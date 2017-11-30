@@ -1,7 +1,7 @@
 #pragma once
-#include "Cvar.h"
-#include "Offsets.h"
-#include "Tier1.h"
+#include "Cvar.hpp"
+#include "Offsets.hpp"
+#include "Tier1.hpp"
 
 namespace Tier1
 {
@@ -28,7 +28,7 @@ namespace Tier1
 		int unk4;
 	};
 
-	void InitConVar(uintptr_t conVarAddr)
+	void SetConVar(uintptr_t conVarAddr)
 	{
 		ConVarCtor = reinterpret_cast<_ConVar>(conVarAddr);
 	}
@@ -119,12 +119,12 @@ namespace Tier1
 	{
 		return CreateVar(name, value, FCVAR_NEVER_AS_STRING, helpstr, true, min, true, max);
 	}
-	ConVar CreateFloatString(const char* name, const char* value, float min, float max, const char* helpstr = "")
-	{
-		return CreateVar(name, value, 0, helpstr, true, min, true, max);
-	}
 	ConVar CreateString(const char* name, const char* value, const char* helpstr = "")
 	{
 		return CreateVar(name, value, 0, helpstr);
+	}
+	ConVar CreateStringFloat(const char* name, const char* value, float min, float max, const char* helpstr = "")
+	{
+		return CreateVar(name, value, 0, helpstr, true, min, true, max);
 	}
 }

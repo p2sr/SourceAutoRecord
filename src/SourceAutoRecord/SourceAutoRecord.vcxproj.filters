@@ -45,52 +45,58 @@
     <ClInclude Include="..\..\libs\minhook\MinHook.h">
       <Filter>MinHook</Filter>
     </ClInclude>
-    <ClInclude Include="Offsets.h">
+    <ClInclude Include="Modules\Client.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\ConCommand.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Console.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\ConVar.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Cvar.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Engine.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Server.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Surface.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Tier1.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Callbacks.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Patterns.h">
+    <ClInclude Include="Commands.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Utils.h">
+    <ClInclude Include="Demo.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Modules\Console.h">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\ConVar.h">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Cvar.h">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Server.h">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Client.h">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Surface.h">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Engine.h">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Demo.h">
+    <ClInclude Include="Patterns.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="SourceAutoRecord.h">
+    <ClInclude Include="Offsets.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Modules\ConCommand.h">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Tier1.h">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands.h">
+    <ClInclude Include="Utils.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Callbacks.h">
+    <ClInclude Include="SourceAutoRecord.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Recorder.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Rebinder.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
   </ItemGroup>

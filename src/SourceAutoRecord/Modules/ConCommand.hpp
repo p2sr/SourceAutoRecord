@@ -1,10 +1,10 @@
 #pragma once
-#include "../SourceAutoRecord.h"
+#include "../SourceAutoRecord.hpp"
 
-#include "../Offsets.h"
-#include "../Utils.h"
+#include "../Offsets.hpp"
+#include "../Utils.hpp"
 
-#include "Tier1.h"
+#include "Tier1.hpp"
 
 namespace Tier1
 {
@@ -27,7 +27,7 @@ namespace Tier1
 		bool UsingCommandCallbackInterface : 1;
 	};
 
-	void InitConCommand(uintptr_t conCommandAddr)
+	void SetConCommand(uintptr_t conCommandAddr)
 	{
 		ConCommandCtor = reinterpret_cast<_ConCommand>(conCommandAddr);
 	}
@@ -54,6 +54,12 @@ namespace Tier1
 	};
 
 	ConCommand CreateCommand(const char* name, _CommandCallbackVoid callback, const char* helpstr = "")
+	{
+		auto ret = ConCommand();
+		ConCommandCtor(ret.Ptr, nullptr, name, callback, helpstr, 0, nullptr);
+		return ret;
+	}
+	ConCommand CreateCommand(const char* name, _CommandCallbackArgs callback, const char* helpstr = "")
 	{
 		auto ret = ConCommand();
 		ConCommandCtor(ret.Ptr, nullptr, name, callback, helpstr, 0, nullptr);

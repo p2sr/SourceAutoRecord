@@ -1,6 +1,6 @@
 #pragma once
-#include "Offsets.h"
-#include "Utils.h"
+#include "Offsets.hpp"
+#include "Utils.hpp"
 
 #define FCVAR_NEVER_AS_STRING (1 << 12)
 

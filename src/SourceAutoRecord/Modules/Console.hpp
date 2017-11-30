@@ -1,7 +1,5 @@
 #pragma once
-#include "Utils.h"
-
-#define COL_GREEN Color(17, 224, 35)
+#include "Utils.hpp"
 
 using _Msg = void(__cdecl*)(const char* pMsgFormat, ...);
 using _Warning = void(__cdecl*)(const char* pMsgFormat, ...);
@@ -19,13 +17,13 @@ namespace Console
 
 	bool Init()
 	{
-		auto module = GetModuleHandleA("tier0.dll");
-		if (module) {
-			auto msgAddr = GetProcAddress(module, "Msg");
-			auto colorMsgAddr = GetProcAddress(module, "?ConColorMsg@@YAXABVColor@@PBDZZ");
-			auto warningAddr = GetProcAddress(module, "Warning");
-			auto devMsgAddr = GetProcAddress(module, "?DevMsg@@YAXPBDZZ");
-			auto devWarningAddr = GetProcAddress(module, "?DevWarning@@YAXPBDZZ");
+		auto tier0 = GetModuleHandleA("tier0.dll");
+		if (tier0) {
+			auto msgAddr = GetProcAddress(tier0, "Msg");
+			auto colorMsgAddr = GetProcAddress(tier0, "?ConColorMsg@@YAXABVColor@@PBDZZ");
+			auto warningAddr = GetProcAddress(tier0, "Warning");
+			auto devMsgAddr = GetProcAddress(tier0, "?DevMsg@@YAXPBDZZ");
+			auto devWarningAddr = GetProcAddress(tier0, "?DevWarning@@YAXPBDZZ");
 
 			if (msgAddr && colorMsgAddr && warningAddr && devMsgAddr && devWarningAddr) {
 				Msg = reinterpret_cast<_Msg>(msgAddr);

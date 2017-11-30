@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "Modules/Console.h"
+#include "Modules/Console.hpp"
 
 #define DEMO_HEADER_ID "HL2DEMO"
 #define DEMO_PROTOCOL 4
@@ -13,8 +13,7 @@
 
 std::string exeFilePath;
 
-enum DemoMessageType
-{
+enum DemoMessageType {
 	SignOn = 1,
 	Packet,
 	SyncTick,
@@ -26,7 +25,8 @@ enum DemoMessageType
 	StringTables
 };
 
-class Demo {
+class Demo
+{
 public:
 	char demoFileStamp[8];
 	__int32 demoProtocol;
@@ -46,9 +46,9 @@ public:
 	__int32 Demo::GetLastTick() {
 		return messageTicks.back();
 	}
-	bool Demo::Parse(std::string demoName, bool headerOnly = true) {
+	bool Demo::Parse(std::string filePath, bool headerOnly = true) {
 		try {
-			std::ifstream file(exeFilePath + "\\portal2\\" + demoName + ".dem", std::ios::in | std::ios::binary);
+			std::ifstream file(filePath, std::ios::in | std::ios::binary);
 			if (!file.good()) return false;
 
 			file.read(demoFileStamp, sizeof(demoFileStamp));
@@ -139,11 +139,9 @@ public:
 			file.close();
 		}
 		catch (const std::exception& ex) {
-			Console::Warning("SAR: Error occurred when trying to parse the demo file.\nReport this to NeKz: https://github.com/NeKzor/Portal2AutoRecord/issues\n%s", std::string(ex.what()));
+			Console::Warning("SAR: Error occurred when trying to parse the demo file.\nIf you think this is an issue, report it at: https://github.com/NeKzor/SourceAutoRecord/issues\n%s", std::string(ex.what()));
 			return false;
 		}
 		return true;
 	}
 };
-
-extern Demo dem;

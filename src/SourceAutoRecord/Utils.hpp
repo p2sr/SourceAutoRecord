@@ -6,7 +6,14 @@
 #include <vector>
 #include <Windows.h>
 
-#define INRANGE(x, a, b) (x >= a && x <= b) 
+#define SAR_VERSION "1.0"
+#define SAR_BUILD __DATE__ " " __TIME__
+
+#define COL_GREEN Color(17, 224, 35)
+#define COL_WHITE Color(255, 255, 255, 255)
+#define COL_YELLOW Color(247, 235, 69)
+
+#define INRANGE(x, a, b) (x >= a && x <= b)
 #define getBits(x) (INRANGE((x & (~0x20)), 'A', 'F') ? ((x & (~0x20)) - 'A' + 0xA): (INRANGE(x, '0', '9') ? x - '0': 0))
 #define getByte(x) (getBits(x[0]) << 4 | getBits(x[1]))
 
@@ -21,15 +28,29 @@ struct Signature {
 	const int Offset = 0;
 };
 
-struct Pattern {
-	const char* Module;
-	const std::vector<Signature> Signatures;
-};
-
 struct ScanResult {
 	uintptr_t Address;
 	int Index = 0;
 	bool Found = false;
+};
+
+struct Pattern {
+	const char* Name;
+	const char* Module;
+	const std::vector<Signature> Signatures;
+	ScanResult Result;
+
+	const char* GetResult()
+	{
+		char result[256];
+		if (Result.Found) {
+			snprintf(result, sizeof(result), "Found %s at 0x%p in %s using %s.", Name, Result.Address, Module, Signatures[Result.Index].Comment);
+		}
+		else {
+			snprintf(result, sizeof(result), "Failed to find %s.", Name);
+		}
+		return result;
+	}
 };
 
 uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_address, const char* target_pattern) {
@@ -62,8 +83,7 @@ uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_addre
 	return NULL;
 }
 
-ScanResult Scan(const Pattern& pattern) {
-	ScanResult result = { 0 };
+ScanResult Scan(Pattern& pattern) {
 	MODULEINFO info = { 0 };
 
 	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleA(pattern.Module), &info, sizeof(MODULEINFO))) {
@@ -71,17 +91,17 @@ ScanResult Scan(const Pattern& pattern) {
 		const uintptr_t end = start + info.SizeOfImage;
 
 		for (auto &signature : pattern.Signatures) {
-			result.Address = FindAddress(start, end, signature.Bytes);
-			if (result.Address == NULL) {
-				result.Index++;
+			pattern.Result.Address = FindAddress(start, end, signature.Bytes);
+			if (pattern.Result.Address == NULL) {
+				pattern.Result.Index++;
 				continue;
 			}
-			result.Address += signature.Offset;
-			result.Found = true;
+			pattern.Result.Address += signature.Offset;
+			pattern.Result.Found = true;
 			break;
 		}
 	}
-	return result;
+	return pattern.Result;
 }
 
 void* GetVirtualFunctionByIndex(void* ptr, int index)
