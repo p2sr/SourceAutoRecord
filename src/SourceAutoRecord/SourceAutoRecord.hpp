@@ -248,12 +248,12 @@ namespace SAR
 			"Echo message when using sar_rebinder_save and sar_bind_save. Default is \"#SAVE#\", a SourceRuns standard. Keep this empty if no echo message should be binded.\n");
 
 		// Others
-		sar_time_demo = CreateCommand(
+		sar_time_demo = CreateCommandArgs(
 			"sar_time_demo",
 			Callbacks::PrintDemoTime,
-			"Prints the tick count of a demo.\n");
-		sar_server_tick = CreateCommand(
-			"sar_server_tick",
+			"Parses a demo and prints some information about it.\n");
+		sar_session_tick = CreateCommand(
+			"sar_session_tick",
 			Callbacks::PrintCurrentTick,
 			"Prints the current tick of the server since it has loaded.\n");
 		sar_about = CreateCommand(

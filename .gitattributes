@@ -1,4 +1,4 @@
-libs/ linguist-vendored
+libs/minhook/ linguist-vendored=true
 
 ###############################################################################
 # Set default behavior to automatically normalize line endings.

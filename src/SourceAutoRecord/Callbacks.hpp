@@ -23,22 +23,38 @@ namespace Callbacks
 		Console::Msg("Version: %s\n", SAR_VERSION);
 		Console::Msg("Build: %s\n", SAR_BUILD);
 	}
-	void PrintDemoTime()
+	void PrintDemoTime(const void* ptr)
 	{
-		if (Recorder::DemoName[0] == '\0' || Recorder::LastDemo.empty()) {
-			Console::Msg("No demo was recorded!\n");
+		ConCommandArgs args(ptr);
+		if (args.Count() != 2) {
+			Console::Msg("sar_time_demo [demo_name] : Parses a demo and prints some information about it.\n");
 			return;
 		}
 
-		std::string file = Engine::GetDir() + std::string("\\") + Recorder::LastDemo;
-		Console::DevMsg("Parsing %s\n", file.c_str());
+		std::string name;
+		if (args.At(1)[0] == '\0') {
+			if (Recorder::DemoName[0] != '\0' && !Recorder::LastDemo.empty()) {
+				name = Recorder::LastDemo;
+			}
+			else {
+				Console::Msg("No demo was recorded!\n");
+				return;
+			}	
+		}
+		else {
+			name = std::string(args.At(1));
+		}
+
+		std::string file = Engine::GetDir() + std::string("\\") + name;
+		Console::DevMsg("Trying to parse \"%s\"...\n", file.c_str());
 
 		Demo demo;
 		if (demo.Parse(file, false)) {
-			Console::Msg("Demo: %s\nTicks: %i\n", Recorder::LastDemo.c_str(), demo.GetLastTick());
+			demo.Fix();
+			Console::Msg("Demo: %s\nClient: %s\nMap: %s\nTicks: %i\nTime: %.3f\nIpT: %.6f\n", name.c_str(), demo.clientName, demo.mapName, demo.playbackTicks, demo.playbackTime, demo.IntervalPerTick());
 		}
 		else {
-			Console::Msg("Parsing failed!\n");
+			Console::Msg("Could not parse \"%s\"!\n", name.c_str());
 		}
 	}
 	void SetSaveRebind(const void* ptr)

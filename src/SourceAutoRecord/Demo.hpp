@@ -46,6 +46,14 @@ public:
 	__int32 Demo::GetLastTick() {
 		return messageTicks.back();
 	}
+	float IntervalPerTick() {
+		return playbackTime / playbackTicks;
+	}
+	void Fix() {
+		float ipt = IntervalPerTick();
+		playbackTicks = GetLastTick();
+		playbackTime = ipt * playbackTicks;
+	}
 	bool Demo::Parse(std::string filePath, bool headerOnly = true) {
 		try {
 			std::ifstream file(filePath, std::ios::in | std::ios::binary);
