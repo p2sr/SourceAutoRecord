@@ -1,9 +1,10 @@
 #pragma once
 #include "minhook/MinHook.h"
 
-#include "Modules/Console.hpp"
 #include "Modules/Client.hpp"
+#include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/InputSystem.hpp"
 #include "Modules/Server.hpp"
 
 #include "Modules/ConCommand.hpp"
@@ -22,8 +23,8 @@ namespace SAR
 	std::string ExePath;
 
 	ScanResult cjb, pnt, sst, cdf, str, sdf, stp;
-	ScanResult enc, ggd, crt, ldg;
-	ScanResult rec, cvr, cnv, mss, cnc, cnc2;
+	ScanResult enc, ggd, crt, ldg, rec, ins, ksb;
+	ScanResult cvr, cnv, mss, cnc, cnc2;
 
 	bool LoadHooks()
 	{
@@ -93,9 +94,20 @@ namespace SAR
 			Console::Warning("SAR: %s\n", Patterns::Record.GetResult());
 			return 1;
 		}
+		ins = Scan(Patterns::InputSystemPtr);
+		if (!ins.Found) {
+			Console::Warning("SAR: %s\n", Patterns::InputSystemPtr.GetResult());
+			return 1;
+		}
+		ksb = Scan(Patterns::Key_SetBinding);
+		if (!ksb.Found) {
+			Console::Warning("SAR: %s\n", Patterns::Key_SetBinding.GetResult());
+			return 1;
+		}
 
 		Engine::Set(enc.Address, ggd.Address, crt.Address, ldg.Address);
 		Recorder::Set(rec.Address);
+		InputSystem::Set(ins.Address, ksb.Address);
 		return true;
 	}
 	bool LoadTier1()
@@ -214,30 +226,28 @@ namespace SAR
 	}
 	void RegisterCommands()
 	{
-		// Save rebinding
+		// Rebinder feature
 		sar_rebinder_save = CreateFloat(
-			"sar_rebinder_save",
-			"0",
-			0,
-			1,
-			"Automatic save rebinding after loading from a save.\n");
+			"sar_rebinder_save", "0", 0, 1,
+			"Automatic save rebinding when server has loaded. File indexing will be synced when recording demos.\n");
 		sar_rebinder_reload = CreateFloat(
-			"sar_rebinder_reload",
-			"0",
-			0,
-			1,
-			"Automatic save-reload rebinding after loading from a save.\n");
-		/*sar_bind_save = CreateString(
-			"sar_bind_save",
-			"C segment_",
-			"Automatic save rebinding after loading from a save. Usage: <key> <save_name>.\n");*/
-		sar_bind_reload = CreateString(
-			"sar_bind_reload",
-			"Q segment_",
-			"Automatic save-reload rebinding after loading from a save. Usage: <key> <save_name>.\n");
-		sar_bind_save = CreateCommandArgs("sar_bind_save", Callbacks::SetSaveRebind, "Automatic save rebinding after loading from a save. Usage: <key> <save_name>.\n");
+			"sar_rebinder_reload", "0", 0, 1,
+			"Automatic save-reload rebinding when server has loaded. File indexing will be synced when recording demos.\n");
 
-		// Commands
+		// Binding commands
+		sar_bind_save = CreateCommandArgs(
+			"sar_bind_save", Callbacks::SetSaveRebind,
+			"Automatic save rebinding when server has loaded. File indexing will be synced when recording demos. Usage: sar_bind_save <key> [save_name]\n");
+		sar_bind_reload = CreateCommandArgs(
+			"sar_bind_reload", Callbacks::SetReloadRebind,
+			"Automatic save rebinding when server has loaded. File indexing will be synced when recording demos. Usage: sar_bind_reload <key> [save_name]\n");
+
+		// Optional binding config
+		sar_save_flag = CreateString(
+			"sar_save_flag", "#SAVE#",
+			"Echo message when using sar_rebinder_save and sar_bind_save. Default is \"#SAVE#\", a SourceRuns standard. Keep this empty if no echo message should be binded.\n");
+
+		// Others
 		sar_time_demo = CreateCommand(
 			"sar_time_demo",
 			Callbacks::PrintDemoTime,
@@ -245,7 +255,7 @@ namespace SAR
 		sar_server_tick = CreateCommand(
 			"sar_server_tick",
 			Callbacks::PrintCurrentTick,
-			"Prints the current tick of the server.\n");
+			"Prints the current tick of the server since it has loaded.\n");
 		sar_about = CreateCommand(
 			"sar_about",
 			Callbacks::PrintAbout,
@@ -258,12 +268,25 @@ namespace SAR
 			"Enables automatic jumping on the server (requires sv_cheats).\n");
 
 		// Experimental
-		cl_showtime = CreateBoolean(
+		/*cl_showtime = CreateBoolean(
 			"cl_showtime",
-			"Draw the current server time.\n");
+			"Draw the current server time.\n");*/
 
 		// From the game
-		_sv_cheats = ConVar("sv_cheats");
-		_sv_bonus_challenge = ConVar("sv_bonus_challenge");
+		sv_cheats = ConVar("sv_cheats");
+		sv_bonus_challenge = ConVar("sv_bonus_challenge");
+		sv_accelerate = ConVar("sv_accelerate");
+		sv_airaccelerate = ConVar("sv_airaccelerate");
+		sv_friction = ConVar("sv_friction");
+		sv_maxspeed = ConVar("sv_maxspeed");
+		sv_stopspeed = ConVar("sv_stopspeed");
+
+		// Even more cheats
+		sv_bonus_challenge.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
+		sv_accelerate.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
+		sv_airaccelerate.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
+		sv_friction.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
+		sv_maxspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
+		sv_stopspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 	}
 }

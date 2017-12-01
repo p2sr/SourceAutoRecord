@@ -11,6 +11,7 @@ namespace Offsets
 	int SetValueFloat;
 	int SetValueInt;
 	int DrawColoredText;
+	int StringToButtonCode;
 
 	// AutoJump
 	int mv;
@@ -24,7 +25,7 @@ namespace Offsets
 	int m_nDemoNumber;
 
 	void Init(int variant) {
-		Console::DevMsg("SAR: Setting variant value to %i!\n", variant);
+		Console::DevMsg("SAR: Offsets will be set correctly for variant: %i!\n", variant);
 		switch (Variant = variant) {
 		case 0:	// Portal 2 6879
 			SetValueString = 12;
@@ -32,6 +33,7 @@ namespace Offsets
 			SetValueInt = 14;
 			FindVar = 16;
 			ClientCommand = 7;
+			StringToButtonCode = 31;
 			mv = 2;
 			m_nOldButtons = 40;
 			DrawColoredText = 160;
@@ -47,6 +49,7 @@ namespace Offsets
 			SetValueInt = 16;
 			FindVar = 16;
 			ClientCommand = 7; // TODO
+			StringToButtonCode = 31; // TODO
 			mv = 2;
 			m_nOldButtons = 40;
 			DrawColoredText = 160; // TODO
@@ -57,5 +60,14 @@ namespace Offsets
 			m_nDemoNumber = 1608; // TODO
 			break;
 		}
+	}
+	const char* GetVariant() {
+		switch (Variant) {
+		case 0:
+			return "Portal 2 (6879)";
+		case 1:
+			return "INFRA (6905)";
+		}
+		return "Unknown";
 	}
 }

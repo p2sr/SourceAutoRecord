@@ -21,6 +21,10 @@ unsigned __stdcall Main(void* args)
 	Console::DevMsg("SAR: %s\n", Patterns::EngineClientPtr.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::GetGameDir.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::CurtimePtr.GetResult());
+	Console::DevMsg("SAR: %s\n", Patterns::LoadgamePtr.GetResult());
+	Console::DevMsg("SAR: %s\n", Patterns::Record.GetResult());
+	Console::DevMsg("SAR: %s\n", Patterns::InputSystemPtr.GetResult());
+	Console::DevMsg("SAR: %s\n", Patterns::Key_SetBinding.GetResult());
 	
 	if (!SAR::LoadTier1()) return 1;
 	Console::DevMsg("SAR: %s\n", Patterns::CvarPtr.GetResult());

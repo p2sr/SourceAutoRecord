@@ -1,9 +1,12 @@
 #pragma once
 #include <string>
+#include "Console.hpp"
+#include "../Rebinder.hpp"
 #include "../Recorder.hpp"
 
 using _GetGameDir = void(__cdecl*)(char* szGetGameDir, int maxlength);
 using _ClientCommand = void(__fastcall*)(void* thisptr, void* edx, const char* str);
+
 using _SetSignonState = bool(__thiscall*)(void* thisptr, int state, int spawncount);
 using _CloseDemoFile = bool(__thiscall*)(void* thisptr);
 using _StopRecording = int(__thiscall*)(void* thisptr);
@@ -79,18 +82,20 @@ namespace Engine
 
 		bool __fastcall SetSignonState(void* thisptr, int edx, int state, int spawncount)
 		{
-			if (state == SignonState::Full) {
-				BaseTick = *TickCount;
+			if (state == SignonState::Prespawn) {
 				if (sar_rebinder_save.GetBool()) {
-
+					Rebinder::RebindSave(*Recorder::Recording ? *Recorder::DemoNumber : -1);
 				}
 				if (sar_rebinder_reload.GetBool()) {
-
+					Rebinder::RebindReload(*Recorder::Recording ? *Recorder::DemoNumber : -1);
 				}
+			}
+			if (state == SignonState::Full) {
+				BaseTick = *TickCount;
 			}
 			return Original::SetSignonState(thisptr, state, spawncount);
 		}
-		// TODO: try to fix demo bug here
+		// TODO: try to fix demo bug here (Portal 2)
 		bool __fastcall CloseDemoFile(void* thisptr, int edx)
 		{
 			return Original::CloseDemoFile(thisptr);

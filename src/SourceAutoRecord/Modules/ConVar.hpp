@@ -73,6 +73,14 @@ namespace Tier1
 			}
 			return nullptr;
 		}
+		const int ConVar::GetFlags() const {
+			switch (Offsets::Variant) {
+			case 0: // Portal 2 6879
+			case 1: // INFRA 6905
+				return ((ConVarData0*)Ptr)->Flags;
+			}
+			return 0;
+		}
 		void ConVar::SetValue(const char* value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::SetValueString);
 			if (vf) ((_SetValueString)vf)(Ptr, nullptr, value);
@@ -84,6 +92,19 @@ namespace Tier1
 		void ConVar::SetValue(int value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::SetValueInt);
 			if (vf) ((_SetValueInt)vf)(Ptr, nullptr, value);
+		}
+		void ConVar::SetFlags(int value) {
+			switch (Offsets::Variant) {
+			case 0: // Portal 2 6879
+			case 1: // INFRA 6905
+				((ConVarData0*)Ptr)->Flags = value;
+			}
+		}
+		void ConVar::AddFlag(int value) {
+			SetFlags(GetFlags() | value);
+		}
+		void ConVar::RemoveFlag(int value) {
+			SetFlags(GetFlags() & ~(value));
 		}
 	};
 

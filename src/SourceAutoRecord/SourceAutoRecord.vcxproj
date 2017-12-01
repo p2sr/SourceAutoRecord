@@ -167,6 +167,7 @@
     <ClInclude Include="Modules\ConVar.hpp" />
     <ClInclude Include="Modules\Cvar.hpp" />
     <ClInclude Include="Modules\Engine.hpp" />
+    <ClInclude Include="Modules\InputSystem.hpp" />
     <ClInclude Include="Modules\Server.hpp" />
     <ClInclude Include="Modules\Surface.hpp" />
     <ClInclude Include="Modules\Tier1.hpp" />

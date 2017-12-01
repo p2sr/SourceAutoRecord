@@ -13,10 +13,7 @@ namespace Tier1
 			switch (Offsets::Variant) {
 			case 0:	// Portal 2 6879
 			case 1: // INFRA 6905
-				//return ((const ConCommandArgsData*)Ptr)->ArgC;
-				auto ptr = (const ConCommandArgsData*)Ptr;
-				auto test = *ptr;
-				return ptr->ArgC;
+				return ((const ConCommandArgsData*)Ptr)->ArgC;
 			}
 			return 0;
 		}

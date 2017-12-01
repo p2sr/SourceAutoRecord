@@ -44,10 +44,10 @@ struct Pattern {
 	{
 		char result[256];
 		if (Result.Found) {
-			snprintf(result, sizeof(result), "Found %s at 0x%p in %s using %s.", Name, Result.Address, Module, Signatures[Result.Index].Comment);
+			snprintf(result, sizeof(result), "Found %s at 0x%p in %s using %s!", Name, Result.Address, Module, Signatures[Result.Index].Comment);
 		}
 		else {
-			snprintf(result, sizeof(result), "Failed to find %s.", Name);
+			snprintf(result, sizeof(result), "Failed to find %s!", Name);
 		}
 		return result;
 	}

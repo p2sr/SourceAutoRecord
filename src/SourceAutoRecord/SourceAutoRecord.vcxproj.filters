@@ -102,6 +102,9 @@
     <ClInclude Include="Modules\ConCommandArgs.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
+    <ClInclude Include="Modules\InputSystem.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

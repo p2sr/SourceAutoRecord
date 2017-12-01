@@ -92,6 +92,33 @@ namespace Patterns
 				}
 			}
 		};
+		Pattern InputSystemPtr = Pattern
+		{
+			"IInputSystem *g_pInputSystem",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// \x55\x8B\xEC\x56\x8B\x75\x08\x83\x3E\x02\x74\x11\x68\x00\x00\x00\x00\xFF\x15\x00\x00\x00\x00\x83\xC4\x04\x5E\x5D\xC3\x8B\x86\x00\x00\x00\x00\x8B\x0D\x00\x00\x00\x00 xxxxxxxxxxxxx????xx????xxxxxxxx????xx????
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC 56 8B 75 08 83 3E 02 74 11 68 ? ? ? ? FF 15 ? ? ? ? 83 C4 04 5E 5D C3 8B 86 ? ? ? ? 8B 0D ? ? ? ? " },
+					{ 37 }
+				}
+			}
+		};
+		Pattern Key_SetBinding = Pattern
+		{
+			"Key_SetBinding",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// \x55\x8B\xEC\x56\x8B\x75\x08\x83\xFE\xFF xxxxxxxxxx
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC 56 8B 75 08 83 FE FF" }
+				}
+			}
+		};
 		Pattern ConCommand_Ctor1 = Pattern
 		{
 			"ConCommand_Ctor1",
