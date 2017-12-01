@@ -99,6 +99,9 @@
     <ClInclude Include="Rebinder.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
+    <ClInclude Include="Modules\ConCommandArgs.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

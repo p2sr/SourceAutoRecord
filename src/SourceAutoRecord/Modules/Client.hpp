@@ -12,17 +12,17 @@ namespace Client
 	{
 		_Paint Paint;
 	}
-	
+
 	namespace Detour
 	{
 		int __fastcall Paint(void* thisptr, int edx)
 		{
-			// TODO: font size
-			int font = (int)(*((uintptr_t*)thisptr + 348));
+			//int font = (int)(*((uintptr_t*)thisptr + 348));
+			int font = 5;
 
 			char ticks[64];
-			snprintf(ticks, sizeof(ticks), "Ticks: %i", !*Engine::LoadGame ? Engine::GetCurrentTick() : 0);
-			Surface::Draw(font, 2, 63, COL_WHITE, ticks);
+			snprintf(ticks, sizeof(ticks), "ticks: %i", !*Engine::LoadGame ? Engine::GetCurrentTick() : 0);
+			Surface::Draw(font, 1, 65, COL_WHITE, ticks);
 
 			return Original::Paint(thisptr);
 		}

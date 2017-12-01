@@ -18,4 +18,16 @@ namespace Tier1
 		const char* HelpString;
 		int Flags;
 	};
+
+	struct ConCommandArgsData {
+		enum {
+			COMMAND_MAX_ARGC = 64,
+			COMMAND_MAX_LENGTH = 512,
+		};
+		int ArgC;
+		int ArgV0Size;
+		char ArgSBuffer[COMMAND_MAX_LENGTH];
+		char ArgVBuffer[COMMAND_MAX_LENGTH];
+		const char* ArgV[COMMAND_MAX_ARGC];
+	};
 }

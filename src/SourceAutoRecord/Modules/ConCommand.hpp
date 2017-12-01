@@ -1,14 +1,11 @@
 #pragma once
-#include "../SourceAutoRecord.hpp"
-
-#include "../Offsets.hpp"
-#include "../Utils.hpp"
-
 #include "Tier1.hpp"
+#include "../Offsets.hpp"
 
 namespace Tier1
 {
 	_ConCommand ConCommandCtor;
+	_ConCommand ConCommandCtor2;
 
 	// Portal 2 6879
 	// INFRA 6905
@@ -27,22 +24,22 @@ namespace Tier1
 		bool UsingCommandCallbackInterface : 1;
 	};
 
-	void SetConCommand(uintptr_t conCommandAddr)
+	void SetConCommand(uintptr_t conCommandAddr, uintptr_t conCommandAddr2)
 	{
 		ConCommandCtor = reinterpret_cast<_ConCommand>(conCommandAddr);
+		ConCommandCtor2 = reinterpret_cast<_ConCommand>(conCommandAddr2);
 	}
 
 	struct ConCommand {
 		void* Ptr = nullptr;
 		std::unique_ptr<uint8_t[]> Blob;
 
-		ConCommand::ConCommand()
-		{
+		ConCommand::ConCommand() {
 			size_t size = 0;
 
 			switch (Offsets::Variant) {
-			case 0:
-			case 1:
+			case 0:	// Portal 2 6879
+			case 1: // INFRA 6905
 				size = sizeof(ConCommandData0);
 				break;
 			}
@@ -59,10 +56,10 @@ namespace Tier1
 		ConCommandCtor(ret.Ptr, nullptr, name, callback, helpstr, 0, nullptr);
 		return ret;
 	}
-	ConCommand CreateCommand(const char* name, _CommandCallbackArgs callback, const char* helpstr = "")
+	ConCommand CreateCommandArgs(const char* name, _CommandCallbackArgs callback, const char* helpstr = "")
 	{
 		auto ret = ConCommand();
-		ConCommandCtor(ret.Ptr, nullptr, name, callback, helpstr, 0, nullptr);
+		ConCommandCtor2(ret.Ptr, nullptr, name, callback, helpstr, 0, nullptr);
 		return ret;
 	}
 }

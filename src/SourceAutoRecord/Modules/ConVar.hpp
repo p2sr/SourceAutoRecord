@@ -6,7 +6,7 @@
 namespace Tier1
 {
 	_ConVar ConVarCtor;
-
+	
 	// Portal 2 6879
 	// INFRA 6905
 	struct ConVarData0 : ConCommandBase {

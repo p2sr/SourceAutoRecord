@@ -160,6 +160,7 @@
     <ClInclude Include="Commands.hpp" />
     <ClInclude Include="Demo.hpp" />
     <ClInclude Include="Callbacks.hpp" />
+    <ClInclude Include="Modules\ConCommandArgs.hpp" />
     <ClInclude Include="Modules\Client.hpp" />
     <ClInclude Include="Modules\ConCommand.hpp" />
     <ClInclude Include="Modules\Console.hpp" />

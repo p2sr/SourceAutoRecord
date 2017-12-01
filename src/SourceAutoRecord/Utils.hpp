@@ -7,7 +7,7 @@
 #include <Windows.h>
 
 #define SAR_VERSION "1.0"
-#define SAR_BUILD __DATE__ " " __TIME__
+#define SAR_BUILD __TIME__ "" __DATE__
 
 #define COL_GREEN Color(17, 224, 35)
 #define COL_WHITE Color(255, 255, 255, 255)

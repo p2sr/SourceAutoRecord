@@ -23,7 +23,7 @@ namespace SAR
 
 	ScanResult cjb, pnt, sst, cdf, str, sdf, stp;
 	ScanResult enc, ggd, crt, ldg;
-	ScanResult rec, cvr, cnv, mss, cnc;
+	ScanResult rec, cvr, cnv, mss, cnc, cnc2;
 
 	bool LoadHooks()
 	{
@@ -115,10 +115,15 @@ namespace SAR
 			Console::Warning("SAR: %s\n", Patterns::ConCommand_Ctor1.GetResult());
 			return 1;
 		}
+		cnc2 = Scan(Patterns::ConCommand_Ctor2);
+		if (!cnc.Found) {
+			Console::Warning("SAR: %s\n", Patterns::ConCommand_Ctor2.GetResult());
+			return 1;
+		}
 
 		Cvar::Set(cvr.Address);
 		Tier1::SetConVar(cnv.Address);
-		Tier1::SetConCommand(cnc.Address);
+		Tier1::SetConCommand(cnc.Address, cnc2.Address);
 		return true;
 	}
 	bool LoadRest()
@@ -222,14 +227,15 @@ namespace SAR
 			0,
 			1,
 			"Automatic save-reload rebinding after loading from a save.\n");
-		sar_bind_save = CreateString(
+		/*sar_bind_save = CreateString(
 			"sar_bind_save",
 			"C segment_",
-			"Automatic save rebinding after loading from a save. Usage: <key> <save_name>.\n");
+			"Automatic save rebinding after loading from a save. Usage: <key> <save_name>.\n");*/
 		sar_bind_reload = CreateString(
 			"sar_bind_reload",
 			"Q segment_",
 			"Automatic save-reload rebinding after loading from a save. Usage: <key> <save_name>.\n");
+		sar_bind_save = CreateCommandArgs("sar_bind_save", Callbacks::SetSaveRebind, "Automatic save rebinding after loading from a save. Usage: <key> <save_name>.\n");
 
 		// Commands
 		sar_time_demo = CreateCommand(

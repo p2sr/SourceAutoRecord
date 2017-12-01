@@ -105,6 +105,19 @@ namespace Patterns
 				}
 			}
 		};
+		Pattern ConCommand_Ctor2 = Pattern
+		{
+			"ConCommand_Ctor2",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// \x55\x8B\xEC\x8B\x45\x0C\x53\x33\xDB\x56\x8B\xF1\x8B\x4D\x18\x80\x4E\x20\x02 xxxxxxxxxxxxxxxxxxx
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC 8B 45 0C 53 33 DB 56 8B F1 8B 4D 18 80 4E 20 02" }
+				}
+			}
+		};
 		Pattern SetSignonState = Pattern
 		{
 			"CGameClient::SetSignonState",

@@ -23,8 +23,8 @@ namespace Offsets
 	int m_bRecording;
 	int m_nDemoNumber;
 
-	void Init(int variant)
-	{
+	void Init(int variant) {
+		Console::DevMsg("SAR: Setting variant value to %i!\n", variant);
 		switch (Variant = variant) {
 		case 0:	// Portal 2 6879
 			SetValueString = 12;

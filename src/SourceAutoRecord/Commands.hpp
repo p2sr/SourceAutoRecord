@@ -9,8 +9,9 @@ namespace Commands
 	// Rebinder
 	ConVar sar_rebinder_save;
 	ConVar sar_rebinder_reload;
-	ConVar sar_bind_save;
+	//ConVar sar_bind_save;
 	ConVar sar_bind_reload;
+	ConCommand sar_bind_save;
 
 	// Info
 	ConCommand sar_time_demo;

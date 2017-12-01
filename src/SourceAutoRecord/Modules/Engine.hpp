@@ -81,6 +81,12 @@ namespace Engine
 		{
 			if (state == SignonState::Full) {
 				BaseTick = *TickCount;
+				if (sar_rebinder_save.GetBool()) {
+
+				}
+				if (sar_rebinder_reload.GetBool()) {
+
+				}
 			}
 			return Original::SetSignonState(thisptr, state, spawncount);
 		}

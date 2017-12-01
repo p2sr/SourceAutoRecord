@@ -26,6 +26,7 @@ unsigned __stdcall Main(void* args)
 	Console::DevMsg("SAR: %s\n", Patterns::CvarPtr.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::ConVar_Ctor3.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::ConCommand_Ctor1.GetResult());
+	Console::DevMsg("SAR: %s\n", Patterns::ConCommand_Ctor2.GetResult());
 	
 	if (!SAR::LoadRest()) return 1;
 	Console::DevMsg("SAR: %s\n", Patterns::MatSystemSurfacePtr.GetResult());
