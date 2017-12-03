@@ -245,7 +245,7 @@ namespace Patterns
 				}
 			}
 		};
-		Pattern Record = Pattern
+		Pattern DemoRecorderPtr = Pattern
 		{
 			"IDemoRecorder *demorecorder",
 			"engine.dll",
@@ -256,6 +256,47 @@ namespace Patterns
 					{ "Portal 2 Build 6879" },
 					{ "55 8B EC 81 EC ? ? ? ? 83 3D ? ? ? ? ? 53" },
 					{ 43 }
+				}
+			}
+		};
+		Pattern DemoPlayerPtr = Pattern
+		{
+			"IDemoPlayer *demoplayer",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// \x55\x8B\xEC\x81\xEC\x00\x00\x00\x00\x83\x3D\x00\x00\x00\x00\x00\x53 xxxxx????xx?????x
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC 81 EC ? ? ? ? 83 3D ? ? ? ? ? 53" },
+					{ 79 }
+				}
+			}
+		};
+		Pattern PlayDemo = Pattern
+		{
+			"CL_PlayDemo_f",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// \x55\x8B\xEC\x81\xEC\x00\x00\x00\x00\x83\x3D\x00\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x8B\x45\x08\x83\x38\x02 xxxxx????xx?????xx????xxxxxx
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC 81 EC ? ? ? ? 83 3D ? ? ? ? ? 0F 85 ? ? ? ? 8B 45 08 83 38 02" }
+				}
+			}
+		};
+		Pattern StartPlayback = Pattern
+		{
+			"CDemoPlayer::StartPlayback",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// CDemoPlayer::StartPlayback
+					// \x55\x8B\xEC\x53\x56\x57\x6A\x00\x8B\xF1 xxxxxxxxxx
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC 53 56 57 6A 00 8B F1" }
 				}
 			}
 		};
@@ -287,6 +328,21 @@ namespace Patterns
 				}
 			}
 		};
+		Pattern ReadPacket = Pattern
+		{
+			"CDemoPlayer::ReadPacket",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// CDemoPlayer::ReadPacket
+					// \x55\x8B\xEC\x81\xEC\x00\x00\x00\x00\x57\x8B\xF9\x8D\x4F\x04\x89\x7D\xB0 xxxxx????xxxxxxxxx
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC 81 EC ? ? ? ? 57 8B F9 8D 4F 04 89 7D B0" },
+					{ 414 }
+				}
+			}
+		};
 		Pattern Stop = Pattern
 		{
 			"CON_COMMAND stop",
@@ -297,6 +353,33 @@ namespace Patterns
 					// \x83\x3D\x00\x00\x00\x00\x00\x75\x1F xx?????xx
 					{ "Portal 2 Build 6879" },
 					{ "83 3D ? ? ? ? ? 75 1F" }
+				}
+			}
+		};
+		Pattern ConVar_PrintDescription = Pattern
+		{
+			"ConVar_PrintDescription",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// \x68\x00\x00\x00\x00\xFF\x15\x00\x00\x00\x00\x83\xC4\x0C\x8B\xE5\x5D\xC3\x8D\x8D\x00\x00\x00\x00 x????xx????xxxxxxxxx????
+					{ "Portal 2 Build 6879" },
+					{ "68 ? ? ? ? FF 15 ? ? ? ? 83 C4 0C 8B E5 5D C3 8D 8D ? ? ? ? " },
+					{ 1 }
+				}
+			}
+		};
+		Pattern Disconnect = Pattern
+		{
+			"CBaseClientState::Disconnect",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// \x55\x8B\xEC\xDD\x05\x00\x00\x00\x00\x83\xEC\x18 xxxxx????xxx
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC DD 05 ? ? ? ? 83 EC 18" }
 				}
 			}
 		};

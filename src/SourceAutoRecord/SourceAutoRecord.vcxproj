@@ -166,6 +166,8 @@
     <ClInclude Include="Modules\Console.hpp" />
     <ClInclude Include="Modules\ConVar.hpp" />
     <ClInclude Include="Modules\Cvar.hpp" />
+    <ClInclude Include="Modules\DemoPlayer.hpp" />
+    <ClInclude Include="Modules\DemoRecorder.hpp" />
     <ClInclude Include="Modules\Engine.hpp" />
     <ClInclude Include="Modules\InputSystem.hpp" />
     <ClInclude Include="Modules\Server.hpp" />
@@ -175,7 +177,6 @@
     <ClInclude Include="Patterns.hpp" />
     <ClInclude Include="..\..\libs\minhook\MinHook.h" />
     <ClInclude Include="Rebinder.hpp" />
-    <ClInclude Include="Recorder.hpp" />
     <ClInclude Include="SourceAutoRecord.hpp" />
     <ClInclude Include="Utils.hpp" />
   </ItemGroup>

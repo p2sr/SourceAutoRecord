@@ -9,9 +9,7 @@
 #define DEMO_HEADER_ID "HL2DEMO"
 #define DEMO_PROTOCOL 4
 #define	MAX_OSPATH 260	
-#define MAX_SPLITSCREEN_CLIENTS 2
-
-std::string exeFilePath;
+#define MAX_SPLITSCREEN_CLIENTS 2 // TODO
 
 enum DemoMessageType {
 	SignOn = 1,

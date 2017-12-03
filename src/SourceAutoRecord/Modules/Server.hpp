@@ -4,7 +4,7 @@
 
 #define IN_JUMP (1 << 1)
 
-using _CheckJumpButton = int(__thiscall*)(void* thisptr);
+using _CheckJumpButton = bool(__thiscall*)(void* thisptr);
 
 using namespace Commands;
 
@@ -20,7 +20,9 @@ namespace Server
 
 	namespace Detour
 	{
-		int __fastcall CheckJumpButton(void* thisptr, int edx)
+		bool CallFromCheckJumpButton = false;
+
+		bool __fastcall CheckJumpButton(void* thisptr, int edx)
 		{
 			int *pM_nOldButtons = NULL;
 			int origM_nOldButtons = 0;
@@ -34,7 +36,9 @@ namespace Server
 			}
 			CantJumpNextTime = false;
 
+			CallFromCheckJumpButton = true;
 			bool result = Original::CheckJumpButton(thisptr);
+			CallFromCheckJumpButton = false;
 
 			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sv_autojump.GetBool()) {
 				if (!(*pM_nOldButtons & IN_JUMP))

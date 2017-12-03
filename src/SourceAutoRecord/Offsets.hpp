@@ -12,6 +12,8 @@ namespace Offsets
 	int SetValueInt;
 	int DrawColoredText;
 	int StringToButtonCode;
+	int GetRecordingTick;
+	int IsPlayingBack;
 
 	// AutoJump
 	int mv;
@@ -24,6 +26,9 @@ namespace Offsets
 	int m_bRecording;
 	int m_nDemoNumber;
 
+	// DemoPlayer
+	int m_szFileName;
+
 	void Init(int variant) {
 		Console::DevMsg("SAR: Offsets will be set correctly for variant: %i!\n", variant);
 		switch (Variant = variant) {
@@ -34,6 +39,8 @@ namespace Offsets
 			FindVar = 16;
 			ClientCommand = 7;
 			StringToButtonCode = 31;
+			GetRecordingTick = 1;
+			IsPlayingBack = 6;
 			mv = 2;
 			m_nOldButtons = 40;
 			DrawColoredText = 160;
@@ -42,6 +49,7 @@ namespace Offsets
 			m_bCloseDemoFile = 1605;
 			m_bRecording = 1606;
 			m_nDemoNumber = 1608;
+			m_szFileName = 4;
 			break;
 		case 1: // INFRA 6905
 			SetValueString = 14;
@@ -50,6 +58,8 @@ namespace Offsets
 			FindVar = 16;
 			ClientCommand = 7; // TODO
 			StringToButtonCode = 31; // TODO
+			GetRecordingTick = 1; // TODO
+			IsPlayingBack = 6; // TODO
 			mv = 2;
 			m_nOldButtons = 40;
 			DrawColoredText = 160; // TODO
@@ -58,6 +68,7 @@ namespace Offsets
 			m_bCloseDemoFile = 1605; // TODO
 			m_bRecording = 1606; // TODO
 			m_nDemoNumber = 1608; // TODO
+			m_szFileName = 4; // TODO
 			break;
 		}
 	}

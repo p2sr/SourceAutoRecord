@@ -1,17 +1,22 @@
 #pragma once
 #include <string>
 #include "Console.hpp"
+#include "DemoRecorder.hpp"
+#include "DemoPlayer.hpp"
+#include "../Demo.hpp"
 #include "../Rebinder.hpp"
-#include "../Recorder.hpp"
 
 using _GetGameDir = void(__cdecl*)(char* szGetGameDir, int maxlength);
-using _ClientCommand = void(__fastcall*)(void* thisptr, void* edx, const char* str);
+using _ClientCmd = void(__fastcall*)(void* thisptr, const char* szCmdString);
 
 using _SetSignonState = bool(__thiscall*)(void* thisptr, int state, int spawncount);
 using _CloseDemoFile = bool(__thiscall*)(void* thisptr);
 using _StopRecording = int(__thiscall*)(void* thisptr);
 using _StartupDemoFile = void(__thiscall*)(void* thisptr);
 using _ConCommandStop = void(__cdecl*)();
+using _Disconnect = void(__thiscall*)(void* thisptr, int bShowMainMenu);
+using _PlayDemo = void(__cdecl*)(void* thisptr);
+using _StartPlayback = bool(__thiscall*)(void* thisptr, int edx, const char *filename, bool bAsTimeDemo);
 
 enum SignonState {
 	None = 0,
@@ -31,7 +36,7 @@ namespace Engine
 {
 	void* ClientPtr;
 	_GetGameDir GetGameDir;
-	_ClientCommand ClientCommand;
+	_ClientCmd ClientCmd;
 
 	int* TickCount;
 	bool* LoadGame;
@@ -41,8 +46,9 @@ namespace Engine
 	void Set(uintptr_t clientPtr, uintptr_t gameDirAddr, uintptr_t curtimeAddr, uintptr_t loadGameAddr)
 	{
 		ClientPtr = **(void***)(clientPtr);
-		ClientCommand = (_ClientCommand)GetVirtualFunctionByIndex(ClientPtr, Offsets::ClientCommand);
+		ClientCmd = (_ClientCmd)GetVirtualFunctionByIndex(ClientPtr, Offsets::ClientCommand);
 		GetGameDir = (_GetGameDir)gameDirAddr;
+
 		TickCount = (int*)reinterpret_cast<uintptr_t*>(*((uintptr_t*)curtimeAddr) + 12);
 		LoadGame = *(bool**)(loadGameAddr);
 
@@ -50,9 +56,9 @@ namespace Engine
 			BaseTick = *TickCount;
 		}
 	}
-	void ExecuteCommand(const char* str)
+	void ExecuteCommand(const char* cmd)
 	{
-		ClientCommand(ClientPtr, nullptr, str);
+		ClientCmd(ClientPtr, cmd);
 	}
 	int GetCurrentTick()
 	{
@@ -73,59 +79,65 @@ namespace Engine
 		_StopRecording StopRecording;
 		_StartupDemoFile StartupDemoFile;
 		_ConCommandStop ConCommandStop;
+		_Disconnect Disconnect;
+		_PlayDemo PlayDemo;
+		_StartPlayback StartPlayback;
 	}
 
 	namespace Detour
 	{
 		bool PlayerRequestedStop;
-		bool IsRecording;
+		bool IsRecordingDemo;
+
+		bool PlayerRequestedPlayback;
+		bool IsPlayingDemo;
 
 		bool __fastcall SetSignonState(void* thisptr, int edx, int state, int spawncount)
 		{
 			if (state == SignonState::Prespawn) {
-				if (sar_rebinder_save.GetBool()) {
-					Rebinder::RebindSave(*Recorder::Recording ? *Recorder::DemoNumber : -1);
+				if (Rebinder::IsSaveBinding) {
+					Rebinder::RebindSave(IsRecordingDemo ? *DemoRecorder::DemoNumber : -1);
 				}
-				if (sar_rebinder_reload.GetBool()) {
-					Rebinder::RebindReload(*Recorder::Recording ? *Recorder::DemoNumber : -1);
+				if (Rebinder::IsReloadBinding) {
+					Rebinder::RebindReload(IsRecordingDemo ? *DemoRecorder::DemoNumber : -1);
 				}
 			}
-			if (state == SignonState::Full) {
+			else if (state == SignonState::Full) {
 				BaseTick = *TickCount;
 			}
 			return Original::SetSignonState(thisptr, state, spawncount);
 		}
-		// TODO: try to fix demo bug here (Portal 2)
 		bool __fastcall CloseDemoFile(void* thisptr, int edx)
 		{
 			return Original::CloseDemoFile(thisptr);
 		}
 		bool __fastcall StopRecording(void* thisptr, int edx)
 		{
-			const int LastDemoNumber = *Recorder::DemoNumber;
+			const int LastDemoNumber = *DemoRecorder::DemoNumber;
 			bool result = Original::StopRecording(thisptr);
 
 			if (!PlayerRequestedStop) {
-				if (!*LoadGame) {
+				if (!*LoadGame && !IsPlayingDemo) {
 					Console::ColorMsg(COL_YELLOW, "Session: %i ticks\n", Engine::GetCurrentTick());
 				}
-				if (IsRecording) {
-					*Recorder::DemoNumber = LastDemoNumber;
+				if (IsRecordingDemo) {
+					*DemoRecorder::DemoNumber = LastDemoNumber;
 					if (*LoadGame) {
-						Recorder::SetLastDemo();
-						*Recorder::Recording = true;
-						(*Recorder::DemoNumber)++;
+						DemoRecorder::SetLastDemo();
+						*DemoRecorder::Recording = true;
+						(*DemoRecorder::DemoNumber)++;
 					}
 				}
 			}
 			else {
-				IsRecording = false;
+				IsRecordingDemo = false;
 			}
+			if (IsPlayingDemo) IsPlayingDemo = false;
 			return result;
 		}
 		void __fastcall StartupDemoFile(void* thisptr, int edx)
 		{
-			IsRecording = true;
+			IsRecordingDemo = true;
 			Original::StartupDemoFile(thisptr);
 		}
 		void __cdecl ConCommandStop()
@@ -133,6 +145,40 @@ namespace Engine
 			PlayerRequestedStop = true;
 			Original::ConCommandStop();
 			PlayerRequestedStop = false;
+		}
+		void __fastcall Disconnect(void* thisptr, int edx, bool bShowMainMenu)
+		{
+			Console::ColorMsg(COL_YELLOW, "Disconnected at: %i\n", DemoRecorder::GetCurrentTick());
+			Original::Disconnect(thisptr, bShowMainMenu);
+		}
+		void __cdecl PlayDemo(void* thisptr)
+		{
+			PlayerRequestedPlayback = true;
+			Original::PlayDemo(thisptr);
+			PlayerRequestedPlayback = false;
+		}
+		bool __fastcall StartPlayback(void* thisptr, int edx, const char *filename, bool bAsTimeDemo)
+		{
+			bool result = Original::StartPlayback(thisptr, edx, filename, bAsTimeDemo);
+
+			if (result && PlayerRequestedPlayback) {
+				IsPlayingDemo = true;
+				std::string file = GetDir() + std::string("\\") + std::string(DemoPlayer::DemoName);
+				Demo demo;
+				if (demo.Parse(file, false)) {
+					demo.Fix();
+					Console::Msg("Demo: %s\n", DemoPlayer::DemoName);
+					Console::Msg("Client: %s\n", demo.clientName);
+					Console::Msg("Map: %s\n", demo.mapName);
+					Console::Msg("Ticks: %i\n", demo.playbackTicks);
+					Console::Msg("Time: %.3f\n", demo.playbackTime);
+					Console::Msg("IpT: %.6f\n", demo.IntervalPerTick());
+				}
+				else {
+					Console::Msg("Could not parse \"%s\"!\n", DemoPlayer::DemoName);
+				}
+			}
+			return result;
 		}
 	}
 }

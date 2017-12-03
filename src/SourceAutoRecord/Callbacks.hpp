@@ -2,6 +2,7 @@
 #include "Modules/Client.hpp"
 #include "Modules/ConCommandArgs.hpp"
 #include "Modules/Console.hpp"
+#include "Modules/DemoRecorder.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/InputSystem.hpp"
 
@@ -11,9 +12,10 @@
 
 namespace Callbacks
 {
-	void PrintCurrentTick()
+	void PrintSessionTick()
 	{
-		Console::Msg("Current Tick: %i\n", Engine::GetCurrentTick());
+		Console::Msg("Session Tick: %i\n", Engine::GetCurrentTick());
+		Console::Msg("Recorder Tick: %i\n", DemoRecorder::GetCurrentTick());
 	}
 	void PrintAbout()
 	{
@@ -23,7 +25,7 @@ namespace Callbacks
 		Console::Msg("Version: %s\n", SAR_VERSION);
 		Console::Msg("Build: %s\n", SAR_BUILD);
 	}
-	void PrintDemoTime(const void* ptr)
+	void PrintDemoInfo(const void* ptr)
 	{
 		ConCommandArgs args(ptr);
 		if (args.Count() != 2) {
@@ -33,13 +35,16 @@ namespace Callbacks
 
 		std::string name;
 		if (args.At(1)[0] == '\0') {
-			if (Recorder::DemoName[0] != '\0' && !Recorder::LastDemo.empty()) {
-				name = Recorder::LastDemo;
+			if (DemoRecorder::DemoName[0] != '\0' && !DemoRecorder::LastDemo.empty()) {
+				name = DemoRecorder::LastDemo;
+			}
+			else if (DemoPlayer::DemoName[0] != '\0') {
+				name = std::string(DemoPlayer::DemoName);
 			}
 			else {
-				Console::Msg("No demo was recorded!\n");
+				Console::Msg("No demo was recorded or played back!\n");
 				return;
-			}	
+			}
 		}
 		else {
 			name = std::string(args.At(1));
@@ -51,13 +56,18 @@ namespace Callbacks
 		Demo demo;
 		if (demo.Parse(file, false)) {
 			demo.Fix();
-			Console::Msg("Demo: %s\nClient: %s\nMap: %s\nTicks: %i\nTime: %.3f\nIpT: %.6f\n", name.c_str(), demo.clientName, demo.mapName, demo.playbackTicks, demo.playbackTime, demo.IntervalPerTick());
+			Console::Msg("Demo: %s\n", name.c_str());
+			Console::Msg("Client: %s\n", demo.clientName);
+			Console::Msg("Map: %s\n", demo.mapName);
+			Console::Msg("Ticks: %i\n", demo.playbackTicks);
+			Console::Msg("Time: %.3f\n", demo.playbackTime);
+			Console::Msg("IpT: %.6f\n", demo.IntervalPerTick());
 		}
 		else {
 			Console::Msg("Could not parse \"%s\"!\n", name.c_str());
 		}
 	}
-	void SetSaveRebind(const void* ptr)
+	void BindSaveRebinder(const void* ptr)
 	{
 		ConCommandArgs args(ptr);
 		if (args.Count() != 3) {
@@ -77,7 +87,7 @@ namespace Callbacks
 		Rebinder::SetSaveBind(button, args.At(2));
 		Rebinder::RebindSave();
 	}
-	void SetReloadRebind(const void* ptr)
+	void BindReloadRebinder(const void* ptr)
 	{
 		ConCommandArgs args(ptr);
 		if (args.Count() != 3) {
@@ -96,5 +106,21 @@ namespace Callbacks
 		}
 		Rebinder::SetReloadBind(button, args.At(2));
 		Rebinder::RebindReload();
+	}
+	void UnbindSaveRebinder()
+	{
+		if (!Rebinder::IsSaveBinding) {
+			Console::Msg("There's nothing to unbind.\n");
+			return;
+		}
+		Rebinder::ResetSaveBind();
+	}
+	void UnbindReloadRebinder()
+	{
+		if (!Rebinder::IsReloadBinding) {
+			Console::Msg("There's nothing to unbind.\n");
+			return;
+		}
+		Rebinder::ResetReloadBind();
 	}
 }

@@ -93,9 +93,6 @@
     <ClInclude Include="SourceAutoRecord.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Recorder.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
     <ClInclude Include="Rebinder.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
@@ -103,6 +100,12 @@
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
     <ClInclude Include="Modules\InputSystem.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\DemoPlayer.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\DemoRecorder.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
   </ItemGroup>
