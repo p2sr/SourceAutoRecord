@@ -16,7 +16,8 @@ using _StartupDemoFile = void(__thiscall*)(void* thisptr);
 using _ConCommandStop = void(__cdecl*)();
 using _Disconnect = void(__thiscall*)(void* thisptr, int bShowMainMenu);
 using _PlayDemo = void(__cdecl*)(void* thisptr);
-using _StartPlayback = bool(__thiscall*)(void* thisptr, int edx, const char *filename, bool bAsTimeDemo);
+using _StartPlayback = bool(__fastcall*)(void* thisptr, int edx, const char *filename, bool bAsTimeDemo);
+using _StopPlayback = int(__fastcall*)(void* thisptr, int edx);
 
 enum SignonState {
 	None = 0,
@@ -82,6 +83,7 @@ namespace Engine
 		_Disconnect Disconnect;
 		_PlayDemo PlayDemo;
 		_StartPlayback StartPlayback;
+		_StopPlayback StopPlayback;
 	}
 
 	namespace Detour
@@ -117,7 +119,7 @@ namespace Engine
 			bool result = Original::StopRecording(thisptr);
 
 			if (!PlayerRequestedStop) {
-				if (!*LoadGame && !IsPlayingDemo) {
+				if (!*LoadGame && !IsPlayingDemo && !IsPlayingDemo) {
 					Console::ColorMsg(COL_YELLOW, "Session: %i ticks\n", Engine::GetCurrentTick());
 				}
 				if (IsRecordingDemo) {
@@ -132,7 +134,10 @@ namespace Engine
 			else {
 				IsRecordingDemo = false;
 			}
-			if (IsPlayingDemo) IsPlayingDemo = false;
+
+			if (!PlayerRequestedPlayback && IsPlayingDemo)
+				IsPlayingDemo = false;
+
 			return result;
 		}
 		void __fastcall StartupDemoFile(void* thisptr, int edx)
@@ -148,7 +153,7 @@ namespace Engine
 		}
 		void __fastcall Disconnect(void* thisptr, int edx, bool bShowMainMenu)
 		{
-			Console::ColorMsg(COL_YELLOW, "Disconnected at: %i\n", DemoRecorder::GetCurrentTick());
+			//Console::ColorMsg(COL_YELLOW, "Disconnected at: %i\n", DemoRecorder::GetCurrentTick());
 			Original::Disconnect(thisptr, bShowMainMenu);
 		}
 		void __cdecl PlayDemo(void* thisptr)
@@ -167,7 +172,6 @@ namespace Engine
 				Demo demo;
 				if (demo.Parse(file, false)) {
 					demo.Fix();
-					Console::Msg("Demo: %s\n", DemoPlayer::DemoName);
 					Console::Msg("Client: %s\n", demo.clientName);
 					Console::Msg("Map: %s\n", demo.mapName);
 					Console::Msg("Ticks: %i\n", demo.playbackTicks);
@@ -179,6 +183,10 @@ namespace Engine
 				}
 			}
 			return result;
+		}
+		int __fastcall StopPlayback(void* thisptr, int edx)
+		{
+			return Original::StopPlayback(thisptr, edx);
 		}
 	}
 }

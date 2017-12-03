@@ -300,6 +300,20 @@ namespace Patterns
 				}
 			}
 		};
+		Pattern StopPlayback = Pattern
+		{
+			"CDemoPlayer::StopPlayback",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// CDemoPlayer::StopPlayback
+					// \x55\x8B\xEC\x51\x56\x8B\xF1\x8B\x06\x8B\x50\x18 xxxxxxxxxxxx
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC 51 56 8B F1 8B 06 8B 50 18" }
+				}
+			}
+		};
 		Pattern StopRecording = Pattern
 		{
 			"CDemoRecorder::StopRecording",

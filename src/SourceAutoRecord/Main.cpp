@@ -18,6 +18,7 @@ unsigned __stdcall Main(void* args)
 	Console::DevMsg("SAR: %s\n", Patterns::Stop.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::StartPlayback.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::PlayDemo.GetResult());
+	Console::DevMsg("SAR: %s\n", Patterns::StopPlayback.GetResult());
 
 	if (!SAR::LoadEngine()) return 1;
 	Console::DevMsg("SAR: %s\n", Patterns::EngineClientPtr.GetResult());

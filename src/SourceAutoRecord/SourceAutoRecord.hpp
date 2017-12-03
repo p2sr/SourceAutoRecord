@@ -24,7 +24,7 @@ namespace SAR
 {
 	std::string ExePath;
 
-	ScanResult cjb, pnt, sst, cdf, str, sdf, stp, spb, pld, dsc;
+	ScanResult cjb, pnt, sst, cdf, str, sdf, stp, spb, pld, dsc, spl;
 	ScanResult enc, ggd, crt, ldg, drc, ins, ksb, dpl;
 	ScanResult cvr, cnv, mss, cnc, cnc2;
 
@@ -78,6 +78,11 @@ namespace SAR
 		dsc = Scan(Patterns::Disconnect);
 		if (!dsc.Found) {
 			Console::Warning("SAR: %s\n", Patterns::Disconnect.GetResult());
+			return 1;
+		}
+		spl = Scan(Patterns::StopPlayback);
+		if (!spl.Found) {
+			Console::Warning("SAR: %s\n", Patterns::StopPlayback.GetResult());
 			return 1;
 		}
 
@@ -225,6 +230,11 @@ namespace SAR
 			Engine::Detour::Disconnect,
 			reinterpret_cast<LPVOID*>(&Engine::Original::Disconnect)
 		);
+		MH_CreateHook(
+			reinterpret_cast<LPVOID>(spl.Address),
+			Engine::Detour::StopPlayback,
+			reinterpret_cast<LPVOID*>(&Engine::Original::StopPlayback)
+		);
 		auto hook1 = MH_EnableHook(reinterpret_cast<LPVOID>(cjb.Address));
 		auto hook2 = MH_EnableHook(reinterpret_cast<LPVOID>(pnt.Address));
 		auto hook3 = MH_EnableHook(reinterpret_cast<LPVOID>(sst.Address));
@@ -235,6 +245,7 @@ namespace SAR
 		auto hook8 = MH_EnableHook(reinterpret_cast<LPVOID>(spb.Address));
 		auto hook9 = MH_EnableHook(reinterpret_cast<LPVOID>(pld.Address));
 		auto hook10 = MH_EnableHook(reinterpret_cast<LPVOID>(dsc.Address));
+		auto hook11 = MH_EnableHook(reinterpret_cast<LPVOID>(spl.Address));
 		if (hook1 != MH_OK) {
 			Console::Warning("SAR: %s\n", MH_StatusToString(hook1));
 			return false;
@@ -273,6 +284,10 @@ namespace SAR
 		}
 		if (hook10 != MH_OK) {
 			Console::Warning("SAR: %s\n", MH_StatusToString(hook10));
+			return false;
+		}
+		if (hook11 != MH_OK) {
+			Console::Warning("SAR: %s\n", MH_StatusToString(hook11));
 			return false;
 		}
 		return true;
