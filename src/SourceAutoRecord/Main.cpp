@@ -7,7 +7,7 @@ unsigned __stdcall Main(void* args)
 	if (!Console::Init()) return Error("Could not initialize console!", "SourceAutoRecord");
 
 	// Signature scanning
-	if (!SAR::LoadHooks()) return 1;
+	Hooks::Load();
 
 	Console::DevMsg("SAR: %s\n", Patterns::CheckJumpButton.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::Paint.GetResult());
@@ -18,9 +18,10 @@ unsigned __stdcall Main(void* args)
 	Console::DevMsg("SAR: %s\n", Patterns::Stop.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::StartPlayback.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::PlayDemo.GetResult());
+	Console::DevMsg("SAR: %s\n", Patterns::Disconnect.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::StopPlayback.GetResult());
 
-	if (!SAR::LoadEngine()) return 1;
+	SAR::LoadEngine();
 	Console::DevMsg("SAR: %s\n", Patterns::EngineClientPtr.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::GetGameDir.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::CurtimePtr.GetResult());
@@ -30,21 +31,17 @@ unsigned __stdcall Main(void* args)
 	Console::DevMsg("SAR: %s\n", Patterns::Key_SetBinding.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::DemoPlayerPtr.GetResult());
 	
-	if (!SAR::LoadTier1()) return 1;
+	SAR::LoadTier1();
 	Console::DevMsg("SAR: %s\n", Patterns::CvarPtr.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::ConVar_Ctor3.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::ConCommand_Ctor1.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::ConCommand_Ctor2.GetResult());
 	
-	if (!SAR::LoadRest()) return 1;
+	SAR::LoadRest();
 	Console::DevMsg("SAR: %s\n", Patterns::MatSystemSurfacePtr.GetResult());
 
 	// Hook all functions
-	if (!SAR::EnableHooks()) return 1;
-	Console::DevMsg("SAR: Enabled hook for CheckJumpButton!\n");
-	Console::DevMsg("SAR: Enabled hook for Paint!\n");
-	Console::DevMsg("SAR: Enabled hook for SetSignOnState!\n");
-	Console::DevMsg("SAR: Enabled hook for CloseDemoFile!\n");
+	Hooks::CreateAndEnable();
 
 	// Plugin commands
 	SAR::RegisterCommands();

@@ -1,6 +1,6 @@
 #pragma once
 #include "../Commands.hpp"
-#include "Offsets.hpp"
+#include "../Offsets.hpp"
 
 #define IN_JUMP (1 << 1)
 
@@ -27,7 +27,7 @@ namespace Server
 			int *pM_nOldButtons = NULL;
 			int origM_nOldButtons = 0;
 
-			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sv_autojump.GetBool()) {
+			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool()) {
 				pM_nOldButtons = (int*)(*((uintptr_t*)thisptr + Offsets::mv) + Offsets::m_nOldButtons);
 				origM_nOldButtons = *pM_nOldButtons;
 
@@ -40,7 +40,7 @@ namespace Server
 			bool result = Original::CheckJumpButton(thisptr);
 			CallFromCheckJumpButton = false;
 
-			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sv_autojump.GetBool()) {
+			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool()) {
 				if (!(*pM_nOldButtons & IN_JUMP))
 					*pM_nOldButtons = origM_nOldButtons;
 			}

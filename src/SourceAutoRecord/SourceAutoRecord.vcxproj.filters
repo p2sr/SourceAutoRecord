@@ -108,6 +108,9 @@
     <ClInclude Include="Modules\DemoRecorder.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
+    <ClInclude Include="Hooks.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

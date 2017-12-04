@@ -19,14 +19,11 @@ namespace Commands
 	ConCommand sar_about;
 
 	// Cheats
-	ConVar sv_autojump;
-	ConVar sv_abh;
+	ConVar sar_autojump;
 
-	// Anti-Cheat
+	// From the game
 	ConVar sv_cheats;
 	ConVar sv_bonus_challenge;
-
-	// Others
 	ConVar sv_accelerate;
 	ConVar sv_airaccelerate;
 	ConVar sv_friction;
