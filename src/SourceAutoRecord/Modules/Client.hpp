@@ -23,10 +23,11 @@ namespace Client
 			char ticks[64];
 			int tick = !*Engine::LoadGame ? Engine::GetCurrentTick() : 0;
 			float time = tick * *Engine::IntervalPerTick;
-			snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs)", tick, time);
+			if (Summary::HasStarted)
+				snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs) | total: %i (%.3f)", tick, time, Summary::TotalTicks, Summary::TotalTime);
+			else
+				snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs)", tick, time);
 			Surface::Draw(font, 1, 65, COL_WHITE, ticks);
-
-			Surface::Draw(font, 1, 75, COL_WHITE, "Test");
 
 			return Original::Paint(thisptr);
 		}
