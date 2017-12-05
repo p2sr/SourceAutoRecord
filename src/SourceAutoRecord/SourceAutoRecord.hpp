@@ -23,7 +23,7 @@ using namespace Commands;
 
 namespace SAR
 {
-	ScanResult enc, ggd, crt, ldg, drc, ins, ksb, dpl;
+	ScanResult enc, ggd, crt, ldg, drc, ins, ksb, dpl, mpn;
 	ScanResult cvr, cnv, cnc, cnc2;
 	ScanResult mss;
 
@@ -37,8 +37,9 @@ namespace SAR
 		ins = Scan(Patterns::InputSystemPtr);
 		ksb = Scan(Patterns::Key_SetBinding);
 		dpl = Scan(Patterns::DemoPlayerPtr);
+		mpn = Scan(Patterns::MapnamePtr);
 
-		Engine::Set(enc.Address, ggd.Address, crt.Address, ldg.Address);
+		Engine::Set(enc.Address, ggd.Address, crt.Address, ldg.Address, mpn.Address);
 		DemoRecorder::Set(drc.Address);
 		InputSystem::Set(ins.Address, ksb.Address);
 		DemoPlayer::Set(dpl.Address);
@@ -68,7 +69,7 @@ namespace SAR
 			"Automatic save rebinding when server has loaded. File indexing will be synced when recording demos. Usage: sar_bind_save <key> [save_name]\n");
 		sar_bind_reload = CreateCommandArgs(
 			"sar_bind_reload", Callbacks::BindReloadRebinder,
-			"Automatic save rebinding when server has loaded. File indexing will be synced when recording demos. Usage: sar_bind_reload <key> [save_name]\n");
+			"Automatic save-reload rebinding when server has loaded. File indexing will be synced when recording demos. Usage: sar_bind_reload <key> [save_name]\n");
 		sar_unbind_save = CreateCommand(
 			"sar_unbind_save", Callbacks::UnbindSaveRebinder,
 			"Unbinds current save rebinder.\n");
@@ -84,6 +85,10 @@ namespace SAR
 			"sar_time_demo",
 			Callbacks::PrintDemoInfo,
 			"Parses a demo and prints some information about it.\n");
+		sar_time_demos = CreateCommandArgs(
+			"sar_time_demos",
+			Callbacks::PrintDemoInfos,
+			"Parses multiple demos and prints the total sum of them.\n");
 		sar_session_tick = CreateCommand(
 			"sar_session_tick",
 			Callbacks::PrintSessionTick,
@@ -93,9 +98,23 @@ namespace SAR
 			Callbacks::PrintAbout,
 			"Prints info about this plugin.\n");
 
+		// Summary
+		sar_sum_here = CreateCommand(
+			"sar_sum_here",
+			Callbacks::StartSummary,
+			"Starts counting total ticks of sessions.\n");
+		sar_sum_reset = CreateCommand(
+			"sar_sum_reset",
+			Callbacks::ResetSummary,
+			"Stops current running summary counter and resets.\n");
+		sar_sum_result = CreateCommand(
+			"sar_sum_result",
+			Callbacks::PrintSummary,
+			"Prints result of summary.\n");
+
 		// Cheats
 		sar_autojump = CreateBoolean(
-			"sv_autojump",
+			"sar_autojump",
 			"0",
 			"Enables automatic jumping on the server.\n");
 

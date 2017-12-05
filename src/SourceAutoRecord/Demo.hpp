@@ -54,6 +54,8 @@ public:
 	}
 	bool Demo::Parse(std::string filePath, bool headerOnly = true) {
 		try {
+			if (filePath.substr(filePath.length() - 4, 4) != ".dem") filePath += ".dem";
+
 			std::ifstream file(filePath, std::ios::in | std::ios::binary);
 			if (!file.good()) return false;
 

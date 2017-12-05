@@ -111,6 +111,9 @@
     <ClInclude Include="Hooks.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
+    <ClInclude Include="Summary.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

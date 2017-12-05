@@ -179,6 +179,7 @@
     <ClInclude Include="..\..\libs\minhook\MinHook.h" />
     <ClInclude Include="Rebinder.hpp" />
     <ClInclude Include="SourceAutoRecord.hpp" />
+    <ClInclude Include="Summary.hpp" />
     <ClInclude Include="Utils.hpp" />
   </ItemGroup>
   <ItemGroup>

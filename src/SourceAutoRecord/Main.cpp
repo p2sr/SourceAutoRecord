@@ -30,6 +30,7 @@ unsigned __stdcall Main(void* args)
 	Console::DevMsg("SAR: %s\n", Patterns::InputSystemPtr.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::Key_SetBinding.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::DemoPlayerPtr.GetResult());
+	Console::DevMsg("SAR: %s\n", Patterns::MapnamePtr.GetResult());
 	
 	SAR::LoadTier1();
 	Console::DevMsg("SAR: %s\n", Patterns::CvarPtr.GetResult());

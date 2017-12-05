@@ -31,9 +31,6 @@ namespace DemoRecorder
 	void SetLastDemo()
 	{
 		LastDemo = std::string(DemoRecorder::DemoName);
-		if (*DemoNumber > 1) {
-			LastDemo += std::string("_") + std::to_string(*DemoNumber);
-		}
-		LastDemo += std::string(".dem");
+		if (*DemoNumber > 1) LastDemo += "_" + std::to_string(*DemoNumber);
 	}
 }

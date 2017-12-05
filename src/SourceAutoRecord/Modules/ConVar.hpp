@@ -82,15 +82,15 @@ namespace Tier1
 			return 0;
 		}
 		void ConVar::SetValue(const char* value) {
-			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::SetValueString);
+			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetValue);
 			if (vf) ((_SetValueString)vf)(Ptr, nullptr, value);
 		}
 		void ConVar::SetValue(float value) {
-			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::SetValueFloat);
+			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetFloatValue);
 			if (vf) ((_SetValueFloat)vf)(Ptr, nullptr, value);
 		}
 		void ConVar::SetValue(int value) {
-			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::SetValueInt);
+			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetIntValue);
 			if (vf) ((_SetValueInt)vf)(Ptr, nullptr, value);
 		}
 		void ConVar::SetFlags(int value) {

@@ -5,6 +5,7 @@
 #include "DemoPlayer.hpp"
 #include "../Demo.hpp"
 #include "../Rebinder.hpp"
+#include "../Summary.hpp"
 
 using _GetGameDir = void(__cdecl*)(char* szGetGameDir, int maxlength);
 using _ClientCmd = void(__fastcall*)(void* thisptr, const char* szCmdString);
@@ -40,18 +41,22 @@ namespace Engine
 	_ClientCmd ClientCmd;
 
 	int* TickCount;
+	float* IntervalPerTick;
 	bool* LoadGame;
+	char** Mapname;
 
 	int BaseTick = 0;
 
-	void Set(uintptr_t clientPtr, uintptr_t gameDirAddr, uintptr_t curtimeAddr, uintptr_t loadGameAddr)
+	void Set(uintptr_t clientPtr, uintptr_t gameDirAddr, uintptr_t curtimeAddr, uintptr_t loadGameAddr, uintptr_t mapnameAddr)
 	{
 		ClientPtr = **(void***)(clientPtr);
 		ClientCmd = (_ClientCmd)GetVirtualFunctionByIndex(ClientPtr, Offsets::ClientCommand);
 		GetGameDir = (_GetGameDir)gameDirAddr;
 
-		TickCount = (int*)reinterpret_cast<uintptr_t*>(*((uintptr_t*)curtimeAddr) + 12);
+		TickCount = (int*)reinterpret_cast<uintptr_t*>(*((uintptr_t*)curtimeAddr) + Offsets::tickcount);
+		IntervalPerTick = (float*)reinterpret_cast<uintptr_t*>(*((uintptr_t*)curtimeAddr) + Offsets::interval_per_tick);
 		LoadGame = *(bool**)(loadGameAddr);
+		Mapname = (char**)(mapnameAddr);
 
 		if (!*LoadGame) {
 			BaseTick = *TickCount;
@@ -121,6 +126,11 @@ namespace Engine
 			if (!PlayerRequestedStop) {
 				if (!*LoadGame && !IsPlayingDemo && !IsPlayingDemo) {
 					Console::ColorMsg(COL_YELLOW, "Session: %i ticks\n", Engine::GetCurrentTick());
+					if (Summary::HasStarted) {
+						int tick = GetCurrentTick();
+						Summary::Add(tick, tick * *IntervalPerTick, *Mapname);
+						Console::ColorMsg(COL_YELLOW, "Total: %i ticks\n", Summary::TotalTicks);
+					}
 				}
 				if (IsRecordingDemo) {
 					*DemoRecorder::DemoNumber = LastDemoNumber;
@@ -168,7 +178,7 @@ namespace Engine
 
 			if (result && PlayerRequestedPlayback) {
 				IsPlayingDemo = true;
-				std::string file = GetDir() + std::string("\\") + std::string(DemoPlayer::DemoName);
+				std::string file = GetDir() + "\\" + std::string(DemoPlayer::DemoName);
 				Demo demo;
 				if (demo.Parse(file, false)) {
 					demo.Fix();

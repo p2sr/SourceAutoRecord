@@ -21,8 +21,12 @@ namespace Client
 			int font = 5;
 
 			char ticks[64];
-			snprintf(ticks, sizeof(ticks), "ticks: %i", !*Engine::LoadGame ? Engine::GetCurrentTick() : 0);
+			int tick = !*Engine::LoadGame ? Engine::GetCurrentTick() : 0;
+			float time = tick * *Engine::IntervalPerTick;
+			snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs)", tick, time);
 			Surface::Draw(font, 1, 65, COL_WHITE, ticks);
+
+			Surface::Draw(font, 1, 75, COL_WHITE, "Test");
 
 			return Original::Paint(thisptr);
 		}

@@ -231,6 +231,28 @@ namespace Patterns
 				}
 			}
 		};
+		Pattern MapnamePtr = Pattern
+		{
+			"CBaseServer::m_szMapname",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// CBaseServer::m_szMapname[64]
+					// \xD9\x00\x2C\xD9\xC9\xDF\xF1\xDD\xD8\x76\x00\x80\x00\x00\x00\x00\x00\x00 x?xxxxxxxx?x?????x
+					{ "Portal 2 Build 6879" },
+					{ "D9 ? 2C D9 C9 DF F1 DD D8 76 ? 80 ? ? ? ? ? 00" },
+					{ 13 }
+				},
+				{
+					// CBaseServer::m_szMapname[64]
+					// \x76\x50\x80\x3D\x00\x00\x00\x00\x00\xB8\x00\x00\x00\x00 xxxx?????x????
+					{ "INFRA Build 6905" },
+					{ "76 50 80 3D ? ? ? ? ? B8 ? ? ? ? " },
+					{ 10 }
+				}
+			}
+		};
 		Pattern CloseDemoFile = Pattern
 		{
 			"CDemoRecorder::CloseDemoFile",
