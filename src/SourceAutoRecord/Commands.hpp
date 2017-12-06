@@ -21,8 +21,9 @@ namespace Commands
 
 	// Summary
 	ConCommand sar_sum_here;
-	ConCommand sar_sum_reset;
+	ConCommand sar_sum_stop;
 	ConCommand sar_sum_result;
+	ConVar sar_sum_during_session;
 
 	// Cheats
 	ConVar sar_autojump;

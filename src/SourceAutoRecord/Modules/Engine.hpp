@@ -132,7 +132,7 @@ namespace Engine
 					if (tick != 0)
 						Console::ColorMsg(COL_YELLOW, "Session: %i ticks (%.3fs)\n", tick, GetTime());
 
-					if (Summary::HasStarted) {
+					if (Summary::IsRunning) {
 						Summary::Add(tick, GetTime(), *Mapname);
 						Console::ColorMsg(COL_YELLOW, "Total: %i ticks (%.3fs)\n", Summary::TotalTicks, Summary::TotalTime);
 					}

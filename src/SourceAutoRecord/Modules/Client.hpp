@@ -15,21 +15,27 @@ namespace Client
 
 	namespace Detour
 	{
+		int ShowPosFont = 5;
+
 		int __fastcall Paint(void* thisptr, int edx)
 		{
-			//int font = (int)(*((uintptr_t*)thisptr + 348));
-			int font = 5;
-
 			char ticks[64];
 			int tick = !*Engine::LoadGame ? Engine::GetTick() : 0;
 			float time = tick * *Engine::IntervalPerTick;
 
-			if (Summary::HasStarted)
-				snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs) | total: %i (%.3f)", tick, time, Summary::TotalTicks, Summary::TotalTime);
-			else
+			if (Summary::IsRunning) {
+				if (sar_sum_during_session.GetBool()) {
+					snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs) | total: %i (%.3f)", tick, time, Summary::TotalTicks + tick, Summary::TotalTime + time);
+				}
+				else {
+					snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs) | total: %i (%.3f)", tick, time, Summary::TotalTicks, Summary::TotalTime);
+				}
+			}
+			else {
 				snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs)", tick, time);
+			}
 
-			Surface::Draw(font, 1, 65, COL_WHITE, ticks);
+			Surface::Draw(ShowPosFont, 1, 65, COL_WHITE, ticks);
 			return Original::Paint(thisptr);
 		}
 	}

@@ -1,41 +1,46 @@
-[![Build Version](https://img.shields.io/badge/version-v1.0-yellow.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/1)
+[![Build Version](https://img.shields.io/badge/version-v1.0-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/1)
 [![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
 
-# SourceAutoRecord
-
-## Main Features
-- Automatic demo recording
-- Automatic binding
-- Demo parsing
-- Session timing
-- Small engine bug fixes
+**SourceAutoRecord** allows automatic demo recording, automatic binding, demo parsing, session timing and much more.
 
 ## Supported Games
 - Portal 2
 
-## List of Commands
+## Features
 
-| Name | Description |
-| --- | --- |
-| sar_bind_save | Automatic save rebinding when server has loaded. File indexing will be synced when recording demos. Usage: sar_bind_save <key> [save_name] |
-| sar_bind_reload | Automatic save-reload rebinding when server has loaded. File indexing will be synced when recording demos. Usage: sar_bind_reload <key> [save_name] |
-| sar_unbind_save | Unbinds current save rebinder. |
-| sar_unbind_reload | Unbinds current save-reload rebinder. |
-| sar_save_flag | Echo message when using sar_binder_save. Default is \"#SAVE#\", a [SourceRuns standard](https://wiki.sourceruns.org/wiki/Demo_Recording). Keep this empty if no echo message should be binded. |
-| sar_time_demo | Parses a demo and prints some information about it. |
-| sar_time_demos | Parses multiple demos and prints the total sum of them. |
-| sar_session | Prints the current tick of the server since it has loaded. |
-| sar_about | Prints info about this plugin. |
-| sar_sum_here | Starts counting total ticks of sessions. |
-| sar_sum_reset | Stops current running summary counter and resets. |
-| sar_sum_result | Prints result of summary. |
-| sar_autojump | Enables automatic jumping on the server. |
-| sv_bonus_challenge | - |
-| sv_accelerate | - |
-| sv_airaccelerate | - |
-| sv_friction | - |
-| sv_maxspeed | - |
-| sv_stopspeed | - |
+### Automatic Demo Recorder
+- Tells the engine to keep recording when loading from a save
+- `stop` disables automatic recording
+
+### Automatic Binding
+- `sar_bind_save <key> [save_name]` binds automatically `save save_name` to the given key when loading
+- `sar_save_flag [echo_message]` appens `;echo message` to the save bind
+- `sar_bind_reload <key> [save_name]` binds automatically `save save_name;reload` to the given key when loading
+- `sar_unbind_save` unbinds the key and stops automatic binding for `sar_bind_save`
+- `sar_unbind_reload` unbinds the key and stops automatic binding for `sar_bind_reload`
+- Save files will be named _2, _3, etc.
+- File indexing will be synced automatically with the demo recorder when recording with demos
+
+### Demo Parsing
+- `sar_time_demo [demo_name]` parses a demo and prints some useful information about it
+- Passing an empty string `sar_time_demo ""` will take the last demo from demo recorder or demo player
+- `sar_time_demos [demo_name] [demo_name2] [etc.]` parses multiple demos
+
+### Session Summary
+- `sar_sum_here` starts saving the total tick count of each session
+- `sar_sum_stop` stops counting
+- `sar_sum_reset` resets the counter
+- `sar_sum_result` prints the result of all saved sessions
+- `sar_sum_during_session` counts current session too
+
+### Others
+- `sar_autojump` enables tick-perfect jumping on the server
+- `sar_session` prints the current tick count since the server has loaded
+- `cl_showpos` draws the current tick count since the server has loaded
+- `cl_showpos` draws the total summary when using `sar_sum_here`
+- `sv_bonus_challenge`, `sv_accelerate`, `sv_airaccelerate`, `sv_friction`, `sv_maxspeed` and `sv_stopspeed` can be accessed in the developer console
+- Limited character printing has been extended for `help`
+- Redundant command execution has been removed for `playdemo`
 
 ## Inspired By
 - [SourcePauseTool](https://github.com/YaLTeR/SourcePauseTool)

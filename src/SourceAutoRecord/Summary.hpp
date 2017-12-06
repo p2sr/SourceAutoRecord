@@ -8,7 +8,7 @@ namespace Summary
 		char* Map;
 	};
 
-	bool HasStarted;
+	bool IsRunning;
 
 	std::vector<SummaryItem> Items;
 
@@ -16,13 +16,10 @@ namespace Summary
 	float TotalTime;
 
 	void Start() {
-		HasStarted = true;
-	}
-	void Reset() {
 		Items.clear();
 		TotalTicks = 0;
 		TotalTime = 0;
-		HasStarted = false;
+		IsRunning = true;
 	}
 	void Add(int ticks, float time, char* map) {
 		Items.push_back(SummaryItem {

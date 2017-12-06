@@ -74,7 +74,7 @@ namespace SAR
 			"Unbinds current save-reload rebinder.\n");
 		sar_save_flag = CreateString(
 			"sar_save_flag", "#SAVE#",
-			"Echo message when using sar_binder_save. Default is \"#SAVE#\", a SourceRuns standard. Keep this empty if no echo message should be binded.\n");
+			"Echo message when using sar_bind_save. Default is \"#SAVE#\", a SourceRuns standard. Keep this empty if no echo message should be binded.\n");
 
 		// Info
 		sar_time_demo = CreateCommandArgs(
@@ -99,14 +99,18 @@ namespace SAR
 			"sar_sum_here",
 			Callbacks::StartSummary,
 			"Starts counting total ticks of sessions.\n");
-		sar_sum_reset = CreateCommand(
-			"sar_sum_reset",
-			Callbacks::ResetSummary,
-			"Stops current running summary counter and resets.\n");
+		sar_sum_stop = CreateCommand(
+			"sar_sum_stop",
+			Callbacks::StopSummary,
+			"Stops summary counter.\n");
 		sar_sum_result = CreateCommand(
 			"sar_sum_result",
 			Callbacks::PrintSummary,
 			"Prints result of summary.\n");
+		sar_sum_during_session = CreateBoolean(
+			"sar_sum_during_session",
+			"1",
+			"Updates the summary counter automatically during a session.\n");
 
 		// Cheats
 		sar_autojump = CreateBoolean(

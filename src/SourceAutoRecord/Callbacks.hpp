@@ -175,35 +175,50 @@ namespace Callbacks
 	}
 	void StartSummary()
 	{
-		if (Summary::HasStarted) {
+		if (Summary::IsRunning) {
 			Console::Msg("Summary has already started!\n");
 			return;
 		}
 		Summary::Start();
 	}
-	void ResetSummary()
+	void StopSummary()
 	{
-		if (!Summary::HasStarted) {
-			Console::Msg("There's no summary to reset!\n");
+		if (!Summary::IsRunning) {
+			Console::Msg("There's no summary to stop!\n");
 			return;
 		}
-		Summary::Reset();
+		
+		if (sar_sum_during_session.GetBool()) {
+			Summary::Add(Engine::GetTick(), Engine::GetTime(), *Engine::Mapname);
+		}
+		Summary::IsRunning = false;
 	}
 	void PrintSummary()
 	{
-		if (!Summary::HasStarted || Summary::Items.size() == 0) {
-			Console::Msg("There is no result for a summary!\n");
-			return;
-		}
+		int sessions = Summary::Items.size();
+		if (sessions == 0)
+			Console::Msg("Summary of this session:\n");
+		else
+			Console::Msg("Summary of %i session%s:\n", sessions, (sessions == 1) ? "" : "s");
 
-		Console::Msg("Summary of %i sessions:\n", Summary::Items.size());
-		for (size_t i = 0; i < Summary::Items.size(); i++) {
+		for (size_t i = 0; i < sessions; i++) {
 			Console::Msg("%s -> ", Summary::Items[i].Map);
 			Console::Msg("%i ticks", Summary::Items[i].Ticks);
 			Console::Msg("(%.3fs)\n", Summary::Items[i].Time);
 		}
-		Console::Msg("---------------\n");
-		Console::Msg("Total Ticks: %i\n", Summary::TotalTicks);
-		Console::Msg("Total Time: %.3f\n", Summary::TotalTime);
+
+		if (Summary::IsRunning) {
+			Console::ColorMsg(COL_YELLOW, "%s -> ", *Engine::Mapname);
+			Console::ColorMsg(COL_YELLOW, "%i ticks", Engine::GetTick());
+			Console::ColorMsg(COL_YELLOW, "(%.3fs)\n", Engine::GetTime());
+			Console::Msg("---------------\n");
+			Console::Msg("Total Ticks: %i\n", Summary::TotalTicks + Engine::GetTick());
+			Console::Msg("Total Time: %.3f\n", Summary::TotalTime + Engine::GetTime());
+		}
+		else {
+			Console::Msg("---------------\n");
+			Console::Msg("Total Ticks: %i\n", Summary::TotalTicks);
+			Console::Msg("Total Time: %.3f\n", Summary::TotalTime);
+		}
 	}
 }

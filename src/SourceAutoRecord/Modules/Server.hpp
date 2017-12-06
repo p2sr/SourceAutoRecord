@@ -11,8 +11,6 @@ using namespace Commands;
 // server.dll
 namespace Server
 {
-	bool CantJumpNextTime = false;
-
 	namespace Original
 	{
 		_CheckJumpButton CheckJumpButton;
@@ -20,6 +18,7 @@ namespace Server
 
 	namespace Detour
 	{
+		bool CantJumpNextTime = false;
 		bool CallFromCheckJumpButton = false;
 
 		bool __fastcall CheckJumpButton(void* thisptr, int edx)
