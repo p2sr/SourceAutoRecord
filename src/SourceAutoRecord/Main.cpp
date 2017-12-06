@@ -38,7 +38,7 @@ unsigned __stdcall Main(void* args)
 	Console::DevMsg("SAR: %s\n", Patterns::ConCommand_Ctor1.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::ConCommand_Ctor2.GetResult());
 	
-	SAR::LoadRest();
+	SAR::LoadClient();
 	Console::DevMsg("SAR: %s\n", Patterns::MatSystemSurfacePtr.GetResult());
 
 	// Hook all functions
@@ -47,10 +47,10 @@ unsigned __stdcall Main(void* args)
 	// Plugin commands
 	SAR::RegisterCommands();
 
-	// Sorry, not sorry
-	SAR::LoadAntiCheat();
+	// Nobody likes cheaters
+	SAR::EnableAntiCheat();
 
-	// Game patches because nobody likes silly bugs
+	// Nobody likes silly bugs
 	SAR::LoadPatches();
 
 	Console::ColorMsg(COL_GREEN, "Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);

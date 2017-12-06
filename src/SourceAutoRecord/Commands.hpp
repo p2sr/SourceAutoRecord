@@ -16,7 +16,7 @@ namespace Commands
 	// Info
 	ConCommand sar_time_demo;
 	ConCommand sar_time_demos;
-	ConCommand sar_session_tick;
+	ConCommand sar_session;
 	ConCommand sar_about;
 
 	// Summary

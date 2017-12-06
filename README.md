@@ -1,3 +1,6 @@
+[![Build Version](https://img.shields.io/badge/version-v1.0-yellow.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/1)
+[![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
+
 # SourceAutoRecord
 
 ## Main Features
@@ -21,7 +24,7 @@
 | sar_save_flag | Echo message when using sar_binder_save. Default is \"#SAVE#\", a [SourceRuns standard](https://wiki.sourceruns.org/wiki/Demo_Recording). Keep this empty if no echo message should be binded. |
 | sar_time_demo | Parses a demo and prints some information about it. |
 | sar_time_demos | Parses multiple demos and prints the total sum of them. |
-| sar_session_tick | Prints the current tick of the server since it has loaded. |
+| sar_session | Prints the current tick of the server since it has loaded. |
 | sar_about | Prints info about this plugin. |
 | sar_sum_here | Starts counting total ticks of sessions. |
 | sar_sum_reset | Stops current running summary counter and resets. |
@@ -37,3 +40,4 @@
 ## Inspired By
 - [SourcePauseTool](https://github.com/YaLTeR/SourcePauseTool)
 - [SourceDemoRender](https://github.com/crashfort/SourceDemoRender)
+- [SourceSplit](https://github.com/fatalis/SourceSplit)

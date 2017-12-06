@@ -57,19 +57,19 @@ namespace Engine
 		IntervalPerTick = (float*)reinterpret_cast<uintptr_t*>(*((uintptr_t*)curtimeAddr) + Offsets::interval_per_tick);
 		LoadGame = *(bool**)(loadGameAddr);
 		Mapname = (char**)(mapnameAddr);
-
-		if (!*LoadGame) {
-			BaseTick = *TickCount;
-		}
 	}
 	void ExecuteCommand(const char* cmd)
 	{
 		ClientCmd(ClientPtr, cmd);
 	}
-	int GetCurrentTick()
+	int GetTick()
 	{
 		int result = *TickCount - BaseTick;
 		return (result >= 0) ? result : 0;
+	}
+	float GetTime()
+	{
+		return GetTick() * *IntervalPerTick;
 	}
 	std::string GetDir()
 	{
@@ -102,11 +102,13 @@ namespace Engine
 		bool __fastcall SetSignonState(void* thisptr, int edx, int state, int spawncount)
 		{
 			if (state == SignonState::Prespawn) {
-				if (Rebinder::IsSaveBinding) {
-					Rebinder::RebindSave(IsRecordingDemo ? *DemoRecorder::DemoNumber : -1);
-				}
-				if (Rebinder::IsReloadBinding) {
-					Rebinder::RebindReload(IsRecordingDemo ? *DemoRecorder::DemoNumber : -1);
+				if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
+					Rebinder::LastIndexNumber = (IsRecordingDemo)
+						? *DemoRecorder::DemoNumber
+						: Rebinder::LastIndexNumber + 1;
+
+					Rebinder::RebindSave();
+					Rebinder::RebindReload();
 				}
 			}
 			else if (state == SignonState::Full) {
@@ -124,16 +126,20 @@ namespace Engine
 			bool result = Original::StopRecording(thisptr);
 
 			if (!PlayerRequestedStop) {
-				if (!*LoadGame && !IsPlayingDemo && !IsPlayingDemo) {
-					Console::ColorMsg(COL_YELLOW, "Session: %i ticks\n", Engine::GetCurrentTick());
+				if (!*LoadGame && !IsPlayingDemo) {
+					int tick = Engine::GetTick();
+
+					if (tick != 0)
+						Console::ColorMsg(COL_YELLOW, "Session: %i ticks (%.3fs)\n", tick, GetTime());
+
 					if (Summary::HasStarted) {
-						int tick = GetCurrentTick();
-						Summary::Add(tick, tick * *IntervalPerTick, *Mapname);
-						Console::ColorMsg(COL_YELLOW, "Total: %i ticks\n", Summary::TotalTicks);
+						Summary::Add(tick, GetTime(), *Mapname);
+						Console::ColorMsg(COL_YELLOW, "Total: %i ticks (%.3fs)\n", Summary::TotalTicks, Summary::TotalTime);
 					}
 				}
 				if (IsRecordingDemo) {
 					*DemoRecorder::DemoNumber = LastDemoNumber;
+
 					if (*LoadGame) {
 						DemoRecorder::SetLastDemo();
 						*DemoRecorder::Recording = true;

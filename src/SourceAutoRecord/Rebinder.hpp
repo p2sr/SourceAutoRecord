@@ -9,24 +9,24 @@ namespace Rebinder
 	int SaveButton;
 	int ReloadButton;
 
-	const char* SaveName;
-	const char* ReloadName;
+	std::string SaveName;
+	std::string ReloadName;
 
 	bool IsSaveBinding = false;
 	bool IsReloadBinding = false;
 
-	// Sync index between binds
-	// Also own indexing when not recording with demos
+	// Syncing index between binds
+	// Demo recorder can overwrite this
 	int LastIndexNumber;
 
 	void SetSaveBind(int button, const char* name) {
 		SaveButton = button;
-		SaveName = name;
+		SaveName = std::string(name);
 		IsSaveBinding = true;
 	}
 	void SetReloadBind(int button, const char* name) {
 		ReloadButton = button;
-		ReloadName = name;
+		ReloadName = std::string(name);
 		IsReloadBinding = true;
 	}
 	void ResetSaveBind() {
@@ -37,40 +37,26 @@ namespace Rebinder
 		IsReloadBinding = true;
 		InputSystem::KeySetBinding(ReloadButton, "");
 	}
-	void RebindSave(int num = 0) {
+	void RebindSave() {
 		if (!IsSaveBinding) return;
-		LastIndexNumber = (num == -1) ? LastIndexNumber++ : num;
 
-		char cmd[1024];
-		if (sar_save_flag.GetString()[0] == '\0') {
-			if (num > 0) {
-				snprintf(cmd, sizeof(cmd), "save \"%s_%i\"", SaveName, LastIndexNumber);
-			}
-			else {
-				snprintf(cmd, sizeof(cmd), "save \"%s\"", SaveName);
-			}
-		}
-		else {
-			if (num > 0) {
-				snprintf(cmd, sizeof(cmd), "save \"%s_%i\";echo \"%s\"", SaveName, LastIndexNumber, sar_save_flag.GetString());
-			}
-			else {
-				snprintf(cmd, sizeof(cmd), "save \"%s\";echo \"%s\"", SaveName, sar_save_flag.GetString());
-			}
-		}
-		InputSystem::KeySetBinding(SaveButton, cmd);
+		std::string cmd = (LastIndexNumber > 0)
+			? std::string("save \"") + SaveName + std::string("_") + std::to_string(LastIndexNumber) + std::string("\"")
+			: std::string("save \"") + SaveName + std::string("\"");
+
+		if (sar_save_flag.GetString()[0] != '\0')
+			cmd += std::string(";echo \"") + std::string(sar_save_flag.GetString()) + std::string("\"");
+
+		InputSystem::KeySetBinding(SaveButton, cmd.c_str());
 	}
-	void RebindReload(int num = 0) {
+	void RebindReload() {
 		if (!IsReloadBinding) return;
-		LastIndexNumber = (num == -1) ? LastIndexNumber++ : num;
 
-		char cmd[1024];
-		if (num > 0) {
-			snprintf(cmd, sizeof(cmd), "save \"%s_%i\";reload", ReloadName, LastIndexNumber);
-		}
-		else {
-			snprintf(cmd, sizeof(cmd), "save \"%s\";reload", ReloadName);
-		}
-		InputSystem::KeySetBinding(ReloadButton, cmd);
+		std::string cmd = (LastIndexNumber > 0)
+			? std::string("save \"") + ReloadName + std::string("_") + std::to_string(LastIndexNumber) + std::string("\"")
+			: std::string("save \"") + ReloadName + std::string("\"");
+
+		cmd += std::string(";reload");
+		InputSystem::KeySetBinding(ReloadButton, cmd.c_str());
 	}
 }

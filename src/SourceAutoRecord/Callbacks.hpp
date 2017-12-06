@@ -13,10 +13,10 @@
 
 namespace Callbacks
 {
-	void PrintSessionTick()
+	void PrintSession()
 	{
-		Console::Msg("Session Tick: %i\n", Engine::GetCurrentTick());
-		Console::Msg("Recorder Tick: %i\n", DemoRecorder::GetCurrentTick());
+		Console::Msg("Session Tick: %i (%.3f)\n", Engine::GetTick(), Engine::GetTime());
+		//Console::Msg("Recorder Tick: %i\n", DemoRecorder::GetCurrentTick());
 	}
 	void PrintAbout()
 	{
@@ -81,7 +81,7 @@ namespace Callbacks
 		{
 			name = std::string(args.At(i));
 
-			std::string file = Engine::GetDir() + "\\" + name;// ".dem";
+			std::string file = Engine::GetDir() + "\\" + name;
 			Console::DevMsg("Trying to parse \"%s\"...\n", file.c_str());
 
 			Demo demo;
@@ -124,6 +124,11 @@ namespace Callbacks
 			Console::Msg("Can't bind ESCAPE key!\n", args.At(1));
 			return;
 		}
+		
+		if (Rebinder::IsReloadBinding && button == Rebinder::ReloadButton) {
+			Rebinder::ResetReloadBind();
+		}
+
 		Rebinder::SetSaveBind(button, args.At(2));
 		Rebinder::RebindSave();
 	}
@@ -144,6 +149,11 @@ namespace Callbacks
 			Console::Msg("Can't bind ESCAPE key!\n", args.At(1));
 			return;
 		}
+
+		if (Rebinder::IsSaveBinding && button == Rebinder::SaveButton) {
+			Rebinder::ResetSaveBind();
+		}
+
 		Rebinder::SetReloadBind(button, args.At(2));
 		Rebinder::RebindReload();
 	}

@@ -23,21 +23,17 @@ using namespace Commands;
 
 namespace SAR
 {
-	ScanResult enc, ggd, crt, ldg, drc, ins, ksb, dpl, mpn;
-	ScanResult cvr, cnv, cnc, cnc2;
-	ScanResult mss;
-
 	void LoadEngine()
 	{
-		enc = Scan(Patterns::EngineClientPtr);
-		ggd = Scan(Patterns::GetGameDir);
-		crt = Scan(Patterns::CurtimePtr);
-		ldg = Scan(Patterns::LoadgamePtr);
-		drc = Scan(Patterns::DemoRecorderPtr);
-		ins = Scan(Patterns::InputSystemPtr);
-		ksb = Scan(Patterns::Key_SetBinding);
-		dpl = Scan(Patterns::DemoPlayerPtr);
-		mpn = Scan(Patterns::MapnamePtr);
+		auto enc = Scan(Patterns::EngineClientPtr);
+		auto ggd = Scan(Patterns::GetGameDir);
+		auto crt = Scan(Patterns::CurtimePtr);
+		auto ldg = Scan(Patterns::LoadgamePtr);
+		auto drc = Scan(Patterns::DemoRecorderPtr);
+		auto ins = Scan(Patterns::InputSystemPtr);
+		auto ksb = Scan(Patterns::Key_SetBinding);
+		auto dpl = Scan(Patterns::DemoPlayerPtr);
+		auto mpn = Scan(Patterns::MapnamePtr);
 
 		Engine::Set(enc.Address, ggd.Address, crt.Address, ldg.Address, mpn.Address);
 		DemoRecorder::Set(drc.Address);
@@ -46,18 +42,18 @@ namespace SAR
 	}
 	void LoadTier1()
 	{
-		cvr = Scan(Patterns::CvarPtr);
-		cnv = Scan(Patterns::ConVar_Ctor3);
-		cnc = Scan(Patterns::ConCommand_Ctor1);
-		cnc2 = Scan(Patterns::ConCommand_Ctor2);
+		auto cvr = Scan(Patterns::CvarPtr);
+		auto cnv = Scan(Patterns::ConVar_Ctor3);
+		auto cnc = Scan(Patterns::ConCommand_Ctor1);
+		auto cnc2 = Scan(Patterns::ConCommand_Ctor2);
 
 		Cvar::Set(cvr.Address);
 		Tier1::SetConVar(cnv.Address);
 		Tier1::SetConCommand(cnc.Address, cnc2.Address);
 	}
-	void LoadRest()
+	void LoadClient()
 	{
-		mss = Scan(Patterns::MatSystemSurfacePtr);
+		auto mss = Scan(Patterns::MatSystemSurfacePtr);
 
 		Surface::Set(mss.Address);
 	}
@@ -89,9 +85,9 @@ namespace SAR
 			"sar_time_demos",
 			Callbacks::PrintDemoInfos,
 			"Parses multiple demos and prints the total sum of them.\n");
-		sar_session_tick = CreateCommand(
-			"sar_session_tick",
-			Callbacks::PrintSessionTick,
+		sar_session = CreateCommand(
+			"sar_session",
+			Callbacks::PrintSession,
 			"Prints the current tick of the server since it has loaded.\n");
 		sar_about = CreateCommand(
 			"sar_about",
@@ -127,7 +123,7 @@ namespace SAR
 		sv_maxspeed = ConVar("sv_maxspeed");
 		sv_stopspeed = ConVar("sv_stopspeed");
 	}
-	void LoadAntiCheat()
+	void EnableAntiCheat()
 	{
 		sv_bonus_challenge.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 		sv_accelerate.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
@@ -153,7 +149,7 @@ namespace SAR
 			// Changing 80 to 1024
 			const char* thanksForNothingValve = "%-80s - %.1024s\n";
 
-			ScanResult prd = Scan(Patterns::ConVar_PrintDescription);
+			auto prd = Scan(Patterns::ConVar_PrintDescription);
 			Console::DevMsg("SAR: %s\n", Patterns::ConVar_PrintDescription.GetResult());
 
 			if (prd.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(prd.Address), &thanksForNothingValve, 4, 0)) {
@@ -164,10 +160,10 @@ namespace SAR
 			// Removing Cbuf_AddText and Cbuf_Execute
 			BYTE ignoreEvilCommandsInDemos[22] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 
-			ScanResult rdp = Scan(Patterns::ReadPacket);
+			auto rdp = Scan(Patterns::ReadPacket);
 			Console::DevMsg("SAR: %s\n", Patterns::ReadPacket.GetResult());
 			if (prd.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(rdp.Address), ignoreEvilCommandsInDemos, 22, 0)) {
-				Console::DevMsg("SAR: Patched ReadPacket!\n");
+				Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket!\n");
 			}
 
 			break;

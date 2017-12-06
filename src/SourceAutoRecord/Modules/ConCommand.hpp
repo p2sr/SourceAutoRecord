@@ -50,16 +50,16 @@ namespace Tier1
 		}
 	};
 
-	ConCommand CreateCommand(const char* name, _CommandCallbackVoid callback, const char* helpstr = "")
+	ConCommand CreateCommand(const char* name, _CommandCallbackVoid callback, const char* helpstr = "", int flags = 0)
 	{
 		auto ret = ConCommand();
-		ConCommandCtor(ret.Ptr, nullptr, name, callback, helpstr, 0, nullptr);
+		ConCommandCtor(ret.Ptr, nullptr, name, callback, helpstr, flags, nullptr);
 		return ret;
 	}
-	ConCommand CreateCommandArgs(const char* name, _CommandCallbackArgs callback, const char* helpstr = "")
+	ConCommand CreateCommandArgs(const char* name, _CommandCallbackArgs callback, const char* helpstr = "", int flags = 0)
 	{
 		auto ret = ConCommand();
-		ConCommandCtor2(ret.Ptr, nullptr, name, callback, helpstr, 0, nullptr);
+		ConCommandCtor2(ret.Ptr, nullptr, name, callback, helpstr, flags, nullptr);
 		return ret;
 	}
 }

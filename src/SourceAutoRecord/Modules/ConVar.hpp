@@ -128,17 +128,17 @@ namespace Tier1
 
 		return ret;
 	}
-	ConVar CreateBoolean(const char* name, const char* value, const char* helpstr = "")
+	ConVar CreateBoolean(const char* name, const char* value, const char* helpstr = "", int flags = FCVAR_NEVER_AS_STRING)
 	{
-		return CreateVar(name, value, FCVAR_NEVER_AS_STRING, helpstr, true, 0, true, 1);
+		return CreateVar(name, value, flags, helpstr, true, 0, true, 1);
 	}
-	ConVar CreateFloat(const char* name, const char* value, float min, const char* helpstr = "")
+	ConVar CreateFloat(const char* name, const char* value, float min, const char* helpstr = "", int flags = FCVAR_NEVER_AS_STRING)
 	{
-		return CreateVar(name, value, FCVAR_NEVER_AS_STRING, helpstr, true, min);
+		return CreateVar(name, value, flags, helpstr, true, min);
 	}
-	ConVar CreateFloat(const char* name, const char* value, float min, float max, const char* helpstr = "")
+	ConVar CreateFloat(const char* name, const char* value, float min, float max, const char* helpstr = "", int flags = FCVAR_NEVER_AS_STRING)
 	{
-		return CreateVar(name, value, FCVAR_NEVER_AS_STRING, helpstr, true, min, true, max);
+		return CreateVar(name, value, flags, helpstr, true, min, true, max);
 	}
 	ConVar CreateString(const char* name, const char* value, const char* helpstr = "")
 	{

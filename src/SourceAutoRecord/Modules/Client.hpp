@@ -21,14 +21,15 @@ namespace Client
 			int font = 5;
 
 			char ticks[64];
-			int tick = !*Engine::LoadGame ? Engine::GetCurrentTick() : 0;
+			int tick = !*Engine::LoadGame ? Engine::GetTick() : 0;
 			float time = tick * *Engine::IntervalPerTick;
+
 			if (Summary::HasStarted)
 				snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs) | total: %i (%.3f)", tick, time, Summary::TotalTicks, Summary::TotalTime);
 			else
 				snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs)", tick, time);
-			Surface::Draw(font, 1, 65, COL_WHITE, ticks);
 
+			Surface::Draw(font, 1, 65, COL_WHITE, ticks);
 			return Original::Paint(thisptr);
 		}
 	}
