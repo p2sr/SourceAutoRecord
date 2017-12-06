@@ -196,24 +196,35 @@ namespace Callbacks
 	void PrintSummary()
 	{
 		int sessions = Summary::Items.size();
-		if (sessions == 0)
+		if (Summary::IsRunning && sessions == 0) {
 			Console::Msg("Summary of this session:\n");
-		else
-			Console::Msg("Summary of %i session%s:\n", sessions, (sessions == 1) ? "" : "s");
+		}
+		else if (Summary::IsRunning && sessions > 0) {
+			Console::Msg("Summary of %i sessions:\n", sessions + 1);
+		}
+		else if (sessions > 0) {
+			Console::Msg("Summary of %i session%s:\n", sessions, sessions == 1 ? "" : "s");
+		}
+		else {
+			Console::Msg("There's no result of a summary!\n");
+			return;
+		}
 
-		for (size_t i = 0; i < sessions; i++) {
+		for (size_t i = 0; i < Summary::Items.size(); i++) {
 			Console::Msg("%s -> ", Summary::Items[i].Map);
 			Console::Msg("%i ticks", Summary::Items[i].Ticks);
-			Console::Msg("(%.3fs)\n", Summary::Items[i].Time);
+			Console::Msg("(%.3f)\n", Summary::Items[i].Time);
 		}
 
 		if (Summary::IsRunning) {
 			Console::ColorMsg(COL_YELLOW, "%s -> ", *Engine::Mapname);
-			Console::ColorMsg(COL_YELLOW, "%i ticks", Engine::GetTick());
-			Console::ColorMsg(COL_YELLOW, "(%.3fs)\n", Engine::GetTime());
+			Console::ColorMsg(COL_YELLOW, "%i ticks ", Engine::GetTick());
+			Console::ColorMsg(COL_YELLOW, "(%.3f)\n", Engine::GetTime());
 			Console::Msg("---------------\n");
-			Console::Msg("Total Ticks: %i\n", Summary::TotalTicks + Engine::GetTick());
-			Console::Msg("Total Time: %.3f\n", Summary::TotalTime + Engine::GetTime());
+			Console::Msg("Total Ticks: %i ", Summary::TotalTicks);
+			Console::ColorMsg(COL_YELLOW, "(%i)\n", Summary::TotalTicks + Engine::GetTick());
+			Console::Msg("Total Time: %.3f ", Summary::TotalTime);
+			Console::ColorMsg(COL_YELLOW, "(%.3f)\n", Summary::TotalTime + Engine::GetTime());
 		}
 		else {
 			Console::Msg("---------------\n");

@@ -25,14 +25,14 @@ namespace Client
 
 			if (Summary::IsRunning) {
 				if (sar_sum_during_session.GetBool()) {
-					snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs) | total: %i (%.3f)", tick, time, Summary::TotalTicks + tick, Summary::TotalTime + time);
+					snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f) | total: %i (%.3f)", tick, time, Summary::TotalTicks + tick, Summary::TotalTime + time);
 				}
 				else {
-					snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs) | total: %i (%.3f)", tick, time, Summary::TotalTicks, Summary::TotalTime);
+					snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f) | total: %i (%.3f)", tick, time, Summary::TotalTicks, Summary::TotalTime);
 				}
 			}
 			else {
-				snprintf(ticks, sizeof(ticks), "ticks: %i (%.3fs)", tick, time);
+				snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f)", tick, time);
 			}
 
 			Surface::Draw(ShowPosFont, 1, 65, COL_WHITE, ticks);
