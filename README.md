@@ -14,7 +14,7 @@
 
 ### Automatic Binding
 - `sar_bind_save <key> [save_name]` binds automatically `save save_name` to the given key when loading
-- `sar_save_flag [echo_message]` append `;echo message` to the save bind
+- `sar_save_flag [echo_message]` appends `;echo message` to the save bind
 - `sar_bind_reload <key> [save_name]` binds automatically `save save_name;reload` to the given key when loading
 - `sar_unbind_save` unbinds the key and stops automatic binding for `sar_bind_save`
 - `sar_unbind_reload` unbinds the key and stops automatic binding for `sar_bind_reload`
