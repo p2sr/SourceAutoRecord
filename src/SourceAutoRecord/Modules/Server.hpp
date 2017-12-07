@@ -19,7 +19,6 @@ namespace Server
 	namespace Detour
 	{
 		bool CantJumpNextTime = false;
-		bool CallFromCheckJumpButton = false;
 
 		bool __fastcall CheckJumpButton(void* thisptr, int edx)
 		{
@@ -35,9 +34,7 @@ namespace Server
 			}
 			CantJumpNextTime = false;
 
-			CallFromCheckJumpButton = true;
 			bool result = Original::CheckJumpButton(thisptr);
-			CallFromCheckJumpButton = false;
 
 			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool()) {
 				if (!(*pM_nOldButtons & IN_JUMP))
