@@ -29,29 +29,23 @@ namespace Client
 				float time = tick * *Engine::IntervalPerTick;
 
 				if (sar_timer_enabled.GetBool()) {
-					if (sar_avg_enabled.GetBool()) {
-						if (Timer::IsRunning) {
-							snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f) | average: %i (%.3f)", Timer::GetTick() + tick, Timer::GetTime() + time, Timer::Average::AverageTicks, Timer::Average::AverageTime);
-						}
-						else {
-							snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f) | average: %i (%.3f)", Timer::GetTick(), Timer::GetTime(), Timer::Average::AverageTicks, Timer::Average::AverageTime);
-						}
-					}
-					else if (sar_cps_enabled.GetBool()) {
-						if (Timer::IsRunning) {
-							snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f) | last cp: %i (%.3f)", Timer::GetTick() + tick, Timer::GetTime() + time, Timer::CheckPoints::LatestTick, Timer::CheckPoints::LatestTime);
-						}
-						else {
-							snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f) | last cp: %i (%.3f)", Timer::GetTick(), Timer::GetTime(), Timer::CheckPoints::LatestTick, Timer::CheckPoints::LatestTime);
-						}
+					if (Timer::IsRunning) {
+						tick = Timer::GetTick(tick), time;
+						time = tick * *Engine::IntervalPerTick;
 					}
 					else {
-						if (Timer::IsRunning) {
-							snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f)", Timer::GetTick() + tick, Timer::GetTime() + time);
-						}
-						else {
-							snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f)", Timer::GetTick(), Timer::GetTime());
-						}
+						tick = Timer::GetTick(), time;
+						time = tick * *Engine::IntervalPerTick;
+					}
+
+					if (sar_avg_enabled.GetBool()) {
+						snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f) | average: %i (%.3f)", tick, time, Timer::Average::AverageTicks, Timer::Average::AverageTime);
+					}
+					else if (sar_cps_enabled.GetBool()) {
+						snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f) | last cp: %i (%.3f)", tick, time, Timer::CheckPoints::LatestTick, Timer::CheckPoints::LatestTime);
+					}
+					else {
+						snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f)", tick, time);
 					}
 				}
 				else if (Summary::IsRunning) {

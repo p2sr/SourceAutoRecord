@@ -104,7 +104,10 @@ public:
 						{
 							__int32 length;
 							file.read((char*)&length, sizeof(length));
-							file.ignore(length);
+							//file.ignore(length);
+							char* cmd;
+							file.read((char*)&cmd, length);
+							Console::DevMsg("%s", cmd);
 							break;
 						}
 					case DemoMessageType::UserCmd:
