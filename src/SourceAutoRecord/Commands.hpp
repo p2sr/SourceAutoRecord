@@ -14,6 +14,7 @@ namespace Commands
 	ConVar sar_save_flag;
 
 	// Info
+	ConVar sar_showticks;
 	ConCommand sar_time_demo;
 	ConCommand sar_time_demos;
 	ConCommand sar_session;
@@ -24,6 +25,24 @@ namespace Commands
 	ConCommand sar_sum_stop;
 	ConCommand sar_sum_result;
 	ConVar sar_sum_during_session;
+
+	// Timer
+	ConCommand sar_timer_start;
+	ConCommand sar_timer_stop;
+	ConCommand sar_timer_result;
+	ConVar sar_timer_enabled;
+
+	// Timer average
+	ConCommand sar_avg_start;
+	ConCommand sar_avg_stop;
+	ConCommand sar_avg_result;
+	ConVar sar_avg_enabled;
+
+	// Timer checkpoints
+	ConCommand sar_cps_add;
+	ConCommand sar_cps_clear;
+	ConCommand sar_cps_result;
+	ConVar sar_cps_enabled;
 
 	// Cheats
 	ConVar sar_autojump;

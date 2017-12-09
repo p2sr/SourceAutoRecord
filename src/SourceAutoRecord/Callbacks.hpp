@@ -9,6 +9,9 @@
 #include "Demo.hpp"
 #include "Rebinder.hpp"
 #include "Summary.hpp"
+#include "Timer.hpp"
+#include "TimerAverage.hpp"
+#include "TimerCheckPoints.hpp"
 #include "Utils.hpp"
 
 namespace Callbacks
@@ -231,5 +234,99 @@ namespace Callbacks
 			Console::Msg("Total Ticks: %i\n", Summary::TotalTicks);
 			Console::Msg("Total Time: %.3f\n", Summary::TotalTime);
 		}
+	}
+	void StartTimer()
+	{
+		if (Timer::IsRunning)
+			Console::DevMsg("Restarting timer!\n");
+		else
+			Console::DevMsg("Starting timer!\n");
+		Timer::Start(Engine::GetTick(), Engine::GetTime());
+	}
+	void StopTimer()
+	{
+		if (!Timer::IsRunning) {
+			Console::DevMsg("Timer isn't running!\n");
+			return;
+		}
+
+		int tick = Engine::GetTick();
+		float time = Engine::GetTime();
+
+		if (sar_avg_enabled.GetBool()) {
+			Timer::Average::Add(tick, time, *Engine::Mapname);
+		}
+		Timer::Stop(tick, time);
+	}
+	void PrintTimer() {
+		if (Timer::IsRunning) {
+			int tick = Engine::GetTick();
+			float time = Engine::GetTime();
+			Console::ColorMsg(COL_YELLOW, "Current Time: %i (%.3f)", Timer::GetTick() + tick, Timer::GetTime() + time);
+		}
+		else {
+			Console::Msg("Final Time: %i (%.3f)", Timer::GetTick(), Timer::GetTime());
+		}
+	}
+	void StartAverage() {
+		Timer::Average::Start();
+	}
+	void StopAverage() {
+		Timer::Average::IsEnabled = false;
+	}
+	void PrintAverage() {
+		int average = Timer::Average::Items.size();
+		if (average > 0) {
+			Console::Msg("Average of %i:\n", average);
+		}
+		else {
+			Console::Msg("No result!\n");
+			return;
+		}
+
+		for (size_t i = 0; i < average; i++) {
+			Console::Msg("%s -> ", Timer::Average::Items[i].Map);
+			Console::Msg("%i ticks", Timer::Average::Items[i].Ticks);
+			Console::Msg("(%.3f)\n", Timer::Average::Items[i].Time);
+		}
+
+		if (Timer::IsRunning) {
+			Console::ColorMsg(COL_YELLOW, "Current Average: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
+		}
+		else {
+			Console::Msg("Final Average: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
+		}
+	}
+	void AddCheckpoint() {
+		Timer::CheckPoints::Add(Timer::GetTick(), Timer::GetTime(), *Engine::Mapname);
+	}
+	void ClearCheckpoints() {
+		Timer::CheckPoints::Reset();
+	}
+	void PrintCheckpoints() {
+		int cps = Timer::CheckPoints::Items.size();
+		if (cps > 0) {
+			Console::Msg("Result of %i checkpoints:\n", cps);
+		}
+		else {
+			Console::Msg("No result!\n");
+			return;
+		}
+
+		for (size_t i = 0; i < cps; i++) {
+			if (i == cps - 1 && Timer::IsRunning) {
+				Console::ColorMsg(COL_YELLOW, "%s -> ", Timer::CheckPoints::Items[i].Map);
+				Console::ColorMsg(COL_YELLOW, "%i ticks", Timer::CheckPoints::Items[i].Ticks);
+				Console::ColorMsg(COL_YELLOW, "(%.3f)\n", Timer::CheckPoints::Items[i].Time);
+			}
+			else {
+				Console::Msg("%s -> ", Timer::CheckPoints::Items[i].Map);
+				Console::Msg("%i ticks", Timer::CheckPoints::Items[i].Ticks);
+				Console::Msg("(%.3f)\n", Timer::CheckPoints::Items[i].Time);
+			}
+		}
+
+		if (!Timer::IsRunning)
+			Console::Msg("Total: %i (%.3f)", Timer::GetTick(), Timer::GetTime());
 	}
 }

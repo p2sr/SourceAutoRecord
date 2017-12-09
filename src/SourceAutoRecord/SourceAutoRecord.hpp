@@ -77,6 +77,10 @@ namespace SAR
 			"Echo message when using sar_bind_save. Default is \"#SAVE#\", a SourceRuns standard. Keep this empty if no echo message should be binded.\n");
 
 		// Info
+		sar_showticks = CreateBoolean(
+			"sar_showticks",
+			"1",
+			"Draws tick info about session, summary, timer or average when using cl_showpos.\n");
 		sar_time_demo = CreateCommandArgs(
 			"sar_time_demo",
 			Callbacks::PrintDemoInfo,
@@ -111,6 +115,60 @@ namespace SAR
 			"sar_sum_during_session",
 			"1",
 			"Updates the summary counter automatically during a session.\n");
+
+		// Timer
+		sar_timer_start = CreateCommand(
+			"sar_timer_start",
+			Callbacks::StartTimer,
+			"Starts timer.\n");
+		sar_timer_stop = CreateCommand(
+			"sar_timer_stop",
+			Callbacks::StopTimer,
+			"Stops timer.\n");
+		sar_timer_result = CreateCommand(
+			"sar_timer_result",
+			Callbacks::PrintTimer,
+			"Prints result of timer.\n");
+		sar_timer_enabled = CreateBoolean(
+			"sar_timer_enabled",
+			"0",
+			"Enables timer when using cl_showpos.\n");
+
+		// Timer average
+		sar_avg_start = CreateCommand(
+			"sar_avg_start",
+			Callbacks::StartAverage,
+			"Starts calculating the average when using timer.\n");
+		sar_avg_stop = CreateCommand(
+			"sar_avg_stop",
+			Callbacks::StopAverage,
+			"Stops average calculation.\n");
+		sar_avg_result = CreateCommand(
+			"sar_avg_result",
+			Callbacks::PrintAverage,
+			"Prints result of average.\n");
+		sar_avg_enabled = CreateBoolean(
+			"sar_avg_enabled",
+			"0",
+			"Enables average calculation when using timer and cl_showpos.\n");
+
+		// Timer checkpoints
+		sar_cps_add = CreateCommand(
+			"sar_cps_add",
+			Callbacks::AddCheckpoint,
+			"Saves current time of timer.\n");
+		sar_cps_clear = CreateCommand(
+			"sar_cps_clear",
+			Callbacks::ClearCheckpoints,
+			"Resets saved times of timer.\n");
+		sar_cps_result = CreateCommand(
+			"sar_cps_result",
+			Callbacks::PrintCheckpoints,
+			"Prints result of timer checkpoints.\n");
+		sar_cps_enabled = CreateBoolean(
+			"sar_cps_enabled",
+			"0",
+			"Enables checkpoint calculation when using timer and cl_showpos.\n");
 
 		// Cheats
 		sar_autojump = CreateBoolean(

@@ -157,6 +157,7 @@
     <ClInclude Include="..\..\libs\minhook\hde\table32.h" />
     <ClInclude Include="..\..\libs\minhook\hde\table64.h" />
     <ClInclude Include="..\..\libs\minhook\trampoline.h" />
+    <ClInclude Include="TimerAverage.hpp" />
     <ClInclude Include="Commands.hpp" />
     <ClInclude Include="Demo.hpp" />
     <ClInclude Include="Callbacks.hpp" />
@@ -180,6 +181,8 @@
     <ClInclude Include="Rebinder.hpp" />
     <ClInclude Include="SourceAutoRecord.hpp" />
     <ClInclude Include="Summary.hpp" />
+    <ClInclude Include="Timer.hpp" />
+    <ClInclude Include="TimerCheckPoints.hpp" />
     <ClInclude Include="Utils.hpp" />
   </ItemGroup>
   <ItemGroup>
