@@ -217,7 +217,7 @@ namespace Callbacks
 				Console::Msg("Summary of %i sessions:\n", sessions + 1);
 			}
 			else if (sessions > 0) {
-				Console::Msg("Summary of %i session%s:\n", sessions, sessions == 1 ? "" : "s");
+				Console::Msg("Summary of %i session%s:\n", sessions, (sessions == 1) ? "" : "s");
 			}
 			else {
 				Console::Msg("There's no result of a summary!\n");
@@ -273,16 +273,14 @@ namespace Callbacks
 			}
 		}
 		void PrintTimer() {
-			int tick = Engine::GetTick();
-			float time = Engine::GetTime();
+			int tick = Timer::GetTick((Timer::IsRunning) ? Engine::GetTick() : -1);
+			float time = tick * *Engine::IntervalPerTick;
 
 			if (Timer::IsRunning) {
-				tick = Timer::GetTick(tick);
-				time = tick * *Engine::IntervalPerTick;
-				Console::ColorMsg(COL_YELLOW, "Current Time: %i (%.3f)", tick, time);
+				Console::ColorMsg(COL_YELLOW, "Result: %i (%.3f)\n", tick, time);
 			}
 			else {
-				Console::Msg("Final Time: %i (%.3f)", tick, time);
+				Console::Msg("Result: %i (%.3f)\n", tick, time);
 			}
 		}
 		void StartAverage() {
@@ -308,10 +306,10 @@ namespace Callbacks
 			}
 
 			if (Timer::IsRunning) {
-				Console::ColorMsg(COL_YELLOW, "Current Average: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
+				Console::ColorMsg(COL_YELLOW, "Result: %i (%.3f)\n", Timer::Average::AverageTicks, Timer::Average::AverageTime);
 			}
 			else {
-				Console::Msg("Final Average: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
+				Console::Msg("Result: %i (%.3f)\n", Timer::Average::AverageTicks, Timer::Average::AverageTime);
 			}
 		}
 		void AddCheckpoint() {
@@ -352,7 +350,7 @@ namespace Callbacks
 			if (!Timer::IsRunning) {
 				int tick = Timer::GetTick();
 				float time = tick * *Engine::IntervalPerTick;
-				Console::Msg("Total: %i (%.3f)", tick, time);
+				Console::Msg("Result: %i (%.3f)\n", tick, time);
 			}
 		}
 	}

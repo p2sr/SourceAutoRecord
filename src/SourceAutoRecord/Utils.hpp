@@ -72,7 +72,7 @@ uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_addre
 			if (!pattern[2])
 				return first_match;
 
-			pattern += pattern_current != '\?' ? 3 : 2;
+			pattern += (pattern_current != '\?') ? 3 : 2;
 		}
 		else {
 			pattern = target_pattern;

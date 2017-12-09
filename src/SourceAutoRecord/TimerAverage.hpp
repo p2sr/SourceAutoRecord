@@ -29,9 +29,9 @@ namespace Timer
 				time,
 				map
 			});
-			int size = Items.size() + 1;
-			AverageTicks += ticks / size;
-			AverageTime += time / size;
+			int count = Items.size();
+			AverageTicks += ticks / count;
+			AverageTime += time / count;
 		}
 	}
 }

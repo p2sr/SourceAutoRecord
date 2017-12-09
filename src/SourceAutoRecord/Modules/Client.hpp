@@ -25,18 +25,12 @@ namespace Client
 		{
 			if (sar_showticks.GetBool()) {
 				char ticks[64];
-				int tick = !*Engine::LoadGame ? Engine::GetTick() : 0;
+				int tick = (!*Engine::LoadGame) ? Engine::GetTick() : 0;
 				float time = tick * *Engine::IntervalPerTick;
 
 				if (sar_timer_enabled.GetBool()) {
-					if (Timer::IsRunning) {
-						tick = Timer::GetTick(tick), time;
-						time = tick * *Engine::IntervalPerTick;
-					}
-					else {
-						tick = Timer::GetTick(), time;
-						time = tick * *Engine::IntervalPerTick;
-					}
+					tick = Timer::GetTick((Timer::IsRunning) ? tick : -1);
+					time = tick * *Engine::IntervalPerTick;
 
 					if (sar_avg_enabled.GetBool()) {
 						snprintf(ticks, sizeof(ticks), "ticks: %i (%.3f) | average: %i (%.3f)", tick, time, Timer::Average::AverageTicks, Timer::Average::AverageTime);
