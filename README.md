@@ -18,8 +18,8 @@
   - [Cheats](#cheats)
   - [Patches](#patches)
 - [Mapping](#mapping)
- - [Start & Stop Triggers](#start--stop-triggers)
- - [With Checkpoints](#with-checkpoints)
+  - [Start & Stop Triggers](#start--stop-triggers)
+  - [With Checkpoints](#with-checkpoints)
 - [Credits](#inspired-by)
 
 ## Supported Games
@@ -79,7 +79,7 @@
 - `sar_draw_timer` draws timer value
 - `sar_draw_avg` draws current average of timer
 - `sar_draw_cps` draws last checkpoint value of timer
-- `sar_draw_demo` draws current name, tick and time of demo recorder
+- `sar_draw_demo` draws current name, tick and time of demo recorder or demo player
 
 ### Cheats
 - `sar_autojump` enables tick-perfect jumping on the server
