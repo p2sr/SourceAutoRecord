@@ -1,6 +1,6 @@
 #pragma once
-#include "../Offsets.hpp"
-#include "../Utils.hpp"
+#include "Offsets.hpp"
+#include "Utils.hpp"
 
 #define BUTTON_CODE_INVALID -1
 #define KEY_ESCAPE 70

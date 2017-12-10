@@ -52,9 +52,11 @@ public:
 		playbackTicks = GetLastTick();
 		playbackTime = ipt * playbackTicks;
 	}
-	bool Demo::Parse(std::string filePath, bool headerOnly = true) {
+	bool Demo::Parse(std::string filePath, int outputMode = 0, bool headerOnly = false) {
 		try {
 			if (filePath.substr(filePath.length() - 4, 4) != ".dem") filePath += ".dem";
+
+			Console::DevMsg("Trying to parse \"%s\"...\n", filePath.c_str());
 
 			std::ifstream file(filePath, std::ios::in | std::ios::binary);
 			if (!file.good()) return false;
@@ -92,7 +94,49 @@ public:
 					case DemoMessageType::SignOn:
 					case DemoMessageType::Packet:
 						{
-							file.ignore((MAX_SPLITSCREEN_CLIENTS * 76) + 4 + 4);
+							if (outputMode == 2) {
+								for (size_t i = 0; i < MAX_SPLITSCREEN_CLIENTS; i++)
+								{
+									if (i >= 1) {
+										file.ignore(76);
+										continue;
+									}
+									__int32 flags;
+									float vo_x, vo_y, vo_z;
+									float va_x, va_y, va_z;
+									float lva_x, lva_y, lva_z;
+									float vo2_x, vo2_y, vo2_z;
+									float va2_x, va2_y, va2_z;
+									float lva2_x, lva2_y, lva2_z;
+									file.read((char*)&flags, sizeof(flags));
+									file.read((char*)&vo_x, sizeof(vo_x));
+									file.read((char*)&vo_y, sizeof(vo_y));
+									file.read((char*)&vo_z, sizeof(vo_z));
+									file.read((char*)&va_x, sizeof(va_x));
+									file.read((char*)&va_y, sizeof(va_y));
+									file.read((char*)&va_z, sizeof(va_z));
+									file.read((char*)&lva_x, sizeof(lva_z));
+									file.read((char*)&lva_y, sizeof(lva_y));
+									file.read((char*)&lva_z, sizeof(lva_z));
+									file.read((char*)&vo2_x, sizeof(vo2_x));
+									file.read((char*)&vo2_y, sizeof(vo2_y));
+									file.read((char*)&vo2_z, sizeof(vo2_z));
+									file.read((char*)&va2_x, sizeof(va2_x));
+									file.read((char*)&va2_y, sizeof(va2_y));
+									file.read((char*)&va2_z, sizeof(va2_z));
+									file.read((char*)&lva2_x, sizeof(lva2_z));
+									file.read((char*)&lva2_y, sizeof(lva2_y));
+									file.read((char*)&lva2_z, sizeof(lva2_z));
+									Console::Msg("[%i] flags: %i | view origin: %.3f/%.3f/%.3f | view angles: %.3f/%.3f/%.3f | local view angles: %.3f/%.3f/%.3f\n", tick, flags, vo_x, vo_y, vo_z, va_x, va_y, va_z, lva_x, lva_y, lva_z);
+								}
+								__int32 in_seq, out_seq;
+								file.read((char*)&in_seq, sizeof(in_seq));
+								file.read((char*)&out_seq, sizeof(out_seq));
+							}
+							else {
+								file.ignore((MAX_SPLITSCREEN_CLIENTS * 76) + 4 + 4);
+							}
+
 							__int32 length;
 							file.read((char*)&length, sizeof(length));
 							file.ignore(length);
@@ -104,10 +148,14 @@ public:
 						{
 							__int32 length;
 							file.read((char*)&length, sizeof(length));
-							//file.ignore(length);
-							char* cmd;
-							file.read((char*)&cmd, length);
-							Console::DevMsg("%s", cmd);
+							if (outputMode >= 1) {
+								std::string cmd(length, ' ');
+								file.read(&cmd[0], length);
+								Console::Msg("[%i] %s\n", tick, cmd.c_str());
+							}
+							else {
+								file.ignore(length);
+							}
 							break;
 						}
 					case DemoMessageType::UserCmd:
@@ -150,7 +198,7 @@ public:
 			file.close();
 		}
 		catch (const std::exception& ex) {
-			Console::Warning("SAR: Error occurred when trying to parse the demo file.\nIf you think this is an issue, report it at: https://github.com/NeKzor/SourceAutoRecord/issues\n%s", std::string(ex.what()));
+			Console::Warning("SAR: Error occurred when trying to parse the demo file.\nIf you think this is an issue, report it at: https://github.com/NeKzor/SourceAutoRecord/issues\n%s\n", std::string(ex.what()));
 			return false;
 		}
 		return true;

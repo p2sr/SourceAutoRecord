@@ -57,11 +57,8 @@ namespace Callbacks
 				name = std::string(args.At(1));
 			}
 
-			std::string file = Engine::GetDir() + "\\" + name;
-			Console::DevMsg("Trying to parse \"%s\"...\n", file.c_str());
-
 			Demo demo;
-			if (demo.Parse(file, false)) {
+			if (demo.Parse(Engine::GetDir() + "\\" + name, sar_time_demo_dev.GetInt())) {
 				demo.Fix();
 				Console::Msg("Demo: %s\n", name.c_str());
 				Console::Msg("Client: %s\n", demo.clientName);
@@ -83,15 +80,13 @@ namespace Callbacks
 			bool printTotal = false;
 
 			std::string name;
+			std::string dir = Engine::GetDir() + std::string("\\");
 			for (size_t i = 1; i < args.Count(); i++)
 			{
 				name = std::string(args.At(i));
 
-				std::string file = Engine::GetDir() + "\\" + name;
-				Console::DevMsg("Trying to parse \"%s\"...\n", file.c_str());
-
 				Demo demo;
-				if (demo.Parse(file, false)) {
+				if (demo.Parse(dir + name)) {
 					demo.Fix();
 					Console::Msg("Demo: %s\n", name.c_str());
 					Console::Msg("Client: %s\n", demo.clientName);

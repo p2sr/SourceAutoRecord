@@ -1,6 +1,7 @@
 #pragma once
-#include "../Offsets.hpp"
 #include "Tier1.hpp"
+
+#include "Offsets.hpp"
 
 namespace Tier1
 {

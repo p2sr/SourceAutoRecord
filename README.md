@@ -1,20 +1,25 @@
 [![Build Version](https://img.shields.io/badge/version-v1.0-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/1)
 [![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
 
-**SourceAutoRecord** allows automatic demo recording, automatic binding, demo parsing, session timing and much more.
+**SourceAutoRecord** allows automatic demo recording, automatic binding, demo parsing, session timing and [much more](#features).
 
 ## Overview
 - [Supported Games](#supported-games)
 - [Features](#features)
   - [Automatic Demo Recorder](#automatic-demo-recorder)
   - [Automatic Binding](#automatic-binding)
-  - [Demo Parsing](#demo-parsing)
-  - [Session Summary](#session-summary)
+  - [Demo Parser](#demo-parser)
+  - [Session Timing](#session-timing)
+    - [Summary](#summary)
   - [Timer](#timer)
     - [Average](#average)
     - [Checkpoints](#checkpoints)
-  - [Others](#others)
+  - [HUD](#hud)
+  - [Cheats](#cheats)
+  - [Patches](#patches)
 - [Mapping](#mapping)
+ - [Start & Stop Triggers](#start--stop-triggers)
+ - [Checkpoint Triggers](#checkpoint-triggers)
 - [Credits](#inspired-by)
 
 ## Supported Games
@@ -35,12 +40,17 @@
 - Save files will be named _2, _3, etc.
 - File indexing will be synced automatically with the demo recorder when recording with demos
 
-### Demo Parsing
+### Demo Parser
 - `sar_time_demo [demo_name]` parses a demo and prints some useful information about it
 - Passing an empty string `sar_time_demo ""` will take the last demo from demo recorder or demo player
+- `sar_time_demo_dev` prints demo's console commands and packets when using `sar_time_demo`
+- Use `con_log [file_name]` to export the extra data into a file
 - `sar_time_demos [demo_name] [demo_name2] [etc.]` parses multiple demos
 
-### Session Summary
+### Session Timing
+- `sar_session` prints the current tick count since the server has loaded
+
+#### Summary
 - `sar_sum_here` starts saving the total tick count of each session
 - `sar_sum_stop` stops counting
 - `sar_sum_reset` resets the counter
@@ -48,33 +58,41 @@
 - `sar_sum_during_session` counts current session too
 
 ### Timer
-- `sar_timer_start` starts or restarts the timer, counting from the invocation
+- `sar_timer_start` starts or restarts the timer, counting from invocation
 - `sar_timer_stop` stops timer
 - `sar_timer_result` prints result
-- `sar_timer_enabled` draws timer values instead of session values when using cl_showpos
 - Mappers can use this for accurate timing, [see below](#mapping)
 
 #### Average
 - `sar_avg_start` starts calculating the average of the timer
 - `sar_avg_stop` stops calculation
 - `sar_avg_result` prints result
-- `sar_avg_enabled` draws current average when using cl_showpos
 
 #### Checkpoints
 - `sar_cps_add` saves current timer value
 - `sar_cps_clear` resets all saved values
 - `sar_cps_result` prints result of all checkpoints
-- `sar_cps_enabled` draws last checkpoint time when using cl_showpos
 
-### Others
+### HUD
+- Drawing useful information with `cl_showpos`
+- `sar_draw_session` draws current session value
+- `sar_draw_sum` draws summary value of sessions
+- `sar_draw_timer` draws timer value
+- `sar_draw_avg` draws current average of timer
+- `sar_draw_cps` draws last checkpoint value of timer
+- `sar_draw_demo` draws current demo name
+
+### Cheats
 - `sar_autojump` enables tick-perfect jumping on the server
-- `sar_session` prints the current tick count since the server has loaded
-- `sar_showticks` draws tick information when using `cl_showpos`
 - `sv_bonus_challenge`, `sv_accelerate`, `sv_airaccelerate`, `sv_friction`, `sv_maxspeed` and `sv_stopspeed` can be accessed in the developer console
+
+### Patches
 - Limited character printing has been extended for `help`
 - Redundant command execution has been removed for `playdemo`
 
 ## Mapping
+
+### Start & Stop Triggers
 - Place a `point_servercommand` object anywhere in the map
 - Use two `trigger_multiple` objects for start and stop
   - Add `OnStartTouch` as output
@@ -84,6 +102,9 @@
   - Do the same for the second trigger with `sar_timer_stop`
 
 ![trigger_multiple.png](trigger_multiple.png)
+
+### Checkpoint Triggers
+- TODO
 
 ## Inspired By
 - [SourcePauseTool](https://github.com/YaLTeR/SourcePauseTool)

@@ -40,6 +40,7 @@ unsigned __stdcall Main(void* args)
 	
 	SAR::LoadClient();
 	Console::DevMsg("SAR: %s\n", Patterns::MatSystemSurfacePtr.GetResult());
+	Console::DevMsg("SAR: %s\n", Patterns::SetSize.GetResult());
 
 	// Hook all functions
 	Hooks::CreateAndEnable();

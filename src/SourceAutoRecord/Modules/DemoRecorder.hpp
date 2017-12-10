@@ -1,6 +1,6 @@
 #pragma once
-#include "../Offsets.hpp"
-#include "../Utils.hpp"
+#include "Offsets.hpp"
+#include "Utils.hpp"
 
 using _GetRecordingTick = int(__thiscall*)(void* thisptr);
 

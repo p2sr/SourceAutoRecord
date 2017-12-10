@@ -1,11 +1,13 @@
 #pragma once
 #include <string>
+
 #include "Console.hpp"
 #include "DemoRecorder.hpp"
 #include "DemoPlayer.hpp"
-#include "../Demo.hpp"
-#include "../Rebinder.hpp"
-#include "../Summary.hpp"
+
+#include "Demo.hpp"
+#include "Rebinder.hpp"
+#include "Summary.hpp"
 
 using _GetGameDir = void(__cdecl*)(char* szGetGameDir, int maxlength);
 using _ClientCmd = void(__fastcall*)(void* thisptr, const char* szCmdString);
@@ -170,6 +172,9 @@ namespace Engine
 		void __fastcall Disconnect(void* thisptr, int edx, bool bShowMainMenu)
 		{
 			//Console::ColorMsg(COL_YELLOW, "Disconnected at: %i\n", DemoRecorder::GetCurrentTick());
+			/*if (Timer::IsRunning) {
+				Timer::Stop(Engine::GetTick());
+			}*/
 			Original::Disconnect(thisptr, bShowMainMenu);
 		}
 		void __cdecl PlayDemo(void* thisptr)
@@ -186,7 +191,7 @@ namespace Engine
 				IsPlayingDemo = true;
 				std::string file = GetDir() + "\\" + std::string(DemoPlayer::DemoName);
 				Demo demo;
-				if (demo.Parse(file, false)) {
+				if (demo.Parse(file)) {
 					demo.Fix();
 					Console::Msg("Client: %s\n", demo.clientName);
 					Console::Msg("Map: %s\n", demo.mapName);

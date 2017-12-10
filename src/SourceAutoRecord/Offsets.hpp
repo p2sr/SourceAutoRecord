@@ -15,8 +15,11 @@ namespace Offsets
 	int InternalSetFloatValue;
 	int InternalSetIntValue;
 
-	// vgui_basepanel.h
+	// IMatSystemSurface
 	int DrawColoredText;
+
+	// CFPSPanel
+	int m_hFont;
 
 	// CInputSystem
 	int StringToButtonCode;
@@ -58,6 +61,7 @@ namespace Offsets
 			mv = 2;
 			m_nOldButtons = 40;
 			DrawColoredText = 160;
+			m_hFont = 348;
 			m_szDemoBaseName = 1344;
 			m_bIsDemoHeader = 1604;
 			m_bCloseDemoFile = 1605;
@@ -79,6 +83,7 @@ namespace Offsets
 			mv = 2;
 			m_nOldButtons = 40;
 			DrawColoredText = 160; // TODO
+			m_hFont = 348; // TODO
 			m_szDemoBaseName = 1344; // TODO
 			m_bIsDemoHeader = 1604; // TODO
 			m_bCloseDemoFile = 1605; // TODO

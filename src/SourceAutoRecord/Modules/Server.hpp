@@ -1,6 +1,6 @@
 #pragma once
-#include "../Commands.hpp"
-#include "../Offsets.hpp"
+#include "Commands.hpp"
+#include "Offsets.hpp"
 
 #define IN_JUMP (1 << 1)
 

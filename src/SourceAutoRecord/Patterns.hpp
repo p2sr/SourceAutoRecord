@@ -45,9 +45,23 @@ namespace Patterns
 				}
 			}
 		};
+		Pattern SetSize = Pattern
+		{
+			"VPanel::SetSize",
+			"client.dll",
+			std::vector<Signature>
+			{
+				{
+					// VPanel::SetSize
+					// \x55\x8B\xEC\x8B\x41\x04\x8B\x50\x04\x8B\x45\x0C\x56\x8B\x35\x00\x00\x00\x00\x57\x8B\x3E\x8D\x4C\x0A\x04\x8B\x55\x08\x50\x8B\x01\x52\x8B\x10\xFF\xD2\x50\x8B\x47\x10 xxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxx
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC 8B 41 04 8B 50 04 8B 45 0C 56 8B 35 ? ? ? ? 57 8B 3E 8D 4C 0A 04 8B 55 08 50 8B 01 52 8B 10 FF D2 50 8B 47 10" }
+				}
+			}
+		};
 		Pattern MatSystemSurfacePtr = Pattern
 		{
-			"CNetGraphPanel::DrawTextFields",
+			"IMatSystemSurface *g_pMatSystemSurface",
 			"client.dll",
 			std::vector<Signature>
 			{
@@ -203,7 +217,7 @@ namespace Patterns
 		};
 		Pattern LoadgamePtr = Pattern
 		{
-			"CGameClient::SpawnPlayer",
+			"CGameServer::m_bLoadgame",
 			"engine.dll",
 			std::vector<Signature>
 			{

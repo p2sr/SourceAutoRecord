@@ -1,6 +1,6 @@
 #pragma once
-#include "../Offsets.hpp"
-#include "../Utils.hpp"
+#include "Offsets.hpp"
+#include "Utils.hpp"
 
 using _IsPlayingBack = bool(__thiscall*)(void* thisptr);
 

@@ -13,12 +13,10 @@ namespace Commands
 	ConCommand sar_unbind_reload;
 	ConVar sar_save_flag;
 
-	// Info
-	ConVar sar_showticks;
+	// Demo
 	ConCommand sar_time_demo;
 	ConCommand sar_time_demos;
-	ConCommand sar_session;
-	ConCommand sar_about;
+	ConVar sar_time_demo_dev;
 
 	// Summary
 	ConCommand sar_sum_here;
@@ -30,24 +28,34 @@ namespace Commands
 	ConCommand sar_timer_start;
 	ConCommand sar_timer_stop;
 	ConCommand sar_timer_result;
-	ConVar sar_timer_enabled;
 
 	// Timer average
 	ConCommand sar_avg_start;
 	ConCommand sar_avg_stop;
 	ConCommand sar_avg_result;
-	ConVar sar_avg_enabled;
 
 	// Timer checkpoints
 	ConCommand sar_cps_add;
 	ConCommand sar_cps_clear;
 	ConCommand sar_cps_result;
-	ConVar sar_cps_enabled;
+
+	// Drawing
+	ConVar sar_draw_session;
+	ConVar sar_draw_sum;
+	ConVar sar_draw_timer;
+	ConVar sar_draw_avg;
+	ConVar sar_draw_cps;
+	ConVar sar_draw_demo;
 
 	// Cheats
 	ConVar sar_autojump;
 
+	// Others
+	ConCommand sar_session;
+	ConCommand sar_about;
+
 	// From the game
+	ConVar cl_showpos;
 	ConVar sv_cheats;
 	ConVar sv_bonus_challenge;
 	ConVar sv_accelerate;

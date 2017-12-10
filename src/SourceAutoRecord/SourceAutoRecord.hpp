@@ -53,8 +53,10 @@ namespace SAR
 	}
 	void LoadClient()
 	{
+		auto sts = Scan(Patterns::SetSize);
 		auto mss = Scan(Patterns::MatSystemSurfacePtr);
 
+		Client::Set(sts.Address);
 		Surface::Set(mss.Address);
 	}
 	void RegisterCommands()
@@ -76,11 +78,7 @@ namespace SAR
 			"sar_save_flag", "#SAVE#",
 			"Echo message when using sar_bind_save. Default is \"#SAVE#\", a SourceRuns standard. Keep this empty if no echo message should be binded.\n");
 
-		// Info
-		sar_showticks = CreateBoolean(
-			"sar_showticks",
-			"1",
-			"Draws tick info about session, summary, timer or average when using cl_showpos.\n");
+		// Demo parsing
 		sar_time_demo = CreateCommandArgs(
 			"sar_time_demo",
 			Callbacks::PrintDemoInfo,
@@ -89,14 +87,11 @@ namespace SAR
 			"sar_time_demos",
 			Callbacks::PrintDemoInfos,
 			"Parses multiple demos and prints the total sum of them.\n");
-		sar_session = CreateCommand(
-			"sar_session",
-			Callbacks::PrintSession,
-			"Prints the current tick of the server since it has loaded.\n");
-		sar_about = CreateCommand(
-			"sar_about",
-			Callbacks::PrintAbout,
-			"Prints info about this plugin.\n");
+		sar_time_demo_dev = CreateFloat(
+			"sar_time_demo_dev",
+			"1",
+			0,
+			"Printing mode when using sar_time_demo. 0 = default, 1 = console commands, 2 = console commands & packets.\n");
 
 		// Summary
 		sar_sum_here = CreateCommand(
@@ -129,10 +124,6 @@ namespace SAR
 			"sar_timer_result",
 			Callbacks::PrintTimer,
 			"Prints result of timer.\n");
-		sar_timer_enabled = CreateBoolean(
-			"sar_timer_enabled",
-			"0",
-			"Enables timer when using cl_showpos.\n");
 
 		// Timer average
 		sar_avg_start = CreateCommand(
@@ -147,10 +138,6 @@ namespace SAR
 			"sar_avg_result",
 			Callbacks::PrintAverage,
 			"Prints result of average.\n");
-		sar_avg_enabled = CreateBoolean(
-			"sar_avg_enabled",
-			"0",
-			"Enables average calculation when using timer and cl_showpos.\n");
 
 		// Timer checkpoints
 		sar_cps_add = CreateCommand(
@@ -165,10 +152,32 @@ namespace SAR
 			"sar_cps_result",
 			Callbacks::PrintCheckpoints,
 			"Prints result of timer checkpoints.\n");
-		sar_cps_enabled = CreateBoolean(
-			"sar_cps_enabled",
-			"0",
-			"Enables checkpoint calculation when using timer and cl_showpos.\n");
+
+		// Drawing
+		sar_draw_session = CreateBoolean(
+			"sar_draw_session",
+			"1",
+			"Draws info about session when using cl_showpos.\n");
+		sar_draw_sum = CreateBoolean(
+			"sar_draw_sum",
+			"1",
+			"Draws info about session's summary when using cl_showpos.\n");
+		sar_draw_timer = CreateBoolean(
+			"sar_draw_timer",
+			"1",
+			"Draws info about timer when using cl_showpos.\n");
+		sar_draw_avg = CreateBoolean(
+			"sar_draw_avg",
+			"1",
+			"Draws info about timer's average when using cl_showpos.\n");
+		sar_draw_cps = CreateBoolean(
+			"sar_draw_cps",
+			"1",
+			"Draws info about timer's checkpoints when using cl_showpos.\n");
+		sar_draw_demo = CreateBoolean(
+			"sar_draw_demo",
+			"1",
+			"Draws info about demo recorder when using cl_showpos.\n");
 
 		// Cheats
 		sar_autojump = CreateBoolean(
@@ -176,7 +185,18 @@ namespace SAR
 			"0",
 			"Enables automatic jumping on the server.\n");
 
+		// Others
+		sar_session = CreateCommand(
+			"sar_session",
+			Callbacks::PrintSession,
+			"Prints the current tick of the server since it has loaded.\n");
+		sar_about = CreateCommand(
+			"sar_about",
+			Callbacks::PrintAbout,
+			"Prints info about this plugin.\n");
+
 		// From the game
+		cl_showpos = ConVar("cl_showpos");
 		sv_cheats = ConVar("sv_cheats");
 		sv_bonus_challenge = ConVar("sv_bonus_challenge");
 		sv_accelerate = ConVar("sv_accelerate");
