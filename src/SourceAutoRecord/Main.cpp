@@ -12,14 +12,15 @@ unsigned __stdcall Main(void* args)
 	Console::DevMsg("SAR: %s\n", Patterns::CheckJumpButton.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::Paint.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::SetSignonState.GetResult());
-	Console::DevMsg("SAR: %s\n", Patterns::CloseDemoFile.GetResult());
+	//Console::DevMsg("SAR: %s\n", Patterns::CloseDemoFile.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::StopRecording.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::StartupDemoFile.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::Stop.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::StartPlayback.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::PlayDemo.GetResult());
 	Console::DevMsg("SAR: %s\n", Patterns::Disconnect.GetResult());
-	Console::DevMsg("SAR: %s\n", Patterns::StopPlayback.GetResult());
+	//Console::DevMsg("SAR: %s\n", Patterns::StopPlayback.GetResult());
+	Console::DevMsg("SAR: %s\n", Patterns::ShouldDraw.GetResult());
 
 	SAR::LoadEngine();
 	Console::DevMsg("SAR: %s\n", Patterns::EngineClientPtr.GetResult());

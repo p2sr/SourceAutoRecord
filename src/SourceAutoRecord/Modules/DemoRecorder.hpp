@@ -25,7 +25,7 @@ namespace DemoRecorder
 		DemoNumber = (int*)reinterpret_cast<uintptr_t*>((uintptr_t)Ptr + Offsets::m_nDemoNumber);
 		Recording = (bool*)reinterpret_cast<uintptr_t*>((uintptr_t)Ptr + Offsets::m_bRecording);
 	}
-	int GetCurrentTick()
+	int GetTick()
 	{
 		return GetRecordingTick(Ptr);
 	}

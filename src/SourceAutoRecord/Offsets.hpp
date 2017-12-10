@@ -41,6 +41,7 @@ namespace Offsets
 	int m_nDemoNumber;
 
 	// CDemoPlayer
+	int GetPlaybackTick;
 	int IsPlayingBack;
 	int m_szFileName;
 
@@ -55,6 +56,7 @@ namespace Offsets
 			ClientCommand = 7;
 			StringToButtonCode = 31;
 			GetRecordingTick = 1;
+			GetPlaybackTick = 3;
 			IsPlayingBack = 6;
 			tickcount = 12;
 			interval_per_tick = 16;
@@ -77,6 +79,7 @@ namespace Offsets
 			ClientCommand = 7; // TODO
 			StringToButtonCode = 31; // TODO
 			GetRecordingTick = 1; // TODO
+			GetPlaybackTick = 3; // TODO
 			IsPlayingBack = 6; // TODO
 			tickcount = 12;
 			interval_per_tick = 16;

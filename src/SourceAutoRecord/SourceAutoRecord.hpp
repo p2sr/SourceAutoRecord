@@ -153,31 +153,35 @@ namespace SAR
 			Callbacks::PrintCheckpoints,
 			"Prints result of timer checkpoints.\n");
 
-		// Drawing
+		// HUD
 		sar_draw_session = CreateBoolean(
 			"sar_draw_session",
 			"0",
-			"Draws current session value when using cl_showpos.\n");
+			"Draws current session value.\n");
+		sar_draw_last_session = CreateBoolean(
+			"sar_draw_last_session",
+			"0",
+			"Draws value of latest completed session.\n");
 		sar_draw_sum = CreateBoolean(
 			"sar_draw_sum",
 			"0",
-			"Draws summary value of sessions when using cl_showpos.\n");
+			"Draws summary value of sessions.\n");
 		sar_draw_timer = CreateBoolean(
 			"sar_draw_timer",
 			"0",
-			"Draws current value of timer when using cl_showpos.\n");
+			"Draws current value of timer.\n");
 		sar_draw_avg = CreateBoolean(
 			"sar_draw_avg",
 			"0",
-			"Draws calculated average of timer when using cl_showpos.\n");
+			"Draws calculated average of timer.\n");
 		sar_draw_cps = CreateBoolean(
 			"sar_draw_cps",
 			"0",
-			"Draws latest checkpoint of timer when using cl_showpos.\n");
+			"Draws latest checkpoint of timer.\n");
 		sar_draw_demo = CreateBoolean(
 			"sar_draw_demo",
 			"0",
-			"Draws name, tick and time of demo recorder when using cl_showpos.\n");
+			"Draws name, tick and time of current demo.\n");
 
 		// Cheats
 		sar_autojump = CreateBoolean(
@@ -214,6 +218,7 @@ namespace SAR
 		sv_maxspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 		sv_stopspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 
+		// It might be possible to abuse this, please don't
 		//sv_bonus_challenge.AddFlag(FCVAR_CHEAT);
 		sv_accelerate.AddFlag(FCVAR_CHEAT);
 		sv_airaccelerate.AddFlag(FCVAR_CHEAT);

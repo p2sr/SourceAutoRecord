@@ -41,6 +41,7 @@ namespace Commands
 
 	// Drawing
 	ConVar sar_draw_session;
+	ConVar sar_draw_last_session;
 	ConVar sar_draw_sum;
 	ConVar sar_draw_timer;
 	ConVar sar_draw_avg;

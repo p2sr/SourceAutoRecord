@@ -74,7 +74,6 @@
 - `sar_cps_result` prints result of all checkpoints
 
 ### HUD
-- Drawing useful information with `cl_showpos`
 - `sar_draw_session` draws current session value
 - `sar_draw_sum` draws summary value of sessions
 - `sar_draw_timer` draws timer value

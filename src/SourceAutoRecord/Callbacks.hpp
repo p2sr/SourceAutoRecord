@@ -19,7 +19,10 @@ namespace Callbacks
 	void PrintSession()
 	{
 		Console::Msg("Session Tick: %i (%.3f)\n", Engine::GetTick(), Engine::GetTime());
-		//Console::Msg("Recorder Tick: %i\n", DemoRecorder::GetCurrentTick());
+		if (*DemoRecorder::Recording)
+			Console::Msg("Demo Recorder Tick: %i\n", DemoRecorder::GetTick());
+		if (DemoPlayer::IsPlaying())
+			Console::Msg("Demo Player Tick: %i\n", DemoPlayer::GetTick());
 	}
 	void PrintAbout()
 	{

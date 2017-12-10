@@ -8,6 +8,7 @@
 #include "Demo.hpp"
 #include "Rebinder.hpp"
 #include "Summary.hpp"
+#include "Timer.hpp"
 
 using _GetGameDir = void(__cdecl*)(char* szGetGameDir, int maxlength);
 using _ClientCmd = void(__fastcall*)(void* thisptr, const char* szCmdString);
@@ -48,6 +49,7 @@ namespace Engine
 	char** Mapname;
 
 	int BaseTick = 0;
+	int LastSavedSession = 0;
 
 	void Set(uintptr_t clientPtr, uintptr_t gameDirAddr, uintptr_t curtimeAddr, uintptr_t loadGameAddr, uintptr_t mapnameAddr)
 	{
@@ -76,21 +78,21 @@ namespace Engine
 	std::string GetDir()
 	{
 		char dir[256];
-		Engine::GetGameDir(dir, 256);
+		GetGameDir(dir, 256);
 		return std::string(dir);
 	}
 
 	namespace Original
 	{
 		_SetSignonState SetSignonState;
-		_CloseDemoFile CloseDemoFile;
+		//_CloseDemoFile CloseDemoFile;
 		_StopRecording StopRecording;
 		_StartupDemoFile StartupDemoFile;
 		_ConCommandStop ConCommandStop;
 		_Disconnect Disconnect;
 		_PlayDemo PlayDemo;
 		_StartPlayback StartPlayback;
-		_StopPlayback StopPlayback;
+		//_StopPlayback StopPlayback;
 	}
 
 	namespace Detour
@@ -118,10 +120,10 @@ namespace Engine
 			}
 			return Original::SetSignonState(thisptr, state, spawncount);
 		}
-		bool __fastcall CloseDemoFile(void* thisptr, int edx)
+		/*bool __fastcall CloseDemoFile(void* thisptr, int edx)
 		{
 			return Original::CloseDemoFile(thisptr);
-		}
+		}*/
 		bool __fastcall StopRecording(void* thisptr, int edx)
 		{
 			const int LastDemoNumber = *DemoRecorder::DemoNumber;
@@ -129,10 +131,12 @@ namespace Engine
 
 			if (!PlayerRequestedStop) {
 				if (!*LoadGame && !IsPlayingDemo) {
-					int tick = Engine::GetTick();
+					int tick = GetTick();
 
-					if (tick != 0)
+					if (tick != 0) {
 						Console::ColorMsg(COL_YELLOW, "Session: %i ticks (%.3f)\n", tick, GetTime());
+						LastSavedSession = tick;
+					}
 
 					if (Summary::IsRunning) {
 						Summary::Add(tick, GetTime(), *Mapname);
@@ -172,10 +176,12 @@ namespace Engine
 		}
 		void __fastcall Disconnect(void* thisptr, int edx, bool bShowMainMenu)
 		{
-			//Console::ColorMsg(COL_YELLOW, "Disconnected at: %i\n", DemoRecorder::GetCurrentTick());
-			/*if (Timer::IsRunning) {
-				Timer::Stop(Engine::GetTick());
-			}*/
+			//Console::ColorMsg(COL_YELLOW, "Disconnected at: %i\n", GetTick());
+			//Console::ColorMsg(COL_YELLOW, "Disconnected at: %i\n", DemoRecorder::GetTick());
+			if (Timer::IsRunning) {
+				Timer::Stop(GetTick());
+				Console::Msg("Stopped timer!");
+			}
 			DemoRecorder::CurrentDemo = "";
 			Original::Disconnect(thisptr, bShowMainMenu);
 		}
@@ -207,9 +213,9 @@ namespace Engine
 			}
 			return result;
 		}
-		int __fastcall StopPlayback(void* thisptr, int edx)
+		/*int __fastcall StopPlayback(void* thisptr, int edx)
 		{
 			return Original::StopPlayback(thisptr, edx);
-		}
+		}*/
 	}
 }

@@ -59,6 +59,20 @@ namespace Patterns
 				}
 			}
 		};
+		Pattern ShouldDraw = Pattern
+		{
+			"CFPSPanel::ShouldDraw",
+			"client.dll",
+			std::vector<Signature>
+			{
+				{
+					// CFPSPanel::ShouldDraw
+					// \x80\x3D\x00\x00\x00\x00\x00\x75\x7C xx?????xx
+					{ "Portal 2 Build 6879" },
+					{ "80 3D ? ? ? ? ? 75 7C" }
+				}
+			}
+		};
 		Pattern MatSystemSurfacePtr = Pattern
 		{
 			"IMatSystemSurface *g_pMatSystemSurface",
