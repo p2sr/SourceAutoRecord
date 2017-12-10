@@ -19,7 +19,7 @@
   - [Patches](#patches)
 - [Mapping](#mapping)
  - [Start & Stop Triggers](#start--stop-triggers)
- - [Checkpoint Triggers](#checkpoint-triggers)
+ - [With Checkpoints](#with-checkpoints)
 - [Credits](#inspired-by)
 
 ## Supported Games
@@ -80,7 +80,7 @@
 - `sar_draw_timer` draws timer value
 - `sar_draw_avg` draws current average of timer
 - `sar_draw_cps` draws last checkpoint value of timer
-- `sar_draw_demo` draws current demo name
+- `sar_draw_demo` draws current name, tick and time of demo recorder
 
 ### Cheats
 - `sar_autojump` enables tick-perfect jumping on the server
@@ -101,10 +101,21 @@
   - Use `sar_timer_start` as parameter
   - Do the same for the second trigger with `sar_timer_stop`
 
-![trigger_multiple.png](trigger_multiple.png)
+![start.png](docs/start.png)
 
-### Checkpoint Triggers
-- TODO
+### With Checkpoints
+- Use `trigger_multiple` object for start
+  - Trigger `sar_timer_start`
+  - Trigger `sar_cps_clear`
+  - Enable checkpoint object
+- Use `trigger_multiple` object for checkpoint
+  - Trigger `sar_cps_add`
+  - Disable itself
+- Use `trigger_multiple` object for stop
+  - Trigger `sar_timer_stop`
+
+![cpstart.png](docs/cpstart.png)
+![cp1.png](docs/cp1.png)
 
 ## Inspired By
 - [SourcePauseTool](https://github.com/YaLTeR/SourcePauseTool)

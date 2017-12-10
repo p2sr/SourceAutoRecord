@@ -161,6 +161,7 @@ namespace Engine
 		void __fastcall StartupDemoFile(void* thisptr, int edx)
 		{
 			IsRecordingDemo = true;
+			DemoRecorder::SetCurrentDemo();
 			Original::StartupDemoFile(thisptr);
 		}
 		void __cdecl ConCommandStop()
@@ -175,6 +176,7 @@ namespace Engine
 			/*if (Timer::IsRunning) {
 				Timer::Stop(Engine::GetTick());
 			}*/
+			DemoRecorder::CurrentDemo = "";
 			Original::Disconnect(thisptr, bShowMainMenu);
 		}
 		void __cdecl PlayDemo(void* thisptr)
@@ -189,7 +191,7 @@ namespace Engine
 
 			if (result && PlayerRequestedPlayback) {
 				IsPlayingDemo = true;
-				std::string file = GetDir() + "\\" + std::string(DemoPlayer::DemoName);
+				std::string file = GetDir() + std::string("\\") + std::string(DemoPlayer::DemoName);
 				Demo demo;
 				if (demo.Parse(file)) {
 					demo.Fix();

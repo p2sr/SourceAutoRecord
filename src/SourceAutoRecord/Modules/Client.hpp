@@ -37,8 +37,9 @@ namespace Client
 			int result = Original::Paint(thisptr);
 			if (cl_showpos.GetBool()) {
 				int m_hFont = *(int*)((uintptr_t)thisptr + Offsets::m_hFont);
-				const int start = 65;
+				const int start = 67;
 				const int factor = 10;
+				const int space = 4;
 				int level = 0;
 
 				// Session
@@ -48,7 +49,7 @@ namespace Client
 
 					char session[64];
 					snprintf(session, sizeof(session), "session: %i (%.3f)", tick, time);
-					Surface::Draw(m_hFont, 1, start + (factor * level), COL_WHITE, session);
+					Surface::Draw(m_hFont, 1, start + level * (factor + level), COL_WHITE, session);
 					level++;
 				}
 				if (sar_draw_sum.GetBool()) {
@@ -61,7 +62,7 @@ namespace Client
 					else {
 						snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks, Summary::TotalTime);
 					}
-					Surface::Draw(m_hFont, 1, start + (factor * level), COL_WHITE, sum);
+					Surface::Draw(m_hFont, 1, start + level * (factor + level), COL_WHITE, sum);
 					level++;
 				}
 				// Timer
@@ -71,26 +72,38 @@ namespace Client
 
 					char timer[64];
 					snprintf(timer, sizeof(timer), "timer: %i (%.3f)", tick, time);
-					Surface::Draw(m_hFont, 1, start + (factor * level), COL_WHITE, timer);
+					Surface::Draw(m_hFont, 1, start + level * (factor + level), COL_WHITE, timer);
 					level++;
 				}
 				if (sar_draw_avg.GetBool()) {
 					char avg[64];
 					snprintf(avg, sizeof(avg), "avg: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
-					Surface::Draw(m_hFont, 1, start + (factor * level), COL_WHITE, avg);
+					Surface::Draw(m_hFont, 1, start + level * (factor + level), COL_WHITE, avg);
 					level++;
 				}
 				if (sar_draw_cps.GetBool()) {
 					char cps[64];
 					snprintf(cps, sizeof(cps), "last cp: %i (%.3f)", Timer::CheckPoints::LatestTick, Timer::CheckPoints::LatestTime);
-					Surface::Draw(m_hFont, 1, start + (factor * level), COL_WHITE, cps);
+					Surface::Draw(m_hFont, 1, start + level * (factor + level), COL_WHITE, cps);
 					level++;
 				}
 				// Demo
 				if (sar_draw_demo.GetBool()) {
 					char demo[64];
-					snprintf(demo, sizeof(demo), "demo: %s", (DemoRecorder::LastDemo.empty()) ? "-" : DemoRecorder::LastDemo.c_str());
-					Surface::Draw(m_hFont, 1, start + (factor * level), COL_WHITE, demo);
+					if (!DemoRecorder::CurrentDemo.empty()) {
+						if (*DemoRecorder::Recording && !*Engine::LoadGame) {
+							int tick = DemoRecorder::GetCurrentTick();
+							float time = tick * *Engine::IntervalPerTick;
+							snprintf(demo, sizeof(demo), "demo: %s %i (%.3f)", DemoRecorder::CurrentDemo.c_str(), tick, time);
+						}
+						else {
+							snprintf(demo, sizeof(demo), "demo: %s", DemoRecorder::CurrentDemo.c_str());
+						}
+					}
+					else {
+						snprintf(demo, sizeof(demo), "demo: -");
+					}
+					Surface::Draw(m_hFont, 1, start + level * (factor + level), COL_WHITE, demo);
 					level++;
 				}
 

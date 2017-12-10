@@ -89,7 +89,7 @@ namespace SAR
 			"Parses multiple demos and prints the total sum of them.\n");
 		sar_time_demo_dev = CreateFloat(
 			"sar_time_demo_dev",
-			"1",
+			"0",
 			0,
 			"Printing mode when using sar_time_demo. 0 = default, 1 = console commands, 2 = console commands & packets.\n");
 
@@ -156,28 +156,28 @@ namespace SAR
 		// Drawing
 		sar_draw_session = CreateBoolean(
 			"sar_draw_session",
-			"1",
-			"Draws info about session when using cl_showpos.\n");
+			"0",
+			"Draws current session value when using cl_showpos.\n");
 		sar_draw_sum = CreateBoolean(
 			"sar_draw_sum",
-			"1",
-			"Draws info about session's summary when using cl_showpos.\n");
+			"0",
+			"Draws summary value of sessions when using cl_showpos.\n");
 		sar_draw_timer = CreateBoolean(
 			"sar_draw_timer",
-			"1",
-			"Draws info about timer when using cl_showpos.\n");
+			"0",
+			"Draws current value of timer when using cl_showpos.\n");
 		sar_draw_avg = CreateBoolean(
 			"sar_draw_avg",
-			"1",
-			"Draws info about timer's average when using cl_showpos.\n");
+			"0",
+			"Draws calculated average of timer when using cl_showpos.\n");
 		sar_draw_cps = CreateBoolean(
 			"sar_draw_cps",
-			"1",
-			"Draws info about timer's checkpoints when using cl_showpos.\n");
+			"0",
+			"Draws latest checkpoint of timer when using cl_showpos.\n");
 		sar_draw_demo = CreateBoolean(
 			"sar_draw_demo",
-			"1",
-			"Draws info about demo recorder when using cl_showpos.\n");
+			"0",
+			"Draws name, tick and time of demo recorder when using cl_showpos.\n");
 
 		// Cheats
 		sar_autojump = CreateBoolean(

@@ -322,7 +322,7 @@ namespace Callbacks
 		void PrintCheckpoints() {
 			int cps = Timer::CheckPoints::Items.size();
 			if (cps > 0) {
-				Console::Msg("Result of %i checkpoints:\n", cps);
+				Console::Msg("Result of %i checkpoint%s:\n", cps, (cps == 1) ? "" : "s");
 			}
 			else {
 				Console::Msg("No result!\n");

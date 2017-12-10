@@ -14,6 +14,7 @@ namespace DemoRecorder
 	int* DemoNumber;
 	bool* Recording;
 
+	std::string CurrentDemo;
 	std::string LastDemo;
 
 	void Set(uintptr_t recorderAddr)
@@ -27,6 +28,11 @@ namespace DemoRecorder
 	int GetCurrentTick()
 	{
 		return GetRecordingTick(Ptr);
+	}
+	void SetCurrentDemo()
+	{
+		CurrentDemo = std::string(DemoRecorder::DemoName);
+		if (*DemoNumber > 1) CurrentDemo += "_" + std::to_string(*DemoNumber);
 	}
 	void SetLastDemo()
 	{
