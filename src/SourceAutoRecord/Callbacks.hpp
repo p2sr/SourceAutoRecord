@@ -8,6 +8,7 @@
 
 #include "Demo.hpp"
 #include "Rebinder.hpp"
+#include "Stats.hpp"
 #include "Summary.hpp"
 #include "Timer.hpp"
 #include "TimerAverage.hpp"
@@ -255,6 +256,10 @@ namespace Callbacks
 			else
 				Console::DevMsg("Starting timer!\n");
 			Timer::Start(Engine::GetTick());
+
+			if (sar_stats_auto_reset.GetInt() >= 2) {
+				Stats::Reset();
+			}
 		}
 		void StopTimer()
 		{
@@ -350,6 +355,15 @@ namespace Callbacks
 				float time = tick * *Engine::IntervalPerTick;
 				Console::Msg("Result: %i (%.3f)\n", tick, time);
 			}
+		}
+	}
+	// Stats
+	namespace {
+		void ResetJumps() {
+			Stats::TotalJumps = 0;
+		}
+		void ResetUses() {
+			Stats::TotalUses = 0;
 		}
 	}
 }

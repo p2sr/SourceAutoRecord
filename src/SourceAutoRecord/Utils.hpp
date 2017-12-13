@@ -6,7 +6,7 @@
 #include <vector>
 #include <Windows.h>
 
-#define SAR_VERSION "1.1"
+#define SAR_VERSION "1.2"
 #define SAR_BUILD __TIME__ " " __DATE__
 
 #define COL_GREEN Color(17, 224, 35)
@@ -28,29 +28,17 @@ struct Signature {
 	const int Offset = 0;
 };
 
-struct ScanResult {
-	uintptr_t Address;
-	int Index = 0;
-	bool Found = false;
-};
-
 struct Pattern {
 	const char* Name;
 	const char* Module;
 	const std::vector<Signature> Signatures;
-	ScanResult Result;
+};
 
-	const char* GetResult()
-	{
-		char result[256];
-		if (Result.Found) {
-			snprintf(result, sizeof(result), "Found %s at 0x%p in %s using %s!", Name, Result.Address, Module, Signatures[Result.Index].Comment);
-		}
-		else {
-			snprintf(result, sizeof(result), "Failed to find %s!", Name);
-		}
-		return result;
-	}
+struct ScanResult {
+	uintptr_t Address;
+	int Index = 0;
+	bool Found = false;
+	char Message[256];
 };
 
 uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_address, const char* target_pattern) {
@@ -79,29 +67,31 @@ uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_addre
 			first_match = 0;
 		}
 	}
-
 	return NULL;
 }
 
 ScanResult Scan(Pattern& pattern) {
 	MODULEINFO info = { 0 };
+	ScanResult result = { 0 };
 
 	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleA(pattern.Module), &info, sizeof(MODULEINFO))) {
 		const uintptr_t start = uintptr_t(info.lpBaseOfDll);
 		const uintptr_t end = start + info.SizeOfImage;
 
 		for (auto &signature : pattern.Signatures) {
-			pattern.Result.Address = FindAddress(start, end, signature.Bytes);
-			if (pattern.Result.Address == NULL) {
-				pattern.Result.Index++;
+			result.Address = FindAddress(start, end, signature.Bytes);
+			if (result.Address == NULL) {
+				result.Index++;
 				continue;
 			}
-			pattern.Result.Address += signature.Offset;
-			pattern.Result.Found = true;
+			result.Address += signature.Offset;
+			result.Found = true;
+			snprintf(result.Message, sizeof(result.Message), "Found %s at 0x%p in %s using %s!", pattern.Name, result.Address, pattern.Module, pattern.Signatures[result.Index].Comment);
 			break;
 		}
 	}
-	return pattern.Result;
+	if (!result.Found) snprintf(result.Message, sizeof(result.Message), "Failed to find %s!", pattern.Name);
+	return result;
 }
 
 void* GetVirtualFunctionByIndex(void* ptr, int index)

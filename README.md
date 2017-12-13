@@ -15,6 +15,7 @@
     - [Average](#average)
     - [Checkpoints](#checkpoints)
   - [HUD](#hud)
+  - [Stats](#stats)
   - [Cheats](#cheats)
   - [Patches](#patches)
 - [Mapping](#mapping)
@@ -24,6 +25,8 @@
 
 ## Supported Games
 - Portal 2
+- Aperture Tag
+- Portal Stories: Mel
 
 ## Features
 
@@ -74,12 +77,19 @@
 - `sar_cps_result` prints result of all checkpoints
 
 ### HUD
-- `sar_draw_session` draws current session value
-- `sar_draw_sum` draws summary value of sessions
-- `sar_draw_timer` draws timer value
-- `sar_draw_avg` draws current average of timer
-- `sar_draw_cps` draws last checkpoint value of timer
-- `sar_draw_demo` draws current name, tick and time of demo recorder or demo player
+- `sar_hud_session` draws current session value
+- `sar_hud_sum` draws summary value of sessions
+- `sar_hud_timer` draws timer value
+- `sar_hud_avg` draws current average of timer
+- `sar_hud_cps` draws last checkpoint value of timer
+- `sar_hud_demo` draws current name, tick and time of demo recorder or demo player
+- `sar_hud_jumps` draws total jump count
+- `sar_hud_uses` draws total use count
+
+### Stats
+- `sar_stats_auto_reset` resets all stats automatically
+- `sar_stats_reset_jumps` resets jump count
+- `sar_stats_reset_uses` resets use count
 
 ### Cheats
 - `sar_autojump` enables tick-perfect jumping on the server

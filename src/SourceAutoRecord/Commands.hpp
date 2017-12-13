@@ -39,14 +39,21 @@ namespace Commands
 	ConCommand sar_cps_clear;
 	ConCommand sar_cps_result;
 
-	// Drawing
-	ConVar sar_draw_session;
-	ConVar sar_draw_last_session;
-	ConVar sar_draw_sum;
-	ConVar sar_draw_timer;
-	ConVar sar_draw_avg;
-	ConVar sar_draw_cps;
-	ConVar sar_draw_demo;
+	// HUD
+	ConVar sar_hud_session;
+	ConVar sar_hud_last_session;
+	ConVar sar_hud_sum;
+	ConVar sar_hud_timer;
+	ConVar sar_hud_avg;
+	ConVar sar_hud_cps;
+	ConVar sar_hud_demo;
+	ConVar sar_hud_jumps;
+	ConVar sar_hud_uses;
+
+	// Stats
+	ConVar sar_stats_auto_reset;
+	ConCommand sar_stats_reset_jumps;
+	ConCommand sar_stats_reset_uses;
 
 	// Cheats
 	ConVar sar_autojump;

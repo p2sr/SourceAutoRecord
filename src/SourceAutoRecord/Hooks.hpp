@@ -2,6 +2,7 @@
 #include "minhook/MinHook.h"
 
 #include "Modules/Client.hpp"
+#include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 
@@ -11,52 +12,38 @@
 
 namespace Hooks
 {
-	ScanResult cjb, pnt, sst, cdf, str, sdf, stp, spb, pld, dsc, spl, shd;
+	ScanResult CreateAndEnable(Pattern toScan, LPVOID detour, LPVOID* original)
+	{
+		auto result = Scan(toScan);
+		if (result.Found) {
+			Console::DevMsg("SAR: %s\n", result.Message);
+			auto created = MH_CreateHook(reinterpret_cast<LPVOID>(result.Address), detour, original);
+			auto enabled = MH_EnableHook(reinterpret_cast<LPVOID>(result.Address));
+			if (created != MH_OK || enabled != MH_OK) Console::DevWarning("SAR: Could not create or enable this hook!\n");
+		}
+		else {
+			Console::DevWarning("SAR: %s\n", result.Message);
+		}
+		return result;
+	}
 
 	void Load()
 	{
-		cjb = Scan(Patterns::CheckJumpButton);
-		pnt = Scan(Patterns::Paint);
-		sst = Scan(Patterns::SetSignonState);
-		//cdf = Scan(Patterns::CloseDemoFile);
-		str = Scan(Patterns::StopRecording);
-		sdf = Scan(Patterns::StartupDemoFile);
-		stp = Scan(Patterns::Stop);
-		spb = Scan(Patterns::StartPlayback);
-		pld = Scan(Patterns::PlayDemo);
-		dsc = Scan(Patterns::Disconnect);
-		//spl = Scan(Patterns::StopPlayback);
-		shd = Scan(Patterns::ShouldDraw);
+		if (MH_Initialize() != MH_OK) {
+			Console::DevWarning("SAR: Failed to init MinHook!\n");
+			return;
+		}
 
-		Offsets::Init(cjb.Index);
-	}
-
-	void CreateAndEnable()
-	{
-		MH_Initialize();
-		MH_CreateHook(reinterpret_cast<LPVOID>(cjb.Address), Server::Detour::CheckJumpButton, reinterpret_cast<LPVOID*>(&Server::Original::CheckJumpButton));
-		MH_CreateHook(reinterpret_cast<LPVOID>(pnt.Address), Client::Detour::Paint, reinterpret_cast<LPVOID*>(&Client::Original::Paint));
-		MH_CreateHook(reinterpret_cast<LPVOID>(sst.Address), Engine::Detour::SetSignonState, reinterpret_cast<LPVOID*>(&Engine::Original::SetSignonState));
-		//MH_CreateHook(reinterpret_cast<LPVOID>(cdf.Address), Engine::Detour::CloseDemoFile, reinterpret_cast<LPVOID*>(&Engine::Original::CloseDemoFile));
-		MH_CreateHook(reinterpret_cast<LPVOID>(str.Address), Engine::Detour::StopRecording, reinterpret_cast<LPVOID*>(&Engine::Original::StopRecording));
-		MH_CreateHook(reinterpret_cast<LPVOID>(sdf.Address), Engine::Detour::StartupDemoFile, reinterpret_cast<LPVOID*>(&Engine::Original::StartupDemoFile));
-		MH_CreateHook(reinterpret_cast<LPVOID>(stp.Address), Engine::Detour::ConCommandStop, reinterpret_cast<LPVOID*>(&Engine::Original::ConCommandStop));
-		MH_CreateHook(reinterpret_cast<LPVOID>(spb.Address), Engine::Detour::StartPlayback, reinterpret_cast<LPVOID*>(&Engine::Original::StartPlayback));
-		MH_CreateHook(reinterpret_cast<LPVOID>(pld.Address), Engine::Detour::PlayDemo, reinterpret_cast<LPVOID*>(&Engine::Original::PlayDemo));
-		MH_CreateHook(reinterpret_cast<LPVOID>(dsc.Address), Engine::Detour::Disconnect, reinterpret_cast<LPVOID*>(&Engine::Original::Disconnect));
-		//MH_CreateHook(reinterpret_cast<LPVOID>(spl.Address), Engine::Detour::StopPlayback, reinterpret_cast<LPVOID*>(&Engine::Original::StopPlayback));
-		MH_CreateHook(reinterpret_cast<LPVOID>(shd.Address), Client::Detour::ShouldDraw, reinterpret_cast<LPVOID*>(&Client::Original::ShouldDraw));
-		MH_EnableHook(reinterpret_cast<LPVOID>(cjb.Address));
-		MH_EnableHook(reinterpret_cast<LPVOID>(pnt.Address));
-		MH_EnableHook(reinterpret_cast<LPVOID>(sst.Address));
-		//MH_EnableHook(reinterpret_cast<LPVOID>(cdf.Address));
-		MH_EnableHook(reinterpret_cast<LPVOID>(str.Address));
-		MH_EnableHook(reinterpret_cast<LPVOID>(sdf.Address));
-		MH_EnableHook(reinterpret_cast<LPVOID>(stp.Address));
-		MH_EnableHook(reinterpret_cast<LPVOID>(spb.Address));
-		MH_EnableHook(reinterpret_cast<LPVOID>(pld.Address));
-		MH_EnableHook(reinterpret_cast<LPVOID>(dsc.Address));
-		//MH_EnableHook(reinterpret_cast<LPVOID>(spl.Address));
-		MH_EnableHook(reinterpret_cast<LPVOID>(shd.Address));
+		CreateAndEnable(Patterns::CheckJumpButton,	Server::Detour::CheckJumpButton, reinterpret_cast<LPVOID*>(&Server::Original::CheckJumpButton));
+		CreateAndEnable(Patterns::Paint,			Client::Detour::Paint, reinterpret_cast<LPVOID*>(&Client::Original::Paint));
+		CreateAndEnable(Patterns::SetSignonState,	Engine::Detour::SetSignonState, reinterpret_cast<LPVOID*>(&Engine::Original::SetSignonState));
+		CreateAndEnable(Patterns::StopRecording,	Engine::Detour::StopRecording, reinterpret_cast<LPVOID*>(&Engine::Original::StopRecording));
+		CreateAndEnable(Patterns::StartupDemoFile,	Engine::Detour::StartupDemoFile, reinterpret_cast<LPVOID*>(&Engine::Original::StartupDemoFile));
+		CreateAndEnable(Patterns::Stop,				Engine::Detour::ConCommandStop, reinterpret_cast<LPVOID*>(&Engine::Original::ConCommandStop));
+		CreateAndEnable(Patterns::StartPlayback,	Engine::Detour::StartPlayback, reinterpret_cast<LPVOID*>(&Engine::Original::StartPlayback));
+		CreateAndEnable(Patterns::PlayDemo,			Engine::Detour::PlayDemo, reinterpret_cast<LPVOID*>(&Engine::Original::PlayDemo));
+		CreateAndEnable(Patterns::Disconnect,		Engine::Detour::Disconnect, reinterpret_cast<LPVOID*>(&Engine::Original::Disconnect));
+		CreateAndEnable(Patterns::ShouldDraw,		Client::Detour::ShouldDraw, reinterpret_cast<LPVOID*>(&Client::Original::ShouldDraw));
+		CreateAndEnable(Patterns::PlayerUse,		Server::Detour::PlayerUse, reinterpret_cast<LPVOID*>(&Server::Original::PlayerUse));
 	}
 }

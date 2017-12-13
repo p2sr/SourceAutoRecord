@@ -7,6 +7,7 @@
 
 #include "Demo.hpp"
 #include "Rebinder.hpp"
+#include "Stats.hpp"
 #include "Summary.hpp"
 #include "Timer.hpp"
 
@@ -118,6 +119,7 @@ namespace Engine
 			else if (state == SignonState::Full) {
 				BaseTick = *TickCount;
 			}
+			//Console::Msg("SignOn changed to: %i\n", state);
 			return Original::SetSignonState(thisptr, state, spawncount);
 		}
 		/*bool __fastcall CloseDemoFile(void* thisptr, int edx)
@@ -181,6 +183,9 @@ namespace Engine
 			if (Timer::IsRunning) {
 				Timer::Stop(GetTick());
 				Console::Msg("Stopped timer!");
+			}
+			if (sar_stats_auto_reset.GetInt() >= 1) {
+				Stats::Reset();
 			}
 			DemoRecorder::CurrentDemo = "";
 			Original::Disconnect(thisptr, bShowMainMenu);

@@ -157,6 +157,7 @@
     <ClInclude Include="..\..\libs\minhook\hde\table32.h" />
     <ClInclude Include="..\..\libs\minhook\hde\table64.h" />
     <ClInclude Include="..\..\libs\minhook\trampoline.h" />
+    <ClInclude Include="Stats.hpp" />
     <ClInclude Include="TimerAverage.hpp" />
     <ClInclude Include="Commands.hpp" />
     <ClInclude Include="Demo.hpp" />

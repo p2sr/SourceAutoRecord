@@ -47,7 +47,7 @@ namespace Tier1
 			Ptr = Cvar::FindVar(Cvar::Ptr, nullptr, ref);
 		}
 		bool ConVar::GetBool() const {
-			return !!GetInt();
+				return !!GetInt();
 		}
 		int ConVar::GetInt() const {
 			switch (Offsets::Variant) {

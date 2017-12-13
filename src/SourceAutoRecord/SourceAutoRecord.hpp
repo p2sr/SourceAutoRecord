@@ -23,41 +23,53 @@ using namespace Commands;
 
 namespace SAR
 {
-	void LoadEngine()
+	bool LoadEngine()
 	{
 		auto enc = Scan(Patterns::EngineClientPtr);
 		auto ggd = Scan(Patterns::GetGameDir);
 		auto crt = Scan(Patterns::CurtimePtr);
 		auto ldg = Scan(Patterns::LoadgamePtr);
+		auto mpn = Scan(Patterns::MapnamePtr);
 		auto drc = Scan(Patterns::DemoRecorderPtr);
 		auto ins = Scan(Patterns::InputSystemPtr);
 		auto ksb = Scan(Patterns::Key_SetBinding);
 		auto dpl = Scan(Patterns::DemoPlayerPtr);
-		auto mpn = Scan(Patterns::MapnamePtr);
+
+		if (!enc.Found || !ggd.Found || !crt.Found || !ldg.Found || !mpn.Found || !drc.Found || !ins.Found || !ksb.Found || !dpl.Found)
+			return false;
 
 		Engine::Set(enc.Address, ggd.Address, crt.Address, ldg.Address, mpn.Address);
 		DemoRecorder::Set(drc.Address);
 		InputSystem::Set(ins.Address, ksb.Address);
 		DemoPlayer::Set(dpl.Address);
+		return true;
 	}
-	void LoadTier1()
+	bool LoadTier1()
 	{
 		auto cvr = Scan(Patterns::CvarPtr);
 		auto cnv = Scan(Patterns::ConVar_Ctor3);
 		auto cnc = Scan(Patterns::ConCommand_Ctor1);
 		auto cnc2 = Scan(Patterns::ConCommand_Ctor2);
 
+		if (!cvr.Found || !cnv.Found || !cnc.Found || !cnc2.Found)
+			return false;
+
 		Cvar::Set(cvr.Address);
 		Tier1::SetConVar(cnv.Address);
 		Tier1::SetConCommand(cnc.Address, cnc2.Address);
+		return true;
 	}
-	void LoadClient()
+	bool LoadClient()
 	{
 		auto sts = Scan(Patterns::SetSize);
 		auto mss = Scan(Patterns::MatSystemSurfacePtr);
 
+		if (!sts.Found || !mss.Found)
+			return false;
+
 		Client::Set(sts.Address);
 		Surface::Set(mss.Address);
+		return true;
 	}
 	void RegisterCommands()
 	{
@@ -154,34 +166,57 @@ namespace SAR
 			"Prints result of timer checkpoints.\n");
 
 		// HUD
-		sar_draw_session = CreateBoolean(
-			"sar_draw_session",
+		sar_hud_session = CreateBoolean(
+			"sar_hud_session",
 			"0",
 			"Draws current session value.\n");
-		sar_draw_last_session = CreateBoolean(
-			"sar_draw_last_session",
+		sar_hud_last_session = CreateBoolean(
+			"sar_hud_last_session",
 			"0",
 			"Draws value of latest completed session.\n");
-		sar_draw_sum = CreateBoolean(
-			"sar_draw_sum",
+		sar_hud_sum = CreateBoolean(
+			"sar_hud_sum",
 			"0",
 			"Draws summary value of sessions.\n");
-		sar_draw_timer = CreateBoolean(
-			"sar_draw_timer",
+		sar_hud_timer = CreateBoolean(
+			"sar_hud_timer",
 			"0",
 			"Draws current value of timer.\n");
-		sar_draw_avg = CreateBoolean(
-			"sar_draw_avg",
+		sar_hud_avg = CreateBoolean(
+			"sar_hud_avg",
 			"0",
 			"Draws calculated average of timer.\n");
-		sar_draw_cps = CreateBoolean(
-			"sar_draw_cps",
+		sar_hud_cps = CreateBoolean(
+			"sar_hud_cps",
 			"0",
 			"Draws latest checkpoint of timer.\n");
-		sar_draw_demo = CreateBoolean(
-			"sar_draw_demo",
+		sar_hud_demo = CreateBoolean(
+			"sar_hud_demo",
 			"0",
 			"Draws name, tick and time of current demo.\n");
+		sar_hud_jumps = CreateBoolean(
+			"sar_hud_jumps",
+			"0",
+			"Draws total jump count.\n");
+		sar_hud_uses = CreateBoolean(
+			"sar_hud_uses",
+			"0",
+			"Draws total use count.\n");
+
+		// Stats
+		sar_stats_auto_reset = CreateFloat(
+			"sar_stats_auto_reset",
+			"0",
+			0,
+			"Resets all stats automatically. 0 = default, 1 = disconnect, 2 = disconnect & sar_timer_start.\n");
+		sar_stats_reset_jumps = CreateCommand(
+			"sar_stats_reset_jumps",
+			Callbacks::ResetJumps,
+			"Resets jump counter.\n");
+		sar_stats_reset_uses = CreateCommand(
+			"sar_stats_reset_uses",
+			Callbacks::ResetUses,
+			"Resets use counter.\n");
 
 		// Cheats
 		sar_autojump = CreateBoolean(
@@ -209,7 +244,7 @@ namespace SAR
 		sv_maxspeed = ConVar("sv_maxspeed");
 		sv_stopspeed = ConVar("sv_stopspeed");
 	}
-	void EnableAntiCheat()
+	void EnableGameCheats()
 	{
 		sv_bonus_challenge.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 		sv_accelerate.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
@@ -218,8 +253,8 @@ namespace SAR
 		sv_maxspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 		sv_stopspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 
-		// It might be possible to abuse this, please don't
-		//sv_bonus_challenge.AddFlag(FCVAR_CHEAT);
+		// Nobody likes cheaters
+		sv_bonus_challenge.AddFlag(FCVAR_CHEAT);
 		sv_accelerate.AddFlag(FCVAR_CHEAT);
 		sv_airaccelerate.AddFlag(FCVAR_CHEAT);
 		sv_friction.AddFlag(FCVAR_CHEAT);
@@ -237,8 +272,6 @@ namespace SAR
 			const char* thanksForNothingValve = "%-80s - %.1024s\n";
 
 			auto prd = Scan(Patterns::ConVar_PrintDescription);
-			Console::DevMsg("SAR: %s\n", Patterns::ConVar_PrintDescription.GetResult());
-
 			if (prd.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(prd.Address), &thanksForNothingValve, 4, 0)) {
 				Console::DevMsg("SAR: Patched ConVar_PrintDescription!\n");
 			}
@@ -248,8 +281,7 @@ namespace SAR
 			BYTE ignoreEvilCommandsInDemos[22] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 
 			auto rdp = Scan(Patterns::ReadPacket);
-			Console::DevMsg("SAR: %s\n", Patterns::ReadPacket.GetResult());
-			if (prd.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(rdp.Address), ignoreEvilCommandsInDemos, 22, 0)) {
+			if (rdp.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(rdp.Address), ignoreEvilCommandsInDemos, 22, 0)) {
 				Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket!\n");
 			}
 

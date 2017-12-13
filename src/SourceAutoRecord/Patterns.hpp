@@ -26,6 +26,20 @@ namespace Patterns
 				}
 			}
 		};
+		Pattern PlayerUse = Pattern
+		{
+			"C_BasePlayer::PlayerUse",
+			"server.dll",
+			std::vector<Signature>
+			{
+				{
+					// CPortal_Player::PlayerUse
+					// \x55\x8B\xEC\x8B\x15\x00\x00\x00\x00\x83\xEC\x0C\x56\x8B\xF1 xxxxx????xxxxxx
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC 8B 15 ? ? ? ? 83 EC 0C 56 8B F1" }
+				}
+			}
+		};
 	}
 
 	// client.dll
@@ -281,20 +295,20 @@ namespace Patterns
 				}
 			}
 		};
-		Pattern CloseDemoFile = Pattern
-		{
-			"CDemoRecorder::CloseDemoFile",
-			"engine.dll",
-			std::vector<Signature>
-			{
-				{
-					// CDemoRecorder::CloseDemoFile
-					// \x56\x8B\xF1\x57\x8D\x4E\x04\xE8\x00\x00\x00\x00\x84\xC0\x0F\x84\x00\x00\x00\x00\x80\xBE\x00\x00\x00\x00\x00 xxxxxxxx????xxxx????xx?????
-					{ "Portal 2 Build 6879" },
-					{ "56 8B F1 57 8D 4E 04 E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 80 BE ? ? ? ? ? " }
-				}
-			}
-		};
+		//Pattern CloseDemoFile = Pattern
+		//{
+		//	"CDemoRecorder::CloseDemoFile",
+		//	"engine.dll",
+		//	std::vector<Signature>
+		//	{
+		//		{
+		//			// CDemoRecorder::CloseDemoFile
+		//			// \x56\x8B\xF1\x57\x8D\x4E\x04\xE8\x00\x00\x00\x00\x84\xC0\x0F\x84\x00\x00\x00\x00\x80\xBE\x00\x00\x00\x00\x00 xxxxxxxx????xxxx????xx?????
+		//			{ "Portal 2 Build 6879" },
+		//			{ "56 8B F1 57 8D 4E 04 E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 80 BE ? ? ? ? ? " }
+		//		}
+		//	}
+		//};
 		Pattern DemoRecorderPtr = Pattern
 		{
 			"IDemoRecorder *demorecorder",
@@ -350,20 +364,20 @@ namespace Patterns
 				}
 			}
 		};
-		Pattern StopPlayback = Pattern
-		{
-			"CDemoPlayer::StopPlayback",
-			"engine.dll",
-			std::vector<Signature>
-			{
-				{
-					// CDemoPlayer::StopPlayback
-					// \x55\x8B\xEC\x51\x56\x8B\xF1\x8B\x06\x8B\x50\x18 xxxxxxxxxxxx
-					{ "Portal 2 Build 6879" },
-					{ "55 8B EC 51 56 8B F1 8B 06 8B 50 18" }
-				}
-			}
-		};
+		//Pattern StopPlayback = Pattern
+		//{
+		//	"CDemoPlayer::StopPlayback",
+		//	"engine.dll",
+		//	std::vector<Signature>
+		//	{
+		//		{
+		//			// CDemoPlayer::StopPlayback
+		//			// \x55\x8B\xEC\x51\x56\x8B\xF1\x8B\x06\x8B\x50\x18 xxxxxxxxxxxx
+		//			{ "Portal 2 Build 6879" },
+		//			{ "55 8B EC 51 56 8B F1 8B 06 8B 50 18" }
+		//		}
+		//	}
+		//};
 		Pattern StopRecording = Pattern
 		{
 			"CDemoRecorder::StopRecording",

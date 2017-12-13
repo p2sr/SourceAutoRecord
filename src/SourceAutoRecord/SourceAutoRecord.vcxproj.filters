@@ -123,6 +123,9 @@
     <ClInclude Include="TimerCheckPoints.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
+    <ClInclude Include="Stats.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

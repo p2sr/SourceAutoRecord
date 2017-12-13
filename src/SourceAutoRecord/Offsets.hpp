@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 namespace Offsets
 {
@@ -45,10 +46,19 @@ namespace Offsets
 	int IsPlayingBack;
 	int m_szFileName;
 
-	void Init(int variant) {
-		Console::DevMsg("SAR: Offsets will be set correctly for variant: %i!\n", variant);
-		switch (Variant = variant) {
-		case 0:	// Portal 2 6879
+	// C_BasePlayer
+	int m_afButtonPressed;
+
+	bool Init() {
+		TCHAR temp[MAX_PATH];
+		GetModuleFileName(NULL, temp, _countof(temp));
+		std::string exe = std::string(temp);
+		int index = exe.find_last_of("\\/");
+		exe = exe.substr(index + 1, exe.length() - index);
+
+		// Portal 2 6879
+		if (exe == "portal2.exe") {
+			Variant = 0;
 			InternalSetValue = 12;
 			InternalSetFloatValue = 13;
 			InternalSetIntValue = 14;
@@ -70,8 +80,11 @@ namespace Offsets
 			m_bRecording = 1606;
 			m_nDemoNumber = 1608;
 			m_szFileName = 4;
-			break;
-		case 1: // INFRA 6905
+			m_afButtonPressed = 2860;
+		}
+		// INFRA 6905
+		else if (exe == "infra.exe") {
+			Variant = 1;
 			InternalSetValue = 14;
 			InternalSetFloatValue = 15;
 			InternalSetIntValue = 16;
@@ -93,8 +106,12 @@ namespace Offsets
 			m_bRecording = 1606; // TODO
 			m_nDemoNumber = 1608; // TODO
 			m_szFileName = 4; // TODO
-			break;
+			m_afButtonPressed = 2860; // TODO
 		}
+		else {
+			return false;
+		}
+		return true;
 	}
 	const char* GetStringVariant() {
 		switch (Variant) {

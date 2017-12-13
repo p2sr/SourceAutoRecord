@@ -3,6 +3,7 @@
 #include "Surface.hpp"
 
 #include "Patterns.hpp"
+#include "Stats.hpp"
 #include "Timer.hpp"
 #include "TimerAverage.hpp"
 #include "TimerCheckpoints.hpp"
@@ -21,7 +22,7 @@ namespace Client
 	_SetSize SetSize;
 
 	void Set(uintptr_t setSizeAddress)
-	{	
+	{
 		SetSize = (_SetSize)setSizeAddress;
 	}
 
@@ -51,7 +52,7 @@ namespace Client
 			}
 
 			// Session
-			if (sar_draw_session.GetBool()) {
+			if (sar_hud_session.GetBool()) {
 				int tick = (!*Engine::LoadGame) ? Engine::GetTick() : 0;
 				float time = tick * *Engine::IntervalPerTick;
 
@@ -60,13 +61,13 @@ namespace Client
 				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, session);
 				level++;
 			}
-			if (sar_draw_last_session.GetBool()) {
+			if (sar_hud_last_session.GetBool()) {
 				char session[64];
 				snprintf(session, sizeof(session), "last session: %i (%.3f)", Engine::LastSavedSession, Engine::LastSavedSession * *Engine::IntervalPerTick);
 				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, session);
 				level++;
 			}
-			if (sar_draw_sum.GetBool()) {
+			if (sar_hud_sum.GetBool()) {
 				char sum[64];
 				if (Summary::IsRunning && sar_sum_during_session.GetBool()) {
 					int tick = (!*Engine::LoadGame) ? Engine::GetTick() : 0;
@@ -80,7 +81,7 @@ namespace Client
 				level++;
 			}
 			// Timer
-			if (sar_draw_timer.GetBool()) {
+			if (sar_hud_timer.GetBool()) {
 				int tick = Timer::GetTick((Timer::IsRunning) ? Engine::GetTick() : -1);
 				float time = tick * *Engine::IntervalPerTick;
 
@@ -89,20 +90,20 @@ namespace Client
 				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, timer);
 				level++;
 			}
-			if (sar_draw_avg.GetBool()) {
+			if (sar_hud_avg.GetBool()) {
 				char avg[64];
 				snprintf(avg, sizeof(avg), "avg: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
 				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, avg);
 				level++;
 			}
-			if (sar_draw_cps.GetBool()) {
+			if (sar_hud_cps.GetBool()) {
 				char cps[64];
 				snprintf(cps, sizeof(cps), "last cp: %i (%.3f)", Timer::CheckPoints::LatestTick, Timer::CheckPoints::LatestTime);
 				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, cps);
 				level++;
 			}
 			// Demo
-			if (sar_draw_demo.GetBool()) {
+			if (sar_hud_demo.GetBool()) {
 				char demo[64];
 				if (!*Engine::LoadGame && *DemoRecorder::Recording && !DemoRecorder::CurrentDemo.empty()) {
 					int tick = DemoRecorder::GetTick();
@@ -121,6 +122,19 @@ namespace Client
 				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, demo);
 				level++;
 			}
+			// Stats
+			if (sar_hud_jumps.GetBool()) {
+				char jumps[64];
+				snprintf(jumps, sizeof(jumps), "jumps: %i", Stats::TotalJumps);
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, jumps);
+				level++;
+			}
+			if (sar_hud_uses.GetBool()) {
+				char uses[64];
+				snprintf(uses, sizeof(uses), "uses: %i", Stats::TotalUses);
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, uses);
+				level++;
+			}
 
 			// Original paint function might resize the panel
 			// And this needs more space anyway
@@ -130,13 +144,15 @@ namespace Client
 		bool __fastcall ShouldDraw(void* thisptr, int edx)
 		{
 			return Original::ShouldDraw(thisptr)
-				|| sar_draw_session.GetBool()
-				|| sar_draw_last_session.GetBool()
-				|| sar_draw_sum.GetBool()
-				|| sar_draw_timer.GetBool()
-				|| sar_draw_avg.GetBool()
-				|| sar_draw_cps.GetBool()
-				|| sar_draw_demo.GetBool();
+				|| sar_hud_session.GetBool()
+				|| sar_hud_last_session.GetBool()
+				|| sar_hud_sum.GetBool()
+				|| sar_hud_timer.GetBool()
+				|| sar_hud_avg.GetBool()
+				|| sar_hud_cps.GetBool()
+				|| sar_hud_demo.GetBool()
+				|| sar_hud_jumps.GetBool()
+				|| sar_hud_uses.GetBool();
 		}
 	}
 }
