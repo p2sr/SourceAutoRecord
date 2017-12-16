@@ -49,7 +49,8 @@ namespace Offsets
 	// C_BasePlayer
 	int m_afButtonPressed;
 
-	bool Init() {
+	bool Init()
+	{
 		TCHAR temp[MAX_PATH];
 		GetModuleFileName(NULL, temp, _countof(temp));
 		std::string exe = std::string(temp);

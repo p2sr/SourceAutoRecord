@@ -30,15 +30,17 @@ namespace SAR
 		auto crt = Scan(Patterns::CurtimePtr);
 		auto ldg = Scan(Patterns::LoadgamePtr);
 		auto mpn = Scan(Patterns::MapnamePtr);
+		auto cns = Scan(Patterns::CurrentStatePtr);
 		auto drc = Scan(Patterns::DemoRecorderPtr);
 		auto ins = Scan(Patterns::InputSystemPtr);
 		auto ksb = Scan(Patterns::Key_SetBinding);
 		auto dpl = Scan(Patterns::DemoPlayerPtr);
 
-		if (!enc.Found || !ggd.Found || !crt.Found || !ldg.Found || !mpn.Found || !drc.Found || !ins.Found || !ksb.Found || !dpl.Found)
+		if (!enc.Found || !ggd.Found || !crt.Found || !ldg.Found || !mpn.Found
+			|| !cns.Found || !drc.Found || !ins.Found || !ksb.Found || !dpl.Found)
 			return false;
 
-		Engine::Set(enc.Address, ggd.Address, crt.Address, ldg.Address, mpn.Address);
+		Engine::Set(enc.Address, ggd.Address, crt.Address, ldg.Address, mpn.Address, cns.Address);
 		DemoRecorder::Set(drc.Address);
 		InputSystem::Set(ins.Address, ksb.Address);
 		DemoPlayer::Set(dpl.Address);
@@ -136,6 +138,10 @@ namespace SAR
 			"sar_timer_result",
 			Callbacks::PrintTimer,
 			"Prints result of timer.\n");
+		sar_timer_always_running = CreateBoolean(
+			"sar_timer_always_running",
+			"1",
+			"Timer will save current value when disconnecting.\n");
 
 		// Timer average
 		sar_avg_start = CreateCommand(
@@ -194,6 +200,10 @@ namespace SAR
 			"sar_hud_demo",
 			"0",
 			"Draws name, tick and time of current demo.\n");
+		sar_hud_last_demo = CreateBoolean(
+			"sar_hud_last_demo",
+			"0",
+			"Draws value of latest completed demo.\n");
 		sar_hud_jumps = CreateBoolean(
 			"sar_hud_jumps",
 			"0",
@@ -283,6 +293,14 @@ namespace SAR
 			auto rdp = Scan(Patterns::ReadPacket);
 			if (rdp.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(rdp.Address), ignoreEvilCommandsInDemos, 22, 0)) {
 				Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket!\n");
+			}
+
+			// Remove the default ConMsg when demo file gets closed
+			BYTE weAlreadyPrintABetterMessage[29] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+
+			auto cdf = Scan("engine.dll", "D9 86 ? ? ? ? 8B 8E ? ? ? ? 51");
+			if (cdf.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(cdf.Address), weAlreadyPrintABetterMessage, 29, 0)) {
+				Console::DevMsg("SAR: Patched CDemoPlayer::CloseDemoFile!\n");
 			}
 
 			break;

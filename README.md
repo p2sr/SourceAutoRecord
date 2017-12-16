@@ -31,7 +31,8 @@
 ## Features
 
 ### Automatic Demo Recorder
-- Tells the engine to keep recording when loading from a save
+- Tells engine to keep recording when loading from a save
+- Closes demo file correctly when changing the level
 - `stop` disables automatic recording
 
 ### Automatic Binding
@@ -45,13 +46,13 @@
 
 ### Demo Parser
 - `sar_time_demo [demo_name]` parses a demo and prints some useful information about it
-- Passing an empty string `sar_time_demo ""` will take the last demo from demo recorder or demo player
+  - Passing an empty string will take the last recorded demo from demo recorder or the last played demo from the demo player
 - `sar_time_demo_dev` prints demo's console commands and packets when using `sar_time_demo`
-- Use `con_log [file_name]` to export the extra data into a file
+  - Use `con_log [file_name]` to export the extra data into a file
 - `sar_time_demos [demo_name] [demo_name2] [etc.]` parses multiple demos
 
 ### Session Timing
-- `sar_session` prints the current tick count since the server has loaded
+- `sar_session` prints current tick count since the server has loaded
 
 #### Summary
 - `sar_sum_here` starts saving the total tick count of each session
@@ -64,6 +65,7 @@
 - `sar_timer_start` starts or restarts the timer, counting from invocation
 - `sar_timer_stop` stops timer
 - `sar_timer_result` prints result
+- `sar_timer_always_running` doesn't stop the timer when disconnecting from server
 - Mappers can use this for accurate timing, [see below](#mapping)
 
 #### Average
@@ -78,11 +80,13 @@
 
 ### HUD
 - `sar_hud_session` draws current session value
+- `sar_hud_last_session` draws value of latest completed session value
 - `sar_hud_sum` draws summary value of sessions
 - `sar_hud_timer` draws timer value
 - `sar_hud_avg` draws current average of timer
 - `sar_hud_cps` draws last checkpoint value of timer
 - `sar_hud_demo` draws current name, tick and time of demo recorder or demo player
+- `sar_hud_last_demo` draws value of latest completed demo
 - `sar_hud_jumps` draws total jump count
 - `sar_hud_uses` draws total use count
 

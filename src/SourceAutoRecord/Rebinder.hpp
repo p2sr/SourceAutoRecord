@@ -20,25 +20,30 @@ namespace Rebinder
 	// Demo recorder can overwrite this
 	int LastIndexNumber;
 
-	void SetSaveBind(int button, const char* name) {
+	void SetSaveBind(int button, const char* name)
+	{
 		SaveButton = button;
 		SaveName = std::string(name);
 		IsSaveBinding = true;
 	}
-	void SetReloadBind(int button, const char* name) {
+	void SetReloadBind(int button, const char* name)
+	{
 		ReloadButton = button;
 		ReloadName = std::string(name);
 		IsReloadBinding = true;
 	}
-	void ResetSaveBind() {
+	void ResetSaveBind()
+	{
 		IsSaveBinding = false;
 		InputSystem::KeySetBinding(SaveButton, "");
 	}
-	void ResetReloadBind() {
+	void ResetReloadBind()
+	{
 		IsReloadBinding = true;
 		InputSystem::KeySetBinding(ReloadButton, "");
 	}
-	void RebindSave() {
+	void RebindSave()
+	{
 		if (!IsSaveBinding) return;
 
 		std::string cmd = (LastIndexNumber > 0)
@@ -50,7 +55,8 @@ namespace Rebinder
 
 		InputSystem::KeySetBinding(SaveButton, cmd.c_str());
 	}
-	void RebindReload() {
+	void RebindReload()
+	{
 		if (!IsReloadBinding) return;
 
 		std::string cmd = (LastIndexNumber > 0)

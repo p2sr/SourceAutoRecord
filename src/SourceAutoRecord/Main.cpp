@@ -6,27 +6,32 @@ unsigned __stdcall Main(void* args)
 	if (!Offsets::Init()) return Error("Game not supported!", "SourceAutoRecord");
 	if (!Console::Init()) return Error("Could not initialize console!", "SourceAutoRecord");
 
-	// Signature scans and hooks
+	// ConCommand and ConVar
 	if (SAR::LoadTier1()) {
+
+		// Cheats
 		SAR::RegisterCommands();
 		SAR::EnableGameCheats();
 
+		// Hooks
 		if (SAR::LoadClient() && SAR::LoadEngine()) {
 			Hooks::Load();
+
+			// Nobody likes silly bugs
+			SAR::LoadPatches();
+
+			Console::ColorMsg(COL_ACTIVE, "Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
+			return 0;
 		}
 		else {
-			Console::DevWarning("Could not load any hooks!\n");
+			Console::DevWarning("Could not hook any functions!\n");
 		}
 	}
 	else {
 		Console::DevWarning("Could not register any commands!\n");
 	}
-
-	// Nobody likes silly bugs
-	SAR::LoadPatches();
-		
-	Console::ColorMsg(COL_GREEN, "Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
-	return 0;
+	Console::Warning("Failed to load SourceAutoRecord!\n");
+	return 1;
 }
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved)

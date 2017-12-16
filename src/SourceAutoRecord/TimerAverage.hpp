@@ -17,13 +17,15 @@ namespace Timer
 		int AverageTicks;
 		float AverageTime;
 
-		void Start() {
+		void Start()
+		{
 			Items.clear();
 			AverageTicks = 0;
 			AverageTime = 0;
 			IsEnabled = true;
 		}
-		void Add(int ticks, float time, char* map) {
+		void Add(int ticks, float time, char* map)
+		{
 			Items.push_back(AverageItem{
 				ticks,
 				time,

@@ -3,6 +3,7 @@
 #include "Surface.hpp"
 
 #include "Patterns.hpp"
+#include "Session.hpp"
 #include "Stats.hpp"
 #include "Timer.hpp"
 #include "TimerAverage.hpp"
@@ -58,13 +59,13 @@ namespace Client
 
 				char session[64];
 				snprintf(session, sizeof(session), "session: %i (%.3f)", tick, time);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, session);
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, session);
 				level++;
 			}
 			if (sar_hud_last_session.GetBool()) {
 				char session[64];
-				snprintf(session, sizeof(session), "last session: %i (%.3f)", Engine::LastSavedSession, Engine::LastSavedSession * *Engine::IntervalPerTick);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, session);
+				snprintf(session, sizeof(session), "last session: %i (%.3f)", Session::LastSession, Session::LastSession * *Engine::IntervalPerTick);
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, session);
 				level++;
 			}
 			if (sar_hud_sum.GetBool()) {
@@ -77,29 +78,29 @@ namespace Client
 				else {
 					snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks, Summary::TotalTime);
 				}
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, sum);
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, sum);
 				level++;
 			}
 			// Timer
 			if (sar_hud_timer.GetBool()) {
-				int tick = Timer::GetTick((Timer::IsRunning) ? Engine::GetTick() : -1);
+				int tick = (!Timer::IsPaused) ? Timer::GetTick(*Engine::TickCount) : Timer::TotalTicks;
 				float time = tick * *Engine::IntervalPerTick;
 
 				char timer[64];
 				snprintf(timer, sizeof(timer), "timer: %i (%.3f)", tick, time);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, timer);
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, timer);
 				level++;
 			}
 			if (sar_hud_avg.GetBool()) {
 				char avg[64];
 				snprintf(avg, sizeof(avg), "avg: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, avg);
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, avg);
 				level++;
 			}
 			if (sar_hud_cps.GetBool()) {
 				char cps[64];
 				snprintf(cps, sizeof(cps), "last cp: %i (%.3f)", Timer::CheckPoints::LatestTick, Timer::CheckPoints::LatestTime);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, cps);
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, cps);
 				level++;
 			}
 			// Demo
@@ -119,20 +120,33 @@ namespace Client
 				else {
 					snprintf(demo, sizeof(demo), "demo: -");
 				}
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, demo);
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, demo);
+				level++;
+			}
+			if (sar_hud_last_demo.GetBool()) {
+				char demo[64];
+				if (!DemoRecorder::LastDemo.empty()) {
+					int tick = DemoRecorder::LastDemoTick;
+					float time = tick * *Engine::IntervalPerTick;
+					snprintf(demo, sizeof(demo), "last demo: %s %i (%.3f)", DemoRecorder::LastDemo.c_str(), tick, time);
+				}
+				else {
+					snprintf(demo, sizeof(demo), "last demo: -");
+				}
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, demo);
 				level++;
 			}
 			// Stats
 			if (sar_hud_jumps.GetBool()) {
 				char jumps[64];
 				snprintf(jumps, sizeof(jumps), "jumps: %i", Stats::TotalJumps);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, jumps);
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, jumps);
 				level++;
 			}
 			if (sar_hud_uses.GetBool()) {
 				char uses[64];
 				snprintf(uses, sizeof(uses), "uses: %i", Stats::TotalUses);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_WHITE, uses);
+				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, uses);
 				level++;
 			}
 
@@ -151,6 +165,7 @@ namespace Client
 				|| sar_hud_avg.GetBool()
 				|| sar_hud_cps.GetBool()
 				|| sar_hud_demo.GetBool()
+				|| sar_hud_last_demo.GetBool()
 				|| sar_hud_jumps.GetBool()
 				|| sar_hud_uses.GetBool();
 		}

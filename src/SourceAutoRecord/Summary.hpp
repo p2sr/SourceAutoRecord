@@ -15,13 +15,15 @@ namespace Summary
 	int TotalTicks;
 	float TotalTime;
 
-	void Start() {
+	void Start()
+	{
 		Items.clear();
 		TotalTicks = 0;
 		TotalTime = 0;
 		IsRunning = true;
 	}
-	void Add(int ticks, float time, char* map) {
+	void Add(int ticks, float time, char* map)
+	{
 		Items.push_back(SummaryItem {
 			ticks,
 			time,

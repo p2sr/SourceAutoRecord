@@ -295,20 +295,20 @@ namespace Patterns
 				}
 			}
 		};
-		//Pattern CloseDemoFile = Pattern
-		//{
-		//	"CDemoRecorder::CloseDemoFile",
-		//	"engine.dll",
-		//	std::vector<Signature>
-		//	{
-		//		{
-		//			// CDemoRecorder::CloseDemoFile
-		//			// \x56\x8B\xF1\x57\x8D\x4E\x04\xE8\x00\x00\x00\x00\x84\xC0\x0F\x84\x00\x00\x00\x00\x80\xBE\x00\x00\x00\x00\x00 xxxxxxxx????xxxx????xx?????
-		//			{ "Portal 2 Build 6879" },
-		//			{ "56 8B F1 57 8D 4E 04 E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 80 BE ? ? ? ? ? " }
-		//		}
-		//	}
-		//};
+		Pattern CloseDemoFile = Pattern
+		{
+			"CDemoRecorder::CloseDemoFile",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// CDemoRecorder::CloseDemoFile
+					// \x56\x8B\xF1\x57\x8D\x4E\x04\xE8\x00\x00\x00\x00\x84\xC0\x0F\x84\x00\x00\x00\x00\x80\xBE\x00\x00\x00\x00\x00 xxxxxxxx????xxxx????xx?????
+					{ "Portal 2 Build 6879" },
+					{ "56 8B F1 57 8D 4E 04 E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 80 BE ? ? ? ? ? " }
+				}
+			}
+		};
 		Pattern DemoRecorderPtr = Pattern
 		{
 			"IDemoRecorder *demorecorder",
@@ -364,20 +364,6 @@ namespace Patterns
 				}
 			}
 		};
-		//Pattern StopPlayback = Pattern
-		//{
-		//	"CDemoPlayer::StopPlayback",
-		//	"engine.dll",
-		//	std::vector<Signature>
-		//	{
-		//		{
-		//			// CDemoPlayer::StopPlayback
-		//			// \x55\x8B\xEC\x51\x56\x8B\xF1\x8B\x06\x8B\x50\x18 xxxxxxxxxxxx
-		//			{ "Portal 2 Build 6879" },
-		//			{ "55 8B EC 51 56 8B F1 8B 06 8B 50 18" }
-		//		}
-		//	}
-		//};
 		Pattern StopRecording = Pattern
 		{
 			"CDemoRecorder::StopRecording",
@@ -458,6 +444,33 @@ namespace Patterns
 					// \x55\x8B\xEC\xDD\x05\x00\x00\x00\x00\x83\xEC\x18 xxxxx????xxx
 					{ "Portal 2 Build 6879" },
 					{ "55 8B EC DD 05 ? ? ? ? 83 EC 18" }
+				}
+			}
+		};
+		Pattern HostStateFrame = Pattern
+		{
+			"HostState_Frame",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// \x55\x8B\xEC\xD9\x45\x08\x51\xB9\x00\x00\x00\x00\xD9\x1C\x24\xE8\x00\x00\x00\x00\x5D\xC3 xxxxxxxx????xxxx????xx
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC D9 45 08 51 B9 ? ? ? ? D9 1C 24 E8 ? ? ? ? 5D C3" }
+				}
+			}
+		};
+		Pattern CurrentStatePtr = Pattern
+		{
+			"CHostState::m_currentState",
+			"engine.dll",
+			std::vector<Signature>
+			{
+				{
+					// \xC7\x05\x00\x00\x00\x00\x07\x00\x00\x00\xC3 xx????xxxxx
+					{ "Portal 2 Build 6879" },
+					{ "C7 05 ? ? ? ? 07 00 00 00 C3" },
+					{ 2 }
 				}
 			}
 		};

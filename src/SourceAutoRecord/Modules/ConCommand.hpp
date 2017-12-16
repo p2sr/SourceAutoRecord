@@ -53,14 +53,14 @@ namespace Tier1
 
 	ConCommand CreateCommand(const char* name, _CommandCallbackVoid callback, const char* helpstr = "", int flags = 0)
 	{
-		auto ret = ConCommand();
-		ConCommandCtor(ret.Ptr, nullptr, name, callback, helpstr, flags, nullptr);
-		return ret;
+		auto cc = ConCommand();
+		ConCommandCtor(cc.Ptr, nullptr, name, callback, helpstr, flags, nullptr);
+		return cc;
 	}
 	ConCommand CreateCommandArgs(const char* name, _CommandCallbackArgs callback, const char* helpstr = "", int flags = 0)
 	{
-		auto ret = ConCommand();
-		ConCommandCtor2(ret.Ptr, nullptr, name, callback, helpstr, flags, nullptr);
-		return ret;
+		auto cc = ConCommand();
+		ConCommandCtor2(cc.Ptr, nullptr, name, callback, helpstr, flags, nullptr);
+		return cc;
 	}
 }

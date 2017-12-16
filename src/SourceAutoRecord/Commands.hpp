@@ -28,6 +28,7 @@ namespace Commands
 	ConCommand sar_timer_start;
 	ConCommand sar_timer_stop;
 	ConCommand sar_timer_result;
+	ConVar sar_timer_always_running;
 
 	// Timer average
 	ConCommand sar_avg_start;
@@ -47,6 +48,7 @@ namespace Commands
 	ConVar sar_hud_avg;
 	ConVar sar_hud_cps;
 	ConVar sar_hud_demo;
+	ConVar sar_hud_last_demo;
 	ConVar sar_hud_jumps;
 	ConVar sar_hud_uses;
 

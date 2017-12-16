@@ -19,19 +19,24 @@ namespace Callbacks
 {
 	void PrintSession()
 	{
-		Console::Msg("Session Tick: %i (%.3f)\n", Engine::GetTick(), Engine::GetTime());
-		if (*DemoRecorder::Recording)
-			Console::Msg("Demo Recorder Tick: %i\n", DemoRecorder::GetTick());
-		if (DemoPlayer::IsPlaying())
-			Console::Msg("Demo Player Tick: %i\n", DemoPlayer::GetTick());
+		int tick = Engine::GetTick();
+		Console::Print("Session Tick: %i (%.3f)\n", tick, tick * *Engine::IntervalPerTick);
+		if (*DemoRecorder::Recording) {
+			tick = DemoRecorder::GetTick();
+			Console::Print("Demo Recorder Tick: %i (%.3f)\n", tick, tick * *Engine::IntervalPerTick);
+		}
+		if (DemoPlayer::IsPlaying()) {
+			tick = DemoPlayer::GetTick();
+			Console::Print("Demo Player Tick: %i (%.3f)\n", tick, tick * *Engine::IntervalPerTick);
+		}
 	}
 	void PrintAbout()
 	{
-		Console::Msg("SourceAutoRecord tells the engine to keep recording when loading a save.\n");
-		Console::Msg("More information at: https://nekzor.github.io/SourceAutoRecord\n");
-		Console::Msg("Variant: %s\n", Offsets::GetStringVariant());
-		Console::Msg("Version: %s\n", SAR_VERSION);
-		Console::Msg("Build: %s\n", SAR_BUILD);
+		Console::Print("SourceAutoRecord tells the engine to keep recording when loading a save.\n");
+		Console::Print("More information at: https://nekzor.github.io/SourceAutoRecord\n");
+		Console::Print("Variant: %s\n", Offsets::GetStringVariant());
+		Console::Print("Version: %s\n", SAR_VERSION);
+		Console::Print("Build: %s\n", SAR_BUILD);
 	}
 	// Demo parsing
 	namespace
@@ -40,20 +45,20 @@ namespace Callbacks
 		{
 			ConCommandArgs args(ptr);
 			if (args.Count() != 2) {
-				Console::Msg("sar_time_demo [demo_name] : Parses a demo and prints some information about it.\n");
+				Console::Print("sar_time_demo [demo_name] : Parses a demo and prints some information about it.\n");
 				return;
 			}
 
 			std::string name;
 			if (args.At(1)[0] == '\0') {
-				if (DemoRecorder::DemoName[0] != '\0' && !DemoRecorder::LastDemo.empty()) {
+				if (!DemoRecorder::LastDemo.empty()) {
 					name = DemoRecorder::LastDemo;
 				}
 				else if (DemoPlayer::DemoName[0] != '\0') {
 					name = std::string(DemoPlayer::DemoName);
 				}
 				else {
-					Console::Msg("No demo was recorded or played back!\n");
+					Console::Print("No demo was recorded or played back!\n");
 					return;
 				}
 			}
@@ -62,22 +67,26 @@ namespace Callbacks
 			}
 
 			Demo demo;
-			if (demo.Parse(Engine::GetDir() + "\\" + name, sar_time_demo_dev.GetInt())) {
+			if (demo.Parse(Engine::GetDir() + std::string("\\") + name, sar_time_demo_dev.GetInt())) {
 				demo.Fix();
-				Console::Msg("Demo: %s\n", name.c_str());
-				Console::Msg("Client: %s\n", demo.clientName);
-				Console::Msg("Map: %s\n", demo.mapName);
-				Console::Msg("Ticks: %i\n", demo.playbackTicks);
-				Console::Msg("Time: %.3f\n", demo.playbackTime);
-				Console::Msg("IpT: %.6f\n", demo.IntervalPerTick());
+				Console::Print("Demo: %s\n", name.c_str());
+				Console::Print("Client: %s\n", demo.clientName);
+				Console::Print("Map: %s\n", demo.mapName);
+				Console::Print("Ticks: %i\n", demo.playbackTicks);
+				Console::Print("Time: %.3f\n", demo.playbackTime);
+				Console::Print("IpT: %.6f\n", demo.IntervalPerTick());
 			}
 			else {
-				Console::Msg("Could not parse \"%s\"!\n", name.c_str());
+				Console::Print("Could not parse \"%s\"!\n", name.c_str());
 			}
 		}
 		void PrintDemoInfos(const void* ptr)
 		{
 			ConCommandArgs args(ptr);
+			if (args.Count() <= 1) {
+				Console::Print("sar_time_demos [demo_name] [demo_name2] [etc.] : Parses multiple demos and prints the total sum of them.\n");
+				return;
+			}
 
 			int totalTicks = 0;
 			float totalTime = 0;
@@ -92,24 +101,24 @@ namespace Callbacks
 				Demo demo;
 				if (demo.Parse(dir + name)) {
 					demo.Fix();
-					Console::Msg("Demo: %s\n", name.c_str());
-					Console::Msg("Client: %s\n", demo.clientName);
-					Console::Msg("Map: %s\n", demo.mapName);
-					Console::Msg("Ticks: %i\n", demo.playbackTicks);
-					Console::Msg("Time: %.3f\n", demo.playbackTime);
-					Console::Msg("IpT: %.6f\n", demo.IntervalPerTick());
-					Console::Msg("---------------\n");
+					Console::Print("Demo: %s\n", name.c_str());
+					Console::Print("Client: %s\n", demo.clientName);
+					Console::Print("Map: %s\n", demo.mapName);
+					Console::Print("Ticks: %i\n", demo.playbackTicks);
+					Console::Print("Time: %.3f\n", demo.playbackTime);
+					Console::Print("IpT: %.6f\n", demo.IntervalPerTick());
+					Console::Print("---------------\n");
 					totalTicks += demo.playbackTicks;
 					totalTime += demo.playbackTime;
 					printTotal = true;
 				}
 				else {
-					Console::Msg("Could not parse \"%s\"!\n", name.c_str());
+					Console::Print("Could not parse \"%s\"!\n", name.c_str());
 				}
 			}
 			if (printTotal) {
-				Console::Msg("Total Ticks: %i\n", totalTicks);
-				Console::Msg("Total Time: %.3f\n", totalTime);
+				Console::Print("Total Ticks: %i\n", totalTicks);
+				Console::Print("Total Time: %.3f\n", totalTime);
 			}
 		}
 	}
@@ -120,17 +129,17 @@ namespace Callbacks
 		{
 			ConCommandArgs args(ptr);
 			if (args.Count() != 3) {
-				Console::Msg("sar_bind_save <key> [save_name] : Automatic save rebinding when server has loaded. File indexing will be synced when recording demos.\n");
+				Console::Print("sar_bind_save <key> [save_name] : Automatic save rebinding when server has loaded. File indexing will be synced when recording demos.\n");
 				return;
 			}
 
 			int button = InputSystem::StringToButtonCode(args.At(1));
 			if (button == BUTTON_CODE_INVALID) {
-				Console::Msg("\"%s\" isn't a valid key!\n", args.At(1));
+				Console::Print("\"%s\" isn't a valid key!\n", args.At(1));
 				return;
 			}
 			else if (button == KEY_ESCAPE) {
-				Console::Msg("Can't bind ESCAPE key!\n", args.At(1));
+				Console::Print("Can't bind ESCAPE key!\n", args.At(1));
 				return;
 			}
 
@@ -145,17 +154,17 @@ namespace Callbacks
 		{
 			ConCommandArgs args(ptr);
 			if (args.Count() != 3) {
-				Console::Msg("sar_bind_reload <key> [save_name] : Automatic save-reload rebinding when server has loaded. File indexing will be synced when recording demos.\n");
+				Console::Print("sar_bind_reload <key> [save_name] : Automatic save-reload rebinding when server has loaded. File indexing will be synced when recording demos.\n");
 				return;
 			}
 
 			int button = InputSystem::StringToButtonCode(args.At(1));
 			if (button == BUTTON_CODE_INVALID) {
-				Console::Msg("\"%s\" isn't a valid key!\n", args.At(1));
+				Console::Print("\"%s\" isn't a valid key!\n", args.At(1));
 				return;
 			}
 			else if (button == KEY_ESCAPE) {
-				Console::Msg("Can't bind ESCAPE key!\n", args.At(1));
+				Console::Print("Can't bind ESCAPE key!\n", args.At(1));
 				return;
 			}
 
@@ -169,7 +178,7 @@ namespace Callbacks
 		void UnbindSaveRebinder()
 		{
 			if (!Rebinder::IsSaveBinding) {
-				Console::Msg("There's nothing to unbind.\n");
+				Console::Print("There's nothing to unbind.\n");
 				return;
 			}
 			Rebinder::ResetSaveBind();
@@ -177,7 +186,7 @@ namespace Callbacks
 		void UnbindReloadRebinder()
 		{
 			if (!Rebinder::IsReloadBinding) {
-				Console::Msg("There's nothing to unbind.\n");
+				Console::Print("There's nothing to unbind.\n");
 				return;
 			}
 			Rebinder::ResetReloadBind();
@@ -189,7 +198,7 @@ namespace Callbacks
 		void StartSummary()
 		{
 			if (Summary::IsRunning) {
-				Console::Msg("Summary has already started!\n");
+				Console::Print("Summary has already started!\n");
 				return;
 			}
 			Summary::Start();
@@ -197,12 +206,13 @@ namespace Callbacks
 		void StopSummary()
 		{
 			if (!Summary::IsRunning) {
-				Console::Msg("There's no summary to stop!\n");
+				Console::Print("There's no summary to stop!\n");
 				return;
 			}
 
 			if (sar_sum_during_session.GetBool()) {
-				Summary::Add(Engine::GetTick(), Engine::GetTime(), *Engine::Mapname);
+				int tick = Engine::GetTick();
+				Summary::Add(tick, tick * *Engine::IntervalPerTick, *Engine::Mapname);
 			}
 			Summary::IsRunning = false;
 		}
@@ -210,39 +220,41 @@ namespace Callbacks
 		{
 			int sessions = Summary::Items.size();
 			if (Summary::IsRunning && sessions == 0) {
-				Console::Msg("Summary of this session:\n");
+				Console::Print("Summary of this session:\n");
 			}
 			else if (Summary::IsRunning && sessions > 0) {
-				Console::Msg("Summary of %i sessions:\n", sessions + 1);
+				Console::Print("Summary of %i sessions:\n", sessions + 1);
 			}
 			else if (sessions > 0) {
-				Console::Msg("Summary of %i session%s:\n", sessions, (sessions == 1) ? "" : "s");
+				Console::Print("Summary of %i session%s:\n", sessions, (sessions == 1) ? "" : "s");
 			}
 			else {
-				Console::Msg("There's no result of a summary!\n");
+				Console::Print("There's no result of a summary!\n");
 				return;
 			}
 
 			for (size_t i = 0; i < Summary::Items.size(); i++) {
-				Console::Msg("%s -> ", Summary::Items[i].Map);
-				Console::Msg("%i ticks", Summary::Items[i].Ticks);
-				Console::Msg("(%.3f)\n", Summary::Items[i].Time);
+				Console::Print("%s -> ", Summary::Items[i].Map);
+				Console::Print("%i ticks", Summary::Items[i].Ticks);
+				Console::Print("(%.3f)\n", Summary::Items[i].Time);
 			}
 
 			if (Summary::IsRunning) {
-				Console::ColorMsg(COL_YELLOW, "%s -> ", *Engine::Mapname);
-				Console::ColorMsg(COL_YELLOW, "%i ticks ", Engine::GetTick());
-				Console::ColorMsg(COL_YELLOW, "(%.3f)\n", Engine::GetTime());
-				Console::Msg("---------------\n");
-				Console::Msg("Total Ticks: %i ", Summary::TotalTicks);
-				Console::ColorMsg(COL_YELLOW, "(%i)\n", Summary::TotalTicks + Engine::GetTick());
-				Console::Msg("Total Time: %.3f ", Summary::TotalTime);
-				Console::ColorMsg(COL_YELLOW, "(%.3f)\n", Summary::TotalTime + Engine::GetTime());
+				int tick = Engine::GetTick();
+				float time = tick * *Engine::IntervalPerTick;
+				Console::PrintActive("%s -> ", *Engine::Mapname);
+				Console::PrintActive("%i ticks ", tick);
+				Console::PrintActive("(%.3f)\n", time);
+				Console::Print("---------------\n");
+				Console::Print("Total Ticks: %i ", Summary::TotalTicks);
+				Console::PrintActive("(%i)\n", Summary::TotalTicks + tick);
+				Console::Print("Total Time: %.3f ", Summary::TotalTime);
+				Console::PrintActive("(%.3f)\n", Summary::TotalTime + time);
 			}
 			else {
-				Console::Msg("---------------\n");
-				Console::Msg("Total Ticks: %i\n", Summary::TotalTicks);
-				Console::Msg("Total Time: %.3f\n", Summary::TotalTime);
+				Console::Print("---------------\n");
+				Console::Print("Total Ticks: %i\n", Summary::TotalTicks);
+				Console::Print("Total Time: %.3f\n", Summary::TotalTime);
 			}
 		}
 	}
@@ -255,7 +267,7 @@ namespace Callbacks
 				Console::DevMsg("Restarting timer!\n");
 			else
 				Console::DevMsg("Starting timer!\n");
-			Timer::Start(Engine::GetTick());
+			Timer::Start(*Engine::TickCount);
 
 			if (sar_stats_auto_reset.GetInt() >= 2) {
 				Stats::Reset();
@@ -268,22 +280,22 @@ namespace Callbacks
 				return;
 			}
 
-			Timer::Stop(Engine::GetTick());
+			Timer::Stop(*Engine::TickCount);
 
 			if (Timer::Average::IsEnabled) {
-				int tick = Timer::GetTick();
+				int tick = Timer::GetTick(*Engine::TickCount);
 				Timer::Average::Add(tick, tick * *Engine::IntervalPerTick, *Engine::Mapname);
 			}
 		}
 		void PrintTimer() {
-			int tick = Timer::GetTick((Timer::IsRunning) ? Engine::GetTick() : -1);
+			int tick = Timer::GetTick(*Engine::TickCount);
 			float time = tick * *Engine::IntervalPerTick;
 
 			if (Timer::IsRunning) {
-				Console::ColorMsg(COL_YELLOW, "Result: %i (%.3f)\n", tick, time);
+				Console::PrintActive("Result: %i (%.3f)\n", tick, time);
 			}
 			else {
-				Console::Msg("Result: %i (%.3f)\n", tick, time);
+				Console::Print("Result: %i (%.3f)\n", tick, time);
 			}
 		}
 		void StartAverage() {
@@ -295,24 +307,24 @@ namespace Callbacks
 		void PrintAverage() {
 			int average = Timer::Average::Items.size();
 			if (average > 0) {
-				Console::Msg("Average of %i:\n", average);
+				Console::Print("Average of %i:\n", average);
 			}
 			else {
-				Console::Msg("No result!\n");
+				Console::Print("No result!\n");
 				return;
 			}
 
 			for (size_t i = 0; i < average; i++) {
-				Console::Msg("%s -> ", Timer::Average::Items[i].Map);
-				Console::Msg("%i ticks", Timer::Average::Items[i].Ticks);
-				Console::Msg("(%.3f)\n", Timer::Average::Items[i].Time);
+				Console::Print("%s -> ", Timer::Average::Items[i].Map);
+				Console::Print("%i ticks", Timer::Average::Items[i].Ticks);
+				Console::Print("(%.3f)\n", Timer::Average::Items[i].Time);
 			}
 
 			if (Timer::IsRunning) {
-				Console::ColorMsg(COL_YELLOW, "Result: %i (%.3f)\n", Timer::Average::AverageTicks, Timer::Average::AverageTime);
+				Console::PrintActive("Result: %i (%.3f)\n", Timer::Average::AverageTicks, Timer::Average::AverageTime);
 			}
 			else {
-				Console::Msg("Result: %i (%.3f)\n", Timer::Average::AverageTicks, Timer::Average::AverageTime);
+				Console::Print("Result: %i (%.3f)\n", Timer::Average::AverageTicks, Timer::Average::AverageTime);
 			}
 		}
 		void AddCheckpoint() {
@@ -330,39 +342,42 @@ namespace Callbacks
 		void PrintCheckpoints() {
 			int cps = Timer::CheckPoints::Items.size();
 			if (cps > 0) {
-				Console::Msg("Result of %i checkpoint%s:\n", cps, (cps == 1) ? "" : "s");
+				Console::Print("Result of %i checkpoint%s:\n", cps, (cps == 1) ? "" : "s");
 			}
 			else {
-				Console::Msg("No result!\n");
+				Console::Print("No result!\n");
 				return;
 			}
 
 			for (size_t i = 0; i < cps; i++) {
 				if (i == cps - 1 && Timer::IsRunning) {
-					Console::ColorMsg(COL_YELLOW, "%s -> ", Timer::CheckPoints::Items[i].Map);
-					Console::ColorMsg(COL_YELLOW, "%i ticks", Timer::CheckPoints::Items[i].Ticks);
-					Console::ColorMsg(COL_YELLOW, "(%.3f)\n", Timer::CheckPoints::Items[i].Time);
+					Console::PrintActive("%s -> ", Timer::CheckPoints::Items[i].Map);
+					Console::PrintActive("%i ticks", Timer::CheckPoints::Items[i].Ticks);
+					Console::PrintActive("(%.3f)\n", Timer::CheckPoints::Items[i].Time);
 				}
 				else {
-					Console::Msg("%s -> ", Timer::CheckPoints::Items[i].Map);
-					Console::Msg("%i ticks", Timer::CheckPoints::Items[i].Ticks);
-					Console::Msg("(%.3f)\n", Timer::CheckPoints::Items[i].Time);
+					Console::Print("%s -> ", Timer::CheckPoints::Items[i].Map);
+					Console::Print("%i ticks", Timer::CheckPoints::Items[i].Ticks);
+					Console::Print("(%.3f)\n", Timer::CheckPoints::Items[i].Time);
 				}
 			}
 
 			if (!Timer::IsRunning) {
-				int tick = Timer::GetTick();
+				int tick = Timer::GetTick(*Engine::TickCount);
 				float time = tick * *Engine::IntervalPerTick;
-				Console::Msg("Result: %i (%.3f)\n", tick, time);
+				Console::Print("Result: %i (%.3f)\n", tick, time);
 			}
 		}
 	}
 	// Stats
-	namespace {
-		void ResetJumps() {
+	namespace
+	{
+		void ResetJumps()
+		{
 			Stats::TotalJumps = 0;
 		}
-		void ResetUses() {
+		void ResetUses()
+		{
 			Stats::TotalUses = 0;
 		}
 	}

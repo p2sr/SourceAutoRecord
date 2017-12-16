@@ -8,10 +8,10 @@
 
 #define SAR_VERSION "1.2"
 #define SAR_BUILD __TIME__ " " __DATE__
+#define SAR_COLOR Color(247, 235, 69)
 
-#define COL_GREEN Color(17, 224, 35)
-#define COL_WHITE Color(255, 255, 255, 255)
-#define COL_YELLOW Color(247, 235, 69)
+#define COL_ACTIVE Color(110, 247, 76)
+#define COL_DEFAULT Color(255, 255, 255, 255)
 
 #define INRANGE(x, a, b) (x >= a && x <= b)
 #define getBits(x) (INRANGE((x & (~0x20)), 'A', 'F') ? ((x & (~0x20)) - 'A' + 0xA): (INRANGE(x, '0', '9') ? x - '0': 0))
@@ -41,9 +41,9 @@ struct ScanResult {
 	char Message[256];
 };
 
-uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_address, const char* target_pattern) {
+uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_address, const char* target_pattern)
+{
 	const char* pattern = target_pattern;
-
 	uintptr_t first_match = 0;
 
 	for (uintptr_t position = start_address; position < end_address; position++) {
@@ -70,7 +70,25 @@ uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_addre
 	return NULL;
 }
 
-ScanResult Scan(Pattern& pattern) {
+ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
+{
+	MODULEINFO info = { 0 };
+	ScanResult result = { 0 };
+
+	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleA(moduleName), &info, sizeof(MODULEINFO))) {
+		const uintptr_t start = uintptr_t(info.lpBaseOfDll);
+		const uintptr_t end = start + info.SizeOfImage;
+		result.Address = FindAddress(start, end, pattern);
+		if (result.Address != NULL) {
+			result.Found = true;
+			result.Address += offset;
+		}
+	}
+	return result;
+}
+
+ScanResult Scan(Pattern& pattern)
+{
 	MODULEINFO info = { 0 };
 	ScanResult result = { 0 };
 

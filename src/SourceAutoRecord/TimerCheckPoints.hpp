@@ -15,7 +15,8 @@ namespace Timer
 		int LatestTick;
 		float LatestTime;
 
-		void Add(int ticks, float time, char* map) {
+		void Add(int ticks, float time, char* map)
+		{
 			Items.push_back(CheckPointItem{
 				ticks,
 				time,
@@ -24,7 +25,8 @@ namespace Timer
 			LatestTick = ticks;
 			LatestTime = time;
 		}
-		void Reset() {
+		void Reset()
+		{
 			Items.clear();
 			LatestTick = 0;
 			LatestTime = 0;

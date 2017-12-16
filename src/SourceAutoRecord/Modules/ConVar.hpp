@@ -47,7 +47,7 @@ namespace Tier1
 			Ptr = Cvar::FindVar(Cvar::Ptr, nullptr, ref);
 		}
 		bool ConVar::GetBool() const {
-				return !!GetInt();
+			return !!GetInt();
 		}
 		int ConVar::GetInt() const {
 			switch (Offsets::Variant) {
@@ -110,7 +110,7 @@ namespace Tier1
 
 	ConVar CreateVar(const char* name, const char* value, int flags = 0, const char* helpstr = "", bool hasmin = false, float min = 0, bool hasmax = false, float max = 0)
 	{
-		ConVar ret;
+		ConVar cv;
 		size_t size = 0;
 
 		switch (Offsets::Variant) {
@@ -120,13 +120,13 @@ namespace Tier1
 			break;
 		}
 
-		ret.Blob = std::make_unique<uint8_t[]>(size);
-		ret.Ptr = ret.Blob.get();
+		cv.Blob = std::make_unique<uint8_t[]>(size);
+		cv.Ptr = cv.Blob.get();
 
-		std::memset(ret.Ptr, 0, size);
-		ConVarCtor(ret.Ptr, nullptr, name, value, flags, helpstr, hasmin, min, hasmax, max);
+		std::memset(cv.Ptr, 0, size);
+		ConVarCtor(cv.Ptr, nullptr, name, value, flags, helpstr, hasmin, min, hasmax, max);
 
-		return ret;
+		return cv;
 	}
 	ConVar CreateBoolean(const char* name, const char* value, const char* helpstr = "", int flags = FCVAR_NEVER_AS_STRING)
 	{
