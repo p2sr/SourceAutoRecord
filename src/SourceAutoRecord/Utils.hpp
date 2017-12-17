@@ -6,7 +6,7 @@
 #include <vector>
 #include <Windows.h>
 
-#define SAR_VERSION "1.2"
+#define SAR_VERSION "1.3"
 #define SAR_BUILD __TIME__ " " __DATE__
 #define SAR_COLOR Color(247, 235, 69)
 

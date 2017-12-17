@@ -47,5 +47,9 @@ namespace Hooks
 		CreateAndEnable(Patterns::PlayerUse,		Server::Detour::PlayerUse,			reinterpret_cast<LPVOID*>(&Server::Original::PlayerUse));
 		CreateAndEnable(Patterns::HostStateFrame,	Engine::Detour::HostStateFrame,		reinterpret_cast<LPVOID*>(&Engine::Original::HostStateFrame));
 		CreateAndEnable(Patterns::CloseDemoFile,	Engine::Detour::CloseDemoFile,		reinterpret_cast<LPVOID*>(&Engine::Original::CloseDemoFile));
+		
+		auto amv =
+		CreateAndEnable(Patterns::AirMove,			Engine::Detour::AirMove,			reinterpret_cast<LPVOID*>(&Engine::Original::AirMove));
+		Engine::Detour::SetAirMove(amv.Address);
 	}
 }

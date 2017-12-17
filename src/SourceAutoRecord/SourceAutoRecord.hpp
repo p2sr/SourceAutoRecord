@@ -233,6 +233,10 @@ namespace SAR
 			"sar_autojump",
 			"0",
 			"Enables automatic jumping on the server.\n");
+		sar_aircontrol = CreateBoolean(
+			"sar_aircontrol",
+			"0",
+			"Enables \"more air-control\" on the server.\n");
 
 		// Others
 		sar_session = CreateCommand(
@@ -292,7 +296,7 @@ namespace SAR
 
 			auto rdp = Scan(Patterns::ReadPacket);
 			if (rdp.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(rdp.Address), ignoreEvilCommandsInDemos, 22, 0)) {
-				Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket!\n");
+				Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket at 0x%p!\n", rdp.Address);
 			}
 
 			// Remove the default ConMsg when demo file gets closed
@@ -300,7 +304,7 @@ namespace SAR
 
 			auto cdf = Scan("engine.dll", "D9 86 ? ? ? ? 8B 8E ? ? ? ? 51");
 			if (cdf.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(cdf.Address), weAlreadyPrintABetterMessage, 29, 0)) {
-				Console::DevMsg("SAR: Patched CDemoPlayer::CloseDemoFile!\n");
+				Console::DevMsg("SAR: Patched CDemoPlayer::CloseDemoFile at 0x%p!\n", cdf.Address);
 			}
 
 			break;

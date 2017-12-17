@@ -40,6 +40,21 @@ namespace Patterns
 				}
 			}
 		};
+		Pattern AirMove = Pattern
+		{
+			"CGameMovement::AirMove",
+			"server.dll",
+			std::vector<Signature>
+			{
+				{
+					// CPortalGameMovement::AirMove
+					// \x55\x8B\xEC\x83\xEC\x50\x56\x8B\xF1\x8D\x45\xBC xxxxxxxxxxxx
+					{ "Portal 2 Build 6879" },
+					{ "55 8B EC 83 EC 50 56 8B F1 8D 45 BC" },
+					{ 679 }
+				}
+			}
+		};
 	}
 
 	// client.dll
