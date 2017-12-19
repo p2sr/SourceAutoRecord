@@ -25,16 +25,16 @@ namespace SAR
 {
 	bool LoadEngine()
 	{
-		auto enc = Scan(Patterns::EngineClientPtr);
-		auto ggd = Scan(Patterns::GetGameDir);
-		auto crt = Scan(Patterns::CurtimePtr);
-		auto ldg = Scan(Patterns::LoadgamePtr);
-		auto mpn = Scan(Patterns::MapnamePtr);
-		auto cns = Scan(Patterns::CurrentStatePtr);
-		auto drc = Scan(Patterns::DemoRecorderPtr);
-		auto ins = Scan(Patterns::InputSystemPtr);
-		auto ksb = Scan(Patterns::Key_SetBinding);
-		auto dpl = Scan(Patterns::DemoPlayerPtr);
+		auto enc = Scan(Patterns::Get("engineClient"));
+		auto ggd = Scan(Patterns::Get("GetGameDir"));
+		auto crt = Scan(Patterns::Get("curtime"));
+		auto ldg = Scan(Patterns::Get("m_bLoadgame"));
+		auto mpn = Scan(Patterns::Get("m_szMapname"));
+		auto cns = Scan(Patterns::Get("m_currentState"));
+		auto drc = Scan(Patterns::Get("demorecorder"));
+		auto ins = Scan(Patterns::Get("g_pInputSystem"));
+		auto ksb = Scan(Patterns::Get("Key_SetBinding"));
+		auto dpl = Scan(Patterns::Get("demoplayer"));
 
 		if (!enc.Found || !ggd.Found || !crt.Found || !ldg.Found || !mpn.Found
 			|| !cns.Found || !drc.Found || !ins.Found || !ksb.Found || !dpl.Found)
@@ -48,10 +48,10 @@ namespace SAR
 	}
 	bool LoadTier1()
 	{
-		auto cvr = Scan(Patterns::CvarPtr);
-		auto cnv = Scan(Patterns::ConVar_Ctor3);
-		auto cnc = Scan(Patterns::ConCommand_Ctor1);
-		auto cnc2 = Scan(Patterns::ConCommand_Ctor2);
+		auto cvr = Scan(Patterns::Get("CvarPtr"));
+		auto cnv = Scan(Patterns::Get("ConVar_Ctor3"));
+		auto cnc = Scan(Patterns::Get("ConCommand_Ctor1"));
+		auto cnc2 = Scan(Patterns::Get("ConCommand_Ctor2"));
 
 		if (!cvr.Found || !cnv.Found || !cnc.Found || !cnc2.Found)
 			return false;
@@ -63,8 +63,8 @@ namespace SAR
 	}
 	bool LoadClient()
 	{
-		auto sts = Scan(Patterns::SetSize);
-		auto mss = Scan(Patterns::MatSystemSurfacePtr);
+		auto sts = Scan(Patterns::Get("SetSize"));
+		auto mss = Scan(Patterns::Get("g_pMatSystemSurface"));
 
 		if (!sts.Found || !mss.Found)
 			return false;
@@ -285,7 +285,7 @@ namespace SAR
 			// Changing 80 to 1024
 			const char* thanksForNothingValve = "%-80s - %.1024s\n";
 
-			auto prd = Scan(Patterns::ConVar_PrintDescription);
+			auto prd = Scan(Patterns::Get("PrintDescription"));
 			if (prd.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(prd.Address), &thanksForNothingValve, 4, 0)) {
 				Console::DevMsg("SAR: Patched ConVar_PrintDescription!\n");
 			}
@@ -294,7 +294,7 @@ namespace SAR
 			// Removing Cbuf_AddText and Cbuf_Execute
 			BYTE ignoreEvilCommandsInDemos[22] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 
-			auto rdp = Scan(Patterns::ReadPacket);
+			auto rdp = Scan(Patterns::Get("ReadPacket"));
 			if (rdp.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(rdp.Address), ignoreEvilCommandsInDemos, 22, 0)) {
 				Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket at 0x%p!\n", rdp.Address);
 			}

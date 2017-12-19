@@ -6,6 +6,8 @@ unsigned __stdcall Main(void* args)
 	if (!Offsets::Init()) return Error("Game not supported!", "SourceAutoRecord");
 	if (!Console::Init()) return Error("Could not initialize console!", "SourceAutoRecord");
 
+	Patterns::LoadAll();
+
 	// ConCommand and ConVar
 	if (SAR::LoadTier1()) {
 
@@ -15,10 +17,12 @@ unsigned __stdcall Main(void* args)
 
 		// Hooks
 		if (SAR::LoadClient() && SAR::LoadEngine()) {
-			Hooks::Load();
+			Hooks::CreateAll();
 
 			// Nobody likes silly bugs
 			SAR::LoadPatches();
+
+			Hooks::EnableAll();
 
 			Console::ColorMsg(COL_ACTIVE, "Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
 			return 0;

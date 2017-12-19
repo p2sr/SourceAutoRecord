@@ -97,6 +97,7 @@
 
 ### Cheats
 - `sar_autojump` enables tick-perfect jumping on the server
+- `sar_aircontrol` enables more air-control on the server
 - `sv_bonus_challenge`, `sv_accelerate`, `sv_airaccelerate`, `sv_friction`, `sv_maxspeed` and `sv_stopspeed` can be accessed in the developer console
 
 ### Patches

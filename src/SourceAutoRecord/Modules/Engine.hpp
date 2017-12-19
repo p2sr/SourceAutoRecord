@@ -162,7 +162,6 @@ namespace Engine
 		_PlayDemo PlayDemo;
 		_StartPlayback StartPlayback;
 		_HostStateFrame HostStateFrame;
-		void* AirMove;
 	}
 
 	namespace Detour
@@ -310,34 +309,6 @@ namespace Engine
 				LastHostState = state.m_currentState;
 			}
 			Original::HostStateFrame(time);
-		}
-		void* SkipSomeStuffInAirMove;
-		__declspec(naked) void AirMove()
-		{
-			__asm {
-				pushad;
-				pushfd;
-			}
-
-			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_aircontrol.GetBool()) {
-				__asm {
-					popfd;
-					popad;
-					jmp SkipSomeStuffInAirMove;
-				}
-			}
-
-			__asm {
-				popfd;
-				popad;
-				movss xmm2, dword ptr[eax + 40h];
-				jmp Original::AirMove;
-			}
-		}
-		void SetAirMove(uintptr_t addr)
-		{
-			SkipSomeStuffInAirMove = (void*)(addr + 142);
-			Original::AirMove = (void*)(addr + 5);
 		}
 	}
 }

@@ -31,7 +31,7 @@ struct Signature {
 struct Pattern {
 	const char* Name;
 	const char* Module;
-	const std::vector<Signature> Signatures;
+	std::vector<Signature> Signatures;
 };
 
 struct ScanResult {

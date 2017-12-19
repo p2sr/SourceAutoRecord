@@ -18,6 +18,17 @@ namespace Server
 	{
 		_CheckJumpButton CheckJumpButton;
 		_PlayerUse PlayerUse;
+		void* AirMove;
+		void* AirMoveSkip;
+	}
+
+	void Set(uintptr_t airMoveAddr)
+	{
+		Original::AirMove = (void*)(airMoveAddr + 5);
+		// Old Portal 2 bunnymod converted the else-if condition into an if
+		// which checks if sv_player_funnel_into_portals is on, let's just
+		// ignore that and leave it as an else-if
+		Original::AirMoveSkip = (void*)(airMoveAddr + 142);
 	}
 
 	namespace Detour
@@ -59,6 +70,28 @@ namespace Server
 				Stats::TotalUses++;
 			}
 			return Original::PlayerUse(thisptr);
+		}
+		__declspec(naked) void AirMove()
+		{
+			__asm {
+				pushad;
+				pushfd;
+			}
+
+			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_aircontrol.GetBool()) {
+				__asm {
+					popfd;
+					popad;
+					jmp Original::AirMoveSkip;
+				}
+			}
+
+			__asm {
+				popfd;
+				popad;
+				movss xmm2, dword ptr[eax + 40h];
+				jmp Original::AirMove;
+			}
 		}
 	}
 }
