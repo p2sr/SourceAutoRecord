@@ -69,7 +69,7 @@ namespace Hooks
 		Create(Patterns::Get("CloseDemoFile"),		Engine::Detour::CloseDemoFile,		reinterpret_cast<LPVOID*>(&Engine::Original::CloseDemoFile));
 		Create(Patterns::Get("FindElement"),		Client::Detour::FindElement,		reinterpret_cast<LPVOID*>(&Client::Original::FindElement));
 
-		// Mid-function-hook
+		// Mid-function-hooks
 		auto amv =
 		Create(Patterns::Get("AirMove"),			Server::Detour::AirMove,			NULL);
 		auto prc =

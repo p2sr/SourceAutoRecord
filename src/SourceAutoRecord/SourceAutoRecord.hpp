@@ -277,7 +277,7 @@ namespace SAR
 
 		// Challenge mode will reset every cheat automatically
 		// Flagging this as a cheat would break cm, I think
-		// and I hope it's impossible to abuse this somehow
+		// it's impossible to abuse this somehow anyway
 		//sv_bonus_challenge.AddFlag(FCVAR_CHEAT);
 
 		sv_accelerate.AddFlag(FCVAR_CHEAT);

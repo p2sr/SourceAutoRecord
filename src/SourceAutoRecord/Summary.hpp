@@ -24,7 +24,8 @@ namespace Summary
 	}
 	void Add(int ticks, float time, char* map)
 	{
-		Items.push_back(SummaryItem {
+		Items.push_back(SummaryItem
+		{
 			ticks,
 			time,
 			map
