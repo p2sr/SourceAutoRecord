@@ -67,10 +67,13 @@ namespace Hooks
 		Create(Patterns::Get("PlayerUse"),			Server::Detour::PlayerUse,			reinterpret_cast<LPVOID*>(&Server::Original::PlayerUse));
 		Create(Patterns::Get("HostStateFrame"),		Engine::Detour::HostStateFrame,		reinterpret_cast<LPVOID*>(&Engine::Original::HostStateFrame));
 		Create(Patterns::Get("CloseDemoFile"),		Engine::Detour::CloseDemoFile,		reinterpret_cast<LPVOID*>(&Engine::Original::CloseDemoFile));
-		
+		Create(Patterns::Get("FindElement"),		Client::Detour::FindElement,		reinterpret_cast<LPVOID*>(&Client::Original::FindElement));
+
 		// Mid-function-hook
 		auto amv =
 		Create(Patterns::Get("AirMove"),			Server::Detour::AirMove,			NULL);
-		Server::Set(amv.Address);
+		auto prc =
+		Create(Patterns::Get("PlayerRunCommand"),	Server::Detour::PlayerRunCommand,	NULL);
+		Server::Set(amv.Address, prc.Address);
 	}
 }

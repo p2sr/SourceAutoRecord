@@ -49,6 +49,14 @@ namespace Offsets
 	// C_BasePlayer
 	int m_afButtonPressed;
 
+	// CUserCmd
+	int forwardmove;
+	int sidemove;
+	int upmove;
+	int buttons;
+	int impulse;
+	int viewangles;
+
 	bool Init()
 	{
 		TCHAR temp[MAX_PATH];
@@ -82,6 +90,12 @@ namespace Offsets
 			m_nDemoNumber = 1608;
 			m_szFileName = 4;
 			m_afButtonPressed = 2860;
+			forwardmove = 24;
+			sidemove = 28;
+			upmove = 32;
+			buttons = 36;
+			impulse = 40;
+			viewangles = 12;
 		}
 		// INFRA 6905
 		else if (exe == "infra.exe") {
@@ -108,6 +122,12 @@ namespace Offsets
 			m_nDemoNumber = 1608; // TODO
 			m_szFileName = 4; // TODO
 			m_afButtonPressed = 2860; // TODO
+			forwardmove = 24; // TODO
+			sidemove = 28; // TODO
+			upmove = 32; // TODO
+			buttons = 36; // TODO
+			impulse = 40; // TODO
+			viewangles = 12; // TODO
 		}
 		else {
 			return false;

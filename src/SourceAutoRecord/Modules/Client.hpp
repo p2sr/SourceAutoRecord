@@ -16,6 +16,7 @@ using _Paint = int(__thiscall*)(void* thisptr);
 using _ComputeSize = int(__thiscall*)(void* thisptr);
 using _SetSize = int(__thiscall*)(void* thisptr, int wide, int tall);
 using _ShouldDraw = bool(__thiscall*)(void* thisptr);
+using _FindElement = int(__thiscall*)(void* thisptr, const char* pName);
 
 // client.dll
 namespace Client
@@ -32,6 +33,7 @@ namespace Client
 		_Paint Paint;
 		_ComputeSize ComputeSize;
 		_ShouldDraw ShouldDraw;
+		_FindElement FindElement;
 	}
 
 	namespace Detour
@@ -168,6 +170,13 @@ namespace Client
 				|| sar_hud_last_demo.GetBool()
 				|| sar_hud_jumps.GetBool()
 				|| sar_hud_uses.GetBool();
+		}
+		int __fastcall FindElement(void* thisptr, int edx, const char* pName)
+		{
+			if (sar_never_open_cm_hud.GetBool() && strcmp(pName, "CHUDChallengeStats") == 0) {
+				return 0;
+			}
+			return Original::FindElement(thisptr, pName);
 		}
 	}
 }

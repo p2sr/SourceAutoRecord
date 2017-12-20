@@ -20,15 +20,22 @@ namespace Server
 		_PlayerUse PlayerUse;
 		void* AirMove;
 		void* AirMoveSkip;
+		void* PlayerRunCommand;
+		void* PlayerRunCommandSkip;
 	}
 
-	void Set(uintptr_t airMoveAddr)
+	void Set(uintptr_t airMoveAddr, uintptr_t playerRunCommandAddr)
 	{
 		Original::AirMove = (void*)(airMoveAddr + 5);
 		// Old Portal 2 bunnymod converted the else-if condition into an if
 		// which checks if sv_player_funnel_into_portals is on, let's just
 		// ignore that and leave it as an else-if
 		Original::AirMoveSkip = (void*)(airMoveAddr + 142);
+
+		Original::PlayerRunCommand = (void*)(playerRunCommandAddr + 8);
+		// 8 bytes = 5 bytes for jmp + addres -> 3 left
+		DoNothingAt(playerRunCommandAddr + 5, 3);
+		Original::PlayerRunCommandSkip = (void*)(playerRunCommandAddr + 51);
 	}
 
 	namespace Detour
@@ -74,23 +81,46 @@ namespace Server
 		__declspec(naked) void AirMove()
 		{
 			__asm {
-				pushad;
-				pushfd;
+				pushad
+				pushfd
 			}
 
 			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_aircontrol.GetBool()) {
 				__asm {
-					popfd;
-					popad;
-					jmp Original::AirMoveSkip;
+					popfd
+					popad
+					jmp Original::AirMoveSkip
 				}
 			}
 
 			__asm {
-				popfd;
-				popad;
-				movss xmm2, dword ptr[eax + 40h];
-				jmp Original::AirMove;
+				popfd
+				popad
+				movss xmm2, dword ptr[eax + 40h]
+				jmp Original::AirMove
+			}
+		}
+		__declspec(naked) void PlayerRunCommand()
+		{
+			__asm {
+				pushad
+				pushfd
+			}
+
+			if (sar_never_delay_start.GetBool()) {
+				__asm {
+					popfd
+					popad
+					jmp Original::PlayerRunCommandSkip
+				}
+			}
+
+			__asm {
+				popfd
+				popad
+				xorps xmm0, xmm0
+				movss dword ptr[esi + 18h], xmm0
+				jmp Original::PlayerRunCommand
 			}
 		}
 	}

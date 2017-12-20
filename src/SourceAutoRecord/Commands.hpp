@@ -60,6 +60,8 @@ namespace Commands
 	// Cheats
 	ConVar sar_autojump;
 	ConVar sar_aircontrol;
+	ConVar sar_never_open_cm_hud;
+	ConVar sar_never_delay_start;
 
 	// Others
 	ConCommand sar_session;

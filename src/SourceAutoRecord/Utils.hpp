@@ -17,6 +17,14 @@
 #define getBits(x) (INRANGE((x & (~0x20)), 'A', 'F') ? ((x & (~0x20)) - 'A' + 0xA): (INRANGE(x, '0', '9') ? x - '0': 0))
 #define getByte(x) (getBits(x[0]) << 4 | getBits(x[1]))
 
+struct Vector {
+	float x, y, z;
+};
+
+struct QAngle {
+	float x, y, z;
+};
+
 struct Color {
 	Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) : Colors{ r, g, b, a } { }
 	uint8_t Colors[4];
@@ -121,4 +129,16 @@ int Error(std::string text, std::string title)
 {
 	MessageBoxA(0, text.c_str(), title.c_str(), MB_ICONERROR);
 	return 1;
+}
+
+bool DoNothingAt(uintptr_t address, unsigned int count)
+{
+	BYTE nop[1] = { 0x90 };
+
+	for (int i = 0; i < count; i++) {
+		if (!WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(address + i), nop, 1, 0)) {
+			return false;
+		}
+	}
+	return true;
 }

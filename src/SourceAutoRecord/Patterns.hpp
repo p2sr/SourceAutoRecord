@@ -55,6 +55,10 @@ namespace Patterns
 		// \x55\x8B\xEC\x83\xEC\x50\x56\x8B\xF1\x8D\x45\xBC xxxxxxxxxxxx
 		Add("AirMove", "server.dll", "Portal 2 Build 6879", "55 8B EC 83 EC 50 56 8B F1 8D 45 BC", 679);
 
+		// CBasePlayer:PlayerRunCommand
+		// \x55\x8B\xEC\x56\x8B\x75\x08\x57\x8B\xF9\x33\xC0 xxxxxxxxxxxx
+		Add("PlayerRunCommand", "server.dll", "Portal 2 Build 6879", "55 8B EC 56 8B 75 08 57 8B F9 33 C0", 162);
+
 
 		// client.dll
 
@@ -74,6 +78,10 @@ namespace Patterns
 		// CNetGraphPanel::DrawTextFields
 		// \x55\x8B\xEC\xA1\x00\x00\x00\x00\x81\xEC\x00\x00\x00\x00\x83\x78\x30\x00\x56\x8B\xF1\x0F\x84\x00\x00\x00\x00 xxxx????xx????xxxxxxxxx????
 		Add("g_pMatSystemSurface", "client.dll", "Portal 2 Build 6879", "55 8B EC A1 ? ? ? ? 81 EC ? ? ? ? 83 78 30 00 56 8B F1 0F 84 ? ? ? ? ", 264);
+
+		// CHud::FindElement
+		// \x55\x8B\xEC\x53\x8B\x5D\x08\x56\x57\x8B\xF1\x33\xFF\x39\x7E\x28 xxxxxxxxxxxxxxxx
+		Add("FindElement", "client.dll", "Portal 2 Build 6879", "55 8B EC 53 8B 5D 08 56 57 8B F1 33 FF 39 7E 28");
 
 
 		// engine.dll
@@ -131,7 +139,7 @@ namespace Patterns
 
 		// CBaseServer::m_szMapname[64]
 		// \x76\x50\x80\x3D\x00\x00\x00\x00\x00\xB8\x00\x00\x00\x00 xxxx?????x????
-		Add("m_szMapname", "engine.dll", "INFRA Build 6879", "76 50 80 3D ? ? ? ? ? B8 ? ? ? ? ", 10);
+		Add("m_szMapname", "engine.dll", "INFRA Build 6905", "76 50 80 3D ? ? ? ? ? B8 ? ? ? ? ", 10);
 
 		// CDemoRecorder::CloseDemoFile
 		// \x56\x8B\xF1\x57\x8D\x4E\x04\xE8\x00\x00\x00\x00\x84\xC0\x0F\x84\x00\x00\x00\x00\x80\xBE\x00\x00\x00\x00\x00 xxxxxxxx????xxxx????xx?????
@@ -184,5 +192,9 @@ namespace Patterns
 		// CHostState::m_currentState
 		// \xC7\x05\x00\x00\x00\x00\x07\x00\x00\x00\xC3 xx????xxxxx
 		Add("m_currentState", "engine.dll", "Portal 2 Build 6879", "C7 05 ? ? ? ? 07 00 00 00 C3", 2);
+
+		// CBaseServer::SetPaused
+		// \x55\x8B\xEC\x83\xEC\x14\x56\x8B\xF1\x83\x7E\x04\x03 xxxxxxxxxxxxx
+		Add("SetPaused", "engine.dll", "Portal 2 Build 6879", "55 8B EC 83 EC 14 56 8B F1 83 7E 04 03");
 	}
 }

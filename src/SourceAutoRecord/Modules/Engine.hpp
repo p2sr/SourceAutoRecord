@@ -11,6 +11,7 @@
 #include "Stats.hpp"
 #include "Summary.hpp"
 #include "Timer.hpp"
+#include "Utils.hpp"
 
 using _GetGameDir = void(__cdecl*)(char* szGetGameDir, int maxlength);
 using _ClientCmd = void(__fastcall*)(void* thisptr, const char* szCmdString);
@@ -47,14 +48,6 @@ enum HostState {
 	GameShutdown = 5,
 	Shutdown = 6,
 	Restart = 7
-};
-
-struct Vector {
-	float x, y, z;
-};
-
-struct QAngle {
-	float x, y, z;
 };
 
 struct HostStateData {

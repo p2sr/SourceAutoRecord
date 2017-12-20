@@ -237,6 +237,14 @@ namespace SAR
 			"sar_aircontrol",
 			"0",
 			"Enables \"more air-control\" on the server.\n");
+		sar_never_open_cm_hud = CreateBoolean(
+			"sar_never_open_cm_hud",
+			"0",
+			"Removes the challenge mode scoreboard panel.\n");
+		sar_never_delay_start = CreateBoolean(
+			"sar_never_delay_start",
+			"0",
+			"Doesn't prevent player to be frozen at spawn.\n");
 
 		// Others
 		sar_session = CreateCommand(
@@ -267,8 +275,11 @@ namespace SAR
 		sv_maxspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 		sv_stopspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 
-		// Nobody likes cheaters
-		sv_bonus_challenge.AddFlag(FCVAR_CHEAT);
+		// Challenge mode will reset every cheat automatically
+		// Flagging this as a cheat would break cm, I think
+		// and I hope it's impossible to abuse this somehow
+		//sv_bonus_challenge.AddFlag(FCVAR_CHEAT);
+
 		sv_accelerate.AddFlag(FCVAR_CHEAT);
 		sv_airaccelerate.AddFlag(FCVAR_CHEAT);
 		sv_friction.AddFlag(FCVAR_CHEAT);
@@ -284,7 +295,6 @@ namespace SAR
 			// Fix limited help string output in ConVar_PrintDescription
 			// Changing 80 to 1024
 			const char* thanksForNothingValve = "%-80s - %.1024s\n";
-
 			auto prd = Scan(Patterns::Get("PrintDescription"));
 			if (prd.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(prd.Address), &thanksForNothingValve, 4, 0)) {
 				Console::DevMsg("SAR: Patched ConVar_PrintDescription!\n");
@@ -292,18 +302,14 @@ namespace SAR
 
 			// Fix executing commands in demo playback
 			// Removing Cbuf_AddText and Cbuf_Execute
-			BYTE ignoreEvilCommandsInDemos[22] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
-
 			auto rdp = Scan(Patterns::Get("ReadPacket"));
-			if (rdp.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(rdp.Address), ignoreEvilCommandsInDemos, 22, 0)) {
+			if (rdp.Found && DoNothingAt(rdp.Address, 22)) {
 				Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket at 0x%p!\n", rdp.Address);
 			}
 
 			// Remove the default ConMsg when demo file gets closed
-			BYTE weAlreadyPrintABetterMessage[29] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
-
 			auto cdf = Scan("engine.dll", "D9 86 ? ? ? ? 8B 8E ? ? ? ? 51");
-			if (cdf.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(cdf.Address), weAlreadyPrintABetterMessage, 29, 0)) {
+			if (cdf.Found && DoNothingAt(cdf.Address, 29)) {
 				Console::DevMsg("SAR: Patched CDemoPlayer::CloseDemoFile at 0x%p!\n", cdf.Address);
 			}
 
