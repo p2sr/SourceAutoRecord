@@ -6,7 +6,9 @@
 #include <vector>
 #include <Windows.h>
 
-#define SAR_VERSION "1.3"
+#include "Offsets.hpp"
+
+#define SAR_VERSION "1.4"
 #define SAR_BUILD __TIME__ " " __DATE__
 #define SAR_COLOR Color(247, 235, 69)
 
@@ -104,19 +106,23 @@ ScanResult Scan(Pattern& pattern)
 		const uintptr_t start = uintptr_t(info.lpBaseOfDll);
 		const uintptr_t end = start + info.SizeOfImage;
 
-		for (auto &signature : pattern.Signatures) {
+		if (pattern.Signatures.size() >= Offsets::Variant + 1) {
+			auto signature = pattern.Signatures[Offsets::Variant];
 			result.Address = FindAddress(start, end, signature.Bytes);
-			if (result.Address == NULL) {
-				result.Index++;
-				continue;
+			if (result.Address != NULL) {
+				result.Address += signature.Offset;
+				result.Found = true;
+				snprintf(result.Message, sizeof(result.Message), "Found %s at 0x%p in %s using %s!", pattern.Name, result.Address, pattern.Module, signature.Comment);
 			}
-			result.Address += signature.Offset;
-			result.Found = true;
-			snprintf(result.Message, sizeof(result.Message), "Found %s at 0x%p in %s using %s!", pattern.Name, result.Address, pattern.Module, pattern.Signatures[result.Index].Comment);
-			break;
+			else {
+				snprintf(result.Message, sizeof(result.Message), "Failed to find %s!", pattern.Name);
+			}
+		}
+		else {
+			snprintf(result.Message, sizeof(result.Message), "Ignored %s!", pattern.Name);
 		}
 	}
-	if (!result.Found) snprintf(result.Message, sizeof(result.Message), "Failed to find %s!", pattern.Name);
+	
 	return result;
 }
 

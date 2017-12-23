@@ -24,18 +24,19 @@ namespace Server
 		void* PlayerRunCommandSkip;
 	}
 
-	void Set(uintptr_t airMoveAddr, uintptr_t playerRunCommandAddr)
+	void SetAirMove(uintptr_t airMoveAddr)
 	{
-		Original::AirMove = (void*)(airMoveAddr + 5);
 		// Old Portal 2 bunnymod converted the else-if condition into an if
 		// which checks if sv_player_funnel_into_portals is on, let's just
 		// ignore that and leave it as an else-if
-		Original::AirMoveSkip = (void*)(airMoveAddr + 142);
-
+		Original::AirMove = (void*)(airMoveAddr + 5);
+		Original::AirMoveSkip = (void*)(airMoveAddr + Offsets::AirMoveSkip);
+	}
+	void SetRunCommand(uintptr_t playerRunCommandAddr)
+	{
 		Original::PlayerRunCommand = (void*)(playerRunCommandAddr + 8);
-		// 8 bytes = 5 bytes for jmp + addres -> 3 left
+		Original::PlayerRunCommandSkip = (void*)(playerRunCommandAddr + Offsets::PlayerRunCommandSkip);
 		DoNothingAt(playerRunCommandAddr + 5, 3);
-		Original::PlayerRunCommandSkip = (void*)(playerRunCommandAddr + 51);
 	}
 
 	namespace Detour
@@ -96,7 +97,7 @@ namespace Server
 			__asm {
 				popfd
 				popad
-				movss xmm2, dword ptr[eax + 40h]
+				movss xmm2, dword ptr[eax + 0x40]
 				jmp Original::AirMove
 			}
 		}
@@ -119,7 +120,7 @@ namespace Server
 				popfd
 				popad
 				xorps xmm0, xmm0
-				movss dword ptr[esi + 18h], xmm0
+				movss dword ptr[esi + 0x18], xmm0
 				jmp Original::PlayerRunCommand
 			}
 		}

@@ -126,6 +126,8 @@ namespace Tier1
 		std::memset(cv.Ptr, 0, size);
 		ConVarCtor(cv.Ptr, nullptr, name, value, flags, helpstr, hasmin, min, hasmax, max);
 
+		ConVarCount++;
+
 		return cv;
 	}
 	ConVar CreateBoolean(const char* name, const char* value, const char* helpstr = "", int flags = FCVAR_NEVER_AS_STRING)

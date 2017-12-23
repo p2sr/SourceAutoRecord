@@ -38,18 +38,6 @@ enum SignonState {
 	Changelevel = 7
 };
 
-// TODO
-enum HostState {
-	NewGame = 0,
-	LoadGame = 1,
-	ChangeLevelSp = 2,
-	ChangeLevelMp = 3,
-	Run = 4,
-	GameShutdown = 5,
-	Shutdown = 6,
-	Restart = 7
-};
-
 struct HostStateData {
 	int	m_currentState;
 	int	m_nextState;
@@ -170,6 +158,7 @@ namespace Engine
 
 		bool __fastcall SetSignonState(void* thisptr, int edx, int state, int spawncount)
 		{
+			//Console::Print("SetSignonState = %i\n", state);
 			if (state == SignonState::Prespawn) {
 				if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
 					Rebinder::LastIndexNumber = (IsRecordingDemo)
@@ -281,7 +270,8 @@ namespace Engine
 			HostStateData state = *reinterpret_cast<HostStateData*>(CurrentStatePtr);
 
 			if (state.m_currentState != LastHostState) {
-				if (state.m_currentState == HostState::ChangeLevelSp) {
+				//Console::Print("m_currentState = %i\n", state.m_currentState);
+				if (state.m_currentState == Offsets::HS_CHANGE_LEVEL_SP) {
 					SessionEnded();
 
 					// CloseDemoFile gets called too late when changing the level
@@ -294,7 +284,7 @@ namespace Engine
 				}
 
 				// Start new session when in menu
-				if (state.m_currentState == HostState::Run && !state.m_activeGame && !DemoPlayer::IsPlaying()) {
+				if (state.m_currentState == Offsets::HS_RUN && !state.m_activeGame && !DemoPlayer::IsPlaying()) {
 					//Console::Print("Detected menu!\n");
 					Session::Rebase(*Engine::TickCount);
 				}

@@ -237,10 +237,12 @@ namespace SAR
 			"sar_aircontrol",
 			"0",
 			"Enables \"more air-control\" on the server.\n");
-		sar_never_open_cm_hud = CreateBoolean(
-			"sar_never_open_cm_hud",
-			"0",
-			"Removes the challenge mode scoreboard panel.\n");
+		if (Offsets::Variant == 0) {
+			sar_never_open_cm_hud = CreateBoolean(
+				"sar_never_open_cm_hud",
+				"0",
+				"Removes the challenge mode scoreboard panel.\n");
+		}
 		sar_never_delay_start = CreateBoolean(
 			"sar_never_delay_start",
 			"0",
@@ -265,6 +267,8 @@ namespace SAR
 		sv_friction = ConVar("sv_friction");
 		sv_maxspeed = ConVar("sv_maxspeed");
 		sv_stopspeed = ConVar("sv_stopspeed");
+
+		Console::DevMsg("Created %i ConVars and %i ConCommands!\n", Tier1::ConVarCount, Tier1::ConCommandCount);
 	}
 	void EnableGameCheats()
 	{
@@ -312,6 +316,12 @@ namespace SAR
 			if (cdf.Found && DoNothingAt(cdf.Address, 29)) {
 				Console::DevMsg("SAR: Patched CDemoPlayer::CloseDemoFile at 0x%p!\n", cdf.Address);
 			}
+
+			// Test
+			/*auto test = Scan("server.dll", "7C 36 56 E8 ? ? ? ? 83 C4 04 85 C0 74 1D 8B 0D ? ? ? ? 8B 40 1C 8B 11 68 ? ? ? ? 50 51 8B 8A ? ? ? ? FF D1 83 C4 0C");
+			if (test.Found && DoNothingAt(test.Address + 15, 29)) {
+				Console::DevMsg("SAR: Patched Something at 0x%p!\n", test.Address);
+			}*/
 
 			break;
 		}

@@ -10,6 +10,9 @@ using _SetValueInt = void(__fastcall*)(void* thisptr, void* edx, int value);
 
 namespace Tier1
 {
+	int ConCommandCount = 0;
+	int ConVarCount = 0;
+
 	struct ConCommandBase {
 		void* VTable_ConCommandBase;
 		ConCommandBase* Next;

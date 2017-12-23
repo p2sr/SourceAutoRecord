@@ -70,10 +70,9 @@ namespace Hooks
 		Create(Patterns::Get("FindElement"),		Client::Detour::FindElement,		reinterpret_cast<LPVOID*>(&Client::Original::FindElement));
 
 		// Mid-function-hooks
-		auto amv =
-		Create(Patterns::Get("AirMove"),			Server::Detour::AirMove,			NULL);
-		auto prc =
-		Create(Patterns::Get("PlayerRunCommand"),	Server::Detour::PlayerRunCommand,	NULL);
-		Server::Set(amv.Address, prc.Address);
+		Server::SetAirMove(Create(Patterns::Get("AirMove"), Server::Detour::AirMove, NULL).Address);
+		if (Offsets::Variant == 0) {
+			Server::SetRunCommand(Create(Patterns::Get("PlayerRunCommand"), Server::Detour::PlayerRunCommand, NULL).Address);
+		}
 	}
 }
