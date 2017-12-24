@@ -6,10 +6,8 @@
 namespace Tier1
 {
 	_ConVar ConVarCtor;
-	
-	// Portal 2 6879
-	// INFRA 6905
-	struct ConVarData0 : ConCommandBase {
+
+	struct ConVarData : ConCommandBase {
 		void* VTable_IConVar;
 		void* Parent;
 		const char* DefaultValue;
@@ -50,36 +48,16 @@ namespace Tier1
 			return !!GetInt();
 		}
 		int ConVar::GetInt() const {
-			switch (Offsets::Variant) {
-			case 0: // Portal 2 6879
-			case 1: // INFRA 6905
-				return ((ConVarData0*)Ptr)->IntValue;
-			}
-			return 0;
+			return ((ConVarData*)Ptr)->IntValue;
 		}
 		float ConVar::GetFloat() const {
-			switch (Offsets::Variant) {
-			case 0: // Portal 2 6879
-			case 1: // INFRA 6905
-				return ((ConVarData0*)Ptr)->FloatValue;
-			}
-			return 0;
+			return ((ConVarData*)Ptr)->FloatValue;
 		}
 		const char* ConVar::GetString() const {
-			switch (Offsets::Variant) {
-			case 0: // Portal 2 6879
-			case 1: // INFRA 6905
-				return ((ConVarData0*)Ptr)->String;
-			}
-			return nullptr;
+			return ((ConVarData*)Ptr)->String;
 		}
 		const int ConVar::GetFlags() const {
-			switch (Offsets::Variant) {
-			case 0: // Portal 2 6879
-			case 1: // INFRA 6905
-				return ((ConVarData0*)Ptr)->Flags;
-			}
-			return 0;
+			return ((ConVarData*)Ptr)->Flags;
 		}
 		void ConVar::SetValue(const char* value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetValue);
@@ -94,11 +72,7 @@ namespace Tier1
 			if (vf) ((_SetValueInt)vf)(Ptr, nullptr, value);
 		}
 		void ConVar::SetFlags(int value) {
-			switch (Offsets::Variant) {
-			case 0: // Portal 2 6879
-			case 1: // INFRA 6905
-				((ConVarData0*)Ptr)->Flags = value;
-			}
+			((ConVarData*)Ptr)->Flags = value;
 		}
 		void ConVar::AddFlag(int value) {
 			SetFlags(GetFlags() | value);
@@ -113,10 +87,10 @@ namespace Tier1
 		ConVar cv;
 		size_t size = 0;
 
-		switch (Offsets::Variant) {
+		switch (Offsets::Game) {
 		case 0:	// Portal 2 6879
 		case 1: // INFRA 6905
-			size = sizeof(ConVarData0);
+			size = sizeof(ConVarData);
 			break;
 		}
 

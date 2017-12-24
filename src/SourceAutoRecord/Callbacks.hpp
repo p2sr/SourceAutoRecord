@@ -34,7 +34,7 @@ namespace Callbacks
 	{
 		Console::Print("SourceAutoRecord tells the engine to keep recording when loading a save.\n");
 		Console::Print("More information at: https://nekzor.github.io/SourceAutoRecord\n");
-		Console::Print("Variant: %s\n", Offsets::GetStringVariant());
+		Console::Print("Game: %s\n", Offsets::GetGame());
 		Console::Print("Version: %s\n", SAR_VERSION);
 		Console::Print("Build: %s\n", SAR_BUILD);
 	}

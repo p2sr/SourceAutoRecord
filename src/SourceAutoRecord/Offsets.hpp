@@ -3,7 +3,7 @@
 
 namespace Offsets
 {
-	int Variant;
+	int Game;
 
 	// CCvar
 	int FindVar;
@@ -65,7 +65,7 @@ namespace Offsets
 
 		// Portal 2 6879
 		if (exe == "portal2.exe") {
-			Variant = 0;
+			Game = 0;
 			InternalSetValue = 12;
 			InternalSetFloatValue = 13;
 			InternalSetIntValue = 14;
@@ -95,7 +95,7 @@ namespace Offsets
 		}
 		// INFRA 6905
 		else if (exe == "infra.exe") {
-			Variant = 1;
+			Game = 1;
 			InternalSetValue = 14;
 			InternalSetFloatValue = 15;
 			InternalSetIntValue = 16;
@@ -128,8 +128,8 @@ namespace Offsets
 		}
 		return true;
 	}
-	const char* GetStringVariant() {
-		switch (Variant) {
+	const char* GetGame() {
+		switch (Game) {
 		case 0:
 			return "Portal 2 (6879)";
 		case 1:

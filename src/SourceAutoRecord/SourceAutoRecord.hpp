@@ -237,7 +237,7 @@ namespace SAR
 			"sar_aircontrol",
 			"0",
 			"Enables \"more air-control\" on the server.\n");
-		if (Offsets::Variant == 0) {
+		if (Offsets::Game == 0) {
 			sar_never_open_cm_hud = CreateBoolean(
 				"sar_never_open_cm_hud",
 				"0",
@@ -292,24 +292,22 @@ namespace SAR
 	}
 	void LoadPatches()
 	{
-		switch (Offsets::Variant) {
+		// Change limited help string output in ConVar_PrintDescription
+		// from 80 to 1024
+		const char* thanksForNothingValve = "%-80s - %.1024s\n";
+		auto prd = Scan(Patterns::Get("PrintDescription"));
+		if (prd.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(prd.Address), &thanksForNothingValve, 4, 0)) {
+			Console::DevMsg("SAR: Patched ConVar_PrintDescription!\n");
+		}
+
+		// Remove Cbuf_AddText and Cbuf_Execute when playing a demo
+		auto rdp = Scan(Patterns::Get("ReadPacket"));
+		if (rdp.Found && DoNothingAt(rdp.Address, 22)) {
+			Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket at 0x%p!\n", rdp.Address);
+		}
+
 		// Portal 2 6879
-		case 0:
-
-			// Fix limited help string output in ConVar_PrintDescription
-			// Changing 80 to 1024
-			const char* thanksForNothingValve = "%-80s - %.1024s\n";
-			auto prd = Scan(Patterns::Get("PrintDescription"));
-			if (prd.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(prd.Address), &thanksForNothingValve, 4, 0)) {
-				Console::DevMsg("SAR: Patched ConVar_PrintDescription!\n");
-			}
-
-			// Fix executing commands in demo playback
-			// Removing Cbuf_AddText and Cbuf_Execute
-			auto rdp = Scan(Patterns::Get("ReadPacket"));
-			if (rdp.Found && DoNothingAt(rdp.Address, 22)) {
-				Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket at 0x%p!\n", rdp.Address);
-			}
+		if (Offsets::Game == 0) {
 
 			// Remove the default ConMsg when demo file gets closed
 			auto cdf = Scan("engine.dll", "D9 86 ? ? ? ? 8B 8E ? ? ? ? 51");
@@ -317,13 +315,11 @@ namespace SAR
 				Console::DevMsg("SAR: Patched CDemoPlayer::CloseDemoFile at 0x%p!\n", cdf.Address);
 			}
 
-			// Test
-			/*auto test = Scan("server.dll", "7C 36 56 E8 ? ? ? ? 83 C4 04 85 C0 74 1D 8B 0D ? ? ? ? 8B 40 1C 8B 11 68 ? ? ? ? 50 51 8B 8A ? ? ? ? FF D1 83 C4 0C");
-			if (test.Found && DoNothingAt(test.Address + 15, 29)) {
-				Console::DevMsg("SAR: Patched Something at 0x%p!\n", test.Address);
-			}*/
-
-			break;
+			// Remove automatic -remote_view on map load
+			auto remoteview = Scan("server.dll", "7C 36 56 E8 ? ? ? ? 83 C4 04 85 C0 74 1D 8B 0D ? ? ? ? 8B 40 1C 8B 11 68 ? ? ? ? 50 51 8B 8A ? ? ? ? FF D1 83 C4 0C");
+			if (remoteview.Found && DoNothingAt(remoteview.Address + 15, 29)) {
+				Console::DevMsg("SAR: Patched -remote_view at 0x%p!\n", remoteview.Address);
+			}
 		}
 	}
 }

@@ -10,7 +10,7 @@ namespace Tier1
 
 	// Portal 2 6879
 	// INFRA 6905
-	struct ConCommandData0 : ConCommandBase {
+	struct ConCommandData : ConCommandBase {
 		union {
 			void* CommandCallbackV1;
 			void* CommandCallback;
@@ -38,10 +38,10 @@ namespace Tier1
 		ConCommand::ConCommand() {
 			size_t size = 0;
 
-			switch (Offsets::Variant) {
+			switch (Offsets::Game) {
 			case 0:	// Portal 2 6879
 			case 1: // INFRA 6905
-				size = sizeof(ConCommandData0);
+				size = sizeof(ConCommandData);
 				break;
 			}
 

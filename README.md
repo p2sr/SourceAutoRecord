@@ -99,13 +99,14 @@
 ### Cheats
 - `sar_autojump` enables tick-perfect jumping on the server
 - `sar_aircontrol` enables more air-control on the server
-- `sar_never_open_cm_hud` disables HUD for challenge mode stats
+- `sar_never_open_cm_hud` disables HUD for challenge mode stats (Portal 2)
 - `sar_never_delay_start` disables start delay when spawning
 - `sv_bonus_challenge`, `sv_accelerate`, `sv_airaccelerate`, `sv_friction`, `sv_maxspeed` and `sv_stopspeed` can be accessed in the developer console
 
 ### Patches
 - Limited character printing has been extended for `help`
 - Redundant command execution has been removed for `playdemo`
+- Server doesn't close `+remote_view` on map load (Portal 2)
 
 ## Mapping
 

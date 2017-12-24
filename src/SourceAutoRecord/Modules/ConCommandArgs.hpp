@@ -11,28 +11,13 @@ namespace Tier1
 		ConCommandArgs::ConCommandArgs(const void* ptr) : Ptr(ptr) {
 		}
 		int ConCommandArgs::Count() const {
-			switch (Offsets::Variant) {
-			case 0:	// Portal 2 6879
-			case 1: // INFRA 6905
-				return ((const ConCommandArgsData*)Ptr)->ArgC;
-			}
-			return 0;
+			return ((const ConCommandArgsData*)Ptr)->ArgC;
 		}
 		const char* ConCommandArgs::At(int index) const {
-			switch (Offsets::Variant) {
-			case 0:	// Portal 2 6879
-			case 1: // INFRA 6905
-				return ((const ConCommandArgsData*)Ptr)->ArgV[index];
-			}
-			return nullptr;
+			return ((const ConCommandArgsData*)Ptr)->ArgV[index];
 		}
 		const char* ConCommandArgs::FullArgs() const {
-			switch (Offsets::Variant) {
-			case 0:	// Portal 2 6879
-			case 1: // INFRA 6905
-				return ((const ConCommandArgsData*)Ptr)->ArgSBuffer;
-			}
-			return nullptr;
+			return ((const ConCommandArgsData*)Ptr)->ArgSBuffer;
 		}
 	};
 }

@@ -71,7 +71,7 @@ namespace Hooks
 
 		// Mid-function-hooks
 		Server::SetAirMove(Create(Patterns::Get("AirMove"), Server::Detour::AirMove, NULL).Address);
-		if (Offsets::Variant == 0) {
+		if (Offsets::Game == 0) {
 			Server::SetRunCommand(Create(Patterns::Get("PlayerRunCommand"), Server::Detour::PlayerRunCommand, NULL).Address);
 		}
 	}

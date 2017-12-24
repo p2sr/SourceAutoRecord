@@ -106,8 +106,8 @@ ScanResult Scan(Pattern& pattern)
 		const uintptr_t start = uintptr_t(info.lpBaseOfDll);
 		const uintptr_t end = start + info.SizeOfImage;
 
-		if (pattern.Signatures.size() >= Offsets::Variant + 1) {
-			auto signature = pattern.Signatures[Offsets::Variant];
+		if (pattern.Signatures.size() >= Offsets::Game + 1) {
+			auto signature = pattern.Signatures[Offsets::Game];
 			result.Address = FindAddress(start, end, signature.Bytes);
 			if (result.Address != NULL) {
 				result.Address += signature.Offset;
