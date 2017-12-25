@@ -267,6 +267,11 @@ namespace SAR
 		sv_friction = ConVar("sv_friction");
 		sv_maxspeed = ConVar("sv_maxspeed");
 		sv_stopspeed = ConVar("sv_stopspeed");
+		sv_maxvelocity = ConVar("sv_maxvelocity");
+		sv_transition_fade_time = ConVar("sv_transition_fade_time");
+		sv_laser_cube_autoaim = ConVar("sv_laser_cube_autoaim");
+		ui_loadingscreen_transition_time = ConVar("ui_loadingscreen_transition_time");
+		hide_gun_when_holding = ConVar("hide_gun_when_holding");
 
 		Console::DevMsg("Created %i ConVars and %i ConCommands!\n", Tier1::ConVarCount, Tier1::ConCommandCount);
 	}
@@ -278,6 +283,11 @@ namespace SAR
 		sv_friction.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 		sv_maxspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 		sv_stopspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
+		sv_maxvelocity.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
+		sv_transition_fade_time.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
+		sv_laser_cube_autoaim.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
+		ui_loadingscreen_transition_time.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
+		hide_gun_when_holding.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
 
 		// Challenge mode will reset every cheat automatically
 		// Flagging this as a cheat would break cm, I think
@@ -289,6 +299,11 @@ namespace SAR
 		sv_friction.AddFlag(FCVAR_CHEAT);
 		sv_maxspeed.AddFlag(FCVAR_CHEAT);
 		sv_stopspeed.AddFlag(FCVAR_CHEAT);
+		sv_maxvelocity.AddFlag(FCVAR_CHEAT);
+		sv_transition_fade_time.AddFlag(FCVAR_CHEAT);
+		sv_laser_cube_autoaim.AddFlag(FCVAR_CHEAT);
+		ui_loadingscreen_transition_time.AddFlag(FCVAR_CHEAT);
+		//hide_gun_when_holding.AddFlag(FCVAR_CHEAT);
 	}
 	void LoadPatches()
 	{

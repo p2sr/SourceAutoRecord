@@ -76,4 +76,9 @@ namespace Commands
 	ConVar sv_friction;
 	ConVar sv_maxspeed;
 	ConVar sv_stopspeed;
+	ConVar sv_maxvelocity;
+	ConVar sv_transition_fade_time;
+	ConVar sv_laser_cube_autoaim;
+	ConVar ui_loadingscreen_transition_time;
+	ConVar hide_gun_when_holding;
 }
