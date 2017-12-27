@@ -129,6 +129,9 @@
     <ClInclude Include="Session.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
+    <ClInclude Include="Game.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

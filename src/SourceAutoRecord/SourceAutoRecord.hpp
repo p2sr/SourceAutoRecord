@@ -14,6 +14,7 @@
 
 #include "Callbacks.hpp"
 #include "Commands.hpp"
+#include "Game.hpp"
 #include "Hooks.hpp"
 #include "Offsets.hpp"
 #include "Patterns.hpp"
@@ -73,7 +74,7 @@ namespace SAR
 		Surface::Set(mss.Address);
 		return true;
 	}
-	void RegisterCommands()
+	void CreateCommands()
 	{
 		// Rebinder
 		sar_bind_save = CreateCommandArgs(
@@ -237,7 +238,7 @@ namespace SAR
 			"sar_aircontrol",
 			"0",
 			"Enables \"more air-control\" on the server.\n");
-		if (Offsets::Game == 0) {
+		if (Game::Version == Game::Portal2) {
 			sar_never_open_cm_hud = CreateBoolean(
 				"sar_never_open_cm_hud",
 				"0",
@@ -275,35 +276,33 @@ namespace SAR
 
 		Console::DevMsg("Created %i ConVars and %i ConCommands!\n", Tier1::ConVarCount, Tier1::ConCommandCount);
 	}
+	void Enable(ConVar& var, bool asCheat = true)
+	{
+		var.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
+		if (asCheat) var.AddFlag(FCVAR_CHEAT);
+	}
 	void EnableGameCheats()
 	{
-		sv_bonus_challenge.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
-		sv_accelerate.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
-		sv_airaccelerate.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
-		sv_friction.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
-		sv_maxspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
-		sv_stopspeed.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
-		sv_maxvelocity.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
-		sv_transition_fade_time.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
-		sv_laser_cube_autoaim.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
-		ui_loadingscreen_transition_time.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
-		hide_gun_when_holding.RemoveFlag(FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN);
-
 		// Challenge mode will reset every cheat automatically
-		// Flagging this as a cheat would break cm, I think
-		// it's impossible to abuse this somehow anyway
-		//sv_bonus_challenge.AddFlag(FCVAR_CHEAT);
+		// Flagging this as a cheat would break cm. I think
+		// it's impossible to abuse this anyway
+		Enable(sv_bonus_challenge, false);
 
-		sv_accelerate.AddFlag(FCVAR_CHEAT);
-		sv_airaccelerate.AddFlag(FCVAR_CHEAT);
-		sv_friction.AddFlag(FCVAR_CHEAT);
-		sv_maxspeed.AddFlag(FCVAR_CHEAT);
-		sv_stopspeed.AddFlag(FCVAR_CHEAT);
-		sv_maxvelocity.AddFlag(FCVAR_CHEAT);
-		sv_transition_fade_time.AddFlag(FCVAR_CHEAT);
-		sv_laser_cube_autoaim.AddFlag(FCVAR_CHEAT);
-		ui_loadingscreen_transition_time.AddFlag(FCVAR_CHEAT);
-		//hide_gun_when_holding.AddFlag(FCVAR_CHEAT);
+		Enable(sv_accelerate);
+		Enable(sv_airaccelerate);
+		Enable(sv_friction);
+		Enable(sv_maxspeed);
+		Enable(sv_stopspeed);
+		Enable(sv_maxvelocity);
+
+		if (Game::Version == Game::Portal2) {
+			Enable(sv_transition_fade_time);
+			Enable(sv_laser_cube_autoaim);
+			Enable(ui_loadingscreen_transition_time);
+
+			// Not a real cheat, right?
+			Enable(hide_gun_when_holding, false);
+		}
 	}
 	void LoadPatches()
 	{
@@ -321,9 +320,7 @@ namespace SAR
 			Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket at 0x%p!\n", rdp.Address);
 		}
 
-		// Portal 2 6879
-		if (Offsets::Game == 0) {
-
+		if (Game::Version == Game::Portal2) {
 			// Remove the default ConMsg when demo file gets closed
 			auto cdf = Scan("engine.dll", "D9 86 ? ? ? ? 8B 8E ? ? ? ? 51");
 			if (cdf.Found && DoNothingAt(cdf.Address, 29)) {

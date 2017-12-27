@@ -1,4 +1,4 @@
-[![Build Version](https://img.shields.io/badge/version-v1.3-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/1)
+[![Build Version](https://img.shields.io/badge/version-v1.4-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/1)
 [![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
 
 **SourceAutoRecord** allows automatic demo recording, automatic binding, demo parsing, session timing and [much more](#features).
@@ -101,7 +101,18 @@
 - `sar_aircontrol` enables more air-control on the server
 - `sar_never_open_cm_hud` disables HUD for challenge mode stats (Portal 2)
 - `sar_never_delay_start` disables start delay when spawning
-- `sv_bonus_challenge`, `sv_accelerate`, `sv_airaccelerate`, `sv_friction`, `sv_maxspeed` and `sv_stopspeed` can be accessed in the developer console
+- These commands can be accessed in the developer console:
+    - sv_bonus_challenge
+    - sv_accelerate
+    - sv_airaccelerate
+    - sv_friction
+    - sv_maxspeed
+    - sv_stopspeed
+    - sv_maxvelocity
+    - sv_transition_fade_time (Portal 2)
+    - sv_laser_cube_autoaim (Portal 2)
+    - ui_loadingscreen_transition_time (Portal 2)
+    - hide_gun_when_holding (Portal 2)
 
 ### Patches
 - Limited character printing has been extended for `help`

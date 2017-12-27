@@ -3,16 +3,17 @@
 
 unsigned __stdcall Main(void* args)
 {
-	if (!Offsets::Init()) return Error("Game not supported!", "SourceAutoRecord");
+	if (!Game::IsSupported()) return Error("Game not supported!", "SourceAutoRecord");
 	if (!Console::Init()) return Error("Could not initialize console!", "SourceAutoRecord");
 
-	Patterns::LoadAll();
+	Offsets::Init();
+	Patterns::Init();
 
 	// ConCommand and ConVar
 	if (SAR::LoadTier1()) {
 
 		// Cheats
-		SAR::RegisterCommands();
+		SAR::CreateCommands();
 		SAR::EnableGameCheats();
 
 		// Hooks

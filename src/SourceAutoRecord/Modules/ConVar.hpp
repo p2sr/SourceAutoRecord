@@ -1,7 +1,8 @@
 #pragma once
 #include "Cvar.hpp"
-#include "Offsets.hpp"
 #include "Tier1.hpp"
+
+#include "Game.hpp"
 
 namespace Tier1
 {
@@ -87,9 +88,9 @@ namespace Tier1
 		ConVar cv;
 		size_t size = 0;
 
-		switch (Offsets::Game) {
-		case 0:	// Portal 2 6879
-		case 1: // INFRA 6905
+		switch (Game::Version) {
+		case 0:
+		case 1:
 			size = sizeof(ConVarData);
 			break;
 		}

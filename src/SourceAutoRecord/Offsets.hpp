@@ -1,10 +1,10 @@
 #pragma once
 #include <string>
 
+#include "Game.hpp"
+
 namespace Offsets
 {
-	int Game;
-
 	// CCvar
 	int FindVar;
 
@@ -55,17 +55,9 @@ namespace Offsets
 	int AirMoveSkip;
 	int PlayerRunCommandSkip;
 
-	bool Init()
+	void Init()
 	{
-		TCHAR temp[MAX_PATH];
-		GetModuleFileName(NULL, temp, _countof(temp));
-		std::string exe = std::string(temp);
-		int index = exe.find_last_of("\\/");
-		exe = exe.substr(index + 1, exe.length() - index);
-
-		// Portal 2 6879
-		if (exe == "portal2.exe") {
-			Game = 0;
+		if (Game::Version == Game::Portal2) {
 			InternalSetValue = 12;
 			InternalSetFloatValue = 13;
 			InternalSetIntValue = 14;
@@ -93,9 +85,7 @@ namespace Offsets
 			AirMoveSkip = 142;
 			PlayerRunCommandSkip = 51;
 		}
-		// INFRA 6905
-		else if (exe == "infra.exe") {
-			Game = 1;
+		else if (Game::Version == Game::INFRA) {
 			InternalSetValue = 14;
 			InternalSetFloatValue = 15;
 			InternalSetIntValue = 16;
@@ -123,18 +113,5 @@ namespace Offsets
 			AirMoveSkip = 162;
 			//PlayerRunCommandSkip = 132;
 		}
-		else {
-			return false;
-		}
-		return true;
-	}
-	const char* GetGame() {
-		switch (Game) {
-		case 0:
-			return "Portal 2 (6879)";
-		case 1:
-			return "INFRA (6905)";
-		}
-		return "Unknown";
 	}
 }

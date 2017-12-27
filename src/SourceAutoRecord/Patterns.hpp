@@ -5,273 +5,362 @@ namespace Patterns
 {
 	std::vector<Pattern> Items;
 
-	void Create(const char* name, const char* moduleName, const char* comment, const char* sigBytes, int offset = 0)
+	void Create(const char* moduleName, const char* patternName)
 	{
 		Items.push_back(Pattern
 		{
-			name,
 			moduleName,
-			std::vector<Signature>
-			{
-				{
-					comment,
-					sigBytes,
-					offset
-				}
-			}
+			patternName
 		});
 	}
-	void AddTo(const char* name, const char* comment, int index = 0)
+	Pattern* Get(const char* patternName)
 	{
 		for (auto &pattern : Items) {
-			if (pattern.Name == name) {
-				auto sigBytes = pattern.Signatures[index].Bytes;
-				auto offset = pattern.Signatures[index].Offset;
-				pattern.Signatures.push_back(Signature
-				{
-					comment,
-					sigBytes,
-					offset
-				});
-				break;
+			if (pattern.Name == patternName) {
+				return &pattern;
 			}
 		}
+		return nullptr;
 	}
-	void AddTo(const char* name, const char* comment, const char* sigBytes, int offset = 0)
+	void Add(const char* patternName, const char* version, const char* sigName, const char* sigBytes, const int offset = 0)
 	{
-		for (auto &pattern : Items) {
-			if (pattern.Name == name) {
-				pattern.Signatures.push_back(Signature
-				{
-					comment,
-					sigBytes,
-					offset
-				});
-				break;
-			}
-		}
-	}
-	Pattern Get(const char* name)
-	{
-		for (auto &pattern : Items) {
-			if (pattern.Name == name) {
-				return pattern;
-			}
-		}
-	}
-	void LoadAll()
-	{
-		// server.dll
+		auto pattern = Get(patternName);
 
+		(*pattern).Signatures.push_back(Signature
+		{
+			version,
+			sigName,
+			sigBytes,
+			offset
+		});
+	}
+	void Add(const char* patternName, const char* version, const char* sigName, const int index = 0)
+	{
+		auto pattern = Get(patternName);
 
-		// CPortalGameMovement::CheckJumpButton
+		(*pattern).Signatures.push_back(Signature
+		{
+			version,
+			sigName,
+			(*pattern).Signatures[index].Bytes,
+			(*pattern).Signatures[index].Offset,
+		});
+	}
+	void Init()
+	{
+		Create("server.dll", "CheckJumpButton");
+		Create("server.dll", "PlayerUse");
+		Create("server.dll", "AirMove");
+		Create("server.dll", "PlayerRunCommand");
+
 		// \x55\x8B\xEC\x83\xEC\x0C\x56\x8B\xF1\x8B\x4E\x04 xxxxxxxxxxxx
-		Create("CheckJumpButton", "server.dll", "Portal 2 Build 6879", "55 8B EC 83 EC 0C 56 8B F1 8B 4E 04");
+		Add("CheckJumpButton", "Portal 2 Build 6879",
+			"CPortalGameMovement::CheckJumpButton",
+			"55 8B EC 83 EC 0C 56 8B F1 8B 4E 04");
 
-		// CINFRAGameMovement::CheckJumpButton
 		// \x55\x8B\xEC\x83\xEC\x18\x56\x8B\xF1\x8B\x4E\x04 xxxxxxxxxxxx
-		AddTo("CheckJumpButton", "INFRA Build 6905", "55 8B EC 83 EC 18 56 8B F1 8B 4E 04");
+		Add("CheckJumpButton", "INFRA Build 6905",
+			"CINFRAGameMovement::CheckJumpButton",
+			"55 8B EC 83 EC 18 56 8B F1 8B 4E 04");
 
-		// CPortal_Player::PlayerUse
 		// \x55\x8B\xEC\x8B\x15\x00\x00\x00\x00\x83\xEC\x0C\x56\x8B\xF1 xxxxx????xxxxxx
-		Create("PlayerUse", "server.dll", "Portal 2 Build 6879", "55 8B EC 8B 15 ? ? ? ? 83 EC 0C 56 8B F1");
+		Add("PlayerUse", "Portal 2 Build 6879",
+			"CPortal_Player::PlayerUse",
+			"55 8B EC 8B 15 ? ? ? ? 83 EC 0C 56 8B F1");
 
-		// CINFRA_Player::PlayerUse
 		// \x57\x8B\xF9\x8B\x87\x00\x00\x00\x00\x0B\x87\x00\x00\x00\x00 xxxxx????xx????
-		AddTo("PlayerUse", "INFRA Build 6905", "57 8B F9 8B 87 ? ? ? ? 0B 87 ? ? ? ? ");
+		Add("PlayerUse", "INFRA Build 6905",
+			"CINFRA_Player::PlayerUse",
+			"57 8B F9 8B 87 ? ? ? ? 0B 87 ? ? ? ? ");
 
-		// CPortalGameMovement::AirMove
 		// \x55\x8B\xEC\x83\xEC\x50\x56\x8B\xF1\x8D\x45\xBC xxxxxxxxxxxx
-		Create("AirMove", "server.dll", "Portal 2 Build 6879", "55 8B EC 83 EC 50 56 8B F1 8D 45 BC", 679);
-
-		// CINFRAGameMovement::AirMove
+		Add("AirMove", "Portal 2 Build 6879",
+			"CPortalGameMovement::AirMove",
+			"55 8B EC 83 EC 50 56 8B F1 8D 45 BC",
+			679);
 		// \x55\x8B\xEC\x83\xEC\x50\x56\x8B\xF1\x8D\x45\xBC xxxxxxxxxxxx
-		AddTo("AirMove", "INFRA Build 6905", "55 8B EC 83 EC 50 56 8B F1 8D 45 BC", 689);
+		Add("AirMove", "INFRA Build 6905",
+			"CINFRAGameMovement::AirMove",
+			"55 8B EC 83 EC 50 56 8B F1 8D 45 BC",
+			689);
 
-		// CBasePlayer:PlayerRunCommand
 		// \x55\x8B\xEC\x56\x8B\x75\x08\x57\x8B\xF9\x33\xC0 xxxxxxxxxxxx
-		Create("PlayerRunCommand", "server.dll", "Portal 2 Build 6879", "55 8B EC 56 8B 75 08 57 8B F9 33 C0", 162);
+		Add("PlayerRunCommand", "Portal 2 Build 6879",
+			"CBasePlayer::PlayerRunCommand",
+			"55 8B EC 56 8B 75 08 57 8B F9 33 C0",
+			162);
 
+		Create("client.dll", "Paint");
+		Create("client.dll", "SetSize");
+		Create("client.dll", "ShouldDraw");
+		Create("client.dll", "g_pMatSystemSurface");
+		Create("client.dll", "FindElement");
 
-		// client.dll
-
-
-		// CFPSPanel::Paint
 		// \x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\x81\xEC\x00\x00\x00\x00\x56\x8B\xF1\x8B\x0D\x00\x00\x00\x00\x8B\x01\x8B\x96\x00\x00\x00\x00 xxxxxxxxxxxxxxxxxxxxxxxx????xxxxx????xxxx????
-		Create("Paint", "client.dll", "Portal 2 Build 6879", "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC ? ? ? ? 56 8B F1 8B 0D ? ? ? ? 8B 01 8B 96 ? ? ? ? ");
+		Add("Paint", "Portal 2 Build 6879",
+			"CFPSPanel::Paint",
+			"53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC ? ? ? ? 56 8B F1 8B 0D ? ? ? ? 8B 01 8B 96 ? ? ? ? ");
 
-		// CFPSPanel::Paint
 		// \x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\x81\xEC\x00\x00\x00\x00\x56\x57\x8B\xF9\x8B\x0D\x00\x00\x00\x00\x8B\x01\x8B\x97\x00\x00\x00\x00 xxxxxxxxxxxxxxxxxxxxxxxx????xxxxxx????xxxx????
-		AddTo("Paint", "INFRA Build 6905", "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC ? ? ? ? 56 57 8B F9 8B 0D ? ? ? ? 8B 01 8B 97 ? ? ? ? ");
+		Add("Paint", "INFRA Build 6905",
+			"CFPSPanel::Paint",
+			"53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC ? ? ? ? 56 57 8B F9 8B 0D ? ? ? ? 8B 01 8B 97 ? ? ? ? ");
 
-		// VPanel::SetSize
 		// \x55\x8B\xEC\x8B\x41\x04\x8B\x50\x04\x8B\x45\x0C\x56\x8B\x35\x00\x00\x00\x00\x57\x8B\x3E\x8D\x4C\x0A\x04\x8B\x55\x08\x50\x8B\x01\x52\x8B\x10\xFF\xD2\x50\x8B\x47\x10 xxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxx
-		Create("SetSize", "client.dll", "Portal 2 Build 6879", "55 8B EC 8B 41 04 8B 50 04 8B 45 0C 56 8B 35 ? ? ? ? 57 8B 3E 8D 4C 0A 04 8B 55 08 50 8B 01 52 8B 10 FF D2 50 8B 47 10");
-		AddTo("SetSize", "INFRA Build 6905");
 
-		// CFPSPanel::ShouldDraw
+		Add("SetSize", "Portal 2 Build 6879",
+			"VPanel::SetSize",
+			"55 8B EC 8B 41 04 8B 50 04 8B 45 0C 56 8B 35 ? ? ? ? 57 8B 3E 8D 4C 0A 04 8B 55 08 50 8B 01 52 8B 10 FF D2 50 8B 47 10");
+		Add("SetSize", "INFRA Build 6905",
+			"VPanel::SetSize");
+
 		// \x80\x3D\x00\x00\x00\x00\x00\x75\x7C xx?????xx
-		Create("ShouldDraw", "client.dll", "Portal 2 Build 6879", "80 3D ? ? ? ? ? 75 7C");
+		Add("ShouldDraw", "Portal 2 Build 6879",
+			"CFPSPanel::ShouldDraw",
+			"80 3D ? ? ? ? ? 75 7C");
 
-		// CFPSPanel::ShouldDraw
 		// \x80\x3D\x00\x00\x00\x00\x00\x56\x8B\xF1\x0F\x85\x00\x00\x00\x00 xx?????xxxxx????
-		AddTo("ShouldDraw", "INFRA Build 6905", "80 3D ? ? ? ? ? 56 8B F1 0F 85 ? ? ? ? ");
-
-		// CNetGraphPanel::DrawTextFields
+		Add("ShouldDraw", "INFRA Build 6905",
+			"CFPSPanel::ShouldDraw",
+			"80 3D ? ? ? ? ? 56 8B F1 0F 85 ? ? ? ? ");
+		
 		// \x55\x8B\xEC\xA1\x00\x00\x00\x00\x81\xEC\x00\x00\x00\x00\x83\x78\x30\x00\x56\x8B\xF1\x0F\x84\x00\x00\x00\x00 xxxx????xx????xxxxxxxxx????
-		Create("g_pMatSystemSurface", "client.dll", "Portal 2 Build 6879", "55 8B EC A1 ? ? ? ? 81 EC ? ? ? ? 83 78 30 00 56 8B F1 0F 84 ? ? ? ? ", 264);
-
-		// CNetGraphPanel::DrawTextFields
+		Add("g_pMatSystemSurface", "Portal 2 Build 6879",
+			"CNetGraphPanel::DrawTextFields",
+			"55 8B EC A1 ? ? ? ? 81 EC ? ? ? ? 83 78 30 00 56 8B F1 0F 84 ? ? ? ? ",
+			264);
+		
 		// \x55\x8B\xEC\xA1\x00\x00\x00\x00\x8B\x50\x34\x81\xEC\x00\x00\x00\x00\x56\x8B\xF1\xB9\x00\x00\x00\x00\xFF\xD2\x85\xC0\x0F\x84\x00\x00\x00\x00 xxxx????xxxxx????xxxx????xxxxxx????
-		AddTo("g_pMatSystemSurface", "INFRA Build 6905", "55 8B EC A1 ? ? ? ? 8B 50 34 81 EC ? ? ? ? 56 8B F1 B9 ? ? ? ? FF D2 85 C0 0F 84 ? ? ? ? ", 278);
-
-		// CHud::FindElement
+		Add("g_pMatSystemSurface", "INFRA Build 6905",
+			"CNetGraphPanel::DrawTextFields",
+			"55 8B EC A1 ? ? ? ? 8B 50 34 81 EC ? ? ? ? 56 8B F1 B9 ? ? ? ? FF D2 85 C0 0F 84 ? ? ? ? ",
+			278);
+		
 		// \x55\x8B\xEC\x53\x8B\x5D\x08\x56\x57\x8B\xF1\x33\xFF\x39\x7E\x28 xxxxxxxxxxxxxxxx
-		Create("FindElement", "client.dll", "Portal 2 Build 6879", "55 8B EC 53 8B 5D 08 56 57 8B F1 33 FF 39 7E 28");
+		Add("FindElement", "Portal 2 Build 6879",
+			"CHud::FindElement",
+			"55 8B EC 53 8B 5D 08 56 57 8B F1 33 FF 39 7E 28");
 
-
-		// engine.dll
-
+		Create("engine.dll", "ConVar_Ctor3");
+		Create("engine.dll", "CvarPtr");
+		Create("engine.dll", "g_pInputSystem");
+		Create("engine.dll", "Key_SetBinding");
+		Create("engine.dll", "ConCommand_Ctor1");
+		Create("engine.dll", "ConCommand_Ctor2");
+		Create("engine.dll", "SetSignonState");
+		Create("engine.dll", "OnFileSelected");
+		Create("engine.dll", "GetGameDir");
+		Create("engine.dll", "engineClient");
+		Create("engine.dll", "m_bLoadgame");
+		Create("engine.dll", "curtime");
+		Create("engine.dll", "m_szMapname");
+		Create("engine.dll", "CloseDemoFile");
+		Create("engine.dll", "demorecorder");
+		Create("engine.dll", "demoplayer");
+		Create("engine.dll", "PlayDemo");
+		Create("engine.dll", "StartPlayback");
+		Create("engine.dll", "StopRecording");
+		Create("engine.dll", "StartupDemoFile");
+		Create("engine.dll", "ReadPacket");
+		Create("engine.dll", "Stop");
+		Create("engine.dll", "PrintDescription");
+		Create("engine.dll", "Disconnect");
+		Create("engine.dll", "HostStateFrame");
+		Create("engine.dll", "m_currentState");
 
 		// \x55\x8B\xEC\xF3\x0F\x10\x45\x00\x8B\x55\x14 xxxxxxx?xxx
-		Create("ConVar_Ctor3", "engine.dll", "Portal 2 Build 6879", "55 8B EC F3 0F 10 45 ? 8B 55 14");
-		AddTo("ConVar_Ctor3", "INFRA Build 6905");
+		Add("ConVar_Ctor3", "Portal 2 Build 6879",
+			"ConVar",
+			"55 8B EC F3 0F 10 45 ? 8B 55 14");
+		Add("ConVar_Ctor3", "INFRA Build 6905", "ConVar");
 
 		// \x8B\x0D\x00\x00\x00\x00\x8B\x01\x8B\x50\x40\x68\x00\x00\x00\x00\xFF\xD2\x85\xC0\x74\x17 xx????xxxxxx????xxxxxxx
-		Create("CvarPtr", "engine.dll", "Portal 2 Build 6879", "8B 0D ? ? ? ? 8B 01 8B 50 40 68 ? ? ? ? FF D2 85 C0 74 17", 2);
-		AddTo("CvarPtr", "INFRA Build 6905");
+		Add("CvarPtr", "Portal 2 Build 6879",
+			"Cvar",
+			"8B 0D ? ? ? ? 8B 01 8B 50 40 68 ? ? ? ? FF D2 85 C0 74 17", 2);
+		Add("CvarPtr", "INFRA Build 6905", "Cvar");
 
-		// CON_COMMAND unbind
 		// \x55\x8B\xEC\x56\x8B\x75\x08\x83\x3E\x02\x74\x11\x68\x00\x00\x00\x00\xFF\x15\x00\x00\x00\x00\x83\xC4\x04\x5E\x5D\xC3\x8B\x86\x00\x00\x00\x00\x8B\x0D\x00\x00\x00\x00 xxxxxxxxxxxxx????xx????xxxxxxxx????xx????
-		Create("g_pInputSystem", "engine.dll", "Portal 2 Build 6879", "55 8B EC 56 8B 75 08 83 3E 02 74 11 68 ? ? ? ? FF 15 ? ? ? ? 83 C4 04 5E 5D C3 8B 86 ? ? ? ? 8B 0D ? ? ? ? ", 37);
-		AddTo("g_pInputSystem", "INFRA Build 6905");
-
+		Add("g_pInputSystem", "Portal 2 Build 6879",
+			"CON_COMMAND unbind",
+			"55 8B EC 56 8B 75 08 83 3E 02 74 11 68 ? ? ? ? FF 15 ? ? ? ? 83 C4 04 5E 5D C3 8B 86 ? ? ? ? 8B 0D ? ? ? ? ", 37);
+		Add("g_pInputSystem", "INFRA Build 6905", "CON_COMMAND unbind");
+		
 		// \x55\x8B\xEC\x56\x8B\x75\x08\x83\xFE\xFF xxxxxxxxxx
-		Create("Key_SetBinding", "engine.dll", "Portal 2 Build 6879", "55 8B EC 56 8B 75 08 83 FE FF");
-
+		Add("Key_SetBinding", "Portal 2 Build 6879",
+			"Key_SetBinding",
+			"55 8B EC 56 8B 75 08 83 FE FF");
+		
 		// \x55\x8B\xEC\x57\x8B\x7D\x08\x83\xFF\xFF xxxxxxxxxx
-		AddTo("Key_SetBinding", "INFRA Build 6905", "55 8B EC 57 8B 7D 08 83 FF FF");
-
+		Add("Key_SetBinding", "INFRA Build 6905",
+			"Key_SetBinding",
+			"55 8B EC 57 8B 7D 08 83 FF FF");
+		
 		// \x55\x8B\xEC\x8B\x45\x0C\x53\x33\xDB\x56\x8B\xF1\x8B\x4D\x18\x80\x66\x20\xF9 xxxxxxxxxxxxxxxxxxx
-		Create("ConCommand_Ctor1", "engine.dll", "Portal 2 Build 6879", "55 8B EC 8B 45 0C 53 33 DB 56 8B F1 8B 4D 18 80 66 20 F9");
-		AddTo("ConCommand_Ctor1", "INFRA Build 6905");
-
+		Add("ConCommand_Ctor1", "Portal 2 Build 6879",
+			"ConCommand",
+			"55 8B EC 8B 45 0C 53 33 DB 56 8B F1 8B 4D 18 80 66 20 F9");
+		Add("ConCommand_Ctor1", "INFRA Build 6905", "ConCommand");
+		
 		// \x55\x8B\xEC\x8B\x45\x0C\x53\x33\xDB\x56\x8B\xF1\x8B\x4D\x18\x80\x4E\x20\x02 xxxxxxxxxxxxxxxxxxx
-		Create("ConCommand_Ctor2", "engine.dll", "Portal 2 Build 6879", "55 8B EC 8B 45 0C 53 33 DB 56 8B F1 8B 4D 18 80 4E 20 02");
-		AddTo("ConCommand_Ctor2", "INFRA Build 6905");
-
-		// CGameClient::SetSignonState
+		Add("ConCommand_Ctor2", "Portal 2 Build 6879",
+			"ConCommand",
+			"55 8B EC 8B 45 0C 53 33 DB 56 8B F1 8B 4D 18 80 4E 20 02");
+		Add("ConCommand_Ctor2", "INFRA Build 6905", "ConCommand");
+		
 		// \x55\x8B\xEC\x56\x57\x8B\x7D\x08\x8B\xF1\x83\xFF\x02 xxxxxxxxxxxxx
-		Create("SetSignonState", "engine.dll", "Portal 2 Build 6879", "55 8B EC 56 57 8B 7D 08 8B F1 83 FF 02");
-		AddTo("SetSignonState", "INFRA Build 6905");
-
-		// CDemoUIPanel::OnFileSelected
+		Add("SetSignonState", "Portal 2 Build 6879",
+			"CGameClient::SetSignonState",
+			"55 8B EC 56 57 8B 7D 08 8B F1 83 FF 02");
+		Add("SetSignonState", "INFRA Build 6905", "CGameClient::SetSignonState");
+		
 		// \x55\x8B\xEC\x8B\x45\x08\x81\xEC\x00\x00\x00\x00\x56\x8B\xF1\x85\xC0\x0F\x84\x00\x00\x00\x00\x80\x38\x00\x0F\x84\x00\x00\x00\x00\x8B\x0D\x00\x00\x00\x00\x8B\x11\x57\x68\x00\x00\x00\x00\x8D\xBD\x00\x00\x00\x00\x57\x50\x8B\x82\x00\x00\x00\x00\xFF\xD0\x6A\x0A xxxxxxxx????xxxxxxx????xxxxx????xx????xxxx????xx????xxxx????xxxx
-		Create("OnFileSelected", "engine.dll", "Portal 2 Build 6879", "55 8B EC 8B 45 08 81 EC ? ? ? ? 56 8B F1 85 C0 0F 84 ? ? ? ? 80 38 00 0F 84 ? ? ? ? 8B 0D ? ? ? ? 8B 11 57 68 ? ? ? ? 8D BD ? ? ? ? 57 50 8B 82 ? ? ? ? FF D0 6A 0A");
-		AddTo("OnFileSelected", "INFRA Build 6905");
-
-		// CVEngineServer::GetGameDir
+		Add("OnFileSelected", "Portal 2 Build 6879",
+			"CDemoUIPanel::OnFileSelected",
+			"55 8B EC 8B 45 08 81 EC ? ? ? ? 56 8B F1 85 C0 0F 84 ? ? ? ? 80 38 00 0F 84 ? ? ? ? 8B 0D ? ? ? ? 8B 11 57 68 ? ? ? ? 8D BD ? ? ? ? 57 50 8B 82 ? ? ? ? FF D0 6A 0A");
+		Add("OnFileSelected", "INFRA Build 6905", "CDemoUIPanel::OnFileSelected");
+		
 		// \x55\x8B\xEC\x8B\x45\x08\x85\xC0\x74\x12\x8B\x4D\x0C xxxxxxxxxxxxx
-		Create("GetGameDir", "engine.dll", "Portal 2 Build 6879", "55 8B EC 8B 45 08 85 C0 74 12 8B 4D 0C");
-		AddTo("GetGameDir", "INFRA Build 6905");
-
+		Add("GetGameDir", "Portal 2 Build 6879",
+			"CVEngineServer::GetGameDir",
+			"55 8B EC 8B 45 08 85 C0 74 12 8B 4D 0C");
+		Add("GetGameDir", "INFRA Build 6905", "CVEngineServer::GetGameDir");
+		
 		// \x55\x8B\xEC\x83\xEC\x10\xB8\x00\x00\x00\x00\x99 xxxxxxx????x
-		Create("engineClient", "engine.dll", "Portal 2 Build 6879", "55 8B EC 83 EC 10 B8 ? ? ? ? 99", 63);
-
+		Add("engineClient", "Portal 2 Build 6879",
+			"engineClient",
+			"55 8B EC 83 EC 10 B8 ? ? ? ? 99",
+			63);
+		
 		// \x55\x8B\xEC\x83\xEC\x14\xB8\x00\x00\x00\x00 xxxxxxx????
-		AddTo("engineClient", "INFRA Build 6905", "55 8B EC 83 EC 14 B8 ? ? ? ? ", 96);
-
-		// CGameClient::SpawnPlayer
+		Add("engineClient", "INFRA Build 6905",
+			"engineClient",
+			"55 8B EC 83 EC 14 B8 ? ? ? ? ",
+			96);
+		
 		// \x55\x8B\xEC\x83\xEC\x14\x80\x3D\x00\x00\x00\x00\x00\x56 xxxxxxxx?????x
-		Create("m_bLoadgame", "engine.dll", "Portal 2 Build 6879", "55 8B EC 83 EC 14 80 3D ? ? ? ? ? 56", 8);
-		AddTo("m_bLoadgame", "INFRA Build 6905");
-
-		// CGlobalVarsBase::curtime
+		Add("m_bLoadgame", "Portal 2 Build 6879",
+			"CGameClient::SpawnPlayer",
+			"55 8B EC 83 EC 14 80 3D ? ? ? ? ? 56",
+			8);
+		Add("m_bLoadgame", "INFRA Build 6905", "CGameClient::SpawnPlayer");
+		
 		// \x89\x96\xC4\x00\x00\x00\x8B\x86\xC8\x00\x00\x00\x8B\xCE\xA3\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xD9\x1D\x00\x00\x00\x00\x8B\xCE\xE8\x00\x00\x00\x00\xD9\x1D xxxxxxxxxxxxxxx????x????xx????xxx????xx
-		Create("curtime", "engine.dll", "Portal 2 Build 6879", "89 96 C4 00 00 00 8B 86 C8 00 00 00 8B CE A3 ? ? ? ? E8 ? ? ? ? D9 1D ? ? ? ? 8B CE E8 ? ? ? ? D9 1D", 26);
-		AddTo("curtime", "INFRA Build 6905");
-
-		// CBaseServer::m_szMapname[64]
+		Add("curtime", "Portal 2 Build 6879",
+			"CGlobalVarsBase::curtime",
+			"89 96 C4 00 00 00 8B 86 C8 00 00 00 8B CE A3 ? ? ? ? E8 ? ? ? ? D9 1D ? ? ? ? 8B CE E8 ? ? ? ? D9 1D", 26);
+		Add("curtime", "INFRA Build 6905", "CGlobalVarsBase::curtime");
+		
 		// \xD9\x00\x2C\xD9\xC9\xDF\xF1\xDD\xD8\x76\x00\x80\x00\x00\x00\x00\x00\x00 x?xxxxxxxx?x?????x
-		Create("m_szMapname", "engine.dll", "Portal 2 Build 6879", "D9 ? 2C D9 C9 DF F1 DD D8 76 ? 80 ? ? ? ? ? 00", 13);
-
-		// CBaseServer::m_szMapname[64]
+		Add("m_szMapname", "Portal 2 Build 6879",
+			"CBaseServer::m_szMapname[64]",
+			"D9 ? 2C D9 C9 DF F1 DD D8 76 ? 80 ? ? ? ? ? 00",
+			13);
+		
 		// \x76\x50\x80\x3D\x00\x00\x00\x00\x00\xB8\x00\x00\x00\x00 xxxx?????x????
-		AddTo("m_szMapname", "INFRA Build 6905", "76 50 80 3D ? ? ? ? ? B8 ? ? ? ? ", 10);
-
-		// CDemoRecorder::CloseDemoFile
+		Add("m_szMapname", "INFRA Build 6905",
+			"CBaseServer::m_szMapname[64]",
+			"76 50 80 3D ? ? ? ? ? B8 ? ? ? ? ",
+			10);
+		
 		// \x56\x8B\xF1\x57\x8D\x4E\x04\xE8\x00\x00\x00\x00\x84\xC0\x0F\x84\x00\x00\x00\x00\x80\xBE\x00\x00\x00\x00\x00 xxxxxxxx????xxxx????xx?????
-		Create("CloseDemoFile", "engine.dll", "Portal 2 Build 6879", "56 8B F1 57 8D 4E 04 E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 80 BE ? ? ? ? ? ");
-		AddTo("CloseDemoFile", "INFRA Build 6905");
-
+		Add("CloseDemoFile", "Portal 2 Build 6879",
+			"CDemoRecorder::CloseDemoFile",
+			"56 8B F1 57 8D 4E 04 E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 80 BE ? ? ? ? ? ");
+		Add("CloseDemoFile", "INFRA Build 6905", "CDemoRecorder::CloseDemoFile");
+		
 		// \x55\x8B\xEC\x81\xEC\x00\x00\x00\x00\x83\x3D\x00\x00\x00\x00\x00\x53 xxxxx????xx?????x
-		Create("demorecorder", "engine.dll", "Portal 2 Build 6879", "55 8B EC 81 EC ? ? ? ? 83 3D ? ? ? ? ? 53", 43);
-		AddTo("demorecorder", "INFRA Build 6905");
-
+		Add("demorecorder", "Portal 2 Build 6879",
+			"demorecorder",
+			"55 8B EC 81 EC ? ? ? ? 83 3D ? ? ? ? ? 53",
+			43);
+		Add("demorecorder", "INFRA Build 6905", "demorecorder");
+		
 		// \x55\x8B\xEC\x81\xEC\x00\x00\x00\x00\x83\x3D\x00\x00\x00\x00\x00\x53 xxxxx????xx?????x
-		Create("demoplayer", "engine.dll", "Portal 2 Build 6879", "55 8B EC 81 EC ? ? ? ? 83 3D ? ? ? ? ? 53", 79);
-		AddTo("demoplayer", "INFRA Build 6905");
+		Add("demoplayer", "Portal 2 Build 6879",
+			"demoplayer",
+			"55 8B EC 81 EC ? ? ? ? 83 3D ? ? ? ? ? 53",
+			79);
+		Add("demoplayer", "INFRA Build 6905", "demoplayer");
 
-		// CL_PlayDemo_f
 		// \x55\x8B\xEC\x81\xEC\x00\x00\x00\x00\x83\x3D\x00\x00\x00\x00\x00\x0F\x85\x00\x00\x00\x00\x8B\x45\x08\x83\x38\x02 xxxxx????xx?????xx????xxxxxx
-		Create("PlayDemo", "engine.dll", "Portal 2 Build 6879", "55 8B EC 81 EC ? ? ? ? 83 3D ? ? ? ? ? 0F 85 ? ? ? ? 8B 45 08 83 38 02");
-		AddTo("PlayDemo", "INFRA Build 6905");
+		Add("PlayDemo", "Portal 2 Build 6879",
+			"CL_PlayDemo_f",
+			"55 8B EC 81 EC ? ? ? ? 83 3D ? ? ? ? ? 0F 85 ? ? ? ? 8B 45 08 83 38 02");
+		Add("PlayDemo", "INFRA Build 6905", "CL_PlayDemo_f");
 
-		// CDemoPlayer::StartPlayback
 		// \x55\x8B\xEC\x53\x56\x57\x6A\x00\x8B\xF1 xxxxxxxxxx
-		Create("StartPlayback", "engine.dll", "Portal 2 Build 6879", "55 8B EC 53 56 57 6A 00 8B F1");
-		AddTo("StartPlayback", "INFRA Build 6905");
+		Add("StartPlayback", "Portal 2 Build 6879",
+			"CDemoPlayer::StartPlayback",
+			"55 8B EC 53 56 57 6A 00 8B F1");
+		Add("StartPlayback", "INFRA Build 6905", "CDemoPlayer::StartPlayback");
 
-		// CDemoRecorder::StopRecording
 		// \x55\x8B\xEC\x51\x56\x8B\xF1\x8B\x06\x8B\x50\x10 xxxxxxxxxxxx
-		Create("StopRecording", "engine.dll", "Portal 2 Build 6879", "55 8B EC 51 56 8B F1 8B 06 8B 50 10");
+		Add("StopRecording", "Portal 2 Build 6879",
+			"CDemoRecorder::StopRecording",
+			"55 8B EC 51 56 8B F1 8B 06 8B 50 10");
 
-		// CDemoRecorder::StopRecording
 		// \x56\x8B\xF1\x8B\x06\x8B\x50\x10\xFF\xD2\x84\xC0\x74\x63 xxxxxxxxxxxxxx
-		AddTo("StopRecording", "INFRA Build 6905", "56 8B F1 8B 06 8B 50 10 FF D2 84 C0 74 63");
+		Add("StopRecording", "INFRA Build 6905",
+			"CDemoRecorder::StopRecording",
+			"56 8B F1 8B 06 8B 50 10 FF D2 84 C0 74 63");
 
-		// CDemoRecorder::StartupDemoFile
 		// \x55\x8B\xEC\x81\xEC\x00\x00\x00\x00\x53\x8B\xD9\x80\xBB\x00\x00\x00\x00\x00\x56 xxxxx????xxxxx?????x
-		Create("StartupDemoFile", "engine.dll", "Portal 2 Build 6879", "55 8B EC 81 EC ? ? ? ? 53 8B D9 80 BB ? ? ? ? ? 56");
-		AddTo("StartupDemoFile", "INFRA Build 6905");
+		Add("StartupDemoFile", "Portal 2 Build 6879",
+			"CDemoRecorder::StartupDemoFile",
+			"55 8B EC 81 EC ? ? ? ? 53 8B D9 80 BB ? ? ? ? ? 56");
+		Add("StartupDemoFile", "INFRA Build 6905", "CDemoRecorder::StartupDemoFile");
 
-		// CDemoPlayer::ReadPacket
 		// \x55\x8B\xEC\x81\xEC\x00\x00\x00\x00\x57\x8B\xF9\x8D\x4F\x04\x89\x7D\xB0 xxxxx????xxxxxxxxx
-		Create("ReadPacket", "engine.dll", "Portal 2 Build 6879", "55 8B EC 81 EC ? ? ? ? 57 8B F9 8D 4F 04 89 7D B0", 414);
-		AddTo("ReadPacket", "INFRA Build 6905");
+		Add("ReadPacket", "Portal 2 Build 6879",
+			"CDemoPlayer::ReadPacket",
+			"55 8B EC 81 EC ? ? ? ? 57 8B F9 8D 4F 04 89 7D B0",
+			414);
+		Add("ReadPacket", "INFRA Build 6905", "CDemoPlayer::ReadPacket");
 
-		// CON_COMMAND stop
 		// \x83\x3D\x00\x00\x00\x00\x00\x75\x1F xx?????xx
-		Create("Stop", "engine.dll", "Portal 2 Build 6879", "83 3D ? ? ? ? ? 75 1F");
+		Add("Stop", "Portal 2 Build 6879",
+			"CON_COMMAND stop",
+			"83 3D ? ? ? ? ? 75 1F");
 
-		// CON_COMMAND stop
 		// \x83\x3D\x00\x00\x00\x00\x00\x75\x1F\x8B\x0D\x00\x00\x00\x00\x8B\x01 xx?????xxxx????xx
-		AddTo("Stop", "INFRA Build 6905", "83 3D ? ? ? ? ? 75 1F 8B 0D ? ? ? ? 8B 01");
+		Add("Stop", "INFRA Build 6905",
+			"CON_COMMAND stop",
+			"83 3D ? ? ? ? ? 75 1F 8B 0D ? ? ? ? 8B 01");
 
-		// ConVar_PrintDescription
 		// \x68\x00\x00\x00\x00\xFF\x15\x00\x00\x00\x00\x83\xC4\x0C\x8B\xE5\x5D\xC3\x8D\x8D\x00\x00\x00\x00 x????xx????xxxxxxxxx????
-		Create("PrintDescription", "engine.dll", "Portal 2 Build 6879", "68 ? ? ? ? FF 15 ? ? ? ? 83 C4 0C 8B E5 5D C3 8D 8D ? ? ? ? ", 1);
-		AddTo("PrintDescription", "INFRA Build 6905");
+		Add("PrintDescription", "Portal 2 Build 6879",
+			"ConVar_PrintDescription",
+			"68 ? ? ? ? FF 15 ? ? ? ? 83 C4 0C 8B E5 5D C3 8D 8D ? ? ? ? ",
+			1);
+		Add("PrintDescription", "INFRA Build 6905",
+			"ConVar_PrintDescription");
 
-		// CBaseClientState::Disconnect
 		// \x55\x8B\xEC\xDD\x05\x00\x00\x00\x00\x83\xEC\x18 xxxxx????xxx
-		Create("Disconnect", "engine.dll", "Portal 2 Build 6879", "55 8B EC DD 05 ? ? ? ? 83 EC 18");
+		Add("Disconnect", "Portal 2 Build 6879",
+			"CBaseClientState::Disconnect",
+			"55 8B EC DD 05 ? ? ? ? 83 EC 18");
 
-		// CBaseClientState::Disconnect
 		// \x55\x8B\xEC\xF2\x0F\x10\x05\x00\x00\x00\x00 xxxxxxx????
-		AddTo("Disconnect", "INFRA Build 6905", "55 8B EC F2 0F 10 05 ? ? ? ? ");
+		Add("Disconnect", "INFRA Build 6905",
+			"CBaseClientState::Disconnect",
+			"55 8B EC F2 0F 10 05 ? ? ? ? ");
 
-		// HostState_Frame
 		// \x55\x8B\xEC\xD9\x45\x08\x51\xB9\x00\x00\x00\x00\xD9\x1C\x24\xE8\x00\x00\x00\x00\x5D\xC3 xxxxxxxx????xxxx????xx
-		Create("HostStateFrame", "engine.dll", "Portal 2 Build 6879", "55 8B EC D9 45 08 51 B9 ? ? ? ? D9 1C 24 E8 ? ? ? ? 5D C3");
+		Add("HostStateFrame", "Portal 2 Build 6879",
+			"HostState_Frame",
+			"55 8B EC D9 45 08 51 B9 ? ? ? ? D9 1C 24 E8 ? ? ? ? 5D C3");
 
-		//  HostState_Frame
 		// \x55\x8B\xEC\xF3\x0F\x10\x45\x00\x51\xB9\x00\x00\x00\x00\xF3\x0F\x11\x04\x24\xE8\x00\x00\x00\x00\x5D\xC3 xxxxxxx?xx????xxxxxx????xx
-		AddTo("HostStateFrame", "INFRA Build 6905", "55 8B EC F3 0F 10 45 ? 51 B9 ? ? ? ? F3 0F 11 04 24 E8 ? ? ? ? 5D C3");
+		Add("HostStateFrame", "INFRA Build 6905",
+			"HostState_Frame",
+			"55 8B EC F3 0F 10 45 ? 51 B9 ? ? ? ? F3 0F 11 04 24 E8 ? ? ? ? 5D C3");
 
-		// CHostState::m_currentState
 		// \xC7\x05\x00\x00\x00\x00\x07\x00\x00\x00\xC3 xx????xxxxx
-		Create("m_currentState", "engine.dll", "Portal 2 Build 6879", "C7 05 ? ? ? ? 07 00 00 00 C3", 2);
-		AddTo("m_currentState", "INFRA Build 6905");
+		Add("m_currentState", "Portal 2 Build 6879",
+			"CHostState::m_currentState",
+			"C7 05 ? ? ? ? 07 00 00 00 C3",
+			2);
+		Add("m_currentState", "INFRA Build 6905", "CHostState::m_currentState");
 	}
 }

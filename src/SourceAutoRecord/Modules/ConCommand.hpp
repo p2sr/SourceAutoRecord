@@ -1,15 +1,13 @@
 #pragma once
 #include "Tier1.hpp"
 
-#include "Offsets.hpp"
+#include "Game.hpp"
 
 namespace Tier1
 {
 	_ConCommand ConCommandCtor;
 	_ConCommand ConCommandCtor2;
 
-	// Portal 2 6879
-	// INFRA 6905
 	struct ConCommandData : ConCommandBase {
 		union {
 			void* CommandCallbackV1;
@@ -38,9 +36,9 @@ namespace Tier1
 		ConCommand::ConCommand() {
 			size_t size = 0;
 
-			switch (Offsets::Game) {
-			case 0:	// Portal 2 6879
-			case 1: // INFRA 6905
+			switch (Game::Version) {
+			case 0:
+			case 1:
 				size = sizeof(ConCommandData);
 				break;
 			}

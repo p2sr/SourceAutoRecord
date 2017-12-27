@@ -34,7 +34,7 @@ namespace Callbacks
 	{
 		Console::Print("SourceAutoRecord tells the engine to keep recording when loading a save.\n");
 		Console::Print("More information at: https://nekzor.github.io/SourceAutoRecord\n");
-		Console::Print("Game: %s\n", Offsets::GetGame());
+		Console::Print("Game: %s\n", Game::GetVersion());
 		Console::Print("Version: %s\n", SAR_VERSION);
 		Console::Print("Build: %s\n", SAR_BUILD);
 	}
@@ -94,7 +94,7 @@ namespace Callbacks
 
 			std::string name;
 			std::string dir = Engine::GetDir() + std::string("\\");
-			for (size_t i = 1; i < args.Count(); i++)
+			for (int i = 1; i < args.Count(); i++)
 			{
 				name = std::string(args.At(i));
 
@@ -314,7 +314,7 @@ namespace Callbacks
 				return;
 			}
 
-			for (size_t i = 0; i < average; i++) {
+			for (int i = 0; i < average; i++) {
 				Console::Print("%s -> ", Timer::Average::Items[i].Map);
 				Console::Print("%i ticks", Timer::Average::Items[i].Ticks);
 				Console::Print("(%.3f)\n", Timer::Average::Items[i].Time);
@@ -349,7 +349,7 @@ namespace Callbacks
 				return;
 			}
 
-			for (size_t i = 0; i < cps; i++) {
+			for (int i = 0; i < cps; i++) {
 				if (i == cps - 1 && Timer::IsRunning) {
 					Console::PrintActive("%s -> ", Timer::CheckPoints::Items[i].Map);
 					Console::PrintActive("%i ticks", Timer::CheckPoints::Items[i].Ticks);

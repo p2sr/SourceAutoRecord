@@ -6,7 +6,7 @@
 #include <vector>
 #include <Windows.h>
 
-#include "Offsets.hpp"
+#include "Game.hpp"
 
 #define SAR_VERSION "1.4"
 #define SAR_BUILD __TIME__ " " __DATE__
@@ -33,14 +33,15 @@ struct Color {
 };
 
 struct Signature {
-	const char* Comment;
+	const char* Version;
+	const char* Name;
 	const char* Bytes;
 	const int Offset = 0;
 };
 
 struct Pattern {
-	const char* Name;
 	const char* Module;
+	const char* Name;
 	std::vector<Signature> Signatures;
 };
 
@@ -82,8 +83,8 @@ uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_addre
 
 ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
 {
-	MODULEINFO info = { 0 };
-	ScanResult result = { 0 };
+	auto info = MODULEINFO();
+	auto result = ScanResult();
 
 	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleA(moduleName), &info, sizeof(MODULEINFO))) {
 		const uintptr_t start = uintptr_t(info.lpBaseOfDll);
@@ -97,29 +98,29 @@ ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
 	return result;
 }
 
-ScanResult Scan(Pattern& pattern)
+ScanResult Scan(Pattern* pattern)
 {
-	MODULEINFO info = { 0 };
-	ScanResult result = { 0 };
+	auto info = MODULEINFO();
+	auto result = ScanResult();
 
-	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleA(pattern.Module), &info, sizeof(MODULEINFO))) {
+	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleA((*pattern).Module), &info, sizeof(MODULEINFO))) {
 		const uintptr_t start = uintptr_t(info.lpBaseOfDll);
 		const uintptr_t end = start + info.SizeOfImage;
 
-		if (pattern.Signatures.size() >= Offsets::Game + 1) {
-			auto signature = pattern.Signatures[Offsets::Game];
+		if ((int)(*pattern).Signatures.size() >= Game::Version + 1) {
+			auto signature = (*pattern).Signatures[Game::Version];
 			result.Address = FindAddress(start, end, signature.Bytes);
 			if (result.Address != NULL) {
 				result.Address += signature.Offset;
 				result.Found = true;
-				snprintf(result.Message, sizeof(result.Message), "Found %s at 0x%p in %s using %s!", pattern.Name, result.Address, pattern.Module, signature.Comment);
+				snprintf(result.Message, sizeof(result.Message), "Found %s at 0x%p in %s!", signature.Name, (void*)result.Address, (*pattern).Module);
 			}
 			else {
-				snprintf(result.Message, sizeof(result.Message), "Failed to find %s!", pattern.Name);
+				snprintf(result.Message, sizeof(result.Message), "Failed to find %s!", signature.Name);
 			}
 		}
 		else {
-			snprintf(result.Message, sizeof(result.Message), "Ignored %s!", pattern.Name);
+			snprintf(result.Message, sizeof(result.Message), "Ignored %s!", (*pattern).Name);
 		}
 	}
 	
@@ -137,7 +138,7 @@ int Error(std::string text, std::string title)
 	return 1;
 }
 
-bool DoNothingAt(uintptr_t address, unsigned int count)
+bool DoNothingAt(uintptr_t address, int count)
 {
 	BYTE nop[1] = { 0x90 };
 

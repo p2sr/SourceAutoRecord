@@ -76,11 +76,11 @@
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
     <IncludePath>$(IncludePath);$(SolutionDir)\libs</IncludePath>
-    <OutDir>$(SolutionDir)\bin</OutDir>
+    <OutDir>$(SolutionDir)\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetExt>.dll</TargetExt>
-    <OutDir>$(SolutionDir)\bin</OutDir>
+    <OutDir>$(SolutionDir)\bin\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\libs;$(ProjectDir)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -157,6 +157,7 @@
     <ClInclude Include="..\..\libs\minhook\hde\table32.h" />
     <ClInclude Include="..\..\libs\minhook\hde\table64.h" />
     <ClInclude Include="..\..\libs\minhook\trampoline.h" />
+    <ClInclude Include="Game.hpp" />
     <ClInclude Include="Session.hpp" />
     <ClInclude Include="Stats.hpp" />
     <ClInclude Include="TimerAverage.hpp" />
