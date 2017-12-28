@@ -48,12 +48,17 @@ namespace Offsets
 
 	// C_BasePlayer
 	int m_afButtonPressed;
+	int GetAbsOrigin;
+	int GetAbsAngles;
+	int GetLocalVelocity;
 
 	// Others
 	int HS_RUN;
 	int HS_CHANGE_LEVEL_SP;
 	int AirMoveSkip;
 	int PlayerRunCommandSkip;
+	int MainViewOrigin;
+	int MainViewAngles;
 
 	void Init()
 	{
@@ -84,6 +89,11 @@ namespace Offsets
 			HS_CHANGE_LEVEL_SP = 2;
 			AirMoveSkip = 142;
 			PlayerRunCommandSkip = 51;
+			GetAbsOrigin = 156;
+			GetAbsAngles = 192;
+			GetLocalVelocity = 264;
+			MainViewOrigin = 31;
+			MainViewAngles = 59;
 		}
 		else if (Game::Version == Game::INFRA) {
 			InternalSetValue = 14;
@@ -112,6 +122,11 @@ namespace Offsets
 			HS_CHANGE_LEVEL_SP = 3;
 			AirMoveSkip = 162;
 			//PlayerRunCommandSkip = 132;
+			GetAbsOrigin = 156;
+			GetAbsAngles = 192;
+			GetLocalVelocity = 264;
+			MainViewOrigin = 31;
+			MainViewAngles = 59;
 		}
 	}
 }

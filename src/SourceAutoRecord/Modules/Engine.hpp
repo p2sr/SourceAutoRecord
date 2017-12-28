@@ -14,7 +14,7 @@
 #include "Utils.hpp"
 
 using _GetGameDir = void(__cdecl*)(char* szGetGameDir, int maxlength);
-using _ClientCmd = void(__fastcall*)(void* thisptr, const char* szCmdString);
+using _ClientCmd = void(__fastcall*)(void* thisptr, int edx, const char* szCmdString);
 
 using _SetSignonState = bool(__thiscall*)(void* thisptr, int state, int spawncount);
 using _CloseDemoFile = int(__thiscall*)(void* thisptr);
@@ -85,7 +85,7 @@ namespace Engine
 	}
 	void ExecuteCommand(const char* cmd)
 	{
-		ClientCmd(ClientPtr, cmd);
+		ClientCmd(ClientPtr, 0, cmd);
 	}
 	int GetTick()
 	{

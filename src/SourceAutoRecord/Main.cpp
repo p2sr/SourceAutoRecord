@@ -25,7 +25,7 @@ unsigned __stdcall Main(void* args)
 
 			Hooks::EnableAll();
 
-			Console::ColorMsg(COL_ACTIVE, "Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
+			Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
 			return 0;
 		}
 		else {

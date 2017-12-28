@@ -132,6 +132,9 @@
     <ClInclude Include="Game.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
+    <ClInclude Include="Teleporter.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

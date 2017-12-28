@@ -10,22 +10,46 @@
 #include "TimerCheckpoints.hpp"
 #include "Utils.hpp"
 
-#define FPS_PANEL_WIDTH 300
+// Is this large enough for everyone?
+#define FPS_PANEL_WIDTH 3333
 
 using _Paint = int(__thiscall*)(void* thisptr);
 using _ComputeSize = int(__thiscall*)(void* thisptr);
 using _SetSize = int(__thiscall*)(void* thisptr, int wide, int tall);
 using _ShouldDraw = bool(__thiscall*)(void* thisptr);
 using _FindElement = int(__thiscall*)(void* thisptr, const char* pName);
+using _GetLocalPlayer = void*(__cdecl*)(int unk);
 
 // client.dll
 namespace Client
 {
 	_SetSize SetSize;
+	_GetLocalPlayer GetLocalPlayer;
 
-	void Set(uintptr_t setSizeAddress)
+	Vector* MainViewOrigin;
+	QAngle* MainViewAngles;
+
+	void Set(uintptr_t setSizeAddress, uintptr_t getLocalPlayerAddress, uintptr_t getPosAddress)
 	{
 		SetSize = (_SetSize)setSizeAddress;
+		GetLocalPlayer = (_GetLocalPlayer)getLocalPlayerAddress;
+		MainViewOrigin = *(Vector**)((uintptr_t)getPosAddress + Offsets::MainViewOrigin);
+		MainViewAngles = *(QAngle**)((uintptr_t)getPosAddress + Offsets::MainViewAngles);
+	}
+	Vector GetAbsOrigin()
+	{
+		auto player = Client::GetLocalPlayer(-1);
+		return (player) ? *(Vector*)((uintptr_t)player + Offsets::GetAbsOrigin) : Vector();
+	}
+	QAngle GetAbsAngles()
+	{
+		auto player = Client::GetLocalPlayer(-1);
+		return (player) ? *(QAngle*)((uintptr_t)player + Offsets::GetAbsAngles) : QAngle();
+	}
+	Vector GetLocalVelocity()
+	{
+		auto player = Client::GetLocalPlayer(-1);
+		return (player) ? *(Vector*)((uintptr_t)player + Offsets::GetLocalVelocity) : Vector();
 	}
 
 	namespace Original
@@ -42,18 +66,53 @@ namespace Client
 		{
 			int result = 0;
 
-			int m_hFont = *(int*)((uintptr_t)thisptr + Offsets::m_hFont);
+			int elements = 0;
+			int xPadding = sar_hud_default_padding_x.GetInt();
+			int yPadding = sar_hud_default_padding_y.GetInt();
+			int spacing = sar_hud_default_spacing.GetInt();
 
-			int level = 0;
-			int offset = 2;
-			const int size = 10;
-			const int spacing = 4;
+			unsigned long m_hFont = *(unsigned long*)((uintptr_t)thisptr + Offsets::m_hFont) + sar_hud_default_font_index.GetInt();
+			int fontSize = sar_hud_default_font_size.GetInt();
+
+			int r, g, b, a;
+			sscanf_s(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
+			Color textColor(r, g, b, a);
 
 			if (cl_showpos.GetBool()) {
 				result = Original::Paint(thisptr);
-				offset = 67;
+				yPadding += 65; // Ehem?
 			}
 
+			// cl_showpos replacement
+			if (sar_hud_text.GetString()[0] != '\0') {
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, (char*)sar_hud_text.GetString());
+				elements++;
+			}
+			if (sar_hud_position.GetBool()) {
+				char position[64];
+				
+				if (sar_hud_position.GetInt() == 1) {
+					snprintf(position, sizeof(position), "pos: %.3f %.3f %.3f", MainViewOrigin->x, MainViewOrigin->y, MainViewOrigin->z);
+				}
+				else {
+					auto pos = GetAbsOrigin();
+					snprintf(position, sizeof(position), "pos: %.3f %.3f %.3f", pos.x, pos.y, pos.z);
+				}
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, position);
+				elements++;
+			}
+			if (sar_hud_angles.GetBool()) {
+				char angles[64];
+				snprintf(angles, sizeof(angles), "ang: %.3f %.3f", MainViewAngles->x, MainViewAngles->y);
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, angles);
+				elements++;
+			}
+			if (sar_hud_velocity.GetBool()) {
+				char velocity[64];
+				snprintf(velocity, sizeof(velocity), "vel: %.3f", (sar_hud_velocity.GetInt() == 1) ? GetLocalVelocity().Length() : GetLocalVelocity().Length2D());
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, velocity);
+				elements++;
+			}
 			// Session
 			if (sar_hud_session.GetBool()) {
 				int tick = (!*Engine::LoadGame) ? Engine::GetTick() : 0;
@@ -61,14 +120,14 @@ namespace Client
 
 				char session[64];
 				snprintf(session, sizeof(session), "session: %i (%.3f)", tick, time);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, session);
-				level++;
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, session);
+				elements++;
 			}
 			if (sar_hud_last_session.GetBool()) {
 				char session[64];
 				snprintf(session, sizeof(session), "last session: %i (%.3f)", Session::LastSession, Session::LastSession * *Engine::IntervalPerTick);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, session);
-				level++;
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, session);
+				elements++;
 			}
 			if (sar_hud_sum.GetBool()) {
 				char sum[64];
@@ -80,8 +139,8 @@ namespace Client
 				else {
 					snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks, Summary::TotalTime);
 				}
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, sum);
-				level++;
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, sum);
+				elements++;
 			}
 			// Timer
 			if (sar_hud_timer.GetBool()) {
@@ -90,20 +149,20 @@ namespace Client
 
 				char timer[64];
 				snprintf(timer, sizeof(timer), "timer: %i (%.3f)", tick, time);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, timer);
-				level++;
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, timer);
+				elements++;
 			}
 			if (sar_hud_avg.GetBool()) {
 				char avg[64];
 				snprintf(avg, sizeof(avg), "avg: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, avg);
-				level++;
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, avg);
+				elements++;
 			}
 			if (sar_hud_cps.GetBool()) {
 				char cps[64];
 				snprintf(cps, sizeof(cps), "last cp: %i (%.3f)", Timer::CheckPoints::LatestTick, Timer::CheckPoints::LatestTime);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, cps);
-				level++;
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, cps);
+				elements++;
 			}
 			// Demo
 			if (sar_hud_demo.GetBool()) {
@@ -122,8 +181,8 @@ namespace Client
 				else {
 					snprintf(demo, sizeof(demo), "demo: -");
 				}
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, demo);
-				level++;
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, demo);
+				elements++;
 			}
 			if (sar_hud_last_demo.GetBool()) {
 				char demo[64];
@@ -135,21 +194,21 @@ namespace Client
 				else {
 					snprintf(demo, sizeof(demo), "last demo: -");
 				}
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, demo);
-				level++;
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, demo);
+				elements++;
 			}
 			// Stats
 			if (sar_hud_jumps.GetBool()) {
 				char jumps[64];
 				snprintf(jumps, sizeof(jumps), "jumps: %i", Stats::TotalJumps);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, jumps);
-				level++;
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, jumps);
+				elements++;
 			}
 			if (sar_hud_uses.GetBool()) {
 				char uses[64];
 				snprintf(uses, sizeof(uses), "uses: %i", Stats::TotalUses);
-				Surface::Draw(m_hFont, 1, offset + level * (size + spacing), COL_DEFAULT, uses);
-				level++;
+				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, uses);
+				elements++;
 			}
 
 			// Original paint function might resize the panel
@@ -160,6 +219,10 @@ namespace Client
 		bool __fastcall ShouldDraw(void* thisptr, int edx)
 		{
 			return Original::ShouldDraw(thisptr)
+				|| sar_hud_text.GetString()[0] != '\0'
+				|| sar_hud_position.GetBool()
+				|| sar_hud_angles.GetBool()
+				|| sar_hud_velocity.GetBool()
 				|| sar_hud_session.GetBool()
 				|| sar_hud_last_session.GetBool()
 				|| sar_hud_sum.GetBool()

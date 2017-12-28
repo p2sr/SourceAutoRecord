@@ -15,8 +15,10 @@
     - [Average](#average)
     - [Checkpoints](#checkpoints)
   - [HUD](#hud)
+    - [Optional](#optional)
   - [Stats](#stats)
   - [Cheats](#cheats)
+    - [Accessible](#accessible)
   - [Patches](#patches)
 - [Mapping](#mapping)
   - [Start & Stop Triggers](#start--stop-triggers)
@@ -55,7 +57,7 @@
 ### Session Timing
 - `sar_session` prints current tick count since the server has loaded
 
-#### Summary
+##### Summary
 - `sar_sum_here` starts saving the total tick count of each session
 - `sar_sum_stop` stops counting
 - `sar_sum_reset` resets the counter
@@ -69,19 +71,23 @@
 - `sar_timer_always_running` doesn't stop the timer when disconnecting from server
 - Mappers can use this for accurate timing, [see below](#mapping)
 
-#### Average
+##### Average
 - `sar_avg_start` starts calculating the average of the timer
 - `sar_avg_stop` stops calculation
 - `sar_avg_result` prints result
 
-#### Checkpoints
+##### Checkpoints
 - `sar_cps_add` saves current timer value
 - `sar_cps_clear` resets all saved values
 - `sar_cps_result` prints result of all checkpoints
 
 ### HUD
+- `sar_hud_text` draws given string
+- `sar_hud_position` draws player's position
+- `sar_hud_angles` draws player's view angles
+- `sar_hud_velocity` draws player's velocity
 - `sar_hud_session` draws current session value
-- `sar_hud_last_session` draws value of latest completed session value
+- `sar_hud_last_session` draws value of latest completed session
 - `sar_hud_sum` draws summary value of sessions
 - `sar_hud_timer` draws timer value
 - `sar_hud_avg` draws current average of timer
@@ -89,7 +95,14 @@
 - `sar_hud_demo` draws current name, tick and time of demo recorder or demo player
 - `sar_hud_last_demo` draws value of latest completed demo
 - `sar_hud_jumps` draws total jump count
-- `sar_hud_uses` draws total use count
+
+##### Optional
+- `sar_hud_default_spacing` space between HUD elements
+- `sar_hud_default_padding_x` additional padding of HUD on x-axis
+- `sar_hud_default_padding_y` additional padding of HUD on y-axis
+- `sar_hud_default_font_index` draws total use count
+- `sar_hud_default_font_size` font size of HUD used for spacing
+- `sar_hud_default_font_color` font color of HUD
 
 ### Stats
 - `sar_stats_auto_reset` resets all stats automatically
@@ -101,18 +114,21 @@
 - `sar_aircontrol` enables more air-control on the server
 - `sar_never_open_cm_hud` disables HUD for challenge mode stats (Portal 2)
 - `sar_never_delay_start` disables start delay when spawning
-- These commands can be accessed in the developer console:
-    - sv_bonus_challenge
-    - sv_accelerate
-    - sv_airaccelerate
-    - sv_friction
-    - sv_maxspeed
-    - sv_stopspeed
-    - sv_maxvelocity
-    - sv_transition_fade_time (Portal 2)
-    - sv_laser_cube_autoaim (Portal 2)
-    - ui_loadingscreen_transition_time (Portal 2)
-    - hide_gun_when_holding (Portal 2)
+- `sar_teleport` teleports player to a saved location
+- `sar_teleport_setpos` saves current location for teleportation
+
+##### Accessible
+- `sv_bonus_challenge`
+- `sv_accelerate`
+- `sv_airaccelerate`
+- `sv_friction`
+- `sv_maxspeed`
+- `sv_stopspeed`
+- `sv_maxvelocity`
+- `sv_transition_fade_time` (Portal 2)
+- `sv_laser_cube_autoaim` (Portal 2)
+- `ui_loadingscreen_transition_time` (Portal 2)
+- `hide_gun_when_holding` (Portal 2)
 
 ### Patches
 - Limited character printing has been extended for `help`

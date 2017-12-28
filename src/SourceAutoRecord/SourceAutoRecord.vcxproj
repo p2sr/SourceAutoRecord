@@ -160,6 +160,7 @@
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="Session.hpp" />
     <ClInclude Include="Stats.hpp" />
+    <ClInclude Include="Teleporter.hpp" />
     <ClInclude Include="TimerAverage.hpp" />
     <ClInclude Include="Commands.hpp" />
     <ClInclude Include="Demo.hpp" />

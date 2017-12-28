@@ -4,18 +4,19 @@
 
 using _DrawColoredText = int(__cdecl*)(void* thisptr, unsigned long font, int x, int y, int r, int g, int b, int a, char *fmt, ...);
 
+// vguimatsurface.dll
 namespace Surface
 {
-	void* Ptr;
+	void* MatSystemSurfacePtr;
 	_DrawColoredText DrawColoredText;
 
 	void Set(uintptr_t mssPtr)
 	{
-		Ptr = **(void***)(mssPtr);
-		DrawColoredText = (_DrawColoredText)GetVirtualFunctionByIndex(Ptr, Offsets::DrawColoredText);
+		MatSystemSurfacePtr = **(void***)(mssPtr);
+		DrawColoredText = (_DrawColoredText)GetVirtualFunctionByIndex(MatSystemSurfacePtr, Offsets::DrawColoredText);
 	}
 	void Draw(unsigned long font, int x, int y, Color clr, char *fmt, ...)
 	{
-		DrawColoredText(Ptr, font, x, y, clr.Colors[0], clr.Colors[1], clr.Colors[2], clr.Colors[3], fmt);
+		DrawColoredText(MatSystemSurfacePtr, font, x, y, clr.r(), clr.g(), clr.b(), clr.a(), fmt);
 	}
 }

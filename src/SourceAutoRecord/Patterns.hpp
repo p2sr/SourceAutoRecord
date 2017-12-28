@@ -26,7 +26,7 @@ namespace Patterns
 	{
 		auto pattern = Get(patternName);
 
-		(*pattern).Signatures.push_back(Signature
+		pattern->Signatures.push_back(Signature
 		{
 			version,
 			sigName,
@@ -38,12 +38,12 @@ namespace Patterns
 	{
 		auto pattern = Get(patternName);
 
-		(*pattern).Signatures.push_back(Signature
+		pattern->Signatures.push_back(Signature
 		{
 			version,
 			sigName,
-			(*pattern).Signatures[index].Bytes,
-			(*pattern).Signatures[index].Offset,
+			pattern->Signatures[index].Bytes,
+			pattern->Signatures[index].Offset,
 		});
 	}
 	void Init()
@@ -52,6 +52,45 @@ namespace Patterns
 		Create("server.dll", "PlayerUse");
 		Create("server.dll", "AirMove");
 		Create("server.dll", "PlayerRunCommand");
+
+		Create("client.dll", "Paint");
+		Create("client.dll", "SetSize");
+		Create("client.dll", "ShouldDraw");
+		Create("client.dll", "g_pMatSystemSurface");
+		Create("client.dll", "FindElement");
+		Create("client.dll", "GetLocalPlayer");
+		Create("client.dll", "GetPos");
+
+		Create("engine.dll", "ConVar_Ctor3");
+		Create("engine.dll", "CvarPtr");
+		Create("engine.dll", "g_pInputSystem");
+		Create("engine.dll", "Key_SetBinding");
+		Create("engine.dll", "ConCommand_Ctor1");
+		Create("engine.dll", "ConCommand_Ctor2");
+		Create("engine.dll", "SetSignonState");
+		Create("engine.dll", "OnFileSelected");
+		Create("engine.dll", "GetGameDir");
+		Create("engine.dll", "engineClient");
+		Create("engine.dll", "m_bLoadgame");
+		Create("engine.dll", "curtime");
+		Create("engine.dll", "m_szMapname");
+		Create("engine.dll", "CloseDemoFile");
+		Create("engine.dll", "demorecorder");
+		Create("engine.dll", "demoplayer");
+		Create("engine.dll", "PlayDemo");
+		Create("engine.dll", "StartPlayback");
+		Create("engine.dll", "StopRecording");
+		Create("engine.dll", "StartupDemoFile");
+		Create("engine.dll", "ReadPacket");
+		Create("engine.dll", "Stop");
+		Create("engine.dll", "PrintDescription");
+		Create("engine.dll", "Disconnect");
+		Create("engine.dll", "HostStateFrame");
+		Create("engine.dll", "m_currentState");
+
+
+		// server.dll
+
 
 		// \x55\x8B\xEC\x83\xEC\x0C\x56\x8B\xF1\x8B\x4E\x04 xxxxxxxxxxxx
 		Add("CheckJumpButton", "Portal 2 Build 6879",
@@ -78,6 +117,7 @@ namespace Patterns
 			"CPortalGameMovement::AirMove",
 			"55 8B EC 83 EC 50 56 8B F1 8D 45 BC",
 			679);
+
 		// \x55\x8B\xEC\x83\xEC\x50\x56\x8B\xF1\x8D\x45\xBC xxxxxxxxxxxx
 		Add("AirMove", "INFRA Build 6905",
 			"CINFRAGameMovement::AirMove",
@@ -90,11 +130,9 @@ namespace Patterns
 			"55 8B EC 56 8B 75 08 57 8B F9 33 C0",
 			162);
 
-		Create("client.dll", "Paint");
-		Create("client.dll", "SetSize");
-		Create("client.dll", "ShouldDraw");
-		Create("client.dll", "g_pMatSystemSurface");
-		Create("client.dll", "FindElement");
+
+		// client.dll
+
 
 		// \x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\x81\xEC\x00\x00\x00\x00\x56\x8B\xF1\x8B\x0D\x00\x00\x00\x00\x8B\x01\x8B\x96\x00\x00\x00\x00 xxxxxxxxxxxxxxxxxxxxxxxx????xxxxx????xxxx????
 		Add("Paint", "Portal 2 Build 6879",
@@ -107,7 +145,6 @@ namespace Patterns
 			"53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC ? ? ? ? 56 57 8B F9 8B 0D ? ? ? ? 8B 01 8B 97 ? ? ? ? ");
 
 		// \x55\x8B\xEC\x8B\x41\x04\x8B\x50\x04\x8B\x45\x0C\x56\x8B\x35\x00\x00\x00\x00\x57\x8B\x3E\x8D\x4C\x0A\x04\x8B\x55\x08\x50\x8B\x01\x52\x8B\x10\xFF\xD2\x50\x8B\x47\x10 xxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxx
-
 		Add("SetSize", "Portal 2 Build 6879",
 			"VPanel::SetSize",
 			"55 8B EC 8B 41 04 8B 50 04 8B 45 0C 56 8B 35 ? ? ? ? 57 8B 3E 8D 4C 0A 04 8B 55 08 50 8B 01 52 8B 10 FF D2 50 8B 47 10");
@@ -141,32 +178,21 @@ namespace Patterns
 			"CHud::FindElement",
 			"55 8B EC 53 8B 5D 08 56 57 8B F1 33 FF 39 7E 28");
 
-		Create("engine.dll", "ConVar_Ctor3");
-		Create("engine.dll", "CvarPtr");
-		Create("engine.dll", "g_pInputSystem");
-		Create("engine.dll", "Key_SetBinding");
-		Create("engine.dll", "ConCommand_Ctor1");
-		Create("engine.dll", "ConCommand_Ctor2");
-		Create("engine.dll", "SetSignonState");
-		Create("engine.dll", "OnFileSelected");
-		Create("engine.dll", "GetGameDir");
-		Create("engine.dll", "engineClient");
-		Create("engine.dll", "m_bLoadgame");
-		Create("engine.dll", "curtime");
-		Create("engine.dll", "m_szMapname");
-		Create("engine.dll", "CloseDemoFile");
-		Create("engine.dll", "demorecorder");
-		Create("engine.dll", "demoplayer");
-		Create("engine.dll", "PlayDemo");
-		Create("engine.dll", "StartPlayback");
-		Create("engine.dll", "StopRecording");
-		Create("engine.dll", "StartupDemoFile");
-		Create("engine.dll", "ReadPacket");
-		Create("engine.dll", "Stop");
-		Create("engine.dll", "PrintDescription");
-		Create("engine.dll", "Disconnect");
-		Create("engine.dll", "HostStateFrame");
-		Create("engine.dll", "m_currentState");
+		// \x55\x8B\xEC\x8B\x45\x08\x83\xF8\xFF\x75\x10\x8B\x0D\x00\x00\x00\x00\x8B\x01\x8B\x90\x00\x00\x00\x00\xFF\xD2\x8B\x04\x85\x00\x00\x00\x00 xxxxxxxxxxxxx????xxxx????xxxxx????
+		Add("GetLocalPlayer", "Portal 2 Build 6879",
+			"C_BasePlayer::GetLocalPlayer",
+			"55 8B EC 8B 45 08 83 F8 FF 75 10 8B 0D ? ? ? ? 8B 01 8B 90 ? ? ? ? FF D2 8B 04 85 ? ? ? ? ");
+		Add("GetLocalPlayer", "INFRA Build 6905", "C_BasePlayer::GetLocalPlayer");
+
+		// \x55\x8B\xEC\x8B\x0D\x00\x00\x00\x00\x8B\x01\x8B\x90\x00\x00\x00\x00\x53\x8B\x5D\x08 xxxxx????xxxx????xxxx
+		Add("GetPos", "Portal 2 Build 6879",
+			"GetPos",
+			"55 8B EC 8B 0D ? ? ? ? 8B 01 8B 90 ? ? ? ? 53 8B 5D 08");
+		Add("GetPos", "INFRA Build 6905", "GetPos");
+
+
+		// engine.dll
+
 
 		// \x55\x8B\xEC\xF3\x0F\x10\x45\x00\x8B\x55\x14 xxxxxxx?xxx
 		Add("ConVar_Ctor3", "Portal 2 Build 6879",

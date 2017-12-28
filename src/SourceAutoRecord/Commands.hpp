@@ -41,6 +41,10 @@ namespace Commands
 	ConCommand sar_cps_result;
 
 	// HUD
+	ConVar sar_hud_text;
+	ConVar sar_hud_position;
+	ConVar sar_hud_angles;
+	ConVar sar_hud_velocity;
 	ConVar sar_hud_session;
 	ConVar sar_hud_last_session;
 	ConVar sar_hud_sum;
@@ -52,6 +56,13 @@ namespace Commands
 	ConVar sar_hud_jumps;
 	ConVar sar_hud_uses;
 
+	ConVar sar_hud_default_spacing;
+	ConVar sar_hud_default_padding_x;
+	ConVar sar_hud_default_padding_y;
+	ConVar sar_hud_default_font_index;
+	ConVar sar_hud_default_font_size;
+	ConVar sar_hud_default_font_color;
+
 	// Stats
 	ConVar sar_stats_auto_reset;
 	ConCommand sar_stats_reset_jumps;
@@ -62,6 +73,8 @@ namespace Commands
 	ConVar sar_aircontrol;
 	ConVar sar_never_open_cm_hud;
 	ConVar sar_never_delay_start;
+	ConCommand sar_teleport;
+	ConCommand sar_teleport_setpos;
 
 	// Others
 	ConCommand sar_session;
@@ -70,6 +83,7 @@ namespace Commands
 	// From the game
 	ConVar cl_showpos;
 	ConVar sv_cheats;
+
 	ConVar sv_bonus_challenge;
 	ConVar sv_accelerate;
 	ConVar sv_airaccelerate;

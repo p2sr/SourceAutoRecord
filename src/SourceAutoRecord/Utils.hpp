@@ -8,7 +8,7 @@
 
 #include "Game.hpp"
 
-#define SAR_VERSION "1.4"
+#define SAR_VERSION "1.5"
 #define SAR_BUILD __TIME__ " " __DATE__
 #define SAR_COLOR Color(247, 235, 69)
 
@@ -21,6 +21,12 @@
 
 struct Vector {
 	float x, y, z;
+	float Length() {
+		return sqrt(x * x + y * y + z * z);
+	}
+	float Length2D() {
+		return sqrt(x * x + y * y);
+	}
 };
 
 struct QAngle {
@@ -28,8 +34,26 @@ struct QAngle {
 };
 
 struct Color {
-	Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) : Colors{ r, g, b, a } { }
-	uint8_t Colors[4];
+	Color() {
+		*((int *)this) = 255;
+	}
+	Color(int _r, int _g, int _b) {
+		SetColor(_r, _g, _b, 255);
+	}
+	Color(int _r, int _g, int _b, int _a) {
+		SetColor(_r, _g, _b, _a);
+	}
+	void SetColor(int _r, int _g, int _b, int _a = 255) {
+		_color[0] = (unsigned char)_r;
+		_color[1] = (unsigned char)_g;
+		_color[2] = (unsigned char)_b;
+		_color[3] = (unsigned char)_a;
+	}
+	inline int r() const { return _color[0]; }
+	inline int g() const { return _color[1]; }
+	inline int b() const { return _color[2]; }
+	inline int a() const { return _color[3]; }
+	unsigned char _color[4];
 };
 
 struct Signature {
@@ -107,20 +131,20 @@ ScanResult Scan(Pattern* pattern)
 		const uintptr_t start = uintptr_t(info.lpBaseOfDll);
 		const uintptr_t end = start + info.SizeOfImage;
 
-		if ((int)(*pattern).Signatures.size() >= Game::Version + 1) {
-			auto signature = (*pattern).Signatures[Game::Version];
+		if ((int)pattern->Signatures.size() >= Game::Version + 1) {
+			auto signature = pattern->Signatures[Game::Version];
 			result.Address = FindAddress(start, end, signature.Bytes);
 			if (result.Address != NULL) {
 				result.Address += signature.Offset;
 				result.Found = true;
-				snprintf(result.Message, sizeof(result.Message), "Found %s at 0x%p in %s!", signature.Name, (void*)result.Address, (*pattern).Module);
+				snprintf(result.Message, sizeof(result.Message), "Found %s at 0x%p in %s!", signature.Name, (void*)result.Address, pattern->Module);
 			}
 			else {
 				snprintf(result.Message, sizeof(result.Message), "Failed to find %s!", signature.Name);
 			}
 		}
 		else {
-			snprintf(result.Message, sizeof(result.Message), "Ignored %s!", (*pattern).Name);
+			snprintf(result.Message, sizeof(result.Message), "Ignored %s!", pattern->Name);
 		}
 	}
 	

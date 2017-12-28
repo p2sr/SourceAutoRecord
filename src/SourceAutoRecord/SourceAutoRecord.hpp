@@ -24,29 +24,6 @@ using namespace Commands;
 
 namespace SAR
 {
-	bool LoadEngine()
-	{
-		auto enc = Scan(Patterns::Get("engineClient"));
-		auto ggd = Scan(Patterns::Get("GetGameDir"));
-		auto crt = Scan(Patterns::Get("curtime"));
-		auto ldg = Scan(Patterns::Get("m_bLoadgame"));
-		auto mpn = Scan(Patterns::Get("m_szMapname"));
-		auto cns = Scan(Patterns::Get("m_currentState"));
-		auto drc = Scan(Patterns::Get("demorecorder"));
-		auto ins = Scan(Patterns::Get("g_pInputSystem"));
-		auto ksb = Scan(Patterns::Get("Key_SetBinding"));
-		auto dpl = Scan(Patterns::Get("demoplayer"));
-
-		if (!enc.Found || !ggd.Found || !crt.Found || !ldg.Found || !mpn.Found
-			|| !cns.Found || !drc.Found || !ins.Found || !ksb.Found || !dpl.Found)
-			return false;
-
-		Engine::Set(enc.Address, ggd.Address, crt.Address, ldg.Address, mpn.Address, cns.Address);
-		DemoRecorder::Set(drc.Address);
-		InputSystem::Set(ins.Address, ksb.Address);
-		DemoPlayer::Set(dpl.Address);
-		return true;
-	}
 	bool LoadTier1()
 	{
 		auto cvr = Scan(Patterns::Get("CvarPtr"));
@@ -66,12 +43,41 @@ namespace SAR
 	{
 		auto sts = Scan(Patterns::Get("SetSize"));
 		auto mss = Scan(Patterns::Get("g_pMatSystemSurface"));
+		auto glp = Scan(Patterns::Get("GetLocalPlayer"));
+		auto gtp = Scan(Patterns::Get("GetPos"));
 
-		if (!sts.Found || !mss.Found)
+		if (!sts.Found || !mss.Found || !glp.Found || !gtp.Found) {
+			Console::DevWarning("SAR: Failed to find all addresses in client.dll!\n");
 			return false;
+		}
 
-		Client::Set(sts.Address);
+		Client::Set(sts.Address, glp.Address, gtp.Address);
 		Surface::Set(mss.Address);
+		return true;
+	}
+	bool LoadEngine()
+	{
+		auto enc = Scan(Patterns::Get("engineClient"));
+		auto ggd = Scan(Patterns::Get("GetGameDir"));
+		auto crt = Scan(Patterns::Get("curtime"));
+		auto ldg = Scan(Patterns::Get("m_bLoadgame"));
+		auto mpn = Scan(Patterns::Get("m_szMapname"));
+		auto cns = Scan(Patterns::Get("m_currentState"));
+		auto drc = Scan(Patterns::Get("demorecorder"));
+		auto ins = Scan(Patterns::Get("g_pInputSystem"));
+		auto ksb = Scan(Patterns::Get("Key_SetBinding"));
+		auto dpl = Scan(Patterns::Get("demoplayer"));
+
+		if (!enc.Found || !ggd.Found || !crt.Found || !ldg.Found || !mpn.Found
+			|| !cns.Found || !drc.Found || !ins.Found || !ksb.Found || !dpl.Found) {
+			Console::DevWarning("SAR: Failed to find all addresses in engine.dll!\n");
+			return false;
+		}
+
+		Engine::Set(enc.Address, ggd.Address, crt.Address, ldg.Address, mpn.Address, cns.Address);
+		DemoRecorder::Set(drc.Address);
+		InputSystem::Set(ins.Address, ksb.Address);
+		DemoPlayer::Set(dpl.Address);
 		return true;
 	}
 	void CreateCommands()
@@ -173,6 +179,24 @@ namespace SAR
 			"Prints result of timer checkpoints.\n");
 
 		// HUD
+		sar_hud_text = CreateString(
+			"sar_hud_text",
+			"",
+			"Draws specified text when not empty.\n");
+		sar_hud_position = CreateFloat(
+			"sar_hud_position",
+			"0",
+			0,
+			"Draws absolute position of the client.\n");
+		sar_hud_angles = CreateBoolean(
+			"sar_hud_angles",
+			"0",
+			"Draws absolute view angles of the client.\n");
+		sar_hud_velocity = CreateFloat(
+			"sar_hud_velocity",
+			"0",
+			0,
+			"Draws velocity of the client. 0 = default, 1 = x/y/z , 2 = x/y\n");
 		sar_hud_session = CreateBoolean(
 			"sar_hud_session",
 			"0",
@@ -213,6 +237,36 @@ namespace SAR
 			"sar_hud_uses",
 			"0",
 			"Draws total use count.\n");
+		sar_hud_default_spacing = CreateFloat(
+			"sar_hud_default_spacing",
+			"4",
+			0,
+			"Spacing between elements of HUD.\n");
+		sar_hud_default_padding_x = CreateFloat(
+			"sar_hud_default_padding_x",
+			"2",
+			0,
+			"X padding of HUD.\n");
+		sar_hud_default_padding_y = CreateFloat(
+			"sar_hud_default_padding_y",
+			"2",
+			0,
+			"Y padding of HUD.\n");
+		sar_hud_default_font_size = CreateFloat(
+			"sar_hud_default_font_size",
+			"10",
+			0,
+			"Font size of HUD.\n");
+		sar_hud_default_font_index = CreateFloat(
+			"sar_hud_default_font_index",
+			"0",
+			0,
+			225,
+			"Font value of HUD.\n");
+		sar_hud_default_font_color = CreateString(
+			"sar_hud_default_font_color",
+			"255 255 255 255",
+			"RGBA font color of HUD.\n");
 
 		// Stats
 		sar_stats_auto_reset = CreateFloat(
@@ -248,6 +302,14 @@ namespace SAR
 			"sar_never_delay_start",
 			"0",
 			"Doesn't prevent player to be frozen at spawn.\n");
+		sar_teleport = CreateCommand(
+			"sar_teleport",
+			Callbacks::Teleport,
+			"Teleports the player to the last saved location.\n");
+		sar_teleport_setpos = CreateCommand(
+			"sar_teleport_setpos",
+			Callbacks::SetTeleport,
+			"Saves current location for teleportation.\n");
 
 		// Others
 		sar_session = CreateCommand(
@@ -274,7 +336,7 @@ namespace SAR
 		ui_loadingscreen_transition_time = ConVar("ui_loadingscreen_transition_time");
 		hide_gun_when_holding = ConVar("hide_gun_when_holding");
 
-		Console::DevMsg("Created %i ConVars and %i ConCommands!\n", Tier1::ConVarCount, Tier1::ConCommandCount);
+		Console::DevMsg("SAR: Created %i ConVars and %i ConCommands!\n", Tier1::ConVarCount, Tier1::ConCommandCount);
 	}
 	void Enable(ConVar& var, bool asCheat = true)
 	{
