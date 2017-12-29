@@ -20,6 +20,7 @@
   - [Cheats](#cheats)
     - [Accessible](#accessible)
   - [Patches](#patches)
+  - [Config](#config)
 - [Mapping](#mapping)
   - [Start & Stop Triggers](#start--stop-triggers)
   - [With Checkpoints](#with-checkpoints)
@@ -117,7 +118,7 @@
 - `sar_teleport` teleports player to a saved location
 - `sar_teleport_setpos` saves current location for teleportation
 
-##### Accessible
+##### Unlocked
 - `sv_bonus_challenge`
 - `sv_accelerate`
 - `sv_airaccelerate`
@@ -134,6 +135,10 @@
 - Limited character printing has been extended for `help`
 - Redundant command execution has been removed for `playdemo`
 - Server doesn't close `+remote_view` on map load (Portal 2)
+
+### Config
+- `sar_cvars_save` saves important ConVar values to a file
+- `sar_cvars_load` loads saved ConVar values
 
 ## Mapping
 

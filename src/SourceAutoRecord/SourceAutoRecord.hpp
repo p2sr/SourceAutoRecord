@@ -320,6 +320,14 @@ namespace SAR
 			"sar_about",
 			Callbacks::PrintAbout,
 			"Prints info about this plugin.\n");
+		sar_cvars_save = CreateCommand(
+			"sar_cvars_save",
+			Callbacks::SaveCvars,
+			"Saves important SAR cvars.\n");
+		sar_cvars_load = CreateCommand(
+			"sar_cvars_load",
+			Callbacks::LoadCvars,
+			"Loads important SAR cvars.\n");
 
 		// From the game
 		cl_showpos = ConVar("cl_showpos");

@@ -8,19 +8,15 @@ namespace Injector
 	// Dll injection method
 	internal static class Program
 	{
-		private const string _defaultProc = "portal2";
+		private static readonly string[] _defaultProcs = new string[] { "portal2", "infra" };
 		private const string _defaultLib = "SourceAutoRecord.dll";
 
 		private static void Main(string[] args)
 		{
-			string Inject(string processName, string dllPath)
+			string Inject(Process processToInject, string dllPath)
 			{
 				try
 				{
-					var process = Array.Find(Process.GetProcesses(), p => p.ProcessName == processName);
-					if (process == null)
-						return $"Cannot find process named {processName}!";
-
 					if (!File.Exists(dllPath))
 						return $"Cannot find dll named {dllPath}!";
 
@@ -30,7 +26,7 @@ namespace Injector
 					if (load == UIntPtr.Zero)
 						return "Cannot load LoadLibraryA!";
 
-					var handle = Kernel32.OpenProcess(ProcessAccess.AllAccess, false, process.Id);
+					var handle = Kernel32.OpenProcess(ProcessAccess.AllAccess, false, processToInject.Id);
 					if (handle == IntPtr.Zero)
 						return "Cannot open process!";
 
@@ -52,15 +48,14 @@ namespace Injector
 				return null;
 			}
 
-			// Defaults
-			var proc = _defaultProc;
 			var dll = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), _defaultLib);
 
 			// Parse optional arguments
+			var argProc = string.Empty;
 			if (args.Length == 2)
 			{
 				if (!string.IsNullOrEmpty(args[0]))
-					proc = args[0];
+					argProc = args[0];
 				if (args[1].EndsWith(".dll"))
 					dll = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), args[1]);
 			}
@@ -69,15 +64,38 @@ namespace Injector
 				if (args[0].EndsWith(".dll"))
 					dll = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), args[0]);
 				else if (!string.IsNullOrEmpty(args[0]))
-					proc = args[0];
+					argProc = args[0];
 			}
 
-			var result = Inject(proc, dll);
-			if (!string.IsNullOrEmpty(result))
-				Console.WriteLine($"Error: {result}");
+			// Find process
+			var proc = default(Process);
+			if (!string.IsNullOrEmpty(argProc))
+			{
+				proc = Array.Find(Process.GetProcesses(), p => p.ProcessName == argProc);
+			}
 			else
-				Console.WriteLine($"Successfully injected {dll} into process {proc}!");
+			{
+				foreach (var supportedProc in _defaultProcs)
+				{
+					proc = Array.Find(Process.GetProcesses(), p => p.ProcessName == supportedProc);
+					if (proc == null)
+						continue;
+					break;
+				}
+			}
 
+			if (proc == null)
+			{
+				Console.WriteLine($"Could not find supported process!");
+			}
+			else
+			{
+				var result = Inject(proc, dll);
+				if (!string.IsNullOrEmpty(result))
+					Console.WriteLine($"Error: {result}");
+				else
+					Console.WriteLine($"Successfully injected {dll} into process {proc.ProcessName}!");
+			}
 			Console.ReadKey();
 		}
 	}

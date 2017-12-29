@@ -76,6 +76,10 @@ namespace Commands
 	ConCommand sar_teleport;
 	ConCommand sar_teleport_setpos;
 
+	// Config
+	ConCommand sar_cvars_save;
+	ConCommand sar_cvars_load;
+
 	// Others
 	ConCommand sar_session;
 	ConCommand sar_about;
