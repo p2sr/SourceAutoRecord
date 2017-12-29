@@ -84,11 +84,7 @@ namespace Injector
 				}
 			}
 
-			if (proc == null)
-			{
-				Console.WriteLine($"Could not find supported process!");
-			}
-			else
+			if (proc != null)
 			{
 				var result = Inject(proc, dll);
 				if (!string.IsNullOrEmpty(result))
@@ -96,6 +92,9 @@ namespace Injector
 				else
 					Console.WriteLine($"Successfully injected {dll} into process {proc.ProcessName}!");
 			}
+			else
+				Console.WriteLine($"Could not find supported process!");
+
 			Console.ReadKey();
 		}
 	}

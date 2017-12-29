@@ -1,4 +1,4 @@
-[![Build Version](https://img.shields.io/badge/version-v1.4-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/1)
+[![Build Version](https://img.shields.io/badge/version-v1.5-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/1)
 [![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
 
 **SourceAutoRecord** allows automatic demo recording, automatic binding, demo parsing, session timing and [much more](#features).
@@ -18,7 +18,7 @@
     - [Optional](#optional)
   - [Stats](#stats)
   - [Cheats](#cheats)
-    - [Accessible](#accessible)
+    - [Unlocked](#unlocked)
   - [Patches](#patches)
   - [Config](#config)
 - [Mapping](#mapping)
