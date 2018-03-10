@@ -86,6 +86,7 @@ namespace Commands
 
 	// From the game
 	ConVar cl_showpos;
+	ConVar cl_sidespeed;
 	ConVar sv_cheats;
 
 	ConVar sv_bonus_challenge;

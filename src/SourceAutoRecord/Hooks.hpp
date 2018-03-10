@@ -1,5 +1,4 @@
 #pragma once
-#include "minhook/MinHook.h"
 
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
@@ -7,8 +6,9 @@
 #include "Modules/Server.hpp"
 
 #include "Game.hpp"
-#include "Patterns.hpp"
 #include "Utils.hpp"
+
+#include "Patterns.hpp"
 
 namespace Hooks
 {
@@ -16,63 +16,67 @@ namespace Hooks
 	// signature scans have been completed
 	std::vector<uintptr_t> HookAddresses;
 
-	ScanResult Create(Pattern* toScan, LPVOID detour, LPVOID original)
+	ScanResult Create(ScanResult result, void* detour, void* original)
 	{
-		auto result = Scan(toScan);
 		if (result.Found) {
 			Console::DevMsg("SAR: %s\n", result.Message);
 
-			if (MH_CreateHook(reinterpret_cast<LPVOID>(result.Address), detour, reinterpret_cast<LPVOID*>(original)) != MH_OK) {
-				Console::DevWarning("SAR: Could not create this hook!\n");
-			}
-			else {
-				HookAddresses.push_back(result.Address);
-			}
+			// TODO
 		}
 		else {
 			Console::DevWarning("SAR: %s\n", result.Message);
 		}
 		return result;
 	}
+	ScanResult Create(Pattern* toScan, void* detour, void* original)
+	{
+		return Create(Scan(toScan), detour, original);
+	}
+	bool Init()
+	{
+		// TODO
+		return true;
+	}
 	void EnableAll()
 	{
 		int hooks = 0;
-		for (auto &addr : HookAddresses) {
-			if (MH_EnableHook(reinterpret_cast<LPVOID>(addr)) != MH_OK) {
-				Console::DevWarning("SAR: Could not enable the hook at 0x%p!\n", addr);
-			}
-			else {
-				hooks++;
-			}
-		}
+		// TODO
+		/* for (auto &addr : HookAddresses) {
+		} */
 		Console::DevMsg("SAR: Enabled %i of %i hooks!\n", hooks, HookAddresses.size());
 	}
 	void CreateAll()
 	{
-		if (MH_Initialize() != MH_OK) {
-			Console::DevWarning("SAR: Failed to init MinHook!\n");
-			return;
-		}
+		if (!Init()) return;
 
-		Create(Patterns::Get("CheckJumpButton"),	Server::Detour::CheckJumpButton,	&Server::Original::CheckJumpButton);
-		Create(Patterns::Get("Paint"),				Client::Detour::Paint,				&Client::Original::Paint);
-		Create(Patterns::Get("SetSignonState"),		Engine::Detour::SetSignonState,		&Engine::Original::SetSignonState);
-		Create(Patterns::Get("StopRecording"),		Engine::Detour::StopRecording,		&Engine::Original::StopRecording);
-		Create(Patterns::Get("StartupDemoFile"),	Engine::Detour::StartupDemoFile,	&Engine::Original::StartupDemoFile);
-		Create(Patterns::Get("Stop"),				Engine::Detour::ConCommandStop,		&Engine::Original::ConCommandStop);
-		Create(Patterns::Get("StartPlayback"),		Engine::Detour::StartPlayback,		&Engine::Original::StartPlayback);
-		Create(Patterns::Get("PlayDemo"),			Engine::Detour::PlayDemo,			&Engine::Original::PlayDemo);
-		Create(Patterns::Get("Disconnect"),			Engine::Detour::Disconnect,			&Engine::Original::Disconnect);
-		Create(Patterns::Get("ShouldDraw"),			Client::Detour::ShouldDraw,			&Client::Original::ShouldDraw);
-		Create(Patterns::Get("PlayerUse"),			Server::Detour::PlayerUse,			&Server::Original::PlayerUse);
-		Create(Patterns::Get("HostStateFrame"),		Engine::Detour::HostStateFrame,		&Engine::Original::HostStateFrame);
-		Create(Patterns::Get("CloseDemoFile"),		Engine::Detour::CloseDemoFile,		&Engine::Original::CloseDemoFile);
-		Create(Patterns::Get("FindElement"),		Client::Detour::FindElement,		&Client::Original::FindElement);
+		//Create(Patterns::Get("CheckJumpButton"),	(void*)Server::Detour::CheckJumpButton,		&Server::Original::CheckJumpButton);
+		/* Create(Patterns::Get("Paint"),				(void*)Client::Detour::Paint,				&Client::Original::Paint);
+		Create(Patterns::Get("SetSignonState"),		(void*)Engine::Detour::SetSignonState,		&Engine::Original::SetSignonState);
+		Create(Patterns::Get("StopRecording"),		(void*)Engine::Detour::StopRecording,		&Engine::Original::StopRecording);
+		Create(Patterns::Get("StartupDemoFile"),	(void*)Engine::Detour::StartupDemoFile,		&Engine::Original::StartupDemoFile);
+		Create(Patterns::Get("Stop"),				(void*)Engine::Detour::ConCommandStop,		&Engine::Original::ConCommandStop);
+		Create(Patterns::Get("StartPlayback"),		(void*)Engine::Detour::StartPlayback,		&Engine::Original::StartPlayback);
+		Create(Patterns::Get("PlayDemo"),			(void*)Engine::Detour::PlayDemo,			&Engine::Original::PlayDemo);
+		Create(Patterns::Get("Disconnect"),			(void*)Engine::Detour::Disconnect,			&Engine::Original::Disconnect);
+		Create(Patterns::Get("ShouldDraw"),			(void*)Client::Detour::ShouldDraw,			&Client::Original::ShouldDraw);
+		Create(Patterns::Get("PlayerUse"),			(void*)Server::Detour::PlayerUse,			&Server::Original::PlayerUse);
+		Create(Patterns::Get("HostStateFrame"),		(void*)Engine::Detour::HostStateFrame,		&Engine::Original::HostStateFrame);
+		Create(Patterns::Get("CloseDemoFile"),		(void*)Engine::Detour::CloseDemoFile,		&Engine::Original::CloseDemoFile);
+		Create(Patterns::Get("FindElement"),		(void*)Client::Detour::FindElement,			&Client::Original::FindElement);
 
 		// Mid-function-hooks
-		Server::SetAirMove(Create(Patterns::Get("AirMove"), Server::Detour::AirMove, NULL).Address);
+		auto arm = Scan(Patterns::Get("AirMove"));
+		Server::Original::AirMove = (void*)(arm.Address + 7);
+		JumpToAt((void*)Server::Detour::AirMove, (void*)arm.Address);
+		DoNothingAt(arm.Address + 5, 2);
+		Server::Original::AirMoveSkip = (void*)(arm.Address + Offsets::AirMoveSkip);
+
 		if (Game::Version == Game::Portal2) {
-			Server::SetRunCommand(Create(Patterns::Get("PlayerRunCommand"), Server::Detour::PlayerRunCommand, NULL).Address);
-		}
+			auto prc = Scan(Patterns::Get("PlayerRunCommand"));
+			Server::Original::PlayerRunCommand = (void*)(prc.Address + 7);
+			JumpToAt((void*)Server::Detour::PlayerRunCommand, (void*)prc.Address);
+			DoNothingAt(prc.Address + 5, 2);
+			Server::Original::PlayerRunCommandSkip = (void*)(prc.Address + Offsets::PlayerRunCommandSkip);
+		} */
 	}
 }

@@ -96,14 +96,15 @@
 - `sar_hud_demo` draws current name, tick and time of demo recorder or demo player
 - `sar_hud_last_demo` draws value of latest completed demo
 - `sar_hud_jumps` draws total jump count
+- `sar_hud_uses` draws total use count
 
 ##### Optional
 - `sar_hud_default_spacing` space between HUD elements
-- `sar_hud_default_padding_x` additional padding of HUD on x-axis
-- `sar_hud_default_padding_y` additional padding of HUD on y-axis
-- `sar_hud_default_font_index` draws total use count
-- `sar_hud_default_font_size` font size of HUD used for spacing
-- `sar_hud_default_font_color` font color of HUD
+- `sar_hud_default_padding_x` additional padding on x-axis
+- `sar_hud_default_padding_y` additional padding on y-axis
+- `sar_hud_default_font_index` font offset value
+- `sar_hud_default_font_size` font size used for spacing
+- `sar_hud_default_font_color` font color
 
 ### Stats
 - `sar_stats_auto_reset` resets all stats automatically
@@ -120,16 +121,18 @@
 
 ##### Unlocked
 - `sv_bonus_challenge`
-- `sv_accelerate`
-- `sv_airaccelerate`
-- `sv_friction`
-- `sv_maxspeed`
-- `sv_stopspeed`
-- `sv_maxvelocity`
-- `sv_transition_fade_time` (Portal 2)
-- `sv_laser_cube_autoaim` (Portal 2)
-- `ui_loadingscreen_transition_time` (Portal 2)
+- `sv_accelerate`*
+- `sv_airaccelerate`*
+- `sv_friction`*
+- `sv_maxspeed`*
+- `sv_stopspeed`*
+- `sv_maxvelocity`*
+- `sv_transition_fade_time` (Portal 2)*
+- `sv_laser_cube_autoaim` (Portal 2)*
+- `ui_loadingscreen_transition_time` (Portal 2)*
 - `hide_gun_when_holding` (Portal 2)
+
+*Flagged as cheat.
 
 ### Patches
 - Limited character printing has been extended for `help`

@@ -20,13 +20,13 @@ namespace Console
 
 	bool Init()
 	{
-		auto tier0 = GetModuleHandleA("tier0.dll");
+		auto tier0 = dlopen("./bin/libtier0.so", RTLD_NOLOAD | RTLD_NOW);
 		if (tier0) {
-			auto msgAddr = GetProcAddress(tier0, "Msg");
-			auto colorMsgAddr = GetProcAddress(tier0, "?ConColorMsg@@YAXABVColor@@PBDZZ");
-			auto warningAddr = GetProcAddress(tier0, "Warning");
-			auto devMsgAddr = GetProcAddress(tier0, "?DevMsg@@YAXPBDZZ");
-			auto devWarningAddr = GetProcAddress(tier0, "?DevWarning@@YAXPBDZZ");
+			auto msgAddr = dlsym(tier0, "Msg");
+			auto colorMsgAddr = dlsym(tier0, "_Z11ConColorMsgRK5ColorPKcz");
+			auto warningAddr = dlsym(tier0, "Warning");
+			auto devMsgAddr = dlsym(tier0, "_Z6DevMsgPKcz");
+			auto devWarningAddr = dlsym(tier0, "_Z10DevWarningPKcz");
 
 			if (msgAddr && colorMsgAddr && warningAddr && devMsgAddr && devWarningAddr) {
 				Msg = reinterpret_cast<_Msg>(msgAddr);

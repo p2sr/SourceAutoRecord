@@ -6,14 +6,15 @@
 #include "Modules/Engine.hpp"
 #include "Modules/InputSystem.hpp"
 
-#include "Demo.hpp"
-#include "Rebinder.hpp"
-#include "Stats.hpp"
-#include "Summary.hpp"
-#include "Teleporter.hpp"
-#include "Timer.hpp"
-#include "TimerAverage.hpp"
-#include "TimerCheckPoints.hpp"
+#include "Features/Demo.hpp"
+#include "Features/Rebinder.hpp"
+#include "Features/Stats.hpp"
+#include "Features/Summary.hpp"
+#include "Features/Teleporter.hpp"
+#include "Features/Timer.hpp"
+#include "Features/TimerAverage.hpp"
+#include "Features/TimerCheckPoints.hpp"
+
 #include "Utils.hpp"
 
 namespace Callbacks

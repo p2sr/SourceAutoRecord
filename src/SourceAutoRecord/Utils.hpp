@@ -1,10 +1,12 @@
 #pragma once
+#include <cmath>
 #include <cstdint>
+#include <cstring>
+#include <dlfcn.h>
 #include <fstream>
+#include <link.h>
 #include <memory>
-#include <Psapi.h>
 #include <vector>
-#include <Windows.h>
 
 #include "Game.hpp"
 
@@ -18,6 +20,11 @@
 #define INRANGE(x, a, b) (x >= a && x <= b)
 #define getBits(x) (INRANGE((x & (~0x20)), 'A', 'F') ? ((x & (~0x20)) - 'A' + 0xA): (INRANGE(x, '0', '9') ? x - '0': 0))
 #define getByte(x) (getBits(x[0]) << 4 | getBits(x[1]))
+
+#define __cdecl __attribute__((__cdecl__))
+#define __stdcall __attribute__((__stdcall__))
+#define __fastcall __attribute__((__fastcall__))
+#define __thiscall __attribute__((__thiscall__))
 
 struct Vector {
 	float x, y, z;
@@ -56,17 +63,30 @@ struct Color {
 	unsigned char _color[4];
 };
 
-struct Signature {
-	const char* Version;
-	const char* Name;
-	const char* Bytes;
-	const int Offset = 0;
-};
-
 struct Pattern {
 	const char* Module;
 	const char* Name;
-	std::vector<Signature> Signatures;
+	
+	const char* Version;
+	const char* Description;
+	const char* Bytes;
+	int Offset;
+
+	bool IsSet;
+
+	void SetSignature(const char* version, const char* description)
+	{
+		Version = version;
+		Description = description;
+	}
+	void SetSignature(const char* version, const char* description, const char* bytes, int offset = 0)
+	{
+		Version = version;
+		Description = description;
+		Bytes = bytes;
+		Offset = offset;
+		IsSet = true;
+	}
 };
 
 struct ScanResult {
@@ -102,52 +122,91 @@ uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_addre
 			first_match = 0;
 		}
 	}
-	return NULL;
+	return 0;
+}
+
+struct MODULEINFO {
+	char moduleName[64];
+	uintptr_t lpBaseOfDll;
+	uintptr_t SizeOfImage;
+};
+
+namespace Cache
+{
+	std::vector<MODULEINFO> Modules;
+}
+
+bool GetModuleInformation(const char* moduleName, MODULEINFO* moduleInfo) {
+	if (Cache::Modules.size() == 0) {
+		dl_iterate_phdr([] (struct dl_phdr_info* info, size_t, void*) {
+			auto module = MODULEINFO();
+
+			std::string temp = std::string(info->dlpi_name);
+			int index = temp.find_last_of("\\/");
+			temp = temp.substr(index + 1, temp.length() - index);
+			snprintf(module.moduleName, sizeof(module.moduleName), "%s", temp.c_str());
+
+			module.lpBaseOfDll = info->dlpi_addr;
+			module.SizeOfImage = info->dlpi_phdr[0].p_memsz;
+			
+			Cache::Modules.push_back(module);
+			return 0;
+		}, nullptr);
+	}
+
+	for (MODULEINFO& item: Cache::Modules) {
+		if (!strcasestr(item.moduleName, moduleName))
+			continue;
+		*moduleInfo = item;
+		return true;
+	}
+
+	return false;
 }
 
 ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
 {
-	auto info = MODULEINFO();
 	auto result = ScanResult();
+	auto info = MODULEINFO();
 
-	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleA(moduleName), &info, sizeof(MODULEINFO))) {
+	if (GetModuleInformation(moduleName, &info)) {
 		const uintptr_t start = uintptr_t(info.lpBaseOfDll);
 		const uintptr_t end = start + info.SizeOfImage;
 		result.Address = FindAddress(start, end, pattern);
-		if (result.Address != NULL) {
+		if (result.Address) {
 			result.Found = true;
 			result.Address += offset;
 		}
 	}
+
 	return result;
 }
 
 ScanResult Scan(Pattern* pattern)
 {
-	auto info = MODULEINFO();
 	auto result = ScanResult();
+	auto info = MODULEINFO();
 
-	if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleA((*pattern).Module), &info, sizeof(MODULEINFO))) {
+	if (GetModuleInformation(pattern->Module, &info)) {
 		const uintptr_t start = uintptr_t(info.lpBaseOfDll);
 		const uintptr_t end = start + info.SizeOfImage;
 
-		if ((int)pattern->Signatures.size() >= Game::Version + 1) {
-			auto signature = pattern->Signatures[Game::Version];
-			result.Address = FindAddress(start, end, signature.Bytes);
-			if (result.Address != NULL) {
-				result.Address += signature.Offset;
+		if (pattern->IsSet) {
+			result.Address = FindAddress(start, end, pattern->Bytes);
+			if (result.Address) {
+				result.Address += pattern->Offset;
 				result.Found = true;
-				snprintf(result.Message, sizeof(result.Message), "Found %s at 0x%p in %s!", signature.Name, (void*)result.Address, pattern->Module);
+				snprintf(result.Message, sizeof(result.Message), "Found %s at 0x%p in %s!", pattern->Description, (void*)result.Address, pattern->Module);
 			}
 			else {
-				snprintf(result.Message, sizeof(result.Message), "Failed to find %s!", signature.Name);
+				snprintf(result.Message, sizeof(result.Message), "Failed to find %s!", pattern->Description);
 			}
 		}
 		else {
 			snprintf(result.Message, sizeof(result.Message), "Ignored %s!", pattern->Name);
 		}
 	}
-	
+
 	return result;
 }
 
@@ -156,20 +215,24 @@ void* GetVirtualFunctionByIndex(void* ptr, int index)
 	return (*((void***)ptr))[index];
 }
 
-int Error(std::string text, std::string title)
+void DoNothingAt(uintptr_t source, int count)
 {
-	MessageBoxA(0, text.c_str(), title.c_str(), MB_ICONERROR);
-	return 1;
-}
-
-bool DoNothingAt(uintptr_t address, int count)
-{
-	BYTE nop[1] = { 0x90 };
+	unsigned char NOP[1] = { 0x90 };
 
 	for (int i = 0; i < count; i++) {
-		if (!WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(address + i), nop, 1, 0)) {
-			return false;
-		}
+		memcpy(reinterpret_cast<void*>(source + i), NOP, 1);
 	}
-	return true;
+}
+
+void NewReferenceAt(void* destination, void* source)
+{
+	memcpy(source, destination, 4);
+}
+
+void JumpToAt(uintptr_t destination, uintptr_t source)
+{
+	unsigned char JMP[1] = { 0xEB };
+
+	memcpy((void*)source, JMP, 1);
+	memcpy((void*)(source + 1), (void*)destination, 4);
 }

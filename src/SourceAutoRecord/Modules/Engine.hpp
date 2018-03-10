@@ -23,7 +23,7 @@ using _StartupDemoFile = void(__thiscall*)(void* thisptr);
 using _ConCommandStop = void(__cdecl*)();
 using _Disconnect = void(__thiscall*)(void* thisptr, int bShowMainMenu);
 using _PlayDemo = void(__cdecl*)(void* thisptr);
-using _StartPlayback = bool(__fastcall*)(void* thisptr, int edx, const char *filename, bool bAsTimeDemo);
+using _StartPlayback = bool(__fastcall*)(void* thisptr, int edx, const char* filename, bool bAsTimeDemo);
 using _StopPlayback = int(__fastcall*)(void* thisptr, int edx);
 using _HostStateFrame = void(__cdecl*)(float time);
 
@@ -55,7 +55,6 @@ struct HostStateData {
 
 using namespace Commands;
 
-// engine.dll
 namespace Engine
 {
 	void* ClientPtr;
@@ -143,6 +142,8 @@ namespace Engine
 		_PlayDemo PlayDemo;
 		_StartPlayback StartPlayback;
 		_HostStateFrame HostStateFrame;
+		void* PrintCvar;
+		void* PrintCommand;
 	}
 
 	namespace Detour
@@ -278,7 +279,7 @@ namespace Engine
 					// which causes to write invalid ticks into the demo header and redundant packets
 					if (IsRecordingDemo) {
 						CallFromHostStateFrame = true;
-						StopRecording(DemoRecorder::Ptr, NULL);
+						StopRecording(DemoRecorder::Ptr, 0);
 						CallFromHostStateFrame = false;
 					}
 				}

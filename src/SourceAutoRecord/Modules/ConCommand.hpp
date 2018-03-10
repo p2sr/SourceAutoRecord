@@ -33,12 +33,11 @@ namespace Tier1
 		void* Ptr = nullptr;
 		std::unique_ptr<uint8_t[]> Blob;
 
-		ConCommand::ConCommand() {
+		ConCommand() {
 			size_t size = 0;
 
 			switch (Game::Version) {
 			case 0:
-			case 1:
 				size = sizeof(ConCommandData);
 				break;
 			}
@@ -52,14 +51,14 @@ namespace Tier1
 	ConCommand CreateCommand(const char* name, _CommandCallbackVoid callback, const char* helpstr = "", int flags = 0)
 	{
 		auto cc = ConCommand();
-		ConCommandCtor(cc.Ptr, nullptr, name, callback, helpstr, flags, nullptr);
+		ConCommandCtor(cc.Ptr, nullptr, name, (void*)callback, helpstr, flags, nullptr);
 		ConCommandCount++;
 		return cc;
 	}
 	ConCommand CreateCommandArgs(const char* name, _CommandCallbackArgs callback, const char* helpstr = "", int flags = 0)
 	{
 		auto cc = ConCommand();
-		ConCommandCtor2(cc.Ptr, nullptr, name, callback, helpstr, flags, nullptr);
+		ConCommandCtor2(cc.Ptr, nullptr, name, (void*)callback, helpstr, flags, nullptr);
 		ConCommandCount++;
 		return cc;
 	}

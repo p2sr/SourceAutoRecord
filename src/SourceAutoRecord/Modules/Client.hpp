@@ -2,25 +2,40 @@
 #include "Engine.hpp"
 #include "Surface.hpp"
 
-#include "Patterns.hpp"
 #include "Session.hpp"
 #include "Stats.hpp"
 #include "Timer.hpp"
 #include "TimerAverage.hpp"
-#include "TimerCheckpoints.hpp"
+#include "TimerCheckPoints.hpp"
 #include "Utils.hpp"
 
 // Is this large enough for everyone?
 #define FPS_PANEL_WIDTH 3333
 
-using _Paint = int(__thiscall*)(void* thisptr);
-using _ComputeSize = int(__thiscall*)(void* thisptr);
-using _SetSize = int(__thiscall*)(void* thisptr, int wide, int tall);
-using _ShouldDraw = bool(__thiscall*)(void* thisptr);
-using _FindElement = int(__thiscall*)(void* thisptr, const char* pName);
+struct CUserCmd {
+	int unk;
+	int command_number; // 4
+	int tick_count; // 8
+	QAngle viewangles; // 12, 16, 20
+	float forwardmove; // 24
+	float sidemove; // 28
+	float upmove; // 32
+	int buttons; // 36
+	unsigned char impulse; // 40
+	int weaponselect; // 44
+	int weaponsubtype; // 48
+	int random_seed; // 52
+	short mousedx; // 56
+	short mousedy; // 58
+	bool hasbeenpredicted; // 60
+};
+
+using _Paint = int(__cdecl*)(void* thisptr);
+using _ShouldDraw = bool(__cdecl*)(void* thisptr);
+using _FindElement = int(__cdecl*)(void* thisptr, const char* pName);
+using _SetSize = int(__cdecl*)(void* thisptr, int wide, int tall);
 using _GetLocalPlayer = void*(__cdecl*)(int unk);
 
-// client.dll
 namespace Client
 {
 	_SetSize SetSize;
@@ -58,10 +73,14 @@ namespace Client
 		_ComputeSize ComputeSize;
 		_ShouldDraw ShouldDraw;
 		_FindElement FindElement;
+		_CreateMove CreateMove;
+		_ControllerMove ControllerMove;
 	}
 
 	namespace Detour
 	{
+		CUserCmd* cmd;
+
 		int __fastcall Paint(void* thisptr, int edx)
 		{
 			int result = 0;
@@ -75,7 +94,7 @@ namespace Client
 			int fontSize = sar_hud_default_font_size.GetInt();
 
 			int r, g, b, a;
-			sscanf_s(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
+			sscanf(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
 			Color textColor(r, g, b, a);
 
 			if (cl_showpos.GetBool()) {

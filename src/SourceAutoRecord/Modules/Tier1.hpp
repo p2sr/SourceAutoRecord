@@ -1,4 +1,10 @@
 #pragma once
+#define __fastcall __attribute__((__fastcall__))
+
+#define FCVAR_DEVELOPMENTONLY	(1<<1)
+#define FCVAR_HIDDEN			(1<<4)
+#define FCVAR_NEVER_AS_STRING	(1<<12)
+#define FCVAR_CHEAT				(1<<14)
 
 using _CommandCallbackVoid = void(*)();
 using _CommandCallbackArgs = void(*)(const void* args);

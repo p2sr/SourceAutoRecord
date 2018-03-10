@@ -9,7 +9,7 @@
 #define DEMO_HEADER_ID "HL2DEMO"
 #define DEMO_PROTOCOL 4
 #define	MAX_OSPATH 260	
-#define MAX_SPLITSCREEN_CLIENTS 2 // TODO
+#define MAX_SPLITSCREEN_CLIENTS 2
 
 enum DemoMessageType {
 	SignOn = 1,
@@ -27,21 +27,21 @@ class Demo
 {
 public:
 	char demoFileStamp[8];
-	__int32 demoProtocol;
-	__int32 networkProtocol;
+	int32_t demoProtocol;
+	int32_t networkProtocol;
 	char serverName[MAX_OSPATH];
 	char clientName[MAX_OSPATH];
 	char mapName[MAX_OSPATH];
 	char gameDirectory[MAX_OSPATH];
 	float playbackTime;
-	__int32 playbackTicks;
-	__int32 playbackFrames;
-	__int32 signOnLength;
+	int32_t playbackTicks;
+	int32_t playbackFrames;
+	int32_t signOnLength;
 private:
-	std::vector<__int32> messageTicks;
+	std::vector<int32_t> messageTicks;
 
 public:
-	__int32 Demo::GetLastTick() {
+	int32_t GetLastTick() {
 		return messageTicks.back();
 	}
 	float IntervalPerTick() {
@@ -52,7 +52,7 @@ public:
 		playbackTicks = GetLastTick();
 		playbackTime = ipt * playbackTicks;
 	}
-	bool Demo::Parse(std::string filePath, int outputMode = 0, bool headerOnly = false) {
+	bool Parse(std::string filePath, int outputMode = 0, bool headerOnly = false) {
 		try {
 			if (filePath.substr(filePath.length() - 4, 4) != ".dem") filePath += ".dem";
 
@@ -77,9 +77,9 @@ public:
 
 			if (!headerOnly) {
 				while (!file.eof() && !file.bad()) {
-					byte cmd;
-					__int32 tick;
-					byte tag;
+					unsigned char cmd;
+					int32_t tick;
+					unsigned char tag;
 
 					file.read((char*)&cmd, sizeof(cmd));
 					auto type = (DemoMessageType)cmd;
@@ -101,7 +101,7 @@ public:
 										file.ignore(76);
 										continue;
 									}
-									__int32 flags;
+									int32_t flags;
 									float vo_x, vo_y, vo_z;
 									float va_x, va_y, va_z;
 									float lva_x, lva_y, lva_z;
@@ -129,7 +129,7 @@ public:
 									file.read((char*)&lva2_z, sizeof(lva2_z));
 									Console::Msg("[%i] flags: %i | view origin: %.3f/%.3f/%.3f | view angles: %.3f/%.3f/%.3f | local view angles: %.3f/%.3f/%.3f\n", tick, flags, vo_x, vo_y, vo_z, va_x, va_y, va_z, lva_x, lva_y, lva_z);
 								}
-								__int32 in_seq, out_seq;
+								int32_t in_seq, out_seq;
 								file.read((char*)&in_seq, sizeof(in_seq));
 								file.read((char*)&out_seq, sizeof(out_seq));
 							}
@@ -137,7 +137,7 @@ public:
 								file.ignore((MAX_SPLITSCREEN_CLIENTS * 76) + 4 + 4);
 							}
 
-							__int32 length;
+							int32_t length;
 							file.read((char*)&length, sizeof(length));
 							file.ignore(length);
 							break;
@@ -146,7 +146,7 @@ public:
 						continue;
 					case DemoMessageType::ConsoleCmd:
 						{
-							__int32 length;
+							int32_t length;
 							file.read((char*)&length, sizeof(length));
 							if (outputMode >= 1) {
 								std::string cmd(length, ' ');
@@ -160,8 +160,8 @@ public:
 						}
 					case DemoMessageType::UserCmd:
 						{
-							__int32 cmd;
-							__int32 length;
+							int32_t cmd;
+							int32_t length;
 							file.read((char*)&cmd, sizeof(cmd));
 							file.read((char*)&length, sizeof(length));
 							file.ignore(length);
@@ -169,15 +169,15 @@ public:
 						}
 					case DemoMessageType::DataTables:
 						{
-							__int32 length;
+							int32_t length;
 							file.read((char*)&length, sizeof(length));
 							file.ignore(length);
 							break;
 						}
 					case DemoMessageType::CustomData:
 						{
-							__int32 idk;
-							__int32 length;
+							int32_t idk;
+							int32_t length;
 							file.read((char*)&idk, sizeof(idk));
 							file.read((char*)&length, sizeof(length));
 							file.ignore(length);
@@ -185,7 +185,7 @@ public:
 						}
 					case DemoMessageType::StringTables:
 						{
-							__int32 length;
+							int32_t length;
 							file.read((char*)&length, sizeof(length));
 							file.ignore(length);
 							break;

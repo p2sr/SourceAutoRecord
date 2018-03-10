@@ -4,7 +4,6 @@
 
 using _DrawColoredText = int(__cdecl*)(void* thisptr, unsigned long font, int x, int y, int r, int g, int b, int a, char *fmt, ...);
 
-// vguimatsurface.dll
 namespace Surface
 {
 	void* MatSystemSurfacePtr;

@@ -7,6 +7,7 @@ namespace Offsets
 {
 	// CCvar
 	int FindVar;
+	int m_pConCommandList;
 
 	// CEngineClient
 	int ClientCommand;
@@ -67,6 +68,7 @@ namespace Offsets
 			InternalSetFloatValue = 13;
 			InternalSetIntValue = 14;
 			FindVar = 16;
+			m_pConCommandList = 48;
 			ClientCommand = 7;
 			StringToButtonCode = 31;
 			GetRecordingTick = 1;
@@ -84,44 +86,11 @@ namespace Offsets
 			m_bRecording = 1606;
 			m_nDemoNumber = 1608;
 			m_szFileName = 4;
-			m_afButtonPressed = 2860;
 			HS_RUN = 4;
 			HS_CHANGE_LEVEL_SP = 2;
-			AirMoveSkip = 142;
+			m_afButtonPressed = 440;
+			AirMoveSkip = 372;
 			PlayerRunCommandSkip = 51;
-			GetAbsOrigin = 156;
-			GetAbsAngles = 192;
-			GetLocalVelocity = 264;
-			MainViewOrigin = 31;
-			MainViewAngles = 59;
-		}
-		else if (Game::Version == Game::INFRA) {
-			InternalSetValue = 14;
-			InternalSetFloatValue = 15;
-			InternalSetIntValue = 16;
-			FindVar = 16;
-			ClientCommand = 7;
-			StringToButtonCode = 31;
-			GetRecordingTick = 1;
-			GetPlaybackTick = 3;
-			IsPlayingBack = 6;
-			tickcount = 12;
-			interval_per_tick = 16;
-			mv = 2;
-			m_nOldButtons = 40;
-			DrawColoredText = 160;
-			m_hFont = 348;
-			m_szDemoBaseName = 1344;
-			m_bIsDemoHeader = 1604;
-			m_bCloseDemoFile = 1605;
-			m_bRecording = 1606;
-			m_nDemoNumber = 1608;
-			m_szFileName = 4;
-			m_afButtonPressed = 2900;
-			HS_RUN = 5;
-			HS_CHANGE_LEVEL_SP = 3;
-			AirMoveSkip = 162;
-			//PlayerRunCommandSkip = 132;
 			GetAbsOrigin = 156;
 			GetAbsAngles = 192;
 			GetLocalVelocity = 264;

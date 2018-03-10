@@ -1,10 +1,9 @@
-#pragma once
 #include "SourceAutoRecord.hpp"
 
-unsigned __stdcall Main(void* args)
-{
-	if (!Game::IsSupported()) return Error("Game not supported!", "SourceAutoRecord");
-	if (!Console::Init()) return Error("Could not initialize console!", "SourceAutoRecord");
+int __attribute__((constructor)) Main()
+{	
+	if (!Game::IsSupported()) return 1;
+	if (!Console::Init()) return 1;
 
 	Offsets::Init();
 	Patterns::Init();
@@ -21,7 +20,7 @@ unsigned __stdcall Main(void* args)
 			Hooks::CreateAll();
 
 			// Nobody likes silly bugs
-			SAR::LoadPatches();
+			//SAR::LoadPatches();
 
 			Hooks::EnableAll();
 
@@ -37,13 +36,4 @@ unsigned __stdcall Main(void* args)
 	}
 	Console::Warning("Failed to load SourceAutoRecord!\n");
 	return 1;
-}
-
-BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved)
-{
-	if (reason == DLL_PROCESS_ATTACH) {
-		DisableThreadLibraryCalls(module);
-		CreateThread(0, 0, LPTHREAD_START_ROUTINE(Main), 0, 0, 0);
-	}
-	return TRUE;
 }

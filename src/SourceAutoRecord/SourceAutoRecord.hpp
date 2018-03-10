@@ -1,5 +1,4 @@
 #pragma once
-#include "minhook/MinHook.h"
 
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
@@ -11,16 +10,19 @@
 
 #include "Modules/ConCommand.hpp"
 #include "Modules/ConVar.hpp"
+#include "Modules/Cvar.hpp"
 
 #include "Callbacks.hpp"
 #include "Commands.hpp"
 #include "Game.hpp"
 #include "Hooks.hpp"
 #include "Offsets.hpp"
-#include "Patterns.hpp"
 #include "Utils.hpp"
 
+#include "Patterns.hpp"
+
 using namespace Commands;
+using namespace Cvar;
 
 namespace SAR
 {
@@ -42,12 +44,12 @@ namespace SAR
 	bool LoadClient()
 	{
 		auto sts = Scan(Patterns::Get("SetSize"));
-		auto mss = Scan(Patterns::Get("g_pMatSystemSurface"));
 		auto glp = Scan(Patterns::Get("GetLocalPlayer"));
 		auto gtp = Scan(Patterns::Get("GetPos"));
+		auto mss = Scan(Patterns::Get("g_pMatSystemSurface"));
 
-		if (!sts.Found || !mss.Found || !glp.Found || !gtp.Found) {
-			Console::DevWarning("SAR: Failed to find all addresses in client.dll!\n");
+		if (!sts.Found || !glp.Found || !gtp.Found|| !mss.Found) {
+			Console::DevWarning("SAR: Failed to find all addresses in client!\n");
 			return false;
 		}
 
@@ -70,7 +72,7 @@ namespace SAR
 
 		if (!enc.Found || !ggd.Found || !crt.Found || !ldg.Found || !mpn.Found
 			|| !cns.Found || !drc.Found || !ins.Found || !ksb.Found || !dpl.Found) {
-			Console::DevWarning("SAR: Failed to find all addresses in engine.dll!\n");
+			Console::DevWarning("SAR: Failed to find all addresses in engine!\n");
 			return false;
 		}
 
@@ -330,19 +332,21 @@ namespace SAR
 			"Loads important SAR cvars.\n");
 
 		// From the game
-		cl_showpos = ConVar("cl_showpos");
-		sv_cheats = ConVar("sv_cheats");
-		sv_bonus_challenge = ConVar("sv_bonus_challenge");
-		sv_accelerate = ConVar("sv_accelerate");
-		sv_airaccelerate = ConVar("sv_airaccelerate");
-		sv_friction = ConVar("sv_friction");
-		sv_maxspeed = ConVar("sv_maxspeed");
-		sv_stopspeed = ConVar("sv_stopspeed");
-		sv_maxvelocity = ConVar("sv_maxvelocity");
-		sv_transition_fade_time = ConVar("sv_transition_fade_time");
-		sv_laser_cube_autoaim = ConVar("sv_laser_cube_autoaim");
-		ui_loadingscreen_transition_time = ConVar("ui_loadingscreen_transition_time");
-		hide_gun_when_holding = ConVar("hide_gun_when_holding");
+		cl_showpos = FindCvar("cl_showpos");
+		cl_sidespeed = FindCvar("cl_sidespeed");
+		sv_cheats = FindCvar("sv_cheats");
+
+		sv_bonus_challenge = FindCvar("sv_bonus_challenge");
+		sv_accelerate = FindCvar("sv_accelerate");
+		sv_airaccelerate = FindCvar("sv_airaccelerate");
+		sv_friction = FindCvar("sv_friction");
+		sv_maxspeed = FindCvar("sv_maxspeed");
+		sv_stopspeed = FindCvar("sv_stopspeed");
+		sv_maxvelocity = FindCvar("sv_maxvelocity");
+		sv_transition_fade_time = FindCvar("sv_transition_fade_time");
+		sv_laser_cube_autoaim = FindCvar("sv_laser_cube_autoaim");
+		ui_loadingscreen_transition_time = FindCvar("ui_loadingscreen_transition_time");
+		hide_gun_when_holding = FindCvar("hide_gun_when_holding");
 
 		Console::DevMsg("SAR: Created %i ConVars and %i ConCommands!\n", Tier1::ConVarCount, Tier1::ConCommandCount);
 	}
@@ -374,33 +378,38 @@ namespace SAR
 			Enable(hide_gun_when_holding, false);
 		}
 	}
+	// TODO
 	void LoadPatches()
 	{
 		// Change limited help string output in ConVar_PrintDescription
 		// from 80 to 1024
 		const char* thanksForNothingValve = "%-80s - %.1024s\n";
 		auto prd = Scan(Patterns::Get("PrintDescription"));
-		if (prd.Found && WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(prd.Address), &thanksForNothingValve, 4, 0)) {
-			Console::DevMsg("SAR: Patched ConVar_PrintDescription!\n");
+		if (prd.Address) {
+			NewReferenceAt(&thanksForNothingValve, (void*)prd.Address);
+			Console::DevMsg("SAR: Patched ConVar_PrintDescription at 0x%p!\n", prd.Address);
 		}
 
 		// Remove Cbuf_AddText and Cbuf_Execute when playing a demo
 		auto rdp = Scan(Patterns::Get("ReadPacket"));
-		if (rdp.Found && DoNothingAt(rdp.Address, 22)) {
+		if (rdp.Found) {
+			DoNothingAt(rdp.Address, 25);
 			Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket at 0x%p!\n", rdp.Address);
 		}
 
 		if (Game::Version == Game::Portal2) {
 			// Remove the default ConMsg when demo file gets closed
-			auto cdf = Scan("engine.dll", "D9 86 ? ? ? ? 8B 8E ? ? ? ? 51");
-			if (cdf.Found && DoNothingAt(cdf.Address, 29)) {
+			auto cdf = Scan("engine.so", "55 89 E5 56 53 83 EC ? 8B 5D ? 8D 73 ? 89 34 24", 284);
+			if (cdf.Found) {
+				DoNothingAt(cdf.Address, 44);
 				Console::DevMsg("SAR: Patched CDemoPlayer::CloseDemoFile at 0x%p!\n", cdf.Address);
 			}
 
 			// Remove automatic -remote_view on map load
-			auto remoteview = Scan("server.dll", "7C 36 56 E8 ? ? ? ? 83 C4 04 85 C0 74 1D 8B 0D ? ? ? ? 8B 40 1C 8B 11 68 ? ? ? ? 50 51 8B 8A ? ? ? ? FF D1 83 C4 0C");
-			if (remoteview.Found && DoNothingAt(remoteview.Address + 15, 29)) {
-				Console::DevMsg("SAR: Patched -remote_view at 0x%p!\n", remoteview.Address);
+			auto rv = Scan("server.so", "55 89 E5 56 53 83 EC ? 8B 75 ? 89 34 24 E8 ? ? ? ? C7 44 24 ? ? ? ? ? ", 108);
+			if (rv.Found) {
+				DoNothingAt(rv.Address, 32);
+				Console::DevMsg("SAR: Patched -remote_view at 0x%p!\n", rv.Address);
 			}
 		}
 	}
