@@ -1,5 +1,4 @@
 #pragma once
-#include <string>
 
 #include "Game.hpp"
 
@@ -31,6 +30,7 @@ namespace Offsets
 	int interval_per_tick;
 
 	// CGameMovement
+	int CheckJumpButton;
 	int mv;
 	int m_nOldButtons;
 
@@ -48,26 +48,29 @@ namespace Offsets
 	int m_szFileName;
 
 	// C_BasePlayer
+	int PlayerUse;
 	int m_afButtonPressed;
 	int GetAbsOrigin;
 	int GetAbsAngles;
 	int GetLocalVelocity;
 
+	// IClientEntityList
+	int GetClientEntity;
+
 	// Others
 	int HS_RUN;
 	int HS_CHANGE_LEVEL_SP;
-	int AirMoveSkip;
-	int PlayerRunCommandSkip;
 	int MainViewOrigin;
 	int MainViewAngles;
 
 	void Init()
 	{
 		if (Game::Version == Game::Portal2) {
+			// engine.so
 			InternalSetValue = 12;
 			InternalSetFloatValue = 13;
 			InternalSetIntValue = 14;
-			FindVar = 16;
+			FindVar = 15; // CCvarUtilities::IsValidToggleCommand
 			m_pConCommandList = 48;
 			ClientCommand = 7;
 			StringToButtonCode = 31;
@@ -76,26 +79,29 @@ namespace Offsets
 			IsPlayingBack = 6;
 			tickcount = 12;
 			interval_per_tick = 16;
-			mv = 2;
-			m_nOldButtons = 40;
-			DrawColoredText = 160;
-			m_hFont = 348;
 			m_szDemoBaseName = 1344;
 			m_bIsDemoHeader = 1604;
 			m_bCloseDemoFile = 1605;
 			m_bRecording = 1606;
 			m_nDemoNumber = 1608;
 			m_szFileName = 4;
+			GetClientEntity = 3; // R_BuildCubemapSamples
 			HS_RUN = 4;
 			HS_CHANGE_LEVEL_SP = 2;
-			m_afButtonPressed = 440;
-			AirMoveSkip = 372;
-			PlayerRunCommandSkip = 51;
-			GetAbsOrigin = 156;
-			GetAbsAngles = 192;
-			GetLocalVelocity = 264;
-			MainViewOrigin = 31;
-			MainViewAngles = 59;
+			// server.so
+			PlayerUse = 439; // CPortal_Player
+			CheckJumpButton = 37; // CPortalGameMovement
+			mv = 2; // CPortalGameMovement::CheckJumpButton
+			m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
+			m_afButtonPressed = 2884; // CPortal_Player::PlayerUse
+			// client.so
+			DrawColoredText = 160; // CFPSPanel::Paint
+			m_hFont = 344; // CFPSPanel::Paint
+			GetAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
+			GetAbsAngles = 172; // C_BasePlayer::GetAbsAngles
+			GetLocalVelocity = 244; // CFPSPanel::Paint
+			MainViewOrigin = 39; // GetPos view.cpp
+			MainViewAngles = 65; // GetPos view.cpp
 		}
 	}
 }

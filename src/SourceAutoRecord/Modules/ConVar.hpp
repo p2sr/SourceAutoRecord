@@ -61,15 +61,15 @@ namespace Tier1
 		}
 		void SetValue(const char* value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetValue);
-			if (vf) ((_SetValueString)vf)(Ptr, nullptr, value);
+			if (vf) ((_SetValueString)vf)(Ptr, value);
 		}
 		void SetValue(float value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetFloatValue);
-			if (vf) ((_SetValueFloat)vf)(Ptr, nullptr, value);
+			if (vf) ((_SetValueFloat)vf)(Ptr, value);
 		}
 		void SetValue(int value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetIntValue);
-			if (vf) ((_SetValueInt)vf)(Ptr, nullptr, value);
+			if (vf) ((_SetValueInt)vf)(Ptr, value);
 		}
 		void SetFlags(int value) {
 			((ConVarData*)Ptr)->Flags = value;
@@ -97,7 +97,7 @@ namespace Tier1
 		cv.Ptr = cv.Blob.get();
 
 		std::memset(cv.Ptr, 0, size);
-		ConVarCtor(cv.Ptr, nullptr, name, value, flags, helpstr, hasmin, min, hasmax, max);
+		ConVarCtor(cv.Ptr, name, value, flags, helpstr, hasmin, min, hasmax, max);
 
 		ConVarCount++;
 

@@ -26,12 +26,23 @@ using namespace Cvar;
 
 namespace SAR
 {
+	ScanResult Find(const char* pattern)
+	{
+		auto result = Scan(Patterns::Get(pattern));
+		if (result.Found) {
+			Console::DevMsg("%s\n", result.Message);
+		}
+		else {
+			Console::DevWarning("%s\n", result.Message);
+		}
+		return result;
+	}
 	bool LoadTier1()
 	{
-		auto cvr = Scan(Patterns::Get("CvarPtr"));
-		auto cnv = Scan(Patterns::Get("ConVar_Ctor3"));
-		auto cnc = Scan(Patterns::Get("ConCommand_Ctor1"));
-		auto cnc2 = Scan(Patterns::Get("ConCommand_Ctor2"));
+		auto cvr = Find("CvarPtr");
+		auto cnv = Find("ConVar_Ctor3");
+		auto cnc = Find("ConCommand_Ctor1");
+		auto cnc2 = Find("ConCommand_Ctor2");
 
 		if (!cvr.Found || !cnv.Found || !cnc.Found || !cnc2.Found)
 			return false;
@@ -43,15 +54,13 @@ namespace SAR
 	}
 	bool LoadClient()
 	{
-		auto sts = Scan(Patterns::Get("SetSize"));
-		auto glp = Scan(Patterns::Get("GetLocalPlayer"));
-		auto gtp = Scan(Patterns::Get("GetPos"));
-		auto mss = Scan(Patterns::Get("g_pMatSystemSurface"));
+		auto sts = Find("SetSize");
+		auto glp = Find("GetLocalPlayer");
+		auto gtp = Find("GetPos");
+		auto mss = Find("g_pMatSystemSurface");
 
-		if (!sts.Found || !glp.Found || !gtp.Found|| !mss.Found) {
-			Console::DevWarning("SAR: Failed to find all addresses in client!\n");
+		if (!sts.Found || !glp.Found || !gtp.Found|| !mss.Found)
 			return false;
-		}
 
 		Client::Set(sts.Address, glp.Address, gtp.Address);
 		Surface::Set(mss.Address);
@@ -59,22 +68,20 @@ namespace SAR
 	}
 	bool LoadEngine()
 	{
-		auto enc = Scan(Patterns::Get("engineClient"));
-		auto ggd = Scan(Patterns::Get("GetGameDir"));
-		auto crt = Scan(Patterns::Get("curtime"));
-		auto ldg = Scan(Patterns::Get("m_bLoadgame"));
-		auto mpn = Scan(Patterns::Get("m_szMapname"));
-		auto cns = Scan(Patterns::Get("m_currentState"));
-		auto drc = Scan(Patterns::Get("demorecorder"));
-		auto ins = Scan(Patterns::Get("g_pInputSystem"));
-		auto ksb = Scan(Patterns::Get("Key_SetBinding"));
-		auto dpl = Scan(Patterns::Get("demoplayer"));
+		auto enc = Find("engineClient");
+		auto ggd = Find("GetGameDir");
+		auto crt = Find("curtime");
+		auto ldg = Find("m_bLoadgame");
+		auto mpn = Find("m_szMapname");
+		auto cns = Find("m_currentState");
+		auto drc = Find("demorecorder");
+		auto ins = Find("g_pInputSystem");
+		auto ksb = Find("Key_SetBinding");
+		auto dpl = Find("demoplayer");
 
 		if (!enc.Found || !ggd.Found || !crt.Found || !ldg.Found || !mpn.Found
-			|| !cns.Found || !drc.Found || !ins.Found || !ksb.Found || !dpl.Found) {
-			Console::DevWarning("SAR: Failed to find all addresses in engine!\n");
+			|| !cns.Found || !drc.Found || !ins.Found || !ksb.Found || !dpl.Found)
 			return false;
-		}
 
 		Engine::Set(enc.Address, ggd.Address, crt.Address, ldg.Address, mpn.Address, cns.Address);
 		DemoRecorder::Set(drc.Address);
@@ -378,20 +385,23 @@ namespace SAR
 			Enable(hide_gun_when_holding, false);
 		}
 	}
-	// TODO
 	void LoadPatches()
 	{
 		// Change limited help string output in ConVar_PrintDescription
 		// from 80 to 1024
 		const char* thanksForNothingValve = "%-80s - %.1024s\n";
-		auto prd = Scan(Patterns::Get("PrintDescription"));
+		auto prd = Find("PrintDescription");
 		if (prd.Address) {
-			NewReferenceAt(&thanksForNothingValve, (void*)prd.Address);
-			Console::DevMsg("SAR: Patched ConVar_PrintDescription at 0x%p!\n", prd.Address);
+			auto result = NewReferenceAt((void*)prd.Address, (void*)thanksForNothingValve);
+			if (result != -1)
+				Console::DevMsg("SAR: Patched ConVar_PrintDescription at 0x%p!\n", prd.Address);
+			else {
+				Console::DevWarning("SAR: Failed to patch ConVar_PrintDescription (%s)!\n", strerror(errno));
+			}
 		}
 
-		// Remove Cbuf_AddText and Cbuf_Execute when playing a demo
-		auto rdp = Scan(Patterns::Get("ReadPacket"));
+		/* // Remove Cbuf_AddText and Cbuf_Execute when playing a demo
+		auto rdp = Find("ReadPacket");
 		if (rdp.Found) {
 			DoNothingAt(rdp.Address, 25);
 			Console::DevMsg("SAR: Patched CDemoPlayer::ReadPacket at 0x%p!\n", rdp.Address);
@@ -411,6 +421,6 @@ namespace SAR
 				DoNothingAt(rv.Address, 32);
 				Console::DevMsg("SAR: Patched -remote_view at 0x%p!\n", rv.Address);
 			}
-		}
+		} */
 	}
 }

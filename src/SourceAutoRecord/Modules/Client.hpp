@@ -1,4 +1,6 @@
 #pragma once
+#include "vmthook/vmthook.h"
+
 #include "Engine.hpp"
 #include "Surface.hpp"
 
@@ -30,11 +32,11 @@ struct CUserCmd {
 	bool hasbeenpredicted; // 60
 };
 
+using _SetSize = int(__cdecl*)(void* thisptr, int wide, int tall);
+using _GetLocalPlayer = void*(__cdecl*)(int unk);
 using _Paint = int(__cdecl*)(void* thisptr);
 using _ShouldDraw = bool(__cdecl*)(void* thisptr);
 using _FindElement = int(__cdecl*)(void* thisptr, const char* pName);
-using _SetSize = int(__cdecl*)(void* thisptr, int wide, int tall);
-using _GetLocalPlayer = void*(__cdecl*)(int unk);
 
 namespace Client
 {
@@ -67,21 +69,18 @@ namespace Client
 		return (player) ? *(Vector*)((uintptr_t)player + Offsets::GetLocalVelocity) : Vector();
 	}
 
-	namespace Original
+	namespace Hooks
 	{
-		_Paint Paint;
-		_ComputeSize ComputeSize;
-		_ShouldDraw ShouldDraw;
-		_FindElement FindElement;
-		_CreateMove CreateMove;
-		_ControllerMove ControllerMove;
+		std::unique_ptr<VMTHook> Paint;
+		std::unique_ptr<VMTHook> ShouldDraw;
+		std::unique_ptr<VMTHook> FindElement;
 	}
 
 	namespace Detour
 	{
 		CUserCmd* cmd;
 
-		int __fastcall Paint(void* thisptr, int edx)
+		/* int __fastcall Paint(void* thisptr, int edx)
 		{
 			int result = 0;
 
@@ -98,7 +97,7 @@ namespace Client
 			Color textColor(r, g, b, a);
 
 			if (cl_showpos.GetBool()) {
-				result = Original::Paint(thisptr);
+				result = ((_Paint)subhook_get_trampoline(Hooks::Paint))(thisptr);
 				yPadding += 65; // Ehem?
 			}
 
@@ -237,7 +236,7 @@ namespace Client
 		}
 		bool __fastcall ShouldDraw(void* thisptr, int edx)
 		{
-			return Original::ShouldDraw(thisptr)
+			return ((_ShouldDraw)subhook_get_trampoline(Hooks::ShouldDraw))(thisptr)
 				|| sar_hud_text.GetString()[0] != '\0'
 				|| sar_hud_position.GetBool()
 				|| sar_hud_angles.GetBool()
@@ -258,7 +257,7 @@ namespace Client
 			if (sar_never_open_cm_hud.GetBool() && strcmp(pName, "CHUDChallengeStats") == 0) {
 				return 0;
 			}
-			return Original::FindElement(thisptr, pName);
-		}
+			return ((_FindElement)subhook_get_trampoline(Hooks::FindElement))(thisptr, pName);
+		} */
 	}
 }

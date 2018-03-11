@@ -1,5 +1,6 @@
 #pragma once
-#include "Utils.hpp"
+
+#include "Game.hpp"
 
 namespace Patterns
 {
@@ -78,7 +79,7 @@ namespace Patterns
 		Create("engine.so", "CloseDemoFile");
 		Create("engine.so", "StopRecording");
 		Create("engine.so", "StartupDemoFile");
-		Create("engine.so", "Stop");
+		Create("engine.so", "ConCommandStop");
 		Create("engine.so", "Disconnect");
 		Create("engine.so", "PlayDemo");
 		Create("engine.so", "StartPlayback");
@@ -153,7 +154,7 @@ namespace Patterns
 			// \x80\x3D\x00\x00\x00\x00\x00\x55\xB8\x00\x00\x00\x00\x89\xE5 xx?????xx????xx
 			Add("ShouldDraw", "Portal 2 Build 7054",
 				"CFPSPanel::ShouldDraw",
-				"80 3D ? ? ? ? ? 55 B8 ? ? ? ? 89 E5 ");
+				"80 3D ? ? ? ? ? 55 B8 ? ? ? ? 89 E5");
 
 			// \x55\x89\xE5\x57\x56\x53\x83\xEC\x00\x8B\x75\x00\x8B\x7D\x00\x8B\x46\x00\x85\xC0\x7E\x00\x31\xDB\xEB\x00\x8D\xB6\x00\x00\x00\x00\x83\xC3\x00\x39\x5E\x00\x7E\x00\x8B\x46\x00 xxxxxxxx?xx?xx?xx?xxx?xxx?xxxxxxxx?xx?x?xx?
 			Add("FindElement", "Portal 2 Build 7054",
@@ -173,7 +174,7 @@ namespace Patterns
 			// \x55\x89\xE5\x53\x83\xEC\x00\x8B\x5D\x00\x8B\x45\x00\xC6\x43\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x03\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00 xxxxxx?xx?xx?xx??xx?????xx?????xx?????xx?????xx????xx?????xx?????
 			Add("ConVar_Ctor3", "Portal 2 Build 7054",
 				"ConVar",
-				"55 89 E5 53 83 EC ? 8B 5D ? 8B 45 ? C6 43 ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 03 ? ? ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ?");
+				"55 89 E5 53 83 EC ? 8B 5D ? 8B 45 ? C6 43 ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 03 ? ? ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? ");
 
 			// \x55\xB9\x00\x00\x00\x00\x89\xE5\x53\x83\xEC\x00\x8B\x5D\x00\x8B\x45\x00\x8B\x55\x00\xC6\x43\x00\x00\x89\x43\x00\x0F\xB6\x43\x00\x85\xD2 xx????xxxxx?xx?xx?xx?xx??xx?xxx?xx
 			Add("ConCommand_Ctor1", "Portal 2 Build 7054",
@@ -264,7 +265,7 @@ namespace Patterns
 				"55 89 E5 81 EC ? ? ? ? 89 5D ? 8B 5D ? 89 75 ? 89 7D ? 80 BB ? ? ? ? ? ");
 
 			// \x55\x89\xE5\x83\xEC\x00\x83\x3D\x00\x00\x00\x00\x00\x74\x00\xC9\xC3\x8D\xB4\x26\x00\x00\x00\x00\xA1\x00\x00\x00\x00\x8B\x10\x89\x04\x24\xFF\x52\x00\x84\xC0 xxxxx?xx?????x?xxxxxxxxxx????xxxxxxx?xx
-			Add("Stop", "Portal 2 Build 7054",
+			Add("ConCommandStop", "Portal 2 Build 7054",
 				"CON_COMMAND stop",
 				"55 89 E5 83 EC ? 83 3D ? ? ? ? ? 74 ? C9 C3 8D B4 26 00 00 00 00 A1 ? ? ? ? 8B 10 89 04 24 FF 52 ? 84 C0");
 

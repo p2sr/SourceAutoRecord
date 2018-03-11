@@ -15,21 +15,31 @@ int __attribute__((constructor)) Main()
 		SAR::CreateCommands();
 		SAR::EnableGameCheats();
 
+		/* for (MODULEINFO& item: Cache::Modules) {
+			Console::PrintActive("%s -> %p (%i)\n", item.moduleName, item.lpBaseOfDll, item.SizeOfImage);
+		} */
+
+		//SAR::LoadPatches();
+
+		Hooks::Load();
+		Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
+		return 0;
+
 		// Hooks
-		if (SAR::LoadClient() && SAR::LoadEngine()) {
-			Hooks::CreateAll();
+		/* if (SAR::LoadClient() && SAR::LoadEngine()) {
+			//Hooks::CreateAll();
 
 			// Nobody likes silly bugs
 			//SAR::LoadPatches();
 
-			Hooks::EnableAll();
+			//Hooks::InstallAll();
 
 			Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
 			return 0;
 		}
 		else {
 			Console::DevWarning("Could not hook any functions!\n");
-		}
+		} */
 	}
 	else {
 		Console::DevWarning("Could not register any commands!\n");

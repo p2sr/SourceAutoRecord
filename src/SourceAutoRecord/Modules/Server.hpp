@@ -1,4 +1,5 @@
 #pragma once
+#include "vmthook/vmthook.h"
 
 #include "Commands.hpp"
 #include "Offsets.hpp"
@@ -7,17 +8,21 @@
 #define IN_JUMP	(1 << 1)
 #define IN_USE	(1 << 5)
 
-using _CheckJumpButton = bool(__thiscall*)(void* thisptr);
-using _PlayerUse = int(__thiscall*)(void* thisptr);
+using _CheckJumpButton = bool(__cdecl*)(void* thisptr);
+using _PlayerUse = int(__cdecl*)(void* thisptr);
 
 using namespace Commands;
 
 namespace Server
 {
+	namespace Hooks
+	{
+		std::unique_ptr<VMTHook> CheckJumpButton;
+		std::unique_ptr<VMTHook> PlayerUse;
+	}
+
 	namespace Original
 	{
-		_CheckJumpButton CheckJumpButton;
-		_PlayerUse PlayerUse;
 		void* AirMove;
 		void* AirMoveSkip;
 		void* PlayerRunCommand;
@@ -28,7 +33,7 @@ namespace Server
 	{
 		bool CantJumpNextTime = false;
 
-		bool __fastcall CheckJumpButton(void* thisptr, int edx)
+		bool __cdecl CheckJumpButton(void* thisptr)
 		{
 			int* m_nOldButtons = NULL;
 			int original = 0;
@@ -42,7 +47,8 @@ namespace Server
 			}
 			CantJumpNextTime = false;
 
-			bool result = Original::CheckJumpButton(thisptr);
+			bool result = Hooks::CheckJumpButton
+				->GetOriginalFunction<_CheckJumpButton>(Offsets::CheckJumpButton)(thisptr);
 
 			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool()) {
 				if (!(*m_nOldButtons & IN_JUMP))
@@ -61,8 +67,9 @@ namespace Server
 			int* m_afButtonPressed = (int*)((uintptr_t)thisptr + Offsets::m_afButtonPressed);
 			if (*m_afButtonPressed & IN_USE) {
 				Stats::TotalUses++;
+				Console::PrintActive("Hello World!\n");
 			}
-			return Original::PlayerUse(thisptr);
+			return Hooks::PlayerUse->GetOriginalFunction<_PlayerUse>(Offsets::PlayerUse)(thisptr);
 		}
 		// TODO
 		__attribute__((naked)) void AirMove()

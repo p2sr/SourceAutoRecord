@@ -6,9 +6,11 @@
 #include <fstream>
 #include <link.h>
 #include <memory>
+#include <sys/uio.h>
+#include <unistd.h>
 #include <vector>
 
-#include "Game.hpp"
+#include "vmthook/vmthook.h"
 
 #define SAR_VERSION "1.5"
 #define SAR_BUILD __TIME__ " " __DATE__
@@ -215,24 +217,30 @@ void* GetVirtualFunctionByIndex(void* ptr, int index)
 	return (*((void***)ptr))[index];
 }
 
-void DoNothingAt(uintptr_t source, int count)
+int NewReferenceAt(void* source, void* destination)
 {
-	unsigned char NOP[1] = { 0x90 };
+	char buffer[4];
+	memcpy(buffer, &destination, 4);
 
-	for (int i = 0; i < count; i++) {
-		memcpy(reinterpret_cast<void*>(source + i), NOP, 1);
-	}
+	struct iovec local[1];
+	struct iovec remote[1];
+
+	local[0].iov_base = buffer;
+	local[0].iov_len = 4;
+	remote[0].iov_base = source;
+	remote[0].iov_len = 4;
+
+	return process_vm_writev(getpid(), local, 1, remote, 1, 0);
 }
 
-void NewReferenceAt(void* destination, void* source)
-{
-	memcpy(source, destination, 4);
-}
+typedef void* (*CreateInterfaceFn)(const char *pName, int *pReturnCode);
 
-void JumpToAt(uintptr_t destination, uintptr_t source)
-{
-	unsigned char JMP[1] = { 0xEB };
+void* GetInterface(const char* filename, const char* version) {
+	auto handle = dlopen(filename, RTLD_NOLOAD | RTLD_NOW);
+	if (!handle) return nullptr;
 
-	memcpy((void*)source, JMP, 1);
-	memcpy((void*)(source + 1), (void*)destination, 4);
+	auto factory = dlsym(handle, "CreateInterface");
+	if (!factory) return nullptr;
+
+	return ((CreateInterfaceFn)(factory))(version, nullptr);
 }

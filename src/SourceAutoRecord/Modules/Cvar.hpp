@@ -4,7 +4,7 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
-using _FindVar = void*(__fastcall*)(void* thisptr, void* edx, const char* name);
+using _FindVar = void*(__cdecl*)(void* thisptr, const char* name);
 
 namespace Cvar
 {
@@ -21,6 +21,6 @@ namespace Cvar
 	}
 	ConVar FindCvar(const char* ref)
 	{
-		return ConVar(Cvar::FindVar(Cvar::Ptr, nullptr, ref));
+		return ConVar(Cvar::FindVar(Cvar::Ptr, ref));
 	}
 }

@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 
+#include "vmthook/vmthook.h"
+
 #include "Console.hpp"
 #include "DemoRecorder.hpp"
 #include "DemoPlayer.hpp"
@@ -13,19 +15,19 @@
 #include "Timer.hpp"
 #include "Utils.hpp"
 
-using _GetGameDir = void(__cdecl*)(char* szGetGameDir, int maxlength);
 using _ClientCmd = void(__fastcall*)(void* thisptr, int edx, const char* szCmdString);
+using _GetGameDir = void(__cdecl*)(char* szGetGameDir, int maxlength);
 
-using _SetSignonState = bool(__thiscall*)(void* thisptr, int state, int spawncount);
-using _CloseDemoFile = int(__thiscall*)(void* thisptr);
-using _StopRecording = int(__thiscall*)(void* thisptr);
-using _StartupDemoFile = void(__thiscall*)(void* thisptr);
+using _SetSignonState = bool(__cdecl*)(void* thisptr, int state, int spawncount);
+using _CloseDemoFile = int(__cdecl*)(void* thisptr);
+using _StopRecording = int(__cdecl*)(void* thisptr);
+using _StartupDemoFile = void(__cdecl*)(void* thisptr);
 using _ConCommandStop = void(__cdecl*)();
-using _Disconnect = void(__thiscall*)(void* thisptr, int bShowMainMenu);
+using _Disconnect = void(__cdecl*)(void* thisptr, int bShowMainMenu);
 using _PlayDemo = void(__cdecl*)(void* thisptr);
-using _StartPlayback = bool(__fastcall*)(void* thisptr, int edx, const char* filename, bool bAsTimeDemo);
+using _StartPlayback = bool(__cdecl*)(void* thisptr, const char* filename, bool bAsTimeDemo);
 using _StopPlayback = int(__fastcall*)(void* thisptr, int edx);
-using _HostStateFrame = void(__cdecl*)(float time);
+using _HostStateFrame = int(__cdecl*)(float time);
 
 enum SignonState {
 	None = 0,
@@ -131,19 +133,17 @@ namespace Engine
 		}
 	}
 
-	namespace Original
+	namespace Hooks
 	{
-		_SetSignonState SetSignonState;
-		_CloseDemoFile CloseDemoFile;
-		_StopRecording StopRecording;
-		_StartupDemoFile StartupDemoFile;
-		_ConCommandStop ConCommandStop;
-		_Disconnect Disconnect;
-		_PlayDemo PlayDemo;
-		_StartPlayback StartPlayback;
-		_HostStateFrame HostStateFrame;
-		void* PrintCvar;
-		void* PrintCommand;
+		std::unique_ptr<VMTHook> SetSignonState;
+		std::unique_ptr<VMTHook> CloseDemoFile;
+		std::unique_ptr<VMTHook> StopRecording;
+		std::unique_ptr<VMTHook> StartupDemoFile;
+		std::unique_ptr<VMTHook> ConCommandStop;
+		std::unique_ptr<VMTHook> Disconnect;
+		std::unique_ptr<VMTHook> PlayDemo;
+		std::unique_ptr<VMTHook> StartPlayback;
+		std::unique_ptr<VMTHook> HostStateFrame;
 	}
 
 	namespace Detour
@@ -157,7 +157,7 @@ namespace Engine
 		int LastHostState;
 		bool CallFromHostStateFrame;
 
-		bool __fastcall SetSignonState(void* thisptr, int edx, int state, int spawncount)
+		/* bool __fastcall SetSignonState(void* thisptr, int edx, int state, int spawncount)
 		{
 			//Console::Print("SetSignonState = %i\n", state);
 			if (state == SignonState::Prespawn) {
@@ -175,7 +175,7 @@ namespace Engine
 				Session::Rebase(*Engine::TickCount);
 				Timer::Rebase(*Engine::TickCount);
 			}
-			return Original::SetSignonState(thisptr, state, spawncount);
+			return ((_SetSignonState)subhook_get_trampoline(Hooks::SetSignonState))(thisptr, state, spawncount);
 		}
 		int __fastcall CloseDemoFile(void* thisptr, int edx)
 		{
@@ -188,7 +188,7 @@ namespace Engine
 				DemoRecorder::SetLastDemo(tick);
 			}
 
-			return Original::CloseDemoFile(thisptr);
+			return ((_CloseDemoFile)subhook_get_trampoline(Hooks::CloseDemoFile))(thisptr);
 		}
 		bool __fastcall StopRecording(void* thisptr, int edx)
 		{
@@ -197,7 +197,7 @@ namespace Engine
 			// This function does:
 			// m_bRecording = false
 			// m_nDemoNumber = 0
-			bool result = Original::StopRecording(thisptr);
+			bool result = ((_StopRecording)subhook_get_trampoline(Hooks::StopRecording))(thisptr);
 
 			if (IsRecordingDemo && !PlayerRequestedStop) {
 				*DemoRecorder::DemoNumber = LastDemoNumber;
@@ -222,28 +222,28 @@ namespace Engine
 		{
 			IsRecordingDemo = true;
 			DemoRecorder::SetCurrentDemo();
-			Original::StartupDemoFile(thisptr);
+			((_StartupDemoFile)subhook_get_trampoline(Hooks::StartupDemoFile))(thisptr);
 		}
 		void __cdecl ConCommandStop()
 		{
 			PlayerRequestedStop = true;
-			Original::ConCommandStop();
+			((_ConCommandStop)subhook_get_trampoline(Hooks::ConCommandStop))();
 			PlayerRequestedStop = false;
 		}
 		void __fastcall Disconnect(void* thisptr, int edx, bool bShowMainMenu)
 		{
 			SessionEnded();
-			Original::Disconnect(thisptr, bShowMainMenu);
+			((_Disconnect)subhook_get_trampoline(Hooks::Disconnect))(thisptr, bShowMainMenu);
 		}
 		void __cdecl PlayDemo(void* thisptr)
 		{
 			PlayerRequestedPlayback = true;
-			Original::PlayDemo(thisptr);
+			((_PlayDemo)subhook_get_trampoline(Hooks::PlayDemo))(thisptr);
 			PlayerRequestedPlayback = false;
 		}
 		bool __fastcall StartPlayback(void* thisptr, int edx, const char *filename, bool bAsTimeDemo)
 		{
-			bool result = Original::StartPlayback(thisptr, edx, filename, bAsTimeDemo);
+			bool result = ((_StartPlayback)subhook_get_trampoline(Hooks::StartPlayback))(thisptr, filename, bAsTimeDemo);
 
 			if (result && PlayerRequestedPlayback) {
 				IsPlayingDemo = true;
@@ -266,7 +266,7 @@ namespace Engine
 			}
 			return result;
 		}
-		void __fastcall HostStateFrame(void* thisptr, int edx, float time)
+		int __fastcall HostStateFrame(void* thisptr, int edx, float time)
 		{
 			HostStateData state = *reinterpret_cast<HostStateData*>(CurrentStatePtr);
 
@@ -292,7 +292,7 @@ namespace Engine
 
 				LastHostState = state.m_currentState;
 			}
-			Original::HostStateFrame(time);
-		}
+			return ((_HostStateFrame)subhook_get_trampoline(Hooks::HostStateFrame))(time);
+		} */
 	}
 }
