@@ -9,7 +9,11 @@ namespace Offsets
 	int m_pConCommandList;
 
 	// CEngineClient
-	int ClientCommand;
+	int ClientCmd;
+	int GetGameDirectory;
+
+	// CHLClient
+	int HudUpdate;
 
 	// ConVar
 	int InternalSetValue;
@@ -25,10 +29,6 @@ namespace Offsets
 	// CInputSystem
 	int StringToButtonCode;
 
-	// CGlobalVarsBase
-	int tickcount;
-	int interval_per_tick;
-
 	// CGameMovement
 	int CheckJumpButton;
 	int mv;
@@ -36,6 +36,9 @@ namespace Offsets
 
 	// CDemoRecorder
 	int GetRecordingTick;
+	int SetSignonState;
+	int StopRecording;
+
 	int m_szDemoBaseName;
 	int m_bIsDemoHeader;
 	int m_bCloseDemoFile;
@@ -44,12 +47,14 @@ namespace Offsets
 
 	// CDemoPlayer
 	int GetPlaybackTick;
+	int StartPlayback;
 	int IsPlayingBack;
 	int m_szFileName;
 
+	// CClientState
+	int Disconnect;
+
 	// C_BasePlayer
-	int PlayerUse;
-	int m_afButtonPressed;
 	int GetAbsOrigin;
 	int GetAbsAngles;
 	int GetLocalVelocity;
@@ -72,29 +77,33 @@ namespace Offsets
 			InternalSetIntValue = 14;
 			FindVar = 15; // CCvarUtilities::IsValidToggleCommand
 			m_pConCommandList = 48;
-			ClientCommand = 7;
+			ClientCmd = 7; // CEngineClient
+			GetGameDirectory = 35; // CEngineClient
 			StringToButtonCode = 31;
-			GetRecordingTick = 1;
-			GetPlaybackTick = 3;
-			IsPlayingBack = 6;
-			tickcount = 12;
-			interval_per_tick = 16;
+			GetRecordingTick = 1; // CDemoRecorder
+			SetSignonState = 3; // CDemoRecorder
+			StopRecording = 7; // CDemoRecorder
+			GetPlaybackTick = 3; // CDemoPlayer
+			StartPlayback = 6; // CDemoPlayer
+			IsPlayingBack = 7; // CDemoPlayer
+			m_szFileName = 4; // CDemoPlayer::SkipToTick
 			m_szDemoBaseName = 1344;
 			m_bIsDemoHeader = 1604;
 			m_bCloseDemoFile = 1605;
 			m_bRecording = 1606;
 			m_nDemoNumber = 1608;
-			m_szFileName = 4;
-			GetClientEntity = 3; // R_BuildCubemapSamples
+			Disconnect = 37; //  CClientState
+			//GetClientEntity = 3; // R_BuildCubemapSamples
 			HS_RUN = 4;
 			HS_CHANGE_LEVEL_SP = 2;
+
 			// server.so
-			PlayerUse = 439; // CPortal_Player
 			CheckJumpButton = 37; // CPortalGameMovement
 			mv = 2; // CPortalGameMovement::CheckJumpButton
 			m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
-			m_afButtonPressed = 2884; // CPortal_Player::PlayerUse
+
 			// client.so
+			HudUpdate = 11; // CHLClient
 			DrawColoredText = 160; // CFPSPanel::Paint
 			m_hFont = 344; // CFPSPanel::Paint
 			GetAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin

@@ -6,6 +6,8 @@ using namespace Tier1;
 
 namespace Commands
 {
+	ConVar sar_autorecord;
+
 	// Rebinder
 	ConCommand sar_bind_save;
 	ConCommand sar_bind_reload;
@@ -66,11 +68,9 @@ namespace Commands
 	// Stats
 	ConVar sar_stats_auto_reset;
 	ConCommand sar_stats_reset_jumps;
-	ConCommand sar_stats_reset_uses;
 
 	// Cheats
 	ConVar sar_autojump;
-	ConVar sar_aircontrol;
 	ConVar sar_never_open_cm_hud;
 	ConVar sar_never_delay_start;
 	ConCommand sar_teleport;

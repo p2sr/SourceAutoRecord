@@ -1,5 +1,23 @@
 #include "SourceAutoRecord.hpp"
 
+#include "Modules/Client.hpp"
+#include "Modules/Console.hpp"
+#include "Modules/DemoPlayer.hpp"
+#include "Modules/DemoRecorder.hpp"
+#include "Modules/Engine.hpp"
+#include "Modules/InputSystem.hpp"
+#include "Modules/Server.hpp"
+
+#include "Modules/ConCommand.hpp"
+#include "Modules/ConVar.hpp"
+#include "Modules/Cvar.hpp"
+
+#include "Callbacks.hpp"
+#include "Cheats.hpp"
+#include "Commands.hpp"
+#include "Game.hpp"
+#include "Hooks.hpp"
+
 int __attribute__((constructor)) Main()
 {	
 	if (!Game::IsSupported()) return 1;
@@ -9,37 +27,18 @@ int __attribute__((constructor)) Main()
 	Patterns::Init();
 
 	// ConCommand and ConVar
-	if (SAR::LoadTier1()) {
-
-		// Cheats
-		SAR::CreateCommands();
-		SAR::EnableGameCheats();
+	if (Hooks::LoadTier1()) {
 
 		/* for (MODULEINFO& item: Cache::Modules) {
 			Console::PrintActive("%s -> %p (%i)\n", item.moduleName, item.lpBaseOfDll, item.SizeOfImage);
 		} */
 
-		//SAR::LoadPatches();
-
+		Cheats::Create();
+		Cheats::UnlockAll();
 		Hooks::Load();
+		
 		Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
 		return 0;
-
-		// Hooks
-		/* if (SAR::LoadClient() && SAR::LoadEngine()) {
-			//Hooks::CreateAll();
-
-			// Nobody likes silly bugs
-			//SAR::LoadPatches();
-
-			//Hooks::InstallAll();
-
-			Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
-			return 0;
-		}
-		else {
-			Console::DevWarning("Could not hook any functions!\n");
-		} */
 	}
 	else {
 		Console::DevWarning("Could not register any commands!\n");

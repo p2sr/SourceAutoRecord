@@ -19,7 +19,6 @@
   - [Stats](#stats)
   - [Cheats](#cheats)
     - [Unlocked](#unlocked)
-  - [Patches](#patches)
   - [Config](#config)
 - [Mapping](#mapping)
   - [Start & Stop Triggers](#start--stop-triggers)
@@ -30,14 +29,11 @@
 - Portal 2
 - Aperture Tag
 - Portal Stories: Mel
-- INFRA
 
 ## Features
 
 ### Automatic Demo Recorder
-- Tells engine to keep recording when loading from a save
-- Closes demo file correctly when changing the level
-- `stop` disables automatic recording
+- `sar_autorecord` keeps recording a demo when loading from a save
 
 ### Automatic Binding
 - `sar_bind_save <key> [save_name]` binds automatically `save save_name` to the given key when loading
@@ -50,7 +46,7 @@
 
 ### Demo Parser
 - `sar_time_demo [demo_name]` parses a demo and prints some useful information about it
-  - Passing an empty string will take the last recorded demo from demo recorder or the last played demo from the demo player
+  - Passing an empty string will take the last played demo from the demo player
 - `sar_time_demo_dev` prints demo's console commands and packets when using `sar_time_demo`
   - Use `con_log [file_name]` to export the extra data into a file
 - `sar_time_demos [demo_name] [demo_name2] [etc.]` parses multiple demos
@@ -94,7 +90,6 @@
 - `sar_hud_avg` draws current average of timer
 - `sar_hud_cps` draws last checkpoint value of timer
 - `sar_hud_demo` draws current name, tick and time of demo recorder or demo player
-- `sar_hud_last_demo` draws value of latest completed demo
 - `sar_hud_jumps` draws total jump count
 - `sar_hud_uses` draws total use count
 
@@ -109,11 +104,9 @@
 ### Stats
 - `sar_stats_auto_reset` resets all stats automatically
 - `sar_stats_reset_jumps` resets jump count
-- `sar_stats_reset_uses` resets use count
 
 ### Cheats
 - `sar_autojump` enables tick-perfect jumping on the server
-- `sar_aircontrol` enables more air-control on the server
 - `sar_never_open_cm_hud` disables HUD for challenge mode stats (Portal 2)
 - `sar_never_delay_start` disables start delay when spawning
 - `sar_teleport` teleports player to a saved location
@@ -133,11 +126,6 @@
 - `hide_gun_when_holding` (Portal 2)
 
 *Flagged as cheat.
-
-### Patches
-- Limited character printing has been extended for `help`
-- Redundant command execution has been removed for `playdemo`
-- Server doesn't close `+remote_view` on map load (Portal 2)
 
 ### Config
 - `sar_cvars_save` saves important ConVar values to a file
@@ -174,3 +162,4 @@
 - [SourcePauseTool](https://github.com/YaLTeR/SourcePauseTool)
 - [SourceDemoRender](https://github.com/crashfort/SourceDemoRender)
 - [SourceSplit](https://github.com/fatalis/SourceSplit)
+- [cstrike-basehook-linux](https://github.com/aixxe/cstrike-basehook-linux)

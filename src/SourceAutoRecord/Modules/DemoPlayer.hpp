@@ -2,8 +2,8 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
-using _IsPlayingBack = bool(__thiscall*)(void* thisptr);
-using _GetPlaybackTick = int(__thiscall*)(void* thisptr);
+using _IsPlayingBack = bool(__cdecl*)(void* thisptr);
+using _GetPlaybackTick = int(__cdecl*)(void* thisptr);
 
 namespace DemoPlayer
 {

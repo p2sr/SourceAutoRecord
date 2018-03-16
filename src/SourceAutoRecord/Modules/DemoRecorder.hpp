@@ -1,8 +1,10 @@
 #pragma once
+#include "vmthook/vmthook.h"
+
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
-using _GetRecordingTick = int(__thiscall*)(void* thisptr);
+using _GetRecordingTick = int(__cdecl*)(void* thisptr);
 
 namespace DemoRecorder
 {
@@ -15,8 +17,6 @@ namespace DemoRecorder
 	bool* Recording;
 
 	std::string CurrentDemo;
-	std::string LastDemo;
-	int LastDemoTick;
 
 	void Set(uintptr_t recorderAddr)
 	{
@@ -34,11 +34,5 @@ namespace DemoRecorder
 	{
 		CurrentDemo = std::string(DemoRecorder::DemoName);
 		if (*DemoNumber > 1) CurrentDemo += "_" + std::to_string(*DemoNumber);
-	}
-	void SetLastDemo(int tick)
-	{
-		LastDemo = std::string(DemoRecorder::DemoName);
-		if (*DemoNumber > 1) LastDemo += "_" + std::to_string(*DemoNumber);
-		LastDemoTick = tick;
 	}
 }
