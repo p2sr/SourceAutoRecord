@@ -7,6 +7,9 @@
 #include "Modules/Engine.hpp"
 #include "Modules/InputSystem.hpp"
 #include "Modules/Server.hpp"
+#include "Modules/Surface.hpp"
+#include "Modules/Vars.hpp"
+#include "Modules/VGui.hpp"
 
 #include "Modules/ConCommand.hpp"
 #include "Modules/ConVar.hpp"
@@ -15,8 +18,8 @@
 #include "Callbacks.hpp"
 #include "Cheats.hpp"
 #include "Commands.hpp"
+#include "Interfaces.hpp"
 #include "Game.hpp"
-#include "Hooks.hpp"
 
 int __attribute__((constructor)) Main()
 {	
@@ -26,8 +29,7 @@ int __attribute__((constructor)) Main()
 	Offsets::Init();
 	Patterns::Init();
 
-	// ConCommand and ConVar
-	if (Hooks::LoadTier1()) {
+	if (Cvar::Loaded() && Tier1::ConCommandLoaded() && Tier1::ConVarLoaded()) {
 
 		/* for (MODULEINFO& item: Cache::Modules) {
 			Console::PrintActive("%s -> %p (%i)\n", item.moduleName, item.lpBaseOfDll, item.SizeOfImage);
@@ -35,7 +37,17 @@ int __attribute__((constructor)) Main()
 
 		Cheats::Create();
 		Cheats::UnlockAll();
-		Hooks::Load();
+
+		Interfaces::Load();
+
+		DemoPlayer::Hook();
+		DemoRecorder::Hook();
+		Engine::Hook();
+		InputSystem::Hook();
+		Server::Hook();
+		Surface::Hook();
+		Vars::Hook();
+		VGui::Hook();
 		
 		Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
 		return 0;

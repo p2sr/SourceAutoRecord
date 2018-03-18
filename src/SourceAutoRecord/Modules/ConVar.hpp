@@ -2,6 +2,7 @@
 #include "Tier1.hpp"
 
 #include "Offsets.hpp"
+#include "SourceAutoRecord.hpp"
 
 namespace Tier1
 {
@@ -26,9 +27,13 @@ namespace Tier1
 		int unk4;
 	};
 
-	void SetConVar(uintptr_t conVarAddr)
+	bool ConVarLoaded()
 	{
-		ConVarCtor = reinterpret_cast<_ConVar>(conVarAddr);
+		auto cnv = SAR::Find("ConVar_Ctor3");
+		if (cnv.Found) {
+			ConVarCtor = reinterpret_cast<_ConVar>(cnv.Address);
+		}
+		return cnv.Found;
 	}
 
 	struct ConVar {

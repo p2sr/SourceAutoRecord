@@ -96,7 +96,7 @@ bool GetModuleInformation(const char* moduleName, MODULEINFO* moduleInfo) {
 			temp = temp.substr(index + 1, temp.length() - index);
 			snprintf(module.moduleName, sizeof(module.moduleName), "%s", temp.c_str());
 
-			module.lpBaseOfDll = info->dlpi_addr;
+			module.lpBaseOfDll = info->dlpi_addr + info->dlpi_phdr[0].p_paddr;
 			module.SizeOfImage = info->dlpi_phdr[0].p_memsz;
 			
 			Cache::Modules.push_back(module);

@@ -86,6 +86,10 @@ namespace Patterns
 		Create("engine.so", "HostStateFrame");
 		Create("engine.so", "PrintDescription");
 		Create("engine.so", "ReadPacket");
+		Create("engine.so", "ClientState");
+
+		Create("vguimatsurface.so", "StartDrawing");
+		Create("vguimatsurface.so", "FinishDrawing");
 
 		if (Game::Version == Game::Portal2){
 			Portal2::Load();
@@ -300,6 +304,25 @@ namespace Patterns
 				"CDemoPlayer::ReadPacket",
 				"55 89 E5 57 56 53 81 EC ? ? ? ? C7 45 ? ? ? ? ? 8B 5D ? C6 45 ? ? 8D 43 ? ",
 				1407);
+
+			// \x55\x89\xE5\x83\xEC\x00\xC7\x44\x24\x00\x00\x00\x00\x00\xC7\x04\x24\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xC9\xC3\x8D\x74\x26\x00\x55\x89\xE5\x57\x56\x53\x83\xEC\x00\xA1\x00\x00\x00\x00 xxxxx?xxx?????xxx????x????xxxxxxxxxxxxxx?x????
+			Add("ClientState", "Portal 2 Build 7054",
+				"CClientState::cl",
+				"55 89 E5 83 EC ? C7 44 24 ? ? ? ? ? C7 04 24 ? ? ? ? E8 ? ? ? ? C9 C3 8D 74 26 00 55 89 E5 57 56 53 83 EC ? A1 ? ? ? ? ");
+
+
+			// vguimatsurface.so
+
+
+			// \x55\x89\xE5\x53\x83\xEC\x00\x80\x3D\x00\x00\x00\x00\x00\x8B\x5D\x00\x0F\x84\x00\x00\x00\x00 xxxxxx?xx?????xx?xx????
+			Add("StartDrawing", "Portal 2 Build 7054",
+				"CMatSystemSurface::StartDrawing",
+				"55 89 E5 53 83 EC ? 80 3D ? ? ? ? ? 8B 5D ? 0F 84 ? ? ? ? ");
+
+			// \x55\x89\xE5\x53\x83\xEC\x00\xC7\x04\x24\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xA1\x00\x00\x00\x00 xxxxxx?xxx????x????x????
+			Add("FinishDrawing", "Portal 2 Build 7054",
+				"CMatSystemSurface::FinishDrawing",
+				"55 89 E5 53 83 EC ? C7 04 24 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? ");
 		}
 	}
 }

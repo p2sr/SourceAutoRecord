@@ -68,6 +68,13 @@ namespace Offsets
 	int MainViewOrigin;
 	int MainViewAngles;
 
+	// IEngineVGuiInternal
+	int Paint;
+
+	// IServerGameDLL
+	int LevelInit;
+	int LevelInit_gpGlobals;
+
 	void Init()
 	{
 		if (Game::Version == Game::Portal2) {
@@ -92,6 +99,9 @@ namespace Offsets
 			m_bCloseDemoFile = 1605;
 			m_bRecording = 1606;
 			m_nDemoNumber = 1608;
+			Paint = 15; // IEngineVGuiInternal
+			LevelInit = 2; // IServerGameDLL
+			LevelInit_gpGlobals = 83; // IServerGameDLL::LevelInit
 			Disconnect = 37; //  CClientState
 			//GetClientEntity = 3; // R_BuildCubemapSamples
 			HS_RUN = 4;

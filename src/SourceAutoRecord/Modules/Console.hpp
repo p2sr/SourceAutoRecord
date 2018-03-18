@@ -4,14 +4,14 @@
 #define Print(...) ColorMsg(SAR_COLOR, __VA_ARGS__)
 #define PrintActive(...) ColorMsg(COL_ACTIVE, __VA_ARGS__)
 
-using _Msg = void(__cdecl*)(const char* pMsgFormat, ...);
-using _Warning = void(__cdecl*)(const char* pMsgFormat, ...);
-using _ColorMsg = void(__cdecl*)(const Color& clr, const char* pMsgFormat, ...);
-using _DevMsg = void(__cdecl*)(const char* pMsgFormat, ...);
-using _DevWarning = void(__cdecl*)(const char* pMsgFormat, ...);
-
 namespace Console
 {
+	using _Msg = void(__cdecl*)(const char* pMsgFormat, ...);
+	using _Warning = void(__cdecl*)(const char* pMsgFormat, ...);
+	using _ColorMsg = void(__cdecl*)(const Color& clr, const char* pMsgFormat, ...);
+	using _DevMsg = void(__cdecl*)(const char* pMsgFormat, ...);
+	using _DevWarning = void(__cdecl*)(const char* pMsgFormat, ...);
+
 	_Msg Msg;
 	_ColorMsg ColorMsg;
 	_Warning Warning;

@@ -1,6 +1,7 @@
 #pragma once
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Vars.hpp"
 
 #include "Features/Timer.hpp"
 #include "Features/TimerAverage.hpp"
@@ -16,7 +17,7 @@ namespace Callbacks
 			Console::DevMsg("Restarting timer!\n");
 		else
 			Console::DevMsg("Starting timer!\n");
-		Timer::Start(*Engine::TickCount);
+		Timer::Start(Vars::gpGlobals->interval_per_tick);
 
 		if (sar_stats_auto_reset.GetInt() >= 2) {
 			Stats::Reset();
@@ -29,16 +30,16 @@ namespace Callbacks
 			return;
 		}
 
-		Timer::Stop(*Engine::TickCount);
+		Timer::Stop(Vars::gpGlobals->interval_per_tick);
 
 		if (Timer::Average::IsEnabled) {
-			int tick = Timer::GetTick(*Engine::TickCount);
-			Timer::Average::Add(tick, tick * *Engine::IntervalPerTick, *Engine::Mapname);
+			int tick = Timer::GetTick(Vars::gpGlobals->interval_per_tick);
+			Timer::Average::Add(tick, tick * Vars::gpGlobals->interval_per_tick, *Vars::Mapname);
 		}
 	}
 	void PrintTimer() {
-		int tick = Timer::GetTick(*Engine::TickCount);
-		float time = tick * *Engine::IntervalPerTick;
+		int tick = Timer::GetTick(Vars::gpGlobals->interval_per_tick);
+		float time = tick * Vars::gpGlobals->interval_per_tick;
 
 		if (Timer::IsRunning) {
 			Console::PrintActive("Result: %i (%.3f)\n", tick, time);
@@ -83,7 +84,7 @@ namespace Callbacks
 		}
 
 		int tick = Timer::GetTick(Engine::GetTick());
-		Timer::CheckPoints::Add(tick, tick * *Engine::IntervalPerTick, *Engine::Mapname);
+		Timer::CheckPoints::Add(tick, tick * Vars::gpGlobals->interval_per_tick, *Vars::Mapname);
 	}
 	void ClearCheckpoints() {
 		Timer::CheckPoints::Reset();
@@ -112,8 +113,8 @@ namespace Callbacks
 		}
 
 		if (!Timer::IsRunning) {
-			int tick = Timer::GetTick(*Engine::TickCount);
-			float time = tick * *Engine::IntervalPerTick;
+			int tick = Timer::GetTick(Vars::gpGlobals->interval_per_tick);
+			float time = tick * Vars::gpGlobals->interval_per_tick;
 			Console::Print("Result: %i (%.3f)\n", tick, time);
 		}
 	}

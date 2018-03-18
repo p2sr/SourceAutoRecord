@@ -2,22 +2,27 @@
 #include "ConVar.hpp"
 
 #include "Offsets.hpp"
+#include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
-
-using _FindVar = void*(__cdecl*)(void* thisptr, const char* name);
 
 namespace Cvar
 {
+	using _FindVar = void*(__cdecl*)(void* thisptr, const char* name);
+
 	void* Ptr;
 	_FindVar FindVar;
 
 	ConCommandBase* ConCommandList;
 
-	void Set(uintptr_t cvarPtr)
+	bool Loaded()
 	{
-		Ptr = **(void***)(cvarPtr);
-		FindVar = (_FindVar)GetVirtualFunctionByIndex(Ptr, Offsets::FindVar);
-		ConCommandList = (ConCommandBase*)((uintptr_t)Ptr + Offsets::m_pConCommandList);
+		auto cvr = SAR::Find("CvarPtr");
+		if (cvr.Found) {
+			Ptr = **(void***)(cvr.Address);
+			FindVar = (_FindVar)GetVirtualFunctionByIndex(Ptr, Offsets::FindVar);
+			ConCommandList = (ConCommandBase*)((uintptr_t)Ptr + Offsets::m_pConCommandList);
+		}
+		return cvr.Found;
 	}
 	ConVar FindCvar(const char* ref)
 	{

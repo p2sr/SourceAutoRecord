@@ -49,21 +49,6 @@ enum SignonState {
 	Changelevel = 7
 };
 
-/* struct HostStateData {
-	int	m_currentState;
-	int	m_nextState;
-	Vector m_vecLocation;
-	QAngle m_angLocation;
-	char m_levelName[256];
-	char m_landmarkName[256];
-	char m_saveName[256];
-	float m_flShortFrameTime;
-	bool m_activeGame;
-	bool m_bRememberLocation;
-	bool m_bBackgroundLevel;
-	bool m_bWaitingForConnection;
-}; */
-
 struct CGlobalVarsBase {
 	float realtime;
 	int framecount;

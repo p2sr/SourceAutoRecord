@@ -2,6 +2,7 @@
 #include "Tier1.hpp"
 
 #include "Game.hpp"
+#include "SourceAutoRecord.hpp"
 
 namespace Tier1
 {
@@ -23,10 +24,15 @@ namespace Tier1
 		bool UsingCommandCallbackInterface : 1;
 	};
 
-	void SetConCommand(uintptr_t conCommandAddr, uintptr_t conCommandAddr2)
+	bool ConCommandLoaded()
 	{
-		ConCommandCtor = reinterpret_cast<_ConCommand>(conCommandAddr);
-		ConCommandCtor2 = reinterpret_cast<_ConCommand>(conCommandAddr2);
+		auto cnc = SAR::Find("ConCommand_Ctor1");
+		auto cnc2 = SAR::Find("ConCommand_Ctor2");
+		if (cnc.Found && cnc2.Found) {
+			ConCommandCtor = reinterpret_cast<_ConCommand>(cnc.Address);
+			ConCommandCtor2 = reinterpret_cast<_ConCommand>(cnc2.Address);
+		}
+		return cnc.Found && cnc2.Found;
 	}
 
 	struct ConCommand {
