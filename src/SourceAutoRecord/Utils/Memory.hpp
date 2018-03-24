@@ -150,7 +150,7 @@ ScanResult Scan(Pattern* pattern)
 				(
 					result.Message,
 					sizeof(result.Message),
-					"Found %s at 0x%p in %s!",
+					"Found %s at %p in %s!",
 					pattern->Description,
 					(void*)result.Address,
 					pattern->Module

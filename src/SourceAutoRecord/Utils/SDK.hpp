@@ -48,21 +48,3 @@ enum SignonState {
 	Full = 6,
 	Changelevel = 7
 };
-
-struct CGlobalVarsBase {
-	float realtime;
-	int framecount;
-	float absoluteframetime;
-	float curtime;
-	float frametime;
-	int maxClients;
-	int tickcount;
-	float interval_per_tick;
-	float interpolation_amount;
-	int simTicksThisFrame;
-	int network_protocol;
-	int* pSaveData;
-	bool m_bClient;
-	int nTimestampNetworkingBase;
-	int nTimestampRandomizeWindow;
-};

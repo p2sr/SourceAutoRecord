@@ -6,7 +6,8 @@
 
 namespace Vars
 {
-	CGlobalVarsBase* gpGlobals;
+	int* tickcount;
+	float* interval_per_tick;
 
 	using _GetGameDirectory = char*(__cdecl*)();
 	_GetGameDirectory GetGameDirectory;
@@ -16,12 +17,6 @@ namespace Vars
 
 	void Hook()
 	{
-		if (Interfaces::IServerGameDLL) {
-			auto serverdll = std::make_unique<VMTHook>(Interfaces::IServerGameDLL);
-			auto LevelInit = serverdll->GetOriginalFunction<uintptr_t>(Offsets::LevelInit);
-			gpGlobals = **reinterpret_cast<CGlobalVarsBase***>(LevelInit + Offsets::LevelInit_gpGlobals);
-		}
-
 		auto ldg = SAR::Find("m_bLoadgame");
 		auto mpn = SAR::Find("m_szMapname");
 		if (ldg.Found && mpn.Found) {

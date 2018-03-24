@@ -10,23 +10,22 @@ namespace Interfaces
 {
 	void* IGameMovement;
 	void* IVEngineClient;
-	void* IBaseClientDLL;
 	void* IInputSystem;
 	void* ISurface;
-	void* IServerGameDLL;
 	void* IEngineVGui;
+	void* IBaseClientDLL;
 
 	void* Get(const char* filename, const char* interface)
 	{
 		auto handle = dlopen(filename, RTLD_NOLOAD | RTLD_NOW);
 		if (!handle) {
-			Console::Warning("Failed to open file %s!\n", filename);
+			Console::DevWarning("Failed to open file %s!\n", filename);
 			return nullptr;
 		}
 
 		auto factory = dlsym(handle, "CreateInterface");
 		if (!factory) {
-			Console::Warning("Failed to find symbol CreateInterface in %s!\n", filename);
+			Console::DevWarning("Failed to find symbol CreateInterface in %s!\n", filename);
 			return nullptr;
 		}
 
@@ -34,10 +33,10 @@ namespace Interfaces
 		auto result = ((CreateInterfaceFn)(factory))(interface, nullptr);
 
 		if (result) {
-			Console::PrintActive("Found interface %s in %s!\n", interface, filename);
+			Console::DevMsg("Found interface %s in %s!\n", interface, filename);
 		}
 		else {
-			Console::Warning("Failed to find interface % in %s!\n", interface, filename);
+			Console::DevWarning("Failed to find interface % in %s!\n", interface, filename);
 		}
 		return result;
 	}
@@ -48,8 +47,8 @@ namespace Interfaces
 			IVEngineClient = Get("./bin/engine.so", "VEngineClient015");
 			IInputSystem = Get("./bin/inputsystem.so", "InputSystemVersion001");
 			ISurface = Get("./bin/vguimatsurface.so", "VGUI_Surface031");
-			IServerGameDLL = Get("./portal2/bin/server.so", "ServerGameDLL005");
 			IEngineVGui = Get("./bin/engine.so", "VEngineVGui001");
+			IBaseClientDLL = Get("./portal2/bin/client.so", "VClient016");
 		}
 	}
 }

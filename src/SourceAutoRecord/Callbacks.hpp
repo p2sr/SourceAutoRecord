@@ -7,3 +7,4 @@
 #include "Callbacks/Stats.hpp"
 #include "Callbacks/Summary.hpp"
 #include "Callbacks/Timer.hpp"
+#include "Callbacks/TAS.hpp"

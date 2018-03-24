@@ -33,7 +33,7 @@ namespace Callbacks
 		}
 
 		Demo demo;
-		if (demo.Parse(Engine::GetDir() + std::string("\\") + name, sar_time_demo_dev.GetInt())) {
+		if (demo.Parse(Engine::GetDir() + std::string("/") + name, sar_time_demo_dev.GetInt())) {
 			demo.Fix();
 			Console::Print("Demo: %s\n", name.c_str());
 			Console::Print("Client: %s\n", demo.clientName);
@@ -59,7 +59,7 @@ namespace Callbacks
 		bool printTotal = false;
 
 		std::string name;
-		std::string dir = Engine::GetDir() + std::string("\\");
+		std::string dir = Engine::GetDir() + std::string("/");
 		for (int i = 1; i < args.Count(); i++)
 		{
 			name = std::string(args.At(i));

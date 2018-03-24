@@ -83,6 +83,11 @@ namespace Commands
 	// Others
 	ConCommand sar_session;
 	ConCommand sar_about;
+	ConCommand sar_tas_add_frame;
+	ConCommand sar_tas_delay;
+	ConCommand sar_tas_start;
+	ConCommand sar_tas_reset;
+	ConVar sar_tas_autostart;
 
 	// From the game
 	ConVar cl_showpos;

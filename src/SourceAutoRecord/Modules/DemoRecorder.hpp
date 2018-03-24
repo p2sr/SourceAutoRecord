@@ -53,7 +53,7 @@ namespace DemoRecorder
 
 		void __cdecl SetSignonState(void* thisptr, int state)
 		{
-			Console::PrintActive("SetSignonState = %i\n", state);
+			//Console::PrintActive("SetSignonState = %i\n", state);
 			if (state == SignonState::Prespawn) {
 				if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
 					Rebinder::LastIndexNumber = (IsRecordingDemo)
@@ -64,11 +64,7 @@ namespace DemoRecorder
 					Rebinder::RebindReload();
 				}
 			}
-			// Demo recorder starts syncing from this tick
 			else if (state == SignonState::Full) {
-				Session::Rebase(Vars::gpGlobals->interval_per_tick);
-				Timer::Rebase(Vars::gpGlobals->interval_per_tick);
-
 				if (*DemoRecorder::Recording) {
 					IsRecordingDemo = true;
 					DemoRecorder::SetCurrentDemo();
@@ -78,7 +74,7 @@ namespace DemoRecorder
 		}
 		int __cdecl StopRecording(void* thisptr)
 		{
-			Console::PrintActive("StopRecording!\n");
+			//Console::PrintActive("StopRecording!\n");
 			const int LastDemoNumber = *DemoRecorder::DemoNumber;
 
 			// This function does:

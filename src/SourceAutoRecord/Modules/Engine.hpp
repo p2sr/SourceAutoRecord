@@ -11,6 +11,7 @@
 #include "Features/Session.hpp"
 #include "Features/Stats.hpp"
 #include "Features/Summary.hpp"
+#include "Features/TAS.hpp"
 #include "Features/Timer.hpp"
 
 #include "Interfaces.hpp"
@@ -23,6 +24,7 @@ namespace Engine
 {
 	using _ClientCmd = int(__cdecl*)(void* thisptr, const char* szCmdString);
 	using _Disconnect = int(__cdecl*)(void* thisptr, int bShowMainMenu);
+	using _SetSignonState = int(__cdecl*)(void* thisptr, int state, int count);
 
 	std::unique_ptr<VMTHook> engine;
 	std::unique_ptr<VMTHook> cl;
@@ -35,7 +37,7 @@ namespace Engine
 	}
 	int GetTick()
 	{
-		int result = Vars::gpGlobals->tickcount - Session::BaseTick;
+		int result = *Vars::tickcount - Session::BaseTick;
 		return (result >= 0) ? result : 0;
 	}
 	std::string GetDir()
@@ -46,33 +48,34 @@ namespace Engine
 	namespace Original
 	{
 		_Disconnect Disconnect;
+		_SetSignonState SetSignonState;
 	}
 
 	namespace Detour
 	{
 		int __cdecl Disconnect(void* thisptr, bool bShowMainMenu)
 		{
-			Console::PrintActive("Disconnect!\n");
+			//Console::PrintActive("Disconnect!\n");
 			if (!*Vars::LoadGame && !DemoPlayer::IsPlaying()) {
 				int tick = GetTick();
 
 				if (tick != 0) {
-					Console::Print("Session: %i (%.3f)\n", tick, tick * Vars::gpGlobals->interval_per_tick);
+					Console::Print("Session: %i (%.3f)\n", tick, tick * *Vars::interval_per_tick);
 					Session::LastSession = tick;
 				}
 
 				if (Summary::IsRunning) {
-					Summary::Add(tick, tick * Vars::gpGlobals->interval_per_tick, *Vars::Mapname);
+					Summary::Add(tick, tick * *Vars::interval_per_tick, *Vars::Mapname);
 					Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Summary::TotalTime);
 				}
 
 				if (Timer::IsRunning) {
 					if (sar_timer_always_running.GetBool()) {
-						Timer::Save(Vars::gpGlobals->interval_per_tick);
-						Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Timer::TotalTicks * Vars::gpGlobals->interval_per_tick);
+						Timer::Save(*Vars::tickcount);
+						Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Timer::TotalTicks * *Vars::interval_per_tick);
 					}
 					else {
-						Timer::Stop(Vars::gpGlobals->interval_per_tick);
+						Timer::Stop(*Vars::tickcount);
 						Console::Print("Timer stopped!\n");
 					}
 				}
@@ -84,6 +87,22 @@ namespace Engine
 				DemoRecorder::CurrentDemo = "";
 			}
 			return Original::Disconnect(thisptr, bShowMainMenu);
+		}
+		int __cdecl SetSignonState(void* thisptr, int state, int count)
+		{
+			//Console::PrintActive("SetSignonState = %i\n", state);
+
+			// Demo recorder starts syncing from this tick
+			if (state == SignonState::Full) {
+				Session::Rebase(*Vars::tickcount);
+				Timer::Rebase(*Vars::tickcount);
+
+				if (*Vars::LoadGame && sar_tas_autostart.GetBool()) {
+					Console::DevMsg("---TAS START---\n");
+					TAS::Start();
+				}
+			}
+			return Original::SetSignonState(thisptr, state, count);
 		}
 	}
 
@@ -100,8 +119,15 @@ namespace Engine
 			typedef void*(*_GetClientState)();
 			auto GetClientState = reinterpret_cast<_GetClientState>(cstate.Address);
 			cl = std::make_unique<VMTHook>(GetClientState());
+
 			cl->HookFunction((void*)Detour::Disconnect, Offsets::Disconnect);
+			cl->HookFunction((void*)Detour::SetSignonState, Offsets::Disconnect - 1); // Before Disconnect in VFT :^)
 			Original::Disconnect = cl->GetOriginalFunction<_Disconnect>(Offsets::Disconnect);
+			Original::SetSignonState = cl->GetOriginalFunction<_SetSignonState>(Offsets::Disconnect - 1);
+
+			auto ProcessTick = cl->GetOriginalFunction<uintptr_t>(Offsets::ProcessTick);
+			Vars::tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
+			Vars::interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
 		}
 	}
 }

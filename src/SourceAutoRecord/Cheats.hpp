@@ -256,6 +256,26 @@ namespace Cheats
 			"sar_cvars_load",
 			Callbacks::LoadCvars,
 			"Loads important SAR cvars.\n");
+		sar_tas_add_frame = CreateCommandArgs(
+			"sar_tas_add_frame",
+			Callbacks::AddTas,
+			"Adds a frame for a TAS.\n");
+		sar_tas_delay = CreateCommandArgs(
+			"sar_tas_delay",
+			Callbacks::DelayTas,
+			"Delays TAS for a certain amount of frames.\n");
+		sar_tas_start = CreateCommand(
+			"sar_tas_start",
+			Callbacks::StartTas,
+			"Starts TAS.\n");
+		sar_tas_reset = CreateCommand(
+			"sar_tas_reset",
+			Callbacks::ResetTas,
+			"Resets TAS.\n");
+		sar_tas_autostart = CreateBoolean(
+			"sar_tas_autostart",
+			"1",
+			"Starts TAS automatically on first frame after a load.\n");
 
 		// From the game
 		cl_showpos = FindCvar("cl_showpos");

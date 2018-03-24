@@ -42,7 +42,7 @@ namespace DemoPlayer
 	{
 		int __cdecl StartPlayback(void* thisptr, const char *filename, bool bAsTimeDemo)
 		{
-			Console::PrintActive("StartPlayback!\n");
+			//Console::PrintActive("StartPlayback!\n");
 			int result = Original::StartPlayback(thisptr, filename, bAsTimeDemo);
 
 			if (result) {

@@ -32,7 +32,7 @@ int __attribute__((constructor)) Main()
 	if (Cvar::Loaded() && Tier1::ConCommandLoaded() && Tier1::ConVarLoaded()) {
 
 		/* for (MODULEINFO& item: Cache::Modules) {
-			Console::PrintActive("%s -> %p (%i)\n", item.moduleName, item.lpBaseOfDll, item.SizeOfImage);
+			Console::DevMsg("%s -> %p (%i)\n", item.moduleName, item.lpBaseOfDll, item.SizeOfImage);
 		} */
 
 		Cheats::Create();
@@ -40,6 +40,7 @@ int __attribute__((constructor)) Main()
 
 		Interfaces::Load();
 
+		Client::Hook();
 		DemoPlayer::Hook();
 		DemoRecorder::Hook();
 		Engine::Hook();
