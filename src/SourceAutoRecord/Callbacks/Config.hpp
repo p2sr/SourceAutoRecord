@@ -8,7 +8,7 @@ namespace Callbacks
 {
 	void SaveCvars()
 	{
-		std::ofstream file(Engine::GetDir() + std::string("\\cfg\\_sar_cvars.cfg"), std::ios::out | std::ios::trunc);
+		std::ofstream file(Engine::GetDir() + std::string("/cfg/_sar_cvars.cfg"), std::ios::out | std::ios::trunc);
 		if (!file.good()) {
 			Console::Print("Failed to create config file!\n");
 			return;
@@ -32,7 +32,7 @@ namespace Callbacks
 	}
 	void LoadCvars()
 	{
-		std::ifstream file(Engine::GetDir() + std::string("\\cfg\\_sar_cvars.cfg"), std::ios::in);
+		std::ifstream file(Engine::GetDir() + std::string("/cfg/_sar_cvars.cfg"), std::ios::in);
 		if (!file.good()) {
 			Console::Print("Config file not found!\n");
 			return;

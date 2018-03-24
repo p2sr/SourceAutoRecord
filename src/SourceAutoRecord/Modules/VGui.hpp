@@ -38,7 +38,7 @@ namespace VGui
 			int yPadding = sar_hud_default_padding_y.GetInt();
 			int spacing = sar_hud_default_spacing.GetInt();
 
-			unsigned long m_hFont = 16 + sar_hud_default_font_index.GetInt();
+			unsigned long m_hFont = 5 + sar_hud_default_font_index.GetInt();
 			int fontSize = sar_hud_default_font_size.GetInt();
 
 			int r, g, b, a;
@@ -81,7 +81,7 @@ namespace VGui
 			}
 			// Session
 			if (sar_hud_session.GetBool()) {
-				int tick = (!*Vars::LoadGame) ? Engine::GetTick() : 0;
+				int tick = (!*Vars::m_bLoadgame) ? Engine::GetTick() : 0;
 				float time = tick * *Vars::interval_per_tick;
 
 				char session[64];
@@ -98,7 +98,7 @@ namespace VGui
 			if (sar_hud_sum.GetBool()) {
 				char sum[64];
 				if (Summary::IsRunning && sar_sum_during_session.GetBool()) {
-					int tick = (!*Vars::LoadGame) ? Engine::GetTick() : 0;
+					int tick = (!*Vars::m_bLoadgame) ? Engine::GetTick() : 0;
 					float time = tick * *Vars::interval_per_tick;
 					snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks + tick, Summary::TotalTime + time);
 				}
@@ -133,12 +133,12 @@ namespace VGui
 			// Demo
 			if (sar_hud_demo.GetBool()) {
 				char demo[64];
-				if (!*Vars::LoadGame && *DemoRecorder::Recording && !DemoRecorder::CurrentDemo.empty()) {
+				if (!*Vars::m_bLoadgame && *DemoRecorder::m_bRecording && !DemoRecorder::CurrentDemo.empty()) {
 					int tick = DemoRecorder::GetTick();
 					float time = tick * *Vars::interval_per_tick;
 					snprintf(demo, sizeof(demo), "demo: %s %i (%.3f)", DemoRecorder::CurrentDemo.c_str(), tick, time);
 				}
-				else if (!*Vars::LoadGame && DemoPlayer::IsPlaying()) {
+				else if (!*Vars::m_bLoadgame && DemoPlayer::IsPlaying()) {
 					int tick = DemoPlayer::GetTick();
 					// Demos overwrite interval_per_tick anyway if I remember correctly
 					float time = tick * *Vars::interval_per_tick;
@@ -150,19 +150,6 @@ namespace VGui
 				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, demo);
 				elements++;
 			}
-			/* if (sar_hud_last_demo.GetBool()) {
-				char demo[64];
-				if (!DemoRecorder::LastDemo.empty()) {
-					int tick = DemoRecorder::LastDemoTick;
-					float time = tick * *Vars::interval_per_tick;
-					snprintf(demo, sizeof(demo), "last demo: %s %i (%.3f)", DemoRecorder::LastDemo.c_str(), tick, time);
-				}
-				else {
-					snprintf(demo, sizeof(demo), "last demo: -");
-				}
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, demo);
-				elements++;
-			} */
 			// Stats
 			if (sar_hud_jumps.GetBool()) {
 				char jumps[64];
@@ -170,12 +157,6 @@ namespace VGui
 				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, jumps);
 				elements++;
 			}
-			/* if (sar_hud_uses.GetBool()) {
-				char uses[64];
-				snprintf(uses, sizeof(uses), "uses: %i", Stats::TotalUses);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, uses);
-				elements++;
-			} */
 
 			Surface::FinishDrawing();
 			return Original::Paint(thisptr, mode);

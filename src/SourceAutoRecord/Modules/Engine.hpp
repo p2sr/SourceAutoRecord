@@ -56,7 +56,7 @@ namespace Engine
 		int __cdecl Disconnect(void* thisptr, bool bShowMainMenu)
 		{
 			//Console::PrintActive("Disconnect!\n");
-			if (!*Vars::LoadGame && !DemoPlayer::IsPlaying()) {
+			if (!*Vars::m_bLoadgame && !DemoPlayer::IsPlaying()) {
 				int tick = GetTick();
 
 				if (tick != 0) {
@@ -65,7 +65,7 @@ namespace Engine
 				}
 
 				if (Summary::IsRunning) {
-					Summary::Add(tick, tick * *Vars::interval_per_tick, *Vars::Mapname);
+					Summary::Add(tick, tick * *Vars::interval_per_tick, *Vars::m_szLevelName);
 					Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Summary::TotalTime);
 				}
 
@@ -97,7 +97,7 @@ namespace Engine
 				Session::Rebase(*Vars::tickcount);
 				Timer::Rebase(*Vars::tickcount);
 
-				if (*Vars::LoadGame && sar_tas_autostart.GetBool()) {
+				if (*Vars::m_bLoadgame && sar_tas_autostart.GetBool()) {
 					Console::DevMsg("---TAS START---\n");
 					TAS::Start();
 				}
@@ -112,22 +112,30 @@ namespace Engine
 			engine = std::make_unique<VMTHook>(Interfaces::IVEngineClient);
 			ClientCmd = engine->GetOriginalFunction<_ClientCmd>(Offsets::ClientCmd);
 			Vars::GetGameDirectory = engine->GetOriginalFunction<Vars::_GetGameDirectory>(Offsets::GetGameDirectory);
-		}
-		
-		auto cstate = SAR::Find("ClientState");
-		if (cstate.Found) {
+
 			typedef void*(*_GetClientState)();
-			auto GetClientState = reinterpret_cast<_GetClientState>(cstate.Address);
+			auto abs = GetAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientState);
+			auto GetClientState = reinterpret_cast<_GetClientState>(abs);
 			cl = std::make_unique<VMTHook>(GetClientState());
 
+			// Before Disconnect in VMT :^)
+			cl->HookFunction((void*)Detour::SetSignonState, Offsets::Disconnect - 1);
 			cl->HookFunction((void*)Detour::Disconnect, Offsets::Disconnect);
-			cl->HookFunction((void*)Detour::SetSignonState, Offsets::Disconnect - 1); // Before Disconnect in VFT :^)
-			Original::Disconnect = cl->GetOriginalFunction<_Disconnect>(Offsets::Disconnect);
 			Original::SetSignonState = cl->GetOriginalFunction<_SetSignonState>(Offsets::Disconnect - 1);
+			Original::Disconnect = cl->GetOriginalFunction<_Disconnect>(Offsets::Disconnect);
 
 			auto ProcessTick = cl->GetOriginalFunction<uintptr_t>(Offsets::ProcessTick);
 			Vars::tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
 			Vars::interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
+
+			DemoPlayer::Hook(**reinterpret_cast<void***>((uintptr_t)Original::Disconnect + Offsets::demoplayer));
+			DemoRecorder::Hook(**reinterpret_cast<void***>((uintptr_t)Original::Disconnect + Offsets::demorecorder));
+		}
+
+		if (Interfaces::IEngineTool) {
+			auto tool = std::make_unique<VMTHook>(Interfaces::IEngineTool);
+			auto GetCurrentMap = tool->GetOriginalFunction<uintptr_t>(Offsets::GetCurrentMap);
+			Vars::m_szLevelName = reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
 		}
 	}
 }

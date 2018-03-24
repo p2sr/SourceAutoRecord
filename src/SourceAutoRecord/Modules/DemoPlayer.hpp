@@ -47,7 +47,7 @@ namespace DemoPlayer
 
 			if (result) {
 				Demo demo;
-				if (demo.Parse(Vars::GetGameDirectory() + std::string("\\") + std::string(DemoPlayer::DemoName))) {
+				if (demo.Parse(Vars::GetGameDirectory() + std::string("\\") + std::string(DemoName))) {
 					demo.Fix();
 					Console::Print("Client: %s\n", demo.clientName);
 					Console::Print("Map: %s\n", demo.mapName);
@@ -56,25 +56,21 @@ namespace DemoPlayer
 					Console::Print("IpT: %.6f\n", demo.IntervalPerTick());
 				}
 				else {
-					Console::Print("Could not parse \"%s\"!\n", DemoPlayer::DemoName);
+					Console::Print("Could not parse \"%s\"!\n", DemoName);
 				}
 			}
 			return result;
 		}
 	}
 
-	void Hook()
+	void Hook(void* ptr)
 	{
-		auto player = SAR::Find("demoplayer");
-		if (player.Found) {
-			auto ptr = **(void***)player.Address;
-			s_ClientDemoPlayer = std::make_unique<VMTHook>(ptr);
-			s_ClientDemoPlayer->HookFunction((void*)Detour::StartPlayback, Offsets::StartPlayback);
-			Original::StartPlayback = s_ClientDemoPlayer->GetOriginalFunction<_StartPlayback>(Offsets::StartPlayback);
+		s_ClientDemoPlayer = std::make_unique<VMTHook>(ptr);
+		s_ClientDemoPlayer->HookFunction((void*)Detour::StartPlayback, Offsets::StartPlayback);
+		Original::StartPlayback = s_ClientDemoPlayer->GetOriginalFunction<_StartPlayback>(Offsets::StartPlayback);
 
-			DemoPlayer::GetPlaybackTick = s_ClientDemoPlayer->GetOriginalFunction<_GetPlaybackTick>(Offsets::GetPlaybackTick);
-			DemoPlayer::IsPlayingBack = s_ClientDemoPlayer->GetOriginalFunction<_IsPlayingBack>(Offsets::IsPlayingBack);
-			DemoPlayer::DemoName = reinterpret_cast<char*>((uintptr_t)ptr + Offsets::m_szFileName);
-		}
+		GetPlaybackTick = s_ClientDemoPlayer->GetOriginalFunction<_GetPlaybackTick>(Offsets::GetPlaybackTick);
+		IsPlayingBack = s_ClientDemoPlayer->GetOriginalFunction<_IsPlayingBack>(Offsets::IsPlayingBack);
+		DemoName = reinterpret_cast<char*>((uintptr_t)ptr + Offsets::m_szFileName);
 	}
 }

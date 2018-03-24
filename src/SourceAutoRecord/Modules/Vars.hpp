@@ -12,16 +12,14 @@ namespace Vars
 	using _GetGameDirectory = char*(__cdecl*)();
 	_GetGameDirectory GetGameDirectory;
 
-	bool* LoadGame;
-	char** Mapname;
+	bool* m_bLoadgame;
+	char** m_szLevelName;
 
 	void Hook()
 	{
 		auto ldg = SAR::Find("m_bLoadgame");
-		auto mpn = SAR::Find("m_szMapname");
-		if (ldg.Found && mpn.Found) {
-			LoadGame = *reinterpret_cast<bool**>(ldg.Address);
-			Mapname = reinterpret_cast<char**>(mpn.Address);
+		if (ldg.Found) {
+			m_bLoadgame = *reinterpret_cast<bool**>(ldg.Address);
 		}
 	}
 }

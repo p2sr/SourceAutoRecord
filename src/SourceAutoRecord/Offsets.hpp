@@ -23,9 +23,6 @@ namespace Offsets
 	// IMatSystemSurface
 	int DrawColoredText;
 
-	// CFPSPanel
-	int m_hFont;
-
 	// CInputSystem
 	int StringToButtonCode;
 
@@ -39,8 +36,6 @@ namespace Offsets
 	int SetSignonState;
 	int StopRecording;
 	int m_szDemoBaseName;
-	int m_bIsDemoHeader;
-	int m_bCloseDemoFile;
 	int m_bRecording;
 	int m_nDemoNumber;
 
@@ -59,23 +54,21 @@ namespace Offsets
 	int GetAbsAngles;
 	int GetLocalVelocity;
 
-	// IClientEntityList
-	int GetClientEntity;
+	// IEngineVGuiInternal
+	int Paint;
+
+	// CEngineTool
+	int GetCurrentMap;
 
 	// Others
-	int HS_RUN;
-	int HS_CHANGE_LEVEL_SP;
 	int MainViewOrigin;
 	int MainViewAngles;
 	int tickcount;
 	int interval_per_tick;
-
-	// IEngineVGuiInternal
-	int Paint;
-
-	// IServerGameDLL
-	int LevelInit;
-	int LevelInit_gpGlobals;
+	int GetClientState;
+	int demoplayer;
+	int demorecorder;
+	int m_szLevelName;
 
 	void Init()
 	{
@@ -98,29 +91,24 @@ namespace Offsets
 			m_szFileName = 4; // CDemoPlayer::SkipToTick
 			m_szDemoBaseName = 1344; // CDemoRecorder::StartupDemoFile
 			m_nDemoNumber = 1608; // CDemoRecorder::StartupDemoFile
-			m_bIsDemoHeader = 1604; // CDemoRecorder::StartupDemoHeader
-			m_bCloseDemoFile = 1605; // CDemoRecorder::SetSignonState
 			m_bRecording = 1606; // CDemoRecorder::SetSignonState
 			Paint = 15; // IEngineVGuiInternal
-			LevelInit = 2; // IServerGameDLL
-			LevelInit_gpGlobals = 83; // IServerGameDLL::LevelInit
 			ProcessTick = 12; // CClientState
 			tickcount = 73; // CClientState::ProcessTick
 			interval_per_tick = 81; // CClientState::ProcessTick
 			Disconnect = 37; //  CClientState
-			//GetClientEntity = 3; // R_BuildCubemapSamples
-			HS_RUN = 4; // host_state.cpp
-			HS_CHANGE_LEVEL_SP = 2; // host_state.cpp
-
+			GetClientState = 11; // CEngineClient::ClientCmd
+			GetCurrentMap = 26; // CEngineTool
+			demoplayer = 93; // CClientState::Disconnect
+			demorecorder = 106; // CClientState::Disconnect
+			m_szLevelName = 72; // CEngineTool::GetCurrentMap
 			// server.so
 			CheckJumpButton = 37; // CPortalGameMovement
 			mv = 2; // CPortalGameMovement::CheckJumpButton
 			m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
-
 			// client.so
 			HudUpdate = 11; // CHLClient
 			DrawColoredText = 160; // CFPSPanel::Paint
-			m_hFont = 344; // CFPSPanel::Paint
 			GetAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
 			GetAbsAngles = 172; // C_BasePlayer::GetAbsAngles
 			GetLocalVelocity = 244; // CFPSPanel::Paint

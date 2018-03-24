@@ -34,7 +34,7 @@ namespace Callbacks
 
 		if (Timer::Average::IsEnabled) {
 			int tick = Timer::GetTick(*Vars::tickcount);
-			Timer::Average::Add(tick, tick * *Vars::interval_per_tick, *Vars::Mapname);
+			Timer::Average::Add(tick, tick * *Vars::interval_per_tick, *Vars::m_szLevelName);
 		}
 	}
 	void PrintTimer() {
@@ -84,7 +84,7 @@ namespace Callbacks
 		}
 
 		int tick = Timer::GetTick(Engine::GetTick());
-		Timer::CheckPoints::Add(tick, tick * *Vars::interval_per_tick, *Vars::Mapname);
+		Timer::CheckPoints::Add(tick, tick * *Vars::interval_per_tick, *Vars::m_szLevelName);
 	}
 	void ClearCheckpoints() {
 		Timer::CheckPoints::Reset();

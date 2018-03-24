@@ -172,3 +172,9 @@ void* GetVirtualFunctionByIndex(void* ptr, int index)
 {
 	return (*((void***)ptr))[index];
 }
+
+uintptr_t GetAbsoluteAddress(uintptr_t source)
+{
+	auto rel = *reinterpret_cast<int*>(source);
+	return source + rel + sizeof(rel);
+}

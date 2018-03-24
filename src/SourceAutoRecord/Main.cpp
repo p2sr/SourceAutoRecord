@@ -31,18 +31,12 @@ int __attribute__((constructor)) Main()
 
 	if (Cvar::Loaded() && Tier1::ConCommandLoaded() && Tier1::ConVarLoaded()) {
 
-		/* for (MODULEINFO& item: Cache::Modules) {
-			Console::DevMsg("%s -> %p (%i)\n", item.moduleName, item.lpBaseOfDll, item.SizeOfImage);
-		} */
-
 		Cheats::Create();
 		Cheats::UnlockAll();
 
 		Interfaces::Load();
 
 		Client::Hook();
-		DemoPlayer::Hook();
-		DemoRecorder::Hook();
 		Engine::Hook();
 		InputSystem::Hook();
 		Server::Hook();

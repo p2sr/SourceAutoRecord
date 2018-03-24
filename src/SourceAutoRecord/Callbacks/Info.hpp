@@ -11,7 +11,7 @@ namespace Callbacks
 	{
 		int tick = Engine::GetTick();
 		Console::Print("Session Tick: %i (%.3f)\n", tick, tick * *Vars::interval_per_tick);
-		if (*DemoRecorder::Recording) {
+		if (*DemoRecorder::m_bRecording) {
 			tick = DemoRecorder::GetTick();
 			Console::Print("Demo Recorder Tick: %i (%.3f)\n", tick, tick * *Vars::interval_per_tick);
 		}

@@ -14,6 +14,7 @@ namespace Interfaces
 	void* ISurface;
 	void* IEngineVGui;
 	void* IBaseClientDLL;
+	void* IEngineTool;
 
 	void* Get(const char* filename, const char* interface)
 	{
@@ -49,6 +50,7 @@ namespace Interfaces
 			ISurface = Get("./bin/vguimatsurface.so", "VGUI_Surface031");
 			IEngineVGui = Get("./bin/engine.so", "VEngineVGui001");
 			IBaseClientDLL = Get("./portal2/bin/client.so", "VClient016");
+			IEngineTool= Get("./bin/engine.so", "VENGINETOOL003");
 		}
 	}
 }

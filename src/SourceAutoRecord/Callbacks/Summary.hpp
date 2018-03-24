@@ -23,7 +23,7 @@ namespace Callbacks
 
 		if (sar_sum_during_session.GetBool()) {
 			int tick = Engine::GetTick();
-			Summary::Add(tick, tick * *Vars::interval_per_tick, *Vars::Mapname);
+			Summary::Add(tick, tick * *Vars::interval_per_tick, *Vars::m_szLevelName);
 		}
 		Summary::IsRunning = false;
 	}
@@ -53,7 +53,7 @@ namespace Callbacks
 		if (Summary::IsRunning) {
 			int tick = Engine::GetTick();
 			float time = tick * *Vars::interval_per_tick;
-			Console::PrintActive("%s -> ", *Vars::Mapname);
+			Console::PrintActive("%s -> ", *Vars::m_szLevelName);
 			Console::PrintActive("%i ticks ", tick);
 			Console::PrintActive("(%.3f)\n", time);
 			Console::Print("---------------\n");
