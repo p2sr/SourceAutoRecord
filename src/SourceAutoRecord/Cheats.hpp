@@ -161,18 +161,10 @@ namespace Cheats
 			"sar_hud_demo",
 			"0",
 			"Draws name, tick and time of current demo.\n");
-		sar_hud_last_demo = CreateBoolean(
-			"sar_hud_last_demo",
-			"0",
-			"Draws value of latest completed demo.\n");
 		sar_hud_jumps = CreateBoolean(
 			"sar_hud_jumps",
 			"0",
 			"Draws total jump count.\n");
-		sar_hud_uses = CreateBoolean(
-			"sar_hud_uses",
-			"0",
-			"Draws total use count.\n");
 		sar_hud_default_spacing = CreateFloat(
 			"sar_hud_default_spacing",
 			"4",
@@ -220,16 +212,6 @@ namespace Cheats
 			"sar_autojump",
 			"0",
 			"Enables automatic jumping on the server.\n");
-		if (Game::Version == Game::Portal2) {
-			sar_never_open_cm_hud = CreateBoolean(
-				"sar_never_open_cm_hud",
-				"0",
-				"Removes the challenge mode scoreboard panel.\n");
-		}
-		sar_never_delay_start = CreateBoolean(
-			"sar_never_delay_start",
-			"0",
-			"Doesn't prevent player to be frozen at spawn.\n");
 		sar_teleport = CreateCommand(
 			"sar_teleport",
 			Callbacks::Teleport,
@@ -279,7 +261,6 @@ namespace Cheats
 
 		// From the game
 		cl_showpos = FindCvar("cl_showpos");
-		cl_sidespeed = FindCvar("cl_sidespeed");
 		sv_cheats = FindCvar("sv_cheats");
 
 		sv_bonus_challenge = FindCvar("sv_bonus_challenge");

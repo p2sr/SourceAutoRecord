@@ -54,9 +54,7 @@ namespace Commands
 	ConVar sar_hud_avg;
 	ConVar sar_hud_cps;
 	ConVar sar_hud_demo;
-	ConVar sar_hud_last_demo;
 	ConVar sar_hud_jumps;
-	ConVar sar_hud_uses;
 
 	ConVar sar_hud_default_spacing;
 	ConVar sar_hud_default_padding_x;
@@ -71,8 +69,6 @@ namespace Commands
 
 	// Cheats
 	ConVar sar_autojump;
-	ConVar sar_never_open_cm_hud;
-	ConVar sar_never_delay_start;
 	ConCommand sar_teleport;
 	ConCommand sar_teleport_setpos;
 
@@ -91,7 +87,6 @@ namespace Commands
 
 	// From the game
 	ConVar cl_showpos;
-	ConVar cl_sidespeed;
 	ConVar sv_cheats;
 
 	ConVar sv_bonus_challenge;
