@@ -21,6 +21,7 @@ namespace Offsets
 	int InternalSetIntValue;
 
 	// IMatSystemSurface
+	int GetFontTall;
 	int DrawColoredText;
 
 	// CInputSystem
@@ -59,6 +60,12 @@ namespace Offsets
 
 	// CEngineTool
 	int GetCurrentMap;
+
+	// CSchemeManager
+	int GetIScheme;
+
+	// CScheme
+	int GetFont;
 
 	// Others
 	int MainViewOrigin;
@@ -102,12 +109,15 @@ namespace Offsets
 			demoplayer = 93; // CClientState::Disconnect
 			demorecorder = 106; // CClientState::Disconnect
 			m_szLevelName = 72; // CEngineTool::GetCurrentMap
+			GetIScheme = 9; // CSchemeManager
+			GetFont = 4; // CScheme
 			// server.so
 			CheckJumpButton = 37; // CPortalGameMovement
 			mv = 2; // CPortalGameMovement::CheckJumpButton
 			m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
 			// client.so
 			HudUpdate = 11; // CHLClient
+			GetFontTall = 72; // CFPSPanel::ComputeSize
 			DrawColoredText = 160; // CFPSPanel::Paint
 			GetAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
 			GetAbsAngles = 172; // C_BasePlayer::GetAbsAngles

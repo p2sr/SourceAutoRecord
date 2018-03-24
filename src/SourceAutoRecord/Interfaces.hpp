@@ -15,6 +15,7 @@ namespace Interfaces
 	void* IEngineVGui;
 	void* IBaseClientDLL;
 	void* IEngineTool;
+	void* ISchemeManager;
 
 	void* Get(const char* filename, const char* interface)
 	{
@@ -37,7 +38,7 @@ namespace Interfaces
 			Console::DevMsg("Found interface %s in %s!\n", interface, filename);
 		}
 		else {
-			Console::DevWarning("Failed to find interface % in %s!\n", interface, filename);
+			Console::DevWarning("Failed to find interface %s in %s!\n", interface, filename);
 		}
 		return result;
 	}
@@ -50,7 +51,8 @@ namespace Interfaces
 			ISurface = Get("./bin/vguimatsurface.so", "VGUI_Surface031");
 			IEngineVGui = Get("./bin/engine.so", "VEngineVGui001");
 			IBaseClientDLL = Get("./portal2/bin/client.so", "VClient016");
-			IEngineTool= Get("./bin/engine.so", "VENGINETOOL003");
+			IEngineTool = Get("./bin/engine.so", "VENGINETOOL003");
+			ISchemeManager = Get("./bin/vgui2.so", "VGUI_Scheme010");
 		}
 	}
 }

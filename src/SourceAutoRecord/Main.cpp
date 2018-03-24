@@ -6,6 +6,7 @@
 #include "Modules/DemoRecorder.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/InputSystem.hpp"
+#include "Modules/Scheme.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
 #include "Modules/Vars.hpp"
@@ -39,6 +40,7 @@ int __attribute__((constructor)) Main()
 		Client::Hook();
 		Engine::Hook();
 		InputSystem::Hook();
+		Scheme::Hook();
 		Server::Hook();
 		Surface::Hook();
 		Vars::Hook();

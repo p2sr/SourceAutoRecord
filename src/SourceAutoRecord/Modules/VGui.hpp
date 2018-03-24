@@ -2,6 +2,7 @@
 #include "vmthook/vmthook.h"
 
 #include "Console.hpp"
+#include "Scheme.hpp"
 #include "Surface.hpp"
 #include "Vars.hpp"
 
@@ -38,20 +39,20 @@ namespace VGui
 			int yPadding = sar_hud_default_padding_y.GetInt();
 			int spacing = sar_hud_default_spacing.GetInt();
 
-			unsigned long m_hFont = 5 + sar_hud_default_font_index.GetInt();
-			int fontSize = sar_hud_default_font_size.GetInt();
+			auto font = Scheme::GetDefaultFont() - 1;
+			int fontSize = Surface::GetFontHeight(font);
 
 			int r, g, b, a;
 			sscanf(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
 			Color textColor(r, g, b, a);
 
 			if (cl_showpos.GetBool()) {
-				yPadding += 65; // Ehem?
+				elements += 4;
 			}
 
 			// cl_showpos replacement
 			if (sar_hud_text.GetString()[0] != '\0') {
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, (char*)sar_hud_text.GetString());
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, (char*)sar_hud_text.GetString());
 				elements++;
 			}
 			if (sar_hud_position.GetBool()) {
@@ -64,19 +65,19 @@ namespace VGui
 					auto pos = Client::GetAbsOrigin();
 					snprintf(position, sizeof(position), "pos: %.3f %.3f %.3f", pos.x, pos.y, pos.z);
 				}
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, position);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, position);
 				elements++;
 			}
 			if (sar_hud_angles.GetBool()) {
 				char angles[64];
 				snprintf(angles, sizeof(angles), "ang: %.3f %.3f", Client::MainViewAngles->x, Client::MainViewAngles->y);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, angles);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, angles);
 				elements++;
 			}
 			if (sar_hud_velocity.GetBool()) {
 				char velocity[64];
 				snprintf(velocity, sizeof(velocity), "vel: %.3f", (sar_hud_velocity.GetInt() == 1) ? Client::GetLocalVelocity().Length() : Client::GetLocalVelocity().Length2D());
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, velocity);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, velocity);
 				elements++;
 			}
 			// Session
@@ -86,13 +87,13 @@ namespace VGui
 
 				char session[64];
 				snprintf(session, sizeof(session), "session: %i (%.3f)", tick, time);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, session);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, session);
 				elements++;
 			}
 			if (sar_hud_last_session.GetBool()) {
 				char session[64];
 				snprintf(session, sizeof(session), "last session: %i (%.3f)", Session::LastSession, Session::LastSession * *Vars::interval_per_tick);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, session);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, session);
 				elements++;
 			}
 			if (sar_hud_sum.GetBool()) {
@@ -105,7 +106,7 @@ namespace VGui
 				else {
 					snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks, Summary::TotalTime);
 				}
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, sum);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, sum);
 				elements++;
 			}
 			// Timer
@@ -115,19 +116,19 @@ namespace VGui
 
 				char timer[64];
 				snprintf(timer, sizeof(timer), "timer: %i (%.3f)", tick, time);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, timer);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, timer);
 				elements++;
 			}
 			if (sar_hud_avg.GetBool()) {
 				char avg[64];
 				snprintf(avg, sizeof(avg), "avg: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, avg);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, avg);
 				elements++;
 			}
 			if (sar_hud_cps.GetBool()) {
 				char cps[64];
 				snprintf(cps, sizeof(cps), "last cp: %i (%.3f)", Timer::CheckPoints::LatestTick, Timer::CheckPoints::LatestTime);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, cps);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, cps);
 				elements++;
 			}
 			// Demo
@@ -147,14 +148,14 @@ namespace VGui
 				else {
 					snprintf(demo, sizeof(demo), "demo: -");
 				}
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, demo);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, demo);
 				elements++;
 			}
 			// Stats
 			if (sar_hud_jumps.GetBool()) {
 				char jumps[64];
 				snprintf(jumps, sizeof(jumps), "jumps: %i", Stats::TotalJumps);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, jumps);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, jumps);
 				elements++;
 			}
 

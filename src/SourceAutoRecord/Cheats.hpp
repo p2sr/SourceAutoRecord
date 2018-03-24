@@ -180,17 +180,6 @@ namespace Cheats
 			"2",
 			0,
 			"Y padding of HUD.\n");
-		sar_hud_default_font_size = CreateFloat(
-			"sar_hud_default_font_size",
-			"10",
-			0,
-			"Font size of HUD.\n");
-		sar_hud_default_font_index = CreateFloat(
-			"sar_hud_default_font_index",
-			"0",
-			0,
-			225,
-			"Font value of HUD.\n");
 		sar_hud_default_font_color = CreateString(
 			"sar_hud_default_font_color",
 			"255 255 255 255",
@@ -221,23 +210,7 @@ namespace Cheats
 			Callbacks::SetTeleport,
 			"Saves current location for teleportation.\n");
 
-		// Others
-		sar_session = CreateCommand(
-			"sar_session",
-			Callbacks::PrintSession,
-			"Prints the current tick of the server since it has loaded.\n");
-		sar_about = CreateCommand(
-			"sar_about",
-			Callbacks::PrintAbout,
-			"Prints info about this plugin.\n");
-		sar_cvars_save = CreateCommand(
-			"sar_cvars_save",
-			Callbacks::SaveCvars,
-			"Saves important SAR cvars.\n");
-		sar_cvars_load = CreateCommand(
-			"sar_cvars_load",
-			Callbacks::LoadCvars,
-			"Loads important SAR cvars.\n");
+		// TAS
 		sar_tas_add_frame = CreateCommandArgs(
 			"sar_tas_add_frame",
 			Callbacks::AddTas,
@@ -258,6 +231,24 @@ namespace Cheats
 			"sar_tas_autostart",
 			"1",
 			"Starts TAS automatically on first frame after a load.\n");
+
+		// Others
+		sar_session = CreateCommand(
+			"sar_session",
+			Callbacks::PrintSession,
+			"Prints the current tick of the server since it has loaded.\n");
+		sar_about = CreateCommand(
+			"sar_about",
+			Callbacks::PrintAbout,
+			"Prints info about this plugin.\n");
+		sar_cvars_save = CreateCommand(
+			"sar_cvars_save",
+			Callbacks::SaveCvars,
+			"Saves important SAR cvars.\n");
+		sar_cvars_load = CreateCommand(
+			"sar_cvars_load",
+			Callbacks::LoadCvars,
+			"Loads important SAR cvars.\n");
 
 		// From the game
 		cl_showpos = FindCvar("cl_showpos");
