@@ -1,4 +1,4 @@
-[![Build Version](https://img.shields.io/badge/version-v1.5-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/1)
+[![Build Version](https://img.shields.io/badge/version-v1.5--linux-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/3)
 [![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
 
 **SourceAutoRecord** allows automatic demo recording, automatic binding, demo parsing, session timing and [much more](#features).
@@ -91,14 +91,11 @@
 - `sar_hud_cps` draws last checkpoint value of timer
 - `sar_hud_demo` draws current name, tick and time of demo recorder or demo player
 - `sar_hud_jumps` draws total jump count
-- `sar_hud_uses` draws total use count
 
 ##### Optional
 - `sar_hud_default_spacing` space between HUD elements
 - `sar_hud_default_padding_x` additional padding on x-axis
 - `sar_hud_default_padding_y` additional padding on y-axis
-- `sar_hud_default_font_index` font offset value
-- `sar_hud_default_font_size` font size used for spacing
 - `sar_hud_default_font_color` font color
 
 ### Stats
@@ -107,8 +104,6 @@
 
 ### Cheats
 - `sar_autojump` enables tick-perfect jumping on the server
-- `sar_never_open_cm_hud` disables HUD for challenge mode stats (Portal 2)
-- `sar_never_delay_start` disables start delay when spawning
 - `sar_teleport` teleports player to a saved location
 - `sar_teleport_setpos` saves current location for teleportation
 
@@ -120,10 +115,10 @@
 - `sv_maxspeed`*
 - `sv_stopspeed`*
 - `sv_maxvelocity`*
-- `sv_transition_fade_time` (Portal 2)*
-- `sv_laser_cube_autoaim` (Portal 2)*
-- `ui_loadingscreen_transition_time` (Portal 2)*
-- `hide_gun_when_holding` (Portal 2)
+- `sv_transition_fade_time`*
+- `sv_laser_cube_autoaim`*
+- `ui_loadingscreen_transition_time`*
+- `hide_gun_when_holding`
 
 *Flagged as cheat.
 
