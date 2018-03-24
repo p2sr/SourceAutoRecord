@@ -91,9 +91,18 @@ namespace Engine
 		int __cdecl SetSignonState(void* thisptr, int state, int count)
 		{
 			//Console::PrintActive("SetSignonState = %i\n", state);
+			if (state == SignonState::Prespawn) {
+				if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
+					Rebinder::LastIndexNumber = (DemoRecorder::IsRecordingDemo)
+						? *DemoRecorder::m_nDemoNumber
+						: Rebinder::LastIndexNumber + 1;
 
+					Rebinder::RebindSave();
+					Rebinder::RebindReload();
+				}
+			}
 			// Demo recorder starts syncing from this tick
-			if (state == SignonState::Full) {
+			else if (state == SignonState::Full) {
 				Session::Rebase(*Vars::tickcount);
 				Timer::Rebase(*Vars::tickcount);
 

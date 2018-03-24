@@ -15,7 +15,7 @@ namespace Callbacks
 			return;
 		}
 
-		int button = InputSystem::StringToButtonCode(args.At(1));
+		int button = InputSystem::GetButton(args.At(1));
 		if (button == BUTTON_CODE_INVALID) {
 			Console::Print("\"%s\" isn't a valid key!\n", args.At(1));
 			return;
@@ -40,7 +40,7 @@ namespace Callbacks
 			return;
 		}
 
-		int button = InputSystem::StringToButtonCode(args.At(1));
+		int button = InputSystem::GetButton(args.At(1));
 		if (button == BUTTON_CODE_INVALID) {
 			Console::Print("\"%s\" isn't a valid key!\n", args.At(1));
 			return;

@@ -11,7 +11,7 @@
 
 namespace InputSystem
 {
-	using _StringToButtonCode = int(__stdcall*)(const char* pString);
+	using _StringToButtonCode = int(__cdecl*)(void* thisptr, const char* pString);
 	using _KeySetBinding = void(__cdecl*)(int keynum, const char* pBinding);
 
 	 std::unique_ptr<VMTHook> g_InputSystem;
@@ -19,6 +19,10 @@ namespace InputSystem
 	_StringToButtonCode StringToButtonCode;
 	_KeySetBinding KeySetBinding;
 
+	int GetButton(const char* pString)
+	{
+		return StringToButtonCode(g_InputSystem->GetThisPtr(), pString);
+	}
 	void Hook()
 	{
 		if (Interfaces::IInputSystem) {

@@ -17,7 +17,6 @@ using namespace Commands;
 namespace DemoRecorder
 {
 	using _GetRecordingTick = int(__cdecl*)(void* thisptr);
-
 	using _SetSignonState = void(__cdecl*)(void* thisptr, int state);
 	using _StopRecording = int(__cdecl*)(void* thisptr);
 
@@ -30,15 +29,11 @@ namespace DemoRecorder
 	bool* m_bRecording;
 
 	std::string CurrentDemo;
+	bool IsRecordingDemo;
 
 	int GetTick()
 	{
 		return GetRecordingTick(s_ClientDemoRecorder->GetThisPtr());
-	}
-	void SetCurrentDemo()
-	{
-		CurrentDemo = std::string(m_szDemoBaseName);
-		if (*m_nDemoNumber > 1) CurrentDemo += "_" + std::to_string(*m_nDemoNumber);
 	}
 
 	namespace Original
@@ -49,25 +44,16 @@ namespace DemoRecorder
 
 	namespace Detour
 	{
-		bool IsRecordingDemo;
-
 		void __cdecl SetSignonState(void* thisptr, int state)
 		{
 			//Console::PrintActive("SetSignonState = %i\n", state);
-			if (state == SignonState::Prespawn) {
-				if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
-					Rebinder::LastIndexNumber = (IsRecordingDemo)
-						? *m_nDemoNumber
-						: Rebinder::LastIndexNumber + 1;
-
-					Rebinder::RebindSave();
-					Rebinder::RebindReload();
-				}
-			}
-			else if (state == SignonState::Full) {
+			if (state == SignonState::Full) {
 				if (*m_bRecording) {
 					IsRecordingDemo = true;
-					SetCurrentDemo();
+					CurrentDemo = std::string(m_szDemoBaseName);
+					if (*m_nDemoNumber > 1) {
+						CurrentDemo += "_" + std::to_string(*m_nDemoNumber);
+					}
 				}
 			}
 			Original::SetSignonState(thisptr, state);
@@ -78,8 +64,8 @@ namespace DemoRecorder
 			const int LastDemoNumber = *m_nDemoNumber;
 
 			// This function does:
-			// m_bRecording = false
-			// m_nDemoNumber = 0
+			//   m_bRecording = false
+			//   m_nDemoNumber = 0
 			int result = Original::StopRecording(thisptr);
 
 			if (IsRecordingDemo && sar_autorecord.GetBool()) {
