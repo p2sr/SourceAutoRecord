@@ -3,6 +3,11 @@ pid=$(pidof portal2_linux)
 
 if [ -z "$pid" ]; then
   echo -e "\e[31mPortal 2 process not found!\e[0m"
+  echo -e "\e[34mWanna start it (y/n)? \e[0m"
+  read ye
+  if [ "$ye" == "y" ]; then
+  	steam steam://run/620
+  fi
   exit
 fi
 
@@ -11,7 +16,7 @@ if [ grep -q $binary /proc/$pid/maps ]; then
   exit
 fi
 
-load = "$(
+load="$(
 sudo gdb -n -q -batch \
   -ex "attach $pid" \
   -ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
