@@ -10,7 +10,10 @@ namespace Offsets
 
 	// CEngineClient
 	int ClientCmd;
+	int GetLocalPlayer;
 	int GetGameDirectory;
+	int GetViewAngles;
+	int SetViewAngles;
 
 	// CHLClient
 	int HudUpdate;
@@ -67,6 +70,9 @@ namespace Offsets
 	// CScheme
 	int GetFont;
 
+	// IClientEntityList
+	int GetClientEntity;
+
 	// Others
 	int MainViewOrigin;
 	int MainViewAngles;
@@ -87,7 +93,10 @@ namespace Offsets
 			FindVar = 15; // CCvarUtilities::IsValidToggleCommand
 			m_pConCommandList = 48; // vstdlib/cvar.cpp
 			ClientCmd = 7; // CEngineClient
+			GetLocalPlayer = 12; // CEngineClient
 			GetGameDirectory = 35; // CEngineClient
+			GetViewAngles = 18; // CEngineClient
+			SetViewAngles = 19; // CEngineClient
 			StringToButtonCode = 31; // ReadCheatCommandsFromFile
 			GetRecordingTick = 1; // CDemoRecorder
 			SetSignonState = 3; // CDemoRecorder
@@ -124,6 +133,7 @@ namespace Offsets
 			GetLocalVelocity = 244; // CFPSPanel::Paint
 			MainViewOrigin = 39; // GetPos view.cpp
 			MainViewAngles = 65; // GetPos view.cpp
+			GetClientEntity = 3; // IClientEntityList
 		}
 	}
 }

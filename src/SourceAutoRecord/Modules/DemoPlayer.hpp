@@ -10,13 +10,12 @@
 #include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
 
-using _IsPlayingBack = bool(__cdecl*)(void* thisptr);
-using _GetPlaybackTick = int(__cdecl*)(void* thisptr);
-
-using _StartPlayback = int(__cdecl*)(void* thisptr, const char* filename, bool bAsTimeDemo);
-
 namespace DemoPlayer
 {
+	using _IsPlayingBack = bool(__cdecl*)(void* thisptr);
+	using _GetPlaybackTick = int(__cdecl*)(void* thisptr);
+	using _StartPlayback = int(__cdecl*)(void* thisptr, const char* filename, bool bAsTimeDemo);
+
 	std::unique_ptr<VMTHook> s_ClientDemoPlayer;
 
 	_IsPlayingBack IsPlayingBack;

@@ -12,29 +12,32 @@
 
 namespace Client
 {
-	using _GetLocalPlayer = void*(__cdecl*)(int unk);
 	using _HudUpdate = int(__cdecl*)(void* thisptr, unsigned int a2);
+	using _GetClientEntity = void*(__cdecl*)(void* thisptr, int entnum);
 
 	std::unique_ptr<VMTHook> clientdll;
+	std::unique_ptr<VMTHook> s_EntityList;
 
-	_GetLocalPlayer GetLocalPlayer;
+	_GetClientEntity GetClientEntity;
 
-	Vector* MainViewOrigin;
-	QAngle* MainViewAngles;
+	void* GetPlayer()
+	{
+		return GetClientEntity(s_EntityList->GetThisPtr(), Engine::GetPlayerIndex());
+	}
 
 	Vector GetAbsOrigin()
 	{
-		auto player = GetLocalPlayer(-1);
+		auto player = GetPlayer();
 		return (player) ? *(Vector*)((uintptr_t)player + Offsets::GetAbsOrigin) : Vector();
 	}
 	QAngle GetAbsAngles()
 	{
-		auto player = GetLocalPlayer(-1);
+		auto player = GetPlayer();
 		return (player) ? *(QAngle*)((uintptr_t)player + Offsets::GetAbsAngles) : QAngle();
 	}
 	Vector GetLocalVelocity()
 	{
-		auto player = GetLocalPlayer(-1);
+		auto player = GetPlayer();
 		return (player) ? *(Vector*)((uintptr_t)player + Offsets::GetLocalVelocity) : Vector();
 	}
 
@@ -81,15 +84,9 @@ namespace Client
 			Original::HudUpdate = clientdll->GetOriginalFunction<_HudUpdate>(Offsets::HudUpdate);
 		}
 
-		auto client = MODULEINFO();
-		if (GetModuleInformation("client.so", &client)) {
-			//GetLocalPlayer = reinterpret_cast<_GetLocalPlayer>(0xB298F0 + client.lpBaseOfDll);
-			GetLocalPlayer = reinterpret_cast<_GetLocalPlayer>(0x9C1890 + client.lpBaseOfDll);
-			MainViewOrigin = *reinterpret_cast<Vector**>(0xDB6DB0 + client.lpBaseOfDll + Offsets::MainViewOrigin);
-			MainViewAngles = *reinterpret_cast<QAngle**>(0xDB6DB0 + client.lpBaseOfDll + Offsets::MainViewAngles);
-		}
-		else {
-			Console::Warning("Failed to get module info for client.so!\n");
+		if (Interfaces::IClientEntityList) {
+			s_EntityList = std::make_unique<VMTHook>(Interfaces::IClientEntityList);
+			GetClientEntity = s_EntityList->GetOriginalFunction<_GetClientEntity>(Offsets::GetClientEntity);
 		}
 	}
 }

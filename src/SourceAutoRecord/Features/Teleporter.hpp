@@ -15,23 +15,14 @@ namespace Teleporter
 	{
 		IsSet = true;
 		Origin = Client::GetAbsOrigin();
-		Angles = *Client::MainViewAngles;
+		Angles = Engine::GetAngles();
 		Console::Print("Saved location: %.3f %.3f %.3f\n", Origin.x, Origin.y, Origin.z);
 	}
-	std::string GetSetpos()
+	void Teleport()
 	{
-		std::string setpos = "setpos "
-			+ std::to_string(Origin.x) + " "
-			+ std::to_string(Origin.y) + " "
-			+ std::to_string(Origin.z);
-		return setpos;
-	}
-	std::string GetSetang()
-	{
-		std::string setang = std::string("setang_exact ")
-			+ std::to_string(Angles.x) + " "
-			+ std::to_string(Angles.y) + " "
-			+ std::to_string(Angles.z);
-		return setang;
+		Engine::SetAngles(Angles);
+		char setpos[64];
+		snprintf(setpos, sizeof(setpos), "setpos %f %f %f", Origin.x, Origin.y, Origin.z);
+		Engine::ExecuteCommand(setpos);
 	}
 }

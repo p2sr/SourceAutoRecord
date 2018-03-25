@@ -25,11 +25,17 @@ namespace Engine
 	using _ClientCmd = int(__cdecl*)(void* thisptr, const char* szCmdString);
 	using _Disconnect = int(__cdecl*)(void* thisptr, int bShowMainMenu);
 	using _SetSignonState = int(__cdecl*)(void* thisptr, int state, int count);
+	using _GetLocalPlayer = int(__cdecl*)(void* thisptr);
+	using _GetViewAngles = int(__cdecl*)(void* thisptr, QAngle& va);
+	using _SetViewAngles = int(__cdecl*)(void* thisptr, QAngle& va);
 
 	std::unique_ptr<VMTHook> engine;
 	std::unique_ptr<VMTHook> cl;
 
 	_ClientCmd ClientCmd;
+	_GetLocalPlayer GetLocalPlayer;
+	_GetViewAngles GetViewAngles;
+	_SetViewAngles SetViewAngles;
 
 	void ExecuteCommand(const char* cmd)
 	{
@@ -43,6 +49,20 @@ namespace Engine
 	std::string GetDir()
 	{
 		return std::string(Vars::GetGameDirectory());
+	}
+	int GetPlayerIndex()
+	{
+		return GetLocalPlayer(engine->GetThisPtr());
+	}
+	QAngle GetAngles()
+	{
+		auto va = QAngle();
+		GetViewAngles(engine->GetThisPtr(), va);
+		return va;
+	}
+	void SetAngles(QAngle va)
+	{
+		SetViewAngles(engine->GetThisPtr(), va);
 	}
 
 	namespace Original
@@ -120,8 +140,11 @@ namespace Engine
 		if (Interfaces::IVEngineClient) {
 			engine = std::make_unique<VMTHook>(Interfaces::IVEngineClient);
 			ClientCmd = engine->GetOriginalFunction<_ClientCmd>(Offsets::ClientCmd);
+			GetLocalPlayer = engine->GetOriginalFunction<_GetLocalPlayer>(Offsets::GetLocalPlayer);
+			GetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::GetViewAngles);
+			SetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::SetViewAngles);
 			Vars::GetGameDirectory = engine->GetOriginalFunction<Vars::_GetGameDirectory>(Offsets::GetGameDirectory);
-
+			
 			typedef void*(*_GetClientState)();
 			auto abs = GetAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientState);
 			auto GetClientState = reinterpret_cast<_GetClientState>(abs);

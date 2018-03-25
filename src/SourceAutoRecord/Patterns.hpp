@@ -48,7 +48,6 @@ namespace Patterns
 	}
 	void Init()
 	{
-		//Create("client.so", "GetLocalPlayer");
 		Create("engine.so", "CvarPtr");
 		Create("engine.so", "ConVar_Ctor3");
 		Create("engine.so", "ConCommand_Ctor1");
@@ -67,15 +66,6 @@ namespace Patterns
 	{
 		void Load()
 		{
-			// client.so
-
-
-			// \x55\x89\xE5\x83\xEC\x00\x8B\x45\x00\x83\xF8\x00\x74\x00\xC9 xxxxx?xx?xx?x?x
-			/* Add("GetLocalPlayer", "Portal 2 Build 7054",
-				"C_BasePlayer::GetLocalPlayer",
-				"55 89 E5 83 EC ? 8B 45 ? 83 F8 ? 74 ? C9"); */
-
-
 			// engine.so
 
 

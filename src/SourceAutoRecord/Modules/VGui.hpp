@@ -48,6 +48,7 @@ namespace VGui
 
 			if (cl_showpos.GetBool()) {
 				elements += 4;
+				yPadding += spacing;
 			}
 
 			// cl_showpos replacement
@@ -56,27 +57,28 @@ namespace VGui
 				elements++;
 			}
 			if (sar_hud_position.GetBool()) {
+				auto abs = Client::GetAbsOrigin();
+
 				char position[64];
-				
-				if (sar_hud_position.GetInt() == 1) {
-					snprintf(position, sizeof(position), "pos: %.3f %.3f %.3f", Client::MainViewOrigin->x, Client::MainViewOrigin->y, Client::MainViewOrigin->z);
-				}
-				else {
-					auto pos = Client::GetAbsOrigin();
-					snprintf(position, sizeof(position), "pos: %.3f %.3f %.3f", pos.x, pos.y, pos.z);
-				}
+				snprintf(position, sizeof(position), "pos: %.3f %.3f %.3f", abs.x, abs.y, abs.z);
 				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, position);
 				elements++;
 			}
 			if (sar_hud_angles.GetBool()) {
+				auto va = Engine::GetAngles();
+
 				char angles[64];
-				snprintf(angles, sizeof(angles), "ang: %.3f %.3f", Client::MainViewAngles->x, Client::MainViewAngles->y);
+				snprintf(angles, sizeof(angles), "ang: %.3f %.3f", va.x, va.y);
 				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, angles);
 				elements++;
 			}
 			if (sar_hud_velocity.GetBool()) {
+				auto vel = (sar_hud_velocity.GetInt() == 1)
+					? Client::GetLocalVelocity().Length()
+					: Client::GetLocalVelocity().Length2D();
+				
 				char velocity[64];
-				snprintf(velocity, sizeof(velocity), "vel: %.3f", (sar_hud_velocity.GetInt() == 1) ? Client::GetLocalVelocity().Length() : Client::GetLocalVelocity().Length2D());
+				snprintf(velocity, sizeof(velocity), "vel: %.3f", vel);
 				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, velocity);
 				elements++;
 			}

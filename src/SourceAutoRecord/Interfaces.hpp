@@ -16,6 +16,7 @@ namespace Interfaces
 	void* IBaseClientDLL;
 	void* IEngineTool;
 	void* ISchemeManager;
+	void* IClientEntityList;
 
 	void* Get(const char* filename, const char* interface)
 	{
@@ -53,6 +54,7 @@ namespace Interfaces
 			IBaseClientDLL = Get("./portal2/bin/client.so", "VClient016");
 			IEngineTool = Get("./bin/engine.so", "VENGINETOOL003");
 			ISchemeManager = Get("./bin/vgui2.so", "VGUI_Scheme010");
+			IClientEntityList = Get("./portal2/bin/client.so", "VClientEntityList003");
 		}
 	}
 }

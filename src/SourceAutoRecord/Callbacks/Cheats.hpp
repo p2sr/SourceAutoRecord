@@ -10,11 +10,10 @@ namespace Callbacks
 	{
 		if (sv_cheats.GetBool()) {
 			if (Teleporter::IsSet) {
-				Engine::ExecuteCommand(Teleporter::GetSetpos().c_str());
-				Engine::ExecuteCommand(Teleporter::GetSetang().c_str());
+				Teleporter::Teleport();
 			}
 			else {
-				Console::Print("Location not set. Use sar_set_teleport.\n");
+				Console::Print("Location not set. Use sar_teleport_setpos.\n");
 			}
 		}
 		else {
