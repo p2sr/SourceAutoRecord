@@ -91,11 +91,14 @@
 - `sar_hud_cps` draws last checkpoint value of timer
 - `sar_hud_demo` draws current name, tick and time of demo recorder or demo player
 - `sar_hud_jumps` draws total jump count
+- `sar_hud_portals` draws total portal count
+- `sar_hud_steps` draws total step count
 
 ##### Optional
 - `sar_hud_default_spacing` space between HUD elements
 - `sar_hud_default_padding_x` additional padding on x-axis
 - `sar_hud_default_padding_y` additional padding on y-axis
+- `sar_hud_default_font_index` font index
 - `sar_hud_default_font_color` font color
 
 ### Stats

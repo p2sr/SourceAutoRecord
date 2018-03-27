@@ -46,7 +46,7 @@ namespace DemoPlayer
 
 			if (result) {
 				Demo demo;
-				if (demo.Parse(Vars::GetGameDirectory() + std::string("\\") + std::string(DemoName))) {
+				if (demo.Parse(Vars::GetGameDirectory() + std::string("/") + std::string(DemoName))) {
 					demo.Fix();
 					Console::Print("Client: %s\n", demo.clientName);
 					Console::Print("Map: %s\n", demo.mapName);

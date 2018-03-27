@@ -4,7 +4,7 @@
 #include "Patterns.hpp"
 #include "Utils.hpp"
 
-#define SAR_VERSION "1.5-linux"
+#define SAR_VERSION "1.6-linux"
 #define SAR_BUILD __TIME__ " " __DATE__
 #define SAR_COLOR Color(247, 235, 69)
 #define COL_ACTIVE Color(110, 247, 76)

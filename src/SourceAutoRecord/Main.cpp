@@ -16,6 +16,8 @@
 #include "Modules/ConVar.hpp"
 #include "Modules/Cvar.hpp"
 
+#include "Features/Config.hpp"
+
 #include "Callbacks.hpp"
 #include "Cheats.hpp"
 #include "Commands.hpp"
@@ -45,6 +47,8 @@ int __attribute__((constructor)) Main()
 		Surface::Hook();
 		Vars::Hook();
 		VGui::Hook();
+
+		Config::Load();
 		
 		Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
 		return 0;
