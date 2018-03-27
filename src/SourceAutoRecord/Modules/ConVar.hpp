@@ -66,15 +66,15 @@ namespace Tier1
 		}
 		void SetValue(const char* value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetValue);
-			if (vf) ((_SetValueString)vf)(Ptr, value);
+			if (vf) ((_InternalSetValue)vf)(Ptr, value);
 		}
 		void SetValue(float value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetFloatValue);
-			if (vf) ((_SetValueFloat)vf)(Ptr, value);
+			if (vf) ((_InternalSetFloatValue)vf)(Ptr, value);
 		}
 		void SetValue(int value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetIntValue);
-			if (vf) ((_SetValueInt)vf)(Ptr, value);
+			if (vf) ((_InternalSetIntValue)vf)(Ptr, value);
 		}
 		void SetFlags(int value) {
 			((ConVarData*)Ptr)->Flags = value;

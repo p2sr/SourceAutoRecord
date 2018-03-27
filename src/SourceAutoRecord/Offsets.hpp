@@ -57,6 +57,8 @@ namespace Offsets
 	int GetAbsOrigin;
 	int GetAbsAngles;
 	int GetLocalVelocity;
+	int iNumPortalsPlaced;
+	int iNumStepsTaken;
 
 	// IEngineVGuiInternal
 	int Paint;
@@ -73,25 +75,26 @@ namespace Offsets
 	// IClientEntityList
 	int GetClientEntity;
 
+	// CServerGameDLL
+	int Think;
+
 	// Others
-	int MainViewOrigin;
-	int MainViewAngles;
 	int tickcount;
 	int interval_per_tick;
 	int GetClientState;
 	int demoplayer;
 	int demorecorder;
 	int m_szLevelName;
+	int UTIL_PlayerByIndex;
 
 	void Init()
 	{
 		if (Game::Version == Game::Portal2) {
 			// engine.so
-			InternalSetValue = 12; // tier1/convar.cpp
-			InternalSetFloatValue = 13; // tier1/convar.cpp
-			InternalSetIntValue = 14; // tier1/convar.cpp
+			InternalSetValue = 19; // ConVar
+			InternalSetFloatValue = 20; // ConVar
+			InternalSetIntValue = 21; // ConVar
 			FindVar = 15; // CCvarUtilities::IsValidToggleCommand
-			m_pConCommandList = 48; // vstdlib/cvar.cpp
 			ClientCmd = 7; // CEngineClient
 			GetLocalPlayer = 12; // CEngineClient
 			GetGameDirectory = 35; // CEngineClient
@@ -124,6 +127,10 @@ namespace Offsets
 			CheckJumpButton = 37; // CPortalGameMovement
 			mv = 2; // CPortalGameMovement::CheckJumpButton
 			m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
+			Think = 31; // CServerGameDLL
+			UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
+			iNumPortalsPlaced = 5724; // CPortal_Player::IncrementPortalsPlaced
+			iNumStepsTaken = 5728; // CPortal_Player::IncrementStepsTaken
 			// client.so
 			HudUpdate = 11; // CHLClient
 			GetFontTall = 72; // CFPSPanel::ComputeSize
@@ -131,9 +138,9 @@ namespace Offsets
 			GetAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
 			GetAbsAngles = 172; // C_BasePlayer::GetAbsAngles
 			GetLocalVelocity = 244; // CFPSPanel::Paint
-			MainViewOrigin = 39; // GetPos view.cpp
-			MainViewAngles = 65; // GetPos view.cpp
 			GetClientEntity = 3; // IClientEntityList
+			// libvstdlib.so
+			m_pConCommandList = 48; // CCvar::RegisterConCommand
 		}
 	}
 }

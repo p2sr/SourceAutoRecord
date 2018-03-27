@@ -3,6 +3,7 @@
 
 #include "Console.hpp"
 #include "Scheme.hpp"
+#include "Server.hpp"
 #include "Surface.hpp"
 #include "Vars.hpp"
 
@@ -39,7 +40,7 @@ namespace VGui
 			int yPadding = sar_hud_default_padding_y.GetInt();
 			int spacing = sar_hud_default_spacing.GetInt();
 
-			auto font = Scheme::GetDefaultFont() - 1;
+			auto font = Scheme::GetDefaultFont() + sar_hud_default_font_index.GetFloat() - 1;
 			int fontSize = Surface::GetFontHeight(font);
 
 			int r, g, b, a;
@@ -158,6 +159,20 @@ namespace VGui
 				char jumps[64];
 				snprintf(jumps, sizeof(jumps), "jumps: %i", Stats::TotalJumps);
 				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, jumps);
+				elements++;
+			}
+			if (sar_hud_portals.GetBool()) {
+				auto iNumPortalsPlaced = Server::GetPortals();
+				char portals[64];
+				snprintf(portals, sizeof(portals), "portals: %i", iNumPortalsPlaced);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, portals);
+				elements++;
+			}
+			if (sar_hud_steps.GetBool()) {
+				auto iNumStepsTaken = Server::GetSteps();
+				char steps[64];
+				snprintf(steps, sizeof(steps), "steps: %i", iNumStepsTaken);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, steps);
 				elements++;
 			}
 

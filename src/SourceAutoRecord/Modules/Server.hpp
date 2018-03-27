@@ -14,8 +14,27 @@ using namespace Commands;
 namespace Server
 {
 	using _CheckJumpButton = bool(__cdecl*)(void* thisptr);
+	using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
 	
 	std::unique_ptr<VMTHook> g_GameMovement;
+	std::unique_ptr<VMTHook> g_ServerGameDLL;
+
+	_UTIL_PlayerByIndex UTIL_PlayerByIndex;
+
+	void* GetPlayer()
+	{
+		return UTIL_PlayerByIndex(1);
+	}
+	int GetPortals()
+	{
+		auto player = GetPlayer();
+		return (player) ? *reinterpret_cast<int*>((uintptr_t)player + Offsets::iNumPortalsPlaced) : 0;
+	}
+	int GetSteps()
+	{
+		auto player = GetPlayer();
+		return (player) ? *reinterpret_cast<int*>((uintptr_t)player + Offsets::iNumStepsTaken) : 0;
+	}
 
 	namespace Original
 	{
@@ -51,7 +70,6 @@ namespace Server
 				CantJumpNextTime = true;
 				Stats::TotalJumps++;
 			}
-
 			return result;
 		}
 	}
@@ -62,6 +80,13 @@ namespace Server
 			g_GameMovement = std::make_unique<VMTHook>(Interfaces::IGameMovement);
 			g_GameMovement->HookFunction((void*)Detour::CheckJumpButton, Offsets::CheckJumpButton);
 			Original::CheckJumpButton = g_GameMovement->GetOriginalFunction<_CheckJumpButton>(Offsets::CheckJumpButton);
+		}
+
+		if (Interfaces::IServerGameDLL) {
+			g_ServerGameDLL = std::make_unique<VMTHook>(Interfaces::IServerGameDLL);
+			auto Think = g_ServerGameDLL->GetOriginalFunction<uintptr_t>(Offsets::Think);
+			auto abs = GetAbsoluteAddress(Think + Offsets::UTIL_PlayerByIndex);
+			UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(abs);
 		}
 	}
 }

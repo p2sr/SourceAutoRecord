@@ -165,6 +165,14 @@ namespace Cheats
 			"sar_hud_jumps",
 			"0",
 			"Draws total jump count.\n");
+		sar_hud_portals = CreateBoolean(
+			"sar_hud_portals",
+			"0",
+			"Draws total portal count.\n");
+		sar_hud_steps = CreateBoolean(
+			"sar_hud_steps",
+			"0",
+			"Draws total step count.\n");
 		sar_hud_default_spacing = CreateFloat(
 			"sar_hud_default_spacing",
 			"4",
@@ -180,6 +188,11 @@ namespace Cheats
 			"2",
 			0,
 			"Y padding of HUD.\n");
+		sar_hud_default_font_index = CreateFloat(
+			"sar_hud_default_font_index",
+			"0",
+			0,
+			"Font index of HUD.\n");
 		sar_hud_default_font_color = CreateString(
 			"sar_hud_default_font_color",
 			"255 255 255 255",
@@ -211,14 +224,10 @@ namespace Cheats
 			"Saves current location for teleportation.\n");
 
 		// TAS
-		sar_tas_add_frame = CreateCommandArgs(
-			"sar_tas_add_frame",
+		sar_tas_frame_at = CreateCommandArgs(
+			"sar_tas_frame_at",
 			Callbacks::AddTas,
 			"Adds a frame for a TAS.\n");
-		sar_tas_delay = CreateCommandArgs(
-			"sar_tas_delay",
-			Callbacks::DelayTas,
-			"Delays TAS for a certain amount of frames.\n");
 		sar_tas_start = CreateCommand(
 			"sar_tas_start",
 			Callbacks::StartTas,
@@ -229,7 +238,7 @@ namespace Cheats
 			"Resets TAS.\n");
 		sar_tas_autostart = CreateBoolean(
 			"sar_tas_autostart",
-			"1",
+			"0",
 			"Starts TAS automatically on first frame after a load.\n");
 
 		// Others

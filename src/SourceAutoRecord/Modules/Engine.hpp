@@ -73,10 +73,12 @@ namespace Engine
 
 	namespace Detour
 	{
+		bool IsInGame = true;
+
 		int __cdecl Disconnect(void* thisptr, bool bShowMainMenu)
 		{
 			//Console::PrintActive("Disconnect!\n");
-			if (!*Vars::m_bLoadgame && !DemoPlayer::IsPlaying()) {
+			if (!*Vars::m_bLoadgame && !DemoPlayer::IsPlaying() && IsInGame) {
 				int tick = GetTick();
 
 				if (tick != 0) {
@@ -106,6 +108,7 @@ namespace Engine
 
 				DemoRecorder::CurrentDemo = "";
 			}
+			IsInGame = false;
 			return Original::Disconnect(thisptr, bShowMainMenu);
 		}
 		int __cdecl SetSignonState(void* thisptr, int state, int count)
@@ -130,6 +133,7 @@ namespace Engine
 					Console::DevMsg("---TAS START---\n");
 					TAS::Start();
 				}
+				IsInGame = true;
 			}
 			return Original::SetSignonState(thisptr, state, count);
 		}

@@ -5,20 +5,14 @@
 
 namespace TAS
 {
-	struct TasFrame
-	{
+	struct TasFrame {
 		int FramesLeft;
 		std::string Command;
 	};
 
 	std::vector<TasFrame> Frames;
 	bool IsRunning = false;
-	int FrameDelay = 0;
 
-	void Delay(int delay)
-	{
-		FrameDelay = delay;
-	}
 	void AddFrame(int framesLeft, std::string command)
 	{
 		Frames.push_back(TasFrame

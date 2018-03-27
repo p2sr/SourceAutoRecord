@@ -24,7 +24,7 @@ namespace Client
 	{
 		return GetClientEntity(s_EntityList->GetThisPtr(), Engine::GetPlayerIndex());
 	}
-
+	
 	Vector GetAbsOrigin()
 	{
 		auto player = GetPlayer();
@@ -52,24 +52,18 @@ namespace Client
 		{
 			if (TAS::IsRunning)
 			{
-				if (TAS::FrameDelay - 1 < 0)
+				for (auto tas = TAS::Frames.begin(); tas != TAS::Frames.end();)
 				{
-					for (auto tas = TAS::Frames.begin(); tas != TAS::Frames.end(); )
+					tas->FramesLeft--;
+					if (tas->FramesLeft <= 0)
 					{
-						tas->FramesLeft--;
-						if (tas->FramesLeft <= 0)
-						{
-							Console::DevMsg("TAS: %s\n", tas->Command.c_str());
-							Engine::ExecuteCommand(tas->Command.c_str());
-							tas = TAS::Frames.erase(tas);
-						}
-						else {
-							tas++;
-						}
+						Console::DevMsg("TAS: %s\n", tas->Command.c_str());
+						Engine::ExecuteCommand(tas->Command.c_str());
+						tas = TAS::Frames.erase(tas);
 					}
-				}
-				else {
-					TAS::FrameDelay--;
+					else {
+						tas++;
+					}
 				}
 			}
 			return Original::HudUpdate(thisptr, a2);

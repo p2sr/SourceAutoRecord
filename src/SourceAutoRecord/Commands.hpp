@@ -55,10 +55,13 @@ namespace Commands
 	ConVar sar_hud_cps;
 	ConVar sar_hud_demo;
 	ConVar sar_hud_jumps;
+	ConVar sar_hud_portals;
+	ConVar sar_hud_steps;
 
 	ConVar sar_hud_default_spacing;
 	ConVar sar_hud_default_padding_x;
 	ConVar sar_hud_default_padding_y;
+	ConVar sar_hud_default_font_index;
 	ConVar sar_hud_default_font_color;
 
 	// Stats
@@ -75,8 +78,7 @@ namespace Commands
 	ConCommand sar_cvars_load;
 
 	// TAS
-	ConCommand sar_tas_add_frame;
-	ConCommand sar_tas_delay;
+	ConCommand sar_tas_frame_at;
 	ConCommand sar_tas_start;
 	ConCommand sar_tas_reset;
 	ConVar sar_tas_autostart;
