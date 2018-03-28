@@ -66,4 +66,8 @@ namespace Rebinder
 		cmd += std::string(";reload");
 		InputSystem::KeySetBinding(ReloadButton, cmd.c_str());
 	}
+	void UpdateIndex(int newIndex)
+	{
+		LastIndexNumber = newIndex;
+	}
 }

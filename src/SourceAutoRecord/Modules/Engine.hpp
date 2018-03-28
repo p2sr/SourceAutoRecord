@@ -65,6 +65,68 @@ namespace Engine
 		SetViewAngles(engine->GetThisPtr(), va);
 	}
 
+	bool IsInGame = false;
+
+	void SessionStarted()
+	{
+		Session::Rebase(*Vars::tickcount);
+		Timer::Rebase(*Vars::tickcount);
+
+		if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
+			if (DemoRecorder::IsRecordingDemo) {
+				Rebinder::UpdateIndex(*DemoRecorder::m_nDemoNumber);
+			}
+			else {
+				Rebinder::UpdateIndex(Rebinder::LastIndexNumber + 1);
+			}
+
+			Rebinder::RebindSave();
+			Rebinder::RebindReload();
+		}
+
+		if (*Vars::m_bLoadgame && sar_tas_autostart.GetBool()) {
+			Console::DevMsg("---TAS START---\n");
+			TAS::Start();
+		}
+
+		IsInGame = true;
+	}
+	void SessionEnded()
+	{
+		if (!DemoPlayer::IsPlaying() && IsInGame) {
+			int tick = GetTick();
+
+			if (tick != 0) {
+				Console::Print("Session: %i (%.3f)\n", tick, tick * *Vars::interval_per_tick);
+				Session::LastSession = tick;
+			}
+
+			if (Summary::IsRunning) {
+				Summary::Add(tick, tick * *Vars::interval_per_tick, *Vars::m_szLevelName);
+				Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Summary::TotalTime);
+			}
+
+			if (Timer::IsRunning) {
+				if (sar_timer_always_running.GetBool()) {
+					Timer::Save(*Vars::tickcount);
+					Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Timer::TotalTicks * *Vars::interval_per_tick);
+				}
+				else {
+					Timer::Stop(*Vars::tickcount);
+					Console::Print("Timer stopped!\n");
+				}
+			}
+
+			if (sar_stats_auto_reset.GetInt() >= 1) {
+				Stats::Reset();
+			}
+
+			DemoRecorder::CurrentDemo = "";
+		}
+
+		IsInGame = false;
+	}
+
 	namespace Original
 	{
 		_Disconnect Disconnect;
@@ -73,68 +135,29 @@ namespace Engine
 
 	namespace Detour
 	{
-		bool IsInGame = true;
+		int LastState;
 
 		int __cdecl Disconnect(void* thisptr, bool bShowMainMenu)
 		{
 			//Console::PrintActive("Disconnect!\n");
-			if (!*Vars::m_bLoadgame && !DemoPlayer::IsPlaying() && IsInGame) {
-				int tick = GetTick();
-
-				if (tick != 0) {
-					Console::Print("Session: %i (%.3f)\n", tick, tick * *Vars::interval_per_tick);
-					Session::LastSession = tick;
-				}
-
-				if (Summary::IsRunning) {
-					Summary::Add(tick, tick * *Vars::interval_per_tick, *Vars::m_szLevelName);
-					Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Summary::TotalTime);
-				}
-
-				if (Timer::IsRunning) {
-					if (sar_timer_always_running.GetBool()) {
-						Timer::Save(*Vars::tickcount);
-						Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Timer::TotalTicks * *Vars::interval_per_tick);
-					}
-					else {
-						Timer::Stop(*Vars::tickcount);
-						Console::Print("Timer stopped!\n");
-					}
-				}
-
-				if (sar_stats_auto_reset.GetInt() >= 1) {
-					Stats::Reset();
-				}
-
-				DemoRecorder::CurrentDemo = "";
-			}
-			IsInGame = false;
+			Console::PrintActive("Session ended (Disconnect)!\n");
+			SessionEnded();
 			return Original::Disconnect(thisptr, bShowMainMenu);
 		}
 		int __cdecl SetSignonState(void* thisptr, int state, int count)
 		{
 			//Console::PrintActive("SetSignonState = %i\n", state);
-			if (state == SignonState::Prespawn) {
-				if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
-					Rebinder::LastIndexNumber = (DemoRecorder::IsRecordingDemo)
-						? *DemoRecorder::m_nDemoNumber
-						: Rebinder::LastIndexNumber + 1;
-
-					Rebinder::RebindSave();
-					Rebinder::RebindReload();
-				}
+			if (state != LastState && LastState == SignonState::Full) {
+				Console::PrintActive("Session ended (SetSignonState)!\n");
+				SessionEnded();
 			}
+
 			// Demo recorder starts syncing from this tick
-			else if (state == SignonState::Full) {
-				Session::Rebase(*Vars::tickcount);
-				Timer::Rebase(*Vars::tickcount);
-
-				if (*Vars::m_bLoadgame && sar_tas_autostart.GetBool()) {
-					Console::DevMsg("---TAS START---\n");
-					TAS::Start();
-				}
-				IsInGame = true;
+			if (state == SignonState::Full) {
+				SessionStarted();
 			}
+
+			LastState = state;
 			return Original::SetSignonState(thisptr, state, count);
 		}
 	}

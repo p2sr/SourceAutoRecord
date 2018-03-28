@@ -67,6 +67,7 @@ namespace Commands
 	// Stats
 	ConVar sar_stats_auto_reset;
 	ConCommand sar_stats_reset_jumps;
+	ConCommand sar_stats_reset_steps;
 
 	// Cheats
 	ConVar sar_autojump;

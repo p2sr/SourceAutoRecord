@@ -31,6 +31,7 @@ namespace Offsets
 	int StringToButtonCode;
 
 	// CGameMovement
+	int PlayerMove;
 	int CheckJumpButton;
 	int mv;
 	int m_nOldButtons;
@@ -58,7 +59,6 @@ namespace Offsets
 	int GetAbsAngles;
 	int GetLocalVelocity;
 	int iNumPortalsPlaced;
-	int iNumStepsTaken;
 
 	// IEngineVGuiInternal
 	int Paint;
@@ -86,6 +86,7 @@ namespace Offsets
 	int demorecorder;
 	int m_szLevelName;
 	int UTIL_PlayerByIndex;
+	int gpGlobals;
 
 	void Init()
 	{
@@ -124,13 +125,14 @@ namespace Offsets
 			GetIScheme = 9; // CSchemeManager
 			GetFont = 4; // CScheme
 			// server.so
+			PlayerMove = 16; // CPortalGameMovement
 			CheckJumpButton = 37; // CPortalGameMovement
 			mv = 2; // CPortalGameMovement::CheckJumpButton
 			m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
 			Think = 31; // CServerGameDLL
 			UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
 			iNumPortalsPlaced = 5724; // CPortal_Player::IncrementPortalsPlaced
-			iNumStepsTaken = 5728; // CPortal_Player::IncrementStepsTaken
+			gpGlobals = 467; // CGameMovement::FullTossMove
 			// client.so
 			HudUpdate = 11; // CHLClient
 			GetFontTall = 72; // CFPSPanel::ComputeSize

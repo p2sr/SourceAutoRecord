@@ -169,9 +169,8 @@ namespace VGui
 				elements++;
 			}
 			if (sar_hud_steps.GetBool()) {
-				auto iNumStepsTaken = Server::GetSteps();
 				char steps[64];
-				snprintf(steps, sizeof(steps), "steps: %i", iNumStepsTaken);
+				snprintf(steps, sizeof(steps), "steps: %i", Stats::TotalSteps);
 				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, steps);
 				elements++;
 			}

@@ -203,11 +203,15 @@ namespace Cheats
 			"sar_stats_auto_reset",
 			"0",
 			0,
-			"Resets all stats automatically. 0 = default, 1 = disconnect, 2 = disconnect & sar_timer_start.\n");
+			"Resets all stats automatically. 0 = default, 1 = disconnect & restart, 2 = disconnect & restart & sar_timer_start.\n");
 		sar_stats_reset_jumps = CreateCommand(
 			"sar_stats_reset_jumps",
 			Callbacks::ResetJumps,
 			"Resets jump counter.\n");
+		sar_stats_reset_steps = CreateCommand(
+			"sar_stats_reset_steps",
+			Callbacks::ResetSteps,
+			"Resets step counter.\n");
 
 		// Cheats
 		sar_autojump = CreateBoolean(

@@ -1,4 +1,5 @@
-[![Build Version](https://img.shields.io/badge/version-v1.5--linux-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/3)
+[![Build Version](https://img.shields.io/badge/version-v1.5-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/2)
+[![Build Version](https://img.shields.io/badge/version-v1.6--linux-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/3)
 [![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
 
 **SourceAutoRecord** allows automatic demo recording, automatic binding, demo parsing, session timing and [much more](#features).
@@ -104,6 +105,7 @@
 ### Stats
 - `sar_stats_auto_reset` resets all stats automatically
 - `sar_stats_reset_jumps` resets jump count
+- `sar_stats_reset_steps` resets step count
 
 ### Cheats
 - `sar_autojump` enables tick-perfect jumping on the server

@@ -24,4 +24,8 @@ namespace Callbacks
 	{
 		Stats::TotalJumps = 0;
 	}
+	void ResetSteps()
+	{
+		Stats::TotalSteps = 0;
+	}
 }
