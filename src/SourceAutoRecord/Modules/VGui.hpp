@@ -41,7 +41,7 @@ namespace VGui
 			int spacing = sar_hud_default_spacing.GetInt();
 
 			auto font = Scheme::GetDefaultFont() + sar_hud_default_font_index.GetFloat() - 1;
-			int fontSize = Surface::GetFontHeight(font);
+			auto fontSize = Surface::GetFontHeight(font);
 
 			int r, g, b, a;
 			sscanf(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
@@ -85,8 +85,8 @@ namespace VGui
 			}
 			// Session
 			if (sar_hud_session.GetBool()) {
-				int tick = (!*Vars::m_bLoadgame) ? Engine::GetTick() : 0;
-				float time = tick * *Vars::interval_per_tick;
+				int tick = (Engine::IsInGame) ? Engine::GetTick() : 0;
+				float time = Engine::GetTime(tick);
 
 				char session[64];
 				snprintf(session, sizeof(session), "session: %i (%.3f)", tick, time);
@@ -95,19 +95,19 @@ namespace VGui
 			}
 			if (sar_hud_last_session.GetBool()) {
 				char session[64];
-				snprintf(session, sizeof(session), "last session: %i (%.3f)", Session::LastSession, Session::LastSession * *Vars::interval_per_tick);
+				snprintf(session, sizeof(session), "last session: %i (%.3f)", Session::LastSession, Engine::GetTime(Session::LastSession));
 				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, session);
 				elements++;
 			}
 			if (sar_hud_sum.GetBool()) {
 				char sum[64];
 				if (Summary::IsRunning && sar_sum_during_session.GetBool()) {
-					int tick = (!*Vars::m_bLoadgame) ? Engine::GetTick() : 0;
-					float time = tick * *Vars::interval_per_tick;
-					snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks + tick, Summary::TotalTime + time);
+					int tick = (Engine::IsInGame) ? Engine::GetTick() : 0;
+					float time = Engine::GetTime(tick);
+					snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks + tick, Engine::GetTime(Summary::TotalTicks) + time);
 				}
 				else {
-					snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks, Summary::TotalTime);
+					snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks, Engine::GetTime(Summary::TotalTicks));
 				}
 				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, sum);
 				elements++;
@@ -115,7 +115,7 @@ namespace VGui
 			// Timer
 			if (sar_hud_timer.GetBool()) {
 				int tick = (!Timer::IsPaused) ? Timer::GetTick(*Vars::tickcount) : Timer::TotalTicks;
-				float time = tick * *Vars::interval_per_tick;
+				float time = Engine::GetTime(tick);
 
 				char timer[64];
 				snprintf(timer, sizeof(timer), "timer: %i (%.3f)", tick, time);
@@ -139,13 +139,12 @@ namespace VGui
 				char demo[64];
 				if (!*Vars::m_bLoadgame && *DemoRecorder::m_bRecording && !DemoRecorder::CurrentDemo.empty()) {
 					int tick = DemoRecorder::GetTick();
-					float time = tick * *Vars::interval_per_tick;
+					float time = Engine::GetTime(tick);
 					snprintf(demo, sizeof(demo), "demo: %s %i (%.3f)", DemoRecorder::CurrentDemo.c_str(), tick, time);
 				}
 				else if (!*Vars::m_bLoadgame && DemoPlayer::IsPlaying()) {
 					int tick = DemoPlayer::GetTick();
-					// Demos overwrite interval_per_tick anyway if I remember correctly
-					float time = tick * *Vars::interval_per_tick;
+					float time = Engine::GetTime(tick);
 					snprintf(demo, sizeof(demo), "demo: %s %i (%.3f)", DemoPlayer::DemoName, tick, time);
 				}
 				else {

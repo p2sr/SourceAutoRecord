@@ -34,7 +34,7 @@ namespace Offsets
 	int PlayerMove;
 	int CheckJumpButton;
 	int mv;
-	int m_nOldButtons;
+	int player;
 
 	// CDemoRecorder
 	int GetRecordingTick;
@@ -54,11 +54,17 @@ namespace Offsets
 	int ProcessTick;
 	int Disconnect;
 
-	// C_BasePlayer
-	int GetAbsOrigin;
-	int GetAbsAngles;
-	int GetLocalVelocity;
+	// C_BaseEntity
+	int m_vecAbsOrigin;
+	int m_angAbsRotation;
+	int m_vecVelocity;
+
+	// CBasePlayer
 	int iNumPortalsPlaced;
+	int m_fFlags;
+	int m_MoveType;
+	int m_nWaterLevel;
+	int psurface;
 
 	// IEngineVGuiInternal
 	int Paint;
@@ -77,6 +83,13 @@ namespace Offsets
 
 	// CServerGameDLL
 	int Think;
+
+	// CGlobalVarsBase
+	int frametime;
+
+	// CMoveData
+	int m_nOldButtons;
+	int m_vecVelocity2;
 
 	// Others
 	int tickcount;
@@ -127,19 +140,26 @@ namespace Offsets
 			// server.so
 			PlayerMove = 16; // CPortalGameMovement
 			CheckJumpButton = 37; // CPortalGameMovement
-			mv = 2; // CPortalGameMovement::CheckJumpButton
+			mv = 8; // CPortalGameMovement::CheckJumpButton
 			m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
 			Think = 31; // CServerGameDLL
 			UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
 			iNumPortalsPlaced = 5724; // CPortal_Player::IncrementPortalsPlaced
 			gpGlobals = 467; // CGameMovement::FullTossMove
+			player = 4; // CPortalGameMovement::PlayerMove
+			m_fFlags = 212; // CBasePlayer::UpdateStepSound
+			m_MoveType = 226; // CBasePlayer::UpdateStepSound
+			m_nWaterLevel = 347; // CBasePlayer::UpdateStepSound
+			psurface = 4116; // CPortalGameMovement::PlayerMove
+			m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
+			frametime = 16; // CBasePlayer::UpdateStepSound
 			// client.so
 			HudUpdate = 11; // CHLClient
 			GetFontTall = 72; // CFPSPanel::ComputeSize
 			DrawColoredText = 160; // CFPSPanel::Paint
-			GetAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
-			GetAbsAngles = 172; // C_BasePlayer::GetAbsAngles
-			GetLocalVelocity = 244; // CFPSPanel::Paint
+			m_vecAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
+			m_angAbsRotation = 172; // C_BasePlayer::GetAbsAngles
+			m_vecVelocity = 244; // CFPSPanel::Paint
 			GetClientEntity = 3; // IClientEntityList
 			// libvstdlib.so
 			m_pConCommandList = 48; // CCvar::RegisterConCommand

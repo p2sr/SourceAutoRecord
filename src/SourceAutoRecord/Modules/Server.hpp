@@ -9,12 +9,14 @@
 
 #define IN_JUMP	(1 << 1)
 
-#define	FL_ONGROUND (1 << 0)
+#define FL_ONGROUND (1 << 0)
 #define FL_DUCKING (1 << 1)
 #define FL_FROZEN (1 << 5)
 #define FL_ATCONTROLS (1 << 6)
 
 #define MOVETYPE_NOCLIP 8
+
+#define WL_Waist 2
 
 using namespace Commands;
 
@@ -28,6 +30,12 @@ namespace Server
 	std::unique_ptr<VMTHook> g_ServerGameDLL;
 
 	_UTIL_PlayerByIndex UTIL_PlayerByIndex;
+
+	void* gpGlobals;
+
+	// Static version of CBasePlayer::m_flStepSoundTime to keep track
+	// of a step globally and to not mess up sounds etc.
+	float StepSoundTime;
 
 	void* GetPlayer()
 	{
@@ -45,86 +53,90 @@ namespace Server
 		_PlayerMove PlayerMove;
 	}
 
-	void* gpGlobals;
-
 	namespace Detour
 	{
-		bool CantJumpNextTime = false;
+		bool JumpedLastTime = false;
 
 		bool __cdecl CheckJumpButton(void* thisptr)
 		{
-			int* m_nOldButtons = NULL;
-			int original = 0;
+			auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
+			auto m_nOldButtons = reinterpret_cast<int*>((uintptr_t)mv + Offsets::m_nOldButtons);
 
-			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool()) {
-				m_nOldButtons = (int*)(*((uintptr_t*)thisptr + Offsets::mv) + Offsets::m_nOldButtons);
-				original = *m_nOldButtons;
+			auto enabled = (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool();
+			auto stored = 0;
 
-				if (!CantJumpNextTime)
+			if (enabled) {
+				stored = *m_nOldButtons;
+
+				if (!JumpedLastTime)
 					*m_nOldButtons &= ~IN_JUMP;
 			}
-			CantJumpNextTime = false;
 
-			bool result = Original::CheckJumpButton(thisptr);
+			JumpedLastTime = false;
 
-			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool()) {
+			auto result = Original::CheckJumpButton(thisptr);
+
+			if (enabled) {
 				if (!(*m_nOldButtons & IN_JUMP))
-					*m_nOldButtons = original;
+					*m_nOldButtons = stored;
 			}
 
 			if (result) {
-				CantJumpNextTime = true;
+				JumpedLastTime = true;
 				Stats::TotalJumps++;
 				Stats::TotalSteps++;
 			}
+
 			return result;
 		}
 		int __cdecl PlayerMove(void* thisptr)
 		{
-			auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + 4);
-			auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + 8);
-			auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + 212);
-			auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + 226);
-			auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + 64);
-			auto psurface = *reinterpret_cast<void**>((uintptr_t)player + 4116);
+			auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
+			auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
 
-			auto m_flStepSoundTime = reinterpret_cast<float*>((uintptr_t)player + 3720);
-			auto m_flStepSoundTime_Stored = *m_flStepSoundTime;
-			
-			auto stepped = false;
+			auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
+			auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
+			auto m_nWaterLevel = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_nWaterLevel);
+			auto psurface = *reinterpret_cast<void**>((uintptr_t)player + Offsets::psurface);
 
-			// Player is on ground and moving
-			if (m_fFlags & FL_ONGROUND && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
+			auto frametime = *reinterpret_cast<float*>((uintptr_t)gpGlobals + Offsets::frametime);
+			auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
+
+			// Calculate when to play next step sound
+			if (StepSoundTime > 0) {
+				StepSoundTime -= 1000.0f * frametime;
+				if (StepSoundTime < 0) {
+					StepSoundTime = 0;
+				}
+			}
+
+			// Player is on ground and moving etc.
+			if (StepSoundTime <= 0
+				&& m_fFlags & FL_ONGROUND && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
 				&& m_vecVelocity.Length2D() > 0.0001f
 				&& psurface
-				&& m_MoveType != MOVETYPE_NOCLIP) {
-				// Calculate when to play next step sound
-				if (m_flStepSoundTime_Stored > 0) {
-					auto frametime = *reinterpret_cast<float*>((uintptr_t)gpGlobals + 16);
-					m_flStepSoundTime_Stored -= 1000.0f * frametime;
-					if (m_flStepSoundTime_Stored < 0) {
-						m_flStepSoundTime_Stored = 0;
-					}
-				}
-				if (m_flStepSoundTime_Stored <= 0) {
-					Stats::TotalSteps++;
-					stepped = true;
-				}
-			}
+				&& m_MoveType != MOVETYPE_NOCLIP
+				&& sv_footsteps.GetFloat()) {
 
-			auto result = Original::PlayerMove(thisptr);
-
-			// Original function should have updated m_flStepSoundTime but it didn't
-			if (stepped && *m_flStepSoundTime == m_flStepSoundTime_Stored) {
+				// Adjust next step
 				auto velrun = (m_fFlags & FL_DUCKING) ? 80 : 220;
 				auto bWalking = m_vecVelocity.Length() < velrun;
-				*m_flStepSoundTime = (bWalking) ? 400 : 300;
-				if (m_fFlags & FL_DUCKING) {
-					*m_flStepSoundTime += 100;
+
+				if (m_nWaterLevel == WL_Waist) {
+					StepSoundTime = 600;
 				}
+				else {
+					StepSoundTime = (bWalking) ? 400 : 300;
+				}
+
+				if (m_fFlags & FL_DUCKING) {
+					StepSoundTime += 100;
+				}
+
+				Stats::TotalSteps++;
 			}
 
-			return result;
+			return Original::PlayerMove(thisptr);
 		}
 	}
 

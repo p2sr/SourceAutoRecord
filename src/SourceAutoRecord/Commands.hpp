@@ -91,6 +91,7 @@ namespace Commands
 	// From the game
 	ConVar cl_showpos;
 	ConVar sv_cheats;
+	ConVar sv_footsteps;
 
 	ConVar sv_bonus_challenge;
 	ConVar sv_accelerate;

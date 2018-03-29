@@ -28,17 +28,17 @@ namespace Client
 	Vector GetAbsOrigin()
 	{
 		auto player = GetPlayer();
-		return (player) ? *(Vector*)((uintptr_t)player + Offsets::GetAbsOrigin) : Vector();
+		return (player) ? *(Vector*)((uintptr_t)player + Offsets::m_vecAbsOrigin) : Vector();
 	}
 	QAngle GetAbsAngles()
 	{
 		auto player = GetPlayer();
-		return (player) ? *(QAngle*)((uintptr_t)player + Offsets::GetAbsAngles) : QAngle();
+		return (player) ? *(QAngle*)((uintptr_t)player + Offsets::m_angAbsRotation) : QAngle();
 	}
 	Vector GetLocalVelocity()
 	{
 		auto player = GetPlayer();
-		return (player) ? *(Vector*)((uintptr_t)player + Offsets::GetLocalVelocity) : Vector();
+		return (player) ? *(Vector*)((uintptr_t)player + Offsets::m_vecVelocity) : Vector();
 	}
 
 	namespace Original

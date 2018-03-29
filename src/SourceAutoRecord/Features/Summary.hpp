@@ -13,13 +13,11 @@ namespace Summary
 	std::vector<SummaryItem> Items;
 
 	int TotalTicks;
-	float TotalTime;
 
 	void Start()
 	{
 		Items.clear();
 		TotalTicks = 0;
-		TotalTime = 0;
 		IsRunning = true;
 	}
 	void Add(int ticks, float time, char* map)
@@ -31,6 +29,5 @@ namespace Summary
 			map
 		});
 		TotalTicks += ticks;
-		TotalTime += time;
 	}
 }

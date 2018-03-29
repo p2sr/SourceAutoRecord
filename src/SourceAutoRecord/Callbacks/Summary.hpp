@@ -23,7 +23,7 @@ namespace Callbacks
 
 		if (sar_sum_during_session.GetBool()) {
 			int tick = Engine::GetTick();
-			Summary::Add(tick, tick * *Vars::interval_per_tick, *Vars::m_szLevelName);
+			Summary::Add(tick, Engine::GetTime(tick), *Vars::m_szLevelName);
 		}
 		Summary::IsRunning = false;
 	}
@@ -50,22 +50,23 @@ namespace Callbacks
 			Console::Print("(%.3f)\n", Summary::Items[i].Time);
 		}
 
+		float totalTime = Engine::GetTime(Summary::TotalTicks);
 		if (Summary::IsRunning) {
 			int tick = Engine::GetTick();
-			float time = tick * *Vars::interval_per_tick;
+			float time = Engine::GetTime(tick);
 			Console::PrintActive("%s -> ", *Vars::m_szLevelName);
 			Console::PrintActive("%i ticks ", tick);
 			Console::PrintActive("(%.3f)\n", time);
 			Console::Print("---------------\n");
 			Console::Print("Total Ticks: %i ", Summary::TotalTicks);
 			Console::PrintActive("(%i)\n", Summary::TotalTicks + tick);
-			Console::Print("Total Time: %.3f ", Summary::TotalTime);
-			Console::PrintActive("(%.3f)\n", Summary::TotalTime + time);
+			Console::Print("Total Time: %.3f ", totalTime);
+			Console::PrintActive("(%.3f)\n", totalTime + time);
 		}
 		else {
 			Console::Print("---------------\n");
 			Console::Print("Total Ticks: %i\n", Summary::TotalTicks);
-			Console::Print("Total Time: %.3f\n", Summary::TotalTime);
+			Console::Print("Total Time: %.3f\n", totalTime);
 		}
 	}
 }

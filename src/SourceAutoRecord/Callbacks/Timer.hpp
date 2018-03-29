@@ -34,12 +34,12 @@ namespace Callbacks
 
 		if (Timer::Average::IsEnabled) {
 			int tick = Timer::GetTick(*Vars::tickcount);
-			Timer::Average::Add(tick, tick * *Vars::interval_per_tick, *Vars::m_szLevelName);
+			Timer::Average::Add(tick, Engine::GetTime(tick), *Vars::m_szLevelName);
 		}
 	}
 	void PrintTimer() {
 		int tick = Timer::GetTick(*Vars::tickcount);
-		float time = tick * *Vars::interval_per_tick;
+		float time = Engine::GetTime(tick);
 
 		if (Timer::IsRunning) {
 			Console::PrintActive("Result: %i (%.3f)\n", tick, time);
@@ -84,7 +84,7 @@ namespace Callbacks
 		}
 
 		int tick = Timer::GetTick(Engine::GetTick());
-		Timer::CheckPoints::Add(tick, tick * *Vars::interval_per_tick, *Vars::m_szLevelName);
+		Timer::CheckPoints::Add(tick, Engine::GetTime(tick), *Vars::m_szLevelName);
 	}
 	void ClearCheckpoints() {
 		Timer::CheckPoints::Reset();
@@ -114,7 +114,7 @@ namespace Callbacks
 
 		if (!Timer::IsRunning) {
 			int tick = Timer::GetTick(*Vars::tickcount);
-			float time = tick * *Vars::interval_per_tick;
+			float time = Engine::GetTime(tick);
 			Console::Print("Result: %i (%.3f)\n", tick, time);
 		}
 	}

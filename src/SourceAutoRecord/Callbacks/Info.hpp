@@ -10,14 +10,14 @@ namespace Callbacks
 	void PrintSession()
 	{
 		int tick = Engine::GetTick();
-		Console::Print("Session Tick: %i (%.3f)\n", tick, tick * *Vars::interval_per_tick);
+		Console::Print("Session Tick: %i (%.3f)\n", tick, Engine::GetTime(tick));
 		if (*DemoRecorder::m_bRecording) {
 			tick = DemoRecorder::GetTick();
-			Console::Print("Demo Recorder Tick: %i (%.3f)\n", tick, tick * *Vars::interval_per_tick);
+			Console::Print("Demo Recorder Tick: %i (%.3f)\n", tick, Engine::GetTime(tick));
 		}
 		if (DemoPlayer::IsPlaying()) {
 			tick = DemoPlayer::GetTick();
-			Console::Print("Demo Player Tick: %i (%.3f)\n", tick, tick * *Vars::interval_per_tick);
+			Console::Print("Demo Player Tick: %i (%.3f)\n", tick, Engine::GetTime(tick));
 		}
 	}
 	void PrintAbout()

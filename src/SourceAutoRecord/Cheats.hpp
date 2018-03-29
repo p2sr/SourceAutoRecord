@@ -266,6 +266,7 @@ namespace Cheats
 		// From the game
 		cl_showpos = FindCvar("cl_showpos");
 		sv_cheats = FindCvar("sv_cheats");
+		sv_footsteps = FindCvar("sv_footsteps");
 
 		sv_bonus_challenge = FindCvar("sv_bonus_challenge");
 		sv_accelerate = FindCvar("sv_accelerate");

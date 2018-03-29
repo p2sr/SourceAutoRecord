@@ -6,6 +6,7 @@
 #include "Console.hpp"
 #include "DemoRecorder.hpp"
 #include "DemoPlayer.hpp"
+#include "Server.hpp"
 #include "Vars.hpp"
 
 #include "Features/Session.hpp"
@@ -45,6 +46,10 @@ namespace Engine
 	{
 		int result = *Vars::tickcount - Session::BaseTick;
 		return (result >= 0) ? result : 0;
+	}
+	float GetTime(int tick)
+	{
+		return tick * *Vars::interval_per_tick;
 	}
 	std::string GetDir()
 	{
@@ -89,6 +94,7 @@ namespace Engine
 			TAS::Start();
 		}
 
+		Server::StepSoundTime = 0;
 		IsInGame = true;
 	}
 	void SessionEnded()
@@ -97,19 +103,19 @@ namespace Engine
 			int tick = GetTick();
 
 			if (tick != 0) {
-				Console::Print("Session: %i (%.3f)\n", tick, tick * *Vars::interval_per_tick);
+				Console::Print("Session: %i (%.3f)\n", tick, Engine::GetTime(tick));
 				Session::LastSession = tick;
 			}
 
 			if (Summary::IsRunning) {
-				Summary::Add(tick, tick * *Vars::interval_per_tick, *Vars::m_szLevelName);
-				Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Summary::TotalTime);
+				Summary::Add(tick, Engine::GetTime(tick), *Vars::m_szLevelName);
+				Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::GetTime(Summary::TotalTicks));
 			}
 
 			if (Timer::IsRunning) {
 				if (sar_timer_always_running.GetBool()) {
 					Timer::Save(*Vars::tickcount);
-					Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Timer::TotalTicks * *Vars::interval_per_tick);
+					Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::GetTime(Timer::TotalTicks));
 				}
 				else {
 					Timer::Stop(*Vars::tickcount);
@@ -140,7 +146,7 @@ namespace Engine
 		int __cdecl Disconnect(void* thisptr, bool bShowMainMenu)
 		{
 			//Console::PrintActive("Disconnect!\n");
-			Console::PrintActive("Session ended (Disconnect)!\n");
+			//Console::PrintActive("Session ended (Disconnect)!\n");
 			SessionEnded();
 			return Original::Disconnect(thisptr, bShowMainMenu);
 		}
@@ -148,12 +154,13 @@ namespace Engine
 		{
 			//Console::PrintActive("SetSignonState = %i\n", state);
 			if (state != LastState && LastState == SignonState::Full) {
-				Console::PrintActive("Session ended (SetSignonState)!\n");
+				//Console::PrintActive("Session ended (SetSignonState)!\n");
 				SessionEnded();
 			}
 
 			// Demo recorder starts syncing from this tick
 			if (state == SignonState::Full) {
+				//Console::PrintActive("Session started!\n");
 				SessionStarted();
 			}
 
