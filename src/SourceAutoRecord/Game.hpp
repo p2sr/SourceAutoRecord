@@ -1,11 +1,15 @@
 #pragma once
 #include <unistd.h>
 
+#include "Games/Portal.hpp"
+#include "Games/Portal2.hpp"
+
 namespace Game
 {
 	enum SourceGame
 	{
-		Portal2		// Portal 2 7054
+		Portal2,	// Portal 2 7054
+		Portal		// Portal XXXX
 	};
 
 	SourceGame Version;
@@ -23,6 +27,13 @@ namespace Game
 
 		if (exe == "portal2_linux") {
 			Version = SourceGame::Portal2;
+			Portal2::Patterns();
+			Portal2::Offsets();
+		}
+		else if (exe == "portal_linux") {
+			Version = SourceGame::Portal;
+			Portal::Patterns();
+			Portal::Offsets();
 		}
 		else {
 			return false;
@@ -33,6 +44,8 @@ namespace Game
 		switch (Version) {
 		case 0:
 			return "Portal 2 (7054)";
+		case 1:
+			return "Portal (XXXX)";
 		}
 		return "Unknown";
 	}

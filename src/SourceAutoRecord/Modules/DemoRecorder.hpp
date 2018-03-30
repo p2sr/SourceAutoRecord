@@ -47,26 +47,24 @@ namespace DemoRecorder
 		void __cdecl SetSignonState(void* thisptr, int state)
 		{
 			//Console::PrintActive("SetSignonState = %i\n", state);
-			if (state == SignonState::Full) {
-				if (*m_bRecording) {
-					IsRecordingDemo = true;
-					CurrentDemo = std::string(m_szDemoBaseName);
-					if (*m_nDemoNumber > 1) {
-						CurrentDemo += "_" + std::to_string(*m_nDemoNumber);
-					}
+			if (state == SignonState::Full && *m_bRecording) {
+				IsRecordingDemo = true;
+				CurrentDemo = std::string(m_szDemoBaseName);
+				if (*m_nDemoNumber > 1) {
+					CurrentDemo += std::string("_") + std::to_string(*m_nDemoNumber);
 				}
 			}
 			Original::SetSignonState(thisptr, state);
 		}
 		int __cdecl StopRecording(void* thisptr)
 		{
-			//Console::PrintActive("StopRecording!\n");
+			Console::PrintActive("StopRecording!\n");
 			const int LastDemoNumber = *m_nDemoNumber;
 
 			// This function does:
 			//   m_bRecording = false
 			//   m_nDemoNumber = 0
-			int result = Original::StopRecording(thisptr);
+			auto result = Original::StopRecording(thisptr);
 
 			if (IsRecordingDemo && sar_autorecord.GetBool()) {
 				*m_nDemoNumber = LastDemoNumber;
@@ -75,6 +73,7 @@ namespace DemoRecorder
 				if (*Vars::m_bLoadgame) {
 					*m_bRecording = true;
 					(*m_nDemoNumber)++;
+					Console::DevMsg("SAR: Recording!");
 				}
 			}
 			else {

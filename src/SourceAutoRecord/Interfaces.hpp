@@ -21,9 +21,15 @@ namespace Interfaces
 
 	void* Get(const char* filename, const char* interface)
 	{
-		auto handle = dlopen(filename, RTLD_NOLOAD | RTLD_NOW);
+		auto module = MODULEINFO();
+		if (!GetModuleInformation(filename, &module)) {
+			Console::DevWarning("Failed to get module info for %s!\n", filename);
+			return nullptr;
+		}
+
+		auto handle = dlopen(module.modulePath, RTLD_NOLOAD | RTLD_NOW);
 		if (!handle) {
-			Console::DevWarning("Failed to open file %s!\n", filename);
+			Console::DevWarning("Failed to open module %s!\n", filename);
 			return nullptr;
 		}
 
@@ -47,16 +53,28 @@ namespace Interfaces
 	void Load()
 	{
 		if (Game::Version == Game::Portal2) {
-			IGameMovement = Get("./portal2/bin/server.so", "GameMovement001");
-			IVEngineClient = Get("./bin/engine.so", "VEngineClient015");
-			IInputSystem = Get("./bin/inputsystem.so", "InputSystemVersion001");
-			ISurface = Get("./bin/vguimatsurface.so", "VGUI_Surface031");
-			IEngineVGui = Get("./bin/engine.so", "VEngineVGui001");
-			IBaseClientDLL = Get("./portal2/bin/client.so", "VClient016");
-			IEngineTool = Get("./bin/engine.so", "VENGINETOOL003");
-			ISchemeManager = Get("./bin/vgui2.so", "VGUI_Scheme010");
-			IClientEntityList = Get("./portal2/bin/client.so", "VClientEntityList003");
-			IServerGameDLL = Get("./portal2/bin/server.so", "ServerGameDLL005");
+			IVEngineClient = Get("engine.so", "VEngineClient015");
+			IEngineVGui = Get("engine.so", "VEngineVGui001");
+			IEngineTool = Get("engine.so", "VENGINETOOL003");
+			IInputSystem = Get("inputsystem.so", "InputSystemVersion001");
+			ISurface = Get("vguimatsurface.so", "VGUI_Surface031");
+			ISchemeManager = Get("vgui2.so", "VGUI_Scheme010");
+			IBaseClientDLL = Get("client.so", "VClient016");
+			IClientEntityList = Get("client.so", "VClientEntityList003");
+			IGameMovement = Get("server.so", "GameMovement001");
+			IServerGameDLL = Get("server.so", "ServerGameDLL005");
+		}
+		else if (Game::Version == Game::Portal) {
+			IVEngineClient = Get("engine.so", "VEngineClient013");
+			IEngineVGui = Get("engine.so", "VEngineVGui001");
+			IEngineTool = Get("engine.so", "VENGINETOOL003");
+			IInputSystem = Get("inputsystem.so", "InputSystemVersion001");
+			ISurface = Get("vguimatsurface.so", "VGUI_Surface030");
+			ISchemeManager = Get("vgui2.so", "VGUI_Scheme010");
+			IBaseClientDLL = Get("client.so", "VClient017");
+			IClientEntityList = Get("client.so", "VClientEntityList003");
+			IGameMovement = Get("server.so", "GameMovement001");
+			IServerGameDLL = Get("server.so", "ServerGameDLL008");
 		}
 	}
 }

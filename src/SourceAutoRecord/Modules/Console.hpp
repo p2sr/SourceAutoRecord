@@ -20,21 +20,25 @@ namespace Console
 
 	bool Init()
 	{
-		auto tier0 = dlopen("./bin/libtier0.so", RTLD_NOLOAD | RTLD_NOW);
-		if (tier0) {
-			auto msgAddr = dlsym(tier0, "Msg");
-			auto colorMsgAddr = dlsym(tier0, "_Z11ConColorMsgRK5ColorPKcz");
-			auto warningAddr = dlsym(tier0, "Warning");
-			auto devMsgAddr = dlsym(tier0, "_Z6DevMsgPKcz");
-			auto devWarningAddr = dlsym(tier0, "_Z10DevWarningPKcz");
+		auto module = MODULEINFO();
+		if (GetModuleInformation("libtier0.so", &module)) {
+			auto tier0 = dlopen(module.modulePath, RTLD_NOLOAD | RTLD_NOW);
 
-			if (msgAddr && colorMsgAddr && warningAddr && devMsgAddr && devWarningAddr) {
-				Msg = reinterpret_cast<_Msg>(msgAddr);
-				ColorMsg = reinterpret_cast<_ColorMsg>(colorMsgAddr);
-				Warning = reinterpret_cast<_Warning>(warningAddr);
-				DevMsg = reinterpret_cast<_DevMsg>(devMsgAddr);
-				DevWarning = reinterpret_cast<_DevWarning>(devWarningAddr);
-				return true;
+			if (tier0) {
+				auto msgAddr = dlsym(tier0, "Msg");
+				auto colorMsgAddr = dlsym(tier0, "_Z11ConColorMsgRK5ColorPKcz");
+				auto warningAddr = dlsym(tier0, "Warning");
+				auto devMsgAddr = dlsym(tier0, "_Z6DevMsgPKcz");
+				auto devWarningAddr = dlsym(tier0, "_Z10DevWarningPKcz");
+
+				if (msgAddr && colorMsgAddr && warningAddr && devMsgAddr && devWarningAddr) {
+					Msg = reinterpret_cast<_Msg>(msgAddr);
+					ColorMsg = reinterpret_cast<_ColorMsg>(colorMsgAddr);
+					Warning = reinterpret_cast<_Warning>(warningAddr);
+					DevMsg = reinterpret_cast<_DevMsg>(devMsgAddr);
+					DevWarning = reinterpret_cast<_DevWarning>(devWarningAddr);
+					return true;
+				}
 			}
 		}
 		return false;

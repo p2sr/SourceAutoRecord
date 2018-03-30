@@ -40,13 +40,7 @@ namespace Tier1
 		std::unique_ptr<uint8_t[]> Blob;
 
 		ConCommand() {
-			size_t size = 0;
-
-			switch (Game::Version) {
-			case 0:
-				size = sizeof(ConCommandData);
-				break;
-			}
+			size_t size = sizeof(ConCommandData);
 
 			Blob = std::make_unique<uint8_t[]>(size);
 			Ptr = Blob.get();

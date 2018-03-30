@@ -79,6 +79,7 @@ struct MODULEINFO {
 	char moduleName[64];
 	uintptr_t lpBaseOfDll;
 	uintptr_t SizeOfImage;
+	char modulePath[4096];
 };
 
 namespace Cache
@@ -98,6 +99,7 @@ bool GetModuleInformation(const char* moduleName, MODULEINFO* moduleInfo) {
 
 			module.lpBaseOfDll = info->dlpi_addr + info->dlpi_phdr[0].p_paddr;
 			module.SizeOfImage = info->dlpi_phdr[0].p_memsz;
+			strcpy(module.modulePath, info->dlpi_name);
 			
 			Cache::Modules.push_back(module);
 			return 0;

@@ -90,13 +90,7 @@ namespace Tier1
 	ConVar CreateVar(const char* name, const char* value, int flags = 0, const char* helpstr = "", bool hasmin = false, float min = 0, bool hasmax = false, float max = 0)
 	{
 		ConVar cv;
-		size_t size = 0;
-
-		switch (Game::Version) {
-		case 0:
-			size = sizeof(ConVarData);
-			break;
-		}
+		size_t size = sizeof(ConVarData);
 
 		cv.Blob = std::make_unique<uint8_t[]>(size);
 		cv.Ptr = cv.Blob.get();

@@ -15,6 +15,7 @@
 #include "Features/TAS.hpp"
 #include "Features/Timer.hpp"
 
+#include "Game.hpp"
 #include "Interfaces.hpp"
 #include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
@@ -25,6 +26,7 @@ namespace Engine
 {
 	using _ClientCmd = int(__cdecl*)(void* thisptr, const char* szCmdString);
 	using _Disconnect = int(__cdecl*)(void* thisptr, int bShowMainMenu);
+	using _Disconnect2 = int(__cdecl*)(void* thisptr, int* unk1, char bShowMainMenu);
 	using _SetSignonState = int(__cdecl*)(void* thisptr, int state, int count);
 	using _GetLocalPlayer = int(__cdecl*)(void* thisptr);
 	using _GetViewAngles = int(__cdecl*)(void* thisptr, QAngle& va);
@@ -74,6 +76,7 @@ namespace Engine
 
 	void SessionStarted()
 	{
+		Console::PrintActive("m_bLoadgame = %i\n", *Vars::m_bLoadgame);
 		Session::Rebase(*Vars::tickcount);
 		Timer::Rebase(*Vars::tickcount);
 
@@ -136,6 +139,7 @@ namespace Engine
 	namespace Original
 	{
 		_Disconnect Disconnect;
+		_Disconnect2 Disconnect2;
 		_SetSignonState SetSignonState;
 	}
 
@@ -146,21 +150,28 @@ namespace Engine
 		int __cdecl Disconnect(void* thisptr, bool bShowMainMenu)
 		{
 			//Console::PrintActive("Disconnect!\n");
-			//Console::PrintActive("Session ended (Disconnect)!\n");
+			Console::PrintActive("Session ended (Disconnect)!\n");
 			SessionEnded();
 			return Original::Disconnect(thisptr, bShowMainMenu);
+		}
+		int __cdecl Disconnect2(void* thisptr, int* unk1, bool bShowMainMenu)
+		{
+			//Console::PrintActive("Disconnect!\n");
+			Console::PrintActive("Session ended (Disconnect)!\n");
+			SessionEnded();
+			return Original::Disconnect2(thisptr, unk1, bShowMainMenu);
 		}
 		int __cdecl SetSignonState(void* thisptr, int state, int count)
 		{
 			//Console::PrintActive("SetSignonState = %i\n", state);
 			if (state != LastState && LastState == SignonState::Full) {
-				//Console::PrintActive("Session ended (SetSignonState)!\n");
+				Console::PrintActive("Session ended (SetSignonState)!\n");
 				SessionEnded();
 			}
 
 			// Demo recorder starts syncing from this tick
 			if (state == SignonState::Full) {
-				//Console::PrintActive("Session started!\n");
+				Console::PrintActive("Session started!\n");
 				SessionStarted();
 			}
 
@@ -178,17 +189,30 @@ namespace Engine
 			GetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::GetViewAngles);
 			SetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::SetViewAngles);
 			Vars::GetGameDirectory = engine->GetOriginalFunction<Vars::_GetGameDirectory>(Offsets::GetGameDirectory);
-			
-			typedef void*(*_GetClientState)();
-			auto abs = GetAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientState);
-			auto GetClientState = reinterpret_cast<_GetClientState>(abs);
-			cl = std::make_unique<VMTHook>(GetClientState());
+
+			if (Offsets::GetClientStateFunction != 0) {
+				typedef void*(*_GetClientStateFunction)();
+				auto abs = GetAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientStateFunction);
+				auto GetClientState = reinterpret_cast<_GetClientStateFunction>(abs);
+				cl = std::make_unique<VMTHook>(GetClientState());
+			}
+			else {
+				auto ptr = **reinterpret_cast<void***>((uintptr_t)ClientCmd + Offsets::cl);
+				cl = std::make_unique<VMTHook>(ptr);
+			}
 
 			// Before Disconnect in VMT :^)
 			cl->HookFunction((void*)Detour::SetSignonState, Offsets::Disconnect - 1);
-			cl->HookFunction((void*)Detour::Disconnect, Offsets::Disconnect);
 			Original::SetSignonState = cl->GetOriginalFunction<_SetSignonState>(Offsets::Disconnect - 1);
-			Original::Disconnect = cl->GetOriginalFunction<_Disconnect>(Offsets::Disconnect);
+
+			if (Game::Version == Game::Portal2) {
+				cl->HookFunction((void*)Detour::Disconnect, Offsets::Disconnect);
+				Original::Disconnect = cl->GetOriginalFunction<_Disconnect>(Offsets::Disconnect);
+			}
+			else {
+				cl->HookFunction((void*)Detour::Disconnect2, Offsets::Disconnect);
+				Original::Disconnect2 = cl->GetOriginalFunction<_Disconnect2>(Offsets::Disconnect);
+			}
 
 			auto ProcessTick = cl->GetOriginalFunction<uintptr_t>(Offsets::ProcessTick);
 			Vars::tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
