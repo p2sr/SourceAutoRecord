@@ -53,10 +53,6 @@ namespace Engine
 	{
 		return tick * *Vars::interval_per_tick;
 	}
-	std::string GetDir()
-	{
-		return std::string(Vars::GetGameDirectory());
-	}
 	int GetPlayerIndex()
 	{
 		return GetLocalPlayer(engine->GetThisPtr());
@@ -193,11 +189,16 @@ namespace Engine
 			if (Offsets::GetClientStateFunction != 0) {
 				typedef void*(*_GetClientStateFunction)();
 				auto abs = GetAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientStateFunction);
-				auto GetClientState = reinterpret_cast<_GetClientStateFunction>(abs);
-				cl = std::make_unique<VMTHook>(GetClientState());
+				auto GetClientStateFunction = reinterpret_cast<_GetClientStateFunction>(abs);
+				cl = std::make_unique<VMTHook>(GetClientStateFunction());
 			}
 			else {
-				auto ptr = **reinterpret_cast<void***>((uintptr_t)ClientCmd + Offsets::cl);
+				auto module = MODULEINFO();
+				GetModuleInformation("engine.so", &module);
+				Console::PrintActive("%i\n", 0xAE9420);
+				//auto unk = engine->GetOriginalFunction<uintptr_t>(128);
+				//auto offset = *reinterpret_cast<int*>(unk + 6);
+				auto ptr = reinterpret_cast<void*>(0xAE9420 + module.lpBaseOfDll);
 				cl = std::make_unique<VMTHook>(ptr);
 			}
 
@@ -205,27 +206,60 @@ namespace Engine
 			cl->HookFunction((void*)Detour::SetSignonState, Offsets::Disconnect - 1);
 			Original::SetSignonState = cl->GetOriginalFunction<_SetSignonState>(Offsets::Disconnect - 1);
 
+			uintptr_t disconnect;
 			if (Game::Version == Game::Portal2) {
 				cl->HookFunction((void*)Detour::Disconnect, Offsets::Disconnect);
 				Original::Disconnect = cl->GetOriginalFunction<_Disconnect>(Offsets::Disconnect);
+				disconnect = (uintptr_t)Original::Disconnect;
 			}
 			else {
 				cl->HookFunction((void*)Detour::Disconnect2, Offsets::Disconnect);
 				Original::Disconnect2 = cl->GetOriginalFunction<_Disconnect2>(Offsets::Disconnect);
+				disconnect = (uintptr_t)Original::Disconnect2;
 			}
+
+			DemoPlayer::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demoplayer));
+			DemoRecorder::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demorecorder));
 
 			auto ProcessTick = cl->GetOriginalFunction<uintptr_t>(Offsets::ProcessTick);
 			Vars::tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
 			Vars::interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
-
-			DemoPlayer::Hook(**reinterpret_cast<void***>((uintptr_t)Original::Disconnect + Offsets::demoplayer));
-			DemoRecorder::Hook(**reinterpret_cast<void***>((uintptr_t)Original::Disconnect + Offsets::demorecorder));
 		}
 
 		if (Interfaces::IEngineTool) {
 			auto tool = std::make_unique<VMTHook>(Interfaces::IEngineTool);
 			auto GetCurrentMap = tool->GetOriginalFunction<uintptr_t>(Offsets::GetCurrentMap);
 			Vars::m_szLevelName = reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
+		}
+	}
+	void Unhook()
+	{
+		if (engine) {
+			engine->~VMTHook();
+			engine.release();
+			ClientCmd = nullptr;
+			GetLocalPlayer = nullptr;
+			GetViewAngles = nullptr;
+			SetViewAngles = nullptr;
+			Vars::GetGameDirectory = nullptr;
+
+			cl->UnhookFunction(Offsets::Disconnect - 1);
+			cl->UnhookFunction(Offsets::Disconnect);
+			cl->~VMTHook();
+			cl.release();
+			Original::SetSignonState = nullptr;
+			Original::Disconnect = nullptr;
+			Original::Disconnect2 = nullptr;
+
+			Vars::tickcount = nullptr;
+			Vars::interval_per_tick = nullptr;
+
+			DemoPlayer::Unhook();
+			DemoRecorder::Unhook();
+		}
+
+		if (Vars::m_szLevelName) {
+			Vars::m_szLevelName = nullptr;
 		}
 	}
 }

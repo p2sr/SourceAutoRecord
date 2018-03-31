@@ -9,18 +9,18 @@ namespace Tier1
 	_ConVar ConVarCtor;
 
 	struct ConVarData : ConCommandBase {
-		void* VTable_IConVar;
-		void* Parent;
-		const char* DefaultValue;
-		char* String;
-		int StringLength;
-		float FloatValue;
-		int IntValue;
-		bool HasMin;
-		float MinVal;
-		bool HasMax;
-		float MaxVal;
-		void* ChangeCallback;
+		void* VMT;
+		ConVarData* m_pParent;
+		const char* m_pszDefaultValue;
+		char* m_pszString;
+		int m_StringLength;
+		float m_fValue;
+		int m_nValue;
+		bool m_bHasMin;
+		float m_fMinVal;
+		bool m_bHasMax;
+		float m_fMaxVal;
+		void* m_fnChangeCallback;
 		int unk1;
 		int unk2;
 		int unk3;
@@ -53,16 +53,16 @@ namespace Tier1
 			return !!GetInt();
 		}
 		int GetInt() const {
-			return ((ConVarData*)Ptr)->IntValue;
+			return ((ConVarData*)Ptr)->m_nValue;
 		}
 		float GetFloat() const {
-			return ((ConVarData*)Ptr)->FloatValue;
+			return ((ConVarData*)Ptr)->m_fValue;
 		}
 		const char* GetString() const {
-			return ((ConVarData*)Ptr)->String;
+			return ((ConVarData*)Ptr)->m_pszString;
 		}
 		const int GetFlags() const {
-			return ((ConVarData*)Ptr)->Flags;
+			return ((ConVarData*)Ptr)->flags;
 		}
 		void SetValue(const char* value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetValue);
@@ -77,7 +77,7 @@ namespace Tier1
 			if (vf) ((_InternalSetIntValue)vf)(Ptr, value);
 		}
 		void SetFlags(int value) {
-			((ConVarData*)Ptr)->Flags = value;
+			((ConVarData*)Ptr)->flags = value;
 		}
 		void AddFlag(int value) {
 			SetFlags(GetFlags() | value);

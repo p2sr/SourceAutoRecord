@@ -2,9 +2,13 @@
 #include "Modules/ConCommand.hpp"
 #include "Modules/ConVar.hpp"
 #include "Modules/Cvar.hpp"
+#include "Modules/Tier1.hpp"
 
 #include "Callbacks.hpp"
 #include "Commands.hpp"
+#include "Interfaces.hpp"
+
+#include "Game.hpp"
 
 using namespace Commands;
 using namespace Cvar;
@@ -264,21 +268,21 @@ namespace Cheats
 			"Loads important SAR cvars.\n");
 
 		// From the game
-		cl_showpos = FindCvar("cl_showpos");
-		sv_cheats = FindCvar("sv_cheats");
-		sv_footsteps = FindCvar("sv_footsteps");
+		cl_showpos = GetConVar("cl_showpos");
+		sv_cheats = GetConVar("sv_cheats");
+		sv_footsteps = GetConVar("sv_footsteps");
 
-		sv_bonus_challenge = FindCvar("sv_bonus_challenge");
-		sv_accelerate = FindCvar("sv_accelerate");
-		sv_airaccelerate = FindCvar("sv_airaccelerate");
-		sv_friction = FindCvar("sv_friction");
-		sv_maxspeed = FindCvar("sv_maxspeed");
-		sv_stopspeed = FindCvar("sv_stopspeed");
-		sv_maxvelocity = FindCvar("sv_maxvelocity");
-		sv_transition_fade_time = FindCvar("sv_transition_fade_time");
-		sv_laser_cube_autoaim = FindCvar("sv_laser_cube_autoaim");
-		ui_loadingscreen_transition_time = FindCvar("ui_loadingscreen_transition_time");
-		hide_gun_when_holding = FindCvar("hide_gun_when_holding");
+		sv_bonus_challenge = GetConVar("sv_bonus_challenge");
+		sv_accelerate = GetConVar("sv_accelerate");
+		sv_airaccelerate = GetConVar("sv_airaccelerate");
+		sv_friction = GetConVar("sv_friction");
+		sv_maxspeed = GetConVar("sv_maxspeed");
+		sv_stopspeed = GetConVar("sv_stopspeed");
+		sv_maxvelocity = GetConVar("sv_maxvelocity");
+		sv_transition_fade_time = GetConVar("sv_transition_fade_time");
+		sv_laser_cube_autoaim = GetConVar("sv_laser_cube_autoaim");
+		ui_loadingscreen_transition_time = GetConVar("ui_loadingscreen_transition_time");
+		hide_gun_when_holding = GetConVar("hide_gun_when_holding");
 
 		Console::DevMsg("SAR: Created %i ConVars and %i ConCommands!\n", Tier1::ConVarCount, Tier1::ConCommandCount);
 	}
@@ -289,19 +293,20 @@ namespace Cheats
 	}
 	void UnlockAll()
 	{
-		// Challenge mode will reset every cheat automatically
-		// Flagging this as a cheat would break cm. I think
-		// it's impossible to abuse this anyway
-		Unlock(sv_bonus_challenge, false);
-
 		Unlock(sv_accelerate);
 		Unlock(sv_airaccelerate);
 		Unlock(sv_friction);
 		Unlock(sv_maxspeed);
 		Unlock(sv_stopspeed);
 		Unlock(sv_maxvelocity);
+		Unlock(sv_footsteps);
 
 		if (Game::Version == Game::Portal2) {
+			// Challenge mode will reset every cheat automatically
+			// Flagging this as a cheat would break cm. I think
+			// it's impossible to abuse this anyway
+			Unlock(sv_bonus_challenge, false);
+
 			Unlock(sv_transition_fade_time);
 			Unlock(sv_laser_cube_autoaim);
 			Unlock(ui_loadingscreen_transition_time);

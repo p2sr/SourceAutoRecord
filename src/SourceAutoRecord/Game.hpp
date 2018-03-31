@@ -30,7 +30,7 @@ namespace Game
 			Portal2::Patterns();
 			Portal2::Offsets();
 		}
-		else if (exe == "portal_linux") {
+		else if (exe == "hl2_linux") {
 			Version = SourceGame::Portal;
 			Portal::Patterns();
 			Portal::Offsets();
@@ -45,7 +45,7 @@ namespace Game
 		case 0:
 			return "Portal 2 (7054)";
 		case 1:
-			return "Portal (XXXX)";
+			return "Portal (1910503)";
 		}
 		return "Unknown";
 	}

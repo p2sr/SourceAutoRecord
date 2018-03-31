@@ -107,7 +107,7 @@ bool GetModuleInformation(const char* moduleName, MODULEINFO* moduleInfo) {
 	}
 
 	for (MODULEINFO& item: Cache::Modules) {
-		if (!strcasestr(item.moduleName, moduleName))
+		if (strcmp(item.moduleName, moduleName) != 0)
 			continue;
 		*moduleInfo = item;
 		return true;

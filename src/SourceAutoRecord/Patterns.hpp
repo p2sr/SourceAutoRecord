@@ -42,7 +42,6 @@ namespace Patterns
 	}
 	void Init()
 	{
-		Create("engine.so", "CvarPtr");
 		Create("engine.so", "ConVar_Ctor3");
 		Create("engine.so", "ConCommand_Ctor1");
 		Create("engine.so", "ConCommand_Ctor2");

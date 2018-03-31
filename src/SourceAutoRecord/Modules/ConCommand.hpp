@@ -11,17 +11,19 @@ namespace Tier1
 
 	struct ConCommandData : ConCommandBase {
 		union {
-			void* CommandCallbackV1;
-			void* CommandCallback;
-			void* CommandCallbackInterface;
+			void* m_fnCommandCallbackV1;
+			void* m_fnCommandCallback;
+			void* m_pCommandCallback;
 		};
+
 		union {
-			void* CompletionCallback;
-			void* CommandCompletionCallback;
+			void* m_fnCompletionCallback;
+			void* m_pCommandCompletionCallback;
 		};
-		bool HasCompletionCallback : 1;
-		bool UsingNewCommandCallback : 1;
-		bool UsingCommandCallbackInterface : 1;
+
+		bool m_bHasCompletionCallback : 1;
+		bool m_bUsingNewCommandCallback : 1;
+		bool m_bUsingCommandCallbackInterface : 1;
 	};
 
 	bool ConCommandLoaded()

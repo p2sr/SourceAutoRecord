@@ -83,17 +83,35 @@ namespace DemoRecorder
 			return result;
 		}
 	}
-	void Hook(void* ptr)
+	void Hook(void* demorecorder)
 	{
-		s_ClientDemoRecorder = std::make_unique<VMTHook>(ptr);
-		s_ClientDemoRecorder->HookFunction((void*)Detour::SetSignonState, Offsets::SetSignonState);
-		s_ClientDemoRecorder->HookFunction((void*)Detour::StopRecording, Offsets::StopRecording);
-		Original::SetSignonState = s_ClientDemoRecorder->GetOriginalFunction<_SetSignonState>(Offsets::SetSignonState);
-		Original::StopRecording = s_ClientDemoRecorder->GetOriginalFunction<_StopRecording>(Offsets::StopRecording);
+		if (demorecorder) {
+			s_ClientDemoRecorder = std::make_unique<VMTHook>(demorecorder);
+			s_ClientDemoRecorder->HookFunction((void*)Detour::SetSignonState, Offsets::SetSignonState);
+			s_ClientDemoRecorder->HookFunction((void*)Detour::StopRecording, Offsets::StopRecording);
+			Original::SetSignonState = s_ClientDemoRecorder->GetOriginalFunction<_SetSignonState>(Offsets::SetSignonState);
+			Original::StopRecording = s_ClientDemoRecorder->GetOriginalFunction<_StopRecording>(Offsets::StopRecording);
 
-		GetRecordingTick = s_ClientDemoRecorder->GetOriginalFunction<_GetRecordingTick>(Offsets::GetRecordingTick);
-		m_szDemoBaseName = reinterpret_cast<char*>((uintptr_t)ptr + Offsets::m_szDemoBaseName);
-		m_nDemoNumber = reinterpret_cast<int*>((uintptr_t)ptr + Offsets::m_nDemoNumber);
-		m_bRecording = reinterpret_cast<bool*>((uintptr_t)ptr + Offsets::m_bRecording);
+			GetRecordingTick = s_ClientDemoRecorder->GetOriginalFunction<_GetRecordingTick>(Offsets::GetRecordingTick);
+			m_szDemoBaseName = reinterpret_cast<char*>((uintptr_t)demorecorder + Offsets::m_szDemoBaseName);
+			m_nDemoNumber = reinterpret_cast<int*>((uintptr_t)demorecorder + Offsets::m_nDemoNumber);
+			m_bRecording = reinterpret_cast<bool*>((uintptr_t)demorecorder + Offsets::m_bRecording);
+		}
+	}
+	void Unhook()
+	{
+		if (s_ClientDemoRecorder) {
+			s_ClientDemoRecorder->UnhookFunction(Offsets::SetSignonState);
+			s_ClientDemoRecorder->UnhookFunction(Offsets::StopRecording);
+			s_ClientDemoRecorder->~VMTHook();
+			s_ClientDemoRecorder.release();
+			Original::SetSignonState = nullptr;
+			Original::StopRecording = nullptr;
+
+			GetRecordingTick = nullptr;
+			m_szDemoBaseName = nullptr;
+			m_nDemoNumber = nullptr;
+			m_bRecording = nullptr;
+		}
 	}
 }

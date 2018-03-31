@@ -32,9 +32,13 @@ namespace Callbacks
 			name = std::string(args.At(1));
 		}
 
+		DemoParser parser;
+		parser.outputMode = sar_time_demo_dev.GetInt();
+
 		Demo demo;
-		if (demo.Parse(Engine::GetDir() + std::string("/") + name, sar_time_demo_dev.GetInt())) {
-			demo.Fix();
+		auto dir = std::string(Vars::GetGameDirectory()) + std::string("/") + name;
+		if (parser.Parse(dir, &demo)) {
+			parser.Adjust(&demo);
 			Console::Print("Demo: %s\n", name.c_str());
 			Console::Print("Client: %s\n", demo.clientName);
 			Console::Print("Map: %s\n", demo.mapName);
@@ -57,16 +61,17 @@ namespace Callbacks
 		int totalTicks = 0;
 		float totalTime = 0;
 		bool printTotal = false;
+		DemoParser parser;
 
 		std::string name;
-		std::string dir = Engine::GetDir() + std::string("/");
+		std::string dir = std::string(Vars::GetGameDirectory()) + std::string("/");
 		for (int i = 1; i < args.Count(); i++)
 		{
 			name = std::string(args.At(i));
 
 			Demo demo;
-			if (demo.Parse(dir + name)) {
-				demo.Fix();
+			if (parser.Parse(dir + name, &demo)) {
+				parser.Adjust(&demo);
 				Console::Print("Demo: %s\n", name.c_str());
 				Console::Print("Client: %s\n", demo.clientName);
 				Console::Print("Map: %s\n", demo.mapName);

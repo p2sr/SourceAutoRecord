@@ -83,4 +83,19 @@ namespace Client
 			GetClientEntity = s_EntityList->GetOriginalFunction<_GetClientEntity>(Offsets::GetClientEntity);
 		}
 	}
+	void Unhook()
+	{
+		if (clientdll) {
+			clientdll->UnhookFunction(Offsets::HudUpdate);
+			clientdll->~VMTHook();
+			clientdll.release();
+			Original::HudUpdate = nullptr;
+		}
+
+		if (s_EntityList) {
+			s_EntityList->~VMTHook();
+			s_EntityList.release();
+			GetClientEntity = nullptr;
+		}
+	}
 }

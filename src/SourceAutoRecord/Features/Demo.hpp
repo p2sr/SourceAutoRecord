@@ -6,53 +6,50 @@
 
 #include "Modules/Console.hpp"
 
-#define DEMO_HEADER_ID "HL2DEMO"
-#define DEMO_PROTOCOL 4
-#define	MAX_OSPATH 260	
-#define MAX_SPLITSCREEN_CLIENTS 2
-
-enum DemoMessageType {
-	SignOn = 1,
-	Packet,
-	SyncTick,
-	ConsoleCmd,
-	UserCmd,
-	DataTables,
-	Stop,
-	CustomData,
-	StringTables
-};
-
 class Demo
 {
 public:
 	char demoFileStamp[8];
 	int32_t demoProtocol;
 	int32_t networkProtocol;
-	char serverName[MAX_OSPATH];
-	char clientName[MAX_OSPATH];
-	char mapName[MAX_OSPATH];
-	char gameDirectory[MAX_OSPATH];
+	char serverName[260];
+	char clientName[260];
+	char mapName[260];
+	char gameDirectory[260];
 	float playbackTime;
 	int32_t playbackTicks;
 	int32_t playbackFrames;
 	int32_t signOnLength;
-private:
 	std::vector<int32_t> messageTicks;
 
 public:
-	int32_t GetLastTick() {
+	int32_t GetLastTick()
+	{
 		return messageTicks.back();
 	}
-	float IntervalPerTick() {
+	float IntervalPerTick()
+	{
 		return playbackTime / playbackTicks;
 	}
-	void Fix() {
-		float ipt = IntervalPerTick();
-		playbackTicks = GetLastTick();
-		playbackTime = ipt * playbackTicks;
+};
+
+// Basic demo parser to handle Portal and Portal 2 demos
+class DemoParser
+{
+public:
+	bool headerOnly;
+	int outputMode;
+	bool hasAlignmentByte = true;
+	int maxSplitScreenClients = 2;
+
+	void Adjust(Demo* demo)
+	{
+		float ipt = demo->IntervalPerTick();
+		demo->playbackTicks = demo->GetLastTick();
+		demo->playbackTime = ipt * demo->playbackTicks;
 	}
-	bool Parse(std::string filePath, int outputMode = 0, bool headerOnly = false) {
+	bool Parse(std::string filePath, Demo* demo)
+	{
 		try {
 			if (filePath.substr(filePath.length() - 4, 4) != ".dem") filePath += ".dem";
 
@@ -61,41 +58,42 @@ public:
 			std::ifstream file(filePath, std::ios::in | std::ios::binary);
 			if (!file.good()) return false;
 
-			file.read(demoFileStamp, sizeof(demoFileStamp));
-			if (strcmp(demoFileStamp, DEMO_HEADER_ID)) return false;
-			file.read((char*)&demoProtocol, sizeof(demoProtocol));
-			if (demoProtocol != DEMO_PROTOCOL) return false;
-			file.read((char*)&networkProtocol, sizeof(networkProtocol));
-			file.read(serverName, sizeof(serverName));
-			file.read(clientName, sizeof(clientName));
-			file.read(mapName, sizeof(mapName));
-			file.read(gameDirectory, sizeof(gameDirectory));
-			file.read((char*)&playbackTime, sizeof(playbackTime));
-			file.read((char*)&playbackTicks, sizeof(playbackTicks));
-			file.read((char*)&playbackFrames, sizeof(playbackFrames));
-			file.read((char*)&signOnLength, sizeof(signOnLength));
+			file.read(demo->demoFileStamp, sizeof(demo->demoFileStamp));
+			file.read((char*)&demo->demoProtocol, sizeof(demo->demoProtocol));
+			file.read((char*)&demo->networkProtocol, sizeof(demo->networkProtocol));
+			file.read(demo->serverName, sizeof(demo->serverName));
+			file.read(demo->clientName, sizeof(demo->clientName));
+			file.read(demo->mapName, sizeof(demo->mapName));
+			file.read(demo->gameDirectory, sizeof(demo->gameDirectory));
+			file.read((char*)&demo->playbackTime, sizeof(demo->playbackTime));
+			file.read((char*)&demo->playbackTicks, sizeof(demo->playbackTicks));
+			file.read((char*)&demo->playbackFrames, sizeof(demo->playbackFrames));
+			file.read((char*)&demo->signOnLength, sizeof(demo->signOnLength));
 
 			if (!headerOnly) {
+				if (demo->demoProtocol != 4) {
+					hasAlignmentByte = false;
+					maxSplitScreenClients = 1;
+				}
+
 				while (!file.eof() && !file.bad()) {
 					unsigned char cmd;
 					int32_t tick;
-					unsigned char tag;
 
 					file.read((char*)&cmd, sizeof(cmd));
-					auto type = (DemoMessageType)cmd;
-					if (type == DemoMessageType::Stop)
+					if (cmd == 0x07) // Stop
 						break;
 
 					file.read((char*)&tick, sizeof(tick));
-					if (tick >= 0) messageTicks.push_back(tick);
-					file.read((char*)&tag, sizeof(tag));
+					if (tick >= 0) demo->messageTicks.push_back(tick);
+					if (hasAlignmentByte) file.ignore(1);
 
-					switch (type) {
-					case DemoMessageType::SignOn:
-					case DemoMessageType::Packet:
+					switch (cmd) {
+					case 0x01: // SignOn
+					case 0x02: // Packet
 						{
 							if (outputMode == 2) {
-								for (size_t i = 0; i < MAX_SPLITSCREEN_CLIENTS; i++)
+								for (int i = 0; i < maxSplitScreenClients; i++)
 								{
 									if (i >= 1) {
 										file.ignore(76);
@@ -134,7 +132,7 @@ public:
 								file.read((char*)&out_seq, sizeof(out_seq));
 							}
 							else {
-								file.ignore((MAX_SPLITSCREEN_CLIENTS * 76) + 4 + 4);
+								file.ignore((maxSplitScreenClients * 76) + 4 + 4);
 							}
 
 							int32_t length;
@@ -142,9 +140,9 @@ public:
 							file.ignore(length);
 							break;
 						}
-					case DemoMessageType::SyncTick:
+					case 0x03: // SyncTick
 						continue;
-					case DemoMessageType::ConsoleCmd:
+					case 0x04: // ConsoleCmd:
 						{
 							int32_t length;
 							file.read((char*)&length, sizeof(length));
@@ -158,7 +156,7 @@ public:
 							}
 							break;
 						}
-					case DemoMessageType::UserCmd:
+					case 0x05: // UserCmd:
 						{
 							int32_t cmd;
 							int32_t length;
@@ -167,24 +165,31 @@ public:
 							file.ignore(length);
 							break;
 						}
-					case DemoMessageType::DataTables:
+					case 0x06: // DataTables:
 						{
 							int32_t length;
 							file.read((char*)&length, sizeof(length));
 							file.ignore(length);
 							break;
 						}
-					case DemoMessageType::CustomData:
+					case 0x08: // CustomData or StringTables
 						{
-							int32_t idk;
-							int32_t length;
-							file.read((char*)&idk, sizeof(idk));
-							file.read((char*)&length, sizeof(length));
-							file.ignore(length);
+							if (demo->demoProtocol == 4) {
+								int32_t unk;
+								int32_t length;
+								file.read((char*)&unk, sizeof(unk));
+								file.read((char*)&length, sizeof(length));
+								file.ignore(length);
+							} else {
+								int32_t length;
+								file.read((char*)&length, sizeof(length));
+								file.ignore(length);
+							}
 							break;
 						}
-					case DemoMessageType::StringTables:
+					case 0x09: // StringTables
 						{
+							if (demo->demoProtocol != 4) return false;
 							int32_t length;
 							file.read((char*)&length, sizeof(length));
 							file.ignore(length);

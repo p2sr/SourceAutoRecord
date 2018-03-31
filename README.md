@@ -30,6 +30,7 @@
 - Portal 2
 - Aperture Tag
 - Portal Stories: Mel
+- Portal
 
 ## Features
 
@@ -113,17 +114,18 @@
 - `sar_teleport_setpos` saves current location for teleportation
 
 ##### Unlocked
-- `sv_bonus_challenge`
+- `sv_bonus_challenge` (Portal 2)
 - `sv_accelerate`*
 - `sv_airaccelerate`*
 - `sv_friction`*
 - `sv_maxspeed`*
 - `sv_stopspeed`*
 - `sv_maxvelocity`*
-- `sv_transition_fade_time`*
-- `sv_laser_cube_autoaim`*
-- `ui_loadingscreen_transition_time`*
-- `hide_gun_when_holding`
+- `sv_footsteps`*
+- `sv_transition_fade_time` (Portal 2)*
+- `sv_laser_cube_autoaim` (Portal 2)*
+- `ui_loadingscreen_transition_time` (Portal 2)*
+- `hide_gun_when_holding` (Portal 2)
 
 *Flagged as cheat.
 

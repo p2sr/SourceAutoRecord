@@ -9,7 +9,9 @@ namespace Config
 
 	bool Save()
 	{
-		std::ofstream file(Engine::GetDir() + FilePath, std::ios::out | std::ios::trunc);
+		if (Vars::GetGameDirectory == nullptr) return false;
+
+		std::ofstream file(std::string(Vars::GetGameDirectory()) + FilePath, std::ios::out | std::ios::trunc);
 		if (!file.good()) return false;
 
 		auto spacing = sar_hud_default_spacing.GetInt();
@@ -29,7 +31,9 @@ namespace Config
 	}
 	bool Load()
 	{
-		std::ifstream file(Engine::GetDir() + FilePath, std::ios::in);
+		if (Vars::GetGameDirectory == nullptr) return false;
+
+		std::ifstream file(std::string(Vars::GetGameDirectory()) + FilePath, std::ios::in);
 		if (!file.good()) return false;
 
 		Engine::ExecuteCommand("exec _sar_cvars.cfg");

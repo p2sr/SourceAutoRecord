@@ -11,13 +11,13 @@ namespace Tier1
 		ConCommandArgs(const void* ptr) : Ptr(ptr) {
 		}
 		int Count() const {
-			return ((const ConCommandArgsData*)Ptr)->ArgC;
+			return ((const CCommand*)Ptr)->m_nArgc;
 		}
 		const char* At(int index) const {
-			return ((const ConCommandArgsData*)Ptr)->ArgV[index];
+			return ((const CCommand*)Ptr)->m_ppArgv[index];
 		}
 		const char* FullArgs() const {
-			return ((const ConCommandArgsData*)Ptr)->ArgSBuffer;
+			return ((const CCommand*)Ptr)->m_pArgSBuffer;
 		}
 	};
 }

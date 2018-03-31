@@ -20,23 +20,23 @@ namespace Tier1
 	int ConVarCount = 0;
 
 	struct ConCommandBase {
-		void* VTable_ConCommandBase;
-		ConCommandBase* Next;
-		bool Registered;
-		const char* Name;
-		const char* HelpString;
-		int Flags;
+		void* VMT;
+		ConCommandBase* m_pNext;
+		bool m_bRegistered;
+		const char* m_pszName;
+		const char* m_pszHelpString;
+		int flags;
 	};
 
-	struct ConCommandArgsData {
+	struct CCommand {
 		enum {
 			COMMAND_MAX_ARGC = 64,
 			COMMAND_MAX_LENGTH = 512,
 		};
-		int ArgC;
-		int ArgV0Size;
-		char ArgSBuffer[COMMAND_MAX_LENGTH];
-		char ArgVBuffer[COMMAND_MAX_LENGTH];
-		const char* ArgV[COMMAND_MAX_ARGC];
+		int m_nArgc;
+		int m_nArgv0Size;
+		char m_pArgSBuffer[COMMAND_MAX_LENGTH];
+		char m_pArgvBuffer[COMMAND_MAX_LENGTH];
+		const char* m_ppArgv[COMMAND_MAX_ARGC];
 	};
 }

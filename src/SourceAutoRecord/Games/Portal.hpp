@@ -15,35 +15,29 @@ namespace Portal
 		// engine.so
 
 
-		// \x55\x89\xE5\x57\x31\xFF\x56\x53\x81\xEC\x00\x00\x00\x00\xC7\x45\x00\x00\x00\x00\x00\xA1\x00\x00\x00\x00\xC7\x45\x00\x00\x00\x00\x00\xC7\x85\x00\x00\x00\x00\x00\x00\x00\x00\x8B\x75\x00 xxxxxxxxxx????xx?????x????xx?????xx????????xx?
-		Add("CvarPtr", "Portal Build XXXX",
-			"CBaseClientState::ProcessGetCvarValue",
-			"55 89 E5 57 31 FF 56 53 81 EC ? ? ? ? C7 45 ? ? ? ? ? A1 ? ? ? ? C7 45 ? ? ? ? ? C7 85 ? ? ? ? ? ? ? ? 8B 75 ? ",
-			263);
-
 		// \x55\x89\xE5\x53\x83\xEC\x00\x8B\x5D\x00\x8B\x45\x00\xC6\x43\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x03\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\x89\x44\x24\x00\x0F\xB6\x45\x00 xxxxxx?xx?xx?xx??xx?????xx?????xx?????xx?????xx????xx?????xxx?xxx?
-		Add("ConVar_Ctor3", "Portal Build XXXX",
+		Add("ConVar_Ctor3", "Portal Build 1910503",
 			"ConVar",
 			"55 89 E5 53 83 EC ? 8B 5D ? 8B 45 ? C6 43 ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 03 ? ? ? ? C7 43 ? ? ? ? ? 89 44 24 ? 0F B6 45 ? ");
 
 		// \x55\xB9\x00\x00\x00\x00\x89\xE5\x53\x83\xEC\x00\x8B\x5D\x00\x8B\x45\x00\x8B\x55\x00\xC6\x43\x00\x00\x89\x43\x00\x0F\xB6\x43\x00\x85\xD2 xx????xxxxx?xx?xx?xx?xx??xx?xxx?xx
-		Add("ConCommand_Ctor1", "Portal Build XXXX",
+		Add("ConCommand_Ctor1", "Portal Build 1910503",
 			"ConCommand",
 			"55 B9 ? ? ? ? 89 E5 53 83 EC ? 8B 5D ? 8B 45 ? 8B 55 ? C6 43 ? ? 89 43 ? 0F B6 43 ? 85 D2 ");
 
 		// \x55\xB9\x00\x00\x00\x00\x89\xE5\x53\x83\xEC\x00\x8B\x5D\x00\x8B\x45\x00\x8B\x55\x00\xC6\x43\x00\x00\x89\x43\x00\x0F\xB6\x43\x00\xC7\x43\x00\x00\x00\x00\x00 xx????xxxxx?xx?xx?xx?xx??xx?xxx?xx?????
-		Add("ConCommand_Ctor2", "Portal Build XXXX",
+		Add("ConCommand_Ctor2", "Portal Build 1910503",
 			"ConCommand",
 			"55 B9 ? ? ? ? 89 E5 53 83 EC ? 8B 5D ? 8B 45 ? 8B 55 ? C6 43 ? ? 89 43 ? 0F B6 43 ? C7 43 ? ? ? ? ? ");
 
 		// \x55\x89\xE5\x57\x56\x53\x83\xEC\x00\x8B\x5D\x00\x89\x1C\x24\xE8\x00\x00\x00\x00\xC7\x04\x24\x00\x00\x00\x00 xxxxxxxx?xx?xxxx????xxx????
-		Add("m_bLoadgame", "Portal Build XXXX",
+		Add("m_bLoadgame", "Portal Build 1910503",
 			"CGameClient::ActivatePlayer",
 			"55 89 E5 57 56 53 83 EC ? 8B 5D ? 89 1C 24 E8 ? ? ? ? C7 04 24 ? ? ? ? ",
 			34);
 
 		// \x55\x89\xE5\x83\xEC\x00\x89\x5D\x00\x8B\x5D\x00\x89\x75\x00\x8B\x75\x00\x89\x7D\x00\x83\xFB\x00\x74\x00 xxxxx?xx?xx?xx?xx?xx?xx?x?
-		Add("Key_SetBinding", "Portal Build XXXX",
+		Add("Key_SetBinding", "Portal Build 1910503",
 			"Key_SetBinding",
 			"55 89 E5 83 EC ? 89 5D ? 8B 5D ? 89 75 ? 8B 75 ? 89 7D ? 83 FB ? 74 ? ");
 
@@ -52,12 +46,12 @@ namespace Portal
 
 
 		// \x55\x89\xE5\x53\x83\xEC\x00\x80\x3D\x00\x00\x00\x00\x00\x8B\x5D\x00\x0F\x84\x00\x00\x00\x00 xxxxxx?xx?????xx?xx????
-		Add("StartDrawing", "Portal Build XXXX",
+		Add("StartDrawing", "Portal Build 1910503",
 			"CMatSystemSurface::StartDrawing",
 			"55 89 E5 53 83 EC ? 80 3D ? ? ? ? ? 8B 5D ? 0F 84 ? ? ? ? ");
 
 		// \x55\x89\xE5\x53\x83\xEC\x00\xC7\x04\x24\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xA1\x00\x00\x00\x00 xxxxxx?xxx????x????x????
-		Add("FinishDrawing", "Portal Build XXXX",
+		Add("FinishDrawing", "Portal Build 1910503",
 			"CMatSystemSurface::FinishDrawing",
 			"55 89 E5 53 83 EC ? C7 04 24 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? ");
 	}
@@ -88,12 +82,9 @@ namespace Portal
 		IsPlayingBack = 7; // CDemoPlayer
 		m_szFileName = 4; // CDemoPlayer::SkipToTick
 		Paint = 14; // CEngineVGui
-
-		// TODO
 		ProcessTick = 12; // CClientState
-		tickcount = 73; // CClientState::ProcessTick
-		interval_per_tick = 81; // CClientState::ProcessTick
-
+		tickcount = 76; // CClientState::ProcessTick
+		interval_per_tick = 84; // CClientState::ProcessTick
 		Disconnect = 34; //  CClientState
 		demoplayer = 151; // CClientState::Disconnect
 		demorecorder = 164; // CClientState::Disconnect
@@ -138,11 +129,5 @@ namespace Portal
 		m_vecAbsOrigin = 588; // C_BasePlayer::GetAbsOrigin
 		m_angAbsRotation = 600; // C_BasePlayer::GetAbsAngles
 		GetClientEntity = 3; // IClientEntityList
-
-
-		// libvstdlib.so
-
-
-		m_pConCommandList = 48; // CCvar::RegisterConCommand
 	}
 }

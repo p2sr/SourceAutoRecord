@@ -18,6 +18,7 @@ namespace Interfaces
 	void* ISchemeManager;
 	void* IClientEntityList;
 	void* IServerGameDLL;
+	void* ICVar;
 
 	void* Get(const char* filename, const char* interface)
 	{
@@ -35,7 +36,7 @@ namespace Interfaces
 
 		auto factory = dlsym(handle, "CreateInterface");
 		if (!factory) {
-			Console::DevWarning("Failed to find symbol CreateInterface in %s!\n", filename);
+			Console::DevWarning("Failed to find symbol CreateInterface in %s!\n", module.modulePath);
 			return nullptr;
 		}
 
@@ -63,6 +64,7 @@ namespace Interfaces
 			IClientEntityList = Get("client.so", "VClientEntityList003");
 			IGameMovement = Get("server.so", "GameMovement001");
 			IServerGameDLL = Get("server.so", "ServerGameDLL005");
+			ICVar = Get("libvstdlib.so", "VEngineCvar007");
 		}
 		else if (Game::Version == Game::Portal) {
 			IVEngineClient = Get("engine.so", "VEngineClient013");
@@ -75,6 +77,7 @@ namespace Interfaces
 			IClientEntityList = Get("client.so", "VClientEntityList003");
 			IGameMovement = Get("server.so", "GameMovement001");
 			IServerGameDLL = Get("server.so", "ServerGameDLL008");
+			ICVar = Get("libvstdlib.so", "VEngineCvar004");
 		}
 	}
 }

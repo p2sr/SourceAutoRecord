@@ -35,4 +35,16 @@ namespace InputSystem
 			KeySetBinding = reinterpret_cast<_KeySetBinding>(ksb.Address);
 		}
 	}
+	void Unhook()
+	{
+		if (g_InputSystem) {
+			g_InputSystem->~VMTHook();
+			g_InputSystem.release();
+			StringToButtonCode = nullptr;
+		}
+
+		if (KeySetBinding) {
+			KeySetBinding = nullptr;
+		}
+	}
 }

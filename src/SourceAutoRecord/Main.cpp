@@ -29,12 +29,13 @@ int __attribute__((constructor)) Main()
 	if (!Console::Init()) return 1;
 
 	if (Game::IsSupported()) {
+
+		Interfaces::Load();
+
 		if (Cvar::Loaded() && Tier1::ConCommandLoaded() && Tier1::ConVarLoaded()) {
 
 			Cheats::Create();
 			Cheats::UnlockAll();
-
-			Interfaces::Load();
 
 			Client::Hook();
 			Engine::Hook();
@@ -60,4 +61,18 @@ int __attribute__((constructor)) Main()
 
 	Console::Warning("SAR: Failed to load SourceAutoRecord!\n");
 	return 1;
+}
+
+// TODO
+void __attribute__((destructor)) Exit()
+{
+	Client::Unhook();
+	Engine::Unhook();
+	InputSystem::Unhook();
+	Scheme::Unhook();
+	Server::Unhook();
+	Surface::Unhook();
+	Vars::Unhook();
+	VGui::Unhook();
+	Console::PrintActive("Unloaded SourceAutoRecord!\n");
 }

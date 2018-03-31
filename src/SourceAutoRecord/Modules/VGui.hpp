@@ -187,4 +187,13 @@ namespace VGui
 			Original::Paint = enginevgui->GetOriginalFunction<_Paint>(Offsets::Paint);
 		}
 	}
+	void Unhook()
+	{
+		if (enginevgui) {
+			enginevgui->UnhookFunction(Offsets::Paint);
+			enginevgui->~VMTHook();
+			enginevgui.release();
+			Original::Paint = nullptr;
+		}
+	}
 }

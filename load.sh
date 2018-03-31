@@ -1,12 +1,19 @@
 binary="bin/sar.so"
-pid=$(pidof portal2_linux)
+
+exe="portal2_linux"
+appid="620"
+
+#exe="hl2_linux"
+#appid="400"
+
+pid=$(pidof $exe)
 
 if [ -z "$pid" ]; then
-  echo -e "\e[31mPortal 2 process not found!\e[0m"
+  echo -e "\e[31mProcess not found!\e[0m"
   echo -e "\e[34mWanna start it (y/n)? \e[0m"
   read ye
   if [ "$ye" == "y" ]; then
-  	steam steam://run/620
+  	steam steam://run/"$appid"
   fi
   exit
 fi
@@ -28,7 +35,7 @@ sudo gdb -n -q -batch \
 result="${load##*$'\n'}"
 
 if [ "$result" != "\$1 = (void *) 0x0" ]; then
-  echo -e "\e[32mInjected $binary into portal2_linux!\e[0m"
+  echo -e "\e[32mInjected $binary into $exe!\e[0m"
 else
   echo -e "\e[31mInjection failed!\e[0m"
 fi

@@ -34,4 +34,16 @@ namespace Scheme
 			GetFont = g_pScheme->GetOriginalFunction<_GetFont>(Offsets::GetFont);
 		}
 	}
+	void Unhook()
+	{
+		if (g_pVGuiSchemeManager) {
+			g_pVGuiSchemeManager->~VMTHook();
+			g_pVGuiSchemeManager.release();
+			GetIScheme = nullptr;
+
+			g_pScheme->~VMTHook();
+			g_pScheme.release();
+			GetFont = nullptr;
+		}
+	}
 }

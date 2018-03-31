@@ -1,6 +1,9 @@
 #pragma once
+#include "vmthook/vmthook.h"
+
 #include "ConVar.hpp"
 
+#include "Interfaces.hpp"
 #include "Offsets.hpp"
 #include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
@@ -8,24 +11,20 @@
 namespace Cvar
 {
 	using _FindVar = void*(__cdecl*)(void* thisptr, const char* name);
-
-	void* Ptr;
 	_FindVar FindVar;
 
-	ConCommandBase* ConCommandList;
+	std::unique_ptr<VMTHook> g_pCVar;
 
 	bool Loaded()
 	{
-		auto cvr = SAR::Find("CvarPtr");
-		if (cvr.Found) {
-			Ptr = **(void***)(cvr.Address);
-			FindVar = (_FindVar)GetVirtualFunctionByIndex(Ptr, Offsets::FindVar);
-			ConCommandList = (ConCommandBase*)((uintptr_t)Ptr + Offsets::m_pConCommandList);
+		if (Interfaces::ICVar) {
+			g_pCVar = std::make_unique<VMTHook>(Interfaces::ICVar);
+			FindVar = g_pCVar->GetOriginalFunction<_FindVar>(Offsets::FindVar);
 		}
-		return cvr.Found;
+		return Interfaces::ICVar != nullptr;
 	}
-	ConVar FindCvar(const char* ref)
+	ConVar GetConVar(const char* var_name)
 	{
-		return ConVar(Cvar::FindVar(Cvar::Ptr, ref));
+		return ConVar(FindVar(g_pCVar->GetThisPtr(), var_name));
 	}
 }

@@ -15,12 +15,6 @@ namespace Portal2
 		// engine.so
 
 
-		// \x55\x89\xE5\x56\x53\x81\xEC\x00\x00\x00\x00\xA1\x00\x00\x00\x00\x8B\x75\x00\x85\xC0 xxxxxxx????x????xx?xx
-		Add("CvarPtr", "Portal 2 Build 7054",
-			"CBaseClientState::ProcessGetCvarValue",
-			"55 89 E5 56 53 81 EC ? ? ? ? A1 ? ? ? ? 8B 75 ? 85 C0",
-			100);
-
 		// \x55\x89\xE5\x53\x83\xEC\x00\x8B\x5D\x00\x8B\x45\x00\xC6\x43\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x03\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00 xxxxxx?xx?xx?xx??xx?????xx?????xx?????xx?????xx????xx?????xx?????
 		Add("ConVar_Ctor3", "Portal 2 Build 7054",
 			"ConVar",
@@ -130,11 +124,5 @@ namespace Portal2
 		m_angAbsRotation = 172; // C_BasePlayer::GetAbsAngles
 		m_vecVelocity = 244; // CFPSPanel::Paint
 		GetClientEntity = 3; // IClientEntityList
-
-
-		// libvstdlib.so
-
-
-		m_pConCommandList = 48; // CCvar::RegisterConCommand
 	}
 }
