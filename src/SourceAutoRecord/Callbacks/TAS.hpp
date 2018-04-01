@@ -1,7 +1,4 @@
 #pragma once
-/* #include <chrono>
-#include <thread> */
-
 #include "Modules/ConCommandArgs.hpp"
 #include "Modules/Client.hpp"
 
@@ -29,8 +26,4 @@ namespace Callbacks
 		Console::DevMsg("---TAS RESET---\n");
 		TAS::Reset();
 	}
-	/* void Wait()
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	} */
 }

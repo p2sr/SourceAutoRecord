@@ -23,13 +23,17 @@ public:
 	std::vector<int32_t> messageTicks;
 
 public:
-	int32_t GetLastTick()
+	int32_t LastTick()
 	{
 		return messageTicks.back();
 	}
 	float IntervalPerTick()
 	{
 		return playbackTime / playbackTicks;
+	}
+	int Tickrate()
+	{
+		return playbackTicks / playbackTime;
 	}
 };
 
@@ -45,7 +49,7 @@ public:
 	void Adjust(Demo* demo)
 	{
 		float ipt = demo->IntervalPerTick();
-		demo->playbackTicks = demo->GetLastTick();
+		demo->playbackTicks = demo->LastTick();
 		demo->playbackTime = ipt * demo->playbackTicks;
 	}
 	bool Parse(std::string filePath, Demo* demo)

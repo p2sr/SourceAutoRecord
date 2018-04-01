@@ -3,8 +3,10 @@ binary="bin/sar.so"
 exe="portal2_linux"
 appid="620"
 
-#exe="hl2_linux"
-#appid="400"
+if [ "$1" == "portal" ]; then
+  exe="hl2_linux"
+  appid="400"
+fi
 
 pid=$(pidof $exe)
 

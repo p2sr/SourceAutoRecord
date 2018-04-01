@@ -9,7 +9,7 @@ namespace Game
 	enum SourceGame
 	{
 		Portal2,	// Portal 2 7054
-		Portal		// Portal XXXX
+		Portal		// Portal 1910503
 	};
 
 	SourceGame Version;

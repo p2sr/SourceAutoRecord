@@ -207,7 +207,7 @@ namespace Cheats
 			"sar_stats_auto_reset",
 			"0",
 			0,
-			"Resets all stats automatically. 0 = default, 1 = disconnect & restart, 2 = disconnect & restart & sar_timer_start.\n");
+			"Resets all stats automatically. 0 = default, 1 = restart or disconnect only, 2 = any load & sar_timer_start. Note: Portal counter is not part of the \"stats\" feature.\n");
 		sar_stats_reset_jumps = CreateCommand(
 			"sar_stats_reset_jumps",
 			Callbacks::ResetJumps,
@@ -279,10 +279,13 @@ namespace Cheats
 		sv_maxspeed = GetConVar("sv_maxspeed");
 		sv_stopspeed = GetConVar("sv_stopspeed");
 		sv_maxvelocity = GetConVar("sv_maxvelocity");
-		sv_transition_fade_time = GetConVar("sv_transition_fade_time");
-		sv_laser_cube_autoaim = GetConVar("sv_laser_cube_autoaim");
-		ui_loadingscreen_transition_time = GetConVar("ui_loadingscreen_transition_time");
-		hide_gun_when_holding = GetConVar("hide_gun_when_holding");
+
+		if (Game::Version == Game::Portal2) {
+			sv_transition_fade_time = GetConVar("sv_transition_fade_time");
+			sv_laser_cube_autoaim = GetConVar("sv_laser_cube_autoaim");
+			ui_loadingscreen_transition_time = GetConVar("ui_loadingscreen_transition_time");
+			hide_gun_when_holding = GetConVar("hide_gun_when_holding");
+		}
 
 		Console::DevMsg("SAR: Created %i ConVars and %i ConCommands!\n", Tier1::ConVarCount, Tier1::ConCommandCount);
 	}

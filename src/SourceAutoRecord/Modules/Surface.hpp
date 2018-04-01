@@ -43,17 +43,4 @@ namespace Surface
 			FinishDrawing = reinterpret_cast<_FinishDrawing>(fdr.Address);
 		}
 	}
-	void Unhook()
-	{
-		if (matsurface) {
-			matsurface->~VMTHook();
-			matsurface.release();
-			DrawColoredText = nullptr;
-			GetFontTall = nullptr;
-		}
-		if (StartDrawing && FinishDrawing) {
-			StartDrawing = nullptr;
-			FinishDrawing = nullptr;
-		}
-	}
 }

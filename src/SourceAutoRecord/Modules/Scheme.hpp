@@ -9,7 +9,6 @@
 namespace Scheme
 {
 	using _GetIScheme = void*(__cdecl*)(void* thisptr, unsigned long scheme);
-	//using _GetFont = unsigned long(__cdecl*)(void* thisptr, const char* fontName);
 	using _GetFont = unsigned long(__cdecl*)(void* thisptr, const char* fontName, bool proportional);
 
 	std::unique_ptr<VMTHook> g_pVGuiSchemeManager;
@@ -32,18 +31,6 @@ namespace Scheme
 			// Default scheme is 1
 			g_pScheme = std::make_unique<VMTHook>(GetIScheme(g_pVGuiSchemeManager->GetThisPtr(), 1));
 			GetFont = g_pScheme->GetOriginalFunction<_GetFont>(Offsets::GetFont);
-		}
-	}
-	void Unhook()
-	{
-		if (g_pVGuiSchemeManager) {
-			g_pVGuiSchemeManager->~VMTHook();
-			g_pVGuiSchemeManager.release();
-			GetIScheme = nullptr;
-
-			g_pScheme->~VMTHook();
-			g_pScheme.release();
-			GetFont = nullptr;
 		}
 	}
 }

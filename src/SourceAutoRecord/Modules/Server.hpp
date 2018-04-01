@@ -161,22 +161,4 @@ namespace Server
 			UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(abs);
 		}
 	}
-	void Unhook()
-	{
-		if (g_GameMovement) {
-			g_GameMovement->UnhookFunction(Offsets::CheckJumpButton);
-			g_GameMovement->UnhookFunction(Offsets::PlayerMove);
-			g_GameMovement->~VMTHook();
-			g_GameMovement.release();
-			Original::CheckJumpButton = nullptr;
-			Original::PlayerMove = nullptr;
-			gpGlobals = nullptr;
-		}
-
-		if (g_ServerGameDLL) {
-			g_ServerGameDLL->~VMTHook();
-			g_ServerGameDLL.release();
-			UTIL_PlayerByIndex = nullptr;
-		}
-	}
 }

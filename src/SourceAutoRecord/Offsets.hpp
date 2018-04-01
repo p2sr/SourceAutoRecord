@@ -93,6 +93,7 @@ namespace Offsets
 	int tickcount;
 	int interval_per_tick;
 	int GetClientStateFunction;
+	int sub_37A4C0;
 	int cl;
 	int demoplayer;
 	int demorecorder;

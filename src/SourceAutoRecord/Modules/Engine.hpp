@@ -72,7 +72,6 @@ namespace Engine
 
 	void SessionStarted()
 	{
-		Console::PrintActive("m_bLoadgame = %i\n", *Vars::m_bLoadgame);
 		Session::Rebase(*Vars::tickcount);
 		Timer::Rebase(*Vars::tickcount);
 
@@ -122,7 +121,8 @@ namespace Engine
 				}
 			}
 
-			if (sar_stats_auto_reset.GetInt() >= 1) {
+			auto reset = sar_stats_auto_reset.GetInt();
+			if ((reset == 1 && !*Vars::m_bLoadgame) || reset >= 2) {
 				Stats::Reset();
 			}
 
@@ -145,29 +145,22 @@ namespace Engine
 
 		int __cdecl Disconnect(void* thisptr, bool bShowMainMenu)
 		{
-			//Console::PrintActive("Disconnect!\n");
-			Console::PrintActive("Session ended (Disconnect)!\n");
 			SessionEnded();
 			return Original::Disconnect(thisptr, bShowMainMenu);
 		}
 		int __cdecl Disconnect2(void* thisptr, int* unk1, bool bShowMainMenu)
 		{
-			//Console::PrintActive("Disconnect!\n");
-			Console::PrintActive("Session ended (Disconnect)!\n");
 			SessionEnded();
 			return Original::Disconnect2(thisptr, unk1, bShowMainMenu);
 		}
 		int __cdecl SetSignonState(void* thisptr, int state, int count)
 		{
-			//Console::PrintActive("SetSignonState = %i\n", state);
 			if (state != LastState && LastState == SignonState::Full) {
-				Console::PrintActive("Session ended (SetSignonState)!\n");
 				SessionEnded();
 			}
 
 			// Demo recorder starts syncing from this tick
 			if (state == SignonState::Full) {
-				Console::PrintActive("Session started!\n");
 				SessionStarted();
 			}
 
@@ -193,12 +186,8 @@ namespace Engine
 				cl = std::make_unique<VMTHook>(GetClientStateFunction());
 			}
 			else {
-				auto module = MODULEINFO();
-				GetModuleInformation("engine.so", &module);
-				Console::PrintActive("%i\n", 0xAE9420);
-				//auto unk = engine->GetOriginalFunction<uintptr_t>(128);
-				//auto offset = *reinterpret_cast<int*>(unk + 6);
-				auto ptr = reinterpret_cast<void*>(0xAE9420 + module.lpBaseOfDll);
+				auto sub_37A4C0 = engine->GetOriginalFunction<uintptr_t>(Offsets::sub_37A4C0);
+				auto ptr = *reinterpret_cast<void**>(sub_37A4C0 + Offsets::cl);
 				cl = std::make_unique<VMTHook>(ptr);
 			}
 
@@ -230,36 +219,6 @@ namespace Engine
 			auto tool = std::make_unique<VMTHook>(Interfaces::IEngineTool);
 			auto GetCurrentMap = tool->GetOriginalFunction<uintptr_t>(Offsets::GetCurrentMap);
 			Vars::m_szLevelName = reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
-		}
-	}
-	void Unhook()
-	{
-		if (engine) {
-			engine->~VMTHook();
-			engine.release();
-			ClientCmd = nullptr;
-			GetLocalPlayer = nullptr;
-			GetViewAngles = nullptr;
-			SetViewAngles = nullptr;
-			Vars::GetGameDirectory = nullptr;
-
-			cl->UnhookFunction(Offsets::Disconnect - 1);
-			cl->UnhookFunction(Offsets::Disconnect);
-			cl->~VMTHook();
-			cl.release();
-			Original::SetSignonState = nullptr;
-			Original::Disconnect = nullptr;
-			Original::Disconnect2 = nullptr;
-
-			Vars::tickcount = nullptr;
-			Vars::interval_per_tick = nullptr;
-
-			DemoPlayer::Unhook();
-			DemoRecorder::Unhook();
-		}
-
-		if (Vars::m_szLevelName) {
-			Vars::m_szLevelName = nullptr;
 		}
 	}
 }

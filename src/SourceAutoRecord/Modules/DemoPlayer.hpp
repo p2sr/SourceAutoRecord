@@ -41,7 +41,6 @@ namespace DemoPlayer
 	{
 		int __cdecl StartPlayback(void* thisptr, const char *filename, bool bAsTimeDemo)
 		{
-			//Console::PrintActive("StartPlayback!\n");
 			auto result = Original::StartPlayback(thisptr, filename, bAsTimeDemo);
 
 			if (result) {
@@ -54,7 +53,7 @@ namespace DemoPlayer
 					Console::Print("Map: %s\n", demo.mapName);
 					Console::Print("Ticks: %i\n", demo.playbackTicks);
 					Console::Print("Time: %.3f\n", demo.playbackTime);
-					Console::Print("IpT: %.6f\n", demo.IntervalPerTick());
+					Console::Print("Tickrate: %i\n", demo.Tickrate());
 				}
 				else {
 					Console::Print("Could not parse \"%s\"!\n", DemoName);
@@ -74,19 +73,6 @@ namespace DemoPlayer
 			GetPlaybackTick = s_ClientDemoPlayer->GetOriginalFunction<_GetPlaybackTick>(Offsets::GetPlaybackTick);
 			IsPlayingBack = s_ClientDemoPlayer->GetOriginalFunction<_IsPlayingBack>(Offsets::IsPlayingBack);
 			DemoName = reinterpret_cast<char*>((uintptr_t)demoplayer + Offsets::m_szFileName);
-		}
-	}
-	void Unhook()
-	{
-		if (s_ClientDemoPlayer) {
-			s_ClientDemoPlayer->UnhookFunction(Offsets::StartPlayback);
-			s_ClientDemoPlayer->~VMTHook();
-			s_ClientDemoPlayer.release();
-			Original::StartPlayback = nullptr;
-
-			GetPlaybackTick = nullptr;
-			IsPlayingBack = nullptr;
-			DemoName = nullptr;
 		}
 	}
 }

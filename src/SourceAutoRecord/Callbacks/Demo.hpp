@@ -44,7 +44,7 @@ namespace Callbacks
 			Console::Print("Map: %s\n", demo.mapName);
 			Console::Print("Ticks: %i\n", demo.playbackTicks);
 			Console::Print("Time: %.3f\n", demo.playbackTime);
-			Console::Print("IpT: %.6f\n", demo.IntervalPerTick());
+			Console::Print("Tickrate: %i\n", demo.Tickrate());
 		}
 		else {
 			Console::Print("Could not parse \"%s\"!\n", name.c_str());
@@ -77,7 +77,7 @@ namespace Callbacks
 				Console::Print("Map: %s\n", demo.mapName);
 				Console::Print("Ticks: %i\n", demo.playbackTicks);
 				Console::Print("Time: %.3f\n", demo.playbackTime);
-				Console::Print("IpT: %.6f\n", demo.IntervalPerTick());
+				Console::Print("Tickrate: %i\n", demo.Tickrate());
 				Console::Print("---------------\n");
 				totalTicks += demo.playbackTicks;
 				totalTime += demo.playbackTime;

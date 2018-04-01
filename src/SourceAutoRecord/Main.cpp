@@ -62,17 +62,3 @@ int __attribute__((constructor)) Main()
 	Console::Warning("SAR: Failed to load SourceAutoRecord!\n");
 	return 1;
 }
-
-// TODO
-void __attribute__((destructor)) Exit()
-{
-	Client::Unhook();
-	Engine::Unhook();
-	InputSystem::Unhook();
-	Scheme::Unhook();
-	Server::Unhook();
-	Surface::Unhook();
-	Vars::Unhook();
-	VGui::Unhook();
-	Console::PrintActive("Unloaded SourceAutoRecord!\n");
-}

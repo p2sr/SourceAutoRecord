@@ -46,7 +46,6 @@ namespace DemoRecorder
 	{
 		void __cdecl SetSignonState(void* thisptr, int state)
 		{
-			//Console::PrintActive("SetSignonState = %i\n", state);
 			if (state == SignonState::Full && *m_bRecording) {
 				IsRecordingDemo = true;
 				CurrentDemo = std::string(m_szDemoBaseName);
@@ -58,7 +57,6 @@ namespace DemoRecorder
 		}
 		int __cdecl StopRecording(void* thisptr)
 		{
-			Console::PrintActive("StopRecording!\n");
 			const int LastDemoNumber = *m_nDemoNumber;
 
 			// This function does:
@@ -96,22 +94,6 @@ namespace DemoRecorder
 			m_szDemoBaseName = reinterpret_cast<char*>((uintptr_t)demorecorder + Offsets::m_szDemoBaseName);
 			m_nDemoNumber = reinterpret_cast<int*>((uintptr_t)demorecorder + Offsets::m_nDemoNumber);
 			m_bRecording = reinterpret_cast<bool*>((uintptr_t)demorecorder + Offsets::m_bRecording);
-		}
-	}
-	void Unhook()
-	{
-		if (s_ClientDemoRecorder) {
-			s_ClientDemoRecorder->UnhookFunction(Offsets::SetSignonState);
-			s_ClientDemoRecorder->UnhookFunction(Offsets::StopRecording);
-			s_ClientDemoRecorder->~VMTHook();
-			s_ClientDemoRecorder.release();
-			Original::SetSignonState = nullptr;
-			Original::StopRecording = nullptr;
-
-			GetRecordingTick = nullptr;
-			m_szDemoBaseName = nullptr;
-			m_nDemoNumber = nullptr;
-			m_bRecording = nullptr;
 		}
 	}
 }

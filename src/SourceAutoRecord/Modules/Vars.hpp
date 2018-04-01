@@ -22,10 +22,4 @@ namespace Vars
 			m_bLoadgame = *reinterpret_cast<bool**>(ldg.Address);
 		}
 	}
-	void Unhook()
-	{
-		if (m_bLoadgame) {
-			m_bLoadgame = nullptr;
-		}
-	}
 }

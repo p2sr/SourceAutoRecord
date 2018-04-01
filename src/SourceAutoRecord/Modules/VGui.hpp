@@ -13,6 +13,7 @@
 #include "Features/TimerAverage.hpp"
 #include "Features/TimerCheckPoints.hpp"
 
+#include "Game.hpp"
 #include "Interfaces.hpp"
 #include "Offsets.hpp"
 #include "SourceAutoRecord.hpp"
@@ -23,6 +24,9 @@ namespace VGui
 	using _Paint = int(__cdecl*)(void* thisptr, int mode);
 	
 	std::unique_ptr<VMTHook> enginevgui;
+
+	bool RespectClShowPos = true;
+	int FontIndexOffset = 1;
 
 	namespace Original
 	{
@@ -40,14 +44,14 @@ namespace VGui
 			int yPadding = sar_hud_default_padding_y.GetInt();
 			int spacing = sar_hud_default_spacing.GetInt();
 
-			auto font = Scheme::GetDefaultFont() + sar_hud_default_font_index.GetFloat() - 1;
+			auto font = Scheme::GetDefaultFont() + sar_hud_default_font_index.GetFloat() - FontIndexOffset;
 			auto fontSize = Surface::GetFontHeight(font);
 
 			int r, g, b, a;
 			sscanf(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
 			Color textColor(r, g, b, a);
 
-			if (cl_showpos.GetBool()) {
+			if (RespectClShowPos && cl_showpos.GetBool()) {
 				elements += 4;
 				yPadding += spacing;
 			}
@@ -185,15 +189,11 @@ namespace VGui
 			enginevgui = std::make_unique<VMTHook>(Interfaces::IEngineVGui);
 			enginevgui->HookFunction((void*)Detour::Paint, Offsets::Paint);
 			Original::Paint = enginevgui->GetOriginalFunction<_Paint>(Offsets::Paint);
-		}
-	}
-	void Unhook()
-	{
-		if (enginevgui) {
-			enginevgui->UnhookFunction(Offsets::Paint);
-			enginevgui->~VMTHook();
-			enginevgui.release();
-			Original::Paint = nullptr;
+
+			if (Game::Version == Game::Portal) {
+				RespectClShowPos = false;
+				FontIndexOffset = 0;
+			}
 		}
 	}
 }
