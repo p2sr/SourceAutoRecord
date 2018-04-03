@@ -57,6 +57,7 @@ namespace Commands
 	ConVar sar_hud_jumps;
 	ConVar sar_hud_portals;
 	ConVar sar_hud_steps;
+	ConVar sar_hud_distance;
 
 	ConVar sar_hud_default_spacing;
 	ConVar sar_hud_default_padding_x;

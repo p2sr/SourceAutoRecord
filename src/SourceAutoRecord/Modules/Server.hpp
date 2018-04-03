@@ -1,22 +1,23 @@
 #pragma once
 #include "vmthook/vmthook.h"
 
+#include "Client.hpp"
+
+#include "Features/JumpDistance.hpp"
+#include "Features/StepCounter.hpp"
+
 #include "Commands.hpp"
 #include "Interfaces.hpp"
 #include "Offsets.hpp"
-#include "Stats.hpp"
 #include "Utils.hpp"
 
 #define IN_JUMP	(1 << 1)
 
 #define FL_ONGROUND (1 << 0)
-#define FL_DUCKING (1 << 1)
 #define FL_FROZEN (1 << 5)
 #define FL_ATCONTROLS (1 << 6)
 
 #define MOVETYPE_NOCLIP 8
-
-#define WL_Waist 2
 
 using namespace Commands;
 
@@ -32,10 +33,6 @@ namespace Server
 	_UTIL_PlayerByIndex UTIL_PlayerByIndex;
 
 	void* gpGlobals;
-
-	// Static version of CBasePlayer::m_flStepSoundTime to keep track
-	// of a step globally and to not mess up sounds etc.
-	float StepSoundTime;
 
 	void* GetPlayer()
 	{
@@ -85,6 +82,7 @@ namespace Server
 				JumpedLastTime = true;
 				Stats::TotalJumps++;
 				Stats::TotalSteps++;
+				JumpDistance::StartTrace(Client::GetAbsOrigin());
 			}
 
 			return result;
@@ -102,38 +100,25 @@ namespace Server
 			auto frametime = *reinterpret_cast<float*>((uintptr_t)gpGlobals + Offsets::frametime);
 			auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
 
-			// Calculate when to play next step sound
-			if (StepSoundTime > 0) {
-				StepSoundTime -= 1000.0f * frametime;
-				if (StepSoundTime < 0) {
-					StepSoundTime = 0;
-				}
+			// Landed after a jump
+			if (JumpDistance::IsTracing
+				&& m_fFlags & FL_ONGROUND
+				&& m_MoveType != MOVETYPE_NOCLIP) {
+
+				JumpDistance::EndTrace(Client::GetAbsOrigin());
 			}
 
+			StepCounter::ReduceTimer(frametime);
+
 			// Player is on ground and moving etc.
-			if (StepSoundTime <= 0
+			if (StepCounter::StepSoundTime <= 0
 				&& m_fFlags & FL_ONGROUND && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
 				&& m_vecVelocity.Length2D() > 0.0001f
 				&& psurface
 				&& m_MoveType != MOVETYPE_NOCLIP
 				&& sv_footsteps.GetFloat()) {
 
-				// Adjust next step
-				auto velrun = (m_fFlags & FL_DUCKING) ? 80 : 220;
-				auto bWalking = m_vecVelocity.Length() < velrun;
-
-				if (m_nWaterLevel == WL_Waist) {
-					StepSoundTime = 600;
-				}
-				else {
-					StepSoundTime = (bWalking) ? 400 : 300;
-				}
-
-				if (m_fFlags & FL_DUCKING) {
-					StepSoundTime += 100;
-				}
-
-				Stats::TotalSteps++;
+				StepCounter::Increment(m_fFlags, m_vecVelocity, m_nWaterLevel);
 			}
 
 			return Original::PlayerMove(thisptr);

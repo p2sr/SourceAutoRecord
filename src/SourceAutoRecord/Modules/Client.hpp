@@ -1,8 +1,8 @@
 #pragma once
 #include "vmthook/vmthook.h"
 
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
+#include "Console.hpp"
+#include "Engine.hpp"
 
 #include "Features/TAS.hpp"
 

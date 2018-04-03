@@ -95,6 +95,7 @@
 - `sar_hud_jumps` draws total jump count
 - `sar_hud_portals` draws total portal count
 - `sar_hud_steps` draws total step count
+- `sar_hud_distance` draws calculated jump distance
 
 ##### Optional
 - `sar_hud_default_spacing` space between HUD elements

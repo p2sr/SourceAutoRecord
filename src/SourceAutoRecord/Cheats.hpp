@@ -177,6 +177,10 @@ namespace Cheats
 			"sar_hud_steps",
 			"0",
 			"Draws total step count.\n");
+		sar_hud_distance = CreateBoolean(
+			"sar_hud_distance",
+			"0",
+			"Draws calculated jump distance.\n");
 		sar_hud_default_spacing = CreateFloat(
 			"sar_hud_default_spacing",
 			"4",

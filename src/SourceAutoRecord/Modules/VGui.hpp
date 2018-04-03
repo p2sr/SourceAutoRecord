@@ -7,8 +7,10 @@
 #include "Surface.hpp"
 #include "Vars.hpp"
 
+#include "Features/JumpDistance.hpp"
 #include "Features/Session.hpp"
 #include "Features/Stats.hpp"
+#include "Features/StepCounter.hpp"
 #include "Features/Timer.hpp"
 #include "Features/TimerAverage.hpp"
 #include "Features/TimerCheckPoints.hpp"
@@ -175,6 +177,13 @@ namespace VGui
 				char steps[64];
 				snprintf(steps, sizeof(steps), "steps: %i", Stats::TotalSteps);
 				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, steps);
+				elements++;
+			}
+			if (sar_hud_distance.GetBool()) {
+				auto jumpDistance = JumpDistance::LastDistance;
+				char distance[64];
+				snprintf(distance, sizeof(distance), "distance: %.3f", jumpDistance);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, distance);
 				elements++;
 			}
 

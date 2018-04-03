@@ -6,11 +6,12 @@
 #include "Console.hpp"
 #include "DemoRecorder.hpp"
 #include "DemoPlayer.hpp"
-#include "Server.hpp"
 #include "Vars.hpp"
 
+#include "Features/JumpDistance.hpp"
 #include "Features/Session.hpp"
 #include "Features/Stats.hpp"
+#include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
 #include "Features/TAS.hpp"
 #include "Features/Timer.hpp"
@@ -92,7 +93,8 @@ namespace Engine
 			TAS::Start();
 		}
 
-		Server::StepSoundTime = 0;
+		StepCounter::ResetTimer();
+		JumpDistance::Reset();
 		IsInGame = true;
 	}
 	void SessionEnded()
