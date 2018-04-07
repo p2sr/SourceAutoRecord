@@ -88,7 +88,7 @@ namespace Engine
 			Rebinder::RebindReload();
 		}
 
-		if (*Vars::m_bLoadgame && sar_tas_autostart.GetBool()) {
+		if (sar_tas_autostart.GetBool()) {
 			Console::DevMsg("---TAS START---\n");
 			TAS::Start();
 		}
