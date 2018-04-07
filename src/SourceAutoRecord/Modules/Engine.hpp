@@ -1,297 +1,226 @@
 #pragma once
 #include <string>
 
+#include "vmthook/vmthook.h"
+
 #include "Console.hpp"
 #include "DemoRecorder.hpp"
 #include "DemoPlayer.hpp"
+#include "Vars.hpp"
 
-#include "Demo.hpp"
-#include "Rebinder.hpp"
-#include "Session.hpp"
-#include "Stats.hpp"
-#include "Summary.hpp"
-#include "Timer.hpp"
+#include "Features/JumpDistance.hpp"
+#include "Features/Session.hpp"
+#include "Features/Stats.hpp"
+#include "Features/StepCounter.hpp"
+#include "Features/Summary.hpp"
+#include "Features/TAS.hpp"
+#include "Features/Timer.hpp"
+
+#include "Game.hpp"
+#include "Interfaces.hpp"
+#include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
-
-using _GetGameDir = void(__cdecl*)(char* szGetGameDir, int maxlength);
-using _ClientCmd = void(__fastcall*)(void* thisptr, int edx, const char* szCmdString);
-
-using _SetSignonState = bool(__thiscall*)(void* thisptr, int state, int spawncount);
-using _CloseDemoFile = int(__thiscall*)(void* thisptr);
-using _StopRecording = int(__thiscall*)(void* thisptr);
-using _StartupDemoFile = void(__thiscall*)(void* thisptr);
-using _ConCommandStop = void(__cdecl*)();
-using _Disconnect = void(__thiscall*)(void* thisptr, int bShowMainMenu);
-using _PlayDemo = void(__cdecl*)(void* thisptr);
-using _StartPlayback = bool(__fastcall*)(void* thisptr, int edx, const char *filename, bool bAsTimeDemo);
-using _StopPlayback = int(__fastcall*)(void* thisptr, int edx);
-using _HostStateFrame = void(__cdecl*)(float time);
-
-enum SignonState {
-	None = 0,
-	Challenge = 1,
-	Connected = 2,
-	New = 3,
-	Prespawn = 4,
-	Spawn = 5,
-	Full = 6,
-	Changelevel = 7
-};
-
-struct HostStateData {
-	int	m_currentState;
-	int	m_nextState;
-	Vector m_vecLocation;
-	QAngle m_angLocation;
-	char m_levelName[256];
-	char m_landmarkName[256];
-	char m_saveName[256];
-	float m_flShortFrameTime;
-	bool m_activeGame;
-	bool m_bRememberLocation;
-	bool m_bBackgroundLevel;
-	bool m_bWaitingForConnection;
-};
 
 using namespace Commands;
 
-// engine.dll
 namespace Engine
 {
-	void* ClientPtr;
-	_GetGameDir GetGameDir;
+	using _ClientCmd = int(__cdecl*)(void* thisptr, const char* szCmdString);
+	using _Disconnect = int(__cdecl*)(void* thisptr, int bShowMainMenu);
+	using _Disconnect2 = int(__cdecl*)(void* thisptr, int* unk1, char bShowMainMenu);
+	using _SetSignonState = int(__cdecl*)(void* thisptr, int state, int count);
+	using _GetLocalPlayer = int(__cdecl*)(void* thisptr);
+	using _GetViewAngles = int(__cdecl*)(void* thisptr, QAngle& va);
+	using _SetViewAngles = int(__cdecl*)(void* thisptr, QAngle& va);
+
+	std::unique_ptr<VMTHook> engine;
+	std::unique_ptr<VMTHook> cl;
+
 	_ClientCmd ClientCmd;
+	_GetLocalPlayer GetLocalPlayer;
+	_GetViewAngles GetViewAngles;
+	_SetViewAngles SetViewAngles;
 
-	int* TickCount;
-	float* IntervalPerTick;
-	bool* LoadGame;
-	char** Mapname;
-
-	void* CurrentStatePtr;
-
-	void Set(uintptr_t clientPtr, uintptr_t gameDirAddr, uintptr_t curtimeAddr,
-		uintptr_t loadGameAddr, uintptr_t mapnameAddr, uintptr_t currentStateAddr)
-	{
-		ClientPtr = **(void***)(clientPtr);
-		ClientCmd = (_ClientCmd)GetVirtualFunctionByIndex(ClientPtr, Offsets::ClientCommand);
-		GetGameDir = (_GetGameDir)gameDirAddr;
-
-		TickCount = (int*)reinterpret_cast<uintptr_t*>(*((uintptr_t*)curtimeAddr) + Offsets::tickcount);
-		IntervalPerTick = (float*)reinterpret_cast<uintptr_t*>(*((uintptr_t*)curtimeAddr) + Offsets::interval_per_tick);
-		LoadGame = *(bool**)(loadGameAddr);
-		Mapname = (char**)(mapnameAddr);
-
-		CurrentStatePtr = (void*)reinterpret_cast<uintptr_t*>(*((uintptr_t*)currentStateAddr) - 4);
-	}
 	void ExecuteCommand(const char* cmd)
 	{
-		ClientCmd(ClientPtr, 0, cmd);
+		ClientCmd(engine->GetThisPtr(), cmd);
 	}
 	int GetTick()
 	{
-		int result = *TickCount - Session::BaseTick;
+		int result = *Vars::tickcount - Session::BaseTick;
 		return (result >= 0) ? result : 0;
 	}
-	std::string GetDir()
+	float GetTime(int tick)
 	{
-		char dir[256];
-		GetGameDir(dir, 256);
-		return std::string(dir);
+		return tick * *Vars::interval_per_tick;
+	}
+	int GetPlayerIndex()
+	{
+		return GetLocalPlayer(engine->GetThisPtr());
+	}
+	QAngle GetAngles()
+	{
+		auto va = QAngle();
+		GetViewAngles(engine->GetThisPtr(), va);
+		return va;
+	}
+	void SetAngles(QAngle va)
+	{
+		SetViewAngles(engine->GetThisPtr(), va);
+	}
+
+	bool IsInGame = false;
+
+	void SessionStarted()
+	{
+		Session::Rebase(*Vars::tickcount);
+		Timer::Rebase(*Vars::tickcount);
+
+		if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
+			if (DemoRecorder::IsRecordingDemo) {
+				Rebinder::UpdateIndex(*DemoRecorder::m_nDemoNumber);
+			}
+			else {
+				Rebinder::UpdateIndex(Rebinder::LastIndexNumber + 1);
+			}
+
+			Rebinder::RebindSave();
+			Rebinder::RebindReload();
+		}
+
+		if (sar_tas_autostart.GetBool()) {
+			Console::DevMsg("---TAS START---\n");
+			TAS::Start();
+		}
+
+		StepCounter::ResetTimer();
+		JumpDistance::Reset();
+		IsInGame = true;
 	}
 	void SessionEnded()
 	{
-		if (!*LoadGame && !DemoPlayer::IsPlaying()) {
+		if (!DemoPlayer::IsPlaying() && IsInGame) {
 			int tick = GetTick();
 
 			if (tick != 0) {
-				Console::Print("Session: %i (%.3f)\n", tick, tick * *IntervalPerTick);
+				Console::Print("Session: %i (%.3f)\n", tick, Engine::GetTime(tick));
 				Session::LastSession = tick;
 			}
 
 			if (Summary::IsRunning) {
-				Summary::Add(tick, tick * *IntervalPerTick, *Mapname);
-				Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Summary::TotalTime);
+				Summary::Add(tick, Engine::GetTime(tick), *Vars::m_szLevelName);
+				Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::GetTime(Summary::TotalTicks));
 			}
 
 			if (Timer::IsRunning) {
 				if (sar_timer_always_running.GetBool()) {
-					Timer::Save(*Engine::TickCount);
-					Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Timer::TotalTicks * *IntervalPerTick);
+					Timer::Save(*Vars::tickcount);
+					Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::GetTime(Timer::TotalTicks));
 				}
 				else {
-					Timer::Stop(*Engine::TickCount);
+					Timer::Stop(*Vars::tickcount);
 					Console::Print("Timer stopped!\n");
 				}
 			}
 
-			if (sar_stats_auto_reset.GetInt() >= 1) {
+			auto reset = sar_stats_auto_reset.GetInt();
+			if ((reset == 1 && !*Vars::m_bLoadgame) || reset >= 2) {
 				Stats::Reset();
 			}
 
 			DemoRecorder::CurrentDemo = "";
 		}
+
+		IsInGame = false;
 	}
 
 	namespace Original
 	{
-		_SetSignonState SetSignonState;
-		_CloseDemoFile CloseDemoFile;
-		_StopRecording StopRecording;
-		_StartupDemoFile StartupDemoFile;
-		_ConCommandStop ConCommandStop;
 		_Disconnect Disconnect;
-		_PlayDemo PlayDemo;
-		_StartPlayback StartPlayback;
-		_HostStateFrame HostStateFrame;
+		_Disconnect2 Disconnect2;
+		_SetSignonState SetSignonState;
 	}
 
 	namespace Detour
 	{
-		bool PlayerRequestedStop;
-		bool IsRecordingDemo;
+		int LastState;
 
-		bool PlayerRequestedPlayback;
-		bool IsPlayingDemo;
-
-		int LastHostState;
-		bool CallFromHostStateFrame;
-
-		bool __fastcall SetSignonState(void* thisptr, int edx, int state, int spawncount)
-		{
-			//Console::Print("SetSignonState = %i\n", state);
-			if (state == SignonState::Prespawn) {
-				if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
-					Rebinder::LastIndexNumber = (IsRecordingDemo)
-						? *DemoRecorder::DemoNumber
-						: Rebinder::LastIndexNumber + 1;
-
-					Rebinder::RebindSave();
-					Rebinder::RebindReload();
-				}
-			}
-			// Demo recorder starts syncing from this tick
-			else if (state == SignonState::Full) {
-				Session::Rebase(*Engine::TickCount);
-				Timer::Rebase(*Engine::TickCount);
-			}
-			return Original::SetSignonState(thisptr, state, spawncount);
-		}
-		int __fastcall CloseDemoFile(void* thisptr, int edx)
-		{
-			bool* m_bIsDemoHeader = (bool*)((uintptr_t)thisptr + Offsets::m_bIsDemoHeader);
-
-			if (!*m_bIsDemoHeader && !*LoadGame && IsRecordingDemo) {
-				int tick = DemoRecorder::GetTick();
-				float time = tick * *IntervalPerTick;
-				Console::Print("Demo: %i (%.3f)\n", tick, time);
-				DemoRecorder::SetLastDemo(tick);
-			}
-
-			return Original::CloseDemoFile(thisptr);
-		}
-		bool __fastcall StopRecording(void* thisptr, int edx)
-		{
-			const int LastDemoNumber = *DemoRecorder::DemoNumber;
-
-			// This function does:
-			// m_bRecording = false
-			// m_nDemoNumber = 0
-			bool result = Original::StopRecording(thisptr);
-
-			if (IsRecordingDemo && !PlayerRequestedStop) {
-				*DemoRecorder::DemoNumber = LastDemoNumber;
-
-				// Tell recorder to keep recording
-				if (*LoadGame || CallFromHostStateFrame) {
-					*DemoRecorder::Recording = true;
-					(*DemoRecorder::DemoNumber)++;
-				}
-			}
-			else {
-				IsRecordingDemo = false;
-			}
-
-			if (IsPlayingDemo && !PlayerRequestedPlayback) {
-				IsPlayingDemo = false;
-			}
-
-			return result;
-		}
-		void __fastcall StartupDemoFile(void* thisptr, int edx)
-		{
-			IsRecordingDemo = true;
-			DemoRecorder::SetCurrentDemo();
-			Original::StartupDemoFile(thisptr);
-		}
-		void __cdecl ConCommandStop()
-		{
-			PlayerRequestedStop = true;
-			Original::ConCommandStop();
-			PlayerRequestedStop = false;
-		}
-		void __fastcall Disconnect(void* thisptr, int edx, bool bShowMainMenu)
+		int __cdecl Disconnect(void* thisptr, bool bShowMainMenu)
 		{
 			SessionEnded();
-			Original::Disconnect(thisptr, bShowMainMenu);
+			return Original::Disconnect(thisptr, bShowMainMenu);
 		}
-		void __cdecl PlayDemo(void* thisptr)
+		int __cdecl Disconnect2(void* thisptr, int* unk1, bool bShowMainMenu)
 		{
-			PlayerRequestedPlayback = true;
-			Original::PlayDemo(thisptr);
-			PlayerRequestedPlayback = false;
+			SessionEnded();
+			return Original::Disconnect2(thisptr, unk1, bShowMainMenu);
 		}
-		bool __fastcall StartPlayback(void* thisptr, int edx, const char *filename, bool bAsTimeDemo)
+		int __cdecl SetSignonState(void* thisptr, int state, int count)
 		{
-			bool result = Original::StartPlayback(thisptr, edx, filename, bAsTimeDemo);
-
-			if (result && PlayerRequestedPlayback) {
-				IsPlayingDemo = true;
-
-				// Allows sar_time_demo to parse last played demo
-				DemoRecorder::LastDemo == "";
-
-				Demo demo;
-				if (demo.Parse(GetDir() + std::string("\\") + std::string(DemoPlayer::DemoName))) {
-					demo.Fix();
-					Console::Print("Client: %s\n", demo.clientName);
-					Console::Print("Map: %s\n", demo.mapName);
-					Console::Print("Ticks: %i\n", demo.playbackTicks);
-					Console::Print("Time: %.3f\n", demo.playbackTime);
-					Console::Print("IpT: %.6f\n", demo.IntervalPerTick());
-				}
-				else {
-					Console::Print("Could not parse \"%s\"!\n", DemoPlayer::DemoName);
-				}
+			if (state != LastState && LastState == SignonState::Full) {
+				SessionEnded();
 			}
-			return result;
-		}
-		void __fastcall HostStateFrame(void* thisptr, int edx, float time)
-		{
-			HostStateData state = *reinterpret_cast<HostStateData*>(CurrentStatePtr);
 
-			if (state.m_currentState != LastHostState) {
-				//Console::Print("m_currentState = %i\n", state.m_currentState);
-				if (state.m_currentState == Offsets::HS_CHANGE_LEVEL_SP) {
-					SessionEnded();
-
-					// CloseDemoFile gets called too late when changing the level
-					// which causes to write invalid ticks into the demo header and redundant packets
-					if (IsRecordingDemo) {
-						CallFromHostStateFrame = true;
-						StopRecording(DemoRecorder::Ptr, NULL);
-						CallFromHostStateFrame = false;
-					}
-				}
-
-				// Start new session when in menu
-				if (state.m_currentState == Offsets::HS_RUN && !state.m_activeGame && !DemoPlayer::IsPlaying()) {
-					//Console::Print("Detected menu!\n");
-					Session::Rebase(*Engine::TickCount);
-				}
-
-				LastHostState = state.m_currentState;
+			// Demo recorder starts syncing from this tick
+			if (state == SignonState::Full) {
+				SessionStarted();
 			}
-			Original::HostStateFrame(time);
+
+			LastState = state;
+			return Original::SetSignonState(thisptr, state, count);
+		}
+	}
+
+	void Hook()
+	{
+		if (Interfaces::IVEngineClient) {
+			engine = std::make_unique<VMTHook>(Interfaces::IVEngineClient);
+			ClientCmd = engine->GetOriginalFunction<_ClientCmd>(Offsets::ClientCmd);
+			GetLocalPlayer = engine->GetOriginalFunction<_GetLocalPlayer>(Offsets::GetLocalPlayer);
+			GetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::GetViewAngles);
+			SetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::SetViewAngles);
+			Vars::GetGameDirectory = engine->GetOriginalFunction<Vars::_GetGameDirectory>(Offsets::GetGameDirectory);
+
+			if (Offsets::GetClientStateFunction != 0) {
+				typedef void*(*_GetClientStateFunction)();
+				auto abs = GetAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientStateFunction);
+				auto GetClientStateFunction = reinterpret_cast<_GetClientStateFunction>(abs);
+				cl = std::make_unique<VMTHook>(GetClientStateFunction());
+			}
+			else {
+				auto sub_37A4C0 = engine->GetOriginalFunction<uintptr_t>(Offsets::sub_37A4C0);
+				auto ptr = *reinterpret_cast<void**>(sub_37A4C0 + Offsets::cl);
+				cl = std::make_unique<VMTHook>(ptr);
+			}
+
+			// Before Disconnect in VMT :^)
+			cl->HookFunction((void*)Detour::SetSignonState, Offsets::Disconnect - 1);
+			Original::SetSignonState = cl->GetOriginalFunction<_SetSignonState>(Offsets::Disconnect - 1);
+
+			uintptr_t disconnect;
+			if (Game::Version == Game::Portal2) {
+				cl->HookFunction((void*)Detour::Disconnect, Offsets::Disconnect);
+				Original::Disconnect = cl->GetOriginalFunction<_Disconnect>(Offsets::Disconnect);
+				disconnect = (uintptr_t)Original::Disconnect;
+			}
+			else {
+				cl->HookFunction((void*)Detour::Disconnect2, Offsets::Disconnect);
+				Original::Disconnect2 = cl->GetOriginalFunction<_Disconnect2>(Offsets::Disconnect);
+				disconnect = (uintptr_t)Original::Disconnect2;
+			}
+
+			DemoPlayer::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demoplayer));
+			DemoRecorder::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demorecorder));
+
+			auto ProcessTick = cl->GetOriginalFunction<uintptr_t>(Offsets::ProcessTick);
+			Vars::tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
+			Vars::interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
+		}
+
+		if (Interfaces::IEngineTool) {
+			auto tool = std::make_unique<VMTHook>(Interfaces::IEngineTool);
+			auto GetCurrentMap = tool->GetOriginalFunction<uintptr_t>(Offsets::GetCurrentMap);
+			Vars::m_szLevelName = reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
 		}
 	}
 }

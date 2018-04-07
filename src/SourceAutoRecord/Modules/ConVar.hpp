@@ -1,35 +1,39 @@
 #pragma once
-#include "Cvar.hpp"
 #include "Tier1.hpp"
 
-#include "Game.hpp"
+#include "Offsets.hpp"
+#include "SourceAutoRecord.hpp"
 
 namespace Tier1
 {
 	_ConVar ConVarCtor;
 
 	struct ConVarData : ConCommandBase {
-		void* VTable_IConVar;
-		void* Parent;
-		const char* DefaultValue;
-		char* String;
-		int StringLength;
-		float FloatValue;
-		int IntValue;
-		bool HasMin;
-		float MinVal;
-		bool HasMax;
-		float MaxVal;
-		void* ChangeCallback;
+		void* VMT;
+		ConVarData* m_pParent;
+		const char* m_pszDefaultValue;
+		char* m_pszString;
+		int m_StringLength;
+		float m_fValue;
+		int m_nValue;
+		bool m_bHasMin;
+		float m_fMinVal;
+		bool m_bHasMax;
+		float m_fMaxVal;
+		void* m_fnChangeCallback;
 		int unk1;
 		int unk2;
 		int unk3;
 		int unk4;
 	};
 
-	void SetConVar(uintptr_t conVarAddr)
+	bool ConVarLoaded()
 	{
-		ConVarCtor = reinterpret_cast<_ConVar>(conVarAddr);
+		auto cnv = SAR::Find("ConVar_Ctor3");
+		if (cnv.Found) {
+			ConVarCtor = reinterpret_cast<_ConVar>(cnv.Address);
+		}
+		return cnv.Found;
 	}
 
 	struct ConVar {
@@ -42,43 +46,43 @@ namespace Tier1
 		ConVar& operator=(const ConVar& other) = delete;
 		ConVar& operator=(ConVar&& other) = default;
 
-		ConVar::ConVar(const char* ref) {
-			Ptr = Cvar::FindVar(Cvar::Ptr, nullptr, ref);
+		ConVar(void* ptr) {
+			Ptr = ptr;
 		}
-		bool ConVar::GetBool() const {
+		bool GetBool() const {
 			return !!GetInt();
 		}
-		int ConVar::GetInt() const {
-			return ((ConVarData*)Ptr)->IntValue;
+		int GetInt() const {
+			return ((ConVarData*)Ptr)->m_nValue;
 		}
-		float ConVar::GetFloat() const {
-			return ((ConVarData*)Ptr)->FloatValue;
+		float GetFloat() const {
+			return ((ConVarData*)Ptr)->m_fValue;
 		}
-		const char* ConVar::GetString() const {
-			return ((ConVarData*)Ptr)->String;
+		const char* GetString() const {
+			return ((ConVarData*)Ptr)->m_pszString;
 		}
-		const int ConVar::GetFlags() const {
-			return ((ConVarData*)Ptr)->Flags;
+		const int GetFlags() const {
+			return ((ConVarData*)Ptr)->flags;
 		}
-		void ConVar::SetValue(const char* value) {
+		void SetValue(const char* value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetValue);
-			if (vf) ((_SetValueString)vf)(Ptr, nullptr, value);
+			if (vf) ((_InternalSetValue)vf)(Ptr, value);
 		}
-		void ConVar::SetValue(float value) {
+		void SetValue(float value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetFloatValue);
-			if (vf) ((_SetValueFloat)vf)(Ptr, nullptr, value);
+			if (vf) ((_InternalSetFloatValue)vf)(Ptr, value);
 		}
-		void ConVar::SetValue(int value) {
+		void SetValue(int value) {
 			auto vf = GetVirtualFunctionByIndex(Ptr, Offsets::InternalSetIntValue);
-			if (vf) ((_SetValueInt)vf)(Ptr, nullptr, value);
+			if (vf) ((_InternalSetIntValue)vf)(Ptr, value);
 		}
-		void ConVar::SetFlags(int value) {
-			((ConVarData*)Ptr)->Flags = value;
+		void SetFlags(int value) {
+			((ConVarData*)Ptr)->flags = value;
 		}
-		void ConVar::AddFlag(int value) {
+		void AddFlag(int value) {
 			SetFlags(GetFlags() | value);
 		}
-		void ConVar::RemoveFlag(int value) {
+		void RemoveFlag(int value) {
 			SetFlags(GetFlags() & ~(value));
 		}
 	};
@@ -86,20 +90,13 @@ namespace Tier1
 	ConVar CreateVar(const char* name, const char* value, int flags = 0, const char* helpstr = "", bool hasmin = false, float min = 0, bool hasmax = false, float max = 0)
 	{
 		ConVar cv;
-		size_t size = 0;
-
-		switch (Game::Version) {
-		case 0:
-		case 1:
-			size = sizeof(ConVarData);
-			break;
-		}
+		size_t size = sizeof(ConVarData);
 
 		cv.Blob = std::make_unique<uint8_t[]>(size);
 		cv.Ptr = cv.Blob.get();
 
 		std::memset(cv.Ptr, 0, size);
-		ConVarCtor(cv.Ptr, nullptr, name, value, flags, helpstr, hasmin, min, hasmax, max);
+		ConVarCtor(cv.Ptr, name, value, flags, helpstr, hasmin, min, hasmax, max);
 
 		ConVarCount++;
 

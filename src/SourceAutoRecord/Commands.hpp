@@ -6,6 +6,8 @@ using namespace Tier1;
 
 namespace Commands
 {
+	ConVar sar_autorecord;
+
 	// Rebinder
 	ConCommand sar_bind_save;
 	ConCommand sar_bind_reload;
@@ -52,33 +54,36 @@ namespace Commands
 	ConVar sar_hud_avg;
 	ConVar sar_hud_cps;
 	ConVar sar_hud_demo;
-	ConVar sar_hud_last_demo;
 	ConVar sar_hud_jumps;
-	ConVar sar_hud_uses;
+	ConVar sar_hud_portals;
+	ConVar sar_hud_steps;
+	ConVar sar_hud_distance;
 
 	ConVar sar_hud_default_spacing;
 	ConVar sar_hud_default_padding_x;
 	ConVar sar_hud_default_padding_y;
 	ConVar sar_hud_default_font_index;
-	ConVar sar_hud_default_font_size;
 	ConVar sar_hud_default_font_color;
 
 	// Stats
 	ConVar sar_stats_auto_reset;
 	ConCommand sar_stats_reset_jumps;
-	ConCommand sar_stats_reset_uses;
+	ConCommand sar_stats_reset_steps;
 
 	// Cheats
 	ConVar sar_autojump;
-	ConVar sar_aircontrol;
-	ConVar sar_never_open_cm_hud;
-	ConVar sar_never_delay_start;
 	ConCommand sar_teleport;
 	ConCommand sar_teleport_setpos;
 
 	// Config
 	ConCommand sar_cvars_save;
 	ConCommand sar_cvars_load;
+
+	// TAS
+	ConCommand sar_tas_frame_at;
+	ConCommand sar_tas_start;
+	ConCommand sar_tas_reset;
+	ConVar sar_tas_autostart;
 
 	// Others
 	ConCommand sar_session;
@@ -87,6 +92,7 @@ namespace Commands
 	// From the game
 	ConVar cl_showpos;
 	ConVar sv_cheats;
+	ConVar sv_footsteps;
 
 	ConVar sv_bonus_challenge;
 	ConVar sv_accelerate;

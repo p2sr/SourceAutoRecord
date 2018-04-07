@@ -8,16 +8,16 @@ namespace Tier1
 	struct ConCommandArgs {
 		const void* Ptr;
 
-		ConCommandArgs::ConCommandArgs(const void* ptr) : Ptr(ptr) {
+		ConCommandArgs(const void* ptr) : Ptr(ptr) {
 		}
-		int ConCommandArgs::Count() const {
-			return ((const ConCommandArgsData*)Ptr)->ArgC;
+		int Count() const {
+			return ((const CCommand*)Ptr)->m_nArgc;
 		}
-		const char* ConCommandArgs::At(int index) const {
-			return ((const ConCommandArgsData*)Ptr)->ArgV[index];
+		const char* At(int index) const {
+			return ((const CCommand*)Ptr)->m_ppArgv[index];
 		}
-		const char* ConCommandArgs::FullArgs() const {
-			return ((const ConCommandArgsData*)Ptr)->ArgSBuffer;
+		const char* FullArgs() const {
+			return ((const CCommand*)Ptr)->m_pArgSBuffer;
 		}
 	};
 }

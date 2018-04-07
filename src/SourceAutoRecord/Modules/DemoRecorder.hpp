@@ -1,44 +1,99 @@
 #pragma once
+#include "vmthook/vmthook.h"
+
+#include "Console.hpp"
+#include "Vars.hpp"
+
+#include "Features/Rebinder.hpp"
+#include "Features/Session.hpp"
+#include "Features/Timer.hpp"
+
 #include "Offsets.hpp"
+#include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
 
-using _GetRecordingTick = int(__thiscall*)(void* thisptr);
+using namespace Commands;
 
 namespace DemoRecorder
 {
-	void* Ptr;
+	using _GetRecordingTick = int(__cdecl*)(void* thisptr);
+	using _SetSignonState = void(__cdecl*)(void* thisptr, int state);
+	using _StopRecording = int(__cdecl*)(void* thisptr);
+
+	std::unique_ptr<VMTHook> s_ClientDemoRecorder;
 
 	_GetRecordingTick GetRecordingTick;
 
-	char* DemoName;
-	int* DemoNumber;
-	bool* Recording;
+	char* m_szDemoBaseName;
+	int* m_nDemoNumber;
+	bool* m_bRecording;
 
 	std::string CurrentDemo;
-	std::string LastDemo;
-	int LastDemoTick;
+	bool IsRecordingDemo;
 
-	void Set(uintptr_t recorderAddr)
-	{
-		Ptr = **(void***)(recorderAddr);
-		GetRecordingTick = (_GetRecordingTick)GetVirtualFunctionByIndex(Ptr, Offsets::GetRecordingTick);
-		DemoName = (char*)reinterpret_cast<uintptr_t*>((uintptr_t)Ptr + Offsets::m_szDemoBaseName);
-		DemoNumber = (int*)reinterpret_cast<uintptr_t*>((uintptr_t)Ptr + Offsets::m_nDemoNumber);
-		Recording = (bool*)reinterpret_cast<uintptr_t*>((uintptr_t)Ptr + Offsets::m_bRecording);
-	}
 	int GetTick()
 	{
-		return GetRecordingTick(Ptr);
+		return GetRecordingTick(s_ClientDemoRecorder->GetThisPtr());
 	}
-	void SetCurrentDemo()
+
+	namespace Original
 	{
-		CurrentDemo = std::string(DemoRecorder::DemoName);
-		if (*DemoNumber > 1) CurrentDemo += "_" + std::to_string(*DemoNumber);
+		_SetSignonState SetSignonState;
+		_StopRecording StopRecording;
 	}
-	void SetLastDemo(int tick)
+
+	namespace Detour
 	{
-		LastDemo = std::string(DemoRecorder::DemoName);
-		if (*DemoNumber > 1) LastDemo += "_" + std::to_string(*DemoNumber);
-		LastDemoTick = tick;
+		void __cdecl SetSignonState(void* thisptr, int state)
+		{
+			if (state == SignonState::Full && *m_bRecording) {
+				IsRecordingDemo = true;
+				CurrentDemo = std::string(m_szDemoBaseName);
+				if (*m_nDemoNumber > 1) {
+					CurrentDemo += std::string("_") + std::to_string(*m_nDemoNumber);
+				}
+			}
+			Original::SetSignonState(thisptr, state);
+		}
+		int __cdecl StopRecording(void* thisptr)
+		{
+			const int LastDemoNumber = *m_nDemoNumber;
+
+			// This function does:
+			//   m_bRecording = false
+			//   m_nDemoNumber = 0
+			auto result = Original::StopRecording(thisptr);
+
+			if (IsRecordingDemo && sar_autorecord.GetBool()) {
+				*m_nDemoNumber = LastDemoNumber;
+
+				// Tell recorder to keep recording
+				if (*Vars::m_bLoadgame) {
+					*m_bRecording = true;
+					(*m_nDemoNumber)++;
+					Console::DevMsg("SAR: Recording!");
+				}
+			}
+			else {
+				IsRecordingDemo = false;
+			}
+
+			return result;
+		}
+	}
+	void Hook(void* demorecorder)
+	{
+		if (demorecorder) {
+			s_ClientDemoRecorder = std::make_unique<VMTHook>(demorecorder);
+			s_ClientDemoRecorder->HookFunction((void*)Detour::SetSignonState, Offsets::SetSignonState);
+			s_ClientDemoRecorder->HookFunction((void*)Detour::StopRecording, Offsets::StopRecording);
+			Original::SetSignonState = s_ClientDemoRecorder->GetOriginalFunction<_SetSignonState>(Offsets::SetSignonState);
+			Original::StopRecording = s_ClientDemoRecorder->GetOriginalFunction<_StopRecording>(Offsets::StopRecording);
+
+			GetRecordingTick = s_ClientDemoRecorder->GetOriginalFunction<_GetRecordingTick>(Offsets::GetRecordingTick);
+			m_szDemoBaseName = reinterpret_cast<char*>((uintptr_t)demorecorder + Offsets::m_szDemoBaseName);
+			m_nDemoNumber = reinterpret_cast<int*>((uintptr_t)demorecorder + Offsets::m_nDemoNumber);
+			m_bRecording = reinterpret_cast<bool*>((uintptr_t)demorecorder + Offsets::m_bRecording);
+		}
 	}
 }

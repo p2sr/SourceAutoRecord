@@ -1,128 +1,149 @@
 #pragma once
+#include "vmthook/vmthook.h"
+
+#include "Client.hpp"
+
+#include "Features/JumpDistance.hpp"
+#include "Features/StepCounter.hpp"
+
 #include "Commands.hpp"
+#include "Interfaces.hpp"
 #include "Offsets.hpp"
-#include "Stats.hpp"
+#include "Utils.hpp"
 
 #define IN_JUMP	(1 << 1)
-#define IN_USE	(1 << 5)
 
-using _CheckJumpButton = bool(__thiscall*)(void* thisptr);
-using _PlayerUse = int(__thiscall*)(void* thisptr);
+#define FL_ONGROUND (1 << 0)
+#define FL_FROZEN (1 << 5)
+#define FL_ATCONTROLS (1 << 6)
+
+#define MOVETYPE_NOCLIP 8
 
 using namespace Commands;
 
-// server.dll
 namespace Server
 {
+	using _CheckJumpButton = bool(__cdecl*)(void* thisptr);
+	using _PlayerMove = int(__cdecl*)(void* thisptr);
+	using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
+
+	std::unique_ptr<VMTHook> g_GameMovement;
+	std::unique_ptr<VMTHook> g_ServerGameDLL;
+
+	_UTIL_PlayerByIndex UTIL_PlayerByIndex;
+
+	void* gpGlobals;
+
+	void* GetPlayer()
+	{
+		return UTIL_PlayerByIndex(1);
+	}
+	int GetPortals()
+	{
+		auto player = GetPlayer();
+		return (player) ? *reinterpret_cast<int*>((uintptr_t)player + Offsets::iNumPortalsPlaced) : 0;
+	}
+
 	namespace Original
 	{
 		_CheckJumpButton CheckJumpButton;
-		_PlayerUse PlayerUse;
-		void* AirMove;
-		void* AirMoveSkip;
-		void* PlayerRunCommand;
-		void* PlayerRunCommandSkip;
-	}
-
-	void SetAirMove(uintptr_t airMoveAddr)
-	{
-		// Old Portal 2 bunnymod converted the else-if condition into an if
-		// which checks if sv_player_funnel_into_portals is on, let's just
-		// ignore that and leave it as an else-if
-		Original::AirMove = (void*)(airMoveAddr + 5);
-		Original::AirMoveSkip = (void*)(airMoveAddr + Offsets::AirMoveSkip);
-	}
-	void SetRunCommand(uintptr_t playerRunCommandAddr)
-	{
-		Original::PlayerRunCommand = (void*)(playerRunCommandAddr + 8);
-		Original::PlayerRunCommandSkip = (void*)(playerRunCommandAddr + Offsets::PlayerRunCommandSkip);
-		DoNothingAt(playerRunCommandAddr + 5, 3);
+		_PlayerMove PlayerMove;
 	}
 
 	namespace Detour
 	{
-		bool CantJumpNextTime = false;
+		bool JumpedLastTime = false;
 
-		bool __fastcall CheckJumpButton(void* thisptr, int edx)
+		bool __cdecl CheckJumpButton(void* thisptr)
 		{
-			int* m_nOldButtons = NULL;
-			int original = 0;
+			auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
+			auto m_nOldButtons = reinterpret_cast<int*>((uintptr_t)mv + Offsets::m_nOldButtons);
 
-			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool()) {
-				m_nOldButtons = (int*)(*((uintptr_t*)thisptr + Offsets::mv) + Offsets::m_nOldButtons);
-				original = *m_nOldButtons;
+			auto enabled = (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool();
+			auto stored = 0;
 
-				if (!CantJumpNextTime)
+			if (enabled) {
+				stored = *m_nOldButtons;
+
+				if (!JumpedLastTime)
 					*m_nOldButtons &= ~IN_JUMP;
 			}
-			CantJumpNextTime = false;
 
-			bool result = Original::CheckJumpButton(thisptr);
+			JumpedLastTime = false;
 
-			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool()) {
+			auto result = Original::CheckJumpButton(thisptr);
+
+			if (enabled) {
 				if (!(*m_nOldButtons & IN_JUMP))
-					*m_nOldButtons = original;
+					*m_nOldButtons = stored;
 			}
 
 			if (result) {
-				CantJumpNextTime = true;
+				JumpedLastTime = true;
 				Stats::TotalJumps++;
+				Stats::TotalSteps++;
+				JumpDistance::StartTrace(Client::GetAbsOrigin());
 			}
 
 			return result;
 		}
-		int __fastcall PlayerUse(void* thisptr, int edx)
+		int __cdecl PlayerMove(void* thisptr)
 		{
-			int* m_afButtonPressed = (int*)((uintptr_t)thisptr + Offsets::m_afButtonPressed);
-			if (*m_afButtonPressed & IN_USE) {
-				Stats::TotalUses++;
+			auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
+			auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
+
+			auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
+			auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
+			auto m_nWaterLevel = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_nWaterLevel);
+			auto psurface = *reinterpret_cast<void**>((uintptr_t)player + Offsets::psurface);
+
+			auto frametime = *reinterpret_cast<float*>((uintptr_t)gpGlobals + Offsets::frametime);
+			auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
+
+			// Landed after a jump
+			if (JumpDistance::IsTracing
+				&& m_fFlags & FL_ONGROUND
+				&& m_MoveType != MOVETYPE_NOCLIP) {
+
+				JumpDistance::EndTrace(Client::GetAbsOrigin());
 			}
-			return Original::PlayerUse(thisptr);
+
+			StepCounter::ReduceTimer(frametime);
+
+			// Player is on ground and moving etc.
+			if (StepCounter::StepSoundTime <= 0
+				&& m_fFlags & FL_ONGROUND && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
+				&& m_vecVelocity.Length2D() > 0.0001f
+				&& psurface
+				&& m_MoveType != MOVETYPE_NOCLIP
+				&& sv_footsteps.GetFloat()) {
+
+				StepCounter::Increment(m_fFlags, m_vecVelocity, m_nWaterLevel);
+			}
+
+			return Original::PlayerMove(thisptr);
 		}
-		__declspec(naked) void AirMove()
-		{
-			__asm {
-				pushad
-				pushfd
-			}
+	}
 
-			if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_aircontrol.GetBool()) {
-				__asm {
-					popfd
-					popad
-					jmp Original::AirMoveSkip
-				}
-			}
+	void Hook()
+	{
+		if (Interfaces::IGameMovement) {
+			g_GameMovement = std::make_unique<VMTHook>(Interfaces::IGameMovement);
+			g_GameMovement->HookFunction((void*)Detour::CheckJumpButton, Offsets::CheckJumpButton);
+			Original::CheckJumpButton = g_GameMovement->GetOriginalFunction<_CheckJumpButton>(Offsets::CheckJumpButton);
+			g_GameMovement->HookFunction((void*)Detour::PlayerMove, Offsets::PlayerMove);
+			Original::PlayerMove = g_GameMovement->GetOriginalFunction<_PlayerMove>(Offsets::PlayerMove);
 
-			__asm {
-				popfd
-				popad
-				movss xmm2, dword ptr[eax + 0x40]
-				jmp Original::AirMove
-			}
+			// After CheckJumpButton in VMT
+			auto FullTossMove = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::CheckJumpButton + 1);
+			gpGlobals = **reinterpret_cast<void***>(FullTossMove + Offsets::gpGlobals);
 		}
-		__declspec(naked) void PlayerRunCommand()
-		{
-			__asm {
-				pushad
-				pushfd
-			}
 
-			if (sar_never_delay_start.GetBool()) {
-				__asm {
-					popfd
-					popad
-					jmp Original::PlayerRunCommandSkip
-				}
-			}
-
-			__asm {
-				popfd
-				popad
-				xorps xmm0, xmm0
-				movss dword ptr[esi + 0x18], xmm0
-				jmp Original::PlayerRunCommand
-			}
+		if (Interfaces::IServerGameDLL) {
+			g_ServerGameDLL = std::make_unique<VMTHook>(Interfaces::IServerGameDLL);
+			auto Think = g_ServerGameDLL->GetOriginalFunction<uintptr_t>(Offsets::Think);
+			auto abs = GetAbsoluteAddress(Think + Offsets::UTIL_PlayerByIndex);
+			UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(abs);
 		}
 	}
 }

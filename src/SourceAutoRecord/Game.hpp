@@ -1,28 +1,39 @@
 #pragma once
+#include <unistd.h>
+
+#include "Games/Portal.hpp"
+#include "Games/Portal2.hpp"
 
 namespace Game
 {
 	enum SourceGame
 	{
-		Portal2,	// Portal 2 6879
-		INFRA		// INFRA 6905
+		Portal2,	// Portal 2 7054
+		Portal		// Portal 1910503
 	};
 
 	SourceGame Version;
 
 	bool IsSupported()
 	{
-		TCHAR temp[MAX_PATH];
-		GetModuleFileName(NULL, temp, _countof(temp));
+		char link[20];
+		char temp[260] = {0};
+		sprintf(link, "/proc/%d/exe", getpid());
+		readlink(link, temp, sizeof(temp));
+
 		std::string exe = std::string(temp);
 		int index = exe.find_last_of("\\/");
 		exe = exe.substr(index + 1, exe.length() - index);
 
-		if (exe == "portal2.exe") {
+		if (exe == "portal2_linux") {
 			Version = SourceGame::Portal2;
+			Portal2::Patterns();
+			Portal2::Offsets();
 		}
-		else if (exe == "infra.exe") {
-			Version = SourceGame::INFRA;
+		else if (exe == "hl2_linux") {
+			Version = SourceGame::Portal;
+			Portal::Patterns();
+			Portal::Offsets();
 		}
 		else {
 			return false;
@@ -32,9 +43,9 @@ namespace Game
 	const char* GetVersion() {
 		switch (Version) {
 		case 0:
-			return "Portal 2 (6879)";
+			return "Portal 2 (7054)";
 		case 1:
-			return "INFRA (6905)";
+			return "Portal (1910503)";
 		}
 		return "Unknown";
 	}

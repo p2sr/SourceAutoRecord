@@ -1,49 +1,64 @@
-#pragma once
 #include "SourceAutoRecord.hpp"
 
-unsigned __stdcall Main(void* args)
+#include "Modules/Client.hpp"
+#include "Modules/Console.hpp"
+#include "Modules/DemoPlayer.hpp"
+#include "Modules/DemoRecorder.hpp"
+#include "Modules/Engine.hpp"
+#include "Modules/InputSystem.hpp"
+#include "Modules/Scheme.hpp"
+#include "Modules/Server.hpp"
+#include "Modules/Surface.hpp"
+#include "Modules/Vars.hpp"
+#include "Modules/VGui.hpp"
+
+#include "Modules/ConCommand.hpp"
+#include "Modules/ConVar.hpp"
+#include "Modules/Cvar.hpp"
+
+#include "Features/Config.hpp"
+
+#include "Callbacks.hpp"
+#include "Cheats.hpp"
+#include "Commands.hpp"
+#include "Interfaces.hpp"
+#include "Game.hpp"
+
+int __attribute__((constructor)) Main()
 {
-	if (!Game::IsSupported()) return Error("Game not supported!", "SourceAutoRecord");
-	if (!Console::Init()) return Error("Could not initialize console!", "SourceAutoRecord");
+	if (!Console::Init()) return 1;
 
-	Offsets::Init();
-	Patterns::Init();
+	if (Game::IsSupported()) {
 
-	// ConCommand and ConVar
-	if (SAR::LoadTier1()) {
+		Interfaces::Load();
 
-		// Cheats
-		SAR::CreateCommands();
-		SAR::EnableGameCheats();
+		if (Cvar::Loaded() && Tier1::ConCommandLoaded() && Tier1::ConVarLoaded()) {
 
-		// Hooks
-		if (SAR::LoadClient() && SAR::LoadEngine()) {
-			Hooks::CreateAll();
+			Cheats::Create();
+			Cheats::UnlockAll();
 
-			// Nobody likes silly bugs
-			SAR::LoadPatches();
+			Client::Hook();
+			Engine::Hook();
+			InputSystem::Hook();
+			Scheme::Hook();
+			Server::Hook();
+			Surface::Hook();
+			Vars::Hook();
+			VGui::Hook();
 
-			Hooks::EnableAll();
+			Config::Load();
 
 			Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
 			return 0;
 		}
 		else {
-			Console::DevWarning("Could not hook any functions!\n");
+			Console::Warning("SAR: Could not register any commands!\n");
 		}
 	}
 	else {
-		Console::DevWarning("Could not register any commands!\n");
+		Console::Warning("SAR: Game not supported!\n");
 	}
-	Console::Warning("Failed to load SourceAutoRecord!\n");
-	return 1;
-}
 
-BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved)
-{
-	if (reason == DLL_PROCESS_ATTACH) {
-		DisableThreadLibraryCalls(module);
-		CreateThread(0, 0, LPTHREAD_START_ROUTINE(Main), 0, 0, 0);
-	}
-	return TRUE;
+	Console::Warning("SAR: Failed to load SourceAutoRecord!\n");
+	return 1;
 }

@@ -1,22 +1,30 @@
 #pragma once
+#include "vmthook/vmthook.h"
+
+#include "ConVar.hpp"
+
+#include "Interfaces.hpp"
 #include "Offsets.hpp"
+#include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
-
-#define FCVAR_DEVELOPMENTONLY	(1<<1)
-#define FCVAR_HIDDEN			(1<<4)
-#define FCVAR_NEVER_AS_STRING	(1<<12)
-#define FCVAR_CHEAT				(1<<14)
-
-using _FindVar = void*(__fastcall*)(void* thisptr, void* edx, const char* name);
 
 namespace Cvar
 {
-	void* Ptr;
+	using _FindVar = void*(__cdecl*)(void* thisptr, const char* name);
 	_FindVar FindVar;
 
-	void Set(uintptr_t cvarPtr)
+	std::unique_ptr<VMTHook> g_pCVar;
+
+	bool Loaded()
 	{
-		Ptr = **(void***)(cvarPtr);
-		FindVar = (_FindVar)GetVirtualFunctionByIndex(Ptr, Offsets::FindVar);
+		if (Interfaces::ICVar) {
+			g_pCVar = std::make_unique<VMTHook>(Interfaces::ICVar);
+			FindVar = g_pCVar->GetOriginalFunction<_FindVar>(Offsets::FindVar);
+		}
+		return Interfaces::ICVar != nullptr;
+	}
+	ConVar GetConVar(const char* var_name)
+	{
+		return ConVar(FindVar(g_pCVar->GetThisPtr(), var_name));
 	}
 }

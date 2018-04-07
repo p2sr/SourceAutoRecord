@@ -2,6 +2,7 @@
 #include "Tier1.hpp"
 
 #include "Game.hpp"
+#include "SourceAutoRecord.hpp"
 
 namespace Tier1
 {
@@ -10,38 +11,38 @@ namespace Tier1
 
 	struct ConCommandData : ConCommandBase {
 		union {
-			void* CommandCallbackV1;
-			void* CommandCallback;
-			void* CommandCallbackInterface;
+			void* m_fnCommandCallbackV1;
+			void* m_fnCommandCallback;
+			void* m_pCommandCallback;
 		};
+
 		union {
-			void* CompletionCallback;
-			void* CommandCompletionCallback;
+			void* m_fnCompletionCallback;
+			void* m_pCommandCompletionCallback;
 		};
-		bool HasCompletionCallback : 1;
-		bool UsingNewCommandCallback : 1;
-		bool UsingCommandCallbackInterface : 1;
+
+		bool m_bHasCompletionCallback : 1;
+		bool m_bUsingNewCommandCallback : 1;
+		bool m_bUsingCommandCallbackInterface : 1;
 	};
 
-	void SetConCommand(uintptr_t conCommandAddr, uintptr_t conCommandAddr2)
+	bool ConCommandLoaded()
 	{
-		ConCommandCtor = reinterpret_cast<_ConCommand>(conCommandAddr);
-		ConCommandCtor2 = reinterpret_cast<_ConCommand>(conCommandAddr2);
+		auto cnc = SAR::Find("ConCommand_Ctor1");
+		auto cnc2 = SAR::Find("ConCommand_Ctor2");
+		if (cnc.Found && cnc2.Found) {
+			ConCommandCtor = reinterpret_cast<_ConCommand>(cnc.Address);
+			ConCommandCtor2 = reinterpret_cast<_ConCommand>(cnc2.Address);
+		}
+		return cnc.Found && cnc2.Found;
 	}
 
 	struct ConCommand {
 		void* Ptr = nullptr;
 		std::unique_ptr<uint8_t[]> Blob;
 
-		ConCommand::ConCommand() {
-			size_t size = 0;
-
-			switch (Game::Version) {
-			case 0:
-			case 1:
-				size = sizeof(ConCommandData);
-				break;
-			}
+		ConCommand() {
+			size_t size = sizeof(ConCommandData);
 
 			Blob = std::make_unique<uint8_t[]>(size);
 			Ptr = Blob.get();
@@ -52,14 +53,14 @@ namespace Tier1
 	ConCommand CreateCommand(const char* name, _CommandCallbackVoid callback, const char* helpstr = "", int flags = 0)
 	{
 		auto cc = ConCommand();
-		ConCommandCtor(cc.Ptr, nullptr, name, callback, helpstr, flags, nullptr);
+		ConCommandCtor(cc.Ptr, name, (void*)callback, helpstr, flags, nullptr);
 		ConCommandCount++;
 		return cc;
 	}
 	ConCommand CreateCommandArgs(const char* name, _CommandCallbackArgs callback, const char* helpstr = "", int flags = 0)
 	{
 		auto cc = ConCommand();
-		ConCommandCtor2(cc.Ptr, nullptr, name, callback, helpstr, flags, nullptr);
+		ConCommandCtor2(cc.Ptr, name, (void*)callback, helpstr, flags, nullptr);
 		ConCommandCount++;
 		return cc;
 	}
