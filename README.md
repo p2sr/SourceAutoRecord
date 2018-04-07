@@ -1,5 +1,5 @@
-[![Build Version](https://img.shields.io/badge/version-v1.5--win-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/2)
 [![Build Version](https://img.shields.io/badge/version-v1.6--linux-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/3)
+[![Build Version](https://img.shields.io/badge/version-v1.5--win-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/2)
 [![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
 
 **SourceAutoRecord** allows automatic demo recording, automatic binding, demo parsing, session timing and [much more](#features).
@@ -31,6 +31,7 @@
 - Aperture Tag
 - Portal Stories: Mel
 - Portal
+- INFRA (1.5)
 
 ## Features
 
