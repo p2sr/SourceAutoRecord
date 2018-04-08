@@ -1,4 +1,4 @@
-binary="bin/sar.so"
+binary="sar.so"
 
 exe="portal2_linux"
 appid="620"

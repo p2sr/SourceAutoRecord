@@ -1,3 +1,0 @@
-[submodule "libs/vmthook"]
-  path = libs/vmthook
-  url = https://github.com/aixxe/vmthook.git

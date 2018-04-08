@@ -1,5 +1,5 @@
 .vscode/
-libs/
+sar.so
 unload.sh
 
 ## Ignore Visual Studio temporary files, build results, and
