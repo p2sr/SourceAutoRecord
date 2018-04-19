@@ -226,6 +226,17 @@ namespace Cheats
 			"sar_autojump",
 			"0",
 			"Enables automatic jumping on the server.\n");
+		if (Game::Version == Game::Portal2) {
+			sar_jumpboost = CreateFloat(
+				"sar_jumpboost",
+				"0",
+				0,
+				"Enables special game movement on the server. 0 = Default, 1 = Orange Box Engine, 2 = Pre-OBE\n");
+			sar_aircontrol = CreateBoolean(
+				"sar_aircontrol",
+				"0",
+				"Enables more air-control on the server.\n");
+		}
 		sar_teleport = CreateCommand(
 			"sar_teleport",
 			Callbacks::Teleport,
@@ -238,8 +249,12 @@ namespace Cheats
 		// TAS
 		sar_tas_frame_at = CreateCommandArgs(
 			"sar_tas_frame_at",
-			Callbacks::AddTas,
-			"Adds a frame for a TAS.\n");
+			Callbacks::AddFrameAtTas,
+			"Adds a command frame to TAS (absolute).\n");
+		sar_tas_frame_after = CreateCommandArgs(
+			"sar_tas_frame_after",
+			Callbacks::AddFrameAfterTas,
+			"Adds a command frame to TAS (relative).\n");
 		sar_tas_start = CreateCommand(
 			"sar_tas_start",
 			Callbacks::StartTas,

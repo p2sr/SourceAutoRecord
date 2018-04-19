@@ -12,9 +12,16 @@ namespace TAS
 
 	std::vector<TasFrame> Frames;
 	bool IsRunning = false;
+	int BaseIndex = 0;
 
-	void AddFrame(int framesLeft, std::string command)
+	void AddFrame(int framesLeft, std::string command, bool relative = false)
 	{
+		if (relative) {
+			framesLeft += BaseIndex;
+		} else {
+			BaseIndex = framesLeft;
+		}
+
 		Frames.push_back(TasFrame
 		{
 			framesLeft,
@@ -24,6 +31,7 @@ namespace TAS
 	void Reset()
 	{
 		IsRunning = false;
+		BaseIndex = 0;
 		Frames.clear();
 	}
 	void Start()

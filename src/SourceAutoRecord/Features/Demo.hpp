@@ -33,7 +33,7 @@ public:
 	}
 	int Tickrate()
 	{
-		return playbackTicks / playbackTime;
+		return std::ceil(playbackTicks / playbackTime);
 	}
 };
 

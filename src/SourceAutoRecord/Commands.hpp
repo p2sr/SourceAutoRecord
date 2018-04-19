@@ -72,6 +72,8 @@ namespace Commands
 
 	// Cheats
 	ConVar sar_autojump;
+	ConVar sar_jumpboost;
+	ConVar sar_aircontrol;
 	ConCommand sar_teleport;
 	ConCommand sar_teleport_setpos;
 
@@ -81,6 +83,7 @@ namespace Commands
 
 	// TAS
 	ConCommand sar_tas_frame_at;
+	ConCommand sar_tas_frame_after;
 	ConCommand sar_tas_start;
 	ConCommand sar_tas_reset;
 	ConVar sar_tas_autostart;

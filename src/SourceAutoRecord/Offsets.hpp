@@ -30,7 +30,10 @@ namespace Offsets
 
 	// CGameMovement
 	int PlayerMove;
+	int AirMove;
+	int FinishGravity;
 	int CheckJumpButton;
+	int FullTossMove;
 	int mv;
 	int player;
 

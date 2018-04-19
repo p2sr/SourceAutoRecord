@@ -112,6 +112,8 @@
 
 ### Cheats
 - `sar_autojump` enables tick-perfect jumping on the server
+- `sar_jumpboost` enables OBE movement on the server (Portal 2)
+- `sar_aircontrol` enables more air-control movement on the server (Portal 2)
 - `sar_teleport` teleports player to a saved location
 - `sar_teleport_setpos` saves current location for teleportation
 

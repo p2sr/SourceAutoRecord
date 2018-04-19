@@ -89,7 +89,6 @@ namespace Engine
 		}
 
 		if (sar_tas_autostart.GetBool()) {
-			Console::DevMsg("---TAS START---\n");
 			TAS::Start();
 		}
 

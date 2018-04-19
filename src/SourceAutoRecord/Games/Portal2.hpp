@@ -98,7 +98,10 @@ namespace Portal2
 
 
 		PlayerMove = 16; // CPortalGameMovement
+		AirMove = 24; // CPortalGameMovement
+		FinishGravity = 35; // CPortalGameMovement
 		CheckJumpButton = 37; // CPortalGameMovement
+		FullTossMove = 38; // CGameMovement
 		mv = 8; // CPortalGameMovement::CheckJumpButton
 		m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
 		Think = 31; // CServerGameDLL

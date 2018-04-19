@@ -105,6 +105,7 @@ namespace Portal
 
 		PlayerMove = 12; // CGameMovement
 		CheckJumpButton = 30; // CGameMovement
+		FullTossMove = 31; // CGameMovement
 		mv = 8; // CPortalGameMovement::CheckJumpButton
 		m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
 		gpGlobals = 705; // CGameMovement::FullTossMove
