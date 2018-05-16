@@ -69,8 +69,8 @@ namespace Portal
 		GetViewAngles = 19; // CEngineClient
 		SetViewAngles = 20; // CEngineClient
 		GetGameDirectory = 35; // CEngineClient
-		sub_37A4C0 = 128; // CEngineClient
-		cl = 6; // sub_37A4C0
+		ServerCmdKeyValues = 128; // CEngineClient
+		cl = 6; // CEngineClient::ServerCmdKeyValues
 		StringToButtonCode = 29; // ReadCheatCommandsFromFile
 		GetRecordingTick = 1; // CDemoRecorder
 		SetSignonState = 3; // CDemoRecorder

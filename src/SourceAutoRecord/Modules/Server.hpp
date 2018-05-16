@@ -28,6 +28,7 @@ namespace Server
 	using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
 	using _FinishGravity = int(__cdecl*)(void* thisptr);
 	using _AirMove = int(__cdecl*)(void* thisptr);
+	using _AirAccelerate = int(__cdecl*)(void* thisptr, int a2, float a3, float a4);
 
 	std::unique_ptr<VMTHook> g_GameMovement;
 	std::unique_ptr<VMTHook> g_ServerGameDLL;
@@ -53,6 +54,7 @@ namespace Server
 		_FinishGravity FinishGravity;
 		_AirMove AirMove;
 		_AirMove AirMoveBase;
+		_AirAccelerate AirAccelerateBase;
 	}
 
 	namespace Detour
@@ -171,6 +173,10 @@ namespace Server
 			}
 			return Original::AirMove(thisptr);
 		}
+		int __cdecl AirAccelerate(void* thisptr, int a2, float a3, float a4)
+		{
+			return Original::AirAccelerateBase(thisptr, a2, a3, a4);
+		}
 	}
 
 	void Hook()
@@ -191,6 +197,9 @@ namespace Server
 				Original::FinishGravity = g_GameMovement->GetOriginalFunction<_FinishGravity>(Offsets::FinishGravity);
 				Original::AirMove = g_GameMovement->GetOriginalFunction<_AirMove>(Offsets::AirMove);
 				Original::AirMoveBase = reinterpret_cast<_AirMove>(module.lpBaseOfDll + 0x47CD30);
+
+				//g_GameMovement->HookFunction((void*)Detour::AirAccelerate, 23);
+				//Original::AirAccelerateBase = reinterpret_cast<_AirAccelerate>(module.lpBaseOfDll + 0x47ED20);
 			}
 
 			auto FullTossMove = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::FullTossMove);

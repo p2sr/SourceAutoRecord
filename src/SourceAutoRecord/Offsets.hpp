@@ -4,7 +4,6 @@ namespace Offsets
 {
 	// CCvar
 	int FindVar;
-	int m_pConCommandList;
 
 	// CEngineClient
 	int ClientCmd;
@@ -96,7 +95,7 @@ namespace Offsets
 	int tickcount;
 	int interval_per_tick;
 	int GetClientStateFunction;
-	int sub_37A4C0;
+	int ServerCmdKeyValues;
 	int cl;
 	int demoplayer;
 	int demorecorder;

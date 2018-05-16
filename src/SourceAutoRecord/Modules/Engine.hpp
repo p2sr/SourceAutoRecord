@@ -187,8 +187,8 @@ namespace Engine
 				cl = std::make_unique<VMTHook>(GetClientStateFunction());
 			}
 			else {
-				auto sub_37A4C0 = engine->GetOriginalFunction<uintptr_t>(Offsets::sub_37A4C0);
-				auto ptr = *reinterpret_cast<void**>(sub_37A4C0 + Offsets::cl);
+				auto ServerCmdKeyValues = engine->GetOriginalFunction<uintptr_t>(Offsets::ServerCmdKeyValues);
+				auto ptr = *reinterpret_cast<void**>(ServerCmdKeyValues + Offsets::cl);
 				cl = std::make_unique<VMTHook>(ptr);
 			}
 
