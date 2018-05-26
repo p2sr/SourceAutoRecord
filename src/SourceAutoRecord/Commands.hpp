@@ -91,6 +91,12 @@ namespace Commands
 	// Others
 	ConCommand sar_session;
 	ConCommand sar_about;
+	ConCommand sar_trace_a;
+	ConCommand sar_trace_b;
+	ConCommand sar_trace_result;
+	ConCommand sar_max_vel;
+	ConVar sar_max_vel_xy;
+	ConCommand sar_max_vel_reset;
 
 	// From the game
 	ConVar cl_showpos;

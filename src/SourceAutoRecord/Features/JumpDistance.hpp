@@ -5,7 +5,7 @@
 
 namespace JumpDistance
 {
-	double LastDistance;
+	float LastDistance;
 
 	bool IsTracing;
 	Vector Source;
@@ -17,8 +17,8 @@ namespace JumpDistance
 	}
 	void EndTrace(Vector destination)
 	{
-		int x = destination.x - Source.x;
-		int y = destination.y - Source.y;
+		float x = destination.x - Source.x;
+		float y = destination.y - Source.y;
 		LastDistance = std::sqrt(x * x + y * y);
 		IsTracing = false;
 	}

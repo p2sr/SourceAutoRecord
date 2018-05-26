@@ -3,6 +3,7 @@
 
 #include "Client.hpp"
 
+#include "Features/Helper.hpp"
 #include "Features/JumpDistance.hpp"
 #include "Features/StepCounter.hpp"
 
@@ -130,6 +131,8 @@ namespace Server
 
 				StepCounter::Increment(m_fFlags, m_vecVelocity, m_nWaterLevel);
 			}
+
+			Helper::Velocity::Save(Client::GetLocalVelocity(), sar_max_vel_xy.GetBool());
 
 			return Original::PlayerMove(thisptr);
 		}

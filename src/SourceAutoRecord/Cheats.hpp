@@ -285,6 +285,30 @@ namespace Cheats
 			"sar_cvars_load",
 			Callbacks::LoadCvars,
 			"Loads important SAR cvars.\n");
+		sar_trace_a = CreateCommand(
+			"sar_trace_a",
+			Callbacks::SaveTracerA,
+			"Saves location A for tracing.\n");
+		sar_trace_b = CreateCommand(
+			"sar_trace_b",
+			Callbacks::SaveTracerB,
+			"Saves location B for tracing.\n");
+		sar_trace_result = CreateCommand(
+			"sar_trace_result",
+			Callbacks::PrintTracerResult,
+			"Prints tracing result.\n");
+		sar_max_vel = CreateCommand(
+			"sar_max_vel",
+			Callbacks::PrintMaxVel,
+			"Prints latest maximum velocity.\n");
+		sar_max_vel_xy = CreateBoolean(
+			"sar_max_vel_xy",
+			"0",
+			"Saves 2D velocity instead.\n");
+		sar_max_vel_reset = CreateCommand(
+			"sar_max_vel_reset",
+			Callbacks::ResetMaxVel,
+			"Resets saved maximum velocity.\n");
 
 		// From the game
 		cl_showpos = GetConVar("cl_showpos");

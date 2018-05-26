@@ -72,16 +72,6 @@ namespace Client
 
 	void Hook()
 	{
-		/* auto module = MODULEINFO();
-		if (GetModuleInformation("client.so", &module)) {
-			void* g_ItemManager = reinterpret_cast<void*>(module.lpBaseOfDll + 0x18B98E0);
-			// CEditorItemFactory::Init
-			typedef void*(*_Init)(void* thisptr);
-			auto Init = reinterpret_cast<_Init>(module.lpBaseOfDll + 0x111F430);
-			Init(g_ItemManager);
-			Console::PrintActive("Init!\n");
-		} */
-
 		if (Interfaces::IBaseClientDLL) {
 			clientdll = std::make_unique<VMTHook>(Interfaces::IBaseClientDLL);
 			clientdll->HookFunction((void*)Detour::HudUpdate, Offsets::HudUpdate);
