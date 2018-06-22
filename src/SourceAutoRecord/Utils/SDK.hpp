@@ -57,6 +57,24 @@ enum SignonState {
 	Changelevel = 7
 };
 
+struct CUserCmd {
+	void* VFT;
+	int command_number;
+	int tick_count;
+	QAngle viewangles;
+	float forwardmove;
+	float sidemove;
+	float upmove;
+	int buttons;
+	unsigned char impulse;
+	int weaponselect;
+	int weaponsubtype;
+	int random_seed;
+	short mousedx;
+	short mousedy;
+	bool hasbeenpredicted;
+};
+
 #define M_PI 3.14159265358979323846
 #define M_PI_F ((float)(M_PI))
 #define RAD2DEG(x) ((float)(x) * (float)(180.f / M_PI_F))
@@ -100,6 +118,36 @@ void VectorAdd(const Vector& a, const Vector& b, Vector& c)
 	c.x = a.x + b.x;
 	c.y = a.y + b.y;
 	c.z = a.z + b.z;
+}
+
+void NormalizeAngles(QAngle& angle)
+{
+	while (angle.x > 89.0f)
+		angle.x -= 180.f;
+
+	while (angle.x < -89.0f)
+		angle.x += 180.f;
+
+	while (angle.y > 180.f)
+		angle.y -= 360.f;
+
+	while (angle.y < -180.f)
+		angle.y += 360.f;
+}
+
+void ClampAngles(QAngle& angle)
+{
+	if (angle.y > 180.0f)
+		angle.y = 180.0f;
+	else if (angle.y < -180.0f)
+		angle.y = -180.0f;
+
+	if (angle.x > 89.0f)
+		angle.x = 89.0f;
+	else if (angle.x < -89.0f)
+		angle.x = -89.0f;
+
+	angle.z = 0;
 }
 
 class CMoveData

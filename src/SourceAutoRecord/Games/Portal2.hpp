@@ -99,6 +99,8 @@ namespace Portal2
 
 		PlayerMove = 16; // CPortalGameMovement
 		AirMove = 24; // CPortalGameMovement
+		AirMove_Offset1 = 14; // CPortalGameMovement::~CPortalGameMovement
+		AirMove_Offset2 = 12; // CGameMovement::~CGameMovement
 		FinishGravity = 35; // CPortalGameMovement
 		CheckJumpButton = 37; // CPortalGameMovement
 		FullTossMove = 38; // CGameMovement
@@ -127,5 +129,7 @@ namespace Portal2
 		m_angAbsRotation = 172; // C_BasePlayer::GetAbsAngles
 		m_vecVelocity = 244; // CFPSPanel::Paint
 		GetClientEntity = 3; // IClientEntityList
+		GetFlags = 228; // C_BasePlayer::PhysicsSimulate
+		CreateMove = 25; // IClientMode
 	}
 }

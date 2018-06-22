@@ -13,10 +13,12 @@
 namespace Client
 {
 	using _HudUpdate = int(__cdecl*)(void* thisptr, unsigned int a2);
+	using _CreateMove = int(__cdecl*)(void* thisptr, float flInputSampleTime, CUserCmd* cmd);
 	using _GetClientEntity = void*(__cdecl*)(void* thisptr, int entnum);
 
 	std::unique_ptr<VMTHook> clientdll;
 	std::unique_ptr<VMTHook> s_EntityList;
+	std::unique_ptr<VMTHook> g_pClientMode;
 
 	_GetClientEntity GetClientEntity;
 
@@ -40,10 +42,16 @@ namespace Client
 		auto player = GetPlayer();
 		return (player) ? *(Vector*)((uintptr_t)player + Offsets::m_vecVelocity) : Vector();
 	}
+	int GetFlags()
+	{
+		auto player = GetPlayer();
+		return (player) ? *(int*)((uintptr_t)player + Offsets::GetFlags) : 0;
+	}
 
 	namespace Original
 	{
 		_HudUpdate HudUpdate;
+		_CreateMove CreateMove;
 	}
 
 	namespace Detour
@@ -68,6 +76,10 @@ namespace Client
 			}
 			return Original::HudUpdate(thisptr, a2);
 		}
+		int __cdecl CreateMove(void* thisptr, float flInputSampleTime, CUserCmd* cmd)
+		{
+			return Original::CreateMove(thisptr, flInputSampleTime, cmd);
+		}
 	}
 
 	void Hook()
@@ -76,6 +88,15 @@ namespace Client
 			clientdll = std::make_unique<VMTHook>(Interfaces::IBaseClientDLL);
 			clientdll->HookFunction((void*)Detour::HudUpdate, Offsets::HudUpdate);
 			Original::HudUpdate = clientdll->GetOriginalFunction<_HudUpdate>(Offsets::HudUpdate);
+
+			/* // Before HudUpdate in VMT
+			auto HudProcessInput = clientdll->GetOriginalFunction<uintptr_t>(Offsets::HudUpdate - 1);
+			typedef void*(*_GetClientMode)();
+			auto GetClientMode = reinterpret_cast<_GetClientMode>(GetAbsoluteAddress(HudProcessInput + 12));
+			g_pClientMode = std::make_unique<VMTHook>(GetClientMode());
+
+			g_pClientMode->HookFunction((void*)Detour::CreateMove, Offsets::CreateMove);
+			Original::CreateMove = g_pClientMode->GetOriginalFunction<_CreateMove>(Offsets::CreateMove); */
 		}
 
 		if (Interfaces::IClientEntityList) {

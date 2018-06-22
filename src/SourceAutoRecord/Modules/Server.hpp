@@ -198,11 +198,17 @@ namespace Server
 				g_GameMovement->HookFunction((void*)Detour::AirMove, Offsets::AirMove);
 
 				Original::FinishGravity = g_GameMovement->GetOriginalFunction<_FinishGravity>(Offsets::FinishGravity);
+
+				auto destructor = g_GameMovement->GetOriginalFunction<uintptr_t>(0);
+				auto baseDestructor = GetAbsoluteAddress(destructor + Offsets::AirMove_Offset1);
+				auto baseOffset = *reinterpret_cast<uintptr_t*>(baseDestructor + Offsets::AirMove_Offset2);
+				auto airMoveAdr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
+
 				Original::AirMove = g_GameMovement->GetOriginalFunction<_AirMove>(Offsets::AirMove);
-				Original::AirMoveBase = reinterpret_cast<_AirMove>(module.lpBaseOfDll + 0x47CD30);
+				Original::AirMoveBase = reinterpret_cast<_AirMove>(airMoveAdr);
 
 				//g_GameMovement->HookFunction((void*)Detour::AirAccelerate, 23);
-				//Original::AirAccelerateBase = reinterpret_cast<_AirAccelerate>(module.lpBaseOfDll + 0x47ED20);
+				//Original::AirAccelerateBase = reinterpret_cast<_AirAccelerate>(module.lpBaseOfDll + 0x485C40);
 			}
 
 			auto FullTossMove = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::FullTossMove);

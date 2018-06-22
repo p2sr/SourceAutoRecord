@@ -15,6 +15,9 @@ namespace Offsets
 	// CHLClient
 	int HudUpdate;
 
+	// IClientMode
+	int CreateMove;
+
 	// ConVar
 	int InternalSetValue;
 	int InternalSetFloatValue;
@@ -30,6 +33,8 @@ namespace Offsets
 	// CGameMovement
 	int PlayerMove;
 	int AirMove;
+	int AirMove_Offset1;
+	int AirMove_Offset2;
 	int FinishGravity;
 	int CheckJumpButton;
 	int FullTossMove;
@@ -58,6 +63,7 @@ namespace Offsets
 	int m_vecAbsOrigin;
 	int m_angAbsRotation;
 	int m_vecVelocity;
+	int GetFlags;
 
 	// CBasePlayer
 	int iNumPortalsPlaced;

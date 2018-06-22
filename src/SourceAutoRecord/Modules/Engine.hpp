@@ -181,10 +181,9 @@ namespace Engine
 			Vars::GetGameDirectory = engine->GetOriginalFunction<Vars::_GetGameDirectory>(Offsets::GetGameDirectory);
 
 			if (Offsets::GetClientStateFunction != 0) {
-				typedef void*(*_GetClientStateFunction)();
-				auto abs = GetAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientStateFunction);
-				auto GetClientStateFunction = reinterpret_cast<_GetClientStateFunction>(abs);
-				cl = std::make_unique<VMTHook>(GetClientStateFunction());
+				typedef void*(*_GetClientState)();
+				auto GetClientState = reinterpret_cast<_GetClientState>(GetAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientStateFunction));
+				cl = std::make_unique<VMTHook>(GetClientState());
 			}
 			else {
 				auto ServerCmdKeyValues = engine->GetOriginalFunction<uintptr_t>(Offsets::ServerCmdKeyValues);
