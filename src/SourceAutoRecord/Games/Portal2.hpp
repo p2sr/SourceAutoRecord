@@ -80,7 +80,7 @@ namespace Portal2
 		m_szDemoBaseName = 1344; // CDemoRecorder::StartupDemoFile
 		m_nDemoNumber = 1608; // CDemoRecorder::StartupDemoFile
 		m_bRecording = 1606; // CDemoRecorder::SetSignonState
-		Paint = 15; // IEngineVGuiInternal
+		Paint = 15; // CEngineVGui
 		ProcessTick = 12; // CClientState
 		tickcount = 73; // CClientState::ProcessTick
 		interval_per_tick = 81; // CClientState::ProcessTick
@@ -90,6 +90,11 @@ namespace Portal2
 		demoplayer = 93; // CClientState::Disconnect
 		demorecorder = 106; // CClientState::Disconnect
 		m_szLevelName = 72; // CEngineTool::GetCurrentMap
+
+
+        // vgui2.so
+
+
 		GetIScheme = 9; // CSchemeManager
 		GetFont = 4; // CScheme
 

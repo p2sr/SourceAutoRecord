@@ -143,7 +143,7 @@ namespace Server
 				auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
 				auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
 
-				auto m_bDucked = *reinterpret_cast<bool*>((uintptr_t)player + 2296);
+				auto m_bDucked = *reinterpret_cast<bool*>((uintptr_t)player + 2296); // TODO
 
 				Vector vecForward;
 				AngleVectors(mv->m_vecViewAngles, &vecForward);
@@ -184,8 +184,7 @@ namespace Server
 
 	void Hook()
 	{
-		auto module = MODULEINFO();
-		if (Interfaces::IGameMovement && GetModuleInformation("server.so", &module)) {
+		if (Interfaces::IGameMovement) {
 			g_GameMovement = std::make_unique<VMTHook>(Interfaces::IGameMovement);
 			g_GameMovement->HookFunction((void*)Detour::CheckJumpButton, Offsets::CheckJumpButton);
 			g_GameMovement->HookFunction((void*)Detour::PlayerMove, Offsets::PlayerMove);
@@ -193,7 +192,7 @@ namespace Server
 			Original::CheckJumpButton = g_GameMovement->GetOriginalFunction<_CheckJumpButton>(Offsets::CheckJumpButton);
 			Original::PlayerMove = g_GameMovement->GetOriginalFunction<_PlayerMove>(Offsets::PlayerMove);
 
-			if (Game::Version == Game::Portal2) {
+			if (Game::Version == Game::Portal2 || Game::Version == Game::TheStanleyParable) {
 				g_GameMovement->HookFunction((void*)Detour::FinishGravity, Offsets::FinishGravity);
 				g_GameMovement->HookFunction((void*)Detour::AirMove, Offsets::AirMove);
 
@@ -202,13 +201,14 @@ namespace Server
 				auto destructor = g_GameMovement->GetOriginalFunction<uintptr_t>(0);
 				auto baseDestructor = GetAbsoluteAddress(destructor + Offsets::AirMove_Offset1);
 				auto baseOffset = *reinterpret_cast<uintptr_t*>(baseDestructor + Offsets::AirMove_Offset2);
-				auto airMoveAdr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
+				auto airMoveAddr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
 
 				Original::AirMove = g_GameMovement->GetOriginalFunction<_AirMove>(Offsets::AirMove);
-				Original::AirMoveBase = reinterpret_cast<_AirMove>(airMoveAdr);
+				Original::AirMoveBase = reinterpret_cast<_AirMove>(airMoveAddr);
 
 				//g_GameMovement->HookFunction((void*)Detour::AirAccelerate, 23);
-				//Original::AirAccelerateBase = reinterpret_cast<_AirAccelerate>(module.lpBaseOfDll + 0x485C40);
+                //auto airAccelerateAddr = *reinterpret_cast<uintptr_t*>(baseOffset + 23 * sizeof(uintptr_t*));
+				//Original::AirAccelerateBase = reinterpret_cast<_AirAccelerate>(airAccelerateAddr);
 			}
 
 			auto FullTossMove = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::FullTossMove);

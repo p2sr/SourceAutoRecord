@@ -203,6 +203,9 @@ namespace VGui
 				RespectClShowPos = false;
 				FontIndexOffset = 0;
 			}
+            else if (Game::Version == Game::TheStanleyParable) {
+                FontIndexOffset = 0;
+            }
 		}
 	}
 }

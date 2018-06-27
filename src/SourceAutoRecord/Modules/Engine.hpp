@@ -180,7 +180,7 @@ namespace Engine
 			SetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::SetViewAngles);
 			Vars::GetGameDirectory = engine->GetOriginalFunction<Vars::_GetGameDirectory>(Offsets::GetGameDirectory);
 
-			if (Offsets::GetClientStateFunction != 0) {
+			if (Game::Version == Game::Portal2 || Game::Version == Game::TheStanleyParable) {
 				typedef void*(*_GetClientState)();
 				auto GetClientState = reinterpret_cast<_GetClientState>(GetAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientStateFunction));
 				cl = std::make_unique<VMTHook>(GetClientState());
@@ -196,7 +196,7 @@ namespace Engine
 			Original::SetSignonState = cl->GetOriginalFunction<_SetSignonState>(Offsets::Disconnect - 1);
 
 			uintptr_t disconnect;
-			if (Game::Version == Game::Portal2) {
+			if (Game::Version == Game::Portal2 || Game::Version == Game::TheStanleyParable) {
 				cl->HookFunction((void*)Detour::Disconnect, Offsets::Disconnect);
 				Original::Disconnect = cl->GetOriginalFunction<_Disconnect>(Offsets::Disconnect);
 				disconnect = (uintptr_t)Original::Disconnect;

@@ -47,6 +47,26 @@ namespace TheStanleyParable
 	{
 		Portal2::Offsets();
 
+
+        // engine.so
+        tickcount = 74; // CClientState::ProcessTick
+        interval_per_tick = 82; // CClientState::ProcessTick
+        m_szLevelName = 56; // CEngineTool::GetCurrentMap
+        demoplayer = 92; // CClientState::Disconnect
+		demorecorder = 105; // CClientState::Disconnect
+
+
+        // server.so
+
+
+        iNumPortalsPlaced = 5728; // CPortal_Player::IncrementPortalsPlaced
+        gpGlobals = 576; // CGameMovement::FullTossMove
+        psurface = 4120; // CPortalGameMovement::PlayerMove
+
+
+        // client.so
+
+
         IN_ActivateMous = 15;
         GetButtonBits = 2;
         JoyStickApplyMovement = 64;

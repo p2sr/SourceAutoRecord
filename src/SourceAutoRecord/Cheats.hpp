@@ -226,7 +226,7 @@ namespace Cheats
 			"sar_autojump",
 			"0",
 			"Enables automatic jumping on the server.\n");
-		if (Game::Version == Game::Portal2) {
+		if (Game::Version == Game::Portal2 || Game::Version == Game::TheStanleyParable) {
 			sar_jumpboost = CreateFloat(
 				"sar_jumpboost",
 				"0",
