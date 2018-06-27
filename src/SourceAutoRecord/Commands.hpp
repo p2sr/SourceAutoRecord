@@ -76,6 +76,8 @@ namespace Commands
 	ConVar sar_aircontrol;
 	ConCommand sar_teleport;
 	ConCommand sar_teleport_setpos;
+    ConCommand sar_startbhop;
+    ConCommand sar_endbhop;
 
 	// Config
 	ConCommand sar_cvars_save;

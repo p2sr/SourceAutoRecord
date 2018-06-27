@@ -8,6 +8,16 @@ if [ "$1" == "portal" ]; then
   appid="400"
 fi
 
+if [ "$1" == "tsp" ]; then
+  exe="stanley_linux"
+  appid="221910"
+fi
+
+if [ "$1" == "tbg" ]; then
+  exe="beginnersguide"
+  appid="303210"
+fi
+
 pid=$(pidof $exe)
 
 if [ -z "$pid" ]; then

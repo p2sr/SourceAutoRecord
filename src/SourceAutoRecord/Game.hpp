@@ -3,50 +3,60 @@
 
 #include "Games/Portal.hpp"
 #include "Games/Portal2.hpp"
+#include "Games/TheStanleyParable.hpp"
 
 namespace Game
 {
-	enum SourceGame
-	{
-		Portal2,	// Portal 2 7054
-		Portal		// Portal 1910503
-	};
+    enum SourceGame
+    {
+        Portal2,          // Portal 2 (7054)
+        Portal,           // Portal (1910503)
+        TheStanleyParable // The Stanley Parable (6130)
+    };
 
-	SourceGame Version;
+    SourceGame Version;
 
-	bool IsSupported()
-	{
-		char link[20];
-		char temp[260] = {0};
-		sprintf(link, "/proc/%d/exe", getpid());
-		readlink(link, temp, sizeof(temp));
+    bool IsSupported()
+    {
+        char link[20];
+        char temp[260] = {0};
+        sprintf(link, "/proc/%d/exe", getpid());
+        readlink(link, temp, sizeof(temp));
 
-		std::string exe = std::string(temp);
-		int index = exe.find_last_of("\\/");
-		exe = exe.substr(index + 1, exe.length() - index);
+        std::string exe = std::string(temp);
+        int index = exe.find_last_of("\\/");
+        exe = exe.substr(index + 1, exe.length() - index);
 
-		if (exe == "portal2_linux") {
-			Version = SourceGame::Portal2;
-			Portal2::Patterns();
-			Portal2::Offsets();
-		}
-		else if (exe == "hl2_linux") {
-			Version = SourceGame::Portal;
-			Portal::Patterns();
-			Portal::Offsets();
-		}
-		else {
-			return false;
-		}
-		return true;
-	}
-	const char* GetVersion() {
-		switch (Version) {
-		case 0:
-			return "Portal 2 (7054)";
-		case 1:
-			return "Portal (1910503)";
-		}
-		return "Unknown";
-	}
+        if (exe == "portal2_linux") {
+            Version = SourceGame::Portal2;
+            Portal2::Patterns();
+            Portal2::Offsets();
+        }
+        else if (exe == "hl2_linux") {
+            Version = SourceGame::Portal;
+            Portal::Patterns();
+            Portal::Offsets();
+        }
+        else if (exe == "stanley_linux") {
+            Version = SourceGame::TheStanleyParable;
+            TheStanleyParable::Patterns();
+            TheStanleyParable::Offsets();
+        }
+        else {
+            return false;
+        }
+        return true;
+    }
+    const char *GetVersion()
+    {
+        switch (Version) {
+            case 0:
+                return "Portal 2 (7054)";
+            case 1:
+                return "Portal (1910503)";
+            case 2:
+                return "The Stanley Parable (6130)";
+        }
+        return "Unknown";
+    }
 }

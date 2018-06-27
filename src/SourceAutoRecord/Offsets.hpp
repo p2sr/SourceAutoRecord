@@ -14,6 +14,8 @@ namespace Offsets
 
 	// CHLClient
 	int HudUpdate;
+    int IN_ActivateMous;
+    int JoyStickApplyMovement;
 
 	// IClientMode
 	int CreateMove;
@@ -29,6 +31,9 @@ namespace Offsets
 
 	// CInputSystem
 	int StringToButtonCode;
+
+    // CInput
+    int GetButtonBits;
 
 	// CGameMovement
 	int PlayerMove;
@@ -108,4 +113,7 @@ namespace Offsets
 	int m_szLevelName;
 	int UTIL_PlayerByIndex;
 	int gpGlobals;
+    int in_jump;
+    int KeyDown;
+    int KeyUp;
 }

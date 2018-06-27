@@ -1,1 +1,1 @@
-g++ -std=c++14 -m32 -fPIC -Isrc/SourceAutoRecord/ -Isrc/SourceAutoRecord/Features/ -Ilibs/ -o sar.so src/SourceAutoRecord/Main.cpp -shared -Wall
+g++ -std=c++14 -m32 -fPIC -static-libstdc++ -Isrc/SourceAutoRecord/ -Isrc/SourceAutoRecord/Features/ -Ilibs/ -o sar.so src/SourceAutoRecord/Main.cpp -shared -Wall

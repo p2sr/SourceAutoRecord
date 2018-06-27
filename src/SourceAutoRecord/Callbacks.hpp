@@ -1,4 +1,5 @@
 #pragma once
+#include "Callbacks/Bhop.hpp"
 #include "Callbacks/Binding.hpp"
 #include "Callbacks/Cheats.hpp"
 #include "Callbacks/Config.hpp"

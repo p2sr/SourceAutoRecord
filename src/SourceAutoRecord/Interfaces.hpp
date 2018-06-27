@@ -76,11 +76,11 @@ namespace Interfaces
 		}
 		result.pop_back();
 
-		Console::DevMsg("%s = Get(\"%s\", \"%s\");\n", interfaceName, filename, result);
+		Console::DevMsg("%s = Get(\"%s\", \"%s\");\n", interfaceName, filename, result.c_str());
 	}
 	void Load()
 	{
-		if (Game::Version == Game::Portal2) {
+		if (Game::Version == Game::Portal2 || Game::Version == Game::TheStanleyParable) {
 			IVEngineClient = Get("engine.so", "VEngineClient015");
 			IEngineVGui = Get("engine.so", "VEngineVGui001");
 			IEngineTool = Get("engine.so", "VENGINETOOL003");

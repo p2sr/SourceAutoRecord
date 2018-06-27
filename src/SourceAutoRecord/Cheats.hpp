@@ -245,6 +245,16 @@ namespace Cheats
 			"sar_teleport_setpos",
 			Callbacks::SetTeleport,
 			"Saves current location for teleportation.\n");
+        if (Game::Version == Game::TheStanleyParable) {
+            sar_startbhop = CreateCommandArgs(
+			    "+bhop",
+			    Callbacks::IN_BhopDown,
+                "Jump.");
+            sar_endbhop = CreateCommandArgs(
+			    "-bhop",
+			    Callbacks::IN_BhopUp,
+                "Jump.");
+        }
 
 		// TAS
 		sar_tas_frame_at = CreateCommandArgs(

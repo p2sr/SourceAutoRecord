@@ -218,8 +218,7 @@ namespace Server
 		if (Interfaces::IServerGameDLL) {
 			g_ServerGameDLL = std::make_unique<VMTHook>(Interfaces::IServerGameDLL);
 			auto Think = g_ServerGameDLL->GetOriginalFunction<uintptr_t>(Offsets::Think);
-			auto abs = GetAbsoluteAddress(Think + Offsets::UTIL_PlayerByIndex);
-			UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(abs);
+			UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(GetAbsoluteAddress(Think + Offsets::UTIL_PlayerByIndex));
 		}
 	}
 }

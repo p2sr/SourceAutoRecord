@@ -30,8 +30,8 @@
 - Portal 2
 - Aperture Tag
 - Portal Stories: Mel
-- Portal (1.6+)
-- INFRA (1.5)
+- Portal
+- The Stanley Parable
 
 ## Features
 
