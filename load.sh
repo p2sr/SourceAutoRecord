@@ -14,7 +14,7 @@ if [ "$1" == "tsp" ]; then
 fi
 
 if [ "$1" == "tbg" ]; then
-  exe="beginnersguide"
+  exe="beginnersguide.bin"
   appid="303210"
 fi
 

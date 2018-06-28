@@ -28,36 +28,31 @@ int __attribute__((constructor)) Main()
 {
 	if (!Console::Init()) return 1;
 
-	if (Game::IsSupported()) {
+	Game::Init();
+	Interfaces::Init();
 
-		Interfaces::Load();
+    if (Cvar::Loaded() && Tier1::ConCommandLoaded() && Tier1::ConVarLoaded()) {
 
-		if (Cvar::Loaded() && Tier1::ConCommandLoaded() && Tier1::ConVarLoaded()) {
+        Cheats::Create();
+        Cheats::UnlockAll();
 
-			Cheats::Create();
-			Cheats::UnlockAll();
+        Client::Hook();
+        Engine::Hook();
+        InputSystem::Hook();
+        Scheme::Hook();
+        Server::Hook();
+        Surface::Hook();
+        Vars::Hook();
+        VGui::Hook();
 
-			Client::Hook();
-			Engine::Hook();
-			InputSystem::Hook();
-			Scheme::Hook();
-			Server::Hook();
-			Surface::Hook();
-			Vars::Hook();
-			VGui::Hook();
+        Config::Load();
 
-			Config::Load();
-
-			Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
-			return 0;
-		}
-		else {
-			Console::Warning("SAR: Could not register any commands!\n");
-		}
-	}
-	else {
-		Console::Warning("SAR: Game not supported!\n");
-	}
+        Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
+        return 0;
+    }
+    else {
+        Console::Warning("SAR: Could not register any commands!\n");
+    }
 
 	Console::Warning("SAR: Failed to load SourceAutoRecord!\n");
 	return 1;

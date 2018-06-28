@@ -67,11 +67,11 @@ namespace TheStanleyParable
         // client.so
 
 
-        IN_ActivateMous = 15;
-        GetButtonBits = 2;
-        JoyStickApplyMovement = 64;
-        in_jump = 210;
-        KeyDown = 337;
-        KeyUp = 384;
+        IN_ActivateMous = 15; // CHLClient
+        GetButtonBits = 2; // CInput
+        JoyStickApplyMovement = 64; // CInput
+        in_jump = 210; // CInput::GetButtonBits
+        KeyDown = 337; // CInput::JoyStickApplyMovement
+        KeyUp = 384; // CInput::JoyStickApplyMovement
 	}
 }

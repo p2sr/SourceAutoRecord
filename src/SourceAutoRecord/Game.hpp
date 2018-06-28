@@ -3,20 +3,27 @@
 
 #include "Games/Portal.hpp"
 #include "Games/Portal2.hpp"
+#include "Games/TheBeginnersGuide.hpp"
 #include "Games/TheStanleyParable.hpp"
 
 namespace Game
 {
     enum SourceGame
     {
-        Portal2,          // Portal 2 (7054)
-        Portal,           // Portal (1910503)
-        TheStanleyParable // The Stanley Parable (6130)
+        Unknown,
+        Portal2,            // Portal 2 (7054)
+        Portal,             // Portal (1910503)
+        TheStanleyParable,  // The Stanley Parable (6130)
+        TheBeginnersGuide   // The Beginners Guide (6172)
     };
 
-    SourceGame Version;
+    SourceGame Version = SourceGame::Unknown;
 
     bool IsSupported()
+    {
+        return Version != SourceGame::Unknown;
+    }
+    void Init()
     {
         char link[20];
         char temp[260] = {0};
@@ -42,21 +49,32 @@ namespace Game
             TheStanleyParable::Patterns();
             TheStanleyParable::Offsets();
         }
-        else {
-            return false;
+        else if (exe == "beginnersguide.bin") {
+            Version = SourceGame::TheBeginnersGuide;
+            TheBeginnersGuide::Patterns();
+            TheBeginnersGuide::Offsets();
         }
-        return true;
     }
     const char *GetVersion()
     {
         switch (Version) {
-            case 0:
+            case SourceGame::Portal2:
                 return "Portal 2 (7054)";
-            case 1:
+            case SourceGame::Portal:
                 return "Portal (1910503)";
-            case 2:
+            case SourceGame::TheStanleyParable:
                 return "The Stanley Parable (6130)";
+            case SourceGame::TheBeginnersGuide:
+                return "The Beginners Guide (6172)";
+            default:
+                break;
         }
         return "Unknown";
+    }
+    bool IsPortal2Engine()
+    {
+        return Version == SourceGame::Portal2
+            || Version == SourceGame::TheStanleyParable
+            || Version == SourceGame::TheBeginnersGuide;
     }
 }

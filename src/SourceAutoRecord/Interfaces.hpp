@@ -51,7 +51,7 @@ namespace Interfaces
 		}
 		return result;
 	}
-	void Log(const char* filename, const char* interfaceName)
+	void Log(const char* variable, const char* filename, const char* interfaceName)
 	{
 		auto module = MODULEINFO();
 		if (!GetModuleInformation(filename, &module)) {
@@ -76,11 +76,11 @@ namespace Interfaces
 		}
 		result.pop_back();
 
-		Console::DevMsg("%s = Get(\"%s\", \"%s\");\n", interfaceName, filename, result.c_str());
+		Console::DevMsg("%s = Get(\"%s\", \"%s\");\n", variable, filename, result.c_str());
 	}
-	void Load()
+	void Init()
 	{
-		if (Game::Version == Game::Portal2 || Game::Version == Game::TheStanleyParable) {
+		if (Game::IsPortal2Engine()) {
 			IVEngineClient = Get("engine.so", "VEngineClient015");
 			IEngineVGui = Get("engine.so", "VEngineVGui001");
 			IEngineTool = Get("engine.so", "VENGINETOOL003");
@@ -107,17 +107,17 @@ namespace Interfaces
 			ICVar = Get("libvstdlib.so", "VEngineCvar004");
 		}
 		else {
-			Log("engine.so", "VEngineClient");
-			Log("engine.so", "VEngineVGui");
-			Log("engine.so", "VENGINETOOL");
-			Log("inputsystem.so", "InputSystemVersion");
-			Log("vguimatsurface.so", "VGUI_Surface");
-			Log("vgui2.so", "VGUI_Scheme");
-			Log("client.so", "VClient");
-			Log("client.so", "VClientEntityList");
-			Log("server.so", "GameMovement");
-			Log("server.so", "ServerGameDLL");
-			Log("libvstdlib.so", "VEngineCvar");
+			Log("IVEngineClient", "engine.so", "VEngineClient");
+			Log("IEngineVGui", "engine.so", "VEngineVGui");
+			Log("IEngineTool", "engine.so", "VENGINETOOL");
+			Log("IInputSystem", "inputsystem.so", "InputSystemVersion");
+			Log("ISurface", "vguimatsurface.so", "VGUI_Surface");
+			Log("ISchemeManager", "vgui2.so", "VGUI_Scheme");
+			Log("IBaseClientDLL", "client.so", "VClient");
+			Log("IClientEntityList", "client.so", "VClientEntityList");
+			Log("IGameMovement", "server.so", "GameMovement");
+			Log("IServerGameDLL", "server.so", "ServerGameDLL");
+			Log("ICVar", "libvstdlib.so", "VEngineCvar");
 		}
 	}
 }

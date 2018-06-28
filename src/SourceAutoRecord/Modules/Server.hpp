@@ -138,12 +138,11 @@ namespace Server
 		}
 		int __cdecl FinishGravity(void* thisptr)
 		{
-			if (CallFromCheckJumpButton && sar_jumpboost.GetBool())
-			{
+			if (CallFromCheckJumpButton && sar_jumpboost.GetBool()) {
 				auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
 				auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
 
-				auto m_bDucked = *reinterpret_cast<bool*>((uintptr_t)player + 2296); // TODO
+				auto m_bDucked = *reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked);
 
 				Vector vecForward;
 				AngleVectors(mv->m_vecViewAngles, &vecForward);
@@ -192,7 +191,7 @@ namespace Server
 			Original::CheckJumpButton = g_GameMovement->GetOriginalFunction<_CheckJumpButton>(Offsets::CheckJumpButton);
 			Original::PlayerMove = g_GameMovement->GetOriginalFunction<_PlayerMove>(Offsets::PlayerMove);
 
-			if (Game::Version == Game::Portal2 || Game::Version == Game::TheStanleyParable) {
+			if (Game::IsPortal2Engine()) {
 				g_GameMovement->HookFunction((void*)Detour::FinishGravity, Offsets::FinishGravity);
 				g_GameMovement->HookFunction((void*)Detour::AirMove, Offsets::AirMove);
 

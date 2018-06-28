@@ -76,6 +76,7 @@ namespace Offsets
 	int m_MoveType;
 	int m_nWaterLevel;
 	int psurface;
+    int m_bDucked;
 
 	// IEngineVGuiInternal
 	int Paint;

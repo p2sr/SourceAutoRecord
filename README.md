@@ -1,4 +1,4 @@
-[![Build Version](https://img.shields.io/badge/version-v1.6--linux-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/3)
+[![Build Version](https://img.shields.io/badge/version-v1.7--linux-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/3)
 [![Build Version](https://img.shields.io/badge/version-v1.5--windows-orange.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/2)
 [![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
 
@@ -32,6 +32,7 @@
 - Portal Stories: Mel
 - Portal
 - The Stanley Parable
+- The Beginners Guide
 
 ## Features
 

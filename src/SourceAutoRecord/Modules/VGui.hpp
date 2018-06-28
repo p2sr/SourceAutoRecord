@@ -28,7 +28,7 @@ namespace VGui
 	std::unique_ptr<VMTHook> enginevgui;
 
 	bool RespectClShowPos = true;
-	int FontIndexOffset = 1;
+	int FontIndexOffset = 0;
 
 	namespace Original
 	{
@@ -201,10 +201,9 @@ namespace VGui
 
 			if (Game::Version == Game::Portal) {
 				RespectClShowPos = false;
-				FontIndexOffset = 0;
 			}
-            else if (Game::Version == Game::TheStanleyParable) {
-                FontIndexOffset = 0;
+            else if (Game::Version == Game::Portal2) {
+                FontIndexOffset = 1;
             }
 		}
 	}

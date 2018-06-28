@@ -122,6 +122,7 @@ namespace Portal2
 		psurface = 4116; // CPortalGameMovement::PlayerMove
 		m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
 		frametime = 16; // CBasePlayer::UpdateStepSound
+        m_bDucked = 2296; // CPortalGameMovement::FinishUnDuck
 
 
 		// client.so
