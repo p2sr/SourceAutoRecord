@@ -9,7 +9,6 @@
 #include "Features/Timer.hpp"
 
 #include "Offsets.hpp"
-#include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
 
 using namespace Commands;
@@ -81,6 +80,7 @@ namespace DemoRecorder
 			return result;
 		}
 	}
+
 	void Hook(void* demorecorder)
 	{
 		if (demorecorder) {

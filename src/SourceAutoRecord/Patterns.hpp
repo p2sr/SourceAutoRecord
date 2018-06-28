@@ -3,17 +3,17 @@
 
 namespace Patterns
 {
-	std::vector<Pattern> Items;
+	std::vector<Memory::Pattern> Items;
 
 	void Create(const char* moduleName, const char* patternName)
 	{
-		Items.push_back(Pattern
+		Items.push_back(Memory::Pattern
 		{
 			moduleName,
 			patternName
 		});
 	}
-	Pattern* Get(const char* patternName)
+	Memory::Pattern* Get(const char* patternName)
 	{
 		for (auto &pattern : Items) {
 			if (pattern.Name == patternName) {

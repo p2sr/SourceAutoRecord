@@ -23,6 +23,7 @@ namespace InputSystem
 	{
 		return StringToButtonCode(g_InputSystem->GetThisPtr(), pString);
 	}
+
 	void Hook()
 	{
 		if (Interfaces::IInputSystem) {

@@ -12,9 +12,9 @@
 
 namespace SAR
 {
-	ScanResult Find(const char* pattern)
+	Memory::ScanResult Find(const char* pattern)
 	{
-		auto result = Scan(Patterns::Get(pattern));
+		auto result = Memory::Scan(Patterns::Get(pattern));
 		if (result.Found) {
 			Console::DevMsg("%s\n", result.Message);
 		}

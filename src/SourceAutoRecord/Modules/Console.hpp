@@ -20,27 +20,23 @@ namespace Console
 
 	bool Init()
 	{
-		auto module = MODULEINFO();
-		if (GetModuleInformation("libtier0.so", &module)) {
-			auto tier0 = dlopen(module.modulePath, RTLD_NOLOAD | RTLD_NOW);
+		auto tier0 = Memory::GetModuleHandle("libtier0.so");
+        if (tier0) {
+            auto msgAddr = Memory::GetSymbolAddress(tier0, "Msg");
+            auto colorMsgAddr = Memory::GetSymbolAddress(tier0, "_Z11ConColorMsgRK5ColorPKcz");
+            auto warningAddr = Memory::GetSymbolAddress(tier0, "Warning");
+            auto devMsgAddr = Memory::GetSymbolAddress(tier0, "_Z6DevMsgPKcz");
+            auto devWarningAddr = Memory::GetSymbolAddress(tier0, "_Z10DevWarningPKcz");
 
-			if (tier0) {
-				auto msgAddr = dlsym(tier0, "Msg");
-				auto colorMsgAddr = dlsym(tier0, "_Z11ConColorMsgRK5ColorPKcz");
-				auto warningAddr = dlsym(tier0, "Warning");
-				auto devMsgAddr = dlsym(tier0, "_Z6DevMsgPKcz");
-				auto devWarningAddr = dlsym(tier0, "_Z10DevWarningPKcz");
-
-				if (msgAddr && colorMsgAddr && warningAddr && devMsgAddr && devWarningAddr) {
-					Msg = reinterpret_cast<_Msg>(msgAddr);
-					ColorMsg = reinterpret_cast<_ColorMsg>(colorMsgAddr);
-					Warning = reinterpret_cast<_Warning>(warningAddr);
-					DevMsg = reinterpret_cast<_DevMsg>(devMsgAddr);
-					DevWarning = reinterpret_cast<_DevWarning>(devWarningAddr);
-					return true;
-				}
-			}
-		}
+            if (msgAddr && colorMsgAddr && warningAddr && devMsgAddr && devWarningAddr) {
+                Msg = reinterpret_cast<_Msg>(msgAddr);
+                ColorMsg = reinterpret_cast<_ColorMsg>(colorMsgAddr);
+                Warning = reinterpret_cast<_Warning>(warningAddr);
+                DevMsg = reinterpret_cast<_DevMsg>(devMsgAddr);
+                DevWarning = reinterpret_cast<_DevWarning>(devWarningAddr);
+                return true;
+            }
+        }
 		return false;
 	}
 }

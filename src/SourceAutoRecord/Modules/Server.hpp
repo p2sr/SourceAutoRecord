@@ -198,7 +198,7 @@ namespace Server
 				Original::FinishGravity = g_GameMovement->GetOriginalFunction<_FinishGravity>(Offsets::FinishGravity);
 
 				auto destructor = g_GameMovement->GetOriginalFunction<uintptr_t>(0);
-				auto baseDestructor = GetAbsoluteAddress(destructor + Offsets::AirMove_Offset1);
+				auto baseDestructor = Memory::ReadAbsoluteAddress(destructor + Offsets::AirMove_Offset1);
 				auto baseOffset = *reinterpret_cast<uintptr_t*>(baseDestructor + Offsets::AirMove_Offset2);
 				auto airMoveAddr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
 
@@ -217,7 +217,8 @@ namespace Server
 		if (Interfaces::IServerGameDLL) {
 			g_ServerGameDLL = std::make_unique<VMTHook>(Interfaces::IServerGameDLL);
 			auto Think = g_ServerGameDLL->GetOriginalFunction<uintptr_t>(Offsets::Think);
-			UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(GetAbsoluteAddress(Think + Offsets::UTIL_PlayerByIndex));
+            auto addr = Memory::ReadAbsoluteAddress(Think + Offsets::UTIL_PlayerByIndex);
+			UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(addr);
 		}
 	}
 }

@@ -7,7 +7,6 @@
 #include "Features/Demo.hpp"
 
 #include "Offsets.hpp"
-#include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
 
 namespace DemoPlayer

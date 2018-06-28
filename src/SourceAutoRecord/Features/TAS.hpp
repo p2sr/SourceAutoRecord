@@ -1,7 +1,7 @@
 #pragma once
-#include "Modules/ConCommandArgs.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Client.hpp"
+#include "Modules/Tier1.hpp"
 
 namespace TAS
 {

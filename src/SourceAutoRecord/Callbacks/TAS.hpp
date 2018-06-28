@@ -1,6 +1,6 @@
 #pragma once
-#include "Modules/ConCommandArgs.hpp"
 #include "Modules/Client.hpp"
+#include "Modules/Tier1.hpp"
 
 #include "Features/TAS.hpp"
 

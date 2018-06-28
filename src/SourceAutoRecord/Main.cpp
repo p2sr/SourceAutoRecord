@@ -1,5 +1,3 @@
-#include "SourceAutoRecord.hpp"
-
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/DemoPlayer.hpp"
@@ -12,9 +10,7 @@
 #include "Modules/Vars.hpp"
 #include "Modules/VGui.hpp"
 
-#include "Modules/ConCommand.hpp"
-#include "Modules/ConVar.hpp"
-#include "Modules/Cvar.hpp"
+#include "Modules/Tier1.hpp"
 
 #include "Features/Config.hpp"
 
@@ -31,7 +27,7 @@ int __attribute__((constructor)) Main()
 	Game::Init();
 	Interfaces::Init();
 
-    if (Cvar::Loaded() && Tier1::ConCommandLoaded() && Tier1::ConVarLoaded()) {
+    if (Tier1::Init()) {
 
         Cheats::Create();
         Cheats::UnlockAll();

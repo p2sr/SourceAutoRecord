@@ -112,8 +112,10 @@ namespace Client
                 in_jump = *reinterpret_cast<void**>((uintptr_t)GetButtonBits + Offsets::in_jump);
 
                 auto JoyStickApplyMovement = g_Input->GetOriginalFunction<uintptr_t>(Offsets::JoyStickApplyMovement);
-                KeyDown = reinterpret_cast<_KeyDown>(GetAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyDown));
-                KeyUp = reinterpret_cast<_KeyUp>(GetAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyUp));
+                auto keyDownAddr = Memory::ReadAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyDown);
+                auto keyUpAddr = Memory::ReadAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyUp);
+                KeyDown = reinterpret_cast<_KeyDown>(keyDownAddr);
+                KeyUp = reinterpret_cast<_KeyUp>(keyUpAddr);
             }
 
             if (Interfaces::IClientEntityList) {

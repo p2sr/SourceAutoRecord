@@ -18,7 +18,6 @@
 #include "Game.hpp"
 #include "Interfaces.hpp"
 #include "Offsets.hpp"
-#include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
 
 namespace VGui

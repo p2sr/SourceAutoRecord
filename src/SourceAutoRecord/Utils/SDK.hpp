@@ -4,13 +4,16 @@
 
 struct Vector {
 	float x, y, z;
-	float Length() {
+	float Length()
+    {
 		return sqrt(x * x + y * y + z * z);
 	}
-	float Length2D() {
+	float Length2D()
+    {
 		return sqrt(x * x + y * y);
 	}
-	Vector operator*(float fl) const {
+	Vector operator*(float fl)
+    {
 		Vector res;
 		res.x = x * fl;
 		res.y = y * fl;
@@ -24,16 +27,20 @@ struct QAngle {
 };
 
 struct Color {
-	Color() {
+	Color()
+    {
 		*((int *)this) = 255;
 	}
-	Color(int _r, int _g, int _b) {
+	Color(int _r, int _g, int _b)
+    {
 		SetColor(_r, _g, _b, 255);
 	}
-	Color(int _r, int _g, int _b, int _a) {
+	Color(int _r, int _g, int _b, int _a)
+    {
 		SetColor(_r, _g, _b, _a);
 	}
-	void SetColor(int _r, int _g, int _b, int _a = 255) {
+	void SetColor(int _r, int _g, int _b, int _a = 255)
+    {
 		_color[0] = (unsigned char)_r;
 		_color[1] = (unsigned char)_g;
 		_color[2] = (unsigned char)_b;
@@ -58,7 +65,7 @@ enum SignonState {
 };
 
 struct CUserCmd {
-	void* VFT;
+	void* VMT;
 	int command_number;
 	int tick_count;
 	QAngle viewangles;
@@ -120,39 +127,9 @@ void VectorAdd(const Vector& a, const Vector& b, Vector& c)
 	c.z = a.z + b.z;
 }
 
-void NormalizeAngles(QAngle& angle)
-{
-	while (angle.x > 89.0f)
-		angle.x -= 180.f;
-
-	while (angle.x < -89.0f)
-		angle.x += 180.f;
-
-	while (angle.y > 180.f)
-		angle.y -= 360.f;
-
-	while (angle.y < -180.f)
-		angle.y += 360.f;
-}
-
-void ClampAngles(QAngle& angle)
-{
-	if (angle.y > 180.0f)
-		angle.y = 180.0f;
-	else if (angle.y < -180.0f)
-		angle.y = -180.0f;
-
-	if (angle.x > 89.0f)
-		angle.x = 89.0f;
-	else if (angle.x < -89.0f)
-		angle.x = -89.0f;
-
-	angle.z = 0;
-}
-
 class CMoveData
 {
-	public:
+public:
 	bool m_bFirstRunOfFunctions : 1;
 	bool m_bGameCodeMovedPlayer : 1;
 	void* m_nPlayerHandle;

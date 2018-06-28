@@ -4,6 +4,7 @@
 #include "Modules/Console.hpp"
 
 #include "Game.hpp"
+#include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
 
 namespace Interfaces
@@ -22,21 +23,15 @@ namespace Interfaces
 
 	void* Get(const char* filename, const char* interface)
 	{
-		auto module = MODULEINFO();
-		if (!GetModuleInformation(filename, &module)) {
-			Console::DevWarning("Failed to get module info for %s!\n", filename);
-			return nullptr;
-		}
-
-		auto handle = dlopen(module.modulePath, RTLD_NOLOAD | RTLD_NOW);
+		auto handle = Memory::GetModuleHandle(filename);
 		if (!handle) {
 			Console::DevWarning("Failed to open module %s!\n", filename);
 			return nullptr;
 		}
 
-		auto factory = dlsym(handle, "CreateInterface");
+		auto factory = Memory::GetSymbolAddress(handle, "CreateInterface");
 		if (!factory) {
-			Console::DevWarning("Failed to find symbol CreateInterface in %s!\n", module.modulePath);
+			Console::DevWarning("Failed to find symbol CreateInterface for %s!\n", filename);
 			return nullptr;
 		}
 
@@ -53,14 +48,14 @@ namespace Interfaces
 	}
 	void Log(const char* variable, const char* filename, const char* interfaceName)
 	{
-		auto module = MODULEINFO();
-		if (!GetModuleInformation(filename, &module)) {
-			Console::DevWarning("Failed to get module info for %s!\n", filename);
+		auto path = Memory::GetModulePath(filename);
+		if (!path) {
+			Console::DevWarning("Failed to get module path for %s!\n", filename);
 			return;
 		}
 
 		char command[1024];
-		snprintf(command, sizeof(command), "strings \"%s\" | grep %s0", module.modulePath, interfaceName);
+		snprintf(command, sizeof(command), "strings \"%s\" | grep %s0", path, interfaceName);
 		std::shared_ptr<FILE> pipe(popen(command, "r"), pclose);
 		if (!pipe) {
 			Console::DevWarning("popen error!\n");

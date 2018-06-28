@@ -18,7 +18,6 @@
 
 #include "Game.hpp"
 #include "Interfaces.hpp"
-#include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
 
 using namespace Commands;
@@ -182,7 +181,8 @@ namespace Engine
 
 			if (Game::IsPortal2Engine()) {
 				typedef void*(*_GetClientState)();
-				auto GetClientState = reinterpret_cast<_GetClientState>(GetAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientStateFunction));
+                auto addr = Memory::ReadAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientStateFunction);
+				auto GetClientState = reinterpret_cast<_GetClientState>(addr);
 				cl = std::make_unique<VMTHook>(GetClientState());
 			}
 			else {
