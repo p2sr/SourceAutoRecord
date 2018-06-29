@@ -5,8 +5,8 @@
 #include "Modules/Scheme.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
-#include "Modules/Vars.hpp"
 #include "Modules/VGui.hpp"
+#include "Modules/Vars.hpp"
 
 #include "Modules/Tier1.hpp"
 
@@ -14,15 +14,16 @@
 
 #include "Callbacks.hpp"
 #include "Cheats.hpp"
-#include "Interfaces.hpp"
 #include "Game.hpp"
+#include "Interfaces.hpp"
 
 int __attribute__((constructor)) Main()
 {
-	if (!Console::Init()) return 1;
+    if (!Console::Init())
+        return 1;
 
-	Game::Init();
-	Interfaces::Init();
+    Game::Init();
+    Interfaces::Init();
 
     if (Tier1::Init()) {
 
@@ -42,11 +43,10 @@ int __attribute__((constructor)) Main()
 
         Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
         return 0;
-    }
-    else {
+    } else {
         Console::Warning("SAR: Could not register any commands!\n");
     }
 
-	Console::Warning("SAR: Failed to load SourceAutoRecord!\n");
-	return 1;
+    Console::Warning("SAR: Failed to load SourceAutoRecord!\n");
+    return 1;
 }

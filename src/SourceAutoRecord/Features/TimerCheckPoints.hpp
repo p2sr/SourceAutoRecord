@@ -1,36 +1,33 @@
 #pragma once
 
-namespace Timer
-{
-	namespace CheckPoints
-	{
-		struct CheckPointItem {
-			int Ticks;
-			float Time;
-			char* Map;
-		};
+namespace Timer {
 
-		std::vector<CheckPointItem> Items;
+namespace CheckPoints {
+    struct CheckPointItem {
+        int Ticks;
+        float Time;
+        char* Map;
+    };
 
-		int LatestTick;
-		float LatestTime;
+    std::vector<CheckPointItem> Items;
 
-		void Add(int ticks, float time, char* map)
-		{
-			Items.push_back(CheckPointItem
-			{
-				ticks,
-				time,
-				map
-			});
-			LatestTick = ticks;
-			LatestTime = time;
-		}
-		void Reset()
-		{
-			Items.clear();
-			LatestTick = 0;
-			LatestTime = 0;
-		}
-	}
+    int LatestTick;
+    float LatestTime;
+
+    void Add(int ticks, float time, char* map)
+    {
+        Items.push_back(CheckPointItem{
+            ticks,
+            time,
+            map });
+        LatestTick = ticks;
+        LatestTime = time;
+    }
+    void Reset()
+    {
+        Items.clear();
+        LatestTick = 0;
+        LatestTime = 0;
+    }
+}
 }

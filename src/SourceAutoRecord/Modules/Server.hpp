@@ -11,7 +11,7 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
-#define IN_JUMP	(1 << 1)
+#define IN_JUMP (1 << 1)
 
 #define FL_ONGROUND (1 << 0)
 #define FL_FROZEN (1 << 5)
@@ -21,203 +21,201 @@
 
 using namespace Commands;
 
-namespace Server
+namespace Server {
+
+using _CheckJumpButton = bool(__cdecl*)(void* thisptr);
+using _PlayerMove = int(__cdecl*)(void* thisptr);
+using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
+using _FinishGravity = int(__cdecl*)(void* thisptr);
+using _AirMove = int(__cdecl*)(void* thisptr);
+using _AirAccelerate = int(__cdecl*)(void* thisptr, int a2, float a3, float a4);
+
+std::unique_ptr<VMTHook> g_GameMovement;
+std::unique_ptr<VMTHook> g_ServerGameDLL;
+
+_UTIL_PlayerByIndex UTIL_PlayerByIndex;
+
+void* gpGlobals;
+
+void* GetPlayer()
 {
-	using _CheckJumpButton = bool(__cdecl*)(void* thisptr);
-	using _PlayerMove = int(__cdecl*)(void* thisptr);
-	using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
-	using _FinishGravity = int(__cdecl*)(void* thisptr);
-	using _AirMove = int(__cdecl*)(void* thisptr);
-	using _AirAccelerate = int(__cdecl*)(void* thisptr, int a2, float a3, float a4);
+    return UTIL_PlayerByIndex(1);
+}
+int GetPortals()
+{
+    auto player = GetPlayer();
+    return (player) ? *reinterpret_cast<int*>((uintptr_t)player + Offsets::iNumPortalsPlaced) : 0;
+}
 
-	std::unique_ptr<VMTHook> g_GameMovement;
-	std::unique_ptr<VMTHook> g_ServerGameDLL;
+namespace Original {
+    _CheckJumpButton CheckJumpButton;
+    _PlayerMove PlayerMove;
+    _FinishGravity FinishGravity;
+    _AirMove AirMove;
+    _AirMove AirMoveBase;
+    _AirAccelerate AirAccelerateBase;
+}
 
-	_UTIL_PlayerByIndex UTIL_PlayerByIndex;
+namespace Detour {
+    bool JumpedLastTime = false;
+    bool CallFromCheckJumpButton = false;
 
-	void* gpGlobals;
+    bool __cdecl CheckJumpButton(void* thisptr)
+    {
+        auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
+        auto m_nOldButtons = reinterpret_cast<int*>((uintptr_t)mv + Offsets::m_nOldButtons);
 
-	void* GetPlayer()
-	{
-		return UTIL_PlayerByIndex(1);
-	}
-	int GetPortals()
-	{
-		auto player = GetPlayer();
-		return (player) ? *reinterpret_cast<int*>((uintptr_t)player + Offsets::iNumPortalsPlaced) : 0;
-	}
+        auto enabled = (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool();
+        auto stored = 0;
 
-	namespace Original
-	{
-		_CheckJumpButton CheckJumpButton;
-		_PlayerMove PlayerMove;
-		_FinishGravity FinishGravity;
-		_AirMove AirMove;
-		_AirMove AirMoveBase;
-		_AirAccelerate AirAccelerateBase;
-	}
+        if (enabled) {
+            stored = *m_nOldButtons;
 
-	namespace Detour
-	{
-		bool JumpedLastTime = false;
-		bool CallFromCheckJumpButton = false;
+            if (!JumpedLastTime)
+                *m_nOldButtons &= ~IN_JUMP;
+        }
 
-		bool __cdecl CheckJumpButton(void* thisptr)
-		{
-			auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
-			auto m_nOldButtons = reinterpret_cast<int*>((uintptr_t)mv + Offsets::m_nOldButtons);
+        JumpedLastTime = false;
 
-			auto enabled = (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool();
-			auto stored = 0;
+        CallFromCheckJumpButton = true;
+        auto result = Original::CheckJumpButton(thisptr);
+        CallFromCheckJumpButton = false;
 
-			if (enabled) {
-				stored = *m_nOldButtons;
+        if (enabled) {
+            if (!(*m_nOldButtons & IN_JUMP))
+                *m_nOldButtons = stored;
+        }
 
-				if (!JumpedLastTime)
-					*m_nOldButtons &= ~IN_JUMP;
-			}
+        if (result) {
+            JumpedLastTime = true;
+            Stats::TotalJumps++;
+            Stats::TotalSteps++;
+            Stats::JumpDistance::StartTrace(Client::GetAbsOrigin());
+        }
 
-			JumpedLastTime = false;
+        return result;
+    }
+    int __cdecl PlayerMove(void* thisptr)
+    {
+        auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
+        auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
 
-			CallFromCheckJumpButton = true;
-			auto result = Original::CheckJumpButton(thisptr);
-			CallFromCheckJumpButton = false;
+        auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
+        auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
+        auto m_nWaterLevel = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_nWaterLevel);
+        auto psurface = *reinterpret_cast<void**>((uintptr_t)player + Offsets::psurface);
 
-			if (enabled) {
-				if (!(*m_nOldButtons & IN_JUMP))
-					*m_nOldButtons = stored;
-			}
+        auto frametime = *reinterpret_cast<float*>((uintptr_t)gpGlobals + Offsets::frametime);
+        auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
 
-			if (result) {
-				JumpedLastTime = true;
-				Stats::TotalJumps++;
-				Stats::TotalSteps++;
-				Stats::JumpDistance::StartTrace(Client::GetAbsOrigin());
-			}
+        // Landed after a jump
+        if (Stats::JumpDistance::IsTracing
+            && m_fFlags & FL_ONGROUND
+            && m_MoveType != MOVETYPE_NOCLIP) {
 
-			return result;
-		}
-		int __cdecl PlayerMove(void* thisptr)
-		{
-			auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
-			auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
+            Stats::JumpDistance::EndTrace(Client::GetAbsOrigin());
+        }
 
-			auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
-			auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
-			auto m_nWaterLevel = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_nWaterLevel);
-			auto psurface = *reinterpret_cast<void**>((uintptr_t)player + Offsets::psurface);
+        StepCounter::ReduceTimer(frametime);
 
-			auto frametime = *reinterpret_cast<float*>((uintptr_t)gpGlobals + Offsets::frametime);
-			auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
+        // Player is on ground and moving etc.
+        if (StepCounter::StepSoundTime <= 0
+            && m_fFlags & FL_ONGROUND && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
+            && m_vecVelocity.Length2D() > 0.0001f
+            && psurface
+            && m_MoveType != MOVETYPE_NOCLIP
+            && sv_footsteps.GetFloat()) {
 
-			// Landed after a jump
-			if (Stats::JumpDistance::IsTracing
-				&& m_fFlags & FL_ONGROUND
-				&& m_MoveType != MOVETYPE_NOCLIP) {
+            StepCounter::Increment(m_fFlags, m_vecVelocity, m_nWaterLevel);
+        }
 
-				Stats::JumpDistance::EndTrace(Client::GetAbsOrigin());
-			}
+        Routing::Velocity::Save(Client::GetLocalVelocity(), sar_velocity_peak_xy.GetBool());
 
-			StepCounter::ReduceTimer(frametime);
+        return Original::PlayerMove(thisptr);
+    }
+    int __cdecl FinishGravity(void* thisptr)
+    {
+        if (CallFromCheckJumpButton && sar_jumpboost.GetBool()) {
+            auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
+            auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
 
-			// Player is on ground and moving etc.
-			if (StepCounter::StepSoundTime <= 0
-				&& m_fFlags & FL_ONGROUND && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
-				&& m_vecVelocity.Length2D() > 0.0001f
-				&& psurface
-				&& m_MoveType != MOVETYPE_NOCLIP
-				&& sv_footsteps.GetFloat()) {
+            auto m_bDucked = *reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked);
 
-				StepCounter::Increment(m_fFlags, m_vecVelocity, m_nWaterLevel);
-			}
+            Vector vecForward;
+            AngleVectors(mv->m_vecViewAngles, &vecForward);
+            vecForward.z = 0;
+            VectorNormalize(vecForward);
 
-			Routing::Velocity::Save(Client::GetLocalVelocity(), sar_velocity_peak_xy.GetBool());
+            float flSpeedBoostPerc = (!mv->m_bIsSprinting && !m_bDucked) ? 0.5f : 0.1f;
+            float flSpeedAddition = fabs(mv->m_flForwardMove * flSpeedBoostPerc);
+            float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
+            float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
 
-			return Original::PlayerMove(thisptr);
-		}
-		int __cdecl FinishGravity(void* thisptr)
-		{
-			if (CallFromCheckJumpButton && sar_jumpboost.GetBool()) {
-				auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
-				auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
+            if (sar_jumpboost.GetInt() == 1) {
+                if (flNewSpeed > flMaxSpeed) {
+                    flSpeedAddition -= flNewSpeed - flMaxSpeed;
+                }
 
-				auto m_bDucked = *reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked);
+                if (mv->m_flForwardMove < 0.0f) {
+                    flSpeedAddition *= -1.0f;
+                }
+            }
 
-				Vector vecForward;
-				AngleVectors(mv->m_vecViewAngles, &vecForward);
-				vecForward.z = 0;
-				VectorNormalize(vecForward);
+            VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
+        }
+        return Original::FinishGravity(thisptr);
+    }
+    int __cdecl AirMove(void* thisptr)
+    {
+        if (sar_aircontrol.GetBool()) {
+            return Original::AirMoveBase(thisptr);
+        }
+        return Original::AirMove(thisptr);
+    }
+    int __cdecl AirAccelerate(void* thisptr, int a2, float a3, float a4)
+    {
+        return Original::AirAccelerateBase(thisptr, a2, a3, a4);
+    }
+}
 
-				float flSpeedBoostPerc = (!mv->m_bIsSprinting && !m_bDucked) ? 0.5f : 0.1f;
-				float flSpeedAddition = fabs(mv->m_flForwardMove * flSpeedBoostPerc);
-				float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
-				float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
+void Hook()
+{
+    if (Interfaces::IGameMovement) {
+        g_GameMovement = std::make_unique<VMTHook>(Interfaces::IGameMovement);
+        g_GameMovement->HookFunction((void*)Detour::CheckJumpButton, Offsets::CheckJumpButton);
+        g_GameMovement->HookFunction((void*)Detour::PlayerMove, Offsets::PlayerMove);
 
-				if (sar_jumpboost.GetInt() == 1) {
-					if (flNewSpeed > flMaxSpeed) {
-						flSpeedAddition -= flNewSpeed - flMaxSpeed;
-					}
+        Original::CheckJumpButton = g_GameMovement->GetOriginalFunction<_CheckJumpButton>(Offsets::CheckJumpButton);
+        Original::PlayerMove = g_GameMovement->GetOriginalFunction<_PlayerMove>(Offsets::PlayerMove);
 
-					if (mv->m_flForwardMove < 0.0f) {
-						flSpeedAddition *= -1.0f;
-					}
-				}
+        if (Game::IsPortal2Engine()) {
+            g_GameMovement->HookFunction((void*)Detour::FinishGravity, Offsets::FinishGravity);
+            g_GameMovement->HookFunction((void*)Detour::AirMove, Offsets::AirMove);
 
-				VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
-			}
-			return Original::FinishGravity(thisptr);
-		}
-		int __cdecl AirMove(void* thisptr)
-		{
-			if (sar_aircontrol.GetBool()) {
-				return Original::AirMoveBase(thisptr);
-			}
-			return Original::AirMove(thisptr);
-		}
-		int __cdecl AirAccelerate(void* thisptr, int a2, float a3, float a4)
-		{
-			return Original::AirAccelerateBase(thisptr, a2, a3, a4);
-		}
-	}
+            Original::FinishGravity = g_GameMovement->GetOriginalFunction<_FinishGravity>(Offsets::FinishGravity);
 
-	void Hook()
-	{
-		if (Interfaces::IGameMovement) {
-			g_GameMovement = std::make_unique<VMTHook>(Interfaces::IGameMovement);
-			g_GameMovement->HookFunction((void*)Detour::CheckJumpButton, Offsets::CheckJumpButton);
-			g_GameMovement->HookFunction((void*)Detour::PlayerMove, Offsets::PlayerMove);
+            auto destructor = g_GameMovement->GetOriginalFunction<uintptr_t>(0);
+            auto baseDestructor = Memory::ReadAbsoluteAddress(destructor + Offsets::AirMove_Offset1);
+            auto baseOffset = *reinterpret_cast<uintptr_t*>(baseDestructor + Offsets::AirMove_Offset2);
+            auto airMoveAddr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
 
-			Original::CheckJumpButton = g_GameMovement->GetOriginalFunction<_CheckJumpButton>(Offsets::CheckJumpButton);
-			Original::PlayerMove = g_GameMovement->GetOriginalFunction<_PlayerMove>(Offsets::PlayerMove);
+            Original::AirMove = g_GameMovement->GetOriginalFunction<_AirMove>(Offsets::AirMove);
+            Original::AirMoveBase = reinterpret_cast<_AirMove>(airMoveAddr);
 
-			if (Game::IsPortal2Engine()) {
-				g_GameMovement->HookFunction((void*)Detour::FinishGravity, Offsets::FinishGravity);
-				g_GameMovement->HookFunction((void*)Detour::AirMove, Offsets::AirMove);
+            //g_GameMovement->HookFunction((void*)Detour::AirAccelerate, 23);
+            //auto airAccelerateAddr = *reinterpret_cast<uintptr_t*>(baseOffset + 23 * sizeof(uintptr_t*));
+            //Original::AirAccelerateBase = reinterpret_cast<_AirAccelerate>(airAccelerateAddr);
+        }
 
-				Original::FinishGravity = g_GameMovement->GetOriginalFunction<_FinishGravity>(Offsets::FinishGravity);
+        auto FullTossMove = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::FullTossMove);
+        gpGlobals = **reinterpret_cast<void***>(FullTossMove + Offsets::gpGlobals);
+    }
 
-				auto destructor = g_GameMovement->GetOriginalFunction<uintptr_t>(0);
-				auto baseDestructor = Memory::ReadAbsoluteAddress(destructor + Offsets::AirMove_Offset1);
-				auto baseOffset = *reinterpret_cast<uintptr_t*>(baseDestructor + Offsets::AirMove_Offset2);
-				auto airMoveAddr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
-
-				Original::AirMove = g_GameMovement->GetOriginalFunction<_AirMove>(Offsets::AirMove);
-				Original::AirMoveBase = reinterpret_cast<_AirMove>(airMoveAddr);
-
-				//g_GameMovement->HookFunction((void*)Detour::AirAccelerate, 23);
-                //auto airAccelerateAddr = *reinterpret_cast<uintptr_t*>(baseOffset + 23 * sizeof(uintptr_t*));
-				//Original::AirAccelerateBase = reinterpret_cast<_AirAccelerate>(airAccelerateAddr);
-			}
-
-			auto FullTossMove = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::FullTossMove);
-			gpGlobals = **reinterpret_cast<void***>(FullTossMove + Offsets::gpGlobals);
-		}
-
-		if (Interfaces::IServerGameDLL) {
-			g_ServerGameDLL = std::make_unique<VMTHook>(Interfaces::IServerGameDLL);
-			auto Think = g_ServerGameDLL->GetOriginalFunction<uintptr_t>(Offsets::Think);
-            auto addr = Memory::ReadAbsoluteAddress(Think + Offsets::UTIL_PlayerByIndex);
-			UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(addr);
-		}
-	}
+    if (Interfaces::IServerGameDLL) {
+        g_ServerGameDLL = std::make_unique<VMTHook>(Interfaces::IServerGameDLL);
+        auto Think = g_ServerGameDLL->GetOriginalFunction<uintptr_t>(Offsets::Think);
+        auto addr = Memory::ReadAbsoluteAddress(Think + Offsets::UTIL_PlayerByIndex);
+        UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(addr);
+    }
+}
 }

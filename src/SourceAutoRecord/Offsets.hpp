@@ -1,120 +1,120 @@
 #pragma once
 
-namespace Offsets
-{
-	// CCvar
-	int FindVar;
+namespace Offsets {
 
-	// CEngineClient
-	int ClientCmd;
-	int GetLocalPlayer;
-	int GetGameDirectory;
-	int GetViewAngles;
-	int SetViewAngles;
+// CCvar
+int FindVar;
 
-	// CHLClient
-	int HudUpdate;
-    int IN_ActivateMous;
-    int JoyStickApplyMovement;
+// CEngineClient
+int ClientCmd;
+int GetLocalPlayer;
+int GetGameDirectory;
+int GetViewAngles;
+int SetViewAngles;
 
-	// IClientMode
-	int CreateMove;
+// CHLClient
+int HudUpdate;
+int IN_ActivateMous;
+int JoyStickApplyMovement;
 
-	// ConVar
-	int InternalSetValue;
-	int InternalSetFloatValue;
-	int InternalSetIntValue;
+// IClientMode
+int CreateMove;
 
-	// IMatSystemSurface
-	int GetFontTall;
-	int DrawColoredText;
+// ConVar
+int InternalSetValue;
+int InternalSetFloatValue;
+int InternalSetIntValue;
 
-	// CInputSystem
-	int StringToButtonCode;
+// IMatSystemSurface
+int GetFontTall;
+int DrawColoredText;
 
-    // CInput
-    int GetButtonBits;
+// CInputSystem
+int StringToButtonCode;
 
-	// CGameMovement
-	int PlayerMove;
-	int AirMove;
-	int AirMove_Offset1;
-	int AirMove_Offset2;
-	int FinishGravity;
-	int CheckJumpButton;
-	int FullTossMove;
-	int mv;
-	int player;
+// CInput
+int GetButtonBits;
 
-	// CDemoRecorder
-	int GetRecordingTick;
-	int SetSignonState;
-	int StopRecording;
-	int m_szDemoBaseName;
-	int m_bRecording;
-	int m_nDemoNumber;
+// CGameMovement
+int PlayerMove;
+int AirMove;
+int AirMove_Offset1;
+int AirMove_Offset2;
+int FinishGravity;
+int CheckJumpButton;
+int FullTossMove;
+int mv;
+int player;
 
-	// CDemoPlayer
-	int GetPlaybackTick;
-	int StartPlayback;
-	int IsPlayingBack;
-	int m_szFileName;
+// CDemoRecorder
+int GetRecordingTick;
+int SetSignonState;
+int StopRecording;
+int m_szDemoBaseName;
+int m_bRecording;
+int m_nDemoNumber;
 
-	// CClientState
-	int ProcessTick;
-	int Disconnect;
+// CDemoPlayer
+int GetPlaybackTick;
+int StartPlayback;
+int IsPlayingBack;
+int m_szFileName;
 
-	// C_BaseEntity
-	int m_vecAbsOrigin;
-	int m_angAbsRotation;
-	int m_vecVelocity;
-	int GetFlags;
+// CClientState
+int ProcessTick;
+int Disconnect;
 
-	// CBasePlayer
-	int iNumPortalsPlaced;
-	int m_fFlags;
-	int m_MoveType;
-	int m_nWaterLevel;
-	int psurface;
-    int m_bDucked;
+// C_BaseEntity
+int m_vecAbsOrigin;
+int m_angAbsRotation;
+int m_vecVelocity;
+int GetFlags;
 
-	// IEngineVGuiInternal
-	int Paint;
+// CBasePlayer
+int iNumPortalsPlaced;
+int m_fFlags;
+int m_MoveType;
+int m_nWaterLevel;
+int psurface;
+int m_bDucked;
 
-	// CEngineTool
-	int GetCurrentMap;
+// IEngineVGuiInternal
+int Paint;
 
-	// CSchemeManager
-	int GetIScheme;
+// CEngineTool
+int GetCurrentMap;
 
-	// CScheme
-	int GetFont;
+// CSchemeManager
+int GetIScheme;
 
-	// IClientEntityList
-	int GetClientEntity;
+// CScheme
+int GetFont;
 
-	// CServerGameDLL
-	int Think;
+// IClientEntityList
+int GetClientEntity;
 
-	// CGlobalVarsBase
-	int frametime;
+// CServerGameDLL
+int Think;
 
-	// CMoveData
-	int m_nOldButtons;
-	int m_vecVelocity2;
+// CGlobalVarsBase
+int frametime;
 
-	// Others
-	int tickcount;
-	int interval_per_tick;
-	int GetClientStateFunction;
-	int ServerCmdKeyValues;
-	int cl;
-	int demoplayer;
-	int demorecorder;
-	int m_szLevelName;
-	int UTIL_PlayerByIndex;
-	int gpGlobals;
-    int in_jump;
-    int KeyDown;
-    int KeyUp;
+// CMoveData
+int m_nOldButtons;
+int m_vecVelocity2;
+
+// Others
+int tickcount;
+int interval_per_tick;
+int GetClientStateFunction;
+int ServerCmdKeyValues;
+int cl;
+int demoplayer;
+int demorecorder;
+int m_szLevelName;
+int UTIL_PlayerByIndex;
+int gpGlobals;
+int in_jump;
+int KeyDown;
+int KeyUp;
 }

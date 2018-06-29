@@ -9,31 +9,31 @@
 #define BUTTON_CODE_INVALID -1
 #define KEY_ESCAPE 70
 
-namespace InputSystem
+namespace InputSystem {
+
+using _StringToButtonCode = int(__cdecl*)(void* thisptr, const char* pString);
+using _KeySetBinding = void(__cdecl*)(int keynum, const char* pBinding);
+
+std::unique_ptr<VMTHook> g_InputSystem;
+
+_StringToButtonCode StringToButtonCode;
+_KeySetBinding KeySetBinding;
+
+int GetButton(const char* pString)
 {
-	using _StringToButtonCode = int(__cdecl*)(void* thisptr, const char* pString);
-	using _KeySetBinding = void(__cdecl*)(int keynum, const char* pBinding);
+    return StringToButtonCode(g_InputSystem->GetThisPtr(), pString);
+}
 
-	 std::unique_ptr<VMTHook> g_InputSystem;
+void Hook()
+{
+    if (Interfaces::IInputSystem) {
+        g_InputSystem = std::make_unique<VMTHook>(Interfaces::IInputSystem);
+        StringToButtonCode = g_InputSystem->GetOriginalFunction<_StringToButtonCode>(Offsets::StringToButtonCode);
+    }
 
-	_StringToButtonCode StringToButtonCode;
-	_KeySetBinding KeySetBinding;
-
-	int GetButton(const char* pString)
-	{
-		return StringToButtonCode(g_InputSystem->GetThisPtr(), pString);
-	}
-
-	void Hook()
-	{
-		if (Interfaces::IInputSystem) {
-			g_InputSystem = std::make_unique<VMTHook>(Interfaces::IInputSystem);
-			StringToButtonCode = g_InputSystem->GetOriginalFunction<_StringToButtonCode>(Offsets::StringToButtonCode);
-		}
-
-		auto ksb = SAR::Find("Key_SetBinding");
-		if (ksb.Found) {
-			KeySetBinding = reinterpret_cast<_KeySetBinding>(ksb.Address);
-		}
-	}
+    auto ksb = SAR::Find("Key_SetBinding");
+    if (ksb.Found) {
+        KeySetBinding = reinterpret_cast<_KeySetBinding>(ksb.Address);
+    }
+}
 }

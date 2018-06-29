@@ -10,17 +10,16 @@
 #define COL_ACTIVE Color(110, 247, 76)
 #define COL_DEFAULT Color(255, 255, 255, 255)
 
-namespace SAR
+namespace SAR {
+
+Memory::ScanResult Find(const char* pattern)
 {
-	Memory::ScanResult Find(const char* pattern)
-	{
-		auto result = Memory::Scan(Patterns::Get(pattern));
-		if (result.Found) {
-			Console::DevMsg("%s\n", result.Message);
-		}
-		else {
-			Console::DevWarning("%s\n", result.Message);
-		}
-		return result;
-	}
+    auto result = Memory::Scan(Patterns::Get(pattern));
+    if (result.Found) {
+        Console::DevMsg("%s\n", result.Message);
+    } else {
+        Console::DevWarning("%s\n", result.Message);
+    }
+    return result;
+}
 }

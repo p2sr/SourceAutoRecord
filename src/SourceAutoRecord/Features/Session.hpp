@@ -1,12 +1,12 @@
 #pragma once
 
-namespace Session
-{
-	int BaseTick = 0;
-	int LastSession = 0;
+namespace Session {
 
-	void Rebase(int from)
-	{
-		BaseTick = from;
-	}
+int BaseTick = 0;
+int LastSession = 0;
+
+void Rebase(int from)
+{
+    BaseTick = from;
+}
 }

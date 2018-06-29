@@ -3,42 +3,46 @@
 
 #include "Utils.hpp"
 
-namespace Config
+namespace Config {
+
+std::string FilePath("/cfg/_sar_cvars.cfg");
+
+bool Save()
 {
-	std::string FilePath("/cfg/_sar_cvars.cfg");
+    if (Vars::GetGameDirectory == nullptr)
+        return false;
 
-	bool Save()
-	{
-		if (Vars::GetGameDirectory == nullptr) return false;
+    std::ofstream file(std::string(Vars::GetGameDirectory()) + FilePath, std::ios::out | std::ios::trunc);
+    if (!file.good())
+        return false;
 
-		std::ofstream file(std::string(Vars::GetGameDirectory()) + FilePath, std::ios::out | std::ios::trunc);
-		if (!file.good()) return false;
+    auto spacing = sar_hud_default_spacing.GetInt();
+    auto xpadding = sar_hud_default_padding_x.GetInt();
+    auto ypadding = sar_hud_default_padding_y.GetInt();
+    auto index = sar_hud_default_font_index.GetInt();
+    auto color = sar_hud_default_font_color.GetString();
 
-		auto spacing = sar_hud_default_spacing.GetInt();
-		auto xpadding = sar_hud_default_padding_x.GetInt();
-		auto ypadding = sar_hud_default_padding_y.GetInt();
-		auto index = sar_hud_default_font_index.GetInt();
-		auto color = sar_hud_default_font_color.GetString();
+    file << "sar_hud_default_spacing " << spacing << "\n";
+    file << "sar_hud_default_padding_x " << xpadding << "\n";
+    file << "sar_hud_default_padding_y " << ypadding << "\n";
+    file << "sar_hud_default_font_index " << index << "\n";
+    file << "sar_hud_default_font_color " << color;
 
-		file << "sar_hud_default_spacing " << spacing << "\n";
-		file << "sar_hud_default_padding_x " << xpadding << "\n";
-		file << "sar_hud_default_padding_y " << ypadding << "\n";
-		file << "sar_hud_default_font_index " << index << "\n";
-		file << "sar_hud_default_font_color " << color;
+    file.close();
+    return true;
+}
+bool Load()
+{
+    if (Vars::GetGameDirectory == nullptr)
+        return false;
 
-		file.close();
-		return true;
-	}
-	bool Load()
-	{
-		if (Vars::GetGameDirectory == nullptr) return false;
+    std::ifstream file(std::string(Vars::GetGameDirectory()) + FilePath, std::ios::in);
+    if (!file.good())
+        return false;
 
-		std::ifstream file(std::string(Vars::GetGameDirectory()) + FilePath, std::ios::in);
-		if (!file.good()) return false;
+    Engine::ExecuteCommand("exec _sar_cvars.cfg");
 
-		Engine::ExecuteCommand("exec _sar_cvars.cfg");
-
-		file.close();
-		return true;
-	}
+    file.close();
+    return true;
+}
 }

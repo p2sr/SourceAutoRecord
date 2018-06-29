@@ -1,18 +1,18 @@
 #pragma once
 #include "Features/Stats.hpp"
 
-namespace Callbacks
+namespace Callbacks {
+
+void ResetJumps()
 {
-	void ResetJumps()
-	{
-		Stats::TotalJumps = 0;
-	}
-	void ResetSteps()
-	{
-		Stats::TotalSteps = 0;
-	}
-    void ResetJumpDistance()
-    {
-        Stats::JumpDistance::Reset();
-    }
+    Stats::TotalJumps = 0;
+}
+void ResetSteps()
+{
+    Stats::TotalSteps = 0;
+}
+void ResetJumpDistance()
+{
+    Stats::JumpDistance::Reset();
+}
 }

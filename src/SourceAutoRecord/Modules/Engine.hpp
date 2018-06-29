@@ -4,8 +4,9 @@
 #include "vmthook/vmthook.h"
 
 #include "Console.hpp"
-#include "DemoRecorder.hpp"
 #include "DemoPlayer.hpp"
+#include "DemoRecorder.hpp"
+#include "Tier1.hpp"
 #include "Vars.hpp"
 
 #include "Features/Session.hpp"
@@ -21,203 +22,198 @@
 
 using namespace Commands;
 
-namespace Engine
+namespace Engine {
+
+using _ClientCmd = int(__cdecl*)(void* thisptr, const char* szCmdString);
+using _Disconnect = int(__cdecl*)(void* thisptr, int bShowMainMenu);
+using _Disconnect2 = int(__cdecl*)(void* thisptr, int* unk1, char bShowMainMenu);
+using _SetSignonState = int(__cdecl*)(void* thisptr, int state, int count);
+using _GetLocalPlayer = int(__cdecl*)(void* thisptr);
+using _GetViewAngles = int(__cdecl*)(void* thisptr, QAngle& va);
+using _SetViewAngles = int(__cdecl*)(void* thisptr, QAngle& va);
+
+std::unique_ptr<VMTHook> engine;
+std::unique_ptr<VMTHook> cl;
+
+_ClientCmd ClientCmd;
+_GetLocalPlayer GetLocalPlayer;
+_GetViewAngles GetViewAngles;
+_SetViewAngles SetViewAngles;
+_AutoCompletionFunc AutoCompleteFunc;
+
+void ExecuteCommand(const char* cmd)
 {
-	using _ClientCmd = int(__cdecl*)(void* thisptr, const char* szCmdString);
-	using _Disconnect = int(__cdecl*)(void* thisptr, int bShowMainMenu);
-	using _Disconnect2 = int(__cdecl*)(void* thisptr, int* unk1, char bShowMainMenu);
-	using _SetSignonState = int(__cdecl*)(void* thisptr, int state, int count);
-	using _GetLocalPlayer = int(__cdecl*)(void* thisptr);
-	using _GetViewAngles = int(__cdecl*)(void* thisptr, QAngle& va);
-	using _SetViewAngles = int(__cdecl*)(void* thisptr, QAngle& va);
+    ClientCmd(engine->GetThisPtr(), cmd);
+}
+int GetTick()
+{
+    int result = *Vars::tickcount - Session::BaseTick;
+    return (result >= 0) ? result : 0;
+}
+float GetTime(int tick)
+{
+    return tick * *Vars::interval_per_tick;
+}
+int GetPlayerIndex()
+{
+    return GetLocalPlayer(engine->GetThisPtr());
+}
+QAngle GetAngles()
+{
+    auto va = QAngle();
+    GetViewAngles(engine->GetThisPtr(), va);
+    return va;
+}
+void SetAngles(QAngle va)
+{
+    SetViewAngles(engine->GetThisPtr(), va);
+}
 
-	std::unique_ptr<VMTHook> engine;
-	std::unique_ptr<VMTHook> cl;
+bool IsInGame = false;
 
-	_ClientCmd ClientCmd;
-	_GetLocalPlayer GetLocalPlayer;
-	_GetViewAngles GetViewAngles;
-	_SetViewAngles SetViewAngles;
+void SessionStarted()
+{
+    Session::Rebase(*Vars::tickcount);
+    Timer::Rebase(*Vars::tickcount);
 
-	void ExecuteCommand(const char* cmd)
-	{
-		ClientCmd(engine->GetThisPtr(), cmd);
-	}
-	int GetTick()
-	{
-		int result = *Vars::tickcount - Session::BaseTick;
-		return (result >= 0) ? result : 0;
-	}
-	float GetTime(int tick)
-	{
-		return tick * *Vars::interval_per_tick;
-	}
-	int GetPlayerIndex()
-	{
-		return GetLocalPlayer(engine->GetThisPtr());
-	}
-	QAngle GetAngles()
-	{
-		auto va = QAngle();
-		GetViewAngles(engine->GetThisPtr(), va);
-		return va;
-	}
-	void SetAngles(QAngle va)
-	{
-		SetViewAngles(engine->GetThisPtr(), va);
-	}
+    if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
+        if (DemoRecorder::IsRecordingDemo) {
+            Rebinder::UpdateIndex(*DemoRecorder::m_nDemoNumber);
+        } else {
+            Rebinder::UpdateIndex(Rebinder::LastIndexNumber + 1);
+        }
 
-	bool IsInGame = false;
+        Rebinder::RebindSave();
+        Rebinder::RebindReload();
+    }
 
-	void SessionStarted()
-	{
-		Session::Rebase(*Vars::tickcount);
-		Timer::Rebase(*Vars::tickcount);
+    if (sar_tas_autostart.GetBool()) {
+        TAS::Start();
+    }
 
-		if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
-			if (DemoRecorder::IsRecordingDemo) {
-				Rebinder::UpdateIndex(*DemoRecorder::m_nDemoNumber);
-			}
-			else {
-				Rebinder::UpdateIndex(Rebinder::LastIndexNumber + 1);
-			}
+    StepCounter::ResetTimer();
+    Stats::JumpDistance::Reset();
+    IsInGame = true;
+}
+void SessionEnded()
+{
+    if (!DemoPlayer::IsPlaying() && IsInGame) {
+        int tick = GetTick();
 
-			Rebinder::RebindSave();
-			Rebinder::RebindReload();
-		}
+        if (tick != 0) {
+            Console::Print("Session: %i (%.3f)\n", tick, Engine::GetTime(tick));
+            Session::LastSession = tick;
+        }
 
-		if (sar_tas_autostart.GetBool()) {
-			TAS::Start();
-		}
+        if (Summary::IsRunning) {
+            Summary::Add(tick, Engine::GetTime(tick), *Vars::m_szLevelName);
+            Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::GetTime(Summary::TotalTicks));
+        }
 
-		StepCounter::ResetTimer();
-		Stats::JumpDistance::Reset();
-		IsInGame = true;
-	}
-	void SessionEnded()
-	{
-		if (!DemoPlayer::IsPlaying() && IsInGame) {
-			int tick = GetTick();
+        if (Timer::IsRunning) {
+            if (sar_timer_always_running.GetBool()) {
+                Timer::Save(*Vars::tickcount);
+                Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::GetTime(Timer::TotalTicks));
+            } else {
+                Timer::Stop(*Vars::tickcount);
+                Console::Print("Timer stopped!\n");
+            }
+        }
 
-			if (tick != 0) {
-				Console::Print("Session: %i (%.3f)\n", tick, Engine::GetTime(tick));
-				Session::LastSession = tick;
-			}
+        auto reset = sar_stats_auto_reset.GetInt();
+        if ((reset == 1 && !*Vars::m_bLoadgame) || reset >= 2) {
+            Stats::Reset();
+        }
 
-			if (Summary::IsRunning) {
-				Summary::Add(tick, Engine::GetTime(tick), *Vars::m_szLevelName);
-				Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::GetTime(Summary::TotalTicks));
-			}
+        DemoRecorder::CurrentDemo = "";
+    }
 
-			if (Timer::IsRunning) {
-				if (sar_timer_always_running.GetBool()) {
-					Timer::Save(*Vars::tickcount);
-					Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::GetTime(Timer::TotalTicks));
-				}
-				else {
-					Timer::Stop(*Vars::tickcount);
-					Console::Print("Timer stopped!\n");
-				}
-			}
+    IsInGame = false;
+}
 
-			auto reset = sar_stats_auto_reset.GetInt();
-			if ((reset == 1 && !*Vars::m_bLoadgame) || reset >= 2) {
-				Stats::Reset();
-			}
+namespace Original {
+    _Disconnect Disconnect;
+    _Disconnect2 Disconnect2;
+    _SetSignonState SetSignonState;
+}
 
-			DemoRecorder::CurrentDemo = "";
-		}
+namespace Detour {
+    int LastState;
 
-		IsInGame = false;
-	}
+    int __cdecl Disconnect(void* thisptr, bool bShowMainMenu)
+    {
+        SessionEnded();
+        return Original::Disconnect(thisptr, bShowMainMenu);
+    }
+    int __cdecl Disconnect2(void* thisptr, int* unk1, bool bShowMainMenu)
+    {
+        SessionEnded();
+        return Original::Disconnect2(thisptr, unk1, bShowMainMenu);
+    }
+    int __cdecl SetSignonState(void* thisptr, int state, int count)
+    {
+        if (state != LastState && LastState == SignonState::Full) {
+            SessionEnded();
+        }
 
-	namespace Original
-	{
-		_Disconnect Disconnect;
-		_Disconnect2 Disconnect2;
-		_SetSignonState SetSignonState;
-	}
+        // Demo recorder starts syncing from this tick
+        if (state == SignonState::Full) {
+            SessionStarted();
+        }
 
-	namespace Detour
-	{
-		int LastState;
+        LastState = state;
+        return Original::SetSignonState(thisptr, state, count);
+    }
+}
 
-		int __cdecl Disconnect(void* thisptr, bool bShowMainMenu)
-		{
-			SessionEnded();
-			return Original::Disconnect(thisptr, bShowMainMenu);
-		}
-		int __cdecl Disconnect2(void* thisptr, int* unk1, bool bShowMainMenu)
-		{
-			SessionEnded();
-			return Original::Disconnect2(thisptr, unk1, bShowMainMenu);
-		}
-		int __cdecl SetSignonState(void* thisptr, int state, int count)
-		{
-			if (state != LastState && LastState == SignonState::Full) {
-				SessionEnded();
-			}
+void Hook()
+{
+    if (Interfaces::IVEngineClient) {
+        engine = std::make_unique<VMTHook>(Interfaces::IVEngineClient);
+        ClientCmd = engine->GetOriginalFunction<_ClientCmd>(Offsets::ClientCmd);
+        GetLocalPlayer = engine->GetOriginalFunction<_GetLocalPlayer>(Offsets::GetLocalPlayer);
+        GetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::GetViewAngles);
+        SetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::SetViewAngles);
+        Vars::GetGameDirectory = engine->GetOriginalFunction<Vars::_GetGameDirectory>(Offsets::GetGameDirectory);
 
-			// Demo recorder starts syncing from this tick
-			if (state == SignonState::Full) {
-				SessionStarted();
-			}
+        if (Game::IsPortal2Engine()) {
+            typedef void* (*_GetClientState)();
+            auto addr = Memory::ReadAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientStateFunction);
+            auto GetClientState = reinterpret_cast<_GetClientState>(addr);
+            cl = std::make_unique<VMTHook>(GetClientState());
+        } else {
+            auto ServerCmdKeyValues = engine->GetOriginalFunction<uintptr_t>(Offsets::ServerCmdKeyValues);
+            auto ptr = *reinterpret_cast<void**>(ServerCmdKeyValues + Offsets::cl);
+            cl = std::make_unique<VMTHook>(ptr);
+        }
 
-			LastState = state;
-			return Original::SetSignonState(thisptr, state, count);
-		}
-	}
+        // Before Disconnect in VMT :^)
+        cl->HookFunction((void*)Detour::SetSignonState, Offsets::Disconnect - 1);
+        Original::SetSignonState = cl->GetOriginalFunction<_SetSignonState>(Offsets::Disconnect - 1);
 
-	void Hook()
-	{
-		if (Interfaces::IVEngineClient) {
-			engine = std::make_unique<VMTHook>(Interfaces::IVEngineClient);
-			ClientCmd = engine->GetOriginalFunction<_ClientCmd>(Offsets::ClientCmd);
-			GetLocalPlayer = engine->GetOriginalFunction<_GetLocalPlayer>(Offsets::GetLocalPlayer);
-			GetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::GetViewAngles);
-			SetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::SetViewAngles);
-			Vars::GetGameDirectory = engine->GetOriginalFunction<Vars::_GetGameDirectory>(Offsets::GetGameDirectory);
+        uintptr_t disconnect;
+        if (Game::IsPortal2Engine()) {
+            cl->HookFunction((void*)Detour::Disconnect, Offsets::Disconnect);
+            Original::Disconnect = cl->GetOriginalFunction<_Disconnect>(Offsets::Disconnect);
+            disconnect = (uintptr_t)Original::Disconnect;
+        } else {
+            cl->HookFunction((void*)Detour::Disconnect2, Offsets::Disconnect);
+            Original::Disconnect2 = cl->GetOriginalFunction<_Disconnect2>(Offsets::Disconnect);
+            disconnect = (uintptr_t)Original::Disconnect2;
+        }
 
-			if (Game::IsPortal2Engine()) {
-				typedef void*(*_GetClientState)();
-                auto addr = Memory::ReadAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientStateFunction);
-				auto GetClientState = reinterpret_cast<_GetClientState>(addr);
-				cl = std::make_unique<VMTHook>(GetClientState());
-			}
-			else {
-				auto ServerCmdKeyValues = engine->GetOriginalFunction<uintptr_t>(Offsets::ServerCmdKeyValues);
-				auto ptr = *reinterpret_cast<void**>(ServerCmdKeyValues + Offsets::cl);
-				cl = std::make_unique<VMTHook>(ptr);
-			}
+        DemoPlayer::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demoplayer));
+        DemoRecorder::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demorecorder));
 
-			// Before Disconnect in VMT :^)
-			cl->HookFunction((void*)Detour::SetSignonState, Offsets::Disconnect - 1);
-			Original::SetSignonState = cl->GetOriginalFunction<_SetSignonState>(Offsets::Disconnect - 1);
+        auto ProcessTick = cl->GetOriginalFunction<uintptr_t>(Offsets::ProcessTick);
+        Vars::tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
+        Vars::interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
+    }
 
-			uintptr_t disconnect;
-			if (Game::IsPortal2Engine()) {
-				cl->HookFunction((void*)Detour::Disconnect, Offsets::Disconnect);
-				Original::Disconnect = cl->GetOriginalFunction<_Disconnect>(Offsets::Disconnect);
-				disconnect = (uintptr_t)Original::Disconnect;
-			}
-			else {
-				cl->HookFunction((void*)Detour::Disconnect2, Offsets::Disconnect);
-				Original::Disconnect2 = cl->GetOriginalFunction<_Disconnect2>(Offsets::Disconnect);
-				disconnect = (uintptr_t)Original::Disconnect2;
-			}
-
-			DemoPlayer::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demoplayer));
-			DemoRecorder::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demorecorder));
-
-			auto ProcessTick = cl->GetOriginalFunction<uintptr_t>(Offsets::ProcessTick);
-			Vars::tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
-			Vars::interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
-		}
-
-		if (Interfaces::IEngineTool) {
-			auto tool = std::make_unique<VMTHook>(Interfaces::IEngineTool);
-			auto GetCurrentMap = tool->GetOriginalFunction<uintptr_t>(Offsets::GetCurrentMap);
-			Vars::m_szLevelName = reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
-		}
-	}
+    if (Interfaces::IEngineTool) {
+        auto tool = std::make_unique<VMTHook>(Interfaces::IEngineTool);
+        auto GetCurrentMap = tool->GetOriginalFunction<uintptr_t>(Offsets::GetCurrentMap);
+        Vars::m_szLevelName = reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
+    }
+}
 }
