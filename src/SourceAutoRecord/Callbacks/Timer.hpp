@@ -1,7 +1,6 @@
 #pragma once
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
-#include "Modules/Vars.hpp"
 
 #include "Features/Timer.hpp"
 #include "Features/TimerAverage.hpp"
@@ -17,7 +16,7 @@ void StartTimer()
         Console::DevMsg("Restarting timer!\n");
     else
         Console::DevMsg("Starting timer!\n");
-    Timer::Start(*Vars::tickcount);
+    Timer::Start(*Engine::tickcount);
 
     if (sar_stats_auto_reset.GetInt() >= 2) {
         Stats::Reset();
@@ -30,16 +29,16 @@ void StopTimer()
         return;
     }
 
-    Timer::Stop(*Vars::tickcount);
+    Timer::Stop(*Engine::tickcount);
 
     if (Timer::Average::IsEnabled) {
-        int tick = Timer::GetTick(*Vars::tickcount);
-        Timer::Average::Add(tick, Engine::GetTime(tick), *Vars::m_szLevelName);
+        int tick = Timer::GetTick(*Engine::tickcount);
+        Timer::Average::Add(tick, Engine::GetTime(tick), *Engine::m_szLevelName);
     }
 }
 void PrintTimer()
 {
-    int tick = Timer::GetTick(*Vars::tickcount);
+    int tick = Timer::GetTick(*Engine::tickcount);
     float time = Engine::GetTime(tick);
 
     if (Timer::IsRunning) {
@@ -86,7 +85,7 @@ void AddCheckpoint()
     }
 
     int tick = Timer::GetTick(Engine::GetTick());
-    Timer::CheckPoints::Add(tick, Engine::GetTime(tick), *Vars::m_szLevelName);
+    Timer::CheckPoints::Add(tick, Engine::GetTime(tick), *Engine::m_szLevelName);
 }
 void ClearCheckpoints()
 {
@@ -115,7 +114,7 @@ void PrintCheckpoints()
     }
 
     if (!Timer::IsRunning) {
-        int tick = Timer::GetTick(*Vars::tickcount);
+        int tick = Timer::GetTick(*Engine::tickcount);
         float time = Engine::GetTime(tick);
         Console::Print("Result: %i (%.3f)\n", tick, time);
     }

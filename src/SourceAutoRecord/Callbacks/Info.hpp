@@ -11,12 +11,12 @@ void PrintSession()
 {
     int tick = Engine::GetTick();
     Console::Print("Session Tick: %i (%.3f)\n", tick, Engine::GetTime(tick));
-    if (*DemoRecorder::m_bRecording) {
-        tick = DemoRecorder::GetTick();
+    if (*Engine::DemoRecorder::m_bRecording) {
+        tick = Engine::DemoRecorder::GetTick();
         Console::Print("Demo Recorder Tick: %i (%.3f)\n", tick, Engine::GetTime(tick));
     }
-    if (DemoPlayer::IsPlaying()) {
-        tick = DemoPlayer::GetTick();
+    if (Engine::DemoPlayer::IsPlaying()) {
+        tick = Engine::DemoPlayer::GetTick();
         Console::Print("Demo Player Tick: %i (%.3f)\n", tick, Engine::GetTime(tick));
     }
 }

@@ -2,10 +2,10 @@
 #include "vmthook/vmthook.h"
 
 #include "Console.hpp"
+#include "Engine.hpp"
 #include "Scheme.hpp"
 #include "Server.hpp"
 #include "Surface.hpp"
-#include "Vars.hpp"
 
 #include "Features/Routing.hpp"
 #include "Features/Session.hpp"
@@ -116,7 +116,7 @@ namespace Detour {
         }
         // Timer
         if (sar_hud_timer.GetBool()) {
-            int tick = (!Timer::IsPaused) ? Timer::GetTick(*Vars::tickcount) : Timer::TotalTicks;
+            int tick = (!Timer::IsPaused) ? Timer::GetTick(*Engine::tickcount) : Timer::TotalTicks;
             float time = Engine::GetTime(tick);
 
             char timer[64];
@@ -139,14 +139,14 @@ namespace Detour {
         // Demo
         if (sar_hud_demo.GetBool()) {
             char demo[64];
-            if (!*Vars::m_bLoadgame && *DemoRecorder::m_bRecording && !DemoRecorder::CurrentDemo.empty()) {
-                int tick = DemoRecorder::GetTick();
+            if (!*Engine::m_bLoadgame && *Engine::DemoRecorder::m_bRecording && !Engine::DemoRecorder::CurrentDemo.empty()) {
+                int tick = Engine::DemoRecorder::GetTick();
                 float time = Engine::GetTime(tick);
-                snprintf(demo, sizeof(demo), "demo: %s %i (%.3f)", DemoRecorder::CurrentDemo.c_str(), tick, time);
-            } else if (!*Vars::m_bLoadgame && DemoPlayer::IsPlaying()) {
-                int tick = DemoPlayer::GetTick();
+                snprintf(demo, sizeof(demo), "demo: %s %i (%.3f)", Engine::DemoRecorder::CurrentDemo.c_str(), tick, time);
+            } else if (!*Engine::m_bLoadgame && Engine::DemoPlayer::IsPlaying()) {
+                int tick = Engine::DemoPlayer::GetTick();
                 float time = Engine::GetTime(tick);
-                snprintf(demo, sizeof(demo), "demo: %s %i (%.3f)", DemoPlayer::DemoName, tick, time);
+                snprintf(demo, sizeof(demo), "demo: %s %i (%.3f)", Engine::DemoPlayer::DemoName, tick, time);
             } else {
                 snprintf(demo, sizeof(demo), "demo: -");
             }

@@ -361,8 +361,7 @@ void Create()
         sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
         ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
         hide_gun_when_holding = Variable("hide_gun_when_holding");
-    }
-    else if (Game::Version == Game::HalfLife2) {
+    } else if (Game::Version == Game::HalfLife2) {
         auto sv_portal_debug_touch = Variable("sv_portal_debug_touch");
         if (sv_portal_debug_touch.ptr) {
             Game::Version = Game::Portal;

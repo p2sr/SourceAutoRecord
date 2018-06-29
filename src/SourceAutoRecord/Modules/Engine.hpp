@@ -7,7 +7,6 @@
 #include "DemoPlayer.hpp"
 #include "DemoRecorder.hpp"
 #include "Tier1.hpp"
-#include "Vars.hpp"
 
 #include "Features/Session.hpp"
 #include "Features/Stats.hpp"
@@ -41,18 +40,22 @@ _GetViewAngles GetViewAngles;
 _SetViewAngles SetViewAngles;
 _AutoCompletionFunc AutoCompleteFunc;
 
+int* tickcount;
+float* interval_per_tick;
+char** m_szLevelName;
+
 void ExecuteCommand(const char* cmd)
 {
     ClientCmd(engine->GetThisPtr(), cmd);
 }
 int GetTick()
 {
-    int result = *Vars::tickcount - Session::BaseTick;
+    int result = *tickcount - Session::BaseTick;
     return (result >= 0) ? result : 0;
 }
 float GetTime(int tick)
 {
-    return tick * *Vars::interval_per_tick;
+    return tick * *interval_per_tick;
 }
 int GetPlayerIndex()
 {
@@ -73,8 +76,8 @@ bool IsInGame = false;
 
 void SessionStarted()
 {
-    Session::Rebase(*Vars::tickcount);
-    Timer::Rebase(*Vars::tickcount);
+    Session::Rebase(*tickcount);
+    Timer::Rebase(*tickcount);
 
     if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
         if (DemoRecorder::IsRecordingDemo) {
@@ -106,22 +109,22 @@ void SessionEnded()
         }
 
         if (Summary::IsRunning) {
-            Summary::Add(tick, Engine::GetTime(tick), *Vars::m_szLevelName);
+            Summary::Add(tick, Engine::GetTime(tick), *m_szLevelName);
             Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::GetTime(Summary::TotalTicks));
         }
 
         if (Timer::IsRunning) {
             if (sar_timer_always_running.GetBool()) {
-                Timer::Save(*Vars::tickcount);
+                Timer::Save(*tickcount);
                 Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::GetTime(Timer::TotalTicks));
             } else {
-                Timer::Stop(*Vars::tickcount);
+                Timer::Stop(*tickcount);
                 Console::Print("Timer stopped!\n");
             }
         }
 
         auto reset = sar_stats_auto_reset.GetInt();
-        if ((reset == 1 && !*Vars::m_bLoadgame) || reset >= 2) {
+        if ((reset == 1 && !*m_bLoadgame) || reset >= 2) {
             Stats::Reset();
         }
 
@@ -174,7 +177,7 @@ void Hook()
         GetLocalPlayer = engine->GetOriginalFunction<_GetLocalPlayer>(Offsets::GetLocalPlayer);
         GetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::GetViewAngles);
         SetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::SetViewAngles);
-        Vars::GetGameDirectory = engine->GetOriginalFunction<Vars::_GetGameDirectory>(Offsets::GetGameDirectory);
+        GetGameDirectory = engine->GetOriginalFunction<_GetGameDirectory>(Offsets::GetGameDirectory);
 
         if (Game::IsPortal2Engine()) {
             typedef void* (*_GetClientState)();
@@ -206,14 +209,19 @@ void Hook()
         DemoRecorder::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demorecorder));
 
         auto ProcessTick = cl->GetOriginalFunction<uintptr_t>(Offsets::ProcessTick);
-        Vars::tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
-        Vars::interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
+        tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
+        interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
     }
 
     if (Interfaces::IEngineTool) {
         auto tool = std::make_unique<VMTHook>(Interfaces::IEngineTool);
         auto GetCurrentMap = tool->GetOriginalFunction<uintptr_t>(Offsets::GetCurrentMap);
-        Vars::m_szLevelName = reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
+        m_szLevelName = reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
+    }
+
+    auto ldg = SAR::Find("m_bLoadgame");
+    if (ldg.Found) {
+        m_bLoadgame = *reinterpret_cast<bool**>(ldg.Address);
     }
 }
 }

@@ -18,8 +18,8 @@ void PrintDemoInfo(const CCommand& args)
 
     std::string name;
     if (args[1][0] == '\0') {
-        if (DemoPlayer::DemoName[0] != '\0') {
-            name = std::string(DemoPlayer::DemoName);
+        if (Engine::DemoPlayer::DemoName[0] != '\0') {
+            name = std::string(Engine::DemoPlayer::DemoName);
         } else {
             Console::Print("No demo was recorded or played back!\n");
             return;
@@ -32,7 +32,7 @@ void PrintDemoInfo(const CCommand& args)
     parser.outputMode = sar_time_demo_dev.GetInt();
 
     Demo demo;
-    auto dir = std::string(Vars::GetGameDirectory()) + std::string("/") + name;
+    auto dir = std::string(Engine::GetGameDirectory()) + std::string("/") + name;
     if (parser.Parse(dir, &demo)) {
         parser.Adjust(&demo);
         Console::Print("Demo: %s\n", name.c_str());
@@ -58,7 +58,7 @@ void PrintDemoInfos(const CCommand& args)
     DemoParser parser;
 
     std::string name;
-    std::string dir = std::string(Vars::GetGameDirectory()) + std::string("/");
+    std::string dir = std::string(Engine::GetGameDirectory()) + std::string("/");
     for (int i = 1; i < args.ArgC(); i++) {
         name = std::string(args[i]);
 

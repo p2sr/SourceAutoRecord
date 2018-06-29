@@ -23,7 +23,7 @@ void StopSummary()
 
     if (sar_sum_during_session.GetBool()) {
         int tick = Engine::GetTick();
-        Summary::Add(tick, Engine::GetTime(tick), *Vars::m_szLevelName);
+        Summary::Add(tick, Engine::GetTime(tick), *Engine::m_szLevelName);
     }
     Summary::IsRunning = false;
 }
@@ -51,7 +51,7 @@ void PrintSummary()
     if (Summary::IsRunning) {
         int tick = Engine::GetTick();
         float time = Engine::GetTime(tick);
-        Console::PrintActive("%s -> ", *Vars::m_szLevelName);
+        Console::PrintActive("%s -> ", *Engine::m_szLevelName);
         Console::PrintActive("%i ticks ", tick);
         Console::PrintActive("(%.3f)\n", time);
         Console::Print("---------------\n");

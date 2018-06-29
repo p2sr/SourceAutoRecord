@@ -9,10 +9,10 @@ std::string FilePath("/cfg/_sar_cvars.cfg");
 
 bool Save()
 {
-    if (Vars::GetGameDirectory == nullptr)
+    if (Engine::GetGameDirectory == nullptr)
         return false;
 
-    std::ofstream file(std::string(Vars::GetGameDirectory()) + FilePath, std::ios::out | std::ios::trunc);
+    std::ofstream file(std::string(Engine::GetGameDirectory()) + FilePath, std::ios::out | std::ios::trunc);
     if (!file.good())
         return false;
 
@@ -33,10 +33,10 @@ bool Save()
 }
 bool Load()
 {
-    if (Vars::GetGameDirectory == nullptr)
+    if (Engine::GetGameDirectory == nullptr)
         return false;
 
-    std::ifstream file(std::string(Vars::GetGameDirectory()) + FilePath, std::ios::in);
+    std::ifstream file(std::string(Engine::GetGameDirectory()) + FilePath, std::ios::in);
     if (!file.good())
         return false;
 

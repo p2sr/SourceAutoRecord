@@ -5,9 +5,8 @@
 #include "Modules/Scheme.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
-#include "Modules/VGui.hpp"
-#include "Modules/Vars.hpp"
 #include "Modules/Tier1.hpp"
+#include "Modules/VGui.hpp"
 
 #include "Features/Config.hpp"
 
@@ -34,7 +33,6 @@ int __attribute__((constructor)) Main()
         Scheme::Hook();
         Server::Hook();
         Surface::Hook();
-        Vars::Hook();
         VGui::Hook();
 
         Config::Load();
