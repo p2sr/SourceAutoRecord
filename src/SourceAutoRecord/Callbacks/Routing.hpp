@@ -2,9 +2,9 @@
 #include "Modules/Console.hpp"
 #include "Modules/Client.hpp"
 
-#include "Features/Helper.hpp"
+#include "Features/Routing.hpp"
 
-using namespace Helper;
+using namespace Routing;
 
 namespace Callbacks
 {
@@ -21,23 +21,24 @@ namespace Callbacks
 	}
 	void PrintTracerResult()
 	{
+        auto xyz = Tracer::GetDifferences();
 		Console::Print("A: %.3f/%.3f/%.3f\n", Tracer::Source.x, Tracer::Source.y, Tracer::Source.z);
 		Console::Print("B: %.3f/%.3f/%.3f\n", Tracer::Destination.x, Tracer::Destination.y, Tracer::Destination.z);
-		Console::Print("X-Distance: %.3f\n", Tracer::GetDifferenceX());
-		Console::Print("Y-Distance: %.3f\n", Tracer::GetDifferenceY());
-		Console::Print("Z-Distance: %.3f\n", Tracer::GetDifferenceZ());
+		Console::Print("X-Distance: %.3f\n", std::get<0>(xyz));
+		Console::Print("Y-Distance: %.3f\n", std::get<1>(xyz));
+		Console::Print("Z-Distance: %.3f\n", std::get<2>(xyz));
 		Console::Print("Total Distance: %.3f\n", Tracer::GetResult());
 	}
 	void ResetTracer()
 	{
 		Tracer::Reset();
 	}
-	// Print last maximum velocity
-	void PrintMaxVel()
+	// Print latest velocity peak
+	void PrintVelocityPeak()
 	{
-		Console::Print("Maximum Velocity: %.3f\n", Velocity::Maximum);
+		Console::Print("Maximum Velocity: %.3f\n", Velocity::Peak);
 	}
-	void ResetMaxVel()
+	void ResetVelocityPeak()
 	{
 		Velocity::Reset();
 	}

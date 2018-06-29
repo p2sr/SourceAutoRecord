@@ -7,21 +7,20 @@
 
 namespace Callbacks
 {
-	void BindSaveRebinder(const void* ptr)
+	void BindSaveRebinder(const CCommand& args)
 	{
-		ConCommandArgs args(ptr);
-		if (args.Count() != 3) {
+		if (args.ArgC() != 3) {
 			Console::Print("sar_bind_save <key> [save_name] : Automatic save rebinding when server has loaded. File indexing will be synced when recording demos.\n");
 			return;
 		}
 
-		int button = InputSystem::GetButton(args.At(1));
+		int button = InputSystem::GetButton(args[1]);
 		if (button == BUTTON_CODE_INVALID) {
-			Console::Print("\"%s\" isn't a valid key!\n", args.At(1));
+			Console::Print("\"%s\" isn't a valid key!\n", args[1]);
 			return;
 		}
 		else if (button == KEY_ESCAPE) {
-			Console::Print("Can't bind ESCAPE key!\n", args.At(1));
+			Console::Print("Can't bind ESCAPE key!\n", args[1]);
 			return;
 		}
 
@@ -29,24 +28,23 @@ namespace Callbacks
 			Rebinder::ResetReloadBind();
 		}
 
-		Rebinder::SetSaveBind(button, args.At(2));
+		Rebinder::SetSaveBind(button, args[2]);
 		Rebinder::RebindSave();
 	}
-	void BindReloadRebinder(const void* ptr)
+	void BindReloadRebinder(const CCommand& args)
 	{
-		ConCommandArgs args(ptr);
-		if (args.Count() != 3) {
+		if (args.ArgC() != 3) {
 			Console::Print("sar_bind_reload <key> [save_name] : Automatic save-reload rebinding when server has loaded. File indexing will be synced when recording demos.\n");
 			return;
 		}
 
-		int button = InputSystem::GetButton(args.At(1));
+		int button = InputSystem::GetButton(args[1]);
 		if (button == BUTTON_CODE_INVALID) {
-			Console::Print("\"%s\" isn't a valid key!\n", args.At(1));
+			Console::Print("\"%s\" isn't a valid key!\n", args[1]);
 			return;
 		}
 		else if (button == KEY_ESCAPE) {
-			Console::Print("Can't bind ESCAPE key!\n", args.At(1));
+			Console::Print("Can't bind ESCAPE key!\n", args[1]);
 			return;
 		}
 
@@ -54,7 +52,7 @@ namespace Callbacks
 			Rebinder::ResetSaveBind();
 		}
 
-		Rebinder::SetReloadBind(button, args.At(2));
+		Rebinder::SetReloadBind(button, args[2]);
 		Rebinder::RebindReload();
 	}
 	void UnbindSaveRebinder()

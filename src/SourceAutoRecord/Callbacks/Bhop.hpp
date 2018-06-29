@@ -4,14 +4,12 @@
 
 namespace Callbacks
 {
-    void IN_BhopDown(const void* ptr)
+    void IN_BhopDown(const CCommand& args)
     {
-        ConCommandArgs args(ptr);
-        Client::KeyDown(Client::in_jump, (args.Count() > 1) ? args.At(1) : NULL);
+        Client::KeyDown(Client::in_jump, (args.ArgC() > 1) ? args[1] : NULL);
     }
-    void IN_BhopUp(const void* ptr)
+    void IN_BhopUp(const CCommand& args)
     {
-        ConCommandArgs args(ptr);
-        Client::KeyUp(Client::in_jump, (args.Count() > 1) ? args.At(1) : NULL);
+        Client::KeyUp(Client::in_jump, (args.ArgC() > 1) ? args[1] : NULL);
     }
 }

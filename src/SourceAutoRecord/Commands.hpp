@@ -58,6 +58,8 @@ namespace Commands
 	Variable sar_hud_portals;
 	Variable sar_hud_steps;
 	Variable sar_hud_distance;
+    Variable sar_hud_trace;
+	Variable sar_hud_velocity_peak;
 
 	Variable sar_hud_default_spacing;
 	Variable sar_hud_default_padding_x;
@@ -69,6 +71,7 @@ namespace Commands
 	Variable sar_stats_auto_reset;
 	Command sar_stats_reset_jumps;
 	Command sar_stats_reset_steps;
+    Command sar_stats_reset_jump_distance;
 
 	// Cheats
 	Variable sar_autojump;
@@ -93,12 +96,14 @@ namespace Commands
 	// Others
 	Command sar_session;
 	Command sar_about;
+
+    // Routing
 	Command sar_trace_a;
 	Command sar_trace_b;
 	Command sar_trace_result;
-	Command sar_max_vel;
-	Variable sar_max_vel_xy;
-	Command sar_max_vel_reset;
+	Command sar_velocity_peak;
+	Command sar_velocity_peak_reset;
+    Variable sar_velocity_peak_xy;
 
 	// From the game
 	Variable cl_showpos;

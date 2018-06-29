@@ -10,8 +10,10 @@
 
 namespace Tier1
 {
+    struct CCommand;
+
 	using _CommandCallback = void(*)();
-	using _CommandCallbackArgs = void(*)(const void* args);
+	using _CommandCallbackArgs = void(*)(const CCommand& args);
 	using _ConCommand = void(__cdecl*)(void* thisptr, const char* name, void* callback, const char* helpstr, int flags, void* compfunc);
 	using _ConVar = void(__cdecl*)(void* thisptr, const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max);
 	using _InternalSetValue = void(__cdecl*)(void* thisptr, const char* value);
@@ -48,6 +50,19 @@ namespace Tier1
 		char m_pArgSBuffer[COMMAND_MAX_LENGTH];
 		char m_pArgvBuffer[COMMAND_MAX_LENGTH];
 		const char* m_ppArgv[COMMAND_MAX_ARGC];
+
+        int ArgC() const
+        {
+			return this->m_nArgc;
+		}
+		const char* Arg(int nIndex) const
+        {
+			return this->m_ppArgv[nIndex];
+		}
+        const char* operator[](int nIndex) const
+        {
+            return Arg(nIndex);
+        }
 	};
 
     struct ConCommand : ConCommandBase {
@@ -65,23 +80,6 @@ namespace Tier1
 		bool m_bHasCompletionCallback : 1;
 		bool m_bUsingNewCommandCallback : 1;
 		bool m_bUsingCommandCallbackInterface : 1;
-	};
-
-    struct ConCommandArgs {
-		const CCommand* ptr;
-
-		ConCommandArgs(const void* ptr) {
-            this->ptr = reinterpret_cast<const CCommand*>(ptr);
-		}
-		int Count() const {
-			return this->ptr->m_nArgc;
-		}
-		const char* At(int index) const {
-			return this->ptr->m_ppArgv[index];
-		}
-		const char* FullArgs() const {
-			return this->ptr->m_pArgSBuffer;
-		}
 	};
 
     struct ConVar : ConCommandBase {

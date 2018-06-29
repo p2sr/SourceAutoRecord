@@ -8,7 +8,6 @@
 #include "DemoPlayer.hpp"
 #include "Vars.hpp"
 
-#include "Features/JumpDistance.hpp"
 #include "Features/Session.hpp"
 #include "Features/Stats.hpp"
 #include "Features/StepCounter.hpp"
@@ -92,7 +91,7 @@ namespace Engine
 		}
 
 		StepCounter::ResetTimer();
-		JumpDistance::Reset();
+		Stats::JumpDistance::Reset();
 		IsInGame = true;
 	}
 	void SessionEnded()

@@ -10,16 +10,15 @@
 
 namespace Callbacks
 {
-	void PrintDemoInfo(const void* ptr)
+	void PrintDemoInfo(const CCommand& args)
 	{
-		ConCommandArgs args(ptr);
-		if (args.Count() != 2) {
+		if (args.ArgC() != 2) {
 			Console::Print("sar_time_demo [demo_name] : Parses a demo and prints some information about it.\n");
 			return;
 		}
 
 		std::string name;
-		if (args.At(1)[0] == '\0') {
+		if (args[1][0] == '\0') {
 			if (DemoPlayer::DemoName[0] != '\0') {
 				name = std::string(DemoPlayer::DemoName);
 			}
@@ -29,7 +28,7 @@ namespace Callbacks
 			}
 		}
 		else {
-			name = std::string(args.At(1));
+			name = std::string(args[1]);
 		}
 
 		DemoParser parser;
@@ -50,10 +49,9 @@ namespace Callbacks
 			Console::Print("Could not parse \"%s\"!\n", name.c_str());
 		}
 	}
-	void PrintDemoInfos(const void* ptr)
+	void PrintDemoInfos(const CCommand& args)
 	{
-		ConCommandArgs args(ptr);
-		if (args.Count() <= 1) {
+		if (args.ArgC() <= 1) {
 			Console::Print("sar_time_demos [demo_name] [demo_name2] [etc.] : Parses multiple demos and prints the total sum of them.\n");
 			return;
 		}
@@ -65,9 +63,9 @@ namespace Callbacks
 
 		std::string name;
 		std::string dir = std::string(Vars::GetGameDirectory()) + std::string("/");
-		for (int i = 1; i < args.Count(); i++)
+		for (int i = 1; i < args.ArgC(); i++)
 		{
-			name = std::string(args.At(i));
+			name = std::string(args[i]);
 
 			Demo demo;
 			if (parser.Parse(dir + name, &demo)) {

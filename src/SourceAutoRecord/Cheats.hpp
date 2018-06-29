@@ -181,6 +181,16 @@ namespace Cheats
 			"sar_hud_distance",
 			"0",
 			"Draws calculated jump distance.\n");
+        sar_hud_trace = Variable(
+			"sar_hud_trace",
+			"0",
+			"Draws distance values of tracer.\n");
+		sar_hud_velocity_peak = Variable(
+			"sar_hud_velocity_peak",
+			"0",
+			"Draws last saved velocity peak.\n");
+
+        // HUD config
 		sar_hud_default_spacing = Variable(
 			"sar_hud_default_spacing",
 			"4",
@@ -221,6 +231,10 @@ namespace Cheats
 			"sar_stats_reset_steps",
 			Callbacks::ResetSteps,
 			"Resets step counter.\n");
+        sar_stats_reset_jump_distance = Command(
+			"sar_stats_reset_jump_distance",
+			Callbacks::ResetJumpDistance,
+			"Resets jump distance value.\n");
 
 		// Cheats
 		sar_autojump = Variable(
@@ -261,33 +275,25 @@ namespace Cheats
 		sar_tas_frame_at = Command(
 			"sar_tas_frame_at",
 			Callbacks::AddFrameAtTas,
-			"Adds a command frame to TAS (absolute).\n");
+			"Adds a command frame to queue (absolute).\n");
 		sar_tas_frame_after = Command(
 			"sar_tas_frame_after",
 			Callbacks::AddFrameAfterTas,
-			"Adds a command frame to TAS (relative).\n");
+			"Adds a command frame to queue (relative).\n");
 		sar_tas_start = Command(
 			"sar_tas_start",
 			Callbacks::StartTas,
-			"Starts TAS.\n");
+			"Starts queued commands.\n");
 		sar_tas_reset = Command(
 			"sar_tas_reset",
 			Callbacks::ResetTas,
-			"Resets TAS.\n");
+			"Clears queued commands.\n");
 		sar_tas_autostart = Variable(
 			"sar_tas_autostart",
-			"0",
-			"Starts TAS automatically on first frame after a load.\n");
+			"1",
+			"Starts queued commands automatically on first frame after a load.\n");
 
-		// Others
-		sar_session = Command(
-			"sar_session",
-			Callbacks::PrintSession,
-			"Prints the current tick of the server since it has loaded.\n");
-		sar_about = Command(
-			"sar_about",
-			Callbacks::PrintAbout,
-			"Prints info about this plugin.\n");
+		// Config
 		sar_cvars_save = Command(
 			"sar_cvars_save",
 			Callbacks::SaveCvars,
@@ -296,6 +302,8 @@ namespace Cheats
 			"sar_cvars_load",
 			Callbacks::LoadCvars,
 			"Loads important SAR cvars.\n");
+
+        // Routing
 		sar_trace_a = Command(
 			"sar_trace_a",
 			Callbacks::SaveTracerA,
@@ -308,18 +316,28 @@ namespace Cheats
 			"sar_trace_result",
 			Callbacks::PrintTracerResult,
 			"Prints tracing result.\n");
-		sar_max_vel = Command(
-			"sar_max_vel",
-			Callbacks::PrintMaxVel,
-			"Prints latest maximum velocity.\n");
-		sar_max_vel_xy = Variable(
-			"sar_max_vel_xy",
+		sar_velocity_peak = Command(
+			"sar_velocity_peak",
+			Callbacks::PrintVelocityPeak,
+			"Prints latest velocity peak.\n");
+		sar_velocity_peak_reset = Command(
+			"sar_velocity_peak_reset",
+			Callbacks::ResetVelocityPeak,
+			"Resets saved velocity peak.\n");
+        sar_velocity_peak_xy = Variable(
+			"sar_velocity_peak_xy",
 			"0",
-			"Saves 2D velocity instead.\n");
-		sar_max_vel_reset = Command(
-			"sar_max_vel_reset",
-			Callbacks::ResetMaxVel,
-			"Resets saved maximum velocity.\n");
+			"Saves 2D velocity peak.\n");
+
+        // Others
+		sar_session = Command(
+			"sar_session",
+			Callbacks::PrintSession,
+			"Prints the current tick of the server since it has loaded.\n");
+		sar_about = Command(
+			"sar_about",
+			Callbacks::PrintAbout,
+			"Prints info about this plugin.\n");
 
 		// From the game
 		cl_showpos = Variable("cl_showpos");

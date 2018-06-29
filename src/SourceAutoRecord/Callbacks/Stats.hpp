@@ -11,4 +11,8 @@ namespace Callbacks
 	{
 		Stats::TotalSteps = 0;
 	}
+    void ResetJumpDistance()
+    {
+        Stats::JumpDistance::Reset();
+    }
 }

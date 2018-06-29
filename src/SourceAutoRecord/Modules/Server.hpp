@@ -3,8 +3,7 @@
 
 #include "Client.hpp"
 
-#include "Features/Helper.hpp"
-#include "Features/JumpDistance.hpp"
+#include "Features/Routing.hpp"
 #include "Features/StepCounter.hpp"
 
 #include "Commands.hpp"
@@ -93,7 +92,7 @@ namespace Server
 				JumpedLastTime = true;
 				Stats::TotalJumps++;
 				Stats::TotalSteps++;
-				JumpDistance::StartTrace(Client::GetAbsOrigin());
+				Stats::JumpDistance::StartTrace(Client::GetAbsOrigin());
 			}
 
 			return result;
@@ -112,11 +111,11 @@ namespace Server
 			auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
 
 			// Landed after a jump
-			if (JumpDistance::IsTracing
+			if (Stats::JumpDistance::IsTracing
 				&& m_fFlags & FL_ONGROUND
 				&& m_MoveType != MOVETYPE_NOCLIP) {
 
-				JumpDistance::EndTrace(Client::GetAbsOrigin());
+				Stats::JumpDistance::EndTrace(Client::GetAbsOrigin());
 			}
 
 			StepCounter::ReduceTimer(frametime);
@@ -132,7 +131,7 @@ namespace Server
 				StepCounter::Increment(m_fFlags, m_vecVelocity, m_nWaterLevel);
 			}
 
-			Helper::Velocity::Save(Client::GetLocalVelocity(), sar_max_vel_xy.GetBool());
+			Routing::Velocity::Save(Client::GetLocalVelocity(), sar_velocity_peak_xy.GetBool());
 
 			return Original::PlayerMove(thisptr);
 		}

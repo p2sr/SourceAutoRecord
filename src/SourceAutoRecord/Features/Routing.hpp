@@ -1,7 +1,7 @@
 #pragma once
 #include "Utils.hpp"
 
-namespace Helper
+namespace Routing
 {
 	namespace Tracer
 	{
@@ -21,38 +21,30 @@ namespace Helper
 			Source = Vector();
 			Destination = Vector();
 		}
-		float GetDifferenceX()
-		{
-			return Destination.x - Source.x;
-		}
-		float GetDifferenceY()
-		{
-			return Destination.y - Source.y;
-		}
-		float GetDifferenceZ()
-		{
-			return Destination.z - Source.z;
-		}
+        std::tuple<float, float, float> GetDifferences()
+        {
+            return std::make_tuple(Destination.x - Source.x, Destination.y - Source.y, Destination.z - Source.z);
+        }
 		float GetResult()
 		{
-			auto x = GetDifferenceX();
-			auto y = GetDifferenceY();
-			auto z = GetDifferenceZ();
+			auto x = Destination.x - Source.x;
+            auto y = Destination.y - Source.y;
+            auto z = Destination.z - Source.z;
 			return std::sqrt(x * x + y * y + z * z);
 		}
 	}
 	namespace Velocity
 	{
-		float Maximum;
+		float Peak;
 
 		void Save(Vector velocity, bool xyOnly = false)
 		{
 			auto vel = (xyOnly) ? velocity.Length2D() : velocity.Length();
-			if (vel > Maximum) Maximum = vel;
+			if (vel > Peak) Peak = vel;
 		}
 		void Reset()
 		{
-			Maximum = 0;
+			Peak = 0;
 		}
 	}
 }

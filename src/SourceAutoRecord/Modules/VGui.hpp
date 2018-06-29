@@ -7,7 +7,7 @@
 #include "Surface.hpp"
 #include "Vars.hpp"
 
-#include "Features/JumpDistance.hpp"
+#include "Features/Routing.hpp"
 #include "Features/Session.hpp"
 #include "Features/Stats.hpp"
 #include "Features/StepCounter.hpp"
@@ -179,10 +179,26 @@ namespace VGui
 				elements++;
 			}
 			if (sar_hud_distance.GetBool()) {
-				auto jumpDistance = JumpDistance::LastDistance;
+				auto jumpDistance = Stats::JumpDistance::LastDistance;
 				char distance[64];
 				snprintf(distance, sizeof(distance), "distance: %.3f", jumpDistance);
 				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, distance);
+				elements++;
+			}
+            // Routing
+            if (sar_hud_trace.GetBool()) {
+				auto xyz = Routing::Tracer::GetDifferences();
+                auto result = Routing::Tracer::GetResult();
+				char trace[64];
+				snprintf(trace, sizeof(trace), "trace: %.3f (%.3f/%.3f/%.3f)", result, std::get<0>(xyz), std::get<1>(xyz), std::get<2>(xyz));
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, trace);
+				elements++;
+			}
+            if (sar_hud_velocity_peak.GetBool()) {
+				auto peak = Routing::Velocity::Peak;
+				char velocity[64];
+				snprintf(velocity, sizeof(velocity), "peak: %.3f", peak);
+				Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, velocity);
 				elements++;
 			}
 

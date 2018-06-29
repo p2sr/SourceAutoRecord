@@ -19,6 +19,9 @@
     - [Optional](#optional)
   - [Stats](#stats)
   - [Cheats](#cheats)
+    - [Movement](#movement)
+    - [TAS](#tas)
+    - [Routing](#routing)
     - [Unlocked](#unlocked)
   - [Config](#config)
 - [Mapping](#mapping)
@@ -37,7 +40,7 @@
 ## Features
 
 ### Automatic Demo Recorder
-- `sar_autorecord` keeps recording a demo when loading from a save
+- `sar_autorecord <0-1>` keeps recording a demo when loading from a save
 
 ### Automatic Binding
 - `sar_bind_save <key> [save_name]` binds automatically `save save_name` to the given key when loading
@@ -63,13 +66,13 @@
 - `sar_sum_stop` stops counting
 - `sar_sum_reset` resets the counter
 - `sar_sum_result` prints the result of all saved sessions
-- `sar_sum_during_session` counts current session too
+- `sar_sum_during_session <0-1>` counts current session too
 
 ### Timer
 - `sar_timer_start` starts or restarts the timer, counting from invocation
 - `sar_timer_stop` stops timer
 - `sar_timer_result` prints result
-- `sar_timer_always_running` doesn't stop the timer when disconnecting from server
+- `sar_timer_always_running <0-1>` doesn't stop the timer when disconnecting from server
 - Mappers can use this for accurate timing, [see below](#mapping)
 
 ##### Average
@@ -83,21 +86,23 @@
 - `sar_cps_result` prints result of all checkpoints
 
 ### HUD
-- `sar_hud_text` draws given string
-- `sar_hud_position` draws player's position
-- `sar_hud_angles` draws player's view angles
-- `sar_hud_velocity` draws player's velocity
-- `sar_hud_session` draws current session value
-- `sar_hud_last_session` draws value of latest completed session
-- `sar_hud_sum` draws summary value of sessions
-- `sar_hud_timer` draws timer value
-- `sar_hud_avg` draws current average of timer
-- `sar_hud_cps` draws last checkpoint value of timer
-- `sar_hud_demo` draws current name, tick and time of demo recorder or demo player
-- `sar_hud_jumps` draws total jump count
-- `sar_hud_portals` draws total portal count
-- `sar_hud_steps` draws total step count
-- `sar_hud_distance` draws calculated jump distance
+- `sar_hud_text <0-1>` draws given string
+- `sar_hud_position <0-1>` draws player's position
+- `sar_hud_angles <0-1>` draws player's view angles
+- `sar_hud_velocity <0-2>` draws player's velocity
+- `sar_hud_session <0-1>` draws current session value
+- `sar_hud_last_session <0-1>` draws value of latest completed session
+- `sar_hud_sum <0-1>` draws summary value of sessions
+- `sar_hud_timer <0-1>` draws timer value
+- `sar_hud_avg <0-1>` draws current average of timer
+- `sar_hud_cps <0-1>` draws last checkpoint value of timer
+- `sar_hud_demo <0-1>` draws current name, tick and time of demo recorder or demo player
+- `sar_hud_jumps <0-1>` draws total jump count
+- `sar_hud_portals <0-1>` draws total portal count
+- `sar_hud_steps <0-1>` draws total step count
+- `sar_hud_distance <0-1>` draws calculated jump distance
+- `sar_hud_trace <0-1>` draws tracer result
+- `sar_hud_velocity_peak <0-1>` draws velocity peak 
 
 ##### Optional
 - `sar_hud_default_spacing` space between HUD elements
@@ -107,16 +112,36 @@
 - `sar_hud_default_font_color` font color
 
 ### Stats
-- `sar_stats_auto_reset` resets all stats automatically
+- `sar_stats_auto_reset <0-1>` resets all stats automatically
 - `sar_stats_reset_jumps` resets jump count
 - `sar_stats_reset_steps` resets step count
+- `sar_stats_reset_jump_distance` resets jump distance
 
 ### Cheats
-- `sar_autojump` enables tick-perfect jumping on the server
-- `sar_jumpboost` enables OBE movement on the server (Portal 2)
-- `sar_aircontrol` enables more air-control movement on the server (Portal 2)
 - `sar_teleport` teleports player to a saved location
 - `sar_teleport_setpos` saves current location for teleportation
+
+#### Movement
+- `sar_autojump <0-1>` enables tick-perfect jumping on the server
+- `sar_jumpboost <0-2>` enables OBE movement on the server (Portal 2 Engine)
+- `sar_aircontrol <0-1>` enables more air-control movement on the server (Portal 2 Engine)
+- `+bhop` and `-bhop` allows the player to jump (The Stanley Parable)
+
+#### TAS
+- `sar_tas_frame_at <frame> [command]` adds a command frame to the queue at an absolute frame value
+- `sar_tas_frame_after <frame> [command]` adds a command frame to the queue, relative to the last added absolute frame value
+- `sar_tas_start` starts playing queued commands
+- `sar_tas_reset` clears all queued commands
+- `sar_tas_autostart <0-1>` starts playing queued commands automatically on first frame after a load
+- Here is a simple TAS of [Propulsion Catch](https://gist.github.com/NeKzor/5ba4fd9bafc80855a395b4a5f03f1c6e)
+
+#### Routing
+- `sar_trace_a` saves first location to measure a distance
+- `sar_trace_b` saves second location to measure a distance
+- `sar_trace_result` prints calculated distance between saved locations
+- `sar_velocity_peak` prints latest velocity peak
+- `sar_velocity_peak_reset` resets saved velocity peak
+- `sar_velocity_peak_xy <0-1>` saves 2D velocity peak
 
 ##### Unlocked
 - `sv_bonus_challenge` (Portal 2)

@@ -6,25 +6,23 @@
 
 namespace Callbacks
 {
-	void AddFrameAtTas(const void* ptr)
+	void AddFrameAtTas(const CCommand& args)
 	{
-		ConCommandArgs args(ptr);
-		if (args.Count() != 3) {
+		if (args.ArgC() != 3) {
 			Console::Print("sar_tas_frame_at <frame> [command_to_execute] : Adds command frame to TAS.\n");
 			return;
 		}
 
-		TAS::AddFrame(atoi(args.At(1)), std::string(args.At(2)));
+		TAS::AddFrame(atoi(args[1]), std::string(args[2]));
 	}
-	void AddFrameAfterTas(const void* ptr)
+	void AddFrameAfterTas(const CCommand& args)
 	{
-		ConCommandArgs args(ptr);
-		if (args.Count() != 3) {
+		if (args.ArgC() != 3) {
 			Console::Print("sar_tas_frame_after <frames_to_wait> [command_to_execute] : Adds command frame to TAS.\n");
 			return;
 		}
 
-		TAS::AddFrame(atoi(args.At(1)), std::string(args.At(2)), true);
+		TAS::AddFrame(atoi(args[1]), std::string(args[2]), true);
 	}
 	void StartTas()
 	{
