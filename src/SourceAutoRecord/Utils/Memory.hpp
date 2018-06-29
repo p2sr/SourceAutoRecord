@@ -174,6 +174,11 @@ void* GetModuleHandle(const char* moduleName)
     return (TryGetModule(moduleName, &info)) ? dlopen(info.path, RTLD_NOLOAD | RTLD_NOW) : nullptr;
 }
 
+void CloseModuleHandle(void* moduleHandle)
+{
+    dlclose(moduleHandle);
+}
+
 void* GetSymbolAddress(void* moduleHandle, const char* symbol)
 {
     return dlsym(moduleHandle, symbol);

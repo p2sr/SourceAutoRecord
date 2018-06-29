@@ -1,21 +1,20 @@
 binary="sar.so"
 
-exe="portal2_linux"
-appid="620"
-
 if [ "$1" == "portal" ]; then
   exe="hl2_linux"
   appid="400"
-fi
-
-if [ "$1" == "tsp" ]; then
+elif [ "$1" == "tsp" ]; then
   exe="stanley_linux"
   appid="221910"
-fi
-
-if [ "$1" == "tbg" ]; then
+elif [ "$1" == "tbg" ]; then
   exe="beginnersguide.bin"
   appid="303210"
+elif [ "$1" == "hl2" ]; then
+  exe="hl2_linux"
+  appid="220"
+else
+  exe="portal2_linux"
+  appid="620"
 fi
 
 pid=$(pidof $exe)

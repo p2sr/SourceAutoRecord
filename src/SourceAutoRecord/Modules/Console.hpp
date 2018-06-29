@@ -28,6 +28,8 @@ bool Init()
         auto devMsgAddr = Memory::GetSymbolAddress(tier0, "_Z6DevMsgPKcz");
         auto devWarningAddr = Memory::GetSymbolAddress(tier0, "_Z10DevWarningPKcz");
 
+        Memory::CloseModuleHandle(tier0);
+
         if (msgAddr && colorMsgAddr && warningAddr && devMsgAddr && devWarningAddr) {
             Msg = reinterpret_cast<_Msg>(msgAddr);
             ColorMsg = reinterpret_cast<_ColorMsg>(colorMsgAddr);

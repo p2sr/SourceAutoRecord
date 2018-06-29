@@ -362,6 +362,13 @@ void Create()
         ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
         hide_gun_when_holding = Variable("hide_gun_when_holding");
     }
+    else if (Game::Version == Game::HalfLife2) {
+        auto sv_portal_debug_touch = Variable("sv_portal_debug_touch");
+        if (sv_portal_debug_touch.ptr) {
+            Game::Version = Game::Portal;
+            Console::DevMsg("SAR: Detected Portal version!\n");
+        }
+    }
 
     Console::DevMsg("SAR: Created %i ConVars and %i ConCommands!\n", Tier1::ConVarCount, Tier1::ConCommandCount);
 }

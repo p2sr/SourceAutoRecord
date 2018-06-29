@@ -9,6 +9,16 @@
 
 namespace Interfaces {
 
+typedef void* (*CreateInterfaceFn)(const char* pName, int* pReturnCode);
+typedef void* (*InstantiateInterfaceFn)();
+
+struct InterfaceReg {
+    InstantiateInterfaceFn m_CreateFn;
+    const char* m_pName;
+    InterfaceReg* m_pNext;
+    static InterfaceReg* s_pInterfaceRegs;
+};
+
 void* IGameMovement;
 void* IVEngineClient;
 void* IInputSystem;
@@ -25,91 +35,47 @@ void* Get(const char* filename, const char* interface)
 {
     auto handle = Memory::GetModuleHandle(filename);
     if (!handle) {
-        Console::DevWarning("Failed to open module %s!\n", filename);
+        Console::DevWarning("SAR: Failed to open module %s!\n", filename);
         return nullptr;
     }
 
-    auto factory = Memory::GetSymbolAddress(handle, "CreateInterface");
-    if (!factory) {
-        Console::DevWarning("Failed to find symbol CreateInterface for %s!\n", filename);
+    auto CreateInterface = Memory::GetSymbolAddress(handle, "CreateInterface");
+    Memory::CloseModuleHandle(handle);
+
+    if (!CreateInterface) {
+        Console::DevWarning("SAR: Failed to find symbol CreateInterface for %s!\n", filename);
         return nullptr;
     }
 
-    typedef void* (*CreateInterfaceFn)(const char* pName, int* pReturnCode);
-    auto result = ((CreateInterfaceFn)(factory))(interface, nullptr);
+    auto CreateInterfaceInternal = Memory::ReadAbsoluteAddress((uintptr_t)CreateInterface + 5);
+    auto s_pInterfaceRegs = **reinterpret_cast<InterfaceReg***>(CreateInterfaceInternal + 11);
 
-    if (result) {
-        Console::DevMsg("Found interface %s in %s!\n", interface, filename);
-    } else {
-        Console::DevWarning("Failed to find interface %s in %s!\n", interface, filename);
-    }
-    return result;
-}
-void Log(const char* variable, const char* filename, const char* interfaceName)
-{
-    auto path = Memory::GetModulePath(filename);
-    if (!path) {
-        Console::DevWarning("Failed to get module path for %s!\n", filename);
-        return;
-    }
-
-    char command[1024];
-    snprintf(command, sizeof(command), "strings \"%s\" | grep %s0", path, interfaceName);
-    std::shared_ptr<FILE> pipe(popen(command, "r"), pclose);
-    if (!pipe) {
-        Console::DevWarning("popen error!\n");
-        return;
-    }
-
-    std::array<char, 128> buffer;
-    std::string result;
-    while (!feof(pipe.get())) {
-        if (fgets(buffer.data(), 128, pipe.get()) != nullptr) {
-            result += buffer.data();
+    void* result = nullptr;
+    for (auto current = s_pInterfaceRegs; current; current = current->m_pNext) {
+        if (strncmp(current->m_pName, interface, strlen(interface)) == 0) {
+            result = current->m_CreateFn();
+            Console::DevMsg("SAR: Found interface %s at %p in %s!\n", current->m_pName, result, filename);
+            break;
         }
     }
-    result.pop_back();
 
-    Console::DevMsg("%s = Get(\"%s\", \"%s\");\n", variable, filename, result.c_str());
+    if (!result)
+        Console::DevWarning("SAR: Failed to find interface with symbol %s in %s!\n", interface, filename);
+
+    return result;
 }
 void Init()
 {
-    if (Game::IsPortal2Engine()) {
-        IVEngineClient = Get("engine.so", "VEngineClient015");
-        IEngineVGui = Get("engine.so", "VEngineVGui001");
-        IEngineTool = Get("engine.so", "VENGINETOOL003");
-        IInputSystem = Get("inputsystem.so", "InputSystemVersion001");
-        ISurface = Get("vguimatsurface.so", "VGUI_Surface031");
-        ISchemeManager = Get("vgui2.so", "VGUI_Scheme010");
-        IBaseClientDLL = Get("client.so", "VClient016");
-        IClientEntityList = Get("client.so", "VClientEntityList003");
-        IGameMovement = Get("server.so", "GameMovement001");
-        IServerGameDLL = Get("server.so", "ServerGameDLL005");
-        ICVar = Get("libvstdlib.so", "VEngineCvar007");
-    } else if (Game::Version == Game::Portal) {
-        IVEngineClient = Get("engine.so", "VEngineClient013");
-        IEngineVGui = Get("engine.so", "VEngineVGui001");
-        IEngineTool = Get("engine.so", "VENGINETOOL003");
-        IInputSystem = Get("inputsystem.so", "InputSystemVersion001");
-        ISurface = Get("vguimatsurface.so", "VGUI_Surface030");
-        ISchemeManager = Get("vgui2.so", "VGUI_Scheme010");
-        IBaseClientDLL = Get("client.so", "VClient017");
-        IClientEntityList = Get("client.so", "VClientEntityList003");
-        IGameMovement = Get("server.so", "GameMovement001");
-        IServerGameDLL = Get("server.so", "ServerGameDLL008");
-        ICVar = Get("libvstdlib.so", "VEngineCvar004");
-    } else {
-        Log("IVEngineClient", "engine.so", "VEngineClient");
-        Log("IEngineVGui", "engine.so", "VEngineVGui");
-        Log("IEngineTool", "engine.so", "VENGINETOOL");
-        Log("IInputSystem", "inputsystem.so", "InputSystemVersion");
-        Log("ISurface", "vguimatsurface.so", "VGUI_Surface");
-        Log("ISchemeManager", "vgui2.so", "VGUI_Scheme");
-        Log("IBaseClientDLL", "client.so", "VClient");
-        Log("IClientEntityList", "client.so", "VClientEntityList");
-        Log("IGameMovement", "server.so", "GameMovement");
-        Log("IServerGameDLL", "server.so", "ServerGameDLL");
-        Log("ICVar", "libvstdlib.so", "VEngineCvar");
-    }
+    IVEngineClient = Get("engine.so", "VEngineClient0");
+    IEngineVGui = Get("engine.so", "VEngineVGui0");
+    IEngineTool = Get("engine.so", "VENGINETOOL0");
+    IInputSystem = Get("inputsystem.so", "InputSystemVersion0");
+    ISurface = Get("vguimatsurface.so", "VGUI_Surface0");
+    ISchemeManager = Get("vgui2.so", "VGUI_Scheme0");
+    IBaseClientDLL = Get("client.so", "VClient0");
+    IClientEntityList = Get("client.so", "VClientEntityList0");
+    IGameMovement = Get("server.so", "GameMovement0");
+    IServerGameDLL = Get("server.so", "ServerGameDLL0");
+    ICVar = Get("libvstdlib.so", "VEngineCvar0");
 }
 }

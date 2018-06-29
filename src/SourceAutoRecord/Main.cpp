@@ -7,12 +7,10 @@
 #include "Modules/Surface.hpp"
 #include "Modules/VGui.hpp"
 #include "Modules/Vars.hpp"
-
 #include "Modules/Tier1.hpp"
 
 #include "Features/Config.hpp"
 
-#include "Callbacks.hpp"
 #include "Cheats.hpp"
 #include "Game.hpp"
 #include "Interfaces.hpp"
@@ -22,8 +20,8 @@ int __attribute__((constructor)) Main()
     if (!Console::Init())
         return 1;
 
-    Game::Init();
     Interfaces::Init();
+    Game::Init();
 
     if (Tier1::Init()) {
 

@@ -36,6 +36,7 @@
 - Portal
 - The Stanley Parable
 - The Beginners Guide
+- Half-Life 2
 
 ## Features
 

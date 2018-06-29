@@ -209,7 +209,7 @@ void Hook()
         enginevgui->HookFunction((void*)Detour::Paint, Offsets::Paint);
         Original::Paint = enginevgui->GetOriginalFunction<_Paint>(Offsets::Paint);
 
-        if (Game::Version == Game::Portal) {
+        if (Game::IsHalfLife2Engine()) {
             RespectClShowPos = false;
         } else if (Game::Version == Game::Portal2) {
             FontIndexOffset = 1;

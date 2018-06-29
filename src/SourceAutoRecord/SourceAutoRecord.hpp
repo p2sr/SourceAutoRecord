@@ -16,9 +16,9 @@ Memory::ScanResult Find(const char* pattern)
 {
     auto result = Memory::Scan(Patterns::Get(pattern));
     if (result.Found) {
-        Console::DevMsg("%s\n", result.Message);
+        Console::DevMsg("SAR: %s\n", result.Message);
     } else {
-        Console::DevWarning("%s\n", result.Message);
+        Console::DevWarning("SAR: %s\n", result.Message);
     }
     return result;
 }

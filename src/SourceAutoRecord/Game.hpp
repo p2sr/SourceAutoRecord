@@ -1,6 +1,7 @@
 #pragma once
 #include <unistd.h>
 
+#include "Games/HalfLife2.hpp"
 #include "Games/Portal.hpp"
 #include "Games/Portal2.hpp"
 #include "Games/TheBeginnersGuide.hpp"
@@ -13,15 +14,12 @@ enum SourceGame {
     Portal2, // Portal 2 (7054)
     Portal, // Portal (1910503)
     TheStanleyParable, // The Stanley Parable (6130)
-    TheBeginnersGuide // The Beginners Guide (6172)
+    TheBeginnersGuide, // The Beginners Guide (6172)
+    HalfLife2 // Half-Life 2 (2257546)
 };
 
 SourceGame Version = SourceGame::Unknown;
 
-bool IsSupported()
-{
-    return Version != SourceGame::Unknown;
-}
 void Init()
 {
     char link[20];
@@ -38,9 +36,9 @@ void Init()
         Portal2::Patterns();
         Portal2::Offsets();
     } else if (exe == "hl2_linux") {
-        Version = SourceGame::Portal;
-        Portal::Patterns();
-        Portal::Offsets();
+        Version = SourceGame::HalfLife2;
+        HalfLife2::Patterns();
+        HalfLife2::Offsets();
     } else if (exe == "stanley_linux") {
         Version = SourceGame::TheStanleyParable;
         TheStanleyParable::Patterns();
@@ -62,6 +60,8 @@ const char* GetVersion()
         return "The Stanley Parable (6130)";
     case SourceGame::TheBeginnersGuide:
         return "The Beginners Guide (6172)";
+    case SourceGame::HalfLife2:
+        return "Half-Life 2 (2257546)";
     default:
         break;
     }
@@ -72,5 +72,10 @@ bool IsPortal2Engine()
     return Version == SourceGame::Portal2
         || Version == SourceGame::TheStanleyParable
         || Version == SourceGame::TheBeginnersGuide;
+}
+bool IsHalfLife2Engine()
+{
+    return Version == SourceGame::HalfLife2
+        || Version == SourceGame::Portal;
 }
 }
