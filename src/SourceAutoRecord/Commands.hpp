@@ -57,9 +57,10 @@ Variable sar_hud_demo;
 Variable sar_hud_jumps;
 Variable sar_hud_portals;
 Variable sar_hud_steps;
-Variable sar_hud_distance;
-Variable sar_hud_trace;
+Variable sar_hud_jump;
+Variable sar_hud_jump_peak;
 Variable sar_hud_velocity_peak;
+Variable sar_hud_trace;
 
 Variable sar_hud_default_spacing;
 Variable sar_hud_default_padding_x;
@@ -68,10 +69,17 @@ Variable sar_hud_default_font_index;
 Variable sar_hud_default_font_color;
 
 // Stats
+Command sar_stats_jumps;
+Command sar_stats_jumps_reset;
+Command sar_stats_steps;
+Command sar_stats_steps_reset;
+Command sar_stats_velocity;
+Command sar_stats_velocity_reset;
+Command sar_stats_reset;
+
+Variable sar_stats_jumps_xy;
+Variable sar_stats_velocity_peak_xy;
 Variable sar_stats_auto_reset;
-Command sar_stats_reset_jumps;
-Command sar_stats_reset_steps;
-Command sar_stats_reset_jump_distance;
 
 // Cheats
 Variable sar_autojump;
@@ -89,7 +97,9 @@ Command sar_cvars_load;
 
 // TAS
 Command sar_tas_frame_at;
+Command sar_tas_frames_at;
 Command sar_tas_frame_after;
+Command sar_tas_frames_after;
 Command sar_tas_start;
 Command sar_tas_reset;
 Variable sar_tas_autostart;
@@ -102,9 +112,6 @@ Command sar_about;
 Command sar_trace_a;
 Command sar_trace_b;
 Command sar_trace_result;
-Command sar_velocity_peak;
-Command sar_velocity_peak_reset;
-Variable sar_velocity_peak_xy;
 
 // From the game
 Variable cl_showpos;

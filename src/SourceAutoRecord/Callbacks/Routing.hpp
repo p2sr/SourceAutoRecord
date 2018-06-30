@@ -8,7 +8,6 @@ using namespace Routing;
 
 namespace Callbacks {
 
-// Distance calculator
 void SaveTracerA()
 {
     Tracer::Start(Client::GetAbsOrigin());
@@ -32,14 +31,5 @@ void PrintTracerResult()
 void ResetTracer()
 {
     Tracer::Reset();
-}
-// Print latest velocity peak
-void PrintVelocityPeak()
-{
-    Console::Print("Maximum Velocity: %.3f\n", Velocity::Peak);
-}
-void ResetVelocityPeak()
-{
-    Velocity::Reset();
 }
 }

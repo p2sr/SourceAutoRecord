@@ -1,4 +1,6 @@
 #pragma once
+#include <algorithm>
+
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Tier1.hpp"
@@ -26,6 +28,21 @@ void AddFrame(int framesLeft, std::string command, bool relative = false)
         framesLeft,
         command });
 }
+void AddFrames(int framesLeft, int interval, int lastFrame, std::string command, bool relative = false)
+{
+    if (relative) {
+        framesLeft += BaseIndex;
+        lastFrame += BaseIndex;
+    } else {
+        BaseIndex = framesLeft;
+    }
+
+    for (; framesLeft <= lastFrame; framesLeft += interval) {
+        Frames.push_back(TasFrame{
+            framesLeft,
+            command });
+    }
+}
 void Reset()
 {
     IsRunning = false;
@@ -34,6 +51,9 @@ void Reset()
 }
 void Start()
 {
+    std::sort(Frames.begin(), Frames.end(), [](const auto& a, const auto& b) {
+        return a.FramesLeft < b.FramesLeft;
+    });
     IsRunning = true;
 }
 }

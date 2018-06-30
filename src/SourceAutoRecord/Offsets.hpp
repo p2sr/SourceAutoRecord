@@ -14,7 +14,7 @@ int SetViewAngles;
 
 // CHLClient
 int HudUpdate;
-int IN_ActivateMous;
+int IN_ActivateMouse;
 int JoyStickApplyMovement;
 
 // IClientMode
@@ -37,6 +37,7 @@ int GetButtonBits;
 
 // CGameMovement
 int PlayerMove;
+int AirAccelerate;
 int AirMove;
 int AirMove_Offset1;
 int AirMove_Offset2;
@@ -117,6 +118,7 @@ int demorecorder;
 int m_szLevelName;
 int UTIL_PlayerByIndex;
 int gpGlobals;
+int g_Input;
 int in_jump;
 int KeyDown;
 int KeyUp;

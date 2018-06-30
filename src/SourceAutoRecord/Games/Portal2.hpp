@@ -106,6 +106,7 @@ void Offsets()
     // server.so
 
     PlayerMove = 16; // CPortalGameMovement
+    AirAccelerate = 23; // CPortalGameMovement
     AirMove = 24; // CPortalGameMovement
     AirMove_Offset1 = 14; // CPortalGameMovement::~CPortalGameMovement
     AirMove_Offset2 = 12; // CGameMovement::~CGameMovement

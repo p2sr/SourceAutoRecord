@@ -95,7 +95,6 @@ void SessionStarted()
     }
 
     StepCounter::ResetTimer();
-    Stats::JumpDistance::Reset();
     IsInGame = true;
 }
 void SessionEnded()
@@ -125,7 +124,7 @@ void SessionEnded()
 
         auto reset = sar_stats_auto_reset.GetInt();
         if ((reset == 1 && !*m_bLoadgame) || reset >= 2) {
-            Stats::Reset();
+            Stats::ResetAll();
         }
 
         DemoRecorder::CurrentDemo = "";

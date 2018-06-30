@@ -19,7 +19,7 @@ void StartTimer()
     Timer::Start(*Engine::tickcount);
 
     if (sar_stats_auto_reset.GetInt() >= 2) {
-        Stats::Reset();
+        Stats::ResetAll();
     }
 }
 void StopTimer()

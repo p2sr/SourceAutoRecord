@@ -119,10 +119,9 @@ void Hook()
                 Original::GetName = g_HUDChallengeStats->GetOriginalFunction<_GetName>(Offsets::GetName);
             }
         } else if (Game::Version == Game::TheStanleyParable) {
-            auto IN_ActivateMous = clientdll->GetOriginalFunction<uintptr_t>(Offsets::IN_ActivateMous);
-            auto input = **reinterpret_cast<void***>(IN_ActivateMous + 1);
-            g_Input = std::make_unique<VMTHook>(input);
-            ;
+            auto IN_ActivateMouse = clientdll->GetOriginalFunction<uintptr_t>(Offsets::IN_ActivateMouse);
+            auto g_InputAdr = **reinterpret_cast<void***>(IN_ActivateMouse + Offsets::g_Input);
+            g_Input = std::make_unique<VMTHook>(g_InputAdr);
 
             auto GetButtonBits = g_Input->GetOriginalFunction<uintptr_t>(Offsets::GetButtonBits);
             in_jump = *reinterpret_cast<void**>((uintptr_t)GetButtonBits + Offsets::in_jump);

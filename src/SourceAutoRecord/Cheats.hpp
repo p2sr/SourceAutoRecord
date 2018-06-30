@@ -42,7 +42,7 @@ void Create()
     sar_time_demo = Command(
         "sar_time_demo",
         Callbacks::PrintDemoInfo,
-        "Parses a demo and prints some information about it.\n",
+        "Parses a demo and prints information about it.\n",
         0,
         Callbacks::DemoAutoComplete);
     sar_time_demos = Command(
@@ -181,10 +181,14 @@ void Create()
         "sar_hud_steps",
         "0",
         "Draws total step count.\n");
-    sar_hud_distance = Variable(
-        "sar_hud_distance",
+    sar_hud_jump = Variable(
+        "sar_hud_jump",
         "0",
-        "Draws calculated jump distance.\n");
+        "Draws current jump distance.\n");
+    sar_hud_jump_peak = Variable(
+        "sar_hud_jump_peak",
+        "0",
+        "Draws longest jump distance.\n");
     sar_hud_trace = Variable(
         "sar_hud_trace",
         "0",
@@ -222,23 +226,47 @@ void Create()
         0);
 
     // Stats
+    sar_stats_jumps = Command(
+        "sar_stats_jumps",
+        Callbacks::PrintJumpStats,
+        "Prints jump stats.\n");
+    sar_stats_jumps_reset = Command(
+        "sar_stats_jumps_reset",
+        Callbacks::ResetJumpStats,
+        "Resets total jump count and jump distance peak.\n");
+    sar_stats_steps = Command(
+        "sar_stats_steps",
+        Callbacks::PrintStepStats,
+        "Prints jump stats.\n");
+    sar_stats_steps_reset = Command(
+        "sar_stats_steps_reset",
+        Callbacks::ResetStepStats,
+        "Resets total step count.\n");
+    sar_stats_velocity = Command(
+        "sar_stats_velocity",
+        Callbacks::PrintVelocityStats,
+        "Prints velocity stats.\n");
+    sar_stats_velocity_reset = Command(
+        "sar_stats_velocity_reset",
+        Callbacks::ResetVelocityStats,
+        "Resets velocity peak.\n");
+    sar_stats_reset = Command(
+        "sar_stats_reset",
+        Callbacks::ResetAllStats,
+        "Resets all saved stats.\n");
+    sar_stats_jumps_xy = Variable(
+        "sar_stats_jumps_xy",
+        "0",
+        "Saves jump distance as 2D vector.\n");
+    sar_stats_velocity_peak_xy = Variable(
+        "sar_stats_velocity_peak_xy",
+        "0",
+        "Saves velocity peak as 2D vector.\n");
     sar_stats_auto_reset = Variable(
         "sar_stats_auto_reset",
         "0",
         0,
         "Resets all stats automatically. 0 = default, 1 = restart or disconnect only, 2 = any load & sar_timer_start. Note: Portal counter is not part of the \"stats\" feature.\n");
-    sar_stats_reset_jumps = Command(
-        "sar_stats_reset_jumps",
-        Callbacks::ResetJumps,
-        "Resets jump counter.\n");
-    sar_stats_reset_steps = Command(
-        "sar_stats_reset_steps",
-        Callbacks::ResetSteps,
-        "Resets step counter.\n");
-    sar_stats_reset_jump_distance = Command(
-        "sar_stats_reset_jump_distance",
-        Callbacks::ResetJumpDistance,
-        "Resets jump distance value.\n");
 
     // Cheats
     sar_autojump = Variable(
@@ -273,8 +301,7 @@ void Create()
             "-bhop",
             Callbacks::IN_BhopUp,
             "Jump.");
-    }
-    else if (Game::Version == Game::Portal2) {
+    } else if (Game::Version == Game::Portal2) {
         sar_disable_challenge_stats_hud = Variable(
             "sar_disable_challenge_stats_hud",
             "0",
@@ -284,20 +311,28 @@ void Create()
     // TAS
     sar_tas_frame_at = Command(
         "sar_tas_frame_at",
-        Callbacks::AddFrameAtTas,
-        "Adds a command frame to queue (absolute).\n");
+        Callbacks::AddTasFrameAt,
+        "Adds command frame to the queue at specified frame. Usage: sar_tas_frame_at <frame> [command_to_execute]\n");
     sar_tas_frame_after = Command(
         "sar_tas_frame_after",
-        Callbacks::AddFrameAfterTas,
-        "Adds a command frame to queue (relative).\n");
+        Callbacks::AddTasFrameAfter,
+        "Adds command frame to the queue after waiting for specified amount of frames. Usage: sar_tas_frame_after <frames_to_wait> [command_to_execute]\n");
+    sar_tas_frames_at = Command(
+        "sar_tas_frames_at",
+        Callbacks::AddTasFramesAt,
+        "Adds command frame multiple times to the queue at specified frame. Usage: sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute]\n");
+    sar_tas_frames_after = Command(
+        "sar_tas_frames_after",
+        Callbacks::AddTasFramesAfter,
+        "Adds command frame multiple times to the queue after waiting for specified amount of frames. Usage: sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute]\n");
     sar_tas_start = Command(
         "sar_tas_start",
         Callbacks::StartTas,
-        "Starts queued commands.\n");
+        "Starts executing queued commands.\n");
     sar_tas_reset = Command(
         "sar_tas_reset",
         Callbacks::ResetTas,
-        "Clears queued commands.\n");
+        "Stops executing commands and clears them from the queue.\n");
     sar_tas_autostart = Variable(
         "sar_tas_autostart",
         "1",
@@ -326,18 +361,6 @@ void Create()
         "sar_trace_result",
         Callbacks::PrintTracerResult,
         "Prints tracing result.\n");
-    sar_velocity_peak = Command(
-        "sar_velocity_peak",
-        Callbacks::PrintVelocityPeak,
-        "Prints latest velocity peak.\n");
-    sar_velocity_peak_reset = Command(
-        "sar_velocity_peak_reset",
-        Callbacks::ResetVelocityPeak,
-        "Resets saved velocity peak.\n");
-    sar_velocity_peak_xy = Variable(
-        "sar_velocity_peak_xy",
-        "0",
-        "Saves 2D velocity peak.\n");
 
     // Others
     sar_session = Command(

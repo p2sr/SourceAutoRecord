@@ -3,6 +3,7 @@
 
 #include "Client.hpp"
 
+#include "Features/AirControl.hpp"
 #include "Features/Routing.hpp"
 #include "Features/StepCounter.hpp"
 
@@ -28,7 +29,7 @@ using _PlayerMove = int(__cdecl*)(void* thisptr);
 using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
 using _FinishGravity = int(__cdecl*)(void* thisptr);
 using _AirMove = int(__cdecl*)(void* thisptr);
-using _AirAccelerate = int(__cdecl*)(void* thisptr, int a2, float a3, float a4);
+using _AirAccelerate = int(__cdecl*)(void* thisptr, Vector& wishdir, float wishspeed, float accel);
 
 std::unique_ptr<VMTHook> g_GameMovement;
 std::unique_ptr<VMTHook> g_ServerGameDLL;
@@ -53,6 +54,7 @@ namespace Original {
     _FinishGravity FinishGravity;
     _AirMove AirMove;
     _AirMove AirMoveBase;
+    _AirAccelerate AirAccelerate;
     _AirAccelerate AirAccelerateBase;
 }
 
@@ -88,9 +90,9 @@ namespace Detour {
 
         if (result) {
             JumpedLastTime = true;
-            Stats::TotalJumps++;
-            Stats::TotalSteps++;
-            Stats::JumpDistance::StartTrace(Client::GetAbsOrigin());
+            Stats::Jumps::Total++;
+            Stats::Steps::Total++;
+            Stats::Jumps::StartTrace(Client::GetAbsOrigin());
         }
 
         return result;
@@ -109,11 +111,11 @@ namespace Detour {
         auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
 
         // Landed after a jump
-        if (Stats::JumpDistance::IsTracing
+        if (Stats::Jumps::IsTracing
             && m_fFlags & FL_ONGROUND
             && m_MoveType != MOVETYPE_NOCLIP) {
 
-            Stats::JumpDistance::EndTrace(Client::GetAbsOrigin());
+            Stats::Jumps::EndTrace(Client::GetAbsOrigin(), sar_stats_jumps_xy.GetBool());
         }
 
         StepCounter::ReduceTimer(frametime);
@@ -129,7 +131,7 @@ namespace Detour {
             StepCounter::Increment(m_fFlags, m_vecVelocity, m_nWaterLevel);
         }
 
-        Routing::Velocity::Save(Client::GetLocalVelocity(), sar_velocity_peak_xy.GetBool());
+        Stats::Velocity::Save(Client::GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
 
         return Original::PlayerMove(thisptr);
     }
@@ -142,9 +144,9 @@ namespace Detour {
             auto m_bDucked = *reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked);
 
             Vector vecForward;
-            AngleVectors(mv->m_vecViewAngles, &vecForward);
+            Math::AngleVectors(mv->m_vecViewAngles, &vecForward);
             vecForward.z = 0;
-            VectorNormalize(vecForward);
+            Math::VectorNormalize(vecForward);
 
             float flSpeedBoostPerc = (!mv->m_bIsSprinting && !m_bDucked) ? 0.5f : 0.1f;
             float flSpeedAddition = fabs(mv->m_flForwardMove * flSpeedBoostPerc);
@@ -161,7 +163,7 @@ namespace Detour {
                 }
             }
 
-            VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
+            Math::VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
         }
         return Original::FinishGravity(thisptr);
     }
@@ -172,9 +174,10 @@ namespace Detour {
         }
         return Original::AirMove(thisptr);
     }
-    int __cdecl AirAccelerate(void* thisptr, int a2, float a3, float a4)
+    int __cdecl AirAccelerate(void* thisptr, Vector& wishdir, float wishspeed, float accel)
     {
-        return Original::AirAccelerateBase(thisptr, a2, a3, a4);
+        //return Original::AirAccelerate(thisptr, wishdir, wishspeed, accel);
+        return Original::AirAccelerateBase(thisptr, wishdir, wishspeed, accel);
     }
 }
 
@@ -202,8 +205,9 @@ void Hook()
             Original::AirMove = g_GameMovement->GetOriginalFunction<_AirMove>(Offsets::AirMove);
             Original::AirMoveBase = reinterpret_cast<_AirMove>(airMoveAddr);
 
-            //g_GameMovement->HookFunction((void*)Detour::AirAccelerate, 23);
-            //auto airAccelerateAddr = *reinterpret_cast<uintptr_t*>(baseOffset + 23 * sizeof(uintptr_t*));
+            //g_GameMovement->HookFunction((void*)Detour::AirAccelerate, Offsets::AirAccelerate);
+            //Original::AirAccelerate = g_GameMovement->GetOriginalFunction<_AirAccelerate>(Offsets::AirAccelerate);
+            //auto airAccelerateAddr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirAccelerate * sizeof(uintptr_t*));
             //Original::AirAccelerateBase = reinterpret_cast<_AirAccelerate>(airAccelerateAddr);
         }
 

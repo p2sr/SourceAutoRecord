@@ -32,18 +32,4 @@ namespace Tracer {
         return std::sqrt(x * x + y * y + z * z);
     }
 }
-namespace Velocity {
-    float Peak;
-
-    void Save(Vector velocity, bool xyOnly = false)
-    {
-        auto vel = (xyOnly) ? velocity.Length2D() : velocity.Length();
-        if (vel > Peak)
-            Peak = vel;
-    }
-    void Reset()
-    {
-        Peak = 0;
-    }
-}
 }

@@ -1,6 +1,5 @@
 #pragma once
 #include <cmath>
-#include <float.h>
 
 struct Vector {
     float x, y, z;
@@ -19,6 +18,14 @@ struct Vector {
         res.y = y * fl;
         res.z = z * fl;
         return res;
+    }
+    float& operator[](int i)
+    {
+        return ((float*)this)[i];
+    }
+    float operator[](int i) const
+    {
+        return ((float*)this)[i];
     }
 };
 
@@ -65,95 +72,48 @@ enum SignonState {
 };
 
 struct CUserCmd {
-    void* VMT;
-    int command_number;
-    int tick_count;
-    QAngle viewangles;
-    float forwardmove;
-    float sidemove;
-    float upmove;
-    int buttons;
-    unsigned char impulse;
-    int weaponselect;
-    int weaponsubtype;
-    int random_seed;
-    short mousedx;
-    short mousedy;
-    bool hasbeenpredicted;
+    void* VMT; // 0
+    int command_number; // 4
+    int tick_count; // 8
+    QAngle viewangles; // 12, 16, 20
+    float forwardmove; // 24
+    float sidemove; // 28
+    float upmove; // 32
+    int buttons; // 36
+    unsigned char impulse; // 40
+    int weaponselect; // 44
+    int weaponsubtype; // 48
+    int random_seed; // 52
+    short mousedx; // 56
+    short mousedy; // 58
+    bool hasbeenpredicted; // 60
 };
-
-#define M_PI 3.14159265358979323846
-#define M_PI_F ((float)(M_PI))
-#define RAD2DEG(x) ((float)(x) * (float)(180.f / M_PI_F))
-#define DEG2RAD(x) ((float)(x) * (float)(M_PI_F / 180.f))
-
-void inline SinCos(float radians, float* sine, float* cosine)
-{
-    register double __cosr, __sinr;
-    __asm("fsincos"
-          : "=t"(__cosr), "=u"(__sinr)
-          : "0"(radians));
-
-    *sine = __sinr;
-    *cosine = __cosr;
-}
-
-void AngleVectors(const QAngle& angles, Vector* forward)
-{
-    float sp, sy, cp, cy;
-
-    SinCos(DEG2RAD(angles.y), &sy, &cy);
-    SinCos(DEG2RAD(angles.x), &sp, &cp);
-
-    forward->x = cp * cy;
-    forward->y = cp * sy;
-    forward->z = -sp;
-}
-
-float VectorNormalize(Vector& vec)
-{
-    float radius = sqrtf(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
-    float iradius = 1.f / (radius + FLT_EPSILON);
-
-    vec.x *= iradius;
-    vec.y *= iradius;
-    vec.z *= iradius;
-
-    return radius;
-}
-
-void VectorAdd(const Vector& a, const Vector& b, Vector& c)
-{
-    c.x = a.x + b.x;
-    c.y = a.y + b.y;
-    c.z = a.z + b.z;
-}
 
 class CMoveData {
 public:
-    bool m_bFirstRunOfFunctions : 1;
-    bool m_bGameCodeMovedPlayer : 1;
-    void* m_nPlayerHandle;
-    int m_nImpulseCommand;
-    QAngle m_vecViewAngles;
-    QAngle m_vecAbsViewAngles;
-    int m_nButtons;
-    int m_nOldButtons;
-    float m_flForwardMove;
-    float m_flSideMove;
-    float m_flUpMove;
-    float m_flMaxSpeed;
-    float m_flClientMaxSpeed;
-    Vector m_vecVelocity;
-    QAngle m_vecAngles;
-    QAngle m_vecOldAngles;
-    float m_outStepHeight;
-    Vector m_outWishVel;
-    Vector m_outJumpVel;
-    Vector m_vecConstraintCenter;
-    float m_flConstraintRadius;
-    float m_flConstraintWidth;
-    float m_flConstraintSpeedFactor;
+    bool m_bFirstRunOfFunctions : 1; // 0
+    bool m_bGameCodeMovedPlayer : 1; // 2
+    void* m_nPlayerHandle; // 4
+    int m_nImpulseCommand; // 8
+    QAngle m_vecViewAngles; // 12, 16, 20
+    QAngle m_vecAbsViewAngles; // 24, 28, 32
+    int m_nButtons; // 36
+    int m_nOldButtons; // 40
+    float m_flForwardMove; // 44
+    float m_flSideMove; // 48
+    float m_flUpMove; // 52
+    float m_flMaxSpeed; // 56
+    float m_flClientMaxSpeed; // 60
+    Vector m_vecVelocity; // 64, 68, 72
+    QAngle m_vecAngles; // 76, 80, 84
+    QAngle m_vecOldAngles; // 88, 92, 96
+    float m_outStepHeight; // 100
+    Vector m_outWishVel; // 104, 108, 112
+    Vector m_outJumpVel; // 116, 120, 124
+    Vector m_vecConstraintCenter; // 128, 132, 136
+    float m_flConstraintRadius; // 140
+    float m_flConstraintWidth; // 144
+    float m_flConstraintSpeedFactor; // 148
     void SetAbsOrigin(const Vector& vec);
     const Vector& GetAbsOrigin() const;
 

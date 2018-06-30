@@ -49,8 +49,9 @@
 - `sar_bind_reload <key> [save_name]` binds automatically `save save_name;reload` to the given key when loading
 - `sar_unbind_save` unbinds the key and stops automatic binding for `sar_bind_save`
 - `sar_unbind_reload` unbinds the key and stops automatic binding for `sar_bind_reload`
-- Save files will be named _2, _3, etc.
-- File indexing will be synced automatically with the demo recorder when recording with demos
+
+Save files will be named _2, _3, etc.
+File indexing will be synced automatically with the demo recorder when recording with demos.
 
 ### Demo Parser
 - `sar_time_demo [demo_name]` parses a demo and prints some useful information about it
@@ -74,7 +75,8 @@
 - `sar_timer_stop` stops timer
 - `sar_timer_result` prints result
 - `sar_timer_always_running <0-1>` doesn't stop the timer when disconnecting from server
-- Mappers can use this for accurate timing, [see below](#mapping)
+
+Mappers can use this for accurate timing, [see below](#mapping).
 
 ##### Average
 - `sar_avg_start` starts calculating the average of the timer
@@ -103,7 +105,9 @@
 - `sar_hud_steps <0-1>` draws total step count
 - `sar_hud_distance <0-1>` draws calculated jump distance
 - `sar_hud_trace <0-1>` draws tracer result
-- `sar_hud_velocity_peak <0-1>` draws velocity peak 
+- `sar_hud_velocity_peak <0-1>` draws velocity peak
+- `sar_hud_jump <0-1>` draws last jump distance
+- `sar_hud_jump_peak <0-1>` draws jump distance peak
 
 ##### Optional
 - `sar_hud_default_spacing` space between HUD elements
@@ -113,10 +117,16 @@
 - `sar_hud_default_font_color` font color
 
 ### Stats
-- `sar_stats_auto_reset <0-1>` resets all stats automatically
-- `sar_stats_reset_jumps` resets jump count
-- `sar_stats_reset_steps` resets step count
-- `sar_stats_reset_jump_distance` resets jump distance
+- `sar_stats_jumps` prints jump stats
+- `sar_stats_jumps_reset` resets jump stats
+- `sar_stats_steps` prints step stats
+- `sar_stats_steps_reset` resets step stats
+- `sar_stats_velocity` prints velocity stats
+- `sar_stats_velocity_reset` resets velocity stats
+- `sar_stats_reset` resets all stats
+- `sar_stats_jumps_xy <0-1>` saves jump distance peak as 2d-vector
+- `sar_stats_velocity_peak_xy <0-1>` saves velocity peak as 2d-vector
+- `sar_stats_auto_reset <0-2>` resets all stats automatically
 
 ### Cheats
 - `sar_teleport` teleports player to a saved location
@@ -130,10 +140,12 @@
 - `+bhop` makes the player jump (The Stanley Parable)
 
 #### TAS
-- `sar_tas_frame_at <frame> [command]` adds a command frame to the queue at an absolute frame value
-- `sar_tas_frame_after <frame> [command]` adds a command frame to the queue, relative to last frame
-- `sar_tas_start` starts playing queued commands
-- `sar_tas_reset` clears all queued commands
+- `sar_tas_frame_at <frame> [command]` adds a command frame to the queue at specified frame
+- `sar_tas_frame_after <delay> [command]` adds a command frame to the queue, relatively to last added frame
+- `sar_tas_frames_at <frame> <interval> <last_frame> [command]` adds command frame multiple times to the queue at specified frame
+- `sar_tas_frames_after <delay> <interval> <length> [command]` adds command frame multiple times to the queue, relatively to last added frame
+- `sar_tas_start` starts executing queued commands
+- `sar_tas_reset` stops execution and clears all queued commands
 - `sar_tas_autostart <0-1>` starts playing queued commands automatically on first frame after a load
 
 Here is a simple TAS of [Propulsion Catch](https://gist.github.com/NeKzor/5ba4fd9bafc80855a395b4a5f03f1c6e).

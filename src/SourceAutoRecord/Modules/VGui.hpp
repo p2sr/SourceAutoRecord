@@ -156,7 +156,7 @@ namespace Detour {
         // Stats
         if (sar_hud_jumps.GetBool()) {
             char jumps[64];
-            snprintf(jumps, sizeof(jumps), "jumps: %i", Stats::TotalJumps);
+            snprintf(jumps, sizeof(jumps), "jumps: %i", Stats::Jumps::Total);
             Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, jumps);
             elements++;
         }
@@ -169,15 +169,29 @@ namespace Detour {
         }
         if (sar_hud_steps.GetBool()) {
             char steps[64];
-            snprintf(steps, sizeof(steps), "steps: %i", Stats::TotalSteps);
+            snprintf(steps, sizeof(steps), "steps: %i", Stats::Steps::Total);
             Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, steps);
             elements++;
         }
-        if (sar_hud_distance.GetBool()) {
-            auto jumpDistance = Stats::JumpDistance::LastDistance;
+        if (sar_hud_jump.GetBool()) {
+            auto latest = Stats::Jumps::Distance;
             char distance[64];
-            snprintf(distance, sizeof(distance), "distance: %.3f", jumpDistance);
+            snprintf(distance, sizeof(distance), "jump: %.3f", latest);
             Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, distance);
+            elements++;
+        }
+        if (sar_hud_jump_peak.GetBool()) {
+            auto peak = Stats::Jumps::Distance;
+            char distance[64];
+            snprintf(distance, sizeof(distance), "jump peak: %.3f", peak);
+            Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, distance);
+            elements++;
+        }
+        if (sar_hud_velocity_peak.GetBool()) {
+            auto peak = Stats::Velocity::Peak;
+            char velocity[64];
+            snprintf(velocity, sizeof(velocity), "vel peak: %.3f", peak);
+            Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, velocity);
             elements++;
         }
         // Routing
@@ -187,13 +201,6 @@ namespace Detour {
             char trace[64];
             snprintf(trace, sizeof(trace), "trace: %.3f (%.3f/%.3f/%.3f)", result, std::get<0>(xyz), std::get<1>(xyz), std::get<2>(xyz));
             Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, trace);
-            elements++;
-        }
-        if (sar_hud_velocity_peak.GetBool()) {
-            auto peak = Routing::Velocity::Peak;
-            char velocity[64];
-            snprintf(velocity, sizeof(velocity), "peak: %.3f", peak);
-            Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, velocity);
             elements++;
         }
 

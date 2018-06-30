@@ -23,6 +23,7 @@ void ReduceTimer(float frametime)
         }
     }
 }
+// TODO: hl2?
 void Increment(int m_fFlags, Vector m_vecVelocity, int m_nWaterLevel)
 {
     // Adjust next step
@@ -39,7 +40,7 @@ void Increment(int m_fFlags, Vector m_vecVelocity, int m_nWaterLevel)
         StepSoundTime += 100;
     }
 
-    Stats::TotalSteps++;
+    Stats::Steps::Total++;
 }
 void ResetTimer()
 {

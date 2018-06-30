@@ -63,7 +63,8 @@ void Offsets()
 
     // client.so
 
-    IN_ActivateMous = 15; // CHLClient
+    IN_ActivateMouse = 15; // CHLClient
+    g_Input = 1; // CHLClient::IN_ActivateMouse
     GetButtonBits = 2; // CInput
     JoyStickApplyMovement = 64; // CInput
     in_jump = 210; // CInput::GetButtonBits
