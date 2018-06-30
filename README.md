@@ -121,20 +121,22 @@
 ### Cheats
 - `sar_teleport` teleports player to a saved location
 - `sar_teleport_setpos` saves current location for teleportation
+- `sar_disable_challenge_stats_hud <0-1>` disables the challenge stats HUD in challenge mode (Portal 2)
 
 #### Movement
 - `sar_autojump <0-1>` enables tick-perfect jumping on the server
-- `sar_jumpboost <0-2>` enables OBE movement on the server (Portal 2 Engine)
+- `sar_jumpboost <0-2>` enables ABH or HL2-Bhop movement on the server (Portal 2 Engine)
 - `sar_aircontrol <0-1>` enables more air-control movement on the server (Portal 2 Engine)
-- `+bhop` and `-bhop` allows the player to jump (The Stanley Parable)
+- `+bhop` makes the player jump (The Stanley Parable)
 
 #### TAS
 - `sar_tas_frame_at <frame> [command]` adds a command frame to the queue at an absolute frame value
-- `sar_tas_frame_after <frame> [command]` adds a command frame to the queue, relative to the last added absolute frame value
+- `sar_tas_frame_after <frame> [command]` adds a command frame to the queue, relative to last frame
 - `sar_tas_start` starts playing queued commands
 - `sar_tas_reset` clears all queued commands
 - `sar_tas_autostart <0-1>` starts playing queued commands automatically on first frame after a load
-- Here is a simple TAS of [Propulsion Catch](https://gist.github.com/NeKzor/5ba4fd9bafc80855a395b4a5f03f1c6e)
+
+Here is a simple TAS of [Propulsion Catch](https://gist.github.com/NeKzor/5ba4fd9bafc80855a395b4a5f03f1c6e).
 
 #### Routing
 - `sar_trace_a` saves first location to measure a distance

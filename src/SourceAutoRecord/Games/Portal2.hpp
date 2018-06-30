@@ -55,6 +55,13 @@ void Patterns()
     Add("FinishDrawing", "Portal 2 Build 7054",
         "CMatSystemSurface::FinishDrawing",
         "55 89 E5 53 83 EC ? C7 04 24 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? ");
+
+    // client.so
+
+    // \x55\x89\xE5\x57\x56\x53\x83\xEC\x00\x8B\x75\x00\x8B\x7D\x00\x8B\x46\x00\x85\xC0\x7E\x00\x31\xDB\xEB\x00\x8D\xB6\x00\x00\x00\x00\x83\xC3\x00\x39\x5E\x00\x7E\x00\x8B\x46\x00 xxxxxxxx?xx?xx?xx?xxx?xxx?xxxxxxxx?xx?x?xx?
+    Add("FindElement", "Portal 2 Build 7054",
+        "CHud::FindElement",
+        "55 89 E5 57 56 53 83 EC ? 8B 75 ? 8B 7D ? 8B 46 ? 85 C0 7E ? 31 DB EB ? 8D B6 00 00 00 00 83 C3 ? 39 5E ? 7E ? 8B 46 ? ");
 }
 void Offsets()
 {
@@ -131,5 +138,7 @@ void Offsets()
     GetClientEntity = 3; // IClientEntityList
     GetFlags = 228; // C_BasePlayer::PhysicsSimulate
     CreateMove = 25; // IClientMode
+    GetName = 11; // CHud
+    GetHud = 144; // CHLClient::HudUpdate
 }
 }

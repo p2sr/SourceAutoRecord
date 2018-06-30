@@ -190,6 +190,19 @@ const char* GetModulePath(const char* moduleName)
     return (TryGetModule(moduleName, &info)) ? std::string(info.path).c_str() : nullptr;
 }
 
+std::string GetProcessName()
+{
+    char link[20];
+    char temp[260] = { 0 };
+    sprintf(link, "/proc/%d/exe", getpid());
+    readlink(link, temp, sizeof(temp));
+
+    std::string exe = std::string(temp);
+    int index = exe.find_last_of("\\/");
+    exe = exe.substr(index + 1, exe.length() - index);
+    return exe;
+}
+
 template <typename T = void*>
 T VMT(void* ptr, int index)
 {

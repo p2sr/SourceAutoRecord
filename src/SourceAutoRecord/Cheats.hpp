@@ -274,6 +274,12 @@ void Create()
             Callbacks::IN_BhopUp,
             "Jump.");
     }
+    else if (Game::Version == Game::Portal2) {
+        sar_disable_challenge_stats_hud = Variable(
+            "sar_disable_challenge_stats_hud",
+            "0",
+            "Disables opening the challenge mode stats HUD.\n");
+    }
 
     // TAS
     sar_tas_frame_at = Command(

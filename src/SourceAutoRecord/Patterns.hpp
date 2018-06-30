@@ -38,5 +38,6 @@ void Init()
     Create("engine.so", "AutoCompletionFunc");
     Create("vguimatsurface.so", "StartDrawing");
     Create("vguimatsurface.so", "FinishDrawing");
+    Create("client.so", "FindElement");
 }
 }

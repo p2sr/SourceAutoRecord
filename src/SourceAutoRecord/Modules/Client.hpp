@@ -6,6 +6,7 @@
 
 #include "Features/TAS.hpp"
 
+#include "Commands.hpp"
 #include "Game.hpp"
 #include "Interfaces.hpp"
 #include "Offsets.hpp"
@@ -18,11 +19,13 @@ using _CreateMove = int(__cdecl*)(void* thisptr, float flInputSampleTime, CUserC
 using _GetClientEntity = void*(__cdecl*)(void* thisptr, int entnum);
 using _KeyDown = int(__cdecl*)(void* b, const char* c);
 using _KeyUp = int(__cdecl*)(void* b, const char* c);
+using _GetName = const char*(__cdecl*)(void* thisptr);
 
 std::unique_ptr<VMTHook> clientdll;
 std::unique_ptr<VMTHook> s_EntityList;
 std::unique_ptr<VMTHook> g_pClientMode;
 std::unique_ptr<VMTHook> g_Input;
+std::unique_ptr<VMTHook> g_HUDChallengeStats;
 
 _GetClientEntity GetClientEntity;
 
@@ -59,6 +62,7 @@ int GetFlags()
 namespace Original {
     _HudUpdate HudUpdate;
     _CreateMove CreateMove;
+    _GetName GetName;
 }
 
 namespace Detour {
@@ -82,6 +86,14 @@ namespace Detour {
     {
         return Original::CreateMove(thisptr, flInputSampleTime, cmd);
     }
+    const char* __cdecl GetName(void* thisptr)
+    {
+        // Never allow CHud::FindElement to find this HUD
+        if (sar_disable_challenge_stats_hud.GetBool())
+            return "";
+
+        return Original::GetName(thisptr);
+    }
 }
 
 void Hook()
@@ -91,16 +103,22 @@ void Hook()
         clientdll->HookFunction((void*)Detour::HudUpdate, Offsets::HudUpdate);
         Original::HudUpdate = clientdll->GetOriginalFunction<_HudUpdate>(Offsets::HudUpdate);
 
-        /* // Before HudUpdate in VMT
-            auto HudProcessInput = clientdll->GetOriginalFunction<uintptr_t>(Offsets::HudUpdate - 1);
-            typedef void*(*_GetClientMode)();
-            auto GetClientMode = reinterpret_cast<_GetClientMode>(GetAbsoluteAddress(HudProcessInput + 12));
-            g_pClientMode = std::make_unique<VMTHook>(GetClientMode());
+        if (Game::Version == Game::Portal2) {
+            auto fel = SAR::Find("FindElement");
+            if (fel.Found) {
+                using _FindElement = void*(__cdecl*)(void* thisptr, const char* pName);
+                auto FindElement = reinterpret_cast<_FindElement>(fel.Address);
 
-            g_pClientMode->HookFunction((void*)Detour::CreateMove, Offsets::CreateMove);
-            Original::CreateMove = g_pClientMode->GetOriginalFunction<_CreateMove>(Offsets::CreateMove); */
+                auto GetHudAddr = Memory::ReadAbsoluteAddress((uintptr_t)Original::HudUpdate + Offsets::GetHud);
+                using _GetHud = void*(__cdecl*)(int unk);
+                auto gHUD = reinterpret_cast<_GetHud>(GetHudAddr)(-1);
 
-        if (Game::Version == Game::TheStanleyParable) {
+                auto element = FindElement(gHUD, "CHUDChallengeStats");
+                g_HUDChallengeStats = std::make_unique<VMTHook>(element);
+                g_HUDChallengeStats->HookFunction((void*)Detour::GetName, Offsets::GetName);
+                Original::GetName = g_HUDChallengeStats->GetOriginalFunction<_GetName>(Offsets::GetName);
+            }
+        } else if (Game::Version == Game::TheStanleyParable) {
             auto IN_ActivateMous = clientdll->GetOriginalFunction<uintptr_t>(Offsets::IN_ActivateMous);
             auto input = **reinterpret_cast<void***>(IN_ActivateMous + 1);
             g_Input = std::make_unique<VMTHook>(input);
@@ -115,6 +133,15 @@ void Hook()
             KeyDown = reinterpret_cast<_KeyDown>(keyDownAddr);
             KeyUp = reinterpret_cast<_KeyUp>(keyUpAddr);
         }
+
+        /* // Before HudUpdate in VMT
+            auto HudProcessInput = clientdll->GetOriginalFunction<uintptr_t>(Offsets::HudUpdate - 1);
+            typedef void*(*_GetClientMode)();
+            auto GetClientMode = reinterpret_cast<_GetClientMode>(GetAbsoluteAddress(HudProcessInput + 12));
+            g_pClientMode = std::make_unique<VMTHook>(GetClientMode());
+
+            g_pClientMode->HookFunction((void*)Detour::CreateMove, Offsets::CreateMove);
+            Original::CreateMove = g_pClientMode->GetOriginalFunction<_CreateMove>(Offsets::CreateMove); */
 
         if (Interfaces::IClientEntityList) {
             s_EntityList = std::make_unique<VMTHook>(Interfaces::IClientEntityList);

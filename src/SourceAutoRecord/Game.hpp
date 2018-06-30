@@ -1,6 +1,4 @@
 #pragma once
-#include <unistd.h>
-
 #include "Games/HalfLife2.hpp"
 #include "Games/Portal.hpp"
 #include "Games/Portal2.hpp"
@@ -22,15 +20,7 @@ SourceGame Version = SourceGame::Unknown;
 
 void Init()
 {
-    char link[20];
-    char temp[260] = { 0 };
-    sprintf(link, "/proc/%d/exe", getpid());
-    readlink(link, temp, sizeof(temp));
-
-    std::string exe = std::string(temp);
-    int index = exe.find_last_of("\\/");
-    exe = exe.substr(index + 1, exe.length() - index);
-
+    auto exe = Memory::GetProcessName();
     if (exe == "portal2_linux") {
         Version = SourceGame::Portal2;
         Portal2::Patterns();

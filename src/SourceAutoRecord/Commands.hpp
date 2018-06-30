@@ -81,6 +81,7 @@ Command sar_teleport;
 Command sar_teleport_setpos;
 Command sar_startbhop;
 Command sar_endbhop;
+Variable sar_disable_challenge_stats_hud;
 
 // Config
 Command sar_cvars_save;

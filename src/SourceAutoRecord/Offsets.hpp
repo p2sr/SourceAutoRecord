@@ -103,6 +103,9 @@ int frametime;
 int m_nOldButtons;
 int m_vecVelocity2;
 
+// CHud
+int GetName;
+
 // Others
 int tickcount;
 int interval_per_tick;
@@ -117,4 +120,5 @@ int gpGlobals;
 int in_jump;
 int KeyDown;
 int KeyUp;
+int GetHud;
 }
