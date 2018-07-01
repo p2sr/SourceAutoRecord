@@ -1,0 +1,208 @@
+#pragma once
+#include <cstring>
+#include <fstream>
+#include <memory>
+#include <tchar.h>
+#include <vector>
+#include <windows.h>
+
+// Last
+#include <psapi.h>
+
+#define INRANGE(x, a, b) (x >= a && x <= b)
+#define getBits(x) (INRANGE((x & (~0x20)), 'A', 'F') ? ((x & (~0x20)) - 'A' + 0xA) : (INRANGE(x, '0', '9') ? x - '0' : 0))
+#define getByte(x) (getBits(x[0]) << 4 | getBits(x[1]))
+
+namespace Memory {
+
+    struct Pattern {
+        const char* Module;
+        const char* Name;
+
+        const char* Version;
+        const char* Description;
+        const char* Bytes;
+        int Offset;
+
+        bool IsSet;
+
+        void SetSignature(const char* version, const char* description)
+        {
+            Version = version;
+            Description = description;
+        }
+        void SetSignature(const char* version, const char* description, const char* bytes, int offset = 0)
+        {
+            Version = version;
+            Description = description;
+            Bytes = bytes;
+            Offset = offset;
+            IsSet = true;
+        }
+    };
+
+    struct ScanResult {
+        uintptr_t Address;
+        int Index = 0;
+        bool Found = false;
+        char Message[256];
+    };
+
+    uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_address, const char* target_pattern)
+    {
+        const char* pattern = target_pattern;
+        uintptr_t first_match = 0;
+
+        for (uintptr_t position = start_address; position < end_address; position++) {
+            if (!*pattern)
+                return first_match;
+
+            const uint8_t pattern_current = *reinterpret_cast<const uint8_t*>(pattern);
+            const uint8_t memory_current = *reinterpret_cast<const uint8_t*>(position);
+
+            if (pattern_current == '\?' || memory_current == getByte(pattern)) {
+                if (!first_match)
+                    first_match = position;
+
+                if (!pattern[2])
+                    return first_match;
+
+                pattern += (pattern_current != '\?') ? 3 : 2;
+            }
+            else {
+                pattern = target_pattern;
+                first_match = 0;
+            }
+        }
+        return 0;
+    }
+
+    struct ModuleInfo {
+        char name[MAX_PATH];
+        uintptr_t base;
+        uintptr_t size;
+        char path[MAX_PATH];
+    };
+
+    bool TryGetModule(const char* moduleName, ModuleInfo* info)
+    {
+        auto mHandle = GetModuleHandleA(moduleName);
+
+        char buffer[MAX_PATH];
+        if (!GetModuleFileName(mHandle, buffer, sizeof(buffer)))
+            return false;
+
+        auto temp = MODULEINFO();
+        auto pHandle = GetCurrentProcess();
+        if (!GetModuleInformation(pHandle, mHandle, &temp, sizeof(temp)))
+            return false;
+
+        auto name = std::string(buffer);
+        auto index = name.find_last_of("\\/");
+        name = name.substr(index + 1, name.length() - index);
+
+        snprintf(info->name, sizeof(info->name), "%s", name.c_str());
+        info->base = (uintptr_t)temp.lpBaseOfDll;
+        info->size = (uintptr_t)temp.SizeOfImage;
+        snprintf(info->path, sizeof(info->path), "%s", buffer);
+
+        return true;
+    }
+
+    ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
+    {
+        auto result = ScanResult();
+        auto info = ModuleInfo();
+
+        if (TryGetModule(moduleName, &info)) {
+            const uintptr_t start = uintptr_t(info.base);
+            const uintptr_t end = start + info.size;
+            result.Address = FindAddress(start, end, pattern);
+            if (result.Address) {
+                result.Found = true;
+                result.Address += offset;
+            }
+        }
+
+        return result;
+    }
+
+    ScanResult Scan(Pattern* pattern)
+    {
+        auto result = ScanResult();
+        auto info = ModuleInfo();
+
+        if (TryGetModule(pattern->Module, &info)) {
+            const uintptr_t start = uintptr_t(info.base);
+            const uintptr_t end = start + info.size;
+
+            if (pattern->IsSet) {
+                result.Address = FindAddress(start, end, pattern->Bytes);
+                if (result.Address) {
+                    result.Address += pattern->Offset;
+                    result.Found = true;
+                    snprintf(
+                        result.Message,
+                        sizeof(result.Message),
+                        "Found %s at %p in %s!",
+                        pattern->Description,
+                        (void*)result.Address,
+                        pattern->Module);
+                }
+                else {
+                    snprintf(result.Message, sizeof(result.Message), "Failed to find %s!", pattern->Description);
+                }
+            }
+            else {
+                snprintf(result.Message, sizeof(result.Message), "Ignored %s!", pattern->Name);
+            }
+        }
+
+        return result;
+    }
+
+    void* GetModuleHandleByName(const char* moduleName)
+    {
+        auto info = ModuleInfo();
+        return (TryGetModule(moduleName, &info)) ? GetModuleHandleA(info.path) : nullptr;
+    }
+
+    void CloseModuleHandle(void* moduleHandle)
+    {
+        return;
+    }
+
+    void* GetSymbolAddress(void* moduleHandle, const char* symbolName)
+    {
+        return (void*)GetProcAddress((HMODULE)moduleHandle, symbolName);
+    }
+
+    const char* GetModulePath(const char* moduleName)
+    {
+        auto info = ModuleInfo();
+        return (TryGetModule(moduleName, &info)) ? std::string(info.path).c_str() : nullptr;
+    }
+
+    std::string GetProcessName()
+    {
+        char temp[MAX_PATH];
+        GetModuleFileName(NULL, temp, sizeof(temp));
+
+        auto exe = std::string(temp);
+        auto index = exe.find_last_of("\\/");
+        exe = exe.substr(index + 1, exe.length() - index);
+        return exe;
+    }
+
+    template <typename T = void*>
+    T VMT(void* ptr, int index)
+    {
+        return reinterpret_cast<T>((*((void***)ptr))[index]);
+    }
+
+    uintptr_t ReadAbsoluteAddress(uintptr_t source)
+    {
+        auto rel = *reinterpret_cast<int*>(source);
+        return source + rel + sizeof(rel);
+    }
+}

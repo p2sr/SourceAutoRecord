@@ -1,245 +1,151 @@
 #pragma once
-#include "Engine.hpp"
-#include "Surface.hpp"
+#include "vmthook/vmthook.h"
 
-#include "Patterns.hpp"
-#include "Session.hpp"
-#include "Stats.hpp"
-#include "Timer.hpp"
-#include "TimerAverage.hpp"
-#include "TimerCheckpoints.hpp"
+#include "Console.hpp"
+#include "Engine.hpp"
+
+#include "Features/TAS.hpp"
+
+#include "Commands.hpp"
+#include "Game.hpp"
+#include "Interfaces.hpp"
+#include "Offsets.hpp"
 #include "Utils.hpp"
 
-// Is this large enough for everyone?
-#define FPS_PANEL_WIDTH 3333
+namespace Client {
 
-using _Paint = int(__thiscall*)(void* thisptr);
-using _ComputeSize = int(__thiscall*)(void* thisptr);
-using _SetSize = int(__thiscall*)(void* thisptr, int wide, int tall);
-using _ShouldDraw = bool(__thiscall*)(void* thisptr);
-using _FindElement = int(__thiscall*)(void* thisptr, const char* pName);
-using _GetLocalPlayer = void*(__cdecl*)(int unk);
+using _HudUpdate = int(__cdecl*)(void* thisptr, unsigned int a2);
+using _CreateMove = int(__cdecl*)(void* thisptr, float flInputSampleTime, CUserCmd* cmd);
+using _GetClientEntity = void*(__cdecl*)(void* thisptr, int entnum);
+using _KeyDown = int(__cdecl*)(void* b, const char* c);
+using _KeyUp = int(__cdecl*)(void* b, const char* c);
+using _GetName = const char*(__cdecl*)(void* thisptr);
 
-// client.dll
-namespace Client
+std::unique_ptr<VMTHook> clientdll;
+std::unique_ptr<VMTHook> s_EntityList;
+std::unique_ptr<VMTHook> g_pClientMode;
+std::unique_ptr<VMTHook> g_Input;
+std::unique_ptr<VMTHook> g_HUDChallengeStats;
+
+_GetClientEntity GetClientEntity;
+
+void* in_jump;
+_KeyDown KeyDown;
+_KeyUp KeyUp;
+
+void* GetPlayer()
 {
-	_SetSize SetSize;
-	_GetLocalPlayer GetLocalPlayer;
+    return GetClientEntity(s_EntityList->GetThisPtr(), Engine::GetPlayerIndex());
+}
 
-	Vector* MainViewOrigin;
-	QAngle* MainViewAngles;
+Vector GetAbsOrigin()
+{
+    auto player = GetPlayer();
+    return (player) ? *(Vector*)((uintptr_t)player + Offsets::m_vecAbsOrigin) : Vector();
+}
+QAngle GetAbsAngles()
+{
+    auto player = GetPlayer();
+    return (player) ? *(QAngle*)((uintptr_t)player + Offsets::m_angAbsRotation) : QAngle();
+}
+Vector GetLocalVelocity()
+{
+    auto player = GetPlayer();
+    return (player) ? *(Vector*)((uintptr_t)player + Offsets::m_vecVelocity) : Vector();
+}
+int GetFlags()
+{
+    auto player = GetPlayer();
+    return (player) ? *(int*)((uintptr_t)player + Offsets::GetFlags) : 0;
+}
 
-	void Set(uintptr_t setSizeAddress, uintptr_t getLocalPlayerAddress, uintptr_t getPosAddress)
-	{
-		SetSize = (_SetSize)setSizeAddress;
-		GetLocalPlayer = (_GetLocalPlayer)getLocalPlayerAddress;
-		MainViewOrigin = *(Vector**)((uintptr_t)getPosAddress + Offsets::MainViewOrigin);
-		MainViewAngles = *(QAngle**)((uintptr_t)getPosAddress + Offsets::MainViewAngles);
-	}
-	Vector GetAbsOrigin()
-	{
-		auto player = Client::GetLocalPlayer(-1);
-		return (player) ? *(Vector*)((uintptr_t)player + Offsets::GetAbsOrigin) : Vector();
-	}
-	QAngle GetAbsAngles()
-	{
-		auto player = Client::GetLocalPlayer(-1);
-		return (player) ? *(QAngle*)((uintptr_t)player + Offsets::GetAbsAngles) : QAngle();
-	}
-	Vector GetLocalVelocity()
-	{
-		auto player = Client::GetLocalPlayer(-1);
-		return (player) ? *(Vector*)((uintptr_t)player + Offsets::GetLocalVelocity) : Vector();
-	}
+namespace Original {
+    _HudUpdate HudUpdate;
+    _CreateMove CreateMove;
+    _GetName GetName;
+}
 
-	namespace Original
-	{
-		_Paint Paint;
-		_ComputeSize ComputeSize;
-		_ShouldDraw ShouldDraw;
-		_FindElement FindElement;
-	}
+namespace Detour {
+    int __cdecl HudUpdate(void* thisptr, unsigned int a2)
+    {
+        if (TAS::IsRunning) {
+            for (auto tas = TAS::Frames.begin(); tas != TAS::Frames.end();) {
+                tas->FramesLeft--;
+                if (tas->FramesLeft <= 0) {
+                    Console::DevMsg("TAS: %s\n", tas->Command.c_str());
+                    Engine::ExecuteCommand(tas->Command.c_str());
+                    tas = TAS::Frames.erase(tas);
+                } else {
+                    tas++;
+                }
+            }
+        }
+        return Original::HudUpdate(thisptr, a2);
+    }
+    int __cdecl CreateMove(void* thisptr, float flInputSampleTime, CUserCmd* cmd)
+    {
+        return Original::CreateMove(thisptr, flInputSampleTime, cmd);
+    }
+    const char* __cdecl GetName(void* thisptr)
+    {
+        // Never allow CHud::FindElement to find this HUD
+        if (sar_disable_challenge_stats_hud.GetBool())
+            return "";
 
-	namespace Detour
-	{
-		int __fastcall Paint(void* thisptr, int edx)
-		{
-			int result = 0;
+        return Original::GetName(thisptr);
+    }
+}
 
-			int elements = 0;
-			int xPadding = sar_hud_default_padding_x.GetInt();
-			int yPadding = sar_hud_default_padding_y.GetInt();
-			int spacing = sar_hud_default_spacing.GetInt();
+void Hook()
+{
+    if (Interfaces::IBaseClientDLL) {
+        clientdll = std::make_unique<VMTHook>(Interfaces::IBaseClientDLL);
+        clientdll->HookFunction((void*)Detour::HudUpdate, Offsets::HudUpdate);
+        Original::HudUpdate = clientdll->GetOriginalFunction<_HudUpdate>(Offsets::HudUpdate);
 
-			unsigned long m_hFont = *(unsigned long*)((uintptr_t)thisptr + Offsets::m_hFont) + sar_hud_default_font_index.GetInt();
-			int fontSize = sar_hud_default_font_size.GetInt();
+        if (Game::Version == Game::Portal2) {
+            auto fel = SAR::Find("FindElement");
+            if (fel.Found) {
+                using _FindElement = void*(__cdecl*)(void* thisptr, const char* pName);
+                auto FindElement = reinterpret_cast<_FindElement>(fel.Address);
 
-			int r, g, b, a;
-			sscanf_s(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
-			Color textColor(r, g, b, a);
+                auto GetHudAddr = Memory::ReadAbsoluteAddress((uintptr_t)Original::HudUpdate + Offsets::GetHud);
+                using _GetHud = void*(__cdecl*)(int unk);
+                auto gHUD = reinterpret_cast<_GetHud>(GetHudAddr)(-1);
 
-			if (cl_showpos.GetBool()) {
-				result = Original::Paint(thisptr);
-				yPadding += 65; // Ehem?
-			}
+                auto element = FindElement(gHUD, "CHUDChallengeStats");
+                g_HUDChallengeStats = std::make_unique<VMTHook>(element);
+                g_HUDChallengeStats->HookFunction((void*)Detour::GetName, Offsets::GetName);
+                Original::GetName = g_HUDChallengeStats->GetOriginalFunction<_GetName>(Offsets::GetName);
+            }
+        } else if (Game::Version == Game::TheStanleyParable) {
+            auto IN_ActivateMouse = clientdll->GetOriginalFunction<uintptr_t>(Offsets::IN_ActivateMouse);
+            auto g_InputAdr = **reinterpret_cast<void***>(IN_ActivateMouse + Offsets::g_Input);
+            g_Input = std::make_unique<VMTHook>(g_InputAdr);
 
-			// cl_showpos replacement
-			if (sar_hud_text.GetString()[0] != '\0') {
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, (char*)sar_hud_text.GetString());
-				elements++;
-			}
-			if (sar_hud_position.GetBool()) {
-				char position[64];
-				
-				if (sar_hud_position.GetInt() == 1) {
-					snprintf(position, sizeof(position), "pos: %.3f %.3f %.3f", MainViewOrigin->x, MainViewOrigin->y, MainViewOrigin->z);
-				}
-				else {
-					auto pos = GetAbsOrigin();
-					snprintf(position, sizeof(position), "pos: %.3f %.3f %.3f", pos.x, pos.y, pos.z);
-				}
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, position);
-				elements++;
-			}
-			if (sar_hud_angles.GetBool()) {
-				char angles[64];
-				snprintf(angles, sizeof(angles), "ang: %.3f %.3f", MainViewAngles->x, MainViewAngles->y);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, angles);
-				elements++;
-			}
-			if (sar_hud_velocity.GetBool()) {
-				char velocity[64];
-				snprintf(velocity, sizeof(velocity), "vel: %.3f", (sar_hud_velocity.GetInt() == 1) ? GetLocalVelocity().Length() : GetLocalVelocity().Length2D());
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, velocity);
-				elements++;
-			}
-			// Session
-			if (sar_hud_session.GetBool()) {
-				int tick = (!*Engine::LoadGame) ? Engine::GetTick() : 0;
-				float time = tick * *Engine::IntervalPerTick;
+            auto GetButtonBits = g_Input->GetOriginalFunction<uintptr_t>(Offsets::GetButtonBits);
+            in_jump = *reinterpret_cast<void**>((uintptr_t)GetButtonBits + Offsets::in_jump);
 
-				char session[64];
-				snprintf(session, sizeof(session), "session: %i (%.3f)", tick, time);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, session);
-				elements++;
-			}
-			if (sar_hud_last_session.GetBool()) {
-				char session[64];
-				snprintf(session, sizeof(session), "last session: %i (%.3f)", Session::LastSession, Session::LastSession * *Engine::IntervalPerTick);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, session);
-				elements++;
-			}
-			if (sar_hud_sum.GetBool()) {
-				char sum[64];
-				if (Summary::IsRunning && sar_sum_during_session.GetBool()) {
-					int tick = (!*Engine::LoadGame) ? Engine::GetTick() : 0;
-					float time = tick * *Engine::IntervalPerTick;
-					snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks + tick, Summary::TotalTime + time);
-				}
-				else {
-					snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks, Summary::TotalTime);
-				}
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, sum);
-				elements++;
-			}
-			// Timer
-			if (sar_hud_timer.GetBool()) {
-				int tick = (!Timer::IsPaused) ? Timer::GetTick(*Engine::TickCount) : Timer::TotalTicks;
-				float time = tick * *Engine::IntervalPerTick;
+            auto JoyStickApplyMovement = g_Input->GetOriginalFunction<uintptr_t>(Offsets::JoyStickApplyMovement);
+            auto keyDownAddr = Memory::ReadAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyDown);
+            auto keyUpAddr = Memory::ReadAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyUp);
+            KeyDown = reinterpret_cast<_KeyDown>(keyDownAddr);
+            KeyUp = reinterpret_cast<_KeyUp>(keyUpAddr);
+        }
 
-				char timer[64];
-				snprintf(timer, sizeof(timer), "timer: %i (%.3f)", tick, time);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, timer);
-				elements++;
-			}
-			if (sar_hud_avg.GetBool()) {
-				char avg[64];
-				snprintf(avg, sizeof(avg), "avg: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, avg);
-				elements++;
-			}
-			if (sar_hud_cps.GetBool()) {
-				char cps[64];
-				snprintf(cps, sizeof(cps), "last cp: %i (%.3f)", Timer::CheckPoints::LatestTick, Timer::CheckPoints::LatestTime);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, cps);
-				elements++;
-			}
-			// Demo
-			if (sar_hud_demo.GetBool()) {
-				char demo[64];
-				if (!*Engine::LoadGame && *DemoRecorder::Recording && !DemoRecorder::CurrentDemo.empty()) {
-					int tick = DemoRecorder::GetTick();
-					float time = tick * *Engine::IntervalPerTick;
-					snprintf(demo, sizeof(demo), "demo: %s %i (%.3f)", DemoRecorder::CurrentDemo.c_str(), tick, time);
-				}
-				else if (!*Engine::LoadGame && DemoPlayer::IsPlaying()) {
-					int tick = DemoPlayer::GetTick();
-					// Demos should overwrite interval_per_tick anyway if I remember correctly
-					float time = tick * *Engine::IntervalPerTick;
-					snprintf(demo, sizeof(demo), "demo: %s %i (%.3f)", DemoPlayer::DemoName, tick, time);
-				}
-				else {
-					snprintf(demo, sizeof(demo), "demo: -");
-				}
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, demo);
-				elements++;
-			}
-			if (sar_hud_last_demo.GetBool()) {
-				char demo[64];
-				if (!DemoRecorder::LastDemo.empty()) {
-					int tick = DemoRecorder::LastDemoTick;
-					float time = tick * *Engine::IntervalPerTick;
-					snprintf(demo, sizeof(demo), "last demo: %s %i (%.3f)", DemoRecorder::LastDemo.c_str(), tick, time);
-				}
-				else {
-					snprintf(demo, sizeof(demo), "last demo: -");
-				}
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, demo);
-				elements++;
-			}
-			// Stats
-			if (sar_hud_jumps.GetBool()) {
-				char jumps[64];
-				snprintf(jumps, sizeof(jumps), "jumps: %i", Stats::TotalJumps);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, jumps);
-				elements++;
-			}
-			if (sar_hud_uses.GetBool()) {
-				char uses[64];
-				snprintf(uses, sizeof(uses), "uses: %i", Stats::TotalUses);
-				Surface::Draw(m_hFont, xPadding, yPadding + elements * (fontSize + spacing), textColor, uses);
-				elements++;
-			}
+        /* // Before HudUpdate in VMT
+            auto HudProcessInput = clientdll->GetOriginalFunction<uintptr_t>(Offsets::HudUpdate - 1);
+            typedef void*(*_GetClientMode)();
+            auto GetClientMode = reinterpret_cast<_GetClientMode>(GetAbsoluteAddress(HudProcessInput + 12));
+            g_pClientMode = std::make_unique<VMTHook>(GetClientMode());
 
-			// Original paint function might resize the panel
-			// And this needs more space anyway
-			SetSize(thisptr, FPS_PANEL_WIDTH, FPS_PANEL_WIDTH);
-			return result;
-		}
-		bool __fastcall ShouldDraw(void* thisptr, int edx)
-		{
-			return Original::ShouldDraw(thisptr)
-				|| sar_hud_text.GetString()[0] != '\0'
-				|| sar_hud_position.GetBool()
-				|| sar_hud_angles.GetBool()
-				|| sar_hud_velocity.GetBool()
-				|| sar_hud_session.GetBool()
-				|| sar_hud_last_session.GetBool()
-				|| sar_hud_sum.GetBool()
-				|| sar_hud_timer.GetBool()
-				|| sar_hud_avg.GetBool()
-				|| sar_hud_cps.GetBool()
-				|| sar_hud_demo.GetBool()
-				|| sar_hud_last_demo.GetBool()
-				|| sar_hud_jumps.GetBool()
-				|| sar_hud_uses.GetBool();
-		}
-		int __fastcall FindElement(void* thisptr, int edx, const char* pName)
-		{
-			if (sar_never_open_cm_hud.GetBool() && strcmp(pName, "CHUDChallengeStats") == 0) {
-				return 0;
-			}
-			return Original::FindElement(thisptr, pName);
-		}
-	}
+            g_pClientMode->HookFunction((void*)Detour::CreateMove, Offsets::CreateMove);
+            Original::CreateMove = g_pClientMode->GetOriginalFunction<_CreateMove>(Offsets::CreateMove); */
+
+        if (Interfaces::IClientEntityList) {
+            s_EntityList = std::make_unique<VMTHook>(Interfaces::IClientEntityList);
+            GetClientEntity = s_EntityList->GetOriginalFunction<_GetClientEntity>(Offsets::GetClientEntity);
+        }
+    }
+}
 }

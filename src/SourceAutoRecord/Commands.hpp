@@ -1,102 +1,132 @@
 #pragma once
-#include "Modules/ConCommand.hpp"
-#include "Modules/ConVar.hpp"
+#include "Modules/Command.hpp"
+#include "Modules/Variable.hpp"
 
 using namespace Tier1;
 
-namespace Commands
-{
-	// Rebinder
-	ConCommand sar_bind_save;
-	ConCommand sar_bind_reload;
-	ConCommand sar_unbind_save;
-	ConCommand sar_unbind_reload;
-	ConVar sar_save_flag;
+namespace Commands {
 
-	// Demo
-	ConCommand sar_time_demo;
-	ConCommand sar_time_demos;
-	ConVar sar_time_demo_dev;
+Variable sar_autorecord;
 
-	// Summary
-	ConCommand sar_sum_here;
-	ConCommand sar_sum_stop;
-	ConCommand sar_sum_result;
-	ConVar sar_sum_during_session;
+// Rebinder
+Command sar_bind_save;
+Command sar_bind_reload;
+Command sar_unbind_save;
+Command sar_unbind_reload;
+Variable sar_save_flag;
 
-	// Timer
-	ConCommand sar_timer_start;
-	ConCommand sar_timer_stop;
-	ConCommand sar_timer_result;
-	ConVar sar_timer_always_running;
+// Demo
+Command sar_time_demo;
+Command sar_time_demos;
+Variable sar_time_demo_dev;
 
-	// Timer average
-	ConCommand sar_avg_start;
-	ConCommand sar_avg_stop;
-	ConCommand sar_avg_result;
+// Summary
+Command sar_sum_here;
+Command sar_sum_stop;
+Command sar_sum_result;
+Variable sar_sum_during_session;
 
-	// Timer checkpoints
-	ConCommand sar_cps_add;
-	ConCommand sar_cps_clear;
-	ConCommand sar_cps_result;
+// Timer
+Command sar_timer_start;
+Command sar_timer_stop;
+Command sar_timer_result;
+Variable sar_timer_always_running;
 
-	// HUD
-	ConVar sar_hud_text;
-	ConVar sar_hud_position;
-	ConVar sar_hud_angles;
-	ConVar sar_hud_velocity;
-	ConVar sar_hud_session;
-	ConVar sar_hud_last_session;
-	ConVar sar_hud_sum;
-	ConVar sar_hud_timer;
-	ConVar sar_hud_avg;
-	ConVar sar_hud_cps;
-	ConVar sar_hud_demo;
-	ConVar sar_hud_last_demo;
-	ConVar sar_hud_jumps;
-	ConVar sar_hud_uses;
+// Timer average
+Command sar_avg_start;
+Command sar_avg_stop;
+Command sar_avg_result;
 
-	ConVar sar_hud_default_spacing;
-	ConVar sar_hud_default_padding_x;
-	ConVar sar_hud_default_padding_y;
-	ConVar sar_hud_default_font_index;
-	ConVar sar_hud_default_font_size;
-	ConVar sar_hud_default_font_color;
+// Timer checkpoints
+Command sar_cps_add;
+Command sar_cps_clear;
+Command sar_cps_result;
 
-	// Stats
-	ConVar sar_stats_auto_reset;
-	ConCommand sar_stats_reset_jumps;
-	ConCommand sar_stats_reset_uses;
+// HUD
+Variable sar_hud_text;
+Variable sar_hud_position;
+Variable sar_hud_angles;
+Variable sar_hud_velocity;
+Variable sar_hud_session;
+Variable sar_hud_last_session;
+Variable sar_hud_sum;
+Variable sar_hud_timer;
+Variable sar_hud_avg;
+Variable sar_hud_cps;
+Variable sar_hud_demo;
+Variable sar_hud_jumps;
+Variable sar_hud_portals;
+Variable sar_hud_steps;
+Variable sar_hud_jump;
+Variable sar_hud_jump_peak;
+Variable sar_hud_velocity_peak;
+Variable sar_hud_trace;
 
-	// Cheats
-	ConVar sar_autojump;
-	ConVar sar_aircontrol;
-	ConVar sar_never_open_cm_hud;
-	ConVar sar_never_delay_start;
-	ConCommand sar_teleport;
-	ConCommand sar_teleport_setpos;
+Variable sar_hud_default_spacing;
+Variable sar_hud_default_padding_x;
+Variable sar_hud_default_padding_y;
+Variable sar_hud_default_font_index;
+Variable sar_hud_default_font_color;
 
-	// Config
-	ConCommand sar_cvars_save;
-	ConCommand sar_cvars_load;
+// Stats
+Command sar_stats_jumps;
+Command sar_stats_jumps_reset;
+Command sar_stats_steps;
+Command sar_stats_steps_reset;
+Command sar_stats_velocity;
+Command sar_stats_velocity_reset;
+Command sar_stats_reset;
 
-	// Others
-	ConCommand sar_session;
-	ConCommand sar_about;
+Variable sar_stats_jumps_xy;
+Variable sar_stats_velocity_peak_xy;
+Variable sar_stats_auto_reset;
 
-	// From the game
-	ConVar cl_showpos;
-	ConVar sv_cheats;
+// Cheats
+Variable sar_autojump;
+Variable sar_jumpboost;
+Variable sar_aircontrol;
+Command sar_teleport;
+Command sar_teleport_setpos;
+Command sar_startbhop;
+Command sar_endbhop;
+Variable sar_disable_challenge_stats_hud;
 
-	ConVar sv_bonus_challenge;
-	ConVar sv_accelerate;
-	ConVar sv_airaccelerate;
-	ConVar sv_friction;
-	ConVar sv_maxspeed;
-	ConVar sv_stopspeed;
-	ConVar sv_maxvelocity;
-	ConVar sv_transition_fade_time;
-	ConVar sv_laser_cube_autoaim;
-	ConVar ui_loadingscreen_transition_time;
-	ConVar hide_gun_when_holding;
+// Config
+Command sar_cvars_save;
+Command sar_cvars_load;
+
+// TAS
+Command sar_tas_frame_at;
+Command sar_tas_frames_at;
+Command sar_tas_frame_after;
+Command sar_tas_frames_after;
+Command sar_tas_start;
+Command sar_tas_reset;
+Variable sar_tas_autostart;
+
+// Others
+Command sar_session;
+Command sar_about;
+
+// Routing
+Command sar_trace_a;
+Command sar_trace_b;
+Command sar_trace_result;
+
+// From the game
+Variable cl_showpos;
+Variable sv_cheats;
+Variable sv_footsteps;
+
+Variable sv_bonus_challenge;
+Variable sv_accelerate;
+Variable sv_airaccelerate;
+Variable sv_friction;
+Variable sv_maxspeed;
+Variable sv_stopspeed;
+Variable sv_maxvelocity;
+Variable sv_transition_fade_time;
+Variable sv_laser_cube_autoaim;
+Variable ui_loadingscreen_transition_time;
+Variable hide_gun_when_holding;
 }
