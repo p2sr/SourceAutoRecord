@@ -48,7 +48,7 @@ void* Get(const char* filename, const char* interfaceSymbol)
     }
 
     auto CreateInterfaceInternal = Memory::ReadAbsoluteAddress((uintptr_t)CreateInterface + 5);
-    auto s_pInterfaceRegs = **reinterpret_cast<InterfaceReg***>(CreateInterfaceInternal + 11);
+    auto s_pInterfaceRegs = **reinterpret_cast<InterfaceReg***>(CreateInterfaceInternal + 6);
 
     void* result = nullptr;
     for (auto current = s_pInterfaceRegs; current; current = current->m_pNext) {
@@ -66,16 +66,16 @@ void* Get(const char* filename, const char* interfaceSymbol)
 }
 void Init()
 {
-    IVEngineClient = Get("engine.so", "VEngineClient0");
-    IEngineVGui = Get("engine.so", "VEngineVGui0");
-    IEngineTool = Get("engine.so", "VENGINETOOL0");
-    IInputSystem = Get("inputsystem.so", "InputSystemVersion0");
-    ISurface = Get("vguimatsurface.so", "VGUI_Surface0");
-    ISchemeManager = Get("vgui2.so", "VGUI_Scheme0");
-    IBaseClientDLL = Get("client.so", "VClient0");
-    IClientEntityList = Get("client.so", "VClientEntityList0");
-    IGameMovement = Get("server.so", "GameMovement0");
-    IServerGameDLL = Get("server.so", "ServerGameDLL0");
-    ICVar = Get("libvstdlib.so", "VEngineCvar0");
+    IVEngineClient = Get("engine.dll", "VEngineClient0");
+    IEngineVGui = Get("engine.dll", "VEngineVGui0");
+    IEngineTool = Get("engine.dll", "VENGINETOOL0");
+    IInputSystem = Get("inputsystem.dll", "InputSystemVersion0");
+    ISurface = Get("vguimatsurface.dll", "VGUI_Surface0");
+    ISchemeManager = Get("vgui2.dll", "VGUI_Scheme0");
+    IBaseClientDLL = Get("client.dll", "VClient0");
+    IClientEntityList = Get("client.dll", "VClientEntityList0");
+    IGameMovement = Get("server.dll", "GameMovement0");
+    IServerGameDLL = Get("server.dll", "ServerGameDLL0");
+    ICVar = Get("vstdlib.dll", "VEngineCvar0");
 }
 }

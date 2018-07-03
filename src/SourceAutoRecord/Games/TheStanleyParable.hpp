@@ -59,7 +59,7 @@ void Offsets()
 
     iNumPortalsPlaced = 5728; // CPortal_Player::IncrementPortalsPlaced
     gpGlobals = 576; // CGameMovement::FullTossMove
-    psurface = 4120; // CPortalGameMovement::PlayerMove
+    m_pSurfaceData = 4120; // CPortalGameMovement::PlayerMove
 
     // client.so
 

@@ -23,13 +23,13 @@ using namespace Commands;
 
 namespace Engine {
 
-using _ClientCmd = int(__cdecl*)(void* thisptr, const char* szCmdString);
-using _Disconnect = int(__cdecl*)(void* thisptr, int bShowMainMenu);
-using _Disconnect2 = int(__cdecl*)(void* thisptr, int* unk1, char bShowMainMenu);
-using _SetSignonState = int(__cdecl*)(void* thisptr, int state, int count);
-using _GetLocalPlayer = int(__cdecl*)(void* thisptr);
-using _GetViewAngles = int(__cdecl*)(void* thisptr, QAngle& va);
-using _SetViewAngles = int(__cdecl*)(void* thisptr, QAngle& va);
+using _ClientCmd = int(__thiscall*)(void* thisptr, const char* szCmdString);
+using _Disconnect = int(__thiscall*)(void* thisptr, int bShowMainMenu);
+using _Disconnect2 = int(__thiscall*)(void* thisptr, int* unk1, char bShowMainMenu);
+using _SetSignonState = int(__thiscall*)(void* thisptr, int state, int count, void* unk);
+using _GetLocalPlayer = int(__thiscall*)(void* thisptr);
+using _GetViewAngles = int(__thiscall*)(void* thisptr, QAngle& va);
+using _SetViewAngles = int(__thiscall*)(void* thisptr, QAngle& va);
 
 std::unique_ptr<VMTHook> engine;
 std::unique_ptr<VMTHook> cl;
@@ -142,17 +142,17 @@ namespace Original {
 namespace Detour {
     int LastState;
 
-    int __cdecl Disconnect(void* thisptr, bool bShowMainMenu)
+    int __fastcall Disconnect(void* thisptr, int edx, bool bShowMainMenu)
     {
         SessionEnded();
         return Original::Disconnect(thisptr, bShowMainMenu);
     }
-    int __cdecl Disconnect2(void* thisptr, int* unk1, bool bShowMainMenu)
+    int __fastcall Disconnect2(void* thisptr, int edx, int* unk1, bool bShowMainMenu)
     {
         SessionEnded();
         return Original::Disconnect2(thisptr, unk1, bShowMainMenu);
     }
-    int __cdecl SetSignonState(void* thisptr, int state, int count)
+    int __fastcall SetSignonState(void* thisptr, int edx, int state, int count, void* unk)
     {
         if (state != LastState && LastState == SignonState::Full) {
             SessionEnded();
@@ -164,7 +164,7 @@ namespace Detour {
         }
 
         LastState = state;
-        return Original::SetSignonState(thisptr, state, count);
+        return Original::SetSignonState(thisptr, state, count, unk);
     }
 }
 
@@ -207,7 +207,8 @@ void Hook()
         DemoPlayer::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demoplayer));
         DemoRecorder::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demorecorder));
 
-        auto ProcessTick = cl->GetOriginalFunction<uintptr_t>(Offsets::ProcessTick);
+        auto IServerMessageHandler_VMT = *reinterpret_cast<uintptr_t*>((uintptr_t)cl->GetThisPtr() + 8);
+        auto ProcessTick = *reinterpret_cast<uintptr_t*>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
         tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
         interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
     }

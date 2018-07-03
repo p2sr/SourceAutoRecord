@@ -23,12 +23,12 @@ using namespace Commands;
 
 namespace Server {
 
-using _CheckJumpButton = bool(__cdecl*)(void* thisptr);
-using _PlayerMove = int(__cdecl*)(void* thisptr);
-using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
-using _FinishGravity = int(__cdecl*)(void* thisptr);
-using _AirMove = int(__cdecl*)(void* thisptr);
-using _AirAccelerate = int(__cdecl*)(void* thisptr, Vector& wishdir, float wishspeed, float accel);
+using _CheckJumpButton = bool(__thiscall*)(void* thisptr);
+using _PlayerMove = int(__thiscall*)(void* thisptr);
+using _UTIL_PlayerByIndex = void*(__thiscall*)(int index);
+using _FinishGravity = int(__thiscall*)(void* thisptr);
+using _AirMove = int(__thiscall*)(void* thisptr);
+using _AirAccelerate = int(__thiscall*)(void* thisptr, Vector& wishdir, float wishspeed, float accel);
 
 std::unique_ptr<VMTHook> g_GameMovement;
 std::unique_ptr<VMTHook> g_ServerGameDLL;
@@ -61,7 +61,7 @@ namespace Detour {
     bool JumpedLastTime = false;
     bool CallFromCheckJumpButton = false;
 
-    bool __cdecl CheckJumpButton(void* thisptr)
+    bool __fastcall CheckJumpButton(void* thisptr, int eax)
     {
         auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
         auto m_nOldButtons = reinterpret_cast<int*>((uintptr_t)mv + Offsets::m_nOldButtons);
@@ -96,7 +96,7 @@ namespace Detour {
 
         return result;
     }
-    int __cdecl PlayerMove(void* thisptr)
+    int __fastcall PlayerMove(void* thisptr, int eax)
     {
         auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
         auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
@@ -104,7 +104,7 @@ namespace Detour {
         auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
         auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
         auto m_nWaterLevel = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_nWaterLevel);
-        auto psurface = *reinterpret_cast<void**>((uintptr_t)player + Offsets::psurface);
+        auto m_pSurfaceData = *reinterpret_cast<void**>((uintptr_t)player + Offsets::m_pSurfaceData);
 
         auto frametime = *reinterpret_cast<float*>((uintptr_t)gpGlobals + Offsets::frametime);
         auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
@@ -123,7 +123,7 @@ namespace Detour {
         if (StepCounter::StepSoundTime <= 0
             && m_fFlags & FL_ONGROUND && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
             && m_vecVelocity.Length2D() > 0.0001f
-            && psurface
+            && m_pSurfaceData
             && m_MoveType != MOVETYPE_NOCLIP
             && sv_footsteps.GetFloat()) {
 
@@ -134,7 +134,7 @@ namespace Detour {
 
         return Original::PlayerMove(thisptr);
     }
-    int __cdecl FinishGravity(void* thisptr)
+    int __fastcall FinishGravity(void* thisptr, int eax)
     {
         if (CallFromCheckJumpButton && sar_jumpboost.GetBool()) {
             auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
@@ -166,14 +166,14 @@ namespace Detour {
         }
         return Original::FinishGravity(thisptr);
     }
-    int __cdecl AirMove(void* thisptr)
+    int __fastcall AirMove(void* thisptr, int eax)
     {
         if (sar_aircontrol.GetBool()) {
             return Original::AirMoveBase(thisptr);
         }
         return Original::AirMove(thisptr);
     }
-    int __cdecl AirAccelerate(void* thisptr, Vector& wishdir, float wishspeed, float accel)
+    int __fastcall AirAccelerate(void* thisptr, int edx, Vector& wishdir, float wishspeed, float accel)
     {
         //return Original::AirAccelerate(thisptr, wishdir, wishspeed, accel);
         return Original::AirAccelerateBase(thisptr, wishdir, wishspeed, accel);

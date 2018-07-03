@@ -8,8 +8,8 @@
 
 namespace Scheme {
 
-using _GetIScheme = void*(__cdecl*)(void* thisptr, unsigned long scheme);
-using _GetFont = unsigned long(__cdecl*)(void* thisptr, const char* fontName, bool proportional);
+using _GetIScheme = void*(__thiscall*)(void* thisptr, unsigned long scheme);
+using _GetFont = unsigned long(__thiscall*)(void* thisptr, const char* fontName, bool proportional);
 
 std::unique_ptr<VMTHook> g_pVGuiSchemeManager;
 _GetIScheme GetIScheme;

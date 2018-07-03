@@ -2,19 +2,19 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\..\libs\minhook\buffer.c">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClCompile>
     <ClCompile Include="..\..\libs\minhook\trampoline.c">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClCompile>
     <ClCompile Include="..\..\libs\minhook\hook.c">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClCompile>
     <ClCompile Include="..\..\libs\minhook\hde\hde64.c">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClCompile>
     <ClCompile Include="..\..\libs\minhook\hde\hde32.c">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>SourceAutoRecord</Filter>
@@ -22,34 +22,34 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\libs\minhook\buffer.h">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libs\minhook\trampoline.h">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libs\minhook\hde\pstdint.h">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libs\minhook\hde\table32.h">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libs\minhook\hde\table64.h">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libs\minhook\hde\hde64.h">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libs\minhook\hde\hde32.h">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libs\minhook\MinHook.h">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </ClInclude>
     <ClInclude Include="SourceAutoRecord.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libs\vmthook\vmthook.h">
-      <Filter>vmthook</Filter>
+      <Filter>libs\vmthook</Filter>
     </ClInclude>
     <ClInclude Include="Callbacks.hpp">
       <Filter>SourceAutoRecord</Filter>
@@ -218,12 +218,6 @@
     <Filter Include="SourceAutoRecord\Modules">
       <UniqueIdentifier>{a52ec2cb-8efb-4026-ba66-d9df6c2a5909}</UniqueIdentifier>
     </Filter>
-    <Filter Include="vmthook">
-      <UniqueIdentifier>{f3c9bd1d-b8bd-4542-9ca8-b033f499beb4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="minhook">
-      <UniqueIdentifier>{df38f6d3-7501-4e2a-ba0c-e8de7ad26787}</UniqueIdentifier>
-    </Filter>
     <Filter Include="SourceAutoRecord\Utils">
       <UniqueIdentifier>{5eb5cd67-ae5d-44f0-aca8-8f66f9aa3753}</UniqueIdentifier>
     </Filter>
@@ -236,13 +230,22 @@
     <Filter Include="SourceAutoRecord\Games">
       <UniqueIdentifier>{56b78df4-db1c-44a5-9243-10415ba45a25}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libs">
+      <UniqueIdentifier>{432c6e31-fbb9-4852-9bfd-74b0cc6d7a57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs\minhook">
+      <UniqueIdentifier>{df38f6d3-7501-4e2a-ba0c-e8de7ad26787}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs\vmthook">
+      <UniqueIdentifier>{f3c9bd1d-b8bd-4542-9ca8-b033f499beb4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\libs\minhook\LICENSE.txt">
-      <Filter>minhook</Filter>
+      <Filter>libs\minhook</Filter>
     </Text>
     <Text Include="..\..\libs\vmthook\LICENSE">
-      <Filter>vmthook</Filter>
+      <Filter>libs\vmthook</Filter>
     </Text>
   </ItemGroup>
 </Project>

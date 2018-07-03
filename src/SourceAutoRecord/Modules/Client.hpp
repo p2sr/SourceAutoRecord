@@ -14,12 +14,12 @@
 
 namespace Client {
 
-using _HudUpdate = int(__cdecl*)(void* thisptr, unsigned int a2);
-using _CreateMove = int(__cdecl*)(void* thisptr, float flInputSampleTime, CUserCmd* cmd);
-using _GetClientEntity = void*(__cdecl*)(void* thisptr, int entnum);
+using _HudUpdate = int(__thiscall*)(void* thisptr, unsigned int a2);
+using _CreateMove = int(__thiscall*)(void* thisptr, float flInputSampleTime, CUserCmd* cmd);
+using _GetClientEntity = void*(__thiscall*)(void* thisptr, int entnum);
 using _KeyDown = int(__cdecl*)(void* b, const char* c);
 using _KeyUp = int(__cdecl*)(void* b, const char* c);
-using _GetName = const char*(__cdecl*)(void* thisptr);
+using _GetName = const char*(__thiscall*)(void* thisptr);
 
 std::unique_ptr<VMTHook> clientdll;
 std::unique_ptr<VMTHook> s_EntityList;
@@ -66,7 +66,7 @@ namespace Original {
 }
 
 namespace Detour {
-    int __cdecl HudUpdate(void* thisptr, unsigned int a2)
+    int __fastcall HudUpdate(void* thisptr, int edx, unsigned int a2)
     {
         if (TAS::IsRunning) {
             for (auto tas = TAS::Frames.begin(); tas != TAS::Frames.end();) {
@@ -82,11 +82,11 @@ namespace Detour {
         }
         return Original::HudUpdate(thisptr, a2);
     }
-    int __cdecl CreateMove(void* thisptr, float flInputSampleTime, CUserCmd* cmd)
+    int __fastcall CreateMove(void* thisptr, int edx, float flInputSampleTime, CUserCmd* cmd)
     {
         return Original::CreateMove(thisptr, flInputSampleTime, cmd);
     }
-    const char* __cdecl GetName(void* thisptr)
+    const char* __fastcall GetName(void* thisptr, int eax)
     {
         // Never allow CHud::FindElement to find this HUD
         if (sar_disable_challenge_stats_hud.GetBool())
@@ -106,7 +106,7 @@ void Hook()
         if (Game::Version == Game::Portal2) {
             auto fel = SAR::Find("FindElement");
             if (fel.Found) {
-                using _FindElement = void*(__cdecl*)(void* thisptr, const char* pName);
+                using _FindElement = void*(__thiscall*)(void* thisptr, const char* pName);
                 auto FindElement = reinterpret_cast<_FindElement>(fel.Address);
 
                 auto GetHudAddr = Memory::ReadAbsoluteAddress((uintptr_t)Original::HudUpdate + Offsets::GetHud);

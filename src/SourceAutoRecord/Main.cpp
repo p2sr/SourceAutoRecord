@@ -22,7 +22,7 @@ unsigned __stdcall Main(void* args)
     Interfaces::Init();
     Game::Init();
 
-    if (Tier1::Init()) {
+   if (Tier1::Init()) {
 
         Cheats::Create();
         Cheats::UnlockAll();

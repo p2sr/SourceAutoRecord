@@ -11,7 +11,7 @@
 
 namespace InputSystem {
 
-using _StringToButtonCode = int(__cdecl*)(void* thisptr, const char* pString);
+using _StringToButtonCode = int(__thiscall*)(void* thisptr, const char* pString);
 using _KeySetBinding = void(__cdecl*)(int keynum, const char* pBinding);
 
 std::unique_ptr<VMTHook> g_InputSystem;

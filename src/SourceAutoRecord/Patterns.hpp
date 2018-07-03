@@ -30,14 +30,14 @@ void Inherit(const char* patternName, const char* version, const char* sigName)
 }
 void Init()
 {
-    Create("engine.so", "ConVar_Ctor3");
-    Create("engine.so", "ConCommand_Ctor1");
-    Create("engine.so", "ConCommand_Ctor2");
-    Create("engine.so", "m_bLoadgame");
-    Create("engine.so", "Key_SetBinding");
-    Create("engine.so", "AutoCompletionFunc");
-    Create("vguimatsurface.so", "StartDrawing");
-    Create("vguimatsurface.so", "FinishDrawing");
-    Create("client.so", "FindElement");
+    Create("engine.dll", "ConVar_Ctor3");
+    Create("engine.dll", "ConCommand_Ctor1");
+    Create("engine.dll", "ConCommand_Ctor2");
+    Create("engine.dll", "m_bLoadgame");
+    Create("engine.dll", "Key_SetBinding");
+    Create("engine.dll", "AutoCompletionFunc");
+    Create("vguimatsurface.dll", "StartDrawing");
+    Create("vguimatsurface.dll", "FinishDrawing");
+    Create("client.dll", "FindElement");
 }
 }

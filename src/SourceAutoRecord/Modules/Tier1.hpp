@@ -16,13 +16,13 @@ struct CCommand;
 using _CommandCallback = void (*)();
 using _CommandCallbackArgs = void (*)(const CCommand& args);
 using _CommandCallbackCompletion = int (*)(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
-using _ConCommand = void(__cdecl*)(void* thisptr, const char* name, void* callback, const char* helpstr, int flags, int* compfunc);
-using _ConVar = void(__cdecl*)(void* thisptr, const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max);
-using _InternalSetValue = void(__cdecl*)(void* thisptr, const char* value);
-using _InternalSetFloatValue = void(__cdecl*)(void* thisptr, float value);
-using _InternalSetIntValue = void(__cdecl*)(void* thisptr, int value);
-using _FindVar = void*(__cdecl*)(void* thisptr, const char* name);
-using _AutoCompletionFunc = int(__cdecl*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+using _ConCommand = void(__thiscall*)(void* thisptr, const char* name, void* callback, const char* helpstr, int flags, int* compfunc);
+using _ConVar = void(__thiscall*)(void* thisptr, const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max);
+using _InternalSetValue = void(__thiscall*)(void* thisptr, const char* value);
+using _InternalSetFloatValue = void(__thiscall*)(void* thisptr, float value);
+using _InternalSetIntValue = void(__thiscall*)(void* thisptr, int value);
+using _FindVar = void*(__thiscall*)(void* thisptr, const char* name);
+using _AutoCompletionFunc = int(__thiscall*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
 std::unique_ptr<VMTHook> g_pCVar;
 

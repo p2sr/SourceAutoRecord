@@ -20,13 +20,13 @@ _DevWarning DevWarning;
 
 bool Init()
 {
-    auto tier0 = Memory::GetModuleHandleByName("libtier0.so");
+    auto tier0 = Memory::GetModuleHandleByName("tier0.dll");
     if (tier0) {
         auto msgAddr = Memory::GetSymbolAddress(tier0, "Msg");
-        auto colorMsgAddr = Memory::GetSymbolAddress(tier0, "_Z11ConColorMsgRK5ColorPKcz");
+        auto colorMsgAddr = Memory::GetSymbolAddress(tier0, "?ConColorMsg@@YAXABVColor@@PBDZZ");
         auto warningAddr = Memory::GetSymbolAddress(tier0, "Warning");
-        auto devMsgAddr = Memory::GetSymbolAddress(tier0, "_Z6DevMsgPKcz");
-        auto devWarningAddr = Memory::GetSymbolAddress(tier0, "_Z10DevWarningPKcz");
+        auto devMsgAddr = Memory::GetSymbolAddress(tier0, "?DevMsg@@YAXPBDZZ");
+        auto devWarningAddr = Memory::GetSymbolAddress(tier0, "?DevWarning@@YAXPBDZZ");
 
         Memory::CloseModuleHandle(tier0);
 

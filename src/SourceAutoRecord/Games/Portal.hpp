@@ -106,7 +106,7 @@ void Offsets()
     m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
     gpGlobals = 705; // CGameMovement::FullTossMove
     player = 4; // CPortalGameMovement::PlayerMove
-    psurface = 3888; // CPortalGameMovement::PlayerMove
+    m_pSurfaceData = 3888; // CPortalGameMovement::PlayerMove
     m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 61; // CServerGameDLL::Think

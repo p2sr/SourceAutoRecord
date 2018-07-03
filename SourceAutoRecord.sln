@@ -9,12 +9,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
-		build.sh = build.sh
-		load.sh = load.sh
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Injector", "src\Injector\Injector.csproj", "{B79C9CF3-FCFB-4F9D-A284-631D9D40600C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Injector", "injector\Injector.csproj", "{B79C9CF3-FCFB-4F9D-A284-631D9D40600C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{2234E52A-D21C-4984-B830-0D1EBC6842C5}"
 	ProjectSection(SolutionItems) = preProject

@@ -3,15 +3,15 @@
 
 struct Vector {
     float x, y, z;
-    float Length()
+    inline float Length()
     {
         return sqrt(x * x + y * y + z * z);
     }
-    float Length2D()
+    inline float Length2D()
     {
         return sqrt(x * x + y * y);
     }
-    Vector operator*(float fl)
+    inline Vector operator*(float fl)
     {
         Vector res;
         res.x = x * fl;
@@ -19,11 +19,11 @@ struct Vector {
         res.z = z * fl;
         return res;
     }
-    float& operator[](int i)
+    inline float& operator[](int i)
     {
         return ((float*)this)[i];
     }
-    float operator[](int i) const
+    inline float operator[](int i) const
     {
         return ((float*)this)[i];
     }

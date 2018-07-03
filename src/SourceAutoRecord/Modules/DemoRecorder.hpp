@@ -17,9 +17,9 @@ namespace Engine {
 bool* m_bLoadgame;
 
 namespace DemoRecorder {
-    using _GetRecordingTick = int(__cdecl*)(void* thisptr);
-    using _SetSignonState = void(__cdecl*)(void* thisptr, int state);
-    using _StopRecording = int(__cdecl*)(void* thisptr);
+    using _GetRecordingTick = int(__thiscall*)(void* thisptr);
+    using _SetSignonState = void(__thiscall*)(void* thisptr, int state);
+    using _StopRecording = int(__thiscall*)(void* thisptr);
 
     std::unique_ptr<VMTHook> s_ClientDemoRecorder;
 
@@ -43,7 +43,7 @@ namespace DemoRecorder {
     }
 
     namespace Detour {
-        void __cdecl SetSignonState(void* thisptr, int state)
+        void __fastcall SetSignonState(void* thisptr, int edx, int state)
         {
             if (state == SignonState::Full && *m_bRecording) {
                 IsRecordingDemo = true;
@@ -54,7 +54,7 @@ namespace DemoRecorder {
             }
             Original::SetSignonState(thisptr, state);
         }
-        int __cdecl StopRecording(void* thisptr)
+        int __fastcall StopRecording(void* thisptr, int eax)
         {
             const int LastDemoNumber = *m_nDemoNumber;
 

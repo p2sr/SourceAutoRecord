@@ -11,7 +11,7 @@
 
 namespace Math {
 
-void inline SinCos(float radians, float* sine, float* cosine)
+inline void SinCos(float radians, float* sine, float* cosine)
 {
     _asm {
         fld DWORD PTR[radians]
@@ -25,7 +25,7 @@ void inline SinCos(float radians, float* sine, float* cosine)
     }
 }
 
-void AngleVectors(const QAngle& angles, Vector* forward)
+inline void AngleVectors(const QAngle& angles, Vector* forward)
 {
     float sp, sy, cp, cy;
 
@@ -37,7 +37,7 @@ void AngleVectors(const QAngle& angles, Vector* forward)
     forward->z = -sp;
 }
 
-float VectorNormalize(Vector& vec)
+inline float VectorNormalize(Vector& vec)
 {
     float radius = sqrtf(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
     float iradius = 1.f / (radius + FLT_EPSILON);
@@ -49,14 +49,14 @@ float VectorNormalize(Vector& vec)
     return radius;
 }
 
-void VectorAdd(const Vector& a, const Vector& b, Vector& c)
+inline void VectorAdd(const Vector& a, const Vector& b, Vector& c)
 {
     c.x = a.x + b.x;
     c.y = a.y + b.y;
     c.z = a.z + b.z;
 }
 
-void AngleVectors(const QAngle& angles, Vector* forward, Vector* right, Vector* up)
+inline void AngleVectors(const QAngle& angles, Vector* forward, Vector* right, Vector* up)
 {
     float sr, sp, sy, cr, cp, cy;
 
@@ -83,14 +83,14 @@ void AngleVectors(const QAngle& angles, Vector* forward, Vector* right, Vector* 
     }
 }
 
-void VectorScale(Vector const& src, float b, Vector& dst)
+inline void VectorScale(Vector const& src, float b, Vector& dst)
 {
     dst.x = src.x * b;
     dst.y = src.y * b;
     dst.z = src.z * b;
 }
 
-void VectorCopy(const Vector& src, Vector& dst)
+inline void VectorCopy(const Vector& src, Vector& dst)
 {
     dst.x = src.x;
     dst.y = src.y;

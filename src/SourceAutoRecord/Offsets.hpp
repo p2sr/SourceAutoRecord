@@ -76,7 +76,7 @@ int iNumPortalsPlaced;
 int m_fFlags;
 int m_MoveType;
 int m_nWaterLevel;
-int psurface;
+int m_pSurfaceData;
 int m_bDucked;
 
 // IEngineVGuiInternal

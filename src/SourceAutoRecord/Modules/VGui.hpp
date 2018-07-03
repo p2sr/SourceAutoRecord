@@ -24,7 +24,7 @@ using namespace Commands;
 
 namespace VGui {
 
-using _Paint = int(__cdecl*)(void* thisptr, int mode);
+using _Paint = int(__thiscall*)(void* thisptr, int mode);
 
 std::unique_ptr<VMTHook> enginevgui;
 
@@ -36,7 +36,7 @@ namespace Original {
 }
 
 namespace Detour {
-    int __cdecl Paint(void* thisptr, int mode)
+    int __fastcall Paint(void* thisptr, int edx, int mode)
     {
         Surface::StartDrawing(Surface::matsurface->GetThisPtr());
 
@@ -53,7 +53,7 @@ namespace Detour {
         Color textColor(r, g, b, a);
 
         if (RespectClShowPos && cl_showpos.GetBool()) {
-            elements += 4;
+            elements += 6;
             yPadding += spacing;
         }
 

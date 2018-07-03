@@ -17,9 +17,9 @@ _GetGameDirectory GetGameDirectory;
 
 namespace DemoPlayer {
 
-    using _IsPlayingBack = bool(__cdecl*)(void* thisptr);
-    using _GetPlaybackTick = int(__cdecl*)(void* thisptr);
-    using _StartPlayback = int(__cdecl*)(void* thisptr, const char* filename, bool bAsTimeDemo);
+    using _IsPlayingBack = bool(__thiscall*)(void* thisptr);
+    using _GetPlaybackTick = int(__thiscall*)(void* thisptr);
+    using _StartPlayback = int(__thiscall*)(void* thisptr, const char* filename, bool bAsTimeDemo);
 
     std::unique_ptr<VMTHook> s_ClientDemoPlayer;
 
@@ -42,7 +42,7 @@ namespace DemoPlayer {
     }
 
     namespace Detour {
-        int __cdecl StartPlayback(void* thisptr, const char* filename, bool bAsTimeDemo)
+        int __fastcall StartPlayback(void* thisptr, int edx, const char* filename, bool bAsTimeDemo)
         {
             auto result = Original::StartPlayback(thisptr, filename, bAsTimeDemo);
 

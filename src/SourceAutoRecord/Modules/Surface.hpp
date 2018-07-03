@@ -6,9 +6,9 @@
 
 namespace Surface {
 
-using _GetFontTall = int(__cdecl*)(void* thisptr, unsigned long font);
+using _GetFontTall = int(__thiscall*)(void* thisptr, unsigned long font);
 using _DrawColoredText = int(__cdecl*)(void* thisptr, unsigned long font, int x, int y, int r, int g, int b, int a, char* fmt, ...);
-using _StartDrawing = int(__cdecl*)(void* thisptr);
+using _StartDrawing = int(__thiscall*)(void* thisptr);
 using _FinishDrawing = int(__cdecl*)();
 
 std::unique_ptr<VMTHook> matsurface;
