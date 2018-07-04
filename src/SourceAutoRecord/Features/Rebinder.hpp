@@ -1,9 +1,9 @@
 #pragma once
 #include "Modules/InputSystem.hpp"
 
-#include "Commands.hpp"
+#include "Cheats.hpp"
 
-using namespace Commands;
+using namespace Cheats;
 
 namespace Rebinder {
 

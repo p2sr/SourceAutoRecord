@@ -3,9 +3,9 @@
 
 #include "Features/Config.hpp"
 
-namespace Callbacks {
+#include "Command.hpp"
 
-void SaveCvars()
+CON_COMMAND(sar_cvars_save, "Saves important SAR cvars.\n")
 {
     if (!Config::Save()) {
         Console::Print("Failed to create config file!\n");
@@ -13,10 +13,10 @@ void SaveCvars()
         Console::Print("Saved important settings in /cfg/_sar_cvars.cfg!\n");
     }
 }
-void LoadCvars()
+
+CON_COMMAND(sar_cvars_load, "Loads important SAR cvars.\n")
 {
     if (!Config::Load()) {
         Console::Print("Config file not found!\n");
     }
-}
 }

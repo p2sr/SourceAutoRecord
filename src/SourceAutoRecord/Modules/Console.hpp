@@ -1,6 +1,16 @@
 #pragma once
 #include "Utils.hpp"
 
+#ifdef _WIN32
+#define CONCOLORMSG_SYMBOL "?ConColorMsg@@YAXABVColor@@PBDZZ"
+#define DEVMSG_SYMBOL "?DevMsg@@YAXPBDZZ"
+#define DEVWARNINGMSG_SYMBOL "?DevWarning@@YAXPBDZZ"
+#else
+#define CONCOLORMSG_SYMBOL "_Z11ConColorMsgRK5ColorPKcz"
+#define DEVMSG_SYMBOL "_Z6DevMsgPKcz"
+#define DEVWARNINGMSG_SYMBOL "_Z10DevWarningPKcz"
+#endif
+
 #define Print(...) ColorMsg(SAR_COLOR, __VA_ARGS__)
 #define PrintActive(...) ColorMsg(COL_ACTIVE, __VA_ARGS__)
 
@@ -20,13 +30,13 @@ _DevWarning DevWarning;
 
 bool Init()
 {
-    auto tier0 = Memory::GetModuleHandleByName("tier0.dll");
+    auto tier0 = Memory::GetModuleHandleByName(MODULE("tier0"));
     if (tier0) {
         auto msgAddr = Memory::GetSymbolAddress(tier0, "Msg");
-        auto colorMsgAddr = Memory::GetSymbolAddress(tier0, "?ConColorMsg@@YAXABVColor@@PBDZZ");
+        auto colorMsgAddr = Memory::GetSymbolAddress(tier0, CONCOLORMSG_SYMBOL);
         auto warningAddr = Memory::GetSymbolAddress(tier0, "Warning");
-        auto devMsgAddr = Memory::GetSymbolAddress(tier0, "?DevMsg@@YAXPBDZZ");
-        auto devWarningAddr = Memory::GetSymbolAddress(tier0, "?DevWarning@@YAXPBDZZ");
+        auto devMsgAddr = Memory::GetSymbolAddress(tier0, DEVMSG_SYMBOL);
+        auto devWarningAddr = Memory::GetSymbolAddress(tier0, DEVWARNINGMSG_SYMBOL);
 
         Memory::CloseModuleHandle(tier0);
 

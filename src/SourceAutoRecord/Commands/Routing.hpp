@@ -4,21 +4,23 @@
 
 #include "Features/Routing.hpp"
 
+#include "Command.hpp"
+
 using namespace Routing;
 
-namespace Callbacks {
-
-void SaveTracerA()
+CON_COMMAND(sar_trace_a, "Saves location A for tracing.\n")
 {
     Tracer::Start(Client::GetAbsOrigin());
     Console::Print("Saved location A for tracing!\n");
 }
-void SaveTracerB()
+
+CON_COMMAND(sar_trace_b, "Saves location B for tracing.\n")
 {
     Tracer::Stop(Client::GetAbsOrigin());
     Console::Print("Saved location B for tracing!\n");
 }
-void PrintTracerResult()
+
+CON_COMMAND(sar_trace_result, "Prints tracing result.\n")
 {
     auto xyz = Tracer::GetDifferences();
     Console::Print("A: %.3f/%.3f/%.3f\n", Tracer::Source.x, Tracer::Source.y, Tracer::Source.z);
@@ -28,8 +30,8 @@ void PrintTracerResult()
     Console::Print("Z-Distance: %.3f\n", std::get<2>(xyz));
     Console::Print("Total Distance: %.3f\n", Tracer::GetResult());
 }
-void ResetTracer()
+
+CON_COMMAND(sar_trace_reset, "Resets tracer.\n")
 {
     Tracer::Reset();
-}
 }

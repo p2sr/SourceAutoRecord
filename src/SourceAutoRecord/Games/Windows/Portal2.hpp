@@ -56,7 +56,7 @@ void Patterns()
         "CMatSystemSurface::FinishDrawing",
         "56 6A 00 E8 ? ? ? ? ");
 
-    // client.so
+    // client.dll
 
     // \x55\x8B\xEC\x53\x8B\x5D\x08\x56\x57\x8B\xF1\x33\xFF\x39\x7E\x28 xxxxxxxxxxxxxxxx
     Add("FindElement", "Portal 2 Build 7054",
@@ -65,7 +65,7 @@ void Patterns()
 }
 void Offsets()
 {
-    // engine.so
+    // engine.dll
 
     InternalSetValue = 12; // ConVar
     InternalSetFloatValue = 13; // ConVar
@@ -97,13 +97,15 @@ void Offsets()
     demorecorder = 87; // CClientState::Disconnect
     GetCurrentMap = 25; // CEngineTool
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
+    GetDLLIdentifier = 9; // ConCommandBase
+    UnregisterConCommand = 10; // CCvar 
 
-    // vgui2.so
+    // vgui2.dll
 
     GetIScheme = 8; // CSchemeManager
     GetFont = 3; // CScheme
 
-    // server.so
+    // server.dll
 
     PlayerMove = 17; // CPortalGameMovement
     AirAccelerate = 24; // CPortalGameMovement
@@ -128,7 +130,7 @@ void Offsets()
     frametime = 16; // CBasePlayer::UpdateStepSound
     m_bDucked = 2272; // CPortalGameMovement::FinishUnDuck
 
-    // client.so
+    // client.dll
 
     HudUpdate = 11; // CHLClient
     GetHud = 221; // CHLClient::HudUpdate

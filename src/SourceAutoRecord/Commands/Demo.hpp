@@ -5,11 +5,9 @@
 
 #include "Features/Demo.hpp"
 
-#include "Utils.hpp"
+#include "Command.hpp"
 
-namespace Callbacks {
-
-void PrintDemoInfo(const CCommand& args)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "", 0, 0, dem)
 {
     if (args.ArgC() != 2) {
         Console::Print("sar_time_demo [demo_name] : Parses a demo and prints some information about it.\n");
@@ -45,7 +43,8 @@ void PrintDemoInfo(const CCommand& args)
         Console::Print("Could not parse \"%s\"!\n", name.c_str());
     }
 }
-void PrintDemoInfos(const CCommand& args)
+
+CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "", 0, 0, dem)
 {
     if (args.ArgC() <= 1) {
         Console::Print("sar_time_demos [demo_name] [demo_name2] [etc.] : Parses multiple demos and prints the total sum of them.\n");
@@ -83,18 +82,4 @@ void PrintDemoInfos(const CCommand& args)
         Console::Print("Total Ticks: %i\n", totalTicks);
         Console::Print("Total Time: %.3f\n", totalTime);
     }
-}
-
-// Auto-completion
-CBaseAutoCompleteFileList sar_time_demo_command("sar_time_demo", 0, "dem");
-CBaseAutoCompleteFileList sar_time_demos_command("sar_time_demos", 0, "dem");
-
-int DemoAutoComplete(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
-{
-    return sar_time_demo_command.AutoCompletionFunc(partial, commands);
-}
-int DemosAutoComplete(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
-{
-    return sar_time_demos_command.AutoCompletionFunc(partial, commands);
-}
 }

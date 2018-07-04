@@ -1,9 +1,11 @@
 #pragma once
-#include "Games/HalfLife2.hpp"
-#include "Games/Portal.hpp"
-#include "Games/Portal2.hpp"
-#include "Games/TheBeginnersGuide.hpp"
-#include "Games/TheStanleyParable.hpp"
+#include "Utils.hpp"
+
+#include GAME(HalfLife2)
+#include GAME(Portal)
+#include GAME(Portal2)
+#include GAME(TheBeginnersGuide)
+#include GAME(TheStanleyParable)
 
 namespace Game {
 
@@ -67,5 +69,13 @@ bool IsHalfLife2Engine()
 {
     return Version == SourceGame::HalfLife2
         || Version == SourceGame::Portal;
+}
+bool HasChallengeMode()
+{
+    return Version == SourceGame::Portal2;
+}
+bool JumpingIsDisabled()
+{
+    return Version == SourceGame::TheStanleyParable;
 }
 }

@@ -1,6 +1,4 @@
 #pragma once
-#include "vmthook/vmthook.h"
-
 #include "Interfaces.hpp"
 #include "Offsets.hpp"
 #include "SourceAutoRecord.hpp"
@@ -11,10 +9,10 @@
 
 namespace InputSystem {
 
+VMT g_InputSystem;
+
 using _StringToButtonCode = int(__thiscall*)(void* thisptr, const char* pString);
 using _KeySetBinding = void(__cdecl*)(int keynum, const char* pBinding);
-
-std::unique_ptr<VMTHook> g_InputSystem;
 
 _StringToButtonCode StringToButtonCode;
 _KeySetBinding KeySetBinding;
@@ -26,8 +24,7 @@ int GetButton(const char* pString)
 
 void Hook()
 {
-    if (Interfaces::IInputSystem) {
-        g_InputSystem = std::make_unique<VMTHook>(Interfaces::IInputSystem);
+    if (SAR::NewVMT(Interfaces::IInputSystem, g_InputSystem)) {
         StringToButtonCode = g_InputSystem->GetOriginalFunction<_StringToButtonCode>(Offsets::StringToButtonCode);
     }
 
@@ -35,5 +32,9 @@ void Hook()
     if (ksb.Found) {
         KeySetBinding = reinterpret_cast<_KeySetBinding>(ksb.Address);
     }
+}
+void Unhook()
+{
+    SAR::DeleteVMT(g_InputSystem);
 }
 }

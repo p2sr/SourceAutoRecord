@@ -4,9 +4,9 @@
 
 #include "Features/Summary.hpp"
 
-namespace Callbacks {
+#include "Command.hpp"
 
-void StartSummary()
+CON_COMMAND(sar_sum_here, "Starts counting total ticks of sessions.\n")
 {
     if (Summary::IsRunning) {
         Console::Print("Summary has already started!\n");
@@ -14,7 +14,8 @@ void StartSummary()
     }
     Summary::Start();
 }
-void StopSummary()
+
+CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
 {
     if (!Summary::IsRunning) {
         Console::Print("There's no summary to stop!\n");
@@ -27,7 +28,8 @@ void StopSummary()
     }
     Summary::IsRunning = false;
 }
-void PrintSummary()
+
+CON_COMMAND(sar_sum_result, "Prints result of summary.\n")
 {
     int sessions = Summary::Items.size();
     if (Summary::IsRunning && sessions == 0) {
@@ -64,5 +66,4 @@ void PrintSummary()
         Console::Print("Total Ticks: %i\n", Summary::TotalTicks);
         Console::Print("Total Time: %.3f\n", totalTime);
     }
-}
 }

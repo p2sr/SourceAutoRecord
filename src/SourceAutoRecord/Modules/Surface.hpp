@@ -6,16 +6,15 @@
 
 namespace Surface {
 
-using _GetFontTall = int(__thiscall*)(void* thisptr, unsigned long font);
-using _DrawColoredText = int(__cdecl*)(void* thisptr, unsigned long font, int x, int y, int r, int g, int b, int a, char* fmt, ...);
-using _StartDrawing = int(__thiscall*)(void* thisptr);
-using _FinishDrawing = int(__cdecl*)();
+VMT matsurface;
 
-std::unique_ptr<VMTHook> matsurface;
+using _GetFontTall = int(__CALL*)(void* thisptr, unsigned long font);
+using _DrawColoredText = int(__cdecl*)(void* thisptr, unsigned long font, int x, int y, int r, int g, int b, int a, char* fmt, ...);
+using _StartDrawing = int(__CALL*)(void* thisptr);
+using _FinishDrawing = int(__cdecl*)();
 
 _GetFontTall GetFontTall;
 _DrawColoredText DrawColoredText;
-
 _StartDrawing StartDrawing;
 _FinishDrawing FinishDrawing;
 
@@ -30,8 +29,7 @@ void Draw(unsigned long font, int x, int y, Color clr, char* fmt, ...)
 
 void Hook()
 {
-    if (Interfaces::ISurface) {
-        matsurface = std::make_unique<VMTHook>(Interfaces::ISurface);
+    if (SAR::NewVMT(Interfaces::ISurface, matsurface)) {
         DrawColoredText = matsurface->GetOriginalFunction<_DrawColoredText>(Offsets::DrawColoredText);
         GetFontTall = matsurface->GetOriginalFunction<_GetFontTall>(Offsets::GetFontTall);
     }
@@ -42,5 +40,9 @@ void Hook()
         StartDrawing = reinterpret_cast<_StartDrawing>(sdr.Address);
         FinishDrawing = reinterpret_cast<_FinishDrawing>(fdr.Address);
     }
+}
+void Unhook()
+{
+    SAR::DeleteVMT(matsurface);
 }
 }

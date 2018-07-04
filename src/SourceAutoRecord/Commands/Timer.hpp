@@ -6,11 +6,9 @@
 #include "Features/TimerAverage.hpp"
 #include "Features/TimerCheckPoints.hpp"
 
-#include "Utils.hpp"
+#include "Command.hpp"
 
-namespace Callbacks {
-
-void StartTimer()
+CON_COMMAND(sar_timer_start, "Starts timer.\n")
 {
     if (Timer::IsRunning)
         Console::DevMsg("Restarting timer!\n");
@@ -22,7 +20,8 @@ void StartTimer()
         Stats::ResetAll();
     }
 }
-void StopTimer()
+
+CON_COMMAND(sar_timer_stop, "Stops timer.\n")
 {
     if (!Timer::IsRunning) {
         Console::DevMsg("Timer isn't running!\n");
@@ -36,7 +35,8 @@ void StopTimer()
         Timer::Average::Add(tick, Engine::GetTime(tick), *Engine::m_szLevelName);
     }
 }
-void PrintTimer()
+
+CON_COMMAND(sar_timer_result, "Prints result of timer.\n")
 {
     int tick = Timer::GetTick(*Engine::tickcount);
     float time = Engine::GetTime(tick);
@@ -47,15 +47,18 @@ void PrintTimer()
         Console::Print("Result: %i (%.3f)\n", tick, time);
     }
 }
-void StartAverage()
+
+CON_COMMAND(sar_avg_start, "Starts calculating the average when using timer.\n")
 {
     Timer::Average::Start();
 }
-void StopAverage()
+
+CON_COMMAND(sar_avg_stop, "Stops average calculation.\n")
 {
     Timer::Average::IsEnabled = false;
 }
-void PrintAverage()
+
+CON_COMMAND(sar_avg_result, "Prints result of average.\n")
 {
     int average = Timer::Average::Items.size();
     if (average > 0) {
@@ -77,7 +80,8 @@ void PrintAverage()
         Console::Print("Result: %i (%.3f)\n", Timer::Average::AverageTicks, Timer::Average::AverageTime);
     }
 }
-void AddCheckpoint()
+
+CON_COMMAND(sar_cps_add, "Saves current time of timer.\n")
 {
     if (!Timer::IsRunning) {
         Console::DevMsg("Timer isn't running!\n");
@@ -87,11 +91,13 @@ void AddCheckpoint()
     int tick = Timer::GetTick(Engine::GetTick());
     Timer::CheckPoints::Add(tick, Engine::GetTime(tick), *Engine::m_szLevelName);
 }
-void ClearCheckpoints()
+
+CON_COMMAND(sar_cps_clear, "Resets saved times of timer.\n")
 {
     Timer::CheckPoints::Reset();
 }
-void PrintCheckpoints()
+
+CON_COMMAND(sar_cps_result, "Prints result of timer checkpoints.\n")
 {
     int cps = Timer::CheckPoints::Items.size();
     if (cps > 0) {
@@ -118,5 +124,4 @@ void PrintCheckpoints()
         float time = Engine::GetTime(tick);
         Console::Print("Result: %i (%.3f)\n", tick, time);
     }
-}
 }

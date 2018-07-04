@@ -6,7 +6,7 @@
 
 #include "Features/TAS.hpp"
 
-#include "Commands.hpp"
+#include "Cheats.hpp"
 #include "Game.hpp"
 #include "Interfaces.hpp"
 #include "Offsets.hpp"
@@ -14,24 +14,19 @@
 
 namespace Client {
 
-using _HudUpdate = int(__thiscall*)(void* thisptr, unsigned int a2);
-using _CreateMove = int(__thiscall*)(void* thisptr, float flInputSampleTime, CUserCmd* cmd);
-using _GetClientEntity = void*(__thiscall*)(void* thisptr, int entnum);
+VMT clientdll;
+VMT g_HUDChallengeStats;
+VMT s_EntityList;
+
+using _GetClientEntity = void*(__CALL*)(void* thisptr, int entnum);
 using _KeyDown = int(__cdecl*)(void* b, const char* c);
 using _KeyUp = int(__cdecl*)(void* b, const char* c);
-using _GetName = const char*(__thiscall*)(void* thisptr);
-
-std::unique_ptr<VMTHook> clientdll;
-std::unique_ptr<VMTHook> s_EntityList;
-std::unique_ptr<VMTHook> g_pClientMode;
-std::unique_ptr<VMTHook> g_Input;
-std::unique_ptr<VMTHook> g_HUDChallengeStats;
 
 _GetClientEntity GetClientEntity;
-
-void* in_jump;
 _KeyDown KeyDown;
 _KeyUp KeyUp;
+
+void* in_jump;
 
 void* GetPlayer()
 {
@@ -59,49 +54,44 @@ int GetFlags()
     return (player) ? *(int*)((uintptr_t)player + Offsets::GetFlags) : 0;
 }
 
-namespace Original {
-    _HudUpdate HudUpdate;
-    _CreateMove CreateMove;
-    _GetName GetName;
-}
-
-namespace Detour {
-    int __fastcall HudUpdate(void* thisptr, int edx, unsigned int a2)
-    {
-        if (TAS::IsRunning) {
-            for (auto tas = TAS::Frames.begin(); tas != TAS::Frames.end();) {
-                tas->FramesLeft--;
-                if (tas->FramesLeft <= 0) {
-                    Console::DevMsg("TAS: %s\n", tas->Command.c_str());
-                    Engine::ExecuteCommand(tas->Command.c_str());
-                    tas = TAS::Frames.erase(tas);
-                } else {
-                    tas++;
-                }
+// CHLClient::HudUpdate
+DETOUR(HudUpdate, unsigned int a2)
+{
+    if (TAS::IsRunning) {
+        for (auto tas = TAS::Frames.begin(); tas != TAS::Frames.end();) {
+            tas->FramesLeft--;
+            if (tas->FramesLeft <= 0) {
+                Console::DevMsg("TAS: %s\n", tas->Command.c_str());
+                Engine::ExecuteCommand(tas->Command.c_str());
+                tas = TAS::Frames.erase(tas);
+            } else {
+                tas++;
             }
         }
-        return Original::HudUpdate(thisptr, a2);
     }
-    int __fastcall CreateMove(void* thisptr, int edx, float flInputSampleTime, CUserCmd* cmd)
-    {
-        return Original::CreateMove(thisptr, flInputSampleTime, cmd);
-    }
-    const char* __fastcall GetName(void* thisptr, int eax)
-    {
-        // Never allow CHud::FindElement to find this HUD
-        if (sar_disable_challenge_stats_hud.GetBool())
-            return "";
+    return Original::HudUpdate(thisptr, a2);
+}
 
-        return Original::GetName(thisptr);
-    }
+//// CHLClient::CreateMove
+//DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd)
+//{
+//    return Original::CreateMove(thisptr, flInputSampleTime, cmd);
+//}
+
+// CHud::GetName
+DETOUR_T(const char*, GetName)
+{
+    // Never allow CHud::FindElement to find this HUD
+    if (sar_disable_challenge_stats_hud.GetBool())
+        return "";
+
+    return Original::GetName(thisptr);
 }
 
 void Hook()
 {
-    if (Interfaces::IBaseClientDLL) {
-        clientdll = std::make_unique<VMTHook>(Interfaces::IBaseClientDLL);
-        clientdll->HookFunction((void*)Detour::HudUpdate, Offsets::HudUpdate);
-        Original::HudUpdate = clientdll->GetOriginalFunction<_HudUpdate>(Offsets::HudUpdate);
+    if (SAR::NewVMT(Interfaces::IBaseClientDLL, clientdll)) {
+        HOOK(clientdll, HudUpdate);
 
         if (Game::Version == Game::Portal2) {
             auto fel = SAR::Find("FindElement");
@@ -114,14 +104,14 @@ void Hook()
                 auto gHUD = reinterpret_cast<_GetHud>(GetHudAddr)(-1);
 
                 auto element = FindElement(gHUD, "CHUDChallengeStats");
-                g_HUDChallengeStats = std::make_unique<VMTHook>(element);
-                g_HUDChallengeStats->HookFunction((void*)Detour::GetName, Offsets::GetName);
-                Original::GetName = g_HUDChallengeStats->GetOriginalFunction<_GetName>(Offsets::GetName);
+                if (SAR::NewVMT(element, g_HUDChallengeStats)) {
+                    HOOK(g_HUDChallengeStats, GetName);
+                }
             }
         } else if (Game::Version == Game::TheStanleyParable) {
             auto IN_ActivateMouse = clientdll->GetOriginalFunction<uintptr_t>(Offsets::IN_ActivateMouse);
             auto g_InputAdr = **reinterpret_cast<void***>(IN_ActivateMouse + Offsets::g_Input);
-            g_Input = std::make_unique<VMTHook>(g_InputAdr);
+            auto g_Input = std::make_unique<VMTHook>(g_InputAdr);
 
             auto GetButtonBits = g_Input->GetOriginalFunction<uintptr_t>(Offsets::GetButtonBits);
             in_jump = *reinterpret_cast<void**>((uintptr_t)GetButtonBits + Offsets::in_jump);
@@ -133,19 +123,18 @@ void Hook()
             KeyUp = reinterpret_cast<_KeyUp>(keyUpAddr);
         }
 
-        /* // Before HudUpdate in VMT
-            auto HudProcessInput = clientdll->GetOriginalFunction<uintptr_t>(Offsets::HudUpdate - 1);
-            typedef void*(*_GetClientMode)();
-            auto GetClientMode = reinterpret_cast<_GetClientMode>(GetAbsoluteAddress(HudProcessInput + 12));
-            g_pClientMode = std::make_unique<VMTHook>(GetClientMode());
-
-            g_pClientMode->HookFunction((void*)Detour::CreateMove, Offsets::CreateMove);
-            Original::CreateMove = g_pClientMode->GetOriginalFunction<_CreateMove>(Offsets::CreateMove); */
-
-        if (Interfaces::IClientEntityList) {
-            s_EntityList = std::make_unique<VMTHook>(Interfaces::IClientEntityList);
+        if (SAR::NewVMT(Interfaces::IClientEntityList, s_EntityList)) {
             GetClientEntity = s_EntityList->GetOriginalFunction<_GetClientEntity>(Offsets::GetClientEntity);
         }
     }
+}
+void Unhook()
+{
+    UNHOOK(clientdll, HudUpdate);
+    UNHOOK(g_HUDChallengeStats, GetName);
+
+    SAR::DeleteVMT(clientdll);
+    SAR::DeleteVMT(g_HUDChallengeStats);
+    SAR::DeleteVMT(s_EntityList);
 }
 }

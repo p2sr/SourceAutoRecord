@@ -51,9 +51,6 @@
     <ClInclude Include="..\..\libs\vmthook\vmthook.h">
       <Filter>libs\vmthook</Filter>
     </ClInclude>
-    <ClInclude Include="Callbacks.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
     <ClInclude Include="Cheats.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
@@ -76,9 +73,6 @@
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Modules\Client.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Command.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
     <ClInclude Include="Modules\Console.hpp">
@@ -108,44 +102,8 @@
     <ClInclude Include="Modules\Tier1.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="Modules\Variable.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
     <ClInclude Include="Modules\VGui.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Callbacks\Bhop.hpp">
-      <Filter>SourceAutoRecord\Callbacks</Filter>
-    </ClInclude>
-    <ClInclude Include="Callbacks\Binding.hpp">
-      <Filter>SourceAutoRecord\Callbacks</Filter>
-    </ClInclude>
-    <ClInclude Include="Callbacks\Cheats.hpp">
-      <Filter>SourceAutoRecord\Callbacks</Filter>
-    </ClInclude>
-    <ClInclude Include="Callbacks\Config.hpp">
-      <Filter>SourceAutoRecord\Callbacks</Filter>
-    </ClInclude>
-    <ClInclude Include="Callbacks\Demo.hpp">
-      <Filter>SourceAutoRecord\Callbacks</Filter>
-    </ClInclude>
-    <ClInclude Include="Callbacks\Info.hpp">
-      <Filter>SourceAutoRecord\Callbacks</Filter>
-    </ClInclude>
-    <ClInclude Include="Callbacks\Routing.hpp">
-      <Filter>SourceAutoRecord\Callbacks</Filter>
-    </ClInclude>
-    <ClInclude Include="Callbacks\Stats.hpp">
-      <Filter>SourceAutoRecord\Callbacks</Filter>
-    </ClInclude>
-    <ClInclude Include="Callbacks\Summary.hpp">
-      <Filter>SourceAutoRecord\Callbacks</Filter>
-    </ClInclude>
-    <ClInclude Include="Callbacks\TAS.hpp">
-      <Filter>SourceAutoRecord\Callbacks</Filter>
-    </ClInclude>
-    <ClInclude Include="Callbacks\Timer.hpp">
-      <Filter>SourceAutoRecord\Callbacks</Filter>
     </ClInclude>
     <ClInclude Include="Features\Config.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
@@ -195,20 +153,74 @@
     <ClInclude Include="Utils\SDK.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Games\HalfLife2.hpp">
-      <Filter>SourceAutoRecord\Games</Filter>
+    <ClInclude Include="Games\Linux\HalfLife2.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Portal.hpp">
-      <Filter>SourceAutoRecord\Games</Filter>
+    <ClInclude Include="Games\Linux\Portal.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Portal2.hpp">
-      <Filter>SourceAutoRecord\Games</Filter>
+    <ClInclude Include="Games\Linux\Portal2.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
-    <ClInclude Include="Games\TheBeginnersGuide.hpp">
-      <Filter>SourceAutoRecord\Games</Filter>
+    <ClInclude Include="Games\Linux\TheBeginnersGuide.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
-    <ClInclude Include="Games\TheStanleyParable.hpp">
-      <Filter>SourceAutoRecord\Games</Filter>
+    <ClInclude Include="Games\Linux\TheStanleyParable.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\HalfLife2.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\Portal.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\Portal2.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\TheStanleyParable.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Command.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Variable.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Bhop.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Binding.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Cheats.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Config.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Demo.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Info.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Routing.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Stats.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Summary.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\TAS.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Timer.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -224,9 +236,6 @@
     <Filter Include="SourceAutoRecord\Features">
       <UniqueIdentifier>{2cad3606-019d-40fd-b1e0-16eabcd459a2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SourceAutoRecord\Callbacks">
-      <UniqueIdentifier>{fa07d817-705c-4525-a195-7ed5d8e10972}</UniqueIdentifier>
-    </Filter>
     <Filter Include="SourceAutoRecord\Games">
       <UniqueIdentifier>{56b78df4-db1c-44a5-9243-10415ba45a25}</UniqueIdentifier>
     </Filter>
@@ -238,6 +247,15 @@
     </Filter>
     <Filter Include="libs\vmthook">
       <UniqueIdentifier>{f3c9bd1d-b8bd-4542-9ca8-b033f499beb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Games\Windows">
+      <UniqueIdentifier>{9e7c58b4-0f87-483c-92ab-77f4d6757512}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Games\Linux">
+      <UniqueIdentifier>{5e8e3eca-807e-4e32-bd8d-046f8be99381}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Commands">
+      <UniqueIdentifier>{fa07d817-705c-4525-a195-7ed5d8e10972}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

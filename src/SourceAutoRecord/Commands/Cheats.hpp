@@ -1,12 +1,12 @@
 #pragma once
 #include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
 
 #include "Features/Teleporter.hpp"
 
-namespace Callbacks {
+#include "Command.hpp"
+#include "Commands.hpp"
 
-void Teleport()
+CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
 {
     if (sv_cheats.GetBool()) {
         if (Teleporter::IsSet) {
@@ -18,8 +18,8 @@ void Teleport()
         Console::Print("Cannot teleport without sv_cheats 1.\n");
     }
 }
-void SetTeleport()
+
+CON_COMMAND(sar_teleport_setpos, "Saves current location for teleportation.\n")
 {
     Teleporter::Save();
-}
 }

@@ -1,13 +1,14 @@
 #pragma once
 #include "Modules/Console.hpp"
 #include "Modules/InputSystem.hpp"
-#include "Modules/Tier1.hpp"
 
 #include "Features/Rebinder.hpp"
 
-namespace Callbacks {
+#include "Command.hpp"
 
-void BindSaveRebinder(const CCommand& args)
+CON_COMMAND(sar_bind_save,
+    "Automatic save rebinding when server has loaded. File indexing will be synced when recording demos. "
+    "Usage: sar_bind_save <key> [save_name]\n")
 {
     if (args.ArgC() != 3) {
         Console::Print("sar_bind_save <key> [save_name] : Automatic save rebinding when server has loaded. File indexing will be synced when recording demos.\n");
@@ -30,7 +31,10 @@ void BindSaveRebinder(const CCommand& args)
     Rebinder::SetSaveBind(button, args[2]);
     Rebinder::RebindSave();
 }
-void BindReloadRebinder(const CCommand& args)
+
+CON_COMMAND(sar_bind_reload,
+    "Automatic save-reload rebinding when server has loaded. File indexing will be synced when recording demos. "
+    "Usage: sar_bind_reload <key> [save_name]\n")
 {
     if (args.ArgC() != 3) {
         Console::Print("sar_bind_reload <key> [save_name] : Automatic save-reload rebinding when server has loaded. File indexing will be synced when recording demos.\n");
@@ -53,7 +57,9 @@ void BindReloadRebinder(const CCommand& args)
     Rebinder::SetReloadBind(button, args[2]);
     Rebinder::RebindReload();
 }
-void UnbindSaveRebinder()
+
+CON_COMMAND(sar_unbind_save,
+    "Unbinds current save rebinder.\n")
 {
     if (!Rebinder::IsSaveBinding) {
         Console::Print("There's nothing to unbind.\n");
@@ -61,12 +67,13 @@ void UnbindSaveRebinder()
     }
     Rebinder::ResetSaveBind();
 }
-void UnbindReloadRebinder()
+
+CON_COMMAND(sar_unbind_reload,
+    "Unbinds current save-reload rebinder.\n")
 {
     if (!Rebinder::IsReloadBinding) {
         Console::Print("There's nothing to unbind.\n");
         return;
     }
     Rebinder::ResetReloadBind();
-}
 }

@@ -1,6 +1,4 @@
 #pragma once
-#include "vmthook/vmthook.h"
-
 #include "Game.hpp"
 #include "Interfaces.hpp"
 #include "Offsets.hpp"
@@ -8,13 +6,9 @@
 
 namespace Scheme {
 
-using _GetIScheme = void*(__thiscall*)(void* thisptr, unsigned long scheme);
-using _GetFont = unsigned long(__thiscall*)(void* thisptr, const char* fontName, bool proportional);
+VMT g_pScheme;
 
-std::unique_ptr<VMTHook> g_pVGuiSchemeManager;
-_GetIScheme GetIScheme;
-
-std::unique_ptr<VMTHook> g_pScheme;
+using _GetFont = unsigned long(__CALL*)(void* thisptr, const char* fontName, bool proportional);
 _GetFont GetFont;
 
 unsigned long GetDefaultFont()
@@ -25,12 +19,18 @@ unsigned long GetDefaultFont()
 void Hook()
 {
     if (Interfaces::ISchemeManager) {
-        g_pVGuiSchemeManager = std::make_unique<VMTHook>(Interfaces::ISchemeManager);
-        GetIScheme = g_pVGuiSchemeManager->GetOriginalFunction<_GetIScheme>(Offsets::GetIScheme);
+        auto g_pVGuiSchemeManager = std::make_unique<VMTHook>(Interfaces::ISchemeManager);
+        using _GetIScheme = void*(__CALL*)(void* thisptr, unsigned long scheme);
+        auto GetIScheme = g_pVGuiSchemeManager->GetOriginalFunction<_GetIScheme>(Offsets::GetIScheme);
 
         // Default scheme is 1
-        g_pScheme = std::make_unique<VMTHook>(GetIScheme(g_pVGuiSchemeManager->GetThisPtr(), 1));
-        GetFont = g_pScheme->GetOriginalFunction<_GetFont>(Offsets::GetFont);
+        if (SAR::NewVMT(GetIScheme(g_pVGuiSchemeManager->GetThisPtr(), 1), g_pScheme)) {
+            GetFont = g_pScheme->GetOriginalFunction<_GetFont>(Offsets::GetFont);
+        }
     }
+}
+void Unhook()
+{
+    SAR::DeleteVMT(g_pScheme);
 }
 }

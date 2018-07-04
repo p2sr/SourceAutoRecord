@@ -1,6 +1,4 @@
 #pragma once
-#include "vmthook/vmthook.h"
-
 #include "Console.hpp"
 #include "Engine.hpp"
 
@@ -17,11 +15,10 @@ _GetGameDirectory GetGameDirectory;
 
 namespace DemoPlayer {
 
-    using _IsPlayingBack = bool(__thiscall*)(void* thisptr);
-    using _GetPlaybackTick = int(__thiscall*)(void* thisptr);
-    using _StartPlayback = int(__thiscall*)(void* thisptr, const char* filename, bool bAsTimeDemo);
+    VMT s_ClientDemoPlayer;
 
-    std::unique_ptr<VMTHook> s_ClientDemoPlayer;
+    using _IsPlayingBack = bool(__CALL*)(void* thisptr);
+    using _GetPlaybackTick = int(__CALL*)(void* thisptr);
 
     _IsPlayingBack IsPlayingBack;
     _GetPlaybackTick GetPlaybackTick;
@@ -37,45 +34,43 @@ namespace DemoPlayer {
         return IsPlayingBack(s_ClientDemoPlayer->GetThisPtr());
     }
 
-    namespace Original {
-        _StartPlayback StartPlayback;
-    }
+    // CDemoRecorder::StartPlayback
+    DETOUR(StartPlayback, const char* filename, bool bAsTimeDemo)
+    {
+        auto result = Original::StartPlayback(thisptr, filename, bAsTimeDemo);
 
-    namespace Detour {
-        int __fastcall StartPlayback(void* thisptr, int edx, const char* filename, bool bAsTimeDemo)
-        {
-            auto result = Original::StartPlayback(thisptr, filename, bAsTimeDemo);
-
-            if (result) {
-                DemoParser parser;
-                Demo demo;
-                auto dir = std::string(GetGameDirectory()) + std::string("/") + std::string(DemoName);
-                if (parser.Parse(dir, &demo)) {
-                    parser.Adjust(&demo);
-                    Console::Print("Client: %s\n", demo.clientName);
-                    Console::Print("Map: %s\n", demo.mapName);
-                    Console::Print("Ticks: %i\n", demo.playbackTicks);
-                    Console::Print("Time: %.3f\n", demo.playbackTime);
-                    Console::Print("Tickrate: %i\n", demo.Tickrate());
-                } else {
-                    Console::Print("Could not parse \"%s\"!\n", DemoName);
-                }
+        if (result) {
+            DemoParser parser;
+            Demo demo;
+            auto dir = std::string(GetGameDirectory()) + std::string("/") + std::string(DemoName);
+            if (parser.Parse(dir, &demo)) {
+                parser.Adjust(&demo);
+                Console::Print("Client: %s\n", demo.clientName);
+                Console::Print("Map: %s\n", demo.mapName);
+                Console::Print("Ticks: %i\n", demo.playbackTicks);
+                Console::Print("Time: %.3f\n", demo.playbackTime);
+                Console::Print("Tickrate: %i\n", demo.Tickrate());
+            } else {
+                Console::Print("Could not parse \"%s\"!\n", DemoName);
             }
-            return result;
         }
+        return result;
     }
 
     void Hook(void* demoplayer)
     {
-        if (demoplayer) {
-            s_ClientDemoPlayer = std::make_unique<VMTHook>(demoplayer);
-            s_ClientDemoPlayer->HookFunction((void*)Detour::StartPlayback, Offsets::StartPlayback);
-            Original::StartPlayback = s_ClientDemoPlayer->GetOriginalFunction<_StartPlayback>(Offsets::StartPlayback);
+        if (SAR::NewVMT(demoplayer, s_ClientDemoPlayer)) {
+            HOOK(s_ClientDemoPlayer, StartPlayback);
 
             GetPlaybackTick = s_ClientDemoPlayer->GetOriginalFunction<_GetPlaybackTick>(Offsets::GetPlaybackTick);
             IsPlayingBack = s_ClientDemoPlayer->GetOriginalFunction<_IsPlayingBack>(Offsets::IsPlayingBack);
             DemoName = reinterpret_cast<char*>((uintptr_t)demoplayer + Offsets::m_szFileName);
         }
+    }
+    void Unhook()
+    {
+        UNHOOK(s_ClientDemoPlayer, StartPlayback);
+        SAR::DeleteVMT(s_ClientDemoPlayer);
     }
 }
 }

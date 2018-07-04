@@ -3,9 +3,9 @@
 
 #include "Features/Stats.hpp"
 
-namespace Callbacks {
+#include "Command.hpp"
 
-void PrintJumpStats()
+CON_COMMAND(sar_stats_jump, "Prints jump stats.\n")
 {
     std::string type;
     if (Stats::Jumps::Type == Stats::ResultType::VEC2) {
@@ -18,11 +18,13 @@ void PrintJumpStats()
     Console::Print("Peak: %.3f %s\n", Stats::Jumps::DistancePeak, type.c_str());
     Console::Print("Jumps: %i\n", Stats::Jumps::Total);
 }
-void PrintStepStats()
+
+CON_COMMAND(sar_stats_steps, "Prints total amount of steps.\n")
 {
     Console::Print("Steps: %i\n", Stats::Jumps::Total);
 }
-void PrintVelocityStats()
+
+CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
 {
     auto current = Client::GetLocalVelocity();
 
@@ -36,20 +38,23 @@ void PrintVelocityStats()
     Console::Print("Current: %.3f/%.3f (vec2/vec3)", current.Length2D(), current.Length());
     Console::Print("Peak: %.3f %s\n", Stats::Velocity::Peak, type.c_str());
 }
-void ResetJumpStats()
+
+CON_COMMAND(sar_stats_jumps_reset, "Resets total jump count and jump distance peak.\n")
 {
     Stats::Jumps::Reset();
 }
-void ResetStepStats()
+
+CON_COMMAND(sar_stats_steps_reset, "Resets total step count.\n")
 {
     Stats::Steps::Reset();
 }
-void ResetVelocityStats()
+
+CON_COMMAND(sar_stats_velocity_reset, "Resets velocity peak.\n")
 {
     Stats::Velocity::Reset();
 }
-void ResetAllStats()
+
+CON_COMMAND(sar_stats_reset, "Resets all saved stats.\n")
 {
     Stats::ResetAll();
-}
 }

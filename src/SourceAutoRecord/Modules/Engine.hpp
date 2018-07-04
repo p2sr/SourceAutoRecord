@@ -1,8 +1,4 @@
 #pragma once
-#include <string>
-
-#include "vmthook/vmthook.h"
-
 #include "Console.hpp"
 #include "DemoPlayer.hpp"
 #include "DemoRecorder.hpp"
@@ -19,20 +15,15 @@
 #include "Interfaces.hpp"
 #include "Utils.hpp"
 
-using namespace Commands;
-
 namespace Engine {
 
-using _ClientCmd = int(__thiscall*)(void* thisptr, const char* szCmdString);
-using _Disconnect = int(__thiscall*)(void* thisptr, int bShowMainMenu);
-using _Disconnect2 = int(__thiscall*)(void* thisptr, int* unk1, char bShowMainMenu);
-using _SetSignonState = int(__thiscall*)(void* thisptr, int state, int count, void* unk);
-using _GetLocalPlayer = int(__thiscall*)(void* thisptr);
-using _GetViewAngles = int(__thiscall*)(void* thisptr, QAngle& va);
-using _SetViewAngles = int(__thiscall*)(void* thisptr, QAngle& va);
+VMT engine;
+VMT cl;
 
-std::unique_ptr<VMTHook> engine;
-std::unique_ptr<VMTHook> cl;
+using _ClientCmd = int(__CALL*)(void* thisptr, const char* szCmdString);
+using _GetLocalPlayer = int(__CALL*)(void* thisptr);
+using _GetViewAngles = int(__CALL*)(void* thisptr, QAngle& va);
+using _SetViewAngles = int(__CALL*)(void* thisptr, QAngle& va);
 
 _ClientCmd ClientCmd;
 _GetLocalPlayer GetLocalPlayer;
@@ -133,84 +124,78 @@ void SessionEnded()
     IsInGame = false;
 }
 
-namespace Original {
-    _Disconnect Disconnect;
-    _Disconnect2 Disconnect2;
-    _SetSignonState SetSignonState;
-}
-
 namespace Detour {
     int LastState;
+}
 
-    int __fastcall Disconnect(void* thisptr, int edx, bool bShowMainMenu)
-    {
+// CClientState::Disconnect
+DETOUR(Disconnect, bool bShowMainMenu)
+{
+    SessionEnded();
+    return Original::Disconnect(thisptr, bShowMainMenu);
+}
+DETOUR(Disconnect2, int* unk, bool bShowMainMenu)
+{
+    SessionEnded();
+    return Original::Disconnect2(thisptr, unk, bShowMainMenu);
+}
+
+// CClientState::SetSignonState
+DETOUR(SetSignonState, int state, int count, void* unk)
+{
+    if (state != LastState && LastState == SignonState::Full) {
         SessionEnded();
-        return Original::Disconnect(thisptr, bShowMainMenu);
     }
-    int __fastcall Disconnect2(void* thisptr, int edx, int* unk1, bool bShowMainMenu)
-    {
-        SessionEnded();
-        return Original::Disconnect2(thisptr, unk1, bShowMainMenu);
-    }
-    int __fastcall SetSignonState(void* thisptr, int edx, int state, int count, void* unk)
-    {
-        if (state != LastState && LastState == SignonState::Full) {
-            SessionEnded();
-        }
 
-        // Demo recorder starts syncing from this tick
-        if (state == SignonState::Full) {
-            SessionStarted();
-        }
-
-        LastState = state;
-        return Original::SetSignonState(thisptr, state, count, unk);
+    // Demo recorder starts syncing from this tick
+    if (state == SignonState::Full) {
+        SessionStarted();
     }
+
+    LastState = state;
+    return Original::SetSignonState(thisptr, state, count, unk);
 }
 
 void Hook()
 {
-    if (Interfaces::IVEngineClient) {
-        engine = std::make_unique<VMTHook>(Interfaces::IVEngineClient);
+    if (SAR::NewVMT(Interfaces::IVEngineClient, engine)) {
         ClientCmd = engine->GetOriginalFunction<_ClientCmd>(Offsets::ClientCmd);
         GetLocalPlayer = engine->GetOriginalFunction<_GetLocalPlayer>(Offsets::GetLocalPlayer);
         GetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::GetViewAngles);
         SetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::SetViewAngles);
         GetGameDirectory = engine->GetOriginalFunction<_GetGameDirectory>(Offsets::GetGameDirectory);
 
+        void* clPtr = nullptr;
         if (Game::IsPortal2Engine()) {
             typedef void* (*_GetClientState)();
             auto addr = Memory::ReadAbsoluteAddress((uintptr_t)ClientCmd + Offsets::GetClientStateFunction);
             auto GetClientState = reinterpret_cast<_GetClientState>(addr);
-            cl = std::make_unique<VMTHook>(GetClientState());
-        } else {
+            clPtr = GetClientState();
+        } else if (Game::IsHalfLife2Engine()) {
             auto ServerCmdKeyValues = engine->GetOriginalFunction<uintptr_t>(Offsets::ServerCmdKeyValues);
-            auto ptr = *reinterpret_cast<void**>(ServerCmdKeyValues + Offsets::cl);
-            cl = std::make_unique<VMTHook>(ptr);
+            clPtr = *reinterpret_cast<void**>(ServerCmdKeyValues + Offsets::cl);
         }
 
-        // Before Disconnect in VMT :^)
-        cl->HookFunction((void*)Detour::SetSignonState, Offsets::Disconnect - 1);
-        Original::SetSignonState = cl->GetOriginalFunction<_SetSignonState>(Offsets::Disconnect - 1);
+        if (SAR::NewVMT(clPtr, cl)) {
+            HOOK_O(cl, SetSignonState, Offsets::Disconnect - 1);
 
-        uintptr_t disconnect;
-        if (Game::IsPortal2Engine()) {
-            cl->HookFunction((void*)Detour::Disconnect, Offsets::Disconnect);
-            Original::Disconnect = cl->GetOriginalFunction<_Disconnect>(Offsets::Disconnect);
-            disconnect = (uintptr_t)Original::Disconnect;
-        } else {
-            cl->HookFunction((void*)Detour::Disconnect2, Offsets::Disconnect);
-            Original::Disconnect2 = cl->GetOriginalFunction<_Disconnect2>(Offsets::Disconnect);
-            disconnect = (uintptr_t)Original::Disconnect2;
+            uintptr_t disconnect;
+            if (Game::IsPortal2Engine()) {
+                HOOK(cl, Disconnect);
+                disconnect = (uintptr_t)Original::Disconnect;
+            } else {
+                HOOK_O(cl, Disconnect2, Offsets::Disconnect);
+                disconnect = (uintptr_t)Original::Disconnect2;
+            }
+
+            DemoPlayer::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demoplayer));
+            DemoRecorder::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demorecorder));
+
+            auto IServerMessageHandler_VMT = *reinterpret_cast<uintptr_t*>((uintptr_t)cl->GetThisPtr() + 8);
+            auto ProcessTick = *reinterpret_cast<uintptr_t*>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
+            tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
+            interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
         }
-
-        DemoPlayer::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demoplayer));
-        DemoRecorder::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demorecorder));
-
-        auto IServerMessageHandler_VMT = *reinterpret_cast<uintptr_t*>((uintptr_t)cl->GetThisPtr() + 8);
-        auto ProcessTick = *reinterpret_cast<uintptr_t*>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
-        tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
-        interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
     }
 
     if (Interfaces::IEngineTool) {
@@ -223,5 +208,16 @@ void Hook()
     if (ldg.Found) {
         m_bLoadgame = *reinterpret_cast<bool**>(ldg.Address);
     }
+}
+void Unhook()
+{
+    UNHOOK(cl, Disconnect);
+    //UNHOOK(cl, SetSignonState);
+
+    SAR::DeleteVMT(engine);
+    SAR::DeleteVMT(cl);
+
+    DemoPlayer::Unhook();
+    DemoRecorder::Unhook();
 }
 }

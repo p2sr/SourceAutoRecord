@@ -66,16 +66,16 @@ void* Get(const char* filename, const char* interfaceSymbol)
 }
 void Init()
 {
-    IVEngineClient = Get("engine.dll", "VEngineClient0");
-    IEngineVGui = Get("engine.dll", "VEngineVGui0");
-    IEngineTool = Get("engine.dll", "VENGINETOOL0");
-    IInputSystem = Get("inputsystem.dll", "InputSystemVersion0");
-    ISurface = Get("vguimatsurface.dll", "VGUI_Surface0");
-    ISchemeManager = Get("vgui2.dll", "VGUI_Scheme0");
-    IBaseClientDLL = Get("client.dll", "VClient0");
-    IClientEntityList = Get("client.dll", "VClientEntityList0");
-    IGameMovement = Get("server.dll", "GameMovement0");
-    IServerGameDLL = Get("server.dll", "ServerGameDLL0");
-    ICVar = Get("vstdlib.dll", "VEngineCvar0");
+    IVEngineClient = Get(MODULE("engine"), "VEngineClient0");
+    IEngineVGui = Get(MODULE("engine"), "VEngineVGui0");
+    IEngineTool = Get(MODULE("engine"), "VENGINETOOL0");
+    IInputSystem = Get(MODULE("inputsystem"), "InputSystemVersion0");
+    ISurface = Get(MODULE("vguimatsurface"), "VGUI_Surface0");
+    ISchemeManager = Get(MODULE("vgui2"), "VGUI_Scheme0");
+    IBaseClientDLL = Get(MODULE("client"), "VClient0");
+    IClientEntityList = Get(MODULE("client"), "VClientEntityList0");
+    IGameMovement = Get(MODULE("server"), "GameMovement0");
+    IServerGameDLL = Get(MODULE("server"), "ServerGameDLL0");
+    ICVar = Get(MODULE("vstdlib"), "VEngineCvar0");
 }
 }

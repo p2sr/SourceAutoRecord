@@ -14,7 +14,11 @@
 #include "Game.hpp"
 #include "Interfaces.hpp"
 
+#ifdef _WIN32
 unsigned __stdcall Main(void* args)
+#else
+int __attribute__((constructor)) Main()
+#endif
 {
     if (!Console::Init())
         return 1;
@@ -24,8 +28,7 @@ unsigned __stdcall Main(void* args)
 
    if (Tier1::Init()) {
 
-        Cheats::Create();
-        Cheats::UnlockAll();
+        Cheats::Init();
 
         Client::Hook();
         Engine::Hook();
@@ -47,11 +50,38 @@ unsigned __stdcall Main(void* args)
     return 1;
 }
 
+void Cleanup()
+{
+    VGui::Unhook();
+    Surface::Unhook();
+    Server::Unhook();
+    Scheme::Unhook();
+    InputSystem::Unhook();
+    Engine::Unhook();
+    Client::Unhook();
+
+    Cheats::Delete();
+
+    Tier1::Shutdown();
+
+    Console::Print("SAR: Cya!\n");
+}
+
+#ifdef _WIN32
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved)
 {
     if (reason == DLL_PROCESS_ATTACH) {
         DisableThreadLibraryCalls(module);
         CreateThread(0, 0, LPTHREAD_START_ROUTINE(Main), 0, 0, 0);
     }
+    else if (reason == DLL_PROCESS_DETACH) {
+        Cleanup();
+    }
     return TRUE;
 }
+#else
+int __attribute__((constructor)) Exit()
+{
+    Cleanup();
+}
+#endif

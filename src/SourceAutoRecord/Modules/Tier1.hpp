@@ -1,5 +1,5 @@
 #pragma once
-#include "vmthook/vmthook.h"
+#include "Utils.hpp"
 
 #define FCVAR_DEVELOPMENTONLY (1 << 1)
 #define FCVAR_HIDDEN (1 << 4)
@@ -11,31 +11,21 @@
 
 namespace Tier1 {
 
+VMT g_pCVar;
+
 struct CCommand;
+struct ConCommandBase;
 
-using _CommandCallback = void (*)();
-using _CommandCallbackArgs = void (*)(const CCommand& args);
-using _CommandCallbackCompletion = int (*)(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
-using _ConCommand = void(__thiscall*)(void* thisptr, const char* name, void* callback, const char* helpstr, int flags, int* compfunc);
-using _ConVar = void(__thiscall*)(void* thisptr, const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max);
-using _InternalSetValue = void(__thiscall*)(void* thisptr, const char* value);
-using _InternalSetFloatValue = void(__thiscall*)(void* thisptr, float value);
-using _InternalSetIntValue = void(__thiscall*)(void* thisptr, int value);
-using _FindVar = void*(__thiscall*)(void* thisptr, const char* name);
-using _AutoCompletionFunc = int(__thiscall*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
-
-std::unique_ptr<VMTHook> g_pCVar;
-
-namespace Original {
-    _ConCommand ConCommandCtor;
-    _ConCommand ConCommandCtor2;
-    _ConVar ConVarCtor;
-    _FindVar FindVar;
-    _AutoCompletionFunc AutoCompletionFunc;
-}
-
-int ConCommandCount = 0;
-int ConVarCount = 0;
+using _CommandCallback = void (*)(const CCommand& args);
+using _CommandCompletionCallback = int (*)(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+using _ConCommand = void(__CALL*)(void* thisptr, const char* name, void* callback, const char* helpstr, int flags, int* compfunc);
+using _ConVar = void(__CALL*)(void* thisptr, const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max);
+using _InternalSetValue = void(__CALL*)(void* thisptr, const char* value);
+using _InternalSetFloatValue = void(__CALL*)(void* thisptr, float value);
+using _InternalSetIntValue = void(__CALL*)(void* thisptr, int value);
+using _UnregisterConCommand = void(__CALL*)(void* thisptr, ConCommandBase* pCommandBase);
+using _FindVar = void*(__CALL*)(void* thisptr, const char* name);
+using _AutoCompletionFunc = int(__CALL*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
 struct ConCommandBase {
     void* VMT;
@@ -43,7 +33,7 @@ struct ConCommandBase {
     bool m_bRegistered;
     const char* m_pszName;
     const char* m_pszHelpString;
-    int flags;
+    int m_nFlags;
 };
 
 struct CCommand {
@@ -107,6 +97,15 @@ struct ConVar : ConCommandBase {
     int unk4;
 };
 
+_ConCommand ConCommandCtor;
+_ConVar ConVarCtor;
+_UnregisterConCommand UnregisterConCommand;
+_FindVar FindVar;
+
+namespace Original {
+    _AutoCompletionFunc AutoCompletionFunc;
+}
+
 struct CBaseAutoCompleteFileList {
     const char* m_pszCommandName;
     const char* m_pszSubDir;
@@ -126,21 +125,19 @@ struct CBaseAutoCompleteFileList {
 
 bool Init()
 {
-    auto cnc = SAR::Find("ConCommand_Ctor1");
-    auto cnc2 = SAR::Find("ConCommand_Ctor2");
-    if (cnc.Found && cnc2.Found) {
-        Original::ConCommandCtor = reinterpret_cast<_ConCommand>(cnc.Address);
-        Original::ConCommandCtor2 = reinterpret_cast<_ConCommand>(cnc2.Address);
+    auto cnc = SAR::Find("ConCommand_Ctor2");
+    if (cnc.Found) {
+        ConCommandCtor = reinterpret_cast<_ConCommand>(cnc.Address);
     }
 
     auto cnv = SAR::Find("ConVar_Ctor3");
     if (cnv.Found) {
-        Original::ConVarCtor = reinterpret_cast<_ConVar>(cnv.Address);
+        ConVarCtor = reinterpret_cast<_ConVar>(cnv.Address);
     }
 
-    if (Interfaces::ICVar) {
-        g_pCVar = std::make_unique<VMTHook>(Interfaces::ICVar);
-        Original::FindVar = g_pCVar->GetOriginalFunction<_FindVar>(Offsets::FindVar);
+    if (SAR::NewVMT(Interfaces::ICVar, g_pCVar)) {
+        FindVar = g_pCVar->GetOriginalFunction<_FindVar>(Offsets::FindVar);
+        UnregisterConCommand = g_pCVar->GetOriginalFunction<_UnregisterConCommand>(Offsets::UnregisterConCommand);
     }
 
     auto acf = SAR::Find("AutoCompletionFunc");
@@ -148,6 +145,10 @@ bool Init()
         Original::AutoCompletionFunc = reinterpret_cast<_AutoCompletionFunc>(acf.Address);
     }
 
-    return cnc.Found && cnc2.Found && cnv.Found && Interfaces::ICVar && acf.Found;
+    return cnc.Found && cnv.Found && Interfaces::ICVar && acf.Found;
+}
+void Shutdown()
+{
+    SAR::DeleteVMT(g_pCVar);
 }
 }
