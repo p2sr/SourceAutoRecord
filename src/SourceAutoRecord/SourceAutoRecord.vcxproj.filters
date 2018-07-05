@@ -147,9 +147,6 @@
     <ClInclude Include="Utils\Math.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\Memory.hpp">
-      <Filter>SourceAutoRecord\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\SDK.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
@@ -195,9 +192,6 @@
     <ClInclude Include="Commands\Binding.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
-    <ClInclude Include="Commands\Cheats.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
     <ClInclude Include="Commands\Config.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
@@ -224,6 +218,12 @@
     </ClInclude>
     <ClInclude Include="Plugin.hpp">
       <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Memory.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Teleporter.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

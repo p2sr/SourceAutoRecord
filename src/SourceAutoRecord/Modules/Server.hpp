@@ -4,7 +4,7 @@
 #include "Features/Routing.hpp"
 #include "Features/StepCounter.hpp"
 
-#include "Commands.hpp"
+#include "Cheats.hpp"
 #include "Interfaces.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
@@ -17,13 +17,11 @@
 
 #define MOVETYPE_NOCLIP 8
 
-using namespace Commands;
-
 namespace Server {
 
 VMT g_GameMovement;
 
-using _UTIL_PlayerByIndex = void*(__CALL*)(int index);
+using _UTIL_PlayerByIndex = void*(__func*)(int index);
 _UTIL_PlayerByIndex UTIL_PlayerByIndex;
 
 void* gpGlobals;
@@ -49,7 +47,7 @@ DETOUR_T(bool, CheckJumpButton)
     auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
     auto m_nOldButtons = reinterpret_cast<int*>((uintptr_t)mv + Offsets::m_nOldButtons);
 
-    auto enabled = (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool();
+    auto enabled = (!Cheats::sv_bonus_challenge.GetBool() || Cheats::sv_cheats.GetBool()) && Cheats::sar_autojump.GetBool();
     auto stored = 0;
 
     if (enabled) {
@@ -99,7 +97,7 @@ DETOUR(PlayerMove)
         && m_fFlags & FL_ONGROUND
         && m_MoveType != MOVETYPE_NOCLIP) {
 
-        Stats::Jumps::EndTrace(Client::GetAbsOrigin(), sar_stats_jumps_xy.GetBool());
+        Stats::Jumps::EndTrace(Client::GetAbsOrigin(), Cheats::sar_stats_jumps_xy.GetBool());
     }
 
     StepCounter::ReduceTimer(frametime);
@@ -110,12 +108,12 @@ DETOUR(PlayerMove)
         && m_vecVelocity.Length2D() > 0.0001f
         && m_pSurfaceData
         && m_MoveType != MOVETYPE_NOCLIP
-        && sv_footsteps.GetFloat()) {
+        && Cheats::sv_footsteps.GetFloat()) {
 
         StepCounter::Increment(m_fFlags, m_vecVelocity, m_nWaterLevel);
     }
 
-    Stats::Velocity::Save(Client::GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
+    Stats::Velocity::Save(Client::GetLocalVelocity(), Cheats::sar_stats_velocity_peak_xy.GetBool());
 
     return Original::PlayerMove(thisptr);
 }
@@ -123,7 +121,7 @@ DETOUR(PlayerMove)
 // CGameMovement::FinishGravity
 DETOUR(FinishGravity)
 {
-    if (CallFromCheckJumpButton && sar_jumpboost.GetBool()) {
+    if (CallFromCheckJumpButton && Cheats::sar_jumpboost.GetBool()) {
         auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
         auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
 
@@ -139,7 +137,7 @@ DETOUR(FinishGravity)
         float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
         float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
 
-        if (sar_jumpboost.GetInt() == 1) {
+        if (Cheats::sar_jumpboost.GetInt() == 1) {
             if (flNewSpeed > flMaxSpeed) {
                 flSpeedAddition -= flNewSpeed - flMaxSpeed;
             }
@@ -157,7 +155,7 @@ DETOUR(FinishGravity)
 // CGameMovement::AirMove
 DETOUR_B(AirMove)
 {
-    if (sar_aircontrol.GetBool()) {
+    if (Cheats::sar_aircontrol.GetBool()) {
         return Original::AirMoveBase(thisptr);
     }
     return Original::AirMove(thisptr);

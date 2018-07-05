@@ -7,6 +7,13 @@
 #include GAME(TheBeginnersGuide)
 #include GAME(TheStanleyParable)
 
+#define PROC_IS(name, game) \
+    if (proc == name) { \
+        Version = SourceGame::game; \
+        game::Patterns(); \
+        game::Offsets(); \
+    }
+
 namespace Game {
 
 enum SourceGame {
@@ -20,26 +27,23 @@ enum SourceGame {
 
 SourceGame Version = SourceGame::Unknown;
 
-void Init()
+bool IsSupported()
 {
-    auto exe = Memory::GetProcessName();
-    if (exe == "portal2.exe") {
-        Version = SourceGame::Portal2;
-        Portal2::Patterns();
-        Portal2::Offsets();
-    } else if (exe == "hl2.exe") {
-        Version = SourceGame::HalfLife2;
-        HalfLife2::Patterns();
-        HalfLife2::Offsets();
-    } else if (exe == "stanley.exe") {
-        Version = SourceGame::TheStanleyParable;
-        TheStanleyParable::Patterns();
-        TheStanleyParable::Offsets();
-    } else if (exe == "beginnersguide.exe") {
-        Version = SourceGame::TheBeginnersGuide;
-        TheBeginnersGuide::Patterns();
-        TheBeginnersGuide::Offsets();
-    }
+    auto proc = Memory::GetProcessName();
+
+#ifdef _WIN32
+    PROC_IS("portal2.exe", Portal2);
+    PROC_IS("hl2.exe", HalfLife2);
+    PROC_IS("stanley.exe", TheStanleyParable);
+    PROC_IS("beginnersguide.exe", TheBeginnersGuide);
+#else
+    PROC_IS("portal2_linx", Portal2);
+    PROC_IS("hl2_linux", HalfLife2);
+    PROC_IS("stanley_linux", TheStanleyParable);
+    PROC_IS("beginnersguide.bin", TheBeginnersGuide);
+#endif
+
+    return Version != SourceGame::Unknown;
 }
 const char* GetVersion()
 {
@@ -74,7 +78,7 @@ bool HasChallengeMode()
 {
     return Version == SourceGame::Portal2;
 }
-bool JumpingIsDisabled()
+bool HasJumpDisabled()
 {
     return Version == SourceGame::TheStanleyParable;
 }

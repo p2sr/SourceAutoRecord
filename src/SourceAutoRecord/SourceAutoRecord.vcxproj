@@ -168,7 +168,7 @@
     <ClInclude Include="Commands.hpp" />
     <ClInclude Include="Commands\Bhop.hpp" />
     <ClInclude Include="Commands\Binding.hpp" />
-    <ClInclude Include="Commands\Cheats.hpp" />
+    <ClInclude Include="Commands\Teleporter.hpp" />
     <ClInclude Include="Commands\Config.hpp" />
     <ClInclude Include="Commands\Demo.hpp" />
     <ClInclude Include="Commands\Info.hpp" />

@@ -4,6 +4,7 @@
 
 #include "Features/Summary.hpp"
 
+#include "Cheats.hpp"
 #include "Command.hpp"
 
 CON_COMMAND(sar_sum_here, "Starts counting total ticks of sessions.\n")
@@ -22,7 +23,7 @@ CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
         return;
     }
 
-    if (sar_sum_during_session.GetBool()) {
+    if (Cheats::sar_sum_during_session.GetBool()) {
         int tick = Engine::GetTick();
         Summary::Add(tick, Engine::GetTime(tick), *Engine::m_szLevelName);
     }

@@ -15,9 +15,8 @@ void Patterns()
 
     // engine.so
 
-    Inherit("ConCommand_Ctor1", "Half-Life 2 Build 2257546", "ConCommand::ConCommand");
-    Inherit("ConCommand_Ctor2", "Half-Life 2 Build 2257546", "ConCommand::ConCommand");
-    Inherit("ConVar_Ctor3", "Half-Life 2 Build 2257546", "ConVar::ConVar");
+    Inherit("ConCommandCtor", "Half-Life 2 Build 2257546", "ConCommand::ConCommand");
+    Inherit("ConVarCtor", "Half-Life 2 Build 2257546", "ConVar::ConVar");
     Inherit("m_bLoadgame", "Half-Life 2 Build 2257546", "CGameClient::ActivatePlayer");
     Inherit("Key_SetBinding", "Half-Life 2 Build 2257546", "Key_SetBinding");
     Inherit("AutoCompletionFunc", "Half-Life 2 Build 2257546", "CBaseAutoCompleteFileList::AutoCompletionFunc");

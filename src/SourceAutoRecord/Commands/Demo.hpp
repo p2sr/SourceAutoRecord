@@ -5,6 +5,7 @@
 
 #include "Features/Demo.hpp"
 
+#include "Cheats.hpp"
 #include "Command.hpp"
 
 CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "", 0, 0, dem)
@@ -27,7 +28,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "", 0, 0, dem)
     }
 
     DemoParser parser;
-    parser.outputMode = sar_time_demo_dev.GetInt();
+    parser.outputMode = Cheats::sar_time_demo_dev.GetInt();
 
     Demo demo;
     auto dir = std::string(Engine::GetGameDirectory()) + std::string("/") + name;

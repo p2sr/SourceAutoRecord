@@ -22,7 +22,7 @@ typedef std::unique_ptr<VMTHook> VMT;
 #ifdef _WIN32
 #define MODULE_EXTENSION ".dll"
 #define GAME_PATH(x) _GAME_PATH(Games/Windows/##x.hpp)
-#define __CALL __thiscall
+#define __func __thiscall
 
 #define DETOUR(name, ...) \
     using _##name = int(__thiscall*)(void* thisptr, __VA_ARGS__); \
@@ -42,7 +42,7 @@ typedef std::unique_ptr<VMTHook> VMT;
 #else
 #define MODULE_EXTENSION ".so"
 #define GAME_PATH(x) _GAME_PATH(Games/Linux/##x.hpp)
-#define __CALL __attribute__((__cdecl__))
+#define __func __attribute__((__cdecl__))
 #define __cdecl __attribute__((__cdecl__))
 #define __stdcall __attribute__((__stdcall__))
 #define __fastcall __attribute__((__fastcall__))

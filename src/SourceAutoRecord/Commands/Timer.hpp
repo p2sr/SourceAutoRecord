@@ -6,6 +6,7 @@
 #include "Features/TimerAverage.hpp"
 #include "Features/TimerCheckPoints.hpp"
 
+#include "Cheats.hpp"
 #include "Command.hpp"
 
 CON_COMMAND(sar_timer_start, "Starts timer.\n")
@@ -16,7 +17,7 @@ CON_COMMAND(sar_timer_start, "Starts timer.\n")
         Console::DevMsg("Starting timer!\n");
     Timer::Start(*Engine::tickcount);
 
-    if (sar_stats_auto_reset.GetInt() >= 2) {
+    if (Cheats::sar_stats_auto_reset.GetInt() >= 2) {
         Stats::ResetAll();
     }
 }

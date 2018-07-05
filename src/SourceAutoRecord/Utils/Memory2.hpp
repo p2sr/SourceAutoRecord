@@ -1,21 +1,13 @@
 #pragma once
-#include <cstring>
-#include <fstream>
-#include <memory>
-#include <vector>
-
-#ifdef _WIN32
-#include <tchar.h>
-#include <windows.h>
-// Last
-#include <psapi.h>
-#else
 #include <cstdint>
+#include <cstring>
 #include <dlfcn.h>
+#include <fstream>
 #include <link.h>
+#include <memory>
 #include <sys/uio.h>
 #include <unistd.h>
-#endif
+#include <vector>
 
 #define INRANGE(x, a, b) (x >= a && x <= b)
 #define getBits(x) (INRANGE((x & (~0x20)), 'A', 'F') ? ((x & (~0x20)) - 'A' + 0xA) : (INRANGE(x, '0', '9') ? x - '0' : 0))
@@ -86,38 +78,12 @@ uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_addre
 }
 
 struct ModuleInfo {
-    char name[MAX_PATH];
+    char name[64];
     uintptr_t base;
     uintptr_t size;
-    char path[MAX_PATH];
+    char path[4096];
 };
 
-#ifdef _WIN32
-bool TryGetModule(const char* moduleName, ModuleInfo* info)
-{
-    auto mHandle = GetModuleHandleA(moduleName);
-
-    char buffer[MAX_PATH];
-    if (!GetModuleFileName(mHandle, buffer, sizeof(buffer)))
-        return false;
-
-    auto temp = MODULEINFO();
-    auto pHandle = GetCurrentProcess();
-    if (!GetModuleInformation(pHandle, mHandle, &temp, sizeof(temp)))
-        return false;
-
-    auto name = std::string(buffer);
-    auto index = name.find_last_of("\\/");
-    name = name.substr(index + 1, name.length() - index);
-
-    snprintf(info->name, sizeof(info->name), "%s", name.c_str());
-    info->base = (uintptr_t)temp.lpBaseOfDll;
-    info->size = (uintptr_t)temp.SizeOfImage;
-    snprintf(info->path, sizeof(info->path), "%s", buffer);
-
-    return true;
-}
-#else
 namespace Cache {
     std::vector<ModuleInfo> Modules;
 }
@@ -152,7 +118,6 @@ bool TryGetModule(const char* moduleName, ModuleInfo* info)
 
     return false;
 }
-#endif
 
 ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
 {
@@ -206,30 +171,20 @@ ScanResult Scan(Pattern* pattern)
     return result;
 }
 
-void* GetModuleHandleByName(const char* moduleName)
+void* GetModuleHandle(const char* moduleName)
 {
     auto info = ModuleInfo();
-#ifdef _WIN32
-    return (TryGetModule(moduleName, &info)) ? GetModuleHandleA(info.path) : nullptr;
-#else
     return (TryGetModule(moduleName, &info)) ? dlopen(info.path, RTLD_NOLOAD | RTLD_NOW) : nullptr;
-#endif
 }
 
 void CloseModuleHandle(void* moduleHandle)
 {
-#ifndef _WIN32
     dlclose(moduleHandle);
-#endif
 }
 
-void* GetSymbolAddress(void* moduleHandle, const char* symbolName)
+void* GetSymbolAddress(void* moduleHandle, const char* symbol)
 {
-#ifdef _WIN32
-    return (void*)GetProcAddress((HMODULE)moduleHandle, symbolName);
-#else
     return dlsym(moduleHandle, symbol);
-#endif
 }
 
 const char* GetModulePath(const char* moduleName)
@@ -240,25 +195,19 @@ const char* GetModulePath(const char* moduleName)
 
 std::string GetProcessName()
 {
-#ifdef _WIN32
-    char temp[MAX_PATH];
-    GetModuleFileName(NULL, temp, sizeof(temp));
-#else
-    char link[32];
-    char temp[MAX_PATH] = { 0 };
+    char link[20];
+    char temp[260] = { 0 };
     sprintf(link, "/proc/%d/exe", getpid());
     readlink(link, temp, sizeof(temp));
-#endif
 
-    auto proc = std::string(temp);
-    auto index = proc.find_last_of("\\/");
+    std::string proc = std::string(temp);
+    int index = proc.find_last_of("\\/");
     proc = proc.substr(index + 1, proc.length() - index);
-
     return proc;
 }
 
 template <typename T = void*>
-inline T VMT(void* ptr, int index)
+T VMT(void* ptr, int index)
 {
     return reinterpret_cast<T>((*((void***)ptr))[index]);
 }

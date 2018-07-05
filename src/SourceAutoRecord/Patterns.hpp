@@ -30,9 +30,8 @@ void Inherit(const char* patternName, const char* version, const char* sigName)
 }
 void Init()
 {
-    Create("engine.dll", "ConVar_Ctor3");
-    Create("engine.dll", "ConCommand_Ctor1");
-    Create("engine.dll", "ConCommand_Ctor2");
+    Create("engine.dll", "ConVarCtor");
+    Create("engine.dll", "ConCommandCtor");
     Create("engine.dll", "m_bLoadgame");
     Create("engine.dll", "Key_SetBinding");
     Create("engine.dll", "AutoCompletionFunc");

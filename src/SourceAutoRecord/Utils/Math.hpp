@@ -13,6 +13,7 @@ namespace Math {
 
 inline void SinCos(float radians, float* sine, float* cosine)
 {
+#ifdef _WIN32
     _asm {
         fld DWORD PTR[radians]
         fsincos
@@ -23,6 +24,15 @@ inline void SinCos(float radians, float* sine, float* cosine)
         fstp DWORD PTR[edx]
         fstp DWORD PTR[eax]
     }
+#else
+    register double __cosr, __sinr;
+    __asm("fsincos"
+        : "=t"(__cosr), "=u"(__sinr)
+        : "0"(radians));
+
+    *sine = __sinr;
+    *cosine = __cosr;
+#endif
 }
 
 inline void AngleVectors(const QAngle& angles, Vector* forward)

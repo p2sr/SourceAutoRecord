@@ -14,17 +14,12 @@ void Patterns()
     // engine.dll
 
     // \x55\x8B\xEC\xF3\x0F\x10\x45\x00\x8B\x55\x14 xxxxxxx?xxx
-    Add("ConVar_Ctor3", "Portal 2 Build 7054",
+    Add("ConVarCtor", "Portal 2 Build 7054",
         "ConVar::ConVar",
         "55 8B EC F3 0F 10 45 ? 8B 55 14");
 
-    // \x55\x8B\xEC\x8B\x45\x0C\x53\x33\xDB\x56\x8B\xF1\x8B\x4D\x18\x80\x66\x20\xF9 xxxxxxxxxxxxxxxxxxx
-    Add("ConCommand_Ctor1", "Portal 2 Build 7054",
-        "ConCommand::ConCommand",
-        "55 8B EC 8B 45 0C 53 33 DB 56 8B F1 8B 4D 18 80 66 20 F9");
-
     // \x55\x8B\xEC\x8B\x45\x0C\x53\x33\xDB\x56\x8B\xF1\x8B\x4D\x18\x80\x4E\x20\x02 xxxxxxxxxxxxxxxxxxx
-    Add("ConCommand_Ctor2", "Portal 2 Build 7054",
+    Add("ConCommandCtor", "Portal 2 Build 7054",
         "ConCommand::ConCommand",
         "55 8B EC 8B 45 0C 53 33 DB 56 8B F1 8B 4D 18 80 4E 20 02");
 
@@ -97,7 +92,6 @@ void Offsets()
     demorecorder = 87; // CClientState::Disconnect
     GetCurrentMap = 25; // CEngineTool
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
-    GetDLLIdentifier = 9; // ConCommandBase
     UnregisterConCommand = 10; // CCvar 
 
     // vgui2.dll

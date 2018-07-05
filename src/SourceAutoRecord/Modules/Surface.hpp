@@ -8,9 +8,9 @@ namespace Surface {
 
 VMT matsurface;
 
-using _GetFontTall = int(__CALL*)(void* thisptr, unsigned long font);
+using _GetFontTall = int(__func*)(void* thisptr, unsigned long font);
 using _DrawColoredText = int(__cdecl*)(void* thisptr, unsigned long font, int x, int y, int r, int g, int b, int a, char* fmt, ...);
-using _StartDrawing = int(__CALL*)(void* thisptr);
+using _StartDrawing = int(__func*)(void* thisptr);
 using _FinishDrawing = int(__cdecl*)();
 
 _GetFontTall GetFontTall;

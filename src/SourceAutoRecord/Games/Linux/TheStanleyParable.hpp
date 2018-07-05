@@ -15,11 +15,10 @@ void Patterns()
 
     // engine.so
 
-    Inherit("ConCommand_Ctor1", "The Stanley Parable Build 6130", "ConCommand::ConCommand");
-    Inherit("ConCommand_Ctor2", "The Stanley Parable Build 6130", "ConCommand::ConCommand");
+    Inherit("ConCommandCtor", "The Stanley Parable Build 6130", "ConCommand::ConCommand");
 
     // \x55\x89\xE5\x56\x53\x83\xEC\x00\x8B\x45\x00\x8B\x5D\x00\x8B\x55\x00\xF3\x0F\x10\x45\x00\x0F\xB6\xC0\xC6\x43\x00\x00 xxxxxxx?xx?xx?xx?xxxx?xxxxx??
-    Add("ConVar_Ctor3", "The Stanley Parable Build 6130",
+    Add("ConVarCtor", "The Stanley Parable Build 6130",
         "ConVar::ConVar",
         "55 89 E5 56 53 83 EC ? 8B 45 ? 8B 5D ? 8B 55 ? F3 0F 10 45 ? 0F B6 C0 C6 43 ? ? ");
 

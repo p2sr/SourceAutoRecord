@@ -11,66 +11,61 @@ void Patterns()
 {
     Init();
 
-    // engine.dll
+    // engine.so
 
-    // \x55\x8B\xEC\xF3\x0F\x10\x45\x00\x8B\x55\x14 xxxxxxx?xxx
-    Add("ConVar_Ctor3", "Portal 2 Build 7054",
+    // \x55\x89\xE5\x53\x83\xEC\x00\x8B\x5D\x00\x8B\x45\x00\xC6\x43\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x03\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00\xC7\x43\x00\x00\x00\x00\x00 xxxxxx?xx?xx?xx??xx?????xx?????xx?????xx?????xx????xx?????xx?????
+    Add("ConVarCtor", "Portal 2 Build 7054",
         "ConVar::ConVar",
-        "55 8B EC F3 0F 10 45 ? 8B 55 14");
+        "55 89 E5 53 83 EC ? 8B 5D ? 8B 45 ? C6 43 ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? C7 03 ? ? ? ? C7 43 ? ? ? ? ? C7 43 ? ? ? ? ? ");
 
-    // \x55\x8B\xEC\x8B\x45\x0C\x53\x33\xDB\x56\x8B\xF1\x8B\x4D\x18\x80\x66\x20\xF9 xxxxxxxxxxxxxxxxxxx
-    Add("ConCommand_Ctor1", "Portal 2 Build 7054",
+    // \x55\xB9\x00\x00\x00\x00\x89\xE5\x53\x83\xEC\x00\x8B\x5D\x00\x8B\x45\x00\x8B\x55\x00\xC6\x43\x00\x00\x89\x43\x00\x0F\xB6\x43\x00\xC7\x43\x00\x00\x00\x00\x00 xx????xxxxx?xx?xx?xx?xx??xx?xxx?xx?????
+    Add("ConCommandCtor", "Portal 2 Build 7054",
         "ConCommand::ConCommand",
-        "55 8B EC 8B 45 0C 53 33 DB 56 8B F1 8B 4D 18 80 66 20 F9");
+        "55 B9 ? ? ? ? 89 E5 53 83 EC ? 8B 5D ? 8B 45 ? 8B 55 ? C6 43 ? ? 89 43 ? 0F B6 43 ? C7 43 ? ? ? ? ? ");
 
-    // \x55\x8B\xEC\x8B\x45\x0C\x53\x33\xDB\x56\x8B\xF1\x8B\x4D\x18\x80\x4E\x20\x02 xxxxxxxxxxxxxxxxxxx
-    Add("ConCommand_Ctor2", "Portal 2 Build 7054",
-        "ConCommand::ConCommand",
-        "55 8B EC 8B 45 0C 53 33 DB 56 8B F1 8B 4D 18 80 4E 20 02");
-
-    // \x55\x8B\xEC\x51\x53\x56\x57\x8B\xF1\xE8\x00\x00\x00\x00\x8B\x1D\x00\x00\x00\x00 xxxxxxxxxx????xx????
+    // \x55\x89\xE5\x57\x56\x53\x83\xEC\x00\x8B\x5D\x00\x89\x1C\x24\xE8\x00\x00\x00\x00\xC7\x04\x24\x00\x00\x00\x00\xE8\x00\x00\x00\x00 xxxxxxxx?xx?xxxx????xxx????x????
     Add("m_bLoadgame", "Portal 2 Build 7054",
         "CGameClient::ActivatePlayer",
-        "55 8B EC 51 53 56 57 8B F1 E8 ? ? ? ? 8B 1D ? ? ? ? ",
-        32);
+        "55 89 E5 57 56 53 83 EC ? 8B 5D ? 89 1C 24 E8 ? ? ? ? C7 04 24 ? ? ? ? E8 ? ? ? ? ",
+        34);
 
-    // \x55\x8B\xEC\x56\x8B\x75\x08\x83\xFE\xFF xxxxxxxxxx
+    // \x55\x89\xE5\x83\xEC\x00\x8B\x45\x00\x89\x75\x00\x89\x5D\x00\x8B\x75\x00\x89\x7D\x00\x83\xF8\x00\x0F\x84\x00\x00\x00\x00 xxxxx?xx?xx?xx?xx?xx?xx?xx????
     Add("Key_SetBinding", "Portal 2 Build 7054",
         "Key_SetBinding",
-        "55 8B EC 56 8B 75 08 83 FE FF");
+        "55 89 E5 83 EC ? 8B 45 ? 89 75 ? 89 5D ? 8B 75 ? 89 7D ? 83 F8 ? 0F 84 ? ? ? ? ");
 
-    // \x55\x8B\xEC\x81\xEC\x00\x00\x00\x00\x53\x8B\x5D\x08\x56\x57\x8B\xF9\x8B\x37\x56\x53\x89\x75\xE4\x89\x5D\xFC\xE8\x00\x00\x00\x00\x83\xC4\x08\x85\xC0\x74\x19\x8B\xC6\x8D\x50\x01\x8D\x64\x24\x00\x8A\x08\x40\x84\xC9\x75\xF9\x2B\xC2\x8D\x44\x18\x01\x89\x45\xFC xxxxx????xxxxxxxxxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    // \x55\x89\xE5\x57\x56\x53\x81\xEC\x00\x00\x00\x00\x8B\x5D\x00\x8B\x75\x00\x8B\x03\x89\x34\x24\x89\x85\x00\x00\x00\x00\x89\x44\x24\x00\xE8\x00\x00\x00\x00\x85\xC0 xxxxxxxx????xx?xx?xxxxxxx????xxx?x????xx
     Add("AutoCompletionFunc", "Portal 2 Build 7054",
         "CBaseAutoCompleteFileList::AutoCompletionFunc",
-        "55 8B EC 81 EC ? ? ? ? 53 8B 5D 08 56 57 8B F9 8B 37 56 53 89 75 E4 89 5D FC E8 ? ? ? ? 83 C4 08 85 C0 74 19 8B C6 8D 50 01 8D 64 24 00 8A 08 40 84 C9 75 F9 2B C2 8D 44 18 01 89 45 FC");
+        "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 75 ? 8B 03 89 34 24 89 85 ? ? ? ? 89 44 24 ? E8 ? ? ? ? 85 C0");
 
-    // vguimatsurface.dll
+    // vguimatsurface.so
 
-    // \x55\x8B\xEC\x83\xEC\x10\x80\x3D\x00\x00\x00\x00\x00 xxxxxxxx?????
+    // \x55\x89\xE5\x53\x83\xEC\x00\x80\x3D\x00\x00\x00\x00\x00\x8B\x5D\x00\x0F\x84\x00\x00\x00\x00 xxxxxx?xx?????xx?xx????
     Add("StartDrawing", "Portal 2 Build 7054",
         "CMatSystemSurface::StartDrawing",
-        "55 8B EC 83 EC 10 80 3D ? ? ? ? ? ");
+        "55 89 E5 53 83 EC ? 80 3D ? ? ? ? ? 8B 5D ? 0F 84 ? ? ? ? ");
 
-    // \x56\x6A\x00\xE8\x00\x00\x00\x00 xxxx????
+    // \x55\x89\xE5\x53\x83\xEC\x00\xC7\x04\x24\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xA1\x00\x00\x00\x00 xxxxxx?xxx????x????x????
     Add("FinishDrawing", "Portal 2 Build 7054",
         "CMatSystemSurface::FinishDrawing",
-        "56 6A 00 E8 ? ? ? ? ");
+        "55 89 E5 53 83 EC ? C7 04 24 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? ");
 
-    // client.dll
+    // client.so
 
-    // \x55\x8B\xEC\x53\x8B\x5D\x08\x56\x57\x8B\xF1\x33\xFF\x39\x7E\x28 xxxxxxxxxxxxxxxx
+    // \x55\x89\xE5\x57\x56\x53\x83\xEC\x00\x8B\x75\x00\x8B\x7D\x00\x8B\x46\x00\x85\xC0\x7E\x00\x31\xDB\xEB\x00\x8D\xB6\x00\x00\x00\x00\x83\xC3\x00\x39\x5E\x00\x7E\x00\x8B\x46\x00 xxxxxxxx?xx?xx?xx?xxx?xxx?xxxxxxxx?xx?x?xx?
     Add("FindElement", "Portal 2 Build 7054",
         "CHud::FindElement",
-        "55 8B EC 53 8B 5D 08 56 57 8B F1 33 FF 39 7E 28");
+        "55 89 E5 57 56 53 83 EC ? 8B 75 ? 8B 7D ? 8B 46 ? 85 C0 7E ? 31 DB EB ? 8D B6 00 00 00 00 83 C3 ? 39 5E ? 7E ? 8B 46 ? ");
 }
 void Offsets()
 {
-    // engine.dll
+    // engine.so
 
-    InternalSetValue = 12; // ConVar
-    InternalSetFloatValue = 13; // ConVar
-    InternalSetIntValue = 14; // ConVar
-    FindVar = 16; // CCvarUtilities::IsValidToggleCommand
+    InternalSetValue = 19; // ConVar
+    InternalSetFloatValue = 20; // ConVar
+    InternalSetIntValue = 21; // ConVar
+    FindVar = 15; // CCvarUtilities::IsValidToggleCommand
     ClientCmd = 7; // CEngineClient
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient
@@ -81,65 +76,66 @@ void Offsets()
     SetSignonState = 3; // CDemoRecorder
     StopRecording = 7; // CDemoRecorder
     GetPlaybackTick = 3; // CDemoPlayer
-    StartPlayback = 5; // CDemoPlayer
-    IsPlayingBack = 6; // CDemoPlayer
+    StartPlayback = 6; // CDemoPlayer
+    IsPlayingBack = 7; // CDemoPlayer
     m_szFileName = 4; // CDemoPlayer::SkipToTick
     m_szDemoBaseName = 1344; // CDemoRecorder::StartupDemoFile
     m_nDemoNumber = 1608; // CDemoRecorder::StartupDemoFile
     m_bRecording = 1606; // CDemoRecorder::SetSignonState
-    Paint = 14; // CEngineVGui
-    ProcessTick = 1; // CClientState/IServerMessageHandler
-    tickcount = 95; // CClientState::ProcessTick
-    interval_per_tick = 65; // CClientState::ProcessTick
-    Disconnect = 16; //  CClientState
-    GetClientStateFunction = 4; // CEngineClient::ClientCmd
-    demoplayer = 74; // CClientState::Disconnect
-    demorecorder = 87; // CClientState::Disconnect
-    GetCurrentMap = 25; // CEngineTool
-    m_szLevelName = 36; // CEngineTool::GetCurrentMap
+    Paint = 15; // CEngineVGui
+    ProcessTick = 12; // CClientState
+    tickcount = 73; // CClientState::ProcessTick
+    interval_per_tick = 81; // CClientState::ProcessTick
+    Disconnect = 37; //  CClientState
+    GetClientStateFunction = 11; // CEngineClient::ClientCmd
+    GetCurrentMap = 26; // CEngineTool
+    demoplayer = 93; // CClientState::Disconnect
+    demorecorder = 106; // CClientState::Disconnect
+    m_szLevelName = 72; // CEngineTool::GetCurrentMap
+    UnregisterConCommand = 10; // CCvar (TODO)
 
-    // vgui2.dll
+    // vgui2.so
 
-    GetIScheme = 8; // CSchemeManager
-    GetFont = 3; // CScheme
+    GetIScheme = 9; // CSchemeManager
+    GetFont = 4; // CScheme
 
-    // server.dll
+    // server.so
 
-    PlayerMove = 17; // CPortalGameMovement
-    AirAccelerate = 24; // CPortalGameMovement
-    AirMove = 25; // CPortalGameMovement
-    AirMove_Offset1 = 7; // CPortalGameMovement::CPortalGameMovement
-    AirMove_Offset2 = 5; // CGameMovement::CGameMovement
-    FinishGravity = 34; // CPortalGameMovement
-    CheckJumpButton = 36; // CPortalGameMovement
-    FullTossMove = 37; // CGameMovement
+    PlayerMove = 16; // CPortalGameMovement
+    AirAccelerate = 23; // CPortalGameMovement
+    AirMove = 24; // CPortalGameMovement
+    AirMove_Offset1 = 14; // CPortalGameMovement::~CPortalGameMovement
+    AirMove_Offset2 = 12; // CGameMovement::~CGameMovement
+    FinishGravity = 35; // CPortalGameMovement
+    CheckJumpButton = 37; // CPortalGameMovement
+    FullTossMove = 38; // CGameMovement
     mv = 8; // CPortalGameMovement::CheckJumpButton
     m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
     Think = 31; // CServerGameDLL
-    UTIL_PlayerByIndex = 37; // CServerGameDLL::Think
-    iNumPortalsPlaced = 5700; // CPortal_Player::IncrementPortalsPlaced
-    gpGlobals = 569; // CGameMovement::FullTossMove
+    UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
+    iNumPortalsPlaced = 5724; // CPortal_Player::IncrementPortalsPlaced
+    gpGlobals = 467; // CGameMovement::FullTossMove
     player = 4; // CPortalGameMovement::PlayerMove
-    m_fFlags = 204; // CBasePlayer::UpdateStepSound
-    m_MoveType = 218; // CBasePlayer::UpdateStepSound
-    m_nWaterLevel = 339; // CBasePlayer::UpdateStepSound
-    m_pSurfaceData = 4092; // CPortalGameMovement::PlayerMove
+    m_fFlags = 212; // CBasePlayer::UpdateStepSound
+    m_MoveType = 226; // CBasePlayer::UpdateStepSound
+    m_nWaterLevel = 347; // CBasePlayer::UpdateStepSound
+    m_pSurfaceData = 4116; // CPortalGameMovement::PlayerMove
     m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
     frametime = 16; // CBasePlayer::UpdateStepSound
-    m_bDucked = 2272; // CPortalGameMovement::FinishUnDuck
+    m_bDucked = 2296; // CPortalGameMovement::FinishUnDuck
 
-    // client.dll
+    // client.so
 
     HudUpdate = 11; // CHLClient
-    GetHud = 221; // CHLClient::HudUpdate
+    GetHud = 144; // CHLClient::HudUpdate
     GetFontTall = 72; // CFPSPanel::ComputeSize
     DrawColoredText = 160; // CFPSPanel::Paint
-    m_vecAbsOrigin = 156; // C_BasePlayer::GetAbsOrigin
-    m_angAbsRotation = 192; // C_BasePlayer::GetAbsAngles
-    m_vecVelocity = 264; // CFPSPanel::Paint
-    GetClientEntity = 3; // CClientEntityList
-    GetFlags = 248; // C_BasePlayer::PhysicsSimulate
-    CreateMove = 24; // CHLClient
-    GetName = 10; // CHud
+    m_vecAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
+    m_angAbsRotation = 172; // C_BasePlayer::GetAbsAngles
+    m_vecVelocity = 244; // CFPSPanel::Paint
+    GetClientEntity = 3; // IClientEntityList
+    GetFlags = 228; // C_BasePlayer::PhysicsSimulate
+    CreateMove = 25; // IClientMode
+    GetName = 11; // CHud
 }
 }

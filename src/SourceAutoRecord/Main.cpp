@@ -11,8 +11,11 @@
 #include "Features/Config.hpp"
 
 #include "Cheats.hpp"
+#include "Command.hpp"
+#include "Commands.hpp"
 #include "Game.hpp"
 #include "Interfaces.hpp"
+#include "Variable.hpp"
 
 #ifdef _WIN32
 unsigned __stdcall Main(void* args)
@@ -24,28 +27,36 @@ int __attribute__((constructor)) Main()
         return 1;
 
     Interfaces::Init();
-    Game::Init();
 
-   if (Tier1::Init()) {
+    if (Game::IsSupported()) {
+        if (Tier1::Init()) {
 
-        Cheats::Init();
+            Commands::Init();
+            Cheats::Init();
 
-        Client::Hook();
-        Engine::Hook();
-        InputSystem::Hook();
-        Scheme::Hook();
-        Server::Hook();
-        Surface::Hook();
-        VGui::Hook();
+            auto vars = Variable::RegisterAll();
+            auto commands = Command::RegisterAll();
+            Console::DevMsg("SAR: Registered %i ConVars and %i ConCommands!\n", vars, commands);
 
-        Config::Load();
+            Client::Hook();
+            Engine::Hook();
+            InputSystem::Hook();
+            Scheme::Hook();
+            Server::Hook();
+            Surface::Hook();
+            VGui::Hook();
 
-        SAR::IsPlugin();
+            Config::Load();
 
-        Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
-        return 0;
+            SAR::IsPlugin();
+
+            Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
+            return 0;
+        } else {
+            Console::Warning("SAR: Could not register any commands!\n");
+        }
     } else {
-        Console::Warning("SAR: Could not register any commands!\n");
+        Console::Warning("SAR: Game not supported!\n");
     }
 
     Console::Warning("SAR: Failed to load SourceAutoRecord!\n");

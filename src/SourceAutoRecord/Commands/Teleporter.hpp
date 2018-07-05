@@ -3,12 +3,12 @@
 
 #include "Features/Teleporter.hpp"
 
+#include "Cheats.hpp"
 #include "Command.hpp"
-#include "Commands.hpp"
 
 CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
 {
-    if (sv_cheats.GetBool()) {
+    if (Cheats::sv_cheats.GetBool()) {
         if (Teleporter::IsSet) {
             Teleporter::Teleport();
         } else {

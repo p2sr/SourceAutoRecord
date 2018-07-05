@@ -10,6 +10,7 @@
 
 #define SAR_VERSION "1.7"
 #define SAR_BUILD __TIME__ " " __DATE__
+#define SAR_SIGNATURE new char[25] { 65, 114, 101, 32, 121, 111, 117, 32, 104, 97, 112, 112, 121, 32, 110, 111, 119, 44, 32, 74, 97, 109, 101, 114, 63 }
 #define SAR_COLOR Color(247, 235, 69)
 #define COL_ACTIVE Color(110, 247, 76)
 #define COL_DEFAULT Color(255, 255, 255, 255)
@@ -30,19 +31,21 @@ bool NewVMT(void* ptr, std::unique_ptr<VMTHook>& hook)
 {
     if (ptr) {
         hook = std::make_unique<VMTHook>(ptr);
-        Console::DevMsg("SAR: Created new VMT for 0x%p with %i functions.\n", ptr, hook->GetTotalFunctions());
+        Console::DevMsg("SAR: Created new VMT for %p with %i functions.\n", ptr, hook->GetTotalFunctions());
         return true;
     }
 
-    Console::DevWarning("SAR: Skipped creating new VMT for 0x%p.\n", ptr);
+    Console::DevWarning("SAR: Skipped creating new VMT for %p.\n", ptr);
     return false;
 }
 void DeleteVMT(std::unique_ptr<VMTHook>& hook)
 {
-    Console::DevMsg("SAR: Released VMT for 0x%p.\n", hook->GetThisPtr());
+    Console::DevMsg("SAR: Released VMT for %p.\n", hook->GetThisPtr());
     hook.reset();
 }
 
+// SAR has to disable itself in the plugin list or the game will crash because of missing callbacks
+// This is a race condition though
 bool LoadedAsPlugin = false;
 void IsPlugin()
 {
@@ -50,15 +53,19 @@ void IsPlugin()
         Console::DevMsg("SAR: Loaded SAR as plugin! Trying to disable itself...\n");
         if (Interfaces::IServerPluginHelpers) {
             auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + 16);
-            Console::Print("m_Size = %i\n", m_Size);
             if (m_Size > 0) {
-                auto sar = reinterpret_cast<CPlugin*>((uintptr_t)Interfaces::IServerPluginHelpers + 4);
-                Console::Print("sar->m_szName = %s\n", sar->m_szName);
-                Console::Print("sar->m_bDisable = %i\n", sar->m_bDisable);
-                sar->m_bDisable = true;
+                auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + 4);
+                for (int i = 0; i < m_Size; i++) {
+                    auto plugin = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
+                    if (std::strcmp(plugin->m_szName, SAR_SIGNATURE) == 0) {
+                        plugin->m_bDisable = true;
+                        Console::DevMsg("SAR: Disabled SAR in the plugin list!\n");
+                        return;
+                    }
+                }
             }
         }
-        Console::DevWarning("SAR: Could not disable SAR from the plugin list! Try manually with plugin_unload.\n");
+        Console::DevWarning("SAR: Could not disable SAR in the plugin list! Try manually with plugin_pause.\n");
     }
 }
 }
@@ -85,7 +92,7 @@ struct CSourceAutoRecord : IServerPluginCallbacks {
     }
     virtual const char* GetPluginDescription()
     {
-        return "Are you happy now, Jamer?";
+        return SAR_SIGNATURE;
     }
     virtual void LevelInit(char const* pMapName)
     {

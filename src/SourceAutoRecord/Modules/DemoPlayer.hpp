@@ -17,8 +17,8 @@ namespace DemoPlayer {
 
     VMT s_ClientDemoPlayer;
 
-    using _IsPlayingBack = bool(__CALL*)(void* thisptr);
-    using _GetPlaybackTick = int(__CALL*)(void* thisptr);
+    using _IsPlayingBack = bool(__func*)(void* thisptr);
+    using _GetPlaybackTick = int(__func*)(void* thisptr);
 
     _IsPlayingBack IsPlayingBack;
     _GetPlaybackTick GetPlaybackTick;

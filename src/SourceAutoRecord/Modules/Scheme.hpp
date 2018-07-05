@@ -8,7 +8,7 @@ namespace Scheme {
 
 VMT g_pScheme;
 
-using _GetFont = unsigned long(__CALL*)(void* thisptr, const char* fontName, bool proportional);
+using _GetFont = unsigned long(__func*)(void* thisptr, const char* fontName, bool proportional);
 _GetFont GetFont;
 
 unsigned long GetDefaultFont()
@@ -20,7 +20,7 @@ void Hook()
 {
     if (Interfaces::ISchemeManager) {
         auto g_pVGuiSchemeManager = std::make_unique<VMTHook>(Interfaces::ISchemeManager);
-        using _GetIScheme = void*(__CALL*)(void* thisptr, unsigned long scheme);
+        using _GetIScheme = void*(__func*)(void* thisptr, unsigned long scheme);
         auto GetIScheme = g_pVGuiSchemeManager->GetOriginalFunction<_GetIScheme>(Offsets::GetIScheme);
 
         // Default scheme is 1

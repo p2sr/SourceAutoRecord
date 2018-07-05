@@ -18,14 +18,14 @@ struct ConCommandBase;
 
 using _CommandCallback = void (*)(const CCommand& args);
 using _CommandCompletionCallback = int (*)(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
-using _ConCommand = void(__CALL*)(void* thisptr, const char* name, void* callback, const char* helpstr, int flags, int* compfunc);
-using _ConVar = void(__CALL*)(void* thisptr, const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max);
-using _InternalSetValue = void(__CALL*)(void* thisptr, const char* value);
-using _InternalSetFloatValue = void(__CALL*)(void* thisptr, float value);
-using _InternalSetIntValue = void(__CALL*)(void* thisptr, int value);
-using _UnregisterConCommand = void(__CALL*)(void* thisptr, ConCommandBase* pCommandBase);
-using _FindVar = void*(__CALL*)(void* thisptr, const char* name);
-using _AutoCompletionFunc = int(__CALL*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+using _ConCommand = void(__func*)(void* thisptr, const char* name, void* callback, const char* helpstr, int flags, int* compfunc);
+using _ConVar = void(__func*)(void* thisptr, const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max);
+using _InternalSetValue = void(__func*)(void* thisptr, const char* value);
+using _InternalSetFloatValue = void(__func*)(void* thisptr, float value);
+using _InternalSetIntValue = void(__func*)(void* thisptr, int value);
+using _UnregisterConCommand = void(__func*)(void* thisptr, ConCommandBase* pCommandBase);
+using _FindVar = void*(__func*)(void* thisptr, const char* name);
+using _AutoCompletionFunc = int(__func*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
 struct ConCommandBase {
     void* VMT;
@@ -125,12 +125,12 @@ struct CBaseAutoCompleteFileList {
 
 bool Init()
 {
-    auto cnc = SAR::Find("ConCommand_Ctor2");
+    auto cnc = SAR::Find("ConCommandCtor");
     if (cnc.Found) {
         ConCommandCtor = reinterpret_cast<_ConCommand>(cnc.Address);
     }
 
-    auto cnv = SAR::Find("ConVar_Ctor3");
+    auto cnv = SAR::Find("ConVarCtor");
     if (cnv.Found) {
         ConVarCtor = reinterpret_cast<_ConVar>(cnv.Address);
     }

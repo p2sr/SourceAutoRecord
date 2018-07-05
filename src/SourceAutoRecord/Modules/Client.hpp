@@ -18,7 +18,7 @@ VMT clientdll;
 VMT g_HUDChallengeStats;
 VMT s_EntityList;
 
-using _GetClientEntity = void*(__CALL*)(void* thisptr, int entnum);
+using _GetClientEntity = void*(__func*)(void* thisptr, int entnum);
 using _KeyDown = int(__cdecl*)(void* b, const char* c);
 using _KeyUp = int(__cdecl*)(void* b, const char* c);
 
@@ -82,7 +82,7 @@ DETOUR(HudUpdate, unsigned int a2)
 DETOUR_T(const char*, GetName)
 {
     // Never allow CHud::FindElement to find this HUD
-    if (sar_disable_challenge_stats_hud.GetBool())
+    if (Cheats::sar_disable_challenge_stats_hud.GetBool())
         return "";
 
     return Original::GetName(thisptr);

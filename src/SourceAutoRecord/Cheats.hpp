@@ -6,21 +6,11 @@
 namespace Cheats {
 
 Variable sar_autorecord("sar_autorecord", "0", "Enables automatic demo recording.\n");
-
-// Rebinder
 Variable sar_save_flag("sar_save_flag", "#SAVE#", "Echo message when using sar_bind_save. "
     "Default is \"#SAVE#\", a SourceRuns standard. Keep this empty if no echo message should be binded.\n", 0);
-
-// Demo parsing
 Variable sar_time_demo_dev("sar_time_demo_dev", "0", 0, "RIP");
-
-// Summary
 Variable sar_sum_during_session("sar_sum_during_session", "1", "Updates the summary counter automatically during a session.\n");
-
-// Timer
 Variable sar_timer_always_running("sar_timer_always_running", "1", "Timer will save current value when disconnecting.\n");
-
-// HUD
 Variable sar_hud_text("sar_hud_text", "", "Draws specified text when not empty.\n", 0);
 Variable sar_hud_position("sar_hud_position", "0", 0, "Draws absolute position of the client.\n");
 Variable sar_hud_angles("sar_hud_angles", "0", "Draws absolute view angles of the client.\n");
@@ -39,36 +29,26 @@ Variable sar_hud_jump("sar_hud_jump", "0", "Draws current jump distance.\n");
 Variable sar_hud_jump_peak("sar_hud_jump_peak", "0", "Draws longest jump distance.\n");
 Variable sar_hud_trace("sar_hud_trace", "0", "Draws distance values of tracer.\n");
 Variable sar_hud_velocity_peak("sar_hud_velocity_peak", "0", "Draws last saved velocity peak.\n");
-
-// HUD config
 Variable sar_hud_default_spacing("sar_hud_default_spacing", "4", 0, "Spacing between elements of HUD.\n");
 Variable sar_hud_default_padding_x("sar_hud_default_padding_x", "2", 0, "X padding of HUD.\n");
 Variable sar_hud_default_padding_y("sar_hud_default_padding_y", "2", 0, "Y padding of HUD.\n");
 Variable sar_hud_default_font_index("sar_hud_default_font_index", "0", 0, "Font index of HUD.\n");
 Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 255", "RGBA font color of HUD.\n", 0);
-
-// Stats
 Variable sar_stats_jumps_xy("sar_stats_jumps_xy", "0", "Saves jump distance as 2D vector.\n");
 Variable sar_stats_velocity_peak_xy("sar_stats_velocity_peak_xy", "0", "Saves velocity peak as 2D vector.\n");
 Variable sar_stats_auto_reset("sar_stats_auto_reset", "0", 0, "Resets all stats automatically. "
     "0 = default, 1 = restart or disconnect only, 2 = any load & sar_timer_start. "
     "Note: Portal counter is not part of the \"stats\" feature.\n");
-
-// Cheats
 Variable sar_autojump("sar_autojump", "0", "Enables automatic jumping on the server.\n");
 Variable sar_jumpboost("sar_jumpboost", "0", 0, "Enables special game movement on the server. "
     "0 = Default, 1 = Orange Box Engine, 2 = Pre-OBE\n");
 Variable sar_aircontrol("sar_aircontrol", "0", "Enables more air-control on the server.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
-
-// TAS
 Variable sar_tas_autostart("sar_tas_autostart", "1", "Starts queued commands automatically on first frame after a load.\n");
 
-// From the game
 Variable cl_showpos;
 Variable sv_cheats;
 Variable sv_footsteps;
-
 Variable sv_bonus_challenge;
 Variable sv_accelerate;
 Variable sv_airaccelerate;
@@ -98,6 +78,24 @@ void Init()
     sv_stopspeed = Variable("sv_stopspeed");
     sv_maxvelocity = Variable("sv_maxvelocity");
 
+    sv_accelerate.Unlock();
+    sv_airaccelerate.Unlock();
+    sv_friction.Unlock();
+    sv_maxspeed.Unlock();
+    sv_stopspeed.Unlock();
+    sv_maxvelocity.Unlock();
+    sv_footsteps.Unlock();
+
+    if (Game::Version == Game::Portal2) {
+        // Don't find a way to abuse this, ok?
+        sv_bonus_challenge.Unlock(false);
+        sv_transition_fade_time.Unlock();
+        sv_laser_cube_autoaim.Unlock();
+        ui_loadingscreen_transition_time.Unlock();
+        // Not a real cheat, right?
+        hide_gun_when_holding.Unlock(false);
+    }
+
     if (Game::Version == Game::Portal2) {
         sv_transition_fade_time = Variable("sv_transition_fade_time");
         sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
@@ -109,32 +107,6 @@ void Init()
             Game::Version = Game::Portal;
             Console::DevMsg("SAR: Detected Portal version!\n");
         }
-    }
-
-    auto vars = Variable::RegisterAll();
-    auto commands = Command::RegisterAll();
-    Console::DevMsg("SAR: Registered %i ConVars and %i ConCommands!\n", vars, commands);
-
-    sv_accelerate.Unlock();
-    sv_airaccelerate.Unlock();
-    sv_friction.Unlock();
-    sv_maxspeed.Unlock();
-    sv_stopspeed.Unlock();
-    sv_maxvelocity.Unlock();
-    sv_footsteps.Unlock();
-
-    if (Game::Version == Game::Portal2) {
-        // Challenge mode will reset every cheat automatically
-        // Flagging this as a cheat would break cm. I think
-        // it's impossible to abuse this anyway
-        sv_bonus_challenge.Unlock(false);
-
-        sv_transition_fade_time.Unlock();
-        sv_laser_cube_autoaim.Unlock();
-        ui_loadingscreen_transition_time.Unlock();
-
-        // Not a real cheat, right?
-        hide_gun_when_holding.Unlock(false);
     }
 }
 void Delete()

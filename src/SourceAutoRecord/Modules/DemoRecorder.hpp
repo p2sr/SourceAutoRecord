@@ -7,7 +7,6 @@
 #include "Features/Session.hpp"
 #include "Features/Timer.hpp"
 
-#include "Cheats.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
@@ -19,7 +18,7 @@ namespace DemoRecorder {
 
     VMT s_ClientDemoRecorder;
 
-    using _GetRecordingTick = int(__CALL*)(void* thisptr);
+    using _GetRecordingTick = int(__func*)(void* thisptr);
     _GetRecordingTick GetRecordingTick;
 
     char* m_szDemoBaseName;
@@ -57,7 +56,7 @@ namespace DemoRecorder {
         //   m_nDemoNumber = 0
         auto result = Original::StopRecording(thisptr);
 
-        if (IsRecordingDemo && sar_autorecord.GetBool()) {
+        if (IsRecordingDemo && Cheats::sar_autorecord.GetBool()) {
             *m_nDemoNumber = LastDemoNumber;
 
             // Tell recorder to keep recording

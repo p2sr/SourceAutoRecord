@@ -11,6 +11,7 @@
 #include "Features/Tas.hpp"
 #include "Features/Timer.hpp"
 
+#include "Cheats.hpp"
 #include "Game.hpp"
 #include "Interfaces.hpp"
 #include "Utils.hpp"
@@ -20,10 +21,10 @@ namespace Engine {
 VMT engine;
 VMT cl;
 
-using _ClientCmd = int(__CALL*)(void* thisptr, const char* szCmdString);
-using _GetLocalPlayer = int(__CALL*)(void* thisptr);
-using _GetViewAngles = int(__CALL*)(void* thisptr, QAngle& va);
-using _SetViewAngles = int(__CALL*)(void* thisptr, QAngle& va);
+using _ClientCmd = int(__func*)(void* thisptr, const char* szCmdString);
+using _GetLocalPlayer = int(__func*)(void* thisptr);
+using _GetViewAngles = int(__func*)(void* thisptr, QAngle& va);
+using _SetViewAngles = int(__func*)(void* thisptr, QAngle& va);
 
 _ClientCmd ClientCmd;
 _GetLocalPlayer GetLocalPlayer;
@@ -81,7 +82,7 @@ void SessionStarted()
         Rebinder::RebindReload();
     }
 
-    if (sar_tas_autostart.GetBool()) {
+    if (Cheats::sar_tas_autostart.GetBool()) {
         TAS::Start();
     }
 
@@ -104,7 +105,7 @@ void SessionEnded()
         }
 
         if (Timer::IsRunning) {
-            if (sar_timer_always_running.GetBool()) {
+            if (Cheats::sar_timer_always_running.GetBool()) {
                 Timer::Save(*tickcount);
                 Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::GetTime(Timer::TotalTicks));
             } else {
@@ -113,7 +114,7 @@ void SessionEnded()
             }
         }
 
-        auto reset = sar_stats_auto_reset.GetInt();
+        auto reset = Cheats::sar_stats_auto_reset.GetInt();
         if ((reset == 1 && !*m_bLoadgame) || reset >= 2) {
             Stats::ResetAll();
         }

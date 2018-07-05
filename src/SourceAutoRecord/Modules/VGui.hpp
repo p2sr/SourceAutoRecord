@@ -13,18 +13,17 @@
 #include "Features/TimerAverage.hpp"
 #include "Features/TimerCheckPoints.hpp"
 
+#include "Cheats.hpp"
 #include "Game.hpp"
 #include "Interfaces.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
-using namespace Commands;
-
 namespace VGui {
 
 VMT enginevgui;
 
-using _Paint = int(__CALL*)(void* thisptr, int mode);
+using _Paint = int(__func*)(void* thisptr, int mode);
 
 bool RespectClShowPos = true;
 int FontIndexOffset = 0;
@@ -35,28 +34,28 @@ DETOUR(Paint, int mode)
     Surface::StartDrawing(Surface::matsurface->GetThisPtr());
 
     int elements = 0;
-    int xPadding = sar_hud_default_padding_x.GetInt();
-    int yPadding = sar_hud_default_padding_y.GetInt();
-    int spacing = sar_hud_default_spacing.GetInt();
+    int xPadding = Cheats::sar_hud_default_padding_x.GetInt();
+    int yPadding = Cheats::sar_hud_default_padding_y.GetInt();
+    int spacing = Cheats::sar_hud_default_spacing.GetInt();
 
-    auto font = Scheme::GetDefaultFont() + (int)sar_hud_default_font_index.GetFloat() - VGui::FontIndexOffset;
+    auto font = Scheme::GetDefaultFont() + (int)Cheats::sar_hud_default_font_index.GetFloat() - VGui::FontIndexOffset;
     auto fontSize = Surface::GetFontHeight(font);
 
     int r, g, b, a;
-    sscanf_s(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
+    sscanf_s(Cheats::sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
     Color textColor(r, g, b, a);
 
-    if (RespectClShowPos && cl_showpos.GetBool()) {
+    if (RespectClShowPos && Cheats::cl_showpos.GetBool()) {
         elements += 6;
         yPadding += spacing;
     }
 
     // cl_showpos replacement
-    if (sar_hud_text.GetString()[0] != '\0') {
-        Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, (char*)sar_hud_text.GetString());
+    if (Cheats::sar_hud_text.GetString()[0] != '\0') {
+        Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, (char*)Cheats::sar_hud_text.GetString());
         elements++;
     }
-    if (sar_hud_position.GetBool()) {
+    if (Cheats::sar_hud_position.GetBool()) {
         auto abs = Client::GetAbsOrigin();
 
         char position[64];
@@ -64,7 +63,7 @@ DETOUR(Paint, int mode)
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, position);
         elements++;
     }
-    if (sar_hud_angles.GetBool()) {
+    if (Cheats::sar_hud_angles.GetBool()) {
         auto va = Engine::GetAngles();
 
         char angles[64];
@@ -72,8 +71,8 @@ DETOUR(Paint, int mode)
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, angles);
         elements++;
     }
-    if (sar_hud_velocity.GetBool()) {
-        auto vel = (sar_hud_velocity.GetInt() == 1)
+    if (Cheats::sar_hud_velocity.GetBool()) {
+        auto vel = (Cheats::sar_hud_velocity.GetInt() == 1)
             ? Client::GetLocalVelocity().Length()
             : Client::GetLocalVelocity().Length2D();
 
@@ -83,7 +82,7 @@ DETOUR(Paint, int mode)
         elements++;
     }
     // Session
-    if (sar_hud_session.GetBool()) {
+    if (Cheats::sar_hud_session.GetBool()) {
         int tick = (Engine::IsInGame) ? Engine::GetTick() : 0;
         float time = Engine::GetTime(tick);
 
@@ -92,15 +91,15 @@ DETOUR(Paint, int mode)
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, session);
         elements++;
     }
-    if (sar_hud_last_session.GetBool()) {
+    if (Cheats::sar_hud_last_session.GetBool()) {
         char session[64];
         snprintf(session, sizeof(session), "last session: %i (%.3f)", Session::LastSession, Engine::GetTime(Session::LastSession));
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, session);
         elements++;
     }
-    if (sar_hud_sum.GetBool()) {
+    if (Cheats::sar_hud_sum.GetBool()) {
         char sum[64];
-        if (Summary::IsRunning && sar_sum_during_session.GetBool()) {
+        if (Summary::IsRunning && Cheats::sar_sum_during_session.GetBool()) {
             int tick = (Engine::IsInGame) ? Engine::GetTick() : 0;
             float time = Engine::GetTime(tick);
             snprintf(sum, sizeof(sum), "sum: %i (%.3f)", Summary::TotalTicks + tick, Engine::GetTime(Summary::TotalTicks) + time);
@@ -111,7 +110,7 @@ DETOUR(Paint, int mode)
         elements++;
     }
     // Timer
-    if (sar_hud_timer.GetBool()) {
+    if (Cheats::sar_hud_timer.GetBool()) {
         int tick = (!Timer::IsPaused) ? Timer::GetTick(*Engine::tickcount) : Timer::TotalTicks;
         float time = Engine::GetTime(tick);
 
@@ -120,20 +119,20 @@ DETOUR(Paint, int mode)
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, timer);
         elements++;
     }
-    if (sar_hud_avg.GetBool()) {
+    if (Cheats::sar_hud_avg.GetBool()) {
         char avg[64];
         snprintf(avg, sizeof(avg), "avg: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, avg);
         elements++;
     }
-    if (sar_hud_cps.GetBool()) {
+    if (Cheats::sar_hud_cps.GetBool()) {
         char cps[64];
         snprintf(cps, sizeof(cps), "last cp: %i (%.3f)", Timer::CheckPoints::LatestTick, Timer::CheckPoints::LatestTime);
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, cps);
         elements++;
     }
     // Demo
-    if (sar_hud_demo.GetBool()) {
+    if (Cheats::sar_hud_demo.GetBool()) {
         char demo[64];
         if (!*Engine::m_bLoadgame && *Engine::DemoRecorder::m_bRecording && !Engine::DemoRecorder::CurrentDemo.empty()) {
             int tick = Engine::DemoRecorder::GetTick();
@@ -150,40 +149,40 @@ DETOUR(Paint, int mode)
         elements++;
     }
     // Stats
-    if (sar_hud_jumps.GetBool()) {
+    if (Cheats::sar_hud_jumps.GetBool()) {
         char jumps[64];
         snprintf(jumps, sizeof(jumps), "jumps: %i", Stats::Jumps::Total);
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, jumps);
         elements++;
     }
-    if (sar_hud_portals.GetBool()) {
+    if (Cheats::sar_hud_portals.GetBool()) {
         auto iNumPortalsPlaced = Server::GetPortals();
         char portals[64];
         snprintf(portals, sizeof(portals), "portals: %i", iNumPortalsPlaced);
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, portals);
         elements++;
     }
-    if (sar_hud_steps.GetBool()) {
+    if (Cheats::sar_hud_steps.GetBool()) {
         char steps[64];
         snprintf(steps, sizeof(steps), "steps: %i", Stats::Steps::Total);
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, steps);
         elements++;
     }
-    if (sar_hud_jump.GetBool()) {
+    if (Cheats::sar_hud_jump.GetBool()) {
         auto latest = Stats::Jumps::Distance;
         char distance[64];
         snprintf(distance, sizeof(distance), "jump: %.3f", latest);
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, distance);
         elements++;
     }
-    if (sar_hud_jump_peak.GetBool()) {
+    if (Cheats::sar_hud_jump_peak.GetBool()) {
         auto peak = Stats::Jumps::Distance;
         char distance[64];
         snprintf(distance, sizeof(distance), "jump peak: %.3f", peak);
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, distance);
         elements++;
     }
-    if (sar_hud_velocity_peak.GetBool()) {
+    if (Cheats::sar_hud_velocity_peak.GetBool()) {
         auto peak = Stats::Velocity::Peak;
         char velocity[64];
         snprintf(velocity, sizeof(velocity), "vel peak: %.3f", peak);
@@ -191,7 +190,7 @@ DETOUR(Paint, int mode)
         elements++;
     }
     // Routing
-    if (sar_hud_trace.GetBool()) {
+    if (Cheats::sar_hud_trace.GetBool()) {
         auto xyz = Routing::Tracer::GetDifferences();
         auto result = Routing::Tracer::GetResult();
         char trace[64];
