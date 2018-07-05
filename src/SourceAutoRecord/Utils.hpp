@@ -1,4 +1,5 @@
 #pragma once
+#include "minhook/MinHook.h"
 #include "vmthook/vmthook.h"
 
 #include "Utils/Math.hpp"
@@ -16,6 +17,12 @@ typedef std::unique_ptr<VMTHook> VMT;
 
 #define UNHOOK(vmt, name) \
     if (vmt) vmt->UnhookFunction(Offsets::##name);
+
+bool mhInitialized = false;
+#define MH_HOOK(orig, detour) \
+    if (!mhInitialized) { MH_Initialize(); mhInitialized = true; } \
+    MH_CreateHook(reinterpret_cast<LPVOID>(orig), detour, nullptr); \
+    MH_EnableHook(reinterpret_cast<LPVOID>(orig));
 
 #define _GAME_PATH(x) #x
 

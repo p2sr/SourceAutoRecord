@@ -42,7 +42,11 @@ Variable sar_stats_auto_reset("sar_stats_auto_reset", "0", 0, "Resets all stats 
 Variable sar_autojump("sar_autojump", "0", "Enables automatic jumping on the server.\n");
 Variable sar_jumpboost("sar_jumpboost", "0", 0, "Enables special game movement on the server. "
     "0 = Default, 1 = Orange Box Engine, 2 = Pre-OBE\n");
-Variable sar_aircontrol("sar_aircontrol", "0", "Enables more air-control on the server.\n");
+Variable sar_aircontrol("sar_aircontrol", "0",
+#ifdef _WIN32
+    0,
+#endif
+    "Enables more air-control on the server.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
 Variable sar_tas_autostart("sar_tas_autostart", "1", "Starts queued commands automatically on first frame after a load.\n");
 

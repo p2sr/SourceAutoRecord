@@ -152,10 +152,47 @@ DETOUR(FinishGravity)
     return Original::FinishGravity(thisptr);
 }
 
+#ifdef _WIN32
+// CGameMovement::AirMove
+namespace Original {
+    void* AirMove_Continue;
+    void* AirMove_Skip;
+}
+
+namespace Detour {
+    __declspec(naked) void AirMove_Mid()
+    {
+        __asm {
+            pushad
+            pushfd
+        }
+
+        if ((!Cheats::sv_bonus_challenge.GetBool() || Cheats::sv_cheats.GetBool()) && Cheats::sar_aircontrol.GetBool()) {
+            __asm {
+                popfd
+                popad
+                jmp Original::AirMove_Skip
+            }
+        }
+
+        __asm {
+            popfd
+            popad
+            movss xmm2, dword ptr[eax + 0x40]
+            jmp Original::AirMove_Continue
+        }
+    }
+}
+#endif
+
 // CGameMovement::AirMove
 DETOUR_B(AirMove)
 {
+#ifdef _WIN32
+    if (Cheats::sar_aircontrol.GetInt() >= 2) {
+#else
     if (Cheats::sar_aircontrol.GetBool()) {
+#endif
         return Original::AirMoveBase(thisptr);
     }
     return Original::AirMove(thisptr);
@@ -178,12 +215,23 @@ void Hook()
             HOOK(g_GameMovement, FinishGravity);
             HOOK(g_GameMovement, AirMove);
 
-            // TODO
             auto destructor = g_GameMovement->GetOriginalFunction<uintptr_t>(0);
             auto baseDestructor = Memory::ReadAbsoluteAddress(destructor + Offsets::AirMove_Offset1);
             auto baseOffset = *reinterpret_cast<uintptr_t*>(baseDestructor + Offsets::AirMove_Offset2);
             auto airMoveAddr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
             Original::AirMoveBase = reinterpret_cast<_AirMove>(airMoveAddr);
+
+#ifdef _WIN32
+            auto midAirMoveAddr = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + 679;
+            if (Memory::FindAddress(midAirMoveAddr, midAirMoveAddr + 5, "F3 0F 10 50 40") == midAirMoveAddr) {
+                MH_HOOK(midAirMoveAddr, Detour::AirMove_Mid);
+                Original::AirMove_Continue = reinterpret_cast<void*>(midAirMoveAddr + 5);
+                Original::AirMove_Skip = reinterpret_cast<void*>(midAirMoveAddr + 142);
+                Console::DevMsg("SAR: Verified sar_aircontrol 1!\n");
+            } else {
+                Console::Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
+            }
+#endif
 
             /*HOOK(g_GameMovement, AirAccelerate);
             auto airAccelerateAddr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirAccelerate * sizeof(uintptr_t*));
