@@ -40,6 +40,8 @@ int __attribute__((constructor)) Main()
 
         Config::Load();
 
+        SAR::IsPlugin();
+
         Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
         return 0;
     } else {

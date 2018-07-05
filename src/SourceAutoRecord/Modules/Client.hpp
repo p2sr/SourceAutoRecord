@@ -4,7 +4,7 @@
 #include "Console.hpp"
 #include "Engine.hpp"
 
-#include "Features/TAS.hpp"
+#include "Features/Tas.hpp"
 
 #include "Cheats.hpp"
 #include "Game.hpp"

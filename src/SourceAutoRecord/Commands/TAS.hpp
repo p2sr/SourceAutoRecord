@@ -2,7 +2,7 @@
 #include "Modules/Console.hpp"
 #include "Modules/Tier1.hpp"
 
-#include "Features/TAS.hpp"
+#include "Features/Tas.hpp"
 
 #include "Command.hpp"
 

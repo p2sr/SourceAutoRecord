@@ -52,7 +52,7 @@ struct Command {
     static int RegisterAll()
     {
         auto result = 0;
-        for (auto command : list) {
+        for (auto command : Command::list) {
             if (command->shouldRegister && !command->shouldRegister()) {
                 continue;
             }
@@ -63,11 +63,13 @@ struct Command {
     }
     static void UnregisterAll()
     {
-        for (auto command : list) {
+        for (auto command : Command::list) {
             command->Unregister();
         }
     }
 };
+
+std::vector<Command*> Command::list;
 
 #define CON_COMMAND(name, description) \
     namespace Commands { \

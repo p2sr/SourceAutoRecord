@@ -30,6 +30,7 @@ void* ISchemeManager;
 void* IClientEntityList;
 void* IServerGameDLL;
 void* ICVar;
+void* IServerPluginHelpers;
 
 void* Get(const char* filename, const char* interfaceSymbol)
 {
@@ -77,5 +78,6 @@ void Init()
     IGameMovement = Get(MODULE("server"), "GameMovement0");
     IServerGameDLL = Get(MODULE("server"), "ServerGameDLL0");
     ICVar = Get(MODULE("vstdlib"), "VEngineCvar0");
+    IServerPluginHelpers = Get(MODULE("engine"), "ISERVERPLUGINHELPERS0");
 }
 }

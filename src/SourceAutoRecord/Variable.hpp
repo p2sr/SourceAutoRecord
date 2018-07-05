@@ -63,7 +63,7 @@ struct Variable {
         this->ptr->m_bHasMax = hasmax;
         this->ptr->m_fMaxVal = max;
 
-        list.push_back(this);
+        Variable::list.push_back(this);
     }
     bool GetBool()
     {
@@ -151,7 +151,7 @@ struct Variable {
     static int RegisterAll()
     {
         auto result = 0;
-        for (auto var : list) {
+        for (auto var : Variable::list) {
             if (var->shouldRegister && !var->shouldRegister()) {
                 continue;
             }
@@ -162,8 +162,10 @@ struct Variable {
     }
     static void UnregisterAll()
     {
-        for (auto var : list) {
+        for (auto var : Variable::list) {
             var->Unregister();
         }
     }
 };
+
+std::vector<Variable*> Variable::list;

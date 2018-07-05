@@ -222,6 +222,9 @@
     <ClInclude Include="Commands\Timer.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
+    <ClInclude Include="Plugin.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

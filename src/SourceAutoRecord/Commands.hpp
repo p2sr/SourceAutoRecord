@@ -8,7 +8,5 @@
 #include "Commands/Routing.hpp"
 #include "Commands/Stats.hpp"
 #include "Commands/Summary.hpp"
-#include "Commands/TAS.hpp"
+#include "Commands/Tas.hpp"
 #include "Commands/Timer.hpp"
-
-// TODO: Remove this

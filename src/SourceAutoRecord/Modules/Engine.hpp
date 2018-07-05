@@ -8,7 +8,7 @@
 #include "Features/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
-#include "Features/TAS.hpp"
+#include "Features/Tas.hpp"
 #include "Features/Timer.hpp"
 
 #include "Game.hpp"

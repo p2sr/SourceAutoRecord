@@ -82,6 +82,7 @@
     <TargetExt>.dll</TargetExt>
     <OutDir>$(SolutionDir)\bin\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\libs;$(ProjectDir)</IncludePath>
+    <TargetName>sar</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -125,6 +126,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(ProjectDir)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Portal 2\$(TargetName).dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -171,7 +175,7 @@
     <ClInclude Include="Commands\Routing.hpp" />
     <ClInclude Include="Commands\Stats.hpp" />
     <ClInclude Include="Commands\Summary.hpp" />
-    <ClInclude Include="Commands\TAS.hpp" />
+    <ClInclude Include="Commands\Tas.hpp" />
     <ClInclude Include="Commands\Timer.hpp" />
     <ClInclude Include="Features\Config.hpp" />
     <ClInclude Include="Features\Demo.hpp" />
@@ -181,7 +185,7 @@
     <ClInclude Include="Features\Stats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
-    <ClInclude Include="Features\TAS.hpp" />
+    <ClInclude Include="Features\Tas.hpp" />
     <ClInclude Include="Features\Teleporter.hpp" />
     <ClInclude Include="Features\Timer.hpp" />
     <ClInclude Include="Features\TimerAverage.hpp" />
@@ -211,6 +215,7 @@
     <ClInclude Include="Modules\VGui.hpp" />
     <ClInclude Include="Offsets.hpp" />
     <ClInclude Include="Patterns.hpp" />
+    <ClInclude Include="Plugin.hpp" />
     <ClInclude Include="SourceAutoRecord.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="Utils\Math.hpp" />

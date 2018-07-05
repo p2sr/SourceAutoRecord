@@ -9,7 +9,7 @@ namespace Injector
     internal static class Program
     {
         private static readonly string[] _defaultProcs = new string[] { "portal2", "hl2", "stanley", "beginnersguide" };
-        private const string _defaultLib = "SourceAutoRecord.dll";
+        private const string _defaultLib = "sar.dll";
 
         private static void Main(string[] args)
         {
