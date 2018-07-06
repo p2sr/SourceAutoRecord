@@ -94,7 +94,7 @@ namespace Injector
                     Console.WriteLine($"Successfully injected {dll} into process {proc.ProcessName}!");
             }
             else
-                Console.WriteLine($"Could not find supported process!");
+                Console.WriteLine("Could not find supported process!");
 
             Console.ReadKey();
         }

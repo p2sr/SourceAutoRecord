@@ -11,12 +11,6 @@
 
 #define IN_JUMP (1 << 1)
 
-#define FL_ONGROUND (1 << 0)
-#define FL_FROZEN (1 << 5)
-#define FL_ATCONTROLS (1 << 6)
-
-#define MOVETYPE_NOCLIP 8
-
 namespace Server {
 
 VMT g_GameMovement;
@@ -87,7 +81,7 @@ DETOUR(PlayerMove)
     auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
     auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
     auto m_nWaterLevel = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_nWaterLevel);
-    auto m_pSurfaceData = *reinterpret_cast<void**>((uintptr_t)player + Offsets::m_pSurfaceData);
+    //auto m_pSurfaceData = *reinterpret_cast<void**>((uintptr_t)player + Offsets::m_pSurfaceData);
 
     auto frametime = *reinterpret_cast<float*>((uintptr_t)gpGlobals + Offsets::frametime);
     auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
@@ -96,7 +90,6 @@ DETOUR(PlayerMove)
     if (Stats::Jumps::IsTracing
         && m_fFlags & FL_ONGROUND
         && m_MoveType != MOVETYPE_NOCLIP) {
-
         Stats::Jumps::EndTrace(Client::GetAbsOrigin(), Cheats::sar_stats_jumps_xy.GetBool());
     }
 
@@ -104,13 +97,12 @@ DETOUR(PlayerMove)
 
     // Player is on ground and moving etc.
     if (StepCounter::StepSoundTime <= 0
-        && m_fFlags & FL_ONGROUND && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
-        && m_vecVelocity.Length2D() > 0.0001f
-        && m_pSurfaceData
         && m_MoveType != MOVETYPE_NOCLIP
-        && Cheats::sv_footsteps.GetFloat()) {
-
-        StepCounter::Increment(m_fFlags, m_vecVelocity, m_nWaterLevel);
+        && Cheats::sv_footsteps.GetFloat()
+        && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
+        && ((m_fFlags & FL_ONGROUND && m_vecVelocity.Length2D() > 0.0001f)
+            || m_MoveType == MOVETYPE_LADDER)) {
+        StepCounter::Increment(m_fFlags, m_MoveType, m_vecVelocity, m_nWaterLevel);
     }
 
     Stats::Velocity::Save(Client::GetLocalVelocity(), Cheats::sar_stats_velocity_peak_xy.GetBool());
@@ -158,7 +150,6 @@ namespace Original {
     void* AirMove_Continue;
     void* AirMove_Skip;
 }
-
 namespace Detour {
     __declspec(naked) void AirMove_Mid()
     {

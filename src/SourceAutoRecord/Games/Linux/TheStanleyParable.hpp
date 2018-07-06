@@ -2,7 +2,7 @@
 #include "Offsets.hpp"
 #include "Patterns.hpp"
 
-#include "Games/Portal2.hpp"
+#include "Portal2.hpp"
 
 namespace TheStanleyParable {
 

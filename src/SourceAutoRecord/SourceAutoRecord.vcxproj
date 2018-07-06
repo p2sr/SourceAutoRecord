@@ -127,7 +127,10 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\libs;$(ProjectDir)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Portal 2\$(TargetName).dll"</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Portal 2\$(TargetName).dll"
+copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Half-Life 2\hl2\$(TargetName).dll"
+copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\The Stanley Parable\$(TargetName).dll"
+copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\The Beginners Guide\$(TargetName).dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -192,12 +195,10 @@
     <ClInclude Include="Features\TimerCheckPoints.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="Games\Linux\HalfLife2.hpp" />
-    <ClInclude Include="Games\Linux\Portal.hpp" />
     <ClInclude Include="Games\Linux\Portal2.hpp" />
     <ClInclude Include="Games\Linux\TheBeginnersGuide.hpp" />
     <ClInclude Include="Games\Linux\TheStanleyParable.hpp" />
     <ClInclude Include="Games\Windows\HalfLife2.hpp" />
-    <ClInclude Include="Games\Windows\Portal.hpp" />
     <ClInclude Include="Games\Windows\Portal2.hpp" />
     <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp" />
     <ClInclude Include="Games\Windows\TheStanleyParable.hpp" />

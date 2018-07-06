@@ -2,7 +2,7 @@
 #include "Offsets.hpp"
 #include "Patterns.hpp"
 
-#include "Games/TheStanleyParable.hpp"
+#include "TheStanleyParable.hpp"
 
 namespace TheBeginnersGuide {
 

@@ -10,18 +10,19 @@ using namespace Patterns;
 void Patterns()
 {
     Init();
+    Create("client.dll", "FindElement");
 
     // engine.dll
-
-    // \x55\x8B\xEC\xF3\x0F\x10\x45\x00\x8B\x55\x14 xxxxxxx?xxx
-    Add("ConVarCtor", "Portal 2 Build 7054",
-        "ConVar::ConVar",
-        "55 8B EC F3 0F 10 45 ? 8B 55 14");
 
     // \x55\x8B\xEC\x8B\x45\x0C\x53\x33\xDB\x56\x8B\xF1\x8B\x4D\x18\x80\x4E\x20\x02 xxxxxxxxxxxxxxxxxxx
     Add("ConCommandCtor", "Portal 2 Build 7054",
         "ConCommand::ConCommand",
         "55 8B EC 8B 45 0C 53 33 DB 56 8B F1 8B 4D 18 80 4E 20 02");
+
+    // \x55\x8B\xEC\xF3\x0F\x10\x45\x00\x8B\x55\x14 xxxxxxx?xxx
+    Add("ConVarCtor", "Portal 2 Build 7054",
+        "ConVar::ConVar",
+        "55 8B EC F3 0F 10 45 ? 8B 55 14");
 
     // \x55\x8B\xEC\x51\x53\x56\x57\x8B\xF1\xE8\x00\x00\x00\x00\x8B\x1D\x00\x00\x00\x00 xxxxxxxxxx????xx????
     Add("m_bLoadgame", "Portal 2 Build 7054",
@@ -92,6 +93,8 @@ void Offsets()
     demorecorder = 87; // CClientState::Disconnect
     GetCurrentMap = 25; // CEngineTool
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
+
+    // vstdlib.dll
     UnregisterConCommand = 10; // CCvar 
 
     // vgui2.dll
@@ -133,7 +136,7 @@ void Offsets()
     m_vecAbsOrigin = 156; // C_BasePlayer::GetAbsOrigin
     m_angAbsRotation = 192; // C_BasePlayer::GetAbsAngles
     m_vecVelocity = 264; // CFPSPanel::Paint
-    GetClientEntity = 3; // CClientEntityList
+    GetClientEntity = 3; // CClientEntityList/IClientEntityList
     GetFlags = 248; // C_BasePlayer::PhysicsSimulate
     CreateMove = 24; // CHLClient
     GetName = 10; // CHud

@@ -7,6 +7,13 @@
 #include "SourceAutoRecord.hpp"
 #include "Utils.hpp"
 
+#define CreateInterfaceInternal_Offset 5
+#ifdef _WIN32
+#define s_pInterfaceRegs_Offset 6
+#else
+#define s_pInterfaceRegs_Offset 11
+#endif
+
 namespace Interfaces {
 
 typedef void* (*CreateInterfaceFn)(const char* pName, int* pReturnCode);
@@ -48,8 +55,8 @@ void* Get(const char* filename, const char* interfaceSymbol)
         return nullptr;
     }
 
-    auto CreateInterfaceInternal = Memory::ReadAbsoluteAddress((uintptr_t)CreateInterface + 5);
-    auto s_pInterfaceRegs = **reinterpret_cast<InterfaceReg***>(CreateInterfaceInternal + 6);
+    auto CreateInterfaceInternal = Memory::ReadAbsoluteAddress((uintptr_t)CreateInterface + CreateInterfaceInternal_Offset);
+    auto s_pInterfaceRegs = **reinterpret_cast<InterfaceReg***>(CreateInterfaceInternal + s_pInterfaceRegs_Offset);
 
     void* result = nullptr;
     for (auto current = s_pInterfaceRegs; current; current = current->m_pNext) {

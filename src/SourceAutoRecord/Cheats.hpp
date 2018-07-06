@@ -8,7 +8,8 @@ namespace Cheats {
 Variable sar_autorecord("sar_autorecord", "0", "Enables automatic demo recording.\n");
 Variable sar_save_flag("sar_save_flag", "#SAVE#", "Echo message when using sar_bind_save. "
     "Default is \"#SAVE#\", a SourceRuns standard. Keep this empty if no echo message should be binded.\n", 0);
-Variable sar_time_demo_dev("sar_time_demo_dev", "0", 0, "RIP");
+Variable sar_time_demo_dev("sar_time_demo_dev", "0", 0, "Printing mode when using sar_time_demo. "
+    "0 = default, 1 = console commands, 2 = console commands & packets.\n");
 Variable sar_sum_during_session("sar_sum_during_session", "1", "Updates the summary counter automatically during a session.\n");
 Variable sar_timer_always_running("sar_timer_always_running", "1", "Timer will save current value when disconnecting.\n");
 Variable sar_hud_text("sar_hud_text", "", "Draws specified text when not empty.\n", 0);
@@ -70,6 +71,7 @@ void Init()
     sar_jumpboost.UniqueFor(Game::IsPortal2Engine);
     sar_aircontrol.UniqueFor(Game::IsPortal2Engine);
     sar_disable_challenge_stats_hud.UniqueFor(Game::HasChallengeMode);
+    sar_hud_portals.UniqueFor(Game::IsPortalGame);
 
     cl_showpos = Variable("cl_showpos");
     sv_cheats = Variable("sv_cheats");
@@ -106,6 +108,7 @@ void Init()
         ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
         hide_gun_when_holding = Variable("hide_gun_when_holding");
     } else if (Game::Version == Game::HalfLife2) {
+        // Detecting Portal game really late but it adds nothing really
         auto sv_portal_debug_touch = Variable("sv_portal_debug_touch");
         if (sv_portal_debug_touch.ptr) {
             Game::Version = Game::Portal;
@@ -113,7 +116,7 @@ void Init()
         }
     }
 }
-void Delete()
+void Unload()
 {
     sv_accelerate.Lock();
     sv_airaccelerate.Lock();
@@ -130,8 +133,5 @@ void Delete()
         ui_loadingscreen_transition_time.Lock();
         hide_gun_when_holding.Lock();
     }
-
-    Variable::UnregisterAll();
-    Command::UnregisterAll();
 }
 }

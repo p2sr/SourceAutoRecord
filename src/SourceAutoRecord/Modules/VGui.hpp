@@ -155,12 +155,14 @@ DETOUR(Paint, int mode)
         Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, jumps);
         elements++;
     }
-    if (Cheats::sar_hud_portals.GetBool()) {
-        auto iNumPortalsPlaced = Server::GetPortals();
-        char portals[64];
-        snprintf(portals, sizeof(portals), "portals: %i", iNumPortalsPlaced);
-        Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, portals);
-        elements++;
+    if (Game::IsPortalGame()) {
+        if (Cheats::sar_hud_portals.GetBool()) {
+            auto iNumPortalsPlaced = Server::GetPortals();
+            char portals[64];
+            snprintf(portals, sizeof(portals), "portals: %i", iNumPortalsPlaced);
+            Surface::Draw(font, xPadding, yPadding + elements * (fontSize + spacing), textColor, portals);
+            elements++;
+        }
     }
     if (Cheats::sar_hud_steps.GetBool()) {
         char steps[64];

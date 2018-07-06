@@ -73,7 +73,10 @@ void Cleanup()
     Engine::Unhook();
     Client::Unhook();
 
-    Cheats::Delete();
+    Cheats::Unload();
+
+    Variable::UnregisterAll();
+    Command::UnregisterAll();
 
     Tier1::Shutdown();
 

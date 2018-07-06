@@ -16,6 +16,8 @@
 #include "Interfaces.hpp"
 #include "Utils.hpp"
 
+#define IServerMessageHandler_VMT_Offset 8
+
 namespace Engine {
 
 VMT engine;
@@ -137,6 +139,7 @@ DETOUR(Disconnect, bool bShowMainMenu)
 }
 DETOUR(Disconnect2, int* unk, bool bShowMainMenu)
 {
+    Console::Print("Disconnect2!\n");
     SessionEnded();
     return Original::Disconnect2(thisptr, unk, bShowMainMenu);
 }
@@ -155,6 +158,20 @@ DETOUR(SetSignonState, int state, int count, void* unk)
 
     LastState = state;
     return Original::SetSignonState(thisptr, state, count, unk);
+}
+DETOUR(SetSignonState2, int state, int count)
+{
+    if (state != LastState && LastState == SignonState::Full) {
+        SessionEnded();
+    }
+
+    // Demo recorder starts syncing from this tick
+    if (state == SignonState::Full) {
+        SessionStarted();
+    }
+
+    LastState = state;
+    return Original::SetSignonState2(thisptr, state, count);
 }
 
 void Hook()
@@ -178,13 +195,13 @@ void Hook()
         }
 
         if (SAR::NewVMT(clPtr, cl)) {
-            HOOK_O(cl, SetSignonState, Offsets::Disconnect - 1);
-
             uintptr_t disconnect;
             if (Game::IsPortal2Engine()) {
+                HOOK_O(cl, SetSignonState, Offsets::Disconnect - 1);
                 HOOK(cl, Disconnect);
                 disconnect = (uintptr_t)Original::Disconnect;
             } else {
+                HOOK_O(cl, SetSignonState2, Offsets::Disconnect - 1);
                 HOOK_O(cl, Disconnect2, Offsets::Disconnect);
                 disconnect = (uintptr_t)Original::Disconnect2;
             }
@@ -192,7 +209,7 @@ void Hook()
             DemoPlayer::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demoplayer));
             DemoRecorder::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demorecorder));
 
-            auto IServerMessageHandler_VMT = *reinterpret_cast<uintptr_t*>((uintptr_t)cl->GetThisPtr() + 8);
+            auto IServerMessageHandler_VMT = *reinterpret_cast<uintptr_t*>((uintptr_t)cl->GetThisPtr() + IServerMessageHandler_VMT_Offset);
             auto ProcessTick = *reinterpret_cast<uintptr_t*>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
             tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
             interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
@@ -213,7 +230,7 @@ void Hook()
 void Unhook()
 {
     UNHOOK(cl, Disconnect);
-    //UNHOOK(cl, SetSignonState);
+    UNHOOK_O(cl, Offsets::Disconnect - 1);
 
     SAR::DeleteVMT(engine);
     SAR::DeleteVMT(cl);

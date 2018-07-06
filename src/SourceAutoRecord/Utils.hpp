@@ -1,5 +1,7 @@
 #pragma once
+#ifdef _WIN32
 #include "minhook/MinHook.h"
+#endif
 #include "vmthook/vmthook.h"
 
 #include "Utils/Math.hpp"
@@ -17,12 +19,8 @@ typedef std::unique_ptr<VMTHook> VMT;
 
 #define UNHOOK(vmt, name) \
     if (vmt) vmt->UnhookFunction(Offsets::##name);
-
-bool mhInitialized = false;
-#define MH_HOOK(orig, detour) \
-    if (!mhInitialized) { MH_Initialize(); mhInitialized = true; } \
-    MH_CreateHook(reinterpret_cast<LPVOID>(orig), detour, nullptr); \
-    MH_EnableHook(reinterpret_cast<LPVOID>(orig));
+#define UNHOOK_O(vmt, offset) \
+    if (vmt) vmt->UnhookFunction(offset);
 
 #define _GAME_PATH(x) #x
 
@@ -46,6 +44,12 @@ bool mhInitialized = false;
     namespace Original { _##name name;  _##name name##Base; } \
     namespace Detour { int __fastcall name(void* thisptr, int edx, __VA_ARGS__); } \
     int __fastcall Detour::##name(void* thisptr, int edx, __VA_ARGS__)
+
+bool mhInitialized = false;
+#define MH_HOOK(orig, detour) \
+    if (!mhInitialized) { MH_Initialize(); mhInitialized = true; } \
+    MH_CreateHook(reinterpret_cast<LPVOID>(orig), detour, nullptr); \
+    MH_EnableHook(reinterpret_cast<LPVOID>(orig));
 #else
 #define MODULE_EXTENSION ".so"
 #define GAME_PATH(x) _GAME_PATH(Games/Linux/##x.hpp)

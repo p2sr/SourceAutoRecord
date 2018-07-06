@@ -101,7 +101,7 @@ Mappers can use this for accurate timing, [see below](#mapping).
 - `sar_hud_cps <0-1>` draws last checkpoint value of timer
 - `sar_hud_demo <0-1>` draws current name, tick and time of demo recorder or demo player
 - `sar_hud_jumps <0-1>` draws total jump count
-- `sar_hud_portals <0-1>` draws total portal count
+- `sar_hud_portals <0-1>` draws total portal count (Portal and Portal 2)
 - `sar_hud_steps <0-1>` draws total step count
 - `sar_hud_distance <0-1>` draws calculated jump distance
 - `sar_hud_trace <0-1>` draws tracer result
@@ -154,9 +154,6 @@ Here is a simple TAS of [Propulsion Catch](https://gist.github.com/NeKzor/5ba4fd
 - `sar_trace_a` saves first location to measure a distance
 - `sar_trace_b` saves second location to measure a distance
 - `sar_trace_result` prints calculated distance between saved locations
-- `sar_velocity_peak` prints latest velocity peak
-- `sar_velocity_peak_reset` resets saved velocity peak
-- `sar_velocity_peak_xy <0-1>` saves 2D velocity peak
 
 ##### Unlocked
 - `sv_bonus_challenge` (Portal 2)

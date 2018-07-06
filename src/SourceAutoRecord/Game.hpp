@@ -2,7 +2,6 @@
 #include "Utils.hpp"
 
 #include GAME(HalfLife2)
-#include GAME(Portal)
 #include GAME(Portal2)
 #include GAME(TheBeginnersGuide)
 #include GAME(TheStanleyParable)
@@ -18,11 +17,11 @@ namespace Game {
 
 enum SourceGame {
     Unknown,
-    Portal2, // Portal 2 (7054)
-    Portal, // Portal (1910503)
-    TheStanleyParable, // The Stanley Parable (6130)
-    TheBeginnersGuide, // The Beginners Guide (6172)
-    HalfLife2 // Half-Life 2 (2257546)
+    Portal2,
+    Portal,
+    TheStanleyParable,
+    TheBeginnersGuide,
+    HalfLife2
 };
 
 SourceGame Version = SourceGame::Unknown;
@@ -81,5 +80,10 @@ bool HasChallengeMode()
 bool HasJumpDisabled()
 {
     return Version == SourceGame::TheStanleyParable;
+}
+bool IsPortalGame()
+{
+    return Version == SourceGame::Portal2
+        || Version == SourceGame::Portal;
 }
 }

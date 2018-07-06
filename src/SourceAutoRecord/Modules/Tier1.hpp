@@ -125,6 +125,11 @@ struct CBaseAutoCompleteFileList {
 
 bool Init()
 {
+    if (SAR::NewVMT(Interfaces::ICVar, g_pCVar)) {
+        FindVar = g_pCVar->GetOriginalFunction<_FindVar>(Offsets::FindVar);
+        UnregisterConCommand = g_pCVar->GetOriginalFunction<_UnregisterConCommand>(Offsets::UnregisterConCommand);
+    }
+
     auto cnc = SAR::Find("ConCommandCtor");
     if (cnc.Found) {
         ConCommandCtor = reinterpret_cast<_ConCommand>(cnc.Address);
@@ -135,17 +140,12 @@ bool Init()
         ConVarCtor = reinterpret_cast<_ConVar>(cnv.Address);
     }
 
-    if (SAR::NewVMT(Interfaces::ICVar, g_pCVar)) {
-        FindVar = g_pCVar->GetOriginalFunction<_FindVar>(Offsets::FindVar);
-        UnregisterConCommand = g_pCVar->GetOriginalFunction<_UnregisterConCommand>(Offsets::UnregisterConCommand);
-    }
-
     auto acf = SAR::Find("AutoCompletionFunc");
     if (acf.Found) {
         Original::AutoCompletionFunc = reinterpret_cast<_AutoCompletionFunc>(acf.Address);
     }
 
-    return cnc.Found && cnv.Found && Interfaces::ICVar && acf.Found;
+    return Interfaces::ICVar && cnc.Found && cnv.Found && acf.Found;
 }
 void Shutdown()
 {

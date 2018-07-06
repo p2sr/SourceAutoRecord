@@ -27,7 +27,7 @@ Memory::ScanResult Find(const char* pattern)
     }
     return result;
 }
-bool NewVMT(void* ptr, std::unique_ptr<VMTHook>& hook)
+bool NewVMT(void* ptr, VMT& hook)
 {
     if (ptr) {
         hook = std::make_unique<VMTHook>(ptr);
@@ -35,11 +35,12 @@ bool NewVMT(void* ptr, std::unique_ptr<VMTHook>& hook)
         return true;
     }
 
-    Console::DevWarning("SAR: Skipped creating new VMT for %p.\n", ptr);
+    Console::DevWarning("SAR: Skipped creating one VMT.\n");
     return false;
 }
-void DeleteVMT(std::unique_ptr<VMTHook>& hook)
+void DeleteVMT(VMT& hook)
 {
+    if (!hook) return;
     Console::DevMsg("SAR: Released VMT for %p.\n", hook->GetThisPtr());
     hook.reset();
 }
@@ -52,11 +53,12 @@ void IsPlugin()
     if (LoadedAsPlugin) {
         Console::DevMsg("SAR: Loaded SAR as plugin! Trying to disable itself...\n");
         if (Interfaces::IServerPluginHelpers) {
-            auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + 16);
+            auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + m_Size_Offset);
             if (m_Size > 0) {
-                auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + 4);
+                auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + m_Plugins_Offset);
                 for (int i = 0; i < m_Size; i++) {
                     auto plugin = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
+                    Console::Print("%s\n", plugin->m_szName);
                     if (std::strcmp(plugin->m_szName, SAR_SIGNATURE) == 0) {
                         plugin->m_bDisable = true;
                         Console::DevMsg("SAR: Disabled SAR in the plugin list!\n");
