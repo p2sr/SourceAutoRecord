@@ -29,7 +29,7 @@ void Draw(unsigned long font, int x, int y, Color clr, char* fmt, ...)
 
 void Hook()
 {
-    if (SAR::NewVMT(Interfaces::ISurface, matsurface)) {
+    CREATE_VMT(Interfaces::ISurface, matsurface) {
         DrawColoredText = matsurface->GetOriginalFunction<_DrawColoredText>(Offsets::DrawColoredText);
         GetFontTall = matsurface->GetOriginalFunction<_GetFontTall>(Offsets::GetFontTall);
     }
@@ -43,6 +43,6 @@ void Hook()
 }
 void Unhook()
 {
-    SAR::DeleteVMT(matsurface);
+    DELETE_VMT(matsurface);
 }
 }

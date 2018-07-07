@@ -59,7 +59,7 @@ namespace DemoPlayer {
 
     void Hook(void* demoplayer)
     {
-        if (SAR::NewVMT(demoplayer, s_ClientDemoPlayer)) {
+        CREATE_VMT(demoplayer, s_ClientDemoPlayer) {
             HOOK(s_ClientDemoPlayer, StartPlayback);
 
             GetPlaybackTick = s_ClientDemoPlayer->GetOriginalFunction<_GetPlaybackTick>(Offsets::GetPlaybackTick);
@@ -70,7 +70,7 @@ namespace DemoPlayer {
     void Unhook()
     {
         UNHOOK(s_ClientDemoPlayer, StartPlayback);
-        SAR::DeleteVMT(s_ClientDemoPlayer);
+        DELETE_VMT(s_ClientDemoPlayer);
     }
 }
 }

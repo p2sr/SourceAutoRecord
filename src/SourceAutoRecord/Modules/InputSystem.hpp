@@ -24,7 +24,7 @@ int GetButton(const char* pString)
 
 void Hook()
 {
-    if (SAR::NewVMT(Interfaces::IInputSystem, g_InputSystem)) {
+    CREATE_VMT(Interfaces::IInputSystem, g_InputSystem) {
         StringToButtonCode = g_InputSystem->GetOriginalFunction<_StringToButtonCode>(Offsets::StringToButtonCode);
     }
 
@@ -35,6 +35,6 @@ void Hook()
 }
 void Unhook()
 {
-    SAR::DeleteVMT(g_InputSystem);
+    DELETE_VMT(g_InputSystem);
 }
 }

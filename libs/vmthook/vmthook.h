@@ -54,7 +54,12 @@ class VMTHook {
 			*this->baseclass = this->original_vft;
 		};
 
-		template <typename Fn> inline const Fn GetOriginalFunction(std::size_t function_index) {
+		template <typename Fn> inline const Fn GetOriginalFunction(std::size_t function_index, bool read_jmp = false) {
+            if (read_jmp) {
+                auto source = this->original_vft[function_index] + 1;
+                auto rel = *reinterpret_cast<uintptr_t*>(source);
+                return (Fn)(source + rel + sizeof(rel));
+            }
 			return (Fn)this->original_vft[function_index];
 		}
 

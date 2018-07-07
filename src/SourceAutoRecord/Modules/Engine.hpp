@@ -176,7 +176,7 @@ DETOUR(SetSignonState2, int state, int count)
 
 void Hook()
 {
-    if (SAR::NewVMT(Interfaces::IVEngineClient, engine)) {
+    CREATE_VMT(Interfaces::IVEngineClient, engine) {
         ClientCmd = engine->GetOriginalFunction<_ClientCmd>(Offsets::ClientCmd);
         GetLocalPlayer = engine->GetOriginalFunction<_GetLocalPlayer>(Offsets::GetLocalPlayer);
         GetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::GetViewAngles);
@@ -194,7 +194,7 @@ void Hook()
             clPtr = *reinterpret_cast<void**>(ServerCmdKeyValues + Offsets::cl);
         }
 
-        if (SAR::NewVMT(clPtr, cl)) {
+        CREATE_VMT(clPtr, cl) {
             uintptr_t disconnect;
             if (Game::IsPortal2Engine()) {
                 HOOK_O(cl, SetSignonState, Offsets::Disconnect - 1);
@@ -216,8 +216,8 @@ void Hook()
         }
     }
 
-    if (Interfaces::IEngineTool) {
-        auto tool = std::make_unique<VMTHook>(Interfaces::IEngineTool);
+    VMT tool;
+    CREATE_VMT(Interfaces::IEngineTool, tool) {
         auto GetCurrentMap = tool->GetOriginalFunction<uintptr_t>(Offsets::GetCurrentMap);
         m_szLevelName = reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
     }
@@ -232,8 +232,8 @@ void Unhook()
     UNHOOK(cl, Disconnect);
     UNHOOK_O(cl, Offsets::Disconnect - 1);
 
-    SAR::DeleteVMT(engine);
-    SAR::DeleteVMT(cl);
+    DELETE_VMT(engine);
+    DELETE_VMT(cl);
 
     DemoPlayer::Unhook();
     DemoRecorder::Unhook();

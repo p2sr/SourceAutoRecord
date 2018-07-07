@@ -74,7 +74,7 @@ namespace DemoRecorder {
 
     void Hook(void* demorecorder)
     {
-        if (SAR::NewVMT(demorecorder, s_ClientDemoRecorder)) {
+        CREATE_VMT(demorecorder, s_ClientDemoRecorder) {
             HOOK(s_ClientDemoRecorder, SetSignonState);
             HOOK(s_ClientDemoRecorder, StopRecording);
 
@@ -88,7 +88,7 @@ namespace DemoRecorder {
     {
         UNHOOK(s_ClientDemoRecorder, SetSignonState);
         UNHOOK(s_ClientDemoRecorder, StopRecording);
-        SAR::DeleteVMT(s_ClientDemoRecorder);
+        DELETE_VMT(s_ClientDemoRecorder);
     }
 }
 }

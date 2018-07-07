@@ -11,6 +11,13 @@
 
 #define IN_JUMP (1 << 1)
 
+#ifdef _WIN32
+#define AirMove_Mid_Offset 679
+#define AirMove_Signature "F3 0F 10 50 40"
+#define AirMove_Continue_Offset 5
+#define AirMove_Skip_Offset 142
+#endif
+
 namespace Server {
 
 VMT g_GameMovement;
@@ -81,7 +88,6 @@ DETOUR(PlayerMove)
     auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
     auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
     auto m_nWaterLevel = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_nWaterLevel);
-    //auto m_pSurfaceData = *reinterpret_cast<void**>((uintptr_t)player + Offsets::m_pSurfaceData);
 
     auto frametime = *reinterpret_cast<float*>((uintptr_t)gpGlobals + Offsets::frametime);
     auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
@@ -198,7 +204,7 @@ DETOUR_B(AirMove)
 
 void Hook()
 {
-    if (SAR::NewVMT(Interfaces::IGameMovement, g_GameMovement)) {
+    CREATE_VMT(Interfaces::IGameMovement, g_GameMovement) {
         HOOK(g_GameMovement, CheckJumpButton);
         HOOK(g_GameMovement, PlayerMove);
 
@@ -206,18 +212,18 @@ void Hook()
             HOOK(g_GameMovement, FinishGravity);
             HOOK(g_GameMovement, AirMove);
 
-            auto destructor = g_GameMovement->GetOriginalFunction<uintptr_t>(0);
-            auto baseDestructor = Memory::ReadAbsoluteAddress(destructor + Offsets::AirMove_Offset1);
-            auto baseOffset = *reinterpret_cast<uintptr_t*>(baseDestructor + Offsets::AirMove_Offset2);
+            auto ctor = g_GameMovement->GetOriginalFunction<uintptr_t>(0);
+            auto baseCtor = Memory::ReadAbsoluteAddress(ctor + Offsets::AirMove_Offset1);
+            auto baseOffset = *reinterpret_cast<uintptr_t*>(baseCtor + Offsets::AirMove_Offset2);
             auto airMoveAddr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
             Original::AirMoveBase = reinterpret_cast<_AirMove>(airMoveAddr);
 
 #ifdef _WIN32
-            auto midAirMoveAddr = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + 679;
-            if (Memory::FindAddress(midAirMoveAddr, midAirMoveAddr + 5, "F3 0F 10 50 40") == midAirMoveAddr) {
+            auto midAirMoveAddr = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + AirMove_Mid_Offset;
+            if (Memory::FindAddress(midAirMoveAddr, midAirMoveAddr + 5, AirMove_Signature) == midAirMoveAddr) {
                 MH_HOOK(midAirMoveAddr, Detour::AirMove_Mid);
-                Original::AirMove_Continue = reinterpret_cast<void*>(midAirMoveAddr + 5);
-                Original::AirMove_Skip = reinterpret_cast<void*>(midAirMoveAddr + 142);
+                Original::AirMove_Continue = reinterpret_cast<void*>(midAirMoveAddr + AirMove_Continue_Offset);
+                Original::AirMove_Skip = reinterpret_cast<void*>(midAirMoveAddr + AirMove_Skip_Offset);
                 Console::DevMsg("SAR: Verified sar_aircontrol 1!\n");
             } else {
                 Console::Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
@@ -233,8 +239,8 @@ void Hook()
         gpGlobals = **reinterpret_cast<void***>(FullTossMove + Offsets::gpGlobals);
     }
 
-    if (Interfaces::IServerGameDLL) {
-        auto g_ServerGameDLL = std::make_unique<VMTHook>(Interfaces::IServerGameDLL);
+    VMT g_ServerGameDLL;
+    CREATE_VMT(Interfaces::IServerGameDLL, g_ServerGameDLL) {
         auto Think = g_ServerGameDLL->GetOriginalFunction<uintptr_t>(Offsets::Think);
         auto addr = Memory::ReadAbsoluteAddress(Think + Offsets::UTIL_PlayerByIndex);
         UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(addr);
@@ -248,6 +254,9 @@ void Unhook()
     UNHOOK(g_GameMovement, PlayerMove);
     UNHOOK(g_GameMovement, AirMove);
     //UNHOOK(g_GameMovement, AirAccelerate);
-    SAR::DeleteVMT(g_GameMovement);
+#ifdef _WIN32
+    MH_UNHOOK(g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + AirMove_Mid_Offset);
+#endif
+    DELETE_VMT(g_GameMovement);
 }
 }

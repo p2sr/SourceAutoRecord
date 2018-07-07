@@ -52,7 +52,11 @@ const char* GetVersion()
     case SourceGame::Portal:
         return "Portal (1910503)";
     case SourceGame::TheStanleyParable:
+#ifdef _WIN32
+        return "The Stanley Parable (5454)";
+#else
         return "The Stanley Parable (6130)";
+#endif
     case SourceGame::TheBeginnersGuide:
         return "The Beginners Guide (6172)";
     case SourceGame::HalfLife2:

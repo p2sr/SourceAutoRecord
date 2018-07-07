@@ -90,7 +90,12 @@ DETOUR_T(const char*, GetName)
 
 void Hook()
 {
-    if (SAR::NewVMT(Interfaces::IBaseClientDLL, clientdll)) {
+    bool readJmp = false;
+#ifdef _WIN32
+    readJmp = Game::Version == Game::TheStanleyParable;
+#endif
+
+    CREATE_VMT(Interfaces::IBaseClientDLL, clientdll) {
         HOOK(clientdll, HudUpdate);
 
         if (Game::Version == Game::Portal2) {
@@ -104,28 +109,30 @@ void Hook()
                 auto gHUD = reinterpret_cast<_GetHud>(GetHudAddr)(-1);
 
                 auto element = FindElement(gHUD, "CHUDChallengeStats");
-                if (SAR::NewVMT(element, g_HUDChallengeStats)) {
+                CREATE_VMT(element, g_HUDChallengeStats) {
                     HOOK(g_HUDChallengeStats, GetName);
                 }
             }
         } else if (Game::Version == Game::TheStanleyParable) {
-            auto IN_ActivateMouse = clientdll->GetOriginalFunction<uintptr_t>(Offsets::IN_ActivateMouse);
-            auto g_InputAdr = **reinterpret_cast<void***>(IN_ActivateMouse + Offsets::g_Input);
-            auto g_Input = std::make_unique<VMTHook>(g_InputAdr);
+            VMT g_Input;
+            auto IN_ActivateMouse = clientdll->GetOriginalFunction<uintptr_t>(Offsets::IN_ActivateMouse, readJmp);
+            auto g_InputAddr = **reinterpret_cast<void***>(IN_ActivateMouse + Offsets::g_Input);
 
-            auto GetButtonBits = g_Input->GetOriginalFunction<uintptr_t>(Offsets::GetButtonBits);
-            in_jump = *reinterpret_cast<void**>((uintptr_t)GetButtonBits + Offsets::in_jump);
+            CREATE_VMT(g_InputAddr, g_Input) {
+                auto GetButtonBits = g_Input->GetOriginalFunction<uintptr_t>(Offsets::GetButtonBits, readJmp);
+                in_jump = *reinterpret_cast<void**>((uintptr_t)GetButtonBits + Offsets::in_jump);
 
-            auto JoyStickApplyMovement = g_Input->GetOriginalFunction<uintptr_t>(Offsets::JoyStickApplyMovement);
-            auto keyDownAddr = Memory::ReadAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyDown);
-            auto keyUpAddr = Memory::ReadAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyUp);
-            KeyDown = reinterpret_cast<_KeyDown>(keyDownAddr);
-            KeyUp = reinterpret_cast<_KeyUp>(keyUpAddr);
+                auto JoyStickApplyMovement = g_Input->GetOriginalFunction<uintptr_t>(Offsets::JoyStickApplyMovement, readJmp);
+                auto keyDownAddr = Memory::ReadAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyDown);
+                auto keyUpAddr = Memory::ReadAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyUp);
+                KeyDown = reinterpret_cast<_KeyDown>(keyDownAddr);
+                KeyUp = reinterpret_cast<_KeyUp>(keyUpAddr);
+            }
         }
+    }
 
-        if (SAR::NewVMT(Interfaces::IClientEntityList, s_EntityList)) {
-            GetClientEntity = s_EntityList->GetOriginalFunction<_GetClientEntity>(Offsets::GetClientEntity);
-        }
+    CREATE_VMT(Interfaces::IClientEntityList, s_EntityList) {
+        GetClientEntity = s_EntityList->GetOriginalFunction<_GetClientEntity>(Offsets::GetClientEntity, readJmp);
     }
 }
 void Unhook()
@@ -133,8 +140,8 @@ void Unhook()
     UNHOOK(clientdll, HudUpdate);
     UNHOOK(g_HUDChallengeStats, GetName);
 
-    SAR::DeleteVMT(clientdll);
-    SAR::DeleteVMT(g_HUDChallengeStats);
-    SAR::DeleteVMT(s_EntityList);
+    DELETE_VMT(clientdll);
+    DELETE_VMT(g_HUDChallengeStats);
+    DELETE_VMT(s_EntityList);
 }
 }

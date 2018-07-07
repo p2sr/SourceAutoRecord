@@ -30,9 +30,9 @@ public:
     {
         return playbackTime / playbackTicks;
     }
-    int Tickrate()
+    float Tickrate()
     {
-        return (int)std::ceil(playbackTicks / playbackTime);
+        return playbackTicks / playbackTime;
     }
 };
 

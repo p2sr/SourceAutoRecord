@@ -3,6 +3,7 @@
 
 #include "Modules/Console.hpp"
 
+#include "Game.hpp"
 #include "Interfaces.hpp"
 #include "Patterns.hpp"
 #include "Plugin.hpp"
@@ -27,21 +28,21 @@ Memory::ScanResult Find(const char* pattern)
     }
     return result;
 }
-bool NewVMT(void* ptr, VMT& hook)
+bool NewVMT(void* ptr, VMT& hook, const char* caller = "unknown")
 {
     if (ptr) {
         hook = std::make_unique<VMTHook>(ptr);
-        Console::DevMsg("SAR: Created new VMT for %p with %i functions.\n", ptr, hook->GetTotalFunctions());
+        Console::DevMsg("SAR: Created new VMT for %s %p with %i functions.\n", caller, ptr, hook->GetTotalFunctions());
         return true;
     }
 
-    Console::DevWarning("SAR: Skipped creating one VMT.\n");
+    Console::DevWarning("SAR: Failed to create VMT for %s.\n", caller);
     return false;
 }
-void DeleteVMT(VMT& hook)
+void DeleteVMT(VMT& hook, const char* caller = "unknown")
 {
     if (!hook) return;
-    Console::DevMsg("SAR: Released VMT for %p.\n", hook->GetThisPtr());
+    Console::DevMsg("SAR: Deleted VMT for %s %p.\n", caller, hook->GetThisPtr());
     hook.reset();
 }
 
@@ -54,11 +55,12 @@ void IsPlugin()
         Console::DevMsg("SAR: Loaded SAR as plugin! Trying to disable itself...\n");
         if (Interfaces::IServerPluginHelpers) {
             auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + m_Size_Offset);
+            //Console::Print("%i\n", m_Size);
             if (m_Size > 0) {
                 auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + m_Plugins_Offset);
                 for (int i = 0; i < m_Size; i++) {
                     auto plugin = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
-                    Console::Print("%s\n", plugin->m_szName);
+                    //Console::Print("%s\n", plugin->m_szName);
                     if (std::strcmp(plugin->m_szName, SAR_SIGNATURE) == 0) {
                         plugin->m_bDisable = true;
                         Console::DevMsg("SAR: Disabled SAR in the plugin list!\n");
@@ -71,6 +73,9 @@ void IsPlugin()
     }
 }
 }
+
+#define CREATE_VMT(ptr, vmt) if (SAR::NewVMT(ptr, vmt, #vmt))
+#define DELETE_VMT(vmt) SAR::DeleteVMT(vmt, #vmt);
 
 struct CSourceAutoRecord : IServerPluginCallbacks {
     CSourceAutoRecord()

@@ -207,7 +207,7 @@ DETOUR(Paint, int mode)
 
 void Hook()
 {
-    if (SAR::NewVMT(Interfaces::IEngineVGui, enginevgui)) {
+    CREATE_VMT(Interfaces::IEngineVGui, enginevgui) {
         HOOK(enginevgui, Paint);
 
         if (Game::IsHalfLife2Engine()) {
@@ -224,6 +224,6 @@ void Hook()
 void Unhook()
 {
     UNHOOK(enginevgui, Paint);
-    SAR::DeleteVMT(enginevgui);
+    DELETE_VMT(enginevgui);
 }
 }

@@ -125,7 +125,7 @@ struct CBaseAutoCompleteFileList {
 
 bool Init()
 {
-    if (SAR::NewVMT(Interfaces::ICVar, g_pCVar)) {
+    CREATE_VMT(Interfaces::ICVar, g_pCVar) {
         FindVar = g_pCVar->GetOriginalFunction<_FindVar>(Offsets::FindVar);
         UnregisterConCommand = g_pCVar->GetOriginalFunction<_UnregisterConCommand>(Offsets::UnregisterConCommand);
     }
@@ -149,6 +149,6 @@ bool Init()
 }
 void Shutdown()
 {
-    SAR::DeleteVMT(g_pCVar);
+    DELETE_VMT(g_pCVar);
 }
 }

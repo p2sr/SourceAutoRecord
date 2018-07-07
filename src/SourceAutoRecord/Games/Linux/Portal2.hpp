@@ -119,7 +119,6 @@ void Offsets()
     m_fFlags = 212; // CBasePlayer::UpdateStepSound
     m_MoveType = 226; // CBasePlayer::UpdateStepSound
     m_nWaterLevel = 347; // CBasePlayer::UpdateStepSound
-    m_pSurfaceData = 4116; // CPortalGameMovement::PlayerMove
     m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
     frametime = 16; // CBasePlayer::UpdateStepSound
     m_bDucked = 2296; // CPortalGameMovement::FinishUnDuck

@@ -50,6 +50,10 @@ bool mhInitialized = false;
     if (!mhInitialized) { MH_Initialize(); mhInitialized = true; } \
     MH_CreateHook(reinterpret_cast<LPVOID>(orig), detour, nullptr); \
     MH_EnableHook(reinterpret_cast<LPVOID>(orig));
+#define MH_UNHOOK(orig) \
+    MH_DisableHook(reinterpret_cast<LPVOID>(orig)); \
+    MH_RemoveHook(reinterpret_cast<LPVOID>(orig));
+
 #else
 #define MODULE_EXTENSION ".so"
 #define GAME_PATH(x) _GAME_PATH(Games/Linux/##x.hpp)

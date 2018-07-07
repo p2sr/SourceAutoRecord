@@ -28,3 +28,11 @@ CON_COMMAND(sar_about, "Prints info about this tool.\n")
     Console::Print("Version: %s\n", SAR_VERSION);
     Console::Print("Build: %s\n", SAR_BUILD);
 }
+
+//CON_COMMAND_AUTOCOMPLETEFILE(sar_map, "maps", 0, 0, bsp)
+//{
+//    if (args.ArgC() != 2) {
+//        Console::Print("sar_map [map_name] : Starts server with specified map.\n");
+//        return;
+//    }
+//}

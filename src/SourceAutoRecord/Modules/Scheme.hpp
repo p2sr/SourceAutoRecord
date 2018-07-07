@@ -18,19 +18,19 @@ unsigned long GetDefaultFont()
 
 void Hook()
 {
-    if (Interfaces::ISchemeManager) {
-        auto g_pVGuiSchemeManager = std::make_unique<VMTHook>(Interfaces::ISchemeManager);
+    VMT g_pVGuiSchemeManager;
+    CREATE_VMT(Interfaces::ISchemeManager, g_pVGuiSchemeManager) {
         using _GetIScheme = void*(__func*)(void* thisptr, unsigned long scheme);
         auto GetIScheme = g_pVGuiSchemeManager->GetOriginalFunction<_GetIScheme>(Offsets::GetIScheme);
 
         // Default scheme is 1
-        if (SAR::NewVMT(GetIScheme(g_pVGuiSchemeManager->GetThisPtr(), 1), g_pScheme)) {
+        CREATE_VMT(GetIScheme(g_pVGuiSchemeManager->GetThisPtr(), 1), g_pScheme) {
             GetFont = g_pScheme->GetOriginalFunction<_GetFont>(Offsets::GetFont);
         }
     }
 }
 void Unhook()
 {
-    SAR::DeleteVMT(g_pScheme);
+    DELETE_VMT(g_pScheme);
 }
 }
