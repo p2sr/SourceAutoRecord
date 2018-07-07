@@ -1,3 +1,5 @@
+#!/bin/sh
+
 binary="sar.so"
 
 if [ "$1" == "portal" ]; then

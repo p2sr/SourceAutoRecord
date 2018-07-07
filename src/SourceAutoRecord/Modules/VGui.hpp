@@ -46,7 +46,7 @@ DETOUR(Paint, int mode)
     Color textColor(r, g, b, a);
 
     if (RespectClShowPos && Cheats::cl_showpos.GetBool()) {
-        elements += 6;
+        elements += 4;
         yPadding += spacing;
     }
 

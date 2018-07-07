@@ -39,7 +39,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "", 0, 0, dem)
         Console::Print("Map: %s\n", demo.mapName);
         Console::Print("Ticks: %i\n", demo.playbackTicks);
         Console::Print("Time: %.3f\n", demo.playbackTime);
-        Console::Print("Tickrate: %i\n", demo.Tickrate());
+        Console::Print("Tickrate: %.3f\n", demo.Tickrate());
     } else {
         Console::Print("Could not parse \"%s\"!\n", name.c_str());
     }
@@ -55,7 +55,9 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "", 0, 0, dem)
     int totalTicks = 0;
     float totalTime = 0;
     bool printTotal = false;
+
     DemoParser parser;
+    parser.outputMode = Cheats::sar_time_demo_dev.GetInt();
 
     std::string name;
     std::string dir = std::string(Engine::GetGameDirectory()) + std::string("/");
@@ -70,7 +72,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "", 0, 0, dem)
             Console::Print("Map: %s\n", demo.mapName);
             Console::Print("Ticks: %i\n", demo.playbackTicks);
             Console::Print("Time: %.3f\n", demo.playbackTime);
-            Console::Print("Tickrate: %i\n", demo.Tickrate());
+            Console::Print("Tickrate: %.3f\n", demo.Tickrate());
             Console::Print("---------------\n");
             totalTicks += demo.playbackTicks;
             totalTime += demo.playbackTime;

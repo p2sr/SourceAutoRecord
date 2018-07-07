@@ -17,5 +17,6 @@ void Init()
 {
     startbhop.UniqueFor(Game::HasJumpDisabled);
     endbhop.UniqueFor(Game::HasJumpDisabled);
+    sar_anti_anti_cheat.UniqueFor(Game::HasJumpDisabled);
 }
 }

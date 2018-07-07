@@ -51,8 +51,10 @@ bool mhInitialized = false;
     MH_CreateHook(reinterpret_cast<LPVOID>(orig), detour, nullptr); \
     MH_EnableHook(reinterpret_cast<LPVOID>(orig));
 #define MH_UNHOOK(orig) \
-    MH_DisableHook(reinterpret_cast<LPVOID>(orig)); \
-    MH_RemoveHook(reinterpret_cast<LPVOID>(orig));
+    if (orig) { \
+        MH_DisableHook(reinterpret_cast<LPVOID>(orig)); \
+        MH_RemoveHook(reinterpret_cast<LPVOID>(orig)); \
+    }
 
 #else
 #define MODULE_EXTENSION ".so"

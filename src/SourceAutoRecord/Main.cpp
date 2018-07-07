@@ -38,13 +38,13 @@ int __attribute__((constructor)) Main()
             auto commands = Command::RegisterAll();
             Console::DevMsg("SAR: Registered %i ConVars and %i ConCommands!\n", vars, commands);
 
-            Client::Hook();
-            Engine::Hook();
             InputSystem::Hook();
             Scheme::Hook();
-            Server::Hook();
             Surface::Hook();
             VGui::Hook();
+            Engine::Hook();
+            Client::Hook();
+            Server::Hook();
 
             Config::Load();
 
@@ -64,14 +64,14 @@ int __attribute__((constructor)) Main()
 }
 
 void Cleanup()
-{
-    VGui::Unhook();
-    Surface::Unhook();
-    Server::Unhook();
-    Scheme::Unhook();
-    InputSystem::Unhook();
-    Engine::Unhook();
+{   
     Client::Unhook();
+    Engine::Unhook();
+    Server::Unhook();
+    InputSystem::Unhook();
+    Scheme::Unhook();
+    Surface::Unhook();
+    VGui::Unhook();
 
     Cheats::Unload();
 

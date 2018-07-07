@@ -153,8 +153,9 @@ DETOUR(FinishGravity)
 #ifdef _WIN32
 // CGameMovement::AirMove
 namespace Original {
-    void* AirMove_Continue;
-    void* AirMove_Skip;
+    uintptr_t AirMove_Mid;
+    uintptr_t AirMove_Continue;
+    uintptr_t AirMove_Skip;
 }
 namespace Detour {
     __declspec(naked) void AirMove_Mid()
@@ -219,11 +220,11 @@ void Hook()
             Original::AirMoveBase = reinterpret_cast<_AirMove>(airMoveAddr);
 
 #ifdef _WIN32
-            auto midAirMoveAddr = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + AirMove_Mid_Offset;
-            if (Memory::FindAddress(midAirMoveAddr, midAirMoveAddr + 5, AirMove_Signature) == midAirMoveAddr) {
-                MH_HOOK(midAirMoveAddr, Detour::AirMove_Mid);
-                Original::AirMove_Continue = reinterpret_cast<void*>(midAirMoveAddr + AirMove_Continue_Offset);
-                Original::AirMove_Skip = reinterpret_cast<void*>(midAirMoveAddr + AirMove_Skip_Offset);
+            Original::AirMove_Mid = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + AirMove_Mid_Offset;
+            if (Memory::FindAddress(Original::AirMove_Mid, Original::AirMove_Mid + 5, AirMove_Signature) == Original::AirMove_Mid) {
+                MH_HOOK(Original::AirMove_Mid, Detour::AirMove_Mid);
+                Original::AirMove_Continue = Original::AirMove_Mid + AirMove_Continue_Offset;
+                Original::AirMove_Skip = Original::AirMove_Mid + AirMove_Skip_Offset;
                 Console::DevMsg("SAR: Verified sar_aircontrol 1!\n");
             } else {
                 Console::Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
@@ -255,7 +256,7 @@ void Unhook()
     UNHOOK(g_GameMovement, AirMove);
     //UNHOOK(g_GameMovement, AirAccelerate);
 #ifdef _WIN32
-    MH_UNHOOK(g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + AirMove_Mid_Offset);
+    MH_UNHOOK(Original::AirMove_Mid);
 #endif
     DELETE_VMT(g_GameMovement);
 }

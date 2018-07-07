@@ -24,7 +24,7 @@ public:
 public:
     int32_t LastTick()
     {
-        return messageTicks.back();
+        return (messageTicks.size() > 0 ) ? messageTicks.back() : playbackTicks;
     }
     float IntervalPerTick()
     {
@@ -39,7 +39,7 @@ public:
 // Basic demo parser to handle Portal and Portal 2 demos
 class DemoParser {
 public:
-    bool headerOnly;
+    bool headerOnly = false;
     int outputMode;
     bool hasAlignmentByte = true;
     int maxSplitScreenClients = 2;

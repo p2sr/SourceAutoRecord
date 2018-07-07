@@ -49,7 +49,7 @@ namespace DemoPlayer {
                 Console::Print("Map: %s\n", demo.mapName);
                 Console::Print("Ticks: %i\n", demo.playbackTicks);
                 Console::Print("Time: %.3f\n", demo.playbackTime);
-                Console::Print("Tickrate: %i\n", demo.Tickrate());
+                Console::Print("Tickrate: %.3f\n", demo.Tickrate());
             } else {
                 Console::Print("Could not parse \"%s\"!\n", DemoName);
             }

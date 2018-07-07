@@ -101,7 +101,7 @@ Mappers can use this for accurate timing, [see below](#mapping).
 - `sar_hud_cps <0-1>` draws last checkpoint value of timer
 - `sar_hud_demo <0-1>` draws current name, tick and time of demo recorder or demo player
 - `sar_hud_jumps <0-1>` draws total jump count
-- `sar_hud_portals <0-1>` draws total portal count (Portal and Portal 2)
+- `sar_hud_portals <0-1>` draws total portal count (Portal games only)
 - `sar_hud_steps <0-1>` draws total step count
 - `sar_hud_distance <0-1>` draws calculated jump distance
 - `sar_hud_trace <0-1>` draws tracer result
@@ -138,6 +138,7 @@ Mappers can use this for accurate timing, [see below](#mapping).
 - `sar_jumpboost <0-2>` enables ABH or HL2-Bhop movement on the server (Portal 2 Engine)
 - `sar_aircontrol <0-1>` enables more air-control movement on the server (Portal 2 Engine)
 - `+bhop` makes the player jump (The Stanley Parable)
+- `sar_anti_anti_cheat` sets sv_cheats to 1 (The Stanley Parable)
 
 #### TAS
 - `sar_tas_frame_at <frame> [command]` adds a command frame to the queue at specified frame
