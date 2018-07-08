@@ -58,7 +58,6 @@ void Offsets()
     InternalSetValue = 14; // ConVar
     InternalSetFloatValue = 15; // ConVar
     InternalSetIntValue = 16; // ConVar
-    FindVar = 12; // CCvarUtilities::IsValidToggleCommand
     ClientCmd = 7; // CEngineClient
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 19; // CEngineClient
@@ -86,6 +85,10 @@ void Offsets()
     demorecorder = 164; // CClientState::Disconnect
     GetCurrentMap = 24; // CEngineTool
     m_szLevelName = 25; // CEngineTool::GetCurrentMap
+
+    // libvstdlib.so
+    UnregisterConCommand = 10; // CCvar (TODO)
+    FindCommandBase = 13; // CCvar (TODO)
 
     // vgui2.so
 

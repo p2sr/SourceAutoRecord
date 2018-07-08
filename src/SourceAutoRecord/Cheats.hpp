@@ -66,6 +66,11 @@ Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
 Variable hide_gun_when_holding;
 
+// The Stanley Parable
+DECLARE_AUTOCOMPLETION_FUNCTION(map, "maps", bsp);
+DECLARE_AUTOCOMPLETION_FUNCTION(changelevel, "maps", bsp);
+DECLARE_AUTOCOMPLETION_FUNCTION(changelevel2, "maps", bsp);
+
 void Init()
 {
     sar_jumpboost.UniqueFor(Game::IsPortal2Engine);
@@ -93,6 +98,11 @@ void Init()
     sv_footsteps.Unlock();
 
     if (Game::Version == Game::Portal2) {
+        sv_transition_fade_time = Variable("sv_transition_fade_time");
+        sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
+        ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
+        hide_gun_when_holding = Variable("hide_gun_when_holding");
+
         // Don't find a way to abuse this, ok?
         sv_bonus_challenge.Unlock(false);
         sv_transition_fade_time.Unlock();
@@ -100,20 +110,17 @@ void Init()
         ui_loadingscreen_transition_time.Unlock();
         // Not a real cheat, right?
         hide_gun_when_holding.Unlock(false);
-    }
-
-    if (Game::Version == Game::Portal2) {
-        sv_transition_fade_time = Variable("sv_transition_fade_time");
-        sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
-        ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
-        hide_gun_when_holding = Variable("hide_gun_when_holding");
     } else if (Game::Version == Game::HalfLife2) {
         // Detecting Portal game really late but it adds nothing really
         auto sv_portal_debug_touch = Variable("sv_portal_debug_touch");
-        if (sv_portal_debug_touch.ptr) {
+        if (sv_portal_debug_touch.GetPtr()) {
             Game::Version = Game::Portal;
             Console::DevMsg("SAR: Detected Portal version!\n");
         }
+    } else if (Game::Version == Game::TheStanleyParable) {
+        ACTIVATE_AUTOCOMPLETEFILE(map);
+        ACTIVATE_AUTOCOMPLETEFILE(changelevel);
+        ACTIVATE_AUTOCOMPLETEFILE(changelevel2);
     }
 }
 void Unload()

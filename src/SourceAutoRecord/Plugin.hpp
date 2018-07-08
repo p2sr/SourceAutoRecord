@@ -88,14 +88,9 @@ struct IServerPluginCallbacks {
     virtual void OnQueryCvarValueFinished(int iCookie, void* pPlayerEntity, int eStatus, const char* pCvarName, const char* pCvarValue) = 0;
 };
 
-// TODO
-#ifdef _WIN32
+// CServerPlugin
 #define m_Size_Offset 16
 #define m_Plugins_Offset 4
-#else
-#define m_Size_Offset 16
-#define m_Plugins_Offset 4
-#endif
 
 struct CPlugin {
     char m_szName[128];

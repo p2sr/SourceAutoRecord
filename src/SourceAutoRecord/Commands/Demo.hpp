@@ -34,11 +34,11 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "", 0, 0, dem)
     auto dir = std::string(Engine::GetGameDirectory()) + std::string("/") + name;
     if (parser.Parse(dir, &demo)) {
         parser.Adjust(&demo);
-        Console::Print("Demo: %s\n", name.c_str());
-        Console::Print("Client: %s\n", demo.clientName);
-        Console::Print("Map: %s\n", demo.mapName);
-        Console::Print("Ticks: %i\n", demo.playbackTicks);
-        Console::Print("Time: %.3f\n", demo.playbackTime);
+        Console::Print("Demo:     %s\n", name.c_str());
+        Console::Print("Client:   %s\n", demo.clientName);
+        Console::Print("Map:      %s\n", demo.mapName);
+        Console::Print("Ticks:    %i\n", demo.playbackTicks);
+        Console::Print("Time:     %.3f\n", demo.playbackTime);
         Console::Print("Tickrate: %.3f\n", demo.Tickrate());
     } else {
         Console::Print("Could not parse \"%s\"!\n", name.c_str());
@@ -67,11 +67,11 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "", 0, 0, dem)
         Demo demo;
         if (parser.Parse(dir + name, &demo)) {
             parser.Adjust(&demo);
-            Console::Print("Demo: %s\n", name.c_str());
-            Console::Print("Client: %s\n", demo.clientName);
-            Console::Print("Map: %s\n", demo.mapName);
-            Console::Print("Ticks: %i\n", demo.playbackTicks);
-            Console::Print("Time: %.3f\n", demo.playbackTime);
+            Console::Print("Demo:     %s\n", name.c_str());
+            Console::Print("Client:   %s\n", demo.clientName);
+            Console::Print("Map:      %s\n", demo.mapName);
+            Console::Print("Ticks:    %i\n", demo.playbackTicks);
+            Console::Print("Time:     %.3f\n", demo.playbackTime);
             Console::Print("Tickrate: %.3f\n", demo.Tickrate());
             Console::Print("---------------\n");
             totalTicks += demo.playbackTicks;

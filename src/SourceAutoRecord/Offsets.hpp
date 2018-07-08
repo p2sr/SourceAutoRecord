@@ -3,7 +3,8 @@
 namespace Offsets {
 
 // CCvar
-int FindVar;
+int UnregisterConCommand;
+int FindCommandBase;
 
 // CEngineClient
 int ClientCmd;
@@ -11,6 +12,7 @@ int GetLocalPlayer;
 int GetGameDirectory;
 int GetViewAngles;
 int SetViewAngles;
+int ServerCmdKeyValues;
 
 // CHLClient
 int HudUpdate;
@@ -106,17 +108,10 @@ int m_vecVelocity2;
 // CHud
 int GetName;
 
-// ConCommandBase
-int GetDLLIdentifier;
-
-// CCvar
-int UnregisterConCommand;
-
 // Others
 int tickcount;
 int interval_per_tick;
 int GetClientStateFunction;
-int ServerCmdKeyValues;
 int cl;
 int demoplayer;
 int demorecorder;

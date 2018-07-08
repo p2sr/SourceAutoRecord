@@ -174,9 +174,6 @@
     <ClInclude Include="Variable.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Commands\Bhop.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
     <ClInclude Include="Commands\Binding.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
@@ -218,6 +215,9 @@
     </ClInclude>
     <ClInclude Include="Games\Linux\HalfLife2.hpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Stanley.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,7 @@
 using namespace Tier1;
 
 struct Command {
+private:
     ConCommand* ptr = nullptr;
     std::unique_ptr<uint8_t[]> data;
     bool isRegistered = false;
@@ -13,6 +14,11 @@ struct Command {
 
     static std::vector<Command*> list;
 
+public:
+    Command(const char* name)
+    {
+        this->ptr = reinterpret_cast<ConCommand*>(FindCommandBase(g_pCVar->GetThisPtr(), name));
+    }
     Command(const char* pName, _CommandCallback callback, const char* pHelpString, int flags = 0, _CommandCompletionCallback completionFunc = nullptr)
     {
         auto size = sizeof(ConCommand);
@@ -28,6 +34,10 @@ struct Command {
         this->ptr->m_pCommandCompletionCallback = completionFunc;
 
         Command::list.push_back(this);
+    }
+    ConCommand* GetPtr()
+    {
+        return this->ptr;
     }
     Command* UniqueFor(_ShouldRegisterCallback callback)
     {
@@ -107,3 +117,26 @@ std::vector<Command*> Command::list;
 #define CON_COMMAND_AUTOCOMPLETEFILE(name, description, flags, subdirectory, extension) \
     DECLARE_AUTOCOMPLETION_FUNCTION(name, subdirectory, extension) \
     CON_COMMAND_F_COMPLETION(name, description, flags, AUTOCOMPLETION_FUNCTION(name))
+
+#define DETOUR_COMMAND(name) \
+    namespace Original { _CommandCallback name##_callback; } \
+    namespace Detour { void name##_callback(const CCommand& args); } \
+    void Detour::##name##_callback(const CCommand& args)
+#define HOOK_COMMAND(name) \
+    auto command = Command(#name); \
+    if (command.GetPtr()) { \
+        Original::##name##_callback = command.GetPtr()->m_fnCommandCallback; \
+        command.GetPtr()->m_fnCommandCallback =  Detour::##name##_callback; \
+    }
+#define UNHOOK_COMMAND(name) \
+    auto command = Command(#name); \
+    if (command.GetPtr() && Original::##name##_callback) { \
+        command.GetPtr()->m_fnCommandCallback =  Original::##name##_callback; \
+    }
+
+#define ACTIVATE_AUTOCOMPLETEFILE(name) \
+    auto name = Command(#name); \
+    if (name##.GetPtr()) { \
+        name##.GetPtr()->m_bHasCompletionCallback = true; \
+        name##.GetPtr()->m_fnCompletionCallback = Commands::##name##_CompletionFunc; \
+    }

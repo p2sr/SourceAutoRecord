@@ -45,10 +45,10 @@ namespace DemoPlayer {
             auto dir = std::string(GetGameDirectory()) + std::string("/") + std::string(DemoName);
             if (parser.Parse(dir, &demo)) {
                 parser.Adjust(&demo);
-                Console::Print("Client: %s\n", demo.clientName);
-                Console::Print("Map: %s\n", demo.mapName);
-                Console::Print("Ticks: %i\n", demo.playbackTicks);
-                Console::Print("Time: %.3f\n", demo.playbackTime);
+                Console::Print("Client:   %s\n", demo.clientName);
+                Console::Print("Map:      %s\n", demo.mapName);
+                Console::Print("Ticks:    %i\n", demo.playbackTicks);
+                Console::Print("Time:     %.3f\n", demo.playbackTime);
                 Console::Print("Tickrate: %.3f\n", demo.Tickrate());
             } else {
                 Console::Print("Could not parse \"%s\"!\n", DemoName);

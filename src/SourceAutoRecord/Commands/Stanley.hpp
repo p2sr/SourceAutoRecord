@@ -15,5 +15,5 @@ Command endbhop("-bhop", IN_BhopUp, "Client sends a keyup event for the in_jump 
 
 CON_COMMAND(sar_anti_anti_cheat, "Sets sv_cheats to 1.\n")
 {
-    Cheats::sv_cheats.ptr->m_nValue = 1;
+    Cheats::sv_cheats.GetPtr()->m_nValue = 1;
 }

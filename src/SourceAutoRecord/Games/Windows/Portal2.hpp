@@ -66,7 +66,6 @@ void Offsets()
     InternalSetValue = 12; // ConVar
     InternalSetFloatValue = 13; // ConVar
     InternalSetIntValue = 14; // ConVar
-    FindVar = 16; // CCvarUtilities::IsValidToggleCommand
     ClientCmd = 7; // CEngineClient
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient
@@ -96,6 +95,7 @@ void Offsets()
 
     // vstdlib.dll
     UnregisterConCommand = 10; // CCvar 
+    FindCommandBase = 13; // CCVar
 
     // vgui2.dll
 

@@ -40,7 +40,7 @@ public:
 class DemoParser {
 public:
     bool headerOnly = false;
-    int outputMode;
+    int outputMode = 0;
     bool hasAlignmentByte = true;
     int maxSplitScreenClients = 2;
 

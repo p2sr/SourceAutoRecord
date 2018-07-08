@@ -7,6 +7,7 @@
 using namespace Tier1;
 
 struct Variable {
+private:
     ConVar* ptr = nullptr;
     std::unique_ptr<uint8_t[]> data;
     bool isRegistered = false;
@@ -17,6 +18,7 @@ struct Variable {
 
     static std::vector<Variable*> list;
 
+public:
     Variable() = default;
     Variable(const Variable& other) = delete;
     Variable(Variable&& other) = default;
@@ -25,7 +27,7 @@ struct Variable {
 
     Variable(const char* name)
     {
-        this->ptr = reinterpret_cast<ConVar*>(FindVar(g_pCVar->GetThisPtr(), name));
+        this->ptr = reinterpret_cast<ConVar*>(FindCommandBase(g_pCVar->GetThisPtr(), name));
     }
     // Boolean or String
     Variable(const char* name, const char* value, const char* helpstr, int flags = FCVAR_NEVER_AS_STRING)
@@ -64,6 +66,10 @@ struct Variable {
         this->ptr->m_fMaxVal = max;
 
         Variable::list.push_back(this);
+    }
+    ConVar* GetPtr()
+    {
+        return this->ptr;
     }
     bool GetBool()
     {

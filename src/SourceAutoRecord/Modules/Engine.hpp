@@ -137,12 +137,19 @@ DETOUR(Disconnect, bool bShowMainMenu)
     SessionEnded();
     return Original::Disconnect(thisptr, bShowMainMenu);
 }
-DETOUR(Disconnect2, int* unk, bool bShowMainMenu)
+#ifdef _WIN32
+DETOUR_COMMAND(connect)
 {
-    Console::Print("Disconnect2!\n");
+    SessionEnded();
+    Original::connect_callback(args);
+}
+#else
+DETOUR(Disconnect2, int unk, bool bShowMainMenu)
+{
     SessionEnded();
     return Original::Disconnect2(thisptr, unk, bShowMainMenu);
 }
+#endif
 
 // CClientState::SetSignonState
 DETOUR(SetSignonState, int state, int count, void* unk)
@@ -195,17 +202,19 @@ void Hook()
         }
 
         CREATE_VMT(clPtr, cl) {
-            uintptr_t disconnect;
             if (Game::IsPortal2Engine()) {
                 HOOK_O(cl, SetSignonState, Offsets::Disconnect - 1);
                 HOOK(cl, Disconnect);
-                disconnect = (uintptr_t)Original::Disconnect;
             } else {
                 HOOK_O(cl, SetSignonState2, Offsets::Disconnect - 1);
+#ifdef _WIN32
+                HOOK_COMMAND(connect);
+#else
                 HOOK_O(cl, Disconnect2, Offsets::Disconnect);
-                disconnect = (uintptr_t)Original::Disconnect2;
+#endif
             }
 
+            auto disconnect = cl->GetOriginalFunction<uintptr_t>(Offsets::Disconnect);
             DemoPlayer::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demoplayer));
             DemoRecorder::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demorecorder));
 
@@ -229,9 +238,9 @@ void Hook()
 }
 void Unhook()
 {
-    UNHOOK(cl, Disconnect);
     UNHOOK_O(cl, Offsets::Disconnect - 1);
-
+    UNHOOK_O(cl, Offsets::Disconnect);
+    UNHOOK_COMMAND(connect);
     DELETE_VMT(engine);
     DELETE_VMT(cl);
 

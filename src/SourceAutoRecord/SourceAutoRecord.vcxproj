@@ -169,7 +169,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Cheats.hpp" />
     <ClInclude Include="Command.hpp" />
     <ClInclude Include="Commands.hpp" />
-    <ClInclude Include="Commands\Bhop.hpp" />
+    <ClInclude Include="Commands\Stanley.hpp" />
     <ClInclude Include="Commands\Binding.hpp" />
     <ClInclude Include="Commands\Teleporter.hpp" />
     <ClInclude Include="Commands\Config.hpp" />

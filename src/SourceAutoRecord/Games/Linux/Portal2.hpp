@@ -92,7 +92,10 @@ void Offsets()
     demoplayer = 93; // CClientState::Disconnect
     demorecorder = 106; // CClientState::Disconnect
     m_szLevelName = 72; // CEngineTool::GetCurrentMap
-    UnregisterConCommand = 10; // CCvar (TODO)
+
+    // libvstdlib.so
+    UnregisterConCommand = 10; // CCvar
+    FindCommandBase = 13; // CCvar
 
     // vgui2.so
 

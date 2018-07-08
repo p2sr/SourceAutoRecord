@@ -24,7 +24,8 @@ using _InternalSetValue = void(__func*)(void* thisptr, const char* value);
 using _InternalSetFloatValue = void(__func*)(void* thisptr, float value);
 using _InternalSetIntValue = void(__func*)(void* thisptr, int value);
 using _UnregisterConCommand = void(__func*)(void* thisptr, ConCommandBase* pCommandBase);
-using _FindVar = void*(__func*)(void* thisptr, const char* name);
+using _FindCommandBase = void*(__func*)(void* thisptr, const char* name);
+using _Command = void*(__func*)(void* thisptr, const char* name);
 using _AutoCompletionFunc = int(__func*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
 struct ConCommandBase {
@@ -61,15 +62,19 @@ struct CCommand {
     }
 };
 
+struct ICommandCallback {
+    virtual void CommandCallback(const CCommand &command) = 0;
+};
+
 struct ConCommand : ConCommandBase {
     union {
         void* m_fnCommandCallbackV1;
-        void* m_fnCommandCallback;
+        _CommandCallback m_fnCommandCallback;
         void* m_pCommandCallback;
     };
 
     union {
-        void* m_fnCompletionCallback;
+        _CommandCompletionCallback m_fnCompletionCallback;
         void* m_pCommandCompletionCallback;
     };
 
@@ -100,7 +105,7 @@ struct ConVar : ConCommandBase {
 _ConCommand ConCommandCtor;
 _ConVar ConVarCtor;
 _UnregisterConCommand UnregisterConCommand;
-_FindVar FindVar;
+_FindCommandBase FindCommandBase;
 
 namespace Original {
     _AutoCompletionFunc AutoCompletionFunc;
@@ -126,8 +131,8 @@ struct CBaseAutoCompleteFileList {
 bool Init()
 {
     CREATE_VMT(Interfaces::ICVar, g_pCVar) {
-        FindVar = g_pCVar->GetOriginalFunction<_FindVar>(Offsets::FindVar);
         UnregisterConCommand = g_pCVar->GetOriginalFunction<_UnregisterConCommand>(Offsets::UnregisterConCommand);
+        FindCommandBase = g_pCVar->GetOriginalFunction<_FindCommandBase>(Offsets::FindCommandBase);
     }
 
     auto cnc = SAR::Find("ConCommandCtor");
