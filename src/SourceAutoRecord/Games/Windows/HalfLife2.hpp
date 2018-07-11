@@ -117,12 +117,10 @@ void Offsets()
 
     HudProcessInput = 10; // CHLClient
     HudUpdate = 11; // CHLClient
-    GetFontTall = 69; // CFPSPanel::ComputeSize
-    DrawColoredText = 162; // CFPSPanel::Paint
     m_vecVelocity = 240; // CFPSPanel::Paint
     m_vecAbsOrigin = 604; // C_BasePlayer::GetAbsOrigin
     m_angAbsRotation = 616; // C_BasePlayer::GetAbsAngles
-    GetClientEntity = 3; // CClientEntityList/IClientEntityList
+    GetClientEntity = 3; // CClientEntityList
     GetClientMode = 5; // CHLClient::HudProcessInput
     CreateMove = 21; // ClientModeShared
 

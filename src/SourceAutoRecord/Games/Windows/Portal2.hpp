@@ -134,7 +134,7 @@ void Offsets()
     m_vecAbsOrigin = 156; // C_BasePlayer::GetAbsOrigin
     m_angAbsRotation = 192; // C_BasePlayer::GetAbsAngles
     m_vecVelocity = 264; // CFPSPanel::Paint
-    GetClientEntity = 3; // CClientEntityList/IClientEntityList
+    GetClientEntity = 3; // CClientEntityList
     GetFlags = 248; // C_BasePlayer::PhysicsSimulate
     GetClientMode = 4; // CHLClient::HudProcessInput
     CreateMove = 24; // ClientModeShared

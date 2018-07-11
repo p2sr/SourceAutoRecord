@@ -65,7 +65,6 @@ void Offsets()
     InternalSetValue = 19; // ConVar
     InternalSetFloatValue = 20; // ConVar
     InternalSetIntValue = 21; // ConVar
-    FindVar = 15; // CCvarUtilities::IsValidToggleCommand
     ClientCmd = 7; // CEngineClient
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient
@@ -94,8 +93,8 @@ void Offsets()
     m_szLevelName = 72; // CEngineTool::GetCurrentMap
 
     // libvstdlib.so
-    UnregisterConCommand = 10; // CCvar
-    FindCommandBase = 13; // CCvar
+    UnregisterConCommand = 10; // CCvar (TODO)
+    FindCommandBase = 13; // CCvar (TODO)
 
     // vgui2.so
 
@@ -128,16 +127,24 @@ void Offsets()
 
     // client.so
 
+    HudProcessInput = 12; // CHLClient
     HudUpdate = 11; // CHLClient
     GetHud = 144; // CHLClient::HudUpdate
-    GetFontTall = 72; // CFPSPanel::ComputeSize
-    DrawColoredText = 160; // CFPSPanel::Paint
     m_vecAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
     m_angAbsRotation = 172; // C_BasePlayer::GetAbsAngles
     m_vecVelocity = 244; // CFPSPanel::Paint
-    GetClientEntity = 3; // IClientEntityList
+    GetClientEntity = 3; // CClientEntityList
     GetFlags = 228; // C_BasePlayer::PhysicsSimulate
-    CreateMove = 25; // IClientMode
+    GetClientMode = 4; // CHLClient::HudProcessInput (TODO)
+    CreateMove = 25; // ClientModeShared
     GetName = 11; // CHud
+
+    // vguimatsurface.so (TODO)
+
+    DrawSetColor = 14; // CMatSystemSurface (TODO)
+    DrawFilledRect = 15; // CMatSystemSurface (TODO)
+    GetFontTall = 72; // CFPSPanel::ComputeSize
+    DrawColoredText = 160; // CFPSPanel::Paint
+    DrawTextLen = 163; // CNetGraphPanel::DrawTextFields (TODO)
 }
 }
