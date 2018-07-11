@@ -182,6 +182,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Commands\Timer.hpp" />
     <ClInclude Include="Features\Config.hpp" />
     <ClInclude Include="Features\Demo.hpp" />
+    <ClInclude Include="Features\InputHud.hpp" />
     <ClInclude Include="Features\Rebinder.hpp" />
     <ClInclude Include="Features\Routing.hpp" />
     <ClInclude Include="Features\Session.hpp" />

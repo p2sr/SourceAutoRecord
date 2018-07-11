@@ -14,9 +14,10 @@ Variable sar_sum_during_session("sar_sum_during_session", "1", "Updates the summ
 Variable sar_timer_always_running("sar_timer_always_running", "1", "Timer will save current value when disconnecting.\n");
 Variable sar_hud_text("sar_hud_text", "", "Draws specified text when not empty.\n", 0);
 Variable sar_hud_position("sar_hud_position", "0", 0, "Draws absolute position of the client.\n");
-Variable sar_hud_angles("sar_hud_angles", "0", "Draws absolute view angles of the client.\n");
+Variable sar_hud_angles("sar_hud_angles", "0", 0, "Draws absolute view angles of the client. "
+    "0 = default, 1 = xy, 2 = xyz.\n");
 Variable sar_hud_velocity("sar_hud_velocity", "0", 0, "Draws velocity of the client. 0 = default, 1 = x/y/z , 2 = x/y\n");
-Variable sar_hud_session("sar_hud_session", "0", "Draws current session value.\n");
+Variable sar_hud_session("sar_hud_session", "0", "Draws current session tick.\n");
 Variable sar_hud_last_session("sar_hud_last_session", "0", "Draws value of latest completed session.\n");
 Variable sar_hud_sum("sar_hud_sum", "0", "Draws summary value of sessions.\n");
 Variable sar_hud_timer("sar_hud_timer", "0", "Draws current value of timer.\n");
@@ -28,13 +29,31 @@ Variable sar_hud_portals("sar_hud_portals", "0", "Draws total portal count.\n");
 Variable sar_hud_steps("sar_hud_steps", "0", "Draws total step count.\n");
 Variable sar_hud_jump("sar_hud_jump", "0", "Draws current jump distance.\n");
 Variable sar_hud_jump_peak("sar_hud_jump_peak", "0", "Draws longest jump distance.\n");
-Variable sar_hud_trace("sar_hud_trace", "0", "Draws distance values of tracer.\n");
+Variable sar_hud_trace("sar_hud_trace", "0", 0, "Draws distance values of tracer. "
+    "0 = default, 1 = vec3, 2 = vec2.\n");
+Variable sar_hud_frame("sar_hud_frame", "0", "Draws current frame count.\n");
+Variable sar_hud_last_frame("sar_hud_last_frame", "0", "Draws last saved frame value.\n");
 Variable sar_hud_velocity_peak("sar_hud_velocity_peak", "0", "Draws last saved velocity peak.\n");
 Variable sar_hud_default_spacing("sar_hud_default_spacing", "4", 0, "Spacing between elements of HUD.\n");
 Variable sar_hud_default_padding_x("sar_hud_default_padding_x", "2", 0, "X padding of HUD.\n");
 Variable sar_hud_default_padding_y("sar_hud_default_padding_y", "2", 0, "Y padding of HUD.\n");
 Variable sar_hud_default_font_index("sar_hud_default_font_index", "0", 0, "Font index of HUD.\n");
 Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 255", "RGBA font color of HUD.\n", 0);
+Variable sar_ihud("sar_ihud", "0", 0, "Draws keyboard events of client. "
+    "0 = default, 1 = forward;back;moveleft;moveright, 2 = 1 + duck;jump;use, 3 = 2 + attack;attack2, 4 = 3 + speed;reload.\n");
+Variable sar_ihud_x("sar_ihud_x", "0", 0, "X offset of input HUD.\n");
+Variable sar_ihud_y("sar_ihud_y", "0", 0, "Y offset of input HUD.\n");
+Variable sar_ihud_padding("sar_ihud_padding", "4", 0, "Padding of input HUD.\n");
+Variable sar_ihud_size("sar_ihud_size", "60", 0, "Size of input HUD.\n");
+Variable sar_ihud_color("sar_ihud_color", "0 0 0 233", "RGBA color of input HUD.\n", 0);
+Variable sar_ihud_font_color("sar_ihud_font_color", "255 255 255 255", "RGBA font color of input HUD.\n", 0);
+Variable sar_ihud_font_index("sar_ihud_font_index", "1", 0, "Font index of input HUD.\n");
+Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD. "
+    "Characters are in this order: forward, back, moveleft, moveright, duck, jump, use, attack, attack2, speed, reload. "
+    "Keep it empty to disable drawing characters.\n", 0);
+Variable sar_ihud_shadow("sar_ihud_shadow", "1", "Draws shadow of input HUD.\n");
+Variable sar_ihud_shadow_color("sar_ihud_shadow_color", "0 0 0 32", "RGBA shadow color of input HUD.\n", 0);
+Variable sar_ihud_shadow_font_color("sar_ihud_shadow_font_color", "255 255 255 32", "RGBA shadow font color of input HUD.\n", 0);
 Variable sar_stats_jumps_xy("sar_stats_jumps_xy", "0", "Saves jump distance as 2D vector.\n");
 Variable sar_stats_velocity_peak_xy("sar_stats_velocity_peak_xy", "0", "Saves velocity peak as 2D vector.\n");
 Variable sar_stats_auto_reset("sar_stats_auto_reset", "0", 0, "Resets all stats automatically. "

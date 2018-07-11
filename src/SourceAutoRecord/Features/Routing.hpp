@@ -6,6 +6,12 @@
 namespace Routing {
 
 namespace Tracer {
+
+    enum ResultType {
+        VEC2,
+        VEC3
+    };
+
     Vector Source;
     Vector Destination;
 
@@ -26,12 +32,14 @@ namespace Tracer {
     {
         return std::make_tuple(Destination.x - Source.x, Destination.y - Source.y, Destination.z - Source.z);
     }
-    float GetResult()
+    float GetResult(ResultType type)
     {
         auto x = Destination.x - Source.x;
         auto y = Destination.y - Source.y;
         auto z = Destination.z - Source.z;
-        return std::sqrt(x * x + y * y + z * z);
+        return (type == ResultType::VEC2)
+            ? std::sqrt(x * x + y * y)
+            : std::sqrt(x * x + y * y + z * z);
     }
 }
 }

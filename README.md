@@ -16,6 +16,7 @@
     - [Checkpoints](#checkpoints)
   - [HUD](#hud)
     - [Optional](#optional)
+  - [Input HUD](#input-hud)
   - [Stats](#stats)
   - [Cheats](#cheats)
     - [Movement](#movement)
@@ -91,7 +92,7 @@ Mappers can use this for accurate timing, [see below](#mapping).
 ### HUD
 - `sar_hud_text <0-1>` draws given string
 - `sar_hud_position <0-1>` draws player's position
-- `sar_hud_angles <0-1>` draws player's view angles
+- `sar_hud_angles <0-2>` draws player's view angles
 - `sar_hud_velocity <0-2>` draws player's velocity
 - `sar_hud_session <0-1>` draws current session value
 - `sar_hud_last_session <0-1>` draws value of latest completed session
@@ -104,7 +105,7 @@ Mappers can use this for accurate timing, [see below](#mapping).
 - `sar_hud_portals <0-1>` draws total portal count (Portal games only)
 - `sar_hud_steps <0-1>` draws total step count
 - `sar_hud_distance <0-1>` draws calculated jump distance
-- `sar_hud_trace <0-1>` draws tracer result
+- `sar_hud_trace <0-2>` draws tracer result
 - `sar_hud_velocity_peak <0-1>` draws velocity peak
 - `sar_hud_jump <0-1>` draws last jump distance
 - `sar_hud_jump_peak <0-1>` draws jump distance peak
@@ -115,6 +116,20 @@ Mappers can use this for accurate timing, [see below](#mapping).
 - `sar_hud_default_padding_y` additional padding on y-axis
 - `sar_hud_default_font_index` font index
 - `sar_hud_default_font_color` font color
+
+### Input HUD
+- `sar_ihud <0-4>` draws keyboard inputs of client
+- `sar_ihud_x` x offset in pixels
+- `sar_ihud_y` y offset in pixels
+- `sar_ihud_padding` space between button elements
+- `sar_ihud_size` size of button elements
+- `sar_ihud_color` color of input HUD
+- `sar_ihud_font_color` font color
+- `sar_ihud_font_index` font index
+- `sar_ihud_layout` characters for the buttons
+- `sar_ihud_shadow <0-1>` shadow of input HUD
+- `sar_ihud_shadow_color` shadow color
+- `sar_ihud_shadow_font_color` shadow font color
 
 ### Stats
 - `sar_stats_jumps` prints jump stats

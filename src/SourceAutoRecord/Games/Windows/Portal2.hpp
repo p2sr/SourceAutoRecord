@@ -128,16 +128,24 @@ void Offsets()
 
     // client.dll
 
+    HudProcessInput = 10; // CHLClient
     HudUpdate = 11; // CHLClient
     GetHud = 221; // CHLClient::HudUpdate
-    GetFontTall = 72; // CFPSPanel::ComputeSize
-    DrawColoredText = 160; // CFPSPanel::Paint
     m_vecAbsOrigin = 156; // C_BasePlayer::GetAbsOrigin
     m_angAbsRotation = 192; // C_BasePlayer::GetAbsAngles
     m_vecVelocity = 264; // CFPSPanel::Paint
     GetClientEntity = 3; // CClientEntityList/IClientEntityList
     GetFlags = 248; // C_BasePlayer::PhysicsSimulate
-    CreateMove = 24; // CHLClient
+    GetClientMode = 4; // CHLClient::HudProcessInput
+    CreateMove = 24; // ClientModeShared
     GetName = 10; // CHud
+
+    // vguimatsurface.dll
+
+    DrawSetColor = 14; // CMatSystemSurface
+    DrawFilledRect = 15; // CMatSystemSurface
+    GetFontTall = 72; // CFPSPanel::ComputeSize
+    DrawColoredText = 160; // CFPSPanel::Paint
+    DrawTextLen = 163; // CNetGraphPanel::DrawTextFields
 }
 }

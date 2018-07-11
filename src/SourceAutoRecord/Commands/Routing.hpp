@@ -25,10 +25,11 @@ CON_COMMAND(sar_trace_result, "Prints tracing result.\n")
     auto xyz = Tracer::GetDifferences();
     Console::Print("A: %.3f/%.3f/%.3f\n", Tracer::Source.x, Tracer::Source.y, Tracer::Source.z);
     Console::Print("B: %.3f/%.3f/%.3f\n", Tracer::Destination.x, Tracer::Destination.y, Tracer::Destination.z);
-    Console::Print("X-Distance: %.3f\n", std::get<0>(xyz));
-    Console::Print("Y-Distance: %.3f\n", std::get<1>(xyz));
-    Console::Print("Z-Distance: %.3f\n", std::get<2>(xyz));
-    Console::Print("Total Distance: %.3f\n", Tracer::GetResult());
+    Console::Print("dX: %.3f\n", std::get<0>(xyz));
+    Console::Print("dY: %.3f\n", std::get<1>(xyz));
+    Console::Print("dZ: %.3f\n", std::get<2>(xyz));
+    Console::Print("dXY: %.3f\n", Tracer::GetResult(Tracer::ResultType::VEC2));
+    Console::Print("dXYZ: %.3f\n", Tracer::GetResult(Tracer::ResultType::VEC3));
 }
 
 CON_COMMAND(sar_trace_reset, "Resets tracer.\n")

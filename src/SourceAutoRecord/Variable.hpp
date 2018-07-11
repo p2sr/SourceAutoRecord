@@ -172,6 +172,15 @@ public:
             var->Unregister();
         }
     }
+    static Variable* Find(const char* name)
+    {
+        for (auto var : Variable::list) {
+            if (std::strcmp(var->GetPtr()->m_pszName, name) == 0) {
+                return var;
+            }
+        }
+        return nullptr;
+    }
 };
 
 std::vector<Variable*> Variable::list;

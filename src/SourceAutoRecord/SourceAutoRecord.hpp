@@ -69,7 +69,7 @@ void IsPlugin()
                 }
             }
         }
-        Console::DevWarning("SAR: Could not disable SAR in the plugin list! Try manually with plugin_pause.\n");
+        Console::DevWarning("SAR: Could not disable SAR in the plugin list!\nTry manually with plugin_pause.\n");
     }
 }
 }

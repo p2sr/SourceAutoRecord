@@ -77,6 +77,15 @@ public:
             command->Unregister();
         }
     }
+    static Command* Find(const char* name)
+    {
+        for (auto command : Command::list) {
+            if (std::strcmp(command->GetPtr()->m_pszName, name) == 0) {
+                return command;
+            }
+        }
+        return nullptr;
+    }
 };
 
 std::vector<Command*> Command::list;

@@ -115,6 +115,7 @@ void Offsets()
 
     // client.dll
 
+    HudProcessInput = 10; // CHLClient
     HudUpdate = 11; // CHLClient
     GetFontTall = 69; // CFPSPanel::ComputeSize
     DrawColoredText = 162; // CFPSPanel::Paint
@@ -122,5 +123,15 @@ void Offsets()
     m_vecAbsOrigin = 604; // C_BasePlayer::GetAbsOrigin
     m_angAbsRotation = 616; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList/IClientEntityList
+    GetClientMode = 5; // CHLClient::HudProcessInput
+    CreateMove = 21; // ClientModeShared
+
+    // vguimatsurface.dll
+
+    DrawSetColor = 11; // CEntityReportPanel::Paint
+    DrawFilledRect = 12; // CEntityReportPanel::Paint
+    GetFontTall = 69; // CFPSPanel::ComputeSize
+    DrawColoredText = 162; // CNetGraphPanel::DrawTextFields
+    DrawTextLen = 165; // CNetGraphPanel::DrawTextFields
 }
 }

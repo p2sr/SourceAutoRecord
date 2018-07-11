@@ -150,39 +150,6 @@ DETOUR(FinishGravity)
     return Original::FinishGravity(thisptr);
 }
 
-#ifdef _WIN32
-// CGameMovement::AirMove
-namespace Original {
-    uintptr_t AirMove_Mid;
-    uintptr_t AirMove_Continue;
-    uintptr_t AirMove_Skip;
-}
-namespace Detour {
-    __declspec(naked) void AirMove_Mid()
-    {
-        __asm {
-            pushad
-            pushfd
-        }
-
-        if ((!Cheats::sv_bonus_challenge.GetBool() || Cheats::sv_cheats.GetBool()) && Cheats::sar_aircontrol.GetBool()) {
-            __asm {
-                popfd
-                popad
-                jmp Original::AirMove_Skip
-            }
-        }
-
-        __asm {
-            popfd
-            popad
-            movss xmm2, dword ptr[eax + 0x40]
-            jmp Original::AirMove_Continue
-        }
-    }
-}
-#endif
-
 // CGameMovement::AirMove
 DETOUR_B(AirMove)
 {
@@ -195,6 +162,36 @@ DETOUR_B(AirMove)
     }
     return Original::AirMove(thisptr);
 }
+
+#ifdef _WIN32
+// CGameMovement::AirMove
+namespace Detour {
+    uintptr_t AirMove_Skip;
+    uintptr_t AirMove_Continue;
+}
+DETOUR_MID_MH(AirMove_Mid)
+{
+    __asm {
+        pushad
+        pushfd
+    }
+
+    if ((!Cheats::sv_bonus_challenge.GetBool() || Cheats::sv_cheats.GetBool()) && Cheats::sar_aircontrol.GetBool()) {
+        __asm {
+            popfd
+            popad
+            jmp Detour::AirMove_Skip
+        }
+    }
+
+    __asm {
+        popfd
+        popad
+        movss xmm2, dword ptr[eax + 0x40]
+        jmp Detour::AirMove_Continue
+    }
+}
+#endif
 
 // CGameMovement::AirAccelerate
 //DETOUR_B(AirAccelerate, Vector& wishdir, float wishspeed, float accel)
@@ -220,11 +217,11 @@ void Hook()
             Original::AirMoveBase = reinterpret_cast<_AirMove>(airMoveAddr);
 
 #ifdef _WIN32
-            Original::AirMove_Mid = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + AirMove_Mid_Offset;
-            if (Memory::FindAddress(Original::AirMove_Mid, Original::AirMove_Mid + 5, AirMove_Signature) == Original::AirMove_Mid) {
-                MH_HOOK(Original::AirMove_Mid, Detour::AirMove_Mid);
-                Original::AirMove_Continue = Original::AirMove_Mid + AirMove_Continue_Offset;
-                Original::AirMove_Skip = Original::AirMove_Mid + AirMove_Skip_Offset;
+            auto airMoveMid = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + AirMove_Mid_Offset;
+            if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
+                MH_HOOK(AirMove_Mid, airMoveMid);
+                Detour::AirMove_Continue = airMoveMid + AirMove_Continue_Offset;
+                Detour::AirMove_Skip = airMoveMid + AirMove_Skip_Offset;
                 Console::DevMsg("SAR: Verified sar_aircontrol 1!\n");
             } else {
                 Console::Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
@@ -256,7 +253,7 @@ void Unhook()
     UNHOOK(g_GameMovement, AirMove);
     //UNHOOK(g_GameMovement, AirAccelerate);
 #ifdef _WIN32
-    MH_UNHOOK(Original::AirMove_Mid);
+    MH_UNHOOK(AirMove_Mid);
 #endif
     DELETE_VMT(g_GameMovement);
 }

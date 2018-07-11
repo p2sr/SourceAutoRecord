@@ -15,11 +15,12 @@ int SetViewAngles;
 int ServerCmdKeyValues;
 
 // CHLClient
+int HudProcessInput;
 int HudUpdate;
 int IN_ActivateMouse;
 int JoyStickApplyMovement;
 
-// IClientMode
+// ClientModeShared
 int CreateMove;
 
 // ConVar
@@ -27,9 +28,12 @@ int InternalSetValue;
 int InternalSetFloatValue;
 int InternalSetIntValue;
 
-// IMatSystemSurface
+// CMatSystemSurface
+int DrawSetColor;
+int DrawFilledRect;
 int GetFontTall;
 int DrawColoredText;
+int DrawTextLen;
 
 // CInputSystem
 int StringToButtonCode;
@@ -123,4 +127,5 @@ int in_jump;
 int KeyDown;
 int KeyUp;
 int GetHud;
+int GetClientMode;
 }

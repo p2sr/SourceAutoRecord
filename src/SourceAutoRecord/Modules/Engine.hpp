@@ -67,6 +67,8 @@ void SetAngles(QAngle va)
 }
 
 bool IsInGame = false;
+unsigned int CurrentFrame = 0;
+unsigned int LastFrame = 0;
 
 void SessionStarted()
 {
@@ -90,6 +92,7 @@ void SessionStarted()
 
     StepCounter::ResetTimer();
     IsInGame = true;
+    CurrentFrame = 0;
 }
 void SessionEnded()
 {
@@ -122,6 +125,8 @@ void SessionEnded()
         }
 
         DemoRecorder::CurrentDemo = "";
+        LastFrame = CurrentFrame;
+        CurrentFrame = 0;
     }
 
     IsInGame = false;
@@ -138,6 +143,11 @@ DETOUR(Disconnect, bool bShowMainMenu)
     return Original::Disconnect(thisptr, bShowMainMenu);
 }
 #ifdef _WIN32
+DETOUR(Disconnect2, int unk1, int unk2, int unk3)
+{
+    SessionEnded();
+    return Original::Disconnect2(thisptr, unk1, unk2, unk3);
+}
 DETOUR_COMMAND(connect)
 {
     SessionEnded();
@@ -181,6 +191,15 @@ DETOUR(SetSignonState2, int state, int count)
     return Original::SetSignonState2(thisptr, state, count);
 }
 
+#ifdef _WIN32
+DETOUR_MH(HostStateFrame, float time)
+{
+    auto hs = reinterpret_cast<CHostState*>(thisptr);
+    Console::Print("hs->m_currentState = %i\n", hs->m_currentState);
+    return Trampoline::HostStateFrame(thisptr, time);
+}
+#endif
+
 void Hook()
 {
     CREATE_VMT(Interfaces::IVEngineClient, engine) {
@@ -222,6 +241,13 @@ void Hook()
             auto ProcessTick = *reinterpret_cast<uintptr_t*>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
             tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
             interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
+
+#ifdef _WIN32
+            /*auto target = Memory::Scan("engine.dll", "55 8B EC 51 56 57 6A 00");
+            if (target.Found) {
+                MH_HOOK(HostStateFrame, target.Address);
+            }*/
+#endif
         }
     }
 
@@ -241,6 +267,9 @@ void Unhook()
     UNHOOK_O(cl, Offsets::Disconnect - 1);
     UNHOOK_O(cl, Offsets::Disconnect);
     UNHOOK_COMMAND(connect);
+#ifdef _WIN32
+    MH_UNHOOK(HostStateFrame);
+#endif
     DELETE_VMT(engine);
     DELETE_VMT(cl);
 

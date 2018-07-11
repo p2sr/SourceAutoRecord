@@ -4,6 +4,7 @@
 #include "Console.hpp"
 #include "Engine.hpp"
 
+#include "Features/InputHud.hpp"
 #include "Features/Tas.hpp"
 
 #include "Cheats.hpp"
@@ -15,6 +16,7 @@
 namespace Client {
 
 VMT clientdll;
+VMT g_pClientMode;
 VMT g_HUDChallengeStats;
 VMT s_EntityList;
 
@@ -61,7 +63,7 @@ DETOUR(HudUpdate, unsigned int a2)
         for (auto tas = TAS::Frames.begin(); tas != TAS::Frames.end();) {
             tas->FramesLeft--;
             if (tas->FramesLeft <= 0) {
-                Console::DevMsg("TAS: %s\n", tas->Command.c_str());
+                Console::DevMsg("[%i] %s\n", Engine::CurrentFrame, tas->Command.c_str());
                 Engine::ExecuteCommand(tas->Command.c_str());
                 tas = TAS::Frames.erase(tas);
             } else {
@@ -69,14 +71,17 @@ DETOUR(HudUpdate, unsigned int a2)
             }
         }
     }
+
+    Engine::CurrentFrame++;
     return Original::HudUpdate(thisptr, a2);
 }
 
-//// CHLClient::CreateMove
-//DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd)
-//{
-//    return Original::CreateMove(thisptr, flInputSampleTime, cmd);
-//}
+// ClientModeShared::CreateMove
+DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd)
+{
+    InputHud::SetButtonBits(cmd->buttons);
+    return Original::CreateMove(thisptr, flInputSampleTime, cmd);
+}
 
 // CHud::GetName
 DETOUR_T(const char*, GetName)
@@ -129,6 +134,20 @@ void Hook()
                 KeyUp = reinterpret_cast<_KeyUp>(keyUpAddr);
             }
         }
+
+        auto HudProcessInput = clientdll->GetOriginalFunction<uintptr_t>(Offsets::HudProcessInput);
+        void* clientMode = nullptr;
+        if (Game::IsPortal2Engine()) {
+            typedef void*(*_GetClientMode)();
+            auto GetClientMode = reinterpret_cast<_GetClientMode>(Memory::ReadAbsoluteAddress(HudProcessInput + Offsets::GetClientMode));
+            clientMode = GetClientMode();
+        } else {
+            clientMode = **reinterpret_cast<void***>(HudProcessInput + Offsets::GetClientMode);
+        }
+
+        CREATE_VMT(clientMode, g_pClientMode) {
+            HOOK(g_pClientMode, CreateMove);
+        }
     }
 
     CREATE_VMT(Interfaces::IClientEntityList, s_EntityList) {
@@ -138,9 +157,11 @@ void Hook()
 void Unhook()
 {
     UNHOOK(clientdll, HudUpdate);
+    UNHOOK(g_pClientMode, CreateMove);
     UNHOOK(g_HUDChallengeStats, GetName);
 
     DELETE_VMT(clientdll);
+    DELETE_VMT(g_pClientMode);
     DELETE_VMT(g_HUDChallengeStats);
     DELETE_VMT(s_EntityList);
 }

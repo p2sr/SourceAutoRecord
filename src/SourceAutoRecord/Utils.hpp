@@ -46,15 +46,27 @@ typedef std::unique_ptr<VMTHook> VMT;
     int __fastcall Detour::##name(void* thisptr, int edx, __VA_ARGS__)
 
 bool mhInitialized = false;
-#define MH_HOOK(orig, detour) \
+#define MH_HOOK(name, target) \
     if (!mhInitialized) { MH_Initialize(); mhInitialized = true; } \
-    MH_CreateHook(reinterpret_cast<LPVOID>(orig), detour, nullptr); \
-    MH_EnableHook(reinterpret_cast<LPVOID>(orig));
-#define MH_UNHOOK(orig) \
-    if (orig) { \
-        MH_DisableHook(reinterpret_cast<LPVOID>(orig)); \
-        MH_RemoveHook(reinterpret_cast<LPVOID>(orig)); \
+    Original::##name = target; \
+    MH_CreateHook(reinterpret_cast<LPVOID>(Original::##name), Detour::##name, &reinterpret_cast<LPVOID>(Trampoline::##name)); \
+    MH_EnableHook(reinterpret_cast<LPVOID>(Original::##name));
+#define MH_UNHOOK(name) \
+    if (Original::##name) { \
+        MH_DisableHook(reinterpret_cast<LPVOID>(Original::##name)); \
+        MH_RemoveHook(reinterpret_cast<LPVOID>(Original::##name)); \
     }
+#define DETOUR_MID_MH(name) \
+    namespace Original { uintptr_t name; } \
+    namespace Trampoline { uintptr_t name; } \
+    namespace Detour { void name(); } \
+    __declspec(naked) void Detour::##name()
+#define DETOUR_MH(name, ...) \
+    using _##name = int(__thiscall*)(void* thisptr, __VA_ARGS__); \
+    namespace Original { uintptr_t name; } \
+    namespace Trampoline { _##name name; } \
+    namespace Detour { int __fastcall name(void* thisptr, int edx, __VA_ARGS__); } \
+    int __fastcall Detour::##name(void* thisptr, int edx, __VA_ARGS__)
 
 #else
 #define MODULE_EXTENSION ".so"

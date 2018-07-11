@@ -219,6 +219,9 @@
     <ClInclude Include="Commands\Stanley.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
+    <ClInclude Include="Features\InputHud.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

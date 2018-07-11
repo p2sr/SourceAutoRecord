@@ -4,6 +4,9 @@
 #include "Cheats.hpp"
 #include "Utils.hpp"
 
+#define SAVE_CVAR(cvar, value) \
+    file << #cvar " " << Cheats::##cvar##.Get##value() << "\n";
+
 namespace Config {
 
 std::string FilePath("/cfg/_sar_cvars.cfg");
@@ -17,17 +20,21 @@ bool Save()
     if (!file.good())
         return false;
 
-    auto spacing = Cheats::sar_hud_default_spacing.GetInt();
-    auto xpadding = Cheats::sar_hud_default_padding_x.GetInt();
-    auto ypadding = Cheats::sar_hud_default_padding_y.GetInt();
-    auto index = Cheats::sar_hud_default_font_index.GetInt();
-    auto color = Cheats::sar_hud_default_font_color.GetString();
-
-    file << "sar_hud_default_spacing " << spacing << "\n";
-    file << "sar_hud_default_padding_x " << xpadding << "\n";
-    file << "sar_hud_default_padding_y " << ypadding << "\n";
-    file << "sar_hud_default_font_index " << index << "\n";
-    file << "sar_hud_default_font_color " << color;
+    SAVE_CVAR(sar_hud_default_spacing, Int);
+    SAVE_CVAR(sar_hud_default_padding_x, Int);
+    SAVE_CVAR(sar_hud_default_padding_y, Int);
+    SAVE_CVAR(sar_hud_default_font_index, Int);
+    SAVE_CVAR(sar_hud_default_font_color, String);
+    SAVE_CVAR(sar_ihud_x, Int);
+    SAVE_CVAR(sar_ihud_y, Int);
+    SAVE_CVAR(sar_ihud_padding, Int);
+    SAVE_CVAR(sar_ihud_size, Int);
+    SAVE_CVAR(sar_ihud_color, String);
+    SAVE_CVAR(sar_ihud_font_color, String);
+    SAVE_CVAR(sar_ihud_font_index, Int);
+    SAVE_CVAR(sar_ihud_layout, String);
+    SAVE_CVAR(sar_ihud_shadow_color, String);
+    SAVE_CVAR(sar_ihud_shadow_font_color, String);
 
     file.close();
     return true;
