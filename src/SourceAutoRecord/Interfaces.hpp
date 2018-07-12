@@ -38,6 +38,7 @@ void* IClientEntityList;
 void* IServerGameDLL;
 void* ICVar;
 void* IServerPluginHelpers;
+void* IGameEventManager2;
 
 void* Get(const char* filename, const char* interfaceSymbol)
 {
@@ -62,7 +63,7 @@ void* Get(const char* filename, const char* interfaceSymbol)
     for (auto current = s_pInterfaceRegs; current; current = current->m_pNext) {
         if (strncmp(current->m_pName, interfaceSymbol, strlen(interfaceSymbol)) == 0) {
             result = current->m_CreateFn();
-            Console::DevMsg("SAR: Found interface %s at %p in %s!\n", current->m_pName, result, filename);
+            //Console::DevMsg("SAR: Found interface %s at %p in %s!\n", current->m_pName, result, filename);
             break;
         }
     }
@@ -86,5 +87,6 @@ void Init()
     IServerGameDLL = Get(MODULE("server"), "ServerGameDLL0");
     ICVar = Get(MODULE("vstdlib"), "VEngineCvar0");
     IServerPluginHelpers = Get(MODULE("engine"), "ISERVERPLUGINHELPERS0");
+    IGameEventManager2 = Get(MODULE("engine"), "GAMEEVENTSMANAGER002");
 }
 }

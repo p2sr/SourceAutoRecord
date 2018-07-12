@@ -15,6 +15,7 @@
 #include "Commands.hpp"
 #include "Game.hpp"
 #include "Interfaces.hpp"
+#include "Listener.hpp"
 #include "Variable.hpp"
 
 #ifdef _WIN32
@@ -46,8 +47,9 @@ int __attribute__((constructor)) Main()
             Client::Hook();
             Server::Hook();
 
-            Config::Load();
+            Listener::Init();
 
+            Config::Load();
             SAR::IsPlugin();
 
             Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
@@ -64,7 +66,9 @@ int __attribute__((constructor)) Main()
 }
 
 void Cleanup()
-{   
+{
+    Listener::Shutdown();
+
     Client::Unhook();
     Engine::Unhook();
     Server::Unhook();

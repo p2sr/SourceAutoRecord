@@ -204,6 +204,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp" />
     <ClInclude Include="Games\Windows\TheStanleyParable.hpp" />
     <ClInclude Include="Interfaces.hpp" />
+    <ClInclude Include="Listener.hpp" />
     <ClInclude Include="Modules\Client.hpp" />
     <ClInclude Include="Modules\Console.hpp" />
     <ClInclude Include="Modules\DemoPlayer.hpp" />

@@ -22,17 +22,21 @@ namespace Engine {
 
 VMT engine;
 VMT cl;
+VMT s_GameEventManager;
 
 using _ClientCmd = int(__func*)(void* thisptr, const char* szCmdString);
 using _GetLocalPlayer = int(__func*)(void* thisptr);
 using _GetViewAngles = int(__func*)(void* thisptr, QAngle& va);
 using _SetViewAngles = int(__func*)(void* thisptr, QAngle& va);
+using _AddListener = bool(__func*)(void* thisptr, IGameEventListener2* listener, const char* name, bool serverside);
+using _RemoveListener = bool(__func*)(void* thisptr, IGameEventListener2* listener);
 
 _ClientCmd ClientCmd;
 _GetLocalPlayer GetLocalPlayer;
 _GetViewAngles GetViewAngles;
 _SetViewAngles SetViewAngles;
-_AutoCompletionFunc AutoCompleteFunc;
+_AddListener AddListener;
+_RemoveListener RemoveListener;
 
 int* tickcount;
 float* interval_per_tick;
@@ -261,6 +265,11 @@ void Hook()
     if (ldg.Found) {
         m_bLoadgame = *reinterpret_cast<bool**>(ldg.Address);
     }
+
+    CREATE_VMT(Interfaces::IGameEventManager2, s_GameEventManager) {
+        AddListener = s_GameEventManager->GetOriginalFunction<_AddListener>(Offsets::AddListener);
+        RemoveListener = s_GameEventManager->GetOriginalFunction<_RemoveListener>(Offsets::RemoveListener);
+    }
 }
 void Unhook()
 {
@@ -272,6 +281,7 @@ void Unhook()
 #endif
     DELETE_VMT(engine);
     DELETE_VMT(cl);
+    DELETE_VMT(s_GameEventManager);
 
     DemoPlayer::Unhook();
     DemoRecorder::Unhook();

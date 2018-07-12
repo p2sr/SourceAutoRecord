@@ -112,6 +112,10 @@ int m_vecVelocity2;
 // CHud
 int GetName;
 
+// CGameEventManager
+int AddListener;
+int RemoveListener;
+
 // Others
 int tickcount;
 int interval_per_tick;

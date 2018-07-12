@@ -92,6 +92,8 @@ void Offsets()
     demorecorder = 87; // CClientState::Disconnect
     GetCurrentMap = 25; // CEngineTool
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
+    AddListener = 3; // CGameEventListener
+    RemoveListener = 5; // CGameEventListener
 
     // vstdlib.dll
     UnregisterConCommand = 10; // CCvar 

@@ -36,7 +36,7 @@ public:
     }
 };
 
-// Basic demo parser to handle Portal and Portal 2 demos
+// Basic demo parser which can handle Portal 2 and Half-Life 2 demos
 class DemoParser {
 public:
     bool headerOnly = false;

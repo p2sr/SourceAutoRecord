@@ -151,3 +151,156 @@ struct CHostState {
     bool m_bBackgroundLevel; // 806
     bool m_bWaitingForConnection; // 807
 };
+
+class IGameEvent {
+public:
+    virtual ~IGameEvent() {};
+    virtual const char* GetName() const = 0;
+    virtual bool IsReliable() const = 0;
+    virtual bool IsLocal() const = 0;
+    virtual bool IsEmpty(const char* key = 0) = 0;
+    virtual bool GetBool(const char* key = 0, bool default_value = false) = 0;
+    virtual int GetInt(const char* key = 0, int default_value = 0) = 0;
+    virtual float GetFloat(const char* key = 0, float default_value = 0.0f) = 0;
+    virtual const char* GetString(const char* key = 0, const char* default_value = "") = 0;
+    virtual void SetBool(const char* key, bool value) = 0;
+    virtual void SetInt(const char* key, int value) = 0;
+    virtual void SetFloat(const char* key, float value) = 0;
+    virtual void SetString(const char* key, const char* value) = 0;
+};
+
+class IGameEventListener2 {
+public:
+    virtual	~IGameEventListener2() {};
+    virtual void FireGameEvent(IGameEvent* event) = 0;
+    virtual int GetEventDebugID() = 0;
+};
+
+// TODO: test these
+#define EVENTS { \
+    "server_spawn", \
+    "server_shutdown", \
+    "server_cvar", \
+    "server_message", \
+    "server_addban", \
+    "server_removeban", \
+    "player_connect", \
+    "player_info", \
+    "player_disconnect", \
+    "player_activate", \
+    "player_say", \
+    "team_info", \
+    "team_score", \
+    "teamplay_broadcast_audio", \
+    "player_team", \
+    "player_class", \
+    "player_death", \
+    "player_hurt", \
+    "player_chat", \
+    "player_score", \
+    "player_spawn", \
+    "player_shoot", \
+    "player_use", \
+    "player_drop", \
+    "player_changename", \
+    "player_hintmessage", \
+    "game_init", \
+    "game_newmap", \
+    "game_start", \
+    "game_end", \
+    "round_start", \
+    "round_end", \
+    "game_message", \
+    "break_breakable", \
+    "break_prop", \
+    "entity_killed", \
+    "bonus_updated", \
+    "achievement_event", \
+    "physgun_pickup", \
+    "flare_ignite_npc", \
+    "helicopter_grenade_punt_miss", \
+    "user_data_downloaded", \
+    "ragdoll_dissolved", \
+    "gameinstructor_draw", \
+    "gameinstructor_nodraw", \
+    "map_transition", \
+    "entity_visible", \
+    "set_instructor_group_enabled", \
+    "instructor_server_hint_create", \
+    "instructor_server_hint_stop", \
+    "portal_player_touchedground", \
+    "portal_player_ping", \
+    "portal_player_portaled", \
+    "turret_hit_turret", \
+    "security_camera_detached", \
+    "challenge_map_complete", \
+    "advanced_map_complete", \
+    "quicksave", \
+    "autosave", \
+    "slowtime", \
+    "portal_enabled", \
+    "portal_fired", \
+    "gesture_earned", \
+    "player_gesture", \
+    "player_zoomed", \
+    "player_unzoomed", \
+    "player_countdown", \
+    "player_touched_ground", \
+    "player_long_fling", \
+    "remote_view_activated", \
+    "touched_paint", \
+    "player_paint_jumped", \
+    "move_hint_visible", \
+    "movedone_hint_visible", \
+    "counter_hint_visible", \
+    "zoom_hint_visible", \
+    "jump_hint_visible", \
+    "partnerview_hint_visible", \
+    "paint_cleanser_visible", \
+    "paint_cleanser_not_visible", \
+    "player_touch_paint_cleanser", \
+    "bounce_count", \
+    "player_landed", \
+    "player_suppressed_bounce", \
+    "OpenRadialMenu", \
+    "AddLocator", \
+    "player_spawn_blue", \
+    "player_spawn_orange", \
+    "map_already_completed", \
+    "achievement_earned", \
+    "replay_status", \
+    "spec_target_updated", \
+    "player_fullyjoined", \
+    "achievement_write_failed", \
+    "player_stats_updated", \
+    "round_start_pre_entity", \
+    "teamplay_round_start", \
+    "client_disconnect", \
+    "server_pre_shutdown", \
+    "difficulty_changed", \
+    "finale_start", \
+    "finale_win", \
+    "vote_passed", \
+    "portal_stats_ui_enable", \
+    "portal_stats_update", \
+    "puzzlemaker_fully_hidden", \
+    "puzzlemaker_showing", \
+    "ss_control_transferred", \
+    "inventory_updated", \
+    "cart_updated", \
+    "store_pricesheet_updated", \
+    "gc_connected", \
+    "item_schema_initialized", \
+    "client_loadout_changed", \
+    "gameui_activated", \
+    "gameui_hidden", \
+    "hltv_status", \
+    "hltv_cameraman", \
+    "hltv_rank_camera", \
+    "hltv_rank_entity", \
+    "hltv_fixed", \
+    "hltv_chase", \
+    "hltv_message", \
+    "hltv_title", \
+    "hltv_chat", \
+}
