@@ -152,6 +152,16 @@ struct CHostState {
     bool m_bWaitingForConnection; // 807
 };
 
+struct CEventAction {
+    const char* m_iTarget; // 0
+    const char* m_iTargetInput; // 4
+    const char* m_iParameter; // 8
+    float m_flDelay; // 12
+    int m_nTimesToFire; // 16
+    int m_iIDStamp; //20
+    CEventAction* m_pNext; // 24
+};
+
 class IGameEvent {
 public:
     virtual ~IGameEvent() {};

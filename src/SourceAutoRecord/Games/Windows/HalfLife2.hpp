@@ -50,6 +50,13 @@ void Patterns()
     Add("FinishDrawing", "Half-Life 2 Build 2257546",
         "CMatSystemSurface::FinishDrawing",
         "55 8B EC 6A FF 68 ? ? ? ? 64 A1 ? ? ? ? 50 64 89 25 ? ? ? ? 51 56 6A 00");
+
+    // server.dll
+
+    // \x55\x8B\xEC\x81\xEC\x00\x00\x00\x00\x53\x8B\xC1 xxxxx????xxx
+    Add("FireOutput", "Half-Life 2 Build 2257546",
+        "CBaseEntityOutput::FireOutput",
+        "55 8B EC 81 EC ? ? ? ? 53 8B C1");
 }
 void Offsets()
 {
@@ -112,6 +119,9 @@ void Offsets()
     m_MoveType = 314; // CBasePlayer::UpdateStepSound
     m_nWaterLevel = 503; // CBasePlayer::UpdateStepSound
     frametime = 16; // CBasePlayer::UpdateStepSound
+    m_iClassname = 92; // CBaseEntityOutput::FireOutput
+    m_iName = 264; // CBaseEntityOutput::FireOutput
+    m_ActionList = 20; // CBaseEntityOutput::FireOutput
 
     // client.dll
 

@@ -10,6 +10,7 @@ using namespace Patterns;
 void Patterns()
 {
     Init();
+    Create(MODULE("client"), "FindElement");
 
     // engine.so
 

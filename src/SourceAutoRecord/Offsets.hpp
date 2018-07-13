@@ -116,6 +116,13 @@ int GetName;
 int AddListener;
 int RemoveListener;
 
+// CBaseEntity
+int m_iClassname;
+int m_iName;
+
+// CBaseEntityOutput
+int m_ActionList;
+
 // Others
 int tickcount;
 int interval_per_tick;

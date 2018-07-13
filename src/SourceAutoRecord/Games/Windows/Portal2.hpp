@@ -10,7 +10,7 @@ using namespace Patterns;
 void Patterns()
 {
     Init();
-    Create("client.dll", "FindElement");
+    Create(MODULE("client"), "FindElement");
 
     // engine.dll
 
@@ -58,6 +58,13 @@ void Patterns()
     Add("FindElement", "Portal 2 Build 7054",
         "CHud::FindElement",
         "55 8B EC 53 8B 5D 08 56 57 8B F1 33 FF 39 7E 28");
+
+    // server.dll
+
+    // \x55\x8B\xEC\x81\xEC\x00\x00\x00\x00\x53\x56\x8B\x71\x14 xxxxx????xxxxx
+    Add("FireOutput", "Portal 2 Build 7054",
+        "CBaseEntityOutput::FireOutput",
+        "55 8B EC 81 EC ? ? ? ? 53 56 8B 71 14");
 }
 void Offsets()
 {
@@ -127,6 +134,9 @@ void Offsets()
     m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
     frametime = 16; // CBasePlayer::UpdateStepSound
     m_bDucked = 2272; // CPortalGameMovement::FinishUnDuck
+    m_iClassname = 96; // CBaseEntityOutput::FireOutput
+    m_iName = 208; // CBaseEntityOutput::FireOutput
+    m_ActionList = 20; // CBaseEntityOutput::FireOutput
 
     // client.dll
 

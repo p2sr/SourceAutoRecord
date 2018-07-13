@@ -49,7 +49,7 @@ bool mhInitialized = false;
 #define MH_HOOK(name, target) \
     if (!mhInitialized) { MH_Initialize(); mhInitialized = true; } \
     Original::##name = target; \
-    MH_CreateHook(reinterpret_cast<LPVOID>(Original::##name), Detour::##name, &reinterpret_cast<LPVOID>(Trampoline::##name)); \
+    MH_CreateHook(reinterpret_cast<LPVOID>(Original::##name), Detour::##name, reinterpret_cast<LPVOID*>(&Trampoline::##name)); \
     MH_EnableHook(reinterpret_cast<LPVOID>(Original::##name));
 #define MH_UNHOOK(name) \
     if (Original::##name) { \

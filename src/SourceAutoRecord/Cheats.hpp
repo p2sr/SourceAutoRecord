@@ -69,6 +69,9 @@ Variable sar_aircontrol("sar_aircontrol", "0",
     "Enables more air-control on the server.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
 Variable sar_tas_autostart("sar_tas_autostart", "1", "Starts queued commands automatically on first frame after a load.\n");
+#ifdef _WIN32
+Variable sar_debug_entitiy_output("sar_debug_entitiy_output", "1", "Prints entity output data, similar to developer 2.\n");
+#endif
 
 Variable cl_showpos;
 Variable sv_cheats;

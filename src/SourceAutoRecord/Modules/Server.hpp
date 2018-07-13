@@ -1,5 +1,6 @@
 #pragma once
 #include "Client.hpp"
+#include "Engine.hpp"
 
 #include "Features/Routing.hpp"
 #include "Features/StepCounter.hpp"
@@ -191,6 +192,43 @@ DETOUR_MID_MH(AirMove_Mid)
         jmp Detour::AirMove_Continue
     }
 }
+
+// CBaseEntityOutput::FireOutput
+DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, void* pCaller, float fDelay)
+{
+    // Portal 2
+    // sp_a1_intro1: [721] camera_intro (point_viewcontrol) (activator)
+    // sp_a4_finale4: [1733] transition_portal2 (prop_portal) (activator)
+
+    auto print = Cheats::sar_debug_entitiy_output.GetBool();
+
+    if (pActivator) {
+        auto m_iName = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iName);
+        auto m_iClassname = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iClassname);
+        if (print) {
+            Console::Print("[%i] %s (%s) (activator)\n", Engine::GetTick(), m_iName, m_iClassname);
+        }
+    }
+
+    if (pCaller) {
+        auto m_iName = *reinterpret_cast<char**>((uintptr_t)pCaller + Offsets::m_iName);
+        auto m_iClassname = *reinterpret_cast<char**>((uintptr_t)pCaller + Offsets::m_iClassname);
+        if (print) {
+            Console::Print("[%i] %s (%s) (caller)\n", Engine::GetTick(), m_iName, m_iClassname);
+        }
+    }
+
+    auto m_ActionList = *reinterpret_cast<CEventAction**>((uintptr_t)thisptr + Offsets::m_ActionList);
+    auto ev = m_ActionList;
+    while (ev) {
+        if (print) {
+            Console::Msg("- [%i] %s -> %s (%s)\n", Engine::GetTick(), ev->m_iTarget, ev->m_iTargetInput, ev->m_iParameter);
+        }
+        ev = ev->m_pNext;
+    }
+
+    return Trampoline::FireOutput(thisptr, a2, a3, a4, a5, a6, pActivator, pCaller, fDelay);
+}
 #endif
 
 // CGameMovement::AirAccelerate
@@ -235,6 +273,13 @@ void Hook()
 
         auto FullTossMove = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::FullTossMove);
         gpGlobals = **reinterpret_cast<void***>(FullTossMove + Offsets::gpGlobals);
+
+#ifdef _WIN32
+        /*auto fio = SAR::Find("FireOutput");
+        if (fio.Found) {
+            MH_HOOK(FireOutput, fio.Address);
+        }*/
+#endif
     }
 
     VMT g_ServerGameDLL;
@@ -254,6 +299,7 @@ void Unhook()
     //UNHOOK(g_GameMovement, AirAccelerate);
 #ifdef _WIN32
     MH_UNHOOK(AirMove_Mid);
+    MH_UNHOOK(FireOutput);
 #endif
     DELETE_VMT(g_GameMovement);
 }
