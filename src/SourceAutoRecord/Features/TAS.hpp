@@ -5,6 +5,8 @@
 #include "Modules/Console.hpp"
 #include "Modules/Tier1.hpp"
 
+#include "Utils.hpp"
+
 namespace TAS {
 
 struct TasFrame {
@@ -51,9 +53,84 @@ void Reset()
 }
 void Start()
 {
-    std::sort(Frames.begin(), Frames.end(), [](const auto& a, const auto& b) {
-        return a.FramesLeft < b.FramesLeft;
+    if (Frames.size() != 0) {
+        std::sort(Frames.begin(), Frames.end(), [](const auto& a, const auto& b) {
+            return a.FramesLeft < b.FramesLeft;
+        });
+        IsRunning = true;
+    }
+}
+}
+
+namespace TAS2 {
+
+struct TasFrame {
+    QAngle viewangles;
+    float forwardmove;
+    float sidemove;
+    float upmove;
+    int buttons;
+    unsigned char impulse;
+    short mousedx;
+    short mousedy;
+};
+
+std::vector<TasFrame> Frames;
+bool IsRecording = false;
+bool IsPlaying = false;
+int PlayIndex;
+
+void StartRecording()
+{
+    IsRecording = true;
+    Frames.clear();
+}
+void StartReRecording()
+{
+    IsRecording = true;
+    IsPlaying = false;
+    Frames.resize(PlayIndex);
+}
+void StartPlaying()
+{
+    if (Frames.size() != 0) {
+        IsPlaying = true;
+        PlayIndex = 0;
+    }
+}
+void Stop()
+{
+    IsRecording = false;
+    IsPlaying = false;
+}
+void Record(CUserCmd* cmd)
+{
+    Frames.push_back(TasFrame {
+        cmd->viewangles,
+        cmd->forwardmove,
+        cmd->sidemove,
+        cmd->upmove,
+        cmd->buttons,
+        cmd->impulse,
+        cmd->mousedx,
+        cmd->mousedy
     });
-    IsRunning = true;
+}
+void Play(CUserCmd* cmd)
+{
+    auto frame = Frames[PlayIndex];
+
+    cmd->viewangles = frame.viewangles;
+    cmd->forwardmove = frame.forwardmove;
+    cmd->sidemove = frame.sidemove;
+    cmd->upmove = frame.upmove;
+    cmd->buttons = frame.buttons;
+    cmd->impulse = frame.impulse;
+    cmd->mousedx = frame.mousedx;
+    cmd->mousedy = frame.mousedy;
+
+    if (++PlayIndex >= (int)Frames.size()) {
+        IsPlaying = false;
+    }
 }
 }

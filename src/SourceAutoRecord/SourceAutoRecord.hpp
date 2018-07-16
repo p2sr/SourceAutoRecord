@@ -2,6 +2,9 @@
 #include "vmthook/vmthook.h"
 
 #include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+
+#include "Features/Speedrun.hpp"
 
 #include "Game.hpp"
 #include "Interfaces.hpp"

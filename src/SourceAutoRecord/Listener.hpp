@@ -28,11 +28,12 @@ public:
                 Console::DevWarning("SAR: Failed to add event listener for %s!\n", event);
             }
         }
-
+#if _WIN32
         auto engine = Memory::ModuleInfo();
         if (Memory::TryGetModule(MODULE("engine"), &engine)) {
             ConPrintEvent = reinterpret_cast<_ConPrintEvent>(engine.base + 0x186C20);
         }
+#endif
     }
     virtual ~SourceAutoRecordListener()
     {
@@ -42,10 +43,15 @@ public:
     {
         if (!event) return;
 
-        Console::Print("[%i] Event fired: %s\n", Engine::GetTick(), event->GetName());
-        ConPrintEvent(event);
+        if (Cheats::sar_debug_game_events.GetBool()) {
+            Console::Print("[%i] Event fired: %s\n", Engine::GetSessionTick(), event->GetName());
+#if _WIN32
+            ConPrintEvent(event);
+#endif
+        }
 
         if (!std::strcmp(event->GetName(), "player_spawn_blue") || !std::strcmp(event->GetName(), "player_spawn_orange")) {
+            Console::Print("Detected cooperative spawn!\n");
             Session::Rebase(*Engine::tickcount);
             Timer::Rebase(*Engine::tickcount);
         }
@@ -72,8 +78,8 @@ SourceAutoRecordListener* instance;
 
 void Init()
 {
-    /*if (Game::Version == Game::Portal2)
-        instance = new SourceAutoRecordListener();*/
+    if (Game::Version == Game::Portal2)
+        instance = new SourceAutoRecordListener();
 }
 void Shutdown()
 {

@@ -8,6 +8,7 @@
 #include "Features/InputHud.hpp"
 #include "Features/Routing.hpp"
 #include "Features/Session.hpp"
+#include "Features/SpeedrunHud.hpp"
 #include "Features/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Timer.hpp"
@@ -92,26 +93,26 @@ DETOUR(Paint, int mode)
     }
     // Session
     if (Cheats::sar_hud_session.GetBool()) {
-        auto tick = (Engine::IsInGame) ? Engine::GetTick() : 0;
-        auto time = Engine::GetTime(tick);
+        auto tick = (Engine::IsInGame) ? Engine::GetSessionTick() : 0;
+        auto time = Engine::ToTime(tick);
         DrawElement("session: %i (%.3f)", tick, time);
     }
     if (Cheats::sar_hud_last_session.GetBool()) {
-        DrawElement("last session: %i (%.3f)", Session::LastSession, Engine::GetTime(Session::LastSession));
+        DrawElement("last session: %i (%.3f)", Session::LastSession, Engine::ToTime(Session::LastSession));
     }
     if (Cheats::sar_hud_sum.GetBool()) {
         if (Summary::IsRunning && Cheats::sar_sum_during_session.GetBool()) {
-            auto tick = (Engine::IsInGame) ? Engine::GetTick() : 0;
-            auto time = Engine::GetTime(tick);
-            DrawElement("sum: %i (%.3f)", Summary::TotalTicks + tick, Engine::GetTime(Summary::TotalTicks) + time);
+            auto tick = (Engine::IsInGame) ? Engine::GetSessionTick() : 0;
+            auto time = Engine::ToTime(tick);
+            DrawElement("sum: %i (%.3f)", Summary::TotalTicks + tick, Engine::ToTime(Summary::TotalTicks) + time);
         } else {
-            DrawElement("sum: %i (%.3f)", Summary::TotalTicks, Engine::GetTime(Summary::TotalTicks));
+            DrawElement("sum: %i (%.3f)", Summary::TotalTicks, Engine::ToTime(Summary::TotalTicks));
         }
     }
     // Timer
     if (Cheats::sar_hud_timer.GetBool()) {
         auto tick = (!Timer::IsPaused) ? Timer::GetTick(*Engine::tickcount) : Timer::TotalTicks;
-        auto time = Engine::GetTime(tick);
+        auto time = Engine::ToTime(tick);
         DrawElement("timer: %i (%.3f)", tick, time);
     }
     if (Cheats::sar_hud_avg.GetBool()) {
@@ -124,11 +125,11 @@ DETOUR(Paint, int mode)
     if (Cheats::sar_hud_demo.GetBool()) {
         if (!*Engine::m_bLoadgame && *Engine::DemoRecorder::m_bRecording && !Engine::DemoRecorder::CurrentDemo.empty()) {
             auto tick = Engine::DemoRecorder::GetTick();
-            auto time = Engine::GetTime(tick);
+            auto time = Engine::ToTime(tick);
             DrawElement("demo: %s %i (%.3f)", Engine::DemoRecorder::CurrentDemo.c_str(), tick, time);
         } else if (!*Engine::m_bLoadgame && Engine::DemoPlayer::IsPlaying()) {
             auto tick = Engine::DemoPlayer::GetTick();
-            auto time = Engine::GetTime(tick);
+            auto time = Engine::ToTime(tick);
             DrawElement("demo: %s %i (%.3f)", Engine::DemoPlayer::DemoName, tick, time);
         } else {
             DrawElement("demo: -");
@@ -172,6 +173,7 @@ DETOUR(Paint, int mode)
 
     // Draw other HUDs
     InputHud::Draw();
+    SpeedrunHud::Draw();
 
     return Original::Paint(thisptr, mode);
 }

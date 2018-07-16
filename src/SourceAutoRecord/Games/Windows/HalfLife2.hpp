@@ -10,6 +10,7 @@ using namespace Patterns;
 void Patterns()
 {
     Init();
+    Create(MODULE("engine"), "FrameUpdate");
 
     // engine.dll
 
@@ -39,6 +40,11 @@ void Patterns()
         "CBaseAutoCompleteFileList::AutoCompletionFunc",
         "55 8B EC 81 EC ? ? ? ? 53 56 8B F1 57 8B 7D 08");
 
+    // \x55\x8B\xEC\x51\xD9\x45\x08\x56 xxxxxxxx
+    Add("FrameUpdate", "Half-Life 2 Build 2257546",
+        "CHostState::FrameUpdate",
+        "55 8B EC 51 D9 45 08 56");
+
     // vguimatsurface.dll
 
     // \x55\x8B\xEC\x64\xA1\x00\x00\x00\x00\x6A\xFF\x68\x00\x00\x00\x00\x50\x64\x89\x25\x00\x00\x00\x00\x83\xEC\x14 xxxxx????xxx????xxxx????xxx
@@ -65,6 +71,7 @@ void Offsets()
     InternalSetValue = 14; // ConVar
     InternalSetFloatValue = 15; // ConVar
     InternalSetIntValue = 16; // ConVar
+    GetScreenSize = 5; // CEngineClient
     ClientCmd = 7; // CEngineClient
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 19; // CEngineClient

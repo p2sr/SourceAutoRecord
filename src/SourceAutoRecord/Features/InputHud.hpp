@@ -1,4 +1,5 @@
 #pragma once
+#include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
 
@@ -44,7 +45,6 @@ const int col5 = 5;
 const int col6 = 6;
 const int col7 = 7;
 const int col8 = 8;
-const int spacebarSize = 6;
 
 void Init()
 {
@@ -63,6 +63,33 @@ Color GetColor(const char* source)
     int r, g, b, a;
     sscanf_s(source, "%i%i%i%i", &r, &g, &b, &a);
     return Color(r, g, b, a);
+}
+bool GetCurrentSize(int& xSize, int& ySize)
+{
+    auto mode = Cheats::sar_ihud.GetInt();
+    if (mode == 0) {
+        return false;
+    }
+
+    auto size = Cheats::sar_ihud_button_size.GetInt();
+    auto padding = Cheats::sar_ihud_button_padding.GetInt();
+
+    switch (mode) {
+    case 1:
+        xSize = (col4 + 1) * (size + (2 * padding));
+        ySize = (row1 + 1) * (size + (2 * padding));
+        break;
+    case 2:
+        xSize = (col6 + 1) * (size + (2 * padding));
+        ySize = (row2 + 1) * (size + (2 * padding));
+        break;
+    default:
+        xSize = (col8 + 1) * (size + (2 * padding));
+        ySize = (row2 + 1) * (size + (2 * padding));
+        break;
+    }
+
+    return true;
 }
 void Draw()
 {
@@ -86,10 +113,10 @@ void Draw()
 
     auto xOffset = Cheats::sar_ihud_x.GetInt();
     auto yOffset = Cheats::sar_ihud_y.GetInt();
-    auto size = Cheats::sar_ihud_size.GetInt();
-    auto padding = Cheats::sar_ihud_padding.GetInt();
+    auto size = Cheats::sar_ihud_button_size.GetInt();
+    auto padding = Cheats::sar_ihud_button_padding.GetInt();
 
-    auto color = GetColor(Cheats::sar_ihud_color.GetString());
+    auto color = GetColor(Cheats::sar_ihud_button_color.GetString());
     auto fontColor = GetColor(Cheats::sar_ihud_font_color.GetString());
     auto font = Scheme::GetDefaultFont() + (int)Cheats::sar_ihud_font_index.GetFloat() - FontIndexOffset;
 
@@ -107,15 +134,15 @@ void Draw()
 
     auto element = 0;
     auto DrawElement = [xOffset, yOffset, mode, shadow, color, size, shadowColor, font, fontColor, shadowFontColor, padding, symbols,
-        &element](int value, bool button, int col, int row, int xFactor = 1)
+        &element](int value, bool button, int col, int row, int length = 1)
     {
-        int x = xOffset + (col * size);
-        int y = yOffset + (row * size);
+        int x = xOffset + (col * size) + ((col + 1) * padding);
+        int y = yOffset + (row * size) + ((row + 1) * padding);
         if (mode >= value && (button || shadow)) {
             Surface::DrawRect((button) ? color : shadowColor,
                 x + ((col + 1) * padding),
                 y + ((row + 1) * padding),
-                x + ((col + xFactor) * padding) + (xFactor * size),
+                x + ((((col + 1) * padding) + size) * length),
                 y + ((row + 1) * padding + size),
                 font,
                 (button) ? fontColor : shadowFontColor,
@@ -131,7 +158,7 @@ void Draw()
     DrawElement(1, mvRight, col3, row1);
 
     DrawElement(2, mvDuck, col0, row2);
-    DrawElement(2, mvJump, col1, row2, spacebarSize);
+    DrawElement(2, mvJump, col1, row2, col6);
     DrawElement(2, mvUse, col3, row0);
 
     DrawElement(3, mvAttack, col7, row2);
@@ -142,4 +169,48 @@ void Draw()
 
     Surface::FinishDrawing();
 }
+}
+
+CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD. "
+    "Usage: sar_ihud_setpos <top, center or bottom> <left, center or right>\n")
+{
+    if (args.ArgC() != 3) {
+        Console::Print("sar_ihud_setpos <top, center or bottom> <left, center or right> : "
+            "Sets automatically the position of input HUD.\n");
+        return;
+    }
+
+    auto xSize = 0;
+    auto ySize = 0;
+
+    if (!InputHud::GetCurrentSize(xSize, ySize)) {
+        Console::Print("HUD not active!\n");
+        return;
+    }
+
+    auto xScreen = 0;
+    auto yScreen = 0;
+    Engine::GetScreenSize(xScreen, yScreen);
+
+    auto xPos = Cheats::sar_ihud_x.GetInt();
+    auto yPos = Cheats::sar_ihud_y.GetInt();
+
+    if (!std::strcmp(args[1], "top")) {
+        yPos = 0;
+    } else if (!std::strcmp(args[1], "center")) {
+        yPos = (yScreen / 2) - (ySize / 2);
+    } else if (!std::strcmp(args[1], "bottom")) {
+        yPos = yScreen - ySize;
+    }
+
+    if (!std::strcmp(args[2], "left")) {
+        xPos = 0;
+    } else if (!std::strcmp(args[2], "center")) {
+        xPos = (xScreen / 2) - (xSize / 2);
+    } else if (!std::strcmp(args[2], "right")) {
+        xPos = xScreen - xSize;
+    }
+
+    Cheats::sar_ihud_x.SetValue(xPos);
+    Cheats::sar_ihud_y.SetValue(yPos);
 }

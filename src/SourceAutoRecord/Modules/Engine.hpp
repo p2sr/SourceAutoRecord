@@ -5,6 +5,7 @@
 #include "Tier1.hpp"
 
 #include "Features/Session.hpp"
+#include "Features/Speedrun.hpp"
 #include "Features/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
@@ -24,6 +25,7 @@ VMT engine;
 VMT cl;
 VMT s_GameEventManager;
 
+using _GetScreenSize = int(__stdcall*)(int& width, int& height);
 using _ClientCmd = int(__func*)(void* thisptr, const char* szCmdString);
 using _GetLocalPlayer = int(__func*)(void* thisptr);
 using _GetViewAngles = int(__func*)(void* thisptr, QAngle& va);
@@ -31,6 +33,7 @@ using _SetViewAngles = int(__func*)(void* thisptr, QAngle& va);
 using _AddListener = bool(__func*)(void* thisptr, IGameEventListener2* listener, const char* name, bool serverside);
 using _RemoveListener = bool(__func*)(void* thisptr, IGameEventListener2* listener);
 
+_GetScreenSize GetScreenSize;
 _ClientCmd ClientCmd;
 _GetLocalPlayer GetLocalPlayer;
 _GetViewAngles GetViewAngles;
@@ -46,16 +49,16 @@ void ExecuteCommand(const char* cmd)
 {
     ClientCmd(engine->GetThisPtr(), cmd);
 }
-int GetTick()
+int GetSessionTick()
 {
     int result = *tickcount - Session::BaseTick;
     return (result >= 0) ? result : 0;
 }
-float GetTime(int tick)
+float ToTime(int tick)
 {
     return tick * *interval_per_tick;
 }
-int GetPlayerIndex()
+int GetLocalPlayerIndex()
 {
     return GetLocalPlayer(engine->GetThisPtr());
 }
@@ -76,6 +79,7 @@ unsigned int LastFrame = 0;
 
 void SessionStarted()
 {
+    Console::Print("Session Started!\n");
     Session::Rebase(*tickcount);
     Timer::Rebase(*tickcount);
 
@@ -93,6 +97,12 @@ void SessionStarted()
     if (Cheats::sar_tas_autostart.GetBool()) {
         TAS::Start();
     }
+    if (Cheats::sar_tas_autorecord.GetBool()) {
+        TAS2::StartRecording();
+    }
+    if (Cheats::sar_tas_autoplay.GetBool()) {
+        TAS2::StartPlaying();
+    }
 
     StepCounter::ResetTimer();
     IsInGame = true;
@@ -101,22 +111,22 @@ void SessionStarted()
 void SessionEnded()
 {
     if (!DemoPlayer::IsPlaying() && IsInGame) {
-        int tick = GetTick();
+        int tick = GetSessionTick();
 
         if (tick != 0) {
-            Console::Print("Session: %i (%.3f)\n", tick, Engine::GetTime(tick));
+            Console::Print("Session: %i (%.3f)\n", tick, Engine::ToTime(tick));
             Session::LastSession = tick;
         }
 
         if (Summary::IsRunning) {
-            Summary::Add(tick, Engine::GetTime(tick), *m_szLevelName);
-            Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::GetTime(Summary::TotalTicks));
+            Summary::Add(tick, Engine::ToTime(tick), *m_szLevelName);
+            Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::ToTime(Summary::TotalTicks));
         }
 
         if (Timer::IsRunning) {
             if (Cheats::sar_timer_always_running.GetBool()) {
                 Timer::Save(*tickcount);
-                Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::GetTime(Timer::TotalTicks));
+                Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::ToTime(Timer::TotalTicks));
             } else {
                 Timer::Stop(*tickcount);
                 Console::Print("Timer stopped!\n");
@@ -133,6 +143,8 @@ void SessionEnded()
         CurrentFrame = 0;
     }
 
+    TAS::Reset();
+    TAS2::Stop();
     IsInGame = false;
 }
 
@@ -196,10 +208,27 @@ DETOUR(SetSignonState2, int state, int count)
 }
 
 #ifdef _WIN32
+HOSTSTATES prevHostState;
+
 DETOUR_MH(HostStateFrame, float time)
 {
     auto hs = reinterpret_cast<CHostState*>(thisptr);
-    Console::Print("hs->m_currentState = %i\n", hs->m_currentState);
+    
+    if (hs->m_currentState != prevHostState) {
+        Console::Print("hs->m_currentState = %i\n", hs->m_currentState);
+        if (hs->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_SP) {
+            SessionEnded();
+        } else if (hs->m_currentState == HOSTSTATES::HS_RUN && hs->m_activeGame && !DemoPlayer::IsPlaying()) {
+            Console::Print("Detected menu!\n");
+            Session::Rebase(*tickcount);
+        }
+    }
+    prevHostState = hs->m_currentState;
+
+    if (Speedrun::timer && tickcount && m_szLevelName && m_bLoadgame) {
+        Speedrun::timer->Update(*tickcount, *m_szLevelName, *m_bLoadgame);
+    }
+
     return Trampoline::HostStateFrame(thisptr, time);
 }
 #endif
@@ -207,6 +236,7 @@ DETOUR_MH(HostStateFrame, float time)
 void Hook()
 {
     CREATE_VMT(Interfaces::IVEngineClient, engine) {
+        GetScreenSize = engine->GetOriginalFunction<_GetScreenSize>(Offsets::GetScreenSize);
         ClientCmd = engine->GetOriginalFunction<_ClientCmd>(Offsets::ClientCmd);
         GetLocalPlayer = engine->GetOriginalFunction<_GetLocalPlayer>(Offsets::GetLocalPlayer);
         GetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::GetViewAngles);
@@ -245,12 +275,13 @@ void Hook()
             auto ProcessTick = *reinterpret_cast<uintptr_t*>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
             tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
             interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
+            Speedrun::timer = new Speedrun::Timer(*Engine::interval_per_tick);
 
 #ifdef _WIN32
-            /*auto target = Memory::Scan("engine.dll", "55 8B EC 51 56 57 6A 00");
-            if (target.Found) {
-                MH_HOOK(HostStateFrame, target.Address);
-            }*/
+            auto fru = SAR::Find("FrameUpdate");
+            if (fru.Found) {
+                MH_HOOK(HostStateFrame, fru.Address);
+            }
 #endif
         }
     }

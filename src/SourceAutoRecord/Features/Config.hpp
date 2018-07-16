@@ -27,14 +27,24 @@ bool Save()
     SAVE_CVAR(sar_hud_default_font_color, String);
     SAVE_CVAR(sar_ihud_x, Int);
     SAVE_CVAR(sar_ihud_y, Int);
-    SAVE_CVAR(sar_ihud_padding, Int);
-    SAVE_CVAR(sar_ihud_size, Int);
-    SAVE_CVAR(sar_ihud_color, String);
+    SAVE_CVAR(sar_ihud_button_padding, Int);
+    SAVE_CVAR(sar_ihud_button_size, Int);
+    SAVE_CVAR(sar_ihud_button_color, String);
     SAVE_CVAR(sar_ihud_font_color, String);
     SAVE_CVAR(sar_ihud_font_index, Int);
     SAVE_CVAR(sar_ihud_layout, String);
     SAVE_CVAR(sar_ihud_shadow_color, String);
     SAVE_CVAR(sar_ihud_shadow_font_color, String);
+    SAVE_CVAR(sar_sr_hud_x, Int);
+    SAVE_CVAR(sar_sr_hud_y, Int);
+    SAVE_CVAR(sar_sr_hud_size, Int);
+    SAVE_CVAR(sar_sr_hud_bg_color, String);
+    SAVE_CVAR(sar_sr_hud_font_color, String);
+    SAVE_CVAR(sar_sr_hud_font_index, Int);
+    SAVE_CVAR(sar_sr_hud_splits, Int);
+    SAVE_CVAR(sar_sr_hud_splits_direction, String);
+    SAVE_CVAR(sar_sr_hud_splits_delta, Int);
+    SAVE_CVAR(sar_sr_hud_pace, Int);
 
     file.close();
     return true;

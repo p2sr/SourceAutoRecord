@@ -186,8 +186,7 @@ ScanResult Scan(Pattern* pattern)
             if (result.Address) {
                 result.Address += pattern->Offset;
                 result.Found = true;
-                snprintf(
-                    result.Message,
+                snprintf(result.Message,
                     sizeof(result.Message),
                     "Found %s at %p in %s!",
                     pattern->Description,

@@ -10,6 +10,7 @@ using namespace Patterns;
 void Patterns()
 {
     Init();
+    Create(MODULE("engine"), "FrameUpdate");
     Create(MODULE("client"), "FindElement");
 
     // engine.dll
@@ -39,6 +40,11 @@ void Patterns()
     Add("AutoCompletionFunc", "Portal 2 Build 7054",
         "CBaseAutoCompleteFileList::AutoCompletionFunc",
         "55 8B EC 81 EC ? ? ? ? 53 8B 5D 08 56 57 8B F9 8B 37 56 53 89 75 E4 89 5D FC E8 ? ? ? ? 83 C4 08 85 C0 74 19 8B C6 8D 50 01 8D 64 24 00 8A 08 40 84 C9 75 F9 2B C2 8D 44 18 01 89 45 FC");
+
+    // \x55\x8B\xEC\x51\x56\x57\x6A\x00 xxxxxxxx
+    Add("FrameUpdate", "Portal 2 Build 7054",
+        "CHostState::FrameUpdate",
+        "55 8B EC 51 56 57 6A 00");
 
     // vguimatsurface.dll
 
@@ -73,6 +79,7 @@ void Offsets()
     InternalSetValue = 12; // ConVar
     InternalSetFloatValue = 13; // ConVar
     InternalSetIntValue = 14; // ConVar
+    GetScreenSize = 5; // CEngineClient
     ClientCmd = 7; // CEngineClient
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient

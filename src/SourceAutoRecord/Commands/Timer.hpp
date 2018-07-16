@@ -33,14 +33,14 @@ CON_COMMAND(sar_timer_stop, "Stops timer.\n")
 
     if (Timer::Average::IsEnabled) {
         int tick = Timer::GetTick(*Engine::tickcount);
-        Timer::Average::Add(tick, Engine::GetTime(tick), *Engine::m_szLevelName);
+        Timer::Average::Add(tick, Engine::ToTime(tick), *Engine::m_szLevelName);
     }
 }
 
 CON_COMMAND(sar_timer_result, "Prints result of timer.\n")
 {
     int tick = Timer::GetTick(*Engine::tickcount);
-    float time = Engine::GetTime(tick);
+    float time = Engine::ToTime(tick);
 
     if (Timer::IsRunning) {
         Console::PrintActive("Result: %i (%.3f)\n", tick, time);
@@ -89,8 +89,8 @@ CON_COMMAND(sar_cps_add, "Saves current time of timer.\n")
         return;
     }
 
-    int tick = Timer::GetTick(Engine::GetTick());
-    Timer::CheckPoints::Add(tick, Engine::GetTime(tick), *Engine::m_szLevelName);
+    int tick = Timer::GetTick(Engine::GetSessionTick());
+    Timer::CheckPoints::Add(tick, Engine::ToTime(tick), *Engine::m_szLevelName);
 }
 
 CON_COMMAND(sar_cps_clear, "Resets saved times of timer.\n")
@@ -122,7 +122,7 @@ CON_COMMAND(sar_cps_result, "Prints result of timer checkpoints.\n")
 
     if (!Timer::IsRunning) {
         int tick = Timer::GetTick(*Engine::tickcount);
-        float time = Engine::GetTime(tick);
+        float time = Engine::ToTime(tick);
         Console::Print("Result: %i (%.3f)\n", tick, time);
     }
 }

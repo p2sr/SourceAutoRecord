@@ -4,6 +4,7 @@
 #include "Commands/Demo.hpp"
 #include "Commands/Info.hpp"
 #include "Commands/Routing.hpp"
+#include "Commands/Speedrun.hpp"
 #include "Commands/Stanley.hpp"
 #include "Commands/Stats.hpp"
 #include "Commands/Summary.hpp"

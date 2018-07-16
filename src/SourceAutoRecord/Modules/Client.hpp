@@ -32,7 +32,7 @@ void* in_jump;
 
 void* GetPlayer()
 {
-    return GetClientEntity(s_EntityList->GetThisPtr(), Engine::GetPlayerIndex());
+    return GetClientEntity(s_EntityList->GetThisPtr(), Engine::GetLocalPlayerIndex());
 }
 
 Vector GetAbsOrigin()
@@ -80,6 +80,15 @@ DETOUR(HudUpdate, unsigned int a2)
 DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd)
 {
     InputHud::SetButtonBits(cmd->buttons);
+
+    if (cmd->command_number) {
+        if (TAS2::IsPlaying) {
+            TAS2::Play(cmd);
+        } else if (TAS2::IsRecording) {
+            TAS2::Record(cmd);
+        }
+    }
+
     return Original::CreateMove(thisptr, flInputSampleTime, cmd);
 }
 

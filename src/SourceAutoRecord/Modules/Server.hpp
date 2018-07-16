@@ -3,6 +3,7 @@
 #include "Engine.hpp"
 
 #include "Features/Routing.hpp"
+#include "Features/Speedrun.hpp"
 #include "Features/StepCounter.hpp"
 
 #include "Cheats.hpp"
@@ -205,8 +206,23 @@ DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, 
     if (pActivator) {
         auto m_iName = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iName);
         auto m_iClassname = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iClassname);
+
+        if (Game::Version == Game::Portal2 && m_iName && Speedrun::timer) {
+            if (!std::strcmp(*Engine::m_szLevelName, "sp_a1_intro1")) {
+                if (!std::strcmp(m_iName, "camera_intro")) {
+                    Console::Print("[%i] Speedrun started!\n", Engine::GetSessionTick());
+                    Speedrun::timer->Start(*Engine::tickcount);
+                }
+            } else if (!std::strcmp(*Engine::m_szLevelName, "sp_a4_finale4")) {
+                if (!std::strcmp(m_iName, "transition_portal2")) {
+                    Console::Print("[%i] Speedrun stopped!\n", Engine::GetSessionTick());
+                    Speedrun::timer->Stop();
+                }
+            }
+        }
+
         if (print) {
-            Console::Print("[%i] %s (%s) (activator)\n", Engine::GetTick(), m_iName, m_iClassname);
+            Console::Print("[%i] %s (%s) (activator)\n", Engine::GetSessionTick(), m_iName, m_iClassname);
         }
     }
 
@@ -214,7 +230,7 @@ DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, 
         auto m_iName = *reinterpret_cast<char**>((uintptr_t)pCaller + Offsets::m_iName);
         auto m_iClassname = *reinterpret_cast<char**>((uintptr_t)pCaller + Offsets::m_iClassname);
         if (print) {
-            Console::Print("[%i] %s (%s) (caller)\n", Engine::GetTick(), m_iName, m_iClassname);
+            Console::Print("[%i] %s (%s) (caller)\n", Engine::GetSessionTick(), m_iName, m_iClassname);
         }
     }
 
@@ -222,7 +238,7 @@ DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, 
     auto ev = m_ActionList;
     while (ev) {
         if (print) {
-            Console::Msg("- [%i] %s -> %s (%s)\n", Engine::GetTick(), ev->m_iTarget, ev->m_iTargetInput, ev->m_iParameter);
+            Console::Msg("- [%i] %s -> %s (%s)\n", Engine::GetSessionTick(), ev->m_iTarget, ev->m_iTargetInput, ev->m_iParameter);
         }
         ev = ev->m_pNext;
     }
@@ -275,10 +291,10 @@ void Hook()
         gpGlobals = **reinterpret_cast<void***>(FullTossMove + Offsets::gpGlobals);
 
 #ifdef _WIN32
-        /*auto fio = SAR::Find("FireOutput");
+        auto fio = SAR::Find("FireOutput");
         if (fio.Found) {
             MH_HOOK(FireOutput, fio.Address);
-        }*/
+        }
 #endif
     }
 

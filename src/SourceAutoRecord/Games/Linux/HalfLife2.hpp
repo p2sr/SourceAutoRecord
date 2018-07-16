@@ -58,6 +58,7 @@ void Offsets()
     InternalSetValue = 14; // ConVar
     InternalSetFloatValue = 15; // ConVar
     InternalSetIntValue = 16; // ConVar
+    GetScreenSize = 5; // CEngineClient
     ClientCmd = 7; // CEngineClient
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 19; // CEngineClient

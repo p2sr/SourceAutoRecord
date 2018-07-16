@@ -7,6 +7,7 @@ int UnregisterConCommand;
 int FindCommandBase;
 
 // CEngineClient
+int GetScreenSize;
 int ClientCmd;
 int GetLocalPlayer;
 int GetGameDirectory;

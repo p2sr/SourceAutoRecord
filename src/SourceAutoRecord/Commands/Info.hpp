@@ -8,15 +8,15 @@
 
 CON_COMMAND(sar_session, "Prints the current tick of the server since it has loaded.\n")
 {
-    int tick = Engine::GetTick();
-    Console::Print("Session Tick: %i (%.3f)\n", tick, Engine::GetTime(tick));
+    int tick = Engine::GetSessionTick();
+    Console::Print("Session Tick: %i (%.3f)\n", tick, Engine::ToTime(tick));
     if (*Engine::DemoRecorder::m_bRecording) {
         tick = Engine::DemoRecorder::GetTick();
-        Console::Print("Demo Recorder Tick: %i (%.3f)\n", tick, Engine::GetTime(tick));
+        Console::Print("Demo Recorder Tick: %i (%.3f)\n", tick, Engine::ToTime(tick));
     }
     if (Engine::DemoPlayer::IsPlaying()) {
         tick = Engine::DemoPlayer::GetTick();
-        Console::Print("Demo Player Tick: %i (%.3f)\n", tick, Engine::GetTime(tick));
+        Console::Print("Demo Player Tick: %i (%.3f)\n", tick, Engine::ToTime(tick));
     }
 }
 
