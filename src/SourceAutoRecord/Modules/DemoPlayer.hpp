@@ -5,7 +5,7 @@
 #include "Features/Demo.hpp"
 
 #include "Offsets.hpp"
-#include "SourceAutoRecord.hpp"
+#include "SAR.hpp"
 #include "Utils.hpp"
 
 namespace Engine {
@@ -45,13 +45,13 @@ namespace DemoPlayer {
             auto dir = std::string(GetGameDirectory()) + std::string("/") + std::string(DemoName);
             if (parser.Parse(dir, &demo)) {
                 parser.Adjust(&demo);
-                Console::Print("Client:   %s\n", demo.clientName);
-                Console::Print("Map:      %s\n", demo.mapName);
-                Console::Print("Ticks:    %i\n", demo.playbackTicks);
-                Console::Print("Time:     %.3f\n", demo.playbackTime);
-                Console::Print("Tickrate: %.3f\n", demo.Tickrate());
+                console->Print("Client:   %s\n", demo.clientName);
+                console->Print("Map:      %s\n", demo.mapName);
+                console->Print("Ticks:    %i\n", demo.playbackTicks);
+                console->Print("Time:     %.3f\n", demo.playbackTime);
+                console->Print("Tickrate: %.3f\n", demo.Tickrate());
             } else {
-                Console::Print("Could not parse \"%s\"!\n", DemoName);
+                console->Print("Could not parse \"%s\"!\n", DemoName);
             }
         }
         return result;

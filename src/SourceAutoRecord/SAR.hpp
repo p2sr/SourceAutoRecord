@@ -1,4 +1,6 @@
 #pragma once
+#include <future>
+
 #include "vmthook/vmthook.h"
 
 #include "Modules/Console.hpp"
@@ -14,10 +16,6 @@
 
 #define SAR_VERSION "1.7"
 #define SAR_BUILD __TIME__ " " __DATE__
-#define SAR_SIGNATURE new char[25] { 65, 114, 101, 32, 121, 111, 117, 32, 104, 97, 112, 112, 121, 32, 110, 111, 119, 44, 32, 74, 97, 109, 101, 114, 63 }
-#define SAR_COLOR Color(247, 235, 69)
-#define COL_ACTIVE Color(110, 247, 76)
-#define COL_DEFAULT Color(255, 255, 255, 255)
 
 namespace SAR {
 
@@ -25,9 +23,9 @@ Memory::ScanResult Find(const char* pattern)
 {
     auto result = Memory::Scan(Patterns::Get(pattern));
     if (result.Found) {
-        Console::DevMsg("SAR: %s\n", result.Message);
+        console->DevMsg("SAR: %s\n", result.Message);
     } else {
-        Console::DevWarning("SAR: %s\n", result.Message);
+        console->DevWarning("SAR: %s\n", result.Message);
     }
     return result;
 }
@@ -35,17 +33,19 @@ bool NewVMT(void* ptr, VMT& hook, const char* caller = "unknown")
 {
     if (ptr) {
         hook = std::make_unique<VMTHook>(ptr);
-        Console::DevMsg("SAR: Created new VMT for %s %p with %i functions.\n", caller, ptr, hook->GetTotalFunctions());
+        console->DevMsg("SAR: Created new VMT for %s %p with %i functions.\n", caller, ptr, hook->GetTotalFunctions());
         return true;
     }
 
-    Console::DevWarning("SAR: Failed to create VMT for %s.\n", caller);
+    console->DevWarning("SAR: Failed to create VMT for %s.\n", caller);
     return false;
 }
 void DeleteVMT(VMT& hook, const char* caller = "unknown")
 {
-    if (!hook) return;
-    Console::DevMsg("SAR: Deleted VMT for %s %p.\n", caller, hook->GetThisPtr());
+    if (!hook)
+        return;
+
+    console->DevMsg("SAR: Deleted VMT for %s %p.\n", caller, hook->GetThisPtr());
     hook.reset();
 }
 
@@ -54,33 +54,41 @@ void DeleteVMT(VMT& hook, const char* caller = "unknown")
 bool LoadedAsPlugin = false;
 void IsPlugin()
 {
-    if (LoadedAsPlugin) {
-        Console::DevMsg("SAR: Loaded SAR as plugin! Trying to disable itself...\n");
-        if (Interfaces::IServerPluginHelpers) {
-            auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + m_Size_Offset);
-            //Console::Print("%i\n", m_Size);
-            if (m_Size > 0) {
-                auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + m_Plugins_Offset);
-                for (int i = 0; i < m_Size; i++) {
-                    auto plugin = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
-                    //Console::Print("%s\n", plugin->m_szName);
-                    if (std::strcmp(plugin->m_szName, SAR_SIGNATURE) == 0) {
-                        plugin->m_bDisable = true;
-                        Console::DevMsg("SAR: Disabled SAR in the plugin list!\n");
-                        return;
+    std::async(std::launch::async, []() {
+#if _WIN32
+        Sleep(1000);
+#else
+        sleep(1);
+#endif
+        if (LoadedAsPlugin) {
+            console->DevMsg("SAR: Loaded SAR as plugin! Trying to disable itself...\n");
+            if (Interfaces::IServerPluginHelpers) {
+                auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Size);
+                //Console::Print("%i\n", m_Size);
+                if (m_Size > 0) {
+                    auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Plugins);
+                    for (int i = 0; i < m_Size; i++) {
+                        auto plugin = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
+                        //Console::Print("%s\n", plugin->m_szName);
+                        if (std::strcmp(plugin->m_szName, SAR_PLUGIN_SIGNATURE) == 0) {
+                            plugin->m_bDisable = true;
+                            console->DevMsg("SAR: Disabled SAR in the plugin list!\n");
+                            return;
+                        }
                     }
                 }
             }
+            console->DevWarning("SAR: Could not disable SAR in the plugin list!\nTry manually with plugin_pause.\n");
         }
-        Console::DevWarning("SAR: Could not disable SAR in the plugin list!\nTry manually with plugin_pause.\n");
-    }
+    });
 }
 }
 
 #define CREATE_VMT(ptr, vmt) if (SAR::NewVMT(ptr, vmt, #vmt))
 #define DELETE_VMT(vmt) SAR::DeleteVMT(vmt, #vmt);
 
-struct CSourceAutoRecord : IServerPluginCallbacks {
+class CSourceAutoRecord : public IServerPluginCallbacks {
+public:
     CSourceAutoRecord()
     {
     }
@@ -102,7 +110,7 @@ struct CSourceAutoRecord : IServerPluginCallbacks {
     }
     virtual const char* GetPluginDescription()
     {
-        return SAR_SIGNATURE;
+        return SAR_PLUGIN_SIGNATURE;
     }
     virtual void LevelInit(char const* pMapName)
     {
@@ -114,6 +122,9 @@ struct CSourceAutoRecord : IServerPluginCallbacks {
     {
     }
     virtual void LevelShutdown()
+    {
+    }
+    virtual void ClientFullyConnect(void* pEdict)
     {
     }
     virtual void ClientActive(void* pEntity)
@@ -144,6 +155,12 @@ struct CSourceAutoRecord : IServerPluginCallbacks {
         return 0;
     }
     virtual void OnQueryCvarValueFinished(int iCookie, void* pPlayerEntity, int eStatus, const char* pCvarName, const char* pCvarValue)
+    {
+    }
+    virtual void OnEdictAllocated(void* edict)
+    {
+    }
+    virtual void OnEdictFreed(const void* edict)
     {
     }
 };

@@ -29,18 +29,18 @@ using _Command = void*(__func*)(void* thisptr, const char* name);
 using _AutoCompletionFunc = int(__func*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
 struct ConCommandBase {
-    void* VMT;
-    ConCommandBase* m_pNext;
-    bool m_bRegistered;
-    const char* m_pszName;
-    const char* m_pszHelpString;
-    int m_nFlags;
+    void* ConCommandBase_VTable; // 0
+    ConCommandBase* m_pNext; // 4
+    bool m_bRegistered; // 8
+    const char* m_pszName; // 12
+    const char* m_pszHelpString; // 16
+    int m_nFlags; // 20
 };
 
 struct CCommand {
     enum {
         COMMAND_MAX_ARGC = 64,
-        COMMAND_MAX_LENGTH = 512,
+        COMMAND_MAX_LENGTH = 512
     };
     int m_nArgc;
     int m_nArgv0Size;
@@ -63,7 +63,7 @@ struct CCommand {
 };
 
 struct ICommandCallback {
-    virtual void CommandCallback(const CCommand &command) = 0;
+    virtual void CommandCallback(const CCommand& command) = 0;
 };
 
 struct ConCommand : ConCommandBase {
@@ -84,22 +84,23 @@ struct ConCommand : ConCommandBase {
 };
 
 struct ConVar : ConCommandBase {
-    void* VMT;
-    ConVar* m_pParent;
-    const char* m_pszDefaultValue;
-    char* m_pszString;
-    int m_StringLength;
-    float m_fValue;
-    int m_nValue;
-    bool m_bHasMin;
-    float m_fMinVal;
-    bool m_bHasMax;
-    float m_fMaxVal;
-    void* m_fnChangeCallback;
-    int unk1;
-    int unk2;
-    int unk3;
-    int unk4;
+    void* ConVar_VTable; // 24
+    ConVar* m_pParent; // 28
+    const char* m_pszDefaultValue; // 32
+    char* m_pszString; // 36
+    int m_StringLength; // 40
+    float m_fValue; // 44
+    int m_nValue; // 48
+    bool m_bHasMin; // 52
+    float m_fMinVal; // 56
+    bool m_bHasMax; // 60
+    float m_fMaxVal; // 64
+    // CUtlVector<FnChangeCallback_t> m_fnChangeCallback
+    int m_fnChangeCallback; // 68
+    int m_nAllocationCount; // 72
+    int m_nGrowSize; // 76
+    int m_Size; // 80
+    int m_pElements; // 84
 };
 
 _ConCommand ConCommandCtor;
@@ -130,7 +131,8 @@ struct CBaseAutoCompleteFileList {
 
 bool Init()
 {
-    CREATE_VMT(Interfaces::ICVar, g_pCVar) {
+    CREATE_VMT(Interfaces::ICVar, g_pCVar)
+    {
         UnregisterConCommand = g_pCVar->GetOriginalFunction<_UnregisterConCommand>(Offsets::UnregisterConCommand);
         FindCommandBase = g_pCVar->GetOriginalFunction<_FindCommandBase>(Offsets::FindCommandBase);
     }

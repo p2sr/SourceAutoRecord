@@ -24,6 +24,7 @@ namespace Engine {
 VMT engine;
 VMT cl;
 VMT s_GameEventManager;
+VMT eng;
 
 using _GetScreenSize = int(__stdcall*)(int& width, int& height);
 using _ClientCmd = int(__func*)(void* thisptr, const char* szCmdString);
@@ -79,9 +80,10 @@ unsigned int LastFrame = 0;
 
 void SessionStarted()
 {
-    Console::Print("Session Started!\n");
+    console->Print("Session Started!\n");
     Session::Rebase(*tickcount);
     Timer::Rebase(*tickcount);
+    Speedrun::timer->Unpause(*tickcount);
 
     if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
         if (DemoRecorder::IsRecordingDemo) {
@@ -114,22 +116,22 @@ void SessionEnded()
         int tick = GetSessionTick();
 
         if (tick != 0) {
-            Console::Print("Session: %i (%.3f)\n", tick, Engine::ToTime(tick));
+            console->Print("Session: %i (%.3f)\n", tick, Engine::ToTime(tick));
             Session::LastSession = tick;
         }
 
         if (Summary::IsRunning) {
             Summary::Add(tick, Engine::ToTime(tick), *m_szLevelName);
-            Console::Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::ToTime(Summary::TotalTicks));
+            console->Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::ToTime(Summary::TotalTicks));
         }
 
         if (Timer::IsRunning) {
             if (Cheats::sar_timer_always_running.GetBool()) {
                 Timer::Save(*tickcount);
-                Console::Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::ToTime(Timer::TotalTicks));
+                console->Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::ToTime(Timer::TotalTicks));
             } else {
                 Timer::Stop(*tickcount);
-                Console::Print("Timer stopped!\n");
+                console->Print("Timer stopped!\n");
             }
         }
 
@@ -207,40 +209,39 @@ DETOUR(SetSignonState2, int state, int count)
     return Original::SetSignonState2(thisptr, state, count);
 }
 
-#ifdef _WIN32
-HOSTSTATES prevHostState;
-
-DETOUR_MH(HostStateFrame, float time)
+// CEngine::Frame
+CHostState* hoststate;
+HOSTSTATES prevState;
+DETOUR(Frame)
 {
-    auto hs = reinterpret_cast<CHostState*>(thisptr);
-    
-    if (hs->m_currentState != prevHostState) {
-        Console::Print("hs->m_currentState = %i\n", hs->m_currentState);
-        if (hs->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_SP) {
+    if (hoststate->m_currentState != prevState) {
+        console->Print("hs->m_currentState = %i\n", hoststate->m_currentState);
+        if (hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_SP) {
             SessionEnded();
-        } else if (hs->m_currentState == HOSTSTATES::HS_RUN && hs->m_activeGame && !DemoPlayer::IsPlaying()) {
-            Console::Print("Detected menu!\n");
+        } else if (hoststate->m_currentState == HOSTSTATES::HS_RUN && !hoststate->m_activeGame && !DemoPlayer::IsPlaying()) {
+            console->Print("Detected menu!\n");
             Session::Rebase(*tickcount);
+            Speedrun::timer->Unpause(*tickcount);
         }
     }
-    prevHostState = hs->m_currentState;
+    prevState = hoststate->m_currentState;
 
-    if (Speedrun::timer && tickcount && m_szLevelName && m_bLoadgame) {
+    if (tickcount && m_szLevelName && m_bLoadgame) {
         Speedrun::timer->Update(*tickcount, *m_szLevelName, *m_bLoadgame);
     }
 
-    return Trampoline::HostStateFrame(thisptr, time);
+    return Original::Frame(thisptr);
 }
-#endif
 
 void Hook()
 {
-    CREATE_VMT(Interfaces::IVEngineClient, engine) {
+    CREATE_VMT(Interfaces::IVEngineClient, engine)
+    {
         GetScreenSize = engine->GetOriginalFunction<_GetScreenSize>(Offsets::GetScreenSize);
         ClientCmd = engine->GetOriginalFunction<_ClientCmd>(Offsets::ClientCmd);
         GetLocalPlayer = engine->GetOriginalFunction<_GetLocalPlayer>(Offsets::GetLocalPlayer);
         GetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::GetViewAngles);
-        SetViewAngles = engine->GetOriginalFunction<_GetViewAngles>(Offsets::SetViewAngles);
+        SetViewAngles = engine->GetOriginalFunction<_SetViewAngles>(Offsets::SetViewAngles);
         GetGameDirectory = engine->GetOriginalFunction<_GetGameDirectory>(Offsets::GetGameDirectory);
 
         void* clPtr = nullptr;
@@ -254,7 +255,8 @@ void Hook()
             clPtr = *reinterpret_cast<void**>(ServerCmdKeyValues + Offsets::cl);
         }
 
-        CREATE_VMT(clPtr, cl) {
+        CREATE_VMT(clPtr, cl)
+        {
             if (Game::IsPortal2Engine()) {
                 HOOK_O(cl, SetSignonState, Offsets::Disconnect - 1);
                 HOOK(cl, Disconnect);
@@ -275,19 +277,30 @@ void Hook()
             auto ProcessTick = *reinterpret_cast<uintptr_t*>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
             tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
             interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
-            Speedrun::timer = new Speedrun::Timer(*Engine::interval_per_tick);
+            Speedrun::timer->SetIntervalPerTick(*Engine::interval_per_tick);
 
-#ifdef _WIN32
-            auto fru = SAR::Find("FrameUpdate");
-            if (fru.Found) {
-                MH_HOOK(HostStateFrame, fru.Address);
-            }
+            // TODO
+            auto hsf = SAR::Find("HostState_Frame");
+            if (hsf.Found) {
+                hoststate = *reinterpret_cast<CHostState**>(hsf.Address + Offsets::hoststate);
+                auto FrameUpdate = Memory::ReadAbsoluteAddress(hsf.Address + Offsets::FrameUpdate);
+#if _WIN32
+                auto engAddr = **reinterpret_cast<void***>(FrameUpdate + Offsets::eng);
+#else
+                auto State_Shutdown = Memory::ReadAbsoluteAddress(FrameUpdate + Offsets::State_Shutdown);
+                auto engAddr = **reinterpret_cast<void***>(State_Shutdown + Offsets::eng);
 #endif
+                CREATE_VMT(engAddr, eng)
+                {
+                    HOOK(eng, Frame);
+                }
+            }
         }
     }
 
     VMT tool;
-    CREATE_VMT(Interfaces::IEngineTool, tool) {
+    CREATE_VMT(Interfaces::IEngineTool, tool)
+    {
         auto GetCurrentMap = tool->GetOriginalFunction<uintptr_t>(Offsets::GetCurrentMap);
         m_szLevelName = reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
     }
@@ -297,23 +310,22 @@ void Hook()
         m_bLoadgame = *reinterpret_cast<bool**>(ldg.Address);
     }
 
-    CREATE_VMT(Interfaces::IGameEventManager2, s_GameEventManager) {
+    CREATE_VMT(Interfaces::IGameEventManager2, s_GameEventManager)
+    {
         AddListener = s_GameEventManager->GetOriginalFunction<_AddListener>(Offsets::AddListener);
         RemoveListener = s_GameEventManager->GetOriginalFunction<_RemoveListener>(Offsets::RemoveListener);
     }
 }
 void Unhook()
 {
-    UNHOOK_O(cl, Offsets::Disconnect - 1);
+    UNHOOK_O(cl, Offsets::Disconnect - 1); // SetSignonState
     UNHOOK_O(cl, Offsets::Disconnect);
     UNHOOK_COMMAND(connect);
-#ifdef _WIN32
-    MH_UNHOOK(HostStateFrame);
-#endif
+    UNHOOK(eng, Frame);
     DELETE_VMT(engine);
     DELETE_VMT(cl);
     DELETE_VMT(s_GameEventManager);
-
+    DELETE_VMT(eng);
     DemoPlayer::Unhook();
     DemoRecorder::Unhook();
 }

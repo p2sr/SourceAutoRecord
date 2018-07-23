@@ -24,7 +24,7 @@ unsigned __stdcall Main(void* args)
 int __attribute__((constructor)) Main()
 #endif
 {
-    if (!Console::Init())
+    if (!console->Init())
         return 1;
 
     Interfaces::Init();
@@ -37,7 +37,7 @@ int __attribute__((constructor)) Main()
 
             auto vars = Variable::RegisterAll();
             auto commands = Command::RegisterAll();
-            Console::DevMsg("SAR: Registered %i ConVars and %i ConCommands!\n", vars, commands);
+            console->DevMsg("SAR: Registered %i ConVars and %i ConCommands!\n", vars, commands);
 
             InputSystem::Hook();
             Scheme::Hook();
@@ -52,16 +52,16 @@ int __attribute__((constructor)) Main()
             Config::Load();
             SAR::IsPlugin();
 
-            Console::PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
+            console->PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
             return 0;
         } else {
-            Console::Warning("SAR: Could not register any commands!\n");
+            console->Warning("SAR: Could not register any commands!\n");
         }
     } else {
-        Console::Warning("SAR: Game not supported!\n");
+        console->Warning("SAR: Game not supported!\n");
     }
 
-    Console::Warning("SAR: Failed to load SourceAutoRecord!\n");
+    console->Warning("SAR: Failed to load SourceAutoRecord!\n");
     return 1;
 }
 
@@ -84,7 +84,7 @@ void Cleanup()
 
     Tier1::Shutdown();
 
-    Console::Print("SAR: Cya!\n");
+    console->Print("SAR: Cya!\n");
 }
 
 #ifdef _WIN32
@@ -93,14 +93,13 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved)
     if (reason == DLL_PROCESS_ATTACH) {
         DisableThreadLibraryCalls(module);
         CreateThread(0, 0, LPTHREAD_START_ROUTINE(Main), 0, 0, 0);
-    }
-    else if (reason == DLL_PROCESS_DETACH) {
+    } else if (reason == DLL_PROCESS_DETACH) {
         Cleanup();
     }
     return TRUE;
 }
 #else
-int __attribute__((constructor)) Exit()
+int __attribute__((destructor)) Exit()
 {
     Cleanup();
 }

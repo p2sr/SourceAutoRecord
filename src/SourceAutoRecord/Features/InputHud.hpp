@@ -21,7 +21,6 @@
 namespace InputHud {
 
 int ButtonBits = 0;
-int FontIndexOffset = 0;
 
 /*
     Layout:
@@ -46,14 +45,6 @@ const int col6 = 6;
 const int col7 = 7;
 const int col8 = 8;
 
-void Init()
-{
-#ifndef _WIN32
-    if (Game::Version == Game::Portal2) {
-        FontIndexOffset = 1;
-    }
-#endif
-}
 void SetButtonBits(int bits)
 {
     ButtonBits = bits;
@@ -61,7 +52,7 @@ void SetButtonBits(int bits)
 Color GetColor(const char* source)
 {
     int r, g, b, a;
-    sscanf_s(source, "%i%i%i%i", &r, &g, &b, &a);
+    sscanf(source, "%i%i%i%i", &r, &g, &b, &a);
     return Color(r, g, b, a);
 }
 bool GetCurrentSize(int& xSize, int& ySize)
@@ -118,7 +109,7 @@ void Draw()
 
     auto color = GetColor(Cheats::sar_ihud_button_color.GetString());
     auto fontColor = GetColor(Cheats::sar_ihud_font_color.GetString());
-    auto font = Scheme::GetDefaultFont() + (int)Cheats::sar_ihud_font_index.GetFloat() - FontIndexOffset;
+    auto font = Scheme::GetDefaultFont() + Cheats::sar_ihud_font_index.GetInt();
 
     auto symbols = std::string("WASDCSELRSR");
     auto layout = std::string(Cheats::sar_ihud_layout.GetString());
@@ -134,8 +125,7 @@ void Draw()
 
     auto element = 0;
     auto DrawElement = [xOffset, yOffset, mode, shadow, color, size, shadowColor, font, fontColor, shadowFontColor, padding, symbols,
-        &element](int value, bool button, int col, int row, int length = 1)
-    {
+                           &element](int value, bool button, int col, int row, int length = 1) {
         int x = xOffset + (col * size) + ((col + 1) * padding);
         int y = yOffset + (row * size) + ((row + 1) * padding);
         if (mode >= value && (button || shadow)) {
@@ -172,11 +162,11 @@ void Draw()
 }
 
 CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD. "
-    "Usage: sar_ihud_setpos <top, center or bottom> <left, center or right>\n")
+                             "Usage: sar_ihud_setpos <top, center or bottom> <left, center or right>\n")
 {
     if (args.ArgC() != 3) {
-        Console::Print("sar_ihud_setpos <top, center or bottom> <left, center or right> : "
-            "Sets automatically the position of input HUD.\n");
+        console->Print("sar_ihud_setpos <top, center or bottom> <left, center or right> : "
+                       "Sets automatically the position of input HUD.\n");
         return;
     }
 
@@ -184,7 +174,7 @@ CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD. "
     auto ySize = 0;
 
     if (!InputHud::GetCurrentSize(xSize, ySize)) {
-        Console::Print("HUD not active!\n");
+        console->Print("HUD not active!\n");
         return;
     }
 

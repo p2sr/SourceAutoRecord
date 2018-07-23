@@ -1,4 +1,6 @@
 #pragma once
+#include "Features/Speedrun.hpp"
+
 #include "Offsets.hpp"
 #include "Patterns.hpp"
 
@@ -52,5 +54,14 @@ void Offsets()
     in_jump = 420; // CInput::GetButtonBits
     KeyDown = 255; // CInput::JoyStickApplyMovement
     KeyUp = 234; // CInput::JoyStickApplyMovement
+}
+void Rules()
+{
+    Speedrun::TimerRules rules;
+
+    rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::Start));
+    rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::End));
+
+    Speedrun::timer->LoadRules(rules);
 }
 }

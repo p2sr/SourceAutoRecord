@@ -63,7 +63,7 @@ DETOUR(HudUpdate, unsigned int a2)
         for (auto tas = TAS::Frames.begin(); tas != TAS::Frames.end();) {
             tas->FramesLeft--;
             if (tas->FramesLeft <= 0) {
-                Console::DevMsg("[%i] %s\n", Engine::CurrentFrame, tas->Command.c_str());
+                console->DevMsg("[%i] %s\n", Engine::CurrentFrame, tas->Command.c_str());
                 Engine::ExecuteCommand(tas->Command.c_str());
                 tas = TAS::Frames.erase(tas);
             } else {
@@ -109,13 +109,14 @@ void Hook()
     readJmp = Game::Version == Game::TheStanleyParable;
 #endif
 
-    CREATE_VMT(Interfaces::IBaseClientDLL, clientdll) {
+    CREATE_VMT(Interfaces::IBaseClientDLL, clientdll)
+    {
         HOOK(clientdll, HudUpdate);
 
         if (Game::Version == Game::Portal2) {
             auto fel = SAR::Find("FindElement");
             if (fel.Found) {
-                using _FindElement = void*(__thiscall*)(void* thisptr, const char* pName);
+                using _FindElement = void*(__func*)(void* thisptr, const char* pName);
                 auto FindElement = reinterpret_cast<_FindElement>(fel.Address);
 
                 auto GetHudAddr = Memory::ReadAbsoluteAddress((uintptr_t)Original::HudUpdate + Offsets::GetHud);
@@ -123,7 +124,8 @@ void Hook()
                 auto gHUD = reinterpret_cast<_GetHud>(GetHudAddr)(-1);
 
                 auto element = FindElement(gHUD, "CHUDChallengeStats");
-                CREATE_VMT(element, g_HUDChallengeStats) {
+                CREATE_VMT(element, g_HUDChallengeStats)
+                {
                     HOOK(g_HUDChallengeStats, GetName);
                 }
             }
@@ -132,7 +134,8 @@ void Hook()
             auto IN_ActivateMouse = clientdll->GetOriginalFunction<uintptr_t>(Offsets::IN_ActivateMouse, readJmp);
             auto g_InputAddr = **reinterpret_cast<void***>(IN_ActivateMouse + Offsets::g_Input);
 
-            CREATE_VMT(g_InputAddr, g_Input) {
+            CREATE_VMT(g_InputAddr, g_Input)
+            {
                 auto GetButtonBits = g_Input->GetOriginalFunction<uintptr_t>(Offsets::GetButtonBits, readJmp);
                 in_jump = *reinterpret_cast<void**>((uintptr_t)GetButtonBits + Offsets::in_jump);
 
@@ -147,19 +150,21 @@ void Hook()
         auto HudProcessInput = clientdll->GetOriginalFunction<uintptr_t>(Offsets::HudProcessInput);
         void* clientMode = nullptr;
         if (Game::IsPortal2Engine()) {
-            typedef void*(*_GetClientMode)();
+            typedef void* (*_GetClientMode)();
             auto GetClientMode = reinterpret_cast<_GetClientMode>(Memory::ReadAbsoluteAddress(HudProcessInput + Offsets::GetClientMode));
             clientMode = GetClientMode();
         } else {
             clientMode = **reinterpret_cast<void***>(HudProcessInput + Offsets::GetClientMode);
         }
 
-        CREATE_VMT(clientMode, g_pClientMode) {
+        CREATE_VMT(clientMode, g_pClientMode)
+        {
             HOOK(g_pClientMode, CreateMove);
         }
     }
 
-    CREATE_VMT(Interfaces::IClientEntityList, s_EntityList) {
+    CREATE_VMT(Interfaces::IClientEntityList, s_EntityList)
+    {
         GetClientEntity = s_EntityList->GetOriginalFunction<_GetClientEntity>(Offsets::GetClientEntity, readJmp);
     }
 }

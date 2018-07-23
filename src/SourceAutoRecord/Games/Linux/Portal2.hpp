@@ -40,6 +40,11 @@ void Patterns()
         "CBaseAutoCompleteFileList::AutoCompletionFunc",
         "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 75 ? 8B 03 89 34 24 89 85 ? ? ? ? 89 44 24 ? E8 ? ? ? ? 85 C0");
 
+    // TODO
+    Add("HostState_Frame", "Portal 2 Build 7054",
+        "HostState_Frame",
+        "");
+
     // vguimatsurface.so
 
     // \x55\x89\xE5\x53\x83\xEC\x00\x80\x3D\x00\x00\x00\x00\x00\x8B\x5D\x00\x0F\x84\x00\x00\x00\x00 xxxxxx?xx?????xx?xx????
@@ -93,10 +98,17 @@ void Offsets()
     demoplayer = 93; // CClientState::Disconnect
     demorecorder = 106; // CClientState::Disconnect
     m_szLevelName = 72; // CEngineTool::GetCurrentMap
+    AddListener = 4; // CGameEventManager
+    RemoveListener = 6; // CGameEventManager
+    hoststate = 12; // HostState_Frame
+    FrameUpdate = 21; // HostState_Frame
+    State_Shutdown = 231; // CHostState::FrameUpdate
+    eng = 12; // CHostState::FrameUpdate
+    Frame = 6; // CEngine
 
     // libvstdlib.so
-    UnregisterConCommand = 10; // CCvar (TODO)
-    FindCommandBase = 13; // CCvar (TODO)
+    UnregisterConCommand = 10; // CCvar
+    FindCommandBase = 13; // CCvar
 
     // vgui2.so
 
@@ -137,16 +149,16 @@ void Offsets()
     m_vecVelocity = 244; // CFPSPanel::Paint
     GetClientEntity = 3; // CClientEntityList
     GetFlags = 228; // C_BasePlayer::PhysicsSimulate
-    GetClientMode = 4; // CHLClient::HudProcessInput (TODO)
+    GetClientMode = 12; // CHLClient::HudProcessInput
     CreateMove = 25; // ClientModeShared
     GetName = 11; // CHud
 
     // vguimatsurface.so (TODO)
 
-    DrawSetColor = 14; // CMatSystemSurface (TODO)
-    DrawFilledRect = 15; // CMatSystemSurface (TODO)
+    DrawSetColor = 13; // CMatSystemSurface
+    DrawFilledRect = 15; // CMatSystemSurface
     GetFontTall = 72; // CFPSPanel::ComputeSize
     DrawColoredText = 160; // CFPSPanel::Paint
-    DrawTextLen = 163; // CNetGraphPanel::DrawTextFields (TODO)
+    DrawTextLen = 163; // CNetGraphPanel::DrawTextFields
 }
 }

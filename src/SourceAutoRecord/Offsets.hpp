@@ -124,6 +124,9 @@ int m_iName;
 // CBaseEntityOutput
 int m_ActionList;
 
+// CEngine
+int Frame;
+
 // Others
 int tickcount;
 int interval_per_tick;
@@ -140,4 +143,8 @@ int KeyDown;
 int KeyUp;
 int GetHud;
 int GetClientMode;
+int hoststate;
+int FrameUpdate;
+int State_Shutdown;
+int eng;
 }

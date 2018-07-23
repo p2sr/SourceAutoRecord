@@ -16,6 +16,12 @@
     <ClCompile Include="..\..\libs\minhook\hde\hde32.c">
       <Filter>libs\minhook</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Speedrun.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Console.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
@@ -44,9 +50,6 @@
     </ClInclude>
     <ClInclude Include="..\..\libs\minhook\MinHook.h">
       <Filter>libs\minhook</Filter>
-    </ClInclude>
-    <ClInclude Include="SourceAutoRecord.hpp">
-      <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libs\vmthook\vmthook.h">
       <Filter>libs\vmthook</Filter>
@@ -233,6 +236,9 @@
     </ClInclude>
     <ClInclude Include="Commands\Speedrun.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="SAR.hpp">
+      <Filter>SourceAutoRecord</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

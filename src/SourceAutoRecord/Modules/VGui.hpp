@@ -28,7 +28,6 @@ VMT enginevgui;
 using _Paint = int(__func*)(void* thisptr, int mode);
 
 bool RespectClShowPos = true;
-int FontIndexOffset = 0;
 
 // CEngineVGui::Paint
 DETOUR(Paint, int mode)
@@ -40,11 +39,11 @@ DETOUR(Paint, int mode)
     auto yPadding = Cheats::sar_hud_default_padding_y.GetInt();
     auto spacing = Cheats::sar_hud_default_spacing.GetInt();
 
-    auto font = Scheme::GetDefaultFont() + (int)Cheats::sar_hud_default_font_index.GetFloat() - VGui::FontIndexOffset;
+    auto font = Scheme::GetDefaultFont() + Cheats::sar_hud_default_font_index.GetInt();
     auto fontSize = Surface::GetFontHeight(font);
 
     int r, g, b, a;
-    sscanf_s(Cheats::sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
+    sscanf(Cheats::sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
     Color textColor(r, g, b, a);
 
     if (RespectClShowPos && Cheats::cl_showpos.GetBool()) {
@@ -52,12 +51,11 @@ DETOUR(Paint, int mode)
         yPadding += spacing;
     }
 
-    auto DrawElement = [font, xPadding, yPadding, fontSize, spacing, textColor, &elements](char* fmt, ...)
-    {
+    auto DrawElement = [font, xPadding, yPadding, fontSize, spacing, textColor, &elements](const char* fmt, ...) {
         va_list argptr;
         va_start(argptr, fmt);
         char data[1024];
-        vsprintf_s(data, fmt, argptr);
+        vsnprintf(data, sizeof(data), fmt, argptr);
         va_end(argptr);
 
         Surface::Draw(font,
@@ -180,20 +178,14 @@ DETOUR(Paint, int mode)
 
 void Hook()
 {
-    CREATE_VMT(Interfaces::IEngineVGui, enginevgui) {
+    CREATE_VMT(Interfaces::IEngineVGui, enginevgui)
+    {
         HOOK(enginevgui, Paint);
 
         if (Game::IsHalfLife2Engine()) {
             RespectClShowPos = false;
         }
-#ifndef _WIN32
-        if (Game::Version == Game::Portal2) {
-            FontIndexOffset = 1;
-        }
-#endif
     }
-
-    InputHud::Init();
 }
 void Unhook()
 {

@@ -62,8 +62,8 @@ Variable sar_sr_hud_bg_color("sar_sr_hud_bg_color", "0 0 0 233", "RGBA backgroun
 Variable sar_sr_hud_font_color("sar_sr_hud_font_color", "255 255 255 255", "RGBA font color of speedrun timer HUD.\n", 0);
 Variable sar_sr_hud_font_index("sar_sr_hud_font_index", "1", 0, "Font index of speedrun timer HUD.\n");
 Variable sar_sr_hud_splits("sar_sr_hud_splits", "0", 0, "Draws splits for speedrun timer.\n");
-Variable sar_sr_hud_splits_direction("sar_sr_hud_splits_direction", "default", "Splits direction for speedrun timer HUD. "
-    "Usage: sar_sr_hud_splits_direction <top, left, right or bottom>. Default is bottom.\n");
+Variable sar_sr_hud_splits_direction("sar_sr_hud_splits_direction", "bottom", "Splits direction for speedrun timer HUD. "
+    "Usage: sar_sr_hud_splits_direction <top, left, right or bottom>.\n");
 Variable sar_sr_hud_splits_delta("sar_sr_hud_splits_delta", "0", 0, "Draws split delta compared to personal best for speedrun timer HUD.\n");
 Variable sar_sr_hud_pace("sar_sr_hud_pace", "0", 0, "Draws current pace compared to personal best for speedrun timer HUD.\n");
 Variable sar_stats_jumps_xy("sar_stats_jumps_xy", "0", "Saves jump distance as 2D vector.\n");
@@ -84,9 +84,9 @@ Variable sar_tas_autostart("sar_tas_autostart", "1", "Starts queued commands aut
 Variable sar_tas_autorecord("sar_tas_autorecord", "0", "Starts recording inputs on first frame after a load.\n");
 Variable sar_tas_autoplay("sar_tas_autoplay", "1", "Starts playing back recorded inputs on first frame after a load.\n");
 #ifdef _WIN32
-Variable sar_debug_entitiy_output("sar_debug_entitiy_output", "0", "Prints entity output data, similar to developer 2.\n");
+Variable sar_debug_entitiy_output("sar_debug_entitiy_output", "0", "Prints entity output data, similar to developer.\n");
 #endif
-Variable sar_debug_game_events("sar_debug_game_events", "0", "Prints game event data data, similar to net_showevents.\n");
+Variable sar_debug_game_events("sar_debug_game_events", "0", "Prints game event data, similar to net_showevents.\n");
 
 Variable cl_showpos;
 Variable sv_cheats;
@@ -153,7 +153,7 @@ void Init()
         auto sv_portal_debug_touch = Variable("sv_portal_debug_touch");
         if (sv_portal_debug_touch.GetPtr()) {
             Game::Version = Game::Portal;
-            Console::DevMsg("SAR: Detected Portal version!\n");
+            console->DevMsg("SAR: Detected Portal version!\n");
         }
     } else if (Game::Version == Game::TheStanleyParable) {
         ACTIVATE_AUTOCOMPLETEFILE(map);

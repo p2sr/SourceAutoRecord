@@ -1,5 +1,5 @@
 #pragma once
-#include "Utils.hpp"
+#include "Utils/Memory.hpp"
 
 namespace Patterns {
 
@@ -7,7 +7,7 @@ std::vector<Memory::Pattern> Items;
 
 void Create(const char* moduleName, const char* patternName)
 {
-    Items.push_back(Memory::Pattern{
+    Items.push_back(Memory::Pattern {
         moduleName,
         patternName });
 }
@@ -35,6 +35,7 @@ void Init()
     Create(MODULE("engine"), "m_bLoadgame");
     Create(MODULE("engine"), "Key_SetBinding");
     Create(MODULE("engine"), "AutoCompletionFunc");
+    Create(MODULE("engine"), "HostState_Frame");
     Create(MODULE("vguimatsurface"), "StartDrawing");
     Create(MODULE("vguimatsurface"), "FinishDrawing");
     Create(MODULE("server"), "FireOutput");

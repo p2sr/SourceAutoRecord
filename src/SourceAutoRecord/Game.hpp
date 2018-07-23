@@ -6,11 +6,12 @@
 #include GAME(TheBeginnersGuide)
 #include GAME(TheStanleyParable)
 
-#define PROC_IS(name, game) \
-    if (proc == name) { \
+#define PROC_IS(name, game)         \
+    if (proc == name) {             \
         Version = SourceGame::game; \
-        game::Patterns(); \
-        game::Offsets(); \
+        game::Patterns();           \
+        game::Offsets();            \
+        game::Rules();              \
     }
 
 namespace Game {
@@ -36,7 +37,7 @@ bool IsSupported()
     PROC_IS("stanley.exe", TheStanleyParable);
     PROC_IS("beginnersguide.exe", TheBeginnersGuide);
 #else
-    PROC_IS("portal2_linx", Portal2);
+    PROC_IS("portal2_linux", Portal2);
     PROC_IS("hl2_linux", HalfLife2);
     PROC_IS("stanley_linux", TheStanleyParable);
     PROC_IS("beginnersguide.bin", TheBeginnersGuide);

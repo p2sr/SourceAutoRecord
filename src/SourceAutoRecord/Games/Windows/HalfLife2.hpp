@@ -1,4 +1,6 @@
 #pragma once
+#include "Features/Speedrun.hpp"
+
 #include "Offsets.hpp"
 #include "Patterns.hpp"
 
@@ -40,10 +42,10 @@ void Patterns()
         "CBaseAutoCompleteFileList::AutoCompletionFunc",
         "55 8B EC 81 EC ? ? ? ? 53 56 8B F1 57 8B 7D 08");
 
-    // \x55\x8B\xEC\x51\xD9\x45\x08\x56 xxxxxxxx
-    Add("FrameUpdate", "Half-Life 2 Build 2257546",
-        "CHostState::FrameUpdate",
-        "55 8B EC 51 D9 45 08 56");
+    // TODO
+    Add("HostState_Frame", "Half-Life 2 Build 2257546",
+        "HostState_Frame",
+        "");
 
     // vguimatsurface.dll
 
@@ -99,6 +101,10 @@ void Offsets()
     demorecorder = 121; // CClientState::Disconnect
     GetCurrentMap = 23; // CEngineTool
     m_szLevelName = 32; // CEngineTool::GetCurrentMap
+    hoststate = 8; // HostState_Frame (TODO)
+    FrameUpdate = 16; // HostState_Frame (TODO)
+    eng = 277; // CHostState::FrameUpdate (TODO)
+    Frame = 5; // CEngine (TODO)
 
     // vstdlib.dll
     UnregisterConCommand = 7; // CCvar
@@ -148,5 +154,14 @@ void Offsets()
     GetFontTall = 69; // CFPSPanel::ComputeSize
     DrawColoredText = 162; // CNetGraphPanel::DrawTextFields
     DrawTextLen = 165; // CNetGraphPanel::DrawTextFields
+}
+void Rules()
+{
+    Speedrun::TimerRules rules;
+
+    rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::Start));
+    rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::End));
+
+    Speedrun::timer->LoadRules(rules);
 }
 }

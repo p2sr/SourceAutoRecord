@@ -4,7 +4,7 @@
 #include "Modules/Console.hpp"
 
 #include "Game.hpp"
-#include "SourceAutoRecord.hpp"
+#include "SAR.hpp"
 #include "Utils.hpp"
 
 #define CreateInterfaceInternal_Offset 5
@@ -44,7 +44,7 @@ void* Get(const char* filename, const char* interfaceSymbol)
 {
     auto handle = Memory::GetModuleHandleByName(filename);
     if (!handle) {
-        Console::DevWarning("SAR: Failed to open module %s!\n", filename);
+        console->DevWarning("SAR: Failed to open module %s!\n", filename);
         return nullptr;
     }
 
@@ -52,7 +52,7 @@ void* Get(const char* filename, const char* interfaceSymbol)
     Memory::CloseModuleHandle(handle);
 
     if (!CreateInterface) {
-        Console::DevWarning("SAR: Failed to find symbol CreateInterface for %s!\n", filename);
+        console->DevWarning("SAR: Failed to find symbol CreateInterface for %s!\n", filename);
         return nullptr;
     }
 
@@ -63,13 +63,13 @@ void* Get(const char* filename, const char* interfaceSymbol)
     for (auto current = s_pInterfaceRegs; current; current = current->m_pNext) {
         if (strncmp(current->m_pName, interfaceSymbol, strlen(interfaceSymbol)) == 0) {
             result = current->m_CreateFn();
-            //Console::DevMsg("SAR: Found interface %s at %p in %s!\n", current->m_pName, result, filename);
+            //console->DevMsg("SAR: Found interface %s at %p in %s!\n", current->m_pName, result, filename);
             break;
         }
     }
 
     if (!result)
-        Console::DevWarning("SAR: Failed to find interface with symbol %s in %s!\n", interfaceSymbol, filename);
+        console->DevWarning("SAR: Failed to find interface with symbol %s in %s!\n", interfaceSymbol, filename);
 
     return result;
 }
@@ -85,7 +85,11 @@ void Init()
     IClientEntityList = Get(MODULE("client"), "VClientEntityList0");
     IGameMovement = Get(MODULE("server"), "GameMovement0");
     IServerGameDLL = Get(MODULE("server"), "ServerGameDLL0");
+#if _WIN32
     ICVar = Get(MODULE("vstdlib"), "VEngineCvar0");
+#else
+    ICVar = Get(MODULE("libvstdlib"), "VEngineCvar0");
+#endif
     IServerPluginHelpers = Get(MODULE("engine"), "ISERVERPLUGINHELPERS0");
     IGameEventManager2 = Get(MODULE("engine"), "GAMEEVENTSMANAGER002");
 }

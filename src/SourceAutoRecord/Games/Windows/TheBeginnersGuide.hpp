@@ -1,4 +1,6 @@
 #pragma once
+#include "Features/Speedrun.hpp"
+
 #include "Offsets.hpp"
 #include "Patterns.hpp"
 
@@ -29,5 +31,14 @@ void Patterns()
 void Offsets()
 {
     TheStanleyParable::Offsets();
+}
+void Rules()
+{
+    Speedrun::TimerRules rules;
+
+    rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::Start));
+    rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::End));
+
+    Speedrun::timer->LoadRules(rules);
 }
 }

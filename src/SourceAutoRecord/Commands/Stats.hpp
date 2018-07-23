@@ -14,14 +14,14 @@ CON_COMMAND(sar_stats_jump, "Prints jump stats.\n")
         type = std::string(" (vec2)");
     }
 
-    Console::Print("Distance: %.3f\n", Stats::Jumps::Distance);
-    Console::Print("Peak: %.3f %s\n", Stats::Jumps::DistancePeak, type.c_str());
-    Console::Print("Jumps: %i\n", Stats::Jumps::Total);
+    console->Print("Distance: %.3f\n", Stats::Jumps::Distance);
+    console->Print("Peak: %.3f %s\n", Stats::Jumps::DistancePeak, type.c_str());
+    console->Print("Jumps: %i\n", Stats::Jumps::Total);
 }
 
 CON_COMMAND(sar_stats_steps, "Prints total amount of steps.\n")
 {
-    Console::Print("Steps: %i\n", Stats::Jumps::Total);
+    console->Print("Steps: %i\n", Stats::Jumps::Total);
 }
 
 CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
@@ -35,8 +35,8 @@ CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
         type = std::string(" (vec2)");
     }
 
-    Console::Print("Current: %.3f/%.3f (vec2/vec3)", current.Length2D(), current.Length());
-    Console::Print("Peak: %.3f %s\n", Stats::Velocity::Peak, type.c_str());
+    console->Print("Current: %.3f/%.3f (vec2/vec3)", current.Length2D(), current.Length());
+    console->Print("Peak: %.3f %s\n", Stats::Velocity::Peak, type.c_str());
 }
 
 CON_COMMAND(sar_stats_jumps_reset, "Resets total jump count and jump distance peak.\n")

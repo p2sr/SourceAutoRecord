@@ -13,7 +13,7 @@ private:
     bool isRegistered = false;
     int originalFlags = 0;
 
-    using _ShouldRegisterCallback = bool(*)();
+    using _ShouldRegisterCallback = bool (*)();
     _ShouldRegisterCallback shouldRegister = NULL;
 
     static std::vector<Variable*> list;
@@ -93,15 +93,15 @@ public:
     }
     void SetValue(const char* value)
     {
-        Memory::VMT<_InternalSetValue>(this->ptr, Offsets::InternalSetValue)(ptr, value);
+        Memory::VMT<_InternalSetValue>(this->ptr, Offsets::InternalSetValue)(this->ptr, value);
     }
     void SetValue(float value)
     {
-        Memory::VMT<_InternalSetFloatValue>(this->ptr, Offsets::InternalSetFloatValue)(ptr, value);
+        Memory::VMT<_InternalSetFloatValue>(this->ptr, Offsets::InternalSetFloatValue)(this->ptr, value);
     }
     void SetValue(int value)
     {
-        Memory::VMT<_InternalSetIntValue>(this->ptr, Offsets::InternalSetIntValue)(ptr, value);
+        Memory::VMT<_InternalSetIntValue>(this->ptr, Offsets::InternalSetIntValue)(this->ptr, value);
     }
     void SetFlags(int value)
     {

@@ -1,4 +1,6 @@
 #pragma once
+#include "Features/Speedrun.hpp"
+
 #include "Offsets.hpp"
 #include "Patterns.hpp"
 
@@ -10,7 +12,6 @@ using namespace Patterns;
 void Patterns()
 {
     Init();
-    Create(MODULE("engine"), "FrameUpdate");
     Create(MODULE("client"), "FindElement");
 
     // engine.dll
@@ -41,10 +42,10 @@ void Patterns()
         "CBaseAutoCompleteFileList::AutoCompletionFunc",
         "55 8B EC 81 EC ? ? ? ? 53 8B 5D 08 56 57 8B F9 8B 37 56 53 89 75 E4 89 5D FC E8 ? ? ? ? 83 C4 08 85 C0 74 19 8B C6 8D 50 01 8D 64 24 00 8A 08 40 84 C9 75 F9 2B C2 8D 44 18 01 89 45 FC");
 
-    // \x55\x8B\xEC\x51\x56\x57\x6A\x00 xxxxxxxx
-    Add("FrameUpdate", "Portal 2 Build 7054",
-        "CHostState::FrameUpdate",
-        "55 8B EC 51 56 57 6A 00");
+    // \x55\x8B\xEC\xD9\x45\x08\x51\xB9\x00\x00\x00\x00\xD9\x1C\x24\xE8\x00\x00\x00\x00\x5D\xC3 xxxxxxxx????xxxx????xx
+    Add("HostState_Frame", "Portal 2 Build 7054",
+        "HostState_Frame",
+        "55 8B EC D9 45 08 51 B9 ? ? ? ? D9 1C 24 E8 ? ? ? ? 5D C3");
 
     // vguimatsurface.dll
 
@@ -106,11 +107,15 @@ void Offsets()
     demorecorder = 87; // CClientState::Disconnect
     GetCurrentMap = 25; // CEngineTool
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
-    AddListener = 3; // CGameEventListener
-    RemoveListener = 5; // CGameEventListener
+    AddListener = 3; // CGameEventManager
+    RemoveListener = 5; // CGameEventManager
+    hoststate = 8; // HostState_Frame
+    FrameUpdate = 16; // HostState_Frame
+    eng = 277; // CHostState::FrameUpdate
+    Frame = 5; // CEngine
 
     // vstdlib.dll
-    UnregisterConCommand = 10; // CCvar 
+    UnregisterConCommand = 10; // CCvar
     FindCommandBase = 13; // CCVar
 
     // vgui2.dll
@@ -166,5 +171,14 @@ void Offsets()
     GetFontTall = 72; // CFPSPanel::ComputeSize
     DrawColoredText = 160; // CFPSPanel::Paint
     DrawTextLen = 163; // CNetGraphPanel::DrawTextFields
+}
+void Rules()
+{
+    Speedrun::TimerRules rules;
+
+    rules.push_back(Speedrun::TimerRule("sp_a1_intro1", "camera_intro", Speedrun::TimerAction::Start));
+    rules.push_back(Speedrun::TimerRule("sp_a4_finale4", "transition_portal2", Speedrun::TimerAction::End));
+
+    Speedrun::timer->LoadRules(rules);
 }
 }

@@ -15,6 +15,7 @@
 #include <link.h>
 #include <sys/uio.h>
 #include <unistd.h>
+#define MAX_PATH 4096
 #endif
 
 #define INRANGE(x, a, b) (x >= a && x <= b)
@@ -56,7 +57,7 @@ struct ScanResult {
     char Message[256];
 };
 
-uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_address, const char* target_pattern)
+static uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_address, const char* target_pattern)
 {
     const char* pattern = target_pattern;
     uintptr_t first_match = 0;
@@ -76,8 +77,7 @@ uintptr_t FindAddress(const uintptr_t& start_address, const uintptr_t& end_addre
                 return first_match;
 
             pattern += (pattern_current != '\?') ? 3 : 2;
-        }
-        else {
+        } else {
             pattern = target_pattern;
             first_match = 0;
         }
@@ -93,7 +93,7 @@ struct ModuleInfo {
 };
 
 #ifdef _WIN32
-bool TryGetModule(const char* moduleName, ModuleInfo* info)
+static bool TryGetModule(const char* moduleName, ModuleInfo* info)
 {
     auto mHandle = GetModuleHandleA(moduleName);
 
@@ -122,7 +122,7 @@ namespace Cache {
     std::vector<ModuleInfo> Modules;
 }
 
-bool TryGetModule(const char* moduleName, ModuleInfo* info)
+static bool TryGetModule(const char* moduleName, ModuleInfo* info)
 {
     if (Cache::Modules.size() == 0) {
         dl_iterate_phdr([](struct dl_phdr_info* info, size_t, void*) {
@@ -144,17 +144,17 @@ bool TryGetModule(const char* moduleName, ModuleInfo* info)
     }
 
     for (ModuleInfo& item : Cache::Modules) {
-        if (strcmp(item.name, moduleName) != 0)
-            continue;
-        *info = item;
-        return true;
+        if (!std::strcmp(item.name, moduleName)) {
+            *info = item;
+            return true;
+        }
     }
 
     return false;
 }
 #endif
 
-ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
+static ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
 {
     auto result = ScanResult();
     auto info = ModuleInfo();
@@ -172,7 +172,7 @@ ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
     return result;
 }
 
-ScanResult Scan(Pattern* pattern)
+static ScanResult Scan(Pattern* pattern)
 {
     auto result = ScanResult();
     auto info = ModuleInfo();
@@ -192,12 +192,10 @@ ScanResult Scan(Pattern* pattern)
                     pattern->Description,
                     (void*)result.Address,
                     pattern->Module);
-            }
-            else {
+            } else {
                 snprintf(result.Message, sizeof(result.Message), "Failed to find %s!", pattern->Description);
             }
-        }
-        else {
+        } else {
             snprintf(result.Message, sizeof(result.Message), "Ignored %s!", pattern->Name);
         }
     }
@@ -205,7 +203,7 @@ ScanResult Scan(Pattern* pattern)
     return result;
 }
 
-void* GetModuleHandleByName(const char* moduleName)
+static void* GetModuleHandleByName(const char* moduleName)
 {
     auto info = ModuleInfo();
 #ifdef _WIN32
@@ -215,29 +213,29 @@ void* GetModuleHandleByName(const char* moduleName)
 #endif
 }
 
-void CloseModuleHandle(void* moduleHandle)
+static void CloseModuleHandle(void* moduleHandle)
 {
 #ifndef _WIN32
     dlclose(moduleHandle);
 #endif
 }
 
-void* GetSymbolAddress(void* moduleHandle, const char* symbolName)
+static void* GetSymbolAddress(void* moduleHandle, const char* symbolName)
 {
 #ifdef _WIN32
     return (void*)GetProcAddress((HMODULE)moduleHandle, symbolName);
 #else
-    return dlsym(moduleHandle, symbol);
+    return dlsym(moduleHandle, symbolName);
 #endif
 }
 
-const char* GetModulePath(const char* moduleName)
+static const char* GetModulePath(const char* moduleName)
 {
     auto info = ModuleInfo();
     return (TryGetModule(moduleName, &info)) ? std::string(info.path).c_str() : nullptr;
 }
 
-std::string GetProcessName()
+static std::string GetProcessName()
 {
 #ifdef _WIN32
     char temp[MAX_PATH];
@@ -257,14 +255,26 @@ std::string GetProcessName()
 }
 
 template <typename T = void*>
-inline T VMT(void* ptr, int index)
+static inline T VMT(void* ptr, int index)
 {
     return reinterpret_cast<T>((*((void***)ptr))[index]);
 }
 
-uintptr_t ReadAbsoluteAddress(uintptr_t source)
+static uintptr_t ReadAbsoluteAddress(uintptr_t source)
 {
     auto rel = *reinterpret_cast<int*>(source);
     return source + rel + sizeof(rel);
+}
+
+template <typename T = void*>
+static inline T Deref(uintptr_t address)
+{
+    return *reinterpret_cast<T*>(address);
+}
+
+static uintptr_t ToAbsoluteAddress(const char* moduleName, int relative)
+{
+    auto info = ModuleInfo();
+    return (TryGetModule(moduleName, &info)) ? info.base + relative : 0;
 }
 }

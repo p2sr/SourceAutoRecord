@@ -10,7 +10,7 @@
 CON_COMMAND(sar_sum_here, "Starts counting total ticks of sessions.\n")
 {
     if (Summary::IsRunning) {
-        Console::Print("Summary has already started!\n");
+        console->Print("Summary has already started!\n");
         return;
     }
     Summary::Start();
@@ -19,7 +19,7 @@ CON_COMMAND(sar_sum_here, "Starts counting total ticks of sessions.\n")
 CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
 {
     if (!Summary::IsRunning) {
-        Console::Print("There's no summary to stop!\n");
+        console->Print("There's no summary to stop!\n");
         return;
     }
 
@@ -34,37 +34,37 @@ CON_COMMAND(sar_sum_result, "Prints result of summary.\n")
 {
     int sessions = Summary::Items.size();
     if (Summary::IsRunning && sessions == 0) {
-        Console::Print("Summary of this session:\n");
+        console->Print("Summary of this session:\n");
     } else if (Summary::IsRunning && sessions > 0) {
-        Console::Print("Summary of %i sessions:\n", sessions + 1);
+        console->Print("Summary of %i sessions:\n", sessions + 1);
     } else if (sessions > 0) {
-        Console::Print("Summary of %i session%s:\n", sessions, (sessions == 1) ? "" : "s");
+        console->Print("Summary of %i session%s:\n", sessions, (sessions == 1) ? "" : "s");
     } else {
-        Console::Print("There's no result of a summary!\n");
+        console->Print("There's no result of a summary!\n");
         return;
     }
 
     for (size_t i = 0; i < Summary::Items.size(); i++) {
-        Console::Print("%s -> ", Summary::Items[i].Map);
-        Console::Print("%i ticks", Summary::Items[i].Ticks);
-        Console::Print("(%.3f)\n", Summary::Items[i].Time);
+        console->Print("%s -> ", Summary::Items[i].Map);
+        console->Print("%i ticks", Summary::Items[i].Ticks);
+        console->Print("(%.3f)\n", Summary::Items[i].Time);
     }
 
     float totalTime = Engine::ToTime(Summary::TotalTicks);
     if (Summary::IsRunning) {
         int tick = Engine::GetSessionTick();
         float time = Engine::ToTime(tick);
-        Console::PrintActive("%s -> ", *Engine::m_szLevelName);
-        Console::PrintActive("%i ticks ", tick);
-        Console::PrintActive("(%.3f)\n", time);
-        Console::Print("---------------\n");
-        Console::Print("Total Ticks: %i ", Summary::TotalTicks);
-        Console::PrintActive("(%i)\n", Summary::TotalTicks + tick);
-        Console::Print("Total Time: %.3f ", totalTime);
-        Console::PrintActive("(%.3f)\n", totalTime + time);
+        console->PrintActive("%s -> ", *Engine::m_szLevelName);
+        console->PrintActive("%i ticks ", tick);
+        console->PrintActive("(%.3f)\n", time);
+        console->Print("---------------\n");
+        console->Print("Total Ticks: %i ", Summary::TotalTicks);
+        console->PrintActive("(%i)\n", Summary::TotalTicks + tick);
+        console->Print("Total Time: %.3f ", totalTime);
+        console->PrintActive("(%.3f)\n", totalTime + time);
     } else {
-        Console::Print("---------------\n");
-        Console::Print("Total Ticks: %i\n", Summary::TotalTicks);
-        Console::Print("Total Time: %.3f\n", totalTime);
+        console->Print("---------------\n");
+        console->Print("Total Ticks: %i\n", Summary::TotalTicks);
+        console->Print("Total Time: %.3f\n", totalTime);
     }
 }

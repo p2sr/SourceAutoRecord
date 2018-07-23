@@ -11,7 +11,7 @@
 CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "", 0, 0, dem)
 {
     if (args.ArgC() != 2) {
-        Console::Print("sar_time_demo [demo_name] : Parses a demo and prints some information about it.\n");
+        console->Print("sar_time_demo [demo_name] : Parses a demo and prints some information about it.\n");
         return;
     }
 
@@ -20,7 +20,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "", 0, 0, dem)
         if (Engine::DemoPlayer::DemoName[0] != '\0') {
             name = std::string(Engine::DemoPlayer::DemoName);
         } else {
-            Console::Print("No demo was recorded or played back!\n");
+            console->Print("No demo was recorded or played back!\n");
             return;
         }
     } else {
@@ -34,21 +34,21 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "", 0, 0, dem)
     auto dir = std::string(Engine::GetGameDirectory()) + std::string("/") + name;
     if (parser.Parse(dir, &demo)) {
         parser.Adjust(&demo);
-        Console::Print("Demo:     %s\n", name.c_str());
-        Console::Print("Client:   %s\n", demo.clientName);
-        Console::Print("Map:      %s\n", demo.mapName);
-        Console::Print("Ticks:    %i\n", demo.playbackTicks);
-        Console::Print("Time:     %.3f\n", demo.playbackTime);
-        Console::Print("Tickrate: %.3f\n", demo.Tickrate());
+        console->Print("Demo:     %s\n", name.c_str());
+        console->Print("Client:   %s\n", demo.clientName);
+        console->Print("Map:      %s\n", demo.mapName);
+        console->Print("Ticks:    %i\n", demo.playbackTicks);
+        console->Print("Time:     %.3f\n", demo.playbackTime);
+        console->Print("Tickrate: %.3f\n", demo.Tickrate());
     } else {
-        Console::Print("Could not parse \"%s\"!\n", name.c_str());
+        console->Print("Could not parse \"%s\"!\n", name.c_str());
     }
 }
 
 CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "", 0, 0, dem)
 {
     if (args.ArgC() <= 1) {
-        Console::Print("sar_time_demos [demo_name] [demo_name2] [etc.] : Parses multiple demos and prints the total sum of them.\n");
+        console->Print("sar_time_demos [demo_name] [demo_name2] [etc.] : Parses multiple demos and prints the total sum of them.\n");
         return;
     }
 
@@ -67,22 +67,22 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "", 0, 0, dem)
         Demo demo;
         if (parser.Parse(dir + name, &demo)) {
             parser.Adjust(&demo);
-            Console::Print("Demo:     %s\n", name.c_str());
-            Console::Print("Client:   %s\n", demo.clientName);
-            Console::Print("Map:      %s\n", demo.mapName);
-            Console::Print("Ticks:    %i\n", demo.playbackTicks);
-            Console::Print("Time:     %.3f\n", demo.playbackTime);
-            Console::Print("Tickrate: %.3f\n", demo.Tickrate());
-            Console::Print("---------------\n");
+            console->Print("Demo:     %s\n", name.c_str());
+            console->Print("Client:   %s\n", demo.clientName);
+            console->Print("Map:      %s\n", demo.mapName);
+            console->Print("Ticks:    %i\n", demo.playbackTicks);
+            console->Print("Time:     %.3f\n", demo.playbackTime);
+            console->Print("Tickrate: %.3f\n", demo.Tickrate());
+            console->Print("---------------\n");
             totalTicks += demo.playbackTicks;
             totalTime += demo.playbackTime;
             printTotal = true;
         } else {
-            Console::Print("Could not parse \"%s\"!\n", name.c_str());
+            console->Print("Could not parse \"%s\"!\n", name.c_str());
         }
     }
     if (printTotal) {
-        Console::Print("Total Ticks: %i\n", totalTicks);
-        Console::Print("Total Time: %.3f\n", totalTime);
+        console->Print("Total Ticks: %i\n", totalTicks);
+        console->Print("Total Time: %.3f\n", totalTime);
     }
 }

@@ -197,32 +197,16 @@ DETOUR_MID_MH(AirMove_Mid)
 // CBaseEntityOutput::FireOutput
 DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, void* pCaller, float fDelay)
 {
-    // Portal 2
-    // sp_a1_intro1: [721] camera_intro (point_viewcontrol) (activator)
-    // sp_a4_finale4: [1733] transition_portal2 (prop_portal) (activator)
-
     auto print = Cheats::sar_debug_entitiy_output.GetBool();
 
     if (pActivator) {
         auto m_iName = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iName);
         auto m_iClassname = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iClassname);
 
-        if (Game::Version == Game::Portal2 && m_iName && Speedrun::timer) {
-            if (!std::strcmp(*Engine::m_szLevelName, "sp_a1_intro1")) {
-                if (!std::strcmp(m_iName, "camera_intro")) {
-                    Console::Print("[%i] Speedrun started!\n", Engine::GetSessionTick());
-                    Speedrun::timer->Start(*Engine::tickcount);
-                }
-            } else if (!std::strcmp(*Engine::m_szLevelName, "sp_a4_finale4")) {
-                if (!std::strcmp(m_iName, "transition_portal2")) {
-                    Console::Print("[%i] Speedrun stopped!\n", Engine::GetSessionTick());
-                    Speedrun::timer->Stop();
-                }
-            }
-        }
+        Speedrun::timer->CheckRules(*Engine::m_szLevelName, m_iName, *Engine::tickcount);
 
         if (print) {
-            Console::Print("[%i] %s (%s) (activator)\n", Engine::GetSessionTick(), m_iName, m_iClassname);
+            console->Print("[%i] %s (%s) (activator)\n", Engine::GetSessionTick(), m_iName, m_iClassname);
         }
     }
 
@@ -230,7 +214,7 @@ DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, 
         auto m_iName = *reinterpret_cast<char**>((uintptr_t)pCaller + Offsets::m_iName);
         auto m_iClassname = *reinterpret_cast<char**>((uintptr_t)pCaller + Offsets::m_iClassname);
         if (print) {
-            Console::Print("[%i] %s (%s) (caller)\n", Engine::GetSessionTick(), m_iName, m_iClassname);
+            console->Print("[%i] %s (%s) (caller)\n", Engine::GetSessionTick(), m_iName, m_iClassname);
         }
     }
 
@@ -238,7 +222,7 @@ DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, 
     auto ev = m_ActionList;
     while (ev) {
         if (print) {
-            Console::Msg("- [%i] %s -> %s (%s)\n", Engine::GetSessionTick(), ev->m_iTarget, ev->m_iTargetInput, ev->m_iParameter);
+            console->Msg("- [%i] %s -> %s (%s)\n", Engine::GetSessionTick(), ev->m_iTarget, ev->m_iTargetInput, ev->m_iParameter);
         }
         ev = ev->m_pNext;
     }
@@ -273,12 +257,12 @@ void Hook()
 #ifdef _WIN32
             auto airMoveMid = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + AirMove_Mid_Offset;
             if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
-                MH_HOOK(AirMove_Mid, airMoveMid);
+                MH_HOOK_MID(AirMove_Mid, airMoveMid);
                 Detour::AirMove_Continue = airMoveMid + AirMove_Continue_Offset;
                 Detour::AirMove_Skip = airMoveMid + AirMove_Skip_Offset;
-                Console::DevMsg("SAR: Verified sar_aircontrol 1!\n");
+                console->DevMsg("SAR: Verified sar_aircontrol 1!\n");
             } else {
-                Console::Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
+                console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
             }
 #endif
 

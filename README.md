@@ -14,15 +14,19 @@
   - [Timer](#timer)
     - [Average](#average)
     - [Checkpoints](#checkpoints)
+  - [Speedrun](#speedrun)
   - [HUD](#hud)
     - [Optional](#optional)
   - [Input HUD](#input-hud)
+  - [Speedrun HUD](#speedrun-hud)
   - [Stats](#stats)
   - [Cheats](#cheats)
     - [Movement](#movement)
-    - [TAS](#tas)
     - [Routing](#routing)
     - [Unlocked](#unlocked)
+  - [TAS](#tas)
+    - [Command Queuer](#command-queuer)
+    - [Replays](#replays)
   - [Config](#config)
 - [Mapping](#mapping)
   - [Start & Stop Triggers](#start--stop-triggers)
@@ -89,6 +93,18 @@ Mappers can use this for accurate timing, [see below](#mapping).
 - `sar_cps_clear` resets all saved values
 - `sar_cps_result` prints result of all checkpoints
 
+### Speedrun
+- `sar_speedrun_result` prints result of timer
+- `sar_speedrun_export <file>` exports timer result to a .csv file
+- `sar_speedrun_import <file>` imports timer result as personal best for comparison
+- `sar_speedrun_autoexport <0-2>` exports result automatically on speedrun completion
+- `sar_speedrun_autosplit <0-1>` splits automatically on map change
+- `sar_speedrun_autoreset <0-1>` resets timer automatically
+- `sar_speedrun_rules` prints loaded rules which the timer will follow
+
+The timer has its own HUD, [see below](#speedrun-hud).
+Here is a basic [ASL script](https://gist.github.com/NeKzor/6db7ca6a28ed55fbcce7d8af7edf0f18) for [LiveSplit](https://livesplit.github.com) which connects to this speedrun timer.
+
 ### HUD
 - `sar_hud_text <0-1>` draws given string
 - `sar_hud_position <0-1>` draws player's position
@@ -121,15 +137,43 @@ Mappers can use this for accurate timing, [see below](#mapping).
 - `sar_ihud <0-4>` draws keyboard inputs of client
 - `sar_ihud_x` x offset in pixels
 - `sar_ihud_y` y offset in pixels
-- `sar_ihud_padding` space between button elements
-- `sar_ihud_size` size of button elements
-- `sar_ihud_color` color of input HUD
+- `sar_ihud_button_padding` space between buttons
+- `sar_ihud_button_size` size of button
+- `sar_ihud_button_color` color of the button
 - `sar_ihud_font_color` font color
 - `sar_ihud_font_index` font index
 - `sar_ihud_layout` characters for the buttons
-- `sar_ihud_shadow <0-1>` shadow of input HUD
+- `sar_ihud_shadow <0-1>` shadow of the buttons
 - `sar_ihud_shadow_color` shadow color
 - `sar_ihud_shadow_font_color` shadow font color
+- `sar_ihud_setpos <top, center, bottom> <left, center, right>` adjusts x and y offset automatically for the screen
+
+### Speedrun HUD
+- `sar_sr_hud <0-1>` draws speedrun timer
+- `sar_sr_hud_x` x offset in pixels
+- `sar_sr_hud_y` y offset in pixels
+- `sar_sr_hud_size` size of timer
+- `sar_sr_hud_bg_color` background color of timer
+- `sar_sr_hud_font_color` font color of timer
+- `sar_sr_hud_font_index` font index of timer
+- `sar_sr_hud_splits <0-1>` draws timer splits
+- `sar_sr_hud_splits_direction <top, left, right, bottom` draws splits on one side of the timer
+- `sar_sr_hud_splits_delta` draws split delta compared to personal best
+- `sar_sr_hud_pace` draws current pace compared to personal best
+- `sar_sr_hud_setpos <top, center, bottom> <left, center, right>` adjusts x and y offset automatically for the screen
+
+Variable sar_sr_hud("sar_sr_hud", "0", 0, "Draws speedrun timer.\n");
+Variable sar_sr_hud_x("sar_sr_hud_x", "0", 0, "X offset of speedrun timer HUD.\n");
+Variable sar_sr_hud_y("sar_sr_hud_y", "0", 0, "Y offset of speedrun timer HUD.\n");
+Variable ("sar_sr_hud_size", "100", 0, "Size of speedrun timer HUD.\n");
+Variable ("sar_sr_hud_bg_color", "0 0 0 233", "RGBA background color of speedrun timer HUD.\n", 0);
+Variable ("sar_sr_hud_font_color", "255 255 255 255", "RGBA font color of speedrun timer HUD.\n", 0);
+Variable ("sar_sr_hud_font_index", "1", 0, "Font index of speedrun timer HUD.\n");
+Variable ("sar_sr_hud_splits", "0", 0, ".\n");
+Variable ("sar_sr_hud_splits_direction", "default", "Splits direction for speedrun timer HUD. "
+    "Usage: sar_sr_hud_splits_direction <top, left, right or bottom>. Default is bottom.\n");
+Variable ("sar_sr_hud_splits_delta", "0", 0, "Draws split delta compared to personal best for speedrun timer HUD.\n");
+Variable ("sar_sr_hud_pace", "0", 0, " for speedrun timer HUD.\n");
 
 ### Stats
 - `sar_stats_jumps` prints jump stats
@@ -155,21 +199,12 @@ Mappers can use this for accurate timing, [see below](#mapping).
 - `+bhop` makes the player jump (The Stanley Parable)
 - `sar_anti_anti_cheat` sets sv_cheats to 1 (The Stanley Parable)
 
-#### TAS
-- `sar_tas_frame_at <frame> [command]` adds a command frame to the queue at specified frame
-- `sar_tas_frame_after <delay> [command]` adds a command frame to the queue, relatively to last added frame
-- `sar_tas_frames_at <frame> <interval> <last_frame> [command]` adds command frame multiple times to the queue at specified frame
-- `sar_tas_frames_after <delay> <interval> <length> [command]` adds command frame multiple times to the queue, relatively to last added frame
-- `sar_tas_start` starts executing queued commands
-- `sar_tas_reset` stops execution and clears all queued commands
-- `sar_tas_autostart <0-1>` starts playing queued commands automatically on first frame after a load
-
-Here is a simple TAS of [Propulsion Catch](https://gist.github.com/NeKzor/5ba4fd9bafc80855a395b4a5f03f1c6e).
-
 #### Routing
 - `sar_trace_a` saves first location to measure a distance
 - `sar_trace_b` saves second location to measure a distance
 - `sar_trace_result` prints calculated distance between saved locations
+- `sar_debug_entitiy_output` prints entity output data, similar to developer
+- `sar_debug_game_events` prints game event data, similar to net_showevents
 
 ##### Unlocked
 - `sv_bonus_challenge` (Portal 2)
@@ -186,6 +221,29 @@ Here is a simple TAS of [Propulsion Catch](https://gist.github.com/NeKzor/5ba4fd
 - `hide_gun_when_holding` (Portal 2)
 
 *Flagged as cheat.
+
+### TAS
+
+#### Command Queuer
+- `sar_tas_frame_at <frame> [command]` adds a command frame to the queue at specified frame
+- `sar_tas_frame_after <delay> [command]` adds a command frame to the queue, relatively to last added frame
+- `sar_tas_frames_at <frame> <interval> <last_frame> [command]` adds command frame multiple times to the queue at specified frame
+- `sar_tas_frames_after <delay> <interval> <length> [command]` adds command frame multiple times to the queue, relatively to last added frame
+- `sar_tas_start` starts executing queued commands
+- `sar_tas_reset` stops execution and clears all queued commands
+- `sar_tas_autostart <0-1>` starts playing queued commands automatically on first frame after a load
+
+Here is a simple TAS of [Propulsion Catch](https://gist.github.com/NeKzor/5ba4fd9bafc80855a395b4a5f03f1c6e).
+
+#### Replays
+- `sar_tas_record` records client inputs
+- `sar_tas_record_again` records inputs while in playback mode
+- `sar_tas_play` plays recorded inputs
+- `sar_tas_stop` stops recording or playing inputs
+- `sar_tas_export <file>` exports replay to a .str file
+- `sar_tas_import <file>` imports .str replay
+- `sar_tas_autorecord <0-1>` records inputs automatically on load
+- `sar_tas_autoplay <0-1>` plays inputs automatically on load
 
 ### Config
 - `sar_cvars_save` saves important ConVar values to a file

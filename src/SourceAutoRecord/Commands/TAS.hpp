@@ -12,7 +12,7 @@ CON_COMMAND(sar_tas_frame_at,
     "Usage: sar_tas_frame_at <frame> [command_to_execute]\n")
 {
     if (args.ArgC() != 3) {
-        Console::Print("sar_tas_frame_at <frame> [command_to_execute] : Adds command frame to the queue.\n");
+        console->Print("sar_tas_frame_at <frame> [command_to_execute] : Adds command frame to the queue.\n");
         return;
     }
 
@@ -24,7 +24,7 @@ CON_COMMAND(sar_tas_frames_at,
     "Usage: sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute]\n")
 {
     if (args.ArgC() != 5) {
-        Console::Print("sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute] : Adds command frame multiple times to the queue.\n");
+        console->Print("sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute] : Adds command frame multiple times to the queue.\n");
         return;
     }
 
@@ -36,7 +36,7 @@ CON_COMMAND(sar_tas_frame_after,
     "Usage: sar_tas_frame_after <frames_to_wait> [command_to_execute]\n")
 {
     if (args.ArgC() != 3) {
-        Console::Print("sar_tas_frame_after <frames_to_wait> [command_to_execute] : Adds command frame to the queue.\n");
+        console->Print("sar_tas_frame_after <frames_to_wait> [command_to_execute] : Adds command frame to the queue.\n");
         return;
     }
 
@@ -48,7 +48,7 @@ CON_COMMAND(sar_tas_frames_after,
     "Usage: sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute]\n")
 {
     if (args.ArgC() != 5) {
-        Console::Print("sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute] : Adds command frame multiple times to the queue.\n");
+        console->Print("sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute] : Adds command frame multiple times to the queue.\n");
         return;
     }
 
@@ -68,34 +68,34 @@ CON_COMMAND(sar_tas_reset, "Stops executing commands and clears them from the qu
 CON_COMMAND(sar_tas_record, "Starts recording user inputs.\n")
 {
     if (TAS2::IsPlaying) {
-        Console::Print("Playback active!\n");
+        console->Print("Playback active!\n");
     } else {
         TAS2::StartRecording();
-        Console::Print("Recording!\n");
+        console->Print("Recording!\n");
     }
 }
 
 CON_COMMAND(sar_tas_record_again, "Starts recording in play back mode.\n")
 {
     if (!TAS2::IsPlaying) {
-        Console::Print("Playback not active!\n");
+        console->Print("Playback not active!\n");
     } else if (TAS2::Frames.size() == 0) {
-        Console::Print("Nothing to record again!\n");
+        console->Print("Nothing to record again!\n");
     } else {
         TAS2::StartReRecording();
-        Console::Print("Re-Recording!\n");
+        console->Print("Re-Recording!\n");
     }
 }
 
 CON_COMMAND(sar_tas_play, "Plays back recorded user inputs.\n")
 {
     if (TAS2::IsRecording) {
-        Console::Print("Recording active!\n");
+        console->Print("Recording active!\n");
     } else if (TAS2::Frames.size() == 0) {
-        Console::Print("Nothing to play!\n");
+        console->Print("Nothing to play!\n");
     } else {
         TAS2::StartPlaying();
-        Console::Print("Recording!\n");
+        console->Print("Recording!\n");
     }
 }
 
@@ -110,7 +110,7 @@ CON_COMMAND(sar_tas_stop, "Stops recording or playing user inputs.\n")
 CON_COMMAND(sar_tas_export, "Export TAS replay to a file.\n")
 {
     if (args.ArgC() != 2) {
-        Console::Print("sar_tas_export <file>: Export TAS replay to a file.\n");
+        console->Print("sar_tas_export <file>: Export TAS replay to a file.\n");
         return;
     }
 
@@ -120,12 +120,12 @@ CON_COMMAND(sar_tas_export, "Export TAS replay to a file.\n")
 
     std::ofstream file(filePath, std::ios::out | std::ios::trunc | std::ios::binary);
     if (!file.good()) {
-        Console::Print("File not found.\n");
+        console->Print("File not found.\n");
         return;
     }
 
     if (TAS2::Frames.size() == 0) {
-        Console::Print("Nothing to export!\n");
+        console->Print("Nothing to export!\n");
         return;
     }
 
@@ -142,7 +142,7 @@ CON_COMMAND(sar_tas_export, "Export TAS replay to a file.\n")
         file.write((char*)&frame.viewangles, sizeof(frame.viewangles));
     }
 
-    Console::Print("Exported TAS replay!\n");
+    console->Print("Exported TAS replay!\n");
 
     file.close();
 }
@@ -150,7 +150,7 @@ CON_COMMAND(sar_tas_export, "Export TAS replay to a file.\n")
 CON_COMMAND_AUTOCOMPLETEFILE(sar_tas_import, "", 0, 0, str)
 {
     if (args.ArgC() != 2) {
-        Console::Print("sar_tas_export <file>: Import TAS replay file.\n");
+        console->Print("sar_tas_export <file>: Import TAS replay file.\n");
         return;
     }
 
@@ -160,7 +160,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_tas_import, "", 0, 0, str)
 
     std::ifstream file(filePath, std::ios::in | std::ios::binary);
     if (!file.good()) {
-        Console::Print("File not found.\n");
+        console->Print("File not found.\n");
         return;
     }
 
@@ -182,10 +182,10 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_tas_import, "", 0, 0, str)
             TAS2::Frames.push_back(frame);
         }
 
-        Console::Print("Imported TAS replay!\n");
+        console->Print("Imported TAS replay!\n");
     }
     else {
-        Console::Print("Invalid file format!\n");
+        console->Print("Invalid file format!\n");
     }
 
     file.close();

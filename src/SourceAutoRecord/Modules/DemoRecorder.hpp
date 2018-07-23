@@ -63,7 +63,7 @@ namespace DemoRecorder {
             if (*m_bLoadgame) {
                 *m_bRecording = true;
                 (*m_nDemoNumber)++;
-                Console::DevMsg("SAR: Recording!");
+                console->DevMsg("SAR: Recording!");
             }
         } else {
             IsRecordingDemo = false;
