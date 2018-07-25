@@ -4,9 +4,9 @@ bool Console::Init()
 {
     auto tier0 = Memory::GetModuleHandleByName(MODULE(TIER0));
     if (tier0) {
-        auto msgAddr = Memory::GetSymbolAddress(tier0, "Msg");
+        auto msgAddr = Memory::GetSymbolAddress(tier0, MSG_SYMBOL);
         auto colorMsgAddr = Memory::GetSymbolAddress(tier0, CONCOLORMSG_SYMBOL);
-        auto warningAddr = Memory::GetSymbolAddress(tier0, "Warning");
+        auto warningAddr = Memory::GetSymbolAddress(tier0, WARNING_SYMBOL);
         auto devMsgAddr = Memory::GetSymbolAddress(tier0, DEVMSG_SYMBOL);
         auto devWarningAddr = Memory::GetSymbolAddress(tier0, DEVWARNINGMSG_SYMBOL);
 
@@ -24,4 +24,4 @@ bool Console::Init()
     return false;
 }
 
-Console* console = new Console();
+Console* console;

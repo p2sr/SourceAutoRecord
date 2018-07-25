@@ -168,9 +168,9 @@ void Offsets()
 
     DrawSetColor = 14; // CMatSystemSurface
     DrawFilledRect = 15; // CMatSystemSurface
-    GetFontTall = 72; // CFPSPanel::ComputeSize
-    DrawColoredText = 160; // CFPSPanel::Paint
-    DrawTextLen = 163; // CNetGraphPanel::DrawTextFields
+    GetFontTall = 72; // CMatSystemSurface
+    DrawColoredText = 160; // CMatSystemSurface
+    DrawTextLen = 163; // CMatSystemSurface
 }
 void Rules()
 {

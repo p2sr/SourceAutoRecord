@@ -25,7 +25,7 @@ CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
 
     if (Cheats::sar_sum_during_session.GetBool()) {
         int tick = Engine::GetSessionTick();
-        Summary::Add(tick, Engine::ToTime(tick), *Engine::m_szLevelName);
+        Summary::Add(tick, Engine::ToTime(tick), Engine::m_szLevelName);
     }
     Summary::IsRunning = false;
 }

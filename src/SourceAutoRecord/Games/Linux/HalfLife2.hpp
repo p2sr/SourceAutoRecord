@@ -1,4 +1,6 @@
 #pragma once
+#include "Features/Speedrun.hpp"
+
 #include "Offsets.hpp"
 #include "Patterns.hpp"
 
@@ -39,10 +41,10 @@ void Patterns()
         "CBaseAutoCompleteFileList::AutoCompletionFunc",
         "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 75 ? 8B 03 89 34 24");
 
-    // TODO
+    // \x55\x89\xE5\x83\xEC\x00\x8B\x45\x00\xC7\x04\x24\x00\x00\x00\x00\x89\x44\x24\x00\xE8\x00\x00\x00\x00\xC9\xC3\x00\x00\x00\x00\x00\x55\xB8\x00\x00\x00\x00\x89\xE5\x8B\x55\x00\x83\x3A\x00\x74\x00\x83\x7A\x00\x00\x0F\x94\xC0 xxxxx?xx?xxx????xxx?x????xx?????xx????xxxx?xx?x?xx??xxx
     Add("HostState_Frame", "Half-Life 2 Build 2257546",
         "HostState_Frame",
-        "");
+        "55 89 E5 83 EC ? 8B 45 ? C7 04 24 ? ? ? ? 89 44 24 ? E8 ? ? ? ? C9 C3 ? ? ? ? ? 55 B8 ? ? ? ? 89 E5 8B 55 ? 83 3A ? 74 ? 83 7A ? ? 0F 94 C0");
 
     // vguimatsurface.so
 
@@ -91,14 +93,15 @@ void Offsets()
     demorecorder = 164; // CClientState::Disconnect
     GetCurrentMap = 24; // CEngineTool
     m_szLevelName = 25; // CEngineTool::GetCurrentMap
-    hoststate = 8; // HostState_Frame (TODO)
-    FrameUpdate = 16; // HostState_Frame (TODO)
-    eng = 277; // CHostState::FrameUpdate (TODO)
-    Frame = 5; // CEngine (TODO)
+    hoststate = 12; // HostState_Frame
+    FrameUpdate = 21; // HostState_Frame
+    State_Shutdown = 111; // CHostState::FrameUpdate
+    eng = 17; // CHostState::FrameUpdate
+    Frame = 6; // CEngine
 
     // libvstdlib.so
-    UnregisterConCommand = 10; // CCvar (TODO)
-    FindCommandBase = 13; // CCvar (TODO)
+    UnregisterConCommand = 7; // CCvar
+    FindCommandBase = 10; // CCvar
 
     // vgui2.so
 
@@ -131,15 +134,24 @@ void Offsets()
     m_vecAbsOrigin = 588; // C_BasePlayer::GetAbsOrigin
     m_angAbsRotation = 600; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
-    GetClientMode = 5; // CHLClient::HudProcessInput (TODO)
-    CreateMove = 21; // ClientModeShared (TODO)
+    GetClientMode = 1; // CHLClient::HudProcessInput (TODO)
+    CreateMove = 22; // ClientModeShared
 
     // vguimatsurface.so
 
-    DrawSetColor = 14; // CMatSystemSurface (TODO)
-    DrawFilledRect = 15; // CMatSystemSurface (TODO)
-    GetFontTall = 69; // CFPSPanel::ComputeSize
-    DrawColoredText = 162; // CFPSPanel::Paint
-    DrawTextLen = 163; // CNetGraphPanel::DrawTextFields (TODO)
+    DrawSetColor = 10; // CMatSystemSurface
+    DrawFilledRect = 12; // CMatSystemSurface
+    GetFontTall = 69; // CMatSystemSurface
+    DrawColoredText = 162; // CMatSystemSurface
+    DrawTextLen = 165; // CMatSystemSurface
+}
+void Rules()
+{
+    /* Speedrun::TimerRules rules;
+
+    rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::Start));
+    rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::End));
+
+    Speedrun::timer->LoadRules(rules); */
 }
 }

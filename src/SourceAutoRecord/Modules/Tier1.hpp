@@ -96,11 +96,12 @@ struct ConVar : ConCommandBase {
     bool m_bHasMax; // 60
     float m_fMaxVal; // 64
     // CUtlVector<FnChangeCallback_t> m_fnChangeCallback
-    int m_fnChangeCallback; // 68
+    // CUtlMemory<FnChangeCallback_t> m_Memory
+    void* m_pMemory; // 68
     int m_nAllocationCount; // 72
     int m_nGrowSize; // 76
     int m_Size; // 80
-    int m_pElements; // 84
+    void* m_pElements; // 84
 };
 
 _ConCommand ConCommandCtor;

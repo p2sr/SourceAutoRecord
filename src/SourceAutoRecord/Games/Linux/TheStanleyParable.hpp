@@ -1,4 +1,6 @@
 #pragma once
+#include "Features/Speedrun.hpp"
+
 #include "Offsets.hpp"
 #include "Patterns.hpp"
 
@@ -38,6 +40,12 @@ void Patterns()
         "CBaseAutoCompleteFileList::AutoCompletionFunc",
         "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 45 ? 8B 5D ? 8B 75 ? 89 85 ? ? ? ? 65 A1 ? ? ? ? 89 45 ? 31 C0 8B 03 89 34 24");
 
+    // \xE8\x00\x00\x00\x00\xE9\x00\x00\x00\x00\x55\x89\xE5\x83\xEC\x00\xF3\x0F\x10\x45\x00\xC7\x04\x24\x00\x00\x00\x00\xF3\x0F\x11\x44\x24\x00\xE8\x00\x00\x00\x00\xC9\xC3 x????x????xxxxx?xxxx?xxx????xxxxx?x????xx
+    Add("HostState_Frame", "The Stanley Parable Build 6130",
+        "HostState_Frame",
+        "E8 ? ? ? ? E9 ? ? ? ? 55 89 E5 83 EC ? F3 0F 10 45 ? C7 04 24 ? ? ? ? F3 0F 11 44 24 ? E8 ? ? ? ? C9 C3",
+        10);
+
     // vguimatsurface.so
 
     Inherit("StartDrawing", "The Stanley Parable Build 6130", "CMatSystemSurface::StartDrawing");
@@ -53,6 +61,10 @@ void Offsets()
     m_szLevelName = 56; // CEngineTool::GetCurrentMap
     demoplayer = 92; // CClientState::Disconnect
     demorecorder = 105; // CClientState::Disconnect
+    hoststate = 14; // HostState_Frame
+    FrameUpdate = 25; // HostState_Frame
+    State_Shutdown = 215; // CHostState::FrameUpdate
+    eng = 12; // CHostState::State_Shutdown
 
     // server.so
 
@@ -60,6 +72,7 @@ void Offsets()
 
     // client.so
 
+    GetClientMode = 11; // CHLClient::HudProcessInput
     IN_ActivateMouse = 15; // CHLClient
     g_Input = 1; // CHLClient::IN_ActivateMouse
     GetButtonBits = 2; // CInput
@@ -67,5 +80,14 @@ void Offsets()
     in_jump = 210; // CInput::GetButtonBits
     KeyDown = 337; // CInput::JoyStickApplyMovement
     KeyUp = 384; // CInput::JoyStickApplyMovement
+}
+void Rules()
+{
+    /* Speedrun::TimerRules rules;
+
+    rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::Start));
+    rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::End));
+
+    Speedrun::timer->LoadRules(rules); */
 }
 }

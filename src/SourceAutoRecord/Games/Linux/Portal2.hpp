@@ -1,4 +1,6 @@
 #pragma once
+#include "Features/Speedrun.hpp"
+
 #include "Offsets.hpp"
 #include "Patterns.hpp"
 
@@ -40,10 +42,11 @@ void Patterns()
         "CBaseAutoCompleteFileList::AutoCompletionFunc",
         "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 75 ? 8B 03 89 34 24 89 85 ? ? ? ? 89 44 24 ? E8 ? ? ? ? 85 C0");
 
-    // TODO
+    // \xE8\x00\x00\x00\x00\xE9\x00\x00\x00\x00\x55\x89\xE5\x83\xEC\x00\x8B\x45\x00\xC7\x04\x24\x00\x00\x00\x00\x89\x44\x24\x00\xE8\x00\x00\x00\x00\xC9\xC3 x????x????xxxxx?xx?xxx????xxx?x????xx
     Add("HostState_Frame", "Portal 2 Build 7054",
         "HostState_Frame",
-        "");
+        "E8 ? ? ? ? E9 ? ? ? ? 55 89 E5 83 EC ? 8B 45 ? C7 04 24 ? ? ? ? 89 44 24 ? E8 ? ? ? ? C9 C3",
+        10);
 
     // vguimatsurface.so
 
@@ -141,7 +144,7 @@ void Offsets()
 
     // client.so
 
-    HudProcessInput = 12; // CHLClient
+    HudProcessInput = 10; // CHLClient
     HudUpdate = 11; // CHLClient
     GetHud = 144; // CHLClient::HudUpdate
     m_vecAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
@@ -153,12 +156,21 @@ void Offsets()
     CreateMove = 25; // ClientModeShared
     GetName = 11; // CHud
 
-    // vguimatsurface.so (TODO)
+    // vguimatsurface.so
 
     DrawSetColor = 13; // CMatSystemSurface
     DrawFilledRect = 15; // CMatSystemSurface
-    GetFontTall = 72; // CFPSPanel::ComputeSize
-    DrawColoredText = 160; // CFPSPanel::Paint
-    DrawTextLen = 163; // CNetGraphPanel::DrawTextFields
+    GetFontTall = 72; // CMatSystemSurface
+    DrawColoredText = 160; // CMatSystemSurface
+    DrawTextLen = 163; // CMatSystemSurface
+}
+void Rules()
+{
+    Speedrun::TimerRules rules;
+
+    rules.push_back(Speedrun::TimerRule("sp_a1_intro1", "camera_intro", Speedrun::TimerAction::Start));
+    rules.push_back(Speedrun::TimerRule("sp_a4_finale4", "transition_portal2", Speedrun::TimerAction::End));
+
+    Speedrun::timer->LoadRules(rules);
 }
 }

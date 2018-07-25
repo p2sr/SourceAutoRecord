@@ -93,7 +93,7 @@ struct ModuleInfo {
 };
 
 #ifdef _WIN32
-static bool TryGetModule(const char* moduleName, ModuleInfo* info)
+bool TryGetModule(const char* moduleName, ModuleInfo* info)
 {
     auto mHandle = GetModuleHandleA(moduleName);
 
@@ -119,7 +119,7 @@ static bool TryGetModule(const char* moduleName, ModuleInfo* info)
 }
 #else
 namespace Cache {
-    std::vector<ModuleInfo> Modules;
+    static std::vector<ModuleInfo> Modules;
 }
 
 static bool TryGetModule(const char* moduleName, ModuleInfo* info)
@@ -154,7 +154,7 @@ static bool TryGetModule(const char* moduleName, ModuleInfo* info)
 }
 #endif
 
-static ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
+/* ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
 {
     auto result = ScanResult();
     auto info = ModuleInfo();
@@ -170,7 +170,7 @@ static ScanResult Scan(const char* moduleName, const char* pattern, int offset =
     }
 
     return result;
-}
+} */
 
 static ScanResult Scan(Pattern* pattern)
 {
@@ -229,11 +229,11 @@ static void* GetSymbolAddress(void* moduleHandle, const char* symbolName)
 #endif
 }
 
-static const char* GetModulePath(const char* moduleName)
+/* const char* GetModulePath(const char* moduleName)
 {
     auto info = ModuleInfo();
     return (TryGetModule(moduleName, &info)) ? std::string(info.path).c_str() : nullptr;
-}
+} */
 
 static std::string GetProcessName()
 {
@@ -255,7 +255,7 @@ static std::string GetProcessName()
 }
 
 template <typename T = void*>
-static inline T VMT(void* ptr, int index)
+inline T VMT(void* ptr, int index)
 {
     return reinterpret_cast<T>((*((void***)ptr))[index]);
 }
@@ -266,15 +266,15 @@ static uintptr_t ReadAbsoluteAddress(uintptr_t source)
     return source + rel + sizeof(rel);
 }
 
-template <typename T = void*>
-static inline T Deref(uintptr_t address)
+/* template <typename T = void*>
+inline T Deref(uintptr_t address)
 {
     return *reinterpret_cast<T*>(address);
 }
 
-static uintptr_t ToAbsoluteAddress(const char* moduleName, int relative)
+uintptr_t ToAbsoluteAddress(const char* moduleName, int relative)
 {
     auto info = ModuleInfo();
     return (TryGetModule(moduleName, &info)) ? info.base + relative : 0;
-}
+} */
 }

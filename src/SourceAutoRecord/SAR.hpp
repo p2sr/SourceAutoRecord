@@ -1,5 +1,5 @@
 #pragma once
-#include <future>
+#include <thread>
 
 #include "vmthook/vmthook.h"
 
@@ -18,6 +18,9 @@
 #define SAR_BUILD __TIME__ " " __DATE__
 
 namespace SAR {
+
+std::thread selfDisable;
+bool exited;
 
 Memory::ScanResult Find(const char* pattern)
 {
@@ -49,121 +52,37 @@ void DeleteVMT(VMT& hook, const char* caller = "unknown")
     hook.reset();
 }
 
-// SAR has to disable itself in the plugin list or the game will crash because of missing callbacks
+// SAR has to disable itself in the plugin list or the game might crash because of missing callbacks
 // This is a race condition though
-bool LoadedAsPlugin = false;
-void IsPlugin()
+void Disable()
 {
-    std::async(std::launch::async, []() {
+    selfDisable = std::thread([]() {
 #if _WIN32
         Sleep(1000);
 #else
         sleep(1);
 #endif
-        if (LoadedAsPlugin) {
-            console->DevMsg("SAR: Loaded SAR as plugin! Trying to disable itself...\n");
-            if (Interfaces::IServerPluginHelpers) {
-                auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Size);
-                //Console::Print("%i\n", m_Size);
-                if (m_Size > 0) {
-                    auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Plugins);
-                    for (int i = 0; i < m_Size; i++) {
-                        auto plugin = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
-                        //Console::Print("%s\n", plugin->m_szName);
-                        if (std::strcmp(plugin->m_szName, SAR_PLUGIN_SIGNATURE) == 0) {
-                            plugin->m_bDisable = true;
-                            console->DevMsg("SAR: Disabled SAR in the plugin list!\n");
-                            return;
-                        }
+        if (Interfaces::IServerPluginHelpers) {
+            auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Size);
+            console->Print("%i\n", m_Size);
+            if (m_Size > 0) {
+                auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Plugins);
+                for (int i = 0; i < m_Size; i++) {
+                    auto plugin = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
+                    console->Print("%s\n", plugin->m_szName);
+                    if (!std::strcmp(plugin->m_szName, SAR_PLUGIN_SIGNATURE)) {
+                        plugin->m_bDisable = true;
+                        console->DevMsg("SAR: Disabled SAR in the plugin list!\n");
+                        return;
                     }
                 }
             }
-            console->DevWarning("SAR: Could not disable SAR in the plugin list!\nTry manually with plugin_pause.\n");
         }
+        console->DevWarning("SAR: Could not disable SAR in the plugin list!\nTry manually with plugin_pause.\n");
     });
+    selfDisable.detach();
 }
 }
 
 #define CREATE_VMT(ptr, vmt) if (SAR::NewVMT(ptr, vmt, #vmt))
 #define DELETE_VMT(vmt) SAR::DeleteVMT(vmt, #vmt);
-
-class CSourceAutoRecord : public IServerPluginCallbacks {
-public:
-    CSourceAutoRecord()
-    {
-    }
-    ~CSourceAutoRecord()
-    {
-    }
-    virtual bool Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
-    {
-        return SAR::LoadedAsPlugin = true;
-    }
-    virtual void Unload()
-    {
-    }
-    virtual void Pause()
-    {
-    }
-    virtual void UnPause()
-    {
-    }
-    virtual const char* GetPluginDescription()
-    {
-        return SAR_PLUGIN_SIGNATURE;
-    }
-    virtual void LevelInit(char const* pMapName)
-    {
-    }
-    virtual void ServerActivate(void* pEdictList, int edictCount, int clientMax)
-    {
-    }
-    virtual void GameFrame(bool simulating)
-    {
-    }
-    virtual void LevelShutdown()
-    {
-    }
-    virtual void ClientFullyConnect(void* pEdict)
-    {
-    }
-    virtual void ClientActive(void* pEntity)
-    {
-    }
-    virtual void ClientDisconnect(void* pEntity)
-    {
-    }
-    virtual void ClientPutInServer(void* pEntity, char const* playername)
-    {
-    }
-    virtual void SetCommandClient(int index)
-    {
-    }
-    virtual void ClientSettingsChanged(void* pEdict)
-    {
-    }
-    virtual int ClientConnect(bool* bAllowConnect, void* pEntity, const char* pszName, const char* pszAddress, char* reject, int maxrejectlen)
-    {
-        return 0;
-    }
-    virtual int ClientCommand(void* pEntity, const void*& args)
-    {
-        return 0;
-    }
-    virtual int NetworkIDValidated(const char* pszUserName, const char* pszNetworkID)
-    {
-        return 0;
-    }
-    virtual void OnQueryCvarValueFinished(int iCookie, void* pPlayerEntity, int eStatus, const char* pCvarName, const char* pCvarValue)
-    {
-    }
-    virtual void OnEdictAllocated(void* edict)
-    {
-    }
-    virtual void OnEdictFreed(const void* edict)
-    {
-    }
-};
-
-CSourceAutoRecord g_SourceAutoRecord;
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourceAutoRecord, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_SourceAutoRecord);

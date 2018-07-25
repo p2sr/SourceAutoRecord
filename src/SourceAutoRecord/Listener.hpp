@@ -6,21 +6,21 @@
 
 #include "Utils.hpp"
 
-namespace Listener {
-
-using _ConPrintEvent = int(__stdcall*)(IGameEvent* event);
-_ConPrintEvent ConPrintEvent;
-
 class SourceAutoRecordListener : public IGameEventListener2 {
 private:
     bool m_bRegisteredForEvents;
+#if _WIN32
+    using _ConPrintEvent = int(__stdcall*)(IGameEvent* event);
+    _ConPrintEvent ConPrintEvent;
+#endif
 
 public:
-    SourceAutoRecordListener(bool dumpEvents = false) : m_bRegisteredForEvents(false)
+    SourceAutoRecordListener()
+        : m_bRegisteredForEvents(false)
     {
         //DumpGameEvents();
 
-        for (auto event: EVENTS) {
+        for (auto event : EVENTS) {
             auto result = Engine::AddListener(Engine::s_GameEventManager->GetThisPtr(), this, event, true);
             if (result) {
                 //console->DevMsg("SAR: Added event listener for %s!\n", event);
@@ -31,7 +31,7 @@ public:
 #if _WIN32
         auto engine = Memory::ModuleInfo();
         if (Memory::TryGetModule(MODULE("engine"), &engine)) {
-            ConPrintEvent = reinterpret_cast<_ConPrintEvent>(engine.base + 0x186C20);
+            this->ConPrintEvent = reinterpret_cast<_ConPrintEvent>(engine.base + 0x186C20);
         }
 #endif
     }
@@ -41,12 +41,13 @@ public:
     }
     virtual void FireGameEvent(IGameEvent* event)
     {
-        if (!event) return;
+        if (!event)
+            return;
 
         if (Cheats::sar_debug_game_events.GetBool()) {
             console->Print("[%i] Event fired: %s\n", Engine::GetSessionTick(), event->GetName());
 #if _WIN32
-            ConPrintEvent(event);
+            this->ConPrintEvent(event);
 #endif
         }
 
@@ -74,18 +75,4 @@ public:
     }
 };
 
-SourceAutoRecordListener* instance;
-
-void Init()
-{
-    if (Game::Version == Game::Portal2) {
-        instance = new SourceAutoRecordListener();
-    }
-}
-void Shutdown()
-{
-    if (instance) {
-        delete instance;
-    }
-}
-}
+SourceAutoRecordListener* listener;

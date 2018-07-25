@@ -29,4 +29,5 @@ CON_COMMAND(sar_about, "Prints info about this tool.\n")
     console->Print("Game: %s\n", Game::GetVersion());
     console->Print("Version: %s\n", SAR_VERSION);
     console->Print("Build: %s\n", SAR_BUILD);
+    console->Print("Test: %s\n", SAR_PLUGIN_SIGNATURE);
 }

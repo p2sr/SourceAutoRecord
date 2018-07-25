@@ -57,11 +57,11 @@ void Offsets()
 }
 void Rules()
 {
-    Speedrun::TimerRules rules;
+    /* Speedrun::TimerRules rules;
 
     rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::Start));
     rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::End));
 
-    Speedrun::timer->LoadRules(rules);
+    Speedrun::timer->LoadRules(rules); */
 }
 }

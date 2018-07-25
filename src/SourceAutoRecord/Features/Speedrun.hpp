@@ -1,8 +1,10 @@
 #pragma once
+#include <cmath>
+#include <cstring>
 #include <fstream>
 #include <memory>
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #define SAR_SPEEDRUN_EXPORT_HEADER "Map,Ticks,Time,Map Ticks,Map Time,Total Ticks,Total Time,Segment"
@@ -27,13 +29,13 @@ class Timer;
 
 class TimerRule {
 private:
-    char* map;
-    char* activator;
+    const char* map;
+    const char* activator;
     TimerAction action;
 
 public:
-    TimerRule(char* map, char* activator, TimerAction action);
-    void Check(char* map, char* activator, int engineTicks, Timer* timer);
+    TimerRule(const char* map, const char* activator, TimerAction action);
+    void Check(const char* map, const char* activator, const int* engineTicks, Timer* timer);
 };
 
 typedef std::vector<TimerRule> TimerRules;
@@ -76,7 +78,7 @@ public:
     char end[14] = "SAR_TIMER_END"; // 28-41
 
 public:
-    TimerInterface(float ipt);
+    void SetIntervalPerTick(const float* ipt);
     void Update(Timer* timer);
     void SetAction(TimerAction action);
 };
@@ -84,12 +86,13 @@ public:
 class Timer {
 public:
     std::unique_ptr<TimerInterface> liveSplit;
+
 private:
     int session;
     int base;
     int total;
     int prevTotal;
-    char* map;
+    char map[64];
     float ipt;
     TimerState state;
     std::unique_ptr<TimerResult> result;
@@ -99,15 +102,15 @@ private:
 public:
     Timer();
     bool IsRunning();
-    void Start(int engineTicks);
-    void Unpause(int engineTicks);
-    void Update(int engineTicks, char* engineMap, bool engineIsPaused);
+    void Start(const int* engineTicks);
+    void Unpause(const int* engineTicks);
+    void Update(const int* engineTicks, const bool* engineIsPaused, const char* engineMap);
     void Stop();
     void LoadRules(TimerRules rules);
-    void CheckRules(char* map, char* activator, int engineTicks);
+    void CheckRules(const char* map, const char* activator, const int* engineTicks);
     int GetSession();
     int GetTotal();
-    void SetIntervalPerTick(float ipt);
+    void SetIntervalPerTick(const float* ipt);
     float GetIntervalPerTick();
     TimerResult* GetResult();
     TimerResult* GetPersonalBest();
@@ -117,7 +120,7 @@ public:
     int GetSplitDelta();
     int GetCurrentDelta();
     ~Timer();
-    static std::string Timer::Format(float raw);
+    static std::string Format(float raw);
 };
 
 extern Timer* timer;

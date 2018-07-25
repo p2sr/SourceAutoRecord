@@ -1,4 +1,6 @@
 #pragma once
+#include <stdarg.h>
+
 #include "Interfaces.hpp"
 #include "Offsets.hpp"
 #include "SAR.hpp"

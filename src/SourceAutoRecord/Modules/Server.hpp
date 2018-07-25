@@ -109,7 +109,7 @@ DETOUR(PlayerMove)
         && Cheats::sv_footsteps.GetFloat()
         && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
         && ((m_fFlags & FL_ONGROUND && m_vecVelocity.Length2D() > 0.0001f)
-            || m_MoveType == MOVETYPE_LADDER)) {
+               || m_MoveType == MOVETYPE_LADDER)) {
         StepCounter::Increment(m_fFlags, m_MoveType, m_vecVelocity, m_nWaterLevel);
     }
 
@@ -178,7 +178,8 @@ DETOUR_MID_MH(AirMove_Mid)
         pushfd
     }
 
-    if ((!Cheats::sv_bonus_challenge.GetBool() || Cheats::sv_cheats.GetBool()) && Cheats::sar_aircontrol.GetBool()) {
+    if ((!Cheats::sv_bonus_challenge.GetBool() || Cheats::sv_cheats.GetBool()) && Cheats::sar_aircontrol.GetBool())
+    {
         __asm {
             popfd
             popad
@@ -203,7 +204,7 @@ DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, 
         auto m_iName = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iName);
         auto m_iClassname = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iClassname);
 
-        Speedrun::timer->CheckRules(*Engine::m_szLevelName, m_iName, *Engine::tickcount);
+        Speedrun::timer->CheckRules(Engine::m_szLevelName, m_iName, Engine::tickcount);
 
         if (print) {
             console->Print("[%i] %s (%s) (activator)\n", Engine::GetSessionTick(), m_iName, m_iClassname);
@@ -240,7 +241,8 @@ DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, 
 
 void Hook()
 {
-    CREATE_VMT(Interfaces::IGameMovement, g_GameMovement) {
+    CREATE_VMT(Interfaces::IGameMovement, g_GameMovement)
+    {
         HOOK(g_GameMovement, CheckJumpButton);
         HOOK(g_GameMovement, PlayerMove);
 
@@ -283,7 +285,8 @@ void Hook()
     }
 
     VMT g_ServerGameDLL;
-    CREATE_VMT(Interfaces::IServerGameDLL, g_ServerGameDLL) {
+    CREATE_VMT(Interfaces::IServerGameDLL, g_ServerGameDLL)
+    {
         auto Think = g_ServerGameDLL->GetOriginalFunction<uintptr_t>(Offsets::Think);
         auto addr = Memory::ReadAbsoluteAddress(Think + Offsets::UTIL_PlayerByIndex);
         UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(addr);

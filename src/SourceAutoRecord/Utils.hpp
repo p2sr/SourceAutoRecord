@@ -11,15 +11,15 @@
 typedef std::unique_ptr<VMTHook> VMT;
 
 #define HOOK(vmt, name)                                        \
-    vmt->HookFunction((void*)Detour::##name, Offsets::##name); \
-    Original::##name = vmt->GetOriginalFunction<_##name>(Offsets::##name);
+    vmt->HookFunction((void*)Detour::name, Offsets::name); \
+    Original::name = vmt->GetOriginalFunction<_##name>(Offsets::name);
 #define HOOK_O(vmt, name, offset)                     \
-    vmt->HookFunction((void*)Detour::##name, offset); \
-    Original::##name = vmt->GetOriginalFunction<_##name>(offset);
+    vmt->HookFunction((void*)Detour::name, offset); \
+    Original::name = vmt->GetOriginalFunction<_##name>(offset);
 
 #define UNHOOK(vmt, name) \
     if (vmt)              \
-        vmt->UnhookFunction(Offsets::##name);
+        vmt->UnhookFunction(Offsets::name);
 #define UNHOOK_O(vmt, offset) \
     if (vmt)                  \
         vmt->UnhookFunction(offset);
@@ -129,7 +129,7 @@ bool mhInitialized = false;
     namespace Detour {                                           \
         int __cdecl name(void* thisptr, ##__VA_ARGS__);          \
     }                                                            \
-    int __cdecl Detour::##name(void* thisptr, ##__VA_ARGS__)
+    int __cdecl Detour::name(void* thisptr, ##__VA_ARGS__)
 #define DETOUR_T(type, name, ...)                                 \
     using _##name = type(__cdecl*)(void* thisptr, ##__VA_ARGS__); \
     namespace Original {                                          \
@@ -138,7 +138,7 @@ bool mhInitialized = false;
     namespace Detour {                                            \
         type __cdecl name(void* thisptr, ##__VA_ARGS__);          \
     }                                                             \
-    type __cdecl Detour::##name(void* thisptr, ##__VA_ARGS__)
+    type __cdecl Detour::name(void* thisptr, ##__VA_ARGS__)
 #define DETOUR_B(name, ...)                                      \
     using _##name = int(__cdecl*)(void* thisptr, ##__VA_ARGS__); \
     namespace Original {                                         \
@@ -148,7 +148,7 @@ bool mhInitialized = false;
     namespace Detour {                                           \
         int __cdecl name(void* thisptr, ##__VA_ARGS__);          \
     }                                                            \
-    int __cdecl Detour::##name(void* thisptr, ##__VA_ARGS__)
+    int __cdecl Detour::name(void* thisptr, ##__VA_ARGS__)
 #endif
 
 #define MODULE(name) name MODULE_EXTENSION

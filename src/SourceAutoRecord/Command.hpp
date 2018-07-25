@@ -48,7 +48,7 @@ public:
     {
         ConCommandCtor(this->ptr,
             this->ptr->m_pszName,
-            this->ptr->m_fnCommandCallback,
+            (void*)this->ptr->m_fnCommandCallback,
             this->ptr->m_pszHelpString,
             this->ptr->m_nFlags,
             (int*)this->ptr->m_fnCompletionCallback);
@@ -135,22 +135,22 @@ std::vector<Command*> Command::list;
     namespace Detour {                              \
         void name##_callback(const CCommand& args); \
     }                                               \
-    void Detour::##name##_callback(const CCommand& args)
-#define HOOK_COMMAND(name)                                                   \
-    auto command = Command(#name);                                           \
-    if (command.GetPtr()) {                                                  \
-        Original::##name##_callback = command.GetPtr()->m_fnCommandCallback; \
-        command.GetPtr()->m_fnCommandCallback = Detour::##name##_callback;   \
+    void Detour::name##_callback(const CCommand& args)
+#define HOOK_COMMAND(name)                                                  \
+    auto c_##name = Command(#name);                                         \
+    if (c_##name.GetPtr()) {                                                \
+        Original::name##_callback = c_##name.GetPtr()->m_fnCommandCallback; \
+        c_##name.GetPtr()->m_fnCommandCallback = Detour::name##_callback;   \
     }
-#define UNHOOK_COMMAND(name)                                                 \
-    auto command = Command(#name);                                           \
-    if (command.GetPtr() && Original::##name##_callback) {                   \
-        command.GetPtr()->m_fnCommandCallback = Original::##name##_callback; \
+#define UNHOOK_COMMAND(name)                                                \
+    auto c_##name = Command(#name);                                         \
+    if (c_##name.GetPtr() && Original::name##_callback) {                   \
+        c_##name.GetPtr()->m_fnCommandCallback = Original::name##_callback; \
     }
 
 #define ACTIVATE_AUTOCOMPLETEFILE(name)                                              \
-    auto name = Command(#name);                                                      \
-    if (name##.GetPtr()) {                                                           \
-        name##.GetPtr()->m_bHasCompletionCallback = true;                            \
-        name##.GetPtr()->m_fnCompletionCallback = Commands::##name##_CompletionFunc; \
+    auto c_##name = Command(#name);                                                  \
+    if (c_##name.GetPtr()) {                                                         \
+        c_##name.GetPtr()->m_bHasCompletionCallback = true;                          \
+        c_##name.GetPtr()->m_fnCompletionCallback = Commands::name##_CompletionFunc; \
     }

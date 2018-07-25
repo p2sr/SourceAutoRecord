@@ -4,13 +4,13 @@ namespace Speedrun {
 
 class Timer;
 
-TimerRule::TimerRule(char* map, char* activator, TimerAction action)
+TimerRule::TimerRule(const char* map, const char* activator, TimerAction action)
 {
     this->map = map;
     this->activator = activator;
     this->action = action;
 }
-void TimerRule::Check(char* map, char* activator, int engineTicks, Timer* timer)
+void TimerRule::Check(const char* map, const char* activator, const int* engineTicks, Timer* timer)
 {
     if (!map || !activator)
         return;
@@ -28,7 +28,7 @@ void TimerRule::Check(char* map, char* activator, int engineTicks, Timer* timer)
 int TimerSplit::GetTotal()
 {
     auto result = 0;
-    for (auto seg: this->segments) {
+    for (auto seg : this->segments) {
         result += seg.session;
     }
     return result;
@@ -37,13 +37,13 @@ int TimerSplit::GetTotal()
 void TimerResult::AddSplit(int tick, char* map)
 {
     this->prevSplit = this->curSplit;
-    this->curSplit = TimerSplit { tick, map };
+    this->curSplit = TimerSplit{ tick, map };
     this->splits.push_back(this->curSplit);
 }
 void TimerResult::AddSegment(int tick)
 {
     if (!this->splits.empty()) {
-        this->splits.back().segments.push_back(TimerSegment { tick });
+        this->splits.back().segments.push_back(TimerSegment{ tick });
     }
 }
 void TimerResult::UpdateSplit(char* map)
@@ -61,9 +61,9 @@ void TimerResult::Reset()
     this->splits.clear();
 }
 
-TimerInterface::TimerInterface(float ipt)
+void TimerInterface::SetIntervalPerTick(const float* ipt)
 {
-    this->ipt = ipt;
+    this->ipt = *ipt;
 }
 void TimerInterface::Update(Timer* timer)
 {
@@ -75,20 +75,27 @@ void TimerInterface::SetAction(TimerAction action)
 }
 
 Timer::Timer()
+    : session(0)
+    , base(0)
+    , total(0)
+    , prevTotal(0)
+    , map("unknown")
+    , ipt(0.0f)
+    , state(TimerState::NotRunning)
 {
-    this->liveSplit = std::make_unique<TimerInterface>(ipt);
-    this->ipt = ipt;
+    this->liveSplit = std::make_unique<TimerInterface>();
     this->result = std::make_unique<TimerResult>();
     this->pb = std::make_unique<TimerResult>();
     this->rules = std::make_unique<TimerRules>();
 }
 bool Timer::IsRunning()
 {
-    return this->state != TimerState::NotRunning;
+    return this->state == TimerState::Running
+        || this->state == TimerState::Paused;
 }
-void Timer::Start(int engineTicks)
+void Timer::Start(const int* engineTicks)
 {
-    this->base = engineTicks;
+    this->base = *engineTicks;
 
     if (this->IsRunning()) {
         this->liveSplit.get()->SetAction(TimerAction::Restart);
@@ -99,33 +106,45 @@ void Timer::Start(int engineTicks)
     this->state = TimerState::Running;
     this->result.get()->Reset();
 }
-void Timer::Unpause(int engineTicks)
+void Timer::Unpause(const int* engineTicks)
 {
     if (this->state == TimerState::Paused) {
         this->state = TimerState::Running;
-        this->base = engineTicks;
+        this->base = *engineTicks;
     }
 }
-void Timer::Update(int engineTicks, char* engineMap, bool engineIsPaused)
+void Timer::Update(const int* engineTicks, const bool* engineIsPaused, const char* engineMap)
 {
+    if (!engineTicks)
+        return;
+    if (!engineMap && std::strlen(engineMap) != 0)
+        return;
+    if (!engineIsPaused)
+        return;
+
+    auto mapChange = false;
+    if (std::strncmp(this->map, engineMap, sizeof(this->map))) {
+        std::strncpy(this->map, engineMap, sizeof(this->map));
+        mapChange = true;
+    }
+
     if (this->IsRunning()) {
         if (engineIsPaused) {
-            // Save time from previous tick
+            // Completed segment, save time from previous tick
             if (this->state == TimerState::Running) {
                 this->state = TimerState::Paused;
                 this->prevTotal = this->total;
                 this->result.get()->AddSegment(this->session);
             }
 
-            // Detect map change
-            if (!std::strcmp(this->map, engineMap)) {
+            // Split on map change
+            if (mapChange) {
                 this->liveSplit.get()->SetAction(TimerAction::Split);
-                this->map = map;
                 this->result.get()->AddSplit(this->total, this->map);
                 this->pb.get()->UpdateSplit(this->map);
             }
         } else {
-            this->session = engineTicks - this->base;
+            this->session = *engineTicks - this->base;
             this->total = this->prevTotal + this->session;
             this->liveSplit.get()->Update(this);
         }
@@ -144,7 +163,7 @@ void Timer::LoadRules(TimerRules rules)
 {
     *this->rules = rules;
 }
-void Timer::CheckRules(char* map, char* activator, int engineTicks)
+void Timer::CheckRules(const char* map, const char* activator, const int* engineTicks)
 {
     for (auto rule : *this->rules) {
         rule.Check(map, activator, engineTicks, this);
@@ -158,9 +177,10 @@ int Timer::GetTotal()
 {
     return this->total;
 }
-void Timer::SetIntervalPerTick(float ipt)
+void Timer::SetIntervalPerTick(const float* ipt)
 {
-    this->ipt = ipt;
+    this->ipt = *ipt;
+    this->liveSplit->SetIntervalPerTick(ipt);
 }
 float Timer::GetIntervalPerTick()
 {
@@ -199,13 +219,13 @@ bool Timer::ExportResult(std::string filePath, bool pb)
 
         for (auto seg : split.segments) {
             file << split.map << ","
-                << seg.session << ","
-                << (seg.session * ipt) << ","
-                << ticks << ","
-                << time << ","
-                << total << ","
-                << totalTime << ","
-                << ++segment;
+                 << seg.session << ","
+                 << (seg.session * ipt) << ","
+                 << ticks << ","
+                 << time << ","
+                 << total << ","
+                 << totalTime << ","
+                 << ++segment;
         }
     }
 
@@ -279,17 +299,15 @@ std::string Timer::Format(float raw)
             auto hrs = min / 60;
             min = min % 60;
             snprintf(format, sizeof(format), "%i:%02i:%02i.%03i", hrs, min, sec, ms);
-        }
-        else {
+        } else {
             snprintf(format, sizeof(format), "%i:%02i.%03i", min, sec, ms);
         }
-    }
-    else {
+    } else {
         snprintf(format, sizeof(format), "%i.%03i", sec, ms);
     }
 
     return std::string(format);
 }
 
-Timer* timer = new Timer();
+Timer* timer;
 }

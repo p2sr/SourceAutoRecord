@@ -5,7 +5,7 @@
 #include "Utils.hpp"
 
 #define SAVE_CVAR(cvar, value) \
-    file << #cvar " " << Cheats::##cvar##.Get##value() << "\n";
+    file << #cvar " " << Cheats::cvar.Get##value() << "\n";
 
 namespace Config {
 

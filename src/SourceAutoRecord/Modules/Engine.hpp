@@ -1,4 +1,6 @@
 #pragma once
+#include <future>
+
 #include "Console.hpp"
 #include "DemoPlayer.hpp"
 #include "DemoRecorder.hpp"
@@ -44,7 +46,7 @@ _RemoveListener RemoveListener;
 
 int* tickcount;
 float* interval_per_tick;
-char** m_szLevelName;
+char* m_szLevelName;
 
 void ExecuteCommand(const char* cmd)
 {
@@ -83,7 +85,7 @@ void SessionStarted()
     console->Print("Session Started!\n");
     Session::Rebase(*tickcount);
     Timer::Rebase(*tickcount);
-    Speedrun::timer->Unpause(*tickcount);
+    Speedrun::timer->Unpause(tickcount);
 
     if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
         if (DemoRecorder::IsRecordingDemo) {
@@ -121,7 +123,7 @@ void SessionEnded()
         }
 
         if (Summary::IsRunning) {
-            Summary::Add(tick, Engine::ToTime(tick), *m_szLevelName);
+            Summary::Add(tick, Engine::ToTime(tick), m_szLevelName);
             console->Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::ToTime(Summary::TotalTicks));
         }
 
@@ -218,19 +220,60 @@ DETOUR(Frame)
         console->Print("hs->m_currentState = %i\n", hoststate->m_currentState);
         if (hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_SP) {
             SessionEnded();
-        } else if (hoststate->m_currentState == HOSTSTATES::HS_RUN && !hoststate->m_activeGame && !DemoPlayer::IsPlaying()) {
+        } else if (hoststate->m_currentState == HOSTSTATES::HS_RUN
+            && !hoststate->m_activeGame
+            && !DemoPlayer::IsPlaying()) {
             console->Print("Detected menu!\n");
             Session::Rebase(*tickcount);
-            Speedrun::timer->Unpause(*tickcount);
+            Speedrun::timer->Unpause(tickcount);
         }
     }
     prevState = hoststate->m_currentState;
 
-    if (tickcount && m_szLevelName && m_bLoadgame) {
-        Speedrun::timer->Update(*tickcount, *m_szLevelName, *m_bLoadgame);
-    }
+    // Observe other game states here
+    Speedrun::timer->Update(tickcount, m_bLoadgame, m_szLevelName);
 
     return Original::Frame(thisptr);
+}
+
+static bool endsWith(const std::string& str, const std::string& suffix)
+{
+    return str.size() >= suffix.size() && 0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
+}
+
+DETOUR_COMMAND(plugin_load)
+{
+    // Prevent crash when loading SAR twice
+    if (Interfaces::IServerPluginHelpers && args.ArgC() >= 2) {
+        auto plugin = std::string(args[1]);
+        if (endsWith(plugin, std::string("sar.so"))
+            || endsWith(plugin, std::string("sar"))) {
+            console->Warning("SAR: Cannot load the same plugin twice!\n");
+            return;
+        }
+    }
+
+    return Original::plugin_load_callback(args);
+}
+
+DETOUR_COMMAND(plugin_unload)
+{
+    // Warn user that sar_unload has to be called before unloading SAR
+    if (Interfaces::IServerPluginHelpers && args.ArgC() >= 2) {
+        auto index = std::atoi(args[1]);
+        auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Size);
+        console->Print("%i\n", m_Size);
+        if (index >= 0 && index < m_Size) {
+            auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Plugins);
+            auto plugin = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * index);
+            if (!std::strcmp(plugin->m_szName, SAR_PLUGIN_SIGNATURE)) {
+                console->Warning("SAR: Use \"sar_unload\" before unloading the module!\n");
+                return;
+            }
+        }
+    }
+
+    return Original::plugin_unload_callback(args);
 }
 
 void Hook()
@@ -273,13 +316,16 @@ void Hook()
             DemoPlayer::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demoplayer));
             DemoRecorder::Hook(**reinterpret_cast<void***>(disconnect + Offsets::demorecorder));
 
+#if _WIN32
             auto IServerMessageHandler_VMT = *reinterpret_cast<uintptr_t*>((uintptr_t)cl->GetThisPtr() + IServerMessageHandler_VMT_Offset);
             auto ProcessTick = *reinterpret_cast<uintptr_t*>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
+#else
+            auto ProcessTick = cl->GetOriginalFunction<uintptr_t>(Offsets::ProcessTick);
+#endif
             tickcount = *reinterpret_cast<int**>(ProcessTick + Offsets::tickcount);
             interval_per_tick = *reinterpret_cast<float**>(ProcessTick + Offsets::interval_per_tick);
-            Speedrun::timer->SetIntervalPerTick(*Engine::interval_per_tick);
+            Speedrun::timer->SetIntervalPerTick(interval_per_tick);
 
-            // TODO
             auto hsf = SAR::Find("HostState_Frame");
             if (hsf.Found) {
                 hoststate = *reinterpret_cast<CHostState**>(hsf.Address + Offsets::hoststate);
@@ -302,7 +348,7 @@ void Hook()
     CREATE_VMT(Interfaces::IEngineTool, tool)
     {
         auto GetCurrentMap = tool->GetOriginalFunction<uintptr_t>(Offsets::GetCurrentMap);
-        m_szLevelName = reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
+        m_szLevelName = *reinterpret_cast<char**>(GetCurrentMap + Offsets::m_szLevelName);
     }
 
     auto ldg = SAR::Find("m_bLoadgame");
@@ -315,17 +361,28 @@ void Hook()
         AddListener = s_GameEventManager->GetOriginalFunction<_AddListener>(Offsets::AddListener);
         RemoveListener = s_GameEventManager->GetOriginalFunction<_RemoveListener>(Offsets::RemoveListener);
     }
+
+    HOOK_COMMAND(plugin_load);
+    HOOK_COMMAND(plugin_unload);
 }
 void Unhook()
 {
-    UNHOOK_O(cl, Offsets::Disconnect - 1); // SetSignonState
-    UNHOOK_O(cl, Offsets::Disconnect);
+    UNHOOK_O(cl, Offsets::Disconnect - 1);
+#ifdef _WIN32
     UNHOOK_COMMAND(connect);
+#else
+    UNHOOK_O(cl, Offsets::Disconnect);
+#endif
     UNHOOK(eng, Frame);
+
     DELETE_VMT(engine);
     DELETE_VMT(cl);
     DELETE_VMT(s_GameEventManager);
     DELETE_VMT(eng);
+
+    UNHOOK_COMMAND(plugin_load);
+    UNHOOK_COMMAND(plugin_unload);
+
     DemoPlayer::Unhook();
     DemoRecorder::Unhook();
 }

@@ -149,19 +149,19 @@ void Offsets()
 
     // vguimatsurface.dll
 
-    DrawSetColor = 11; // CEntityReportPanel::Paint
-    DrawFilledRect = 12; // CEntityReportPanel::Paint
-    GetFontTall = 69; // CFPSPanel::ComputeSize
-    DrawColoredText = 162; // CNetGraphPanel::DrawTextFields
-    DrawTextLen = 165; // CNetGraphPanel::DrawTextFields
+    DrawSetColor = 11; // CMatSystemSurface
+    DrawFilledRect = 12; // CMatSystemSurface
+    GetFontTall = 69; // CMatSystemSurface
+    DrawColoredText = 162; // CMatSystemSurface
+    DrawTextLen = 165; // CMatSystemSurface
 }
 void Rules()
 {
-    Speedrun::TimerRules rules;
+    /* Speedrun::TimerRules rules;
 
     rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::Start));
     rules.push_back(Speedrun::TimerRule("TODO", "TODO", Speedrun::TimerAction::End));
 
-    Speedrun::timer->LoadRules(rules);
+    Speedrun::timer->LoadRules(rules); */
 }
 }

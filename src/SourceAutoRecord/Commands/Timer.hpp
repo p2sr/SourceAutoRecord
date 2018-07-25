@@ -33,7 +33,7 @@ CON_COMMAND(sar_timer_stop, "Stops timer.\n")
 
     if (Timer::Average::IsEnabled) {
         int tick = Timer::GetTick(*Engine::tickcount);
-        Timer::Average::Add(tick, Engine::ToTime(tick), *Engine::m_szLevelName);
+        Timer::Average::Add(tick, Engine::ToTime(tick), Engine::m_szLevelName);
     }
 }
 
@@ -90,7 +90,7 @@ CON_COMMAND(sar_cps_add, "Saves current time of timer.\n")
     }
 
     int tick = Timer::GetTick(Engine::GetSessionTick());
-    Timer::CheckPoints::Add(tick, Engine::ToTime(tick), *Engine::m_szLevelName);
+    Timer::CheckPoints::Add(tick, Engine::ToTime(tick), Engine::m_szLevelName);
 }
 
 CON_COMMAND(sar_cps_clear, "Resets saved times of timer.\n")
