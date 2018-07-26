@@ -24,6 +24,7 @@ public:
     virtual bool Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
     {
         console = new Console();
+        plugin = new Plugin();
         Speedrun::timer = new Speedrun::Timer();
 
         if (!console->Init())
@@ -52,7 +53,7 @@ public:
                 //listener = new SourceAutoRecordListener();
 
                 //Config::Load();
-                SAR::Disable();
+                SAR::SearchPlugin();
 
                 console->PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
                 return true;
@@ -135,7 +136,7 @@ public:
 CSourceAutoRecord g_SourceAutoRecord;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourceAutoRecord, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_SourceAutoRecord);
 
-CON_COMMAND(sar_unload, "Removes all function hooks and registered commands.\n")
+CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
     //delete listener;
 
@@ -154,7 +155,8 @@ CON_COMMAND(sar_unload, "Removes all function hooks and registered commands.\n")
 
     Tier1::Shutdown();
 
-    console->Print("Use \"plugin_unload <index>\" to unload the module now!\n");
+    console->Print("Cya :)\n");
     delete Speedrun::timer;
+    delete plugin;
     delete console;
 }

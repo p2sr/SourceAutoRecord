@@ -232,7 +232,7 @@ struct CEventAction {
 
 class IGameEvent {
 public:
-    virtual ~IGameEvent(){};
+    virtual ~IGameEvent() {};
     virtual const char* GetName() const = 0;
     virtual bool IsReliable() const = 0;
     virtual bool IsLocal() const = 0;
@@ -249,7 +249,7 @@ public:
 
 class IGameEventListener2 {
 public:
-    virtual ~IGameEventListener2(){};
+    virtual ~IGameEventListener2() {};
     virtual void FireGameEvent(IGameEvent* event) = 0;
     virtual int GetEventDebugID() = 0;
 };

@@ -14,6 +14,7 @@ int GetGameDirectory;
 int GetViewAngles;
 int SetViewAngles;
 int ServerCmdKeyValues;
+int GetActiveSplitScreenPlayerSlot;
 
 // CHLClient
 int HudProcessInput;
@@ -147,4 +148,7 @@ int hoststate;
 int FrameUpdate;
 int State_Shutdown;
 int eng;
+int Cbuf_AddText;
+int s_CommandBuffer;
+int AddText;
 }

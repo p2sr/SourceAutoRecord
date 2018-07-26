@@ -19,8 +19,7 @@
 
 namespace SAR {
 
-std::thread selfDisable;
-bool exited;
+std::thread findPluginThread;
 
 Memory::ScanResult Find(const char* pattern)
 {
@@ -51,36 +50,43 @@ void DeleteVMT(VMT& hook, const char* caller = "unknown")
     console->DevMsg("SAR: Deleted VMT for %s %p.\n", caller, hook->GetThisPtr());
     hook.reset();
 }
+bool PluginFound()
+{
+    if (!plugin->found && Interfaces::IServerPluginHelpers) {
+        auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Size);
+        if (m_Size > 0) {
+            auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Plugins);
+            for (int i = 0; i < m_Size; i++) {
+                auto ptr = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
+                if (!std::strcmp(ptr->m_szName, SAR_PLUGIN_SIGNATURE)) {
+                    plugin->index = i;
+                    plugin->ptr = ptr;
+                    plugin->found = true;
+                    break;
+                }
+            }
+        }
+    }
+    return plugin->found;
+}
 
 // SAR has to disable itself in the plugin list or the game might crash because of missing callbacks
 // This is a race condition though
-void Disable()
+void SearchPlugin()
 {
-    selfDisable = std::thread([]() {
+    findPluginThread = std::thread([]() {
 #if _WIN32
         Sleep(1000);
 #else
         sleep(1);
 #endif
-        if (Interfaces::IServerPluginHelpers) {
-            auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Size);
-            console->Print("%i\n", m_Size);
-            if (m_Size > 0) {
-                auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Plugins);
-                for (int i = 0; i < m_Size; i++) {
-                    auto plugin = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
-                    console->Print("%s\n", plugin->m_szName);
-                    if (!std::strcmp(plugin->m_szName, SAR_PLUGIN_SIGNATURE)) {
-                        plugin->m_bDisable = true;
-                        console->DevMsg("SAR: Disabled SAR in the plugin list!\n");
-                        return;
-                    }
-                }
-            }
+        if (!PluginFound()) {
+            console->DevWarning("SAR: Failed to find SAR in the plugin list!\nTry again with \"plugin_load\".\n");
+        } else {
+            plugin->ptr->m_bDisable = true;
         }
-        console->DevWarning("SAR: Could not disable SAR in the plugin list!\nTry manually with plugin_pause.\n");
     });
-    selfDisable.detach();
+    findPluginThread.detach();
 }
 }
 

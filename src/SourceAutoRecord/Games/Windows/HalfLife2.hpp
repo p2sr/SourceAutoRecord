@@ -42,10 +42,10 @@ void Patterns()
         "CBaseAutoCompleteFileList::AutoCompletionFunc",
         "55 8B EC 81 EC ? ? ? ? 53 56 8B F1 57 8B 7D 08");
 
-    // TODO
+    // \x55\x8B\xEC\xD9\x45\x08\x51\xB9\x00\x00\x00\x00\xD9\x1C\x24\xE8\x00\x00\x00\x00\x5D\xC3 xxxxxxxx????xxxx????xx
     Add("HostState_Frame", "Half-Life 2 Build 2257546",
         "HostState_Frame",
-        "");
+        "55 8B EC D9 45 08 51 B9 ? ? ? ? D9 1C 24 E8 ? ? ? ? 5D C3");
 
     // vguimatsurface.dll
 
@@ -101,10 +101,13 @@ void Offsets()
     demorecorder = 121; // CClientState::Disconnect
     GetCurrentMap = 23; // CEngineTool
     m_szLevelName = 32; // CEngineTool::GetCurrentMap
-    hoststate = 8; // HostState_Frame (TODO)
-    FrameUpdate = 16; // HostState_Frame (TODO)
-    eng = 277; // CHostState::FrameUpdate (TODO)
-    Frame = 5; // CEngine (TODO)
+    hoststate = 8; // HostState_Frame
+    FrameUpdate = 16; // HostState_Frame
+    eng = 281; // CHostState::FrameUpdate
+    Frame = 5; // CEngine
+    Cbuf_AddText = 58; // CEngine::ClientCmd
+    s_CommandBuffer = 64; // Cbuf_AddText
+    AddText = 69; // Cbuf_AddText
 
     // vstdlib.dll
     UnregisterConCommand = 7; // CCvar

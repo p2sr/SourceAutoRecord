@@ -1,6 +1,4 @@
 #pragma once
-#include <future>
-
 #include "Console.hpp"
 #include "DemoPlayer.hpp"
 #include "DemoRecorder.hpp"
@@ -17,6 +15,7 @@
 #include "Cheats.hpp"
 #include "Game.hpp"
 #include "Interfaces.hpp"
+#include "SAR.hpp"
 #include "Utils.hpp"
 
 #define IServerMessageHandler_VMT_Offset 8
@@ -236,19 +235,60 @@ DETOUR(Frame)
     return Original::Frame(thisptr);
 }
 
-static bool endsWith(const std::string& str, const std::string& suffix)
+void SendToCommandBuffer(const char* text, int delay)
 {
-    return str.size() >= suffix.size() && 0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
+    using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
+    auto Cbuf_AddText = Memory::ReadAbsoluteAddress<_Cbuf_AddText>((uintptr_t)ClientCmd + Offsets::Cbuf_AddText);
+
+    if (Game::IsPortal2Engine()) {
+        auto GetActiveSplitScreenPlayerSlot = engine->GetOriginalFunction<int (*)()>(Offsets::GetActiveSplitScreenPlayerSlot);
+        Cbuf_AddText(GetActiveSplitScreenPlayerSlot(), text, delay);
+    } else if (Game::IsHalfLife2Engine()) {
+        using _AddText = void(__func*)(void* thisptr, const char* pText, int nTickDelay);
+        auto AddText = Memory::ReadAbsoluteAddress<_AddText>((uintptr_t)Cbuf_AddText + Offsets::AddText);
+        auto s_CommandBuffer = Memory::Deref<void*>((uintptr_t)Cbuf_AddText + Offsets::s_CommandBuffer);
+        AddText(s_CommandBuffer, text, delay);
+    }
+}
+
+// SAR has to unhook CEngine::Frame one tick before unloading the module or the game
+// will crash 100% of the time because the hooked function gets called so often
+#define SAFE_UNLOAD_TICK_DELAY 69
+void SafeUnload(bool exit = false)
+{
+    if (SAR::PluginFound()) {
+        auto unload = std::string("plugin_unload ") + std::to_string(plugin->index);
+
+        // Everything gets deleted at this point
+        ExecuteCommand("sar_exit");
+
+        if (Game::IsPortal2Engine()) {
+            SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);
+        } else {
+        }
+    } else {
+        console->Warning("SAR: This should never happen :(\n");
+    }
+
+    if (exit)
+        SendToCommandBuffer("exit", SAFE_UNLOAD_TICK_DELAY);
 }
 
 DETOUR_COMMAND(plugin_load)
 {
-    // Prevent crash when loading SAR twice
-    if (Interfaces::IServerPluginHelpers && args.ArgC() >= 2) {
-        auto plugin = std::string(args[1]);
-        if (endsWith(plugin, std::string("sar.so"))
-            || endsWith(plugin, std::string("sar"))) {
-            console->Warning("SAR: Cannot load the same plugin twice!\n");
+    // Prevent crash when trying to load SAR twice or find the module in
+    // the plugin list if the search thread failed before because of RC
+    if (args.ArgC() >= 2) {
+        auto file = std::string(args[1]);
+        if (endsWith(file, std::string(MODULE("sar"))) || endsWith(file, std::string("sar"))) {
+            if (plugin->found) {
+                console->Warning("SAR: Cannot load the same plugin twice!\n");
+            } else if (SAR::PluginFound()) {
+                plugin->ptr->m_bDisable = true;
+                console->PrintActive("SAR: Loaded SAR successfully!\n");
+            } else {
+                console->Warning("SAR: This should never happen :(\n");
+            }
             return;
         }
     }
@@ -258,22 +298,28 @@ DETOUR_COMMAND(plugin_load)
 
 DETOUR_COMMAND(plugin_unload)
 {
-    // Warn user that sar_unload has to be called before unloading SAR
-    if (Interfaces::IServerPluginHelpers && args.ArgC() >= 2) {
-        auto index = std::atoi(args[1]);
-        auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Size);
-        console->Print("%i\n", m_Size);
-        if (index >= 0 && index < m_Size) {
-            auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IServerPluginHelpers + CServerPlugin_m_Plugins);
-            auto plugin = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * index);
-            if (!std::strcmp(plugin->m_szName, SAR_PLUGIN_SIGNATURE)) {
-                console->Warning("SAR: Use \"sar_unload\" before unloading the module!\n");
+    if (args.ArgC() >= 2) {
+        if (SAR::PluginFound()) {
+            if (atoi(args[1]) == plugin->index) {
+                SafeUnload();
                 return;
             }
+        } else {
+            console->Warning("SAR: This should never happen :(\n");
         }
     }
 
     return Original::plugin_unload_callback(args);
+}
+
+DETOUR_COMMAND(exit)
+{
+    SafeUnload(true);
+}
+
+DETOUR_COMMAND(quit)
+{
+    SafeUnload(true);
 }
 
 void Hook()
@@ -364,6 +410,8 @@ void Hook()
 
     HOOK_COMMAND(plugin_load);
     HOOK_COMMAND(plugin_unload);
+    HOOK_COMMAND(exit);
+    HOOK_COMMAND(quit);
 }
 void Unhook()
 {
@@ -382,6 +430,8 @@ void Unhook()
 
     UNHOOK_COMMAND(plugin_load);
     UNHOOK_COMMAND(plugin_unload);
+    UNHOOK_COMMAND(exit);
+    UNHOOK_COMMAND(quit);
 
     DemoPlayer::Unhook();
     DemoRecorder::Unhook();

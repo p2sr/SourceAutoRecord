@@ -22,7 +22,10 @@
     <ClCompile Include="Modules\Console.cpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
+    <ClCompile Include="SAR.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Plugin.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
   </ItemGroup>

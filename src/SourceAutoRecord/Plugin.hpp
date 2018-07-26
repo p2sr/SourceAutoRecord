@@ -8,28 +8,14 @@
 #define CServerPlugin_m_Size 16
 #define CServerPlugin_m_Plugins 4
 
-InterfaceReg* InterfaceReg::s_pInterfaceRegs = nullptr;
+class Plugin {
+public:
+    CPlugin* ptr;
+    int index;
+    bool found;
 
-void* CreateInterfaceInternal(const char* pName, int* pReturnCode)
-{
-    InterfaceReg* pCur;
+public:
+    Plugin();
+};
 
-    for (pCur = InterfaceReg::s_pInterfaceRegs; pCur; pCur = pCur->m_pNext) {
-        if (strcmp(pCur->m_pName, pName) == 0) {
-            if (pReturnCode) {
-                *pReturnCode = 0;
-            }
-            return pCur->m_CreateFn();
-        }
-    }
-
-    if (pReturnCode) {
-        *pReturnCode = 1;
-    }
-    return NULL;
-}
-
-DLL_EXPORT void* CreateInterface(const char* pName, int* pReturnCode)
-{
-    return CreateInterfaceInternal(pName, pReturnCode);
-}
+extern Plugin* plugin;

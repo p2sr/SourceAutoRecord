@@ -98,6 +98,9 @@ void Offsets()
     State_Shutdown = 111; // CHostState::FrameUpdate
     eng = 17; // CHostState::FrameUpdate
     Frame = 6; // CEngine
+    Cbuf_AddText = 58; // CEngine::ClientCmd (TODO)
+    s_CommandBuffer = 64; // Cbuf_AddText (TODO)
+    AddText = 69; // Cbuf_AddText (TODO)
 
     // libvstdlib.so
     UnregisterConCommand = 7; // CCvar

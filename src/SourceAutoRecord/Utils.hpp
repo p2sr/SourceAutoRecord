@@ -10,10 +10,10 @@
 
 typedef std::unique_ptr<VMTHook> VMT;
 
-#define HOOK(vmt, name)                                        \
+#define HOOK(vmt, name)                                    \
     vmt->HookFunction((void*)Detour::name, Offsets::name); \
     Original::name = vmt->GetOriginalFunction<_##name>(Offsets::name);
-#define HOOK_O(vmt, name, offset)                     \
+#define HOOK_O(vmt, name, offset)                   \
     vmt->HookFunction((void*)Detour::name, offset); \
     Original::name = vmt->GetOriginalFunction<_##name>(offset);
 
@@ -153,3 +153,8 @@ bool mhInitialized = false;
 
 #define MODULE(name) name MODULE_EXTENSION
 #define GAME(x) GAME_PATH(x)
+
+static bool endsWith(const std::string& str, const std::string& suffix)
+{
+    return str.size() >= suffix.size() && 0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
+}

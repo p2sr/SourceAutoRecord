@@ -157,7 +157,8 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="..\..\libs\minhook\hook.c" />
     <ClCompile Include="..\..\libs\minhook\trampoline.c" />
     <ClCompile Include="Features\Speedrun.cpp" />
-    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Plugin.cpp" />
+    <ClCompile Include="SAR.cpp" />
     <ClCompile Include="Modules\Console.cpp" />
   </ItemGroup>
   <ItemGroup>

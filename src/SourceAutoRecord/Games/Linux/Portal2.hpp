@@ -80,6 +80,7 @@ void Offsets()
     GetViewAngles = 18; // CEngineClient
     SetViewAngles = 19; // CEngineClient
     GetGameDirectory = 35; // CEngineClient
+    GetActiveSplitScreenPlayerSlot = 127; // CEngineClient (TODO)
     StringToButtonCode = 31; // ReadCheatCommandsFromFile
     GetRecordingTick = 1; // CDemoRecorder
     SetSignonState = 3; // CDemoRecorder
@@ -108,6 +109,7 @@ void Offsets()
     State_Shutdown = 231; // CHostState::FrameUpdate
     eng = 12; // CHostState::FrameUpdate
     Frame = 6; // CEngine
+    Cbuf_AddText = 46; // CEngine::ClientCmd (TODO)
 
     // libvstdlib.so
     UnregisterConCommand = 10; // CCvar

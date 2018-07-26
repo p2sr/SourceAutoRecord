@@ -93,7 +93,7 @@ struct ModuleInfo {
 };
 
 #ifdef _WIN32
-bool TryGetModule(const char* moduleName, ModuleInfo* info)
+static bool TryGetModule(const char* moduleName, ModuleInfo* info)
 {
     auto mHandle = GetModuleHandleA(moduleName);
 
@@ -154,7 +154,7 @@ static bool TryGetModule(const char* moduleName, ModuleInfo* info)
 }
 #endif
 
-/* ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
+static ScanResult Scan(const char* moduleName, const char* pattern, int offset = 0)
 {
     auto result = ScanResult();
     auto info = ModuleInfo();
@@ -170,7 +170,7 @@ static bool TryGetModule(const char* moduleName, ModuleInfo* info)
     }
 
     return result;
-} */
+}
 
 static ScanResult Scan(Pattern* pattern)
 {
@@ -229,11 +229,11 @@ static void* GetSymbolAddress(void* moduleHandle, const char* symbolName)
 #endif
 }
 
-/* const char* GetModulePath(const char* moduleName)
+static const char* GetModulePath(const char* moduleName)
 {
     auto info = ModuleInfo();
     return (TryGetModule(moduleName, &info)) ? std::string(info.path).c_str() : nullptr;
-} */
+}
 
 static std::string GetProcessName()
 {
@@ -260,21 +260,22 @@ inline T VMT(void* ptr, int index)
     return reinterpret_cast<T>((*((void***)ptr))[index]);
 }
 
-static uintptr_t ReadAbsoluteAddress(uintptr_t source)
+template <typename T = uintptr_t>
+static T ReadAbsoluteAddress(uintptr_t source)
 {
     auto rel = *reinterpret_cast<int*>(source);
-    return source + rel + sizeof(rel);
+    return (T)(source + rel + sizeof(rel));
 }
 
-/* template <typename T = void*>
+template <typename T = void*>
 inline T Deref(uintptr_t address)
 {
     return *reinterpret_cast<T*>(address);
 }
 
-uintptr_t ToAbsoluteAddress(const char* moduleName, int relative)
+static uintptr_t ToAbsoluteAddress(const char* moduleName, int relative)
 {
     auto info = ModuleInfo();
     return (TryGetModule(moduleName, &info)) ? info.base + relative : 0;
-} */
+}
 }
