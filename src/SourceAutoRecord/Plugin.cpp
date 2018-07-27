@@ -7,7 +7,7 @@ static void* CreateInterfaceInternal(const char* pName, int* pReturnCode)
     InterfaceReg* pCur;
 
     for (pCur = InterfaceReg::s_pInterfaceRegs; pCur; pCur = pCur->m_pNext) {
-        if (strcmp(pCur->m_pName, pName) == 0) {
+        if (!std::strcmp(pCur->m_pName, pName)) {
             if (pReturnCode) {
                 *pReturnCode = 0;
             }

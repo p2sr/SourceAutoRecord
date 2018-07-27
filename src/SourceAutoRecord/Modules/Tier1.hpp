@@ -14,7 +14,7 @@ namespace Tier1 {
 VMT g_pCVar;
 
 struct CCommand;
-struct ConCommandBase;
+class ConCommandBase;
 
 using _CommandCallback = void (*)(const CCommand& args);
 using _CommandCompletionCallback = int (*)(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
@@ -28,13 +28,25 @@ using _FindCommandBase = void*(__func*)(void* thisptr, const char* name);
 using _Command = void*(__func*)(void* thisptr, const char* name);
 using _AutoCompletionFunc = int(__func*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
-struct ConCommandBase {
+class ConCommandBase {
+public:
     void* ConCommandBase_VTable; // 0
     ConCommandBase* m_pNext; // 4
     bool m_bRegistered; // 8
     const char* m_pszName; // 12
     const char* m_pszHelpString; // 16
     int m_nFlags; // 20
+
+public:
+    ConCommandBase()
+        : ConCommandBase_VTable(nullptr)
+        , m_pNext(nullptr)
+        , m_bRegistered(false)
+        , m_pszName(nullptr)
+        , m_pszHelpString(nullptr)
+        , m_nFlags(0)
+    {
+    }
 };
 
 struct CCommand {
@@ -62,11 +74,8 @@ struct CCommand {
     }
 };
 
-struct ICommandCallback {
-    virtual void CommandCallback(const CCommand& command) = 0;
-};
-
-struct ConCommand : ConCommandBase {
+class ConCommand : public ConCommandBase {
+public:
     union {
         void* m_fnCommandCallbackV1;
         _CommandCallback m_fnCommandCallback;
@@ -81,9 +90,24 @@ struct ConCommand : ConCommandBase {
     bool m_bHasCompletionCallback : 1;
     bool m_bUsingNewCommandCallback : 1;
     bool m_bUsingCommandCallbackInterface : 1;
+
+public:
+    ConCommand()
+        : m_fnCommandCallbackV1(nullptr)
+        , m_fnCommandCallback(nullptr)
+        , m_pCommandCallback(nullptr)
+        , m_fnCompletionCallback(nullptr)
+        , m_pCommandCompletionCallback(nullptr)
+        , m_bHasCompletionCallback(false)
+        , m_bUsingNewCommandCallback(false)
+        , m_bUsingCommandCallbackInterface(false)
+        , ConCommandBase()
+    {
+    }
 };
 
-struct ConVar : ConCommandBase {
+class ConVar : public ConCommandBase {
+public:
     void* ConVar_VTable; // 24
     ConVar* m_pParent; // 28
     const char* m_pszDefaultValue; // 32
@@ -102,6 +126,28 @@ struct ConVar : ConCommandBase {
     int m_nGrowSize; // 76
     int m_Size; // 80
     void* m_pElements; // 84
+
+public:
+    ConVar()
+        : ConVar_VTable(nullptr)
+        , m_pParent(nullptr)
+        , m_pszDefaultValue(nullptr)
+        , m_pszString(nullptr)
+        , m_StringLength(0)
+        , m_fValue(0)
+        , m_nValue(0)
+        , m_bHasMin(0)
+        , m_fMinVal(0)
+        , m_bHasMax(0)
+        , m_fMaxVal(0)
+        , m_pMemory(nullptr)
+        , m_nAllocationCount(0)
+        , m_nGrowSize(0)
+        , m_Size(0)
+        , m_pElements(nullptr)
+        , ConCommandBase()
+    {
+    }
 };
 
 _ConCommand ConCommandCtor;

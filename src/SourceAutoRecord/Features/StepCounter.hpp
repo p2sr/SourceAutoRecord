@@ -51,7 +51,7 @@ void Increment(int m_fFlags, int m_MoveType, Vector m_vecVelocity, int m_nWaterL
         StepSoundTime += 100;
     }
 
-    Stats::Steps::Total++;
+    ++Stats::Steps::Total;
 }
 void ResetTimer()
 {

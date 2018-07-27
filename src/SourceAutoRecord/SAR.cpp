@@ -155,6 +155,15 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 
     Tier1::Shutdown();
 
+    if (SAR::PluginFound()) {
+        // SAR has to unhook CEngine some ticks before unloading the module or the game
+        // will crash 100% of the time
+        auto unload = std::string("plugin_unload ") + std::to_string(plugin->index);
+        Engine::SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);
+    } else {
+        console->Warning("SAR: This should never happen :(\n");
+    }
+
     console->Print("Cya :)\n");
     delete Speedrun::timer;
     delete plugin;

@@ -8,29 +8,40 @@ using namespace Tier1;
 
 struct Variable {
 private:
-    ConVar* ptr = nullptr;
-    std::unique_ptr<uint8_t[]> data;
-    bool isRegistered = false;
-    int originalFlags = 0;
+    ConVar* ptr;
+    bool isRegistered;
+    bool isReference;
+    int originalFlags;
 
     using _ShouldRegisterCallback = bool (*)();
-    _ShouldRegisterCallback shouldRegister = NULL;
+    _ShouldRegisterCallback shouldRegister;
 
     static std::vector<Variable*> list;
 
 public:
-    Variable() = default;
-    Variable(const Variable& other) = delete;
-    Variable(Variable&& other) = default;
-    Variable& operator=(const Variable& other) = delete;
-    Variable& operator=(Variable&& other) = default;
-
+    Variable()
+        : ptr(nullptr)
+        , isRegistered(false)
+        , isReference(nullptr)
+        , originalFlags(0)
+        , shouldRegister(nullptr)
+    {
+    }
+    ~Variable()
+    {
+        if (!isReference) {
+            delete ptr;
+        }
+    }
     Variable(const char* name)
+        : Variable()
     {
         this->ptr = reinterpret_cast<ConVar*>(FindCommandBase(g_pCVar->GetThisPtr(), name));
+        this->isReference = true;
     }
     // Boolean or String
     Variable(const char* name, const char* value, const char* helpstr, int flags = FCVAR_NEVER_AS_STRING)
+        : Variable()
     {
         if (flags != 0)
             Create(name, value, flags, helpstr, true, 0, true, 1);
@@ -39,23 +50,20 @@ public:
     }
     // Float
     Variable(const char* name, const char* value, float min, const char* helpstr, int flags = FCVAR_NEVER_AS_STRING)
+        : Variable()
     {
         Create(name, value, flags, helpstr, true, min);
     }
     // Float
     Variable(const char* name, const char* value, float min, float max, const char* helpstr, int flags = FCVAR_NEVER_AS_STRING)
+        : Variable()
     {
         Create(name, value, flags, helpstr, true, min, true, max);
     }
     void Create(const char* name, const char* value, int flags = 0, const char* helpstr = "", bool hasmin = false, float min = 0,
         bool hasmax = false, float max = 0)
     {
-        auto size = sizeof(ConVar);
-        data = std::make_unique<uint8_t[]>(size);
-        this->ptr = reinterpret_cast<ConVar*>(data.get());
-        std::memset(this->ptr, 0, size);
-
-        // Store data temporarily so we can "register" it later in the engine
+        this->ptr = new ConVar();
         this->ptr->m_pszName = name;
         this->ptr->m_pszDefaultValue = value;
         this->ptr->m_nFlags = flags;
@@ -131,51 +139,54 @@ public:
             this->ptr->m_nFlags = this->originalFlags;
         }
     }
-    Variable* UniqueFor(_ShouldRegisterCallback callback)
+    void UniqueFor(_ShouldRegisterCallback callback)
     {
-        shouldRegister = callback;
-        return this;
+        this->shouldRegister = callback;
     }
     void Register()
     {
-        ConVarCtor(this->ptr,
-            this->ptr->m_pszName,
-            this->ptr->m_pszDefaultValue,
-            this->ptr->m_nFlags,
-            this->ptr->m_pszHelpString,
-            this->ptr->m_bHasMin,
-            this->ptr->m_fMinVal,
-            this->ptr->m_bHasMax,
-            this->ptr->m_fMaxVal);
-        isRegistered = true;
+        if (!this->isRegistered) {
+            ConVarCtor(this->ptr,
+                this->ptr->m_pszName,
+                this->ptr->m_pszDefaultValue,
+                this->ptr->m_nFlags,
+                this->ptr->m_pszHelpString,
+                this->ptr->m_bHasMin,
+                this->ptr->m_fMinVal,
+                this->ptr->m_bHasMax,
+                this->ptr->m_fMaxVal);
+        }
+        this->isRegistered = true;
     }
     void Unregister()
     {
-        if (isRegistered)
+        if (this->isRegistered) {
             UnregisterConCommand(g_pCVar->GetThisPtr(), this->ptr);
+        }
+        this->isRegistered = false;
     }
     static int RegisterAll()
     {
         auto result = 0;
-        for (auto var : Variable::list) {
+        for (const auto& var : Variable::list) {
             if (var->shouldRegister && !var->shouldRegister()) {
                 continue;
             }
             var->Register();
-            result++;
+            ++result;
         }
         return result;
     }
     static void UnregisterAll()
     {
-        for (auto var : Variable::list) {
+        for (const auto& var : Variable::list) {
             var->Unregister();
         }
     }
     static Variable* Find(const char* name)
     {
-        for (auto var : Variable::list) {
-            if (std::strcmp(var->GetPtr()->m_pszName, name) == 0) {
+        for (const auto& var : Variable::list) {
+            if (!std::strcmp(var->GetPtr()->m_pszName, name)) {
                 return var;
             }
         }

@@ -73,8 +73,8 @@ DETOUR_T(bool, CheckJumpButton)
 
     if (result) {
         JumpedLastTime = true;
-        Stats::Jumps::Total++;
-        Stats::Steps::Total++;
+        ++Stats::Jumps::Total;
+        ++Stats::Steps::Total;
         Stats::Jumps::StartTrace(Client::GetAbsOrigin());
     }
 
@@ -204,7 +204,7 @@ DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, 
         auto m_iName = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iName);
         auto m_iClassname = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iClassname);
 
-        Speedrun::timer->CheckRules(Engine::m_szLevelName, m_iName, Engine::tickcount);
+        Speedrun::timer->CheckRules(m_iName, Engine::tickcount);
 
         if (print) {
             console->Print("[%i] %s (%s) (activator)\n", Engine::GetSessionTick(), m_iName, m_iClassname);
@@ -252,9 +252,8 @@ void Hook()
 
             auto ctor = g_GameMovement->GetOriginalFunction<uintptr_t>(0);
             auto baseCtor = Memory::ReadAbsoluteAddress(ctor + Offsets::AirMove_Offset1);
-            auto baseOffset = *reinterpret_cast<uintptr_t*>(baseCtor + Offsets::AirMove_Offset2);
-            auto airMoveAddr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
-            Original::AirMoveBase = reinterpret_cast<_AirMove>(airMoveAddr);
+            auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
+            Original::AirMoveBase = Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
 
 #ifdef _WIN32
             auto airMoveMid = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + AirMove_Mid_Offset;
@@ -274,12 +273,14 @@ void Hook()
         }
 
         auto FullTossMove = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::FullTossMove);
-        gpGlobals = **reinterpret_cast<void***>(FullTossMove + Offsets::gpGlobals);
+        gpGlobals = Memory::DerefDeref<void*>(FullTossMove + Offsets::gpGlobals);
 
 #ifdef _WIN32
-        auto fio = SAR::Find("FireOutput");
-        if (fio.Found) {
-            MH_HOOK(FireOutput, fio.Address);
+        if (Game::Version == Game::Portal2) {
+            auto fio = SAR::Find("FireOutput");
+            if (fio.Found) {
+                MH_HOOK(FireOutput, fio.Address);
+            }
         }
 #endif
     }
@@ -288,8 +289,7 @@ void Hook()
     CREATE_VMT(Interfaces::IServerGameDLL, g_ServerGameDLL)
     {
         auto Think = g_ServerGameDLL->GetOriginalFunction<uintptr_t>(Offsets::Think);
-        auto addr = Memory::ReadAbsoluteAddress(Think + Offsets::UTIL_PlayerByIndex);
-        UTIL_PlayerByIndex = reinterpret_cast<_UTIL_PlayerByIndex>(addr);
+        UTIL_PlayerByIndex = Memory::ReadAbsoluteAddress<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex);
     }
 }
 

@@ -60,7 +60,7 @@ void* Get(const char* filename, const char* interfaceSymbol)
     auto s_pInterfaceRegs = **reinterpret_cast<InterfaceReg***>(CreateInterfaceInternal + s_pInterfaceRegs_Offset);
 
     void* result = nullptr;
-    for (auto current = s_pInterfaceRegs; current; current = current->m_pNext) {
+    for (auto& current = s_pInterfaceRegs; current; current = current->m_pNext) {
         if (strncmp(current->m_pName, interfaceSymbol, strlen(interfaceSymbol)) == 0) {
             result = current->m_CreateFn();
             //console->DevMsg("SAR: Found interface %s at %p in %s!\n", current->m_pName, result, filename);

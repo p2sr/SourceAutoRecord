@@ -16,7 +16,7 @@
 #define MSG_SYMBOL "Msg"
 #define WARNING_SYMBOL "Warning"
 
-#define SAR_PRINT_COLOR Color(247, 235, 69)
+#define SAR_PRINT_COLOR Color(247, 214, 68)
 #define SAR_PRINT_ACTIVE_COLOR Color(110, 247, 76)
 
 class Console {

@@ -38,11 +38,10 @@ bool Save()
     SAVE_CVAR(sar_sr_hud_x, Int);
     SAVE_CVAR(sar_sr_hud_y, Int);
     SAVE_CVAR(sar_sr_hud_size, Int);
-    SAVE_CVAR(sar_sr_hud_bg_color, String);
+    SAVE_CVAR(sar_sr_hud_color, String);
     SAVE_CVAR(sar_sr_hud_font_color, String);
     SAVE_CVAR(sar_sr_hud_font_index, Int);
-    SAVE_CVAR(sar_sr_hud_splits, Int);
-    SAVE_CVAR(sar_sr_hud_splits_direction, String);
+    SAVE_CVAR(sar_sr_hud_splits, String);
     SAVE_CVAR(sar_sr_hud_splits_delta, Int);
     SAVE_CVAR(sar_sr_hud_pace, Int);
 

@@ -28,14 +28,14 @@ enum class TimerState {
 class Timer;
 
 class TimerRule {
-private:
+public:
     const char* map;
     const char* activator;
     TimerAction action;
 
 public:
     TimerRule(const char* map, const char* activator, TimerAction action);
-    void Check(const char* map, const char* activator, const int* engineTicks, Timer* timer);
+    void Check(Timer* timer, const char* activator, const int* engineTicks);
 };
 
 typedef std::vector<TimerRule> TimerRules;
@@ -71,13 +71,14 @@ class Timer;
 
 class TimerInterface {
 public:
-    char start[16] = "SAR_TIMER_START"; // 0-15
+    char start[16]; // 0-15
     int total; // 16
     float ipt; // 20
     TimerAction action; // 24
-    char end[14] = "SAR_TIMER_END"; // 28-41
+    char end[14]; // 28-41
 
 public:
+    TimerInterface();
     void SetIntervalPerTick(const float* ipt);
     void Update(Timer* timer);
     void SetAction(TimerAction action);
@@ -107,9 +108,11 @@ public:
     void Update(const int* engineTicks, const bool* engineIsPaused, const char* engineMap);
     void Stop();
     void LoadRules(TimerRules rules);
-    void CheckRules(const char* map, const char* activator, const int* engineTicks);
+    TimerRules* Timer::GetRules();
+    void CheckRules(const char* activator, const int* engineTicks);
     int GetSession();
     int GetTotal();
+    char* GetCurrentMap();
     void SetIntervalPerTick(const float* ipt);
     float GetIntervalPerTick();
     TimerResult* GetResult();

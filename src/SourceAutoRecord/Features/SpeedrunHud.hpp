@@ -9,7 +9,6 @@
 #include "Command.hpp"
 #include "Game.hpp"
 
-// TODO
 namespace SpeedrunHud {
 
 Color GetColor(const char* source)
@@ -38,7 +37,24 @@ void Draw()
     auto total = Speedrun::timer->GetTotal();
     auto ipt = Speedrun::timer->GetIntervalPerTick();
 
-    Surface::Draw(Scheme::GetDefaultFont(), 0, 0, Color(255, 255, 255, 255), "%s", Speedrun::Timer::Format(total * ipt).c_str());
+    auto xOffset = Cheats::sar_sr_hud_x.GetInt();
+    auto yOffset = Cheats::sar_sr_hud_y.GetInt();
+    auto color = GetColor(Cheats::sar_sr_hud_color.GetString());
+    auto fontColor = GetColor(Cheats::sar_sr_hud_font_color.GetString());
+
+    auto size = Cheats::sar_sr_hud_size.GetInt();
+    auto font = Scheme::GetDefaultFont() + Cheats::sar_sr_hud_font_index.GetInt();
+
+    /*Surface::DrawRect(color,
+        xOffset,
+        yOffset,
+        xOffset + (size * 4),
+        yOffset + size);*/
+    Surface::DrawTxt(Scheme::GetDefaultFont(),
+        xOffset,
+        yOffset,
+        fontColor,
+        "%s", Speedrun::Timer::Format(total * ipt).c_str());
 
     Surface::FinishDrawing();
 }

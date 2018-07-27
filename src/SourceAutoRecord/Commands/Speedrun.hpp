@@ -25,12 +25,12 @@ CON_COMMAND(sar_speedrun_result, "Prints result of speedrun.\n")
         }
 
         auto segments = 0;
-        for (auto split : splits) {
+        for (auto& split : splits) {
             auto completedIn = split.GetTotal();
             console->Print("%s in %s (%i)\n", split.map, Speedrun::Timer::Format(completedIn * ipt).c_str(), completedIn);
-            for (auto seg : split.segments) {
+            for (const auto& seg : split.segments) {
                 console->Msg("-> %s (%i)\n", Speedrun::Timer::Format(seg.session * ipt).c_str(), seg.session);
-                segments++;
+                ++segments;
             }
         }
 
@@ -90,5 +90,20 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "", 0, 0, csv)
         console->Print("Imported personal best!\n");
     } else {
         console->Warning("Failed to import file!\n");
+    }
+}
+
+CON_COMMAND(sar_speedrun_rules, "Prints loaded rules which the timer will follow.\n")
+{
+    auto rules = Speedrun::timer->GetRules();
+    if (rules->size() == 0) {
+        console->Print("No rules loaded!\n");
+        return;
+    }
+
+    for (const auto& rule : *rules) {
+        console->Print("%s\n", rule.map);
+        console->Print("    -> Event: %s\n", rule.activator);
+        console->Print("    -> Type:  %s\n", (rule.action == Speedrun::TimerAction::Start) ? "Start" : "Stop");
     }
 }

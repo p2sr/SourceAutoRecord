@@ -12,7 +12,6 @@ using namespace Patterns;
 void Patterns()
 {
     Init();
-    Create(MODULE("engine"), "FrameUpdate");
 
     // engine.dll
 
@@ -70,9 +69,9 @@ void Offsets()
 {
     // engine.dll
 
-    InternalSetValue = 14; // ConVar
-    InternalSetFloatValue = 15; // ConVar
-    InternalSetIntValue = 16; // ConVar
+    InternalSetValue = 10; // ConVar
+    InternalSetFloatValue = 11; // ConVar
+    InternalSetIntValue = 12; // ConVar
     GetScreenSize = 5; // CEngineClient
     ClientCmd = 7; // CEngineClient
     GetLocalPlayer = 12; // CEngineClient

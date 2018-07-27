@@ -97,10 +97,9 @@ Mappers can use this for accurate timing, [see below](#mapping).
 - `sar_speedrun_result` prints result of timer
 - `sar_speedrun_export <file>` exports timer result to a .csv file
 - `sar_speedrun_import <file>` imports timer result as personal best for comparison
-- `sar_speedrun_autoexport <0-2>` exports result automatically on speedrun completion
-- `sar_speedrun_autosplit <0-1>` splits automatically on map change
-- `sar_speedrun_autoreset <0-1>` resets timer automatically
 - `sar_speedrun_rules` prints loaded rules which the timer will follow
+
+Currently supported games: Portal 2
 
 The timer has its own HUD, [see below](#speedrun-hud).
 Here is a basic [ASL script](https://gist.github.com/NeKzor/6db7ca6a28ed55fbcce7d8af7edf0f18) for [LiveSplit](https://livesplit.github.com) which connects to this speedrun timer.
@@ -153,27 +152,13 @@ Here is a basic [ASL script](https://gist.github.com/NeKzor/6db7ca6a28ed55fbcce7
 - `sar_sr_hud_x` x offset in pixels
 - `sar_sr_hud_y` y offset in pixels
 - `sar_sr_hud_size` size of timer
-- `sar_sr_hud_bg_color` background color of timer
+- `sar_sr_hud_color` background color of timer
 - `sar_sr_hud_font_color` font color of timer
 - `sar_sr_hud_font_index` font index of timer
-- `sar_sr_hud_splits <0-1>` draws timer splits
-- `sar_sr_hud_splits_direction <top, left, right, bottom` draws splits on one side of the timer
+- `sar_sr_hud_splits <top, left, right, bottom>` draws timer splits
 - `sar_sr_hud_splits_delta` draws split delta compared to personal best
-- `sar_sr_hud_pace` draws current pace compared to personal best
+- `sar_sr_hud_pace <0-1>` draws current pace compared to personal best
 - `sar_sr_hud_setpos <top, center, bottom> <left, center, right>` adjusts x and y offset automatically for the screen
-
-Variable sar_sr_hud("sar_sr_hud", "0", 0, "Draws speedrun timer.\n");
-Variable sar_sr_hud_x("sar_sr_hud_x", "0", 0, "X offset of speedrun timer HUD.\n");
-Variable sar_sr_hud_y("sar_sr_hud_y", "0", 0, "Y offset of speedrun timer HUD.\n");
-Variable ("sar_sr_hud_size", "100", 0, "Size of speedrun timer HUD.\n");
-Variable ("sar_sr_hud_bg_color", "0 0 0 233", "RGBA background color of speedrun timer HUD.\n", 0);
-Variable ("sar_sr_hud_font_color", "255 255 255 255", "RGBA font color of speedrun timer HUD.\n", 0);
-Variable ("sar_sr_hud_font_index", "1", 0, "Font index of speedrun timer HUD.\n");
-Variable ("sar_sr_hud_splits", "0", 0, ".\n");
-Variable ("sar_sr_hud_splits_direction", "default", "Splits direction for speedrun timer HUD. "
-    "Usage: sar_sr_hud_splits_direction <top, left, right or bottom>. Default is bottom.\n");
-Variable ("sar_sr_hud_splits_delta", "0", 0, "Draws split delta compared to personal best for speedrun timer HUD.\n");
-Variable ("sar_sr_hud_pace", "0", 0, " for speedrun timer HUD.\n");
 
 ### Stats
 - `sar_stats_jumps` prints jump stats
@@ -203,8 +188,8 @@ Variable ("sar_sr_hud_pace", "0", 0, " for speedrun timer HUD.\n");
 - `sar_trace_a` saves first location to measure a distance
 - `sar_trace_b` saves second location to measure a distance
 - `sar_trace_result` prints calculated distance between saved locations
-- `sar_debug_entitiy_output` prints entity output data, similar to developer
-- `sar_debug_game_events` prints game event data, similar to net_showevents
+- `sar_debug_entitiy_output <0-1>` prints entity output data, similar to developer (Portal 2)
+- `sar_debug_game_events <0-1>` prints game event data, similar to net_showevents (Portal 2)
 
 ##### Unlocked
 - `sv_bonus_challenge` (Portal 2)

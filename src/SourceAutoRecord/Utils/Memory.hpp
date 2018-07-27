@@ -273,6 +273,12 @@ inline T Deref(uintptr_t address)
     return *reinterpret_cast<T*>(address);
 }
 
+template <typename T = void*>
+inline T DerefDeref(uintptr_t address)
+{
+    return **reinterpret_cast<T**>(address);
+}
+
 static uintptr_t ToAbsoluteAddress(const char* moduleName, int relative)
 {
     auto info = ModuleInfo();

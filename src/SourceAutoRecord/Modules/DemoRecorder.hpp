@@ -62,7 +62,7 @@ namespace DemoRecorder {
             // Tell recorder to keep recording
             if (*m_bLoadgame) {
                 *m_bRecording = true;
-                (*m_nDemoNumber)++;
+                ++(*m_nDemoNumber);
                 console->DevMsg("SAR: Recording!");
             }
         } else {
@@ -74,7 +74,8 @@ namespace DemoRecorder {
 
     void Hook(void* demorecorder)
     {
-        CREATE_VMT(demorecorder, s_ClientDemoRecorder) {
+        CREATE_VMT(demorecorder, s_ClientDemoRecorder)
+        {
             HOOK(s_ClientDemoRecorder, SetSignonState);
             HOOK(s_ClientDemoRecorder, StopRecording);
 

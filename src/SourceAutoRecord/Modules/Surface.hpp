@@ -49,7 +49,7 @@ int GetFontLength(HFont font, const char* fmt, ...)
     va_end(argptr);
     return DrawTextLen(matsurface->GetThisPtr(), font, data);
 }
-void Draw(HFont font, int x, int y, Color clr, const char* fmt, ...)
+void DrawTxt(HFont font, int x, int y, Color clr, const char* fmt, ...)
 {
     va_list argptr;
     va_start(argptr, fmt);
@@ -63,7 +63,7 @@ void DrawRect(Color clr, int x0, int y0, int x1, int y1)
     DrawSetColor(matsurface->GetThisPtr(), clr.r(), clr.g(), clr.b(), clr.a());
     DrawFilledRect(matsurface->GetThisPtr(), x0, y0, x1, y1);
 }
-void DrawRect(Color clr, int x0, int y0, int x1, int y1, HFont font, Color fontClr, const char* fmt, ...)
+void DrawRectAndCenterTxt(Color clr, int x0, int y0, int x1, int y1, HFont font, Color fontClr, const char* fmt, ...)
 {
     DrawRect(clr, x0, y0, x1, y1);
 
@@ -80,7 +80,7 @@ void DrawRect(Color clr, int x0, int y0, int x1, int y1, HFont font, Color fontC
     auto xc = x0 + ((x1 - x0) / 2);
     auto yc = y0 + ((y1 - y0) / 2);
 
-    Draw(font, xc - (tw / 2), yc - (th / 2), fontClr, data);
+    DrawTxt(font, xc - (tw / 2), yc - (th / 2), fontClr, data);
 }
 
 void Hook()

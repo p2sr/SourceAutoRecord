@@ -131,7 +131,7 @@ CON_COMMAND(sar_tas_export, "Export TAS replay to a file.\n")
 
     file << SAR_TAS_HEADER << std::endl;
 
-    for (auto frame : TAS2::Frames) {
+    for (const auto& frame : TAS2::Frames) {
         file.write((char*)&frame.buttons, sizeof(frame.buttons));
         file.write((char*)&frame.forwardmove, sizeof(frame.forwardmove));
         file.write((char*)&frame.impulse, sizeof(frame.impulse));
@@ -183,8 +183,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_tas_import, "", 0, 0, str)
         }
 
         console->Print("Imported TAS replay!\n");
-    }
-    else {
+    } else {
         console->Print("Invalid file format!\n");
     }
 

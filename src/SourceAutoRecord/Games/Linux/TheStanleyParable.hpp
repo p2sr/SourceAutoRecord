@@ -56,6 +56,7 @@ void Offsets()
     Portal2::Offsets();
 
     // engine.so
+    GetActiveSplitScreenPlayerSlot = 127; // CEngineClient (TODO)
     tickcount = 74; // CClientState::ProcessTick
     interval_per_tick = 82; // CClientState::ProcessTick
     m_szLevelName = 56; // CEngineTool::GetCurrentMap
@@ -65,6 +66,7 @@ void Offsets()
     FrameUpdate = 25; // HostState_Frame
     State_Shutdown = 215; // CHostState::FrameUpdate
     eng = 12; // CHostState::State_Shutdown
+    Cbuf_AddText = 46; // CEngine::ClientCmd (TODO)
 
     // server.so
 

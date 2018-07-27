@@ -129,7 +129,7 @@ void Draw()
         int x = xOffset + (col * size) + ((col + 1) * padding);
         int y = yOffset + (row * size) + ((row + 1) * padding);
         if (mode >= value && (button || shadow)) {
-            Surface::DrawRect((button) ? color : shadowColor,
+            Surface::DrawRectAndCenterTxt((button) ? color : shadowColor,
                 x + ((col + 1) * padding),
                 y + ((row + 1) * padding),
                 x + ((((col + 1) * padding) + size) * length),
@@ -139,7 +139,7 @@ void Draw()
                 "%c",
                 symbols[element]);
         }
-        element++;
+        ++element;
     };
 
     DrawElement(1, mvForward, col2, row0);

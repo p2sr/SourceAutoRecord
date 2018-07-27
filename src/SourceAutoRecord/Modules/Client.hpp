@@ -60,19 +60,19 @@ int GetFlags()
 DETOUR(HudUpdate, unsigned int a2)
 {
     if (TAS::IsRunning) {
-        for (auto tas = TAS::Frames.begin(); tas != TAS::Frames.end();) {
+        for (auto& tas = TAS::Frames.begin(); tas != TAS::Frames.end();) {
             tas->FramesLeft--;
             if (tas->FramesLeft <= 0) {
-                console->DevMsg("[%i] %s\n", Engine::CurrentFrame, tas->Command.c_str());
+                console->DevMsg("[%i] %s\n", Engine::currentFrame, tas->Command.c_str());
                 Engine::ExecuteCommand(tas->Command.c_str());
                 tas = TAS::Frames.erase(tas);
             } else {
-                tas++;
+                ++tas;
             }
         }
     }
 
-    Engine::CurrentFrame++;
+    ++Engine::currentFrame;
     return Original::HudUpdate(thisptr, a2);
 }
 
@@ -106,7 +106,8 @@ void Hook()
 {
     bool readJmp = false;
 #ifdef _WIN32
-    readJmp = Game::Version == Game::TheStanleyParable;
+    readJmp = Game::Version == Game::TheStanleyParable
+        || Game::Version == Game::TheBeginnersGuide;
 #endif
 
     CREATE_VMT(Interfaces::IBaseClientDLL, clientdll)
@@ -132,29 +133,27 @@ void Hook()
         } else if (Game::Version == Game::TheStanleyParable) {
             VMT g_Input;
             auto IN_ActivateMouse = clientdll->GetOriginalFunction<uintptr_t>(Offsets::IN_ActivateMouse, readJmp);
-            auto g_InputAddr = **reinterpret_cast<void***>(IN_ActivateMouse + Offsets::g_Input);
+            auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
 
             CREATE_VMT(g_InputAddr, g_Input)
             {
                 auto GetButtonBits = g_Input->GetOriginalFunction<uintptr_t>(Offsets::GetButtonBits, readJmp);
-                in_jump = *reinterpret_cast<void**>((uintptr_t)GetButtonBits + Offsets::in_jump);
+                in_jump = Memory::Deref<void*>((uintptr_t)GetButtonBits + Offsets::in_jump);
 
                 auto JoyStickApplyMovement = g_Input->GetOriginalFunction<uintptr_t>(Offsets::JoyStickApplyMovement, readJmp);
-                auto keyDownAddr = Memory::ReadAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyDown);
-                auto keyUpAddr = Memory::ReadAbsoluteAddress(JoyStickApplyMovement + Offsets::KeyUp);
-                KeyDown = reinterpret_cast<_KeyDown>(keyDownAddr);
-                KeyUp = reinterpret_cast<_KeyUp>(keyUpAddr);
+                KeyDown = Memory::ReadAbsoluteAddress<_KeyDown>(JoyStickApplyMovement + Offsets::KeyDown);
+                KeyUp = Memory::ReadAbsoluteAddress<_KeyUp>(JoyStickApplyMovement + Offsets::KeyUp);
             }
         }
 
-        auto HudProcessInput = clientdll->GetOriginalFunction<uintptr_t>(Offsets::HudProcessInput);
+        auto HudProcessInput = clientdll->GetOriginalFunction<uintptr_t>(Offsets::HudProcessInput, readJmp);
         void* clientMode = nullptr;
         if (Game::IsPortal2Engine()) {
             typedef void* (*_GetClientMode)();
-            auto GetClientMode = reinterpret_cast<_GetClientMode>(Memory::ReadAbsoluteAddress(HudProcessInput + Offsets::GetClientMode));
+            auto GetClientMode = Memory::ReadAbsoluteAddress<_GetClientMode>(HudProcessInput + Offsets::GetClientMode);
             clientMode = GetClientMode();
         } else {
-            clientMode = **reinterpret_cast<void***>(HudProcessInput + Offsets::GetClientMode);
+            clientMode = Memory::DerefDeref<void*>(HudProcessInput + Offsets::GetClientMode);
         }
 
         CREATE_VMT(clientMode, g_pClientMode)

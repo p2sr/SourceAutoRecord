@@ -10,25 +10,22 @@ TimerRule::TimerRule(const char* map, const char* activator, TimerAction action)
     this->activator = activator;
     this->action = action;
 }
-void TimerRule::Check(const char* map, const char* activator, const int* engineTicks, Timer* timer)
+void TimerRule::Check(Timer* timer, const char* activator, const int* engineTicks)
 {
-    if (!map || !activator)
+    if (std::strcmp(this->map, timer->GetCurrentMap()))
         return;
-    if (std::strcmp(this->activator, activator))
+    if (!activator || std::strcmp(this->activator, activator))
         return;
-    if (std::strcmp(this->map, map))
-        return;
-
-    if (action == TimerAction::Start)
+    if (this->action == TimerAction::Start)
         timer->Start(engineTicks);
-    else if (action == TimerAction::End)
+    else if (this->action == TimerAction::End)
         timer->Stop();
 }
 
 int TimerSplit::GetTotal()
 {
     auto result = 0;
-    for (auto seg : this->segments) {
+    for (const auto& seg : this->segments) {
         result += seg.session;
     }
     return result;
@@ -37,18 +34,18 @@ int TimerSplit::GetTotal()
 void TimerResult::AddSplit(int tick, char* map)
 {
     this->prevSplit = this->curSplit;
-    this->curSplit = TimerSplit{ tick, map };
+    this->curSplit = TimerSplit { tick, map };
     this->splits.push_back(this->curSplit);
 }
 void TimerResult::AddSegment(int tick)
 {
     if (!this->splits.empty()) {
-        this->splits.back().segments.push_back(TimerSegment{ tick });
+        this->splits.back().segments.push_back(TimerSegment { tick });
     }
 }
 void TimerResult::UpdateSplit(char* map)
 {
-    for (auto split : this->splits) {
+    for (const auto& split : this->splits) {
         if (!std::strcmp(map, split.map)) {
             this->prevSplit = this->curSplit;
             this->curSplit = split;
@@ -61,6 +58,14 @@ void TimerResult::Reset()
     this->splits.clear();
 }
 
+TimerInterface::TimerInterface()
+    : start("SAR_TIMER_START")
+    , total(0)
+    , ipt(0)
+    , action(TimerAction::Unknown)
+    , end("SAR_TIMER_END")
+{
+}
 void TimerInterface::SetIntervalPerTick(const float* ipt)
 {
     this->ipt = *ipt;
@@ -117,7 +122,7 @@ void Timer::Update(const int* engineTicks, const bool* engineIsPaused, const cha
 {
     if (!engineTicks)
         return;
-    if (!engineMap && std::strlen(engineMap) != 0)
+    if (!engineMap || std::strlen(engineMap) == 0)
         return;
     if (!engineIsPaused)
         return;
@@ -129,7 +134,7 @@ void Timer::Update(const int* engineTicks, const bool* engineIsPaused, const cha
     }
 
     if (this->IsRunning()) {
-        if (engineIsPaused) {
+        if (*engineIsPaused) {
             // Completed segment, save time from previous tick
             if (this->state == TimerState::Running) {
                 this->state = TimerState::Paused;
@@ -163,10 +168,14 @@ void Timer::LoadRules(TimerRules rules)
 {
     *this->rules = rules;
 }
-void Timer::CheckRules(const char* map, const char* activator, const int* engineTicks)
+TimerRules* Timer::GetRules()
 {
-    for (auto rule : *this->rules) {
-        rule.Check(map, activator, engineTicks, this);
+    return this->rules.get();
+}
+void Timer::CheckRules(const char* activator, const int* engineTicks)
+{
+    for (auto& rule : *this->rules) {
+        rule.Check(this, activator, engineTicks);
     }
 }
 int Timer::GetSession()
@@ -176,6 +185,10 @@ int Timer::GetSession()
 int Timer::GetTotal()
 {
     return this->total;
+}
+char* Timer::GetCurrentMap()
+{
+    return this->map;
 }
 void Timer::SetIntervalPerTick(const float* ipt)
 {
@@ -211,13 +224,13 @@ bool Timer::ExportResult(std::string filePath, bool pb)
     auto segment = 0;
     auto ipt = Speedrun::timer->GetIntervalPerTick();
 
-    for (auto split : result->splits) {
+    for (auto& split : result->splits) {
         auto total = split.entered;
         auto totalTime = total * ipt;
         auto ticks = split.GetTotal();
         auto time = ticks * ipt;
 
-        for (auto seg : split.segments) {
+        for (const auto& seg : split.segments) {
             file << split.map << ","
                  << seg.session << ","
                  << (seg.session * ipt) << ","

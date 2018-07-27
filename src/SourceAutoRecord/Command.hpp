@@ -5,28 +5,38 @@ using namespace Tier1;
 
 struct Command {
 private:
-    ConCommand* ptr = nullptr;
-    std::unique_ptr<uint8_t[]> data;
-    bool isRegistered = false;
+    ConCommand* ptr;
+    bool isRegistered;
+    bool isReference;
 
     using _ShouldRegisterCallback = bool (*)();
-    _ShouldRegisterCallback shouldRegister = NULL;
+    _ShouldRegisterCallback shouldRegister;
 
     static std::vector<Command*> list;
 
 public:
+    Command()
+        : ptr(nullptr)
+        , isRegistered(false)
+        , isReference(false)
+        , shouldRegister(nullptr)
+    {
+    }
+    ~Command()
+    {
+        if (!isReference) {
+            delete ptr;
+        }
+    }
     Command(const char* name)
     {
         this->ptr = reinterpret_cast<ConCommand*>(FindCommandBase(g_pCVar->GetThisPtr(), name));
+        this->isReference = true;
     }
-    Command(const char* pName, _CommandCallback callback, const char* pHelpString, int flags = 0, _CommandCompletionCallback completionFunc = nullptr)
+    Command(const char* pName, _CommandCallback callback, const char* pHelpString, int flags = 0,
+        _CommandCompletionCallback completionFunc = nullptr)
     {
-        auto size = sizeof(ConCommand);
-        data = std::make_unique<uint8_t[]>(size);
-        this->ptr = reinterpret_cast<ConCommand*>(data.get());
-        std::memset(this->ptr, 0, size);
-
-        // Store data temporarily so we can "register" it later in the engine
+        this->ptr = new ConCommand();
         this->ptr->m_pszName = pName;
         this->ptr->m_fnCommandCallback = callback;
         this->ptr->m_pszHelpString = pHelpString;
@@ -39,48 +49,51 @@ public:
     {
         return this->ptr;
     }
-    Command* UniqueFor(_ShouldRegisterCallback callback)
+    void UniqueFor(_ShouldRegisterCallback callback)
     {
-        shouldRegister = callback;
-        return this;
+        this->shouldRegister = callback;
     }
     void Register()
     {
-        ConCommandCtor(this->ptr,
-            this->ptr->m_pszName,
-            (void*)this->ptr->m_fnCommandCallback,
-            this->ptr->m_pszHelpString,
-            this->ptr->m_nFlags,
-            (int*)this->ptr->m_fnCompletionCallback);
-        isRegistered = true;
+        if (!this->isRegistered) {
+            ConCommandCtor(this->ptr,
+                this->ptr->m_pszName,
+                (void*)this->ptr->m_fnCommandCallback,
+                this->ptr->m_pszHelpString,
+                this->ptr->m_nFlags,
+                (int*)this->ptr->m_fnCompletionCallback);
+        }
+        this->isRegistered = true;
     }
     void Unregister()
     {
-        if (isRegistered)
+        if (this->isRegistered) {
             UnregisterConCommand(g_pCVar->GetThisPtr(), this->ptr);
+        }
+        this->isRegistered = false;
     }
     static int RegisterAll()
     {
         auto result = 0;
-        for (auto command : Command::list) {
+        for (const auto& command : Command::list) {
             if (command->shouldRegister && !command->shouldRegister()) {
                 continue;
             }
             command->Register();
-            result++;
+            ++result;
         }
         return result;
     }
     static void UnregisterAll()
     {
-        for (auto command : Command::list) {
+        for (const auto& command : Command::list) {
             command->Unregister();
         }
     }
     static Command* Find(const char* name)
     {
-        for (auto command : Command::list) {
-            if (std::strcmp(command->GetPtr()->m_pszName, name) == 0) {
+        for (const auto& command : Command::list) {
+            if (!std::strcmp(command->GetPtr()->m_pszName, name)) {
                 return command;
             }
         }
@@ -153,4 +166,10 @@ std::vector<Command*> Command::list;
     if (c_##name.GetPtr()) {                                                         \
         c_##name.GetPtr()->m_bHasCompletionCallback = true;                          \
         c_##name.GetPtr()->m_fnCompletionCallback = Commands::name##_CompletionFunc; \
+    }
+#define DEACTIVATE_AUTOCOMPLETEFILE(name)                    \
+    auto c_##name = Command(#name);                          \
+    if (c_##name.GetPtr()) {                                 \
+        c_##name.GetPtr()->m_bHasCompletionCallback = false; \
+        c_##name.GetPtr()->m_fnCompletionCallback = nullptr; \
     }

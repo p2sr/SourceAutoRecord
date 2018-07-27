@@ -17,6 +17,8 @@
 #define SAR_VERSION "1.7"
 #define SAR_BUILD __TIME__ " " __DATE__
 
+#define SAFE_UNLOAD_TICK_DELAY 33
+
 namespace SAR {
 
 std::thread findPluginThread;

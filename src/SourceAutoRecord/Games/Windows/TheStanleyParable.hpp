@@ -28,6 +28,11 @@ void Patterns()
 
     Inherit("AutoCompletionFunc", "The Stanley Parable Build 5454", "CBaseAutoCompleteFileList::AutoCompletionFunc");
 
+    // \x55\x8B\xEC\xF3\x0F\x10\x45\x00\x51\xB9\x00\x00\x00\x00\xF3\x0F\x11\x04\x24\xE8\x00\x00\x00\x00\x5D\xC3 xxxxxxx?xx????xxxxxx????xx
+    Add("HostState_Frame", "The Stanley Parable Build 5454",
+        "HostState_Frame",
+        "55 8B EC F3 0F 10 45 ? 51 B9 ? ? ? ? F3 0F 11 04 24 E8 ? ? ? ? 5D C3");
+
     // vguimatsurface.dll
 
     Inherit("StartDrawing", "The Stanley Parable Build 5454", "CMatSystemSurface::StartDrawing");
@@ -43,17 +48,23 @@ void Offsets()
     interval_per_tick = 73; // CClientState::ProcessTick
     Disconnect = 16; //  CClientState
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
+    hoststate = 10; // HostState_Frame
+    FrameUpdate = 20; // HostState_Frame
+    eng = 284; // CHostState::FrameUpdate
 
     // client.dll
 
-    DrawColoredText = 159; // CFPSPanel::Paint
-    GetButtonBits = 2;
-    IN_ActivateMouse = 15;
+    IN_ActivateMouse = 15; // CHLClient
     g_Input = 2; // CHLClient::IN_ActivateMouse
+    GetButtonBits = 2; //CInput
     JoyStickApplyMovement = 60; // CInput
     in_jump = 420; // CInput::GetButtonBits
     KeyDown = 255; // CInput::JoyStickApplyMovement
     KeyUp = 234; // CInput::JoyStickApplyMovement
+
+    // vguimatsurface.dll
+    DrawColoredText = 159; // CMatSystemSurface
+    DrawTextLen = 162; // CMatSystemSurface
 }
 void Rules()
 {

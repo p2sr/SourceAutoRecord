@@ -20,7 +20,7 @@ public:
     {
         //DumpGameEvents();
 
-        for (auto event : EVENTS) {
+        for (const auto& event : EVENTS) {
             auto result = Engine::AddListener(Engine::s_GameEventManager->GetThisPtr(), this, event, true);
             if (result) {
                 //console->DevMsg("SAR: Added event listener for %s!\n", event);

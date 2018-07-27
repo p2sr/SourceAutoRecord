@@ -58,13 +58,13 @@ DETOUR(Paint, int mode)
         vsnprintf(data, sizeof(data), fmt, argptr);
         va_end(argptr);
 
-        Surface::Draw(font,
+        Surface::DrawTxt(font,
             xPadding,
             yPadding + elements * (fontSize + spacing),
             textColor,
             data);
 
-        elements++;
+        ++elements;
     };
 
     // cl_showpos replacement
@@ -91,7 +91,7 @@ DETOUR(Paint, int mode)
     }
     // Session
     if (Cheats::sar_hud_session.GetBool()) {
-        auto tick = (Engine::IsInGame) ? Engine::GetSessionTick() : 0;
+        auto tick = (Engine::isInSession) ? Engine::GetSessionTick() : 0;
         auto time = Engine::ToTime(tick);
         DrawElement("session: %i (%.3f)", tick, time);
     }
@@ -100,7 +100,7 @@ DETOUR(Paint, int mode)
     }
     if (Cheats::sar_hud_sum.GetBool()) {
         if (Summary::IsRunning && Cheats::sar_sum_during_session.GetBool()) {
-            auto tick = (Engine::IsInGame) ? Engine::GetSessionTick() : 0;
+            auto tick = (Engine::isInSession) ? Engine::GetSessionTick() : 0;
             auto time = Engine::ToTime(tick);
             DrawElement("sum: %i (%.3f)", Summary::TotalTicks + tick, Engine::ToTime(Summary::TotalTicks) + time);
         } else {
@@ -161,10 +161,10 @@ DETOUR(Paint, int mode)
         DrawElement("trace: %.3f (%.3f/%.3f/%.3f)", result, std::get<0>(xyz), std::get<1>(xyz), std::get<2>(xyz));
     }
     if (Cheats::sar_hud_frame.GetBool()) {
-        DrawElement("frame: %i", Engine::CurrentFrame);
+        DrawElement("frame: %i", Engine::currentFrame);
     }
     if (Cheats::sar_hud_last_frame.GetBool()) {
-        DrawElement("last frame: %i", Engine::LastFrame);
+        DrawElement("last frame: %i", Engine::lastFrame);
     }
 
     Surface::FinishDrawing();
