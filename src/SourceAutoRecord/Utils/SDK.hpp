@@ -230,6 +230,61 @@ struct CEventAction {
     CEventAction* m_pNext; // 24
 };
 
+struct EventQueuePrioritizedEvent_t {
+    float m_flFireTime; // 0
+    char* m_iTarget; // 4
+    char* m_iTargetInput; // 8
+    void* m_pActivator; // 12
+    void* m_pCaller; // 16
+    int m_iOutputID; // 20
+    void* m_pEntTarget; // 24
+    char m_VariantValue[20]; // 28
+    EventQueuePrioritizedEvent_t* m_pNext; // 48
+    EventQueuePrioritizedEvent_t* m_pPrev; // 52
+};
+
+struct CEventQueue {
+    EventQueuePrioritizedEvent_t m_Events; // 0
+    int m_iListCount; // 56
+};
+
+enum MapLoadType_t {
+    MapLoad_NewGame = 0,
+    MapLoad_LoadGame = 1,
+    MapLoad_Transition = 2,
+    MapLoad_Background = 3
+};
+
+struct CGlobalVarsBase {
+    float realtime; // 0
+    int framecount; // 4
+    float absoluteframetime; // 8
+    float curtime; // 12
+    float frametime; // 16
+    int maxClients; // 20
+    int tickcount; // 24
+    float interval_per_tick;
+    float interpolation_amount;
+    int simTicksThisFrame;
+    int network_protocol;
+    void* pSaveData;
+    bool m_bClient;
+    int nTimestampNetworkingBase;
+    int nTimestampRandomizeWindow;
+};
+
+struct CGlobalVars : CGlobalVarsBase {
+    char* mapname;
+    int mapversion;
+    char* startspot;
+    MapLoadType_t eLoadType;
+    bool bMapLoadFailed;
+    bool deathmatch;
+    bool coop;
+    bool teamplay;
+    int maxEntities;
+};
+
 class IGameEvent {
 public:
     virtual ~IGameEvent() {};

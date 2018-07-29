@@ -1,9 +1,5 @@
 #pragma once
-#include <cmath>
-#include <cstring>
-#include <fstream>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -48,34 +44,41 @@ public:
 class TimerSplit {
 public:
     int entered;
-    char* map;
+    int finished;
+    char map[64];
     std::vector<TimerSegment> segments;
 
+    TimerSplit(const int start, const char* map);
+    //void Update(const TimerSegment segment);
     int GetTotal();
 };
 
 class TimerResult {
 public:
     int total;
-    TimerSplit curSplit;
-    TimerSplit prevSplit;
-    std::vector<TimerSplit> splits;
+    TimerSplit* curSplit;
+    TimerSplit* prevSplit;
+    std::vector<TimerSplit*> splits;
 
-    void AddSplit(int tick, char* map);
-    void AddSegment(int tick);
+    TimerResult();
+    void NewSplit(const int started, const char* map);
+    void EndSplit(const int finished);
+    void Split(const int ticks, const char* map);
+    void AddSegment(int ticks);
     void UpdateSplit(char* map);
     void Reset();
+    ~TimerResult();
 };
 
 class Timer;
 
 class TimerInterface {
 public:
-    char start[16]; // 0-15
+    char start[16]; // 0
     int total; // 16
     float ipt; // 20
     TimerAction action; // 24
-    char end[14]; // 28-41
+    char end[14]; // 28
 
 public:
     TimerInterface();
@@ -102,8 +105,9 @@ private:
 
 public:
     Timer();
-    bool IsRunning();
+    bool IsActive();
     void Start(const int* engineTicks);
+    void Pause();
     void Unpause(const int* engineTicks);
     void Update(const int* engineTicks, const bool* engineIsPaused, const char* engineMap);
     void Stop();

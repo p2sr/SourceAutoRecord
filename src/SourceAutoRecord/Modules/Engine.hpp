@@ -169,9 +169,11 @@ void SessionEnded()
     TAS::Reset();
     TAS2::Stop();
     isInSession = false;
+    Speedrun::timer->Pause();
 }
 void SessionChanged(int state)
 {
+    console->Print("state = %i\n", state);
     if (state != prevSignonState && prevSignonState == SignonState::Full) {
         SessionEnded();
     }
@@ -234,20 +236,22 @@ DETOUR(SetSignonState2, int state, int count)
 DETOUR(Frame)
 {
     if (hoststate->m_currentState != prevState) {
+        console->Print("m_currentState = %i\n", hoststate->m_currentState);
         if (hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_SP) {
             SessionEnded();
         } else if (hoststate->m_currentState == HOSTSTATES::HS_RUN
             && !hoststate->m_activeGame
             && !DemoPlayer::IsPlaying()) {
-            console->Print("Session started!\n");
+            console->Print("Session started! (menu)\n");
             Session::Rebase(*tickcount);
             Speedrun::timer->Unpause(tickcount);
         }
     }
     prevState = hoststate->m_currentState;
 
-    if (hoststate->m_activeGame)
+    if (hoststate->m_activeGame) {
         Speedrun::timer->Update(tickcount, m_bLoadgame, m_szLevelName);
+    }
 
     return Original::Frame(thisptr);
 }

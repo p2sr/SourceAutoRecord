@@ -4,7 +4,7 @@
 #include "Console.hpp"
 #include "Engine.hpp"
 
-#include "Features/InputHud.hpp"
+#include "Features/Hud/InputHud.hpp"
 #include "Features/Tas.hpp"
 
 #include "Cheats.hpp"
@@ -79,7 +79,7 @@ DETOUR(HudUpdate, unsigned int a2)
 // ClientModeShared::CreateMove
 DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd)
 {
-    InputHud::SetButtonBits(cmd->buttons);
+    inputHud->SetButtonBits(cmd->buttons);
 
     if (cmd->command_number) {
         if (TAS2::IsPlaying) {

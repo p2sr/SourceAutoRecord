@@ -1,5 +1,15 @@
 #include "Speedrun.hpp"
 
+#include <cmath>
+#include <cstring>
+#include <fstream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include "Modules/Console.hpp"
+
 namespace Speedrun {
 
 class Timer;
@@ -22,31 +32,47 @@ void TimerRule::Check(Timer* timer, const char* activator, const int* engineTick
         timer->Stop();
 }
 
+TimerSplit::TimerSplit(const int ticks, const char* map)
+{
+    this->entered = ticks;
+    std::strcpy(this->map, map);
+    this->segments = std::vector<TimerSegment>();
+}
 int TimerSplit::GetTotal()
 {
-    auto result = 0;
-    for (const auto& seg : this->segments) {
-        result += seg.session;
-    }
-    return result;
+    return this->finished - this->entered;
 }
 
-void TimerResult::AddSplit(int tick, char* map)
+TimerResult::TimerResult()
+    : total(0)
+    , curSplit(nullptr)
+    , prevSplit(nullptr)
+    , splits()
+{
+}
+void TimerResult::NewSplit(const int started, const char* map)
 {
     this->prevSplit = this->curSplit;
-    this->curSplit = TimerSplit { tick, map };
+    this->curSplit = new TimerSplit(started, map);
+}
+void TimerResult::EndSplit(const int finished)
+{
+    this->curSplit->finished = finished;
     this->splits.push_back(this->curSplit);
 }
-void TimerResult::AddSegment(int tick)
+void TimerResult::Split(const int ticks, const char* map)
 {
-    if (!this->splits.empty()) {
-        this->splits.back().segments.push_back(TimerSegment { tick });
-    }
+    this->EndSplit(ticks);
+    this->NewSplit(ticks, map);
+}
+void TimerResult::AddSegment(int ticks)
+{
+    this->curSplit->segments.push_back(TimerSegment { ticks });
 }
 void TimerResult::UpdateSplit(char* map)
 {
     for (const auto& split : this->splits) {
-        if (!std::strcmp(map, split.map)) {
+        if (!std::strcmp(map, split->map)) {
             this->prevSplit = this->curSplit;
             this->curSplit = split;
         }
@@ -55,7 +81,21 @@ void TimerResult::UpdateSplit(char* map)
 void TimerResult::Reset()
 {
     this->total = 0;
-    this->splits.clear();
+    this->prevSplit = nullptr;
+
+    if (this->curSplit) {
+        delete this->curSplit;
+        this->curSplit = nullptr;
+    }
+
+    for (auto it = this->splits.begin(); it != this->splits.end();) {
+        delete *it;
+        it = this->splits.erase(it);
+    }
+}
+TimerResult::~TimerResult()
+{
+    this->Reset();
 }
 
 TimerInterface::TimerInterface()
@@ -93,38 +133,53 @@ Timer::Timer()
     this->pb = std::make_unique<TimerResult>();
     this->rules = std::make_unique<TimerRules>();
 }
-bool Timer::IsRunning()
+bool Timer::IsActive()
 {
     return this->state == TimerState::Running
         || this->state == TimerState::Paused;
 }
 void Timer::Start(const int* engineTicks)
 {
+    console->Print("Speedrun started!\n");
     this->base = *engineTicks;
 
-    if (this->IsRunning()) {
+    if (this->IsActive()) {
         this->liveSplit.get()->SetAction(TimerAction::Restart);
     } else {
         this->liveSplit.get()->SetAction(TimerAction::Start);
     }
 
+    this->total = 0;
+    this->prevTotal = 0;
     this->state = TimerState::Running;
+
     this->result.get()->Reset();
+    this->result.get()->NewSplit(this->total, this->map);
+}
+void Timer::Pause()
+{
+    if (this->state == TimerState::Running) {
+        console->Print("Speedrun paused!\n");
+        this->state = TimerState::Paused;
+        this->prevTotal = this->total;
+        this->result.get()->AddSegment(this->session);
+    }
 }
 void Timer::Unpause(const int* engineTicks)
 {
     if (this->state == TimerState::Paused) {
+        console->Print("Speedrun unpaused!\n");
         this->state = TimerState::Running;
         this->base = *engineTicks;
     }
 }
-void Timer::Update(const int* engineTicks, const bool* engineIsPaused, const char* engineMap)
+void Timer::Update(const int* engineTicks, const bool* engineIsLoading, const char* engineMap)
 {
     if (!engineTicks)
         return;
     if (!engineMap || std::strlen(engineMap) == 0)
         return;
-    if (!engineIsPaused)
+    if (!engineIsLoading)
         return;
 
     auto mapChange = false;
@@ -133,22 +188,15 @@ void Timer::Update(const int* engineTicks, const bool* engineIsPaused, const cha
         mapChange = true;
     }
 
-    if (this->IsRunning()) {
-        if (*engineIsPaused) {
-            // Completed segment, save time from previous tick
-            if (this->state == TimerState::Running) {
-                this->state = TimerState::Paused;
-                this->prevTotal = this->total;
-                this->result.get()->AddSegment(this->session);
-            }
+    if (this->IsActive()) {
+        if (mapChange) {
+            console->Print("Speedrun split!\n");
+            this->liveSplit.get()->SetAction(TimerAction::Split);
+            this->result.get()->Split(this->total, this->map);
+            this->pb.get()->UpdateSplit(this->map);
+        }
 
-            // Split on map change
-            if (mapChange) {
-                this->liveSplit.get()->SetAction(TimerAction::Split);
-                this->result.get()->AddSplit(this->total, this->map);
-                this->pb.get()->UpdateSplit(this->map);
-            }
-        } else {
+        if (!*engineIsLoading) {
             this->session = *engineTicks - this->base;
             this->total = this->prevTotal + this->session;
             this->liveSplit.get()->Update(this);
@@ -157,11 +205,11 @@ void Timer::Update(const int* engineTicks, const bool* engineIsPaused, const cha
 }
 void Timer::Stop()
 {
-    if (this->IsRunning()) {
+    if (this->IsActive()) {
         this->liveSplit.get()->SetAction(TimerAction::End);
         this->state = TimerState::NotRunning;
-        this->result.get()->total = this->total;
         this->result.get()->AddSegment(this->session);
+        this->result.get()->EndSplit(this->total);
     }
 }
 void Timer::LoadRules(TimerRules rules)
@@ -209,36 +257,37 @@ TimerResult* Timer::GetPersonalBest()
 }
 bool Timer::ExportResult(std::string filePath, bool pb)
 {
+    auto result = (pb)
+        ? this->GetPersonalBest()
+        : this->GetResult();
+
+    if (result->splits.empty()) {
+        return false;
+    }
+
     std::ofstream file(filePath, std::ios::out | std::ios::trunc);
     if (!file.good()) {
         return false;
     }
 
-    auto result = Speedrun::timer->GetResult();
-    if (result->splits.empty()) {
-        return false;
-    }
-
     file << SAR_SPEEDRUN_EXPORT_HEADER << std::endl;
 
-    auto segment = 0;
-    auto ipt = Speedrun::timer->GetIntervalPerTick();
+    auto segment = 1;
 
     for (auto& split : result->splits) {
-        auto total = split.entered;
-        auto totalTime = total * ipt;
-        auto ticks = split.GetTotal();
-        auto time = ticks * ipt;
+        auto ticks = split->GetTotal();
+        auto time = Timer::Format(ticks * this->ipt);
 
-        for (const auto& seg : split.segments) {
-            file << split.map << ","
+        for (const auto& seg : split->segments) {
+            auto total = split->entered + seg.session;
+            file << split->map << ","
                  << seg.session << ","
-                 << (seg.session * ipt) << ","
+                 << Timer::Format(seg.session * this->ipt) << ","
                  << ticks << ","
                  << time << ","
                  << total << ","
-                 << totalTime << ","
-                 << ++segment;
+                 << Timer::Format(total * this->ipt) << ","
+                 << ++segment << std::endl;
         }
     }
 
@@ -263,6 +312,8 @@ bool Timer::ImportPersonalBest(std::string filePath)
         auto pb = Speedrun::TimerResult();
         std::string buffer;
         std::string lastMap;
+        auto row = 0;
+        auto totaltotal = 0;
         while (std::getline(file, buffer)) {
             std::stringstream line(buffer);
             std::string element;
@@ -271,11 +322,26 @@ bool Timer::ImportPersonalBest(std::string filePath)
                 elements.push_back(element);
             }
 
-            if (elements[0] != lastMap) {
-                pb.AddSplit(atoi(elements[5].c_str()), (char*)elements[0].c_str());
+            auto map = elements[0].c_str();
+            auto segment = std::atoi(elements[1].c_str());
+            auto total = std::atoi(elements[5].c_str());
+
+            if (row == 0) {
+                pb.NewSplit(total - segment, map);
+            } else if (elements[0] != lastMap) {
+                pb.Split(total - segment, map);
             }
-            pb.AddSegment(atoi(elements[1].c_str()));
+
+            pb.AddSegment(segment);
             lastMap = elements[0];
+
+            totaltotal = total;
+            ++row;
+        }
+
+        if (!pb.splits.empty()) {
+            pb.EndSplit(totaltotal);
+            pb.total = totaltotal;
         }
 
         *this->pb = pb;
@@ -287,16 +353,18 @@ bool Timer::ImportPersonalBest(std::string filePath)
 }
 int Timer::GetSplitDelta()
 {
-    return this->result.get()->curSplit.entered - this->pb.get()->prevSplit.entered;
+    return this->result.get()->curSplit->entered - this->pb.get()->prevSplit->entered;
 }
 int Timer::GetCurrentDelta()
 {
-    return this->total - this->pb.get()->curSplit.entered;
+    return this->total - this->pb.get()->curSplit->entered;
 }
 Timer::~Timer()
 {
+    this->liveSplit.reset();
     this->result.reset();
     this->pb.reset();
+    this->rules.reset();
 }
 std::string Timer::Format(float raw)
 {
@@ -305,10 +373,10 @@ std::string Timer::Format(float raw)
     auto sec = int(std::floor(raw));
     auto ms = int(std::ceil((raw - sec) * 1000));
 
-    if (sec > 60) {
+    if (sec >= 60) {
         auto min = sec / 60;
         sec = sec % 60;
-        if (min > 60) {
+        if (min >= 60) {
             auto hrs = min / 60;
             min = min % 60;
             snprintf(format, sizeof(format), "%i:%02i:%02i.%03i", hrs, min, sec, ms);

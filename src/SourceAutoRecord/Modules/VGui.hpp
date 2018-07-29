@@ -5,10 +5,10 @@
 #include "Server.hpp"
 #include "Surface.hpp"
 
-#include "Features/InputHud.hpp"
+#include "Features/Hud/InputHud.hpp"
+#include "Features/Hud/SpeedrunHud.hpp"
 #include "Features/Routing.hpp"
 #include "Features/Session.hpp"
-#include "Features/SpeedrunHud.hpp"
 #include "Features/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Timer.hpp"
@@ -170,8 +170,8 @@ DETOUR(Paint, int mode)
     Surface::FinishDrawing();
 
     // Draw other HUDs
-    InputHud::Draw();
-    SpeedrunHud::Draw();
+    inputHud->Draw();
+    speedrunHud->Draw();
 
     return Original::Paint(thisptr, mode);
 }
@@ -186,10 +186,16 @@ void Hook()
             RespectClShowPos = false;
         }
     }
+
+    inputHud = new InputHud();
+    speedrunHud = new SpeedrunHud();
 }
 void Unhook()
 {
     UNHOOK(enginevgui, Paint);
     DELETE_VMT(enginevgui);
+
+    delete inputHud;
+    delete speedrunHud;
 }
 }

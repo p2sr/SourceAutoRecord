@@ -1,10 +1,11 @@
 #pragma once
+#include "Hud.hpp"
+
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
 
 #include "Cheats.hpp"
-#include "Game.hpp"
 
 #define IN_ATTACK (1 << 0)
 #define IN_JUMP (1 << 1)
@@ -18,18 +19,14 @@
 #define IN_RELOAD (1 << 13)
 #define IN_SPEED (1 << 17)
 
-namespace InputHud {
-
-int ButtonBits = 0;
-
 /*
     Layout:
 
-              row|col0|1|2|3|4|5|6|7|8
-              ---|---------------------
-                0|       w|e|r
-                1|shft|a|s|d
-                2|ctrl|spacebar   |l|r
+        row|col0|1|2|3|4|5|6|7|8
+        ---|---------------------
+          0|       w|e|r
+          1|shft|a|s|d
+          2|ctrl|spacebar   |l|r
 */
 
 const int row0 = 0;
@@ -45,17 +42,24 @@ const int col6 = 6;
 const int col7 = 7;
 const int col8 = 8;
 
-void SetButtonBits(int bits)
+class InputHud : public Hud {
+private:
+    int buttonBits = 0;
+
+public:
+    void SetButtonBits(int buttonBits);
+    bool GetCurrentSize(int& xSize, int& ySize);
+    void Draw();
+};
+
+InputHud* inputHud;
+extern InputHud* inputHud;
+
+void InputHud::SetButtonBits(int buttonBits)
 {
-    ButtonBits = bits;
+    this->buttonBits = buttonBits;
 }
-Color GetColor(const char* source)
-{
-    int r, g, b, a;
-    sscanf(source, "%i%i%i%i", &r, &g, &b, &a);
-    return Color(r, g, b, a);
-}
-bool GetCurrentSize(int& xSize, int& ySize)
+bool InputHud::GetCurrentSize(int& xSize, int& ySize)
 {
     auto mode = Cheats::sar_ihud.GetInt();
     if (mode == 0) {
@@ -82,23 +86,23 @@ bool GetCurrentSize(int& xSize, int& ySize)
 
     return true;
 }
-void Draw()
+void InputHud::Draw()
 {
     auto mode = Cheats::sar_ihud.GetInt();
     if (mode == 0)
         return;
 
-    auto mvForward = ButtonBits & IN_FORWARD;
-    auto mvBack = ButtonBits & IN_BACK;
-    auto mvLeft = ButtonBits & IN_MOVELEFT;
-    auto mvRight = ButtonBits & IN_MOVERIGHT;
-    auto mvJump = ButtonBits & IN_JUMP;
-    auto mvDuck = ButtonBits & IN_DUCK;
-    auto mvUse = ButtonBits & IN_USE;
-    auto mvAttack = ButtonBits & IN_ATTACK;
-    auto mvAttack2 = ButtonBits & IN_ATTACK2;
-    auto mvReload = ButtonBits & IN_RELOAD;
-    auto mvSpeed = ButtonBits & IN_SPEED;
+    auto mvForward = this->buttonBits & IN_FORWARD;
+    auto mvBack = this->buttonBits & IN_BACK;
+    auto mvLeft = this->buttonBits & IN_MOVELEFT;
+    auto mvRight = this->buttonBits & IN_MOVERIGHT;
+    auto mvJump = this->buttonBits & IN_JUMP;
+    auto mvDuck = this->buttonBits & IN_DUCK;
+    auto mvUse = this->buttonBits & IN_USE;
+    auto mvAttack = this->buttonBits & IN_ATTACK;
+    auto mvAttack2 = this->buttonBits & IN_ATTACK2;
+    auto mvReload = this->buttonBits & IN_RELOAD;
+    auto mvSpeed = this->buttonBits & IN_SPEED;
 
     Surface::StartDrawing(Surface::matsurface->GetThisPtr());
 
@@ -107,8 +111,8 @@ void Draw()
     auto size = Cheats::sar_ihud_button_size.GetInt();
     auto padding = Cheats::sar_ihud_button_padding.GetInt();
 
-    auto color = GetColor(Cheats::sar_ihud_button_color.GetString());
-    auto fontColor = GetColor(Cheats::sar_ihud_font_color.GetString());
+    auto color = this->GetColor(Cheats::sar_ihud_button_color.GetString());
+    auto fontColor = this->GetColor(Cheats::sar_ihud_font_color.GetString());
     auto font = Scheme::GetDefaultFont() + Cheats::sar_ihud_font_index.GetInt();
 
     auto symbols = std::string("WASDCSELRSR");
@@ -120,7 +124,7 @@ void Draw()
     }
 
     auto shadow = Cheats::sar_ihud_shadow.GetBool();
-    auto shadowColor = GetColor(Cheats::sar_ihud_shadow_color.GetString());
+    auto shadowColor = Hud::GetColor(Cheats::sar_ihud_shadow_color.GetString());
     auto shadowFontColor = GetColor(Cheats::sar_ihud_shadow_font_color.GetString());
 
     auto element = 0;
@@ -159,7 +163,6 @@ void Draw()
 
     Surface::FinishDrawing();
 }
-}
 
 CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD. "
                              "Usage: sar_ihud_setpos <top, center or bottom> <left, center or right>\n")
@@ -173,7 +176,7 @@ CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD. "
     auto xSize = 0;
     auto ySize = 0;
 
-    if (!InputHud::GetCurrentSize(xSize, ySize)) {
+    if (!inputHud->GetCurrentSize(xSize, ySize)) {
         console->Print("HUD not active!\n");
         return;
     }

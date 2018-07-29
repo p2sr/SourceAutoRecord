@@ -8,34 +8,37 @@
 
 CON_COMMAND(sar_speedrun_result, "Prints result of speedrun.\n")
 {
+    auto pb = (args.ArgC() == 2 && !std::strcmp(args[1], "pb"));
+
     auto session = Speedrun::timer->GetSession();
     auto total = Speedrun::timer->GetTotal();
     auto ipt = Speedrun::timer->GetIntervalPerTick();
 
-    if (Speedrun::timer->IsRunning()) {
+    auto result = (pb)
+        ? Speedrun::timer->GetPersonalBest()
+        : Speedrun::timer->GetResult();
+
+    if (!pb && Speedrun::timer->IsActive()) {
         console->PrintActive("Session: %s (%i)\n", Speedrun::Timer::Format(session * ipt).c_str(), session);
+    }
+
+    auto segments = 0;
+    for (auto& split : result->splits) {
+        auto completedIn = split->GetTotal();
+        console->Print("%s -> %s (%i)\n", split->map, Speedrun::Timer::Format(completedIn * ipt).c_str(), completedIn);
+        for (const auto& seg : split->segments) {
+            console->Msg("  -> %s (%i)\n", Speedrun::Timer::Format(seg.session * ipt).c_str(), seg.session);
+            ++segments;
+        }
+    }
+
+    if (!pb && Speedrun::timer->IsActive()) {
+        console->PrintActive("Session: %s (%i)\n", Speedrun::Timer::Format(session * ipt).c_str(), session);
+        console->PrintActive("Segments: %i\n", segments);
         console->PrintActive("Total:   %s (%i)\n", Speedrun::Timer::Format(total * ipt).c_str(), total);
     } else {
-        auto splits = (args.ArgC() == 2 && !std::strcmp(args[1], "pb"))
-            ? Speedrun::timer->GetPersonalBest()->splits
-            : Speedrun::timer->GetResult()->splits;
-
-        if (splits.size() == 0) {
-            console->Warning("No result to show!\n");
-        }
-
-        auto segments = 0;
-        for (auto& split : splits) {
-            auto completedIn = split.GetTotal();
-            console->Print("%s in %s (%i)\n", split.map, Speedrun::Timer::Format(completedIn * ipt).c_str(), completedIn);
-            for (const auto& seg : split.segments) {
-                console->Msg("-> %s (%i)\n", Speedrun::Timer::Format(seg.session * ipt).c_str(), seg.session);
-                ++segments;
-            }
-        }
-
-        console->Print("Splits: %i\n", segments);
-        console->Print("Total:  %s (%i)\n", Speedrun::Timer::Format(total * ipt).c_str(), total);
+        console->Print("Segments: %i\n", segments);
+        console->Print("Total:  %s (%i)\n", Speedrun::Timer::Format(result->total * ipt).c_str(), result->total);
     }
 }
 
@@ -87,7 +90,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "", 0, 0, csv)
         filePath += ".csv";
 
     if (Speedrun::timer->ImportPersonalBest(filePath)) {
-        console->Print("Imported personal best!\n");
+        console->Print("Imported %s!\n", args[1]);
     } else {
         console->Warning("Failed to import file!\n");
     }

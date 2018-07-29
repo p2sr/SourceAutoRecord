@@ -102,6 +102,7 @@ int GetFont;
 int GetClientEntity;
 
 // CServerGameDLL
+int GameFrame;
 int Think;
 
 // CGlobalVarsBase
@@ -151,4 +152,7 @@ int eng;
 int Cbuf_AddText;
 int s_CommandBuffer;
 int AddText;
+int g_InRestore;
+int ServiceEventQueue;
+int g_EventQueue;
 }

@@ -23,11 +23,14 @@
 namespace Server {
 
 VMT g_GameMovement;
+VMT g_ServerGameDLL;
 
 using _UTIL_PlayerByIndex = void*(__func*)(int index);
 _UTIL_PlayerByIndex UTIL_PlayerByIndex;
 
-void* gpGlobals;
+CGlobalVars* gpGlobals;
+bool* g_InRestore;
+CEventQueue* g_EventQueue;
 
 void* GetPlayer()
 {
@@ -91,7 +94,6 @@ DETOUR(PlayerMove)
     auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
     auto m_nWaterLevel = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_nWaterLevel);
 
-    auto frametime = *reinterpret_cast<float*>((uintptr_t)gpGlobals + Offsets::frametime);
     auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
 
     // Landed after a jump
@@ -101,7 +103,7 @@ DETOUR(PlayerMove)
         Stats::Jumps::EndTrace(Client::GetAbsOrigin(), Cheats::sar_stats_jumps_xy.GetBool());
     }
 
-    StepCounter::ReduceTimer(frametime);
+    StepCounter::ReduceTimer(gpGlobals->frametime);
 
     // Player is on ground and moving etc.
     if (StepCounter::StepSoundTime <= 0
@@ -194,42 +196,6 @@ DETOUR_MID_MH(AirMove_Mid)
         jmp Detour::AirMove_Continue
     }
 }
-
-// CBaseEntityOutput::FireOutput
-DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, void* pCaller, float fDelay)
-{
-    auto print = Cheats::sar_debug_entitiy_output.GetBool();
-
-    if (pActivator) {
-        auto m_iName = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iName);
-        auto m_iClassname = *reinterpret_cast<char**>((uintptr_t)pActivator + Offsets::m_iClassname);
-
-        Speedrun::timer->CheckRules(m_iName, Engine::tickcount);
-
-        if (print) {
-            console->Print("[%i] %s (%s) (activator)\n", Engine::GetSessionTick(), m_iName, m_iClassname);
-        }
-    }
-
-    if (pCaller) {
-        auto m_iName = *reinterpret_cast<char**>((uintptr_t)pCaller + Offsets::m_iName);
-        auto m_iClassname = *reinterpret_cast<char**>((uintptr_t)pCaller + Offsets::m_iClassname);
-        if (print) {
-            console->Print("[%i] %s (%s) (caller)\n", Engine::GetSessionTick(), m_iName, m_iClassname);
-        }
-    }
-
-    auto m_ActionList = *reinterpret_cast<CEventAction**>((uintptr_t)thisptr + Offsets::m_ActionList);
-    auto ev = m_ActionList;
-    while (ev) {
-        if (print) {
-            console->Msg("- [%i] %s -> %s (%s)\n", Engine::GetSessionTick(), ev->m_iTarget, ev->m_iTargetInput, ev->m_iParameter);
-        }
-        ev = ev->m_pNext;
-    }
-
-    return Trampoline::FireOutput(thisptr, a2, a3, a4, a5, a6, pActivator, pCaller, fDelay);
-}
 #endif
 
 // CGameMovement::AirAccelerate
@@ -238,6 +204,35 @@ DETOUR_MH(FireOutput, int a2, int a3, int a4, int a5, int a6, void* pActivator, 
 //    //return Original::AirAccelerate(thisptr, wishdir, wishspeed, accel);
 //    return Original::AirAccelerateBase(thisptr, wishdir, wishspeed, accel);
 //}
+
+// CServerGameDLL::GameFrame
+DETOUR_STD(GameFrame, bool simulating)
+{
+    if (!*g_InRestore) {
+        auto pe = g_EventQueue->m_Events.m_pNext;
+        while (pe && pe->m_flFireTime <= gpGlobals->curtime) {
+            if (Cheats::sar_debug_event_queue.GetBool()) {
+                console->Print("[%i] Event fired!\n", Engine::GetSessionTick());
+                console->Msg("    - m_flFireTime   %f\n", g_EventQueue->m_Events.m_pNext->m_flFireTime);
+                console->Msg("    - m_iTarget      %s\n", g_EventQueue->m_Events.m_pNext->m_iTarget);
+                console->Msg("    - m_pEntTarget   %p\n", g_EventQueue->m_Events.m_pNext->m_pEntTarget);
+                console->Msg("    - m_iTargetInput %s\n", g_EventQueue->m_Events.m_pNext->m_iTargetInput);
+                console->Msg("    - m_pActivator   %p\n", g_EventQueue->m_Events.m_pNext->m_pActivator);
+                console->Msg("    - m_pCaller      %p\n", g_EventQueue->m_Events.m_pNext->m_pCaller);
+                console->Msg("    - m_iOutputID    %i\n", g_EventQueue->m_Events.m_pNext->m_iOutputID);
+            }
+
+            /*if (pe->m_pActivator) {
+                auto m_iName = *reinterpret_cast<char**>((uintptr_t)pe->m_pActivator + Offsets::m_iName);
+                console->Print("--- %s ---\n", m_iName);
+            }*/
+
+            pe = pe->m_pNext;
+        }
+    }
+
+    Original::GameFrame(simulating);
+}
 
 void Hook()
 {
@@ -268,28 +263,32 @@ void Hook()
 #endif
 
             /*HOOK(g_GameMovement, AirAccelerate);
-            auto airAccelerateAddr = *reinterpret_cast<uintptr_t*>(baseOffset + Offsets::AirAccelerate * sizeof(uintptr_t*));
-            Original::AirAccelerateBase = reinterpret_cast<_AirAccelerate>(airAccelerateAddr);*/
+            Original::AirAccelerateBase = Memory::Deref<_AirAccelerate>(baseOffset + Offsets::AirAccelerate * sizeof(uintptr_t*));*/
         }
 
-        auto FullTossMove = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::FullTossMove);
-        gpGlobals = Memory::DerefDeref<void*>(FullTossMove + Offsets::gpGlobals);
-
-#ifdef _WIN32
-        if (Game::Version == Game::Portal2) {
-            auto fio = SAR::Find("FireOutput");
-            if (fio.Found) {
-                MH_HOOK(FireOutput, fio.Address);
-            }
-        }
-#endif
+        /*if (!gpGlobals && Offsets::FullTossMove) {
+            auto FullTossMove = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::FullTossMove);
+            gpGlobals = Memory::DerefDeref<CGlobalVars*>(FullTossMove + Offsets::gpGlobals);
+        }*/
     }
 
-    VMT g_ServerGameDLL;
     CREATE_VMT(Interfaces::IServerGameDLL, g_ServerGameDLL)
     {
         auto Think = g_ServerGameDLL->GetOriginalFunction<uintptr_t>(Offsets::Think);
         UTIL_PlayerByIndex = Memory::ReadAbsoluteAddress<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex);
+
+#ifdef _WIN32
+        if (Game::Version == Game::Portal2) {
+            auto gameFrameAddr = g_ServerGameDLL->GetOriginalFunction<uintptr_t>(Offsets::GameFrame);
+            g_InRestore = Memory::Deref<bool*>(gameFrameAddr + Offsets::g_InRestore);
+            gpGlobals = Memory::DerefDeref<CGlobalVars*>(gameFrameAddr + Offsets::gpGlobals);
+
+            auto ServiceEventQueue = Memory::ReadAbsoluteAddress(gameFrameAddr + Offsets::ServiceEventQueue);
+            g_EventQueue = Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue);
+
+            HOOK(g_ServerGameDLL, GameFrame);
+        }
+#endif
     }
 }
 
@@ -302,8 +301,9 @@ void Unhook()
     //UNHOOK(g_GameMovement, AirAccelerate);
 #ifdef _WIN32
     MH_UNHOOK(AirMove_Mid);
-    MH_UNHOOK(FireOutput);
+    UNHOOK(g_ServerGameDLL, GameFrame);
 #endif
     DELETE_VMT(g_GameMovement);
+    DELETE_VMT(g_ServerGameDLL);
 }
 }

@@ -188,7 +188,7 @@ Here is a basic [ASL script](https://gist.github.com/NeKzor/6db7ca6a28ed55fbcce7
 - `sar_trace_a` saves first location to measure a distance
 - `sar_trace_b` saves second location to measure a distance
 - `sar_trace_result` prints calculated distance between saved locations
-- `sar_debug_entitiy_output <0-1>` prints entity output data, similar to developer (Portal 2)
+- `sar_debug_event_queue <0-1>` prints entity events when they are fired, similar to developer (Portal 2)
 - `sar_debug_game_events <0-1>` prints game event data, similar to net_showevents (Portal 2)
 
 ##### Unlocked

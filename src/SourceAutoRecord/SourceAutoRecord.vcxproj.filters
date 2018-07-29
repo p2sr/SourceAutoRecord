@@ -28,6 +28,9 @@
     <ClCompile Include="Plugin.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Hud\Hud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\libs\minhook\buffer.h">
@@ -225,16 +228,10 @@
     <ClInclude Include="Commands\Stanley.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
-    <ClInclude Include="Features\InputHud.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
     <ClInclude Include="Listener.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Features\Speedrun.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\SpeedrunHud.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Commands\Speedrun.hpp">
@@ -242,6 +239,15 @@
     </ClInclude>
     <ClInclude Include="SAR.hpp">
       <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\InputHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\SpeedrunHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\Hud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -277,6 +283,9 @@
     </Filter>
     <Filter Include="SourceAutoRecord\Commands">
       <UniqueIdentifier>{fa07d817-705c-4525-a195-7ed5d8e10972}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Hud">
+      <UniqueIdentifier>{79986844-aff5-4989-abfb-85cb7515858e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

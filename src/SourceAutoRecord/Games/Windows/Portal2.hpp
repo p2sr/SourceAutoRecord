@@ -134,13 +134,16 @@ void Offsets()
     AirMove_Offset2 = 5; // CGameMovement::CGameMovement
     FinishGravity = 34; // CPortalGameMovement
     CheckJumpButton = 36; // CPortalGameMovement
-    FullTossMove = 37; // CGameMovement
     mv = 8; // CPortalGameMovement::CheckJumpButton
     m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
+    GameFrame = 4; // CServerGameDLL
     Think = 31; // CServerGameDLL
+    g_InRestore = 8; // CServerGameDLL::GameFrame
+    gpGlobals = 92; // CServerGameDLL::GameFrame
+    ServiceEventQueue = 249; // CServerGameDLL::GameFrame
+    g_EventQueue = 1; // ServiceEventQueue
     UTIL_PlayerByIndex = 37; // CServerGameDLL::Think
     iNumPortalsPlaced = 5700; // CPortal_Player::IncrementPortalsPlaced
-    gpGlobals = 569; // CGameMovement::FullTossMove
     player = 4; // CPortalGameMovement::PlayerMove
     m_fFlags = 204; // CBasePlayer::UpdateStepSound
     m_MoveType = 218; // CBasePlayer::UpdateStepSound
@@ -148,9 +151,9 @@ void Offsets()
     m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
     frametime = 16; // CBasePlayer::UpdateStepSound
     m_bDucked = 2272; // CPortalGameMovement::FinishUnDuck
-    m_iClassname = 96; // CBaseEntityOutput::FireOutput
+    //m_iClassname = 96; // CBaseEntityOutput::FireOutput
     m_iName = 208; // CBaseEntityOutput::FireOutput
-    m_ActionList = 20; // CBaseEntityOutput::FireOutput
+    //m_ActionList = 20; // CBaseEntityOutput::FireOutput
 
     // client.dll
 

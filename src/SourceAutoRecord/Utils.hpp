@@ -62,6 +62,15 @@ typedef std::unique_ptr<VMTHook> VMT;
         int __fastcall name(void* thisptr, int edx, __VA_ARGS__); \
     }                                                             \
     int __fastcall Detour::##name(void* thisptr, int edx, __VA_ARGS__)
+#define DETOUR_STD(name, ...)                      \
+    using _##name = void(__stdcall*)(__VA_ARGS__); \
+    namespace Original {                           \
+        _##name name;                              \
+    }                                              \
+    namespace Detour {                             \
+        void __stdcall name(__VA_ARGS__);          \
+    }                                              \
+    void __stdcall Detour::##name(__VA_ARGS__)
 
 namespace {
 bool mhInitialized = false;
