@@ -20,12 +20,14 @@ void Portal2::LoadOffsets()
     InternalSetIntValue = 21; // ConVar
     GetScreenSize = 5; // CEngineClient
     ClientCmd = 7; // CEngineClient
+    GetClientStateFunction = 11; // CEngineClient::ClientCmd
+    Cbuf_AddText = 45; // CEngineClient::ClientCmd
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient
     SetViewAngles = 19; // CEngineClient
     GetGameDirectory = 35; // CEngineClient
     GetActiveSplitScreenPlayerSlot = 127; // CEngineClient
-    StringToButtonCode = 31; // ReadCheatCommandsFromFile
+    StringToButtonCode = 31; // CInputSystem
     GetRecordingTick = 1; // CDemoRecorder
     SetSignonState = 3; // CDemoRecorder
     StopRecording = 7; // CDemoRecorder
@@ -40,23 +42,21 @@ void Portal2::LoadOffsets()
     ProcessTick = 12; // CClientState
     tickcount = 73; // CClientState::ProcessTick
     interval_per_tick = 81; // CClientState::ProcessTick
+    HostState_OnClientConnected = 735; // CClientState::SetSignonState
+    hoststate = 9; // HostState_OnClientConnected
     Disconnect = 37; //  CClientState
-    GetClientStateFunction = 11; // CEngineClient::ClientCmd
-    GetCurrentMap = 26; // CEngineTool
     demoplayer = 93; // CClientState::Disconnect
     demorecorder = 106; // CClientState::Disconnect
+    GetCurrentMap = 26; // CEngineTool
     m_szLevelName = 72; // CEngineTool::GetCurrentMap
     AddListener = 4; // CGameEventManager
     RemoveListener = 6; // CGameEventManager
-    Cbuf_AddText = 45; // CEngine::ClientCmd
     AutoCompletionFunc = 37; // listdemo_CompletionFunc
     Key_SetBinding = 60; // unbind
     IsRunningSimulation = 12; // CEngineAPI
     eng = 7; // CEngineAPI::IsRunningSimulation
     Frame = 6; // CEngine
-    HostState_OnClientConnected = 735; // CClientState::SetSignonState
-    hoststate = 9; // HostState_OnClientConnected
-    m_bLoadGame = 440; // CBaseServer::m_szLevelName
+    m_bLoadGame = 440; // CGameClient::ActivatePlaye/CBaseServer::m_szLevelName
 
     // libvstdlib.so
     RegisterConCommand = 9; // CCVar
@@ -81,11 +81,11 @@ void Portal2::LoadOffsets()
     mv = 8; // CPortalGameMovement::CheckJumpButton
     m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
     GameFrame = 4; // CServerGameDLL
-    Think = 31; // CServerGameDLL
     g_InRestore = 51; // CServerGameDLL::GameFrame
     gpGlobals = 104; // CServerGameDLL::GameFrame
     ServiceEventQueue = 484; // CServerGameDLL::GameFrame
     g_EventQueue = 43; // ServiceEventQueue
+    Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
     iNumPortalsPlaced = 5724; // CPortal_Player::IncrementPortalsPlaced
     player = 4; // CPortalGameMovement::PlayerMove

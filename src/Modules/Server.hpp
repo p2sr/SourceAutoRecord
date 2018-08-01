@@ -275,10 +275,11 @@ void Hook()
         auto Think = g_ServerGameDLL->GetOriginal(Offsets::Think);
         UTIL_PlayerByIndex = Memory::Read<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex);
 
+        auto gameFrameAddr = g_ServerGameDLL->GetOriginal(Offsets::GameFrame);
+        gpGlobals = Memory::DerefDeref<CGlobalVars*>(gameFrameAddr + Offsets::gpGlobals);
+
         if (game->version == SourceGame::Portal2) {
-            auto gameFrameAddr = g_ServerGameDLL->GetOriginal(Offsets::GameFrame);
             g_InRestore = Memory::Deref<bool*>(gameFrameAddr + Offsets::g_InRestore);
-            gpGlobals = Memory::DerefDeref<CGlobalVars*>(gameFrameAddr + Offsets::gpGlobals);
 
             auto ServiceEventQueue = Memory::Read(gameFrameAddr + Offsets::ServiceEventQueue);
             g_EventQueue = Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue);

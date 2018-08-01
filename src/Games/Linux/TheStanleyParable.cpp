@@ -14,24 +14,21 @@ void TheStanleyParable::LoadOffsets()
 
     // engine.so
 
-    GetActiveSplitScreenPlayerSlot = 127; // CEngineClient (TODO)
+    Cbuf_AddText = 45; // CEngineClient::ClientCmd
     tickcount = 74; // CClientState::ProcessTick
     interval_per_tick = 82; // CClientState::ProcessTick
-    m_szLevelName = 56; // CEngineTool::GetCurrentMap
+    HostState_OnClientConnected = 1523; // CClientState::SetSignonState
     demoplayer = 92; // CClientState::Disconnect
     demorecorder = 105; // CClientState::Disconnect
-    Cbuf_AddText = 46; // CEngine::ClientCmd (TODO)
-    AutoCompletionFunc = 37; // listdemo_CompletionFunc (TODO)
-    Key_SetBinding = 60; // unbind (TODO)
-    IsRunningSimulation = 12; // CEngineAPI (TODO)
-    eng = 7; // CEngineAPI::IsRunningSimulation (TODO)
-    HostState_OnClientConnected = 735; // CClientState::SetSignonState (TODO)
-    hoststate = 9; // HostState_OnClientConnected (TODO)
-    m_bLoadGame = 440; // CBaseServer::m_szLevelName (TODO)
+    m_szLevelName = 56; // CEngineTool::GetCurrentMap
+    Key_SetBinding = 59; // unbind
 
     // server.so
 
-    gpGlobals = 576; // CGameMovement::FullTossMove
+    g_InRestore = 32; // CServerGameDLL::GameFrame
+    gpGlobals = 84; // CServerGameDLL::GameFrame
+    ServiceEventQueue = 328; // CServerGameDLL::GameFrame
+    g_EventQueue = 24; // ServiceEventQueue
 
     // client.so
 
@@ -43,6 +40,11 @@ void TheStanleyParable::LoadOffsets()
     in_jump = 210; // CInput::GetButtonBits
     KeyDown = 337; // CInput::JoyStickApplyMovement
     KeyUp = 384; // CInput::JoyStickApplyMovement
+
+    // vguimatsurface.so
+
+    StartDrawing = 692; // CMatSystemSurface::PaintTraverseEx
+    FinishDrawing = 627; // CMatSystemSurface::PaintTraverseEx
 }
 void TheStanleyParable::LoadRules()
 {

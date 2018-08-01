@@ -18,13 +18,16 @@ void HalfLife2::LoadOffsets()
     InternalSetIntValue = 16; // ConVar
     GetScreenSize = 5; // CEngineClient
     ClientCmd = 7; // CEngineClient
+    Cbuf_AddText = 28; // CEngineClient::ClientCmd
+    s_CommandBuffer = 78; // Cbuf_AddText
+    AddText = 87; // Cbuf_AddText
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 19; // CEngineClient
     SetViewAngles = 20; // CEngineClient
     GetGameDirectory = 35; // CEngineClient
     ServerCmdKeyValues = 128; // CEngineClient
     cl = 6; // CEngineClient::ServerCmdKeyValues
-    StringToButtonCode = 29; // ReadCheatCommandsFromFile
+    StringToButtonCode = 29; // CInputSystem
     GetRecordingTick = 1; // CDemoRecorder
     SetSignonState = 3; // CDemoRecorder
     StopRecording = 7; // CDemoRecorder
@@ -39,22 +42,19 @@ void HalfLife2::LoadOffsets()
     ProcessTick = 12; // CClientState
     tickcount = 76; // CClientState::ProcessTick
     interval_per_tick = 84; // CClientState::ProcessTick
+    HostState_OnClientConnected = 411; // CClientState::SetSignonState
+    hoststate = 9; // HostState_OnClientConnected
     Disconnect = 34; //  CClientState
     demoplayer = 151; // CClientState::Disconnect
     demorecorder = 164; // CClientState::Disconnect
     GetCurrentMap = 24; // CEngineTool
     m_szLevelName = 25; // CEngineTool::GetCurrentMap
-    Cbuf_AddText = 58; // CEngine::ClientCmd (TODO)
-    s_CommandBuffer = 64; // Cbuf_AddText (TODO)
-    AddText = 69; // Cbuf_AddText (TODO)
-    AutoCompletionFunc = 37; // listdemo_CompletionFunc (TODO)
-    Key_SetBinding = 60; // unbind (TODO)
-    IsRunningSimulation = 12; // CEngineAPI (TODO)
-    eng = 7; // CEngineAPI::IsRunningSimulation (TODO)
+    AutoCompletionFunc = 37; // listdemo_CompletionFunc
+    Key_SetBinding = 60; // unbind
+    IsRunningSimulation = 9; // CEngineAPI
+    eng = 7; // CEngineAPI::IsRunningSimulation
     Frame = 6; // CEngine
-    HostState_OnClientConnected = 735; // CClientState::SetSignonState (TODO)
-    hoststate = 9; // HostState_OnClientConnected (TODO)
-    m_bLoadGame = 440; // CBaseServer::m_szLevelName (TODO)
+    m_bLoadGame = 328; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
 
     // libvstdlib.so
     RegisterConCommand = 6; // CCVar
@@ -73,9 +73,13 @@ void HalfLife2::LoadOffsets()
     FullTossMove = 31; // CGameMovement
     mv = 8; // CPortalGameMovement::CheckJumpButton
     m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
-    gpGlobals = 705; // CGameMovement::FullTossMove
     player = 4; // CPortalGameMovement::PlayerMove
     m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
+    GameFrame = 5; // CServerGameDLL
+    g_InRestore = 201; // CServerGameDLL::GameFrame
+    gpGlobals = 220; // CServerGameDLL::GameFrame
+    ServiceEventQueue = 333; // CServerGameDLL::GameFrame
+    g_EventQueue = 177; // ServiceEventQueue
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
     iNumPortalsPlaced = 4816; // CPortal_Player::IncrementPortalsPlaced
@@ -91,7 +95,7 @@ void HalfLife2::LoadOffsets()
     m_vecAbsOrigin = 588; // C_BasePlayer::GetAbsOrigin
     m_angAbsRotation = 600; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
-    GetClientMode = 1; // CHLClient::HudProcessInput (TODO)
+    GetClientMode = 1; // CHLClient::HudProcessInput
     CreateMove = 22; // ClientModeShared
 
     // vguimatsurface.so
@@ -99,9 +103,9 @@ void HalfLife2::LoadOffsets()
     DrawSetColor = 10; // CMatSystemSurface
     DrawFilledRect = 12; // CMatSystemSurface
     GetFontTall = 69; // CMatSystemSurface
-    PaintTraverseEx = 117; // CMatSystemSurface (TODO)
-    StartDrawing = 193; // CMatSystemSurface::PaintTraverseEx (TODO)
-    FinishDrawing = 590; // CMatSystemSurface::PaintTraverseEx (TODO)
+    PaintTraverseEx = 114; // CMatSystemSurface
+    StartDrawing = 294; // CMatSystemSurface::PaintTraverseEx
+    FinishDrawing = 1681; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 162; // CMatSystemSurface
     DrawTextLen = 165; // CMatSystemSurface
 }

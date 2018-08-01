@@ -51,7 +51,8 @@ public:
 #endif
         }
 
-        if (!std::strcmp(event->GetName(), "player_spawn_blue") || !std::strcmp(event->GetName(), "player_spawn_orange")) {
+        if (!std::strcmp(event->GetName(), "player_spawn_blue")
+            || !std::strcmp(event->GetName(), "player_spawn_orange")) {
             console->Print("Detected cooperative spawn!\n");
             Session::Rebase(*Engine::tickcount);
             Timer::Rebase(*Engine::tickcount);
