@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SourceAutoRecord", "src\SourceAutoRecord\SourceAutoRecord.vcxproj", "{3F6459A9-566E-4CAC-A412-C03FF51D67E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SourceAutoRecord", "src\SourceAutoRecord.vcxproj", "{3F6459A9-566E-4CAC-A412-C03FF51D67E9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4990948C-3306-40BA-9EAD-594A5520043F}"
 	ProjectSection(SolutionItems) = preProject
@@ -13,11 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{2234E52A-D21C-4984-B830-0D1EBC6842C5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{2234E52A-D21C-4984-B830-0D1EBC6842C5}"
 	ProjectSection(SolutionItems) = preProject
-		docs\cp1.png = docs\cp1.png
-		docs\cpstart.png = docs\cpstart.png
-		docs\start.png = docs\start.png
+		doc\cp1.png = doc\cp1.png
+		doc\cpstart.png = doc\cpstart.png
+		doc\start.png = doc\start.png
 	EndProjectSection
 EndProject
 Global

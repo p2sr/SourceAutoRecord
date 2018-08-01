@@ -245,7 +245,7 @@ Here is a simple TAS of [Propulsion Catch](https://gist.github.com/NeKzor/5ba4fd
   - Use `sar_timer_start` as parameter
   - Do the same for the second trigger with `sar_timer_stop`
 
-![start.png](docs/start.png)
+![start.png](doc/start.png)
 
 ### With Checkpoints
 - Use `trigger_multiple` object for start
@@ -258,8 +258,8 @@ Here is a simple TAS of [Propulsion Catch](https://gist.github.com/NeKzor/5ba4fd
 - Use `trigger_multiple` object for stop
   - Trigger `sar_timer_stop`
 
-![cpstart.png](docs/cpstart.png)
-![cp1.png](docs/cp1.png)
+![cpstart.png](doc/cpstart.png)
+![cp1.png](doc/cp1.png)
 
 ## Inspired By
 - [SourcePauseTool](https://github.com/YaLTeR/SourcePauseTool)

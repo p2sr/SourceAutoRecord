@@ -1,0 +1,320 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\lib\minhook\buffer.c">
+      <Filter>lib\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\minhook\trampoline.c">
+      <Filter>lib\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\minhook\hook.c">
+      <Filter>lib\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\minhook\hde\hde64.c">
+      <Filter>lib\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\minhook\hde\hde32.c">
+      <Filter>lib\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Console.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="SAR.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Plugin.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\Hud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\Hud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClInclude Include="Games\Linux\Portal2.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\TheBeginnersGuide.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\TheStanleyParable.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\Portal2.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\TheBeginnersGuide.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\TheStanleyParable.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\lib\minhook\buffer.h">
+      <Filter>lib\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\minhook\trampoline.h">
+      <Filter>lib\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\minhook\hde\pstdint.h">
+      <Filter>lib\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\minhook\hde\table32.h">
+      <Filter>lib\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\minhook\hde\table64.h">
+      <Filter>lib\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\minhook\hde\hde64.h">
+      <Filter>lib\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\minhook\hde\hde32.h">
+      <Filter>lib\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\minhook\MinHook.h">
+      <Filter>lib\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\vmthook\vmthook.h">
+      <Filter>lib\vmthook</Filter>
+    </ClInclude>
+    <ClInclude Include="Cheats.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Interfaces.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Offsets.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Client.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Console.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\DemoPlayer.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\DemoRecorder.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Engine.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\InputSystem.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Scheme.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Server.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Surface.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Tier1.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\VGui.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Config.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Rebinder.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Routing.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Session.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\StepCounter.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Summary.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\TAS.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Teleporter.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Timer.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\TimerAverage.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\TimerCheckPoints.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Math.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\Portal2.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\TheBeginnersGuide.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\TheStanleyParable.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\Portal2.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\TheStanleyParable.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Command.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Variable.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Binding.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Config.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Demo.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Info.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Routing.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Stats.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Summary.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\TAS.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Timer.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Plugin.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Memory.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Teleporter.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\HalfLife2.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\HalfLife2.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Stanley.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Listener.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Speedrun.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="SAR.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\InputHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\SpeedrunHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\Hud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="SourceAutoRecord">
+      <UniqueIdentifier>{92afbf75-28dc-4045-af85-34b6c55400b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Modules">
+      <UniqueIdentifier>{a52ec2cb-8efb-4026-ba66-d9df6c2a5909}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Utils">
+      <UniqueIdentifier>{5eb5cd67-ae5d-44f0-aca8-8f66f9aa3753}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features">
+      <UniqueIdentifier>{2cad3606-019d-40fd-b1e0-16eabcd459a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Games">
+      <UniqueIdentifier>{56b78df4-db1c-44a5-9243-10415ba45a25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{432c6e31-fbb9-4852-9bfd-74b0cc6d7a57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\minhook">
+      <UniqueIdentifier>{df38f6d3-7501-4e2a-ba0c-e8de7ad26787}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\vmthook">
+      <UniqueIdentifier>{f3c9bd1d-b8bd-4542-9ca8-b033f499beb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Games\Windows">
+      <UniqueIdentifier>{9e7c58b4-0f87-483c-92ab-77f4d6757512}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Games\Linux">
+      <UniqueIdentifier>{5e8e3eca-807e-4e32-bd8d-046f8be99381}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Commands">
+      <UniqueIdentifier>{fa07d817-705c-4525-a195-7ed5d8e10972}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Hud">
+      <UniqueIdentifier>{79986844-aff5-4989-abfb-85cb7515858e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\lib\minhook\LICENSE.txt">
+      <Filter>lib\minhook</Filter>
+    </Text>
+    <Text Include="..\lib\vmthook\LICENSE">
+      <Filter>lib\vmthook</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

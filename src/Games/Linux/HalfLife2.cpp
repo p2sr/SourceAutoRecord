@@ -1,0 +1,116 @@
+#include "HalfLife2.hpp"
+
+#include "Game.hpp"
+#include "Offsets.hpp"
+
+HalfLife2::HalfLife2()
+{
+    this->version = SourceGame::HalfLife2;
+}
+void HalfLife2::LoadOffsets()
+{
+    using namespace Offsets;
+
+    // engine.so
+
+    InternalSetValue = 14; // ConVar
+    InternalSetFloatValue = 15; // ConVar
+    InternalSetIntValue = 16; // ConVar
+    GetScreenSize = 5; // CEngineClient
+    ClientCmd = 7; // CEngineClient
+    GetLocalPlayer = 12; // CEngineClient
+    GetViewAngles = 19; // CEngineClient
+    SetViewAngles = 20; // CEngineClient
+    GetGameDirectory = 35; // CEngineClient
+    ServerCmdKeyValues = 128; // CEngineClient
+    cl = 6; // CEngineClient::ServerCmdKeyValues
+    StringToButtonCode = 29; // ReadCheatCommandsFromFile
+    GetRecordingTick = 1; // CDemoRecorder
+    SetSignonState = 3; // CDemoRecorder
+    StopRecording = 7; // CDemoRecorder
+    m_szDemoBaseName = 1348; // CDemoRecorder::StartupDemoFile
+    m_nDemoNumber = 1612; // CDemoRecorder::StartupDemoFile
+    m_bRecording = 1610; // CDemoRecorder::SetSignonState
+    GetPlaybackTick = 3; // CDemoPlayer
+    StartPlayback = 6; // CDemoPlayer
+    IsPlayingBack = 7; // CDemoPlayer
+    m_szFileName = 4; // CDemoPlayer::SkipToTick
+    Paint = 14; // CEngineVGui
+    ProcessTick = 12; // CClientState
+    tickcount = 76; // CClientState::ProcessTick
+    interval_per_tick = 84; // CClientState::ProcessTick
+    Disconnect = 34; //  CClientState
+    demoplayer = 151; // CClientState::Disconnect
+    demorecorder = 164; // CClientState::Disconnect
+    GetCurrentMap = 24; // CEngineTool
+    m_szLevelName = 25; // CEngineTool::GetCurrentMap
+    Cbuf_AddText = 58; // CEngine::ClientCmd (TODO)
+    s_CommandBuffer = 64; // Cbuf_AddText (TODO)
+    AddText = 69; // Cbuf_AddText (TODO)
+    AutoCompletionFunc = 37; // listdemo_CompletionFunc (TODO)
+    Key_SetBinding = 60; // unbind (TODO)
+    IsRunningSimulation = 12; // CEngineAPI (TODO)
+    eng = 7; // CEngineAPI::IsRunningSimulation (TODO)
+    Frame = 6; // CEngine
+    HostState_OnClientConnected = 735; // CClientState::SetSignonState (TODO)
+    hoststate = 9; // HostState_OnClientConnected (TODO)
+    m_bLoadGame = 440; // CBaseServer::m_szLevelName (TODO)
+
+    // libvstdlib.so
+    RegisterConCommand = 6; // CCVar
+    UnregisterConCommand = 7; // CCvar
+    FindCommandBase = 10; // CCvar
+
+    // vgui2.so
+
+    GetIScheme = 9; // CSchemeManager
+    GetFont = 4; // CScheme
+
+    // server.so
+
+    PlayerMove = 12; // CGameMovement
+    CheckJumpButton = 30; // CGameMovement
+    FullTossMove = 31; // CGameMovement
+    mv = 8; // CPortalGameMovement::CheckJumpButton
+    m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
+    gpGlobals = 705; // CGameMovement::FullTossMove
+    player = 4; // CPortalGameMovement::PlayerMove
+    m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
+    Think = 31; // CServerGameDLL
+    UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
+    iNumPortalsPlaced = 4816; // CPortal_Player::IncrementPortalsPlaced
+    m_fFlags = 280; // CBasePlayer::UpdateStepSound
+    m_MoveType = 334; // CBasePlayer::UpdateStepSound
+    m_nWaterLevel = 523; // CBasePlayer::UpdateStepSound
+
+    // client.so
+
+    HudProcessInput = 10; // CHLClient
+    HudUpdate = 11; // CHLClient
+    m_vecVelocity = 224; // CFPSPanel::Paint
+    m_vecAbsOrigin = 588; // C_BasePlayer::GetAbsOrigin
+    m_angAbsRotation = 600; // C_BasePlayer::GetAbsAngles
+    GetClientEntity = 3; // CClientEntityList
+    GetClientMode = 1; // CHLClient::HudProcessInput (TODO)
+    CreateMove = 22; // ClientModeShared
+
+    // vguimatsurface.so
+
+    DrawSetColor = 10; // CMatSystemSurface
+    DrawFilledRect = 12; // CMatSystemSurface
+    GetFontTall = 69; // CMatSystemSurface
+    PaintTraverseEx = 117; // CMatSystemSurface (TODO)
+    StartDrawing = 193; // CMatSystemSurface::PaintTraverseEx (TODO)
+    FinishDrawing = 590; // CMatSystemSurface::PaintTraverseEx (TODO)
+    DrawColoredText = 162; // CMatSystemSurface
+    DrawTextLen = 165; // CMatSystemSurface
+}
+void HalfLife2::LoadRules()
+{
+}
+const char* HalfLife2::GetVersion()
+{
+    return (this->version != SourceGame::Portal)
+        ? "Half-Life 2 (2257546)"
+        : "Portal (1910503)";
+}
