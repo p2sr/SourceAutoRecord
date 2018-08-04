@@ -7,6 +7,10 @@
 #include GAME(TheBeginnersGuide)
 #include GAME(TheStanleyParable)
 
+const char* Game::GetVersion()
+{
+    return "Unknown";
+}
 bool Game::IsPortal2Engine()
 {
     return game->version == SourceGame::Portal2
@@ -31,7 +35,7 @@ bool Game::IsPortalGame()
     return game->version == SourceGame::Portal2
         || game->version == SourceGame::Portal;
 }
-bool IsSupported()
+bool Game::IsSupported()
 {
     auto proc = Memory::GetProcessName();
 
@@ -58,7 +62,7 @@ bool IsSupported()
     if (proc == "stanley_linux") {
         game = new TheStanleyParable();
     }
-    if (proc == "beginnersguide") {
+    if (proc == "beginnersguide.bin") {
         game = new TheBeginnersGuide();
     }
 #endif

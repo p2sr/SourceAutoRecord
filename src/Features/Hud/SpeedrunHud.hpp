@@ -27,7 +27,7 @@ void SpeedrunHud::Draw()
     if (mode == 0)
         return;
 
-    Surface::StartDrawing(Surface::matsurface->GetThisPtr());
+    Surface::StartDrawing(Surface::matsurface->ThisPtr());
 
     auto total = Speedrun::timer->GetTotal();
     auto ipt = Speedrun::timer->GetIntervalPerTick();

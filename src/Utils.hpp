@@ -2,27 +2,10 @@
 #ifdef _WIN32
 #include "minhook/MinHook.h"
 #endif
-#include "vmthook/vmthook.h"
 
 #include "Utils/Math.hpp"
 #include "Utils/Memory.hpp"
 #include "Utils/SDK.hpp"
-
-typedef std::unique_ptr<VMTHook> VMT;
-
-#define HOOK(vmt, name)                            \
-    vmt->Hook((void*)Detour::name, Offsets::name); \
-    Original::name = vmt->GetOriginal<_##name>(Offsets::name);
-#define HOOK_O(vmt, name, offset)           \
-    vmt->Hook((void*)Detour::name, offset); \
-    Original::name = vmt->GetOriginal<_##name>(offset);
-
-#define UNHOOK(vmt, name) \
-    if (vmt)              \
-        vmt->Unhook(Offsets::name);
-#define UNHOOK_O(vmt, offset) \
-    if (vmt)                  \
-        vmt->Unhook(offset);
 
 #define _GAME_PATH(x) #x
 
@@ -37,29 +20,29 @@ typedef std::unique_ptr<VMTHook> VMT;
 #define DETOUR(name, ...)                                         \
     using _##name = int(__thiscall*)(void* thisptr, __VA_ARGS__); \
     namespace Original {                                          \
-        _##name name;                                             \
+    _##name name;                                                 \
     }                                                             \
     namespace Detour {                                            \
-        int __fastcall name(void* thisptr, int edx, __VA_ARGS__); \
+    int __fastcall name(void* thisptr, int edx, __VA_ARGS__);     \
     }                                                             \
     int __fastcall Detour::##name(void* thisptr, int edx, __VA_ARGS__)
 #define DETOUR_T(type, name, ...)                                  \
     using _##name = type(__thiscall*)(void* thisptr, __VA_ARGS__); \
     namespace Original {                                           \
-        _##name name;                                              \
+    _##name name;                                                  \
     }                                                              \
     namespace Detour {                                             \
-        type __fastcall name(void* thisptr, int edx, __VA_ARGS__); \
+    type __fastcall name(void* thisptr, int edx, __VA_ARGS__);     \
     }                                                              \
     type __fastcall Detour::##name(void* thisptr, int edx, __VA_ARGS__)
 #define DETOUR_B(name, ...)                                       \
     using _##name = int(__thiscall*)(void* thisptr, __VA_ARGS__); \
     namespace Original {                                          \
-        _##name name;                                             \
-        _##name name##Base;                                       \
+    _##name name;                                                 \
+    _##name name##Base;                                           \
     }                                                             \
     namespace Detour {                                            \
-        int __fastcall name(void* thisptr, int edx, __VA_ARGS__); \
+    int __fastcall name(void* thisptr, int edx, __VA_ARGS__);     \
     }                                                             \
     int __fastcall Detour::##name(void* thisptr, int edx, __VA_ARGS__)
 
@@ -168,3 +151,9 @@ static bool endsWith(const std::string& str, const std::string& suffix)
         void __stdcall name(__VA_ARGS__);          \
     }                                              \
     void __stdcall Detour::name(__VA_ARGS__)
+
+#define SAFE_DELETE(ptr) \
+    if (ptr) {           \
+        delete ptr;      \
+        ptr = nullptr;   \
+    }

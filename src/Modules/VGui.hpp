@@ -17,13 +17,13 @@
 
 #include "Cheats.hpp"
 #include "Game.hpp"
-#include "Interfaces.hpp"
+#include "Interface.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
 namespace VGui {
 
-VMT enginevgui;
+Interface* enginevgui;
 
 using _Paint = int(__func*)(void* thisptr, int mode);
 
@@ -32,7 +32,7 @@ bool RespectClShowPos = true;
 // CEngineVGui::Paint
 DETOUR(Paint, int mode)
 {
-    Surface::StartDrawing(Surface::matsurface->GetThisPtr());
+    Surface::StartDrawing(Surface::matsurface->ThisPtr());
 
     auto elements = 0;
     auto xPadding = Cheats::sar_hud_default_padding_x.GetInt();
@@ -176,24 +176,23 @@ DETOUR(Paint, int mode)
     return Original::Paint(thisptr, mode);
 }
 
-void Hook()
+void Init()
 {
-    CREATE_VMT(Interfaces::IEngineVGui, enginevgui)
-    {
-        HOOK(enginevgui, Paint);
-
-        if (Game::IsHalfLife2Engine()) {
-            RespectClShowPos = false;
-        }
-    }
-
     inputHud = new InputHud();
     speedrunHud = new SpeedrunHud();
+
+    enginevgui = Interface::Create(MODULE("engine"), "VEngineVGui0");
+    if (enginevgui) {
+        enginevgui->Hook(Detour::Paint, Original::Paint, Offsets::Paint);
+    }
+
+    if (Game::IsHalfLife2Engine()) {
+        RespectClShowPos = false;
+    }
 }
-void Unhook()
+void Shutdown()
 {
-    UNHOOK(enginevgui, Paint);
-    DELETE_VMT(enginevgui);
+    Interface::Delete(enginevgui);
 
     delete inputHud;
     delete speedrunHud;

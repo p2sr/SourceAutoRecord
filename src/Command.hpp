@@ -30,7 +30,7 @@ public:
     }
     Command(const char* name)
     {
-        this->ptr = reinterpret_cast<ConCommand*>(FindCommandBase(g_pCVar->GetThisPtr(), name));
+        this->ptr = reinterpret_cast<ConCommand*>(FindCommandBase(g_pCVar->ThisPtr(), name));
         this->isReference = true;
     }
     Command(const char* pName, _CommandCallback callback, const char* pHelpString, int flags = 0,
@@ -57,16 +57,20 @@ public:
     {
         if (!this->isRegistered) {
             this->ptr->ConCommandBase_VTable = Original::ConCommand_VTable;
-            RegisterConCommand(g_pCVar->GetThisPtr(), this->ptr);
+            RegisterConCommand(g_pCVar->ThisPtr(), this->ptr);
         }
         this->isRegistered = true;
     }
     void Unregister()
     {
         if (this->isRegistered) {
-            UnregisterConCommand(g_pCVar->GetThisPtr(), this->ptr);
+            UnregisterConCommand(g_pCVar->ThisPtr(), this->ptr);
         }
         this->isRegistered = false;
+    }
+    bool operator!()
+    {
+        return this->ptr == nullptr;
     }
     static int RegisterAll()
     {

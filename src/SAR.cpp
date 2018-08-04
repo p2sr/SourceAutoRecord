@@ -14,7 +14,7 @@
 #include "Command.hpp"
 #include "Commands.hpp"
 #include "Game.hpp"
-#include "Interfaces.hpp"
+#include "Interface.hpp"
 #include "Listener.hpp"
 #include "SAR.hpp"
 #include "Variable.hpp"
@@ -30,8 +30,6 @@ public:
         if (!console->Init())
             return false;
 
-        Interfaces::Init();
-
         if (Game::IsSupported()) {
             if (Tier1::Init()) {
 
@@ -42,13 +40,13 @@ public:
                 auto commands = Command::RegisterAll();
                 console->DevMsg("SAR: Registered %i ConVars and %i ConCommands!\n", vars, commands);
 
-                InputSystem::Hook();
-                Scheme::Hook();
-                Surface::Hook();
-                VGui::Hook();
-                Engine::Hook();
-                Client::Hook();
-                Server::Hook();
+                InputSystem::Init();
+                Scheme::Init();
+                Surface::Init();
+                VGui::Init();
+                Engine::Init();
+                Client::Init();
+                Server::Init();
 
                 //listener = new SourceAutoRecordListener();
 
@@ -140,13 +138,13 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 {
     //delete listener;
 
-    Client::Unhook();
-    Engine::Unhook();
-    Server::Unhook();
-    InputSystem::Unhook();
-    Scheme::Unhook();
-    Surface::Unhook();
-    VGui::Unhook();
+    Client::Shutdown();
+    Engine::Shutdown();
+    Server::Shutdown();
+    InputSystem::Shutdown();
+    Scheme::Shutdown();
+    Surface::Shutdown();
+    VGui::Shutdown();
 
     Cheats::Unload();
 
@@ -156,8 +154,7 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
     Tier1::Shutdown();
 
     if (SAR::PluginFound()) {
-        // SAR has to unhook CEngine some ticks before unloading the module or the game
-        // will crash 100% of the time
+        // SAR has to unhook CEngine some ticks before unloading the module
         auto unload = std::string("plugin_unload ") + std::to_string(plugin->index);
         Engine::SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);
     } else {
@@ -165,7 +162,9 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
     }
 
     console->Print("Cya :)\n");
-    delete Speedrun::timer;
-    delete plugin;
+
+    SAFE_DELETE(game);
+    SAFE_DELETE(Speedrun::timer);
+    SAFE_DELETE(plugin);
     delete console;
 }

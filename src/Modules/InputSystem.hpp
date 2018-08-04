@@ -1,6 +1,6 @@
 #pragma once
 #include "Command.hpp"
-#include "Interfaces.hpp"
+#include "Interface.hpp"
 #include "Offsets.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
@@ -10,7 +10,7 @@
 
 namespace InputSystem {
 
-VMT g_InputSystem;
+Interface* g_InputSystem;
 
 using _StringToButtonCode = int(__func*)(void* thisptr, const char* pString);
 using _KeySetBinding = void(__cdecl*)(int keynum, const char* pBinding);
@@ -20,14 +20,15 @@ _KeySetBinding KeySetBinding;
 
 int GetButton(const char* pString)
 {
-    return StringToButtonCode(g_InputSystem->GetThisPtr(), pString);
+    return StringToButtonCode(g_InputSystem->ThisPtr(), pString);
 }
 
-void Hook()
+void Init()
 {
-    CREATE_VMT(Interfaces::IInputSystem, g_InputSystem)
-    {
-        StringToButtonCode = g_InputSystem->GetOriginal<_StringToButtonCode>(Offsets::StringToButtonCode);
+    g_InputSystem = Interface::Create(MODULE("inputsystem"), "InputSystemVersion0");
+
+    if (g_InputSystem) {
+        StringToButtonCode = g_InputSystem->Original<_StringToButtonCode>(Offsets::StringToButtonCode);
     }
 
     auto unbind = Command("unbind");
@@ -36,8 +37,8 @@ void Hook()
         KeySetBinding = Memory::Read<_KeySetBinding>(cc_unbind_callback + Offsets::Key_SetBinding);
     }
 }
-void Unhook()
+void Shutdown()
 {
-    DELETE_VMT(g_InputSystem);
+    Interface::Delete(g_InputSystem);
 }
 }

@@ -16,13 +16,13 @@ public:
 public:
     virtual void LoadOffsets() = 0;
     virtual void LoadRules() = 0;
-    virtual const char* GetVersion() = 0;
-    static bool IsSupported();
+    virtual const char* GetVersion();
     static bool IsPortal2Engine();
     static bool IsHalfLife2Engine();
     static bool HasChallengeMode();
     static bool HasJumpDisabled();
     static bool IsPortalGame();
+    static bool IsSupported();
 };
 
 extern Game* game;

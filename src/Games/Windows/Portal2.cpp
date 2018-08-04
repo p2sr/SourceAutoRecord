@@ -42,8 +42,8 @@ void Portal2::LoadOffsets()
     ProcessTick = 1; // CClientState/IServerMessageHandler
     tickcount = 95; // CClientState::ProcessTick
     interval_per_tick = 65; // CClientState::ProcessTick
-    HostState_OnClientConnected = 123; // CClientState::SetSignonState (TODO)
-    hoststate = 123; // HostState_OnClientConnected (TODO)
+    HostState_OnClientConnected = 684; // CClientState::SetSignonState
+    hoststate = 1; // HostState_OnClientConnected
     Disconnect = 16; //  CClientState
     demoplayer = 74; // CClientState::Disconnect
     demorecorder = 87; // CClientState::Disconnect
@@ -51,12 +51,12 @@ void Portal2::LoadOffsets()
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
     AddListener = 3; // CGameEventManager
     RemoveListener = 5; // CGameEventManager
-    AutoCompletionFunc = 37; // listdemo_CompletionFunc (TODO)
-    Key_SetBinding = 60; // unbind (TODO)
-    IsRunningSimulation = 5; // CEngineAPI (TODO)
-    eng = 7; // CEngineAPI::IsRunningSimulation (TODO)
+    AutoCompletionFunc = 66; // listdemo_CompletionFunc
+    Key_SetBinding = 135; // unbind
+    IsRunningSimulation = 12; // CEngineAPI
+    eng = 2; // CEngineAPI::IsRunningSimulation
     Frame = 5; // CEngine
-    m_bLoadGame = 440; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName (TODO)
+    m_bLoadGame = 448; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
 
     // vstdlib.dll
     RegisterConCommand = 9; // CCVar
@@ -106,17 +106,17 @@ void Portal2::LoadOffsets()
     GetClientMode = 4; // CHLClient::HudProcessInput
     CreateMove = 24; // ClientModeShared
     GetName = 10; // CHud
-    GetHud = 221; // cc_leaderboard_enable (TODO)
-    FindElement = 123; // cc_leaderboard_enable (TODO)
+    GetHud = 125; // cc_leaderboard_enable
+    FindElement = 135; // cc_leaderboard_enable
 
     // vguimatsurface.dll
 
     DrawSetColor = 14; // CMatSystemSurface
     DrawFilledRect = 15; // CMatSystemSurface
     GetFontTall = 72; // CMatSystemSurface
-    PaintTraverseEx = 117; // CMatSystemSurface (TODO)
-    StartDrawing = 193; // CMatSystemSurface::PaintTraverseEx (TODO)
-    FinishDrawing = 590; // CMatSystemSurface::PaintTraverseEx (TODO)
+    PaintTraverseEx = 117; // CMatSystemSurface
+    StartDrawing = 127; // CMatSystemSurface::PaintTraverseEx
+    FinishDrawing = 603; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 160; // CMatSystemSurface
     DrawTextLen = 163; // CMatSystemSurface
 }

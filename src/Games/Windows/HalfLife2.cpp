@@ -42,19 +42,19 @@ void HalfLife2::LoadOffsets()
     ProcessTick = 1; // CClientState/IServerMessageHandler
     tickcount = 87; // CClientState::ProcessTick
     interval_per_tick = 65; // CClientState::ProcessTick
-    HostState_OnClientConnected = 735; // CClientState::SetSignonState (TODO)
-    hoststate = 9; // HostState_OnClientConnected (TODO)
+    HostState_OnClientConnected = 518; // CClientState::SetSignonState
+    hoststate = 1; // HostState_OnClientConnected
     Disconnect = 14; //  CClientState
     demoplayer = 110; // CClientState::Disconnect
     demorecorder = 121; // CClientState::Disconnect
     GetCurrentMap = 23; // CEngineTool
     m_szLevelName = 32; // CEngineTool::GetCurrentMap
-    AutoCompletionFunc = 37; // listdemo_CompletionFunc (TODO)
-    Key_SetBinding = 60; // unbind (TODO)
-    IsRunningSimulation = 12; // CEngineAPI (TODO)
-    eng = 7; // CEngineAPI::IsRunningSimulation (TODO)
+    AutoCompletionFunc = 62; // listdemo_CompletionFunc
+    Key_SetBinding = 110; // unbind
+    IsRunningSimulation = 9; // CEngineAPI
+    eng = 2; // CEngineAPI::IsRunningSimulation
     Frame = 5; // CEngine
-    m_bLoadGame = 440; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName (TODO)
+    m_bLoadGame = 335; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
 
     // vstdlib.dll
     RegisterConCommand = 6; // CCVar
@@ -75,11 +75,11 @@ void HalfLife2::LoadOffsets()
     m_nOldButtons = 40; // CGameMovement::CheckJumpButton
     player = 4; // CGameMovement::CheckJumpButton
     m_vecVelocity2 = 64; // CGameMovement::PlayerMove
-    GameFrame = 4; // CServerGameDLL (TODO)
-    g_InRestore = 32; // CServerGameDLL::GameFrame (TODO)
-    gpGlobals = 84; // CServerGameDLL::GameFrame (TODO)
-    ServiceEventQueue = 328; // CServerGameDLL::GameFrame (TODO)
-    g_EventQueue = 24; // ServiceEventQueue (TODO)
+    GameFrame = 4; // CServerGameDLL
+    g_InRestore = 8; // CServerGameDLL::GameFrame
+    gpGlobals = 29; // CServerGameDLL::GameFrame
+    ServiceEventQueue = 145; // CServerGameDLL::GameFrame
+    g_EventQueue = 1; // ServiceEventQueue
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 38; // CServerGameDLL::Think
     iNumPortalsPlaced = 4816; // CPortal_Player::IncrementPortalsPlaced
@@ -103,9 +103,9 @@ void HalfLife2::LoadOffsets()
     DrawSetColor = 11; // CMatSystemSurface
     DrawFilledRect = 12; // CMatSystemSurface
     GetFontTall = 69; // CMatSystemSurface
-    PaintTraverseEx = 117; // CMatSystemSurface (TODO)
-    StartDrawing = 193; // CMatSystemSurface::PaintTraverseEx (TODO)
-    FinishDrawing = 590; // CMatSystemSurface::PaintTraverseEx (TODO)
+    PaintTraverseEx = 114; // CMatSystemSurface
+    StartDrawing = 124; // CMatSystemSurface::PaintTraverseEx
+    FinishDrawing = 606; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 162; // CMatSystemSurface
     DrawTextLen = 165; // CMatSystemSurface
 }

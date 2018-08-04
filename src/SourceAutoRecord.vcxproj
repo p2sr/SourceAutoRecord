@@ -158,14 +158,24 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="..\lib\minhook\trampoline.c" />
     <ClCompile Include="Features\Hud\Hud.cpp" />
     <ClCompile Include="Features\Speedrun.cpp" />
-    <ClInclude Include="Game.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Interface.cpp" />
+    <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
     <ClCompile Include="Modules\Console.cpp" />
-    <ClCompile Include="Games\Linux\HalfLife2.cpp" />
-    <ClCompile Include="Games\Linux\Portal2.cpp" />
-    <ClCompile Include="Games\Linux\TheBeginnersGuide.cpp" />
-    <ClCompile Include="Games\Linux\TheStanleyParable.cpp" />
+    <ClCompile Include="Games\Linux\HalfLife2.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\Portal2.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\TheBeginnersGuide.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\TheStanleyParable.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Games\Windows\HalfLife2.cpp" />
     <ClCompile Include="Games\Windows\Portal2.cpp" />
     <ClCompile Include="Games\Windows\TheBeginnersGuide.cpp" />
@@ -180,7 +190,6 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="..\lib\minhook\hde\table64.h" />
     <ClInclude Include="..\lib\minhook\trampoline.h" />
     <ClInclude Include="..\lib\minhook\MinHook.h" />
-    <ClInclude Include="..\lib\vmthook\vmthook.h" />
     <ClInclude Include="Cheats.hpp" />
     <ClInclude Include="Command.hpp" />
     <ClInclude Include="Commands.hpp" />
@@ -214,15 +223,23 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\TimerAverage.hpp" />
     <ClInclude Include="Features\TimerCheckPoints.hpp" />
     <ClInclude Include="Game.hpp" />
-    <ClInclude Include="Games\Linux\HalfLife2.hpp" />
-    <ClInclude Include="Games\Linux\Portal2.hpp" />
-    <ClInclude Include="Games\Linux\TheBeginnersGuide.hpp" />
-    <ClInclude Include="Games\Linux\TheStanleyParable.hpp" />
+    <ClInclude Include="Games\Linux\HalfLife2.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\Portal2.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\TheBeginnersGuide.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\TheStanleyParable.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Games\Windows\HalfLife2.hpp" />
     <ClInclude Include="Games\Windows\Portal2.hpp" />
     <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp" />
     <ClInclude Include="Games\Windows\TheStanleyParable.hpp" />
-    <ClInclude Include="Interfaces.hpp" />
+    <ClInclude Include="Interface.hpp" />
     <ClInclude Include="Listener.hpp" />
     <ClInclude Include="Modules\Client.hpp" />
     <ClInclude Include="Modules\Console.hpp" />
@@ -246,7 +263,6 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\lib\minhook\LICENSE.txt" />
-    <Text Include="..\lib\vmthook\LICENSE" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -7,16 +7,16 @@
 
 #include "Cheats.hpp"
 #include "Game.hpp"
-#include "Interfaces.hpp"
+#include "Interface.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
 namespace Client {
 
-VMT clientdll;
-VMT g_pClientMode;
-VMT g_HUDChallengeStats;
-VMT s_EntityList;
+Interface* g_ClientDLL;
+Interface* g_pClientMode;
+Interface* g_HUDChallengeStats;
+Interface* s_EntityList;
 
 using _GetClientEntity = void*(__func*)(void* thisptr, int entnum);
 using _KeyDown = int(__cdecl*)(void* b, const char* c);
@@ -30,7 +30,7 @@ void* in_jump;
 
 void* GetPlayer()
 {
-    return GetClientEntity(s_EntityList->GetThisPtr(), Engine::GetLocalPlayerIndex());
+    return GetClientEntity(s_EntityList->ThisPtr(), Engine::GetLocalPlayerIndex());
 }
 
 Vector GetAbsOrigin()
@@ -100,17 +100,19 @@ DETOUR_T(const char*, GetName)
     return Original::GetName(thisptr);
 }
 
-void Hook()
+void Init()
 {
     bool readJmp = false;
 #ifdef _WIN32
-    readJmp = Game::Version == Game::TheStanleyParable
-        || Game::Version == Game::TheBeginnersGuide;
+    readJmp = game->version == SourceGame::TheStanleyParable
+        || game->version == SourceGame::TheBeginnersGuide;
 #endif
 
-    CREATE_VMT(Interfaces::IBaseClientDLL, clientdll)
-    {
-        HOOK(clientdll, HudUpdate);
+    g_ClientDLL = Interface::Create(MODULE("client"), "VClient0");
+    s_EntityList = Interface::Create(MODULE("client"), "VClientEntityList0", false);
+
+    if (g_ClientDLL) {
+        g_ClientDLL->Hook(Detour::HudUpdate, Original::HudUpdate, Offsets::HudUpdate);
 
         if (game->version == SourceGame::Portal2) {
             auto leaderboard = Command("+leaderboard");
@@ -121,30 +123,27 @@ void Hook()
                 auto cc_leaderboard_enable = (uintptr_t)leaderboard.GetPtr()->m_pCommandCallback;
                 auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
                 auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
-
                 auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
-                CREATE_VMT(CHUDChallengeStats, g_HUDChallengeStats)
-                {
-                    HOOK(g_HUDChallengeStats, GetName);
+
+                if (g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
+                    g_HUDChallengeStats->Hook(Detour::GetName, Original::GetName, Offsets::GetName);
                 }
             }
         } else if (game->version == SourceGame::TheStanleyParable) {
-            auto IN_ActivateMouse = clientdll->GetOriginal(Offsets::IN_ActivateMouse, readJmp);
+            auto IN_ActivateMouse = g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
             auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
 
-            VMT g_Input;
-            COPY_VMT(g_InputAddr, g_Input)
-            {
-                auto GetButtonBits = g_Input->GetOriginal(Offsets::GetButtonBits, readJmp);
-                in_jump = Memory::Deref<void*>((uintptr_t)GetButtonBits + Offsets::in_jump);
+            if (auto g_Input = Interface::Create(g_InputAddr, false)) {
+                auto GetButtonBits = g_Input->Original(Offsets::GetButtonBits, readJmp);
+                Memory::Deref(GetButtonBits + Offsets::in_jump, &in_jump);
 
-                auto JoyStickApplyMovement = g_Input->GetOriginal(Offsets::JoyStickApplyMovement, readJmp);
-                KeyDown = Memory::Read<_KeyDown>(JoyStickApplyMovement + Offsets::KeyDown);
-                KeyUp = Memory::Read<_KeyUp>(JoyStickApplyMovement + Offsets::KeyUp);
+                auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
+                Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &KeyDown);
+                Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &KeyUp);
             }
         }
 
-        auto HudProcessInput = clientdll->GetOriginal(Offsets::HudProcessInput, readJmp);
+        auto HudProcessInput = g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
         void* clientMode = nullptr;
         if (Game::IsPortal2Engine()) {
             typedef void* (*_GetClientMode)();
@@ -154,26 +153,20 @@ void Hook()
             clientMode = Memory::DerefDeref<void*>(HudProcessInput + Offsets::GetClientMode);
         }
 
-        CREATE_VMT(clientMode, g_pClientMode)
-        {
-            HOOK(g_pClientMode, CreateMove);
+        if (g_pClientMode = Interface::Create(clientMode)) {
+            g_pClientMode->Hook(Detour::CreateMove, Original::CreateMove, Offsets::CreateMove);
         }
     }
 
-    CREATE_VMT(Interfaces::IClientEntityList, s_EntityList)
-    {
-        GetClientEntity = s_EntityList->GetOriginal<_GetClientEntity>(Offsets::GetClientEntity, readJmp);
+    if (s_EntityList) {
+        GetClientEntity = s_EntityList->Original<_GetClientEntity>(Offsets::GetClientEntity, readJmp);
     }
 }
-void Unhook()
+void Shutdown()
 {
-    UNHOOK(clientdll, HudUpdate);
-    UNHOOK(g_pClientMode, CreateMove);
-    UNHOOK(g_HUDChallengeStats, GetName);
-
-    DELETE_VMT(clientdll);
-    DELETE_VMT(g_pClientMode);
-    DELETE_VMT(g_HUDChallengeStats);
-    DELETE_VMT(s_EntityList);
+    Interface::Delete(g_ClientDLL);
+    Interface::Delete(g_pClientMode);
+    Interface::Delete(g_HUDChallengeStats);
+    Interface::Delete(s_EntityList);
 }
 }

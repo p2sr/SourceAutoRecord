@@ -14,7 +14,7 @@ bool* m_bLoadgame;
 
 namespace DemoRecorder {
 
-    VMT s_ClientDemoRecorder;
+    Interface* s_ClientDemoRecorder;
 
     using _GetRecordingTick = int(__func*)(void* thisptr);
     _GetRecordingTick GetRecordingTick;
@@ -28,7 +28,7 @@ namespace DemoRecorder {
 
     int GetTick()
     {
-        return GetRecordingTick(s_ClientDemoRecorder->GetThisPtr());
+        return GetRecordingTick(s_ClientDemoRecorder->ThisPtr());
     }
 
     // CDemoRecorder::SetSignonState
@@ -70,24 +70,21 @@ namespace DemoRecorder {
         return result;
     }
 
-    void Hook(void* demorecorder)
+    void Init(void* demorecorder)
     {
-        CREATE_VMT(demorecorder, s_ClientDemoRecorder)
-        {
-            HOOK(s_ClientDemoRecorder, SetSignonState);
-            HOOK(s_ClientDemoRecorder, StopRecording);
+        if (s_ClientDemoRecorder = Interface::Create(demorecorder)) {
+            s_ClientDemoRecorder->Hook(Detour::SetSignonState, Original::SetSignonState, Offsets::SetSignonState);
+            s_ClientDemoRecorder->Hook(Detour::StopRecording, Original::StopRecording, Offsets::StopRecording);
 
-            GetRecordingTick = s_ClientDemoRecorder->GetOriginal<_GetRecordingTick>(Offsets::GetRecordingTick);
+            GetRecordingTick = s_ClientDemoRecorder->Original<_GetRecordingTick>(Offsets::GetRecordingTick);
             m_szDemoBaseName = reinterpret_cast<char*>((uintptr_t)demorecorder + Offsets::m_szDemoBaseName);
             m_nDemoNumber = reinterpret_cast<int*>((uintptr_t)demorecorder + Offsets::m_nDemoNumber);
             m_bRecording = reinterpret_cast<bool*>((uintptr_t)demorecorder + Offsets::m_bRecording);
         }
     }
-    void Unhook()
+    void Shutdown()
     {
-        UNHOOK(s_ClientDemoRecorder, SetSignonState);
-        UNHOOK(s_ClientDemoRecorder, StopRecording);
-        DELETE_VMT(s_ClientDemoRecorder);
+        Interface::Delete(s_ClientDemoRecorder);
     }
 }
 }

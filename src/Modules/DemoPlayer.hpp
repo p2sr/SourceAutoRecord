@@ -4,6 +4,7 @@
 
 #include "Features/Demo.hpp"
 
+#include "Interface.hpp"
 #include "Offsets.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
@@ -15,7 +16,7 @@ _GetGameDirectory GetGameDirectory;
 
 namespace DemoPlayer {
 
-    VMT s_ClientDemoPlayer;
+    Interface* s_ClientDemoPlayer;
 
     using _IsPlayingBack = bool(__func*)(void* thisptr);
     using _GetPlaybackTick = int(__func*)(void* thisptr);
@@ -27,11 +28,11 @@ namespace DemoPlayer {
 
     int GetTick()
     {
-        return GetPlaybackTick(s_ClientDemoPlayer->GetThisPtr());
+        return GetPlaybackTick(s_ClientDemoPlayer->ThisPtr());
     }
     bool IsPlaying()
     {
-        return IsPlayingBack(s_ClientDemoPlayer->GetThisPtr());
+        return IsPlayingBack(s_ClientDemoPlayer->ThisPtr());
     }
 
     // CDemoRecorder::StartPlayback
@@ -57,20 +58,19 @@ namespace DemoPlayer {
         return result;
     }
 
-    void Hook(void* demoplayer)
+    void Init(void* demoplayer)
     {
-        CREATE_VMT(demoplayer, s_ClientDemoPlayer) {
-            HOOK(s_ClientDemoPlayer, StartPlayback);
+        if (s_ClientDemoPlayer = Interface::Create(demoplayer)) {
+            s_ClientDemoPlayer->Hook(Detour::StartPlayback, Original::StartPlayback, Offsets::StartPlayback);
 
-            GetPlaybackTick = s_ClientDemoPlayer->GetOriginal<_GetPlaybackTick>(Offsets::GetPlaybackTick);
-            IsPlayingBack = s_ClientDemoPlayer->GetOriginal<_IsPlayingBack>(Offsets::IsPlayingBack);
+            GetPlaybackTick = s_ClientDemoPlayer->Original<_GetPlaybackTick>(Offsets::GetPlaybackTick);
+            IsPlayingBack = s_ClientDemoPlayer->Original<_IsPlayingBack>(Offsets::IsPlayingBack);
             DemoName = reinterpret_cast<char*>((uintptr_t)demoplayer + Offsets::m_szFileName);
         }
     }
-    void Unhook()
+    void Shutdown()
     {
-        UNHOOK(s_ClientDemoPlayer, StartPlayback);
-        DELETE_VMT(s_ClientDemoPlayer);
+        Interface::Delete(s_ClientDemoPlayer);
     }
 }
 }

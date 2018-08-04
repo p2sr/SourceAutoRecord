@@ -1,39 +1,38 @@
 #pragma once
 #include "Game.hpp"
-#include "Interfaces.hpp"
+#include "Interface.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
 // TODO: Custom fonts
 namespace Scheme {
 
-VMT g_pScheme;
+Interface* g_pScheme;
 
 using _GetFont = unsigned long(__func*)(void* thisptr, const char* fontName, bool proportional);
 _GetFont GetFont;
 
 unsigned long GetDefaultFont()
 {
-    return GetFont(g_pScheme->GetThisPtr(), "DefaultFixedOutline", 0);
+    return GetFont(g_pScheme->ThisPtr(), "DefaultFixedOutline", 0);
 }
 
-void Hook()
+void Init()
 {
-    VMT g_pVGuiSchemeManager;
-    COPY_VMT(Interfaces::ISchemeManager, g_pVGuiSchemeManager)
-    {
+    auto g_pVGuiSchemeManager = Interface::Create(MODULE("vgui2"), "VGUI_Scheme0", false);
+    if (g_pVGuiSchemeManager) {
         using _GetIScheme = void*(__func*)(void* thisptr, unsigned long scheme);
-        auto GetIScheme = g_pVGuiSchemeManager->GetOriginal<_GetIScheme>(Offsets::GetIScheme);
+        auto GetIScheme = g_pVGuiSchemeManager->Original<_GetIScheme>(Offsets::GetIScheme);
 
         // Default scheme is 1
-        CREATE_VMT(GetIScheme(g_pVGuiSchemeManager->GetThisPtr(), 1), g_pScheme)
-        {
-            GetFont = g_pScheme->GetOriginal<_GetFont>(Offsets::GetFont);
+        g_pScheme = Interface::Create(GetIScheme(g_pVGuiSchemeManager->ThisPtr(), 1));
+        if (g_pScheme) {
+            GetFont = g_pScheme->Original<_GetFont>(Offsets::GetFont);
         }
     }
 }
-void Unhook()
+void Shutdown()
 {
-    DELETE_VMT(g_pScheme);
+    Interface::Delete(g_pScheme);
 }
 }

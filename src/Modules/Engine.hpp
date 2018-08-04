@@ -14,7 +14,7 @@
 
 #include "Cheats.hpp"
 #include "Game.hpp"
-#include "Interfaces.hpp"
+#include "Interface.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
 
@@ -24,10 +24,10 @@
 
 namespace Engine {
 
-VMT engine;
-VMT cl;
-VMT s_GameEventManager;
-VMT eng;
+Interface* engine;
+Interface* cl;
+Interface* s_GameEventManager;
+Interface* eng;
 
 using _GetScreenSize = int(__stdcall*)(int& width, int& height);
 using _ClientCmd = int(__func*)(void* thisptr, const char* szCmdString);
@@ -59,7 +59,7 @@ void* s_CommandBuffer;
 
 void ExecuteCommand(const char* cmd)
 {
-    ClientCmd(engine->GetThisPtr(), cmd);
+    ClientCmd(engine->ThisPtr(), cmd);
 }
 int GetSessionTick()
 {
@@ -72,17 +72,17 @@ float ToTime(int tick)
 }
 int GetLocalPlayerIndex()
 {
-    return GetLocalPlayer(engine->GetThisPtr());
+    return GetLocalPlayer(engine->ThisPtr());
 }
 QAngle GetAngles()
 {
     auto va = QAngle();
-    GetViewAngles(engine->GetThisPtr(), va);
+    GetViewAngles(engine->ThisPtr(), va);
     return va;
 }
 void SetAngles(QAngle va)
 {
-    SetViewAngles(engine->GetThisPtr(), va);
+    SetViewAngles(engine->ThisPtr(), va);
 }
 void SendToCommandBuffer(const char* text, int delay)
 {
@@ -294,16 +294,16 @@ DETOUR_COMMAND(quit)
     SafeUnload("quit");
 }
 
-void Hook()
+void Init()
 {
-    CREATE_VMT(Interfaces::IVEngineClient, engine)
-    {
-        GetScreenSize = engine->GetOriginal<_GetScreenSize>(Offsets::GetScreenSize);
-        ClientCmd = engine->GetOriginal<_ClientCmd>(Offsets::ClientCmd);
-        GetLocalPlayer = engine->GetOriginal<_GetLocalPlayer>(Offsets::GetLocalPlayer);
-        GetViewAngles = engine->GetOriginal<_GetViewAngles>(Offsets::GetViewAngles);
-        SetViewAngles = engine->GetOriginal<_SetViewAngles>(Offsets::SetViewAngles);
-        GetGameDirectory = engine->GetOriginal<_GetGameDirectory>(Offsets::GetGameDirectory);
+    engine = Interface::Create(MODULE("engine"), "VEngineClient0", false);
+    if (engine) {
+        GetScreenSize = engine->Original<_GetScreenSize>(Offsets::GetScreenSize);
+        ClientCmd = engine->Original<_ClientCmd>(Offsets::ClientCmd);
+        GetLocalPlayer = engine->Original<_GetLocalPlayer>(Offsets::GetLocalPlayer);
+        GetViewAngles = engine->Original<_GetViewAngles>(Offsets::GetViewAngles);
+        SetViewAngles = engine->Original<_SetViewAngles>(Offsets::SetViewAngles);
+        GetGameDirectory = engine->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
 
         Cbuf_AddText = Memory::Read<_Cbuf_AddText>((uintptr_t)ClientCmd + Offsets::Cbuf_AddText);
 
@@ -313,35 +313,34 @@ void Hook()
             auto GetClientState = Memory::Read<_GetClientState>((uintptr_t)ClientCmd + Offsets::GetClientStateFunction);
             clPtr = GetClientState();
 
-            GetActiveSplitScreenPlayerSlot = engine->GetOriginal<_GetActiveSplitScreenPlayerSlot>(Offsets::GetActiveSplitScreenPlayerSlot);
+            GetActiveSplitScreenPlayerSlot = engine->Original<_GetActiveSplitScreenPlayerSlot>(Offsets::GetActiveSplitScreenPlayerSlot);
         } else if (Game::IsHalfLife2Engine()) {
-            auto ServerCmdKeyValues = engine->GetOriginal(Offsets::ServerCmdKeyValues);
+            auto ServerCmdKeyValues = engine->Original(Offsets::ServerCmdKeyValues);
             clPtr = Memory::Deref<void*>(ServerCmdKeyValues + Offsets::cl);
 
             AddText = Memory::Read<_AddText>((uintptr_t)Cbuf_AddText + Offsets::AddText);
             s_CommandBuffer = Memory::Deref<void*>((uintptr_t)Cbuf_AddText + Offsets::s_CommandBuffer);
         }
 
-        CREATE_VMT(clPtr, cl)
-        {
+        if (cl = Interface::Create(clPtr)) {
             if (Game::IsPortal2Engine()) {
-                HOOK_O(cl, SetSignonState, Offsets::Disconnect - 1);
-                HOOK(cl, Disconnect);
+                cl->Hook(Detour::SetSignonState, Original::SetSignonState, Offsets::Disconnect - 1);
+                cl->Hook(Detour::Disconnect, Original::Disconnect, Offsets::Disconnect);
             } else {
-                HOOK_O(cl, SetSignonState2, Offsets::Disconnect - 1);
+                cl->Hook(Detour::SetSignonState2, Original::SetSignonState2, Offsets::Disconnect - 1);
 #ifdef _WIN32
                 HOOK_COMMAND(connect);
 #else
-                HOOK_O(cl, Disconnect2, Offsets::Disconnect);
+                cl->Hook(Detour::Disconnect2, Original::Disconnect2, Offsets::Disconnect);
 #endif
             }
 
-            auto disconnect = cl->GetOriginal(Offsets::Disconnect);
-            DemoPlayer::Hook(Memory::DerefDeref<void*>(disconnect + Offsets::demoplayer));
-            DemoRecorder::Hook(Memory::DerefDeref<void*>(disconnect + Offsets::demorecorder));
+            auto disconnect = cl->Original(Offsets::Disconnect);
+            DemoPlayer::Init(Memory::DerefDeref<void*>(disconnect + Offsets::demoplayer));
+            DemoRecorder::Init(Memory::DerefDeref<void*>(disconnect + Offsets::demorecorder));
 
 #if _WIN32
-            auto IServerMessageHandler_VMT = Memory::Deref<uintptr_t>((uintptr_t)cl->GetThisPtr() + IServerMessageHandler_VMT_Offset);
+            auto IServerMessageHandler_VMT = Memory::Deref<uintptr_t>((uintptr_t)cl->ThisPtr() + IServerMessageHandler_VMT_Offset);
             auto ProcessTick = Memory::Deref<uintptr_t>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
 #else
             auto ProcessTick = cl->GetOriginal(Offsets::ProcessTick);
@@ -350,35 +349,32 @@ void Hook()
             interval_per_tick = Memory::Deref<float*>(ProcessTick + Offsets::interval_per_tick);
             Speedrun::timer->SetIntervalPerTick(interval_per_tick);
 
-            auto SetSignonState = cl->GetOriginal(Offsets::Disconnect - 1);
+            auto SetSignonState = cl->Original(Offsets::Disconnect - 1);
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
             hoststate = Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate);
 
-            VMT s_EngineAPI;
-            COPY_VMT(Interfaces::IEngineAPI, s_EngineAPI)
-            {
-                auto IsRunningSimulation = s_EngineAPI->GetOriginal(Offsets::IsRunningSimulation);
+            if (auto s_EngineAPI = Interface::Create(MODULE("engine"), "VENGINE_LAUNCHER_API_VERSION0", false)) {
+                auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
                 auto engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
 
-                CREATE_VMT(engAddr, eng)
-                {
-                    HOOK(eng, Frame);
+                if (eng = Interface::Create(engAddr)) {
+                    eng->Hook(Detour::Frame, Original::Frame, Offsets::Frame);
                 }
             }
         }
     }
 
-    VMT tool;
-    COPY_VMT(Interfaces::IEngineTool, tool)
-    {
-        auto GetCurrentMap = tool->GetOriginal(Offsets::GetCurrentMap);
+    if (auto tool = Interface::Create(MODULE("engine"), "VENGINETOOL0", false)) {
+        auto GetCurrentMap = tool->Original(Offsets::GetCurrentMap);
         m_szLevelName = Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName);
     }
 
-    CREATE_VMT(Interfaces::IGameEventManager2, s_GameEventManager)
-    {
-        AddListener = s_GameEventManager->GetOriginal<_AddListener>(Offsets::AddListener);
-        RemoveListener = s_GameEventManager->GetOriginal<_RemoveListener>(Offsets::RemoveListener);
+    if (game->version == SourceGame::Portal2) {
+        s_GameEventManager = Interface::Create(MODULE("engine"), "GAMEEVENTSMANAGER002", false);
+        if (s_GameEventManager) {
+            AddListener = s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
+            RemoveListener = s_GameEventManager->Original<_RemoveListener>(Offsets::RemoveListener);
+        }
     }
 
     HOOK_COMMAND(plugin_load);
@@ -386,27 +382,22 @@ void Hook()
     HOOK_COMMAND(exit);
     HOOK_COMMAND(quit);
 }
-void Unhook()
+void Shutdown()
 {
-    UNHOOK_O(cl, Offsets::Disconnect - 1);
+    Interface::Delete(engine);
+    Interface::Delete(cl);
+    Interface::Delete(eng);
+    Interface::Delete(s_GameEventManager);
+
 #ifdef _WIN32
     UNHOOK_COMMAND(connect);
-#else
-    UNHOOK_O(cl, Offsets::Disconnect);
 #endif
-    UNHOOK(eng, Frame);
-
-    DELETE_VMT(engine);
-    DELETE_VMT(cl);
-    DELETE_VMT(s_GameEventManager);
-    DELETE_VMT(eng);
-
     UNHOOK_COMMAND(plugin_load);
     UNHOOK_COMMAND(plugin_unload);
     UNHOOK_COMMAND(exit);
     UNHOOK_COMMAND(quit);
 
-    DemoPlayer::Unhook();
-    DemoRecorder::Unhook();
+    DemoPlayer::Shutdown();
+    DemoRecorder::Shutdown();
 }
 }

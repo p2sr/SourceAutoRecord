@@ -16,23 +16,7 @@ void TheStanleyParable::LoadOffsets()
 
     tickcount = 103; // CClientState::ProcessTick
     interval_per_tick = 73; // CClientState::ProcessTick
-    HostState_OnClientConnected = 735; // CClientState::SetSignonState (TODO)
-    hoststate = 9; // HostState_OnClientConnected (TODO)
-    Disconnect = 16; //  CClientState
-    m_szLevelName = 36; // CEngineTool::GetCurrentMap
-    AutoCompletionFunc = 37; // listdemo_CompletionFunc (TODO)
-    Key_SetBinding = 60; // unbind (TODO)
-    IsRunningSimulation = 12; // CEngineAPI (TODO)
-    eng = 7; // CEngineAPI::IsRunningSimulation (TODO)
-    m_bLoadGame = 440; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName (TODO)
-
-    // server.dll
-
-    GameFrame = 4; // CServerGameDLL (TODO)
-    g_InRestore = 32; // CServerGameDLL::GameFrame (TODO)
-    gpGlobals = 84; // CServerGameDLL::GameFrame (TODO)
-    ServiceEventQueue = 328; // CServerGameDLL::GameFrame (TODO)
-    g_EventQueue = 24; // ServiceEventQueue (TODO)
+    HostState_OnClientConnected = 695; // CClientState::SetSignonState
 
     // client.dll
 
@@ -46,9 +30,6 @@ void TheStanleyParable::LoadOffsets()
 
     // vguimatsurface.dll
 
-    PaintTraverseEx = 117; // CMatSystemSurface (TODO)
-    StartDrawing = 193; // CMatSystemSurface::PaintTraverseEx (TODO)
-    FinishDrawing = 590; // CMatSystemSurface::PaintTraverseEx (TODO)
     DrawColoredText = 159; // CMatSystemSurface
     DrawTextLen = 162; // CMatSystemSurface
 }
@@ -57,5 +38,5 @@ void TheStanleyParable::LoadRules()
 }
 const char* TheStanleyParable::GetVersion()
 {
-    return "The Stanley Parable (TODO)";
+    return "The Stanley Parable (5454)";
 }

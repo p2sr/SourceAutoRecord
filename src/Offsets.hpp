@@ -3,157 +3,157 @@
 namespace Offsets {
 
 // CCvar
-static int RegisterConCommand;
-static int UnregisterConCommand;
-static int FindCommandBase;
+extern int RegisterConCommand;
+extern int UnregisterConCommand;
+extern int FindCommandBase;
 
 // CEngineClient
-static int GetScreenSize;
-static int ClientCmd;
-static int GetLocalPlayer;
-static int GetGameDirectory;
-static int GetViewAngles;
-static int SetViewAngles;
-static int ServerCmdKeyValues;
-static int GetActiveSplitScreenPlayerSlot;
+extern int GetScreenSize;
+extern int ClientCmd;
+extern int GetLocalPlayer;
+extern int GetGameDirectory;
+extern int GetViewAngles;
+extern int SetViewAngles;
+extern int ServerCmdKeyValues;
+extern int GetActiveSplitScreenPlayerSlot;
 
 // CHLClient
-static int HudProcessInput;
-static int HudUpdate;
-static int IN_ActivateMouse;
-static int JoyStickApplyMovement;
+extern int HudProcessInput;
+extern int HudUpdate;
+extern int IN_ActivateMouse;
+extern int JoyStickApplyMovement;
 
 // ClientModeShared
-static int CreateMove;
+extern int CreateMove;
 
 // ConVar
-static int InternalSetValue;
-static int InternalSetFloatValue;
-static int InternalSetIntValue;
+extern int InternalSetValue;
+extern int InternalSetFloatValue;
+extern int InternalSetIntValue;
 
 // CMatSystemSurface
-static int DrawSetColor;
-static int DrawFilledRect;
-static int GetFontTall;
-static int PaintTraverseEx;
-static int DrawColoredText;
-static int DrawTextLen;
+extern int DrawSetColor;
+extern int DrawFilledRect;
+extern int GetFontTall;
+extern int PaintTraverseEx;
+extern int DrawColoredText;
+extern int DrawTextLen;
 
 // CInputSystem
-static int StringToButtonCode;
+extern int StringToButtonCode;
 
 // CInput
-static int GetButtonBits;
+extern int GetButtonBits;
 
 // CGameMovement
-static int PlayerMove;
-static int AirAccelerate;
-static int AirMove;
-static int FinishGravity;
-static int CheckJumpButton;
-static int FullTossMove;
-static int mv;
-static int player;
+extern int PlayerMove;
+extern int AirAccelerate;
+extern int AirMove;
+extern int FinishGravity;
+extern int CheckJumpButton;
+extern int FullTossMove;
+extern int mv;
+extern int player;
 
 // CDemoRecorder
-static int GetRecordingTick;
-static int SetSignonState;
-static int StopRecording;
-static int m_szDemoBaseName;
-static int m_bRecording;
-static int m_nDemoNumber;
+extern int GetRecordingTick;
+extern int SetSignonState;
+extern int StopRecording;
+extern int m_szDemoBaseName;
+extern int m_bRecording;
+extern int m_nDemoNumber;
 
 // CDemoPlayer
-static int GetPlaybackTick;
-static int StartPlayback;
-static int IsPlayingBack;
-static int m_szFileName;
+extern int GetPlaybackTick;
+extern int StartPlayback;
+extern int IsPlayingBack;
+extern int m_szFileName;
 
 // CClientState
-static int ProcessTick;
-static int Disconnect;
+extern int ProcessTick;
+extern int Disconnect;
 
 // C_BaseEntity
-static int m_vecAbsOrigin;
-static int m_angAbsRotation;
-static int m_vecVelocity;
-static int GetFlags;
+extern int m_vecAbsOrigin;
+extern int m_angAbsRotation;
+extern int m_vecVelocity;
+extern int GetFlags;
 
 // CBasePlayer
-static int iNumPortalsPlaced;
-static int m_fFlags;
-static int m_MoveType;
-static int m_nWaterLevel;
-static int m_bDucked;
+extern int iNumPortalsPlaced;
+extern int m_fFlags;
+extern int m_MoveType;
+extern int m_nWaterLevel;
+extern int m_bDucked;
 
 // IEngineVGuiInternal
-static int Paint;
+extern int Paint;
 
 // CEngineTool
-static int GetCurrentMap;
+extern int GetCurrentMap;
 
 // CSchemeManager
-static int GetIScheme;
+extern int GetIScheme;
 
 // CScheme
-static int GetFont;
+extern int GetFont;
 
 // IClientEntityList
-static int GetClientEntity;
+extern int GetClientEntity;
 
 // CServerGameDLL
-static int GameFrame;
-static int Think;
+extern int GameFrame;
+extern int Think;
 
 // CMoveData
-static int m_nOldButtons;
-static int m_vecVelocity2;
+extern int m_nOldButtons;
+extern int m_vecVelocity2;
 
 // CHud
-static int GetName;
+extern int GetName;
 
 // CGameEventManager
-static int AddListener;
-static int RemoveListener;
+extern int AddListener;
+extern int RemoveListener;
 
 // CEngine
-static int Frame;
+extern int Frame;
 
 // CEngineAPI
-static int IsRunningSimulation;
+extern int IsRunningSimulation;
 
 // Others
-static int tickcount;
-static int interval_per_tick;
-static int GetClientStateFunction;
-static int cl;
-static int demoplayer;
-static int demorecorder;
-static int m_szLevelName;
-static int AirMove_Offset1;
-static int AirMove_Offset2;
-static int UTIL_PlayerByIndex;
-static int gpGlobals;
-static int g_Input;
-static int in_jump;
-static int KeyDown;
-static int KeyUp;
-static int GetClientMode;
-static int State_Shutdown;
-static int Cbuf_AddText;
-static int s_CommandBuffer;
-static int AddText;
-static int g_InRestore;
-static int ServiceEventQueue;
-static int g_EventQueue;
-static int AutoCompletionFunc;
-static int StartDrawing;
-static int FinishDrawing;
-static int GetHud;
-static int FindElement;
-static int Key_SetBinding;
-static int eng;
-static int HostState_OnClientConnected;
-static int hoststate;
-static int m_bLoadGame;
+extern int tickcount;
+extern int interval_per_tick;
+extern int GetClientStateFunction;
+extern int cl;
+extern int demoplayer;
+extern int demorecorder;
+extern int m_szLevelName;
+extern int AirMove_Offset1;
+extern int AirMove_Offset2;
+extern int UTIL_PlayerByIndex;
+extern int gpGlobals;
+extern int g_Input;
+extern int in_jump;
+extern int KeyDown;
+extern int KeyUp;
+extern int GetClientMode;
+extern int State_Shutdown;
+extern int Cbuf_AddText;
+extern int s_CommandBuffer;
+extern int AddText;
+extern int g_InRestore;
+extern int ServiceEventQueue;
+extern int g_EventQueue;
+extern int AutoCompletionFunc;
+extern int StartDrawing;
+extern int FinishDrawing;
+extern int GetHud;
+extern int FindElement;
+extern int Key_SetBinding;
+extern int eng;
+extern int HostState_OnClientConnected;
+extern int hoststate;
+extern int m_bLoadGame;
 }

@@ -7,7 +7,7 @@
 #include "Features/StepCounter.hpp"
 
 #include "Cheats.hpp"
-#include "Interfaces.hpp"
+#include "Interface.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
@@ -22,8 +22,8 @@
 
 namespace Server {
 
-VMT g_GameMovement;
-VMT g_ServerGameDLL;
+Interface* g_GameMovement;
+Interface* g_ServerGameDLL;
 
 using _UTIL_PlayerByIndex = void*(__func*)(int index);
 _UTIL_PlayerByIndex UTIL_PlayerByIndex;
@@ -237,24 +237,26 @@ DETOUR(GameFrame, bool simulating)
 #endif
 }
 
-void Hook()
+void Init()
 {
-    CREATE_VMT(Interfaces::IGameMovement, g_GameMovement)
-    {
-        HOOK(g_GameMovement, CheckJumpButton);
-        HOOK(g_GameMovement, PlayerMove);
+    g_GameMovement = Interface::Create(MODULE("server"), "GameMovement0");
+    g_ServerGameDLL = Interface::Create(MODULE("server"), "ServerGameDLL0", game->version == SourceGame::Portal2);
+
+    if (g_GameMovement) {
+        g_GameMovement->Hook(Detour::CheckJumpButton, Original::CheckJumpButton, Offsets::CheckJumpButton);
+        g_GameMovement->Hook(Detour::PlayerMove, Original::PlayerMove, Offsets::PlayerMove);
 
         if (Game::IsPortal2Engine()) {
-            HOOK(g_GameMovement, FinishGravity);
-            HOOK(g_GameMovement, AirMove);
+            g_GameMovement->Hook(Detour::FinishGravity, Original::FinishGravity, Offsets::FinishGravity);
+            g_GameMovement->Hook(Detour::AirMove, Original::AirMove, Offsets::AirMove);
 
-            auto ctor = g_GameMovement->GetOriginal(0);
+            auto ctor = g_GameMovement->Original(0);
             auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
             auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
             Original::AirMoveBase = Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
 
 #ifdef _WIN32
-            auto airMoveMid = g_GameMovement->GetOriginalFunction<uintptr_t>(Offsets::AirMove) + AirMove_Mid_Offset;
+            auto airMoveMid = g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
             if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
                 MH_HOOK_MID(AirMove_Mid, airMoveMid);
                 Detour::AirMove_Continue = airMoveMid + AirMove_Continue_Offset;
@@ -264,42 +266,32 @@ void Hook()
                 console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
             }
 #endif
-
             /*HOOK(g_GameMovement, AirAccelerate);
             Original::AirAccelerateBase = Memory::Deref<_AirAccelerate>(baseOffset + Offsets::AirAccelerate * sizeof(uintptr_t*));*/
         }
     }
 
-    CREATE_VMT(Interfaces::IServerGameDLL, g_ServerGameDLL)
-    {
-        auto Think = g_ServerGameDLL->GetOriginal(Offsets::Think);
+    if (g_ServerGameDLL) {
+        auto Think = g_ServerGameDLL->Original(Offsets::Think);
         UTIL_PlayerByIndex = Memory::Read<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex);
 
-        auto gameFrameAddr = g_ServerGameDLL->GetOriginal(Offsets::GameFrame);
-        gpGlobals = Memory::DerefDeref<CGlobalVars*>(gameFrameAddr + Offsets::gpGlobals);
+        auto GameFrame = g_ServerGameDLL->Original(Offsets::GameFrame);
+        gpGlobals = Memory::DerefDeref<CGlobalVars*>(GameFrame + Offsets::gpGlobals);
 
         if (game->version == SourceGame::Portal2) {
-            g_InRestore = Memory::Deref<bool*>(gameFrameAddr + Offsets::g_InRestore);
+            g_InRestore = Memory::Deref<bool*>(GameFrame + Offsets::g_InRestore);
 
-            auto ServiceEventQueue = Memory::Read(gameFrameAddr + Offsets::ServiceEventQueue);
+            auto ServiceEventQueue = Memory::Read(GameFrame + Offsets::ServiceEventQueue);
             g_EventQueue = Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue);
 
-            HOOK(g_ServerGameDLL, GameFrame);
+            g_ServerGameDLL->Hook(Detour::GameFrame, Original::GameFrame, Offsets::GameFrame);
         }
     }
 }
 
-void Unhook()
+void Shutdown()
 {
-    UNHOOK(g_GameMovement, CheckJumpButton);
-    UNHOOK(g_GameMovement, PlayerMove);
-    UNHOOK(g_GameMovement, AirMove);
-    //UNHOOK(g_GameMovement, AirAccelerate);
-#ifdef _WIN32
-    MH_UNHOOK(AirMove_Mid);
-#endif
-    UNHOOK(g_ServerGameDLL, GameFrame);
-    DELETE_VMT(g_GameMovement);
-    DELETE_VMT(g_ServerGameDLL);
+    Interface::Delete(g_GameMovement);
+    Interface::Delete(g_ServerGameDLL);
 }
 }

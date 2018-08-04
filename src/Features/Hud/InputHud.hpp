@@ -104,7 +104,7 @@ void InputHud::Draw()
     auto mvReload = this->buttonBits & IN_RELOAD;
     auto mvSpeed = this->buttonBits & IN_SPEED;
 
-    Surface::StartDrawing(Surface::matsurface->GetThisPtr());
+    Surface::StartDrawing(Surface::matsurface->ThisPtr());
 
     auto xOffset = Cheats::sar_ihud_x.GetInt();
     auto yOffset = Cheats::sar_ihud_y.GetInt();

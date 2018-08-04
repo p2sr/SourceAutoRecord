@@ -15,5 +15,5 @@ void TheBeginnersGuide::LoadRules()
 }
 const char* TheBeginnersGuide::GetVersion()
 {
-    return "The Beginners Guide (TODO)";
+    return "The Beginners Guide (6167)";
 }

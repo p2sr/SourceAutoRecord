@@ -28,33 +28,45 @@
     <ClCompile Include="Plugin.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Hud\Hud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\Hud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\Portal2.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\TheBeginnersGuide.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\HalfLife2.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\TheStanleyParable.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\TheStanleyParable.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\HalfLife2.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\Portal2.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\TheBeginnersGuide.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
     <ClCompile Include="Game.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Hud\Hud.cpp">
-      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    <ClCompile Include="Offsets.cpp">
+      <Filter>SourceAutoRecord</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Hud\Hud.cpp">
-      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    <ClCompile Include="Interface.cpp">
+      <Filter>SourceAutoRecord</Filter>
     </ClCompile>
-    <ClInclude Include="Games\Linux\Portal2.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\TheBeginnersGuide.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\TheStanleyParable.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\Portal2.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\TheBeginnersGuide.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\TheStanleyParable.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -81,9 +93,6 @@
     <ClInclude Include="..\lib\minhook\MinHook.h">
       <Filter>lib\minhook</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\vmthook\vmthook.h">
-      <Filter>lib\vmthook</Filter>
-    </ClInclude>
     <ClInclude Include="Cheats.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
@@ -91,9 +100,6 @@
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Game.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
-    <ClInclude Include="Interfaces.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Offsets.hpp">
@@ -270,6 +276,9 @@
     <ClInclude Include="Features\Hud\Hud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
+    <ClInclude Include="Interface.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">
@@ -293,9 +302,6 @@
     <Filter Include="lib\minhook">
       <UniqueIdentifier>{df38f6d3-7501-4e2a-ba0c-e8de7ad26787}</UniqueIdentifier>
     </Filter>
-    <Filter Include="lib\vmthook">
-      <UniqueIdentifier>{f3c9bd1d-b8bd-4542-9ca8-b033f499beb4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="SourceAutoRecord\Games\Windows">
       <UniqueIdentifier>{9e7c58b4-0f87-483c-92ab-77f4d6757512}</UniqueIdentifier>
     </Filter>
@@ -312,9 +318,6 @@
   <ItemGroup>
     <Text Include="..\lib\minhook\LICENSE.txt">
       <Filter>lib\minhook</Filter>
-    </Text>
-    <Text Include="..\lib\vmthook\LICENSE">
-      <Filter>lib\vmthook</Filter>
     </Text>
   </ItemGroup>
 </Project>

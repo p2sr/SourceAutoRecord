@@ -21,7 +21,7 @@ public:
         //DumpGameEvents();
 
         for (const auto& event : EVENTS) {
-            auto result = Engine::AddListener(Engine::s_GameEventManager->GetThisPtr(), this, event, true);
+            auto result = Engine::AddListener(Engine::s_GameEventManager->ThisPtr(), this, event, true);
             if (result) {
                 //console->DevMsg("SAR: Added event listener for %s!\n", event);
             } else {
@@ -37,7 +37,7 @@ public:
     }
     virtual ~SourceAutoRecordListener()
     {
-        Engine::RemoveListener(Engine::s_GameEventManager->GetThisPtr(), this);
+        Engine::RemoveListener(Engine::s_GameEventManager->ThisPtr(), this);
     }
     virtual void FireGameEvent(IGameEvent* event)
     {
@@ -64,10 +64,10 @@ public:
     }
     void DumpGameEvents()
     {
-        auto m_Size = *reinterpret_cast<int*>((uintptr_t)Interfaces::IGameEventManager2 + 16);
+        auto m_Size = *reinterpret_cast<int*>((uintptr_t)Engine::s_GameEventManager->ThisPtr() + 16);
         console->Print("m_Size = %i\n", m_Size);
         if (m_Size > 0) {
-            auto m_GameEvents = *reinterpret_cast<uintptr_t*>((uintptr_t)Interfaces::IGameEventManager2 + 124);
+            auto m_GameEvents = *reinterpret_cast<uintptr_t*>((uintptr_t)Engine::s_GameEventManager->ThisPtr() + 124);
             for (int i = 0; i < m_Size; i++) {
                 auto name = *reinterpret_cast<char**>(m_GameEvents + 24 * i + 16);
                 console->Print("%s\n", name);

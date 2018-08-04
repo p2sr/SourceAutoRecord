@@ -1,14 +1,14 @@
 #pragma once
 #include <stdarg.h>
 
-#include "Interfaces.hpp"
+#include "Interface.hpp"
 #include "Offsets.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
 
 namespace Surface {
 
-VMT matsurface;
+Interface* matsurface;
 
 typedef unsigned long HFont;
 
@@ -47,7 +47,7 @@ int GetFontLength(HFont font, const char* fmt, ...)
     char data[1024];
     vsnprintf(data, sizeof(data), fmt, argptr);
     va_end(argptr);
-    return DrawTextLen(matsurface->GetThisPtr(), font, data);
+    return DrawTextLen(matsurface->ThisPtr(), font, data);
 }
 void DrawTxt(HFont font, int x, int y, Color clr, const char* fmt, ...)
 {
@@ -56,12 +56,12 @@ void DrawTxt(HFont font, int x, int y, Color clr, const char* fmt, ...)
     char data[1024];
     vsnprintf(data, sizeof(data), fmt, argptr);
     va_end(argptr);
-    DrawColoredText(matsurface->GetThisPtr(), font, x, y, clr.r(), clr.g(), clr.b(), clr.a(), data);
+    DrawColoredText(matsurface->ThisPtr(), font, x, y, clr.r(), clr.g(), clr.b(), clr.a(), data);
 }
 void DrawRect(Color clr, int x0, int y0, int x1, int y1)
 {
-    DrawSetColor(matsurface->GetThisPtr(), clr.r(), clr.g(), clr.b(), clr.a());
-    DrawFilledRect(matsurface->GetThisPtr(), x0, y0, x1, y1);
+    DrawSetColor(matsurface->ThisPtr(), clr.r(), clr.g(), clr.b(), clr.a());
+    DrawFilledRect(matsurface->ThisPtr(), x0, y0, x1, y1);
 }
 void DrawRectAndCenterTxt(Color clr, int x0, int y0, int x1, int y1, HFont font, Color fontClr, const char* fmt, ...)
 {
@@ -83,23 +83,23 @@ void DrawRectAndCenterTxt(Color clr, int x0, int y0, int x1, int y1, HFont font,
     DrawTxt(font, xc - (tw / 2), yc - (th / 2), fontClr, data);
 }
 
-void Hook()
+void Init()
 {
-    CREATE_VMT(Interfaces::ISurface, matsurface)
-    {
-        DrawSetColor = matsurface->GetOriginal<_DrawSetColor>(Offsets::DrawSetColor);
-        DrawFilledRect = matsurface->GetOriginal<_DrawFilledRect>(Offsets::DrawFilledRect);
-        GetFontTall = matsurface->GetOriginal<_GetFontTall>(Offsets::GetFontTall);
-        DrawColoredText = matsurface->GetOriginal<_DrawColoredText>(Offsets::DrawColoredText);
-        DrawTextLen = matsurface->GetOriginal<_DrawTextLen>(Offsets::DrawTextLen);
+    matsurface = Interface::Create(MODULE("vguimatsurface"), "VGUI_Surface0", false);
+    if (matsurface) {
+        DrawSetColor = matsurface->Original<_DrawSetColor>(Offsets::DrawSetColor);
+        DrawFilledRect = matsurface->Original<_DrawFilledRect>(Offsets::DrawFilledRect);
+        GetFontTall = matsurface->Original<_GetFontTall>(Offsets::GetFontTall);
+        DrawColoredText = matsurface->Original<_DrawColoredText>(Offsets::DrawColoredText);
+        DrawTextLen = matsurface->Original<_DrawTextLen>(Offsets::DrawTextLen);
 
-        auto PaintTraverseEx = matsurface->GetOriginal(Offsets::PaintTraverseEx);
+        auto PaintTraverseEx = matsurface->Original(Offsets::PaintTraverseEx);
         StartDrawing = Memory::Read<_StartDrawing>(PaintTraverseEx + Offsets::StartDrawing);
         FinishDrawing = Memory::Read<_FinishDrawing>(PaintTraverseEx + Offsets::FinishDrawing);
     }
 }
-void Unhook()
+void Shutdown()
 {
-    DELETE_VMT(matsurface);
+    Interface::Delete(matsurface);
 }
 }

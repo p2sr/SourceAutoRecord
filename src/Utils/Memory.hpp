@@ -202,16 +202,35 @@ static T Read(uintptr_t source)
     return (T)(source + rel + sizeof(rel));
 }
 
-template <typename T = void*>
-inline T Deref(uintptr_t address)
+template <typename T = uintptr_t>
+static void Read(uintptr_t source, T destination)
 {
-    return *reinterpret_cast<T*>(address);
+    auto rel = *reinterpret_cast<int*>(source);
+    destination = (T)(source + rel + sizeof(rel));
 }
 
 template <typename T = void*>
-inline T DerefDeref(uintptr_t address)
+inline T Deref(uintptr_t source)
 {
-    return **reinterpret_cast<T**>(address);
+    return *reinterpret_cast<T*>(source);
+}
+
+template <typename T = void*>
+inline void Deref(uintptr_t source, T destination)
+{
+    destination = *reinterpret_cast<T*>(source);
+}
+
+template <typename T = void*>
+inline T DerefDeref(uintptr_t source)
+{
+    return **reinterpret_cast<T**>(source);
+}
+
+template <typename T = void*>
+inline void DerefDeref(uintptr_t source, T destination)
+{
+    destination = **reinterpret_cast<T**>(source);
 }
 
 static uintptr_t Absolute(const char* moduleName, int relative)

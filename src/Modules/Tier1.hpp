@@ -1,4 +1,5 @@
 #pragma once
+#include "Interface.hpp"
 #include "Utils.hpp"
 
 #define FCVAR_DEVELOPMENTONLY (1 << 1)
@@ -11,7 +12,7 @@
 
 namespace Tier1 {
 
-VMT g_pCVar;
+Interface* g_pCVar;
 
 struct CCommand;
 class ConCommandBase;
@@ -111,6 +112,9 @@ public:
     float m_fMinVal; // 56
     bool m_bHasMax; // 60
     float m_fMaxVal; // 64
+#ifdef HL2_OPTIMISATION
+    void* m_fnChangeCallback; // 68
+#else
     // CUtlVector<FnChangeCallback_t> m_fnChangeCallback
     // CUtlMemory<FnChangeCallback_t> m_Memory
     void* m_pMemory; // 68
@@ -118,6 +122,7 @@ public:
     int m_nGrowSize; // 76
     int m_Size; // 80
     void* m_pElements; // 84
+#endif
 
 public:
     ConVar()
@@ -133,12 +138,24 @@ public:
         , m_fMinVal(0)
         , m_bHasMax(0)
         , m_fMaxVal(0)
+#ifdef HL2_OPTIMISATION
+        , m_fnChangeCallback(nullptr)
+#else
         , m_pMemory(nullptr)
         , m_nAllocationCount(0)
         , m_nGrowSize(0)
         , m_Size(0)
         , m_pElements(nullptr)
+#endif
     {
+    }
+
+    ~ConVar()
+    {
+        if (this->m_pszString) {
+            delete[] this->m_pszString;
+            this->m_pszString = nullptr;
+        }
     }
 };
 
@@ -172,28 +189,42 @@ struct CBaseAutoCompleteFileList {
 
 bool Init()
 {
-    CREATE_VMT(Interfaces::ICVar, g_pCVar)
-    {
-        RegisterConCommand = g_pCVar->GetOriginal<_RegisterConCommand>(Offsets::RegisterConCommand);
-        UnregisterConCommand = g_pCVar->GetOriginal<_UnregisterConCommand>(Offsets::UnregisterConCommand);
-        FindCommandBase = g_pCVar->GetOriginal<_FindCommandBase>(Offsets::FindCommandBase);
+#if _WIN32
+    g_pCVar = Interface::Create(MODULE("vstdlib"), "VEngineCvar0", false);
+#else
+    g_pCVar = Interface::Create(MODULE("libvstdlib"), "VEngineCvar0", false);
+#endif
+    if (g_pCVar) {
+        RegisterConCommand = g_pCVar->Original<_RegisterConCommand>(Offsets::RegisterConCommand);
+        UnregisterConCommand = g_pCVar->Original<_UnregisterConCommand>(Offsets::UnregisterConCommand);
+        FindCommandBase = g_pCVar->Original<_FindCommandBase>(Offsets::FindCommandBase);
 
-        auto play = reinterpret_cast<ConCommand*>(FindCommandBase(g_pCVar->GetThisPtr(), "play"));
-        Original::ConCommand_VTable = play->ConCommandBase_VTable;
+        auto play = reinterpret_cast<ConCommand*>(FindCommandBase(g_pCVar->ThisPtr(), "play"));
+        if (play) {
+            Original::ConCommand_VTable = play->ConCommandBase_VTable;
+        }
 
-        auto sv_lan = reinterpret_cast<ConVar*>(FindCommandBase(g_pCVar->GetThisPtr(), "sv_lan"));
-        Original::ConVar_VTable = sv_lan->ConCommandBase_VTable;
-        Original::ConVar_VTable2 = sv_lan->ConVar_VTable;
+        auto sv_lan = reinterpret_cast<ConVar*>(FindCommandBase(g_pCVar->ThisPtr(), "sv_lan"));
+        if (sv_lan) {
+            Original::ConVar_VTable = sv_lan->ConCommandBase_VTable;
+            Original::ConVar_VTable2 = sv_lan->ConVar_VTable;
+        }
 
-        auto listdemo = reinterpret_cast<ConCommand*>(FindCommandBase(g_pCVar->GetThisPtr(), "listdemo"));
-        auto callback = (uintptr_t)listdemo->m_fnCompletionCallback + Offsets::AutoCompletionFunc;
-        Original::AutoCompletionFunc = Memory::Read<_AutoCompletionFunc>(callback);
+        auto listdemo = reinterpret_cast<ConCommand*>(FindCommandBase(g_pCVar->ThisPtr(), "listdemo"));
+        if (listdemo && listdemo->m_fnCompletionCallback) {
+            auto callback = (uintptr_t)listdemo->m_fnCompletionCallback + Offsets::AutoCompletionFunc;
+            Original::AutoCompletionFunc = Memory::Read<_AutoCompletionFunc>(callback);
+        }
     }
 
-    return Interfaces::ICVar;
+    return g_pCVar
+        && Original::ConCommand_VTable
+        && Original::ConVar_VTable
+        && Original::ConVar_VTable2
+        && Original::AutoCompletionFunc;
 }
 void Shutdown()
 {
-    DELETE_VMT(g_pCVar);
+    Interface::Delete(g_pCVar);
 }
 }
