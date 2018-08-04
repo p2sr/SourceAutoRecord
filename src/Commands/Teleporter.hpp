@@ -8,7 +8,7 @@
 
 CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
 {
-    if (Cheats::sv_cheats.GetBool()) {
+    if (sv_cheats.GetBool()) {
         if (Teleporter::IsSet) {
             Teleporter::Teleport();
         } else {

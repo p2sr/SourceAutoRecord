@@ -233,9 +233,10 @@ inline void DerefDeref(uintptr_t source, T destination)
     destination = **reinterpret_cast<T**>(source);
 }
 
-static uintptr_t Absolute(const char* moduleName, int relative)
+template <typename T = uintptr_t>
+static T Absolute(const char* moduleName, int relative)
 {
     auto info = ModuleInfo();
-    return (TryGetModule(moduleName, &info)) ? info.base + relative : 0;
+    return (TryGetModule(moduleName, &info)) ? (T)(info.base + relative) : (T)0;
 }
 }

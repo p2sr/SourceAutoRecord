@@ -24,7 +24,7 @@ public:
 public:
     int32_t LastTick()
     {
-        return (messageTicks.size() > 0 ) ? messageTicks.back() : playbackTicks;
+        return (messageTicks.size() > 0) ? messageTicks.back() : playbackTicks;
     }
     float IntervalPerTick()
     {
@@ -130,7 +130,11 @@ public:
                                 file.read((char*)&lva2_x, sizeof(lva2_z));
                                 file.read((char*)&lva2_y, sizeof(lva2_y));
                                 file.read((char*)&lva2_z, sizeof(lva2_z));
-                                console->Msg("[%i] flags: %i | view origin: %.3f/%.3f/%.3f | view angles: %.3f/%.3f/%.3f | local view angles: %.3f/%.3f/%.3f\n", tick, flags, vo_x, vo_y, vo_z, va_x, va_y, va_z, lva_x, lva_y, lva_z);
+                                console->Msg("[%i] flags: %i | "
+                                             "view origin: %.3f/%.3f/%.3f | "
+                                             "view angles: %.3f/%.3f/%.3f | "
+                                             "local view angles: %.3f/%.3f/%.3f\n",
+                                    tick, flags, vo_x, vo_y, vo_z, va_x, va_y, va_z, lva_x, lva_y, lva_z);
                             }
                             int32_t in_seq, out_seq;
                             file.read((char*)&in_seq, sizeof(in_seq));
@@ -206,7 +210,9 @@ public:
             }
             file.close();
         } catch (const std::exception& ex) {
-            console->Warning("SAR: Error occurred when trying to parse the demo file.\nIf you think this is an issue, report it at: https://github.com/NeKzor/SourceAutoRecord/issues\n%s\n", std::string(ex.what()));
+            console->Warning("SAR: Error occurred when trying to parse the demo file.\n"
+                             "If you think this is an issue, report it at: https://github.com/NeKzor/SourceAutoRecord/issues\n%s\n",
+                std::string(ex.what()));
             return false;
         }
         return true;

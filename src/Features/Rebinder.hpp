@@ -49,8 +49,8 @@ void RebindSave()
         ? std::string("save \"") + SaveName + std::string("_") + std::to_string(LastIndexNumber) + std::string("\"")
         : std::string("save \"") + SaveName + std::string("\"");
 
-    if (Cheats::sar_save_flag.GetString()[0] != '\0')
-        cmd += std::string(";echo \"") + std::string(Cheats::sar_save_flag.GetString()) + std::string("\"");
+    if (sar_save_flag.GetString()[0] != '\0')
+        cmd += std::string(";echo \"") + std::string(sar_save_flag.GetString()) + std::string("\"");
 
     InputSystem::KeySetBinding(SaveButton, cmd.c_str());
 }

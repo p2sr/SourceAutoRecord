@@ -23,7 +23,7 @@ CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
         return;
     }
 
-    if (Cheats::sar_sum_during_session.GetBool()) {
+    if (sar_sum_during_session.GetBool()) {
         int tick = Engine::GetSessionTick();
         Summary::Add(tick, Engine::ToTime(tick), Engine::m_szLevelName);
     }

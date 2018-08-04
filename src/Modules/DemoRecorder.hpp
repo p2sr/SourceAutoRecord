@@ -54,7 +54,7 @@ namespace DemoRecorder {
         //   m_nDemoNumber = 0
         auto result = Original::StopRecording(thisptr);
 
-        if (IsRecordingDemo && Cheats::sar_autorecord.GetBool()) {
+        if (IsRecordingDemo && sar_autorecord.GetBool()) {
             *m_nDemoNumber = LastDemoNumber;
 
             // Tell recorder to keep recording

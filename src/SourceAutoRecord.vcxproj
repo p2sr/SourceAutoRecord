@@ -156,10 +156,14 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="..\lib\minhook\hde\hde64.c" />
     <ClCompile Include="..\lib\minhook\hook.c" />
     <ClCompile Include="..\lib\minhook\trampoline.c" />
+    <ClCompile Include="Cheats.cpp" />
+    <ClCompile Include="Command.cpp" />
     <ClCompile Include="Features\Hud\Hud.cpp" />
     <ClCompile Include="Features\Speedrun.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Interface.cpp" />
+    <ClCompile Include="Modules\Module.cpp" />
+    <ClCompile Include="Modules\Tier1.cpp" />
     <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
@@ -180,6 +184,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="Games\Windows\Portal2.cpp" />
     <ClCompile Include="Games\Windows\TheBeginnersGuide.cpp" />
     <ClCompile Include="Games\Windows\TheStanleyParable.cpp" />
+    <ClCompile Include="Variable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h" />
@@ -247,6 +252,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Modules\DemoRecorder.hpp" />
     <ClInclude Include="Modules\Engine.hpp" />
     <ClInclude Include="Modules\InputSystem.hpp" />
+    <ClInclude Include="Modules\Module.hpp" />
     <ClInclude Include="Modules\Scheme.hpp" />
     <ClInclude Include="Modules\Server.hpp" />
     <ClInclude Include="Modules\Surface.hpp" />
@@ -258,6 +264,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="Utils\Math.hpp" />
     <ClInclude Include="Utils\Memory.hpp" />
+    <ClInclude Include="Utils\Platform.hpp" />
     <ClInclude Include="Utils\SDK.hpp" />
     <ClInclude Include="Variable.hpp" />
   </ItemGroup>

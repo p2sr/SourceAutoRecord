@@ -19,6 +19,8 @@ namespace SAR {
 
 std::thread findPluginThread;
 
+// SAR has to disable itself in the plugin list or the game might crash because of missing callbacks
+// This is a race condition though
 bool PluginFound()
 {
     static Interface* helper = Interface::Create(MODULE("engine"), "ISERVERPLUGINHELPERS0", false);
@@ -39,9 +41,6 @@ bool PluginFound()
     }
     return plugin->found;
 }
-
-// SAR has to disable itself in the plugin list or the game might crash because of missing callbacks
-// This is a race condition though
 void SearchPlugin()
 {
     findPluginThread = std::thread([]() {

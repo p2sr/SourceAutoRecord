@@ -31,14 +31,17 @@ public:
             return false;
 
         if (Game::IsSupported()) {
-            if (Tier1::Init()) {
 
-                Commands::Init();
-                Cheats::Init();
+            modules = new Modules();
+            modules->AddModule<Tier1>(&tier1);
+            modules->InitAll();
 
-                auto vars = Variable::RegisterAll();
-                auto commands = Command::RegisterAll();
-                console->DevMsg("SAR: Registered %i ConVars and %i ConCommands!\n", vars, commands);
+            if (tier1->hasLoaded) {
+                commands = new Commands();
+                cheats = new Cheats();
+
+                commands->Init();
+                cheats->Init();
 
                 InputSystem::Init();
                 Scheme::Init();
@@ -146,12 +149,10 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
     Surface::Shutdown();
     VGui::Shutdown();
 
-    Cheats::Unload();
+    cheats->Shutdown();
+    commands->Shutdown();
 
-    Variable::UnregisterAll();
-    Command::UnregisterAll();
-
-    Tier1::Shutdown();
+    modules->ShutdownAll();
 
     if (SAR::PluginFound()) {
         // SAR has to unhook CEngine some ticks before unloading the module
@@ -163,8 +164,10 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 
     console->Print("Cya :)\n");
 
+    SAFE_DELETE(cheats);
+    SAFE_DELETE(commands);
     SAFE_DELETE(game);
     SAFE_DELETE(Speedrun::timer);
     SAFE_DELETE(plugin);
-    delete console;
+    SAFE_DELETE(console);
 }

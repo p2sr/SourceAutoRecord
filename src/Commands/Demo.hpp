@@ -28,7 +28,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "", 0, 0, dem)
     }
 
     DemoParser parser;
-    parser.outputMode = Cheats::sar_time_demo_dev.GetInt();
+    parser.outputMode = sar_time_demo_dev.GetInt();
 
     Demo demo;
     auto dir = std::string(Engine::GetGameDirectory()) + std::string("/") + name;
@@ -57,7 +57,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "", 0, 0, dem)
     bool printTotal = false;
 
     DemoParser parser;
-    parser.outputMode = Cheats::sar_time_demo_dev.GetInt();
+    parser.outputMode = sar_time_demo_dev.GetInt();
 
     std::string name;
     std::string dir = std::string(Engine::GetGameDirectory()) + std::string("/");

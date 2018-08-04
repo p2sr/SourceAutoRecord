@@ -29,10 +29,7 @@ public:
             }
         }
 #if _WIN32
-        auto engine = Memory::ModuleInfo();
-        if (Memory::TryGetModule(MODULE("engine"), &engine)) {
-            this->ConPrintEvent = reinterpret_cast<_ConPrintEvent>(engine.base + 0x186C20);
-        }
+        this->ConPrintEvent = Memory::Absolute<_ConPrintEvent>(MODULE("engine"), 0x186C20);
 #endif
     }
     virtual ~SourceAutoRecordListener()
@@ -44,7 +41,7 @@ public:
         if (!event)
             return;
 
-        if (Cheats::sar_debug_game_events.GetBool()) {
+        if (sar_debug_game_events.GetBool() && this->ConPrintEvent) {
             console->Print("[%i] Event fired: %s\n", Engine::GetSessionTick(), event->GetName());
 #if _WIN32
             this->ConPrintEvent(event);
@@ -56,6 +53,7 @@ public:
             console->Print("Detected cooperative spawn!\n");
             Session::Rebase(*Engine::tickcount);
             Timer::Rebase(*Engine::tickcount);
+            //Speedrun::timer->Unpause(Engine::tickcount);
         }
     }
     virtual int GetEventDebugID()

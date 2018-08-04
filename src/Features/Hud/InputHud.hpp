@@ -61,13 +61,13 @@ void InputHud::SetButtonBits(int buttonBits)
 }
 bool InputHud::GetCurrentSize(int& xSize, int& ySize)
 {
-    auto mode = Cheats::sar_ihud.GetInt();
+    auto mode = sar_ihud.GetInt();
     if (mode == 0) {
         return false;
     }
 
-    auto size = Cheats::sar_ihud_button_size.GetInt();
-    auto padding = Cheats::sar_ihud_button_padding.GetInt();
+    auto size = sar_ihud_button_size.GetInt();
+    auto padding = sar_ihud_button_padding.GetInt();
 
     switch (mode) {
     case 1:
@@ -88,7 +88,7 @@ bool InputHud::GetCurrentSize(int& xSize, int& ySize)
 }
 void InputHud::Draw()
 {
-    auto mode = Cheats::sar_ihud.GetInt();
+    auto mode = sar_ihud.GetInt();
     if (mode == 0)
         return;
 
@@ -106,26 +106,26 @@ void InputHud::Draw()
 
     Surface::StartDrawing(Surface::matsurface->ThisPtr());
 
-    auto xOffset = Cheats::sar_ihud_x.GetInt();
-    auto yOffset = Cheats::sar_ihud_y.GetInt();
-    auto size = Cheats::sar_ihud_button_size.GetInt();
-    auto padding = Cheats::sar_ihud_button_padding.GetInt();
+    auto xOffset = sar_ihud_x.GetInt();
+    auto yOffset = sar_ihud_y.GetInt();
+    auto size = sar_ihud_button_size.GetInt();
+    auto padding = sar_ihud_button_padding.GetInt();
 
-    auto color = this->GetColor(Cheats::sar_ihud_button_color.GetString());
-    auto fontColor = this->GetColor(Cheats::sar_ihud_font_color.GetString());
-    auto font = Scheme::GetDefaultFont() + Cheats::sar_ihud_font_index.GetInt();
+    auto color = this->GetColor(sar_ihud_button_color.GetString());
+    auto fontColor = this->GetColor(sar_ihud_font_color.GetString());
+    auto font = Scheme::GetDefaultFont() + sar_ihud_font_index.GetInt();
 
     auto symbols = std::string("WASDCSELRSR");
-    auto layout = std::string(Cheats::sar_ihud_layout.GetString());
+    auto layout = std::string(sar_ihud_layout.GetString());
     if (layout.length() == symbols.length()) {
         symbols = layout;
     } else if (layout.length() == 0) {
         symbols = "           ";
     }
 
-    auto shadow = Cheats::sar_ihud_shadow.GetBool();
-    auto shadowColor = Hud::GetColor(Cheats::sar_ihud_shadow_color.GetString());
-    auto shadowFontColor = GetColor(Cheats::sar_ihud_shadow_font_color.GetString());
+    auto shadow = sar_ihud_shadow.GetBool();
+    auto shadowColor = Hud::GetColor(sar_ihud_shadow_color.GetString());
+    auto shadowFontColor = GetColor(sar_ihud_shadow_font_color.GetString());
 
     auto element = 0;
     auto DrawElement = [xOffset, yOffset, mode, shadow, color, size, shadowColor, font, fontColor, shadowFontColor, padding, symbols,
@@ -185,8 +185,8 @@ CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD. "
     auto yScreen = 0;
     Engine::GetScreenSize(xScreen, yScreen);
 
-    auto xPos = Cheats::sar_ihud_x.GetInt();
-    auto yPos = Cheats::sar_ihud_y.GetInt();
+    auto xPos = sar_ihud_x.GetInt();
+    auto yPos = sar_ihud_y.GetInt();
 
     if (!std::strcmp(args[1], "top")) {
         yPos = 0;
@@ -204,6 +204,6 @@ CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD. "
         xPos = xScreen - xSize;
     }
 
-    Cheats::sar_ihud_x.SetValue(xPos);
-    Cheats::sar_ihud_y.SetValue(yPos);
+    sar_ihud_x.SetValue(xPos);
+    sar_ihud_y.SetValue(yPos);
 }

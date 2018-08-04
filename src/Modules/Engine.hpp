@@ -117,13 +117,13 @@ void SessionStarted()
         Rebinder::RebindReload();
     }
 
-    if (Cheats::sar_tas_autostart.GetBool()) {
+    if (sar_tas_autostart.GetBool()) {
         TAS::Start();
     }
-    if (Cheats::sar_tas_autorecord.GetBool()) {
+    if (sar_tas_autorecord.GetBool()) {
         TAS2::StartRecording();
     }
-    if (Cheats::sar_tas_autoplay.GetBool()) {
+    if (sar_tas_autoplay.GetBool()) {
         TAS2::StartPlaying();
     }
 
@@ -147,7 +147,7 @@ void SessionEnded()
         }
 
         if (Timer::IsRunning) {
-            if (Cheats::sar_timer_always_running.GetBool()) {
+            if (sar_timer_always_running.GetBool()) {
                 Timer::Save(*tickcount);
                 console->Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::ToTime(Timer::TotalTicks));
             } else {
@@ -156,7 +156,7 @@ void SessionEnded()
             }
         }
 
-        auto reset = Cheats::sar_stats_auto_reset.GetInt();
+        auto reset = sar_stats_auto_reset.GetInt();
         if ((reset == 1 && !*m_bLoadgame) || reset >= 2) {
             Stats::ResetAll();
         }

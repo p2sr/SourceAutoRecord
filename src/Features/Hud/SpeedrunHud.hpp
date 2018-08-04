@@ -23,7 +23,7 @@ bool SpeedrunHud::GetCurrentSize(int& xSize, int& ySize)
 }
 void SpeedrunHud::Draw()
 {
-    auto mode = Cheats::sar_sr_hud.GetInt();
+    auto mode = sar_sr_hud.GetInt();
     if (mode == 0)
         return;
 
@@ -32,11 +32,11 @@ void SpeedrunHud::Draw()
     auto total = Speedrun::timer->GetTotal();
     auto ipt = Speedrun::timer->GetIntervalPerTick();
 
-    auto xOffset = Cheats::sar_sr_hud_x.GetInt();
-    auto yOffset = Cheats::sar_sr_hud_y.GetInt();
+    auto xOffset = sar_sr_hud_x.GetInt();
+    auto yOffset = sar_sr_hud_y.GetInt();
 
-    auto font = Scheme::GetDefaultFont() + Cheats::sar_sr_hud_font_index.GetInt();
-    auto fontColor = this->GetColor(Cheats::sar_sr_hud_font_color.GetString());
+    auto font = Scheme::GetDefaultFont() + sar_sr_hud_font_index.GetInt();
+    auto fontColor = this->GetColor(sar_sr_hud_font_color.GetString());
 
     Surface::DrawTxt(font, xOffset, yOffset, fontColor, "%s", Speedrun::Timer::Format(total * ipt).c_str());
 

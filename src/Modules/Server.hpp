@@ -51,8 +51,8 @@ DETOUR_T(bool, CheckJumpButton)
     auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
     auto m_nOldButtons = reinterpret_cast<int*>((uintptr_t)mv + Offsets::m_nOldButtons);
 
-    auto enabled = (!Cheats::sv_bonus_challenge.GetBool() || Cheats::sv_cheats.GetBool())
-        && Cheats::sar_autojump.GetBool();
+    auto enabled = (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool())
+        && sar_autojump.GetBool();
 
     auto original = 0;
     if (enabled) {
@@ -99,7 +99,7 @@ DETOUR(PlayerMove)
     if (Stats::Jumps::IsTracing
         && m_fFlags & FL_ONGROUND
         && m_MoveType != MOVETYPE_NOCLIP) {
-        Stats::Jumps::EndTrace(Client::GetAbsOrigin(), Cheats::sar_stats_jumps_xy.GetBool());
+        Stats::Jumps::EndTrace(Client::GetAbsOrigin(), sar_stats_jumps_xy.GetBool());
     }
 
     StepCounter::ReduceTimer(gpGlobals->frametime);
@@ -107,14 +107,14 @@ DETOUR(PlayerMove)
     // Player is on ground and moving etc.
     if (StepCounter::StepSoundTime <= 0
         && m_MoveType != MOVETYPE_NOCLIP
-        && Cheats::sv_footsteps.GetFloat()
+        && sv_footsteps.GetFloat()
         && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
         && ((m_fFlags & FL_ONGROUND && m_vecVelocity.Length2D() > 0.0001f)
                || m_MoveType == MOVETYPE_LADDER)) {
         StepCounter::Increment(m_fFlags, m_MoveType, m_vecVelocity, m_nWaterLevel);
     }
 
-    Stats::Velocity::Save(Client::GetLocalVelocity(), Cheats::sar_stats_velocity_peak_xy.GetBool());
+    Stats::Velocity::Save(Client::GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
 
     return Original::PlayerMove(thisptr);
 }
@@ -122,7 +122,7 @@ DETOUR(PlayerMove)
 // CGameMovement::FinishGravity
 DETOUR(FinishGravity)
 {
-    if (callFromCheckJumpButton && Cheats::sar_jumpboost.GetBool()) {
+    if (callFromCheckJumpButton && sar_jumpboost.GetBool()) {
         auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
         auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
 
@@ -138,7 +138,7 @@ DETOUR(FinishGravity)
         float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
         float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
 
-        if (Cheats::sar_jumpboost.GetInt() == 1) {
+        if (sar_jumpboost.GetInt() == 1) {
             if (flNewSpeed > flMaxSpeed) {
                 flSpeedAddition -= flNewSpeed - flMaxSpeed;
             }
@@ -157,9 +157,9 @@ DETOUR(FinishGravity)
 DETOUR_B(AirMove)
 {
 #ifdef _WIN32
-    if (Cheats::sar_aircontrol.GetInt() >= 2) {
+    if (sar_aircontrol.GetInt() >= 2) {
 #else
-    if (Cheats::sar_aircontrol.GetBool()) {
+    if (sar_aircontrol.GetBool()) {
 #endif
         return Original::AirMoveBase(thisptr);
     }
@@ -179,7 +179,7 @@ DETOUR_MID_MH(AirMove_Mid)
         pushfd
     }
 
-    if ((!Cheats::sv_bonus_challenge.GetBool() || Cheats::sv_cheats.GetBool()) && Cheats::sar_aircontrol.GetBool())
+    if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_aircontrol.GetBool())
     {
         __asm {
             popfd
@@ -214,7 +214,7 @@ DETOUR(GameFrame, bool simulating)
     if (!*g_InRestore) {
         auto pe = g_EventQueue->m_Events.m_pNext;
         while (pe && pe->m_flFireTime <= gpGlobals->curtime) {
-            if (Cheats::sar_debug_event_queue.GetBool()) {
+            if (sar_debug_event_queue.GetBool()) {
                 console->Print("[%i] Event fired!\n", Engine::GetSessionTick());
                 console->Msg("    - m_flFireTime   %f\n", pe->m_flFireTime);
                 console->Msg("    - m_iTarget      %s\n", pe->m_iTarget);
@@ -291,6 +291,9 @@ void Init()
 
 void Shutdown()
 {
+#if _WIN32
+    MH_UNHOOK(AirMove_Mid);
+#endif
     Interface::Delete(g_GameMovement);
     Interface::Delete(g_ServerGameDLL);
 }

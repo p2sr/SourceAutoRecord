@@ -17,7 +17,7 @@ CON_COMMAND(sar_timer_start, "Starts timer.\n")
         console->DevMsg("Starting timer!\n");
     Timer::Start(*Engine::tickcount);
 
-    if (Cheats::sar_stats_auto_reset.GetInt() >= 2) {
+    if (sar_stats_auto_reset.GetInt() >= 2) {
         Stats::ResetAll();
     }
 }

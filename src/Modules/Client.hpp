@@ -94,7 +94,7 @@ DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd)
 DETOUR_T(const char*, GetName)
 {
     // Never allow CHud::FindElement to find this HUD
-    if (Cheats::sar_disable_challenge_stats_hud.GetBool())
+    if (sar_disable_challenge_stats_hud.GetBool())
         return "";
 
     return Original::GetName(thisptr);
@@ -116,11 +116,11 @@ void Init()
 
         if (game->version == SourceGame::Portal2) {
             auto leaderboard = Command("+leaderboard");
-            if (leaderboard.GetPtr()) {
+            if (!!leaderboard) {
                 using _GetHud = void*(__cdecl*)(int unk);
                 using _FindElement = void*(__func*)(void* thisptr, const char* pName);
 
-                auto cc_leaderboard_enable = (uintptr_t)leaderboard.GetPtr()->m_pCommandCallback;
+                auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
                 auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
                 auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
                 auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");

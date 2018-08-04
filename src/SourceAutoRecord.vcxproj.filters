@@ -67,6 +67,21 @@
     <ClCompile Include="Interface.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
+    <ClCompile Include="Cheats.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Variable.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Tier1.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Module.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Command.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -278,6 +293,12 @@
     </ClInclude>
     <ClInclude Include="Interface.hpp">
       <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Module.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Platform.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

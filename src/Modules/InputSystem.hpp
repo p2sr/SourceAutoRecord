@@ -32,8 +32,8 @@ void Init()
     }
 
     auto unbind = Command("unbind");
-    if (unbind.GetPtr()) {
-        auto cc_unbind_callback = (uintptr_t)unbind.GetPtr()->m_pCommandCallback;
+    if (!!unbind) {
+        auto cc_unbind_callback = (uintptr_t)unbind.ThisPtr()->m_pCommandCallback;
         KeySetBinding = Memory::Read<_KeySetBinding>(cc_unbind_callback + Offsets::Key_SetBinding);
     }
 }
