@@ -35,6 +35,9 @@ extern int InternalSetIntValue;
 // CMatSystemSurface
 extern int DrawSetColor;
 extern int DrawFilledRect;
+extern int DrawLine;
+extern int DrawSetTextFont;
+extern int DrawSetTextColor;
 extern int GetFontTall;
 extern int PaintTraverseEx;
 extern int DrawColoredText;
@@ -122,6 +125,9 @@ extern int Frame;
 
 // CEngineAPI
 extern int IsRunningSimulation;
+
+// CIVDebugOverlay
+extern int ScreenPosition;
 
 // Others
 extern int tickcount;

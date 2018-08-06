@@ -56,6 +56,7 @@ void HalfLife2::LoadOffsets()
     eng = 2; // CEngineAPI::IsRunningSimulation
     Frame = 5; // CEngine
     m_bLoadGame = 335; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
+    ScreenPosition = 10; // CIVDebugOverlay
 
     // vstdlib.dll
     RegisterConCommand = 6; // CCVar
@@ -103,6 +104,9 @@ void HalfLife2::LoadOffsets()
 
     DrawSetColor = 11; // CMatSystemSurface
     DrawFilledRect = 12; // CMatSystemSurface
+    DrawLine = 15; // CMatSystemSurface
+    DrawSetTextFont = 17; // CMatSystemSurface
+    DrawSetTextColor = 18; // CMatSystemSurface
     GetFontTall = 69; // CMatSystemSurface
     PaintTraverseEx = 114; // CMatSystemSurface
     StartDrawing = 124; // CMatSystemSurface::PaintTraverseEx

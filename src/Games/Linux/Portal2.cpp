@@ -58,6 +58,7 @@ void Portal2::LoadOffsets()
     eng = 7; // CEngineAPI::IsRunningSimulation
     Frame = 6; // CEngine
     m_bLoadGame = 440; // CGameClient::ActivatePlaye/CBaseServer::m_szLevelName
+    ScreenPosition = 11; // CIVDebugOverlay
 
     // libvstdlib.so
     RegisterConCommand = 9; // CCVar
@@ -115,6 +116,9 @@ void Portal2::LoadOffsets()
 
     DrawSetColor = 13; // CMatSystemSurface
     DrawFilledRect = 15; // CMatSystemSurface
+    DrawLine = 18; // CMatSystemSurface
+    DrawSetTextFont = 22; // CMatSystemSurface
+    DrawSetTextColor = 24; // CMatSystemSurface
     GetFontTall = 72; // CMatSystemSurface
     PaintTraverseEx = 117; // CMatSystemSurface
     StartDrawing = 193; // CMatSystemSurface::PaintTraverseEx
@@ -129,7 +133,7 @@ void Portal2::LoadRules()
         "camera_intro",
         "TeleportToView",
         TimerAction::Start));
-    speedrun->AddRule(TimernRule(
+    speedrun->AddRule(TimerRule(
         "sp_a4_finale4",
         "transition_portal2",
         "TODO",

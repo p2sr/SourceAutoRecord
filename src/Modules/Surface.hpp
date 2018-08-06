@@ -14,6 +14,9 @@ typedef unsigned long HFont;
 
 using _DrawSetColor = int(__func*)(void* thisptr, int r, int g, int b, int a);
 using _DrawFilledRect = int(__func*)(void* thisptr, int x0, int y0, int x1, int y1);
+using _DrawLine = int(__func*)(void* thisptr, int x0, int y0, int x1, int y1);
+using _DrawSetTextFont = int(__func*)(void* thisptr, HFont font);
+using _DrawSetTextColor = int(__func*)(void* thisptr, Color color);
 #ifdef _WIN32
 using _GetFontTall = int(__stdcall*)(HFont font);
 #else
@@ -27,6 +30,9 @@ using _FinishDrawing = int(__cdecl*)();
 _GetFontTall GetFontTall;
 _DrawSetColor DrawSetColor;
 _DrawFilledRect DrawFilledRect;
+_DrawLine DrawLine;
+_DrawSetTextFont DrawSetTextFont;
+_DrawSetTextColor DrawSetTextColor;
 _DrawColoredText DrawColoredText;
 _DrawTextLen DrawTextLen;
 _StartDrawing StartDrawing;
@@ -89,6 +95,9 @@ void Init()
     if (matsurface) {
         DrawSetColor = matsurface->Original<_DrawSetColor>(Offsets::DrawSetColor);
         DrawFilledRect = matsurface->Original<_DrawFilledRect>(Offsets::DrawFilledRect);
+        DrawLine = matsurface->Original<_DrawLine>(Offsets::DrawLine);
+        DrawSetTextFont = matsurface->Original<_DrawSetTextFont>(Offsets::DrawSetTextFont);
+        DrawSetTextColor = matsurface->Original<_DrawSetTextColor>(Offsets::DrawSetTextColor);
         GetFontTall = matsurface->Original<_GetFontTall>(Offsets::GetFontTall);
         DrawColoredText = matsurface->Original<_DrawColoredText>(Offsets::DrawColoredText);
         DrawTextLen = matsurface->Original<_DrawTextLen>(Offsets::DrawTextLen);

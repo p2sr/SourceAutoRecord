@@ -58,6 +58,7 @@ void Portal2::LoadOffsets()
     eng = 2; // CEngineAPI::IsRunningSimulation
     Frame = 5; // CEngine
     m_bLoadGame = 448; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
+    ScreenPosition = 12; // CIVDebugOverlay
 
     // vstdlib.dll
     RegisterConCommand = 9; // CCVar
@@ -114,6 +115,9 @@ void Portal2::LoadOffsets()
 
     DrawSetColor = 14; // CMatSystemSurface
     DrawFilledRect = 15; // CMatSystemSurface
+    DrawLine = 18; // CMatSystemSurface
+    DrawSetTextFont = 22; // CMatSystemSurface
+    DrawSetTextColor = 23; // CMatSystemSurface
     GetFontTall = 72; // CMatSystemSurface
     PaintTraverseEx = 117; // CMatSystemSurface
     StartDrawing = 127; // CMatSystemSurface::PaintTraverseEx

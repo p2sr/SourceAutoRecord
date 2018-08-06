@@ -28,6 +28,7 @@ Interface* engine;
 Interface* cl;
 Interface* s_GameEventManager;
 Interface* eng;
+Interface* debugoverlay;
 
 using _GetScreenSize = int(__stdcall*)(int& width, int& height);
 using _ClientCmd = int(__func*)(void* thisptr, const char* szCmdString);
@@ -40,6 +41,11 @@ using _RemoveListener = bool(__func*)(void* thisptr, IGameEventListener2* listen
 using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
 using _AddText = void(__func*)(void* thisptr, const char* pText, int nTickDelay);
 using _GetActiveSplitScreenPlayerSlot = int (*)();
+#ifdef _WIN32
+using _ScreenPosition = int(__stdcall*)(const Vector& point, Vector& screen);
+#else
+using _ScreenPosition = int(__stdcall*)(void* thisptr, const Vector& point, Vector& screen);
+#endif
 
 _GetScreenSize GetScreenSize;
 _ClientCmd ClientCmd;
@@ -52,6 +58,7 @@ _AddListener AddListener;
 _RemoveListener RemoveListener;
 _Cbuf_AddText Cbuf_AddText;
 _AddText AddText;
+_ScreenPosition ScreenPosition;
 
 int* tickcount;
 float* interval_per_tick;
@@ -93,6 +100,14 @@ void SendToCommandBuffer(const char* text, int delay)
     } else if (Game::IsHalfLife2Engine()) {
         AddText(s_CommandBuffer, text, delay);
     }
+}
+int PointToScreen(const Vector& point, Vector& screen)
+{
+#ifdef _WIN32
+    return ScreenPosition(point, screen);
+#else
+    return ScreenPosition(nullptr, point, screen);
+#endif
 }
 
 bool isInSession = false;
@@ -382,6 +397,11 @@ void Init()
             RemoveListener = s_GameEventManager->Original<_RemoveListener>(Offsets::RemoveListener);
         }
     }
+
+    /*debugoverlay = Interface::Create(MODULE("engine"), "VDebugOverlay0", false);
+    if (debugoverlay) {
+        ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
+    }*/
 
     HOOK_COMMAND(plugin_load);
     HOOK_COMMAND(plugin_unload);
