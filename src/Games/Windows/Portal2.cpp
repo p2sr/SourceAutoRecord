@@ -1,6 +1,6 @@
 #include "Portal2.hpp"
 
-#include "Features/Speedrun.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 
 #include "Game.hpp"
 #include "Offsets.hpp"
@@ -25,6 +25,7 @@ void Portal2::LoadOffsets()
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient
     SetViewAngles = 19; // CEngineClient
+    GetMaxClients = 20; // CEngineClient
     GetGameDirectory = 35; // CEngineClient
     GetActiveSplitScreenPlayerSlot = 127; // CEngineClient
     StringToButtonCode = 31; // CInputSystem
@@ -122,18 +123,18 @@ void Portal2::LoadOffsets()
 }
 void Portal2::LoadRules()
 {
-    Speedrun::timer->AddRule(Speedrun::TimerRule(
+    speedrun->AddRule(TimerRule(
         "sp_a1_intro1",
         "camera_intro",
         "TeleportToView",
-        Speedrun::TimerAction::Start));
-    Speedrun::timer->AddRule(Speedrun::TimerRule(
+        TimerAction::Start));
+    speedrun->AddRule(TimerRule(
         "sp_a4_finale4",
         "transition_portal2",
         "TODO",
-        Speedrun::TimerAction::End));
+        TimerAction::End));
 }
-const char* Portal2::GetVersion()
+const char* Portal2::Version()
 {
     return "Portal 2 (7054)";
 }

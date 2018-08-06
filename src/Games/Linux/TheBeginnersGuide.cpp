@@ -13,7 +13,7 @@ void TheBeginnersGuide::LoadOffsets()
 void TheBeginnersGuide::LoadRules()
 {
 }
-const char* TheBeginnersGuide::GetVersion()
+const char* TheBeginnersGuide::Version()
 {
     return "The Beginners Guide (6172)";
 }

@@ -16,9 +16,6 @@
     <ClCompile Include="..\lib\minhook\hde\hde32.c">
       <Filter>lib\minhook</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Speedrun.cpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClCompile>
     <ClCompile Include="Modules\Console.cpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClCompile>
@@ -81,6 +78,21 @@
     </ClCompile>
     <ClCompile Include="Command.cpp">
       <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\TimerInterface.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\TimerResult.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\TimerRule.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\TimerSplit.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -228,13 +240,7 @@
     <ClInclude Include="Commands\Binding.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
-    <ClInclude Include="Commands\Config.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
     <ClInclude Include="Commands\Demo.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\Info.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
     <ClInclude Include="Commands\Routing.hpp">
@@ -267,14 +273,8 @@
     <ClInclude Include="Games\Linux\HalfLife2.hpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
-    <ClInclude Include="Commands\Stanley.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
     <ClInclude Include="Listener.hpp">
       <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Commands\Speedrun.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
@@ -299,6 +299,33 @@
     </ClInclude>
     <ClInclude Include="Utils\Platform.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\TimerInterface.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\TimerResult.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\TimerRule.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\TimerSplit.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\TimerAction.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\TimerState.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\WorkshopList.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\Exclusive.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -334,6 +361,9 @@
     </Filter>
     <Filter Include="SourceAutoRecord\Features\Hud">
       <UniqueIdentifier>{79986844-aff5-4989-abfb-85cb7515858e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Speedrun">
+      <UniqueIdentifier>{68aa521b-4809-41c1-9070-2b9f95b802bd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

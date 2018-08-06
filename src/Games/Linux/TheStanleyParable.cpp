@@ -49,7 +49,7 @@ void TheStanleyParable::LoadOffsets()
 void TheStanleyParable::LoadRules()
 {
 }
-const char* TheStanleyParable::GetVersion()
+const char* TheStanleyParable::Version()
 {
     return "The Stanley Parable (6130)";
 }

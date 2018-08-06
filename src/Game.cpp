@@ -7,7 +7,7 @@
 #include GAME(TheBeginnersGuide)
 #include GAME(TheStanleyParable)
 
-const char* Game::GetVersion()
+const char* Game::Version()
 {
     return "Unknown";
 }
@@ -69,7 +69,6 @@ bool Game::IsSupported()
 
     if (game) {
         game->LoadOffsets();
-        game->LoadRules();
         return true;
     }
 

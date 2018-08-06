@@ -16,7 +16,7 @@ public:
 public:
     virtual void LoadOffsets() = 0;
     virtual void LoadRules() = 0;
-    virtual const char* GetVersion();
+    virtual const char* Version();
     static bool IsPortal2Engine();
     static bool IsHalfLife2Engine();
     static bool HasChallengeMode();

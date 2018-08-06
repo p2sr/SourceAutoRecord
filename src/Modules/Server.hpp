@@ -3,7 +3,7 @@
 #include "Engine.hpp"
 
 #include "Features/Routing.hpp"
-#include "Features/Speedrun.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/StepCounter.hpp"
 
 #include "Cheats.hpp"
@@ -225,7 +225,7 @@ DETOUR(GameFrame, bool simulating)
                 console->Msg("    - m_iOutputID    %i\n", pe->m_iOutputID);
             }
 
-            Speedrun::timer->CheckRules(pe, Engine::tickcount);
+            speedrun->CheckRules(pe, Engine::tickcount);
 
             pe = pe->m_pNext;
         }

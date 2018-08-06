@@ -159,7 +159,11 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="Cheats.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="Features\Hud\Hud.cpp" />
-    <ClCompile Include="Features\Speedrun.cpp" />
+    <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp" />
+    <ClCompile Include="Features\Speedrun\TimerInterface.cpp" />
+    <ClCompile Include="Features\Speedrun\TimerResult.cpp" />
+    <ClCompile Include="Features\Speedrun\TimerRule.cpp" />
+    <ClCompile Include="Features\Speedrun\TimerSplit.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Interface.cpp" />
     <ClCompile Include="Modules\Module.cpp" />
@@ -199,12 +203,10 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Command.hpp" />
     <ClInclude Include="Commands.hpp" />
     <ClInclude Include="Commands\Speedrun.hpp" />
-    <ClInclude Include="Commands\Stanley.hpp" />
+    <ClInclude Include="Commands\Exclusive.hpp" />
     <ClInclude Include="Commands\Binding.hpp" />
     <ClInclude Include="Commands\Teleporter.hpp" />
-    <ClInclude Include="Commands\Config.hpp" />
     <ClInclude Include="Commands\Demo.hpp" />
-    <ClInclude Include="Commands\Info.hpp" />
     <ClInclude Include="Commands\Routing.hpp" />
     <ClInclude Include="Commands\Stats.hpp" />
     <ClInclude Include="Commands\Summary.hpp" />
@@ -218,7 +220,13 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\Rebinder.hpp" />
     <ClInclude Include="Features\Routing.hpp" />
     <ClInclude Include="Features\Session.hpp" />
-    <ClInclude Include="Features\Speedrun.hpp" />
+    <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp" />
+    <ClInclude Include="Features\Speedrun\TimerAction.hpp" />
+    <ClInclude Include="Features\Speedrun\TimerInterface.hpp" />
+    <ClInclude Include="Features\Speedrun\TimerResult.hpp" />
+    <ClInclude Include="Features\Speedrun\TimerRule.hpp" />
+    <ClInclude Include="Features\Speedrun\TimerSplit.hpp" />
+    <ClInclude Include="Features\Speedrun\TimerState.hpp" />
     <ClInclude Include="Features\Stats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
@@ -227,6 +235,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\Timer.hpp" />
     <ClInclude Include="Features\TimerAverage.hpp" />
     <ClInclude Include="Features\TimerCheckPoints.hpp" />
+    <ClInclude Include="Features\WorkshopList.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="Games\Linux\HalfLife2.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>

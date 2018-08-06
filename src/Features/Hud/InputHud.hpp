@@ -48,8 +48,8 @@ private:
 
 public:
     void SetButtonBits(int buttonBits);
-    bool GetCurrentSize(int& xSize, int& ySize);
-    void Draw();
+    bool GetCurrentSize(int& xSize, int& ySize) override;
+    void Draw() override;
 };
 
 InputHud* inputHud;

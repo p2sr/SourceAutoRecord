@@ -24,6 +24,7 @@ void HalfLife2::LoadOffsets()
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 19; // CEngineClient
     SetViewAngles = 20; // CEngineClient
+    GetMaxClients = 21; // CEngineClient
     GetGameDirectory = 35; // CEngineClient
     ServerCmdKeyValues = 128; // CEngineClient
     cl = 6; // CEngineClient::ServerCmdKeyValues
@@ -112,7 +113,7 @@ void HalfLife2::LoadOffsets()
 void HalfLife2::LoadRules()
 {
 }
-const char* HalfLife2::GetVersion()
+const char* HalfLife2::Version()
 {
     return (this->version != SourceGame::Portal)
         ? "Half-Life 2 (2257546)"

@@ -4,14 +4,14 @@
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
 
-#include "Features/Speedrun.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 
 #include "Cheats.hpp"
 
 class SpeedrunHud : public Hud {
 public:
-    bool GetCurrentSize(int& xSize, int& ySize);
-    void Draw();
+    bool GetCurrentSize(int& xSize, int& ySize) override;
+    void Draw() override;
 };
 
 SpeedrunHud* speedrunHud;
@@ -29,8 +29,8 @@ void SpeedrunHud::Draw()
 
     Surface::StartDrawing(Surface::matsurface->ThisPtr());
 
-    auto total = Speedrun::timer->GetTotal();
-    auto ipt = Speedrun::timer->GetIntervalPerTick();
+    auto total = speedrun->GetTotal();
+    auto ipt = speedrun->GetIntervalPerTick();
 
     auto xOffset = sar_sr_hud_x.GetInt();
     auto yOffset = sar_sr_hud_y.GetInt();
@@ -38,7 +38,7 @@ void SpeedrunHud::Draw()
     auto font = Scheme::GetDefaultFont() + sar_sr_hud_font_index.GetInt();
     auto fontColor = this->GetColor(sar_sr_hud_font_color.GetString());
 
-    Surface::DrawTxt(font, xOffset, yOffset, fontColor, "%s", Speedrun::Timer::Format(total * ipt).c_str());
+    Surface::DrawTxt(font, xOffset, yOffset, fontColor, "%s", SpeedrunTimer::Format(total * ipt).c_str());
 
     Surface::FinishDrawing();
 }

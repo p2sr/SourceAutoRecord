@@ -5,7 +5,7 @@
 #include "Tier1.hpp"
 
 #include "Features/Session.hpp"
-#include "Features/Speedrun.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
@@ -34,6 +34,7 @@ using _ClientCmd = int(__func*)(void* thisptr, const char* szCmdString);
 using _GetLocalPlayer = int(__func*)(void* thisptr);
 using _GetViewAngles = int(__func*)(void* thisptr, QAngle& va);
 using _SetViewAngles = int(__func*)(void* thisptr, QAngle& va);
+using _GetMaxClients = int (*)();
 using _AddListener = bool(__func*)(void* thisptr, IGameEventListener2* listener, const char* name, bool serverside);
 using _RemoveListener = bool(__func*)(void* thisptr, IGameEventListener2* listener);
 using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
@@ -45,6 +46,7 @@ _ClientCmd ClientCmd;
 _GetLocalPlayer GetLocalPlayer;
 _GetViewAngles GetViewAngles;
 _SetViewAngles SetViewAngles;
+_GetMaxClients GetMaxClients;
 _GetActiveSplitScreenPlayerSlot GetActiveSplitScreenPlayerSlot;
 _AddListener AddListener;
 _RemoveListener RemoveListener;
@@ -101,10 +103,12 @@ HOSTSTATES prevState;
 
 void SessionStarted()
 {
-    console->Print("Session Started!\n");
-    Session::Rebase(*tickcount);
-    Timer::Rebase(*tickcount);
-    Speedrun::timer->Unpause(tickcount);
+    if (GetMaxClients() <= 1) {
+        console->Print("Session Started!\n");
+        Session::Rebase(*tickcount);
+        Timer::Rebase(*tickcount);
+        speedrun->Unpause(tickcount);
+    }
 
     if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
         if (DemoRecorder::IsRecordingDemo) {
@@ -169,7 +173,7 @@ void SessionEnded()
     TAS::Reset();
     TAS2::Stop();
     isInSession = false;
-    Speedrun::timer->Pause();
+    speedrun->Pause();
 }
 void SessionChanged(int state)
 {
@@ -244,13 +248,13 @@ DETOUR(Frame)
             && !DemoPlayer::IsPlaying()) {
             console->Print("Session started! (menu)\n");
             Session::Rebase(*tickcount);
-            Speedrun::timer->Unpause(tickcount);
+            speedrun->Unpause(tickcount);
         }
     }
     prevState = hoststate->m_currentState;
 
     if (hoststate->m_activeGame) {
-        Speedrun::timer->Update(tickcount, m_bLoadgame, m_szLevelName);
+        speedrun->Update(tickcount, hoststate->m_levelName);
     }
 
     return Original::Frame(thisptr);
@@ -265,7 +269,7 @@ DETOUR_COMMAND(plugin_load)
         if (endsWith(file, std::string(MODULE("sar"))) || endsWith(file, std::string("sar"))) {
             if (plugin->found) {
                 console->Warning("SAR: Plugin already loaded!\n");
-            } else if (SAR::PluginFound()) {
+            } else if (sar->PluginFound()) {
                 plugin->ptr->m_bDisable = true;
                 console->PrintActive("SAR: Plugin fully loaded!\n");
             } else {
@@ -303,6 +307,7 @@ void Init()
         GetLocalPlayer = engine->Original<_GetLocalPlayer>(Offsets::GetLocalPlayer);
         GetViewAngles = engine->Original<_GetViewAngles>(Offsets::GetViewAngles);
         SetViewAngles = engine->Original<_SetViewAngles>(Offsets::SetViewAngles);
+        GetMaxClients = engine->Original<_GetMaxClients>(Offsets::GetMaxClients);
         GetGameDirectory = engine->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
 
         Cbuf_AddText = Memory::Read<_Cbuf_AddText>((uintptr_t)ClientCmd + Offsets::Cbuf_AddText);
@@ -347,7 +352,7 @@ void Init()
 #endif
             tickcount = Memory::Deref<int*>(ProcessTick + Offsets::tickcount);
             interval_per_tick = Memory::Deref<float*>(ProcessTick + Offsets::interval_per_tick);
-            Speedrun::timer->SetIntervalPerTick(interval_per_tick);
+            speedrun->SetIntervalPerTick(interval_per_tick);
 
             auto SetSignonState = cl->Original(Offsets::Disconnect - 1);
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
@@ -367,6 +372,7 @@ void Init()
     if (auto tool = Interface::Create(MODULE("engine"), "VENGINETOOL0", false)) {
         auto GetCurrentMap = tool->Original(Offsets::GetCurrentMap);
         m_szLevelName = Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName);
+        m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)m_szLevelName + Offsets::m_bLoadGame);
     }
 
     if (game->version == SourceGame::Portal2) {

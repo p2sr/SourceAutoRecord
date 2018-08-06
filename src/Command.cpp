@@ -29,6 +29,8 @@ Command::Command(const char* pName, _CommandCallback callback, const char* pHelp
     this->ptr->m_nFlags = flags;
     this->ptr->m_fnCommandCallback = callback;
     this->ptr->m_fnCompletionCallback = completionFunc;
+    this->ptr->m_bHasCompletionCallback = completionFunc != nullptr;
+    this->ptr->m_bUsingNewCommandCallback = true;
 
     Command::list.push_back(this);
 }

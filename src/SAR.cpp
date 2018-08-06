@@ -9,6 +9,8 @@
 #include "Modules/VGui.hpp"
 
 #include "Features/Config.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/WorkshopList.hpp"
 
 #include "Cheats.hpp"
 #include "Command.hpp"
@@ -24,19 +26,21 @@ public:
     virtual bool Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
     {
         console = new Console();
-        plugin = new Plugin();
-        Speedrun::timer = new Speedrun::Timer();
 
         if (!console->Init())
             return false;
 
         if (Game::IsSupported()) {
-
             modules = new Modules();
             modules->AddModule<Tier1>(&tier1);
             modules->InitAll();
 
             if (tier1->hasLoaded) {
+                sar = new SAR();
+                plugin = new Plugin();
+                speedrun = new SpeedrunTimer();
+                game->LoadRules();
+
                 commands = new Commands();
                 cheats = new Cheats();
 
@@ -51,10 +55,17 @@ public:
                 Client::Init();
                 Server::Init();
 
-                //listener = new SourceAutoRecordListener();
+                listener = new Listener();
+                listener->Init();
 
-                //Config::Load();
-                SAR::SearchPlugin();
+                config = new Config();
+                config->Load();
+
+                if (game->version == SourceGame::Portal2) {
+                    workshop = new WorkshopList();
+                }
+
+                sar->SearchPlugin();
 
                 console->PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
                 return true;
@@ -137,9 +148,32 @@ public:
 CSourceAutoRecord g_SourceAutoRecord;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSourceAutoRecord, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_SourceAutoRecord);
 
+CON_COMMAND(sar_session, "Prints the current tick of the server since it has loaded.\n")
+{
+    int tick = Engine::GetSessionTick();
+    console->Print("Session Tick: %i (%.3f)\n", tick, Engine::ToTime(tick));
+    if (*Engine::DemoRecorder::m_bRecording) {
+        tick = Engine::DemoRecorder::GetTick();
+        console->Print("Demo Recorder Tick: %i (%.3f)\n", tick, Engine::ToTime(tick));
+    }
+    if (Engine::DemoPlayer::IsPlaying()) {
+        tick = Engine::DemoPlayer::GetTick();
+        console->Print("Demo Player Tick: %i (%.3f)\n", tick, Engine::ToTime(tick));
+    }
+}
+
+CON_COMMAND(sar_about, "Prints info about this tool.\n")
+{
+    console->Print("SourceAutoRecord tells the engine to keep recording when loading a save.\n");
+    console->Print("More information at: %s\n", sar->Website());
+    console->Print("Game: %s\n", game->Version());
+    console->Print("Version: %s\n", sar->Version());
+    console->Print("Build: %s\n", sar->Build());
+}
+
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
-    //delete listener;
+    //SAFE_DELETE(listener);
 
     Client::Shutdown();
     Engine::Shutdown();
@@ -154,7 +188,7 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 
     modules->ShutdownAll();
 
-    if (SAR::PluginFound()) {
+    if (sar->PluginFound()) {
         // SAR has to unhook CEngine some ticks before unloading the module
         auto unload = std::string("plugin_unload ") + std::to_string(plugin->index);
         Engine::SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);
@@ -164,10 +198,13 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 
     console->Print("Cya :)\n");
 
+    SAFE_DELETE(workshop);
+    SAFE_DELETE(config);
     SAFE_DELETE(cheats);
     SAFE_DELETE(commands);
     SAFE_DELETE(game);
-    SAFE_DELETE(Speedrun::timer);
+    SAFE_DELETE(speedrun);
     SAFE_DELETE(plugin);
+    SAFE_DELETE(sar);
     SAFE_DELETE(console);
 }

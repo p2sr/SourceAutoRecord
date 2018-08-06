@@ -1,4 +1,4 @@
-#include "Speedrun.hpp"
+#include "SpeedrunTimer.hpp"
 
 #include <cmath>
 #include <cstring>
@@ -10,127 +10,12 @@
 
 #include "Modules/Console.hpp"
 
-namespace Speedrun {
+#include "TimerInterface.hpp"
+#include "TimerResult.hpp"
+#include "TimerRule.hpp"
+#include "TimerSplit.hpp"
 
-class Timer;
-
-TimerRule::TimerRule(const char* map, const char* target, const char* targetInput, TimerAction action)
-{
-    this->map = map;
-    this->target = target;
-    this->targetInput = targetInput;
-    this->action = action;
-}
-void TimerRule::Check(const EventQueuePrioritizedEvent_t* event, const int* engineTicks, Timer* timer)
-{
-    if (std::strcmp(this->map, timer->GetCurrentMap()) || !event)
-        return;
-    if (!event->m_iTarget || std::strcmp(this->target, event->m_iTarget))
-        return;
-    if (!event->m_iTargetInput || std::strcmp(this->targetInput, event->m_iTargetInput))
-        return;
-
-    if (this->action == TimerAction::Start)
-        timer->Start(engineTicks);
-    else if (this->action == TimerAction::End)
-        timer->Stop();
-}
-
-TimerSplit::TimerSplit(const int ticks, const char* map)
-{
-    this->entered = ticks;
-    std::strcpy(this->map, map);
-    this->segments = std::vector<TimerSegment>();
-}
-int TimerSplit::GetTotal()
-{
-    auto total = this->finished - this->entered;
-    if (total < 0) {
-        total = 0;
-        for (const auto& segment : this->segments) {
-            total += segment.session;
-        }
-    }
-    return total;
-}
-
-TimerResult::TimerResult()
-    : total(0)
-    , curSplit(nullptr)
-    , prevSplit(nullptr)
-    , splits()
-{
-}
-void TimerResult::NewSplit(const int started, const char* map)
-{
-    this->prevSplit = this->curSplit;
-    this->curSplit = new TimerSplit(started, map);
-}
-void TimerResult::EndSplit(const int finished)
-{
-    this->curSplit->finished = finished;
-    this->splits.push_back(this->curSplit);
-}
-void TimerResult::Split(const int ticks, const char* map)
-{
-    this->EndSplit(ticks);
-    this->NewSplit(ticks, map);
-}
-void TimerResult::AddSegment(int ticks)
-{
-    this->curSplit->segments.push_back(TimerSegment{ ticks });
-}
-void TimerResult::UpdateSplit(char* map)
-{
-    for (const auto& split : this->splits) {
-        if (!std::strcmp(map, split->map)) {
-            this->prevSplit = this->curSplit;
-            this->curSplit = split;
-        }
-    }
-}
-void TimerResult::Reset()
-{
-    this->total = 0;
-    this->prevSplit = nullptr;
-
-    if (this->curSplit) {
-        delete this->curSplit;
-        this->curSplit = nullptr;
-    }
-
-    for (auto it = this->splits.begin(); it != this->splits.end();) {
-        delete *it;
-        it = this->splits.erase(it);
-    }
-}
-TimerResult::~TimerResult()
-{
-    this->Reset();
-}
-
-TimerInterface::TimerInterface()
-    : start("SAR_TIMER_START")
-    , total(0)
-    , ipt(0)
-    , action(TimerAction::Unknown)
-    , end("SAR_TIMER_END")
-{
-}
-void TimerInterface::SetIntervalPerTick(const float* ipt)
-{
-    this->ipt = *ipt;
-}
-void TimerInterface::Update(Timer* timer)
-{
-    this->total = timer->GetTotal();
-}
-void TimerInterface::SetAction(TimerAction action)
-{
-    this->action = action;
-}
-
-Timer::Timer()
+SpeedrunTimer::SpeedrunTimer()
     : session(0)
     , base(0)
     , total(0)
@@ -144,12 +29,12 @@ Timer::Timer()
     this->result = std::make_unique<TimerResult>();
     this->pb = std::make_unique<TimerResult>();
 }
-bool Timer::IsActive()
+bool SpeedrunTimer::IsActive()
 {
     return this->state == TimerState::Running
         || this->state == TimerState::Paused;
 }
-void Timer::Start(const int* engineTicks)
+void SpeedrunTimer::Start(const int* engineTicks)
 {
     console->Print("Speedrun started!\n");
     this->base = *engineTicks;
@@ -167,7 +52,7 @@ void Timer::Start(const int* engineTicks)
     this->result.get()->Reset();
     this->result.get()->NewSplit(this->total, this->map);
 }
-void Timer::Pause()
+void SpeedrunTimer::Pause()
 {
     if (this->state == TimerState::Running) {
         console->Print("Speedrun paused!\n");
@@ -176,7 +61,7 @@ void Timer::Pause()
         this->result.get()->AddSegment(this->session);
     }
 }
-void Timer::Unpause(const int* engineTicks)
+void SpeedrunTimer::Unpause(const int* engineTicks)
 {
     if (this->state == TimerState::Paused) {
         console->Print("Speedrun unpaused!\n");
@@ -184,20 +69,24 @@ void Timer::Unpause(const int* engineTicks)
         this->base = *engineTicks;
     }
 }
-void Timer::Update(const int* engineTicks, const bool* engineIsLoading, const char* engineMap)
+void SpeedrunTimer::Update(const int* engineTicks, const char* engineMap)
 {
-    if (!engineTicks)
-        return;
-    if (!engineMap || std::strlen(engineMap) == 0)
-        return;
-    if (!engineIsLoading)
+    if (!engineTicks || !engineMap || std::strlen(engineMap) == 0)
         return;
 
-    if (this->state == TimerState::Paused) {
+    auto mapChanged = false;
+    if (this->state != TimerState::Running) {
         if (std::strncmp(this->map, engineMap, sizeof(this->map))) {
+            std::strncpy(this->map, engineMap, sizeof(this->map));
+            console->Print("Speedrun map change: %s\n", this->map);
+            mapChanged = true;
+        }
+    }
+
+    if (this->state == TimerState::Paused) {
+        if (mapChanged) {
             console->Print("Speedrun split!\n");
             this->liveSplit.get()->SetAction(TimerAction::Split);
-            std::strncpy(this->map, engineMap, sizeof(this->map));
             this->result.get()->Split(this->total, this->map);
             this->pb.get()->UpdateSplit(this->map);
         }
@@ -207,7 +96,7 @@ void Timer::Update(const int* engineTicks, const bool* engineIsLoading, const ch
         this->liveSplit.get()->Update(this);
     }
 }
-void Timer::Stop()
+void SpeedrunTimer::Stop()
 {
     if (this->IsActive()) {
         this->liveSplit.get()->SetAction(TimerAction::End);
@@ -216,50 +105,52 @@ void Timer::Stop()
         this->result.get()->EndSplit(this->total);
     }
 }
-void Timer::AddRule(TimerRule rule)
+void SpeedrunTimer::AddRule(TimerRule rule)
 {
     this->rules.push_back(rule);
 }
-std::vector<TimerRule> Timer::GetRules()
+std::vector<TimerRule> SpeedrunTimer::GetRules()
 {
     return this->rules;
 }
-void Timer::CheckRules(const EventQueuePrioritizedEvent_t* event, const int* engineTicks)
+void SpeedrunTimer::CheckRules(const EventQueuePrioritizedEvent_t* event, const int* engineTicks)
 {
-    for (auto& rule : this->rules) {
-        rule.Check(event, engineTicks, this);
+    if (this->state != TimerState::Paused) {
+        for (auto& rule : this->rules) {
+            rule.Check(event, engineTicks, this);
+        }
     }
 }
-int Timer::GetSession()
+int SpeedrunTimer::GetSession()
 {
     return this->session;
 }
-int Timer::GetTotal()
+int SpeedrunTimer::GetTotal()
 {
     return this->total;
 }
-char* Timer::GetCurrentMap()
+char* SpeedrunTimer::GetCurrentMap()
 {
     return this->map;
 }
-void Timer::SetIntervalPerTick(const float* ipt)
+void SpeedrunTimer::SetIntervalPerTick(const float* ipt)
 {
     this->ipt = *ipt;
     this->liveSplit->SetIntervalPerTick(ipt);
 }
-float Timer::GetIntervalPerTick()
+float SpeedrunTimer::GetIntervalPerTick()
 {
     return this->ipt;
 }
-TimerResult* Timer::GetResult()
+TimerResult* SpeedrunTimer::GetResult()
 {
     return this->result.get();
 }
-TimerResult* Timer::GetPersonalBest()
+TimerResult* SpeedrunTimer::GetPersonalBest()
 {
     return this->pb.get();
 }
-bool Timer::ExportResult(std::string filePath, bool pb)
+bool SpeedrunTimer::ExportResult(std::string filePath, bool pb)
 {
     auto result = (pb)
         ? this->GetPersonalBest()
@@ -280,17 +171,17 @@ bool Timer::ExportResult(std::string filePath, bool pb)
 
     for (auto& split : result->splits) {
         auto ticks = split->GetTotal();
-        auto time = Timer::Format(ticks * this->ipt);
+        auto time = SpeedrunTimer::Format(ticks * this->ipt);
 
         for (const auto& seg : split->segments) {
             auto total = split->entered + seg.session;
             file << split->map << ","
                  << seg.session << ","
-                 << Timer::Format(seg.session * this->ipt) << ","
+                 << SpeedrunTimer::Format(seg.session * this->ipt) << ","
                  << ticks << ","
                  << time << ","
                  << total << ","
-                 << Timer::Format(total * this->ipt) << ","
+                 << SpeedrunTimer::Format(total * this->ipt) << ","
                  << ++segment << std::endl;
         }
     }
@@ -298,11 +189,11 @@ bool Timer::ExportResult(std::string filePath, bool pb)
     file.close();
     return true;
 }
-bool Timer::ExportPersonalBest(std::string filePath)
+bool SpeedrunTimer::ExportPersonalBest(std::string filePath)
 {
     return this->ExportResult(filePath, true);
 }
-bool Timer::ImportPersonalBest(std::string filePath)
+bool SpeedrunTimer::ImportPersonalBest(std::string filePath)
 {
     std::ifstream file(filePath, std::ios::in);
     if (!file.good()) {
@@ -313,7 +204,7 @@ bool Timer::ImportPersonalBest(std::string filePath)
     std::getline(file, buffer);
 
     if (buffer == std::string(SAR_SPEEDRUN_EXPORT_HEADER)) {
-        auto pb = Speedrun::TimerResult();
+        auto pb = TimerResult();
         std::string buffer;
         std::string lastMap;
         auto row = 0;
@@ -355,22 +246,22 @@ bool Timer::ImportPersonalBest(std::string filePath)
 
     return false;
 }
-int Timer::GetSplitDelta()
+int SpeedrunTimer::GetSplitDelta()
 {
     return this->result.get()->curSplit->entered - this->pb.get()->prevSplit->entered;
 }
-int Timer::GetCurrentDelta()
+int SpeedrunTimer::GetCurrentDelta()
 {
     return this->total - this->pb.get()->curSplit->entered;
 }
-Timer::~Timer()
+SpeedrunTimer::~SpeedrunTimer()
 {
     this->liveSplit.reset();
     this->result.reset();
     this->pb.reset();
     this->rules.clear();
 }
-std::string Timer::Format(float raw)
+std::string SpeedrunTimer::Format(float raw)
 {
     char format[16];
 
@@ -394,5 +285,4 @@ std::string Timer::Format(float raw)
     return std::string(format);
 }
 
-Timer* timer;
-}
+SpeedrunTimer* speedrun;

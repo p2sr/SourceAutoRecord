@@ -6,5 +6,5 @@ public:
     Portal2();
     void LoadOffsets() override;
     void LoadRules() override;
-    const char* GetVersion() override;
+    const char* Version() override;
 };

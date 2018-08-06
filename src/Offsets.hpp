@@ -14,6 +14,7 @@ extern int GetLocalPlayer;
 extern int GetGameDirectory;
 extern int GetViewAngles;
 extern int SetViewAngles;
+extern int GetMaxClients;
 extern int ServerCmdKeyValues;
 extern int GetActiveSplitScreenPlayerSlot;
 

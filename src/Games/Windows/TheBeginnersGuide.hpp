@@ -4,7 +4,7 @@
 class TheBeginnersGuide : public TheStanleyParable {
 public:
     TheBeginnersGuide();
-    void LoadOffsets();
-    void LoadRules();
-    const char* GetVersion();
+    void LoadOffsets() override;
+    void LoadRules() override;
+    const char* Version() override;
 };

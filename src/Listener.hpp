@@ -2,11 +2,12 @@
 #include "Modules/Engine.hpp"
 
 #include "Features/Session.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Timer.hpp"
 
 #include "Utils.hpp"
 
-class SourceAutoRecordListener : public IGameEventListener2 {
+class Listener : public IGameEventListener2 {
 private:
     bool m_bRegisteredForEvents;
 #if _WIN32
@@ -15,11 +16,13 @@ private:
 #endif
 
 public:
-    SourceAutoRecordListener()
+    Listener()
         : m_bRegisteredForEvents(false)
+        , ConPrintEvent(nullptr)
     {
-        //DumpGameEvents();
-
+    }
+    void Init()
+    {
         for (const auto& event : EVENTS) {
             auto result = Engine::AddListener(Engine::s_GameEventManager->ThisPtr(), this, event, true);
             if (result) {
@@ -32,9 +35,13 @@ public:
         this->ConPrintEvent = Memory::Absolute<_ConPrintEvent>(MODULE("engine"), 0x186C20);
 #endif
     }
-    virtual ~SourceAutoRecordListener()
+    void Shutdown()
     {
         Engine::RemoveListener(Engine::s_GameEventManager->ThisPtr(), this);
+    }
+    virtual ~Listener()
+    {
+        this->Shutdown();
     }
     virtual void FireGameEvent(IGameEvent* event)
     {
@@ -48,12 +55,13 @@ public:
 #endif
         }
 
-        if (!std::strcmp(event->GetName(), "player_spawn_blue")
-            || !std::strcmp(event->GetName(), "player_spawn_orange")) {
-            console->Print("Detected cooperative spawn!\n");
-            Session::Rebase(*Engine::tickcount);
-            Timer::Rebase(*Engine::tickcount);
-            //Speedrun::timer->Unpause(Engine::tickcount);
+        if (Engine::GetMaxClients() >= 2) {
+            if (!std::strcmp(event->GetName(), "player_spawn_blue") || !std::strcmp(event->GetName(), "player_spawn_orange")) {
+                console->Print("Detected cooperative spawn!\n");
+                Session::Rebase(*Engine::tickcount);
+                Timer::Rebase(*Engine::tickcount);
+                speedrun->Unpause(Engine::tickcount);
+            }
         }
     }
     virtual int GetEventDebugID()
@@ -74,4 +82,5 @@ public:
     }
 };
 
-SourceAutoRecordListener* listener;
+Listener* listener;
+extern Listener* listener;
