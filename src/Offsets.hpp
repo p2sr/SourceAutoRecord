@@ -6,6 +6,10 @@ namespace Offsets {
 extern int RegisterConCommand;
 extern int UnregisterConCommand;
 extern int FindCommandBase;
+extern int m_pConCommandList;
+
+// ConCommandBase
+extern int IsCommand;
 
 // CEngineClient
 extern int GetScreenSize;
@@ -119,6 +123,9 @@ extern int GetName;
 // CGameEventManager
 extern int AddListener;
 extern int RemoveListener;
+extern int FireEventClientSide;
+extern int FireEventIntern;
+extern int ConPrintEvent;
 
 // CEngine
 extern int Frame;

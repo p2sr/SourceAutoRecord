@@ -52,6 +52,9 @@ void Portal2::LoadOffsets()
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
     AddListener = 3; // CGameEventManager
     RemoveListener = 5; // CGameEventManager
+    FireEventClientSide = 8; // CGameEventManager
+    FireEventIntern = 12; // CGameEventManager
+    ConPrintEvent = 303; // CGameEventManager
     AutoCompletionFunc = 66; // listdemo_CompletionFunc
     Key_SetBinding = 135; // unbind
     IsRunningSimulation = 12; // CEngineAPI
@@ -64,6 +67,8 @@ void Portal2::LoadOffsets()
     RegisterConCommand = 9; // CCVar
     UnregisterConCommand = 10; // CCvar
     FindCommandBase = 13; // CCVar
+    m_pConCommandList = 48; //CCvar
+    IsCommand = 1; // ConCommandBase
 
     // vgui2.dll
 
@@ -87,7 +92,7 @@ void Portal2::LoadOffsets()
     ServiceEventQueue = 249; // CServerGameDLL::GameFrame
     g_EventQueue = 1; // ServiceEventQueue
     Think = 31; // CServerGameDLL
-    UTIL_PlayerByIndex = 37; // CServerGameDLL::Think
+    UTIL_PlayerByIndex = 39; // CServerGameDLL::Think
     iNumPortalsPlaced = 5700; // CPortal_Player::IncrementPortalsPlaced
     player = 4; // CPortalGameMovement::PlayerMove
     m_fFlags = 204; // CBasePlayer::UpdateStepSound

@@ -18,7 +18,7 @@ static void* CreateInterfaceInternal(const char* pName, int* pReturnCode)
     if (pReturnCode) {
         *pReturnCode = 1;
     }
-    return NULL;
+    return nullptr;
 }
 
 DLL_EXPORT void* CreateInterface(const char* pName, int* pReturnCode)

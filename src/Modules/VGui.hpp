@@ -32,15 +32,15 @@ bool RespectClShowPos = true;
 // CEngineVGui::Paint
 DETOUR(Paint, int mode)
 {
-    Surface::StartDrawing(Surface::matsurface->ThisPtr());
+    surface->StartDrawing(surface->matsurface->ThisPtr());
 
     auto elements = 0;
     auto xPadding = sar_hud_default_padding_x.GetInt();
     auto yPadding = sar_hud_default_padding_y.GetInt();
     auto spacing = sar_hud_default_spacing.GetInt();
 
-    auto font = Scheme::GetDefaultFont() + sar_hud_default_font_index.GetInt();
-    auto fontSize = Surface::GetFontHeight(font);
+    auto font = scheme->GetDefaultFont() + sar_hud_default_font_index.GetInt();
+    auto fontSize = surface->GetFontHeight(font);
 
     int r, g, b, a;
     sscanf(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
@@ -58,7 +58,7 @@ DETOUR(Paint, int mode)
         vsnprintf(data, sizeof(data), fmt, argptr);
         va_end(argptr);
 
-        Surface::DrawTxt(font,
+        surface->DrawTxt(font,
             xPadding,
             yPadding + elements * (fontSize + spacing),
             textColor,
@@ -135,22 +135,22 @@ DETOUR(Paint, int mode)
     }
     // Stats
     if (sar_hud_jumps.GetBool()) {
-        DrawElement("jumps: %i", Stats::Jumps::Total);
+        DrawElement("jumps: %i", stats->jumps->total);
     }
     if (Game::IsPortalGame() && sar_hud_portals.GetBool()) {
         DrawElement("portals: %i", Server::GetPortals());
     }
     if (sar_hud_steps.GetBool()) {
-        DrawElement("steps: %i", Stats::Steps::Total);
+        DrawElement("steps: %i", stats->steps->total);
     }
     if (sar_hud_jump.GetBool()) {
-        DrawElement("jump: %.3f", Stats::Jumps::Distance);
+        DrawElement("jump: %.3f", stats->jumps->distance);
     }
     if (sar_hud_jump_peak.GetBool()) {
-        DrawElement("jump peak: %.3f", Stats::Jumps::Distance);
+        DrawElement("jump peak: %.3f", stats->jumps->distance);
     }
     if (sar_hud_velocity_peak.GetBool()) {
-        DrawElement("vel peak: %.3f", Stats::Velocity::Peak);
+        DrawElement("vel peak: %.3f", stats->velocity->peak);
     }
     // Routing
     if (sar_hud_trace.GetBool()) {
@@ -167,7 +167,7 @@ DETOUR(Paint, int mode)
         DrawElement("last frame: %i", Engine::lastFrame);
     }
 
-    Surface::FinishDrawing();
+    surface->FinishDrawing();
 
     // Draw other HUDs
     inputHud->Draw();
@@ -194,7 +194,7 @@ void Shutdown()
 {
     Interface::Delete(enginevgui);
 
-    delete inputHud;
-    delete speedrunHud;
+    SAFE_DELETE(inputHud);
+    SAFE_DELETE(speedrunHud);
 }
 }

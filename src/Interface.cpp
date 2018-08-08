@@ -97,7 +97,7 @@ Interface* Interface::Create(const char* filename, const char* interfaceSymbol, 
 
     void* result = nullptr;
     for (auto& current = s_pInterfaceRegs; current; current = current->m_pNext) {
-        if (std::strncmp(current->m_pName, interfaceSymbol, strlen(interfaceSymbol)) == 0) {
+        if (std::strncmp(current->m_pName, interfaceSymbol, std::strlen(interfaceSymbol)) == 0) {
             result = current->m_CreateFn();
             //console->DevMsg("SAR: Found interface %s at %p in %s!\n", current->m_pName, result, filename);
             break;

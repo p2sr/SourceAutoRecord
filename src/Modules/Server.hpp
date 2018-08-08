@@ -11,8 +11,6 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
-#define IN_JUMP (1 << 1)
-
 #ifdef _WIN32
 #define AirMove_Mid_Offset 679
 #define AirMove_Signature "F3 0F 10 50 40"
@@ -25,7 +23,7 @@ namespace Server {
 Interface* g_GameMovement;
 Interface* g_ServerGameDLL;
 
-using _UTIL_PlayerByIndex = void*(__func*)(int index);
+using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
 _UTIL_PlayerByIndex UTIL_PlayerByIndex;
 
 CGlobalVars* gpGlobals;
@@ -39,7 +37,7 @@ void* GetPlayer()
 int GetPortals()
 {
     auto player = GetPlayer();
-    return (player) ? *reinterpret_cast<int*>((uintptr_t)player + Offsets::iNumPortalsPlaced) : 0;
+    return (player) ? *reinterpret_cast<int*>((uintptr_t)player + Offsets::iNumPortalsPlaced) : -1;
 }
 
 bool jumpedLastTime = false;
@@ -75,9 +73,9 @@ DETOUR_T(bool, CheckJumpButton)
 
     if (result) {
         jumpedLastTime = true;
-        ++Stats::Jumps::Total;
-        ++Stats::Steps::Total;
-        Stats::Jumps::StartTrace(Client::GetAbsOrigin());
+        ++stats->jumps->total;
+        ++stats->steps->total;
+        stats->jumps->StartTrace(Client::GetAbsOrigin());
     }
 
     return result;
@@ -96,25 +94,25 @@ DETOUR(PlayerMove)
     auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
 
     // Landed after a jump
-    if (Stats::Jumps::IsTracing
+    if (stats->jumps->isTracing
         && m_fFlags & FL_ONGROUND
         && m_MoveType != MOVETYPE_NOCLIP) {
-        Stats::Jumps::EndTrace(Client::GetAbsOrigin(), sar_stats_jumps_xy.GetBool());
+        stats->jumps->EndTrace(Client::GetAbsOrigin(), sar_stats_jumps_xy.GetBool());
     }
 
-    StepCounter::ReduceTimer(gpGlobals->frametime);
+    stepCounter->ReduceTimer(gpGlobals->frametime);
 
     // Player is on ground and moving etc.
-    if (StepCounter::StepSoundTime <= 0
+    if (stepCounter->stepSoundTime <= 0
         && m_MoveType != MOVETYPE_NOCLIP
         && sv_footsteps.GetFloat()
         && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
         && ((m_fFlags & FL_ONGROUND && m_vecVelocity.Length2D() > 0.0001f)
                || m_MoveType == MOVETYPE_LADDER)) {
-        StepCounter::Increment(m_fFlags, m_MoveType, m_vecVelocity, m_nWaterLevel);
+        stepCounter->Increment(m_fFlags, m_MoveType, m_vecVelocity, m_nWaterLevel);
     }
 
-    Stats::Velocity::Save(Client::GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
+    stats->velocity->Save(Client::GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
 
     return Original::PlayerMove(thisptr);
 }
@@ -240,7 +238,7 @@ DETOUR(GameFrame, bool simulating)
 void Init()
 {
     g_GameMovement = Interface::Create(MODULE("server"), "GameMovement0");
-    g_ServerGameDLL = Interface::Create(MODULE("server"), "ServerGameDLL0", game->version == SourceGame::Portal2);
+    g_ServerGameDLL = Interface::Create(MODULE("server"), "ServerGameDLL0");
 
     if (g_GameMovement) {
         g_GameMovement->Hook(Detour::CheckJumpButton, Original::CheckJumpButton, Offsets::CheckJumpButton);
@@ -253,7 +251,7 @@ void Init()
             auto ctor = g_GameMovement->Original(0);
             auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
             auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
-            Original::AirMoveBase = Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*));
+            Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*), &Original::AirMoveBase);
 
 #ifdef _WIN32
             auto airMoveMid = g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
@@ -266,26 +264,23 @@ void Init()
                 console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
             }
 #endif
-            /*HOOK(g_GameMovement, AirAccelerate);
-            Original::AirAccelerateBase = Memory::Deref<_AirAccelerate>(baseOffset + Offsets::AirAccelerate * sizeof(uintptr_t*));*/
+            //g_GameMovement->Hook(Detour::AirAccelerate, Original::AirAccelerate, Offsets::AirAccelerate);
+            //Memory::Deref<_AirAccelerate>(baseOffset + Offsets::AirAccelerate * sizeof(uintptr_t*), &Original::AirAccelerateBase);
         }
     }
 
     if (g_ServerGameDLL) {
         auto Think = g_ServerGameDLL->Original(Offsets::Think);
-        UTIL_PlayerByIndex = Memory::Read<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex);
+        Memory::Read<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex, &UTIL_PlayerByIndex);
 
         auto GameFrame = g_ServerGameDLL->Original(Offsets::GameFrame);
-        gpGlobals = Memory::DerefDeref<CGlobalVars*>(GameFrame + Offsets::gpGlobals);
+        Memory::DerefDeref<CGlobalVars*>(GameFrame + Offsets::gpGlobals, &gpGlobals);
+        Memory::Deref<bool*>(GameFrame + Offsets::g_InRestore, &g_InRestore);
 
-        if (game->version == SourceGame::Portal2) {
-            g_InRestore = Memory::Deref<bool*>(GameFrame + Offsets::g_InRestore);
+        auto ServiceEventQueue = Memory::Read(GameFrame + Offsets::ServiceEventQueue);
+        Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue, &g_EventQueue);
 
-            auto ServiceEventQueue = Memory::Read(GameFrame + Offsets::ServiceEventQueue);
-            g_EventQueue = Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue);
-
-            g_ServerGameDLL->Hook(Detour::GameFrame, Original::GameFrame, Offsets::GameFrame);
-        }
+        g_ServerGameDLL->Hook(Detour::GameFrame, Original::GameFrame, Offsets::GameFrame);
     }
 }
 

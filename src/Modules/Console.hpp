@@ -1,4 +1,6 @@
 #pragma once
+#include "Module.hpp"
+
 #include "Utils.hpp"
 
 #ifdef _WIN32
@@ -19,7 +21,7 @@
 #define SAR_PRINT_COLOR Color(247, 214, 68)
 #define SAR_PRINT_ACTIVE_COLOR Color(110, 247, 76)
 
-class Console {
+class Console : public Module {
 public:
     using _Msg = void(__cdecl*)(const char* pMsgFormat, ...);
     using _Warning = void(__cdecl*)(const char* pMsgFormat, ...);
@@ -33,7 +35,8 @@ public:
     _DevMsg DevMsg;
     _DevWarning DevWarning;
 
-    bool Init();
+    bool Init() override;
+    void Shutdown() override;
 
     template <typename... T>
     void Print(const char* fmt, T... args)

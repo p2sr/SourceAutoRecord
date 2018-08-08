@@ -4,12 +4,13 @@
 struct Command {
 private:
     ConCommand* ptr;
-    bool isRegistered;
-    bool isReference;
 
     using _ShouldRegisterCallback = bool (*)();
     _ShouldRegisterCallback shouldRegister;
 
+public:
+    bool isRegistered;
+    bool isReference;
     static std::vector<Command*> list;
 
 public:

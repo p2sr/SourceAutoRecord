@@ -18,7 +18,7 @@ CON_COMMAND(sar_timer_start, "Starts timer.\n")
     Timer::Start(*Engine::tickcount);
 
     if (sar_stats_auto_reset.GetInt() >= 2) {
-        Stats::ResetAll();
+        stats->ResetAll();
     }
 }
 

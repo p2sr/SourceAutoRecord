@@ -13,6 +13,7 @@ Command::~Command()
 {
     if (!isReference) {
         delete ptr;
+        ptr = nullptr;
     }
 }
 Command::Command(const char* name)

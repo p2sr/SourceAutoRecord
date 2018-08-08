@@ -18,6 +18,7 @@ Variable::~Variable()
 {
     if (!isReference) {
         delete ptr;
+        ptr = nullptr;
     }
 }
 Variable::Variable(const char* name)

@@ -7,17 +7,7 @@
 
 #include "Cheats.hpp"
 
-#define IN_ATTACK (1 << 0)
-#define IN_JUMP (1 << 1)
-#define IN_DUCK (1 << 2)
-#define IN_FORWARD (1 << 3)
-#define IN_BACK (1 << 4)
-#define IN_USE (1 << 5)
-#define IN_MOVELEFT (1 << 9)
-#define IN_MOVERIGHT (1 << 10)
-#define IN_ATTACK2 (1 << 11)
-#define IN_RELOAD (1 << 13)
-#define IN_SPEED (1 << 17)
+#include "Utils/SDK.hpp"
 
 /*
     Layout:
@@ -104,7 +94,7 @@ void InputHud::Draw()
     auto mvReload = this->buttonBits & IN_RELOAD;
     auto mvSpeed = this->buttonBits & IN_SPEED;
 
-    Surface::StartDrawing(Surface::matsurface->ThisPtr());
+    surface->StartDrawing(surface->matsurface->ThisPtr());
 
     auto xOffset = sar_ihud_x.GetInt();
     auto yOffset = sar_ihud_y.GetInt();
@@ -113,7 +103,7 @@ void InputHud::Draw()
 
     auto color = this->GetColor(sar_ihud_button_color.GetString());
     auto fontColor = this->GetColor(sar_ihud_font_color.GetString());
-    auto font = Scheme::GetDefaultFont() + sar_ihud_font_index.GetInt();
+    auto font = scheme->GetDefaultFont() + sar_ihud_font_index.GetInt();
 
     auto symbols = std::string("WASDCSELRSR");
     auto layout = std::string(sar_ihud_layout.GetString());
@@ -124,8 +114,8 @@ void InputHud::Draw()
     }
 
     auto shadow = sar_ihud_shadow.GetBool();
-    auto shadowColor = Hud::GetColor(sar_ihud_shadow_color.GetString());
-    auto shadowFontColor = GetColor(sar_ihud_shadow_font_color.GetString());
+    auto shadowColor = this->GetColor(sar_ihud_shadow_color.GetString());
+    auto shadowFontColor = this->GetColor(sar_ihud_shadow_font_color.GetString());
 
     auto element = 0;
     auto DrawElement = [xOffset, yOffset, mode, shadow, color, size, shadowColor, font, fontColor, shadowFontColor, padding, symbols,
@@ -133,7 +123,7 @@ void InputHud::Draw()
         int x = xOffset + (col * size) + ((col + 1) * padding);
         int y = yOffset + (row * size) + ((row + 1) * padding);
         if (mode >= value && (button || shadow)) {
-            Surface::DrawRectAndCenterTxt((button) ? color : shadowColor,
+            surface->DrawRectAndCenterTxt((button) ? color : shadowColor,
                 x + ((col + 1) * padding),
                 y + ((row + 1) * padding),
                 x + ((((col + 1) * padding) + size) * length),
@@ -161,7 +151,7 @@ void InputHud::Draw()
     DrawElement(4, mvSpeed, col0, row1);
     DrawElement(4, mvReload, col4, row0);
 
-    Surface::FinishDrawing();
+    surface->FinishDrawing();
 }
 
 CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD. "

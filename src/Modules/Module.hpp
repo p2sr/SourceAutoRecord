@@ -12,22 +12,23 @@ public:
 
 class Modules {
 public:
-    static std::vector<Module*> list;
+    std::vector<Module*> list;
 
 public:
+    Modules();
     template <typename T = Module>
     void AddModule(T** modulePtr)
     {
         *modulePtr = new T();
-        list.push_back(*modulePtr);
+        this->list.push_back(*modulePtr);
     }
     template <typename T = Module>
     void RemoveModule(T** modulePtr)
     {
-        list.erase(*modulePtr);
+        this->list.erase(*modulePtr);
     }
     void InitAll();
     void ShutdownAll();
+    void DeleteAll();
+    ~Modules();
 };
-
-extern Modules* modules;

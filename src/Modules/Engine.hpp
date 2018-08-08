@@ -46,6 +46,7 @@ using _ScreenPosition = int(__stdcall*)(const Vector& point, Vector& screen);
 #else
 using _ScreenPosition = int(__stdcall*)(void* thisptr, const Vector& point, Vector& screen);
 #endif
+using _ConPrintEvent = int(__stdcall*)(IGameEvent* ev);
 
 _GetScreenSize GetScreenSize;
 _ClientCmd ClientCmd;
@@ -59,6 +60,7 @@ _RemoveListener RemoveListener;
 _Cbuf_AddText Cbuf_AddText;
 _AddText AddText;
 _ScreenPosition ScreenPosition;
+_ConPrintEvent ConPrintEvent;
 
 int* tickcount;
 float* interval_per_tick;
@@ -125,15 +127,15 @@ void SessionStarted()
         speedrun->Unpause(tickcount);
     }
 
-    if (Rebinder::IsSaveBinding || Rebinder::IsReloadBinding) {
+    if (rebinder->IsSaveBinding || rebinder->IsReloadBinding) {
         if (DemoRecorder::IsRecordingDemo) {
-            Rebinder::UpdateIndex(*DemoRecorder::m_nDemoNumber);
+            rebinder->UpdateIndex(*DemoRecorder::m_nDemoNumber);
         } else {
-            Rebinder::UpdateIndex(Rebinder::LastIndexNumber + 1);
+            rebinder->UpdateIndex(rebinder->LastIndexNumber + 1);
         }
 
-        Rebinder::RebindSave();
-        Rebinder::RebindReload();
+        rebinder->RebindSave();
+        rebinder->RebindReload();
     }
 
     if (sar_tas_autostart.GetBool()) {
@@ -146,7 +148,7 @@ void SessionStarted()
         TAS2::StartPlaying();
     }
 
-    StepCounter::ResetTimer();
+    stepCounter->ResetTimer();
     isInSession = true;
     currentFrame = 0;
 }
@@ -177,7 +179,7 @@ void SessionEnded()
 
         auto reset = sar_stats_auto_reset.GetInt();
         if ((reset == 1 && !*m_bLoadgame) || reset >= 2) {
-            Stats::ResetAll();
+            stats->ResetAll();
         }
 
         DemoRecorder::CurrentDemo = "";
@@ -192,7 +194,7 @@ void SessionEnded()
 }
 void SessionChanged(int state)
 {
-    console->Print("state = %i\n", state);
+    //console->Print("state = %i\n", state);
     if (state != prevSignonState && prevSignonState == SignonState::Full) {
         SessionEnded();
     }
@@ -255,7 +257,7 @@ DETOUR(SetSignonState2, int state, int count)
 DETOUR(Frame)
 {
     if (hoststate->m_currentState != prevState) {
-        console->Print("m_currentState = %i\n", hoststate->m_currentState);
+        //console->Print("m_currentState = %i\n", hoststate->m_currentState);
         if (hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_SP) {
             SessionEnded();
         } else if (hoststate->m_currentState == HOSTSTATES::HS_RUN
@@ -287,8 +289,6 @@ DETOUR_COMMAND(plugin_load)
             } else if (sar->PluginFound()) {
                 plugin->ptr->m_bDisable = true;
                 console->PrintActive("SAR: Plugin fully loaded!\n");
-            } else {
-                console->Warning("SAR: This should never happen :(\n");
             }
             return;
         }
@@ -325,7 +325,7 @@ void Init()
         GetMaxClients = engine->Original<_GetMaxClients>(Offsets::GetMaxClients);
         GetGameDirectory = engine->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
 
-        Cbuf_AddText = Memory::Read<_Cbuf_AddText>((uintptr_t)ClientCmd + Offsets::Cbuf_AddText);
+        Memory::Read<_Cbuf_AddText>((uintptr_t)ClientCmd + Offsets::Cbuf_AddText, &Cbuf_AddText);
 
         void* clPtr = nullptr;
         if (Game::IsPortal2Engine()) {
@@ -338,8 +338,8 @@ void Init()
             auto ServerCmdKeyValues = engine->Original(Offsets::ServerCmdKeyValues);
             clPtr = Memory::Deref<void*>(ServerCmdKeyValues + Offsets::cl);
 
-            AddText = Memory::Read<_AddText>((uintptr_t)Cbuf_AddText + Offsets::AddText);
-            s_CommandBuffer = Memory::Deref<void*>((uintptr_t)Cbuf_AddText + Offsets::s_CommandBuffer);
+            Memory::Read<_AddText>((uintptr_t)Cbuf_AddText + Offsets::AddText, &AddText);
+            Memory::Deref<void*>((uintptr_t)Cbuf_AddText + Offsets::s_CommandBuffer, &s_CommandBuffer);
         }
 
         if (cl = Interface::Create(clPtr)) {
@@ -371,7 +371,7 @@ void Init()
 
             auto SetSignonState = cl->Original(Offsets::Disconnect - 1);
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
-            hoststate = Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate);
+            Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
 
             if (auto s_EngineAPI = Interface::Create(MODULE("engine"), "VENGINE_LAUNCHER_API_VERSION0", false)) {
                 auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
@@ -395,6 +395,10 @@ void Init()
         if (s_GameEventManager) {
             AddListener = s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
             RemoveListener = s_GameEventManager->Original<_RemoveListener>(Offsets::RemoveListener);
+
+            auto FireEventClientSide = s_GameEventManager->Original(Offsets::FireEventClientSide);
+            auto FireEventIntern = Memory::Read(FireEventClientSide + Offsets::FireEventIntern);
+            Memory::Read<_ConPrintEvent>(FireEventIntern + Offsets::ConPrintEvent, &ConPrintEvent);
         }
     }
 

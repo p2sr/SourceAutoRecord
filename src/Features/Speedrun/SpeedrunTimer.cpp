@@ -78,7 +78,7 @@ void SpeedrunTimer::Update(const int* engineTicks, const char* engineMap)
     if (this->state != TimerState::Running) {
         if (std::strncmp(this->map, engineMap, sizeof(this->map))) {
             std::strncpy(this->map, engineMap, sizeof(this->map));
-            console->Print("Speedrun map change: %s\n", this->map);
+            //console->Print("Speedrun map change: %s\n", this->map);
             mapChanged = true;
         }
     }

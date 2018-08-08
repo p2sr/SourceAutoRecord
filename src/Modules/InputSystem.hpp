@@ -1,44 +1,52 @@
 #pragma once
 #include "Command.hpp"
 #include "Interface.hpp"
+#include "Module.hpp"
 #include "Offsets.hpp"
-#include "SAR.hpp"
 #include "Utils.hpp"
 
 #define BUTTON_CODE_INVALID -1
 #define KEY_ESCAPE 70
 
-namespace InputSystem {
+class InputSystem : public Module {
+public:
+    Interface* g_InputSystem;
 
-Interface* g_InputSystem;
+    using _StringToButtonCode = int(__func*)(void* thisptr, const char* pString);
+    using _KeySetBinding = void(__cdecl*)(int keynum, const char* pBinding);
 
-using _StringToButtonCode = int(__func*)(void* thisptr, const char* pString);
-using _KeySetBinding = void(__cdecl*)(int keynum, const char* pBinding);
+    _StringToButtonCode StringToButtonCode;
+    _KeySetBinding KeySetBinding;
 
-_StringToButtonCode StringToButtonCode;
-_KeySetBinding KeySetBinding;
+public:
+    int GetButton(const char* pString);
+    bool Init() override;
+    void Shutdown() override;
+};
 
-int GetButton(const char* pString)
+int InputSystem::GetButton(const char* pString)
 {
-    return StringToButtonCode(g_InputSystem->ThisPtr(), pString);
+    return this->StringToButtonCode(this->g_InputSystem->ThisPtr(), pString);
 }
-
-void Init()
+bool InputSystem::Init()
 {
-    g_InputSystem = Interface::Create(MODULE("inputsystem"), "InputSystemVersion0");
-
-    if (g_InputSystem) {
-        StringToButtonCode = g_InputSystem->Original<_StringToButtonCode>(Offsets::StringToButtonCode);
+    this->g_InputSystem = Interface::Create(MODULE("inputsystem"), "InputSystemVersion0");
+    if (this->g_InputSystem) {
+        this->StringToButtonCode = this->g_InputSystem->Original<_StringToButtonCode>(Offsets::StringToButtonCode);
     }
 
     auto unbind = Command("unbind");
     if (!!unbind) {
         auto cc_unbind_callback = (uintptr_t)unbind.ThisPtr()->m_pCommandCallback;
-        KeySetBinding = Memory::Read<_KeySetBinding>(cc_unbind_callback + Offsets::Key_SetBinding);
+        this->KeySetBinding = Memory::Read<_KeySetBinding>(cc_unbind_callback + Offsets::Key_SetBinding);
     }
+
+    return this->hasLoaded = this->g_InputSystem && !!unbind;
 }
-void Shutdown()
+void InputSystem::Shutdown()
 {
-    Interface::Delete(g_InputSystem);
+    Interface::Delete(this->g_InputSystem);
 }
-}
+
+InputSystem* inputSystem;
+extern InputSystem* inputSystem;

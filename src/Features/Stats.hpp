@@ -1,92 +1,58 @@
 #pragma once
+#include "Feature.hpp"
 
-namespace Stats {
+#include "Utils/SDK.hpp"
 
-enum ResultType {
+enum class ResultType {
     UNKNOWN,
     VEC2,
     VEC3
 };
 
-namespace Jumps {
-    int Total;
-    float Distance;
-    float DistancePeak;
-    ResultType Type;
+class JumpStats {
+public:
+    int total;
+    float distance;
+    float distancePeak;
+    ResultType type;
 
-    bool IsTracing;
-    Vector Source;
+    bool isTracing;
+    Vector source;
 
-    void StartTrace(Vector source)
-    {
-        Source = source;
-        IsTracing = true;
-    }
-    void EndTrace(Vector destination, bool xyOnly)
-    {
-        auto x = destination.x - Source.x;
-        auto y = destination.y - Source.y;
+public:
+    void StartTrace(Vector source);
+    void EndTrace(Vector destination, bool xyOnly);
+    void Reset();
+};
 
-        if (xyOnly) {
-            Distance = std::sqrt(x * x + y * y);
-            Type = ResultType::VEC2;
-        } else {
-            auto z = destination.z - Source.z;
-            Distance = std::sqrt(x * x + y * y + z * z);
-            Type = ResultType::VEC3;
-        }
+class StepStats {
+public:
+    int total;
 
-        if (Distance > DistancePeak)
-            DistancePeak = Distance;
+public:
+    void Reset();
+};
 
-        IsTracing = false;
-    }
-    void Reset()
-    {
-        Total = 0;
-        Distance = 0;
-        DistancePeak = 0;
-        Type = ResultType::UNKNOWN;
-        IsTracing = false;
-    }
-}
-namespace Steps {
-    int Total;
+class VelocityStats {
+public:
+    float peak;
+    ResultType type;
 
-    void Reset()
-    {
-        Total = 0;
-    }
-}
-namespace Velocity {
-    float Peak;
-    ResultType Type;
+public:
+    void Save(Vector velocity, bool xyOnly);
+    void Reset();
+};
 
-    void Save(Vector velocity, bool xyOnly)
-    {
-        float vel = 0;
-        if (xyOnly) {
-            vel = velocity.Length2D();
-            Type = ResultType::VEC2;
-        } else {
-            vel = velocity.Length();
-            Type = ResultType::VEC3;
-        }
+class Stats : public Feature {
+public:
+    JumpStats* jumps;
+    StepStats* steps;
+    VelocityStats* velocity;
 
-        if (vel > Peak)
-            Peak = vel;
-    }
-    void Reset()
-    {
-        Peak = 0;
-        Type = ResultType::UNKNOWN;
-    }
-}
+public:
+    Stats();
+    ~Stats();
+    void ResetAll();
+};
 
-void ResetAll()
-{
-    Jumps::Reset();
-    Steps::Reset();
-    Velocity::Reset();
-}
-}
+extern Stats* stats;

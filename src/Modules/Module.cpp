@@ -2,20 +2,35 @@
 
 #include <vector>
 
+Modules::Modules()
+    : list()
+{
+}
 void Modules::InitAll()
 {
-    for (const auto& m : this->list) {
-        if (!m->hasLoaded) {
-            m->Init();
+    for (const auto& mod : this->list) {
+        if (!mod->hasLoaded) {
+            mod->Init();
         }
     }
 }
 void Modules::ShutdownAll()
 {
-    for (const auto& m : this->list) {
-        m->Shutdown();
+    for (const auto& mod : this->list) {
+        mod->Shutdown();
     }
 }
-
-std::vector<Module*> Modules::list;
-Modules* modules;
+void Modules::DeleteAll()
+{
+    for (auto& mod : this->list) {
+        if (mod) {
+            delete mod;
+            mod = nullptr;
+        }
+    }
+}
+Modules::~Modules()
+{
+    DeleteAll();
+    this->list.clear();
+}

@@ -3,7 +3,6 @@
 #include "Modules/Engine.hpp"
 
 #include "Cheats.hpp"
-#include "Command.hpp"
 #include "Utils.hpp"
 
 #define SAVE_CVAR(cvar, value) \
@@ -18,9 +17,6 @@ public:
     bool Save();
     bool Load();
 };
-
-Config* config;
-extern Config* config;
 
 Config::Config()
     : filePath("/cfg/_sar_cvars.cfg")
@@ -73,18 +69,5 @@ bool Config::Load()
     return true;
 }
 
-CON_COMMAND(sar_cvars_save, "Saves important SAR cvars.\n")
-{
-    if (!config->Save()) {
-        console->Print("Failed to create config file!\n");
-    } else {
-        console->Print("Saved important settings in /cfg/_sar_cvars.cfg!\n");
-    }
-}
-
-CON_COMMAND(sar_cvars_load, "Loads important SAR cvars.\n")
-{
-    if (!config->Load()) {
-        console->Print("Config file not found!\n");
-    }
-}
+Config* config;
+extern Config* config;

@@ -6,7 +6,7 @@
 
 #include "Utils.hpp"
 
-class WorkshopList {
+class WorkshopList : public Feature {
 public:
     std::vector<std::string> maps;
 

@@ -2,7 +2,8 @@
 #include "Console.hpp"
 #include "Engine.hpp"
 
-#include "Features/Demo.hpp"
+#include "Features/Demo/Demo.hpp"
+#include "Features/Demo/DemoParser.hpp"
 
 #include "Interface.hpp"
 #include "Offsets.hpp"

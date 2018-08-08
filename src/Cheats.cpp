@@ -61,7 +61,7 @@ Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD.
 Variable sar_ihud_shadow("sar_ihud_shadow", "1", "Draws button shadows of input HUD.\n");
 Variable sar_ihud_shadow_color("sar_ihud_shadow_color", "0 0 0 32", "RGBA button shadow color of input HUD.\n", 0);
 Variable sar_ihud_shadow_font_color("sar_ihud_shadow_font_color", "255 255 255 32", "RGBA button shadow font color of input HUD.\n", 0);
-Variable sar_sr_hud("sar_sr_hud", "1", 0, "Draws speedrun timer.\n");
+Variable sar_sr_hud("sar_sr_hud", "0", 0, "Draws speedrun timer.\n");
 Variable sar_sr_hud_x("sar_sr_hud_x", "0", 0, "X offset of speedrun timer HUD.\n");
 Variable sar_sr_hud_y("sar_sr_hud_y", "100", 0, "Y offset of speedrun timer HUD.\n");
 Variable sar_sr_hud_font_color("sar_sr_hud_font_color", "255 255 255 255", "RGBA font color of speedrun timer HUD.\n", 0);
@@ -106,16 +106,6 @@ Variable hide_gun_when_holding;
 
 void Cheats::Init()
 {
-    sar_jumpboost.UniqueFor(Game::IsPortal2Engine);
-    sar_aircontrol.UniqueFor(Game::IsPortal2Engine);
-    sar_disable_challenge_stats_hud.UniqueFor(Game::HasChallengeMode);
-    sar_hud_portals.UniqueFor(Game::IsPortalGame);
-#if _WIN32
-    sar_debug_event_queue.UniqueFor(Game::HasChallengeMode);
-#endif
-    sar_debug_game_events.UniqueFor(Game::HasChallengeMode);
-    //sar_debug_game_events.UniqueFor([]() { return false; });
-
     cl_showpos = Variable("cl_showpos");
     sv_cheats = Variable("sv_cheats");
     sv_footsteps = Variable("sv_footsteps");
@@ -150,13 +140,23 @@ void Cheats::Init()
         // Not a real cheat, right?
         hide_gun_when_holding.Unlock(false);
     } else if (game->version == SourceGame::HalfLife2) {
-        // Detecting Portal game really late but it adds nothing really
         auto sv_portal_debug_touch = Variable("sv_portal_debug_touch");
         if (!!sv_portal_debug_touch) {
             game->version = SourceGame::Portal;
             console->DevMsg("SAR: Detected Portal version!\n");
         }
     }
+
+    sar_jumpboost.UniqueFor(Game::IsPortal2Engine);
+    sar_aircontrol.UniqueFor(Game::IsPortal2Engine);
+    sar_hud_portals.UniqueFor(Game::IsPortalGame);
+    sar_disable_challenge_stats_hud.UniqueFor(Game::HasChallengeMode);
+    sar_debug_game_events.UniqueFor(Game::HasChallengeMode);
+    sar_sr_hud.UniqueFor(Game::HasChallengeMode);
+    sar_sr_hud_x.UniqueFor(Game::HasChallengeMode);
+    sar_sr_hud_y.UniqueFor(Game::HasChallengeMode);
+    sar_sr_hud_font_color.UniqueFor(Game::HasChallengeMode);
+    sar_sr_hud_font_index.UniqueFor(Game::HasChallengeMode);
 
     Variable::RegisterAll();
 }

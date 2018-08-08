@@ -5,6 +5,8 @@
 
 #include "Utils/SDK.hpp"
 
+#include "Features/Feature.hpp"
+
 #include "TimerAction.hpp"
 #include "TimerInterface.hpp"
 #include "TimerResult.hpp"
@@ -13,7 +15,7 @@
 
 #define SAR_SPEEDRUN_EXPORT_HEADER "Map,Ticks,Time,Map Ticks,Map Time,Total Ticks,Total Time,Segment"
 
-class SpeedrunTimer {
+class SpeedrunTimer : public Feature {
 public:
     std::unique_ptr<TimerInterface> liveSplit;
 

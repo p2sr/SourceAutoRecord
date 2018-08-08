@@ -27,7 +27,7 @@ void SpeedrunHud::Draw()
     if (mode == 0)
         return;
 
-    Surface::StartDrawing(Surface::matsurface->ThisPtr());
+    surface->StartDrawing(surface->matsurface->ThisPtr());
 
     auto total = speedrun->GetTotal();
     auto ipt = speedrun->GetIntervalPerTick();
@@ -35,10 +35,10 @@ void SpeedrunHud::Draw()
     auto xOffset = sar_sr_hud_x.GetInt();
     auto yOffset = sar_sr_hud_y.GetInt();
 
-    auto font = Scheme::GetDefaultFont() + sar_sr_hud_font_index.GetInt();
+    auto font = scheme->GetDefaultFont() + sar_sr_hud_font_index.GetInt();
     auto fontColor = this->GetColor(sar_sr_hud_font_color.GetString());
 
-    Surface::DrawTxt(font, xOffset, yOffset, fontColor, "%s", SpeedrunTimer::Format(total * ipt).c_str());
+    surface->DrawTxt(font, xOffset, yOffset, fontColor, "%s", SpeedrunTimer::Format(total * ipt).c_str());
 
-    Surface::FinishDrawing();
+    surface->FinishDrawing();
 }

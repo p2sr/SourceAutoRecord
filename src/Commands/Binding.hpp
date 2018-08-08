@@ -15,7 +15,7 @@ CON_COMMAND(sar_bind_save,
         return;
     }
 
-    int button = InputSystem::GetButton(args[1]);
+    int button = inputSystem->GetButton(args[1]);
     if (button == BUTTON_CODE_INVALID) {
         console->Print("\"%s\" isn't a valid key!\n", args[1]);
         return;
@@ -24,12 +24,12 @@ CON_COMMAND(sar_bind_save,
         return;
     }
 
-    if (Rebinder::IsReloadBinding && button == Rebinder::ReloadButton) {
-        Rebinder::ResetReloadBind();
+    if (rebinder->IsReloadBinding && button == rebinder->ReloadButton) {
+        rebinder->ResetReloadBind();
     }
 
-    Rebinder::SetSaveBind(button, args[2]);
-    Rebinder::RebindSave();
+    rebinder->SetSaveBind(button, args[2]);
+    rebinder->RebindSave();
 }
 
 CON_COMMAND(sar_bind_reload,
@@ -41,7 +41,7 @@ CON_COMMAND(sar_bind_reload,
         return;
     }
 
-    int button = InputSystem::GetButton(args[1]);
+    int button = inputSystem->GetButton(args[1]);
     if (button == BUTTON_CODE_INVALID) {
         console->Print("\"%s\" isn't a valid key!\n", args[1]);
         return;
@@ -50,30 +50,30 @@ CON_COMMAND(sar_bind_reload,
         return;
     }
 
-    if (Rebinder::IsSaveBinding && button == Rebinder::SaveButton) {
-        Rebinder::ResetSaveBind();
+    if (rebinder->IsSaveBinding && button == rebinder->SaveButton) {
+        rebinder->ResetSaveBind();
     }
 
-    Rebinder::SetReloadBind(button, args[2]);
-    Rebinder::RebindReload();
+    rebinder->SetReloadBind(button, args[2]);
+    rebinder->RebindReload();
 }
 
 CON_COMMAND(sar_unbind_save,
     "Unbinds current save rebinder.\n")
 {
-    if (!Rebinder::IsSaveBinding) {
+    if (!rebinder->IsSaveBinding) {
         console->Print("There's nothing to unbind.\n");
         return;
     }
-    Rebinder::ResetSaveBind();
+    rebinder->ResetSaveBind();
 }
 
 CON_COMMAND(sar_unbind_reload,
     "Unbinds current save-reload rebinder.\n")
 {
-    if (!Rebinder::IsReloadBinding) {
+    if (!rebinder->IsReloadBinding) {
         console->Print("There's nothing to unbind.\n");
         return;
     }
-    Rebinder::ResetReloadBind();
+    rebinder->ResetReloadBind();
 }

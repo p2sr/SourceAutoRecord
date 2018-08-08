@@ -94,6 +94,21 @@
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Demo\Demo.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Demo\DemoParser.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Stats.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\StepCounter.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Feature.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -169,9 +184,6 @@
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
     <ClInclude Include="Features\Config.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Demo.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Rebinder.hpp">
@@ -327,6 +339,15 @@
     <ClInclude Include="Commands\Exclusive.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Demo\Demo.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\DemoParser.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Feature.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">
@@ -364,6 +385,9 @@
     </Filter>
     <Filter Include="SourceAutoRecord\Features\Speedrun">
       <UniqueIdentifier>{68aa521b-4809-41c1-9070-2b9f95b802bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Demo">
+      <UniqueIdentifier>{274d8264-59f6-4e07-880f-672c8c26c1f7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

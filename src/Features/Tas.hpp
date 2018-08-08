@@ -26,7 +26,7 @@ void AddFrame(int framesLeft, std::string command, bool relative = false)
         BaseIndex = framesLeft;
     }
 
-    Frames.push_back(TasFrame{
+    Frames.push_back(TasFrame {
         framesLeft,
         command });
 }
@@ -40,7 +40,7 @@ void AddFrames(int framesLeft, int interval, int lastFrame, std::string command,
     }
 
     for (; framesLeft <= lastFrame; framesLeft += interval) {
-        Frames.push_back(TasFrame{
+        Frames.push_back(TasFrame {
             framesLeft,
             command });
     }
@@ -113,8 +113,7 @@ void Record(CUserCmd* cmd)
         cmd->buttons,
         cmd->impulse,
         cmd->mousedx,
-        cmd->mousedy
-    });
+        cmd->mousedy });
 }
 void Play(CUserCmd* cmd)
 {

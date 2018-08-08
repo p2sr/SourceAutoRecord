@@ -7,22 +7,33 @@
 
 #include "Utils.hpp"
 
+// Portal 2 Engine only
+#define CGameEventManager_m_Size_Offset 16
+#define CGameEventManager_m_GameEvents_Offset 124
+#define CGameEventManager_m_GameEvents_name_Offset 16
+#define CGameEventDescriptor_Size 24
+
 class Listener : public IGameEventListener2 {
 private:
     bool m_bRegisteredForEvents;
-#if _WIN32
-    using _ConPrintEvent = int(__stdcall*)(IGameEvent* event);
-    _ConPrintEvent ConPrintEvent;
-#endif
 
 public:
-    Listener()
-        : m_bRegisteredForEvents(false)
-        , ConPrintEvent(nullptr)
-    {
-    }
-    void Init()
-    {
+    Listener();
+    void Init();
+    void Shutdown();
+    virtual ~Listener();
+    virtual void FireGameEvent(IGameEvent* ev);
+    virtual int GetEventDebugID();
+    void DumpGameEvents();
+};
+
+Listener::Listener()
+    : m_bRegisteredForEvents(false)
+{
+}
+void Listener::Init()
+{
+    if (Engine::AddListener) {
         for (const auto& event : EVENTS) {
             auto result = Engine::AddListener(Engine::s_GameEventManager->ThisPtr(), this, event, true);
             if (result) {
@@ -31,56 +42,60 @@ public:
                 console->DevWarning("SAR: Failed to add event listener for %s!\n", event);
             }
         }
-#if _WIN32
-        this->ConPrintEvent = Memory::Absolute<_ConPrintEvent>(MODULE("engine"), 0x186C20);
-#endif
     }
-    void Shutdown()
-    {
+}
+void Listener::Shutdown()
+{
+    if (Engine::RemoveListener) {
         Engine::RemoveListener(Engine::s_GameEventManager->ThisPtr(), this);
     }
-    virtual ~Listener()
-    {
-        this->Shutdown();
-    }
-    virtual void FireGameEvent(IGameEvent* event)
-    {
-        if (!event)
-            return;
+}
+Listener::~Listener()
+{
+    this->Shutdown();
+}
+void Listener::FireGameEvent(IGameEvent* ev)
+{
+    if (!ev)
+        return;
 
-        if (sar_debug_game_events.GetBool() && this->ConPrintEvent) {
-            console->Print("[%i] Event fired: %s\n", Engine::GetSessionTick(), event->GetName());
-#if _WIN32
-            this->ConPrintEvent(event);
-#endif
+    if (sar_debug_game_events.GetBool()) {
+        console->Print("[%i] Event fired: %s\n", Engine::GetSessionTick(), ev->GetName());
+        if (Engine::ConPrintEvent) {
+            Engine::ConPrintEvent(ev);
         }
+    }
 
-        if (Engine::GetMaxClients() >= 2) {
-            if (!std::strcmp(event->GetName(), "player_spawn_blue") || !std::strcmp(event->GetName(), "player_spawn_orange")) {
-                console->Print("Detected cooperative spawn!\n");
-                Session::Rebase(*Engine::tickcount);
-                Timer::Rebase(*Engine::tickcount);
-                speedrun->Unpause(Engine::tickcount);
-            }
+    if (Engine::GetMaxClients() >= 2) {
+        // TODO: Start when orange spawns?
+        if (!std::strcmp(ev->GetName(), "player_spawn_orange")) {
+            console->Print("Detected cooperative spawn!\n");
+            Session::Rebase(*Engine::tickcount);
+            Timer::Rebase(*Engine::tickcount);
+            speedrun->Unpause(Engine::tickcount);
         }
     }
-    virtual int GetEventDebugID()
-    {
-        return 42;
+}
+int Listener::GetEventDebugID()
+{
+    return 42;
+}
+void Listener::DumpGameEvents()
+{
+    if (!Engine::s_GameEventManager) {
+        return;
     }
-    void DumpGameEvents()
-    {
-        auto m_Size = *reinterpret_cast<int*>((uintptr_t)Engine::s_GameEventManager->ThisPtr() + 16);
-        console->Print("m_Size = %i\n", m_Size);
-        if (m_Size > 0) {
-            auto m_GameEvents = *reinterpret_cast<uintptr_t*>((uintptr_t)Engine::s_GameEventManager->ThisPtr() + 124);
-            for (int i = 0; i < m_Size; i++) {
-                auto name = *reinterpret_cast<char**>(m_GameEvents + 24 * i + 16);
-                console->Print("%s\n", name);
-            }
+
+    auto m_Size = *reinterpret_cast<int*>((uintptr_t)Engine::s_GameEventManager->ThisPtr() + CGameEventManager_m_Size_Offset);
+    console->Print("m_Size = %i\n", m_Size);
+    if (m_Size > 0) {
+        auto m_GameEvents = *(uintptr_t*)((uintptr_t)Engine::s_GameEventManager->ThisPtr() + CGameEventManager_m_GameEvents_Offset);
+        for (int i = 0; i < m_Size; i++) {
+            auto name = *(char**)(m_GameEvents + CGameEventDescriptor_Size * i + CGameEventManager_m_GameEvents_name_Offset);
+            console->Print("%s\n", name);
         }
     }
-};
+}
 
 Listener* listener;
 extern Listener* listener;

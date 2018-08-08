@@ -26,19 +26,23 @@ public:
     virtual bool Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
     {
         console = new Console();
-
         if (!console->Init())
             return false;
 
         if (Game::IsSupported()) {
-            modules = new Modules();
-            modules->AddModule<Tier1>(&tier1);
-            modules->InitAll();
+            sar = new SAR();
+
+            sar->modules->AddModule<Tier1>(&tier1);
+            sar->modules->InitAll();
 
             if (tier1->hasLoaded) {
-                sar = new SAR();
                 plugin = new Plugin();
-                speedrun = new SpeedrunTimer();
+
+                sar->features->AddFeature<Stats>(&stats);
+                sar->features->AddFeature<StepCounter>(&stepCounter);
+                sar->features->AddFeature<SpeedrunTimer>(&speedrun);
+                sar->features->AddFeature<Rebinder>(&rebinder);
+
                 game->LoadRules();
 
                 commands = new Commands();
@@ -47,22 +51,25 @@ public:
                 commands->Init();
                 cheats->Init();
 
-                InputSystem::Init();
-                Scheme::Init();
-                Surface::Init();
+                sar->modules->AddModule<InputSystem>(&inputSystem);
+                sar->modules->AddModule<Scheme>(&scheme);
+                sar->modules->AddModule<Surface>(&surface);
+                sar->modules->InitAll();
+
                 VGui::Init();
                 Engine::Init();
                 Client::Init();
                 Server::Init();
 
-                listener = new Listener();
-                listener->Init();
-
                 config = new Config();
                 config->Load();
 
                 if (game->version == SourceGame::Portal2) {
-                    workshop = new WorkshopList();
+                    listener = new Listener();
+                    listener->Init();
+                    //listener->DumpGameEvents();
+
+                    sar->features->AddFeature<WorkshopList>(&workshop);
                 }
 
                 sar->SearchPlugin();
@@ -162,6 +169,88 @@ CON_COMMAND(sar_session, "Prints the current tick of the server since it has loa
     }
 }
 
+CON_COMMAND(sar_cvars_save, "Saves important SAR cvars.\n")
+{
+    if (!config->Save()) {
+        console->Print("Failed to create config file!\n");
+    } else {
+        console->Print("Saved important settings in /cfg/_sar_cvars.cfg!\n");
+    }
+}
+
+CON_COMMAND(sar_cvars_load, "Loads important SAR cvars.\n")
+{
+    if (!config->Load()) {
+        console->Print("Config file not found!\n");
+    }
+}
+
+CON_COMMAND(sar_cvars_dump, "Dumps all cvars to a file.\n")
+{
+    std::ofstream file("game.cvars", std::ios::out | std::ios::trunc | std::ios::binary);
+
+    auto m_pConCommandList = reinterpret_cast<ConCommandBase*>((uintptr_t)Tier1::g_pCVar->ThisPtr() + Offsets::m_pConCommandList);
+    auto cmd = m_pConCommandList->m_pNext;
+
+    if (Game::IsPortal2Engine()) {
+        cmd = cmd->m_pNext;
+        cmd = cmd->m_pNext;
+    }
+
+    typedef bool (*_IsCommand)(void* thisptr);
+    auto IsCommand = reinterpret_cast<_IsCommand>(Memory::VMT(cmd, Offsets::IsCommand));
+
+    auto count = 0;
+    do {
+        file << cmd->m_pszName;
+        file << "[cvar_data]";
+
+        if (!IsCommand(cmd)) {
+            auto cvar = reinterpret_cast<ConVar*>(cmd);
+            file << cvar->m_nValue;
+        } else {
+            file << "cmd";
+        }
+        file << "[cvar_data]";
+
+        file << cmd->m_nFlags;
+        file << "[cvar_data]";
+        file << cmd->m_pszHelpString;
+        file << "[end_of_cvar]";
+        ++count;
+
+    } while (cmd = cmd->m_pNext);
+
+    file.close();
+
+    console->Print("Dumped %i cvars to game.cvars!\n", count);
+}
+
+CON_COMMAND(sar_cvarlist, "Lists all SAR cvars.\n")
+{
+    console->Msg("Commands:\n");
+    for (auto& command : Command::list) {
+        if (!!command && command->isRegistered) {
+            auto ptr = command->ThisPtr();
+            console->Print("\n%s\n", ptr->m_pszName);
+            console->Print("     %s", ptr->m_pszHelpString);
+        }
+    }
+    console->Msg("\nVariables:\n");
+    for (auto& variable : Variable::list) {
+        if (!!variable && variable->isRegistered) {
+            auto ptr = variable->ThisPtr();
+            console->Print("\n%s ", ptr->m_pszName);
+            if (ptr->m_bHasMin) {
+                console->Print("<number>\n");
+            } else {
+                console->Print("<string>\n");
+            }
+            console->Print("     %s", ptr->m_pszHelpString);
+        }
+    }
+}
+
 CON_COMMAND(sar_about, "Prints info about this tool.\n")
 {
     console->Print("SourceAutoRecord tells the engine to keep recording when loading a save.\n");
@@ -173,38 +262,31 @@ CON_COMMAND(sar_about, "Prints info about this tool.\n")
 
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
-    //SAFE_DELETE(listener);
+    SAFE_DELETE(listener);
 
     Client::Shutdown();
     Engine::Shutdown();
     Server::Shutdown();
-    InputSystem::Shutdown();
-    Scheme::Shutdown();
-    Surface::Shutdown();
     VGui::Shutdown();
 
     cheats->Shutdown();
     commands->Shutdown();
 
-    modules->ShutdownAll();
+    sar->modules->ShutdownAll();
 
     if (sar->PluginFound()) {
         // SAR has to unhook CEngine some ticks before unloading the module
         auto unload = std::string("plugin_unload ") + std::to_string(plugin->index);
         Engine::SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);
-    } else {
-        console->Warning("SAR: This should never happen :(\n");
     }
 
     console->Print("Cya :)\n");
 
-    SAFE_DELETE(workshop);
-    SAFE_DELETE(config);
     SAFE_DELETE(cheats);
     SAFE_DELETE(commands);
-    SAFE_DELETE(game);
-    SAFE_DELETE(speedrun);
+    SAFE_DELETE(config);
     SAFE_DELETE(plugin);
     SAFE_DELETE(sar);
+    SAFE_DELETE(game);
     SAFE_DELETE(console);
 }

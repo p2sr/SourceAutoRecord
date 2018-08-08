@@ -16,7 +16,7 @@ namespace CheckPoints {
 
     void Add(int ticks, float time, char* map)
     {
-        Items.push_back(CheckPointItem{
+        Items.push_back(CheckPointItem {
             ticks,
             time,
             map });

@@ -50,6 +50,11 @@ void HalfLife2::LoadOffsets()
     demorecorder = 164; // CClientState::Disconnect
     GetCurrentMap = 24; // CEngineTool
     m_szLevelName = 25; // CEngineTool::GetCurrentMap
+    //AddListener = 3; // CGameEventManager (TODO)
+    //RemoveListener = 5; // CGameEventManager (TODO)
+    //FireEventClientSide = 8; // CGameEventManager (TODO)
+    //FireEventIntern = 11; // CGameEventManager (TODO)
+    //ConPrintEvent = 231; // CGameEventManager (TODO)
     AutoCompletionFunc = 37; // listdemo_CompletionFunc
     Key_SetBinding = 60; // unbind
     IsRunningSimulation = 9; // CEngineAPI
@@ -57,6 +62,8 @@ void HalfLife2::LoadOffsets()
     Frame = 6; // CEngine
     m_bLoadGame = 328; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
     ScreenPosition = 9; // CIVDebugOverlay
+    m_pConCommandList = 48; //CCvar (TODO)
+    IsCommand = 2; // ConCommandBase (TODO)
 
     // libvstdlib.so
     RegisterConCommand = 6; // CCVar

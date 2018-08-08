@@ -8,23 +8,24 @@
 
 #include "Utils.hpp"
 
-// The Stanley Parable only
+// TSP only
 void IN_BhopDown(const CCommand& args) { Client::KeyDown(Client::in_jump, (args.ArgC() > 1) ? args[1] : NULL); }
 void IN_BhopUp(const CCommand& args) { Client::KeyUp(Client::in_jump, (args.ArgC() > 1) ? args[1] : NULL); }
 
-Command startbhop("+bhop", IN_BhopDown, "Client sends a keydown event for the in_jump state.");
-Command endbhop("-bhop", IN_BhopUp, "Client sends a keyup event for the in_jump state.");
+Command startbhop("+bhop", IN_BhopDown, "Client sends a key-down event for the in_jump state.\n");
+Command endbhop("-bhop", IN_BhopUp, "Client sends a key-up event for the in_jump state.\n");
 
 CON_COMMAND(sar_anti_anti_cheat, "Sets sv_cheats to 1.\n")
 {
     sv_cheats.ThisPtr()->m_nValue = 1;
 }
 
+// TSP & TBG only
 DECLARE_AUTOCOMPLETION_FUNCTION(map, "maps", bsp);
 DECLARE_AUTOCOMPLETION_FUNCTION(changelevel, "maps", bsp);
 DECLARE_AUTOCOMPLETION_FUNCTION(changelevel2, "maps", bsp);
 
-// Portal 2 only
+// P2 only
 int sar_workshop_CompletionFunc(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     const char* cmd = "sar_workshop ";

@@ -25,7 +25,7 @@ namespace Average {
     }
     void Add(int ticks, float time, char* map)
     {
-        Items.push_back(AverageItem{
+        Items.push_back(AverageItem {
             ticks,
             time,
             map });

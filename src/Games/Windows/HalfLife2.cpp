@@ -50,6 +50,11 @@ void HalfLife2::LoadOffsets()
     demorecorder = 121; // CClientState::Disconnect
     GetCurrentMap = 23; // CEngineTool
     m_szLevelName = 32; // CEngineTool::GetCurrentMap
+    //AddListener = 3; // CGameEventManager
+    //RemoveListener = 5; // CGameEventManager
+    //FireEventClientSide = 8; // CGameEventManager
+    //FireEventIntern = 11; // CGameEventManager
+    //ConPrintEvent = 231; // CGameEventManager
     AutoCompletionFunc = 62; // listdemo_CompletionFunc
     Key_SetBinding = 110; // unbind
     IsRunningSimulation = 9; // CEngineAPI
@@ -62,6 +67,8 @@ void HalfLife2::LoadOffsets()
     RegisterConCommand = 6; // CCVar
     UnregisterConCommand = 7; // CCvar
     FindCommandBase = 10; // CCvar
+    m_pConCommandList = 44; //CCvar
+    IsCommand = 1; // ConCommandBase
 
     // vgui2.dll
 
@@ -77,14 +84,14 @@ void HalfLife2::LoadOffsets()
     m_nOldButtons = 40; // CGameMovement::CheckJumpButton
     player = 4; // CGameMovement::CheckJumpButton
     m_vecVelocity2 = 64; // CGameMovement::PlayerMove
-    GameFrame = 4; // CServerGameDLL
+    GameFrame = 5; // CServerGameDLL
     g_InRestore = 8; // CServerGameDLL::GameFrame
     gpGlobals = 29; // CServerGameDLL::GameFrame
-    ServiceEventQueue = 145; // CServerGameDLL::GameFrame
+    ServiceEventQueue = 147; // CServerGameDLL::GameFrame
     g_EventQueue = 1; // ServiceEventQueue
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 38; // CServerGameDLL::Think
-    iNumPortalsPlaced = 4816; // CPortal_Player::IncrementPortalsPlaced
+    iNumPortalsPlaced = 4816; // CPortal_Player::IncrementPortalsPlaced (TODO)
     m_fFlags = 260; // CBasePlayer::UpdateStepSound
     m_MoveType = 314; // CBasePlayer::UpdateStepSound
     m_nWaterLevel = 503; // CBasePlayer::UpdateStepSound

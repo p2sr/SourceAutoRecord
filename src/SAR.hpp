@@ -2,6 +2,9 @@
 #include <thread>
 
 #include "Modules/Console.hpp"
+#include "Modules/Module.hpp"
+
+#include "Features/Feature.hpp"
 
 #include "Interface.hpp"
 #include "Plugin.hpp"
@@ -13,10 +16,24 @@
 #define SAFE_UNLOAD_TICK_DELAY 33
 
 class SAR {
+public:
+    Modules* modules;
+    Features* features;
+
 private:
     std::thread findPluginThread;
 
 public:
+    SAR()
+    {
+        this->modules = new Modules();
+        this->features = new Features();
+    }
+    ~SAR()
+    {
+        SAFE_DELETE(this->modules);
+        SAFE_DELETE(this->features);
+    }
     const char* Version()
     {
         return SAR_VERSION;
@@ -33,11 +50,11 @@ public:
     // This is a race condition though
     bool PluginFound()
     {
-        static Interface* helper = Interface::Create(MODULE("engine"), "ISERVERPLUGINHELPERS0", false);
-        if (!plugin->found && helper) {
-            auto m_Size = *reinterpret_cast<int*>((uintptr_t)helper->ThisPtr() + CServerPlugin_m_Size);
+        static Interface* s_ServerPlugin = Interface::Create(MODULE("engine"), "ISERVERPLUGINHELPERS0", false);
+        if (!plugin->found && s_ServerPlugin) {
+            auto m_Size = *reinterpret_cast<int*>((uintptr_t)s_ServerPlugin->ThisPtr() + CServerPlugin_m_Size);
             if (m_Size > 0) {
-                auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)helper->ThisPtr() + CServerPlugin_m_Plugins);
+                auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)s_ServerPlugin->ThisPtr() + CServerPlugin_m_Plugins);
                 for (int i = 0; i < m_Size; i++) {
                     auto ptr = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
                     if (!std::strcmp(ptr->m_szName, SAR_PLUGIN_SIGNATURE)) {

@@ -4,13 +4,14 @@
 struct Variable {
 private:
     ConVar* ptr;
-    bool isRegistered;
-    bool isReference;
     int originalFlags;
 
     using _ShouldRegisterCallback = bool (*)();
     _ShouldRegisterCallback shouldRegister;
 
+public:
+    bool isRegistered;
+    bool isReference;
     static std::vector<Variable*> list;
 
 public:

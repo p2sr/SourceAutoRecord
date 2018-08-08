@@ -3,7 +3,8 @@
 #include "Modules/DemoRecorder.hpp"
 #include "Modules/Tier1.hpp"
 
-#include "Features/Demo.hpp"
+#include "Features/Demo/Demo.hpp"
+#include "Features/Demo/DemoParser.hpp"
 
 #include "Cheats.hpp"
 #include "Command.hpp"

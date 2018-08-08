@@ -77,7 +77,7 @@ CON_COMMAND(sar_speedrun_export_pb, "Saves speedrun personal best to a csv file.
     }
 }
 
-CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "", 0, 0, csv)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.", 0, 0, csv)
 {
     if (args.ArgC() != 2) {
         console->Print("sar_speedrun_import [file_name] : Imports speedrun data file.\n");

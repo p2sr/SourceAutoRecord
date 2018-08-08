@@ -93,6 +93,109 @@ static bool TryGetModule(const char* moduleName, ModuleInfo* info)
 }
 #endif
 
+static const char* GetModulePath(const char* moduleName)
+{
+    auto info = ModuleInfo();
+    return (TryGetModule(moduleName, &info)) ? std::string(info.path).c_str() : nullptr;
+}
+
+template <typename T = uintptr_t>
+static T Absolute(const char* moduleName, int relative)
+{
+    auto info = ModuleInfo();
+    return (TryGetModule(moduleName, &info)) ? (T)(info.base + relative) : (T)0;
+}
+
+static void* GetModuleHandleByName(const char* moduleName)
+{
+    auto info = ModuleInfo();
+#ifdef _WIN32
+    return (TryGetModule(moduleName, &info)) ? GetModuleHandleA(info.path) : nullptr;
+#else
+    return (TryGetModule(moduleName, &info)) ? dlopen(info.path, RTLD_NOLOAD | RTLD_NOW) : nullptr;
+#endif
+}
+
+static void CloseModuleHandle(void* moduleHandle)
+{
+#ifndef _WIN32
+    dlclose(moduleHandle);
+#endif
+}
+
+template <typename T = void*>
+static T GetSymbolAddress(void* moduleHandle, const char* symbolName)
+{
+#ifdef _WIN32
+    return (T)GetProcAddress((HMODULE)moduleHandle, symbolName);
+#else
+    return (T)dlsym(moduleHandle, symbolName);
+#endif
+}
+
+static std::string GetProcessName()
+{
+#ifdef _WIN32
+    char temp[MAX_PATH];
+    GetModuleFileName(NULL, temp, sizeof(temp));
+#else
+    char link[32];
+    char temp[MAX_PATH] = { 0 };
+    sprintf(link, "/proc/%d/exe", getpid());
+    readlink(link, temp, sizeof(temp));
+#endif
+
+    auto proc = std::string(temp);
+    auto index = proc.find_last_of("\\/");
+    proc = proc.substr(index + 1, proc.length() - index);
+
+    return proc;
+}
+
+template <typename T = void*>
+inline T VMT(void* ptr, int index)
+{
+    return reinterpret_cast<T>((*((void***)ptr))[index]);
+}
+
+template <typename T = uintptr_t>
+inline T Read(uintptr_t source)
+{
+    auto rel = *reinterpret_cast<int*>(source);
+    return (T)(source + rel + sizeof(rel));
+}
+
+template <typename T = uintptr_t>
+static void Read(uintptr_t source, T* destination)
+{
+    auto rel = *reinterpret_cast<int*>(source);
+    *destination = (T)(source + rel + sizeof(rel));
+}
+
+template <typename T = void*>
+inline T Deref(uintptr_t source)
+{
+    return *reinterpret_cast<T*>(source);
+}
+
+template <typename T = void*>
+static void Deref(uintptr_t source, T* destination)
+{
+    *destination = *reinterpret_cast<T*>(source);
+}
+
+template <typename T = void*>
+inline T DerefDeref(uintptr_t source)
+{
+    return **reinterpret_cast<T**>(source);
+}
+
+template <typename T = void*>
+static void DerefDeref(uintptr_t source, T* destination)
+{
+    *destination = **reinterpret_cast<T**>(source);
+}
+
 static uintptr_t FindAddress(const uintptr_t start, const uintptr_t end, const char* target)
 {
     const char* pattern = target;
@@ -134,109 +237,6 @@ static uintptr_t Scan(const char* moduleName, const char* pattern, int offset = 
             result += offset;
         }
     }
-
     return result;
-}
-
-static void* GetModuleHandleByName(const char* moduleName)
-{
-    auto info = ModuleInfo();
-#ifdef _WIN32
-    return (TryGetModule(moduleName, &info)) ? GetModuleHandleA(info.path) : nullptr;
-#else
-    return (TryGetModule(moduleName, &info)) ? dlopen(info.path, RTLD_NOLOAD | RTLD_NOW) : nullptr;
-#endif
-}
-
-static void CloseModuleHandle(void* moduleHandle)
-{
-#ifndef _WIN32
-    dlclose(moduleHandle);
-#endif
-}
-
-static void* GetSymbolAddress(void* moduleHandle, const char* symbolName)
-{
-#ifdef _WIN32
-    return (void*)GetProcAddress((HMODULE)moduleHandle, symbolName);
-#else
-    return dlsym(moduleHandle, symbolName);
-#endif
-}
-
-static const char* GetModulePath(const char* moduleName)
-{
-    auto info = ModuleInfo();
-    return (TryGetModule(moduleName, &info)) ? std::string(info.path).c_str() : nullptr;
-}
-
-static std::string GetProcessName()
-{
-#ifdef _WIN32
-    char temp[MAX_PATH];
-    GetModuleFileName(NULL, temp, sizeof(temp));
-#else
-    char link[32];
-    char temp[MAX_PATH] = { 0 };
-    sprintf(link, "/proc/%d/exe", getpid());
-    readlink(link, temp, sizeof(temp));
-#endif
-
-    auto proc = std::string(temp);
-    auto index = proc.find_last_of("\\/");
-    proc = proc.substr(index + 1, proc.length() - index);
-
-    return proc;
-}
-
-template <typename T = void*>
-inline T VMT(void* ptr, int index)
-{
-    return reinterpret_cast<T>((*((void***)ptr))[index]);
-}
-
-template <typename T = uintptr_t>
-static T Read(uintptr_t source)
-{
-    auto rel = *reinterpret_cast<int*>(source);
-    return (T)(source + rel + sizeof(rel));
-}
-
-template <typename T = uintptr_t>
-static void Read(uintptr_t source, T destination)
-{
-    auto rel = *reinterpret_cast<int*>(source);
-    destination = (T)(source + rel + sizeof(rel));
-}
-
-template <typename T = void*>
-inline T Deref(uintptr_t source)
-{
-    return *reinterpret_cast<T*>(source);
-}
-
-template <typename T = void*>
-inline void Deref(uintptr_t source, T destination)
-{
-    destination = *reinterpret_cast<T*>(source);
-}
-
-template <typename T = void*>
-inline T DerefDeref(uintptr_t source)
-{
-    return **reinterpret_cast<T**>(source);
-}
-
-template <typename T = void*>
-inline void DerefDeref(uintptr_t source, T destination)
-{
-    destination = **reinterpret_cast<T**>(source);
-}
-
-template <typename T = uintptr_t>
-static T Absolute(const char* moduleName, int relative)
-{
-    auto info = ModuleInfo();
-    return (TryGetModule(moduleName, &info)) ? (T)(info.base + relative) : (T)0;
 }
 }

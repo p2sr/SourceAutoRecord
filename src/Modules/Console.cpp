@@ -4,24 +4,24 @@ bool Console::Init()
 {
     auto tier0 = Memory::GetModuleHandleByName(MODULE(TIER0));
     if (tier0) {
-        auto msgAddr = Memory::GetSymbolAddress(tier0, MSG_SYMBOL);
-        auto colorMsgAddr = Memory::GetSymbolAddress(tier0, CONCOLORMSG_SYMBOL);
-        auto warningAddr = Memory::GetSymbolAddress(tier0, WARNING_SYMBOL);
-        auto devMsgAddr = Memory::GetSymbolAddress(tier0, DEVMSG_SYMBOL);
-        auto devWarningAddr = Memory::GetSymbolAddress(tier0, DEVWARNINGMSG_SYMBOL);
+        this->Msg = Memory::GetSymbolAddress<_Msg>(tier0, MSG_SYMBOL);
+        this->ColorMsg = Memory::GetSymbolAddress<_ColorMsg>(tier0, CONCOLORMSG_SYMBOL);
+        this->Warning = Memory::GetSymbolAddress<_Warning>(tier0, WARNING_SYMBOL);
+        this->DevMsg = Memory::GetSymbolAddress<_DevMsg>(tier0, DEVMSG_SYMBOL);
+        this->DevWarning = Memory::GetSymbolAddress<_DevWarning>(tier0, DEVWARNINGMSG_SYMBOL);
 
         Memory::CloseModuleHandle(tier0);
-
-        if (msgAddr && colorMsgAddr && warningAddr && devMsgAddr && devWarningAddr) {
-            this->Msg = reinterpret_cast<_Msg>(msgAddr);
-            this->ColorMsg = reinterpret_cast<_ColorMsg>(colorMsgAddr);
-            this->Warning = reinterpret_cast<_Warning>(warningAddr);
-            this->DevMsg = reinterpret_cast<_DevMsg>(devMsgAddr);
-            this->DevWarning = reinterpret_cast<_DevWarning>(devWarningAddr);
-            return true;
-        }
     }
-    return false;
+
+    return this->hasLoaded = tier0
+        && this->Msg
+        && this->ColorMsg
+        && this->Warning
+        && this->DevMsg
+        && this->DevWarning;
+}
+void Console::Shutdown()
+{
 }
 
 Console* console;
