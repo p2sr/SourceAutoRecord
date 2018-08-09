@@ -189,8 +189,7 @@ CON_COMMAND(sar_cvars_dump, "Dumps all cvars to a file.\n")
 {
     std::ofstream file("game.cvars", std::ios::out | std::ios::trunc | std::ios::binary);
 
-    auto m_pConCommandList = reinterpret_cast<ConCommandBase*>((uintptr_t)Tier1::g_pCVar->ThisPtr() + Offsets::m_pConCommandList);
-    auto cmd = m_pConCommandList->m_pNext;
+    auto cmd = tier1->m_pConCommandList->m_pNext;
 
     if (Game::IsPortal2Engine()) {
         cmd = cmd->m_pNext;
@@ -258,6 +257,20 @@ CON_COMMAND(sar_about, "Prints info about this tool.\n")
     console->Print("Game: %s\n", game->Version());
     console->Print("Version: %s\n", sar->Version());
     console->Print("Build: %s\n", sar->Build());
+}
+
+CON_COMMAND(sar_rename, "Changes your name.\n")
+{
+    if (args.ArgC() != 2) {
+        console->Print("Changes your name. Usage: sar_rename <name>\n");
+    }
+
+    auto name = Variable("name");
+    if (!!name) {
+        name.DisableChange();
+        name.SetValue(args[1]);
+        name.EnableChange();
+    }
 }
 
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")

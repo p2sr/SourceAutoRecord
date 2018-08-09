@@ -8,9 +8,9 @@
 #include "Utils.hpp"
 
 // Portal 2 Engine only
-#define CGameEventManager_m_Size_Offset 16
-#define CGameEventManager_m_GameEvents_Offset 124
-#define CGameEventManager_m_GameEvents_name_Offset 16
+#define CGameEventManager_m_Size 16
+#define CGameEventManager_m_GameEvents 124
+#define CGameEventManager_m_GameEvents_name 16
 #define CGameEventDescriptor_Size 24
 
 class Listener : public IGameEventListener2 {
@@ -86,12 +86,13 @@ void Listener::DumpGameEvents()
         return;
     }
 
-    auto m_Size = *reinterpret_cast<int*>((uintptr_t)Engine::s_GameEventManager->ThisPtr() + CGameEventManager_m_Size_Offset);
+    auto s_GameEventManager = reinterpret_cast<uintptr_t>(Engine::s_GameEventManager->ThisPtr());
+    auto m_Size = *reinterpret_cast<int*>(s_GameEventManager + CGameEventManager_m_Size);
     console->Print("m_Size = %i\n", m_Size);
     if (m_Size > 0) {
-        auto m_GameEvents = *(uintptr_t*)((uintptr_t)Engine::s_GameEventManager->ThisPtr() + CGameEventManager_m_GameEvents_Offset);
+        auto m_GameEvents = *(uintptr_t*)(s_GameEventManager + CGameEventManager_m_GameEvents);
         for (int i = 0; i < m_Size; i++) {
-            auto name = *(char**)(m_GameEvents + CGameEventDescriptor_Size * i + CGameEventManager_m_GameEvents_name_Offset);
+            auto name = *(char**)(m_GameEvents + CGameEventDescriptor_Size * i + CGameEventManager_m_GameEvents);
             console->Print("%s\n", name);
         }
     }

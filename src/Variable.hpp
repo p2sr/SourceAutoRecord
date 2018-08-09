@@ -6,6 +6,15 @@ private:
     ConVar* ptr;
     int originalFlags;
 
+#if HL2_OPTIMISATION
+    void* originalfnChangeCallback;
+#else
+    union {
+        void* originalfnChangeCallback;
+        int originalSize;
+    };
+#endif
+
     using _ShouldRegisterCallback = bool (*)();
     _ShouldRegisterCallback shouldRegister;
 
@@ -37,6 +46,8 @@ public:
     void RemoveFlag(int value);
     void Unlock(bool asCheat = true);
     void Lock();
+    void DisableChange();
+    void EnableChange();
     void UniqueFor(_ShouldRegisterCallback callback);
     void Register();
     void Unregister();

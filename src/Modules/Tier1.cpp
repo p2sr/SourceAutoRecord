@@ -12,6 +12,8 @@ bool Tier1::Init()
     this->g_pCVar = Interface::Create(MODULE("libvstdlib"), "VEngineCvar0", false);
 #endif
     if (this->g_pCVar) {
+        this->m_pConCommandList = (ConCommandBase*)((uintptr_t)this->g_pCVar->ThisPtr() + Offsets::m_pConCommandList);
+
         RegisterConCommand = this->g_pCVar->Original<_RegisterConCommand>(Offsets::RegisterConCommand);
         UnregisterConCommand = this->g_pCVar->Original<_UnregisterConCommand>(Offsets::UnregisterConCommand);
         FindCommandBase = this->g_pCVar->Original<_FindCommandBase>(Offsets::FindCommandBase);
@@ -46,6 +48,7 @@ void Tier1::Shutdown()
 }
 
 Interface* Tier1::g_pCVar;
+ConCommandBase* Tier1::m_pConCommandList;
 _RegisterConCommand Tier1::RegisterConCommand;
 _UnregisterConCommand Tier1::UnregisterConCommand;
 _FindCommandBase Tier1::FindCommandBase;

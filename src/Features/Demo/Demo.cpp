@@ -1,5 +1,7 @@
 #include "Demo.hpp"
 
+#include <cstdint>
+
 int32_t Demo::LastTick()
 {
     return (this->messageTicks.size() > 0) ? this->messageTicks.back() : this->playbackTicks;

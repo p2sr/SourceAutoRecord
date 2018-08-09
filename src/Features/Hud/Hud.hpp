@@ -6,7 +6,7 @@ protected:
     Color GetColor(const char* source);
 
 public:
+    virtual ~Hud() = default;
     virtual bool GetCurrentSize(int& xSize, int& ySize) = 0;
     virtual void Draw() = 0;
-    virtual ~Hud() = default;
 };

@@ -1,5 +1,5 @@
 #pragma once
-#include <filesystem>
+#include <experimental/filesystem>
 #include <stdlib.h>
 
 #include "Modules/Engine.hpp"
@@ -29,14 +29,19 @@ int WorkshopList::Update()
     auto before = this->maps.size();
     this->maps.clear();
 
+    auto path = this->Path();
+    auto index = path.length() + 1;
+
     // Scan through all directories and find the map file
-    for (auto& dir : std::experimental::filesystem::recursive_directory_iterator(this->Path())) {
+    for (auto& dir : std::experimental::filesystem::recursive_directory_iterator(path)) {
         if (dir.status().type() == std::experimental::filesystem::file_type::directory) {
-            auto path = dir.path().string();
-            for (auto& dirdir : std::experimental::filesystem::directory_iterator(path)) {
+            auto curdir = dir.path().string();
+            for (auto& dirdir : std::experimental::filesystem::directory_iterator(curdir)) {
                 auto file = dirdir.path().string();
                 if (endsWith(file, std::string(".bsp"))) {
-                    this->maps.push_back(file);
+                    auto map = file.substr(index);
+                    map = map.substr(0, map.length() - 4);
+                    this->maps.push_back(map);
                     break;
                 }
             }

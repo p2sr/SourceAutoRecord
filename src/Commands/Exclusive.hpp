@@ -35,19 +35,17 @@ int sar_workshop_CompletionFunc(const char* partial, char commands[COMMAND_COMPL
         workshop->Update();
     }
 
-    std::vector<std::string> items;
-    auto index = workshop->Path().length() + 1;
-
     // Filter items
-    for (auto& dir : workshop->maps) {
-        auto file = dir.substr(index);
-        file = file.substr(0, file.length() - 4);
+    std::vector<std::string> items;
+    for (auto& map : workshop->maps) {
         if (std::strlen(match) != 0) {
-            if (std::strstr(file.c_str(), match)) {
-                items.push_back(file);
+            if (std::strstr(map.c_str(), match)) {
+                items.push_back(map);
+            } else {
+                continue;
             }
         } else {
-            items.push_back(file);
+            items.push_back(map);
         }
 
         if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
@@ -64,10 +62,10 @@ int sar_workshop_CompletionFunc(const char* partial, char commands[COMMAND_COMPL
     return count;
 }
 
-CON_COMMAND_F_COMPLETION(sar_workshop, "Same as \"map\" command but this can list workshop maps.\n", 0, sar_workshop_CompletionFunc)
+CON_COMMAND_F_COMPLETION(sar_workshop, "Same as \"map\" command but lists workshop maps.\n", 0, sar_workshop_CompletionFunc)
 {
     if (args.ArgC() < 2) {
-        console->Print("sar_workshop <file> : Same as \"map\" command but this can list workshop maps.\n");
+        console->Print("sar_workshop <file> : Same as \"map\" command but lists workshop maps.\n");
         return;
     }
 
@@ -77,4 +75,18 @@ CON_COMMAND_F_COMPLETION(sar_workshop, "Same as \"map\" command but this can lis
 CON_COMMAND(sar_workshop_update, "Updates the workshop map list.\n")
 {
     console->Print("Added or removed %i map(s) to or from the list.\n", workshop->Update());
+}
+
+CON_COMMAND(sar_workshop_list, "Prints all workshop maps.\n")
+{
+    for (const auto& map : workshop->maps) {
+        console->Print("%s\n", map.c_str());
+    }
+}
+
+CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer.\n")
+{
+    auto state = !*Engine::m_bWaitEnabled;
+    *Engine::m_bWaitEnabled = state;
+    console->Print("%s wait!\n", (state) ? "Enabled" : "Disabled");
 }

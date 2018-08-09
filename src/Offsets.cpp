@@ -136,6 +136,9 @@ int IsRunningSimulation;
 // CIVDebugOverlay
 int ScreenPosition;
 
+// CCommandBuffer
+int m_bWaitEnabled;
+
 // Others
 int tickcount;
 int interval_per_tick;

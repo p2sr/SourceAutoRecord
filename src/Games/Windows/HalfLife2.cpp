@@ -53,8 +53,8 @@ void HalfLife2::LoadOffsets()
     //AddListener = 3; // CGameEventManager
     //RemoveListener = 5; // CGameEventManager
     //FireEventClientSide = 8; // CGameEventManager
-    //FireEventIntern = 11; // CGameEventManager
-    //ConPrintEvent = 231; // CGameEventManager
+    //FireEventIntern = 11; // CGameEventManager::FireEventClientSide
+    //ConPrintEvent = 231; // CGameEventManager::FireEventIntern
     AutoCompletionFunc = 62; // listdemo_CompletionFunc
     Key_SetBinding = 110; // unbind
     IsRunningSimulation = 9; // CEngineAPI
@@ -67,7 +67,7 @@ void HalfLife2::LoadOffsets()
     RegisterConCommand = 6; // CCVar
     UnregisterConCommand = 7; // CCvar
     FindCommandBase = 10; // CCvar
-    m_pConCommandList = 44; //CCvar
+    m_pConCommandList = 44; // CCvar
     IsCommand = 1; // ConCommandBase
 
     // vgui2.dll

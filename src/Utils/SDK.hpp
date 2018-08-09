@@ -1,7 +1,11 @@
 #pragma once
 #include <cmath>
 
-#include "Utils/Platform.hpp"
+#ifdef _WIN32
+#define __funcc __thiscall
+#else
+#define __funcc __attribute__((__cdecl__))
+#endif
 
 struct Vector {
     float x, y, z;
@@ -75,13 +79,13 @@ class ConCommandBase;
 
 using _CommandCallback = void (*)(const CCommand& args);
 using _CommandCompletionCallback = int (*)(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
-using _InternalSetValue = void(__func*)(void* thisptr, const char* value);
-using _InternalSetFloatValue = void(__func*)(void* thisptr, float value);
-using _InternalSetIntValue = void(__func*)(void* thisptr, int value);
-using _RegisterConCommand = void(__func*)(void* thisptr, ConCommandBase* pCommandBase);
-using _UnregisterConCommand = void(__func*)(void* thisptr, ConCommandBase* pCommandBase);
-using _FindCommandBase = void*(__func*)(void* thisptr, const char* name);
-using _AutoCompletionFunc = int(__func*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+using _InternalSetValue = void(__funcc*)(void* thisptr, const char* value);
+using _InternalSetFloatValue = void(__funcc*)(void* thisptr, float value);
+using _InternalSetIntValue = void(__funcc*)(void* thisptr, int value);
+using _RegisterConCommand = void(__funcc*)(void* thisptr, ConCommandBase* pCommandBase);
+using _UnregisterConCommand = void(__funcc*)(void* thisptr, ConCommandBase* pCommandBase);
+using _FindCommandBase = void*(__funcc*)(void* thisptr, const char* name);
+using _AutoCompletionFunc = int(__funcc*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
 class ConCommandBase {
 public:
@@ -171,8 +175,8 @@ public:
 #ifdef HL2_OPTIMISATION
     void* m_fnChangeCallback; // 68
 #else
-        // CUtlVector<FnChangeCallback_t> m_fnChangeCallback
-        // CUtlMemory<FnChangeCallback_t> m_Memory
+    // CUtlVector<FnChangeCallback_t> m_fnChangeCallback
+    // CUtlMemory<FnChangeCallback_t> m_Memory
     void* m_pMemory; // 68
     int m_nAllocationCount; // 72
     int m_nGrowSize; // 76
@@ -471,7 +475,7 @@ struct CGlobalVars : CGlobalVarsBase {
 
 class IGameEvent {
 public:
-    virtual ~IGameEvent() {};
+    virtual ~IGameEvent() = default;
     virtual const char* GetName() const = 0;
     virtual bool IsReliable() const = 0;
     virtual bool IsLocal() const = 0;
@@ -488,7 +492,7 @@ public:
 
 class IGameEventListener2 {
 public:
-    virtual ~IGameEventListener2() {};
+    virtual ~IGameEventListener2() = default;
     virtual void FireGameEvent(IGameEvent* event) = 0;
     virtual int GetEventDebugID() = 0;
 };

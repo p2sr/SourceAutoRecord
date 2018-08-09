@@ -15,6 +15,8 @@ void TheStanleyParable::LoadOffsets()
     // engine.so
 
     Cbuf_AddText = 45; // CEngineClient::ClientCmd
+    s_CommandBuffer = 71; // Cbuf_AddText
+    m_bWaitEnabled = 8264; // CCommandBuffer::AddText
     tickcount = 74; // CClientState::ProcessTick
     interval_per_tick = 82; // CClientState::ProcessTick
     HostState_OnClientConnected = 1523; // CClientState::SetSignonState

@@ -40,10 +40,11 @@ using _AddListener = bool(__func*)(void* thisptr, IGameEventListener2* listener,
 using _RemoveListener = bool(__func*)(void* thisptr, IGameEventListener2* listener);
 using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
 using _AddText = void(__func*)(void* thisptr, const char* pText, int nTickDelay);
-using _GetActiveSplitScreenPlayerSlot = int (*)();
 #ifdef _WIN32
+using _GetActiveSplitScreenPlayerSlot = int (*)();
 using _ScreenPosition = int(__stdcall*)(const Vector& point, Vector& screen);
 #else
+using _GetActiveSplitScreenPlayerSlot = int (*)(void* thisptr);
 using _ScreenPosition = int(__stdcall*)(void* thisptr, const Vector& point, Vector& screen);
 #endif
 using _ConPrintEvent = int(__stdcall*)(IGameEvent* ev);
@@ -67,6 +68,7 @@ float* interval_per_tick;
 char* m_szLevelName;
 CHostState* hoststate;
 void* s_CommandBuffer;
+bool* m_bWaitEnabled;
 
 void ExecuteCommand(const char* cmd)
 {
@@ -98,7 +100,12 @@ void SetAngles(QAngle va)
 void SendToCommandBuffer(const char* text, int delay)
 {
     if (Game::IsPortal2Engine()) {
-        Cbuf_AddText(GetActiveSplitScreenPlayerSlot(), text, delay);
+#ifdef _WIN32
+        auto slot = GetActiveSplitScreenPlayerSlot();
+#else
+        auto slot = GetActiveSplitScreenPlayerSlot(nullptr);
+#endif
+        Cbuf_AddText(slot, text, delay);
     } else if (Game::IsHalfLife2Engine()) {
         AddText(s_CommandBuffer, text, delay);
     }
@@ -194,7 +201,7 @@ void SessionEnded()
 }
 void SessionChanged(int state)
 {
-    //console->Print("state = %i\n", state);
+    console->DevMsg("state = %i\n", state);
     if (state != prevSignonState && prevSignonState == SignonState::Full) {
         SessionEnded();
     }
@@ -257,7 +264,7 @@ DETOUR(SetSignonState2, int state, int count)
 DETOUR(Frame)
 {
     if (hoststate->m_currentState != prevState) {
-        //console->Print("m_currentState = %i\n", hoststate->m_currentState);
+        console->DevMsg("m_currentState = %i\n", hoststate->m_currentState);
         if (hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_SP) {
             SessionEnded();
         } else if (hoststate->m_currentState == HOSTSTATES::HS_RUN
@@ -326,6 +333,8 @@ void Init()
         GetGameDirectory = engine->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)ClientCmd + Offsets::Cbuf_AddText, &Cbuf_AddText);
+        Memory::Deref<void*>((uintptr_t)Cbuf_AddText + Offsets::s_CommandBuffer, &s_CommandBuffer);
+        m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
 
         void* clPtr = nullptr;
         if (Game::IsPortal2Engine()) {
@@ -339,7 +348,6 @@ void Init()
             clPtr = Memory::Deref<void*>(ServerCmdKeyValues + Offsets::cl);
 
             Memory::Read<_AddText>((uintptr_t)Cbuf_AddText + Offsets::AddText, &AddText);
-            Memory::Deref<void*>((uintptr_t)Cbuf_AddText + Offsets::s_CommandBuffer, &s_CommandBuffer);
         }
 
         if (cl = Interface::Create(clPtr)) {
@@ -363,7 +371,7 @@ void Init()
             auto IServerMessageHandler_VMT = Memory::Deref<uintptr_t>((uintptr_t)cl->ThisPtr() + IServerMessageHandler_VMT_Offset);
             auto ProcessTick = Memory::Deref<uintptr_t>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
 #else
-            auto ProcessTick = cl->GetOriginal(Offsets::ProcessTick);
+            auto ProcessTick = cl->Original(Offsets::ProcessTick);
 #endif
             tickcount = Memory::Deref<int*>(ProcessTick + Offsets::tickcount);
             interval_per_tick = Memory::Deref<float*>(ProcessTick + Offsets::interval_per_tick);

@@ -1,4 +1,3 @@
-#pragma once
 #include "Variable.hpp"
 
 #include "Modules/Tier1.hpp"
@@ -8,10 +7,11 @@
 
 Variable::Variable()
     : ptr(nullptr)
+    , originalFlags(0)
+    , originalfnChangeCallback(0)
+    , shouldRegister(nullptr)
     , isRegistered(false)
     , isReference(nullptr)
-    , originalFlags(0)
-    , shouldRegister(nullptr)
 {
 }
 Variable::~Variable()
@@ -131,6 +131,37 @@ void Variable::Lock()
 {
     if (this->ptr) {
         this->ptr->m_nFlags = this->originalFlags;
+    }
+}
+void Variable::DisableChange()
+{
+    if (this->ptr) {
+#ifdef HL2_OPTIMISATION
+        this->originalfnChangeCallback = this->ptr->originalfnChangeCallback;
+        this->originalfnChangeCallback = nullptr;
+#else
+        if (game->IsHalfLife2Engine()) {
+            this->originalfnChangeCallback = this->ptr->m_pMemory;
+            this->ptr->m_pMemory = nullptr;
+        } else {
+            this->originalSize = this->ptr->m_Size;
+            this->ptr->m_Size = 0;
+        }
+#endif
+    }
+}
+void Variable::EnableChange()
+{
+    if (this->ptr) {
+#ifdef HL2_OPTIMISATION
+        this->ptr->originalfnChangeCallback = this->originalfnChangeCallback;
+#else
+        if (game->IsHalfLife2Engine()) {
+            this->ptr->m_pMemory = this->originalfnChangeCallback;
+        } else {
+            this->ptr->m_Size = this->originalSize;
+        }
+#endif
     }
 }
 void Variable::UniqueFor(_ShouldRegisterCallback callback)

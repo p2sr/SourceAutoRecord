@@ -4,9 +4,9 @@
 
 Command::Command()
     : ptr(nullptr)
+    , shouldRegister(nullptr)
     , isRegistered(false)
     , isReference(false)
-    , shouldRegister(nullptr)
 {
 }
 Command::~Command()

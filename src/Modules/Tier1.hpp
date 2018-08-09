@@ -6,6 +6,7 @@
 class Tier1 : public Module {
 public:
     static Interface* g_pCVar;
+    static ConCommandBase* m_pConCommandList;
 
     static _RegisterConCommand RegisterConCommand;
     static _UnregisterConCommand UnregisterConCommand;

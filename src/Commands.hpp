@@ -25,11 +25,13 @@ void Commands::Init()
     sar_anti_anti_cheat.UniqueFor(Game::HasJumpDisabled);
     sar_workshop.UniqueFor(Game::HasChallengeMode);
     sar_workshop_update.UniqueFor(Game::HasChallengeMode);
+    sar_workshop_list.UniqueFor(Game::HasChallengeMode);
     sar_speedrun_result.UniqueFor(Game::HasChallengeMode);
     sar_speedrun_export.UniqueFor(Game::HasChallengeMode);
     sar_speedrun_export_pb.UniqueFor(Game::HasChallengeMode);
     sar_speedrun_import.UniqueFor(Game::HasChallengeMode);
     sar_speedrun_rules.UniqueFor(Game::HasChallengeMode);
+    sar_togglewait.UniqueFor(Game::IsPortal2Engine);
 
     if (game->version == SourceGame::TheStanleyParable
         || game->version == SourceGame::TheBeginnersGuide) {

@@ -22,6 +22,8 @@ void Portal2::LoadOffsets()
     ClientCmd = 7; // CEngineClient
     GetClientStateFunction = 11; // CEngineClient::ClientCmd
     Cbuf_AddText = 45; // CEngineClient::ClientCmd
+    s_CommandBuffer = 69; // Cbuf_AddText
+    m_bWaitEnabled = 8265; // CCommandBuffer::AddText
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient
     SetViewAngles = 19; // CEngineClient
@@ -52,9 +54,9 @@ void Portal2::LoadOffsets()
     m_szLevelName = 72; // CEngineTool::GetCurrentMap
     AddListener = 4; // CGameEventManager
     RemoveListener = 6; // CGameEventManager
-    FireEventClientSide = 7; // CGameEventManager (TOOD)
-    FireEventIntern = 12; // CGameEventManager (TODO)
-    ConPrintEvent = 303; // CGameEventManager (TODO)
+    FireEventClientSide = 9; // CGameEventManager
+    FireEventIntern = 36; // CGameEventManager::FireEventClientSide
+    ConPrintEvent = 254; // CGameEventManager::FireEventIntern
     AutoCompletionFunc = 37; // listdemo_CompletionFunc
     Key_SetBinding = 60; // unbind
     IsRunningSimulation = 12; // CEngineAPI
@@ -67,7 +69,7 @@ void Portal2::LoadOffsets()
     RegisterConCommand = 9; // CCVar
     UnregisterConCommand = 10; // CCvar
     FindCommandBase = 13; // CCvar
-    m_pConCommandList = 48; //CCvar
+    m_pConCommandList = 48; // CCvar
     IsCommand = 2; // ConCommandBase
 
     // vgui2.so

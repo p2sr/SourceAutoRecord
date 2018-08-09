@@ -6,6 +6,7 @@ public:
     bool hasLoaded;
 
 public:
+    virtual ~Module() = default;
     virtual bool Init() = 0;
     virtual void Shutdown() = 0;
 };
