@@ -39,6 +39,7 @@ void Commands::Init()
         ACTIVATE_AUTOCOMPLETEFILE(changelevel);
         ACTIVATE_AUTOCOMPLETEFILE(changelevel2);
     }
+
     Command::RegisterAll();
 }
 void Commands::Shutdown()

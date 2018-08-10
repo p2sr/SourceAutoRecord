@@ -69,9 +69,35 @@ void Variable::Create(const char* name, const char* value, int flags, const char
 
     Variable::list.push_back(this);
 }
+void Variable::PostInit()
+{
+    if (Game::IsPortal2Engine()) {
+        auto newptr = new ConVar2();
+        newptr->m_pszName = this->ptr->m_pszName;
+        newptr->m_pszHelpString = this->ptr->m_pszHelpString;
+        newptr->m_nFlags = this->ptr->m_nFlags;
+        newptr->m_pParent = newptr;
+        newptr->m_pszDefaultValue = this->ptr->m_pszDefaultValue;
+        newptr->m_StringLength = this->ptr->m_StringLength;
+        newptr->m_pszString = new char[newptr->m_StringLength];
+        std::memcpy(newptr->m_pszString, newptr->m_pszDefaultValue, newptr->m_StringLength);
+        newptr->m_fValue = this->ptr->m_fValue;
+        newptr->m_nValue = this->ptr->m_nValue;
+        newptr->m_bHasMin = this->ptr->m_bHasMin;
+        newptr->m_fMinVal = this->ptr->m_fMinVal;
+        newptr->m_bHasMax = this->ptr->m_bHasMax;
+        newptr->m_fMaxVal = this->ptr->m_fMaxVal;
+        delete this->ptr;
+        this->ptr = newptr;
+    }
+}
 ConVar* Variable::ThisPtr()
 {
     return this->ptr;
+}
+ConVar2* Variable::ThisPtr2()
+{
+    return reinterpret_cast<ConVar2*>(this->ptr);
 }
 bool Variable::GetBool()
 {
@@ -125,6 +151,10 @@ void Variable::Unlock(bool asCheat)
         if (asCheat) {
             this->AddFlag(FCVAR_CHEAT);
         }
+
+        if (this->isReference) {
+            this->list.push_back(this);
+        }
     }
 }
 void Variable::Lock()
@@ -136,32 +166,23 @@ void Variable::Lock()
 void Variable::DisableChange()
 {
     if (this->ptr) {
-#ifdef HL2_OPTIMISATION
-        this->originalfnChangeCallback = this->ptr->originalfnChangeCallback;
-        this->originalfnChangeCallback = nullptr;
-#else
-        if (game->IsHalfLife2Engine()) {
-            this->originalfnChangeCallback = this->ptr->m_pMemory;
-            this->ptr->m_pMemory = nullptr;
+        if (Game::IsPortal2Engine()) {
+            this->originalSize = ((ConVar2*)this->ptr)->m_Size;
+            ((ConVar2*)this->ptr)->m_Size = 0;
         } else {
-            this->originalSize = this->ptr->m_Size;
-            this->ptr->m_Size = 0;
+            this->originalfnChangeCallback = this->ptr->m_fnChangeCallback;
+            this->ptr->m_fnChangeCallback = nullptr;
         }
-#endif
     }
 }
 void Variable::EnableChange()
 {
     if (this->ptr) {
-#ifdef HL2_OPTIMISATION
-        this->ptr->originalfnChangeCallback = this->originalfnChangeCallback;
-#else
-        if (game->IsHalfLife2Engine()) {
-            this->ptr->m_pMemory = this->originalfnChangeCallback;
+        if (Game::IsPortal2Engine()) {
+            ((ConVar2*)this->ptr)->m_Size = this->originalSize;
         } else {
-            this->ptr->m_Size = this->originalSize;
+            this->ptr->m_fnChangeCallback = this->originalfnChangeCallback;
         }
-#endif
     }
 }
 void Variable::UniqueFor(_ShouldRegisterCallback callback)
@@ -170,19 +191,20 @@ void Variable::UniqueFor(_ShouldRegisterCallback callback)
 }
 void Variable::Register()
 {
-    if (!this->isRegistered) {
+    if (!this->isRegistered && !this->isReference) {
+        this->isRegistered = true;
+        this->PostInit();
         this->ptr->ConCommandBase_VTable = Tier1::ConVar_VTable;
         this->ptr->ConVar_VTable = Tier1::ConVar_VTable2;
         Tier1::RegisterConCommand(Tier1::g_pCVar->ThisPtr(), this->ptr);
     }
-    this->isRegistered = true;
 }
 void Variable::Unregister()
 {
-    if (this->isRegistered) {
+    if (this->isRegistered && !this->isReference) {
+        this->isRegistered = false;
         Tier1::UnregisterConCommand(Tier1::g_pCVar->ThisPtr(), this->ptr);
     }
-    this->isRegistered = false;
 }
 bool Variable::operator!()
 {

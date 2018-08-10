@@ -1,19 +1,15 @@
 #pragma once
 #include "Modules/Tier1.hpp"
 
-struct Variable {
+class Variable {
 private:
     ConVar* ptr;
     int originalFlags;
 
-#if HL2_OPTIMISATION
-    void* originalfnChangeCallback;
-#else
     union {
         void* originalfnChangeCallback;
         int originalSize;
     };
-#endif
 
     using _ShouldRegisterCallback = bool (*)();
     _ShouldRegisterCallback shouldRegister;
@@ -32,7 +28,9 @@ public:
     Variable(const char* name, const char* value, float min, float max, const char* helpstr, int flags = FCVAR_NEVER_AS_STRING);
     void Create(const char* name, const char* value, int flags = 0, const char* helpstr = "", bool hasmin = false, float min = 0,
         bool hasmax = false, float max = 0);
+    void PostInit();
     ConVar* ThisPtr();
+    ConVar2* ThisPtr2();
     bool GetBool();
     int GetInt();
     float GetFloat();

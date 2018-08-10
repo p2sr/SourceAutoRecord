@@ -174,7 +174,7 @@ CON_COMMAND(sar_cvars_save, "Saves important SAR cvars.\n")
     if (!config->Save()) {
         console->Print("Failed to create config file!\n");
     } else {
-        console->Print("Saved important settings in /cfg/_sar_cvars.cfg!\n");
+        console->Print("Saved important settings to cfg/_sar_cvars.cfg!\n");
     }
 }
 
@@ -225,27 +225,36 @@ CON_COMMAND(sar_cvars_dump, "Dumps all cvars to a file.\n")
     console->Print("Dumped %i cvars to game.cvars!\n", count);
 }
 
-CON_COMMAND(sar_cvarlist, "Lists all SAR cvars.\n")
+CON_COMMAND(sar_cvarlist, "Lists all SAR cvars and unlocked engine cvars.\n")
 {
     console->Msg("Commands:\n");
     for (auto& command : Command::list) {
         if (!!command && command->isRegistered) {
             auto ptr = command->ThisPtr();
             console->Print("\n%s\n", ptr->m_pszName);
-            console->Print("     %s", ptr->m_pszHelpString);
+            console->Msg("     %s", ptr->m_pszHelpString);
         }
     }
     console->Msg("\nVariables:\n");
     for (auto& variable : Variable::list) {
-        if (!!variable && variable->isRegistered) {
-            auto ptr = variable->ThisPtr();
+        if (!variable) {
+            continue;
+        }
+
+        auto ptr = variable->ThisPtr();
+        if (variable->isRegistered) {
             console->Print("\n%s ", ptr->m_pszName);
             if (ptr->m_bHasMin) {
                 console->Print("<number>\n");
             } else {
                 console->Print("<string>\n");
             }
-            console->Print("     %s", ptr->m_pszHelpString);
+            console->Msg("     %s", ptr->m_pszHelpString);
+        } else if (variable->isReference) {
+            console->Print("\n%s (unlocked)\n", ptr->m_pszName);
+            if (std::strlen(ptr->m_pszHelpString) != 0) {
+                console->Msg("     %s\n", ptr->m_pszHelpString);
+            }
         }
     }
 }

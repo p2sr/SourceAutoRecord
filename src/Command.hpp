@@ -1,7 +1,7 @@
 #pragma once
 #include "Modules/Tier1.hpp"
 
-struct Command {
+class Command {
 private:
     ConCommand* ptr;
 

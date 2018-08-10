@@ -172,17 +172,7 @@ public:
     float m_fMinVal; // 56
     bool m_bHasMax; // 60
     float m_fMaxVal; // 64
-#ifdef HL2_OPTIMISATION
     void* m_fnChangeCallback; // 68
-#else
-    // CUtlVector<FnChangeCallback_t> m_fnChangeCallback
-    // CUtlMemory<FnChangeCallback_t> m_Memory
-    void* m_pMemory; // 68
-    int m_nAllocationCount; // 72
-    int m_nGrowSize; // 76
-    int m_Size; // 80
-    void* m_pElements; // 84
-#endif
 
 public:
     ConVar()
@@ -198,24 +188,35 @@ public:
         , m_fMinVal(0)
         , m_bHasMax(0)
         , m_fMaxVal(0)
-#ifdef HL2_OPTIMISATION
         , m_fnChangeCallback(nullptr)
-#else
-        , m_pMemory(nullptr)
-        , m_nAllocationCount(0)
-        , m_nGrowSize(0)
-        , m_Size(0)
-        , m_pElements(nullptr)
-#endif
     {
     }
-
     ~ConVar()
     {
         if (this->m_pszString) {
             delete[] this->m_pszString;
             this->m_pszString = nullptr;
         }
+    }
+};
+
+class ConVar2 : public ConVar {
+public:
+    // CUtlVector<FnChangeCallback_t> m_fnChangeCallback
+    // CUtlMemory<FnChangeCallback_t> m_Memory
+    int m_nAllocationCount; // 72
+    int m_nGrowSize; // 76
+    int m_Size; // 80
+    void* m_pElements; // 84
+
+public:
+    ConVar2()
+        : ConVar()
+        , m_nAllocationCount(0)
+        , m_nGrowSize(0)
+        , m_Size(0)
+        , m_pElements(nullptr)
+    {
     }
 };
 

@@ -29,7 +29,10 @@ DECLARE_AUTOCOMPLETION_FUNCTION(changelevel2, "maps", bsp);
 int sar_workshop_CompletionFunc(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     const char* cmd = "sar_workshop ";
-    char* match = (char*)(partial + std::strlen(cmd));
+    char* match = (char*)partial;
+    if (!std::strstr(cmd, match)) {
+        match = match + std::strlen(cmd);
+    }
 
     if (workshop->maps.size() == 0) {
         workshop->Update();
@@ -38,7 +41,7 @@ int sar_workshop_CompletionFunc(const char* partial, char commands[COMMAND_COMPL
     // Filter items
     std::vector<std::string> items;
     for (auto& map : workshop->maps) {
-        if (std::strlen(match) != 0) {
+        if (std::strlen(match) != std::strlen(cmd)) {
             if (std::strstr(map.c_str(), match)) {
                 items.push_back(map);
             } else {
@@ -79,11 +82,16 @@ CON_COMMAND(sar_workshop_update, "Updates the workshop map list.\n")
 
 CON_COMMAND(sar_workshop_list, "Prints all workshop maps.\n")
 {
+    if (workshop->maps.size() == 0) {
+        workshop->Update();
+    }
+
     for (const auto& map : workshop->maps) {
         console->Print("%s\n", map.c_str());
     }
 }
 
+// P2 Engine only
 CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer.\n")
 {
     auto state = !*Engine::m_bWaitEnabled;
