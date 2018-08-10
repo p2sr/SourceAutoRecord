@@ -1,6 +1,7 @@
 #include "TheBeginnersGuide.hpp"
 
 #include "Game.hpp"
+#include "Offsets.hpp"
 
 TheBeginnersGuide::TheBeginnersGuide()
 {
@@ -9,6 +10,13 @@ TheBeginnersGuide::TheBeginnersGuide()
 void TheBeginnersGuide::LoadOffsets()
 {
     TheStanleyParable::LoadOffsets();
+
+    using namespace Offsets;
+
+    // vguimatsurface.so
+
+    StartDrawing = 692; // CMatSystemSurface::PaintTraverseEx
+    FinishDrawing = 619; // CMatSystemSurface::PaintTraverseEx
 }
 void TheBeginnersGuide::LoadRules()
 {

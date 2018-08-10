@@ -189,24 +189,16 @@ CON_COMMAND(sar_cvars_dump, "Dumps all cvars to a file.\n")
 {
     std::ofstream file("game.cvars", std::ios::out | std::ios::trunc | std::ios::binary);
 
-    auto cmd = tier1->m_pConCommandList->m_pNext;
-
-    if (Game::IsPortal2Engine()) {
-        cmd = cmd->m_pNext;
-        cmd = cmd->m_pNext;
-    }
-
-    typedef bool (*_IsCommand)(void* thisptr);
-    auto IsCommand = reinterpret_cast<_IsCommand>(Memory::VMT(cmd, Offsets::IsCommand));
-
+    auto cmd = tier1->m_pConCommandList;
     auto count = 0;
     do {
         file << cmd->m_pszName;
         file << "[cvar_data]";
 
+        auto IsCommand = reinterpret_cast<bool (*)(void*)>(Memory::VMT(cmd, Offsets::IsCommand));
         if (!IsCommand(cmd)) {
             auto cvar = reinterpret_cast<ConVar*>(cmd);
-            file << cvar->m_nValue;
+            file << cvar->m_pszDefaultValue;
         } else {
             file << "cmd";
         }

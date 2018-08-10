@@ -7,7 +7,7 @@
 #define MODULE(name) name MODULE_EXTENSION
 #define GAME(x) GAME_PATH(x)
 
-static bool endsWith(const std::string& str, const std::string& suffix)
+static bool ends_with(const std::string& str, const std::string& suffix)
 {
     return str.size() >= suffix.size() && !str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }

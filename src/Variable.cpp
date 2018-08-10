@@ -197,6 +197,7 @@ void Variable::Register()
         this->ptr->ConCommandBase_VTable = Tier1::ConVar_VTable;
         this->ptr->ConVar_VTable = Tier1::ConVar_VTable2;
         Tier1::RegisterConCommand(Tier1::g_pCVar->ThisPtr(), this->ptr);
+        Tier1::m_pConCommandList = this->ptr;
     }
 }
 void Variable::Unregister()

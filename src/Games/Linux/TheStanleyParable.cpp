@@ -1,5 +1,6 @@
 #include "TheStanleyParable.hpp"
 
+#include "Game.hpp"
 #include "Offsets.hpp"
 
 TheStanleyParable::TheStanleyParable()
@@ -14,7 +15,6 @@ void TheStanleyParable::LoadOffsets()
 
     // engine.so
 
-    Cbuf_AddText = 45; // CEngineClient::ClientCmd
     s_CommandBuffer = 71; // Cbuf_AddText
     m_bWaitEnabled = 8264; // CCommandBuffer::AddText
     tickcount = 74; // CClientState::ProcessTick

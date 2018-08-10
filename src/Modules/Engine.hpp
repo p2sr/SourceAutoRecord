@@ -290,7 +290,7 @@ DETOUR_COMMAND(plugin_load)
     // the plugin list if the initial search thread failed
     if (args.ArgC() >= 2) {
         auto file = std::string(args[1]);
-        if (endsWith(file, std::string(MODULE("sar"))) || endsWith(file, std::string("sar"))) {
+        if (ends_with(file, std::string(MODULE("sar"))) || ends_with(file, std::string("sar"))) {
             if (plugin->found) {
                 console->Warning("SAR: Plugin already loaded!\n");
             } else if (sar->PluginFound()) {

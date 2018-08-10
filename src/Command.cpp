@@ -48,6 +48,7 @@ void Command::Register()
     if (!this->isRegistered) {
         this->ptr->ConCommandBase_VTable = Tier1::ConCommand_VTable;
         Tier1::RegisterConCommand(Tier1::g_pCVar->ThisPtr(), this->ptr);
+        Tier1::m_pConCommandList = this->ptr;
     }
     this->isRegistered = true;
 }

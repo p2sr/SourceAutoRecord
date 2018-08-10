@@ -1,5 +1,6 @@
 #include "TheStanleyParable.hpp"
 
+#include "Game.hpp"
 #include "Offsets.hpp"
 
 TheStanleyParable::TheStanleyParable()
