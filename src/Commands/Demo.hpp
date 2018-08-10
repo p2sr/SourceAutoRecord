@@ -9,7 +9,7 @@
 #include "Cheats.hpp"
 #include "Command.hpp"
 
-CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "", 0, 0, dem)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "Parses a demo and prints some information about it.", 0, 0, dem)
 {
     if (args.ArgC() != 2) {
         console->Print("sar_time_demo [demo_name] : Parses a demo and prints some information about it.\n");
@@ -46,7 +46,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "", 0, 0, dem)
     }
 }
 
-CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "", 0, 0, dem)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "Parses multiple demos and prints the total sum of them.", 0, 0, dem)
 {
     if (args.ArgC() <= 1) {
         console->Print("sar_time_demos [demo_name] [demo_name2] [etc.] : Parses multiple demos and prints the total sum of them.\n");

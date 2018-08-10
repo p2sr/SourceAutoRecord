@@ -147,7 +147,7 @@ CON_COMMAND(sar_tas_export, "Export TAS replay to a file.\n")
     file.close();
 }
 
-CON_COMMAND_AUTOCOMPLETEFILE(sar_tas_import, "", 0, 0, str)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_tas_import, "Import TAS replay file.", 0, 0, str)
 {
     if (args.ArgC() != 2) {
         console->Print("sar_tas_export <file>: Import TAS replay file.\n");
