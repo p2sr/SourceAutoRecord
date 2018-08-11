@@ -15,9 +15,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{2234E52A-D21C-4984-B830-0D1EBC6842C5}"
 	ProjectSection(SolutionItems) = preProject
-		doc\cp1.png = doc\cp1.png
-		doc\cpstart.png = doc\cpstart.png
-		doc\start.png = doc\start.png
+		doc\issue.md = doc\issue.md
+		doc\mapping.md = doc\mapping.md
+		doc\maps.md = doc\maps.md
+		doc\showcases.md = doc\showcases.md
+		doc\standard.md = doc\standard.md
+		doc\tas.md = doc\tas.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{B82DAA33-1051-496B-A05A-58BB70E8BC02}"
+	ProjectSection(SolutionItems) = preProject
+		doc\images\cp1.png = doc\images\cp1.png
+		doc\images\cpstart.png = doc\images\cpstart.png
+		doc\images\failed_to_load.png = doc\images\failed_to_load.png
+		doc\images\feature_request.png = doc\images\feature_request.png
+		doc\images\game_crashed.png = doc\images\game_crashed.png
+		doc\images\screenie.png = doc\images\screenie.png
+		doc\images\start.png = doc\images\start.png
+		doc\images\unable_to_load_plugin.png = doc\images\unable_to_load_plugin.png
 	EndProjectSection
 EndProject
 Global
@@ -46,6 +61,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{2234E52A-D21C-4984-B830-0D1EBC6842C5} = {4990948C-3306-40BA-9EAD-594A5520043F}
+		{B82DAA33-1051-496B-A05A-58BB70E8BC02} = {2234E52A-D21C-4984-B830-0D1EBC6842C5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FE1A6506-7258-47FF-839A-FF441AAA310C}

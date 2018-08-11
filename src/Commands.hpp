@@ -31,7 +31,7 @@ void Commands::Init()
     sar_speedrun_export_pb.UniqueFor(Game::HasChallengeMode);
     sar_speedrun_import.UniqueFor(Game::HasChallengeMode);
     sar_speedrun_rules.UniqueFor(Game::HasChallengeMode);
-    sar_togglewait.UniqueFor(Game::IsPortal2Engine);
+    sar_togglewait.UniqueFor(Game::HasChallengeMode);
 
     if (game->version == SourceGame::TheStanleyParable
         || game->version == SourceGame::TheBeginnersGuide) {

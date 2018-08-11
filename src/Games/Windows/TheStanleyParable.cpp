@@ -15,8 +15,7 @@ void TheStanleyParable::LoadOffsets()
 
     // engine.dll
 
-    s_CommandBuffer = 71; // Cbuf_AddText (TODO)
-    m_bWaitEnabled = 8264; // CCommandBuffer::AddText (TODO)
+    //m_bWaitEnabled = 8264; // CCommandBuffer::AddText
     tickcount = 103; // CClientState::ProcessTick
     interval_per_tick = 73; // CClientState::ProcessTick
     HostState_OnClientConnected = 695; // CClientState::SetSignonState

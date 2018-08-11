@@ -365,7 +365,9 @@ void Init()
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)ClientCmd + Offsets::Cbuf_AddText, &Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)Cbuf_AddText + Offsets::s_CommandBuffer, &s_CommandBuffer);
-        m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
+        if (game->version == SourceGame::Portal2) {
+            m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
+        }
 
         void* clPtr = nullptr;
         if (Game::IsPortal2Engine()) {

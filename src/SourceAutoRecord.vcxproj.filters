@@ -348,6 +348,9 @@
     <ClInclude Include="Features\Feature.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Cvars.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

@@ -221,6 +221,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Commands\Tas.hpp" />
     <ClInclude Include="Commands\Timer.hpp" />
     <ClInclude Include="Features\Config.hpp" />
+    <ClInclude Include="Features\Cvars.hpp" />
     <ClInclude Include="Features\Demo\Demo.hpp" />
     <ClInclude Include="Features\Demo\DemoParser.hpp" />
     <ClInclude Include="Features\Feature.hpp" />

@@ -91,7 +91,6 @@ CON_COMMAND(sar_workshop_list, "Prints all workshop maps.\n")
     }
 }
 
-// P2 Engine only
 CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer.\n")
 {
     auto state = !*Engine::m_bWaitEnabled;
