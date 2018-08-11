@@ -29,6 +29,7 @@ Portal|✖|✔
 - [Maps](doc/maps.md)
 - [Showcases](doc/showcases.md)
 - [Tool-Assisted-Speedruns](doc/tas.md)
+- [Console Commands & Variables](https://nekzor.github.io/cvars/sar)
 
 ## Inspired By
 - [SourceDemoRender](https://github.com/crashfort/SourceDemoRender)
