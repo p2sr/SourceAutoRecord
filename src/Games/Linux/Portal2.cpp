@@ -34,7 +34,7 @@ void Portal2::LoadOffsets()
     GetRecordingTick = 1; // CDemoRecorder
     SetSignonState = 3; // CDemoRecorder
     StopRecording = 7; // CDemoRecorder
-    GetPlaybackTick = 3; // CDemoPlayer
+    GetPlaybackTick = 4; // CDemoPlayer
     StartPlayback = 6; // CDemoPlayer
     IsPlayingBack = 7; // CDemoPlayer
     m_szFileName = 4; // CDemoPlayer::SkipToTick

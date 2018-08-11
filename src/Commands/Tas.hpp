@@ -8,7 +8,7 @@
 #include "Command.hpp"
 
 CON_COMMAND(sar_tas_frame_at,
-    "Adds command frame to the queue at specified frame. "
+    "Adds command frame to the queue at specified frame.\n"
     "Usage: sar_tas_frame_at <frame> [command_to_execute]\n")
 {
     if (args.ArgC() != 3) {
@@ -20,7 +20,7 @@ CON_COMMAND(sar_tas_frame_at,
 }
 
 CON_COMMAND(sar_tas_frames_at,
-    "Adds command frame multiple times to the queue at specified frame. "
+    "Adds command frame multiple times to the queue at specified frame.\n"
     "Usage: sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute]\n")
 {
     if (args.ArgC() != 5) {
@@ -32,7 +32,7 @@ CON_COMMAND(sar_tas_frames_at,
 }
 
 CON_COMMAND(sar_tas_frame_after,
-    "Adds command frame to the queue after waiting for specified amount of frames. "
+    "Adds command frame to the queue after waiting for specified amount of frames.\n"
     "Usage: sar_tas_frame_after <frames_to_wait> [command_to_execute]\n")
 {
     if (args.ArgC() != 3) {
@@ -44,7 +44,7 @@ CON_COMMAND(sar_tas_frame_after,
 }
 
 CON_COMMAND(sar_tas_frames_after,
-    "Adds command frame multiple times to the queue after waiting for specified amount of frames. "
+    "Adds command frame multiple times to the queue after waiting for specified amount of frames.\n"
     "Usage: sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute]\n")
 {
     if (args.ArgC() != 5) {

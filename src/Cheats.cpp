@@ -5,19 +5,26 @@
 #include "Game.hpp"
 
 Variable sar_autorecord("sar_autorecord", "0", "Enables automatic demo recording.\n");
-Variable sar_save_flag("sar_save_flag", "#SAVE#", "Echo message when using sar_bind_save. "
-                                                  "Default is \"#SAVE#\", a SourceRuns standard. "
+Variable sar_save_flag("sar_save_flag", "#SAVE#", "Echo message when using sar_bind_save.\n"
+                                                  "Default is \"#SAVE#\", a SourceRuns standard.\n"
                                                   "Keep this empty if no echo message should be binded.\n",
     0);
-Variable sar_time_demo_dev("sar_time_demo_dev", "0", 0, "Printing mode when using sar_time_demo. "
-                                                        "0 = default, 1 = console commands, 2 = console commands & packets.\n");
+Variable sar_time_demo_dev("sar_time_demo_dev", "0", 0, "Printing mode when using sar_time_demo.\n"
+                                                        "0 = default,\n"
+                                                        "1 = console commands,\n"
+                                                        "2 = console commands & packets.\n");
 Variable sar_sum_during_session("sar_sum_during_session", "1", "Updates the summary counter automatically during a session.\n");
 Variable sar_timer_always_running("sar_timer_always_running", "1", "Timer will save current value when disconnecting.\n");
 Variable sar_hud_text("sar_hud_text", "", "Draws specified text when not empty.\n", 0);
 Variable sar_hud_position("sar_hud_position", "0", 0, "Draws absolute position of the client.\n");
-Variable sar_hud_angles("sar_hud_angles", "0", 0, "Draws absolute view angles of the client. "
-                                                  "0 = default, 1 = xy, 2 = xyz.\n");
-Variable sar_hud_velocity("sar_hud_velocity", "0", 0, "Draws velocity of the client. 0 = default, 1 = x/y/z , 2 = x/y\n");
+Variable sar_hud_angles("sar_hud_angles", "0", 0, "Draws absolute view angles of the client.\n"
+                                                  "0 = default,\n"
+                                                  "1 = xy,\n"
+                                                  "2 = xyz.\n");
+Variable sar_hud_velocity("sar_hud_velocity", "0", 0, "Draws velocity of the client.\n"
+                                                      "0 = default,\n"
+                                                      "1 = x/y/z,\n"
+                                                      "2 = x/y\n");
 Variable sar_hud_session("sar_hud_session", "0", "Draws current session tick.\n");
 Variable sar_hud_last_session("sar_hud_last_session", "0", "Draws value of latest completed session.\n");
 Variable sar_hud_sum("sar_hud_sum", "0", "Draws summary value of sessions.\n");
@@ -31,7 +38,9 @@ Variable sar_hud_steps("sar_hud_steps", "0", "Draws total step count.\n");
 Variable sar_hud_jump("sar_hud_jump", "0", "Draws current jump distance.\n");
 Variable sar_hud_jump_peak("sar_hud_jump_peak", "0", "Draws longest jump distance.\n");
 Variable sar_hud_trace("sar_hud_trace", "0", 0, "Draws distance values of tracer. "
-                                                "0 = default, 1 = vec3, 2 = vec2.\n");
+                                                "0 = default,\n"
+                                                "1 = vec3,\n"
+                                                "2 = vec2.\n");
 Variable sar_hud_frame("sar_hud_frame", "0", "Draws current frame count.\n");
 Variable sar_hud_last_frame("sar_hud_last_frame", "0", "Draws last saved frame value.\n");
 Variable sar_hud_velocity_peak("sar_hud_velocity_peak", "0", "Draws last saved velocity peak.\n");
@@ -40,11 +49,11 @@ Variable sar_hud_default_padding_x("sar_hud_default_padding_x", "2", 0, "X paddi
 Variable sar_hud_default_padding_y("sar_hud_default_padding_y", "2", 0, "Y padding of HUD.\n");
 Variable sar_hud_default_font_index("sar_hud_default_font_index", "0", 0, "Font index of HUD.\n");
 Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 255", "RGBA font color of HUD.\n", 0);
-Variable sar_ihud("sar_ihud", "0", 0, "Draws keyboard events of client. "
-                                      "0 = default, "
-                                      "1 = forward;back;moveleft;moveright, "
-                                      "2 = 1 + duck;jump;use, "
-                                      "3 = 2 + attack;attack2, "
+Variable sar_ihud("sar_ihud", "0", 0, "Draws keyboard events of client.\n"
+                                      "0 = default,\n"
+                                      "1 = forward;back;moveleft;moveright,\n"
+                                      "2 = 1 + duck;jump;use,\n"
+                                      "3 = 2 + attack;attack2,\n"
                                       "4 = 3 + speed;reload.\n");
 Variable sar_ihud_x("sar_ihud_x", "0", 0, "X offset of input HUD.\n");
 Variable sar_ihud_y("sar_ihud_y", "0", 0, "Y offset of input HUD.\n");
@@ -53,9 +62,19 @@ Variable sar_ihud_button_size("sar_ihud_button_size", "60", 0, "Button size of i
 Variable sar_ihud_button_color("sar_ihud_button_color", "0 0 0 233", "RGBA button color of input HUD.\n", 0);
 Variable sar_ihud_font_color("sar_ihud_font_color", "255 255 255 255", "RGBA font color of input HUD.\n", 0);
 Variable sar_ihud_font_index("sar_ihud_font_index", "1", 0, "Font index of input HUD.\n");
-Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD. "
-                                                           "Characters are in this order: forward, back, moveleft, moveright, "
-                                                           "duck, jump, use, attack, attack2, speed, reload. "
+Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD.\n"
+                                                           "Characters are in this order:\n"
+                                                           "forward,\n"
+                                                           "back,\n"
+                                                           "moveleft,\n"
+                                                           "moveright,\n"
+                                                           "duck,\n"
+                                                           "jump,\n"
+                                                           "use,\n"
+                                                           "attack,\n"
+                                                           "attack2,\n"
+                                                           "speed,\n"
+                                                           "reload.\n"
                                                            "Keep it empty to disable drawing characters.\n",
     0);
 Variable sar_ihud_shadow("sar_ihud_shadow", "1", "Draws button shadows of input HUD.\n");
@@ -68,14 +87,16 @@ Variable sar_sr_hud_font_color("sar_sr_hud_font_color", "255 255 255 255", "RGBA
 Variable sar_sr_hud_font_index("sar_sr_hud_font_index", "70", 0, "Font index of speedrun timer HUD.\n");
 Variable sar_stats_jumps_xy("sar_stats_jumps_xy", "0", "Saves jump distance as 2D vector.\n");
 Variable sar_stats_velocity_peak_xy("sar_stats_velocity_peak_xy", "0", "Saves velocity peak as 2D vector.\n");
-Variable sar_stats_auto_reset("sar_stats_auto_reset", "0", 0, "Resets all stats automatically. "
-                                                              "0 = default, "
-                                                              "1 = restart or disconnect only, "
-                                                              "2 = any load & sar_timer_start. "
+Variable sar_stats_auto_reset("sar_stats_auto_reset", "0", 0, "Resets all stats automatically.\n"
+                                                              "0 = default,\n"
+                                                              "1 = restart or disconnect only,\n"
+                                                              "2 = any load & sar_timer_start.\n"
                                                               "Note: Portal counter is not part of the \"stats\" feature.\n");
 Variable sar_autojump("sar_autojump", "0", "Enables automatic jumping on the server.\n");
-Variable sar_jumpboost("sar_jumpboost", "0", 0, "Enables special game movement on the server. "
-                                                "0 = Default, 1 = Orange Box Engine, 2 = Pre-OBE\n");
+Variable sar_jumpboost("sar_jumpboost", "0", 0, "Enables special game movement on the server.\n"
+                                                "0 = Default,\n"
+                                                "1 = Orange Box Engine,\n"
+                                                "2 = Pre-OBE\n");
 Variable sar_aircontrol("sar_aircontrol", "0",
 #ifdef _WIN32
     0,

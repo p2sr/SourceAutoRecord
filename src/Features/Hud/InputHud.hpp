@@ -154,7 +154,7 @@ void InputHud::Draw()
     surface->FinishDrawing();
 }
 
-CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD. "
+CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD.\n"
                              "Usage: sar_ihud_setpos <top, center or bottom> <left, center or right>\n")
 {
     if (args.ArgC() != 3) {

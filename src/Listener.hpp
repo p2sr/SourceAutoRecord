@@ -62,7 +62,11 @@ void Listener::FireGameEvent(IGameEvent* ev)
     if (sar_debug_game_events.GetBool()) {
         console->Print("[%i] Event fired: %s\n", Engine::GetSessionTick(), ev->GetName());
         if (Engine::ConPrintEvent) {
+#ifdef _WIN32
             Engine::ConPrintEvent(ev);
+#else
+            Engine::ConPrintEvent(Engine::s_GameEventManager->ThisPtr(), ev);
+#endif
         }
     }
 

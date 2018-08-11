@@ -7,7 +7,8 @@
 #include "Command.hpp"
 
 CON_COMMAND(sar_bind_save,
-    "Automatic save rebinding when server has loaded. File indexing will be synced when recording demos. "
+    "Automatic save rebinding when server has loaded.\n"
+    "File indexing will be synced when recording demos.\n"
     "Usage: sar_bind_save <key> [save_name]\n")
 {
     if (args.ArgC() != 3) {
@@ -33,7 +34,8 @@ CON_COMMAND(sar_bind_save,
 }
 
 CON_COMMAND(sar_bind_reload,
-    "Automatic save-reload rebinding when server has loaded. File indexing will be synced when recording demos. "
+    "Automatic save-reload rebinding when server has loaded.\n"
+    "File indexing will be synced when recording demos.\n"
     "Usage: sar_bind_reload <key> [save_name]\n")
 {
     if (args.ArgC() != 3) {

@@ -9,6 +9,7 @@
 #include "Modules/VGui.hpp"
 
 #include "Features/Config.hpp"
+#include "Features/Cvars.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/WorkshopList.hpp"
 
@@ -42,6 +43,7 @@ public:
                 sar->features->AddFeature<StepCounter>(&stepCounter);
                 sar->features->AddFeature<SpeedrunTimer>(&speedrun);
                 sar->features->AddFeature<Rebinder>(&rebinder);
+                sar->features->AddFeature<Cvars>(&cvars);
 
                 game->LoadRules();
 
@@ -169,6 +171,15 @@ CON_COMMAND(sar_session, "Prints the current tick of the server since it has loa
     }
 }
 
+CON_COMMAND(sar_about, "Prints info about this tool.\n")
+{
+    console->Print("SourceAutoRecord tells the engine to keep recording when loading a save.\n");
+    console->Print("More information at: %s\n", sar->Website());
+    console->Print("Game: %s\n", game->Version());
+    console->Print("Version: %s\n", sar->Version());
+    console->Print("Build: %s\n", sar->Build());
+}
+
 CON_COMMAND(sar_cvars_save, "Saves important SAR cvars.\n")
 {
     if (!config->Save()) {
@@ -188,76 +199,15 @@ CON_COMMAND(sar_cvars_load, "Loads important SAR cvars.\n")
 CON_COMMAND(sar_cvars_dump, "Dumps all cvars to a file.\n")
 {
     std::ofstream file("game.cvars", std::ios::out | std::ios::trunc | std::ios::binary);
-
-    auto cmd = tier1->m_pConCommandList;
-    auto count = 0;
-    do {
-        file << cmd->m_pszName;
-        file << "[cvar_data]";
-
-        auto IsCommand = reinterpret_cast<bool (*)(void*)>(Memory::VMT(cmd, Offsets::IsCommand));
-        if (!IsCommand(cmd)) {
-            auto cvar = reinterpret_cast<ConVar*>(cmd);
-            file << cvar->m_pszDefaultValue;
-        } else {
-            file << "cmd";
-        }
-        file << "[cvar_data]";
-
-        file << cmd->m_nFlags;
-        file << "[cvar_data]";
-        file << cmd->m_pszHelpString;
-        file << "[end_of_cvar]";
-        ++count;
-
-    } while (cmd = cmd->m_pNext);
-
+    auto result = cvars->Dump(file);
     file.close();
 
-    console->Print("Dumped %i cvars to game.cvars!\n", count);
+    console->Print("Dumped %i cvars to game.cvars!\n", result);
 }
 
 CON_COMMAND(sar_cvarlist, "Lists all SAR cvars and unlocked engine cvars.\n")
 {
-    console->Msg("Commands:\n");
-    for (auto& command : Command::list) {
-        if (!!command && command->isRegistered) {
-            auto ptr = command->ThisPtr();
-            console->Print("\n%s\n", ptr->m_pszName);
-            console->Msg("     %s", ptr->m_pszHelpString);
-        }
-    }
-    console->Msg("\nVariables:\n");
-    for (auto& variable : Variable::list) {
-        if (!variable) {
-            continue;
-        }
-
-        auto ptr = variable->ThisPtr();
-        if (variable->isRegistered) {
-            console->Print("\n%s ", ptr->m_pszName);
-            if (ptr->m_bHasMin) {
-                console->Print("<number>\n");
-            } else {
-                console->Print("<string>\n");
-            }
-            console->Msg("     %s", ptr->m_pszHelpString);
-        } else if (variable->isReference) {
-            console->Print("\n%s (unlocked)\n", ptr->m_pszName);
-            if (std::strlen(ptr->m_pszHelpString) != 0) {
-                console->Msg("     %s\n", ptr->m_pszHelpString);
-            }
-        }
-    }
-}
-
-CON_COMMAND(sar_about, "Prints info about this tool.\n")
-{
-    console->Print("SourceAutoRecord tells the engine to keep recording when loading a save.\n");
-    console->Print("More information at: %s\n", sar->Website());
-    console->Print("Game: %s\n", game->Version());
-    console->Print("Version: %s\n", sar->Version());
-    console->Print("Build: %s\n", sar->Build());
+    cvars->ListAll();
 }
 
 CON_COMMAND(sar_rename, "Changes your name.\n")

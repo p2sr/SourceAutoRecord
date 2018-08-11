@@ -35,7 +35,7 @@ void HalfLife2::LoadOffsets()
     m_szDemoBaseName = 1348; // CDemoRecorder::StartupDemoFile
     m_nDemoNumber = 1612; // CDemoRecorder::StartupDemoFile
     m_bRecording = 1610; // CDemoRecorder::SetSignonState
-    GetPlaybackTick = 3; // CDemoPlayer
+    GetPlaybackTick = 4; // CDemoPlayer
     StartPlayback = 6; // CDemoPlayer
     IsPlayingBack = 7; // CDemoPlayer
     m_szFileName = 4; // CDemoPlayer::SkipToTick

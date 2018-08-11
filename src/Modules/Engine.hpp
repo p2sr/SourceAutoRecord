@@ -1,9 +1,12 @@
 #pragma once
+#include <stdarg.h>
+
 #include "Console.hpp"
 #include "DemoPlayer.hpp"
 #include "DemoRecorder.hpp"
 #include "Tier1.hpp"
 
+#include "Features/Cvars.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats.hpp"
@@ -43,11 +46,12 @@ using _AddText = void(__func*)(void* thisptr, const char* pText, int nTickDelay)
 #ifdef _WIN32
 using _GetActiveSplitScreenPlayerSlot = int (*)();
 using _ScreenPosition = int(__stdcall*)(const Vector& point, Vector& screen);
+using _ConPrintEvent = int(__stdcall*)(IGameEvent* ev);
 #else
 using _GetActiveSplitScreenPlayerSlot = int (*)(void* thisptr);
 using _ScreenPosition = int(__stdcall*)(void* thisptr, const Vector& point, Vector& screen);
+using _ConPrintEvent = int(__cdecl*)(void* thisptr, IGameEvent* ev);
 #endif
-using _ConPrintEvent = int(__stdcall*)(IGameEvent* ev);
 
 _GetScreenSize GetScreenSize;
 _ClientCmd ClientCmd;
@@ -73,6 +77,15 @@ bool* m_bWaitEnabled;
 void ExecuteCommand(const char* cmd)
 {
     ClientCmd(engine->ThisPtr(), cmd);
+}
+void ClientCommand(const char* fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+    char data[1024];
+    vsnprintf(data, sizeof(data), fmt, argptr);
+    va_end(argptr);
+    ClientCmd(engine->ThisPtr(), data);
 }
 int GetSessionTick()
 {
@@ -122,96 +135,119 @@ int PointToScreen(const Vector& point, Vector& screen)
 bool isInSession = false;
 unsigned currentFrame = 0;
 unsigned lastFrame = 0;
-int prevSignonState = 0;
 HOSTSTATES prevState;
 
-void SessionStarted()
+void SessionStarted(bool menu = false)
 {
-    if (GetMaxClients() <= 1) {
-        console->Print("Session Started!\n");
+    if (isInSession) {
+        return;
+    }
+
+    if (menu) {
+        console->Print("Session started! (menu)\n");
         Session::Rebase(*tickcount);
-        Timer::Rebase(*tickcount);
         speedrun->Unpause(tickcount);
-    }
-
-    if (rebinder->IsSaveBinding || rebinder->IsReloadBinding) {
-        if (DemoRecorder::IsRecordingDemo) {
-            rebinder->UpdateIndex(*DemoRecorder::m_nDemoNumber);
-        } else {
-            rebinder->UpdateIndex(rebinder->LastIndexNumber + 1);
+    } else {
+        if (GetMaxClients() <= 1) {
+            console->Print("Session Started!\n");
+            Session::Rebase(*tickcount);
+            Timer::Rebase(*tickcount);
+            speedrun->Unpause(tickcount);
         }
 
-        rebinder->RebindSave();
-        rebinder->RebindReload();
-    }
-
-    if (sar_tas_autostart.GetBool()) {
-        TAS::Start();
-    }
-    if (sar_tas_autorecord.GetBool()) {
-        TAS2::StartRecording();
-    }
-    if (sar_tas_autoplay.GetBool()) {
-        TAS2::StartPlaying();
-    }
-
-    stepCounter->ResetTimer();
-    isInSession = true;
-    currentFrame = 0;
-}
-void SessionEnded()
-{
-    if (!DemoPlayer::IsPlaying() && isInSession) {
-        int tick = GetSessionTick();
-
-        if (tick != 0) {
-            console->Print("Session: %i (%.3f)\n", tick, Engine::ToTime(tick));
-            Session::LastSession = tick;
-        }
-
-        if (Summary::IsRunning) {
-            Summary::Add(tick, Engine::ToTime(tick), m_szLevelName);
-            console->Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::ToTime(Summary::TotalTicks));
-        }
-
-        if (Timer::IsRunning) {
-            if (sar_timer_always_running.GetBool()) {
-                Timer::Save(*tickcount);
-                console->Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::ToTime(Timer::TotalTicks));
+        if (rebinder->IsSaveBinding || rebinder->IsReloadBinding) {
+            if (DemoRecorder::IsRecordingDemo) {
+                rebinder->UpdateIndex(*DemoRecorder::m_nDemoNumber);
             } else {
-                Timer::Stop(*tickcount);
-                console->Print("Timer stopped!\n");
+                rebinder->UpdateIndex(rebinder->LastIndexNumber + 1);
             }
+
+            rebinder->RebindSave();
+            rebinder->RebindReload();
         }
 
-        auto reset = sar_stats_auto_reset.GetInt();
-        if ((reset == 1 && !*m_bLoadgame) || reset >= 2) {
-            stats->ResetAll();
+        if (sar_tas_autostart.GetBool()) {
+            TAS::Start();
+        }
+        if (sar_tas_autorecord.GetBool()) {
+            TAS2::StartRecording();
+        }
+        if (sar_tas_autoplay.GetBool()) {
+            TAS2::StartPlaying();
         }
 
-        DemoRecorder::CurrentDemo = "";
-        lastFrame = currentFrame;
+        stepCounter->ResetTimer();
         currentFrame = 0;
     }
 
+    isInSession = true;
+}
+void SessionEnded()
+{
+    if (!isInSession) {
+        return;
+    }
+
+    int tick = GetSessionTick();
+
+    if (tick != 0) {
+        console->Print("Session: %i (%.3f)\n", tick, Engine::ToTime(tick));
+        Session::LastSession = tick;
+    }
+
+    if (Summary::IsRunning) {
+        Summary::Add(tick, Engine::ToTime(tick), m_szLevelName);
+        console->Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::ToTime(Summary::TotalTicks));
+    }
+
+    if (Timer::IsRunning) {
+        if (sar_timer_always_running.GetBool()) {
+            Timer::Save(*tickcount);
+            console->Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::ToTime(Timer::TotalTicks));
+        } else {
+            Timer::Stop(*tickcount);
+            console->Print("Timer stopped!\n");
+        }
+    }
+
+    auto reset = sar_stats_auto_reset.GetInt();
+    if ((reset == 1 && !*m_bLoadgame) || reset >= 2) {
+        stats->ResetAll();
+    }
+
+    DemoRecorder::CurrentDemo = "";
+    lastFrame = currentFrame;
+    currentFrame = 0;
+
     TAS::Reset();
     TAS2::Stop();
-    isInSession = false;
     speedrun->Pause();
+
+    isInSession = false;
 }
 void SessionChanged(int state)
 {
     console->DevMsg("state = %i\n", state);
-    if (state != prevSignonState && prevSignonState == SignonState::Full) {
-        SessionEnded();
-    }
 
     // Demo recorder starts syncing from this tick
     if (state == SignonState::Full) {
         SessionStarted();
+    } else {
+        SessionEnded();
     }
+}
+void SessionChanged()
+{
+    console->DevMsg("m_currentState = %i\n", hoststate->m_currentState);
 
-    prevSignonState = state;
+    if (hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_SP
+        || hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_MP
+        || hoststate->m_currentState == HOSTSTATES::HS_GAME_SHUTDOWN) {
+        SessionEnded();
+    } else if (hoststate->m_currentState == HOSTSTATES::HS_RUN
+        && !hoststate->m_activeGame) {
+        SessionStarted(true);
+    }
 }
 void SafeUnload(const char* postCommand = nullptr)
 {
@@ -264,16 +300,7 @@ DETOUR(SetSignonState2, int state, int count)
 DETOUR(Frame)
 {
     if (hoststate->m_currentState != prevState) {
-        console->DevMsg("m_currentState = %i\n", hoststate->m_currentState);
-        if (hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_SP) {
-            SessionEnded();
-        } else if (hoststate->m_currentState == HOSTSTATES::HS_RUN
-            && !hoststate->m_activeGame
-            && !DemoPlayer::IsPlaying()) {
-            console->Print("Session started! (menu)\n");
-            Session::Rebase(*tickcount);
-            speedrun->Unpause(tickcount);
-        }
+        SessionChanged();
     }
     prevState = hoststate->m_currentState;
 
@@ -318,6 +345,10 @@ DETOUR_COMMAND(exit)
 DETOUR_COMMAND(quit)
 {
     SafeUnload("quit");
+}
+DETOUR_COMMAND(help)
+{
+    cvars->PrintHelp(args);
 }
 
 void Init()
@@ -419,6 +450,7 @@ void Init()
     HOOK_COMMAND(plugin_unload);
     HOOK_COMMAND(exit);
     HOOK_COMMAND(quit);
+    HOOK_COMMAND(help);
 }
 void Shutdown()
 {
@@ -434,6 +466,7 @@ void Shutdown()
     UNHOOK_COMMAND(plugin_unload);
     UNHOOK_COMMAND(exit);
     UNHOOK_COMMAND(quit);
+    UNHOOK_COMMAND(help);
 
     DemoPlayer::Shutdown();
     DemoRecorder::Shutdown();
