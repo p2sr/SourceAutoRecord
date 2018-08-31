@@ -238,7 +238,7 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 
     sar->modules->ShutdownAll();
 
-    if (sar->PluginFound()) {
+    if (sar->GetPlugin()) {
         // SAR has to unhook CEngine some ticks before unloading the module
         auto unload = std::string("plugin_unload ") + std::to_string(plugin->index);
         Engine::SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);

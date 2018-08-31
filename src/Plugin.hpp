@@ -12,7 +12,6 @@ class Plugin {
 public:
     CPlugin* ptr;
     int index;
-    bool found;
 
 public:
     Plugin();
