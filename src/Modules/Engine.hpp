@@ -9,11 +9,12 @@
 #include "Features/Cvars.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Stats.hpp"
+#include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
-#include "Features/Tas.hpp"
-#include "Features/Timer.hpp"
+#include "Features/Tas/CommandQueuer.hpp"
+#include "Features/Tas/ReplaySystem.hpp"
+#include "Features/Timer/Timer.hpp"
 
 #include "Cheats.hpp"
 #include "Game.hpp"
@@ -89,7 +90,7 @@ void ClientCommand(const char* fmt, ...)
 }
 int GetSessionTick()
 {
-    int result = *tickcount - Session::BaseTick;
+    int result = *tickcount - session->baseTick;
     return (result >= 0) ? result : 0;
 }
 float ToTime(int tick)
@@ -145,21 +146,27 @@ void SessionStarted(bool menu = false)
 
     if (menu) {
         console->Print("Session started! (menu)\n");
-        Session::Rebase(*tickcount);
-        speedrun->Unpause(tickcount);
+        session->Rebase(*tickcount);
+
+        if (sar_speedrun_autostop.GetBool()) {
+            speedrun->Stop(false);
+        } else {
+            speedrun->Unpause(tickcount);
+        }
     } else {
         if (GetMaxClients() <= 1) {
             console->Print("Session Started!\n");
-            Session::Rebase(*tickcount);
-            Timer::Rebase(*tickcount);
+            session->Rebase(*tickcount);
+            timer->Rebase(*tickcount);
+
             speedrun->Unpause(tickcount);
         }
 
-        if (rebinder->IsSaveBinding || rebinder->IsReloadBinding) {
+        if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
             if (DemoRecorder::IsRecordingDemo) {
                 rebinder->UpdateIndex(*DemoRecorder::m_nDemoNumber);
             } else {
-                rebinder->UpdateIndex(rebinder->LastIndexNumber + 1);
+                rebinder->UpdateIndex(rebinder->lastIndexNumber + 1);
             }
 
             rebinder->RebindSave();
@@ -167,13 +174,16 @@ void SessionStarted(bool menu = false)
         }
 
         if (sar_tas_autostart.GetBool()) {
-            TAS::Start();
+            tasQueuer->Start();
         }
         if (sar_tas_autorecord.GetBool()) {
-            TAS2::StartRecording();
+            tasReplaySystem->StartRecording();
         }
         if (sar_tas_autoplay.GetBool()) {
-            TAS2::StartPlaying();
+            tasReplaySystem->StartPlaying();
+        }
+        if (sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
+            speedrun->Start(tickcount);
         }
 
         stepCounter->ResetTimer();
@@ -192,20 +202,20 @@ void SessionEnded()
 
     if (tick != 0) {
         console->Print("Session: %i (%.3f)\n", tick, Engine::ToTime(tick));
-        Session::LastSession = tick;
+        session->lastSession = tick;
     }
 
-    if (Summary::IsRunning) {
-        Summary::Add(tick, Engine::ToTime(tick), m_szLevelName);
-        console->Print("Total: %i (%.3f)\n", Summary::TotalTicks, Engine::ToTime(Summary::TotalTicks));
+    if (summary->isRunning) {
+        summary->Add(tick, Engine::ToTime(tick), m_szLevelName);
+        console->Print("Total: %i (%.3f)\n", summary->totalTicks, Engine::ToTime(summary->totalTicks));
     }
 
-    if (Timer::IsRunning) {
+    if (timer->isRunning) {
         if (sar_timer_always_running.GetBool()) {
-            Timer::Save(*tickcount);
-            console->Print("Timer paused: %i (%.3f)!\n", Timer::TotalTicks, Engine::ToTime(Timer::TotalTicks));
+            timer->Save(*tickcount);
+            console->Print("Timer paused: %i (%.3f)!\n", timer->totalTicks, Engine::ToTime(timer->totalTicks));
         } else {
-            Timer::Stop(*tickcount);
+            timer->Stop(*tickcount);
             console->Print("Timer stopped!\n");
         }
     }
@@ -219,8 +229,8 @@ void SessionEnded()
     lastFrame = currentFrame;
     currentFrame = 0;
 
-    TAS::Stop();
-    TAS2::Stop();
+    tasQueuer->Stop();
+    tasReplaySystem->Stop();
     speedrun->Pause();
 
     isInSession = false;
@@ -330,7 +340,7 @@ DETOUR_COMMAND(plugin_load)
 }
 DETOUR_COMMAND(plugin_unload)
 {
-    if (args.ArgC() >= 2 && atoi(args[1]) == plugin->index) {
+    if (args.ArgC() >= 2 && sar->GetPlugin() && atoi(args[1]) == plugin->index) {
         SafeUnload();
     } else {
         Original::plugin_unload_callback(args);

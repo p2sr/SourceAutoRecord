@@ -1,9 +1,14 @@
 #include "StepCounter.hpp"
 
-#include "Stats.hpp"
+#include "Stats/Stats.hpp"
 
 #include "Utils/SDK.hpp"
 
+StepCounter::StepCounter()
+    : stepSoundTime(0)
+{
+    this->hasLoaded = true;
+}
 // Calculate when to play next step sound
 void StepCounter::ReduceTimer(float frametime)
 {

@@ -25,3 +25,7 @@ const char* TheBeginnersGuide::Version()
 {
     return "The Beginners Guide (6172)";
 }
+const char* TheBeginnersGuide::Process()
+{
+    return "beginnersguide.bin";
+}

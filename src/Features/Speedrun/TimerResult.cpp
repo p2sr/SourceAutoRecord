@@ -20,6 +20,7 @@ void TimerResult::NewSplit(const int started, const char* map)
 }
 void TimerResult::EndSplit(const int finished)
 {
+    this->total = finished;
     this->curSplit->finished = finished;
     this->splits.push_back(this->curSplit);
 }
@@ -30,7 +31,7 @@ void TimerResult::Split(const int ticks, const char* map)
 }
 void TimerResult::AddSegment(int ticks)
 {
-    this->curSplit->segments.push_back(TimerSegment { ticks });
+    this->curSplit->segments.push_back(TimerSegment{ ticks });
 }
 void TimerResult::UpdateSplit(char* map)
 {
@@ -46,14 +47,18 @@ void TimerResult::Reset()
     this->total = 0;
     this->prevSplit = nullptr;
 
-    if (this->curSplit) {
-        delete this->curSplit;
-        this->curSplit = nullptr;
-    }
-
+    auto deleted = false;
     for (auto it = this->splits.begin(); it != this->splits.end();) {
+        if (*it == this->curSplit) {
+            deleted = true;
+        }
         delete *it;
         it = this->splits.erase(it);
+    }
+
+    if (!deleted && this->curSplit) {
+        delete this->curSplit;
+        this->curSplit = nullptr;
     }
 }
 TimerResult::~TimerResult()

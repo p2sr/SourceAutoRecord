@@ -1,12 +1,14 @@
 #pragma once
+#include "Feature.hpp"
 
-namespace Session {
+class Session : public Feature {
+public:
+    int baseTick;
+    int lastSession;
 
-int BaseTick = 0;
-int LastSession = 0;
+public:
+    Session();
+    void Rebase(const int from);
+};
 
-void Rebase(int from)
-{
-    BaseTick = from;
-}
-}
+extern Session* session;

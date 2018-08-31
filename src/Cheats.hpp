@@ -60,6 +60,8 @@ extern Variable sar_tas_autorecord;
 extern Variable sar_tas_autoplay;
 extern Variable sar_debug_event_queue;
 extern Variable sar_debug_game_events;
+extern Variable sar_speedrun_autostart;
+extern Variable sar_speedrun_autostop;
 
 extern Variable cl_showpos;
 extern Variable sv_cheats;

@@ -10,7 +10,15 @@
 
 #include "Features/Config.hpp"
 #include "Features/Cvars.hpp"
+#include "Features/Routing/Tracer.hpp"
+#include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Stats/Stats.hpp"
+#include "Features/Summary.hpp"
+#include "Features/Tas/CommandQueuer.hpp"
+#include "Features/Tas/ReplaySystem.hpp"
+#include "Features/Teleporter.hpp"
+#include "Features/Timer/Timer.hpp"
 #include "Features/WorkshopList.hpp"
 
 #include "Cheats.hpp"
@@ -44,6 +52,14 @@ public:
                 sar->features->AddFeature<SpeedrunTimer>(&speedrun);
                 sar->features->AddFeature<Rebinder>(&rebinder);
                 sar->features->AddFeature<Cvars>(&cvars);
+                sar->features->AddFeature<CommandQueuer>(&tasQueuer);
+                sar->features->AddFeature<ReplaySystem>(&tasReplaySystem);
+                sar->features->AddFeature<Session>(&session);
+                sar->features->AddFeature<Tracer>(&tracer);
+                sar->features->AddFeature<Teleporter>(&teleporter);
+                sar->features->AddFeature<Config>(&config);
+                sar->features->AddFeature<Summary>(&summary);
+                sar->features->AddFeature<Timer>(&timer);
 
                 game->LoadRules();
 
@@ -63,16 +79,14 @@ public:
                 Client::Init();
                 Server::Init();
 
-                config = new Config();
-                config->Load();
-
                 if (game->version == SourceGame::Portal2) {
                     listener = new Listener();
                     listener->Init();
-                    //listener->DumpGameEvents();
 
                     sar->features->AddFeature<WorkshopList>(&workshop);
                 }
+
+                config->Load();
 
                 sar->SearchPlugin();
 

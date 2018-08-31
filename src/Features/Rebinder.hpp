@@ -7,15 +7,15 @@
 
 class Rebinder : public Feature {
 public:
-    int SaveButton;
-    int ReloadButton;
-    std::string SaveName;
-    std::string ReloadName;
-    bool IsSaveBinding;
-    bool IsReloadBinding;
+    int saveButton;
+    int reloadButton;
+    std::string saveName;
+    std::string reloadName;
+    bool isSaveBinding;
+    bool isReloadBinding;
     // Syncing index between binds
     // Demo recorder can overwrite this
-    int LastIndexNumber;
+    int lastIndexNumber;
 
 public:
     Rebinder();
@@ -29,66 +29,71 @@ public:
 };
 
 Rebinder::Rebinder()
-    : SaveButton(0)
-    , ReloadButton(0)
-    , SaveName()
-    , ReloadName()
-    , IsSaveBinding(false)
-    , IsReloadBinding(false)
-    , LastIndexNumber(0)
+    : saveButton(0)
+    , reloadButton(0)
+    , saveName()
+    , reloadName()
+    , isSaveBinding(false)
+    , isReloadBinding(false)
+    , lastIndexNumber(0)
 {
+    this->hasLoaded = true;
 }
 void Rebinder::SetSaveBind(int button, const char* name)
 {
-    SaveButton = button;
-    SaveName = std::string(name);
-    IsSaveBinding = true;
+    this->saveButton = button;
+    this->saveName = std::string(name);
+    this->isSaveBinding = true;
 }
 void Rebinder::SetReloadBind(int button, const char* name)
 {
-    ReloadButton = button;
-    ReloadName = std::string(name);
-    IsReloadBinding = true;
+    this->reloadButton = button;
+    this->reloadName = std::string(name);
+    this->isReloadBinding = true;
 }
 void Rebinder::ResetSaveBind()
 {
-    IsSaveBinding = false;
-    inputSystem->KeySetBinding(SaveButton, "");
+    this->isSaveBinding = false;
+    inputSystem->KeySetBinding(this->saveButton, "");
 }
 void Rebinder::ResetReloadBind()
 {
-    IsReloadBinding = true;
-    inputSystem->KeySetBinding(ReloadButton, "");
+    this->isReloadBinding = true;
+    inputSystem->KeySetBinding(this->reloadButton, "");
 }
 void Rebinder::RebindSave()
 {
-    if (!IsSaveBinding)
+    if (!this->isSaveBinding)
         return;
 
-    std::string cmd = (LastIndexNumber > 0)
-        ? std::string("save \"") + SaveName + std::string("_") + std::to_string(LastIndexNumber) + std::string("\"")
-        : std::string("save \"") + SaveName + std::string("\"");
+    std::string cmd = std::string("save \"") + this->saveName;
+    if (this->lastIndexNumber > 0) {
+        cmd += std::string("_") + std::to_string(lastIndexNumber);
+    }
+
+    cmd += std::string("\"");
 
     if (sar_save_flag.GetString()[0] != '\0')
         cmd += std::string(";echo \"") + std::string(sar_save_flag.GetString()) + std::string("\"");
 
-    inputSystem->KeySetBinding(SaveButton, cmd.c_str());
+    inputSystem->KeySetBinding(this->saveButton, cmd.c_str());
 }
 void Rebinder::RebindReload()
 {
-    if (!IsReloadBinding)
+    if (!this->isReloadBinding)
         return;
 
-    std::string cmd = (LastIndexNumber > 0)
-        ? std::string("save \"") + ReloadName + std::string("_") + std::to_string(LastIndexNumber) + std::string("\"")
-        : std::string("save \"") + ReloadName + std::string("\"");
+    std::string cmd = std::string("save \"") + this->reloadName;
+    if (this->lastIndexNumber > 0) {
+        cmd += std::string("_") + std::to_string(this->lastIndexNumber);
+    }
 
-    cmd += std::string(";reload");
-    inputSystem->KeySetBinding(ReloadButton, cmd.c_str());
+    cmd += std::string("\";reload");
+    inputSystem->KeySetBinding(this->reloadButton, cmd.c_str());
 }
 void Rebinder::UpdateIndex(int newIndex)
 {
-    LastIndexNumber = newIndex;
+    this->lastIndexNumber = newIndex;
 }
 
 Rebinder* rebinder;

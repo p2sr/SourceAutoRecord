@@ -39,33 +39,18 @@ bool Game::IsSupported()
 {
     auto proc = Memory::GetProcessName();
 
-#ifdef _WIN32
-    if (proc == "portal2.exe") {
+    if (proc == Portal2::Process()) {
         game = new Portal2();
     }
-    if (proc == "hl2.exe") {
+    if (proc == HalfLife2::Process()) {
         game = new HalfLife2();
     }
-    if (proc == "stanley.exe") {
+    if (proc == TheStanleyParable::Process()) {
         game = new TheStanleyParable();
     }
-    if (proc == "beginnersguide.exe") {
+    if (proc == TheBeginnersGuide::Process()) {
         game = new TheBeginnersGuide();
     }
-#else
-    if (proc == "portal2_linux") {
-        game = new Portal2();
-    }
-    if (proc == "hl2_linux") {
-        game = new HalfLife2();
-    }
-    if (proc == "stanley_linux") {
-        game = new TheStanleyParable();
-    }
-    if (proc == "beginnersguide.bin") {
-        game = new TheBeginnersGuide();
-    }
-#endif
 
     if (game) {
         game->LoadOffsets();

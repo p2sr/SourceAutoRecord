@@ -130,3 +130,7 @@ const char* HalfLife2::Version()
         ? "Half-Life 2 (2257546)"
         : "Portal (1910503)";
 }
+const char* HalfLife2::Process()
+{
+    return "hl2_linux";
+}

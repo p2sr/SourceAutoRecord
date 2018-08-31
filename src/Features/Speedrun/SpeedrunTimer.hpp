@@ -38,7 +38,7 @@ public:
     void Pause();
     void Unpause(const int* engineTicks);
     void Update(const int* engineTicks, const char* engineMap);
-    void Stop();
+    void Stop(bool addSegment = true);
     void AddRule(TimerRule rule);
     std::vector<TimerRule> GetRules();
     void CheckRules(const EventQueuePrioritizedEvent_t* event, const int* engineTicks);

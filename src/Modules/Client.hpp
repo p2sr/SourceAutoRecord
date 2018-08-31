@@ -3,7 +3,8 @@
 #include "Engine.hpp"
 
 #include "Features/Hud/InputHud.hpp"
-#include "Features/Tas.hpp"
+#include "Features/Tas/CommandQueuer.hpp"
+#include "Features/Tas/ReplaySystem.hpp"
 
 #include "Cheats.hpp"
 #include "Game.hpp"
@@ -57,13 +58,13 @@ int GetFlags()
 // CHLClient::HudUpdate
 DETOUR(HudUpdate, unsigned int a2)
 {
-    if (TAS::IsRunning) {
-        for (auto&& tas = TAS::Frames.begin(); tas != TAS::Frames.end();) {
+    if (tasQueuer->isRunning) {
+        for (auto&& tas = tasQueuer->frames.begin(); tas != tasQueuer->frames.end();) {
             tas->FramesLeft--;
             if (tas->FramesLeft <= 0) {
                 console->DevMsg("[%i] %s\n", Engine::currentFrame, tas->Command.c_str());
                 Engine::ExecuteCommand(tas->Command.c_str());
-                tas = TAS::Frames.erase(tas);
+                tas = tasQueuer->frames.erase(tas);
             } else {
                 ++tas;
             }
@@ -80,10 +81,10 @@ DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd)
     inputHud->SetButtonBits(cmd->buttons);
 
     if (cmd->command_number) {
-        if (TAS2::IsPlaying) {
-            TAS2::Play(cmd);
-        } else if (TAS2::IsRecording) {
-            TAS2::Record(cmd);
+        if (tasReplaySystem->isPlaying) {
+            tasReplaySystem->Play(cmd);
+        } else if (tasReplaySystem->isRecording) {
+            tasReplaySystem->Record(cmd);
         }
     }
 

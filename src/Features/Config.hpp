@@ -2,13 +2,15 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
+#include "Feature.hpp"
+
 #include "Cheats.hpp"
 #include "Utils.hpp"
 
 #define SAVE_CVAR(cvar, value) \
     file << #cvar " " << cvar.Get##value() << "\n";
 
-class Config {
+class Config : public Feature {
 public:
     std::string filePath;
 
@@ -21,6 +23,7 @@ public:
 Config::Config()
     : filePath("/cfg/_sar_cvars.cfg")
 {
+    this->hasLoaded = true;
 }
 bool Config::Save()
 {

@@ -1,16 +1,17 @@
 #pragma once
 #include "Modules/Client.hpp"
 
-#include "Features/Stats.hpp"
+#include "Features/Stats/Stats.hpp"
+#include "Features/Stats/StatsResultType.hpp"
 
 #include "Command.hpp"
 
 CON_COMMAND(sar_stats_jump, "Prints jump stats.\n")
 {
     std::string type;
-    if (stats->jumps->type == ResultType::VEC2) {
+    if (stats->jumps->type == StatsResultType::VEC2) {
         type = std::string(" (vec2)");
-    } else if (stats->jumps->type == ResultType::VEC3) {
+    } else if (stats->jumps->type == StatsResultType::VEC3) {
         type = std::string(" (vec2)");
     }
 
@@ -29,9 +30,9 @@ CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
     auto current = Client::GetLocalVelocity();
 
     std::string type;
-    if (stats->velocity->type == ResultType::VEC2) {
+    if (stats->velocity->type == StatsResultType::VEC2) {
         type = std::string(" (vec2)");
-    } else if (stats->velocity->type == ResultType::VEC3) {
+    } else if (stats->velocity->type == StatsResultType::VEC3) {
         type = std::string(" (vec2)");
     }
 

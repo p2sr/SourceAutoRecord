@@ -96,12 +96,15 @@ void SpeedrunTimer::Update(const int* engineTicks, const char* engineMap)
         this->liveSplit.get()->Update(this);
     }
 }
-void SpeedrunTimer::Stop()
+void SpeedrunTimer::Stop(bool addSegment)
 {
     if (this->IsActive()) {
+        console->Print("Speedrun stopped!\n");
         this->liveSplit.get()->SetAction(TimerAction::End);
         this->state = TimerState::NotRunning;
-        this->result.get()->AddSegment(this->session);
+        if (addSegment) {
+            this->result.get()->AddSegment(this->session);
+        }
         this->result.get()->EndSplit(this->total);
     }
 }

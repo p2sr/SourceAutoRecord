@@ -42,3 +42,7 @@ const char* TheStanleyParable::Version()
 {
     return "The Stanley Parable (5454)";
 }
+const char* TheStanleyParable::Process()
+{
+    return "stanley.exe";
+}

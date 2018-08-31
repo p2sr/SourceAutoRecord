@@ -1,14 +1,15 @@
 #pragma once
 #include "Commands/Binding.hpp"
+#include "Commands/CommandQueuer.hpp"
 #include "Commands/Demo.hpp"
 #include "Commands/Exclusive.hpp"
-#include "Commands/Routing.hpp"
+#include "Commands/ReplaySystem.hpp"
 #include "Commands/Speedrun.hpp"
 #include "Commands/Stats.hpp"
 #include "Commands/Summary.hpp"
-#include "Commands/Tas.hpp"
 #include "Commands/Teleporter.hpp"
 #include "Commands/Timer.hpp"
+#include "Commands/Tracer.hpp"
 
 #include "Game.hpp"
 

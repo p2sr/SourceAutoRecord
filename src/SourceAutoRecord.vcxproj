@@ -215,10 +215,11 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Commands\Binding.hpp" />
     <ClInclude Include="Commands\Teleporter.hpp" />
     <ClInclude Include="Commands\Demo.hpp" />
-    <ClInclude Include="Commands\Routing.hpp" />
+    <ClInclude Include="Commands\Routing\Tracer.hpp" />
     <ClInclude Include="Commands\Stats.hpp" />
     <ClInclude Include="Commands\Summary.hpp" />
-    <ClInclude Include="Commands\Tas.hpp" />
+    <ClInclude Include="Commands\CommandQueuer.hpp" />
+    <ClInclude Include="Commands\ReplaySystem.hpp" />
     <ClInclude Include="Commands\Timer.hpp" />
     <ClInclude Include="Features\Config.hpp" />
     <ClInclude Include="Features\Cvars.hpp" />
@@ -229,7 +230,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\Hud\InputHud.hpp" />
     <ClInclude Include="Features\Hud\SpeedrunHud.hpp" />
     <ClInclude Include="Features\Rebinder.hpp" />
-    <ClInclude Include="Features\Routing.hpp" />
+    <ClInclude Include="Features\Routing\Tracer.hpp" />
     <ClInclude Include="Features\Session.hpp" />
     <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp" />
     <ClInclude Include="Features\Speedrun\TimerAction.hpp" />
@@ -241,7 +242,8 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\Stats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
-    <ClInclude Include="Features\Tas.hpp" />
+    <ClInclude Include="Commands\Tas\CommandQueuer.hpp" />
+    <ClInclude Include="Commands\Tas\ReplaySystem.hpp" />
     <ClInclude Include="Features\Teleporter.hpp" />
     <ClInclude Include="Features\Timer.hpp" />
     <ClInclude Include="Features\TimerAverage.hpp" />

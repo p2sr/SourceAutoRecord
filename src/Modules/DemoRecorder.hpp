@@ -3,7 +3,7 @@
 
 #include "Features/Rebinder.hpp"
 #include "Features/Session.hpp"
-#include "Features/Timer.hpp"
+#include "Features/Timer/Timer.hpp"
 
 #include "Offsets.hpp"
 #include "Utils.hpp"

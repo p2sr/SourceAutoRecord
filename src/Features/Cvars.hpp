@@ -12,11 +12,16 @@
 
 class Cvars : public Feature {
 public:
+    Cvars();
     void ListAll();
     int Dump(std::ofstream& file);
     void PrintHelp(const CCommand& args);
 };
 
+Cvars::Cvars()
+{
+    this->hasLoaded = true;
+}
 int Cvars::Dump(std::ofstream& file)
 {
     auto cmd = tier1->m_pConCommandList;

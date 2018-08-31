@@ -25,7 +25,7 @@ CON_COMMAND(sar_bind_save,
         return;
     }
 
-    if (rebinder->IsReloadBinding && button == rebinder->ReloadButton) {
+    if (rebinder->isReloadBinding && button == rebinder->reloadButton) {
         rebinder->ResetReloadBind();
     }
 
@@ -52,7 +52,7 @@ CON_COMMAND(sar_bind_reload,
         return;
     }
 
-    if (rebinder->IsSaveBinding && button == rebinder->SaveButton) {
+    if (rebinder->isSaveBinding && button == rebinder->saveButton) {
         rebinder->ResetSaveBind();
     }
 
@@ -63,7 +63,7 @@ CON_COMMAND(sar_bind_reload,
 CON_COMMAND(sar_unbind_save,
     "Unbinds current save rebinder.\n")
 {
-    if (!rebinder->IsSaveBinding) {
+    if (!rebinder->isSaveBinding) {
         console->Print("There's nothing to unbind.\n");
         return;
     }
@@ -73,7 +73,7 @@ CON_COMMAND(sar_unbind_save,
 CON_COMMAND(sar_unbind_reload,
     "Unbinds current save-reload rebinder.\n")
 {
-    if (!rebinder->IsReloadBinding) {
+    if (!rebinder->isReloadBinding) {
         console->Print("There's nothing to unbind.\n");
         return;
     }

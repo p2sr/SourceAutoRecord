@@ -8,7 +8,11 @@ SRCS=$(wildcard $(SDIR)*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Demo/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Hud/*.cpp)
+SRCS+=$(wildcard $(SDIR)Features/Routing/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Speedrun/*.cpp)
+SRCS+=$(wildcard $(SDIR)Features/Stats/*.cpp)
+SRCS+=$(wildcard $(SDIR)Features/Tas/*.cpp)
+SRCS+=$(wildcard $(SDIR)Features/Timer/*.cpp)
 SRCS+=$(wildcard $(SDIR)Games/Linux/*.cpp)
 SRCS+=$(wildcard $(SDIR)Modules/*.cpp)
 OBJS=$(patsubst $(SDIR)%.cpp, $(ODIR)%.o, $(SRCS))
@@ -23,10 +27,10 @@ all: dirs | sar
 sar: $(OBJS)
 	$(CC) $(CFLAGS) -o $(BINARY) $^ -lstdc++fs
 	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal 2/$(BINARY)"
-	@$(EXPORT) "$(BINARY)" "$(STEAM)The Stanley Parable/$(BINARY)"
-	@$(EXPORT) "$(BINARY)" "$(STEAM)The Beginners Guide/$(BINARY)"
-	@$(EXPORT) "$(BINARY)" "$(STEAM)Half-Life 2/$(BINARY)"
-	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal/$(BINARY)"
+	#@$(EXPORT) "$(BINARY)" "$(STEAM)The Stanley Parable/$(BINARY)"
+	#@$(EXPORT) "$(BINARY)" "$(STEAM)The Beginners Guide/$(BINARY)"
+	#@$(EXPORT) "$(BINARY)" "$(STEAM)Half-Life 2/$(BINARY)"
+	#@$(EXPORT) "$(BINARY)" "$(STEAM)Portal/$(BINARY)"
 
 $(ODIR)%.o: $(SDIR)%.cpp $(SDIR)%.hpp
 	@echo $@
@@ -43,6 +47,10 @@ dirs:
 	@mkdir -p $(ODIR)Features/
 	@mkdir -p $(ODIR)Features/Demo/
 	@mkdir -p $(ODIR)Features/Hud/
+	@mkdir -p $(ODIR)Features/Routing/
 	@mkdir -p $(ODIR)Features/Speedrun/
+	@mkdir -p $(ODIR)Features/Stats/
+	@mkdir -p $(ODIR)Features/Tas/
+	@mkdir -p $(ODIR)Features/Timer/
 	@mkdir -p $(ODIR)Games/Linux/
 	@mkdir -p $(ODIR)Modules/

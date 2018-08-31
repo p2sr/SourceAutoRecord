@@ -108,6 +108,8 @@ Variable sar_tas_autorecord("sar_tas_autorecord", "0", "Starts recording inputs 
 Variable sar_tas_autoplay("sar_tas_autoplay", "1", "Starts playing back recorded inputs on first frame after a load.\n");
 Variable sar_debug_event_queue("sar_debug_event_queue", "0", "Prints entitity events when they are fired, similar to developer.\n");
 Variable sar_debug_game_events("sar_debug_game_events", "0", "Prints game event data, similar to net_showevents.\n");
+Variable sar_speedrun_autostart("sar_speedrun_autostart", "0", "Starts speedrun timer automatically on first frame after a load.\n");
+Variable sar_speedrun_autostop("sar_speedrun_autostop", "0", "Stops speedrun timer automatically when going into the menu.\n");
 
 Variable cl_showpos;
 Variable sv_cheats;

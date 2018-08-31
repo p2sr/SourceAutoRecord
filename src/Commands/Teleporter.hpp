@@ -9,8 +9,8 @@
 CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
 {
     if (sv_cheats.GetBool()) {
-        if (Teleporter::IsSet) {
-            Teleporter::Teleport();
+        if (teleporter->isSet) {
+            teleporter->Teleport();
         } else {
             console->Print("Location not set. Use sar_teleport_setpos.\n");
         }
@@ -21,5 +21,5 @@ CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
 
 CON_COMMAND(sar_teleport_setpos, "Saves current location for teleportation.\n")
 {
-    Teleporter::Save();
+    teleporter->Save();
 }

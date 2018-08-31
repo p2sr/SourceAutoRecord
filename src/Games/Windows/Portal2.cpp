@@ -139,13 +139,12 @@ void Portal2::LoadRules()
         "camera_intro",
         "TeleportToView",
         TimerAction::Start));
-    speedrun->AddRule(TimerRule(
-        "sp_a4_finale4",
-        "transition_portal2",
-        "TODO",
-        TimerAction::End));
 }
 const char* Portal2::Version()
 {
     return "Portal 2 (7054)";
+}
+const char* Portal2::Process()
+{
+    return "portal2.exe";
 }

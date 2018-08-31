@@ -189,8 +189,8 @@
     <ClInclude Include="Features\Rebinder.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Routing.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
+    <ClInclude Include="Features\Routing\Tracer.hpp">
+      <Filter>SourceAutoRecord\Features\Tracer</Filter>
     </ClInclude>
     <ClInclude Include="Features\Session.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
@@ -204,8 +204,11 @@
     <ClInclude Include="Features\Summary.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
-    <ClInclude Include="Features\TAS.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
+    <ClInclude Include="Features\Tas\CommandQueuer.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\ReplaySystem.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
     <ClInclude Include="Features\Teleporter.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
@@ -255,7 +258,7 @@
     <ClInclude Include="Commands\Demo.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
-    <ClInclude Include="Commands\Routing.hpp">
+    <ClInclude Include="Commands\Tracer.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
     <ClInclude Include="Commands\Stats.hpp">
@@ -264,7 +267,10 @@
     <ClInclude Include="Commands\Summary.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
-    <ClInclude Include="Commands\TAS.hpp">
+    <ClInclude Include="Commands\CommandQueuer.hpp">
+      <Filter>SourceAutoRecord\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands\ReplaySystem.hpp">
       <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
     <ClInclude Include="Commands\Timer.hpp">

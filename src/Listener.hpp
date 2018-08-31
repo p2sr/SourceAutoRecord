@@ -3,7 +3,7 @@
 
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Timer.hpp"
+#include "Features/Timer/Timer.hpp"
 
 #include "Utils.hpp"
 
@@ -74,8 +74,8 @@ void Listener::FireGameEvent(IGameEvent* ev)
         // TODO: Start when orange spawns?
         if (!std::strcmp(ev->GetName(), "player_spawn_orange")) {
             console->Print("Detected cooperative spawn!\n");
-            Session::Rebase(*Engine::tickcount);
-            Timer::Rebase(*Engine::tickcount);
+            session->Rebase(*Engine::tickcount);
+            timer->Rebase(*Engine::tickcount);
             speedrun->Unpause(Engine::tickcount);
         }
     }

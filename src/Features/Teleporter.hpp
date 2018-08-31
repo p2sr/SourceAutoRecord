@@ -2,27 +2,43 @@
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 
+#include "Features/Feature.hpp"
+
 #include "Utils.hpp"
 
-namespace Teleporter {
+class Teleporter : public Feature {
+public:
+    bool isSet;
+    Vector origin;
+    QAngle angles;
 
-bool IsSet;
+public:
+    Teleporter();
+    void Save();
+    void Teleport();
+};
 
-Vector Origin;
-QAngle Angles;
-
-void Save()
+Teleporter::Teleporter()
+    : isSet(false)
+    , origin()
+    , angles()
 {
-    IsSet = true;
-    Origin = Client::GetAbsOrigin();
-    Angles = Engine::GetAngles();
-    console->Print("Saved location: %.3f %.3f %.3f\n", Origin.x, Origin.y, Origin.z);
+    this->hasLoaded = true;
 }
-void Teleport()
+void Teleporter::Save()
 {
-    Engine::SetAngles(Angles);
+    this->isSet = true;
+    this->origin = Client::GetAbsOrigin();
+    this->angles = Engine::GetAngles();
+    console->Print("Saved location: %.3f %.3f %.3f\n", this->origin.x, this->origin.y, this->origin.z);
+}
+void Teleporter::Teleport()
+{
+    Engine::SetAngles(this->angles);
     char setpos[64];
-    snprintf(setpos, sizeof(setpos), "setpos %f %f %f", Origin.x, Origin.y, Origin.z);
+    snprintf(setpos, sizeof(setpos), "setpos %f %f %f", this->origin.x, this->origin.y, this->origin.z);
     Engine::ExecuteCommand(setpos);
 }
-}
+
+Teleporter* teleporter;
+extern Teleporter* teleporter;

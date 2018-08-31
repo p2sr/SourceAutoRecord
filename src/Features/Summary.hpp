@@ -1,31 +1,22 @@
 #pragma once
-
-namespace Summary {
+#include "Feature.hpp"
 
 struct SummaryItem {
-    int Ticks;
-    float Time;
-    char* Map;
+    int ticks;
+    float time;
+    char* map;
 };
 
-bool IsRunning;
+class Summary : public Feature {
+public:
+    bool isRunning;
+    std::vector<SummaryItem> items;
+    int totalTicks;
 
-std::vector<SummaryItem> Items;
+public:
+    Summary();
+    void Start();
+    void Add(int ticks, float time, char* map);
+};
 
-int TotalTicks;
-
-void Start()
-{
-    Items.clear();
-    TotalTicks = 0;
-    IsRunning = true;
-}
-void Add(int ticks, float time, char* map)
-{
-    Items.push_back(SummaryItem{
-        ticks,
-        time,
-        map });
-    TotalTicks += ticks;
-}
-}
+extern Summary* summary;

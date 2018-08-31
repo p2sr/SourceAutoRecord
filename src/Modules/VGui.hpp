@@ -7,13 +7,13 @@
 
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
-#include "Features/Routing.hpp"
+#include "Features/Routing/Tracer.hpp"
 #include "Features/Session.hpp"
-#include "Features/Stats.hpp"
+#include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
-#include "Features/Timer.hpp"
-#include "Features/TimerAverage.hpp"
-#include "Features/TimerCheckPoints.hpp"
+#include "Features/Timer/Timer.hpp"
+#include "Features/Timer/TimerAverage.hpp"
+#include "Features/Timer/TimerCheckPoints.hpp"
 
 #include "Cheats.hpp"
 #include "Game.hpp"
@@ -96,28 +96,28 @@ DETOUR(Paint, int mode)
         DrawElement("session: %i (%.3f)", tick, time);
     }
     if (sar_hud_last_session.GetBool()) {
-        DrawElement("last session: %i (%.3f)", Session::LastSession, Engine::ToTime(Session::LastSession));
+        DrawElement("last session: %i (%.3f)", session->lastSession, Engine::ToTime(session->lastSession));
     }
     if (sar_hud_sum.GetBool()) {
-        if (Summary::IsRunning && sar_sum_during_session.GetBool()) {
+        if (summary->isRunning && sar_sum_during_session.GetBool()) {
             auto tick = (Engine::isInSession) ? Engine::GetSessionTick() : 0;
             auto time = Engine::ToTime(tick);
-            DrawElement("sum: %i (%.3f)", Summary::TotalTicks + tick, Engine::ToTime(Summary::TotalTicks) + time);
+            DrawElement("sum: %i (%.3f)", summary->totalTicks + tick, Engine::ToTime(summary->totalTicks) + time);
         } else {
-            DrawElement("sum: %i (%.3f)", Summary::TotalTicks, Engine::ToTime(Summary::TotalTicks));
+            DrawElement("sum: %i (%.3f)", summary->totalTicks, Engine::ToTime(summary->totalTicks));
         }
     }
     // Timer
     if (sar_hud_timer.GetBool()) {
-        auto tick = (!Timer::IsPaused) ? Timer::GetTick(*Engine::tickcount) : Timer::TotalTicks;
+        auto tick = (!timer->isPaused) ? timer->GetTick(*Engine::tickcount) : timer->totalTicks;
         auto time = Engine::ToTime(tick);
         DrawElement("timer: %i (%.3f)", tick, time);
     }
     if (sar_hud_avg.GetBool()) {
-        DrawElement("avg: %i (%.3f)", Timer::Average::AverageTicks, Timer::Average::AverageTime);
+        DrawElement("avg: %i (%.3f)", timer->avg->averageTicks, timer->avg->averageTime);
     }
     if (sar_hud_cps.GetBool()) {
-        DrawElement("last cp: %i (%.3f)", Timer::CheckPoints::LatestTick, Timer::CheckPoints::LatestTime);
+        DrawElement("last cp: %i (%.3f)", timer->cps->latestTick, timer->cps->latestTime);
     }
     // Demo
     if (sar_hud_demo.GetBool()) {
@@ -154,10 +154,10 @@ DETOUR(Paint, int mode)
     }
     // Routing
     if (sar_hud_trace.GetBool()) {
-        auto xyz = Routing::Tracer::GetDifferences();
+        auto xyz = tracer->GetDifferences();
         auto result = (sar_hud_trace.GetInt() == 1)
-            ? Routing::Tracer::GetResult(Routing::Tracer::ResultType::VEC3)
-            : Routing::Tracer::GetResult(Routing::Tracer::ResultType::VEC2);
+            ? tracer->GetResult(TracerResultType::VEC3)
+            : tracer->GetResult(TracerResultType::VEC2);
         DrawElement("trace: %.3f (%.3f/%.3f/%.3f)", result, std::get<0>(xyz), std::get<1>(xyz), std::get<2>(xyz));
     }
     if (sar_hud_frame.GetBool()) {

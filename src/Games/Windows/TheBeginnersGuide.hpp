@@ -7,4 +7,6 @@ public:
     void LoadOffsets() override;
     void LoadRules() override;
     const char* Version() override;
+
+    static const char* Process();
 };
