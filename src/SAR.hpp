@@ -9,7 +9,7 @@
 #include "Interface.hpp"
 #include "Plugin.hpp"
 
-#define SAR_VERSION "1.7"
+#define SAR_VERSION "1.8"
 #define SAR_BUILD __TIME__ " " __DATE__
 #define SAR_WEB "https://nekzor.github.io/SourceAutoRecord"
 
