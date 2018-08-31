@@ -10,13 +10,13 @@
 
 CON_COMMAND(sar_trace_a, "Saves location A for tracing.\n")
 {
-    tracer->Start(Client::GetAbsOrigin());
+    tracer->Start(client->GetAbsOrigin());
     console->Print("Saved location A for tracing!\n");
 }
 
 CON_COMMAND(sar_trace_b, "Saves location B for tracing.\n")
 {
-    tracer->Stop(Client::GetAbsOrigin());
+    tracer->Stop(client->GetAbsOrigin());
     console->Print("Saved location B for tracing!\n");
 }
 

@@ -18,6 +18,7 @@ void Modules::ShutdownAll()
 {
     for (const auto& mod : this->list) {
         mod->Shutdown();
+        mod->hasLoaded = false;
     }
 }
 void Modules::DeleteAll()

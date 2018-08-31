@@ -15,7 +15,7 @@ CON_COMMAND(sar_timer_start, "Starts timer.\n")
         console->DevMsg("Restarting timer!\n");
     else
         console->DevMsg("Starting timer!\n");
-    timer->Start(*Engine::tickcount);
+    timer->Start(*engine->tickcount);
 
     if (sar_stats_auto_reset.GetInt() >= 2) {
         stats->ResetAll();
@@ -29,18 +29,18 @@ CON_COMMAND(sar_timer_stop, "Stops timer.\n")
         return;
     }
 
-    timer->Stop(*Engine::tickcount);
+    timer->Stop(*engine->tickcount);
 
     if (timer->avg->isEnabled) {
-        int tick = timer->GetTick(*Engine::tickcount);
-        timer->avg->Add(tick, Engine::ToTime(tick), Engine::m_szLevelName);
+        int tick = timer->GetTick(*engine->tickcount);
+        timer->avg->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
     }
 }
 
 CON_COMMAND(sar_timer_result, "Prints result of timer.\n")
 {
-    int tick = timer->GetTick(*Engine::tickcount);
-    float time = Engine::ToTime(tick);
+    int tick = timer->GetTick(*engine->tickcount);
+    float time = engine->ToTime(tick);
 
     if (timer->isRunning) {
         console->PrintActive("Result: %i (%.3f)\n", tick, time);
@@ -89,8 +89,8 @@ CON_COMMAND(sar_cps_add, "Saves current time of timer.\n")
         return;
     }
 
-    int tick = timer->GetTick(Engine::GetSessionTick());
-    timer->cps->Add(tick, Engine::ToTime(tick), Engine::m_szLevelName);
+    int tick = timer->GetTick(engine->GetSessionTick());
+    timer->cps->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
 }
 
 CON_COMMAND(sar_cps_clear, "Resets saved times of timer.\n")
@@ -121,8 +121,8 @@ CON_COMMAND(sar_cps_result, "Prints result of timer checkpoints.\n")
     }
 
     if (!timer->isRunning) {
-        int tick = timer->GetTick(*Engine::tickcount);
-        float time = Engine::ToTime(tick);
+        int tick = timer->GetTick(*engine->tickcount);
+        float time = engine->ToTime(tick);
         console->Print("Result: %i (%.3f)\n", tick, time);
     }
 }

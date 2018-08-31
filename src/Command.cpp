@@ -92,3 +92,43 @@ Command* Command::Find(const char* name)
 }
 
 std::vector<Command*> Command::list;
+
+bool Command::Hook(const char* name, _CommandCallback detour, _CommandCallback* original)
+{
+    auto cc = Command(name);
+    if (!!cc) {
+        *original = cc.ThisPtr()->m_fnCommandCallback;
+        cc.ThisPtr()->m_fnCommandCallback = detour;
+        return true;
+    }
+    return false;
+}
+bool Command::Unhook(const char* name, _CommandCallback original)
+{
+    auto cc = Command(name);
+    if (!!cc && original) {
+        cc.ThisPtr()->m_fnCommandCallback = original;
+        return true;
+    }
+    return false;
+}
+bool Command::ActivateAutoCompleteFile(const char* name, _CommandCompletionCallback callback)
+{
+    auto cc = Command(name);
+    if (!!cc) {
+        cc.ThisPtr()->m_bHasCompletionCallback = true;
+        cc.ThisPtr()->m_fnCompletionCallback = callback;
+        return true;
+    }
+    return false;
+}
+bool Command::DectivateAutoCompleteFile(const char* name)
+{
+    auto cc = Command(name);
+    if (!!cc) {
+        cc.ThisPtr()->m_bHasCompletionCallback = false;
+        cc.ThisPtr()->m_fnCompletionCallback = nullptr;
+        return true;
+    }
+    return false;
+}

@@ -33,9 +33,9 @@ Listener::Listener()
 }
 void Listener::Init()
 {
-    if (Engine::AddListener) {
+    if (engine->AddListener) {
         for (const auto& event : EVENTS) {
-            auto result = Engine::AddListener(Engine::s_GameEventManager->ThisPtr(), this, event, true);
+            auto result = engine->AddListener(engine->s_GameEventManager->ThisPtr(), this, event, true);
             if (result) {
                 //console->DevMsg("SAR: Added event listener for %s!\n", event);
             } else {
@@ -46,8 +46,8 @@ void Listener::Init()
 }
 void Listener::Shutdown()
 {
-    if (Engine::RemoveListener) {
-        Engine::RemoveListener(Engine::s_GameEventManager->ThisPtr(), this);
+    if (engine->RemoveListener) {
+        engine->RemoveListener(engine->s_GameEventManager->ThisPtr(), this);
     }
 }
 Listener::~Listener()
@@ -60,23 +60,23 @@ void Listener::FireGameEvent(IGameEvent* ev)
         return;
 
     if (sar_debug_game_events.GetBool()) {
-        console->Print("[%i] Event fired: %s\n", Engine::GetSessionTick(), ev->GetName());
-        if (Engine::ConPrintEvent) {
+        console->Print("[%i] Event fired: %s\n", engine->GetSessionTick(), ev->GetName());
+        if (engine->ConPrintEvent) {
 #ifdef _WIN32
-            Engine::ConPrintEvent(ev);
+            engine->ConPrintEvent(ev);
 #else
-            Engine::ConPrintEvent(Engine::s_GameEventManager->ThisPtr(), ev);
+            engine->ConPrintEvent(engine->s_GameEventManager->ThisPtr(), ev);
 #endif
         }
     }
 
-    if (Engine::GetMaxClients() >= 2) {
+    if (engine->GetMaxClients() >= 2) {
         // TODO: Start when orange spawns?
         if (!std::strcmp(ev->GetName(), "player_spawn_orange")) {
             console->Print("Detected cooperative spawn!\n");
-            session->Rebase(*Engine::tickcount);
-            timer->Rebase(*Engine::tickcount);
-            speedrun->Unpause(Engine::tickcount);
+            session->Rebase(*engine->tickcount);
+            timer->Rebase(*engine->tickcount);
+            speedrun->Unpause(engine->tickcount);
         }
     }
 }
@@ -86,11 +86,11 @@ int Listener::GetEventDebugID()
 }
 void Listener::DumpGameEvents()
 {
-    if (!Engine::s_GameEventManager) {
+    if (!engine->s_GameEventManager) {
         return;
     }
 
-    auto s_GameEventManager = reinterpret_cast<uintptr_t>(Engine::s_GameEventManager->ThisPtr());
+    auto s_GameEventManager = reinterpret_cast<uintptr_t>(engine->s_GameEventManager->ThisPtr());
     auto m_Size = *reinterpret_cast<int*>(s_GameEventManager + CGameEventManager_m_Size);
     console->Print("m_Size = %i\n", m_Size);
     if (m_Size > 0) {

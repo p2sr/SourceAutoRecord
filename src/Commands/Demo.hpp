@@ -1,6 +1,6 @@
 #pragma once
 #include "Modules/Console.hpp"
-#include "Modules/DemoRecorder.hpp"
+#include "Modules/EngineDemoRecorder.hpp"
 #include "Modules/Tier1.hpp"
 
 #include "Features/Demo/Demo.hpp"
@@ -18,8 +18,8 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "Parses a demo and prints some infor
 
     std::string name;
     if (args[1][0] == '\0') {
-        if (Engine::DemoPlayer::DemoName[0] != '\0') {
-            name = std::string(Engine::DemoPlayer::DemoName);
+        if (engine->demoplayer->DemoName[0] != '\0') {
+            name = std::string(engine->demoplayer->DemoName);
         } else {
             console->Print("No demo was recorded or played back!\n");
             return;
@@ -32,7 +32,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "Parses a demo and prints some infor
     parser.outputMode = sar_time_demo_dev.GetInt();
 
     Demo demo;
-    auto dir = std::string(Engine::GetGameDirectory()) + std::string("/") + name;
+    auto dir = std::string(engine->GetGameDirectory()) + std::string("/") + name;
     if (parser.Parse(dir, &demo)) {
         parser.Adjust(&demo);
         console->Print("Demo:     %s\n", name.c_str());
@@ -61,7 +61,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "Parses multiple demos and prints t
     parser.outputMode = sar_time_demo_dev.GetInt();
 
     std::string name;
-    std::string dir = std::string(Engine::GetGameDirectory()) + std::string("/");
+    std::string dir = std::string(engine->GetGameDirectory()) + std::string("/");
     for (int i = 1; i < args.ArgC(); i++) {
         name = std::string(args[i]);
 

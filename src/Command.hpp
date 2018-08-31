@@ -19,14 +19,23 @@ public:
     Command(const char* name);
     Command(const char* pName, _CommandCallback callback, const char* pHelpString, int flags = 0,
         _CommandCompletionCallback completionFunc = nullptr);
+
     ConCommand* ThisPtr();
+
     void UniqueFor(_ShouldRegisterCallback callback);
     void Register();
     void Unregister();
+
     bool operator!();
+
     static int RegisterAll();
     static void UnregisterAll();
     static Command* Find(const char* name);
+
+    static bool Hook(const char* name, _CommandCallback detour, _CommandCallback* original);
+    static bool Unhook(const char* name, _CommandCallback original);
+    static bool ActivateAutoCompleteFile(const char* name, _CommandCompletionCallback callback);
+    static bool DectivateAutoCompleteFile(const char* name);
 };
 
 #define CON_COMMAND(name, description)                           \
@@ -59,35 +68,8 @@ public:
     DECLARE_AUTOCOMPLETION_FUNCTION(name, subdirectory, extension)                      \
     CON_COMMAND_F_COMPLETION(name, description, flags, AUTOCOMPLETION_FUNCTION(name))
 
-#define DETOUR_COMMAND(name)                        \
-    namespace Original {                            \
-        _CommandCallback name##_callback;           \
-    }                                               \
-    namespace Detour {                              \
-        void name##_callback(const CCommand& args); \
-    }                                               \
-    void Detour::name##_callback(const CCommand& args)
-#define HOOK_COMMAND(name)                                                   \
-    auto c_##name = Command(#name);                                          \
-    if (!!c_##name) {                                                        \
-        Original::name##_callback = c_##name.ThisPtr()->m_fnCommandCallback; \
-        c_##name.ThisPtr()->m_fnCommandCallback = Detour::name##_callback;   \
-    }
-#define UNHOOK_COMMAND(name)                                                 \
-    auto c_##name = Command(#name);                                          \
-    if (!!c_##name && Original::name##_callback) {                           \
-        c_##name.ThisPtr()->m_fnCommandCallback = Original::name##_callback; \
-    }
-
-#define ACTIVATE_AUTOCOMPLETEFILE(name)                                     \
-    auto c_##name = Command(#name);                                         \
-    if (!!c_##name) {                                                       \
-        c_##name.ThisPtr()->m_bHasCompletionCallback = true;                \
-        c_##name.ThisPtr()->m_fnCompletionCallback = name##_CompletionFunc; \
-    }
-#define DEACTIVATE_AUTOCOMPLETEFILE(name)                     \
-    auto c_##name = Command(#name);                           \
-    if (!!c_##name) {                                         \
-        c_##name.ThisPtr()->m_bHasCompletionCallback = false; \
-        c_##name.ThisPtr()->m_fnCompletionCallback = nullptr; \
-    }
+#define DECL_DETOUR_COMMAND(name)            \
+    static _CommandCallback name##_callback; \
+    static void name##_callback_hook(const CCommand& args);
+#define DETOUR_COMMAND(name) \
+    void name##_callback_hook(const CCommand& args)

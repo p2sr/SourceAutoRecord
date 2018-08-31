@@ -4,6 +4,7 @@
 
 #include "Game.hpp"
 #include "Offsets.hpp"
+#include "SAR.hpp"
 
 Variable::Variable()
     : ptr(nullptr)
@@ -71,7 +72,7 @@ void Variable::Create(const char* name, const char* value, int flags, const char
 }
 void Variable::PostInit()
 {
-    if (Game::IsPortal2Engine()) {
+    if (sar.game->IsPortal2Engine()) {
         auto newptr = new ConVar2();
         newptr->m_pszName = this->ptr->m_pszName;
         newptr->m_pszHelpString = this->ptr->m_pszHelpString;
@@ -166,7 +167,7 @@ void Variable::Lock()
 void Variable::DisableChange()
 {
     if (this->ptr) {
-        if (Game::IsPortal2Engine()) {
+        if (sar.game->IsPortal2Engine()) {
             this->originalSize = ((ConVar2*)this->ptr)->m_Size;
             ((ConVar2*)this->ptr)->m_Size = 0;
         } else {
@@ -178,7 +179,7 @@ void Variable::DisableChange()
 void Variable::EnableChange()
 {
     if (this->ptr) {
-        if (Game::IsPortal2Engine()) {
+        if (sar.game->IsPortal2Engine()) {
             ((ConVar2*)this->ptr)->m_Size = this->originalSize;
         } else {
             this->ptr->m_fnChangeCallback = this->originalfnChangeCallback;

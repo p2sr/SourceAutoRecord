@@ -19,12 +19,11 @@ public:
     virtual void LoadRules() = 0;
     virtual const char* Version();
 
-    static bool IsPortal2Engine();
-    static bool IsHalfLife2Engine();
-    static bool HasChallengeMode();
-    static bool HasJumpDisabled();
-    static bool IsPortalGame();
-    static bool IsSupported();
-};
+    bool IsPortal2Engine();
+    bool IsHalfLife2Engine();
+    bool HasChallengeMode();
+    bool HasJumpDisabled();
+    bool IsPortalGame();
 
-extern Game* game;
+    static Game* CreateNew();
+};

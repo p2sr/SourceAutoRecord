@@ -1,8 +1,21 @@
 #include "Cheats.hpp"
 
+#include "Commands/Binding.hpp"
+#include "Commands/CommandQueuer.hpp"
+#include "Commands/Demo.hpp"
+#include "Commands/Exclusive.hpp"
+#include "Commands/ReplaySystem.hpp"
+#include "Commands/Speedrun.hpp"
+#include "Commands/Stats.hpp"
+#include "Commands/Summary.hpp"
+#include "Commands/Teleporter.hpp"
+#include "Commands/Timer.hpp"
+#include "Commands/Tracer.hpp"
+
 #include "Modules/Console.hpp"
 
 #include "Game.hpp"
+#include "SAR.hpp"
 
 Variable sar_autorecord("sar_autorecord", "0", "Enables automatic demo recording.\n");
 Variable sar_save_flag("sar_save_flag", "#SAVE#", "Echo message when using sar_bind_save.\n"
@@ -149,7 +162,7 @@ void Cheats::Init()
     sv_maxvelocity.Unlock();
     sv_footsteps.Unlock();
 
-    if (game->version == SourceGame::Portal2) {
+    if (sar.game->version == SourceGame::Portal2) {
         sv_transition_fade_time = Variable("sv_transition_fade_time");
         sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
         ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
@@ -162,26 +175,45 @@ void Cheats::Init()
         ui_loadingscreen_transition_time.Unlock();
         // Not a real cheat, right?
         hide_gun_when_holding.Unlock(false);
-    } else if (game->version == SourceGame::HalfLife2) {
+    } else if (sar.game->version == SourceGame::HalfLife2) {
         auto sv_portal_debug_touch = Variable("sv_portal_debug_touch");
         if (!!sv_portal_debug_touch) {
-            game->version = SourceGame::Portal;
+            sar.game->version = SourceGame::Portal;
             console->DevMsg("SAR: Detected Portal version!\n");
         }
+    } else if (sar.game->version == SourceGame::TheStanleyParable
+        || sar.game->version == SourceGame::TheBeginnersGuide) {
+        Command::ActivateAutoCompleteFile("map", map_CompletionFunc);
+        Command::ActivateAutoCompleteFile("changelevel", changelevel_CompletionFunc);
+        Command::ActivateAutoCompleteFile("changelevel2", changelevel2_CompletionFunc);
     }
 
-    sar_jumpboost.UniqueFor(Game::IsPortal2Engine);
-    sar_aircontrol.UniqueFor(Game::IsPortal2Engine);
-    sar_hud_portals.UniqueFor(Game::IsPortalGame);
-    sar_disable_challenge_stats_hud.UniqueFor(Game::HasChallengeMode);
-    sar_debug_game_events.UniqueFor(Game::HasChallengeMode);
-    sar_sr_hud.UniqueFor(Game::HasChallengeMode);
-    sar_sr_hud_x.UniqueFor(Game::HasChallengeMode);
-    sar_sr_hud_y.UniqueFor(Game::HasChallengeMode);
-    sar_sr_hud_font_color.UniqueFor(Game::HasChallengeMode);
-    sar_sr_hud_font_index.UniqueFor(Game::HasChallengeMode);
+    sar_jumpboost.UniqueFor([]() { return sar.game->IsPortal2Engine(); });
+    sar_aircontrol.UniqueFor([]() { return sar.game->IsPortal2Engine(); });
+    sar_hud_portals.UniqueFor([]() { return sar.game->IsPortalGame(); });
+    sar_disable_challenge_stats_hud.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_debug_game_events.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_sr_hud.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_sr_hud_x.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_sr_hud_y.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_sr_hud_font_color.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_sr_hud_font_index.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+
+    startbhop.UniqueFor([]() { return sar.game->HasJumpDisabled(); });
+    endbhop.UniqueFor([]() { return sar.game->HasJumpDisabled(); });
+    sar_anti_anti_cheat.UniqueFor([]() { return sar.game->HasJumpDisabled(); });
+    sar_workshop.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_workshop_update.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_workshop_list.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_speedrun_result.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_speedrun_export.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_speedrun_export_pb.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_speedrun_import.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_speedrun_rules.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_togglewait.UniqueFor([]() { return sar.game->HasChallengeMode(); });
 
     Variable::RegisterAll();
+    Command::RegisterAll();
 }
 void Cheats::Shutdown()
 {
@@ -193,15 +225,19 @@ void Cheats::Shutdown()
     sv_maxvelocity.Lock();
     sv_footsteps.Lock();
 
-    if (game->version == SourceGame::Portal2) {
+    if (sar.game->version == SourceGame::Portal2) {
         sv_bonus_challenge.Lock();
         sv_transition_fade_time.Lock();
         sv_laser_cube_autoaim.Lock();
         ui_loadingscreen_transition_time.Lock();
         hide_gun_when_holding.Lock();
+    } else if (sar.game->version == SourceGame::TheStanleyParable
+        || sar.game->version == SourceGame::TheBeginnersGuide) {
+        Command::DectivateAutoCompleteFile("map");
+        Command::DectivateAutoCompleteFile("changelevel");
+        Command::DectivateAutoCompleteFile("changelevel2");
     }
 
     Variable::UnregisterAll();
+    Command::UnregisterAll();
 }
-
-Cheats* cheats;

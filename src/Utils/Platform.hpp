@@ -13,82 +13,44 @@
 #define __func __thiscall
 #define DLL_EXPORT extern "C" __declspec(dllexport)
 
-#define DETOUR(name, ...)                                         \
-    using _##name = int(__thiscall*)(void* thisptr, __VA_ARGS__); \
-    namespace Original {                                          \
-    _##name name;                                                 \
-    }                                                             \
-    namespace Detour {                                            \
-    int __fastcall name(void* thisptr, int edx, __VA_ARGS__);     \
-    }                                                             \
-    int __fastcall Detour::##name(void* thisptr, int edx, __VA_ARGS__)
-#define DETOUR_T(type, name, ...)                                  \
-    using _##name = type(__thiscall*)(void* thisptr, __VA_ARGS__); \
-    namespace Original {                                           \
-    _##name name;                                                  \
-    }                                                              \
-    namespace Detour {                                             \
-    type __fastcall name(void* thisptr, int edx, __VA_ARGS__);     \
-    }                                                              \
-    type __fastcall Detour::##name(void* thisptr, int edx, __VA_ARGS__)
-#define DETOUR_B(name, ...)                                       \
-    using _##name = int(__thiscall*)(void* thisptr, __VA_ARGS__); \
-    namespace Original {                                          \
-    _##name name;                                                 \
-    _##name name##Base;                                           \
-    }                                                             \
-    namespace Detour {                                            \
-    int __fastcall name(void* thisptr, int edx, __VA_ARGS__);     \
-    }                                                             \
-    int __fastcall Detour::##name(void* thisptr, int edx, __VA_ARGS__)
-
 namespace {
 bool mhInitialized = false;
 }
-#define MH_HOOK(name, target)                                                                                        \
-    if (!mhInitialized) {                                                                                            \
-        MH_Initialize();                                                                                             \
-        mhInitialized = true;                                                                                        \
-    }                                                                                                                \
-    Original::##name = reinterpret_cast<_##name>(target);                                                            \
-    MH_CreateHook(reinterpret_cast<LPVOID>(target), Detour::##name, reinterpret_cast<LPVOID*>(&Trampoline::##name)); \
+#define MH_HOOK(name, target)                                                                                    \
+    if (!mhInitialized) {                                                                                        \
+        MH_Initialize();                                                                                         \
+        mhInitialized = true;                                                                                    \
+    }                                                                                                            \
+    name = reinterpret_cast<decltype(name)>(target);                                                             \
+    MH_CreateHook(reinterpret_cast<LPVOID>(target), name##_Hook, reinterpret_cast<LPVOID*>(&name##_Trampoline)); \
     MH_EnableHook(reinterpret_cast<LPVOID>(target));
-#define MH_HOOK_MID(name, target)                                                                                              \
-    if (!mhInitialized) {                                                                                                      \
-        MH_Initialize();                                                                                                       \
-        mhInitialized = true;                                                                                                  \
-    }                                                                                                                          \
-    Original::##name = target;                                                                                                 \
-    MH_CreateHook(reinterpret_cast<LPVOID>(Original::##name), Detour::##name, reinterpret_cast<LPVOID*>(&Trampoline::##name)); \
-    MH_EnableHook(reinterpret_cast<LPVOID>(Original::##name));
-#define MH_UNHOOK(name)                                             \
-    if (Original::##name) {                                         \
-        MH_DisableHook(reinterpret_cast<LPVOID>(Original::##name)); \
-        MH_RemoveHook(reinterpret_cast<LPVOID>(Original::##name));  \
+#define MH_HOOK_MID(name, target)                                                                              \
+    if (!mhInitialized) {                                                                                      \
+        MH_Initialize();                                                                                       \
+        mhInitialized = true;                                                                                  \
+    }                                                                                                          \
+    name = target;                                                                                             \
+    MH_CreateHook(reinterpret_cast<LPVOID>(name), name##_Hook, reinterpret_cast<LPVOID*>(&name##_Trampoline)); \
+    MH_EnableHook(reinterpret_cast<LPVOID>(name));
+#define MH_UNHOOK(name)                                 \
+    if (name) {                                         \
+        MH_DisableHook(reinterpret_cast<LPVOID>(name)); \
+        MH_RemoveHook(reinterpret_cast<LPVOID>(name));  \
     }
-#define DETOUR_MID_MH(name) \
-    namespace Original {    \
-        uintptr_t name;     \
-    }                       \
-    namespace Trampoline {  \
-        uintptr_t name;     \
-    }                       \
-    namespace Detour {      \
-        void name();        \
-    }                       \
-    __declspec(naked) void Detour::##name()
-#define DETOUR_MH(name, ...)                                      \
+#define DECL_DETOUR_MID_MH(name)        \
+    static uintptr_t name;              \
+    static uintptr_t name##_Trampoline; \
+    static void name##_Hook();
+#define DECL_DETOUR_MH(name, ...)                                 \
     using _##name = int(__thiscall*)(void* thisptr, __VA_ARGS__); \
-    namespace Original {                                          \
-        _##name name;                                             \
-    }                                                             \
-    namespace Trampoline {                                        \
-        _##name name;                                             \
-    }                                                             \
-    namespace Detour {                                            \
-        int __fastcall name(void* thisptr, int edx, __VA_ARGS__); \
-    }                                                             \
-    int __fastcall Detour::##name(void* thisptr, int edx, __VA_ARGS__)
+    static _##name name;                                          \
+    static _##name name##_Trampoline;                             \
+    static int __fastcall name##_Hook(void* thisptr, int edx, __VA_ARGS__);
+
+#define DETOUR_MID_MH(name) \
+    __declspec(naked) void name##_Hook()
+#define DETOUR_MH(name, ...) \
+    int __fastcall name##_Hook(void* thisptr, int edx, __VA_ARGS__)
 #else
 #define MODULE_EXTENSION ".so"
 // clang-format off
@@ -99,33 +61,31 @@ bool mhInitialized = false;
 #define __stdcall __attribute__((__stdcall__))
 #define __fastcall __attribute__((__fastcall__))
 #define DLL_EXPORT extern "C" __attribute__((visibility("default")))
-
-#define DETOUR(name, ...)                                        \
-    using _##name = int(__cdecl*)(void* thisptr, ##__VA_ARGS__); \
-    namespace Original {                                         \
-        _##name name;                                            \
-    }                                                            \
-    namespace Detour {                                           \
-        int __cdecl name(void* thisptr, ##__VA_ARGS__);          \
-    }                                                            \
-    int __cdecl Detour::name(void* thisptr, ##__VA_ARGS__)
-#define DETOUR_T(type, name, ...)                                 \
-    using _##name = type(__cdecl*)(void* thisptr, ##__VA_ARGS__); \
-    namespace Original {                                          \
-        _##name name;                                             \
-    }                                                             \
-    namespace Detour {                                            \
-        type __cdecl name(void* thisptr, ##__VA_ARGS__);          \
-    }                                                             \
-    type __cdecl Detour::name(void* thisptr, ##__VA_ARGS__)
-#define DETOUR_B(name, ...)                                      \
-    using _##name = int(__cdecl*)(void* thisptr, ##__VA_ARGS__); \
-    namespace Original {                                         \
-        _##name name;                                            \
-        _##name name##Base;                                      \
-    }                                                            \
-    namespace Detour {                                           \
-        int __cdecl name(void* thisptr, ##__VA_ARGS__);          \
-    }                                                            \
-    int __cdecl Detour::name(void* thisptr, ##__VA_ARGS__)
 #endif
+
+#define DECL_DETOUR(name, ...)                                  \
+    using _##name = int(__func*)(void* thisptr, ##__VA_ARGS__); \
+    static _##name name;                                        \
+    static int __func name##_Hook(void* thisptr, ##__VA_ARGS__);
+#define DECL_DETOUR_T(type, name, ...)                           \
+    using _##name = type(__func*)(void* thisptr, ##__VA_ARGS__); \
+    static _##name name;                                         \
+    static type __func name##_Hook(void* thisptr, ##__VA_ARGS__);
+#define DECL_DETOUR_B(name, ...)                                \
+    using _##name = int(__func*)(void* thisptr, ##__VA_ARGS__); \
+    static _##name name;                                        \
+    static _##name name##Base;                                  \
+    static int __func name##_Hook(void* thisptr, ##__VA_ARGS__);
+
+#define DETOUR(name, ...) \
+    int __func name##_Hook(void* thisptr, ##__VA_ARGS__)
+#define DETOUR_T(type, name, ...) \
+    type __func name##_Hook(void* thisptr, ##__VA_ARGS__)
+#define DETOUR_B(name, ...) \
+    int __func name##_Hook(void* thisptr, ##__VA_ARGS__)
+
+#define DECL_DETOUR_STD(name, ...)                                 \
+    using _##name = int(__stdcall*)(void* thisptr, ##__VA_ARGS__); \
+    static int __func name##_Hook(void* thisptr, ##__VA_ARGS__);
+#define DETOUR_STD(name, ...) \
+    int __stdcall name##_Hook(void* thisptr, ##__VA_ARGS__)

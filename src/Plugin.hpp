@@ -16,5 +16,3 @@ public:
 public:
     Plugin();
 };
-
-extern Plugin* plugin;

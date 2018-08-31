@@ -1,6 +1,12 @@
 #pragma once
 #include "Variable.hpp"
 
+class Cheats {
+public:
+    void Init();
+    void Shutdown();
+};
+
 extern Variable sar_autorecord;
 extern Variable sar_save_flag;
 extern Variable sar_time_demo_dev;
@@ -78,11 +84,3 @@ extern Variable sv_transition_fade_time;
 extern Variable sv_laser_cube_autoaim;
 extern Variable ui_loadingscreen_transition_time;
 extern Variable hide_gun_when_holding;
-
-class Cheats {
-public:
-    void Init();
-    void Shutdown();
-};
-
-extern Cheats* cheats;

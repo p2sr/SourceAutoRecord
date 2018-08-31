@@ -56,7 +56,7 @@ CON_COMMAND(sar_replay_export, "Export TAS replay to a file.\n")
         return;
     }
 
-    auto filePath = std::string(Engine::GetGameDirectory()) + std::string("/") + std::string(args[1]);
+    auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
     if (filePath.substr(filePath.length() - 4, 4) != SAR_TAS_EXTENSION)
         filePath += SAR_TAS_EXTENSION;
 
@@ -96,7 +96,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_tas_import, "Import TAS replay file.", 0, 0, st
         return;
     }
 
-    auto filePath = std::string(Engine::GetGameDirectory()) + std::string("/") + std::string(args[1]);
+    auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
     if (filePath.substr(filePath.length() - 4, 4) != SAR_TAS_EXTENSION)
         filePath += SAR_TAS_EXTENSION;
 

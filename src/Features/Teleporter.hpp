@@ -1,10 +1,7 @@
 #pragma once
-#include "Modules/Client.hpp"
-#include "Modules/Console.hpp"
+#include "Feature.hpp"
 
-#include "Features/Feature.hpp"
-
-#include "Utils.hpp"
+#include "Utils/SDK.hpp"
 
 class Teleporter : public Feature {
 public:
@@ -18,27 +15,4 @@ public:
     void Teleport();
 };
 
-Teleporter::Teleporter()
-    : isSet(false)
-    , origin()
-    , angles()
-{
-    this->hasLoaded = true;
-}
-void Teleporter::Save()
-{
-    this->isSet = true;
-    this->origin = Client::GetAbsOrigin();
-    this->angles = Engine::GetAngles();
-    console->Print("Saved location: %.3f %.3f %.3f\n", this->origin.x, this->origin.y, this->origin.z);
-}
-void Teleporter::Teleport()
-{
-    Engine::SetAngles(this->angles);
-    char setpos[64];
-    snprintf(setpos, sizeof(setpos), "setpos %f %f %f", this->origin.x, this->origin.y, this->origin.z);
-    Engine::ExecuteCommand(setpos);
-}
-
-Teleporter* teleporter;
 extern Teleporter* teleporter;

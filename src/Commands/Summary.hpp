@@ -24,8 +24,8 @@ CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
     }
 
     if (sar_sum_during_session.GetBool()) {
-        int tick = Engine::GetSessionTick();
-        summary->Add(tick, Engine::ToTime(tick), Engine::m_szLevelName);
+        int tick = engine->GetSessionTick();
+        summary->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
     }
     summary->isRunning = false;
 }
@@ -50,11 +50,11 @@ CON_COMMAND(sar_sum_result, "Prints result of summary.\n")
         console->Print("(%.3f)\n", summary->items[i].time);
     }
 
-    float totalTime = Engine::ToTime(summary->totalTicks);
+    float totalTime = engine->ToTime(summary->totalTicks);
     if (summary->isRunning) {
-        int tick = Engine::GetSessionTick();
-        float time = Engine::ToTime(tick);
-        console->PrintActive("%s -> ", *Engine::m_szLevelName);
+        int tick = engine->GetSessionTick();
+        float time = engine->ToTime(tick);
+        console->PrintActive("%s -> ", *engine->m_szLevelName);
         console->PrintActive("%i ticks ", tick);
         console->PrintActive("(%.3f)\n", time);
         console->Print("---------------\n");

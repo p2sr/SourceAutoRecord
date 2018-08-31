@@ -209,7 +209,6 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="..\lib\minhook\MinHook.h" />
     <ClInclude Include="Cheats.hpp" />
     <ClInclude Include="Command.hpp" />
-    <ClInclude Include="Commands.hpp" />
     <ClInclude Include="Commands\Speedrun.hpp" />
     <ClInclude Include="Commands\Exclusive.hpp" />
     <ClInclude Include="Commands\Binding.hpp" />
@@ -270,8 +269,8 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Listener.hpp" />
     <ClInclude Include="Modules\Client.hpp" />
     <ClInclude Include="Modules\Console.hpp" />
-    <ClInclude Include="Modules\DemoPlayer.hpp" />
-    <ClInclude Include="Modules\DemoRecorder.hpp" />
+    <ClInclude Include="Modules\EngineDemoPlayer.hpp" />
+    <ClInclude Include="Modules\EngineDemoRecorder.hpp" />
     <ClInclude Include="Modules\Engine.hpp" />
     <ClInclude Include="Modules\InputSystem.hpp" />
     <ClInclude Include="Modules\Module.hpp" />

@@ -13,51 +13,43 @@ const char* Game::Version()
 }
 bool Game::IsPortal2Engine()
 {
-    return game->version == SourceGame::Portal2
-        || game->version == SourceGame::TheStanleyParable
-        || game->version == SourceGame::TheBeginnersGuide;
+    return this->version == SourceGame::Portal2
+        || this->version == SourceGame::TheStanleyParable
+        || this->version == SourceGame::TheBeginnersGuide;
 }
 bool Game::IsHalfLife2Engine()
 {
-    return game->version == SourceGame::HalfLife2
-        || game->version == SourceGame::Portal;
+    return this->version == SourceGame::HalfLife2
+        || this->version == SourceGame::Portal;
 }
 bool Game::HasChallengeMode()
 {
-    return game->version == SourceGame::Portal2;
+    return this->version == SourceGame::Portal2;
 }
 bool Game::HasJumpDisabled()
 {
-    return game->version == SourceGame::TheStanleyParable;
+    return this->version == SourceGame::TheStanleyParable;
 }
 bool Game::IsPortalGame()
 {
-    return game->version == SourceGame::Portal2
-        || game->version == SourceGame::Portal;
+    return this->version == SourceGame::Portal2
+        || this->version == SourceGame::Portal;
 }
-bool Game::IsSupported()
+Game* Game::CreateNew()
 {
     auto proc = Memory::GetProcessName();
 
     if (proc == Portal2::Process()) {
-        game = new Portal2();
+        return new Portal2();
     }
     if (proc == HalfLife2::Process()) {
-        game = new HalfLife2();
+        return new HalfLife2();
     }
     if (proc == TheStanleyParable::Process()) {
-        game = new TheStanleyParable();
+        return new TheStanleyParable();
     }
     if (proc == TheBeginnersGuide::Process()) {
-        game = new TheBeginnersGuide();
+        return new TheBeginnersGuide();
     }
-
-    if (game) {
-        game->LoadOffsets();
-        return true;
-    }
-
-    return false;
+    return nullptr;
 }
-
-Game* game;

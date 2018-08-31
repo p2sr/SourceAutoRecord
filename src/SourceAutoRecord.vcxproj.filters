@@ -138,9 +138,6 @@
     <ClInclude Include="Cheats.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Commands.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
     <ClInclude Include="Game.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
@@ -156,10 +153,10 @@
     <ClInclude Include="Modules\Console.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="Modules\DemoPlayer.hpp">
+    <ClInclude Include="Modules\EngineDemoPlayer.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="Modules\DemoRecorder.hpp">
+    <ClInclude Include="Modules\EngineDemoRecorder.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
     <ClInclude Include="Modules\Engine.hpp">

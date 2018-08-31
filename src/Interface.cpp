@@ -3,6 +3,7 @@
 #include "Modules/Console.hpp"
 
 #include "Utils/Memory.hpp"
+#include "Utils/SDK.hpp"
 
 #define CreateInterfaceInternal_Offset 5
 #ifdef _WIN32
@@ -78,6 +79,18 @@ Interface* Interface::Create(void* ptr, bool copyVtable, bool autoHook)
 }
 Interface* Interface::Create(const char* filename, const char* interfaceSymbol, bool copyVtable, bool autoHook)
 {
+    auto ptr = Interface::GetPtr(filename, interfaceSymbol);
+    return (ptr) ? new Interface(ptr, copyVtable, autoHook) : nullptr;
+}
+void Interface::Delete(Interface* ptr)
+{
+    if (ptr) {
+        delete ptr;
+        ptr = nullptr;
+    }
+}
+void* Interface::GetPtr(const char* filename, const char* interfaceSymbol)
+{
     auto handle = Memory::GetModuleHandleByName(filename);
     if (!handle) {
         console->DevWarning("SAR: Failed to open module %s!\n", filename);
@@ -108,13 +121,5 @@ Interface* Interface::Create(const char* filename, const char* interfaceSymbol, 
         console->DevWarning("SAR: Failed to find interface with symbol %s in %s!\n", interfaceSymbol, filename);
         return nullptr;
     }
-
-    return new Interface(result, copyVtable, autoHook);
-}
-void Interface::Delete(Interface* ptr)
-{
-    if (ptr) {
-        delete ptr;
-        ptr = nullptr;
-    }
+    return result;
 }

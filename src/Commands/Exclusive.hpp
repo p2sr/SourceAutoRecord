@@ -9,8 +9,8 @@
 #include "Utils.hpp"
 
 // TSP only
-void IN_BhopDown(const CCommand& args) { Client::KeyDown(Client::in_jump, (args.ArgC() > 1) ? args[1] : NULL); }
-void IN_BhopUp(const CCommand& args) { Client::KeyUp(Client::in_jump, (args.ArgC() > 1) ? args[1] : NULL); }
+void IN_BhopDown(const CCommand& args) { client->KeyDown(client->in_jump, (args.ArgC() > 1) ? args[1] : NULL); }
+void IN_BhopUp(const CCommand& args) { client->KeyUp(client->in_jump, (args.ArgC() > 1) ? args[1] : NULL); }
 
 Command startbhop("+bhop", IN_BhopDown, "Client sends a key-down event for the in_jump state.\n");
 Command endbhop("-bhop", IN_BhopUp, "Client sends a key-up event for the in_jump state.\n");
@@ -72,7 +72,7 @@ CON_COMMAND_F_COMPLETION(sar_workshop, "Same as \"map\" command but lists worksh
         return;
     }
 
-    Engine::ExecuteCommand((std::string("map workshop/") + std::string(args[1])).c_str());
+    engine->ExecuteCommand((std::string("map workshop/") + std::string(args[1])).c_str());
 }
 
 CON_COMMAND(sar_workshop_update, "Updates the workshop map list.\n")
@@ -93,7 +93,7 @@ CON_COMMAND(sar_workshop_list, "Prints all workshop maps.\n")
 
 CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer.\n")
 {
-    auto state = !*Engine::m_bWaitEnabled;
-    *Engine::m_bWaitEnabled = state;
+    auto state = !*engine->m_bWaitEnabled;
+    *engine->m_bWaitEnabled = state;
     console->Print("%s wait!\n", (state) ? "Enabled" : "Disabled");
 }

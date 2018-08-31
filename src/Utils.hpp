@@ -12,15 +12,8 @@ static bool ends_with(const std::string& str, const std::string& suffix)
     return str.size() >= suffix.size() && !str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }
 
-#define DETOUR_STD(name, ...)                      \
-    using _##name = void(__stdcall*)(__VA_ARGS__); \
-    namespace Original {                           \
-        _##name name;                              \
-    }                                              \
-    namespace Detour {                             \
-        void __stdcall name(__VA_ARGS__);          \
-    }                                              \
-    void __stdcall Detour::name(__VA_ARGS__)
+#define REDECL(name) \
+    decltype(name) name;
 
 #define SAFE_DELETE(ptr) \
     if (ptr) {           \

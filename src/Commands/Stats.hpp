@@ -27,7 +27,7 @@ CON_COMMAND(sar_stats_steps, "Prints total amount of steps.\n")
 
 CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
 {
-    auto current = Client::GetLocalVelocity();
+    auto current = client->GetLocalVelocity();
 
     std::string type;
     if (stats->velocity->type == StatsResultType::VEC2) {

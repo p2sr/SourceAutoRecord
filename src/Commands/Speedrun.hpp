@@ -48,7 +48,7 @@ CON_COMMAND(sar_speedrun_export, "Saves speedrun result to a csv file.\n")
         return;
     }
 
-    auto filePath = std::string(Engine::GetGameDirectory()) + std::string("/") + std::string(args[1]);
+    auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
     if (filePath.substr(filePath.length() - 4, 4) != ".csv")
         filePath += ".csv";
 
@@ -66,7 +66,7 @@ CON_COMMAND(sar_speedrun_export_pb, "Saves speedrun personal best to a csv file.
         return;
     }
 
-    auto filePath = std::string(Engine::GetGameDirectory()) + std::string("/") + std::string(args[1]);
+    auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
     if (filePath.substr(filePath.length() - 4, 4) != ".csv")
         filePath += ".csv";
 
@@ -84,7 +84,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.",
         return;
     }
 
-    auto filePath = std::string(Engine::GetGameDirectory()) + std::string("/") + std::string(args[1]);
+    auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
     if (filePath.substr(filePath.length() - 4, 4) != ".csv")
         filePath += ".csv";
 
