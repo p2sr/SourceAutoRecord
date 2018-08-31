@@ -219,7 +219,7 @@ void SessionEnded()
     lastFrame = currentFrame;
     currentFrame = 0;
 
-    TAS::Reset();
+    TAS::Stop();
     TAS2::Stop();
     speedrun->Pause();
 
