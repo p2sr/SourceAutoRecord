@@ -18,6 +18,8 @@ STFU=-Wno-unused-function -Wno-unused-variable -Wno-parentheses
 CFLAGS=-std=c++17 -m32 -fPIC -static-libstdc++ -shared -Wall $(STFU) -I$(LDIR) -I$(SDIR)
 EXPORT=cp -fu
 
+all: dirs | sar
+
 sar: $(OBJS)
 	$(CC) $(CFLAGS) -o $(BINARY) $^ -lstdc++fs
 	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal 2/$(BINARY)"
@@ -35,3 +37,12 @@ clean:
 
 clean-all:
 	@rm -rf $(OBJS) $(BINARY)
+
+dirs:
+	@mkdir -p $(ODIR)
+	@mkdir -p $(ODIR)Features/
+	@mkdir -p $(ODIR)Features/Demo/
+	@mkdir -p $(ODIR)Features/Hud/
+	@mkdir -p $(ODIR)Features/Speedrun/
+	@mkdir -p $(ODIR)Games/Linux/
+	@mkdir -p $(ODIR)Modules/
