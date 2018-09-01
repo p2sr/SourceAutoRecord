@@ -10,6 +10,7 @@
 
 #include "Features/Config.hpp"
 #include "Features/Cvars.hpp"
+#include "Features/Listener.hpp"
 #include "Features/Rebinder.hpp"
 #include "Features/Routing/Tracer.hpp"
 #include "Features/Session.hpp"
@@ -27,7 +28,6 @@
 #include "Command.hpp"
 #include "Game.hpp"
 #include "Interface.hpp"
-#include "Listener.hpp"
 #include "SAR.hpp"
 #include "Variable.hpp"
 
@@ -42,23 +42,6 @@ SAR::SAR()
     this->plugin = new Plugin();
     this->game = Game::CreateNew();
 }
-void SAR::Cleanup()
-{
-    SAFE_DELETE(listener);
-
-    if (this->cheats) {
-        this->cheats->Shutdown();
-    }
-    if (this->modules) {
-        this->modules->ShutdownAll();
-    }
-
-    SAFE_DELETE(this->modules);
-    SAFE_DELETE(this->features);
-    SAFE_DELETE(this->cheats);
-    SAFE_DELETE(this->plugin);
-    SAFE_DELETE(this->game);
-}
 
 bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
 {
@@ -69,10 +52,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
     if (this->game) {
         this->game->LoadOffsets();
 
-        this->modules->AddModule<Tier1>(&tier1);
-        this->modules->InitAll();
-
-        if (tier1->hasLoaded) {
+        tier1 = new Tier1();
+        if (tier1->Init()) {
             this->cheats->Init();
 
             this->features->AddFeature<Config>(&config);
@@ -106,11 +87,10 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             }
 
             if (this->game->version == SourceGame::Portal2) {
-                // TODO: Make listener as feature
-                listener = new Listener();
-                listener->Init();
-
+                this->features->AddFeature<Listener>(&listener);
                 this->features->AddFeature<WorkshopList>(&workshop);
+
+                listener->Init();
             }
 
             config->Load();
@@ -154,11 +134,7 @@ bool SAR::GetPlugin()
 void SAR::SearchPlugin()
 {
     this->findPluginThread = std::thread([this]() {
-#if _WIN32
-        Sleep(1000);
-#else
-        sleep(1);
-#endif
+        GO_THE_FUCK_TO_SLEEP(1000);
         if (!this->GetPlugin()) {
             console->DevWarning("SAR: Failed to find SAR in the plugin list!\nTry again with \"plugin_load\".\n");
         } else {
@@ -237,16 +213,30 @@ CON_COMMAND(sar_rename, "Changes your name.\n")
 
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
+    SAFE_DELETE(sar.features)
+
+    if (sar.cheats) {
+        sar.cheats->Shutdown();
+    }
+    if (sar.modules) {
+        sar.modules->ShutdownAll();
+    }
+
     if (sar.GetPlugin()) {
         // SAR has to unhook CEngine some ticks before unloading the module
         auto unload = std::string("plugin_unload ") + std::to_string(sar.plugin->index);
         engine->SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);
     }
 
-    sar.Cleanup();
+    SAFE_DELETE(sar.cheats)
+    SAFE_DELETE(sar.modules)
+    SAFE_DELETE(sar.plugin)
+    SAFE_DELETE(sar.game)
 
     console->Print("Cya :)\n");
-    SAFE_DELETE(console);
+
+    SAFE_DELETE(tier1)
+    SAFE_DELETE(console)
 }
 
 #pragma region Unused callbacks

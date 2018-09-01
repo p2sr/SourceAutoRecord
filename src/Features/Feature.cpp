@@ -16,5 +16,5 @@ void Features::DeleteAll()
 }
 Features::~Features()
 {
-    DeleteAll();
+    this->DeleteAll();
 }

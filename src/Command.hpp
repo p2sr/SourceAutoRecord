@@ -32,7 +32,7 @@ public:
     static void UnregisterAll();
     static Command* Find(const char* name);
 
-    static bool Hook(const char* name, _CommandCallback detour, _CommandCallback* original);
+    static bool Hook(const char* name, _CommandCallback detour, _CommandCallback& original);
     static bool Unhook(const char* name, _CommandCallback original);
     static bool ActivateAutoCompleteFile(const char* name, _CommandCompletionCallback callback);
     static bool DectivateAutoCompleteFile(const char* name);
@@ -53,6 +53,9 @@ public:
     Command name = Command(#name, name##_callback, description, flags, completion); \
     void name##_callback(const CCommand& args)
 
+#define DECL_DECLARE_AUTOCOMPLETION_FUNCTION(command) \
+    int command##_CompletionFunc(const char* partial, \
+        char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 #define DECLARE_AUTOCOMPLETION_FUNCTION(command, subdirectory, extension)            \
     CBaseAutoCompleteFileList command##Complete(#command, subdirectory, #extension); \
     int command##_CompletionFunc(const char* partial,                                \

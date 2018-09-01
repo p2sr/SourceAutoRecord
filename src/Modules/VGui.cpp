@@ -88,7 +88,7 @@ DETOUR(VGui::Paint, int mode)
     }
     // Session
     if (sar_hud_session.GetBool()) {
-        auto tick = (engine->isInSession) ? engine->GetSessionTick() : 0;
+        auto tick = (session->isInSession) ? engine->GetSessionTick() : 0;
         auto time = engine->ToTime(tick);
         DrawElement("session: %i (%.3f)", tick, time);
     }
@@ -97,7 +97,7 @@ DETOUR(VGui::Paint, int mode)
     }
     if (sar_hud_sum.GetBool()) {
         if (summary->isRunning && sar_sum_during_session.GetBool()) {
-            auto tick = (engine->isInSession) ? engine->GetSessionTick() : 0;
+            auto tick = (session->isInSession) ? engine->GetSessionTick() : 0;
             auto time = engine->ToTime(tick);
             DrawElement("sum: %i (%.3f)", summary->totalTicks + tick, engine->ToTime(summary->totalTicks) + time);
         } else {
@@ -158,10 +158,10 @@ DETOUR(VGui::Paint, int mode)
         DrawElement("trace: %.3f (%.3f/%.3f/%.3f)", result, std::get<0>(xyz), std::get<1>(xyz), std::get<2>(xyz));
     }
     if (sar_hud_frame.GetBool()) {
-        DrawElement("frame: %i", engine->currentFrame);
+        DrawElement("frame: %i", session->currentFrame);
     }
     if (sar_hud_last_frame.GetBool()) {
-        DrawElement("last frame: %i", engine->lastFrame);
+        DrawElement("last frame: %i", session->lastFrame);
     }
 
     surface->FinishDrawing();
@@ -180,7 +180,7 @@ bool VGui::Init()
 
     this->enginevgui = Interface::Create(MODULE("engine"), "VEngineVGui0");
     if (this->enginevgui) {
-        this->enginevgui->Hook(this->Paint_Hook, this->Paint, Offsets::Paint);
+        this->enginevgui->Hook(VGui::Paint_Hook, VGui::Paint, Offsets::Paint);
     }
 
     if (sar.game->IsHalfLife2Engine()) {
@@ -193,8 +193,8 @@ void VGui::Shutdown()
 {
     Interface::Delete(this->enginevgui);
 
-    SAFE_DELETE(this->inputHud);
-    SAFE_DELETE(this->speedrunHud);
+    SAFE_DELETE(this->inputHud)
+    SAFE_DELETE(this->speedrunHud)
 }
 
 VGui* vgui;

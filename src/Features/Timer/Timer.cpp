@@ -18,8 +18,8 @@ Timer::Timer()
 }
 Timer::~Timer()
 {
-    SAFE_DELETE(this->avg);
-    SAFE_DELETE(this->cps);
+    SAFE_DELETE(this->avg)
+    SAFE_DELETE(this->cps)
 }
 void Timer::Start(int engineTick)
 {

@@ -217,12 +217,12 @@ bool Server::Init()
     this->g_ServerGameDLL = Interface::Create(MODULE("server"), "ServerGameDLL0");
 
     if (this->g_GameMovement) {
-        this->g_GameMovement->Hook(this->CheckJumpButton_Hook, this->CheckJumpButton, Offsets::CheckJumpButton);
-        this->g_GameMovement->Hook(this->PlayerMove_Hook, this->PlayerMove, Offsets::PlayerMove);
+        this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
+        this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
         if (sar.game->IsPortal2Engine()) {
-            this->g_GameMovement->Hook(this->FinishGravity_Hook, this->FinishGravity, Offsets::FinishGravity);
-            this->g_GameMovement->Hook(this->AirMove_Hook, this->AirMove, Offsets::AirMove);
+            this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
+            this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
 
             auto ctor = this->g_GameMovement->Original(0);
             auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
@@ -254,7 +254,7 @@ bool Server::Init()
         auto ServiceEventQueue = Memory::Read(GameFrame + Offsets::ServiceEventQueue);
         Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue, &this->g_EventQueue);
 
-        this->g_ServerGameDLL->Hook(this->GameFrame_Hook, this->GameFrame, Offsets::GameFrame);
+        this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
     }
 
     return this->hasLoaded = this->g_GameMovement && this->g_ServerGameDLL;

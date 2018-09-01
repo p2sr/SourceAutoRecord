@@ -1,0 +1,71 @@
+#include "Summary.hpp"
+
+#include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+
+#include "Features/Summary.hpp"
+
+#include "Cheats.hpp"
+#include "Command.hpp"
+
+CON_COMMAND(sar_sum_here, "Starts counting total ticks of sessions.\n")
+{
+    if (summary->isRunning) {
+        console->Print("Summary has already started!\n");
+        return;
+    }
+    summary->Start();
+}
+
+CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
+{
+    if (!summary->isRunning) {
+        console->Print("There's no summary to stop!\n");
+        return;
+    }
+
+    if (sar_sum_during_session.GetBool()) {
+        int tick = engine->GetSessionTick();
+        summary->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
+    }
+    summary->isRunning = false;
+}
+
+CON_COMMAND(sar_sum_result, "Prints result of summary.\n")
+{
+    int sessions = summary->items.size();
+    if (summary->isRunning && sessions == 0) {
+        console->Print("Summary of this session:\n");
+    } else if (summary->isRunning && sessions > 0) {
+        console->Print("Summary of %i sessions:\n", sessions + 1);
+    } else if (sessions > 0) {
+        console->Print("Summary of %i session%s:\n", sessions, (sessions == 1) ? "" : "s");
+    } else {
+        console->Print("There's no result of a summary!\n");
+        return;
+    }
+
+    for (size_t i = 0; i < summary->items.size(); i++) {
+        console->Print("%s -> ", summary->items[i].map);
+        console->Print("%i ticks", summary->items[i].ticks);
+        console->Print("(%.3f)\n", summary->items[i].time);
+    }
+
+    float totalTime = engine->ToTime(summary->totalTicks);
+    if (summary->isRunning) {
+        int tick = engine->GetSessionTick();
+        float time = engine->ToTime(tick);
+        console->PrintActive("%s -> ", *engine->m_szLevelName);
+        console->PrintActive("%i ticks ", tick);
+        console->PrintActive("(%.3f)\n", time);
+        console->Print("---------------\n");
+        console->Print("Total Ticks: %i ", summary->totalTicks);
+        console->PrintActive("(%i)\n", summary->totalTicks + tick);
+        console->Print("Total Time: %.3f ", totalTime);
+        console->PrintActive("(%.3f)\n", totalTime + time);
+    } else {
+        console->Print("---------------\n");
+        console->Print("Total Ticks: %i\n", summary->totalTicks);
+        console->Print("Total Time: %.3f\n", totalTime);
+    }
+}

@@ -16,9 +16,9 @@ Stats::Stats()
 }
 Stats::~Stats()
 {
-    SAFE_DELETE(this->jumps);
-    SAFE_DELETE(this->steps);
-    SAFE_DELETE(this->velocity);
+    SAFE_DELETE(this->jumps)
+    SAFE_DELETE(this->steps)
+    SAFE_DELETE(this->velocity)
 }
 void Stats::ResetAll()
 {

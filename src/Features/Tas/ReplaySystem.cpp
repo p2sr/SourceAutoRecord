@@ -45,19 +45,19 @@ void ReplaySystem::Record(CUserCmd* cmd)
 }
 void ReplaySystem::Play(CUserCmd* cmd)
 {
-    auto frame = this->frames[this->playIndex];
-
-    cmd->viewangles = frame.viewangles;
-    cmd->forwardmove = frame.forwardmove;
-    cmd->sidemove = frame.sidemove;
-    cmd->upmove = frame.upmove;
-    cmd->buttons = frame.buttons;
-    cmd->impulse = frame.impulse;
-    cmd->mousedx = frame.mousedx;
-    cmd->mousedy = frame.mousedy;
-
-    if (++this->playIndex >= (int)this->frames.size()) {
+    if (this->playIndex + 1 >= (int)this->frames.size()) {
         this->isPlaying = false;
+    } else {
+        auto frame = this->frames[this->playIndex++];
+
+        cmd->viewangles = frame.viewangles;
+        cmd->forwardmove = frame.forwardmove;
+        cmd->sidemove = frame.sidemove;
+        cmd->upmove = frame.upmove;
+        cmd->buttons = frame.buttons;
+        cmd->impulse = frame.impulse;
+        cmd->mousedx = frame.mousedx;
+        cmd->mousedy = frame.mousedy;
     }
 }
 

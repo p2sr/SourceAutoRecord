@@ -30,7 +30,6 @@ private:
 
 public:
     SAR();
-    void Cleanup();
 
     virtual bool Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory);
     virtual void Unload();
@@ -54,18 +53,9 @@ public:
     virtual void OnEdictAllocated(void* edict);
     virtual void OnEdictFreed(const void* edict);
 
-    inline const char* Version()
-    {
-        return SAR_VERSION;
-    }
-    inline const char* Build()
-    {
-        return SAR_BUILD;
-    }
-    inline const char* Website()
-    {
-        return SAR_WEB;
-    }
+    inline const char* Version() { return SAR_VERSION; }
+    inline const char* Build() { return SAR_BUILD; }
+    inline const char* Website() { return SAR_WEB; }
 
     bool GetPlugin();
     void SearchPlugin();

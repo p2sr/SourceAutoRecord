@@ -5,18 +5,10 @@
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
 #include "EngineDemoRecorder.hpp"
-#include "Tier1.hpp"
 
 #include "Features/Cvars.hpp"
-#include "Features/Rebinder.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Stats/Stats.hpp"
-#include "Features/StepCounter.hpp"
-#include "Features/Summary.hpp"
-#include "Features/Tas/CommandQueuer.hpp"
-#include "Features/Tas/ReplaySystem.hpp"
-#include "Features/Timer/Timer.hpp"
 
 #include "Cheats.hpp"
 #include "Game.hpp"
@@ -95,128 +87,6 @@ int Engine::PointToScreen(const Vector& point, Vector& screen)
     return this->ScreenPosition(nullptr, point, screen);
 #endif
 }
-
-void Engine::SessionStarted(bool menu)
-{
-    if (this->isInSession) {
-        return;
-    }
-
-    if (menu) {
-        console->Print("Session started! (menu)\n");
-        session->Rebase(*tickcount);
-
-        if (sar_speedrun_autostop.GetBool()) {
-            speedrun->Stop(false);
-        } else {
-            speedrun->Unpause(tickcount);
-        }
-    } else {
-        if (GetMaxClients() <= 1) {
-            console->Print("Session Started!\n");
-            session->Rebase(*tickcount);
-            timer->Rebase(*tickcount);
-
-            speedrun->Unpause(tickcount);
-        }
-
-        if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
-            if (this->demorecorder->IsRecordingDemo) {
-                rebinder->UpdateIndex(*this->demorecorder->m_nDemoNumber);
-            } else {
-                rebinder->UpdateIndex(rebinder->lastIndexNumber + 1);
-            }
-
-            rebinder->RebindSave();
-            rebinder->RebindReload();
-        }
-
-        if (sar_tas_autostart.GetBool()) {
-            tasQueuer->Start();
-        }
-        if (sar_tas_autorecord.GetBool()) {
-            tasReplaySystem->StartRecording();
-        }
-        if (sar_tas_autoplay.GetBool()) {
-            tasReplaySystem->StartPlaying();
-        }
-        if (sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
-            speedrun->Start(tickcount);
-        }
-
-        stepCounter->ResetTimer();
-        currentFrame = 0;
-    }
-
-    isInSession = true;
-}
-void Engine::SessionEnded()
-{
-    if (!this->isInSession) {
-        return;
-    }
-
-    int tick = this->GetSessionTick();
-
-    if (tick != 0) {
-        console->Print("Session: %i (%.3f)\n", tick, this->ToTime(tick));
-        session->lastSession = tick;
-    }
-
-    if (summary->isRunning) {
-        summary->Add(tick, this->ToTime(tick), this->m_szLevelName);
-        console->Print("Total: %i (%.3f)\n", summary->totalTicks, this->ToTime(summary->totalTicks));
-    }
-
-    if (timer->isRunning) {
-        if (sar_timer_always_running.GetBool()) {
-            timer->Save(*this->tickcount);
-            console->Print("Timer paused: %i (%.3f)!\n", timer->totalTicks, this->ToTime(timer->totalTicks));
-        } else {
-            timer->Stop(*this->tickcount);
-            console->Print("Timer stopped!\n");
-        }
-    }
-
-    auto reset = sar_stats_auto_reset.GetInt();
-    if ((reset == 1 && !*this->m_bLoadgame) || reset >= 2) {
-        stats->ResetAll();
-    }
-
-    this->demorecorder->CurrentDemo = "";
-    this->lastFrame = this->currentFrame;
-    this->currentFrame = 0;
-
-    tasQueuer->Stop();
-    tasReplaySystem->Stop();
-    speedrun->Pause();
-
-    this->isInSession = false;
-}
-void Engine::SessionChanged(int state)
-{
-    console->DevMsg("state = %i\n", state);
-
-    // Demo recorder starts syncing from this tick
-    if (state == SignonState::Full) {
-        this->SessionStarted();
-    } else {
-        this->SessionEnded();
-    }
-}
-void Engine::SessionChanged()
-{
-    console->DevMsg("m_currentState = %i\n", this->hoststate->m_currentState);
-
-    if (this->hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_SP
-        || this->hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_MP
-        || this->hoststate->m_currentState == HOSTSTATES::HS_GAME_SHUTDOWN) {
-        this->SessionEnded();
-    } else if (this->hoststate->m_currentState == HOSTSTATES::HS_RUN
-        && !this->hoststate->m_activeGame) {
-        this->SessionStarted(true);
-    }
-}
 void Engine::SafeUnload(const char* postCommand)
 {
     // The exit command will handle everything
@@ -230,7 +100,7 @@ void Engine::SafeUnload(const char* postCommand)
 // CClientState::Disconnect
 DETOUR(Engine::Disconnect, bool bShowMainMenu)
 {
-    engine->SessionEnded();
+    session->Ended();
     return Engine::Disconnect(thisptr, bShowMainMenu);
 }
 #ifdef _WIN32
@@ -247,7 +117,7 @@ DETOUR_COMMAND(Engine::connect)
 #else
 DETOUR(Engine::Disconnect2, int unk, bool bShowMainMenu)
 {
-    engine->SessionEnded();
+    session->Ended();
     return Engine::Disconnect2(thisptr, unk, bShowMainMenu);
 }
 #endif
@@ -255,22 +125,22 @@ DETOUR(Engine::Disconnect2, int unk, bool bShowMainMenu)
 // CClientState::SetSignonState
 DETOUR(Engine::SetSignonState, int state, int count, void* unk)
 {
-    engine->SessionChanged(state);
+    session->Changed(state);
     return Engine::SetSignonState(thisptr, state, count, unk);
 }
 DETOUR(Engine::SetSignonState2, int state, int count)
 {
-    engine->SessionChanged(state);
+    session->Changed(state);
     return Engine::SetSignonState2(thisptr, state, count);
 }
 
 // CEngine::Frame
 DETOUR(Engine::Frame)
 {
-    if (engine->hoststate->m_currentState != engine->prevState) {
-        engine->SessionChanged();
+    if (engine->hoststate->m_currentState != session->prevState) {
+        session->Changed();
     }
-    engine->prevState = engine->hoststate->m_currentState;
+    session->prevState = engine->hoststate->m_currentState;
 
     if (engine->hoststate->m_activeGame) {
         speedrun->Update(engine->tickcount, engine->hoststate->m_levelName);
@@ -355,13 +225,13 @@ bool Engine::Init()
 
             if (sar.game->IsPortal2Engine()) {
                 this->cl->Hook(Engine::SetSignonState_Hook, Engine::SetSignonState, Offsets::Disconnect - 1);
-                this->cl->Hook(this->Disconnect_Hook, this->Disconnect, Offsets::Disconnect);
+                this->cl->Hook(Engine::Disconnect_Hook, Engine::Disconnect, Offsets::Disconnect);
             } else {
                 this->cl->Hook(Engine::SetSignonState2_Hook, Engine::SetSignonState2, Offsets::Disconnect - 1);
 #ifdef _WIN32
-                Command::Hook("connect", this->connect_callback_hook, &this->connect_callback);
+                Command::Hook("connect", Engine::connect_callback_hook, &Engine::connect_callback);
 #else
-                this->cl->Hook(this->Disconnect2_Hook, this->Disconnect2, Offsets::Disconnect);
+                this->cl->Hook(Engine::Disconnect2_Hook, Engine::Disconnect2, Offsets::Disconnect);
 #endif
             }
 
@@ -384,7 +254,7 @@ bool Engine::Init()
                 auto engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
 
                 if (this->eng = Interface::Create(engAddr)) {
-                    this->eng->Hook(this->Frame_Hook, this->Frame, Offsets::Frame);
+                    this->eng->Hook(Engine::Frame_Hook, Engine::Frame, Offsets::Frame);
                 }
             }
         }
@@ -408,16 +278,11 @@ bool Engine::Init()
         }
     }
 
-    /*debugoverlay = Interface::Create(MODULE("engine"), "VDebugOverlay0", false);
-    if (this->debugoverlay) {
-        this->ScreenPosition = this->debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
-    }*/
-
-    Command::Hook("plugin_load", Engine::plugin_load_callback_hook, &Engine::plugin_load_callback);
-    Command::Hook("plugin_unload", Engine::plugin_unload_callback_hook, &Engine::plugin_unload_callback);
-    Command::Hook("exit", Engine::exit_callback_hook, &Engine::exit_callback);
-    Command::Hook("quit", Engine::quit_callback_hook, &Engine::quit_callback);
-    Command::Hook("help", Engine::help_callback_hook, &Engine::help_callback);
+    Command::Hook("plugin_load", Engine::plugin_load_callback_hook, Engine::plugin_load_callback);
+    Command::Hook("plugin_unload", Engine::plugin_unload_callback_hook, Engine::plugin_unload_callback);
+    Command::Hook("exit", Engine::exit_callback_hook, Engine::exit_callback);
+    Command::Hook("quit", Engine::quit_callback_hook, Engine::quit_callback);
+    Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
 
     return this->hasLoaded = this->engineClient && this->demoplayer && this->demorecorder;
 }
@@ -432,13 +297,21 @@ void Engine::Shutdown()
     Command::Unhook("connect", Engine::connect_callback);
 #endif
     Command::Unhook("plugin_load", Engine::plugin_load_callback);
-    Command::Unhook("plugin_load", Engine::plugin_unload_callback);
+    Command::Unhook("plugin_unload", Engine::plugin_unload_callback);
     Command::Unhook("exit", Engine::exit_callback);
     Command::Unhook("quit", Engine::quit_callback);
     Command::Unhook("help", Engine::help_callback);
 
-    this->demoplayer->Shutdown();
-    this->demorecorder->Shutdown();
+    if (this->demoplayer) {
+        this->demoplayer->Shutdown();
+        delete this->demoplayer;
+        this->demoplayer = nullptr;
+    }
+    if (this->demorecorder) {
+        this->demorecorder->Shutdown();
+        delete this->demorecorder;
+        this->demorecorder = nullptr;
+    }
 }
 
 Engine* engine;

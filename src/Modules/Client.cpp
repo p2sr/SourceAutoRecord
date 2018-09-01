@@ -4,6 +4,7 @@
 #include "Engine.hpp"
 #include "VGui.hpp"
 
+#include "Features/Session.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Tas/ReplaySystem.hpp"
 
@@ -49,7 +50,7 @@ DETOUR(Client::HudUpdate, unsigned int a2)
         for (auto&& tas = tasQueuer->frames.begin(); tas != tasQueuer->frames.end();) {
             tas->FramesLeft--;
             if (tas->FramesLeft <= 0) {
-                console->DevMsg("[%i] %s\n", engine->currentFrame, tas->Command.c_str());
+                console->DevMsg("[%i] %s\n", session->currentFrame, tas->Command.c_str());
                 engine->ExecuteCommand(tas->Command.c_str());
                 tas = tasQueuer->frames.erase(tas);
             } else {
@@ -58,7 +59,7 @@ DETOUR(Client::HudUpdate, unsigned int a2)
         }
     }
 
-    ++engine->currentFrame;
+    ++session->currentFrame;
     return Client::HudUpdate(thisptr, a2);
 }
 
@@ -100,7 +101,7 @@ bool Client::Init()
     this->s_EntityList = Interface::Create(MODULE("client"), "VClientEntityList0", false);
 
     if (this->g_ClientDLL) {
-        this->g_ClientDLL->Hook(this->HudUpdate_Hook, this->HudUpdate, Offsets::HudUpdate);
+        this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);
 
         if (sar.game->version == SourceGame::Portal2) {
             auto leaderboard = Command("+leaderboard");
@@ -114,7 +115,7 @@ bool Client::Init()
                 auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
 
                 if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
-                    this->g_HUDChallengeStats->Hook(this->GetName_Hook, this->GetName, Offsets::GetName);
+                    this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
                 }
             }
         } else if (sar.game->version == SourceGame::TheStanleyParable) {
@@ -142,7 +143,7 @@ bool Client::Init()
         }
 
         if (this->g_pClientMode = Interface::Create(clientMode)) {
-            this->g_pClientMode->Hook(this->CreateMove_Hook, this->CreateMove, Offsets::CreateMove);
+            this->g_pClientMode->Hook(Client::CreateMove_Hook, Client::CreateMove, Offsets::CreateMove);
         }
     }
 

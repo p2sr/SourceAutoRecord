@@ -1,53 +1,39 @@
-#pragma once
+#include "Listener.hpp"
+
 #include "Modules/Engine.hpp"
 
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Timer/Timer.hpp"
 
-#include "Utils.hpp"
-
-// Portal 2 Engine only
-#define CGameEventManager_m_Size 16
-#define CGameEventManager_m_GameEvents 124
-#define CGameEventManager_m_GameEvents_name 16
-#define CGameEventDescriptor_Size 24
-
-class Listener : public IGameEventListener2 {
-private:
-    bool m_bRegisteredForEvents;
-
-public:
-    Listener();
-    void Init();
-    void Shutdown();
-    virtual ~Listener();
-    virtual void FireGameEvent(IGameEvent* ev);
-    virtual int GetEventDebugID();
-    void DumpGameEvents();
-};
+#include "Utils/SDK.hpp"
 
 Listener::Listener()
     : m_bRegisteredForEvents(false)
 {
+    this->hasLoaded = true;
 }
 void Listener::Init()
 {
-    if (engine->AddListener) {
+    if (engine->hasLoaded && engine->AddListener && !this->m_bRegisteredForEvents) {
         for (const auto& event : EVENTS) {
-            auto result = engine->AddListener(engine->s_GameEventManager->ThisPtr(), this, event, true);
-            if (result) {
+            this->m_bRegisteredForEvents = engine->AddListener(engine->s_GameEventManager->ThisPtr(),
+                this, event, true);
+
+            if (this->m_bRegisteredForEvents) {
                 //console->DevMsg("SAR: Added event listener for %s!\n", event);
             } else {
                 console->DevWarning("SAR: Failed to add event listener for %s!\n", event);
+                break;
             }
         }
     }
 }
 void Listener::Shutdown()
 {
-    if (engine->RemoveListener) {
+    if (engine->hasLoaded && engine->RemoveListener && this->m_bRegisteredForEvents) {
         engine->RemoveListener(engine->s_GameEventManager->ThisPtr(), this);
+        this->m_bRegisteredForEvents = false;
     }
 }
 Listener::~Listener()

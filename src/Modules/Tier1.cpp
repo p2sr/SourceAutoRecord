@@ -14,9 +14,9 @@ bool Tier1::Init()
     if (this->g_pCVar) {
         this->m_pConCommandList = (ConCommandBase*)((uintptr_t)this->g_pCVar->ThisPtr() + Offsets::m_pConCommandList);
 
-        RegisterConCommand = this->g_pCVar->Original<_RegisterConCommand>(Offsets::RegisterConCommand);
-        UnregisterConCommand = this->g_pCVar->Original<_UnregisterConCommand>(Offsets::UnregisterConCommand);
-        FindCommandBase = this->g_pCVar->Original<_FindCommandBase>(Offsets::FindCommandBase);
+        this->RegisterConCommand = this->g_pCVar->Original<_RegisterConCommand>(Offsets::RegisterConCommand);
+        this->UnregisterConCommand = this->g_pCVar->Original<_UnregisterConCommand>(Offsets::UnregisterConCommand);
+        this->FindCommandBase = this->g_pCVar->Original<_FindCommandBase>(Offsets::FindCommandBase);
 
         auto play = reinterpret_cast<ConCommand*>(FindCommandBase(this->g_pCVar->ThisPtr(), "play"));
         if (play) {
@@ -47,14 +47,15 @@ void Tier1::Shutdown()
     Interface::Delete(this->g_pCVar);
 }
 
-Interface* Tier1::g_pCVar;
-ConCommandBase* Tier1::m_pConCommandList;
-_RegisterConCommand Tier1::RegisterConCommand;
-_UnregisterConCommand Tier1::UnregisterConCommand;
-_FindCommandBase Tier1::FindCommandBase;
-void* Tier1::ConCommand_VTable;
-void* Tier1::ConVar_VTable;
-void* Tier1::ConVar_VTable2;
-_AutoCompletionFunc Tier1::AutoCompletionFunc;
-
 Tier1* tier1;
+
+CBaseAutoCompleteFileList::CBaseAutoCompleteFileList(const char* cmdname, const char* subdir, const char* extension)
+{
+    m_pszCommandName = cmdname;
+    m_pszSubDir = subdir;
+    m_pszExtension = extension;
+}
+int CBaseAutoCompleteFileList::AutoCompletionFunc(char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    return tier1->AutoCompletionFunc(this, partial, commands);
+}

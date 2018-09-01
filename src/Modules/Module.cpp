@@ -32,6 +32,6 @@ void Modules::DeleteAll()
 }
 Modules::~Modules()
 {
-    DeleteAll();
+    this->DeleteAll();
     this->list.clear();
 }

@@ -117,8 +117,8 @@ Variable sar_aircontrol("sar_aircontrol", "0",
     "Enables more air-control on the server.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
 Variable sar_tas_autostart("sar_tas_autostart", "1", "Starts queued commands automatically on first frame after a load.\n");
-Variable sar_tas_autorecord("sar_tas_autorecord", "0", "Starts recording inputs on first frame after a load.\n");
-Variable sar_tas_autoplay("sar_tas_autoplay", "1", "Starts playing back recorded inputs on first frame after a load.\n");
+Variable sar_replay_autorecord("sar_replay_autorecord", "0", "Starts recording inputs on first frame after a load.\n");
+Variable sar_replay_autoplay("sar_replay_autoplay", "1", "Starts playing back recorded inputs on first frame after a load.\n");
 Variable sar_debug_event_queue("sar_debug_event_queue", "0", "Prints entitity events when they are fired, similar to developer.\n");
 Variable sar_debug_game_events("sar_debug_game_events", "0", "Prints game event data, similar to net_showevents.\n");
 Variable sar_speedrun_autostart("sar_speedrun_autostart", "0", "Starts speedrun timer automatically on first frame after a load.\n");
@@ -198,6 +198,8 @@ void Cheats::Init()
     sar_sr_hud_y.UniqueFor([]() { return sar.game->HasChallengeMode(); });
     sar_sr_hud_font_color.UniqueFor([]() { return sar.game->HasChallengeMode(); });
     sar_sr_hud_font_index.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_speedrun_autostart.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_speedrun_autostop.UniqueFor([]() { return sar.game->HasChallengeMode(); });
 
     startbhop.UniqueFor([]() { return sar.game->HasJumpDisabled(); });
     endbhop.UniqueFor([]() { return sar.game->HasJumpDisabled(); });

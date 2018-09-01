@@ -26,6 +26,7 @@ public:
     using _GetViewAngles = int(__func*)(void* thisptr, QAngle& va);
     using _SetViewAngles = int(__func*)(void* thisptr, QAngle& va);
     using _GetMaxClients = int (*)();
+    using _GetGameDirectory = char*(__cdecl*)();
     using _AddListener = bool(__func*)(void* thisptr, IGameEventListener2* listener, const char* name, bool serverside);
     using _RemoveListener = bool(__func*)(void* thisptr, IGameEventListener2* listener);
     using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
@@ -46,6 +47,7 @@ public:
     _GetViewAngles GetViewAngles;
     _SetViewAngles SetViewAngles;
     _GetMaxClients GetMaxClients;
+    _GetGameDirectory GetGameDirectory;
     _GetActiveSplitScreenPlayerSlot GetActiveSplitScreenPlayerSlot;
     _AddListener AddListener;
     _RemoveListener RemoveListener;
@@ -54,15 +56,13 @@ public:
     _ScreenPosition ScreenPosition;
     _ConPrintEvent ConPrintEvent;
 
-    using _GetGameDirectory = char*(__cdecl*)();
-    _GetGameDirectory GetGameDirectory;
-    bool* m_bLoadgame;
     EngineDemoPlayer* demoplayer;
     EngineDemoRecorder* demorecorder;
 
     int* tickcount;
     float* interval_per_tick;
     char* m_szLevelName;
+    bool* m_bLoadgame;
     CHostState* hoststate;
     void* s_CommandBuffer;
     bool* m_bWaitEnabled;
@@ -76,17 +76,6 @@ public:
     void SetAngles(QAngle va);
     void SendToCommandBuffer(const char* text, int delay);
     int PointToScreen(const Vector& point, Vector& screen);
-
-    bool isInSession = false;
-    unsigned currentFrame = 0;
-    unsigned lastFrame = 0;
-    HOSTSTATES prevState;
-
-    // TODO: Move this somewhere else
-    void SessionStarted(bool menu = false);
-    void SessionEnded();
-    void SessionChanged(int state);
-    void SessionChanged();
     void SafeUnload(const char* postCommand = nullptr);
 
 private:

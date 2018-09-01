@@ -18,7 +18,7 @@ Command::~Command()
 }
 Command::Command(const char* name)
 {
-    this->ptr = reinterpret_cast<ConCommand*>(Tier1::FindCommandBase(Tier1::g_pCVar->ThisPtr(), name));
+    this->ptr = reinterpret_cast<ConCommand*>(tier1->FindCommandBase(tier1->g_pCVar->ThisPtr(), name));
     this->isReference = true;
 }
 Command::Command(const char* pName, _CommandCallback callback, const char* pHelpString, int flags,
@@ -46,16 +46,16 @@ void Command::UniqueFor(_ShouldRegisterCallback callback)
 void Command::Register()
 {
     if (!this->isRegistered) {
-        this->ptr->ConCommandBase_VTable = Tier1::ConCommand_VTable;
-        Tier1::RegisterConCommand(Tier1::g_pCVar->ThisPtr(), this->ptr);
-        Tier1::m_pConCommandList = this->ptr;
+        this->ptr->ConCommandBase_VTable = tier1->ConCommand_VTable;
+        tier1->RegisterConCommand(tier1->g_pCVar->ThisPtr(), this->ptr);
+        tier1->m_pConCommandList = this->ptr;
     }
     this->isRegistered = true;
 }
 void Command::Unregister()
 {
     if (this->isRegistered) {
-        Tier1::UnregisterConCommand(Tier1::g_pCVar->ThisPtr(), this->ptr);
+        tier1->UnregisterConCommand(tier1->g_pCVar->ThisPtr(), this->ptr);
     }
     this->isRegistered = false;
 }
@@ -93,11 +93,11 @@ Command* Command::Find(const char* name)
 
 std::vector<Command*> Command::list;
 
-bool Command::Hook(const char* name, _CommandCallback detour, _CommandCallback* original)
+bool Command::Hook(const char* name, _CommandCallback detour, _CommandCallback& original)
 {
     auto cc = Command(name);
     if (!!cc) {
-        *original = cc.ThisPtr()->m_fnCommandCallback;
+        original = cc.ThisPtr()->m_fnCommandCallback;
         cc.ThisPtr()->m_fnCommandCallback = detour;
         return true;
     }

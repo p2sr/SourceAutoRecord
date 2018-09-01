@@ -63,8 +63,10 @@ bool EngineDemoRecorder::Init()
     auto disconnect = engine->cl->Original(Offsets::Disconnect);
     auto demorecorder = Memory::DerefDeref<void*>(disconnect + Offsets::demorecorder);
     if (this->s_ClientDemoRecorder = Interface::Create(demorecorder)) {
-        this->s_ClientDemoRecorder->Hook(SetSignonState_Hook, this->SetSignonState, Offsets::SetSignonState);
-        this->s_ClientDemoRecorder->Hook(StopRecording_Hook, this->StopRecording, Offsets::StopRecording);
+        this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::SetSignonState_Hook,
+            EngineDemoRecorder::SetSignonState, Offsets::SetSignonState);
+        this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::StopRecording_Hook,
+            EngineDemoRecorder::StopRecording, Offsets::StopRecording);
 
         this->GetRecordingTick = s_ClientDemoRecorder->Original<_GetRecordingTick>(Offsets::GetRecordingTick);
         this->m_szDemoBaseName = reinterpret_cast<char*>((uintptr_t)demorecorder + Offsets::m_szDemoBaseName);

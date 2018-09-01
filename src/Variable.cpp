@@ -25,7 +25,7 @@ Variable::~Variable()
 Variable::Variable(const char* name)
     : Variable()
 {
-    this->ptr = reinterpret_cast<ConVar*>(Tier1::FindCommandBase(Tier1::g_pCVar->ThisPtr(), name));
+    this->ptr = reinterpret_cast<ConVar*>(tier1->FindCommandBase(tier1->g_pCVar->ThisPtr(), name));
     this->isReference = true;
 }
 // Boolean or String
@@ -195,17 +195,17 @@ void Variable::Register()
     if (!this->isRegistered && !this->isReference) {
         this->isRegistered = true;
         this->PostInit();
-        this->ptr->ConCommandBase_VTable = Tier1::ConVar_VTable;
-        this->ptr->ConVar_VTable = Tier1::ConVar_VTable2;
-        Tier1::RegisterConCommand(Tier1::g_pCVar->ThisPtr(), this->ptr);
-        Tier1::m_pConCommandList = this->ptr;
+        this->ptr->ConCommandBase_VTable = tier1->ConVar_VTable;
+        this->ptr->ConVar_VTable = tier1->ConVar_VTable2;
+        tier1->RegisterConCommand(tier1->g_pCVar->ThisPtr(), this->ptr);
+        tier1->m_pConCommandList = this->ptr;
     }
 }
 void Variable::Unregister()
 {
     if (this->isRegistered && !this->isReference) {
         this->isRegistered = false;
-        Tier1::UnregisterConCommand(Tier1::g_pCVar->ThisPtr(), this->ptr);
+        tier1->UnregisterConCommand(tier1->g_pCVar->ThisPtr(), this->ptr);
     }
 }
 bool Variable::operator!()

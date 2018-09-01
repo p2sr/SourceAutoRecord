@@ -1,7 +1,6 @@
 #pragma once
 #include "Modules/Console.hpp"
-#include "Modules/EngineDemoRecorder.hpp"
-#include "Modules/Tier1.hpp"
+#include "Modules/Engine.hpp"
 
 #include "Features/Demo/Demo.hpp"
 #include "Features/Demo/DemoParser.hpp"

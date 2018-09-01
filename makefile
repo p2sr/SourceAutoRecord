@@ -5,6 +5,7 @@ LDIR=lib/
 ODIR=obj/
 
 SRCS=$(wildcard $(SDIR)*.cpp)
+SRCS+=$(wildcard $(SDIR)Commands/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Demo/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Hud/*.cpp)
@@ -26,7 +27,7 @@ EXPORT=cp -fu
 all: dirs | sar
 
 sar: $(OBJS)
-	$(CC) $(CFLAGS) -o $(BINARY) $^ -lstdc++fs
+	@$(CC) $(CFLAGS) -o $(BINARY) $^ -lstdc++fs
 	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal 2/$(BINARY)"
 	@$(EXPORT) "$(BINARY)" "$(STEAM)The Stanley Parable/$(BINARY)"
 	@$(EXPORT) "$(BINARY)" "$(STEAM)The Beginners Guide/$(BINARY)"
@@ -45,6 +46,7 @@ clean-all:
 
 dirs:
 	@mkdir -p $(ODIR)
+	@mkdir -p $(ODIR)Commands/
 	@mkdir -p $(ODIR)Features/
 	@mkdir -p $(ODIR)Features/Demo/
 	@mkdir -p $(ODIR)Features/Hud/
