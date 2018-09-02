@@ -9,6 +9,8 @@
 #include "Hud/InputHud.hpp"
 #include "Hud/SpeedrunHud.hpp"
 
+#include "Game.hpp"
+#include "SAR.hpp"
 #include "Utils.hpp"
 
 Config::Config()
@@ -40,10 +42,13 @@ bool Config::Save()
     SAVE_CVAR(sar_ihud_layout, String);
     SAVE_CVAR(sar_ihud_shadow_color, String);
     SAVE_CVAR(sar_ihud_shadow_font_color, String);
-    SAVE_CVAR(sar_sr_hud_x, Int);
-    SAVE_CVAR(sar_sr_hud_y, Int);
-    SAVE_CVAR(sar_sr_hud_font_color, String);
-    SAVE_CVAR(sar_sr_hud_font_index, Int);
+
+    if (sar.game->version & SourceGame_Portal2) {
+        SAVE_CVAR(sar_sr_hud_x, Int);
+        SAVE_CVAR(sar_sr_hud_y, Int);
+        SAVE_CVAR(sar_sr_hud_font_color, String);
+        SAVE_CVAR(sar_sr_hud_font_index, Int);
+    }
 
     file.close();
     return true;

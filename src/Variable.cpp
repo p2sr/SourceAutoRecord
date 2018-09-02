@@ -216,7 +216,7 @@ int Variable::RegisterAll()
 {
     auto result = 0;
     for (const auto& var : Variable::list) {
-        if (var->version != SourceGame_Unknown && var->version & sar.game->version) {
+        if (var->version != SourceGame_Unknown && !(var->version & sar.game->version)) {
             continue;
         }
         var->Register();
