@@ -15,7 +15,6 @@
 #include <link.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#define MAX_PATH 4096
 #endif
 
 #define INRANGE(x, a, b) (x >= a && x <= b)

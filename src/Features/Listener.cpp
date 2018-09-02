@@ -1,5 +1,7 @@
 #include "Listener.hpp"
 
+#include <cstring>
+
 #include "Modules/Engine.hpp"
 
 #include "Features/Session.hpp"

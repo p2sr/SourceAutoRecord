@@ -1,5 +1,7 @@
 #include "InputHud.hpp"
 
+#include <cstring>
+
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"

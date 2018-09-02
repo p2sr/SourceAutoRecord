@@ -3,6 +3,7 @@
 #include <windows.h>
 #else
 #include <dlfcn.h>
+#define MAX_PATH 4096
 #endif
 
 #include <memory>

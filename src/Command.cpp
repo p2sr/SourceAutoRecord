@@ -1,5 +1,7 @@
 #include "Command.hpp"
 
+#include <cstring>
+
 #include "Modules/Tier1.hpp"
 
 #include "Game.hpp"

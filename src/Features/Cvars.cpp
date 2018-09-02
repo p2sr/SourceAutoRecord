@@ -1,5 +1,7 @@
 #include "Cvars.hpp"
 
+#include <cstring>
+
 #include "Modules/Console.hpp"
 #include "Modules/Tier1.hpp"
 

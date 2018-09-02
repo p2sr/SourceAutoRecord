@@ -1,5 +1,7 @@
 #include "Interface.hpp"
 
+#include <cstring>
+
 #include "Modules/Console.hpp"
 
 #include "Utils/Memory.hpp"

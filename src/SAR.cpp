@@ -1,5 +1,7 @@
 #include "SAR.hpp"
 
+#include <cstring>
+
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"

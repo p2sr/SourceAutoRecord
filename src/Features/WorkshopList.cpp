@@ -1,5 +1,7 @@
 #include "WorkshopList.hpp"
 
+#include <cstring>
+
 #include <experimental/filesystem>
 #include <stdlib.h>
 
