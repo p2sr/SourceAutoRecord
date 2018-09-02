@@ -229,6 +229,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
+    <ClCompile Include="Utils\Memory.cpp" />
     <ClCompile Include="Utils\SDK.cpp" />
     <ClCompile Include="Variable.cpp" />
   </ItemGroup>

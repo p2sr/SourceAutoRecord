@@ -1,5 +1,7 @@
 #include "ReplaySystem.hpp"
 
+#include <fstream>
+
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
@@ -44,7 +46,7 @@ void ReplaySystem::Stop()
 }
 void ReplaySystem::Record(CUserCmd* cmd)
 {
-    this->frames.push_back(ReplayFrame{
+    this->frames.push_back(ReplayFrame {
         cmd->viewangles,
         cmd->forwardmove,
         cmd->sidemove,

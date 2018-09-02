@@ -92,7 +92,6 @@ void HalfLife2::LoadOffsets()
     g_EventQueue = 1; // ServiceEventQueue
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 38; // CServerGameDLL::Think
-    iNumPortalsPlaced = 4796; // CPortal_Player::IncrementPortalsPlaced
     m_fFlags = 260; // CBasePlayer::UpdateStepSound
     m_MoveType = 314; // CBasePlayer::UpdateStepSound
     m_nWaterLevel = 503; // CBasePlayer::UpdateStepSound
@@ -127,9 +126,7 @@ void HalfLife2::LoadRules()
 }
 const char* HalfLife2::Version()
 {
-    return (this->version != SourceGame_Portal)
-        ? "Half-Life 2 (2257546)"
-        : "Portal (1910503)";
+    return "Half-Life 2 (2257546)";
 }
 const char* HalfLife2::Process()
 {

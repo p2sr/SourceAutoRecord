@@ -1,5 +1,6 @@
 #include "Config.hpp"
 
+#include <fstream>
 #include <string>
 
 #include "Modules/Console.hpp"
