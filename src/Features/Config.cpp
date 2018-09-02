@@ -20,9 +20,6 @@ Config::Config()
 }
 bool Config::Save()
 {
-    if (engine->GetGameDirectory == nullptr)
-        return false;
-
     std::ofstream file(std::string(engine->GetGameDirectory()) + this->filePath, std::ios::out | std::ios::trunc);
     if (!file.good())
         return false;
@@ -55,9 +52,6 @@ bool Config::Save()
 }
 bool Config::Load()
 {
-    if (engine->GetGameDirectory == nullptr)
-        return false;
-
     std::ifstream file(std::string(engine->GetGameDirectory()) + this->filePath, std::ios::in);
     if (!file.good())
         return false;
@@ -65,7 +59,7 @@ bool Config::Load()
     engine->ExecuteCommand("exec _sar_cvars.cfg");
 
     file.close();
-    return true;
+    return false;
 }
 
 Config* config;

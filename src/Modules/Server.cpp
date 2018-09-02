@@ -31,6 +31,12 @@ REDECL(Server::FinishGravity)
 REDECL(Server::AirMove)
 REDECL(Server::AirMoveBase)
 REDECL(Server::GameFrame)
+#ifdef _WIN32
+REDECL(Server::AirMove_Skip)
+REDECL(Server::AirMove_Continue)
+REDECL(Server::AirMove_Mid)
+REDECL(Server::AirMove_Mid_Trampoline)
+#endif
 
 void* Server::GetPlayer()
 {
@@ -191,7 +197,7 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 
 // CServerGameDLL::GameFrame
 #ifdef _WIN32
-DETOUR_STD(Server::GameFrame, bool simulating)
+DETOUR_STD(void, Server::GameFrame, bool simulating)
 #else
 DETOUR(Server::GameFrame, bool simulating)
 #endif

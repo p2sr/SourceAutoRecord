@@ -47,21 +47,21 @@ public:
 
 #ifdef _WIN32
     // CGameMovement::AirMove
-    static uintptr_t AirMove_Skip = 0;
-    static uintptr_t AirMove_Continue = 0;
+    static uintptr_t AirMove_Skip;
+    static uintptr_t AirMove_Continue;
     DECL_DETOUR_MID_MH(AirMove_Mid)
 #endif
 
 // CServerGameDLL::GameFrame
 #ifdef _WIN32
-    DECL_DETOUR_STD(GameFrame, bool simulating)
+    DECL_DETOUR_STD(void, GameFrame, bool simulating)
 #else
     DECL_DETOUR(GameFrame, bool simulating)
 #endif
 
     bool Init() override;
     void Shutdown() override;
-    const char* Name() override { return MODULE("engine"); }
+    const char* Name() override { return MODULE("server"); }
 };
 
 extern Server* server;

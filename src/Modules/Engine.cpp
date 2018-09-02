@@ -26,7 +26,7 @@ REDECL(Engine::exit_callback)
 REDECL(Engine::quit_callback)
 REDECL(Engine::help_callback)
 #ifdef _WIN32
-REDECL(Engine::connect)
+REDECL(Engine::connect_callback)
 #endif
 
 void Engine::ExecuteCommand(const char* cmd)
@@ -105,12 +105,12 @@ DETOUR(Engine::Disconnect, bool bShowMainMenu)
 #ifdef _WIN32
 DETOUR(Engine::Disconnect2, int unk1, int unk2, int unk3)
 {
-    engine->SessionEnded();
+    session->Ended();
     return Engine::Disconnect2(thisptr, unk1, unk2, unk3);
 }
 DETOUR_COMMAND(Engine::connect)
 {
-    engine->SessionEnded();
+    session->Ended();
     Engine::connect_callback(args);
 }
 #else
@@ -230,7 +230,7 @@ bool Engine::Init()
             } else if (sar.game->version & SourceGame_HalfLife2Engine) {
                 this->cl->Hook(Engine::SetSignonState2_Hook, Engine::SetSignonState2, Offsets::Disconnect - 1);
 #ifdef _WIN32
-                Command::Hook("connect", Engine::connect_callback_hook, &Engine::connect_callback);
+                Command::Hook("connect", Engine::connect_callback_hook, Engine::connect_callback);
 #else
                 this->cl->Hook(Engine::Disconnect2_Hook, Engine::Disconnect2, Offsets::Disconnect);
 #endif
@@ -250,7 +250,7 @@ bool Engine::Init()
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
             Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
 
-            if (auto s_EngineAPI = Interface::Create(MODULE("engine"), "VENGINE_LAUNCHER_API_VERSION0", false)) {
+            if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
                 auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
                 auto engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
 
@@ -261,14 +261,14 @@ bool Engine::Init()
         }
     }
 
-    if (auto tool = Interface::Create(MODULE("engine"), "VENGINETOOL0", false)) {
+    if (auto tool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
         auto GetCurrentMap = tool->Original(Offsets::GetCurrentMap);
         this->m_szLevelName = Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName);
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
     }
 
     if (sar.game->version == SourceGame_Portal2) {
-        this->s_GameEventManager = Interface::Create(MODULE("engine"), "GAMEEVENTSMANAGER002", false);
+        this->s_GameEventManager = Interface::Create(this->Name(), "GAMEEVENTSMANAGER002", false);
         if (this->s_GameEventManager) {
             this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
             this->RemoveListener = this->s_GameEventManager->Original<_RemoveListener>(Offsets::RemoveListener);

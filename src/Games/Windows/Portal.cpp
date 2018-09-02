@@ -1,14 +1,16 @@
-#include "HalfLife2.hpp"
+#include "Portal.hpp"
 
 #include "Game.hpp"
 #include "Offsets.hpp"
 
-HalfLife2::HalfLife2()
+Portal::Portal()
 {
-    this->version = SourceGame_HalfLife2;
+    this->version = SourceGame_Portal;
 }
-void HalfLife2::LoadOffsets()
+void Portal::LoadOffsets()
 {
+    HalfLife2::LoadOffsets();
+
     using namespace Offsets;
 
     // engine.dll
@@ -18,9 +20,9 @@ void HalfLife2::LoadOffsets()
     InternalSetIntValue = 12; // ConVar
     GetScreenSize = 5; // CEngineClient
     ClientCmd = 7; // CEngineClient
-    Cbuf_AddText = 58; // CEngineClient::ClientCmd
-    s_CommandBuffer = 64; // Cbuf_AddText
-    AddText = 69; // Cbuf_AddText
+    Cbuf_AddText = 60; // CEngineClient::ClientCmd
+    s_CommandBuffer = 71; // Cbuf_AddText
+    AddText = 76; // Cbuf_AddText
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 19; // CEngineClient
     SetViewAngles = 20; // CEngineClient
@@ -41,22 +43,22 @@ void HalfLife2::LoadOffsets()
     m_szFileName = 4; // CDemoPlayer::SkipToTick
     Paint = 13; // CEngineVGui
     ProcessTick = 1; // CClientState/IServerMessageHandler
-    tickcount = 87; // CClientState::ProcessTick
-    interval_per_tick = 65; // CClientState::ProcessTick
-    HostState_OnClientConnected = 518; // CClientState::SetSignonState
+    tickcount = 98; // CClientState::ProcessTick
+    interval_per_tick = 68; // CClientState::ProcessTick
+    HostState_OnClientConnected = 570; // CClientState::SetSignonState
     hoststate = 1; // HostState_OnClientConnected
     Disconnect = 14; //  CClientState
-    demoplayer = 110; // CClientState::Disconnect
-    demorecorder = 121; // CClientState::Disconnect
+    demoplayer = 115; // CClientState::Disconnect
+    demorecorder = 128; // CClientState::Disconnect
     GetCurrentMap = 23; // CEngineTool
-    m_szLevelName = 32; // CEngineTool::GetCurrentMap
+    m_szLevelName = 34; // CEngineTool::GetCurrentMap
     //AddListener = 3; // CGameEventManager
     //RemoveListener = 5; // CGameEventManager
     //FireEventClientSide = 8; // CGameEventManager
-    //FireEventIntern = 11; // CGameEventManager::FireEventClientSide
-    //ConPrintEvent = 231; // CGameEventManager::FireEventIntern
-    AutoCompletionFunc = 62; // listdemo_CompletionFunc
-    Key_SetBinding = 110; // unbind
+    //FireEventIntern = 12; // CGameEventManager::FireEventClientSide
+    //ConPrintEvent = 262; // CGameEventManager::FireEventIntern
+    AutoCompletionFunc = 66; // listdemo_CompletionFunc
+    Key_SetBinding = 135; // unbind
     IsRunningSimulation = 9; // CEngineAPI
     eng = 2; // CEngineAPI::IsRunningSimulation
     Frame = 5; // CEngine
@@ -88,10 +90,10 @@ void HalfLife2::LoadOffsets()
     GameFrame = 5; // CServerGameDLL
     g_InRestore = 8; // CServerGameDLL::GameFrame
     gpGlobals = 29; // CServerGameDLL::GameFrame
-    ServiceEventQueue = 147; // CServerGameDLL::GameFrame
+    ServiceEventQueue = 152; // CServerGameDLL::GameFrame
     g_EventQueue = 1; // ServiceEventQueue
     Think = 31; // CServerGameDLL
-    UTIL_PlayerByIndex = 38; // CServerGameDLL::Think
+    UTIL_PlayerByIndex = 39; // CServerGameDLL::Think
     iNumPortalsPlaced = 4796; // CPortal_Player::IncrementPortalsPlaced
     m_fFlags = 260; // CBasePlayer::UpdateStepSound
     m_MoveType = 314; // CBasePlayer::UpdateStepSound
@@ -117,21 +119,19 @@ void HalfLife2::LoadOffsets()
     DrawSetTextColor = 18; // CMatSystemSurface
     GetFontTall = 69; // CMatSystemSurface
     PaintTraverseEx = 114; // CMatSystemSurface
-    StartDrawing = 124; // CMatSystemSurface::PaintTraverseEx
-    FinishDrawing = 606; // CMatSystemSurface::PaintTraverseEx
+    StartDrawing = 129; // CMatSystemSurface::PaintTraverseEx
+    FinishDrawing = 650; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 162; // CMatSystemSurface
     DrawTextLen = 165; // CMatSystemSurface
 }
-void HalfLife2::LoadRules()
+void Portal::LoadRules()
 {
 }
-const char* HalfLife2::Version()
+const char* Portal::Version()
 {
-    return (this->version != SourceGame_Portal)
-        ? "Half-Life 2 (2257546)"
-        : "Portal (1910503)";
+    return "Portal (TODO)";
 }
-const char* HalfLife2::Process()
+const char* Portal::Process()
 {
     return "hl2.exe";
 }

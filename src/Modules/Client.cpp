@@ -141,7 +141,7 @@ bool Client::Init()
             typedef void* (*_GetClientMode)();
             auto GetClientMode = Memory::Read<_GetClientMode>(HudProcessInput + Offsets::GetClientMode);
             clientMode = GetClientMode();
-        } else {
+        } else if (sar.game->version & SourceGame_HalfLife2Engine) {
             clientMode = Memory::DerefDeref<void*>(HudProcessInput + Offsets::GetClientMode);
         }
 

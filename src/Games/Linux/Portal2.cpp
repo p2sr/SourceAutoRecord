@@ -66,6 +66,7 @@ void Portal2::LoadOffsets()
     ScreenPosition = 11; // CIVDebugOverlay
 
     // libvstdlib.so
+
     RegisterConCommand = 9; // CCVar
     UnregisterConCommand = 10; // CCvar
     FindCommandBase = 13; // CCvar

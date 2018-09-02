@@ -31,39 +31,41 @@ struct ModuleInfo {
     char path[MAX_PATH];
 };
 
+static std::vector<ModuleInfo> moduleList;
+
+static bool TryGetModule(const char* moduleName, ModuleInfo* info)
+{
+    if (moduleList.size() == 0) {
 #ifdef _WIN32
-static bool TryGetModule(const char* moduleName, ModuleInfo* info)
-{
-    auto mHandle = GetModuleHandleA(moduleName);
+        HMODULE hMods[1024];
+        HANDLE pHandle = GetCurrentProcess();
+        DWORD cbNeeded;
+        if (EnumProcessModules(pHandle, hMods, sizeof(hMods), &cbNeeded)) {
+            for (unsigned i = 0; i < (cbNeeded / sizeof(HMODULE)); ++i) {
+                char buffer[MAX_PATH];
+                if (!GetModuleFileName(hMods[i], buffer, sizeof(buffer)))
+                    continue;
 
-    char buffer[MAX_PATH];
-    if (!GetModuleFileName(mHandle, buffer, sizeof(buffer)))
-        return false;
+                auto modinfo = MODULEINFO();
+                if (!GetModuleInformation(pHandle, hMods[i], &modinfo, sizeof(modinfo)))
+                    continue;
 
-    auto temp = MODULEINFO();
-    auto pHandle = GetCurrentProcess();
-    if (!GetModuleInformation(pHandle, mHandle, &temp, sizeof(temp)))
-        return false;
+                auto module = ModuleInfo();
 
-    auto name = std::string(buffer);
-    auto index = name.find_last_of("\\/");
-    name = name.substr(index + 1, name.length() - index);
+                auto temp = std::string(buffer);
+                auto index = temp.find_last_of("\\/");
+                temp = temp.substr(index + 1, temp.length() - index);
 
-    snprintf(info->name, sizeof(info->name), "%s", name.c_str());
-    info->base = (uintptr_t)temp.lpBaseOfDll;
-    info->size = (uintptr_t)temp.SizeOfImage;
-    snprintf(info->path, sizeof(info->path), "%s", buffer);
+                snprintf(module.name, sizeof(module.name), "%s", temp.c_str());
+                module.base = (uintptr_t)modinfo.lpBaseOfDll;
+                module.size = (uintptr_t)modinfo.SizeOfImage;
+                snprintf(module.path, sizeof(module.path), "%s", buffer);
 
-    return true;
-}
+                moduleList.push_back(module);
+            }
+        }
+
 #else
-namespace Cache {
-    static std::vector<ModuleInfo> Modules;
-}
-
-static bool TryGetModule(const char* moduleName, ModuleInfo* info)
-{
-    if (Cache::Modules.size() == 0) {
         dl_iterate_phdr([](struct dl_phdr_info* info, size_t, void*) {
             auto module = ModuleInfo();
 
@@ -76,22 +78,24 @@ static bool TryGetModule(const char* moduleName, ModuleInfo* info)
             module.size = info->dlpi_phdr[0].p_memsz;
             strcpy(module.path, info->dlpi_name);
 
-            Cache::Modules.push_back(module);
+            moduleList.push_back(module);
             return 0;
         },
             nullptr);
+#endif
     }
 
-    for (ModuleInfo& item : Cache::Modules) {
+    for (ModuleInfo& item : moduleList) {
         if (!std::strcmp(item.name, moduleName)) {
-            *info = item;
+            if (info) {
+                *info = item;
+            }
             return true;
         }
     }
 
     return false;
 }
-#endif
 
 static const char* GetModulePath(const char* moduleName)
 {

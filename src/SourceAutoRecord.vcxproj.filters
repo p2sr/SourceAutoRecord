@@ -16,15 +16,6 @@
     <ClCompile Include="..\lib\minhook\hde\hde32.c">
       <Filter>lib\minhook</Filter>
     </ClCompile>
-    <ClCompile Include="Modules\Console.cpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="SAR.cpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClCompile>
-    <ClCompile Include="Plugin.cpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Hud\Hud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
@@ -55,30 +46,6 @@
     <ClCompile Include="Games\Linux\TheBeginnersGuide.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClCompile>
-    <ClCompile Include="Offsets.cpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClCompile>
-    <ClCompile Include="Interface.cpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClCompile>
-    <ClCompile Include="Cheats.cpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClCompile>
-    <ClCompile Include="Variable.cpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClCompile>
-    <ClCompile Include="Modules\Tier1.cpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="Modules\Module.cpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="Command.cpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Speedrun\TimerInterface.cpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClCompile>
@@ -100,14 +67,140 @@
     <ClCompile Include="Features\Demo\DemoParser.cpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Stats.cpp">
+    <ClCompile Include="Features\Routing\Tracer.cpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\SDK.cpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Client.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Console.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Engine.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\EngineDemoPlayer.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\EngineDemoRecorder.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\InputSystem.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Module.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Scheme.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Server.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Surface.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\Tier1.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\VGui.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Stats\JumpStats.cpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Stats\Stats.cpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Stats\StepStats.cpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Stats\VelocityStats.cpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\InputHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\SpeedrunHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\CommandQueuer.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\ReplaySystem.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Timer\Timer.cpp">
+      <Filter>SourceAutoRecord\Features\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Timer\TimerAverage.cpp">
+      <Filter>SourceAutoRecord\Features\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Timer\TimerCheckPoints.cpp">
+      <Filter>SourceAutoRecord\Features\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Config.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Cvars.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Feature.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Listener.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Rebinder.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Session.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
     <ClCompile Include="Features\StepCounter.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Feature.cpp">
+    <ClCompile Include="Features\Summary.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Teleporter.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\WorkshopList.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Cheats.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Command.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Interface.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Offsets.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Plugin.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="SAR.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Variable.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\Portal.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\Portal.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -135,90 +228,6 @@
     <ClInclude Include="..\lib\minhook\MinHook.h">
       <Filter>lib\minhook</Filter>
     </ClInclude>
-    <ClInclude Include="Cheats.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
-    <ClInclude Include="Game.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
-    <ClInclude Include="Offsets.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Client.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Console.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\EngineDemoPlayer.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\EngineDemoRecorder.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Engine.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\InputSystem.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Scheme.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Server.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Surface.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Tier1.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\VGui.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Config.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Rebinder.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Routing\Tracer.hpp">
-      <Filter>SourceAutoRecord\Features\Tracer</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Session.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Stats.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\StepCounter.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Summary.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Tas\CommandQueuer.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Tas\ReplaySystem.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Teleporter.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Timer.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\TimerAverage.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\TimerCheckPoints.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\Math.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
@@ -243,59 +252,14 @@
     <ClInclude Include="Games\Windows\TheStanleyParable.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Command.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
-    <ClInclude Include="Variable.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\Binding.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\Demo.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\Tracer.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\Stats.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\Summary.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\CommandQueuer.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\ReplaySystem.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\Timer.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="Plugin.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\Memory.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\Teleporter.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
     </ClInclude>
     <ClInclude Include="Games\Windows\HalfLife2.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
     <ClInclude Include="Games\Linux\HalfLife2.hpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Listener.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\Speedrun.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="SAR.hpp">
-      <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Features\Hud\InputHud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
@@ -305,12 +269,6 @@
     </ClInclude>
     <ClInclude Include="Features\Hud\Hud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
-    </ClInclude>
-    <ClInclude Include="Interface.hpp">
-      <Filter>SourceAutoRecord</Filter>
-    </ClInclude>
-    <ClInclude Include="Modules\Module.hpp">
-      <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Platform.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
@@ -336,23 +294,143 @@
     <ClInclude Include="Features\Speedrun\TimerState.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
-    <ClInclude Include="Features\WorkshopList.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\Exclusive.hpp">
-      <Filter>SourceAutoRecord\Commands</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Demo\Demo.hpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\DemoParser.hpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Feature.hpp">
+    <ClInclude Include="Modules\Client.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Console.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Engine.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\EngineDemoPlayer.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\EngineDemoRecorder.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\InputSystem.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Module.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Scheme.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Server.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Surface.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Tier1.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\VGui.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats\JumpStats.hpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats\Stats.hpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats\StatsResultType.hpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats\StepStats.hpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats\VelocityStats.hpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Routing\Tracer.hpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\CommandQueuer.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\ReplaySystem.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Timer\Timer.hpp">
+      <Filter>SourceAutoRecord\Features\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Timer\TimerAverage.hpp">
+      <Filter>SourceAutoRecord\Features\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Timer\TimerCheckPoints.hpp">
+      <Filter>SourceAutoRecord\Features\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Config.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Cvars.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Feature.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Listener.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Rebinder.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Session.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\StepCounter.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Summary.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Teleporter.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\WorkshopList.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Cheats.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Command.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Offsets.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Plugin.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="SAR.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Variable.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\Portal.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\Portal.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -383,17 +461,26 @@
     <Filter Include="SourceAutoRecord\Games\Linux">
       <UniqueIdentifier>{5e8e3eca-807e-4e32-bd8d-046f8be99381}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SourceAutoRecord\Commands">
-      <UniqueIdentifier>{fa07d817-705c-4525-a195-7ed5d8e10972}</UniqueIdentifier>
-    </Filter>
     <Filter Include="SourceAutoRecord\Features\Hud">
       <UniqueIdentifier>{79986844-aff5-4989-abfb-85cb7515858e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Demo">
+      <UniqueIdentifier>{274d8264-59f6-4e07-880f-672c8c26c1f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Stats">
+      <UniqueIdentifier>{d85b9369-515b-4810-bfce-0bc962742d18}</UniqueIdentifier>
     </Filter>
     <Filter Include="SourceAutoRecord\Features\Speedrun">
       <UniqueIdentifier>{68aa521b-4809-41c1-9070-2b9f95b802bd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SourceAutoRecord\Features\Demo">
-      <UniqueIdentifier>{274d8264-59f6-4e07-880f-672c8c26c1f7}</UniqueIdentifier>
+    <Filter Include="SourceAutoRecord\Features\Timer">
+      <UniqueIdentifier>{7417ee07-2df2-415e-a102-e7e90830ec16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Tas">
+      <UniqueIdentifier>{d662a603-82c9-4401-9b5e-a46e1a3a71da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Routing">
+      <UniqueIdentifier>{74d18c35-2424-4dab-bb78-11a5aefde796}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

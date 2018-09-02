@@ -66,6 +66,7 @@ void HalfLife2::LoadOffsets()
     IsCommand = 2; // ConCommandBase
 
     // libvstdlib.so
+
     RegisterConCommand = 6; // CCVar
     UnregisterConCommand = 7; // CCvar
     FindCommandBase = 10; // CCvar

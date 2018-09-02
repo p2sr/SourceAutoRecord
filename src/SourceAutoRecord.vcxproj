@@ -135,7 +135,8 @@
       <Command>copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Portal 2\$(TargetName).dll"
 copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Half-Life 2\hl2\$(TargetName).dll"
 copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\The Stanley Parable\$(TargetName).dll"
-copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\The Beginners Guide\$(TargetName).dll"</Command>
+copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\The Beginners Guide\$(TargetName).dll"
+copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Portal\$(TargetName).dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -161,25 +162,54 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="..\lib\minhook\trampoline.c" />
     <ClCompile Include="Cheats.cpp" />
     <ClCompile Include="Command.cpp" />
+    <ClCompile Include="Features\Config.cpp" />
+    <ClCompile Include="Features\Cvars.cpp" />
     <ClCompile Include="Features\Demo\Demo.cpp" />
     <ClCompile Include="Features\Demo\DemoParser.cpp" />
     <ClCompile Include="Features\Feature.cpp" />
     <ClCompile Include="Features\Hud\Hud.cpp" />
+    <ClCompile Include="Features\Hud\InputHud.cpp" />
+    <ClCompile Include="Features\Hud\SpeedrunHud.cpp" />
+    <ClCompile Include="Features\Listener.cpp" />
+    <ClCompile Include="Features\Rebinder.cpp" />
+    <ClCompile Include="Features\Routing\Tracer.cpp" />
+    <ClCompile Include="Features\Session.cpp" />
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp" />
     <ClCompile Include="Features\Speedrun\TimerInterface.cpp" />
     <ClCompile Include="Features\Speedrun\TimerResult.cpp" />
     <ClCompile Include="Features\Speedrun\TimerRule.cpp" />
     <ClCompile Include="Features\Speedrun\TimerSplit.cpp" />
-    <ClCompile Include="Features\Stats.cpp" />
+    <ClCompile Include="Features\Stats\JumpStats.cpp" />
+    <ClCompile Include="Features\Stats\Stats.cpp" />
+    <ClCompile Include="Features\Stats\StepStats.cpp" />
+    <ClCompile Include="Features\Stats\VelocityStats.cpp" />
     <ClCompile Include="Features\StepCounter.cpp" />
+    <ClCompile Include="Features\Summary.cpp" />
+    <ClCompile Include="Features\Tas\CommandQueuer.cpp" />
+    <ClCompile Include="Features\Tas\ReplaySystem.cpp" />
+    <ClCompile Include="Features\Teleporter.cpp" />
+    <ClCompile Include="Features\Timer\Timer.cpp" />
+    <ClCompile Include="Features\Timer\TimerAverage.cpp" />
+    <ClCompile Include="Features\Timer\TimerCheckPoints.cpp" />
+    <ClCompile Include="Features\WorkshopList.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Games\Linux\Portal.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\Portal.cpp" />
     <ClCompile Include="Interface.cpp" />
-    <ClCompile Include="Modules\Module.cpp" />
-    <ClCompile Include="Modules\Tier1.cpp" />
-    <ClCompile Include="Offsets.cpp" />
-    <ClCompile Include="Plugin.cpp" />
-    <ClCompile Include="SAR.cpp" />
+    <ClCompile Include="Modules\Client.cpp" />
     <ClCompile Include="Modules\Console.cpp" />
+    <ClCompile Include="Modules\Engine.cpp" />
+    <ClCompile Include="Modules\EngineDemoPlayer.cpp" />
+    <ClCompile Include="Modules\EngineDemoRecorder.cpp" />
+    <ClCompile Include="Modules\InputSystem.cpp" />
+    <ClCompile Include="Modules\Module.cpp" />
+    <ClCompile Include="Modules\Scheme.cpp" />
+    <ClCompile Include="Modules\Server.cpp" />
+    <ClCompile Include="Modules\Surface.cpp" />
+    <ClCompile Include="Modules\Tier1.cpp" />
+    <ClCompile Include="Modules\VGui.cpp" />
     <ClCompile Include="Games\Linux\HalfLife2.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -196,6 +226,10 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="Games\Windows\Portal2.cpp" />
     <ClCompile Include="Games\Windows\TheBeginnersGuide.cpp" />
     <ClCompile Include="Games\Windows\TheStanleyParable.cpp" />
+    <ClCompile Include="Offsets.cpp" />
+    <ClCompile Include="Plugin.cpp" />
+    <ClCompile Include="SAR.cpp" />
+    <ClCompile Include="Utils\SDK.cpp" />
     <ClCompile Include="Variable.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -209,17 +243,6 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="..\lib\minhook\MinHook.h" />
     <ClInclude Include="Cheats.hpp" />
     <ClInclude Include="Command.hpp" />
-    <ClInclude Include="Commands\Speedrun.hpp" />
-    <ClInclude Include="Commands\Exclusive.hpp" />
-    <ClInclude Include="Commands\Binding.hpp" />
-    <ClInclude Include="Commands\Teleporter.hpp" />
-    <ClInclude Include="Commands\Demo.hpp" />
-    <ClInclude Include="Commands\Routing\Tracer.hpp" />
-    <ClInclude Include="Commands\Stats.hpp" />
-    <ClInclude Include="Commands\Summary.hpp" />
-    <ClInclude Include="Commands\CommandQueuer.hpp" />
-    <ClInclude Include="Commands\ReplaySystem.hpp" />
-    <ClInclude Include="Commands\Timer.hpp" />
     <ClInclude Include="Features\Config.hpp" />
     <ClInclude Include="Features\Cvars.hpp" />
     <ClInclude Include="Features\Demo\Demo.hpp" />
@@ -228,6 +251,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\Hud\Hud.hpp" />
     <ClInclude Include="Features\Hud\InputHud.hpp" />
     <ClInclude Include="Features\Hud\SpeedrunHud.hpp" />
+    <ClInclude Include="Features\Listener.hpp" />
     <ClInclude Include="Features\Rebinder.hpp" />
     <ClInclude Include="Features\Routing\Tracer.hpp" />
     <ClInclude Include="Features\Session.hpp" />
@@ -238,18 +262,25 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\Speedrun\TimerRule.hpp" />
     <ClInclude Include="Features\Speedrun\TimerSplit.hpp" />
     <ClInclude Include="Features\Speedrun\TimerState.hpp" />
-    <ClInclude Include="Features\Stats.hpp" />
+    <ClInclude Include="Features\Stats\JumpStats.hpp" />
+    <ClInclude Include="Features\Stats\Stats.hpp" />
+    <ClInclude Include="Features\Stats\StatsResultType.hpp" />
+    <ClInclude Include="Features\Stats\StepStats.hpp" />
+    <ClInclude Include="Features\Stats\VelocityStats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
-    <ClInclude Include="Commands\Tas\CommandQueuer.hpp" />
-    <ClInclude Include="Commands\Tas\ReplaySystem.hpp" />
+    <ClInclude Include="Features\Tas\CommandQueuer.hpp" />
+    <ClInclude Include="Features\Tas\ReplaySystem.hpp" />
     <ClInclude Include="Features\Teleporter.hpp" />
-    <ClInclude Include="Features\Timer.hpp" />
-    <ClInclude Include="Features\TimerAverage.hpp" />
-    <ClInclude Include="Features\TimerCheckPoints.hpp" />
+    <ClInclude Include="Features\Timer\Timer.hpp" />
+    <ClInclude Include="Features\Timer\TimerAverage.hpp" />
+    <ClInclude Include="Features\Timer\TimerCheckPoints.hpp" />
     <ClInclude Include="Features\WorkshopList.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="Games\Linux\HalfLife2.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\Portal.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Games\Linux\Portal2.hpp">
@@ -262,16 +293,16 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Games\Windows\HalfLife2.hpp" />
+    <ClInclude Include="Games\Windows\Portal.hpp" />
     <ClInclude Include="Games\Windows\Portal2.hpp" />
     <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp" />
     <ClInclude Include="Games\Windows\TheStanleyParable.hpp" />
     <ClInclude Include="Interface.hpp" />
-    <ClInclude Include="Listener.hpp" />
     <ClInclude Include="Modules\Client.hpp" />
     <ClInclude Include="Modules\Console.hpp" />
+    <ClInclude Include="Modules\Engine.hpp" />
     <ClInclude Include="Modules\EngineDemoPlayer.hpp" />
     <ClInclude Include="Modules\EngineDemoRecorder.hpp" />
-    <ClInclude Include="Modules\Engine.hpp" />
     <ClInclude Include="Modules\InputSystem.hpp" />
     <ClInclude Include="Modules\Module.hpp" />
     <ClInclude Include="Modules\Scheme.hpp" />

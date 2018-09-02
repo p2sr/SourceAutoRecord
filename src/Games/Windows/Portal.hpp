@@ -1,9 +1,11 @@
 #pragma once
-#include "TheStanleyParable.hpp"
+#include "Game.hpp"
 
-class TheBeginnersGuide : public TheStanleyParable {
+#include "HalfLife2.hpp"
+
+class Portal : public HalfLife2 {
 public:
-    TheBeginnersGuide();
+    Portal();
 
     void LoadOffsets() override;
     void LoadRules() override;

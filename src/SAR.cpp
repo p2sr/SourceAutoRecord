@@ -96,24 +96,26 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->modules->AddModule<Server>(&server);
             this->modules->InitAll();
 
-            if (engine->hasLoaded) {
+            if (engine && engine->hasLoaded) {
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
+
+                if (this->game->version & SourceGame_Portal2) {
+                    this->features->AddFeature<Listener>(&listener);
+                    this->features->AddFeature<WorkshopList>(&workshop);
+
+                    listener->Init();
+                }
+
+                config->Load();
+
+                this->SearchPlugin();
+
+                console->PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
+                return true;
+            } else {
+                console->Warning("SAR: Failed to load engine module!\n");
             }
-
-            if (this->game->version & SourceGame_Portal2) {
-                this->features->AddFeature<Listener>(&listener);
-                this->features->AddFeature<WorkshopList>(&workshop);
-
-                listener->Init();
-            }
-
-            config->Load();
-
-            this->SearchPlugin();
-
-            console->PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
-            return true;
         } else {
             console->Warning("SAR: Failed to load tier1 module!\n");
         }

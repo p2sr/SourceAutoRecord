@@ -49,12 +49,6 @@ void Cheats::Init()
         ui_loadingscreen_transition_time.Unlock();
         // Not a real cheat, right?
         hide_gun_when_holding.Unlock(false);
-    } else if (sar.game->version & SourceGame_HalfLife2) {
-        auto sv_portal_debug_touch = Variable("sv_portal_debug_touch");
-        if (!!sv_portal_debug_touch) {
-            sar.game->version = SourceGame_Portal;
-            console->DevMsg("SAR: Detected Portal version!\n");
-        }
     } else if (sar.game->version & SourceGame_TheStanleyParable
         || sar.game->version & SourceGame_TheBeginnersGuide) {
         Command::ActivateAutoCompleteFile("map", map_CompletionFunc);
