@@ -96,8 +96,8 @@ bool Client::Init()
 {
     bool readJmp = false;
 #ifdef _WIN32
-    readJmp = sar.game->version == SourceGame::TheStanleyParable
-        || sar.game->version == SourceGame::TheBeginnersGuide;
+    readJmp = sar.game->version == SourceGame_TheStanleyParable
+        || sar.game->version == SourceGame_TheBeginnersGuide;
 #endif
 
     this->g_ClientDLL = Interface::Create(this->Name(), "VClient0");
@@ -106,7 +106,7 @@ bool Client::Init()
     if (this->g_ClientDLL) {
         this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);
 
-        if (sar.game->version == SourceGame::Portal2) {
+        if (sar.game->version == SourceGame_Portal2) {
             auto leaderboard = Command("+leaderboard");
             if (!!leaderboard) {
                 using _GetHud = void*(__cdecl*)(int unk);
@@ -121,7 +121,7 @@ bool Client::Init()
                     this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
                 }
             }
-        } else if (sar.game->version == SourceGame::TheStanleyParable) {
+        } else if (sar.game->version == SourceGame_TheStanleyParable) {
             auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
             auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
 
@@ -137,7 +137,7 @@ bool Client::Init()
 
         auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
         void* clientMode = nullptr;
-        if (sar.game->IsPortal2Engine()) {
+        if (sar.game->version & SourceGame_Portal2Engine) {
             typedef void* (*_GetClientMode)();
             auto GetClientMode = Memory::Read<_GetClientMode>(HudProcessInput + Offsets::GetClientMode);
             clientMode = GetClientMode();

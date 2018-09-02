@@ -2,9 +2,12 @@
 
 #include "Modules/Tier1.hpp"
 
+#include "Game.hpp"
+#include "SAR.hpp"
+
 Command::Command()
     : ptr(nullptr)
-    , shouldRegister(nullptr)
+    , version(SourceGame_Unknown)
     , isRegistered(false)
     , isReference(false)
 {
@@ -39,9 +42,9 @@ ConCommand* Command::ThisPtr()
 {
     return this->ptr;
 }
-void Command::UniqueFor(_ShouldRegisterCallback callback)
+void Command::UniqueFor(int version)
 {
-    this->shouldRegister = callback;
+    this->version = version;
 }
 void Command::Register()
 {
@@ -67,7 +70,7 @@ int Command::RegisterAll()
 {
     auto result = 0;
     for (const auto& command : Command::list) {
-        if (command->shouldRegister && !command->shouldRegister()) {
+        if (command->version != SourceGame_Unknown && command->version & sar.game->version) {
             continue;
         }
         command->Register();

@@ -36,28 +36,38 @@ private:
 
 public:
     SpeedrunTimer();
+
     bool IsActive();
+
     void Start(const int* engineTicks);
     void Pause();
     void Unpause(const int* engineTicks);
     void Update(const int* engineTicks, const char* engineMap);
     void Stop(bool addSegment = true);
+
     void AddRule(TimerRule rule);
     std::vector<TimerRule> GetRules();
     void CheckRules(const EventQueuePrioritizedEvent_t* event, const int* engineTicks);
+
     int GetSession();
     int GetTotal();
     char* GetCurrentMap();
+
     void SetIntervalPerTick(const float* ipt);
     float GetIntervalPerTick();
+
     TimerResult* GetResult();
     TimerResult* GetPersonalBest();
+
     bool ExportResult(std::string filePath, bool pb = false);
     bool ExportPersonalBest(std::string filePath);
     bool ImportPersonalBest(std::string filePath);
+
     int GetSplitDelta();
     int GetCurrentDelta();
+
     ~SpeedrunTimer();
+
     static std::string Format(float raw);
 };
 

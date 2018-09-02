@@ -101,7 +101,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 engine->demorecorder->Init();
             }
 
-            if (this->game->version == SourceGame::Portal2) {
+            if (this->game->version & SourceGame_Portal2) {
                 this->features->AddFeature<Listener>(&listener);
                 this->features->AddFeature<WorkshopList>(&workshop);
 

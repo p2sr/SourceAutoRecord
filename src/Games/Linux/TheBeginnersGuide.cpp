@@ -5,7 +5,7 @@
 
 TheBeginnersGuide::TheBeginnersGuide()
 {
-    this->version = SourceGame::TheBeginnersGuide;
+    this->version = SourceGame_TheBeginnersGuide;
 }
 void TheBeginnersGuide::LoadOffsets()
 {

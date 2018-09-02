@@ -5,7 +5,7 @@
 
 TheStanleyParable::TheStanleyParable()
 {
-    this->version = SourceGame::TheStanleyParable;
+    this->version = SourceGame_TheStanleyParable;
 }
 void TheStanleyParable::LoadOffsets()
 {

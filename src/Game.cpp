@@ -11,30 +11,6 @@ const char* Game::Version()
 {
     return "Unknown";
 }
-bool Game::IsPortal2Engine()
-{
-    return this->version == SourceGame::Portal2
-        || this->version == SourceGame::TheStanleyParable
-        || this->version == SourceGame::TheBeginnersGuide;
-}
-bool Game::IsHalfLife2Engine()
-{
-    return this->version == SourceGame::HalfLife2
-        || this->version == SourceGame::Portal;
-}
-bool Game::HasChallengeMode()
-{
-    return this->version == SourceGame::Portal2;
-}
-bool Game::HasJumpDisabled()
-{
-    return this->version == SourceGame::TheStanleyParable;
-}
-bool Game::IsPortalGame()
-{
-    return this->version == SourceGame::Portal2
-        || this->version == SourceGame::Portal;
-}
 Game* Game::CreateNew()
 {
     auto proc = Memory::GetProcessName();

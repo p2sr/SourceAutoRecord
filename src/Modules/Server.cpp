@@ -231,7 +231,7 @@ bool Server::Init()
         this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
         this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
-        if (sar.game->IsPortal2Engine()) {
+        if (sar.game->version & SourceGame_Portal2Engine) {
             this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
             this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
 

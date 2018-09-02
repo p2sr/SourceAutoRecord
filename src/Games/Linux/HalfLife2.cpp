@@ -5,7 +5,7 @@
 
 HalfLife2::HalfLife2()
 {
-    this->version = SourceGame::HalfLife2;
+    this->version = SourceGame_HalfLife2;
 }
 void HalfLife2::LoadOffsets()
 {
@@ -126,7 +126,7 @@ void HalfLife2::LoadRules()
 }
 const char* HalfLife2::Version()
 {
-    return (this->version != SourceGame::Portal)
+    return (this->version != SourceGame_Portal)
         ? "Half-Life 2 (2257546)"
         : "Portal (1910503)";
 }

@@ -1,12 +1,13 @@
 #pragma once
 #include "Modules/Tier1.hpp"
 
+#include "Game.hpp"
+
 class Command {
 private:
     ConCommand* ptr;
 
-    using _ShouldRegisterCallback = bool (*)();
-    _ShouldRegisterCallback shouldRegister;
+    int version;
 
 public:
     bool isRegistered;
@@ -22,7 +23,7 @@ public:
 
     ConCommand* ThisPtr();
 
-    void UniqueFor(_ShouldRegisterCallback callback);
+    void UniqueFor(int version);
     void Register();
     void Unregister();
 

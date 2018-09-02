@@ -13,6 +13,7 @@ WorkshopList* workshop;
 WorkshopList::WorkshopList()
     : maps()
 {
+    this->hasLoaded = true;
 }
 std::string WorkshopList::Path()
 {

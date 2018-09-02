@@ -37,6 +37,8 @@ SpeedrunTimer::SpeedrunTimer()
     this->liveSplit = std::make_unique<TimerInterface>();
     this->result = std::make_unique<TimerResult>();
     this->pb = std::make_unique<TimerResult>();
+
+    this->hasLoaded = true;
 }
 bool SpeedrunTimer::IsActive()
 {

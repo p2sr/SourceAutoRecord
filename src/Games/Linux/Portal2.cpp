@@ -7,7 +7,7 @@
 
 Portal2::Portal2()
 {
-    this->version = SourceGame::Portal2;
+    this->version = SourceGame_Portal2;
 }
 void Portal2::LoadOffsets()
 {

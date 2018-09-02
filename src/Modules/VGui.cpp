@@ -133,7 +133,7 @@ DETOUR(VGui::Paint, int mode)
     if (sar_hud_jumps.GetBool()) {
         DrawElement("jumps: %i", stats->jumps->total);
     }
-    if (sar.game->IsPortalGame() && sar_hud_portals.GetBool()) {
+    if (sar.game->version & (SourceGame_Portal2 | SourceGame_Portal) && sar_hud_portals.GetBool()) {
         DrawElement("portals: %i", server->GetPortals());
     }
     if (sar_hud_steps.GetBool()) {
@@ -182,7 +182,7 @@ bool VGui::Init()
         this->enginevgui->Hook(VGui::Paint_Hook, VGui::Paint, Offsets::Paint);
     }
 
-    if (sar.game->IsHalfLife2Engine()) {
+    if (sar.game->version & SourceGame_HalfLife2Engine) {
         this->respectClShowPos = false;
     }
 

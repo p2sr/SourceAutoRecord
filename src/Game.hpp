@@ -1,29 +1,27 @@
 #pragma once
 
-enum class SourceGame {
-    Unknown,
-    Portal2,
-    Portal,
-    TheStanleyParable,
-    TheBeginnersGuide,
-    HalfLife2
+enum SourceGameVersion {
+    SourceGame_Unknown = 0,
+
+    SourceGame_Portal2 = (1 << 0),
+    SourceGame_Portal = (1 << 1),
+    SourceGame_TheStanleyParable = (1 << 2),
+    SourceGame_TheBeginnersGuide = (1 << 3),
+    SourceGame_HalfLife2 = (1 << 4),
+
+    SourceGame_Portal2Engine = SourceGame_Portal2 | SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide,
+    SourceGame_HalfLife2Engine = SourceGame_Portal | SourceGame_HalfLife2
 };
 
 class Game {
 public:
-    SourceGame version;
+    SourceGameVersion version;
 
 public:
     virtual ~Game() = default;
     virtual void LoadOffsets() = 0;
     virtual void LoadRules() = 0;
     virtual const char* Version();
-
-    bool IsPortal2Engine();
-    bool IsHalfLife2Engine();
-    bool HasChallengeMode();
-    bool HasJumpDisabled();
-    bool IsPortalGame();
 
     static Game* CreateNew();
 };

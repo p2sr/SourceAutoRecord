@@ -8,9 +8,9 @@
 
 Variable::Variable()
     : ptr(nullptr)
+    , version(SourceGame_Unknown)
     , originalFlags(0)
     , originalfnChangeCallback(0)
-    , shouldRegister(nullptr)
     , isRegistered(false)
     , isReference(nullptr)
 {
@@ -72,7 +72,7 @@ void Variable::Create(const char* name, const char* value, int flags, const char
 }
 void Variable::PostInit()
 {
-    if (sar.game->IsPortal2Engine()) {
+    if (sar.game->version & SourceGame_Portal2Engine) {
         auto newptr = new ConVar2();
         newptr->m_pszName = this->ptr->m_pszName;
         newptr->m_pszHelpString = this->ptr->m_pszHelpString;
@@ -167,10 +167,10 @@ void Variable::Lock()
 void Variable::DisableChange()
 {
     if (this->ptr) {
-        if (sar.game->IsPortal2Engine()) {
+        if (sar.game->version & SourceGame_Portal2Engine) {
             this->originalSize = ((ConVar2*)this->ptr)->m_Size;
             ((ConVar2*)this->ptr)->m_Size = 0;
-        } else {
+        } else if (sar.game->version & SourceGame_HalfLife2Engine) {
             this->originalfnChangeCallback = this->ptr->m_fnChangeCallback;
             this->ptr->m_fnChangeCallback = nullptr;
         }
@@ -179,16 +179,16 @@ void Variable::DisableChange()
 void Variable::EnableChange()
 {
     if (this->ptr) {
-        if (sar.game->IsPortal2Engine()) {
+        if (sar.game->version & SourceGame_Portal2Engine) {
             ((ConVar2*)this->ptr)->m_Size = this->originalSize;
-        } else {
+        } else if (sar.game->version & SourceGame_HalfLife2Engine) {
             this->ptr->m_fnChangeCallback = this->originalfnChangeCallback;
         }
     }
 }
-void Variable::UniqueFor(_ShouldRegisterCallback callback)
+void Variable::UniqueFor(int version)
 {
-    this->shouldRegister = callback;
+    this->version = version;
 }
 void Variable::Register()
 {
@@ -216,7 +216,7 @@ int Variable::RegisterAll()
 {
     auto result = 0;
     for (const auto& var : Variable::list) {
-        if (var->shouldRegister && !var->shouldRegister()) {
+        if (var->version != SourceGame_Unknown && var->version & sar.game->version) {
             continue;
         }
         var->Register();

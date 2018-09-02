@@ -36,7 +36,7 @@ void Cheats::Init()
     sv_maxvelocity.Unlock();
     sv_footsteps.Unlock();
 
-    if (sar.game->version == SourceGame::Portal2) {
+    if (sar.game->version & SourceGame_Portal2) {
         sv_transition_fade_time = Variable("sv_transition_fade_time");
         sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
         ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
@@ -49,44 +49,44 @@ void Cheats::Init()
         ui_loadingscreen_transition_time.Unlock();
         // Not a real cheat, right?
         hide_gun_when_holding.Unlock(false);
-    } else if (sar.game->version == SourceGame::HalfLife2) {
+    } else if (sar.game->version & SourceGame_HalfLife2) {
         auto sv_portal_debug_touch = Variable("sv_portal_debug_touch");
         if (!!sv_portal_debug_touch) {
-            sar.game->version = SourceGame::Portal;
+            sar.game->version = SourceGame_Portal;
             console->DevMsg("SAR: Detected Portal version!\n");
         }
-    } else if (sar.game->version == SourceGame::TheStanleyParable
-        || sar.game->version == SourceGame::TheBeginnersGuide) {
+    } else if (sar.game->version & SourceGame_TheStanleyParable
+        || sar.game->version & SourceGame_TheBeginnersGuide) {
         Command::ActivateAutoCompleteFile("map", map_CompletionFunc);
         Command::ActivateAutoCompleteFile("changelevel", changelevel_CompletionFunc);
         Command::ActivateAutoCompleteFile("changelevel2", changelevel2_CompletionFunc);
     }
 
-    sar_jumpboost.UniqueFor([]() { return sar.game->IsPortal2Engine(); });
-    sar_aircontrol.UniqueFor([]() { return sar.game->IsPortal2Engine(); });
-    sar_hud_portals.UniqueFor([]() { return sar.game->IsPortalGame(); });
-    sar_disable_challenge_stats_hud.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_debug_game_events.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_sr_hud.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_sr_hud_x.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_sr_hud_y.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_sr_hud_font_color.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_sr_hud_font_index.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_speedrun_autostart.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_speedrun_autostop.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    sar_jumpboost.UniqueFor(SourceGame_Portal2Engine);
+    sar_aircontrol.UniqueFor(SourceGame_Portal2Engine);
+    sar_hud_portals.UniqueFor(SourceGame_Portal2 | SourceGame_Portal);
+    sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
+    sar_debug_game_events.UniqueFor(SourceGame_Portal2);
+    sar_sr_hud.UniqueFor(SourceGame_Portal2);
+    sar_sr_hud_x.UniqueFor(SourceGame_Portal2);
+    sar_sr_hud_y.UniqueFor(SourceGame_Portal2);
+    sar_sr_hud_font_color.UniqueFor(SourceGame_Portal2);
+    sar_sr_hud_font_index.UniqueFor(SourceGame_Portal2);
+    sar_speedrun_autostart.UniqueFor(SourceGame_Portal2);
+    sar_speedrun_autostop.UniqueFor(SourceGame_Portal2);
 
-    startbhop.UniqueFor([]() { return sar.game->HasJumpDisabled(); });
-    endbhop.UniqueFor([]() { return sar.game->HasJumpDisabled(); });
-    sar_anti_anti_cheat.UniqueFor([]() { return sar.game->HasJumpDisabled(); });
-    sar_workshop.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_workshop_update.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_workshop_list.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_speedrun_result.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_speedrun_export.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_speedrun_export_pb.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_speedrun_import.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_speedrun_rules.UniqueFor([]() { return sar.game->HasChallengeMode(); });
-    sar_togglewait.UniqueFor([]() { return sar.game->HasChallengeMode(); });
+    startbhop.UniqueFor(SourceGame_TheStanleyParable);
+    endbhop.UniqueFor(SourceGame_TheStanleyParable);
+    sar_anti_anti_cheat.UniqueFor(SourceGame_TheStanleyParable);
+    sar_workshop.UniqueFor(SourceGame_Portal2);
+    sar_workshop_update.UniqueFor(SourceGame_Portal2);
+    sar_workshop_list.UniqueFor(SourceGame_Portal2);
+    sar_speedrun_result.UniqueFor(SourceGame_Portal2);
+    sar_speedrun_export.UniqueFor(SourceGame_Portal2);
+    sar_speedrun_export_pb.UniqueFor(SourceGame_Portal2);
+    sar_speedrun_import.UniqueFor(SourceGame_Portal2);
+    sar_speedrun_rules.UniqueFor(SourceGame_Portal2);
+    sar_togglewait.UniqueFor(SourceGame_Portal2);
 
     Variable::RegisterAll();
     Command::RegisterAll();
@@ -101,14 +101,14 @@ void Cheats::Shutdown()
     sv_maxvelocity.Lock();
     sv_footsteps.Lock();
 
-    if (sar.game->version == SourceGame::Portal2) {
+    if (sar.game->version & SourceGame_Portal2) {
         sv_bonus_challenge.Lock();
         sv_transition_fade_time.Lock();
         sv_laser_cube_autoaim.Lock();
         ui_loadingscreen_transition_time.Lock();
         hide_gun_when_holding.Lock();
-    } else if (sar.game->version == SourceGame::TheStanleyParable
-        || sar.game->version == SourceGame::TheBeginnersGuide) {
+    } else if (sar.game->version & SourceGame_TheStanleyParable
+        || sar.game->version & SourceGame_TheBeginnersGuide) {
         Command::DectivateAutoCompleteFile("map");
         Command::DectivateAutoCompleteFile("changelevel");
         Command::DectivateAutoCompleteFile("changelevel2");
