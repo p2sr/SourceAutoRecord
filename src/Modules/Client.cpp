@@ -8,11 +8,14 @@
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Tas/ReplaySystem.hpp"
 
-#include "Cheats.hpp"
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
+
+Variable cl_showpos;
+Variable ui_loadingscreen_transition_time;
+Variable hide_gun_when_holding;
 
 REDECL(Client::HudUpdate)
 REDECL(Client::CreateMove)
@@ -97,8 +100,8 @@ bool Client::Init()
         || sar.game->version == SourceGame::TheBeginnersGuide;
 #endif
 
-    this->g_ClientDLL = Interface::Create(MODULE("client"), "VClient0");
-    this->s_EntityList = Interface::Create(MODULE("client"), "VClientEntityList0", false);
+    this->g_ClientDLL = Interface::Create(this->Name(), "VClient0");
+    this->s_EntityList = Interface::Create(this->Name(), "VClientEntityList0", false);
 
     if (this->g_ClientDLL) {
         this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);

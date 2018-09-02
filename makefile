@@ -5,7 +5,6 @@ LDIR=lib/
 ODIR=obj/
 
 SRCS=$(wildcard $(SDIR)*.cpp)
-SRCS+=$(wildcard $(SDIR)Commands/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Demo/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Hud/*.cpp)
@@ -46,7 +45,6 @@ clean-all:
 
 dirs:
 	@mkdir -p $(ODIR)
-	@mkdir -p $(ODIR)Commands/
 	@mkdir -p $(ODIR)Features/
 	@mkdir -p $(ODIR)Features/Demo/
 	@mkdir -p $(ODIR)Features/Hud/

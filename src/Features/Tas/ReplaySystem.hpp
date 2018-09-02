@@ -1,7 +1,11 @@
 #pragma once
 #include "Features/Feature.hpp"
 
-#include "Utils.hpp"
+#include "Utils/SDK.hpp"
+#include "Variable.hpp"
+
+#define SAR_TAS_REPLAY_HEADER001 "sar-tas-replay v1.7"
+#define SAR_TAS_REPLAY_EXTENSION ".str"
 
 struct ReplayFrame {
     QAngle viewangles;
@@ -32,3 +36,6 @@ public:
 };
 
 extern ReplaySystem* tasReplaySystem;
+
+extern Variable sar_replay_autorecord;
+extern Variable sar_replay_autoplay;

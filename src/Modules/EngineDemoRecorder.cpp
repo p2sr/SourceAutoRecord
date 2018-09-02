@@ -7,7 +7,6 @@
 #include "Features/Session.hpp"
 #include "Features/Timer/Timer.hpp"
 
-#include "Cheats.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
@@ -23,10 +22,10 @@ int EngineDemoRecorder::GetTick()
 DETOUR(EngineDemoRecorder::SetSignonState, int state)
 {
     if (state == SignonState::Full && *engine->demorecorder->m_bRecording) {
-        engine->demorecorder->IsRecordingDemo = true;
-        engine->demorecorder->CurrentDemo = std::string(engine->demorecorder->m_szDemoBaseName);
+        engine->demorecorder->isRecordingDemo = true;
+        engine->demorecorder->currentDemo = std::string(engine->demorecorder->m_szDemoBaseName);
         if (*engine->demorecorder->m_nDemoNumber > 1) {
-            engine->demorecorder->CurrentDemo += std::string("_") + std::to_string(*engine->demorecorder->m_nDemoNumber);
+            engine->demorecorder->currentDemo += std::string("_") + std::to_string(*engine->demorecorder->m_nDemoNumber);
         }
     }
     return EngineDemoRecorder::SetSignonState(thisptr, state);
@@ -42,7 +41,7 @@ DETOUR(EngineDemoRecorder::StopRecording)
     //   m_nDemoNumber = 0
     auto result = EngineDemoRecorder::StopRecording(thisptr);
 
-    if (engine->demorecorder->IsRecordingDemo && sar_autorecord.GetBool()) {
+    if (engine->demorecorder->isRecordingDemo && sar_autorecord.GetBool()) {
         *engine->demorecorder->m_nDemoNumber = LastDemoNumber;
 
         // Tell recorder to keep recording
@@ -52,7 +51,7 @@ DETOUR(EngineDemoRecorder::StopRecording)
             console->DevMsg("SAR: Recording!");
         }
     } else {
-        engine->demorecorder->IsRecordingDemo = false;
+        engine->demorecorder->isRecordingDemo = false;
     }
 
     return result;

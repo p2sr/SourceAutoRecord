@@ -11,19 +11,20 @@
 
 class InputSystem : public Module {
 public:
-    Interface* g_InputSystem;
+    Interface* g_InputSystem = nullptr;
 
     using _StringToButtonCode = int(__func*)(void* thisptr, const char* pString);
     using _KeySetBinding = void(__cdecl*)(int keynum, const char* pBinding);
 
-    _StringToButtonCode StringToButtonCode;
-    _KeySetBinding KeySetBinding;
+    _StringToButtonCode StringToButtonCode = nullptr;
+    _KeySetBinding KeySetBinding = nullptr;
 
 public:
     int GetButton(const char* pString);
 
     bool Init() override;
     void Shutdown() override;
+    const char* Name() override { return MODULE("inputsystem"); }
 };
 
 extern InputSystem* inputSystem;

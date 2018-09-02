@@ -4,6 +4,8 @@
 
 #include "Features/Feature.hpp"
 
+#include "Variable.hpp"
+
 struct CommandFrame {
     int FramesLeft;
     std::string Command;
@@ -25,3 +27,5 @@ public:
 };
 
 extern CommandQueuer* tasQueuer;
+
+extern Variable sar_tas_autostart;

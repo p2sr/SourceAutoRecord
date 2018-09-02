@@ -5,7 +5,10 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
-#include "Cheats.hpp"
+#include "Hud/Hud.hpp"
+#include "Hud/InputHud.hpp"
+#include "Hud/SpeedrunHud.hpp"
+
 #include "Utils.hpp"
 
 Config::Config()

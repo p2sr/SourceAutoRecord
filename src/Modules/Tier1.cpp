@@ -6,17 +6,13 @@
 
 bool Tier1::Init()
 {
-#if _WIN32
-    this->g_pCVar = Interface::Create(MODULE("vstdlib"), "VEngineCvar0", false);
-#else
-    this->g_pCVar = Interface::Create(MODULE("libvstdlib"), "VEngineCvar0", false);
-#endif
+    this->g_pCVar = Interface::Create(this->Name(), "VEngineCvar0", false);
     if (this->g_pCVar) {
-        this->m_pConCommandList = (ConCommandBase*)((uintptr_t)this->g_pCVar->ThisPtr() + Offsets::m_pConCommandList);
-
         this->RegisterConCommand = this->g_pCVar->Original<_RegisterConCommand>(Offsets::RegisterConCommand);
         this->UnregisterConCommand = this->g_pCVar->Original<_UnregisterConCommand>(Offsets::UnregisterConCommand);
         this->FindCommandBase = this->g_pCVar->Original<_FindCommandBase>(Offsets::FindCommandBase);
+
+        this->m_pConCommandList = (ConCommandBase*)((uintptr_t)this->g_pCVar->ThisPtr() + Offsets::m_pConCommandList);
 
         auto play = reinterpret_cast<ConCommand*>(FindCommandBase(this->g_pCVar->ThisPtr(), "play"));
         if (play) {

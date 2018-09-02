@@ -18,7 +18,6 @@
 #include "Features/Timer/TimerAverage.hpp"
 #include "Features/Timer/TimerCheckPoints.hpp"
 
-#include "Cheats.hpp"
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Offsets.hpp"
@@ -118,10 +117,10 @@ DETOUR(VGui::Paint, int mode)
     }
     // Demo
     if (sar_hud_demo.GetBool()) {
-        if (!*engine->m_bLoadgame && *engine->demorecorder->m_bRecording && !engine->demorecorder->CurrentDemo.empty()) {
+        if (!*engine->m_bLoadgame && *engine->demorecorder->m_bRecording && !engine->demorecorder->currentDemo.empty()) {
             auto tick = engine->demorecorder->GetTick();
             auto time = engine->ToTime(tick);
-            DrawElement("demo: %s %i (%.3f)", engine->demorecorder->CurrentDemo.c_str(), tick, time);
+            DrawElement("demo: %s %i (%.3f)", engine->demorecorder->currentDemo.c_str(), tick, time);
         } else if (!*engine->m_bLoadgame && engine->demoplayer->IsPlaying()) {
             auto tick = engine->demoplayer->GetTick();
             auto time = engine->ToTime(tick);
@@ -178,7 +177,7 @@ bool VGui::Init()
     this->inputHud = new InputHud();
     this->speedrunHud = new SpeedrunHud();
 
-    this->enginevgui = Interface::Create(MODULE("engine"), "VEngineVGui0");
+    this->enginevgui = Interface::Create(this->Name(), "VEngineVGui0");
     if (this->enginevgui) {
         this->enginevgui->Hook(VGui::Paint_Hook, VGui::Paint, Offsets::Paint);
     }

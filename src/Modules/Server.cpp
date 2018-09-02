@@ -7,11 +7,23 @@
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 
-#include "Cheats.hpp"
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
+
+Variable sv_cheats;
+Variable sv_footsteps;
+Variable sv_alternateticks;
+Variable sv_bonus_challenge;
+Variable sv_accelerate;
+Variable sv_airaccelerate;
+Variable sv_friction;
+Variable sv_maxspeed;
+Variable sv_stopspeed;
+Variable sv_maxvelocity;
+Variable sv_transition_fade_time;
+Variable sv_laser_cube_autoaim;
 
 REDECL(Server::CheckJumpButton)
 REDECL(Server::PlayerMove)
@@ -36,8 +48,7 @@ DETOUR_T(bool, Server::CheckJumpButton)
     auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
     auto m_nOldButtons = reinterpret_cast<int*>((uintptr_t)mv + Offsets::m_nOldButtons);
 
-    auto enabled = (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool())
-        && sar_autojump.GetBool();
+    auto enabled = (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool();
 
     auto original = 0;
     if (enabled) {
@@ -213,8 +224,8 @@ DETOUR(Server::GameFrame, bool simulating)
 
 bool Server::Init()
 {
-    this->g_GameMovement = Interface::Create(MODULE("server"), "GameMovement0");
-    this->g_ServerGameDLL = Interface::Create(MODULE("server"), "ServerGameDLL0");
+    this->g_GameMovement = Interface::Create(this->Name(), "GameMovement0");
+    this->g_ServerGameDLL = Interface::Create(this->Name(), "ServerGameDLL0");
 
     if (this->g_GameMovement) {
         this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);

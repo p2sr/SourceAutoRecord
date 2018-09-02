@@ -8,25 +8,24 @@
 
 class EngineDemoPlayer : public Module {
 public:
-    Interface* s_ClientDemoPlayer;
+    Interface* s_ClientDemoPlayer = nullptr;
 
     using _IsPlayingBack = bool(__func*)(void* thisptr);
     using _GetPlaybackTick = int(__func*)(void* thisptr);
 
-    _IsPlayingBack IsPlayingBack;
-    _GetPlaybackTick GetPlaybackTick;
+    _IsPlayingBack IsPlayingBack = nullptr;
+    _GetPlaybackTick GetPlaybackTick = nullptr;
 
-    char* DemoName;
+    char* DemoName = nullptr;
 
 public:
     int GetTick();
     bool IsPlaying();
 
-private:
     // CDemoRecorder::StartPlayback
     DECL_DETOUR(StartPlayback, const char* filename, bool bAsTimeDemo)
 
-public:
     bool Init() override;
     void Shutdown() override;
+    const char* Name() override { return MODULE("engine"); }
 };

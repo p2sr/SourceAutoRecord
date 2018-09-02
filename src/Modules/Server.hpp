@@ -1,10 +1,10 @@
 #pragma once
 #include "Module.hpp"
 
-#include "Cheats.hpp"
 #include "Interface.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
+#include "Variable.hpp"
 
 #ifdef _WIN32
 #define AirMove_Mid_Offset 679
@@ -15,22 +15,23 @@
 
 class Server : public Module {
 public:
-    Interface* g_GameMovement;
-    Interface* g_ServerGameDLL;
+    Interface* g_GameMovement = nullptr;
+    Interface* g_ServerGameDLL = nullptr;
 
     using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
     _UTIL_PlayerByIndex UTIL_PlayerByIndex;
 
-    CGlobalVars* gpGlobals;
-    bool* g_InRestore;
-    CEventQueue* g_EventQueue;
+    CGlobalVars* gpGlobals = nullptr;
+    bool* g_InRestore = nullptr;
+    CEventQueue* g_EventQueue = nullptr;
+
+private:
+    bool jumpedLastTime = false;
+    bool callFromCheckJumpButton = false;
 
 public:
     void* GetPlayer();
     int GetPortals();
-
-    bool jumpedLastTime = false;
-    bool callFromCheckJumpButton = false;
 
     // CGameMovement::CheckJumpButton
     DECL_DETOUR_T(bool, CheckJumpButton)
@@ -46,8 +47,8 @@ public:
 
 #ifdef _WIN32
     // CGameMovement::AirMove
-    static uintptr_t AirMove_Skip;
-    static uintptr_t AirMove_Continue;
+    static uintptr_t AirMove_Skip = 0;
+    static uintptr_t AirMove_Continue = 0;
     DECL_DETOUR_MID_MH(AirMove_Mid)
 #endif
 
@@ -60,6 +61,20 @@ public:
 
     bool Init() override;
     void Shutdown() override;
+    const char* Name() override { return MODULE("engine"); }
 };
 
 extern Server* server;
+
+extern Variable sv_cheats;
+extern Variable sv_footsteps;
+extern Variable sv_alternateticks;
+extern Variable sv_bonus_challenge;
+extern Variable sv_accelerate;
+extern Variable sv_airaccelerate;
+extern Variable sv_friction;
+extern Variable sv_maxspeed;
+extern Variable sv_stopspeed;
+extern Variable sv_maxvelocity;
+extern Variable sv_transition_fade_time;
+extern Variable sv_laser_cube_autoaim;

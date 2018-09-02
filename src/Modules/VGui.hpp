@@ -9,19 +9,21 @@
 
 class VGui : public Module {
 public:
-    Interface* enginevgui;
+    Interface* enginevgui = nullptr;
 
-    InputHud* inputHud;
-    SpeedrunHud* speedrunHud;
-    bool respectClShowPos = false;
+    InputHud* inputHud = nullptr;
+    SpeedrunHud* speedrunHud = nullptr;
 
 private:
+    bool respectClShowPos = false;
+
+public:
     // CEngineVGui::Paint
     DECL_DETOUR(Paint, int mode)
 
-public:
     bool Init() override;
     void Shutdown() override;
+    const char* Name() override { return MODULE("engine"); }
 };
 
 extern VGui* vgui;

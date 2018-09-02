@@ -5,9 +5,41 @@
 #include "Modules/Surface.hpp"
 #include "Modules/VGui.hpp"
 
-#include "Cheats.hpp"
-
 #include "Utils/SDK.hpp"
+
+#include "Variable.hpp"
+
+Variable sar_ihud("sar_ihud", "0", 0, "Draws keyboard events of client.\n"
+                                      "0 = default,\n"
+                                      "1 = forward;back;moveleft;moveright,\n"
+                                      "2 = 1 + duck;jump;use,\n"
+                                      "3 = 2 + attack;attack2,\n"
+                                      "4 = 3 + speed;reload.\n");
+Variable sar_ihud_x("sar_ihud_x", "0", 0, "X offset of input HUD.\n");
+Variable sar_ihud_y("sar_ihud_y", "0", 0, "Y offset of input HUD.\n");
+Variable sar_ihud_button_padding("sar_ihud_button_padding", "2", 0, "Padding between buttons of input HUD.\n");
+Variable sar_ihud_button_size("sar_ihud_button_size", "60", 0, "Button size of input HUD.\n");
+Variable sar_ihud_button_color("sar_ihud_button_color", "0 0 0 233", "RGBA button color of input HUD.\n", 0);
+Variable sar_ihud_font_color("sar_ihud_font_color", "255 255 255 255", "RGBA font color of input HUD.\n", 0);
+Variable sar_ihud_font_index("sar_ihud_font_index", "1", 0, "Font index of input HUD.\n");
+Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD.\n"
+                                                           "Characters are in this order:\n"
+                                                           "forward,\n"
+                                                           "back,\n"
+                                                           "moveleft,\n"
+                                                           "moveright,\n"
+                                                           "duck,\n"
+                                                           "jump,\n"
+                                                           "use,\n"
+                                                           "attack,\n"
+                                                           "attack2,\n"
+                                                           "speed,\n"
+                                                           "reload.\n"
+                                                           "Keep it empty to disable drawing characters.\n",
+    0);
+Variable sar_ihud_shadow("sar_ihud_shadow", "1", "Draws button shadows of input HUD.\n");
+Variable sar_ihud_shadow_color("sar_ihud_shadow_color", "0 0 0 32", "RGBA button shadow color of input HUD.\n", 0);
+Variable sar_ihud_shadow_font_color("sar_ihud_shadow_font_color", "255 255 255 32", "RGBA button shadow font color of input HUD.\n", 0);
 
 const int row0 = 0;
 const int row1 = 1;
@@ -119,9 +151,9 @@ void InputHud::Draw()
 
             row|col0|1|2|3|4|5|6|7|8
             ---|---------------------
-            0|       w|e|r
-            1|shft|a|s|d
-            2|ctrl|spacebar   |l|r
+              0|       w|e|r
+              1|shft|a|s|d
+              2|ctrl|spacebar   |l|r
     */
 
     DrawElement(1, mvForward, col2, row0);

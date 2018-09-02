@@ -5,6 +5,8 @@
 #include "StepStats.hpp"
 #include "VelocityStats.hpp"
 
+#include "Variable.hpp"
+
 class Stats : public Feature {
 public:
     JumpStats* jumps;
@@ -18,3 +20,7 @@ public:
 };
 
 extern Stats* stats;
+
+extern Variable sar_stats_jumps_xy;
+extern Variable sar_stats_velocity_peak_xy;
+extern Variable sar_stats_auto_reset;

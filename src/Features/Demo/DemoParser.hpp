@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 
+#include "Variable.hpp"
+
 class Demo;
 
 // Basic demo parser which can handle Portal 2 and Half-Life 2 demos
@@ -16,3 +18,5 @@ public:
     void Adjust(Demo* demo);
     bool Parse(std::string filePath, Demo* demo);
 };
+
+extern Variable sar_time_demo_dev;

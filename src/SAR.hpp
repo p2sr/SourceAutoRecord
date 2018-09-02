@@ -7,9 +7,11 @@
 #include "Features/Feature.hpp"
 
 #include "Cheats.hpp"
+#include "Command.hpp"
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Plugin.hpp"
+#include "Variable.hpp"
 
 #define SAR_VERSION "1.8"
 #define SAR_BUILD __TIME__ " " __DATE__
@@ -62,3 +64,19 @@ public:
 };
 
 extern SAR sar;
+
+extern Variable sar_autorecord;
+extern Variable sar_autojump;
+extern Variable sar_jumpboost;
+extern Variable sar_aircontrol;
+extern Variable sar_disable_challenge_stats_hud;
+extern Variable sar_debug_event_queue;
+
+extern Command startbhop;
+extern Command endbhop;
+extern Command sar_anti_anti_cheat;
+extern Command sar_togglewait;
+
+extern DECL_DECLARE_AUTOCOMPLETION_FUNCTION(map);
+extern DECL_DECLARE_AUTOCOMPLETION_FUNCTION(changelevel);
+extern DECL_DECLARE_AUTOCOMPLETION_FUNCTION(changelevel2);

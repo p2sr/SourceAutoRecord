@@ -9,7 +9,7 @@
 
 class Surface : public Module {
 public:
-    Interface* matsurface;
+    Interface* matsurface = nullptr;
 
     typedef unsigned long HFont;
 
@@ -28,16 +28,16 @@ public:
     using _StartDrawing = int(__func*)(void* thisptr);
     using _FinishDrawing = int(__cdecl*)();
 
-    _GetFontTall GetFontTall;
-    _DrawSetColor DrawSetColor;
-    _DrawFilledRect DrawFilledRect;
-    _DrawLine DrawLine;
-    _DrawSetTextFont DrawSetTextFont;
-    _DrawSetTextColor DrawSetTextColor;
-    _DrawColoredText DrawColoredText;
-    _DrawTextLen DrawTextLen;
-    _StartDrawing StartDrawing;
-    _FinishDrawing FinishDrawing;
+    _GetFontTall GetFontTall = nullptr;
+    _DrawSetColor DrawSetColor = nullptr;
+    _DrawFilledRect DrawFilledRect = nullptr;
+    _DrawLine DrawLine = nullptr;
+    _DrawSetTextFont DrawSetTextFont = nullptr;
+    _DrawSetTextColor DrawSetTextColor = nullptr;
+    _DrawColoredText DrawColoredText = nullptr;
+    _DrawTextLen DrawTextLen = nullptr;
+    _StartDrawing StartDrawing = nullptr;
+    _FinishDrawing FinishDrawing = nullptr;
 
 public:
     int GetFontHeight(HFont font);
@@ -48,6 +48,7 @@ public:
 
     bool Init() override;
     void Shutdown() override;
+    const char* Name() override { return MODULE("vguimatsurface"); }
 };
 
 extern Surface* surface;

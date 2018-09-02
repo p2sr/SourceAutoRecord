@@ -59,7 +59,7 @@ void Surface::DrawRectAndCenterTxt(Color clr, int x0, int y0, int x1, int y1, HF
 }
 bool Surface::Init()
 {
-    this->matsurface = Interface::Create(MODULE("vguimatsurface"), "VGUI_Surface0", false);
+    this->matsurface = Interface::Create(this->Name(), "VGUI_Surface0", false);
     if (this->matsurface) {
         this->DrawSetColor = matsurface->Original<_DrawSetColor>(Offsets::DrawSetColor);
         this->DrawFilledRect = matsurface->Original<_DrawFilledRect>(Offsets::DrawFilledRect);

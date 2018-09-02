@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "Variable.hpp"
+
 class Rebinder : public Feature {
 public:
     int saveButton;
@@ -27,3 +29,5 @@ public:
 };
 
 extern Rebinder* rebinder;
+
+extern Variable sar_save_flag;

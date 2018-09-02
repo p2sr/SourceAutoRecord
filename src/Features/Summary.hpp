@@ -1,6 +1,8 @@
 #pragma once
 #include "Feature.hpp"
 
+#include "Variable.hpp"
+
 struct SummaryItem {
     int ticks;
     float time;
@@ -20,3 +22,5 @@ public:
 };
 
 extern Summary* summary;
+
+extern Variable sar_sum_during_session;

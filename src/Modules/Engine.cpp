@@ -10,7 +10,6 @@
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 
-#include "Cheats.hpp"
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "SAR.hpp"
@@ -189,7 +188,7 @@ DETOUR_COMMAND(Engine::help)
 
 bool Engine::Init()
 {
-    this->engineClient = Interface::Create(MODULE("engine"), "VEngineClient0", false);
+    this->engineClient = Interface::Create(this->Name(), "VEngineClient0", false);
     if (this->engineClient) {
         this->GetScreenSize = this->engineClient->Original<_GetScreenSize>(Offsets::GetScreenSize);
         this->ClientCmd = this->engineClient->Original<_ClientCmd>(Offsets::ClientCmd);
@@ -220,8 +219,10 @@ bool Engine::Init()
         }
 
         if (this->cl = Interface::Create(clPtr)) {
-            this->demoplayer = new EngineDemoPlayer();
-            this->demorecorder = new EngineDemoRecorder();
+            if (!this->demoplayer)
+                this->demoplayer = new EngineDemoPlayer();
+            if (!this->demorecorder)
+                this->demorecorder = new EngineDemoRecorder();
 
             if (sar.game->IsPortal2Engine()) {
                 this->cl->Hook(Engine::SetSignonState_Hook, Engine::SetSignonState, Offsets::Disconnect - 1);

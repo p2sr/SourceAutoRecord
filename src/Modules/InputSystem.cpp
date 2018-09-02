@@ -12,7 +12,7 @@ int InputSystem::GetButton(const char* pString)
 }
 bool InputSystem::Init()
 {
-    this->g_InputSystem = Interface::Create(MODULE("inputsystem"), "InputSystemVersion0");
+    this->g_InputSystem = Interface::Create(this->Name(), "InputSystemVersion0");
     if (this->g_InputSystem) {
         this->StringToButtonCode = this->g_InputSystem->Original<_StringToButtonCode>(Offsets::StringToButtonCode);
     }

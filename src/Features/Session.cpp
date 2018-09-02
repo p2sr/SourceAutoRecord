@@ -51,7 +51,7 @@ void Session::Started(bool menu)
         }
 
         if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
-            if (engine->demorecorder->IsRecordingDemo) {
+            if (engine->demorecorder->isRecordingDemo) {
                 rebinder->UpdateIndex(*engine->demorecorder->m_nDemoNumber);
             } else {
                 rebinder->UpdateIndex(rebinder->lastIndexNumber + 1);
@@ -113,7 +113,7 @@ void Session::Ended()
         stats->ResetAll();
     }
 
-    engine->demorecorder->CurrentDemo = "";
+    engine->demorecorder->currentDemo = "";
     this->lastFrame = this->currentFrame;
     this->currentFrame = 0;
 

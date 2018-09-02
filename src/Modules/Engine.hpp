@@ -14,11 +14,11 @@
 
 class Engine : public Module {
 public:
-    Interface* engineClient;
-    Interface* cl;
-    Interface* s_GameEventManager;
-    Interface* eng;
-    Interface* debugoverlay;
+    Interface* engineClient = nullptr;
+    Interface* cl = nullptr;
+    Interface* s_GameEventManager = nullptr;
+    Interface* eng = nullptr;
+    Interface* debugoverlay = nullptr;
 
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _ClientCmd = int(__func*)(void* thisptr, const char* szCmdString);
@@ -41,32 +41,33 @@ public:
     using _ConPrintEvent = int(__cdecl*)(void* thisptr, IGameEvent* ev);
 #endif
 
-    _GetScreenSize GetScreenSize;
-    _ClientCmd ClientCmd;
-    _GetLocalPlayer GetLocalPlayer;
-    _GetViewAngles GetViewAngles;
-    _SetViewAngles SetViewAngles;
-    _GetMaxClients GetMaxClients;
-    _GetGameDirectory GetGameDirectory;
-    _GetActiveSplitScreenPlayerSlot GetActiveSplitScreenPlayerSlot;
-    _AddListener AddListener;
-    _RemoveListener RemoveListener;
-    _Cbuf_AddText Cbuf_AddText;
-    _AddText AddText;
-    _ScreenPosition ScreenPosition;
-    _ConPrintEvent ConPrintEvent;
+    _GetScreenSize GetScreenSize = nullptr;
+    _ClientCmd ClientCmd = nullptr;
+    _GetLocalPlayer GetLocalPlayer = nullptr;
+    _GetViewAngles GetViewAngles = nullptr;
+    _SetViewAngles SetViewAngles = nullptr;
+    _GetMaxClients GetMaxClients = nullptr;
+    _GetGameDirectory GetGameDirectory = nullptr;
+    _GetActiveSplitScreenPlayerSlot GetActiveSplitScreenPlayerSlot = nullptr;
+    _AddListener AddListener = nullptr;
+    _RemoveListener RemoveListener = nullptr;
+    _Cbuf_AddText Cbuf_AddText = nullptr;
+    _AddText AddText = nullptr;
+    _ScreenPosition ScreenPosition = nullptr;
+    _ConPrintEvent ConPrintEvent = nullptr;
 
-    EngineDemoPlayer* demoplayer;
-    EngineDemoRecorder* demorecorder;
+    EngineDemoPlayer* demoplayer = nullptr;
+    EngineDemoRecorder* demorecorder = nullptr;
 
-    int* tickcount;
-    float* interval_per_tick;
-    char* m_szLevelName;
-    bool* m_bLoadgame;
-    CHostState* hoststate;
-    void* s_CommandBuffer;
-    bool* m_bWaitEnabled;
+    int* tickcount = nullptr;
+    float* interval_per_tick = nullptr;
+    char* m_szLevelName = nullptr;
+    bool* m_bLoadgame = nullptr;
+    CHostState* hoststate = nullptr;
+    void* s_CommandBuffer = nullptr;
+    bool* m_bWaitEnabled = nullptr;
 
+public:
     void ExecuteCommand(const char* cmd);
     void ClientCommand(const char* fmt, ...);
     int GetSessionTick();
@@ -78,7 +79,6 @@ public:
     int PointToScreen(const Vector& point, Vector& screen);
     void SafeUnload(const char* postCommand = nullptr);
 
-private:
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu)
 #ifdef _WIN32
@@ -103,6 +103,7 @@ private:
 
     bool Init() override;
     void Shutdown() override;
+    const char* Name() override { return MODULE("engine"); }
 };
 
 extern Engine* engine;

@@ -2,7 +2,7 @@
 
 bool Console::Init()
 {
-    auto tier0 = Memory::GetModuleHandleByName(MODULE(TIER0));
+    auto tier0 = Memory::GetModuleHandleByName(this->Name());
     if (tier0) {
         this->Msg = Memory::GetSymbolAddress<_Msg>(tier0, MSG_SYMBOL);
         this->ColorMsg = Memory::GetSymbolAddress<_ColorMsg>(tier0, CONCOLORMSG_SYMBOL);

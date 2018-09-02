@@ -1,6 +1,8 @@
 #pragma once
 #include "Features/Feature.hpp"
 
+#include "Variable.hpp"
+
 class TimerAverage;
 class TimerCheckPoints;
 
@@ -24,3 +26,5 @@ public:
 };
 
 extern Timer* timer;
+
+extern Variable sar_timer_always_running;

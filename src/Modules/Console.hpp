@@ -29,26 +29,27 @@ public:
     using _DevMsg = void(__cdecl*)(const char* pMsgFormat, ...);
     using _DevWarning = void(__cdecl*)(const char* pMsgFormat, ...);
 
-    _Msg Msg;
-    _ColorMsg ColorMsg;
-    _Warning Warning;
-    _DevMsg DevMsg;
-    _DevWarning DevWarning;
+    _Msg Msg = nullptr;
+    _ColorMsg ColorMsg = nullptr;
+    _Warning Warning = nullptr;
+    _DevMsg DevMsg = nullptr;
+    _DevWarning DevWarning = nullptr;
 
-    bool Init() override;
-    void Shutdown() override;
-
+public:
     template <typename... T>
     void Print(const char* fmt, T... args)
     {
         this->ColorMsg(SAR_PRINT_COLOR, fmt, args...);
     }
-
     template <typename... T>
     void PrintActive(const char* fmt, T... args)
     {
         this->ColorMsg(SAR_PRINT_ACTIVE_COLOR, fmt, args...);
     }
+
+    bool Init() override;
+    void Shutdown() override;
+    const char* Name() override { return MODULE(TIER0); }
 };
 
 extern Console* console;

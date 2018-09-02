@@ -8,6 +8,10 @@
 
 #include "Utils/SDK.hpp"
 
+#include "Variable.hpp"
+
+Variable sar_debug_game_events("sar_debug_game_events", "0", "Prints game event data, similar to net_showevents.\n");
+
 Listener::Listener()
     : m_bRegisteredForEvents(false)
 {

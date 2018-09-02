@@ -3,6 +3,8 @@
 
 #include "Utils/SDK.hpp"
 
+#include "Variable.hpp"
+
 // Portal 2 Engine only
 #define CGameEventManager_m_Size 16
 #define CGameEventManager_m_GameEvents 124
@@ -25,3 +27,5 @@ public:
 };
 
 extern Listener* listener;
+
+extern Variable sar_debug_game_events;

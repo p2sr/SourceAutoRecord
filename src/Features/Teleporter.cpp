@@ -3,10 +3,12 @@
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
-#include "Features/Feature.hpp"
-
+#include "Command.hpp"
 #include "Utils.hpp"
+
+Teleporter* teleporter;
 
 Teleporter::Teleporter()
     : isSet(false)
@@ -30,4 +32,19 @@ void Teleporter::Teleport()
     engine->ExecuteCommand(setpos);
 }
 
-Teleporter* teleporter;
+CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
+{
+    if (sv_cheats.GetBool()) {
+        if (teleporter->isSet) {
+            teleporter->Teleport();
+        } else {
+            console->Print("Location not set. Use sar_teleport_setpos.\n");
+        }
+    } else {
+        console->Print("Cannot teleport without sv_cheats 1.\n");
+    }
+}
+CON_COMMAND(sar_teleport_setpos, "Saves current location for teleportation.\n")
+{
+    teleporter->Save();
+}

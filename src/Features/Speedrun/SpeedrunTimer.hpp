@@ -13,6 +13,9 @@
 #include "TimerRule.hpp"
 #include "TimerState.hpp"
 
+#include "Command.hpp"
+#include "Variable.hpp"
+
 #define SAR_SPEEDRUN_EXPORT_HEADER "Map,Ticks,Time,Map Ticks,Map Time,Total Ticks,Total Time,Segment"
 
 class SpeedrunTimer : public Feature {
@@ -59,3 +62,12 @@ public:
 };
 
 extern SpeedrunTimer* speedrun;
+
+extern Command sar_speedrun_result;
+extern Command sar_speedrun_export;
+extern Command sar_speedrun_export_pb;
+extern Command sar_speedrun_import;
+extern Command sar_speedrun_rules;
+
+extern Variable sar_speedrun_autostart;
+extern Variable sar_speedrun_autostop;
