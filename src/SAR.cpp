@@ -34,20 +34,6 @@
 #include "Interface.hpp"
 #include "Variable.hpp"
 
-Variable sar_autorecord("sar_autorecord", "0", "Enables automatic demo recording.\n");
-Variable sar_autojump("sar_autojump", "0", "Enables automatic jumping on the server.\n");
-Variable sar_jumpboost("sar_jumpboost", "0", 0, "Enables special game movement on the server.\n"
-                                                "0 = Default,\n"
-                                                "1 = Orange Box Engine,\n"
-                                                "2 = Pre-OBE\n");
-Variable sar_aircontrol("sar_aircontrol", "0",
-#ifdef _WIN32
-    0,
-#endif
-    "Enables more air-control on the server.\n");
-Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
-Variable sar_debug_event_queue("sar_debug_event_queue", "0", "Prints entitity events when they are fired, similar to developer.\n");
-
 SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
 
@@ -249,31 +235,6 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 
     SAFE_DELETE(tier1)
     SAFE_DELETE(console)
-}
-
-// TSP only
-void IN_BhopDown(const CCommand& args) { client->KeyDown(client->in_jump, (args.ArgC() > 1) ? args[1] : NULL); }
-void IN_BhopUp(const CCommand& args) { client->KeyUp(client->in_jump, (args.ArgC() > 1) ? args[1] : NULL); }
-
-Command startbhop("+bhop", IN_BhopDown, "Client sends a key-down event for the in_jump state.\n");
-Command endbhop("-bhop", IN_BhopUp, "Client sends a key-up event for the in_jump state.\n");
-
-CON_COMMAND(sar_anti_anti_cheat, "Sets sv_cheats to 1.\n")
-{
-    sv_cheats.ThisPtr()->m_nValue = 1;
-}
-
-// TSP & TBG only
-DECLARE_AUTOCOMPLETION_FUNCTION(map, "maps", bsp);
-DECLARE_AUTOCOMPLETION_FUNCTION(changelevel, "maps", bsp);
-DECLARE_AUTOCOMPLETION_FUNCTION(changelevel2, "maps", bsp);
-
-// P2 only
-CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer.\n")
-{
-    auto state = !*engine->m_bWaitEnabled;
-    *engine->m_bWaitEnabled = state;
-    console->Print("%s wait!\n", (state) ? "Enabled" : "Disabled");
 }
 
 #pragma region Unused callbacks

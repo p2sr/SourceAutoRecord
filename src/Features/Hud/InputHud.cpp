@@ -176,8 +176,57 @@ void InputHud::Draw()
     surface->FinishDrawing();
 }
 
-CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD.\n"
-                             "Usage: sar_ihud_setpos <top, center or bottom> <left, center or right>\n")
+int sar_ihud_setpos_CompletionFunc(const char* partial,
+    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    const char* cmd = "sar_ihud_setpos ";
+    char* match = (char*)partial;
+    if (!std::strstr(cmd, match)) {
+        match = match + std::strlen(cmd);
+    }
+
+    static std::vector<std::string> positions = std::vector<std::string>{
+        std::string("top left"),
+        std::string("top center"),
+        std::string("top right"),
+        std::string("center left"),
+        std::string("center center"),
+        std::string("center right"),
+        std::string("bottom left"),
+        std::string("bottom center"),
+        std::string("bottom right")
+    };
+
+    // Filter items
+    std::vector<std::string> items;
+    for (auto& pos : positions) {
+        if (std::strlen(match) != std::strlen(cmd)) {
+            if (std::strstr(pos.c_str(), match)) {
+                items.push_back(pos);
+            } else {
+                continue;
+            }
+        } else {
+            items.push_back(pos);
+        }
+
+        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+            break;
+        }
+    }
+
+    // Copy items into list buffer
+    auto count = 0;
+    for (auto& item : items) {
+        std::strcpy(commands[count++], (std::string(cmd) + item).c_str());
+    }
+
+    return count;
+}
+CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of input HUD.\n"
+                                          "Usage: sar_ihud_setpos <top, center or bottom> <left, center or right>\n",
+    0,
+    sar_ihud_setpos_CompletionFunc)
 {
     if (args.ArgC() != 3) {
         console->Print("sar_ihud_setpos <top, center or bottom> <left, center or right> : "
@@ -195,7 +244,11 @@ CON_COMMAND(sar_ihud_setpos, "Sets automatically the position of input HUD.\n"
 
     auto xScreen = 0;
     auto yScreen = 0;
+#if _WIN32
     engine->GetScreenSize(xScreen, yScreen);
+#else
+    engine->GetScreenSize(nullptr, xScreen, yScreen);
+#endif
 
     auto xPos = sar_ihud_x.GetInt();
     auto yPos = sar_ihud_y.GetInt();

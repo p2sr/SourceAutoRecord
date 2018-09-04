@@ -20,7 +20,6 @@ public:
     Interface* eng = nullptr;
     Interface* debugoverlay = nullptr;
 
-    using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _ClientCmd = int(__func*)(void* thisptr, const char* szCmdString);
     using _GetLocalPlayer = int(__func*)(void* thisptr);
     using _GetViewAngles = int(__func*)(void* thisptr, QAngle& va);
@@ -32,10 +31,12 @@ public:
     using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
     using _AddText = void(__func*)(void* thisptr, const char* pText, int nTickDelay);
 #ifdef _WIN32
+    using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
     using _ScreenPosition = int(__stdcall*)(const Vector& point, Vector& screen);
     using _ConPrintEvent = int(__stdcall*)(IGameEvent* ev);
 #else
+    using _GetScreenSize = int(__cdecl*)(void* thisptr, int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)(void* thisptr);
     using _ScreenPosition = int(__stdcall*)(void* thisptr, const Vector& point, Vector& screen);
     using _ConPrintEvent = int(__cdecl*)(void* thisptr, IGameEvent* ev);

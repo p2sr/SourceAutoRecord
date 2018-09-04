@@ -49,7 +49,8 @@ int WorkshopList::Update()
 }
 
 // P2 only
-int sar_workshop_CompletionFunc(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+int sar_workshop_CompletionFunc(const char* partial,
+    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     const char* cmd = "sar_workshop ";
     char* match = (char*)partial;
@@ -87,7 +88,8 @@ int sar_workshop_CompletionFunc(const char* partial, char commands[COMMAND_COMPL
 
     return count;
 }
-CON_COMMAND_F_COMPLETION(sar_workshop, "Same as \"map\" command but lists workshop maps.\n", 0, sar_workshop_CompletionFunc)
+CON_COMMAND_F_COMPLETION(sar_workshop, "Same as \"map\" command but lists workshop maps.\n", 0,
+    sar_workshop_CompletionFunc)
 {
     if (args.ArgC() < 2) {
         console->Print("sar_workshop <file> : Same as \"map\" command but lists workshop maps.\n");
