@@ -51,7 +51,7 @@ DETOUR(Client::HudUpdate, unsigned int a2)
 {
     if (tasQueuer->isRunning) {
         for (auto&& tas = tasQueuer->frames.begin(); tas != tasQueuer->frames.end();) {
-            tas->FramesLeft--;
+            --tas->FramesLeft;
             if (tas->FramesLeft <= 0) {
                 console->DevMsg("[%i] %s\n", session->currentFrame, tas->Command.c_str());
                 engine->ExecuteCommand(tas->Command.c_str());
