@@ -10,8 +10,8 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
-REDECL(EngineDemoRecorder::SetSignonState)
-REDECL(EngineDemoRecorder::StopRecording)
+REDECL(EngineDemoRecorder::SetSignonState);
+REDECL(EngineDemoRecorder::StopRecording);
 
 int EngineDemoRecorder::GetTick()
 {

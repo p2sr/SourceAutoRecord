@@ -11,7 +11,7 @@
 #include "SAR.hpp"
 #include "Utils.hpp"
 
-REDECL(EngineDemoPlayer::StartPlayback)
+REDECL(EngineDemoPlayer::StartPlayback);
 
 int EngineDemoPlayer::GetTick()
 {

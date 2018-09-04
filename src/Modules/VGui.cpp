@@ -23,7 +23,7 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
-REDECL(VGui::Paint)
+REDECL(VGui::Paint);
 
 // CEngineVGui::Paint
 DETOUR(VGui::Paint, int mode)

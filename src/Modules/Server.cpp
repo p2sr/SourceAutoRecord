@@ -25,17 +25,17 @@ Variable sv_maxvelocity;
 Variable sv_transition_fade_time;
 Variable sv_laser_cube_autoaim;
 
-REDECL(Server::CheckJumpButton)
-REDECL(Server::PlayerMove)
-REDECL(Server::FinishGravity)
-REDECL(Server::AirMove)
-REDECL(Server::AirMoveBase)
-REDECL(Server::GameFrame)
+REDECL(Server::CheckJumpButton);
+REDECL(Server::PlayerMove);
+REDECL(Server::FinishGravity);
+REDECL(Server::AirMove);
+REDECL(Server::AirMoveBase);
+REDECL(Server::GameFrame);
 #ifdef _WIN32
-REDECL(Server::AirMove_Skip)
-REDECL(Server::AirMove_Continue)
-REDECL(Server::AirMove_Mid)
-REDECL(Server::AirMove_Mid_Trampoline)
+REDECL(Server::AirMove_Skip);
+REDECL(Server::AirMove_Continue);
+REDECL(Server::AirMove_Mid);
+REDECL(Server::AirMove_Mid_Trampoline);
 #endif
 
 void* Server::GetPlayer()

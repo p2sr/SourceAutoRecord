@@ -15,18 +15,18 @@
 #include "SAR.hpp"
 #include "Utils.hpp"
 
-REDECL(Engine::Disconnect)
-REDECL(Engine::Disconnect2)
-REDECL(Engine::SetSignonState)
-REDECL(Engine::SetSignonState2)
-REDECL(Engine::Frame)
-REDECL(Engine::plugin_load_callback)
-REDECL(Engine::plugin_unload_callback)
-REDECL(Engine::exit_callback)
-REDECL(Engine::quit_callback)
-REDECL(Engine::help_callback)
+REDECL(Engine::Disconnect);
+REDECL(Engine::Disconnect2);
+REDECL(Engine::SetSignonState);
+REDECL(Engine::SetSignonState2);
+REDECL(Engine::Frame);
+REDECL(Engine::plugin_load_callback);
+REDECL(Engine::plugin_unload_callback);
+REDECL(Engine::exit_callback);
+REDECL(Engine::quit_callback);
+REDECL(Engine::help_callback);
 #ifdef _WIN32
-REDECL(Engine::connect_callback)
+REDECL(Engine::connect_callback);
 #endif
 
 void Engine::ExecuteCommand(const char* cmd)

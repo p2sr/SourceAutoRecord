@@ -15,7 +15,7 @@ static bool ends_with(const std::string& str, const std::string& suffix)
 }
 
 #define REDECL(name) \
-    decltype(name) name;
+    decltype(name) name
 
 #define SAFE_DELETE(ptr) \
     if (ptr) {           \

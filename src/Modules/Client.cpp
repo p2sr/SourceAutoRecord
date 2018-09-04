@@ -17,9 +17,9 @@ Variable cl_showpos;
 Variable ui_loadingscreen_transition_time;
 Variable hide_gun_when_holding;
 
-REDECL(Client::HudUpdate)
-REDECL(Client::CreateMove)
-REDECL(Client::GetName)
+REDECL(Client::HudUpdate);
+REDECL(Client::CreateMove);
+REDECL(Client::GetName);
 
 void* Client::GetPlayer()
 {
