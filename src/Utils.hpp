@@ -4,7 +4,9 @@
 #include "Utils/Platform.hpp"
 #include "Utils/SDK.hpp"
 
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #define MODULE(name) name MODULE_EXTENSION
 #define GAME(x) GAME_PATH(x)

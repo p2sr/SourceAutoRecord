@@ -211,10 +211,9 @@ CON_COMMAND(sar_rename, "Changes your name.\n")
 }
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
-    listener->Shutdown();
-
-    SAFE_DELETE(sar.features)
-
+    if (sar.features) {
+        sar.features->DeleteAll();
+    }
     if (sar.cheats) {
         sar.cheats->Shutdown();
     }
@@ -228,6 +227,7 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
         engine->SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);
     }
 
+    SAFE_DELETE(sar.features)
     SAFE_DELETE(sar.cheats)
     SAFE_DELETE(sar.modules)
     SAFE_DELETE(sar.plugin)
