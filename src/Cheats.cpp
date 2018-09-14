@@ -9,6 +9,7 @@
 #include "Features/Hud/SpeedrunHud.hpp"
 #include "Features/Listener.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Tas/CommandQueuer.hpp"
 #include "Features/WorkshopList.hpp"
 
 #include "Game.hpp"
@@ -120,6 +121,7 @@ void Cheats::Init()
     sar_speedrun_import.UniqueFor(SourceGame_Portal2);
     sar_speedrun_rules.UniqueFor(SourceGame_Portal2);
     sar_togglewait.UniqueFor(SourceGame_Portal2);
+    sar_tas_ss.UniqueFor(SourceGame_Portal2);
 
     Variable::RegisterAll();
     Command::RegisterAll();

@@ -51,10 +51,17 @@ DETOUR(Client::HudUpdate, unsigned int a2)
 {
     if (tasQueuer->isRunning) {
         for (auto&& tas = tasQueuer->frames.begin(); tas != tasQueuer->frames.end();) {
-            --tas->FramesLeft;
-            if (tas->FramesLeft <= 0) {
-                console->DevMsg("[%i] %s\n", session->currentFrame, tas->Command.c_str());
-                engine->ExecuteCommand(tas->Command.c_str());
+            --tas->framesLeft;
+
+            if (tas->framesLeft <= 0) {
+                console->DevMsg("[%i] %s\n", session->currentFrame, tas->command.c_str());
+
+                if (sar.game->version & SourceGame_Portal2Engine) {
+                    engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0);
+                } else if (sar.game->version & SourceGame_HalfLife2Engine) {
+                    engine->AddText(engine->s_CommandBuffer, tas->command.c_str(), 0);
+                }
+
                 tas = tasQueuer->frames.erase(tas);
             } else {
                 ++tas;

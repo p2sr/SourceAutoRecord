@@ -211,6 +211,8 @@ CON_COMMAND(sar_rename, "Changes your name.\n")
 }
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
+    listener->Shutdown();
+
     SAFE_DELETE(sar.features)
 
     if (sar.cheats) {
