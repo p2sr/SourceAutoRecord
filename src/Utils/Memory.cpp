@@ -167,3 +167,57 @@ uintptr_t Memory::Scan(const char* moduleName, const char* pattern, int offset)
     }
     return result;
 }
+
+#ifdef _WIN32
+Memory::Patch::~Patch()
+{
+    if (this->original) {
+        this->Restore();
+        delete this->original;
+        this->original = nullptr;
+    }
+}
+bool Memory::Patch::Execute(uintptr_t location, unsigned char* bytes)
+{
+    this->location = location;
+    this->size = sizeof(bytes) / sizeof(bytes[0]) - 1;
+    this->original = new unsigned char[this->size];
+
+    for (size_t i = 0; i < this->size; i++) {
+        if (!ReadProcessMemory(GetCurrentProcess(),
+            reinterpret_cast<LPVOID>(this->location + i),
+            &this->original[i],
+            1,
+            0)) {
+            return false;
+        }
+    }
+
+    for (size_t i = 0; i < this->size; i++) {
+        if (!WriteProcessMemory(GetCurrentProcess(),
+            reinterpret_cast<LPVOID>(this->location + i),
+            &bytes[i],
+            1,
+            0)) {
+            return false;
+        }
+    }
+    return true;
+}
+bool Memory::Patch::Restore()
+{
+    if (this->location && this->original) {
+        for (size_t i = 0; i < this->size; i++) {
+            if (!WriteProcessMemory(GetCurrentProcess(),
+                reinterpret_cast<LPVOID>(this->location + i),
+                &this->original[i],
+                1,
+                0)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+#endif

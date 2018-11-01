@@ -26,7 +26,6 @@ void Modules::DeleteAll()
     for (auto& mod : this->list) {
         if (mod) {
             delete mod;
-            mod = nullptr;
         }
     }
 }

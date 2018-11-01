@@ -4,6 +4,9 @@
 class Feature {
 public:
     bool hasLoaded;
+
+public:
+    virtual ~Feature() = default;
 };
 
 class Features {
@@ -16,12 +19,9 @@ public:
     void AddFeature(T** featurePtr)
     {
         *featurePtr = new T();
-        if (*featurePtr) {
-            (*featurePtr)->hasLoaded = true;
-        }
         this->list.push_back(*featurePtr);
     }
-    template <typename T = Feature>
+    template <typename T = Module>
     void RemoveFeature(T** featurePtr)
     {
         this->list.erase(*featurePtr);

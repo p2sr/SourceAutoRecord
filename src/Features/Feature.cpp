@@ -9,7 +9,6 @@ void Features::DeleteAll()
     for (auto& feature : this->list) {
         if (feature) {
             delete feature;
-            feature = nullptr;
         }
     }
     this->list.clear();

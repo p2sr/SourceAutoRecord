@@ -30,6 +30,20 @@ std::string GetProcessName();
 uintptr_t FindAddress(const uintptr_t start, const uintptr_t end, const char* target);
 uintptr_t Scan(const char* moduleName, const char* pattern, int offset = 0);
 
+#ifdef _WIN32
+class Patch {
+private:
+    uintptr_t location;
+    unsigned char* original;
+    size_t size;
+
+public:
+    ~Patch();
+    bool Execute(uintptr_t location, unsigned char* bytes);
+    bool Restore();
+};
+#endif
+
 template <typename T = uintptr_t>
 T Absolute(const char* moduleName, int relative)
 {
