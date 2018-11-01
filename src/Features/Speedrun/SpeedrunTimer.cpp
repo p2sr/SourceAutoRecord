@@ -181,14 +181,14 @@ bool SpeedrunTimer::ExportResult(std::string filePath, bool pb)
 
     file << SAR_SPEEDRUN_EXPORT_HEADER << std::endl;
 
-    auto segment = 1;
+    auto segment = 0;
 
     for (auto& split : result->splits) {
         auto ticks = split->GetTotal();
         auto time = SpeedrunTimer::Format(ticks * this->ipt);
 
         for (const auto& seg : split->segments) {
-            auto total = split->entered + seg.session;
+            auto total = split->GetTotal();
             file << split->map << ","
                  << seg.session << ","
                  << SpeedrunTimer::Format(seg.session * this->ipt) << ","
@@ -299,6 +299,14 @@ std::string SpeedrunTimer::Format(float raw)
     return std::string(format);
 }
 
+CON_COMMAND(sar_speedrun_start, "Prints result of speedrun.\n")
+{
+    speedrun->Start(engine->tickcount);
+}
+CON_COMMAND(sar_speedrun_stop, "Prints result of speedrun.\n")
+{
+    speedrun->Stop();
+}
 CON_COMMAND(sar_speedrun_result, "Prints result of speedrun.\n")
 {
     auto pb = (args.ArgC() == 2 && !std::strcmp(args[1], "pb"));

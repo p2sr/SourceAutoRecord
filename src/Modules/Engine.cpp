@@ -338,6 +338,12 @@ bool Engine::Init()
             this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3);             // Nop rest
         }
 #endif
+
+        auto alias = Command("alias");
+        if (!!alias) {
+            auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;
+            this->cmd_alias = Memory::Deref<cmdalias_t*>(callback + Offsets::cmd_alias);
+        }
     }
 
     Command::Hook("plugin_load", Engine::plugin_load_callback_hook, Engine::plugin_load_callback);

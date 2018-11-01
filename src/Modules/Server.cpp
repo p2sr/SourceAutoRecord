@@ -26,6 +26,7 @@ Variable sv_transition_fade_time;
 Variable sv_laser_cube_autoaim;
 
 REDECL(Server::CheckJumpButton);
+REDECL(Server::CheckJumpButtonBase);
 REDECL(Server::PlayerMove);
 REDECL(Server::FinishGravity);
 REDECL(Server::AirMove);
@@ -54,10 +55,12 @@ DETOUR_T(bool, Server::CheckJumpButton)
     auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
     auto m_nOldButtons = reinterpret_cast<int*>((uintptr_t)mv + Offsets::m_nOldButtons);
 
-    auto enabled = (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_autojump.GetBool();
+    auto cheating = !sv_bonus_challenge.GetBool() || sv_cheats.GetBool();
+    auto autoJump = cheating && sar_autojump.GetBool();
+    auto duckJump = cheating && sar_duckjump.GetBool();
 
     auto original = 0;
-    if (enabled) {
+    if (autoJump) {
         original = *m_nOldButtons;
 
         if (!server->jumpedLastTime)
@@ -67,10 +70,12 @@ DETOUR_T(bool, Server::CheckJumpButton)
     server->jumpedLastTime = false;
 
     server->callFromCheckJumpButton = true;
-    auto result = Server::CheckJumpButton(thisptr);
+    auto result = (duckJump && Server::CheckJumpButtonBase)
+        ? Server::CheckJumpButtonBase(thisptr)
+        : Server::CheckJumpButton(thisptr);
     server->callFromCheckJumpButton = false;
 
-    if (enabled) {
+    if (autoJump) {
         if (!(*m_nOldButtons & IN_JUMP))
             *m_nOldButtons = original;
     }
@@ -221,6 +226,7 @@ DETOUR(Server::GameFrame, bool simulating)
             pe = pe->m_pNext;
         }
     }
+
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else
@@ -246,6 +252,8 @@ bool Server::Init()
             auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
             Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*), &this->AirMoveBase);
 
+            Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &this->CheckJumpButtonBase);
+
 #ifdef _WIN32
             auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
             if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
@@ -263,15 +271,15 @@ bool Server::Init()
     if (this->g_ServerGameDLL) {
         auto Think = this->g_ServerGameDLL->Original(Offsets::Think);
         Memory::Read<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex, &this->UTIL_PlayerByIndex);
+        Memory::DerefDeref<CGlobalVars*>((uintptr_t)this->UTIL_PlayerByIndex + Offsets::gpGlobals, &this->gpGlobals);
 
-        auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
-        Memory::DerefDeref<CGlobalVars*>(GameFrame + Offsets::gpGlobals, &this->gpGlobals);
-        Memory::Deref<bool*>(GameFrame + Offsets::g_InRestore, &this->g_InRestore);
-
+        /* auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
         auto ServiceEventQueue = Memory::Read(GameFrame + Offsets::ServiceEventQueue);
+
+        Memory::Deref<bool*>(GameFrame + Offsets::g_InRestore, &this->g_InRestore);
         Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue, &this->g_EventQueue);
 
-        this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
+        this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame); */
     }
 
     return this->hasLoaded = this->g_GameMovement && this->g_ServerGameDLL;

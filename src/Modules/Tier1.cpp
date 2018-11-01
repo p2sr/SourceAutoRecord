@@ -14,21 +14,20 @@ bool Tier1::Init()
 
         this->m_pConCommandList = (ConCommandBase*)((uintptr_t)this->g_pCVar->ThisPtr() + Offsets::m_pConCommandList);
 
-        auto play = reinterpret_cast<ConCommand*>(FindCommandBase(this->g_pCVar->ThisPtr(), "play"));
-        if (play) {
-            this->ConCommand_VTable = play->ConCommandBase_VTable;
+        auto listdemo = reinterpret_cast<ConCommand*>(this->FindCommandBase(this->g_pCVar->ThisPtr(), "listdemo"));
+        if (listdemo) {
+            this->ConCommand_VTable = listdemo->ConCommandBase_VTable;
+
+            if (listdemo->m_fnCompletionCallback) {
+                auto callback = (uintptr_t)listdemo->m_fnCompletionCallback + Offsets::AutoCompletionFunc;
+                this->AutoCompletionFunc = Memory::Read<_AutoCompletionFunc>(callback);
+            }
         }
 
-        auto sv_lan = reinterpret_cast<ConVar*>(FindCommandBase(this->g_pCVar->ThisPtr(), "sv_lan"));
+        auto sv_lan = reinterpret_cast<ConVar*>(this->FindCommandBase(this->g_pCVar->ThisPtr(), "sv_lan"));
         if (sv_lan) {
             this->ConVar_VTable = sv_lan->ConCommandBase_VTable;
             this->ConVar_VTable2 = sv_lan->ConVar_VTable;
-        }
-
-        auto listdemo = reinterpret_cast<ConCommand*>(FindCommandBase(this->g_pCVar->ThisPtr(), "listdemo"));
-        if (listdemo && listdemo->m_fnCompletionCallback) {
-            auto callback = (uintptr_t)listdemo->m_fnCompletionCallback + Offsets::AutoCompletionFunc;
-            this->AutoCompletionFunc = Memory::Read<_AutoCompletionFunc>(callback);
         }
     }
 

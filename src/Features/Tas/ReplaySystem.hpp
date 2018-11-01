@@ -5,6 +5,7 @@
 #include "Variable.hpp"
 
 #define SAR_TAS_REPLAY_HEADER001 "sar-tas-replay v1.7"
+#define SAR_TAS_REPLAY_HEADER002 "sar-tas-replay v1.8"
 #define SAR_TAS_REPLAY_EXTENSION ".str"
 
 struct ReplayFrame {
@@ -18,21 +19,52 @@ struct ReplayFrame {
     short mousedy;
 };
 
-class ReplaySystem : public Feature {
-public:
+struct ReplayView {
     std::vector<ReplayFrame> frames;
-    bool isRecording;
-    bool isPlaying;
+};
+
+class Replay {
+public:
+    std::vector<ReplayView> views;
+
+private:
     int playIndex;
 
 public:
+    Replay();
+    bool Ended();
+    void Reset();
+    void Resize();
+    void Record(CUserCmd* cmd, int slot);
+    void Play(CUserCmd* cmd, int slot);
+};
+
+class ReplaySystem : public Feature {
+private:
+    std::vector<Replay*> replays;
+    int replayIndex;
+    bool isRecording;
+    bool isPlaying;
+
+public:
     ReplaySystem();
-    void StartRecording();
-    void StartReRecording();
-    void StartPlaying();
+    void Record(bool rerecord = false);
+    void Play();
     void Stop();
-    void Record(CUserCmd* cmd);
-    void Play(CUserCmd* cmd);
+    bool IsRecording();
+    bool IsPlaying();
+    Replay* GetCurrentReplay();
+    bool AnyReplaysLoaded();
+    void DeleteAll();
+    void MergeAll();
+
+private:
+    void NewReplay();
+    void DeleteReplay();
+
+public:
+    void Export(std::string filePath, int index = 0);
+    void Import(std::string filePath);
 };
 
 extern ReplaySystem* tasReplaySystem;

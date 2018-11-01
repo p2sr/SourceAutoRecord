@@ -22,6 +22,7 @@ public:
     virtual void LoadOffsets() = 0;
     virtual void LoadRules() = 0;
     virtual const char* Version();
+    virtual const float Tickrate() = 0;
 
     static Game* CreateNew();
 };

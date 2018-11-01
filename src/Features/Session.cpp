@@ -65,10 +65,10 @@ void Session::Started(bool menu)
             tasQueuer->Start();
         }
         if (sar_replay_autorecord.GetBool()) {
-            tasReplaySystem->StartRecording();
+            tasReplaySystem->Record();
         }
         if (sar_replay_autoplay.GetBool()) {
-            tasReplaySystem->StartPlaying();
+            tasReplaySystem->Play();
         }
         if (sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
             speedrun->Start(engine->tickcount);
