@@ -21,7 +21,7 @@ public:
         *featurePtr = new T();
         this->list.push_back(*featurePtr);
     }
-    template <typename T = Module>
+    template <typename T = Feature>
     void RemoveFeature(T** featurePtr)
     {
         this->list.erase(*featurePtr);
