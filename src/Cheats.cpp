@@ -26,6 +26,7 @@ Variable sar_aircontrol("sar_aircontrol", "0",
     0,
 #endif
     "Enables more air-control on the server.\n");
+Variable sar_duckjump("sar_duckjump", "0", "Allows duck-jumping even when fully crouched, similar to prevent_crouch_jump.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
 Variable sar_debug_event_queue("sar_debug_event_queue", "0", "Prints entitity events when they are fired, similar to developer.\n");
 
@@ -52,6 +53,27 @@ CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer
     auto state = !*engine->m_bWaitEnabled;
     *engine->m_bWaitEnabled = state;
     console->Print("%s wait!\n", (state) ? "Enabled" : "Disabled");
+}
+CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
+{
+    if (!engine->cmd_alias->next) {
+        return console->Print("Nothing to delete.\n");
+    }
+
+    auto count = 0;
+    auto cur = engine->cmd_alias->next;
+    do {
+        auto next = cur->next;
+        // Better than valve because no mem-leak :^)
+        delete[] cur->value;
+        delete cur;
+        cur = next;
+        ++count;
+    } while (cur);
+
+    engine->cmd_alias->next = nullptr;
+
+    console->Print("Deleted %i alias commands!\n", count);
 }
 
 void Cheats::Init()
@@ -108,6 +130,7 @@ void Cheats::Init()
     sar_sr_hud_font_index.UniqueFor(SourceGame_Portal2);
     sar_speedrun_autostart.UniqueFor(SourceGame_Portal2);
     sar_speedrun_autostop.UniqueFor(SourceGame_Portal2);
+    sar_duckjump.UniqueFor(SourceGame_Portal2);
 
     startbhop.UniqueFor(SourceGame_TheStanleyParable);
     endbhop.UniqueFor(SourceGame_TheStanleyParable);
@@ -122,6 +145,7 @@ void Cheats::Init()
     sar_speedrun_rules.UniqueFor(SourceGame_Portal2);
     sar_togglewait.UniqueFor(SourceGame_Portal2);
     sar_tas_ss.UniqueFor(SourceGame_Portal2);
+    sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2);
 
     Variable::RegisterAll();
     Command::RegisterAll();

@@ -28,7 +28,6 @@ void TheStanleyParable::LoadOffsets()
     // server.so
 
     g_InRestore = 31; // CServerGameDLL::GameFrame
-    gpGlobals = 84; // CServerGameDLL::GameFrame
     ServiceEventQueue = 328; // CServerGameDLL::GameFrame
     g_EventQueue = 24; // ServiceEventQueue
 

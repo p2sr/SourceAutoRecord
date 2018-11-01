@@ -64,6 +64,7 @@ void Portal2::LoadOffsets()
     Frame = 5; // CEngine
     m_bLoadGame = 448; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
     ScreenPosition = 12; // CIVDebugOverlay
+    cmd_alias = 37; // alias
 
     // vstdlib.dll
 
@@ -91,11 +92,11 @@ void Portal2::LoadOffsets()
     m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
     GameFrame = 4; // CServerGameDLL
     g_InRestore = 8; // CServerGameDLL::GameFrame
-    gpGlobals = 92; // CServerGameDLL::GameFrame
     ServiceEventQueue = 249; // CServerGameDLL::GameFrame
     g_EventQueue = 1; // ServiceEventQueue
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 39; // CServerGameDLL::Think
+    gpGlobals = 14; // UTIL_PlayerByIndex
     iNumPortalsPlaced = 5700; // CPortal_Player::IncrementPortalsPlaced
     player = 4; // CPortalGameMovement::PlayerMove
     m_fFlags = 204; // CBasePlayer::UpdateStepSound
@@ -148,4 +149,8 @@ const char* Portal2::Version()
 const char* Portal2::Process()
 {
     return "portal2.exe";
+}
+const float Portal2::Tickrate()
+{
+    return 60;
 }

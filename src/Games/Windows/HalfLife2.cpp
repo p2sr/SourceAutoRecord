@@ -87,11 +87,11 @@ void HalfLife2::LoadOffsets()
     m_vecVelocity2 = 64; // CGameMovement::PlayerMove
     GameFrame = 5; // CServerGameDLL
     g_InRestore = 8; // CServerGameDLL::GameFrame
-    gpGlobals = 29; // CServerGameDLL::GameFrame
     ServiceEventQueue = 147; // CServerGameDLL::GameFrame
     g_EventQueue = 1; // ServiceEventQueue
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 38; // CServerGameDLL::Think
+    gpGlobals = 29; // UTIL_PlayerByIndex (TODO)
     m_fFlags = 260; // CBasePlayer::UpdateStepSound
     m_MoveType = 314; // CBasePlayer::UpdateStepSound
     m_nWaterLevel = 503; // CBasePlayer::UpdateStepSound
@@ -131,4 +131,8 @@ const char* HalfLife2::Version()
 const char* HalfLife2::Process()
 {
     return "hl2.exe";
+}
+const float HalfLife2::Tickrate()
+{
+    return 1 / 0.015;
 }

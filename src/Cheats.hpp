@@ -12,6 +12,7 @@ extern Variable sar_autorecord;
 extern Variable sar_autojump;
 extern Variable sar_jumpboost;
 extern Variable sar_aircontrol;
+extern Variable sar_duckjump;
 extern Variable sar_disable_challenge_stats_hud;
 extern Variable sar_debug_event_queue;
 

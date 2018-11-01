@@ -79,10 +79,15 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
     vgui->inputHud->SetButtonBits(cmd->buttons);
 
     if (cmd->command_number) {
-        if (tasReplaySystem->isPlaying) {
-            tasReplaySystem->Play(cmd);
-        } else if (tasReplaySystem->isRecording) {
-            tasReplaySystem->Record(cmd);
+        if (tasReplaySystem->IsPlaying()) {
+            auto replay = tasReplaySystem->GetCurrentReplay();
+            if (replay->Ended()) {
+                tasReplaySystem->Stop();
+            } else {
+                replay->Play(cmd, 0);
+            }
+        } else if (tasReplaySystem->IsRecording()) {
+            tasReplaySystem->GetCurrentReplay()->Record(cmd, 0);
         }
     }
 

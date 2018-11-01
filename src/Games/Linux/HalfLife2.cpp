@@ -87,11 +87,11 @@ void HalfLife2::LoadOffsets()
     m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
     GameFrame = 5; // CServerGameDLL
     g_InRestore = 201; // CServerGameDLL::GameFrame
-    gpGlobals = 220; // CServerGameDLL::GameFrame
     ServiceEventQueue = 333; // CServerGameDLL::GameFrame
     g_EventQueue = 177; // ServiceEventQueue
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
+    gpGlobals = 15; // UTIL_PlayerByIndex
     iNumPortalsPlaced = 4816; // CPortal_Player::IncrementPortalsPlaced
     m_fFlags = 280; // CBasePlayer::UpdateStepSound
     m_MoveType = 334; // CBasePlayer::UpdateStepSound
@@ -134,4 +134,8 @@ const char* HalfLife2::Version()
 const char* HalfLife2::Process()
 {
     return "hl2_linux";
+}
+const float HalfLife2::Tickrate()
+{
+    return 1 / 0.015;
 }

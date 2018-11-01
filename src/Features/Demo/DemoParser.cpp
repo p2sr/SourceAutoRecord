@@ -69,8 +69,11 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
                     break;
 
                 file.read((char*)&tick, sizeof(tick));
+
+                // Save postive ticks to keep adjustments simple
                 if (tick >= 0)
                     demo->messageTicks.push_back(tick);
+
                 if (this->hasAlignmentByte)
                     file.ignore(1);
 

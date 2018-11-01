@@ -36,6 +36,8 @@ public:
     // CGameMovement::CheckJumpButton
     DECL_DETOUR_T(bool, CheckJumpButton)
 
+    static _CheckJumpButton CheckJumpButtonBase;
+
     // CGameMovement::PlayerMove
     DECL_DETOUR(PlayerMove)
 

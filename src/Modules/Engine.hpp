@@ -12,6 +12,12 @@
 #define IServerMessageHandler_VMT_Offset 8
 #endif
 
+struct cmdalias_t {
+    cmdalias_t* next;
+    char name[32];
+    char* value;
+};
+
 class Engine : public Module {
 public:
     Interface* engineClient = nullptr;
@@ -67,6 +73,7 @@ public:
     CHostState* hoststate = nullptr;
     void* s_CommandBuffer = nullptr;
     bool* m_bWaitEnabled = nullptr;
+    cmdalias_t* cmd_alias = nullptr;
 
 public:
     void ExecuteCommand(const char* cmd);

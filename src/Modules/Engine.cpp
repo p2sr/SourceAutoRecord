@@ -277,6 +277,12 @@ bool Engine::Init()
             auto FireEventIntern = Memory::Read(FireEventClientSide + Offsets::FireEventIntern);
             Memory::Read<_ConPrintEvent>(FireEventIntern + Offsets::ConPrintEvent, &this->ConPrintEvent);
         }
+
+        auto alias = Command("alias");
+        if (!!alias) {
+            auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;
+            this->cmd_alias = Memory::Deref<cmdalias_t*>(callback + Offsets::cmd_alias);
+        }
     }
 
     Command::Hook("plugin_load", Engine::plugin_load_callback_hook, Engine::plugin_load_callback);

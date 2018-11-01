@@ -4,7 +4,6 @@
 class TheStanleyParable : public Portal2 {
 public:
     TheStanleyParable();
-
     void LoadOffsets() override;
     void LoadRules() override;
     const char* Version() override;

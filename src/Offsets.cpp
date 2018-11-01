@@ -173,4 +173,5 @@ int eng;
 int HostState_OnClientConnected;
 int hoststate;
 int m_bLoadGame;
+int cmd_alias;
 }
