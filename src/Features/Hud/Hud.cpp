@@ -39,6 +39,7 @@ Variable sar_hud_trace("sar_hud_trace", "0", 0, "Draws distance values of tracer
                                                 "2 = vec2.\n");
 Variable sar_hud_frame("sar_hud_frame", "0", "Draws current frame count.\n");
 Variable sar_hud_last_frame("sar_hud_last_frame", "0", "Draws last saved frame value.\n");
+Variable sar_hud_inspection("sar_hud_inspection", "0", "Draws entity inspection data.\n");
 Variable sar_hud_velocity_peak("sar_hud_velocity_peak", "0", "Draws last saved velocity peak.\n");
 Variable sar_hud_default_spacing("sar_hud_default_spacing", "4", 0, "Spacing between elements of HUD.\n");
 Variable sar_hud_default_padding_x("sar_hud_default_padding_x", "2", 0, "X padding of HUD.\n");

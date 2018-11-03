@@ -8,6 +8,7 @@
 
 #include "Hud/Hud.hpp"
 #include "Hud/InputHud.hpp"
+#include "Hud/InspectionHud.hpp"
 #include "Hud/SpeedrunHud.hpp"
 
 #include "Game.hpp"
@@ -46,6 +47,12 @@ bool Config::Save()
         SAVE_CVAR(sar_sr_hud_y, Int);
         SAVE_CVAR(sar_sr_hud_font_color, String);
         SAVE_CVAR(sar_sr_hud_font_index, Int);
+        SAVE_CVAR(sar_ei_hud_x, Int);
+        SAVE_CVAR(sar_ei_hud_y, Int);
+        SAVE_CVAR(sar_ei_hud_z, Int);
+        SAVE_CVAR(sar_ei_hud_font_color, String);
+        SAVE_CVAR(sar_ei_hud_font_color2, String);
+        SAVE_CVAR(sar_ei_hud_font_index, Int);
     }
 
     file.close();

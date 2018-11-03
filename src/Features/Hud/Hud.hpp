@@ -32,6 +32,7 @@ extern Variable sar_hud_jump_peak;
 extern Variable sar_hud_trace;
 extern Variable sar_hud_frame;
 extern Variable sar_hud_last_frame;
+extern Variable sar_hud_inspection;
 extern Variable sar_hud_velocity_peak;
 extern Variable sar_hud_default_spacing;
 extern Variable sar_hud_default_padding_x;

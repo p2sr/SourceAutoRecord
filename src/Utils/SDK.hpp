@@ -25,6 +25,14 @@ struct Vector {
         res.z = z * fl;
         return res;
     }
+    inline Vector operator+(Vector vec)
+    {
+        Vector res;
+        res.x = x + vec.x;
+        res.y = y + vec.y;
+        res.z = z + vec.z;
+        return res;
+    }
     inline float& operator[](int i)
     {
         return ((float*)this)[i];
@@ -413,12 +421,6 @@ struct CEventAction {
     CEventAction* m_pNext; // 24
 };
 
-#define MAX_EDICT_BITS 11
-#define MAX_EDICTS (1 << MAX_EDICT_BITS)
-#define NUM_ENT_ENTRY_BITS (MAX_EDICT_BITS + 1)
-#define NUM_ENT_ENTRIES (1 << NUM_ENT_ENTRY_BITS)
-#define ENT_ENTRY_MASK (NUM_ENT_ENTRIES - 1)
-
 struct EventQueuePrioritizedEvent_t {
     float m_flFireTime; // 0
     char* m_iTarget; // 4
@@ -453,6 +455,18 @@ struct CGlobalVarsBase {
     bool m_bClient; // 48
     int nTimestampNetworkingBase; // 52
     int nTimestampRandomizeWindow; // 56
+};
+
+struct CEntInfo {
+    void* m_pEntity; // 0
+    int m_SerialNumber; // 4
+    CEntInfo* m_pPrev; // 8
+    CEntInfo* m_pNext; // 12
+};
+
+struct CEntInfo2 : CEntInfo {
+    void* unk1; // 16
+    void* unk2; // 20
 };
 
 enum MapLoadType_t {

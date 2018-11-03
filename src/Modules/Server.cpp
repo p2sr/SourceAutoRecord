@@ -6,6 +6,7 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
+#include "Features/Routing/EntityInspector.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -47,6 +48,53 @@ int Server::GetPortals()
 {
     auto player = this->GetPlayer();
     return (player) ? *reinterpret_cast<int*>((uintptr_t)player + Offsets::iNumPortalsPlaced) : -1;
+}
+CEntInfo* Server::GetEntityInfoByIndex(int index)
+{
+    auto size = (sar.game->version & SourceGame_Portal2Engine)
+        ? sizeof(CEntInfo2)
+        : sizeof(CEntInfo);
+    return reinterpret_cast<CEntInfo*>((uintptr_t)server->m_EntPtrArray + size * index);
+}
+char* Server::GetEntityName(void* entity)
+{
+    return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iName);
+}
+char* Server::GetEntityClassName(void* entity)
+{
+    return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iClassName);
+}
+Vector Server::GetAbsOrigin(void* entity)
+{
+    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::m_vecAbsOrigin2);
+}
+QAngle Server::GetAbsAngles(void* entity)
+{
+    return *reinterpret_cast<QAngle*>((uintptr_t)entity + Offsets::m_angAbsRotation2);
+}
+Vector Server::GetLocalVelocity(void* entity)
+{
+    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::m_vecVelocity3);
+}
+int Server::GetFlags(void* entity)
+{
+    return *reinterpret_cast<int*>((uintptr_t)entity + Offsets::m_fFlags);
+}
+int Server::GetEFlags(void* entity)
+{
+    return *reinterpret_cast<int*>((uintptr_t)entity + Offsets::m_iEFlags);
+}
+float Server::GetMaxSpeed(void* entity)
+{
+    return *reinterpret_cast<float*>((uintptr_t)entity + Offsets::m_flMaxspeed);
+}
+float Server::GetGravity(void* entity)
+{
+    return *reinterpret_cast<float*>((uintptr_t)entity + Offsets::m_flGravity);
+}
+Vector Server::GetViewOffset(void* entity)
+{
+    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::m_vecViewOffset);
 }
 
 // CGameMovement::CheckJumpButton
@@ -122,6 +170,8 @@ DETOUR(Server::PlayerMove)
     }
 
     stats->velocity->Save(client->GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
+
+    inspector->Record();
 
     return Server::PlayerMove(thisptr);
 }
@@ -267,6 +317,16 @@ bool Server::Init()
 #endif
         }
     }
+
+#ifndef _WIN32
+    // TODO: offset
+    if (sar.game->version & SourceGame_Portal2) {
+        auto module = Memory::ModuleInfo();
+        if (Memory::TryGetModule(this->Name(), &module)) {
+            this->m_EntPtrArray = reinterpret_cast<CEntInfo*>(module.base + 0xFAD0A4);
+        }
+    }
+#endif
 
     if (this->g_ServerGameDLL) {
         auto Think = this->g_ServerGameDLL->Original(Offsets::Think);

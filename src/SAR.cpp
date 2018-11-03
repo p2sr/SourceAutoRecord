@@ -16,6 +16,7 @@
 #include "Features/Cvars.hpp"
 #include "Features/Listener.hpp"
 #include "Features/Rebinder.hpp"
+#include "Features/Routing/EntityInspector.hpp"
 #include "Features/Routing/Tracer.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -72,6 +73,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<CommandQueuer>(&tasQueuer);
             this->features->AddFeature<ReplaySystem>(&tasReplaySystem);
             this->features->AddFeature<Timer>(&timer);
+            this->features->AddFeature<EntityInspector>(&inspector);
 
             this->game->LoadRules();
 
@@ -162,7 +164,7 @@ CON_COMMAND(sar_session, "Prints the current tick of the server since it has loa
         console->Print("Demo Player Tick: %i (%.3f)\n", tick, engine->ToTime(tick));
     }
 }
-CON_COMMAND(sar_about, "Prints info about this tool.\n")
+CON_COMMAND(sar_about, "Prints info about SAR plugin.\n")
 {
     console->Print("SourceAutoRecord tells the engine to keep recording when loading a save.\n");
     console->Print("More information at: %s\n", sar.Website());

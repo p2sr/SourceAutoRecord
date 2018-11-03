@@ -87,6 +87,15 @@ int m_angAbsRotation;
 int m_vecVelocity;
 int GetFlags;
 
+// CBaseEntity
+int m_vecAbsOrigin2;
+int m_angAbsRotation2;
+int m_vecVelocity3;
+int m_iEFlags;
+int m_flMaxspeed;
+int m_flGravity;
+int m_vecViewOffset;
+
 // CBasePlayer
 int iNumPortalsPlaced;
 int m_fFlags;
@@ -174,4 +183,7 @@ int HostState_OnClientConnected;
 int hoststate;
 int m_bLoadGame;
 int cmd_alias;
+int NUM_ENT_ENTRIES;
+int m_iClassName;
+int m_iName;
 }

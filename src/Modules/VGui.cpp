@@ -9,6 +9,7 @@
 
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
+#include "Features/Routing/EntityInspector.hpp"
 #include "Features/Routing/Tracer.hpp"
 #include "Features/Session.hpp"
 #include "Features/Stats/Stats.hpp"
@@ -162,12 +163,34 @@ DETOUR(VGui::Paint, int mode)
     if (sar_hud_last_frame.GetBool()) {
         DrawElement("last frame: %i", session->lastFrame);
     }
+    if (sar_hud_inspection.GetBool()) {
+        DrawElement(inspector->IsRunning() ? "inspection (recording)" : "inspection");
+
+        auto info = server->GetEntityInfoByIndex(inspector->entityIndex);
+        if (info != nullptr) {
+            DrawElement("name: %s", server->GetEntityName(info->m_pEntity));
+            DrawElement("class: %s", server->GetEntityClassName(info->m_pEntity));
+        }
+
+        auto data = inspector->GetData();
+        DrawElement("pos: %.3f %.3f %.3f", data.origin.x, data.origin.y, data.origin.z);
+        DrawElement("off: %.3f %.3f %.3f", data.viewOffset.x, data.viewOffset.y, data.viewOffset.z);
+        DrawElement("ang: %.3f %.3f %.3f", data.angles.x, data.angles.y, data.angles.z);
+        DrawElement("vel: %.3f %.3f %.3f", data.velocity.x, data.velocity.y, data.velocity.z);
+        DrawElement("flags: %i", data.flags);
+        DrawElement("eflags: %i", data.eFlags);
+        DrawElement("maxspeed: %.3f", data.maxSpeed);
+        DrawElement("gravity: %.3f", data.gravity);
+    }
 
     surface->FinishDrawing();
 
     // Draw other HUDs
     vgui->inputHud->Draw();
     vgui->speedrunHud->Draw();
+#ifndef _WIN32
+    vgui->inspectionHud->Draw();
+#endif
 
     return VGui::Paint(thisptr, mode);
 }
@@ -176,6 +199,7 @@ bool VGui::Init()
 {
     this->inputHud = new InputHud();
     this->speedrunHud = new SpeedrunHud();
+    this->inspectionHud = new InspectionHud();
 
     this->enginevgui = Interface::Create(this->Name(), "VEngineVGui0");
     if (this->enginevgui) {
@@ -186,7 +210,7 @@ bool VGui::Init()
         this->respectClShowPos = false;
     }
 
-    return this->hasLoaded = this->inputHud && this->speedrunHud && this->enginevgui;
+    return this->hasLoaded = this->inputHud && this->speedrunHud && this->inspectionHud && this->enginevgui;
 }
 void VGui::Shutdown()
 {
@@ -194,6 +218,7 @@ void VGui::Shutdown()
 
     SAFE_DELETE(this->inputHud)
     SAFE_DELETE(this->speedrunHud)
+    SAFE_DELETE(this->inspectionHud)
 }
 
 VGui* vgui;

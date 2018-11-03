@@ -104,6 +104,16 @@ void Portal2::LoadOffsets()
     m_nWaterLevel = 339; // CBasePlayer::UpdateStepSound
     m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
     m_bDucked = 2272; // CPortalGameMovement::FinishUnDuck
+    m_iClassName = 104; // CBaseEntity (TODO)
+    m_iName = 216; // CBaseEntity (TODO)
+    m_vecAbsOrigin2 = 468; // CBaseEntity (TODO)
+    m_angAbsRotation2 = 480; // CBaseEntity (TODO)
+    m_vecVelocity3 = 492; // CBaseEntity (TODO)
+    m_iEFlags = 208; // CBaseEntity (TODO)
+    m_flMaxspeed = 3728; // CBaseEntity (TODO)
+    m_flGravity = 792; // CBaseEntity (TODO)
+    m_vecViewOffset = 748; // CBaseEntity (TODO)
+    NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList (TODO)
 
     // client.dll
 

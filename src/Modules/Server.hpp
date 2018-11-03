@@ -24,6 +24,7 @@ public:
     CGlobalVars* gpGlobals = nullptr;
     bool* g_InRestore = nullptr;
     CEventQueue* g_EventQueue = nullptr;
+    CEntInfo* m_EntPtrArray = nullptr;
 
 private:
     bool jumpedLastTime = false;
@@ -32,6 +33,19 @@ private:
 public:
     void* GetPlayer();
     int GetPortals();
+    CEntInfo* GetEntityInfoByIndex(int index);
+    char* GetEntityName(void* entity);
+    char* GetEntityClassName(void* entity);
+    Vector GetAbsOrigin(void* entity);
+    QAngle GetAbsAngles(void* entity);
+    Vector GetLocalVelocity(void* entity);
+    int GetFlags(void* entity);
+    int GetEFlags(void* entity);
+    float GetMaxSpeed(void* entity);
+    float GetGravity(void* entity);
+    Vector GetViewOffset(void* entity);
+
+    float GetFriction(void* entity);
 
     // CGameMovement::CheckJumpButton
     DECL_DETOUR_T(bool, CheckJumpButton)

@@ -2,6 +2,7 @@
 #include "Module.hpp"
 
 #include "Features/Hud/InputHud.hpp"
+#include "Features/Hud/InspectionHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
 
 #include "Interface.hpp"
@@ -13,6 +14,7 @@ public:
 
     InputHud* inputHud = nullptr;
     SpeedrunHud* speedrunHud = nullptr;
+    InspectionHud* inspectionHud = nullptr;
 
 private:
     bool respectClShowPos = false;

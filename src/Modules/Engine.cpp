@@ -173,7 +173,7 @@ DETOUR_COMMAND(Engine::plugin_load)
 }
 DETOUR_COMMAND(Engine::plugin_unload)
 {
-    if (args.ArgC() >= 2 && sar.GetPlugin() && atoi(args[1]) == sar.plugin->index) {
+    if (args.ArgC() >= 2 && sar.GetPlugin() && std::atoi(args[1]) == sar.plugin->index) {
         engine->SafeUnload();
     } else {
         engine->plugin_unload_callback(args);
@@ -343,6 +343,10 @@ bool Engine::Init()
         if (!!alias) {
             auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;
             this->cmd_alias = Memory::Deref<cmdalias_t*>(callback + Offsets::cmd_alias);
+        }
+
+        if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
+            ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
         }
     }
 

@@ -344,7 +344,7 @@ CON_COMMAND(sar_speedrun_result, "Prints result of speedrun.\n")
 CON_COMMAND(sar_speedrun_export, "Saves speedrun result to a csv file.\n")
 {
     if (args.ArgC() != 2) {
-        console->Print("sar_speedrun_export [file_name] : Saves speedrun result to a csv file.\n");
+        console->Print("sar_speedrun_export <file_name> : Saves speedrun result to a csv file.\n");
         return;
     }
 
@@ -378,7 +378,7 @@ CON_COMMAND(sar_speedrun_export_pb, "Saves speedrun personal best to a csv file.
 CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.", 0, 0, csv)
 {
     if (args.ArgC() != 2) {
-        console->Print("sar_speedrun_import [file_name] : Imports speedrun data file.\n");
+        console->Print("sar_speedrun_import <file_name> : Imports speedrun data file.\n");
         return;
     }
 

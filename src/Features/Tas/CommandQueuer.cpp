@@ -83,7 +83,7 @@ CON_COMMAND(sar_tas_frame_at,
         return;
     }
 
-    tasQueuer->AddFrame(atoi(args[1]), std::string(args[2]));
+    tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]));
 }
 CON_COMMAND(sar_tas_frames_at,
     "Adds command frame multiple times to the queue at specified frame.\n"
@@ -94,7 +94,7 @@ CON_COMMAND(sar_tas_frames_at,
         return;
     }
 
-    tasQueuer->AddFrames(atoi(args[1]), atoi(args[2]), atoi(args[3]), std::string(args[4]));
+    tasQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]));
 }
 CON_COMMAND(sar_tas_frame_after,
     "Adds command frame to the queue after waiting for specified amount of frames.\n"
@@ -105,7 +105,7 @@ CON_COMMAND(sar_tas_frame_after,
         return;
     }
 
-    tasQueuer->AddFrame(atoi(args[1]), std::string(args[2]), true);
+    tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]), true);
 }
 CON_COMMAND(sar_tas_frames_after,
     "Adds command frame multiple times to the queue after waiting for specified amount of frames.\n"
@@ -116,7 +116,7 @@ CON_COMMAND(sar_tas_frames_after,
         return;
     }
 
-    tasQueuer->AddFrames(atoi(args[1]), atoi(args[2]), atoi(args[3]), std::string(args[4]), true);
+    tasQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]), true);
 }
 CON_COMMAND(sar_tas_start, "Starts executing queued commands.\n")
 {
@@ -133,7 +133,7 @@ CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\
         return;
     }
 
-    auto index = atoi(args[1]);
+    auto index = std::atoi(args[1]);
     if (index == 0 || index == 1) {
         tasQueuer->SetSplitScreen(index);
     } else {
