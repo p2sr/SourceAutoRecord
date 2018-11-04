@@ -167,9 +167,12 @@ DETOUR(VGui::Paint, int mode)
         DrawElement(inspector->IsRunning() ? "inspection (recording)" : "inspection");
 
         auto info = server->GetEntityInfoByIndex(inspector->entityIndex);
-        if (info != nullptr) {
+        if (info && info->m_pEntity) {
             DrawElement("name: %s", server->GetEntityName(info->m_pEntity));
             DrawElement("class: %s", server->GetEntityClassName(info->m_pEntity));
+        } else {
+            DrawElement("name: -");
+            DrawElement("class: -");
         }
 
         auto data = inspector->GetData();
