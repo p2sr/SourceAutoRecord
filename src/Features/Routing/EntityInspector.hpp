@@ -52,3 +52,6 @@ extern Command sar_inspection_stop;
 extern Command sar_inspection_print;
 extern Command sar_inspection_export;
 extern Command sar_inspection_index;
+extern Command sar_dump_entlist;
+extern Command sar_find_ent_by_name;
+extern Command sar_find_ent_by_class_name;

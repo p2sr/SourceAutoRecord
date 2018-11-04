@@ -148,6 +148,9 @@ extern int ScreenPosition;
 // CCommandBuffer
 extern int m_bWaitEnabled;
 
+// CServerTools
+extern int GetIServerEntity;
+
 // Others
 extern int tickcount;
 extern int interval_per_tick;
@@ -186,4 +189,5 @@ extern int cmd_alias;
 extern int NUM_ENT_ENTRIES;
 extern int m_iClassName;
 extern int m_iName;
+extern int m_EntPtrArray;
 }

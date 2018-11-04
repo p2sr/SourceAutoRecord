@@ -148,3 +148,64 @@ CON_COMMAND(sar_inspection_index, "Sets entity index for inspection.\n")
 
     inspector->entityIndex = std::atoi(args[1]);
 }
+CON_COMMAND(sar_dump_entlist, "Dumps entity list.\n")
+{
+    console->Print("[index] addr | m_iClassName | m_iName\n");
+
+    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+        auto info = server->GetEntityInfoByIndex(index);
+        if (info->m_pEntity == nullptr) {
+            continue;
+        }
+
+        console->Print("[%i] %p | %s | %s\n", index, info->m_pEntity,
+            server->GetEntityClassName(info->m_pEntity),
+            server->GetEntityName(info->m_pEntity));
+    }
+}
+CON_COMMAND(sar_find_ent_by_name, "Finds first entity in the entity list by name.\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print("sar_find_ent_by_name <m_iName> : Finds first entity in the entity list by name.\n");
+    }
+
+    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+        auto info = server->GetEntityInfoByIndex(index);
+        if (info->m_pEntity == nullptr) {
+            continue;
+        }
+
+        auto name = server->GetEntityName(info->m_pEntity);
+        if (!name || std::strcmp(name, args[1]) != 0) {
+            continue;
+        }
+
+        console->Print("[%i] %p\n", index, info->m_pEntity);
+        console->Msg("    -> m_iClassName = %s\n", server->GetEntityClassName(info->m_pEntity));
+        console->Msg("    -> m_iName = %s\n", name);
+        break;
+    }
+}
+CON_COMMAND(sar_find_ent_by_class_name, "Finds first entity in the entity list by class name.\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print("sar_find_ent_by_class_name <m_iClassName> : Finds first entity in the entity list by class name.\n");
+    }
+
+    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+        auto info = server->GetEntityInfoByIndex(index);
+        if (info->m_pEntity == nullptr) {
+            continue;
+        }
+
+        auto cname = server->GetEntityClassName(info->m_pEntity);
+        if (!cname || std::strcmp(cname, args[1]) != 0) {
+            continue;
+        }
+
+        console->Print("[%i] %p\n", index, info->m_pEntity);
+        console->Msg("    -> m_iClassName = %s\n", cname);
+        console->Msg("    -> m_iName = %s\n", server->GetEntityName(info->m_pEntity));
+        break;
+    }
+}

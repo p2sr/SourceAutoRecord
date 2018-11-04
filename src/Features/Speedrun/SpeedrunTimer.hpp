@@ -73,6 +73,8 @@ public:
 
 extern SpeedrunTimer* speedrun;
 
+extern Command sar_speedrun_start;
+extern Command sar_speedrun_stop;
 extern Command sar_speedrun_result;
 extern Command sar_speedrun_export;
 extern Command sar_speedrun_export_pb;

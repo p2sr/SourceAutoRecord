@@ -15,8 +15,8 @@
 Game|Windows|Linux
 ---|:-:|:-:
 Portal 2|✔|✔
-Aperture Tag|✔|✔
-Portal Stories: Mel|✔|✔
+Aperture Tag|✔|✖
+Portal Stories: Mel|✔|✖
 The Stanley Parable|✔|✔
 The Beginners Guide|✔|✔
 Half-Life 2|✔|✔

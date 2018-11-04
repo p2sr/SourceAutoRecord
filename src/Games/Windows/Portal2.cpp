@@ -114,6 +114,8 @@ void Portal2::LoadOffsets()
     m_flGravity = 792; // CBaseEntity (TODO)
     m_vecViewOffset = 748; // CBaseEntity (TODO)
     NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList (TODO)
+    GetIServerEntity = 2; // CServerTools (TODO)
+    m_EntPtrArray = 48; // CServerTools::GetIServerEntity (TODO)
 
     // client.dll
 

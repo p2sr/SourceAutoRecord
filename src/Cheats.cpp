@@ -59,6 +59,8 @@ CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer
     *engine->m_bWaitEnabled = state;
     console->Print("%s wait!\n", (state) ? "Enabled" : "Disabled");
 }
+
+// P2 and Half-Life 2 Engine only
 CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
 {
     if (!engine->cmd_alias->next) {
@@ -79,68 +81,6 @@ CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
     engine->cmd_alias->next = nullptr;
 
     console->Print("Deleted %i alias commands!\n", count);
-}
-
-CON_COMMAND(sar_dump_entlist, "Dumps entity list.\n")
-{
-    console->Print("[index] addr | m_iClassName | m_iName\n");
-
-    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
-        auto info = server->GetEntityInfoByIndex(index);
-        if (info->m_pEntity == nullptr) {
-            continue;
-        }
-
-        console->Print("[%i] %p | %s | %s\n", index, info->m_pEntity,
-            server->GetEntityClassName(info->m_pEntity),
-            server->GetEntityName(info->m_pEntity));
-    }
-}
-CON_COMMAND(sar_find_ent_by_name, "Finds first entity in the entity list by name.\n")
-{
-    if (args.ArgC() != 2) {
-        return console->Print("sar_find_ent_by_name <m_iName> : Finds first entity in the entity list by name.\n");
-    }
-
-    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
-        auto info = server->GetEntityInfoByIndex(index);
-        if (info->m_pEntity == nullptr) {
-            continue;
-        }
-
-        auto name = server->GetEntityName(info->m_pEntity);
-        if (!name || std::strcmp(name, args[1]) != 0) {
-            continue;
-        }
-
-        console->Print("[%i] %p\n", index, info->m_pEntity);
-        console->Msg("    -> m_iClassName = %s\n", server->GetEntityClassName(info->m_pEntity));
-        console->Msg("    -> m_iName = %s\n", name);
-        break;
-    }
-}
-CON_COMMAND(sar_find_ent_by_class_name, "Finds first entity in the entity list by class name.\n")
-{
-    if (args.ArgC() != 2) {
-        return console->Print("sar_find_ent_by_class_name <m_iClassName> : Finds first entity in the entity list by class name.\n");
-    }
-
-    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
-        auto info = server->GetEntityInfoByIndex(index);
-        if (info->m_pEntity == nullptr) {
-            continue;
-        }
-
-        auto cname = server->GetEntityClassName(info->m_pEntity);
-        if (!cname || std::strcmp(cname, args[1]) != 0) {
-            continue;
-        }
-
-        console->Print("[%i] %p\n", index, info->m_pEntity);
-        console->Msg("    -> m_iClassName = %s\n", cname);
-        console->Msg("    -> m_iName = %s\n", server->GetEntityName(info->m_pEntity));
-        break;
-    }
 }
 
 void Cheats::Init()
@@ -190,22 +130,14 @@ void Cheats::Init()
     sar_hud_portals.UniqueFor(SourceGame_Portal2 | SourceGame_Portal);
     sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
     sar_debug_game_events.UniqueFor(SourceGame_Portal2);
-    sar_sr_hud.UniqueFor(SourceGame_Portal2);
-    sar_sr_hud_x.UniqueFor(SourceGame_Portal2);
-    sar_sr_hud_y.UniqueFor(SourceGame_Portal2);
-    sar_sr_hud_font_color.UniqueFor(SourceGame_Portal2);
-    sar_sr_hud_font_index.UniqueFor(SourceGame_Portal2);
-    sar_speedrun_autostart.UniqueFor(SourceGame_Portal2);
-    sar_speedrun_autostop.UniqueFor(SourceGame_Portal2);
+    sar_sr_hud.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_sr_hud_x.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_sr_hud_y.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_sr_hud_font_color.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_sr_hud_font_index.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_speedrun_autostart.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_speedrun_autostop.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
     sar_duckjump.UniqueFor(SourceGame_Portal2);
-    sar_ei_hud.UniqueFor(SourceGame_Portal2);
-    sar_ei_hud_font_color.UniqueFor(SourceGame_Portal2);
-    sar_ei_hud_font_color2.UniqueFor(SourceGame_Portal2);
-    sar_ei_hud_font_index.UniqueFor(SourceGame_Portal2);
-    sar_ei_hud_x.UniqueFor(SourceGame_Portal2);
-    sar_ei_hud_y.UniqueFor(SourceGame_Portal2);
-    sar_ei_hud_z.UniqueFor(SourceGame_Portal2);
-    sar_hud_inspection.UniqueFor(SourceGame_Portal2);
 
     startbhop.UniqueFor(SourceGame_TheStanleyParable);
     endbhop.UniqueFor(SourceGame_TheStanleyParable);
@@ -213,22 +145,16 @@ void Cheats::Init()
     sar_workshop.UniqueFor(SourceGame_Portal2);
     sar_workshop_update.UniqueFor(SourceGame_Portal2);
     sar_workshop_list.UniqueFor(SourceGame_Portal2);
-    sar_speedrun_result.UniqueFor(SourceGame_Portal2);
-    sar_speedrun_export.UniqueFor(SourceGame_Portal2);
-    sar_speedrun_export_pb.UniqueFor(SourceGame_Portal2);
-    sar_speedrun_import.UniqueFor(SourceGame_Portal2);
-    sar_speedrun_rules.UniqueFor(SourceGame_Portal2);
+    sar_speedrun_result.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_speedrun_export.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_speedrun_export_pb.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_speedrun_import.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_speedrun_rules.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_speedrun_start.UniqueFor(SourceGame_Portal2 | SourceGame_Portal2Engine);
+    sar_speedrun_stop.UniqueFor(SourceGame_Portal2 | SourceGame_Portal2Engine);
     sar_togglewait.UniqueFor(SourceGame_Portal2);
     sar_tas_ss.UniqueFor(SourceGame_Portal2);
-    sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2);
-    sar_dump_entlist.UniqueFor(SourceGame_Portal2);
-    sar_find_ent_by_name.UniqueFor(SourceGame_Portal2);
-    sar_find_ent_by_class_name.UniqueFor(SourceGame_Portal2);
-    sar_inspection_start.UniqueFor(SourceGame_Portal2);
-    sar_inspection_stop.UniqueFor(SourceGame_Portal2);
-    sar_inspection_print.UniqueFor(SourceGame_Portal2);
-    sar_inspection_export.UniqueFor(SourceGame_Portal2);
-    sar_inspection_index.UniqueFor(SourceGame_Portal2);
+    sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2 | SourceGame_HalfLife2Engine);
 
     Variable::RegisterAll();
     Command::RegisterAll();

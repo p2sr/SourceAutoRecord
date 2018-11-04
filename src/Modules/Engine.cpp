@@ -338,16 +338,21 @@ bool Engine::Init()
             this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3);             // Nop rest
         }
 #endif
+    }
 
+    // TODO: windows
+#ifndef _WIN32
+    if (sar.game->version & SourceGame_Portal2 || sar.game->version & SourceGame_HalfLife2Engine) {
         auto alias = Command("alias");
         if (!!alias) {
             auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;
-            this->cmd_alias = Memory::Deref<cmdalias_t*>(callback + Offsets::cmd_alias);
+            Memory::Deref<cmdalias_t*>(callback + Offsets::cmd_alias, &this->cmd_alias);
         }
+    }
+#endif
 
-        if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
-            ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
-        }
+    if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
+        ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
     }
 
     Command::Hook("plugin_load", Engine::plugin_load_callback_hook, Engine::plugin_load_callback);

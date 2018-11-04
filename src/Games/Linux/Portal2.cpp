@@ -115,7 +115,9 @@ void Portal2::LoadOffsets()
     m_flGravity = 792; // CBaseEntity
     m_vecViewOffset = 748; // CBaseEntity
     NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList
-    
+    GetIServerEntity = 2; // CServerTools
+    m_EntPtrArray = 48; // CServerTools::GetIServerEntity
+
     // client.so
 
     HudProcessInput = 10; // CHLClient

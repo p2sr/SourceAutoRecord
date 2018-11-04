@@ -171,7 +171,9 @@ DETOUR(Server::PlayerMove)
 
     stats->velocity->Save(client->GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
 
+#ifndef _WIN32
     inspector->Record();
+#endif
 
     return Server::PlayerMove(thisptr);
 }
@@ -318,13 +320,11 @@ bool Server::Init()
         }
     }
 
+    // TODO: windows
 #ifndef _WIN32
-    // TODO: offset
-    if (sar.game->version & SourceGame_Portal2) {
-        auto module = Memory::ModuleInfo();
-        if (Memory::TryGetModule(this->Name(), &module)) {
-            this->m_EntPtrArray = reinterpret_cast<CEntInfo*>(module.base + 0xFAD0A4);
-        }
+    if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS0")) {
+        auto GetIServerEntity = g_ServerTools->Original(Offsets::GetIServerEntity);
+        Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
     }
 #endif
 

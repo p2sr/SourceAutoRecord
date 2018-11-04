@@ -62,6 +62,7 @@ void HalfLife2::LoadOffsets()
     Frame = 5; // CEngine
     m_bLoadGame = 335; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
     ScreenPosition = 10; // CIVDebugOverlay
+    cmd_alias = 284; // alias (TODO)
 
     // vstdlib.dll
 
@@ -105,6 +106,8 @@ void HalfLife2::LoadOffsets()
     m_flGravity = 792; // CBaseEntity (TODO)
     m_vecViewOffset = 748; // CBaseEntity (TODO)
     NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList (TODO)
+    GetIServerEntity = 2; // CServerTools (TODO)
+    m_EntPtrArray = 48; // CServerTools::GetIServerEntity (TODO)
 
     // client.dll
 

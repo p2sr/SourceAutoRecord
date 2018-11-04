@@ -64,6 +64,7 @@ void HalfLife2::LoadOffsets()
     ScreenPosition = 9; // CIVDebugOverlay
     m_pConCommandList = 44; // CCvar
     IsCommand = 2; // ConCommandBase
+    cmd_alias = 284; // alias
 
     // libvstdlib.so
 
@@ -96,16 +97,18 @@ void HalfLife2::LoadOffsets()
     m_fFlags = 280; // CBasePlayer::UpdateStepSound
     m_MoveType = 334; // CBasePlayer::UpdateStepSound
     m_nWaterLevel = 523; // CBasePlayer::UpdateStepSound
-    m_iClassName = 104; // CBaseEntity (TODO)
-    m_iName = 216; // CBaseEntity (TODO)
-    m_vecAbsOrigin2 = 468; // CBaseEntity (TODO)
-    m_angAbsRotation2 = 480; // CBaseEntity (TODO)
-    m_vecVelocity3 = 492; // CBaseEntity (TODO)
-    m_iEFlags = 208; // CBaseEntity (TODO)
-    m_flMaxspeed = 3728; // CBaseEntity (TODO)
-    m_flGravity = 792; // CBaseEntity (TODO)
-    m_vecViewOffset = 748; // CBaseEntity (TODO)
-    NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
+    m_iClassName = 100; // CBaseEntity
+    m_iName = 284; // CBaseEntity
+    m_vecAbsOrigin2 = 656; // CBaseEntity
+    m_angAbsRotation2 = 780; // CBaseEntity
+    m_vecVelocity3 = 668; // CBaseEntity
+    m_iEFlags = 276; // CBaseEntity
+    m_flMaxspeed = 3516; // CBaseEntity
+    m_flGravity = 628; // CBaseEntity
+    m_vecViewOffset = 820; // CBaseEntity
+    NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList
+    GetIServerEntity = 2; // CServerTools
+    m_EntPtrArray = 48; // CServerTools::GetIServerEntity
 
     // client.so
 

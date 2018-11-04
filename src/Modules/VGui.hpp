@@ -17,7 +17,7 @@ public:
     InspectionHud* inspectionHud = nullptr;
 
 private:
-    bool respectClShowPos = false;
+    bool respectClShowPos = true;
 
 public:
     // CEngineVGui::Paint
