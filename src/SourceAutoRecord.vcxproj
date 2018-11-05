@@ -168,6 +168,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="..\lib\minhook\trampoline.c" />
     <ClCompile Include="Cheats.cpp" />
     <ClCompile Include="Command.cpp" />
+    <ClCompile Include="Features\ClassDumper.cpp" />
     <ClCompile Include="Features\Config.cpp" />
     <ClCompile Include="Features\Cvars.cpp" />
     <ClCompile Include="Features\Demo\Demo.cpp" />
@@ -252,6 +253,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="..\lib\minhook\MinHook.h" />
     <ClInclude Include="Cheats.hpp" />
     <ClInclude Include="Command.hpp" />
+    <ClCompile Include="Features\ClassDumper.hpp" />
     <ClInclude Include="Features\Config.hpp" />
     <ClInclude Include="Features\Cvars.hpp" />
     <ClInclude Include="Features\Demo\Demo.hpp" />

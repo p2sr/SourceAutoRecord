@@ -118,8 +118,7 @@ void Cheats::Init()
         ui_loadingscreen_transition_time.Unlock();
         // Not a real cheat, right?
         hide_gun_when_holding.Unlock(false);
-    } else if (sar.game->version & SourceGame_TheStanleyParable
-        || sar.game->version & SourceGame_TheBeginnersGuide) {
+    } else if (sar.game->version & (SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
         Command::ActivateAutoCompleteFile("map", map_CompletionFunc);
         Command::ActivateAutoCompleteFile("changelevel", changelevel_CompletionFunc);
         Command::ActivateAutoCompleteFile("changelevel2", changelevel2_CompletionFunc);
@@ -175,8 +174,7 @@ void Cheats::Shutdown()
         sv_laser_cube_autoaim.Lock();
         ui_loadingscreen_transition_time.Lock();
         hide_gun_when_holding.Lock();
-    } else if (sar.game->version & SourceGame_TheStanleyParable
-        || sar.game->version & SourceGame_TheBeginnersGuide) {
+    } else if (sar.game->version & (SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
         Command::DectivateAutoCompleteFile("map");
         Command::DectivateAutoCompleteFile("changelevel");
         Command::DectivateAutoCompleteFile("changelevel2");

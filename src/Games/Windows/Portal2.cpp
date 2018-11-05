@@ -1,7 +1,5 @@
 #include "Portal2.hpp"
 
-#include "Features/Speedrun/SpeedrunTimer.hpp"
-
 #include "Game.hpp"
 #include "Offsets.hpp"
 
@@ -94,38 +92,30 @@ void Portal2::LoadOffsets()
     g_InRestore = 8; // CServerGameDLL::GameFrame
     ServiceEventQueue = 249; // CServerGameDLL::GameFrame
     g_EventQueue = 1; // ServiceEventQueue
+    GetAllServerClasses = 10; // CServerGameDLL (TODO)
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 39; // CServerGameDLL::Think
     gpGlobals = 14; // UTIL_PlayerByIndex
-    iNumPortalsPlaced = 5700; // CPortal_Player::IncrementPortalsPlaced
     player = 4; // CPortalGameMovement::PlayerMove
-    m_fFlags = 204; // CBasePlayer::UpdateStepSound
     m_MoveType = 218; // CBasePlayer::UpdateStepSound
-    m_nWaterLevel = 339; // CBasePlayer::UpdateStepSound
-    m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
-    m_bDucked = 2272; // CPortalGameMovement::FinishUnDuck
+    mv_m_vecVelocity = 64; // CPortalGameMovement::PlayerMove
     m_iClassName = 104; // CBaseEntity (TODO)
-    m_iName = 216; // CBaseEntity (TODO)
-    m_vecAbsOrigin2 = 468; // CBaseEntity (TODO)
-    m_angAbsRotation2 = 480; // CBaseEntity (TODO)
-    m_vecVelocity3 = 492; // CBaseEntity (TODO)
+    S_m_vecAbsOrigin = 468; // CBaseEntity (TODO)
+    S_m_angAbsRotation = 480; // CBaseEntity (TODO)
     m_iEFlags = 208; // CBaseEntity (TODO)
-    m_flMaxspeed = 3728; // CBaseEntity (TODO)
     m_flGravity = 792; // CBaseEntity (TODO)
-    m_vecViewOffset = 748; // CBaseEntity (TODO)
     NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList (TODO)
     GetIServerEntity = 2; // CServerTools (TODO)
     m_EntPtrArray = 48; // CServerTools::GetIServerEntity (TODO)
 
     // client.dll
 
+    GetAllClasses = 8; // CHLClient
     HudProcessInput = 10; // CHLClient
     HudUpdate = 11; // CHLClient
-    m_vecAbsOrigin = 156; // C_BasePlayer::GetAbsOrigin
-    m_angAbsRotation = 192; // C_BasePlayer::GetAbsAngles
-    m_vecVelocity = 264; // CFPSPanel::Paint
+    C_m_vecAbsOrigin = 156; // C_BasePlayer::GetAbsOrigin
+    C_m_vecAbsOrigin = 192; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
-    GetFlags = 248; // C_BasePlayer::PhysicsSimulate
     GetClientMode = 4; // CHLClient::HudProcessInput
     CreateMove = 24; // ClientModeShared
     GetName = 10; // CHud
@@ -145,14 +135,6 @@ void Portal2::LoadOffsets()
     FinishDrawing = 603; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 160; // CMatSystemSurface
     DrawTextLen = 163; // CMatSystemSurface
-}
-void Portal2::LoadRules()
-{
-    speedrun->AddRule(TimerRule(
-        "sp_a1_intro1",
-        "camera_intro",
-        "TeleportToView",
-        TimerAction::Start));
 }
 const char* Portal2::Version()
 {

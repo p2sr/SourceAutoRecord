@@ -23,6 +23,7 @@ int ServerCmdKeyValues;
 int GetActiveSplitScreenPlayerSlot;
 
 // CHLClient
+int GetAllClasses;
 int HudProcessInput;
 int HudUpdate;
 int IN_ActivateMouse;
@@ -82,26 +83,27 @@ int ProcessTick;
 int Disconnect;
 
 // C_BaseEntity
-int m_vecAbsOrigin;
-int m_angAbsRotation;
-int m_vecVelocity;
-int GetFlags;
+int C_m_vecAbsOrigin;
+int C_m_angAbsRotation;
+int C_m_vecVelocity;
 
 // CBaseEntity
-int m_vecAbsOrigin2;
-int m_angAbsRotation2;
-int m_vecVelocity3;
+int S_m_vecAbsOrigin;
+int S_m_angAbsRotation;
+int S_m_vecVelocity;
 int m_iEFlags;
 int m_flMaxspeed;
 int m_flGravity;
 int m_vecViewOffset;
 
 // CBasePlayer
-int iNumPortalsPlaced;
 int m_fFlags;
 int m_MoveType;
 int m_nWaterLevel;
 int m_bDucked;
+
+// CPortal_Player
+int iNumPortalsPlaced;
 
 // IEngineVGuiInternal
 int Paint;
@@ -121,10 +123,11 @@ int GetClientEntity;
 // CServerGameDLL
 int GameFrame;
 int Think;
+int GetAllServerClasses;
 
 // CMoveData
 int m_nOldButtons;
-int m_vecVelocity2;
+int mv_m_vecVelocity;
 
 // CHud
 int GetName;

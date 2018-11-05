@@ -1,12 +1,15 @@
 #include "Server.hpp"
 
+#include <cstdint>
+#include <cstring>
+
 #include "Client.hpp"
 #include "Engine.hpp"
 
+#include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
-#include "Features/Routing/EntityInspector.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -66,15 +69,15 @@ char* Server::GetEntityClassName(void* entity)
 }
 Vector Server::GetAbsOrigin(void* entity)
 {
-    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::m_vecAbsOrigin2);
+    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::S_m_vecAbsOrigin);
 }
 QAngle Server::GetAbsAngles(void* entity)
 {
-    return *reinterpret_cast<QAngle*>((uintptr_t)entity + Offsets::m_angAbsRotation2);
+    return *reinterpret_cast<QAngle*>((uintptr_t)entity + Offsets::S_m_angAbsRotation);
 }
 Vector Server::GetLocalVelocity(void* entity)
 {
-    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::m_vecVelocity3);
+    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::S_m_vecVelocity);
 }
 int Server::GetFlags(void* entity)
 {
@@ -95,6 +98,60 @@ float Server::GetGravity(void* entity)
 Vector Server::GetViewOffset(void* entity)
 {
     return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::m_vecViewOffset);
+}
+void Server::GetOffset(const char* className, const char* propName, int& offset)
+{
+    if (this->GetAllServerClasses) {
+        for (auto curClass = this->GetAllServerClasses(); curClass; curClass = curClass->m_pNext) {
+            if (!std::strcmp(curClass->m_pNetworkName, className)) {
+                auto result = FindOffset(curClass->m_pTable, propName);
+                if (result != 0) {
+                    console->DevMsg("Found %s::%s at %i (server-side)\n", className, propName, result);
+                    offset = result;
+                }
+                break;
+            }
+        }
+    }
+
+    if (offset == 0) {
+        console->DevWarning("Failed to find offset for: %s::%s (server-side)\n", className, propName);
+    }
+}
+int16_t Server::FindOffset(SendTable* table, const char* propName)
+{
+    auto size = sar.game->version & SourceGame_Portal2Engine ? sizeof(SendProp2) : sizeof(SendProp);
+
+    for (int i = 0; i < table->m_nProps; ++i) {
+        auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + size * i);
+
+        auto name = prop.m_pVarName;
+        auto offset = prop.m_Offset;
+        auto type = prop.m_Type;
+        auto nextTable = prop.m_pDataTable;
+
+        if (sar.game->version & SourceGame_Portal2Engine) {
+            auto temp = *reinterpret_cast<SendProp2*>(&prop);
+            name = temp.m_pVarName;
+            offset = temp.m_Offset;
+            type = temp.m_Type;
+            nextTable = temp.m_pDataTable;
+        }
+
+        if (!std::strcmp(name, propName)) {
+            return offset;
+        }
+
+        if (type != SendPropType::DPT_DataTable) {
+            continue;
+        }
+
+        if (auto nextOffset = FindOffset(nextTable, propName)) {
+            return offset + nextOffset;
+        }
+    }
+
+    return 0;
 }
 
 // CGameMovement::CheckJumpButton
@@ -148,7 +205,7 @@ DETOUR(Server::PlayerMove)
     auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
     auto m_nWaterLevel = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_nWaterLevel);
 
-    auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::m_vecVelocity2);
+    auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::mv_m_vecVelocity);
 
     // Landed after a jump
     if (stats->jumps->isTracing
@@ -333,6 +390,7 @@ bool Server::Init()
         Memory::Read<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex, &this->UTIL_PlayerByIndex);
         Memory::DerefDeref<CGlobalVars*>((uintptr_t)this->UTIL_PlayerByIndex + Offsets::gpGlobals, &this->gpGlobals);
 
+        this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
         /* auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
         auto ServiceEventQueue = Memory::Read(GameFrame + Offsets::ServiceEventQueue);
 
@@ -340,6 +398,20 @@ bool Server::Init()
         Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue, &this->g_EventQueue);
 
         this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame); */
+    }
+
+    this->GetOffset("CBasePlayer", "m_nWaterLevel", Offsets::m_nWaterLevel);
+    this->GetOffset("CBasePlayer", "m_iName", Offsets::m_iName);
+    this->GetOffset("CBasePlayer", "m_vecVelocity[0]", Offsets::S_m_vecVelocity);
+    this->GetOffset("CBasePlayer", "m_fFlags", Offsets::m_fFlags);
+    this->GetOffset("CBasePlayer", "m_flMaxspeed", Offsets::m_flMaxspeed);
+    this->GetOffset("CBasePlayer", "m_vecViewOffset[0]", Offsets::m_vecViewOffset);
+
+    if (sar.game->version & SourceGame_Portal2Engine) {
+        this->GetOffset("CBasePlayer", "m_bDucked", Offsets::m_bDucked);
+    }
+    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2)) {
+        this->GetOffset("CPortal_Player", "iNumPortalsPlaced", Offsets::iNumPortalsPlaced);
     }
 
     return this->hasLoaded = this->g_GameMovement && this->g_ServerGameDLL;

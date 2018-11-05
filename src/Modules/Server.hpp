@@ -19,7 +19,10 @@ public:
     Interface* g_ServerGameDLL = nullptr;
 
     using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
-    _UTIL_PlayerByIndex UTIL_PlayerByIndex;
+    using _GetAllServerClasses = ServerClass*(*)();
+
+    _UTIL_PlayerByIndex UTIL_PlayerByIndex = nullptr;
+    _GetAllServerClasses GetAllServerClasses = nullptr;
 
     CGlobalVars* gpGlobals = nullptr;
     bool* g_InRestore = nullptr;
@@ -44,9 +47,12 @@ public:
     float GetMaxSpeed(void* entity);
     float GetGravity(void* entity);
     Vector GetViewOffset(void* entity);
+    void GetOffset(const char* className, const char* propName, int& offset);
 
-    float GetFriction(void* entity);
+private:
+    int16_t FindOffset(SendTable* table, const char* propName);
 
+public:
     // CGameMovement::CheckJumpButton
     DECL_DETOUR_T(bool, CheckJumpButton)
 

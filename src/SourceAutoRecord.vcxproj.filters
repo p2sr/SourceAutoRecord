@@ -148,6 +148,9 @@
     <ClCompile Include="Features\Timer\TimerCheckPoints.cpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
     </ClCompile>
+    <ClCompile Include="Features\ClassDumper.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Config.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
@@ -383,6 +386,9 @@
     </ClInclude>
     <ClInclude Include="Features\Timer\TimerCheckPoints.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ClassDumper.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Config.hpp">
       <Filter>SourceAutoRecord\Features</Filter>

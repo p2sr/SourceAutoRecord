@@ -18,9 +18,6 @@ void TheBeginnersGuide::LoadOffsets()
     gpGlobals = 50; // UTIL_PlayerByIndex (TODO)
     ServiceEventQueue = 207; // CServerGameDLL::GameFrame
 }
-void TheBeginnersGuide::LoadRules()
-{
-}
 const char* TheBeginnersGuide::Version()
 {
     return "The Beginners Guide (6167)";

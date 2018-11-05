@@ -342,7 +342,7 @@ bool Engine::Init()
 
     // TODO: windows
 #ifndef _WIN32
-    if (sar.game->version & SourceGame_Portal2 || sar.game->version & SourceGame_HalfLife2Engine) {
+    if (sar.game->version & (SourceGame_Portal2 | SourceGame_HalfLife2Engine)) {
         auto alias = Command("alias");
         if (!!alias) {
             auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;

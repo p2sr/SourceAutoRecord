@@ -85,38 +85,33 @@ void HalfLife2::LoadOffsets()
     mv = 8; // CPortalGameMovement::CheckJumpButton
     m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
     player = 4; // CPortalGameMovement::PlayerMove
-    m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
+    mv_m_vecVelocity = 64; // CPortalGameMovement::PlayerMove
     GameFrame = 5; // CServerGameDLL
     g_InRestore = 201; // CServerGameDLL::GameFrame
     ServiceEventQueue = 333; // CServerGameDLL::GameFrame
     g_EventQueue = 177; // ServiceEventQueue
+    GetAllServerClasses = 11; // CServerGameDLL
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
     gpGlobals = 15; // UTIL_PlayerByIndex
-    iNumPortalsPlaced = 4816; // CPortal_Player::IncrementPortalsPlaced
-    m_fFlags = 280; // CBasePlayer::UpdateStepSound
     m_MoveType = 334; // CBasePlayer::UpdateStepSound
-    m_nWaterLevel = 523; // CBasePlayer::UpdateStepSound
     m_iClassName = 100; // CBaseEntity
     m_iName = 284; // CBaseEntity
-    m_vecAbsOrigin2 = 656; // CBaseEntity
-    m_angAbsRotation2 = 780; // CBaseEntity
-    m_vecVelocity3 = 668; // CBaseEntity
+    S_m_vecAbsOrigin = 656; // CBaseEntity
+    S_m_angAbsRotation = 780; // CBaseEntity
     m_iEFlags = 276; // CBaseEntity
-    m_flMaxspeed = 3516; // CBaseEntity
     m_flGravity = 628; // CBaseEntity
-    m_vecViewOffset = 820; // CBaseEntity
     NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList
     GetIServerEntity = 2; // CServerTools
     m_EntPtrArray = 48; // CServerTools::GetIServerEntity
 
     // client.so
 
+    GetAllClasses = 8; // CHLClient
     HudProcessInput = 10; // CHLClient
     HudUpdate = 11; // CHLClient
-    m_vecVelocity = 224; // CFPSPanel::Paint
-    m_vecAbsOrigin = 588; // C_BasePlayer::GetAbsOrigin
-    m_angAbsRotation = 600; // C_BasePlayer::GetAbsAngles
+    C_m_vecAbsOrigin = 588; // C_BasePlayer::GetAbsOrigin
+    C_m_vecAbsOrigin = 600; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
     GetClientMode = 1; // CHLClient::HudProcessInput
     CreateMove = 22; // ClientModeShared
@@ -134,9 +129,6 @@ void HalfLife2::LoadOffsets()
     FinishDrawing = 1681; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 162; // CMatSystemSurface
     DrawTextLen = 165; // CMatSystemSurface
-}
-void HalfLife2::LoadRules()
-{
 }
 const char* HalfLife2::Version()
 {

@@ -12,6 +12,7 @@
 #include "Modules/Tier1.hpp"
 #include "Modules/VGui.hpp"
 
+#include "Features/ClassDumper.hpp"
 #include "Features/Config.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/Listener.hpp"
@@ -74,8 +75,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<ReplaySystem>(&tasReplaySystem);
             this->features->AddFeature<Timer>(&timer);
             this->features->AddFeature<EntityInspector>(&inspector);
-
-            this->game->LoadRules();
+            this->features->AddFeature<ClassDumper>(&classDumper);
 
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);

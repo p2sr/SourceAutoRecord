@@ -1,5 +1,8 @@
 #include "Client.hpp"
 
+#include <cstdint>
+#include <cstring>
+
 #include "Console.hpp"
 #include "Engine.hpp"
 #include "VGui.hpp"
@@ -28,22 +31,61 @@ void* Client::GetPlayer()
 Vector Client::GetAbsOrigin()
 {
     auto player = this->GetPlayer();
-    return (player) ? *(Vector*)((uintptr_t)player + Offsets::m_vecAbsOrigin) : Vector();
+    return (player) ? *(Vector*)((uintptr_t)player + Offsets::C_m_vecAbsOrigin) : Vector();
 }
 QAngle Client::GetAbsAngles()
 {
     auto player = this->GetPlayer();
-    return (player) ? *(QAngle*)((uintptr_t)player + Offsets::m_angAbsRotation) : QAngle();
+    return (player) ? *(QAngle*)((uintptr_t)player + Offsets::C_m_angAbsRotation) : QAngle();
 }
 Vector Client::GetLocalVelocity()
 {
     auto player = this->GetPlayer();
-    return (player) ? *(Vector*)((uintptr_t)player + Offsets::m_vecVelocity) : Vector();
+    return (player) ? *(Vector*)((uintptr_t)player + Offsets::C_m_vecVelocity) : Vector();
 }
-int Client::GetFlags()
+void Client::GetOffset(const char* className, const char* propName, int& offset)
 {
-    auto player = this->GetPlayer();
-    return (player) ? *(int*)((uintptr_t)player + Offsets::GetFlags) : 0;
+    if (this->GetAllClasses) {
+        for (auto curClass = this->GetAllClasses(); curClass; curClass = curClass->m_pNext) {
+            if (!std::strcmp(curClass->m_pNetworkName, className)) {
+                auto result = FindOffset(curClass->m_pRecvTable, propName);
+                if (result != 0) {
+                    console->DevMsg("Found %s::%s at %i (client-side)\n", className, propName, result);
+                    offset = result;
+                }
+                break;
+            }
+        }
+    }
+
+    if (offset == 0) {
+        console->DevWarning("Failed to find offset for: %s::%s (client-side)\n", className, propName);
+    }
+}
+int16_t Client::FindOffset(RecvTable* table, const char* propName)
+{
+    for (int i = 0; i < table->m_nProps; ++i) {
+        auto prop = table->m_pProps[i];
+
+        auto name = prop.m_pVarName;
+        auto offset = prop.m_Offset;
+        auto type = prop.m_RecvType;
+        auto nextTable = prop.m_pDataTable;
+
+        if (!std::strcmp(name, propName)) {
+            return offset;
+        }
+
+        if (type != SendPropType::DPT_DataTable) {
+            continue;
+        }
+
+        if (auto nextOffset = FindOffset(nextTable, propName)) {
+            return offset + nextOffset;
+        }
+    }
+
+    return 0;
 }
 
 // CHLClient::HudUpdate
@@ -108,14 +150,15 @@ bool Client::Init()
 {
     bool readJmp = false;
 #ifdef _WIN32
-    readJmp = sar.game->version == SourceGame_TheStanleyParable
-        || sar.game->version == SourceGame_TheBeginnersGuide;
+    readJmp = sar.game->version & (SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide);
 #endif
 
     this->g_ClientDLL = Interface::Create(this->Name(), "VClient0");
     this->s_EntityList = Interface::Create(this->Name(), "VClientEntityList0", false);
 
     if (this->g_ClientDLL) {
+        this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses, readJmp);
+
         this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);
 
         if (sar.game->version == SourceGame_Portal2) {
@@ -165,6 +208,8 @@ bool Client::Init()
     if (this->s_EntityList) {
         this->GetClientEntity = this->s_EntityList->Original<_GetClientEntity>(Offsets::GetClientEntity, readJmp);
     }
+
+    this->GetOffset("CBasePlayer", "m_vecVelocity[0]", Offsets::C_m_vecVelocity);
 
     return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }
