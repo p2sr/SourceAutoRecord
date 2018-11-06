@@ -2,11 +2,6 @@
 
 #include <cstring>
 
-#include "Modules/Client.hpp"
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
-#include "Modules/Server.hpp"
-
 #include "Features/Hud/Hud.hpp"
 #include "Features/Hud/InspectionHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
@@ -15,6 +10,11 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/WorkshopList.hpp"
+
+#include "Modules/Client.hpp"
+#include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
 #include "Game.hpp"
 #include "Offsets.hpp"

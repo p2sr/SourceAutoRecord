@@ -2,13 +2,13 @@
 
 #include <stdarg.h>
 
-#include "Console.hpp"
-#include "EngineDemoPlayer.hpp"
-#include "EngineDemoRecorder.hpp"
-
 #include "Features/Cvars.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+
+#include "Console.hpp"
+#include "EngineDemoPlayer.hpp"
+#include "EngineDemoRecorder.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"

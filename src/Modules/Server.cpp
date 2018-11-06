@@ -3,13 +3,13 @@
 #include <cstdint>
 #include <cstring>
 
-#include "Client.hpp"
-#include "Engine.hpp"
-
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
+
+#include "Client.hpp"
+#include "Engine.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -97,7 +97,7 @@ float Server::GetGravity(void* entity)
 }
 Vector Server::GetViewOffset(void* entity)
 {
-    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::m_vecViewOffset);
+    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::S_m_vecViewOffset);
 }
 void Server::GetOffset(const char* className, const char* propName, int& offset)
 {
@@ -405,7 +405,7 @@ bool Server::Init()
     this->GetOffset("CBasePlayer", "m_vecVelocity[0]", Offsets::S_m_vecVelocity);
     this->GetOffset("CBasePlayer", "m_fFlags", Offsets::m_fFlags);
     this->GetOffset("CBasePlayer", "m_flMaxspeed", Offsets::m_flMaxspeed);
-    this->GetOffset("CBasePlayer", "m_vecViewOffset[0]", Offsets::m_vecViewOffset);
+    this->GetOffset("CBasePlayer", "m_vecViewOffset[0]", Offsets::S_m_vecViewOffset);
 
     if (sar.game->version & SourceGame_Portal2Engine) {
         this->GetOffset("CBasePlayer", "m_bDucked", Offsets::m_bDucked);

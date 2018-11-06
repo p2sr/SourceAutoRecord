@@ -35,22 +35,22 @@ void Summary::Add(int ticks, float time, char* map)
 CON_COMMAND(sar_sum_here, "Starts counting total ticks of sessions.\n")
 {
     if (summary->isRunning) {
-        console->Print("Summary has already started!\n");
-        return;
+        return console->Print("Summary has already started!\n");
     }
+
     summary->Start();
 }
 CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
 {
     if (!summary->isRunning) {
-        console->Print("There's no summary to stop!\n");
-        return;
+        return console->Print("There's no summary to stop!\n");
     }
 
     if (sar_sum_during_session.GetBool()) {
-        int tick = engine->GetSessionTick();
+        auto tick = engine->GetSessionTick();
         summary->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
     }
+
     summary->isRunning = false;
 }
 CON_COMMAND(sar_sum_result, "Prints result of summary.\n")
@@ -63,8 +63,7 @@ CON_COMMAND(sar_sum_result, "Prints result of summary.\n")
     } else if (sessions > 0) {
         console->Print("Summary of %i session%s:\n", sessions, (sessions == 1) ? "" : "s");
     } else {
-        console->Print("There's no result of a summary!\n");
-        return;
+        return console->Print("There's no result of a summary!\n");
     }
 
     for (size_t i = 0; i < summary->items.size(); i++) {

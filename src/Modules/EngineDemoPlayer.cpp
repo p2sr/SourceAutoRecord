@@ -1,10 +1,10 @@
 #include "EngineDemoPlayer.hpp"
 
-#include "Console.hpp"
-#include "Engine.hpp"
-
 #include "Features/Demo/Demo.hpp"
 #include "Features/Demo/DemoParser.hpp"
+
+#include "Console.hpp"
+#include "Engine.hpp"
 
 #include "Interface.hpp"
 #include "Offsets.hpp"

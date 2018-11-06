@@ -3,15 +3,15 @@
 #include <string>
 #include <vector>
 
-#include "Utils/SDK.hpp"
-
-#include "Features/Feature.hpp"
-
 #include "TimerAction.hpp"
 #include "TimerInterface.hpp"
 #include "TimerResult.hpp"
 #include "TimerRule.hpp"
 #include "TimerState.hpp"
+
+#include "Features/Feature.hpp"
+
+#include "Utils/SDK.hpp"
 
 #include "Command.hpp"
 #include "Variable.hpp"

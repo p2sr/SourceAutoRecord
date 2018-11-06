@@ -1,10 +1,10 @@
 #pragma once
 #include <thread>
 
+#include "Features/Feature.hpp"
+
 #include "Modules/Console.hpp"
 #include "Modules/Module.hpp"
-
-#include "Features/Feature.hpp"
 
 #include "Cheats.hpp"
 #include "Command.hpp"

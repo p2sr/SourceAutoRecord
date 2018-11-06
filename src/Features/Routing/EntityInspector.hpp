@@ -2,15 +2,15 @@
 #include "Features/Feature.hpp"
 
 #include "Command.hpp"
-
 #include "Utils.hpp"
+#include "Variable.hpp"
 
-#define SAR_INSPECTION_EXPORT_HEADER "Index,Tick," \
-    "m_vecAbsOrigin.x,m_vecAbsOrigin.y,m_vecAbsOrigin.z," \
-    "m_angAbsRotation.x,m_angAbsRotation.y,m_angAbsRotation.z," \
-    "m_vecVelocity.x,m_vecVelocity.y,m_vecVelocity.z," \
-    "m_fFlags,m_iEFlags,m_flMaxspeed,m_flGravity," \
-    "m_vecViewOffset.x,m_vecViewOffset.y,m_vecViewOffset.z"
+#define SAR_INSPECTION_EXPORT_HEADER "Index,Tick,"                                               \
+                                     "m_vecAbsOrigin.x,m_vecAbsOrigin.y,m_vecAbsOrigin.z,"       \
+                                     "m_angAbsRotation.x,m_angAbsRotation.y,m_angAbsRotation.z," \
+                                     "m_vecVelocity.x,m_vecVelocity.y,m_vecVelocity.z,"          \
+                                     "m_fFlags,m_iEFlags,m_flMaxspeed,m_flGravity,"              \
+                                     "m_vecViewOffset.x,m_vecViewOffset.y,m_vecViewOffset.z"
 
 struct InspectionItem {
     int session;
@@ -46,6 +46,8 @@ public:
 };
 
 extern EntityInspector* inspector;
+
+extern Variable sar_inspection_save_every_tick;
 
 extern Command sar_inspection_start;
 extern Command sar_inspection_stop;

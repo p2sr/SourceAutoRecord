@@ -2,16 +2,6 @@
 
 #include <cstring>
 
-#include "Modules/Client.hpp"
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
-#include "Modules/InputSystem.hpp"
-#include "Modules/Scheme.hpp"
-#include "Modules/Server.hpp"
-#include "Modules/Surface.hpp"
-#include "Modules/Tier1.hpp"
-#include "Modules/VGui.hpp"
-
 #include "Features/ClassDumper.hpp"
 #include "Features/Config.hpp"
 #include "Features/Cvars.hpp"
@@ -30,6 +20,16 @@
 #include "Features/Teleporter.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/WorkshopList.hpp"
+
+#include "Modules/Client.hpp"
+#include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+#include "Modules/InputSystem.hpp"
+#include "Modules/Scheme.hpp"
+#include "Modules/Server.hpp"
+#include "Modules/Surface.hpp"
+#include "Modules/Tier1.hpp"
+#include "Modules/VGui.hpp"
 
 #include "Cheats.hpp"
 #include "Command.hpp"

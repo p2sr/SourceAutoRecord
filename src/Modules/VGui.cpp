@@ -1,12 +1,5 @@
 #include "VGui.hpp"
 
-#include "Client.hpp"
-#include "Console.hpp"
-#include "Engine.hpp"
-#include "Scheme.hpp"
-#include "Server.hpp"
-#include "Surface.hpp"
-
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
 #include "Features/Routing/EntityInspector.hpp"
@@ -18,6 +11,13 @@
 #include "Features/Timer/Timer.hpp"
 #include "Features/Timer/TimerAverage.hpp"
 #include "Features/Timer/TimerCheckPoints.hpp"
+
+#include "Client.hpp"
+#include "Console.hpp"
+#include "Engine.hpp"
+#include "Scheme.hpp"
+#include "Server.hpp"
+#include "Surface.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"

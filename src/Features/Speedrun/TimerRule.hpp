@@ -1,7 +1,7 @@
 #pragma once
-#include "Utils/SDK.hpp"
-
 #include "TimerAction.hpp"
+
+#include "Utils/SDK.hpp"
 
 class SpeedrunTimer;
 

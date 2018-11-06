@@ -1,7 +1,7 @@
 #pragma once
-#include "Module.hpp"
-
 #include <string>
+
+#include "Module.hpp"
 
 #include "Interface.hpp"
 #include "Utils.hpp"

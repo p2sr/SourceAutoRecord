@@ -1,7 +1,7 @@
 #pragma once
-#include "Feature.hpp"
-
 #include <string>
+
+#include "Feature.hpp"
 
 #define SAVE_CVAR(cvar, value) \
     file << #cvar " " << cvar.Get##value() << "\n";

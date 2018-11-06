@@ -1,11 +1,11 @@
 #include "EngineDemoRecorder.hpp"
 
-#include "Console.hpp"
-#include "Engine.hpp"
-
 #include "Features/Rebinder.hpp"
 #include "Features/Session.hpp"
 #include "Features/Timer/Timer.hpp"
+
+#include "Console.hpp"
+#include "Engine.hpp"
 
 #include "Offsets.hpp"
 #include "Utils.hpp"

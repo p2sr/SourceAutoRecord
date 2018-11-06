@@ -1,8 +1,5 @@
 #include "Session.hpp"
 
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
-
 #include "Features/Rebinder.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
@@ -11,6 +8,11 @@
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Tas/ReplaySystem.hpp"
 #include "Features/Timer/Timer.hpp"
+
+#include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+
+Session* session;
 
 Session::Session()
     : baseTick(0)
@@ -147,5 +149,3 @@ void Session::Changed(int state)
         this->Ended();
     }
 }
-
-Session* session;

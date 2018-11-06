@@ -11,11 +11,11 @@ struct Vector {
     float x, y, z;
     inline float Length()
     {
-        return sqrt(x * x + y * y + z * z);
+        return std::sqrt(x * x + y * y + z * z);
     }
     inline float Length2D()
     {
-        return sqrt(x * x + y * y);
+        return std::sqrt(x * x + y * y);
     }
     inline Vector operator*(float fl)
     {
@@ -639,142 +639,7 @@ public:
     virtual int GetEventDebugID() = 0;
 };
 
-// Needed events
 static const char* EVENTS[] = {
     "player_spawn_blue",
     "player_spawn_orange"
-};
-
-// Observable events
-static const char* WORKING_EVENTS[] = {
-    "server_spawn",
-    "server_shutdown",
-    "server_cvar",
-    "player_connect",
-    "player_disconnect",
-    "player_activate",
-    "player_say",
-    "player_team",
-    "player_class",
-    "player_death",
-    "player_hurt",
-    "player_spawn",
-    "player_use",
-    "player_drop",
-    "game_init",
-    "break_breakable",
-    "entity_killed",
-    "physgun_pickup",
-    "entity_visible",
-    "portal_player_ping",
-    //"portal_player_portaled", // Crashes game :>
-    "portal_enabled",
-    "portal_fired",
-    "player_gesture",
-    "player_zoomed",
-    "player_unzoomed",
-    "remote_view_activated",
-    "bounce_count",
-    "player_landed",
-    "player_suppressed_bounce",
-    "player_spawn_blue",
-    "player_spawn_orange",
-    "map_already_completed",
-    "server_pre_shutdown"
-};
-
-// Might or might not work
-static const char* UNKNOWN_EVENTS[] = {
-    "server_message",
-    "server_addban",
-    "server_removeban",
-    "player_info",
-    "team_info",
-    "team_score",
-    "teamplay_broadcast_audio",
-    "player_class",
-    "player_chat",
-    "player_score",
-    "player_shoot",
-    "player_changename",
-    "player_hintmessage",
-    "game_newmap",
-    "game_start",
-    "game_end",
-    "round_start",
-    "round_end",
-    "game_message",
-    "break_prop",
-    "bonus_updated",
-    "achievement_event",
-    "flare_ignite_npc",
-    "helicopter_grenade_punt_miss",
-    "user_data_downloaded",
-    "ragdoll_dissolved",
-    "gameinstructor_draw",
-    "gameinstructor_nodraw",
-    "map_transition",
-    "set_instructor_group_enabled",
-    "instructor_server_hint_create",
-    "instructor_server_hint_stop",
-    "portal_player_touchedground",
-    "turret_hit_turret",
-    "security_camera_detached",
-    "challenge_map_complete",
-    "advanced_map_complete",
-    "quicksave",
-    "autosave",
-    "slowtime",
-    "gesture_earned",
-    "player_countdown",
-    "player_touched_ground",
-    "player_long_fling",
-    "touched_paint",
-    "player_paint_jumped",
-    "move_hint_visible",
-    "movedone_hint_visible",
-    "counter_hint_visible",
-    "zoom_hint_visible",
-    "jump_hint_visible",
-    "partnerview_hint_visible",
-    "paint_cleanser_visible",
-    "paint_cleanser_not_visible",
-    "player_touch_paint_cleanser",
-    "OpenRadialMenu",
-    "AddLocator",
-    "achievement_earned",
-    "replay_status",
-    "spec_target_updated",
-    "player_fullyjoined",
-    "achievement_write_failed",
-    "player_stats_updated",
-    "round_start_pre_entity",
-    "teamplay_round_start",
-    "client_disconnect",
-    "difficulty_changed",
-    "finale_start",
-    "finale_win",
-    "vote_passed",
-    "portal_stats_ui_enable",
-    "portal_stats_update",
-    "puzzlemaker_fully_hidden",
-    "puzzlemaker_showing",
-    "ss_control_transferred",
-    "inventory_updated",
-    "cart_updated",
-    "store_pricesheet_updated",
-    "gc_connected",
-    "item_schema_initialized",
-    "client_loadout_changed",
-    "gameui_activated",
-    "gameui_hidden",
-    "hltv_status",
-    "hltv_cameraman",
-    "hltv_rank_camera",
-    "hltv_rank_entity",
-    "hltv_fixed",
-    "hltv_chase",
-    "hltv_message",
-    "hltv_title",
-    "hltv_chat"
 };

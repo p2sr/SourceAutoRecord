@@ -10,6 +10,10 @@
 #include "Modules/Server.hpp"
 
 #include "Command.hpp"
+#include "Variable.hpp"
+
+Variable sar_inspection_save_every_tick("sar_inspection_save_every_tick", "0",
+    "Saves inspection data even when session ticks do not increment.\n");
 
 EntityInspector* inspector;
 
@@ -33,7 +37,7 @@ void EntityInspector::Record()
 
     auto entity = server->GetEntityInfoByIndex(this->entityIndex);
     if (entity->m_pEntity != nullptr) {
-        this->latest = InspectionItem {
+        this->latest = InspectionItem{
             session,
             server->GetAbsOrigin(entity->m_pEntity),
             server->GetAbsAngles(entity->m_pEntity),
@@ -47,7 +51,7 @@ void EntityInspector::Record()
     }
 
     if (this->isRunning) {
-        if (session != this->lastSession) {
+        if (session != this->lastSession || sar_inspection_save_every_tick.GetBool()) {
             this->data.push_back(this->latest);
             this->lastSession = session;
         }
@@ -95,7 +99,7 @@ bool EntityInspector::ExportData(std::string filePath)
         file << current++
              << "," << item.session
              << "," << std::fixed << std::setprecision(6)
-                    << item.origin.x << "," << item.origin.y << "," << item.origin.z
+             << item.origin.x << "," << item.origin.y << "," << item.origin.z
              << "," << item.angles.x << "," << item.angles.y << "," << item.angles.z
              << "," << item.velocity.x << "," << item.velocity.y << "," << item.velocity.z
              << "," << item.flags
@@ -109,6 +113,8 @@ bool EntityInspector::ExportData(std::string filePath)
     file.close();
     return true;
 }
+
+// Commands
 
 CON_COMMAND(sar_inspection_start, "Starts recording entity data.\n")
 {

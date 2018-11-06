@@ -1,9 +1,9 @@
 #include "SpeedrunHud.hpp"
 
+#include "Features/Speedrun/SpeedrunTimer.hpp"
+
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
-
-#include "Features/Speedrun/SpeedrunTimer.hpp"
 
 #include "Variable.hpp"
 

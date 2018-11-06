@@ -4,9 +4,9 @@
 #include <fstream>
 #include <string>
 
-#include "Command.hpp"
-
 #include "Utils/SDK.hpp"
+
+#include "Command.hpp"
 
 class ClassDumper : public Feature {
 public:

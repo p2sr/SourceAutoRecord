@@ -5,11 +5,13 @@
 #include "Modules/Console.hpp"
 #include "Modules/Tier1.hpp"
 
+#include "Utils/Memory.hpp"
+
 #include "Command.hpp"
 #include "Offsets.hpp"
 #include "Variable.hpp"
 
-#include "Utils/Memory.hpp"
+Cvars* cvars;
 
 Cvars::Cvars()
 {
@@ -78,8 +80,7 @@ void Cvars::ListAll()
 void Cvars::PrintHelp(const CCommand& args)
 {
     if (args.ArgC() != 2) {
-        console->Print("Prints help string of cvar. Usage: help <cvar>\n");
-        return;
+        return console->Print("Prints help string of cvar. Usage: help <cvar>\n");
     }
 
     auto cmd = reinterpret_cast<ConCommandBase*>(tier1->FindCommandBase(tier1->g_pCVar->ThisPtr(), args[1]));
@@ -100,5 +101,3 @@ void Cvars::PrintHelp(const CCommand& args)
         console->Print("Unknown cvar name!\n");
     }
 }
-
-Cvars* cvars;

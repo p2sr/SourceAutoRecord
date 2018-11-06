@@ -3,17 +3,19 @@
 #include <fstream>
 #include <string>
 
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
-
 #include "Hud/Hud.hpp"
 #include "Hud/InputHud.hpp"
 #include "Hud/InspectionHud.hpp"
 #include "Hud/SpeedrunHud.hpp"
 
+#include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+
 #include "Game.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
+
+Config* config;
 
 Config::Config()
     : filePath("/cfg/_sar_cvars.cfg")
@@ -69,5 +71,3 @@ bool Config::Load()
     file.close();
     return false;
 }
-
-Config* config;

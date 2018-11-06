@@ -2,17 +2,19 @@
 
 #include <cstring>
 
-#include "Modules/Engine.hpp"
-
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Timer/Timer.hpp"
+
+#include "Modules/Engine.hpp"
 
 #include "Utils/SDK.hpp"
 
 #include "Variable.hpp"
 
 Variable sar_debug_game_events("sar_debug_game_events", "0", "Prints game event data, similar to net_showevents.\n");
+
+Listener* listener;
 
 Listener::Listener()
     : m_bRegisteredForEvents(false)
@@ -93,6 +95,3 @@ void Listener::DumpGameEvents()
         }
     }
 }
-
-Listener* listener;
-extern Listener* listener;

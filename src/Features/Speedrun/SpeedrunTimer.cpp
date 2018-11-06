@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
-
 #include "TimerInterface.hpp"
 #include "TimerResult.hpp"
 #include "TimerRule.hpp"
 #include "TimerSplit.hpp"
+
+#include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
 
 #include "Command.hpp"
 #include "Variable.hpp"
@@ -298,6 +298,8 @@ std::string SpeedrunTimer::Format(float raw)
 
     return std::string(format);
 }
+
+// Commands
 
 CON_COMMAND(sar_speedrun_start, "Prints result of speedrun.\n")
 {

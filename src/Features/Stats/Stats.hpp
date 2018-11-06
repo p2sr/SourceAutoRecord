@@ -1,9 +1,9 @@
 #pragma once
-#include "Features/Feature.hpp"
-
 #include "JumpStats.hpp"
 #include "StepStats.hpp"
 #include "VelocityStats.hpp"
+
+#include "Features/Feature.hpp"
 
 #include "Variable.hpp"
 

@@ -4,10 +4,10 @@
 #include <sstream>
 #include <string>
 
+#include "Demo.hpp"
+
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
-
-#include "Demo.hpp"
 
 #include "Command.hpp"
 #include "Variable.hpp"
@@ -194,18 +194,20 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
         file.close();
     } catch (const std::exception& ex) {
         console->Warning("SAR: Error occurred when trying to parse the demo file.\n"
-                         "If you think this is an issue, report it at: https://github.com/NeKzor/SourceAutoRecord/issues\n%s\n",
+                         "If you think this is an issue, report it at: https://github.com/NeKzor/SourceAutoRecord/issues\n"
+                         "%s\n",
             std::string(ex.what()));
         return false;
     }
     return true;
 }
 
+// Commands
+
 CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "Parses a demo and prints some information about it.", 0, 0, dem)
 {
     if (args.ArgC() != 2) {
-        console->Print("sar_time_demo <demo_name> : Parses a demo and prints some information about it.\n");
-        return;
+        return console->Print("sar_time_demo <demo_name> : Parses a demo and prints some information about it.\n");
     }
 
     std::string name;
@@ -213,8 +215,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "Parses a demo and prints some infor
         if (engine->demoplayer->DemoName[0] != '\0') {
             name = std::string(engine->demoplayer->DemoName);
         } else {
-            console->Print("No demo was recorded or played back!\n");
-            return;
+            return console->Print("No demo was recorded or played back!\n");
         }
     } else {
         name = std::string(args[1]);
@@ -240,8 +241,8 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "Parses a demo and prints some infor
 CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "Parses multiple demos and prints the total sum of them.", 0, 0, dem)
 {
     if (args.ArgC() <= 1) {
-        console->Print("sar_time_demos <demo_name> <demo_name2> <etc.> : Parses multiple demos and prints the total sum of them.\n");
-        return;
+        return console->Print("sar_time_demos <demo_name> <demo_name2> <etc.> : "
+            "Parses multiple demos and prints the total sum of them.\n");
     }
 
     int totalTicks = 0;
@@ -273,6 +274,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "Parses multiple demos and prints t
             console->Print("Could not parse \"%s\"!\n", name.c_str());
         }
     }
+
     if (printTotal) {
         console->Print("Total Ticks: %i\n", totalTicks);
         console->Print("Total Time: %.3f\n", totalTime);
