@@ -7,6 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SourceAutoRecord", "src\Sou
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4990948C-3306-40BA-9EAD-594A5520043F}"
 	ProjectSection(SolutionItems) = preProject
+		.clang-format = .clang-format
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		makefile = makefile
