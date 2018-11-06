@@ -111,7 +111,7 @@ void HalfLife2::LoadOffsets()
     HudProcessInput = 10; // CHLClient
     HudUpdate = 11; // CHLClient
     C_m_vecAbsOrigin = 588; // C_BasePlayer::GetAbsOrigin
-    C_m_vecAbsOrigin = 600; // C_BasePlayer::GetAbsAngles
+    C_m_angAbsRotation = 600; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
     GetClientMode = 1; // CHLClient::HudProcessInput
     CreateMove = 22; // ClientModeShared
