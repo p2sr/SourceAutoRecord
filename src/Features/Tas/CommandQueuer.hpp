@@ -19,6 +19,7 @@ public:
     bool isRunning;
     int baseIndex;
     int curSplitScreen;
+    int curDelay;
 
 public:
     CommandQueuer();
@@ -28,6 +29,7 @@ public:
     void Stop();
     void Reset();
     void Start();
+    void DelayQueueBy(int frames);
 };
 
 extern CommandQueuer* tasQueuer;

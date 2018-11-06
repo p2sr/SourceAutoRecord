@@ -18,6 +18,7 @@ CommandQueuer::CommandQueuer()
     , isRunning(false)
     , baseIndex(0)
     , curSplitScreen(0)
+    , curDelay(0)
 {
     this->hasLoaded = true;
 }
@@ -30,7 +31,7 @@ void CommandQueuer::AddFrame(int framesLeft, std::string command, bool relative)
     }
 
     this->frames.push_back(CommandFrame{
-        framesLeft,
+        framesLeft + this->curDelay,
         command,
         this->curSplitScreen });
 }
@@ -45,7 +46,7 @@ void CommandQueuer::AddFrames(int framesLeft, int interval, int lastFrame, std::
 
     for (; framesLeft <= lastFrame; framesLeft += interval) {
         this->frames.push_back(CommandFrame{
-            framesLeft,
+            framesLeft + this->curDelay,
             command,
             this->curSplitScreen });
     }
@@ -63,6 +64,7 @@ void CommandQueuer::Reset()
     this->Stop();
     this->baseIndex = 0;
     this->frames.clear();
+    this->curDelay = 0;
 }
 void CommandQueuer::Start()
 {
@@ -73,14 +75,19 @@ void CommandQueuer::Start()
         this->isRunning = true;
     }
 }
+void CommandQueuer::DelayQueueBy(int frames)
+{
+    this->curDelay = frames;
+}
+
+// Commands
 
 CON_COMMAND(sar_tas_frame_at,
     "Adds command frame to the queue at specified frame.\n"
     "Usage: sar_tas_frame_at <frame> [command_to_execute]\n")
 {
     if (args.ArgC() != 3) {
-        console->Print("sar_tas_frame_at <frame> [command_to_execute] : Adds command frame to the queue.\n");
-        return;
+        return console->Print("sar_tas_frame_at <frame> [command_to_execute] : Adds command frame to the queue.\n");
     }
 
     tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]));
@@ -90,8 +97,8 @@ CON_COMMAND(sar_tas_frames_at,
     "Usage: sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute]\n")
 {
     if (args.ArgC() != 5) {
-        console->Print("sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute] : Adds command frame multiple times to the queue.\n");
-        return;
+        return console->Print("sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute] : "
+            "Adds command frame multiple times to the queue.\n");
     }
 
     tasQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]));
@@ -101,8 +108,8 @@ CON_COMMAND(sar_tas_frame_after,
     "Usage: sar_tas_frame_after <frames_to_wait> [command_to_execute]\n")
 {
     if (args.ArgC() != 3) {
-        console->Print("sar_tas_frame_after <frames_to_wait> [command_to_execute] : Adds command frame to the queue.\n");
-        return;
+        return console->Print("sar_tas_frame_after <frames_to_wait> [command_to_execute] : "
+            "Adds command frame to the queue.\n");
     }
 
     tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]), true);
@@ -112,8 +119,8 @@ CON_COMMAND(sar_tas_frames_after,
     "Usage: sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute]\n")
 {
     if (args.ArgC() != 5) {
-        console->Print("sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute] : Adds command frame multiple times to the queue.\n");
-        return;
+        return console->Print("sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute] : "
+            "Adds command frame multiple times to the queue.\n");
     }
 
     tasQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]), true);
@@ -129,8 +136,7 @@ CON_COMMAND(sar_tas_reset, "Stops executing commands and clears them from the qu
 CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\n")
 {
     if (args.ArgC() != 2) {
-        console->Print("sar_tas_ss <index> : Select split screen index for command buffer (0 or 1).\n");
-        return;
+        return console->Print("sar_tas_ss <index> : Select split screen index for command buffer (0 or 1).\n");
     }
 
     auto index = std::atoi(args[1]);
@@ -139,4 +145,12 @@ CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\
     } else {
         console->Print("Invalid split screen index!\n");
     }
+}
+CON_COMMAND(sar_tas_delay, "Delays command queue by specified amount of frames.\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print("sar_tas_delay <frames_to_wait> : Delays command queue by specified amount of frames.\n");
+    }
+
+    tasQueuer->DelayQueueBy(std::atoi(args[1]));
 }
