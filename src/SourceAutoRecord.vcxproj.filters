@@ -124,16 +124,22 @@
     <ClCompile Include="Features\Stats\VelocityStats.cpp">
       <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClCompile>
-    <ClInclude Include="Features\Hud\InspectionHud.cpp">
+    <ClCompile Include="Features\Hud\InspectionHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
-    </ClInclude>
+    </ClCompile>
     <ClCompile Include="Features\Hud\InputHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Tas\AutoAiming.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Tas\CommandQueuer.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\Replay.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
     <ClCompile Include="Features\Tas\ReplaySystem.cpp">
@@ -366,13 +372,19 @@
     <ClInclude Include="Features\Stats\VelocityStats.hpp">
       <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClInclude>
-    <ClCompile Include="Features\Routing\EntityInspector.hpp">
+    <ClInclude Include="Features\Routing\EntityInspector.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
-    </ClCompile>
+    </ClInclude>
     <ClInclude Include="Features\Routing\Tracer.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Tas\AutoAiming.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
     <ClInclude Include="Features\Tas\CommandQueuer.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\Replay.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
     <ClInclude Include="Features\Tas\ReplaySystem.hpp">

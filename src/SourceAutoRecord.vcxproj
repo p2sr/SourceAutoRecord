@@ -194,7 +194,9 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="Features\Stats\VelocityStats.cpp" />
     <ClCompile Include="Features\StepCounter.cpp" />
     <ClCompile Include="Features\Summary.cpp" />
+    <ClCompile Include="Features\Tas\AutoAiming.cpp" />
     <ClCompile Include="Features\Tas\CommandQueuer.cpp" />
+    <ClCompile Include="Features\Tas\Replay.cpp" />
     <ClCompile Include="Features\Tas\ReplaySystem.cpp" />
     <ClCompile Include="Features\Teleporter.cpp" />
     <ClCompile Include="Features\Timer\Timer.cpp" />
@@ -253,7 +255,7 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="..\lib\minhook\MinHook.h" />
     <ClInclude Include="Cheats.hpp" />
     <ClInclude Include="Command.hpp" />
-    <ClCompile Include="Features\ClassDumper.hpp" />
+    <ClInclude Include="Features\ClassDumper.hpp" />
     <ClInclude Include="Features\Config.hpp" />
     <ClInclude Include="Features\Cvars.hpp" />
     <ClInclude Include="Features\Demo\Demo.hpp" />
@@ -261,11 +263,11 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\Feature.hpp" />
     <ClInclude Include="Features\Hud\Hud.hpp" />
     <ClInclude Include="Features\Hud\InputHud.hpp" />
-    <ClCompile Include="Features\Hud\InspectionHud.hpp" />
+    <ClInclude Include="Features\Hud\InspectionHud.hpp" />
     <ClInclude Include="Features\Hud\SpeedrunHud.hpp" />
     <ClInclude Include="Features\Listener.hpp" />
     <ClInclude Include="Features\Rebinder.hpp" />
-    <ClCompile Include="Features\Routing\EntityInspector.hpp" />
+    <ClInclude Include="Features\Routing\EntityInspector.hpp" />
     <ClInclude Include="Features\Routing\Tracer.hpp" />
     <ClInclude Include="Features\Session.hpp" />
     <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp" />
@@ -282,7 +284,9 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\Stats\VelocityStats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
+    <ClInclude Include="Features\Tas\AutoAiming.hpp" />
     <ClInclude Include="Features\Tas\CommandQueuer.hpp" />
+    <ClInclude Include="Features\Tas\Replay.hpp" />
     <ClInclude Include="Features\Tas\ReplaySystem.hpp" />
     <ClInclude Include="Features\Teleporter.hpp" />
     <ClInclude Include="Features\Timer\Timer.hpp" />
