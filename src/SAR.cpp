@@ -103,7 +103,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
                 this->SearchPlugin();
 
-                console->PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
+                console->PrintActive("Loaded SourceAutoRecord, Version %s\n", SAR_VERSION);
                 return true;
             } else {
                 console->Warning("SAR: Failed to load engine module!\n");
