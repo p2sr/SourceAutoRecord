@@ -3,13 +3,13 @@
 #include <cstdint>
 #include <cstring>
 
-#include "Console.hpp"
-#include "Engine.hpp"
-#include "VGui.hpp"
-
 #include "Features/Session.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Tas/ReplaySystem.hpp"
+
+#include "Console.hpp"
+#include "Engine.hpp"
+#include "VGui.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -42,6 +42,11 @@ Vector Client::GetLocalVelocity()
 {
     auto player = this->GetPlayer();
     return (player) ? *(Vector*)((uintptr_t)player + Offsets::C_m_vecVelocity) : Vector();
+}
+Vector Client::GetViewOffset()
+{
+    auto player = this->GetPlayer();
+    return (player) ? *(Vector*)((uintptr_t)player + Offsets::C_m_vecViewOffset) : Vector();
 }
 void Client::GetOffset(const char* className, const char* propName, int& offset)
 {
@@ -210,6 +215,7 @@ bool Client::Init()
     }
 
     this->GetOffset("CBasePlayer", "m_vecVelocity[0]", Offsets::C_m_vecVelocity);
+    this->GetOffset("CBasePlayer", "m_vecViewOffset[0]", Offsets::C_m_vecViewOffset);
 
     return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }

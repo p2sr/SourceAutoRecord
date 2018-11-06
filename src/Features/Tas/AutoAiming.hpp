@@ -1,18 +1,10 @@
 #pragma once
-
 #include "Features/Feature.hpp"
 
-#include "Utils/SDK.hpp"
-
-
-
-class AutoAiming : public Feature
-{
-
+class AutoAiming : public Feature {
 public:
-
-	void AimAtPoint(float x, float y, float z);
-
+    AutoAiming();
+    void AimAtPoint(float x, float y, float z);
 };
 
-extern AutoAiming *autoAiming;
+extern AutoAiming* autoAiming;

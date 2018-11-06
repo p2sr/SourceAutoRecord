@@ -32,6 +32,7 @@ public:
     Vector GetAbsOrigin();
     QAngle GetAbsAngles();
     Vector GetLocalVelocity();
+    Vector GetViewOffset();
     void GetOffset(const char* className, const char* propName, int& offset);
 
 private:

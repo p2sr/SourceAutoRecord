@@ -86,6 +86,7 @@ int Disconnect;
 int C_m_vecAbsOrigin;
 int C_m_angAbsRotation;
 int C_m_vecVelocity;
+int C_m_vecViewOffset;
 
 // CBaseEntity
 int S_m_vecAbsOrigin;
@@ -94,7 +95,7 @@ int S_m_vecVelocity;
 int m_iEFlags;
 int m_flMaxspeed;
 int m_flGravity;
-int m_vecViewOffset;
+int S_m_vecViewOffset;
 
 // CBasePlayer
 int m_fFlags;
