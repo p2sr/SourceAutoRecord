@@ -1,27 +1,86 @@
 #include "TimerRule.hpp"
 
-#include <cstring>
+#include <vector>
 
-#include "SpeedrunTimer.hpp"
+#include "Modules/Server.hpp"
+
 #include "TimerAction.hpp"
 
-TimerRule::TimerRule(const char* map, const char* target, const char* targetInput, TimerAction action)
+TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
+    _TimerRuleCallback2 callback)
+    : madeAction(false)
+    , gameVersion(gameVersion)
+    , categoryName(categoryName)
+    , mapName(mapName)
+    , entityName(entityName)
+    , callback2(callback)
+    , entityPtr(nullptr)
+    , hasProps(false)
+    , propOffset(0)
+    , isActive(false)
 {
-    this->map = map;
-    this->target = target;
-    this->targetInput = targetInput;
-    this->action = action;
+    TimerRule::list.push_back(this);
 }
-void TimerRule::Check(const EventQueuePrioritizedEvent_t* event, const int* engineTicks, SpeedrunTimer* timer)
+TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
+    _TimerRuleCallback callback, const char* className, const char* propName)
+    : TimerRule(gameVersion, categoryName, mapName, entityName, nullptr)
 {
-    if (std::strcmp(this->map, timer->GetCurrentMap()) || !event)
-        return;
-    if (!event->m_iTarget || std::strcmp(this->target, event->m_iTarget))
-        return;
-    if (!event->m_iTargetInput || std::strcmp(this->targetInput, event->m_iTargetInput))
-        return;
-    if (this->action == TimerAction::Start)
-        timer->Start(engineTicks);
-    else if (this->action == TimerAction::End)
-        timer->Stop();
+    this->className = className;
+    this->propName = propName;
+    this->callback = callback;
+    this->hasProps = true;
 }
+bool TimerRule::Load()
+{
+    auto info = server->GetEntityInfoByClassName(this->entityName);
+    if (info) {
+        this->entityPtr = info->m_pEntity;
+    }
+
+    if (this->hasProps) {
+        server->GetOffset(this->className, this->propName, this->propOffset);
+        return this->isActive = (this->entityPtr != nullptr && this->propOffset != 0);
+    }
+
+    return this->isActive = this->entityPtr != nullptr;
+}
+void TimerRule::Unload()
+{
+    this->entityPtr = nullptr;
+    this->propOffset = 0;
+    this->isActive = false;
+}
+TimerAction TimerRule::Dispatch()
+{
+    if (this->isActive) {
+        if (this->hasProps) {
+            auto prop = reinterpret_cast<int*>((uintptr_t)this->entityPtr + this->propOffset);
+            return this->callback(this->entityPtr, prop);
+        }
+        return this->callback2(this->entityPtr);
+    }
+
+    return TimerAction::DoNothing;
+}
+int TimerRule::FilterByGame(Game* game)
+{
+    auto count = 0;
+    for (auto&& rule = TimerRule::list.begin(); rule != TimerRule::list.end();) {
+        if ((*rule)->gameVersion != game->version) {
+            rule = TimerRule::list.erase(rule);
+        } else {
+            ++rule;
+            ++count;
+        }
+    }
+
+    return count;
+}
+void TimerRule::ResetAll()
+{
+    for (auto& rule : TimerRule::list) {
+        rule->madeAction = false;
+    }
+}
+
+std::vector<TimerRule*> TimerRule::list;

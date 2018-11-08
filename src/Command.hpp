@@ -12,6 +12,7 @@ private:
 public:
     bool isRegistered;
     bool isReference;
+
     static std::vector<Command*> list;
 
 public:

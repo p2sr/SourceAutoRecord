@@ -99,6 +99,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                     listener->Init();
                 }
 
+                speedrun->LoadRules(this->game);
+
                 config->Load();
 
                 this->SearchPlugin();

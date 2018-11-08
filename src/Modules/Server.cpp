@@ -59,6 +59,42 @@ CEntInfo* Server::GetEntityInfoByIndex(int index)
         : sizeof(CEntInfo);
     return reinterpret_cast<CEntInfo*>((uintptr_t)server->m_EntPtrArray + size * index);
 }
+CEntInfo* Server::GetEntityInfoByName(const char* name)
+{
+    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+        auto info = server->GetEntityInfoByIndex(index);
+        if (info->m_pEntity == nullptr) {
+            continue;
+        }
+
+        auto match = server->GetEntityName(info->m_pEntity);
+        if (!match || std::strcmp(match, name) != 0) {
+            continue;
+        }
+
+        return info;
+    }
+
+    return nullptr;
+}
+CEntInfo* Server::GetEntityInfoByClassName(const char* name)
+{
+    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+        auto info = server->GetEntityInfoByIndex(index);
+        if (info->m_pEntity == nullptr) {
+            continue;
+        }
+
+        auto match = server->GetEntityClassName(info->m_pEntity);
+        if (!match || std::strcmp(match, name) != 0) {
+            continue;
+        }
+
+        return info;
+    }
+
+    return nullptr;
+}
 char* Server::GetEntityName(void* entity)
 {
     return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iName);
@@ -330,8 +366,6 @@ DETOUR(Server::GameFrame, bool simulating)
                 console->Msg("    - m_iOutputID    %i\n", pe->m_iOutputID);
             }
 
-            speedrun->CheckRules(pe, engine->tickcount);
-
             pe = pe->m_pNext;
         }
     }
@@ -339,7 +373,14 @@ DETOUR(Server::GameFrame, bool simulating)
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else
-    return Server::GameFrame(thisptr, simulating);
+if (!*server->g_InRestore) {
+        speedrun->CheckRules(engine->tickcount);
+    }
+    auto result = Server::GameFrame(thisptr, simulating);
+#endif
+    
+#ifndef _WIN32
+    return result;
 #endif
 }
 
@@ -391,13 +432,14 @@ bool Server::Init()
         Memory::DerefDeref<CGlobalVars*>((uintptr_t)this->UTIL_PlayerByIndex + Offsets::gpGlobals, &this->gpGlobals);
 
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
-        /* auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
+
+        auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
         auto ServiceEventQueue = Memory::Read(GameFrame + Offsets::ServiceEventQueue);
 
         Memory::Deref<bool*>(GameFrame + Offsets::g_InRestore, &this->g_InRestore);
         Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue, &this->g_EventQueue);
 
-        this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame); */
+        this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
     }
 
     this->GetOffset("CBasePlayer", "m_nWaterLevel", Offsets::m_nWaterLevel);

@@ -14,6 +14,7 @@
 #include "Utils/SDK.hpp"
 
 #include "Command.hpp"
+#include "Game.hpp"
 #include "Variable.hpp"
 
 #define SAR_SPEEDRUN_EXPORT_HEADER "Map,Ticks,Time,Map Ticks,Map Time,Total Ticks,Total Time,Segment"
@@ -32,7 +33,8 @@ private:
     TimerState state;
     std::unique_ptr<TimerResult> result;
     std::unique_ptr<TimerResult> pb;
-    std::vector<TimerRule> rules;
+    std::vector<TimerRule*> rules;
+    const char* category;
 
 public:
     SpeedrunTimer();
@@ -43,11 +45,8 @@ public:
     void Pause();
     void Unpause(const int* engineTicks);
     void Update(const int* engineTicks, const char* engineMap);
+    void CheckRules(const int* engineTicks);
     void Stop(bool addSegment = true);
-
-    void AddRule(TimerRule rule);
-    std::vector<TimerRule> GetRules();
-    void CheckRules(const EventQueuePrioritizedEvent_t* event, const int* engineTicks);
 
     int GetSession();
     int GetTotal();
@@ -55,6 +54,15 @@ public:
 
     void SetIntervalPerTick(const float* ipt);
     float GetIntervalPerTick();
+
+    void SetCategory(const char* category);
+    const char* GetCategory();
+
+    void LoadRules(Game* game);
+    void InitRules();
+    void ReloadRules();
+    void UnloadRules();
+    const std::vector<TimerRule*>& GetRules();
 
     TimerResult* GetResult();
     TimerResult* GetPersonalBest();
@@ -80,6 +88,8 @@ extern Command sar_speedrun_export;
 extern Command sar_speedrun_export_pb;
 extern Command sar_speedrun_import;
 extern Command sar_speedrun_rules;
+extern Command sar_speedrun_all_rules;
+extern Command sar_speedrun_category;
 
 extern Variable sar_speedrun_autostart;
 extern Variable sar_speedrun_autostop;

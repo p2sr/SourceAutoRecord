@@ -122,6 +122,7 @@ void Session::Ended()
     tasQueuer->Stop();
     tasReplaySystem->Stop();
     speedrun->Pause();
+    speedrun->UnloadRules();
 
     this->isInSession = false;
 }
@@ -144,6 +145,7 @@ void Session::Changed(int state)
 
     // Demo recorder starts syncing from this tick
     if (state == SignonState::Full) {
+        speedrun->ReloadRules();
         this->Started();
     } else {
         this->Ended();

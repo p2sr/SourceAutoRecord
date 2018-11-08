@@ -36,4 +36,13 @@ extern CommandQueuer* tasQueuer;
 
 extern Variable sar_tas_autostart;
 
+extern Command sar_tas_frame_at;
+extern Command sar_tas_frames_at;
+extern Command sar_tas_frame_after;
+extern Command sar_tas_frames_after;
+extern Command sar_tas_start;
+extern Command sar_tas_reset;
 extern Command sar_tas_ss;
+extern Command sar_tas_delay;
+extern Command sar_tas_frame_at_for;
+extern Command sar_tas_frame_after_for;

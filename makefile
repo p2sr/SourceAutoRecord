@@ -10,6 +10,7 @@ SRCS+=$(wildcard $(SDIR)Features/Demo/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Hud/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Routing/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Speedrun/*.cpp)
+SRCS+=$(wildcard $(SDIR)Features/Speedrun/Rules/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Stats/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Tas/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Timer/*.cpp)
@@ -52,6 +53,7 @@ dirs:
 	@mkdir -p $(ODIR)Features/Hud/
 	@mkdir -p $(ODIR)Features/Routing/
 	@mkdir -p $(ODIR)Features/Speedrun/
+	@mkdir -p $(ODIR)Features/Speedrun/Rules
 	@mkdir -p $(ODIR)Features/Stats/
 	@mkdir -p $(ODIR)Features/Tas/
 	@mkdir -p $(ODIR)Features/Timer/

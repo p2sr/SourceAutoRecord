@@ -37,6 +37,8 @@ public:
     void* GetPlayer();
     int GetPortals();
     CEntInfo* GetEntityInfoByIndex(int index);
+    CEntInfo* GetEntityInfoByName(const char* name);
+    CEntInfo* GetEntityInfoByClassName(const char* name);
     char* GetEntityName(void* entity);
     char* GetEntityClassName(void* entity);
     Vector GetAbsOrigin(void* entity);
