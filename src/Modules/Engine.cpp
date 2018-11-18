@@ -148,7 +148,7 @@ DETOUR(Engine::Frame)
     session->prevState = engine->hoststate->m_currentState;
 
     if (engine->hoststate->m_activeGame) {
-        speedrun->Update(engine->tickcount, engine->hoststate->m_levelName);
+        speedrun->Update(engine->tickcount, engine->m_szLevelName /* engine->hoststate->m_levelName */);
     }
 
     return Engine::Frame(thisptr);

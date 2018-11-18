@@ -2,12 +2,13 @@
 
 #include <vector>
 
+#include "Modules/Console.hpp"
 #include "Modules/Server.hpp"
 
 #include "TimerAction.hpp"
 
 TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
-    _TimerRuleCallback0 callback)
+    _TimerRuleCallback0 callback, SearchMode searchMode)
     : madeAction(false)
     , gameVersion(gameVersion)
     , categoryName(categoryName)
@@ -18,12 +19,13 @@ TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapN
     , callbackType(0)
     , propOffset(0)
     , isActive(false)
+    , searchMode(searchMode)
 {
     TimerRule::list.push_back(this);
 }
 TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
-    _TimerRuleCallback1 callback, const char* className, const char* propName)
-    : TimerRule(gameVersion, categoryName, mapName, entityName, nullptr)
+    _TimerRuleCallback1 callback, const char* className, const char* propName, SearchMode searchMode)
+    : TimerRule(gameVersion, categoryName, mapName, entityName, nullptr, searchMode)
 {
     this->className = className;
     this->propName = propName;
@@ -31,8 +33,8 @@ TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapN
     this->callbackType = 1;
 }
 TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
-    _TimerRuleCallback2 callback, const char* className, const char* propName)
-    : TimerRule(gameVersion, categoryName, mapName, entityName, nullptr)
+    _TimerRuleCallback2 callback, const char* className, const char* propName, SearchMode searchMode)
+    : TimerRule(gameVersion, categoryName, mapName, entityName, nullptr, searchMode)
 {
     this->className = className;
     this->propName = propName;
@@ -41,9 +43,18 @@ TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapN
 }
 bool TimerRule::Load()
 {
-    auto info = server->GetEntityInfoByName(this->entityName);
+    auto info = (this->searchMode == SearchMode::Classes)
+        ? server->GetEntityInfoByClassName(this->entityName)
+        : server->GetEntityInfoByName(this->entityName);
+
     if (info) {
         this->entityPtr = info->m_pEntity;
+    } else {
+        if (this->searchMode == SearchMode::Classes) {
+            console->Warning("There isn't any entity with the class name: %s\n", this->entityName);
+        } else {
+            console->Warning("There is no entity with the name: %s\n", this->entityName);
+        }
     }
 
     if (this->callbackType != 0) {

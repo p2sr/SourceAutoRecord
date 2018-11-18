@@ -5,36 +5,32 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
-SAR_RULE(Portal2, any, sp_a1_intro1, player, CBasePlayer, m_hViewEntity)
+#ifdef _WIN32
+#define Offset_m_iTouchingPortalCount 1124
+#else
+#define Offset_m_iTouchingPortalCount 1148
+#endif
+
+SAR_RULE(Portal2, any, sp_a1_intro1, player, CBasePlayer, m_hViewEntity, SearchMode::Classes)
 {
-    if (*m_hViewEntity == -1 && engine->GetSessionTick() > 100) {
-        console->Print("[%i] %i\n", engine->GetSessionTick(), *m_hViewEntity);
+    // Wait some ticks till camera_intro gets enabled
+    if (engine->GetSessionTick() > 13 && *m_hViewEntity == -1) {
+        console->DevMsg("[%i] Portal 2 any rule start!\n", engine->GetSessionTick());
         return TimerAction::Start;
     }
 
     return TimerAction::DoNothing;
 }
 
-SAR_RULE3(Portal2, any, sp_a4_finale4, moon_portal_detector)
+SAR_RULE3(Portal2, any, sp_a4_finale4, moon_portal_detector, SearchMode::Names)
 {
-    auto m_phTouchingPortals = reinterpret_cast<int*>((uintptr_t)moon_portal_detector + 1140);
-    //console->Print("[%i] %i\n", engine->GetSessionTick(), *m_phTouchingPortals);
-    if (m_phTouchingPortals && *m_phTouchingPortals != -1) {
-        console->Print("[%i] %i\n", engine->GetSessionTick(), *m_phTouchingPortals);
+    // CFuncPortalDetector aka point_viewcontrol
+    auto m_iTouchingPortalCount = reinterpret_cast<int*>((uintptr_t)moon_portal_detector + Offset_m_iTouchingPortalCount);
+
+    if (m_iTouchingPortalCount && *m_iTouchingPortalCount != 0) {
+        console->DevMsg("[%i] Portal 2 any rule end!\n", engine->GetSessionTick());
         return TimerAction::End;
     }
 
     return TimerAction::DoNothing;
 }
-
-/* SAR_RULE2(Portal2, any, sp_a4_finale4, ending_vehicle, CPropVehicleChoreoGeneric, m_bEnterAnimOn)
-{
-    auto m_bPlayerCanShoot = reinterpret_cast<int*>((uintptr_t)ending_vehicle + (m_bEnterAnimOn_offset - 5));
-    console->Print("[%i] %i\n", engine->GetSessionTick(), *m_bPlayerCanShoot);
-    if (!*m_bPlayerCanShoot) {
-        console->Warning("[%i] %i\n", engine->GetSessionTick(), *m_bPlayerCanShoot);
-        return TimerAction::End;
-    }
-
-    return TimerAction::DoNothing;
-} */

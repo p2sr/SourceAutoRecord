@@ -97,6 +97,7 @@ void SpeedrunTimer::Update(const int* engineTicks, const char* engineMap)
             this->InitRules();
         }
     }
+
     if (this->state == TimerState::Paused) {
         if (mapChanged) {
             console->Print("Speedrun split!\n");
@@ -161,8 +162,9 @@ void SpeedrunTimer::Stop(bool addSegment)
 }
 void SpeedrunTimer::Reset()
 {
-    this->total = 0;
+    this->total = this->offset;
     this->prevTotal = 0;
+    this->base = 0;
     TimerRule::ResetAll();
     this->InitRules();
 }
@@ -188,6 +190,7 @@ void SpeedrunTimer::InitRules()
 {
     this->rules.clear();
     for (const auto& rule : TimerRule::list) {
+        console->Print("%s = %s | %s = %s\n", this->category, rule->categoryName, this->map, rule->mapName);
         if (!std::strcmp(this->category, rule->categoryName) && !std::strcmp(this->map, rule->mapName)) {
             this->rules.push_back(rule);
         }

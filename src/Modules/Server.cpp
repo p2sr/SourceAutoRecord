@@ -373,10 +373,11 @@ DETOUR(Server::GameFrame, bool simulating)
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else
+    auto result = Server::GameFrame(thisptr, simulating);
+
     if (!*server->g_InRestore) {
         speedrun->CheckRules(engine->tickcount);
     }
-    auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
 #ifndef _WIN32
