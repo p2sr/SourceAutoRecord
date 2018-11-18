@@ -170,9 +170,11 @@ DETOUR(VGui::Paint, int mode)
         if (info && info->m_pEntity) {
             DrawElement("name: %s", server->GetEntityName(info->m_pEntity));
             DrawElement("class: %s", server->GetEntityClassName(info->m_pEntity));
+            DrawElement("offset: %s", *reinterpret_cast<int*>((uintptr_t)info->m_pEntity + inspector->offset));
         } else {
             DrawElement("name: -");
             DrawElement("class: -");
+            DrawElement("offset: -");
         }
 
         auto data = inspector->GetData();

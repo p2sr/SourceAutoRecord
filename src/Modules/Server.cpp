@@ -352,7 +352,7 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
-    if (!*server->g_InRestore) {
+    /* if (!*server->g_InRestore) {
         auto pe = server->g_EventQueue->m_Events.m_pNext;
         while (pe && pe->m_flFireTime <= server->gpGlobals->curtime) {
             if (sar_debug_event_queue.GetBool()) {
@@ -368,17 +368,17 @@ DETOUR(Server::GameFrame, bool simulating)
 
             pe = pe->m_pNext;
         }
-    }
+    } */
 
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else
-if (!*server->g_InRestore) {
+    if (!*server->g_InRestore) {
         speedrun->CheckRules(engine->tickcount);
     }
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
-    
+
 #ifndef _WIN32
     return result;
 #endif

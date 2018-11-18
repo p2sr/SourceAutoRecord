@@ -80,6 +80,7 @@ void Session::Started(bool menu)
         currentFrame = 0;
     }
 
+    speedrun->ReloadRules();
     isInSession = true;
 }
 void Session::Ended()
@@ -145,7 +146,6 @@ void Session::Changed(int state)
 
     // Demo recorder starts syncing from this tick
     if (state == SignonState::Full) {
-        speedrun->ReloadRules();
         this->Started();
     } else {
         this->Ended();

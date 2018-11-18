@@ -7,37 +7,46 @@
 #include "TimerAction.hpp"
 
 TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
-    _TimerRuleCallback2 callback)
+    _TimerRuleCallback0 callback)
     : madeAction(false)
     , gameVersion(gameVersion)
     , categoryName(categoryName)
     , mapName(mapName)
     , entityName(entityName)
-    , callback2(callback)
+    , callback0(callback)
     , entityPtr(nullptr)
-    , hasProps(false)
+    , callbackType(0)
     , propOffset(0)
     , isActive(false)
 {
     TimerRule::list.push_back(this);
 }
 TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
-    _TimerRuleCallback callback, const char* className, const char* propName)
+    _TimerRuleCallback1 callback, const char* className, const char* propName)
     : TimerRule(gameVersion, categoryName, mapName, entityName, nullptr)
 {
     this->className = className;
     this->propName = propName;
-    this->callback = callback;
-    this->hasProps = true;
+    this->callback1 = callback;
+    this->callbackType = 1;
+}
+TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
+    _TimerRuleCallback2 callback, const char* className, const char* propName)
+    : TimerRule(gameVersion, categoryName, mapName, entityName, nullptr)
+{
+    this->className = className;
+    this->propName = propName;
+    this->callback2 = callback;
+    this->callbackType = 2;
 }
 bool TimerRule::Load()
 {
-    auto info = server->GetEntityInfoByClassName(this->entityName);
+    auto info = server->GetEntityInfoByName(this->entityName);
     if (info) {
         this->entityPtr = info->m_pEntity;
     }
 
-    if (this->hasProps) {
+    if (this->callbackType != 0) {
         server->GetOffset(this->className, this->propName, this->propOffset);
         return this->isActive = (this->entityPtr != nullptr && this->propOffset != 0);
     }
@@ -53,11 +62,13 @@ void TimerRule::Unload()
 TimerAction TimerRule::Dispatch()
 {
     if (this->isActive) {
-        if (this->hasProps) {
+        if (this->callbackType == 1) {
             auto prop = reinterpret_cast<int*>((uintptr_t)this->entityPtr + this->propOffset);
-            return this->callback(this->entityPtr, prop);
+            return this->callback1(this->entityPtr, prop);
+        } else if (this->callbackType == 2) {
+            return this->callback2(this->entityPtr, this->propOffset);
         }
-        return this->callback2(this->entityPtr);
+        return this->callback0(this->entityPtr);
     }
 
     return TimerAction::DoNothing;

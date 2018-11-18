@@ -1,5 +1,5 @@
 BINARY=sar.so
-STEAM=/home/nekz/.local/share/Steam/steamapps/common/
+STEAM=/home/nekz/.steam/steamapps/common/
 SDIR=src/
 LDIR=lib/
 ODIR=obj/

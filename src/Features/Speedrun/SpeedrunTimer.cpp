@@ -35,6 +35,7 @@ SpeedrunTimer::SpeedrunTimer()
     , state(TimerState::NotRunning)
     , rules()
     , category("any")
+    , offset(0)
 {
     this->liveSplit = std::make_unique<TimerInterface>();
     this->result = std::make_unique<TimerResult>();
@@ -58,7 +59,7 @@ void SpeedrunTimer::Start(const int* engineTicks)
         this->liveSplit.get()->SetAction(TimerAction::Start);
     }
 
-    this->total = 0;
+    this->total = this->offset;
     this->prevTotal = 0;
     this->state = TimerState::Running;
 
@@ -111,11 +112,13 @@ void SpeedrunTimer::Update(const int* engineTicks, const char* engineMap)
 void SpeedrunTimer::CheckRules(const int* engineTicks)
 {
     auto action = TimerAction::DoNothing;
+    TimerRule* source;
+
     for (auto& rule : this->rules) {
         if (!rule->madeAction) {
             action = rule->Dispatch();
             if (action != TimerAction::DoNothing) {
-                rule->madeAction = true;
+                source = rule;
                 break; // Only allow one action
             }
         }
@@ -126,12 +129,17 @@ void SpeedrunTimer::CheckRules(const int* engineTicks)
         console->Print("Speedrun split!\n");
         this->result.get()->Split(this->total, this->map);
         this->pb.get()->UpdateSplit(this->map);
+        source->madeAction = true;
         break;
     case TimerAction::Start:
         this->Start(engineTicks);
+        source->madeAction = true;
         break;
     case TimerAction::End:
-        this->Stop(engineTicks);
+        if (this->IsActive()) {
+            this->Stop(engineTicks);
+            source->madeAction = true;
+        }
     default:
         break;
     }
@@ -148,9 +156,15 @@ void SpeedrunTimer::Stop(bool addSegment)
         this->result.get()->EndSplit(this->total);
     } else {
         console->Print("Ready for new speedun!\n");
-        TimerRule::ResetAll();
-        this->InitRules();
+        this->Reset();
     }
+}
+void SpeedrunTimer::Reset()
+{
+    this->total = 0;
+    this->prevTotal = 0;
+    TimerRule::ResetAll();
+    this->InitRules();
 }
 int SpeedrunTimer::GetSession()
 {
@@ -158,7 +172,7 @@ int SpeedrunTimer::GetSession()
 }
 int SpeedrunTimer::GetTotal()
 {
-    return this->total;
+    return this->total + this->offset;
 }
 char* SpeedrunTimer::GetCurrentMap()
 {
@@ -183,7 +197,7 @@ void SpeedrunTimer::ReloadRules()
 {
     for (const auto& rule : this->rules) {
         if (!rule->Load()) {
-            console->Warning("Failed to load rule!\n");
+            console->Warning("Failed to load rule: %s -> %s\n", rule->categoryName, rule->mapName);
         }
     }
 }
@@ -202,7 +216,7 @@ void SpeedrunTimer::SetIntervalPerTick(const float* ipt)
     this->ipt = *ipt;
     this->liveSplit->SetIntervalPerTick(ipt);
 }
-float SpeedrunTimer::GetIntervalPerTick()
+const float SpeedrunTimer::GetIntervalPerTick()
 {
     return this->ipt;
 }
@@ -213,6 +227,14 @@ void SpeedrunTimer::SetCategory(const char* category)
 const char* SpeedrunTimer::GetCategory()
 {
     return this->category;
+}
+void SpeedrunTimer::SetOffset(const int offset)
+{
+    this->offset = offset;
+}
+const int SpeedrunTimer::GetOffset()
+{
+    return this->offset;
 }
 TimerResult* SpeedrunTimer::GetResult()
 {
@@ -481,4 +503,16 @@ CON_COMMAND(sar_speedrun_category, "Sets the category for a speedrun.\n")
     }
 
     console->Print("Current category: %s\n", speedrun->GetCategory());
+}
+CON_COMMAND(sar_speedrun_offset, "Sets offset in ticks at which the timer should start.\n")
+{
+    if (args.ArgC() == 2) {
+        if (speedrun->IsActive()) {
+            return console->Print("Cannot change offset during an active speedrun.\n");
+        }
+
+        speedrun->SetOffset(std::atoi(args[1]));
+    }
+
+    console->Print("Current offset: %i\n", speedrun->GetOffset());
 }

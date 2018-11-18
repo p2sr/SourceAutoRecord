@@ -35,6 +35,7 @@ private:
     std::unique_ptr<TimerResult> pb;
     std::vector<TimerRule*> rules;
     const char* category;
+    int offset;
 
 public:
     SpeedrunTimer();
@@ -47,16 +48,20 @@ public:
     void Update(const int* engineTicks, const char* engineMap);
     void CheckRules(const int* engineTicks);
     void Stop(bool addSegment = true);
+    void Reset();
 
     int GetSession();
     int GetTotal();
     char* GetCurrentMap();
 
     void SetIntervalPerTick(const float* ipt);
-    float GetIntervalPerTick();
+    const float GetIntervalPerTick();
 
     void SetCategory(const char* category);
     const char* GetCategory();
+
+    void SetOffset(const int offset);
+    const int GetOffset();
 
     void LoadRules(Game* game);
     void InitRules();
@@ -90,6 +95,7 @@ extern Command sar_speedrun_import;
 extern Command sar_speedrun_rules;
 extern Command sar_speedrun_all_rules;
 extern Command sar_speedrun_category;
+extern Command sar_speedrun_offset;
 
 extern Variable sar_speedrun_autostart;
 extern Variable sar_speedrun_autostop;
