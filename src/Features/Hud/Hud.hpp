@@ -39,3 +39,6 @@ extern Variable sar_hud_default_padding_x;
 extern Variable sar_hud_default_padding_y;
 extern Variable sar_hud_default_font_index;
 extern Variable sar_hud_default_font_color;
+extern Variable sar_hud_velocity_angle;
+extern Variable sar_hud_acceleration;
+extern Variable sar_hud_get_offset;

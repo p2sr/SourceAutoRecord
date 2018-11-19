@@ -46,3 +46,6 @@ Variable sar_hud_default_padding_x("sar_hud_default_padding_x", "2", 0, "X paddi
 Variable sar_hud_default_padding_y("sar_hud_default_padding_y", "2", 0, "Y padding of HUD.\n");
 Variable sar_hud_default_font_index("sar_hud_default_font_index", "0", 0, "Font index of HUD.\n");
 Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 255", "RGBA font color of HUD.\n", 0);
+Variable sar_hud_velocity_angle("sar_hud_velocity_angle", "0", "Draw the velocity angles.\n");
+Variable sar_hud_acceleration("sar_hud_acceleration", "0", 0, 2, "Draw the instant acceleration.\n");
+Variable sar_hud_get_offset("sar_hud_get_offset", "0", "Draw the offset specified.\n");
