@@ -34,7 +34,7 @@ private:
     std::unique_ptr<TimerResult> result;
     std::unique_ptr<TimerResult> pb;
     std::vector<TimerRule*> rules;
-    const char* category;
+    char category[16];
     int offset;
 
 public:

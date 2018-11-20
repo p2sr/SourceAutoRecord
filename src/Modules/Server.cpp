@@ -93,6 +93,10 @@ char* Server::GetEntityClassName(void* entity)
 {
     return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iClassName);
 }
+bool Server::IsPlayer(void* entity)
+{
+    return Memory::VMT<bool(*)(void*)>(entity, Offsets::IsPlayer)(entity);
+}
 
 // CGameMovement::CheckJumpButton
 DETOUR_T(bool, Server::CheckJumpButton)

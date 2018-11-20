@@ -16,8 +16,8 @@ public:
 public:
     Session();
     void Rebase(const int from);
-
     void Started(bool menu = false);
+    void Start();
     void Ended();
     void Changed();
     void Changed(int state);

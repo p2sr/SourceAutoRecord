@@ -96,6 +96,7 @@ int m_iEFlags;
 int m_flMaxspeed;
 int m_flGravity;
 int S_m_vecViewOffset;
+int IsPlayer;
 
 // CBasePlayer
 int m_fFlags;

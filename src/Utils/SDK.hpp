@@ -439,24 +439,6 @@ struct CEventQueue {
     int m_iListCount; // 56
 };
 
-struct CGlobalVarsBase {
-    float realtime; // 0
-    int framecount; // 4
-    float absoluteframetime; // 8
-    float curtime; // 12
-    float frametime; // 16
-    int maxClients; // 20
-    int tickcount; // 24
-    float interval_per_tick; // 28
-    float interpolation_amount; // 32
-    int simTicksThisFrame; // 36
-    int network_protocol; // 40
-    void* pSaveData; // 44
-    bool m_bClient; // 48
-    int nTimestampNetworkingBase; // 52
-    int nTimestampRandomizeWindow; // 56
-};
-
 struct CEntInfo {
     void* m_pEntity; // 0
     int m_SerialNumber; // 4
@@ -603,16 +585,53 @@ enum MapLoadType_t {
     MapLoad_Background = 3
 };
 
+#define FL_EDICT_FREE (1 << 1)
+
+struct CBaseEdict {
+    int m_fStateFlags; // 0
+    int m_NetworkSerialNumber; // 4
+    void* m_pNetworkable; // 8
+    void* m_pUnk; // 12
+
+    inline bool IsFree() const
+    {
+        return (m_fStateFlags & FL_EDICT_FREE) != 0;
+    }
+};
+
+struct edict_t : CBaseEdict {
+};
+
+struct CGlobalVarsBase {
+    float realtime; // 0
+    int framecount; // 4
+    float absoluteframetime; // 8
+    float curtime; // 12
+    float frametime; // 16
+    int maxClients; // 20
+    int tickcount; // 24
+    float interval_per_tick; // 28
+    float interpolation_amount; // 32
+    int simTicksThisFrame; // 36
+    int network_protocol; // 40
+    void* pSaveData; // 44
+    bool m_bClient; // 48
+    int nTimestampNetworkingBase; // 52
+    int nTimestampRandomizeWindow; // 56
+};
+
 struct CGlobalVars : CGlobalVarsBase {
     char* mapname; // 60
     int mapversion; // 64
     char* startspot; // 68
     MapLoadType_t eLoadType; // 72
-    bool bMapLoadFailed; // 76
-    bool deathmatch; // 80
-    bool coop; // 84
-    bool teamplay; // 88
-    int maxEntities; // 92
+    char bMapLoadFailed; // 76
+    char deathmatch; // 77
+    char coop; // 78
+    char teamplay; // 79
+    int maxEntities; // 80
+    int serverCount; // 84
+    edict_t* pEdicts; // 88
 };
 
 class IGameEvent {

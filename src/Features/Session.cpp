@@ -46,42 +46,45 @@ void Session::Started(bool menu)
     } else {
         if (engine->GetMaxClients() <= 1) {
             console->Print("Session Started!\n");
-            session->Rebase(*engine->tickcount);
-            timer->Rebase(*engine->tickcount);
-
-            speedrun->Unpause(engine->tickcount);
+            this->Start();
         }
-
-        if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
-            if (engine->demorecorder->isRecordingDemo) {
-                rebinder->UpdateIndex(*engine->demorecorder->m_nDemoNumber);
-            } else {
-                rebinder->UpdateIndex(rebinder->lastIndexNumber + 1);
-            }
-
-            rebinder->RebindSave();
-            rebinder->RebindReload();
-        }
-
-        if (sar_tas_autostart.GetBool()) {
-            tasQueuer->Start();
-        }
-        if (sar_replay_autorecord.GetBool()) {
-            tasReplaySystem->Record();
-        }
-        if (sar_replay_autoplay.GetBool()) {
-            tasReplaySystem->Play();
-        }
-        if (sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
-            speedrun->Start(engine->tickcount);
-        }
-
-        stepCounter->ResetTimer();
-        currentFrame = 0;
     }
 
     speedrun->ReloadRules();
     isInSession = true;
+}
+void Session::Start()
+{
+    session->Rebase(*engine->tickcount);
+    timer->Rebase(*engine->tickcount);
+    speedrun->Unpause(engine->tickcount);
+
+    if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
+        if (engine->demorecorder->isRecordingDemo) {
+            rebinder->UpdateIndex(*engine->demorecorder->m_nDemoNumber);
+        } else {
+            rebinder->UpdateIndex(rebinder->lastIndexNumber + 1);
+        }
+
+        rebinder->RebindSave();
+        rebinder->RebindReload();
+    }
+
+    if (sar_tas_autostart.GetBool()) {
+        tasQueuer->Start();
+    }
+    if (sar_replay_autorecord.GetBool()) {
+        tasReplaySystem->Record();
+    }
+    if (sar_replay_autoplay.GetBool()) {
+        tasReplaySystem->Play();
+    }
+    if (sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
+        speedrun->Start(engine->tickcount);
+    }
+
+    stepCounter->ResetTimer();
+    currentFrame = 0;
 }
 void Session::Ended()
 {

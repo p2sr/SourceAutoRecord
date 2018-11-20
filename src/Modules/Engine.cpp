@@ -7,6 +7,7 @@
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
 #include "EngineDemoRecorder.hpp"
+#include "Server.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -49,6 +50,17 @@ float Engine::ToTime(int tick)
 int Engine::GetLocalPlayerIndex()
 {
     return this->GetLocalPlayer(this->engineClient->ThisPtr());
+}
+edict_t* Engine::PEntityOfEntIndex(int iEntIndex)
+{
+    if (iEntIndex >= 0 && iEntIndex < server->gpGlobals->maxEntities) {
+        auto pEdict = reinterpret_cast<edict_t*>((uintptr_t)server->gpGlobals->pEdicts + iEntIndex * sizeof(edict_t));
+        if (!pEdict->IsFree()) {
+            return pEdict;
+        }
+    }
+
+    return nullptr;
 }
 QAngle Engine::GetAngles()
 {
@@ -321,7 +333,7 @@ bool Engine::Init()
             Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133;              // Default case
             Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29;                  // Continue loop
             Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(readCustomDataAddr); // Function that handles dem_customdata
-            
+
             this->demoSmootherPatch = new Memory::Patch();
             unsigned char nop3[] = { 0x90, 0x90, 0x90 };
             this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3);             // Nop rest

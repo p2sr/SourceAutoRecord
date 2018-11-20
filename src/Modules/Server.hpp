@@ -46,6 +46,7 @@ public:
     Vector GetViewOffset(void* entity);
     char* GetEntityName(void* entity);
     char* GetEntityClassName(void* entity);
+    bool IsPlayer(void* entity);
 
 public:
     // CGameMovement::CheckJumpButton

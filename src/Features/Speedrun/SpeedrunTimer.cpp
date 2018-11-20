@@ -228,7 +228,7 @@ const float SpeedrunTimer::GetIntervalPerTick()
 }
 void SpeedrunTimer::SetCategory(const char* category)
 {
-    this->category = category;
+    std::strncpy(this->category, category, sizeof(this->category));
 }
 const char* SpeedrunTimer::GetCategory()
 {

@@ -82,6 +82,7 @@ public:
     int GetSessionTick();
     float ToTime(int tick);
     int GetLocalPlayerIndex();
+    edict_t* PEntityOfEntIndex(int iEntIndex);
     QAngle GetAngles();
     void SetAngles(QAngle va);
     void SendToCommandBuffer(const char* text, int delay);

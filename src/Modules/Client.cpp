@@ -10,6 +10,7 @@
 
 #include "Console.hpp"
 #include "Engine.hpp"
+#include "Server.hpp"
 #include "VGui.hpp"
 
 #include "Game.hpp"
@@ -62,7 +63,14 @@ DETOUR(Client::HudUpdate, unsigned int a2)
                 console->DevMsg("[%i] %s\n", session->currentFrame, tas->command.c_str());
 
                 if (sar.game->version & SourceGame_Portal2Engine) {
-                    engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0);
+                    if (engine->GetMaxClients() <= 1) {
+                        engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0);
+                    } else {
+                        auto entity = engine->PEntityOfEntIndex(tas->splitScreen + 1);
+                        if (entity && !entity->IsFree() && server->IsPlayer(entity->m_pUnk)) {
+                            engine->ClientCommand(nullptr, entity, tas->command.c_str());
+                        }
+                    }
                 } else if (sar.game->version & SourceGame_HalfLife2Engine) {
                     engine->AddText(engine->s_CommandBuffer, tas->command.c_str(), 0);
                 }
@@ -176,9 +184,9 @@ bool Client::Init()
         if (sar.game->version & SourceGame_Portal2Engine) {
             if (sar.game->version & SourceGame_Portal2) {
                 auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
-                auto g_pClientMode = *reinterpret_cast<void**>((uintptr_t)GetClientMode + Offsets::g_pClientMode);
-                clientMode = *reinterpret_cast<void**>((uintptr_t)g_pClientMode);
-                clientMode2 = *reinterpret_cast<void**>((uintptr_t)g_pClientMode + sizeof(void*));
+                auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
+                clientMode = Memory::Deref<void*>(g_pClientMode);
+                clientMode2 = Memory::Deref<void*>(g_pClientMode + sizeof(void*));
             } else {
                 typedef void* (*_GetClientMode)();
                 auto GetClientMode = Memory::Read<_GetClientMode>(HudProcessInput + Offsets::GetClientMode);

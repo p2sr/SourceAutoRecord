@@ -92,7 +92,7 @@ void Portal2::LoadOffsets()
     g_InRestore = 8; // CServerGameDLL::GameFrame
     ServiceEventQueue = 249; // CServerGameDLL::GameFrame
     g_EventQueue = 1; // ServiceEventQueue
-    GetAllServerClasses = 10; // CServerGameDLL (TODO)
+    GetAllServerClasses = 10; // CServerGameDLL
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 39; // CServerGameDLL::Think
     gpGlobals = 14; // UTIL_PlayerByIndex
@@ -104,10 +104,11 @@ void Portal2::LoadOffsets()
     S_m_angAbsRotation = 480; // CBaseEntity (TODO)
     m_iEFlags = 208; // CBaseEntity (TODO)
     m_flGravity = 792; // CBaseEntity (TODO)
-    NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList (TODO)
-    GetIServerEntity = 2; // CServerTools (TODO)
-    m_EntPtrArray = 48; // CServerTools::GetIServerEntity (TODO)
+    NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
+    GetIServerEntity = 1; // CServerTools
+    m_EntPtrArray = 61; // CServerTools::GetIServerEntity
     ClientCommand = 39; // CVEngineServer
+    IsPlayer = 85; // CBasePlayer
 
     // client.dll
 
@@ -118,7 +119,7 @@ void Portal2::LoadOffsets()
     C_m_angAbsRotation = 192; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
     GetClientMode = 4; // CHLClient::HudProcessInput
-    g_pClientMode = 25; // GetClientMode (TODO)
+    g_pClientMode = 19; // GetClientMode
     CreateMove = 24; // ClientModeShared
     GetName = 10; // CHud
     GetHud = 125; // cc_leaderboard_enable

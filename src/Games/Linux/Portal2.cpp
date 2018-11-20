@@ -105,10 +105,11 @@ void Portal2::LoadOffsets()
     S_m_angAbsRotation = 480; // CBaseEntity
     m_iEFlags = 208; // CBaseEntity
     m_flGravity = 792; // CBaseEntity
-    NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList
+    NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
     GetIServerEntity = 2; // CServerTools
     m_EntPtrArray = 48; // CServerTools::GetIServerEntity
     ClientCommand = 39; // CVEngineServer
+    IsPlayer = 86; // CBasePlayer
 
     // client.so
 
