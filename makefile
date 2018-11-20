@@ -1,7 +1,6 @@
 BINARY=sar.so
 STEAM=/home/nekz/.steam/steamapps/common/
 SDIR=src/
-LDIR=lib/
 ODIR=obj/
 
 SRCS=$(wildcard $(SDIR)*.cpp)
@@ -21,42 +20,44 @@ OBJS=$(patsubst $(SDIR)%.cpp, $(ODIR)%.o, $(SRCS))
 
 CC=g++
 STFU=-Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas
-CFLAGS=-std=c++17 -m32 -fPIC -static-libstdc++ -shared -Wall $(STFU) -I$(LDIR) -I$(SDIR)
+CFLAGS=-std=c++17 -m32 -fPIC -static-libstdc++ -shared -Wall $(STFU) -I$(SDIR)
 EXPORT=cp -fu
+PRINT=echo
+DELETE=rm -rf
+CREATE=mkdir -p
 
-all: dirs | sar
+all: pre sar post
 
 sar: $(OBJS)
 	@$(CC) $(CFLAGS) -o $(BINARY) $^ -lstdc++fs
-	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal 2/$(BINARY)"
-	@$(EXPORT) "$(BINARY)" "$(STEAM)Aperture Tag/$(BINARY)"
-	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal Stories Mel/$(BINARY)"
-	@$(EXPORT) "$(BINARY)" "$(STEAM)The Stanley Parable/$(BINARY)"
-	@$(EXPORT) "$(BINARY)" "$(STEAM)The Beginners Guide/$(BINARY)"
-	@$(EXPORT) "$(BINARY)" "$(STEAM)Half-Life 2/$(BINARY)"
-	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal/$(BINARY)"
 
 $(ODIR)%.o: $(SDIR)%.cpp $(SDIR)%.hpp
-	@echo $@
+	@$(PRINT) $@
 	@$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	@rm -rf $(ODIR)SAR.o $(BINARY)
+	@$(DELETE) $(OBJS) $(BINARY)
 
-clean-all:
-	@rm -rf $(OBJS) $(BINARY)
+pre:
+	@$(CREATE) $(ODIR)
+	@$(CREATE) $(ODIR)Features/
+	@$(CREATE) $(ODIR)Features/Demo/
+	@$(CREATE) $(ODIR)Features/Hud/
+	@$(CREATE) $(ODIR)Features/Routing/
+	@$(CREATE) $(ODIR)Features/Speedrun/
+	@$(CREATE) $(ODIR)Features/Speedrun/Rules
+	@$(CREATE) $(ODIR)Features/Stats/
+	@$(CREATE) $(ODIR)Features/Tas/
+	@$(CREATE) $(ODIR)Features/Timer/
+	@$(CREATE) $(ODIR)Games/Linux/
+	@$(CREATE) $(ODIR)Modules/
+	@$(CREATE) $(ODIR)Utils/
 
-dirs:
-	@mkdir -p $(ODIR)
-	@mkdir -p $(ODIR)Features/
-	@mkdir -p $(ODIR)Features/Demo/
-	@mkdir -p $(ODIR)Features/Hud/
-	@mkdir -p $(ODIR)Features/Routing/
-	@mkdir -p $(ODIR)Features/Speedrun/
-	@mkdir -p $(ODIR)Features/Speedrun/Rules
-	@mkdir -p $(ODIR)Features/Stats/
-	@mkdir -p $(ODIR)Features/Tas/
-	@mkdir -p $(ODIR)Features/Timer/
-	@mkdir -p $(ODIR)Games/Linux/
-	@mkdir -p $(ODIR)Modules/
-	@mkdir -p $(ODIR)Utils/
+post:
+	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal 2/$(BINARY)"
+#	@$(EXPORT) "$(BINARY)" "$(STEAM)Aperture Tag/$(BINARY)"
+#	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal Stories Mel/$(BINARY)"
+#	@$(EXPORT) "$(BINARY)" "$(STEAM)The Stanley Parable/$(BINARY)"
+#	@$(EXPORT) "$(BINARY)" "$(STEAM)The Beginners Guide/$(BINARY)"
+#	@$(EXPORT) "$(BINARY)" "$(STEAM)Half-Life 2/$(BINARY)"
+#	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal/$(BINARY)"

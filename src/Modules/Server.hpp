@@ -36,11 +36,6 @@ private:
 public:
     void* GetPlayer();
     int GetPortals();
-    CEntInfo* GetEntityInfoByIndex(int index);
-    CEntInfo* GetEntityInfoByName(const char* name);
-    CEntInfo* GetEntityInfoByClassName(const char* name);
-    char* GetEntityName(void* entity);
-    char* GetEntityClassName(void* entity);
     Vector GetAbsOrigin(void* entity);
     QAngle GetAbsAngles(void* entity);
     Vector GetLocalVelocity(void* entity);
@@ -49,10 +44,8 @@ public:
     float GetMaxSpeed(void* entity);
     float GetGravity(void* entity);
     Vector GetViewOffset(void* entity);
-    void GetOffset(const char* className, const char* propName, int& offset);
-
-private:
-    int16_t FindOffset(SendTable* table, const char* propName);
+    char* GetEntityName(void* entity);
+    char* GetEntityClassName(void* entity);
 
 public:
     // CGameMovement::CheckJumpButton

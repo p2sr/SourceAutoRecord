@@ -1,5 +1,6 @@
 #include "VGui.hpp"
 
+#include "Features/EntityList.hpp"
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
 #include "Features/Routing/EntityInspector.hpp"
@@ -166,15 +167,13 @@ DETOUR(VGui::Paint, int mode)
     if (sar_hud_inspection.GetBool()) {
         DrawElement(inspector->IsRunning() ? "inspection (recording)" : "inspection");
 
-        auto info = server->GetEntityInfoByIndex(inspector->entityIndex);
+        auto info = entityList->GetEntityInfoByIndex(inspector->entityIndex);
         if (info && info->m_pEntity) {
             DrawElement("name: %s", server->GetEntityName(info->m_pEntity));
             DrawElement("class: %s", server->GetEntityClassName(info->m_pEntity));
-            DrawElement("offset: %s", *reinterpret_cast<int*>((uintptr_t)info->m_pEntity + inspector->offset));
         } else {
             DrawElement("name: -");
             DrawElement("class: -");
-            DrawElement("offset: -");
         }
 
         auto data = inspector->GetData();

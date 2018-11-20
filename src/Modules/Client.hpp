@@ -11,6 +11,7 @@ class Client : public Module {
 private:
     Interface* g_ClientDLL = nullptr;
     Interface* g_pClientMode = nullptr;
+    Interface* g_pClientMode2 = nullptr;
     Interface* g_HUDChallengeStats = nullptr;
     Interface* s_EntityList = nullptr;
 
@@ -33,10 +34,6 @@ public:
     QAngle GetAbsAngles();
     Vector GetLocalVelocity();
     Vector GetViewOffset();
-    void GetOffset(const char* className, const char* propName, int& offset);
-
-private:
-    int16_t FindOffset(RecvTable* table, const char* propName);
 
 public:
     // CHLClient::HudUpdate
@@ -44,6 +41,7 @@ public:
 
     // ClientModeShared::CreateMove
     DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd)
+    DECL_DETOUR(CreateMove2, float flInputSampleTime, CUserCmd* cmd)
 
     // CHud::GetName
     DECL_DETOUR_T(const char*, GetName)

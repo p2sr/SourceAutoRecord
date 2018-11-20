@@ -1,7 +1,9 @@
 #include "Replay.hpp"
 
+#include "Variable.hpp"
+
 Replay::Replay()
-    : views(1)
+    : views(2)
     , playIndex(0)
 {
 }
@@ -36,7 +38,7 @@ void Replay::Play(CUserCmd* cmd, int slot)
     if (this->Ended())
         return;
 
-    auto frame = this->views[slot].frames[this->playIndex++];
+    auto frame = this->views[slot].frames[this->playIndex];
 
     cmd->viewangles = frame.viewangles;
     cmd->forwardmove = frame.forwardmove;
@@ -46,4 +48,12 @@ void Replay::Play(CUserCmd* cmd, int slot)
     cmd->impulse = frame.impulse;
     cmd->mousedx = frame.mousedx;
     cmd->mousedy = frame.mousedy;
+
+    if (slot == 0) {
+        this->playIndex++;
+    }
+}
+int Replay::ViewSize()
+{
+    return (this->views[1].frames.empty()) ? 1 : 2;
 }

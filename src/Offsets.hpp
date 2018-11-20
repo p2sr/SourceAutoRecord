@@ -155,6 +155,9 @@ extern int m_bWaitEnabled;
 // CServerTools
 extern int GetIServerEntity;
 
+// CVEngineServer
+extern int ClientCommand;
+
 // Others
 extern int tickcount;
 extern int interval_per_tick;
@@ -194,4 +197,5 @@ extern int NUM_ENT_ENTRIES;
 extern int m_iClassName;
 extern int m_iName;
 extern int m_EntPtrArray;
+extern int g_pClientMode;
 }

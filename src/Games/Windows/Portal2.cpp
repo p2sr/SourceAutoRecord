@@ -107,6 +107,7 @@ void Portal2::LoadOffsets()
     NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList (TODO)
     GetIServerEntity = 2; // CServerTools (TODO)
     m_EntPtrArray = 48; // CServerTools::GetIServerEntity (TODO)
+    ClientCommand = 39; // CVEngineServer
 
     // client.dll
 
@@ -117,6 +118,7 @@ void Portal2::LoadOffsets()
     C_m_angAbsRotation = 192; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
     GetClientMode = 4; // CHLClient::HudProcessInput
+    g_pClientMode = 25; // GetClientMode (TODO)
     CreateMove = 24; // ClientModeShared
     GetName = 10; // CHud
     GetHud = 125; // cc_leaderboard_enable

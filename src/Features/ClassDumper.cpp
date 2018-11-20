@@ -118,17 +118,27 @@ void ClassDumper::DumpRecvTable(std::ofstream& file, RecvTable* table, int& leve
 
 // Commands
 
-CON_COMMAND(sar_dump_serverclasses, "Dumps all server classes to a file.\n")
+CON_COMMAND(sar_dump_server_classes, "Dumps all server classes to a file.\n")
 {
     classDumper->DumpServerClasses();
 }
-CON_COMMAND(sar_list_serverclasses, "Lists all server classes.\n")
+CON_COMMAND(sar_dump_client_classes, "Dumps all client classes to a file.\n")
+{
+    classDumper->DumpClientClasses();
+}
+CON_COMMAND(sar_list_server_classes, "Lists all server classes.\n")
 {
     for (auto sclass = server->GetAllServerClasses(); sclass; sclass = sclass->m_pNext) {
         console->Print("%s\n", sclass->m_pNetworkName);
     }
 }
-CON_COMMAND(sar_find_serverclass, "Finds specific server class tables and props with their offset.\n")
+CON_COMMAND(sar_list_client_classes, "Lists all client classes.\n")
+{
+    for (auto cclass = client->GetAllClasses(); cclass; cclass = cclass->m_pNext) {
+        console->Print("%s\n", cclass->m_pNetworkName);
+    }
+}
+CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props with their offset.\n")
 {
     if (args.ArgC() != 2) {
         return console->Print("sar_find_serverclass <class_name> : "
@@ -175,28 +185,7 @@ CON_COMMAND(sar_find_serverclass, "Finds specific server class tables and props 
         }
     }
 }
-CON_COMMAND(sar_find_serverclass_prop_offset, "Finds prop offset in specified server class.\n")
-{
-    if (args.ArgC() != 3) {
-        return console->Print("sar_find_serverclass_prop_offset <class_name> <prop_name> : "
-                              "Finds prop offset in specified server class.\n");
-    }
-
-    auto offset = 0;
-    server->GetOffset(args[1], args[2], offset);
-    console->Print("%s::%s = %d\n", args[1], args[2], offset);
-}
-CON_COMMAND(sar_dump_clientclasses, "Dumps all client classes to a file.\n")
-{
-    classDumper->DumpClientClasses();
-}
-CON_COMMAND(sar_list_clientclasses, "Lists all client classes.\n")
-{
-    for (auto cclass = client->GetAllClasses(); cclass; cclass = cclass->m_pNext) {
-        console->Print("%s\n", cclass->m_pNetworkName);
-    }
-}
-CON_COMMAND(sar_find_clientclass, "Finds specific client class tables and props with their offset.\n")
+CON_COMMAND(sar_find_client_class, "Finds specific client class tables and props with their offset.\n")
 {
     if (args.ArgC() != 2) {
         return console->Print("sar_find_clientclass <class_name> : "
@@ -234,15 +223,4 @@ CON_COMMAND(sar_find_clientclass, "Finds specific client class tables and props 
             break;
         }
     }
-}
-CON_COMMAND(sar_find_clientclass_prop_offset, "Finds prop offset in specified client class.\n")
-{
-    if (args.ArgC() != 3) {
-        return console->Print("sar_find_clientclass_prop_offset <class_name> <prop_name> : "
-                              "Finds prop offset in specified client class.\n");
-    }
-
-    auto offset = 0;
-    client->GetOffset(args[1], args[2], offset);
-    console->Print("%s::%s = %d\n", args[1], args[2], offset);
 }

@@ -136,6 +136,7 @@ void Cheats::Init()
     sar_sr_hud_font_index.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
     sar_speedrun_autostart.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
     sar_speedrun_autostop.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_speedrun_standard.UniqueFor(SourceGame_Portal2);
     sar_duckjump.UniqueFor(SourceGame_Portal2);
 
     startbhop.UniqueFor(SourceGame_TheStanleyParable);
@@ -148,8 +149,8 @@ void Cheats::Init()
     sar_speedrun_export.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
     sar_speedrun_export_pb.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
     sar_speedrun_import.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_rules.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_all_rules.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_speedrun_list_rules.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
+    sar_speedrun_list_all_rules.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
     sar_speedrun_category.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
     sar_speedrun_start.UniqueFor(SourceGame_Portal2 | SourceGame_Portal2Engine);
     sar_speedrun_stop.UniqueFor(SourceGame_Portal2 | SourceGame_Portal2Engine);

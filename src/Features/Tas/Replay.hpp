@@ -3,6 +3,8 @@
 
 #include "Utils/SDK.hpp"
 
+#include "Variable.hpp"
+
 struct ReplayFrame {
     QAngle viewangles;
     float forwardmove;
@@ -32,4 +34,5 @@ public:
     void Resize();
     void Record(CUserCmd* cmd, int slot);
     void Play(CUserCmd* cmd, int slot);
+    int ViewSize();
 };

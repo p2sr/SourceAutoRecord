@@ -2,34 +2,8 @@
 
 #include <cstring>
 
-#include "Features/ClassDumper.hpp"
-#include "Features/Config.hpp"
-#include "Features/Cvars.hpp"
-#include "Features/Listener.hpp"
-#include "Features/Rebinder.hpp"
-#include "Features/Routing/EntityInspector.hpp"
-#include "Features/Routing/Tracer.hpp"
-#include "Features/Session.hpp"
-#include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Stats/Stats.hpp"
-#include "Features/StepCounter.hpp"
-#include "Features/Summary.hpp"
-#include "Features/Tas/CommandQueuer.hpp"
-#include "Features/Tas/ReplaySystem.hpp"
-#include "Features/Tas/AutoAiming.hpp"
-#include "Features/Teleporter.hpp"
-#include "Features/Timer/Timer.hpp"
-#include "Features/WorkshopList.hpp"
-
-#include "Modules/Client.hpp"
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
-#include "Modules/InputSystem.hpp"
-#include "Modules/Scheme.hpp"
-#include "Modules/Server.hpp"
-#include "Modules/Surface.hpp"
-#include "Modules/Tier1.hpp"
-#include "Modules/VGui.hpp"
+#include "Features.hpp"
+#include "Modules.hpp"
 
 #include "Cheats.hpp"
 #include "Command.hpp"
@@ -74,10 +48,12 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Stats>(&stats);
             this->features->AddFeature<CommandQueuer>(&tasQueuer);
             this->features->AddFeature<ReplaySystem>(&tasReplaySystem);
-			this->features->AddFeature<AutoAiming>(&autoAiming);
+            this->features->AddFeature<AutoAiming>(&autoAiming);
             this->features->AddFeature<Timer>(&timer);
             this->features->AddFeature<EntityInspector>(&inspector);
             this->features->AddFeature<ClassDumper>(&classDumper);
+            this->features->AddFeature<EntityList>(&entityList);
+            this->features->AddFeature<OffsetFinder>(&offsetFinder);
 
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);

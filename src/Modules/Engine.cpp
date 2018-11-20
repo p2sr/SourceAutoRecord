@@ -1,7 +1,5 @@
 #include "Engine.hpp"
 
-#include <stdarg.h>
-
 #include "Features/Cvars.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -38,15 +36,6 @@ REDECL(Engine::ReadCustomData);
 void Engine::ExecuteCommand(const char* cmd)
 {
     this->ClientCmd(this->engineClient->ThisPtr(), cmd);
-}
-void Engine::ClientCommand(const char* fmt, ...)
-{
-    va_list argptr;
-    va_start(argptr, fmt);
-    char data[1024];
-    vsnprintf(data, sizeof(data), fmt, argptr);
-    va_end(argptr);
-    this->ClientCmd(this->engineClient->ThisPtr(), data);
 }
 int Engine::GetSessionTick()
 {
@@ -338,6 +327,9 @@ bool Engine::Init()
             this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3);             // Nop rest
         }
 #endif
+        if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
+            this->ClientCommand = g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
+        }
     }
 
     // TODO: windows

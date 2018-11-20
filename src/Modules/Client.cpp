@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "Features/OffsetFinder.hpp"
 #include "Features/Session.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Tas/ReplaySystem.hpp"
@@ -22,6 +23,7 @@ Variable hide_gun_when_holding;
 
 REDECL(Client::HudUpdate);
 REDECL(Client::CreateMove);
+REDECL(Client::CreateMove2);
 REDECL(Client::GetName);
 
 void* Client::GetPlayer()
@@ -47,50 +49,6 @@ Vector Client::GetViewOffset()
 {
     auto player = this->GetPlayer();
     return (player) ? *(Vector*)((uintptr_t)player + Offsets::C_m_vecViewOffset) : Vector();
-}
-void Client::GetOffset(const char* className, const char* propName, int& offset)
-{
-    if (this->GetAllClasses) {
-        for (auto curClass = this->GetAllClasses(); curClass; curClass = curClass->m_pNext) {
-            if (!std::strcmp(curClass->m_pNetworkName, className)) {
-                auto result = FindOffset(curClass->m_pRecvTable, propName);
-                if (result != 0) {
-                    console->DevMsg("Found %s::%s at %i (client-side)\n", className, propName, result);
-                    offset = result;
-                }
-                break;
-            }
-        }
-    }
-
-    if (offset == 0) {
-        console->DevWarning("Failed to find offset for: %s::%s (client-side)\n", className, propName);
-    }
-}
-int16_t Client::FindOffset(RecvTable* table, const char* propName)
-{
-    for (int i = 0; i < table->m_nProps; ++i) {
-        auto prop = table->m_pProps[i];
-
-        auto name = prop.m_pVarName;
-        auto offset = prop.m_Offset;
-        auto type = prop.m_RecvType;
-        auto nextTable = prop.m_pDataTable;
-
-        if (!std::strcmp(name, propName)) {
-            return offset;
-        }
-
-        if (type != SendPropType::DPT_DataTable) {
-            continue;
-        }
-
-        if (auto nextOffset = FindOffset(nextTable, propName)) {
-            return offset + nextOffset;
-        }
-    }
-
-    return 0;
 }
 
 // CHLClient::HudUpdate
@@ -139,6 +97,23 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
     }
 
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
+}
+DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
+{
+    if (cmd->command_number) {
+        if (tasReplaySystem->IsPlaying()) {
+            auto replay = tasReplaySystem->GetCurrentReplay();
+            if (replay->Ended()) {
+                tasReplaySystem->Stop();
+            } else {
+                replay->Play(cmd, 1);
+            }
+        } else if (tasReplaySystem->IsRecording()) {
+            tasReplaySystem->GetCurrentReplay()->Record(cmd, 1);
+        }
+    }
+
+    return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
 }
 
 // CHud::GetName
@@ -197,10 +172,18 @@ bool Client::Init()
 
         auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
         void* clientMode = nullptr;
+        void* clientMode2 = nullptr;
         if (sar.game->version & SourceGame_Portal2Engine) {
-            typedef void* (*_GetClientMode)();
-            auto GetClientMode = Memory::Read<_GetClientMode>(HudProcessInput + Offsets::GetClientMode);
-            clientMode = GetClientMode();
+            if (sar.game->version & SourceGame_Portal2) {
+                auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
+                auto g_pClientMode = *reinterpret_cast<void**>((uintptr_t)GetClientMode + Offsets::g_pClientMode);
+                clientMode = *reinterpret_cast<void**>((uintptr_t)g_pClientMode);
+                clientMode2 = *reinterpret_cast<void**>((uintptr_t)g_pClientMode + sizeof(void*));
+            } else {
+                typedef void* (*_GetClientMode)();
+                auto GetClientMode = Memory::Read<_GetClientMode>(HudProcessInput + Offsets::GetClientMode);
+                clientMode = GetClientMode();
+            }
         } else if (sar.game->version & SourceGame_HalfLife2Engine) {
             clientMode = Memory::DerefDeref<void*>(HudProcessInput + Offsets::GetClientMode);
         }
@@ -208,14 +191,18 @@ bool Client::Init()
         if (this->g_pClientMode = Interface::Create(clientMode)) {
             this->g_pClientMode->Hook(Client::CreateMove_Hook, Client::CreateMove, Offsets::CreateMove);
         }
+
+        if (this->g_pClientMode2 = Interface::Create(clientMode2)) {
+            this->g_pClientMode2->Hook(Client::CreateMove2_Hook, Client::CreateMove2, Offsets::CreateMove);
+        }
     }
 
     if (this->s_EntityList) {
         this->GetClientEntity = this->s_EntityList->Original<_GetClientEntity>(Offsets::GetClientEntity, readJmp);
     }
 
-    this->GetOffset("CBasePlayer", "m_vecVelocity[0]", Offsets::C_m_vecVelocity);
-    this->GetOffset("CBasePlayer", "m_vecViewOffset[0]", Offsets::C_m_vecViewOffset);
+    offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
+    offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
 
     return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }
@@ -223,6 +210,7 @@ void Client::Shutdown()
 {
     Interface::Delete(this->g_ClientDLL);
     Interface::Delete(this->g_pClientMode);
+    Interface::Delete(this->g_pClientMode2);
     Interface::Delete(this->g_HUDChallengeStats);
     Interface::Delete(this->s_EntityList);
 }

@@ -10,8 +10,10 @@
 #include "Command.hpp"
 #include "Variable.hpp"
 
-Variable sar_replay_autorecord("sar_replay_autorecord", "0", "Starts recording inputs on first frame after a load.\n");
-Variable sar_replay_autoplay("sar_replay_autoplay", "0", "Starts playing back recorded inputs on first frame after a load.\n");
+Variable sar_replay_autorecord("sar_replay_autorecord", "0",
+    "Starts recording inputs on first frame after a load.\n");
+Variable sar_replay_autoplay("sar_replay_autoplay", "0",
+    "Starts playing back recorded inputs on first frame after a load.\n");
 
 ReplaySystem* tasReplaySystem;
 
@@ -22,13 +24,16 @@ ReplaySystem::ReplaySystem()
 {
     this->hasLoaded = true;
 }
+ReplaySystem::~ReplaySystem()
+{
+    this->DeleteAll();
+}
 void ReplaySystem::Record(bool rerecord)
 {
     this->isRecording = true;
     if (rerecord && this->AnyReplaysLoaded()) {
         this->isPlaying = false;
-        auto replay = this->GetCurrentReplay();
-        replay->Resize();
+        this->GetCurrentReplay()->Resize();
     } else {
         this->DeleteAll();
         this->NewReplay();
@@ -78,11 +83,11 @@ void ReplaySystem::MergeAll()
         return console->Print("Need at least two replays for a merge.\n");
     }
 
-    auto viewSize = this->GetCurrentReplay()->views.size();
+    auto viewSize = this->GetCurrentReplay()->ViewSize();
     auto baseReplay = new Replay();
 
     for (const auto& replay : this->replays) {
-        if (viewSize != replay->views.size()) {
+        if (viewSize != replay->ViewSize()) {
             console->Warning("Ignored different view size between replays!\n");
         }
 
@@ -95,6 +100,38 @@ void ReplaySystem::MergeAll()
     }
 
     this->DeleteAll();
+    this->replays.push_back(baseReplay);
+}
+void ReplaySystem::MergeViews()
+{
+    if (this->replays.size() < 2) {
+        return console->Print("Need at least two replays for a merge.\n");
+    }
+
+    auto replay = this->GetCurrentReplay();
+    auto replay2 = this->replays[this->replays.size() - 2];
+
+    auto viewSize = replay->ViewSize();
+    if (viewSize != replay2->ViewSize()) {
+        return console->Print("Replays have different view size!\n");
+    }
+
+    if (viewSize != 2) {
+        return console->Print("Replay view size of 2 is required!\n");
+    }
+
+    auto baseReplay = new Replay();
+    baseReplay->views[0].frames.insert(
+        baseReplay->views[0].frames.end(),
+        replay->views[0].frames.begin(),
+        replay->views[0].frames.end());
+    baseReplay->views[1].frames.insert(
+        baseReplay->views[1].frames.end(),
+        replay2->views[1].frames.begin(),
+        replay2->views[1].frames.end());
+
+    this->DeleteReplay();
+    this->DeleteReplay();
     this->replays.push_back(baseReplay);
 }
 void ReplaySystem::NewReplay()
@@ -131,7 +168,7 @@ void ReplaySystem::Export(std::string filePath, int index)
     file << SAR_TAS_REPLAY_HEADER002 << std::endl;
 
     auto replay = this->replays[index];
-    auto viewSize = (int)replay->views.size();
+    auto viewSize = (int)replay->ViewSize();
     file.write((char*)&viewSize, sizeof(viewSize));
 
     auto frameIndex = 0;
@@ -188,8 +225,8 @@ void ReplaySystem::Import(std::string filePath)
         auto viewSize = 0;
         file.read((char*)&viewSize, sizeof(viewSize));
 
-        if (viewSize != 1) {
-            console->Print("Invalid view size.\n");
+        if (viewSize != 1 && viewSize != 2) {
+            console->Print("Invalid view size: %i\n", viewSize);
             return file.close();
         }
 
@@ -209,7 +246,6 @@ void ReplaySystem::Import(std::string filePath)
             }
         }
         this->replays.push_back(replay);
-
     } else {
         console->Print("Invalid file format!\n");
         return file.close();
@@ -218,6 +254,8 @@ void ReplaySystem::Import(std::string filePath)
     console->Print("Imported TAS replay!\n");
     file.close();
 }
+
+// Commands
 
 CON_COMMAND(sar_replay_record, "Starts recording user inputs.\n")
 {
@@ -254,9 +292,13 @@ CON_COMMAND(sar_replay_stop, "Stops recording or playing user inputs.\n")
 {
     tasReplaySystem->Stop();
 }
-CON_COMMAND(sar_replay_merge, "Merges all replays into one.\n")
+CON_COMMAND(sar_replay_merge_all, "Merges all replays into one.\n")
 {
     tasReplaySystem->MergeAll();
+}
+CON_COMMAND(sar_replay_merge_views, "Replaces last replay's second view with second to last replay's second view.\n")
+{
+    tasReplaySystem->MergeViews();
 }
 CON_COMMAND(sar_replay_export, "Exports replay to a file.\n")
 {

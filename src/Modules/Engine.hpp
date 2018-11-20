@@ -36,6 +36,7 @@ public:
     using _RemoveListener = bool(__func*)(void* thisptr, IGameEventListener2* listener);
     using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
     using _AddText = void(__func*)(void* thisptr, const char* pText, int nTickDelay);
+    using _ClientCommand = int(*)(void* thisptr, void* pEdict, const char* szFmt, ...);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -62,6 +63,7 @@ public:
     _AddText AddText = nullptr;
     _ScreenPosition ScreenPosition = nullptr;
     _ConPrintEvent ConPrintEvent = nullptr;
+    _ClientCommand ClientCommand = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;
@@ -77,7 +79,6 @@ public:
 
 public:
     void ExecuteCommand(const char* cmd);
-    void ClientCommand(const char* fmt, ...);
     int GetSessionTick();
     float ToTime(int tick);
     int GetLocalPlayerIndex();

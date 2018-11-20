@@ -2,6 +2,9 @@
 
 #include <vector>
 
+#include "Features/EntityList.hpp"
+#include "Features/OffsetFinder.hpp"
+
 #include "Modules/Console.hpp"
 #include "Modules/Server.hpp"
 
@@ -44,8 +47,8 @@ TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapN
 bool TimerRule::Load()
 {
     auto info = (this->searchMode == SearchMode::Classes)
-        ? server->GetEntityInfoByClassName(this->entityName)
-        : server->GetEntityInfoByName(this->entityName);
+        ? entityList->GetEntityInfoByClassName(this->entityName)
+        : entityList->GetEntityInfoByName(this->entityName);
 
     if (info) {
         this->entityPtr = info->m_pEntity;
@@ -58,7 +61,7 @@ bool TimerRule::Load()
     }
 
     if (this->callbackType != 0) {
-        server->GetOffset(this->className, this->propName, this->propOffset);
+        offsetFinder->ServerSide(this->className, this->propName, &this->propOffset);
         return this->isActive = (this->entityPtr != nullptr && this->propOffset != 0);
     }
 

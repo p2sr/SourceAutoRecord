@@ -3,8 +3,7 @@
 
 #include "Features/Feature.hpp"
 
-#include "Utils/SDK.hpp"
-
+#include "Command.hpp"
 #include "Variable.hpp"
 
 #define SAR_TAS_REPLAY_HEADER001 "sar-tas-replay v1.7"
@@ -20,6 +19,7 @@ private:
 
 public:
     ReplaySystem();
+    ~ReplaySystem();
     void Record(bool rerecord = false);
     void Play();
     void Stop();
@@ -29,6 +29,7 @@ public:
     bool AnyReplaysLoaded();
     void DeleteAll();
     void MergeAll();
+    void MergeViews();
 
 private:
     void NewReplay();
@@ -43,3 +44,14 @@ extern ReplaySystem* tasReplaySystem;
 
 extern Variable sar_replay_autorecord;
 extern Variable sar_replay_autoplay;
+
+extern Command sar_replay_record;
+extern Command sar_replay_record_again;
+extern Command sar_replay_play;
+extern Command sar_replay_stop;
+extern Command sar_replay_merge_all;
+extern Command sar_replay_merge_views;
+extern Command sar_replay_export;
+extern Command sar_replay_export_at;
+extern Command sar_replay_import;
+extern Command sar_replay_import2;

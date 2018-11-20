@@ -181,11 +181,11 @@ int sar_ihud_setpos_CompletionFunc(const char* partial,
 {
     const char* cmd = "sar_ihud_setpos ";
     char* match = (char*)partial;
-    if (!std::strstr(cmd, match)) {
+    if (!std::strstr(partial, cmd)) {
         match = match + std::strlen(cmd);
     }
 
-    static std::vector<std::string> positions = std::vector<std::string>{
+    static auto positions = std::vector<std::string>{
         std::string("top left"),
         std::string("top center"),
         std::string("top right"),
@@ -198,7 +198,8 @@ int sar_ihud_setpos_CompletionFunc(const char* partial,
     };
 
     // Filter items
-    std::vector<std::string> items;
+    static auto items = std::vector<std::string>(positions.size());
+    items.clear();
     for (auto& pos : positions) {
         if (std::strlen(match) != std::strlen(cmd)) {
             if (std::strstr(pos.c_str(), match)) {

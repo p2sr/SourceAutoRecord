@@ -20,8 +20,12 @@
 #include "Game.hpp"
 #include "Variable.hpp"
 
-Variable sar_speedrun_autostart("sar_speedrun_autostart", "0", "Starts speedrun timer automatically on first frame after a load.\n");
-Variable sar_speedrun_autostop("sar_speedrun_autostop", "0", "Stops speedrun timer automatically when going into the menu.\n");
+Variable sar_speedrun_autostart("sar_speedrun_autostart", "0",
+    "Starts speedrun timer automatically on first frame after a load.\n");
+Variable sar_speedrun_autostop("sar_speedrun_autostop", "0",
+    "Stops speedrun timer automatically when going into the menu.\n");
+Variable sar_speedrun_standard("sar_speedrun_standard", "1",
+    "Timer automatically starts, splits and stops.\n");
 
 SpeedrunTimer* speedrun;
 
@@ -190,7 +194,6 @@ void SpeedrunTimer::InitRules()
 {
     this->rules.clear();
     for (const auto& rule : TimerRule::list) {
-        console->Print("%s = %s | %s = %s\n", this->category, rule->categoryName, this->map, rule->mapName);
         if (!std::strcmp(this->category, rule->categoryName) && !std::strcmp(this->map, rule->mapName)) {
             this->rules.push_back(rule);
         }
@@ -476,7 +479,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.",
         console->Warning("Failed to import file!\n");
     }
 }
-CON_COMMAND(sar_speedrun_rules, "Prints currently loaded rules which the timer will follow.\n")
+CON_COMMAND(sar_speedrun_list_rules, "Prints currently loaded rules which the timer will follow.\n")
 {
     auto rules = speedrun->GetRules();
     if (rules.empty()) {
@@ -487,7 +490,7 @@ CON_COMMAND(sar_speedrun_rules, "Prints currently loaded rules which the timer w
         console->Print("%s -> %s\n", rule->categoryName, rule->mapName);
     }
 }
-CON_COMMAND(sar_speedrun_all_rules, "Prints all rules which the timer might follow.\n")
+CON_COMMAND(sar_speedrun_list_all_rules, "Prints all rules which the timer might follow.\n")
 {
     auto rules = TimerRule::list;
     if (rules.empty()) {

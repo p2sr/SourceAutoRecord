@@ -92,10 +92,11 @@ extern Command sar_speedrun_result;
 extern Command sar_speedrun_export;
 extern Command sar_speedrun_export_pb;
 extern Command sar_speedrun_import;
-extern Command sar_speedrun_rules;
-extern Command sar_speedrun_all_rules;
+extern Command sar_speedrun_list_rules;
+extern Command sar_speedrun_list_all_rules;
 extern Command sar_speedrun_category;
 extern Command sar_speedrun_offset;
 
 extern Variable sar_speedrun_autostart;
 extern Variable sar_speedrun_autostop;
+extern Variable sar_speedrun_standard;
