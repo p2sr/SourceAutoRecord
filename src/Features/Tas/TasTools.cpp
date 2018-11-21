@@ -1,6 +1,7 @@
 #include "TasTools.hpp"
 
 #include <cmath>
+#include <cstring>
 
 #include "Features/Session.hpp"
 #include "Modules/Client.hpp"
@@ -14,14 +15,12 @@
 TasTools* tasTools;
 
 TasTools::TasTools()
+    : m_previous_speed(Vector{ 0, 0, 0 })
+    , m_last_tick(0)
+    , m_acceleration(Vector{ 0, 0, 0 })
 {
     this->hasLoaded = true;
-    this->m_previous_speed = Vector{ 0, 0, 0 };
-    this->m_last_tick = (session->isInSession) ? engine->GetSessionTick() : 0;
-    this->m_acceleration = Vector{ 0, 0, 0 };
-
     strcpy(this->m_offset_name, "m_InAirState");
-    strcpy(this->m_class_name, "CPortal_Player");
 }
 void TasTools::AimAtPoint(float x, float y, float z)
 {
@@ -43,9 +42,38 @@ void TasTools::AimAtPoint(float x, float y, float z)
 
     engine->SetAngles(angles);
 }
+int TasTools::GetOffset()
+{
+    int anyOffset = (m_player) ? *reinterpret_cast<int*>((uintptr_t)m_player + this->m_offset) : -1;
+    return anyOffset;
+}
+Vector TasTools::GetVelocityAngles()
+{
+    Vector velocity_angles = client->GetLocalVelocity();
+    if (velocity_angles.Length() == 0)
+        return Vector{ 0, 0, 0 };
 
+    Math::VectorNormalize(velocity_angles);
+
+    float yaw = atan2f(velocity_angles.y, velocity_angles.x);
+    float pitch = atan2f(velocity_angles.z, sqrtf(velocity_angles.y * velocity_angles.y + velocity_angles.x * velocity_angles.x));
+
+    return Vector{ RAD2DEG(yaw), RAD2DEG(pitch), 0 };
+}
+Vector TasTools::GetAcceleration()
+{
+    int current_tick = engine->GetSessionTick();
+    Vector current_speed = client->GetLocalVelocity();
+    if (current_tick != m_last_tick) { //Every frames
+        m_acceleration.z = current_speed.Length2D() - m_previous_speed.Length2D(); //z used to represent the combined x/y acceleration axis value
+        m_acceleration.x = abs(current_speed.x) - abs(m_previous_speed.x);
+        m_acceleration.y = abs(current_speed.y) - abs(m_previous_speed.y);
+        m_previous_speed = current_speed;
+        m_last_tick = current_tick;
+    }
+    return m_acceleration;
+}
 // Commands
-
 CON_COMMAND(sar_tas_aim_at_point, "sar_tas_aim_at_point <x> <y> <z> : Aim at the point {x, y, z} specified.\n")
 {
     if (!sv_cheats.GetBool()) {
@@ -56,93 +84,48 @@ CON_COMMAND(sar_tas_aim_at_point, "sar_tas_aim_at_point <x> <y> <z> : Aim at the
         return console->Print("sar_tas_aim_at_point <x> <y> <z> : Aim at the point {x, y, z} specified.\n");
     }
 
-    tasTools->AimAtPoint(static_cast<float>(atof(args[1])), static_cast<float>(atof(args[2])), static_cast<float>(atof(args[3])));
+    tasTools->AimAtPoint(static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])));
 }
-
-
-int TasTools::GetOffset()
+CON_COMMAND(sar_get_offset, "sar_get_offset <Offset> : return the value of the offset.\n")
 {
-    client->GetOffset(this->m_class_name, this->m_offset_name, Offsets::anyOffset);
-    auto player = client->GetPlayer();
-    int anyOffset = (player) ? *reinterpret_cast<int*>((uintptr_t)player + Offsets::anyOffset) : -1;
-
-    return (anyOffset);
-
-}
-
-
-CON_COMMAND(sar_get_offset, "sar_get_offset <Class_name> <Offset> : return the value of the offset.\n")
-{
-	if (args.ArgC() < 3) {
-        console->Print("sar_get_offset <Class_name> <Offset> : return the value of the offset.\n");
+    if (args.ArgC() < 2) {
+        console->Print("sar_get_offset <Offset> : return the value of the offset.\n");
         return;
-	}
-
-	std::strcpy(tasTools->m_class_name, args[1]);
-    std::strcpy(tasTools->m_offset_name, args[2]);
-
+    }
+    std::strcpy(tasTools->m_offset_name, args[1]);
+    tasTools->m_player = client->GetPlayer();
+    client->GetOffset("CPortal_Player", args[1], tasTools->m_offset);
 }
-
-
 CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] : add {x, y, z} degrees to {x, y, z} view axis.\n")
 {
-
+    if (!sv_cheats.GetBool()) {
+        console->Print("Cannot use sar_tas_addang without sv_cheats sets to 1.\n");
+        return;
+    }
     if (args.ArgC() < 3) {
-        console->Print("Missing arguments : sar_addang <x> <y> [z].\n");
+        console->Print("Missing arguments : sar_tas_addang <x> <y> [z].\n");
         return;
     }
 
     QAngle angles = engine->GetAngles();
     angles.x += static_cast<float>(std::atof(args[1]));
-    angles.y += static_cast<float>(atof(args[2])); // Player orientation
+    angles.y += static_cast<float>(std::atof(args[2])); // Player orientation
     if (args.ArgC() == 4)
-        angles.z += static_cast<float>(atof(args[3]));
+        angles.z += static_cast<float>(std::atof(args[3]));
 
     engine->SetAngles(angles);
 }
-
 CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : set {x, y, z} degres to view axis.\n")
 {
-    QAngle angle = { static_cast<float>(atof(args[1])), static_cast<float>(atof(args[2])), static_cast<float>(atof(args[3])) };
-    engine->SetAngles(angle);
-}
-
-Vector TasTools::GetVelocityAngles()
-{
-    Vector velocity_angles = client->GetLocalVelocity();
-    if (velocity_angles.Length() == 0)
-        return (Vector{ 0, 0, 0 });
-
-    Math::VectorNormalize(velocity_angles);
-
-    float yaw = atan2f(velocity_angles.y, velocity_angles.x);
-    float pitch = atan2f(velocity_angles.z, sqrtf(velocity_angles.y * velocity_angles.y + velocity_angles.x * velocity_angles.x));
-
-    return (Vector{ RAD2DEG(yaw), RAD2DEG(pitch), 0 });
-}
-
-Vector& TasTools::GetAcceleration()
-{
-    int current_tick = engine->GetSessionTick();
-    Vector current_speed = client->GetLocalVelocity();
-    if (current_tick != m_last_tick) { //Every frames
-        m_acceleration.z = current_speed.Length2D() - m_previous_speed.Length2D(); //z used to represent the combined x/y acceleration axis value
-		m_acceleration.x = abs(current_speed.x) - abs(m_previous_speed.x);
-        m_acceleration.y = abs(current_speed.y) - abs(m_previous_speed.y);
-
-        m_previous_speed = current_speed;
-        m_last_tick = current_tick;
+    if (!sv_cheats.GetBool()) {
+        console->Print("Cannot use sar_tas_setang without sv_cheats sets to 1.\n");
+        return;
+    }
+    if (args.ArgC() < 3) {
+        console->Print("Missing arguments : sar_tas_setang <x> <y> [z].\n");
+        return;
     }
 
-
-    return m_acceleration;
+    QAngle angle = { static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])) };
+    engine->SetAngles(angle);
 }
-
-//TODO : Finish this function
-/*CON_COMMAND(sar_tas_strafe, "sar_tas_strafe : do an optimized strafe.\n")
-{
-    QAngle angle = {0, (-41.4423 + log(std::fmax(client->GetLocalVelocity().Length2D() - 144.31, 0)) * 19.919) + tasTools->GetVelocityAngles().x, 0};
-	engine->SetAngles(angle);
-}*/
-
-

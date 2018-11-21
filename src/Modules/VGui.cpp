@@ -186,25 +186,20 @@ DETOUR(VGui::Paint, int mode)
         DrawElement("maxspeed: %.3f", data.maxSpeed);
         DrawElement("gravity: %.3f", data.gravity);
     }
-
-
 	//Tas hud
     if (sar_hud_velocity_angle.GetBool()) {
         Vector velocity_angles = tasTools->GetVelocityAngles();
         DrawElement("velocity: %.3f %0.3f", velocity_angles.x, velocity_angles.y);
     }
-
     if (sar_hud_acceleration.GetBool()) {
 		if (sar_hud_acceleration.GetInt() == 1)
             DrawElement("acceleration: %.3f %.3f", tasTools->GetAcceleration().x, tasTools->GetAcceleration().y);
         else
             DrawElement("acceleration: %.3f", tasTools->GetAcceleration().z);
     }
-
-
 	//Offset reader
     if (sar_hud_get_offset.GetBool()) {
-        DrawElement("%s::%s = %d", tasTools->m_class_name, tasTools->m_offset_name, tasTools->GetOffset());
+        DrawElement("CPortal_Player::%s = %d", tasTools->m_offset_name, tasTools->GetOffset());
 	}
 
     surface->FinishDrawing();
