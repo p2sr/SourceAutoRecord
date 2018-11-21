@@ -93,7 +93,7 @@ CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] : add {x, y, z} degrees 
     }
 
     QAngle angles = engine->GetAngles();
-    angles.x += static_cast<float>(atof(args[1]));
+    angles.x += static_cast<float>(std::atof(args[1]));
     angles.y += static_cast<float>(atof(args[2])); // Player orientation
     if (args.ArgC() == 4)
         angles.z += static_cast<float>(atof(args[3]));
