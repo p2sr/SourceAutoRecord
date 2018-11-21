@@ -84,7 +84,7 @@ CON_COMMAND(sar_get_offset, "sar_get_offset <Class_name> <Offset> : return the v
 }
 
 
-CON_COMMAND(sar_tas_addang, "sar_addang <x> <y> [z] : add {x, y, z} degrees to {x, y, z} view axis.\n")
+CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] : add {x, y, z} degrees to {x, y, z} view axis.\n")
 {
 
     if (args.ArgC() < 3) {
