@@ -1,12 +1,12 @@
 #include "Stats.hpp"
 
-#include "Modules/Client.hpp"
-#include "Modules/Console.hpp"
-
 #include "JumpStats.hpp"
 #include "StatsResultType.hpp"
 #include "StepStats.hpp"
 #include "VelocityStats.hpp"
+
+#include "Modules/Client.hpp"
+#include "Modules/Console.hpp"
 
 #include "Command.hpp"
 #include "Utils.hpp"
@@ -42,6 +42,8 @@ void Stats::ResetAll()
     this->steps->Reset();
     this->velocity->Reset();
 }
+
+// Commmands
 
 CON_COMMAND(sar_stats_jump, "Prints jump stats.\n")
 {

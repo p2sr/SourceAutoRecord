@@ -23,6 +23,7 @@ extern int ServerCmdKeyValues;
 extern int GetActiveSplitScreenPlayerSlot;
 
 // CHLClient
+extern int GetAllClasses;
 extern int HudProcessInput;
 extern int HudUpdate;
 extern int IN_ActivateMouse;
@@ -82,26 +83,28 @@ extern int ProcessTick;
 extern int Disconnect;
 
 // C_BaseEntity
-extern int m_vecAbsOrigin;
-extern int m_angAbsRotation;
-extern int m_vecVelocity;
-extern int GetFlags;
+extern int C_m_vecAbsOrigin;
+extern int C_m_angAbsRotation;
+extern int C_m_vecVelocity;
+extern int C_m_vecViewOffset;
 
 // CBaseEntity
-extern int m_vecAbsOrigin2;
-extern int m_angAbsRotation2;
-extern int m_vecVelocity3;
+extern int S_m_vecAbsOrigin;
+extern int S_m_angAbsRotation;
+extern int S_m_vecVelocity;
 extern int m_iEFlags;
 extern int m_flMaxspeed;
 extern int m_flGravity;
-extern int m_vecViewOffset;
+extern int S_m_vecViewOffset;
 
 // CBasePlayer
-extern int iNumPortalsPlaced;
 extern int m_fFlags;
 extern int m_MoveType;
 extern int m_nWaterLevel;
 extern int m_bDucked;
+
+// CPortal_Player
+extern int iNumPortalsPlaced;
 
 // IEngineVGuiInternal
 extern int Paint;
@@ -121,10 +124,11 @@ extern int GetClientEntity;
 // CServerGameDLL
 extern int GameFrame;
 extern int Think;
+extern int GetAllServerClasses;
 
 // CMoveData
 extern int m_nOldButtons;
-extern int m_vecVelocity2;
+extern int mv_m_vecVelocity;
 
 // CHud
 extern int GetName;

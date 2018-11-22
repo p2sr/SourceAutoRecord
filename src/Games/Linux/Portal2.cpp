@@ -1,7 +1,5 @@
 #include "Portal2.hpp"
 
-#include "Features/Speedrun/SpeedrunTimer.hpp"
-
 #include "Game.hpp"
 #include "Offsets.hpp"
 
@@ -95,38 +93,30 @@ void Portal2::LoadOffsets()
     g_InRestore = 51; // CServerGameDLL::GameFrame
     ServiceEventQueue = 484; // CServerGameDLL::GameFrame
     g_EventQueue = 43; // ServiceEventQueue
+    GetAllServerClasses = 10; // CServerGameDLL
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
     gpGlobals = 12; // UTIL_PlayerByIndex
-    iNumPortalsPlaced = 5724; // CPortal_Player::IncrementPortalsPlaced
     player = 4; // CPortalGameMovement::PlayerMove
-    m_fFlags = 212; // CBasePlayer::UpdateStepSound
     m_MoveType = 226; // CBasePlayer::UpdateStepSound
-    m_nWaterLevel = 347; // CBasePlayer::UpdateStepSound
-    m_vecVelocity2 = 64; // CPortalGameMovement::PlayerMove
-    m_bDucked = 2296; // CPortalGameMovement::FinishUnDuck
+    mv_m_vecVelocity = 64; // CPortalGameMovement::PlayerMove
     m_iClassName = 104; // CBaseEntity
-    m_iName = 216; // CBaseEntity
-    m_vecAbsOrigin2 = 468; // CBaseEntity
-    m_angAbsRotation2 = 480; // CBaseEntity
-    m_vecVelocity3 = 492; // CBaseEntity
+    S_m_vecAbsOrigin = 468; // CBaseEntity
+    S_m_angAbsRotation = 480; // CBaseEntity
     m_iEFlags = 208; // CBaseEntity
-    m_flMaxspeed = 3728; // CBaseEntity
     m_flGravity = 792; // CBaseEntity
-    m_vecViewOffset = 748; // CBaseEntity
     NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList
     GetIServerEntity = 2; // CServerTools
     m_EntPtrArray = 48; // CServerTools::GetIServerEntity
 
     // client.so
 
+    GetAllClasses = 8; // CHLClient
     HudProcessInput = 10; // CHLClient
     HudUpdate = 11; // CHLClient
-    m_vecAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
-    m_angAbsRotation = 172; // C_BasePlayer::GetAbsAngles
-    m_vecVelocity = 244; // CFPSPanel::Paint
+    C_m_vecAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
+    C_m_angAbsRotation = 172; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
-    GetFlags = 228; // C_BasePlayer::PhysicsSimulate
     GetClientMode = 12; // CHLClient::HudProcessInput
     CreateMove = 25; // ClientModeShared
     GetName = 11; // CHud
@@ -146,14 +136,6 @@ void Portal2::LoadOffsets()
     FinishDrawing = 590; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 160; // CMatSystemSurface
     DrawTextLen = 163; // CMatSystemSurface
-}
-void Portal2::LoadRules()
-{
-    speedrun->AddRule(TimerRule(
-        "sp_a1_intro1",
-        "camera_intro",
-        "TeleportToView",
-        TimerAction::Start));
 }
 const char* Portal2::Version()
 {

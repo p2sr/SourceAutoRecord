@@ -6,7 +6,7 @@
 
 int32_t Demo::LastTick()
 {
-    return (this->messageTicks.size() > 0)
+    return (!this->messageTicks.empty())
         ? this->messageTicks.back()
         : this->playbackTicks;
 }

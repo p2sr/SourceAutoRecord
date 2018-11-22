@@ -11,11 +11,11 @@ struct Vector {
     float x, y, z;
     inline float Length()
     {
-        return sqrt(x * x + y * y + z * z);
+        return std::sqrt(x * x + y * y + z * z);
     }
     inline float Length2D()
     {
-        return sqrt(x * x + y * y);
+        return std::sqrt(x * x + y * y);
     }
     inline Vector operator*(float fl)
     {
@@ -469,6 +469,133 @@ struct CEntInfo2 : CEntInfo {
     void* unk2; // 20
 };
 
+typedef enum {
+    DPT_Int = 0,
+    DPT_Float,
+    DPT_Vector,
+    DPT_VectorXY,
+    DPT_String,
+    DPT_Array,
+    DPT_DataTable,
+    DPT_Int64,
+    DPT_NUMSendPropTypes
+} SendPropType;
+
+struct SendProp;
+struct RecvProp;
+struct SendTable;
+
+typedef void (*RecvVarProxyFn)(const void* pData, void* pStruct, void* pOut);
+typedef void (*ArrayLengthRecvProxyFn)(void* pStruct, int objectID, int currentArrayLength);
+typedef void (*DataTableRecvVarProxyFn)(const RecvProp* pProp, void** pOut, void* pData, int objectID);
+typedef void (*SendVarProxyFn)(const SendProp* pProp, const void* pStructBase, const void* pData, void* pOut, int iElement, int objectID);
+typedef int (*ArrayLengthSendProxyFn)(const void* pStruct, int objectID);
+typedef void* (*SendTableProxyFn)(const SendProp* pProp, const void* pStructBase, const void* pData, void* pRecipients, int objectID);
+
+struct RecvTable {
+    RecvProp* m_pProps;
+    int m_nProps;
+    void* m_pDecoder;
+    char* m_pNetTableName;
+    bool m_bInitialized;
+    bool m_bInMainList;
+};
+
+struct RecvProp {
+    char* m_pVarName;
+    SendPropType m_RecvType;
+    int m_Flags;
+    int m_StringBufferSize;
+    bool m_bInsideArray;
+    const void* m_pExtraData;
+    RecvProp* m_pArrayProp;
+    ArrayLengthRecvProxyFn m_ArrayLengthProxy;
+    RecvVarProxyFn m_ProxyFn;
+    DataTableRecvVarProxyFn m_DataTableProxyFn;
+    RecvTable* m_pDataTable;
+    int m_Offset;
+    int m_ElementStride;
+    int m_nElements;
+    const char* m_pParentArrayPropName;
+};
+
+struct SendProp {
+    void* VMT; // 0
+    RecvProp* m_pMatchingRecvProp; // 4
+    SendPropType m_Type; // 8
+    int m_nBits; // 12
+    float m_fLowValue; // 16
+    float m_fHighValue; // 20
+    SendProp* m_pArrayProp; // 24
+    ArrayLengthSendProxyFn m_ArrayLengthProxy; // 28
+    int m_nElements; // 32
+    int m_ElementStride; //36
+    char* m_pExcludeDTName; // 40
+    char* m_pParentArrayPropName; // 44
+    char* m_pVarName; // 48
+    float m_fHighLowMul; // 52
+    int m_Flags; // 56
+    SendVarProxyFn m_ProxyFn; // 60
+    SendTableProxyFn m_DataTableProxyFn; // 64
+    SendTable* m_pDataTable; // 68
+    int m_Offset; // 72
+    const void* m_pExtraData; // 76
+};
+
+struct SendProp2 {
+    void* VMT; // 0
+    RecvProp* m_pMatchingRecvProp; // 4
+    SendPropType m_Type; // 8
+    int m_nBits; // 12
+    float m_fLowValue; // 16
+    float m_fHighValue; // 20
+    SendProp2* m_pArrayProp; // 24
+    ArrayLengthSendProxyFn m_ArrayLengthProxy; // 28
+    int m_nElements; // 32
+    int m_ElementStride; // 36
+    char* m_pExcludeDTName; // 40
+    char* m_pParentArrayPropName; // 44
+    char* m_pVarName; // 48
+    float m_fHighLowMul; // 52
+    char m_priority; // 56
+    int m_Flags; // 60
+    SendVarProxyFn m_ProxyFn; // 64
+    SendTableProxyFn m_DataTableProxyFn; // 68
+    SendTable* m_pDataTable; // 72
+    int m_Offset; // 76
+    const void* m_pExtraData; // 80
+};
+
+struct SendTable {
+    SendProp* m_pProps;
+    int m_nProps;
+    char* m_pNetTableName;
+    void* m_pPrecalc;
+    bool m_bInitialized : 1;
+    bool m_bHasBeenWritten : 1;
+    bool m_bHasPropsEncodedAgainstCurrentTickCount : 1;
+};
+
+typedef void* (*CreateClientClassFn)(int entnum, int serialNum);
+typedef void* (*CreateEventFn)();
+
+struct ClientClass {
+    CreateClientClassFn m_pCreateFn;
+    CreateEventFn m_pCreateEventFn;
+    char* m_pNetworkName;
+    RecvTable* m_pRecvTable;
+    ClientClass* m_pNext;
+    int m_ClassID;
+};
+
+struct ServerClass {
+    char* m_pNetworkName;
+    SendTable* m_pTable;
+    ServerClass* m_pNext;
+    int m_ClassID;
+    int m_InstanceBaselineIndex;
+};
+
 enum MapLoadType_t {
     MapLoad_NewGame = 0,
     MapLoad_LoadGame = 1,
@@ -512,142 +639,7 @@ public:
     virtual int GetEventDebugID() = 0;
 };
 
-// Needed events
 static const char* EVENTS[] = {
     "player_spawn_blue",
     "player_spawn_orange"
-};
-
-// Observable events
-static const char* WORKING_EVENTS[] = {
-    "server_spawn",
-    "server_shutdown",
-    "server_cvar",
-    "player_connect",
-    "player_disconnect",
-    "player_activate",
-    "player_say",
-    "player_team",
-    "player_class",
-    "player_death",
-    "player_hurt",
-    "player_spawn",
-    "player_use",
-    "player_drop",
-    "game_init",
-    "break_breakable",
-    "entity_killed",
-    "physgun_pickup",
-    "entity_visible",
-    "portal_player_ping",
-    //"portal_player_portaled", // Crashes game :>
-    "portal_enabled",
-    "portal_fired",
-    "player_gesture",
-    "player_zoomed",
-    "player_unzoomed",
-    "remote_view_activated",
-    "bounce_count",
-    "player_landed",
-    "player_suppressed_bounce",
-    "player_spawn_blue",
-    "player_spawn_orange",
-    "map_already_completed",
-    "server_pre_shutdown"
-};
-
-// Might or might not work
-static const char* UNKNOWN_EVENTS[] = {
-    "server_message",
-    "server_addban",
-    "server_removeban",
-    "player_info",
-    "team_info",
-    "team_score",
-    "teamplay_broadcast_audio",
-    "player_class",
-    "player_chat",
-    "player_score",
-    "player_shoot",
-    "player_changename",
-    "player_hintmessage",
-    "game_newmap",
-    "game_start",
-    "game_end",
-    "round_start",
-    "round_end",
-    "game_message",
-    "break_prop",
-    "bonus_updated",
-    "achievement_event",
-    "flare_ignite_npc",
-    "helicopter_grenade_punt_miss",
-    "user_data_downloaded",
-    "ragdoll_dissolved",
-    "gameinstructor_draw",
-    "gameinstructor_nodraw",
-    "map_transition",
-    "set_instructor_group_enabled",
-    "instructor_server_hint_create",
-    "instructor_server_hint_stop",
-    "portal_player_touchedground",
-    "turret_hit_turret",
-    "security_camera_detached",
-    "challenge_map_complete",
-    "advanced_map_complete",
-    "quicksave",
-    "autosave",
-    "slowtime",
-    "gesture_earned",
-    "player_countdown",
-    "player_touched_ground",
-    "player_long_fling",
-    "touched_paint",
-    "player_paint_jumped",
-    "move_hint_visible",
-    "movedone_hint_visible",
-    "counter_hint_visible",
-    "zoom_hint_visible",
-    "jump_hint_visible",
-    "partnerview_hint_visible",
-    "paint_cleanser_visible",
-    "paint_cleanser_not_visible",
-    "player_touch_paint_cleanser",
-    "OpenRadialMenu",
-    "AddLocator",
-    "achievement_earned",
-    "replay_status",
-    "spec_target_updated",
-    "player_fullyjoined",
-    "achievement_write_failed",
-    "player_stats_updated",
-    "round_start_pre_entity",
-    "teamplay_round_start",
-    "client_disconnect",
-    "difficulty_changed",
-    "finale_start",
-    "finale_win",
-    "vote_passed",
-    "portal_stats_ui_enable",
-    "portal_stats_update",
-    "puzzlemaker_fully_hidden",
-    "puzzlemaker_showing",
-    "ss_control_transferred",
-    "inventory_updated",
-    "cart_updated",
-    "store_pricesheet_updated",
-    "gc_connected",
-    "item_schema_initialized",
-    "client_loadout_changed",
-    "gameui_activated",
-    "gameui_hidden",
-    "hltv_status",
-    "hltv_cameraman",
-    "hltv_rank_camera",
-    "hltv_rank_entity",
-    "hltv_fixed",
-    "hltv_chase",
-    "hltv_message",
-    "hltv_title",
-    "hltv_chat"
 };

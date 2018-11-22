@@ -46,6 +46,8 @@ float Tracer::GetResult(TracerResultType type)
         : std::sqrt(x * x + y * y + z * z);
 }
 
+// Commands
+
 CON_COMMAND(sar_trace_a, "Saves location A for tracing.\n")
 {
     tracer->Start(client->GetAbsOrigin());

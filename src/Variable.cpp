@@ -140,11 +140,11 @@ void Variable::SetFlags(int value)
 }
 void Variable::AddFlag(int value)
 {
-    SetFlags(GetFlags() | value);
+    this->SetFlags(this->GetFlags() | value);
 }
 void Variable::RemoveFlag(int value)
 {
-    SetFlags(GetFlags() & ~(value));
+    this->SetFlags(this->GetFlags() & ~(value));
 }
 void Variable::Unlock(bool asCheat)
 {

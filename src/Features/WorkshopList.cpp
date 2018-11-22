@@ -1,7 +1,6 @@
 #include "WorkshopList.hpp"
 
 #include <cstring>
-
 #include <experimental/filesystem>
 #include <stdlib.h>
 
@@ -48,7 +47,8 @@ int WorkshopList::Update()
     return std::abs((int)before - (int)this->maps.size());
 }
 
-// P2 only
+// Completion Function
+
 int sar_workshop_CompletionFunc(const char* partial,
     char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
@@ -58,7 +58,7 @@ int sar_workshop_CompletionFunc(const char* partial,
         match = match + std::strlen(cmd);
     }
 
-    if (workshop->maps.size() == 0) {
+    if (workshop->maps.empty()) {
         workshop->Update();
     }
 
@@ -88,12 +88,14 @@ int sar_workshop_CompletionFunc(const char* partial,
 
     return count;
 }
+
+// Commands
+
 CON_COMMAND_F_COMPLETION(sar_workshop, "Same as \"map\" command but lists workshop maps.\n", 0,
     sar_workshop_CompletionFunc)
 {
     if (args.ArgC() < 2) {
-        console->Print("sar_workshop <file> : Same as \"map\" command but lists workshop maps.\n");
-        return;
+        return console->Print("sar_workshop <file> : Same as \"map\" command but lists workshop maps.\n");
     }
 
     engine->ExecuteCommand((std::string("map workshop/") + std::string(args[1])).c_str());
@@ -104,7 +106,7 @@ CON_COMMAND(sar_workshop_update, "Updates the workshop map list.\n")
 }
 CON_COMMAND(sar_workshop_list, "Prints all workshop maps.\n")
 {
-    if (workshop->maps.size() == 0) {
+    if (workshop->maps.empty()) {
         workshop->Update();
     }
 

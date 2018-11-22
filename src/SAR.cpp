@@ -2,16 +2,7 @@
 
 #include <cstring>
 
-#include "Modules/Client.hpp"
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
-#include "Modules/InputSystem.hpp"
-#include "Modules/Scheme.hpp"
-#include "Modules/Server.hpp"
-#include "Modules/Surface.hpp"
-#include "Modules/Tier1.hpp"
-#include "Modules/VGui.hpp"
-
+#include "Features/ClassDumper.hpp"
 #include "Features/Config.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/Listener.hpp"
@@ -25,9 +16,20 @@
 #include "Features/Summary.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Tas/ReplaySystem.hpp"
+#include "Features/Tas/TasTools.hpp"
 #include "Features/Teleporter.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/WorkshopList.hpp"
+
+#include "Modules/Client.hpp"
+#include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+#include "Modules/InputSystem.hpp"
+#include "Modules/Scheme.hpp"
+#include "Modules/Server.hpp"
+#include "Modules/Surface.hpp"
+#include "Modules/Tier1.hpp"
+#include "Modules/VGui.hpp"
 
 #include "Cheats.hpp"
 #include "Command.hpp"
@@ -74,8 +76,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<ReplaySystem>(&tasReplaySystem);
             this->features->AddFeature<Timer>(&timer);
             this->features->AddFeature<EntityInspector>(&inspector);
-
-            this->game->LoadRules();
+            this->features->AddFeature<ClassDumper>(&classDumper);
 
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
@@ -90,6 +91,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
 
+                this->features->AddFeature<TasTools>(&tasTools);
+
                 if (this->game->version & SourceGame_Portal2) {
                     this->features->AddFeature<Listener>(&listener);
                     this->features->AddFeature<WorkshopList>(&workshop);
@@ -97,11 +100,13 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                     listener->Init();
                 }
 
+                speedrun->LoadRules(this->game);
+
                 config->Load();
 
                 this->SearchPlugin();
 
-                console->PrintActive("Loaded SourceAutoRecord, Version %s (by NeKz)\n", SAR_VERSION);
+                console->PrintActive("Loaded SourceAutoRecord, Version %s\n", SAR_VERSION);
                 return true;
             } else {
                 console->Warning("SAR: Failed to load engine module!\n");

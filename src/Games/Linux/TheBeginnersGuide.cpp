@@ -18,9 +18,6 @@ void TheBeginnersGuide::LoadOffsets()
     StartDrawing = 692; // CMatSystemSurface::PaintTraverseEx
     FinishDrawing = 619; // CMatSystemSurface::PaintTraverseEx
 }
-void TheBeginnersGuide::LoadRules()
-{
-}
 const char* TheBeginnersGuide::Version()
 {
     return "The Beginners Guide (6172)";

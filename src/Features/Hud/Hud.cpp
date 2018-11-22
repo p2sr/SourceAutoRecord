@@ -20,7 +20,7 @@ Variable sar_hud_angles("sar_hud_angles", "0", 0, "Draws absolute view angles of
 Variable sar_hud_velocity("sar_hud_velocity", "0", 0, "Draws velocity of the client.\n"
                                                       "0 = default,\n"
                                                       "1 = x/y/z,\n"
-                                                      "2 = x/y\n");
+                                                      "2 = x/y.\n");
 Variable sar_hud_session("sar_hud_session", "0", "Draws current session tick.\n");
 Variable sar_hud_last_session("sar_hud_last_session", "0", "Draws value of latest completed session.\n");
 Variable sar_hud_sum("sar_hud_sum", "0", "Draws summary value of sessions.\n");
@@ -41,6 +41,9 @@ Variable sar_hud_frame("sar_hud_frame", "0", "Draws current frame count.\n");
 Variable sar_hud_last_frame("sar_hud_last_frame", "0", "Draws last saved frame value.\n");
 Variable sar_hud_inspection("sar_hud_inspection", "0", "Draws entity inspection data.\n");
 Variable sar_hud_velocity_peak("sar_hud_velocity_peak", "0", "Draws last saved velocity peak.\n");
+Variable sar_hud_velocity_angle("sar_hud_velocity_angle", "0", "Draws velocity angles.\n");
+Variable sar_hud_acceleration("sar_hud_acceleration", "0", 0, "Draws instant acceleration.\n");
+Variable sar_hud_player_info("sar_hud_player_info", "0", "Draws player state defined with sar_tas_set_prop.\n");
 Variable sar_hud_default_spacing("sar_hud_default_spacing", "4", 0, "Spacing between elements of HUD.\n");
 Variable sar_hud_default_padding_x("sar_hud_default_padding_x", "2", 0, "X padding of HUD.\n");
 Variable sar_hud_default_padding_y("sar_hud_default_padding_y", "2", 0, "Y padding of HUD.\n");

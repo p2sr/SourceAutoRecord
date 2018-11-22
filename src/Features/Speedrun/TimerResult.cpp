@@ -2,9 +2,9 @@
 
 #include <cstring>
 
-#include "Modules/Console.hpp"
-
 #include "TimerSplit.hpp"
+
+#include "Modules/Console.hpp"
 
 TimerResult::TimerResult()
     : total(0)

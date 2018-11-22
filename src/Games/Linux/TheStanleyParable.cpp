@@ -30,7 +30,6 @@ void TheStanleyParable::LoadOffsets()
     g_InRestore = 31; // CServerGameDLL::GameFrame
     ServiceEventQueue = 328; // CServerGameDLL::GameFrame
     g_EventQueue = 24; // ServiceEventQueue
-    m_flMaxspeed = 3732; // CBaseEntity
     NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
 
     // client.so
@@ -48,9 +47,6 @@ void TheStanleyParable::LoadOffsets()
 
     StartDrawing = 692; // CMatSystemSurface::PaintTraverseEx
     FinishDrawing = 627; // CMatSystemSurface::PaintTraverseEx
-}
-void TheStanleyParable::LoadRules()
-{
 }
 const char* TheStanleyParable::Version()
 {

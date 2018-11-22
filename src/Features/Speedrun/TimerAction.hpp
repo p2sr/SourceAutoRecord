@@ -1,7 +1,7 @@
 #pragma once
 
 enum class TimerAction {
-    Unknown,
+    DoNothing,
     Start,
     Restart,
     Split,

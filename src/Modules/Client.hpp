@@ -1,4 +1,6 @@
 #pragma once
+#include <cstdint>
+
 #include "Module.hpp"
 
 #include "Interface.hpp"
@@ -16,10 +18,12 @@ public:
     using _GetClientEntity = void*(__func*)(void* thisptr, int entnum);
     using _KeyDown = int(__cdecl*)(void* b, const char* c);
     using _KeyUp = int(__cdecl*)(void* b, const char* c);
+    using _GetAllClasses = ClientClass* (*)();
 
     _GetClientEntity GetClientEntity = nullptr;
     _KeyDown KeyDown = nullptr;
     _KeyUp KeyUp = nullptr;
+    _GetAllClasses GetAllClasses = nullptr;
 
     void* in_jump = nullptr;
 
@@ -28,8 +32,13 @@ public:
     Vector GetAbsOrigin();
     QAngle GetAbsAngles();
     Vector GetLocalVelocity();
-    int GetFlags();
+    Vector GetViewOffset();
+    void GetOffset(const char* className, const char* propName, int& offset);
 
+private:
+    int16_t FindOffset(RecvTable* table, const char* propName);
+
+public:
     // CHLClient::HudUpdate
     DECL_DETOUR(HudUpdate, unsigned int a2)
 

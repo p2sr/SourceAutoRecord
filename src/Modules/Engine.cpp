@@ -2,13 +2,13 @@
 
 #include <stdarg.h>
 
-#include "Console.hpp"
-#include "EngineDemoPlayer.hpp"
-#include "EngineDemoRecorder.hpp"
-
 #include "Features/Cvars.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+
+#include "Console.hpp"
+#include "EngineDemoPlayer.hpp"
+#include "EngineDemoRecorder.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -342,7 +342,7 @@ bool Engine::Init()
 
     // TODO: windows
 #ifndef _WIN32
-    if (sar.game->version & SourceGame_Portal2 || sar.game->version & SourceGame_HalfLife2Engine) {
+    if (sar.game->version & (SourceGame_Portal2 | SourceGame_HalfLife2Engine)) {
         auto alias = Command("alias");
         if (!!alias) {
             auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;

@@ -1,7 +1,7 @@
 #pragma once
-#include "Feature.hpp"
-
 #include <string>
+
+#include "Feature.hpp"
 
 #include "Variable.hpp"
 

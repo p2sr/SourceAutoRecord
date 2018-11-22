@@ -1,10 +1,10 @@
 #include "InspectionHud.hpp"
 
+#include "Features/Routing/EntityInspector.hpp"
+
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
-
-#include "Features/Routing/EntityInspector.hpp"
 
 #include "Variable.hpp"
 

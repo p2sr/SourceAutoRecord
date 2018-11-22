@@ -1,43 +1,15 @@
 #pragma once
+#include "Replay.hpp"
+
 #include "Features/Feature.hpp"
 
 #include "Utils/SDK.hpp"
+
 #include "Variable.hpp"
 
 #define SAR_TAS_REPLAY_HEADER001 "sar-tas-replay v1.7"
 #define SAR_TAS_REPLAY_HEADER002 "sar-tas-replay v1.8"
 #define SAR_TAS_REPLAY_EXTENSION ".str"
-
-struct ReplayFrame {
-    QAngle viewangles;
-    float forwardmove;
-    float sidemove;
-    float upmove;
-    int buttons;
-    unsigned char impulse;
-    short mousedx;
-    short mousedy;
-};
-
-struct ReplayView {
-    std::vector<ReplayFrame> frames;
-};
-
-class Replay {
-public:
-    std::vector<ReplayView> views;
-
-private:
-    int playIndex;
-
-public:
-    Replay();
-    bool Ended();
-    void Reset();
-    void Resize();
-    void Record(CUserCmd* cmd, int slot);
-    void Play(CUserCmd* cmd, int slot);
-};
 
 class ReplaySystem : public Feature {
 private:

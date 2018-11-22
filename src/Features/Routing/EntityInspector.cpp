@@ -10,11 +10,16 @@
 #include "Modules/Server.hpp"
 
 #include "Command.hpp"
+#include "Variable.hpp"
+
+Variable sar_inspection_save_every_tick("sar_inspection_save_every_tick", "0",
+    "Saves inspection data even when session ticks do not increment.\n");
 
 EntityInspector* inspector;
 
 EntityInspector::EntityInspector()
     : entityIndex(1)
+    , offset()
     , isRunning(false)
     , lastSession(0)
     , latest()
@@ -33,7 +38,7 @@ void EntityInspector::Record()
 
     auto entity = server->GetEntityInfoByIndex(this->entityIndex);
     if (entity->m_pEntity != nullptr) {
-        this->latest = InspectionItem {
+        this->latest = InspectionItem{
             session,
             server->GetAbsOrigin(entity->m_pEntity),
             server->GetAbsAngles(entity->m_pEntity),
@@ -47,7 +52,7 @@ void EntityInspector::Record()
     }
 
     if (this->isRunning) {
-        if (session != this->lastSession) {
+        if (session != this->lastSession || sar_inspection_save_every_tick.GetBool()) {
             this->data.push_back(this->latest);
             this->lastSession = session;
         }
@@ -95,7 +100,7 @@ bool EntityInspector::ExportData(std::string filePath)
         file << current++
              << "," << item.session
              << "," << std::fixed << std::setprecision(6)
-                    << item.origin.x << "," << item.origin.y << "," << item.origin.z
+             << item.origin.x << "," << item.origin.y << "," << item.origin.z
              << "," << item.angles.x << "," << item.angles.y << "," << item.angles.z
              << "," << item.velocity.x << "," << item.velocity.y << "," << item.velocity.z
              << "," << item.flags
@@ -109,6 +114,8 @@ bool EntityInspector::ExportData(std::string filePath)
     file.close();
     return true;
 }
+
+// Commands
 
 CON_COMMAND(sar_inspection_start, "Starts recording entity data.\n")
 {
@@ -148,27 +155,49 @@ CON_COMMAND(sar_inspection_index, "Sets entity index for inspection.\n")
 
     inspector->entityIndex = std::atoi(args[1]);
 }
-CON_COMMAND(sar_dump_entlist, "Dumps entity list.\n")
+CON_COMMAND(sar_inspection_offset, "Sets member offset for inspection.\n")
 {
-    console->Print("[index] addr | m_iClassName | m_iName\n");
+    if (args.ArgC() != 2) {
+        return console->Print("Current offset: %i\n", inspector->offset);
+    }
 
-    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+    inspector->offset = std::atoi(args[1]);
+}
+CON_COMMAND(sar_list_ents, "Lists entities.\n")
+{
+    console->Print("[index] address | m_iClassName | m_iName\n");
+
+    auto pages = Offsets::NUM_ENT_ENTRIES / 512;
+
+    auto page = (args.ArgC() == 2) ? std::atoi(args[1]) : 1;
+    page = std::max(page, 1);
+    page = std::min(page, pages);
+
+    auto first = (page - 1) * 512;
+    auto last = page * 512;
+
+    for (int index = first; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+        if (index == last) {
+            break;
+        }
+
         auto info = server->GetEntityInfoByIndex(index);
         if (info->m_pEntity == nullptr) {
             continue;
         }
 
-        console->Print("[%i] %p | %s | %s\n", index, info->m_pEntity,
-            server->GetEntityClassName(info->m_pEntity),
-            server->GetEntityName(info->m_pEntity));
+        console->Print("[%i] %p", index, info->m_pEntity);
+        console->Msg(" | %s | %s\n", server->GetEntityClassName(info->m_pEntity), server->GetEntityName(info->m_pEntity));
     }
+    console->Msg("[page %i of %i]\n", page, pages);
 }
-CON_COMMAND(sar_find_ent_by_name, "Finds first entity in the entity list by name.\n")
+CON_COMMAND(sar_find_ent, "Finds entity in the entity list by name.\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_find_ent_by_name <m_iName> : Finds first entity in the entity list by name.\n");
+        return console->Print("sar_find_ent <m_iName> : Finds entity in the entity list by name.\n");
     }
 
+    console->Msg("Results for %s\n", args[1]);
     for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
         auto info = server->GetEntityInfoByIndex(index);
         if (info->m_pEntity == nullptr) {
@@ -180,18 +209,18 @@ CON_COMMAND(sar_find_ent_by_name, "Finds first entity in the entity list by name
             continue;
         }
 
-        console->Print("[%i] %p\n", index, info->m_pEntity);
-        console->Msg("    -> m_iClassName = %s\n", server->GetEntityClassName(info->m_pEntity));
-        console->Msg("    -> m_iName = %s\n", name);
+        console->Print("[%i] %p", index, info->m_pEntity);
+        console->Msg(" -> %s\n", server->GetEntityClassName(info->m_pEntity));
         break;
     }
 }
-CON_COMMAND(sar_find_ent_by_class_name, "Finds first entity in the entity list by class name.\n")
+CON_COMMAND(sar_find_ents, "Finds entities in the entity list by class name.\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_find_ent_by_class_name <m_iClassName> : Finds first entity in the entity list by class name.\n");
+        return console->Print("sar_find_ents <m_iClassName> : Finds entities in the entity list by class name.\n");
     }
 
+    console->Msg("Results for %s\n", args[1]);
     for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
         auto info = server->GetEntityInfoByIndex(index);
         if (info->m_pEntity == nullptr) {
@@ -203,9 +232,7 @@ CON_COMMAND(sar_find_ent_by_class_name, "Finds first entity in the entity list b
             continue;
         }
 
-        console->Print("[%i] %p\n", index, info->m_pEntity);
-        console->Msg("    -> m_iClassName = %s\n", cname);
-        console->Msg("    -> m_iName = %s\n", server->GetEntityName(info->m_pEntity));
-        break;
+        console->Print("[%i] %p", index, info->m_pEntity);
+        console->Msg(" -> %s\n", server->GetEntityName(info->m_pEntity));
     }
 }

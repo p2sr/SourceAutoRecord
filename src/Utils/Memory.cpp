@@ -25,7 +25,7 @@ std::vector<Memory::ModuleInfo> Memory::moduleList;
 
 bool Memory::TryGetModule(const char* moduleName, Memory::ModuleInfo* info)
 {
-    if (Memory::moduleList.size() == 0) {
+    if (Memory::moduleList.empty()) {
 #ifdef _WIN32
         HMODULE hMods[1024];
         HANDLE pHandle = GetCurrentProcess();

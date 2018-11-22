@@ -83,23 +83,24 @@ void Rebinder::UpdateIndex(int newIndex)
     this->lastIndexNumber = newIndex;
 }
 
+// Commands
+
 CON_COMMAND(sar_bind_save,
     "Automatic save rebinding when server has loaded.\n"
     "File indexing will be synced when recording demos.\n"
     "Usage: sar_bind_save <key> [save_name]\n")
 {
     if (args.ArgC() != 3) {
-        console->Print("sar_bind_save <key> [save_name] : Automatic save rebinding when server has loaded. File indexing will be synced when recording demos.\n");
-        return;
+        return console->Print("sar_bind_save <key> [save_name] : "
+            "Automatic save rebinding when server has loaded. "
+            "File indexing will be synced when recording demos.\n");
     }
 
-    int button = inputSystem->GetButton(args[1]);
+    auto button = inputSystem->GetButton(args[1]);
     if (button == BUTTON_CODE_INVALID) {
-        console->Print("\"%s\" isn't a valid key!\n", args[1]);
-        return;
+        return console->Print("\"%s\" isn't a valid key!\n", args[1]);
     } else if (button == KEY_ESCAPE) {
-        console->Print("Can't bind ESCAPE key!\n", args[1]);
-        return;
+        return console->Print("Can't bind ESCAPE key!\n", args[1]);
     }
 
     if (rebinder->isReloadBinding && button == rebinder->reloadButton) {
@@ -115,17 +116,16 @@ CON_COMMAND(sar_bind_reload,
     "Usage: sar_bind_reload <key> [save_name]\n")
 {
     if (args.ArgC() != 3) {
-        console->Print("sar_bind_reload <key> [save_name] : Automatic save-reload rebinding when server has loaded. File indexing will be synced when recording demos.\n");
-        return;
+        return console->Print("sar_bind_reload <key> [save_name] : "
+            "Automatic save-reload rebinding when server has loaded. "
+            "File indexing will be synced when recording demos.\n");
     }
 
-    int button = inputSystem->GetButton(args[1]);
+    auto button = inputSystem->GetButton(args[1]);
     if (button == BUTTON_CODE_INVALID) {
-        console->Print("\"%s\" isn't a valid key!\n", args[1]);
-        return;
+        return console->Print("\"%s\" isn't a valid key!\n", args[1]);
     } else if (button == KEY_ESCAPE) {
-        console->Print("Can't bind ESCAPE key!\n", args[1]);
-        return;
+        return console->Print("Can't bind ESCAPE key!\n", args[1]);
     }
 
     if (rebinder->isSaveBinding && button == rebinder->saveButton) {
@@ -139,17 +139,17 @@ CON_COMMAND(sar_unbind_save,
     "Unbinds current save rebinder.\n")
 {
     if (!rebinder->isSaveBinding) {
-        console->Print("There's nothing to unbind.\n");
-        return;
+        return console->Print("There's nothing to unbind.\n");
     }
+
     rebinder->ResetSaveBind();
 }
 CON_COMMAND(sar_unbind_reload,
     "Unbinds current save-reload rebinder.\n")
 {
     if (!rebinder->isReloadBinding) {
-        console->Print("There's nothing to unbind.\n");
-        return;
+        return console->Print("There's nothing to unbind.\n");
     }
+
     rebinder->ResetReloadBind();
 }

@@ -1,6 +1,7 @@
 #include "Portal.hpp"
 
 #include "Game.hpp"
+#include "Offsets.hpp"
 
 Portal::Portal()
 {
@@ -9,9 +10,12 @@ Portal::Portal()
 void Portal::LoadOffsets()
 {
     HalfLife2::LoadOffsets();
-}
-void Portal::LoadRules()
-{
+
+    using namespace Offsets;
+
+    // server.so
+
+    iNumPortalsPlaced = 4816; // CPortal_Player::IncrementPortalsPlaced
 }
 const char* Portal::Version()
 {

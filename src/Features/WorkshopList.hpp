@@ -1,8 +1,8 @@
 #pragma once
-#include "Feature.hpp"
-
 #include <string>
 #include <vector>
+
+#include "Feature.hpp"
 
 #include "Command.hpp"
 

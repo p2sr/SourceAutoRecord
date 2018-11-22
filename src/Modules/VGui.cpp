@@ -1,12 +1,5 @@
 #include "VGui.hpp"
 
-#include "Client.hpp"
-#include "Console.hpp"
-#include "Engine.hpp"
-#include "Scheme.hpp"
-#include "Server.hpp"
-#include "Surface.hpp"
-
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
 #include "Features/Routing/EntityInspector.hpp"
@@ -15,9 +8,17 @@
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
+#include "Features/Tas/TasTools.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/Timer/TimerAverage.hpp"
 #include "Features/Timer/TimerCheckPoints.hpp"
+
+#include "Client.hpp"
+#include "Console.hpp"
+#include "Engine.hpp"
+#include "Scheme.hpp"
+#include "Server.hpp"
+#include "Surface.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -170,9 +171,11 @@ DETOUR(VGui::Paint, int mode)
         if (info && info->m_pEntity) {
             DrawElement("name: %s", server->GetEntityName(info->m_pEntity));
             DrawElement("class: %s", server->GetEntityClassName(info->m_pEntity));
+            DrawElement("offset: %s", *reinterpret_cast<int*>((uintptr_t)info->m_pEntity + inspector->offset));
         } else {
             DrawElement("name: -");
             DrawElement("class: -");
+            DrawElement("offset: -");
         }
 
         auto data = inspector->GetData();
@@ -184,6 +187,42 @@ DETOUR(VGui::Paint, int mode)
         DrawElement("eflags: %i", data.eFlags);
         DrawElement("maxspeed: %.3f", data.maxSpeed);
         DrawElement("gravity: %.3f", data.gravity);
+    }
+    // Tas tools
+    if (sar_hud_velocity_angle.GetBool()) {
+        auto velocityAngles = tasTools->GetVelocityAngles();
+        DrawElement("vel ang: %.3f %.3f", velocityAngles.x, velocityAngles.y);
+    }
+    if (sar_hud_acceleration.GetBool()) {
+        auto acceleration = tasTools->GetAcceleration();
+        if (sar_hud_acceleration.GetInt() == 1) {
+            DrawElement("accel: %.3f %.3f", acceleration.x, acceleration.y);
+        } else {
+            DrawElement("accel: %.3f", acceleration.z);
+        }
+    }
+    if (sar_hud_player_info.GetBool()) {
+        auto info = tasTools->GetPlayerInfo();
+        if (info) {
+            if (tasTools->propType == PropType::Boolean) {
+                DrawElement("%s::%s: %s", tasTools->className, tasTools->propName, *reinterpret_cast<bool*>(info) ? "true" : "false");
+            } else if (tasTools->propType == PropType::Float) {
+                DrawElement("%s::%s: %.3f", tasTools->className, tasTools->propName, *reinterpret_cast<float*>(info));
+            } else if (tasTools->propType == PropType::Vector) {
+                auto vec = *reinterpret_cast<Vector*>(info);
+                DrawElement("%s::%s: %.3f %.3f %.3f", tasTools->className, tasTools->propName, vec.x, vec.y, vec.z);
+            } else if (tasTools->propType == PropType::Handle) {
+                DrawElement("%s::%s: %p", tasTools->className, tasTools->propName, *reinterpret_cast<void**>(info));
+            } else if (tasTools->propType == PropType::String) {
+                DrawElement("%s::%s: %s", tasTools->className, tasTools->propName, *reinterpret_cast<char**>(info));
+            } else if (tasTools->propType == PropType::Char) {
+                DrawElement("%s::%s: %c", tasTools->className, tasTools->propName, *reinterpret_cast<char*>(info));
+            } else {
+                DrawElement("%s::%s: %i", tasTools->className, tasTools->propName, *reinterpret_cast<int*>(info));
+            }
+        } else {
+            DrawElement("%s::%s: -", tasTools->className, tasTools->propName);
+        }
     }
 
     surface->FinishDrawing();

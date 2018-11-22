@@ -4,6 +4,8 @@
 
 #include "Utils/SDK.hpp"
 
+StepCounter* stepCounter;
+
 StepCounter::StepCounter()
     : stepSoundTime(0)
 {
@@ -46,5 +48,3 @@ void StepCounter::ResetTimer()
 {
     this->stepSoundTime = 0;
 }
-
-StepCounter* stepCounter;

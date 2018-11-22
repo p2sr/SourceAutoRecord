@@ -1,12 +1,12 @@
 #include "Timer.hpp"
 
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
-
 #include "TimerAverage.hpp"
 #include "TimerCheckPoints.hpp"
 
 #include "Features/Stats/Stats.hpp"
+
+#include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
 
 #include "Command.hpp"
 #include "Utils.hpp"
@@ -63,6 +63,8 @@ void Timer::Stop(int engineTick)
     this->Save(engineTick);
     this->isRunning = false;
 }
+
+// Commands
 
 CON_COMMAND(sar_timer_start, "Starts timer.\n")
 {

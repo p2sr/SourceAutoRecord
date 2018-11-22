@@ -40,9 +40,6 @@ void Portal::LoadOffsets()
     StartDrawing = 129; // CMatSystemSurface::PaintTraverseEx
     FinishDrawing = 650; // CMatSystemSurface::PaintTraverseEx
 }
-void Portal::LoadRules()
-{
-}
 const char* Portal::Version()
 {
     return "Portal (1910503)";
