@@ -19,12 +19,12 @@ public:
     char propName[32];
     int propOffset;
     PropType propType;
+    int move;
 
 private:
     Vector acceleration;
     Vector prevVelocity;
     int prevTick;
-    int move;
     int m_first_tick_forward;
     int m_first_tick_backward;
     int m_first_tick_moveright;
@@ -36,7 +36,7 @@ public:
     Vector GetVelocityAngles();
     Vector GetAcceleration();
     void* GetPlayerInfo();
-    void Strafe(int opposite, int grounded, int in_2D);
+    void Strafe(int opposite, int in_2D);
 };
 
 extern TasTools* tasTools;

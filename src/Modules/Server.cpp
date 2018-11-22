@@ -30,7 +30,6 @@ Variable sv_stopspeed;
 Variable sv_maxvelocity;
 Variable sv_transition_fade_time;
 Variable sv_laser_cube_autoaim;
-
 Variable sv_edgefriction;
 Variable cl_sidespeed;
 Variable cl_forwardspeed;
@@ -270,10 +269,6 @@ DETOUR(Server::PlayerMove)
     }
 
     stats->velocity->Save(client->GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
-
-
-	//tasTools->mv_forward = m_MoveType & IN_FORWARD;
-
 
 #ifndef _WIN32
     inspector->Record();

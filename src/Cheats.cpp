@@ -96,7 +96,6 @@ void Cheats::Init()
     sv_maxspeed = Variable("sv_maxspeed");
     sv_stopspeed = Variable("sv_stopspeed");
     sv_maxvelocity = Variable("sv_maxvelocity");
-
 	sv_edgefriction = Variable("sv_edgefriction");
     cl_sidespeed = Variable("cl_sidespeed");
     cl_forwardspeed = Variable("cl_forwardspeed");

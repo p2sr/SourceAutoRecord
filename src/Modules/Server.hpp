@@ -102,7 +102,6 @@ extern Variable sv_stopspeed;
 extern Variable sv_maxvelocity;
 extern Variable sv_transition_fade_time;
 extern Variable sv_laser_cube_autoaim;
-
 extern Variable sv_edgefriction;
 extern Variable cl_sidespeed;
 extern Variable cl_forwardspeed;

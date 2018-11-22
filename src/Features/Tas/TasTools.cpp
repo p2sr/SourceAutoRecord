@@ -17,7 +17,7 @@ TasTools* tasTools;
 TasTools::TasTools()
     : propName("m_InAirState")
     , propType(PropType::Integer)
-    , acceleration({0, 0, 0})
+    , acceleration({ 0, 0, 0 })
     , prevVelocity({ 0, 0, 0 })
     , prevTick(0)
     , move(0)
@@ -30,7 +30,7 @@ TasTools::TasTools()
         std::strncpy(this->className, "CBasePlayer", sizeof(this->className));
     }
 
-    client->GetOffset(this->className, this-> propName, this->propOffset);
+    client->GetOffset(this->className, this->propName, this->propOffset);
 
     this->hasLoaded = true;
 }
@@ -90,21 +90,26 @@ Vector TasTools::GetAcceleration()
 
     return this->acceleration;
 }
-void TasTools::Strafe(int opposite, int grounded, int in_2D)
+void TasTools::Strafe(int opposite, int in_2D)
 {
-    float tau = 1 / host_framerate.GetFloat(); //A time for one frame to pass, don't know if it's an actual value you can get smh
+    float tau = 1 / host_framerate.GetFloat(); //A time for one frame to pass
 
     //Creating lambda(v) - velocity after ground friction
     float player_friction = 1;
     float friction = sv_friction.GetFloat() * player_friction * 1;
     Vector velocity = client->GetLocalVelocity();
     Vector lambda = velocity;
-    
-	//Get the grounded status
-	/*int is_inAir;
+
+	//Getting the player grounded status
+	int offset;
+	client->GetOffset("CPortal_Player", "m_InAirState", offset);
     auto player = client->GetPlayer();
-    client->GetOffset("CPortal_Player", "m_InAirState", is_inAir);
-    int grounded = (player) ? !(*reinterpret_cast<int*>((uintptr_t)player + is_inAir)) : -1;*/
+    auto info = (player) ? reinterpret_cast<void*>((uintptr_t)player + offset) : nullptr;
+    int grounded = 0;
+    if (info)
+        grounded = !(*reinterpret_cast<int*>(info));
+    else
+        return console->Warning("Unable to find the player !\n");
 
     if (grounded) {
         if ((in_2D) ? velocity.Length() : velocity.Length2D() >= sv_stopspeed.GetFloat()) {
@@ -118,17 +123,13 @@ void TasTools::Strafe(int opposite, int grounded, int in_2D)
     }
 
     //Getting M
-    int jump_state = (this->move & IN_JUMP) ? 1 : 0; 
-	int forward_keystate = (this->move & IN_FORWARD) ? 1 : 0;
-	int backward_keystate = (this->move & IN_BACK) ? 1 : 0;
-	int moveright_keystate = (this->move & IN_MOVELEFT) ? 1 : 0;
-	int moveleft_keystate = (this->move & IN_MOVERIGHT) ? 1 : 0;
+    int forward_keystate = (this->move & IN_FORWARD) ? 1 : 0;
+    int backward_keystate = (this->move & IN_BACK) ? 1 : 0;
+    int moveright_keystate = (this->move & IN_MOVELEFT) ? 1 : 0;
+    int moveleft_keystate = (this->move & IN_MOVERIGHT) ? 1 : 0;
 
     float F = forward_keystate - backward_keystate;
     float S = moveright_keystate - moveleft_keystate;
-
-    //float F = 1;
-    //float S = 0;
 
     float stateLen = sqrt(F * F + S * S);
     float forwardMove = cl_forwardspeed.GetFloat() * F / stateLen;
@@ -147,10 +148,6 @@ void TasTools::Strafe(int opposite, int grounded, int in_2D)
         cosTheta = 0;
 
     float theta = acosf(cosTheta) * (opposite ? -1 : 1);
-
-	console->Print("Friction: %f, velocity.length: %f, lambda.lenght: %f, M: %f, A: %f, L: %f, cosTheta: %f, theta: %f\n\n",
-        friction, (in_2D) ? velocity.Length() : velocity.Length2D(), (in_2D) ? lambda.Length2D() : lambda.Length(), M, A, L, cosTheta, theta);
-
     engine->SetAngles({ 0, this->GetVelocityAngles().x + RAD2DEG(theta), 0 });
 }
 
@@ -242,21 +239,12 @@ CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : Sets {x, y, z} degres 
 }
 CON_COMMAND(sar_groundstrafe, "sar_groundstrafe <opposite> [2D]\n")
 {
-	if (!sv_cheats.GetBool())
-		return console->Print("Cannot use sar_groundstrafe without sv_cheats sets to 1.\n");
-  
-	if (args.ArgC() < 2)
-		return console->Print("Missing arguments : sar_groundstrafe <opposite> [2D]\n");
-  
-	tasTools->Strafe(std::atoi(args[1]), 1, std::atoi(args[2]));
-}
-CON_COMMAND(sar_airstrafe, "sar_strafe <opposite> [2D]\n")
-{
+    if (!(sar.game->version & SourceGame_Portal2))
+        return console->Warning("sar_groundstrafe only available for Portal 2.\n");
     if (!sv_cheats.GetBool())
-        return console->Print("Cannot use sar_strafe without sv_cheats sets to 1.\n");
-  
+        return console->Print("Cannot use sar_groundstrafe without sv_cheats sets to 1.\n");
     if (args.ArgC() < 2)
-        return console->Print("Missing arguments : sar_strafe <opposite> [2D]\n");
-      
-	tasTools->Strafe(std::atoi(args[1]), 0, std::atoi(args[2]));
+        return console->Print("Missing arguments : sar_groundstrafe <opposite> [2D]\n");
+
+    tasTools->Strafe(std::atoi(args[1]), std::atoi(args[2]));
 }
