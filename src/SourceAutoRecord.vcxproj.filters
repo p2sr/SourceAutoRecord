@@ -134,7 +134,8 @@
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
     <ClCompile Include="Features\Tas\TasTools.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+	</ClCompile>
     <ClCompile Include="Features\Tas\CommandQueuer.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
@@ -385,6 +386,7 @@
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTools.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
+	</ClInclude>
     <ClInclude Include="Features\Tas\CommandQueuer.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
