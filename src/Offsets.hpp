@@ -105,7 +105,6 @@ extern int m_bDucked;
 
 // CPortal_Player
 extern int iNumPortalsPlaced;
-extern int m_InAirState;
 
 // IEngineVGuiInternal
 extern int Paint;
@@ -195,7 +194,4 @@ extern int NUM_ENT_ENTRIES;
 extern int m_iClassName;
 extern int m_iName;
 extern int m_EntPtrArray;
-
-//sar_get_offset
-extern int anyOffset;
 }

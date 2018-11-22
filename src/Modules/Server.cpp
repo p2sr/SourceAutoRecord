@@ -7,7 +7,6 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
-#include "Features/Stats/StatsExport.hpp"
 
 #include "Client.hpp"
 #include "Engine.hpp"
@@ -228,10 +227,6 @@ DETOUR(Server::PlayerMove)
     }
 
     stats->velocity->Save(client->GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
-    //Stats recording
-    if (statsExport->isrecording) {
-        statsExport->Record();
-    }
 
 #ifndef _WIN32
     inspector->Record();

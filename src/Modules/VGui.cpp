@@ -8,10 +8,10 @@
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
+#include "Features/Tas/TasTools.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/Timer/TimerAverage.hpp"
 #include "Features/Timer/TimerCheckPoints.hpp"
-#include "Features/Tas/TasTools.hpp"
 
 #include "Client.hpp"
 #include "Console.hpp"
@@ -186,21 +186,42 @@ DETOUR(VGui::Paint, int mode)
         DrawElement("maxspeed: %.3f", data.maxSpeed);
         DrawElement("gravity: %.3f", data.gravity);
     }
-	//Tas hud
+    // Tas tools
     if (sar_hud_velocity_angle.GetBool()) {
-        Vector velocity_angles = tasTools->GetVelocityAngles();
-        DrawElement("velocity: %.3f %0.3f", velocity_angles.x, velocity_angles.y);
+        auto velocityAngles = tasTools->GetVelocityAngles();
+        DrawElement("vel ang: %.3f %.3f", velocityAngles.x, velocityAngles.y);
     }
     if (sar_hud_acceleration.GetBool()) {
-		if (sar_hud_acceleration.GetInt() == 1)
-            DrawElement("acceleration: %.3f %.3f", tasTools->GetAcceleration().x, tasTools->GetAcceleration().y);
-        else
-            DrawElement("acceleration: %.3f", tasTools->GetAcceleration().z);
+        auto acceleration = tasTools->GetAcceleration();
+        if (sar_hud_acceleration.GetInt() == 1) {
+            DrawElement("accel: %.3f %.3f", acceleration.x, acceleration.y);
+        } else {
+            DrawElement("accel: %.3f", acceleration.z);
+        }
     }
-	//Offset reader
-    if (sar_hud_get_offset.GetBool()) {
-        DrawElement("CPortal_Player::%s = %d", tasTools->m_offset_name, tasTools->GetOffset());
-	}
+    if (sar_hud_player_info.GetBool()) {
+        auto info = tasTools->GetPlayerInfo();
+        if (info) {
+            if (tasTools->propType == PropType::Boolean) {
+                DrawElement("%s::%s: %s", tasTools->className, tasTools->propName, *reinterpret_cast<bool*>(info) ? "true" : "false");
+            } else if (tasTools->propType == PropType::Float) {
+                DrawElement("%s::%s: %.3f", tasTools->className, tasTools->propName, *reinterpret_cast<float*>(info));
+            } else if (tasTools->propType == PropType::Vector) {
+                auto vec = *reinterpret_cast<Vector*>(info);
+                DrawElement("%s::%s: %.3f %.3f %.3f", tasTools->className, tasTools->propName, vec.x, vec.y, vec.z);
+            } else if (tasTools->propType == PropType::Handle) {
+                DrawElement("%s::%s: %p", tasTools->className, tasTools->propName, *reinterpret_cast<void**>(info));
+            } else if (tasTools->propType == PropType::String) {
+                DrawElement("%s::%s: %s", tasTools->className, tasTools->propName, *reinterpret_cast<char**>(info));
+            } else if (tasTools->propType == PropType::Char) {
+                DrawElement("%s::%s: %c", tasTools->className, tasTools->propName, *reinterpret_cast<char*>(info));
+            } else {
+                DrawElement("%s::%s: %i", tasTools->className, tasTools->propName, *reinterpret_cast<int*>(info));
+            }
+        } else {
+            DrawElement("%s::%s: -", tasTools->className, tasTools->propName);
+        }
+    }
 
     surface->FinishDrawing();
 

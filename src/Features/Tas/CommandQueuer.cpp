@@ -102,7 +102,7 @@ CON_COMMAND(sar_tas_frames_at,
 {
     if (args.ArgC() != 5) {
         return console->Print("sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute] : "
-            "Adds command frame multiple times to the queue.\n");
+                              "Adds command frame multiple times to the queue.\n");
     }
 
     tasQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]));
@@ -113,7 +113,7 @@ CON_COMMAND(sar_tas_frame_after,
 {
     if (args.ArgC() != 3) {
         return console->Print("sar_tas_frame_after <frames_to_wait> [command_to_execute] : "
-            "Adds command frame to the queue.\n");
+                              "Adds command frame to the queue.\n");
     }
 
     tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]), true);
@@ -124,7 +124,7 @@ CON_COMMAND(sar_tas_frames_after,
 {
     if (args.ArgC() != 5) {
         return console->Print("sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute] : "
-            "Adds command frame multiple times to the queue.\n");
+                              "Adds command frame multiple times to the queue.\n");
     }
 
     tasQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]), true);
