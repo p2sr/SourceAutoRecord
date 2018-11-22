@@ -217,9 +217,6 @@
     <ClCompile Include="Utils\Memory.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Stats\StatsExport.cpp">
-      <Filter>SourceAutoRecord\Features\Stats</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Tas\TasTools.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
@@ -464,9 +461,6 @@
     </ClInclude>
     <ClInclude Include="Games\Linux\Portal.hpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Stats\StatsExport.hpp">
-      <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTools.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>

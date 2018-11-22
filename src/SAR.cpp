@@ -12,7 +12,6 @@
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
-#include "Features/Stats/StatsExport.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
@@ -73,7 +72,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Tracer>(&tracer);
             this->features->AddFeature<SpeedrunTimer>(&speedrun);
             this->features->AddFeature<Stats>(&stats);
-            this->features->AddFeature<StatsExport>(&statsExport);
             this->features->AddFeature<CommandQueuer>(&tasQueuer);
             this->features->AddFeature<ReplaySystem>(&tasReplaySystem);
             this->features->AddFeature<Timer>(&timer);
