@@ -20,7 +20,7 @@ TasTools::TasTools()
     , acceleration({ 0, 0, 0 })
     , prevVelocity({ 0, 0, 0 })
     , prevTick(0)
-    , move(0)
+    , buttonBits(0)
 {
     if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2)) {
         std::strncpy(this->className, "CPortal_Player", sizeof(this->className));
