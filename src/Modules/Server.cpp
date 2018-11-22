@@ -66,6 +66,42 @@ CEntInfo* Server::GetEntityInfoByIndex(int index)
         : sizeof(CEntInfo);
     return reinterpret_cast<CEntInfo*>((uintptr_t)server->m_EntPtrArray + size * index);
 }
+CEntInfo* Server::GetEntityInfoByName(const char* name)
+{
+    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+        auto info = server->GetEntityInfoByIndex(index);
+        if (info->m_pEntity == nullptr) {
+            continue;
+        }
+
+        auto match = server->GetEntityName(info->m_pEntity);
+        if (!match || std::strcmp(match, name) != 0) {
+            continue;
+        }
+
+        return info;
+    }
+
+    return nullptr;
+}
+CEntInfo* Server::GetEntityInfoByClassName(const char* name)
+{
+    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+        auto info = server->GetEntityInfoByIndex(index);
+        if (info->m_pEntity == nullptr) {
+            continue;
+        }
+
+        auto match = server->GetEntityClassName(info->m_pEntity);
+        if (!match || std::strcmp(match, name) != 0) {
+            continue;
+        }
+
+        return info;
+    }
+
+    return nullptr;
+}
 char* Server::GetEntityName(void* entity)
 {
     return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iName);
@@ -234,10 +270,6 @@ DETOUR(Server::PlayerMove)
     }
 
     stats->velocity->Save(client->GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
-    //Stats recording
-    if (statsExport->isrecording) {
-        statsExport->Record();
-    }
 
 
 	//tasTools->mv_forward = m_MoveType & IN_FORWARD;
@@ -331,7 +363,7 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
-    if (!*server->g_InRestore) {
+    /* if (!*server->g_InRestore) {
         auto pe = server->g_EventQueue->m_Events.m_pNext;
         while (pe && pe->m_flFireTime <= server->gpGlobals->curtime) {
             if (sar_debug_event_queue.GetBool()) {
@@ -345,16 +377,21 @@ DETOUR(Server::GameFrame, bool simulating)
                 console->Msg("    - m_iOutputID    %i\n", pe->m_iOutputID);
             }
 
-            speedrun->CheckRules(pe, engine->tickcount);
-
             pe = pe->m_pNext;
         }
-    }
+    } */
 
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else
-    return Server::GameFrame(thisptr, simulating);
+    if (!*server->g_InRestore) {
+        speedrun->CheckRules(engine->tickcount);
+    }
+    auto result = Server::GameFrame(thisptr, simulating);
+#endif
+
+#ifndef _WIN32
+    return result;
 #endif
 }
 
@@ -406,13 +443,14 @@ bool Server::Init()
         Memory::DerefDeref<CGlobalVars*>((uintptr_t)this->UTIL_PlayerByIndex + Offsets::gpGlobals, &this->gpGlobals);
 
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
-        /* auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
+
+        auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
         auto ServiceEventQueue = Memory::Read(GameFrame + Offsets::ServiceEventQueue);
 
         Memory::Deref<bool*>(GameFrame + Offsets::g_InRestore, &this->g_InRestore);
         Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue, &this->g_EventQueue);
 
-        this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame); */
+        this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
     }
 
     this->GetOffset("CBasePlayer", "m_nWaterLevel", Offsets::m_nWaterLevel);

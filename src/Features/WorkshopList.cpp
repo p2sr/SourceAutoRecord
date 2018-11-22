@@ -58,7 +58,7 @@ int sar_workshop_CompletionFunc(const char* partial,
         match = match + std::strlen(cmd);
     }
 
-    if (workshop->maps.size() == 0) {
+    if (workshop->maps.empty()) {
         workshop->Update();
     }
 
@@ -106,7 +106,7 @@ CON_COMMAND(sar_workshop_update, "Updates the workshop map list.\n")
 }
 CON_COMMAND(sar_workshop_list, "Prints all workshop maps.\n")
 {
-    if (workshop->maps.size() == 0) {
+    if (workshop->maps.empty()) {
         workshop->Update();
     }
 

@@ -18,6 +18,7 @@ private:
 public:
     bool isRegistered;
     bool isReference;
+
     static std::vector<Variable*> list;
 
 public:

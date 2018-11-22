@@ -63,7 +63,7 @@ Replay* ReplaySystem::GetCurrentReplay()
 }
 bool ReplaySystem::AnyReplaysLoaded()
 {
-    return this->replays.size() != 0;
+    return !this->replays.empty();
 }
 void ReplaySystem::DeleteAll()
 {

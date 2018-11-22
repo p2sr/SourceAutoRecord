@@ -80,6 +80,7 @@ void Session::Started(bool menu)
         currentFrame = 0;
     }
 
+    speedrun->ReloadRules();
     isInSession = true;
 }
 void Session::Ended()
@@ -122,6 +123,7 @@ void Session::Ended()
     tasQueuer->Stop();
     tasReplaySystem->Stop();
     speedrun->Pause();
+    speedrun->UnloadRules();
 
     this->isInSession = false;
 }

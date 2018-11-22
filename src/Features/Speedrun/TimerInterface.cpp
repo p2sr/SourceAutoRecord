@@ -7,7 +7,7 @@ TimerInterface::TimerInterface()
     : start("SAR_TIMER_START")
     , total(0)
     , ipt(0)
-    , action(TimerAction::Unknown)
+    , action(TimerAction::DoNothing)
     , end("SAR_TIMER_END")
 {
 }

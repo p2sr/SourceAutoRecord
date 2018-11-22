@@ -191,6 +191,7 @@
     <ClCompile Include="Features\Stats\VelocityStats.cpp" />
     <ClCompile Include="Features\StepCounter.cpp" />
     <ClCompile Include="Features\Summary.cpp" />
+    <ClCompile Include="Features\Tas\TasTools.cpp" />
     <ClCompile Include="Features\Tas\CommandQueuer.cpp" />
     <ClCompile Include="Features\Tas\Replay.cpp" />
     <ClCompile Include="Features\Tas\ReplaySystem.cpp" />
@@ -282,6 +283,7 @@
     <ClInclude Include="Features\Stats\VelocityStats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
+    <ClInclude Include="Features\Tas\TasTools.hpp" />
     <ClInclude Include="Features\Tas\CommandQueuer.hpp" />
     <ClInclude Include="Features\Tas\Replay.hpp" />
     <ClInclude Include="Features\Tas\ReplaySystem.hpp" />

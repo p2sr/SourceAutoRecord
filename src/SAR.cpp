@@ -76,7 +76,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<StatsExport>(&statsExport);
             this->features->AddFeature<CommandQueuer>(&tasQueuer);
             this->features->AddFeature<ReplaySystem>(&tasReplaySystem);
-            this->features->AddFeature<TasTools>(&tasTools);
             this->features->AddFeature<Timer>(&timer);
             this->features->AddFeature<EntityInspector>(&inspector);
             this->features->AddFeature<ClassDumper>(&classDumper);
@@ -94,12 +93,16 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
 
+                this->features->AddFeature<TasTools>(&tasTools);
+
                 if (this->game->version & SourceGame_Portal2) {
                     this->features->AddFeature<Listener>(&listener);
                     this->features->AddFeature<WorkshopList>(&workshop);
 
                     listener->Init();
                 }
+
+                speedrun->LoadRules(this->game);
 
                 config->Load();
 
