@@ -241,14 +241,14 @@ CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : Sets {x, y, z} degres 
     QAngle angle = { static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])) };
     engine->SetAngles(angle);
 }
-CON_COMMAND(sar_groundstrafe, "sar_groundstrafe <opposite> [2D]\n")
+CON_COMMAND(sar_tas_groundstrafe, "sar_tas_groundstrafe <opposite> [2D]\n")
 {
     if (!(sar.game->version & SourceGame_Portal2))
-        return console->Warning("sar_groundstrafe only available for Portal 2.\n");
+        return console->Warning("sar_tas_groundstrafe only available for Portal 2.\n");
     if (!sv_cheats.GetBool())
-        return console->Print("Cannot use sar_groundstrafe without sv_cheats sets to 1.\n");
+        return console->Print("Cannot use sar_tas_groundstrafe without sv_cheats sets to 1.\n");
     if (args.ArgC() < 2)
-        return console->Print("Missing arguments : sar_groundstrafe <opposite> [2D]\n");
+        return console->Print("Missing arguments : sar_tas_groundstrafe <opposite> [2D]\n");
 
     tasTools->Strafe(std::atoi(args[1]), std::atoi(args[2]));
 }
