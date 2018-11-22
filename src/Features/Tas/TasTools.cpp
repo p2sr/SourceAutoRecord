@@ -59,6 +59,10 @@ void* TasTools::GetPlayerInfo()
     auto player = client->GetPlayer();
     return (player) ? reinterpret_cast<void*>((uintptr_t)player + this->propOffset) : nullptr;
 }
+void TasTools::SetButtonBits(int buttonBits)
+{
+    this->buttonBits = buttonBits;
+}
 Vector TasTools::GetVelocityAngles()
 {
     auto velocityAngles = client->GetLocalVelocity();
@@ -123,10 +127,10 @@ void TasTools::Strafe(int opposite, int in_2D)
     }
 
     //Getting M
-    int forward_keystate = (this->move & IN_FORWARD) ? 1 : 0;
-    int backward_keystate = (this->move & IN_BACK) ? 1 : 0;
-    int moveright_keystate = (this->move & IN_MOVELEFT) ? 1 : 0;
-    int moveleft_keystate = (this->move & IN_MOVERIGHT) ? 1 : 0;
+    int forward_keystate = (this->buttonBits & IN_FORWARD) ? 1 : 0;
+    int backward_keystate = (this->buttonBits & IN_BACK) ? 1 : 0;
+    int moveright_keystate = (this->buttonBits & IN_MOVELEFT) ? 1 : 0;
+    int moveleft_keystate = (this->buttonBits & IN_MOVERIGHT) ? 1 : 0;
 
     float F = forward_keystate - backward_keystate;
     float S = moveright_keystate - moveleft_keystate;

@@ -7,7 +7,6 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
-#include "Features/Tas/TasTools.hpp"
 
 #include "Client.hpp"
 #include "Engine.hpp"
