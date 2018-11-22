@@ -49,3 +49,4 @@ Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 2
 Variable sar_hud_velocity_angle("sar_hud_velocity_angle", "0", "Draws the velocity angles.\n");
 Variable sar_hud_acceleration("sar_hud_acceleration", "0", 0, 2, "Draws the instant acceleration.\n");
 Variable sar_hud_get_offset("sar_hud_get_offset", "0", "Draw the offset specified.\n");
+Variable sar_hud_get_button("sar_hud_get_button", "0", "Draw the button pressed.\n");

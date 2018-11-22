@@ -42,3 +42,4 @@ extern Variable sar_hud_default_font_color;
 extern Variable sar_hud_velocity_angle;
 extern Variable sar_hud_acceleration;
 extern Variable sar_hud_get_offset;
+extern Variable sar_hud_get_button;

@@ -10,11 +10,13 @@ public:
     Vector GetVelocityAngles();
     Vector GetAcceleration();
     int GetOffset();
+    void GroundStrafe(int opposite);
 
 public:
     char m_offset_name[100];
     int m_offset;
     void* m_player;
+    float mv_forward;
 
 private:
     Vector m_previous_speed;

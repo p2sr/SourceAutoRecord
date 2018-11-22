@@ -30,6 +30,11 @@ Variable sv_maxvelocity;
 Variable sv_transition_fade_time;
 Variable sv_laser_cube_autoaim;
 
+Variable sv_edgefriction;
+Variable cl_sidespeed;
+Variable cl_forwardspeed;
+Variable host_framerate;
+
 REDECL(Server::CheckJumpButton);
 REDECL(Server::CheckJumpButtonBase);
 REDECL(Server::PlayerMove);
@@ -232,6 +237,7 @@ DETOUR(Server::PlayerMove)
     if (statsExport->isrecording) {
         statsExport->Record();
     }
+
 
 #ifndef _WIN32
     inspector->Record();
