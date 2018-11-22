@@ -6,6 +6,7 @@
 #include "Features/Session.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Tas/ReplaySystem.hpp"
+#include "Features/Tas/TasTools.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -125,6 +126,9 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
 {
     vgui->inputHud->SetButtonBits(cmd->buttons);
 
+    tasTools->move = cmd->buttons;
+
+
     if (cmd->command_number) {
         if (tasReplaySystem->IsPlaying()) {
             auto replay = tasReplaySystem->GetCurrentReplay();
@@ -138,7 +142,7 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
         }
     }
 
-    return Client::CreateMove(thisptr, flInputSampleTime, cmd);
+	return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
 
 // CHud::GetName

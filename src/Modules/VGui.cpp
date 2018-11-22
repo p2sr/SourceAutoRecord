@@ -225,6 +225,12 @@ DETOUR(VGui::Paint, int mode)
         }
     }
 
+	DrawElement("+forward : %d", tasTools->move & IN_FORWARD);
+    DrawElement("+back : %d", tasTools->move & IN_BACK);
+    DrawElement("+right : %d", tasTools->move & IN_MOVERIGHT);
+    DrawElement("+left : %d", tasTools->move & IN_MOVELEFT);
+    DrawElement("+jump : %d", tasTools->move & IN_JUMP);
+
     surface->FinishDrawing();
 
     // Draw other HUDs

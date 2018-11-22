@@ -97,6 +97,11 @@ void Cheats::Init()
     sv_stopspeed = Variable("sv_stopspeed");
     sv_maxvelocity = Variable("sv_maxvelocity");
 
+	sv_edgefriction = Variable("sv_edgefriction");
+    cl_sidespeed = Variable("cl_sidespeed");
+    cl_forwardspeed = Variable("cl_forwardspeed");
+    host_framerate = Variable("host_framerate");
+
     sv_accelerate.Unlock();
     sv_airaccelerate.Unlock();
     sv_friction.Unlock();

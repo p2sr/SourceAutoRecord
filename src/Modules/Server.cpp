@@ -7,6 +7,8 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
+#include "Features/Stats/StatsExport.hpp"
+#include "Features/Tas/TasTools.hpp"
 
 #include "Client.hpp"
 #include "Engine.hpp"
@@ -28,6 +30,11 @@ Variable sv_stopspeed;
 Variable sv_maxvelocity;
 Variable sv_transition_fade_time;
 Variable sv_laser_cube_autoaim;
+
+Variable sv_edgefriction;
+Variable cl_sidespeed;
+Variable cl_forwardspeed;
+Variable host_framerate;
 
 REDECL(Server::CheckJumpButton);
 REDECL(Server::CheckJumpButtonBase);
@@ -263,6 +270,10 @@ DETOUR(Server::PlayerMove)
     }
 
     stats->velocity->Save(client->GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
+
+
+	//tasTools->mv_forward = m_MoveType & IN_FORWARD;
+
 
 #ifndef _WIN32
     inspector->Record();
