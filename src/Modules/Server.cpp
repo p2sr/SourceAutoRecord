@@ -8,6 +8,7 @@
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Stats/StatsExport.hpp"
+#include "Features/Tas/TasTools.hpp"
 
 #include "Client.hpp"
 #include "Engine.hpp"
@@ -237,6 +238,9 @@ DETOUR(Server::PlayerMove)
     if (statsExport->isrecording) {
         statsExport->Record();
     }
+
+
+	//tasTools->mv_forward = m_MoveType & IN_FORWARD;
 
 
 #ifndef _WIN32

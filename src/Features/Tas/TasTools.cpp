@@ -18,7 +18,7 @@ TasTools::TasTools()
     : m_previous_speed(Vector{ 0, 0, 0 })
     , m_last_tick(0)
     , m_acceleration(Vector{ 0, 0, 0 })
-    , mv_forward(0)
+    , move(0)
 {
     this->hasLoaded = true;
     strcpy(this->m_offset_name, "m_InAirState");
@@ -74,7 +74,7 @@ Vector TasTools::GetAcceleration()
     }
     return m_acceleration;
 }
-void TasTools::GroundStrafe(int opposite)
+void TasTools::Strafe(int opposite, int grounded, int in_2D)
 {
     float tau = 1 / host_framerate.GetFloat(); //A time for one frame to pass, don't know if it's an actual value you can get smh
 
@@ -82,19 +82,18 @@ void TasTools::GroundStrafe(int opposite)
     float player_friction = 1;
     float friction = sv_friction.GetFloat() * player_friction * 1;
     Vector velocity = client->GetLocalVelocity();
-
     Vector lambda = velocity;
     
 	//Get the grounded status
-	int is_inAir;
+	/*int is_inAir;
     auto player = client->GetPlayer();
     client->GetOffset("CPortal_Player", "m_InAirState", is_inAir);
-    int grounded = (player) ? !(*reinterpret_cast<int*>((uintptr_t)player + is_inAir)) : -1;
+    int grounded = (player) ? !(*reinterpret_cast<int*>((uintptr_t)player + is_inAir)) : -1;*/
 
     if (grounded) {
-        if (velocity.Length2D() >= sv_stopspeed.GetFloat()) {
+        if ((in_2D) ? velocity.Length() : velocity.Length2D() >= sv_stopspeed.GetFloat()) {
             lambda = lambda * (1.0 - tau * friction);
-        } else if (velocity.Length2D() >= std::fmax(0.1, tau * sv_stopspeed.GetFloat() * friction)) {
+        } else if ((in_2D) ? velocity.Length() : velocity.Length2D() >= std::fmax(0.1, tau * sv_stopspeed.GetFloat() * friction)) {
             Math::VectorNormalize(velocity);
             lambda = lambda + (velocity * (tau * sv_stopspeed.GetFloat() * friction)) * -1; //lambda -= v * tau * stop * friction
         } else {
@@ -103,14 +102,17 @@ void TasTools::GroundStrafe(int opposite)
     }
 
     //Getting M
+    int jump_state = (this->move & IN_JUMP) ? 1 : 0; 
+	int forward_keystate = (this->move & IN_FORWARD) ? 1 : 0;
+	int backward_keystate = (this->move & IN_BACK) ? 1 : 0;
+	int moveright_keystate = (this->move & IN_MOVELEFT) ? 1 : 0;
+	int moveleft_keystate = (this->move & IN_MOVERIGHT) ? 1 : 0;
 
-    /*auto mvForward = 0 & IN_FORWARD;
-    auto mvBack = 0 & IN_BACK;
-    auto mvLeft = 0 & IN_MOVELEFT;
-    auto mvRight = 0 & IN_MOVERIGHT;*/
+    float F = forward_keystate - backward_keystate;
+    float S = moveright_keystate - moveleft_keystate;
 
-    float F = 1;
-    float S = 0;
+    //float F = 1;
+    //float S = 0;
 
     float stateLen = sqrt(F * F + S * S);
     float forwardMove = cl_forwardspeed.GetFloat() * F / stateLen;
@@ -119,16 +121,20 @@ void TasTools::GroundStrafe(int opposite)
 
     //Getting other stuff
     float A = (grounded) ? sv_accelerate.GetFloat() : sv_airaccelerate.GetFloat();
-    float L = (grounded) ? M : std::fmin(30, M);
+    float L = (grounded) ? M : std::fmin(60, M);
 
     //Getting the most optimal angle
-    float cosTheta = (L - player_friction * tau * M * A) / lambda.Length2D();
+    float cosTheta = (L - player_friction * tau * M * A) / (in_2D) ? lambda.Length2D() : lambda.Length();
     if (cosTheta < 0)
         cosTheta = M_PI_F / 2;
     if (cosTheta > 1)
         cosTheta = 0;
 
     float theta = acosf(cosTheta) * (opposite ? -1 : 1);
+
+	console->Print("Friction: %f, velocity.length: %f, lambda.lenght: %f, M: %f, A: %f, L: %f, cosTheta: %f, theta: %f\n\n",
+        friction, (in_2D) ? velocity.Length() : velocity.Length2D(), (in_2D) ? lambda.Length2D() : lambda.Length(), M, A, L, cosTheta, theta);
+
     engine->SetAngles({ 0, this->GetVelocityAngles().x + RAD2DEG(theta), 0 });
 }
 
@@ -189,15 +195,27 @@ CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : set {x, y, z} degres t
     QAngle angle = { static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])) };
     engine->SetAngles(angle);
 }
-CON_COMMAND(sar_groundstrafe, "sar_groundstrafe <opposite> \n")
+CON_COMMAND(sar_groundstrafe, "sar_groundstrafe <opposite> [2D]\n")
 {
 	if (!sv_cheats.GetBool()){
         console->Print("Cannot use sar_groundstrafe without sv_cheats sets to 1.\n");
 		return;
 	}
 	if (args.ArgC() < 2) {
-		console->Print("Missing arguments : sar_groundstrafe <opposite>\n");
+		console->Print("Missing arguments : sar_groundstrafe <opposite> [2D]\n");
 		return;
 	}
-    tasTools->GroundStrafe(std::atoi(args[1]));
+	tasTools->Strafe(std::atoi(args[1]), 1, std::atoi(args[2]));
+}
+CON_COMMAND(sar_airstrafe, "sar_strafe <opposite> [2D]\n")
+{
+    if (!sv_cheats.GetBool()) {
+        console->Print("Cannot use sar_strafe without sv_cheats sets to 1.\n");
+        return;
+    }
+    if (args.ArgC() < 2) {
+        console->Print("Missing arguments : sar_strafe <opposite> [2D]\n");
+        return;
+    }
+	tasTools->Strafe(std::atoi(args[1]), 0, std::atoi(args[2]));
 }
