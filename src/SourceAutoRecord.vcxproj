@@ -138,11 +138,7 @@
       <NoEntryPoint>false</NoEntryPoint>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Portal 2\$(TargetName).dll"
-copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Half-Life 2\hl2\$(TargetName).dll"
-copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\The Stanley Parable\$(TargetName).dll"
-copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\The Beginners Guide\$(TargetName).dll"
-copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Portal\$(TargetName).dll"</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName).dll" "E:\Steam\SteamApps\common\Portal 2\$(TargetName).dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -190,14 +186,15 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="Features\Speedrun\TimerSplit.cpp" />
     <ClCompile Include="Features\Stats\JumpStats.cpp" />
     <ClCompile Include="Features\Stats\Stats.cpp" />
+    <ClCompile Include="Features\Stats\StatsExport.cpp" />
     <ClCompile Include="Features\Stats\StepStats.cpp" />
     <ClCompile Include="Features\Stats\VelocityStats.cpp" />
     <ClCompile Include="Features\StepCounter.cpp" />
     <ClCompile Include="Features\Summary.cpp" />
-    <ClCompile Include="Features\Tas\AutoAiming.cpp" />
     <ClCompile Include="Features\Tas\CommandQueuer.cpp" />
     <ClCompile Include="Features\Tas\Replay.cpp" />
     <ClCompile Include="Features\Tas\ReplaySystem.cpp" />
+    <ClCompile Include="Features\Tas\TasTools.cpp" />
     <ClCompile Include="Features\Teleporter.cpp" />
     <ClCompile Include="Features\Timer\Timer.cpp" />
     <ClCompile Include="Features\Timer\TimerAverage.cpp" />
@@ -279,15 +276,16 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\Speedrun\TimerState.hpp" />
     <ClInclude Include="Features\Stats\JumpStats.hpp" />
     <ClInclude Include="Features\Stats\Stats.hpp" />
+    <ClInclude Include="Features\Stats\StatsExport.hpp" />
     <ClInclude Include="Features\Stats\StatsResultType.hpp" />
     <ClInclude Include="Features\Stats\StepStats.hpp" />
     <ClInclude Include="Features\Stats\VelocityStats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
-    <ClInclude Include="Features\Tas\AutoAiming.hpp" />
     <ClInclude Include="Features\Tas\CommandQueuer.hpp" />
     <ClInclude Include="Features\Tas\Replay.hpp" />
     <ClInclude Include="Features\Tas\ReplaySystem.hpp" />
+    <ClInclude Include="Features\Tas\TasTools.hpp" />
     <ClInclude Include="Features\Teleporter.hpp" />
     <ClInclude Include="Features\Timer\Timer.hpp" />
     <ClInclude Include="Features\Timer\TimerAverage.hpp" />
