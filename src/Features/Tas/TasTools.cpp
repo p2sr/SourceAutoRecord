@@ -17,10 +17,14 @@ TasTools* tasTools;
 TasTools::TasTools()
     : propName("m_InAirState")
     , propType(PropType::Integer)
-    , acceleration({0, 0, 0})
+    , acceleration({ 0, 0, 0 })
     , prevVelocity({ 0, 0, 0 })
     , prevTick(0)
-    , move(0)
+    , buttonBits(0)
+    , m_backward_was_pressed(0)
+    , m_forward_was_pressed(0)
+    , m_moveleft_was_pressed(0)
+    , m_moveright_was_pressed(0)
 {
     if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2)) {
         std::strncpy(this->className, "CPortal_Player", sizeof(this->className));
@@ -30,7 +34,7 @@ TasTools::TasTools()
         std::strncpy(this->className, "CBasePlayer", sizeof(this->className));
     }
 
-    client->GetOffset(this->className, this-> propName, this->propOffset);
+    client->GetOffset(this->className, this->propName, this->propOffset);
 
     this->hasLoaded = true;
 }
@@ -90,66 +94,97 @@ Vector TasTools::GetAcceleration()
 
     return this->acceleration;
 }
-void TasTools::Strafe(int opposite, int grounded, int in_2D)
+void TasTools::SetButtonBits(int buttonBits)
 {
-    float tau = 1 / host_framerate.GetFloat(); //A time for one frame to pass, don't know if it's an actual value you can get smh
+    this->buttonBits = buttonBits;
+}
+void TasTools::Strafe(int direction)
+{
+    float tau = 1 / host_framerate.GetFloat(); //A time for one frame to pass
 
     //Creating lambda(v) - velocity after ground friction
     float player_friction = 1;
     float friction = sv_friction.GetFloat() * player_friction * 1;
     Vector velocity = client->GetLocalVelocity();
     Vector lambda = velocity;
-    
-	//Get the grounded status
-	/*int is_inAir;
+
+    //Getting the grounded status
+    /*int is_inAir;
     auto player = client->GetPlayer();
     client->GetOffset("CPortal_Player", "m_InAirState", is_inAir);
     int grounded = (player) ? !(*reinterpret_cast<int*>((uintptr_t)player + is_inAir)) : -1;*/
+    int jump_state = this->buttonBits & IN_JUMP;
+    int grounded = !jump_state;
 
     if (grounded) {
-        if ((in_2D) ? velocity.Length() : velocity.Length2D() >= sv_stopspeed.GetFloat()) {
+        if (velocity.Length2D() >= sv_stopspeed.GetFloat()) {
             lambda = lambda * (1.0 - tau * friction);
-        } else if ((in_2D) ? velocity.Length() : velocity.Length2D() >= std::fmax(0.1, tau * sv_stopspeed.GetFloat() * friction)) {
-            Math::VectorNormalize(velocity);
-            lambda = lambda + (velocity * (tau * sv_stopspeed.GetFloat() * friction)) * -1; //lambda -= v * tau * stop * friction
+        } else if (velocity.Length2D() >= std::fmax(0.1, tau * sv_stopspeed.GetFloat() * friction)) {
+            Vector normalized_velocity = velocity;
+            Math::VectorNormalize(normalized_velocity);
+            lambda = lambda + (normalized_velocity * (tau * sv_stopspeed.GetFloat() * friction)) * -1; //lambda -= v * tau * stop * friction
         } else {
             lambda = lambda * 0;
         }
     }
 
     //Getting M
-    int jump_state = (this->move & IN_JUMP) ? 1 : 0; 
-	int forward_keystate = (this->move & IN_FORWARD) ? 1 : 0;
-	int backward_keystate = (this->move & IN_BACK) ? 1 : 0;
-	int moveright_keystate = (this->move & IN_MOVELEFT) ? 1 : 0;
-	int moveleft_keystate = (this->move & IN_MOVERIGHT) ? 1 : 0;
+    float forward_keystate = (this->buttonBits & IN_FORWARD) ? 1 : 0;
+    float backward_keystate = (this->buttonBits & IN_BACK) ? 1 : 0;
+    float moveright_keystate = (this->buttonBits & IN_MOVELEFT) ? 1 : 0;
+    float moveleft_keystate = (this->buttonBits & IN_MOVERIGHT) ? 1 : 0;
+
+    //Managing 0.5 inputs
+    /*if (!forward_keystate) {
+        this->m_forward_was_pressed = 0;
+	} else if (forward_keystate && !this->m_forward_was_pressed){
+        this->m_forward_was_pressed = 1;
+        forward_keystate = 0.5;
+    } else {
+        this->m_forward_was_pressed = 0;
+    }
+    if (backward_keystate && !this->m_backward_was_pressed) {
+        this->m_backward_was_pressed = 1;
+        backward_keystate = 0.5;
+    } else {
+        this->m_backward_was_pressed = 0;
+    }
+    if (moveright_keystate && !this->m_moveright_was_pressed) {
+        this->m_moveright_was_pressed = 1;
+        moveright_keystate = 0.5;
+    } else {
+        this->m_moveright_was_pressed = 0;
+    }
+    if (moveleft_keystate && !this->m_moveleft_was_pressed) {
+        this->m_moveleft_was_pressed = 1;
+        moveleft_keystate = 0.5;
+    } else {
+        this->m_moveleft_was_pressed = 0;
+    }*/
 
     float F = forward_keystate - backward_keystate;
     float S = moveright_keystate - moveleft_keystate;
-
-    //float F = 1;
-    //float S = 0;
-
     float stateLen = sqrt(F * F + S * S);
     float forwardMove = cl_forwardspeed.GetFloat() * F / stateLen;
     float sideMove = cl_sidespeed.GetFloat() * S / stateLen;
     float M = std::fminf(sv_maxspeed.GetFloat(), sqrt(forwardMove * forwardMove + sideMove * sideMove));
 
     //Getting other stuff
-    float A = (grounded) ? sv_accelerate.GetFloat() : sv_airaccelerate.GetFloat();
+    float A = (grounded) ? sv_accelerate.GetFloat() : sv_airaccelerate.GetFloat() / 2;
     float L = (grounded) ? M : std::fmin(60, M);
 
     //Getting the most optimal angle
-    float cosTheta = (L - player_friction * tau * M * A) / (in_2D) ? lambda.Length2D() : lambda.Length();
+    float cosTheta = (L - player_friction * tau * M * A) / lambda.Length2D();
     if (cosTheta < 0)
         cosTheta = M_PI_F / 2;
     if (cosTheta > 1)
         cosTheta = 0;
 
-    float theta = acosf(cosTheta) * (opposite ? -1 : 1);
+    float theta = acosf(cosTheta) * (direction ? -1 : 1);
+    float lookangle = std::atan2f(sideMove, forwardMove);
 
-	console->Print("Friction: %f, velocity.length: %f, lambda.lenght: %f, M: %f, A: %f, L: %f, cosTheta: %f, theta: %f\n\n",
-        friction, (in_2D) ? velocity.Length() : velocity.Length2D(), (in_2D) ? lambda.Length2D() : lambda.Length(), M, A, L, cosTheta, theta);
+    console->Print("lookangle: %f, forward: %f, back: %f, left: %f, right: %f, forwardmove: %f, sidemove: %f\n\n",
+					RAD2DEG(lookangle),	forward_keystate, backward_keystate, moveleft_keystate, moveright_keystate, forwardMove, sideMove);
 
     engine->SetAngles({ 0, this->GetVelocityAngles().x + RAD2DEG(theta), 0 });
 }
@@ -240,23 +275,23 @@ CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : Sets {x, y, z} degres 
     QAngle angle = { static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])) };
     engine->SetAngles(angle);
 }
-CON_COMMAND(sar_groundstrafe, "sar_groundstrafe <opposite> [2D]\n")
+CON_COMMAND(sar_groundstrafe, "sar_groundstrafe <direction>\n")
 {
-	if (!sv_cheats.GetBool())
-		return console->Print("Cannot use sar_groundstrafe without sv_cheats sets to 1.\n");
-  
-	if (args.ArgC() < 2)
-		return console->Print("Missing arguments : sar_groundstrafe <opposite> [2D]\n");
-  
-	tasTools->Strafe(std::atoi(args[1]), 1, std::atoi(args[2]));
+    if (!sv_cheats.GetBool())
+        return console->Print("Cannot use sar_groundstrafe without sv_cheats sets to 1.\n");
+
+    if (args.ArgC() < 2)
+        return console->Print("Missing arguments : sar_groundstrafe <direction>\n");
+
+    tasTools->Strafe(std::atoi(args[1]));
 }
-CON_COMMAND(sar_airstrafe, "sar_strafe <opposite> [2D]\n")
+CON_COMMAND(sar_airstrafe, "sar_strafe <direction>\n")
 {
     if (!sv_cheats.GetBool())
         return console->Print("Cannot use sar_strafe without sv_cheats sets to 1.\n");
-  
+
     if (args.ArgC() < 2)
-        return console->Print("Missing arguments : sar_strafe <opposite> [2D]\n");
-      
-	tasTools->Strafe(std::atoi(args[1]), 0, std::atoi(args[2]));
+        return console->Print("Missing arguments : sar_strafe <direction>\n");
+
+    tasTools->Strafe(std::atoi(args[1]));
 }

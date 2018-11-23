@@ -220,9 +220,6 @@
     <ClCompile Include="Utils\Memory.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\TasTools.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Stats\StatsExport.cpp">
       <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClCompile>
@@ -384,9 +381,6 @@
     <ClInclude Include="Features\Routing\Tracer.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Tas\TasTools.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-	</ClInclude>
     <ClInclude Include="Features\Tas\CommandQueuer.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
