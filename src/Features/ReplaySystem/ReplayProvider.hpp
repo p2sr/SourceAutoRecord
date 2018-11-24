@@ -10,40 +10,29 @@
 #define SAR_TAS_REPLAY_HEADER002 "sar-tas-replay v1.8"
 #define SAR_TAS_REPLAY_EXTENSION ".str"
 
-class ReplaySystem : public Feature {
-private:
+class ReplayProvider : public Feature {
+public:
     std::vector<Replay*> replays;
-    int replayIndex;
-    bool isRecording;
-    bool isPlaying;
 
 public:
-    ReplaySystem();
-    ~ReplaySystem();
-    void Record(bool rerecord = false);
-    void Play();
-    void Stop();
-    bool IsRecording();
-    bool IsPlaying();
+    ReplayProvider();
+    ~ReplayProvider();
+    void CreateNewReplay();
     Replay* GetCurrentReplay();
     bool AnyReplaysLoaded();
     void DeleteAll();
     void MergeAll();
-    void MergeViews();
-
-private:
-    void NewReplay();
-    void DeleteReplay();
+    void MergeViews(int firstReplay, int secondReplay, int firstView, int secondView);
 
 public:
-    void Export(std::string filePath, int index = 0);
-    void Import(std::string filePath);
+    void Export(const char* fileName, int index = 0);
+    void Import(const char* fileName);
 };
 
-extern ReplaySystem* tasReplaySystem;
+extern ReplayProvider* replayProvider;
 
-extern Variable sar_replay_autorecord;
-extern Variable sar_replay_autoplay;
+extern Variable sar_replay_mode;
+extern Variable sar_replay_viewmode;
 
 extern Command sar_replay_record;
 extern Command sar_replay_record_again;

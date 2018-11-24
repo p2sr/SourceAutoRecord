@@ -87,7 +87,7 @@ void Listener::DumpGameEvents()
     console->Print("m_Size = %i\n", m_Size);
     if (m_Size > 0) {
         auto m_GameEvents = *(uintptr_t*)(s_GameEventManager + CGameEventManager_m_GameEvents);
-        for (int i = 0; i < m_Size; i++) {
+        for (auto i = 0; i < m_Size; ++i) {
             auto name = *(char**)(m_GameEvents + CGameEventDescriptor_Size * i + CGameEventManager_m_GameEvents);
             console->Print("%s\n", name);
         }

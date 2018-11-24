@@ -34,7 +34,7 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state)
 // CDemoRecorder::StopRecording
 DETOUR(EngineDemoRecorder::StopRecording)
 {
-    const int LastDemoNumber = *engine->demorecorder->m_nDemoNumber;
+    const auto lastDemoNumber = *engine->demorecorder->m_nDemoNumber;
 
     // This function does:
     //   m_bRecording = false
@@ -42,7 +42,7 @@ DETOUR(EngineDemoRecorder::StopRecording)
     auto result = EngineDemoRecorder::StopRecording(thisptr);
 
     if (engine->demorecorder->isRecordingDemo && sar_autorecord.GetBool()) {
-        *engine->demorecorder->m_nDemoNumber = LastDemoNumber;
+        *engine->demorecorder->m_nDemoNumber = lastDemoNumber;
 
         // Tell recorder to keep recording
         if (*engine->m_bLoadgame) {

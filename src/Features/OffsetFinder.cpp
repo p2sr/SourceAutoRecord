@@ -59,7 +59,7 @@ int16_t OffsetFinder::Find(SendTable* table, const char* propName)
 {
     auto size = sar.game->version & SourceGame_Portal2Engine ? sizeof(SendProp2) : sizeof(SendProp);
 
-    for (int i = 0; i < table->m_nProps; ++i) {
+    for (auto i = 0; i < table->m_nProps; ++i) {
         auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + size * i);
 
         auto name = prop.m_pVarName;
@@ -92,7 +92,7 @@ int16_t OffsetFinder::Find(SendTable* table, const char* propName)
 }
 int16_t OffsetFinder::Find(RecvTable* table, const char* propName)
 {
-    for (int i = 0; i < table->m_nProps; ++i) {
+    for (auto i = 0; i < table->m_nProps; ++i) {
         auto prop = table->m_pProps[i];
 
         auto name = prop.m_pVarName;

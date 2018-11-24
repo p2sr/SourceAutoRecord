@@ -4,9 +4,11 @@
 #include <cstring>
 
 #include "Features/OffsetFinder.hpp"
+#include "Features/ReplaySystem/ReplayPlayer.hpp"
+#include "Features/ReplaySystem/ReplayProvider.hpp"
+#include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Session.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
-#include "Features/Tas/ReplaySystem.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -55,8 +57,8 @@ Vector Client::GetViewOffset()
 // CHLClient::HudUpdate
 DETOUR(Client::HudUpdate, unsigned int a2)
 {
-    if (tasQueuer->isRunning) {
-        for (auto&& tas = tasQueuer->frames.begin(); tas != tasQueuer->frames.end();) {
+    if (cmdQueuer->isRunning) {
+        for (auto&& tas = cmdQueuer->frames.begin(); tas != cmdQueuer->frames.end();) {
             --tas->framesLeft;
 
             if (tas->framesLeft <= 0) {
@@ -75,7 +77,7 @@ DETOUR(Client::HudUpdate, unsigned int a2)
                     engine->AddText(engine->s_CommandBuffer, tas->command.c_str(), 0);
                 }
 
-                tas = tasQueuer->frames.erase(tas);
+                tas = cmdQueuer->frames.erase(tas);
             } else {
                 ++tas;
             }
@@ -92,15 +94,10 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
     vgui->inputHud->SetButtonBits(cmd->buttons);
 
     if (cmd->command_number) {
-        if (tasReplaySystem->IsPlaying()) {
-            auto replay = tasReplaySystem->GetCurrentReplay();
-            if (replay->Ended()) {
-                tasReplaySystem->Stop();
-            } else {
-                replay->Play(cmd, 0);
-            }
-        } else if (tasReplaySystem->IsRecording()) {
-            tasReplaySystem->GetCurrentReplay()->Record(cmd, 0);
+        if (replayPlayer1->IsPlaying()) {
+            replayPlayer1->Play(replayProvider->GetCurrentReplay(), cmd);
+        } else if (replayRecorder1->IsRecording()) {
+            replayRecorder1->Record(replayProvider->GetCurrentReplay(), cmd);
         }
     }
 
@@ -109,15 +106,10 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
 DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
 {
     if (cmd->command_number) {
-        if (tasReplaySystem->IsPlaying()) {
-            auto replay = tasReplaySystem->GetCurrentReplay();
-            if (replay->Ended()) {
-                tasReplaySystem->Stop();
-            } else {
-                replay->Play(cmd, 1);
-            }
-        } else if (tasReplaySystem->IsRecording()) {
-            tasReplaySystem->GetCurrentReplay()->Record(cmd, 1);
+        if (replayPlayer2->IsPlaying()) {
+            replayPlayer2->Play(replayProvider->GetCurrentReplay(), cmd);
+        } else if (replayRecorder2->IsRecording()) {
+            replayRecorder2->Record(replayProvider->GetCurrentReplay(), cmd);
         }
     }
 

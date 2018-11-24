@@ -14,13 +14,13 @@ Color Hud::GetColor(const char* source)
 Variable sar_hud_text("sar_hud_text", "", "Draws specified text when not empty.\n", 0);
 Variable sar_hud_position("sar_hud_position", "0", 0, "Draws absolute position of the client.\n");
 Variable sar_hud_angles("sar_hud_angles", "0", 0, "Draws absolute view angles of the client.\n"
-                                                  "0 = default,\n"
-                                                  "1 = xy,\n"
-                                                  "2 = xyz.\n");
+                                                  "0 = Default,\n"
+                                                  "1 = XY,\n"
+                                                  "2 = XYZ.\n");
 Variable sar_hud_velocity("sar_hud_velocity", "0", 0, "Draws velocity of the client.\n"
-                                                      "0 = default,\n"
-                                                      "1 = x/y/z,\n"
-                                                      "2 = x/y.\n");
+                                                      "0 = Default,\n"
+                                                      "1 = X/Y/Z,\n"
+                                                      "2 = X/Y.\n");
 Variable sar_hud_session("sar_hud_session", "0", "Draws current session tick.\n");
 Variable sar_hud_last_session("sar_hud_last_session", "0", "Draws value of latest completed session.\n");
 Variable sar_hud_sum("sar_hud_sum", "0", "Draws summary value of sessions.\n");
@@ -34,9 +34,9 @@ Variable sar_hud_steps("sar_hud_steps", "0", "Draws total step count.\n");
 Variable sar_hud_jump("sar_hud_jump", "0", "Draws current jump distance.\n");
 Variable sar_hud_jump_peak("sar_hud_jump_peak", "0", "Draws longest jump distance.\n");
 Variable sar_hud_trace("sar_hud_trace", "0", 0, "Draws distance values of tracer. "
-                                                "0 = default,\n"
-                                                "1 = vec3,\n"
-                                                "2 = vec2.\n");
+                                                "0 = Default,\n"
+                                                "1 = Vec3,\n"
+                                                "2 = Vec2.\n");
 Variable sar_hud_frame("sar_hud_frame", "0", "Draws current frame count.\n");
 Variable sar_hud_last_frame("sar_hud_last_frame", "0", "Draws last saved frame value.\n");
 Variable sar_hud_inspection("sar_hud_inspection", "0", "Draws entity inspection data.\n");

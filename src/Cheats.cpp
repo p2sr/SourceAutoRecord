@@ -6,6 +6,8 @@
 #include "Features/Hud/InspectionHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
 #include "Features/Listener.hpp"
+#include "Features/ReplaySystem/ReplayPlayer.hpp"
+#include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
@@ -25,7 +27,7 @@ Variable sar_autojump("sar_autojump", "0", "Enables automatic jumping on the ser
 Variable sar_jumpboost("sar_jumpboost", "0", 0, "Enables special game movement on the server.\n"
                                                 "0 = Default,\n"
                                                 "1 = Orange Box Engine,\n"
-                                                "2 = Pre-OBE\n");
+                                                "2 = Pre-OBE.\n");
 Variable sar_aircontrol("sar_aircontrol", "0",
 #ifdef _WIN32
     0,
@@ -138,6 +140,7 @@ void Cheats::Init()
     sar_speedrun_autostop.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
     sar_speedrun_standard.UniqueFor(SourceGame_Portal2);
     sar_duckjump.UniqueFor(SourceGame_Portal2);
+    sar_replay_viewmode.UniqueFor(SourceGame_Portal2);
 
     startbhop.UniqueFor(SourceGame_TheStanleyParable);
     endbhop.UniqueFor(SourceGame_TheStanleyParable);

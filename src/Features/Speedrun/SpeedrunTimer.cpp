@@ -462,7 +462,7 @@ CON_COMMAND(sar_speedrun_export_pb, "Saves speedrun personal best to a csv file.
         console->Warning("Failed to export personal best!\n");
     }
 }
-CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.", 0, 0, csv)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.\n", 0, 0, csv)
 {
     if (args.ArgC() != 2) {
         console->Print("sar_speedrun_import <file_name> : Imports speedrun data file.\n");

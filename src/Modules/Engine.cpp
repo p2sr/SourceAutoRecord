@@ -40,7 +40,7 @@ void Engine::ExecuteCommand(const char* cmd)
 }
 int Engine::GetSessionTick()
 {
-    int result = *this->tickcount - session->baseTick;
+    auto result = *this->tickcount - session->baseTick;
     return (result >= 0) ? result : 0;
 }
 float Engine::ToTime(int tick)
@@ -155,6 +155,41 @@ DETOUR(Engine::Frame)
     return Engine::Frame(thisptr);
 }
 
+#ifdef _WIN32
+// CDemoFile::ReadCustomData
+void __fastcall ReadCustomData_Wrapper(int demoFile, int edx, int unk1, int unk2)
+{
+    Engine::ReadCustomData((void*)demoFile, 0, nullptr, nullptr);
+}
+// CDemoSmootherPanel::ParseSmoothingInfo
+DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
+{
+    __asm {
+        // Check if we have dem_customdata
+        cmp eax, 8
+        jne _orig
+
+        // Parse stuff that does not get parsed (thanks valve)
+        push edi
+        push edi
+        mov ecx, esi
+        call ReadCustomData_Wrapper
+
+        jmp Engine::ParseSmoothingInfo_Skip
+
+_orig:  // Original overwritten instructions
+        add eax, -3
+        cmp eax, 6
+        ja _def
+
+        jmp Engine::ParseSmoothingInfo_Continue
+
+_def:
+        jmp Engine::ParseSmoothingInfo_Default
+    }
+}
+#endif
+
 DETOUR_COMMAND(Engine::plugin_load)
 {
     // Prevent crash when trying to load SAR twice or try to find the module in
@@ -192,41 +227,6 @@ DETOUR_COMMAND(Engine::help)
 {
     cvars->PrintHelp(args);
 }
-
-#ifdef _WIN32
-// CDemoFile::ReadCustomData
-void __fastcall ReadCustomData_Wrapper(int demoFile, int edx, int unk1, int unk2)
-{
-    Engine::ReadCustomData((void*)demoFile, 0, nullptr, nullptr);
-}
-// CDemoSmootherPanel::ParseSmoothingInfo
-DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
-{
-    __asm {
-        // Check if we have dem_customdata
-        cmp eax, 8
-        jne _orig
-
-        // Parse stuff that does not get parsed (thanks valve)
-        push edi
-        push edi
-        mov ecx, esi
-        call ReadCustomData_Wrapper
-
-        jmp Engine::ParseSmoothingInfo_Skip
-
-_orig:  // Original overwritten instructions
-        add eax, -3
-        cmp eax, 6
-        ja _def
-
-        jmp Engine::ParseSmoothingInfo_Continue
-
-_def:
-        jmp Engine::ParseSmoothingInfo_Default
-    }
-}
-#endif
 
 bool Engine::Init()
 {

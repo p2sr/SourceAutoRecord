@@ -24,7 +24,7 @@ CEntInfo* EntityList::GetEntityInfoByIndex(int index)
 }
 CEntInfo* EntityList::GetEntityInfoByName(const char* name)
 {
-    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+    for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
         auto info = this->GetEntityInfoByIndex(index);
         if (info->m_pEntity == nullptr) {
             continue;
@@ -42,7 +42,7 @@ CEntInfo* EntityList::GetEntityInfoByName(const char* name)
 }
 CEntInfo* EntityList::GetEntityInfoByClassName(const char* name)
 {
-    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+    for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
         auto info = this->GetEntityInfoByIndex(index);
         if (info->m_pEntity == nullptr) {
             continue;
@@ -74,7 +74,7 @@ CON_COMMAND(sar_list_ents, "Lists entities.\n")
     auto first = (page - 1) * 512;
     auto last = page * 512;
 
-    for (int index = first; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+    for (auto index = first; index < Offsets::NUM_ENT_ENTRIES; ++index) {
         if (index == last) {
             break;
         }
@@ -100,7 +100,7 @@ CON_COMMAND(sar_find_ent, "Finds entity in the entity list by name.\n")
     }
 
     console->Msg("Results for %s\n", args[1]);
-    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+    for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
         auto info = entityList->GetEntityInfoByIndex(index);
         if (info->m_pEntity == nullptr) {
             continue;
@@ -125,7 +125,7 @@ CON_COMMAND(sar_find_ents, "Finds entities in the entity list by class name.\n")
     }
 
     console->Print("Results for %s\n", args[1]);
-    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+    for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
         auto info = entityList->GetEntityInfoByIndex(index);
         if (info->m_pEntity == nullptr) {
             continue;

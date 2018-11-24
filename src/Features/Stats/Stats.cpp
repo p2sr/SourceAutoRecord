@@ -15,9 +15,9 @@
 Variable sar_stats_jumps_xy("sar_stats_jumps_xy", "0", "Saves jump distance as 2D vector.\n");
 Variable sar_stats_velocity_peak_xy("sar_stats_velocity_peak_xy", "0", "Saves velocity peak as 2D vector.\n");
 Variable sar_stats_auto_reset("sar_stats_auto_reset", "0", 0, "Resets all stats automatically.\n"
-                                                              "0 = default,\n"
-                                                              "1 = restart or disconnect only,\n"
-                                                              "2 = any load & sar_timer_start.\n"
+                                                              "0 = Default,\n"
+                                                              "1 = Restart or disconnect only,\n"
+                                                              "2 = Any load & sar_timer_start.\n"
                                                               "Note: Portal counter is not part of the \"stats\" feature.\n");
 
 Stats* stats;

@@ -11,6 +11,7 @@ SRCS+=$(wildcard $(SDIR)Features/Routing/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Speedrun/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Speedrun/Rules/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Stats/*.cpp)
+SRCS+=$(wildcard $(SDIR)Features/ReplaySystem/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Tas/*.cpp)
 SRCS+=$(wildcard $(SDIR)Features/Timer/*.cpp)
 SRCS+=$(wildcard $(SDIR)Games/Linux/*.cpp)
@@ -47,6 +48,7 @@ pre:
 	@$(CREATE) $(ODIR)Features/Speedrun/
 	@$(CREATE) $(ODIR)Features/Speedrun/Rules
 	@$(CREATE) $(ODIR)Features/Stats/
+	@$(CREATE) $(ODIR)Features/ReplaySystem/
 	@$(CREATE) $(ODIR)Features/Tas/
 	@$(CREATE) $(ODIR)Features/Timer/
 	@$(CREATE) $(ODIR)Games/Linux/

@@ -1,12 +1,14 @@
 #include "Session.hpp"
 
 #include "Features/Rebinder.hpp"
+#include "Features/ReplaySystem/ReplayPlayer.hpp"
+#include "Features/ReplaySystem/ReplayProvider.hpp"
+#include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
-#include "Features/Tas/ReplaySystem.hpp"
 #include "Features/Timer/Timer.hpp"
 
 #include "Modules/Console.hpp"
@@ -71,14 +73,38 @@ void Session::Start()
     }
 
     if (sar_tas_autostart.GetBool()) {
-        tasQueuer->Start();
+        cmdQueuer->Start();
     }
-    if (sar_replay_autorecord.GetBool()) {
-        tasReplaySystem->Record();
+
+    if (sar_replay_mode.GetBool()) {
+        if (sar_replay_mode.GetInt() == 1) {
+            replayProvider->CreateNewReplay();
+            replayRecorder1->StartRecording();
+
+            if (replayProvider->GetCurrentReplay()->GetViewSize() > 1) {
+                replayRecorder2->StartRecording();
+            }
+        } else if (replayProvider->AnyReplaysLoaded()) {
+            auto replay = replayProvider->GetCurrentReplay();
+            replayPlayer1->StartPlaying(replay);
+
+            if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
+                replayPlayer2->StartPlaying(replay);
+            }
+        }
+    } else if (sar_replay_viewmode.isRegistered && sar_replay_viewmode.GetBool() && replayProvider->AnyReplaysLoaded()) {
+        auto replay = replayProvider->GetCurrentReplay();
+        if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
+            if (sar_replay_viewmode.GetInt() == 1) {
+                replayRecorder1->StartRecording();
+                replayPlayer2->StartPlaying(replay);
+            } else {
+                replayRecorder2->StartRecording();
+                replayPlayer1->StartPlaying(replay);
+            }
+        }
     }
-    if (sar_replay_autoplay.GetBool()) {
-        tasReplaySystem->Play();
-    }
+
     if (sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
         speedrun->Start(engine->tickcount);
     }
@@ -92,7 +118,7 @@ void Session::Ended()
         return;
     }
 
-    int tick = engine->GetSessionTick();
+    auto tick = engine->GetSessionTick();
 
     if (tick != 0) {
         console->Print("Session: %i (%.3f)\n", tick, engine->ToTime(tick));
@@ -123,8 +149,11 @@ void Session::Ended()
     this->lastFrame = this->currentFrame;
     this->currentFrame = 0;
 
-    tasQueuer->Stop();
-    tasReplaySystem->Stop();
+    cmdQueuer->Stop();
+    replayRecorder1->StopRecording();
+    replayRecorder2->StopRecording();
+    replayPlayer1->StopPlaying();
+    replayPlayer2->StopPlaying();
     speedrun->Pause();
     speedrun->UnloadRules();
 

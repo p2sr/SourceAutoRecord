@@ -139,11 +139,20 @@
     <ClCompile Include="Features\Tas\CommandQueuer.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\Replay.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    <ClCompile Include="Features\ReplaySystem\Replay.cpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\ReplaySystem.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    <ClCompile Include="Features\ReplaySystem\ReplayPlayer.cpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\ReplaySystem\ReplayProvider.cpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\ReplaySystem\ReplayRecorder.cpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\ReplaySystem\ReplayView.cpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
     </ClCompile>
     <ClCompile Include="Features\Timer\Timer.cpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
@@ -384,11 +393,23 @@
     <ClInclude Include="Features\Tas\CommandQueuer.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Tas\Replay.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    <ClInclude Include="Features\ReplaySystem\Replay.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Tas\ReplaySystem.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    <ClInclude Include="Features\ReplaySystem\ReplayFrame.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ReplaySystem\ReplayPlayer.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ReplaySystem\ReplayProvider.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ReplaySystem\ReplayRecorder.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ReplaySystem\ReplayView.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
     </ClInclude>
     <ClInclude Include="Features\Timer\Timer.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>

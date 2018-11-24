@@ -194,9 +194,9 @@ DETOUR(Server::FinishGravity)
         Math::VectorNormalize(vecForward);
 
         float flSpeedBoostPerc = (!mv->m_bIsSprinting && !m_bDucked) ? 0.5f : 0.1f;
-        float flSpeedAddition = fabs(mv->m_flForwardMove * flSpeedBoostPerc);
+        float flSpeedAddition = std::fabs(mv->m_flForwardMove * flSpeedBoostPerc);
         float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
-        float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
+        float flNewSpeed = flSpeedAddition + mv->m_vecVelocity.Length2D();
 
         if (sar_jumpboost.GetInt() == 1) {
             if (flNewSpeed > flMaxSpeed) {
@@ -208,7 +208,7 @@ DETOUR(Server::FinishGravity)
             }
         }
 
-        Math::VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
+        Math::VectorAdd(vecForward * flSpeedAddition, mv->m_vecVelocity, mv->m_vecVelocity);
     }
     return Server::FinishGravity(thisptr);
 }

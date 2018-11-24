@@ -32,7 +32,7 @@ public:
     void DelayQueueBy(int frames);
 };
 
-extern CommandQueuer* tasQueuer;
+extern CommandQueuer* cmdQueuer;
 
 extern Variable sar_tas_autostart;
 

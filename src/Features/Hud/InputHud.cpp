@@ -12,7 +12,7 @@
 #include "Variable.hpp"
 
 Variable sar_ihud("sar_ihud", "0", 0, "Draws keyboard events of client.\n"
-                                      "0 = default,\n"
+                                      "0 = Default,\n"
                                       "1 = forward;back;moveleft;moveright,\n"
                                       "2 = 1 + duck;jump;use,\n"
                                       "3 = 2 + attack;attack2,\n"
@@ -132,8 +132,8 @@ void InputHud::Draw()
     auto element = 0;
     auto DrawElement = [xOffset, yOffset, mode, shadow, color, size, shadowColor, font, fontColor, shadowFontColor, padding, symbols,
                            &element](int value, bool button, int col, int row, int length = 1) {
-        int x = xOffset + (col * size) + ((col + 1) * padding);
-        int y = yOffset + (row * size) + ((row + 1) * padding);
+        auto x = xOffset + (col * size) + ((col + 1) * padding);
+        auto y = yOffset + (row * size) + ((row + 1) * padding);
         if (mode >= value && (button || shadow)) {
             surface->DrawRectAndCenterTxt((button) ? color : shadowColor,
                 x + ((col + 1) * padding),

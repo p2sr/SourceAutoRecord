@@ -15,12 +15,12 @@ SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
 
 SAR::SAR()
+    : modules(new Modules())
+    , features(new Features())
+    , cheats(new Cheats())
+    , plugin(new Plugin())
+    , game(Game::CreateNew())
 {
-    this->modules = new Modules();
-    this->features = new Features();
-    this->cheats = new Cheats();
-    this->plugin = new Plugin();
-    this->game = Game::CreateNew();
 }
 
 bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
@@ -46,8 +46,12 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Tracer>(&tracer);
             this->features->AddFeature<SpeedrunTimer>(&speedrun);
             this->features->AddFeature<Stats>(&stats);
-            this->features->AddFeature<CommandQueuer>(&tasQueuer);
-            this->features->AddFeature<ReplaySystem>(&tasReplaySystem);
+            this->features->AddFeature<CommandQueuer>(&cmdQueuer);
+            this->features->AddFeature<ReplayRecorder>(&replayRecorder1);
+            this->features->AddFeature<ReplayRecorder>(&replayRecorder2);
+            this->features->AddFeature<ReplayPlayer>(&replayPlayer1);
+            this->features->AddFeature<ReplayPlayer>(&replayPlayer2);
+            this->features->AddFeature<ReplayProvider>(&replayProvider);
             this->features->AddFeature<AutoAiming>(&autoAiming);
             this->features->AddFeature<Timer>(&timer);
             this->features->AddFeature<EntityInspector>(&inspector);
@@ -106,7 +110,7 @@ bool SAR::GetPlugin()
         auto m_Size = *reinterpret_cast<int*>((uintptr_t)s_ServerPlugin->ThisPtr() + CServerPlugin_m_Size);
         if (m_Size > 0) {
             auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)s_ServerPlugin->ThisPtr() + CServerPlugin_m_Plugins);
-            for (int i = 0; i < m_Size; i++) {
+            for (auto i = 0; i < m_Size; ++i) {
                 auto ptr = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
                 if (!std::strcmp(ptr->m_szName, SAR_PLUGIN_SIGNATURE)) {
                     this->plugin->ptr = ptr;
@@ -133,7 +137,7 @@ void SAR::SearchPlugin()
 
 CON_COMMAND(sar_session, "Prints the current tick of the server since it has loaded.\n")
 {
-    int tick = engine->GetSessionTick();
+    auto tick = engine->GetSessionTick();
     console->Print("Session Tick: %i (%.3f)\n", tick, engine->ToTime(tick));
     if (*engine->demorecorder->m_bRecording) {
         tick = engine->demorecorder->GetTick();

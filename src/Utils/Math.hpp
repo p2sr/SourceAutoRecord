@@ -49,8 +49,8 @@ inline void AngleVectors(const QAngle& angles, Vector* forward)
 
 inline float VectorNormalize(Vector& vec)
 {
-    float radius = sqrtf(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
-    float iradius = 1.f / (radius + FLT_EPSILON);
+    auto radius = sqrtf(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+    auto iradius = 1.f / (radius + FLT_EPSILON);
 
     vec.x *= iradius;
     vec.y *= iradius;

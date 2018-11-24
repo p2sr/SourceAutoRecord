@@ -62,7 +62,7 @@ void ClassDumper::DumpSendTable(std::ofstream& file, SendTable* table, int& leve
     file << std::setw(level * 4) << "";
     file << table->m_pNetTableName << std::endl;
 
-    for (int i = 0; i < table->m_nProps; ++i) {
+    for (auto i = 0; i < table->m_nProps; ++i) {
         auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + this->sendPropSize * i);
 
         auto name = prop.m_pVarName;
@@ -95,7 +95,7 @@ void ClassDumper::DumpRecvTable(std::ofstream& file, RecvTable* table, int& leve
     file << std::setw(level * 4) << "";
     file << table->m_pNetTableName << std::endl;
 
-    for (int i = 0; i < table->m_nProps; ++i) {
+    for (auto i = 0; i < table->m_nProps; ++i) {
         auto prop = table->m_pProps[i];
 
         auto name = prop.m_pVarName;
@@ -148,7 +148,7 @@ CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props
     std::function<void(SendTable * table, int& level)> DumpTable;
     DumpTable = [&DumpTable](SendTable* table, int& level) {
         console->Print("%*s%s\n", level * 4, "", table->m_pNetTableName);
-        for (int i = 0; i < table->m_nProps; ++i) {
+        for (auto i = 0; i < table->m_nProps; ++i) {
             auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + classDumper->sendPropSize * i);
 
             auto name = prop.m_pVarName;
@@ -195,7 +195,7 @@ CON_COMMAND(sar_find_client_class, "Finds specific client class tables and props
     std::function<void(RecvTable * table, int& level)> DumpTable;
     DumpTable = [&DumpTable](RecvTable* table, int& level) {
         console->Print("%*s%s\n", level * 4, "", table->m_pNetTableName);
-        for (int i = 0; i < table->m_nProps; ++i) {
+        for (auto i = 0; i < table->m_nProps; ++i) {
             auto prop = table->m_pProps[i];
 
             auto name = prop.m_pVarName;
