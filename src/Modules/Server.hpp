@@ -25,8 +25,6 @@ public:
     _GetAllServerClasses GetAllServerClasses = nullptr;
 
     CGlobalVars* gpGlobals = nullptr;
-    bool* g_InRestore = nullptr;
-    CEventQueue* g_EventQueue = nullptr;
     CEntInfo* m_EntPtrArray = nullptr;
 
 private:

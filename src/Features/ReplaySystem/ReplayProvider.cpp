@@ -119,11 +119,11 @@ void ReplayProvider::MergeViews(int firstReplay, int secondReplay, int firstView
 
     auto baseReplay = new Replay(viewSize);
     baseReplay->GetView(0)->frames.insert(
-        baseReplay->GetView(firstView)->frames.end(),
+        baseReplay->GetView(0)->frames.end(),
         replay2->GetView(firstView)->frames.begin(),
         replay2->GetView(firstView)->frames.end());
     baseReplay->GetView(1)->frames.insert(
-        baseReplay->GetView(secondView)->frames.end(),
+        baseReplay->GetView(1)->frames.end(),
         replay->GetView(secondView)->frames.begin(),
         replay->GetView(secondView)->frames.end());
 
@@ -146,7 +146,7 @@ void ReplayProvider::Export(const char* fileName, int index)
         return file.close();
     }
 
-    if (index >= (int)this->replays.size()) {
+    if (index < 0 && index >= (int)this->replays.size()) {
         console->Print("Invalid replay index!\n");
         return file.close();
     }
@@ -415,8 +415,8 @@ CON_COMMAND(sar_replay_clone_views, "Clones view to another of a replay.\n")
     }
 
     auto loadedReplays = (int)replayProvider->replays.size();
-    if (loadedReplays < 2) {
-        return console->Print("Need at least two replays for cloning!\n");
+    if (loadedReplays < 1) {
+        return console->Print("Need at least one replay for cloning!\n");
     }
 
     auto replaxIndex = std::atoi(args[1]);
@@ -453,10 +453,10 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import, "Imports replay file.\n", 0, 0, 
     replayProvider->DeleteAll();
     replayProvider->Import(args[1]);
 }
-CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import2, "Imports replay file but doesn't delete already added replays.\n", 0, 0, str)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import_add, "Imports replay file but doesn't delete already added replays.\n", 0, 0, str)
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_rep_import <file> : Imports replay file but doesn't delete already added replays.\n");
+        return console->Print("sar_replay_import_add <file> : Imports replay file but doesn't delete already added replays.\n");
     }
 
     replayProvider->Import(args[1]);
@@ -471,6 +471,6 @@ CON_COMMAND(sar_replay_list, "Lists all currently imported replays.\n")
     for (const auto& replay : replayProvider->replays) {
         console->Print("[%i] %s\n", index++, replay->GetSource());
         console->Msg("  -> ");
-        console->Print("(views: %i, frames: %i)\n", replay->GetViewSize(), replay->GetFrameSize());
+        console->Print("views: %i | frames: %i\n", replay->GetViewSize(), replay->GetFrameSize());
     }
 }

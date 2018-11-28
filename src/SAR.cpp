@@ -34,8 +34,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
         tier1 = new Tier1();
         if (tier1->Init()) {
-            this->cheats->Init();
-
             this->features->AddFeature<Config>(&config);
             this->features->AddFeature<Cvars>(&cvars);
             this->features->AddFeature<Rebinder>(&rebinder);
@@ -72,12 +70,21 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
 
-                if (this->game->version & SourceGame_Portal2) {
+                if (this->game->version & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
                     this->features->AddFeature<Listener>(&listener);
                     this->features->AddFeature<WorkshopList>(&workshop);
+                }
 
+                if (listener) {
                     listener->Init();
                 }
+
+                if (auto mod = Game::CreateNewMod(engine->GetGameDirectory())) {
+                    delete this->game;
+                    this->game = mod;
+                }
+
+                this->cheats->Init();
 
                 speedrun->LoadRules(this->game);
 

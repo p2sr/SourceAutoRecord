@@ -31,7 +31,6 @@ void Portal::LoadOffsets()
 
     // server.dll
 
-    ServiceEventQueue = 152; // CServerGameDLL::GameFrame
     UTIL_PlayerByIndex = 39; // CServerGameDLL::Think
     iNumPortalsPlaced = 4796; // CPortal_Player::IncrementPortalsPlaced
 

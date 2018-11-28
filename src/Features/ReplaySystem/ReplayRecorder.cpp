@@ -39,3 +39,5 @@ int ReplayRecorder::GetViewId()
 {
     return this->viewIndex;
 }
+
+int ReplayRecorder::count;

@@ -242,7 +242,7 @@ bool Engine::Init()
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
-        if (sar.game->version & SourceGame_Portal2) {
+        if (sar.game->version & SourceGame_Portal2Game) {
             this->m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
         }
 
@@ -309,7 +309,7 @@ bool Engine::Init()
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
     }
 
-    if (sar.game->version == SourceGame_Portal2) {
+    if (sar.game->version  & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
         this->s_GameEventManager = Interface::Create(this->Name(), "GAMEEVENTSMANAGER002", false);
         if (this->s_GameEventManager) {
             this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
@@ -346,7 +346,7 @@ bool Engine::Init()
 
     // TODO: windows
 #ifndef _WIN32
-    if (sar.game->version & (SourceGame_Portal2 | SourceGame_HalfLife2Engine)) {
+    if (sar.game->version & (SourceGame_Portal2Game | SourceGame_HalfLife2Engine)) {
         auto alias = Command("alias");
         if (!!alias) {
             auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;

@@ -174,7 +174,7 @@ bool Client::Init()
         void* clientMode = nullptr;
         void* clientMode2 = nullptr;
         if (sar.game->version & SourceGame_Portal2Engine) {
-            if (sar.game->version & SourceGame_Portal2) {
+            if (sar.game->version & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
                 auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
                 auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
                 clientMode = Memory::Deref<void*>(g_pClientMode);

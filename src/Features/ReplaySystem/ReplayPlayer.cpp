@@ -53,3 +53,5 @@ bool ReplayPlayer::IsPlaying()
 {
     return this->isPlaying;
 }
+
+int ReplayPlayer::count;

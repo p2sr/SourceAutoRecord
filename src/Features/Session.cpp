@@ -46,17 +46,16 @@ void Session::Started(bool menu)
             speedrun->Unpause(engine->tickcount);
         }
     } else {
-        if (engine->GetMaxClients() <= 1) {
-            console->Print("Session Started!\n");
-            this->Start();
-        }
+        console->Print("Session Started!\n");
+        this->Start();
     }
-
-    speedrun->ReloadRules();
-    isInSession = true;
 }
 void Session::Start()
 {
+    if (this->isInSession) {
+        return;
+    }
+
     session->Rebase(*engine->tickcount);
     timer->Rebase(*engine->tickcount);
     speedrun->Unpause(engine->tickcount);
@@ -111,6 +110,8 @@ void Session::Start()
 
     stepCounter->ResetTimer();
     currentFrame = 0;
+    speedrun->ReloadRules();
+    isInSession = true;
 }
 void Session::Ended()
 {
@@ -168,7 +169,8 @@ void Session::Changed()
         || engine->hoststate->m_currentState == HOSTSTATES::HS_GAME_SHUTDOWN) {
         this->Ended();
     } else if (engine->hoststate->m_currentState == HOSTSTATES::HS_RUN
-        && !engine->hoststate->m_activeGame) {
+        && !engine->hoststate->m_activeGame
+        && engine->GetMaxClients() <= 1) {
         this->Started(true);
     }
 }
@@ -178,7 +180,9 @@ void Session::Changed(int state)
 
     // Demo recorder starts syncing from this tick
     if (state == SignonState::Full) {
-        this->Started();
+        if (engine->GetMaxClients() <= 1) {
+            this->Started();
+        }
     } else {
         this->Ended();
     }

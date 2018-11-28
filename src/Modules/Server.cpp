@@ -5,6 +5,7 @@
 
 #include "Features/OffsetFinder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
+#include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
@@ -95,7 +96,7 @@ char* Server::GetEntityClassName(void* entity)
 }
 bool Server::IsPlayer(void* entity)
 {
-    return Memory::VMT<bool(*)(void*)>(entity, Offsets::IsPlayer)(entity);
+    return Memory::VMT<bool (*)(void*)>(entity, Offsets::IsPlayer)(entity);
 }
 
 // CGameMovement::CheckJumpButton
@@ -256,24 +257,25 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 // CServerGameDLL::GameFrame
 #ifdef _WIN32
 DETOUR_STD(void, Server::GameFrame, bool simulating)
-#else
-DETOUR(Server::GameFrame, bool simulating)
-#endif
 {
-#ifdef _WIN32
     Server::GameFrame(simulating);
-#else
-    auto result = Server::GameFrame(thisptr, simulating);
 
-    if (!*server->g_InRestore && sar_speedrun_standard.GetBool()) {
+    if (session->isInSession && sar_speedrun_standard.GetBool()) {
         speedrun->CheckRules(engine->tickcount);
     }
-#endif
-
-#ifndef _WIN32
-    return result;
-#endif
 }
+#else
+DETOUR(Server::GameFrame, bool simulating)
+{
+    auto result = Server::GameFrame(thisptr, simulating);
+
+    if (session->isInSession && sar_speedrun_standard.GetBool()) {
+        speedrun->CheckRules(engine->tickcount);
+    }
+
+    return result;
+}
+#endif
 
 bool Server::Init()
 {
@@ -325,11 +327,6 @@ bool Server::Init()
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
 
         auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
-        auto ServiceEventQueue = Memory::Read(GameFrame + Offsets::ServiceEventQueue);
-
-        Memory::Deref<bool*>(GameFrame + Offsets::g_InRestore, &this->g_InRestore);
-        Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue, &this->g_EventQueue);
-
         this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
     }
 
@@ -343,7 +340,7 @@ bool Server::Init()
     if (sar.game->version & SourceGame_Portal2Engine) {
         offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
     }
-    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2)) {
+    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2Game)) {
         offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
     }
 

@@ -35,7 +35,6 @@ Variable sar_aircontrol("sar_aircontrol", "0",
     "Enables more air-control on the server.\n");
 Variable sar_duckjump("sar_duckjump", "0", "Allows duck-jumping even when fully crouched, similar to prevent_crouch_jump.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
-Variable sar_debug_event_queue("sar_debug_event_queue", "0", "Prints entitity events when they are fired, similar to developer.\n");
 
 // TSP only
 void IN_BhopDown(const CCommand& args) { client->KeyDown(client->in_jump, (args.ArgC() > 1) ? args[1] : NULL); }
@@ -107,7 +106,7 @@ void Cheats::Init()
     sv_maxvelocity.Unlock();
     sv_footsteps.Unlock();
 
-    if (sar.game->version & SourceGame_Portal2) {
+    if (sar.game->version & SourceGame_Portal2Game) {
         sv_transition_fade_time = Variable("sv_transition_fade_time");
         sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
         ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
@@ -128,38 +127,38 @@ void Cheats::Init()
 
     sar_jumpboost.UniqueFor(SourceGame_Portal2Engine);
     sar_aircontrol.UniqueFor(SourceGame_Portal2Engine);
-    sar_hud_portals.UniqueFor(SourceGame_Portal2 | SourceGame_Portal);
+    sar_hud_portals.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
     sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
-    sar_debug_game_events.UniqueFor(SourceGame_Portal2);
-    sar_sr_hud.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_sr_hud_x.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_sr_hud_y.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_sr_hud_font_color.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_sr_hud_font_index.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_autostart.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_autostop.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_standard.UniqueFor(SourceGame_Portal2);
-    sar_duckjump.UniqueFor(SourceGame_Portal2);
-    sar_replay_viewmode.UniqueFor(SourceGame_Portal2);
+    sar_debug_game_events.UniqueFor(SourceGame_Portal2Game);
+    sar_sr_hud.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_sr_hud_x.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_sr_hud_y.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_sr_hud_font_color.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_sr_hud_font_index.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_speedrun_autostart.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_speedrun_autostop.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_speedrun_standard.UniqueFor(SourceGame_Portal2Game);
+    sar_duckjump.UniqueFor(SourceGame_Portal2Game);
+    sar_replay_viewmode.UniqueFor(SourceGame_Portal2Game);
 
     startbhop.UniqueFor(SourceGame_TheStanleyParable);
     endbhop.UniqueFor(SourceGame_TheStanleyParable);
     sar_anti_anti_cheat.UniqueFor(SourceGame_TheStanleyParable);
-    sar_workshop.UniqueFor(SourceGame_Portal2);
-    sar_workshop_update.UniqueFor(SourceGame_Portal2);
-    sar_workshop_list.UniqueFor(SourceGame_Portal2);
-    sar_speedrun_result.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_export.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_export_pb.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_import.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_list_rules.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_list_all_rules.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_category.UniqueFor(SourceGame_Portal2 | SourceGame_TheStanleyParable);
-    sar_speedrun_start.UniqueFor(SourceGame_Portal2 | SourceGame_Portal2Engine);
-    sar_speedrun_stop.UniqueFor(SourceGame_Portal2 | SourceGame_Portal2Engine);
-    sar_togglewait.UniqueFor(SourceGame_Portal2);
-    sar_tas_ss.UniqueFor(SourceGame_Portal2);
-    sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2 | SourceGame_HalfLife2Engine);
+    sar_workshop.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_workshop_update.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_workshop_list.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_speedrun_result.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_speedrun_export.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_speedrun_export_pb.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_speedrun_import.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_speedrun_list_rules.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_speedrun_list_all_rules.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_speedrun_category.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
+    sar_speedrun_start.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal2Engine);
+    sar_speedrun_stop.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal2Engine);
+    sar_togglewait.UniqueFor(SourceGame_Portal2Game);
+    sar_tas_ss.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2Game | SourceGame_HalfLife2Engine);
 
     Variable::RegisterAll();
     Command::RegisterAll();
@@ -174,7 +173,7 @@ void Cheats::Shutdown()
     sv_maxvelocity.Lock();
     sv_footsteps.Lock();
 
-    if (sar.game->version & SourceGame_Portal2) {
+    if (sar.game->version & SourceGame_Portal2Game) {
         sv_bonus_challenge.Lock();
         sv_transition_fade_time.Lock();
         sv_laser_cube_autoaim.Lock();

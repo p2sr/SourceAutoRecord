@@ -14,10 +14,10 @@ Replay::Replay(int viewSize, const char* source)
 }
 ReplayView* Replay::GetView(int view)
 {
-    if (view > this->GetViewSize())
-        return nullptr;
+    if (view < this->GetViewSize())
+        return &this->views[view];
 
-    return &this->views[view];
+    return nullptr;
 }
 int Replay::GetViewSize()
 {
@@ -26,4 +26,8 @@ int Replay::GetViewSize()
 int Replay::GetFrameSize()
 {
     return this->views[0].frames.size();
+}
+const char* Replay::GetSource()
+{
+    return this->source;
 }

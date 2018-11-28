@@ -13,19 +13,16 @@ WorkshopList* workshop;
 
 WorkshopList::WorkshopList()
     : maps()
+    , path(std::string(engine->GetGameDirectory()) + std::string("/maps/workshop"))
 {
     this->hasLoaded = true;
-}
-std::string WorkshopList::Path()
-{
-    return std::string(engine->GetGameDirectory()) + std::string("/maps/workshop");
 }
 int WorkshopList::Update()
 {
     auto before = this->maps.size();
     this->maps.clear();
 
-    auto path = this->Path();
+    auto path = this->path;
     auto index = path.length() + 1;
 
     // Scan through all directories and find the map file

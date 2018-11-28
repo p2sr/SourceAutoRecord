@@ -135,7 +135,7 @@ DETOUR(VGui::Paint, int mode)
     if (sar_hud_jumps.GetBool()) {
         DrawElement("jumps: %i", stats->jumps->total);
     }
-    if (sar.game->version & (SourceGame_Portal2 | SourceGame_Portal) && sar_hud_portals.GetBool()) {
+    if (sar.game->version & (SourceGame_Portal2Game | SourceGame_Portal) && sar_hud_portals.GetBool()) {
         DrawElement("portals: %i", server->GetPortals());
     }
     if (sar_hud_steps.GetBool()) {

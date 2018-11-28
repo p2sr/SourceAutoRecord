@@ -87,9 +87,6 @@ void HalfLife2::LoadOffsets()
     player = 4; // CGameMovement::CheckJumpButton
     mv_m_vecVelocity = 64; // CGameMovement::PlayerMove
     GameFrame = 5; // CServerGameDLL
-    g_InRestore = 8; // CServerGameDLL::GameFrame
-    ServiceEventQueue = 147; // CServerGameDLL::GameFrame
-    g_EventQueue = 1; // ServiceEventQueue
     GetAllServerClasses = 11; // CServerGameDLL (TODO)
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 38; // CServerGameDLL::Think

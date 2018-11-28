@@ -90,9 +90,6 @@ void Portal2::LoadOffsets()
     mv = 8; // CPortalGameMovement::CheckJumpButton
     m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
     GameFrame = 4; // CServerGameDLL
-    g_InRestore = 51; // CServerGameDLL::GameFrame
-    ServiceEventQueue = 484; // CServerGameDLL::GameFrame
-    g_EventQueue = 43; // ServiceEventQueue
     GetAllServerClasses = 10; // CServerGameDLL
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
