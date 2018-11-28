@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "TimerCategory.hpp"
 #include "TimerInterface.hpp"
 #include "TimerResult.hpp"
 #include "TimerRule.hpp"
@@ -38,7 +39,7 @@ SpeedrunTimer::SpeedrunTimer()
     , ipt(0.0f)
     , state(TimerState::NotRunning)
     , rules()
-    , category("any")
+    , category(nullptr)
     , offset(0)
 {
     this->liveSplit = std::make_unique<TimerInterface>();
@@ -169,7 +170,7 @@ void SpeedrunTimer::Reset()
     this->total = this->offset;
     this->prevTotal = 0;
     this->base = 0;
-    TimerRule::ResetAll();
+    TimerCategory::ResetAll();
     this->InitRules();
 }
 int SpeedrunTimer::GetSession()
@@ -186,16 +187,20 @@ char* SpeedrunTimer::GetCurrentMap()
 }
 void SpeedrunTimer::LoadRules(Game* game)
 {
-    auto filtered = TimerRule::FilterByGame(game);
-    if (filtered != 0)
+    auto filtered = TimerCategory::FilterByGame(game);
+    if (filtered != 0) {
+        this->category = TimerCategory::list[0];
         console->DevMsg("Loaded %i speedrun rules!\n", filtered);
+    }
 }
 void SpeedrunTimer::InitRules()
 {
     this->rules.clear();
-    for (const auto& rule : TimerRule::list) {
-        if (!std::strcmp(this->category, rule->categoryName) && !std::strcmp(this->map, rule->mapName)) {
-            this->rules.push_back(rule);
+    if (this->category) {
+        for (const auto& rule : this->category->rules) {
+            if (!std::strcmp(this->map, rule->mapName)) {
+                this->rules.push_back(rule);
+            }
         }
     }
 }
@@ -203,7 +208,7 @@ void SpeedrunTimer::ReloadRules()
 {
     for (const auto& rule : this->rules) {
         if (!rule->Load()) {
-            console->Warning("Failed to load rule: %s -> %s\n", rule->categoryName, rule->mapName);
+            console->Warning("Failed to load rule: %s -> %s\n", rule->name, rule->mapName);
         }
     }
 }
@@ -226,11 +231,11 @@ const float SpeedrunTimer::GetIntervalPerTick()
 {
     return this->ipt;
 }
-void SpeedrunTimer::SetCategory(const char* category)
+void SpeedrunTimer::SetCategory(TimerCategory* category)
 {
-    std::strncpy(this->category, category, sizeof(this->category));
+    this->category = category;
 }
-const char* SpeedrunTimer::GetCategory()
+TimerCategory* SpeedrunTimer::GetCategory()
 {
     return this->category;
 }
@@ -479,36 +484,46 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.\n
         console->Warning("Failed to import file!\n");
     }
 }
-CON_COMMAND(sar_speedrun_list_rules, "Prints currently loaded rules which the timer will follow.\n")
-{
-    auto rules = speedrun->GetRules();
-    if (rules.empty()) {
-        return console->Print("No rules loaded!\n");
-    }
-
-    for (const auto& rule : rules) {
-        console->Print("%s -> %s\n", rule->categoryName, rule->mapName);
-    }
-}
-CON_COMMAND(sar_speedrun_list_all_rules, "Prints all rules which the timer might follow.\n")
-{
-    auto rules = TimerRule::list;
-    if (rules.empty()) {
-        return console->Print("No rules loaded!\n");
-    }
-
-    for (const auto& rule : rules) {
-        console->Print("%s -> %s\n", rule->categoryName, rule->mapName);
-    }
-}
 CON_COMMAND(sar_speedrun_category, "Sets the category for a speedrun.\n")
 {
-    if (args.ArgC() == 2) {
-        speedrun->SetCategory(args[1]);
-        speedrun->InitRules();
+    if (!speedrun->GetCategory() || TimerCategory::list.empty()) {
+        return console->Print("This game does not have any categories!\n");
     }
 
-    console->Print("Current category: %s\n", speedrun->GetCategory());
+    auto PrintCategory = []() {
+        auto category = speedrun->GetCategory();
+        console->Print("Category: %s\n", category->name);
+        for (auto const& rule : category->rules) {
+            console->Msg("  -> %s (%s)\n", rule->name, rule->mapName);
+        }
+    };
+
+    if (args.ArgC() != 2) {
+        return PrintCategory();
+    }
+
+    for (auto const& category : TimerCategory::list) {
+        if (!std::strcmp(category->name, args[1])) {
+            speedrun->SetCategory(category);
+            speedrun->InitRules();
+            return PrintCategory();
+        }
+    }
+
+    console->Print("Unknown category name! Use sar_speedrun_categories to list all categories.\n");
+}
+CON_COMMAND(sar_speedrun_categories, "Lists all categories.\n")
+{
+    if (!speedrun->GetCategory() || TimerCategory::list.empty()) {
+        return console->Print("This game does not have any categories!\n");
+    }
+
+    for (auto const& category : TimerCategory::list) {
+        console->Print("%s\n", category->name);
+        for (auto const& rule : category->rules) {
+            console->Msg("  -> %s (%s)\n", rule->name, rule->mapName);
+        }
+    }
 }
 CON_COMMAND(sar_speedrun_offset, "Sets offset in ticks at which the timer should start.\n")
 {

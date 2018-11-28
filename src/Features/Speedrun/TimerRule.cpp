@@ -10,11 +10,10 @@
 
 #include "TimerAction.hpp"
 
-TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
+TimerRule::TimerRule(const char* name, const char* mapName, const char* entityName,
     _TimerRuleCallback0 callback, SearchMode searchMode)
     : madeAction(false)
-    , gameVersion(gameVersion)
-    , categoryName(categoryName)
+    , name(name)
     , mapName(mapName)
     , entityName(entityName)
     , callback0(callback)
@@ -24,20 +23,19 @@ TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapN
     , isActive(false)
     , searchMode(searchMode)
 {
-    TimerRule::list.push_back(this);
 }
-TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
+TimerRule::TimerRule(const char* name, const char* mapName, const char* entityName,
     _TimerRuleCallback1 callback, const char* className, const char* propName, SearchMode searchMode)
-    : TimerRule(gameVersion, categoryName, mapName, entityName, nullptr, searchMode)
+    : TimerRule(name, mapName, entityName, nullptr, searchMode)
 {
     this->className = className;
     this->propName = propName;
     this->callback1 = callback;
     this->callbackType = 1;
 }
-TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
+TimerRule::TimerRule(const char* name, const char* mapName, const char* entityName,
     _TimerRuleCallback2 callback, const char* className, const char* propName, SearchMode searchMode)
-    : TimerRule(gameVersion, categoryName, mapName, entityName, nullptr, searchMode)
+    : TimerRule(name, mapName, entityName, nullptr, searchMode)
 {
     this->className = className;
     this->propName = propName;
@@ -87,25 +85,3 @@ TimerAction TimerRule::Dispatch()
 
     return TimerAction::DoNothing;
 }
-int TimerRule::FilterByGame(Game* game)
-{
-    auto count = 0;
-    for (auto&& rule = TimerRule::list.begin(); rule != TimerRule::list.end();) {
-        if ((*rule)->gameVersion != game->version) {
-            rule = TimerRule::list.erase(rule);
-        } else {
-            ++rule;
-            ++count;
-        }
-    }
-
-    return count;
-}
-void TimerRule::ResetAll()
-{
-    for (auto& rule : TimerRule::list) {
-        rule->madeAction = false;
-    }
-}
-
-std::vector<TimerRule*> TimerRule::list;

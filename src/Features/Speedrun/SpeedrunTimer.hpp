@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "TimerAction.hpp"
+#include "TimerCategory.hpp"
 #include "TimerInterface.hpp"
 #include "TimerResult.hpp"
 #include "TimerRule.hpp"
@@ -34,7 +35,7 @@ private:
     std::unique_ptr<TimerResult> result;
     std::unique_ptr<TimerResult> pb;
     std::vector<TimerRule*> rules;
-    char category[16];
+    TimerCategory* category;
     int offset;
 
 public:
@@ -57,8 +58,8 @@ public:
     void SetIntervalPerTick(const float* ipt);
     const float GetIntervalPerTick();
 
-    void SetCategory(const char* category);
-    const char* GetCategory();
+    void SetCategory(TimerCategory* category);
+    TimerCategory* GetCategory();
 
     void SetOffset(const int offset);
     const int GetOffset();
@@ -92,9 +93,8 @@ extern Command sar_speedrun_result;
 extern Command sar_speedrun_export;
 extern Command sar_speedrun_export_pb;
 extern Command sar_speedrun_import;
-extern Command sar_speedrun_list_rules;
-extern Command sar_speedrun_list_all_rules;
 extern Command sar_speedrun_category;
+extern Command sar_speedrun_categories;
 extern Command sar_speedrun_offset;
 
 extern Variable sar_speedrun_autostart;
