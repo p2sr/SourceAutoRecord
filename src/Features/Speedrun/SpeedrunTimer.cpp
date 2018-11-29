@@ -190,7 +190,7 @@ void SpeedrunTimer::LoadRules(Game* game)
     auto filtered = TimerCategory::FilterByGame(game);
     if (filtered != 0) {
         this->category = TimerCategory::list[0];
-        console->DevMsg("Loaded %i speedrun rules!\n", filtered);
+        console->DevMsg("Loaded %i speedrun %s!\n", filtered, (filtered == 1) ? "category" : "categories");
     }
 }
 void SpeedrunTimer::InitRules()

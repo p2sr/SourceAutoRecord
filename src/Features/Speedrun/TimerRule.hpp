@@ -48,15 +48,15 @@ public:
     TimerAction Dispatch();
 };
 
-#define SAR_RULE(ruleName, mapName, entityName, className, propName, searchMode)                                              \
-    TimerAction ruleName##_callback(void* entityName, int* propName);                                                         \
-    TimerRule ruleName = TimerRule(#ruleName, #mapName, #entityName, ruleName##_callback, #className, #propName, searchMode); \
-    TimerAction ruleName##_callback(void* entityName, int* propName)
-#define SAR_RULE2(ruleName, mapName, entityName, className, propName, searchMode)                                             \
-    TimerAction ruleName##_callback(void* entityName, int propName##_offset);                                                 \
-    TimerRule ruleName = TimerRule(#ruleName, #mapName, #entityName, ruleName##_callback, #className, #propName, searchMode); \
-    TimerAction ruleName##_callback(void* entityName, int propName##_offset)
-#define SAR_RULE3(ruleName, mapName, entityName, searchMode)                                           \
-    TimerAction ruleName##_callback(void* entityName);                                                 \
-    TimerRule ruleName = TimerRule(#ruleName, #mapName, #entityName, ruleName##_callback, searchMode); \
-    TimerAction ruleName##_callback(void* entityName)
+#define SAR_RULE(ruleName, mapName, entityName, className, propName, searchMode)                                           \
+    TimerAction ruleName##_callback(void* entity, int* propName);                                                          \
+    TimerRule ruleName = TimerRule(#ruleName, mapName, entityName, ruleName##_callback, className, #propName, searchMode); \
+    TimerAction ruleName##_callback(void* entity, int* propName)
+#define SAR_RULE2(ruleName, mapName, entityName, className, propName, searchMode)                                          \
+    TimerAction ruleName##_callback(void* entity, int propName##_offset);                                                  \
+    TimerRule ruleName = TimerRule(#ruleName, mapName, entityName, ruleName##_callback, className, #propName, searchMode); \
+    TimerAction ruleName##_callback(void* entity, int propName##_offset)
+#define SAR_RULE3(ruleName, mapName, entityName, searchMode)                                         \
+    TimerAction ruleName##_callback(void* entity);                                                   \
+    TimerRule ruleName = TimerRule(#ruleName, mapName, entityName, ruleName##_callback, searchMode); \
+    TimerAction ruleName##_callback(void* entity)
