@@ -6,8 +6,8 @@
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
-#include "Features/StepCounter.hpp"
 #include "Features/Stats/StatsExport.hpp"
+#include "Features/StepCounter.hpp"
 #include "Features/Tas/TasTools.hpp"
 
 #include "Client.hpp"
@@ -43,6 +43,7 @@ REDECL(Server::FinishGravity);
 REDECL(Server::AirMove);
 REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
+REDECL(Server::ProcessMovement);
 #ifdef _WIN32
 REDECL(Server::AirMove_Skip);
 REDECL(Server::AirMove_Continue);
@@ -271,15 +272,25 @@ DETOUR(Server::PlayerMove)
 
     stats->velocity->Save(client->GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
 
-
-	//tasTools->mv_forward = m_MoveType & IN_FORWARD;
-
-
 #ifndef _WIN32
     inspector->Record();
 #endif
 
     return Server::PlayerMove(thisptr);
+}
+
+//CGameMovement::ProcessMovement
+DETOUR(Server::ProcessMovement, void* a, CMoveData* pmove)
+{
+    auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
+    float forward = (mv->m_nButtons & IN_FORWARD) ? 1 : 0;
+    float backward = (mv->m_nButtons & IN_BACK) ? 1 : 0;
+    float moveright = (mv->m_nButtons & IN_MOVELEFT) ? 1 : 0;
+    float moveleft = (mv->m_nButtons & IN_MOVERIGHT) ? 1 : 0;
+    float jump = (mv->m_nButtons & IN_JUMP) ? 1 : 0;
+    tasTools->SetMoveButtonsState(forward, backward, moveright, moveleft, jump);
+
+    return Server::ProcessMovement(thisptr, a, pmove);
 }
 
 // CGameMovement::FinishGravity
@@ -416,6 +427,7 @@ bool Server::Init()
             Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &this->CheckJumpButtonBase);
 
 #ifdef _WIN32
+            this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
             auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
             if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
                 MH_HOOK_MID(this->AirMove_Mid, airMoveMid);

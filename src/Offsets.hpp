@@ -63,6 +63,7 @@ extern int CheckJumpButton;
 extern int FullTossMove;
 extern int mv;
 extern int player;
+extern int ProcessMovement;
 
 // CDemoRecorder
 extern int GetRecordingTick;

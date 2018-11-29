@@ -56,7 +56,7 @@ void Client::GetOffset(const char* className, const char* propName, int& offset)
             if (!std::strcmp(curClass->m_pNetworkName, className)) {
                 auto result = FindOffset(curClass->m_pRecvTable, propName);
                 if (result != 0) {
-                    console->DevMsg("Found %s::%s at %i (client-side)\n", className, propName, result);
+                    //console->DevMsg("Found %s::%s at %i (client-side)\n", className, propName, result);
                     offset = result;
                 }
                 break;

@@ -25,6 +25,7 @@ TasTools::TasTools()
     , m_forward_was_pressed(0)
     , m_moveleft_was_pressed(0)
     , m_moveright_was_pressed(0)
+    , m_jump_was_pressed(0)
 {
     if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2)) {
         std::strncpy(this->className, "CPortal_Player", sizeof(this->className));
@@ -98,6 +99,15 @@ void TasTools::SetButtonBits(int buttonBits)
 {
     this->buttonBits = buttonBits;
 }
+void TasTools::SetMoveButtonsState(float forward, float backward, float moveright, float moveleft, float jump)
+{
+    this->m_forward_was_pressed = forward;
+    this->m_backward_was_pressed = backward;
+    this->m_moveright_was_pressed = moveright;
+    this->m_moveleft_was_pressed = moveleft;
+    this->m_jump_was_pressed = jump;
+}
+//void TasTools::Strafe(int direction, float forward, float backward, float moveleft, float moveright, float jump)
 void TasTools::Strafe(int direction)
 {
     float tau = 1 / host_framerate.GetFloat(); //A time for one frame to pass
@@ -109,12 +119,18 @@ void TasTools::Strafe(int direction)
     Vector lambda = velocity;
 
     //Getting the grounded status
-    /*int is_inAir;
+    int is_inAir;
     auto player = client->GetPlayer();
     client->GetOffset("CPortal_Player", "m_InAirState", is_inAir);
-    int grounded = (player) ? !(*reinterpret_cast<int*>((uintptr_t)player + is_inAir)) : -1;*/
-    int jump_state = this->buttonBits & IN_JUMP;
-    int grounded = !jump_state;
+    //Managing 0.5 jumping input
+    float jump = (this->buttonBits & IN_JUMP) ? 1 : 0;
+    if (!jump) {
+        this->m_jump_was_pressed = 0;
+    } else if (jump && !this->m_jump_was_pressed) {
+        this->m_jump_was_pressed = 1;
+        jump = 0.5;
+    }
+    int grounded = (jump == 0.5 || ((player) ? !(*reinterpret_cast<int*>((uintptr_t)player + is_inAir)) : -1));
 
     if (grounded) {
         if (velocity.Length2D() >= sv_stopspeed.GetFloat()) {
@@ -135,35 +151,34 @@ void TasTools::Strafe(int direction)
     float moveleft_keystate = (this->buttonBits & IN_MOVERIGHT) ? 1 : 0;
 
     //Managing 0.5 inputs
-    /*if (!forward_keystate) {
+    if (!forward_keystate) {
         this->m_forward_was_pressed = 0;
-	} else if (forward_keystate && !this->m_forward_was_pressed){
+    } else if (forward_keystate && !this->m_forward_was_pressed) {
         this->m_forward_was_pressed = 1;
         forward_keystate = 0.5;
-    } else {
-        this->m_forward_was_pressed = 0;
     }
-    if (backward_keystate && !this->m_backward_was_pressed) {
+    if (!backward_keystate) {
+        this->m_backward_was_pressed = 0;
+    } else if (backward_keystate && !this->m_backward_was_pressed) {
         this->m_backward_was_pressed = 1;
         backward_keystate = 0.5;
-    } else {
-        this->m_backward_was_pressed = 0;
     }
-    if (moveright_keystate && !this->m_moveright_was_pressed) {
+    if (!moveright_keystate) {
+        this->m_moveright_was_pressed = 0;
+    } else if (moveright_keystate && !this->m_moveright_was_pressed) {
         this->m_moveright_was_pressed = 1;
         moveright_keystate = 0.5;
-    } else {
-        this->m_moveright_was_pressed = 0;
     }
-    if (moveleft_keystate && !this->m_moveleft_was_pressed) {
+    if (!moveleft_keystate) {
+        this->m_moveleft_was_pressed = 0;
+    } else if (moveleft_keystate && !this->m_moveleft_was_pressed) {
         this->m_moveleft_was_pressed = 1;
         moveleft_keystate = 0.5;
-    } else {
-        this->m_moveleft_was_pressed = 0;
-    }*/
+    }
 
     float F = forward_keystate - backward_keystate;
     float S = moveright_keystate - moveleft_keystate;
+
     float stateLen = sqrt(F * F + S * S);
     float forwardMove = cl_forwardspeed.GetFloat() * F / stateLen;
     float sideMove = cl_sidespeed.GetFloat() * S / stateLen;
@@ -183,8 +198,6 @@ void TasTools::Strafe(int direction)
     float theta = acosf(cosTheta) * (direction ? -1 : 1);
     float lookangle = std::atan2f(sideMove, forwardMove);
 
-    console->Print("lookangle: %f, forward: %f, back: %f, left: %f, right: %f, forwardmove: %f, sidemove: %f\n\n",
-					RAD2DEG(lookangle),	forward_keystate, backward_keystate, moveleft_keystate, moveright_keystate, forwardMove, sideMove);
 
     engine->SetAngles({ 0, this->GetVelocityAngles().x + RAD2DEG(theta), 0 });
 }
@@ -275,23 +288,14 @@ CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : Sets {x, y, z} degres 
     QAngle angle = { static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])) };
     engine->SetAngles(angle);
 }
-CON_COMMAND(sar_groundstrafe, "sar_groundstrafe <direction>\n")
+CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <direction>\n")
 {
     if (!sv_cheats.GetBool())
-        return console->Print("Cannot use sar_groundstrafe without sv_cheats sets to 1.\n");
+        return console->Print("Cannot use sar_tas_strafe without sv_cheats sets to 1.\n");
 
     if (args.ArgC() < 2)
-        return console->Print("Missing arguments : sar_groundstrafe <direction>\n");
+        return console->Print("Missing arguments : sar_tas_strafe <direction>\n");
 
     tasTools->Strafe(std::atoi(args[1]));
-}
-CON_COMMAND(sar_airstrafe, "sar_strafe <direction>\n")
-{
-    if (!sv_cheats.GetBool())
-        return console->Print("Cannot use sar_strafe without sv_cheats sets to 1.\n");
 
-    if (args.ArgC() < 2)
-        return console->Print("Missing arguments : sar_strafe <direction>\n");
-
-    tasTools->Strafe(std::atoi(args[1]));
 }

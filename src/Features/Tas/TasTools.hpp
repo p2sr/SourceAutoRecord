@@ -29,6 +29,7 @@ private:
     int m_backward_was_pressed;
     int m_moveright_was_pressed;
     int m_moveleft_was_pressed;
+    int m_jump_was_pressed;
 
 public:
     TasTools();
@@ -38,6 +39,7 @@ public:
     void* GetPlayerInfo();
     void Strafe(int opposite);
     void SetButtonBits(int buttonBits);
+    void SetMoveButtonsState(float forward, float backward, float moveright, float moveleft, float jump);
 };
 
 extern TasTools* tasTools;
