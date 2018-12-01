@@ -4,5 +4,9 @@
 
 extern TimerRule view_change;
 extern TimerRule moon_shot;
+extern TimerRule players_teleport;
+extern TimerRule players_taunt;
+extern TimerRule gate_opens;
 
 extern TimerCategory Portal2_RTA;
+extern TimerCategory Portal2_CoopRTA;

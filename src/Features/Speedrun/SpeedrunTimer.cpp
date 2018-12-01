@@ -492,7 +492,7 @@ CON_COMMAND(sar_speedrun_category, "Sets the category for a speedrun.\n")
 
     auto PrintCategory = []() {
         auto category = speedrun->GetCategory();
-        console->Print("Category: %s\n", category->name);
+        console->Print("%s\n", category->name);
         for (auto const& rule : category->rules) {
             console->Msg("  -> %s (%s)\n", rule->name, rule->mapName);
         }
