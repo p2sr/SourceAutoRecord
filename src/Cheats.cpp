@@ -5,6 +5,7 @@
 #include "Features/Hud/Hud.hpp"
 #include "Features/Hud/InspectionHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
+#include "Features/Imitator.hpp"
 #include "Features/Listener.hpp"
 #include "Features/ReplaySystem/ReplayPlayer.hpp"
 #include "Features/ReplaySystem/ReplayProvider.hpp"
@@ -129,7 +130,7 @@ void Cheats::Init()
     sar_aircontrol.UniqueFor(SourceGame_Portal2Engine);
     sar_hud_portals.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
     sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
-    sar_debug_game_events.UniqueFor(SourceGame_Portal2Game);
+    sar_debug_game_events.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_sr_hud.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
     sar_sr_hud_x.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
     sar_sr_hud_y.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
@@ -139,7 +140,8 @@ void Cheats::Init()
     sar_speedrun_autostop.UniqueFor(SourceGame_Portal2Game | SourceGame_TheStanleyParable);
     sar_speedrun_standard.UniqueFor(SourceGame_Portal2Game);
     sar_duckjump.UniqueFor(SourceGame_Portal2Game);
-    sar_replay_viewmode.UniqueFor(SourceGame_Portal2Game);
+    sar_replay_viewmode.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_mimic.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
 
     startbhop.UniqueFor(SourceGame_TheStanleyParable);
     endbhop.UniqueFor(SourceGame_TheStanleyParable);

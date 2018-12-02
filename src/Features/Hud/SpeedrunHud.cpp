@@ -13,6 +13,8 @@ Variable sar_sr_hud_y("sar_sr_hud_y", "100", 0, "Y offset of speedrun timer HUD.
 Variable sar_sr_hud_font_color("sar_sr_hud_font_color", "255 255 255 255", "RGBA font color of speedrun timer HUD.\n", 0);
 Variable sar_sr_hud_font_index("sar_sr_hud_font_index", "70", 0, "Font index of speedrun timer HUD.\n");
 
+SpeedrunHud* speedrunHud;
+
 bool SpeedrunHud::GetCurrentSize(int& xSize, int& ySize)
 {
     return false;

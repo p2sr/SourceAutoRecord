@@ -107,7 +107,7 @@ DETOUR_T(bool, Server::CheckJumpButton)
 
     auto cheating = !sv_bonus_challenge.GetBool() || sv_cheats.GetBool();
     auto autoJump = cheating && sar_autojump.GetBool();
-    auto duckJump = cheating && sar_duckjump.GetBool();
+    auto duckJump = cheating && sar_duckjump.isRegistered && sar_duckjump.GetBool();
 
     auto original = 0;
     if (autoJump) {
@@ -217,18 +217,13 @@ DETOUR(Server::FinishGravity)
 // CGameMovement::AirMove
 DETOUR_B(Server::AirMove)
 {
-#ifdef _WIN32
     if (sar_aircontrol.GetInt() >= 2) {
-#else
-    if (sar_aircontrol.GetBool()) {
-#endif
         return Server::AirMoveBase(thisptr);
     }
+
     return Server::AirMove(thisptr);
 }
-
 #ifdef _WIN32
-// CGameMovement::AirMove
 DETOUR_MID_MH(Server::AirMove_Mid)
 {
     __asm {
@@ -326,8 +321,10 @@ bool Server::Init()
 
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
 
-        auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
-        this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
+        if (sar.game->version & SourceGame_Portal2Game) {
+            auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
+            this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
+        }
     }
 
     offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);

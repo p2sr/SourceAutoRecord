@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "Features/Hud/InputHud.hpp"
 #include "Features/Imitator.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/ReplaySystem/ReplayPlayer.hpp"
@@ -14,7 +15,6 @@
 #include "Console.hpp"
 #include "Engine.hpp"
 #include "Server.hpp"
-#include "VGui.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -100,11 +100,11 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
         }
     }
 
-    if (sar_mimic.GetBool()) {
+    if (sar_mimic.isRegistered && sar_mimic.GetBool()) {
         imitator->Save(cmd);
     }
 
-    vgui->inputHud->SetButtonBits(cmd->buttons);
+    inputHud->SetButtonBits(cmd->buttons);
 
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
@@ -118,7 +118,7 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
         }
     }
 
-    if (sar_mimic.GetBool()) {
+    if (sar_mimic.isRegistered && sar_mimic.GetBool()) {
         imitator->Modify(cmd);
     }
 

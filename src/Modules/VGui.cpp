@@ -2,6 +2,7 @@
 
 #include "Features/EntityList.hpp"
 #include "Features/Hud/InputHud.hpp"
+#include "Features/Hud/InspectionHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Routing/Tracer.hpp"
@@ -23,6 +24,7 @@
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Offsets.hpp"
+#include "SAR.hpp"
 #include "Utils.hpp"
 
 REDECL(VGui::Paint);
@@ -135,7 +137,7 @@ DETOUR(VGui::Paint, int mode)
     if (sar_hud_jumps.GetBool()) {
         DrawElement("jumps: %i", stats->jumps->total);
     }
-    if (sar.game->version & (SourceGame_Portal2Game | SourceGame_Portal) && sar_hud_portals.GetBool()) {
+    if (sar_hud_portals.isRegistered && sar_hud_portals.GetBool()) {
         DrawElement("portals: %i", server->GetPortals());
     }
     if (sar_hud_steps.GetBool()) {
@@ -190,39 +192,44 @@ DETOUR(VGui::Paint, int mode)
     surface->FinishDrawing();
 
     // Draw other HUDs
-    vgui->inputHud->Draw();
-    vgui->speedrunHud->Draw();
-#ifndef _WIN32
-    vgui->inspectionHud->Draw();
-#endif
+    for (auto const& hud : vgui->huds) {
+        hud->Draw();
+    }
 
     return VGui::Paint(thisptr, mode);
 }
 
 bool VGui::Init()
 {
-    this->inputHud = new InputHud();
-    this->speedrunHud = new SpeedrunHud();
-    this->inspectionHud = new InspectionHud();
-
     this->enginevgui = Interface::Create(this->Name(), "VEngineVGui0");
     if (this->enginevgui) {
         this->enginevgui->Hook(VGui::Paint_Hook, VGui::Paint, Offsets::Paint);
+    }
+
+    this->huds.push_back(inputHud = new InputHud());
+// TODO: windows
+#ifndef _WIN32
+    this->huds.push_back(inspectionHud = new InspectionHud());
+#endif
+
+    if (sar.game->version & (SourceGame_Portal2Game | SourceGame_TheStanleyParable)) {
+        this->huds.push_back(speedrunHud = new SpeedrunHud());
     }
 
     if (sar.game->version & SourceGame_HalfLife2Engine) {
         this->respectClShowPos = false;
     }
 
-    return this->hasLoaded = this->inputHud && this->speedrunHud && this->inspectionHud && this->enginevgui;
+    return this->hasLoaded = this->enginevgui;
 }
 void VGui::Shutdown()
 {
     Interface::Delete(this->enginevgui);
 
-    SAFE_DELETE(this->inputHud)
-    SAFE_DELETE(this->speedrunHud)
-    SAFE_DELETE(this->inspectionHud)
+    for (auto const& hud : this->huds) {
+        delete hud;
+    }
+    this->huds.clear();
 }
 
 VGui* vgui;

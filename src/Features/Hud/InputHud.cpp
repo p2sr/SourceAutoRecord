@@ -5,7 +5,6 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
-#include "Modules/VGui.hpp"
 
 #include "Utils/SDK.hpp"
 
@@ -56,6 +55,8 @@ const int col5 = 5;
 const int col6 = 6;
 const int col7 = 7;
 const int col8 = 8;
+
+InputHud* inputHud;
 
 void InputHud::SetButtonBits(int buttonBits)
 {
@@ -238,7 +239,7 @@ CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of in
     auto xSize = 0;
     auto ySize = 0;
 
-    if (!vgui->inputHud->GetCurrentSize(xSize, ySize)) {
+    if (!inputHud->GetCurrentSize(xSize, ySize)) {
         console->Print("HUD not active!\n");
         return;
     }

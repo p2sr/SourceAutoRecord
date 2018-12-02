@@ -40,7 +40,7 @@ void Session::Started(bool menu)
         console->Print("Session started! (menu)\n");
         session->Rebase(*engine->tickcount);
 
-        if (sar_speedrun_autostop.GetBool()) {
+        if (sar_speedrun_autostop.isRegistered && sar_speedrun_autostop.GetBool()) {
             speedrun->Stop(false);
         } else {
             speedrun->Unpause(engine->tickcount);
@@ -104,7 +104,7 @@ void Session::Start()
         }
     }
 
-    if (sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
+    if (sar_speedrun_autostart.isRegistered && sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
         speedrun->Start(engine->tickcount);
     }
 
