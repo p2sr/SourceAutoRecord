@@ -56,9 +56,9 @@ pre:
 	@$(CREATE) $(ODIR)Utils/
 
 post:
-	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal 2/$(BINARY)"
+#	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal 2/$(BINARY)"
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)Aperture Tag/$(BINARY)"
-#	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal Stories Mel/$(BINARY)"
+	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal Stories Mel/$(BINARY)"
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)The Stanley Parable/$(BINARY)"
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)The Beginners Guide/$(BINARY)"
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)Half-Life 2/$(BINARY)"
