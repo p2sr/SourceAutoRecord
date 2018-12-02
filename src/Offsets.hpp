@@ -179,6 +179,7 @@ extern int GetClientMode;
 extern int State_Shutdown;
 extern int Cbuf_AddText;
 extern int s_CommandBuffer;
+extern int CCommandBufferSize;
 extern int AddText;
 extern int AutoCompletionFunc;
 extern int StartDrawing;

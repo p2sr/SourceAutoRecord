@@ -179,6 +179,7 @@ int GetClientMode;
 int State_Shutdown;
 int Cbuf_AddText;
 int s_CommandBuffer;
+int CCommandBufferSize;
 int AddText;
 int AutoCompletionFunc;
 int StartDrawing;

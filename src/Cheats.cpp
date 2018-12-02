@@ -53,7 +53,7 @@ DECLARE_AUTOCOMPLETION_FUNCTION(changelevel2, "maps", bsp);
 CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer.\n")
 {
     auto state = !*engine->m_bWaitEnabled;
-    *engine->m_bWaitEnabled = state;
+    *engine->m_bWaitEnabled = *engine->m_bWaitEnabled2 = state;
     console->Print("%s wait!\n", (state) ? "Enabled" : "Disabled");
 }
 

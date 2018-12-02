@@ -21,6 +21,7 @@ void Portal2::LoadOffsets()
     GetClientStateFunction = 4; // CEngineClient::ClientCmd
     Cbuf_AddText = 46; // CEngineClient::ClientCmd
     s_CommandBuffer = 82; // Cbuf_AddText
+    CCommandBufferSize = 9556; // Cbuf_AddText
     m_bWaitEnabled = 8265; // CCommandBuffer::AddText
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient
