@@ -91,7 +91,7 @@ DETOUR(VGui::Paint, int mode)
     }
     // Session
     if (sar_hud_session.GetBool()) {
-        auto tick = (session->isInSession) ? engine->GetSessionTick() : 0;
+        auto tick = (session->isRunning) ? engine->GetSessionTick() : 0;
         auto time = engine->ToTime(tick);
         DrawElement("session: %i (%.3f)", tick, time);
     }
@@ -100,7 +100,7 @@ DETOUR(VGui::Paint, int mode)
     }
     if (sar_hud_sum.GetBool()) {
         if (summary->isRunning && sar_sum_during_session.GetBool()) {
-            auto tick = (session->isInSession) ? engine->GetSessionTick() : 0;
+            auto tick = (session->isRunning) ? engine->GetSessionTick() : 0;
             auto time = engine->ToTime(tick);
             DrawElement("sum: %i (%.3f)", summary->totalTicks + tick, engine->ToTime(summary->totalTicks) + time);
         } else {

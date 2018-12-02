@@ -255,7 +255,7 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 {
     Server::GameFrame(simulating);
 
-    if (session->isInSession && sar_speedrun_standard.GetBool()) {
+    if (session->isRunning && sar_speedrun_standard.GetBool()) {
         speedrun->CheckRules(engine->tickcount);
     }
 }
@@ -264,7 +264,7 @@ DETOUR(Server::GameFrame, bool simulating)
 {
     auto result = Server::GameFrame(thisptr, simulating);
 
-    if (session->isInSession && sar_speedrun_standard.GetBool()) {
+    if (session->isRunning && sar_speedrun_standard.GetBool()) {
         speedrun->CheckRules(engine->tickcount);
     }
 

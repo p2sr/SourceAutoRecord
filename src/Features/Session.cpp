@@ -19,7 +19,7 @@ Session* session;
 Session::Session()
     : baseTick(0)
     , lastSession(0)
-    , isInSession(false)
+    , isRunning(false)
     , currentFrame(0)
     , lastFrame(0)
     , prevState(HOSTSTATES::HS_RUN)
@@ -32,13 +32,13 @@ void Session::Rebase(const int from)
 }
 void Session::Started(bool menu)
 {
-    if (this->isInSession) {
+    if (this->isRunning) {
         return;
     }
 
     if (menu) {
         console->Print("Session started! (menu)\n");
-        session->Rebase(*engine->tickcount);
+        this->Rebase(*engine->tickcount);
 
         if (sar_speedrun_autostop.isRegistered && sar_speedrun_autostop.GetBool()) {
             speedrun->Stop(false);
@@ -52,11 +52,11 @@ void Session::Started(bool menu)
 }
 void Session::Start()
 {
-    if (this->isInSession) {
+    if (this->isRunning) {
         return;
     }
 
-    session->Rebase(*engine->tickcount);
+    this->Rebase(*engine->tickcount);
     timer->Rebase(*engine->tickcount);
     speedrun->Unpause(engine->tickcount);
 
@@ -109,13 +109,14 @@ void Session::Start()
     }
 
     stepCounter->ResetTimer();
-    currentFrame = 0;
+    
     speedrun->ReloadRules();
-    isInSession = true;
+    this->currentFrame = 0;
+    this->isRunning = true;
 }
 void Session::Ended()
 {
-    if (!this->isInSession) {
+    if (!this->isRunning) {
         return;
     }
 
@@ -123,7 +124,7 @@ void Session::Ended()
 
     if (tick != 0) {
         console->Print("Session: %i (%.3f)\n", tick, engine->ToTime(tick));
-        session->lastSession = tick;
+        this->lastSession = tick;
     }
 
     if (summary->isRunning) {
@@ -158,7 +159,7 @@ void Session::Ended()
     speedrun->Pause();
     speedrun->UnloadRules();
 
-    this->isInSession = false;
+    this->isRunning = false;
 }
 void Session::Changed()
 {

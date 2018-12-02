@@ -8,7 +8,7 @@ public:
     int baseTick;
     int lastSession;
 
-    bool isInSession;
+    bool isRunning;
     unsigned currentFrame;
     unsigned lastFrame;
     HOSTSTATES prevState;

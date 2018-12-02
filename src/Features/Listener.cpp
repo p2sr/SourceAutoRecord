@@ -64,7 +64,7 @@ void Listener::FireGameEvent(IGameEvent* ev)
         }
     }
 
-    if (engine->GetMaxClients() >= 2) {
+    if (!session->isRunning && engine->GetMaxClients() >= 2) {
         // TODO: Start when orange spawns?
         if (!std::strcmp(ev->GetName(), "player_spawn_orange")) {
             console->Print("Session Started! (coop)\n");
