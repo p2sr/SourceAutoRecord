@@ -2,6 +2,7 @@
 #include "Features/Config.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/EntityList.hpp"
+#include "Features/Imitator.hpp"
 #include "Features/Listener.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/Rebinder.hpp"

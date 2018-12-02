@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "Features/Imitator.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/ReplaySystem/ReplayPlayer.hpp"
 #include "Features/ReplaySystem/ReplayProvider.hpp"
@@ -91,8 +92,6 @@ DETOUR(Client::HudUpdate, unsigned int a2)
 // ClientModeShared::CreateMove
 DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
 {
-    vgui->inputHud->SetButtonBits(cmd->buttons);
-
     if (cmd->command_number) {
         if (replayPlayer1->IsPlaying()) {
             replayPlayer1->Play(replayProvider->GetCurrentReplay(), cmd);
@@ -100,6 +99,12 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
             replayRecorder1->Record(replayProvider->GetCurrentReplay(), cmd);
         }
     }
+
+    if (sar_mimic.GetBool()) {
+        imitator->Save(cmd);
+    }
+
+    vgui->inputHud->SetButtonBits(cmd->buttons);
 
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
@@ -111,6 +116,10 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
         } else if (replayRecorder2->IsRecording()) {
             replayRecorder2->Record(replayProvider->GetCurrentReplay(), cmd);
         }
+    }
+
+    if (sar_mimic.GetBool()) {
+        imitator->Modify(cmd);
     }
 
     return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
