@@ -186,6 +186,14 @@ CON_COMMAND(sar_cvars_dump, "Dumps all cvars to a file.\n")
 
     console->Print("Dumped %i cvars to game.cvars!\n", result);
 }
+CON_COMMAND(sar_cvars_lock, "Restores default flags of unlocked cvars.\n")
+{
+    cvars->Lock();
+}
+CON_COMMAND(sar_cvars_unlock, "Unlocks all special cvars.\n")
+{
+    cvars->Unlock();
+}
 CON_COMMAND(sar_cvarlist, "Lists all SAR cvars and unlocked engine cvars.\n")
 {
     cvars->ListAll();

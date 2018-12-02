@@ -2,6 +2,7 @@
 
 #include <cstring>
 
+#include "Features/Cvars.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Features/Hud/InspectionHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
@@ -17,11 +18,9 @@
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
-#include "Modules/Server.hpp"
 
 #include "Game.hpp"
 #include "Offsets.hpp"
-#include "SAR.hpp"
 
 Variable sar_autorecord("sar_autorecord", "0", "Enables automatic demo recording.\n");
 Variable sar_autojump("sar_autojump", "0", "Enables automatic jumping on the server.\n");
@@ -29,11 +28,7 @@ Variable sar_jumpboost("sar_jumpboost", "0", 0, "Enables special game movement o
                                                 "0 = Default,\n"
                                                 "1 = Orange Box Engine,\n"
                                                 "2 = Pre-OBE.\n");
-Variable sar_aircontrol("sar_aircontrol", "0",
-#ifdef _WIN32
-    0,
-#endif
-    "Enables more air-control on the server.\n");
+Variable sar_aircontrol("sar_aircontrol", "0", "Enables more air-control on the server.\n");
 Variable sar_duckjump("sar_duckjump", "0", "Allows duck-jumping even when fully crouched, similar to prevent_crouch_jump.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
 
@@ -99,27 +94,11 @@ void Cheats::Init()
     sv_stopspeed = Variable("sv_stopspeed");
     sv_maxvelocity = Variable("sv_maxvelocity");
 
-    sv_accelerate.Unlock();
-    sv_airaccelerate.Unlock();
-    sv_friction.Unlock();
-    sv_maxspeed.Unlock();
-    sv_stopspeed.Unlock();
-    sv_maxvelocity.Unlock();
-    sv_footsteps.Unlock();
-
     if (sar.game->version & SourceGame_Portal2Game) {
         sv_transition_fade_time = Variable("sv_transition_fade_time");
         sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
         ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
         hide_gun_when_holding = Variable("hide_gun_when_holding");
-
-        // Don't find a way to abuse this, ok?
-        sv_bonus_challenge.Unlock(false);
-        sv_transition_fade_time.Unlock();
-        sv_laser_cube_autoaim.Unlock();
-        ui_loadingscreen_transition_time.Unlock();
-        // Not a real cheat, right?
-        hide_gun_when_holding.Unlock(false);
     } else if (sar.game->version & (SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
         Command::ActivateAutoCompleteFile("map", map_CompletionFunc);
         Command::ActivateAutoCompleteFile("changelevel", changelevel_CompletionFunc);
@@ -161,30 +140,20 @@ void Cheats::Init()
     sar_tas_ss.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2Game | SourceGame_HalfLife2Engine);
 
+    cvars->Unlock();
+
     Variable::RegisterAll();
     Command::RegisterAll();
 }
 void Cheats::Shutdown()
 {
-    sv_accelerate.Lock();
-    sv_airaccelerate.Lock();
-    sv_friction.Lock();
-    sv_maxspeed.Lock();
-    sv_stopspeed.Lock();
-    sv_maxvelocity.Lock();
-    sv_footsteps.Lock();
-
-    if (sar.game->version & SourceGame_Portal2Game) {
-        sv_bonus_challenge.Lock();
-        sv_transition_fade_time.Lock();
-        sv_laser_cube_autoaim.Lock();
-        ui_loadingscreen_transition_time.Lock();
-        hide_gun_when_holding.Lock();
-    } else if (sar.game->version & (SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
+    if (sar.game->version & (SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
         Command::DectivateAutoCompleteFile("map");
         Command::DectivateAutoCompleteFile("changelevel");
         Command::DectivateAutoCompleteFile("changelevel2");
     }
+
+    cvars->Lock();
 
     Variable::UnregisterAll();
     Command::UnregisterAll();
