@@ -18,6 +18,7 @@
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
 #include "Game.hpp"
 #include "Offsets.hpp"
