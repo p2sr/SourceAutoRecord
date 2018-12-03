@@ -16,7 +16,7 @@
 #include "Features/Summary.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Tas/ReplaySystem.hpp"
-#include "Features/Tas/AutoAiming.hpp"
+#include "Features/Tas/TasTools.hpp"
 #include "Features/Teleporter.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/WorkshopList.hpp"
@@ -74,7 +74,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Stats>(&stats);
             this->features->AddFeature<CommandQueuer>(&tasQueuer);
             this->features->AddFeature<ReplaySystem>(&tasReplaySystem);
-			this->features->AddFeature<AutoAiming>(&autoAiming);
             this->features->AddFeature<Timer>(&timer);
             this->features->AddFeature<EntityInspector>(&inspector);
             this->features->AddFeature<ClassDumper>(&classDumper);
@@ -91,6 +90,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             if (engine && engine->hasLoaded) {
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
+
+                this->features->AddFeature<TasTools>(&tasTools);
 
                 if (this->game->version & SourceGame_Portal2) {
                     this->features->AddFeature<Listener>(&listener);
