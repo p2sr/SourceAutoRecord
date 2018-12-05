@@ -13,12 +13,22 @@ enum class PropType {
     Char
 };
 
+struct MoveInputs {
+    float forward;
+    float backward;
+    float moveleft;
+    float moveright;
+    float jump;
+};
+
 class TasTools : public Feature {
 public:
     char className[32];
     char propName[32];
     int propOffset;
     PropType propType;
+    int want_to_strafe;
+    int strafing_direction;
 
 private:
     Vector acceleration;
@@ -30,6 +40,7 @@ private:
     int m_moveright_was_pressed;
     int m_moveleft_was_pressed;
     int m_jump_was_pressed;
+    MoveInputs moves;
 
 public:
     TasTools();
@@ -37,9 +48,11 @@ public:
     Vector GetVelocityAngles();
     Vector GetAcceleration();
     void* GetPlayerInfo();
-    void Strafe(int opposite);
+    QAngle GetStrafeAngle();
+    void Strafe();
     void SetButtonBits(int buttonBits);
     void SetMoveButtonsState(float forward, float backward, float moveright, float moveleft, float jump);
+    MoveInputs GetMoveInputs();
 };
 
 extern TasTools* tasTools;

@@ -282,13 +282,10 @@ DETOUR(Server::PlayerMove)
 //CGameMovement::ProcessMovement
 DETOUR(Server::ProcessMovement, void* a, CMoveData* pmove)
 {
-    auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
-    float forward = (mv->m_nButtons & IN_FORWARD) ? 1 : 0;
-    float backward = (mv->m_nButtons & IN_BACK) ? 1 : 0;
-    float moveright = (mv->m_nButtons & IN_MOVELEFT) ? 1 : 0;
-    float moveleft = (mv->m_nButtons & IN_MOVERIGHT) ? 1 : 0;
-    float jump = (mv->m_nButtons & IN_JUMP) ? 1 : 0;
-    tasTools->SetMoveButtonsState(forward, backward, moveright, moveleft, jump);
+	if (tasTools->want_to_strafe) {
+		tasTools->Strafe();
+        //tasTools->want_to_strafe = 0;
+		}
 
     return Server::ProcessMovement(thisptr, a, pmove);
 }

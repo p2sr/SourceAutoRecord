@@ -26,6 +26,10 @@ TasTools::TasTools()
     , m_moveleft_was_pressed(0)
     , m_moveright_was_pressed(0)
     , m_jump_was_pressed(0)
+    , want_to_strafe(0)
+    , strafing_direction(0)
+    , moves({ 0 })
+
 {
     if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2)) {
         std::strncpy(this->className, "CPortal_Player", sizeof(this->className));
@@ -107,48 +111,13 @@ void TasTools::SetMoveButtonsState(float forward, float backward, float moverigh
     this->m_moveleft_was_pressed = moveleft;
     this->m_jump_was_pressed = jump;
 }
-//void TasTools::Strafe(int direction, float forward, float backward, float moveleft, float moveright, float jump)
-void TasTools::Strafe(int direction)
+MoveInputs TasTools::GetMoveInputs()
 {
-    float tau = 1 / host_framerate.GetFloat(); //A time for one frame to pass
-
-    //Creating lambda(v) - velocity after ground friction
-    float player_friction = 1;
-    float friction = sv_friction.GetFloat() * player_friction * 1;
-    Vector velocity = client->GetLocalVelocity();
-    Vector lambda = velocity;
-
-    //Getting the grounded status
-    int is_inAir;
-    auto player = client->GetPlayer();
-    client->GetOffset("CPortal_Player", "m_InAirState", is_inAir);
-    //Managing 0.5 jumping input
-    float jump = (this->buttonBits & IN_JUMP) ? 1 : 0;
-    if (!jump) {
-        this->m_jump_was_pressed = 0;
-    } else if (jump && !this->m_jump_was_pressed) {
-        this->m_jump_was_pressed = 1;
-        jump = 0.5;
-    }
-    int grounded = (jump == 0.5 || ((player) ? !(*reinterpret_cast<int*>((uintptr_t)player + is_inAir)) : -1));
-
-    if (grounded) {
-        if (velocity.Length2D() >= sv_stopspeed.GetFloat()) {
-            lambda = lambda * (1.0 - tau * friction);
-        } else if (velocity.Length2D() >= std::fmax(0.1, tau * sv_stopspeed.GetFloat() * friction)) {
-            Vector normalized_velocity = velocity;
-            Math::VectorNormalize(normalized_velocity);
-            lambda = lambda + (normalized_velocity * (tau * sv_stopspeed.GetFloat() * friction)) * -1; //lambda -= v * tau * stop * friction
-        } else {
-            lambda = lambda * 0;
-        }
-    }
-
-    //Getting M
     float forward_keystate = (this->buttonBits & IN_FORWARD) ? 1 : 0;
     float backward_keystate = (this->buttonBits & IN_BACK) ? 1 : 0;
     float moveright_keystate = (this->buttonBits & IN_MOVELEFT) ? 1 : 0;
     float moveleft_keystate = (this->buttonBits & IN_MOVERIGHT) ? 1 : 0;
+    float jump_keystate = (this->buttonBits & IN_JUMP) ? 1 : 0;
 
     //Managing 0.5 inputs
     if (!forward_keystate) {
@@ -175,9 +144,52 @@ void TasTools::Strafe(int direction)
         this->m_moveleft_was_pressed = 1;
         moveleft_keystate = 0.5;
     }
+    float jump = (this->buttonBits & IN_JUMP) ? 1 : 0;
+    if (!jump) {
+        this->m_jump_was_pressed = 0;
+    } else if (jump && !this->m_jump_was_pressed) {
+        this->m_jump_was_pressed = 1;
+        jump = 0.5;
+    }
 
-    float F = forward_keystate - backward_keystate;
-    float S = moveright_keystate - moveleft_keystate;
+    return MoveInputs{forward_keystate, backward_keystate, moveleft_keystate, moveright_keystate};
+}
+QAngle TasTools::GetStrafeAngle()
+{
+    float tau = 1 / host_framerate.GetFloat(); //A time for one frame to pass
+
+    //For getting the offsets needed
+    auto player = client->GetPlayer();
+	//Getting the player inputs
+    MoveInputs inputs = this->GetMoveInputs();
+
+    //Creating lambda(v) - velocity after ground friction
+    int player_friction_offset = 0;
+    client->GetOffset("CPortal_Player", "m_flFriction", player_friction_offset);
+    float player_friction = (*reinterpret_cast<float*>((uintptr_t)player + player_friction_offset));
+    float friction = sv_friction.GetFloat() * player_friction * 1;
+    Vector velocity = client->GetLocalVelocity();
+    Vector lambda = velocity;
+
+    //Getting the grounded status
+    int is_inAir;
+    client->GetOffset("CPortal_Player", "m_InAirState", is_inAir);
+    int grounded = (inputs.jump == 0.5 || ((player) ? !(*reinterpret_cast<int*>((uintptr_t)player + is_inAir)) : -1));
+    if (grounded) {
+        if (velocity.Length2D() >= sv_stopspeed.GetFloat()) {
+            lambda = lambda * (1.0 - tau * friction);
+        } else if (velocity.Length2D() >= std::fmax(0.1, tau * sv_stopspeed.GetFloat() * friction)) {
+            Vector normalized_velocity = velocity;
+            Math::VectorNormalize(normalized_velocity);
+            lambda = lambda + (normalized_velocity * (tau * sv_stopspeed.GetFloat() * friction)) * -1; //lambda -= v * tau * stop * friction
+        } else {
+            lambda = lambda * 0;
+        }
+    }
+
+    //Getting M
+    float F = inputs.forward - inputs.backward;
+    float S = inputs.moveright - inputs.moveleft;
 
     float stateLen = sqrt(F * F + S * S);
     float forwardMove = cl_forwardspeed.GetFloat() * F / stateLen;
@@ -195,11 +207,17 @@ void TasTools::Strafe(int direction)
     if (cosTheta > 1)
         cosTheta = 0;
 
-    float theta = acosf(cosTheta) * (direction ? -1 : 1);
+    float theta = acosf(cosTheta) * (this->strafing_direction ? -1 : 1);
     float lookangle = std::atan2f(sideMove, forwardMove);
 
+    return QAngle{ 0, this->GetVelocityAngles().x + RAD2DEG(theta), 0 };
 
-    engine->SetAngles({ 0, this->GetVelocityAngles().x + RAD2DEG(theta), 0 });
+    console->Print("velocity: %f, lookangle: %f\n\n",
+        velocity.Length2D(), RAD2DEG(lookangle));
+}
+void TasTools::Strafe()
+{
+    engine->SetAngles(this->GetStrafeAngle());
 }
 
 // Commands
@@ -288,14 +306,17 @@ CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : Sets {x, y, z} degres 
     QAngle angle = { static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])) };
     engine->SetAngles(angle);
 }
-CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <direction>\n")
+CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <direction> <working>\n")
 {
     if (!sv_cheats.GetBool())
         return console->Print("Cannot use sar_tas_strafe without sv_cheats sets to 1.\n");
 
     if (args.ArgC() < 2)
-        return console->Print("Missing arguments : sar_tas_strafe <direction>\n");
+        return console->Print("Missing arguments : sar_tas_strafe <working>\n");
 
-    tasTools->Strafe(std::atoi(args[1]));
+    tasTools->want_to_strafe = std::atoi(args[2]);
+    tasTools->strafing_direction = std::atoi(args[1]);
 
+    /*tasTools->strafing = atoi(args[2]);
+    tasTools->strafingDirection = atoi(args[1]);*/
 }
