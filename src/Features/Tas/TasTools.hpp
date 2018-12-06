@@ -29,6 +29,8 @@ public:
     PropType propType;
     int want_to_strafe;
     int strafing_direction;
+    CMoveData* pmove;
+    int test;
 
 private:
     Vector acceleration;
