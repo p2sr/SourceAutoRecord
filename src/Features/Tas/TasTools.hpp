@@ -29,8 +29,7 @@ public:
     PropType propType;
     int want_to_strafe;
     int strafing_direction;
-    CMoveData* pmove;
-    int test;
+    int strafeMode;
 
 private:
     Vector acceleration;
@@ -50,8 +49,9 @@ public:
     Vector GetVelocityAngles();
     Vector GetAcceleration();
     void* GetPlayerInfo();
-    QAngle GetStrafeAngle();
-    void Strafe();
+    float GetStrafeAngle(CMoveData* pmove, int direction);
+    void Strafe(CMoveData *pmove);
+    void VectorialStrafe(CMoveData* pmove);
     void SetButtonBits(int buttonBits);
     void SetMoveButtonsState(float forward, float backward, float moveright, float moveleft, float jump);
     MoveInputs GetMoveInputs();

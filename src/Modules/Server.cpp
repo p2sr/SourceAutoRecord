@@ -282,13 +282,13 @@ DETOUR(Server::PlayerMove)
 //CGameMovement::ProcessMovement
 DETOUR(Server::ProcessMovement, void* a, CMoveData* pmove)
 {
+    if (tasTools->want_to_strafe) {
+        if (tasTools->strafeMode == 0)
+            tasTools->Strafe(pmove);
+        else
+            tasTools->VectorialStrafe(pmove);
+    }
 
-	if (tasTools->test) {
-        pmove->m_flForwardMove = 175;
-		pmove->m_flSideMove = 20;
-		}
-
-    tasTools->pmove = pmove;
     return Server::ProcessMovement(thisptr, a, pmove);
 }
 
