@@ -193,7 +193,7 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
 
     //Getting M
     float F = pmove->m_flForwardMove / cl_forwardspeed.GetFloat();
-    float S = pmove->m_flSideMove / cl_forwardspeed.GetFloat();
+    float S = pmove->m_flSideMove / cl_sidespeed.GetFloat();
 
     float stateLen = sqrt(F * F + S * S);
     float forwardMove = 0;
@@ -216,7 +216,7 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
     if (cosTheta > 1)
         cosTheta = 0;
 
-    float theta = acosf(cosTheta) * (this->strafing_direction ? -1 : 1);
+    float theta = acosf(cosTheta) * ((direction > 0) ? -1 : 1);
     float lookangle = std::atan2f(sideMove, forwardMove);
 
     return this->GetVelocityAngles().x + RAD2DEG(theta);
@@ -225,24 +225,27 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
 void TasTools::Strafe(CMoveData* pmove)
 {
     float angle = this->GetStrafeAngle(pmove, this->strafing_direction);
-    float lookangle = std::atan2f(pmove->m_flSideMove, pmove->m_flForwardMove);
+    float lookangle = RAD2DEG(std::atan2f(pmove->m_flSideMove, pmove->m_flForwardMove));
 
     QAngle newAngle = { 0, angle + lookangle, 0 };
     pmove->m_vecViewAngles = newAngle;
     pmove->m_vecAbsViewAngles = newAngle;
 
-    //engine->SetAngles(newAngle);
+	console->Print("LookAngle: %f\n\n", lookangle);
+
+    engine->SetAngles(newAngle);
 }
 //whishdir set based on current angle ("controller" inputs)
 void TasTools::VectorialStrafe(CMoveData* pmove)
 {
+
+	console->Print("vecAbsViewAngle: x %f, y: %f, z: %f\n\n", pmove->m_vecAbsViewAngles.x, pmove->m_vecAbsViewAngles.y, pmove->m_vecAbsViewAngles.z);
+
     float angle = this->GetStrafeAngle(pmove, this->strafing_direction);
-    angle = DEG2RAD(angle - this->GetVelocityAngles().x);
+    angle = DEG2RAD(angle - pmove->m_vecAbsViewAngles.y);
 
-    pmove->m_flForwardMove = cosf(angle);
-    pmove->m_flSideMove = sinf(angle);
-
-	engine->SetAngles(QAngle({0, angle, 0}));
+    pmove->m_flForwardMove = cosf(angle) * cl_forwardspeed.GetFloat();
+    pmove->m_flSideMove = -sinf(angle) * cl_sidespeed.GetFloat();
 
 }
 
