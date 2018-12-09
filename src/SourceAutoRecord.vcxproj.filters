@@ -468,9 +468,6 @@
     <ClInclude Include="Features\Tas\TasTools.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Stats\StatsExport.hpp">
-      <Filter>SourceAutoRecord\Features\Stats</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

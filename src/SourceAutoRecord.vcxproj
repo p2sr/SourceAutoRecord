@@ -186,7 +186,6 @@
     <ClCompile Include="Features\Speedrun\TimerSplit.cpp" />
     <ClCompile Include="Features\Stats\JumpStats.cpp" />
     <ClCompile Include="Features\Stats\Stats.cpp" />
-    <ClCompile Include="Features\Stats\StatsExport.cpp" />
     <ClCompile Include="Features\Stats\StepStats.cpp" />
     <ClCompile Include="Features\Stats\VelocityStats.cpp" />
     <ClCompile Include="Features\StepCounter.cpp" />
@@ -276,7 +275,6 @@
     <ClInclude Include="Features\Speedrun\TimerState.hpp" />
     <ClInclude Include="Features\Stats\JumpStats.hpp" />
     <ClInclude Include="Features\Stats\Stats.hpp" />
-    <ClInclude Include="Features\Stats\StatsExport.hpp" />
     <ClInclude Include="Features\Stats\StatsResultType.hpp" />
     <ClInclude Include="Features\Stats\StepStats.hpp" />
     <ClInclude Include="Features\Stats\VelocityStats.hpp" />

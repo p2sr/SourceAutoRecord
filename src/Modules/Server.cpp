@@ -30,7 +30,6 @@ Variable sv_stopspeed;
 Variable sv_maxvelocity;
 Variable sv_transition_fade_time;
 Variable sv_laser_cube_autoaim;
-
 Variable sv_edgefriction;
 Variable cl_sidespeed;
 Variable cl_forwardspeed;

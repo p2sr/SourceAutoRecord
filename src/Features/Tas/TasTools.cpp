@@ -62,6 +62,10 @@ void* TasTools::GetPlayerInfo()
     auto player = client->GetPlayer();
     return (player) ? reinterpret_cast<void*>((uintptr_t)player + this->propOffset) : nullptr;
 }
+void TasTools::SetButtonBits(int buttonBits)
+{
+    this->buttonBits = buttonBits;
+}
 Vector TasTools::GetVelocityAngles()
 {
     auto velocityAngles = client->GetLocalVelocity();
@@ -261,6 +265,8 @@ CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : Sets {x, y, z} degres 
 CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <direction> [vectorial] [oscillate].\n"
                             "Strafe while <direction> is -1 or 1. Set <vectorial> to use vectorial strafing. Set <oscillate> to 1 to strafe in a straight line.\n")
 {
+    if (!(sar.game->version & SourceGame_Portal2))
+        return console->Warning("sar_tas_groundstrafe only available for Portal 2.\n");
     if (!sv_cheats.GetBool())
         return console->Print("Cannot use sar_tas_strafe without sv_cheats sets to 1.\n");
 
