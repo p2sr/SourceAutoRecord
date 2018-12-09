@@ -62,10 +62,6 @@ void* TasTools::GetPlayerInfo()
     auto player = client->GetPlayer();
     return (player) ? reinterpret_cast<void*>((uintptr_t)player + this->propOffset) : nullptr;
 }
-void TasTools::SetButtonBits(int buttonBits)
-{
-    this->buttonBits = buttonBits;
-}
 Vector TasTools::GetVelocityAngles()
 {
     auto velocityAngles = client->GetLocalVelocity();
