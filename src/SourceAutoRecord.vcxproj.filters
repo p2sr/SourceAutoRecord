@@ -133,6 +133,9 @@
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+	</ClCompile>
     <ClCompile Include="Features\Tas\CommandQueuer.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
@@ -217,8 +220,8 @@
     <ClCompile Include="Utils\Memory.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\TasTools.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    <ClCompile Include="Features\Stats\StatsExport.cpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

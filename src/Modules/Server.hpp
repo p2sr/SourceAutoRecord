@@ -55,6 +55,9 @@ private:
     int16_t FindOffset(SendTable* table, const char* propName);
 
 public:
+	//CGameMovement::ProcessMovement
+    DECL_DETOUR(ProcessMovement, void* a, CMoveData* pmove)
+
     // CGameMovement::CheckJumpButton
     DECL_DETOUR_T(bool, CheckJumpButton)
 

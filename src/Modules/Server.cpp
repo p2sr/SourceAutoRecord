@@ -6,7 +6,9 @@
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
+#include "Features/Stats/StatsExport.hpp"
 #include "Features/StepCounter.hpp"
+#include "Features/Tas/TasTools.hpp"
 
 #include "Client.hpp"
 #include "Engine.hpp"
@@ -40,6 +42,7 @@ REDECL(Server::FinishGravity);
 REDECL(Server::AirMove);
 REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
+REDECL(Server::ProcessMovement);
 #ifdef _WIN32
 REDECL(Server::AirMove_Skip);
 REDECL(Server::AirMove_Continue);
@@ -275,6 +278,21 @@ DETOUR(Server::PlayerMove)
     return Server::PlayerMove(thisptr);
 }
 
+//CGameMovement::ProcessMovement
+DETOUR(Server::ProcessMovement, void* a, CMoveData* pmove)
+{
+    if (tasTools->want_to_strafe) {
+        if (tasTools->strafe_mode == 0)
+            tasTools->Strafe(pmove);
+        else
+            tasTools->VectorialStrafe(pmove);
+
+        if (tasTools->oscillate_dir)
+            tasTools->strafing_direction *= -1;
+    }
+    return Server::ProcessMovement(thisptr, a, pmove);
+}
+
 // CGameMovement::FinishGravity
 DETOUR(Server::FinishGravity)
 {
@@ -409,6 +427,7 @@ bool Server::Init()
             Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &this->CheckJumpButtonBase);
 
 #ifdef _WIN32
+            this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
             auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
             if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
                 MH_HOOK_MID(this->AirMove_Mid, airMoveMid);

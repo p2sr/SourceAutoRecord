@@ -63,6 +63,7 @@ int CheckJumpButton;
 int FullTossMove;
 int mv;
 int player;
+int ProcessMovement;
 
 // CDemoRecorder
 int GetRecordingTick;

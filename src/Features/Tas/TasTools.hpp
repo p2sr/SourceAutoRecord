@@ -19,12 +19,15 @@ public:
     char propName[32];
     int propOffset;
     PropType propType;
+    int want_to_strafe;
+    int strafing_direction;
+    int strafe_mode;
+    int oscillate_dir;
 
 private:
     Vector acceleration;
     Vector prevVelocity;
     int prevTick;
-    int buttonBits;
 
 public:
     TasTools();
@@ -32,8 +35,9 @@ public:
     Vector GetVelocityAngles();
     Vector GetAcceleration();
     void* GetPlayerInfo();
-    void Strafe(int opposite, int in_2D);
-    void SetButtonBits(int buttonBits);
+    float GetStrafeAngle(CMoveData* pmove, int direction);
+    void Strafe(CMoveData *pmove);
+    void VectorialStrafe(CMoveData* pmove);
 };
 
 extern TasTools* tasTools;
