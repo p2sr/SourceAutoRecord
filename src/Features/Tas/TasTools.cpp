@@ -150,20 +150,22 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
 //Angle set based on current wishdir
 void TasTools::Strafe(CMoveData* pmove)
 {
-    float angle = this->GetStrafeAngle(pmove, this->strafing_direction);
-    float lookangle = RAD2DEG(std::atan2f(pmove->m_flSideMove, pmove->m_flForwardMove));
+    if ((pmove->m_nButtons & 0b11000011000) > 0 && pmove->m_vecVelocity.Length2D() > 50) {
+		float angle = this->GetStrafeAngle(pmove, this->strafing_direction);
+		float lookangle = RAD2DEG(std::atan2f(pmove->m_flSideMove, pmove->m_flForwardMove));
 
-    QAngle newAngle = { 0, angle + lookangle, 0 };
-    pmove->m_vecViewAngles = newAngle;
-    pmove->m_vecAbsViewAngles = newAngle;
-    engine->SetAngles(newAngle);
+		QAngle newAngle = { 0, angle + lookangle, 0 };
+		pmove->m_vecViewAngles = newAngle;
+		pmove->m_vecAbsViewAngles = newAngle;
+		engine->SetAngles(newAngle);
+	}
 }
 //whishdir set based on current angle ("controller" inputs)
 void TasTools::VectorialStrafe(CMoveData* pmove)
 {
     //don't strafe if player is not holding any movement button
     //temporary fix, we should find a way to make the game think we're holding one
-    if ((pmove->m_nButtons & 0b11000011000) > 0) {
+    if ((pmove->m_nButtons & 0b11000011000) > 0 && pmove->m_vecVelocity.Length2D() > 50) {
         float angle = this->GetStrafeAngle(pmove, this->strafing_direction);
         angle = DEG2RAD(angle - pmove->m_vecAbsViewAngles.y);
 
