@@ -1,8 +1,6 @@
 language: cpp
 dist: xenial
-compiler:
-- gcc
-os:
-- linux
-script:
-- make
+compiler: gcc
+os: linux
+install: make get-deps
+script: make

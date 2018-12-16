@@ -63,3 +63,6 @@ post:
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)The Beginners Guide/$(BINARY)"
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)Half-Life 2/$(BINARY)"
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal/$(BINARY)"
+
+get-deps:
+	sudo apt-get install -y gcc-multilib g++-multilib
