@@ -2,5 +2,9 @@ language: cpp
 dist: xenial
 compiler: gcc
 os: linux
-install: make get-deps
 script: make
+addons:
+  apt:
+    packages:
+      - gcc-multilib
+      - g++-multilib
