@@ -43,7 +43,7 @@ void Session::Started(bool menu)
         if (sar_speedrun_autostop.isRegistered && sar_speedrun_autostop.GetBool()) {
             speedrun->Stop(false);
         } else {
-            speedrun->Unpause(engine->tickcount);
+            speedrun->Resume(engine->tickcount);
         }
     } else {
         console->Print("Session Started!\n");
@@ -58,7 +58,7 @@ void Session::Start()
 
     this->Rebase(*engine->tickcount);
     timer->Rebase(*engine->tickcount);
-    speedrun->Unpause(engine->tickcount);
+    speedrun->Resume(engine->tickcount);
 
     if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
         if (engine->demorecorder->isRecordingDemo) {
