@@ -109,7 +109,7 @@ void Session::Start()
     }
 
     stepCounter->ResetTimer();
-    
+
     speedrun->ReloadRules();
     this->currentFrame = 0;
     this->isRunning = true;

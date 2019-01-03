@@ -1,7 +1,5 @@
 #include "Portal2Rules.hpp"
 
-#include <vector>
-
 #include "Features/Speedrun/TimerCategory.hpp"
 #include "Features/Speedrun/TimerRule.hpp"
 
@@ -53,7 +51,7 @@ SAR_RULE3(end_credits2, "gg_stage_theend", "ele_exit_door", SearchMode::Names)
     return TimerAction::DoNothing;
 }
 
-SAR_CATEGORY(ApertureTag, RTA, std::vector<TimerRule*>({ &out_of_shower, &end_credits/* , &end_credits2 */ }));
+SAR_CATEGORY(ApertureTag, RTA, _Rules({ &out_of_shower, &end_credits/* , &end_credits2 */ }));
 
 /*
     (112.53) input incinarator_path_die_2: die_ending_math_final.Add(1)

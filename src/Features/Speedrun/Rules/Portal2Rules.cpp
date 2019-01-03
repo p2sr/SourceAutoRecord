@@ -1,7 +1,5 @@
 #include "Portal2Rules.hpp"
 
-#include <vector>
-
 #include "Features/Speedrun/TimerCategory.hpp"
 #include "Features/Speedrun/TimerRule.hpp"
 
@@ -79,5 +77,5 @@ SAR_RULE3(gate_opens, "mp_coop_paint_crazy_box", "coopman_airlock_success", Sear
     return TimerAction::DoNothing;
 }
 
-SAR_CATEGORY(Portal2, RTA, std::vector<TimerRule*>({ &view_change, &moon_shot }));
-SAR_CATEGORY(Portal2, CoopRTA, std::vector<TimerRule*>({ &players_teleport, &players_taunt, &gate_opens }));
+SAR_CATEGORY(Portal2, RTA, _Rules({ &view_change, &moon_shot }));
+SAR_CATEGORY(Portal2, CoopRTA, _Rules({ &players_teleport, &players_taunt, &gate_opens }));

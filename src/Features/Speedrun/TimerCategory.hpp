@@ -5,6 +5,8 @@
 
 #include "Game.hpp"
 
+using _Rules = std::vector<TimerRule*>;
+
 class TimerCategory {
 public:
     int gameVersion;

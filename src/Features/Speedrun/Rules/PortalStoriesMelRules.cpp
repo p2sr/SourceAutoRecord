@@ -1,7 +1,5 @@
 #include "Portal2Rules.hpp"
 
-#include <vector>
-
 #include "Features/Speedrun/TimerCategory.hpp"
 #include "Features/Speedrun/TimerRule.hpp"
 
@@ -18,54 +16,19 @@
 /*
     (12.10) input tramstart_relay: Subway_TankTrain.StartForward()
     TRAIN(Subway_TankTrain), speed to 115.00
-    (12.13) input tramstart_relay: tramstart_relay.EnableRefire()
+    (12.13) input tramstart_relay: tramstart_relay.EnableRefire() <- START
     (12.13) input <NULL>: intro_Soundscape.Enable()
     (12.13) input <NULL>: StartFade.FadeReverse()
     (12.13) input <NULL>: Intro_Viewcontroller.Disable()
 */
 
-#include "Command.hpp"
-#include "Features/EntityList.hpp"
-#include "Variable.hpp"
-
-Variable sar_print("sar_print", "0", 0, "Aaa.\n");
-Variable sar_offset("sar_offset", "0", 0, "Aaa.\n");
-
-void* globalEnt = nullptr;
-
-CON_COMMAND(sar_ent, "Aaa.\n")
-{
-    auto info = entityList->GetEntityInfoByName(args[1]);
-    if (info) {
-        globalEnt = info->m_pEntity;
-        return console->Print("Found!\n");
-    }
-    globalEnt = nullptr;
-}
-CON_COMMAND(sar_ent2, "Aaa.\n")
-{
-    auto info = entityList->GetEntityInfoByClassName(args[1]);
-    if (info) {
-        globalEnt = info->m_pEntity;
-        return console->Print("Found!\n");
-    }
-    globalEnt = nullptr;
-}
-
-SAR_RULE3(tram_teleport, "sp_a1_tramride", "intro_Soundscape", SearchMode::Names)
+SAR_RULE3(tram_teleport, "sp_a1_tramride", "tramstart_relay", SearchMode::Names)
 {
     // CLogicRelay aka logic_relay
-    //auto m_bWaitForRefire = reinterpret_cast<bool*>((uintptr_t)entity + 956);
-    //if (m_bWaitForRefire) console->Print("[%i] m_bWaitForRefire = %i\n", engine->GetSessionTick(), *m_bWaitForRefire);
+    auto m_bWaitForRefire = reinterpret_cast<bool*>((uintptr_t)entity + Offset_m_bWaitForRefire);
 
-    /* if (engine->GetSessionTick() > 10 && !*m_bWaitForRefire) {
+    if (*m_bWaitForRefire) {
         return TimerAction::Start;
-    } */
-
-    if (globalEnt) {
-        auto prop = reinterpret_cast<int*>((uintptr_t)globalEnt + sar_offset.GetInt());
-        if (prop && sar_print.GetBool())
-            console->Print("[%i] prop = %i\n", engine->GetSessionTick(), *prop);
     }
 
     return TimerAction::DoNothing;
@@ -73,9 +36,9 @@ SAR_RULE3(tram_teleport, "sp_a1_tramride", "intro_Soundscape", SearchMode::Names
 SAR_RULE3(tram_teleport2, "st_a1_tramride", "tramstart_relay", SearchMode::Names)
 {
     // CLogicRelay aka logic_relay
-    auto m_bWaitForRefire = reinterpret_cast<bool*>((uintptr_t)entity + 933);
+    auto m_bWaitForRefire = reinterpret_cast<bool*>((uintptr_t)entity + Offset_m_bWaitForRefire);
 
-    if (engine->GetSessionTick() > 10 && !*m_bWaitForRefire) {
+    if (*m_bWaitForRefire) {
         return TimerAction::Start;
     }
 
@@ -87,7 +50,7 @@ SAR_RULE3(tram_teleport2, "st_a1_tramride", "tramstart_relay", SearchMode::Names
     (49.75) output: (func_button,press_e_to_hire_us_valve) -> (cs*,Cancel)()
     (49.75) output: (func_button,press_e_to_hire_us_valve) -> (cs*,Kill,0.0)()
     (49.75) output: (func_button,press_e_to_hire_us_valve) -> (soundscape,Kill,0.0)()
-    (49.75) output: (func_button,press_e_to_hire_us_valve) -> (soundscape,Disable)()
+    (49.75) output: (func_button,press_e_to_hire_us_valve) -> (soundscape,Disable)()  <- END
     (49.75) output: (func_button,press_e_to_hire_us_valve) -> (end_teleport,Teleport)()
     (49.75) output: (func_button,press_e_to_hire_us_valve) -> (ending_speedmod,ModifySpeed)(0)
     (49.75) output: (func_button,press_e_to_hire_us_valve) -> (weaponstrip,StripWeaponsAndSuit)()
@@ -117,4 +80,4 @@ SAR_RULE3(aegis_shutdown2, "st_a4_finale", "soundscape", SearchMode::Names)
     return TimerAction::DoNothing;
 }
 
-SAR_CATEGORY(PortalStoriesMel, RTA, std::vector<TimerRule*>({ &tram_teleport, &tram_teleport2, &aegis_shutdown, &aegis_shutdown2 }));
+SAR_CATEGORY(PortalStoriesMel, RTA, _Rules({ &tram_teleport, &tram_teleport2, &aegis_shutdown, &aegis_shutdown2 }));
