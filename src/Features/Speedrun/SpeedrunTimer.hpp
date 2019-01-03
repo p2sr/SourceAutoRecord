@@ -22,7 +22,7 @@
 
 class SpeedrunTimer : public Feature {
 public:
-    std::unique_ptr<TimerInterface> liveSplit;
+    std::unique_ptr<TimerInterface> interface;
 
 private:
     int session;
@@ -45,11 +45,12 @@ public:
 
     void Start(const int* engineTicks);
     void Pause();
-    void Unpause(const int* engineTicks);
+    void Resume(const int* engineTicks);
     void Update(const int* engineTicks, const char* engineMap);
     void CheckRules(const int* engineTicks);
     void Stop(bool addSegment = true);
     void Reset();
+    void Split();
 
     int GetSession();
     int GetTotal();
@@ -79,6 +80,8 @@ public:
 
     int GetSplitDelta();
     int GetCurrentDelta();
+
+    void StatusReport(const char* message);
 
     ~SpeedrunTimer();
 
