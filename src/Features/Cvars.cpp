@@ -23,6 +23,8 @@ Cvars::Cvars()
 }
 int Cvars::Dump(std::ofstream& file)
 {
+    this->Lock();
+
     auto cmd = tier1->m_pConCommandList;
     auto count = 0;
     do {
@@ -45,6 +47,8 @@ int Cvars::Dump(std::ofstream& file)
         ++count;
 
     } while (cmd = cmd->m_pNext);
+
+    this->Unlock();
 
     return count;
 }
