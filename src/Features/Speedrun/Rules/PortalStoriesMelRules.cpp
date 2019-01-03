@@ -24,15 +24,49 @@
     (12.13) input <NULL>: Intro_Viewcontroller.Disable()
 */
 
-SAR_RULE3(tram_teleport, "sp_a1_tramride", "tramstart_relay", SearchMode::Names)
+#include "Command.hpp"
+#include "Features/EntityList.hpp"
+#include "Variable.hpp"
+
+Variable sar_print("sar_print", "0", 0, "Aaa.\n");
+Variable sar_offset("sar_offset", "0", 0, "Aaa.\n");
+
+void* globalEnt = nullptr;
+
+CON_COMMAND(sar_ent, "Aaa.\n")
+{
+    auto info = entityList->GetEntityInfoByName(args[1]);
+    if (info) {
+        globalEnt = info->m_pEntity;
+        return console->Print("Found!\n");
+    }
+    globalEnt = nullptr;
+}
+CON_COMMAND(sar_ent2, "Aaa.\n")
+{
+    auto info = entityList->GetEntityInfoByClassName(args[1]);
+    if (info) {
+        globalEnt = info->m_pEntity;
+        return console->Print("Found!\n");
+    }
+    globalEnt = nullptr;
+}
+
+SAR_RULE3(tram_teleport, "sp_a1_tramride", "intro_Soundscape", SearchMode::Names)
 {
     // CLogicRelay aka logic_relay
-    auto m_bWaitForRefire = reinterpret_cast<bool*>((uintptr_t)entity + Offset_m_bWaitForRefire);
-    if (m_bWaitForRefire) console->Print("[%i] m_bWaitForRefire = %i\n", engine->GetSessionTick(), *m_bWaitForRefire);
+    //auto m_bWaitForRefire = reinterpret_cast<bool*>((uintptr_t)entity + 956);
+    //if (m_bWaitForRefire) console->Print("[%i] m_bWaitForRefire = %i\n", engine->GetSessionTick(), *m_bWaitForRefire);
 
     /* if (engine->GetSessionTick() > 10 && !*m_bWaitForRefire) {
         return TimerAction::Start;
     } */
+
+    if (globalEnt) {
+        auto prop = reinterpret_cast<int*>((uintptr_t)globalEnt + sar_offset.GetInt());
+        if (prop && sar_print.GetBool())
+            console->Print("[%i] prop = %i\n", engine->GetSessionTick(), *prop);
+    }
 
     return TimerAction::DoNothing;
 }
