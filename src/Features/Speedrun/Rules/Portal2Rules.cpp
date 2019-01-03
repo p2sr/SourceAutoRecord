@@ -1,5 +1,7 @@
 #include "Portal2Rules.hpp"
 
+#include <cstdint>
+
 #include "Features/Speedrun/TimerCategory.hpp"
 #include "Features/Speedrun/TimerRule.hpp"
 

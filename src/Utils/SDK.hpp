@@ -699,6 +699,13 @@ struct PerUserInput_t {
     int m_nCamCommand; // 188
 };
 
+enum TOGGLE_STATE {
+    TS_AT_TOP,
+    TS_AT_BOTTOM,
+    TS_GOING_UP,
+    TS_GOING_DOWN
+};
+
 class IGameEvent {
 public:
     virtual ~IGameEvent() = default;
