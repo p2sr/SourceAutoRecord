@@ -24,6 +24,7 @@
 Variable cl_showpos;
 Variable ui_loadingscreen_transition_time;
 Variable hide_gun_when_holding;
+Variable in_forceuser;
 
 REDECL(Client::HudUpdate);
 REDECL(Client::CreateMove);
@@ -105,7 +106,9 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
         imitator->Save(cmd);
     }
 
-    inputHud->SetButtonBits(cmd->buttons);
+    if (in_forceuser.isReference && in_forceuser.GetInt() != 1) {
+        inputHud->SetButtonBits(cmd->buttons);
+    }
 
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
@@ -123,6 +126,10 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
         imitator->Modify(cmd);
     }
 
+    if (in_forceuser.isReference && in_forceuser.GetInt() == 1) {
+        inputHud->SetButtonBits(cmd->buttons);
+    }
+
     return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
 }
 
@@ -138,7 +145,7 @@ DETOUR_T(const char*, Client::GetName)
 
 DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
 {
-    #define MULTIPLAYER_BACKUP 150
+#define MULTIPLAYER_BACKUP 150
 
     auto result = Client::DecodeUserCmdFromBuffer(thisptr, nSlot, buf, sequence_number);
 
@@ -220,6 +227,8 @@ bool Client::Init()
                 auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
                 clientMode = Memory::Deref<void*>(g_pClientMode);
                 clientMode2 = Memory::Deref<void*>(g_pClientMode + sizeof(void*));
+
+                in_forceuser = Variable("in_forceuser");
             } else {
                 typedef void* (*_GetClientMode)();
                 auto GetClientMode = Memory::Read<_GetClientMode>(HudProcessInput + Offsets::GetClientMode);
