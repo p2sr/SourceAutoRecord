@@ -14,7 +14,7 @@ Variable::Variable()
     , originalFlags(0)
     , originalfnChangeCallback(0)
     , isRegistered(false)
-    , isReference(nullptr)
+    , isReference(false)
 {
 }
 Variable::~Variable()

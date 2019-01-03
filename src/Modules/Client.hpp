@@ -62,3 +62,4 @@ extern Client* client;
 extern Variable cl_showpos;
 extern Variable ui_loadingscreen_transition_time;
 extern Variable hide_gun_when_holding;
+extern Variable in_forceuser;

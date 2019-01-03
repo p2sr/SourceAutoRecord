@@ -284,17 +284,17 @@ bool SpeedrunTimer::ExportResult(std::string filePath, bool pb)
 
     for (auto& split : result->splits) {
         auto ticks = split->GetTotal();
-        auto time = SpeedrunTimer::Format(ticks * this->ipt);
+        auto time = SpeedrunTimer::Format(ticks * this->ipt).c_str();
 
         for (const auto& seg : split->segments) {
             auto total = split->GetTotal();
             file << split->map << ","
                  << seg.session << ","
-                 << SpeedrunTimer::Format(seg.session * this->ipt) << ","
+                 << SpeedrunTimer::Format(seg.session * this->ipt).c_str() << ","
                  << ticks << ","
                  << time << ","
                  << total << ","
-                 << SpeedrunTimer::Format(total * this->ipt) << ","
+                 << SpeedrunTimer::Format(total * this->ipt).c_str() << ","
                  << ++segment << std::endl;
         }
     }
@@ -369,7 +369,8 @@ int SpeedrunTimer::GetCurrentDelta()
 }
 void SpeedrunTimer::StatusReport(const char* message)
 {
-    console->Print("%s%s", message, SpeedrunTimer::Format(this->total * this->ipt));
+    console->Print("%s", message);
+    console->DevMsg("%s\n", SpeedrunTimer::Format(this->total * this->ipt).c_str());
 }
 SpeedrunTimer::~SpeedrunTimer()
 {
@@ -566,5 +567,5 @@ CON_COMMAND(sar_speedrun_offset, "Sets offset in ticks at which the timer should
         speedrun->SetOffset(std::atoi(args[1]));
     }
 
-    console->Print("Timer will start at: %s\n", SpeedrunTimer::Format(speedrun->GetOffset() * speedrun->GetIntervalPerTick()));
+    console->Print("Timer will start at: %s\n", SpeedrunTimer::Format(speedrun->GetOffset() * speedrun->GetIntervalPerTick()).c_str());
 }
