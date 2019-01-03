@@ -123,6 +123,14 @@ void Portal2::LoadOffsets()
     GetName = 11; // CHud
     GetHud = 104; // cc_leaderboard_enable
     FindElement = 120; // cc_leaderboard_enable
+    DecodeUserCmdFromBuffer = 7; // CInput
+    GetPerUser = 153; // CInput::DecodeUserCmdFromBuffer
+    IN_ActivateMouse = 15; // CHLClient
+    g_Input = 1; // CHLClient::IN_ActivateMouse
+    GetButtonBits = 2; // CInput
+    JoyStickApplyMovement = 64; // CInput
+    KeyDown = 295; // CInput::JoyStickApplyMovement
+    KeyUp = 341; // CInput::JoyStickApplyMovement
 
     // vguimatsurface.so
 

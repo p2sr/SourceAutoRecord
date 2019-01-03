@@ -29,6 +29,7 @@ REDECL(Client::HudUpdate);
 REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
 REDECL(Client::GetName);
+REDECL(Client::DecodeUserCmdFromBuffer);
 
 void* Client::GetPlayer()
 {
@@ -135,6 +136,21 @@ DETOUR_T(const char*, Client::GetName)
     return Client::GetName(thisptr);
 }
 
+DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
+{
+    #define MULTIPLAYER_BACKUP 150
+
+    auto result = Client::DecodeUserCmdFromBuffer(thisptr, nSlot, buf, sequence_number);
+
+    auto user = client->GetPerUser(thisptr, nSlot);
+    auto m_pCommands = *reinterpret_cast<uintptr_t*>(user + 172);
+    auto cmd = reinterpret_cast<CUserCmd*>(user + 96 * (sequence_number % MULTIPLAYER_BACKUP));
+
+    inputHud->SetButtonBits(cmd->buttons);
+
+    return result;
+}
+
 bool Client::Init()
 {
     bool readJmp = false;
@@ -165,13 +181,29 @@ bool Client::Init()
                     this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
                 }
             }
-        } else if (sar.game->version == SourceGame_TheStanleyParable) {
+        }
+
+        if (sar.game->version & SourceGame_TheStanleyParable) {
             auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
             auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
 
-            if (auto g_Input = Interface::Create(g_InputAddr, false)) {
-                auto GetButtonBits = g_Input->Original(Offsets::GetButtonBits, readJmp);
+            if (auto input = Interface::Create(g_InputAddr, false)) {
+                auto GetButtonBits = input->Original(Offsets::GetButtonBits, readJmp);
                 Memory::Deref(GetButtonBits + Offsets::in_jump, &this->in_jump);
+
+                auto JoyStickApplyMovement = input->Original(Offsets::JoyStickApplyMovement, readJmp);
+                Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
+                Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &this->KeyUp);
+            }
+        } else if (sar.game->version & SourceGame_Portal2Game) {
+            auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
+            auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
+
+            if (g_Input = Interface::Create(g_InputAddr)) {
+                auto DecodeUserCmdFromBufferAddr = g_Input->Original(Offsets::DecodeUserCmdFromBuffer, readJmp);
+                Memory::Read(DecodeUserCmdFromBufferAddr + Offsets::GetPerUser, &this->GetPerUser);
+
+                g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
 
                 auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
                 Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);

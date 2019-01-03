@@ -14,17 +14,20 @@ private:
     Interface* g_pClientMode2 = nullptr;
     Interface* g_HUDChallengeStats = nullptr;
     Interface* s_EntityList = nullptr;
+    Interface* g_Input = nullptr;
 
 public:
     using _GetClientEntity = void*(__func*)(void* thisptr, int entnum);
     using _KeyDown = int(__cdecl*)(void* b, const char* c);
     using _KeyUp = int(__cdecl*)(void* b, const char* c);
     using _GetAllClasses = ClientClass* (*)();
+    using _GetPerUser = int(__cdecl*)(void* thisptr, int nSlot);
 
     _GetClientEntity GetClientEntity = nullptr;
     _KeyDown KeyDown = nullptr;
     _KeyUp KeyUp = nullptr;
     _GetAllClasses GetAllClasses = nullptr;
+    _GetPerUser GetPerUser = nullptr;
 
     void* in_jump = nullptr;
 
@@ -45,6 +48,9 @@ public:
 
     // CHud::GetName
     DECL_DETOUR_T(const char*, GetName)
+
+    // CInput::_DecodeUserCmdFromBuffer
+    DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
 
     bool Init() override;
     void Shutdown() override;

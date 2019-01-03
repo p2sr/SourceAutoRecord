@@ -634,6 +634,71 @@ struct CGlobalVars : CGlobalVarsBase {
     edict_t* pEdicts; // 88
 };
 
+enum JoystickAxis_t {
+    JOY_AXIS_X = 0,
+    JOY_AXIS_Y,
+    JOY_AXIS_Z,
+    JOY_AXIS_R,
+    JOY_AXIS_U,
+    JOY_AXIS_V,
+    MAX_JOYSTICK_AXES,
+};
+
+typedef struct {
+    unsigned int AxisFlags; // 0
+    unsigned int AxisMap; // 4
+    unsigned int ControlMap; // 8
+} joy_axis_t;
+
+struct CameraThirdData_t {
+    float m_flPitch; // 0
+    float m_flYaw; // 4
+    float m_flDist; // 8
+    float m_flLag; // 12
+    Vector m_vecHullMin; // 16, 20, 24
+    Vector m_vecHullMax; // 28, 32, 36
+};
+
+typedef unsigned long CRC32_t;
+
+class CVerifiedUserCmd {
+public:
+    CUserCmd m_cmd;
+    CRC32_t m_crc;
+};
+
+struct PerUserInput_t {
+    float m_flAccumulatedMouseXMovement; // ?
+    float m_flAccumulatedMouseYMovement; // ?
+    float m_flPreviousMouseXPosition; // ?
+    float m_flPreviousMouseYPosition; // ?
+    float m_flRemainingJoystickSampleTime; // ?
+    float m_flKeyboardSampleTime; // 12
+    float m_flSpinFrameTime; // ?
+    float m_flSpinRate; // ?
+    float m_flLastYawAngle; // ?
+    joy_axis_t m_rgAxes[MAX_JOYSTICK_AXES]; // ???
+    bool m_fCameraInterceptingMouse; // ?
+    bool m_fCameraInThirdPerson; // ?
+    bool m_fCameraMovingWithMouse; // ?
+    Vector m_vecCameraOffset; // 104, 108, 112
+    bool m_fCameraDistanceMove; // 116
+    int m_nCameraOldX; // 120
+    int m_nCameraOldY; // 124
+    int m_nCameraX; // 128
+    int m_nCameraY; // 132
+    bool m_CameraIsOrthographic; // 136
+    QAngle m_angPreviousViewAngles; // 140, 144, 148
+    QAngle m_angPreviousViewAnglesTilt; // 152, 156, 160
+    float m_flLastForwardMove; // 164
+    int m_nClearInputState; // 168
+    CUserCmd* m_pCommands; // 172
+    CVerifiedUserCmd* m_pVerifiedCommands; // 176
+    unsigned long m_hSelectedWeapon; // 180 CHandle<C_BaseCombatWeapon>
+    CameraThirdData_t* m_pCameraThirdData; // 184
+    int m_nCamCommand; // 188
+};
+
 class IGameEvent {
 public:
     virtual ~IGameEvent() = default;

@@ -53,6 +53,8 @@ int StringToButtonCode;
 
 // CInput
 int GetButtonBits;
+int DecodeUserCmdFromBuffer;
+int GetPerUser;
 
 // CGameMovement
 int PlayerMove;

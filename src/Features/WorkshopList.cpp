@@ -51,7 +51,7 @@ int sar_workshop_CompletionFunc(const char* partial,
 {
     const char* cmd = "sar_workshop ";
     char* match = (char*)partial;
-    if (!std::strstr(partial, cmd)) {
+    if (std::strstr(partial, cmd) == partial) {
         match = match + std::strlen(cmd);
     }
 
