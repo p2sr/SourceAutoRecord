@@ -144,7 +144,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 
     auto user = client->GetPerUser(thisptr, nSlot);
     auto m_pCommands = *reinterpret_cast<uintptr_t*>(user + 172);
-    auto cmd = reinterpret_cast<CUserCmd*>(user + 96 * (sequence_number % MULTIPLAYER_BACKUP));
+    auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + 96 * (sequence_number % MULTIPLAYER_BACKUP));
 
     inputHud->SetButtonBits(cmd->buttons);
 

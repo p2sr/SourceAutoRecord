@@ -25,8 +25,8 @@ Keep in mind that your PR might not be merged because:
 
 - You didn't follow the coding style
 - You didn't follow my requested changes
-- Your implementation sucks
-- Your idea sucks
+- Your implementation is bad
+- Your idea is bad
 
 You can simply avoid the last two points by discussing your PR with me before wasting any time.
 
@@ -36,7 +36,7 @@ Mostly follows [Webkit Style Guide](https://webkit.org/code-style-guidelines) wi
 
 - PascalCaseForClassesNamespacesStructsAndFunctions
 - camelCaseForPropertiesAndVariables
-- _UnderscoreForTypeAliases
+- _LeadingUnderscoreForTypeAliases
 
 A `.clang-format` file is included. I'd highly recommend using an extension:
 
@@ -125,7 +125,7 @@ Macros resolve the calling convention automatically: `__cdecl` for Linux and `__
 
 ```cpp
 // Address of original function
-auto GetButtonBits = g_Input->Original(Offsets::GetButtonBits, readJmp);
+auto GetButtonBits = g_Input->Original(Offsets::GetButtonBits);
 
 // Reads in_jump pointer from address + some offset
 Memory::Deref(GetButtonBits + Offsets::in_jump, &this->in_jump);
@@ -135,7 +135,7 @@ Memory::Deref(GetButtonBits + Offsets::in_jump, &this->in_jump);
 
 ```cpp
 // Address of original function
-auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
+auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement);
 
 // Reads function address from address + some offset
 Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
@@ -155,14 +155,14 @@ Memory::CloseModuleHandle(tier0);
 auto IsCommand = reinterpret_cast<bool (*)(void*)>(Memory::VMT(cmd, Offsets::IsCommand));
 ```
 
-Only use these in experiments and tests:
+Only use these in experiments or tests:
 
 ```cpp
 // Signature-Scanning aka AOB-Scan
-auto parseSmoothingInfoAddr = Memory::Scan(MODULE("engine"), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
+auto address = Memory::Scan(MODULE("engine"), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
 
 // Relative to absolute address
-auto thatOneFunction = Memory::Absolute(MODULE("engine"), 0xdeadbeef);
+auto funcAddress = Memory::Absolute(MODULE("engine"), 0xdeadbeef);
 ```
 
 ### Console Commands
