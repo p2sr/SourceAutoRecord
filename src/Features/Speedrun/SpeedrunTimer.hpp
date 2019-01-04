@@ -22,7 +22,7 @@
 
 class SpeedrunTimer : public Feature {
 public:
-    std::unique_ptr<TimerInterface> interface;
+    std::unique_ptr<TimerInterface> pubInterface;
 
 private:
     int session;

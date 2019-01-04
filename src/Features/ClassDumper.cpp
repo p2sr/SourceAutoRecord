@@ -5,6 +5,10 @@
 #include <iomanip>
 #include <string>
 
+#ifdef _WIN32
+#include <functional>
+#endif
+
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -145,7 +149,7 @@ CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props
                               "Finds specific server class tables and props with their offset.\n");
     }
 
-    std::function<void(SendTable * table, int& level)> DumpTable;
+    std::function<void(SendTable* table, int& level)> DumpTable;
     DumpTable = [&DumpTable](SendTable* table, int& level) {
         console->Print("%*s%s\n", level * 4, "", table->m_pNetTableName);
         for (auto i = 0; i < table->m_nProps; ++i) {

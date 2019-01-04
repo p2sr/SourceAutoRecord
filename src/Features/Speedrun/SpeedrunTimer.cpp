@@ -42,7 +42,7 @@ SpeedrunTimer::SpeedrunTimer()
     , category(nullptr)
     , offset(0)
 {
-    this->interface = std::make_unique<TimerInterface>();
+    this->pubInterface = std::make_unique<TimerInterface>();
     this->result = std::make_unique<TimerResult>();
     this->pb = std::make_unique<TimerResult>();
 
@@ -59,9 +59,9 @@ void SpeedrunTimer::Start(const int* engineTicks)
     this->base = *engineTicks;
 
     if (this->IsActive()) {
-        this->interface.get()->SetAction(TimerAction::Restart);
+        this->pubInterface.get()->SetAction(TimerAction::Restart);
     } else {
-        this->interface.get()->SetAction(TimerAction::Start);
+        this->pubInterface.get()->SetAction(TimerAction::Start);
     }
 
     this->total = this->offset;
@@ -75,7 +75,7 @@ void SpeedrunTimer::Pause()
 {
     if (this->state == TimerState::Running) {
         this->StatusReport("Speedrun paused!\n");
-        this->interface.get()->SetAction(TimerAction::Pause);
+        this->pubInterface.get()->SetAction(TimerAction::Pause);
         this->state = TimerState::Paused;
         this->prevTotal = this->total;
         this->result.get()->AddSegment(this->session);
@@ -85,7 +85,7 @@ void SpeedrunTimer::Resume(const int* engineTicks)
 {
     if (this->state == TimerState::Paused) {
         this->StatusReport("Speedrun resumed!\n");
-        this->interface.get()->SetAction(TimerAction::Resume);
+        this->pubInterface.get()->SetAction(TimerAction::Resume);
         this->state = TimerState::Running;
         this->base = *engineTicks;
     }
@@ -112,7 +112,7 @@ void SpeedrunTimer::Update(const int* engineTicks, const char* engineMap)
     } else if (this->state == TimerState::Running) {
         this->session = *engineTicks - this->base;
         this->total = this->prevTotal + this->session;
-        this->interface.get()->Update(this);
+        this->pubInterface.get()->Update(this);
     }
 }
 void SpeedrunTimer::CheckRules(const int* engineTicks)
@@ -152,7 +152,7 @@ void SpeedrunTimer::Stop(bool addSegment)
 {
     if (this->IsActive()) {
         this->StatusReport("Speedrun stopped!\n");
-        this->interface.get()->SetAction(TimerAction::End);
+        this->pubInterface.get()->SetAction(TimerAction::End);
         this->state = TimerState::NotRunning;
         if (addSegment) {
             this->result.get()->AddSegment(this->session);
@@ -160,7 +160,7 @@ void SpeedrunTimer::Stop(bool addSegment)
         this->result.get()->EndSplit(this->total);
     } else {
         console->Print("Ready for new speedun!\n");
-        this->interface.get()->SetAction(TimerAction::Reset);
+        this->pubInterface.get()->SetAction(TimerAction::Reset);
         this->Reset();
     }
 }
@@ -178,7 +178,7 @@ void SpeedrunTimer::Split()
         this->StatusReport("Speedrun split!\n");
         this->result.get()->Split(this->total, this->map);
         this->pb.get()->UpdateSplit(this->map);
-        this->interface.get()->SetAction(TimerAction::Split);
+        this->pubInterface.get()->SetAction(TimerAction::Split);
     }
 }
 int SpeedrunTimer::GetSession()
@@ -235,7 +235,7 @@ const std::vector<TimerRule*>& SpeedrunTimer::GetRules()
 void SpeedrunTimer::SetIntervalPerTick(const float* ipt)
 {
     this->ipt = *ipt;
-    this->interface->SetIntervalPerTick(ipt);
+    this->pubInterface->SetIntervalPerTick(ipt);
 }
 const float SpeedrunTimer::GetIntervalPerTick()
 {
@@ -376,7 +376,7 @@ void SpeedrunTimer::StatusReport(const char* message)
 }
 SpeedrunTimer::~SpeedrunTimer()
 {
-    this->interface.reset();
+    this->pubInterface.reset();
     this->result.reset();
     this->pb.reset();
 }

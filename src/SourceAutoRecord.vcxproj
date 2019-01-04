@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3F6459A9-566E-4CAC-A412-C03FF51D67E9}</ProjectGuid>
     <RootNamespace>SourceAutoRecord</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>SourceAutoRecord</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -173,16 +173,24 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="Features\Cvars.cpp" />
     <ClCompile Include="Features\Demo\Demo.cpp" />
     <ClCompile Include="Features\Demo\DemoParser.cpp" />
+    <ClCompile Include="Features\EntityList.cpp" />
     <ClCompile Include="Features\Feature.cpp" />
     <ClCompile Include="Features\Hud\Hud.cpp" />
     <ClCompile Include="Features\Hud\InputHud.cpp" />
     <ClCompile Include="Features\Hud\InspectionHud.cpp" />
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp" />
+    <ClCompile Include="Features\Imitator.cpp" />
     <ClCompile Include="Features\Listener.cpp" />
+    <ClCompile Include="Features\OffsetFinder.cpp" />
     <ClCompile Include="Features\Rebinder.cpp" />
     <ClCompile Include="Features\Routing\EntityInspector.cpp" />
     <ClCompile Include="Features\Routing\Tracer.cpp" />
     <ClCompile Include="Features\Session.cpp" />
+    <ClCompile Include="Features\Speedrun\Rules\ApertureTagRules.cpp" />
+    <ClCompile Include="Features\Speedrun\Rules\DebugRule.cpp" />
+    <ClCompile Include="Features\Speedrun\Rules\Portal2Rules.cpp" />
+    <ClCompile Include="Features\Speedrun\Rules\PortalRules.cpp" />
+    <ClCompile Include="Features\Speedrun\Rules\PortalStoriesMelRules.cpp" />
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp" />
     <ClCompile Include="Features\Speedrun\TimerInterface.cpp" />
     <ClCompile Include="Features\Speedrun\TimerResult.cpp" />
@@ -207,10 +215,21 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="Features\Timer\TimerCheckPoints.cpp" />
     <ClCompile Include="Features\WorkshopList.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="Games\Linux\Portal.cpp">
+    <ClCompile Include="Games\Linux\ApertureTag.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Games\Linux\Portal.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\PortalStoriesMel.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\ApertureTag.cpp" />
     <ClCompile Include="Games\Windows\Portal.cpp" />
+    <ClCompile Include="Games\Windows\PortalStoriesMel.cpp" />
     <ClCompile Include="Interface.cpp" />
     <ClCompile Include="Modules\Client.cpp" />
     <ClCompile Include="Modules\Console.cpp" />
@@ -226,15 +245,19 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClCompile Include="Modules\VGui.cpp" />
     <ClCompile Include="Games\Linux\HalfLife2.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Games\Linux\Portal2.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Games\Linux\TheBeginnersGuide.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Games\Linux\TheStanleyParable.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Games\Windows\HalfLife2.cpp" />
     <ClCompile Include="Games\Windows\Portal2.cpp" />
@@ -263,16 +286,24 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\Cvars.hpp" />
     <ClInclude Include="Features\Demo\Demo.hpp" />
     <ClInclude Include="Features\Demo\DemoParser.hpp" />
+    <ClInclude Include="Features\EntityList.hpp" />
     <ClInclude Include="Features\Feature.hpp" />
     <ClInclude Include="Features\Hud\Hud.hpp" />
     <ClInclude Include="Features\Hud\InputHud.hpp" />
     <ClInclude Include="Features\Hud\InspectionHud.hpp" />
     <ClInclude Include="Features\Hud\SpeedrunHud.hpp" />
+    <ClInclude Include="Features\Imitator.hpp" />
     <ClInclude Include="Features\Listener.hpp" />
+    <ClInclude Include="Features\OffsetFinder.hpp" />
     <ClInclude Include="Features\Rebinder.hpp" />
     <ClInclude Include="Features\Routing\EntityInspector.hpp" />
     <ClInclude Include="Features\Routing\Tracer.hpp" />
     <ClInclude Include="Features\Session.hpp" />
+    <ClInclude Include="Features\Speedrun\Rules\ApertureTagRules.hpp" />
+    <ClInclude Include="Features\Speedrun\Rules\DebugRule.hpp" />
+    <ClInclude Include="Features\Speedrun\Rules\Portal2Rules.hpp" />
+    <ClInclude Include="Features\Speedrun\Rules\PortalRules.hpp" />
+    <ClInclude Include="Features\Speedrun\Rules\PortalStoriesMelRules.hpp" />
     <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp" />
     <ClInclude Include="Features\Speedrun\TimerAction.hpp" />
     <ClInclude Include="Features\Speedrun\TimerInterface.hpp" />
@@ -301,24 +332,39 @@ copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\
     <ClInclude Include="Features\Timer\TimerCheckPoints.hpp" />
     <ClInclude Include="Features\WorkshopList.hpp" />
     <ClInclude Include="Game.hpp" />
+    <ClInclude Include="Games\Linux\ApertureTag.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Games\Linux\HalfLife2.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Games\Linux\Portal.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Games\Linux\Portal2.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\PortalStoriesMel.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Games\Linux\TheBeginnersGuide.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Games\Linux\TheStanleyParable.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="Games\Windows\ApertureTag.hpp" />
     <ClInclude Include="Games\Windows\HalfLife2.hpp" />
     <ClInclude Include="Games\Windows\Portal.hpp" />
     <ClInclude Include="Games\Windows\Portal2.hpp" />
+    <ClInclude Include="Games\Windows\PortalStoriesMel.hpp" />
     <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp" />
     <ClInclude Include="Games\Windows\TheStanleyParable.hpp" />
     <ClInclude Include="Interface.hpp" />
