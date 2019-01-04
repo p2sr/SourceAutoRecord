@@ -212,7 +212,7 @@ bool VGui::Init()
     this->huds.push_back(inspectionHud = new InspectionHud());
 #endif
 
-    if (sar.game->version & (SourceGame_Portal2Game | SourceGame_TheStanleyParable)) {
+    if (sar.game->version & (SourceGame_Portal2Game | SourceGame_Portal)) {
         this->huds.push_back(speedrunHud = new SpeedrunHud());
     }
 

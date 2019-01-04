@@ -321,8 +321,7 @@ bool Server::Init()
 
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
 
-        if (sar.game->version & SourceGame_Portal2Game) {
-            auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
+        if (sar.game->version & (SourceGame_Portal2Game | SourceGame_Portal)) {
             this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
         }
     }
