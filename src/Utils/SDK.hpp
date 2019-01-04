@@ -706,6 +706,13 @@ enum TOGGLE_STATE {
     TS_GOING_DOWN
 };
 
+typedef enum {
+    USE_OFF = 0,
+    USE_ON = 1,
+    USE_SET = 2,
+    USE_TOGGLE = 3
+} USE_TYPE;
+
 class IGameEvent {
 public:
     virtual ~IGameEvent() = default;
