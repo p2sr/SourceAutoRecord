@@ -25,6 +25,7 @@ public:
     CommandQueuer();
     void AddFrame(int framesLeft, std::string command, bool relative = false);
     void AddFrames(int framesLeft, int interval, int lastFrame, std::string command, bool relative = false);
+    void CalculateOffset(int framesLeft);
     void SetSplitScreen(int splitScreen);
     void Stop();
     void Reset();
