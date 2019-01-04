@@ -2,23 +2,29 @@
 
 #include <cstring>
 
+#include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
+#include "Modules/Server.hpp"
 #include "Modules/Tier1.hpp"
 
 #include "Utils/Memory.hpp"
 
 #include "Command.hpp"
 #include "Offsets.hpp"
+#include "SAR.hpp"
 #include "Variable.hpp"
 
 Cvars* cvars;
 
 Cvars::Cvars()
+    : locked(true)
 {
     this->hasLoaded = true;
 }
 int Cvars::Dump(std::ofstream& file)
 {
+    this->Lock();
+
     auto cmd = tier1->m_pConCommandList;
     auto count = 0;
     do {
@@ -41,6 +47,8 @@ int Cvars::Dump(std::ofstream& file)
         ++count;
 
     } while (cmd = cmd->m_pNext);
+
+    this->Unlock();
 
     return count;
 }
@@ -99,5 +107,47 @@ void Cvars::PrintHelp(const CCommand& args)
         }
     } else {
         console->Print("Unknown cvar name!\n");
+    }
+}
+void Cvars::Lock()
+{
+    if (!this->locked) {
+        sv_accelerate.Lock();
+        sv_airaccelerate.Lock();
+        sv_friction.Lock();
+        sv_maxspeed.Lock();
+        sv_stopspeed.Lock();
+        sv_maxvelocity.Lock();
+        sv_footsteps.Lock();
+
+        if (sar.game->version & SourceGame_Portal2Game) {
+            sv_bonus_challenge.Lock();
+            sv_transition_fade_time.Lock();
+            sv_laser_cube_autoaim.Lock();
+            ui_loadingscreen_transition_time.Lock();
+            hide_gun_when_holding.Lock();
+        }
+    }
+}
+void Cvars::Unlock()
+{
+    if (this->locked) {
+        sv_accelerate.Unlock();
+        sv_airaccelerate.Unlock();
+        sv_friction.Unlock();
+        sv_maxspeed.Unlock();
+        sv_stopspeed.Unlock();
+        sv_maxvelocity.Unlock();
+        sv_footsteps.Unlock();
+
+        if (sar.game->version & SourceGame_Portal2Game) {
+            // Don't find a way to abuse this, ok?
+            sv_bonus_challenge.Unlock(false);
+            sv_transition_fade_time.Unlock();
+            sv_laser_cube_autoaim.Unlock();
+            ui_loadingscreen_transition_time.Unlock();
+            // Not a real cheat, right?
+            hide_gun_when_holding.Unlock(false);
+        }
     }
 }

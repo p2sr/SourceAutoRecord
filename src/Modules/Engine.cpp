@@ -1,7 +1,5 @@
 #include "Engine.hpp"
 
-#include <stdarg.h>
-
 #include "Features/Cvars.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -9,6 +7,7 @@
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
 #include "EngineDemoRecorder.hpp"
+#include "Server.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -39,18 +38,9 @@ void Engine::ExecuteCommand(const char* cmd)
 {
     this->ClientCmd(this->engineClient->ThisPtr(), cmd);
 }
-void Engine::ClientCommand(const char* fmt, ...)
-{
-    va_list argptr;
-    va_start(argptr, fmt);
-    char data[1024];
-    vsnprintf(data, sizeof(data), fmt, argptr);
-    va_end(argptr);
-    this->ClientCmd(this->engineClient->ThisPtr(), data);
-}
 int Engine::GetSessionTick()
 {
-    int result = *this->tickcount - session->baseTick;
+    auto result = *this->tickcount - session->baseTick;
     return (result >= 0) ? result : 0;
 }
 float Engine::ToTime(int tick)
@@ -60,6 +50,17 @@ float Engine::ToTime(int tick)
 int Engine::GetLocalPlayerIndex()
 {
     return this->GetLocalPlayer(this->engineClient->ThisPtr());
+}
+edict_t* Engine::PEntityOfEntIndex(int iEntIndex)
+{
+    if (iEntIndex >= 0 && iEntIndex < server->gpGlobals->maxEntities) {
+        auto pEdict = reinterpret_cast<edict_t*>((uintptr_t)server->gpGlobals->pEdicts + iEntIndex * sizeof(edict_t));
+        if (!pEdict->IsFree()) {
+            return pEdict;
+        }
+    }
+
+    return nullptr;
 }
 QAngle Engine::GetAngles()
 {
@@ -148,11 +149,46 @@ DETOUR(Engine::Frame)
     session->prevState = engine->hoststate->m_currentState;
 
     if (engine->hoststate->m_activeGame) {
-        speedrun->Update(engine->tickcount, engine->hoststate->m_levelName);
+        speedrun->Update(engine->tickcount, engine->m_szLevelName /* engine->hoststate->m_levelName */);
     }
 
     return Engine::Frame(thisptr);
 }
+
+#ifdef _WIN32
+// CDemoFile::ReadCustomData
+void __fastcall ReadCustomData_Wrapper(int demoFile, int edx, int unk1, int unk2)
+{
+    Engine::ReadCustomData((void*)demoFile, 0, nullptr, nullptr);
+}
+// CDemoSmootherPanel::ParseSmoothingInfo
+DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
+{
+    __asm {
+        // Check if we have dem_customdata
+        cmp eax, 8
+        jne _orig
+
+        // Parse stuff that does not get parsed (thanks valve)
+        push edi
+        push edi
+        mov ecx, esi
+        call ReadCustomData_Wrapper
+
+        jmp Engine::ParseSmoothingInfo_Skip
+
+_orig:  // Original overwritten instructions
+        add eax, -3
+        cmp eax, 6
+        ja _def
+
+        jmp Engine::ParseSmoothingInfo_Continue
+
+_def:
+        jmp Engine::ParseSmoothingInfo_Default
+    }
+}
+#endif
 
 DETOUR_COMMAND(Engine::plugin_load)
 {
@@ -192,41 +228,6 @@ DETOUR_COMMAND(Engine::help)
     cvars->PrintHelp(args);
 }
 
-#ifdef _WIN32
-// CDemoFile::ReadCustomData
-void __fastcall ReadCustomData_Wrapper(int demoFile, int edx, int unk1, int unk2)
-{
-    Engine::ReadCustomData((void*)demoFile, 0, nullptr, nullptr);
-}
-// CDemoSmootherPanel::ParseSmoothingInfo
-DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
-{
-    __asm {
-        // Check if we have dem_customdata
-        cmp eax, 8
-        jne _orig
-
-        // Parse stuff that does not get parsed (thanks valve)
-        push edi
-        push edi
-        mov ecx, esi
-        call ReadCustomData_Wrapper
-
-        jmp Engine::ParseSmoothingInfo_Skip
-
-_orig:  // Original overwritten instructions
-        add eax, -3
-        cmp eax, 6
-        ja _def
-
-        jmp Engine::ParseSmoothingInfo_Continue
-
-_def:
-        jmp Engine::ParseSmoothingInfo_Default
-    }
-}
-#endif
-
 bool Engine::Init()
 {
     this->engineClient = Interface::Create(this->Name(), "VEngineClient0", false);
@@ -241,8 +242,9 @@ bool Engine::Init()
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
-        if (sar.game->version & SourceGame_Portal2) {
+        if (sar.game->version & SourceGame_Portal2Game) {
             this->m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
+            this->m_bWaitEnabled2 = reinterpret_cast<bool*>((uintptr_t)this->m_bWaitEnabled + Offsets::CCommandBufferSize);
         }
 
         void* clPtr = nullptr;
@@ -308,7 +310,7 @@ bool Engine::Init()
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
     }
 
-    if (sar.game->version == SourceGame_Portal2) {
+    if (sar.game->version  & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
         this->s_GameEventManager = Interface::Create(this->Name(), "GAMEEVENTSMANAGER002", false);
         if (this->s_GameEventManager) {
             this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
@@ -332,17 +334,20 @@ bool Engine::Init()
             Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133;              // Default case
             Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29;                  // Continue loop
             Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(readCustomDataAddr); // Function that handles dem_customdata
-            
+
             this->demoSmootherPatch = new Memory::Patch();
             unsigned char nop3[] = { 0x90, 0x90, 0x90 };
             this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3);             // Nop rest
         }
 #endif
+        if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
+            this->ClientCommand = g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
+        }
     }
 
     // TODO: windows
 #ifndef _WIN32
-    if (sar.game->version & (SourceGame_Portal2 | SourceGame_HalfLife2Engine)) {
+    if (sar.game->version & (SourceGame_Portal2Game | SourceGame_HalfLife2Engine)) {
         auto alias = Command("alias");
         if (!!alias) {
             auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;

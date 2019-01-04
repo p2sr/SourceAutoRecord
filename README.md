@@ -25,10 +25,10 @@ Portal|✖|✔
 
 ## Docs
 
+- [Contributing](doc/contributing.md)
 - [Issues & Troubleshooting](doc/issue.md)
 - [Mapping](doc/mapping.md)
 - [Maps](doc/maps.md)
-- [Showcases](doc/showcases.md)
 - [Tool-Assisted-Speedruns](doc/tas.md)
 - [Console Commands & Variables](https://nekzor.github.io/cvars/sar)
 

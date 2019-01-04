@@ -22,6 +22,7 @@ OBJS=$(patsubst $(SDIR)%.cpp, $(ODIR)%.o, $(SRCS))
 CC=g++
 STFU=-Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas
 CFLAGS=-std=c++17 -m32 -fPIC -static-libstdc++ -shared -Wall $(STFU) -I$(SDIR)
+#CFLAGS+= -DDBG_RULE
 EXPORT=cp -fu
 PRINT=echo
 DELETE=rm -rf
@@ -57,8 +58,8 @@ pre:
 
 post:
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal 2/$(BINARY)"
-#	@$(EXPORT) "$(BINARY)" "$(STEAM)Aperture Tag/$(BINARY)"
-#	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal Stories Mel/$(BINARY)"
+#	@$(EXPORT) "$(BINARY)" "$(STEAM)Aperture Tag/bin/$(BINARY)"
+#	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal Stories Mel/bin/$(BINARY)"
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)The Stanley Parable/$(BINARY)"
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)The Beginners Guide/$(BINARY)"
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)Half-Life 2/$(BINARY)"

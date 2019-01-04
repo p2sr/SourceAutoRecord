@@ -16,6 +16,8 @@ Variable sar_ei_hud_font_color("sar_ei_hud_font_color", "255 255 255 255", "RGBA
 Variable sar_ei_hud_font_color2("sar_ei_hud_font_color2", "153 23 9 255", "RGBA font color of entity inspection HUD when recording.\n", 0);
 Variable sar_ei_hud_font_index("sar_ei_hud_font_index", "1", 0, "Font index of entity inspection HUD.\n");
 
+InspectionHud* inspectionHud;
+
 bool InspectionHud::GetCurrentSize(int& xSize, int& ySize)
 {
     return false;

@@ -2,34 +2,8 @@
 
 #include <cstring>
 
-#include "Features/ClassDumper.hpp"
-#include "Features/Config.hpp"
-#include "Features/Cvars.hpp"
-#include "Features/Listener.hpp"
-#include "Features/Rebinder.hpp"
-#include "Features/Routing/EntityInspector.hpp"
-#include "Features/Routing/Tracer.hpp"
-#include "Features/Session.hpp"
-#include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Stats/Stats.hpp"
-#include "Features/StepCounter.hpp"
-#include "Features/Summary.hpp"
-#include "Features/Tas/CommandQueuer.hpp"
-#include "Features/Tas/ReplaySystem.hpp"
-#include "Features/Tas/TasTools.hpp"
-#include "Features/Teleporter.hpp"
-#include "Features/Timer/Timer.hpp"
-#include "Features/WorkshopList.hpp"
-
-#include "Modules/Client.hpp"
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
-#include "Modules/InputSystem.hpp"
-#include "Modules/Scheme.hpp"
-#include "Modules/Server.hpp"
-#include "Modules/Surface.hpp"
-#include "Modules/Tier1.hpp"
-#include "Modules/VGui.hpp"
+#include "Features.hpp"
+#include "Modules.hpp"
 
 #include "Cheats.hpp"
 #include "Command.hpp"
@@ -41,12 +15,12 @@ SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
 
 SAR::SAR()
+    : modules(new Modules())
+    , features(new Features())
+    , cheats(new Cheats())
+    , plugin(new Plugin())
+    , game(Game::CreateNew())
 {
-    this->modules = new Modules();
-    this->features = new Features();
-    this->cheats = new Cheats();
-    this->plugin = new Plugin();
-    this->game = Game::CreateNew();
 }
 
 bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
@@ -60,8 +34,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
         tier1 = new Tier1();
         if (tier1->Init()) {
-            this->cheats->Init();
-
             this->features->AddFeature<Config>(&config);
             this->features->AddFeature<Cvars>(&cvars);
             this->features->AddFeature<Rebinder>(&rebinder);
@@ -72,11 +44,19 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Tracer>(&tracer);
             this->features->AddFeature<SpeedrunTimer>(&speedrun);
             this->features->AddFeature<Stats>(&stats);
-            this->features->AddFeature<CommandQueuer>(&tasQueuer);
-            this->features->AddFeature<ReplaySystem>(&tasReplaySystem);
+            this->features->AddFeature<CommandQueuer>(&cmdQueuer);
+            this->features->AddFeature<ReplayRecorder>(&replayRecorder1);
+            this->features->AddFeature<ReplayRecorder>(&replayRecorder2);
+            this->features->AddFeature<ReplayPlayer>(&replayPlayer1);
+            this->features->AddFeature<ReplayPlayer>(&replayPlayer2);
+            this->features->AddFeature<ReplayProvider>(&replayProvider);
+            this->features->AddFeature<AutoAiming>(&autoAiming);
             this->features->AddFeature<Timer>(&timer);
             this->features->AddFeature<EntityInspector>(&inspector);
             this->features->AddFeature<ClassDumper>(&classDumper);
+            this->features->AddFeature<EntityList>(&entityList);
+            this->features->AddFeature<OffsetFinder>(&offsetFinder);
+            this->features->AddFeature<Imitator>(&imitator);
 
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
@@ -91,14 +71,21 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
 
-                this->features->AddFeature<TasTools>(&tasTools);
-
-                if (this->game->version & SourceGame_Portal2) {
+                if (this->game->version & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
                     this->features->AddFeature<Listener>(&listener);
                     this->features->AddFeature<WorkshopList>(&workshop);
+                }
 
+                if (listener) {
                     listener->Init();
                 }
+
+                if (auto mod = Game::CreateNewMod(engine->GetGameDirectory())) {
+                    delete this->game;
+                    this->game = mod;
+                }
+
+                this->cheats->Init();
 
                 speedrun->LoadRules(this->game);
 
@@ -131,7 +118,7 @@ bool SAR::GetPlugin()
         auto m_Size = *reinterpret_cast<int*>((uintptr_t)s_ServerPlugin->ThisPtr() + CServerPlugin_m_Size);
         if (m_Size > 0) {
             auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)s_ServerPlugin->ThisPtr() + CServerPlugin_m_Plugins);
-            for (int i = 0; i < m_Size; i++) {
+            for (auto i = 0; i < m_Size; ++i) {
                 auto ptr = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
                 if (!std::strcmp(ptr->m_szName, SAR_PLUGIN_SIGNATURE)) {
                     this->plugin->ptr = ptr;
@@ -158,7 +145,7 @@ void SAR::SearchPlugin()
 
 CON_COMMAND(sar_session, "Prints the current tick of the server since it has loaded.\n")
 {
-    int tick = engine->GetSessionTick();
+    auto tick = engine->GetSessionTick();
     console->Print("Session Tick: %i (%.3f)\n", tick, engine->ToTime(tick));
     if (*engine->demorecorder->m_bRecording) {
         tick = engine->demorecorder->GetTick();
@@ -198,6 +185,14 @@ CON_COMMAND(sar_cvars_dump, "Dumps all cvars to a file.\n")
     file.close();
 
     console->Print("Dumped %i cvars to game.cvars!\n", result);
+}
+CON_COMMAND(sar_cvars_lock, "Restores default flags of unlocked cvars.\n")
+{
+    cvars->Lock();
+}
+CON_COMMAND(sar_cvars_unlock, "Unlocks all special cvars.\n")
+{
+    cvars->Unlock();
 }
 CON_COMMAND(sar_cvarlist, "Lists all SAR cvars and unlocked engine cvars.\n")
 {

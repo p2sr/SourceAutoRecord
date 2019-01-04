@@ -13,19 +13,16 @@ WorkshopList* workshop;
 
 WorkshopList::WorkshopList()
     : maps()
+    , path(std::string(engine->GetGameDirectory()) + std::string("/maps/workshop"))
 {
     this->hasLoaded = true;
-}
-std::string WorkshopList::Path()
-{
-    return std::string(engine->GetGameDirectory()) + std::string("/maps/workshop");
 }
 int WorkshopList::Update()
 {
     auto before = this->maps.size();
     this->maps.clear();
 
-    auto path = this->Path();
+    auto path = this->path;
     auto index = path.length() + 1;
 
     // Scan through all directories and find the map file
@@ -54,7 +51,7 @@ int sar_workshop_CompletionFunc(const char* partial,
 {
     const char* cmd = "sar_workshop ";
     char* match = (char*)partial;
-    if (!std::strstr(cmd, match)) {
+    if (std::strstr(partial, cmd) == partial) {
         match = match + std::strlen(cmd);
     }
 
@@ -63,20 +60,19 @@ int sar_workshop_CompletionFunc(const char* partial,
     }
 
     // Filter items
-    std::vector<std::string> items;
+    static auto items = std::vector<std::string>(COMMAND_COMPLETION_MAXITEMS);
+    items.clear();
     for (auto& map : workshop->maps) {
+        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+            break;
+        }
+
         if (std::strlen(match) != std::strlen(cmd)) {
             if (std::strstr(map.c_str(), match)) {
                 items.push_back(map);
-            } else {
-                continue;
             }
         } else {
             items.push_back(map);
-        }
-
-        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
-            break;
         }
     }
 

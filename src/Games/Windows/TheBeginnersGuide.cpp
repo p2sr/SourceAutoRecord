@@ -16,7 +16,6 @@ void TheBeginnersGuide::LoadOffsets()
     // server.dll
 
     gpGlobals = 50; // UTIL_PlayerByIndex (TODO)
-    ServiceEventQueue = 207; // CServerGameDLL::GameFrame
 }
 const char* TheBeginnersGuide::Version()
 {
