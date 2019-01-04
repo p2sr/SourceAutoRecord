@@ -7,6 +7,7 @@
 - Visual Studio 2017
 - MSVC Toolset v141
 - Configure `src/SourceAutoRecord.vcxproj`
+- Configure `copy.bat`
 
 ### Linux
 

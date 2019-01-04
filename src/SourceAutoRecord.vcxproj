@@ -81,8 +81,7 @@
       <AssemblyDebug>true</AssemblyDebug>
     </Link>
     <PostBuildEvent>
-      <Command>echo EDIT ME
-echo copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Portal 2\$(TargetName).dll"</Command>
+      <Command>call ..\copy.bat</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -105,8 +104,7 @@ echo copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\Steam
       <NoEntryPoint>false</NoEntryPoint>
     </Link>
     <PostBuildEvent>
-      <Command>echo EDIT ME
-echo copy /Y "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\SteamApps\common\Portal 2\$(TargetName).dll"</Command>
+      <Command>call ..\copy.bat</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
