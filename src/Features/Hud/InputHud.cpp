@@ -25,9 +25,9 @@ Variable sar_ihud_font_color("sar_ihud_font_color", "255 255 255 255", "RGBA fon
 Variable sar_ihud_font_index("sar_ihud_font_index", "1", 0, "Font index of input HUD.\n");
 Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD.\n"
                                                            "Characters are in this order:\n"
-                                                           "forward,\n"
-                                                           "back,\n"
+                                                           "forward,\n"                                          
                                                            "moveleft,\n"
+                                                           "back,\n"
                                                            "moveright,\n"
                                                            "duck,\n"
                                                            "jump,\n"
