@@ -97,11 +97,11 @@ void Portal2::LoadOffsets()
     player = 4; // CPortalGameMovement::PlayerMove
     m_MoveType = 218; // CBasePlayer::UpdateStepSound
     mv_m_vecVelocity = 64; // CPortalGameMovement::PlayerMove
-    m_iClassName = 104; // CBaseEntity (TODO)
-    S_m_vecAbsOrigin = 468; // CBaseEntity (TODO)
-    S_m_angAbsRotation = 480; // CBaseEntity (TODO)
-    m_iEFlags = 208; // CBaseEntity (TODO)
-    m_flGravity = 792; // CBaseEntity (TODO)
+    m_iClassName = 96; // CBaseEntity
+    S_m_vecAbsOrigin = 460; // CBaseEntity
+    S_m_angAbsRotation = 472; // CBaseEntity
+    m_iEFlags = 200; // CBaseEntity
+    m_flGravity = 772; // CBaseEntity
     NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
     GetIServerEntity = 1; // CServerTools
     m_EntPtrArray = 61; // CServerTools::GetIServerEntity
@@ -122,17 +122,17 @@ void Portal2::LoadOffsets()
     GetName = 10; // CHud
     GetHud = 125; // cc_leaderboard_enable
     FindElement = 135; // cc_leaderboard_enable
-    DecodeUserCmdFromBuffer = 7; // CInput (TODO)
-    m_pCommands = 172; // CInput::DecodeUserCmdFromBuffer (TODO)
-    CUserCmdSize = 96; // CInput::DecodeUserCmdFromBuffer (TODO)
-    MULTIPLAYER_BACKUP = 150; // CInput::DecodeUserCmdFromBuffer (TODO)
-    GetPerUser = 153; // CInput::DecodeUserCmdFromBuffer (TODO)
-    IN_ActivateMouse = 15; // CHLClient (TODO)
-    g_Input = 2; // CHLClient::IN_ActivateMouse (TODO)
-    GetButtonBits = 2; // CInput (TODO)
-    JoyStickApplyMovement = 64; // CInput (TODO)
-    KeyDown = 295; // CInput::JoyStickApplyMovement (TODO)
-    KeyUp = 341; // CInput::JoyStickApplyMovement (TODO)
+    DecodeUserCmdFromBuffer = 7; // CInput
+    PerUserInput_tSize = 92; // CInput::DecodeUserCmdFromBuffer
+    m_pCommands = 228; // CInput::DecodeUserCmdFromBuffer
+    CUserCmdSize = 96; // CInput::DecodeUserCmdFromBuffer
+    MULTIPLAYER_BACKUP = 150; // CInput::DecodeUserCmdFromBuffer
+    IN_ActivateMouse = 15; // CHLClient
+    g_Input = 2; // CHLClient::IN_ActivateMouse
+    GetButtonBits = 2; // CInput
+    JoyStickApplyMovement = 64; // CInput
+    KeyDown = 398; // CInput::JoyStickApplyMovement
+    KeyUp = 377; // CInput::JoyStickApplyMovement
 
     // vguimatsurface.dll
 

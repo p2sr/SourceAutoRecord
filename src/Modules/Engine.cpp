@@ -345,8 +345,6 @@ bool Engine::Init()
         }
     }
 
-    // TODO: windows
-#ifndef _WIN32
     if (sar.game->version & (SourceGame_Portal2Game | SourceGame_HalfLife2Engine)) {
         auto alias = Command("alias");
         if (!!alias) {
@@ -354,7 +352,6 @@ bool Engine::Init()
             Memory::Deref<cmdalias_t*>(callback + Offsets::cmd_alias, &this->cmd_alias);
         }
     }
-#endif
 
     if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
         ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);

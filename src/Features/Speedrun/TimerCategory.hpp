@@ -24,4 +24,4 @@ public:
 };
 
 #define SAR_CATEGORY(gameVersion, name, rules) \
-    TimerCategory gameVersion##_##name(SourceGame_##gameVersion, #name, std::vector<TimerRule*>(rules))
+    TimerCategory gameVersion##_##name(SourceGame_##gameVersion, #name, rules)

@@ -16,7 +16,7 @@ const char* PortalStoriesMel::Version()
 }
 const char* PortalStoriesMel::Process()
 {
-    return "portal2_linux";
+    return "portal2.exe";
 }
 const float PortalStoriesMel::Tickrate()
 {

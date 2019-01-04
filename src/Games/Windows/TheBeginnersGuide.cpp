@@ -10,12 +10,6 @@ TheBeginnersGuide::TheBeginnersGuide()
 void TheBeginnersGuide::LoadOffsets()
 {
     TheStanleyParable::LoadOffsets();
-
-    using namespace Offsets;
-
-    // server.dll
-
-    gpGlobals = 50; // UTIL_PlayerByIndex (TODO)
 }
 const char* TheBeginnersGuide::Version()
 {

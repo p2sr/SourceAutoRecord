@@ -3,6 +3,8 @@
 #include <cmath>
 #include <cstring>
 
+#include "Features/OffsetFinder.hpp"
+
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -29,7 +31,7 @@ TasTools::TasTools()
         std::strncpy(this->className, "CBasePlayer", sizeof(this->className));
     }
 
-    client->GetOffset(this->className, this-> propName, this->propOffset);
+    offsetFinder->ClientSide(this->className, this-> propName, &this->propOffset);
 
     this->hasLoaded = true;
 }
@@ -111,7 +113,7 @@ CON_COMMAND(sar_tas_set_prop, "sar_tas_set_prop <prop_name> : Sets value for sar
     }
 
     auto offset = 0;
-    client->GetOffset(tasTools->className, args[1], offset);
+    offsetFinder->ClientSide(tasTools->className, args[1], &offset);
 
     if (!offset) {
         console->Print("Unknown prop of %s!\n", tasTools->className);

@@ -16,7 +16,7 @@
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
-#include "Features/Tas/AutoAiming.hpp"
+#include "Features/Tas/TasTools.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Teleporter.hpp"
 #include "Features/Timer/Timer.hpp"

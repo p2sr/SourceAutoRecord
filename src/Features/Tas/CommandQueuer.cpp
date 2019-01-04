@@ -138,7 +138,7 @@ CON_COMMAND(sar_tas_frame_offset,
                               "sar_tas_frame_after rely on the last sar_tas_frame_offset.\n");
     }
 
-    tasQueuer->CalculateOffset(std::atoi(args[1]));
+    cmdQueuer->CalculateOffset(std::atoi(args[1]));
 }
 CON_COMMAND(sar_tas_start, "Starts executing queued commands.\n")
 {

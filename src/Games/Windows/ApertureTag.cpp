@@ -16,7 +16,7 @@ const char* ApertureTag::Version()
 }
 const char* ApertureTag::Process()
 {
-    return "portal2_linux";
+    return "portal2.exe";
 }
 const float ApertureTag::Tickrate()
 {

@@ -148,7 +148,11 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 {
     auto result = Client::DecodeUserCmdFromBuffer(thisptr, nSlot, buf, sequence_number);
 
+#ifdef _WIN32
+    auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)thisptr + nSlot * Offsets::PerUserInput_tSize) + Offsets::m_pCommands;
+#else
     auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)client->GetPerUser(thisptr, nSlot) + Offsets::m_pCommands);
+#endif
     auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + Offsets::CUserCmdSize * (sequence_number % Offsets::MULTIPLAYER_BACKUP));
 
     inputHud->SetButtonBits(cmd->buttons);
@@ -216,8 +220,10 @@ bool Client::Init()
             auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
 
             if (g_Input = Interface::Create(g_InputAddr)) {
+#ifndef _WIN32
                 auto DecodeUserCmdFromBufferAddr = g_Input->Original(Offsets::DecodeUserCmdFromBuffer, readJmp);
                 Memory::Read(DecodeUserCmdFromBufferAddr + Offsets::GetPerUser, &this->GetPerUser);
+#endif
 
                 if (sar.game->version & SourceGame_Portal2Game) {
                     g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);

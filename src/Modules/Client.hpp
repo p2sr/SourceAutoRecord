@@ -21,13 +21,16 @@ public:
     using _KeyDown = int(__cdecl*)(void* b, const char* c);
     using _KeyUp = int(__cdecl*)(void* b, const char* c);
     using _GetAllClasses = ClientClass* (*)();
-    using _GetPerUser = int(__cdecl*)(void* thisptr, int nSlot);
 
     _GetClientEntity GetClientEntity = nullptr;
     _KeyDown KeyDown = nullptr;
     _KeyUp KeyUp = nullptr;
     _GetAllClasses GetAllClasses = nullptr;
+
+#ifndef _WIN32
+    using _GetPerUser = int(__cdecl*)(void* thisptr, int nSlot);
     _GetPerUser GetPerUser = nullptr;
+#endif
 
     void* in_jump = nullptr;
 

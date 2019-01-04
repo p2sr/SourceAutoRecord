@@ -50,7 +50,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<ReplayPlayer>(&replayPlayer1);
             this->features->AddFeature<ReplayPlayer>(&replayPlayer2);
             this->features->AddFeature<ReplayProvider>(&replayProvider);
-            this->features->AddFeature<AutoAiming>(&autoAiming);
             this->features->AddFeature<Timer>(&timer);
             this->features->AddFeature<EntityInspector>(&inspector);
             this->features->AddFeature<ClassDumper>(&classDumper);
@@ -70,6 +69,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             if (engine && engine->hasLoaded) {
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
+
+                this->features->AddFeature<TasTools>(&tasTools);
 
                 if (this->game->version & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
                     this->features->AddFeature<Listener>(&listener);

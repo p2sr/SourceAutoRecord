@@ -1,5 +1,6 @@
 #include "EntityList.hpp"
 
+#include <algorithm>
 #include <cstring>
 
 #include "Modules/Console.hpp"

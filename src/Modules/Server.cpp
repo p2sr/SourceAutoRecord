@@ -306,13 +306,10 @@ bool Server::Init()
         }
     }
 
-    // TODO: windows
-#ifndef _WIN32
     if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS0")) {
         auto GetIServerEntity = g_ServerTools->Original(Offsets::GetIServerEntity);
         Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
     }
-#endif
 
     if (this->g_ServerGameDLL) {
         auto Think = this->g_ServerGameDLL->Original(Offsets::Think);

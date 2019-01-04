@@ -265,6 +265,9 @@
     <ClCompile Include="Games\Windows\PortalStoriesMel.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Speedrun\TimerCategory.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -557,6 +560,9 @@
     </ClInclude>
     <ClInclude Include="Games\Windows\PortalStoriesMel.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\TimerCategory.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

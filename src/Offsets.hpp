@@ -202,4 +202,5 @@ extern int g_pClientMode;
 extern int m_pCommands;
 extern int CUserCmdSize;
 extern int MULTIPLAYER_BACKUP;
+extern int PerUserInput_tSize;
 }

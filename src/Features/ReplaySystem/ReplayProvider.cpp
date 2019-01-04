@@ -1,5 +1,6 @@
 #include "ReplayProvider.hpp"
 
+#include <algorithm>
 #include <fstream>
 
 #include "Replay.hpp"
