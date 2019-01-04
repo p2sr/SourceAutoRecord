@@ -199,4 +199,7 @@ extern int m_iClassName;
 extern int m_iName;
 extern int m_EntPtrArray;
 extern int g_pClientMode;
+extern int m_pCommands;
+extern int CUserCmdSize;
+extern int MULTIPLAYER_BACKUP;
 }

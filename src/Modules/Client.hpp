@@ -51,6 +51,7 @@ public:
 
     // CInput::_DecodeUserCmdFromBuffer
     DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
+    DECL_DETOUR(DecodeUserCmdFromBuffer2, int buf, signed int sequence_number)
 
     bool Init() override;
     void Shutdown() override;

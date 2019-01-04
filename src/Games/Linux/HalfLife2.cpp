@@ -112,6 +112,12 @@ void HalfLife2::LoadOffsets()
     GetClientEntity = 3; // CClientEntityList
     GetClientMode = 1; // CHLClient::HudProcessInput
     CreateMove = 22; // ClientModeShared
+    DecodeUserCmdFromBuffer = 7; // CInput
+    m_pCommands = 196; // CInput::DecodeUserCmdFromBuffer
+    CUserCmdSize = 84; // CInput::DecodeUserCmdFromBuffer
+    MULTIPLAYER_BACKUP = 90; // CInput::DecodeUserCmdFromBuffer
+    IN_ActivateMouse = 15; // CHLClient
+    g_Input = 1; // CHLClient::IN_ActivateMouse
 
     // vguimatsurface.so
 

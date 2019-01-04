@@ -123,6 +123,9 @@ void Portal2::LoadOffsets()
     GetHud = 125; // cc_leaderboard_enable
     FindElement = 135; // cc_leaderboard_enable
     DecodeUserCmdFromBuffer = 7; // CInput (TODO)
+    m_pCommands = 172; // CInput::DecodeUserCmdFromBuffer (TODO)
+    CUserCmdSize = 96; // CInput::DecodeUserCmdFromBuffer (TODO)
+    MULTIPLAYER_BACKUP = 150; // CInput::DecodeUserCmdFromBuffer (TODO)
     GetPerUser = 153; // CInput::DecodeUserCmdFromBuffer (TODO)
     IN_ActivateMouse = 15; // CHLClient (TODO)
     g_Input = 2; // CHLClient::IN_ActivateMouse (TODO)

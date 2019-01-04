@@ -31,6 +31,7 @@ REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
 REDECL(Client::GetName);
 REDECL(Client::DecodeUserCmdFromBuffer);
+REDECL(Client::DecodeUserCmdFromBuffer2);
 
 void* Client::GetPlayer()
 {
@@ -106,7 +107,7 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
         imitator->Save(cmd);
     }
 
-    if (in_forceuser.isReference && in_forceuser.GetInt() != 1) {
+    if (!in_forceuser.isReference || (in_forceuser.isReference && in_forceuser.GetInt() != 1)) {
         inputHud->SetButtonBits(cmd->buttons);
     }
 
@@ -145,13 +146,21 @@ DETOUR_T(const char*, Client::GetName)
 
 DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
 {
-#define MULTIPLAYER_BACKUP 150
-
     auto result = Client::DecodeUserCmdFromBuffer(thisptr, nSlot, buf, sequence_number);
 
-    auto user = client->GetPerUser(thisptr, nSlot);
-    auto m_pCommands = *reinterpret_cast<uintptr_t*>(user + 172);
-    auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + 96 * (sequence_number % MULTIPLAYER_BACKUP));
+    auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)client->GetPerUser(thisptr, nSlot) + Offsets::m_pCommands);
+    auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + Offsets::CUserCmdSize * (sequence_number % Offsets::MULTIPLAYER_BACKUP));
+
+    inputHud->SetButtonBits(cmd->buttons);
+
+    return result;
+}
+DETOUR(Client::DecodeUserCmdFromBuffer2, int buf, signed int sequence_number)
+{
+    auto result = Client::DecodeUserCmdFromBuffer2(thisptr, buf, sequence_number);
+
+    auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)thisptr + Offsets::m_pCommands);
+    auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + Offsets::CUserCmdSize * (sequence_number % Offsets::MULTIPLAYER_BACKUP));
 
     inputHud->SetButtonBits(cmd->buttons);
 
@@ -202,7 +211,7 @@ bool Client::Init()
                 Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
                 Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &this->KeyUp);
             }
-        } else if (sar.game->version & SourceGame_Portal2Game) {
+        } else if (sar.game->version & (SourceGame_Portal2Game | SourceGame_HalfLife2Engine)) {
             auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
             auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
 
@@ -210,11 +219,15 @@ bool Client::Init()
                 auto DecodeUserCmdFromBufferAddr = g_Input->Original(Offsets::DecodeUserCmdFromBuffer, readJmp);
                 Memory::Read(DecodeUserCmdFromBufferAddr + Offsets::GetPerUser, &this->GetPerUser);
 
-                g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
+                if (sar.game->version & SourceGame_Portal2Game) {
+                    g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
 
-                auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
-                Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
-                Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &this->KeyUp);
+                    auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
+                    Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
+                    Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &this->KeyUp);
+                } else {
+                    g_Input->Hook(Client::DecodeUserCmdFromBuffer2_Hook, Client::DecodeUserCmdFromBuffer2, Offsets::DecodeUserCmdFromBuffer);
+                }
             }
         }
 
@@ -263,6 +276,7 @@ void Client::Shutdown()
     Interface::Delete(this->g_pClientMode2);
     Interface::Delete(this->g_HUDChallengeStats);
     Interface::Delete(this->s_EntityList);
+    Interface::Delete(this->g_Input);
 }
 
 Client* client;
