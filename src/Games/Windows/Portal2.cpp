@@ -123,7 +123,7 @@ void Portal2::LoadOffsets()
     GetHud = 125; // cc_leaderboard_enable
     FindElement = 135; // cc_leaderboard_enable
     DecodeUserCmdFromBuffer = 7; // CInput
-    PerUserInput_tSize = 92; // CInput::DecodeUserCmdFromBuffer
+    PerUserInput_tSize = 368; // CInput::DecodeUserCmdFromBuffer
     m_pCommands = 228; // CInput::DecodeUserCmdFromBuffer
     CUserCmdSize = 96; // CInput::DecodeUserCmdFromBuffer
     MULTIPLAYER_BACKUP = 150; // CInput::DecodeUserCmdFromBuffer

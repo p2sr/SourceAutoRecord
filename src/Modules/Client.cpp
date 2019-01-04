@@ -149,7 +149,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
     auto result = Client::DecodeUserCmdFromBuffer(thisptr, nSlot, buf, sequence_number);
 
 #ifdef _WIN32
-    auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)thisptr + nSlot * Offsets::PerUserInput_tSize) + Offsets::m_pCommands;
+    auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)thisptr + nSlot * Offsets::PerUserInput_tSize + Offsets::m_pCommands);
 #else
     auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)client->GetPerUser(thisptr, nSlot) + Offsets::m_pCommands);
 #endif
