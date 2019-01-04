@@ -21,8 +21,9 @@ public:
     PropType propType;
     int want_to_strafe;
     int strafing_direction;
-    int strafe_mode;
-    int oscillate_dir;
+    int is_vectorial;
+    int strafe_type;
+    int is_turning;
 
 private:
     Vector acceleration;

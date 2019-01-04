@@ -107,6 +107,18 @@ CON_COMMAND(sar_tas_frames_at,
 
     tasQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]));
 }
+CON_COMMAND(sar_tas_frame_next,
+    "Adds command frame to the queue after waiting for specified amount of frames.\n"
+    "Usage: sar_tas_frame_pack <frames_to_wait> [command_to_execute]\n")
+{
+    if (args.ArgC() != 3) {
+        return console->Print("Usage: sar_tas_frame_pack <frames_to_wait> [command_to_execute] : "
+                              "Adds command frame to the queue.\n");
+    }
+
+    tasQueuer->CalculateOffset(std::atoi(args[1]));
+    tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]), true);
+}
 CON_COMMAND(sar_tas_frame_after,
     "Adds command frame to the queue after waiting for specified amount of frames.\n"
     "Usage: sar_tas_frame_after <frames_to_wait> [command_to_execute]\n")
@@ -175,7 +187,7 @@ CON_COMMAND(sar_tas_frame_at_for,
 {
     if (args.ArgC() != 5) {
         return console->Print("sar_tas_frame_at_for <frame> <delay> <first_command> <last_command> : "
-            "Adds two command frames to the queue at specified frame, the last frame will be executed after a delay.\n");
+                              "Adds two command frames to the queue at specified frame, the last frame will be executed after a delay.\n");
     }
 
     tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[3]));
@@ -188,7 +200,7 @@ CON_COMMAND(sar_tas_frame_after_for,
 {
     if (args.ArgC() != 5) {
         return console->Print("sar_tas_frame_after_for <frames_to_wait> <delay> <first_command> <last_command> : "
-            "Adds two command frames to the queue at specified frame, the last frame will be executed after a delay.\n");
+                              "Adds two command frames to the queue at specified frame, the last frame will be executed after a delay.\n");
     }
 
     tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[3]), true);

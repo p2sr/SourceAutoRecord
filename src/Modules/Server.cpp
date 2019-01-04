@@ -281,12 +281,12 @@ DETOUR(Server::PlayerMove)
 DETOUR(Server::ProcessMovement, void* a, CMoveData* pmove)
 {
     if (tasTools->want_to_strafe) {
-        if (tasTools->strafe_mode == 0)
+        if (tasTools->is_vectorial == 0)
             tasTools->Strafe(pmove);
         else
             tasTools->VectorialStrafe(pmove);
 
-        if (tasTools->oscillate_dir)
+        if (tasTools->strafe_type == 1)
             tasTools->strafing_direction *= -1;
     }
     return Server::ProcessMovement(thisptr, a, pmove);
