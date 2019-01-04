@@ -44,6 +44,10 @@ TimerRule::TimerRule(const char* name, const char* mapName, const char* entityNa
 }
 bool TimerRule::Load()
 {
+    if (this->IsEmpty()) {
+        return this->isActive = true;
+    }
+
     auto info = (this->searchMode == SearchMode::Classes)
         ? entityList->GetEntityInfoByClassName(this->entityName)
         : entityList->GetEntityInfoByName(this->entityName);
@@ -84,4 +88,8 @@ TimerAction TimerRule::Dispatch()
     }
 
     return TimerAction::DoNothing;
+}
+bool TimerRule::IsEmpty()
+{
+    return this->mapName == nullptr || this->entityName == nullptr;
 }

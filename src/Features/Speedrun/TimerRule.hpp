@@ -46,6 +46,7 @@ public:
     bool Load();
     void Unload();
     TimerAction Dispatch();
+    bool IsEmpty();
 };
 
 #define SAR_RULE(ruleName, mapName, entityName, className, propName, searchMode)                                           \
@@ -59,4 +60,8 @@ public:
 #define SAR_RULE3(ruleName, mapName, entityName, searchMode)                                         \
     TimerAction ruleName##_callback(void* entity);                                                   \
     TimerRule ruleName = TimerRule(#ruleName, mapName, entityName, ruleName##_callback, searchMode); \
+    TimerAction ruleName##_callback(void* entity)
+#define SAR_RULE0(ruleName)                                                 \
+    TimerAction ruleName##_callback(void* entity);                          \
+    TimerRule ruleName = TimerRule(#ruleName, nullptr, nullptr, ruleName##_callback); \
     TimerAction ruleName##_callback(void* entity)

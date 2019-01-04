@@ -206,7 +206,7 @@ void SpeedrunTimer::InitRules()
     this->rules.clear();
     if (this->category) {
         for (const auto& rule : this->category->rules) {
-            if (!std::strcmp(this->map, rule->mapName)) {
+            if (rule->IsEmpty() || !std::strcmp(this->map, rule->mapName)) {
                 this->rules.push_back(rule);
             }
         }
@@ -217,6 +217,8 @@ void SpeedrunTimer::ReloadRules()
     for (const auto& rule : this->rules) {
         if (!rule->Load()) {
             console->Warning("Failed to load rule: %s -> %s\n", rule->name, rule->mapName);
+        } else {
+            console->DevMsg("Loaded rule: %s -> %s\n", rule->name, rule->mapName);
         }
     }
 }
