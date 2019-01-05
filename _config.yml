@@ -1,0 +1,5 @@
+include:
+  - contributing.md
+exclude:
+  - src
+  - lib
