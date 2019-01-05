@@ -7,6 +7,7 @@ A new way to time your speedrun!
 - Tick-perfect timing with rule system
 - Support for categories
 - Automatic start, stop and split
+- Menu timing
 - LiveSplit support
 
 ## Support

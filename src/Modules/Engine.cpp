@@ -143,13 +143,15 @@ DETOUR(Engine::SetSignonState2, int state, int count)
 // CEngine::Frame
 DETOUR(Engine::Frame)
 {
+    speedrun->PreUpdate(engine->tickcount, engine->m_szLevelName);
+
     if (engine->hoststate->m_currentState != session->prevState) {
         session->Changed();
     }
     session->prevState = engine->hoststate->m_currentState;
 
-    if (engine->hoststate->m_activeGame) {
-        speedrun->Update(engine->tickcount, engine->m_szLevelName /* engine->hoststate->m_levelName */);
+    if (engine->hoststate->m_activeGame || std::strlen(engine->m_szLevelName) == 0) {
+        speedrun->PostUpdate(engine->tickcount, engine->m_szLevelName);
     }
 
     return Engine::Frame(thisptr);
@@ -278,7 +280,6 @@ bool Engine::Init()
                 this->cl->Hook(Engine::Disconnect2_Hook, Engine::Disconnect2, Offsets::Disconnect);
 #endif
             }
-
 #if _WIN32
             auto IServerMessageHandler_VMT = Memory::Deref<uintptr_t>((uintptr_t)this->cl->ThisPtr() + IServerMessageHandler_VMT_Offset);
             auto ProcessTick = Memory::Deref<uintptr_t>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
@@ -292,15 +293,6 @@ bool Engine::Init()
             auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
             Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
-
-            if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
-                auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
-                auto engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
-
-                if (this->eng = Interface::Create(engAddr)) {
-                    this->eng->Hook(Engine::Frame_Hook, Engine::Frame, Offsets::Frame);
-                }
-            }
         }
     }
 
@@ -310,7 +302,18 @@ bool Engine::Init()
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
     }
 
-    if (sar.game->version  & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
+    if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
+        auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
+        auto engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
+
+        if (this->eng = Interface::Create(engAddr)) {
+            if (this->tickcount && this->hoststate && this->m_szLevelName) {
+                this->eng->Hook(Engine::Frame_Hook, Engine::Frame, Offsets::Frame);
+            }
+        }
+    }
+
+    if (sar.game->version & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
         this->s_GameEventManager = Interface::Create(this->Name(), "GAMEEVENTSMANAGER002", false);
         if (this->s_GameEventManager) {
             this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
@@ -321,7 +324,13 @@ bool Engine::Init()
             Memory::Read<_ConPrintEvent>(FireEventIntern + Offsets::ConPrintEvent, &this->ConPrintEvent);
         }
 
+        if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
+            this->ClientCommand = g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
+        }
+    }
+
 #ifdef _WIN32
+    if (sar.game->version & SourceGame_Portal2Game) {
         auto parseSmoothingInfoAddr = Memory::Scan(this->Name(), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
         auto readCustomDataAddr = Memory::Scan(this->Name(), "55 8B EC F6 05 ? ? ? ? ? 53 56 57 8B F1 75 2F");
 
@@ -339,11 +348,8 @@ bool Engine::Init()
             unsigned char nop3[] = { 0x90, 0x90, 0x90 };
             this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3);             // Nop rest
         }
-#endif
-        if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
-            this->ClientCommand = g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
-        }
     }
+#endif
 
     if (sar.game->version & (SourceGame_Portal2Game | SourceGame_HalfLife2Engine)) {
         auto alias = Command("alias");

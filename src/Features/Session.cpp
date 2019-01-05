@@ -45,6 +45,8 @@ void Session::Started(bool menu)
         } else {
             speedrun->Resume(engine->tickcount);
         }
+
+        this->isRunning = true;
     } else {
         console->Print("Session Started!\n");
         this->Start();

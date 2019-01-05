@@ -224,7 +224,6 @@ bool Client::Init()
                 auto DecodeUserCmdFromBufferAddr = g_Input->Original(Offsets::DecodeUserCmdFromBuffer, readJmp);
                 Memory::Read(DecodeUserCmdFromBufferAddr + Offsets::GetPerUser, &this->GetPerUser);
 #endif
-
                 if (sar.game->version & SourceGame_Portal2Game) {
                     g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
 

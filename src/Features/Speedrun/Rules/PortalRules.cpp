@@ -5,7 +5,6 @@
 #include "Features/Speedrun/TimerCategory.hpp"
 #include "Features/Speedrun/TimerRule.hpp"
 
-#include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
 #include "Utils/SDK.hpp"

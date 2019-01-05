@@ -90,26 +90,22 @@ void SpeedrunTimer::Resume(const int* engineTicks)
         this->base = *engineTicks;
     }
 }
-void SpeedrunTimer::Update(const int* engineTicks, const char* engineMap)
+void SpeedrunTimer::PreUpdate(const int* engineTicks, const char* engineMap)
 {
-    if (!engineTicks || !engineMap || std::strlen(engineMap) == 0)
-        return;
-
-    auto mapChanged = false;
     if (this->state != TimerState::Running) {
         if (std::strncmp(this->map, engineMap, sizeof(this->map))) {
             std::strncpy(this->map, engineMap, sizeof(this->map));
             console->DevMsg("Speedrun map change: %s\n", this->map);
-            mapChanged = true;
+            if (this->state == TimerState::Paused) {
+                this->Split();
+            }
             this->InitRules();
         }
     }
-
-    if (this->state == TimerState::Paused) {
-        if (mapChanged) {
-            this->Split();
-        }
-    } else if (this->state == TimerState::Running) {
+}
+void SpeedrunTimer::PostUpdate(const int* engineTicks, const char* engineMap)
+{
+    if (this->state == TimerState::Running) {
         this->session = *engineTicks - this->base;
         this->total = this->prevTotal + this->session;
         this->pubInterface.get()->Update(this);
