@@ -196,7 +196,7 @@ DETOUR_COMMAND(Engine::plugin_load)
     // the plugin list if the initial search thread failed
     if (args.ArgC() >= 2) {
         auto file = std::string(args[1]);
-        if (ends_with(file, std::string(MODULE("sar"))) || ends_with(file, std::string("sar"))) {
+        if (Utils::EndsWith(file, std::string(MODULE("sar"))) || Utils::EndsWith(file, std::string("sar"))) {
             if (sar.GetPlugin()) {
                 sar.plugin->ptr->m_bDisable = true;
                 console->PrintActive("SAR: Plugin fully loaded!\n");

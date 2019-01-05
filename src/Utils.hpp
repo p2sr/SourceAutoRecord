@@ -11,9 +11,10 @@
 #define MODULE(name) name MODULE_EXTENSION
 #define GAME(x) GAME_PATH(x)
 
-static bool ends_with(const std::string& str, const std::string& suffix)
-{
-    return str.size() >= suffix.size() && !str.compare(str.size() - suffix.size(), suffix.size(), suffix);
+namespace Utils {
+
+bool EndsWith(const std::string& str, const std::string& suffix);
+bool StartsWith(const char* str, const char* subStr);
 }
 
 #define REDECL(name) \

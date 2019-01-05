@@ -62,23 +62,25 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <UndefinePreprocessorDefinitions>
-      </UndefinePreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>
-      </SubSystem>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
       <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
       <AssemblyDebug>true</AssemblyDebug>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <NoEntryPoint>false</NoEntryPoint>
     </Link>
     <PostBuildEvent>
       <Command>call ..\copy.bat</Command>
@@ -214,6 +216,7 @@
     <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Utils\Memory.cpp" />
     <ClCompile Include="Utils\SDK.cpp" />
     <ClCompile Include="Variable.cpp" />

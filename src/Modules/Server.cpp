@@ -172,10 +172,7 @@ DETOUR(Server::PlayerMove)
     }
 
     stats->velocity->Save(client->GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
-
-#ifndef _WIN32
     inspector->Record();
-#endif
 
     return Server::PlayerMove(thisptr);
 }

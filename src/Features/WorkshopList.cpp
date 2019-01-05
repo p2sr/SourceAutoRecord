@@ -31,7 +31,7 @@ int WorkshopList::Update()
             auto curdir = dir.path().string();
             for (auto& dirdir : std::experimental::filesystem::directory_iterator(curdir)) {
                 auto file = dirdir.path().string();
-                if (ends_with(file, std::string(".bsp"))) {
+                if (Utils::EndsWith(file, std::string(".bsp"))) {
                     auto map = file.substr(index);
                     map = map.substr(0, map.length() - 4);
                     this->maps.push_back(map);

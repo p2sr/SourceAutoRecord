@@ -42,11 +42,11 @@ Game* Game::CreateNewMod(const char* dir)
 {
     auto mod = std::string(dir);
 
-    if (ends_with(mod, std::string("aperturetag"))) {
+    if (Utils::EndsWith(mod, std::string("aperturetag"))) {
         return new ApertureTag();
     }
 
-    if (ends_with(mod, std::string("portal_stories"))) {
+    if (Utils::EndsWith(mod, std::string("portal_stories"))) {
         return new PortalStoriesMel();
     }
 

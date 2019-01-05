@@ -16,7 +16,7 @@
 #include "Variable.hpp"
 
 Variable sar_inspection_save_every_tick("sar_inspection_save_every_tick", "0",
-    "Saves inspection data even when session ticks do not increment.\n");
+    "Saves inspection data even when session tick does not increment.\n");
 
 EntityInspector* inspector;
 
@@ -39,7 +39,7 @@ void EntityInspector::Record()
     auto session = engine->GetSessionTick();
 
     auto entity = entityList->GetEntityInfoByIndex(this->entityIndex);
-    if (entity->m_pEntity != nullptr) {
+    if (entity && entity->m_pEntity) {
         this->latest = InspectionItem{
             session,
             server->GetAbsOrigin(entity->m_pEntity),

@@ -59,10 +59,7 @@ SAR_CATEGORY(ApertureTag,                       // Name of game or mod
 ## Interface
 
 SAR provides an interface for accessing the timer externally which can be used with [LiveSplit](https://livesplit.github.com).
-
-### Examples
-
-- [ASL Script for Portal 2](https://gist.github.com/NeKzor/6db7ca6a28ed55fbcce7d8af7edf0f18)
+Here's a generic [ASL Script](https://gist.github.com/NeKzor/6db7ca6a28ed55fbcce7d8af7edf0f18) as an example.
 
 ## Console Commands
 

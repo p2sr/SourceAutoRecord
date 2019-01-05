@@ -32,7 +32,9 @@ void Portal::LoadOffsets()
     // server.dll
 
     UTIL_PlayerByIndex = 39; // CServerGameDLL::Think
+    gpGlobals = 15; // UTIL_PlayerByIndex
     iNumPortalsPlaced = 4796; // CPortal_Player::IncrementPortalsPlaced
+    m_EntPtrArray = 53; // CServerTools::GetIServerEntity
 
     // vguimatsurface.dll
 
