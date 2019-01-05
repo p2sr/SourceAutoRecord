@@ -23,7 +23,7 @@ TasTools::TasTools()
     , prevVelocity({ 0, 0, 0 })
     , prevTick(0)
 {
-    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2)) {
+    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2Engine)) {
         std::strncpy(this->className, "CPortal_Player", sizeof(this->className));
     } else if (sar.game->version & SourceGame_HalfLife2) {
         std::strncpy(this->className, "CHL2_Player", sizeof(this->className));
