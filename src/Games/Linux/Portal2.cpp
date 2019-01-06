@@ -80,7 +80,7 @@ void Portal2::LoadOffsets()
 
     // server.so
 
-    ProcessMovement = 1; // CGameMovement
+    ProcessMovement = 2; // CGameMovement
     PlayerMove = 16; // CPortalGameMovement
     AirAccelerate = 23; // CPortalGameMovement
     AirMove = 24; // CPortalGameMovement
