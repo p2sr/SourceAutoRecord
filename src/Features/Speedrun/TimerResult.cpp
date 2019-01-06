@@ -48,12 +48,12 @@ void TimerResult::Reset()
     this->prevSplit = nullptr;
 
     auto deleted = false;
-    for (auto it = this->splits.begin(); it != this->splits.end();) {
-        if (*it == this->curSplit) {
+    for (auto split = this->splits.begin(); split != this->splits.end();) {
+        if (*split == this->curSplit) {
             deleted = true;
         }
-        delete *it;
-        it = this->splits.erase(it);
+        delete *split;
+        split = this->splits.erase(split);
     }
 
     if (!deleted && this->curSplit) {

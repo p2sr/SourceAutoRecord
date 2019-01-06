@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 #include "Module.hpp"
 
 #include "Features/Hud/InputHud.hpp"
@@ -12,11 +14,8 @@ class VGui : public Module {
 public:
     Interface* enginevgui = nullptr;
 
-    InputHud* inputHud = nullptr;
-    SpeedrunHud* speedrunHud = nullptr;
-    InspectionHud* inspectionHud = nullptr;
-
 private:
+    std::vector<Hud*> huds = std::vector<Hud*>();
     bool respectClShowPos = true;
 
 public:

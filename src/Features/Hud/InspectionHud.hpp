@@ -9,6 +9,8 @@ public:
     void Draw() override;
 };
 
+extern InspectionHud* inspectionHud;
+
 extern Variable sar_ei_hud;
 extern Variable sar_ei_hud_x;
 extern Variable sar_ei_hud_y;

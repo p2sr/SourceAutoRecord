@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "TimerAction.hpp"
+#include "TimerCategory.hpp"
 #include "TimerInterface.hpp"
 #include "TimerResult.hpp"
 #include "TimerRule.hpp"
@@ -21,7 +22,7 @@
 
 class SpeedrunTimer : public Feature {
 public:
-    std::unique_ptr<TimerInterface> liveSplit;
+    std::unique_ptr<TimerInterface> pubInterface;
 
 private:
     int session;
@@ -34,7 +35,7 @@ private:
     std::unique_ptr<TimerResult> result;
     std::unique_ptr<TimerResult> pb;
     std::vector<TimerRule*> rules;
-    const char* category;
+    TimerCategory* category;
     int offset;
 
 public:
@@ -44,11 +45,13 @@ public:
 
     void Start(const int* engineTicks);
     void Pause();
-    void Unpause(const int* engineTicks);
-    void Update(const int* engineTicks, const char* engineMap);
+    void Resume(const int* engineTicks);
+    void PreUpdate(const int* engineTicks, const char* engineMap);
+    void PostUpdate(const int* engineTicks, const char* engineMap);
     void CheckRules(const int* engineTicks);
     void Stop(bool addSegment = true);
     void Reset();
+    void Split();
 
     int GetSession();
     int GetTotal();
@@ -57,8 +60,8 @@ public:
     void SetIntervalPerTick(const float* ipt);
     const float GetIntervalPerTick();
 
-    void SetCategory(const char* category);
-    const char* GetCategory();
+    void SetCategory(TimerCategory* category);
+    TimerCategory* GetCategory();
 
     void SetOffset(const int offset);
     const int GetOffset();
@@ -79,6 +82,8 @@ public:
     int GetSplitDelta();
     int GetCurrentDelta();
 
+    void StatusReport(const char* message);
+
     ~SpeedrunTimer();
 
     static std::string Format(float raw);
@@ -88,14 +93,18 @@ extern SpeedrunTimer* speedrun;
 
 extern Command sar_speedrun_start;
 extern Command sar_speedrun_stop;
+extern Command sar_speedrun_split;
+extern Command sar_speedrun_pause;
+extern Command sar_speedrun_resume;
+extern Command sar_speedrun_reset;
 extern Command sar_speedrun_result;
 extern Command sar_speedrun_export;
 extern Command sar_speedrun_export_pb;
 extern Command sar_speedrun_import;
-extern Command sar_speedrun_rules;
-extern Command sar_speedrun_all_rules;
 extern Command sar_speedrun_category;
+extern Command sar_speedrun_categories;
 extern Command sar_speedrun_offset;
 
 extern Variable sar_speedrun_autostart;
 extern Variable sar_speedrun_autostop;
+extern Variable sar_speedrun_standard;

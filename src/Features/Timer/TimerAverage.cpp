@@ -20,7 +20,7 @@ void TimerAverage::Add(int ticks, float time, char* map)
         ticks,
         time,
         map });
-    int count = this->items.size();
+    auto count = this->items.size();
     this->averageTicks += ticks / count;
     this->averageTime += time / count;
 }

@@ -9,6 +9,7 @@
 class WorkshopList : public Feature {
 public:
     std::vector<std::string> maps;
+    std::string path;
 
 public:
     WorkshopList();

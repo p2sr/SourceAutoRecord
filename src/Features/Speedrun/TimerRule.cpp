@@ -2,16 +2,18 @@
 
 #include <vector>
 
+#include "Features/EntityList.hpp"
+#include "Features/OffsetFinder.hpp"
+
 #include "Modules/Console.hpp"
 #include "Modules/Server.hpp"
 
 #include "TimerAction.hpp"
 
-TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
+TimerRule::TimerRule(const char* name, const char* mapName, const char* entityName,
     _TimerRuleCallback0 callback, SearchMode searchMode)
     : madeAction(false)
-    , gameVersion(gameVersion)
-    , categoryName(categoryName)
+    , name(name)
     , mapName(mapName)
     , entityName(entityName)
     , callback0(callback)
@@ -21,20 +23,19 @@ TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapN
     , isActive(false)
     , searchMode(searchMode)
 {
-    TimerRule::list.push_back(this);
 }
-TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
+TimerRule::TimerRule(const char* name, const char* mapName, const char* entityName,
     _TimerRuleCallback1 callback, const char* className, const char* propName, SearchMode searchMode)
-    : TimerRule(gameVersion, categoryName, mapName, entityName, nullptr, searchMode)
+    : TimerRule(name, mapName, entityName, nullptr, searchMode)
 {
     this->className = className;
     this->propName = propName;
     this->callback1 = callback;
     this->callbackType = 1;
 }
-TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapName, const char* entityName,
+TimerRule::TimerRule(const char* name, const char* mapName, const char* entityName,
     _TimerRuleCallback2 callback, const char* className, const char* propName, SearchMode searchMode)
-    : TimerRule(gameVersion, categoryName, mapName, entityName, nullptr, searchMode)
+    : TimerRule(name, mapName, entityName, nullptr, searchMode)
 {
     this->className = className;
     this->propName = propName;
@@ -43,9 +44,13 @@ TimerRule::TimerRule(int gameVersion, const char* categoryName, const char* mapN
 }
 bool TimerRule::Load()
 {
+    if (this->IsEmpty()) {
+        return this->isActive = true;
+    }
+
     auto info = (this->searchMode == SearchMode::Classes)
-        ? server->GetEntityInfoByClassName(this->entityName)
-        : server->GetEntityInfoByName(this->entityName);
+        ? entityList->GetEntityInfoByClassName(this->entityName)
+        : entityList->GetEntityInfoByName(this->entityName);
 
     if (info) {
         this->entityPtr = info->m_pEntity;
@@ -58,7 +63,7 @@ bool TimerRule::Load()
     }
 
     if (this->callbackType != 0) {
-        server->GetOffset(this->className, this->propName, this->propOffset);
+        offsetFinder->ServerSide(this->className, this->propName, &this->propOffset);
         return this->isActive = (this->entityPtr != nullptr && this->propOffset != 0);
     }
 
@@ -84,25 +89,7 @@ TimerAction TimerRule::Dispatch()
 
     return TimerAction::DoNothing;
 }
-int TimerRule::FilterByGame(Game* game)
+bool TimerRule::IsEmpty()
 {
-    auto count = 0;
-    for (auto&& rule = TimerRule::list.begin(); rule != TimerRule::list.end();) {
-        if ((*rule)->gameVersion != game->version) {
-            rule = TimerRule::list.erase(rule);
-        } else {
-            ++rule;
-            ++count;
-        }
-    }
-
-    return count;
+    return this->mapName == nullptr || this->entityName == nullptr;
 }
-void TimerRule::ResetAll()
-{
-    for (auto& rule : TimerRule::list) {
-        rule->madeAction = false;
-    }
-}
-
-std::vector<TimerRule*> TimerRule::list;

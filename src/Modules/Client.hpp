@@ -11,8 +11,10 @@ class Client : public Module {
 private:
     Interface* g_ClientDLL = nullptr;
     Interface* g_pClientMode = nullptr;
+    Interface* g_pClientMode2 = nullptr;
     Interface* g_HUDChallengeStats = nullptr;
     Interface* s_EntityList = nullptr;
+    Interface* g_Input = nullptr;
 
 public:
     using _GetClientEntity = void*(__func*)(void* thisptr, int entnum);
@@ -25,6 +27,11 @@ public:
     _KeyUp KeyUp = nullptr;
     _GetAllClasses GetAllClasses = nullptr;
 
+#ifndef _WIN32
+    using _GetPerUser = int(__cdecl*)(void* thisptr, int nSlot);
+    _GetPerUser GetPerUser = nullptr;
+#endif
+
     void* in_jump = nullptr;
 
 public:
@@ -33,10 +40,6 @@ public:
     QAngle GetAbsAngles();
     Vector GetLocalVelocity();
     Vector GetViewOffset();
-    void GetOffset(const char* className, const char* propName, int& offset);
-
-private:
-    int16_t FindOffset(RecvTable* table, const char* propName);
 
 public:
     // CHLClient::HudUpdate
@@ -44,9 +47,14 @@ public:
 
     // ClientModeShared::CreateMove
     DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd)
+    DECL_DETOUR(CreateMove2, float flInputSampleTime, CUserCmd* cmd)
 
     // CHud::GetName
     DECL_DETOUR_T(const char*, GetName)
+
+    // CInput::_DecodeUserCmdFromBuffer
+    DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
+    DECL_DETOUR(DecodeUserCmdFromBuffer2, int buf, signed int sequence_number)
 
     bool Init() override;
     void Shutdown() override;
@@ -58,3 +66,4 @@ extern Client* client;
 extern Variable cl_showpos;
 extern Variable ui_loadingscreen_transition_time;
 extern Variable hide_gun_when_holding;
+extern Variable in_forceuser;

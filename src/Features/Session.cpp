@@ -1,12 +1,14 @@
 #include "Session.hpp"
 
 #include "Features/Rebinder.hpp"
+#include "Features/ReplaySystem/ReplayPlayer.hpp"
+#include "Features/ReplaySystem/ReplayProvider.hpp"
+#include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
-#include "Features/Tas/ReplaySystem.hpp"
 #include "Features/Timer/Timer.hpp"
 
 #include "Modules/Console.hpp"
@@ -17,7 +19,7 @@ Session* session;
 Session::Session()
     : baseTick(0)
     , lastSession(0)
-    , isInSession(false)
+    , isRunning(false)
     , currentFrame(0)
     , lastFrame(0)
     , prevState(HOSTSTATES::HS_RUN)
@@ -30,70 +32,101 @@ void Session::Rebase(const int from)
 }
 void Session::Started(bool menu)
 {
-    if (this->isInSession) {
+    if (this->isRunning) {
         return;
     }
 
     if (menu) {
         console->Print("Session started! (menu)\n");
-        session->Rebase(*engine->tickcount);
+        this->Rebase(*engine->tickcount);
 
-        if (sar_speedrun_autostop.GetBool()) {
+        if (sar_speedrun_autostop.isRegistered && sar_speedrun_autostop.GetBool()) {
             speedrun->Stop(false);
         } else {
-            speedrun->Unpause(engine->tickcount);
+            speedrun->Resume(engine->tickcount);
         }
+
+        this->isRunning = true;
     } else {
-        if (engine->GetMaxClients() <= 1) {
-            console->Print("Session Started!\n");
-            session->Rebase(*engine->tickcount);
-            timer->Rebase(*engine->tickcount);
-
-            speedrun->Unpause(engine->tickcount);
-        }
-
-        if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
-            if (engine->demorecorder->isRecordingDemo) {
-                rebinder->UpdateIndex(*engine->demorecorder->m_nDemoNumber);
-            } else {
-                rebinder->UpdateIndex(rebinder->lastIndexNumber + 1);
-            }
-
-            rebinder->RebindSave();
-            rebinder->RebindReload();
-        }
-
-        if (sar_tas_autostart.GetBool()) {
-            tasQueuer->Start();
-        }
-        if (sar_replay_autorecord.GetBool()) {
-            tasReplaySystem->Record();
-        }
-        if (sar_replay_autoplay.GetBool()) {
-            tasReplaySystem->Play();
-        }
-        if (sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
-            speedrun->Start(engine->tickcount);
-        }
-
-        stepCounter->ResetTimer();
-        currentFrame = 0;
+        console->Print("Session Started!\n");
+        this->Start();
     }
-
-    speedrun->ReloadRules();
-    isInSession = true;
 }
-void Session::Ended()
+void Session::Start()
 {
-    if (!this->isInSession) {
+    if (this->isRunning) {
         return;
     }
 
-    int tick = engine->GetSessionTick();
+    this->Rebase(*engine->tickcount);
+    timer->Rebase(*engine->tickcount);
+    speedrun->Resume(engine->tickcount);
+
+    if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
+        if (engine->demorecorder->isRecordingDemo) {
+            rebinder->UpdateIndex(*engine->demorecorder->m_nDemoNumber);
+        } else {
+            rebinder->UpdateIndex(rebinder->lastIndexNumber + 1);
+        }
+
+        rebinder->RebindSave();
+        rebinder->RebindReload();
+    }
+
+    if (sar_tas_autostart.GetBool()) {
+        cmdQueuer->Start();
+    }
+
+    if (sar_replay_mode.GetBool()) {
+        if (sar_replay_mode.GetInt() == 1) {
+            replayProvider->CreateNewReplay();
+            replayRecorder1->StartRecording();
+
+            if (replayProvider->GetCurrentReplay()->GetViewSize() > 1) {
+                replayRecorder2->StartRecording();
+            }
+        } else if (replayProvider->AnyReplaysLoaded()) {
+            auto replay = replayProvider->GetCurrentReplay();
+            replayPlayer1->StartPlaying(replay);
+
+            if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
+                replayPlayer2->StartPlaying(replay);
+            }
+        }
+    } else if (sar_replay_viewmode.isRegistered && sar_replay_viewmode.GetBool() && replayProvider->AnyReplaysLoaded()) {
+        auto replay = replayProvider->GetCurrentReplay();
+        if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
+            if (sar_replay_viewmode.GetInt() == 1) {
+                replayRecorder1->StartRecording();
+                replayPlayer2->StartPlaying(replay);
+            } else {
+                replayRecorder2->StartRecording();
+                replayPlayer1->StartPlaying(replay);
+            }
+        }
+    }
+
+    if (sar_speedrun_autostart.isRegistered && sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
+        speedrun->Start(engine->tickcount);
+    }
+
+    stepCounter->ResetTimer();
+
+    speedrun->ReloadRules();
+    this->currentFrame = 0;
+    this->isRunning = true;
+}
+void Session::Ended()
+{
+    if (!this->isRunning) {
+        return;
+    }
+
+    auto tick = engine->GetSessionTick();
 
     if (tick != 0) {
         console->Print("Session: %i (%.3f)\n", tick, engine->ToTime(tick));
-        session->lastSession = tick;
+        this->lastSession = tick;
     }
 
     if (summary->isRunning) {
@@ -120,12 +153,15 @@ void Session::Ended()
     this->lastFrame = this->currentFrame;
     this->currentFrame = 0;
 
-    tasQueuer->Stop();
-    tasReplaySystem->Stop();
+    cmdQueuer->Stop();
+    replayRecorder1->StopRecording();
+    replayRecorder2->StopRecording();
+    replayPlayer1->StopPlaying();
+    replayPlayer2->StopPlaying();
     speedrun->Pause();
     speedrun->UnloadRules();
 
-    this->isInSession = false;
+    this->isRunning = false;
 }
 void Session::Changed()
 {
@@ -136,7 +172,8 @@ void Session::Changed()
         || engine->hoststate->m_currentState == HOSTSTATES::HS_GAME_SHUTDOWN) {
         this->Ended();
     } else if (engine->hoststate->m_currentState == HOSTSTATES::HS_RUN
-        && !engine->hoststate->m_activeGame) {
+        && !engine->hoststate->m_activeGame
+        && engine->GetMaxClients() <= 1) {
         this->Started(true);
     }
 }
@@ -146,7 +183,9 @@ void Session::Changed(int state)
 
     // Demo recorder starts syncing from this tick
     if (state == SignonState::Full) {
-        this->Started();
+        if (engine->GetMaxClients() <= 1) {
+            this->Started();
+        }
     } else {
         this->Ended();
     }

@@ -1,7 +1,9 @@
-## SAR: Mapping
+# SAR: Mapping
+
 Add SAR timing to your map!
 
-### Start & Stop Triggers
+## Start & Stop Triggers
+
 - Place a `point_servercommand` object anywhere in the map
 - Use two `trigger_multiple` objects for start and stop
   - Add `OnStartTouch` as output
@@ -12,7 +14,8 @@ Add SAR timing to your map!
 
 ![start.png](images/start.png)
 
-### Using Checkpoints
+## Using Checkpoints
+
 - Use `trigger_multiple` object for start
   - Trigger `sar_timer_start`
   - Trigger `sar_cps_clear`

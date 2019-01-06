@@ -13,9 +13,9 @@
 #include "Variable.hpp"
 
 Variable sar_time_demo_dev("sar_time_demo_dev", "0", 0, "Printing mode when using sar_time_demo.\n"
-                                                        "0 = default,\n"
-                                                        "1 = console commands,\n"
-                                                        "2 = console commands & packets.\n");
+                                                        "0 = Default,\n"
+                                                        "1 = Console commands,\n"
+                                                        "2 = Console commands & packets.\n");
 
 DemoParser::DemoParser()
     : headerOnly(false)
@@ -26,7 +26,7 @@ DemoParser::DemoParser()
 }
 void DemoParser::Adjust(Demo* demo)
 {
-    float ipt = demo->IntervalPerTick();
+    auto ipt = demo->IntervalPerTick();
     demo->playbackTicks = demo->LastTick();
     demo->playbackTime = ipt * demo->playbackTicks;
 }
@@ -82,7 +82,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
                 case 0x02: // Packet
                 {
                     if (outputMode == 2) {
-                        for (int i = 0; i < this->maxSplitScreenClients; i++) {
+                        for (auto i = 0; i < this->maxSplitScreenClients; ++i) {
                             if (i >= 1) {
                                 file.ignore(76);
                                 continue;
@@ -204,7 +204,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
 
 // Commands
 
-CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "Parses a demo and prints some information about it.", 0, 0, dem)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "Parses a demo and prints some information about it.\n", 0, 0, dem)
 {
     if (args.ArgC() != 2) {
         return console->Print("sar_time_demo <demo_name> : Parses a demo and prints some information about it.\n");
@@ -238,23 +238,23 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "Parses a demo and prints some infor
         console->Print("Could not parse \"%s\"!\n", name.c_str());
     }
 }
-CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "Parses multiple demos and prints the total sum of them.", 0, 0, dem)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "Parses multiple demos and prints the total sum of them.\n", 0, 0, dem)
 {
     if (args.ArgC() <= 1) {
         return console->Print("sar_time_demos <demo_name> <demo_name2> <etc.> : "
             "Parses multiple demos and prints the total sum of them.\n");
     }
 
-    int totalTicks = 0;
-    float totalTime = 0;
-    bool printTotal = false;
+    auto totalTicks = 0;
+    auto totalTime = 0.f;
+    auto printTotal = false;
 
     DemoParser parser;
     parser.outputMode = sar_time_demo_dev.GetInt();
 
-    std::string name;
-    std::string dir = std::string(engine->GetGameDirectory()) + std::string("/");
-    for (int i = 1; i < args.ArgC(); i++) {
+    auto name = std::string();
+    auto dir = std::string(engine->GetGameDirectory()) + std::string("/");
+    for (auto i = 1; i < args.ArgC(); ++i) {
         name = std::string(args[i]);
 
         Demo demo;
