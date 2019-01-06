@@ -127,6 +127,8 @@ void Cvars::Lock()
             ui_loadingscreen_transition_time.Lock();
             hide_gun_when_holding.Lock();
         }
+
+        this->locked = true;
     }
 }
 void Cvars::Unlock()
@@ -149,5 +151,7 @@ void Cvars::Unlock()
             // Not a real cheat, right?
             hide_gun_when_holding.Unlock(false);
         }
+
+        this->locked = false;
     }
 }
