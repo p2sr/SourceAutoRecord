@@ -1,5 +1,7 @@
 #include "Engine.hpp"
 
+#include <cstring>
+
 #include "Features/Cvars.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
