@@ -13,6 +13,7 @@
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
+#include "Features/Tas/TasTools.hpp"
 #include "Features/WorkshopList.hpp"
 
 #include "Modules/Client.hpp"
@@ -126,6 +127,7 @@ void Cheats::Init()
     sar_duckjump.UniqueFor(SourceGame_Portal2Game);
     sar_replay_viewmode.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_mimic.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_tas_strafe.UniqueFor(SourceGame_Portal2Engine);
 
     startbhop.UniqueFor(SourceGame_TheStanleyParable);
     endbhop.UniqueFor(SourceGame_TheStanleyParable);

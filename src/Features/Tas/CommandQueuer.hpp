@@ -39,8 +39,10 @@ extern Variable sar_tas_autostart;
 
 extern Command sar_tas_frame_at;
 extern Command sar_tas_frames_at;
+extern Command sar_tas_frame_next;
 extern Command sar_tas_frame_after;
 extern Command sar_tas_frames_after;
+extern Command sar_tas_frame_offset;
 extern Command sar_tas_start;
 extern Command sar_tas_reset;
 extern Command sar_tas_ss;

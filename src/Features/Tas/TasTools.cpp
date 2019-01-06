@@ -270,10 +270,6 @@ CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <direction> [vectorial] [strafing ty
                             "Strafe while <direction> is -1 or 1. Set <vectorial> to use vectorial strafing.\n"
                             "<strafing type> : 0 - normal strafing; 1 - oscillating; 2 - turning\n")
 {
-    if (!(sar.game->version & SourceGame_Portal2)) {
-        return console->Warning("sar_tas_strafe only available for Portal 2.\n");
-    }
-
     if (!sv_cheats.GetBool()) {
         return console->Print("Cannot use sar_tas_strafe without sv_cheats set to 1.\n");
     }
