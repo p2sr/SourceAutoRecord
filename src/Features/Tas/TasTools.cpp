@@ -100,9 +100,7 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
     float tau = 1 / host_framerate.GetFloat(); // A time for one frame to pass
 
     // Getting player's friction
-    int player_friction_offset = 0;
-    offsetFinder->ClientSide("CPortal_Player", "m_flFriction", &player_friction_offset);
-    float player_friction = (*reinterpret_cast<float*>((uintptr_t)client->GetPlayer() + player_friction_offset));
+    float player_friction = (*reinterpret_cast<float*>((uintptr_t)client->GetPlayer() + Offsets::m_flFriction));
     float friction = sv_friction.GetFloat() * player_friction * 1;
 
     // Creating lambda(v) - velocity after ground friction

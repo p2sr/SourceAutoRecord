@@ -271,6 +271,7 @@ bool Client::Init()
 
     offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
     offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
+    offsetFinder->ClientSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
 
     return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }

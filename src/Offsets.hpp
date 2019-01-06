@@ -106,6 +106,7 @@ extern int m_fFlags;
 extern int m_MoveType;
 extern int m_nWaterLevel;
 extern int m_bDucked;
+extern int m_flFriction;
 
 // CPortal_Player
 extern int iNumPortalsPlaced;
