@@ -109,10 +109,10 @@ CON_COMMAND(sar_tas_frames_at,
 }
 CON_COMMAND(sar_tas_frame_next,
     "Adds command frame to the queue after waiting for specified amount of frames.\n"
-    "Usage: sar_tas_frame_pack <frames_to_wait> [command_to_execute]\n")
+    "Usage: sar_tas_frame_next <frames_to_wait> [command_to_execute]\n")
 {
     if (args.ArgC() != 3) {
-        return console->Print("Usage: sar_tas_frame_pack <frames_to_wait> [command_to_execute] : "
+        return console->Print("Usage: sar_tas_frame_next <frames_to_wait> [command_to_execute] : "
                               "Adds command frame to the queue.\n");
     }
 

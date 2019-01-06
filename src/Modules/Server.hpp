@@ -19,7 +19,7 @@ public:
     Interface* g_ServerGameDLL = nullptr;
 
     using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
-    using _GetAllServerClasses = ServerClass*(*)();
+    using _GetAllServerClasses = ServerClass* (*)();
 
     _UTIL_PlayerByIndex UTIL_PlayerByIndex = nullptr;
     _GetAllServerClasses GetAllServerClasses = nullptr;
@@ -47,8 +47,8 @@ public:
     bool IsPlayer(void* entity);
 
 public:
-	//CGameMovement::ProcessMovement
-    DECL_DETOUR(ProcessMovement, void* a, CMoveData* pmove)
+    // CGameMovement::ProcessMovement
+    DECL_DETOUR(ProcessMovement, void* pPlayer, CMoveData* pMove)
 
     // CGameMovement::CheckJumpButton
     DECL_DETOUR_T(bool, CheckJumpButton)

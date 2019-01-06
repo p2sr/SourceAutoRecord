@@ -183,19 +183,22 @@ DETOUR(Server::PlayerMove)
     return Server::PlayerMove(thisptr);
 }
 
-//CGameMovement::ProcessMovement
-DETOUR(Server::ProcessMovement, void* a, CMoveData* pmove)
+// CGameMovement::ProcessMovement
+DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
 {
-    if (tasTools->want_to_strafe) {
-        if (tasTools->is_vectorial == 0)
-            tasTools->Strafe(pmove);
-        else
-            tasTools->VectorialStrafe(pmove);
+    if (tasTools->wantToStrafe) {
+        if (tasTools->isVectorial == 0) {
+            tasTools->Strafe(pMove);
+        } else {
+            tasTools->VectorialStrafe(pMove);
+        }
 
-        if (tasTools->strafe_type == 1)
-            tasTools->strafing_direction *= -1;
+        if (tasTools->strafeType == 1) {
+            tasTools->strafingDirection *= -1;
+        }
     }
-    return Server::ProcessMovement(thisptr, a, pmove);
+
+    return Server::ProcessMovement(thisptr, pPlayer, pMove);
 }
 
 // CGameMovement::FinishGravity
@@ -300,6 +303,7 @@ bool Server::Init()
         this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
         if (sar.game->version & SourceGame_Portal2Engine) {
+            this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
             this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
             this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
 
@@ -311,7 +315,6 @@ bool Server::Init()
             Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &this->CheckJumpButtonBase);
 
 #ifdef _WIN32
-            this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
             auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
             if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
                 MH_HOOK_MID(this->AirMove_Mid, airMoveMid);

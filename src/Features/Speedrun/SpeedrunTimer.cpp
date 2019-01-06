@@ -126,9 +126,6 @@ void SpeedrunTimer::CheckRules(const int* engineTicks)
         }
     }
 
-	if (source == nullptr)
-        return;
-
     switch (action) {
     case TimerAction::Split:
         this->Split();
