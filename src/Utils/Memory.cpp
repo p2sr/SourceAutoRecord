@@ -46,10 +46,10 @@ bool Memory::TryGetModule(const char* moduleName, Memory::ModuleInfo* info)
                 auto index = temp.find_last_of("\\/");
                 temp = temp.substr(index + 1, temp.length() - index);
 
-                snprintf(module.name, sizeof(module.name), "%s", temp.c_str());
+                std::snprintf(module.name, sizeof(module.name), "%s", temp.c_str());
                 module.base = (uintptr_t)modinfo.lpBaseOfDll;
                 module.size = (uintptr_t)modinfo.SizeOfImage;
-                snprintf(module.path, sizeof(module.path), "%s", buffer);
+                std::snprintf(module.path, sizeof(module.path), "%s", buffer);
 
                 Memory::moduleList.push_back(module);
             }
@@ -59,14 +59,14 @@ bool Memory::TryGetModule(const char* moduleName, Memory::ModuleInfo* info)
         dl_iterate_phdr([](struct dl_phdr_info* info, size_t, void*) {
             auto module = Memory::ModuleInfo();
 
-            std::string temp = std::string(info->dlpi_name);
-            int index = temp.find_last_of("\\/");
+            auto temp = std::string(info->dlpi_name);
+            auto index = temp.find_last_of("\\/");
             temp = temp.substr(index + 1, temp.length() - index);
-            snprintf(module.name, sizeof(module.name), "%s", temp.c_str());
+            std::snprintf(module.name, sizeof(module.name), "%s", temp.c_str());
 
             module.base = info->dlpi_addr + info->dlpi_phdr[0].p_paddr;
             module.size = info->dlpi_phdr[0].p_memsz;
-            strcpy(module.path, info->dlpi_name);
+            std::strncpy(module.path, info->dlpi_name, sizeof(module.path));
 
             Memory::moduleList.push_back(module);
             return 0;
@@ -114,7 +114,7 @@ std::string Memory::GetProcessName()
 #else
     char link[32];
     char temp[MAX_PATH] = { 0 };
-    sprintf(link, "/proc/%d/exe", getpid());
+    std::sprintf(link, "/proc/%d/exe", getpid());
     readlink(link, temp, sizeof(temp));
 #endif
 
@@ -183,7 +183,7 @@ bool Memory::Patch::Execute(uintptr_t location, unsigned char* bytes)
     this->size = sizeof(bytes) / sizeof(bytes[0]) - 1;
     this->original = new unsigned char[this->size];
 
-    for (size_t i = 0; i < this->size; i++) {
+    for (size_t i = 0; i < this->size; ++i) {
         if (!ReadProcessMemory(GetCurrentProcess(),
             reinterpret_cast<LPVOID>(this->location + i),
             &this->original[i],
@@ -193,7 +193,7 @@ bool Memory::Patch::Execute(uintptr_t location, unsigned char* bytes)
         }
     }
 
-    for (size_t i = 0; i < this->size; i++) {
+    for (size_t i = 0; i < this->size; ++i) {
         if (!WriteProcessMemory(GetCurrentProcess(),
             reinterpret_cast<LPVOID>(this->location + i),
             &bytes[i],
@@ -207,7 +207,7 @@ bool Memory::Patch::Execute(uintptr_t location, unsigned char* bytes)
 bool Memory::Patch::Restore()
 {
     if (this->location && this->original) {
-        for (size_t i = 0; i < this->size; i++) {
+        for (size_t i = 0; i < this->size; ++i) {
             if (!WriteProcessMemory(GetCurrentProcess(),
                 reinterpret_cast<LPVOID>(this->location + i),
                 &this->original[i],

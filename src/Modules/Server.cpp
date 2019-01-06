@@ -3,7 +3,9 @@
 #include <cstdint>
 #include <cstring>
 
+#include "Features/OffsetFinder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
+#include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
@@ -58,57 +60,6 @@ int Server::GetPortals()
     auto player = this->GetPlayer();
     return (player) ? *reinterpret_cast<int*>((uintptr_t)player + Offsets::iNumPortalsPlaced) : -1;
 }
-CEntInfo* Server::GetEntityInfoByIndex(int index)
-{
-    auto size = (sar.game->version & SourceGame_Portal2Engine)
-        ? sizeof(CEntInfo2)
-        : sizeof(CEntInfo);
-    return reinterpret_cast<CEntInfo*>((uintptr_t)server->m_EntPtrArray + size * index);
-}
-CEntInfo* Server::GetEntityInfoByName(const char* name)
-{
-    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
-        auto info = server->GetEntityInfoByIndex(index);
-        if (info->m_pEntity == nullptr) {
-            continue;
-        }
-
-        auto match = server->GetEntityName(info->m_pEntity);
-        if (!match || std::strcmp(match, name) != 0) {
-            continue;
-        }
-
-        return info;
-    }
-
-    return nullptr;
-}
-CEntInfo* Server::GetEntityInfoByClassName(const char* name)
-{
-    for (int index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
-        auto info = server->GetEntityInfoByIndex(index);
-        if (info->m_pEntity == nullptr) {
-            continue;
-        }
-
-        auto match = server->GetEntityClassName(info->m_pEntity);
-        if (!match || std::strcmp(match, name) != 0) {
-            continue;
-        }
-
-        return info;
-    }
-
-    return nullptr;
-}
-char* Server::GetEntityName(void* entity)
-{
-    return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iName);
-}
-char* Server::GetEntityClassName(void* entity)
-{
-    return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iClassName);
-}
 Vector Server::GetAbsOrigin(void* entity)
 {
     return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::S_m_vecAbsOrigin);
@@ -141,59 +92,17 @@ Vector Server::GetViewOffset(void* entity)
 {
     return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::S_m_vecViewOffset);
 }
-void Server::GetOffset(const char* className, const char* propName, int& offset)
+char* Server::GetEntityName(void* entity)
 {
-    if (this->GetAllServerClasses) {
-        for (auto curClass = this->GetAllServerClasses(); curClass; curClass = curClass->m_pNext) {
-            if (!std::strcmp(curClass->m_pNetworkName, className)) {
-                auto result = FindOffset(curClass->m_pTable, propName);
-                if (result != 0) {
-                    console->DevMsg("Found %s::%s at %i (server-side)\n", className, propName, result);
-                    offset = result;
-                }
-                break;
-            }
-        }
-    }
-
-    if (offset == 0) {
-        console->DevWarning("Failed to find offset for: %s::%s (server-side)\n", className, propName);
-    }
+    return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iName);
 }
-int16_t Server::FindOffset(SendTable* table, const char* propName)
+char* Server::GetEntityClassName(void* entity)
 {
-    auto size = sar.game->version & SourceGame_Portal2Engine ? sizeof(SendProp2) : sizeof(SendProp);
-
-    for (int i = 0; i < table->m_nProps; ++i) {
-        auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + size * i);
-
-        auto name = prop.m_pVarName;
-        auto offset = prop.m_Offset;
-        auto type = prop.m_Type;
-        auto nextTable = prop.m_pDataTable;
-
-        if (sar.game->version & SourceGame_Portal2Engine) {
-            auto temp = *reinterpret_cast<SendProp2*>(&prop);
-            name = temp.m_pVarName;
-            offset = temp.m_Offset;
-            type = temp.m_Type;
-            nextTable = temp.m_pDataTable;
-        }
-
-        if (!std::strcmp(name, propName)) {
-            return offset;
-        }
-
-        if (type != SendPropType::DPT_DataTable) {
-            continue;
-        }
-
-        if (auto nextOffset = FindOffset(nextTable, propName)) {
-            return offset + nextOffset;
-        }
-    }
-
-    return 0;
+    return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iClassName);
+}
+bool Server::IsPlayer(void* entity)
+{
+    return Memory::VMT<bool (*)(void*)>(entity, Offsets::IsPlayer)(entity);
 }
 
 // CGameMovement::CheckJumpButton
@@ -204,7 +113,7 @@ DETOUR_T(bool, Server::CheckJumpButton)
 
     auto cheating = !sv_bonus_challenge.GetBool() || sv_cheats.GetBool();
     auto autoJump = cheating && sar_autojump.GetBool();
-    auto duckJump = cheating && sar_duckjump.GetBool();
+    auto duckJump = cheating && sar_duckjump.isRegistered && sar_duckjump.GetBool();
 
     auto original = 0;
     if (autoJump) {
@@ -269,10 +178,7 @@ DETOUR(Server::PlayerMove)
     }
 
     stats->velocity->Save(client->GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
-
-#ifndef _WIN32
     inspector->Record();
-#endif
 
     return Server::PlayerMove(thisptr);
 }
@@ -307,9 +213,9 @@ DETOUR(Server::FinishGravity)
         Math::VectorNormalize(vecForward);
 
         float flSpeedBoostPerc = (!mv->m_bIsSprinting && !m_bDucked) ? 0.5f : 0.1f;
-        float flSpeedAddition = fabs(mv->m_flForwardMove * flSpeedBoostPerc);
+        float flSpeedAddition = std::fabs(mv->m_flForwardMove * flSpeedBoostPerc);
         float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
-        float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
+        float flNewSpeed = flSpeedAddition + mv->m_vecVelocity.Length2D();
 
         if (sar_jumpboost.GetInt() == 1) {
             if (flNewSpeed > flMaxSpeed) {
@@ -321,7 +227,7 @@ DETOUR(Server::FinishGravity)
             }
         }
 
-        Math::VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
+        Math::VectorAdd(vecForward * flSpeedAddition, mv->m_vecVelocity, mv->m_vecVelocity);
     }
     return Server::FinishGravity(thisptr);
 }
@@ -329,18 +235,13 @@ DETOUR(Server::FinishGravity)
 // CGameMovement::AirMove
 DETOUR_B(Server::AirMove)
 {
-#ifdef _WIN32
     if (sar_aircontrol.GetInt() >= 2) {
-#else
-    if (sar_aircontrol.GetBool()) {
-#endif
         return Server::AirMoveBase(thisptr);
     }
+
     return Server::AirMove(thisptr);
 }
-
 #ifdef _WIN32
-// CGameMovement::AirMove
 DETOUR_MID_MH(Server::AirMove_Mid)
 {
     __asm {
@@ -369,41 +270,25 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 // CServerGameDLL::GameFrame
 #ifdef _WIN32
 DETOUR_STD(void, Server::GameFrame, bool simulating)
-#else
-DETOUR(Server::GameFrame, bool simulating)
-#endif
 {
-    /* if (!*server->g_InRestore) {
-        auto pe = server->g_EventQueue->m_Events.m_pNext;
-        while (pe && pe->m_flFireTime <= server->gpGlobals->curtime) {
-            if (sar_debug_event_queue.GetBool()) {
-                console->Print("[%i] Event fired!\n", engine->GetSessionTick());
-                console->Msg("    - m_flFireTime   %f\n", pe->m_flFireTime);
-                console->Msg("    - m_iTarget      %s\n", pe->m_iTarget);
-                console->Msg("    - m_pEntTarget   %p\n", pe->m_pEntTarget);
-                console->Msg("    - m_iTargetInput %s\n", pe->m_iTargetInput);
-                console->Msg("    - m_pActivator   %p\n", pe->m_pActivator);
-                console->Msg("    - m_pCaller      %p\n", pe->m_pCaller);
-                console->Msg("    - m_iOutputID    %i\n", pe->m_iOutputID);
-            }
-
-            pe = pe->m_pNext;
-        }
-    } */
-
-#ifdef _WIN32
     Server::GameFrame(simulating);
-#else
-    if (!*server->g_InRestore) {
+
+    if (session->isRunning && sar_speedrun_standard.GetBool()) {
         speedrun->CheckRules(engine->tickcount);
     }
-    auto result = Server::GameFrame(thisptr, simulating);
-#endif
-
-#ifndef _WIN32
-    return result;
-#endif
 }
+#else
+DETOUR(Server::GameFrame, bool simulating)
+{
+    auto result = Server::GameFrame(thisptr, simulating);
+
+    if (session->isRunning && sar_speedrun_standard.GetBool()) {
+        speedrun->CheckRules(engine->tickcount);
+    }
+
+    return result;
+}
+#endif
 
 bool Server::Init()
 {
@@ -440,13 +325,10 @@ bool Server::Init()
         }
     }
 
-    // TODO: windows
-#ifndef _WIN32
     if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS0")) {
         auto GetIServerEntity = g_ServerTools->Original(Offsets::GetIServerEntity);
         Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
     }
-#endif
 
     if (this->g_ServerGameDLL) {
         auto Think = this->g_ServerGameDLL->Original(Offsets::Think);
@@ -455,27 +337,23 @@ bool Server::Init()
 
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
 
-        auto GameFrame = this->g_ServerGameDLL->Original(Offsets::GameFrame);
-        auto ServiceEventQueue = Memory::Read(GameFrame + Offsets::ServiceEventQueue);
-
-        Memory::Deref<bool*>(GameFrame + Offsets::g_InRestore, &this->g_InRestore);
-        Memory::Deref<CEventQueue*>(ServiceEventQueue + Offsets::g_EventQueue, &this->g_EventQueue);
-
-        this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
+        if (sar.game->version & (SourceGame_Portal2Game | SourceGame_Portal)) {
+            this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
+        }
     }
 
-    this->GetOffset("CBasePlayer", "m_nWaterLevel", Offsets::m_nWaterLevel);
-    this->GetOffset("CBasePlayer", "m_iName", Offsets::m_iName);
-    this->GetOffset("CBasePlayer", "m_vecVelocity[0]", Offsets::S_m_vecVelocity);
-    this->GetOffset("CBasePlayer", "m_fFlags", Offsets::m_fFlags);
-    this->GetOffset("CBasePlayer", "m_flMaxspeed", Offsets::m_flMaxspeed);
-    this->GetOffset("CBasePlayer", "m_vecViewOffset[0]", Offsets::S_m_vecViewOffset);
+    offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);
+    offsetFinder->ServerSide("CBasePlayer", "m_iName", &Offsets::m_iName);
+    offsetFinder->ServerSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::S_m_vecVelocity);
+    offsetFinder->ServerSide("CBasePlayer", "m_fFlags", &Offsets::m_fFlags);
+    offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
+    offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
 
     if (sar.game->version & SourceGame_Portal2Engine) {
-        this->GetOffset("CBasePlayer", "m_bDucked", Offsets::m_bDucked);
+        offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
     }
-    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2)) {
-        this->GetOffset("CPortal_Player", "iNumPortalsPlaced", Offsets::iNumPortalsPlaced);
+    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2Game)) {
+        offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
     }
 
     return this->hasLoaded = this->g_GameMovement && this->g_ServerGameDLL;

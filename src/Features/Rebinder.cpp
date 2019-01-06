@@ -53,7 +53,7 @@ void Rebinder::RebindSave()
     if (!this->isSaveBinding)
         return;
 
-    std::string cmd = std::string("save \"") + this->saveName;
+    auto cmd = std::string("save \"") + this->saveName;
     if (this->lastIndexNumber > 0) {
         cmd += std::string("_") + std::to_string(lastIndexNumber);
     }
@@ -70,7 +70,7 @@ void Rebinder::RebindReload()
     if (!this->isReloadBinding)
         return;
 
-    std::string cmd = std::string("save \"") + this->reloadName;
+    auto cmd = std::string("save \"") + this->reloadName;
     if (this->lastIndexNumber > 0) {
         cmd += std::string("_") + std::to_string(this->lastIndexNumber);
     }

@@ -21,6 +21,7 @@ void Portal2::LoadOffsets()
     GetClientStateFunction = 4; // CEngineClient::ClientCmd
     Cbuf_AddText = 46; // CEngineClient::ClientCmd
     s_CommandBuffer = 82; // Cbuf_AddText
+    CCommandBufferSize = 9556; // Cbuf_AddText
     m_bWaitEnabled = 8265; // CCommandBuffer::AddText
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient
@@ -90,24 +91,23 @@ void Portal2::LoadOffsets()
     mv = 8; // CPortalGameMovement::CheckJumpButton
     m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
     GameFrame = 4; // CServerGameDLL
-    g_InRestore = 8; // CServerGameDLL::GameFrame
-    ServiceEventQueue = 249; // CServerGameDLL::GameFrame
-    g_EventQueue = 1; // ServiceEventQueue
-    GetAllServerClasses = 10; // CServerGameDLL (TODO)
+    GetAllServerClasses = 10; // CServerGameDLL
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 39; // CServerGameDLL::Think
     gpGlobals = 14; // UTIL_PlayerByIndex
     player = 4; // CPortalGameMovement::PlayerMove
     m_MoveType = 218; // CBasePlayer::UpdateStepSound
     mv_m_vecVelocity = 64; // CPortalGameMovement::PlayerMove
-    m_iClassName = 104; // CBaseEntity (TODO)
-    S_m_vecAbsOrigin = 468; // CBaseEntity (TODO)
-    S_m_angAbsRotation = 480; // CBaseEntity (TODO)
-    m_iEFlags = 208; // CBaseEntity (TODO)
-    m_flGravity = 792; // CBaseEntity (TODO)
-    NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList (TODO)
-    GetIServerEntity = 2; // CServerTools (TODO)
-    m_EntPtrArray = 48; // CServerTools::GetIServerEntity (TODO)
+    m_iClassName = 96; // CBaseEntity
+    S_m_vecAbsOrigin = 460; // CBaseEntity
+    S_m_angAbsRotation = 472; // CBaseEntity
+    m_iEFlags = 200; // CBaseEntity
+    m_flGravity = 772; // CBaseEntity
+    NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
+    GetIServerEntity = 1; // CServerTools
+    m_EntPtrArray = 61; // CServerTools::GetIServerEntity
+    ClientCommand = 39; // CVEngineServer
+    IsPlayer = 85; // CBasePlayer
 
     // client.dll
 
@@ -118,10 +118,22 @@ void Portal2::LoadOffsets()
     C_m_angAbsRotation = 192; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
     GetClientMode = 4; // CHLClient::HudProcessInput
+    g_pClientMode = 19; // GetClientMode
     CreateMove = 24; // ClientModeShared
     GetName = 10; // CHud
     GetHud = 125; // cc_leaderboard_enable
     FindElement = 135; // cc_leaderboard_enable
+    DecodeUserCmdFromBuffer = 7; // CInput
+    PerUserInput_tSize = 368; // CInput::DecodeUserCmdFromBuffer
+    m_pCommands = 228; // CInput::DecodeUserCmdFromBuffer
+    CUserCmdSize = 96; // CInput::DecodeUserCmdFromBuffer
+    MULTIPLAYER_BACKUP = 150; // CInput::DecodeUserCmdFromBuffer
+    IN_ActivateMouse = 15; // CHLClient
+    g_Input = 2; // CHLClient::IN_ActivateMouse
+    GetButtonBits = 2; // CInput
+    JoyStickApplyMovement = 64; // CInput
+    KeyDown = 398; // CInput::JoyStickApplyMovement
+    KeyUp = 377; // CInput::JoyStickApplyMovement
 
     // vguimatsurface.dll
 

@@ -1,21 +1,29 @@
-## SAR: Issues & Troubleshooting
+# SAR: Issues & Troubleshooting
 
-### The classic "it doesnt' work"
+## The classic "it doesn't work"
+
 [![failed_to_load](images/failed_to_load.png)](images/failed_to_load.png)
 
 ---
-### "My game crashed :("
+
+## "My game crashed :("
+
 [![game_crashed](images/game_crashed.png)](images/game_crashed.png)
 
 ---
-### Unable to load plugin "sar"
+
+## Unable to load plugin "sar"
 
 [![unable_to_load_plugin](images/unable_to_load_plugin.png)](images/unable_to_load_plugin.png)
 
 ---
-### "Gimme xyz!"
+
+## "Gimme xyz!"
+
 [![feature_request](images/feature_request.png)](images/feature_request.png)
 
 ---
-### "It works"
+
+## "It works"
+
 [![screenie](images/screenie.png)](images/screenie.png)

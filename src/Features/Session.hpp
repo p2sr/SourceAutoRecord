@@ -8,7 +8,7 @@ public:
     int baseTick;
     int lastSession;
 
-    bool isInSession;
+    bool isRunning;
     unsigned currentFrame;
     unsigned lastFrame;
     HOSTSTATES prevState;
@@ -16,8 +16,8 @@ public:
 public:
     Session();
     void Rebase(const int from);
-
     void Started(bool menu = false);
+    void Start();
     void Ended();
     void Changed();
     void Changed(int state);

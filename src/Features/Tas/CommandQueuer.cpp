@@ -11,7 +11,7 @@
 
 Variable sar_tas_autostart("sar_tas_autostart", "1", "Starts queued commands automatically on first frame after a load.\n");
 
-CommandQueuer* tasQueuer;
+CommandQueuer* cmdQueuer;
 
 CommandQueuer::CommandQueuer()
     : frames()
@@ -94,7 +94,7 @@ CON_COMMAND(sar_tas_frame_at,
         return console->Print("sar_tas_frame_at <frame> [command_to_execute] : Adds command frame to the queue.\n");
     }
 
-    tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]));
+    cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]));
 }
 CON_COMMAND(sar_tas_frames_at,
     "Adds command frame multiple times to the queue at specified frame.\n"
@@ -105,7 +105,7 @@ CON_COMMAND(sar_tas_frames_at,
                               "Adds command frame multiple times to the queue.\n");
     }
 
-    tasQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]));
+    cmdQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]));
 }
 CON_COMMAND(sar_tas_frame_next,
     "Adds command frame to the queue after waiting for specified amount of frames.\n"
@@ -128,7 +128,7 @@ CON_COMMAND(sar_tas_frame_after,
                               "Adds command frame to the queue.\n");
     }
 
-    tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]), true);
+    cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]), true);
 }
 CON_COMMAND(sar_tas_frames_after,
     "Adds command frame multiple times to the queue after waiting for specified amount of frames.\n"
@@ -139,7 +139,7 @@ CON_COMMAND(sar_tas_frames_after,
                               "Adds command frame multiple times to the queue.\n");
     }
 
-    tasQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]), true);
+    cmdQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]), true);
 }
 CON_COMMAND(sar_tas_frame_offset,
     "sar_tas_frame_after rely on the last sar_tas_frame_offset.\n"
@@ -150,15 +150,15 @@ CON_COMMAND(sar_tas_frame_offset,
                               "sar_tas_frame_after rely on the last sar_tas_frame_offset.\n");
     }
 
-    tasQueuer->CalculateOffset(std::atoi(args[1]));
+    cmdQueuer->CalculateOffset(std::atoi(args[1]));
 }
 CON_COMMAND(sar_tas_start, "Starts executing queued commands.\n")
 {
-    tasQueuer->Start();
+    cmdQueuer->Start();
 }
 CON_COMMAND(sar_tas_reset, "Stops executing commands and clears them from the queue.\n")
 {
-    tasQueuer->Reset();
+    cmdQueuer->Reset();
 }
 CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\n")
 {
@@ -168,7 +168,7 @@ CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\
 
     auto index = std::atoi(args[1]);
     if (index == 0 || index == 1) {
-        tasQueuer->SetSplitScreen(index);
+        cmdQueuer->SetSplitScreen(index);
     } else {
         console->Print("Invalid split screen index!\n");
     }
@@ -179,7 +179,7 @@ CON_COMMAND(sar_tas_delay, "Delays command queue by specified amount of frames.\
         return console->Print("sar_tas_delay <frames_to_wait> : Delays command queue by specified amount of frames.\n");
     }
 
-    tasQueuer->DelayQueueBy(std::atoi(args[1]));
+    cmdQueuer->DelayQueueBy(std::atoi(args[1]));
 }
 CON_COMMAND(sar_tas_frame_at_for,
     "Adds two command frames to the queue at specified frame, the last frame will be executed after a delay.\n"
@@ -190,8 +190,8 @@ CON_COMMAND(sar_tas_frame_at_for,
                               "Adds two command frames to the queue at specified frame, the last frame will be executed after a delay.\n");
     }
 
-    tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[3]));
-    tasQueuer->AddFrame(std::atoi(args[1]) + std::atoi(args[2]), std::string(args[4]));
+    cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[3]));
+    cmdQueuer->AddFrame(std::atoi(args[1]) + std::atoi(args[2]), std::string(args[4]));
 }
 CON_COMMAND(sar_tas_frame_after_for,
     "Adds two command frames to the queue after waiting for specified amount of frames, "
@@ -203,6 +203,6 @@ CON_COMMAND(sar_tas_frame_after_for,
                               "Adds two command frames to the queue at specified frame, the last frame will be executed after a delay.\n");
     }
 
-    tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[3]), true);
-    tasQueuer->AddFrame(std::atoi(args[1]) + std::atoi(args[2]), std::string(args[4]), true);
+    cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[3]), true);
+    cmdQueuer->AddFrame(std::atoi(args[1]) + std::atoi(args[2]), std::string(args[4]), true);
 }

@@ -3,20 +3,20 @@
 #include <cmath>
 #include <cstring>
 
+#include "Features/OffsetFinder.hpp"
+
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 
-#include "Utils/Math.hpp"
-#include "Utils/SDK.hpp"
-
 #include "SAR.hpp"
+#include "Utils.hpp"
 
 TasTools* tasTools;
 
 TasTools::TasTools()
-    : propName("m_InAirState")
-    , propType(PropType::Integer)
+    : propName("m_hGroundEntity")
+    , propType(PropType::Handle)
     , acceleration({ 0, 0, 0 })
     , prevVelocity({ 0, 0, 0 })
     , prevTick(0)
@@ -26,7 +26,7 @@ TasTools::TasTools()
     , strafe_type(0)
     , is_turning(0)
 {
-    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2)) {
+    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2Engine)) {
         std::strncpy(this->className, "CPortal_Player", sizeof(this->className));
     } else if (sar.game->version & SourceGame_HalfLife2) {
         std::strncpy(this->className, "CHL2_Player", sizeof(this->className));
@@ -34,7 +34,7 @@ TasTools::TasTools()
         std::strncpy(this->className, "CBasePlayer", sizeof(this->className));
     }
 
-    client->GetOffset(this->className, this->propName, this->propOffset);
+    offsetFinder->ClientSide(this->className, this->propName, &this->propOffset);
 
     this->hasLoaded = true;
 }
@@ -202,7 +202,7 @@ CON_COMMAND(sar_tas_set_prop, "sar_tas_set_prop <prop_name> : Sets value for sar
     }
 
     auto offset = 0;
-    client->GetOffset(tasTools->className, args[1], offset);
+    offsetFinder->ClientSide(tasTools->className, args[1], &offset);
 
     if (!offset) {
         console->Print("Unknown prop of %s!\n", tasTools->className);
@@ -210,21 +210,21 @@ CON_COMMAND(sar_tas_set_prop, "sar_tas_set_prop <prop_name> : Sets value for sar
         std::strncpy(tasTools->propName, args[1], sizeof(tasTools->propName));
         tasTools->propOffset = offset;
 
-        if (std::strstr(tasTools->propName, "m_b") == tasTools->propName) {
+        if (Utils::StartsWith(tasTools->propName, "m_b")) {
             tasTools->propType = PropType::Boolean;
-        } else if (std::strstr(tasTools->propName, "m_f") == tasTools->propName) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_f")) {
             tasTools->propType = PropType::Float;
-        } else if (std::strstr(tasTools->propName, "m_vec") == tasTools->propName
-            || std::strstr(tasTools->propName, "m_ang") == tasTools->propName
-            || std::strstr(tasTools->propName, "m_q") == tasTools->propName) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_vec")
+            || Utils::StartsWith(tasTools->propName, "m_ang")
+            || Utils::StartsWith(tasTools->propName, "m_q")) {
             tasTools->propType = PropType::Vector;
-        } else if (std::strstr(tasTools->propName, "m_h") == tasTools->propName
-            || std::strstr(tasTools->propName, "m_p") == tasTools->propName) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_h")
+            || Utils::StartsWith(tasTools->propName, "m_p")) {
             tasTools->propType = PropType::Handle;
-        } else if (std::strstr(tasTools->propName, "m_sz") == tasTools->propName
-            || std::strstr(tasTools->propName, "m_isz") == tasTools->propName) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_sz")
+            || Utils::StartsWith(tasTools->propName, "m_isz")) {
             tasTools->propType = PropType::String;
-        } else if (std::strstr(tasTools->propName, "m_ch") == tasTools->propName) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_ch")) {
             tasTools->propType = PropType::Char;
         } else {
             tasTools->propType = PropType::Integer;

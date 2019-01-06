@@ -13,6 +13,8 @@ public:
     void Draw() override;
 };
 
+extern InputHud* inputHud;
+
 extern Variable sar_ihud;
 extern Variable sar_ihud_x;
 extern Variable sar_ihud_y;

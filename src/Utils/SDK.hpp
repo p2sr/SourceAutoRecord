@@ -439,24 +439,6 @@ struct CEventQueue {
     int m_iListCount; // 56
 };
 
-struct CGlobalVarsBase {
-    float realtime; // 0
-    int framecount; // 4
-    float absoluteframetime; // 8
-    float curtime; // 12
-    float frametime; // 16
-    int maxClients; // 20
-    int tickcount; // 24
-    float interval_per_tick; // 28
-    float interpolation_amount; // 32
-    int simTicksThisFrame; // 36
-    int network_protocol; // 40
-    void* pSaveData; // 44
-    bool m_bClient; // 48
-    int nTimestampNetworkingBase; // 52
-    int nTimestampRandomizeWindow; // 56
-};
-
 struct CEntInfo {
     void* m_pEntity; // 0
     int m_SerialNumber; // 4
@@ -603,17 +585,133 @@ enum MapLoadType_t {
     MapLoad_Background = 3
 };
 
+#define FL_EDICT_FREE (1 << 1)
+
+struct CBaseEdict {
+    int m_fStateFlags; // 0
+    int m_NetworkSerialNumber; // 4
+    void* m_pNetworkable; // 8
+    void* m_pUnk; // 12
+
+    inline bool IsFree() const
+    {
+        return (m_fStateFlags & FL_EDICT_FREE) != 0;
+    }
+};
+
+struct edict_t : CBaseEdict {
+};
+
+struct CGlobalVarsBase {
+    float realtime; // 0
+    int framecount; // 4
+    float absoluteframetime; // 8
+    float curtime; // 12
+    float frametime; // 16
+    int maxClients; // 20
+    int tickcount; // 24
+    float interval_per_tick; // 28
+    float interpolation_amount; // 32
+    int simTicksThisFrame; // 36
+    int network_protocol; // 40
+    void* pSaveData; // 44
+    bool m_bClient; // 48
+    int nTimestampNetworkingBase; // 52
+    int nTimestampRandomizeWindow; // 56
+};
+
 struct CGlobalVars : CGlobalVarsBase {
     char* mapname; // 60
     int mapversion; // 64
     char* startspot; // 68
     MapLoadType_t eLoadType; // 72
-    bool bMapLoadFailed; // 76
-    bool deathmatch; // 80
-    bool coop; // 84
-    bool teamplay; // 88
-    int maxEntities; // 92
+    char bMapLoadFailed; // 76
+    char deathmatch; // 77
+    char coop; // 78
+    char teamplay; // 79
+    int maxEntities; // 80
+    int serverCount; // 84
+    edict_t* pEdicts; // 88
 };
+
+enum JoystickAxis_t {
+    JOY_AXIS_X = 0,
+    JOY_AXIS_Y,
+    JOY_AXIS_Z,
+    JOY_AXIS_R,
+    JOY_AXIS_U,
+    JOY_AXIS_V,
+    MAX_JOYSTICK_AXES,
+};
+
+typedef struct {
+    unsigned int AxisFlags; // 0
+    unsigned int AxisMap; // 4
+    unsigned int ControlMap; // 8
+} joy_axis_t;
+
+struct CameraThirdData_t {
+    float m_flPitch; // 0
+    float m_flYaw; // 4
+    float m_flDist; // 8
+    float m_flLag; // 12
+    Vector m_vecHullMin; // 16, 20, 24
+    Vector m_vecHullMax; // 28, 32, 36
+};
+
+typedef unsigned long CRC32_t;
+
+class CVerifiedUserCmd {
+public:
+    CUserCmd m_cmd;
+    CRC32_t m_crc;
+};
+
+struct PerUserInput_t {
+    float m_flAccumulatedMouseXMovement; // ?
+    float m_flAccumulatedMouseYMovement; // ?
+    float m_flPreviousMouseXPosition; // ?
+    float m_flPreviousMouseYPosition; // ?
+    float m_flRemainingJoystickSampleTime; // ?
+    float m_flKeyboardSampleTime; // 12
+    float m_flSpinFrameTime; // ?
+    float m_flSpinRate; // ?
+    float m_flLastYawAngle; // ?
+    joy_axis_t m_rgAxes[MAX_JOYSTICK_AXES]; // ???
+    bool m_fCameraInterceptingMouse; // ?
+    bool m_fCameraInThirdPerson; // ?
+    bool m_fCameraMovingWithMouse; // ?
+    Vector m_vecCameraOffset; // 104, 108, 112
+    bool m_fCameraDistanceMove; // 116
+    int m_nCameraOldX; // 120
+    int m_nCameraOldY; // 124
+    int m_nCameraX; // 128
+    int m_nCameraY; // 132
+    bool m_CameraIsOrthographic; // 136
+    QAngle m_angPreviousViewAngles; // 140, 144, 148
+    QAngle m_angPreviousViewAnglesTilt; // 152, 156, 160
+    float m_flLastForwardMove; // 164
+    int m_nClearInputState; // 168
+    CUserCmd* m_pCommands; // 172
+    CVerifiedUserCmd* m_pVerifiedCommands; // 176
+    unsigned long m_hSelectedWeapon; // 180 CHandle<C_BaseCombatWeapon>
+    CameraThirdData_t* m_pCameraThirdData; // 184
+    int m_nCamCommand; // 188
+};
+
+enum TOGGLE_STATE {
+    TS_AT_TOP,
+    TS_AT_BOTTOM,
+    TS_GOING_UP,
+    TS_GOING_DOWN
+};
+
+typedef enum {
+    USE_OFF = 0,
+    USE_ON = 1,
+    USE_SET = 2,
+    USE_TOGGLE = 3
+} USE_TYPE;
 
 class IGameEvent {
 public:
