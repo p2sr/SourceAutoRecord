@@ -116,8 +116,8 @@ CON_COMMAND(sar_tas_frame_next,
                               "Adds command frame to the queue.\n");
     }
 
-    tasQueuer->CalculateOffset(std::atoi(args[1]));
-    tasQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]), true);
+    cmdQueuer->CalculateOffset(std::atoi(args[1]));
+    cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]), true);
 }
 CON_COMMAND(sar_tas_frame_after,
     "Adds command frame to the queue after waiting for specified amount of frames.\n"

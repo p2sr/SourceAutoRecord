@@ -101,7 +101,7 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
 
     //Getting player's friction
     int player_friction_offset = 0;
-    client->GetOffset("CPortal_Player", "m_flFriction", player_friction_offset);
+    offsetFinder->ClientSide("CPortal_Player", "m_flFriction", &player_friction_offset);
     float player_friction = (*reinterpret_cast<float*>((uintptr_t)client->GetPlayer() + player_friction_offset));
     float friction = sv_friction.GetFloat() * player_friction * 1;
 
@@ -142,7 +142,7 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
         cosTheta = (player_friction * tau * M * A) / (2 * velocity.Length2D());
     } else {
         cosTheta = (L - player_friction * tau * M * A) / lambda.Length2D();
-	}
+    }
 
     if (cosTheta < 0)
         cosTheta = M_PI_F / 2;
@@ -150,8 +150,7 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
         cosTheta = 0;
 
     float theta = acosf(cosTheta) * ((direction > 0) ? -1 : 1);
-    float lookangle = std::atan2f(sideMove, forwardMove);
-
+    float lookangle = atan2f(sideMove, forwardMove);
 
     return this->GetVelocityAngles().x + RAD2DEG(theta);
 }
@@ -160,7 +159,7 @@ void TasTools::Strafe(CMoveData* pmove)
 {
     if ((pmove->m_nButtons & 0b11000011000) > 0) {
         float angle = this->GetStrafeAngle(pmove, this->strafing_direction);
-        float lookangle = RAD2DEG(std::atan2f(pmove->m_flSideMove, pmove->m_flForwardMove));
+        float lookangle = RAD2DEG(atan2f(pmove->m_flSideMove, pmove->m_flForwardMove));
 
         QAngle newAngle = { 0, angle + lookangle, 0 };
         pmove->m_vecViewAngles = newAngle;
@@ -214,15 +213,11 @@ CON_COMMAND(sar_tas_set_prop, "sar_tas_set_prop <prop_name> : Sets value for sar
             tasTools->propType = PropType::Boolean;
         } else if (Utils::StartsWith(tasTools->propName, "m_f")) {
             tasTools->propType = PropType::Float;
-        } else if (Utils::StartsWith(tasTools->propName, "m_vec")
-            || Utils::StartsWith(tasTools->propName, "m_ang")
-            || Utils::StartsWith(tasTools->propName, "m_q")) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_vec") || Utils::StartsWith(tasTools->propName, "m_ang") || Utils::StartsWith(tasTools->propName, "m_q")) {
             tasTools->propType = PropType::Vector;
-        } else if (Utils::StartsWith(tasTools->propName, "m_h")
-            || Utils::StartsWith(tasTools->propName, "m_p")) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_h") || Utils::StartsWith(tasTools->propName, "m_p")) {
             tasTools->propType = PropType::Handle;
-        } else if (Utils::StartsWith(tasTools->propName, "m_sz")
-            || Utils::StartsWith(tasTools->propName, "m_isz")) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_sz") || Utils::StartsWith(tasTools->propName, "m_isz")) {
             tasTools->propType = PropType::String;
         } else if (Utils::StartsWith(tasTools->propName, "m_ch")) {
             tasTools->propType = PropType::Char;
