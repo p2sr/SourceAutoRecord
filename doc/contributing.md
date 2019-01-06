@@ -80,7 +80,7 @@ struct CEntInfo {
 };
 ```
 
-- Calling and hooking virtual function:
+- Calling and hooking virtual functions:
 
 ```cpp
 class IServerPluginCallbacks {

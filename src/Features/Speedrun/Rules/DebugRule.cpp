@@ -1,5 +1,5 @@
 #include "DebugRule.hpp"
-
+#ifdef DBG_RULE
 #include <cstdint>
 
 #include "Features/EntityList.hpp"
@@ -54,3 +54,4 @@ SAR_RULE0(debug_rule)
 
     return TimerAction::DoNothing;
 }
+#endif
