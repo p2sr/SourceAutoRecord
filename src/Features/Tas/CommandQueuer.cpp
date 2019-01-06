@@ -107,6 +107,18 @@ CON_COMMAND(sar_tas_frames_at,
 
     cmdQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]));
 }
+CON_COMMAND(sar_tas_frame_next,
+    "Adds command frame to the queue after waiting for specified amount of frames.\n"
+    "Usage: sar_tas_frame_next <frames_to_wait> [command_to_execute]\n")
+{
+    if (args.ArgC() != 3) {
+        return console->Print("Usage: sar_tas_frame_next <frames_to_wait> [command_to_execute] : "
+                              "Adds command frame to the queue.\n");
+    }
+
+    cmdQueuer->CalculateOffset(std::atoi(args[1]));
+    cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]), true);
+}
 CON_COMMAND(sar_tas_frame_after,
     "Adds command frame to the queue after waiting for specified amount of frames.\n"
     "Usage: sar_tas_frame_after <frames_to_wait> [command_to_execute]\n")

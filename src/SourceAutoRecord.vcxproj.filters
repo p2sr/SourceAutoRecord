@@ -135,7 +135,7 @@
     </ClCompile>
     <ClCompile Include="Features\Tas\TasTools.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClCompile>
+	</ClCompile>
     <ClCompile Include="Features\Tas\CommandQueuer.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
@@ -428,9 +428,6 @@
     </ClInclude>
     <ClInclude Include="Features\Routing\Tracer.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Tas\TasTools.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
     <ClInclude Include="Features\Tas\CommandQueuer.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>

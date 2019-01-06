@@ -9,6 +9,7 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
+#include "Features/Tas/TasTools.hpp"
 
 #include "Client.hpp"
 #include "Engine.hpp"
@@ -30,6 +31,10 @@ Variable sv_stopspeed;
 Variable sv_maxvelocity;
 Variable sv_transition_fade_time;
 Variable sv_laser_cube_autoaim;
+Variable sv_edgefriction;
+Variable cl_sidespeed;
+Variable cl_forwardspeed;
+Variable host_framerate;
 
 REDECL(Server::CheckJumpButton);
 REDECL(Server::CheckJumpButtonBase);
@@ -38,6 +43,7 @@ REDECL(Server::FinishGravity);
 REDECL(Server::AirMove);
 REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
+REDECL(Server::ProcessMovement);
 #ifdef _WIN32
 REDECL(Server::AirMove_Skip);
 REDECL(Server::AirMove_Continue);
@@ -177,6 +183,24 @@ DETOUR(Server::PlayerMove)
     return Server::PlayerMove(thisptr);
 }
 
+// CGameMovement::ProcessMovement
+DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
+{
+    if (tasTools->wantToStrafe) {
+        if (tasTools->isVectorial == 0) {
+            tasTools->Strafe(pMove);
+        } else {
+            tasTools->VectorialStrafe(pMove);
+        }
+
+        if (tasTools->strafeType == 1) {
+            tasTools->strafingDirection *= -1;
+        }
+    }
+
+    return Server::ProcessMovement(thisptr, pPlayer, pMove);
+}
+
 // CGameMovement::FinishGravity
 DETOUR(Server::FinishGravity)
 {
@@ -279,6 +303,7 @@ bool Server::Init()
         this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
         if (sar.game->version & SourceGame_Portal2Engine) {
+            this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
             this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
             this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
 

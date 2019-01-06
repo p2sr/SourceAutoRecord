@@ -19,7 +19,7 @@ public:
     Interface* g_ServerGameDLL = nullptr;
 
     using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
-    using _GetAllServerClasses = ServerClass*(*)();
+    using _GetAllServerClasses = ServerClass* (*)();
 
     _UTIL_PlayerByIndex UTIL_PlayerByIndex = nullptr;
     _GetAllServerClasses GetAllServerClasses = nullptr;
@@ -47,6 +47,9 @@ public:
     bool IsPlayer(void* entity);
 
 public:
+    // CGameMovement::ProcessMovement
+    DECL_DETOUR(ProcessMovement, void* pPlayer, CMoveData* pMove)
+
     // CGameMovement::CheckJumpButton
     DECL_DETOUR_T(bool, CheckJumpButton)
 
@@ -94,3 +97,7 @@ extern Variable sv_stopspeed;
 extern Variable sv_maxvelocity;
 extern Variable sv_transition_fade_time;
 extern Variable sv_laser_cube_autoaim;
+extern Variable sv_edgefriction;
+extern Variable cl_sidespeed;
+extern Variable cl_forwardspeed;
+extern Variable host_framerate;

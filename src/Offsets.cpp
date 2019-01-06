@@ -65,6 +65,7 @@ int CheckJumpButton;
 int FullTossMove;
 int mv;
 int player;
+int ProcessMovement;
 
 // CDemoRecorder
 int GetRecordingTick;
@@ -105,6 +106,7 @@ int m_fFlags;
 int m_MoveType;
 int m_nWaterLevel;
 int m_bDucked;
+int m_flFriction;
 
 // CPortal_Player
 int iNumPortalsPlaced;
