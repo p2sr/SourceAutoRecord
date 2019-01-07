@@ -23,7 +23,6 @@ public:
     int strafing_direction;
     int is_vectorial;
     int strafe_type;
-    int is_turning;
 
 private:
     Vector acceleration;
