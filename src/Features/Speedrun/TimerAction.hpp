@@ -5,5 +5,8 @@ enum class TimerAction {
     Start,
     Restart,
     Split,
-    End
+    End,
+    Reset,
+    Pause,
+    Resume
 };

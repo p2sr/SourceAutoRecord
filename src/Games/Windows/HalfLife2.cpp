@@ -62,7 +62,7 @@ void HalfLife2::LoadOffsets()
     Frame = 5; // CEngine
     m_bLoadGame = 335; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
     ScreenPosition = 10; // CIVDebugOverlay
-    cmd_alias = 284; // alias (TODO)
+    cmd_alias = 37; // alias
 
     // vstdlib.dll
 
@@ -87,23 +87,20 @@ void HalfLife2::LoadOffsets()
     player = 4; // CGameMovement::CheckJumpButton
     mv_m_vecVelocity = 64; // CGameMovement::PlayerMove
     GameFrame = 5; // CServerGameDLL
-    g_InRestore = 8; // CServerGameDLL::GameFrame
-    ServiceEventQueue = 147; // CServerGameDLL::GameFrame
-    g_EventQueue = 1; // ServiceEventQueue
-    GetAllServerClasses = 11; // CServerGameDLL (TODO)
+    GetAllServerClasses = 11; // CServerGameDLL
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 38; // CServerGameDLL::Think
-    gpGlobals = 29; // UTIL_PlayerByIndex (TODO)
+    gpGlobals = 11; // UTIL_PlayerByIndex
     m_MoveType = 314; // CBasePlayer::UpdateStepSound
-    m_iClassName = 104; // CBaseEntity (TODO)
-    m_iName = 216; // CBaseEntity (TODO)
-    S_m_vecAbsOrigin = 468; // CBaseEntity (TODO)
-    S_m_angAbsRotation = 480; // CBaseEntity (TODO)
-    m_iEFlags = 208; // CBaseEntity (TODO)
-    m_flGravity = 792; // CBaseEntity (TODO)
-    NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList (TODO)
-    GetIServerEntity = 2; // CServerTools (TODO)
-    m_EntPtrArray = 48; // CServerTools::GetIServerEntity (TODO)
+    m_iClassName = 92; // CBaseEntity
+    m_iName = 264; // CBaseEntity
+    S_m_vecAbsOrigin = 636; // CBaseEntity
+    S_m_angAbsRotation = 760; // CBaseEntity
+    m_iEFlags = 256; // CBaseEntity
+    m_flGravity = 608; // CBaseEntity
+    NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList
+    GetIServerEntity = 1; // CServerTools
+    m_EntPtrArray = 51; // CServerTools::GetIServerEntity
 
     // client.dll
 
@@ -115,6 +112,12 @@ void HalfLife2::LoadOffsets()
     GetClientEntity = 3; // CClientEntityList
     GetClientMode = 5; // CHLClient::HudProcessInput
     CreateMove = 21; // ClientModeShared
+    DecodeUserCmdFromBuffer = 7; // CInput
+    m_pCommands = 196; // CInput::DecodeUserCmdFromBuffer
+    CUserCmdSize = 84; // CInput::DecodeUserCmdFromBuffer
+    MULTIPLAYER_BACKUP = 90; // CInput::DecodeUserCmdFromBuffer
+    IN_ActivateMouse = 15; // CHLClient
+    g_Input = 2; // CHLClient::IN_ActivateMouse
 
     // vguimatsurface.dll
 
@@ -140,5 +143,5 @@ const char* HalfLife2::Process()
 }
 const float HalfLife2::Tickrate()
 {
-    return 1 / 0.015;
+    return 1 / 0.015f;
 }

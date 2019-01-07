@@ -55,7 +55,7 @@ CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
 }
 CON_COMMAND(sar_sum_result, "Prints result of summary.\n")
 {
-    int sessions = summary->items.size();
+    auto sessions = summary->items.size();
     if (summary->isRunning && sessions == 0) {
         console->Print("Summary of this session:\n");
     } else if (summary->isRunning && sessions > 0) {
@@ -66,16 +66,16 @@ CON_COMMAND(sar_sum_result, "Prints result of summary.\n")
         return console->Print("There's no result of a summary!\n");
     }
 
-    for (size_t i = 0; i < summary->items.size(); i++) {
+    for (size_t i = 0; i < summary->items.size(); ++i) {
         console->Print("%s -> ", summary->items[i].map);
         console->Print("%i ticks", summary->items[i].ticks);
         console->Print("(%.3f)\n", summary->items[i].time);
     }
 
-    float totalTime = engine->ToTime(summary->totalTicks);
+    auto totalTime = engine->ToTime(summary->totalTicks);
     if (summary->isRunning) {
-        int tick = engine->GetSessionTick();
-        float time = engine->ToTime(tick);
+        auto tick = engine->GetSessionTick();
+        auto time = engine->ToTime(tick);
         console->PrintActive("%s -> ", *engine->m_szLevelName);
         console->PrintActive("%i ticks ", tick);
         console->PrintActive("(%.3f)\n", time);

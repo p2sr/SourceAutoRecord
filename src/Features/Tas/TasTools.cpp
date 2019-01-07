@@ -3,29 +3,37 @@
 #include <cmath>
 #include <cstring>
 
+#include "Features/OffsetFinder.hpp"
+
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 
-#include "Utils/Math.hpp"
-#include "Utils/SDK.hpp"
-
 #include "SAR.hpp"
+#include "Utils.hpp"
 
 TasTools* tasTools;
 
 TasTools::TasTools()
-    : propName("m_InAirState")
-    , propType(PropType::Integer)
+    : propName("m_hGroundEntity")
+    , propType(PropType::Handle)
+    , wantToStrafe(0)
+    , strafingDirection(0)
+    , isVectorial(0)
+    , strafeType(0)
+    , isTurning(0)
     , acceleration({ 0, 0, 0 })
     , prevVelocity({ 0, 0, 0 })
     , prevTick(0)
+<<<<<<< HEAD
     , want_to_strafe(0)
     , strafing_direction(0)
     , is_vectorial(0)
     , strafe_type(0)
+=======
+>>>>>>> 5d9d63339fbdea65c646c4df9f0179d20de52bd3
 {
-    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2)) {
+    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2Engine)) {
         std::strncpy(this->className, "CPortal_Player", sizeof(this->className));
     } else if (sar.game->version & SourceGame_HalfLife2) {
         std::strncpy(this->className, "CHL2_Player", sizeof(this->className));
@@ -33,7 +41,7 @@ TasTools::TasTools()
         std::strncpy(this->className, "CBasePlayer", sizeof(this->className));
     }
 
-    client->GetOffset(this->className, this->propName, this->propOffset);
+    offsetFinder->ClientSide(this->className, this->propName, &this->propOffset);
 
     this->hasLoaded = true;
 }
@@ -93,18 +101,16 @@ Vector TasTools::GetAcceleration()
 
     return this->acceleration;
 }
-//Returns an absolute angle for perfect wish direction vector
+// Returns an absolute angle for perfect wish direction vector
 float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
 {
-    float tau = 1 / host_framerate.GetFloat(); //A time for one frame to pass
+    float tau = 1 / host_framerate.GetFloat(); // A time for one frame to pass
 
-    //Getting player's friction
-    int player_friction_offset = 0;
-    client->GetOffset("CPortal_Player", "m_flFriction", player_friction_offset);
-    float player_friction = (*reinterpret_cast<float*>((uintptr_t)client->GetPlayer() + player_friction_offset));
+    // Getting player's friction
+    float player_friction = (*reinterpret_cast<float*>((uintptr_t)client->GetPlayer() + Offsets::m_flFriction));
     float friction = sv_friction.GetFloat() * player_friction * 1;
 
-    //Creating lambda(v) - velocity after ground friction
+    // Creating lambda(v) - velocity after ground friction
     Vector velocity = client->GetLocalVelocity();
     Vector lambda = velocity;
 
@@ -116,13 +122,13 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
         } else if (velocity.Length2D() >= std::fmax(0.1, tau * sv_stopspeed.GetFloat() * friction)) {
             Vector normalized_velocity = velocity;
             Math::VectorNormalize(normalized_velocity);
-            lambda = lambda + (normalized_velocity * (tau * sv_stopspeed.GetFloat() * friction)) * -1; //lambda -= v * tau * stop * friction
+            lambda = lambda + (normalized_velocity * (tau * sv_stopspeed.GetFloat() * friction)) * -1; // lambda -= v * tau * stop * friction
         } else {
             lambda = lambda * 0;
         }
     }
 
-    //Getting M
+    // Getting M
     float F = pmove->m_flForwardMove / cl_forwardspeed.GetFloat();
     float S = pmove->m_flSideMove / cl_sidespeed.GetFloat();
 
@@ -131,13 +137,17 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
     float sideMove = pmove->m_flSideMove / stateLen;
     float M = std::fminf(sv_maxspeed.GetFloat(), sqrt(forwardMove * forwardMove + sideMove * sideMove));
 
-    //Getting other stuff
+    // Getting other stuff
     float A = (grounded) ? sv_accelerate.GetFloat() : sv_airaccelerate.GetFloat() / 2;
     float L = (grounded) ? M : std::fminf(60, M);
 
-    //Getting the most optimal angle
+    // Getting the most optimal angle
     float cosTheta;
+<<<<<<< HEAD
     if (this->strafe_type == 2 && !grounded) {
+=======
+    if (isTurning) {
+>>>>>>> 5d9d63339fbdea65c646c4df9f0179d20de52bd3
         cosTheta = (player_friction * tau * M * A) / (2 * velocity.Length2D());
     } else if (this->strafe_type == 2 && grounded) {
         cosTheta = std::cos(velocity.Length2D() * velocity.Length2D() - std::pow(player_friction * tau * M * A, 2) - lambda.Length2D() * lambda.Length2D()) / (2 * player_friction * tau * M * A * lambda.Length2D());
@@ -150,41 +160,47 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
     if (cosTheta > 1)
         cosTheta = 0;
 
+<<<<<<< HEAD
     float theta;
     if (this->strafe_type == 2) {
         theta = (M_PI_F - acosf(cosTheta)) * ((direction > 0) ? -1 : 1);
     } else {
         theta = acosf(cosTheta) * ((direction > 0) ? -1 : 1);
     }
+=======
+    float theta = acosf(cosTheta) * ((direction > 0) ? -1 : 1);
+    float lookangle = atan2f(sideMove, forwardMove);
+>>>>>>> 5d9d63339fbdea65c646c4df9f0179d20de52bd3
 
     return this->GetVelocityAngles().x + RAD2DEG(theta);
 }
-//Angle set based on current wishdir
-void TasTools::Strafe(CMoveData* pmove)
+// Angle set based on current wishdir
+void TasTools::Strafe(CMoveData* pMove)
 {
-    if ((pmove->m_nButtons & 0b11000011000) > 0) {
-        float angle = this->GetStrafeAngle(pmove, this->strafing_direction);
-        float lookangle = RAD2DEG(std::atan2f(pmove->m_flSideMove, pmove->m_flForwardMove));
+    if ((pMove->m_nButtons & 0b11000011000) > 0) {
+        float angle = this->GetStrafeAngle(pMove, this->strafingDirection);
+        float lookangle = RAD2DEG(atan2f(pMove->m_flSideMove, pMove->m_flForwardMove));
 
         QAngle newAngle = { 0, angle + lookangle, 0 };
-        pmove->m_vecViewAngles = newAngle;
-        pmove->m_vecAbsViewAngles = newAngle;
+        pMove->m_vecViewAngles = newAngle;
+        pMove->m_vecAbsViewAngles = newAngle;
         engine->SetAngles(newAngle);
     }
 }
-//whishdir set based on current angle ("controller" inputs)
-void TasTools::VectorialStrafe(CMoveData* pmove)
+// whishdir set based on current angle ("controller" inputs)
+void TasTools::VectorialStrafe(CMoveData* pMove)
 {
-    //don't strafe if player is not holding any movement button
-    //temporary fix, we should find a way to make the game think we're holding one
-    if ((pmove->m_nButtons & 0b11000011000) > 0) {
-        float angle = this->GetStrafeAngle(pmove, this->strafing_direction);
-        angle = DEG2RAD(angle - pmove->m_vecAbsViewAngles.y);
+    // don't strafe if player is not holding any movement button
+    // temporary fix, we should find a way to make the game think we're holding one
+    if ((pMove->m_nButtons & 0b11000011000) > 0) {
+        float angle = this->GetStrafeAngle(pMove, this->strafingDirection);
+        angle = DEG2RAD(angle - pMove->m_vecAbsViewAngles.y);
 
-        pmove->m_flForwardMove = cosf(angle) * cl_forwardspeed.GetFloat();
-        pmove->m_flSideMove = -sinf(angle) * cl_sidespeed.GetFloat();
+        pMove->m_flForwardMove = cosf(angle) * cl_forwardspeed.GetFloat();
+        pMove->m_flSideMove = -sinf(angle) * cl_sidespeed.GetFloat();
     }
 }
+
 // Commands
 
 CON_COMMAND(sar_tas_aim_at_point, "sar_tas_aim_at_point <x> <y> <z> : Aims at point {x, y, z} specified.\n")
@@ -206,7 +222,7 @@ CON_COMMAND(sar_tas_set_prop, "sar_tas_set_prop <prop_name> : Sets value for sar
     }
 
     auto offset = 0;
-    client->GetOffset(tasTools->className, args[1], offset);
+    offsetFinder->ClientSide(tasTools->className, args[1], &offset);
 
     if (!offset) {
         console->Print("Unknown prop of %s!\n", tasTools->className);
@@ -214,21 +230,17 @@ CON_COMMAND(sar_tas_set_prop, "sar_tas_set_prop <prop_name> : Sets value for sar
         std::strncpy(tasTools->propName, args[1], sizeof(tasTools->propName));
         tasTools->propOffset = offset;
 
-        if (std::strstr(tasTools->propName, "m_b") == tasTools->propName) {
+        if (Utils::StartsWith(tasTools->propName, "m_b")) {
             tasTools->propType = PropType::Boolean;
-        } else if (std::strstr(tasTools->propName, "m_f") == tasTools->propName) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_f")) {
             tasTools->propType = PropType::Float;
-        } else if (std::strstr(tasTools->propName, "m_vec") == tasTools->propName
-            || std::strstr(tasTools->propName, "m_ang") == tasTools->propName
-            || std::strstr(tasTools->propName, "m_q") == tasTools->propName) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_vec") || Utils::StartsWith(tasTools->propName, "m_ang") || Utils::StartsWith(tasTools->propName, "m_q")) {
             tasTools->propType = PropType::Vector;
-        } else if (std::strstr(tasTools->propName, "m_h") == tasTools->propName
-            || std::strstr(tasTools->propName, "m_p") == tasTools->propName) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_h") || Utils::StartsWith(tasTools->propName, "m_p")) {
             tasTools->propType = PropType::Handle;
-        } else if (std::strstr(tasTools->propName, "m_sz") == tasTools->propName
-            || std::strstr(tasTools->propName, "m_isz") == tasTools->propName) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_sz") || Utils::StartsWith(tasTools->propName, "m_isz")) {
             tasTools->propType = PropType::String;
-        } else if (std::strstr(tasTools->propName, "m_ch") == tasTools->propName) {
+        } else if (Utils::StartsWith(tasTools->propName, "m_ch")) {
             tasTools->propType = PropType::Char;
         } else {
             tasTools->propType = PropType::Integer;
@@ -240,7 +252,7 @@ CON_COMMAND(sar_tas_set_prop, "sar_tas_set_prop <prop_name> : Sets value for sar
 CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] : Adds {x, y, z} degrees to {x, y, z} view axis.\n")
 {
     if (!sv_cheats.GetBool()) {
-        return console->Print("Cannot use sar_tas_addang without sv_cheats sets to 1.\n");
+        return console->Print("Cannot use sar_tas_addang without sv_cheats set to 1.\n");
     }
 
     if (args.ArgC() < 3) {
@@ -257,42 +269,45 @@ CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] : Adds {x, y, z} degrees
 
     engine->SetAngles(angles);
 }
-CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : Sets {x, y, z} degres to view axis.\n")
+CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : Sets {x, y, z} degrees to view axis.\n")
 {
-    if (!sv_cheats.GetBool())
-        return console->Print("Cannot use sar_tas_setang without sv_cheats sets to 1.\n");
+    if (!sv_cheats.GetBool()) {
+        return console->Print("Cannot use sar_tas_setang without sv_cheats set to 1.\n");
+    }
 
-    if (args.ArgC() < 3)
+    if (args.ArgC() < 3) {
         return console->Print("Missing arguments : sar_tas_setang <x> <y> [z].\n");
+    }
 
-    //Fix the bug when z is not set
-    if (args.ArgC() == 3)
+    // Fix the bug when z is not set
+    if (args.ArgC() == 3) {
         engine->SetAngles(QAngle{ static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), 0.0f });
-    else
+    } else {
         engine->SetAngles(QAngle{ static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])) });
+    }
 }
 CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <direction> [vectorial] [strafing type].\n"
                             "Strafe while <direction> is -1 or 1. Set <vectorial> to use vectorial strafing.\n"
                             "<strafing type> : 0 - normal strafing; 1 - oscillating; 2 - turning\n")
 {
-    if (!(sar.game->version & SourceGame_Portal2))
-        return console->Warning("sar_tas_groundstrafe only available for Portal 2.\n");
-    if (!sv_cheats.GetBool())
-        return console->Print("Cannot use sar_tas_strafe without sv_cheats sets to 1.\n");
+    if (!sv_cheats.GetBool()) {
+        return console->Print("Cannot use sar_tas_strafe without sv_cheats set to 1.\n");
+    }
 
-    if (args.ArgC() < 2)
-        return console->Print("Missing arguments : sar_tas_strafe <direction> [vectorial] [strafing type]\n");
+    if (args.ArgC() < 2) {
+        return console->Print("Missing arguments : sar_tas_strafe <direction> [vectorial] [strafing type].\n");
+    }
 
     int direction = std::atoi(args[1]);
     if (direction == 0) {
-        tasTools->want_to_strafe = 0;
-        tasTools->is_vectorial = 0;
-        tasTools->strafing_direction = 0;
-        tasTools->strafe_type = 0;
+        tasTools->wantToStrafe = 0;
+        tasTools->isVectorial = 0;
+        tasTools->strafingDirection = 0;
+        tasTools->strafeType = 0;
     } else {
-        tasTools->want_to_strafe = 1;
-        tasTools->strafing_direction = (direction > 0) ? 1 : -1;
-        tasTools->is_vectorial = std::atoi(args[2]);
-        tasTools->strafe_type = std::atoi(args[3]);
+        tasTools->wantToStrafe = 1;
+        tasTools->strafingDirection = (direction > 0) ? 1 : -1;
+        tasTools->isVectorial = std::atoi(args[2]);
+        tasTools->strafeType = std::atoi(args[3]);
     }
 }

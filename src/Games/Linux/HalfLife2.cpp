@@ -87,9 +87,6 @@ void HalfLife2::LoadOffsets()
     player = 4; // CPortalGameMovement::PlayerMove
     mv_m_vecVelocity = 64; // CPortalGameMovement::PlayerMove
     GameFrame = 5; // CServerGameDLL
-    g_InRestore = 201; // CServerGameDLL::GameFrame
-    ServiceEventQueue = 333; // CServerGameDLL::GameFrame
-    g_EventQueue = 177; // ServiceEventQueue
     GetAllServerClasses = 11; // CServerGameDLL
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
@@ -115,6 +112,12 @@ void HalfLife2::LoadOffsets()
     GetClientEntity = 3; // CClientEntityList
     GetClientMode = 1; // CHLClient::HudProcessInput
     CreateMove = 22; // ClientModeShared
+    DecodeUserCmdFromBuffer = 7; // CInput
+    m_pCommands = 196; // CInput::DecodeUserCmdFromBuffer
+    CUserCmdSize = 84; // CInput::DecodeUserCmdFromBuffer
+    MULTIPLAYER_BACKUP = 90; // CInput::DecodeUserCmdFromBuffer
+    IN_ActivateMouse = 15; // CHLClient
+    g_Input = 1; // CHLClient::IN_ActivateMouse
 
     // vguimatsurface.so
 

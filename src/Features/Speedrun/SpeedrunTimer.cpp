@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "TimerCategory.hpp"
 #include "TimerInterface.hpp"
 #include "TimerResult.hpp"
 #include "TimerRule.hpp"
@@ -20,8 +21,12 @@
 #include "Game.hpp"
 #include "Variable.hpp"
 
-Variable sar_speedrun_autostart("sar_speedrun_autostart", "0", "Starts speedrun timer automatically on first frame after a load.\n");
-Variable sar_speedrun_autostop("sar_speedrun_autostop", "0", "Stops speedrun timer automatically when going into the menu.\n");
+Variable sar_speedrun_autostart("sar_speedrun_autostart", "0",
+    "Starts speedrun timer automatically on first frame after a load.\n");
+Variable sar_speedrun_autostop("sar_speedrun_autostop", "0",
+    "Stops speedrun timer automatically when going into the menu.\n");
+Variable sar_speedrun_standard("sar_speedrun_standard", "1",
+    "Timer automatically starts, splits and stops.\n");
 
 SpeedrunTimer* speedrun;
 
@@ -34,10 +39,10 @@ SpeedrunTimer::SpeedrunTimer()
     , ipt(0.0f)
     , state(TimerState::NotRunning)
     , rules()
-    , category("any")
+    , category(nullptr)
     , offset(0)
 {
-    this->liveSplit = std::make_unique<TimerInterface>();
+    this->pubInterface = std::make_unique<TimerInterface>();
     this->result = std::make_unique<TimerResult>();
     this->pb = std::make_unique<TimerResult>();
 
@@ -50,13 +55,13 @@ bool SpeedrunTimer::IsActive()
 }
 void SpeedrunTimer::Start(const int* engineTicks)
 {
-    console->Print("Speedrun started!\n");
+    this->StatusReport("Speedrun started!\n");
     this->base = *engineTicks;
 
     if (this->IsActive()) {
-        this->liveSplit.get()->SetAction(TimerAction::Restart);
+        this->pubInterface.get()->SetAction(TimerAction::Restart);
     } else {
-        this->liveSplit.get()->SetAction(TimerAction::Start);
+        this->pubInterface.get()->SetAction(TimerAction::Start);
     }
 
     this->total = this->offset;
@@ -69,44 +74,41 @@ void SpeedrunTimer::Start(const int* engineTicks)
 void SpeedrunTimer::Pause()
 {
     if (this->state == TimerState::Running) {
-        console->Print("Speedrun paused!\n");
+        this->StatusReport("Speedrun paused!\n");
+        this->pubInterface.get()->SetAction(TimerAction::Pause);
         this->state = TimerState::Paused;
         this->prevTotal = this->total;
         this->result.get()->AddSegment(this->session);
     }
 }
-void SpeedrunTimer::Unpause(const int* engineTicks)
+void SpeedrunTimer::Resume(const int* engineTicks)
 {
     if (this->state == TimerState::Paused) {
-        console->Print("Speedrun unpaused!\n");
+        this->StatusReport("Speedrun resumed!\n");
+        this->pubInterface.get()->SetAction(TimerAction::Resume);
         this->state = TimerState::Running;
         this->base = *engineTicks;
     }
 }
-void SpeedrunTimer::Update(const int* engineTicks, const char* engineMap)
+void SpeedrunTimer::PreUpdate(const int* engineTicks, const char* engineMap)
 {
-    if (!engineTicks || !engineMap || std::strlen(engineMap) == 0)
-        return;
-
-    auto mapChanged = false;
     if (this->state != TimerState::Running) {
         if (std::strncmp(this->map, engineMap, sizeof(this->map))) {
             std::strncpy(this->map, engineMap, sizeof(this->map));
             console->DevMsg("Speedrun map change: %s\n", this->map);
-            mapChanged = true;
+            if (this->state == TimerState::Paused) {
+                this->Split();
+            }
             this->InitRules();
         }
     }
-    if (this->state == TimerState::Paused) {
-        if (mapChanged) {
-            console->Print("Speedrun split!\n");
-            this->result.get()->Split(this->total, this->map);
-            this->pb.get()->UpdateSplit(this->map);
-        }
-    } else if (this->state == TimerState::Running) {
+}
+void SpeedrunTimer::PostUpdate(const int* engineTicks, const char* engineMap)
+{
+    if (this->state == TimerState::Running) {
         this->session = *engineTicks - this->base;
         this->total = this->prevTotal + this->session;
-        this->liveSplit.get()->Update(this);
+        this->pubInterface.get()->Update(this);
     }
 }
 void SpeedrunTimer::CheckRules(const int* engineTicks)
@@ -124,14 +126,9 @@ void SpeedrunTimer::CheckRules(const int* engineTicks)
         }
     }
 
-	if (source == nullptr)
-        return;
-
     switch (action) {
     case TimerAction::Split:
-        console->Print("Speedrun split!\n");
-        this->result.get()->Split(this->total, this->map);
-        this->pb.get()->UpdateSplit(this->map);
+        this->Split();
         source->madeAction = true;
         break;
     case TimerAction::Start:
@@ -150,8 +147,8 @@ void SpeedrunTimer::CheckRules(const int* engineTicks)
 void SpeedrunTimer::Stop(bool addSegment)
 {
     if (this->IsActive()) {
-        console->Print("Speedrun stopped!\n");
-        this->liveSplit.get()->SetAction(TimerAction::End);
+        this->StatusReport("Speedrun stopped!\n");
+        this->pubInterface.get()->SetAction(TimerAction::End);
         this->state = TimerState::NotRunning;
         if (addSegment) {
             this->result.get()->AddSegment(this->session);
@@ -159,15 +156,26 @@ void SpeedrunTimer::Stop(bool addSegment)
         this->result.get()->EndSplit(this->total);
     } else {
         console->Print("Ready for new speedun!\n");
+        this->pubInterface.get()->SetAction(TimerAction::Reset);
         this->Reset();
     }
 }
 void SpeedrunTimer::Reset()
 {
-    this->total = 0;
+    this->total = this->offset;
     this->prevTotal = 0;
-    TimerRule::ResetAll();
+    this->base = 0;
+    TimerCategory::ResetAll();
     this->InitRules();
+}
+void SpeedrunTimer::Split()
+{
+    if (this->IsActive()) {
+        this->StatusReport("Speedrun split!\n");
+        this->result.get()->Split(this->total, this->map);
+        this->pb.get()->UpdateSplit(this->map);
+        this->pubInterface.get()->SetAction(TimerAction::Split);
+    }
 }
 int SpeedrunTimer::GetSession()
 {
@@ -183,16 +191,20 @@ char* SpeedrunTimer::GetCurrentMap()
 }
 void SpeedrunTimer::LoadRules(Game* game)
 {
-    auto filtered = TimerRule::FilterByGame(game);
-    if (filtered != 0)
-        console->DevMsg("Loaded %i speedrun rules!\n", filtered);
+    auto filtered = TimerCategory::FilterByGame(game);
+    if (filtered != 0) {
+        this->category = TimerCategory::list[0];
+        console->DevMsg("Loaded %i speedrun %s!\n", filtered, (filtered == 1) ? "category" : "categories");
+    }
 }
 void SpeedrunTimer::InitRules()
 {
     this->rules.clear();
-    for (const auto& rule : TimerRule::list) {
-        if (!std::strcmp(this->category, rule->categoryName) && !std::strcmp(this->map, rule->mapName)) {
-            this->rules.push_back(rule);
+    if (this->category) {
+        for (const auto& rule : this->category->rules) {
+            if (rule->IsEmpty() || !std::strcmp(this->map, rule->mapName)) {
+                this->rules.push_back(rule);
+            }
         }
     }
 }
@@ -200,7 +212,9 @@ void SpeedrunTimer::ReloadRules()
 {
     for (const auto& rule : this->rules) {
         if (!rule->Load()) {
-            console->Warning("Failed to load rule: %s -> %s\n", rule->categoryName, rule->mapName);
+            console->Warning("Failed to load rule: %s -> %s\n", rule->name, rule->mapName);
+        } else {
+            console->DevMsg("Loaded rule: %s -> %s\n", rule->name, rule->mapName);
         }
     }
 }
@@ -217,17 +231,17 @@ const std::vector<TimerRule*>& SpeedrunTimer::GetRules()
 void SpeedrunTimer::SetIntervalPerTick(const float* ipt)
 {
     this->ipt = *ipt;
-    this->liveSplit->SetIntervalPerTick(ipt);
+    this->pubInterface->SetIntervalPerTick(ipt);
 }
 const float SpeedrunTimer::GetIntervalPerTick()
 {
     return this->ipt;
 }
-void SpeedrunTimer::SetCategory(const char* category)
+void SpeedrunTimer::SetCategory(TimerCategory* category)
 {
     this->category = category;
 }
-const char* SpeedrunTimer::GetCategory()
+TimerCategory* SpeedrunTimer::GetCategory()
 {
     return this->category;
 }
@@ -268,17 +282,17 @@ bool SpeedrunTimer::ExportResult(std::string filePath, bool pb)
 
     for (auto& split : result->splits) {
         auto ticks = split->GetTotal();
-        auto time = SpeedrunTimer::Format(ticks * this->ipt);
+        auto time = SpeedrunTimer::Format(ticks * this->ipt).c_str();
 
         for (const auto& seg : split->segments) {
             auto total = split->GetTotal();
             file << split->map << ","
                  << seg.session << ","
-                 << SpeedrunTimer::Format(seg.session * this->ipt) << ","
+                 << SpeedrunTimer::Format(seg.session * this->ipt).c_str() << ","
                  << ticks << ","
                  << time << ","
                  << total << ","
-                 << SpeedrunTimer::Format(total * this->ipt) << ","
+                 << SpeedrunTimer::Format(total * this->ipt).c_str() << ","
                  << ++segment << std::endl;
         }
     }
@@ -351,9 +365,14 @@ int SpeedrunTimer::GetCurrentDelta()
 {
     return this->total - this->pb.get()->curSplit->entered;
 }
+void SpeedrunTimer::StatusReport(const char* message)
+{
+    console->Print("%s", message);
+    console->DevMsg("%s\n", SpeedrunTimer::Format(this->total * this->ipt).c_str());
+}
 SpeedrunTimer::~SpeedrunTimer()
 {
-    this->liveSplit.reset();
+    this->pubInterface.reset();
     this->result.reset();
     this->pb.reset();
 }
@@ -383,12 +402,31 @@ std::string SpeedrunTimer::Format(float raw)
 
 // Commands
 
-CON_COMMAND(sar_speedrun_start, "Prints result of speedrun.\n")
+CON_COMMAND(sar_speedrun_start, "Starts speedrun.\n")
 {
     speedrun->Start(engine->tickcount);
 }
-CON_COMMAND(sar_speedrun_stop, "Prints result of speedrun.\n")
+CON_COMMAND(sar_speedrun_stop, "Stops speedrun timer.\n")
 {
+    speedrun->Stop();
+}
+CON_COMMAND(sar_speedrun_split, "Splits speedrun timer.\n")
+{
+    speedrun->Split();
+}
+CON_COMMAND(sar_speedrun_pause, "Pauses speedrun timer.\n")
+{
+    speedrun->Pause();
+}
+CON_COMMAND(sar_speedrun_resume, "Resumes speedrun timer.\n")
+{
+    speedrun->Resume(engine->tickcount);
+}
+CON_COMMAND(sar_speedrun_reset, "Resets speedrun timer.\n")
+{
+    if (speedrun->IsActive()) {
+        speedrun->Stop();
+    }
     speedrun->Stop();
 }
 CON_COMMAND(sar_speedrun_result, "Prints result of speedrun.\n")
@@ -459,7 +497,7 @@ CON_COMMAND(sar_speedrun_export_pb, "Saves speedrun personal best to a csv file.
         console->Warning("Failed to export personal best!\n");
     }
 }
-CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.", 0, 0, csv)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.\n", 0, 0, csv)
 {
     if (args.ArgC() != 2) {
         console->Print("sar_speedrun_import <file_name> : Imports speedrun data file.\n");
@@ -476,36 +514,46 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.",
         console->Warning("Failed to import file!\n");
     }
 }
-CON_COMMAND(sar_speedrun_rules, "Prints currently loaded rules which the timer will follow.\n")
-{
-    auto rules = speedrun->GetRules();
-    if (rules.empty()) {
-        return console->Print("No rules loaded!\n");
-    }
-
-    for (const auto& rule : rules) {
-        console->Print("%s -> %s\n", rule->categoryName, rule->mapName);
-    }
-}
-CON_COMMAND(sar_speedrun_all_rules, "Prints all rules which the timer might follow.\n")
-{
-    auto rules = TimerRule::list;
-    if (rules.empty()) {
-        return console->Print("No rules loaded!\n");
-    }
-
-    for (const auto& rule : rules) {
-        console->Print("%s -> %s\n", rule->categoryName, rule->mapName);
-    }
-}
 CON_COMMAND(sar_speedrun_category, "Sets the category for a speedrun.\n")
 {
-    if (args.ArgC() == 2) {
-        speedrun->SetCategory(args[1]);
-        speedrun->InitRules();
+    if (!speedrun->GetCategory() || TimerCategory::list.empty()) {
+        return console->Print("This game does not have any categories!\n");
     }
 
-    console->Print("Current category: %s\n", speedrun->GetCategory());
+    auto PrintCategory = []() {
+        auto category = speedrun->GetCategory();
+        console->Print("%s\n", category->name);
+        for (auto const& rule : category->rules) {
+            console->Msg("  -> %s (%s)\n", rule->name, rule->mapName);
+        }
+    };
+
+    if (args.ArgC() != 2) {
+        return PrintCategory();
+    }
+
+    for (auto const& category : TimerCategory::list) {
+        if (!std::strcmp(category->name, args[1])) {
+            speedrun->SetCategory(category);
+            speedrun->InitRules();
+            return PrintCategory();
+        }
+    }
+
+    console->Print("Unknown category name! Use sar_speedrun_categories to list all categories.\n");
+}
+CON_COMMAND(sar_speedrun_categories, "Lists all categories.\n")
+{
+    if (!speedrun->GetCategory() || TimerCategory::list.empty()) {
+        return console->Print("This game does not have any categories!\n");
+    }
+
+    for (auto const& category : TimerCategory::list) {
+        console->Print("%s\n", category->name);
+        for (auto const& rule : category->rules) {
+            console->Msg("  -> %s (%s)\n", rule->name, rule->mapName);
+        }
+    }
 }
 CON_COMMAND(sar_speedrun_offset, "Sets offset in ticks at which the timer should start.\n")
 {
@@ -517,5 +565,5 @@ CON_COMMAND(sar_speedrun_offset, "Sets offset in ticks at which the timer should
         speedrun->SetOffset(std::atoi(args[1]));
     }
 
-    console->Print("Current offset: %i\n", speedrun->GetOffset());
+    console->Print("Timer will start at: %s\n", SpeedrunTimer::Format(speedrun->GetOffset() * speedrun->GetIntervalPerTick()).c_str());
 }

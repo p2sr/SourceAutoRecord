@@ -6,7 +6,7 @@
 TimerSplit::TimerSplit(const int ticks, const char* map)
 {
     this->entered = ticks;
-    std::strcpy(this->map, map);
+    std::strncpy(this->map, map, sizeof(this->map));
     this->segments = std::vector<TimerSegment>();
 }
 int TimerSplit::GetTotal()

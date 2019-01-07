@@ -1,6 +1,6 @@
 #include "Engine.hpp"
 
-#include <stdarg.h>
+#include <cstring>
 
 #include "Features/Cvars.hpp"
 #include "Features/Session.hpp"
@@ -9,6 +9,7 @@
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
 #include "EngineDemoRecorder.hpp"
+#include "Server.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -39,18 +40,9 @@ void Engine::ExecuteCommand(const char* cmd)
 {
     this->ClientCmd(this->engineClient->ThisPtr(), cmd);
 }
-void Engine::ClientCommand(const char* fmt, ...)
-{
-    va_list argptr;
-    va_start(argptr, fmt);
-    char data[1024];
-    vsnprintf(data, sizeof(data), fmt, argptr);
-    va_end(argptr);
-    this->ClientCmd(this->engineClient->ThisPtr(), data);
-}
 int Engine::GetSessionTick()
 {
-    int result = *this->tickcount - session->baseTick;
+    auto result = *this->tickcount - session->baseTick;
     return (result >= 0) ? result : 0;
 }
 float Engine::ToTime(int tick)
@@ -60,6 +52,17 @@ float Engine::ToTime(int tick)
 int Engine::GetLocalPlayerIndex()
 {
     return this->GetLocalPlayer(this->engineClient->ThisPtr());
+}
+edict_t* Engine::PEntityOfEntIndex(int iEntIndex)
+{
+    if (iEntIndex >= 0 && iEntIndex < server->gpGlobals->maxEntities) {
+        auto pEdict = reinterpret_cast<edict_t*>((uintptr_t)server->gpGlobals->pEdicts + iEntIndex * sizeof(edict_t));
+        if (!pEdict->IsFree()) {
+            return pEdict;
+        }
+    }
+
+    return nullptr;
 }
 QAngle Engine::GetAngles()
 {
@@ -142,54 +145,18 @@ DETOUR(Engine::SetSignonState2, int state, int count)
 // CEngine::Frame
 DETOUR(Engine::Frame)
 {
+    speedrun->PreUpdate(engine->tickcount, engine->m_szLevelName);
+
     if (engine->hoststate->m_currentState != session->prevState) {
         session->Changed();
     }
     session->prevState = engine->hoststate->m_currentState;
 
-    if (engine->hoststate->m_activeGame) {
-        speedrun->Update(engine->tickcount, engine->hoststate->m_levelName);
+    if (engine->hoststate->m_activeGame || std::strlen(engine->m_szLevelName) == 0) {
+        speedrun->PostUpdate(engine->tickcount, engine->m_szLevelName);
     }
 
     return Engine::Frame(thisptr);
-}
-
-DETOUR_COMMAND(Engine::plugin_load)
-{
-    // Prevent crash when trying to load SAR twice or try to find the module in
-    // the plugin list if the initial search thread failed
-    if (args.ArgC() >= 2) {
-        auto file = std::string(args[1]);
-        if (ends_with(file, std::string(MODULE("sar"))) || ends_with(file, std::string("sar"))) {
-            if (sar.GetPlugin()) {
-                sar.plugin->ptr->m_bDisable = true;
-                console->PrintActive("SAR: Plugin fully loaded!\n");
-            }
-            return;
-        }
-    }
-
-    Engine::plugin_load_callback(args);
-}
-DETOUR_COMMAND(Engine::plugin_unload)
-{
-    if (args.ArgC() >= 2 && sar.GetPlugin() && std::atoi(args[1]) == sar.plugin->index) {
-        engine->SafeUnload();
-    } else {
-        engine->plugin_unload_callback(args);
-    }
-}
-DETOUR_COMMAND(Engine::exit)
-{
-    engine->SafeUnload("exit");
-}
-DETOUR_COMMAND(Engine::quit)
-{
-    engine->SafeUnload("quit");
-}
-DETOUR_COMMAND(Engine::help)
-{
-    cvars->PrintHelp(args);
 }
 
 #ifdef _WIN32
@@ -227,6 +194,44 @@ _def:
 }
 #endif
 
+DETOUR_COMMAND(Engine::plugin_load)
+{
+    // Prevent crash when trying to load SAR twice or try to find the module in
+    // the plugin list if the initial search thread failed
+    if (args.ArgC() >= 2) {
+        auto file = std::string(args[1]);
+        if (Utils::EndsWith(file, std::string(MODULE("sar"))) || Utils::EndsWith(file, std::string("sar"))) {
+            if (sar.GetPlugin()) {
+                sar.plugin->ptr->m_bDisable = true;
+                console->PrintActive("SAR: Plugin fully loaded!\n");
+            }
+            return;
+        }
+    }
+
+    Engine::plugin_load_callback(args);
+}
+DETOUR_COMMAND(Engine::plugin_unload)
+{
+    if (args.ArgC() >= 2 && sar.GetPlugin() && std::atoi(args[1]) == sar.plugin->index) {
+        engine->SafeUnload();
+    } else {
+        engine->plugin_unload_callback(args);
+    }
+}
+DETOUR_COMMAND(Engine::exit)
+{
+    engine->SafeUnload("exit");
+}
+DETOUR_COMMAND(Engine::quit)
+{
+    engine->SafeUnload("quit");
+}
+DETOUR_COMMAND(Engine::help)
+{
+    cvars->PrintHelp(args);
+}
+
 bool Engine::Init()
 {
     this->engineClient = Interface::Create(this->Name(), "VEngineClient0", false);
@@ -241,8 +246,9 @@ bool Engine::Init()
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
-        if (sar.game->version & SourceGame_Portal2) {
+        if (sar.game->version & SourceGame_Portal2Game) {
             this->m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
+            this->m_bWaitEnabled2 = reinterpret_cast<bool*>((uintptr_t)this->m_bWaitEnabled + Offsets::CCommandBufferSize);
         }
 
         void* clPtr = nullptr;
@@ -276,7 +282,6 @@ bool Engine::Init()
                 this->cl->Hook(Engine::Disconnect2_Hook, Engine::Disconnect2, Offsets::Disconnect);
 #endif
             }
-
 #if _WIN32
             auto IServerMessageHandler_VMT = Memory::Deref<uintptr_t>((uintptr_t)this->cl->ThisPtr() + IServerMessageHandler_VMT_Offset);
             auto ProcessTick = Memory::Deref<uintptr_t>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
@@ -290,15 +295,6 @@ bool Engine::Init()
             auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
             Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
-
-            if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
-                auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
-                auto engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
-
-                if (this->eng = Interface::Create(engAddr)) {
-                    this->eng->Hook(Engine::Frame_Hook, Engine::Frame, Offsets::Frame);
-                }
-            }
         }
     }
 
@@ -308,7 +304,18 @@ bool Engine::Init()
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
     }
 
-    if (sar.game->version == SourceGame_Portal2) {
+    if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
+        auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
+        auto engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
+
+        if (this->eng = Interface::Create(engAddr)) {
+            if (this->tickcount && this->hoststate && this->m_szLevelName) {
+                this->eng->Hook(Engine::Frame_Hook, Engine::Frame, Offsets::Frame);
+            }
+        }
+    }
+
+    if (sar.game->version & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
         this->s_GameEventManager = Interface::Create(this->Name(), "GAMEEVENTSMANAGER002", false);
         if (this->s_GameEventManager) {
             this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
@@ -319,7 +326,13 @@ bool Engine::Init()
             Memory::Read<_ConPrintEvent>(FireEventIntern + Offsets::ConPrintEvent, &this->ConPrintEvent);
         }
 
+        if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
+            this->ClientCommand = g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
+        }
+    }
+
 #ifdef _WIN32
+    if (sar.game->version & SourceGame_Portal2Game) {
         auto parseSmoothingInfoAddr = Memory::Scan(this->Name(), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
         auto readCustomDataAddr = Memory::Scan(this->Name(), "55 8B EC F6 05 ? ? ? ? ? 53 56 57 8B F1 75 2F");
 
@@ -332,24 +345,21 @@ bool Engine::Init()
             Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133;              // Default case
             Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29;                  // Continue loop
             Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(readCustomDataAddr); // Function that handles dem_customdata
-            
+
             this->demoSmootherPatch = new Memory::Patch();
             unsigned char nop3[] = { 0x90, 0x90, 0x90 };
             this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3);             // Nop rest
         }
-#endif
     }
+#endif
 
-    // TODO: windows
-#ifndef _WIN32
-    if (sar.game->version & (SourceGame_Portal2 | SourceGame_HalfLife2Engine)) {
+    if (sar.game->version & (SourceGame_Portal2Game | SourceGame_HalfLife2Engine)) {
         auto alias = Command("alias");
         if (!!alias) {
             auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;
             Memory::Deref<cmdalias_t*>(callback + Offsets::cmd_alias, &this->cmd_alias);
         }
     }
-#endif
 
     if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
         ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);

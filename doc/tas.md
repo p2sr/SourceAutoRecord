@@ -2,4 +2,6 @@
 
 ## Portal 2
 
-- [Propulsion Catch](https://gist.github.com/NeKzor/5ba4fd9bafc80855a395b4a5f03f1c6e) in 24.70 by NeKz
+Map|Time|Publisher|Script|Video
+---|:-:|:-:|:-:|:-:
+Propulsion Catch|24.70|NeKz|[Script](https://gist.github.com/NeKzor/5ba4fd9bafc80855a395b4a5f03f1c6e)|[Video](https://www.youtube.com/watch?v=eW6F5z5mBUs)

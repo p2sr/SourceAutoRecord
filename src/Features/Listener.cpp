@@ -64,13 +64,11 @@ void Listener::FireGameEvent(IGameEvent* ev)
         }
     }
 
-    if (engine->GetMaxClients() >= 2) {
+    if (!session->isRunning && engine->GetMaxClients() >= 2) {
         // TODO: Start when orange spawns?
         if (!std::strcmp(ev->GetName(), "player_spawn_orange")) {
-            console->Print("Detected cooperative spawn!\n");
-            session->Rebase(*engine->tickcount);
-            timer->Rebase(*engine->tickcount);
-            speedrun->Unpause(engine->tickcount);
+            console->Print("Session Started! (coop)\n");
+            session->Start();
         }
     }
 }
@@ -89,7 +87,7 @@ void Listener::DumpGameEvents()
     console->Print("m_Size = %i\n", m_Size);
     if (m_Size > 0) {
         auto m_GameEvents = *(uintptr_t*)(s_GameEventManager + CGameEventManager_m_GameEvents);
-        for (int i = 0; i < m_Size; i++) {
+        for (auto i = 0; i < m_Size; ++i) {
             auto name = *(char**)(m_GameEvents + CGameEventDescriptor_Size * i + CGameEventManager_m_GameEvents);
             console->Print("%s\n", name);
         }

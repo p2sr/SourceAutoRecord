@@ -6,7 +6,7 @@
 
 void VelocityStats::Save(Vector velocity, bool xyOnly)
 {
-    float vel = 0;
+    auto vel = 0.f;
     if (xyOnly) {
         vel = velocity.Length2D();
         this->type = StatsResultType::VEC2;

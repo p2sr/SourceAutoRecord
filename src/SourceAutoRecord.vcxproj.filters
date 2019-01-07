@@ -133,16 +133,7 @@
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\TasTools.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-	</ClCompile>
     <ClCompile Include="Features\Tas\CommandQueuer.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Tas\Replay.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Tas\ReplaySystem.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
     <ClCompile Include="Features\Timer\Timer.cpp">
@@ -220,8 +211,65 @@
     <ClCompile Include="Utils\Memory.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Stats\StatsExport.cpp">
-      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    <ClCompile Include="Features\Speedrun\Rules\ApertureTagRules.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\Rules\DebugRule.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\Rules\Portal2Rules.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\Rules\PortalRules.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\Rules\PortalStoriesMelRules.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\EntityList.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Imitator.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\OffsetFinder.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\ReplaySystem\Replay.cpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\ReplaySystem\ReplayPlayer.cpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\ReplaySystem\ReplayProvider.cpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\ReplaySystem\ReplayRecorder.cpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\ReplaySystem\ReplayView.cpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\ApertureTag.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\PortalStoriesMel.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\ApertureTag.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\PortalStoriesMel.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\TimerCategory.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -384,12 +432,6 @@
     <ClInclude Include="Features\Tas\CommandQueuer.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Tas\Replay.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Tas\ReplaySystem.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Timer\Timer.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
     </ClInclude>
@@ -465,6 +507,63 @@
     <ClInclude Include="Games\Linux\Portal.hpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Speedrun\Rules\ApertureTagRules.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\Rules\DebugRule.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\Rules\Portal2Rules.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\Rules\PortalRules.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\Rules\PortalStoriesMelRules.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\EntityList.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Imitator.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\OffsetFinder.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ReplaySystem\ReplayView.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ReplaySystem\Replay.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ReplaySystem\ReplayFrame.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ReplaySystem\ReplayPlayer.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ReplaySystem\ReplayProvider.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ReplaySystem\ReplayRecorder.hpp">
+      <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\ApertureTag.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\PortalStoriesMel.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\ApertureTag.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\PortalStoriesMel.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\TimerCategory.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClInclude>
     <ClInclude Include="Features\Tas\TasTools.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
@@ -517,6 +616,12 @@
     </Filter>
     <Filter Include="SourceAutoRecord\Features\Routing">
       <UniqueIdentifier>{74d18c35-2424-4dab-bb78-11a5aefde796}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Speedrun\Rules">
+      <UniqueIdentifier>{338d75c8-ceab-4c59-932b-0129e629742f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\ReplaySystem">
+      <UniqueIdentifier>{6d5adac2-903e-463f-8055-8677eaca4662}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

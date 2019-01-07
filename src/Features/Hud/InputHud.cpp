@@ -5,14 +5,13 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
-#include "Modules/VGui.hpp"
 
 #include "Utils/SDK.hpp"
 
 #include "Variable.hpp"
 
 Variable sar_ihud("sar_ihud", "0", 0, "Draws keyboard events of client.\n"
-                                      "0 = default,\n"
+                                      "0 = Default,\n"
                                       "1 = forward;back;moveleft;moveright,\n"
                                       "2 = 1 + duck;jump;use,\n"
                                       "3 = 2 + attack;attack2,\n"
@@ -26,9 +25,9 @@ Variable sar_ihud_font_color("sar_ihud_font_color", "255 255 255 255", "RGBA fon
 Variable sar_ihud_font_index("sar_ihud_font_index", "1", 0, "Font index of input HUD.\n");
 Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD.\n"
                                                            "Characters are in this order:\n"
-                                                           "forward,\n"
-                                                           "back,\n"
+                                                           "forward,\n"                                          
                                                            "moveleft,\n"
+                                                           "back,\n"
                                                            "moveright,\n"
                                                            "duck,\n"
                                                            "jump,\n"
@@ -56,6 +55,8 @@ const int col5 = 5;
 const int col6 = 6;
 const int col7 = 7;
 const int col8 = 8;
+
+InputHud* inputHud;
 
 void InputHud::SetButtonBits(int buttonBits)
 {
@@ -132,8 +133,8 @@ void InputHud::Draw()
     auto element = 0;
     auto DrawElement = [xOffset, yOffset, mode, shadow, color, size, shadowColor, font, fontColor, shadowFontColor, padding, symbols,
                            &element](int value, bool button, int col, int row, int length = 1) {
-        int x = xOffset + (col * size) + ((col + 1) * padding);
-        int y = yOffset + (row * size) + ((row + 1) * padding);
+        auto x = xOffset + (col * size) + ((col + 1) * padding);
+        auto y = yOffset + (row * size) + ((row + 1) * padding);
         if (mode >= value && (button || shadow)) {
             surface->DrawRectAndCenterTxt((button) ? color : shadowColor,
                 x + ((col + 1) * padding),
@@ -181,11 +182,11 @@ int sar_ihud_setpos_CompletionFunc(const char* partial,
 {
     const char* cmd = "sar_ihud_setpos ";
     char* match = (char*)partial;
-    if (!std::strstr(cmd, match)) {
+    if (std::strstr(partial, cmd) == partial) {
         match = match + std::strlen(cmd);
     }
 
-    static std::vector<std::string> positions = std::vector<std::string>{
+    static auto positions = std::vector<std::string>{
         std::string("top left"),
         std::string("top center"),
         std::string("top right"),
@@ -198,20 +199,19 @@ int sar_ihud_setpos_CompletionFunc(const char* partial,
     };
 
     // Filter items
-    std::vector<std::string> items;
+    static auto items = std::vector<std::string>(positions.size());
+    items.clear();
     for (auto& pos : positions) {
+        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+            break;
+        }
+
         if (std::strlen(match) != std::strlen(cmd)) {
             if (std::strstr(pos.c_str(), match)) {
                 items.push_back(pos);
-            } else {
-                continue;
             }
         } else {
             items.push_back(pos);
-        }
-
-        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
-            break;
         }
     }
 
@@ -237,7 +237,7 @@ CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of in
     auto xSize = 0;
     auto ySize = 0;
 
-    if (!vgui->inputHud->GetCurrentSize(xSize, ySize)) {
+    if (!inputHud->GetCurrentSize(xSize, ySize)) {
         console->Print("HUD not active!\n");
         return;
     }

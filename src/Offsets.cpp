@@ -53,6 +53,8 @@ int StringToButtonCode;
 
 // CInput
 int GetButtonBits;
+int DecodeUserCmdFromBuffer;
+int GetPerUser;
 
 // CGameMovement
 int PlayerMove;
@@ -97,12 +99,14 @@ int m_iEFlags;
 int m_flMaxspeed;
 int m_flGravity;
 int S_m_vecViewOffset;
+int IsPlayer;
 
 // CBasePlayer
 int m_fFlags;
 int m_MoveType;
 int m_nWaterLevel;
 int m_bDucked;
+int m_flFriction;
 
 // CPortal_Player
 int iNumPortalsPlaced;
@@ -156,6 +160,9 @@ int m_bWaitEnabled;
 // CServerTools
 int GetIServerEntity;
 
+// CVEngineServer
+int ClientCommand;
+
 // Others
 int tickcount;
 int interval_per_tick;
@@ -176,10 +183,8 @@ int GetClientMode;
 int State_Shutdown;
 int Cbuf_AddText;
 int s_CommandBuffer;
+int CCommandBufferSize;
 int AddText;
-int g_InRestore;
-int ServiceEventQueue;
-int g_EventQueue;
 int AutoCompletionFunc;
 int StartDrawing;
 int FinishDrawing;
@@ -195,4 +200,9 @@ int NUM_ENT_ENTRIES;
 int m_iClassName;
 int m_iName;
 int m_EntPtrArray;
+int g_pClientMode;
+int m_pCommands;
+int CUserCmdSize;
+int MULTIPLAYER_BACKUP;
+int PerUserInput_tSize;
 }

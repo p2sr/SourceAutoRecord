@@ -53,6 +53,8 @@ extern int StringToButtonCode;
 
 // CInput
 extern int GetButtonBits;
+extern int DecodeUserCmdFromBuffer;
+extern int GetPerUser;
 
 // CGameMovement
 extern int PlayerMove;
@@ -97,12 +99,14 @@ extern int m_iEFlags;
 extern int m_flMaxspeed;
 extern int m_flGravity;
 extern int S_m_vecViewOffset;
+extern int IsPlayer;
 
 // CBasePlayer
 extern int m_fFlags;
 extern int m_MoveType;
 extern int m_nWaterLevel;
 extern int m_bDucked;
+extern int m_flFriction;
 
 // CPortal_Player
 extern int iNumPortalsPlaced;
@@ -156,6 +160,9 @@ extern int m_bWaitEnabled;
 // CServerTools
 extern int GetIServerEntity;
 
+// CVEngineServer
+extern int ClientCommand;
+
 // Others
 extern int tickcount;
 extern int interval_per_tick;
@@ -176,10 +183,8 @@ extern int GetClientMode;
 extern int State_Shutdown;
 extern int Cbuf_AddText;
 extern int s_CommandBuffer;
+extern int CCommandBufferSize;
 extern int AddText;
-extern int g_InRestore;
-extern int ServiceEventQueue;
-extern int g_EventQueue;
 extern int AutoCompletionFunc;
 extern int StartDrawing;
 extern int FinishDrawing;
@@ -195,4 +200,9 @@ extern int NUM_ENT_ENTRIES;
 extern int m_iClassName;
 extern int m_iName;
 extern int m_EntPtrArray;
+extern int g_pClientMode;
+extern int m_pCommands;
+extern int CUserCmdSize;
+extern int MULTIPLAYER_BACKUP;
+extern int PerUserInput_tSize;
 }

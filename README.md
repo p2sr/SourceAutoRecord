@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/NeKzor/SourceAutoRecord.svg?branch=master)](https://travis-ci.org/NeKzor/SourceAutoRecord)
-[![Build Version](https://img.shields.io/badge/version-v1.7-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/3)
+[![Build Version](https://img.shields.io/badge/version-v1.8-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/3)
 [![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
 
 ## Features
@@ -16,19 +16,19 @@
 Game|Windows|Linux
 ---|:-:|:-:
 Portal 2|✔|✔
-Aperture Tag|✔|✖
-Portal Stories: Mel|✔|✖
+Aperture Tag|✔|✔
+Portal Stories: Mel|✔|✔
 The Stanley Parable|✔|✔
 The Beginners Guide|✔|✔
 Half-Life 2|✔|✔
-Portal|✖|✔
+Portal|✔|✔
 
 ## Docs
 
+- [Contributing](doc/contributing.md)
 - [Issues & Troubleshooting](doc/issue.md)
 - [Mapping](doc/mapping.md)
 - [Maps](doc/maps.md)
-- [Showcases](doc/showcases.md)
 - [Tool-Assisted-Speedruns](doc/tas.md)
 - [Console Commands & Variables](https://nekzor.github.io/cvars/sar)
 

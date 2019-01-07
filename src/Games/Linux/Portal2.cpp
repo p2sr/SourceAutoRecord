@@ -21,6 +21,7 @@ void Portal2::LoadOffsets()
     GetClientStateFunction = 11; // CEngineClient::ClientCmd
     Cbuf_AddText = 45; // CEngineClient::ClientCmd
     s_CommandBuffer = 69; // Cbuf_AddText
+    CCommandBufferSize = 9556; // Cbuf_AddText
     m_bWaitEnabled = 8265; // CCommandBuffer::AddText
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient
@@ -79,6 +80,7 @@ void Portal2::LoadOffsets()
 
     // server.so
 
+    ProcessMovement = 2; // CGameMovement
     PlayerMove = 16; // CPortalGameMovement
     AirAccelerate = 23; // CPortalGameMovement
     AirMove = 24; // CPortalGameMovement
@@ -90,9 +92,6 @@ void Portal2::LoadOffsets()
     mv = 8; // CPortalGameMovement::CheckJumpButton
     m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
     GameFrame = 4; // CServerGameDLL
-    g_InRestore = 51; // CServerGameDLL::GameFrame
-    ServiceEventQueue = 484; // CServerGameDLL::GameFrame
-    g_EventQueue = 43; // ServiceEventQueue
     GetAllServerClasses = 10; // CServerGameDLL
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
@@ -105,9 +104,11 @@ void Portal2::LoadOffsets()
     S_m_angAbsRotation = 480; // CBaseEntity
     m_iEFlags = 208; // CBaseEntity
     m_flGravity = 792; // CBaseEntity
-    NUM_ENT_ENTRIES = 4096; // CBaseEntityList::CBaseEntityList
+    NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
     GetIServerEntity = 2; // CServerTools
     m_EntPtrArray = 48; // CServerTools::GetIServerEntity
+    ClientCommand = 39; // CVEngineServer
+    IsPlayer = 86; // CBasePlayer
 
     // client.so
 
@@ -118,10 +119,22 @@ void Portal2::LoadOffsets()
     C_m_angAbsRotation = 172; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
     GetClientMode = 12; // CHLClient::HudProcessInput
+    g_pClientMode = 25; // GetClientMode
     CreateMove = 25; // ClientModeShared
     GetName = 11; // CHud
     GetHud = 104; // cc_leaderboard_enable
     FindElement = 120; // cc_leaderboard_enable
+    DecodeUserCmdFromBuffer = 7; // CInput
+    m_pCommands = 172; // CInput::DecodeUserCmdFromBuffer
+    CUserCmdSize = 96; // CInput::DecodeUserCmdFromBuffer
+    MULTIPLAYER_BACKUP = 150; // CInput::DecodeUserCmdFromBuffer
+    GetPerUser = 153; // CInput::DecodeUserCmdFromBuffer
+    IN_ActivateMouse = 15; // CHLClient
+    g_Input = 1; // CHLClient::IN_ActivateMouse
+    GetButtonBits = 2; // CInput
+    JoyStickApplyMovement = 64; // CInput
+    KeyDown = 295; // CInput::JoyStickApplyMovement
+    KeyUp = 341; // CInput::JoyStickApplyMovement
 
     // vguimatsurface.so
 

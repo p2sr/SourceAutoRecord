@@ -9,6 +9,8 @@ public:
     void Draw() override;
 };
 
+extern SpeedrunHud* speedrunHud;
+
 extern Variable sar_sr_hud;
 extern Variable sar_sr_hud_x;
 extern Variable sar_sr_hud_y;

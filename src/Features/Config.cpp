@@ -44,7 +44,7 @@ bool Config::Save()
     SAVE_CVAR(sar_ihud_shadow_color, String);
     SAVE_CVAR(sar_ihud_shadow_font_color, String);
 
-    if (sar.game->version & SourceGame_Portal2) {
+    if (sar.game->version & SourceGame_Portal2Game) {
         SAVE_CVAR(sar_sr_hud_x, Int);
         SAVE_CVAR(sar_sr_hud_y, Int);
         SAVE_CVAR(sar_sr_hud_font_color, String);
