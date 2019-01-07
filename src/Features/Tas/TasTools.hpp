@@ -21,18 +21,11 @@ public:
     char propName[32];
     int propOffset;
     PropType propType;
-<<<<<<< HEAD
-    int want_to_strafe;
-    int strafing_direction;
-    int is_vectorial;
-    int strafe_type;
-=======
     int wantToStrafe;
     int strafingDirection;
     int isVectorial;
     int strafeType;
     int isTurning;
->>>>>>> 5d9d63339fbdea65c646c4df9f0179d20de52bd3
 
 private:
     Vector acceleration;

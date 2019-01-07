@@ -25,13 +25,6 @@ TasTools::TasTools()
     , acceleration({ 0, 0, 0 })
     , prevVelocity({ 0, 0, 0 })
     , prevTick(0)
-<<<<<<< HEAD
-    , want_to_strafe(0)
-    , strafing_direction(0)
-    , is_vectorial(0)
-    , strafe_type(0)
-=======
->>>>>>> 5d9d63339fbdea65c646c4df9f0179d20de52bd3
 {
     if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2Engine)) {
         std::strncpy(this->className, "CPortal_Player", sizeof(this->className));
@@ -143,13 +136,9 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
 
     // Getting the most optimal angle
     float cosTheta;
-<<<<<<< HEAD
-    if (this->strafe_type == 2 && !grounded) {
-=======
-    if (isTurning) {
->>>>>>> 5d9d63339fbdea65c646c4df9f0179d20de52bd3
+    if (this->strafeType == 2 && !grounded) {
         cosTheta = (player_friction * tau * M * A) / (2 * velocity.Length2D());
-    } else if (this->strafe_type == 2 && grounded) {
+    } else if (this->strafeType == 2 && grounded) {
         cosTheta = std::cos(velocity.Length2D() * velocity.Length2D() - std::pow(player_friction * tau * M * A, 2) - lambda.Length2D() * lambda.Length2D()) / (2 * player_friction * tau * M * A * lambda.Length2D());
     } else {
         cosTheta = (L - player_friction * tau * M * A) / lambda.Length2D();
@@ -160,17 +149,12 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
     if (cosTheta > 1)
         cosTheta = 0;
 
-<<<<<<< HEAD
     float theta;
-    if (this->strafe_type == 2) {
+    if (this->strafeType == 2) {
         theta = (M_PI_F - acosf(cosTheta)) * ((direction > 0) ? -1 : 1);
     } else {
         theta = acosf(cosTheta) * ((direction > 0) ? -1 : 1);
     }
-=======
-    float theta = acosf(cosTheta) * ((direction > 0) ? -1 : 1);
-    float lookangle = atan2f(sideMove, forwardMove);
->>>>>>> 5d9d63339fbdea65c646c4df9f0179d20de52bd3
 
     return this->GetVelocityAngles().x + RAD2DEG(theta);
 }
