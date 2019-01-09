@@ -56,6 +56,9 @@ public:
     DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
     DECL_DETOUR(DecodeUserCmdFromBuffer2, int buf, signed int sequence_number)
 
+    // CInput::CreateMove
+    DECL_DETOUR(CInput_CreateMove, int sequence_number, float input_sample_frametime, bool active)
+
     bool Init() override;
     void Shutdown() override;
     const char* Name() override { return MODULE("client"); }

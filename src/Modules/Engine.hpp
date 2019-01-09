@@ -131,3 +131,9 @@ public:
 };
 
 extern Engine* engine;
+
+#ifdef _WIN32
+#define GET_ACTIVE_SPLITSCREEN_SLOT() engine->GetActiveSplitScreenPlayerSlot()
+#else
+#define GET_ACTIVE_SPLITSCREEN_SLOT() engine->GetActiveSplitScreenPlayerSlot(nullptr)
+#endif

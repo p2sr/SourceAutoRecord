@@ -32,6 +32,7 @@ REDECL(Client::CreateMove2);
 REDECL(Client::GetName);
 REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::DecodeUserCmdFromBuffer2);
+REDECL(Client::CInput_CreateMove);
 
 void* Client::GetPlayer()
 {
@@ -144,6 +145,7 @@ DETOUR_T(const char*, Client::GetName)
     return Client::GetName(thisptr);
 }
 
+// CInput::DecodeUserCmdFromBuffer
 DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
 {
     auto result = Client::DecodeUserCmdFromBuffer(thisptr, nSlot, buf, sequence_number);
@@ -167,6 +169,24 @@ DETOUR(Client::DecodeUserCmdFromBuffer2, int buf, signed int sequence_number)
     auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + Offsets::CUserCmdSize * (sequence_number % Offsets::MULTIPLAYER_BACKUP));
 
     inputHud->SetButtonBits(cmd->buttons);
+
+    return result;
+}
+
+// CInput::CreateMove
+DETOUR(Client::CInput_CreateMove, int sequence_number, float input_sample_frametime, bool active)
+{
+    auto originalValue = 0;
+    if (sar_tas_ss_forceuser.GetBool()) {
+        originalValue = in_forceuser.GetInt();
+        in_forceuser.SetValue(GET_ACTIVE_SPLITSCREEN_SLOT());
+    }
+
+    auto result = Client::CInput_CreateMove(thisptr, sequence_number, input_sample_frametime, active);
+
+    if (sar_tas_ss_forceuser.GetBool()) {
+        in_forceuser.SetValue(originalValue);
+    }
 
     return result;
 }
@@ -247,6 +267,9 @@ bool Client::Init()
                 clientMode2 = Memory::Deref<void*>(g_pClientMode + sizeof(void*));
 
                 in_forceuser = Variable("in_forceuser");
+                if (!!in_forceuser && this->g_Input) {
+                    this->g_Input->Hook(CInput_CreateMove_Hook, CInput_CreateMove, Offsets::GetButtonBits + 1);
+                }
             } else {
                 typedef void* (*_GetClientMode)();
                 auto GetClientMode = Memory::Read<_GetClientMode>(HudProcessInput + Offsets::GetClientMode);

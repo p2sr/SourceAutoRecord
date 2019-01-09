@@ -36,6 +36,7 @@ public:
 extern CommandQueuer* cmdQueuer;
 
 extern Variable sar_tas_autostart;
+extern Variable sar_tas_ss_forceuser;
 
 extern Command sar_tas_frame_at;
 extern Command sar_tas_frames_at;

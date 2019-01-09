@@ -10,6 +10,7 @@
 #include "Variable.hpp"
 
 Variable sar_tas_autostart("sar_tas_autostart", "1", "Starts queued commands automatically on first frame after a load.\n");
+Variable sar_tas_ss_forceuser("sar_tas_ss_forceuser", "0", "Forces engine to calculate movement for every splitescreen client.\n");
 
 CommandQueuer* cmdQueuer;
 
