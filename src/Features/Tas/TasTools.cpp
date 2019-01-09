@@ -136,8 +136,10 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
 
     // Getting the most optimal angle
     float cosTheta;
-    if (isTurning) {
+    if (this->strafeType == 2 && !grounded) {
         cosTheta = (player_friction * tau * M * A) / (2 * velocity.Length2D());
+    } else if (this->strafeType == 2 && grounded) {
+        cosTheta = std::cos(velocity.Length2D() * velocity.Length2D() - std::pow(player_friction * tau * M * A, 2) - lambda.Length2D() * lambda.Length2D()) / (2 * player_friction * tau * M * A * lambda.Length2D());
     } else {
         cosTheta = (L - player_friction * tau * M * A) / lambda.Length2D();
     }
@@ -147,8 +149,12 @@ float TasTools::GetStrafeAngle(CMoveData* pmove, int direction)
     if (cosTheta > 1)
         cosTheta = 0;
 
-    float theta = acosf(cosTheta) * ((direction > 0) ? -1 : 1);
-    float lookangle = atan2f(sideMove, forwardMove);
+    float theta;
+    if (this->strafeType == 2) {
+        theta = (M_PI_F - acosf(cosTheta)) * ((direction > 0) ? -1 : 1);
+    } else {
+        theta = acosf(cosTheta) * ((direction > 0) ? -1 : 1);
+    }
 
     return this->GetVelocityAngles().x + RAD2DEG(theta);
 }
