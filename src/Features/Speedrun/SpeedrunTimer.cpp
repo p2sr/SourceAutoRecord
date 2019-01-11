@@ -137,7 +137,7 @@ void SpeedrunTimer::CheckRules(const int* engineTicks)
         break;
     case TimerAction::End:
         if (this->IsActive()) {
-            this->Stop(engineTicks);
+            this->Stop();
             source->madeAction = true;
         }
     default:
@@ -466,8 +466,7 @@ CON_COMMAND(sar_speedrun_result, "Prints result of speedrun.\n")
 CON_COMMAND(sar_speedrun_export, "Saves speedrun result to a csv file.\n")
 {
     if (args.ArgC() != 2) {
-        console->Print("sar_speedrun_export <file_name> : Saves speedrun result to a csv file.\n");
-        return;
+        return console->Print("sar_speedrun_export <file_name> : Saves speedrun result to a csv file!\n");
     }
 
     auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
@@ -483,8 +482,7 @@ CON_COMMAND(sar_speedrun_export, "Saves speedrun result to a csv file.\n")
 CON_COMMAND(sar_speedrun_export_pb, "Saves speedrun personal best to a csv file.\n")
 {
     if (args.ArgC() != 2) {
-        console->Print("sar_speedrun_export_pb [file_name] : Saves speedrun personal best to a csv file.\n");
-        return;
+        return console->Print("sar_speedrun_export_pb [file_name] : Saves speedrun personal best to a csv file!\n");
     }
 
     auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
@@ -500,8 +498,7 @@ CON_COMMAND(sar_speedrun_export_pb, "Saves speedrun personal best to a csv file.
 CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.\n", 0, 0, csv)
 {
     if (args.ArgC() != 2) {
-        console->Print("sar_speedrun_import <file_name> : Imports speedrun data file.\n");
-        return;
+        return console->Print("sar_speedrun_import <file_name> : Imports speedrun data file.\n");
     }
 
     auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
@@ -559,10 +556,15 @@ CON_COMMAND(sar_speedrun_offset, "Sets offset in ticks at which the timer should
 {
     if (args.ArgC() == 2) {
         if (speedrun->IsActive()) {
-            return console->Print("Cannot change offset during an active speedrun.\n");
+            return console->Print("Cannot change offset during an active speedrun!\n");
         }
 
-        speedrun->SetOffset(std::atoi(args[1]));
+        auto offset = std::atoi(args[1]);
+        if (offset < 0) {
+            return console->Print("Offset cannot be negative!\n");
+        }
+
+        speedrun->SetOffset(offset);
     }
 
     console->Print("Timer will start at: %s\n", SpeedrunTimer::Format(speedrun->GetOffset() * speedrun->GetIntervalPerTick()).c_str());
