@@ -11,17 +11,19 @@
 - HUDs
 - A lot of cheats
 
-## Support
+## Support¹
 
 Game|Windows|Linux
 ---|:-:|:-:
-Portal 2|✔|✔
-Aperture Tag|✔|✔
-Portal Stories: Mel|✔|✔
-The Stanley Parable|✔|✔
-The Beginners Guide|✔|✔
-Half-Life 2|✔|✔
-Portal|✔|✔
+[Portal 2](https://store.steampowered.com/app/620)|✔|✔
+[Aperture Tag](https://store.steampowered.com/app/280740)|✔|✔
+[Portal Stories: Mel](https://store.steampowered.com/app/317400)|✔|✔
+[The Stanley Parable](https://store.steampowered.com/app/221910)|✔|✔
+[The Beginners Guide](https://store.steampowered.com/app/303210)|✔|✔
+[Half-Life 2](https://store.steampowered.com/app/220)|✔|✔
+[Portal](https://store.steampowered.com/app/400)|✔|✔
+
+¹ Latest Steam version.
 
 ## Docs
 
