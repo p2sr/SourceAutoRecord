@@ -12,7 +12,7 @@ void ApertureTag::LoadOffsets()
 }
 const char* ApertureTag::Version()
 {
-    return "Aperture Tag (TODO)";
+    return "Aperture Tag (7054)";
 }
 const char* ApertureTag::Process()
 {

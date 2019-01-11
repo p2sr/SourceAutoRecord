@@ -12,7 +12,7 @@ void PortalStoriesMel::LoadOffsets()
 }
 const char* PortalStoriesMel::Version()
 {
-    return "Portal Stories: Mel (TODO)";
+    return "Portal Stories: Mel (7054)";
 }
 const char* PortalStoriesMel::Process()
 {
