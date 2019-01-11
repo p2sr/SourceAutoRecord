@@ -64,8 +64,7 @@ void SpeedrunTimer::Start(const int* engineTicks)
         this->pubInterface.get()->SetAction(TimerAction::Start);
     }
 
-    this->total = this->offset;
-    this->prevTotal = 0;
+    this->total = this->prevTotal = this->offset;
     this->state = TimerState::Running;
 
     this->result.get()->Reset();
@@ -183,7 +182,7 @@ int SpeedrunTimer::GetSession()
 }
 int SpeedrunTimer::GetTotal()
 {
-    return this->total + this->offset;
+    return this->total;
 }
 char* SpeedrunTimer::GetCurrentMap()
 {
@@ -247,7 +246,7 @@ TimerCategory* SpeedrunTimer::GetCategory()
 }
 void SpeedrunTimer::SetOffset(const int offset)
 {
-    this->offset = offset;
+    this->offset = this->total = offset;
 }
 const int SpeedrunTimer::GetOffset()
 {
