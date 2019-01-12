@@ -116,7 +116,6 @@ void Portal2::LoadOffsets()
     HudUpdate = 11; // CHLClient
     C_m_vecAbsOrigin = 156; // C_BasePlayer::GetAbsOrigin
     C_m_angAbsRotation = 192; // C_BasePlayer::GetAbsAngles
-    m_nSplitScreenSlot = 6480; // C_BasePlayer
     GetClientEntity = 3; // CClientEntityList
     GetClientMode = 4; // CHLClient::HudProcessInput
     g_pClientMode = 19; // GetClientMode

@@ -20,11 +20,9 @@ public:
 
     using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
     using _GetAllServerClasses = ServerClass* (*)();
-    using _GetSplitScreenPlayerSlot = int(__func*)(void* thisptr);
 
     _UTIL_PlayerByIndex UTIL_PlayerByIndex = nullptr;
     _GetAllServerClasses GetAllServerClasses = nullptr;
-    _GetSplitScreenPlayerSlot GetSplitScreenPlayerSlot = nullptr;
 
     CGlobalVars* gpGlobals = nullptr;
     CEntInfo* m_EntPtrArray = nullptr;
@@ -47,6 +45,7 @@ public:
     char* GetEntityName(void* entity);
     char* GetEntityClassName(void* entity);
     bool IsPlayer(void* entity);
+    int GetSplitScreenPlayerSlot(void* entity);
 
 public:
     // CGameMovement::ProcessMovement

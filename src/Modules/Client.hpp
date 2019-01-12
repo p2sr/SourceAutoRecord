@@ -40,7 +40,6 @@ public:
     QAngle GetAbsAngles();
     Vector GetLocalVelocity();
     Vector GetViewOffset();
-    int GetSplitScreenPlayerSlot();
     void CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset);
 
 public:

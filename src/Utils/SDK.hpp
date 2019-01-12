@@ -602,6 +602,9 @@ struct CBaseEdict {
 struct edict_t : CBaseEdict {
 };
 
+int ENTINDEX(edict_t *pEdict);
+edict_t* INDEXENT(int iEdictNum);
+
 struct CGlobalVarsBase {
     float realtime; // 0
     int framecount; // 4

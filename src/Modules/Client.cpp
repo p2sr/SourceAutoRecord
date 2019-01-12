@@ -60,11 +60,6 @@ Vector Client::GetViewOffset()
     auto player = this->GetPlayer();
     return (player) ? *(Vector*)((uintptr_t)player + Offsets::C_m_vecViewOffset) : Vector();
 }
-int Client::GetSplitScreenPlayerSlot()
-{
-    auto player = this->GetPlayer();
-    return (player) ? *(int*)((uintptr_t)player + Offsets::m_nSplitScreenSlot) : -1;
-}
 void Client::CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset)
 {
     auto pButtonState = &button->GetPerUser(nSlot);

@@ -104,6 +104,17 @@ bool Server::IsPlayer(void* entity)
 {
     return Memory::VMT<bool (*)(void*)>(entity, Offsets::IsPlayer)(entity);
 }
+int Server::GetSplitScreenPlayerSlot(void* entity)
+{
+    // Simplified version of CBasePlayer::GetSplitScreenPlayerSlot
+    for (auto i = 0; i < MAX_SPLITSCREEN_PLAYERS; ++i) {
+        if (server->UTIL_PlayerByIndex(i + 1) == entity) {
+            return i;
+        }
+    }
+
+    return 0;
+}
 
 // CGameMovement::CheckJumpButton
 DETOUR_T(bool, Server::CheckJumpButton)
@@ -293,6 +304,7 @@ bool Server::Init()
     if (this->g_GameMovement) {
         this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
         this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
+        this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
 
         if (sar.game->version & SourceGame_Portal2Engine) {
             this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
@@ -315,14 +327,7 @@ bool Server::Init()
             } else {
                 console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
             }
-#else
-            // TODO: implement own function
-            #define GetSplitScreenPlayerSlot_Signature "55 31 C0 89 E5 56 53 83 EC ? 8B 5D ? 80 BB ? ? ? ? ? "
-            this->GetSplitScreenPlayerSlot = Memory::Scan<_GetSplitScreenPlayerSlot>(this->Name(), GetSplitScreenPlayerSlot_Signature);
 #endif
-            if (this->GetSplitScreenPlayerSlot) {
-                this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
-            }
         }
     }
 
