@@ -96,4 +96,20 @@ void DerefDeref(uintptr_t source, T* destination)
 {
     *destination = **reinterpret_cast<T**>(source);
 }
+template <typename T = uintptr_t>
+T Scan(const char* moduleName, const char* pattern, int offset = 0)
+{
+    uintptr_t result = 0;
+
+    auto info = Memory::ModuleInfo();
+    if (Memory::TryGetModule(moduleName, &info)) {
+        auto start = uintptr_t(info.base);
+        auto end = start + info.size;
+        result = Memory::FindAddress(start, end, pattern);
+        if (result) {
+            result += offset;
+        }
+    }
+    return reinterpret_cast<T>(result);
+}
 }

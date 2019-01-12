@@ -2,6 +2,8 @@
 
 #include <cstring>
 
+#include "Modules/Engine.hpp"
+
 #include "Platform.hpp"
 
 InterfaceReg* InterfaceReg::s_pInterfaceRegs = nullptr;
@@ -28,4 +30,12 @@ static void* CreateInterfaceInternal(const char* pName, int* pReturnCode)
 DLL_EXPORT void* CreateInterface(const char* pName, int* pReturnCode)
 {
     return CreateInterfaceInternal(pName, pReturnCode);
+}
+
+kbutton_t::Split_t& kbutton_t::GetPerUser(int nSlot)
+{
+    if (nSlot == -1) {
+        nSlot = GET_ACTIVE_SPLITSCREEN_SLOT();
+    }
+    return m_PerUser[nSlot];
 }

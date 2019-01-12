@@ -91,6 +91,9 @@ extern int C_m_angAbsRotation;
 extern int C_m_vecVelocity;
 extern int C_m_vecViewOffset;
 
+// C_BasePlayer
+extern int m_nSplitScreenSlot;
+
 // CBaseEntity
 extern int S_m_vecAbsOrigin;
 extern int S_m_angAbsRotation;

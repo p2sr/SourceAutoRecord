@@ -160,7 +160,7 @@ Only use these in experiments or tests:
 
 ```cpp
 // Signature-Scanning aka AOB-Scan
-auto address = Memory::Scan(MODULE("engine"), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
+auto address = Memory::Scan(MODULE("engine"), "55 8B EC 0F 57 C0 81 EC ? ? ? ", 178);
 
 // Relative to absolute address
 auto funcAddress = Memory::Absolute(MODULE("engine"), 0xdeadbeef);

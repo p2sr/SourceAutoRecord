@@ -137,6 +137,6 @@ CON_COMMAND(sar_find_client_offset, "Finds prop offset in specified client class
     }
 
     auto offset = 0;
-    offsetFinder->ServerSide(args[1], args[2], &offset);
+    offsetFinder->ClientSide(args[1], args[2], &offset);
     console->Print("%s::%s = %d\n", args[1], args[2], offset);
 }

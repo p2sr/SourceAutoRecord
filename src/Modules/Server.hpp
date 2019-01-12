@@ -20,9 +20,11 @@ public:
 
     using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
     using _GetAllServerClasses = ServerClass* (*)();
+    using _GetSplitScreenPlayerSlot = int(__func*)(void* thisptr);
 
     _UTIL_PlayerByIndex UTIL_PlayerByIndex = nullptr;
     _GetAllServerClasses GetAllServerClasses = nullptr;
+    _GetSplitScreenPlayerSlot GetSplitScreenPlayerSlot = nullptr;
 
     CGlobalVars* gpGlobals = nullptr;
     CEntInfo* m_EntPtrArray = nullptr;
@@ -32,8 +34,8 @@ private:
     bool callFromCheckJumpButton = false;
 
 public:
-    void* GetPlayer();
-    int GetPortals();
+    void* GetPlayer(int index = -1);
+    int GetPortals(void* entity);
     Vector GetAbsOrigin(void* entity);
     QAngle GetAbsAngles(void* entity);
     Vector GetLocalVelocity(void* entity);

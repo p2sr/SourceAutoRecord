@@ -9,7 +9,7 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
-#include "Features/Tas/TasTools.hpp"
+#include "Features/Tas/AutoStrafer.hpp"
 
 #include "Client.hpp"
 #include "Engine.hpp"
@@ -51,14 +51,14 @@ REDECL(Server::AirMove_Mid);
 REDECL(Server::AirMove_Mid_Trampoline);
 #endif
 
-void* Server::GetPlayer()
+void* Server::GetPlayer(int index)
 {
-    return this->UTIL_PlayerByIndex(1);
+    index = (index == -1) ? engine->GetLocalPlayerIndex() : index;
+    return this->UTIL_PlayerByIndex(index);
 }
-int Server::GetPortals()
+int Server::GetPortals(void* entity)
 {
-    auto player = this->GetPlayer();
-    return (player) ? *reinterpret_cast<int*>((uintptr_t)player + Offsets::iNumPortalsPlaced) : -1;
+    return *reinterpret_cast<int*>((uintptr_t)entity + Offsets::iNumPortalsPlaced);
 }
 Vector Server::GetAbsOrigin(void* entity)
 {
@@ -186,16 +186,8 @@ DETOUR(Server::PlayerMove)
 // CGameMovement::ProcessMovement
 DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
 {
-    if (tasTools->wantToStrafe) {
-        if (tasTools->isVectorial == 0) {
-            tasTools->Strafe(pMove);
-        } else {
-            tasTools->VectorialStrafe(pMove);
-        }
-
-        if (tasTools->strafeType == 1) {
-            tasTools->strafingDirection *= -1;
-        }
+    if (sv_cheats.GetBool()) {
+        autoStrafer->Strafe(pPlayer, pMove);
     }
 
     return Server::ProcessMovement(thisptr, pPlayer, pMove);
@@ -303,7 +295,6 @@ bool Server::Init()
         this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
         if (sar.game->version & SourceGame_Portal2Engine) {
-            this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
             this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
             this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
 
@@ -324,7 +315,14 @@ bool Server::Init()
             } else {
                 console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
             }
+#else
+            // TODO: implement own function
+            #define GetSplitScreenPlayerSlot_Signature "55 31 C0 89 E5 56 53 83 EC ? 8B 5D ? 80 BB ? ? ? ? ? "
+            this->GetSplitScreenPlayerSlot = Memory::Scan<_GetSplitScreenPlayerSlot>(this->Name(), GetSplitScreenPlayerSlot_Signature);
 #endif
+            if (this->GetSplitScreenPlayerSlot) {
+                this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
+            }
         }
     }
 
@@ -354,6 +352,7 @@ bool Server::Init()
 
     if (sar.game->version & SourceGame_Portal2Engine) {
         offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
+        offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
     }
     if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2Game)) {
         offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
