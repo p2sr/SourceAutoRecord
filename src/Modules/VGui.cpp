@@ -11,6 +11,7 @@
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
 #include "Features/Tas/TasTools.hpp"
+#include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/Timer/TimerAverage.hpp"
 #include "Features/Timer/TimerCheckPoints.hpp"
@@ -119,6 +120,11 @@ DETOUR(VGui::Paint, int mode)
     }
     if (sar_hud_cps.GetBool()) {
         DrawElement("last cp: %i (%.3f)", timer->cps->latestTick, timer->cps->latestTime);
+    }
+    if (sar_hud_pause_timer.GetBool()) {
+        auto tick = pauseTimer->GetTotal();
+        auto time = engine->ToTime(tick);
+        DrawElement("pause: %i (%.3f)", tick, time);
     }
     // Demo
     if (sar_hud_demo.GetBool()) {

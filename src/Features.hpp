@@ -19,5 +19,6 @@
 #include "Features/Tas/TasTools.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Teleporter.hpp"
+#include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/WorkshopList.hpp"

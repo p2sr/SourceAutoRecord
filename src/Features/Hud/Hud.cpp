@@ -25,6 +25,7 @@ Variable sar_hud_session("sar_hud_session", "0", "Draws current session tick.\n"
 Variable sar_hud_last_session("sar_hud_last_session", "0", "Draws value of latest completed session.\n");
 Variable sar_hud_sum("sar_hud_sum", "0", "Draws summary value of sessions.\n");
 Variable sar_hud_timer("sar_hud_timer", "0", "Draws current value of timer.\n");
+Variable sar_hud_pause_timer("sar_hud_pause_timer", "1", "Draws current value of pause timer.\n");
 Variable sar_hud_avg("sar_hud_avg", "0", "Draws calculated average of timer.\n");
 Variable sar_hud_cps("sar_hud_cps", "0", "Draws latest checkpoint of timer.\n");
 Variable sar_hud_demo("sar_hud_demo", "0", "Draws name, tick and time of current demo.\n");

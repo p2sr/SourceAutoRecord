@@ -10,6 +10,7 @@
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Tas/TasTools.hpp"
+#include "Features/Timer/PauseTimer.hpp"
 
 #include "Client.hpp"
 #include "Engine.hpp"
@@ -283,6 +284,18 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 #else
 DETOUR(Server::GameFrame, bool simulating)
 {
+    if (!server->IsRestoring()) {
+        if (!simulating && !pauseTimer->IsActive()) {
+            pauseTimer->Start();
+        } else if (simulating && pauseTimer->IsActive()) {
+            pauseTimer->Stop();
+        }
+
+        if (pauseTimer->IsActive()) {
+            pauseTimer->Increment();
+        }
+    }
+
     auto result = Server::GameFrame(thisptr, simulating);
 
     if (session->isRunning && sar_speedrun_standard.GetBool()) {
@@ -339,6 +352,10 @@ bool Server::Init()
         Memory::DerefDeref<CGlobalVars*>((uintptr_t)this->UTIL_PlayerByIndex + Offsets::gpGlobals, &this->gpGlobals);
 
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
+
+        if (sar.game->version & SourceGame_Portal2Engine) {
+            this->IsRestoring = this->g_ServerGameDLL->Original<_IsRestoring>(Offsets::IsRestoring);
+        }
 
         if (sar.game->version & (SourceGame_Portal2Game | SourceGame_Portal)) {
             this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
