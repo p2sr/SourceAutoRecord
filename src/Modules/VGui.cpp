@@ -139,7 +139,12 @@ DETOUR(VGui::Paint, int mode)
         DrawElement("jumps: %i", stats->jumps->total);
     }
     if (sar_hud_portals.isRegistered && sar_hud_portals.GetBool()) {
-        DrawElement("portals: %i", server->GetPortals(server->GetPlayer()));
+        auto player = server->GetPlayer();
+        if (player) {
+            DrawElement("portals: %i", server->GetPortals(player));
+        } else {
+            DrawElement("portals: -");
+        }
     }
     if (sar_hud_steps.GetBool()) {
         DrawElement("steps: %i", stats->steps->total);
@@ -191,15 +196,25 @@ DETOUR(VGui::Paint, int mode)
     }
     // Tas tools
     if (sar_hud_velocity_angle.GetBool()) {
-        auto velocityAngles = tasTools->GetVelocityAngles(server->GetPlayer());
-        DrawElement("vel ang: %.3f %.3f", velocityAngles.x, velocityAngles.y);
+        auto player = server->GetPlayer();
+        if (player) {
+            auto velocityAngles = tasTools->GetVelocityAngles(player);
+            DrawElement("vel ang: %.3f %.3f", velocityAngles.x, velocityAngles.y);
+        } else {
+            DrawElement("vel ang: -");
+        }
     }
     if (sar_hud_acceleration.GetBool()) {
-        auto acceleration = tasTools->GetAcceleration(server->GetPlayer());
-        if (sar_hud_acceleration.GetInt() == 1) {
-            DrawElement("accel: %.3f %.3f", acceleration.x, acceleration.y);
+        auto player = server->GetPlayer();
+        if (player) {
+            auto acceleration = tasTools->GetAcceleration(player);
+            if (sar_hud_acceleration.GetInt() == 1) {
+                DrawElement("accel: %.3f %.3f", acceleration.x, acceleration.y);
+            } else {
+                DrawElement("accel: %.3f", acceleration.z);
+            }
         } else {
-            DrawElement("accel: %.3f", acceleration.z);
+            DrawElement("accel: -");
         }
     }
     if (sar_hud_player_info.GetBool()) {
