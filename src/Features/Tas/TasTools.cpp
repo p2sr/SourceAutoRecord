@@ -101,7 +101,7 @@ CON_COMMAND(sar_tas_aim_at_point, "sar_tas_aim_at_point <x> <y> <z> : Aims at po
         return console->Print("sar_tas_aim_at_point <x> <y> <z> : Aims at point {x, y, z} specified.\n");
     }
 
-    auto player = server->GetPlayer(GET_ACTIVE_SPLITSCREEN_SLOT());
+    auto player = server->GetPlayer();
     if (player) {
         tasTools->AimAtPoint(player, static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])));
     }
