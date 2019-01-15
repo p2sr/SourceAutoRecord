@@ -8,59 +8,31 @@ A new way to time your speedrun!
 - Support for categories
 - Automatic start, stop and split
 - Menu timing
+- Pause timing (1.9)
 - LiveSplit support
 
-## Support
+## Support¹
 
 Game|Windows|Linux
 ---|:-:|:-:
-Portal 2|✔|✔
-Aperture Tag|✔|✔
-Portal Stories: Mel|✔|✔
-The Stanley Parable|✖|✖
-The Beginners Guide|✖|✖
-Half-Life 2|✖|✖
-Portal|✔|✔
+[Portal 2](https://store.steampowered.com/app/620)²|✔|✔
+[Aperture Tag](https://store.steampowered.com/app/280740)|✔|✔
+[Portal Stories: Mel](https://store.steampowered.com/app/317400)|✔|✔
+[The Stanley Parable](https://store.steampowered.com/app/221910)|✖|✖
+[The Beginners Guide](https://store.steampowered.com/app/303210)|✖|✖
+[Half-Life 2](https://store.steampowered.com/app/220)|✖|✖
+[Portal](https://store.steampowered.com/app/400)|✔|✔
 
-## Adding Game Support
-
-### Rules
-
-```cpp
-#include "Features/Speedrun/TimerRule.hpp"
-
-SAR_RULE3(moon_shot,        // Name of the rule
-    "sp_a4_finale4",        // Name of the map
-    "moon_portal_detector", // Name of the entity
-    SearchMode::Names)      // Search in entity list by name
-{
-    // Access property
-    auto portalCount = reinterpret_cast<int*>((uintptr_t)entity + 1337);
-
-    if (*portalCount != 0) {
-        return TimerAction::End; // Timer ends on this tick
-    }
-
-    return TimerAction::DoNothing; // Continue running
-}
-```
-
-Note: Pointers of entities will be cached when the server has loaded. Make sure that the entity lives long enough to get any valid states. This also means that entities which get created at a later time cannot be accessed.
-
-### Categories
-
-```cpp
-#include "Features/Speedrun/TimerCategory.hpp"
-
-SAR_CATEGORY(ApertureTag,                       // Name of game or mod
-    RTA,                                        // Name of category
-    _Rules({ &out_of_shower, &end_credits }));  // List of rules
-```
+¹ Latest Steam version.<br>
+² Cooperative game not supported.
 
 ## Interface
 
 SAR provides an interface for accessing the timer externally which can be used with [LiveSplit](https://livesplit.github.com).
-Here's a generic [ASL Script](https://gist.github.com/NeKzor/6db7ca6a28ed55fbcce7d8af7edf0f18) as an example.
+
+### Examples
+
+- [SAR.asl](https://raw.githubusercontent.com/NeKzor/SourceAutoRecord/livesplit/SAR.asl)
 
 ## Console Commands
 
@@ -85,6 +57,7 @@ Here's a generic [ASL Script](https://gist.github.com/NeKzor/6db7ca6a28ed55fbcce
 - sar_speedrun_autostart
 - sar_speedrun_autostop
 - sar_speedrun_standard
+- sar_speedrun_time_pauses (1.9)
 
 ### HUD
 

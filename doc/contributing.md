@@ -228,3 +228,38 @@ sar_hello.UniqueFor(SourceGame_TheStanleyParable);
 ### SDK
 
 A minimal Source Engine SDK can be found in `Utils/SDK.hpp`.
+
+### Speedrun Timer
+
+#### Rules
+
+```cpp
+#include "Features/Speedrun/TimerRule.hpp"
+
+SAR_RULE3(moon_shot,        // Name of the rule
+    "sp_a4_finale4",        // Name of the map
+    "moon_portal_detector", // Name of the entity
+    SearchMode::Names)      // Search in entity list by name
+{
+    // Access property
+    auto portalCount = reinterpret_cast<int*>((uintptr_t)entity + 1337);
+
+    if (*portalCount != 0) {
+        return TimerAction::End; // Timer ends on this tick
+    }
+
+    return TimerAction::DoNothing; // Continue running
+}
+```
+
+Note: Pointers of entities will be cached when the server has loaded. Make sure that the entity lives long enough to get any valid states. This also means that entities which get created at a later time cannot be accessed.
+
+#### Categories
+
+```cpp
+#include "Features/Speedrun/TimerCategory.hpp"
+
+SAR_CATEGORY(ApertureTag,                       // Name of game or mod
+    RTA,                                        // Name of category
+    _Rules({ &out_of_shower, &end_credits }));  // List of rules
+```
