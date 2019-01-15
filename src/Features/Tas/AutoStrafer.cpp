@@ -51,7 +51,8 @@ void AutoStrafer::Strafe(void* pPlayer, CMoveData* pMove)
         QAngle newAngle = { 0, angle + lookangle, 0 };
         pMove->m_vecViewAngles = newAngle;
         pMove->m_vecAbsViewAngles = newAngle;
-        engine->SetAngles(newAngle);
+        // TODO: write own function
+        //engine->SetAngles(newAngle);
     }
 
     if (strafe->type == StrafingType::Straight) {
