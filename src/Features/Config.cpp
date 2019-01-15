@@ -25,8 +25,10 @@ Config::Config()
 bool Config::Save()
 {
     std::ofstream file(std::string(engine->GetGameDirectory()) + this->filePath, std::ios::out | std::ios::trunc);
-    if (!file.good())
+    if (!file.good()) {
+        file.close();
         return false;
+    }
 
     SAVE_CVAR(sar_hud_default_spacing, Int);
     SAVE_CVAR(sar_hud_default_padding_x, Int);
@@ -43,18 +45,18 @@ bool Config::Save()
     SAVE_CVAR(sar_ihud_layout, String);
     SAVE_CVAR(sar_ihud_shadow_color, String);
     SAVE_CVAR(sar_ihud_shadow_font_color, String);
+    SAVE_CVAR(sar_ei_hud_x, Int);
+    SAVE_CVAR(sar_ei_hud_y, Int);
+    SAVE_CVAR(sar_ei_hud_z, Int);
+    SAVE_CVAR(sar_ei_hud_font_color, String);
+    SAVE_CVAR(sar_ei_hud_font_color2, String);
+    SAVE_CVAR(sar_ei_hud_font_index, Int);
 
-    if (sar.game->version & SourceGame_Portal2Game) {
+    if (sar.game->version & (SourceGame_Portal2Game | SourceGame_Portal)) {
         SAVE_CVAR(sar_sr_hud_x, Int);
         SAVE_CVAR(sar_sr_hud_y, Int);
         SAVE_CVAR(sar_sr_hud_font_color, String);
         SAVE_CVAR(sar_sr_hud_font_index, Int);
-        SAVE_CVAR(sar_ei_hud_x, Int);
-        SAVE_CVAR(sar_ei_hud_y, Int);
-        SAVE_CVAR(sar_ei_hud_z, Int);
-        SAVE_CVAR(sar_ei_hud_font_color, String);
-        SAVE_CVAR(sar_ei_hud_font_color2, String);
-        SAVE_CVAR(sar_ei_hud_font_index, Int);
     }
 
     file.close();
@@ -63,8 +65,10 @@ bool Config::Save()
 bool Config::Load()
 {
     std::ifstream file(std::string(engine->GetGameDirectory()) + this->filePath, std::ios::in);
-    if (!file.good())
+    if (!file.good()) {
+        file.close();
         return false;
+    }
 
     engine->ExecuteCommand("exec _sar_cvars.cfg");
 
