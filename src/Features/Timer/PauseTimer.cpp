@@ -2,7 +2,8 @@
 
 #include "Variable.hpp"
 
-Variable sar_time_pauses("sar_time_pauses", "1", "Calculate pauses for session timing.\n");
+Variable sar_time_pauses("sar_time_pauses", "1", "Counts non-simulated ticks when the server pauses. "
+                                                 "Setting this to 0 also affects sar_timer_time_pauses and sar_speedrun_time_pauses.\n");
 
 PauseTimer* pauseTimer;
 

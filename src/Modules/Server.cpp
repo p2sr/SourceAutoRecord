@@ -11,6 +11,7 @@
 #include "Features/StepCounter.hpp"
 #include "Features/Tas/TasTools.hpp"
 #include "Features/Timer/PauseTimer.hpp"
+#include "Features/Timer/Timer.hpp"
 
 #include "Client.hpp"
 #include "Engine.hpp"
@@ -289,14 +290,23 @@ DETOUR(Server::GameFrame, bool simulating)
             pauseTimer->Start();
         } else if (simulating && pauseTimer->IsActive()) {
             pauseTimer->Stop();
-        }
-
-        if (pauseTimer->IsActive()) {
-            pauseTimer->Increment();
+            console->DevMsg("Paused for %i non-simulated ticks.\n", pauseTimer->GetTotal());
         }
     }
 
     auto result = Server::GameFrame(thisptr, simulating);
+
+    if (session->isRunning && pauseTimer->IsActive()) {
+        pauseTimer->Increment();
+
+        if (speedrun->IsActive() && sar_speedrun_time_pauses.GetBool()) {
+             speedrun->IncrementPauseTime();
+        }
+
+        if (timer->isRunning && sar_timer_time_pauses.GetBool()) {
+            ++timer->totalTicks;
+        }
+    }
 
     if (session->isRunning && sar_speedrun_standard.GetBool()) {
         speedrun->CheckRules(engine->tickcount);

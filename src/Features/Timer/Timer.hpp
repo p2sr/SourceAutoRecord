@@ -28,3 +28,4 @@ public:
 extern Timer* timer;
 
 extern Variable sar_timer_always_running;
+extern Variable sar_timer_time_pauses;
