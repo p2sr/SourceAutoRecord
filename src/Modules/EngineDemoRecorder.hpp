@@ -3,6 +3,7 @@
 
 #include "Module.hpp"
 
+#include "Command.hpp"
 #include "Interface.hpp"
 #include "Utils.hpp"
 
@@ -19,6 +20,7 @@ public:
 
     std::string currentDemo = std::string();
     bool isRecordingDemo = false;
+    bool requestedStop = false;
 
 public:
     int GetTick();
@@ -28,6 +30,8 @@ public:
 
     // CDemoRecorder::StopRecording
     DECL_DETOUR(StopRecording)
+
+    DECL_DETOUR_COMMAND(stop)
 
     bool Init() override;
     void Shutdown() override;
