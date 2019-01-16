@@ -130,6 +130,7 @@ int GetClientEntity;
 int GameFrame;
 int Think;
 int GetAllServerClasses;
+int IsRestoring;
 
 // CMoveData
 int m_nOldButtons;

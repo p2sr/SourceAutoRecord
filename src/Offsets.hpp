@@ -130,6 +130,7 @@ extern int GetClientEntity;
 extern int GameFrame;
 extern int Think;
 extern int GetAllServerClasses;
+extern int IsRestoring;
 
 // CMoveData
 extern int m_nOldButtons;

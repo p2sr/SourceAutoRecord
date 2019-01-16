@@ -21,6 +21,7 @@ extern Variable sar_hud_session;
 extern Variable sar_hud_last_session;
 extern Variable sar_hud_sum;
 extern Variable sar_hud_timer;
+extern Variable sar_hud_pause_timer;
 extern Variable sar_hud_avg;
 extern Variable sar_hud_cps;
 extern Variable sar_hud_demo;

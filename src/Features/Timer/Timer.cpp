@@ -13,6 +13,7 @@
 #include "Variable.hpp"
 
 Variable sar_timer_always_running("sar_timer_always_running", "1", "Timer will save current value when disconnecting.\n");
+Variable sar_timer_time_pauses("sar_timer_time_pauses", "1", "Timer adds non-simulated ticks when server pauses.\n");
 
 Timer* timer;
 

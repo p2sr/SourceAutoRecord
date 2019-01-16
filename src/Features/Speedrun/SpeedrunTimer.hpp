@@ -37,6 +37,7 @@ private:
     std::vector<TimerRule*> rules;
     TimerCategory* category;
     int offset;
+    int pause;
 
 public:
     SpeedrunTimer();
@@ -52,6 +53,8 @@ public:
     void Stop(bool addSegment = true);
     void Reset();
     void Split();
+
+    void IncrementPauseTime();
 
     int GetSession();
     int GetTotal();
@@ -108,3 +111,4 @@ extern Command sar_speedrun_offset;
 extern Variable sar_speedrun_autostart;
 extern Variable sar_speedrun_autostop;
 extern Variable sar_speedrun_standard;
+extern Variable sar_speedrun_time_pauses;

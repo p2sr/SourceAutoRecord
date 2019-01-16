@@ -93,6 +93,7 @@ void Portal2::LoadOffsets()
     m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
     GameFrame = 4; // CServerGameDLL
     GetAllServerClasses = 10; // CServerGameDLL
+    IsRestoring = 24; // CServerGameDLL
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
     gpGlobals = 12; // UTIL_PlayerByIndex

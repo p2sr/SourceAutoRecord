@@ -27,6 +27,8 @@ Variable sar_speedrun_autostop("sar_speedrun_autostop", "0",
     "Stops speedrun timer automatically when going into the menu.\n");
 Variable sar_speedrun_standard("sar_speedrun_standard", "1",
     "Timer automatically starts, splits and stops.\n");
+Variable sar_speedrun_time_pauses("sar_speedrun_time_pauses", "1",
+    "Timer automatically adds non-simulated ticks when server pauses.\n");
 
 SpeedrunTimer* speedrun;
 
@@ -41,6 +43,7 @@ SpeedrunTimer::SpeedrunTimer()
     , rules()
     , category(nullptr)
     , offset(0)
+    , pause(0)
 {
     this->pubInterface = std::make_unique<TimerInterface>();
     this->result = std::make_unique<TimerResult>();
@@ -65,6 +68,7 @@ void SpeedrunTimer::Start(const int* engineTicks)
     }
 
     this->total = this->prevTotal = this->offset;
+    this->pause = 0;
     this->state = TimerState::Running;
 
     this->result.get()->Reset();
@@ -87,6 +91,7 @@ void SpeedrunTimer::Resume(const int* engineTicks)
         this->pubInterface.get()->SetAction(TimerAction::Resume);
         this->state = TimerState::Running;
         this->base = *engineTicks;
+        this->pause = 0;
     }
 }
 void SpeedrunTimer::PreUpdate(const int* engineTicks, const char* engineMap)
@@ -106,7 +111,7 @@ void SpeedrunTimer::PostUpdate(const int* engineTicks, const char* engineMap)
 {
     if (this->state == TimerState::Running) {
         this->session = *engineTicks - this->base;
-        this->total = this->prevTotal + this->session;
+        this->total = this->prevTotal + this->session + this->pause;
         this->pubInterface.get()->Update(this);
     }
 }
@@ -153,6 +158,7 @@ void SpeedrunTimer::Stop(bool addSegment)
             this->result.get()->AddSegment(this->session);
         }
         this->result.get()->EndSplit(this->total);
+        this->pause = 0;
     } else {
         console->Print("Ready for new speedun!\n");
         this->pubInterface.get()->SetAction(TimerAction::Reset);
@@ -164,6 +170,7 @@ void SpeedrunTimer::Reset()
     this->total = this->offset;
     this->prevTotal = 0;
     this->base = 0;
+    this->pause = 0;
     TimerCategory::ResetAll();
     this->InitRules();
 }
@@ -175,6 +182,10 @@ void SpeedrunTimer::Split()
         this->pb.get()->UpdateSplit(this->map);
         this->pubInterface.get()->SetAction(TimerAction::Split);
     }
+}
+void SpeedrunTimer::IncrementPauseTime()
+{
+    ++this->pause;
 }
 int SpeedrunTimer::GetSession()
 {
