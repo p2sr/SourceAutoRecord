@@ -15,6 +15,7 @@
 #include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Tas/TasTools.hpp"
+#include "Features/Timer/Timer.hpp"
 #include "Features/WorkshopList.hpp"
 
 #include "Modules/Client.hpp"
@@ -129,6 +130,9 @@ void Cheats::Init()
     sar_replay_viewmode.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_mimic.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_tas_strafe_vectorial.UniqueFor(SourceGame_Portal2Engine);
+    sar_hud_pause_timer.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
+    sar_speedrun_time_pauses.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
+    sar_timer_time_pauses.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
 
     startbhop.UniqueFor(SourceGame_TheStanleyParable);
     endbhop.UniqueFor(SourceGame_TheStanleyParable);
