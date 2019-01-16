@@ -368,7 +368,7 @@ CON_COMMAND(sar_replay_stop, "Stops recording or playing user inputs.\n")
 {
     replayRecorder1->StopRecording();
     replayRecorder2->StopRecording();
-    replayPlayer2->StopPlaying();
+    replayPlayer1->StopPlaying();
     replayPlayer2->StopPlaying();
     console->Print("Stopped playing and recording!\n");
 }
