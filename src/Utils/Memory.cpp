@@ -160,7 +160,7 @@ uintptr_t Memory::Scan(const char* moduleName, const char* pattern, int offset)
     if (Memory::TryGetModule(moduleName, &info)) {
         auto start = uintptr_t(info.base);
         auto end = start + info.size;
-        result = FindAddress(start, end, pattern);
+        result = Memory::FindAddress(start, end, pattern);
         if (result) {
             result += offset;
         }

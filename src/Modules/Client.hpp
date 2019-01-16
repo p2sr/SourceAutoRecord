@@ -40,6 +40,7 @@ public:
     QAngle GetAbsAngles();
     Vector GetLocalVelocity();
     Vector GetViewOffset();
+    void CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset);
 
 public:
     // CHLClient::HudUpdate
@@ -58,6 +59,9 @@ public:
 
     // CInput::CreateMove
     DECL_DETOUR(CInput_CreateMove, int sequence_number, float input_sample_frametime, bool active)
+
+    // CInput::GetButtonBits
+    DECL_DETOUR(GetButtonBits, bool bResetState)
 
     bool Init() override;
     void Shutdown() override;

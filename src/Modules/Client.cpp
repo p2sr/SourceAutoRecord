@@ -10,6 +10,7 @@
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Session.hpp"
+#include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 
 #include "Console.hpp"
@@ -33,6 +34,7 @@ REDECL(Client::GetName);
 REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::DecodeUserCmdFromBuffer2);
 REDECL(Client::CInput_CreateMove);
+REDECL(Client::GetButtonBits);
 
 void* Client::GetPlayer()
 {
@@ -57,6 +59,22 @@ Vector Client::GetViewOffset()
 {
     auto player = this->GetPlayer();
     return (player) ? *(Vector*)((uintptr_t)player + Offsets::C_m_vecViewOffset) : Vector();
+}
+void Client::CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset)
+{
+    auto pButtonState = &button->GetPerUser(nSlot);
+    if (pButtonState->state & 3) {
+        bits |= in_button;
+    }
+
+    int clearmask = ~2;
+    if (in_ignore & in_button) {
+        clearmask = ~3;
+    }
+
+    if (reset) {
+        pButtonState->state &= clearmask;
+    }
 }
 
 // CHLClient::HudUpdate
@@ -191,6 +209,16 @@ DETOUR(Client::CInput_CreateMove, int sequence_number, float input_sample_framet
     return result;
 }
 
+// CInput::GetButtonBits
+DETOUR(Client::GetButtonBits, bool bResetState)
+{
+    auto bits = Client::GetButtonBits(thisptr, bResetState);
+
+    client->CalcButtonBits(GET_ACTIVE_SPLITSCREEN_SLOT(), bits, IN_AUTOSTRAFE, 0, &autoStrafer->in_autostrafe, bResetState);
+
+    return bits;
+}
+
 bool Client::Init()
 {
     bool readJmp = false;
@@ -246,6 +274,7 @@ bool Client::Init()
 #endif
                 if (sar.game->version & SourceGame_Portal2Game) {
                     g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
+                    g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
 
                     auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
                     Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
@@ -294,7 +323,6 @@ bool Client::Init()
 
     offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
     offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
-    offsetFinder->ClientSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
 
     return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }

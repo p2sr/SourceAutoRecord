@@ -32,8 +32,8 @@ private:
     bool callFromCheckJumpButton = false;
 
 public:
-    void* GetPlayer();
-    int GetPortals();
+    void* GetPlayer(int index = -1);
+    int GetPortals(void* entity);
     Vector GetAbsOrigin(void* entity);
     QAngle GetAbsAngles(void* entity);
     Vector GetLocalVelocity(void* entity);
@@ -45,6 +45,7 @@ public:
     char* GetEntityName(void* entity);
     char* GetEntityClassName(void* entity);
     bool IsPlayer(void* entity);
+    int GetSplitScreenPlayerSlot(void* entity);
 
 public:
     // CGameMovement::ProcessMovement

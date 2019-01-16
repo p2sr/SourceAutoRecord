@@ -21,11 +21,6 @@ public:
     char propName[32];
     int propOffset;
     PropType propType;
-    int wantToStrafe;
-    int strafingDirection;
-    int isVectorial;
-    int strafeType;
-    int isTurning;
 
 private:
     Vector acceleration;
@@ -34,13 +29,10 @@ private:
 
 public:
     TasTools();
-    void AimAtPoint(float x, float y, float z);
-    Vector GetVelocityAngles();
-    Vector GetAcceleration();
+    void AimAtPoint(void* player, float x, float y, float z);
+    Vector GetVelocityAngles(void* player);
+    Vector GetAcceleration(void* player);
     void* GetPlayerInfo();
-    float GetStrafeAngle(CMoveData* pMove, int direction);
-    void Strafe(CMoveData *pMove);
-    void VectorialStrafe(CMoveData* pMove);
 };
 
 extern TasTools* tasTools;
@@ -49,4 +41,3 @@ extern Command sar_tas_aim_at_point;
 extern Command sar_tas_set_prop;
 extern Command sar_tas_addang;
 extern Command sar_tas_setang;
-extern Command sar_tas_strafe;

@@ -12,6 +12,7 @@
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Tas/TasTools.hpp"
 #include "Features/WorkshopList.hpp"
@@ -30,13 +31,13 @@ Variable sar_jumpboost("sar_jumpboost", "0", 0, "Enables special game movement o
                                                 "0 = Default,\n"
                                                 "1 = Orange Box Engine,\n"
                                                 "2 = Pre-OBE.\n");
-Variable sar_aircontrol("sar_aircontrol", "0", "Enables more air-control on the server.\n");
+Variable sar_aircontrol("sar_aircontrol", "0", 0, "Enables more air-control on the server.\n");
 Variable sar_duckjump("sar_duckjump", "0", "Allows duck-jumping even when fully crouched, similar to prevent_crouch_jump.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
 
 // TSP only
-void IN_BhopDown(const CCommand& args) { client->KeyDown(client->in_jump, (args.ArgC() > 1) ? args[1] : NULL); }
-void IN_BhopUp(const CCommand& args) { client->KeyUp(client->in_jump, (args.ArgC() > 1) ? args[1] : NULL); }
+void IN_BhopDown(const CCommand& args) { client->KeyDown(client->in_jump, (args.ArgC() > 1) ? args[1] : nullptr); }
+void IN_BhopUp(const CCommand& args) { client->KeyUp(client->in_jump, (args.ArgC() > 1) ? args[1] : nullptr); }
 
 Command startbhop("+bhop", IN_BhopDown, "Client sends a key-down event for the in_jump state.\n");
 Command endbhop("-bhop", IN_BhopUp, "Client sends a key-up event for the in_jump state.\n");
@@ -127,7 +128,7 @@ void Cheats::Init()
     sar_duckjump.UniqueFor(SourceGame_Portal2Game);
     sar_replay_viewmode.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_mimic.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
-    sar_tas_strafe.UniqueFor(SourceGame_Portal2Engine);
+    sar_tas_strafe_vectorial.UniqueFor(SourceGame_Portal2Engine);
 
     startbhop.UniqueFor(SourceGame_TheStanleyParable);
     endbhop.UniqueFor(SourceGame_TheStanleyParable);
@@ -151,6 +152,9 @@ void Cheats::Init()
     sar_togglewait.UniqueFor(SourceGame_Portal2Game);
     sar_tas_ss.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2Game | SourceGame_HalfLife2Engine);
+    sar_tas_strafe.UniqueFor(SourceGame_Portal2Engine);
+    startautostrafe.UniqueFor(SourceGame_Portal2Engine);
+    endautostrafe.UniqueFor(SourceGame_Portal2Engine);
 
     cvars->Unlock();
 

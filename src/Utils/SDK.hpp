@@ -602,6 +602,9 @@ struct CBaseEdict {
 struct edict_t : CBaseEdict {
 };
 
+int ENTINDEX(edict_t *pEdict);
+edict_t* INDEXENT(int iEdictNum);
+
 struct CGlobalVarsBase {
     float realtime; // 0
     int framecount; // 4
@@ -697,6 +700,18 @@ struct PerUserInput_t {
     unsigned long m_hSelectedWeapon; // 180 CHandle<C_BaseCombatWeapon>
     CameraThirdData_t* m_pCameraThirdData; // 184
     int m_nCamCommand; // 188
+};
+
+#define MAX_SPLITSCREEN_PLAYERS 2
+
+struct kbutton_t {
+    struct Split_t {
+        int down[2];
+        int state;
+    };
+
+    Split_t& GetPerUser(int nSlot = -1);
+    Split_t m_PerUser[MAX_SPLITSCREEN_PLAYERS];
 };
 
 enum TOGGLE_STATE {

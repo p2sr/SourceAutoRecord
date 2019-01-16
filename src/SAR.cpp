@@ -56,6 +56,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<EntityList>(&entityList);
             this->features->AddFeature<OffsetFinder>(&offsetFinder);
             this->features->AddFeature<Imitator>(&imitator);
+            this->features->AddFeature<AutoStrafer>(&autoStrafer);
 
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
