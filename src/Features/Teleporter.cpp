@@ -11,50 +11,51 @@
 Teleporter* teleporter;
 
 Teleporter::Teleporter()
-    : isSet(false)
-    , origin()
-    , angles()
+    : locations()
 {
     this->hasLoaded = true;
 }
-void Teleporter::Save()
+TeleportLocation* Teleporter::GetLocation(int nSlot)
 {
-    this->origin = client->GetAbsOrigin();
-    this->angles = engine->GetAngles();
-    this->isSet = true;
-
-    console->Print("Saved location: %.3f %.3f %.3f\n", this->origin.x, this->origin.y, this->origin.z);
+    return &this->locations[nSlot];
 }
-void Teleporter::Teleport()
+void Teleporter::Save(int nSlot)
 {
+    auto player = server->GetPlayer(nSlot);
+    if (player) {
+        auto location = this->GetLocation(nSlot);
+        location->origin = server->GetAbsOrigin(player);
+        location->angles = server->GetAbsAngles(player);
+        location->isSet = true;
+
+        console->Print("Saved location: %.3f %.3f %.3f\n", location->origin.x, location->origin.y, location->origin.z);
+    }
+}
+void Teleporter::Teleport(int nSlot)
+{
+    auto location = this->GetLocation(nSlot);
+
     char setpos[64];
-    std::snprintf(setpos, sizeof(setpos), "setpos %f %f %f", this->origin.x, this->origin.y, this->origin.z);
+    std::snprintf(setpos, sizeof(setpos), "setpos %f %f %f", location->origin.x, location->origin.y, location->origin.z);
 
-    engine->SetAngles(this->angles);
+    engine->SetAngles(location->angles);
     engine->ExecuteCommand(setpos);
-}
-bool Teleporter::HasLocation()
-{
-    return this->isSet;
-}
-void Teleporter::Reset()
-{
-    this->isSet = false;
 }
 
 CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
 {
     if (!sv_cheats.GetBool()) {
-        return console->Print("Cannot teleport without sv_cheats 1.\n");
+        return console->Print("Cannot teleport without sv_cheats 1!\n");
     }
 
-    if (!teleporter->HasLocation()) {
-        return console->Print("Location not set. Use sar_teleport_setpos.\n");
+    auto slot = engine->GetLocalPlayerIndex();
+    if (!teleporter->GetLocation(slot)->isSet) {
+        return console->Print("Location not set! Use sar_teleport_setpos.\n");
     }
 
-    teleporter->Teleport();
+    teleporter->Teleport(slot);
 }
 CON_COMMAND(sar_teleport_setpos, "Saves current location for teleportation.\n")
 {
-    teleporter->Save();
+    teleporter->Save(engine->GetLocalPlayerIndex());
 }

@@ -3,18 +3,21 @@
 
 #include "Utils/SDK.hpp"
 
+struct TeleportLocation {
+    bool isSet = false;
+    Vector origin = Vector();
+    QAngle angles = QAngle();
+};
+
 class Teleporter : public Feature {
 private:
-    bool isSet;
-    Vector origin;
-    QAngle angles;
+    TeleportLocation locations[MAX_SPLITSCREEN_PLAYERS];
 
 public:
     Teleporter();
-    void Save();
-    void Teleport();
-    bool HasLocation();
-    void Reset();
+    TeleportLocation* GetLocation(int nSlot);
+    void Save(int nSlot);
+    void Teleport(int nSlot);
 };
 
 extern Teleporter* teleporter;

@@ -51,8 +51,7 @@ bool EngineDemoPlayer::Init()
     auto disconnect = engine->cl->Original(Offsets::Disconnect);
     auto demoplayer = Memory::DerefDeref<void*>(disconnect + Offsets::demoplayer);
     if (this->s_ClientDemoPlayer = Interface::Create(demoplayer)) {
-        this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StartPlayback_Hook,
-            EngineDemoPlayer::StartPlayback, Offsets::StartPlayback);
+        this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StartPlayback_Hook, EngineDemoPlayer::StartPlayback, Offsets::StartPlayback);
 
         this->GetPlaybackTick = s_ClientDemoPlayer->Original<_GetPlaybackTick>(Offsets::GetPlaybackTick);
         this->IsPlayingBack = s_ClientDemoPlayer->Original<_IsPlayingBack>(Offsets::IsPlayingBack);
