@@ -74,6 +74,16 @@ void Engine::SetAngles(QAngle va)
 {
     this->SetViewAngles(this->engineClient->ThisPtr(), va);
 }
+void Engine::SetAngles(int nSlot, QAngle va)
+{
+    auto client = engine->GetLocalClient(nSlot);
+    if (client) {
+        auto viewangles = reinterpret_cast<QAngle*>((uintptr_t)client + Offsets::viewangles);
+        viewangles->x = Math::AngleNormalize(va.x);
+        viewangles->y = Math::AngleNormalize(va.y);
+        viewangles->z = Math::AngleNormalize(va.z);
+    }
+}
 void Engine::SendToCommandBuffer(const char* text, int delay)
 {
     if (sar.game->version & SourceGame_Portal2Engine) {
@@ -246,7 +256,10 @@ bool Engine::Init()
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
+
         if (sar.game->version & SourceGame_Portal2Game) {
+            Memory::Read((uintptr_t)this->SetViewAngles + Offsets::GetLocalClient, &this->GetLocalClient);
+
             this->m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
             this->m_bWaitEnabled2 = reinterpret_cast<bool*>((uintptr_t)this->m_bWaitEnabled + Offsets::CCommandBufferSize);
         }

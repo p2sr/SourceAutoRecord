@@ -27,8 +27,8 @@ inline void SinCos(float radians, float* sine, float* cosine)
 #else
     register double __cosr, __sinr;
     __asm("fsincos"
-        : "=t"(__cosr), "=u"(__sinr)
-        : "0"(radians));
+          : "=t"(__cosr), "=u"(__sinr)
+          : "0"(radians));
 
     *sine = __sinr;
     *cosine = __cosr;
@@ -45,6 +45,18 @@ inline void AngleVectors(const QAngle& angles, Vector* forward)
     forward->x = cp * cy;
     forward->y = cp * sy;
     forward->z = -sp;
+}
+
+inline float AngleNormalize(float angle)
+{
+    angle = fmodf(angle, 360.0f);
+    if (angle > 180) {
+        angle -= 360;
+    }
+    if (angle < -180) {
+        angle += 360;
+    }
+    return angle;
 }
 
 inline float VectorNormalize(Vector& vec)

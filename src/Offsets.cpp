@@ -84,6 +84,7 @@ int m_szFileName;
 // CClientState
 int ProcessTick;
 int Disconnect;
+int viewangles;
 
 // C_BaseEntity
 int C_m_vecAbsOrigin;
@@ -206,4 +207,5 @@ int m_pCommands;
 int CUserCmdSize;
 int MULTIPLAYER_BACKUP;
 int PerUserInput_tSize;
+int GetLocalClient;
 }

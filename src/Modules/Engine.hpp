@@ -37,6 +37,7 @@ public:
     using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
     using _AddText = void(__func*)(void* thisptr, const char* pText, int nTickDelay);
     using _ClientCommand = int(*)(void* thisptr, void* pEdict, const char* szFmt, ...);
+    using _GetLocalClient = int (*)(int index);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -64,6 +65,7 @@ public:
     _ScreenPosition ScreenPosition = nullptr;
     _ConPrintEvent ConPrintEvent = nullptr;
     _ClientCommand ClientCommand = nullptr;
+    _GetLocalClient GetLocalClient = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;
@@ -86,6 +88,7 @@ public:
     edict_t* PEntityOfEntIndex(int iEntIndex);
     QAngle GetAngles();
     void SetAngles(QAngle va);
+    void SetAngles(int nSlot, QAngle va);
     void SendToCommandBuffer(const char* text, int delay);
     int PointToScreen(const Vector& point, Vector& screen);
     void SafeUnload(const char* postCommand = nullptr);

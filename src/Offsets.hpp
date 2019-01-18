@@ -84,6 +84,7 @@ extern int m_szFileName;
 // CClientState
 extern int ProcessTick;
 extern int Disconnect;
+extern int viewangles;
 
 // C_BaseEntity
 extern int C_m_vecAbsOrigin;
@@ -206,4 +207,5 @@ extern int m_pCommands;
 extern int CUserCmdSize;
 extern int MULTIPLAYER_BACKUP;
 extern int PerUserInput_tSize;
+extern int GetLocalClient;
 }

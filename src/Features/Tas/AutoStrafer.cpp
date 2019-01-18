@@ -11,7 +11,9 @@
 
 #include "Utils.hpp"
 
-Variable sar_tas_strafe_vectorial("sar_tas_strafe_vectorial", "1", "Yes.\n");
+Variable sar_tas_strafe_vectorial("sar_tas_strafe_vectorial", "1",
+    "1 = Auto-strafer calculates perfect forward-side movement,\n"
+    "0 = Auto-strafer calculates perfect viewangle.\n");
 
 AutoStrafer* autoStrafer;
 
@@ -51,8 +53,7 @@ void AutoStrafer::Strafe(void* pPlayer, CMoveData* pMove)
         QAngle newAngle = { 0, angle + lookangle, 0 };
         pMove->m_vecViewAngles = newAngle;
         pMove->m_vecAbsViewAngles = newAngle;
-        // TODO: write own function
-        //engine->SetAngles(newAngle);
+        engine->SetAngles(slot, newAngle);
     }
 
     if (strafe->type == StrafingType::Straight) {
