@@ -3,6 +3,7 @@
 
 #include "Utils/SDK.hpp"
 
+#include "Command.hpp"
 #include "Variable.hpp"
 
 // Portal 2 Engine only
@@ -23,9 +24,10 @@ public:
     virtual ~Listener();
     virtual void FireGameEvent(IGameEvent* ev);
     virtual int GetEventDebugID();
-    void DumpGameEvents();
 };
 
 extern Listener* listener;
 
-extern Variable sar_debug_game_events;
+extern Variable sar_debug_listener;
+
+extern Command sar_dump_events;
