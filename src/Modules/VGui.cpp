@@ -166,11 +166,12 @@ DETOUR(VGui::Paint, int mode)
     }
     // Routing
     if (sar_hud_trace.GetBool()) {
-        auto xyz = tracer->GetDifferences();
-        auto result = (sar_hud_trace.GetInt() == 1)
-            ? tracer->GetResult(TracerResultType::VEC3)
-            : tracer->GetResult(TracerResultType::VEC2);
-        DrawElement("trace: %.3f (%.3f/%.3f/%.3f)", result, std::get<0>(xyz), std::get<1>(xyz), std::get<2>(xyz));
+        auto result = tracer->GetTraceResult(engine->GetLocalPlayerIndex());
+        auto xyz = tracer->CalculateDifferences(result);
+        auto length = (sar_hud_trace.GetInt() == 1)
+            ? tracer->CalculateLength(result, TracerLengthType::VEC3)
+            : tracer->CalculateLength(result, TracerLengthType::VEC2);
+        DrawElement("trace: %.3f (%.3f/%.3f/%.3f)", length, std::get<0>(xyz), std::get<1>(xyz), std::get<2>(xyz));
     }
     if (sar_hud_frame.GetBool()) {
         DrawElement("frame: %i", session->currentFrame);

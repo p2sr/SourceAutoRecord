@@ -5,23 +5,30 @@
 
 #include "Utils.hpp"
 
-enum TracerResultType {
+enum TracerLengthType {
     VEC2,
     VEC3
 };
 
+struct TraceResult {
+    Vector source = Vector();
+    Vector destination = Vector();
+};
+
 class Tracer : public Feature {
 public:
-    Vector source;
-    Vector destination;
+    TraceResult traces[MAX_SPLITSCREEN_PLAYERS];
 
 public:
     Tracer();
-    void Start(Vector source);
-    void Stop(Vector destination);
-    void Reset();
-    std::tuple<float, float, float> GetDifferences();
-    float GetResult(TracerResultType type);
+    TraceResult* GetTraceResult(int nSlot);
+
+    void Start(int nSlot, Vector source);
+    void Stop(int nSlot, Vector destination);
+    void Reset(int nSlot);
+
+    std::tuple<float, float, float> CalculateDifferences(const TraceResult* trace);
+    float CalculateLength(const TraceResult* trace, TracerLengthType type);
 };
 
 extern Tracer* tracer;

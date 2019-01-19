@@ -3,45 +3,50 @@
 #include <cstdlib>
 #include <tuple>
 
-#include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
 #include "Command.hpp"
 
 Tracer* tracer;
 
 Tracer::Tracer()
-    : source()
-    , destination()
+    : traces()
 {
     this->hasLoaded = true;
 }
-void Tracer::Start(Vector source)
+TraceResult* Tracer::GetTraceResult(int nSlot)
 {
-    this->source = source;
+    return &this->traces[nSlot];
 }
-void Tracer::Stop(Vector destination)
+void Tracer::Start(int nSlot, Vector source)
 {
-    this->destination = destination;
+    this->GetTraceResult(nSlot)->source = source;
 }
-void Tracer::Reset()
+void Tracer::Stop(int nSlot, Vector destination)
 {
-    this->source = Vector();
-    this->destination = Vector();
+    this->GetTraceResult(nSlot)->destination = destination;
 }
-std::tuple<float, float, float> Tracer::GetDifferences()
+void Tracer::Reset(int nSlot)
+{
+    auto trace = this->GetTraceResult(nSlot);
+    trace->source = Vector();
+    trace->destination = Vector();
+}
+std::tuple<float, float, float> Tracer::CalculateDifferences(const TraceResult* trace)
 {
     return std::make_tuple(
-        this->destination.x - this->source.x,
-        this->destination.y - this->source.y,
-        this->destination.z - this->source.z);
+        trace->destination.x - trace->source.x,
+        trace->destination.y - trace->source.y,
+        trace->destination.z - trace->source.z);
 }
-float Tracer::GetResult(TracerResultType type)
+float Tracer::CalculateLength(const TraceResult* trace, TracerLengthType type)
 {
-    auto x = this->destination.x - this->source.x;
-    auto y = this->destination.y - this->source.y;
-    auto z = this->destination.z - this->source.z;
-    return (type == TracerResultType::VEC2)
+    auto x = trace->destination.x - trace->source.x;
+    auto y = trace->destination.y - trace->source.y;
+    auto z = trace->destination.z - trace->source.z;
+    return (type == TracerLengthType::VEC2)
         ? std::sqrt(x * x + y * y)
         : std::sqrt(x * x + y * y + z * z);
 }
@@ -50,26 +55,33 @@ float Tracer::GetResult(TracerResultType type)
 
 CON_COMMAND(sar_trace_a, "Saves location A for tracing.\n")
 {
-    tracer->Start(client->GetAbsOrigin());
-    console->Print("Saved location A for tracing!\n");
+    auto player = server->GetPlayer();
+    if (player) {
+        tracer->Start(engine->GetLocalPlayerIndex(), server->GetAbsOrigin(player));
+        console->Print("Saved location A for tracing!\n");
+    }
 }
 CON_COMMAND(sar_trace_b, "Saves location B for tracing.\n")
 {
-    tracer->Stop(client->GetAbsOrigin());
-    console->Print("Saved location B for tracing!\n");
+    auto player = server->GetPlayer();
+    if (player) {
+        tracer->Stop(engine->GetLocalPlayerIndex(), server->GetAbsOrigin(player));
+        console->Print("Saved location B for tracing!\n");
+    }
 }
 CON_COMMAND(sar_trace_result, "Prints tracing result.\n")
 {
-    auto xyz = tracer->GetDifferences();
-    console->Print("A: %.3f/%.3f/%.3f\n", tracer->source.x, tracer->source.y, tracer->source.z);
-    console->Print("B: %.3f/%.3f/%.3f\n", tracer->destination.x, tracer->destination.y, tracer->destination.z);
+    auto result = tracer->GetTraceResult(engine->GetLocalPlayerIndex());
+    auto xyz = tracer->CalculateDifferences(result);
+    console->Print("A: %.3f/%.3f/%.3f\n", result->source.x, result->source.y, result->source.z);
+    console->Print("B: %.3f/%.3f/%.3f\n", result->destination.x, result->destination.y, result->destination.z);
     console->Print("dX: %.3f\n", std::get<0>(xyz));
     console->Print("dY: %.3f\n", std::get<1>(xyz));
     console->Print("dZ: %.3f\n", std::get<2>(xyz));
-    console->Print("dXY: %.3f\n", tracer->GetResult(TracerResultType::VEC2));
-    console->Print("dXYZ: %.3f\n", tracer->GetResult(TracerResultType::VEC3));
+    console->Print("dXY: %.3f\n", tracer->CalculateLength(result, TracerLengthType::VEC2));
+    console->Print("dXYZ: %.3f\n", tracer->CalculateLength(result, TracerLengthType::VEC3));
 }
 CON_COMMAND(sar_trace_reset, "Resets tracer.\n")
 {
-    tracer->Reset();
+    tracer->Reset(engine->GetLocalPlayerIndex());
 }
