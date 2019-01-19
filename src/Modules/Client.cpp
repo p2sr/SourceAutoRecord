@@ -36,29 +36,26 @@ REDECL(Client::DecodeUserCmdFromBuffer2);
 REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
 
-void* Client::GetPlayer()
+void* Client::GetPlayer(int index)
 {
-    return this->GetClientEntity(this->s_EntityList->ThisPtr(), engine->GetLocalPlayerIndex());
+    index = (index == -1) ? engine->GetLocalPlayerIndex() : index;
+    return this->GetClientEntity(this->s_EntityList->ThisPtr(), index);
 }
-Vector Client::GetAbsOrigin()
+Vector Client::GetAbsOrigin(void* entity)
 {
-    auto player = this->GetPlayer();
-    return (player) ? *(Vector*)((uintptr_t)player + Offsets::C_m_vecAbsOrigin) : Vector();
+    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::C_m_vecAbsOrigin);
 }
-QAngle Client::GetAbsAngles()
+QAngle Client::GetAbsAngles(void* entity)
 {
-    auto player = this->GetPlayer();
-    return (player) ? *(QAngle*)((uintptr_t)player + Offsets::C_m_angAbsRotation) : QAngle();
+    return *reinterpret_cast<QAngle*>((uintptr_t)entity + Offsets::C_m_angAbsRotation);
 }
-Vector Client::GetLocalVelocity()
+Vector Client::GetLocalVelocity(void* entity)
 {
-    auto player = this->GetPlayer();
-    return (player) ? *(Vector*)((uintptr_t)player + Offsets::C_m_vecVelocity) : Vector();
+    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::C_m_vecVelocity);
 }
-Vector Client::GetViewOffset()
+Vector Client::GetViewOffset(void* entity)
 {
-    auto player = this->GetPlayer();
-    return (player) ? *(Vector*)((uintptr_t)player + Offsets::C_m_vecViewOffset) : Vector();
+    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::C_m_vecViewOffset);
 }
 void Client::CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset)
 {
@@ -126,7 +123,7 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
         imitator->Save(cmd);
     }
 
-    if (!in_forceuser.isReference || (in_forceuser.isReference && in_forceuser.GetInt() != 1)) {
+    if (!in_forceuser.isReference || (in_forceuser.isReference && !in_forceuser.GetBool())) {
         inputHud->SetButtonBits(cmd->buttons);
     }
 
@@ -142,11 +139,11 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
         }
     }
 
-    if (sar_mimic.isRegistered && sar_mimic.GetBool()) {
+    if (sar_mimic.GetBool()) {
         imitator->Modify(cmd);
     }
 
-    if (in_forceuser.isReference && in_forceuser.GetInt() == 1) {
+    if (in_forceuser.GetBool()) {
         inputHud->SetButtonBits(cmd->buttons);
     }
 
