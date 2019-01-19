@@ -5,8 +5,9 @@
 #include "StepStats.hpp"
 #include "VelocityStats.hpp"
 
-#include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
 #include "Command.hpp"
 #include "Utils.hpp"
@@ -24,71 +25,83 @@ Stats* stats;
 
 Stats::Stats()
 {
-    this->jumps = new JumpStats();
-    this->steps = new StepStats();
-    this->velocity = new VelocityStats();
+    for (auto i = 0; i < MAX_SPLITSCREEN_PLAYERS; ++i) {
+        this->playerStats.push_back(new PlayerStats());
+    }
 
-    this->hasLoaded = this->jumps && this->steps && this->velocity;
+    this->hasLoaded = true;
 }
 Stats::~Stats()
 {
-    SAFE_DELETE(this->jumps)
-    SAFE_DELETE(this->steps)
-    SAFE_DELETE(this->velocity)
+    for (auto& stat : this->playerStats) {
+        delete stat;
+    }
+}
+PlayerStats* Stats::Get(int nSlot)
+{
+    return this->playerStats[nSlot];
 }
 void Stats::ResetAll()
 {
-    this->jumps->Reset();
-    this->steps->Reset();
-    this->velocity->Reset();
+    for (auto& stat : this->playerStats) {
+        stat->Reset();
+    }
 }
 
-// Commmands
+// Commands
 
 CON_COMMAND(sar_stats_jump, "Prints jump stats.\n")
 {
-    std::string type;
-    if (stats->jumps->type == StatsResultType::VEC2) {
+    auto stat = stats->Get(engine->GetLocalPlayerIndex());
+
+    auto type = std::string();
+    if (stat->jumps->type == StatsResultType::VEC2) {
         type = std::string(" (vec2)");
-    } else if (stats->jumps->type == StatsResultType::VEC3) {
+    } else if (stat->jumps->type == StatsResultType::VEC3) {
         type = std::string(" (vec2)");
     }
 
-    console->Print("Distance: %.3f\n", stats->jumps->distance);
-    console->Print("Peak: %.3f %s\n", stats->jumps->distancePeak, type.c_str());
-    console->Print("Jumps: %i\n", stats->jumps->total);
+    console->Print("Distance: %.3f\n", stat->jumps->distance);
+    console->Print("Peak: %.3f %s\n", stat->jumps->distancePeak, type.c_str());
+    console->Print("Jumps: %i\n", stat->jumps->total);
 }
 CON_COMMAND(sar_stats_steps, "Prints total amount of steps.\n")
 {
-    console->Print("Steps: %i\n", stats->jumps->total);
+    auto stat = stats->Get(engine->GetLocalPlayerIndex());
+    console->Print("Steps: %i\n", stat->jumps->total);
 }
 CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
 {
-    auto current = client->GetLocalVelocity();
+    auto stat = stats->Get(engine->GetLocalPlayerIndex());
 
     std::string type;
-    if (stats->velocity->type == StatsResultType::VEC2) {
+    if (stat->velocity->type == StatsResultType::VEC2) {
         type = std::string(" (vec2)");
-    } else if (stats->velocity->type == StatsResultType::VEC3) {
+    } else if (stat->velocity->type == StatsResultType::VEC3) {
         type = std::string(" (vec2)");
     }
 
-    console->Print("Current: %.3f/%.3f (vec2/vec3)", current.Length2D(), current.Length());
-    console->Print("Peak: %.3f %s\n", stats->velocity->peak, type.c_str());
+    auto player = server->GetPlayer();
+    if (player) {
+        auto curVel = server->GetLocalVelocity(player);
+        console->Print("Current: %.3f/%.3f (vec2/vec3)", curVel.Length2D(), curVel.Length());
+    }
+
+    console->Print("Peak: %.3f %s\n", stat->velocity->peak, type.c_str());
 }
 CON_COMMAND(sar_stats_jumps_reset, "Resets total jump count and jump distance peak.\n")
 {
-    stats->jumps->Reset();
+    stats->Get(engine->GetLocalPlayerIndex())->jumps->Reset();
 }
 CON_COMMAND(sar_stats_steps_reset, "Resets total step count.\n")
 {
-    stats->steps->Reset();
+    stats->Get(engine->GetLocalPlayerIndex())->steps->Reset();
 }
 CON_COMMAND(sar_stats_velocity_reset, "Resets velocity peak.\n")
 {
-    stats->velocity->Reset();
+    stats->Get(engine->GetLocalPlayerIndex())->velocity->Reset();
 }
 CON_COMMAND(sar_stats_reset, "Resets all saved stats.\n")
 {
-    stats->ResetAll();
+    stats->Get(engine->GetLocalPlayerIndex())->Reset();
 }

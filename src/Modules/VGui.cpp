@@ -74,28 +74,37 @@ DETOUR(VGui::Paint, int mode)
         DrawElement((char*)sar_hud_text.GetString());
     }
     if (sar_hud_position.GetBool()) {
-        auto abs = client->GetAbsOrigin();
-        DrawElement("pos: %.3f %.3f %.3f", abs.x, abs.y, abs.z);
+        auto player = server->GetPlayer();
+        if (player) {
+            auto pos = server->GetAbsOrigin(player);
+            DrawElement("pos: %.3f %.3f %.3f", pos.x, pos.y, pos.z);
+        } else {
+            DrawElement("pos: -");
+        }
     }
     if (sar_hud_angles.GetBool()) {
-        auto va = engine->GetAngles();
+        auto ang = engine->GetAngles();
         if (sar_hud_angles.GetInt() == 1) {
-            DrawElement("ang: %.3f %.3f", va.x, va.y);
+            DrawElement("ang: %.3f %.3f", ang.x, ang.y);
         } else {
-            DrawElement("ang: %.3f %.3f %.3f", va.x, va.y, va.z);
+            DrawElement("ang: %.3f %.3f %.3f", ang.x, ang.y, ang.z);
         }
     }
     if (sar_hud_velocity.GetBool()) {
-        auto vel = (sar_hud_velocity.GetInt() == 1)
-            ? client->GetLocalVelocity().Length()
-            : client->GetLocalVelocity().Length2D();
-        DrawElement("vel: %.3f", vel);
+        auto player = server->GetPlayer();
+        if (player) {
+            auto vel = (sar_hud_velocity.GetInt() == 1)
+                ? server->GetLocalVelocity(player).Length()
+                : server->GetLocalVelocity(player).Length2D();
+            DrawElement("vel: %.3f", vel);
+        } else {
+            DrawElement("vel: -");
+        }
     }
     // Session
     if (sar_hud_session.GetBool()) {
         auto tick = (session->isRunning) ? engine->GetSessionTick() : 0;
-        auto time = engine->ToTime(tick);
-        DrawElement("session: %i (%.3f)", tick, time);
+        DrawElement("session: %i (%.3f)", tick, engine->ToTime(tick));
     }
     if (sar_hud_last_session.GetBool()) {
         DrawElement("last session: %i (%.3f)", session->lastSession, engine->ToTime(session->lastSession));
@@ -142,7 +151,8 @@ DETOUR(VGui::Paint, int mode)
     }
     // Stats
     if (sar_hud_jumps.GetBool()) {
-        DrawElement("jumps: %i", stats->jumps->total);
+        auto stat = stats->Get(engine->GetLocalPlayerIndex());
+        DrawElement("jumps: %i", stat->jumps->total);
     }
     if (sar_hud_portals.isRegistered && sar_hud_portals.GetBool()) {
         auto player = server->GetPlayer();
@@ -153,16 +163,20 @@ DETOUR(VGui::Paint, int mode)
         }
     }
     if (sar_hud_steps.GetBool()) {
-        DrawElement("steps: %i", stats->steps->total);
+        auto stat = stats->Get(engine->GetLocalPlayerIndex());
+        DrawElement("steps: %i", stat->steps->total);
     }
     if (sar_hud_jump.GetBool()) {
-        DrawElement("jump: %.3f", stats->jumps->distance);
+        auto stat = stats->Get(engine->GetLocalPlayerIndex());
+        DrawElement("jump: %.3f", stat->jumps->distance);
     }
     if (sar_hud_jump_peak.GetBool()) {
-        DrawElement("jump peak: %.3f", stats->jumps->distance);
+        auto stat = stats->Get(engine->GetLocalPlayerIndex());
+        DrawElement("jump peak: %.3f", stat->jumps->distance);
     }
     if (sar_hud_velocity_peak.GetBool()) {
-        DrawElement("vel peak: %.3f", stats->velocity->peak);
+        auto stat = stats->Get(engine->GetLocalPlayerIndex());
+        DrawElement("vel peak: %.3f", stat->velocity->peak);
     }
     // Routing
     if (sar_hud_trace.GetBool()) {

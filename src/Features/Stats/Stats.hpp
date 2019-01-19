@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 #include "JumpStats.hpp"
 #include "StepStats.hpp"
 #include "VelocityStats.hpp"
@@ -7,15 +9,40 @@
 
 #include "Variable.hpp"
 
-class Stats : public Feature {
-public:
+struct PlayerStats {
     JumpStats* jumps;
     StepStats* steps;
     VelocityStats* velocity;
 
+    PlayerStats()
+        : jumps(new JumpStats())
+        , steps(new StepStats())
+        , velocity(new VelocityStats())
+    {
+    }
+    void Reset()
+    {
+        this->jumps->Reset();
+        this->steps->Reset();
+        this->velocity->Reset();
+    }
+    ~PlayerStats()
+    {
+        SAFE_DELETE(this->jumps);
+        SAFE_DELETE(this->steps);
+        SAFE_DELETE(this->velocity);
+    }
+};
+
+class Stats : public Feature {
+private:
+    std::vector<PlayerStats*> playerStats;
+
 public:
     Stats();
     ~Stats();
+
+    PlayerStats* Get(int nSlot);
     void ResetAll();
 };
 

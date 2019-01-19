@@ -1,7 +1,5 @@
 #include "StepCounter.hpp"
 
-#include "Stats/Stats.hpp"
-
 #include "Utils/SDK.hpp"
 
 StepCounter* stepCounter;
@@ -41,8 +39,6 @@ void StepCounter::Increment(int m_fFlags, int m_MoveType, Vector m_vecVelocity, 
     if (m_fFlags & FL_DUCKING || m_MoveType & MOVETYPE_LADDER) {
         this->stepSoundTime += 100;
     }
-
-    ++stats->steps->total;
 }
 void StepCounter::ResetTimer()
 {

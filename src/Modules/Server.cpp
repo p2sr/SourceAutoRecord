@@ -14,7 +14,6 @@
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
 
-#include "Client.hpp"
 #include "Engine.hpp"
 
 #include "Game.hpp"
@@ -122,6 +121,8 @@ int Server::GetSplitScreenPlayerSlot(void* entity)
 // CGameMovement::CheckJumpButton
 DETOUR_T(bool, Server::CheckJumpButton)
 {
+    auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
+
     auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
     auto m_nOldButtons = reinterpret_cast<int*>((uintptr_t)mv + Offsets::m_nOldButtons);
 
@@ -152,9 +153,11 @@ DETOUR_T(bool, Server::CheckJumpButton)
 
     if (result) {
         server->jumpedLastTime = true;
-        ++stats->jumps->total;
-        ++stats->steps->total;
-        stats->jumps->StartTrace(client->GetAbsOrigin());
+
+        auto stat = stats->Get(server->GetSplitScreenPlayerSlot(player));        
+        ++stat->jumps->total;
+        ++stat->steps->total;
+        stat->jumps->StartTrace(server->GetAbsOrigin(player));
     }
 
     return result;
@@ -172,11 +175,13 @@ DETOUR(Server::PlayerMove)
 
     auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::mv_m_vecVelocity);
 
+    auto stat = stats->Get(server->GetSplitScreenPlayerSlot(player));
+
     // Landed after a jump
-    if (stats->jumps->isTracing
+    if (stat->jumps->isTracing
         && m_fFlags & FL_ONGROUND
         && m_MoveType != MOVETYPE_NOCLIP) {
-        stats->jumps->EndTrace(client->GetAbsOrigin(), sar_stats_jumps_xy.GetBool());
+        stat->jumps->EndTrace(server->GetAbsOrigin(player), sar_stats_jumps_xy.GetBool());
     }
 
     stepCounter->ReduceTimer(server->gpGlobals->frametime);
@@ -188,9 +193,10 @@ DETOUR(Server::PlayerMove)
         && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
         && ((m_fFlags & FL_ONGROUND && m_vecVelocity.Length2D() > 0.0001f) || m_MoveType == MOVETYPE_LADDER)) {
         stepCounter->Increment(m_fFlags, m_MoveType, m_vecVelocity, m_nWaterLevel);
+        ++stat->steps;
     }
 
-    stats->velocity->Save(client->GetLocalVelocity(), sar_stats_velocity_peak_xy.GetBool());
+    stat->velocity->Save(server->GetLocalVelocity(player), sar_stats_velocity_peak_xy.GetBool());
     inspector->Record();
 
     return Server::PlayerMove(thisptr);
