@@ -94,31 +94,31 @@ void Variable::PostInit()
         this->ptr = newptr;
     }
 }
-ConVar* Variable::ThisPtr()
+inline ConVar* Variable::ThisPtr()
 {
     return this->ptr;
 }
-ConVar2* Variable::ThisPtr2()
+inline ConVar2* Variable::ThisPtr2()
 {
     return reinterpret_cast<ConVar2*>(this->ptr);
 }
-bool Variable::GetBool()
+inline bool Variable::GetBool()
 {
     return !!GetInt();
 }
-int Variable::GetInt()
+inline int Variable::GetInt()
 {
     return this->ptr->m_nValue;
 }
-float Variable::GetFloat()
+inline float Variable::GetFloat()
 {
     return this->ptr->m_fValue;
 }
-const char* Variable::GetString()
+inline const char* Variable::GetString()
 {
     return this->ptr->m_pszString;
 }
-const int Variable::GetFlags()
+inline const int Variable::GetFlags()
 {
     return this->ptr->m_nFlags;
 }
@@ -210,7 +210,7 @@ void Variable::Unregister()
         tier1->UnregisterConCommand(tier1->g_pCVar->ThisPtr(), this->ptr);
     }
 }
-bool Variable::operator!()
+inline bool Variable::operator!()
 {
     return this->ptr == nullptr;
 }

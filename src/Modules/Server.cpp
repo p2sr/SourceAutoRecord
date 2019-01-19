@@ -58,51 +58,51 @@ void* Server::GetPlayer(int index)
     index = (index == -1) ? engine->GetLocalPlayerIndex() : index;
     return this->UTIL_PlayerByIndex(index);
 }
-int Server::GetPortals(void* entity)
+inline int Server::GetPortals(void* entity)
 {
     return *reinterpret_cast<int*>((uintptr_t)entity + Offsets::iNumPortalsPlaced);
 }
-Vector Server::GetAbsOrigin(void* entity)
+inline Vector Server::GetAbsOrigin(void* entity)
 {
     return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::S_m_vecAbsOrigin);
 }
-QAngle Server::GetAbsAngles(void* entity)
+inline QAngle Server::GetAbsAngles(void* entity)
 {
     return *reinterpret_cast<QAngle*>((uintptr_t)entity + Offsets::S_m_angAbsRotation);
 }
-Vector Server::GetLocalVelocity(void* entity)
+inline Vector Server::GetLocalVelocity(void* entity)
 {
     return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::S_m_vecVelocity);
 }
-int Server::GetFlags(void* entity)
+inline int Server::GetFlags(void* entity)
 {
     return *reinterpret_cast<int*>((uintptr_t)entity + Offsets::m_fFlags);
 }
-int Server::GetEFlags(void* entity)
+inline int Server::GetEFlags(void* entity)
 {
     return *reinterpret_cast<int*>((uintptr_t)entity + Offsets::m_iEFlags);
 }
-float Server::GetMaxSpeed(void* entity)
+inline float Server::GetMaxSpeed(void* entity)
 {
     return *reinterpret_cast<float*>((uintptr_t)entity + Offsets::m_flMaxspeed);
 }
-float Server::GetGravity(void* entity)
+inline float Server::GetGravity(void* entity)
 {
     return *reinterpret_cast<float*>((uintptr_t)entity + Offsets::m_flGravity);
 }
-Vector Server::GetViewOffset(void* entity)
+inline Vector Server::GetViewOffset(void* entity)
 {
     return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::S_m_vecViewOffset);
 }
-char* Server::GetEntityName(void* entity)
+inline char* Server::GetEntityName(void* entity)
 {
     return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iName);
 }
-char* Server::GetEntityClassName(void* entity)
+inline char* Server::GetEntityClassName(void* entity)
 {
     return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iClassName);
 }
-bool Server::IsPlayer(void* entity)
+inline bool Server::IsPlayer(void* entity)
 {
     return Memory::VMT<bool (*)(void*)>(entity, Offsets::IsPlayer)(entity);
 }

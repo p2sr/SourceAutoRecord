@@ -41,19 +41,19 @@ void* Client::GetPlayer(int index)
     index = (index == -1) ? engine->GetLocalPlayerIndex() : index;
     return this->GetClientEntity(this->s_EntityList->ThisPtr(), index);
 }
-Vector Client::GetAbsOrigin(void* entity)
+inline Vector Client::GetAbsOrigin(void* entity)
 {
     return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::C_m_vecAbsOrigin);
 }
-QAngle Client::GetAbsAngles(void* entity)
+inline QAngle Client::GetAbsAngles(void* entity)
 {
     return *reinterpret_cast<QAngle*>((uintptr_t)entity + Offsets::C_m_angAbsRotation);
 }
-Vector Client::GetLocalVelocity(void* entity)
+inline Vector Client::GetLocalVelocity(void* entity)
 {
     return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::C_m_vecVelocity);
 }
-Vector Client::GetViewOffset(void* entity)
+inline Vector Client::GetViewOffset(void* entity)
 {
     return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::C_m_vecViewOffset);
 }
