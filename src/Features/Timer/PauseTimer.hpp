@@ -1,8 +1,6 @@
 #pragma once
 #include "Features/Feature.hpp"
 
-#include "Variable.hpp"
-
 class PauseTimer : public Feature {
 private:
     bool isActive;
@@ -18,5 +16,3 @@ public:
 };
 
 extern PauseTimer* pauseTimer;
-
-extern Variable sar_time_pauses;
