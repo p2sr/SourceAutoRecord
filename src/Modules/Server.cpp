@@ -193,7 +193,7 @@ DETOUR(Server::PlayerMove)
         && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
         && ((m_fFlags & FL_ONGROUND && m_vecVelocity.Length2D() > 0.0001f) || m_MoveType == MOVETYPE_LADDER)) {
         stepCounter->Increment(m_fFlags, m_MoveType, m_vecVelocity, m_nWaterLevel);
-        ++stat->steps;
+        ++stat->steps->total;
     }
 
     stat->velocity->Save(server->GetLocalVelocity(player), sar_stats_velocity_peak_xy.GetBool());

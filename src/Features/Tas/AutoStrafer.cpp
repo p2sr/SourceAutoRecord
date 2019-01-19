@@ -148,7 +148,7 @@ CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <type> <direction> : Automatic straf
                               "Direction: -1 = left, 1 = right.\n");
     }
 
-    auto nSlot = GET_ACTIVE_SPLITSCREEN_SLOT();
+    auto nSlot = GET_SLOT();
     autoStrafer->states[nSlot].type = type;
     autoStrafer->states[nSlot].direction = direction;
 }

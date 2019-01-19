@@ -197,7 +197,7 @@ DETOUR(Client::CInput_CreateMove, int sequence_number, float input_sample_framet
     auto originalValue = 0;
     if (sar_tas_ss_forceuser.GetBool()) {
         originalValue = in_forceuser.GetInt();
-        in_forceuser.SetValue(GET_ACTIVE_SPLITSCREEN_SLOT());
+        in_forceuser.SetValue(GET_SLOT());
     }
 
     auto result = Client::CInput_CreateMove(thisptr, sequence_number, input_sample_frametime, active);
@@ -214,7 +214,7 @@ DETOUR(Client::GetButtonBits, bool bResetState)
 {
     auto bits = Client::GetButtonBits(thisptr, bResetState);
 
-    client->CalcButtonBits(GET_ACTIVE_SPLITSCREEN_SLOT(), bits, IN_AUTOSTRAFE, 0, &autoStrafer->in_autostrafe, bResetState);
+    client->CalcButtonBits(GET_SLOT(), bits, IN_AUTOSTRAFE, 0, &autoStrafer->in_autostrafe, bResetState);
 
     return bits;
 }
@@ -251,37 +251,28 @@ bool Client::Init()
             }
         }
 
-        if (sar.game->version & SourceGame_TheStanleyParable) {
-            auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
-            auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
+        auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
+        auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
 
-            if (auto input = Interface::Create(g_InputAddr, false)) {
-                auto GetButtonBits = input->Original(Offsets::GetButtonBits, readJmp);
+        if (g_Input = Interface::Create(g_InputAddr)) {
+#ifndef _WIN32
+            auto DecodeUserCmdFromBufferAddr = g_Input->Original(Offsets::DecodeUserCmdFromBuffer, readJmp);
+            Memory::Read(DecodeUserCmdFromBufferAddr + Offsets::GetPerUser, &this->GetPerUser);
+#endif
+            if (sar.game->version & SourceGame_TheStanleyParable) {
+                auto GetButtonBits = g_Input->Original(Offsets::GetButtonBits, readJmp);
                 Memory::Deref(GetButtonBits + Offsets::in_jump, &this->in_jump);
+            }
 
-                auto JoyStickApplyMovement = input->Original(Offsets::JoyStickApplyMovement, readJmp);
+            if (sar.game->version & SourceGame_Portal2Engine) {
+                g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
+                g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
+
+                auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
                 Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
                 Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &this->KeyUp);
-            }
-        } else if (sar.game->version & (SourceGame_Portal2Game | SourceGame_HalfLife2Engine)) {
-            auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
-            auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
-
-            if (g_Input = Interface::Create(g_InputAddr)) {
-#ifndef _WIN32
-                auto DecodeUserCmdFromBufferAddr = g_Input->Original(Offsets::DecodeUserCmdFromBuffer, readJmp);
-                Memory::Read(DecodeUserCmdFromBufferAddr + Offsets::GetPerUser, &this->GetPerUser);
-#endif
-                if (sar.game->version & SourceGame_Portal2Game) {
-                    g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
-                    g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
-
-                    auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
-                    Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
-                    Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &this->KeyUp);
-                } else {
-                    g_Input->Hook(Client::DecodeUserCmdFromBuffer2_Hook, Client::DecodeUserCmdFromBuffer2, Offsets::DecodeUserCmdFromBuffer);
-                }
+            } else {
+                g_Input->Hook(Client::DecodeUserCmdFromBuffer2_Hook, Client::DecodeUserCmdFromBuffer2, Offsets::DecodeUserCmdFromBuffer);
             }
         }
 

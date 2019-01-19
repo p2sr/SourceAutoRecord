@@ -48,7 +48,7 @@ CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
         return console->Print("Cannot teleport without sv_cheats 1!\n");
     }
 
-    auto slot = engine->GetLocalPlayerIndex();
+    auto slot = GET_SLOT();
     if (!teleporter->GetLocation(slot)->isSet) {
         return console->Print("Location not set! Use sar_teleport_setpos.\n");
     }
@@ -57,5 +57,5 @@ CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
 }
 CON_COMMAND(sar_teleport_setpos, "Saves current location for teleportation.\n")
 {
-    teleporter->Save(engine->GetLocalPlayerIndex());
+    teleporter->Save(GET_SLOT());
 }

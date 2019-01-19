@@ -57,7 +57,7 @@ CON_COMMAND(sar_trace_a, "Saves location A for tracing.\n")
 {
     auto player = server->GetPlayer();
     if (player) {
-        tracer->Start(engine->GetLocalPlayerIndex(), server->GetAbsOrigin(player));
+        tracer->Start(GET_SLOT(), server->GetAbsOrigin(player));
         console->Print("Saved location A for tracing!\n");
     }
 }
@@ -65,13 +65,13 @@ CON_COMMAND(sar_trace_b, "Saves location B for tracing.\n")
 {
     auto player = server->GetPlayer();
     if (player) {
-        tracer->Stop(engine->GetLocalPlayerIndex(), server->GetAbsOrigin(player));
+        tracer->Stop(GET_SLOT(), server->GetAbsOrigin(player));
         console->Print("Saved location B for tracing!\n");
     }
 }
 CON_COMMAND(sar_trace_result, "Prints tracing result.\n")
 {
-    auto result = tracer->GetTraceResult(engine->GetLocalPlayerIndex());
+    auto result = tracer->GetTraceResult(GET_SLOT());
     auto xyz = tracer->CalculateDifferences(result);
     console->Print("A: %.3f/%.3f/%.3f\n", result->source.x, result->source.y, result->source.z);
     console->Print("B: %.3f/%.3f/%.3f\n", result->destination.x, result->destination.y, result->destination.z);
@@ -83,5 +83,5 @@ CON_COMMAND(sar_trace_result, "Prints tracing result.\n")
 }
 CON_COMMAND(sar_trace_reset, "Resets tracer.\n")
 {
-    tracer->Reset(engine->GetLocalPlayerIndex());
+    tracer->Reset(GET_SLOT());
 }

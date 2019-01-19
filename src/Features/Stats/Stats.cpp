@@ -36,6 +36,7 @@ Stats::~Stats()
     for (auto& stat : this->playerStats) {
         delete stat;
     }
+    this->playerStats.clear();
 }
 PlayerStats* Stats::Get(int nSlot)
 {
@@ -52,7 +53,7 @@ void Stats::ResetAll()
 
 CON_COMMAND(sar_stats_jump, "Prints jump stats.\n")
 {
-    auto stat = stats->Get(engine->GetLocalPlayerIndex());
+    auto stat = stats->Get(GET_SLOT());
 
     auto type = std::string();
     if (stat->jumps->type == StatsResultType::VEC2) {
@@ -67,12 +68,12 @@ CON_COMMAND(sar_stats_jump, "Prints jump stats.\n")
 }
 CON_COMMAND(sar_stats_steps, "Prints total amount of steps.\n")
 {
-    auto stat = stats->Get(engine->GetLocalPlayerIndex());
+    auto stat = stats->Get(GET_SLOT());
     console->Print("Steps: %i\n", stat->jumps->total);
 }
 CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
 {
-    auto stat = stats->Get(engine->GetLocalPlayerIndex());
+    auto stat = stats->Get(GET_SLOT());
 
     std::string type;
     if (stat->velocity->type == StatsResultType::VEC2) {
@@ -91,17 +92,17 @@ CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
 }
 CON_COMMAND(sar_stats_jumps_reset, "Resets total jump count and jump distance peak.\n")
 {
-    stats->Get(engine->GetLocalPlayerIndex())->jumps->Reset();
+    stats->Get(GET_SLOT())->jumps->Reset();
 }
 CON_COMMAND(sar_stats_steps_reset, "Resets total step count.\n")
 {
-    stats->Get(engine->GetLocalPlayerIndex())->steps->Reset();
+    stats->Get(GET_SLOT())->steps->Reset();
 }
 CON_COMMAND(sar_stats_velocity_reset, "Resets velocity peak.\n")
 {
-    stats->Get(engine->GetLocalPlayerIndex())->velocity->Reset();
+    stats->Get(GET_SLOT())->velocity->Reset();
 }
 CON_COMMAND(sar_stats_reset, "Resets all saved stats.\n")
 {
-    stats->Get(engine->GetLocalPlayerIndex())->Reset();
+    stats->Get(GET_SLOT())->Reset();
 }

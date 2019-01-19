@@ -151,7 +151,7 @@ DETOUR(VGui::Paint, int mode)
     }
     // Stats
     if (sar_hud_jumps.GetBool()) {
-        auto stat = stats->Get(engine->GetLocalPlayerIndex());
+        auto stat = stats->Get(GET_SLOT());
         DrawElement("jumps: %i", stat->jumps->total);
     }
     if (sar_hud_portals.isRegistered && sar_hud_portals.GetBool()) {
@@ -161,26 +161,27 @@ DETOUR(VGui::Paint, int mode)
         } else {
             DrawElement("portals: -");
         }
+        DrawElement("aaa: %i", GET_SLOT());
     }
     if (sar_hud_steps.GetBool()) {
-        auto stat = stats->Get(engine->GetLocalPlayerIndex());
+        auto stat = stats->Get(GET_SLOT());
         DrawElement("steps: %i", stat->steps->total);
     }
     if (sar_hud_jump.GetBool()) {
-        auto stat = stats->Get(engine->GetLocalPlayerIndex());
+        auto stat = stats->Get(GET_SLOT());
         DrawElement("jump: %.3f", stat->jumps->distance);
     }
     if (sar_hud_jump_peak.GetBool()) {
-        auto stat = stats->Get(engine->GetLocalPlayerIndex());
+        auto stat = stats->Get(GET_SLOT());
         DrawElement("jump peak: %.3f", stat->jumps->distance);
     }
     if (sar_hud_velocity_peak.GetBool()) {
-        auto stat = stats->Get(engine->GetLocalPlayerIndex());
+        auto stat = stats->Get(GET_SLOT());
         DrawElement("vel peak: %.3f", stat->velocity->peak);
     }
     // Routing
     if (sar_hud_trace.GetBool()) {
-        auto result = tracer->GetTraceResult(engine->GetLocalPlayerIndex());
+        auto result = tracer->GetTraceResult(GET_SLOT());
         auto xyz = tracer->CalculateDifferences(result);
         auto length = (sar_hud_trace.GetInt() == 1)
             ? tracer->CalculateLength(result, TracerLengthType::VEC3)

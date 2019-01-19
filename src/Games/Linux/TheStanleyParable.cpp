@@ -15,6 +15,8 @@ void TheStanleyParable::LoadOffsets()
 
     // engine.so
 
+    GetLocalClient = 92; // CEngineClient::SetViewAngles
+    viewangles = 19084; // CEngineClient::SetViewAngles
     s_CommandBuffer = 71; // Cbuf_AddText
     //m_bWaitEnabled = 8264; // CCommandBuffer::AddText
     tickcount = 74; // CClientState::ProcessTick
