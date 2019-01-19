@@ -27,11 +27,6 @@ public:
     _KeyUp KeyUp = nullptr;
     _GetAllClasses GetAllClasses = nullptr;
 
-#ifndef _WIN32
-    using _GetPerUser = int(__cdecl*)(void* thisptr, int nSlot);
-    _GetPerUser GetPerUser = nullptr;
-#endif
-
     void* in_jump = nullptr;
 
 public:
