@@ -284,15 +284,9 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 // CServerGameDLL::GameFrame
 #ifdef _WIN32
 DETOUR_STD(void, Server::GameFrame, bool simulating)
-{
-    Server::GameFrame(simulating);
-
-    if (session->isRunning && sar_speedrun_standard.GetBool()) {
-        speedrun->CheckRules(engine->tickcount);
-    }
-}
 #else
 DETOUR(Server::GameFrame, bool simulating)
+#endif
 {
     if (!server->IsRestoring()) {
         if (!simulating && !pauseTimer->IsActive()) {
@@ -303,7 +297,11 @@ DETOUR(Server::GameFrame, bool simulating)
         }
     }
 
+#ifdef _WIN32
+    Server::GameFrame(simulating);
+#else
     auto result = Server::GameFrame(thisptr, simulating);
+#endif
 
     if (session->isRunning && pauseTimer->IsActive()) {
         pauseTimer->Increment();
@@ -321,9 +319,10 @@ DETOUR(Server::GameFrame, bool simulating)
         speedrun->CheckRules(engine->tickcount);
     }
 
+#ifndef _WIN32
     return result;
-}
 #endif
+}
 
 bool Server::Init()
 {
