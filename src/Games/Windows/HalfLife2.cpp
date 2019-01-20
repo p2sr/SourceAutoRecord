@@ -88,6 +88,7 @@ void HalfLife2::LoadOffsets()
     mv_m_vecVelocity = 64; // CGameMovement::PlayerMove
     GameFrame = 5; // CServerGameDLL
     GetAllServerClasses = 11; // CServerGameDLL
+    IsRestoring = 25; // CServerGameDLL
     Think = 31; // CServerGameDLL
     UTIL_PlayerByIndex = 38; // CServerGameDLL::Think
     gpGlobals = 11; // UTIL_PlayerByIndex
