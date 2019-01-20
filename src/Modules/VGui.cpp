@@ -36,6 +36,8 @@ DETOUR(VGui::Paint, int mode)
 {
     surface->StartDrawing(surface->matsurface->ThisPtr());
 
+    auto slot = GET_SLOT();
+
     auto elements = 0;
     auto xPadding = sar_hud_default_padding_x.GetInt();
     auto yPadding = sar_hud_default_padding_y.GetInt();
@@ -151,7 +153,7 @@ DETOUR(VGui::Paint, int mode)
     }
     // Stats
     if (sar_hud_jumps.GetBool()) {
-        auto stat = stats->Get(GET_SLOT());
+        auto stat = stats->Get(slot);
         DrawElement("jumps: %i", stat->jumps->total);
     }
     if (sar_hud_portals.isRegistered && sar_hud_portals.GetBool()) {
@@ -161,27 +163,27 @@ DETOUR(VGui::Paint, int mode)
         } else {
             DrawElement("portals: -");
         }
-        DrawElement("aaa: %i", GET_SLOT());
+        DrawElement("aaa: %i", slot);
     }
     if (sar_hud_steps.GetBool()) {
-        auto stat = stats->Get(GET_SLOT());
+        auto stat = stats->Get(slot);
         DrawElement("steps: %i", stat->steps->total);
     }
     if (sar_hud_jump.GetBool()) {
-        auto stat = stats->Get(GET_SLOT());
+        auto stat = stats->Get(slot);
         DrawElement("jump: %.3f", stat->jumps->distance);
     }
     if (sar_hud_jump_peak.GetBool()) {
-        auto stat = stats->Get(GET_SLOT());
+        auto stat = stats->Get(slot);
         DrawElement("jump peak: %.3f", stat->jumps->distance);
     }
     if (sar_hud_velocity_peak.GetBool()) {
-        auto stat = stats->Get(GET_SLOT());
+        auto stat = stats->Get(slot);
         DrawElement("vel peak: %.3f", stat->velocity->peak);
     }
     // Routing
     if (sar_hud_trace.GetBool()) {
-        auto result = tracer->GetTraceResult(GET_SLOT());
+        auto result = tracer->GetTraceResult(slot);
         auto xyz = tracer->CalculateDifferences(result);
         auto length = (sar_hud_trace.GetInt() == 1)
             ? tracer->CalculateLength(result, TracerLengthType::VEC3)
@@ -266,8 +268,14 @@ DETOUR(VGui::Paint, int mode)
     surface->FinishDrawing();
 
     // Draw other HUDs
-    for (auto const& hud : vgui->huds) {
-        hud->Draw();
+    if (slot == 0) {
+        for (auto const& hud : vgui->huds) {
+            hud->Draw();
+        }
+    } else if (slot == 1) {
+        for (auto const& hud : vgui->huds2) {
+            hud->Draw();
+        }
     }
 
     return VGui::Paint(thisptr, mode);
@@ -281,6 +289,7 @@ bool VGui::Init()
     }
 
     this->huds.push_back(inputHud = new InputHud());
+    this->huds2.push_back(inputHud2 = new InputHud());
     this->huds.push_back(inspectionHud = new InspectionHud());
 
     if (sar.game->version & (SourceGame_Portal2Game | SourceGame_Portal)) {

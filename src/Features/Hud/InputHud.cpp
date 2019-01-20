@@ -57,6 +57,7 @@ const int col7 = 7;
 const int col8 = 8;
 
 InputHud* inputHud;
+InputHud* inputHud2;
 
 void InputHud::SetButtonBits(int buttonBits)
 {

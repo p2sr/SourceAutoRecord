@@ -144,7 +144,7 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
     }
 
     if (in_forceuser.GetBool()) {
-        inputHud->SetButtonBits(cmd->buttons);
+        inputHud2->SetButtonBits(cmd->buttons);
     }
 
     return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
