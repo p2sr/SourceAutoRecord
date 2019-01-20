@@ -16,8 +16,6 @@ public:
     Interface(void* baseclass, bool copyVtable = true, bool autoHook = true);
     ~Interface();
 
-    void* ThisPtr();
-
     void CopyVtable();
     void EnableHooks();
     void DisableHooks();
@@ -54,6 +52,11 @@ public:
     }
 
     bool Unhook(int index);
+
+    inline void* ThisPtr()
+    {
+        return reinterpret_cast<void*>(this->baseclass);
+    }
 
     static Interface* Create(void* ptr, bool copyVtable = true, bool autoHook = true);
     static Interface* Create(const char* filename, const char* interfaceSymbol, bool copyVtable = true, bool autoHook = true);

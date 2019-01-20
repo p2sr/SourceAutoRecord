@@ -46,10 +46,6 @@ Interface::~Interface()
         this->copy.reset();
     }
 }
-inline void* Interface::ThisPtr()
-{
-    return reinterpret_cast<void*>(this->baseclass);
-}
 void Interface::CopyVtable()
 {
     if (!this->copy) {
