@@ -5,41 +5,7 @@
 
 #include "SDK.hpp"
 
-inline void Math::SinCos(float radians, float* sine, float* cosine)
-{
-#ifdef _WIN32
-    _asm {
-        fld DWORD PTR[radians]
-        fsincos
-
-        mov edx, DWORD PTR[cosine]
-        mov eax, DWORD PTR[sine]
-
-        fstp DWORD PTR[edx]
-        fstp DWORD PTR[eax]
-    }
-#else
-    register double __cosr, __sinr;
-    __asm("fsincos"
-          : "=t"(__cosr), "=u"(__sinr)
-          : "0"(radians));
-
-    *sine = __sinr;
-    *cosine = __cosr;
-#endif
-}
-inline void Math::AngleVectors(const QAngle& angles, Vector* forward)
-{
-    float sp, sy, cp, cy;
-
-    SinCos(DEG2RAD(angles.y), &sy, &cy);
-    SinCos(DEG2RAD(angles.x), &sp, &cp);
-
-    forward->x = cp * cy;
-    forward->y = cp * sy;
-    forward->z = -sp;
-}
-inline float Math::AngleNormalize(float angle)
+float Math::AngleNormalize(float angle)
 {
     angle = fmodf(angle, 360.0f);
     if (angle > 180) {
@@ -50,7 +16,7 @@ inline float Math::AngleNormalize(float angle)
     }
     return angle;
 }
-inline float Math::VectorNormalize(Vector& vec)
+float Math::VectorNormalize(Vector& vec)
 {
     auto radius = sqrtf(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
     auto iradius = 1.f / (radius + FLT_EPSILON);
@@ -61,19 +27,24 @@ inline float Math::VectorNormalize(Vector& vec)
 
     return radius;
 }
-inline void Math::VectorAdd(const Vector& a, const Vector& b, Vector& c)
+void Math::AngleVectors(const QAngle& angles, Vector* forward)
 {
-    c.x = a.x + b.x;
-    c.y = a.y + b.y;
-    c.z = a.z + b.z;
+    float sp, sy, cp, cy;
+
+    Math::SinCos(DEG2RAD(angles.y), &sy, &cy);
+    Math::SinCos(DEG2RAD(angles.x), &sp, &cp);
+
+    forward->x = cp * cy;
+    forward->y = cp * sy;
+    forward->z = -sp;
 }
-inline void Math::AngleVectors(const QAngle& angles, Vector* forward, Vector* right, Vector* up)
+void Math::AngleVectors(const QAngle& angles, Vector* forward, Vector* right, Vector* up)
 {
     float sr, sp, sy, cr, cp, cy;
 
-    SinCos(DEG2RAD(angles.x), &sy, &cy);
-    SinCos(DEG2RAD(angles.y), &sp, &cp);
-    SinCos(DEG2RAD(angles.z), &sr, &cr);
+    Math::SinCos(DEG2RAD(angles.x), &sy, &cy);
+    Math::SinCos(DEG2RAD(angles.y), &sp, &cp);
+    Math::SinCos(DEG2RAD(angles.z), &sr, &cr);
 
     if (forward) {
         forward->x = cp * cy;
@@ -82,26 +53,14 @@ inline void Math::AngleVectors(const QAngle& angles, Vector* forward, Vector* ri
     }
 
     if (right) {
-        right->x = (-1 * sr * sp * cy + -1 * cr * -sy);
-        right->y = (-1 * sr * sp * sy + -1 * cr * cy);
+        right->x = -1 * sr * sp * cy + -1 * cr * -sy;
+        right->y = -1 * sr * sp * sy + -1 * cr * cy;
         right->z = -1 * sr * cp;
     }
 
     if (up) {
-        up->x = (cr * sp * cy + -sr * -sy);
-        up->y = (cr * sp * sy + -sr * cy);
+        up->x = cr * sp * cy + -sr * -sy;
+        up->y = cr * sp * sy + -sr * cy;
         up->z = cr * cp;
     }
-}
-inline void Math::VectorScale(Vector const& src, float b, Vector& dst)
-{
-    dst.x = src.x * b;
-    dst.y = src.y * b;
-    dst.z = src.z * b;
-}
-inline void Math::VectorCopy(const Vector& src, Vector& dst)
-{
-    dst.x = src.x;
-    dst.y = src.y;
-    dst.z = src.z;
 }
