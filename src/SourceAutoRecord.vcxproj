@@ -158,7 +158,7 @@
     <ClCompile Include="Features\ReplaySystem\ReplayProvider.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayRecorder.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayView.cpp" />
-    <ClInclude Include="Features\Tas\AutoStrafer.cpp" />
+    <ClCompile Include="Features\Tas\AutoStrafer.cpp" />
     <ClCompile Include="Features\Tas\TasTools.cpp" />
     <ClCompile Include="Features\Teleporter.cpp" />
     <ClCompile Include="Features\Timer\PauseTimer.cpp" />
@@ -219,7 +219,7 @@
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
     <ClCompile Include="Utils.cpp" />
-    <ClInclude Include="Utils\Math.cpp" />
+    <ClCompile Include="Utils\Math.cpp" />
     <ClCompile Include="Utils\Memory.cpp" />
     <ClCompile Include="Utils\SDK.cpp" />
     <ClCompile Include="Variable.cpp" />
@@ -283,7 +283,7 @@
     <ClInclude Include="Features\Tas\AutoStrafer.hpp" />
     <ClInclude Include="Features\Tas\TasTools.hpp" />
     <ClInclude Include="Features\Teleporter.hpp" />
-    <ClCompile Include="Features\Timer\PauseTimer.hpp" />
+    <ClInclude Include="Features\Timer\PauseTimer.hpp" />
     <ClInclude Include="Features\Timer\Timer.hpp" />
     <ClInclude Include="Features\Timer\TimerAverage.hpp" />
     <ClInclude Include="Features\Timer\TimerCheckPoints.hpp" />
