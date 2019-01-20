@@ -59,7 +59,7 @@ CON_COMMAND(sar_stats_jump, "Prints jump stats.\n")
     if (stat->jumps->type == StatsResultType::VEC2) {
         type = std::string(" (vec2)");
     } else if (stat->jumps->type == StatsResultType::VEC3) {
-        type = std::string(" (vec2)");
+        type = std::string(" (vec3)");
     }
 
     console->Print("Distance: %.3f\n", stat->jumps->distance);
@@ -79,13 +79,13 @@ CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
     if (stat->velocity->type == StatsResultType::VEC2) {
         type = std::string(" (vec2)");
     } else if (stat->velocity->type == StatsResultType::VEC3) {
-        type = std::string(" (vec2)");
+        type = std::string(" (vec3)");
     }
 
     auto player = server->GetPlayer();
     if (player) {
         auto curVel = server->GetLocalVelocity(player);
-        console->Print("Current: %.3f/%.3f (vec2/vec3)", curVel.Length2D(), curVel.Length());
+        console->Print("Current: %.3f/%.3f (vec2/vec3)\n", curVel.Length2D(), curVel.Length());
     }
 
     console->Print("Peak: %.3f %s\n", stat->velocity->peak, type.c_str());
