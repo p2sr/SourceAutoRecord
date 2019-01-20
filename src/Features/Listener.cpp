@@ -91,7 +91,7 @@ CON_COMMAND(sar_dump_events, "Dumps all registered game events of the game event
     if (m_Size > 0) {
         auto m_GameEvents = *(uintptr_t*)(s_GameEventManager + CGameEventManager_m_GameEvents);
         for (auto i = 0; i < m_Size; ++i) {
-            auto name = *(char**)(m_GameEvents + CGameEventDescriptor_Size * i + CGameEventManager_m_GameEvents);
+            auto name = *(char**)(m_GameEvents + CGameEventDescriptor_Size * i + CGameEventManager_m_GameEvents_name);
             console->Print("%s\n", name);
         }
     }
