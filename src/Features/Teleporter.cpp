@@ -25,7 +25,7 @@ void Teleporter::Save(int nSlot)
     if (player) {
         auto location = this->GetLocation(nSlot);
         location->origin = server->GetAbsOrigin(player);
-        location->angles = server->GetAbsAngles(player);
+        location->angles = engine->GetAngles();
         location->isSet = true;
 
         console->Print("Saved location: %.3f %.3f %.3f\n", location->origin.x, location->origin.y, location->origin.z);
