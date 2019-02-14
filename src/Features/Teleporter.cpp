@@ -21,7 +21,7 @@ TeleportLocation* Teleporter::GetLocation(int nSlot)
 }
 void Teleporter::Save(int nSlot)
 {
-    auto player = server->GetPlayer(nSlot);
+    auto player = server->GetPlayer();
     if (player) {
         auto location = this->GetLocation(nSlot);
         location->origin = server->GetAbsOrigin(player);
