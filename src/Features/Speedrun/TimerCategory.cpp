@@ -21,7 +21,7 @@ int TimerCategory::FilterByGame(Game* game)
 {
     auto count = 0;
     for (auto&& rule = TimerCategory::list.begin(); rule != TimerCategory::list.end();) {
-        if ((*rule)->gameVersion != game->version) {
+        if (!game->Is((*rule)->gameVersion)) {
             rule = TimerCategory::list.erase(rule);
         } else {
             ++rule;

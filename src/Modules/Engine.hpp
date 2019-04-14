@@ -125,7 +125,7 @@ public:
     static uintptr_t ParseSmoothingInfo_Continue;
     DECL_DETOUR_MID_MH(ParseSmoothingInfo_Mid)
 
-    Memory::Patch* demoSmootherPatch;
+    Memory::Patch* demoSmootherPatch = nullptr;
 #endif
 
     bool Init() override;

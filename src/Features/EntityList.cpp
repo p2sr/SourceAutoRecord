@@ -18,7 +18,7 @@ EntityList::EntityList()
 }
 CEntInfo* EntityList::GetEntityInfoByIndex(int index)
 {
-    auto size = (sar.game->version & SourceGame_Portal2Engine)
+    auto size = sar.game->Is(SourceGame_Portal2Engine)
         ? sizeof(CEntInfo2)
         : sizeof(CEntInfo);
     return reinterpret_cast<CEntInfo*>((uintptr_t)server->m_EntPtrArray + size * index);

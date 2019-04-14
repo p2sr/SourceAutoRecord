@@ -102,12 +102,12 @@ void Cheats::Init()
     cl_forwardspeed = Variable("cl_forwardspeed");
     host_framerate = Variable("host_framerate");
 
-    if (sar.game->version & SourceGame_Portal2Game) {
+    if (sar.game->Is(SourceGame_Portal2Game)) {
         sv_transition_fade_time = Variable("sv_transition_fade_time");
         sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
         ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
         hide_gun_when_holding = Variable("hide_gun_when_holding");
-    } else if (sar.game->version & (SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
+    } else if (sar.game->Is(SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
         Command::ActivateAutoCompleteFile("map", map_CompletionFunc);
         Command::ActivateAutoCompleteFile("changelevel", changelevel_CompletionFunc);
         Command::ActivateAutoCompleteFile("changelevel2", changelevel2_CompletionFunc);
@@ -169,7 +169,7 @@ void Cheats::Init()
 }
 void Cheats::Shutdown()
 {
-    if (sar.game->version & (SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
+    if (sar.game->Is(SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
         Command::DectivateAutoCompleteFile("map");
         Command::DectivateAutoCompleteFile("changelevel");
         Command::DectivateAutoCompleteFile("changelevel2");

@@ -86,14 +86,14 @@ void Engine::SetAngles(int nSlot, QAngle va)
 }
 void Engine::SendToCommandBuffer(const char* text, int delay)
 {
-    if (sar.game->version & SourceGame_Portal2Engine) {
+    if (sar.game->Is(SourceGame_Portal2Engine)) {
 #ifdef _WIN32
         auto slot = this->GetActiveSplitScreenPlayerSlot();
 #else
         auto slot = this->GetActiveSplitScreenPlayerSlot(nullptr);
 #endif
         this->Cbuf_AddText(slot, text, delay);
-    } else if (sar.game->version & SourceGame_HalfLife2Engine) {
+    } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
         this->AddText(this->s_CommandBuffer, text, delay);
     }
 }
@@ -257,23 +257,23 @@ bool Engine::Init()
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
 
-        if (sar.game->version & SourceGame_Portal2Engine) {
+        if (sar.game->Is(SourceGame_Portal2Engine)) {
             Memory::Read((uintptr_t)this->SetViewAngles + Offsets::GetLocalClient, &this->GetLocalClient);
 
-            if (sar.game->version & SourceGame_Portal2Game) {
+            if (sar.game->Is(SourceGame_Portal2Game)) {
                 this->m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
                 this->m_bWaitEnabled2 = reinterpret_cast<bool*>((uintptr_t)this->m_bWaitEnabled + Offsets::CCommandBufferSize);
             }
         }
 
         void* clPtr = nullptr;
-        if (sar.game->version & SourceGame_Portal2Engine) {
+        if (sar.game->Is(SourceGame_Portal2Engine)) {
             typedef void* (*_GetClientState)();
             auto GetClientState = Memory::Read<_GetClientState>((uintptr_t)this->ClientCmd + Offsets::GetClientStateFunction);
             clPtr = GetClientState();
 
             this->GetActiveSplitScreenPlayerSlot = this->engineClient->Original<_GetActiveSplitScreenPlayerSlot>(Offsets::GetActiveSplitScreenPlayerSlot);
-        } else if (sar.game->version & SourceGame_HalfLife2Engine) {
+        } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
             auto ServerCmdKeyValues = this->engineClient->Original(Offsets::ServerCmdKeyValues);
             clPtr = Memory::Deref<void*>(ServerCmdKeyValues + Offsets::cl);
 
@@ -286,10 +286,10 @@ bool Engine::Init()
             if (!this->demorecorder)
                 this->demorecorder = new EngineDemoRecorder();
 
-            if (sar.game->version & SourceGame_Portal2Engine) {
+            if (sar.game->Is(SourceGame_Portal2Engine)) {
                 this->cl->Hook(Engine::SetSignonState_Hook, Engine::SetSignonState, Offsets::Disconnect - 1);
                 this->cl->Hook(Engine::Disconnect_Hook, Engine::Disconnect, Offsets::Disconnect);
-            } else if (sar.game->version & SourceGame_HalfLife2Engine) {
+            } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
                 this->cl->Hook(Engine::SetSignonState2_Hook, Engine::SetSignonState2, Offsets::Disconnect - 1);
 #ifdef _WIN32
                 Command::Hook("connect", Engine::connect_callback_hook, Engine::connect_callback);
@@ -330,7 +330,7 @@ bool Engine::Init()
         }
     }
 
-    if (sar.game->version & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
+    if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
         this->s_GameEventManager = Interface::Create(this->Name(), "GAMEEVENTSMANAGER002", false);
         if (this->s_GameEventManager) {
             this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
@@ -347,7 +347,7 @@ bool Engine::Init()
     }
 
 #ifdef _WIN32
-    if (sar.game->version & SourceGame_Portal2Game) {
+    if (sar.game->Is(SourceGame_Portal2Game)) {
         auto parseSmoothingInfoAddr = Memory::Scan(this->Name(), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
         auto readCustomDataAddr = Memory::Scan(this->Name(), "55 8B EC F6 05 ? ? ? ? ? 53 56 57 8B F1 75 2F");
 
@@ -368,7 +368,7 @@ bool Engine::Init()
     }
 #endif
 
-    if (sar.game->version & (SourceGame_Portal2Game | SourceGame_HalfLife2Engine)) {
+    if (sar.game->Is(SourceGame_Portal2Game | SourceGame_HalfLife2Engine)) {
         auto alias = Command("alias");
         if (!!alias) {
             auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;

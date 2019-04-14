@@ -72,7 +72,7 @@ int Command::RegisterAll()
 {
     auto result = 0;
     for (const auto& command : Command::list) {
-        if (command->version != SourceGame_Unknown && !(command->version & sar.game->version)) {
+        if (command->version != SourceGame_Unknown && !sar.game->Is(command->version)) {
             continue;
         }
         command->Register();

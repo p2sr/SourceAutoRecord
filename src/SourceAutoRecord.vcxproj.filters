@@ -280,6 +280,9 @@
     <ClCompile Include="Utils\Math.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
+    <ClCompile Include="Games\Windows\INFRA.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -581,6 +584,15 @@
     </ClInclude>
     <ClInclude Include="Features\Timer\PauseTimer.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\INFRA.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Features.hpp">
+      <Filter>SourceAutoRecord</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
