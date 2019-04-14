@@ -39,9 +39,11 @@ Game* Game::CreateNew()
         return new TheBeginnersGuide();
     }
 
+#ifdef _WIN32
 	if (proc == INFRA::Process()) {
         return new INFRA();
     }
+#endif
 
     return nullptr;
 }
