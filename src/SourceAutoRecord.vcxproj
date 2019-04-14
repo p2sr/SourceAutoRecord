@@ -179,6 +179,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Games\Windows\INFRA.cpp" />
     <ClCompile Include="Games\Windows\ApertureTag.cpp" />
     <ClCompile Include="Games\Windows\Portal.cpp" />
     <ClCompile Include="Games\Windows\PortalStoriesMel.cpp" />
@@ -318,6 +319,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="Games\Windows\INFRA.hpp" />
     <ClInclude Include="Games\Windows\ApertureTag.hpp" />
     <ClInclude Include="Games\Windows\HalfLife2.hpp" />
     <ClInclude Include="Games\Windows\Portal.hpp" />

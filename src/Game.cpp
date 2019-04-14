@@ -11,6 +11,9 @@
 #include GAME(TheStanleyParable)
 #include GAME(ApertureTag)
 #include GAME(PortalStoriesMel)
+#ifdef _WIN32
+#include GAME(INFRA)
+#endif
 
 const char* Game::Version()
 {
@@ -34,6 +37,10 @@ Game* Game::CreateNew()
 
     if (proc == TheBeginnersGuide::Process()) {
         return new TheBeginnersGuide();
+    }
+
+	if (proc == INFRA::Process()) {
+        return new INFRA();
     }
 
     return nullptr;
