@@ -20,7 +20,7 @@ enum SourceGameVersion {
 };
 
 class Game {
-public:
+protected:
     SourceGameVersion version = SourceGame_Unknown;
 
 public:
@@ -28,6 +28,7 @@ public:
     virtual void LoadOffsets() = 0;
     virtual const char* Version();
     virtual const float Tickrate() = 0;
+    inline bool Is(int game) { return this->version & game; }
 
     static Game* CreateNew();
     static Game* CreateNewMod(const char* dir);

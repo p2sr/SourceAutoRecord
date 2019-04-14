@@ -55,7 +55,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<ClassDumper>(&classDumper);
             this->features->AddFeature<EntityList>(&entityList);
             this->features->AddFeature<OffsetFinder>(&offsetFinder);
-            this->features->AddFeature<Imitator>(&imitator);
             this->features->AddFeature<AutoStrafer>(&autoStrafer);
             this->features->AddFeature<PauseTimer>(&pauseTimer);
 
@@ -72,21 +71,24 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
 
+				if (auto mod = Game::CreateNewMod(engine->GetGameDirectory())) {
+                    delete this->game;
+                    this->game = mod;
+                }
+
                 this->features->AddFeature<TasTools>(&tasTools);
 
-                if (this->game->version & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
+                if (this->game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
                     this->features->AddFeature<Listener>(&listener);
                     this->features->AddFeature<WorkshopList>(&workshop);
+                    this->features->AddFeature<Imitator>(&imitator);
                 }
 
                 if (listener) {
                     listener->Init();
                 }
 
-                if (auto mod = Game::CreateNewMod(engine->GetGameDirectory())) {
-                    delete this->game;
-                    this->game = mod;
-                }
+                
 
                 this->cheats->Init();
 

@@ -585,10 +585,14 @@
     <ClInclude Include="Features\Timer\PauseTimer.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
     </ClInclude>
-    <ClInclude Include="Modules.hpp" />
-    <ClInclude Include="Features.hpp" />
     <ClInclude Include="Games\Windows\INFRA.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Features.hpp">
+      <Filter>SourceAutoRecord</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
