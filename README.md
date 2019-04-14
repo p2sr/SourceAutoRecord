@@ -22,6 +22,7 @@ Game|Windows|Linux
 [The Beginners Guide](https://store.steampowered.com/app/303210)|✔|✔
 [Half-Life 2](https://store.steampowered.com/app/220)|✔|✔
 [Portal](https://store.steampowered.com/app/400)|✔|✔
+[INFRA](https://store.steampowered.com/app/251110)|✔|➖
 
 ¹ Latest Steam version.
 

@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning(suppress : 26495)
 #include <cmath>
 
 #ifdef _WIN32
@@ -162,10 +163,7 @@ public:
     ConCommand()
         : ConCommandBase()
         , m_fnCommandCallbackV1(nullptr)
-        , m_fnCommandCallback(nullptr)
-        , m_pCommandCallback(nullptr)
         , m_fnCompletionCallback(nullptr)
-        , m_pCommandCompletionCallback(nullptr)
         , m_bHasCompletionCallback(true)
         , m_bUsingNewCommandCallback(true)
         , m_bUsingCommandCallbackInterface(true)
@@ -608,7 +606,7 @@ struct CBaseEdict {
 struct edict_t : CBaseEdict {
 };
 
-int ENTINDEX(edict_t *pEdict);
+int ENTINDEX(edict_t* pEdict);
 edict_t* INDEXENT(int iEdictNum);
 
 struct CGlobalVarsBase {
