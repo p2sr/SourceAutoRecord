@@ -71,7 +71,7 @@ struct Color {
     inline int g() const { return _color[1]; }
     inline int b() const { return _color[2]; }
     inline int a() const { return _color[3]; }
-    unsigned char _color[4];
+    unsigned char _color[4] = { 0, 0, 0, 0 };
 };
 
 #define FCVAR_DEVELOPMENTONLY (1 << 1)
@@ -162,7 +162,13 @@ public:
     ConCommand()
         : ConCommandBase()
         , m_fnCommandCallbackV1(nullptr)
+        , m_fnCommandCallback(nullptr)
+        , m_pCommandCallback(nullptr)
         , m_fnCompletionCallback(nullptr)
+        , m_pCommandCompletionCallback(nullptr)
+        , m_bHasCompletionCallback(true)
+        , m_bUsingNewCommandCallback(true)
+        , m_bUsingCommandCallbackInterface(true)
     {
     }
 };
