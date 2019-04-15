@@ -88,8 +88,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                     listener->Init();
                 }
 
-                
-
                 this->cheats->Init();
 
                 speedrun->LoadRules(this->game);
@@ -218,11 +216,11 @@ CON_COMMAND(sar_rename, "Changes your name.\n")
 }
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
-    if (sar.features) {
-        sar.features->DeleteAll();
-    }
     if (sar.cheats) {
         sar.cheats->Shutdown();
+    }
+    if (sar.features) {
+        sar.features->DeleteAll();
     }
     if (sar.modules) {
         sar.modules->ShutdownAll();
