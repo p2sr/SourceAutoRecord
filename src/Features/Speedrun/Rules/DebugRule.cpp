@@ -1,5 +1,5 @@
 #include "DebugRule.hpp"
-#ifdef DBG_RULE
+#ifdef _DEBUG
 #include <cstdint>
 
 #include "Features/EntityList.hpp"
