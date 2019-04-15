@@ -333,7 +333,7 @@ bool Server::Init()
         this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
         this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
-        if (sar.game->version & SourceGame_Portal2Engine) {
+        if (sar.game->Is(SourceGame_Portal2Engine)) {
             this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
             this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
             this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
@@ -346,14 +346,16 @@ bool Server::Init()
             Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &this->CheckJumpButtonBase);
 
 #ifdef _WIN32
-            auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
-            if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
-                MH_HOOK_MID(this->AirMove_Mid, airMoveMid);
-                this->AirMove_Continue = airMoveMid + AirMove_Continue_Offset;
-                this->AirMove_Skip = airMoveMid + AirMove_Skip_Offset;
-                console->DevMsg("SAR: Verified sar_aircontrol 1!\n");
-            } else {
-                console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
+            if (!sar.game->Is(SourceGame_INFRA)) {
+                auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
+                if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
+                    MH_HOOK_MID(this->AirMove_Mid, airMoveMid);
+                    this->AirMove_Continue = airMoveMid + AirMove_Continue_Offset;
+                    this->AirMove_Skip = airMoveMid + AirMove_Skip_Offset;
+                    console->DevMsg("SAR: Verified sar_aircontrol 1!\n");
+                } else {
+                    console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
+                }
             }
 #endif
         }
@@ -372,7 +374,7 @@ bool Server::Init()
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
         this->IsRestoring = this->g_ServerGameDLL->Original<_IsRestoring>(Offsets::IsRestoring);
 
-        if (sar.game->version & (SourceGame_Portal2Game | SourceGame_Portal)) {
+        if (sar.game->Is(SourceGame_Portal2Game | SourceGame_Portal)) {
             this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
         }
     }
@@ -384,11 +386,11 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
     offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
 
-    if (sar.game->version & SourceGame_Portal2Engine) {
+    if (sar.game->Is(SourceGame_Portal2Engine)) {
         offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
         offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
     }
-    if (sar.game->version & (SourceGame_Portal | SourceGame_Portal2Game)) {
+    if (sar.game->Is(SourceGame_Portal | SourceGame_Portal2Game)) {
         offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
     }
 

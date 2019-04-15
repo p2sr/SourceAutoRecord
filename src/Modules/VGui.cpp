@@ -292,11 +292,11 @@ bool VGui::Init()
     this->huds2.push_back(inputHud2 = new InputHud());
     this->huds.push_back(inspectionHud = new InspectionHud());
 
-    if (sar.game->version & (SourceGame_Portal2Game | SourceGame_Portal)) {
+    if (sar.game->Is(SourceGame_Portal2Game | SourceGame_Portal)) {
         this->huds.push_back(speedrunHud = new SpeedrunHud());
     }
 
-    if (sar.game->version & SourceGame_HalfLife2Engine) {
+    if (sar.game->Is(SourceGame_HalfLife2Engine)) {
         this->respectClShowPos = false;
     }
 

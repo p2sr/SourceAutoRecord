@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning(suppress : 26495)
 #include <cmath>
 
 #ifdef _WIN32
@@ -71,7 +72,7 @@ struct Color {
     inline int g() const { return _color[1]; }
     inline int b() const { return _color[2]; }
     inline int a() const { return _color[3]; }
-    unsigned char _color[4];
+    unsigned char _color[4] = { 0, 0, 0, 0 };
 };
 
 #define FCVAR_DEVELOPMENTONLY (1 << 1)
@@ -163,6 +164,9 @@ public:
         : ConCommandBase()
         , m_fnCommandCallbackV1(nullptr)
         , m_fnCompletionCallback(nullptr)
+        , m_bHasCompletionCallback(true)
+        , m_bUsingNewCommandCallback(true)
+        , m_bUsingCommandCallbackInterface(true)
     {
     }
 };
@@ -602,7 +606,7 @@ struct CBaseEdict {
 struct edict_t : CBaseEdict {
 };
 
-int ENTINDEX(edict_t *pEdict);
+int ENTINDEX(edict_t* pEdict);
 edict_t* INDEXENT(int iEdictNum);
 
 struct CGlobalVarsBase {

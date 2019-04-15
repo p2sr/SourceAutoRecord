@@ -84,7 +84,7 @@ DETOUR(Client::HudUpdate, unsigned int a2)
             if (tas->framesLeft <= 0) {
                 console->DevMsg("[%i] %s\n", session->currentFrame, tas->command.c_str());
 
-                if (sar.game->version & SourceGame_Portal2Engine) {
+                if (sar.game->Is(SourceGame_Portal2Engine)) {
                     if (engine->GetMaxClients() <= 1) {
                         engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0);
                     } else {
@@ -93,7 +93,7 @@ DETOUR(Client::HudUpdate, unsigned int a2)
                             engine->ClientCommand(nullptr, entity, tas->command.c_str());
                         }
                     }
-                } else if (sar.game->version & SourceGame_HalfLife2Engine) {
+                } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
                     engine->AddText(engine->s_CommandBuffer, tas->command.c_str(), 0);
                 }
 
@@ -216,7 +216,7 @@ bool Client::Init()
 {
     bool readJmp = false;
 #ifdef _WIN32
-    readJmp = sar.game->version & (SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide);
+    readJmp = sar.game->Is(SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide);
 #endif
 
     this->g_ClientDLL = Interface::Create(this->Name(), "VClient0");
@@ -227,7 +227,7 @@ bool Client::Init()
 
         this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);
 
-        if (sar.game->version == SourceGame_Portal2) {
+        if (sar.game->Is(SourceGame_Portal2)) {
             auto leaderboard = Command("+leaderboard");
             if (!!leaderboard) {
                 using _GetHud = void*(__cdecl*)(int unk);
@@ -248,7 +248,7 @@ bool Client::Init()
         auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
 
         if (g_Input = Interface::Create(g_InputAddr)) {
-            if (sar.game->version & SourceGame_Portal2Engine) {
+            if (sar.game->Is(SourceGame_Portal2Engine)) {
                 g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
                 g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
 
@@ -256,10 +256,10 @@ bool Client::Init()
                 Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
                 Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &this->KeyUp);
 
-                if (sar.game->version & SourceGame_TheStanleyParable) {
+                if (sar.game->Is(SourceGame_TheStanleyParable)) {
                     auto GetButtonBits = g_Input->Original(Offsets::GetButtonBits, readJmp);
                     Memory::Deref(GetButtonBits + Offsets::in_jump, &this->in_jump);
-                } else if (sar.game->version & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
+                } else if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
                     in_forceuser = Variable("in_forceuser");
                     if (!!in_forceuser && this->g_Input) {
                         this->g_Input->Hook(CInput_CreateMove_Hook, CInput_CreateMove, Offsets::GetButtonBits + 1);
@@ -273,8 +273,8 @@ bool Client::Init()
         auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
         void* clientMode = nullptr;
         void* clientMode2 = nullptr;
-        if (sar.game->version & SourceGame_Portal2Engine) {
-            if (sar.game->version & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
+        if (sar.game->Is(SourceGame_Portal2Engine)) {
+            if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
                 auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
                 auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
                 clientMode = Memory::Deref<void*>(g_pClientMode);
@@ -284,7 +284,7 @@ bool Client::Init()
                 auto GetClientMode = Memory::Read<_GetClientMode>(HudProcessInput + Offsets::GetClientMode);
                 clientMode = GetClientMode();
             }
-        } else if (sar.game->version & SourceGame_HalfLife2Engine) {
+        } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
             clientMode = Memory::DerefDeref<void*>(HudProcessInput + Offsets::GetClientMode);
         }
 
