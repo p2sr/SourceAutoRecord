@@ -7,9 +7,11 @@ fs.readFile('sar.cvars', 'utf-8', (err, data) => {
 
     const body = data
         .replace(/\[end_of_cvar\]|\[cvar_data\]/g, '|')
-        .replace(/\n(?!\|)/g, '<br>');
+        .replace(/\n(?!\|)/g, '<br>')
+        .slice(0, -1);
 
-    fs.writeFileSync('doc/sar.md', `# SAR: Cvars
+    fs.writeFileSync('doc/cvars.md',
+`# SAR: Cvars
 
 |Name|Default|Flags|Description|
 |---|---|---|---|

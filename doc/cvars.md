@@ -182,4 +182,3 @@
 |sar_jumpboost|0|4096|Enables special game movement on the server.<br>0 = Default,<br>1 = Orange Box Engine,<br>2 = Pre-OBE.
 |sar_autojump|0|4096|Enables automatic jumping on the server.
 |sar_autorecord|0|4096|Enables automatic demo recording for loading a save.
-|
