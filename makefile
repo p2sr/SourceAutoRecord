@@ -67,3 +67,6 @@ post:
 
 get-deps:
 	sudo apt-get install -y gcc-multilib g++-multilib
+
+cvars:
+	node cvars.js
