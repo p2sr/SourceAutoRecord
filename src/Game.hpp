@@ -12,13 +12,15 @@ enum SourceGameVersion {
     SourceGame_ApertureTag = (1 << 5),
     SourceGame_PortalStoriesMel = (1 << 6),
 
+	SourceGame_INFRA = (1 << 7),
+
     SourceGame_Portal2Game = SourceGame_Portal2 | SourceGame_ApertureTag | SourceGame_PortalStoriesMel,
-    SourceGame_Portal2Engine = SourceGame_Portal2Game | SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide,
+    SourceGame_Portal2Engine = SourceGame_Portal2Game | SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide | SourceGame_INFRA,
     SourceGame_HalfLife2Engine = SourceGame_Portal | SourceGame_HalfLife2
 };
 
 class Game {
-public:
+protected:
     SourceGameVersion version = SourceGame_Unknown;
 
 public:
@@ -26,6 +28,7 @@ public:
     virtual void LoadOffsets() = 0;
     virtual const char* Version();
     virtual const float Tickrate() = 0;
+    inline bool Is(int game) { return this->version & game; }
 
     static Game* CreateNew();
     static Game* CreateNewMod(const char* dir);

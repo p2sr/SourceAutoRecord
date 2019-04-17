@@ -120,7 +120,7 @@ void Cvars::Lock()
         sv_maxvelocity.Lock();
         sv_footsteps.Lock();
 
-        if (sar.game->version & SourceGame_Portal2Game) {
+        if (sar.game->Is(SourceGame_Portal2Game)) {
             sv_bonus_challenge.Lock();
             sv_transition_fade_time.Lock();
             sv_laser_cube_autoaim.Lock();
@@ -142,7 +142,7 @@ void Cvars::Unlock()
         sv_maxvelocity.Unlock();
         sv_footsteps.Unlock();
 
-        if (sar.game->version & SourceGame_Portal2Game) {
+        if (sar.game->Is(SourceGame_Portal2Game)) {
             // Don't find a way to abuse this, ok?
             sv_bonus_challenge.Unlock(false);
             sv_transition_fade_time.Unlock();

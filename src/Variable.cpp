@@ -74,7 +74,7 @@ void Variable::Create(const char* name, const char* value, int flags, const char
 }
 void Variable::PostInit()
 {
-    if (sar.game->version & SourceGame_Portal2Engine) {
+    if (sar.game->Is(SourceGame_Portal2Engine)) {
         auto newptr = new ConVar2();
         newptr->m_pszName = this->ptr->m_pszName;
         newptr->m_pszHelpString = this->ptr->m_pszHelpString;
@@ -169,10 +169,10 @@ void Variable::Lock()
 void Variable::DisableChange()
 {
     if (this->ptr) {
-        if (sar.game->version & SourceGame_Portal2Engine) {
+        if (sar.game->Is(SourceGame_Portal2Engine)) {
             this->originalSize = ((ConVar2*)this->ptr)->m_Size;
             ((ConVar2*)this->ptr)->m_Size = 0;
-        } else if (sar.game->version & SourceGame_HalfLife2Engine) {
+        } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
             this->originalfnChangeCallback = this->ptr->m_fnChangeCallback;
             this->ptr->m_fnChangeCallback = nullptr;
         }
@@ -181,9 +181,9 @@ void Variable::DisableChange()
 void Variable::EnableChange()
 {
     if (this->ptr) {
-        if (sar.game->version & SourceGame_Portal2Engine) {
+        if (sar.game->Is(SourceGame_Portal2Engine)) {
             ((ConVar2*)this->ptr)->m_Size = this->originalSize;
-        } else if (sar.game->version & SourceGame_HalfLife2Engine) {
+        } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
             this->ptr->m_fnChangeCallback = this->originalfnChangeCallback;
         }
     }
@@ -218,7 +218,7 @@ int Variable::RegisterAll()
 {
     auto result = 0;
     for (const auto& var : Variable::list) {
-        if (var->version != SourceGame_Unknown && !(var->version & sar.game->version)) {
+        if (var->version != SourceGame_Unknown && !sar.game->Is(var->version)) {
             continue;
         }
         var->Register();

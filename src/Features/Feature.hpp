@@ -3,7 +3,7 @@
 
 class Feature {
 public:
-    bool hasLoaded;
+    bool hasLoaded = false;
 
 public:
     virtual ~Feature() = default;

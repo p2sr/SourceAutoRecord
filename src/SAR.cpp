@@ -55,7 +55,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<ClassDumper>(&classDumper);
             this->features->AddFeature<EntityList>(&entityList);
             this->features->AddFeature<OffsetFinder>(&offsetFinder);
-            this->features->AddFeature<Imitator>(&imitator);
             this->features->AddFeature<AutoStrafer>(&autoStrafer);
             this->features->AddFeature<PauseTimer>(&pauseTimer);
 
@@ -72,20 +71,21 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
 
+				if (auto mod = Game::CreateNewMod(engine->GetGameDirectory())) {
+                    delete this->game;
+                    this->game = mod;
+                }
+
                 this->features->AddFeature<TasTools>(&tasTools);
 
-                if (this->game->version & (SourceGame_Portal2 | SourceGame_ApertureTag)) {
+                if (this->game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
                     this->features->AddFeature<Listener>(&listener);
                     this->features->AddFeature<WorkshopList>(&workshop);
+                    this->features->AddFeature<Imitator>(&imitator);
                 }
 
                 if (listener) {
                     listener->Init();
-                }
-
-                if (auto mod = Game::CreateNewMod(engine->GetGameDirectory())) {
-                    delete this->game;
-                    this->game = mod;
                 }
 
                 this->cheats->Init();
@@ -216,11 +216,11 @@ CON_COMMAND(sar_rename, "Changes your name.\n")
 }
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
-    if (sar.features) {
-        sar.features->DeleteAll();
-    }
     if (sar.cheats) {
         sar.cheats->Shutdown();
+    }
+    if (sar.features) {
+        sar.features->DeleteAll();
     }
     if (sar.modules) {
         sar.modules->ShutdownAll();

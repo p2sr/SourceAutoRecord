@@ -1,5 +1,5 @@
 #pragma once
-#ifdef DBG_RULE
+#ifdef _DEBUG
 #include "Features/Speedrun/TimerRule.hpp"
 
 extern TimerRule debug_rule;

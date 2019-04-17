@@ -3,7 +3,7 @@
 
 class Module {
 public:
-    bool hasLoaded;
+    bool hasLoaded = false;
 
 public:
     virtual ~Module() = default;
