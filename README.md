@@ -33,7 +33,7 @@ Game|Windows|Linux
 - [Mapping](doc/mapping.md)
 - [Maps](doc/maps.md)
 - [Tool-Assisted-Speedruns](doc/tas.md)
-- [Console Commands & Variables](https://nekzor.github.io/cvars/sar)
+- [Console Commands & Variables](doc/cvars.md)
 
 ## Inspired By
 - [SourceDemoRender](https://github.com/crashfort/SourceDemoRender)
