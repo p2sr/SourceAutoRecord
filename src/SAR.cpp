@@ -37,7 +37,9 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Config>(&config);
             this->features->AddFeature<Cvars>(&cvars);
             this->features->AddFeature<Rebinder>(&rebinder);
-            this->features->AddFeature<Session>(&session);
+            this->game->Is(SourceGame_INFRA)
+                ? this->features->AddFeature<InfraSession>(reinterpret_cast<InfraSession**>(&session))
+                : this->features->AddFeature<Session>(&session);
             this->features->AddFeature<StepCounter>(&stepCounter);
             this->features->AddFeature<Summary>(&summary);
             this->features->AddFeature<Teleporter>(&teleporter);
@@ -71,7 +73,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
 
-				if (auto mod = Game::CreateNewMod(engine->GetGameDirectory())) {
+                if (auto mod = Game::CreateNewMod(engine->GetGameDirectory())) {
                     delete this->game;
                     this->game = mod;
                 }

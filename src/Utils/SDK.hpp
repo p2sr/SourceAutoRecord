@@ -318,8 +318,8 @@ public:
 #define WL_Feet 1
 #define WL_Waist 2
 
-#define MOVETYPE_LADDER 9
 #define MOVETYPE_NOCLIP 8
+#define MOVETYPE_LADDER 9
 
 typedef enum {
     HS_NEW_GAME = 0,
@@ -329,12 +329,23 @@ typedef enum {
     HS_RUN = 4,
     HS_GAME_SHUTDOWN = 5,
     HS_SHUTDOWN = 6,
-    HS_RESTART = 7
+    HS_RESTART = 7,
+
+    INFRA_HS_NEW_GAME = 0,
+    INFRA_HS_LOAD_GAME = 1,
+    INFRA_HS_LOAD_GAME_WITHOUT_RESTART = 2,
+    INFRA_HS_CHANGE_LEVEL_SP = 3,
+    INFRA_HS_CHANGE_LEVEL_MP = 4,
+    INFRA_HS_RUN = 5,
+    INFRA_HS_GAME_SHUTDOWN = 6,
+    INFRA_HS_SHUTDOWN = 7,
+    INFRA_HS_RESTART = 8,
+    INFRA_HS_RESTART_WITHOUT_RESTART = 9
 } HOSTSTATES;
 
 struct CHostState {
-    HOSTSTATES m_currentState; // 0
-    HOSTSTATES m_nextState; // 4
+    int m_currentState; // 0
+    int m_nextState; // 4
     Vector m_vecLocation; // 8, 12, 16
     QAngle m_angLocation; // 20, 24, 28
     char m_levelName[256]; // 32

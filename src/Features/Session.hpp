@@ -11,7 +11,7 @@ public:
     bool isRunning;
     unsigned currentFrame;
     unsigned lastFrame;
-    HOSTSTATES prevState;
+    int prevState;
 
 public:
     Session();
@@ -19,7 +19,7 @@ public:
     void Started(bool menu = false);
     void Start();
     void Ended();
-    void Changed();
+    virtual void Changed();
     void Changed(int state);
 };
 

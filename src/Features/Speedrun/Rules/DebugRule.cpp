@@ -8,7 +8,7 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
-#include "Command.hpp" 
+#include "Command.hpp"
 #include "Variable.hpp"
 
 Variable dbg_print("dbg_print", "0", 0, "\n");

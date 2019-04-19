@@ -130,6 +130,7 @@
     <ClCompile Include="Features\Hud\InspectionHud.cpp" />
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp" />
     <ClCompile Include="Features\Imitator.cpp" />
+    <ClCompile Include="Features\InfraSession.cpp" />
     <ClCompile Include="Features\Listener.cpp" />
     <ClCompile Include="Features\OffsetFinder.cpp" />
     <ClCompile Include="Features\Rebinder.cpp" />
@@ -250,6 +251,7 @@
     <ClInclude Include="Features\Hud\InspectionHud.hpp" />
     <ClInclude Include="Features\Hud\SpeedrunHud.hpp" />
     <ClInclude Include="Features\Imitator.hpp" />
+    <ClInclude Include="Features\InfraSession.hpp" />
     <ClInclude Include="Features\Listener.hpp" />
     <ClInclude Include="Features\OffsetFinder.hpp" />
     <ClInclude Include="Features\Rebinder.hpp" />

@@ -14,6 +14,8 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
+#include "Utils/SDK.hpp"
+
 Session* session;
 
 Session::Session()
@@ -22,7 +24,7 @@ Session::Session()
     , isRunning(false)
     , currentFrame(0)
     , lastFrame(0)
-    , prevState(HOSTSTATES::HS_RUN)
+    , prevState(HS_RUN)
 {
     this->hasLoaded = true;
 }
@@ -167,11 +169,11 @@ void Session::Changed()
 {
     console->DevMsg("m_currentState = %i\n", engine->hoststate->m_currentState);
 
-    if (engine->hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_SP
-        || engine->hoststate->m_currentState == HOSTSTATES::HS_CHANGE_LEVEL_MP
-        || engine->hoststate->m_currentState == HOSTSTATES::HS_GAME_SHUTDOWN) {
+    if (engine->hoststate->m_currentState == HS_CHANGE_LEVEL_SP
+        || engine->hoststate->m_currentState == HS_CHANGE_LEVEL_MP
+        || engine->hoststate->m_currentState == HS_GAME_SHUTDOWN) {
         this->Ended();
-    } else if (engine->hoststate->m_currentState == HOSTSTATES::HS_RUN
+    } else if (engine->hoststate->m_currentState == HS_RUN
         && !engine->hoststate->m_activeGame
         && engine->GetMaxClients() <= 1) {
         this->Started(true);

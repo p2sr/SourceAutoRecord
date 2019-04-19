@@ -260,7 +260,7 @@ bool Engine::Init()
         if (sar.game->Is(SourceGame_Portal2Engine)) {
             Memory::Read((uintptr_t)this->SetViewAngles + Offsets::GetLocalClient, &this->GetLocalClient);
 
-            if (sar.game->Is(SourceGame_Portal2Game)) {
+            if (sar.game->Is(SourceGame_Portal2Game | SourceGame_INFRA)) {
                 this->m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
                 this->m_bWaitEnabled2 = reinterpret_cast<bool*>((uintptr_t)this->m_bWaitEnabled + Offsets::CCommandBufferSize);
             }
