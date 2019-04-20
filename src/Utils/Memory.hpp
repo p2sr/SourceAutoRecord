@@ -29,6 +29,7 @@ std::string GetProcessName();
 
 uintptr_t FindAddress(const uintptr_t start, const uintptr_t end, const char* target);
 uintptr_t Scan(const char* moduleName, const char* pattern, int offset = 0);
+std::vector<uintptr_t> MultiScan(const char* moduleName, const char* pattern, int offset = 0);
 
 #ifdef _WIN32
 class Patch {

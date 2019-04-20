@@ -167,6 +167,28 @@ uintptr_t Memory::Scan(const char* moduleName, const char* pattern, int offset)
     }
     return result;
 }
+std::vector<uintptr_t> Memory::MultiScan(const char* moduleName, const char* pattern, int offset)
+{
+    std::vector<uintptr_t> result;
+    auto length = std::strlen(pattern);
+
+    auto info = Memory::ModuleInfo();
+    if (Memory::TryGetModule(moduleName, &info)) {
+        auto start = uintptr_t(info.base);
+        auto end = start + info.size;
+        auto addr = uintptr_t();
+        while (true) {
+            auto addr = Memory::FindAddress(start, end, pattern);
+            if (addr) {
+                result.push_back(addr + offset);
+                start = addr + length;
+            } else {
+                break;
+            }
+        }
+    }
+    return result;
+}
 
 #ifdef _WIN32
 Memory::Patch::~Patch()
@@ -185,20 +207,20 @@ bool Memory::Patch::Execute(uintptr_t location, unsigned char* bytes)
 
     for (size_t i = 0; i < this->size; ++i) {
         if (!ReadProcessMemory(GetCurrentProcess(),
-            reinterpret_cast<LPVOID>(this->location + i),
-            &this->original[i],
-            1,
-            0)) {
+                reinterpret_cast<LPVOID>(this->location + i),
+                &this->original[i],
+                1,
+                0)) {
             return false;
         }
     }
 
     for (size_t i = 0; i < this->size; ++i) {
         if (!WriteProcessMemory(GetCurrentProcess(),
-            reinterpret_cast<LPVOID>(this->location + i),
-            &bytes[i],
-            1,
-            0)) {
+                reinterpret_cast<LPVOID>(this->location + i),
+                &bytes[i],
+                1,
+                0)) {
             return false;
         }
     }
@@ -209,10 +231,10 @@ bool Memory::Patch::Restore()
     if (this->location && this->original) {
         for (size_t i = 0; i < this->size; ++i) {
             if (!WriteProcessMemory(GetCurrentProcess(),
-                reinterpret_cast<LPVOID>(this->location + i),
-                &this->original[i],
-                1,
-                0)) {
+                    reinterpret_cast<LPVOID>(this->location + i),
+                    &this->original[i],
+                    1,
+                    0)) {
                 return false;
             }
         }
