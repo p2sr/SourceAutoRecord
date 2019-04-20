@@ -1,6 +1,7 @@
 #include "Features/ClassDumper.hpp"
 #include "Features/Config.hpp"
 #include "Features/Cvars.hpp"
+#include "Features/DataMapDumper.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/Imitator.hpp"
 #include "Features/InfraSession.hpp"

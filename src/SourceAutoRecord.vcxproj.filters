@@ -286,6 +286,9 @@
     <ClCompile Include="Features\InfraSession.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\DataMapDumper.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -598,6 +601,9 @@
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Features\InfraSession.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\DataMapDumper.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>
