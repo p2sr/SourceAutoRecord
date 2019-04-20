@@ -61,27 +61,38 @@ CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer
     console->Print("%s wait!\n", (state) ? "Enabled" : "Disabled");
 }
 
-// P2 and Half-Life 2 Engine only
+// P2, INFRA and HL2 only
+#ifdef _WIN32
+#define TRACE_SHUTDOWN_PATTERN "6A 00 68 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ?"
+#define TRACE_SHUTDOWN_OFFSET1 3
+#define TRACE_SHUTDOWN_OFFSET2 10
+#else
+#define TRACE_SHUTDOWN_PATTERN "C7 44 24 ? ? ? ? ? C7 04 24 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ?"
+#define TRACE_SHUTDOWN_OFFSET1 11
+#define TRACE_SHUTDOWN_OFFSET2 10
+#endif
 CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
 {
-    if (!engine->cmd_alias->next) {
-        return console->Print("Nothing to delete.\n");
+    using _Cmd_Shutdown = int (*)();
+    static _Cmd_Shutdown Cmd_Shutdown = nullptr;
+
+    if (!Cmd_Shutdown) {
+        auto result = Memory::MultiScan(engine->Name(), TRACE_SHUTDOWN_PATTERN, TRACE_SHUTDOWN_OFFSET1);
+        if (!result.empty()) {
+            for (auto const& addr : result) {
+                if (!std::strcmp(*reinterpret_cast<char**>(addr), "Cmd_Shutdown()")) {
+                    Cmd_Shutdown = Memory::Read<_Cmd_Shutdown>(addr + TRACE_SHUTDOWN_OFFSET2);
+                    break;
+                }
+            }
+        }
     }
 
-    auto count = 0;
-    auto cur = engine->cmd_alias->next;
-    do {
-        auto next = cur->next;
-        // Better than valve because no mem-leak :^)
-        delete[] cur->value;
-        delete cur;
-        cur = next;
-        ++count;
-    } while (cur);
-
-    engine->cmd_alias->next = nullptr;
-
-    console->Print("Deleted %i alias commands!\n", count);
+    if (Cmd_Shutdown) {
+        Cmd_Shutdown();
+    } else {
+        console->Print("Unable to find Cmd_Shutdown() function!\n");
+    }
 }
 
 void Cheats::Init()
