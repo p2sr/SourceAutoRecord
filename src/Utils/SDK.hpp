@@ -164,9 +164,9 @@ public:
         : ConCommandBase()
         , m_fnCommandCallbackV1(nullptr)
         , m_fnCompletionCallback(nullptr)
-        , m_bHasCompletionCallback(true)
-        , m_bUsingNewCommandCallback(true)
-        , m_bUsingCommandCallbackInterface(true)
+        , m_bHasCompletionCallback(false)
+        , m_bUsingNewCommandCallback(false)
+        , m_bUsingCommandCallbackInterface(false)
     {
     }
 };
