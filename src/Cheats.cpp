@@ -63,11 +63,11 @@ CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer
 
 // P2, INFRA and HL2 only
 #ifdef _WIN32
-#define TRACE_SHUTDOWN_PATTERN "6A 00 68 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ?"
+#define TRACE_SHUTDOWN_PATTERN "6A 00 68 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? "
 #define TRACE_SHUTDOWN_OFFSET1 3
 #define TRACE_SHUTDOWN_OFFSET2 10
 #else
-#define TRACE_SHUTDOWN_PATTERN "C7 44 24 ? ? ? ? ? C7 04 24 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ?"
+#define TRACE_SHUTDOWN_PATTERN "C7 44 24 04 00 00 00 00 C7 04 24 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? C7"
 #define TRACE_SHUTDOWN_OFFSET1 11
 #define TRACE_SHUTDOWN_OFFSET2 10
 #endif
@@ -85,7 +85,7 @@ CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
                     break;
                 }
             }
-        }
+       }
     }
 
     if (Cmd_Shutdown) {
