@@ -190,6 +190,54 @@ std::vector<uintptr_t> Memory::MultiScan(const char* moduleName, const char* pat
     return result;
 }
 
+std::vector<uintptr_t> Memory::Scan(const char* moduleName, const Memory::Pattern* pattern)
+{
+    std::vector<uintptr_t> result;
+
+    auto info = Memory::ModuleInfo();
+    if (Memory::TryGetModule(moduleName, &info)) {
+        auto start = uintptr_t(info.base);
+        auto end = start + info.size;
+        auto addr = Memory::FindAddress(start, end, pattern->signature);
+        if (addr) {
+            for (auto const& offset : pattern->offsets) {
+                result.push_back(addr + offset);
+            }
+        }
+    }
+    return result;
+}
+std::vector<std::vector<uintptr_t>> Memory::MultiScan(const char* moduleName, const Memory::Patterns* patterns)
+{
+    auto results = std::vector<std::vector<uintptr_t>>();
+
+    auto info = Memory::ModuleInfo();
+    if (Memory::TryGetModule(moduleName, &info)) {
+        auto moduleStart = uintptr_t(info.base);
+        auto moduleEnd = moduleStart + info.size;
+
+        for (const auto& pattern : *patterns) {
+            auto length = std::strlen(pattern->signature);
+            auto start = moduleStart;
+
+            while (true) {
+                auto addr = Memory::FindAddress(start, moduleEnd, pattern->signature);
+                if (addr) {
+                    auto result = std::vector<uintptr_t>();
+                    for (const auto& offset : pattern->offsets) {
+                        result.push_back(addr + offset);
+                    }
+                    results.push_back(result);
+                    start = addr + length;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+    return results;
+}
+
 #ifdef _WIN32
 Memory::Patch::~Patch()
 {
