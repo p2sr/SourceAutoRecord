@@ -1,49 +1,29 @@
 #pragma once
 #include "Feature.hpp"
 
-#include <fstream>
 #include <string>
 #include <vector>
 
-#include "Utils/SDK.hpp"
+#include "Utils/Memory.hpp"
 
 #include "Command.hpp"
 
-#ifdef _WIN32
-// \xC7\x05\x00\x00\x00\x00\x00\x00\x00\x00\xC7\x05\x00\x00\x00\x00\x00\x00\x00\x00\xB8\x00\x00\x00\x00 xx????????xx????????x????
-#define DATAMAP_P2_PATTERN "C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ? B8 ? ? ? ?"
-#define DATAMAP_P2_NUM_OFFSET 6
-#define DATAMAP_P2_OFFSET1 12
-#define DATAMAP_P2_OFFSET2 21
-#define DATAMAP_HL2_PATTERN "B8 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ?"
-#define DATAMAP_HL2_NUM_OFFSET 11
-#define DATAMAP_HL2_OFFSET1 1
-#define DATAMAP_HL2_OFFSET2 17
-#else
-#define DATAMAP_P2_PATTERN "C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ? B8 ? ? ? ?"
-#define DATAMAP_HL2_PATTERN "B8 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ?"
-#define DATAMAP_P2_NUM_OFFSET 6
-#define DATAMAP_P2_OFFSET1 12
-#define DATAMAP_P2_OFFSET2 21
-#define DATAMAP_HL2_NUM_OFFSET 11
-#define DATAMAP_HL2_OFFSET1 1
-#define DATAMAP_HL2_OFFSET2 17
-#endif
+PATTERN(DATAMAP_PATTERN1, "B8 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ? ", 11, 1);
+PATTERN(DATAMAP_PATTERN2, "C7 05 ? ? ? ? ? ? ? ? B8 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? ", 6, 11);
+PATTERN(DATAMAP_PATTERN3, "B8 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? 89 E5 5D C7 05 ? ? ? ? ? ? ? ? ", 11, 1);
+
+PATTERNS(DATAMAP_PATTERNS, &DATAMAP_PATTERN1, &DATAMAP_PATTERN2, &DATAMAP_PATTERN3);
 
 class DataMapDumper : public Feature {
 private:
     std::string serverDataMapFile;
     std::string clientDataMapFile;
-    std::vector<uintptr_t> serverResult;
-    std::vector<uintptr_t> clientResult;
+    std::vector<std::vector<uintptr_t>> serverResult;
+    std::vector<std::vector<uintptr_t>> clientResult;
 
 public:
     DataMapDumper();
-    void DumpServer();
-    void DumpClient();
-
-private:
-    void InternalDump(std::ofstream& file, bool dumpServer = true);
+    void Dump(bool dumpServer = true);
 };
 
 extern DataMapDumper* dataMapDumper;

@@ -640,16 +640,19 @@ struct typedescription_t {
     fieldtype_t fieldType; // 0
     const char* fieldName; // 4
     int fieldOffset[TD_OFFSET_COUNT]; // 8
-    unsigned short fieldSize; // 12
-    short flags; // 16
+    unsigned short fieldSize; // 16
+    short flags; // 18
     const char* externalName; // 20
     void* pSaveRestoreOps; // 24
-    inputfunc_t inputFunc; // 28
-    datamap_t* td; // 32
-    int fieldSizeInBytes; // 36
-    struct typedescription_t* override_field; // 40
-    int override_count; // 44
-    float fieldTolerance; // 48
+#ifndef _WIN32
+    void* unk; // 28
+#endif
+    inputfunc_t inputFunc; // 28/32
+    datamap_t* td; // 32/36
+    int fieldSizeInBytes; // 36/40
+    struct typedescription_t* override_field; // 40/44
+    int override_count; // 44/48
+    float fieldTolerance; // 48/52
 };
 
 struct datamap_t2;
@@ -658,17 +661,20 @@ struct typedescription_t2 {
     const char* fieldName; // 4
     int fieldOffset; // 8
     unsigned short fieldSize; // 12
-    short flags; // 16
-    const char* externalName; // 20
-    void* pSaveRestoreOps; // 24
-    inputfunc_t inputFunc; // 28
-    datamap_t2* td; // 32
-    int fieldSizeInBytes; // 36
-    struct typedescription_t2* override_field; // 40
-    int override_count; // 44
-    float fieldTolerance; // 48
-    int flatOffset[TD_OFFSET_COUNT]; // 52
-    unsigned short flatGroup; // 56
+    short flags; // 14
+    const char* externalName; // 16
+    void* pSaveRestoreOps; // 20
+#ifndef _WIN32
+    void* unk1; // 24
+#endif
+    inputfunc_t inputFunc; // 24/28
+    datamap_t2* td; // 28/32
+    int fieldSizeInBytes; // 32/36
+    struct typedescription_t2* override_field; // 36/40
+    int override_count; // 40/44
+    float fieldTolerance; // 44/48
+    int flatOffset[TD_OFFSET_COUNT]; // 48/52
+    unsigned short flatGroup; // 56/60
 };
 
 struct datamap_t {
