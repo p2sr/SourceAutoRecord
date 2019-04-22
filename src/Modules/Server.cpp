@@ -364,6 +364,7 @@ bool Server::Init()
     if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS0")) {
         auto GetIServerEntity = g_ServerTools->Original(Offsets::GetIServerEntity);
         Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
+        Interface::Delete(g_ServerTools);
     }
 
     if (this->g_ServerGameDLL) {

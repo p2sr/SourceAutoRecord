@@ -11,8 +11,7 @@ unsigned long Scheme::GetDefaultFont()
 }
 bool Scheme::Init()
 {
-    auto g_pVGuiSchemeManager = Interface::Create(this->Name(), "VGUI_Scheme0", false);
-    if (g_pVGuiSchemeManager) {
+    if (auto g_pVGuiSchemeManager = Interface::Create(this->Name(), "VGUI_Scheme0", false)) {
         using _GetIScheme = void*(__func*)(void* thisptr, unsigned long scheme);
         auto GetIScheme = g_pVGuiSchemeManager->Original<_GetIScheme>(Offsets::GetIScheme);
 
@@ -21,6 +20,7 @@ bool Scheme::Init()
         if (this->g_pScheme) {
             this->GetFont = this->g_pScheme->Original<_GetFont>(Offsets::GetFont);
         }
+        Interface::Delete(g_pVGuiSchemeManager);
     }
 
     return this->hasLoaded = this->g_pScheme;

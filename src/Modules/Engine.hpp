@@ -25,6 +25,7 @@ public:
     Interface* s_GameEventManager = nullptr;
     Interface* eng = nullptr;
     Interface* debugoverlay = nullptr;
+    Interface* s_ServerPlugin = nullptr;
 
     using _ClientCmd = int(__func*)(void* thisptr, const char* szCmdString);
     using _GetLocalPlayer = int(__func*)(void* thisptr);

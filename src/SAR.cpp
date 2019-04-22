@@ -119,18 +119,16 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 // This is a race condition though
 bool SAR::GetPlugin()
 {
-    static Interface* s_ServerPlugin = Interface::Create(MODULE("engine"), "ISERVERPLUGINHELPERS0", false);
-    if (s_ServerPlugin) {
-        auto m_Size = *reinterpret_cast<int*>((uintptr_t)s_ServerPlugin->ThisPtr() + CServerPlugin_m_Size);
-        if (m_Size > 0) {
-            auto m_Plugins = *reinterpret_cast<uintptr_t*>((uintptr_t)s_ServerPlugin->ThisPtr() + CServerPlugin_m_Plugins);
-            for (auto i = 0; i < m_Size; ++i) {
-                auto ptr = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
-                if (!std::strcmp(ptr->m_szName, SAR_PLUGIN_SIGNATURE)) {
-                    this->plugin->ptr = ptr;
-                    this->plugin->index = i;
-                    return true;
-                }
+    auto s_ServerPlugin = reinterpret_cast<uintptr_t>(engine->s_ServerPlugin->ThisPtr());
+    auto m_Size = *reinterpret_cast<int*>(s_ServerPlugin + CServerPlugin_m_Size);
+    if (m_Size > 0) {
+        auto m_Plugins = *reinterpret_cast<uintptr_t*>(s_ServerPlugin + CServerPlugin_m_Plugins);
+        for (auto i = 0; i < m_Size; ++i) {
+            auto ptr = *reinterpret_cast<CPlugin**>(m_Plugins + sizeof(uintptr_t) * i);
+            if (!std::strcmp(ptr->m_szName, SAR_PLUGIN_SIGNATURE)) {
+                this->plugin->ptr = ptr;
+                this->plugin->index = i;
+                return true;
             }
         }
     }
