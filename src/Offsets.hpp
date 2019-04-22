@@ -196,7 +196,6 @@ extern int eng;
 extern int HostState_OnClientConnected;
 extern int hoststate;
 extern int m_bLoadGame;
-extern int cmd_alias;
 extern int NUM_ENT_ENTRIES;
 extern int m_iClassName;
 extern int m_iName;

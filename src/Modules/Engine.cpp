@@ -245,6 +245,8 @@ DETOUR_COMMAND(Engine::help)
 bool Engine::Init()
 {
     this->engineClient = Interface::Create(this->Name(), "VEngineClient0", false);
+    this->s_ServerPlugin = Interface::Create(engine->Name(), "ISERVERPLUGINHELPERS0", false);
+
     if (this->engineClient) {
         this->GetScreenSize = this->engineClient->Original<_GetScreenSize>(Offsets::GetScreenSize);
         this->ClientCmd = this->engineClient->Original<_ClientCmd>(Offsets::ClientCmd);
@@ -317,6 +319,7 @@ bool Engine::Init()
         auto GetCurrentMap = tool->Original(Offsets::GetCurrentMap);
         this->m_szLevelName = Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName);
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
+        Interface::Delete(tool);
     }
 
     if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
@@ -328,6 +331,7 @@ bool Engine::Init()
                 this->eng->Hook(Engine::Frame_Hook, Engine::Frame, Offsets::Frame);
             }
         }
+        Interface::Delete(s_EngineAPI);
     }
 
     if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
@@ -343,6 +347,7 @@ bool Engine::Init()
 
         if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
             this->ClientCommand = g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
+            Interface::Delete(g_VEngineServer);
         }
     }
 
@@ -368,16 +373,9 @@ bool Engine::Init()
     }
 #endif
 
-    if (sar.game->Is(SourceGame_Portal2Game | SourceGame_HalfLife2Engine)) {
-        auto alias = Command("alias");
-        if (!!alias) {
-            auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;
-            Memory::Deref<cmdalias_t*>(callback + Offsets::cmd_alias, &this->cmd_alias);
-        }
-    }
-
     if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
         ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
+        Interface::Delete(debugoverlay);
     }
 
     Command::Hook("plugin_load", Engine::plugin_load_callback_hook, Engine::plugin_load_callback);
@@ -386,11 +384,12 @@ bool Engine::Init()
     Command::Hook("quit", Engine::quit_callback_hook, Engine::quit_callback);
     Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
 
-    return this->hasLoaded = this->engineClient && this->demoplayer && this->demorecorder;
+    return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder;
 }
 void Engine::Shutdown()
 {
     Interface::Delete(this->engineClient);
+    Interface::Delete(this->s_ServerPlugin);
     Interface::Delete(this->cl);
     Interface::Delete(this->eng);
     Interface::Delete(this->s_GameEventManager);
