@@ -79,7 +79,6 @@ public:
     void* s_CommandBuffer = nullptr;
     bool* m_bWaitEnabled = nullptr;
     bool* m_bWaitEnabled2 = nullptr;
-    cmdalias_t* cmd_alias = nullptr;
 
 public:
     void ExecuteCommand(const char* cmd);

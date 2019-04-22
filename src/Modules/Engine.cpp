@@ -373,14 +373,6 @@ bool Engine::Init()
     }
 #endif
 
-    if (sar.game->Is(SourceGame_Portal2Game | SourceGame_HalfLife2Engine)) {
-        auto alias = Command("alias");
-        if (!!alias) {
-            auto callback = (uintptr_t)alias.ThisPtr()->m_pCommandCallback;
-            Memory::Deref<cmdalias_t*>(callback + Offsets::cmd_alias, &this->cmd_alias);
-        }
-    }
-
     if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
         ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
         Interface::Delete(debugoverlay);

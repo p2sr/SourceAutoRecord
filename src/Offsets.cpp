@@ -196,7 +196,6 @@ int eng;
 int HostState_OnClientConnected;
 int hoststate;
 int m_bLoadGame;
-int cmd_alias;
 int NUM_ENT_ENTRIES;
 int m_iClassName;
 int m_iName;

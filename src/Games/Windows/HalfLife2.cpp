@@ -62,7 +62,6 @@ void HalfLife2::LoadOffsets()
     Frame = 5; // CEngine
     m_bLoadGame = 335; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
     ScreenPosition = 10; // CIVDebugOverlay
-    cmd_alias = 37; // alias
 
     // vstdlib.dll
 
