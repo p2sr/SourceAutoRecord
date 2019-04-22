@@ -15,6 +15,9 @@
 #include "SAR.hpp"
 #include "Utils.hpp"
 
+#define SAVE_CVAR(cvar, value) \
+    file << #cvar " \"" << cvar.Get##value() << "\"\n";
+
 Config* config;
 
 Config::Config()
