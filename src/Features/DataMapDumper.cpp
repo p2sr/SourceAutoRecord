@@ -13,9 +13,21 @@
 #include "Modules/Console.hpp"
 #include "Modules/Server.hpp"
 
+#include "Utils/Memory.hpp"
 #include "Utils/SDK.hpp"
 
 #include "SAR.hpp"
+
+#ifdef _WIN32
+PATTERN(DATAMAP_PATTERN1, "C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ? B8 ? ? ? ? ", 6, 12);
+PATTERN(DATAMAP_PATTERN2, "C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ? C3", 6, 12);
+PATTERNS(DATAMAP_PATTERNS, &DATAMAP_PATTERN1, &DATAMAP_PATTERN2);
+#else
+PATTERN(DATAMAP_PATTERN1, "B8 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ? ", 11, 1);
+PATTERN(DATAMAP_PATTERN2, "C7 05 ? ? ? ? ? ? ? ? B8 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? ", 6, 11);
+PATTERN(DATAMAP_PATTERN3, "B8 ? ? ? ? C7 05 ? ? ? ? ? ? ? ? 89 E5 5D C7 05 ? ? ? ? ? ? ? ? ", 11, 1);
+PATTERNS(DATAMAP_PATTERNS, &DATAMAP_PATTERN1, &DATAMAP_PATTERN2, &DATAMAP_PATTERN2, &DATAMAP_PATTERN3);
+#endif
 
 DataMapDumper* dataMapDumper;
 
@@ -82,7 +94,7 @@ void DataMapDumper::Dump(bool dumpServer)
         *results = Memory::MultiScan(moduleName, &DATAMAP_PATTERNS);
         for (auto const& result : *results) {
             auto num = Memory::Deref<int>(result[0]);
-            if (num > 0) {
+            if (num > 0 && num < 1000) {
                 auto ptr = Memory::Deref<void*>(result[1]);
                 auto level = 0;
                 if (hl2) {
