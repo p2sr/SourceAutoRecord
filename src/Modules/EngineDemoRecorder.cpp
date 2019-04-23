@@ -23,7 +23,7 @@ int EngineDemoRecorder::GetTick()
 // CDemoRecorder::SetSignonState
 DETOUR(EngineDemoRecorder::SetSignonState, int state)
 {
-    if (state == SignonState::Full && *engine->demorecorder->m_bRecording) {
+    if (state == SIGNONSTATE_FULL && *engine->demorecorder->m_bRecording) {
         engine->demorecorder->isRecordingDemo = true;
         engine->demorecorder->currentDemo = std::string(engine->demorecorder->m_szDemoBaseName);
 

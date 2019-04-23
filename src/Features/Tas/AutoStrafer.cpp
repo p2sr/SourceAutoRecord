@@ -9,7 +9,10 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 
+#include "Command.hpp"
+#include "Offsets.hpp"
 #include "Utils.hpp"
+#include "Variable.hpp"
 
 Variable sar_tas_strafe_vectorial("sar_tas_strafe_vectorial", "1",
     "1 = Auto-strafer calculates perfect forward-side movement,\n"
@@ -21,12 +24,23 @@ AutoStrafer::AutoStrafer()
     : in_autostrafe()
     , states()
 {
+    for (auto i = 0; i < Offsets::MAX_SPLITSCREEN_PLAYERS; ++i) {
+        this->states.push_back(new StrafeState());
+    }
+
     this->hasLoaded = true;
+}
+AutoStrafer::~AutoStrafer()
+{
+    for (auto& state : this->states) {
+        delete state;
+    }
+    this->states.clear();
 }
 void AutoStrafer::Strafe(void* pPlayer, CMoveData* pMove)
 {
     auto slot = server->GetSplitScreenPlayerSlot(pPlayer);
-    auto strafe = &this->states[slot];
+    auto strafe = this->states[slot];
 
     if (pMove->m_nButtons & IN_AUTOSTRAFE && !(pMove->m_nOldButtons & IN_AUTOSTRAFE)) {
         strafe->type = StrafingType::Straight;

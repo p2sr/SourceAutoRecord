@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 #include "Features/Feature.hpp"
 
 #include "Utils/SDK.hpp"
@@ -22,10 +24,12 @@ struct StrafeState {
 class AutoStrafer : public Feature {
 public:
     kbutton_t in_autostrafe;
-    StrafeState states[MAX_SPLITSCREEN_PLAYERS];
+    std::vector<StrafeState*> states;
 
 public:
     AutoStrafer();
+    ~AutoStrafer();
+
     void Strafe(void* pPlayer, CMoveData* pMove);
 
 private:

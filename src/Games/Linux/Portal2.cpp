@@ -67,6 +67,7 @@ void Portal2::LoadOffsets()
     Frame = 6; // CEngine
     m_bLoadGame = 440; // CGameClient::ActivatePlaye/CBaseServer::m_szLevelName
     ScreenPosition = 11; // CIVDebugOverlay
+    MAX_SPLITSCREEN_PLAYERS = 2; // maxplayers
 
     // libvstdlib.so
 

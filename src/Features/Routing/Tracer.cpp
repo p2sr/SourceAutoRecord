@@ -8,17 +8,29 @@
 #include "Modules/Server.hpp"
 
 #include "Command.hpp"
+#include "Offsets.hpp"
 
 Tracer* tracer;
 
 Tracer::Tracer()
     : traces()
 {
+    for (auto i = 0; i < Offsets::MAX_SPLITSCREEN_PLAYERS; ++i) {
+        this->traces.push_back(new TraceResult());
+    }
     this->hasLoaded = true;
 }
+Tracer::~Tracer()
+{
+    for (const auto& trace : this->traces) {
+        delete trace;
+    }
+    this->traces.clear();
+}
+
 TraceResult* Tracer::GetTraceResult(int nSlot)
 {
-    return &this->traces[nSlot];
+    return this->traces[nSlot];
 }
 void Tracer::Start(int nSlot, Vector source)
 {

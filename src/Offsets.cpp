@@ -208,4 +208,5 @@ int CUserCmdSize;
 int MULTIPLAYER_BACKUP;
 int PerUserInput_tSize;
 int GetLocalClient;
+int MAX_SPLITSCREEN_PLAYERS;
 }

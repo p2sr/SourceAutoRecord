@@ -109,7 +109,7 @@ bool Server::IsPlayer(void* entity)
 int Server::GetSplitScreenPlayerSlot(void* entity)
 {
     // Simplified version of CBasePlayer::GetSplitScreenPlayerSlot
-    for (auto i = 0; i < MAX_SPLITSCREEN_PLAYERS; ++i) {
+    for (auto i = 0; i < Offsets::MAX_SPLITSCREEN_PLAYERS; ++i) {
         if (server->UTIL_PlayerByIndex(i + 1) == entity) {
             return i;
         }

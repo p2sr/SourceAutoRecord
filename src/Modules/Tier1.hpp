@@ -1,6 +1,7 @@
 #pragma once
-#include "Interface.hpp"
 #include "Module.hpp"
+
+#include "Interface.hpp"
 #include "Utils.hpp"
 
 #ifdef _WIN32

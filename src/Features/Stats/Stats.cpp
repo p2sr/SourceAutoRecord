@@ -10,6 +10,7 @@
 #include "Modules/Server.hpp"
 
 #include "Command.hpp"
+#include "Offsets.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
 
@@ -25,7 +26,7 @@ Stats* stats;
 
 Stats::Stats()
 {
-    for (auto i = 0; i < MAX_SPLITSCREEN_PLAYERS; ++i) {
+    for (auto i = 0; i < Offsets::MAX_SPLITSCREEN_PLAYERS; ++i) {
         this->playerStats.push_back(new PlayerStats());
     }
 

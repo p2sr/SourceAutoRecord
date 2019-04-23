@@ -1,5 +1,5 @@
 #pragma once
-#include "Features/Feature.hpp"
+#include "Feature.hpp"
 
 #include "Command.hpp"
 #include "Utils.hpp"

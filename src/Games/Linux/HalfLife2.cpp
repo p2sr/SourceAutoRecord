@@ -66,6 +66,7 @@ void HalfLife2::LoadOffsets()
     ScreenPosition = 9; // CIVDebugOverlay
     m_pConCommandList = 44; // CCvar
     IsCommand = 2; // ConCommandBase
+    MAX_SPLITSCREEN_PLAYERS = 1; // maxplayers
 
     // libvstdlib.so
 

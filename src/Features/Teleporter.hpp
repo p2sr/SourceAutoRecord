@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 #include "Feature.hpp"
 
 #include "Utils/SDK.hpp"
@@ -11,10 +13,12 @@ struct TeleportLocation {
 
 class Teleporter : public Feature {
 private:
-    TeleportLocation locations[MAX_SPLITSCREEN_PLAYERS];
+    std::vector<TeleportLocation*> locations;
 
 public:
     Teleporter();
+    ~Teleporter();
+
     TeleportLocation* GetLocation(int nSlot);
     void Save(int nSlot);
     void Teleport(int nSlot);

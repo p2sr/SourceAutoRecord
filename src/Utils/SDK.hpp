@@ -193,16 +193,14 @@ struct ConVar2 : ConCommandBase {
     CUtlVector<FnChangeCallback_t> m_fnChangeCallback; // 68
 };
 
-enum SignonState {
-    None = 0,
-    Challenge = 1,
-    Connected = 2,
-    New = 3,
-    Prespawn = 4,
-    Spawn = 5,
-    Full = 6,
-    Changelevel = 7
-};
+#define SIGNONSTATE_NONE 0
+#define SIGNONSTATE_CHALLENGE 1
+#define SIGNONSTATE_CONNECTED 2
+#define SIGNONSTATE_NEW 3
+#define SIGNONSTATE_PRESPAWN 4
+#define SIGNONSTATE_SPAWN 5
+#define SIGNONSTATE_FULL 6
+#define SIGNONSTATE_CHANGELEVEL 7
 
 struct CUserCmd {
     void* VMT; // 0
@@ -776,8 +774,6 @@ struct PerUserInput_t {
     int m_nCamCommand; // 188
 };
 
-#define MAX_SPLITSCREEN_PLAYERS 2
-
 struct kbutton_t {
     struct Split_t {
         int down[2];
@@ -785,7 +781,7 @@ struct kbutton_t {
     };
 
     Split_t& GetPerUser(int nSlot = -1);
-    Split_t m_PerUser[MAX_SPLITSCREEN_PLAYERS];
+    Split_t m_PerUser[2];
 };
 
 enum TOGGLE_STATE {

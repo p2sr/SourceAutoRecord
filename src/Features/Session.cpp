@@ -184,7 +184,7 @@ void Session::Changed(int state)
     console->DevMsg("state = %i\n", state);
 
     // Demo recorder starts syncing from this tick
-    if (state == SignonState::Full) {
+    if (state == SIGNONSTATE_FULL) {
         if (engine->GetMaxClients() <= 1) {
             this->Started();
         }
