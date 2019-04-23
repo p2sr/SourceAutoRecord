@@ -27,38 +27,31 @@ ClassDumper::ClassDumper()
 {
     this->hasLoaded = true;
 }
-void ClassDumper::DumpServerClasses()
+void ClassDumper::Dump(bool dumpServer)
 {
-    std::ofstream file(this->serverClassesFile, std::ios::out | std::ios::trunc);
+    auto source = (dumpServer) ? &this->serverClassesFile : &this->clientClassesFile;
+
+    std::ofstream file(*source, std::ios::out | std::ios::trunc);
     if (!file.good()) {
         console->Warning("Failed to create file!\n");
         return file.close();
     }
 
-    for (auto sclass = server->GetAllServerClasses(); sclass; sclass = sclass->m_pNext) {
-        file << sclass->m_pNetworkName << std::endl;
-        auto level = 1;
-        this->DumpSendTable(file, sclass->m_pTable, level);
+    if (dumpServer) {
+        for (auto sclass = server->GetAllServerClasses(); sclass; sclass = sclass->m_pNext) {
+            file << sclass->m_pNetworkName << std::endl;
+            auto level = 1;
+            this->DumpSendTable(file, sclass->m_pTable, level);
+        }
+    } else {
+        for (auto cclass = client->GetAllClasses(); cclass; cclass = cclass->m_pNext) {
+            file << cclass->m_pNetworkName << std::endl;
+            auto level = 1;
+            this->DumpRecvTable(file, cclass->m_pRecvTable, level);
+        }
     }
 
-    console->Print("Created %s file.\n", this->serverClassesFile.c_str());
-    file.close();
-}
-void ClassDumper::DumpClientClasses()
-{
-    std::ofstream file(this->clientClassesFile, std::ios::out | std::ios::trunc);
-    if (!file.good()) {
-        console->Warning("Failed to create file!\n");
-        return file.close();
-    }
-
-    for (auto cclass = client->GetAllClasses(); cclass; cclass = cclass->m_pNext) {
-        file << cclass->m_pNetworkName << std::endl;
-        auto level = 1;
-        this->DumpRecvTable(file, cclass->m_pRecvTable, level);
-    }
-
-    console->Print("Created %s file.\n", this->clientClassesFile.c_str());
+    console->Print("Created %s file.\n", source->c_str());
     file.close();
 }
 void ClassDumper::DumpSendTable(std::ofstream& file, SendTable* table, int& level)
@@ -83,7 +76,7 @@ void ClassDumper::DumpSendTable(std::ofstream& file, SendTable* table, int& leve
         }
 
         file << std::setw(level * 4) << "";
-        file << "-> " << name << " (" << (int16_t)offset << ")" << std::endl;
+        file << name << " -> " << (int16_t)offset << std::endl;
 
         if (type != SendPropType::DPT_DataTable) {
             continue;
@@ -108,7 +101,7 @@ void ClassDumper::DumpRecvTable(std::ofstream& file, RecvTable* table, int& leve
         auto nextTable = prop.m_pDataTable;
 
         file << std::setw(level * 4) << "";
-        file << "-> " << name << " (" << (int16_t)offset << ")" << std::endl;
+        file << name << " -> " << (int16_t)offset << std::endl;
 
         if (type != SendPropType::DPT_DataTable) {
             continue;
@@ -124,11 +117,11 @@ void ClassDumper::DumpRecvTable(std::ofstream& file, RecvTable* table, int& leve
 
 CON_COMMAND(sar_dump_server_classes, "Dumps all server classes to a file.\n")
 {
-    classDumper->DumpServerClasses();
+    classDumper->Dump();
 }
 CON_COMMAND(sar_dump_client_classes, "Dumps all client classes to a file.\n")
 {
-    classDumper->DumpClientClasses();
+    classDumper->Dump(false);
 }
 CON_COMMAND(sar_list_server_classes, "Lists all server classes.\n")
 {
@@ -149,7 +142,7 @@ CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props
                               "Finds specific server class tables and props with their offset.\n");
     }
 
-    std::function<void(SendTable* table, int& level)> DumpTable;
+    std::function<void(SendTable * table, int& level)> DumpTable;
     DumpTable = [&DumpTable](SendTable* table, int& level) {
         console->Print("%*s%s\n", level * 4, "", table->m_pNetTableName);
         for (auto i = 0; i < table->m_nProps; ++i) {
@@ -168,7 +161,7 @@ CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props
                 nextTable = temp.m_pDataTable;
             }
 
-            console->Msg("%*s -> %s (%d)\n", level * 4, "", name, (int16_t)offset);
+            console->Msg("%*s%s -> %d\n", level * 4, "", name, (int16_t)offset);
 
             if (type != SendPropType::DPT_DataTable) {
                 continue;
@@ -207,7 +200,7 @@ CON_COMMAND(sar_find_client_class, "Finds specific client class tables and props
             auto type = prop.m_RecvType;
             auto nextTable = prop.m_pDataTable;
 
-            console->Msg("%*s -> %s (%d)\n", level * 4, "", name, (int16_t)offset);
+            console->Msg("%*s%s -> %d\n", level * 4, "", name, (int16_t)offset);
 
             if (type != SendPropType::DPT_DataTable) {
                 continue;
