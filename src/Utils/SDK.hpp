@@ -84,7 +84,7 @@ struct Color {
 #define COMMAND_COMPLETION_ITEM_LENGTH 64
 
 struct CCommand;
-class ConCommandBase;
+struct ConCommandBase;
 
 using _CommandCallback = void (*)(const CCommand& args);
 using _CommandCompletionCallback = int (*)(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
@@ -96,25 +96,13 @@ using _UnregisterConCommand = void(__funcc*)(void* thisptr, ConCommandBase* pCom
 using _FindCommandBase = void*(__funcc*)(void* thisptr, const char* name);
 using _AutoCompletionFunc = int(__funcc*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
-class ConCommandBase {
-public:
+struct ConCommandBase {
     void* ConCommandBase_VTable; // 0
     ConCommandBase* m_pNext; // 4
     bool m_bRegistered; // 8
     const char* m_pszName; // 12
     const char* m_pszHelpString; // 16
     int m_nFlags; // 20
-
-public:
-    ConCommandBase()
-        : ConCommandBase_VTable(nullptr)
-        , m_pNext(nullptr)
-        , m_bRegistered(false)
-        , m_pszName(nullptr)
-        , m_pszHelpString(nullptr)
-        , m_nFlags(0)
-    {
-    }
 };
 
 struct CCommand {
@@ -142,8 +130,7 @@ struct CCommand {
     }
 };
 
-class ConCommand : public ConCommandBase {
-public:
+struct ConCommand : ConCommandBase {
     union {
         void* m_fnCommandCallbackV1;
         _CommandCallback m_fnCommandCallback;
@@ -158,21 +145,11 @@ public:
     bool m_bHasCompletionCallback : 1;
     bool m_bUsingNewCommandCallback : 1;
     bool m_bUsingCommandCallbackInterface : 1;
-
-public:
-    ConCommand()
-        : ConCommandBase()
-        , m_fnCommandCallbackV1(nullptr)
-        , m_fnCompletionCallback(nullptr)
-        , m_bHasCompletionCallback(false)
-        , m_bUsingNewCommandCallback(false)
-        , m_bUsingCommandCallbackInterface(false)
-    {
-    }
 };
 
-class ConVar : public ConCommandBase {
-public:
+typedef void (*FnChangeCallback_t)(void* var, const char* pOldValue, float flOldValue);
+
+struct ConVar : ConCommandBase {
     void* ConVar_VTable; // 24
     ConVar* m_pParent; // 28
     const char* m_pszDefaultValue; // 32
@@ -184,52 +161,36 @@ public:
     float m_fMinVal; // 56
     bool m_bHasMax; // 60
     float m_fMaxVal; // 64
-    void* m_fnChangeCallback; // 68
-
-public:
-    ConVar()
-        : ConCommandBase()
-        , ConVar_VTable(nullptr)
-        , m_pParent(nullptr)
-        , m_pszDefaultValue(nullptr)
-        , m_pszString(nullptr)
-        , m_StringLength(0)
-        , m_fValue(0)
-        , m_nValue(0)
-        , m_bHasMin(0)
-        , m_fMinVal(0)
-        , m_bHasMax(0)
-        , m_fMaxVal(0)
-        , m_fnChangeCallback(nullptr)
-    {
-    }
-    ~ConVar()
-    {
-        if (this->m_pszString) {
-            delete[] this->m_pszString;
-            this->m_pszString = nullptr;
-        }
-    }
+    FnChangeCallback_t m_fnChangeCallback; // 68
 };
 
-class ConVar2 : public ConVar {
-public:
-    // CUtlVector<FnChangeCallback_t> m_fnChangeCallback
-    // CUtlMemory<FnChangeCallback_t> m_Memory
-    int m_nAllocationCount; // 72
-    int m_nGrowSize; // 76
-    int m_Size; // 80
-    void* m_pElements; // 84
+template <class T, class I = int>
+struct CUtlMemory {
+    T* m_pMemory;
+    int m_nAllocationCount;
+    int m_nGrowSize;
+};
 
-public:
-    ConVar2()
-        : ConVar()
-        , m_nAllocationCount(0)
-        , m_nGrowSize(0)
-        , m_Size(0)
-        , m_pElements(nullptr)
-    {
-    }
+template <class T, class A = CUtlMemory<T>>
+struct CUtlVector {
+    A m_Memory;
+    int m_Size;
+    T* m_pElements;
+};
+
+struct ConVar2 : ConCommandBase {
+    void* ConVar_VTable; // 24
+    ConVar2* m_pParent; // 28
+    const char* m_pszDefaultValue; // 32
+    char* m_pszString; // 36
+    int m_StringLength; // 40
+    float m_fValue; // 44
+    int m_nValue; // 48
+    bool m_bHasMin; // 52
+    float m_fMinVal; // 56
+    bool m_bHasMax; // 60
+    float m_fMaxVal; // 64
+    CUtlVector<FnChangeCallback_t> m_fnChangeCallback; // 68
 };
 
 enum SignonState {
@@ -261,8 +222,7 @@ struct CUserCmd {
     bool hasbeenpredicted; // 60
 };
 
-class CMoveData {
-public:
+struct CMoveData {
     bool m_bFirstRunOfFunctions : 1; // 0
     bool m_bGameCodeMovedPlayer : 1; // 2
     void* m_nPlayerHandle; // 4
@@ -286,11 +246,7 @@ public:
     float m_flConstraintRadius; // 140
     float m_flConstraintWidth; // 144
     float m_flConstraintSpeedFactor; // 148
-    void SetAbsOrigin(const Vector& vec);
-    const Vector& GetAbsOrigin() const;
-
-private:
-    Vector m_vecAbsOrigin;
+    Vector m_vecAbsOrigin; // 152
 };
 
 class CHLMoveData : public CMoveData {

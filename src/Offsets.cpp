@@ -33,9 +33,11 @@ int JoyStickApplyMovement;
 int CreateMove;
 
 // ConVar
+int Dtor;
 int InternalSetValue;
 int InternalSetFloatValue;
 int InternalSetIntValue;
+int Create;
 
 // CMatSystemSurface
 int DrawSetColor;

@@ -13,9 +13,11 @@ void Portal2::LoadOffsets()
 
     // engine.so
 
+    Dtor = 0; // ConVar (TODO)
     InternalSetValue = 19; // ConVar
     InternalSetFloatValue = 20; // ConVar
     InternalSetIntValue = 21; // ConVar
+    Create = 25; // ConVar (TODO)
     GetScreenSize = 5; // CEngineClient
     ClientCmd = 7; // CEngineClient
     GetClientStateFunction = 11; // CEngineClient::ClientCmd

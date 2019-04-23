@@ -33,9 +33,11 @@ extern int JoyStickApplyMovement;
 extern int CreateMove;
 
 // ConVar
+extern int Dtor;
 extern int InternalSetValue;
 extern int InternalSetFloatValue;
 extern int InternalSetIntValue;
+extern int Create;
 
 // CMatSystemSurface
 extern int DrawSetColor;

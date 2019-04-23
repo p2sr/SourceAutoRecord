@@ -16,9 +16,8 @@ Command::Command()
 }
 Command::~Command()
 {
-    if (!isReference) {
-        delete ptr;
-        ptr = nullptr;
+    if (!this->isReference) {
+        SAFE_DELETE(this->ptr)
     }
 }
 Command::Command(const char* name)

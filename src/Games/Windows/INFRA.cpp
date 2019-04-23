@@ -15,9 +15,11 @@ void INFRA::LoadOffsets()
 
     // engine.dll
 
+    Dtor = 9; // ConVar
     InternalSetValue = 14; // ConVar
     InternalSetFloatValue = 15; // ConVar
     InternalSetIntValue = 16; // ConVar
+    Create = 29; // ConVar
     GetLocalClient = 138; // CEngineClient::SetViewAngles
     viewangles = 35424; // CEngineClient::SetViewAngles
     GetActiveSplitScreenPlayerSlot = 129; // CEngineClient

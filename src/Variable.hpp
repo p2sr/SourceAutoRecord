@@ -31,7 +31,7 @@ public:
 
     void Create(const char* name, const char* value, int flags = 0, const char* helpstr = "", bool hasmin = false, float min = 0,
         bool hasmax = false, float max = 0);
-    void PostInit();
+    void Realloc();
 
     ConVar* ThisPtr();
     ConVar2* ThisPtr2();

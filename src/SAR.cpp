@@ -61,6 +61,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<PauseTimer>(&pauseTimer);
             this->features->AddFeature<DataMapDumper>(&dataMapDumper);
 
+            this->cheats->Init();
+
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
             this->modules->AddModule<Surface>(&surface);
@@ -90,8 +92,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 if (listener) {
                     listener->Init();
                 }
-
-                this->cheats->Init();
 
                 speedrun->LoadRules(this->game);
 
@@ -223,15 +223,16 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
     if (sar.features) {
         sar.features->DeleteAll();
     }
-    if (sar.modules) {
-        sar.modules->ShutdownAll();
-    }
 
     if (sar.GetPlugin()) {
         // SAR has to unhook CEngine some ticks before unloading the module
         auto unload = std::string("plugin_unload ") + std::to_string(sar.plugin->index);
         engine->SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);
     }
+
+    if (sar.modules) {
+        sar.modules->ShutdownAll();
+    }    
 
     SAFE_DELETE(sar.features)
     SAFE_DELETE(sar.cheats)
