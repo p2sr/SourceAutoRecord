@@ -16,7 +16,6 @@ public:
 
 private:
     std::vector<Hud*> huds = std::vector<Hud*>();
-    std::vector<Hud*> huds2 = std::vector<Hud*>();
 
     bool respectClShowPos = true;
 

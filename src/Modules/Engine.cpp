@@ -70,6 +70,11 @@ QAngle Engine::GetAngles()
     this->GetViewAngles(this->engineClient->ThisPtr(), va);
     return va;
 }
+const QAngle* Engine::GetAngles(int nSlot)
+{
+    auto client = engine->GetLocalClient(nSlot);
+    return (client) ? reinterpret_cast<QAngle*>((uintptr_t)client + Offsets::viewangles) : nullptr;
+}
 void Engine::SetAngles(QAngle va)
 {
     this->SetViewAngles(this->engineClient->ThisPtr(), va);

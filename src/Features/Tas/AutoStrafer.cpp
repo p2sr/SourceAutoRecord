@@ -163,6 +163,6 @@ CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <type> <direction> : Automatic straf
     }
 
     auto nSlot = GET_SLOT();
-    autoStrafer->states[nSlot].type = type;
-    autoStrafer->states[nSlot].direction = direction;
+    autoStrafer->states[nSlot]->type = type;
+    autoStrafer->states[nSlot]->direction = direction;
 }

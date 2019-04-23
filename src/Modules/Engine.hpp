@@ -87,6 +87,7 @@ public:
     int GetLocalPlayerIndex();
     edict_t* PEntityOfEntIndex(int iEntIndex);
     QAngle GetAngles();
+    const QAngle* GetAngles(int nSlot);
     void SetAngles(QAngle va);
     void SetAngles(int nSlot, QAngle va);
     void SendToCommandBuffer(const char* text, int delay);
