@@ -130,10 +130,7 @@ DETOUR_T(bool, Server::CheckJumpButton)
     auto autoJump = cheating && sar_autojump.GetBool();
     auto duckJump = cheating && sar_duckjump.isRegistered && sar_duckjump.GetBool();
 
-    auto original = 0;
     if (autoJump) {
-        original = *m_nOldButtons;
-
         if (!server->jumpedLastTime)
             *m_nOldButtons &= ~IN_JUMP;
     }
@@ -145,11 +142,6 @@ DETOUR_T(bool, Server::CheckJumpButton)
         ? Server::CheckJumpButtonBase(thisptr)
         : Server::CheckJumpButton(thisptr);
     server->callFromCheckJumpButton = false;
-
-    if (autoJump) {
-        if (!(*m_nOldButtons & IN_JUMP))
-            *m_nOldButtons = original;
-    }
 
     if (result) {
         server->jumpedLastTime = true;
