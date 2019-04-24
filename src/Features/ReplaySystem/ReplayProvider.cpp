@@ -38,8 +38,8 @@ ReplayProvider::~ReplayProvider()
 void ReplayProvider::CreateNewReplay()
 {
     auto clients = engine->GetMaxClients();
-    std::max(clients, 1);
-    std::min(clients, 2);
+    clients = std::max(clients, 1);
+    clients = std::min(clients, 2);
 
     this->replays.push_back(new Replay(clients));
 }
@@ -69,8 +69,8 @@ void ReplayProvider::MergeAll()
     }
 
     auto clients = engine->GetMaxClients();
-    std::max(clients, 1);
-    std::min(clients, 2);
+    clients = std::max(clients, 1);
+    clients = std::min(clients, 2);
 
     auto viewSize = this->GetCurrentReplay()->GetViewSize();
     auto baseReplay = new Replay(clients);
@@ -393,7 +393,7 @@ CON_COMMAND(sar_replay_merge_views, "Merges one view to another of two replays.\
 
     if (replayIndex1 >= loadedReplays
         || replayIndex2 >= loadedReplays
-        || replayIndex2 < 0
+        || replayIndex1 < 0
         || replayIndex2 < 0
         || replayIndex1 == replayIndex2) {
         return console->Print("Invalid replay indexes!\n");
