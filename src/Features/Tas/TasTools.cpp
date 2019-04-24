@@ -50,7 +50,7 @@ void TasTools::AimAtPoint(void* player, float x, float y, float z)
 
     QAngle angles = { RAD2DEG(-atan2f(ydis, xzdis)), RAD2DEG(-(atan2f(-xdis, zdis))), 0 };
 
-    engine->SetAngles(angles);
+    engine->SetAngles(GET_SLOT(), angles);
 }
 void* TasTools::GetPlayerInfo()
 {
@@ -150,7 +150,8 @@ CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] : Adds {x, y, z} degrees
         return console->Print("Missing arguments : sar_tas_addang <x> <y> [z].\n");
     }
 
-    auto angles = engine->GetAngles();
+    auto nSlot = GET_SLOT();
+    auto angles = engine->GetAngles(nSlot);
 
     angles.x += static_cast<float>(std::atof(args[1]));
     angles.y += static_cast<float>(std::atof(args[2])); // Player orientation
@@ -158,7 +159,7 @@ CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] : Adds {x, y, z} degrees
     if (args.ArgC() == 4)
         angles.z += static_cast<float>(std::atof(args[3]));
 
-    engine->SetAngles(angles);
+    engine->SetAngles(nSlot, angles);
 }
 CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : Sets {x, y, z} degrees to view axis.\n")
 {
@@ -170,10 +171,12 @@ CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] : Sets {x, y, z} degrees
         return console->Print("Missing arguments : sar_tas_setang <x> <y> [z].\n");
     }
 
+    auto nSlot = GET_SLOT();
+
     // Fix the bug when z is not set
     if (args.ArgC() == 3) {
-        engine->SetAngles(QAngle{ static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), 0.0f });
+        engine->SetAngles(nSlot, QAngle{ static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), 0.0f });
     } else {
-        engine->SetAngles(QAngle{ static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])) });
+        engine->SetAngles(nSlot, QAngle{ static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])) });
     }
 }

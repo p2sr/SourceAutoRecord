@@ -86,9 +86,7 @@ public:
     float ToTime(int tick);
     int GetLocalPlayerIndex();
     edict_t* PEntityOfEntIndex(int iEntIndex);
-    QAngle GetAngles();
-    const QAngle* GetAngles(int nSlot);
-    void SetAngles(QAngle va);
+    QAngle GetAngles(int nSlot);
     void SetAngles(int nSlot, QAngle va);
     void SendToCommandBuffer(const char* text, int delay);
     int PointToScreen(const Vector& point, Vector& screen);

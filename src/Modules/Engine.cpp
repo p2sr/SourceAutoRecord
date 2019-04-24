@@ -64,29 +64,31 @@ edict_t* Engine::PEntityOfEntIndex(int iEntIndex)
 
     return nullptr;
 }
-QAngle Engine::GetAngles()
+QAngle Engine::GetAngles(int nSlot)
 {
     auto va = QAngle();
-    this->GetViewAngles(this->engineClient->ThisPtr(), va);
+    if (this->GetLocalClient) {
+        auto client = this->GetLocalClient(nSlot);
+        if (client) {
+            va = *reinterpret_cast<QAngle*>((uintptr_t)client + Offsets::viewangles);
+        }
+    } else {
+        this->GetViewAngles(this->engineClient->ThisPtr(), va);
+    }
     return va;
-}
-const QAngle* Engine::GetAngles(int nSlot)
-{
-    auto client = engine->GetLocalClient(nSlot);
-    return (client) ? reinterpret_cast<QAngle*>((uintptr_t)client + Offsets::viewangles) : nullptr;
-}
-void Engine::SetAngles(QAngle va)
-{
-    this->SetViewAngles(this->engineClient->ThisPtr(), va);
 }
 void Engine::SetAngles(int nSlot, QAngle va)
 {
-    auto client = engine->GetLocalClient(nSlot);
-    if (client) {
-        auto viewangles = reinterpret_cast<QAngle*>((uintptr_t)client + Offsets::viewangles);
-        viewangles->x = Math::AngleNormalize(va.x);
-        viewangles->y = Math::AngleNormalize(va.y);
-        viewangles->z = Math::AngleNormalize(va.z);
+    if (this->GetLocalClient) {
+        auto client = this->GetLocalClient(nSlot);
+        if (client) {
+            auto viewangles = reinterpret_cast<QAngle*>((uintptr_t)client + Offsets::viewangles);
+            viewangles->x = Math::AngleNormalize(va.x);
+            viewangles->y = Math::AngleNormalize(va.y);
+            viewangles->z = Math::AngleNormalize(va.z);
+        }
+    } else {
+        this->SetViewAngles(this->engineClient->ThisPtr(), va);
     }
 }
 void Engine::SendToCommandBuffer(const char* text, int delay)
@@ -250,7 +252,7 @@ DETOUR_COMMAND(Engine::help)
 bool Engine::Init()
 {
     this->engineClient = Interface::Create(this->Name(), "VEngineClient0", false);
-    this->s_ServerPlugin = Interface::Create(engine->Name(), "ISERVERPLUGINHELPERS0", false);
+    this->s_ServerPlugin = Interface::Create(this->Name(), "ISERVERPLUGINHELPERS0", false);
 
     if (this->engineClient) {
         this->GetScreenSize = this->engineClient->Original<_GetScreenSize>(Offsets::GetScreenSize);

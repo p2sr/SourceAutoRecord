@@ -101,14 +101,10 @@ DETOUR(VGui::Paint, int mode)
     if (sar_hud_angles.GetBool()) {
         for (auto i = 0; i < maxClients; ++i) {
             auto ang = engine->GetAngles(i);
-            if (ang) {
-                if (sar_hud_angles.GetInt() == 1) {
-                    DrawElement("ang: %.3f %.3f", ang->x, ang->y);
-                } else {
-                    DrawElement("ang: %.3f %.3f %.3f", ang->x, ang->y, ang->z);
-                }
+            if (sar_hud_angles.GetInt() == 1) {
+                DrawElement("ang: %.3f %.3f", ang.x, ang.y);
             } else {
-                DrawElement("ang: -");
+                DrawElement("ang: %.3f %.3f %.3f", ang.x, ang.y, ang.z);
             }
         }
     }

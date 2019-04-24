@@ -12,7 +12,7 @@ public:
     Interface* s_ClientDemoRecorder = nullptr;
 
     using _GetRecordingTick = int(__func*)(void* thisptr);
-    _GetRecordingTick GetRecordingTick;
+    _GetRecordingTick GetRecordingTick = nullptr;
 
     char* m_szDemoBaseName = nullptr;
     int* m_nDemoNumber = nullptr;
