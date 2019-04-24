@@ -12,7 +12,10 @@ Color Hud::GetColor(const char* source)
 }
 
 Variable sar_hud_text("sar_hud_text", "", "Draws specified text when not empty.\n", 0);
-Variable sar_hud_position("sar_hud_position", "0", 0, "Draws absolute position of the client.\n");
+Variable sar_hud_position("sar_hud_position", "0", 0, "Draws absolute position of the client.\n"
+                                                      "0 = Default,\n"
+                                                      "1 = Player position,\n"
+                                                      "2 = Camera position.\n");
 Variable sar_hud_angles("sar_hud_angles", "0", 0, "Draws absolute view angles of the client.\n"
                                                   "0 = Default,\n"
                                                   "1 = XY,\n"
@@ -45,7 +48,7 @@ Variable sar_hud_velocity_peak("sar_hud_velocity_peak", "0", "Draws last saved v
 Variable sar_hud_velocity_angle("sar_hud_velocity_angle", "0", "Draws velocity angles.\n");
 Variable sar_hud_acceleration("sar_hud_acceleration", "0", 0, "Draws instant acceleration.\n");
 Variable sar_hud_player_info("sar_hud_player_info", "0", "Draws player state defined with sar_tas_set_prop.\n");
-Variable sar_hud_default_spacing("sar_hud_default_spacing", "4", 0, "Spacing between elements of HUD.\n");
+Variable sar_hud_default_spacing("sar_hud_default_spacing", "1", 0, "Spacing between elements of HUD.\n");
 Variable sar_hud_default_padding_x("sar_hud_default_padding_x", "2", 0, "X padding of HUD.\n");
 Variable sar_hud_default_padding_y("sar_hud_default_padding_y", "2", 0, "Y padding of HUD.\n");
 Variable sar_hud_default_font_index("sar_hud_default_font_index", "0", 0, "Font index of HUD.\n");

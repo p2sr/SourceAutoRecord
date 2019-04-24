@@ -63,8 +63,7 @@ DETOUR(VGui::Paint, int mode)
     Color textColor(r, g, b, a);
 
     if (vgui->respectClShowPos && cl_showpos.GetBool()) {
-        elements += 4;
-        yPadding += spacing;
+        yPadding += 5 * (surface->GetFontHeight(scheme->GetDefaultFont()) + spacing);
     }
 
     auto DrawElement = [font, xPadding, yPadding, fontSize, spacing, textColor, &elements](const char* fmt, ...) {
@@ -92,6 +91,9 @@ DETOUR(VGui::Paint, int mode)
             auto player = client->GetPlayer(i);
             if (player) {
                 auto pos = client->GetAbsOrigin(player);
+                if (sar_hud_position.GetInt() >= 2) {
+                    pos = pos + client->GetViewOffset(player);
+                }
                 DrawElement("pos: %.3f %.3f %.3f", pos.x, pos.y, pos.z);
             } else {
                 DrawElement("pos: -");
