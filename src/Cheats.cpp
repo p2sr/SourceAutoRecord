@@ -142,7 +142,6 @@ void Cheats::Init()
     sar_duckjump.UniqueFor(SourceGame_Portal2Game);
     sar_replay_viewmode.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_mimic.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
-    sar_tas_strafe_vectorial.UniqueFor(SourceGame_Portal2Engine);
     sar_tas_ss_forceuser.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_hud_pause_timer.UniqueFor(s3);
     sar_speedrun_time_pauses.UniqueFor(s3);

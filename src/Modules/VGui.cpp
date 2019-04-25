@@ -114,10 +114,15 @@ DETOUR(VGui::Paint, int mode)
         for (auto i = 1; i <= maxClients; ++i) {
             auto player = client->GetPlayer(i);
             if (player) {
-                auto vel = (sar_hud_velocity.GetInt() == 1)
-                    ? client->GetLocalVelocity(player).Length()
-                    : client->GetLocalVelocity(player).Length2D();
-                DrawElement("vel: %.3f", vel);
+                if (sar_hud_velocity.GetInt() >= 3) {
+                    auto vel = server->GetLocalVelocity(player);
+                    DrawElement("vel: x : %.3f y : %.3f z : %.3f", vel.x, vel.y, vel.z);
+                } else {
+                    auto vel = (sar_hud_velocity.GetInt() == 1)
+                        ? server->GetLocalVelocity(player).Length()
+                        : server->GetLocalVelocity(player).Length2D();
+                    DrawElement("vel: %.3f", vel);
+                }
             } else {
                 DrawElement("vel: -");
             }

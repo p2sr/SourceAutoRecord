@@ -271,6 +271,7 @@
     <ClCompile Include="Features\Tas\TasTools.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="Features\Timer\PauseTimer.cpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
     </ClCompile>
@@ -289,6 +290,8 @@
     <ClCompile Include="Features\DataMapDumper.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+=======
+>>>>>>> parent of f46348b... Fix missing files
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -585,6 +588,7 @@
     <ClInclude Include="Features\Tas\TasTools.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="Features\Tas\AutoStrafer.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
@@ -606,6 +610,8 @@
     <ClInclude Include="Features\DataMapDumper.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
+=======
+>>>>>>> parent of f46348b... Fix missing files
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

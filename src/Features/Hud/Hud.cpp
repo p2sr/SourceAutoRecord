@@ -23,7 +23,8 @@ Variable sar_hud_angles("sar_hud_angles", "0", 0, "Draws absolute view angles of
 Variable sar_hud_velocity("sar_hud_velocity", "0", 0, "Draws velocity of the client.\n"
                                                       "0 = Default,\n"
                                                       "1 = X/Y/Z,\n"
-                                                      "2 = X/Y.\n");
+                                                      "2 = X/Y.\n"
+                                                      "3 = X : Y : Z.\n");
 Variable sar_hud_session("sar_hud_session", "0", "Draws current session tick.\n");
 Variable sar_hud_last_session("sar_hud_last_session", "0", "Draws value of latest completed session.\n");
 Variable sar_hud_sum("sar_hud_sum", "0", "Draws summary value of sessions.\n");

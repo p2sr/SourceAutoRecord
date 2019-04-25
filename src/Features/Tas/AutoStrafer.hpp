@@ -16,9 +16,15 @@ enum class StrafingType {
     Turning
 };
 
+enum class VecStrafeType {
+    Disabled,
+    Normal,
+    Visual
+};
 struct StrafeState {
     int direction = 1;
     StrafingType type = StrafingType::None;
+    VecStrafeType vecType = VecStrafeType::Visual;
 };
 
 class AutoStrafer : public Feature {
@@ -41,5 +47,3 @@ extern AutoStrafer* autoStrafer;
 extern Command sar_tas_strafe;
 extern Command startautostrafe;
 extern Command endautostrafe;
-
-extern Variable sar_tas_strafe_vectorial;

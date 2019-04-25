@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 #include "Features/Feature.hpp"
 
 #include "Utils/SDK.hpp"
@@ -15,12 +17,19 @@ enum class PropType {
     Char
 };
 
+struct SetAnglesData {
+    QAngle currentAngles = { 0, 0, 0 };
+    QAngle targetAngles = { 0, 0, 0 };
+    float speedInterpolation = 0;
+};
+
 class TasTools : public Feature {
 public:
     char className[32];
     char propName[32];
     int propOffset;
     PropType propType;
+    std::vector<SetAnglesData*> data;
 
 private:
     Vector acceleration;
@@ -29,10 +38,14 @@ private:
 
 public:
     TasTools();
-    void AimAtPoint(void* player, float x, float y, float z);
+    ~TasTools();
+
+    void AimAtPoint(void* player, float x, float y, float z, int doSlerp);
     Vector GetVelocityAngles(void* player);
     Vector GetAcceleration(void* player);
     void* GetPlayerInfo();
+    void SetAngles(void* pPlayer);
+    QAngle Slerp(QAngle a0, QAngle a1, float speedInterpolation);
 };
 
 extern TasTools* tasTools;
