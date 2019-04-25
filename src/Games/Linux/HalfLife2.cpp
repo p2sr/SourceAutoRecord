@@ -13,11 +13,11 @@ void HalfLife2::LoadOffsets()
 
     // engine.so
 
-    Dtor = 0; // ConVar (TODO)
+    Dtor = 0; // ConVar
     InternalSetValue = 14; // ConVar
     InternalSetFloatValue = 15; // ConVar
     InternalSetIntValue = 16; // ConVar
-    Create = 20; // ConVar (TODO)
+    Create = 19; // ConVar
     GetScreenSize = 5; // CEngineClient
     ClientCmd = 7; // CEngineClient
     Cbuf_AddText = 28; // CEngineClient::ClientCmd

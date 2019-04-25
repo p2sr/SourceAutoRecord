@@ -25,17 +25,9 @@ Command::Command(const char* name)
     this->ptr = reinterpret_cast<ConCommand*>(tier1->FindCommandBase(tier1->g_pCVar->ThisPtr(), name));
     this->isReference = true;
 }
-Command::Command(const char* pName, _CommandCallback callback, const char* pHelpString, int flags,
-    _CommandCompletionCallback completionFunc)
+Command::Command(const char* pName, _CommandCallback callback, const char* pHelpString, int flags, _CommandCompletionCallback completionFunc)
 {
-    this->ptr = new ConCommand();
-    this->ptr->m_pszName = pName;
-    this->ptr->m_pszHelpString = pHelpString;
-    this->ptr->m_nFlags = flags;
-    this->ptr->m_fnCommandCallback = callback;
-    this->ptr->m_fnCompletionCallback = completionFunc;
-    this->ptr->m_bHasCompletionCallback = completionFunc != nullptr;
-    this->ptr->m_bUsingNewCommandCallback = true;
+    this->ptr = new ConCommand(pName, callback, pHelpString, flags, completionFunc);
 
     Command::list.push_back(this);
 }

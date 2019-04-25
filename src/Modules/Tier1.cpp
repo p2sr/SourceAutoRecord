@@ -1,11 +1,12 @@
 #include "Tier1.hpp"
 
-//#include "Console.hpp"
-
+#ifdef _WIN32
 #include "Game.hpp"
+#include "SAR.hpp"
+#endif
+
 #include "Interface.hpp"
 #include "Offsets.hpp"
-#include "SAR.hpp"
 #include "Utils.hpp"
 
 bool Tier1::Init()
@@ -33,13 +34,17 @@ bool Tier1::Init()
             this->ConVar_VTable = sv_lan->ConCommandBase_VTable;
             this->ConVar_VTable2 = sv_lan->ConVar_VTable;
 
-            auto vtable = sar.game->Is(SourceGame_HalfLife2Engine)
+            auto vtable =
+#ifdef _WIN32
+            sar.game->Is(SourceGame_HalfLife2Engine)
                 ? &this->ConVar_VTable
                 : &this->ConVar_VTable2;
+#else
+                &this->ConVar_VTable;
+#endif
 
             this->Dtor = Memory::VMT<_Dtor>(vtable, Offsets::Dtor);
             this->Create = Memory::VMT<_Create>(vtable, Offsets::Create);
-            //console->Print("%p\n%p\n", this->Dtor, this->Create);
         }
     }
 
@@ -47,7 +52,7 @@ bool Tier1::Init()
         && this->ConCommand_VTable
         && this->ConVar_VTable
         && this->ConVar_VTable2
-        && this->AutoCompletionFunc/* && false*/;
+        && this->AutoCompletionFunc;
 }
 void Tier1::Shutdown()
 {

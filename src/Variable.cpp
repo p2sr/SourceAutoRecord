@@ -12,7 +12,7 @@ Variable::Variable()
     : ptr(nullptr)
     , version(SourceGame_Unknown)
     , originalFlags(0)
-    , originalfnChangeCallback(0)
+    , originalFnChangeCallback(nullptr)
     , isRegistered(false)
     , isReference(false)
 {
@@ -52,52 +52,22 @@ Variable::Variable(const char* name, const char* value, float min, float max, co
 }
 void Variable::Create(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
 {
-    this->ptr = new ConVar {
-        nullptr,
-        nullptr,
-        false,
-        name,
-        helpstr,
-        flags,
-        nullptr,
-        nullptr,
-        value,
-        nullptr,
-        0,
-        0.0f,
-        0,
-        hasmin,
-        min,
-        hasmax,
-        max,
-        nullptr
-    };
+    this->ptr = new ConVar(name, value, flags, helpstr, hasmin, min, hasmax, max);
 
     Variable::list.push_back(this);
 }
 void Variable::Realloc()
 {
     if (sar.game->Is(SourceGame_Portal2Engine)) {
-        auto newptr = new ConVar2 {
-            nullptr,
-            nullptr,
-            false,
+        auto newptr = new ConVar2(
             this->ptr->m_pszName,
-            this->ptr->m_pszHelpString,
-            this->ptr->m_nFlags,
-            nullptr,
-            nullptr,
             this->ptr->m_pszDefaultValue,
-            nullptr,
-            0,
-            0.0f,
-            0,
+            this->ptr->m_nFlags,
+            this->ptr->m_pszHelpString,
             this->ptr->m_bHasMin,
             this->ptr->m_fMinVal,
             this->ptr->m_bHasMax,
-            this->ptr->m_fMaxVal,
-            nullptr
-        };
+            this->ptr->m_fMaxVal);
         delete this->ptr;
         this->ptr = reinterpret_cast<ConVar*>(newptr);
     }
@@ -181,7 +151,7 @@ void Variable::DisableChange()
             this->originalSize = ((ConVar2*)this->ptr)->m_fnChangeCallback.m_Size;
             ((ConVar2*)this->ptr)->m_fnChangeCallback.m_Size = 0;
         } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-            this->originalfnChangeCallback = this->ptr->m_fnChangeCallback;
+            this->originalFnChangeCallback = this->ptr->m_fnChangeCallback;
             this->ptr->m_fnChangeCallback = nullptr;
         }
     }
@@ -192,7 +162,7 @@ void Variable::EnableChange()
         if (sar.game->Is(SourceGame_Portal2Engine)) {
             ((ConVar2*)this->ptr)->m_fnChangeCallback.m_Size = this->originalSize;
         } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-            this->ptr->m_fnChangeCallback = reinterpret_cast<FnChangeCallback_t>(this->originalfnChangeCallback);
+            this->ptr->m_fnChangeCallback = this->originalFnChangeCallback;
         }
     }
 }

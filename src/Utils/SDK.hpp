@@ -103,6 +103,16 @@ struct ConCommandBase {
     const char* m_pszName; // 12
     const char* m_pszHelpString; // 16
     int m_nFlags; // 20
+
+    ConCommandBase(const char* name, int flags, const char* helpstr)
+        : ConCommandBase_VTable(nullptr)
+        , m_pNext(nullptr)
+        , m_bRegistered(false)
+        , m_pszName(name)
+        , m_pszHelpString(helpstr)
+        , m_nFlags(flags)
+    {
+    }
 };
 
 struct CCommand {
@@ -145,6 +155,16 @@ struct ConCommand : ConCommandBase {
     bool m_bHasCompletionCallback : 1;
     bool m_bUsingNewCommandCallback : 1;
     bool m_bUsingCommandCallbackInterface : 1;
+
+    ConCommand(const char* pName, _CommandCallback callback, const char* pHelpString, int flags, _CommandCompletionCallback completionFunc)
+        : ConCommandBase(pName, flags, pHelpString)
+        , m_fnCommandCallback(callback)
+        , m_fnCompletionCallback(completionFunc)
+        , m_bHasCompletionCallback(completionFunc != nullptr)
+        , m_bUsingNewCommandCallback(true)
+        , m_bUsingCommandCallbackInterface(false)
+    {
+    }
 };
 
 typedef void (*FnChangeCallback_t)(void* var, const char* pOldValue, float flOldValue);
@@ -162,6 +182,22 @@ struct ConVar : ConCommandBase {
     bool m_bHasMax; // 60
     float m_fMaxVal; // 64
     FnChangeCallback_t m_fnChangeCallback; // 68
+
+    ConVar(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
+        : ConCommandBase(name, flags, helpstr)
+        , ConVar_VTable(nullptr)
+        , m_pParent(nullptr)
+        , m_pszDefaultValue(value)
+        , m_pszString(nullptr)
+        , m_fValue(0.0f)
+        , m_nValue(0)
+        , m_bHasMin(hasmin)
+        , m_fMinVal(min)
+        , m_bHasMax(hasmax)
+        , m_fMaxVal(max)
+        , m_fnChangeCallback(nullptr)
+    {
+    }
 };
 
 template <class T, class I = int>
@@ -191,6 +227,22 @@ struct ConVar2 : ConCommandBase {
     bool m_bHasMax; // 60
     float m_fMaxVal; // 64
     CUtlVector<FnChangeCallback_t> m_fnChangeCallback; // 68
+
+    ConVar2(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
+        : ConCommandBase(name, flags, helpstr)
+        , ConVar_VTable(nullptr)
+        , m_pParent(nullptr)
+        , m_pszDefaultValue(value)
+        , m_pszString(nullptr)
+        , m_fValue(0.0f)
+        , m_nValue(0)
+        , m_bHasMin(hasmin)
+        , m_fMinVal(min)
+        , m_bHasMax(hasmax)
+        , m_fMaxVal(max)
+        , m_fnChangeCallback()
+    {
+    }
 };
 
 #define SIGNONSTATE_NONE 0

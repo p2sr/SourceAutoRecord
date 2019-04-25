@@ -1,7 +1,7 @@
 #pragma once
 #include "Modules/Tier1.hpp"
 
-#include "Game.hpp"
+#include "Utils/SDK.hpp"
 
 class Variable {
 private:
@@ -11,7 +11,7 @@ private:
     int originalFlags;
 
     union {
-        void* originalfnChangeCallback;
+        FnChangeCallback_t originalFnChangeCallback;
         int originalSize;
     };
 
