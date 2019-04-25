@@ -473,10 +473,11 @@ CON_COMMAND(sar_speedrun_result, "Prints result of speedrun.\n")
         console->Print("Total:    %s (%i)\n", SpeedrunTimer::Format(result->total * ipt).c_str(), result->total);
     }
 }
-CON_COMMAND(sar_speedrun_export, "Saves speedrun result to a csv file.\n")
+CON_COMMAND(sar_speedrun_export, "Saves speedrun result to a csv file.\n"
+                                 "Usage: sar_speedrun_export <file_name>\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_speedrun_export <file_name> : Saves speedrun result to a csv file!\n");
+        return console->Print(sar_speedrun_export.ThisPtr()->m_pszHelpString);
     }
 
     auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
@@ -489,10 +490,11 @@ CON_COMMAND(sar_speedrun_export, "Saves speedrun result to a csv file.\n")
         console->Warning("Failed to export result!\n");
     }
 }
-CON_COMMAND(sar_speedrun_export_pb, "Saves speedrun personal best to a csv file.\n")
+CON_COMMAND(sar_speedrun_export_pb, "Saves speedrun personal best to a csv file.\n"
+                                    "Usage: sar_speedrun_export_pb <file_name>\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_speedrun_export_pb [file_name] : Saves speedrun personal best to a csv file!\n");
+        return console->Print(sar_speedrun_export_pb.ThisPtr()->m_pszHelpString);
     }
 
     auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
@@ -505,10 +507,12 @@ CON_COMMAND(sar_speedrun_export_pb, "Saves speedrun personal best to a csv file.
         console->Warning("Failed to export personal best!\n");
     }
 }
-CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.\n", 0, 0, csv)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.\n"
+                                                  "Usage: sar_speedrun_import <file_name>\n",
+    0, 0, csv)
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_speedrun_import <file_name> : Imports speedrun data file.\n");
+        return console->Print(sar_speedrun_import.ThisPtr()->m_pszHelpString);
     }
 
     auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);

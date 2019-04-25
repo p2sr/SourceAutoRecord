@@ -54,14 +54,13 @@ void AutoStrafer::Strafe(void* pPlayer, CMoveData* pMove)
 
     // whishdir set based on current angle ("controller" inputs)
     if (strafe->vecType == VecStrafeType::Normal || strafe->vecType == VecStrafeType::Visual) {
-        //make vectorial strafing look like AD strafing
+        // make vectorial strafing look like AD strafing
         if (strafe->vecType == VecStrafeType::Visual) {
             QAngle newAngle = { 0, velAngle, 0 };
             pMove->m_vecViewAngles = newAngle;
             pMove->m_vecAbsViewAngles = newAngle;
 
             engine->SetAngles(slot, newAngle);
-            //engine->SetAngles(newAngle);
         }
 
         angle = DEG2RAD(angle - pMove->m_vecAbsViewAngles.y);
@@ -150,6 +149,8 @@ float AutoStrafer::GetStrafeAngle(const StrafeState* strafe, void* pPlayer, cons
     return RAD2DEG(theta);
 }
 
+// Commands
+
 void IN_AutoStrafeDown(const CCommand& args) { client->KeyDown(&autoStrafer->in_autostrafe, (args.ArgC() > 1) ? args[1] : nullptr); }
 void IN_AutoStrafeUp(const CCommand& args) { client->KeyUp(&autoStrafer->in_autostrafe, (args.ArgC() > 1) ? args[1] : nullptr); }
 
@@ -169,9 +170,7 @@ CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <type> <direction> : Automatic straf
         type = static_cast<StrafingType>(std::atoi(args[1]));
         direction = std::atoi(args[2]);
     } else {
-        return console->Print("sar_tas_strafe <type> <direction> : Automatic strafing.\n"
-                              "Type: 0 = off, 1 = straight, 2 = turning and keeping velocity, 3 = turning with velocity gain.\n"
-                              "Direction: -1 = left, 1 = right.\n");
+        return console->Print(sar_tas_strafe.ThisPtr()->m_pszHelpString);
     }
 
     auto nSlot = GET_SLOT();
@@ -179,19 +178,17 @@ CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <type> <direction> : Automatic straf
     autoStrafer->states[nSlot]->direction = direction;
 }
 CON_COMMAND(sar_tas_strafe_vectorial, "sar_tas_strafe_vectorial <type>: Change type of vectorial strafing.\n"
-                                      "0 = Auto-strafer calculates perfect viewangle.\n"
-                                      "1 = Auto-strafer calculates perfect forward-side movement.\n"
-                                      "2 = Auto-strafer calculates perfect forward-side movement, while setting the viewangle toward current velocity, to make strafing visually visible.")
+                                      "0 = Auto-strafer calculates perfect viewangle,\n"
+                                      "1 = Auto-strafer calculates perfect forward-side movement,\n"
+                                      "2 = Auto-strafer calculates perfect forward-side movement, "
+                                      "while setting the viewangle toward current velocity, to make strafing visually visible.\n")
 {
     auto type = VecStrafeType::Disabled;
 
     if (args.ArgC() == 2) {
         type = static_cast<VecStrafeType>(std::atoi(args[1]));
     } else {
-        return console->Print("sar_tas_strafe_vectorial <type>: Change type of vectorial strafing.\n"
-                              "0 = Auto-strafer calculates perfect viewangle.\n"
-                              "1 = Auto-strafer calculates perfect forward-side movement.\n"
-                              "2 = Auto-strafer calculates perfect forward-side movement, while setting the viewangle toward current velocity, to make strafing visually visible.");
+        return console->Print(sar_tas_strafe_vectorial.ThisPtr()->m_pszHelpString);
     }
 
     auto nSlot = GET_ACTIVE_SPLITSCREEN_SLOT();

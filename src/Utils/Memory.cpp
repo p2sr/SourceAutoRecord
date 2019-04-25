@@ -33,12 +33,14 @@ bool Memory::TryGetModule(const char* moduleName, Memory::ModuleInfo* info)
         if (EnumProcessModules(pHandle, hMods, sizeof(hMods), &cbNeeded)) {
             for (unsigned i = 0; i < (cbNeeded / sizeof(HMODULE)); ++i) {
                 char buffer[MAX_PATH];
-                if (!GetModuleFileName(hMods[i], buffer, sizeof(buffer)))
+                if (!GetModuleFileName(hMods[i], buffer, sizeof(buffer))) {
                     continue;
+                }
 
                 auto modinfo = MODULEINFO();
-                if (!GetModuleInformation(pHandle, hMods[i], &modinfo, sizeof(modinfo)))
+                if (!GetModuleInformation(pHandle, hMods[i], &modinfo, sizeof(modinfo))) {
                     continue;
+                }
 
                 auto module = ModuleInfo();
 

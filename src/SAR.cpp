@@ -202,10 +202,10 @@ CON_COMMAND(sar_cvarlist, "Lists all SAR cvars and unlocked engine cvars.\n")
 {
     cvars->ListAll();
 }
-CON_COMMAND(sar_rename, "Changes your name.\n")
+CON_COMMAND(sar_rename, "Changes your name. Usage: sar_rename <name>\n")
 {
     if (args.ArgC() != 2) {
-        console->Print("Changes your name. Usage: sar_rename <name>\n");
+        return console->Print(sar_rename.ThisPtr()->m_pszHelpString);
     }
 
     auto name = Variable("name");

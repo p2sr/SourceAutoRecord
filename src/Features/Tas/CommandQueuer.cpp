@@ -92,7 +92,7 @@ CON_COMMAND(sar_tas_frame_at,
     "Usage: sar_tas_frame_at <frame> [command_to_execute]\n")
 {
     if (args.ArgC() != 3) {
-        return console->Print("sar_tas_frame_at <frame> [command_to_execute] : Adds command frame to the queue.\n");
+        return console->Print(sar_tas_frame_at.ThisPtr()->m_pszHelpString);
     }
 
     cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]));
@@ -102,8 +102,7 @@ CON_COMMAND(sar_tas_frames_at,
     "Usage: sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute]\n")
 {
     if (args.ArgC() != 5) {
-        return console->Print("sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute] : "
-                              "Adds command frame multiple times to the queue.\n");
+        return console->Print(sar_tas_frames_at.ThisPtr()->m_pszHelpString);
     }
 
     cmdQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]));
@@ -113,8 +112,7 @@ CON_COMMAND(sar_tas_frame_next,
     "Usage: sar_tas_frame_next <frames_to_wait> [command_to_execute]\n")
 {
     if (args.ArgC() != 3) {
-        return console->Print("Usage: sar_tas_frame_next <frames_to_wait> [command_to_execute] : "
-                              "Adds command frame to the queue.\n");
+        return console->Print(sar_tas_frame_next.ThisPtr()->m_pszHelpString);
     }
 
     cmdQueuer->CalculateOffset(std::atoi(args[1]));
@@ -125,8 +123,7 @@ CON_COMMAND(sar_tas_frame_after,
     "Usage: sar_tas_frame_after <frames_to_wait> [command_to_execute]\n")
 {
     if (args.ArgC() != 3) {
-        return console->Print("sar_tas_frame_after <frames_to_wait> [command_to_execute] : "
-                              "Adds command frame to the queue.\n");
+        return console->Print(sar_tas_frame_after.ThisPtr()->m_pszHelpString);
     }
 
     cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]), true);
@@ -136,8 +133,7 @@ CON_COMMAND(sar_tas_frames_after,
     "Usage: sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute]\n")
 {
     if (args.ArgC() != 5) {
-        return console->Print("sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute] : "
-                              "Adds command frame multiple times to the queue.\n");
+        return console->Print(sar_tas_frames_after.ThisPtr()->m_pszHelpString);
     }
 
     cmdQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]), true);
@@ -147,8 +143,7 @@ CON_COMMAND(sar_tas_frame_offset,
     "Usage: sar_tas_frame_offset <frame>\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_tas_frame_offset <frame> : "
-                              "sar_tas_frame_after rely on the last sar_tas_frame_offset.\n");
+        return console->Print(sar_tas_frame_offset.ThisPtr()->m_pszHelpString);
     }
 
     cmdQueuer->CalculateOffset(std::atoi(args[1]));
@@ -161,10 +156,11 @@ CON_COMMAND(sar_tas_reset, "Stops executing commands and clears them from the qu
 {
     cmdQueuer->Reset();
 }
-CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\n")
+CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\n"
+                        "Usage: sar_tas_ss <index>\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_tas_ss <index> : Select split screen index for command buffer (0 or 1).\n");
+        return console->Print(sar_tas_ss.ThisPtr()->m_pszHelpString);
     }
 
     auto index = std::atoi(args[1]);
@@ -174,10 +170,11 @@ CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\
         console->Print("Invalid split screen index!\n");
     }
 }
-CON_COMMAND(sar_tas_delay, "Delays command queue by specified amount of frames.\n")
+CON_COMMAND(sar_tas_delay, "Delays command queue by specified amount of frames.\n"
+                           "Usage: sar_tas_delay <frames_to_wait>\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_tas_delay <frames_to_wait> : Delays command queue by specified amount of frames.\n");
+        return console->Print(sar_tas_delay.ThisPtr()->m_pszHelpString);
     }
 
     cmdQueuer->DelayQueueBy(std::atoi(args[1]));
@@ -187,8 +184,7 @@ CON_COMMAND(sar_tas_frame_at_for,
     "Usage: sar_tas_frame_at_for <frame> <delay> <first_command> <last_command>\n")
 {
     if (args.ArgC() != 5) {
-        return console->Print("sar_tas_frame_at_for <frame> <delay> <first_command> <last_command> : "
-                              "Adds two command frames to the queue at specified frame, the last frame will be executed after a delay.\n");
+        return console->Print(sar_tas_frame_at_for.ThisPtr()->m_pszHelpString);
     }
 
     cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[3]));
@@ -200,8 +196,7 @@ CON_COMMAND(sar_tas_frame_after_for,
     "Usage: sar_tas_frame_after_for <frames_to_wait> <delay> <first_command> <last_command>\n")
 {
     if (args.ArgC() != 5) {
-        return console->Print("sar_tas_frame_after_for <frames_to_wait> <delay> <first_command> <last_command> : "
-                              "Adds two command frames to the queue at specified frame, the last frame will be executed after a delay.\n");
+        return console->Print(sar_tas_frame_after_for.ThisPtr()->m_pszHelpString);
     }
 
     cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[3]), true);

@@ -25,8 +25,9 @@ bool InspectionHud::GetCurrentSize(int& xSize, int& ySize)
 void InspectionHud::Draw()
 {
     auto mode = sar_ei_hud.GetInt();
-    if (mode == 0)
+    if (mode == 0) {
         return;
+    }
 
     surface->StartDrawing(surface->matsurface->ThisPtr());
 

@@ -135,11 +135,11 @@ CON_COMMAND(sar_list_client_classes, "Lists all client classes.\n")
         console->Print("%s\n", cclass->m_pNetworkName);
     }
 }
-CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props with their offset.\n")
+CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props with their offset.\n"
+                                   "Usage: sar_find_serverclass <class_name>\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_find_serverclass <class_name> : "
-                              "Finds specific server class tables and props with their offset.\n");
+        return console->Print(sar_find_server_class.ThisPtr()->m_pszHelpString);
     }
 
     std::function<void(SendTable * table, int& level)> DumpTable;
@@ -182,11 +182,11 @@ CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props
         }
     }
 }
-CON_COMMAND(sar_find_client_class, "Finds specific client class tables and props with their offset.\n")
+CON_COMMAND(sar_find_client_class, "Finds specific client class tables and props with their offset.\n"
+                                   "Usage: sar_find_clientclass <class_name>\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_find_clientclass <class_name> : "
-                              "Finds specific client class tables and props with their offset.\n");
+        return console->Print(sar_find_client_class.ThisPtr()->m_pszHelpString);
     }
 
     std::function<void(RecvTable * table, int& level)> DumpTable;

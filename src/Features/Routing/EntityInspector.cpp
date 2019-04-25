@@ -133,10 +133,11 @@ CON_COMMAND(sar_inspection_print, "Prints recorded entity data.\n")
 {
     inspector->PrintData();
 }
-CON_COMMAND(sar_inspection_export, "Stops recording entity data.\n")
+CON_COMMAND(sar_inspection_export, "Saves recorded entity data to a csv file.\n"
+                                   "Usage: sar_inspection_export <file_name>\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_inspection_export <file_name> : Saves recorded entitiy data to a csv file.\n");
+        return console->Print(sar_inspection_export.ThisPtr()->m_pszHelpString);
     }
 
     auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);

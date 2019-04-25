@@ -273,11 +273,11 @@ CON_COMMAND(sar_replay_record, "Starts recording a replay.\n")
 
     console->Print((playbackActive) ? "Recording!\n" : "Re-Recording!\n");
 }
-CON_COMMAND(sar_replay_record_view, "Starts recording a specific view for a replay.\n")
+CON_COMMAND(sar_replay_record_view, "Starts recording a specific view for a replay.\n"
+                                    "Usage: sar_replay_record_view <view_index>\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_replay_record_view <view_index> : "
-                              "Starts recording a specific view for a replay.\n");
+        return console->Print(sar_replay_record_view.ThisPtr()->m_pszHelpString);
     }
 
     auto view = std::atoi(args[1]);
@@ -330,11 +330,11 @@ CON_COMMAND(sar_replay_play, "Plays back a replay.\n")
 
     console->Print("Playing!\n");
 }
-CON_COMMAND(sar_replay_play_view, "Plays back a specific view of a replay.\n")
+CON_COMMAND(sar_replay_play_view, "Plays back a specific view of a replay.\n"
+                                  "Usage: sar_replay_play_view <view_index>\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_replay_play_view <view_index> : "
-                              "Plays back a specific view of a replay.\n");
+        return console->Print(sar_replay_play_view.ThisPtr()->m_pszHelpString);
     }
 
     auto view = std::atoi(args[1]);
@@ -376,11 +376,11 @@ CON_COMMAND(sar_replay_merge_all, "Merges all replays into one.\n")
 {
     replayProvider->MergeAll();
 }
-CON_COMMAND(sar_replay_merge_views, "Merges one view to another of two replays.\n")
+CON_COMMAND(sar_replay_merge_views, "Merges one view to another of two replays.\n"
+                                    "Usage: sar_replay_merge_views <replay_index1> <replay_index2> <view_index1> <view_index2>\n")
 {
     if (args.ArgC() != 5) {
-        return console->Print("sar_replay_merge_views <replay_index1> <replay_index2> <view_index1> <view_index2> : "
-                              "Merges one view to another of two replays.\n");
+        return console->Print(sar_replay_merge_views.ThisPtr()->m_pszHelpString);
     }
 
     auto loadedReplays = (int)replayProvider->replays.size();
@@ -408,11 +408,11 @@ CON_COMMAND(sar_replay_merge_views, "Merges one view to another of two replays.\
 
     replayProvider->MergeViews(replayIndex1, replayIndex2, viewIndex1, viewIndex2);
 }
-CON_COMMAND(sar_replay_clone_views, "Clones view to another of a replay.\n")
+CON_COMMAND(sar_replay_clone_views, "Clones view to another of a replay.\n"
+                                    "Usage: sar_replay_clone_views <replay_index> <view_index>\n")
 {
     if (args.ArgC() != 3) {
-        return console->Print("sar_replay_clone_views <replay_index> <view_index> : "
-                              "Clones view to another of a replay.\n");
+        return console->Print(sar_replay_clone_views.ThisPtr()->m_pszHelpString);
     }
 
     auto loadedReplays = (int)replayProvider->replays.size();
@@ -429,35 +429,37 @@ CON_COMMAND(sar_replay_clone_views, "Clones view to another of a replay.\n")
 
     replayProvider->MergeViews(replaxIndex, replaxIndex, viewIndex, viewIndex);
 }
-CON_COMMAND(sar_replay_export, "Exports replay to a file.\n")
+CON_COMMAND(sar_replay_export, "Exports replay to a file.\nUsage: sar_replay_export <file>\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_replay_export <file> : Exports replay to a file.\n");
+        return console->Print(sar_replay_export.ThisPtr()->m_pszHelpString);
     }
 
     replayProvider->Export(args[1]);
 }
-CON_COMMAND(sar_replay_export_at, "Exports specific replay to a file.\n")
+CON_COMMAND(sar_replay_export_at, "Exports specific replay to a file.\nUsage: sar_replay_export_at <index> <file>\n")
 {
     if (args.ArgC() != 3) {
-        return console->Print("sar_replay_export_at <index> <file> : Exports specific replay to a file.\n");
+        return console->Print(sar_replay_export_at.ThisPtr()->m_pszHelpString);
     }
 
     replayProvider->Export(args[2], std::atoi(args[1]));
 }
-CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import, "Imports replay file.\n", 0, 0, str)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import, "Imports replay file.\nUsage: sar_replay_import <file>\n", 0, 0, str)
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_replay_import <file> : Imports replay file.\n");
+        return console->Print(sar_replay_import.ThisPtr()->m_pszHelpString);
     }
 
     replayProvider->DeleteAll();
     replayProvider->Import(args[1]);
 }
-CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import_add, "Imports replay file but doesn't delete already added replays.\n", 0, 0, str)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import_add, "Imports replay file but doesn't delete already added replays.\n"
+                                                    "Usage: sar_replay_import_add <file>\n",
+    0, 0, str)
 {
     if (args.ArgC() != 2) {
-        return console->Print("sar_replay_import_add <file> : Imports replay file but doesn't delete already added replays.\n");
+        return console->Print(sar_replay_import_add.ThisPtr()->m_pszHelpString);
     }
 
     replayProvider->Import(args[1]);

@@ -87,11 +87,11 @@ int sar_workshop_CompletionFunc(const char* partial,
 
 // Commands
 
-CON_COMMAND_F_COMPLETION(sar_workshop, "Same as \"map\" command but lists workshop maps.\n", 0,
+CON_COMMAND_F_COMPLETION(sar_workshop, "Same as \"map\" command but lists workshop maps.\nUsage: sar_workshop <file>\n", 0,
     sar_workshop_CompletionFunc)
 {
     if (args.ArgC() < 2) {
-        return console->Print("sar_workshop <file> : Same as \"map\" command but lists workshop maps.\n");
+        return console->Print(sar_workshop.ThisPtr()->m_pszHelpString);
     }
 
     engine->ExecuteCommand((std::string("map workshop/") + std::string(args[1])).c_str());

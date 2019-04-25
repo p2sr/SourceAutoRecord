@@ -22,8 +22,9 @@ bool SpeedrunHud::GetCurrentSize(int& xSize, int& ySize)
 void SpeedrunHud::Draw()
 {
     auto mode = sar_sr_hud.GetInt();
-    if (mode == 0)
+    if (mode == 0) {
         return;
+    }
 
     surface->StartDrawing(surface->matsurface->ThisPtr());
 

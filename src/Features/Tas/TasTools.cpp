@@ -156,7 +156,7 @@ QAngle TasTools::Slerp(QAngle a0, QAngle a1, float speedInterpolation)
 // Commands
 
 CON_COMMAND(sar_tas_aim_at_point, "sar_tas_aim_at_point <x> <y> <z> [speed] : Aims at point {x, y, z} specified.\n"
-                                  "Setting the [speed] parameter will make an time interpolation between current player angles and the targeted point.\n")
+                                  "Setting the [speed] parameter will make a time interpolation between current player angles and the targeted point.\n")
 {
     if (!sv_cheats.GetBool()) {
         return console->Print("Cannot use sar_tas_aim_at_point without sv_cheats set to 1.\n");
@@ -180,7 +180,7 @@ CON_COMMAND(sar_tas_aim_at_point, "sar_tas_aim_at_point <x> <y> <z> [speed] : Ai
 CON_COMMAND(sar_tas_set_prop, "sar_tas_set_prop <prop_name> : Sets value for sar_hud_player_info.\n")
 {
     if (args.ArgC() < 2) {
-        return console->Print("sar_tas_set_prop <prop_name> : Sets value for sar_hud_player_info.\n");
+        return console->Print(sar_tas_set_prop.ThisPtr()->m_pszHelpString);
     }
 
     auto offset = 0;
@@ -233,7 +233,7 @@ CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] : Adds {x, y, z} degrees
     engine->SetAngles(nSlot, angles);
 }
 CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] [speed] : Sets {x, y, z} degrees to view axis.\n"
-                            "Setting the [speed] parameter will make an time interpolation between current player angles and the targeted angles.\n")
+                            "Setting the [speed] parameter will make a time interpolation between current player angles and the targeted angles.\n")
 {
     if (!sv_cheats.GetBool()) {
         return console->Print("Cannot use sar_tas_setang without sv_cheats set to 1.\n");

@@ -6,5 +6,4 @@ script: make
 addons:
   apt:
     packages:
-      - gcc-multilib
       - g++-multilib

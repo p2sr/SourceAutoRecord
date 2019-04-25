@@ -50,8 +50,9 @@ void Rebinder::ResetReloadBind()
 }
 void Rebinder::RebindSave()
 {
-    if (!this->isSaveBinding)
+    if (!this->isSaveBinding) {
         return;
+    }
 
     auto cmd = std::string("save \"") + this->saveName;
     if (this->lastIndexNumber > 0) {
@@ -67,8 +68,9 @@ void Rebinder::RebindSave()
 }
 void Rebinder::RebindReload()
 {
-    if (!this->isReloadBinding)
+    if (!this->isReloadBinding) {
         return;
+    }
 
     auto cmd = std::string("save \"") + this->reloadName;
     if (this->lastIndexNumber > 0) {
@@ -91,9 +93,7 @@ CON_COMMAND(sar_bind_save,
     "Usage: sar_bind_save <key> [save_name]\n")
 {
     if (args.ArgC() != 3) {
-        return console->Print("sar_bind_save <key> [save_name] : "
-            "Automatic save rebinding when server has loaded. "
-            "File indexing will be synced when recording demos.\n");
+        return console->Print(sar_bind_save.ThisPtr()->m_pszHelpString);
     }
 
     auto button = inputSystem->GetButton(args[1]);
@@ -116,9 +116,7 @@ CON_COMMAND(sar_bind_reload,
     "Usage: sar_bind_reload <key> [save_name]\n")
 {
     if (args.ArgC() != 3) {
-        return console->Print("sar_bind_reload <key> [save_name] : "
-            "Automatic save-reload rebinding when server has loaded. "
-            "File indexing will be synced when recording demos.\n");
+        return console->Print(sar_bind_reload.ThisPtr()->m_pszHelpString);
     }
 
     auto button = inputSystem->GetButton(args[1]);

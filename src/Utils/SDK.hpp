@@ -410,7 +410,7 @@ public:
 };
 
 struct CPlugin {
-    char m_szName[128]; //0
+    char m_szName[128]; // 0
     bool m_bDisable; // 128
     IServerPluginCallbacks* m_pPlugin; // 132
     int m_iPluginInterfaceVersion; // 136
@@ -438,7 +438,7 @@ struct CEventAction {
     const char* m_iParameter; // 8
     float m_flDelay; // 12
     int m_nTimesToFire; // 16
-    int m_iIDStamp; //20
+    int m_iIDStamp; // 20
     CEventAction* m_pNext; // 24
 };
 
@@ -532,7 +532,7 @@ struct SendProp {
     SendProp* m_pArrayProp; // 24
     ArrayLengthSendProxyFn m_ArrayLengthProxy; // 28
     int m_nElements; // 32
-    int m_ElementStride; //36
+    int m_ElementStride; // 36
     char* m_pExcludeDTName; // 40
     char* m_pParentArrayPropName; // 44
     char* m_pVarName; // 48

@@ -50,8 +50,9 @@ Listener::~Listener()
 }
 void Listener::FireGameEvent(IGameEvent* ev)
 {
-    if (!ev)
+    if (!ev) {
         return;
+    }
 
     if (sar_debug_listener.GetBool()) {
         console->Print("[%i] Event fired: %s\n", engine->GetSessionTick(), ev->GetName());
