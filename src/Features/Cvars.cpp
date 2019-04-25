@@ -10,6 +10,7 @@
 #include "Utils/Memory.hpp"
 
 #include "Command.hpp"
+#include "Game.hpp"
 #include "Offsets.hpp"
 #include "SAR.hpp"
 #include "Variable.hpp"
@@ -42,6 +43,7 @@ int Cvars::Dump(std::ofstream& file)
 
         file << cmd->m_nFlags;
         file << "[cvar_data]";
+
         file << cmd->m_pszHelpString;
         file << "[end_of_cvar]";
         ++count;
@@ -49,6 +51,43 @@ int Cvars::Dump(std::ofstream& file)
     } while (cmd = cmd->m_pNext);
 
     this->Unlock();
+
+    return count;
+}
+int Cvars::DumpDoc(std::ofstream& file)
+{
+    auto InternalDump = [&file](ConCommandBase* cmd, std::string games, bool isCommand) {
+        file << cmd->m_pszName;
+        file << "[cvar_data]";
+
+        if (!isCommand) {
+            auto cvar = reinterpret_cast<ConVar*>(cmd);
+            file << cvar->m_pszDefaultValue;
+        } else {
+            file << "cmd";
+        }
+        file << "[cvar_data]";
+
+        file << games.c_str();
+        file << "[cvar_data]";
+
+        file << cmd->m_pszHelpString;
+        file << "[end_of_cvar]";
+    };
+
+    auto count = 0;
+    for (const auto& var : Variable::list) {
+        if (var && !var->isReference) {
+            InternalDump(var->ThisPtr(), Game::VersionToString(var->version), false);
+            ++count;
+        }
+    }
+    for (const auto& com : Command::list) {
+        if (com && !com->isReference) {
+            InternalDump(com->ThisPtr(), Game::VersionToString(com->version), true);
+            ++count;
+        }
+    }
 
     return count;
 }

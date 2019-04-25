@@ -190,6 +190,14 @@ CON_COMMAND(sar_cvars_dump, "Dumps all cvars to a file.\n")
 
     console->Print("Dumped %i cvars to game.cvars!\n", result);
 }
+CON_COMMAND(sar_cvars_dump_doc, "Dumps all SAR cvars to a file.\n")
+{
+    std::ofstream file("sar.cvars", std::ios::out | std::ios::trunc | std::ios::binary);
+    auto result = cvars->DumpDoc(file);
+    file.close();
+
+    console->Print("Dumped %i cvars to sar.cvars!\n", result);
+}
 CON_COMMAND(sar_cvars_lock, "Restores default flags of unlocked cvars.\n")
 {
     cvars->Lock();

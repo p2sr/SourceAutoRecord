@@ -1,6 +1,7 @@
 #include "Game.hpp"
 
 #include <cstring>
+#include <string>
 
 #include "Utils.hpp"
 
@@ -14,6 +15,17 @@
 #ifdef _WIN32
 #include GAME(INFRA)
 #endif
+
+#define HAS_GAME_FLAG(flag, name)        \
+    if (version & (flag)) {                \
+        games += std::string(name "\n"); \
+        version &= ~(flag);                \
+    }
+#define HAS_GAME_FLAGS(flags, name)       \
+    if (version == (flags)) {               \
+        games += std::string(name "\n"); \
+        version &= ~(flags);                \
+    }
 
 const char* Game::Version()
 {
@@ -40,7 +52,7 @@ Game* Game::CreateNew()
     }
 
 #ifdef _WIN32
-	if (proc == INFRA::Process()) {
+    if (proc == INFRA::Process()) {
         return new INFRA();
     }
 #endif
@@ -60,4 +72,23 @@ Game* Game::CreateNewMod(const char* dir)
     }
 
     return nullptr;
+}
+std::string Game::VersionToString(int version)
+{
+    auto games = std::string("");
+    while (version > 0) {
+        HAS_GAME_FLAGS(SourceGame_Portal2Game | SourceGame_Portal, "Portal Game")
+        HAS_GAME_FLAGS(SourceGame_Portal2Engine, "Portal 2 Engine")
+        HAS_GAME_FLAGS(SourceGame_Portal2Game, "Portal 2 Game")
+        HAS_GAME_FLAGS(SourceGame_HalfLife2Engine, "Half-Life 2 Engine")
+        HAS_GAME_FLAG(SourceGame_Portal2, "Portal 2")
+        HAS_GAME_FLAG(SourceGame_Portal, "Portal")
+        HAS_GAME_FLAG(SourceGame_TheStanleyParable, "The Stanley Parable")
+        HAS_GAME_FLAG(SourceGame_TheBeginnersGuide, "The Beginners Guide")
+        HAS_GAME_FLAG(SourceGame_HalfLife2, "Half-Life 2")
+        HAS_GAME_FLAG(SourceGame_ApertureTag, "Aperture Tag")
+        HAS_GAME_FLAG(SourceGame_PortalStoriesMel, "Portal Stories: Mel")
+        HAS_GAME_FLAG(SourceGame_INFRA, "INFRA")
+    }
+    return games;
 }

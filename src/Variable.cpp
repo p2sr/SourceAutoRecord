@@ -10,9 +10,9 @@
 
 Variable::Variable()
     : ptr(nullptr)
-    , version(SourceGame_Unknown)
     , originalFlags(0)
     , originalFnChangeCallback(nullptr)
+    , version(SourceGame_Unknown)
     , isRegistered(false)
     , isReference(false)
 {

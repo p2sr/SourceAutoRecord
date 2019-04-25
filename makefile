@@ -69,4 +69,4 @@ get-deps:
 	sudo apt-get install -y g++-multilib
 
 cvars:
-	node cvars.js
+	node cvars.js "$(STEAM)Portal 2"

@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 enum SourceGameVersion {
     SourceGame_Unknown = 0,
@@ -32,4 +33,6 @@ public:
 
     static Game* CreateNew();
     static Game* CreateNewMod(const char* dir);
+
+    static std::string VersionToString(int version);
 };

@@ -7,7 +7,6 @@ class Variable {
 private:
     ConVar* ptr;
 
-    int version;
     int originalFlags;
 
     union {
@@ -16,6 +15,7 @@ private:
     };
 
 public:
+    int version;
     bool isRegistered;
     bool isReference;
 

@@ -13,6 +13,7 @@ public:
     Cvars();
     void ListAll();
     int Dump(std::ofstream& file);
+    int DumpDoc(std::ofstream& file);
     void PrintHelp(const CCommand& args);
     void Lock();
     void Unlock();
