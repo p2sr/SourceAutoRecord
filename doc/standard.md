@@ -8,7 +8,7 @@ A new way to time your speedrun!
 - Support for categories
 - Automatic start, stop and split
 - Menu timing
-- Pause timing (1.9)
+- Pause timing
 - LiveSplit support
 
 ## Support¹
@@ -57,7 +57,7 @@ SAR provides an interface for accessing the timer externally which can be used w
 - sar_speedrun_autostart
 - sar_speedrun_autostop
 - sar_speedrun_standard
-- sar_speedrun_time_pauses (1.9)
+- sar_speedrun_time_pauses
 
 ### HUD
 
