@@ -67,17 +67,19 @@ float Tracer::CalculateLength(const TraceResult* trace, TracerLengthType type)
 
 CON_COMMAND(sar_trace_a, "Saves location A for tracing.\n")
 {
-    auto player = server->GetPlayer();
+    auto nSlot = GET_SLOT();
+    auto player = server->GetPlayer(nSlot + 1);
     if (player) {
-        tracer->Start(GET_SLOT(), server->GetAbsOrigin(player));
+        tracer->Start(nSlot, server->GetAbsOrigin(player));
         console->Print("Saved location A for tracing!\n");
     }
 }
 CON_COMMAND(sar_trace_b, "Saves location B for tracing.\n")
 {
-    auto player = server->GetPlayer();
+    auto nSlot = GET_SLOT();
+    auto player = server->GetPlayer(nSlot + 1);
     if (player) {
-        tracer->Stop(GET_SLOT(), server->GetAbsOrigin(player));
+        tracer->Stop(nSlot, server->GetAbsOrigin(player));
         console->Print("Saved location B for tracing!\n");
     }
 }

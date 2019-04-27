@@ -30,7 +30,7 @@ public:
     void* in_jump = nullptr;
 
 public:
-    void* GetPlayer(int index = -1);
+    void* GetPlayer(int index);
     Vector GetAbsOrigin(void* entity);
     QAngle GetAbsAngles(void* entity);
     Vector GetLocalVelocity(void* entity);

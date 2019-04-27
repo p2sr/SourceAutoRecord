@@ -55,7 +55,6 @@ REDECL(Server::AirMove_Mid_Trampoline);
 
 void* Server::GetPlayer(int index)
 {
-    index = (index == -1) ? engine->GetLocalPlayerIndex() : index;
     return this->UTIL_PlayerByIndex(index);
 }
 int Server::GetPortals(void* entity)

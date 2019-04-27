@@ -110,8 +110,7 @@ float AutoStrafer::GetStrafeAngle(const StrafeState* strafe, void* pPlayer, cons
     float F = pMove->m_flForwardMove / cl_forwardspeed.GetFloat();
     float S = pMove->m_flSideMove / cl_sidespeed.GetFloat();
 
-    auto player = server->GetPlayer();
-    auto isCrouched = (player) ? *reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked) : false;
+    auto isCrouched = *reinterpret_cast<bool*>((uintptr_t)pPlayer + Offsets::m_bDucked);
 
     float duckMultiplier = (grounded && isCrouched) ? 1.0f / 3.0f : 1.0f;
     float stateLen = sqrt(F * F + S * S);

@@ -74,7 +74,8 @@ CON_COMMAND(sar_stats_steps, "Prints total amount of steps.\n")
 }
 CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
 {
-    auto stat = stats->Get(GET_SLOT());
+    auto nSlot = GET_SLOT();
+    auto stat = stats->Get(nSlot);
 
     std::string type;
     if (stat->velocity->type == StatsResultType::VEC2) {
@@ -83,7 +84,7 @@ CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
         type = std::string(" (vec3)");
     }
 
-    auto player = server->GetPlayer();
+    auto player = server->GetPlayer(nSlot + 1);
     if (player) {
         auto curVel = server->GetLocalVelocity(player);
         console->Print("Current: %.3f/%.3f (vec2/vec3)\n", curVel.Length2D(), curVel.Length());

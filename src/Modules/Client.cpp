@@ -38,7 +38,6 @@ REDECL(Client::GetButtonBits);
 
 void* Client::GetPlayer(int index)
 {
-    index = (index == -1) ? engine->GetLocalPlayerIndex() : index;
     return this->GetClientEntity(this->s_EntityList->ThisPtr(), index);
 }
 Vector Client::GetAbsOrigin(void* entity)

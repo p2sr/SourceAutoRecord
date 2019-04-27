@@ -34,7 +34,7 @@ private:
     bool callFromCheckJumpButton = false;
 
 public:
-    void* GetPlayer(int index = -1);
+    void* GetPlayer(int index);
     int GetPortals(void* entity);
     Vector GetAbsOrigin(void* entity);
     QAngle GetAbsAngles(void* entity);
