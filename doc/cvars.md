@@ -1,7 +1,7 @@
 # SAR: Cvars
 
 |Name|Default|Game|Description|
-|---|---|---|---|---|
+|---|---|---|---|
 |-autostrafe|cmd|Portal 2 Engine<br>|Auto-strafe button.
 |+autostrafe|cmd|Portal 2 Engine<br>|Auto-strafe button.
 |+bhop|cmd|The Stanley Parable<br>|Client sends a key-down event for the in_jump state.

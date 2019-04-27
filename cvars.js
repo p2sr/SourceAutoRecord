@@ -30,5 +30,5 @@ fs.readFile(process.argv[2] + '/sar.cvars', 'utf-8', (err, data) => {
 `# SAR: Cvars
 
 |Name|Default|Game|Description|
-|---|---|---|---|---|${body}`);
+|---|---|---|---|${body}`);
 });
