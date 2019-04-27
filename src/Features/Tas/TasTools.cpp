@@ -18,12 +18,9 @@ TasTools::TasTools()
     : propName("m_hGroundEntity")
     , propType(PropType::Handle)
     , data()
-    , acceleration({ 0, 0, 0 })
-    , prevVelocity({ 0, 0, 0 })
-    , prevTick(0)
 {
     for (auto i = 0; i < Offsets::MAX_SPLITSCREEN_PLAYERS; ++i) {
-        this->data.push_back(new SetAnglesData());
+        this->data.push_back(new TasPlayerData());
     }
 
     if (sar.game->Is(SourceGame_Portal | SourceGame_Portal2Engine)) {
@@ -74,9 +71,8 @@ void TasTools::AimAtPoint(void* player, float x, float y, float z, int doSlerp)
     slotData->currentAngles = { curAngles.x, curAngles.y, 0 };
     slotData->targetAngles = angles;
 }
-void* TasTools::GetPlayerInfo()
+void* TasTools::GetPlayerInfo(void* player)
 {
-    auto player = server->GetPlayer();
     return (player) ? reinterpret_cast<void*>((uintptr_t)player + this->propOffset) : nullptr;
 }
 Vector TasTools::GetVelocityAngles(void* player)
@@ -95,24 +91,27 @@ Vector TasTools::GetVelocityAngles(void* player)
 }
 Vector TasTools::GetAcceleration(void* player)
 {
+    auto slot = server->GetSplitScreenPlayerSlot(player);
+    auto slotData = this->data[slot];
+
     auto curTick = engine->GetSessionTick();
-    if (this->prevTick != curTick) {
+    if (slotData->prevTick != curTick) {
         auto curVelocity = server->GetLocalVelocity(player);
 
         // z used to represent the combined x/y acceleration axis value
-        this->acceleration.z = curVelocity.Length2D() - prevVelocity.Length2D();
-        this->acceleration.x = std::abs(curVelocity.x) - std::abs(this->prevVelocity.x);
-        this->acceleration.y = std::abs(curVelocity.y) - std::abs(this->prevVelocity.y);
+        slotData->acceleration.z = curVelocity.Length2D() - slotData->prevVelocity.Length2D();
+        slotData->acceleration.x = std::abs(curVelocity.x) - std::abs(slotData->prevVelocity.x);
+        slotData->acceleration.y = std::abs(curVelocity.y) - std::abs(slotData->prevVelocity.y);
 
-        this->prevVelocity = curVelocity;
-        this->prevTick = curTick;
+        slotData->prevVelocity = curVelocity;
+        slotData->prevTick = curTick;
     }
 
-    return this->acceleration;
+    return slotData->acceleration;
 }
-void TasTools::SetAngles(void* pPlayer)
+void TasTools::SetAngles(void* player)
 {
-    auto slot = server->GetSplitScreenPlayerSlot(pPlayer);
+    auto slot = server->GetSplitScreenPlayerSlot(player);
     auto slotData = this->data[slot];
 
     if (slotData->speedInterpolation == 0) {
@@ -125,15 +124,18 @@ void TasTools::SetAngles(void* pPlayer)
 
     engine->SetAngles(slot, m);
 
-    if (m.x == slotData->targetAngles.x && m.y == slotData->targetAngles.y)
+    if (m.x == slotData->targetAngles.x && m.y == slotData->targetAngles.y) {
         slotData->speedInterpolation = 0;
+    }
 }
 QAngle TasTools::Slerp(QAngle a0, QAngle a1, float speedInterpolation)
 {
-    if (abs(a1.y - a0.y) > abs(a1.y + 360 - a0.y))
+    if (std::abs(a1.y - a0.y) > std::abs(a1.y + 360 - a0.y)) {
         a1.y = a1.y + 360;
-    if (abs(a1.y - a0.y) > abs(a1.y - 360 - a0.y))
+    }
+    if (std::abs(a1.y - a0.y) > std::abs(a1.y - 360 - a0.y)) {
         a1.y = a1.y - 360;
+    }
 
     Vector vec{ a1.x - a0.x, a1.y - a0.y, 0 };
     Math::VectorNormalize(vec);
@@ -143,10 +145,10 @@ QAngle TasTools::Slerp(QAngle a0, QAngle a1, float speedInterpolation)
     m.y = a0.y + vec.y * speedInterpolation;
     m.z = 0;
 
-    if (abs(a0.x - a1.x) <= speedInterpolation) {
+    if (std::abs(a0.x - a1.x) <= speedInterpolation) {
         m.x = a1.x;
     }
-    if (abs(a1.y - a0.y) <= speedInterpolation) {
+    if (std::abs(a1.y - a0.y) <= speedInterpolation) {
         m.y = a1.y;
     }
 
@@ -166,8 +168,8 @@ CON_COMMAND(sar_tas_aim_at_point, "sar_tas_aim_at_point <x> <y> <z> [speed] : Ai
         return console->Print("Missing arguments: sar_tas_aim_at_point <x> <y> <z> [speed].\n");
     }
 
-    auto player = server->GetPlayer();
     auto nSlot = GET_SLOT();
+    auto player = server->GetPlayer(nSlot + 1);
     if (player && args[4] == 0 || args.ArgC() == 4) {
         tasTools->data[nSlot]->speedInterpolation = 0;
         tasTools->AimAtPoint(player, static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])), 0);
