@@ -32,7 +32,6 @@ Game|Windows|Linux
 - [Issues & Troubleshooting](doc/issue.md)
 - [Mapping](doc/mapping.md)
 - [Maps](doc/maps.md)
-- [Tool-Assisted-Speedruns](doc/tas.md)
 - [Console Commands & Variables](doc/cvars.md)
 
 ## Inspired By

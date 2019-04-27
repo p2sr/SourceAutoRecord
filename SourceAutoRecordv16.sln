@@ -10,8 +10,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.clang-format = .clang-format
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		.travis.yml = .travis.yml
 		_config.yml = _config.yml
 		copy.bat = copy.bat
+		cvars.js = cvars.js
 		makefile = makefile
 		README.md = README.md
 	EndProjectSection
@@ -19,11 +21,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{2234E52A-D21C-4984-B830-0D1EBC6842C5}"
 	ProjectSection(SolutionItems) = preProject
 		doc\contributing.md = doc\contributing.md
+		doc\cvars.md = doc\cvars.md
 		doc\issue.md = doc\issue.md
 		doc\mapping.md = doc\mapping.md
 		doc\maps.md = doc\maps.md
 		doc\standard.md = doc\standard.md
-		doc\tas.md = doc\tas.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{B82DAA33-1051-496B-A05A-58BB70E8BC02}"
