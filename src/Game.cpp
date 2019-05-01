@@ -63,11 +63,11 @@ Game* Game::CreateNewMod(const char* dir)
 {
     auto mod = std::string(dir);
 
-    if (Utils::EndsWith(mod, std::string("aperturetag"))) {
+    if (!mod.compare(ApertureTag::ModDir())) {
         return new ApertureTag();
     }
 
-    if (Utils::EndsWith(mod, std::string("portal_stories"))) {
+    if (!mod.compare(PortalStoriesMel::ModDir())) {
         return new PortalStoriesMel();
     }
 
@@ -78,17 +78,17 @@ std::string Game::VersionToString(int version)
     auto games = std::string("");
     while (version > 0) {
         HAS_GAME_FLAGS(SourceGame_Portal2Game | SourceGame_Portal, "Portal Game")
-        HAS_GAME_FLAGS(SourceGame_Portal2Engine, "Portal 2 Engine")
-        HAS_GAME_FLAGS(SourceGame_Portal2Game, "Portal 2 Game")
-        HAS_GAME_FLAGS(SourceGame_HalfLife2Engine, "Half-Life 2 Engine")
-        HAS_GAME_FLAG(SourceGame_Portal2, "Portal 2")
-        HAS_GAME_FLAG(SourceGame_Portal, "Portal")
-        HAS_GAME_FLAG(SourceGame_TheStanleyParable, "The Stanley Parable")
-        HAS_GAME_FLAG(SourceGame_TheBeginnersGuide, "The Beginners Guide")
-        HAS_GAME_FLAG(SourceGame_HalfLife2, "Half-Life 2")
-        HAS_GAME_FLAG(SourceGame_ApertureTag, "Aperture Tag")
-        HAS_GAME_FLAG(SourceGame_PortalStoriesMel, "Portal Stories: Mel")
-        HAS_GAME_FLAG(SourceGame_INFRA, "INFRA")
+        HAS_GAME_FLAGS(SourceGame_Portal2Engine,                   "Portal 2 Engine")
+        HAS_GAME_FLAGS(SourceGame_Portal2Game,                     "Portal 2 Game")
+        HAS_GAME_FLAGS(SourceGame_HalfLife2Engine,                 "Half-Life 2 Engine")
+        HAS_GAME_FLAG(SourceGame_Portal2,                          "Portal 2")
+        HAS_GAME_FLAG(SourceGame_Portal,                           "Portal")
+        HAS_GAME_FLAG(SourceGame_TheStanleyParable,                "The Stanley Parable")
+        HAS_GAME_FLAG(SourceGame_TheBeginnersGuide,                "The Beginners Guide")
+        HAS_GAME_FLAG(SourceGame_HalfLife2,                        "Half-Life 2")
+        HAS_GAME_FLAG(SourceGame_ApertureTag,                      "Aperture Tag")
+        HAS_GAME_FLAG(SourceGame_PortalStoriesMel,                 "Portal Stories: Mel")
+        HAS_GAME_FLAG(SourceGame_INFRA,                            "INFRA")
     }
     return games;
 }

@@ -6,19 +6,11 @@ PortalStoriesMel::PortalStoriesMel()
 {
     this->version = SourceGame_PortalStoriesMel;
 }
-void PortalStoriesMel::LoadOffsets()
-{
-    Portal2::LoadOffsets();
-}
 const char* PortalStoriesMel::Version()
 {
-    return "Portal Stories: Mel (5723)";
+    return "Portal Stories: Mel (7054)";
 }
-const char* PortalStoriesMel::Process()
+const char* PortalStoriesMel::ModDir()
 {
-    return "portal2_linux";
-}
-const float PortalStoriesMel::Tickrate()
-{
-    return 60;
+    return "portal_stories";
 }
