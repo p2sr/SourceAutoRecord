@@ -170,6 +170,7 @@ void Cheats::Init()
     sar_tas_ss.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2Game | SourceGame_HalfLife2Engine);
     sar_tas_strafe.UniqueFor(SourceGame_Portal2Engine);
+    sar_tas_strafe_vectorial.UniqueFor(SourceGame_Portal2Engine);
     startautostrafe.UniqueFor(SourceGame_Portal2Engine);
     endautostrafe.UniqueFor(SourceGame_Portal2Engine);
     sar_dump_events.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
