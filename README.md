@@ -11,7 +11,7 @@
 - HUDs
 - A lot of cheats
 
-## Support¹
+## Support
 
 Game|Windows|Linux
 ---|:-:|:-:
@@ -23,8 +23,6 @@ Game|Windows|Linux
 [Half-Life 2](https://store.steampowered.com/app/220)|✔|✔
 [Portal](https://store.steampowered.com/app/400)|✔|✔
 [INFRA](https://store.steampowered.com/app/251110)|✔|➖
-
-¹ Latest Steam version.
 
 ## Docs
 

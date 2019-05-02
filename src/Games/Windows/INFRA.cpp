@@ -58,11 +58,11 @@ const char* INFRA::Version()
 {
     return "INFRA (6905)";
 }
-const char* INFRA::Process()
-{
-    return "infra.exe";
-}
 const float INFRA::Tickrate()
 {
     return 120;
+}
+const char* INFRA::ModDir()
+{
+    return "infra";
 }

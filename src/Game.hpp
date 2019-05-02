@@ -32,7 +32,6 @@ public:
     inline bool Is(int game) { return this->version & game; }
 
     static Game* CreateNew();
-    static Game* CreateNewMod(const char* dir);
 
     static std::string VersionToString(int version);
 };

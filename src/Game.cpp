@@ -3,6 +3,7 @@
 #include <cstring>
 #include <string>
 
+#include "Command.hpp"
 #include "Utils.hpp"
 
 #include GAME(HalfLife2)
@@ -14,18 +15,23 @@
 #include GAME(PortalStoriesMel)
 #ifdef _WIN32
 #include GAME(INFRA)
+#include GAME(HalfLife2Unpack)
+#include GAME(PortalUnpack)
 #endif
 
 #define HAS_GAME_FLAG(flag, name)        \
-    if (version & (flag)) {                \
+    if (version & (flag)) {              \
         games += std::string(name "\n"); \
-        version &= ~(flag);                \
+        version &= ~(flag);              \
     }
-#define HAS_GAME_FLAGS(flags, name)       \
-    if (version == (flags)) {               \
+#define HAS_GAME_FLAGS(flags, name)      \
+    if (version == (flags)) {            \
         games += std::string(name "\n"); \
-        version &= ~(flags);                \
+        version &= ~(flags);             \
     }
+
+#define TARGET_MOD      MODULE("server")
+#define TARGET_PATTERN  "\\bin\\" TARGET_MOD
 
 const char* Game::Version()
 {
@@ -33,43 +39,50 @@ const char* Game::Version()
 }
 Game* Game::CreateNew()
 {
-    auto proc = Memory::GetProcessName();
+    auto modDir = std::string();
 
-    if (proc == Portal2::Process()) {
+    auto target = Memory::ModuleInfo();
+    if (Memory::TryGetModule(TARGET_MOD, &target)) {
+        modDir = std::string(target.path);
+        modDir = modDir.substr(0, modDir.length() - std::strlen(TARGET_PATTERN));
+        modDir = modDir.substr(modDir.find_last_of("\\/") + 1);
+    }
+
+    if (!modDir.compare(Portal2::ModDir())) {
         return new Portal2();
     }
 
-    if (proc == HalfLife2::Process()) {
-        return (Memory::TryGetModule(MODULE("sourcevr"), nullptr)) ? new HalfLife2() : new Portal();
+    if (!modDir.compare(HalfLife2::ModDir())) {
+#ifdef _WIN32
+        if (Memory::TryGetModule(MODULE("filesystem_steam"), nullptr)) {
+            return new HalfLife2Unpack();
+        }
+#endif
+        return new HalfLife2();
     }
 
-    if (proc == TheStanleyParable::Process()) {
+    if (!modDir.compare(Portal::ModDir())) {
+#ifdef _WIN32
+        if (Memory::TryGetModule(MODULE("filesystem_steam"), nullptr)) {
+            return new PortalUnpack();
+        }
+#endif
+        return new Portal();
+    }
+
+    if (!modDir.compare(TheStanleyParable::ModDir())) {
         return new TheStanleyParable();
     }
 
-    if (proc == TheBeginnersGuide::Process()) {
+    if (!modDir.compare(TheBeginnersGuide::ModDir())) {
         return new TheBeginnersGuide();
     }
 
 #ifdef _WIN32
-    if (proc == INFRA::Process()) {
+    if (!modDir.compare(INFRA::ModDir())) {
         return new INFRA();
     }
 #endif
-
-    return nullptr;
-}
-Game* Game::CreateNewMod(const char* dir)
-{
-    auto mod = std::string(dir);
-
-    if (!mod.compare(ApertureTag::ModDir())) {
-        return new ApertureTag();
-    }
-
-    if (!mod.compare(PortalStoriesMel::ModDir())) {
-        return new PortalStoriesMel();
-    }
 
     return nullptr;
 }
