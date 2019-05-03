@@ -38,7 +38,7 @@ const char* TheStanleyParable::Version()
 {
     return "The Stanley Parable (5454)";
 }
-const char* TheStanleyParable::Process()
+const char* TheStanleyParable::ModDir()
 {
-    return "stanley.exe";
+    return "thestanleyparable";
 }

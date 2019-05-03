@@ -1,9 +1,9 @@
 #pragma once
-#include "TheStanleyParable.hpp"
+#include "HalfLife2Unpack.hpp"
 
-class TheBeginnersGuide : public TheStanleyParable {
+class PortalUnpack : public HalfLife2Unpack {
 public:
-    TheBeginnersGuide();
+    PortalUnpack();
     void LoadOffsets() override;
     const char* Version() override;
 

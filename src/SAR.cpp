@@ -61,8 +61,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<PauseTimer>(&pauseTimer);
             this->features->AddFeature<DataMapDumper>(&dataMapDumper);
 
-            this->cheats->Init();
-
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
             this->modules->AddModule<Surface>(&surface);
@@ -76,10 +74,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 engine->demoplayer->Init();
                 engine->demorecorder->Init();
 
-                if (auto mod = Game::CreateNewMod(engine->GetGameDirectory())) {
-                    delete this->game;
-                    this->game = mod;
-                }
+                this->cheats->Init();
 
                 this->features->AddFeature<TasTools>(&tasTools);
 

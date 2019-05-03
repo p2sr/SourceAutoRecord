@@ -21,7 +21,7 @@ const char* Portal::Version()
 {
     return "Portal (1910503)";
 }
-const char* Portal::Process()
+const char* Portal::ModDir()
 {
-    return "hl2_linux";
+    return "portal";
 }

@@ -158,11 +158,11 @@ const char* Portal2::Version()
 {
     return "Portal 2 (7054)";
 }
-const char* Portal2::Process()
-{
-    return "portal2.exe";
-}
 const float Portal2::Tickrate()
 {
     return 60;
+}
+const char* Portal2::ModDir()
+{
+    return "portal2";
 }

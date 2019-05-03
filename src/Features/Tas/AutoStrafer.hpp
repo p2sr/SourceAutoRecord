@@ -45,5 +45,6 @@ private:
 extern AutoStrafer* autoStrafer;
 
 extern Command sar_tas_strafe;
+extern Command sar_tas_strafe_vectorial;
 extern Command startautostrafe;
 extern Command endautostrafe;

@@ -289,6 +289,12 @@
     <ClCompile Include="Features\DataMapDumper.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Games\Windows\HalfLife2Unpack.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Windows\PortalUnpack.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -605,6 +611,12 @@
     </ClInclude>
     <ClInclude Include="Features\DataMapDumper.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\HalfLife2Unpack.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\PortalUnpack.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -142,11 +142,11 @@ const char* HalfLife2::Version()
         ? "Half-Life 2 (2257546)"
         : "Portal (1910503)";
 }
-const char* HalfLife2::Process()
-{
-    return "hl2_linux";
-}
 const float HalfLife2::Tickrate()
 {
     return 1 / 0.015;
+}
+const char* HalfLife2::ModDir()
+{
+    return "hl2";
 }

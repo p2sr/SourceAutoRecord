@@ -9,5 +9,5 @@ public:
     void LoadOffsets() override;
     const char* Version() override;
 
-    static const char* Process();
+    static const char* ModDir();
 };

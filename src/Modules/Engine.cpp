@@ -273,6 +273,11 @@ bool Engine::Init()
                 this->m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
                 this->m_bWaitEnabled2 = reinterpret_cast<bool*>((uintptr_t)this->m_bWaitEnabled + Offsets::CCommandBufferSize);
             }
+
+            if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
+                this->ClientCommand = g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
+                Interface::Delete(g_VEngineServer);
+            }
         }
 
         void* clPtr = nullptr;
@@ -350,11 +355,6 @@ bool Engine::Init()
             auto FireEventClientSide = s_GameEventManager->Original(Offsets::FireEventClientSide);
             auto FireEventIntern = Memory::Read(FireEventClientSide + Offsets::FireEventIntern);
             Memory::Read<_ConPrintEvent>(FireEventIntern + Offsets::ConPrintEvent, &this->ConPrintEvent);
-        }
-
-        if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
-            this->ClientCommand = g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
-            Interface::Delete(g_VEngineServer);
         }
     }
 

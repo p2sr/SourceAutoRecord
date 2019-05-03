@@ -140,11 +140,11 @@ const char* HalfLife2::Version()
 {
     return "Half-Life 2 (2257546)";
 }
-const char* HalfLife2::Process()
-{
-    return "hl2.exe";
-}
 const float HalfLife2::Tickrate()
 {
     return 1 / 0.015f;
+}
+const char* HalfLife2::ModDir()
+{
+    return "hl2";
 }

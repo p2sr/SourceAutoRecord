@@ -1,6 +1,4 @@
 #pragma once
-#include "Game.hpp"
-
 #include "HalfLife2.hpp"
 
 class Portal : public HalfLife2 {
@@ -9,5 +7,5 @@ public:
     void LoadOffsets() override;
     const char* Version() override;
 
-    static const char* Process();
+    static const char* ModDir();
 };
