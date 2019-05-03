@@ -1,14 +1,8 @@
 # SAR: Issues & Troubleshooting
 
-## The classic "it doesn't work"
-
-[![failed_to_load](images/failed_to_load.png)](images/failed_to_load.png)
-
----
-
 ## "My game crashed :("
 
-[![game_crashed](images/game_crashed.png)](images/game_crashed.png)
+Report the issue [here](https://github.com/NeKzor/SourceAutoRecord/issues) if you think SAR caused the crash.
 
 ---
 
@@ -16,14 +10,22 @@
 
 [![unable_to_load_plugin](images/unable_to_load_plugin.png)](images/unable_to_load_plugin.png)
 
----
-
-## "Gimme xyz!"
-
-[![feature_request](images/feature_request.png)](images/feature_request.png)
+Read related issue: [#17](https://github.com/NeKzor/SourceAutoRecord/issues/17)
 
 ---
 
-## "It works"
+## "Add feature xyz?"
+
+No.
+
+---
+
+## "Support game xyz?"
+
+No.
+
+---
+
+## "How do I know it loaded correctly?"
 
 [![screenie](images/screenie.png)](images/screenie.png)
