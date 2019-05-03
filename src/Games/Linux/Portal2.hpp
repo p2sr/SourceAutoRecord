@@ -8,5 +8,5 @@ public:
     const char* Version() override;
     const float Tickrate() override;
 
-    static const char* Process();
+    static const char* ModDir();
 };

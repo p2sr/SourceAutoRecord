@@ -107,7 +107,11 @@ void* Interface::GetPtr(const char* filename, const char* interfaceSymbol)
         return nullptr;
     }
 
+#ifdef _WIN32
     auto obe = Memory::Deref<uint8_t>(CreateInterface) == 0xE9; // jmp
+#else
+    auto obe = false;
+#endif
 
     auto CreateInterfaceInternal = Memory::Read(CreateInterface + (obe ? 1 : CreateInterfaceInternal_Offset));
     auto s_pInterfaceRegs = Memory::DerefDeref<InterfaceReg*>(CreateInterfaceInternal + (obe ? 3 : s_pInterfaceRegs_Offset));
