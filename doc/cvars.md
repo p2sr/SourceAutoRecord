@@ -176,7 +176,7 @@
 |sar_tas_ss_forceuser|0|Portal 2<br>Aperture Tag<br>|Forces engine to calculate movement for every splitescreen client.
 |sar_tas_ss|cmd|Portal 2<br>Aperture Tag<br>|Select split screen index for command buffer (0 or 1).<br>Usage: sar_tas_ss <index>
 |sar_tas_start|cmd||Starts executing queued commands.
-|sar_tas_strafe_vectorial|cmd||sar_tas_strafe_vectorial <type>: Change type of vectorial strafing.<br>0 = Auto-strafer calculates perfect viewangle,<br>1 = Auto-strafer calculates perfect forward-side movement,<br>2 = Auto-strafer calculates perfect forward-side movement, while setting the viewangle toward current velocity, to make strafing visually visible.
+|sar_tas_strafe_vectorial|cmd|Portal 2 Engine<br>|sar_tas_strafe_vectorial <type>: Change type of vectorial strafing.<br>0 = Auto-strafer calculates perfect viewangle,<br>1 = Auto-strafer calculates perfect forward-side movement,<br>2 = Auto-strafer calculates perfect forward-side movement, while setting the viewangle toward current velocity, to make strafing visually visible.
 |sar_tas_strafe|cmd|Portal 2 Engine<br>|sar_tas_strafe <type> <direction> : Automatic strafing.<br>Type: 0 = off, 1 = straight, 2 = turning and keeping velocity, 3 = turning with velocity gain.<br>Direction: -1 = left, 1 = right.
 |sar_teleport_setpos|cmd||Saves current location for teleportation.
 |sar_teleport|cmd||Teleports the player to the last saved location.
