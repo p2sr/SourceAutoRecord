@@ -92,6 +92,11 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
                 config->Load();
 
+                if (sar.game->Is(SourceGame_HalfLife2Engine) && std::strlen(engine->m_szLevelName) != 0) {
+                    console->Warning("SAR: DONT load this plugin during a game session!\n");
+                    engine->SendToCommandBuffer("disconnect", 0);
+                }
+
                 this->SearchPlugin();
 
                 console->PrintActive("Loaded SourceAutoRecord, Version %s\n", SAR_VERSION);
