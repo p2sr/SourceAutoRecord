@@ -190,7 +190,7 @@ DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
         cmp eax, 8
         jne _orig
 
-            // Parse stuff that does not get parsed (thanks valve)
+        // Parse stuff that does not get parsed (thanks valve)
         push edi
         push edi
         mov ecx, esi
