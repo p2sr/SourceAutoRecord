@@ -60,10 +60,6 @@ Game* Game::CreateNew()
         return new PortalStoriesMel();
     }
 
-    if (!modDir.compare(TheBeginnersGuide::ModDir())) {
-        return new TheBeginnersGuide();
-    }
-
     if (!modDir.compare(HalfLife2::ModDir())) {
 #ifdef _WIN32
         if (Memory::TryGetModule(MODULE("filesystem_steam"), nullptr)) {
