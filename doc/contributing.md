@@ -49,10 +49,11 @@
 
 ## Pull Requests
 
-- Write a short description of what you added or what you changed
+- Write a meaningful title and a short description
 - Follow the coding style
 - Follow my requested changes
-- Don't edit files that you had to configure
+- Don't stage files that you had to configure
+- Use latest `master` branch
 
 ## Coding Style
 
