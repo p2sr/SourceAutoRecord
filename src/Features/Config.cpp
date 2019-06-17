@@ -76,5 +76,5 @@ bool Config::Load()
     engine->ExecuteCommand("exec _sar_cvars.cfg");
 
     file.close();
-    return false;
+    return true;
 }
