@@ -190,6 +190,6 @@ CON_COMMAND(sar_tas_strafe_vectorial, "sar_tas_strafe_vectorial <type>: Change t
         return console->Print(sar_tas_strafe_vectorial.ThisPtr()->m_pszHelpString);
     }
 
-    auto nSlot = GET_ACTIVE_SPLITSCREEN_SLOT();
+    auto nSlot = GET_SLOT();
     autoStrafer->states[nSlot]->vecType = type;
 }
