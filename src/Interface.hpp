@@ -33,7 +33,7 @@ public:
     template <typename T = uintptr_t>
     T Hooked(int index)
     {
-        return (T)this->copy[index];
+        return (T)this->copy[index + 1];
     }
     template <typename T = uintptr_t>
     T Current(int index)
@@ -44,7 +44,7 @@ public:
     bool Hook(T detour, U& original, int index)
     {
         if (index >= 0 && index < this->vtableSize) {
-            this->copy[index] = reinterpret_cast<uintptr_t>(detour);
+            this->copy[index + 1] = reinterpret_cast<uintptr_t>(detour);
             original = this->Original<U>(index);
             return true;
         }
