@@ -161,7 +161,6 @@ void Cvars::Lock()
 
         if (sar.game->Is(SourceGame_Portal2Game)) {
             sv_bonus_challenge.Lock();
-            sv_transition_fade_time.Lock();
             sv_laser_cube_autoaim.Lock();
             ui_loadingscreen_transition_time.Lock();
             hide_gun_when_holding.Lock();
@@ -184,7 +183,6 @@ void Cvars::Unlock()
         if (sar.game->Is(SourceGame_Portal2Game)) {
             // Don't find a way to abuse this, ok?
             sv_bonus_challenge.Unlock(false);
-            sv_transition_fade_time.Unlock();
             sv_laser_cube_autoaim.Unlock();
             ui_loadingscreen_transition_time.Unlock();
             // Not a real cheat, right?
