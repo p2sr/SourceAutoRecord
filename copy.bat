@@ -6,6 +6,8 @@ SET "dest=C:\Program Files (x86)\Steam\SteamApps\common"
 SET "unpack=F:\SOURCE_UNPACK"
 
 REM copy /Y "%src%" "%dest%\Portal 2\%binary%"
+REM copy /Y "%src%" "%dest%\Aperture Tag\%binary%"
+REM copy /Y "%src%" "%dest%\Portal Stories Mel\%binary%"
 REM copy /Y "%src%" "%dest%\Portal\%binary%"
 REM copy /Y "%src%" "%dest%\Half-Life 2\%binary%"
 REM copy /Y "%src%" "%dest%\The Stanley Parable\%binary%"

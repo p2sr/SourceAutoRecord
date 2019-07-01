@@ -6,5 +6,5 @@ public:
     ApertureTag();
     const char* Version() override;
 
-    static const char* ModDir();
+    static const char* GameDir();
 };

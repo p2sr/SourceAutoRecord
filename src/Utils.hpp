@@ -15,6 +15,7 @@ namespace Utils {
 
 bool EndsWith(const std::string& str, const std::string& suffix);
 bool StartsWith(const char* str, const char* subStr);
+bool ICompare(const std::string& a, const std::string& b);
 }
 
 #define REDECL(name) \

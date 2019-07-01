@@ -10,7 +10,7 @@ const char* ApertureTag::Version()
 {
     return "Aperture Tag (7054)";
 }
-const char* ApertureTag::ModDir()
+const char* ApertureTag::GameDir()
 {
-    return "aperturetag";
+    return "Aperture Tag";
 }
