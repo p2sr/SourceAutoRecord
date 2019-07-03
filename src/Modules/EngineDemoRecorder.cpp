@@ -23,14 +23,29 @@ int EngineDemoRecorder::GetTick()
 // CDemoRecorder::SetSignonState
 DETOUR(EngineDemoRecorder::SetSignonState, int state)
 {
-    if (state == SIGNONSTATE_FULL && *engine->demorecorder->m_bRecording) {
-        engine->demorecorder->isRecordingDemo = true;
-        engine->demorecorder->currentDemo = std::string(engine->demorecorder->m_szDemoBaseName);
-
-        if (*engine->demorecorder->m_nDemoNumber > 1) {
-            engine->demorecorder->currentDemo += std::string("_") + std::to_string(*engine->demorecorder->m_nDemoNumber);
-        }
+    console->Print("SignonState: %d \n", state);
+    //SIGNONSTATE_FULL is set twice during first CM load. Using SINGONSTATE_SPAWN for demo number increase instead
+    if (state == SIGNONSTATE_SPAWN) {
+        if (engine->demorecorder->isRecordingDemo || *engine->demorecorder->m_bRecording) {
+            engine->demorecorder->lastDemoNumber++;
+		}
     }
+    if (state == SIGNONSTATE_FULL) {
+		//autorecording in different session (save deletion)
+        if (engine->demorecorder->isRecordingDemo) {
+            *engine->demorecorder->m_bRecording = true;
+		}
+
+        if (*engine->demorecorder->m_bRecording) {
+            engine->demorecorder->isRecordingDemo = true;
+            *engine->demorecorder->m_nDemoNumber = engine->demorecorder->lastDemoNumber; 
+            engine->demorecorder->currentDemo = std::string(engine->demorecorder->m_szDemoBaseName);
+
+            if (*engine->demorecorder->m_nDemoNumber > 1) {
+                engine->demorecorder->currentDemo += std::string("_") + std::to_string(*engine->demorecorder->m_nDemoNumber);
+            }
+        }
+	}
 
     return EngineDemoRecorder::SetSignonState(thisptr, state);
 }
@@ -38,7 +53,7 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state)
 // CDemoRecorder::StopRecording
 DETOUR(EngineDemoRecorder::StopRecording)
 {
-    const auto lastDemoNumber = *engine->demorecorder->m_nDemoNumber;
+    //engine->demorecorder->lastDemoNumber = *engine->demorecorder->m_nDemoNumber;
 
     // This function does:
     //   m_bRecording = false
@@ -46,16 +61,17 @@ DETOUR(EngineDemoRecorder::StopRecording)
     auto result = EngineDemoRecorder::StopRecording(thisptr);
 
     if (engine->demorecorder->isRecordingDemo && sar_autorecord.GetBool() && !engine->demorecorder->requestedStop) {
-        *engine->demorecorder->m_nDemoNumber = lastDemoNumber;
+        *engine->demorecorder->m_nDemoNumber = engine->demorecorder->lastDemoNumber;
 
         // Tell recorder to keep recording
         if (*engine->m_bLoadgame) {
             *engine->demorecorder->m_bRecording = true;
-            ++(*engine->demorecorder->m_nDemoNumber);
+            //++(*engine->demorecorder->m_nDemoNumber); //handling demo numbers in SetSignonState detour
             console->DevMsg("Auto-Recording!");
         }
     } else {
         engine->demorecorder->isRecordingDemo = false;
+        engine->demorecorder->lastDemoNumber = 1;
     }
 
     return result;
