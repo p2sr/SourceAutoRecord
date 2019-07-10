@@ -160,6 +160,8 @@ CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <type> <direction> : Automatic straf
                             "Type: 0 = off, 1 = straight, 2 = turning and keeping velocity, 3 = turning with velocity gain.\n"
                             "Direction: -1 = left, 1 = right.\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     auto type = StrafingType::Straight;
     auto direction = -1;
 
@@ -182,6 +184,8 @@ CON_COMMAND(sar_tas_strafe_vectorial, "sar_tas_strafe_vectorial <type>: Change t
                                       "2 = Auto-strafer calculates perfect forward-side movement, "
                                       "while setting the viewangle toward current velocity, to make strafing visually visible.\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     auto type = VecStrafeType::Disabled;
 
     if (args.ArgC() == 2) {
