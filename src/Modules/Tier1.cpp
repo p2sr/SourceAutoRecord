@@ -1,12 +1,9 @@
 #include "Tier1.hpp"
 
-#ifdef _WIN32
 #include "Game.hpp"
-#include "SAR.hpp"
-#endif
-
 #include "Interface.hpp"
 #include "Offsets.hpp"
+#include "SAR.hpp"
 #include "Utils.hpp"
 
 bool Tier1::Init()

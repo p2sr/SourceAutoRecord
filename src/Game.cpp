@@ -6,8 +6,6 @@
 #include "Command.hpp"
 #include "Utils.hpp"
 
-#include <Windows.h>
-
 #include GAME(HalfLife2)
 #include GAME(Portal)
 #include GAME(Portal2)
