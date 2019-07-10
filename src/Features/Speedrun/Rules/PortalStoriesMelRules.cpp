@@ -5,31 +5,35 @@
 #include "Features/Speedrun/TimerCategory.hpp"
 #include "Features/Speedrun/TimerRule.hpp"
 
+#include "Modules/Engine.hpp"
+
+#include "Utils/SDK.hpp"
+
 #ifdef _WIN32
-#define Offset_m_bWaitForRefire 909
+#define Offset_m_state 908
 #define Offset_m_bDisabled 936
 #else
-#define Offset_m_bWaitForRefire 933
+#define Offset_m_state 932
 #define Offset_m_bDisabled 960
 #endif
 
-SAR_RULE3(tram_teleport, "sp_a1_tramride", "tramstart_relay", SearchMode::Names)
+SAR_RULE3(tram_teleport, "sp_a1_tramride", "Intro_Viewcontroller", SearchMode::Names)
 {
-    // CLogicRelay aka logic_relay
-    auto m_bWaitForRefire = reinterpret_cast<bool*>((uintptr_t)entity + Offset_m_bWaitForRefire);
+    // CTriggerCamera aka point_viewcontrol
+    auto m_state = reinterpret_cast<int*>((uintptr_t)entity + Offset_m_state);
 
-    if (*m_bWaitForRefire) {
+    if (engine->GetSessionTick() > 60 && *m_state == USE_OFF) {
         return TimerAction::Start;
     }
 
     return TimerAction::DoNothing;
 }
-SAR_RULE3(tram_teleport2, "st_a1_tramride", "tramstart_relay", SearchMode::Names)
+SAR_RULE3(tram_teleport2, "st_a1_tramride", "Intro_Viewcontroller", SearchMode::Names)
 {
-    // CLogicRelay aka logic_relay
-    auto m_bWaitForRefire = reinterpret_cast<bool*>((uintptr_t)entity + Offset_m_bWaitForRefire);
+    // CTriggerCamera aka point_viewcontrol
+    auto m_state = reinterpret_cast<int*>((uintptr_t)entity + Offset_m_state);
 
-    if (*m_bWaitForRefire) {
+    if (engine->GetSessionTick() > 60 && *m_state == USE_OFF) {
         return TimerAction::Start;
     }
 
