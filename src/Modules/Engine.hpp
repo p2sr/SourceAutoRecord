@@ -135,6 +135,7 @@ public:
 extern Engine* engine;
 
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
+#define IGNORE_DEMO_PLAYER() if (engine->demoplayer->IsPlaying()) return;
 
 #ifdef _WIN32
 #define GET_ACTIVE_SPLITSCREEN_SLOT() engine->GetActiveSplitScreenPlayerSlot()

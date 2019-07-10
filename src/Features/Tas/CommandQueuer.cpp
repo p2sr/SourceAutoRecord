@@ -91,6 +91,8 @@ CON_COMMAND(sar_tas_frame_at,
     "Adds command frame to the queue at specified frame.\n"
     "Usage: sar_tas_frame_at <frame> [command_to_execute]\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     if (args.ArgC() != 3) {
         return console->Print(sar_tas_frame_at.ThisPtr()->m_pszHelpString);
     }
@@ -101,6 +103,8 @@ CON_COMMAND(sar_tas_frames_at,
     "Adds command frame multiple times to the queue at specified frame.\n"
     "Usage: sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute]\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     if (args.ArgC() != 5) {
         return console->Print(sar_tas_frames_at.ThisPtr()->m_pszHelpString);
     }
@@ -111,6 +115,8 @@ CON_COMMAND(sar_tas_frame_next,
     "Adds command frame to the queue after waiting for specified amount of frames.\n"
     "Usage: sar_tas_frame_next <frames_to_wait> [command_to_execute]\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     if (args.ArgC() != 3) {
         return console->Print(sar_tas_frame_next.ThisPtr()->m_pszHelpString);
     }
@@ -122,6 +128,8 @@ CON_COMMAND(sar_tas_frame_after,
     "Adds command frame to the queue after waiting for specified amount of frames.\n"
     "Usage: sar_tas_frame_after <frames_to_wait> [command_to_execute]\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     if (args.ArgC() != 3) {
         return console->Print(sar_tas_frame_after.ThisPtr()->m_pszHelpString);
     }
@@ -132,6 +140,8 @@ CON_COMMAND(sar_tas_frames_after,
     "Adds command frame multiple times to the queue after waiting for specified amount of frames.\n"
     "Usage: sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute]\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     if (args.ArgC() != 5) {
         return console->Print(sar_tas_frames_after.ThisPtr()->m_pszHelpString);
     }
@@ -142,6 +152,8 @@ CON_COMMAND(sar_tas_frame_offset,
     "sar_tas_frame_after rely on the last sar_tas_frame_offset.\n"
     "Usage: sar_tas_frame_offset <frame>\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     if (args.ArgC() != 2) {
         return console->Print(sar_tas_frame_offset.ThisPtr()->m_pszHelpString);
     }
@@ -150,15 +162,21 @@ CON_COMMAND(sar_tas_frame_offset,
 }
 CON_COMMAND(sar_tas_start, "Starts executing queued commands.\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     cmdQueuer->Start();
 }
 CON_COMMAND(sar_tas_reset, "Stops executing commands and clears them from the queue.\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     cmdQueuer->Reset();
 }
 CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\n"
                         "Usage: sar_tas_ss <index>\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     if (args.ArgC() != 2) {
         return console->Print(sar_tas_ss.ThisPtr()->m_pszHelpString);
     }
@@ -173,6 +191,8 @@ CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\
 CON_COMMAND(sar_tas_delay, "Delays command queue by specified amount of frames.\n"
                            "Usage: sar_tas_delay <frames_to_wait>\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     if (args.ArgC() != 2) {
         return console->Print(sar_tas_delay.ThisPtr()->m_pszHelpString);
     }
@@ -183,6 +203,8 @@ CON_COMMAND(sar_tas_frame_at_for,
     "Adds two command frames to the queue at specified frame, the last frame will be executed after a delay.\n"
     "Usage: sar_tas_frame_at_for <frame> <delay> <first_command> <last_command>\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     if (args.ArgC() != 5) {
         return console->Print(sar_tas_frame_at_for.ThisPtr()->m_pszHelpString);
     }
@@ -195,6 +217,8 @@ CON_COMMAND(sar_tas_frame_after_for,
     "the last frame will be executed after a delay.\n"
     "Usage: sar_tas_frame_after_for <frames_to_wait> <delay> <first_command> <last_command>\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     if (args.ArgC() != 5) {
         return console->Print(sar_tas_frame_after_for.ThisPtr()->m_pszHelpString);
     }
