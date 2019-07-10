@@ -2,6 +2,10 @@
 
 #include "Replay.hpp"
 
+#include "Features/Speedrun/SpeedrunTimer.hpp"
+
+#include "Modules/Server.hpp"
+
 #include "Variable.hpp"
 #include "Utils.hpp"
 
@@ -42,8 +46,10 @@ void ReplayPlayer::Play(Replay* replay, CUserCmd* cmd)
 }
 void ReplayPlayer::StartPlaying(Replay* replay)
 {
-    replay->GetView(this->viewIndex)->Reset();
-    this->isPlaying = true;
+    if (!speedrun->IsActive() && !sv_bonus_challenge.GetBool()) {
+        replay->GetView(this->viewIndex)->Reset();
+        this->isPlaying = true;
+    }
 }
 void ReplayPlayer::StopPlaying()
 {
