@@ -1,6 +1,7 @@
 #pragma once
 #pragma warning(suppress : 26495)
 #include <cmath>
+#include <cstdint>
 
 #ifdef _WIN32
 #define __funcc __thiscall
@@ -877,4 +878,14 @@ public:
 static const char* EVENTS[] = {
     "player_spawn_blue",
     "player_spawn_orange"
+};
+
+struct cmdalias_t {
+    cmdalias_t* next;
+    char name[32];
+    char* value;
+};
+
+struct GameOverlayActivated_t {
+    uint8_t m_bActive;
 };

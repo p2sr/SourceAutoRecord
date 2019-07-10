@@ -74,6 +74,6 @@ public:
 
 #define DECL_DETOUR_COMMAND(name)            \
     static _CommandCallback name##_callback; \
-    static void name##_callback_hook(const CCommand& args);
+    static void name##_callback_hook(const CCommand& args)
 #define DETOUR_COMMAND(name) \
     void name##_callback_hook(const CCommand& args)

@@ -12,12 +12,6 @@
 #define IServerMessageHandler_VMT_Offset 8
 #endif
 
-struct cmdalias_t {
-    cmdalias_t* next;
-    char name[32];
-    char* value;
-};
-
 class Engine : public Module {
 public:
     Interface* engineClient = nullptr;
@@ -80,6 +74,8 @@ public:
     bool* m_bWaitEnabled = nullptr;
     bool* m_bWaitEnabled2 = nullptr;
 
+    bool overlayActivated = false;
+
 public:
     void ExecuteCommand(const char* cmd);
     int GetSessionTick();
@@ -93,26 +89,30 @@ public:
     void SafeUnload(const char* postCommand = nullptr);
 
     // CClientState::Disconnect
-    DECL_DETOUR(Disconnect, bool bShowMainMenu)
+    DECL_DETOUR(Disconnect, bool bShowMainMenu);
 #ifdef _WIN32
-    DECL_DETOUR(Disconnect2, int unk1, int unk2, int unk3)
-    DECL_DETOUR_COMMAND(connect)
+    DECL_DETOUR(Disconnect2, int unk1, int unk2, int unk3);
+    DECL_DETOUR_COMMAND(connect);
 #else
-    DECL_DETOUR(Disconnect2, int unk, bool bShowMainMenu)
+    DECL_DETOUR(Disconnect2, int unk, bool bShowMainMenu);
 #endif
 
     // CClientState::SetSignonState
-    DECL_DETOUR(SetSignonState, int state, int count, void* unk)
-    DECL_DETOUR(SetSignonState2, int state, int count)
+    DECL_DETOUR(SetSignonState, int state, int count, void* unk);
+    DECL_DETOUR(SetSignonState2, int state, int count);
 
     // CEngine::Frame
-    DECL_DETOUR(Frame)
+    DECL_DETOUR(Frame);
 
-    DECL_DETOUR_COMMAND(plugin_load)
-    DECL_DETOUR_COMMAND(plugin_unload)
-    DECL_DETOUR_COMMAND(exit)
-    DECL_DETOUR_COMMAND(quit)
-    DECL_DETOUR_COMMAND(help)
+    // CSteam3Client::OnGameOverlayActivated
+    DECL_DETOUR_B(OnGameOverlayActivated, GameOverlayActivated_t* pGameOverlayActivated);
+
+    DECL_DETOUR_COMMAND(plugin_load);
+    DECL_DETOUR_COMMAND(plugin_unload);
+    DECL_DETOUR_COMMAND(exit);
+    DECL_DETOUR_COMMAND(quit);
+    DECL_DETOUR_COMMAND(help);
+    DECL_DETOUR_COMMAND(gameui_activate);
 
 #ifdef _WIN32
     using _ReadCustomData = int(__fastcall*)(void* thisptr, int edx, void* unk1, void* unk2);
@@ -122,7 +122,7 @@ public:
     static uintptr_t ParseSmoothingInfo_Skip;
     static uintptr_t ParseSmoothingInfo_Default;
     static uintptr_t ParseSmoothingInfo_Continue;
-    DECL_DETOUR_MID_MH(ParseSmoothingInfo_Mid)
+    DECL_DETOUR_MID_MH(ParseSmoothingInfo_Mid);
 
     Memory::Patch* demoSmootherPatch = nullptr;
 #endif

@@ -33,6 +33,7 @@ void Portal2::LoadOffsets()
     GetMaxClients = 20; // CEngineClient
     GetGameDirectory = 35; // CEngineClient
     GetActiveSplitScreenPlayerSlot = 127; // CEngineClient
+    GetSteamAPIContext = 177; // CEngineClient
     StringToButtonCode = 31; // CInputSystem
     GetRecordingTick = 1; // CDemoRecorder
     SetSignonState = 3; // CDemoRecorder
@@ -68,6 +69,7 @@ void Portal2::LoadOffsets()
     m_bLoadGame = 448; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
     ScreenPosition = 12; // CIVDebugOverlay
     MAX_SPLITSCREEN_PLAYERS = 2; // maxplayers
+    OnGameOverlayActivated = 144; // CSteam3Client
 
     // vstdlib.dll
 

@@ -16,16 +16,16 @@
 #define DECL_DETOUR(name, ...)                                  \
     using _##name = int(__func*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                        \
-    static int __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__);
+    static int __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__)
 #define DECL_DETOUR_T(type, name, ...)                           \
     using _##name = type(__func*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                         \
-    static type __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__);
+    static type __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__)
 #define DECL_DETOUR_B(name, ...)                                \
     using _##name = int(__func*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                        \
     static _##name name##Base;                                  \
-    static int __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__);
+    static int __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__)
 
 #define DETOUR(name, ...) \
     int __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__)
@@ -61,12 +61,12 @@ bool mhInitialized = false;
 #define DECL_DETOUR_MID_MH(name)        \
     static uintptr_t name;              \
     static uintptr_t name##_Trampoline; \
-    static void name##_Hook();
+    static void name##_Hook()
 #define DECL_DETOUR_MH(name, ...)                                 \
     using _##name = int(__thiscall*)(void* thisptr, __VA_ARGS__); \
     static _##name name;                                          \
     static _##name name##_Trampoline;                             \
-    static int __fastcall name##_Hook(void* thisptr, int edx, __VA_ARGS__);
+    static int __fastcall name##_Hook(void* thisptr, int edx, __VA_ARGS__)
 
 #define DETOUR_MID_MH(name) \
     __declspec(naked) void name##_Hook()
@@ -86,16 +86,16 @@ bool mhInitialized = false;
 #define DECL_DETOUR(name, ...)                                  \
     using _##name = int(__func*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                        \
-    static int __func name##_Hook(void* thisptr, ##__VA_ARGS__);
+    static int __func name##_Hook(void* thisptr, ##__VA_ARGS__)
 #define DECL_DETOUR_T(type, name, ...)                           \
     using _##name = type(__func*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                         \
-    static type __func name##_Hook(void* thisptr, ##__VA_ARGS__);
+    static type __func name##_Hook(void* thisptr, ##__VA_ARGS__)
 #define DECL_DETOUR_B(name, ...)                                \
     using _##name = int(__func*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                        \
     static _##name name##Base;                                  \
-    static int __func name##_Hook(void* thisptr, ##__VA_ARGS__);
+    static int __func name##_Hook(void* thisptr, ##__VA_ARGS__)
 
 #define DETOUR(name, ...) \
     int __func name##_Hook(void* thisptr, ##__VA_ARGS__)
@@ -108,6 +108,6 @@ bool mhInitialized = false;
 #define DECL_DETOUR_STD(type, name, ...)             \
     using _##name = type(__stdcall*)(##__VA_ARGS__); \
     static _##name name;                             \
-    static type __stdcall name##_Hook(##__VA_ARGS__);
+    static type __stdcall name##_Hook(##__VA_ARGS__)
 #define DETOUR_STD(type, name, ...) \
     type __stdcall name##_Hook(##__VA_ARGS__)

@@ -1,6 +1,13 @@
 #pragma once
 #include <vector>
 
+#define DECL_M(name, type) type name(void* entity)
+#define MDECL(name, type, offset)                                             \
+    type name(void* entity)                                                   \
+    {                                                                         \
+        return *reinterpret_cast<type*>((uintptr_t)entity + Offsets::offset); \
+    }
+
 class Module {
 public:
     bool hasLoaded = false;

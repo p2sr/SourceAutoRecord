@@ -21,6 +21,7 @@ extern int SetViewAngles;
 extern int GetMaxClients;
 extern int ServerCmdKeyValues;
 extern int GetActiveSplitScreenPlayerSlot;
+extern int GetSteamAPIContext;
 
 // CHLClient
 extern int GetAllClasses;
@@ -165,6 +166,9 @@ extern int GetIServerEntity;
 
 // CVEngineServer
 extern int ClientCommand;
+
+// CSteam3Client
+extern int OnGameOverlayActivated;
 
 // Others
 extern int tickcount;

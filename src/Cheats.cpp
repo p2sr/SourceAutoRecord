@@ -35,6 +35,7 @@ Variable sar_jumpboost("sar_jumpboost", "0", 0, "Enables special game movement o
 Variable sar_aircontrol("sar_aircontrol", "0", 0, "Enables more air-control on the server.\n");
 Variable sar_duckjump("sar_duckjump", "0", "Allows duck-jumping even when fully crouched, similar to prevent_crouch_jump.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
+Variable sar_disable_steam_pause("sar_disable_steam_pause", "0", "Prevents pauses from steam overlay.\n");
 
 // TSP only
 void IN_BhopDown(const CCommand& args) { client->KeyDown(client->in_jump, (args.ArgC() > 1) ? args[1] : nullptr); }
@@ -129,6 +130,7 @@ void Cheats::Init()
     sar_aircontrol.UniqueFor(SourceGame_Portal2Engine);
     sar_hud_portals.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
     sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
+    sar_disable_steam_pause.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_debug_listener.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_sr_hud.UniqueFor(s3);
     sar_sr_hud_x.UniqueFor(s3);

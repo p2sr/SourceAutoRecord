@@ -21,11 +21,14 @@ REDECL(Engine::Disconnect2);
 REDECL(Engine::SetSignonState);
 REDECL(Engine::SetSignonState2);
 REDECL(Engine::Frame);
+REDECL(Engine::OnGameOverlayActivated);
+REDECL(Engine::OnGameOverlayActivatedBase);
 REDECL(Engine::plugin_load_callback);
 REDECL(Engine::plugin_unload_callback);
 REDECL(Engine::exit_callback);
 REDECL(Engine::quit_callback);
 REDECL(Engine::help_callback);
+REDECL(Engine::gameui_activate_callback);
 #ifdef _WIN32
 REDECL(Engine::connect_callback);
 REDECL(Engine::ParseSmoothingInfo_Skip);
@@ -211,6 +214,13 @@ _def:
 }
 #endif
 
+// CSteam3Client::OnGameOverlayActivated
+DETOUR_B(Engine::OnGameOverlayActivated, GameOverlayActivated_t* pGameOverlayActivated)
+{
+    engine->overlayActivated = pGameOverlayActivated->m_bActive;
+    return Engine::OnGameOverlayActivatedBase(thisptr, pGameOverlayActivated);
+}
+
 DETOUR_COMMAND(Engine::plugin_load)
 {
     // Prevent crash when trying to load SAR twice or try to find the module in
@@ -248,6 +258,14 @@ DETOUR_COMMAND(Engine::help)
 {
     cvars->PrintHelp(args);
 }
+DETOUR_COMMAND(Engine::gameui_activate)
+{
+    if (sar_disable_steam_pause.GetBool() && engine->overlayActivated) {
+        return;
+    }
+
+    Engine::gameui_activate_callback(args);
+}
 
 bool Engine::Init()
 {
@@ -272,6 +290,14 @@ bool Engine::Init()
             if (sar.game->Is(SourceGame_Portal2Game | SourceGame_INFRA)) {
                 this->m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
                 this->m_bWaitEnabled2 = reinterpret_cast<bool*>((uintptr_t)this->m_bWaitEnabled + Offsets::CCommandBufferSize);
+            }
+
+            if (sar.game->Is(SourceGame_Portal2Game)) {
+                auto GetSteamAPIContext = this->engineClient->Original<uintptr_t (*)()>(Offsets::GetSteamAPIContext);
+                auto OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated*>(GetSteamAPIContext() + Offsets::OnGameOverlayActivated);
+
+                Engine::OnGameOverlayActivatedBase = *OnGameOverlayActivated;
+                *OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated>(Engine::OnGameOverlayActivated_Hook);
             }
 
             if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
@@ -390,11 +416,18 @@ bool Engine::Init()
     Command::Hook("exit", Engine::exit_callback_hook, Engine::exit_callback);
     Command::Hook("quit", Engine::quit_callback_hook, Engine::quit_callback);
     Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
+    Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
 
     return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder;
 }
 void Engine::Shutdown()
 {
+    if (this->engineClient && sar.game->Is(SourceGame_Portal2Game)) {
+        auto GetSteamAPIContext = this->engineClient->Original<uintptr_t (*)()>(Offsets::GetSteamAPIContext);
+        auto OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated*>(GetSteamAPIContext() + Offsets::OnGameOverlayActivated);
+        *OnGameOverlayActivated = Engine::OnGameOverlayActivatedBase;
+    }
+
     Interface::Delete(this->engineClient);
     Interface::Delete(this->s_ServerPlugin);
     Interface::Delete(this->cl);
@@ -416,6 +449,7 @@ void Engine::Shutdown()
     Command::Unhook("exit", Engine::exit_callback);
     Command::Unhook("quit", Engine::quit_callback);
     Command::Unhook("help", Engine::help_callback);
+    Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
 
     if (this->demoplayer) {
         this->demoplayer->Shutdown();
