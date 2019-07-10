@@ -52,53 +52,21 @@ REDECL(Server::AirMove_Mid);
 REDECL(Server::AirMove_Mid_Trampoline);
 #endif
 
+MDECL(Server::GetPortals, int, iNumPortalsPlaced);
+MDECL(Server::GetAbsOrigin, Vector, S_m_vecAbsOrigin);
+MDECL(Server::GetAbsAngles, QAngle, S_m_angAbsRotation);
+MDECL(Server::GetLocalVelocity, Vector, S_m_vecVelocity);
+MDECL(Server::GetFlags, int, m_fFlags);
+MDECL(Server::GetEFlags, int, m_iEFlags);
+MDECL(Server::GetMaxSpeed, float, m_flMaxspeed);
+MDECL(Server::GetGravity, float, m_flGravity);
+MDECL(Server::GetViewOffset, Vector, S_m_vecViewOffset);
+MDECL(Server::GetEntityName, char*, m_iName);
+MDECL(Server::GetEntityClassName, char*, m_iClassName);
+
 void* Server::GetPlayer(int index)
 {
     return this->UTIL_PlayerByIndex(index);
-}
-int Server::GetPortals(void* entity)
-{
-    return *reinterpret_cast<int*>((uintptr_t)entity + Offsets::iNumPortalsPlaced);
-}
-Vector Server::GetAbsOrigin(void* entity)
-{
-    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::S_m_vecAbsOrigin);
-}
-QAngle Server::GetAbsAngles(void* entity)
-{
-    return *reinterpret_cast<QAngle*>((uintptr_t)entity + Offsets::S_m_angAbsRotation);
-}
-Vector Server::GetLocalVelocity(void* entity)
-{
-    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::S_m_vecVelocity);
-}
-int Server::GetFlags(void* entity)
-{
-    return *reinterpret_cast<int*>((uintptr_t)entity + Offsets::m_fFlags);
-}
-int Server::GetEFlags(void* entity)
-{
-    return *reinterpret_cast<int*>((uintptr_t)entity + Offsets::m_iEFlags);
-}
-float Server::GetMaxSpeed(void* entity)
-{
-    return *reinterpret_cast<float*>((uintptr_t)entity + Offsets::m_flMaxspeed);
-}
-float Server::GetGravity(void* entity)
-{
-    return *reinterpret_cast<float*>((uintptr_t)entity + Offsets::m_flGravity);
-}
-Vector Server::GetViewOffset(void* entity)
-{
-    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::S_m_vecViewOffset);
-}
-char* Server::GetEntityName(void* entity)
-{
-    return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iName);
-}
-char* Server::GetEntityClassName(void* entity)
-{
-    return *reinterpret_cast<char**>((uintptr_t)entity + Offsets::m_iClassName);
 }
 bool Server::IsPlayer(void* entity)
 {
@@ -144,7 +112,7 @@ DETOUR_T(bool, Server::CheckJumpButton)
     if (result) {
         server->jumpedLastTime = true;
 
-        auto stat = stats->Get(server->GetSplitScreenPlayerSlot(player));        
+        auto stat = stats->Get(server->GetSplitScreenPlayerSlot(player));
         ++stat->jumps->total;
         ++stat->steps->total;
         stat->jumps->StartTrace(server->GetAbsOrigin(player));
@@ -298,7 +266,7 @@ DETOUR(Server::GameFrame, bool simulating)
         pauseTimer->Increment();
 
         if (speedrun->IsActive() && sar_speedrun_time_pauses.GetBool()) {
-             speedrun->IncrementPauseTime();
+            speedrun->IncrementPauseTime();
         }
 
         if (timer->isRunning && sar_timer_time_pauses.GetBool()) {
@@ -332,9 +300,9 @@ bool Server::Init()
             auto ctor = this->g_GameMovement->Original(0);
             auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
             auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
-            Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*), &this->AirMoveBase);
-
-            Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &this->CheckJumpButtonBase);
+            Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*), &Server::AirMoveBase);
+            
+            Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &Server::CheckJumpButtonBase);
 
 #ifdef _WIN32
             if (!sar.game->Is(SourceGame_INFRA)) {

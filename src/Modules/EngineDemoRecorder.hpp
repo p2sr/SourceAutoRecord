@@ -26,12 +26,12 @@ public:
     int GetTick();
 
     // CDemoRecorder::SetSignonState
-    DECL_DETOUR(SetSignonState, int state)
+    DECL_DETOUR(SetSignonState, int state);
 
     // CDemoRecorder::StopRecording
-    DECL_DETOUR(StopRecording)
+    DECL_DETOUR(StopRecording);
 
-    DECL_DETOUR_COMMAND(stop)
+    DECL_DETOUR_COMMAND(stop);
 
     bool Init() override;
     void Shutdown() override;

@@ -30,33 +30,34 @@ public:
     void* in_jump = nullptr;
 
 public:
+    DECL_M(GetAbsOrigin, Vector);
+    DECL_M(GetAbsAngles, QAngle);
+    DECL_M(GetLocalVelocity, Vector);
+    DECL_M(GetViewOffset, Vector);
+
     void* GetPlayer(int index);
-    Vector GetAbsOrigin(void* entity);
-    QAngle GetAbsAngles(void* entity);
-    Vector GetLocalVelocity(void* entity);
-    Vector GetViewOffset(void* entity);
     void CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset);
 
 public:
     // CHLClient::HudUpdate
-    DECL_DETOUR(HudUpdate, unsigned int a2)
+    DECL_DETOUR(HudUpdate, unsigned int a2);
 
     // ClientModeShared::CreateMove
-    DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd)
-    DECL_DETOUR(CreateMove2, float flInputSampleTime, CUserCmd* cmd)
+    DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd);
+    DECL_DETOUR(CreateMove2, float flInputSampleTime, CUserCmd* cmd);
 
     // CHud::GetName
-    DECL_DETOUR_T(const char*, GetName)
+    DECL_DETOUR_T(const char*, GetName);
 
     // CInput::_DecodeUserCmdFromBuffer
-    DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
-    DECL_DETOUR(DecodeUserCmdFromBuffer2, int buf, signed int sequence_number)
+    DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number);
+    DECL_DETOUR(DecodeUserCmdFromBuffer2, int buf, signed int sequence_number);
 
     // CInput::CreateMove
-    DECL_DETOUR(CInput_CreateMove, int sequence_number, float input_sample_frametime, bool active)
+    DECL_DETOUR(CInput_CreateMove, int sequence_number, float input_sample_frametime, bool active);
 
     // CInput::GetButtonBits
-    DECL_DETOUR(GetButtonBits, bool bResetState)
+    DECL_DETOUR(GetButtonBits, bool bResetState);
 
     bool Init() override;
     void Shutdown() override;

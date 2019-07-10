@@ -23,7 +23,7 @@ public:
     bool IsPlaying();
 
     // CDemoRecorder::StartPlayback
-    DECL_DETOUR(StartPlayback, const char* filename, bool bAsTimeDemo)
+    DECL_DETOUR(StartPlayback, const char* filename, bool bAsTimeDemo);
 
     bool Init() override;
     void Shutdown() override;

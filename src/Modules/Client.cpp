@@ -36,25 +36,14 @@ REDECL(Client::DecodeUserCmdFromBuffer2);
 REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
 
+MDECL(Client::GetAbsOrigin, Vector, C_m_vecAbsOrigin);
+MDECL(Client::GetAbsAngles, QAngle, C_m_angAbsRotation);
+MDECL(Client::GetLocalVelocity, Vector, C_m_vecVelocity);
+MDECL(Client::GetViewOffset, Vector, C_m_vecViewOffset);
+
 void* Client::GetPlayer(int index)
 {
     return this->GetClientEntity(this->s_EntityList->ThisPtr(), index);
-}
-Vector Client::GetAbsOrigin(void* entity)
-{
-    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::C_m_vecAbsOrigin);
-}
-QAngle Client::GetAbsAngles(void* entity)
-{
-    return *reinterpret_cast<QAngle*>((uintptr_t)entity + Offsets::C_m_angAbsRotation);
-}
-Vector Client::GetLocalVelocity(void* entity)
-{
-    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::C_m_vecVelocity);
-}
-Vector Client::GetViewOffset(void* entity)
-{
-    return *reinterpret_cast<Vector*>((uintptr_t)entity + Offsets::C_m_vecViewOffset);
 }
 void Client::CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset)
 {

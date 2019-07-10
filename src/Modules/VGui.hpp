@@ -22,7 +22,7 @@ private:
 
 public:
     // CEngineVGui::Paint
-    DECL_DETOUR(Paint, int mode)
+    DECL_DETOUR(Paint, int mode);
 
     bool Init() override;
     void Shutdown() override;

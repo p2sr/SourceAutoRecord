@@ -34,51 +34,52 @@ private:
     bool callFromCheckJumpButton = false;
 
 public:
+    DECL_M(GetPortals, int);
+    DECL_M(GetAbsOrigin, Vector);
+    DECL_M(GetAbsAngles, QAngle);
+    DECL_M(GetLocalVelocity, Vector);
+    DECL_M(GetFlags, int);
+    DECL_M(GetEFlags, int);
+    DECL_M(GetMaxSpeed, float);
+    DECL_M(GetGravity, float);
+    DECL_M(GetViewOffset, Vector);
+    DECL_M(GetEntityName, char*);
+    DECL_M(GetEntityClassName, char*);
+
     void* GetPlayer(int index);
-    int GetPortals(void* entity);
-    Vector GetAbsOrigin(void* entity);
-    QAngle GetAbsAngles(void* entity);
-    Vector GetLocalVelocity(void* entity);
-    int GetFlags(void* entity);
-    int GetEFlags(void* entity);
-    float GetMaxSpeed(void* entity);
-    float GetGravity(void* entity);
-    Vector GetViewOffset(void* entity);
-    char* GetEntityName(void* entity);
-    char* GetEntityClassName(void* entity);
     bool IsPlayer(void* entity);
     int GetSplitScreenPlayerSlot(void* entity);
 
 public:
     // CGameMovement::ProcessMovement
-    DECL_DETOUR(ProcessMovement, void* pPlayer, CMoveData* pMove)
+    DECL_DETOUR(ProcessMovement, void* pPlayer, CMoveData* pMove);
 
     // CGameMovement::CheckJumpButton
-    DECL_DETOUR_T(bool, CheckJumpButton)
+    DECL_DETOUR_T(bool, CheckJumpButton);
 
     static _CheckJumpButton CheckJumpButtonBase;
 
     // CGameMovement::PlayerMove
-    DECL_DETOUR(PlayerMove)
+    DECL_DETOUR(PlayerMove);
 
     // CGameMovement::FinishGravity
-    DECL_DETOUR(FinishGravity)
+    DECL_DETOUR(FinishGravity);
 
     // CGameMovement::AirMove
-    DECL_DETOUR_B(AirMove)
+    DECL_DETOUR_B(AirMove);
 
 #ifdef _WIN32
     // CGameMovement::AirMove
     static uintptr_t AirMove_Skip;
     static uintptr_t AirMove_Continue;
-    DECL_DETOUR_MID_MH(AirMove_Mid)
+    DECL_DETOUR_MID_MH(AirMove_Mid);
 #endif
 
 // CServerGameDLL::GameFrame
 #ifdef _WIN32
-    DECL_DETOUR_STD(void, GameFrame, bool simulating)
+    DECL_DETOUR_STD(void, GameFrame, bool simulating);
 #else
-    DECL_DETOUR(GameFrame, bool simulating)
+    DECL_DETOUR(GameFrame, bool simulating);
 #endif
 
     bool Init() override;
