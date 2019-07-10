@@ -24,6 +24,15 @@ public:
     virtual ~Listener();
     virtual void FireGameEvent(IGameEvent* ev);
     virtual int GetEventDebugID();
+
+private:
+    bool installedChangeCallback;
+    int changeCount;
+
+public:
+    void Reset();
+
+    static void OnCheatsChanged(IConVar* pVar, const char* pOldString, float flOldValue);
 };
 
 extern Listener* listener;

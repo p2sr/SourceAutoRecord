@@ -3,6 +3,7 @@
 
 #include "Module.hpp"
 
+#include "Command.hpp"
 #include "Interface.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
@@ -58,6 +59,8 @@ public:
 
     // CInput::GetButtonBits
     DECL_DETOUR(GetButtonBits, bool bResetState);
+
+    DECL_DETOUR_COMMAND(playvideo_end_level_transition);
 
     bool Init() override;
     void Shutdown() override;

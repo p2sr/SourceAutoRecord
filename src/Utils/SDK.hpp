@@ -87,6 +87,8 @@ struct Color {
 struct CCommand;
 struct ConCommandBase;
 
+typedef void (*FnChangeCallback_t)(void* var, const char* pOldValue, float flOldValue);
+
 using _CommandCallback = void (*)(const CCommand& args);
 using _CommandCompletionCallback = int (*)(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 using _InternalSetValue = void(__funcc*)(void* thisptr, const char* value);
@@ -95,7 +97,21 @@ using _InternalSetIntValue = void(__funcc*)(void* thisptr, int value);
 using _RegisterConCommand = void(__funcc*)(void* thisptr, ConCommandBase* pCommandBase);
 using _UnregisterConCommand = void(__funcc*)(void* thisptr, ConCommandBase* pCommandBase);
 using _FindCommandBase = void*(__funcc*)(void* thisptr, const char* name);
+using _InstallGlobalChangeCallback = void(__funcc*)(void* thisptr, FnChangeCallback_t callback);
+using _RemoveGlobalChangeCallback = void(__funcc*)(void* thisptr, FnChangeCallback_t callback);
 using _AutoCompletionFunc = int(__funcc*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+
+class IConVar {
+public:
+    virtual void SetValue(const char* pValue) = 0;
+    virtual void SetValue(float flValue) = 0;
+    virtual void SetValue(int nValue) = 0;
+    virtual void SetValue(Color value) = 0;
+    virtual const char* GetName(void) const = 0;
+    virtual const char* GetBaseName(void) const = 0;
+    virtual bool IsFlagSet(int nFlag) const = 0;
+    virtual int GetSplitScreenPlayerSlot() const = 0;
+};
 
 struct ConCommandBase {
     void* ConCommandBase_VTable; // 0
@@ -167,8 +183,6 @@ struct ConCommand : ConCommandBase {
     {
     }
 };
-
-typedef void (*FnChangeCallback_t)(void* var, const char* pOldValue, float flOldValue);
 
 struct ConVar : ConCommandBase {
     void* ConVar_VTable; // 24

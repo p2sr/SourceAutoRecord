@@ -1,5 +1,6 @@
 #include "Session.hpp"
 
+#include "Features/Listener.hpp"
 #include "Features/Rebinder.hpp"
 #include "Features/ReplaySystem/ReplayPlayer.hpp"
 #include "Features/ReplaySystem/ReplayProvider.hpp"
@@ -21,7 +22,7 @@ Session* session;
 Session::Session()
     : baseTick(0)
     , lastSession(0)
-    , isRunning(false)
+    , isRunning(true)
     , currentFrame(0)
     , lastFrame(0)
     , prevState(HS_RUN)
@@ -162,6 +163,7 @@ void Session::Ended()
     replayPlayer2->StopPlaying();
     speedrun->Pause();
     speedrun->UnloadRules();
+    listener->Reset();
 
     this->isRunning = false;
 }

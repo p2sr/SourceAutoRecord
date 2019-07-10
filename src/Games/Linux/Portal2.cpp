@@ -76,6 +76,8 @@ void Portal2::LoadOffsets()
     RegisterConCommand = 9; // CCVar
     UnregisterConCommand = 10; // CCvar
     FindCommandBase = 13; // CCvar
+    InstallGlobalChangeCallback = 19; // CCvar
+    RemoveGlobalChangeCallback = 20; // CCvar
     m_pConCommandList = 48; // CCvar
     IsCommand = 2; // ConCommandBase
 

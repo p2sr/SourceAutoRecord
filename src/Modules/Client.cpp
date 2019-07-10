@@ -17,6 +17,7 @@
 #include "Engine.hpp"
 #include "Server.hpp"
 
+#include "Command.hpp"
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Offsets.hpp"
@@ -35,6 +36,7 @@ REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::DecodeUserCmdFromBuffer2);
 REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
+REDECL(Client::playvideo_end_level_transition_callback);
 
 MDECL(Client::GetAbsOrigin, Vector, C_m_vecAbsOrigin);
 MDECL(Client::GetAbsAngles, QAngle, C_m_angAbsRotation);
@@ -200,6 +202,14 @@ DETOUR(Client::GetButtonBits, bool bResetState)
     return bits;
 }
 
+DETOUR_COMMAND(Client::playvideo_end_level_transition)
+{
+    console->DevMsg("%s\n", args.m_pArgSBuffer);
+    session->Ended();
+
+    return Client::playvideo_end_level_transition_callback(args);
+}
+
 bool Client::Init()
 {
     bool readJmp = false;
@@ -292,6 +302,8 @@ bool Client::Init()
     offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
     offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
 
+    Command::Hook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback_hook, Client::playvideo_end_level_transition_callback);
+
     return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }
 void Client::Shutdown()
@@ -302,6 +314,7 @@ void Client::Shutdown()
     Interface::Delete(this->g_HUDChallengeStats);
     Interface::Delete(this->s_EntityList);
     Interface::Delete(this->g_Input);
+    Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 }
 
 Client* client;

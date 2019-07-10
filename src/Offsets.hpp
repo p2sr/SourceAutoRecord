@@ -6,6 +6,8 @@ namespace Offsets {
 extern int RegisterConCommand;
 extern int UnregisterConCommand;
 extern int FindCommandBase;
+extern int InstallGlobalChangeCallback;
+extern int RemoveGlobalChangeCallback;
 extern int m_pConCommandList;
 
 // ConCommandBase
