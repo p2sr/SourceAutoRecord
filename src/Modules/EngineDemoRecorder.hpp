@@ -21,6 +21,7 @@ public:
     std::string currentDemo = std::string();
     bool isRecordingDemo = false;
     bool requestedStop = false;
+    int lastDemoNumber = 1;
 
 public:
     int GetTick();
