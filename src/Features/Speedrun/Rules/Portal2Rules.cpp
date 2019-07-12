@@ -104,6 +104,6 @@ SAR_RULE3(vehicle_lock, "e1912", "crash-vehicle_outro", SearchMode::Names)
     return TimerAction::DoNothing;
 }
 
-SAR_CATEGORY(Portal2, RTA,     _Rules({ &view_change, &moon_shot }));
-SAR_CATEGORY(Portal2, CoopRTA, _Rules({ &players_teleport, &players_taunt, &gate_opens }));
-SAR_CATEGORY(Portal2, Super8,  _Rules({ &gain_control, &vehicle_lock }));
+SAR_CATEGORY(Portal2, SinglePlayer, _Rules({ &view_change, &moon_shot }));
+SAR_CATEGORY(Portal2, Cooperative,  _Rules({ &players_teleport, &players_taunt, &gate_opens }));
+SAR_CATEGORY(Portal2, Super8,       _Rules({ &gain_control, &vehicle_lock }));

@@ -38,6 +38,8 @@ private:
     TimerCategory* category;
     int offset;
     int pause;
+public:
+    std::vector<std::string> visitedMaps;
 
 public:
     SpeedrunTimer();
@@ -52,7 +54,7 @@ public:
     void CheckRules(const int* engineTicks);
     void Stop(bool addSegment = true);
     void Reset();
-    void Split();
+    void Split(bool visited);
 
     void IncrementPauseTime();
 
@@ -105,10 +107,10 @@ extern Command sar_speedrun_export;
 extern Command sar_speedrun_export_pb;
 extern Command sar_speedrun_import;
 extern Command sar_speedrun_category;
-extern Command sar_speedrun_categories;
 extern Command sar_speedrun_offset;
 
 extern Variable sar_speedrun_autostart;
 extern Variable sar_speedrun_autostop;
 extern Variable sar_speedrun_standard;
 extern Variable sar_speedrun_time_pauses;
+extern Variable sar_speedrun_smartsplit;

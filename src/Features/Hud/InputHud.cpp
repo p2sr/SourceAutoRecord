@@ -201,7 +201,7 @@ int sar_ihud_setpos_CompletionFunc(const char* partial,
     };
 
     // Filter items
-    static auto items = std::vector<std::string>(positions.size());
+    static auto items = std::vector<std::string>();
     items.clear();
     for (auto& pos : positions) {
         if (items.size() == COMMAND_COMPLETION_MAXITEMS) {

@@ -163,7 +163,10 @@ void Session::Ended()
     replayPlayer2->StopPlaying();
     speedrun->Pause();
     speedrun->UnloadRules();
-    listener->Reset();
+
+    if (listener) {
+        listener->Reset();
+    }
 
     this->isRunning = false;
 }

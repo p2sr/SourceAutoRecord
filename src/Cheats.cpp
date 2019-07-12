@@ -134,7 +134,7 @@ void Cheats::Init()
     sar_tas_ss_forceuser.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_hud_pause_timer.UniqueFor(s3);
     sar_speedrun_time_pauses.UniqueFor(s3);
-    sar_timer_time_pauses.UniqueFor(s3);
+    sar_speedrun_smartsplit.UniqueFor(s3);
 
     startbhop.UniqueFor(SourceGame_TheStanleyParable);
     endbhop.UniqueFor(SourceGame_TheStanleyParable);

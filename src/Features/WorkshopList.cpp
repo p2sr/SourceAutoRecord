@@ -60,7 +60,7 @@ int sar_workshop_CompletionFunc(const char* partial,
     }
 
     // Filter items
-    static auto items = std::vector<std::string>(COMMAND_COMPLETION_MAXITEMS);
+    static auto items = std::vector<std::string>();
     items.clear();
     for (auto& map : workshop->maps) {
         if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
