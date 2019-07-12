@@ -29,13 +29,17 @@
 Variable sar_autorecord("sar_autorecord", "0", "Enables automatic demo recording for loading a save.\n");
 Variable sar_autojump("sar_autojump", "0", "Enables automatic jumping on the server.\n");
 Variable sar_jumpboost("sar_jumpboost", "0", 0, "Enables special game movement on the server.\n"
-                                                "0 = Default,\n"
-                                                "1 = Orange Box Engine,\n"
-                                                "2 = Pre-OBE.\n");
+                                              "0 = Default,\n"
+                                              "1 = Orange Box Engine,\n"
+                                              "2 = Pre-OBE.\n");
 Variable sar_aircontrol("sar_aircontrol", "0", 0, "Enables more air-control on the server.\n");
 Variable sar_duckjump("sar_duckjump", "0", "Allows duck-jumping even when fully crouched, similar to prevent_crouch_jump.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
 Variable sar_disable_steam_pause("sar_disable_steam_pause", "0", "Prevents pauses from steam overlay.\n");
+
+Variable sv_laser_cube_autoaim;
+Variable ui_loadingscreen_transition_time;
+Variable hide_gun_when_holding;
 
 // TSP only
 void IN_BhopDown(const CCommand& args) { client->KeyDown(client->in_jump, (args.ArgC() > 1) ? args[1] : nullptr); }
@@ -86,7 +90,7 @@ CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
                     break;
                 }
             }
-       }
+        }
     }
 
     if (Cmd_Shutdown) {
@@ -98,22 +102,6 @@ CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
 
 void Cheats::Init()
 {
-    cl_showpos = Variable("cl_showpos");
-    sv_cheats = Variable("sv_cheats");
-    sv_footsteps = Variable("sv_footsteps");
-    sv_alternateticks = Variable("sv_alternateticks");
-    sv_bonus_challenge = Variable("sv_bonus_challenge");
-    sv_accelerate = Variable("sv_accelerate");
-    sv_airaccelerate = Variable("sv_airaccelerate");
-    sv_friction = Variable("sv_friction");
-    sv_maxspeed = Variable("sv_maxspeed");
-    sv_stopspeed = Variable("sv_stopspeed");
-    sv_maxvelocity = Variable("sv_maxvelocity");
-    sv_edgefriction = Variable("sv_edgefriction");
-    cl_sidespeed = Variable("cl_sidespeed");
-    cl_forwardspeed = Variable("cl_forwardspeed");
-    host_framerate = Variable("host_framerate");
-
     if (sar.game->Is(SourceGame_Portal2Game)) {
         sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
         ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
@@ -140,7 +128,7 @@ void Cheats::Init()
     sar_speedrun_autostart.UniqueFor(s3);
     sar_speedrun_autostop.UniqueFor(s3);
     sar_speedrun_standard.UniqueFor(s3);
-    sar_duckjump.UniqueFor(SourceGame_Portal2Game);
+    sar_duckjump.UniqueFor(SourceGame_Portal2Engine);
     sar_replay_viewmode.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_mimic.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_tas_ss_forceuser.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
@@ -159,7 +147,6 @@ void Cheats::Init()
     sar_speedrun_export_pb.UniqueFor(s3);
     sar_speedrun_import.UniqueFor(s3);
     sar_speedrun_category.UniqueFor(s3);
-    sar_speedrun_categories.UniqueFor(s3);
     sar_speedrun_offset.UniqueFor(s3);
     sar_speedrun_start.UniqueFor(s3);
     sar_speedrun_stop.UniqueFor(s3);

@@ -24,8 +24,8 @@
 #include "Utils.hpp"
 
 Variable cl_showpos;
-Variable ui_loadingscreen_transition_time;
-Variable hide_gun_when_holding;
+Variable cl_sidespeed;
+Variable cl_forwardspeed;
 Variable in_forceuser;
 
 REDECL(Client::HudUpdate);
@@ -303,6 +303,10 @@ bool Client::Init()
 
     offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
     offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
+
+    cl_showpos = Variable("cl_showpos");
+    cl_sidespeed = Variable("cl_sidespeed");
+    cl_forwardspeed = Variable("cl_forwardspeed");
 
     return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }

@@ -5,6 +5,7 @@
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
 #include "Command.hpp"
 #include "Variable.hpp"
@@ -73,7 +74,7 @@ void CommandQueuer::Reset()
 }
 void CommandQueuer::Start()
 {
-    if (!this->frames.empty()) {
+    if (!this->frames.empty() && sv_cheats.GetBool()) {
         std::sort(this->frames.begin(), this->frames.end(), [](const auto& a, const auto& b) {
             return a.framesLeft < b.framesLeft;
         });

@@ -98,7 +98,6 @@ void Portal2::LoadOffsets()
     CheckJumpButton = 37; // CPortalGameMovement
     FullTossMove = 38; // CGameMovement
     mv = 8; // CPortalGameMovement::CheckJumpButton
-    m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
     GameFrame = 4; // CServerGameDLL
     GetAllServerClasses = 10; // CServerGameDLL
     IsRestoring = 24; // CServerGameDLL
@@ -107,7 +106,6 @@ void Portal2::LoadOffsets()
     gpGlobals = 12; // UTIL_PlayerByIndex
     player = 4; // CPortalGameMovement::PlayerMove
     m_MoveType = 226; // CBasePlayer::UpdateStepSound
-    mv_m_vecVelocity = 64; // CPortalGameMovement::PlayerMove
     m_iClassName = 104; // CBaseEntity
     S_m_vecAbsOrigin = 468; // CBaseEntity
     S_m_angAbsRotation = 480; // CBaseEntity
@@ -118,6 +116,8 @@ void Portal2::LoadOffsets()
     m_EntPtrArray = 48; // CServerTools::GetIServerEntity
     ClientCommand = 39; // CVEngineServer
     IsPlayer = 86; // CBasePlayer
+    m_pSurfaceData = 4116; // CGameMovement::CheckJumpButton
+    jumpFactor = 72; // CGameMovement::CheckJumpButton
 
     // client.so
 

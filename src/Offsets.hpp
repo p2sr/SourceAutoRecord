@@ -112,6 +112,7 @@ extern int m_MoveType;
 extern int m_nWaterLevel;
 extern int m_bDucked;
 extern int m_flFriction;
+extern int m_pSurfaceData;
 
 // CPortal_Player
 extern int iNumPortalsPlaced;
@@ -136,10 +137,6 @@ extern int GameFrame;
 extern int Think;
 extern int GetAllServerClasses;
 extern int IsRestoring;
-
-// CMoveData
-extern int m_nOldButtons;
-extern int mv_m_vecVelocity;
 
 // CHud
 extern int GetName;
@@ -171,6 +168,9 @@ extern int ClientCommand;
 
 // CSteam3Client
 extern int OnGameOverlayActivated;
+
+// surfacedata_t
+extern int jumpFactor;
 
 // Others
 extern int tickcount;

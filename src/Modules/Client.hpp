@@ -70,6 +70,6 @@ public:
 extern Client* client;
 
 extern Variable cl_showpos;
-extern Variable ui_loadingscreen_transition_time;
-extern Variable hide_gun_when_holding;
+extern Variable cl_sidespeed;
+extern Variable cl_forwardspeed;
 extern Variable in_forceuser;

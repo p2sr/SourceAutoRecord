@@ -20,6 +20,7 @@
 #include "Interface.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
+#include "Variable.hpp"
 
 Variable sv_cheats;
 Variable sv_footsteps;
@@ -31,11 +32,7 @@ Variable sv_friction;
 Variable sv_maxspeed;
 Variable sv_stopspeed;
 Variable sv_maxvelocity;
-Variable sv_laser_cube_autoaim;
-Variable sv_edgefriction;
-Variable cl_sidespeed;
-Variable cl_forwardspeed;
-Variable host_framerate;
+Variable sv_gravity;
 
 REDECL(Server::CheckJumpButton);
 REDECL(Server::CheckJumpButtonBase);
@@ -88,23 +85,22 @@ int Server::GetSplitScreenPlayerSlot(void* entity)
 DETOUR_T(bool, Server::CheckJumpButton)
 {
     auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
-
-    auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
-    auto m_nOldButtons = reinterpret_cast<int*>((uintptr_t)mv + Offsets::m_nOldButtons);
+    auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
 
     auto cheating = !sv_bonus_challenge.GetBool() || sv_cheats.GetBool();
-    auto autoJump = cheating && sar_autojump.GetBool();
-    auto duckJump = cheating && sar_duckjump.isRegistered && sar_duckjump.GetBool();
-
+    auto autoJump = sar_autojump.GetBool() && cheating;
+    auto duckJump = sar_duckjump.isRegistered && sar_duckjump.GetBool() && cheating;
+    
     if (autoJump) {
         if (!server->jumpedLastTime)
-            *m_nOldButtons &= ~IN_JUMP;
+            mv->m_nOldButtons &= ~IN_JUMP;
     }
 
     server->jumpedLastTime = false;
+    server->savedVerticalVelocity = mv->m_vecVelocity[2];
 
     server->callFromCheckJumpButton = true;
-    auto result = (duckJump && Server::CheckJumpButtonBase)
+    auto result = (duckJump)
         ? Server::CheckJumpButtonBase(thisptr)
         : Server::CheckJumpButton(thisptr);
     server->callFromCheckJumpButton = false;
@@ -125,13 +121,11 @@ DETOUR_T(bool, Server::CheckJumpButton)
 DETOUR(Server::PlayerMove)
 {
     auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
-    auto mv = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::mv);
+    auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
 
     auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
     auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
     auto m_nWaterLevel = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_nWaterLevel);
-
-    auto m_vecVelocity = *reinterpret_cast<Vector*>((uintptr_t)mv + Offsets::mv_m_vecVelocity);
 
     auto stat = stats->Get(server->GetSplitScreenPlayerSlot(player));
 
@@ -149,8 +143,8 @@ DETOUR(Server::PlayerMove)
         && m_MoveType != MOVETYPE_NOCLIP
         && sv_footsteps.GetFloat()
         && !(m_fFlags & (FL_FROZEN | FL_ATCONTROLS))
-        && ((m_fFlags & FL_ONGROUND && m_vecVelocity.Length2D() > 0.0001f) || m_MoveType == MOVETYPE_LADDER)) {
-        stepCounter->Increment(m_fFlags, m_MoveType, m_vecVelocity, m_nWaterLevel);
+        && ((m_fFlags & FL_ONGROUND && mv->m_vecVelocity.Length2D() > 0.0001f) || m_MoveType == MOVETYPE_LADDER)) {
+        stepCounter->Increment(m_fFlags, m_MoveType, mv->m_vecVelocity, m_nWaterLevel);
         ++stat->steps->total;
     }
 
@@ -174,34 +168,51 @@ DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
 // CGameMovement::FinishGravity
 DETOUR(Server::FinishGravity)
 {
-    if (server->callFromCheckJumpButton && sar_jumpboost.GetBool()) {
+    if (server->callFromCheckJumpButton) {
         auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
         auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
 
         auto m_bDucked = *reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked);
 
-        Vector vecForward;
-        Math::AngleVectors(mv->m_vecViewAngles, &vecForward);
-        vecForward.z = 0;
-        Math::VectorNormalize(vecForward);
+        if (sar_duckjump.GetBool()) {
+            auto m_pSurfaceData = *reinterpret_cast<uintptr_t*>((uintptr_t)player + Offsets::m_pSurfaceData);
+            auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
 
-        float flSpeedBoostPerc = (!mv->m_bIsSprinting && !m_bDucked) ? 0.5f : 0.1f;
-        float flSpeedAddition = std::fabs(mv->m_flForwardMove * flSpeedBoostPerc);
-        float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
-        float flNewSpeed = flSpeedAddition + mv->m_vecVelocity.Length2D();
+            auto flGroundFactor = (m_pSurfaceData) ? *reinterpret_cast<float*>(m_pSurfaceData + Offsets::jumpFactor) : 1.0f;
+            auto flMul = std::sqrt(2 * sv_gravity.GetFloat() * GAMEMOVEMENT_JUMP_HEIGHT);
 
-        if (sar_jumpboost.GetInt() == 1) {
-            if (flNewSpeed > flMaxSpeed) {
-                flSpeedAddition -= flNewSpeed - flMaxSpeed;
-            }
-
-            if (mv->m_flForwardMove < 0.0f) {
-                flSpeedAddition *= -1.0f;
+            if (m_bDucked || m_fFlags & FL_DUCKING) {
+                mv->m_vecVelocity[2] = flGroundFactor * flMul;
+            } else {
+                mv->m_vecVelocity[2] = server->savedVerticalVelocity + flGroundFactor * flMul;
             }
         }
 
-        Math::VectorAdd(vecForward * flSpeedAddition, mv->m_vecVelocity, mv->m_vecVelocity);
+        if (sar_jumpboost.GetBool()) {
+            Vector vecForward;
+            Math::AngleVectors(mv->m_vecViewAngles, &vecForward);
+            vecForward.z = 0;
+            Math::VectorNormalize(vecForward);
+
+            float flSpeedBoostPerc = (!mv->m_bIsSprinting && !m_bDucked) ? 0.5f : 0.1f;
+            float flSpeedAddition = std::fabs(mv->m_flForwardMove * flSpeedBoostPerc);
+            float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
+            float flNewSpeed = flSpeedAddition + mv->m_vecVelocity.Length2D();
+
+            if (sar_jumpboost.GetInt() == 1) {
+                if (flNewSpeed > flMaxSpeed) {
+                    flSpeedAddition -= flNewSpeed - flMaxSpeed;
+                }
+
+                if (mv->m_flForwardMove < 0.0f) {
+                    flSpeedAddition *= -1.0f;
+                }
+            }
+
+            Math::VectorAdd(vecForward * flSpeedAddition, mv->m_vecVelocity, mv->m_vecVelocity);
+        }
     }
+
     return Server::FinishGravity(thisptr);
 }
 
@@ -354,6 +365,18 @@ bool Server::Init()
     if (sar.game->Is(SourceGame_Portal2Game)) {
         offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
     }
+
+    sv_cheats = Variable("sv_cheats");
+    sv_footsteps = Variable("sv_footsteps");
+    sv_alternateticks = Variable("sv_alternateticks");
+    sv_bonus_challenge = Variable("sv_bonus_challenge");
+    sv_accelerate = Variable("sv_accelerate");
+    sv_airaccelerate = Variable("sv_airaccelerate");
+    sv_friction = Variable("sv_friction");
+    sv_maxspeed = Variable("sv_maxspeed");
+    sv_stopspeed = Variable("sv_stopspeed");
+    sv_maxvelocity = Variable("sv_maxvelocity");
+    sv_gravity = Variable("sv_gravity");
 
     return this->hasLoaded = this->g_GameMovement && this->g_ServerGameDLL;
 }

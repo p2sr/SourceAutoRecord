@@ -31,6 +31,7 @@ public:
 
 private:
     bool jumpedLastTime = false;
+    float savedVerticalVelocity = 0.0f;
     bool callFromCheckJumpButton = false;
 
 public:
@@ -99,8 +100,4 @@ extern Variable sv_friction;
 extern Variable sv_maxspeed;
 extern Variable sv_stopspeed;
 extern Variable sv_maxvelocity;
-extern Variable sv_laser_cube_autoaim;
-extern Variable sv_edgefriction;
-extern Variable cl_sidespeed;
-extern Variable cl_forwardspeed;
-extern Variable host_framerate;
+extern Variable sv_gravity;

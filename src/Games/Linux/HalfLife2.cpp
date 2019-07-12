@@ -85,9 +85,7 @@ void HalfLife2::LoadOffsets()
     CheckJumpButton = 30; // CGameMovement
     FullTossMove = 31; // CGameMovement
     mv = 8; // CPortalGameMovement::CheckJumpButton
-    m_nOldButtons = 40; // CPortalGameMovement::CheckJumpButton
     player = 4; // CPortalGameMovement::PlayerMove
-    mv_m_vecVelocity = 64; // CPortalGameMovement::PlayerMove
     GameFrame = 5; // CServerGameDLL
     GetAllServerClasses = 11; // CServerGameDLL
     IsRestoring = 25; // CServerGameDLL

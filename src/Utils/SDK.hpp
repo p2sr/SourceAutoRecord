@@ -287,6 +287,8 @@ struct CUserCmd {
     bool hasbeenpredicted; // 60
 };
 
+#define GAMEMOVEMENT_JUMP_HEIGHT 21.0f
+
 struct CMoveData {
     bool m_bFirstRunOfFunctions : 1; // 0
     bool m_bGameCodeMovedPlayer : 1; // 2

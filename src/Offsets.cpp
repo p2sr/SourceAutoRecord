@@ -112,6 +112,7 @@ int m_MoveType;
 int m_nWaterLevel;
 int m_bDucked;
 int m_flFriction;
+int m_pSurfaceData;
 
 // CPortal_Player
 int iNumPortalsPlaced;
@@ -136,10 +137,6 @@ int GameFrame;
 int Think;
 int GetAllServerClasses;
 int IsRestoring;
-
-// CMoveData
-int m_nOldButtons;
-int mv_m_vecVelocity;
 
 // CHud
 int GetName;
@@ -171,6 +168,9 @@ int ClientCommand;
 
 // CSteam3Client
 int OnGameOverlayActivated;
+
+// surfacedata_t
+int jumpFactor;
 
 // Others
 int tickcount;

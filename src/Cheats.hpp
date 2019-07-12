@@ -16,6 +16,10 @@ extern Variable sar_duckjump;
 extern Variable sar_disable_challenge_stats_hud;
 extern Variable sar_disable_steam_pause;
 
+extern Variable sv_laser_cube_autoaim;
+extern Variable ui_loadingscreen_transition_time;
+extern Variable hide_gun_when_holding;
+
 extern Command startbhop;
 extern Command endbhop;
 extern Command sar_anti_anti_cheat;

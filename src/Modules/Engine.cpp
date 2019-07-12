@@ -15,6 +15,9 @@
 #include "Interface.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
+#include "Variable.hpp"
+
+Variable host_framerate;
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::Disconnect2);
@@ -417,6 +420,8 @@ bool Engine::Init()
     Command::Hook("quit", Engine::quit_callback_hook, Engine::quit_callback);
     Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
     Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
+
+    host_framerate = Variable("host_framerate");
 
     return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder;
 }

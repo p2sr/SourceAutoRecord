@@ -7,6 +7,7 @@
 #include "Command.hpp"
 #include "Interface.hpp"
 #include "Utils.hpp"
+#include "Variable.hpp"
 
 #if _WIN32
 #define IServerMessageHandler_VMT_Offset 8
@@ -133,6 +134,8 @@ public:
 };
 
 extern Engine* engine;
+
+extern Variable host_framerate;
 
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
 #define IGNORE_DEMO_PLAYER() if (engine->demoplayer->IsPlaying()) return;
