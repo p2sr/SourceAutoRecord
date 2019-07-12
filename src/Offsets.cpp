@@ -55,6 +55,7 @@ int DrawTextLen;
 
 // CInputSystem
 int StringToButtonCode;
+int SleepUntilInput;
 
 // CInput
 int GetButtonBits;

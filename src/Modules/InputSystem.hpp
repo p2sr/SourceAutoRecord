@@ -22,6 +22,9 @@ public:
 public:
     int GetButton(const char* pString);
 
+    // CInputSystem::SleepUntilInput
+    DECL_DETOUR(SleepUntilInput, int nMaxSleepTimeMS);
+
     bool Init() override;
     void Shutdown() override;
     const char* Name() override { return MODULE("inputsystem"); }

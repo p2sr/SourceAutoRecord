@@ -35,6 +35,7 @@ void Portal2::LoadOffsets()
     GetActiveSplitScreenPlayerSlot = 127; // CEngineClient
     GetSteamAPIContext = 178; // CEngineClient
     StringToButtonCode = 31; // CInputSystem
+    SleepUntilInput = 33; // CInputSystem
     GetRecordingTick = 1; // CDemoRecorder
     SetSignonState = 3; // CDemoRecorder
     StopRecording = 7; // CDemoRecorder

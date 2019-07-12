@@ -15,6 +15,7 @@ extern Variable sar_aircontrol;
 extern Variable sar_duckjump;
 extern Variable sar_disable_challenge_stats_hud;
 extern Variable sar_disable_steam_pause;
+extern Variable sar_disable_no_focus_sleep;
 
 extern Variable sv_laser_cube_autoaim;
 extern Variable ui_loadingscreen_transition_time;
