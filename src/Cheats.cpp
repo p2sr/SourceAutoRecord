@@ -26,12 +26,12 @@
 #include "Game.hpp"
 #include "Offsets.hpp"
 
-Variable sar_autorecord("sar_autorecord", "0", "Enables automatic demo recording for loading a save.\n");
+Variable sar_autorecord("sar_autorecord", "0", "Enables automatic demo recording.\n");
 Variable sar_autojump("sar_autojump", "0", "Enables automatic jumping on the server.\n");
 Variable sar_jumpboost("sar_jumpboost", "0", 0, "Enables special game movement on the server.\n"
-                                              "0 = Default,\n"
-                                              "1 = Orange Box Engine,\n"
-                                              "2 = Pre-OBE.\n");
+                                                "0 = Default,\n"
+                                                "1 = Orange Box Engine,\n"
+                                                "2 = Pre-OBE.\n");
 Variable sar_aircontrol("sar_aircontrol", "0", 0, "Enables more air-control on the server.\n");
 Variable sar_duckjump("sar_duckjump", "0", "Allows duck-jumping even when fully crouched, similar to prevent_crouch_jump.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
