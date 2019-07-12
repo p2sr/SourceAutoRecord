@@ -184,8 +184,7 @@ void Cvars::Unlock()
             // Don't find a way to abuse this, ok?
             sv_bonus_challenge.Unlock(false);
             sv_laser_cube_autoaim.Unlock();
-            ui_loadingscreen_transition_time.Unlock();
-            // Not a real cheat, right?
+            ui_loadingscreen_transition_time.Unlock(false);
             hide_gun_when_holding.Unlock(false);
         }
 
