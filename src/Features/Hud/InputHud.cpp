@@ -10,7 +10,7 @@
 
 #include "Variable.hpp"
 
-Variable sar_ihud("sar_ihud", "0", 0, "Draws keyboard events of client.\n"
+Variable sar_ihud("sar_ihud", "0", 0, "Draws movement inputs of client.\n"
                                       "0 = Default,\n"
                                       "1 = forward;back;moveleft;moveright,\n"
                                       "2 = 1 + duck;jump;use,\n"
@@ -24,8 +24,8 @@ Variable sar_ihud_button_color("sar_ihud_button_color", "0 0 0 233", "RGBA butto
 Variable sar_ihud_font_color("sar_ihud_font_color", "255 255 255 255", "RGBA font color of input HUD.\n", 0);
 Variable sar_ihud_font_index("sar_ihud_font_index", "1", 0, "Font index of input HUD.\n");
 Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD.\n"
-                                                           "Characters are in this order:\n"
-                                                           "forward,\n"                                          
+                                                           "Labels are in this order:\n"
+                                                           "forward,\n"
                                                            "moveleft,\n"
                                                            "back,\n"
                                                            "moveright,\n"
@@ -36,7 +36,7 @@ Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD.
                                                            "attack2,\n"
                                                            "speed,\n"
                                                            "reload.\n"
-                                                           "Keep it empty to disable drawing characters.\n",
+                                                           "Pass an empty string to disable drawing labels completely.\n",
     0);
 Variable sar_ihud_shadow("sar_ihud_shadow", "1", "Draws button shadows of input HUD.\n");
 Variable sar_ihud_shadow_color("sar_ihud_shadow_color", "0 0 0 32", "RGBA button shadow color of input HUD.\n", 0);
@@ -179,6 +179,8 @@ void InputHud::Draw()
     surface->FinishDrawing();
 }
 
+// Completion Functions
+
 int sar_ihud_setpos_CompletionFunc(const char* partial,
     char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
@@ -225,6 +227,51 @@ int sar_ihud_setpos_CompletionFunc(const char* partial,
 
     return count;
 }
+
+int sar_ihud_setlayout_CompletionFunc(const char* partial,
+    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    const char* cmd = "sar_ihud_setlayout ";
+    char* match = (char*)partial;
+    if (std::strstr(partial, cmd) == partial) {
+        match = match + std::strlen(cmd);
+    }
+
+    static auto layouts = std::vector<std::string>{
+        std::string("WASDCSELRSR"),
+        std::string("ZQSDCSELRSR"),
+        std::string("wasdcselrsr"),
+        std::string("zqsdcselrsr")
+    };
+
+    // Filter items
+    static auto items = std::vector<std::string>();
+    items.clear();
+    for (auto& layout : layouts) {
+        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+            break;
+        }
+
+        if (std::strlen(match) != std::strlen(cmd)) {
+            if (std::strstr(layout.c_str(), match)) {
+                items.push_back(layout);
+            }
+        } else {
+            items.push_back(layout);
+        }
+    }
+
+    // Copy items into list buffer
+    auto count = 0;
+    for (auto& item : items) {
+        std::strcpy(commands[count++], (std::string(cmd) + item).c_str());
+    }
+
+    return count;
+}
+
+// Commands
+
 CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of input HUD.\n"
                                           "Usage: sar_ihud_setpos <top, center or bottom> <left, center or right>\n",
     0,
@@ -270,4 +317,22 @@ CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of in
 
     sar_ihud_x.SetValue(xPos);
     sar_ihud_y.SetValue(yPos);
+}
+
+CON_COMMAND_F_COMPLETION(sar_ihud_setlayout, "Suggests keyboard layouts for sar_ihud_layout.\n", 0, sar_ihud_setlayout_CompletionFunc)
+{
+    if (args.ArgC() != 2) {
+        return console->Print(sar_ihud_setlayout.ThisPtr()->m_pszHelpString);
+    }
+
+    auto layout = args[1];
+    auto length = std::strlen(layout);
+
+    if (length != 11 && length != 0) {
+        return console->Print("Invalid layout!\n"
+                              "Labels are in this order: forward, moveleft, back, moveright, duck, jump, use, attack, attack2, speed, reload.\n"
+                              "Pass an empty string to disable drawing labels completely.\n");
+    }
+
+    sar_ihud_layout.SetValue(layout);
 }
