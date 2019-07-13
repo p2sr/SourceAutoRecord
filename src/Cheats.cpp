@@ -119,7 +119,7 @@ void Cheats::Init()
     sar_aircontrol.UniqueFor(SourceGame_Portal2Engine);
     sar_hud_portals.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
     sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
-    sar_disable_steam_pause.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_disable_steam_pause.UniqueFor(SourceGame_Portal2Game);
     sar_debug_listener.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_sr_hud.UniqueFor(s3);
     sar_sr_hud_x.UniqueFor(s3);
