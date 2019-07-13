@@ -11,13 +11,17 @@
 
 struct Vector {
     float x, y, z;
-    inline float Length()
+    inline float Length() const
     {
         return std::sqrt(x * x + y * y + z * z);
     }
-    inline float Length2D()
+    inline float Length2D() const
     {
         return std::sqrt(x * x + y * y);
+    }
+    inline float Dot(const Vector& vOther) const
+    {
+        return Vector::DotProduct(*this, vOther);
     }
     inline Vector operator*(float fl)
     {
@@ -42,6 +46,10 @@ struct Vector {
     inline float operator[](int i) const
     {
         return ((float*)this)[i];
+    }
+    static inline float DotProduct(const Vector& a, const Vector& b) 
+    {
+        return a.x*b.x + a.y*b.y + a.z*b.z; 
     }
 };
 

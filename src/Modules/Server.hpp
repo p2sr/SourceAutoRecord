@@ -49,6 +49,7 @@ public:
 
     void* GetPlayer(int index);
     bool IsPlayer(void* entity);
+    bool AllowsMovementChanges();
     int GetSplitScreenPlayerSlot(void* entity);
 
 public:
