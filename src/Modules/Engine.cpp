@@ -419,7 +419,10 @@ bool Engine::Init()
     Command::Hook("exit", Engine::exit_callback_hook, Engine::exit_callback);
     Command::Hook("quit", Engine::quit_callback_hook, Engine::quit_callback);
     Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
-    Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
+
+    if (sar.game->Is(SourceGame_Portal2Game)) {
+        Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
+    }
 
     host_framerate = Variable("host_framerate");
 
