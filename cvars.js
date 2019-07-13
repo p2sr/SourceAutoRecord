@@ -1,5 +1,15 @@
 const fs = require('fs');
 
+class Cvar {
+    constructor(name, value, games, description) {
+        this.name = name;
+        this.value = value;
+        games.pop();
+        this.games = games;
+        this.description = description;
+    }
+};
+
 fs.readFile(process.argv[2] + '/sar.cvars', 'utf-8', (err, data) => {
     if (err) {
         return console.error(err);
@@ -7,28 +17,34 @@ fs.readFile(process.argv[2] + '/sar.cvars', 'utf-8', (err, data) => {
 
     data = '[end_of_cvar]' + data;
 
-    const body = data
-        .replace(/\n\[cvar_data\]/g, '<br>[cvar_data\]')
-        .replace(/\[end_of_cvar\]|\[cvar_data\]/g, '|')
-        .replace(/\n(?!\|)/g, '<br>')
-        .slice(0, -1)
-        .split('\n')
-        .sort((a, b) => {
-            a = a.substr(1);
-            b = b.substr(1);
-            if (a.startsWith('-') || a.startsWith('+')) {
-                a = a.substring(1);
-            }
-            if (b.startsWith('-') || b.startsWith('+')) {
-                b = b.substring(1);
-            }
-            return a.localeCompare(b);
-        })
-        .join('\n');
+    let cvars = [];
+    for (let cvar of data.split('[end_of_cvar]')) {
+        let data = cvar.split('[cvar_data]');
+        if (data.length == 4) {
+            cvars.push(new Cvar(data[0], data[1], data[2].split('\n'), data[3]));
+        }
+    }
+
+    const compareCvar = (a, b) => {
+        if (a.startsWith('-') || a.startsWith('+')) {
+            a = a.substring(1);
+        }
+        if (b.startsWith('-') || b.startsWith('+')) {
+            b = b.substring(1);
+        }
+        return a.localeCompare(b);
+    };
+
+    let body = '';
+    for (let cvar of cvars.sort((a, b) => compareCvar(a.name, b.name))) {
+        body += '\n|';
+        body += (cvar.games.length > 0) ? `<i title="${cvar.games.join('&#10;')}">${cvar.name}</i>` : cvar.name;
+        body += `|${cvar.value}|${cvar.description.replace(/\n/g, '<br>')}|`;
+    }
 
     fs.writeFileSync('doc/cvars.md',
 `# SAR: Cvars
 
-|Name|Default|Game|Description|
-|---|---|---|---|${body}`);
+|Name|Default|Description|
+|---|---|---|${body}`);
 });
