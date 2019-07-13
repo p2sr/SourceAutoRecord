@@ -22,6 +22,11 @@ void TheStanleyParable::LoadOffsets()
     interval_per_tick = 73; // CClientState::ProcessTick
     HostState_OnClientConnected = 695; // CClientState::SetSignonStatey
 
+    // server.dll
+
+    m_pSurfaceData = 4096; // CGameMovement::CheckJumpButton
+    jumpFactor = 72; // CGameMovement::CheckJumpButton
+
     // client.dll
 
     JoyStickApplyMovement = 60; // CInput

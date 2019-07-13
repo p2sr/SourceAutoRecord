@@ -30,6 +30,7 @@ void TheStanleyParable::LoadOffsets()
     // server.so
 
     NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
+    m_pSurfaceData = 4120; // CGameMovement::CheckJumpButton
 
     // client.so
 
