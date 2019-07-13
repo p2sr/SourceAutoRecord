@@ -129,7 +129,7 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
         }
     }
 
-    if (sar_mimic.GetBool()) {
+    if (sar_mimic.GetBool() && (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool())) {
         imitator->Modify(cmd);
     }
 

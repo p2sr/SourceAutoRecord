@@ -168,7 +168,7 @@ DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
 // CGameMovement::FinishGravity
 DETOUR(Server::FinishGravity)
 {
-    if (server->callFromCheckJumpButton) {
+    if (server->callFromCheckJumpButton && (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool())) {
         auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
         auto mv = *reinterpret_cast<CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
 
@@ -219,7 +219,7 @@ DETOUR(Server::FinishGravity)
 // CGameMovement::AirMove
 DETOUR_B(Server::AirMove)
 {
-    if (sar_aircontrol.GetInt() >= 2) {
+    if (sar_aircontrol.GetInt() >= 2 && (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool())) {
         return Server::AirMoveBase(thisptr);
     }
 
@@ -233,7 +233,7 @@ DETOUR_MID_MH(Server::AirMove_Mid)
         pushfd
     }
 
-    if ((!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()) && sar_aircontrol.GetBool())
+    if (sar_aircontrol.GetBool() && (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool()))
     {
         __asm {
             popfd
