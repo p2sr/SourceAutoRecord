@@ -39,10 +39,10 @@ void Listener::Init()
         }
     }
 
-    if (tier1->hasLoaded && tier1->InstallGlobalChangeCallback && !this->installedChangeCallback) {
+    /*if (tier1->hasLoaded && tier1->InstallGlobalChangeCallback && !this->installedChangeCallback) {
         tier1->InstallGlobalChangeCallback(tier1->g_pCVar->ThisPtr(), (FnChangeCallback_t)Listener::OnCheatsChanged);
         installedChangeCallback = true;
-    }
+    }*/
 }
 void Listener::Shutdown()
 {
@@ -51,10 +51,10 @@ void Listener::Shutdown()
         this->m_bRegisteredForEvents = false;
     }
 
-    if (tier1->hasLoaded && tier1->RemoveGlobalChangeCallback && this->installedChangeCallback) {
+    /*if (tier1->hasLoaded && tier1->RemoveGlobalChangeCallback && this->installedChangeCallback) {
         tier1->RemoveGlobalChangeCallback(tier1->g_pCVar->ThisPtr(), (FnChangeCallback_t)Listener::OnCheatsChanged);
         this->installedChangeCallback = false;
-    }
+    }*/
 }
 Listener::~Listener()
 {
