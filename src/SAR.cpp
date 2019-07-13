@@ -162,7 +162,7 @@ CON_COMMAND(sar_session, "Prints the current tick of the server since it has loa
 }
 CON_COMMAND(sar_about, "Prints info about SAR plugin.\n")
 {
-    console->Print("SourceAutoRecord tells the engine to keep recording when loading a save.\n");
+    console->Print("SourceAutoRecord is a speedrun plugin for Source Engine games.\n");
     console->Print("More information at: %s\n", sar.Website());
     console->Print("Game: %s\n", sar.game->Version());
     console->Print("Version: %s\n", sar.Version());
