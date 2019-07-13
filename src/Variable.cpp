@@ -141,7 +141,8 @@ void Variable::Unlock(bool asCheat)
 void Variable::Lock()
 {
     if (this->ptr) {
-        this->ptr->m_nFlags = this->originalFlags;
+        this->SetFlags(this->originalFlags);
+        this->SetValue(this->ptr->m_pszDefaultValue);
     }
 }
 void Variable::DisableChange()
