@@ -77,7 +77,7 @@ void SpeedrunTimer::Start(const int* engineTicks)
     this->visitedMaps.push_back(this->map);
 
     this->result.get()->Reset();
-    this->result.get()->NewSplit(this->total, this->map);
+    this->result.get()->NewSplit(this->total, this->GetCurrentMap());
 }
 void SpeedrunTimer::Pause()
 {
@@ -103,12 +103,10 @@ void SpeedrunTimer::PreUpdate(const int* engineTicks, const char* engineMap)
 {
     if (this->state != TimerState::Running) {
         if (std::strncmp(this->map, engineMap, sizeof(this->map))) {
-            auto menu = std::strlen(engineMap) == 0;
-
-            std::strncpy(this->map, (menu) ? "menu" : engineMap, sizeof(this->map));
+            std::strncpy(this->map, engineMap, sizeof(this->map));
 
             auto visited = false;
-            if (this->state == TimerState::Paused && sar_speedrun_smartsplit.GetBool() && !menu) {
+            if (this->state == TimerState::Paused && sar_speedrun_smartsplit.GetBool() && std::strlen(this->map) != 0) {
                 for (auto& map : this->visitedMaps) {
                     if (!map.compare(this->map)) {
                         visited = true;
@@ -120,7 +118,7 @@ void SpeedrunTimer::PreUpdate(const int* engineTicks, const char* engineMap)
                 }
             }
 
-            console->DevMsg("Speedrun map change: %s\n", this->map);
+            console->DevMsg("Speedrun map change: %s\n", this->GetCurrentMap());
             if (this->state == TimerState::Paused && !visited) {
                 this->Split(visited);
             }
@@ -199,8 +197,8 @@ void SpeedrunTimer::Split(bool visited)
 {
     if (this->IsActive()) {
         this->StatusReport("Speedrun split!\n");
-        this->result.get()->Split(this->total, this->map);
-        this->pb.get()->UpdateSplit(this->map);
+        this->result.get()->Split(this->total, this->GetCurrentMap());
+        this->pb.get()->UpdateSplit(this->GetCurrentMap());
         if (!visited) {
             this->pubInterface.get()->SetAction(TimerAction::Split);
         }
@@ -218,9 +216,9 @@ int SpeedrunTimer::GetTotal()
 {
     return this->total;
 }
-char* SpeedrunTimer::GetCurrentMap()
+const char* SpeedrunTimer::GetCurrentMap()
 {
-    return this->map;
+    return (std::strlen(this->map) != 0) ? this->map : "menu";
 }
 void SpeedrunTimer::LoadRules(Game* game)
 {

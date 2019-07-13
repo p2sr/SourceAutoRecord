@@ -33,7 +33,7 @@ void TimerResult::AddSegment(int ticks)
 {
     this->curSplit->segments.push_back(TimerSegment{ ticks });
 }
-void TimerResult::UpdateSplit(char* map)
+void TimerResult::UpdateSplit(const char* map)
 {
     for (const auto& split : this->splits) {
         if (!std::strcmp(map, split->map)) {

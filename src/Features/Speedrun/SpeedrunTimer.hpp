@@ -60,7 +60,7 @@ public:
 
     int GetSession();
     int GetTotal();
-    char* GetCurrentMap();
+    const char* GetCurrentMap();
 
     void SetIntervalPerTick(const float* ipt);
     const float GetIntervalPerTick();

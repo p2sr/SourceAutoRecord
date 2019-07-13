@@ -15,7 +15,7 @@ public:
     void EndSplit(const int finished);
     void Split(const int ticks, const char* map);
     void AddSegment(int ticks);
-    void UpdateSplit(char* map);
+    void UpdateSplit(const char* map);
     void Reset();
     ~TimerResult();
 };
