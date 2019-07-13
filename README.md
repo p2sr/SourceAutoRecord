@@ -1,15 +1,16 @@
 [![Build Status](https://travis-ci.org/NeKzor/SourceAutoRecord.svg?branch=master)](https://travis-ci.org/NeKzor/SourceAutoRecord)
-[![Build Version](https://img.shields.io/badge/version-v1.9-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/3)
+[![Build Version](https://img.shields.io/badge/version-v1.10-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/3)
 [![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
 
 ## Features
 
-- Automatic Demo Recorder
-- Automatic Binding
-- Demo Parser
-- Session Timing
-- HUDs
-- A lot of cheats
+- Automatic demo recording
+- Accurate session timing
+- Speedrun timer with predefined rule system
+- Tools for segmented and tool-assisted speedruns
+- Movement mods like ABH, aircontrol etc.
+- Useful HUDs
+- Lots of other cheats
 
 ## Support
 
@@ -33,6 +34,7 @@ Game|Windows|Linux
 - [Console Commands & Variables](doc/cvars.md)
 
 ## Inspired By
+
 - [SourceDemoRender](https://github.com/crashfort/SourceDemoRender)
 - [SourcePauseTool](https://github.com/YaLTeR/SourcePauseTool)
 - [SourceSplit](https://github.com/fatalis/SourceSplit)
