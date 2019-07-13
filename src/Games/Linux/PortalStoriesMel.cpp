@@ -8,7 +8,7 @@ PortalStoriesMel::PortalStoriesMel()
 }
 const char* PortalStoriesMel::Version()
 {
-    return "Portal Stories: Mel (7054)";
+    return "Portal Stories: Mel (5723)";
 }
 const char* PortalStoriesMel::ModDir()
 {

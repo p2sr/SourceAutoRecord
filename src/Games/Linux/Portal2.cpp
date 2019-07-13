@@ -162,7 +162,7 @@ void Portal2::LoadOffsets()
 }
 const char* Portal2::Version()
 {
-    return "Portal 2 (7054)";
+    return "Portal 2 (7293)";
 }
 const float Portal2::Tickrate()
 {
