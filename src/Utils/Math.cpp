@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <float.h>
+#include <random>
 
 #include "SDK.hpp"
 
@@ -63,4 +64,20 @@ void Math::AngleVectors(const QAngle& angles, Vector* forward, Vector* right, Ve
         up->y = cr * sp * sy + -sr * cy;
         up->z = cr * cp;
     }
+}
+float Math::RandomNumber(const float& min, const float& max)
+{
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<float> dist_pitch(min, std::nextafter(max, FLT_MAX));
+
+    return dist_pitch(mt);
+}
+int Math::RandomNumber(const int& min, const int& max)
+{
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_int_distribution<int> dist_pitch(min, max);
+
+    return dist_pitch(mt);
 }

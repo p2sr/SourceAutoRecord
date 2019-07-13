@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstring>
+#include <random>
 
 #include "Features/OffsetFinder.hpp"
 

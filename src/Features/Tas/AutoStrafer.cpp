@@ -107,17 +107,19 @@ float AutoStrafer::GetStrafeAngle(const StrafeState* strafe, void* pPlayer, cons
     }
 
     // Getting M
-    float F = pMove->m_flForwardMove / cl_forwardspeed.GetFloat();
-    float S = pMove->m_flSideMove / cl_sidespeed.GetFloat();
+    float maxSpeed = *reinterpret_cast<float*>((uintptr_t)pPlayer + Offsets::m_flMaxspeed);
+
+    float forwardMove = pMove->m_flForwardMove;
+    float sideMove = pMove->m_flSideMove;
 
     auto isCrouched = *reinterpret_cast<bool*>((uintptr_t)pPlayer + Offsets::m_bDucked);
-
     float duckMultiplier = (grounded && isCrouched) ? 1.0f / 3.0f : 1.0f;
-    float stateLen = sqrt(F * F + S * S);
-    float forwardMove = pMove->m_flForwardMove / stateLen * duckMultiplier;
-    float sideMove = pMove->m_flSideMove / stateLen * duckMultiplier;
-    float maxSpeed = sv_maxspeed.GetFloat();
-    float M = std::fminf(maxSpeed, sqrt(forwardMove * forwardMove + sideMove * sideMove));
+
+    float stateLen = sqrt(forwardMove * forwardMove + sideMove * sideMove);
+    float F = forwardMove * maxSpeed * duckMultiplier / stateLen;
+    float S = sideMove * maxSpeed * duckMultiplier / stateLen;
+
+    float M = std::fminf(maxSpeed, sqrt(F * F + S * S));
 
     // Getting other stuff
     float A = (grounded) ? sv_accelerate.GetFloat() : sv_airaccelerate.GetFloat() / 2;

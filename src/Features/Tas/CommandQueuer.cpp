@@ -1,6 +1,7 @@
 #include "CommandQueuer.hpp"
 
 #include <algorithm>
+#include <array>
 #include <string>
 
 #include "Modules/Console.hpp"
@@ -21,6 +22,9 @@ CommandQueuer::CommandQueuer()
     , baseIndex(0)
     , curSplitScreen(0)
     , curDelay(0)
+    , numberRegex("([-+]?\\d*(\\d|(\\.\\d))\\d*([eE]([+-]?\\d+))?)")
+    , floatRegex("\\[" + numberRegex + ":" + numberRegex + "\\]")
+    , intRegex("\\{" + numberRegex + ":" + numberRegex + "\\}")
 {
     this->hasLoaded = true;
 }
@@ -85,6 +89,21 @@ void CommandQueuer::DelayQueueBy(int frames)
 {
     this->curDelay = frames;
 }
+void CommandQueuer::RandomRegex(std::string& input)
+{
+    for (std::sregex_iterator it = std::sregex_iterator(input.begin(), input.end(), this->floatRegex); it != std::sregex_iterator(); ++it) {
+        std::smatch m = *it;
+        float rand = Math::RandomNumber(std::stof(m.str(1)), std::stof(m.str(6)));
+        input = std::regex_replace(input, this->floatRegex, std::to_string(rand), std::regex_constants::format_first_only);
+    }
+
+
+    for (std::sregex_iterator it = std::sregex_iterator(input.begin(), input.end(), this->intRegex); it != std::sregex_iterator(); ++it) {
+        std::smatch m = *it;
+        int rand = Math::RandomNumber(std::stoi(m.str(1)), std::stoi(m.str(6)));
+        input = std::regex_replace(input, this->intRegex, std::to_string(rand), std::regex_constants::format_first_only);
+    }
+}
 
 // Commands
 
@@ -98,7 +117,14 @@ CON_COMMAND(sar_tas_frame_at,
         return console->Print(sar_tas_frame_at.ThisPtr()->m_pszHelpString);
     }
 
-    cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]));
+    std::array<std::string, 2> tab_args = { args[1], args[2] };
+    for (int i = 0; i < 2; i++) {
+        if (tab_args[i][0] == '[' || tab_args[i][0] == '{' || i == 1) {
+            cmdQueuer->RandomRegex(tab_args[i]);
+        }
+    }
+
+    cmdQueuer->AddFrame(std::atoi(tab_args[0].c_str()), tab_args[1]);
 }
 CON_COMMAND(sar_tas_frames_at,
     "Adds command frame multiple times to the queue at specified frame.\n"
@@ -110,7 +136,14 @@ CON_COMMAND(sar_tas_frames_at,
         return console->Print(sar_tas_frames_at.ThisPtr()->m_pszHelpString);
     }
 
-    cmdQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]));
+    std::array<std::string, 4> tab_args = { args[1], args[2], args[3], args[4] };
+    for (int i = 0; i < 4; i++) {
+        if (tab_args[i][0] == '[' || tab_args[i][0] == '{' || i == 3) {
+            cmdQueuer->RandomRegex(tab_args[i]);
+        }
+    }
+
+    cmdQueuer->AddFrames(std::atoi(tab_args[0].c_str()), std::atoi(tab_args[1].c_str()), std::atoi(tab_args[2].c_str()), tab_args[3]);
 }
 CON_COMMAND(sar_tas_frame_next,
     "Adds command frame to the queue after waiting for specified amount of frames.\n"
@@ -135,7 +168,14 @@ CON_COMMAND(sar_tas_frame_after,
         return console->Print(sar_tas_frame_after.ThisPtr()->m_pszHelpString);
     }
 
-    cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[2]), true);
+    std::array<std::string, 2> tab_args = { args[1], args[2] };
+    for (int i = 0; i < 2; i++) {
+        if (tab_args[i][0] == '[' || tab_args[i][0] == '{' || i == 1) {
+            cmdQueuer->RandomRegex(tab_args[i]);
+        }
+    }
+
+    cmdQueuer->AddFrame(std::atoi(tab_args[0].c_str()), tab_args[1], true);
 }
 CON_COMMAND(sar_tas_frames_after,
     "Adds command frame multiple times to the queue after waiting for specified amount of frames.\n"
@@ -147,7 +187,14 @@ CON_COMMAND(sar_tas_frames_after,
         return console->Print(sar_tas_frames_after.ThisPtr()->m_pszHelpString);
     }
 
-    cmdQueuer->AddFrames(std::atoi(args[1]), std::atoi(args[2]), std::atoi(args[3]), std::string(args[4]), true);
+    std::array<std::string, 4> tab_args = { args[1], args[2], args[3], args[4] };
+    for (int i = 0; i < 4; i++) {
+        if (tab_args[i][0] == '[' || tab_args[i][0] == '{' || i == 3) {
+            cmdQueuer->RandomRegex(tab_args[i]);
+        }
+    }
+
+    cmdQueuer->AddFrames(std::atoi(tab_args[0].c_str()), std::atoi(tab_args[1].c_str()), std::atoi(tab_args[2].c_str()), tab_args[3], true);
 }
 CON_COMMAND(sar_tas_frame_offset,
     "sar_tas_frame_after rely on the last sar_tas_frame_offset.\n"

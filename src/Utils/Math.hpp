@@ -1,5 +1,6 @@
 #pragma once
 #include "SDK.hpp"
+#include <random>
 
 #define M_PI 3.14159265358979323846
 #define M_PI_F ((float)(M_PI))
@@ -16,6 +17,8 @@ void AngleVectors(const QAngle& angles, Vector* forward);
 void AngleVectors(const QAngle& angles, Vector* forward, Vector* right, Vector* up);
 void VectorScale(Vector const& src, float b, Vector& dst);
 void VectorCopy(const Vector& src, Vector& dst);
+float RandomNumber(const float& min, const float& max);
+int RandomNumber(const int& min, const int& max);
 }
 
 inline void Math::SinCos(float radians, float* sine, float* cosine)
