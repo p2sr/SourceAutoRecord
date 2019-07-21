@@ -136,6 +136,7 @@ public:
 extern Engine* engine;
 
 extern Variable host_framerate;
+extern Variable net_showmsg;
 
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
 #define IGNORE_DEMO_PLAYER() if (engine->demoplayer->IsPlaying()) return;

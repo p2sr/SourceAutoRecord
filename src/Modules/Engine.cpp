@@ -18,6 +18,7 @@
 #include "Variable.hpp"
 
 Variable host_framerate;
+Variable net_showmsg;
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::Disconnect2);
@@ -425,6 +426,7 @@ bool Engine::Init()
     }
 
     host_framerate = Variable("host_framerate");
+    net_showmsg = Variable("net_showmsg");
 
     return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder;
 }
