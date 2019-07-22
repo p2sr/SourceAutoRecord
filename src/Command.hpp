@@ -77,3 +77,23 @@ public:
     static void name##_callback_hook(const CCommand& args)
 #define DETOUR_COMMAND(name) \
     void name##_callback_hook(const CCommand& args)
+
+#define DECL_COMMAND_COMPLETION(command)                \
+    DECL_DECLARE_AUTOCOMPLETION_FUNCTION(command)       \
+    {                                                   \
+        const char* cmd = #command " ";                \
+        char* match = (char*)partial;                   \
+        if (std::strstr(partial, cmd) == partial) {     \
+            match = match + std::strlen(cmd);           \
+        }                                               \
+        static auto items = std::vector<std::string>(); \
+        items.clear();
+// clang-format off
+#define FINISH_COMMAND_COMPLETION(command)                                 \
+    }                                                                      \
+    auto count = 0;                                                        \
+    for (auto& item : items) {                                             \
+        std::strcpy(commands[count++], (std::string(cmd) + item).c_str()); \
+    }                                                                      \
+    return count;
+// clang-format on
