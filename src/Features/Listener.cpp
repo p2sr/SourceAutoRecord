@@ -67,7 +67,7 @@ void Listener::FireGameEvent(IGameEvent* ev)
     }
 
     if (sar_debug_listener.GetBool()) {
-        console->Print("[%i] Event fired: %s\n", engine->GetSessionTick(), ev->GetName());
+        console->Print("[%i] Event fired: %s\n", session->GetTick(), ev->GetName());
         if (engine->ConPrintEvent) {
 #ifdef _WIN32
             engine->ConPrintEvent(ev);

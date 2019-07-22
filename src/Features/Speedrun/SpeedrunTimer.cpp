@@ -59,10 +59,10 @@ bool SpeedrunTimer::IsActive()
     return this->state == TimerState::Running
         || this->state == TimerState::Paused;
 }
-void SpeedrunTimer::Start(const int* engineTicks)
+void SpeedrunTimer::Start(const int engineTicks)
 {
     this->StatusReport("Speedrun started!\n");
-    this->base = *engineTicks;
+    this->base = engineTicks;
 
     if (this->IsActive()) {
         this->pubInterface.get()->SetAction(TimerAction::Restart);
@@ -89,17 +89,17 @@ void SpeedrunTimer::Pause()
         this->result.get()->AddSegment(this->session + this->pause);
     }
 }
-void SpeedrunTimer::Resume(const int* engineTicks)
+void SpeedrunTimer::Resume(const int engineTicks)
 {
     if (this->state == TimerState::Paused) {
         this->StatusReport("Speedrun resumed!\n");
         this->pubInterface.get()->SetAction(TimerAction::Resume);
         this->state = TimerState::Running;
-        this->base = *engineTicks;
+        this->base = engineTicks;
         this->pause = 0;
     }
 }
-void SpeedrunTimer::PreUpdate(const int* engineTicks, const char* engineMap)
+void SpeedrunTimer::PreUpdate(const int engineTicks, const char* engineMap)
 {
     if (this->state != TimerState::Running) {
         if (std::strncmp(this->map, engineMap, sizeof(this->map))) {
@@ -126,15 +126,15 @@ void SpeedrunTimer::PreUpdate(const int* engineTicks, const char* engineMap)
         }
     }
 }
-void SpeedrunTimer::PostUpdate(const int* engineTicks, const char* engineMap)
+void SpeedrunTimer::PostUpdate(const int engineTicks, const char* engineMap)
 {
     if (this->state == TimerState::Running) {
-        this->session = *engineTicks - this->base;
+        this->session = engineTicks - this->base;
         this->total = this->prevTotal + this->session + this->pause;
         this->pubInterface.get()->Update(this);
     }
 }
-void SpeedrunTimer::CheckRules(const int* engineTicks)
+void SpeedrunTimer::CheckRules(const int engineTicks)
 {
     auto action = TimerAction::DoNothing;
     TimerRule* source = nullptr;
@@ -472,7 +472,7 @@ int sar_category_CompletionFunc(const char* partial,
 
 CON_COMMAND(sar_speedrun_start, "Starts speedrun timer manually.\n")
 {
-    speedrun->Start(engine->tickcount);
+    speedrun->Start(engine->GetTick());
 }
 CON_COMMAND(sar_speedrun_stop, "Stops speedrun timer manually.\n")
 {
@@ -488,7 +488,7 @@ CON_COMMAND(sar_speedrun_pause, "Pauses speedrun timer manually.\n")
 }
 CON_COMMAND(sar_speedrun_resume, "Resumes speedrun timer manually.\n")
 {
-    speedrun->Resume(engine->tickcount);
+    speedrun->Resume(engine->GetTick());
 }
 CON_COMMAND(sar_speedrun_reset, "Resets speedrun timer.\n")
 {

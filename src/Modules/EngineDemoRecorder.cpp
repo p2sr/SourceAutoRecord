@@ -87,6 +87,8 @@ bool EngineDemoRecorder::Init()
         this->m_szDemoBaseName = reinterpret_cast<char*>((uintptr_t)demorecorder + Offsets::m_szDemoBaseName);
         this->m_nDemoNumber = reinterpret_cast<int*>((uintptr_t)demorecorder + Offsets::m_nDemoNumber);
         this->m_bRecording = reinterpret_cast<bool*>((uintptr_t)demorecorder + Offsets::m_bRecording);
+
+        engine->net_time = Memory::Deref<double*>((uintptr_t)this->GetRecordingTick + Offsets::net_time);
     }
 
     Command::Hook("stop", EngineDemoRecorder::stop_callback_hook, EngineDemoRecorder::stop_callback);

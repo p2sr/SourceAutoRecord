@@ -29,6 +29,11 @@ Session::Session()
 {
     this->hasLoaded = true;
 }
+int Session::GetTick()
+{
+    auto result = engine->GetTick() - this->baseTick;
+    return (result >= 0) ? result : 0;
+}
 void Session::Rebase(const int from)
 {
     this->baseTick = from;
@@ -41,12 +46,12 @@ void Session::Started(bool menu)
 
     if (menu) {
         console->Print("Session started! (menu)\n");
-        this->Rebase(*engine->tickcount);
+        this->Rebase(engine->GetTick());
 
         if (sar_speedrun_autostop.isRegistered && sar_speedrun_autostop.GetBool()) {
             speedrun->Stop(false);
         } else {
-            speedrun->Resume(engine->tickcount);
+            speedrun->Resume(engine->GetTick());
         }
 
         this->isRunning = true;
@@ -61,9 +66,11 @@ void Session::Start()
         return;
     }
 
-    this->Rebase(*engine->tickcount);
-    timer->Rebase(*engine->tickcount);
-    speedrun->Resume(engine->tickcount);
+    auto tick = engine->GetTick();
+
+    this->Rebase(tick);
+    timer->Rebase(tick);
+    speedrun->Resume(tick);
 
     if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
         if (engine->demorecorder->isRecordingDemo) {
@@ -110,7 +117,7 @@ void Session::Start()
     }
 
     if (sar_speedrun_autostart.isRegistered && sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
-        speedrun->Start(engine->tickcount);
+        speedrun->Start(engine->GetTick());
     }
 
     stepCounter->ResetTimer();
@@ -125,7 +132,7 @@ void Session::Ended()
         return;
     }
 
-    auto tick = engine->GetSessionTick();
+    auto tick = this->GetTick();
 
     if (tick != 0) {
         console->Print("Session: %i (%.3f)\n", tick, engine->ToTime(tick));
@@ -139,10 +146,10 @@ void Session::Ended()
 
     if (timer->isRunning) {
         if (sar_timer_always_running.GetBool()) {
-            timer->Save(*engine->tickcount);
+            timer->Save(engine->GetTick());
             console->Print("Timer paused: %i (%.3f)!\n", timer->totalTicks, engine->ToTime(timer->totalTicks));
         } else {
-            timer->Stop(*engine->tickcount);
+            timer->Stop(engine->GetTick());
             console->Print("Timer stopped!\n");
         }
     }

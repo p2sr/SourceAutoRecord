@@ -32,6 +32,7 @@ void HalfLife2::LoadOffsets()
     cl = 6; // CEngineClient::ServerCmdKeyValues
     StringToButtonCode = 29; // CInputSystem
     GetRecordingTick = 1; // CDemoRecorder
+    net_time = 19; // CDemoRecorder::GetRecordingTick
     SetSignonState = 3; // CDemoRecorder
     StopRecording = 7; // CDemoRecorder
     m_szDemoBaseName = 1348; // CDemoRecorder::StartupDemoFile

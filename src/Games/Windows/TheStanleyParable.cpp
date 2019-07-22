@@ -21,6 +21,7 @@ void TheStanleyParable::LoadOffsets()
     tickcount = 103; // CClientState::ProcessTick
     interval_per_tick = 73; // CClientState::ProcessTick
     HostState_OnClientConnected = 695; // CClientState::SetSignonStatey
+    net_time = 21; // CDemoRecorder::GetRecordingTick (TODO)
 
     // server.dll
 

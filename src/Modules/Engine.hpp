@@ -32,7 +32,7 @@ public:
     using _RemoveListener = bool(__func*)(void* thisptr, IGameEventListener2* listener);
     using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
     using _AddText = void(__func*)(void* thisptr, const char* pText, int nTickDelay);
-    using _ClientCommand = int(*)(void* thisptr, void* pEdict, const char* szFmt, ...);
+    using _ClientCommand = int (*)(void* thisptr, void* pEdict, const char* szFmt, ...);
     using _GetLocalClient = int (*)(int index);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
@@ -67,6 +67,7 @@ public:
     EngineDemoRecorder* demorecorder = nullptr;
 
     int* tickcount = nullptr;
+    double* net_time = nullptr;
     float* interval_per_tick = nullptr;
     char* m_szLevelName = nullptr;
     bool* m_bLoadgame = nullptr;
@@ -79,7 +80,7 @@ public:
 
 public:
     void ExecuteCommand(const char* cmd);
-    int GetSessionTick();
+    int GetTick();
     float ToTime(int tick);
     int GetLocalPlayerIndex();
     edict_t* PEntityOfEntIndex(int iEntIndex);
@@ -138,6 +139,7 @@ extern Engine* engine;
 extern Variable host_framerate;
 extern Variable net_showmsg;
 
+#define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
 #define IGNORE_DEMO_PLAYER() if (engine->demoplayer->IsPlaying()) return;
 

@@ -37,6 +37,7 @@ void Portal2::LoadOffsets()
     StringToButtonCode = 31; // CInputSystem
     SleepUntilInput = 33; // CInputSystem
     GetRecordingTick = 1; // CDemoRecorder
+    net_time = 19; // CDemoRecorder::GetRecordingTick
     SetSignonState = 3; // CDemoRecorder
     StopRecording = 7; // CDemoRecorder
     GetPlaybackTick = 3; // CDemoPlayer

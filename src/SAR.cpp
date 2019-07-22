@@ -149,7 +149,7 @@ void SAR::SearchPlugin()
 
 CON_COMMAND(sar_session, "Prints the current tick of the server since it has loaded.\n")
 {
-    auto tick = engine->GetSessionTick();
+    auto tick = session->GetTick();
     console->Print("Session Tick: %i (%.3f)\n", tick, engine->ToTime(tick));
     if (*engine->demorecorder->m_bRecording) {
         tick = engine->demorecorder->GetTick();

@@ -297,7 +297,7 @@ DETOUR(Server::GameFrame, bool simulating)
     }
 
     if (session->isRunning && sar_speedrun_standard.GetBool()) {
-        speedrun->CheckRules(engine->tickcount);
+        speedrun->CheckRules(engine->GetTick());
     }
 
 #ifndef _WIN32
@@ -323,7 +323,7 @@ bool Server::Init()
             auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
             auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
             Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*), &Server::AirMoveBase);
-            
+
             Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &Server::CheckJumpButtonBase);
 
 #ifdef _WIN32

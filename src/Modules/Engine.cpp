@@ -47,10 +47,9 @@ void Engine::ExecuteCommand(const char* cmd)
 {
     this->ClientCmd(this->engineClient->ThisPtr(), cmd);
 }
-int Engine::GetSessionTick()
+int Engine::GetTick()
 {
-    auto result = *this->tickcount - session->baseTick;
-    return (result >= 0) ? result : 0;
+    return (this->GetMaxClients() < 2) ? *this->tickcount : TIME_TO_TICKS(*this->net_time);
 }
 float Engine::ToTime(int tick)
 {
@@ -169,7 +168,7 @@ DETOUR(Engine::SetSignonState2, int state, int count)
 // CEngine::Frame
 DETOUR(Engine::Frame)
 {
-    speedrun->PreUpdate(engine->tickcount, engine->m_szLevelName);
+    speedrun->PreUpdate(engine->GetTick(), engine->m_szLevelName);
 
     if (engine->hoststate->m_currentState != session->prevState) {
         session->Changed();
@@ -177,7 +176,7 @@ DETOUR(Engine::Frame)
     session->prevState = engine->hoststate->m_currentState;
 
     if (engine->hoststate->m_activeGame || std::strlen(engine->m_szLevelName) == 0) {
-        speedrun->PostUpdate(engine->tickcount, engine->m_szLevelName);
+        speedrun->PostUpdate(engine->GetTick(), engine->m_szLevelName);
     }
 
     return Engine::Frame(thisptr);

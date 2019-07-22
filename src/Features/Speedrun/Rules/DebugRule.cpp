@@ -41,7 +41,7 @@ SAR_RULE0(debug_rule)
     }
 
     if (globalEnt && dbg_print.GetBool()) {
-        auto tick = engine->GetSessionTick();
+        auto tick = session->GetTick();
         auto ent = dbg_ent.GetString();
         auto offset = dbg_offset.GetInt();
 

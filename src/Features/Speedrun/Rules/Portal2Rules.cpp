@@ -2,10 +2,9 @@
 
 #include <cstdint>
 
+#include "Features/Session.hpp"
 #include "Features/Speedrun/TimerCategory.hpp"
 #include "Features/Speedrun/TimerRule.hpp"
-
-#include "Modules/Engine.hpp"
 
 #ifdef _WIN32
 #define Offset_m_iTouchingPortalCount 1124
@@ -24,7 +23,7 @@
 SAR_RULE(view_change, "sp_a1_intro1", "player", "CBasePlayer", m_hViewEntity, SearchMode::Classes)
 {
     // Wait some ticks till camera_intro gets enabled
-    if (engine->GetSessionTick() > 13 && *m_hViewEntity == -1) {
+    if (session->GetTick() > 13 && *m_hViewEntity == -1) {
         return TimerAction::Start;
     }
 
@@ -84,7 +83,7 @@ SAR_RULE3(gate_opens, "mp_coop_paint_crazy_box", "coopman_airlock_success", Sear
 SAR_RULE(gain_control, "e1912", "player", "CBasePlayer", m_hVehicle, SearchMode::Classes)
 {
     // Wait some ticks till we get into the vehicle
-    if (engine->GetSessionTick() > 13 && *m_hVehicle == -1) {
+    if (session->GetTick() > 13 && *m_hVehicle == -1) {
         return TimerAction::Start;
     }
 

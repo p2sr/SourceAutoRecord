@@ -15,6 +15,7 @@ public:
 
 public:
     Session();
+    int GetTick();
     void Rebase(const int from);
     void Started(bool menu = false);
     void Start();

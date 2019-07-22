@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "Features/EntityList.hpp"
+#include "Features/Session.hpp"
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -36,12 +37,12 @@ void EntityInspector::Start()
 }
 void EntityInspector::Record()
 {
-    auto session = engine->GetSessionTick();
+    auto sessionTick = session->GetTick();
 
     auto entity = entityList->GetEntityInfoByIndex(this->entityIndex);
     if (entity && entity->m_pEntity) {
         this->latest = InspectionItem{
-            session,
+            sessionTick,
             server->GetAbsOrigin(entity->m_pEntity),
             server->GetAbsAngles(entity->m_pEntity),
             server->GetLocalVelocity(entity->m_pEntity),
@@ -54,9 +55,9 @@ void EntityInspector::Record()
     }
 
     if (this->isRunning) {
-        if (session != this->lastSession || sar_inspection_save_every_tick.GetBool()) {
+        if (sessionTick != this->lastSession || sar_inspection_save_every_tick.GetBool()) {
             this->data.push_back(this->latest);
-            this->lastSession = session;
+            this->lastSession = sessionTick;
         }
     }
 }
@@ -122,12 +123,12 @@ bool EntityInspector::ExportData(std::string filePath)
 CON_COMMAND(sar_inspection_start, "Starts recording entity data.\n")
 {
     inspector->Start();
-    console->Print("Started recording data at tick %i!\n", engine->GetSessionTick());
+    console->Print("Started recording data at tick %i!\n", session->GetTick());
 }
 CON_COMMAND(sar_inspection_stop, "Stops recording entity data.\n")
 {
     inspector->Stop();
-    console->Print("Stopped recording data at tick %i!\n", engine->GetSessionTick());
+    console->Print("Stopped recording data at tick %i!\n", session->GetTick());
 }
 CON_COMMAND(sar_inspection_print, "Prints recorded entity data.\n")
 {

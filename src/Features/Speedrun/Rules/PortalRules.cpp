@@ -2,12 +2,11 @@
 
 #include <cstdint>
 
+#include "Features/Session.hpp"
 #include "Features/Speedrun/TimerCategory.hpp"
 #include "Features/Speedrun/TimerRule.hpp"
 
 #include "Games/Windows/PortalUnpack.hpp"
-
-#include "Modules/Engine.hpp"
 
 #include "Utils/SDK.hpp"
 #include "SAR.hpp"
@@ -39,7 +38,7 @@ SAR_RULE3(waking_up, testchmb_a_00, "blackout_viewcontroller", SearchMode::Names
     auto m_state = reinterpret_cast<int*>((uintptr_t)entity + (isUnpack ? Offset_m_state_Unpack : Offset_m_state));
 
     // Give it some time to get enabled...
-    if (engine->GetSessionTick() > 10 && *m_state == USE_OFF) {
+    if (session->GetTick() > 10 && *m_state == USE_OFF) {
         return TimerAction::Start;
     }
 
