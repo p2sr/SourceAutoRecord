@@ -82,7 +82,7 @@ void AutoStrafer::Strafe(void* pPlayer, CMoveData* pMove)
 }
 float AutoStrafer::GetStrafeAngle(const StrafeState* strafe, void* pPlayer, const CMoveData* pMove)
 {
-    float tau = 1 / host_framerate.GetFloat(); // A time for one frame to pass
+    float tau = server->gpGlobals->frametime; // A time for one frame to pass
 
     // Getting player's friction
     float playerFriction = *reinterpret_cast<float*>((uintptr_t)pPlayer + Offsets::m_flFriction);
