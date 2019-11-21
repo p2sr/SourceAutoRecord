@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "Features/EntityList.hpp"
+#include "Features/Session.hpp"
 #include "Features/Speedrun/TimerRule.hpp"
 
 #include "Modules/Console.hpp"
