@@ -30,6 +30,7 @@ void TheStanleyParable::LoadOffsets()
 
     // client.dll
 
+    m_pCommands = 228; // CInput::DecodeUserCmdFromBuffer
     JoyStickApplyMovement = 60; // CInput
     in_jump = 420; // CInput::GetButtonBits
     KeyDown = 255; // CInput::JoyStickApplyMovement
