@@ -145,6 +145,7 @@
     <ClCompile Include="Features\Speedrun\Rules\Portal2Rules.cpp" />
     <ClCompile Include="Features\Speedrun\Rules\PortalRules.cpp" />
     <ClCompile Include="Features\Speedrun\Rules\PortalStoriesMelRules.cpp" />
+    <ClCompile Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.cpp" />
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp" />
     <ClCompile Include="Features\Speedrun\TimerCategory.cpp" />
     <ClCompile Include="Features\Speedrun\TimerInterface.cpp" />
@@ -184,12 +185,17 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Games\Linux\ThinkingWithTimeMachine.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Games\Windows\HalfLife2Unpack.cpp" />
     <ClCompile Include="Games\Windows\INFRA.cpp" />
     <ClCompile Include="Games\Windows\ApertureTag.cpp" />
     <ClCompile Include="Games\Windows\Portal.cpp" />
     <ClCompile Include="Games\Windows\PortalStoriesMel.cpp" />
     <ClCompile Include="Games\Windows\PortalUnpack.cpp" />
+    <ClCompile Include="Games\Windows\ThinkingWithTimeMachine.cpp" />
     <ClCompile Include="Interface.cpp" />
     <ClCompile Include="Modules\Client.cpp" />
     <ClCompile Include="Modules\Console.cpp" />
@@ -269,6 +275,7 @@
     <ClInclude Include="Features\Speedrun\Rules\Portal2Rules.hpp" />
     <ClInclude Include="Features\Speedrun\Rules\PortalRules.hpp" />
     <ClInclude Include="Features\Speedrun\Rules\PortalStoriesMelRules.hpp" />
+    <ClInclude Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.hpp" />
     <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp" />
     <ClInclude Include="Features\Speedrun\TimerAction.hpp" />
     <ClInclude Include="Features\Speedrun\TimerCategory.hpp" />
@@ -328,6 +335,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="Games\Linux\ThinkingWithTimeMachine.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Games\Windows\HalfLife2Unpack.hpp" />
     <ClInclude Include="Games\Windows\INFRA.hpp" />
     <ClInclude Include="Games\Windows\ApertureTag.hpp" />
@@ -338,6 +349,7 @@
     <ClInclude Include="Games\Windows\PortalUnpack.hpp" />
     <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp" />
     <ClInclude Include="Games\Windows\TheStanleyParable.hpp" />
+    <ClInclude Include="Games\Windows\ThinkingWithTimeMachine.hpp" />
     <ClInclude Include="Interface.hpp" />
     <ClInclude Include="Modules.hpp" />
     <ClInclude Include="Modules\Client.hpp" />

@@ -295,6 +295,15 @@
     <ClCompile Include="Games\Windows\PortalUnpack.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="Games\Windows\ThinkingWithTimeMachine.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\ThinkingWithTimeMachine.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -617,6 +626,15 @@
     </ClInclude>
     <ClInclude Include="Games\Windows\PortalUnpack.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\ThinkingWithTimeMachine.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\ThinkingWithTimeMachine.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -12,10 +12,11 @@ enum SourceGameVersion {
 
     SourceGame_ApertureTag = (1 << 5),
     SourceGame_PortalStoriesMel = (1 << 6),
+    SourceGame_ThinkingWithTimeMachine = (1 << 7),
 
-	SourceGame_INFRA = (1 << 7),
+	SourceGame_INFRA = (1 << 8),
 
-    SourceGame_Portal2Game = SourceGame_Portal2 | SourceGame_ApertureTag | SourceGame_PortalStoriesMel,
+    SourceGame_Portal2Game = SourceGame_Portal2 | SourceGame_ApertureTag | SourceGame_PortalStoriesMel | SourceGame_ThinkingWithTimeMachine,
     SourceGame_Portal2Engine = SourceGame_Portal2Game | SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide | SourceGame_INFRA,
     SourceGame_HalfLife2Engine = SourceGame_Portal | SourceGame_HalfLife2
 };

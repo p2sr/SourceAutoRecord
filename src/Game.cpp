@@ -13,6 +13,7 @@
 #include GAME(TheStanleyParable)
 #include GAME(ApertureTag)
 #include GAME(PortalStoriesMel)
+#include GAME(ThinkingWithTimeMachine)
 #ifdef _WIN32
 #include GAME(INFRA)
 #include GAME(HalfLife2Unpack)
@@ -96,6 +97,9 @@ Game* Game::CreateNew()
     if (Utils::ICompare(modDir, ApertureTag::GameDir())) {
         return new ApertureTag();
     }
+    if (Utils::ICompare(modDir, ThinkingWithTimeMachine::GameDir())) {
+        return new ThinkingWithTimeMachine();
+    }
 
     return nullptr;
 }
@@ -115,6 +119,7 @@ std::string Game::VersionToString(int version)
         HAS_GAME_FLAG(SourceGame_ApertureTag,                      "Aperture Tag")
         HAS_GAME_FLAG(SourceGame_PortalStoriesMel,                 "Portal Stories: Mel")
         HAS_GAME_FLAG(SourceGame_INFRA,                            "INFRA")
+        HAS_GAME_FLAG(SourceGame_ThinkingWithTimeMachine,          "Thinking with Time Machine")
     }
     return games;
 }

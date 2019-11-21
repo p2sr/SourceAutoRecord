@@ -18,6 +18,7 @@ Game|Windows|Linux
 [Portal 2](https://store.steampowered.com/app/620)¹|✔|✔
 [Aperture Tag](https://store.steampowered.com/app/280740)|✔|✔
 [Portal Stories: Mel](https://store.steampowered.com/app/317400)|✔|✔
+[Thinking with Time Machine](https://store.steampowered.com/app/286080)|✔|✔
 [The Stanley Parable](https://store.steampowered.com/app/221910)|✖|✖
 [The Beginners Guide](https://store.steampowered.com/app/303210)|✖|✖
 [Half-Life 2](https://store.steampowered.com/app/220)|✖|✖
