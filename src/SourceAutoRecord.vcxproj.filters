@@ -304,6 +304,12 @@
     <ClCompile Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.cpp">
       <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
     </ClCompile>
+    <ClCompile Include="Games\Windows\HalfLife2Episodic.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\HalfLife2Episodic.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -635,6 +641,12 @@
     </ClInclude>
     <ClInclude Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\HalfLife2Episodic.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\HalfLife2Episodic.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

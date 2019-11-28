@@ -7,6 +7,7 @@
 #include "Utils.hpp"
 
 #include GAME(HalfLife2)
+#include GAME(HalfLife2Episodic)
 #include GAME(Portal)
 #include GAME(Portal2)
 #include GAME(TheBeginnersGuide)
@@ -70,6 +71,10 @@ Game* Game::CreateNew()
         return new HalfLife2();
     }
 
+    if (Utils::ICompare(modDir, HalfLife2Episodic::ModDir())) {
+        return new HalfLife2Episodic();
+    }
+
     if (Utils::ICompare(modDir, Portal::ModDir())) {
 #ifdef _WIN32
         if (Memory::TryGetModule(MODULE("filesystem_steam"), nullptr)) {
@@ -120,6 +125,7 @@ std::string Game::VersionToString(int version)
         HAS_GAME_FLAG(SourceGame_PortalStoriesMel,                 "Portal Stories: Mel")
         HAS_GAME_FLAG(SourceGame_INFRA,                            "INFRA")
         HAS_GAME_FLAG(SourceGame_ThinkingWithTimeMachine,          "Thinking with Time Machine")
+        HAS_GAME_FLAG(SourceGame_HalfLife2Episodic,                "Half-Life 2: Episode One/Two")
     }
     return games;
 }

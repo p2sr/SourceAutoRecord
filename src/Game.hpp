@@ -16,9 +16,11 @@ enum SourceGameVersion {
 
 	SourceGame_INFRA = (1 << 8),
 
+    SourceGame_HalfLife2Episodic = (1 << 9),
+
     SourceGame_Portal2Game = SourceGame_Portal2 | SourceGame_ApertureTag | SourceGame_PortalStoriesMel | SourceGame_ThinkingWithTimeMachine,
     SourceGame_Portal2Engine = SourceGame_Portal2Game | SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide | SourceGame_INFRA,
-    SourceGame_HalfLife2Engine = SourceGame_Portal | SourceGame_HalfLife2
+    SourceGame_HalfLife2Engine = SourceGame_Portal | SourceGame_HalfLife2 | SourceGame_HalfLife2Episodic
 };
 
 class Game {
