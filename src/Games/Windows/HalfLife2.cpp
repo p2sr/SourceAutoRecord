@@ -91,7 +91,7 @@ void HalfLife2::LoadOffsets()
     GetAllServerClasses = 11; // CServerGameDLL
     IsRestoring = 25; // CServerGameDLL
     Think = 31; // CServerGameDLL
-    UTIL_PlayerByIndex = 38; // CServerGameDLL::Think
+    UTIL_PlayerByIndex = 43; // CServerGameDLL::Think
     gpGlobals = 11; // UTIL_PlayerByIndex
     m_MoveType = 314; // CBasePlayer::UpdateStepSound
     m_iClassName = 92; // CBaseEntity
@@ -137,7 +137,7 @@ void HalfLife2::LoadOffsets()
 }
 const char* HalfLife2::Version()
 {
-    return "Half-Life 2 (2257546)";
+    return "Half-Life 2 (5377866)";
 }
 const float HalfLife2::Tickrate()
 {
