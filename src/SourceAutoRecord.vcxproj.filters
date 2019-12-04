@@ -310,6 +310,12 @@
     <ClCompile Include="Games\Linux\HalfLife2Episodic.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
+    <ClCompile Include="Games\Windows\HalfLifeSource.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\HalfLifeSource.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -646,6 +652,12 @@
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
     <ClInclude Include="Games\Linux\HalfLife2Episodic.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\HalfLifeSource.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\HalfLifeSource.hpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
   </ItemGroup>

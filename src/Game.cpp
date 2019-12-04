@@ -8,6 +8,7 @@
 
 #include GAME(HalfLife2)
 #include GAME(HalfLife2Episodic)
+#include GAME(HalfLifeSource)
 #include GAME(Portal)
 #include GAME(Portal2)
 #include GAME(TheBeginnersGuide)
@@ -73,6 +74,10 @@ Game* Game::CreateNew()
 
     if (Utils::ICompare(modDir, HalfLife2Episodic::ModDir())) {
         return new HalfLife2Episodic();
+    }
+
+    if (Utils::ICompare(modDir, HalfLifeSource::ModDir())) {
+        return new HalfLifeSource();
     }
 
     if (Utils::ICompare(modDir, Portal::ModDir())) {
