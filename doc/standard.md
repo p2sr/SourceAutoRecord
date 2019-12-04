@@ -22,6 +22,9 @@ Game|Windows|Linux
 [The Stanley Parable](https://store.steampowered.com/app/221910)|✖|✖
 [The Beginners Guide](https://store.steampowered.com/app/303210)|✖|✖
 [Half-Life 2](https://store.steampowered.com/app/220)|✖|✖
+[Half-Life 2: Episode One](https://store.steampowered.com/app/380)|✖|✖
+[Half-Life 2: Episode Two](https://store.steampowered.com/app/420)|✖|✖
+[Half-Life: Source](https://store.steampowered.com/app/280)|✖|✖
 [Portal](https://store.steampowered.com/app/400)|✔|✔
 [INFRA](https://store.steampowered.com/app/251110)|✖|➖
 
