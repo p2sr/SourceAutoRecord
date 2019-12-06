@@ -40,6 +40,8 @@ Variable sar_disable_no_focus_sleep("sar_disable_no_focus_sleep", "0", "Does not
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
+Variable ui_loadingscreen_fadein_time;
+Variable ui_loadingscreen_mintransition_time;
 Variable hide_gun_when_holding;
 
 // TSP only
@@ -106,6 +108,8 @@ void Cheats::Init()
     if (sar.game->Is(SourceGame_Portal2Game)) {
         sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
         ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
+        ui_loadingscreen_fadein_time = Variable("ui_loadingscreen_fadein_time");
+        ui_loadingscreen_mintransition_time = Variable("ui_loadingscreen_mintransition_time");
         hide_gun_when_holding = Variable("hide_gun_when_holding");
     } else if (sar.game->Is(SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
         Command::ActivateAutoCompleteFile("map", map_CompletionFunc);

@@ -19,6 +19,8 @@ extern Variable sar_disable_no_focus_sleep;
 
 extern Variable sv_laser_cube_autoaim;
 extern Variable ui_loadingscreen_transition_time;
+extern Variable ui_loadingscreen_fadein_time;
+extern Variable ui_loadingscreen_mintransition_time;
 extern Variable hide_gun_when_holding;
 
 extern Command startbhop;
