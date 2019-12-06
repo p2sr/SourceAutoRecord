@@ -81,7 +81,7 @@ public:
 #define DECL_COMMAND_COMPLETION(command)                \
     DECL_DECLARE_AUTOCOMPLETION_FUNCTION(command)       \
     {                                                   \
-        const char* cmd = #command " ";                \
+        const char* cmd = #command " ";                 \
         char* match = (char*)partial;                   \
         if (std::strstr(partial, cmd) == partial) {     \
             match = match + std::strlen(cmd);           \
@@ -89,7 +89,7 @@ public:
         static auto items = std::vector<std::string>(); \
         items.clear();
 // clang-format off
-#define FINISH_COMMAND_COMPLETION(command)                                 \
+#define FINISH_COMMAND_COMPLETION()                                        \
     }                                                                      \
     auto count = 0;                                                        \
     for (auto& item : items) {                                             \
