@@ -190,7 +190,7 @@ DETOUR(VGui::Paint, int mode)
     }
     if (sar_hud_jump_peak.GetBool()) {
         auto stat = stats->Get(slot);
-        DrawElement("jump peak: %.3f", stat->jumps->distance);
+        DrawElement("jump peak: %.3f", stat->jumps->distancePeak);
     }
     if (sar_hud_velocity_peak.GetBool()) {
         auto stat = stats->Get(slot);
