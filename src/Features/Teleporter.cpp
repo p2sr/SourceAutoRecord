@@ -58,6 +58,8 @@ void Teleporter::Teleport(int nSlot)
 
 CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
 {
+    IGNORE_DEMO_PLAYER();
+
     if (!sv_cheats.GetBool()) {
         return console->Print("Cannot teleport without sv_cheats 1!\n");
     }
