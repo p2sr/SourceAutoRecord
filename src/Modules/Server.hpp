@@ -102,3 +102,7 @@ extern Variable sv_maxspeed;
 extern Variable sv_stopspeed;
 extern Variable sv_maxvelocity;
 extern Variable sv_gravity;
+
+extern Variable sar_record_at;
+extern Variable sar_record_at_demo_name;
+extern Variable sar_record_at_increment;
