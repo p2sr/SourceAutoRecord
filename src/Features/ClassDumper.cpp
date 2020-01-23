@@ -22,8 +22,8 @@ ClassDumper* classDumper;
 
 ClassDumper::ClassDumper()
     : sendPropSize(sar.game->Is(SourceGame_Portal2Engine) ? sizeof(SendProp2) : sizeof(SendProp))
-    , serverClassesFile("server_classes.txt")
-    , clientClassesFile("client_classes.txt")
+    , serverClassesFile("server_classes.json")
+    , clientClassesFile("client_classes.json")
 {
     this->hasLoaded = true;
 }
@@ -37,27 +37,31 @@ void ClassDumper::Dump(bool dumpServer)
         return file.close();
     }
 
+    file << "{\"data\":[";
+
     if (dumpServer) {
         for (auto sclass = server->GetAllServerClasses(); sclass; sclass = sclass->m_pNext) {
-            file << sclass->m_pNetworkName << std::endl;
-            auto level = 1;
-            this->DumpSendTable(file, sclass->m_pTable, level);
+            file << "{\"class\":\"" << sclass->m_pNetworkName << "\",\"table\":";
+            this->DumpSendTable(file, sclass->m_pTable);
+            file << "},";
         }
     } else {
         for (auto cclass = client->GetAllClasses(); cclass; cclass = cclass->m_pNext) {
-            file << cclass->m_pNetworkName << std::endl;
-            auto level = 1;
-            this->DumpRecvTable(file, cclass->m_pRecvTable, level);
+            file << "{\"class\":\"" << cclass->m_pNetworkName << "\",\"table\":";
+            this->DumpRecvTable(file, cclass->m_pRecvTable);
+            file << "},";
         }
     }
 
-    console->Print("Created %s file.\n", source->c_str());
+    file.seekp(-1, SEEK_CUR);
+    file << "]}";
     file.close();
+
+    console->Print("Created %s file.\n", source->c_str());
 }
-void ClassDumper::DumpSendTable(std::ofstream& file, SendTable* table, int& level)
+void ClassDumper::DumpSendTable(std::ofstream& file, SendTable* table)
 {
-    file << std::setw(level * 4) << "";
-    file << table->m_pNetTableName << std::endl;
+    file << "{\"name\":\"" << table->m_pNetTableName << "\",\"props\":[";
 
     for (auto i = 0; i < table->m_nProps; ++i) {
         auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + this->sendPropSize * i);
@@ -75,22 +79,38 @@ void ClassDumper::DumpSendTable(std::ofstream& file, SendTable* table, int& leve
             nextTable = temp.m_pDataTable;
         }
 
-        file << std::setw(level * 4) << "";
-        file << name << " -> " << (int16_t)offset << std::endl;
+        auto sanitized = std::string("");
+        auto c = name;
+        while (*c != '\0') {
+            if (*c == '"') {
+                sanitized += "\\";
+            }
+            sanitized += *c;
+            ++c;
+        }
+
+        file << "{\"name\":\"" << sanitized.c_str() << "\",\"offset\":" << (int16_t)offset;
 
         if (type != SendPropType::DPT_DataTable) {
+            file << ",\"type\":" << type << "},";
             continue;
         }
 
-        ++level;
-        this->DumpSendTable(file, nextTable, level);
+        file << ",\"table\":";
+
+        this->DumpSendTable(file, nextTable);
+
+        file << "},";
     }
-    --level;
+
+    if (table->m_nProps != 0) {
+        file.seekp(-1, SEEK_CUR);
+    }
+    file << "]}";
 }
-void ClassDumper::DumpRecvTable(std::ofstream& file, RecvTable* table, int& level)
+void ClassDumper::DumpRecvTable(std::ofstream& file, RecvTable* table)
 {
-    file << std::setw(level * 4) << "";
-    file << table->m_pNetTableName << std::endl;
+    file << "{\"name\":\"" << table->m_pNetTableName << "\",\"props\":[";
 
     for (auto i = 0; i < table->m_nProps; ++i) {
         auto prop = table->m_pProps[i];
@@ -100,17 +120,34 @@ void ClassDumper::DumpRecvTable(std::ofstream& file, RecvTable* table, int& leve
         auto type = prop.m_RecvType;
         auto nextTable = prop.m_pDataTable;
 
-        file << std::setw(level * 4) << "";
-        file << name << " -> " << (int16_t)offset << std::endl;
+        auto sanitized = std::string("");
+        auto c = name;
+        while (*c != '\0') {
+            if (*c == '"') {
+                sanitized += "\\";
+            }
+            sanitized += *c;
+            ++c;
+        }
+
+        file << "{\"name\":\"" << sanitized.c_str() << "\",\"offset\":" << (int16_t)offset;
 
         if (type != SendPropType::DPT_DataTable) {
+            file << ",\"type\":" << type << "},";
             continue;
         }
 
-        ++level;
-        this->DumpRecvTable(file, nextTable, level);
+        file << ",\"table\":";
+
+        this->DumpRecvTable(file, nextTable);
+
+        file << "},";
     }
-    --level;
+
+    if (table->m_nProps != 0) {
+        file.seekp(-1, SEEK_CUR);
+    }
+    file << "]}";
 }
 
 // Commands

@@ -21,8 +21,8 @@ public:
     void Dump(bool dumpServer = true);
 
 private:
-    void DumpSendTable(std::ofstream& file, SendTable* table, int& level);
-    void DumpRecvTable(std::ofstream& file, RecvTable* table, int& level);
+    void DumpSendTable(std::ofstream& file, SendTable* table);
+    void DumpRecvTable(std::ofstream& file, RecvTable* table);
 };
 
 extern ClassDumper* classDumper;

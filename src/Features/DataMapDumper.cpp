@@ -32,8 +32,8 @@ PATTERNS(DATAMAP_PATTERNS, &DATAMAP_PATTERN1, &DATAMAP_PATTERN2, &DATAMAP_PATTER
 DataMapDumper* dataMapDumper;
 
 DataMapDumper::DataMapDumper()
-    : serverDataMapFile("server_datamap.txt")
-    , clientDataMapFile("client_datamap.txt")
+    : serverDataMapFile("server_datamap.json")
+    , clientDataMapFile("client_datamap.json")
     , serverResult()
     , clientResult()
 {
@@ -49,41 +49,73 @@ void DataMapDumper::Dump(bool dumpServer)
         return file.close();
     }
 
-    std::function<void(datamap_t * map, int& level)> DumpMap;
-    DumpMap = [&DumpMap, &file](datamap_t* map, int& level) {
-        file << std::setw(level * 4) << "";
-        file << map->dataClassName << std::endl;
+    file << "{\"data\":[";
+
+    std::function<void(datamap_t * map)> DumpMap;
+    DumpMap = [&DumpMap, &file](datamap_t* map) {
+        file << "{\"type\":\"" << map->dataClassName << "\",\"fields\":[";
         while (map) {
             for (auto i = 0; i < map->dataNumFields; ++i) {
                 auto field = &map->dataDesc[i];
-                file << std::setw((level + 1) * 4) << "";
-                file << ((field->fieldName) ? field->fieldName : "unk") << " -> " << field->fieldOffset[0] << std::endl;
-                if (field->fieldType == FIELD_EMBEDDED) {
-                    ++level;
-                    DumpMap(field->td, level);
+
+                file << "{";
+
+                if (field->fieldName) {
+                    file << "\"name\":\"" << field->fieldName << "\",";
                 }
+
+                file << "\"offset\":" << field->fieldOffset[0];
+
+                if (field->externalName) {
+                    file << ",\"external\":\"" << field->externalName << "\"";
+                }
+
+                if (field->fieldType == FIELD_EMBEDDED) {
+                    file << ",\"type\":";
+                    DumpMap(field->td);
+                } else {
+                    file << ",\"type\":" << field->fieldType;
+                }
+
+                file << "},";
             }
             map = map->baseMap;
         }
-        --level;
+        file.seekp(-1, SEEK_CUR);
+        file << "]}";
     };
-    std::function<void(datamap_t2* map, int& level)> DumpMap2;
-    DumpMap2 = [&DumpMap2, &file](datamap_t2* map, int& level) {
-        file << std::setw(level * 4) << "";
-        file << map->dataClassName << std::endl;
+    std::function<void(datamap_t2 * map)> DumpMap2;
+    DumpMap2 = [&DumpMap2, &file](datamap_t2* map) {
+        file << "{\"type\":\"" << map->dataClassName << "\",\"fields\":[";
         while (map) {
             for (auto i = 0; i < map->dataNumFields; ++i) {
                 auto field = &map->dataDesc[i];
-                file << std::setw((level + 1) * 4) << "";
-                file << ((field->fieldName) ? field->fieldName : "unk") << " -> " << field->fieldOffset << std::endl;
-                if (field->fieldType == FIELD_EMBEDDED) {
-                    ++level;
-                    DumpMap2(field->td, level);
+
+                file << "{";
+
+                if (field->fieldName) {
+                    file << "\"name\":\"" << field->fieldName << "\",";
                 }
+
+                file << "\"offset\":" << field->fieldOffset;
+
+                if (field->externalName) {
+                    file << ",\"external\":\"" << field->externalName << "\"";
+                }
+
+                if (field->fieldType == FIELD_EMBEDDED) {
+                    file << ",\"type\":";
+                    DumpMap2(field->td);
+                } else {
+                    file << ",\"type\":" << field->fieldType;
+                }
+
+                file << "},";
             }
             map = map->baseMap;
         }
-        --level;
+        file.seekp(-1, SEEK_CUR);
+        file << "]}";
     };
 
     auto results = (dumpServer) ? &this->serverResult : &this->clientResult;
@@ -96,18 +128,21 @@ void DataMapDumper::Dump(bool dumpServer)
             auto num = Memory::Deref<int>(result[0]);
             if (num > 0 && num < 1000) {
                 auto ptr = Memory::Deref<void*>(result[1]);
-                auto level = 0;
                 if (hl2) {
-                    DumpMap(reinterpret_cast<datamap_t*>(ptr), level);
+                    DumpMap(reinterpret_cast<datamap_t*>(ptr));
                 } else {
-                    DumpMap2(reinterpret_cast<datamap_t2*>(ptr), level);
+                    DumpMap2(reinterpret_cast<datamap_t2*>(ptr));
                 }
+                file << ",";
             }
         }
     }
 
-    console->Print("Created %s file.\n", source->c_str());
+    file.seekp(-1, SEEK_CUR);
+    file << "]}";
     file.close();
+
+    console->Print("Created %s file.\n", source->c_str());
 }
 
 // Commands
