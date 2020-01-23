@@ -8,7 +8,7 @@
 #include "Command.hpp"
 #include "Variable.hpp"
 
-#define IN_AUTOSTRAFE (1 << 30)
+#define IN_AUTOSTRAFE (1 << 31)
 
 enum class StrafingType {
     None,
