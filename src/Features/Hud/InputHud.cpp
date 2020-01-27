@@ -93,7 +93,7 @@ bool InputHud::GetCurrentSize(int& xSize, int& ySize)
 void InputHud::Draw()
 {
     auto mode = sar_ihud.GetInt();
-    if (mode == 0) {
+    if (mode == 0 || engine->m_szLevelName[0] == '\0') {
         return;
     }
 

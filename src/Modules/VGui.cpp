@@ -34,6 +34,8 @@ REDECL(VGui::Paint);
 // CEngineVGui::Paint
 DETOUR(VGui::Paint, int mode)
 {
+    auto result = VGui::Paint(thisptr, mode);
+
     auto slot = GET_SLOT();
     if (slot == 0) {
         for (auto const& hud : vgui->huds) {
@@ -283,7 +285,7 @@ DETOUR(VGui::Paint, int mode)
 
     surface->FinishDrawing();
 
-    return VGui::Paint(thisptr, mode);
+    return result;
 }
 
 bool VGui::Init()
