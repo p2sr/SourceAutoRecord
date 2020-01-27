@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "Features/FovChanger.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Session.hpp"
@@ -310,6 +311,10 @@ DETOUR(Server::GameFrame, bool simulating)
         } else if (server->paused && simulating && engine->GetTick() > server->pauseTick + 5) {
             server->paused = false;
         }
+    }
+
+    if (session->isRunning && session->GetTick() == 16) {
+        fovChanger->Force();
     }
 
     if (session->isRunning && pauseTimer->IsActive()) {

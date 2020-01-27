@@ -88,6 +88,35 @@ public:
         }                                               \
         static auto items = std::vector<std::string>(); \
         items.clear();
+#define DECL_AUTO_COMMAND_COMPLETION(command, completion)                      \
+    DECL_DECLARE_AUTOCOMPLETION_FUNCTION(command)                              \
+    {                                                                          \
+        const char* cmd = #command " ";                                        \
+        char* match = (char*)partial;                                          \
+        if (std::strstr(partial, cmd) == partial) {                            \
+            match = match + std::strlen(cmd);                                  \
+        }                                                                      \
+        static auto items = std::vector<std::string>();                        \
+        items.clear();                                                         \
+        static auto list = std::vector<std::string> completion;                \
+        for (auto& item : list) {                                              \
+            if (items.size() == COMMAND_COMPLETION_MAXITEMS) {                 \
+                break;                                                         \
+            }                                                                  \
+            if (std::strlen(match) != std::strlen(cmd)) {                      \
+                if (std::strstr(item.c_str(), match)) {                        \
+                    items.push_back(item);                                     \
+                }                                                              \
+            } else {                                                           \
+                items.push_back(item);                                         \
+            }                                                                  \
+        }                                                                      \
+        auto count = 0;                                                        \
+        for (auto& item : items) {                                             \
+            std::strcpy(commands[count++], (std::string(cmd) + item).c_str()); \
+        }                                                                      \
+        return count;                                                          \
+    }
 // clang-format off
 #define FINISH_COMMAND_COMPLETION()                                        \
     }                                                                      \
@@ -97,3 +126,6 @@ public:
     }                                                                      \
     return count;
 // clang-format on
+#define CON_COMMAND_COMPLETION(name, description, completion) \
+    DECL_AUTO_COMMAND_COMPLETION(name, completion)            \
+    CON_COMMAND_F_COMPLETION(name, description, 0, name##_CompletionFunc)

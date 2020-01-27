@@ -316,6 +316,9 @@
     <ClCompile Include="Games\Linux\HalfLifeSource.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
+    <ClCompile Include="Features\FovChanger.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -659,6 +662,9 @@
     </ClInclude>
     <ClInclude Include="Games\Linux\HalfLifeSource.hpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\FovChanger.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

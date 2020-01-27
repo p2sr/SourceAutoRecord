@@ -128,6 +128,7 @@
     <ClCompile Include="Features\Demo\DemoParser.cpp" />
     <ClCompile Include="Features\EntityList.cpp" />
     <ClCompile Include="Features\Feature.cpp" />
+    <ClCompile Include="Features\FovChanger.cpp" />
     <ClCompile Include="Features\Hud\Hud.cpp" />
     <ClCompile Include="Features\Hud\InputHud.cpp" />
     <ClCompile Include="Features\Hud\InspectionHud.cpp" />
@@ -268,6 +269,7 @@
     <ClInclude Include="Features\Demo\DemoParser.hpp" />
     <ClInclude Include="Features\EntityList.hpp" />
     <ClInclude Include="Features\Feature.hpp" />
+    <ClInclude Include="Features\FovChanger.hpp" />
     <ClInclude Include="Features\Hud\Hud.hpp" />
     <ClInclude Include="Features\Hud\InputHud.hpp" />
     <ClInclude Include="Features\Hud\InspectionHud.hpp" />
