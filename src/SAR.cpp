@@ -93,11 +93,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
                 config->Load();
 
-                if (sar.game->Is(SourceGame_HalfLife2Engine) && std::strlen(engine->m_szLevelName) != 0) {
-                    console->Warning("SAR: DONT load this plugin during a game session!\n");
-                    engine->SendToCommandBuffer("disconnect", 0);
-                }
-
                 this->SearchPlugin();
 
                 console->PrintActive("Loaded SourceAutoRecord, Version %s\n", SAR_VERSION);
@@ -113,6 +108,25 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
     }
 
     console->Warning("SAR: Failed to load SourceAutoRecord!\n");
+
+    if (sar.cheats) {
+        sar.cheats->Shutdown();
+    }
+    if (sar.features) {
+        sar.features->DeleteAll();
+    }
+
+    if (sar.modules) {
+        sar.modules->ShutdownAll();
+    }
+
+    SAFE_DELETE(sar.features)
+    SAFE_DELETE(sar.cheats)
+    SAFE_DELETE(sar.modules)
+    SAFE_DELETE(sar.plugin)
+    SAFE_DELETE(sar.game)
+    SAFE_DELETE(tier1)
+    SAFE_DELETE(console)
     return false;
 }
 
@@ -139,10 +153,10 @@ void SAR::SearchPlugin()
 {
     this->findPluginThread = std::thread([this]() {
         GO_THE_FUCK_TO_SLEEP(1000);
-        if (!this->GetPlugin()) {
-            console->DevWarning("SAR: Failed to find SAR in the plugin list!\nTry again with \"plugin_load\".\n");
-        } else {
+        if (this->GetPlugin()) {
             this->plugin->ptr->m_bDisable = true;
+        } else {
+            console->DevWarning("SAR: Failed to find SAR in the plugin list!\nTry again with \"plugin_load\".\n");
         }
     });
     this->findPluginThread.detach();

@@ -196,7 +196,7 @@ DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
         cmp eax, 8
         jne _orig
 
-        // Parse stuff that does not get parsed (thanks valve)
+            // Parse stuff that does not get parsed (thanks valve)
         push edi
         push edi
         mov ecx, esi
@@ -359,6 +359,12 @@ bool Engine::Init()
     if (auto tool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
         auto GetCurrentMap = tool->Original(Offsets::GetCurrentMap);
         this->m_szLevelName = Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName);
+
+        if (sar.game->Is(SourceGame_HalfLife2Engine) && std::strlen(this->m_szLevelName) != 0) {
+            console->Warning("SAR: DO NOT load this plugin when the server is active!\n");
+            return false;
+        }
+
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
         Interface::Delete(tool);
     }
