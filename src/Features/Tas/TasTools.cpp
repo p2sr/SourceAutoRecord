@@ -4,6 +4,7 @@
 #include <cstring>
 #include <random>
 
+#include "Features/Hud/Hud.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/Session.hpp"
 
@@ -269,5 +270,57 @@ CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] [speed] : Sets {x, y, z}
         tasTools->data[nSlot]->speedInterpolation = static_cast<float>(std::atof(args[4]));
         tasTools->data[nSlot]->currentAngles = { angles.x, angles.y, 0 };
         tasTools->data[nSlot]->targetAngles = { static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])) };
+    }
+}
+
+// HUD
+
+HUD_ELEMENT2(velocity_angle, "0", "Draws velocity angles.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen)
+{
+    auto player = server->GetPlayer(ctx->slot + 1);
+    if (player) {
+        auto velocityAngles = tasTools->GetVelocityAngles(player);
+        ctx->DrawElement("vel ang: %.3f %.3f", velocityAngles.x, velocityAngles.y);
+    } else {
+        ctx->DrawElement("vel ang: -");
+    }
+}
+HUD_ELEMENT_MODE2(acceleration, "0", 0, 2, "Draws instant acceleration.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen)
+{
+    auto player = server->GetPlayer(ctx->slot + 1);
+    if (player) {
+        auto acceleration = tasTools->GetAcceleration(player);
+        if (mode == 1) {
+            ctx->DrawElement("accel: %.3f %.3f", acceleration.x, acceleration.y);
+        } else {
+            ctx->DrawElement("accel: %.3f", acceleration.z);
+        }
+    } else {
+        ctx->DrawElement("accel: -");
+    }
+}
+HUD_ELEMENT2(player_info, "0", "Draws player state defined with sar_tas_set_prop.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen)
+{
+    auto player = server->GetPlayer(ctx->slot + 1);
+    auto info = tasTools->GetPlayerInfo(player);
+    if (info) {
+        if (tasTools->propType == PropType::Boolean) {
+            ctx->DrawElement("%s::%s: %s", tasTools->className, tasTools->propName, *reinterpret_cast<bool*>(info) ? "true" : "false");
+        } else if (tasTools->propType == PropType::Float) {
+            ctx->DrawElement("%s::%s: %.3f", tasTools->className, tasTools->propName, *reinterpret_cast<float*>(info));
+        } else if (tasTools->propType == PropType::Vector) {
+            auto vec = *reinterpret_cast<Vector*>(info);
+            ctx->DrawElement("%s::%s: %.3f %.3f %.3f", tasTools->className, tasTools->propName, vec.x, vec.y, vec.z);
+        } else if (tasTools->propType == PropType::Handle) {
+            ctx->DrawElement("%s::%s: %p", tasTools->className, tasTools->propName, *reinterpret_cast<void**>(info));
+        } else if (tasTools->propType == PropType::String) {
+            ctx->DrawElement("%s::%s: %s", tasTools->className, tasTools->propName, *reinterpret_cast<char**>(info));
+        } else if (tasTools->propType == PropType::Char) {
+            ctx->DrawElement("%s::%s: %c", tasTools->className, tasTools->propName, *reinterpret_cast<char*>(info));
+        } else {
+            ctx->DrawElement("%s::%s: %i", tasTools->className, tasTools->propName, *reinterpret_cast<int*>(info));
+        }
+    } else {
+        ctx->DrawElement("%s::%s: -", tasTools->className, tasTools->propName);
     }
 }

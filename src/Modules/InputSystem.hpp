@@ -13,7 +13,7 @@ class InputSystem : public Module {
 public:
     Interface* g_InputSystem = nullptr;
 
-    using _StringToButtonCode = int(__func*)(void* thisptr, const char* pString);
+    using _StringToButtonCode = int(__rescall*)(void* thisptr, const char* pString);
     using _KeySetBinding = void(__cdecl*)(int keynum, const char* pBinding);
 
     _StringToButtonCode StringToButtonCode = nullptr;

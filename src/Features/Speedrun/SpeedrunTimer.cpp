@@ -224,7 +224,7 @@ void SpeedrunTimer::LoadRules(Game* game)
 {
     auto filtered = TimerCategory::FilterByGame(game);
     if (filtered != 0) {
-        this->category = TimerCategory::list[0];
+        this->category = TimerCategory::GetList()[0];
         console->DevMsg("Loaded %i speedrun %s!\n", filtered, (filtered == 1) ? "category" : "categories");
     }
 }
@@ -445,7 +445,7 @@ int sar_category_CompletionFunc(const char* partial,
     // Filter items
     static auto items = std::vector<std::string>();
     items.clear();
-    for (auto& cat : TimerCategory::list) {
+    for (auto& cat : TimerCategory::GetList()) {
         if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
             break;
         }
@@ -585,7 +585,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.\n
 }
 CON_COMMAND_F_COMPLETION(sar_speedrun_category, "Sets the category for a speedrun.\n", 0, sar_category_CompletionFunc)
 {
-    if (!speedrun->GetCategory() || TimerCategory::list.empty()) {
+    if (!speedrun->GetCategory() || TimerCategory::GetList().empty()) {
         return console->Print("This game does not have any categories!\n");
     }
 
@@ -602,7 +602,7 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_category, "Sets the category for a speedru
         return PrintCategory();
     }
 
-    for (auto const& category : TimerCategory::list) {
+    for (auto const& category : TimerCategory::GetList()) {
         if (!std::strcmp(category->name, args[1])) {
             speedrun->SetCategory(category);
             speedrun->InitRules();

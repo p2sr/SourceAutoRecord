@@ -13,21 +13,18 @@ Variable sar_sr_hud_y("sar_sr_hud_y", "100", 0, "Y offset of speedrun timer HUD.
 Variable sar_sr_hud_font_color("sar_sr_hud_font_color", "255 255 255 255", "RGBA font color of speedrun timer HUD.\n", 0);
 Variable sar_sr_hud_font_index("sar_sr_hud_font_index", "70", 0, "Font index of speedrun timer HUD.\n");
 
-SpeedrunHud* speedrunHud;
+SpeedrunHud speedrunHud;
 
-bool SpeedrunHud::GetCurrentSize(int& xSize, int& ySize)
+SpeedrunHud::SpeedrunHud()
+    : Hud(HudType_InGame | HudType_Menu | HudType_Paused | HudType_LoadingScreen, false, SourceGame_SupportsS3)
 {
-    return false;
 }
-void SpeedrunHud::Draw()
+bool SpeedrunHud::ShouldDraw()
 {
-    auto mode = sar_sr_hud.GetInt();
-    if (mode == 0) {
-        return;
-    }
-
-    surface->StartDrawing(surface->matsurface->ThisPtr());
-
+    return sar_sr_hud.GetBool() && Hud::ShouldDraw();
+}
+void SpeedrunHud::Paint(int slot)
+{
     auto total = speedrun->GetTotal();
     auto ipt = speedrun->GetIntervalPerTick();
 
@@ -38,6 +35,8 @@ void SpeedrunHud::Draw()
     auto fontColor = this->GetColor(sar_sr_hud_font_color.GetString());
 
     surface->DrawTxt(font, xOffset, yOffset, fontColor, "%s", SpeedrunTimer::Format(total * ipt).c_str());
-
-    surface->FinishDrawing();
+}
+bool SpeedrunHud::GetCurrentSize(int& xSize, int& ySize)
+{
+    return false;
 }

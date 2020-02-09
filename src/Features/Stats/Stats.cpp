@@ -5,6 +5,8 @@
 #include "StepStats.hpp"
 #include "VelocityStats.hpp"
 
+#include "Features/Hud/Hud.hpp"
+
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -107,4 +109,41 @@ CON_COMMAND(sar_stats_velocity_reset, "Resets velocity peak.\n")
 CON_COMMAND(sar_stats_reset, "Resets all saved stats.\n")
 {
     stats->Get(GET_SLOT())->Reset();
+}
+
+// HUD
+
+HUD_ELEMENT2(jumps, "0", "Draws total jump count.\n", HudType_InGame | HudType_Paused)
+{
+    auto stat = stats->Get(ctx->slot);
+    ctx->DrawElement("jumps: %i", stat->jumps->total);
+}
+HUD_ELEMENT3(portals, "0", "Draws total portal count.\n", HudType_InGame | HudType_Paused, true, SourceGame_Portal2Game | SourceGame_Portal)
+{
+    auto player = server->GetPlayer(ctx->slot + 1);
+    if (player) {
+        ctx->DrawElement("portals: %i", server->GetPortals(player));
+    } else {
+        ctx->DrawElement("portals: -");
+    }
+}
+HUD_ELEMENT2(steps, "0", "Draws total step count.\n", HudType_InGame | HudType_Paused)
+{
+    auto stat = stats->Get(ctx->slot);
+    ctx->DrawElement("steps: %i", stat->steps->total);
+}
+HUD_ELEMENT2(jump, "0", "Draws current jump distance.\n", HudType_InGame | HudType_Paused)
+{
+    auto stat = stats->Get(ctx->slot);
+    ctx->DrawElement("jump: %.3f", stat->jumps->distance);
+}
+HUD_ELEMENT2(jump_peak, "0", "Draws longest jump distance.\n", HudType_InGame | HudType_Paused)
+{
+    auto stat = stats->Get(ctx->slot);
+    ctx->DrawElement("jump peak: %.3f", stat->jumps->distancePeak);
+}
+HUD_ELEMENT2(velocity_peak, "0", "Draws last saved velocity peak.\n", HudType_InGame | HudType_Paused)
+{
+    auto stat = stats->Get(ctx->slot);
+    ctx->DrawElement("vel peak: %.3f", stat->velocity->peak);
 }

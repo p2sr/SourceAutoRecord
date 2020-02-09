@@ -10,19 +10,25 @@
 
 #include "TimerAction.hpp"
 
+std::vector<TimerCategory*>& TimerCategory::GetList()
+{
+    static std::vector<TimerCategory*> list;
+    return list;
+}
+
 TimerCategory::TimerCategory(int gameVersion, const char* name, std::vector<TimerRule*> rules)
     : gameVersion(gameVersion)
     , name(name)
     , rules(rules)
 {
-    TimerCategory::list.push_back(this);
+    TimerCategory::GetList().push_back(this);
 }
 int TimerCategory::FilterByGame(Game* game)
 {
     auto count = 0;
-    for (auto&& rule = TimerCategory::list.begin(); rule != TimerCategory::list.end();) {
+    for (auto&& rule = TimerCategory::GetList().begin(); rule != TimerCategory::GetList().end();) {
         if (!game->Is((*rule)->gameVersion)) {
-            rule = TimerCategory::list.erase(rule);
+            rule = TimerCategory::GetList().erase(rule);
         } else {
             ++rule;
             ++count;
@@ -33,11 +39,9 @@ int TimerCategory::FilterByGame(Game* game)
 }
 void TimerCategory::ResetAll()
 {
-    for (auto& category : TimerCategory::list) {
+    for (auto& category : TimerCategory::GetList()) {
         for (auto& rule : category->rules) {
             rule->madeAction = false;
         }
     }
 }
-
-std::vector<TimerCategory*> TimerCategory::list;

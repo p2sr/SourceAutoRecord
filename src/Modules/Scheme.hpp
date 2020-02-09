@@ -9,7 +9,7 @@ class Scheme : public Module {
 public:
     Interface* g_pScheme = nullptr;
 
-    using _GetFont = unsigned long(__func*)(void* thisptr, const char* fontName, bool proportional);
+    using _GetFont = unsigned long(__rescall*)(void* thisptr, const char* fontName, bool proportional);
     _GetFont GetFont = nullptr;
 
 public:

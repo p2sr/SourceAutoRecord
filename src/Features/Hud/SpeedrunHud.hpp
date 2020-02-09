@@ -5,11 +5,13 @@
 
 class SpeedrunHud : public Hud {
 public:
+    SpeedrunHud();
+    bool ShouldDraw() override;
+    void Paint(int slot) override;
     bool GetCurrentSize(int& xSize, int& ySize) override;
-    void Draw() override;
 };
 
-extern SpeedrunHud* speedrunHud;
+extern SpeedrunHud speedrunHud;
 
 extern Variable sar_sr_hud;
 extern Variable sar_sr_hud_x;

@@ -10,19 +10,19 @@
 // clang-format off
 #define GAME_PATH(x) _GAME_PATH(Games/Windows/##x.hpp)
 // clang-format on
-#define __func __thiscall
+#define __rescall __thiscall
 #define DLL_EXPORT extern "C" __declspec(dllexport)
 
 #define DECL_DETOUR(name, ...)                                  \
-    using _##name = int(__func*)(void* thisptr, ##__VA_ARGS__); \
+    using _##name = int(__rescall*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                        \
     static int __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__)
 #define DECL_DETOUR_T(type, name, ...)                           \
-    using _##name = type(__func*)(void* thisptr, ##__VA_ARGS__); \
+    using _##name = type(__rescall*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                         \
     static type __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__)
 #define DECL_DETOUR_B(name, ...)                                \
-    using _##name = int(__func*)(void* thisptr, ##__VA_ARGS__); \
+    using _##name = int(__rescall*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                        \
     static _##name name##Base;                                  \
     static int __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__)
@@ -77,32 +77,32 @@ bool mhInitialized = false;
 // clang-format off
 #define GAME_PATH(x) _GAME_PATH(Games/Linux/x.hpp)
 // clang-format on
-#define __func __attribute__((__cdecl__))
+#define __rescall __attribute__((__cdecl__))
 #define __cdecl __attribute__((__cdecl__))
 #define __stdcall __attribute__((__stdcall__))
 #define __fastcall __attribute__((__fastcall__))
 #define DLL_EXPORT extern "C" __attribute__((visibility("default")))
 
 #define DECL_DETOUR(name, ...)                                  \
-    using _##name = int(__func*)(void* thisptr, ##__VA_ARGS__); \
+    using _##name = int(__rescall*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                        \
-    static int __func name##_Hook(void* thisptr, ##__VA_ARGS__)
+    static int __rescall name##_Hook(void* thisptr, ##__VA_ARGS__)
 #define DECL_DETOUR_T(type, name, ...)                           \
-    using _##name = type(__func*)(void* thisptr, ##__VA_ARGS__); \
+    using _##name = type(__rescall*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                         \
-    static type __func name##_Hook(void* thisptr, ##__VA_ARGS__)
+    static type __rescall name##_Hook(void* thisptr, ##__VA_ARGS__)
 #define DECL_DETOUR_B(name, ...)                                \
-    using _##name = int(__func*)(void* thisptr, ##__VA_ARGS__); \
+    using _##name = int(__rescall*)(void* thisptr, ##__VA_ARGS__); \
     static _##name name;                                        \
     static _##name name##Base;                                  \
-    static int __func name##_Hook(void* thisptr, ##__VA_ARGS__)
+    static int __rescall name##_Hook(void* thisptr, ##__VA_ARGS__)
 
 #define DETOUR(name, ...) \
-    int __func name##_Hook(void* thisptr, ##__VA_ARGS__)
+    int __rescall name##_Hook(void* thisptr, ##__VA_ARGS__)
 #define DETOUR_T(type, name, ...) \
-    type __func name##_Hook(void* thisptr, ##__VA_ARGS__)
+    type __rescall name##_Hook(void* thisptr, ##__VA_ARGS__)
 #define DETOUR_B(name, ...) \
-    int __func name##_Hook(void* thisptr, ##__VA_ARGS__)
+    int __rescall name##_Hook(void* thisptr, ##__VA_ARGS__)
 #endif
 
 #define DECL_DETOUR_STD(type, name, ...)             \

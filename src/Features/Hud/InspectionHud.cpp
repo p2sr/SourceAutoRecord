@@ -16,20 +16,19 @@ Variable sar_ei_hud_font_color("sar_ei_hud_font_color", "255 255 255 255", "RGBA
 Variable sar_ei_hud_font_color2("sar_ei_hud_font_color2", "153 23 9 255", "RGBA font color of entity inspection HUD when recording.\n", 0);
 Variable sar_ei_hud_font_index("sar_ei_hud_font_index", "1", 0, "Font index of entity inspection HUD.\n");
 
-InspectionHud* inspectionHud;
+InspectionHud inspectionHud;
 
-bool InspectionHud::GetCurrentSize(int& xSize, int& ySize)
+InspectionHud::InspectionHud()
+    : Hud(HudType_InGame | HudType_Paused)
 {
-    return false;
 }
-void InspectionHud::Draw()
+bool InspectionHud::ShouldDraw()
+{
+    return sar_ei_hud.GetBool() && Hud::ShouldDraw();
+}
+void InspectionHud::Paint(int slot)
 {
     auto mode = sar_ei_hud.GetInt();
-    if (mode == 0 || engine->m_szLevelName[0] == '\0') {
-        return;
-    }
-
-    surface->StartDrawing(surface->matsurface->ThisPtr());
 
     auto font = scheme->GetDefaultFont() + sar_ei_hud_font_index.GetInt();
 
@@ -82,6 +81,8 @@ void InspectionHud::Draw()
             data.origin.x, data.origin.y, data.origin.z);
         break;
     }
-
-    surface->FinishDrawing();
+}
+bool InspectionHud::GetCurrentSize(int& xSize, int& ySize)
+{
+    return false;
 }

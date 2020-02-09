@@ -18,7 +18,7 @@ private:
     Interface* g_Input = nullptr;
 
 public:
-    using _GetClientEntity = void*(__func*)(void* thisptr, int entnum);
+    using _GetClientEntity = void*(__rescall*)(void* thisptr, int entnum);
     using _KeyDown = int(__cdecl*)(void* b, const char* c);
     using _KeyUp = int(__cdecl*)(void* b, const char* c);
     using _GetAllClasses = ClientClass* (*)();

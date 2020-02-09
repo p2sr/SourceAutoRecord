@@ -7,6 +7,12 @@
 #include "Game.hpp"
 #include "SAR.hpp"
 
+std::vector<Command*>& Command::GetList()
+{
+    static std::vector<Command*> list;
+    return list;
+}
+
 Command::Command()
     : ptr(nullptr)
     , version(SourceGame_Unknown)
@@ -29,7 +35,7 @@ Command::Command(const char* pName, _CommandCallback callback, const char* pHelp
 {
     this->ptr = new ConCommand(pName, callback, pHelpString, flags, completionFunc);
 
-    Command::list.push_back(this);
+    Command::GetList().push_back(this);
 }
 ConCommand* Command::ThisPtr()
 {
@@ -62,7 +68,7 @@ bool Command::operator!()
 int Command::RegisterAll()
 {
     auto result = 0;
-    for (const auto& command : Command::list) {
+    for (const auto& command : Command::GetList()) {
         if (command->version != SourceGame_Unknown && !sar.game->Is(command->version)) {
             continue;
         }
@@ -73,21 +79,19 @@ int Command::RegisterAll()
 }
 void Command::UnregisterAll()
 {
-    for (const auto& command : Command::list) {
+    for (const auto& command : Command::GetList()) {
         command->Unregister();
     }
 }
 Command* Command::Find(const char* name)
 {
-    for (const auto& command : Command::list) {
+    for (const auto& command : Command::GetList()) {
         if (!std::strcmp(command->ThisPtr()->m_pszName, name)) {
             return command;
         }
     }
     return nullptr;
 }
-
-std::vector<Command*> Command::list;
 
 bool Command::Hook(const char* name, _CommandCallback detour, _CommandCallback& original)
 {

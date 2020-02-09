@@ -28,11 +28,11 @@ public:
     _AutoCompletionFunc AutoCompletionFunc = nullptr;
 
 #ifdef _WIN32
-    using _Dtor = int(__func*)(ConVar* thisptr, char a2);
+    using _Dtor = int(__rescall*)(ConVar* thisptr, char a2);
 #else
-    using _Dtor = int(__func*)(ConVar* thisptr);
+    using _Dtor = int(__rescall*)(ConVar* thisptr);
 #endif
-    using _Create = int(__func*)(ConVar* thisptr, const char* pName, const char* pDefaultValue, int flags, const char* pHelpString, bool bMin, float fMin, bool bMax,
+    using _Create = int(__rescall*)(ConVar* thisptr, const char* pName, const char* pDefaultValue, int flags, const char* pHelpString, bool bMin, float fMin, bool bMax,
         float fMax, FnChangeCallback_t callback);
 
     _Dtor Dtor = nullptr;

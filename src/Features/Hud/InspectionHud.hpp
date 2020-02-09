@@ -5,11 +5,13 @@
 
 class InspectionHud : public Hud {
 public:
+    InspectionHud();
     bool GetCurrentSize(int& xSize, int& ySize) override;
-    void Draw() override;
+    bool ShouldDraw() override;
+    void Paint(int slot) override;
 };
 
-extern InspectionHud* inspectionHud;
+extern InspectionHud inspectionHud;
 
 extern Variable sar_ei_hud;
 extern Variable sar_ei_hud_x;

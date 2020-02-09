@@ -77,13 +77,13 @@ int Cvars::DumpDoc(std::ofstream& file)
     };
 
     auto count = 0;
-    for (const auto& var : Variable::list) {
+    for (const auto& var : Variable::GetList()) {
         if (var && !var->isReference) {
             InternalDump(var->ThisPtr(), Game::VersionToString(var->version), false);
             ++count;
         }
     }
-    for (const auto& com : Command::list) {
+    for (const auto& com : Command::GetList()) {
         if (com && !com->isReference) {
             InternalDump(com->ThisPtr(), Game::VersionToString(com->version), true);
             ++count;
@@ -95,7 +95,7 @@ int Cvars::DumpDoc(std::ofstream& file)
 void Cvars::ListAll()
 {
     console->Msg("Commands:\n");
-    for (auto& command : Command::list) {
+    for (auto& command : Command::GetList()) {
         if (!!command && command->isRegistered) {
             auto ptr = command->ThisPtr();
             console->Print("\n%s\n", ptr->m_pszName);
@@ -103,7 +103,7 @@ void Cvars::ListAll()
         }
     }
     console->Msg("\nVariables:\n");
-    for (auto& variable : Variable::list) {
+    for (auto& variable : Variable::GetList()) {
         if (!variable) {
             continue;
         }

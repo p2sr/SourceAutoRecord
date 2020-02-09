@@ -1,6 +1,9 @@
 #pragma once
 #include "Modules/Tier1.hpp"
 
+#include <cstring>
+#include <vector>
+
 #include "Game.hpp"
 
 class Command {
@@ -12,7 +15,8 @@ public:
     bool isRegistered;
     bool isReference;
 
-    static std::vector<Command*> list;
+public:
+    static std::vector<Command*>& GetList();
 
 public:
     Command();

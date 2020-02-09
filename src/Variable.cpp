@@ -8,6 +8,12 @@
 #include "Offsets.hpp"
 #include "SAR.hpp"
 
+std::vector<Variable*>& Variable::GetList()
+{
+    static std::vector<Variable*> list;
+    return list;
+}
+
 Variable::Variable()
     : ptr(nullptr)
     , originalFlags(0)
@@ -54,7 +60,7 @@ void Variable::Create(const char* name, const char* value, int flags, const char
 {
     this->ptr = new ConVar(name, value, flags, helpstr, hasmin, min, hasmax, max);
 
-    Variable::list.push_back(this);
+    Variable::GetList().push_back(this);
 }
 void Variable::Realloc()
 {
@@ -134,7 +140,7 @@ void Variable::Unlock(bool asCheat)
         }
 
         if (this->isReference) {
-            this->list.push_back(this);
+            this->GetList().push_back(this);
         }
     }
 }
@@ -210,7 +216,7 @@ bool Variable::operator!()
 int Variable::RegisterAll()
 {
     auto result = 0;
-    for (const auto& var : Variable::list) {
+    for (const auto& var : Variable::GetList()) {
         if (var->version != SourceGame_Unknown && !sar.game->Is(var->version)) {
             continue;
         }
@@ -221,18 +227,16 @@ int Variable::RegisterAll()
 }
 void Variable::UnregisterAll()
 {
-    for (const auto& var : Variable::list) {
+    for (const auto& var : Variable::GetList()) {
         var->Unregister();
     }
 }
 Variable* Variable::Find(const char* name)
 {
-    for (const auto& var : Variable::list) {
+    for (const auto& var : Variable::GetList()) {
         if (!std::strcmp(var->ThisPtr()->m_pszName, name)) {
             return var;
         }
     }
     return nullptr;
 }
-
-std::vector<Variable*> Variable::list;

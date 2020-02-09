@@ -5,16 +5,17 @@
 
 class InputHud : public Hud {
 private:
-    int buttonBits = 0;
+    int buttonBits[2];
 
 public:
-    void SetButtonBits(int buttonBits);
+    InputHud();
+    void SetButtonBits(int slot, int buttonBits);
+    bool ShouldDraw() override;
+    void Paint(int slot) override;
     bool GetCurrentSize(int& xSize, int& ySize) override;
-    void Draw() override;
 };
 
-extern InputHud* inputHud;
-extern InputHud* inputHud2;
+extern InputHud inputHud;
 
 extern Variable sar_ihud;
 extern Variable sar_ihud_x;

@@ -5,6 +5,7 @@
 #include "StepStats.hpp"
 #include "VelocityStats.hpp"
 
+#include "Features/Hud/Hud.hpp"
 #include "Features/Feature.hpp"
 
 #include "Variable.hpp"

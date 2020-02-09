@@ -19,7 +19,8 @@ public:
     bool isRegistered;
     bool isReference;
 
-    static std::vector<Variable*> list;
+public:
+    static std::vector<Variable*>& GetList();
 
 public:
     Variable();

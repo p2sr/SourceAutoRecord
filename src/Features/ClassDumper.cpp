@@ -3,6 +3,7 @@
 #include <cstring>
 #include <fstream>
 #include <iomanip>
+#include <ios>
 #include <string>
 
 #ifdef _WIN32
@@ -53,7 +54,7 @@ void ClassDumper::Dump(bool dumpServer)
         }
     }
 
-    file.seekp(-1, SEEK_CUR);
+    file.seekp(-1, std::ios_base::_Seekcur);
     file << "]}";
     file.close();
 
@@ -104,7 +105,7 @@ void ClassDumper::DumpSendTable(std::ofstream& file, SendTable* table)
     }
 
     if (table->m_nProps != 0) {
-        file.seekp(-1, SEEK_CUR);
+        file.seekp(-1, std::ios_base::_Seekcur);
     }
     file << "]}";
 }
@@ -145,7 +146,7 @@ void ClassDumper::DumpRecvTable(std::ofstream& file, RecvTable* table)
     }
 
     if (table->m_nProps != 0) {
-        file.seekp(-1, SEEK_CUR);
+        file.seekp(-1, std::ios_base::_Seekcur);
     }
     file << "]}";
 }

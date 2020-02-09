@@ -11,7 +11,7 @@ class EngineDemoRecorder : public Module {
 public:
     Interface* s_ClientDemoRecorder = nullptr;
 
-    using _GetRecordingTick = int(__func*)(void* thisptr);
+    using _GetRecordingTick = int(__rescall*)(void* thisptr);
     _GetRecordingTick GetRecordingTick = nullptr;
 
     char* m_szDemoBaseName = nullptr;

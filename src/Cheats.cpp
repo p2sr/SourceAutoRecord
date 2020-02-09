@@ -121,7 +121,7 @@ void Cheats::Init()
 
     sar_jumpboost.UniqueFor(SourceGame_Portal2Engine);
     sar_aircontrol.UniqueFor(SourceGame_Portal2Engine);
-    sar_hud_portals.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
+    //sar_hud_portals.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
     sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
     sar_disable_steam_pause.UniqueFor(SourceGame_Portal2Game);
     sar_debug_listener.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
@@ -137,7 +137,7 @@ void Cheats::Init()
     sar_replay_viewmode.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_mimic.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_tas_ss_forceuser.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
-    sar_hud_pause_timer.UniqueFor(s3);
+    //sar_hud_pause_timer.UniqueFor(s3);
     sar_speedrun_time_pauses.UniqueFor(s3);
     sar_speedrun_smartsplit.UniqueFor(s3);
     sar_disable_no_focus_sleep.UniqueFor(SourceGame_Portal2Engine);

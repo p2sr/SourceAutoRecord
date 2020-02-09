@@ -4,6 +4,8 @@
 #include <sstream>
 #include <string>
 
+#include "Features/Hud/Hud.hpp"
+
 #include "Demo.hpp"
 
 #include "Modules/Console.hpp"
@@ -101,7 +103,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
                             file.read((char*)&va_x, sizeof(va_x));
                             file.read((char*)&va_y, sizeof(va_y));
                             file.read((char*)&va_z, sizeof(va_z));
-                            file.read((char*)&lva_x, sizeof(lva_z));
+                            file.read((char*)&lva_x, sizeof(lva_x));
                             file.read((char*)&lva_y, sizeof(lva_y));
                             file.read((char*)&lva_z, sizeof(lva_z));
                             file.read((char*)&vo2_x, sizeof(vo2_x));
@@ -110,7 +112,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
                             file.read((char*)&va2_x, sizeof(va2_x));
                             file.read((char*)&va2_y, sizeof(va2_y));
                             file.read((char*)&va2_z, sizeof(va2_z));
-                            file.read((char*)&lva2_x, sizeof(lva2_z));
+                            file.read((char*)&lva2_x, sizeof(lva2_x));
                             file.read((char*)&lva2_y, sizeof(lva2_y));
                             file.read((char*)&lva2_z, sizeof(lva2_z));
                             console->Msg("[%i] flags: %i | "
@@ -281,5 +283,22 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "Parses multiple demos and prints t
     if (printTotal) {
         console->Print("Total Ticks: %i\n", totalTicks);
         console->Print("Total Time: %.3f\n", totalTime);
+    }
+}
+
+// HUD
+
+HUD_ELEMENT(demo, "0", "Draws name, tick and time of current demo.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen)
+{
+    if (!*engine->m_bLoadgame && *engine->demorecorder->m_bRecording && !engine->demorecorder->currentDemo.empty()) {
+        auto tick = engine->demorecorder->GetTick();
+        auto time = engine->ToTime(tick);
+        ctx->DrawElement("demo: %s %i (%.3f)", engine->demorecorder->currentDemo.c_str(), tick, time);
+    } else if (!*engine->m_bLoadgame && engine->demoplayer->IsPlaying()) {
+        auto tick = engine->demoplayer->GetTick();
+        auto time = engine->ToTime(tick);
+        ctx->DrawElement("demo: %s %i (%.3f)", engine->demoplayer->DemoName, tick, time);
+    } else {
+        ctx->DrawElement("demo: -");
     }
 }

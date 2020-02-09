@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "Features/EntityList.hpp"
+#include "Features/Hud/Hud.hpp"
 #include "Features/Session.hpp"
 
 #include "Modules/Console.hpp"
@@ -167,4 +168,30 @@ CON_COMMAND(sar_inspection_index, "Sets entity index for inspection.\n")
     }
 
     inspector->entityIndex = index;
+}
+
+// HUD
+
+HUD_ELEMENT(inspection, "0", "Draws entity inspection data.\n", HudType_InGame | HudType_Paused)
+{
+    ctx->DrawElement(inspector->IsRunning() ? "inspection (recording)" : "inspection");
+
+    auto info = entityList->GetEntityInfoByIndex(inspector->entityIndex);
+    if (info && info->m_pEntity) {
+        ctx->DrawElement("name: %s", server->GetEntityName(info->m_pEntity));
+        ctx->DrawElement("class: %s", server->GetEntityClassName(info->m_pEntity));
+    } else {
+        ctx->DrawElement("name: -");
+        ctx->DrawElement("class: -");
+    }
+
+    auto data = inspector->GetData();
+    ctx->DrawElement("pos: %.3f %.3f %.3f", data.origin.x, data.origin.y, data.origin.z);
+    ctx->DrawElement("off: %.3f %.3f %.3f", data.viewOffset.x, data.viewOffset.y, data.viewOffset.z);
+    ctx->DrawElement("ang: %.3f %.3f %.3f", data.angles.x, data.angles.y, data.angles.z);
+    ctx->DrawElement("vel: %.3f %.3f %.3f", data.velocity.x, data.velocity.y, data.velocity.z);
+    ctx->DrawElement("flags: %i", data.flags);
+    ctx->DrawElement("eflags: %i", data.eFlags);
+    ctx->DrawElement("maxspeed: %.3f", data.maxSpeed);
+    ctx->DrawElement("gravity: %.3f", data.gravity);
 }

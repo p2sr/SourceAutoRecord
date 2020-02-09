@@ -14,7 +14,7 @@ public:
     std::vector<TimerRule*> rules;
 
 public:
-    static std::vector<TimerCategory*> list;
+    static std::vector<TimerCategory*>& GetList();
 
 public:
     TimerCategory(int gameVersion, const char* name, std::vector<TimerRule*> rules);

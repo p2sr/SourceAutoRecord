@@ -1,11 +1,9 @@
 #pragma once
 #include <vector>
 
-#include "Module.hpp"
+#include "Features/Hud/Hud.hpp"
 
-#include "Features/Hud/InputHud.hpp"
-#include "Features/Hud/InspectionHud.hpp"
-#include "Features/Hud/SpeedrunHud.hpp"
+#include "Module.hpp"
 
 #include "Interface.hpp"
 #include "Utils.hpp"
@@ -15,14 +13,19 @@ public:
     Interface* enginevgui = nullptr;
 
 private:
+    HudContext context = HudContext();
     std::vector<Hud*> huds = std::vector<Hud*>();
-    std::vector<Hud*> huds2 = std::vector<Hud*>();
 
-    bool respectClShowPos = true;
+public:
+    std::vector<HudElement*> elements = std::vector<HudElement*>();
+
+private:
+    void Draw(Hud* const& hud);
+    void Draw(HudElement* const& element);
 
 public:
     // CEngineVGui::Paint
-    DECL_DETOUR(Paint, int mode);
+    DECL_DETOUR(Paint, PaintMode_t mode);
 
     bool Init() override;
     void Shutdown() override;

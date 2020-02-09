@@ -20,7 +20,7 @@ Variable sar_ihud_x("sar_ihud_x", "0", 0, "X offset of input HUD.\n");
 Variable sar_ihud_y("sar_ihud_y", "0", 0, "Y offset of input HUD.\n");
 Variable sar_ihud_button_padding("sar_ihud_button_padding", "2", 0, "Padding between buttons of input HUD.\n");
 Variable sar_ihud_button_size("sar_ihud_button_size", "60", 0, "Button size of input HUD.\n");
-Variable sar_ihud_button_color("sar_ihud_button_color", "0 0 0 233", "RGBA button color of input HUD.\n", 0);
+Variable sar_ihud_button_color("sar_ihud_button_color", "0 0 0 255", "RGBA button color of input HUD.\n", 0);
 Variable sar_ihud_font_color("sar_ihud_font_color", "255 255 255 255", "RGBA font color of input HUD.\n", 0);
 Variable sar_ihud_font_index("sar_ihud_font_index", "1", 0, "Font index of input HUD.\n");
 Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD.\n"
@@ -39,8 +39,8 @@ Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR", "Layout of input HUD.
                                                            "Pass an empty string to disable drawing labels completely.\n",
     0);
 Variable sar_ihud_shadow("sar_ihud_shadow", "1", "Draws button shadows of input HUD.\n");
-Variable sar_ihud_shadow_color("sar_ihud_shadow_color", "0 0 0 32", "RGBA button shadow color of input HUD.\n", 0);
-Variable sar_ihud_shadow_font_color("sar_ihud_shadow_font_color", "255 255 255 32", "RGBA button shadow font color of input HUD.\n", 0);
+Variable sar_ihud_shadow_color("sar_ihud_shadow_color", "0 0 0 64", "RGBA button shadow color of input HUD.\n", 0);
+Variable sar_ihud_shadow_font_color("sar_ihud_shadow_font_color", "255 255 255 64", "RGBA button shadow font color of input HUD.\n", 0);
 
 const int row0 = 0;
 const int row1 = 1;
@@ -56,60 +56,39 @@ const int col6 = 6;
 const int col7 = 7;
 const int col8 = 8;
 
-InputHud* inputHud;
-InputHud* inputHud2;
+InputHud inputHud;
+InputHud inputHud2;
 
-void InputHud::SetButtonBits(int buttonBits)
+InputHud::InputHud()
+    : Hud(HudType_InGame, true, SourceGame_Portal2Engine)
+    , buttonBits { 0, 0 }
 {
-    this->buttonBits = buttonBits;
 }
-bool InputHud::GetCurrentSize(int& xSize, int& ySize)
+void InputHud::SetButtonBits(int slot, int buttonBits)
+{
+    this->buttonBits[slot] = buttonBits;
+}
+bool InputHud::ShouldDraw()
+{
+    return sar_ihud.GetBool() && Hud::ShouldDraw();
+}
+void InputHud::Paint(int slot)
 {
     auto mode = sar_ihud.GetInt();
-    if (mode == 0) {
-        return false;
-    }
 
-    auto size = sar_ihud_button_size.GetInt();
-    auto padding = sar_ihud_button_padding.GetInt();
+    auto button = this->buttonBits[slot];
 
-    switch (mode) {
-    case 1:
-        xSize = (col4 + 1) * (size + (2 * padding));
-        ySize = (row1 + 1) * (size + (2 * padding));
-        break;
-    case 2:
-        xSize = (col6 + 1) * (size + (2 * padding));
-        ySize = (row2 + 1) * (size + (2 * padding));
-        break;
-    default:
-        xSize = (col8 + 1) * (size + (2 * padding));
-        ySize = (row2 + 1) * (size + (2 * padding));
-        break;
-    }
-
-    return true;
-}
-void InputHud::Draw()
-{
-    auto mode = sar_ihud.GetInt();
-    if (mode == 0 || engine->m_szLevelName[0] == '\0') {
-        return;
-    }
-
-    auto mvForward = this->buttonBits & IN_FORWARD;
-    auto mvBack = this->buttonBits & IN_BACK;
-    auto mvLeft = this->buttonBits & IN_MOVELEFT;
-    auto mvRight = this->buttonBits & IN_MOVERIGHT;
-    auto mvJump = this->buttonBits & IN_JUMP;
-    auto mvDuck = this->buttonBits & IN_DUCK;
-    auto mvUse = this->buttonBits & IN_USE;
-    auto mvAttack = this->buttonBits & IN_ATTACK;
-    auto mvAttack2 = this->buttonBits & IN_ATTACK2;
-    auto mvReload = this->buttonBits & IN_RELOAD;
-    auto mvSpeed = this->buttonBits & IN_SPEED;
-
-    surface->StartDrawing(surface->matsurface->ThisPtr());
+    auto mvForward =button & IN_FORWARD;
+    auto mvBack =button & IN_BACK;
+    auto mvLeft =button & IN_MOVELEFT;
+    auto mvRight =button & IN_MOVERIGHT;
+    auto mvJump =button & IN_JUMP;
+    auto mvDuck =button & IN_DUCK;
+    auto mvUse =button & IN_USE;
+    auto mvAttack =button & IN_ATTACK;
+    auto mvAttack2 =button & IN_ATTACK2;
+    auto mvReload =button & IN_RELOAD;
+    auto mvSpeed =button & IN_SPEED;
 
     auto xOffset = sar_ihud_x.GetInt();
     auto yOffset = sar_ihud_y.GetInt();
@@ -175,8 +154,33 @@ void InputHud::Draw()
 
     DrawElement(4, mvSpeed, col0, row1);
     DrawElement(4, mvReload, col4, row0);
+}
+bool InputHud::GetCurrentSize(int& xSize, int& ySize)
+{
+    auto mode = sar_ihud.GetInt();
+    if (mode == 0) {
+        return false;
+    }
 
-    surface->FinishDrawing();
+    auto size = sar_ihud_button_size.GetInt();
+    auto padding = sar_ihud_button_padding.GetInt();
+
+    switch (mode) {
+    case 1:
+        xSize = (col4 + 1) * (size + (2 * padding));
+        ySize = (row1 + 1) * (size + (2 * padding));
+        break;
+    case 2:
+        xSize = (col6 + 1) * (size + (2 * padding));
+        ySize = (row2 + 1) * (size + (2 * padding));
+        break;
+    default:
+        xSize = (col8 + 1) * (size + (2 * padding));
+        ySize = (row2 + 1) * (size + (2 * padding));
+        break;
+    }
+
+    return true;
 }
 
 // Completion Functions
@@ -284,7 +288,7 @@ CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of in
     auto xSize = 0;
     auto ySize = 0;
 
-    if (!inputHud->GetCurrentSize(xSize, ySize)) {
+    if (!inputHud.GetCurrentSize(xSize, ySize)) {
         return console->Print("HUD not active!\n");
     }
 

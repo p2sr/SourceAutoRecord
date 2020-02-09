@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 
+#include "Features/Hud/Hud.hpp"
 #include "Features/Feature.hpp"
 
 #include "Utils/SDK.hpp"

@@ -10,8 +10,8 @@ class EngineDemoPlayer : public Module {
 public:
     Interface* s_ClientDemoPlayer = nullptr;
 
-    using _IsPlayingBack = bool(__func*)(void* thisptr);
-    using _GetPlaybackTick = int(__func*)(void* thisptr);
+    using _IsPlayingBack = bool(__rescall*)(void* thisptr);
+    using _GetPlaybackTick = int(__rescall*)(void* thisptr);
 
     _IsPlayingBack IsPlayingBack = nullptr;
     _GetPlaybackTick GetPlaybackTick = nullptr;

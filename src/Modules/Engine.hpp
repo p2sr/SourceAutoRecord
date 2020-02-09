@@ -22,16 +22,16 @@ public:
     Interface* debugoverlay = nullptr;
     Interface* s_ServerPlugin = nullptr;
 
-    using _ClientCmd = int(__func*)(void* thisptr, const char* szCmdString);
-    using _GetLocalPlayer = int(__func*)(void* thisptr);
-    using _GetViewAngles = int(__func*)(void* thisptr, QAngle& va);
-    using _SetViewAngles = int(__func*)(void* thisptr, QAngle& va);
+    using _ClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
+    using _GetLocalPlayer = int(__rescall*)(void* thisptr);
+    using _GetViewAngles = int(__rescall*)(void* thisptr, QAngle& va);
+    using _SetViewAngles = int(__rescall*)(void* thisptr, QAngle& va);
     using _GetMaxClients = int (*)();
     using _GetGameDirectory = char*(__cdecl*)();
-    using _AddListener = bool(__func*)(void* thisptr, IGameEventListener2* listener, const char* name, bool serverside);
-    using _RemoveListener = bool(__func*)(void* thisptr, IGameEventListener2* listener);
+    using _AddListener = bool(__rescall*)(void* thisptr, IGameEventListener2* listener, const char* name, bool serverside);
+    using _RemoveListener = bool(__rescall*)(void* thisptr, IGameEventListener2* listener);
     using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
-    using _AddText = void(__func*)(void* thisptr, const char* pText, int nTickDelay);
+    using _AddText = void(__rescall*)(void* thisptr, const char* pText, int nTickDelay);
     using _ClientCommand = int (*)(void* thisptr, void* pEdict, const char* szFmt, ...);
     using _GetLocalClient = int (*)(int index);
 #ifdef _WIN32

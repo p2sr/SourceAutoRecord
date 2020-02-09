@@ -1,5 +1,9 @@
 #include "PauseTimer.hpp"
 
+#include "Features/Hud/Hud.hpp"
+
+#include "Modules/Engine.hpp"
+
 PauseTimer* pauseTimer;
 
 PauseTimer::PauseTimer()
@@ -28,4 +32,13 @@ bool PauseTimer::IsActive()
 int PauseTimer::GetTotal()
 {
     return this->ticks;
+}
+
+// HUD
+
+HUD_ELEMENT(pause_timer, "0", "Draws current value of pause timer.\n", HudType_InGame | HudType_Paused)
+{
+    auto tick = pauseTimer->GetTotal();
+    auto time = engine->ToTime(tick);
+    ctx->DrawElement("pause: %i (%.3f)", tick, time);
 }

@@ -4,9 +4,9 @@
 #include <cstdint>
 
 #ifdef _WIN32
-#define __funcc __thiscall
+#define __rescalll __thiscall
 #else
-#define __funcc __attribute__((__cdecl__))
+#define __rescalll __attribute__((__cdecl__))
 #endif
 
 struct Vector {
@@ -99,15 +99,15 @@ typedef void (*FnChangeCallback_t)(void* var, const char* pOldValue, float flOld
 
 using _CommandCallback = void (*)(const CCommand& args);
 using _CommandCompletionCallback = int (*)(const char* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
-using _InternalSetValue = void(__funcc*)(void* thisptr, const char* value);
-using _InternalSetFloatValue = void(__funcc*)(void* thisptr, float value);
-using _InternalSetIntValue = void(__funcc*)(void* thisptr, int value);
-using _RegisterConCommand = void(__funcc*)(void* thisptr, ConCommandBase* pCommandBase);
-using _UnregisterConCommand = void(__funcc*)(void* thisptr, ConCommandBase* pCommandBase);
-using _FindCommandBase = void*(__funcc*)(void* thisptr, const char* name);
-using _InstallGlobalChangeCallback = void(__funcc*)(void* thisptr, FnChangeCallback_t callback);
-using _RemoveGlobalChangeCallback = void(__funcc*)(void* thisptr, FnChangeCallback_t callback);
-using _AutoCompletionFunc = int(__funcc*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+using _InternalSetValue = void(__rescalll*)(void* thisptr, const char* value);
+using _InternalSetFloatValue = void(__rescalll*)(void* thisptr, float value);
+using _InternalSetIntValue = void(__rescalll*)(void* thisptr, int value);
+using _RegisterConCommand = void(__rescalll*)(void* thisptr, ConCommandBase* pCommandBase);
+using _UnregisterConCommand = void(__rescalll*)(void* thisptr, ConCommandBase* pCommandBase);
+using _FindCommandBase = void*(__rescalll*)(void* thisptr, const char* name);
+using _InstallGlobalChangeCallback = void(__rescalll*)(void* thisptr, FnChangeCallback_t callback);
+using _RemoveGlobalChangeCallback = void(__rescalll*)(void* thisptr, FnChangeCallback_t callback);
+using _AutoCompletionFunc = int(__rescalll*)(void* thisptr, char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
 class IConVar {
 public:
@@ -912,4 +912,9 @@ struct cmdalias_t {
 
 struct GameOverlayActivated_t {
     uint8_t m_bActive;
+};
+
+enum PaintMode_t {
+    PAINT_UIPANELS = (1 << 0),
+    PAINT_INGAMEPANELS = (1 << 1),
 };

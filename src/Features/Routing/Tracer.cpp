@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <tuple>
 
+#include "Features/Hud/Hud.hpp"
+
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -98,4 +100,20 @@ CON_COMMAND(sar_trace_result, "Prints tracing result.\n")
 CON_COMMAND(sar_trace_reset, "Resets tracer.\n")
 {
     tracer->Reset(GET_SLOT());
+}
+
+// HUD
+
+HUD_ELEMENT_MODE2(trace, "0", 0, 2, "Draws distance values of tracer. "
+                                   "0 = Default,\n"
+                                   "1 = Vec3,\n"
+                                   "2 = Vec2.\n",
+    HudType_InGame | HudType_Paused)
+{
+    auto result = tracer->GetTraceResult(ctx->slot);
+    auto xyz = tracer->CalculateDifferences(result);
+    auto length = (mode == 1)
+        ? tracer->CalculateLength(result, TracerLengthType::VEC3)
+        : tracer->CalculateLength(result, TracerLengthType::VEC2);
+    ctx->DrawElement("trace: %.3f (%.3f/%.3f/%.3f)", length, std::get<0>(xyz), std::get<1>(xyz), std::get<2>(xyz));
 }

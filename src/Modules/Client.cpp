@@ -115,7 +115,7 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
     }
 
     if (!in_forceuser.isReference || (in_forceuser.isReference && !in_forceuser.GetBool())) {
-        inputHud->SetButtonBits(cmd->buttons);
+        inputHud.SetButtonBits(0, cmd->buttons);
     }
 
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
@@ -135,7 +135,7 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
     }
 
     if (in_forceuser.GetBool()) {
-        inputHud2->SetButtonBits(cmd->buttons);
+        inputHud.SetButtonBits(1, cmd->buttons);
     }
 
     return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
@@ -159,7 +159,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
     auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)thisptr + nSlot * Offsets::PerUserInput_tSize + Offsets::m_pCommands);
     auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + Offsets::CUserCmdSize * (sequence_number % Offsets::MULTIPLAYER_BACKUP));
 
-    inputHud->SetButtonBits(cmd->buttons);
+    inputHud.SetButtonBits(0, cmd->buttons);
 
     return result;
 }
@@ -170,7 +170,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer2, int buf, signed int sequence_number)
     auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)thisptr + Offsets::m_pCommands);
     auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + Offsets::CUserCmdSize * (sequence_number % Offsets::MULTIPLAYER_BACKUP));
 
-    inputHud->SetButtonBits(cmd->buttons);
+    inputHud.SetButtonBits(1, cmd->buttons);
 
     return result;
 }
@@ -230,7 +230,7 @@ bool Client::Init()
             auto leaderboard = Command("+leaderboard");
             if (!!leaderboard) {
                 using _GetHud = void*(__cdecl*)(int unk);
-                using _FindElement = void*(__func*)(void* thisptr, const char* pName);
+                using _FindElement = void*(__rescall*)(void* thisptr, const char* pName);
 
                 auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
                 auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
