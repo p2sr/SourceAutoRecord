@@ -47,7 +47,7 @@ SAR provides an interface for accessing the timer externally which can be used w
 |sar_speedrun_result|cmd|Prints result of speedrun.
 |sar_speedrun_autostart|0|Starts speedrun timer automatically on first frame after a load.
 |sar_speedrun_autostop|0|Stops speedrun timer automatically when going into the menu.
-|sar_speedrun_smartsplit|1|[Timer interface](#interface) only splits once per level change.
+|sar_speedrun_smartsplit|0|[Timer interface](#interface) only splits once per level change.
 |sar_speedrun_categories|cmd|Lists all categories.
 |sar_speedrun_category|cmd|Sets the category for a speedrun.
 |sar_speedrun_offset|cmd|Sets offset in ticks at which the timer should start.

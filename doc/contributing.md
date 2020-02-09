@@ -23,6 +23,9 @@
     - [Variables](#variables)
     - [Commands](#commands)
     - [Buttons](#buttons)
+  - [HUD](#hud)
+    - [Elements](#elements)
+	- [Separate](#separate)
   - [Game Support](#game-support)
     - [Versions](#versions)
     - [Unique Console Commands](#unique-console-commands)
@@ -50,10 +53,31 @@
 ## Pull Requests
 
 - Write a meaningful title and a short description
-- Follow the coding style
+- Follow the [coding style](#coding-style)
 - Follow my requested changes
-- Don't stage files that you had to configure
+- DO NOT stage files that you had to configure
 - Use latest `master` branch
+
+### Quick Tutorial with git
+
+- Fork this repository on GitHub
+- git clone https://github.com/<your_account>/SourceAutoRecord
+- git remote add upstream https://github.com/NeKzor/SourceAutoRecord
+- git fetch remotes/upstream/master
+- git checkout -b feature/something remotes/upstream/master
+- *Change stuff and stage files*
+- git commit -m "New something"
+- git push origin feature/something
+
+### Merge existing branch (optionally)
+
+PRs will be squashed in the end anyway.
+
+- git checkout -b feature/something remotes/upstream/master
+- git merge --squash some-branch
+- *Resolve merge conflicts*
+- git commit -m "New something"
+- git push origin feature/something
 
 ## Coding Style
 
@@ -116,7 +140,7 @@ public:
     ...
 ```
 
-All offsets are declared in the `Offsets` namespace. If multiple variables have the same name rename them with a prefix. For example: `C_m_vecAbsOrigin` means client-side and `S_m_vecAbsOrigin` server-side.
+It is recommended to use offsets instead of SDK classes as they can be different for every game since SAR's philosophy is to support as many games as possible. The number of offsets to get to an object should be kept as low as possible. Why use offsets and not signatures aka patterns? Because they are much faster during initialization and development. All offsets are declared in the `Offsets` namespace. If multiple variables have the same name rename them with a prefix. For example: `C_m_vecAbsOrigin` means client-side and `S_m_vecAbsOrigin` server-side.
 
 Read [Game Support](#game-support) for initialization.
 
@@ -142,7 +166,7 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
 this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);
 ```
 
-Macros resolve the calling convention automatically: `__cdecl` for Linux and `__thiscall` as `__fastcall` with unused `edx` register for Windows. Use `DETOUR_T` for custom return types and `DETOUR_STD` for `__stdcall`.
+Calling conventions will automatically be resolved using the `__rescall` macro. On Linux it will be `__cdecl` and on Windows `__thiscall`. Hooks on Windows will be declared as `__fastcall` with unused `edx` register. Use `DETOUR_T` for custom return types and `DETOUR_STD` for `__stdcall`.
 
 ### Features
 
@@ -295,11 +319,197 @@ CON_COMMAND(sar_hello, "Useful help description.\n")
 }
 ```
 
+#### Autocompletion
+
+```cpp
+#include "Command.hpp"
+
+// Fastest way to declare a hidden autocompletion function
+// Last argument is type of std::vector<std::string>. It is required to wrap it with ()
+CON_COMMAND_COMPLETION(sar_force_fov, "Description.\n", ({ "0", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140" }))
+{
+	// Command callback
+}
+
+// Use this macro in order to call some initialization logic
+DECL_COMMAND_COMPLETION(sar_workshop)
+{
+	// Init some stuff
+    if (workshop->maps.empty()) {
+        workshop->Update();
+    }
+
+	// Basic filtering logic
+    for (auto& map : workshop->maps) {
+        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+            break;
+        }
+
+        if (std::strlen(match) != std::strlen(cmd)) {
+            if (std::strstr(map.c_str(), match)) {
+                items.push_back(map);
+            }
+        } else {
+            items.push_back(map);
+        }
+    }
+
+    FINISH_COMMAND_COMPLETION();
+}
+
+CON_COMMAND_F_COMPLETION(sar_workshop, "Description.\n", 0, sar_workshop_CompletionFunc)
+{
+	// Command callback
+}
+```
+
+### HUD
+
+#### Elements
+
+HUD elements can be declared with just a few lines of code. All elements are grouped together and start with `sar_hud_`. They also share the same settings starting with `sar_hud_default_`. The order of all elments can be customized by the user but the default order has to be declared separately.
+
+```cpp
+#include "Features/Hud/Hud.hpp"
+
+// Called if: sar_hud_frame 1
+HUD_ELEMENT(frame, "0", "Default example.\n", HudType_InGame | HudType_Paused)
+{
+    ctx->DrawElement("frame: %i", session->currentFrame);
+}
+
+// Called if: sar_hud_some_mode > 0
+HUD_ELEMENT_MODE(some_mode, "0", 0, 5, "Mode example.\n", HudType_InGame | HudType_Paused)
+{
+	if (mode == 4) {
+		ctx->DrawElement("mode: 4");
+	} else {
+		ctx->DrawElement("mode: 1-3 or 5");
+	}
+}
+
+// Called if: sar_hud_some_text[0] != '\0' (not empty)
+HUD_ELEMENT_STRING(some_text, "", 0, 5, "Text example.\n", HudType_InGame | HudType_Paused)
+{
+    ctx->DrawElement("mode: %s", text);
+}
+
+// Splitscreen support needs a 2 at the end of the macro
+HUD_ELEMENT2(splitscreen, "0", "Slot example.\n", HudType_InGame | HudType_Paused)
+{
+	// Do something with slot
+	auto slot = ctx->slot;
+}
+
+// Limit an element for a specific game
+HUD_ELEMENT3(game_version, "0", "Game specific example.\n",
+	HudType_InGame | HudType_Paused, // Where to draw
+	false,							 // no splitscreens
+	SourceGame_Portal)				 // Portal only
+{
+}
+```
+
+Last step is to add the element name to the ordered list. It is used for autocompletion and allows users to manually script their HUD order.
+
+```
+// Features/Hud/Hud.cpp
+std::vector<std::string> elementOrder = {
+	// ...
+	"frame",
+	"some_mode",
+	"some_text",
+	"splitscreen",
+	"game_version"
+};
+```
+
+### Separate
+
+A more complete HUD with separate settings can be declared manually if needed.
+
+```cpp
+// Features/Hud/MyHud.hpp
+#include "Hud.hpp"
+
+#include "Variable.hpp"
+
+class MyCustomHud : public Hud {
+public:
+    MyCustomHud();
+    bool ShouldDraw() override;
+    void Paint(int slot) override;
+    bool GetCurrentSize(int& xSize, int& ySize) override;
+};
+
+extern MyCustomHud myHud;
+
+extern Variable sar_my_hud;
+extern Variable sar_my_hud_x;
+extern Variable sar_my_hud_y;
+extern Variable sar_my_hud_font_color;
+extern Variable sar_my_hud_font_index;
+```
+
+```cpp
+// Features/Hud/MyHud.cpp
+#include "MyHud.hpp"
+
+#include "Modules/Scheme.hpp"
+#include "Modules/Surface.hpp"
+
+#include "Variable.hpp"
+
+Variable sar_my_hud("sar_sr_hud", "0", 0, "Draws my HUD.\n");
+Variable sar_my_hud_x("sar_sr_hud_x", "0", 0, "X offset of my HUD.\n");
+Variable sar_my_hud_y("sar_sr_hud_y", "100", 0, "Y offset of my HUD.\n");
+Variable sar_my_hud_font_color("sar_sr_hud_font_color", "255 255 255 255", "RGBA font color of my HUD.\n", 0);
+Variable sar_my_hud_font_index("sar_sr_hud_font_index", "70", 0, "Font index of my HUD.\n");
+
+MyHud myHud;
+
+MyHud::MyHud()
+    : Hud(HudType_InGame,         // Only when session is running (no-pauses)
+		false,                    // Do not draw for splitscreen (default)
+		SourceGame_Portal2Engine) // Support specific game verison (default is for every game)
+{
+}
+
+// Implement a more complex drawing logic if needed
+bool MyHud::ShouldDraw()
+{
+	// Calling the base function will resolve the HUD type condition
+    return sar_my_hud.GetBool() && Hud::ShouldDraw();
+}
+
+// Will be called if ShoulDraw allows it
+// The slot value is the current splitscreen index which will always
+// be 0 if we do not want splitscreens or if the game does not support them
+void MyHud::Paint(int slot)
+{
+    auto xOffset = sar_my_hud_x.GetInt();
+    auto yOffset = sar_my_hud_y.GetInt();
+
+    auto font = scheme->GetDefaultFont() + sar_my_hud_font_index.GetInt();
+    auto fontColor = this->GetColor(sar_my_hud_font_color.GetString());
+
+    surface->DrawTxt(font, xOffset, yOffset, fontColor, "%s", "hi :)");
+}
+
+// Useful for commands that need the exact position
+// See Feature/Hud/InputHud.cpp
+bool MyHud::GetCurrentSize(int& xSize, int& ySize)
+{
+	// Calc size and return value if hud is active
+    return false;
+}
+```
+
 #### Buttons
 
 Portal 2 Engine only.
 ```cpp
-#define IN_AUTOSTRAFE (1 << 30) // Use a unique flag
+#define IN_AUTOSTRAFE (1 << 31) // Make sure to use a unique flag
 
 kbutton_t in_autostrafe;
 
