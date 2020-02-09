@@ -1,0 +1,43 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build-lin:
+    name: Linux Build
+    runs-on: ubuntu-16.04
+    if: "contains(github.event.head_commit.message, '[ci build]')"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Install Dependencies
+      run: make get-deps
+    - name: Build
+      run: |
+        make
+        mkdir -p artifact/
+        cp sar.so artifact/sar.so
+    - name: Create Artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: sar-linux
+        path: artifact/
+  build-win:
+    name: Windows Build
+    runs-on: windows-2019
+    if: "contains(github.event.head_commit.message, '[ci build]')"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build
+        run: |
+          cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+          .\MSBuild.exe $Env:GITHUB_WORKSPACE\SourceAutoRecordv16.sln /t:SourceAutoRecord /p:Configuration=Release /p:Platform=x86
+          cd $Env:GITHUB_WORKSPACE
+          mkdir -p artifact/
+          cp bin/sar.dll artifact/sar.dll
+      - name: Create Artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: sar-windows
+          path: artifact/

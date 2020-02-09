@@ -1,9 +1,0 @@
-language: cpp
-dist: xenial
-compiler: gcc
-os: linux
-script: make
-addons:
-  apt:
-    packages:
-      - g++-multilib

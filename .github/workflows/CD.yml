@@ -1,0 +1,97 @@
+name: CD
+
+on:
+  push:
+    tags:
+    - '*'
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-16.04
+    steps:
+    - name: Get Release Version
+      id: get_release
+      run: echo ::set-output name=version::${GITHUB_REF:10}
+    - name: Create Release
+      uses: actions/create-release@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        body: |
+          ![CD](https://github.com/NeKzor/SourceAutoRecord/workflows/CD/badge.svg)
+
+          **Installation**
+          - Download:
+            - [Windows](https://github.com/NeKzor/SourceAutoRecord/releases/download/${{ steps.get_release.output.version }}/sar.dll)
+            - [Linux](https://github.com/NeKzor/SourceAutoRecord/releases/download/${{ steps.get_release.output.version }}/sar.so)
+          - Place the binary into the game folder e.g. `Portal 2`
+          - Open developer console and enter `plugin_load sar`
+
+          ---
+
+          **Changelog**
+          TODO
+
+          ---
+
+          **Special Thanks To**
+          TODO
+
+          ---
+
+          **Useful Links**
+
+          [Cvar List](https://nekzor.github.io/SourceAutoRecord/doc/cvars)
+          [Troubleshooting](https://nekzor.github.io/SourceAutoRecord/doc/issue)
+          [Upcoming Features](https://github.com/NeKzor/SourceAutoRecord/projects/3)
+        draft: false
+        prerelease: false
+  build-lin:
+    name: Linux Build
+    runs-on: ubuntu-16.04
+    needs: release
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Install Dependencies
+      run: make get-deps
+    - name: Build
+      run: make
+    - name: Fetch Latest Release
+      id: latest_release
+      run: echo ::set-output name=release_id::$(node -e "require('https').request({hostname:'api.github.com',path:'/repos/NeKzor/SourceAutoRecord/releases',headers:{'User-Agent':'n^'}},(r)=>{let b='';r.on('data',(d)=>b+=d);r.on('end',()=>process.stdout.write(JSON.parse(b)[0].id.toString()));}).end();")
+    - name: Upload Asset
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: https://uploads.github.com/repos/NeKzor/SourceAutoRecord/releases/${{ steps.latest_release.outputs.release_id }}/assets{?name,label}
+        asset_path: sar.so
+        asset_name: sar.so
+        asset_content_type: application/octet-stream
+  build-win:
+    name: Windows Build
+    runs-on: windows-2019
+    needs: release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build
+        run: |
+          cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+          .\MSBuild.exe $Env:GITHUB_WORKSPACE\SourceAutoRecordv16.sln /t:SourceAutoRecord /p:Configuration=Release /p:Platform=x86
+      - name: Fetch Latest Release
+        id: latest_release
+        run: echo ::set-output name=release_id::$(node -e "require('https').request({hostname:'api.github.com',path:'/repos/NeKzor/SourceAutoRecord/releases',headers:{'User-Agent':'n^'}},(r)=>{let b='';r.on('data',(d)=>b+=d);r.on('end',()=>process.stdout.write(JSON.parse(b)[0].id.toString()));}).end();")
+      - name: Upload Windows Asset
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: https://uploads.github.com/repos/NeKzor/SourceAutoRecord/releases/${{ steps.latest_release.outputs.release_id }}/assets{?name,label}
+          asset_path: bin/sar.dll
+          asset_name: sar.dll
+          asset_content_type: application/octet-stream
