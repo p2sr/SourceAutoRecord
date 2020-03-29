@@ -38,6 +38,12 @@ Variable cl_crosshairdot("cl_crosshairdot", "1", "Decides if there is a dot in t
 Variable cl_quickhud_x("sar_quickhud_x", "45", -1000, "Horizontal distance of the custom quickhud.\n");
 Variable cl_quickhud_y("sar_quickhud_y", "0", -1000, "Vertical distance of the custom quickhud.\n");
 Variable cl_quickhud_size("sar_quickhud_size", "15", -100, "Size of the custom quickhud.\n");
+Variable cl_quickhudleftcolor_r("cl_quickhudleftcolor_r", "255", 0, 255, "Changes the color of the left quickhud.\n");
+Variable cl_quickhudleftcolor_g("cl_quickhudleftcolor_g", "184", 0, 255, "Changes the color of the left quickhud.\n");
+Variable cl_quickhudleftcolor_b("cl_quickhudleftcolor_b", "86", 0, 255, "Changes the color of the left quickhud.\n");
+Variable cl_quickhudrightcolor_r("cl_quickhudrightcolor_r", "111", 0, 255, "Changes the color of the right quickhud.\n");
+Variable cl_quickhudrightcolor_g("cl_quickhudrightcolor_g", "184", 0, 255, "Changes the color of the right quickhud.\n");
+Variable cl_quickhudrightcolor_b("cl_quickhudrightcolor_b", "255", 0, 255, "Changes the color of the right quickhud.\n");
 Variable cl_quickhud_alpha("cl_quickhud_alpha", "255", 0, 255, "Change the amount of transparency.\n");
 
 Crosshair crosshair;
@@ -174,22 +180,25 @@ void Crosshair::Paint(int slot)
     this->GetPortalsStates(portalGunUpgradeState, bluePortalState, orangePortalState);
 
     if (sar_quickhud_mode.GetInt() == 1 && portalGunUpgradeState) { // Customizable quickhud
+        Color cl(cl_quickhudleftcolor_r.GetInt(), cl_quickhudleftcolor_g.GetInt(), cl_quickhudleftcolor_b.GetInt(), cl_quickhud_alpha.GetInt());
+        Color cr(cl_quickhudrightcolor_r.GetInt(), cl_quickhudrightcolor_r.GetInt(), cl_quickhudrightcolor_r.GetInt(), cl_quickhud_alpha.GetInt());
+
         int x1 = xCenter + cl_quickhud_x.GetInt();
         int x2 = xCenter - cl_quickhud_x.GetInt();
         int y1 = yCenter + cl_quickhud_y.GetInt();
         int size = cl_quickhud_size.GetInt();
 
         if (bluePortalState) {
-            surface->DrawFilledCircle(x1, y1, size, Color(255, 184, 86, cl_quickhud_alpha.GetInt()));
+            surface->DrawFilledCircle(x1, y1, size, cl);
         } else {
-            surface->DrawCircle(x1, y1, size, Color(255, 184, 86, cl_quickhud_alpha.GetInt()));
+            surface->DrawCircle(x1, y1, size, cl);
         }
 
         if (portalGunUpgradeState == 2) {
             if (orangePortalState) {
-                surface->DrawFilledCircle(x2, y1, size, Color(111, 184, 255, cl_quickhud_alpha.GetInt()));
+                surface->DrawFilledCircle(x2, y1, size, cr);
             } else {
-                surface->DrawCircle(x2, y1, size, Color(111, 184, 255, cl_quickhud_alpha.GetInt()));
+                surface->DrawCircle(x2, y1, size, cr);
             }
         }
 

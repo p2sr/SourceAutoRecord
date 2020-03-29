@@ -50,6 +50,12 @@ extern Variable cl_crosshairdot;
 extern Variable cl_quickhud_x;
 extern Variable cl_quickhud_y;
 extern Variable cl_quickhud_size;
+extern Variable cl_quickhudleftcolor_r;
+extern Variable cl_quickhudleftcolor_g;
+extern Variable cl_quickhudleftcolor_b;
+extern Variable cl_quickhudrightcolor_r;
+extern Variable cl_quickhudrightcolor_g;
+extern Variable cl_quickhudrightcolor_b;
 extern Variable cl_quickhud_alpha;
 
 extern Command sar_crosshair_set_texture;
