@@ -28,6 +28,7 @@ public:
 
     CGlobalVars* gpGlobals = nullptr;
     CEntInfo* m_EntPtrArray = nullptr;
+    CEntInfo* portalGun = nullptr;
 
 private:
     bool jumpedLastTime = false;

@@ -2,6 +2,7 @@
 #pragma warning(suppress : 26495)
 #include <cmath>
 #include <cstdint>
+#include "Offsets.hpp"
 
 #ifdef _WIN32
 #define __rescalll __thiscall
@@ -918,3 +919,21 @@ enum PaintMode_t {
     PAINT_UIPANELS = (1 << 0),
     PAINT_INGAMEPANELS = (1 << 1),
 };
+
+class IHandleEntity;
+
+class CBaseHandle {
+    friend class EntityList;
+
+public:
+    inline int GetEntryIndex() const
+    {
+        return m_Index & Offsets::ENT_ENTRY_MASK;
+    }
+
+    inline int GetSerialNumber() const
+    {
+        return m_Index >> Offsets::NUM_ENT_ENTRY_BITS;
+    }
+
+

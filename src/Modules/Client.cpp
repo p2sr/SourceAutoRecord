@@ -28,6 +28,7 @@ Variable cl_sidespeed;
 Variable cl_forwardspeed;
 Variable in_forceuser;
 Variable cl_fov;
+Variable crosshairVariable;
 
 REDECL(Client::HudUpdate);
 REDECL(Client::CreateMove);
@@ -63,6 +64,18 @@ void Client::CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, 
     if (reset) {
         pButtonState->state &= clearmask;
     }
+}
+
+bool Client::ShouldDrawCrosshair()
+{
+    if (!crosshairVariable.GetBool()) {
+        crosshairVariable.SetValue(1);
+        auto value = this->ShouldDraw(this->g_HUDQuickInfo->ThisPtr());
+        crosshairVariable.SetValue(0);
+        return value;
+    }
+
+    return this->ShouldDraw(this->g_HUDQuickInfo->ThisPtr());
 }
 
 // CHLClient::HudUpdate
@@ -240,6 +253,12 @@ bool Client::Init()
                 if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
                     this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
                 }
+
+                auto CHUDQuickInfo = FindElement(GetHud(-1), "CHUDQuickInfo");
+
+                if (this->g_HUDQuickInfo = Interface::Create(CHUDQuickInfo)) {
+                    this->ShouldDraw = this->g_HUDQuickInfo->Original<_ShouldDraw>(Offsets::ShouldDraw, readJmp);
+                }
             }
         }
 
@@ -309,6 +328,7 @@ bool Client::Init()
     cl_sidespeed = Variable("cl_sidespeed");
     cl_forwardspeed = Variable("cl_forwardspeed");
     cl_fov = Variable("cl_fov");
+    crosshairVariable = Variable("crosshair");
 
     return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }
@@ -320,6 +340,7 @@ void Client::Shutdown()
     Interface::Delete(this->g_HUDChallengeStats);
     Interface::Delete(this->s_EntityList);
     Interface::Delete(this->g_Input);
+    Interface::Delete(this->g_HUDQuickInfo);
     Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 }
 

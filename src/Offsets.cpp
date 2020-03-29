@@ -45,6 +45,7 @@ int Create;
 // CMatSystemSurface
 int DrawSetColor;
 int DrawFilledRect;
+int DrawColoredCircle;
 int DrawLine;
 int DrawSetTextFont;
 int DrawSetTextColor;
@@ -52,6 +53,16 @@ int GetFontTall;
 int PaintTraverseEx;
 int DrawColoredText;
 int DrawTextLen;
+
+int DrawGetTextureId;
+int DrawGetTextureFile;
+int DrawSetTextureFile;
+int DrawSetTextureRGBA;
+int DrawSetTexture;
+int DrawGetTextureSize;
+int DrawTexturedRect;
+int IsTextureIDValid;
+int CreateNewTextureID;
 
 // CInputSystem
 int StringToButtonCode;
@@ -118,6 +129,18 @@ int m_pSurfaceData;
 // CPortal_Player
 int iNumPortalsPlaced;
 
+//CWeaponPortalgun
+int m_bCanFirePortal1;
+int m_bCanFirePortal2;
+int m_hPrimaryPortal;
+int m_hSecondaryPortal;
+
+// CProp_Portal
+int m_bActivated;
+int m_bIsPortal2;
+int m_hFiredByPlayerOffset;
+int m_hActiveWeapon;
+
 // IEngineVGuiInternal
 int Paint;
 
@@ -141,6 +164,9 @@ int IsRestoring;
 
 // CHud
 int GetName;
+
+//CHUDQuickInfo
+int ShouldDraw;
 
 // CGameEventManager
 int AddListener;
@@ -206,6 +232,9 @@ int HostState_OnClientConnected;
 int hoststate;
 int m_bLoadGame;
 int NUM_ENT_ENTRIES;
+int ENT_ENTRY_MASK;
+int INVALID_EHANDLE_INDEX;
+int NUM_ENT_ENTRY_BITS;
 int m_iClassName;
 int m_iName;
 int m_EntPtrArray;

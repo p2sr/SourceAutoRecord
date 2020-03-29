@@ -14,6 +14,7 @@ private:
     Interface* g_pClientMode = nullptr;
     Interface* g_pClientMode2 = nullptr;
     Interface* g_HUDChallengeStats = nullptr;
+    Interface* g_HUDQuickInfo = nullptr;
     Interface* s_EntityList = nullptr;
     Interface* g_Input = nullptr;
 
@@ -22,11 +23,13 @@ public:
     using _KeyDown = int(__cdecl*)(void* b, const char* c);
     using _KeyUp = int(__cdecl*)(void* b, const char* c);
     using _GetAllClasses = ClientClass* (*)();
+    using _ShouldDraw = bool(__rescall*)(void* thisptr);
 
     _GetClientEntity GetClientEntity = nullptr;
     _KeyDown KeyDown = nullptr;
     _KeyUp KeyUp = nullptr;
     _GetAllClasses GetAllClasses = nullptr;
+    _ShouldDraw ShouldDraw = nullptr;
 
     void* in_jump = nullptr;
 
@@ -38,6 +41,7 @@ public:
 
     void* GetPlayer(int index);
     void CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset);
+    bool ShouldDrawCrosshair();
 
 public:
     // CHLClient::HudUpdate
