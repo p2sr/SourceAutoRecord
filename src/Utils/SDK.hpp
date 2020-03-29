@@ -936,4 +936,6 @@ public:
         return m_Index >> Offsets::NUM_ENT_ENTRY_BITS;
     }
 
-
+protected:
+    unsigned long m_Index;
+};
