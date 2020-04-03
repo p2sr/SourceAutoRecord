@@ -28,10 +28,19 @@ BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
 }
 bool BaseHud::ShouldDraw()
 {
-    return ((this->type & HudType_InGame) && session->isRunning)
-        || ((this->type & HudType_Paused) && pauseTimer->IsActive())
-        || ((this->type & HudType_Menu) && engine->m_szLevelName[0] == '\0')
-        || ((this->type & HudType_LoadingScreen) && !session->isRunning);
+    if (engine->m_szLevelName[0] == '\0') {
+        return this->type & HudType_Menu;
+    }
+
+    if (pauseTimer->IsActive()) {
+        return this->type & HudType_Paused;
+    }
+
+    if (session->isRunning) {
+        return this->type & HudType_InGame;
+    }
+
+    return this->type & HudType_LoadingScreen;
 }
 
 std::vector<Hud*>& Hud::GetList()
