@@ -12,6 +12,7 @@
 // clang-format on
 #define __rescall __thiscall
 #define DLL_EXPORT extern "C" __declspec(dllexport)
+#define SEEK_DIR_CUR std::ios_base::_Seekdir::_Seekcur
 
 #define DECL_DETOUR(name, ...)                                  \
     using _##name = int(__rescall*)(void* thisptr, ##__VA_ARGS__); \
@@ -82,6 +83,7 @@ bool mhInitialized = false;
 #define __stdcall __attribute__((__stdcall__))
 #define __fastcall __attribute__((__fastcall__))
 #define DLL_EXPORT extern "C" __attribute__((visibility("default")))
+#define SEEK_DIR_CUR std::ios_base::seekdir::_S_cur
 
 #define DECL_DETOUR(name, ...)                                  \
     using _##name = int(__rescall*)(void* thisptr, ##__VA_ARGS__); \
