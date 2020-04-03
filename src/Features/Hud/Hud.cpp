@@ -1,5 +1,6 @@
 #include "Hud.hpp"
 
+#include <algorithm>
 #include <cstdio>
 
 #include "Features/Session.hpp"
