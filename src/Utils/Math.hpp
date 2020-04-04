@@ -35,7 +35,7 @@ inline void Math::SinCos(float radians, float* sine, float* cosine)
         fstp DWORD PTR[eax]
     }
 #else
-    register double __cosr, __sinr;
+    double __cosr, __sinr;
     __asm("fsincos"
           : "=t"(__cosr), "=u"(__sinr)
           : "0"(radians));

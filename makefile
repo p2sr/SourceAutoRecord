@@ -19,7 +19,7 @@ SRCS+=$(wildcard $(SDIR)Modules/*.cpp)
 SRCS+=$(wildcard $(SDIR)Utils/*.cpp)
 OBJS=$(patsubst $(SDIR)%.cpp, $(ODIR)%.o, $(SRCS))
 
-CC=g++
+CC=g++-8
 STFU=-Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas
 CFLAGS=-std=c++17 -m32 -fPIC -static-libstdc++ -shared -Wall -s $(STFU) -I$(SDIR)
 #CFLAGS+=-D _DEBUG
@@ -66,7 +66,7 @@ post:
 #	@$(EXPORT) "$(BINARY)" "$(STEAM)Portal/$(BINARY)"
 
 get-deps:
-	sudo apt-get install -y g++-multilib
+	sudo apt-get install -y g++-8-multilib
 
 cvars:
 	node cvars.js "$(STEAM)Portal 2"

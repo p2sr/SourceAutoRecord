@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/NeKzor/SourceAutoRecord.svg?branch=master)](https://travis-ci.org/NeKzor/SourceAutoRecord)
+![CI](https://github.com/NeKzor/SourceAutoRecord/workflows/CI/badge.svg)
+![CD](https://github.com/NeKzor/SourceAutoRecord/workflows/CD/badge.svg)
 [![Build Version](https://img.shields.io/badge/version-v1.11-brightgreen.svg)](https://github.com/NeKzor/SourceAutoRecord/projects/3)
 [![Release Status](https://img.shields.io/github/release/NeKzor/SourceAutoRecord/all.svg)](https://github.com/NeKzor/SourceAutoRecord/releases)
 

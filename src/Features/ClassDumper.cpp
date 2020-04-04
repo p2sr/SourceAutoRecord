@@ -2,13 +2,10 @@
 
 #include <cstring>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <ios>
 #include <string>
-
-#ifdef _WIN32
-#include <functional>
-#endif
 
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
