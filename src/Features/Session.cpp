@@ -1,5 +1,7 @@
 #include "Session.hpp"
 
+#include "Features/Demo/GhostPlayer.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Features/Listener.hpp"
 #include "Features/Rebinder.hpp"
@@ -56,6 +58,7 @@ void Session::Started(bool menu)
         }
 
         this->isRunning = true;
+        networkGhostPlayer->isInLevel = false;
     } else {
         console->Print("Session Started!\n");
         this->Start();
@@ -121,6 +124,22 @@ void Session::Start()
         speedrun->Start(engine->GetTick());
     }
 
+    if (ghostPlayer->IsReady()) { //Demo Ghost
+        engine->PrecacheModel(ghostPlayer->GetFirstGhost()->modelName, true);
+        ghostPlayer->GetFirstGhost()->hasFinished = false; //TODO : apply for all ghosts
+    } else if (networkGhostPlayer->IsConnected()) {
+        if (networkGhostPlayer->ghostPool.size() > 0) {
+            engine->PrecacheModel(networkGhostPlayer->ghostPool[0]->modelName, true);
+        }
+        networkGhostPlayer->UpdateCurrentMap();
+        networkGhostPlayer->UpdateGhostsCurrentMap();
+        if (sar_ghost_sync_maps.GetBool() && !networkGhostPlayer->AreGhostsOnSameMap()) {
+            engine->ExecuteCommand("pause");
+        }
+        networkGhostPlayer->StartThinking();
+        networkGhostPlayer->isInLevel = true;
+    }
+
     stepCounter->ResetTimer();
 
     speedrun->ReloadRules();
@@ -131,6 +150,16 @@ void Session::Ended()
 {
     if (!this->isRunning) {
         return;
+    }
+
+    //Ghost
+    if (ghostPlayer->IsReady()) {
+        ghostPlayer->ResetGhost();
+    }
+    if (networkGhostPlayer->IsConnected()) {
+        networkGhostPlayer->PauseThinking();
+        networkGhostPlayer->ClearGhosts();
+        networkGhostPlayer->isInLevel = false;
     }
 
     auto tick = this->GetTick();

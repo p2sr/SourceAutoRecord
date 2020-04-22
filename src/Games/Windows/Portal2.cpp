@@ -58,6 +58,7 @@ void Portal2::LoadOffsets()
     demorecorder = 87; // CClientState::Disconnect
     GetCurrentMap = 25; // CEngineTool
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
+    PrecacheModel = 61; // CEngineTool::PrecacheModel
     AddListener = 3; // CGameEventManager
     RemoveListener = 5; // CGameEventManager
     FireEventClientSide = 8; // CGameEventManager
@@ -70,6 +71,12 @@ void Portal2::LoadOffsets()
     Frame = 5; // CEngine
     m_bLoadGame = 448; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
     ScreenPosition = 12; // CIVDebugOverlay
+    AddBoxOverlay = 1; // CIVDebugOverlay
+    AddSphereOverlay = 2; // CIVDebugOverlay
+    AddTriangleOverlay = 3; // CIVDebugOverlay
+    AddLineOverlay = 4; // CIVDebugOverlay
+    AddScreenTextOverlay = 7; // CIVDebugOverlay
+    ClearAllOverlays = 16; // CIVDebugOverlay
     MAX_SPLITSCREEN_PLAYERS = 2; // maxplayers
     OnGameOverlayActivated = 144; // CSteam3Client
 
@@ -115,6 +122,11 @@ void Portal2::LoadOffsets()
     NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
     GetIServerEntity = 1; // CServerTools
     m_EntPtrArray = 61; // CServerTools::GetIServerEntity
+    SetKeyValueChar = 13; // CServerTools::SetKeyValue (const char *szValue)
+    SetKeyValueFloat = 12; // CServerTools::SetKeyValue (float flValue )
+    SetKeyValueVector = 11; // CServerTools::SetKeyValue (const Vector &vecValue )
+    CreateEntityByName = 14; //CServerTool::CreateEntityByName
+    DispatchSpawn = 15; //CServerTool::DispatchSpawn
     ClientCommand = 39; // CVEngineServer
     IsPlayer = 85; // CBasePlayer
     m_pSurfaceData = 3868; // CGameMovement::CheckJumpButton
@@ -134,6 +146,7 @@ void Portal2::LoadOffsets()
     GetName = 10; // CHud
     GetHud = 125; // cc_leaderboard_enable
     FindElement = 135; // cc_leaderboard_enable
+    ChatPrintf = 22; // CBaseHudChat
     DecodeUserCmdFromBuffer = 7; // CInput
     PerUserInput_tSize = 368; // CInput::DecodeUserCmdFromBuffer
     m_pCommands = 236; // CInput::DecodeUserCmdFromBuffer

@@ -5,6 +5,8 @@
 
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
+#include "Features/Demo/GhostEntity.hpp"
+#include "Features/Demo/GhostPlayer.hpp"
 
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
@@ -77,6 +79,23 @@ void HudContext::DrawElement(const char* fmt, ...)
 
     ++this->elements;
 }
+void HudContext::DrawElementOnScreen(const int groupID, const float xPos, const float yPos, const char* fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+    char data[128];
+    vsnprintf(data, sizeof(data), fmt, argptr);
+    va_end(argptr);
+
+    surface->DrawTxt(font,
+        xPos - sizeof(fmt) * fontSize,
+        yPos - sar_ghost_height.GetInt() - sar_ghost_name_offset.GetInt() + this->group[groupID] * (fontSize + spacing),
+        this->textColor,
+        data);
+
+    ++this->group[groupID];
+}
+
 void HudContext::Reset(int slot)
 {
     this->slot = slot;

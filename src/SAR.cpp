@@ -83,6 +83,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                     this->features->AddFeature<Listener>(&listener);
                     this->features->AddFeature<WorkshopList>(&workshop);
                     this->features->AddFeature<Imitator>(&imitator);
+                    this->features->AddFeature<GhostPlayer>(&ghostPlayer);
+                    this->features->AddFeature<NetworkGhostPlayer>(&networkGhostPlayer);
                 }
 
                 if (listener) {
@@ -240,6 +242,13 @@ CON_COMMAND(sar_rename, "Changes your name. Usage: sar_rename <name>\n")
 }
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
+    if (networkGhostPlayer->runThread) {
+        networkGhostPlayer->runThread = false;
+        if (networkGhostPlayer->IsConnected()) {
+            networkGhostPlayer->Disconnect();
+        }
+    }
+
     if (sar.cheats) {
         sar.cheats->Shutdown();
     }

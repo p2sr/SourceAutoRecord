@@ -47,12 +47,14 @@ private:
     int spacing = 0;
     Color textColor = Color(255, 255, 255);
     int elements = 0;
+    int group[128];
 
 public:
     int slot = 0;
 
 public:
     void DrawElement(const char* fmt, ...);
+    void DrawElementOnScreen(const int nbElement, const float xPos, const float yPos, const char* fmt, ...);
     void Reset(int slot);
 };
 

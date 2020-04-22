@@ -319,6 +319,15 @@
     <ClCompile Include="Features\FovChanger.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Demo\GhostEntity.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Demo\GhostPlayer.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Demo\NetworkGhostPlayer.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -665,6 +674,15 @@
     </ClInclude>
     <ClInclude Include="Features\FovChanger.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\GhostEntity.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\GhostPlayer.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\NetworkGhostPlayer.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\SFML\include\SFML\Network\Export.hpp">
       <Filter>lib\SFML\Network</Filter>

@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <cstring>
 
+#include "Features/Demo/GhostPlayer.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Imitator.hpp"
 #include "Features/OffsetFinder.hpp"
@@ -65,9 +67,23 @@ void Client::CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, 
     }
 }
 
+void Client::Chat(TextColor color, const char* fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+    char data[1024];
+    vsnprintf(data, sizeof(data), fmt, argptr);
+    va_end(argptr);
+    client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, "%c%s", color, data);
+}
+
 // CHLClient::HudUpdate
 DETOUR(Client::HudUpdate, unsigned int a2)
 {
+    if (ghostPlayer->IsReady() && !ghostPlayer->IsNetworking() && engine->demoplayer->IsPlaying()) {
+        ghostPlayer->Run();
+    }
+
     if (cmdQueuer->isRunning) {
         for (auto&& tas = cmdQueuer->frames.begin(); tas != cmdQueuer->frames.end();) {
             --tas->framesLeft;
@@ -240,6 +256,11 @@ bool Client::Init()
                 if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
                     this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
                 }
+
+                auto CHudChat = FindElement(GetHud(-1), "CHudChat");
+                if (this->g_HudChat = Interface::Create(CHudChat, false)) {
+                    this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
+                }
             }
         }
 
@@ -320,6 +341,7 @@ void Client::Shutdown()
     Interface::Delete(this->g_HUDChallengeStats);
     Interface::Delete(this->s_EntityList);
     Interface::Delete(this->g_Input);
+    Interface::Delete(this->g_HudChat);
     Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 }
 
