@@ -666,6 +666,114 @@
     <ClInclude Include="Features\FovChanger.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Export.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Ftp.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Http.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\IpAddress.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Packet.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Socket.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\SocketHandle.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\SocketSelector.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\TcpListener.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\TcpSocket.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\UdpSocket.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Clock.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Err.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Export.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\FileInputStream.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\InputStream.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Lock.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\MemoryInputStream.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Mutex.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\NativeActivity.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\NonCopyable.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Sleep.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\String.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Thread.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\ThreadLocal.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\ThreadLocalPtr.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Time.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Utf.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Vector2.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Vector3.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Config.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\GpuPreference.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Graphics.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Main.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">
@@ -722,10 +830,39 @@
     <Filter Include="SourceAutoRecord\Features\ReplaySystem">
       <UniqueIdentifier>{6d5adac2-903e-463f-8055-8677eaca4662}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib\SFML">
+      <UniqueIdentifier>{25544dbf-4c2c-4076-9dc4-94be31cd7b11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\SFML\Network">
+      <UniqueIdentifier>{bc02a0e9-9ff0-4c7f-8eb5-8d0ed2a41c05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\SFML\System">
+      <UniqueIdentifier>{5c7739c9-9ec9-4029-8c83-4d03dd3f4637}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\lib\minhook\LICENSE.txt">
       <Filter>lib\minhook</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lib\SFML\include\SFML\System\String.inl">
+      <Filter>lib\SFML\System</Filter>
+    </None>
+    <None Include="..\lib\SFML\include\SFML\System\Thread.inl">
+      <Filter>lib\SFML\System</Filter>
+    </None>
+    <None Include="..\lib\SFML\include\SFML\System\ThreadLocalPtr.inl">
+      <Filter>lib\SFML\System</Filter>
+    </None>
+    <None Include="..\lib\SFML\include\SFML\System\Utf.inl">
+      <Filter>lib\SFML\System</Filter>
+    </None>
+    <None Include="..\lib\SFML\include\SFML\System\Vector2.inl">
+      <Filter>lib\SFML\System</Filter>
+    </None>
+    <None Include="..\lib\SFML\include\SFML\System\Vector3.inl">
+      <Filter>lib\SFML\System</Filter>
+    </None>
   </ItemGroup>
 </Project>
