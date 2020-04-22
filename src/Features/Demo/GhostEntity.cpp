@@ -89,7 +89,6 @@ GhostEntity* GhostEntity::Spawn(bool instantPlay, Vector position)
         this->isPlaying = instantPlay;
 
         if (this->ghost_entity != nullptr) {
-            console->Print("Say 'Hi !' to Jonnil !\n");
             this->lastUpdate = this->clock.now();
             return this;
         }

@@ -150,7 +150,8 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_ghost_set_demo, "Set the demo in order to build
     }
 }
 
-CON_COMMAND_COMPLETION(sar_ghost_set_prop_model, "Set the prop model. Example : models/props/metal_box.mdl\n", ({ "models/props/metal_box.mdl", "models/player/chell/player.mdl", "models/player/eggbot/eggbot.mdl" }))
+CON_COMMAND_COMPLETION(sar_ghost_set_prop_model, "Set the prop model. Example : models/props/metal_box.mdl\n",
+({ "models/props/metal_box.mdl", "models/player/chell/player.mdl", "models/player/eggbot/eggbot.mdl", "models\player\ballbot\ballbot.mdl", "models\props\radio_reference.mdl" }))
 {
     if (args.ArgC() <= 1) {
         return console->Print(sar_ghost_set_prop_model.ThisPtr()->m_pszHelpString);
@@ -171,7 +172,7 @@ CON_COMMAND_COMPLETION(sar_ghost_set_prop_model, "Set the prop model. Example : 
     ghostPlayer->GetFirstGhost()->Spawn(false, pos);
 }
 
-CON_COMMAND(sar_ghost_time_offset, "In seconds. Start the ghost with a delay. Can be negative of positive.\n")
+CON_COMMAND(sar_ghost_time_offset, "In seconds. Start the ghost with a delay. Can be negative or positive.\n")
 {
     if (args.ArgC() <= 1) {
         return console->Print(sar_ghost_time_offset.ThisPtr()->m_pszHelpString);
