@@ -87,11 +87,23 @@ void HudContext::DrawElementOnScreen(const int groupID, const float xPos, const 
     vsnprintf(data, sizeof(data), fmt, argptr);
     va_end(argptr);
 
-    surface->DrawTxt(font,
+    /*surface->DrawTxt(font,
         xPos - sizeof(fmt) * fontSize,
         yPos - sar_ghost_height.GetInt() - sar_ghost_name_offset.GetInt() + this->group[groupID] * (fontSize + spacing),
         this->textColor,
+        data);*/
+
+    surface->DrawTxt(font,
+        xPos - sizeof(fmt) / 2 * this->fontSize,
+        yPos + this->group[groupID] * (this->fontSize + this->spacing),
+        this->textColor,
         data);
+
+
+	/*console->Print("x : %d\n", xPos - sizeof(fmt) * fontSize);
+    console->Print("y : %d\n", yPos - sar_ghost_height.GetInt() - sar_ghost_name_offset.GetInt() + this->group[groupID] * (fontSize + spacing));
+    console->Print("group: %d\n", this->group[groupID]);*/
+
 
     ++this->group[groupID];
 }
@@ -101,6 +113,7 @@ void HudContext::Reset(int slot)
     this->slot = slot;
 
     this->elements = 0;
+    this->group.fill(0);
     this->xPadding = sar_hud_default_padding_x.GetInt();
     this->yPadding = sar_hud_default_padding_y.GetInt();
     this->spacing = sar_hud_default_spacing.GetInt();

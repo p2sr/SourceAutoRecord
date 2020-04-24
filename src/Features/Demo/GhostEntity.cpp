@@ -12,20 +12,16 @@
 #include "Modules/EngineDemoPlayer.hpp"
 #include "Modules/Server.hpp"
 
-Variable sar_ghost_type("sar_ghost_type", "1", 1, "Type of the ghost :\n"
-                                                  "1 = Ghost drawn manually. Aren't recorded in demos (but still can be drawn in them with SAR)\n"
-                                                  "2 = Ghost using in-game model. WARNING : Those remain permanently in demos\n");
 Variable sar_ghost_height("sar_ghost_height", "16", -256, "Height of the ghost.\n");
 Variable sar_ghost_transparency("sar_ghost_transparency", "255", 0, 256, "Transparency of the ghost.\n");
 Variable sar_ghost_name_offset("sar_ghost_text_offset", "20", -1024, "Offset of the name over the ghost.\n");
-/*Variable sar_hud_ghost_show_name("sar_hud_ghost_show_name", "0", "Display the name of the ghost from you\n");
-Variable sar_hud_ghost_show_distance("sar_hud_ghost_show_distance", "0", "Display the distance of the ghost from you\n");
 Variable sar_hud_ghost_show_crouched("sar_hud_ghost_show_crouched", "0", "Display the crouched state of the ghost\n");*/
 
-GhostEntity::GhostEntity()
+GhostEntity::GhostEntity(int ghostType)
     : positionList()
     , angleList()
     , ID()
+    , ghostType(ghostType)
     , name("demo")
     , currentMap()
     , sameMap(false)
@@ -48,8 +44,10 @@ void GhostEntity::Reset()
     this->ghost_entity = nullptr;
     this->isPlaying = false;
     this->tickCount = GetStartDelay();
-    if (sar_ghost_type.GetInt() == 1) {
+    if (this->ghostType == 1) {
         engine->ClearAllOverlays();
+    } else {
+        this->KillGhost(false);
     }
 }
 
@@ -59,18 +57,29 @@ void GhostEntity::Stop()
     delete this->ghost_entity;
 }
 
-GhostEntity* GhostEntity::Spawn(bool instantPlay, Vector position)
+void GhostEntity::KillGhost(bool newEntity)
 {
-    if (sar_ghost_type.GetInt() == 1) { //Ghost drawn with debug triangles
+    //Bad way but didn't find any function that simply delete the entity lol
+    if (newEntity) {
+        server->SetKeyValueChar(this->ghost_entity, "targetname", "ghost_destroy");
+        engine->ExecuteCommand("ent_fire ghost_destroy kill");
+    } else {
+        engine->ExecuteCommand(std::string("ent_fire ghost_" + this->name + " kill").c_str());
+    }
+}
 
-        this->ghost_entity = new GhostEntity();
+GhostEntity* GhostEntity::Spawn(bool instantPlay, Vector position, int ghostType)
+{
+    if (ghostType == 1) { //Ghost drawn with debug triangles
+
+        this->ghost_entity = new GhostEntity(ghostPlayer->defaultGhostType);
         this->SetPosAng(position, Vector{ 0, 0, 0 });
         this->isPlaying = instantPlay;
         if (this->ghost_entity != nullptr) {
             this->lastUpdate = this->clock.now();
             return this;
         }
-    } else if (sar_ghost_type.GetInt() == 2) { //Ghost drawn with in-game props
+    } else if (ghostType == 2) { //Ghost drawn with in-game props
         this->ghost_entity = server->CreateEntityByName("prop_dynamic_override");
         server->SetKeyValueChar(this->ghost_entity, "model", this->modelName);
         std::string ghostName = "ghost_" + this->name;
@@ -116,7 +125,7 @@ void GhostEntity::Think()
     auto tick = session->GetTick();
     if (this->ghost_entity == nullptr && !this->hasFinished && ((engine->GetMaxClients() == 1 && tick >= (this->startTick + (this->CMTime - this->demo.playbackTicks))) || (engine->GetMaxClients() > 1 && tick >= this->startTick))) {
         auto pos = this->positionList[(this->tickCount)];
-        this->Spawn(true, pos);
+        this->Spawn(true, pos, this->ghostType);
     }
 
     if (this->isPlaying) {
@@ -175,9 +184,22 @@ void GhostEntity::ChangeModel(std::string modelName)
     this->modelName[sizeof(this->modelName) - 1] = '\0';
 }
 
+void GhostEntity::ChangeType(int newType)
+{
+    if (this->ghostType == 1 && newType == 2) {
+        this->ChangeModel(this->modelName);
+        this->ghostType = newType;
+        this->Spawn(true, this->currentPos, newType);
+    } else if (this->ghostType == 2 && newType == 1) {
+        this->KillGhost(false);
+        this->ghostType = newType;
+        this->Spawn(true, this->currentPos, newType);
+    }
+}
+
 void GhostEntity::SetPosAng(const Vector& pos, const Vector& ang)
 {
-    if (sar_ghost_type.GetInt() == 1) {
+    if (this->ghostType == 1) {
         Vector p1 = pos;
         Vector p2 = pos;
         p2.x += 10;
@@ -187,13 +209,14 @@ void GhostEntity::SetPosAng(const Vector& pos, const Vector& ang)
 
         engine->AddTriangleOverlay(p1, p2, p3, 254, 0, 0, sar_ghost_transparency.GetInt(), false, 0);
         engine->AddTriangleOverlay(p3, p2, p1, 254, 0, 0, sar_ghost_transparency.GetInt(), false, 0);
-    } else if (sar_ghost_type.GetInt() == 2) {
+    } else if (this->ghostType == 2) {
         if (this->ghost_entity != nullptr) {
             server->SetKeyValueVector(this->ghost_entity, "origin", pos);
             server->SetKeyValueVector(this->ghost_entity, "angles", ang);
-            this->currentPos = pos;
         }
     }
+
+    this->currentPos = pos;
 }
 
 void GhostEntity::Lerp(DataGhost& oldPosition, DataGhost& targetPosition, float time)
@@ -215,7 +238,30 @@ void GhostEntity::Lerp(DataGhost& oldPosition, DataGhost& targetPosition, float 
     this->SetPosAng(newPos, newAngle);
 }
 
-HUD_ELEMENT(ghost_show_name, "1", "Display the name of the ghost over it.\n", HudType_InGame | HudType_Paused)
+CON_COMMAND(sar_ghost_type, "Type of the ghost :\n"
+                            "1 = Ghost drawn manually. Aren't recorded in demos (but still can be drawn in them with SAR)\n"
+                            "2 = Ghost using in-game model. WARNING : Those remain permanently in demos\n")
+{
+    if (args.ArgC() <= 1) {
+        console->Print(sar_ghost_tickrate.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    int arg = std::atoi(args[1]);
+    ghostPlayer->defaultGhostType = arg;
+    networkGhostPlayer->defaultGhostType = arg;
+
+    if (!networkGhostPlayer->ghostPool.empty()) {
+        for (auto& ghost : networkGhostPlayer->ghostPool) {
+            ghost->ChangeType(arg);
+        }
+    } else if ((!ghostPlayer->ghost.empty() && ghostPlayer->GetFirstGhost()->isPlaying) || (engine->demoplayer->IsPlaying() && !ghostPlayer->ghost.empty())) { //Demo ghost or Playing demo with ghost
+        auto ghost = ghostPlayer->GetFirstGhost();
+        ghost->ChangeType(arg);
+    }
+}
+
+HUD_ELEMENT(ghost_show_name, "1", "Display the name of the ghost over it.\n", HudType_InGame)
 {
     auto slot = GET_SLOT();
     auto player = client->GetPlayer(slot + 1);
@@ -226,7 +272,7 @@ HUD_ELEMENT(ghost_show_name, "1", "Display the name of the ghost over it.\n", Hu
                 if (networkGhostPlayer->ghostPool[i]->sameMap) {
                     Vector screenPos;
                     engine->PointToScreen(networkGhostPlayer->ghostPool[i]->currentPos, screenPos);
-                    ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y, networkGhostPlayer->ghostPool[i]->name.c_str());
+                    ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y - sar_ghost_name_offset.GetInt() - sar_ghost_height.GetInt(), networkGhostPlayer->ghostPool[i]->name.c_str());
                 }
             }
         } else if (!ghostPlayer->ghost.empty() && ghostPlayer->GetFirstGhost()->isPlaying) { //Demo ghost
@@ -234,7 +280,7 @@ HUD_ELEMENT(ghost_show_name, "1", "Display the name of the ghost over it.\n", Hu
             auto ghost = ghostPlayer->GetFirstGhost();
             Vector screenPos;
             engine->PointToScreen(ghost->currentPos, screenPos);
-            ctx->DrawElementOnScreen(0, screenPos.x, screenPos.y, ghost->name.c_str());
+            ctx->DrawElementOnScreen(0, screenPos.x, screenPos.y - sar_ghost_name_offset.GetInt() - sar_ghost_height.GetInt(), ghost->name.c_str());
         } else if (engine->demoplayer->IsPlaying() && !ghostPlayer->ghost.empty()) { //Playing demo with ghost
             auto pos = client->GetAbsOrigin(player);
             auto ghost = ghostPlayer->GetFirstGhost();
@@ -244,7 +290,7 @@ HUD_ELEMENT(ghost_show_name, "1", "Display the name of the ghost over it.\n", Hu
             }
             Vector screenPos;
             engine->PointToScreen(ghost->positionList[tick], screenPos);
-            ctx->DrawElementOnScreen(0, screenPos.x, screenPos.y, ghost->name.c_str());
+            ctx->DrawElementOnScreen(0, screenPos.x, screenPos.y - sar_ghost_name_offset.GetInt() - sar_ghost_height.GetInt(), ghost->name.c_str());
         }
     }
 }
@@ -261,14 +307,14 @@ HUD_ELEMENT(ghost_show_distance, "0", "Display the distance from the ghost over 
                 if (networkGhostPlayer->ghostPool[i]->sameMap) {
                     Vector screenPos;
                     engine->PointToScreen(networkGhostPlayer->ghostPool[i]->currentPos, screenPos);
-                    ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y, "Dist: %.3f", Math::Distance(pos, networkGhostPlayer->ghostPool[i]->currentPos));
+                    ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y - sar_ghost_name_offset.GetInt() - sar_ghost_height.GetInt(), "Dist: %.3f", Math::Distance(pos, networkGhostPlayer->ghostPool[i]->currentPos));
                 }
             }
         } else if (!ghostPlayer->ghost.empty() && ghostPlayer->GetFirstGhost()->isPlaying) { //Demo ghost
             auto ghost = ghostPlayer->GetFirstGhost();
             Vector screenPos;
             engine->PointToScreen(ghost->currentPos, screenPos);
-            ctx->DrawElementOnScreen(0, screenPos.x, screenPos.y, "Dist: %.3f", Math::Distance(pos, ghost->currentPos));
+            ctx->DrawElementOnScreen(0, screenPos.x, screenPos.y - sar_ghost_name_offset.GetInt() - sar_ghost_height.GetInt(), "Dist: %.3f", Math::Distance(pos, ghost->currentPos));
         } else if (engine->demoplayer->IsPlaying() && !ghostPlayer->ghost.empty()) { //Playing demo with ghost
             auto pos = client->GetAbsOrigin(player);
             auto ghost = ghostPlayer->GetFirstGhost();
@@ -278,7 +324,7 @@ HUD_ELEMENT(ghost_show_distance, "0", "Display the distance from the ghost over 
             }
             Vector screenPos;
             engine->PointToScreen(ghost->positionList[tick], screenPos);
-            ctx->DrawElementOnScreen(0, screenPos.x, screenPos.y, "Dist: %.3f", Math::Distance(pos, ghost->currentPos));
+            ctx->DrawElementOnScreen(0, screenPos.x, screenPos.y - sar_ghost_name_offset.GetInt() - sar_ghost_height.GetInt(), "Dist: %.3f", Math::Distance(pos, ghost->currentPos));
         }
     }
 }

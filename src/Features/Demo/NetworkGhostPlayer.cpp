@@ -57,6 +57,7 @@ NetworkGhostPlayer::NetworkGhostPlayer()
     : ip_server("localhost")
     , port_server(53000)
     , name("FrenchSaves10Ticks")
+    , defaultGhostType(1)
     , runThread(false)
     , pauseThread(true)
     , isConnected(false)
@@ -309,7 +310,7 @@ void NetworkGhostPlayer::NetworkThink()
                 if (ghost != nullptr) {
                     if (ghost->sameMap && !pauseThread) { //" && !pauseThread" to verify the map is still loaded
                         if (ghost->ghost_entity == nullptr) {
-                            ghost->Spawn(true, QAngleToVector(data.position));
+                            ghost->Spawn(true, QAngleToVector(data.position), ghost->ghostType);
                         }
                         ghost->oldPos = ghost->newPos;
                         ghost->newPos = { { data.position.x, data.position.y, data.position.z + /*sar_ghost_height.GetFloat()*/ 16 }, { data.view_angle.x, data.view_angle.y, data.view_angle.z } };
@@ -348,7 +349,7 @@ void NetworkGhostPlayer::CheckConnection()
                     if (this->runThread) {
                         auto ghost = this->GetGhostByID(ID);
                         if (ghost->sameMap) {
-                            ghost->Spawn(true, { 1, 1, 1 });
+                            ghost->Spawn(true, { 1, 1, 1 }, ghost->ghostType);
                         }
                     }
                     client->Chat(TextColor::LIGHT_GREEN, "Player %s has connected !\n", name.c_str());
@@ -403,11 +404,6 @@ void NetworkGhostPlayer::CheckConnection()
                         std::string postCommand;
                         sf::Uint32 time;
                         packet >> time >> preCommand >> postCommand;
-                        /*if (!preCommand.empty()) {
-                            sv_cheats.ThisPtr()->m_nValue = 1;
-                            engine->SendToCommandBuffer("sv_cheats 0", 1); //Need cheats to teleport players (Might change this later)
-                            engine->ExecuteCommand(preCommand.c_str());
-                        }*/
                         engine->ExecuteCommand(preCommand.c_str());
                         this->commandPostCountdown = postCommand;
 
@@ -417,6 +413,14 @@ void NetworkGhostPlayer::CheckConnection()
                         this->SetupCountdown(time);
                     } else if (step == 1) {
                         this->Countdown();
+                    }
+                } else if (header == HEADER::MODEL_CHANGE) {
+                    sf::Uint32 ID;
+                    std::string modelName;
+                    packet >> ID >> modelName;
+                    auto ghost = this->GetGhostByID(ID);
+                    if (this->defaultGhostType == 2) {
+                        ghost->ChangeModel(modelName);
                     }
                 }
             } else if (status == sf::Socket::Disconnected) {
@@ -429,7 +433,7 @@ void NetworkGhostPlayer::CheckConnection()
 
 GhostEntity* NetworkGhostPlayer::SetupGhost(sf::Uint32& ID, std::string name, DataGhost& data, std::string& currentMap, std::string& modelName)
 {
-    GhostEntity* tmp_ghost = new GhostEntity;
+    GhostEntity* tmp_ghost = new GhostEntity(this->defaultGhostType);
     tmp_ghost->name = name;
     tmp_ghost->ID = ID;
     tmp_ghost->currentMap = currentMap;

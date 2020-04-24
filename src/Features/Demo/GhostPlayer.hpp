@@ -10,6 +10,7 @@ public:
     bool enabled;
     bool isNetworking;
     std::vector<GhostEntity*> ghost;
+    int defaultGhostType;
 
 public:
     GhostPlayer();

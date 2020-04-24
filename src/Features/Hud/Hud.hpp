@@ -2,6 +2,7 @@
 #include "Utils/SDK.hpp"
 
 #include <vector>
+#include <array>
 
 #include "Game.hpp"
 #include "Variable.hpp"
@@ -47,7 +48,7 @@ private:
     int spacing = 0;
     Color textColor = Color(255, 255, 255);
     int elements = 0;
-    int group[128];
+    std::array<int, 256> group { 0 };
 
 public:
     int slot = 0;

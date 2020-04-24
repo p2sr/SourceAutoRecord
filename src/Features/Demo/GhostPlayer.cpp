@@ -10,6 +10,7 @@ GhostPlayer::GhostPlayer()
     : ghost()
     , enabled(false)
     , isNetworking(false)
+    , defaultGhostType(1)
 {
     this->hasLoaded = true;
 }
@@ -114,10 +115,13 @@ bool GhostPlayer::IsNetworking()
 CON_COMMAND_AUTOCOMPLETEFILE(sar_ghost_set_demo, "Set the demo in order to build the ghost.\n", 0, 0, dem)
 {
     if (args.ArgC() <= 1) {
-        return console->Print(sar_ghost_set_demo.ThisPtr()->m_pszHelpString);
-    }
-    if (ghostPlayer->ghost.empty()) {
-        return console->Print("sar_ghost_enable must be enabled before setting the demo.\n");
+        if (ghostPlayer->enabled) {
+            ghostPlayer->enabled = false;
+            ghostPlayer->StopAll();
+            return;
+        } else {
+            return console->Print(sar_ghost_set_demo.ThisPtr()->m_pszHelpString);
+        }
     }
     if (networkGhostPlayer->IsConnected()) {
         return console->Warning("Can't play ghost with demos when connected to a server !\n");
@@ -125,12 +129,13 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_ghost_set_demo, "Set the demo in order to build
 
     std::string name;
     if (args[1][0] == '\0') {
-        if (engine->demoplayer->DemoName[0] != '\0') {
-            name = std::string(engine->demoplayer->DemoName);
-        } else {
-            return console->Print("No demo was recorded or played back!\n");
-        }
+        ghostPlayer->enabled = false;
+        ghostPlayer->StopAll();
     } else {
+        if (!ghostPlayer->enabled) {
+            ghostPlayer->AddGhost(new GhostEntity(ghostPlayer->defaultGhostType));
+            ghostPlayer->enabled = true;
+        }
         name = std::string(args[1]);
     }
 
@@ -151,25 +156,25 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_ghost_set_demo, "Set the demo in order to build
 }
 
 CON_COMMAND_COMPLETION(sar_ghost_set_prop_model, "Set the prop model. Example : models/props/metal_box.mdl\n",
-({ "models/props/metal_box.mdl", "models/player/chell/player.mdl", "models/player/eggbot/eggbot.mdl", "models\player\ballbot\ballbot.mdl", "models\props\radio_reference.mdl" }))
+    ({ "models/props/metal_box.mdl", "models/player/chell/player.mdl", "models/player/eggbot/eggbot.mdl", "models/player/ballbot/ballbot.mdl", "models/props/radio_reference.mdl",
+        "models/props/food_can/food_can_open.mdl", "models/npcs/turret/turret.mdl", "models/npcs/bird/bird.mdl" }))
 {
     if (args.ArgC() <= 1) {
         return console->Print(sar_ghost_set_prop_model.ThisPtr()->m_pszHelpString);
     }
-    if (sar_ghost_type.GetInt() == 1) {
-        return console->Print("Can't use models when using sar_ghost_type 1.\n");
-    }
+
     networkGhostPlayer->modelName = args[1];
 
     if (ghostPlayer->ghost.empty()) {
         return;
     }
 
-    ghostPlayer->GetFirstGhost()->ChangeModel(args[1]);
-    ghostPlayer->ResetGhost();
-    auto pos = server->GetAbsOrigin(server->GetPlayer(GET_SLOT() + 1));
-    pos.z += sar_ghost_height.GetFloat();
-    ghostPlayer->GetFirstGhost()->Spawn(false, pos);
+    auto ghost = ghostPlayer->GetFirstGhost();
+    ghost->ChangeModel(args[1]);
+    if (ghost->ghostType == 2) {
+        ghost->KillGhost(true);
+        ghost->Spawn(true, ghost->currentPos, ghost->ghostType);
+    }
 }
 
 CON_COMMAND(sar_ghost_time_offset, "In seconds. Start the ghost with a delay. Can be negative or positive.\n")
@@ -200,25 +205,5 @@ CON_COMMAND(sar_ghost_time_offset, "In seconds. Start the ghost with a delay. Ca
         ghost->SetStartDelay(0);
         ghost->SetCMTime(ghost->demo.playbackTime);
         console->Print("Final time of the ghost : %f\n", ghost->demo.playbackTime);
-    }
-}
-
-CON_COMMAND(sar_ghost_autostart, "Start automatically the ghost playback when loading a map.\n")
-{
-    if (args.ArgC() <= 1) {
-        return console->Print(sar_ghost_time_offset.ThisPtr()->m_pszHelpString);
-    }
-    if (networkGhostPlayer->IsConnected()) {
-        return console->Warning("Can't play ghost with demos when connected to a server !\n");
-    }
-    bool enable = static_cast<bool>(std::atoi(args[1]));
-    if (enable) {
-        if (!ghostPlayer->enabled) {
-            ghostPlayer->enabled = true;
-            ghostPlayer->AddGhost(new GhostEntity);
-        }
-    } else {
-        ghostPlayer->enabled = false;
-        ghostPlayer->StopAll();
     }
 }

@@ -27,6 +27,7 @@ public:
     std::vector<Vector> positionList;
     std::vector<Vector> angleList;
     unsigned int ID;
+    int ghostType;
     std::string name;
     std::string currentMap;
     bool sameMap;
@@ -44,28 +45,29 @@ public:
     std::chrono::time_point<std::chrono::steady_clock> lastUpdate;
     long long loopTime;
 
-    //void* trail;
-
 public:
-    GhostEntity();
+    GhostEntity(int ghostType);
     void Reset();
     void Stop();
-    GhostEntity* Spawn(bool instantPlay, Vector position);
+    void KillGhost(bool newEntity);
+    GhostEntity* Spawn(bool instantPlay, Vector position, int ghostType);
+    void ChangeType(int newType);
+
     bool IsReady();
     void SetCMTime(float);
     void Think();
     int GetTickCount();
     int GetStartDelay();
     void SetStartDelay(int);
-    void ChangeModel(std::string modelName);
+    
+	void ChangeModel(std::string modelName);
     void SetPosAng(const Vector&, const Vector&);
     void Lerp(DataGhost& oldPosition, DataGhost& targetPosition, float time);
 };
 
-extern Variable sar_ghost_type;
+
 extern Variable sar_ghost_height;
 extern Variable sar_ghost_transparency;
 extern Variable sar_ghost_name_offset;
-/*extern Variable sar_hud_ghost_show_name;
-extern Variable sar_hud_ghost_show_distance;
-extern Variable sar_hud_ghost_show_crouched;*/
+extern Command sar_ghost_type;
+/*extern Variable sar_hud_ghost_show_crouched;*/

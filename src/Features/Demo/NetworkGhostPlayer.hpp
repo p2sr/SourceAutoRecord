@@ -25,6 +25,7 @@ enum class HEADER {
     MESSAGE,
     COUNTDOWN,
     UPDATE,
+	MODEL_CHANGE
 };
 
 class NetworkGhostPlayer : public Feature {
@@ -40,6 +41,7 @@ public:
     std::vector<GhostEntity*> ghostPool;
     std::string name;
     std::string modelName;
+    int defaultGhostType;
     sf::IpAddress ip_server;
     unsigned short port_server;
     sf::UdpSocket socket;
