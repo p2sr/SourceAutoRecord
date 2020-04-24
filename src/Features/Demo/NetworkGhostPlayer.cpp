@@ -184,15 +184,17 @@ bool NetworkGhostPlayer::IsConnected()
     return this->isConnected;
 }
 
-int NetworkGhostPlayer::ReceivePacket(sf::Packet& packet, sf::IpAddress& ip, int timeout)
+sf::Socket::Status NetworkGhostPlayer::ReceivePacket(sf::Packet& packet, sf::IpAddress& ip, int timeout)
 {
     unsigned short port;
 
-    if (this->socket.receive(packet, ip, port) == sf::Socket::Done) {
+    /*if (this->socket.receive(packet, ip, port) == sf::Socket::Done) {
         return 1;
     } else {
         return 0;
-    }
+    }*/
+
+	return this->socket.receive(packet, ip, port);
 }
 
 DataGhost NetworkGhostPlayer::GetPlayerData()
@@ -289,12 +291,31 @@ void NetworkGhostPlayer::NetworkThink()
         this->UpdatePlayer();
 
         //Update other players
-        int success = 1;
-        while (success != 0) {
+        //int success = 1;
+        sf::Socket::Status success = sf::Socket::Done;
+        while (success == sf::Socket::Done) {
+            /*if (success == sf::Socket::Done)
+                console->Print("sf::Socket::Done");
+            else if (success == sf::Socket::Error)
+                console->Print("sf::Socket::Error");
+            else if (success == sf::Socket::Partial)
+                console->Print("sf::Socket::Partial");
+            else if (success == sf::Socket::Disconnected)
+                console->Print("sf::Socket::Disconnected");*/
+
             sf::Packet packet;
             sf::IpAddress ip;
             success = this->ReceivePacket(packet, ip, 50);
-            if (success == 1) {
+            /*if (success == sf::Socket::Done)
+                console->Print(" sf::Socket::Done\n");
+            else if (success == sf::Socket::Error)
+                console->Print(" sf::Socket::Error\n");
+            else if (success == sf::Socket::Partial)
+                console->Print(" sf::Socket::Partial\n");
+            else if (success == sf::Socket::Disconnected)
+                console->Print(" sf::Socket::Disconnected\n");*/
+
+            if (success == sf::Socket::Done) {
                 packet_queue.insert({ ip.toInteger(), packet });
             }
         }

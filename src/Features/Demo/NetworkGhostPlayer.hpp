@@ -76,7 +76,7 @@ public:
     void Countdown();
     bool IsConnected();
 
-    int ReceivePacket(sf::Packet& packet, sf::IpAddress&, int timeout);
+    sf::Socket::Status ReceivePacket(sf::Packet& packet, sf::IpAddress&, int timeout);
 
     void StartThinking();
     void PauseThinking();
