@@ -15,6 +15,7 @@
 Variable sar_ghost_height("sar_ghost_height", "16", -256, "Height of the ghost.\n");
 Variable sar_ghost_transparency("sar_ghost_transparency", "255", 0, 256, "Transparency of the ghost.\n");
 Variable sar_ghost_name_offset("sar_ghost_text_offset", "20", -1024, "Offset of the name over the ghost.\n");
+/*
 Variable sar_hud_ghost_show_crouched("sar_hud_ghost_show_crouched", "0", "Display the crouched state of the ghost\n");*/
 
 GhostEntity::GhostEntity(int ghostType)
@@ -299,8 +300,8 @@ HUD_ELEMENT(ghost_show_distance, "0", "Display the distance from the ghost over 
 {
     auto slot = GET_SLOT();
     auto player = client->GetPlayer(slot + 1);
-    auto pos = client->GetAbsOrigin(player);
     if (player) {
+        auto pos = client->GetAbsOrigin(player);
         if (!networkGhostPlayer->ghostPool.empty()) {
             auto pos = client->GetAbsOrigin(player);
             for (int i = 0; i < networkGhostPlayer->ghostPool.size(); ++i) {
@@ -311,6 +312,7 @@ HUD_ELEMENT(ghost_show_distance, "0", "Display the distance from the ghost over 
                 }
             }
         } else if (!ghostPlayer->ghost.empty() && ghostPlayer->GetFirstGhost()->isPlaying) { //Demo ghost
+            auto pos = client->GetAbsOrigin(player);
             auto ghost = ghostPlayer->GetFirstGhost();
             Vector screenPos;
             engine->PointToScreen(ghost->currentPos, screenPos);
