@@ -12,6 +12,7 @@
 #include "Features/Session.hpp"
 #include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
+#include "Features/DemoCamera.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -38,6 +39,7 @@ REDECL(Client::DecodeUserCmdFromBuffer2);
 REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
 REDECL(Client::playvideo_end_level_transition_callback);
+REDECL(Client::OverrideView);
 
 MDECL(Client::GetAbsOrigin, Vector, C_m_vecAbsOrigin);
 MDECL(Client::GetAbsAngles, QAngle, C_m_angAbsRotation);
@@ -211,6 +213,12 @@ DETOUR_COMMAND(Client::playvideo_end_level_transition)
     return Client::playvideo_end_level_transition_callback(args);
 }
 
+DETOUR(Client::OverrideView, void* m_View)
+{
+    demoCamera->OverrideView(m_View);
+    return Client::OverrideView(thisptr, m_View);
+}
+
 bool Client::Init()
 {
     bool readJmp = false;
@@ -291,6 +299,7 @@ bool Client::Init()
 
         if (this->g_pClientMode = Interface::Create(clientMode)) {
             this->g_pClientMode->Hook(Client::CreateMove_Hook, Client::CreateMove, Offsets::CreateMove);
+            this->g_pClientMode->Hook(Client::OverrideView_Hook, Client::OverrideView, Offsets::OverrideView);
         }
 
         if (this->g_pClientMode2 = Interface::Create(clientMode2)) {

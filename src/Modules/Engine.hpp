@@ -21,6 +21,7 @@ public:
     Interface* eng = nullptr;
     Interface* debugoverlay = nullptr;
     Interface* s_ServerPlugin = nullptr;
+    Interface* engineTool = nullptr;
 
     using _ClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
     using _GetLocalPlayer = int(__rescall*)(void* thisptr);
@@ -34,6 +35,8 @@ public:
     using _AddText = void(__rescall*)(void* thisptr, const char* pText, int nTickDelay);
     using _ClientCommand = int (*)(void* thisptr, void* pEdict, const char* szFmt, ...);
     using _GetLocalClient = int (*)(int index);
+    using _HostFrameTime = float (*)(void* thisptr);
+    using _ClientTime = float (*)(void* thisptr);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -62,6 +65,8 @@ public:
     _ConPrintEvent ConPrintEvent = nullptr;
     _ClientCommand ClientCommand = nullptr;
     _GetLocalClient GetLocalClient = nullptr;
+    _HostFrameTime HostFrameTime = nullptr;
+    _ClientTime ClientTime = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;
@@ -89,6 +94,8 @@ public:
     void SendToCommandBuffer(const char* text, int delay);
     int PointToScreen(const Vector& point, Vector& screen);
     void SafeUnload(const char* postCommand = nullptr);
+    float GetHostFrameTime();
+    float GetClientTime();
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);

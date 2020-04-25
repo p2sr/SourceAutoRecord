@@ -2,6 +2,7 @@
 
 #include "Features/Demo/Demo.hpp"
 #include "Features/Demo/DemoParser.hpp"
+#include "Features/DemoCamera.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -43,6 +44,9 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
             console->Print("Could not parse \"%s\"!\n", engine->demoplayer->DemoName);
         }
     }
+
+    demoCamera->RequestTimeOffsetRefresh();
+
     return result;
 }
 

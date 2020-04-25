@@ -60,6 +60,9 @@ public:
     // CInput::GetButtonBits
     DECL_DETOUR(GetButtonBits, bool bResetState);
 
+    // ClientModeShared::OverrideView
+    DECL_DETOUR(OverrideView, void* m_View);
+
     DECL_DETOUR_COMMAND(playvideo_end_level_transition);
 
     bool Init() override;

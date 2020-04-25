@@ -128,6 +128,16 @@ void Engine::SafeUnload(const char* postCommand)
     }
 }
 
+float Engine::GetHostFrameTime()
+{
+    return this->HostFrameTime(this->engineTool->ThisPtr());
+}
+
+float Engine::GetClientTime()
+{
+    return this->ClientTime(this->engineTool->ThisPtr());
+}
+
 // CClientState::Disconnect
 DETOUR(Engine::Disconnect, bool bShowMainMenu)
 {
@@ -356,8 +366,8 @@ bool Engine::Init()
         }
     }
 
-    if (auto tool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
-        auto GetCurrentMap = tool->Original(Offsets::GetCurrentMap);
+    if (this->engineTool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
+        auto GetCurrentMap = this->engineTool->Original(Offsets::GetCurrentMap);
         this->m_szLevelName = Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName);
 
         if (sar.game->Is(SourceGame_HalfLife2Engine) && std::strlen(this->m_szLevelName) != 0) {
@@ -366,7 +376,9 @@ bool Engine::Init()
         }
 
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
-        Interface::Delete(tool);
+
+        this->HostFrameTime = this->engineTool->Original<_HostFrameTime>(Offsets::HostFrameTime);
+        this->ClientTime = this->engineTool->Original<_ClientTime>(Offsets::ClientTime);
     }
 
     if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
@@ -448,6 +460,7 @@ void Engine::Shutdown()
     Interface::Delete(this->cl);
     Interface::Delete(this->eng);
     Interface::Delete(this->s_GameEventManager);
+    Interface::Delete(this->engineTool);
 
 #ifdef _WIN32
     Command::Unhook("connect", Engine::connect_callback);
