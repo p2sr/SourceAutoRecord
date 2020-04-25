@@ -2,7 +2,7 @@
 
 #include "Features/Demo/Demo.hpp"
 #include "Features/Demo/DemoParser.hpp"
-#include "Features/DemoCamera.hpp"
+#include "Features/Camera.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -45,7 +45,7 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
         }
     }
 
-    demoCamera->RequestTimeOffsetRefresh();
+    camera->RequestTimeOffsetRefresh();
 
     return result;
 }

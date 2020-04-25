@@ -12,7 +12,7 @@
 #include "Features/Session.hpp"
 #include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
-#include "Features/DemoCamera.hpp"
+#include "Features/Camera.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -120,6 +120,11 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
         inputHud.SetButtonBits(0, cmd->buttons);
     }
 
+    if (sv_cheats.GetBool() && engine->hoststate->m_activeGame) {
+        camera->OverrideMovement(cmd);
+    }
+    
+
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
 DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
@@ -215,7 +220,7 @@ DETOUR_COMMAND(Client::playvideo_end_level_transition)
 
 DETOUR(Client::OverrideView, void* m_View)
 {
-    demoCamera->OverrideView(m_View);
+    camera->OverrideView(m_View);
     return Client::OverrideView(thisptr, m_View);
 }
 
