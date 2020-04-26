@@ -13,7 +13,7 @@ public:
 
 public:
     WorkshopList();
-    std::string Cinematic();
+    std::string Path();
     int Update();
 };
 

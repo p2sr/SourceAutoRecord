@@ -17,7 +17,7 @@ enum class StrafingType {
 };
 
 enum class VecStrafeType {
-    Default,
+    Disabled,
     Normal,
     Visual
 };

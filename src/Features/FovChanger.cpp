@@ -36,7 +36,7 @@ CON_COMMAND_COMPLETION(sar_force_fov, "Forces player FOV. Usage: sar_force_fov <
     auto fov = std::atoi(args[1]);
     if (fov == 0) {
         fovChanger->SetFov(fov);
-        return console->Print("Default forcing FOV!\n");
+        return console->Print("Disabled forcing FOV!\n");
     }
 
     if (fov < 75 || fov > 150) {

@@ -188,7 +188,7 @@ CON_COMMAND(sar_tas_strafe_vectorial, "sar_tas_strafe_vectorial <type>: Change t
 {
     IGNORE_DEMO_PLAYER();
 
-    auto type = VecStrafeType::Default;
+    auto type = VecStrafeType::Disabled;
 
     if (args.ArgC() == 2) {
         type = static_cast<VecStrafeType>(std::atoi(args[1]));
