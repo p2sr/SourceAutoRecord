@@ -44,27 +44,29 @@ enum CameraStateParameter {
 };
 
 enum CameraControlType {
-    Disabled,
-    Manual,
-    Path,
+    Default,
+    Drive,
+    Cinematic,
 };
 
 class Camera : public Feature {
 private:
     bool manualActive = false;
-    bool timeOffsetRefresh = true;
+    bool cameraRefreshRequested = false;
+    bool timeOffsetRefreshRequested = true;
     int mouseHoldPos[2] = {0,0};
     float timeOffset = 0.0;
 public:
-    CameraControlType controlType = Disabled;
+    CameraControlType controlType = Default;
     CameraState currentState;
     std::map<int, CameraState> states;
     Camera();
     ~Camera();
     bool IsDriving();
     void OverrideView(void* m_View);
-    float InterpolateStateParam(CameraStateParameter param, float time);
+    CameraState InterpolateStates(float time);
     void RequestTimeOffsetRefresh();
+    void RequestCameraRefresh();
     void OverrideMovement(CUserCmd* cmd);
 };
 

@@ -7,6 +7,7 @@
 #include "Modules/Server.hpp"
 
 #include "Features/EntityList.hpp"
+#include "Features/Timer/PauseTimer.hpp"
 
 #include "Command.hpp"
 #include "Offsets.hpp"
@@ -20,55 +21,139 @@ Variable sar_cam_control("sar_cam_control", "0", 0, 2,
     "1 = Drive mode (camera is separated and can be controlled by user input),\n"
     "2 = Cinematic mode (camera is controlled by predefined path).\n");
 
-Variable sar_cam_drive("sar_cam_drive", "0", 0, 1, 
+Variable sar_cam_drive("sar_cam_drive", "0", 0, 1,
     "Enables or disables camera drive mode in-game "
     "(turning it on is not required for demo player)\n");
 
 Variable cl_skip_player_render_in_main_view;
 Variable r_drawviewmodel;
 Variable ss_force_primary_fullscreen;
-Variable crosshair;
+
+void ResetCameraRelatedCvars()
+{
+    cl_skip_player_render_in_main_view.SetValue(cl_skip_player_render_in_main_view.GetString());
+    r_drawviewmodel.SetValue(r_drawviewmodel.GetString());
+    ss_force_primary_fullscreen.SetValue(ss_force_primary_fullscreen.GetString());
+    in_forceuser.SetValue(in_forceuser.GetString());
+}
 
 Camera::Camera()
 {
-    controlType = Disabled;
+    controlType = Default;
 
     //a bunch of console variables later used in a janky hack
     cl_skip_player_render_in_main_view = Variable("cl_skip_player_render_in_main_view");
     r_drawviewmodel = Variable("r_drawviewmodel");
     ss_force_primary_fullscreen = Variable("ss_force_primary_fullscreen");
-    crosshair = Variable("crosshair");
 }
 
 Camera::~Camera()
 {
     camera->states.clear();
-
-    //if (sar_democam_cvar_autochange.GetBool()) {
-    //    cl_skip_player_render_in_main_view.SetValue(1);
-    //    r_drawviewmodel.SetValue(1);
-    //}
+    ResetCameraRelatedCvars();
 }
+
+
 
 //if in drive mode, checks if player wants to control the camera
 //for now it requires LMB input (as in demo drive mode)
-bool Camera::IsDriving() {
+bool Camera::IsDriving()
+{
     bool drivingInGame = sar_cam_drive.GetBool() && sv_cheats.GetBool() && engine->hoststate->m_activeGame;
     bool drivingInDemo = engine->demoplayer->IsPlaying();
     bool wantingToDrive = inputSystem->IsKeyDown(ButtonCode_t::MOUSE_LEFT);
-    
-    return camera->controlType == Manual && wantingToDrive && (drivingInGame || drivingInDemo);
+
+    return camera->controlType == Drive && wantingToDrive && (drivingInGame || drivingInDemo);
 }
 
-//Calculates demo camera parameter value based on time and predefined path
-float Camera::InterpolateStateParam(CameraStateParameter param, float time)
+
+//used by camera state interpolation function. all the math is here.
+float InterpolateCurve(std::vector<Vector> points, float x, bool dealingWithAngles=false)
 {
     enum { FIRST,
         PREV,
         NEXT,
         LAST };
 
-    //reading closest 4 frames
+    //fixing Y values in case they're angles, for proper interpolation
+    if (dealingWithAngles) {
+        float oldY = 0;
+        for (int i = 0; i < 4; i++) {
+            float angDif = points[i].y - oldY;
+            angDif += (angDif > 180) ? -360 : (angDif < -180) ? 360 : 0;
+            points[i].y = oldY += angDif;
+            oldY = points[i].y;
+        }
+    }
+
+    if (x <= points[PREV].x)
+        return points[PREV].y;
+    if (x >= points[NEXT].x)
+        return points[NEXT].y;
+
+    float t = (x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
+
+    //linear interp. in case you dont want anything cool
+    //return points[PREV].y + (points[NEXT].y - points[PREV].y) * t;
+
+    //cubic hermite spline... kind of? maybe? no fucking clue, just leave me alone
+    float t2 = t * t, t3 = t * t * t;
+    float x0 = (points[FIRST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
+    float x1 = 0, x2 = 1;
+    float x3 = (points[LAST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
+    float m1 = ((points[NEXT].y - points[PREV].y) / (x2 - x1) + (points[PREV].y - points[FIRST].y) / (x1 - x0)) / 2;
+    float m2 = ((points[LAST].y - points[NEXT].y) / (x3 - x2) + (points[NEXT].y - points[PREV].y) / (x2 - x1)) / 2;
+
+    return (2 * t3 - 3 * t2 + 1) * points[PREV].y + (t3 - 2 * t2 + t) * m1 + (-2 * t3 + 3 * t2) * points[NEXT].y + (t3 - t2) * m2;
+}
+
+
+//creates vector array for specified parameter. it can probably be done in much more elegant way 
+std::vector<Vector> CameraStatesToInterpolationPoints(float* x, CameraState* y, CameraStateParameter param)
+{
+    std::vector<Vector> points;
+    for (int i = 0; i < 4; i++) {
+        Vector v;
+        v.x = x[i];
+        CameraState cs = y[i];
+        switch (param) {
+        case ORIGIN_X:
+            v.y = cs.origin.x;
+            break;
+        case ORIGIN_Y:
+            v.y = cs.origin.y;
+            break;
+        case ORIGIN_Z:
+            v.y = cs.origin.z;
+            break;
+        case ANGLES_X:
+            v.y = cs.angles.x;
+            break;
+        case ANGLES_Y:
+            v.y = cs.angles.y;
+            break;
+        case ANGLES_Z:
+            v.y = cs.angles.z;
+            break;
+        case FOV:
+            v.y = cs.fov;
+            break;
+        }
+        points.push_back(v);
+    }
+    return points;
+}
+
+//Creates interpolated camera state based on states array and given time.
+//This is the closest I could get to valve's demo spline camera path
+CameraState Camera::InterpolateStates(float time)
+{
+    enum { FIRST,
+        PREV,
+        NEXT,
+        LAST };
+
+    //reading 4 frames closest to time
     float frameTime = time * 60.0f;
     int frames[4] = { INT_MIN, INT_MIN, INT_MAX, INT_MAX };
     for (auto const& state : camera->states) {
@@ -89,119 +174,80 @@ float Camera::InterpolateStateParam(CameraStateParameter param, float time)
         }
     }
 
-    //points for interpolation
-    Vector points[4];
-
-    //filling X values
+    //x values for interpolation
+    float x[4];
     for (int i = 0; i < 4; i++) {
-        points[i].x = (float)frames[i];
+        x[i] = (float)frames[i];
     }
 
     //making sure all X values are correct before reading Y values,
-    //"frames" fixed for read, "points" fixed for interpolation.
+    //"frames" fixed for read, "x" fixed for interpolation.
     //if there's at least one cam state in the map, none of these should be MIN or MAX after this.
     if (frames[PREV] == INT_MIN) {
-        points[PREV].x = (float)frames[NEXT];
+        x[PREV] = (float)frames[NEXT];
         frames[PREV] = frames[NEXT];
     }
     if (frames[NEXT] == INT_MAX) {
-        points[NEXT].x = (float)frames[PREV];
+        x[NEXT] = (float)frames[PREV];
         frames[NEXT] = frames[PREV];
     }
     if (frames[FIRST] == INT_MIN) {
-        points[FIRST].x = (float)(2 * frames[PREV] - frames[NEXT]);
+        x[FIRST] = (float)(2 * frames[PREV] - frames[NEXT]);
         frames[FIRST] = frames[PREV];
     }
     if (frames[LAST] == INT_MAX) {
-        points[LAST].x = (float)(2 * frames[NEXT] - frames[PREV]);
+        x[LAST] = (float)(2 * frames[NEXT] - frames[PREV]);
         frames[LAST] = frames[NEXT];
     }
 
-    bool workWithAngles = param == ANGLES_X || param == ANGLES_Y || param == ANGLES_Z;
-
     //filling Y values
-    float oldY = 0;
+    CameraState y[4];
     for (int i = 0; i < 4; i++) {
-        CameraState state = camera->states[frames[i]];
-        switch (param) {
-        case ANGLES_X:
-            points[i].y = state.angles.x;
-            break;
-        case ANGLES_Y:
-            points[i].y = state.angles.y;
-            break;
-        case ANGLES_Z:
-            points[i].y = state.angles.z;
-            break;
-        case ORIGIN_X:
-            points[i].y = state.origin.x;
-            break;
-        case ORIGIN_Y:
-            points[i].y = state.origin.y;
-            break;
-        case ORIGIN_Z:
-            points[i].y = state.origin.z;
-            break;
-        case FOV:
-            points[i].y = state.fov;
-            break;
-        }
-        if (workWithAngles) {
-            float angDif = points[i].y - oldY;
-            angDif += (angDif > 180) ? -360 : (angDif < -180) ? 360 : 0;
-            points[i].y = oldY += angDif;
-            oldY = points[i].y;
-        }
+        y[i] = camera->states[frames[i]];
     }
 
-    if (frameTime <= points[PREV].x)
-        return points[PREV].y;
-    if (frameTime >= points[NEXT].x)
-        return points[NEXT].y;
-
-    float t = (frameTime - points[PREV].x) / (points[NEXT].x - points[PREV].x);
-    //linear interp.
-
-    //return points[PREV].y + (points[NEXT].y - points[PREV].y) * t;
-
-    //cubic hermite spline... kind of? maybe? no fucking clue, just leave me alone
-    float t2 = t * t, t3 = t * t * t;
-    float x0 = (points[FIRST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
-    float x1 = 0, x2 = 1;
-    float x3 = (points[LAST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
-    float m1 = ((points[NEXT].y - points[PREV].y) / (x2 - x1) + (points[PREV].y - points[FIRST].y) / (x1 - x0)) / 2;
-    float m2 = ((points[LAST].y - points[NEXT].y) / (x3 - x2) + (points[NEXT].y - points[PREV].y) / (x2 - x1)) / 2;
-
-    return (2 * t3 - 3 * t2 + 1) * points[PREV].y + (t3 - 2 * t2 + t) * m1 + (-2 * t3 + 3 * t2) * points[NEXT].y + (t3 - t2) * m2;
+    //interpolating each parameter
+    CameraState interp;
+    interp.origin.x = InterpolateCurve(CameraStatesToInterpolationPoints(x, y, ORIGIN_X), frameTime);
+    interp.origin.y = InterpolateCurve(CameraStatesToInterpolationPoints(x, y, ORIGIN_Y), frameTime);
+    interp.origin.z = InterpolateCurve(CameraStatesToInterpolationPoints(x, y, ORIGIN_Z), frameTime);
+    interp.angles.x = InterpolateCurve(CameraStatesToInterpolationPoints(x, y, ANGLES_X), frameTime, true);
+    interp.angles.y = InterpolateCurve(CameraStatesToInterpolationPoints(x, y, ANGLES_Y), frameTime, true);
+    interp.angles.z = InterpolateCurve(CameraStatesToInterpolationPoints(x, y, ANGLES_Z), frameTime, true);
+    interp.fov = InterpolateCurve(CameraStatesToInterpolationPoints(x, y, FOV), frameTime);
+    
+    return interp;
 }
+
+
 
 //Overrides view.
 void Camera::OverrideView(void* m_View)
 {
-    if (timeOffsetRefresh) {
+    if (timeOffsetRefreshRequested) {
         timeOffset = engine->GetClientTime() - engine->demoplayer->GetTick() / 60.0f;
-        timeOffsetRefresh = false;
+        timeOffsetRefreshRequested = false;
     }
 
     auto newControlType = static_cast<CameraControlType>(sar_cam_control.GetInt());
 
     //don't allow cinematic mode outside of demo player
-    if (!engine->demoplayer->IsPlaying() && newControlType == Path) {
-        if (controlType != Path) {
+    if (!engine->demoplayer->IsPlaying() && newControlType == Cinematic) {
+        if (controlType != Cinematic) {
             CAMERA_REQUIRE_DEMO_PLAYER_ERROR();
         } else {
-            controlType = Disabled;
+            controlType = Default;
         }
         newControlType = controlType;
         sar_cam_control.SetValue(controlType);
     }
 
     //don't allow drive mode when not using sv_cheats
-    if (newControlType == Manual && !sv_cheats.GetBool() && !engine->demoplayer->IsPlaying()) {
-        if (controlType != Manual) {
+    if (newControlType == Drive && !sv_cheats.GetBool() && !engine->demoplayer->IsPlaying()) {
+        if (controlType != Drive) {
             console->Print("Drive mode requires sv_cheats 1 or demo player.\n");
         } else {
-            controlType = Disabled;
+            controlType = Default;
         }
         newControlType = controlType;
         sar_cam_control.SetValue(controlType);
@@ -210,26 +256,21 @@ void Camera::OverrideView(void* m_View)
     //janky hack mate
     //overriding cvar values, boolean (int) values only.
     //this way the cvar themselves are unchanged
-    if (newControlType != Disabled) {
+    if (newControlType != Default) {
         cl_skip_player_render_in_main_view.ThisPtr()->m_nValue = 0;
         r_drawviewmodel.ThisPtr()->m_nValue = 0;
         ss_force_primary_fullscreen.ThisPtr()->m_nValue = 1;
-        crosshair.ThisPtr()->m_nValue = 0;
     }
 
     //handling camera control type switching
     if (newControlType != controlType) {
-        if (controlType == Disabled && newControlType != Disabled) {
+        if (controlType == Default && newControlType != Default) {
             //enabling
             //sorry nothing
-        } else if (controlType != Disabled && newControlType == Disabled) {
+        } else if (controlType != Default && newControlType == Default) {
             //disabling
             //resetting cvars to their actual values when swithing control off
-            cl_skip_player_render_in_main_view.SetValue(cl_skip_player_render_in_main_view.GetString());
-            r_drawviewmodel.SetValue(r_drawviewmodel.GetString());
-            ss_force_primary_fullscreen.SetValue(ss_force_primary_fullscreen.GetString());
-            in_forceuser.SetValue(in_forceuser.GetString());
-            crosshair.SetValue(crosshair.GetString());
+            ResetCameraRelatedCvars();
             this->manualActive = false;
         }
         controlType = newControlType;
@@ -240,15 +281,17 @@ void Camera::OverrideView(void* m_View)
         //TODO: make CViewSetup struct instead of getting stuff with offsets
         Vector* origin = reinterpret_cast<Vector*>(static_cast<int*>(m_View) + 28);
         QAngle* angles = reinterpret_cast<QAngle*>(static_cast<int*>(m_View) + 31);
-        float* fov = reinterpret_cast<float*>(static_cast<int*>(m_View) + 20);
-        if (controlType == Disabled) {
+        float* fov = reinterpret_cast<float*>(static_cast<int*>(m_View) + 26);
+        if (controlType == Default || cameraRefreshRequested) {
             currentState.origin = (*origin);
             currentState.angles = (*angles);
             currentState.fov = (*fov);
-        } else {
-
+            if (cameraRefreshRequested)
+                cameraRefreshRequested = false;
+        }
+        if (controlType != Default) {
             //manual camera view control
-            if (controlType == Manual) {
+            if (controlType == Drive) {
                 if (IsDriving()) {
                     if (!manualActive) {
                         inputSystem->GetCursorPos(mouseHoldPos[0], mouseHoldPos[1]);
@@ -262,7 +305,8 @@ void Camera::OverrideView(void* m_View)
                 }
                 if (manualActive) {
                     //even junkier hack. lock mouse movement using fake in_forceuser 2 LMAO
-                    if(engine->hoststate->m_activeGame)in_forceuser.ThisPtr()->m_nValue = 2;
+                    if (engine->hoststate->m_activeGame)
+                        in_forceuser.ThisPtr()->m_nValue = 2;
 
                     //getting mouse movement and resetting the cursor position
                     int mX, mY;
@@ -271,8 +315,14 @@ void Camera::OverrideView(void* m_View)
                     mY -= mouseHoldPos[1];
                     inputSystem->SetCursorPos(mouseHoldPos[0], mouseHoldPos[1]);
 
-                    currentState.angles.x += (float)mY * 0.22f;
-                    currentState.angles.y -= (float)mX * 0.22f;
+                    if (inputSystem->IsKeyDown(ButtonCode_t::MOUSE_RIGHT)) {
+                        //allow fov manipulation
+                        currentState.fov = fminf(fmaxf(currentState.fov + mY * 0.22f, 0.1f), 179.0f);
+                        currentState.angles.z += (float)mX * 0.22f;
+                    } else {
+                        currentState.angles.x += (float)mY * 0.22f;
+                        currentState.angles.y -= (float)mX * 0.22f;
+                    }
 
                     //limit both values between -180 and 180
                     currentState.angles.x = remainderf(currentState.angles.x, 360.0f);
@@ -316,17 +366,11 @@ void Camera::OverrideView(void* m_View)
                     }
                 }
             }
-            if (controlType == Path) {
+            if (controlType == Cinematic) {
                 //don't do interpolation when there are no points
                 if (states.size() > 0) {
                     float currentTime = engine->GetClientTime() - timeOffset;
-                    currentState.origin.x = InterpolateStateParam(ORIGIN_X, currentTime);
-                    currentState.origin.y = InterpolateStateParam(ORIGIN_Y, currentTime);
-                    currentState.origin.z = InterpolateStateParam(ORIGIN_Z, currentTime);
-                    currentState.angles.x = InterpolateStateParam(ANGLES_X, currentTime);
-                    currentState.angles.y = InterpolateStateParam(ANGLES_Y, currentTime);
-                    currentState.angles.z = InterpolateStateParam(ANGLES_Z, currentTime);
-                    //currentState.fov = InterpolateStateParam(FOV, currentFrameTime);
+                    currentState = InterpolateStates(currentTime);
                 }
             }
             //applying custom view
@@ -340,7 +384,12 @@ void Camera::OverrideView(void* m_View)
 
 void Camera::RequestTimeOffsetRefresh()
 {
-    timeOffsetRefresh = true;
+    timeOffsetRefreshRequested = true;
+}
+
+void Camera::RequestCameraRefresh()
+{
+    cameraRefreshRequested = true;
 }
 
 void Camera::OverrideMovement(CUserCmd* cmd)
@@ -431,7 +480,7 @@ CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs : Exports commands for rec
     if (args.ArgC() == 1) {
         for (auto const& state : camera->states) {
             CameraState cam = state.second;
-            console->Print("sar_democam_setkf %d %f %f %f %f %f %f;\n", state.first, cam.origin.x, cam.origin.y, cam.origin.z, cam.angles.x, cam.angles.y, cam.angles.z);
+            console->Print("sar_cam_path_setkf %d %f %f %f %f %f %f %f;\n", state.first, cam.origin.x, cam.origin.y, cam.origin.z, cam.angles.x, cam.angles.y, cam.angles.z, cam.fov);
         }
     } else {
         return console->Print(sar_cam_path_getkfs.ThisPtr()->m_pszHelpString);
@@ -442,10 +491,14 @@ CON_COMMAND(sar_cam_path_remkf, "sar_cam_path_remkf [frame] : Removes camera pat
 {
     CAMERA_REQUIRE_DEMO_PLAYER();
 
-    if (args.ArgC() == 1) {
+    if (args.ArgC() == 2) {
         int i = std::atoi(args[1]);
-        camera->states.erase(i);
-        console->Print("Camera path keyframe at frame %f removed.\n", args[1]);
+        if (camera->states.count(i)) {
+            camera->states.erase(i);
+            console->Print("Camera path keyframe at frame %d removed.\n", args[1]);
+        } else {
+            console->Print("This keyframe does not exist.\n");
+        }
     } else {
         return console->Print(sar_cam_path_remkf.ThisPtr()->m_pszHelpString);
     }
@@ -463,11 +516,11 @@ CON_COMMAND(sar_cam_path_remkfs, "sar_cam_path_remkfs : Removes all camera path 
     }
 }
 
-CON_COMMAND(sar_cam_setang, "sar_cam_setang <pitch> <yaw> [roll] : Sets camera angle.\n")
+CON_COMMAND(sar_cam_setang, "sar_cam_setang <pitch> <yaw> [roll] : Sets camera angle (requires camera Drive Mode).\n")
 {
-    if (camera->controlType != Manual) {
+    if (camera->controlType != Drive) {
         console->Print("Camera not in drive mode! Switching.\n");
-        sar_cam_control.SetValue(CameraControlType::Manual);
+        sar_cam_control.SetValue(CameraControlType::Drive);
     }
 
     if (args.ArgC() == 3 || args.ArgC() == 4) {
@@ -483,11 +536,11 @@ CON_COMMAND(sar_cam_setang, "sar_cam_setang <pitch> <yaw> [roll] : Sets camera a
     }
 }
 
-CON_COMMAND(sar_cam_setpos, "sar_cam_setpos <x> <y> <z> : Sets camera position.\n")
+CON_COMMAND(sar_cam_setpos, "sar_cam_setpos <x> <y> <z> : Sets camera position (requires camera Drive Mode).\n")
 {
-    if (camera->controlType != Manual) {
+    if (camera->controlType != Drive) {
         console->Print("Camera not in drive mode! Switching.\n");
-        sar_cam_control.SetValue(CameraControlType::Manual);
+        sar_cam_control.SetValue(CameraControlType::Drive);
     }
 
     if (args.ArgC() == 4) {
@@ -500,5 +553,31 @@ CON_COMMAND(sar_cam_setpos, "sar_cam_setpos <x> <y> <z> : Sets camera position.\
         camera->currentState.origin.z = pos[2];
     } else {
         return console->Print(sar_cam_setpos.ThisPtr()->m_pszHelpString);
+    }
+}
+
+CON_COMMAND(sar_cam_setfov, "sar_cam_setfov <fov>: Sets camera field of view (requires camera Drive Mode).\n")
+{
+    if (camera->controlType != Drive) {
+        console->Print("Camera not in drive mode! Switching.\n");
+        sar_cam_control.SetValue(CameraControlType::Drive);
+    }
+
+    if (args.ArgC() == 2) {
+        float fov = std::atof(args[1]);
+        camera->currentState.fov = fov;
+    } else {
+        return console->Print(sar_cam_setfov.ThisPtr()->m_pszHelpString);
+    }
+}
+
+CON_COMMAND(sar_cam_reset, "sar_cam_reset: Resets camera to its default position.\n")
+{
+    if (args.ArgC() == 1) {
+        if (camera->controlType == Drive) {
+            camera->RequestCameraRefresh();
+        }
+    } else {
+        return console->Print(sar_cam_reset.ThisPtr()->m_pszHelpString);
     }
 }

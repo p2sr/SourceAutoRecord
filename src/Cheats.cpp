@@ -66,7 +66,7 @@ CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer
 {
     auto state = !*engine->m_bWaitEnabled;
     *engine->m_bWaitEnabled = *engine->m_bWaitEnabled2 = state;
-    console->Print("%s wait!\n", (state) ? "Enabled" : "Disabled");
+    console->Print("%s wait!\n", (state) ? "Enabled" : "Default");
 }
 
 // P2, INFRA and HL2 only
