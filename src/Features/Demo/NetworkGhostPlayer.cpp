@@ -48,6 +48,7 @@ sf::Packet& operator<<(sf::Packet& packet, const HEADER& header)
 }
 
 Variable sar_ghost_sync_maps("sar_ghost_sync_maps", "0", "If the player loads a map first, game will pause until other players reach that same map, keeping everyone synchronized.\n");
+Variable sar_ghost_show_progress("sar_ghost_show_progress", "1", "Shows the progression of the other players.\n");
 
 NetworkGhostPlayer* networkGhostPlayer;
 
@@ -187,14 +188,7 @@ bool NetworkGhostPlayer::IsConnected()
 sf::Socket::Status NetworkGhostPlayer::ReceivePacket(sf::Packet& packet, sf::IpAddress& ip, int timeout)
 {
     unsigned short port;
-
-    /*if (this->socket.receive(packet, ip, port) == sf::Socket::Done) {
-        return 1;
-    } else {
-        return 0;
-    }*/
-
-	return this->socket.receive(packet, ip, port);
+    return this->socket.receive(packet, ip, port);
 }
 
 DataGhost NetworkGhostPlayer::GetPlayerData()
@@ -291,29 +285,22 @@ void NetworkGhostPlayer::NetworkThink()
         this->UpdatePlayer();
 
         //Update other players
-        //int success = 1;
         sf::Socket::Status success = sf::Socket::Done;
         while (success == sf::Socket::Done) {
-            /*if (success == sf::Socket::Done)
-                console->Print("sf::Socket::Done");
-            else if (success == sf::Socket::Error)
-                console->Print("sf::Socket::Error");
-            else if (success == sf::Socket::Partial)
-                console->Print("sf::Socket::Partial");
-            else if (success == sf::Socket::Disconnected)
-                console->Print("sf::Socket::Disconnected");*/
 
             sf::Packet packet;
             sf::IpAddress ip;
             success = this->ReceivePacket(packet, ip, 50);
-            /*if (success == sf::Socket::Done)
-                console->Print(" sf::Socket::Done\n");
-            else if (success == sf::Socket::Error)
-                console->Print(" sf::Socket::Error\n");
-            else if (success == sf::Socket::Partial)
-                console->Print(" sf::Socket::Partial\n");
-            else if (success == sf::Socket::Disconnected)
-                console->Print(" sf::Socket::Disconnected\n");*/
+
+            /*if (success == sf::Socket::Done) {
+                console->Print("sf::Socket::Done");
+            } else if (success == sf::Socket::Error) {
+                console->Print("sf::Socket::Error");
+            } else if (success == sf::Socket::Partial) {
+                console->Print("sf::Socket::Partial");
+            } else if (success == sf::Socket::Disconnected) {
+                console->Print("sf::Socket::Disconnected");
+            }*/
 
             if (success == sf::Socket::Done) {
                 packet_queue.insert({ ip.toInteger(), packet });
@@ -393,11 +380,13 @@ void NetworkGhostPlayer::CheckConnection()
                     std::string newMap;
                     packet >> ID >> newMap;
                     auto ghost = this->GetGhostByID(ID);
-                    client->Chat(TextColor::LIGHT_GREEN, "Player %s is now on %s\n", ghost->name.c_str(), newMap.c_str());
+                    if (sar_ghost_show_progress.GetBool()) {
+                        client->Chat(TextColor::LIGHT_GREEN, "Player %s is now on %s\n", ghost->name.c_str(), newMap.c_str());
+                    }
                     if (newMap == engine->m_szLevelName) {
                         ghost->sameMap = true;
                         if (sar_ghost_sync_maps.GetBool() && this->AreGhostsOnSameMap()) {
-                            engine->ExecuteCommand("unpause");
+                            engine->SendToCommandBuffer("unpause", 5);
                         }
                     } else {
                         ghost->sameMap = false;
@@ -411,7 +400,12 @@ void NetworkGhostPlayer::CheckConnection()
                     if (ID == this->ip_client.toInteger()) {
                         client->Chat(TextColor::ORANGE, "%s : %s", this->name.c_str(), message.c_str());
                     } else {
-                        client->Chat(TextColor::ORANGE, "%s : %s", this->GetGhostByID(ID)->name.c_str(), message.c_str());
+                        if (message.empty()) {
+                            console->Print("empty\n");
+                        } else {
+                            auto ghost = this->GetGhostByID(ID);
+                            client->Chat(TextColor::ORANGE, "%s : %s", ghost->name.c_str(), message.c_str());
+                        }
                     }
                 } else if (header == HEADER::PING) {
                     auto stop = std::chrono::steady_clock::now();
@@ -442,6 +436,8 @@ void NetworkGhostPlayer::CheckConnection()
                     auto ghost = this->GetGhostByID(ID);
                     if (this->defaultGhostType == 2) {
                         ghost->ChangeModel(modelName);
+                        ghost->KillGhost(true);
+                        ghost->Spawn(true, ghost->currentPos, ghost->ghostType);
                     }
                 }
             } else if (status == sf::Socket::Disconnected) {
@@ -477,6 +473,14 @@ void NetworkGhostPlayer::ClearGhosts()
     for (auto& ghost : this->ghostPool) {
         ghost->Stop();
     }
+}
+
+void NetworkGhostPlayer::UpdateModel()
+{
+    HEADER header = HEADER::MODEL_CHANGE;
+    sf::Packet packet;
+    packet << header << this->modelName;
+    this->tcpSocket.send(packet);
 }
 
 void NetworkGhostPlayer::SetupCountdown(sf::Uint32 time)
@@ -527,7 +531,7 @@ CON_COMMAND(sar_ghost_connect_to_server, "Connect to the server : <ip address> <
     networkGhostPlayer->ConnectToServer(args[1], std::atoi(args[2]));
 }
 
-CON_COMMAND(sar_ghost_ping, "Send ping\n")
+CON_COMMAND(sar_ghost_ping, "Send ping.\n")
 {
     sf::Packet packet;
     packet << HEADER::PING;
@@ -536,7 +540,7 @@ CON_COMMAND(sar_ghost_ping, "Send ping\n")
     networkGhostPlayer->tcpSocket.send(packet);
 }
 
-CON_COMMAND(sar_ghost_disconnect, "Disconnect the player from the server\n")
+CON_COMMAND(sar_ghost_disconnect, "Disconnect the player from the server.\n")
 {
 
     if (!networkGhostPlayer->IsConnected()) {
@@ -545,10 +549,10 @@ CON_COMMAND(sar_ghost_disconnect, "Disconnect the player from the server\n")
     }
 
     networkGhostPlayer->Disconnect();
-    client->Chat(TextColor::ORANGE, "You have successfully been disconnected !\n");
+    client->Chat(TextColor::ORANGE, "You have successfully been disconnected !.\n");
 }
 
-CON_COMMAND(sar_ghost_name, "Name that will be displayed\n")
+CON_COMMAND(sar_ghost_name, "Name that will be displayed.\n")
 {
     if (args.ArgC() <= 1) {
         console->Print(sar_ghost_name.ThisPtr()->m_pszHelpString);
@@ -557,7 +561,7 @@ CON_COMMAND(sar_ghost_name, "Name that will be displayed\n")
     networkGhostPlayer->name = args[1];
 }
 
-CON_COMMAND(sar_ghost_tickrate, "Adjust the tickrate\n")
+CON_COMMAND(sar_ghost_tickrate, "Adjust the tickrate.\n")
 {
     if (args.ArgC() <= 1) {
         console->Print(sar_ghost_tickrate.ThisPtr()->m_pszHelpString);
@@ -566,10 +570,10 @@ CON_COMMAND(sar_ghost_tickrate, "Adjust the tickrate\n")
     networkGhostPlayer->tickrate = std::chrono::milliseconds(std::atoi(args[1]));
 }
 
-CON_COMMAND(sar_ghost_countdown, "Start a countdown\n")
+CON_COMMAND(sar_ghost_countdown, "Start a countdown.\n")
 {
     if (args.ArgC() < 2) {
-        console->Print(sar_ghost_tickrate.ThisPtr()->m_pszHelpString);
+        console->Print(sar_ghost_countdown.ThisPtr()->m_pszHelpString);
         return;
     } else if (args.ArgC() >= 2) {
         sf::Packet packet;
@@ -578,7 +582,7 @@ CON_COMMAND(sar_ghost_countdown, "Start a countdown\n")
     }
 }
 
-CON_COMMAND(sar_ghost_message, "Send a message to other players\n")
+CON_COMMAND(sar_ghost_message, "Send a message to other players.\n")
 {
     if (args.ArgC() <= 1) {
         console->Print(sar_ghost_message.ThisPtr()->m_pszHelpString);
@@ -589,6 +593,7 @@ CON_COMMAND(sar_ghost_message, "Send a message to other players\n")
     std::string message = "";
     for (int i = 1; i < args.ArgC(); ++i) {
         message += args[i];
+        message += " ";
     }
     packet << message;
     networkGhostPlayer->tcpSocket.send(packet);

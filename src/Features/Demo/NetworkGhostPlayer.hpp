@@ -1,12 +1,12 @@
 #pragma once
 #include "GhostEntity.hpp"
 
-#include "Features/Feature.hpp"
 #include "Features/Demo/Demo.hpp"
+#include "Features/Feature.hpp"
 
 #include "Command.hpp"
-#include "Variable.hpp"
 #include "Utils/SDK.hpp"
+#include "Variable.hpp"
 
 #include "SFML/Network.hpp"
 
@@ -25,7 +25,7 @@ enum class HEADER {
     MESSAGE,
     COUNTDOWN,
     UPDATE,
-	MODEL_CHANGE
+    MODEL_CHANGE
 };
 
 class NetworkGhostPlayer : public Feature {
@@ -88,11 +88,13 @@ public:
     void UpdateGhostsCurrentMap();
     bool AreGhostsOnSameMap();
     void ClearGhosts();
+    void UpdateModel();
 };
 
 extern NetworkGhostPlayer* networkGhostPlayer;
 
 extern Variable sar_ghost_sync_maps;
+extern Variable sar_ghost_show_progress;
 
 extern Command sar_ghost_connect_to_server;
 extern Command sar_ghost_disconnect;

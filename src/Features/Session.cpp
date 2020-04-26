@@ -134,7 +134,8 @@ void Session::Start()
         networkGhostPlayer->UpdateCurrentMap();
         networkGhostPlayer->UpdateGhostsCurrentMap();
         if (sar_ghost_sync_maps.GetBool() && !networkGhostPlayer->AreGhostsOnSameMap()) {
-            engine->ExecuteCommand("pause");
+            //engine->ExecuteCommand("pause");
+            engine->SendToCommandBuffer("pause", 5);
         }
         networkGhostPlayer->StartThinking();
         networkGhostPlayer->isInLevel = true;
