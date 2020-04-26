@@ -21,7 +21,7 @@ Variable sar_cam_control("sar_cam_control", "0", 0, 2,
     "1 = Drive mode (camera is separated and can be controlled by user input),\n"
     "2 = Cinematic mode (camera is controlled by predefined path).\n");
 
-Variable sar_cam_drive("sar_cam_drive", "0", 0, 1,
+Variable sar_cam_drive("sar_cam_drive", "1", 0, 1,
     "Enables or disables camera drive mode in-game "
     "(turning it on is not required for demo player)\n");
 
@@ -237,6 +237,7 @@ void Camera::OverrideView(void* m_View)
             console->Print("Cinematic mode cannot be used outside of demo player.\n");
         } else {
             controlType = Default;
+            ResetCameraRelatedCvars();
         }
         newControlType = controlType;
         sar_cam_control.SetValue(controlType);
@@ -248,6 +249,7 @@ void Camera::OverrideView(void* m_View)
             console->Print("Drive mode requires sv_cheats 1 or demo player.\n");
         } else {
             controlType = Default;
+            ResetCameraRelatedCvars();
         }
         newControlType = controlType;
         sar_cam_control.SetValue(controlType);
