@@ -164,6 +164,9 @@ CON_COMMAND_COMPLETION(sar_ghost_set_prop_model, "Set the prop model. Example : 
     }
 
     networkGhostPlayer->modelName = args[1];
+    if (networkGhostPlayer->IsConnected()) {
+        networkGhostPlayer->UpdateModel();
+	}
 
     if (ghostPlayer->ghost.empty()) {
         return;
