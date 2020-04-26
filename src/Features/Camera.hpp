@@ -9,9 +9,6 @@
 #include "Modules/Engine.hpp"
 
 
-#define CAMERA_REQUIRE_DEMO_PLAYER_ERROR() console->Print("Cinematic mode cannot be used outside of demo player.\n")
-#define CAMERA_REQUIRE_DEMO_PLAYER() if (!engine->demoplayer->IsPlaying()) return CAMERA_REQUIRE_DEMO_PLAYER_ERROR()
-
 extern Variable sar_cam_control;
 extern Variable sar_cam_drive;
 

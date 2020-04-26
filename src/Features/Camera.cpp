@@ -234,7 +234,7 @@ void Camera::OverrideView(void* m_View)
     //don't allow cinematic mode outside of demo player
     if (!engine->demoplayer->IsPlaying() && newControlType == Cinematic) {
         if (controlType != Cinematic) {
-            CAMERA_REQUIRE_DEMO_PLAYER_ERROR();
+            console->Print("Cinematic mode cannot be used outside of demo player.\n");
         } else {
             controlType = Default;
         }
@@ -366,6 +366,7 @@ void Camera::OverrideView(void* m_View)
                     }
                 }
             }
+            //cinematic camera - move it along predefined path
             if (controlType == Cinematic) {
                 //don't do interpolation when there are no points
                 if (states.size() > 0) {
@@ -376,8 +377,7 @@ void Camera::OverrideView(void* m_View)
             //applying custom view
             *origin = currentState.origin;
             *angles = currentState.angles;
-            *fov = currentState.fov; //fov is currently not working, not sure why
-            //console->Print("%f\n", engine->GetClientTime() - timeOffset);
+            *fov = currentState.fov;
         }
     }
 }
@@ -407,7 +407,8 @@ void Camera::OverrideMovement(CUserCmd* cmd)
 
 CON_COMMAND(sar_cam_path_setkf, "sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov]: Sets the camera path keyframe.\n")
 {
-    CAMERA_REQUIRE_DEMO_PLAYER();
+    if (!engine->demoplayer->IsPlaying())
+        return console->Print("Cinematic mode cannot be used outside of demo player.\n");
 
     if (args.ArgC() >= 1 && args.ArgC() <= 9) {
         CameraState campos = camera->currentState;
@@ -443,7 +444,8 @@ CON_COMMAND(sar_cam_path_setkf, "sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [p
 
 CON_COMMAND(sar_cam_path_showkf, "sar_cam_path_showkf [frame] : Display information about camera path keyframe at specified frame.\n")
 {
-    CAMERA_REQUIRE_DEMO_PLAYER();
+    if (!engine->demoplayer->IsPlaying())
+        return console->Print("Cinematic mode cannot be used outside of demo player.\n");
 
     if (args.ArgC() == 2) {
         int i = std::atoi(args[1]);
@@ -460,7 +462,8 @@ CON_COMMAND(sar_cam_path_showkf, "sar_cam_path_showkf [frame] : Display informat
 
 CON_COMMAND(sar_cam_path_showkfs, "sar_cam_path_showkfs : Display information about all camera path keyframes.\n")
 {
-    CAMERA_REQUIRE_DEMO_PLAYER();
+    if (!engine->demoplayer->IsPlaying())
+        return console->Print("Cinematic mode cannot be used outside of demo player.\n");
 
     if (args.ArgC() == 1) {
         for (auto const& state : camera->states) {
@@ -475,7 +478,8 @@ CON_COMMAND(sar_cam_path_showkfs, "sar_cam_path_showkfs : Display information ab
 
 CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs : Exports commands for recreating currently made camera path.\n")
 {
-    CAMERA_REQUIRE_DEMO_PLAYER();
+    if (!engine->demoplayer->IsPlaying())
+        return console->Print("Cinematic mode cannot be used outside of demo player.\n");
 
     if (args.ArgC() == 1) {
         for (auto const& state : camera->states) {
@@ -489,13 +493,14 @@ CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs : Exports commands for rec
 
 CON_COMMAND(sar_cam_path_remkf, "sar_cam_path_remkf [frame] : Removes camera path keyframe at specified frame.\n")
 {
-    CAMERA_REQUIRE_DEMO_PLAYER();
+    if (!engine->demoplayer->IsPlaying())
+        return console->Print("Cinematic mode cannot be used outside of demo player.\n");
 
     if (args.ArgC() == 2) {
         int i = std::atoi(args[1]);
         if (camera->states.count(i)) {
             camera->states.erase(i);
-            console->Print("Camera path keyframe at frame %d removed.\n", args[1]);
+            console->Print("Camera path keyframe at frame %d removed.\n", i);
         } else {
             console->Print("This keyframe does not exist.\n");
         }
@@ -506,7 +511,8 @@ CON_COMMAND(sar_cam_path_remkf, "sar_cam_path_remkf [frame] : Removes camera pat
 
 CON_COMMAND(sar_cam_path_remkfs, "sar_cam_path_remkfs : Removes all camera path keyframes.\n")
 {
-    CAMERA_REQUIRE_DEMO_PLAYER();
+    if (!engine->demoplayer->IsPlaying())
+        return console->Print("Cinematic mode cannot be used outside of demo player.\n");
 
     if (args.ArgC() == 1) {
         camera->states.clear();
@@ -564,7 +570,7 @@ CON_COMMAND(sar_cam_setfov, "sar_cam_setfov <fov>: Sets camera field of view (re
     }
 
     if (args.ArgC() == 2) {
-        float fov = std::atof(args[1]);
+        float fov = (float)std::atof(args[1]);
         camera->currentState.fov = fov;
     } else {
         return console->Print(sar_cam_setfov.ThisPtr()->m_pszHelpString);
