@@ -30,6 +30,7 @@ extern int GetAllClasses;
 extern int HudProcessInput;
 extern int HudUpdate;
 extern int IN_ActivateMouse;
+extern int SteamControllerMove;
 extern int JoyStickApplyMovement;
 
 // ClientModeShared

@@ -30,6 +30,7 @@ int GetAllClasses;
 int HudProcessInput;
 int HudUpdate;
 int IN_ActivateMouse;
+int SteamControllerMove;
 int JoyStickApplyMovement;
 
 // ClientModeShared
