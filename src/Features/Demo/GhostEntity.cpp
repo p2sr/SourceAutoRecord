@@ -244,7 +244,7 @@ CON_COMMAND(sar_ghost_type, "Type of the ghost :\n"
                             "2 = Ghost using in-game model. WARNING : Those remain permanently in demos\n")
 {
     if (args.ArgC() <= 1) {
-        console->Print(sar_ghost_tickrate.ThisPtr()->m_pszHelpString);
+        console->Print(sar_ghost_type.ThisPtr()->m_pszHelpString);
         return;
     }
 

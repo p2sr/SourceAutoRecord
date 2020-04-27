@@ -57,7 +57,7 @@ std::mutex mutex;
 NetworkGhostPlayer::NetworkGhostPlayer()
     : ip_server("localhost")
     , port_server(53000)
-    , name("FrenchSaves10Ticks")
+    , name("me")
     , defaultGhostType(1)
     , runThread(false)
     , pauseThread(true)
@@ -80,7 +80,7 @@ NetworkGhostPlayer::NetworkGhostPlayer()
 void NetworkGhostPlayer::ConnectToServer(std::string ip, unsigned short port)
 {
     if (tcpSocket.connect(ip, port, sf::seconds(5)) != sf::Socket::Done) {
-        client->Chat(TextColor::ORANGE, "0 ! GO !", "Timeout reached ! Can't connect to the server %s:%d !\n", ip.c_str(), port);
+        client->Chat(TextColor::ORANGE, "Timeout reached ! Can't connect to the server %s:%d !\n", ip.c_str(), port);
         return;
     }
 
@@ -91,14 +91,14 @@ void NetworkGhostPlayer::ConnectToServer(std::string ip, unsigned short port)
     this->port_server = port;
 
     sf::Packet connection_packet;
-    connection_packet << HEADER::CONNECT << this->socket.getLocalPort() << this->name;
+    connection_packet << HEADER::CONNECT << this->socket.getLocalPort() << this->name.c_str();
     if (!*engine->m_szLevelName) { //If not in a level
         connection_packet << DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } };
     } else {
         connection_packet << this->GetPlayerData();
     }
 
-    connection_packet << std::string(engine->m_szLevelName) << this->modelName;
+    connection_packet << engine->m_szLevelName << this->modelName.c_str();
     tcpSocket.send(connection_packet);
 
     sf::SocketSelector tcpSelector;
@@ -232,7 +232,7 @@ void NetworkGhostPlayer::UpdateGhostsCurrentMap()
 void NetworkGhostPlayer::UpdateCurrentMap()
 {
     sf::Packet packet;
-    packet << HEADER::MAP_CHANGE << std::string(engine->m_szLevelName);
+    packet << HEADER::MAP_CHANGE << engine->m_szLevelName;
     this->tcpSocket.send(packet);
 }
 
@@ -321,7 +321,7 @@ void NetworkGhostPlayer::NetworkThink()
                             ghost->Spawn(true, QAngleToVector(data.position), ghost->ghostType);
                         }
                         ghost->oldPos = ghost->newPos;
-                        ghost->newPos = { { data.position.x, data.position.y, data.position.z + /*sar_ghost_height.GetFloat()*/ 16 }, { data.view_angle.x, data.view_angle.y, data.view_angle.z } };
+                        ghost->newPos = { { data.position.x, data.position.y, data.position.z + sar_ghost_height.GetFloat() }, { data.view_angle.x, data.view_angle.y, data.view_angle.z } };
                         ghost->loopTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - ghost->lastUpdate).count();
                         ghost->lastUpdate = std::chrono::steady_clock::now();
                     }
@@ -357,7 +357,7 @@ void NetworkGhostPlayer::CheckConnection()
                     if (this->runThread) {
                         auto ghost = this->GetGhostByID(ID);
                         if (ghost->sameMap) {
-                            ghost->Spawn(true, { 1, 1, 1 }, ghost->ghostType);
+                            ghost->Spawn(true, { 1, 1, 1 }, this->defaultGhostType);
                         }
                     }
                     client->Chat(TextColor::LIGHT_GREEN, "Player %s has connected !\n", name.c_str());
@@ -401,7 +401,7 @@ void NetworkGhostPlayer::CheckConnection()
                         client->Chat(TextColor::ORANGE, "%s : %s", this->name.c_str(), message.c_str());
                     } else {
                         if (message.empty()) {
-                            console->Print("empty\n");
+                            console->Print("Failed to receive message.\n");
                         } else {
                             auto ghost = this->GetGhostByID(ID);
                             client->Chat(TextColor::ORANGE, "%s : %s", ghost->name.c_str(), message.c_str());
@@ -479,7 +479,7 @@ void NetworkGhostPlayer::UpdateModel()
 {
     HEADER header = HEADER::MODEL_CHANGE;
     sf::Packet packet;
-    packet << header << this->modelName;
+    packet << header << this->modelName.c_str();
     this->tcpSocket.send(packet);
 }
 
@@ -577,12 +577,12 @@ CON_COMMAND(sar_ghost_countdown, "Start a countdown.\n")
         return;
     } else if (args.ArgC() >= 2) {
         sf::Packet packet;
-        packet << HEADER::COUNTDOWN << sf::Uint8(0) << sf::Uint32(std::atoi(args[1])) << std::string("") << std::string(""); //Players can't use pre/post commands
+        packet << HEADER::COUNTDOWN << sf::Uint8(0) << sf::Uint32(std::atoi(args[1])) << "" << ""; //Players can't use pre/post commands
         networkGhostPlayer->tcpSocket.send(packet);
     }
 }
 
-CON_COMMAND(sar_ghost_message, "Send a message to other players.\n")
+CON_COMMAND(sar_ghost_message, "Send a message to other players.s \n")
 {
     if (args.ArgC() <= 1) {
         console->Print(sar_ghost_message.ThisPtr()->m_pszHelpString);
@@ -595,6 +595,6 @@ CON_COMMAND(sar_ghost_message, "Send a message to other players.\n")
         message += args[i];
         message += " ";
     }
-    packet << message;
+    packet << message.c_str();
     networkGhostPlayer->tcpSocket.send(packet);
 }
