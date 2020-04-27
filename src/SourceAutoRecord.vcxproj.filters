@@ -319,6 +319,9 @@
     <ClCompile Include="Features\FovChanger.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Camera.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -664,6 +667,9 @@
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
     <ClInclude Include="Features\FovChanger.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Camera.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>

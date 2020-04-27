@@ -124,6 +124,7 @@
     <ClCompile Include="Features\Config.cpp" />
     <ClCompile Include="Features\Cvars.cpp" />
     <ClCompile Include="Features\DataMapDumper.cpp" />
+    <ClCompile Include="Features\Camera.cpp" />
     <ClCompile Include="Features\Demo\Demo.cpp" />
     <ClCompile Include="Features\Demo\DemoParser.cpp" />
     <ClCompile Include="Features\EntityList.cpp" />
@@ -265,6 +266,7 @@
     <ClInclude Include="Features\Config.hpp" />
     <ClInclude Include="Features\Cvars.hpp" />
     <ClInclude Include="Features\DataMapDumper.hpp" />
+    <ClInclude Include="Features\Camera.hpp" />
     <ClInclude Include="Features\Demo\Demo.hpp" />
     <ClInclude Include="Features\Demo\DemoParser.hpp" />
     <ClInclude Include="Features\EntityList.hpp" />
