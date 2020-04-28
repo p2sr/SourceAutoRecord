@@ -60,6 +60,9 @@ public:
     // CInput::GetButtonBits
     DECL_DETOUR(GetButtonBits, bool bResetState);
 
+    // CInput::SteamControllerMove
+    DECL_DETOUR(SteamControllerMove, int nSlot, float flFrametime, CUserCmd* cmd); //is it slot though? :thinking:
+
     DECL_DETOUR_COMMAND(playvideo_end_level_transition);
 
     bool Init() override;

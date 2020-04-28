@@ -22,6 +22,7 @@
 #include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Tas/TasTools.hpp"
+#include "Features/Tas/TasController.hpp"
 #include "Features/Teleporter.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"

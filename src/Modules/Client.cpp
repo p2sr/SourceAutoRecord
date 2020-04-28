@@ -10,6 +10,7 @@
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Session.hpp"
+#include "Features/Tas/TasController.hpp"
 #include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 
@@ -37,6 +38,7 @@ REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::DecodeUserCmdFromBuffer2);
 REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
+REDECL(Client::SteamControllerMove);
 REDECL(Client::playvideo_end_level_transition_callback);
 
 MDECL(Client::GetAbsOrigin, Vector, C_m_vecAbsOrigin);
@@ -203,6 +205,16 @@ DETOUR(Client::GetButtonBits, bool bResetState)
     return bits;
 }
 
+// CInput::SteamControllerMove
+DETOUR(Client::SteamControllerMove, int nSlot, float flFrametime, CUserCmd* cmd)
+{
+    auto result = Client::SteamControllerMove(thisptr, nSlot, flFrametime, cmd);
+
+    tasController->ControllerMove(nSlot, flFrametime, cmd);
+
+    return result;
+}
+
 DETOUR_COMMAND(Client::playvideo_end_level_transition)
 {
     console->DevMsg("%s\n", args.m_pArgSBuffer);
@@ -250,6 +262,7 @@ bool Client::Init()
             if (sar.game->Is(SourceGame_Portal2Engine)) {
                 g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
                 g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
+                g_Input->Hook(Client::SteamControllerMove_Hook, Client::SteamControllerMove, Offsets::SteamControllerMove);
 
                 auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
                 Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);

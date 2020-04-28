@@ -142,6 +142,7 @@ void Portal2::LoadOffsets()
     IN_ActivateMouse = 15; // CHLClient
     g_Input = 2; // CHLClient::IN_ActivateMouse
     GetButtonBits = 2; // CInput
+    SteamControllerMove = 58; // CInput
     JoyStickApplyMovement = 64; // CInput
     KeyDown = 398; // CInput::JoyStickApplyMovement
     KeyUp = 377; // CInput::JoyStickApplyMovement
