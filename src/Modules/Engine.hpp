@@ -37,6 +37,7 @@ public:
     using _GetLocalClient = int (*)(int index);
     using _HostFrameTime = float (*)(void* thisptr);
     using _ClientTime = float (*)(void* thisptr);
+    using _IsPaused = bool (*)(void* thisptr);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -67,6 +68,7 @@ public:
     _GetLocalClient GetLocalClient = nullptr;
     _HostFrameTime HostFrameTime = nullptr;
     _ClientTime ClientTime = nullptr;
+    _IsPaused IsPaused = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;
@@ -96,6 +98,7 @@ public:
     void SafeUnload(const char* postCommand = nullptr);
     float GetHostFrameTime();
     float GetClientTime();
+    bool IsGamePaused();
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);

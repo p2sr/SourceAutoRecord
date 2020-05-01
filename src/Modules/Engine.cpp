@@ -138,6 +138,11 @@ float Engine::GetClientTime()
     return this->ClientTime(this->engineTool->ThisPtr());
 }
 
+bool Engine::IsGamePaused()
+{
+    return this->IsPaused(this->engineClient->ThisPtr());
+}
+
 // CClientState::Disconnect
 DETOUR(Engine::Disconnect, bool bShowMainMenu)
 {
@@ -293,6 +298,7 @@ bool Engine::Init()
         this->SetViewAngles = this->engineClient->Original<_SetViewAngles>(Offsets::SetViewAngles);
         this->GetMaxClients = this->engineClient->Original<_GetMaxClients>(Offsets::GetMaxClients);
         this->GetGameDirectory = this->engineClient->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
+        this->IsPaused = this->engineClient->Original<_IsPaused>(Offsets::IsPaused);
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);

@@ -60,10 +60,11 @@ Camera::~Camera()
 bool Camera::IsDriving()
 {
     bool drivingInGame = sar_cam_drive.GetBool() && sv_cheats.GetBool() && engine->hoststate->m_activeGame;
+    bool isPaused = engine->IsGamePaused();
     bool drivingInDemo = engine->demoplayer->IsPlaying();
     bool wantingToDrive = inputSystem->IsKeyDown(ButtonCode_t::MOUSE_LEFT);
 
-    return camera->controlType == Drive && wantingToDrive && (drivingInGame || drivingInDemo);
+    return camera->controlType == Drive && wantingToDrive && (drivingInGame || drivingInDemo) && !isPaused;
 }
 
 
