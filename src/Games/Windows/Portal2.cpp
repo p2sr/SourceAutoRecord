@@ -32,7 +32,6 @@ void Portal2::LoadOffsets()
     viewangles = 19040; // CEngineClient::SetViewAngles
     GetMaxClients = 20; // CEngineClient
     GetGameDirectory = 35; // CEngineClient
-    IsPaused = 86; // CEngineClient
     GetActiveSplitScreenPlayerSlot = 127; // CEngineClient
     GetSteamAPIContext = 177; // CEngineClient
     StringToButtonCode = 31; // CInputSystem
@@ -51,6 +50,7 @@ void Portal2::LoadOffsets()
     m_szDemoBaseName = 1344; // CDemoRecorder::StartupDemoFile
     m_nDemoNumber = 1608; // CDemoRecorder::StartupDemoFile
     m_bRecording = 1606; // CDemoRecorder::SetSignonState
+    IsGameUIVisible = 2; //IEngineGui
     Paint = 14; // CEngineVGui
     ProcessTick = 1; // CClientState/IServerMessageHandler
     tickcount = 95; // CClientState::ProcessTick

@@ -60,7 +60,7 @@ public:
     Camera();
     ~Camera();
     bool IsDriving();
-    void OverrideView(void* m_View);
+    void OverrideView(CPortalViewSetup1* m_View);
     CameraState InterpolateStates(float time);
     void RequestTimeOffsetRefresh();
     void RequestCameraRefresh();

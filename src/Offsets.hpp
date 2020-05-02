@@ -22,7 +22,6 @@ extern int GetViewAngles;
 extern int SetViewAngles;
 extern int GetMaxClients;
 extern int ServerCmdKeyValues;
-extern int IsPaused;
 extern int GetActiveSplitScreenPlayerSlot;
 extern int GetSteamAPIContext;
 
@@ -124,6 +123,7 @@ extern int m_pSurfaceData;
 extern int iNumPortalsPlaced;
 
 // IEngineVGuiInternal
+extern int IsGameUIVisible;
 extern int Paint;
 
 // CEngineTool

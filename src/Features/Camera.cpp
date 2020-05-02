@@ -5,6 +5,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/InputSystem.hpp"
 #include "Modules/Server.hpp"
+#include "Modules/VGui.hpp"
 
 #include "Features/EntityList.hpp"
 #include "Features/Timer/PauseTimer.hpp"
@@ -53,22 +54,20 @@ Camera::~Camera()
     ResetCameraRelatedCvars();
 }
 
-
-
 //if in drive mode, checks if player wants to control the camera
 //for now it requires LMB input (as in demo drive mode)
 bool Camera::IsDriving()
 {
-    bool drivingInGame = sar_cam_drive.GetBool() && sv_cheats.GetBool() && !engine->IsGamePaused() && engine->hoststate->m_activeGame;
+    bool drivingInGame = sar_cam_drive.GetBool() && sv_cheats.GetBool() && engine->hoststate->m_activeGame;
     bool drivingInDemo = engine->demoplayer->IsPlaying();
     bool wantingToDrive = inputSystem->IsKeyDown(ButtonCode_t::MOUSE_LEFT);
+    bool isUI = vgui->IsUIVisible();
 
-    return camera->controlType == Drive && wantingToDrive && (drivingInGame || drivingInDemo);
+    return camera->controlType == Drive && wantingToDrive && (drivingInGame || drivingInDemo) && !isUI;
 }
 
-
 //used by camera state interpolation function. all the math is here.
-float InterpolateCurve(std::vector<Vector> points, float x, bool dealingWithAngles=false)
+float InterpolateCurve(std::vector<Vector> points, float x, bool dealingWithAngles = false)
 {
     enum { FIRST,
         PREV,
@@ -107,8 +106,7 @@ float InterpolateCurve(std::vector<Vector> points, float x, bool dealingWithAngl
     return (2 * t3 - 3 * t2 + 1) * points[PREV].y + (t3 - 2 * t2 + t) * m1 + (-2 * t3 + 3 * t2) * points[NEXT].y + (t3 - t2) * m2;
 }
 
-
-//creates vector array for specified parameter. it can probably be done in much more elegant way 
+//creates vector array for specified parameter. it can probably be done in much more elegant way
 std::vector<Vector> CameraStatesToInterpolationPoints(float* x, CameraState* y, CameraStateParameter param)
 {
     std::vector<Vector> points;
@@ -215,14 +213,12 @@ CameraState Camera::InterpolateStates(float time)
     interp.angles.y = InterpolateCurve(CameraStatesToInterpolationPoints(x, y, ANGLES_Y), frameTime, true);
     interp.angles.z = InterpolateCurve(CameraStatesToInterpolationPoints(x, y, ANGLES_Z), frameTime, true);
     interp.fov = InterpolateCurve(CameraStatesToInterpolationPoints(x, y, FOV), frameTime);
-    
+
     return interp;
 }
 
-
-
 //Overrides view.
-void Camera::OverrideView(void* m_View)
+void Camera::OverrideView(CPortalViewSetup1* m_View)
 {
     if (timeOffsetRefreshRequested) {
         timeOffset = engine->GetClientTime() - engine->demoplayer->GetTick() / 60.0f;
@@ -280,14 +276,10 @@ void Camera::OverrideView(void* m_View)
 
     //don't do anything if not in game or demo player
     if (engine->hoststate->m_activeGame || engine->demoplayer->IsPlaying()) {
-        //TODO: make CViewSetup struct instead of getting stuff with offsets
-        Vector* origin = reinterpret_cast<Vector*>(static_cast<int*>(m_View) + 28);
-        QAngle* angles = reinterpret_cast<QAngle*>(static_cast<int*>(m_View) + 31);
-        float* fov = reinterpret_cast<float*>(static_cast<int*>(m_View) + 26);
         if (controlType == Default || cameraRefreshRequested) {
-            currentState.origin = (*origin);
-            currentState.angles = (*angles);
-            currentState.fov = (*fov);
+            currentState.origin = m_View->origin;
+            currentState.angles = m_View->angles;
+            currentState.fov = m_View->fov;
             if (cameraRefreshRequested)
                 cameraRefreshRequested = false;
         }
@@ -377,9 +369,9 @@ void Camera::OverrideView(void* m_View)
                 }
             }
             //applying custom view
-            *origin = currentState.origin;
-            *angles = currentState.angles;
-            *fov = currentState.fov;
+            m_View->origin = currentState.origin;
+            m_View->angles = currentState.angles;
+            m_View->fov = currentState.fov;
         }
     }
 }
@@ -416,10 +408,9 @@ DECL_COMMAND_COMPLETION(sar_cam_path_setkf)
 
         char camString[512] = {};
         CameraState cam = state.second;
-        sprintf(camString, "%d %.0f %.0f %.0f %.0f %.0f %.0f %.0f", 
-            state.first, cam.origin.x, cam.origin.y, cam.origin.z, 
-            cam.angles.x, cam.angles.y, cam.angles.z, cam.fov
-        );
+        sprintf(camString, "%d %.0f %.0f %.0f %.0f %.0f %.0f %.0f",
+            state.first, cam.origin.x, cam.origin.y, cam.origin.z,
+            cam.angles.x, cam.angles.y, cam.angles.z, cam.fov);
 
         camString[COMMAND_COMPLETION_ITEM_LENGTH - 1 - 19] = '\0';
         std::string camStringString(&camString[0], COMMAND_COMPLETION_ITEM_LENGTH - 19);
@@ -437,10 +428,9 @@ DECL_COMMAND_COMPLETION(sar_cam_path_setkf)
 }
 
 CON_COMMAND_F_COMPLETION(
-    sar_cam_path_setkf, 
-    "sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov]: Sets the camera path keyframe.\n", 
-    0, AUTOCOMPLETION_FUNCTION(sar_cam_path_setkf)
-)
+    sar_cam_path_setkf,
+    "sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov]: Sets the camera path keyframe.\n",
+    0, AUTOCOMPLETION_FUNCTION(sar_cam_path_setkf))
 {
     if (!engine->demoplayer->IsPlaying())
         return console->Print("Cinematic mode cannot be used outside of demo player.\n");
@@ -503,10 +493,9 @@ DECL_COMMAND_COMPLETION(sar_cam_path_showkf)
 }
 
 CON_COMMAND_F_COMPLETION(
-    sar_cam_path_showkf, 
-    "sar_cam_path_showkf [frame] : Display information about camera path keyframe at specified frame.\n", 
-    0, AUTOCOMPLETION_FUNCTION(sar_cam_path_showkf)
-)
+    sar_cam_path_showkf,
+    "sar_cam_path_showkf [frame] : Display information about camera path keyframe at specified frame.\n",
+    0, AUTOCOMPLETION_FUNCTION(sar_cam_path_showkf))
 {
     if (!engine->demoplayer->IsPlaying())
         return console->Print("Cinematic mode cannot be used outside of demo player.\n");
@@ -548,10 +537,9 @@ CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs : Exports commands for rec
     if (args.ArgC() == 1) {
         for (auto const& state : camera->states) {
             CameraState cam = state.second;
-            console->Print("sar_cam_path_setkf %d %f %f %f %f %f %f %f;\n", 
-                state.first, cam.origin.x, cam.origin.y, cam.origin.z, 
-                cam.angles.x, cam.angles.y, cam.angles.z, cam.fov
-            );
+            console->Print("sar_cam_path_setkf %d %f %f %f %f %f %f %f;\n",
+                state.first, cam.origin.x, cam.origin.y, cam.origin.z,
+                cam.angles.x, cam.angles.y, cam.angles.z, cam.fov);
         }
     } else {
         return console->Print(sar_cam_path_getkfs.ThisPtr()->m_pszHelpString);
@@ -559,10 +547,9 @@ CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs : Exports commands for rec
 }
 
 CON_COMMAND_F_COMPLETION(
-    sar_cam_path_remkf, 
-    "sar_cam_path_remkf [frame] : Removes camera path keyframe at specified frame.\n", 
-    0, AUTOCOMPLETION_FUNCTION(sar_cam_path_showkf)
-)
+    sar_cam_path_remkf,
+    "sar_cam_path_remkf [frame] : Removes camera path keyframe at specified frame.\n",
+    0, AUTOCOMPLETION_FUNCTION(sar_cam_path_showkf))
 {
     if (!engine->demoplayer->IsPlaying())
         return console->Print("Cinematic mode cannot be used outside of demo player.\n");
@@ -592,9 +579,6 @@ CON_COMMAND(sar_cam_path_remkfs, "sar_cam_path_remkfs : Removes all camera path 
         return console->Print(sar_cam_path_remkfs.ThisPtr()->m_pszHelpString);
     }
 }
-
-
-
 
 CON_COMMAND(sar_cam_setang, "sar_cam_setang <pitch> <yaw> [roll] : Sets camera angle (requires camera Drive Mode).\n")
 {

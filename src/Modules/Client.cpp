@@ -210,22 +210,19 @@ DETOUR(Client::GetButtonBits, bool bResetState)
     return bits;
 }
 
-DETOUR_COMMAND(Client::playvideo_end_level_transition)
-{
+DETOUR_COMMAND(Client::playvideo_end_level_transition) {
     console->DevMsg("%s\n", args.m_pArgSBuffer);
     session->Ended();
 
     return Client::playvideo_end_level_transition_callback(args);
 }
 
-DETOUR(Client::OverrideView, void* m_View)
-{
+DETOUR(Client::OverrideView, CPortalViewSetup1* m_View) {
     camera->OverrideView(m_View);
     return Client::OverrideView(thisptr, m_View);
 }
 
-bool Client::Init()
-{
+bool Client::Init() {
     bool readJmp = false;
 #ifdef _WIN32
     readJmp = sar.game->Is(SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide);
@@ -242,8 +239,8 @@ bool Client::Init()
         if (sar.game->Is(SourceGame_Portal2)) {
             auto leaderboard = Command("+leaderboard");
             if (!!leaderboard) {
-                using _GetHud = void*(__cdecl*)(int unk);
-                using _FindElement = void*(__rescall*)(void* thisptr, const char* pName);
+                using _GetHud = void* (__cdecl*)(int unk);
+                using _FindElement = void* (__rescall*)(void* thisptr, const char* pName);
 
                 auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
                 auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
@@ -271,7 +268,8 @@ bool Client::Init()
                 if (sar.game->Is(SourceGame_TheStanleyParable)) {
                     auto GetButtonBits = g_Input->Original(Offsets::GetButtonBits, readJmp);
                     Memory::Deref(GetButtonBits + Offsets::in_jump, &this->in_jump);
-                } else if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+                }
+                else if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
                     in_forceuser = Variable("in_forceuser");
                     if (!!in_forceuser && this->g_Input) {
                         this->g_Input->Hook(CInput_CreateMove_Hook, CInput_CreateMove, Offsets::GetButtonBits + 1);
@@ -279,7 +277,8 @@ bool Client::Init()
 
                     Command::Hook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback_hook, Client::playvideo_end_level_transition_callback);
                 }
-            } else {
+            }
+            else {
                 g_Input->Hook(Client::DecodeUserCmdFromBuffer2_Hook, Client::DecodeUserCmdFromBuffer2, Offsets::DecodeUserCmdFromBuffer);
             }
         }
@@ -293,18 +292,22 @@ bool Client::Init()
                 auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
                 clientMode = Memory::Deref<void*>(g_pClientMode);
                 clientMode2 = Memory::Deref<void*>(g_pClientMode + sizeof(void*));
-            } else {
+            }
+            else {
                 typedef void* (*_GetClientMode)();
                 auto GetClientMode = Memory::Read<_GetClientMode>(HudProcessInput + Offsets::GetClientMode);
                 clientMode = GetClientMode();
             }
-        } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
+        }
+        else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
             clientMode = Memory::DerefDeref<void*>(HudProcessInput + Offsets::GetClientMode);
         }
 
         if (this->g_pClientMode = Interface::Create(clientMode)) {
             this->g_pClientMode->Hook(Client::CreateMove_Hook, Client::CreateMove, Offsets::CreateMove);
-            this->g_pClientMode->Hook(Client::OverrideView_Hook, Client::OverrideView, Offsets::OverrideView);
+            if (sar.game->Is(SourceGame_Portal2Engine)) {
+                this->g_pClientMode->Hook(Client::OverrideView_Hook, Client::OverrideView, Offsets::OverrideView);
+            }
         }
 
         if (this->g_pClientMode2 = Interface::Create(clientMode2)) {

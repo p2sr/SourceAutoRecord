@@ -66,10 +66,16 @@ DETOUR(VGui::Paint, PaintMode_t mode)
     return result;
 }
 
+bool VGui::IsUIVisible(){
+    return this->IsGameUIVisible(this->enginevgui->ThisPtr());
+}
+
 bool VGui::Init()
 {
     this->enginevgui = Interface::Create(this->Name(), "VEngineVGui0");
     if (this->enginevgui) {
+        this->IsGameUIVisible = this->enginevgui->Original<_IsGameUIVisible>(Offsets::IsGameUIVisible);
+
         this->enginevgui->Hook(VGui::Paint_Hook, VGui::Paint, Offsets::Paint);
 
         for (auto& hud : Hud::GetList()) {

@@ -22,7 +22,6 @@ int GetViewAngles;
 int SetViewAngles;
 int GetMaxClients;
 int ServerCmdKeyValues;
-int IsPaused;
 int GetActiveSplitScreenPlayerSlot;
 int GetSteamAPIContext;
 
@@ -124,6 +123,7 @@ int m_pSurfaceData;
 int iNumPortalsPlaced;
 
 // IEngineVGuiInternal
+int IsGameUIVisible;
 int Paint;
 
 // CEngineTool
