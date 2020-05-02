@@ -59,12 +59,11 @@ Camera::~Camera()
 //for now it requires LMB input (as in demo drive mode)
 bool Camera::IsDriving()
 {
-    bool drivingInGame = sar_cam_drive.GetBool() && sv_cheats.GetBool() && engine->hoststate->m_activeGame;
-    bool isPaused = engine->IsGamePaused();
+    bool drivingInGame = sar_cam_drive.GetBool() && sv_cheats.GetBool() && !engine->IsGamePaused() && engine->hoststate->m_activeGame;
     bool drivingInDemo = engine->demoplayer->IsPlaying();
     bool wantingToDrive = inputSystem->IsKeyDown(ButtonCode_t::MOUSE_LEFT);
 
-    return camera->controlType == Drive && wantingToDrive && (drivingInGame || drivingInDemo) && !isPaused;
+    return camera->controlType == Drive && wantingToDrive && (drivingInGame || drivingInDemo);
 }
 
 
@@ -408,7 +407,40 @@ void Camera::OverrideMovement(CUserCmd* cmd)
 
 //COMMANDS
 
-CON_COMMAND(sar_cam_path_setkf, "sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov]: Sets the camera path keyframe.\n")
+DECL_COMMAND_COMPLETION(sar_cam_path_setkf)
+{
+    for (auto const& state : camera->states) {
+        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+            break;
+        }
+
+        char camString[512] = {};
+        CameraState cam = state.second;
+        sprintf(camString, "%d %.0f %.0f %.0f %.0f %.0f %.0f %.0f", 
+            state.first, cam.origin.x, cam.origin.y, cam.origin.z, 
+            cam.angles.x, cam.angles.y, cam.angles.z, cam.fov
+        );
+
+        camString[COMMAND_COMPLETION_ITEM_LENGTH - 1 - 19] = '\0';
+        std::string camStringString(&camString[0], COMMAND_COMPLETION_ITEM_LENGTH - 19);
+
+        if (std::strlen(match) != std::strlen(cmd)) {
+            if (std::strstr(camStringString.c_str(), match)) {
+                items.push_back(camStringString);
+            }
+        } else {
+            items.push_back(camStringString);
+        }
+    }
+
+    FINISH_COMMAND_COMPLETION();
+}
+
+CON_COMMAND_F_COMPLETION(
+    sar_cam_path_setkf, 
+    "sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov]: Sets the camera path keyframe.\n", 
+    0, AUTOCOMPLETION_FUNCTION(sar_cam_path_setkf)
+)
 {
     if (!engine->demoplayer->IsPlaying())
         return console->Print("Cinematic mode cannot be used outside of demo player.\n");
@@ -445,7 +477,36 @@ CON_COMMAND(sar_cam_path_setkf, "sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [p
     }
 }
 
-CON_COMMAND(sar_cam_path_showkf, "sar_cam_path_showkf [frame] : Display information about camera path keyframe at specified frame.\n")
+DECL_COMMAND_COMPLETION(sar_cam_path_showkf)
+{
+    for (auto const& state : camera->states) {
+        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+            break;
+        }
+
+        char camString[64] = {};
+        CameraState cam = state.second;
+        sprintf(camString, "%d", state.first);
+
+        std::string camStringString = camString;
+
+        if (std::strlen(match) != std::strlen(cmd)) {
+            if (std::strstr(camStringString.c_str(), match)) {
+                items.push_back(camStringString);
+            }
+        } else {
+            items.push_back(camString);
+        }
+    }
+
+    FINISH_COMMAND_COMPLETION();
+}
+
+CON_COMMAND_F_COMPLETION(
+    sar_cam_path_showkf, 
+    "sar_cam_path_showkf [frame] : Display information about camera path keyframe at specified frame.\n", 
+    0, AUTOCOMPLETION_FUNCTION(sar_cam_path_showkf)
+)
 {
     if (!engine->demoplayer->IsPlaying())
         return console->Print("Cinematic mode cannot be used outside of demo player.\n");
@@ -487,14 +548,21 @@ CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs : Exports commands for rec
     if (args.ArgC() == 1) {
         for (auto const& state : camera->states) {
             CameraState cam = state.second;
-            console->Print("sar_cam_path_setkf %d %f %f %f %f %f %f %f;\n", state.first, cam.origin.x, cam.origin.y, cam.origin.z, cam.angles.x, cam.angles.y, cam.angles.z, cam.fov);
+            console->Print("sar_cam_path_setkf %d %f %f %f %f %f %f %f;\n", 
+                state.first, cam.origin.x, cam.origin.y, cam.origin.z, 
+                cam.angles.x, cam.angles.y, cam.angles.z, cam.fov
+            );
         }
     } else {
         return console->Print(sar_cam_path_getkfs.ThisPtr()->m_pszHelpString);
     }
 }
 
-CON_COMMAND(sar_cam_path_remkf, "sar_cam_path_remkf [frame] : Removes camera path keyframe at specified frame.\n")
+CON_COMMAND_F_COMPLETION(
+    sar_cam_path_remkf, 
+    "sar_cam_path_remkf [frame] : Removes camera path keyframe at specified frame.\n", 
+    0, AUTOCOMPLETION_FUNCTION(sar_cam_path_showkf)
+)
 {
     if (!engine->demoplayer->IsPlaying())
         return console->Print("Cinematic mode cannot be used outside of demo player.\n");
@@ -524,6 +592,9 @@ CON_COMMAND(sar_cam_path_remkfs, "sar_cam_path_remkfs : Removes all camera path 
         return console->Print(sar_cam_path_remkfs.ThisPtr()->m_pszHelpString);
     }
 }
+
+
+
 
 CON_COMMAND(sar_cam_setang, "sar_cam_setang <pitch> <yaw> [roll] : Sets camera angle (requires camera Drive Mode).\n")
 {

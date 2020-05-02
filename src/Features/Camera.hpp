@@ -68,3 +68,5 @@ public:
 };
 
 extern Camera* camera;
+
+extern DECL_DECLARE_AUTOCOMPLETION_FUNCTION(sar_cam_path_setkf);
