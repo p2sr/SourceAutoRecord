@@ -25,7 +25,7 @@ enum class HEADER {
     MESSAGE,
     COUNTDOWN,
     UPDATE,
-    MODEL_CHANGE
+    MODEL_CHANGE,
 };
 
 class NetworkGhostPlayer : public Feature {
@@ -95,6 +95,7 @@ extern NetworkGhostPlayer* networkGhostPlayer;
 
 extern Variable sar_ghost_sync_maps;
 extern Variable sar_ghost_show_progress;
+extern Variable sar_ghost_TCP_only;
 
 extern Command sar_ghost_connect_to_server;
 extern Command sar_ghost_disconnect;

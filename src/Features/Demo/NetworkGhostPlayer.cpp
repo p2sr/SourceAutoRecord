@@ -49,6 +49,7 @@ sf::Packet& operator<<(sf::Packet& packet, const HEADER& header)
 
 Variable sar_ghost_sync_maps("sar_ghost_sync_maps", "0", "If the player loads a map first, game will pause until other players reach that same map, keeping everyone synchronized.\n");
 Variable sar_ghost_show_progress("sar_ghost_show_progress", "1", "Shows the progression of the other players.\n");
+Variable sar_ghost_TCP_only("sar_ghost_TCP_only", "0", "Lathil's special command.\n");
 
 NetworkGhostPlayer* networkGhostPlayer;
 
@@ -98,7 +99,7 @@ void NetworkGhostPlayer::ConnectToServer(std::string ip, unsigned short port)
         connection_packet << this->GetPlayerData();
     }
 
-    connection_packet << engine->m_szLevelName << this->modelName.c_str();
+    connection_packet << engine->m_szLevelName << this->modelName.c_str() << sar_ghost_TCP_only.GetBool();
     tcpSocket.send(connection_packet);
 
     sf::SocketSelector tcpSelector;
@@ -386,7 +387,7 @@ void NetworkGhostPlayer::CheckConnection()
                     if (newMap == engine->m_szLevelName) {
                         ghost->sameMap = true;
                         if (sar_ghost_sync_maps.GetBool() && this->AreGhostsOnSameMap()) {
-                            engine->SendToCommandBuffer("unpause", 5);
+                            engine->SendToCommandBuffer("unpause", 20);
                         }
                     } else {
                         ghost->sameMap = false;
@@ -439,6 +440,22 @@ void NetworkGhostPlayer::CheckConnection()
                         ghost->KillGhost(true);
                         ghost->Spawn(true, ghost->currentPos, ghost->ghostType);
                     }
+                } else if (sar_ghost_TCP_only.GetBool() && header == HEADER::UPDATE) {
+                    sf::Uint32 ID;
+                    DataGhost data;
+                    packet >> ID >> data;
+                    auto ghost = this->GetGhostByID(ID);
+                    if (ghost != nullptr) {
+                        if (ghost->sameMap && !pauseThread) { //" && !pauseThread" to verify the map is still loaded
+                            if (ghost->ghost_entity == nullptr) {
+                                ghost->Spawn(true, QAngleToVector(data.position), ghost->ghostType);
+                            }
+                            ghost->oldPos = ghost->newPos;
+                            ghost->newPos = { { data.position.x, data.position.y, data.position.z + sar_ghost_height.GetFloat() }, { data.view_angle.x, data.view_angle.y, data.view_angle.z } };
+                            ghost->loopTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - ghost->lastUpdate).count();
+                            ghost->lastUpdate = std::chrono::steady_clock::now();
+                        }
+                    }
                 }
             } else if (status == sf::Socket::Disconnected) {
                 client->Chat(TextColor::ORANGE, "Connexion has been interrupted ! You have been disconnected !\n");
@@ -465,6 +482,9 @@ void NetworkGhostPlayer::UpdatePlayer()
     DataGhost dataGhost = this->GetPlayerData();
     sf::Packet packet;
     packet << header << dataGhost;
+    if (sar_ghost_TCP_only.GetBool()) {
+        this->tcpSocket.send(packet);
+    }
     this->socket.send(packet, this->ip_server, this->port_server);
 }
 
