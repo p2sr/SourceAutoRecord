@@ -124,8 +124,8 @@ void Session::Start()
 
 
 	//Ghosts
-    //networkManager.NotifyMapChange();
-    //networkManager.UpdateGhostsSameMap();
+    networkManager.NotifyMapChange();
+    networkManager.UpdateGhostsSameMap();
     networkManager.ResumeNetwork();
 
     stepCounter->ResetTimer();

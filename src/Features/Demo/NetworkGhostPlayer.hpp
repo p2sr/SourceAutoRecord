@@ -54,11 +54,16 @@ public:
     void RunNetwork();
 
     void SendPlayerData();
+    void NotifyMapChange();
+    void SendMessageToAll(std::string msg);
     void ReceiveUDPUpdates(std::vector<sf::Packet>& buffer);
     void TreatUDP(std::vector<sf::Packet>& buffer);
     void TreatTCP(sf::Packet& packet);
 
     void UpdateGhostsPosition();
+    GhostEntity* GetGhostByID(sf::Uint32 ID);
+    void UpdateGhostsSameMap();
+
 };
 
 extern NetworkManager networkManager;

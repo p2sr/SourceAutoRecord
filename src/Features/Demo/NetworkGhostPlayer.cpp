@@ -115,6 +115,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
             GhostEntity ghost(ID, name, data, current_map);
             this->ghostPool.push_back(ghost);
         }
+        this->UpdateGhostsSameMap();
         client->Chat(TextColor::GREEN, "Successfully connected to the server !\n%d player connected\n", nb_players);
     } //End of the scope. Will kill the Selector
 
@@ -211,6 +212,21 @@ void NetworkManager::SendPlayerData()
     this->udpSocket.send(packet, this->serverIP, this->serverPort);
 }
 
+void NetworkManager::NotifyMapChange()
+{
+    sf::Packet packet;
+    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName;
+    this->tcpSocket.send(packet);
+}
+
+void NetworkManager::SendMessageToAll(std::string msg)
+{
+    sf::Packet packet;
+    packet << HEADER::MESSAGE << this->ID << msg.c_str();
+    this->tcpSocket.send(packet);
+    client->Chat(TextColor::LIGHT_GREEN, "%s: %s", this->name.c_str(), msg.c_str());
+}
+
 void NetworkManager::ReceiveUDPUpdates(std::vector<sf::Packet>& buffer)
 {
     sf::Socket::Status status;
@@ -245,7 +261,8 @@ void NetworkManager::TreatUDP(std::vector<sf::Packet>& buffer)
 void NetworkManager::TreatTCP(sf::Packet& packet)
 {
     HEADER header;
-    packet >> header;
+    sf::Uint32 ID;
+    packet >> header >> ID;
 
     switch (header) {
     case HEADER::NONE:
@@ -253,18 +270,17 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
     case HEADER::PING:
         break;
     case HEADER::CONNECT: {
-        sf::Uint32 ID;
         std::string name;
         DataGhost data;
         std::string current_map;
-        packet >> ID >> name >> data >> current_map;
+        packet >> name >> data >> current_map;
         GhostEntity ghost(ID, name, data, current_map);
         this->ghostPool.push_back(ghost);
+        client->Chat(TextColor::GREEN, "%s has connected !", name.c_str());
+        this->UpdateGhostsSameMap();
         break;
     }
-    case HEADER::DISCONNECT:
-        sf::Uint32 ID;
-        packet >> ID;
+    case HEADER::DISCONNECT: {
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i].ID == ID) {
                 client->Chat(TextColor::GREEN, "%s has disconnected !", this->ghostPool[i].name.c_str());
@@ -272,14 +288,32 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             }
         }
         break;
+    }
     case HEADER::STOP_SERVER:
+        this->StopServer();
         break;
-    case HEADER::MAP_CHANGE:
+    case HEADER::MAP_CHANGE: {
+        auto ghost = this->GetGhostByID(ID);
+        if (ghost) {
+            std::string map;
+            packet >> map;
+            ghost->currentMap = map;
+            this->UpdateGhostsSameMap();
+            client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+        }
         break;
+    }
     case HEADER::HEART_BEAT:
         break;
-    case HEADER::MESSAGE:
+    case HEADER::MESSAGE: {
+        auto ghost = this->GetGhostByID(ID);
+        if (ghost) {
+            std::string message;
+            packet >> message;
+            client->Chat(TextColor::LIGHT_GREEN, "%s: %s", ghost->name.c_str(), message.c_str());
+        }
         break;
+    }
     default:
         break;
     }
@@ -288,7 +322,26 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
 void NetworkManager::UpdateGhostsPosition()
 {
     for (auto& ghost : this->ghostPool) {
-        ghost.Update();
+        if (ghost.sameMap) {
+            ghost.Update();
+        }
+    }
+}
+
+GhostEntity* NetworkManager::GetGhostByID(sf::Uint32 ID)
+{
+    for (auto& ghost : this->ghostPool) {
+        if (ghost.ID == ID) {
+            return &ghost;
+        }
+    }
+    return nullptr;
+}
+
+void NetworkManager::UpdateGhostsSameMap()
+{
+    for (auto& ghost : this->ghostPool) {
+        ghost.sameMap = ghost.currentMap == engine->m_szLevelName;
     }
 }
 
@@ -312,4 +365,18 @@ CON_COMMAND(ghost_disconnect, "Disconnect.\n")
 CON_COMMAND(lmao, "test")
 {
     networkManager.name = args[1];
+}
+
+CON_COMMAND(ghost_message, "Send message")
+{
+    if (args.ArgC() < 2) {
+        return console->Print(ghost_message.ThisPtr()->m_pszHelpString);
+    }
+    
+    std::string msg = args[1];
+    for (int i = 2; i < args.ArgC(); ++i) {
+        msg += " " + std::string(args[i]);
+    }
+
+    networkManager.SendMessageToAll(msg);
 }
