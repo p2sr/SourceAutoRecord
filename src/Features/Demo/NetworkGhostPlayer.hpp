@@ -49,12 +49,16 @@ public:
     void Connect(sf::IpAddress ip, unsigned short int port);
     void Disconnect();
     void StopServer();
+    void PauseNetwork();
+    void ResumeNetwork();
     void RunNetwork();
 
     void SendPlayerData();
     void ReceiveUDPUpdates(std::vector<sf::Packet>& buffer);
     void TreatUDP(std::vector<sf::Packet>& buffer);
     void TreatTCP(sf::Packet& packet);
+
+    void UpdateGhostsPosition();
 };
 
 extern NetworkManager networkManager;

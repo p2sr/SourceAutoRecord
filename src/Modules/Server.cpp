@@ -180,10 +180,6 @@ DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
         tasTools->SetAngles(pPlayer);
     }
 
-	/*if (engine->isRunning()) {
-        networkManager.UpdateGhostsPosition();
-    }*/
-
     return Server::ProcessMovement(thisptr, pPlayer, pMove);
 }
 

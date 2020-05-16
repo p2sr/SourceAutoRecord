@@ -1,7 +1,7 @@
+#include "NetworkGhostPlayer.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
-#include "NetworkGhostPlayer.hpp"
 
 //DataGhost
 
@@ -149,6 +149,54 @@ void NetworkManager::StopServer()
     this->Disconnect();
 }
 
+void NetworkManager::PauseNetwork()
+{
+    this->runThread = false;
+}
+
+void NetworkManager::ResumeNetwork()
+{
+    this->runThread = true;
+    this->waitForRunning.notify_one();
+}
+
+void NetworkManager::RunNetwork()
+{
+    this->selector.add(this->tcpSocket);
+    this->selector.add(this->udpSocket);
+
+    while (this->isConnected) {
+        {
+            std::unique_lock<std::mutex> lck(mutex);
+            this->waitForRunning.wait(lck, [this] { return this->runThread.load(); });
+        }
+
+        this->SendPlayerData();
+
+        if (this->selector.wait(sf::milliseconds(50))) {
+            if (this->selector.isReady(this->udpSocket)) { //UDP
+                std::vector<sf::Packet> buffer;
+                this->ReceiveUDPUpdates(buffer);
+                this->TreatUDP(buffer);
+            } else if (this->selector.isReady(this->tcpSocket)) { //TCP
+                sf::Packet packet;
+                sf::Socket::Status status;
+                status = this->tcpSocket.receive(packet);
+                if (status != sf::Socket::Done) {
+                    if (status == sf::Socket::Disconnected) { //If connection with the server lost (crash for e.g.)
+                        this->Disconnect();
+                        break;
+                    }
+                    continue;
+                }
+                this->TreatTCP(packet);
+            }
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+}
+
 void NetworkManager::SendPlayerData()
 {
     sf::Packet packet;
@@ -182,21 +230,14 @@ void NetworkManager::TreatUDP(std::vector<sf::Packet>& buffer)
     for (auto& packet : buffer) {
         HEADER header;
         packet >> header;
-
-        switch (header) {
-        case HEADER::UPDATE:
-            sf::Uint32 ID;
-            packet >> ID;
-            for (auto& g : this->ghostPool) {
-                if (g.ID == ID) {
-                    DataGhost data;
-                    packet >> data;
-                    client->Chat(TextColor::GREEN, "%.3f %.3f %.3f", data.position.x, data.position.y, data.position.z);
-                }
+        sf::Uint32 ID;
+        packet >> ID;
+        for (auto& g : this->ghostPool) {
+            if (g.ID == ID) {
+                DataGhost data;
+                packet >> data;
+                g.SetData(data.position, data.view_angle);
             }
-            break;
-        default:
-            break;
         }
     }
 }
@@ -244,33 +285,10 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
     }
 }
 
-void NetworkManager::RunNetwork()
+void NetworkManager::UpdateGhostsPosition()
 {
-    this->selector.add(this->tcpSocket);
-
-    while (this->isConnected) {
-        {
-            std::unique_lock<std::mutex> lck(mutex);
-            this->waitForRunning.wait(lck, [this] { return this->runThread.load(); });
-        }
-
-        this->SendPlayerData();
-
-        //UDP
-        std::vector<sf::Packet> buffer;
-        this->ReceiveUDPUpdates(buffer);
-        this->TreatUDP(buffer);
-
-        if (this->selector.wait(sf::milliseconds(50))) {
-            //TCP
-            if (this->selector.isReady(this->tcpSocket)) {
-                sf::Packet packet;
-                this->tcpSocket.receive(packet);
-                this->TreatTCP(packet);
-            }
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    for (auto& ghost : this->ghostPool) {
+        ghost.Update();
     }
 }
 

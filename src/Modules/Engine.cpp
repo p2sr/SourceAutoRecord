@@ -184,6 +184,10 @@ DETOUR(Engine::Frame)
         speedrun->PostUpdate(engine->GetTick(), engine->m_szLevelName);
     }
 
+    if (engine->isRunning()) {
+        networkManager.UpdateGhostsPosition();
+    }
+
     return Engine::Frame(thisptr);
 }
 
