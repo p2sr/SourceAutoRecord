@@ -103,6 +103,7 @@ public:
     void SendToCommandBuffer(const char* text, int delay);
     int PointToScreen(const Vector& point, Vector& screen);
     void SafeUnload(const char* postCommand = nullptr);
+    bool isRunning();
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);

@@ -7,7 +7,6 @@
 #include "Features/Hud/Hud.hpp"
 
 #include "Demo.hpp"
-#include "GhostPlayer.hpp"
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -57,14 +56,6 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
         file.read((char*)&demo->playbackFrames, sizeof(demo->playbackFrames));
         file.read((char*)&demo->signOnLength, sizeof(demo->signOnLength));
 
-        if (outputMode == 3) {
-            ghostPlayer->ResetCoord();
-        }
-        std::vector<Vector> positionList;
-        std::vector<Vector> anglesList;
-        bool waitForNext = false;
-        int lastTick = 0;
-
         if (!headerOnly) {
             if (demo->demoProtocol != 4) {
                 this->hasAlignmentByte = false;
@@ -92,7 +83,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
                 case 0x01: // SignOn
                 case 0x02: // Packet
                 {
-                    if (outputMode >= 2) {
+                    if (outputMode == 2) {
                         for (auto i = 0; i < this->maxSplitScreenClients; ++i) {
                             if (i >= 1) {
                                 file.ignore(76);
@@ -124,29 +115,12 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
                             file.read((char*)&lva2_x, sizeof(lva2_x));
                             file.read((char*)&lva2_y, sizeof(lva2_y));
                             file.read((char*)&lva2_z, sizeof(lva2_z));
-
-                            if (outputMode == 3) {
-                                if (tick == 0) {
-                                    waitForNext = true;
-                                }
-
-                                if (tick > 0 && waitForNext && lastTick != tick) {
-                                    if (ghostPlayer->GetStartTick() == 0) {
-                                        ghostPlayer->SetStartTick(tick);
-                                    }
-                                    lastTick = tick;
-                                    positionList.push_back(Vector{ vo_x, vo_y, vo_z });
-                                    anglesList.push_back(Vector{ va_x, va_y, va_z });
-                                }
-                            } else {
-                                console->Msg("[%i] flags: %i | "
-                                             "view origin: %.3f/%.3f/%.3f | "
-                                             "view angles: %.3f/%.3f/%.3f | "
-                                             "local view angles: %.3f/%.3f/%.3f\n",
-                                    tick, flags, vo_x, vo_y, vo_z, va_x, va_y, va_z, lva_x, lva_y, lva_z);
-                            }
+                            console->Msg("[%i] flags: %i | "
+                                         "view origin: %.3f/%.3f/%.3f | "
+                                         "view angles: %.3f/%.3f/%.3f | "
+                                         "local view angles: %.3f/%.3f/%.3f\n",
+                                tick, flags, vo_x, vo_y, vo_z, va_x, va_y, va_z, lva_x, lva_y, lva_z);
                         }
-
                         int32_t in_seq, out_seq;
                         file.read((char*)&in_seq, sizeof(in_seq));
                         file.read((char*)&out_seq, sizeof(out_seq));
@@ -168,9 +142,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
                     if (outputMode >= 1) {
                         std::string cmd(length, ' ');
                         file.read(&cmd[0], length);
-                        if (outputMode != 3) {
-                            console->Msg("[%i] %s\n", tick, cmd.c_str());
-                        }
+                        console->Msg("[%i] %s\n", tick, cmd.c_str());
                     } else {
                         file.ignore(length);
                     }
@@ -220,9 +192,6 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
                     return false;
                 }
             }
-        }
-        if (outputMode == 3) {
-            ghostPlayer->SetCoordList(positionList, anglesList);
         }
         file.close();
     } catch (const std::exception& ex) {

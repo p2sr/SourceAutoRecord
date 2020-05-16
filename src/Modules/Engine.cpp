@@ -9,6 +9,7 @@
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
 #include "EngineDemoRecorder.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Server.hpp"
 
 #include "Game.hpp"
@@ -127,6 +128,10 @@ void Engine::SafeUnload(const char* postCommand)
         this->SendToCommandBuffer(postCommand, SAFE_UNLOAD_TICK_DELAY);
     }
 }
+bool Engine::isRunning()
+{
+    return engine->hoststate->m_activeGame && engine->hoststate->m_currentState == HOSTSTATES::HS_RUN;
+}
 
 // CClientState::Disconnect
 DETOUR(Engine::Disconnect, bool bShowMainMenu)
@@ -204,7 +209,7 @@ DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
 
         jmp Engine::ParseSmoothingInfo_Skip
 
-_orig:  // Original overwritten instructions
+_orig: // Original overwritten instructions
         add eax, -3
         cmp eax, 6
         ja _def
@@ -404,15 +409,15 @@ bool Engine::Init()
         console->DevMsg("CDemoFile::ReadCustomData = %p\n", readCustomDataAddr);
 
         if (parseSmoothingInfoAddr && readCustomDataAddr) {
-            MH_HOOK_MID(Engine::ParseSmoothingInfo_Mid, parseSmoothingInfoAddr);            // Hook switch-case
-            Engine::ParseSmoothingInfo_Continue = parseSmoothingInfoAddr + 8;               // Back to original function
-            Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133;              // Default case
-            Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29;                  // Continue loop
+            MH_HOOK_MID(Engine::ParseSmoothingInfo_Mid, parseSmoothingInfoAddr); // Hook switch-case
+            Engine::ParseSmoothingInfo_Continue = parseSmoothingInfoAddr + 8; // Back to original function
+            Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133; // Default case
+            Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29; // Continue loop
             Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(readCustomDataAddr); // Function that handles dem_customdata
 
             this->demoSmootherPatch = new Memory::Patch();
             unsigned char nop3[] = { 0x90, 0x90, 0x90 };
-            this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3);             // Nop rest
+            this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3); // Nop rest
         }
     }
 #endif

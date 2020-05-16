@@ -1,4 +1,4 @@
-#include "Features/Demo/GhostPlayer.hpp"
+/*#include "Features/Demo/GhostPlayer.hpp"
 #include "Command.hpp"
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
@@ -210,3 +210,4 @@ CON_COMMAND(sar_ghost_time_offset, "In seconds. Start the ghost with a delay. Ca
         console->Print("Final time of the ghost : %f\n", ghost->demo.playbackTime);
     }
 }
+*/

@@ -180,6 +180,10 @@ DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
         tasTools->SetAngles(pPlayer);
     }
 
+	/*if (engine->isRunning()) {
+        networkManager.UpdateGhostsPosition();
+    }*/
+
     return Server::ProcessMovement(thisptr, pPlayer, pMove);
 }
 
@@ -280,45 +284,6 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
-    if (ghostPlayer->IsReady() && !ghostPlayer->IsNetworking() && simulating) {
-        ghostPlayer->Run();
-    }
-
-    if (simulating && networkGhostPlayer->pausedByServer && networkGhostPlayer->isInLevel && networkGhostPlayer->runThread) {
-        //networkGhostPlayer->StartThinking();
-        networkGhostPlayer->pausedByServer = false;
-    } else if (!simulating && !networkGhostPlayer->pausedByServer && networkGhostPlayer->isInLevel && networkGhostPlayer->runThread) {
-        //networkGhostPlayer->PauseThinking();
-        networkGhostPlayer->pausedByServer = true;
-    }
-
-    if (!networkGhostPlayer->pausedByServer) {
-        for (auto& ghost : networkGhostPlayer->ghostPool) {
-            if (ghost->ghost_entity != nullptr) {
-                auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - ghost->lastUpdate).count();
-                ghost->Lerp(ghost->oldPos, ghost->newPos, ((float)time / (ghost->loopTime)));
-            }
-        }
-    }
-
-    if (networkGhostPlayer->isCountdownReady) {
-        auto now = std::chrono::steady_clock::now();
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(now - networkGhostPlayer->startCountdown).count() >= 1000) { //Every seconds
-            if (networkGhostPlayer->countdown == 0) {
-                client->Chat(TextColor::GREEN, "0 ! GO !");
-                std::string commands;
-                if (!networkGhostPlayer->commandPostCountdown.empty()) {
-                    commands += ";" + networkGhostPlayer->commandPostCountdown;
-                    engine->ExecuteCommand(commands.c_str());
-                }
-                networkGhostPlayer->isCountdownReady = false;
-            } else {
-                client->Chat(TextColor::LIGHT_GREEN, "%d...", networkGhostPlayer->countdown);
-            }
-            networkGhostPlayer->countdown--;
-            networkGhostPlayer->startCountdown = now;
-        }
-    }
 
     if (simulating && sar_record_at.GetFloat() > 0 && sar_record_at.GetFloat() == session->GetTick()) {
         std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();

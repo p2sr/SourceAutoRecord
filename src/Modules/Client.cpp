@@ -3,8 +3,6 @@
 #include <cstdint>
 #include <cstring>
 
-#include "Features/Demo/GhostPlayer.hpp"
-#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Imitator.hpp"
 #include "Features/OffsetFinder.hpp"
@@ -80,10 +78,6 @@ void Client::Chat(TextColor color, const char* fmt, ...)
 // CHLClient::HudUpdate
 DETOUR(Client::HudUpdate, unsigned int a2)
 {
-    if (ghostPlayer->IsReady() && !ghostPlayer->IsNetworking() && engine->demoplayer->IsPlaying()) {
-        ghostPlayer->Run();
-    }
-
     if (cmdQueuer->isRunning) {
         for (auto&& tas = cmdQueuer->frames.begin(); tas != cmdQueuer->frames.end();) {
             --tas->framesLeft;

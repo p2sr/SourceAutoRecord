@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 #include "GhostEntity.hpp"
 #include "Modules/Engine.hpp"
@@ -35,3 +35,4 @@ extern GhostPlayer* ghostPlayer;
 extern Command sar_ghost_set_demo;
 extern Command sar_ghost_set_prop_model;
 extern Command sar_ghost_time_offset;
+*/
