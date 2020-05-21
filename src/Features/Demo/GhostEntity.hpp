@@ -1,6 +1,7 @@
 #pragma once
 #include "SFML/Network.hpp"
 #include "Utils/SDK.hpp"
+#include <chrono>
 
 struct DataGhost {
     Vector position;
@@ -17,13 +18,19 @@ public:
     std::string currentMap;
     bool sameMap;
 
+    DataGhost oldPos;
+    DataGhost newPos;
+    std::chrono::time_point<std::chrono::steady_clock> lastUpdate;
+    long long loopTime;
+
 public:
+
     GhostEntity(sf::Uint32& ID, std::string& name, DataGhost& data, std::string& current_map);
 
     void Spawn();
     void DeleteGhost();
-    void Update();
     void SetData(Vector pos, QAngle ang);
     void SetupGhost(sf::Uint32& ID, std::string& name, DataGhost& data, std::string& current_map);
-    float update;
+    void Update();
+    void Lerp(float time);
 };

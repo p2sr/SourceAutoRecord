@@ -24,6 +24,7 @@ int GetMaxClients;
 int ServerCmdKeyValues;
 int GetActiveSplitScreenPlayerSlot;
 int GetSteamAPIContext;
+int IsPaused;
 
 // CHLClient
 int GetAllClasses;

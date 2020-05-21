@@ -41,6 +41,7 @@ public:
     using _AddLineOverlay = int(__stdcall*)(const Vector& origin, const Vector& dest, int r, int g, int b, bool noDepthText, float duration);
 	using _AddScreenTextOverlay = void(__stdcall*)(float flXPos, float flYPos, float flDuration, int r, int g, int b, int a, const char* text);
     using _ClearAllOverlays = void(__stdcall*)();
+    using _IsPaused = bool (*)(void* thisptr);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -76,6 +77,7 @@ public:
     _AddLineOverlay AddLineOverlay = nullptr;
     _AddScreenTextOverlay AddScreenTextOverlay = nullptr;
     _ClearAllOverlays ClearAllOverlays = nullptr;
+    _IsPaused IsPaused = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;
@@ -104,6 +106,7 @@ public:
     int PointToScreen(const Vector& point, Vector& screen);
     void SafeUnload(const char* postCommand = nullptr);
     bool isRunning();
+    bool IsGamePaused();
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);
@@ -157,6 +160,7 @@ extern Variable net_showmsg;
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
 #define IGNORE_DEMO_PLAYER() if (engine->demoplayer->IsPlaying()) return;
+#define NOW() std::chrono::steady_clock::now()
 
 #ifdef _WIN32
 #define GET_ACTIVE_SPLITSCREEN_SLOT() engine->GetActiveSplitScreenPlayerSlot()

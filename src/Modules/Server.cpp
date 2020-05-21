@@ -286,6 +286,14 @@ DETOUR(Server::GameFrame, bool simulating)
         engine->ExecuteCommand(cmd.c_str());
     }
 
+    if (networkManager.isConnected && simulating) {
+        networkManager.UpdateGhostsPosition();
+
+        if (networkManager.isCountdownReady) {
+            networkManager.UpdateCountdown();
+        }
+    }
+
     if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
         if (!simulating && !pauseTimer->IsActive()) {
             pauseTimer->Start();

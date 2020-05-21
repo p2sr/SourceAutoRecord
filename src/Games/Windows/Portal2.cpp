@@ -22,6 +22,7 @@ void Portal2::LoadOffsets()
     ClientCmd = 7; // CEngineClient
     GetClientStateFunction = 4; // CEngineClient::ClientCmd
     Cbuf_AddText = 46; // CEngineClient::ClientCmd
+    IsPaused = 86; // CEngineClient
     s_CommandBuffer = 82; // Cbuf_AddText
     CCommandBufferSize = 9556; // Cbuf_AddText
     m_bWaitEnabled = 8265; // CCommandBuffer::AddText

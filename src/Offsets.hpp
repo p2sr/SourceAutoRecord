@@ -24,6 +24,7 @@ extern int GetMaxClients;
 extern int ServerCmdKeyValues;
 extern int GetActiveSplitScreenPlayerSlot;
 extern int GetSteamAPIContext;
+extern int IsPaused;
 
 // CHLClient
 extern int GetAllClasses;

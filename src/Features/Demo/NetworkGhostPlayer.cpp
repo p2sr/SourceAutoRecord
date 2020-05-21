@@ -50,6 +50,11 @@ sf::Packet& operator<<(sf::Packet& packet, const HEADER& header)
     return packet << static_cast<sf::Uint8>(header);
 }
 
+
+Variable ghost_sync("ghost_sync", 0, "When loading a new level, pauses the game until other players load it.\n");
+
+
+
 std::mutex mutex;
 
 NetworkManager networkManager;
@@ -58,6 +63,7 @@ NetworkManager::NetworkManager()
     : serverIP("localhost")
     , serverPort(53000)
     , name("me")
+    , isCountdownReady(false)
 {
 }
 
@@ -172,7 +178,9 @@ void NetworkManager::RunNetwork()
             this->waitForRunning.wait(lck, [this] { return this->runThread.load(); });
         }
 
-        this->SendPlayerData();
+        if (engine->isRunning()) {
+            this->SendPlayerData();
+        }
 
         if (this->selector.wait(sf::milliseconds(50))) {
             if (this->selector.isReady(this->udpSocket)) { //UDP
@@ -227,6 +235,14 @@ void NetworkManager::SendMessageToAll(std::string msg)
     client->Chat(TextColor::LIGHT_GREEN, "%s: %s", this->name.c_str(), msg.c_str());
 }
 
+void NetworkManager::SendPing()
+{
+    sf::Packet packet;
+    packet << HEADER::PING << this->ID;
+    this->tcpSocket.send(packet);
+    this->pingClock.restart();
+}
+
 void NetworkManager::ReceiveUDPUpdates(std::vector<sf::Packet>& buffer)
 {
     sf::Socket::Status status;
@@ -267,8 +283,11 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
     switch (header) {
     case HEADER::NONE:
         break;
-    case HEADER::PING:
+    case HEADER::PING: {
+        auto ping = this->pingClock.getElapsedTime();
+        client->Chat(TextColor::GREEN, "Ping ! (%d ms)", ping.asMilliseconds());
         break;
+    }
     case HEADER::CONNECT: {
         std::string name;
         DataGhost data;
@@ -300,6 +319,11 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             ghost->currentMap = map;
             this->UpdateGhostsSameMap();
             client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+            if (ghost_sync.GetBool()) {
+                if (this->AreGhostsOnSameMap() && engine->IsGamePaused()) {
+                    engine->ExecuteCommand("unpause");
+                }
+            }
         }
         break;
     }
@@ -314,6 +338,25 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         }
         break;
     }
+    case HEADER::COUNTDOWN: {
+        sf::Uint8 step;
+        packet >> step;
+        if (step == 0) { //Countdown setup
+            std::string preCommands;
+            std::string postCommands;
+            sf::Uint32 duration;
+            packet >> duration >> preCommands >> postCommands;
+
+            this->SetupCountdown(preCommands, postCommands, duration);
+            
+            sf::Packet confirm_packet;
+            confirm_packet << HEADER::COUNTDOWN << sf::Uint8(1);
+            this->tcpSocket.send(confirm_packet);
+        } else if (step == 1) { //Exec
+            this->StartCountdown();
+        }
+        break;
+    }
     default:
         break;
     }
@@ -323,7 +366,8 @@ void NetworkManager::UpdateGhostsPosition()
 {
     for (auto& ghost : this->ghostPool) {
         if (ghost.sameMap) {
-            ghost.Update();
+            auto time = std::chrono::duration_cast<std::chrono::milliseconds>(NOW() - ghost.lastUpdate).count();
+            ghost.Lerp(((float)time / (ghost.loopTime)));
         }
     }
 }
@@ -345,16 +389,61 @@ void NetworkManager::UpdateGhostsSameMap()
     }
 }
 
+bool NetworkManager::AreGhostsOnSameMap()
+{
+    for (auto& ghost : this->ghostPool) {
+        if (!ghost.sameMap) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void NetworkManager::SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration)
+{
+    engine->ExecuteCommand(preCommands.c_str());
+    this->postCountdownCommands = postCommands;
+    this->countdownStep = duration;
+    this->timeLeft = NOW();
+}
+
+void NetworkManager::StartCountdown()
+{
+    auto ping = std::chrono::duration_cast<std::chrono::milliseconds>(NOW() - this->timeLeft);
+    this->timeLeft = NOW() + std::chrono::seconds(3) - ping;
+    this->isCountdownReady = true;
+}
+
+void NetworkManager::UpdateCountdown()
+{
+    auto now = NOW();
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(now - this->timeLeft).count() >= 1000) {
+        if (this->countdownStep == 0) {
+            client->Chat(TextColor::GREEN, "0 ! GO !");
+            if (!this->postCountdownCommands.empty()) {
+                engine->ExecuteCommand(this->postCountdownCommands.c_str());
+            }
+            this->isCountdownReady = false;
+        } else {
+            client->Chat(TextColor::LIGHT_GREEN, "%d...", this->countdownStep);
+        }
+        this->countdownStep--;
+        this->timeLeft = now;
+    }
+}
+
+
 // Commands
 
 CON_COMMAND(ghost_connect, "Connect to server.\n")
 {
-    /*if (args.ArgC() < 2) {
+    if (args.ArgC() < 2) {
         return console->Print(ghost_connect.ThisPtr()->m_pszHelpString);
     }
 
-    networkManager.Connect(args[1], std::atoi(args[2]));*/
-    networkManager.Connect("192.168.1.64", 53000);
+    networkManager.Connect(args[1], std::atoi(args[2]));
+    //networkManager.Connect("192.168.1.64", 53000);
 }
 
 CON_COMMAND(ghost_disconnect, "Disconnect.\n")
@@ -379,4 +468,9 @@ CON_COMMAND(ghost_message, "Send message")
     }
 
     networkManager.SendMessageToAll(msg);
+}
+
+CON_COMMAND(ghost_ping, "Pong !")
+{
+    networkManager.SendPing();
 }

@@ -132,6 +132,10 @@ bool Engine::isRunning()
 {
     return engine->hoststate->m_activeGame && engine->hoststate->m_currentState == HOSTSTATES::HS_RUN;
 }
+bool Engine::IsGamePaused()
+{
+    return this->IsPaused(this->engineClient->ThisPtr());
+}
 
 // CClientState::Disconnect
 DETOUR(Engine::Disconnect, bool bShowMainMenu)
@@ -182,10 +186,6 @@ DETOUR(Engine::Frame)
 
     if (engine->hoststate->m_activeGame || std::strlen(engine->m_szLevelName) == 0) {
         speedrun->PostUpdate(engine->GetTick(), engine->m_szLevelName);
-    }
-
-    if (engine->isRunning()) {
-        networkManager.UpdateGhostsPosition();
     }
 
     return Engine::Frame(thisptr);
@@ -292,6 +292,7 @@ bool Engine::Init()
         this->SetViewAngles = this->engineClient->Original<_SetViewAngles>(Offsets::SetViewAngles);
         this->GetMaxClients = this->engineClient->Original<_GetMaxClients>(Offsets::GetMaxClients);
         this->GetGameDirectory = this->engineClient->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
+        this->IsPaused = this->engineClient->Original<_IsPaused>(Offsets::IsPaused);
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
