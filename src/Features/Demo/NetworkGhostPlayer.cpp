@@ -52,6 +52,7 @@ sf::Packet& operator<<(sf::Packet& packet, const HEADER& header)
 
 
 Variable ghost_sync("ghost_sync", 0, "When loading a new level, pauses the game until other players load it.\n");
+Variable ghost_TCP_only("ghost_TCP_only", 0, "Lathil's special command :).\n");
 
 
 
@@ -88,7 +89,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
     client->Chat(TextColor::GREEN, "%s : %d", this->tcpSocket.getRemoteAddress().toString().c_str(), this->udpSocket.getLocalPort());
 
     sf::Packet connection_packet;
-    connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } } << engine->m_szLevelName;
+    connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } } << engine->m_szLevelName << ghost_TCP_only.GetBool();
     this->tcpSocket.send(connection_packet);
 
     {
@@ -122,7 +123,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
             this->ghostPool.push_back(ghost);
         }
         this->UpdateGhostsSameMap();
-        client->Chat(TextColor::GREEN, "Successfully connected to the server !\n%d player connected\n", nb_players);
+        client->Chat(TextColor::GREEN, "Successfully connected to the server !\n%d other players connected\n", nb_players);
     } //End of the scope. Will kill the Selector
 
     this->isConnected = true;
@@ -217,7 +218,11 @@ void NetworkManager::SendPlayerData()
         packet << DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } };
     }
 
-    this->udpSocket.send(packet, this->serverIP, this->serverPort);
+    if (!ghost_TCP_only.GetBool()) {
+        this->udpSocket.send(packet, this->serverIP, this->serverPort);
+    } else {
+        this->tcpSocket.send(packet);
+    }
 }
 
 void NetworkManager::NotifyMapChange()
@@ -354,6 +359,16 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             this->tcpSocket.send(confirm_packet);
         } else if (step == 1) { //Exec
             this->StartCountdown();
+        }
+        break;
+    }
+    case HEADER::UPDATE: {
+        for (auto& g : this->ghostPool) {
+            if (g.ID == ID) {
+                DataGhost data;
+                packet >> data;
+                g.SetData(data.position, data.view_angle);
+            }
         }
         break;
     }

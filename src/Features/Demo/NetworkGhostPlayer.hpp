@@ -85,6 +85,7 @@ public:
 extern NetworkManager networkManager;
 
 extern Variable ghost_sync;
+extern Variable ghost_TCP_only;
 extern Command ghost_connect;
 extern Command ghost_disconnect;
 extern Command ghost_message;
