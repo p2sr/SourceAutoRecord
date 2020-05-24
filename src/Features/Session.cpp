@@ -126,8 +126,9 @@ void Session::Start()
 	//Ghosts
     networkManager.NotifyMapChange();
     networkManager.UpdateGhostsSameMap();
+    networkManager.SpawnAllGhosts();
     if (ghost_sync.GetBool()) {
-        if (!networkManager.AreGhostsOnSameMap() && this->previousMap != engine->m_szLevelName) { //Don't pause if just reloading save
+        if (!networkManager.AreAllGhostsOnSameMap() && this->previousMap != engine->m_szLevelName) { //Don't pause if just reloading save
             engine->SendToCommandBuffer("pause", 20);
         }
     }
@@ -188,6 +189,8 @@ void Session::Ended()
     if (listener) {
         listener->Reset();
     }
+
+    networkManager.DeleteAllGhosts();
 
     this->isRunning = false;
 }

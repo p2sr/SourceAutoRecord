@@ -3,6 +3,7 @@
 #include "Variable.hpp"
 #include "Features/Demo/GhostEntity.hpp"
 #include "Utils/SDK.hpp"
+#include "Features/Hud/Hud.hpp"
 
 #include "SFML/Network.hpp"
 
@@ -74,19 +75,26 @@ public:
     void UpdateGhostsPosition();
     GhostEntity* GetGhostByID(sf::Uint32 ID);
     void UpdateGhostsSameMap();
-    bool AreGhostsOnSameMap();
+    bool AreAllGhostsOnSameMap();
+    void SpawnAllGhosts();
+    void DeleteAllGhosts();
+
     void SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration);
     //Need this function to mesure the ping in order to start the countdown at the same time
     void StartCountdown();
     //Print the state of the countdown
     void UpdateCountdown();
+
+    void DrawNames(HudContext *ctx);
 };
 
 extern NetworkManager networkManager;
 
 extern Variable ghost_sync;
 extern Variable ghost_TCP_only;
+extern Variable ghost_update_rate;
 extern Command ghost_connect;
 extern Command ghost_disconnect;
 extern Command ghost_message;
 extern Command ghost_ping;
+extern Command ghost_name;

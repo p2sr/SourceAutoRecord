@@ -51,8 +51,9 @@ sf::Packet& operator<<(sf::Packet& packet, const HEADER& header)
 }
 
 
-Variable ghost_sync("ghost_sync", 0, "When loading a new level, pauses the game until other players load it.\n");
-Variable ghost_TCP_only("ghost_TCP_only", 0, "Lathil's special command :).\n");
+Variable ghost_sync("ghost_sync", "0", "When loading a new level, pauses the game until other players load it.\n");
+Variable ghost_TCP_only("ghost_TCP_only", "0", "Lathil's special command :).\n");
+Variable ghost_update_rate("ghost_update_rate", "50", 1, "Adjust the update rate. For people with lathil's internet.\n");
 
 
 
@@ -63,7 +64,7 @@ NetworkManager networkManager;
 NetworkManager::NetworkManager()
     : serverIP("localhost")
     , serverPort(53000)
-    , name("me")
+    , name("")
     , isCountdownReady(false)
 {
 }
@@ -85,8 +86,6 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
 
     this->serverIP = ip;
     this->serverPort = port;
-
-    client->Chat(TextColor::GREEN, "%s : %d", this->tcpSocket.getRemoteAddress().toString().c_str(), this->udpSocket.getLocalPort());
 
     sf::Packet connection_packet;
     connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } } << engine->m_szLevelName << ghost_TCP_only.GetBool();
@@ -123,6 +122,9 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
             this->ghostPool.push_back(ghost);
         }
         this->UpdateGhostsSameMap();
+        if (engine->isRunning()) {
+            this->SpawnAllGhosts();
+        }
         client->Chat(TextColor::GREEN, "Successfully connected to the server !\n%d other players connected\n", nb_players);
     } //End of the scope. Will kill the Selector
 
@@ -179,7 +181,7 @@ void NetworkManager::RunNetwork()
             this->waitForRunning.wait(lck, [this] { return this->runThread.load(); });
         }
 
-        if (engine->isRunning()) {
+        if (engine->isRunning() && !engine->IsGamePaused()) {
             this->SendPlayerData();
         }
 
@@ -300,14 +302,21 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         packet >> name >> data >> current_map;
         GhostEntity ghost(ID, name, data, current_map);
         this->ghostPool.push_back(ghost);
-        client->Chat(TextColor::GREEN, "%s has connected !", name.c_str());
+
+        client->Chat(TextColor::GREEN, "%s has just connected in %s !", name.c_str(), current_map.c_str());
+
         this->UpdateGhostsSameMap();
+        if (ghost.sameMap && engine->isRunning()) {
+            ghost.Spawn();
+        }
+
         break;
     }
     case HEADER::DISCONNECT: {
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i].ID == ID) {
                 client->Chat(TextColor::GREEN, "%s has disconnected !", this->ghostPool[i].name.c_str());
+                this->ghostPool[i].DeleteGhost();
                 this->ghostPool.erase(this->ghostPool.begin() + i);
             }
         }
@@ -324,9 +333,15 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             ghost->currentMap = map;
             this->UpdateGhostsSameMap();
             client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+                if (ghost->sameMap) {
+                    ghost->Spawn();
+                } else {
+                    ghost->DeleteGhost();
+                }
+
             if (ghost_sync.GetBool()) {
-                if (this->AreGhostsOnSameMap() && engine->IsGamePaused()) {
-                    engine->ExecuteCommand("unpause");
+                if (this->AreAllGhostsOnSameMap()) {
+                    engine->SendToCommandBuffer("unpause", 20);
                 }
             }
         }
@@ -355,7 +370,7 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             this->SetupCountdown(preCommands, postCommands, duration);
             
             sf::Packet confirm_packet;
-            confirm_packet << HEADER::COUNTDOWN << sf::Uint8(1);
+            confirm_packet << HEADER::COUNTDOWN << this->ID << sf::Uint8(1);
             this->tcpSocket.send(confirm_packet);
         } else if (step == 1) { //Exec
             this->StartCountdown();
@@ -404,7 +419,7 @@ void NetworkManager::UpdateGhostsSameMap()
     }
 }
 
-bool NetworkManager::AreGhostsOnSameMap()
+bool NetworkManager::AreAllGhostsOnSameMap()
 {
     for (auto& ghost : this->ghostPool) {
         if (!ghost.sameMap) {
@@ -415,9 +430,27 @@ bool NetworkManager::AreGhostsOnSameMap()
     return true;
 }
 
+void NetworkManager::SpawnAllGhosts()
+{
+    for (auto& ghost : this->ghostPool) {
+        if (ghost.sameMap) {
+            ghost.Spawn();
+        }
+    }
+}
+
+void NetworkManager::DeleteAllGhosts()
+{
+    for (auto& ghost : this->ghostPool) {
+        ghost.DeleteGhost();
+    }
+}
+
 void NetworkManager::SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration)
 {
-    engine->ExecuteCommand(preCommands.c_str());
+    std::string pre = "\"" + preCommands + "\"";
+    std::string post = "\"" + postCommands + "\"";
+    engine->ExecuteCommand(pre.c_str());
     this->postCountdownCommands = postCommands;
     this->countdownStep = duration;
     this->timeLeft = NOW();
@@ -448,6 +481,21 @@ void NetworkManager::UpdateCountdown()
     }
 }
 
+void NetworkManager::DrawNames(HudContext* ctx)
+{
+    auto player = client->GetPlayer(GET_SLOT() + 1);
+    if (player) {
+        auto pos = client->GetAbsOrigin(player);
+        for (int i = 0; i < this->ghostPool.size(); ++i) {
+            if (this->ghostPool[i].sameMap) {
+                Vector screenPos;
+                engine->PointToScreen(this->ghostPool[i].data.position, screenPos);
+                ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y - ghost_text_offset.GetInt() - ghost_height.GetInt(), this->ghostPool[i].name.c_str());
+            }
+        }
+    }
+}
+
 
 // Commands
 
@@ -455,6 +503,10 @@ CON_COMMAND(ghost_connect, "Connect to server.\n")
 {
     if (args.ArgC() < 2) {
         return console->Print(ghost_connect.ThisPtr()->m_pszHelpString);
+    }
+
+    if (networkManager.name == "") {
+        return console->Print("Please change your name with \"ghost_name\" before connecting to the server.\n");
     }
 
     networkManager.Connect(args[1], std::atoi(args[2]));
@@ -466,8 +518,12 @@ CON_COMMAND(ghost_disconnect, "Disconnect.\n")
     networkManager.Disconnect();
 }
 
-CON_COMMAND(lmao, "test")
+CON_COMMAND(ghost_name, "Change your name.\n")
 {
+    if (networkManager.isConnected) {
+        return console->Print("Can't change your name while being connected to a server.\n");
+    }
+
     networkManager.name = args[1];
 }
 
