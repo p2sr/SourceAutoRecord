@@ -21,6 +21,8 @@
 #include "Game.hpp"
 #include "Variable.hpp"
 
+#include "Features/Demo/NetworkGhostPlayer.hpp"
+
 Variable sar_speedrun_autostart("sar_speedrun_autostart", "0",
     "Starts speedrun timer automatically on first frame after a load.\n");
 Variable sar_speedrun_autostop("sar_speedrun_autostop", "0",
@@ -178,6 +180,10 @@ void SpeedrunTimer::Stop(bool addSegment)
         }
         this->result.get()->EndSplit(this->total);
         this->pause = 0;
+
+        if (networkManager.isConnected) {
+            networkManager.NotifySpeedrunFinished();
+        }
     } else {
         console->Print("Ready for new speedun!\n");
         this->pubInterface.get()->SetAction(TimerAction::Reset);

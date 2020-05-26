@@ -23,7 +23,8 @@ enum class HEADER {
     HEART_BEAT,
     MESSAGE,
     COUNTDOWN,
-    UPDATE
+    UPDATE,
+    SPEEDRUN_FINISH
 };
 
 class NetworkManager {
@@ -66,6 +67,7 @@ public:
 
     void SendPlayerData();
     void NotifyMapChange();
+    void NotifySpeedrunFinished();
     void SendMessageToAll(std::string msg);
     void SendPing();
     void ReceiveUDPUpdates(std::vector<sf::Packet>& buffer);
@@ -93,6 +95,7 @@ extern NetworkManager networkManager;
 extern Variable ghost_sync;
 extern Variable ghost_TCP_only;
 extern Variable ghost_update_rate;
+extern Variable ghost_show_difference;
 extern Command ghost_connect;
 extern Command ghost_disconnect;
 extern Command ghost_message;

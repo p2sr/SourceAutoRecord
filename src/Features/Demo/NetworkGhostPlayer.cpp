@@ -1,7 +1,10 @@
 #include "NetworkGhostPlayer.hpp"
+
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 
 //DataGhost
 
@@ -54,6 +57,7 @@ sf::Packet& operator<<(sf::Packet& packet, const HEADER& header)
 Variable ghost_sync("ghost_sync", "0", "When loading a new level, pauses the game until other players load it.\n");
 Variable ghost_TCP_only("ghost_TCP_only", "0", "Lathil's special command :).\n");
 Variable ghost_update_rate("ghost_update_rate", "50", 1, "Adjust the update rate. For people with lathil's internet.\n");
+Variable ghost_show_difference("ghost_show_difference", "0", "Display time difference between players after they load a map.\n");
 
 
 
@@ -234,6 +238,16 @@ void NetworkManager::NotifyMapChange()
     this->tcpSocket.send(packet);
 }
 
+void NetworkManager::NotifySpeedrunFinished()
+{
+    auto total = speedrun->GetTotal();
+    auto ipt = speedrun->GetIntervalPerTick();
+
+    sf::Packet packet;
+    packet << HEADER::SPEEDRUN_FINISH << this->ID << SpeedrunTimer::Format(total * ipt).c_str();
+    this->tcpSocket.send(packet);
+}
+
 void NetworkManager::SendMessageToAll(std::string msg)
 {
     sf::Packet packet;
@@ -341,7 +355,7 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
 
             if (ghost_sync.GetBool()) {
                 if (this->AreAllGhostsOnSameMap()) {
-                    engine->SendToCommandBuffer("unpause", 20);
+                    engine->SendToCommandBuffer("unpause", 40);
                 }
             }
         }
@@ -374,6 +388,15 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             this->tcpSocket.send(confirm_packet);
         } else if (step == 1) { //Exec
             this->StartCountdown();
+        }
+        break;
+    }
+    case HEADER::SPEEDRUN_FINISH: {
+        std::string timer;
+        packet >> timer;
+        auto ghost = this->GetGhostByID(ID);
+        if (ghost) {
+            client->Chat(TextColor::GREEN, "%s has finished in %s", ghost->name.c_str(), timer.c_str());
         }
         break;
     }
