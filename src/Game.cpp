@@ -131,6 +131,7 @@ std::string Game::VersionToString(int version)
         HAS_GAME_FLAG(SourceGame_INFRA,                            "INFRA")
         HAS_GAME_FLAG(SourceGame_ThinkingWithTimeMachine,          "Thinking with Time Machine")
         HAS_GAME_FLAG(SourceGame_HalfLife2Episodic,                "Half-Life 2: Episode One/Two")
+        HAS_GAME_FLAG(SourceGame_HalfLifeSource,                   "Half-Life: Source")
     }
     return games;
 }

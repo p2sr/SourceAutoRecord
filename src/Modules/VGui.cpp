@@ -1,5 +1,7 @@
 #include "VGui.hpp"
 
+#include <algorithm>
+
 #include "Features/Hud/Hud.hpp"
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"

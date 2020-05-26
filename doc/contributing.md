@@ -45,8 +45,8 @@
 
 ### Linux
 
-- g++ 5.4.0
-- g++-multilib
+- g++ 8.3.0
+- g++-8-multilib
 - Make 4.1
 - Configure paths in `makefile`
 
@@ -54,7 +54,7 @@
 
 - Write a meaningful title and a short description
 - Follow the [coding style](#coding-style)
-- Follow my requested changes
+- Follow the requested changes
 - DO NOT stage files that you had to configure
 - Use latest `master` branch
 

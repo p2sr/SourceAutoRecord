@@ -2,13 +2,10 @@
 
 #include <cstring>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <ios>
 #include <string>
-
-#ifdef _WIN32
-#include <functional>
-#endif
 
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
@@ -82,7 +79,7 @@ void DataMapDumper::Dump(bool dumpServer)
             }
             map = map->baseMap;
         }
-        file.seekp(-1, std::ios_base::_Seekcur);
+        file.seekp(-1, SEEK_DIR_CUR);
         file << "]}";
     };
     std::function<void(datamap_t2 * map)> DumpMap2;
@@ -115,7 +112,7 @@ void DataMapDumper::Dump(bool dumpServer)
             }
             map = map->baseMap;
         }
-        file.seekp(-1, std::ios_base::_Seekcur);
+        file.seekp(-1, SEEK_DIR_CUR);
         file << "]}";
     };
 
@@ -139,7 +136,7 @@ void DataMapDumper::Dump(bool dumpServer)
         }
     }
 
-    file.seekp(-1, std::ios_base::_Seekcur);
+    file.seekp(-1, SEEK_DIR_CUR);
     file << "]}";
     file.close();
 
