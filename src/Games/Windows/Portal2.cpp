@@ -115,7 +115,7 @@ void Portal2::LoadOffsets()
     NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
     ENT_ENTRY_MASK = 65535; //CBaseEntityList::CBaseEntityList
     INVALID_EHANDLE_INDEX = 0xFFFFFFFF; //CBaseEntityList::CBaseEntityList
-    NUM_ENT_ENTRY_BITS = 13; //CBaseEntityList::CBaseEntityList
+    NUM_SERIAL_NUM_SHIFT_BITS = 16; //CBaseEntityList::CBaseEntityList
     GetIServerEntity = 1; // CServerTools
     m_EntPtrArray = 61; // CServerTools::GetIServerEntity
     ClientCommand = 39; // CVEngineServer

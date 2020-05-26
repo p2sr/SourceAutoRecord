@@ -933,7 +933,7 @@ public:
 
     inline int GetSerialNumber() const
     {
-        return m_Index >> Offsets::NUM_ENT_ENTRY_BITS;
+        return m_Index >> Offsets::NUM_SERIAL_NUM_SHIFT_BITS;
     }
 
 protected:

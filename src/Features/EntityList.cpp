@@ -6,8 +6,6 @@
 #include "Modules/Console.hpp"
 #include "Modules/Server.hpp"
 
-#include "Features/OffsetFinder.hpp"
-
 #include "Command.hpp"
 #include "Offsets.hpp"
 #include "SAR.hpp"

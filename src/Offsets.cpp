@@ -138,7 +138,6 @@ int m_hSecondaryPortal;
 // CProp_Portal
 int m_bActivated;
 int m_bIsPortal2;
-int m_hFiredByPlayerOffset;
 int m_hActiveWeapon;
 
 // IEngineVGuiInternal
@@ -234,7 +233,7 @@ int m_bLoadGame;
 int NUM_ENT_ENTRIES;
 int ENT_ENTRY_MASK;
 int INVALID_EHANDLE_INDEX;
-int NUM_ENT_ENTRY_BITS;
+int NUM_SERIAL_NUM_SHIFT_BITS;
 int m_iClassName;
 int m_iName;
 int m_EntPtrArray;

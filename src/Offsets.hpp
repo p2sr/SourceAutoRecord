@@ -138,7 +138,6 @@ extern int m_hSecondaryPortal;
 // CProp_Portal
 extern int m_bActivated;
 extern int m_bIsPortal2;
-extern int m_hFiredByPlayerOffset;
 extern int m_hActiveWeapon;
 
 // IEngineVGuiInternal
@@ -234,7 +233,7 @@ extern int m_bLoadGame;
 extern int NUM_ENT_ENTRIES;
 extern int ENT_ENTRY_MASK;
 extern int INVALID_EHANDLE_INDEX;
-extern int NUM_ENT_ENTRY_BITS;
+extern int NUM_SERIAL_NUM_SHIFT_BITS;
 extern int m_iClassName;
 extern int m_iName;
 extern int m_EntPtrArray;

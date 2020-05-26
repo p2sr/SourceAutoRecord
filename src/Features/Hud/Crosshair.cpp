@@ -1,4 +1,4 @@
-#include "crosshair.hpp"
+#include "Crosshair.hpp"
 
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
@@ -71,7 +71,7 @@ bool Crosshair::GetCurrentSize(int& xSize, int& ySize)
 int Crosshair::GetPortalUpgradeState()
 {
     if (server->portalGun != nullptr) {
-        return (*reinterpret_cast<bool*>((uintptr_t)server->portalGun->m_pEntity + Offsets::m_bCanFirePortal1) + *reinterpret_cast<bool*>((uintptr_t)server->portalGun->m_pEntity + Offsets::m_bCanFirePortal2));
+        return (*reinterpret_cast<bool*>((uintptr_t)server->portalGun + Offsets::m_bCanFirePortal1) || *reinterpret_cast<bool*>((uintptr_t)server->portalGun + Offsets::m_bCanFirePortal2));
     }
 
     return 0;
@@ -82,8 +82,8 @@ std::vector<CEntInfo*> Crosshair::GetPortalsShotByPlayer()
     std::vector<CEntInfo*> v;
 
     if (server->portalGun) {
-        auto m_hPrimaryPortal = entityList->GetEntityIndex(*reinterpret_cast<CBaseHandle*>((uintptr_t)server->portalGun->m_pEntity + Offsets::m_hPrimaryPortal));
-        auto m_hSecondaryPortal = entityList->GetEntityIndex(*reinterpret_cast<CBaseHandle*>((uintptr_t)server->portalGun->m_pEntity + Offsets::m_hSecondaryPortal));
+        auto m_hPrimaryPortal = entityList->GetEntityIndex(*reinterpret_cast<CBaseHandle*>((uintptr_t)server->portalGun + Offsets::m_hPrimaryPortal));
+        auto m_hSecondaryPortal = entityList->GetEntityIndex(*reinterpret_cast<CBaseHandle*>((uintptr_t)server->portalGun + Offsets::m_hSecondaryPortal));
 
         if (m_hPrimaryPortal != NULL) { //If player hasn't shot blue portal
             auto bluePortal = entityList->GetEntityInfoByIndex(m_hPrimaryPortal);

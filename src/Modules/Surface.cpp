@@ -66,7 +66,7 @@ void Surface::DrawFilledCircle(int x, int y, float radius, Color clr)
     const int r2 = radius * radius;
 
     for (int cy = -radius; cy <= radius; cy++) {
-        int cx = std::sqrtf(r2 - cy * cy) + 0.5;
+        int cx = sqrtf(r2 - cy * cy) + 0.5;
         int cyy = cy + y;
 
         surface->DrawColoredLine(x - cx, cyy, x + cx, cyy, clr);
