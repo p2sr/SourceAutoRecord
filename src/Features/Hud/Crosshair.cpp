@@ -177,8 +177,8 @@ void Crosshair::Paint(int slot)
         Color cl(cl_quickhudleftcolor_r.GetInt(), cl_quickhudleftcolor_g.GetInt(), cl_quickhudleftcolor_b.GetInt(), cl_quickhud_alpha.GetInt());
         Color cr(cl_quickhudrightcolor_r.GetInt(), cl_quickhudrightcolor_g.GetInt(), cl_quickhudrightcolor_b.GetInt(), cl_quickhud_alpha.GetInt());
 
-        int x1 = xCenter + cl_quickhud_x.GetInt();
-        int x2 = xCenter - cl_quickhud_x.GetInt();
+        int x1 = xCenter - cl_quickhud_x.GetInt();
+        int x2 = xCenter + cl_quickhud_x.GetInt();
         int y1 = yCenter + cl_quickhud_y.GetInt();
         int size = cl_quickhud_size.GetInt();
 
