@@ -24,7 +24,7 @@ public:
 
     int GetPortalUpgradeState();
     void GetPortalsStates(int& portalUpgradeState, bool& blue, bool& orange);
-    std::vector<CEntInfo*> GetPortalsShotByPlayer();
+    std::vector<IHandleEntity*> GetPortalsShotByPlayer();
 
     int SetCrosshairTexture(const std::string filename);
     bool SetQuickHudTexture(const std::string filename);

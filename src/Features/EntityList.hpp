@@ -11,7 +11,6 @@ public:
     CEntInfo* GetEntityInfoByName(const char* name);
     CEntInfo* GetEntityInfoByClassName(const char* name);
     IHandleEntity* LookupEntity(const CBaseHandle& handle);
-    int GetEntityIndex(const CBaseHandle& handle);
 };
 
 extern EntityList* entityList;

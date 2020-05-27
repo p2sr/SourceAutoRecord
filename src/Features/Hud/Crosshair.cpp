@@ -71,32 +71,26 @@ bool Crosshair::GetCurrentSize(int& xSize, int& ySize)
 int Crosshair::GetPortalUpgradeState()
 {
     if (server->portalGun != nullptr) {
-        return (*reinterpret_cast<bool*>((uintptr_t)server->portalGun + Offsets::m_bCanFirePortal1) || *reinterpret_cast<bool*>((uintptr_t)server->portalGun + Offsets::m_bCanFirePortal2));
+        return (*reinterpret_cast<bool*>((uintptr_t)server->portalGun + Offsets::m_bCanFirePortal1) + *reinterpret_cast<bool*>((uintptr_t)server->portalGun + Offsets::m_bCanFirePortal2));
     }
 
     return 0;
 }
 
-std::vector<CEntInfo*> Crosshair::GetPortalsShotByPlayer()
+std::vector<IHandleEntity*> Crosshair::GetPortalsShotByPlayer()
 {
-    std::vector<CEntInfo*> v;
+    std::vector<IHandleEntity*> v;
 
     if (server->portalGun) {
-        auto m_hPrimaryPortal = entityList->GetEntityIndex(*reinterpret_cast<CBaseHandle*>((uintptr_t)server->portalGun + Offsets::m_hPrimaryPortal));
-        auto m_hSecondaryPortal = entityList->GetEntityIndex(*reinterpret_cast<CBaseHandle*>((uintptr_t)server->portalGun + Offsets::m_hSecondaryPortal));
+        auto bluePortal = entityList->LookupEntity(*reinterpret_cast<CBaseHandle*>((uintptr_t)server->portalGun + Offsets::m_hPrimaryPortal));
+        auto orangePortal = entityList->LookupEntity(*reinterpret_cast<CBaseHandle*>((uintptr_t)server->portalGun + Offsets::m_hSecondaryPortal));
 
-        if (m_hPrimaryPortal != NULL) { //If player hasn't shot blue portal
-            auto bluePortal = entityList->GetEntityInfoByIndex(m_hPrimaryPortal);
-            if (bluePortal && bluePortal->m_pEntity) {
-                v.push_back(bluePortal);
-            }
+        if (bluePortal != NULL) { //If player hasn't shot blue portal
+            v.push_back(bluePortal);
         }
 
-        if (m_hSecondaryPortal != NULL) { //If player hasn't shot blue portal
-            auto orangePortal = entityList->GetEntityInfoByIndex(m_hSecondaryPortal);
-            if (orangePortal && orangePortal->m_pEntity) {
-                v.push_back(orangePortal);
-            }
+        if (orangePortal != NULL) { //If player hasn't shot orange portal
+            v.push_back(orangePortal);
         }
     }
 
@@ -110,8 +104,8 @@ void Crosshair::GetPortalsStates(int& portalUpgradeState, bool& isBlueActive, bo
     portalUpgradeState = GetPortalUpgradeState();
     if (portalUpgradeState) {
         for (auto& portal : GetPortalsShotByPlayer()) {
-            bool isP2 = *reinterpret_cast<bool*>((uintptr_t)portal->m_pEntity + Offsets::m_bIsPortal2); //IsOrange
-            bool isAct = *reinterpret_cast<bool*>((uintptr_t)portal->m_pEntity + Offsets::m_bActivated); //IsActive
+            bool isP2 = *reinterpret_cast<bool*>((uintptr_t)portal + Offsets::m_bIsPortal2); //IsOrange
+            bool isAct = *reinterpret_cast<bool*>((uintptr_t)portal + Offsets::m_bActivated); //IsActive
             if (!isP2) {
                 isBlueActive = isAct;
             } else {

@@ -54,8 +54,6 @@ int PaintTraverseEx;
 int DrawColoredText;
 int DrawTextLen;
 
-int DrawGetTextureId;
-int DrawGetTextureFile;
 int DrawSetTextureFile;
 int DrawSetTextureRGBA;
 int DrawSetTexture;

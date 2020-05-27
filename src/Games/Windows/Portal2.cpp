@@ -165,8 +165,6 @@ void Portal2::LoadOffsets()
     DrawColoredText = 160; // CMatSystemSurface
     DrawTextLen = 163; // CMatSystemSurface
 
-    DrawGetTextureId = 33; // CMatSystemSurface
-    DrawGetTextureFile = 34; // CMatSystemSurface
     DrawSetTextureFile = 35; // CMatSystemSurface
     DrawSetTextureRGBA = 36; // CMatSystemSurface
     DrawSetTexture = 37; // CMatSystemSurface

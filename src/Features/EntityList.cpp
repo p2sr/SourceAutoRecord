@@ -72,14 +72,6 @@ IHandleEntity* EntityList::LookupEntity(const CBaseHandle& handle)
         return NULL;
 }
 
-int EntityList::GetEntityIndex(const CBaseHandle& handle)
-{
-    if (handle.m_Index == Offsets::INVALID_EHANDLE_INDEX)
-        return NULL;
-
-    return handle.GetEntryIndex();
-}
-
 // Commands
 
 CON_COMMAND(sar_list_ents, "Lists entities.\n")
