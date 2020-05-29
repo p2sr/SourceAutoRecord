@@ -319,6 +319,12 @@
     <ClCompile Include="Features\FovChanger.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Stats\Sync.cpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\StrafeSyncHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -665,6 +671,12 @@
     </ClInclude>
     <ClInclude Include="Features\FovChanger.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats\Sync.hpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\StrafeSyncHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

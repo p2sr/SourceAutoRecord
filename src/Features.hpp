@@ -17,6 +17,7 @@
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
+#include "Features/Stats/Sync.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
 #include "Features/Tas/AutoStrafer.hpp"

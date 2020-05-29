@@ -133,6 +133,7 @@
     <ClCompile Include="Features\Hud\InputHud.cpp" />
     <ClCompile Include="Features\Hud\InspectionHud.cpp" />
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp" />
+    <ClCompile Include="Features\Hud\StrafeSyncHud.cpp" />
     <ClCompile Include="Features\Imitator.cpp" />
     <ClCompile Include="Features\InfraSession.cpp" />
     <ClCompile Include="Features\Listener.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="Features\Stats\JumpStats.cpp" />
     <ClCompile Include="Features\Stats\Stats.cpp" />
     <ClCompile Include="Features\Stats\StepStats.cpp" />
+    <ClCompile Include="Features\Stats\Sync.cpp" />
     <ClCompile Include="Features\Stats\VelocityStats.cpp" />
     <ClCompile Include="Features\StepCounter.cpp" />
     <ClCompile Include="Features\Summary.cpp" />
@@ -274,6 +276,7 @@
     <ClInclude Include="Features\Hud\InputHud.hpp" />
     <ClInclude Include="Features\Hud\InspectionHud.hpp" />
     <ClInclude Include="Features\Hud\SpeedrunHud.hpp" />
+    <ClInclude Include="Features\Hud\StrafeSyncHud.hpp" />
     <ClInclude Include="Features\Imitator.hpp" />
     <ClInclude Include="Features\InfraSession.hpp" />
     <ClInclude Include="Features\Listener.hpp" />
@@ -300,6 +303,7 @@
     <ClInclude Include="Features\Stats\Stats.hpp" />
     <ClInclude Include="Features\Stats\StatsResultType.hpp" />
     <ClInclude Include="Features\Stats\StepStats.hpp" />
+    <ClInclude Include="Features\Stats\Sync.hpp" />
     <ClInclude Include="Features\Stats\VelocityStats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
