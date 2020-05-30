@@ -10,6 +10,7 @@
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Variable.hpp"
+#include "Features/Stats/Stats.hpp"
 
 SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
@@ -240,6 +241,11 @@ CON_COMMAND(sar_rename, "Changes your name. Usage: sar_rename <name>\n")
 }
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
+    auto nSlot = GET_SLOT();
+    auto stat = stats->Get(nSlot);
+    auto filePath = "FrenchSaves10ticks.csv";
+    stat->statsCounter->ExportToFile(filePath);
+
     if (sar.cheats) {
         sar.cheats->Shutdown();
     }

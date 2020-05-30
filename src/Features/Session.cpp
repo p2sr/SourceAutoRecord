@@ -176,6 +176,12 @@ void Session::Ended()
         listener->Reset();
     }
 
+    auto nSlot = GET_SLOT();
+    auto stat = stats->Get(nSlot);
+    
+    stat->statsCounter->CMMapsStats[engine->m_szLevelName].framesSpent += engine->GetTick();
+    stat->statsCounter->CMMapsStats[engine->m_szLevelName].retries++;
+
     this->isRunning = false;
 }
 void Session::Changed()

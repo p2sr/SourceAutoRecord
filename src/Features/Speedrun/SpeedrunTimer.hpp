@@ -92,6 +92,8 @@ public:
     ~SpeedrunTimer();
 
     static std::string Format(float raw);
+    static std::string SimpleFormat(float raw);
+    static int UnFormat(std::string formated_time);
 };
 
 extern SpeedrunTimer* speedrun;

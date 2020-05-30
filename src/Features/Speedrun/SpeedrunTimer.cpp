@@ -431,6 +431,34 @@ std::string SpeedrunTimer::Format(float raw)
     return std::string(format);
 }
 
+std::string SpeedrunTimer::SimpleFormat(float raw)
+{
+    char format[16];
+
+    auto sec = int(std::floor(raw));
+    auto ms = int(std::ceil((raw - sec) * 1000));
+
+    auto min = sec / 60;
+    sec = sec % 60;
+    auto hrs = min / 60;
+    min = min % 60;
+    snprintf(format, sizeof(format), "%i:%02i:%02i.%03i", hrs, min, sec, ms);
+
+    return std::string(format);
+}
+
+int SpeedrunTimer::UnFormat(std::string formated_time)
+{
+    int h, m, s, ticks = 0;
+    float ms = 0;
+
+    if (sscanf(formated_time.c_str(), "%d:%d:%d.%f", &h, &m, &s, &ms) >= 2) {
+        ticks = (h * 3600 + m * 60 + s + 0.01 * ms) * 60;
+    }
+
+    return ticks;
+}
+
 // Completion Function
 
 int sar_category_CompletionFunc(const char* partial,
