@@ -27,7 +27,7 @@ Sync::Sync()
     this->start = std::chrono::steady_clock::now();
 }
 
-void Sync::SetLastDatas(const int buttons, const QAngle ang)
+void Sync::SetLastDatas(const int buttons, const QAngle& ang)
 {
     this->lastButtons = buttons;
     this->oldAngles = ang;
@@ -39,15 +39,12 @@ void Sync::UpdateSync(const CUserCmd* cmd)
         return;
     }
 
-    auto player = client->GetPlayer(GET_SLOT() + 1);
-    if (!player) {
-        player = client->GetPlayer(GET_SLOT()); //Bad fix for Orange
+    auto player = server->GetPlayer(GET_SLOT() + 1);
         if (!player) {
             return;
-        }
     }
 
-    auto currentAngles = client->GetAbsAngles(player);
+    auto currentAngles = server->GetAbsAngles(player);
 
     if (sar_strafesync_noground.GetBool()) {
         unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + 344); // m_hGroundEntity
