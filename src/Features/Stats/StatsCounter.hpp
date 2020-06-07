@@ -1,51 +1,58 @@
 #pragma once
+#include <array>
 #include <map>
 #include <string>
 
-#define FR
+#include "Command.hpp"
+#include "Utils.hpp"
+#include "Variable.hpp"
 
-
-#ifdef FR
-#define CSV_SEPARATOR ';'
-#else
+#define CSV_EXTENSION ".csv"
 #define CSV_SEPARATOR ','
-#endif
+#define MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD "sep=,"
 
-#ifdef FR
-#define SAR_CMCOUNTER_EXPORT_HEADER "Index;MapName;Retries;TimeSpent"
-#define SAR_FULLGAMECOUNTER_EXPORT_HEADER "Index;MapName;Retries;TimeSpent;CompletedRuns;AvgResetTime;TotalTimeSP"
-#else
-#define SAR_CMCOUNTER_EXPORT_HEADER "Index,MapName,Retries,TimeSpent"
-#define SAR_FULLGAMECOUNTER_EXPORT_HEADER "Index,MapName,Retries,TimeSpent,CompletedRuns,AvgResetTime,TotalTimeSP"
-#endif
+#define SAR_CM_COUNTER_EXPORT_HEADER "Map Name,CM Retries,CM Time Spent,FullGame Reloads,FullGame Time Spent"
+#define SAR_FULLGAME_COUNTER_EXPORT_HEADER "Completed Runs,Avg Reset Time,Nb Reset,Total Time SP,Portal Count"
+#define SAR_TOTAL_COUNTER_EXPORT_HEADER "Total Time In-Game"
 
-
-struct CMStats{
+struct CMStats {
     int retries;
-    int framesSpent;
+    float secondSpent;
 };
 
-struct FullGameStats{
+struct FullGameStats {
     int retries;
-    int framesSpent;
+    float secondSpent;
 };
-
 
 class StatsCounter {
-public:
-    
+
+private:
     std::map<std::string, CMStats> CMMapsStats;
     std::map<std::string, FullGameStats> fullGameMapsStats;
 
     int completedRuns;
-    int avgResetTime;
-    int totalTimeSP;
+    float avgResetTime;
+    int nbReset;
+    float totalTimeSP;
     //int totalTimeCoop; //When SAR will support Coop
+    int portalCount;
+
+    float totalTimeInGame;
+
+public:
 
 
 public:
     void Reset();
+    void IncrementReset(const float time);
+    void IncrementRunFinished(const float time);
 
-    bool LoadFromFile(std::string filePath, std::string fullGamePath);
-    bool ExportToFile(std::string filePath);
+    void Init();
+    bool LoadFromFile(const std::string& path);
+    bool ExportToFile(const std::string& path);
+    void Print();
+    void RecordDatas(const int tick);
 };
+
+extern Variable sar_statcounter_filePath;

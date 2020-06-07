@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <array>
 
 enum SourceGameVersion {
     SourceGame_Unknown = 0,
@@ -40,4 +41,5 @@ public:
     static Game* CreateNew();
 
     static std::string VersionToString(int version);
+    static const std::array<std::string, 62> mapNames;
 };

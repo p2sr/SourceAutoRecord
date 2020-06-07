@@ -15,6 +15,7 @@
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
 #include "Utils/SDK.hpp"
 
@@ -177,10 +178,7 @@ void Session::Ended()
     }
 
     auto nSlot = GET_SLOT();
-    auto stat = stats->Get(nSlot);
-    
-    stat->statsCounter->CMMapsStats[engine->m_szLevelName].framesSpent += engine->GetTick();
-    stat->statsCounter->CMMapsStats[engine->m_szLevelName].retries++;
+    stats->Get(nSlot)->statsCounter->RecordDatas(tick);
 
     this->isRunning = false;
 }

@@ -14,6 +14,8 @@
 #include "TimerRule.hpp"
 #include "TimerSplit.hpp"
 
+#include "Features/Stats/Stats.hpp"
+
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
@@ -167,9 +169,15 @@ void SpeedrunTimer::CheckRules(const int engineTicks)
         break;
     }
 }
-void SpeedrunTimer::Stop(bool addSegment)
+void SpeedrunTimer::Stop(bool addSegment, bool stopedByUser)
 {
     if (this->IsActive()) {
+        if (!stopedByUser) {
+            stats->Get(GET_SLOT())->statsCounter->IncrementRunFinished(this->total * this->ipt);
+        } else {
+            stats->Get(GET_SLOT())->statsCounter->IncrementReset(this->total * this->ipt);
+        }
+
         this->StatusReport("Speedrun stopped!\n");
         this->pubInterface.get()->SetAction(TimerAction::End);
         this->state = TimerState::NotRunning;
@@ -447,16 +455,16 @@ std::string SpeedrunTimer::SimpleFormat(float raw)
     return std::string(format);
 }
 
-int SpeedrunTimer::UnFormat(std::string formated_time)
+float SpeedrunTimer::UnFormat(std::string& formated_time)
 {
-    int h, m, s, ticks = 0;
-    float ms = 0;
+    int h, m, s;
+    float ms, total = 0;
 
     if (sscanf(formated_time.c_str(), "%d:%d:%d.%f", &h, &m, &s, &ms) >= 2) {
-        ticks = (h * 3600 + m * 60 + s + 0.01 * ms) * 60;
+        total = h * 3600 + m * 60 + s + 0.001 * ms;
     }
 
-    return ticks;
+    return total;
 }
 
 // Completion Function
@@ -504,7 +512,7 @@ CON_COMMAND(sar_speedrun_start, "Starts speedrun timer manually.\n")
 }
 CON_COMMAND(sar_speedrun_stop, "Stops speedrun timer manually.\n")
 {
-    speedrun->Stop();
+    speedrun->Stop(true, true);
 }
 CON_COMMAND(sar_speedrun_split, "Splits speedrun timer manually.\n")
 {
@@ -521,7 +529,7 @@ CON_COMMAND(sar_speedrun_resume, "Resumes speedrun timer manually.\n")
 CON_COMMAND(sar_speedrun_reset, "Resets speedrun timer.\n")
 {
     if (speedrun->IsActive()) {
-        speedrun->Stop();
+        speedrun->Stop(true, true);
     }
     speedrun->Stop();
 }
