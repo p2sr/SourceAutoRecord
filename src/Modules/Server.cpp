@@ -16,6 +16,7 @@
 #include "Features/Timer/Timer.hpp"
 #include "Features/Demo/GhostPlayer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
+#include "Features/Demo/DemoGhostPlayer.hpp"
 
 #include "Engine.hpp"
 #include "Client.hpp"
@@ -280,7 +281,6 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
-
     if (simulating && sar_record_at.GetFloat() > 0 && sar_record_at.GetFloat() == session->GetTick()) {
         std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
         engine->ExecuteCommand(cmd.c_str());
@@ -292,6 +292,10 @@ DETOUR(Server::GameFrame, bool simulating)
         if (networkManager.isCountdownReady) {
             networkManager.UpdateCountdown();
         }
+    }
+
+    if (demoGhostPlayer.IsPlaying() && simulating) {
+        demoGhostPlayer.UpdateGhostsPosition();
     }
 
     if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
