@@ -1,4 +1,4 @@
-# SAR: Cvars
+# SAR: Cvars (Pre-release only)
 
 |Name|Default|Description|
 |---|---|---|
