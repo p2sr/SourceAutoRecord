@@ -6,6 +6,7 @@
 #include "VelocityStats.hpp"
 
 #include "Features/Hud/Hud.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -146,4 +147,53 @@ HUD_ELEMENT2(velocity_peak, "0", "Draws last saved velocity peak.\n", HudType_In
 {
     auto stat = stats->Get(ctx->slot);
     ctx->DrawElement("vel peak: %.3f", stat->velocity->peak);
+}
+
+CON_COMMAND(sar_export_stats, "sar_export_stats [filePath]. Export the stats to the specifed path in a .csv file.\n")
+{
+    auto nSlot = GET_SLOT();
+    auto stat = stats->Get(nSlot);
+
+    bool result = false;
+    std::string path = args.ArgC() == 1 ? sar_statcounter_filePath.GetString() : args[1];
+
+    if (args.ArgC() >= 1) {
+        result = stat->statsCounter->ExportToFile(path);
+    } else {
+        return console->Print(sar_export_stats.ThisPtr()->m_pszHelpString);
+    }
+
+    if (!result) {
+        return console->Print("Couldn't write to this path. Please verify you actually can write here : \"%s\".\n", path.c_str());
+    }
+
+    console->Print("Datas has been sucessfully exported.\n");
+}
+
+CON_COMMAND(sar_import_stats, "sar_import_stats [filePath]. Import the stats from the specified .csv file.\n")
+{
+    auto nSlot = GET_SLOT();
+    auto stat = stats->Get(nSlot);
+
+    bool result = false;
+    std::string path = args.ArgC() == 1 ? sar_statcounter_filePath.GetString() : args[1];
+
+    if (args.ArgC() >= 1) {
+        result = stat->statsCounter->LoadFromFile(path);
+    } else {
+        return console->Print(sar_import_stats.ThisPtr()->m_pszHelpString);
+    }
+
+    if (!result) {
+        return console->Print("Couldn't open the file. Are you sure the file is here ? : \"%s\".\n", path.c_str());
+    }
+
+    stat->statsCounter->Print();
+}
+
+CON_COMMAND(sar_print_stats, "sar_print_stats. Prints your statistics if those are loaded.\n")
+{
+    auto current = 1;
+    auto nSlot = GET_SLOT();
+    stats->Get(nSlot)->statsCounter->Print();
 }

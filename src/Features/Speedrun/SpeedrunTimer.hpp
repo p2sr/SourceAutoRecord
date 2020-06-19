@@ -52,7 +52,7 @@ public:
     void PreUpdate(const int engineTicks, const char* engineMap);
     void PostUpdate(const int engineTicks, const char* engineMap);
     void CheckRules(const int engineTicks);
-    void Stop(bool addSegment = true);
+    void Stop(bool addSegment = true, bool stopedByUser = false);
     void Reset();
     void Split(bool visited);
 
@@ -92,6 +92,8 @@ public:
     ~SpeedrunTimer();
 
     static std::string Format(float raw);
+    static std::string SimpleFormat(float raw);
+    static float UnFormat(std::string& formated_time);
 };
 
 extern SpeedrunTimer* speedrun;

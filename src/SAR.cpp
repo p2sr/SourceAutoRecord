@@ -7,6 +7,7 @@
 
 #include "Cheats.hpp"
 #include "Command.hpp"
+#include "Features/Stats/Stats.hpp"
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Variable.hpp"
@@ -93,6 +94,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 speedrun->LoadRules(this->game);
 
                 config->Load();
+
+                stats->Get(GET_SLOT())->statsCounter->Init();
 
                 this->SearchPlugin();
 
@@ -241,6 +244,10 @@ CON_COMMAND(sar_rename, "Changes your name. Usage: sar_rename <name>\n")
 }
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
+    auto statCounter = stats->Get(GET_SLOT())->statsCounter;
+    statCounter->RecordDatas(session->GetTick());
+    statCounter->ExportToFile(sar_statcounter_filePath.GetString());
+  
     networkManager.Disconnect();
 
     if (sar.cheats) {

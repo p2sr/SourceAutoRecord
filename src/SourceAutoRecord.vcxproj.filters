@@ -319,6 +319,9 @@
     <ClCompile Include="Features\FovChanger.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Stats\StatsCounter.cpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Hud\Crosshair.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
@@ -686,6 +689,9 @@
     </ClInclude>
     <ClInclude Include="Features\FovChanger.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats\StatsCounter.hpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClInclude>
     <ClInclude Include="Features\Hud\Crosshair.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>

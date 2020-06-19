@@ -17,6 +17,7 @@
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
 #include "Utils/SDK.hpp"
 
@@ -207,6 +208,9 @@ void Session::Ended()
     if (listener) {
         listener->Reset();
     }
+
+    auto nSlot = GET_SLOT();
+    stats->Get(nSlot)->statsCounter->RecordDatas(tick);
 
     networkManager.DeleteAllGhosts();
 
