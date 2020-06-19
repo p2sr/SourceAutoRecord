@@ -46,6 +46,7 @@ extern int Create;
 // CMatSystemSurface
 extern int DrawSetColor;
 extern int DrawFilledRect;
+extern int DrawColoredCircle;
 extern int DrawLine;
 extern int DrawSetTextFont;
 extern int DrawSetTextColor;
@@ -53,6 +54,14 @@ extern int GetFontTall;
 extern int PaintTraverseEx;
 extern int DrawColoredText;
 extern int DrawTextLen;
+
+extern int DrawSetTextureFile;
+extern int DrawSetTextureRGBA;
+extern int DrawSetTexture;
+extern int DrawGetTextureSize;
+extern int DrawTexturedRect;
+extern int IsTextureIDValid;
+extern int CreateNewTextureID;
 
 // CInputSystem
 extern int StringToButtonCode;
@@ -119,6 +128,17 @@ extern int m_pSurfaceData;
 // CPortal_Player
 extern int iNumPortalsPlaced;
 
+// CWeaponPortalgun
+extern int m_bCanFirePortal1;
+extern int m_bCanFirePortal2;
+extern int m_hPrimaryPortal;
+extern int m_hSecondaryPortal;
+
+// CProp_Portal
+extern int m_bActivated;
+extern int m_bIsPortal2;
+extern int m_hActiveWeapon;
+
 // IEngineVGuiInternal
 extern int Paint;
 
@@ -143,6 +163,9 @@ extern int IsRestoring;
 
 // CHud
 extern int GetName;
+
+//CHUDQuickInfo
+extern int ShouldDraw;
 
 // CGameEventManager
 extern int AddListener;
@@ -222,6 +245,9 @@ extern int HostState_OnClientConnected;
 extern int hoststate;
 extern int m_bLoadGame;
 extern int NUM_ENT_ENTRIES;
+extern int ENT_ENTRY_MASK;
+extern int INVALID_EHANDLE_INDEX;
+extern int NUM_SERIAL_NUM_SHIFT_BITS;
 extern int m_iClassName;
 extern int m_iName;
 extern int m_EntPtrArray;

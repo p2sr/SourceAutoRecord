@@ -136,6 +136,7 @@
     <ClCompile Include="Features\EntityList.cpp" />
     <ClCompile Include="Features\Feature.cpp" />
     <ClCompile Include="Features\FovChanger.cpp" />
+    <ClCompile Include="Features\Hud\Crosshair.cpp" />
     <ClCompile Include="Features\Hud\Hud.cpp" />
     <ClCompile Include="Features\Hud\InputHud.cpp" />
     <ClCompile Include="Features\Hud\InspectionHud.cpp" />
@@ -251,6 +252,7 @@
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="Utils\lodepng.cpp" />
     <ClCompile Include="Utils\Math.cpp" />
     <ClCompile Include="Utils\Memory.cpp" />
     <ClCompile Include="Utils\SDK.cpp" />
@@ -318,6 +320,7 @@
     <ClInclude Include="Features\EntityList.hpp" />
     <ClInclude Include="Features\Feature.hpp" />
     <ClInclude Include="Features\FovChanger.hpp" />
+    <ClInclude Include="Features\Hud\Crosshair.hpp" />
     <ClInclude Include="Features\Hud\Hud.hpp" />
     <ClInclude Include="Features\Hud\InputHud.hpp" />
     <ClInclude Include="Features\Hud\InspectionHud.hpp" />
@@ -438,6 +441,7 @@
     <ClInclude Include="Plugin.hpp" />
     <ClInclude Include="SAR.hpp" />
     <ClInclude Include="Utils.hpp" />
+    <ClInclude Include="Utils\lodepng.hpp" />
     <ClInclude Include="Utils\Math.hpp" />
     <ClInclude Include="Utils\Memory.hpp" />
     <ClInclude Include="Utils\Platform.hpp" />

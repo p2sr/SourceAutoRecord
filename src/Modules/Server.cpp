@@ -3,7 +3,9 @@
 #include <cstdint>
 #include <cstring>
 
+#include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
+#include "Features/Hud/Crosshair.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Session.hpp"
@@ -141,6 +143,11 @@ DETOUR(Server::PlayerMove)
 {
     auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
     auto mv = *reinterpret_cast<const CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
+
+    if (sar_crosshair_mode.GetBool()) {
+        auto m_hActiveWeapon = *reinterpret_cast<CBaseHandle*>((uintptr_t)player + Offsets::m_hActiveWeapon);
+        server->portalGun = entityList->LookupEntity(m_hActiveWeapon);
+    }
 
     auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
     auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
@@ -431,6 +438,13 @@ bool Server::Init()
 
     if (sar.game->Is(SourceGame_Portal2Game)) {
         offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
+        offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);
+        offsetFinder->ServerSide("CProp_Portal", "m_bActivated", &Offsets::m_bActivated);
+        offsetFinder->ServerSide("CProp_Portal", "m_bIsPortal2", &Offsets::m_bIsPortal2);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal1", &Offsets::m_bCanFirePortal1);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal2", &Offsets::m_bCanFirePortal2);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_hPrimaryPortal", &Offsets::m_hPrimaryPortal);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
     }
 
     sv_cheats = Variable("sv_cheats");

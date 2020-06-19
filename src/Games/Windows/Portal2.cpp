@@ -185,6 +185,9 @@ void Portal2::LoadOffsets()
     m_iEFlags = 200; // CBaseEntity
     m_flGravity = 772; // CBaseEntity
     NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
+    ENT_ENTRY_MASK = 65535; //CBaseEntityList::CBaseEntityList
+    INVALID_EHANDLE_INDEX = 0xFFFFFFFF; //CBaseEntityList::CBaseEntityList
+    NUM_SERIAL_NUM_SHIFT_BITS = 16; //CBaseEntityList::CBaseEntityList
     GetIServerEntity = 1; // CServerTools
     m_EntPtrArray = 61; // CServerTools::GetIServerEntity
     SetKeyValueChar = 13; // CServerTools::SetKeyValue (const char *szValue)
@@ -209,6 +212,7 @@ void Portal2::LoadOffsets()
     g_pClientMode = 19; // GetClientMode
     CreateMove = 24; // ClientModeShared
     GetName = 10; // CHud
+    ShouldDraw = 11; // CHUDQuickInfo
     GetHud = 125; // cc_leaderboard_enable
     FindElement = 135; // cc_leaderboard_enable
     ChatPrintf = 22; // CBaseHudChat
@@ -229,6 +233,7 @@ void Portal2::LoadOffsets()
     DrawSetColor = 14; // CMatSystemSurface
     DrawFilledRect = 15; // CMatSystemSurface
     DrawLine = 18; // CMatSystemSurface
+    DrawColoredCircle = 159; // CMatSystemSurface
     DrawSetTextFont = 22; // CMatSystemSurface
     DrawSetTextColor = 23; // CMatSystemSurface
     GetFontTall = 72; // CMatSystemSurface
@@ -237,6 +242,14 @@ void Portal2::LoadOffsets()
     FinishDrawing = 603; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 160; // CMatSystemSurface
     DrawTextLen = 163; // CMatSystemSurface
+
+    DrawSetTextureFile = 35; // CMatSystemSurface
+    DrawSetTextureRGBA = 36; // CMatSystemSurface
+    DrawSetTexture = 37; // CMatSystemSurface
+    DrawGetTextureSize = 38; // CMatSystemSurface
+    DrawTexturedRect = 39; // CMatSystemSurface
+    IsTextureIDValid = 40; // CMatSystemSurface
+    CreateNewTextureID = 41; // CMatSystemSurface
 }
 const char* Portal2::Version()
 {
