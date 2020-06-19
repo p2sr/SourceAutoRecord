@@ -2,6 +2,7 @@
 #include "Feature.hpp"
 
 #include "Utils/SDK.hpp"
+#include <string>
 
 class Session : public Feature {
 public:
@@ -12,6 +13,7 @@ public:
     unsigned currentFrame;
     unsigned lastFrame;
     int prevState;
+    std::string previousMap;
 
 public:
     Session();

@@ -19,6 +19,8 @@ void VectorScale(Vector const& src, float b, Vector& dst);
 void VectorCopy(const Vector& src, Vector& dst);
 float RandomNumber(const float& min, const float& max);
 int RandomNumber(const int& min, const int& max);
+float Distance(const Vector& a, const Vector& b);
+float Distance(const QAngle& a, const QAngle& b);
 }
 
 inline void Math::SinCos(float radians, float* sine, float* cosine)
@@ -61,4 +63,12 @@ inline void Math::VectorCopy(const Vector& src, Vector& dst)
     dst.x = src.x;
     dst.y = src.y;
     dst.z = src.z;
+}
+inline float Math::Distance(const Vector& a, const Vector& b)
+{
+    return std::sqrtf(std::powf(b.x - a.x, 2) + std::powf(b.y - a.y, 2) + std::powf(b.z - a.z, 2));
+}
+inline float Math::Distance(const QAngle& a, const QAngle& b)
+{
+    return std::sqrtf(std::powf(b.x - a.x, 2) + std::powf(b.y - a.y, 2) + std::powf(b.z - a.z, 2));
 }

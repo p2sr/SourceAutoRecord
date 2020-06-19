@@ -2,6 +2,7 @@
 #include <string>
 
 #include "Variable.hpp"
+#include "DemoGhostPlayer.hpp"
 
 class Demo;
 
@@ -16,7 +17,7 @@ public:
 public:
     DemoParser();
     void Adjust(Demo* demo);
-    bool Parse(std::string filePath, Demo* demo);
+    bool Parse(std::string filePath, Demo* demo, bool ghostRequest = false, std::vector<DataGhost>* datas = nullptr);
 };
 
 extern Variable sar_time_demo_dev;

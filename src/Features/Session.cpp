@@ -1,5 +1,7 @@
 #include "Session.hpp"
 
+#include "Features/Demo/NetworkGhostPlayer.hpp"
+#include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Features/Listener.hpp"
 #include "Features/Rebinder.hpp"
@@ -122,6 +124,34 @@ void Session::Start()
         speedrun->Start(engine->GetTick());
     }
 
+
+	//Network Ghosts
+    if (networkManager.isConnected) {
+        networkManager.NotifyMapChange();
+        networkManager.UpdateGhostsSameMap();
+        networkManager.SpawnAllGhosts();
+        if (ghost_sync.GetBool()) {
+            if (!networkManager.AreAllGhostsOnSameMap() && this->previousMap != engine->m_szLevelName) { //Don't pause if just reloading save
+                engine->SendToCommandBuffer("pause", 20);
+            }
+        }
+    }
+
+    //Demo ghosts
+    if (demoGhostPlayer.IsPlaying()) {
+        demoGhostPlayer.UpdateGhostsSameMap();
+        if (demoGhostPlayer.IsFullGame()) {
+            if (ghost_sync.GetBool()) {
+                demoGhostPlayer.Sync();
+            }
+        } else {
+            demoGhostPlayer.ResetAllGhosts();
+            demoGhostPlayer.ResumeAllGhosts();
+        }
+        demoGhostPlayer.SpawnAllGhosts();
+    }
+
+
     stepCounter->ResetTimer();
 
     speedrun->ReloadRules();
@@ -133,6 +163,8 @@ void Session::Ended()
     if (!this->isRunning) {
         return;
     }
+
+	this->previousMap = engine->m_szLevelName;
 
     auto tick = this->GetTick();
 
@@ -179,6 +211,8 @@ void Session::Ended()
 
     auto nSlot = GET_SLOT();
     stats->Get(nSlot)->statsCounter->RecordDatas(tick);
+
+    networkManager.DeleteAllGhosts();
 
     this->isRunning = false;
 }

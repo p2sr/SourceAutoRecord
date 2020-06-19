@@ -84,6 +84,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                     this->features->AddFeature<Listener>(&listener);
                     this->features->AddFeature<WorkshopList>(&workshop);
                     this->features->AddFeature<Imitator>(&imitator);
+                    //this->features->AddFeature<NetworkGhostPlayer>(&networkGhostPlayer);
                 }
 
                 if (listener) {
@@ -246,6 +247,8 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
     auto statCounter = stats->Get(GET_SLOT())->statsCounter;
     statCounter->RecordDatas(session->GetTick());
     statCounter->ExportToFile(sar_statcounter_filePath.GetString());
+  
+    networkManager.Disconnect();
 
     if (sar.cheats) {
         sar.cheats->Shutdown();

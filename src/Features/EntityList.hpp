@@ -10,6 +10,7 @@ public:
     CEntInfo* GetEntityInfoByIndex(int index);
     CEntInfo* GetEntityInfoByName(const char* name);
     CEntInfo* GetEntityInfoByClassName(const char* name);
+    IHandleEntity* LookupEntity(const CBaseHandle& handle);
 };
 
 extern EntityList* entityList;

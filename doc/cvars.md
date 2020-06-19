@@ -51,6 +51,24 @@
 |sar_find_ents|cmd|Finds entities in the entity list by class name.<br>Usage: sar_find_ents \<m_iClassName><br>|
 |sar_find_server_class|cmd|Finds specific server class tables and props with their offset.<br>Usage: sar_find_serverclass \<class_name><br>|
 |sar_find_server_offset|cmd|Finds prop offset in specified server class.<br>Usage: sar_find_server_offset \<class_name> \<prop_name><br>|
+|sar_ghost_connect_to_server|cmd|Connect to the server : <ip address> <port> :<br>ex: 'localhost 53000' - '127.0.0.1 53000' - 89.10.20.20 53000'.<br>|
+|sar_ghost_countdown|cmd|Start a countdown.<br>|
+|sar_ghost_disconnect|cmd|Disconnect the player from the server.<br>|
+|sar_ghost_height|16|Height of the ghost.<br>|
+|sar_ghost_message|cmd|Send a message to other players.<br>|
+|sar_ghost_name|cmd|Name that will be displayed.<br>|
+|sar_ghost_name_offset|20|Offset of the name over the ghost.<br>|
+|sar_ghost_ping|cmd|Send ping.<br>|
+|sar_ghost_set_demo|cmd|Set the demo in order to build the ghost.<br>|
+|sar_ghost_set_prop_model|cmd|Set the prop model. Example : models/props/metal_box.mdl<br>|
+|sar_ghost_show_progress|1|Shows the progression of the other players.<br>|
+|sar_ghost_sync_maps|0|If the player loads a map first, game will pause until other players reach that same map, keeping everyone synchronized.<br>|
+|sar_ghost_tickrate|cmd|Adjust the tickrate.<br>|
+|sar_ghost_time_offset|cmd|In seconds. Start the ghost with a delay. Can be negative or positive.<br>|
+|sar_ghost_transparency|255|Transparency of the ghost.<br>|
+|sar_ghost_type|cmd|Type of the ghost:<br> 1 = Ghost drawn manually. Aren't recorded in demos (but still can be drawn in them with SAR)<br>2 = Ghost using in-game model. WARNING : Those remain permanently in demos<br>|
+|sar_hud_ghost_show_distance|0|Display the distance from the ghost over it.<br>|
+|sar_hud_ghost_show_name|1|Display the name of the ghost over it.<br>|
 |sar_hud_acceleration|0|Draws instant acceleration.<br>|
 |sar_hud_angles|0|Draws absolute view angles of the client.<br>0 = Default,<br>1 = XY,<br>2 = XYZ.<br>|
 |sar_hud_avg|0|Draws calculated average of timer.<br>|

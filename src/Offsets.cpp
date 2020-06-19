@@ -24,6 +24,7 @@ int GetMaxClients;
 int ServerCmdKeyValues;
 int GetActiveSplitScreenPlayerSlot;
 int GetSteamAPIContext;
+int IsPaused;
 
 // CHLClient
 int GetAllClasses;
@@ -45,6 +46,7 @@ int Create;
 // CMatSystemSurface
 int DrawSetColor;
 int DrawFilledRect;
+int DrawColoredCircle;
 int DrawLine;
 int DrawSetTextFont;
 int DrawSetTextColor;
@@ -52,6 +54,14 @@ int GetFontTall;
 int PaintTraverseEx;
 int DrawColoredText;
 int DrawTextLen;
+
+int DrawSetTextureFile;
+int DrawSetTextureRGBA;
+int DrawSetTexture;
+int DrawGetTextureSize;
+int DrawTexturedRect;
+int IsTextureIDValid;
+int CreateNewTextureID;
 
 // CInputSystem
 int StringToButtonCode;
@@ -118,11 +128,23 @@ int m_pSurfaceData;
 // CPortal_Player
 int iNumPortalsPlaced;
 
+//CWeaponPortalgun
+int m_bCanFirePortal1;
+int m_bCanFirePortal2;
+int m_hPrimaryPortal;
+int m_hSecondaryPortal;
+
+// CProp_Portal
+int m_bActivated;
+int m_bIsPortal2;
+int m_hActiveWeapon;
+
 // IEngineVGuiInternal
 int Paint;
 
 // CEngineTool
 int GetCurrentMap;
+int PrecacheModel;
 
 // CSchemeManager
 int GetIScheme;
@@ -142,6 +164,9 @@ int IsRestoring;
 // CHud
 int GetName;
 
+//CHUDQuickInfo
+int ShouldDraw;
+
 // CGameEventManager
 int AddListener;
 int RemoveListener;
@@ -157,15 +182,29 @@ int IsRunningSimulation;
 
 // CIVDebugOverlay
 int ScreenPosition;
+int AddBoxOverlay;
+int AddSphereOverlay;
+int AddTriangleOverlay;
+int AddLineOverlay;
+int AddScreenTextOverlay;
+int ClearAllOverlays;
 
 // CCommandBuffer
 int m_bWaitEnabled;
 
 // CServerTools
 int GetIServerEntity;
+int CreateEntityByName;
+int DispatchSpawn;
+int SetKeyValueChar;
+int SetKeyValueFloat;
+int SetKeyValueVector;
 
 // CVEngineServer
 int ClientCommand;
+
+// CBaseHudChat
+int ChatPrintf;
 
 // CSteam3Client
 int OnGameOverlayActivated;
@@ -206,6 +245,9 @@ int HostState_OnClientConnected;
 int hoststate;
 int m_bLoadGame;
 int NUM_ENT_ENTRIES;
+int ENT_ENTRY_MASK;
+int INVALID_EHANDLE_INDEX;
+int NUM_SERIAL_NUM_SHIFT_BITS;
 int m_iClassName;
 int m_iName;
 int m_EntPtrArray;

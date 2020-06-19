@@ -2,6 +2,7 @@
 #pragma warning(suppress : 26495)
 #include <cmath>
 #include <cstdint>
+#include "Offsets.hpp"
 
 #ifdef _WIN32
 #define __rescalll __thiscall
@@ -57,6 +58,16 @@ struct QAngle {
     float x, y, z;
 };
 
+inline QAngle VectorToQAngle(const Vector& v)
+{
+    return { v.x, v.y, v.z };
+}
+
+inline Vector QAngleToVector(const QAngle& a)
+{
+    return { a.x, a.y, a.z };
+}
+
 struct Color {
     Color()
     {
@@ -82,6 +93,12 @@ struct Color {
     inline int b() const { return _color[2]; }
     inline int a() const { return _color[3]; }
     unsigned char _color[4] = { 0, 0, 0, 0 };
+};
+
+enum class TextColor {
+    GREEN = 4,
+    LIGHT_GREEN,
+    ORANGE
 };
 
 #define FCVAR_DEVELOPMENTONLY (1 << 1)
@@ -917,4 +934,24 @@ struct GameOverlayActivated_t {
 enum PaintMode_t {
     PAINT_UIPANELS = (1 << 0),
     PAINT_INGAMEPANELS = (1 << 1),
+};
+
+class IHandleEntity;
+
+class CBaseHandle {
+    friend class EntityList;
+
+public:
+    inline int GetEntryIndex() const
+    {
+        return m_Index & Offsets::ENT_ENTRY_MASK;
+    }
+
+    inline int GetSerialNumber() const
+    {
+        return m_Index >> Offsets::NUM_SERIAL_NUM_SHIFT_BITS;
+    }
+
+protected:
+    unsigned long m_Index;
 };
