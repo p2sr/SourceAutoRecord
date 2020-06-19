@@ -6,7 +6,7 @@
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Demo/GhostEntity.hpp"
-#include "Features/Demo/GhostPlayer.hpp"
+#include "Modules/EngineDemoPlayer.hpp"
 
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
@@ -30,6 +30,10 @@ BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
 }
 bool BaseHud::ShouldDraw()
 {
+    if (engine->demoplayer->IsPlaying()) {
+        return this->type & HudType_InGame;
+    }
+
     if (engine->m_szLevelName[0] == '\0') {
         return this->type & HudType_Menu;
     }
@@ -87,22 +91,11 @@ void HudContext::DrawElementOnScreen(const int groupID, const float xPos, const 
     vsnprintf(data, sizeof(data), fmt, argptr);
     va_end(argptr);
 
-    /*surface->DrawTxt(font,
-        xPos - sizeof(fmt) * fontSize,
-        yPos - sar_ghost_height.GetInt() - sar_ghost_name_offset.GetInt() + this->group[groupID] * (fontSize + spacing),
-        this->textColor,
-        data);*/
-
     surface->DrawTxt(font,
         xPos - sizeof(fmt) / 2 * this->fontSize,
         yPos + this->group[groupID] * (this->fontSize + this->spacing),
         this->textColor,
         data);
-
-
-	/*console->Print("x : %d\n", xPos - sizeof(fmt) * fontSize);
-    console->Print("y : %d\n", yPos - sar_ghost_height.GetInt() - sar_ghost_name_offset.GetInt() + this->group[groupID] * (fontSize + spacing));
-    console->Print("group: %d\n", this->group[groupID]);*/
 
 
     ++this->group[groupID];

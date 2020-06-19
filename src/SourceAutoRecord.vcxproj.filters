@@ -331,6 +331,9 @@
     <ClCompile Include="Features\Demo\DemoGhostPlayer.cpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Demo\DemoGhostEntity.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -796,6 +799,9 @@
       <Filter>lib\SFML</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\DemoGhostPlayer.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\DemoGhostEntity.hpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClInclude>
   </ItemGroup>

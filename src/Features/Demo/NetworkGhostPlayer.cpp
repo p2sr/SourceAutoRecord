@@ -53,13 +53,10 @@ sf::Packet& operator<<(sf::Packet& packet, const HEADER& header)
     return packet << static_cast<sf::Uint8>(header);
 }
 
-
 Variable ghost_sync("ghost_sync", "0", "When loading a new level, pauses the game until other players load it.\n");
 Variable ghost_TCP_only("ghost_TCP_only", "0", "Lathil's special command :).\n");
 Variable ghost_update_rate("ghost_update_rate", "50", 1, "Adjust the update rate. For people with lathil's internet.\n");
 Variable ghost_show_difference("ghost_show_difference", "0", "Display time difference between players after they load a map.\n");
-
-
 
 std::mutex mutex;
 
@@ -70,6 +67,7 @@ NetworkManager::NetworkManager()
     , serverPort(53000)
     , name("")
     , isCountdownReady(false)
+    , modelName("models/props/food_can/food_can_open.mdl")
 {
 }
 
@@ -92,7 +90,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
     this->serverPort = port;
 
     sf::Packet connection_packet;
-    connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } } << engine->m_szLevelName << ghost_TCP_only.GetBool();
+    connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } } << this->modelName.c_str() << engine->m_szLevelName << ghost_TCP_only.GetBool();
     this->tcpSocket.send(connection_packet);
 
     {
@@ -119,10 +117,12 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
             sf::Uint32 ID;
             std::string name;
             DataGhost data;
+            std::string model_name;
             std::string current_map;
-            confirm_connection >> ID >> name >> data >> current_map;
+            confirm_connection >> ID >> name >> data >> model_name >> current_map;
 
             GhostEntity ghost(ID, name, data, current_map);
+            ghost.modelName = model_name;
             this->ghostPool.push_back(ghost);
         }
         this->UpdateGhostsSameMap();
@@ -312,9 +312,11 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
     case HEADER::CONNECT: {
         std::string name;
         DataGhost data;
+        std::string model_name;
         std::string current_map;
-        packet >> name >> data >> current_map;
+        packet >> name >> data >> model_name >> current_map;
         GhostEntity ghost(ID, name, data, current_map);
+        ghost.modelName = model_name;
         this->ghostPool.push_back(ghost);
 
         client->Chat(TextColor::GREEN, "%s has just connected in %s !", name.c_str(), current_map.c_str());
@@ -346,12 +348,14 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             packet >> map;
             ghost->currentMap = map;
             this->UpdateGhostsSameMap();
-            client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
-                if (ghost->sameMap) {
-                    ghost->Spawn();
-                } else {
-                    ghost->DeleteGhost();
-                }
+            if (ghost_show_advancement.GetBool()) {
+                client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+            }
+            if (ghost->sameMap) {
+                ghost->Spawn();
+            } else {
+                ghost->DeleteGhost();
+            }
 
             if (ghost_sync.GetBool()) {
                 if (this->AreAllGhostsOnSameMap()) {
@@ -382,7 +386,7 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             packet >> duration >> preCommands >> postCommands;
 
             this->SetupCountdown(preCommands, postCommands, duration);
-            
+
             sf::Packet confirm_packet;
             confirm_packet << HEADER::COUNTDOWN << this->ID << sf::Uint8(1);
             this->tcpSocket.send(confirm_packet);
@@ -396,8 +400,18 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         packet >> timer;
         auto ghost = this->GetGhostByID(ID);
         if (ghost) {
-            client->Chat(TextColor::GREEN, "%s has finished in %s", ghost->name.c_str(), timer.c_str());
+            if (ghost_show_advancement.GetBool()) {
+                client->Chat(TextColor::GREEN, "%s has finished in %s", ghost->name.c_str(), timer.c_str());
+            }
         }
+        break;
+    }
+    case HEADER::MODEL_CHANGE: {
+        sf::Uint32 ID;
+        std::string modelName;
+        packet >> ID >> modelName;
+        auto ghost = this->GetGhostByID(ID);
+        ghost->modelName = modelName;
         break;
     }
     case HEADER::UPDATE: {
@@ -440,6 +454,14 @@ void NetworkManager::UpdateGhostsSameMap()
     for (auto& ghost : this->ghostPool) {
         ghost.sameMap = ghost.currentMap == engine->m_szLevelName;
     }
+}
+
+void NetworkManager::UpdateModel(const std::string modelName)
+{
+    this->modelName = modelName;
+    sf::Packet packet;
+    packet << HEADER::MODEL_CHANGE << this->ID << this->modelName.c_str();
+    this->tcpSocket.send(packet);
 }
 
 bool NetworkManager::AreAllGhostsOnSameMap()
@@ -519,7 +541,6 @@ void NetworkManager::DrawNames(HudContext* ctx)
     }
 }
 
-
 // Commands
 
 CON_COMMAND(ghost_connect, "Connect to server.\n")
@@ -533,7 +554,6 @@ CON_COMMAND(ghost_connect, "Connect to server.\n")
     }
 
     networkManager.Connect(args[1], std::atoi(args[2]));
-    //networkManager.Connect("192.168.1.64", 53000);
 }
 
 CON_COMMAND(ghost_disconnect, "Disconnect.\n")
@@ -555,7 +575,7 @@ CON_COMMAND(ghost_message, "Send message")
     if (args.ArgC() < 2) {
         return console->Print(ghost_message.ThisPtr()->m_pszHelpString);
     }
-    
+
     std::string msg = args[1];
     for (int i = 2; i < args.ArgC(); ++i) {
         msg += " " + std::string(args[i]);

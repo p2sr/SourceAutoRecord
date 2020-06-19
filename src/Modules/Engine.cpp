@@ -137,6 +137,16 @@ bool Engine::IsGamePaused()
     return this->IsPaused(this->engineClient->ThisPtr());
 }
 
+int Engine::GetMapIndex(const std::string map)
+{
+    auto it = std::find(Game::mapNames.begin(), Game::mapNames.end(), map);
+    if (it != Game::mapNames.end()) {
+        return std::distance(Game::mapNames.begin(), it);
+    } else {
+        return 0;
+    }
+}
+
 // CClientState::Disconnect
 DETOUR(Engine::Disconnect, bool bShowMainMenu)
 {

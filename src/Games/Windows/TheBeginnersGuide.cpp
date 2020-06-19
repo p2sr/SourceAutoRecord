@@ -6,6 +6,26 @@
 TheBeginnersGuide::TheBeginnersGuide()
 {
     this->version = SourceGame_TheBeginnersGuide;
+    Game::mapNames = {
+        "Intro"
+        "Whisper",
+        "Backwards",
+        "Entering",
+        "Stairs",
+        "Puzzle",
+        "Exiting",
+        "Down",
+        "Notes",
+        "Escape",
+        "House",
+        "Lecture",
+        "Theater",
+        "Mobius",
+        "Island",
+        "Machine",
+        "Tower",
+        "Epilogue",
+    };
 }
 void TheBeginnersGuide::LoadOffsets()
 {

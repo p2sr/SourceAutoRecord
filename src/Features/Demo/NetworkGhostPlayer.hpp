@@ -24,7 +24,8 @@ enum class HEADER {
     MESSAGE,
     COUNTDOWN,
     UPDATE,
-    SPEEDRUN_FINISH
+    SPEEDRUN_FINISH,
+    MODEL_CHANGE
 };
 
 class NetworkManager {
@@ -54,6 +55,7 @@ public:
     std::atomic<bool> runThread;
     std::string name;
     bool isCountdownReady;
+    std::string modelName;
 
 public:
     NetworkManager();
@@ -77,6 +79,7 @@ public:
     void UpdateGhostsPosition();
     GhostEntity* GetGhostByID(sf::Uint32 ID);
     void UpdateGhostsSameMap();
+    void UpdateModel(const std::string modelName);
     bool AreAllGhostsOnSameMap();
     void SpawnAllGhosts();
     void DeleteAllGhosts();

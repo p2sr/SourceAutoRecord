@@ -107,6 +107,7 @@ public:
     void SafeUnload(const char* postCommand = nullptr);
     bool isRunning();
     bool IsGamePaused();
+    int GetMapIndex(const std::string map);
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);

@@ -1,34 +1,18 @@
 #pragma once
-#include "Command.hpp"
+#include "Demo.hpp"
+#include "DemoGhostEntity.hpp"
 #include "GhostEntity.hpp"
+
+#include "Command.hpp"
 #include "Variable.hpp"
 
+#include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+
+#include "Features/Hud/Hud.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 
-class DemoGhostEntity : public GhostEntity {
-    friend class DemoGhostPlayer;
-
-public:
-    DemoGhostEntity(sf::Uint32 ID, std::string name, DataGhost data, std::string currentMap, std::vector<DataGhost>& datas, size_t nbDemoTicks)
-        : GhostEntity(ID, name, DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } }, currentMap)
-        , datas(datas)
-        , tickCount(0)
-        , nbDemoTicks(nbDemoTicks)
-    {
-    }
-
-    void SetCoordList(std::vector<DataGhost>& datas)
-    {
-        this->datas = datas;
-        this->nbDemoTicks = datas.size();
-    }
-
-private:
-    int finalTime;
-    std::vector<DataGhost> datas;
-    int tickCount;
-    size_t nbDemoTicks;
-};
+#include <algorithm>
 
 class DemoGhostPlayer {
 private:
@@ -36,21 +20,43 @@ private:
     bool isPlaying;
 
 public:
+    bool isFullGame;
+    int nbDemos;
+
 public:
     DemoGhostPlayer();
 
     void SpawnAllGhosts();
+    void StartAllGhost();
+    void ResetAllGhosts();
     void PauseAllGhosts();
+    void ResumeAllGhosts();
     void DeleteAllGhosts();
+    void DeleteGhostsByID(const sf::Uint32 ID);
+    void KillAllGhosts(const bool newEntity);
     void UpdateGhostsPosition();
+    void UpdateGhostsSameMap();
+    void UpdateGhostsModel(const std::string model);
+    void Sync();
 
     DemoGhostEntity* GetGhostByID(int ID);
-    void SetDemoTime(float time);
+
+    bool SetupGhostFromDemo(const std::string& demo_path, const sf::Uint32 ghost_ID, bool fullGame);
     void AddGhost(DemoGhostEntity& ghost);
     bool IsPlaying();
+    bool IsFullGame();
+
+    void PrintRecap();
+    void DrawNames(HudContext* ctx);
 };
 
 extern DemoGhostPlayer demoGhostPlayer;
 
 extern Command ghost_set_demo;
+extern Command ghost_set_demos;
+extern Command ghost_delete_all;
+extern Command ghost_delete_by_ID;
+extern Command ghost_recap;
 extern Command ghost_start;
+extern Command ghost_stop;
+extern Command ghost_offset;
