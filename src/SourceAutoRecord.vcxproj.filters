@@ -698,7 +698,7 @@
     </ClInclude>
     <ClInclude Include="Utils\lodepng.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
-    </CInclude>
+    </ClInclude>
     <ClInclude Include="Features\Demo\GhostEntity.hpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClInclude>
