@@ -37,6 +37,7 @@ Game|Windows|Linux
 - [Mapping](doc/mapping.md)
 - [Maps](doc/maps.md)
 - [Console Commands & Variables](doc/cvars.md)
+- [Console Commands & Variables PRE-RELEASE ONLY](doc/cvars_prerelease.md)
 
 ## Inspired By
 
