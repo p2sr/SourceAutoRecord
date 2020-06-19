@@ -2,6 +2,7 @@
 #include "Utils/SDK.hpp"
 
 #include <vector>
+#include <array>
 
 #include "Game.hpp"
 #include "Variable.hpp"
@@ -47,12 +48,14 @@ private:
     int spacing = 0;
     Color textColor = Color(255, 255, 255);
     int elements = 0;
+    std::array<int, 256> group { 0 };
 
 public:
     int slot = 0;
 
 public:
     void DrawElement(const char* fmt, ...);
+    void DrawElementOnScreen(const int nbElement, const float xPos, const float yPos, const char* fmt, ...);
     void Reset(int slot);
 };
 

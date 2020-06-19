@@ -9,6 +9,7 @@
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
 #include "EngineDemoRecorder.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Server.hpp"
 
 #include "Game.hpp"
@@ -127,6 +128,24 @@ void Engine::SafeUnload(const char* postCommand)
         this->SendToCommandBuffer(postCommand, SAFE_UNLOAD_TICK_DELAY);
     }
 }
+bool Engine::isRunning()
+{
+    return engine->hoststate->m_activeGame && engine->hoststate->m_currentState == HOSTSTATES::HS_RUN;
+}
+bool Engine::IsGamePaused()
+{
+    return this->IsPaused(this->engineClient->ThisPtr());
+}
+
+int Engine::GetMapIndex(const std::string map)
+{
+    auto it = std::find(Game::mapNames.begin(), Game::mapNames.end(), map);
+    if (it != Game::mapNames.end()) {
+        return std::distance(Game::mapNames.begin(), it);
+    } else {
+        return 0;
+    }
+}
 
 // CClientState::Disconnect
 DETOUR(Engine::Disconnect, bool bShowMainMenu)
@@ -204,7 +223,7 @@ DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
 
         jmp Engine::ParseSmoothingInfo_Skip
 
-_orig:  // Original overwritten instructions
+_orig: // Original overwritten instructions
         add eax, -3
         cmp eax, 6
         ja _def
@@ -283,6 +302,7 @@ bool Engine::Init()
         this->SetViewAngles = this->engineClient->Original<_SetViewAngles>(Offsets::SetViewAngles);
         this->GetMaxClients = this->engineClient->Original<_GetMaxClients>(Offsets::GetMaxClients);
         this->GetGameDirectory = this->engineClient->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
+        this->IsPaused = this->engineClient->Original<_IsPaused>(Offsets::IsPaused);
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
@@ -367,6 +387,8 @@ bool Engine::Init()
 
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
         Interface::Delete(tool);
+
+        this->PrecacheModel = tool->Original<_PrecacheModel>(Offsets::PrecacheModel);
     }
 
     if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
@@ -402,21 +424,27 @@ bool Engine::Init()
         console->DevMsg("CDemoFile::ReadCustomData = %p\n", readCustomDataAddr);
 
         if (parseSmoothingInfoAddr && readCustomDataAddr) {
-            MH_HOOK_MID(Engine::ParseSmoothingInfo_Mid, parseSmoothingInfoAddr);            // Hook switch-case
-            Engine::ParseSmoothingInfo_Continue = parseSmoothingInfoAddr + 8;               // Back to original function
-            Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133;              // Default case
-            Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29;                  // Continue loop
+            MH_HOOK_MID(Engine::ParseSmoothingInfo_Mid, parseSmoothingInfoAddr); // Hook switch-case
+            Engine::ParseSmoothingInfo_Continue = parseSmoothingInfoAddr + 8; // Back to original function
+            Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133; // Default case
+            Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29; // Continue loop
             Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(readCustomDataAddr); // Function that handles dem_customdata
 
             this->demoSmootherPatch = new Memory::Patch();
             unsigned char nop3[] = { 0x90, 0x90, 0x90 };
-            this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3);             // Nop rest
+            this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3); // Nop rest
         }
     }
 #endif
 
     if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
         ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
+        AddBoxOverlay = debugoverlay->Original<_AddBoxOverlay>(Offsets::AddBoxOverlay);
+        AddSphereOverlay = debugoverlay->Original<_AddSphereOverlay>(Offsets::AddSphereOverlay);
+        AddTriangleOverlay = debugoverlay->Original<_AddTriangleOverlay>(Offsets::AddTriangleOverlay);
+        AddLineOverlay = debugoverlay->Original<_AddLineOverlay>(Offsets::AddLineOverlay);
+        AddScreenTextOverlay = debugoverlay->Original<_AddScreenTextOverlay>(Offsets::AddScreenTextOverlay);
+        ClearAllOverlays = debugoverlay->Original<_ClearAllOverlays>(Offsets::ClearAllOverlays);
         Interface::Delete(debugoverlay);
     }
 

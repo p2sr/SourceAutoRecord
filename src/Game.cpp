@@ -36,6 +36,8 @@
 #define TARGET_MOD  MODULE("server")
 #define TARGET_MOD2 MODULE("engine")
 
+std::vector<const char*> Game::mapNames;
+
 const char* Game::Version()
 {
     return "Unknown";
