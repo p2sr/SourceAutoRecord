@@ -169,7 +169,7 @@ bool DemoGhostPlayer::SetupGhostFromDemo(const std::string& demo_path, const sf:
             if (fullGame) {
                 ghost->AddLevelDatas(demoDatas);
                 ghost->lastLevel = demo.mapName;
-                ghost->totalTicks += demo.playbackTime;
+                ghost->totalTicks += demo.playbackTicks;
             } else {
                 ghost->name = demo.clientName;
                 ghost->currentMap = demo.mapName;

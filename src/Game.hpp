@@ -41,5 +41,5 @@ public:
     static Game* CreateNew();
 
     static std::string VersionToString(int version);
-    static std::vector<const char*> mapNames;
+    static std::vector<std::string> mapNames;
 };

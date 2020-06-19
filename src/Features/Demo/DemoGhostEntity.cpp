@@ -110,5 +110,5 @@ void DemoGhostEntity::Reset()
 
 int DemoGhostEntity::GetTotalTime()
 {
-    return this->totalTicks * speedrun->GetIntervalPerTick() + this->offset;
+    return (this->totalTicks + this->offset) * speedrun->GetIntervalPerTick();
 }

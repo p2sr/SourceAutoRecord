@@ -268,6 +268,7 @@ bool Client::Init()
 
                 if (this->g_HUDQuickInfo = Interface::Create(CHUDQuickInfo)) {
                     this->ShouldDraw = this->g_HUDQuickInfo->Original<_ShouldDraw>(Offsets::ShouldDraw, readJmp);
+                }
                   
                 auto CHudChat = FindElement(GetHud(-1), "CHudChat");
                 if (this->g_HudChat = Interface::Create(CHudChat, false)) {
