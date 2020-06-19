@@ -6,6 +6,45 @@
 |<i title="Portal 2 Engine">-autostrafe</i>|cmd|Auto-strafe button.<br>|
 |<i title="The Stanley Parable">+bhop</i>|cmd|Client sends a key-down event for the in_jump state.<br>|
 |<i title="The Stanley Parable">-bhop</i>|cmd|Client sends a key-up event for the in_jump state.<br>|
+|cl_crosshair_t|0|Removes the top line from the crosshair :0 : normal crosshair,1 : crosshair without top.<br>|
+|cl_crosshairalpha|255|Change the amount of transparency.<br>|
+|cl_crosshaircolor_b|0|Changes the color of the crosshair.<br>|
+|cl_crosshaircolor_g|255|Changes the color of the crosshair.<br>|
+|cl_crosshaircolor_r|0|Changes the color of the crosshair.<br>|
+|cl_crosshairdot|1|Decides if there is a dot in the middle of the crosshair<br>|
+|cl_crosshairgap|5|Changes the distance of the crosshair lines from the center of screen.<br>|
+|cl_crosshairsize|5|Changes the size of the crosshair.<br>|
+|cl_crosshairthickness|0|Changes the thinkness of the crosshair lines.<br>|
+|cl_quickhud_alpha|255|Change the amount of transparency.<br>|
+|cl_quickhudleftcolor_b|86|Changes the color of the left quickhud.<br>|
+|cl_quickhudleftcolor_g|184|Changes the color of the left quickhud.<br>|
+|cl_quickhudleftcolor_r|255|Changes the color of the left quickhud.<br>|
+|cl_quickhudrightcolor_b|255|Changes the color of the right quickhud.<br>|
+|cl_quickhudrightcolor_g|184|Changes the color of the right quickhud.<br>|
+|cl_quickhudrightcolor_r|111|Changes the color of the right quickhud.<br>|
+|ghost_connect|cmd|Connect to server.<br>|
+|ghost_delete_all|cmd|Delete all ghosts.<br>|
+|ghost_delete_by_ID|cmd|ghost_delete_by_ID \<ID>. Delete the ghost selected.<br>|
+|ghost_disconnect|cmd|Disconnect.<br>|
+|ghost_height|16|Height of the ghosts.<br>|
+|ghost_message|cmd|Send message|
+|ghost_name|cmd|Change your name.<br>|
+|ghost_offset|cmd|ghost_offset \<offset> \<ID>. Delay the ghost start by \<offset> frames.<br>|
+|ghost_ping|cmd|Pong !|
+|ghost_prop_model|cmd|Set the prop model. Example : models/props/metal_box.mdl<br>|
+|ghost_recap|cmd|Recap all ghosts setup.<br>|
+|ghost_set_demo|cmd|ghost_set_demo \<demo> [ID]. Ghost will use this demo. If ID is specified, will create or modify the ID-�me ghost.<br>|
+|ghost_set_demos|cmd|ghost_set_demos \<first_demo> [ID]. Ghost will setup a speedrun with first_demo, first_demo_2, etc.<br>If ID is specified, will create or modify the ID-th ghost.<br>|
+|ghost_show_advancement|1|Show the advancement of the ghosts.<br>|
+|ghost_show_difference|0|Display time difference between players after they load a map.<br>|
+|ghost_start|cmd|Start ghosts|
+|ghost_stop|cmd|Reset ghosts.<br>|
+|ghost_sync|0|When loading a new level, pauses the game until other players load it.<br>|
+|ghost_TCP_only|0|Lathil's special command :).<br>|
+|ghost_text_offset|20|Offset of the name over the ghosts.<br>|
+|ghost_transparency|255|Transparency of the ghosts.<br>|
+|ghost_type|cmd|ghost_type \<0/1>:<br>0: Ghost not recorded in demos.<br>1: Ghost using props model but recorded in demos (NOT RECOMMANDED !).<br>|
+|ghost_update_rate|50|Adjust the update rate. For people with lathil's internet.<br>|
 |sar_about|cmd|Prints info about SAR plugin.<br>|
 |<i title="Portal 2 Engine">sar_aircontrol</i>|0|Enables more air-control on the server.<br>|
 |<i title="The Stanley Parable">sar_anti_anti_cheat</i>|cmd|Sets sv_cheats to 1.<br>|
@@ -19,6 +58,8 @@
 |sar_cps_add|cmd|Saves current time of timer.<br>|
 |sar_cps_clear|cmd|Resets saved times of timer.<br>|
 |sar_cps_result|cmd|Prints result of timer checkpoints.<br>|
+|sar_crosshair_mode|0|Set the crosshair mode :<br>0 : Default crosshair<br>1 : Customizable crosshair<br>2 : Crosshair from .png<br>|
+|sar_crosshair_set_texture|cmd|sar_crosshair_set_texture \<filepath><br>|
 |sar_cvarlist|cmd|Lists all SAR cvars and unlocked engine cvars.<br>|
 |sar_cvars_dump|cmd|Dumps all cvars to a file.<br>|
 |sar_cvars_dump_doc|cmd|Dumps all SAR cvars to a file.<br>|
@@ -27,7 +68,7 @@
 |sar_cvars_save|cmd|Saves important SAR cvars.<br>|
 |sar_cvars_unlock|cmd|Unlocks all special cvars.<br>|
 |<i title="Portal 2&#10;Aperture Tag">sar_debug_listener</i>|0|Prints event data of registered listener.<br>|
-|<i title="Portal 2&#10;Portal&#10;Half-Life 2&#10;Aperture Tag&#10;Portal Stories: Mel">sar_delete_alias_cmds</i>|cmd|Deletes all alias commands.<br>|
+|<i title="Portal 2&#10;Portal&#10;Half-Life 2&#10;Aperture Tag&#10;Portal Stories: Mel&#10;Thinking with Time Machine&#10;Half-Life 2: Episode One/Two&#10;Half-Life: Source">sar_delete_alias_cmds</i>|cmd|Deletes all alias commands.<br>|
 |<i title="Portal 2">sar_disable_challenge_stats_hud</i>|0|Disables opening the challenge mode stats HUD.<br>|
 |<i title="Portal 2 Engine">sar_disable_no_focus_sleep</i>|0|Does not yield the CPU when game is not focused.<br>|
 |<i title="Portal 2 Game">sar_disable_steam_pause</i>|0|Prevents pauses from steam overlay.<br>|
@@ -45,53 +86,46 @@
 |sar_ei_hud_y|0|Y offset of entity inspection HUD.<br>|
 |sar_ei_hud_z|0|Z offset of entity inspection HUD.<br>|
 |sar_exit|cmd|Removes all function hooks, registered commands and unloads the module.<br>|
+|sar_export_stats|cmd|sar_export_stats [filePath]. Export the stats to the specifed path in a .csv file.<br>|
 |sar_find_client_class|cmd|Finds specific client class tables and props with their offset.<br>Usage: sar_find_clientclass \<class_name><br>|
 |sar_find_client_offset|cmd|Finds prop offset in specified client class.<br>Usage: sar_find_client_offset \<class_name> \<prop_name><br>|
 |sar_find_ent|cmd|Finds entity in the entity list by name.<br>Usage: sar_find_ent \<m_iName><br>|
 |sar_find_ents|cmd|Finds entities in the entity list by class name.<br>Usage: sar_find_ents \<m_iClassName><br>|
 |sar_find_server_class|cmd|Finds specific server class tables and props with their offset.<br>Usage: sar_find_serverclass \<class_name><br>|
 |sar_find_server_offset|cmd|Finds prop offset in specified server class.<br>Usage: sar_find_server_offset \<class_name> \<prop_name><br>|
-|sar_ghost_connect_to_server|cmd|Connect to the server : <ip address> <port> :<br>ex: 'localhost 53000' - '127.0.0.1 53000' - 89.10.20.20 53000'.<br>|
-|sar_ghost_countdown|cmd|Start a countdown.<br>|
-|sar_ghost_disconnect|cmd|Disconnect the player from the server.<br>|
-|sar_ghost_height|16|Height of the ghost.<br>|
-|sar_ghost_message|cmd|Send a message to other players.<br>|
-|sar_ghost_name|cmd|Name that will be displayed.<br>|
-|sar_ghost_name_offset|20|Offset of the name over the ghost.<br>|
-|sar_ghost_ping|cmd|Send ping.<br>|
-|sar_ghost_set_demo|cmd|Set the demo in order to build the ghost.<br>|
-|sar_ghost_set_prop_model|cmd|Set the prop model. Example : models/props/metal_box.mdl<br>|
-|sar_ghost_show_progress|1|Shows the progression of the other players.<br>|
-|sar_ghost_sync_maps|0|If the player loads a map first, game will pause until other players reach that same map, keeping everyone synchronized.<br>|
-|sar_ghost_tickrate|cmd|Adjust the tickrate.<br>|
-|sar_ghost_time_offset|cmd|In seconds. Start the ghost with a delay. Can be negative or positive.<br>|
-|sar_ghost_transparency|255|Transparency of the ghost.<br>|
-|sar_ghost_type|cmd|Type of the ghost:<br> 1 = Ghost drawn manually. Aren't recorded in demos (but still can be drawn in them with SAR)<br>2 = Ghost using in-game model. WARNING : Those remain permanently in demos<br>|
-|sar_hud_ghost_show_distance|0|Display the distance from the ghost over it.<br>|
-|sar_hud_ghost_show_name|1|Display the name of the ghost over it.<br>|
+|sar_force_fov|cmd|Forces player FOV. Usage: sar_force_fov \<fov><br>|
 |sar_hud_acceleration|0|Draws instant acceleration.<br>|
 |sar_hud_angles|0|Draws absolute view angles of the client.<br>0 = Default,<br>1 = XY,<br>2 = XYZ.<br>|
 |sar_hud_avg|0|Draws calculated average of timer.<br>|
 |sar_hud_cps|0|Draws latest checkpoint of timer.<br>|
 |sar_hud_default_font_color|255 255 255 255|RGBA font color of HUD.<br>|
 |sar_hud_default_font_index|0|Font index of HUD.<br>|
+|sar_hud_default_order_bottom|cmd|Orders hud element to bottom : sar_hud_default_order_bottom \<name><br>|
+|sar_hud_default_order_reset|cmd|Resets order of hud element.<br>|
+|sar_hud_default_order_top|cmd|Orders hud element to top. Usage: sar_hud_default_order_top \<name><br>|
 |sar_hud_default_padding_x|2|X padding of HUD.<br>|
 |sar_hud_default_padding_y|2|Y padding of HUD.<br>|
 |sar_hud_default_spacing|1|Spacing between elements of HUD.<br>|
 |sar_hud_demo|0|Draws name, tick and time of current demo.<br>|
 |sar_hud_frame|0|Draws current frame count.<br>|
+|sar_hud_ghost_show_name|1|Display the name of the ghost over it.<br>|
 |sar_hud_inspection|0|Draws entity inspection data.<br>|
 |sar_hud_jump|0|Draws current jump distance.<br>|
 |sar_hud_jump_peak|0|Draws longest jump distance.<br>|
 |sar_hud_jumps|0|Draws total jump count.<br>|
 |sar_hud_last_frame|0|Draws last saved frame value.<br>|
 |sar_hud_last_session|0|Draws value of latest completed session.<br>|
-|<i title="Portal Game">sar_hud_pause_timer</i>|0|Draws current value of pause timer.<br>|
+|sar_hud_pause_timer|0|Draws current value of pause timer.<br>|
 |sar_hud_player_info|0|Draws player state defined with sar_tas_set_prop.<br>|
-|<i title="Portal Game">sar_hud_portals</i>|0|Draws total portal count.<br>|
+|sar_hud_portals|0|Draws total portal count.<br>|
 |sar_hud_position|0|Draws absolute position of the client.<br>0 = Default,<br>1 = Player position,<br>2 = Camera position.<br>|
 |sar_hud_session|0|Draws current session tick.<br>|
 |sar_hud_steps|0|Draws total step count.<br>|
+|sar_hud_strafesync_color|0 150 250 255|RGBA font color of strafesync HUD.<br>|
+|sar_hud_strafesync_font_index|1|Font index of strafesync HUD.<br>|
+|sar_hud_strafesync_offset_x|0|X offset of strafesync HUD.<br>|
+|sar_hud_strafesync_offset_y|1000|Y offset of strafesync HUD.<br>|
+|sar_hud_strafesync_split_offset_y|1050|Y offset of strafesync HUD.<br>|
 |sar_hud_sum|0|Draws summary value of sessions.<br>|
 |sar_hud_text||Draws specified text when not empty.<br>|
 |sar_hud_timer|0|Draws current value of timer.<br>|
@@ -100,7 +134,7 @@
 |sar_hud_velocity_angle|0|Draws velocity angles.<br>|
 |sar_hud_velocity_peak|0|Draws last saved velocity peak.<br>|
 |sar_ihud|0|Draws movement inputs of client.<br>0 = Default,<br>1 = forward;back;moveleft;moveright,<br>2 = 1 + duck;jump;use,<br>3 = 2 + attack;attack2,<br>4 = 3 + speed;reload.<br>|
-|sar_ihud_button_color|0 0 0 233|RGBA button color of input HUD.<br>|
+|sar_ihud_button_color|0 0 0 255|RGBA button color of input HUD.<br>|
 |sar_ihud_button_padding|2|Padding between buttons of input HUD.<br>|
 |sar_ihud_button_size|60|Button size of input HUD.<br>|
 |sar_ihud_font_color|255 255 255 255|RGBA font color of input HUD.<br>|
@@ -109,10 +143,11 @@
 |sar_ihud_setlayout|cmd|Suggests keyboard layouts for sar_ihud_layout.<br>|
 |sar_ihud_setpos|cmd|Sets automatically the position of input HUD.<br>Usage: sar_ihud_setpos \<top, center or bottom> \<left, center or right><br>|
 |sar_ihud_shadow|1|Draws button shadows of input HUD.<br>|
-|sar_ihud_shadow_color|0 0 0 32|RGBA button shadow color of input HUD.<br>|
-|sar_ihud_shadow_font_color|255 255 255 32|RGBA button shadow font color of input HUD.<br>|
+|sar_ihud_shadow_color|0 0 0 64|RGBA button shadow color of input HUD.<br>|
+|sar_ihud_shadow_font_color|255 255 255 64|RGBA button shadow font color of input HUD.<br>|
 |sar_ihud_x|0|X offset of input HUD.<br>|
 |sar_ihud_y|0|Y offset of input HUD.<br>|
+|sar_import_stats|cmd|sar_import_stats [filePath]. Import the stats from the specified .csv file.<br>|
 |sar_inspection_export|cmd|Saves recorded entity data to a csv file.<br>Usage: sar_inspection_export \<file_name><br>|
 |sar_inspection_index|cmd|Sets entity index for inspection.<br>|
 |sar_inspection_print|cmd|Prints recorded entity data.<br>|
@@ -124,6 +159,18 @@
 |sar_list_ents|cmd|Lists entities.<br>|
 |sar_list_server_classes|cmd|Lists all server classes.<br>|
 |<i title="Portal 2&#10;Aperture Tag">sar_mimic</i>|0|Copies inputs to secondary split screen. Similar to ss_mimic.<br>|
+|sar_pause|0|Enable pause after a load.<br>|
+|sar_pause_at|0|Pause at the specified tick.<br>|
+|sar_pause_for|0|Pause for this amount of ticks.<br>|
+|sar_print_stats|cmd|sar_print_stats. Prints your statistics if those are loaded.<br>|
+|sar_quickhud_mode|0|Set the quickhud mode :<br>0 : Default quickhud<br>1 : Customizable quickhud<br>2 : quickhud from .png<br>|
+|sar_quickhud_set_texture|cmd|sar_quickhud_set_texture \<filepath>. Enter the base name, it will search for \<filepath>1.png, \<filepath>2.png, \<filepath>3.png and \<filepath>4.png<br>ex: sar_quickhud_set_texture "E:\Steam\steamapps\common\Portal 2\portal2\krzyhau"<br>|
+|sar_quickhud_size|15|Size of the custom quickhud.<br>|
+|sar_quickhud_x|45|Horizontal distance of the custom quickhud.<br>|
+|sar_quickhud_y|0|Vertical distance of the custom quickhud.<br>|
+|sar_record_at|0|Start recording a demo at the tick specified. Will use sar_record_at_demo_name.<br>|
+|sar_record_at_demo_name|chamber|Name of the demo automatically recorded.<br>|
+|sar_record_at_increment|0|Increment automatically the demo name.<br>|
 |sar_rename|cmd|Changes your name. Usage: sar_rename \<name><br>|
 |sar_replay_autoloop|0|Plays replay again when it ended.<br>|
 |sar_replay_clone_views|cmd|Clones view to another of a replay.<br>Usage: sar_replay_clone_views \<replay_index> \<view_index><br>|
@@ -154,7 +201,7 @@
 |<i title="Portal Game">sar_speedrun_reset</i>|cmd|Resets speedrun timer.<br>|
 |<i title="Portal Game">sar_speedrun_result</i>|cmd|Prints result of speedrun.<br>|
 |<i title="Portal Game">sar_speedrun_resume</i>|cmd|Resumes speedrun timer manually.<br>|
-|<i title="Portal Game">sar_speedrun_smartsplit</i>|1|Timer interface only splits once per level change.<br>|
+|<i title="Portal Game">sar_speedrun_smartsplit</i>|0|Timer interface only splits once per level change.<br>|
 |<i title="Portal Game">sar_speedrun_split</i>|cmd|Splits speedrun timer manually.<br>|
 |<i title="Portal Game">sar_speedrun_standard</i>|1|Timer automatically starts, splits and stops.<br>|
 |<i title="Portal Game">sar_speedrun_start</i>|cmd|Starts speedrun timer manually.<br>|
@@ -165,6 +212,7 @@
 |<i title="Portal Game">sar_sr_hud_font_index</i>|70|Font index of speedrun timer HUD.<br>|
 |<i title="Portal Game">sar_sr_hud_x</i>|0|X offset of speedrun timer HUD.<br>|
 |<i title="Portal Game">sar_sr_hud_y</i>|100|Y offset of speedrun timer HUD.<br>|
+|sar_statcounter_filePath|Stats/phunkpaiDWPS.csv|Path to the statcounter .csv file.<br>|
 |sar_stats_auto_reset|0|Resets all stats automatically.<br>0 = Default,<br>1 = Restart or disconnect only,<br>2 = Any load & sar_timer_start.<br>Note: Portal counter is not part of the "stats" feature.<br>|
 |sar_stats_jump|cmd|Prints jump stats.<br>|
 |sar_stats_jumps_reset|cmd|Resets total jump count and jump distance peak.<br>|
@@ -175,6 +223,13 @@
 |sar_stats_velocity|cmd|Prints velocity stats.<br>|
 |sar_stats_velocity_peak_xy|0|Saves velocity peak as 2D vector.<br>|
 |sar_stats_velocity_reset|cmd|Resets velocity peak.<br>|
+|sar_strafesync|0|Shows strafe sync stats.<br>|
+|sar_strafesync_noground|0|0: Always run.<br>1: Do not run when on ground.<br>|
+|sar_strafesync_pause|cmd|Pause strafe sync session.<br>|
+|sar_strafesync_reset|cmd|Reset strafe sync session.<br>|
+|sar_strafesync_resume|cmd|Resume strafe sync session.<br>|
+|sar_strafesync_session_time|0|In seconds. How much time should pass until session is reset.<br>If 0, you'll have to reset the session manually.<br>|
+|sar_strafesync_split|cmd|Makes a new split.<br>|
 |sar_sum_during_session|1|Updates the summary counter automatically during a session.<br>|
 |sar_sum_here|cmd|Starts counting total ticks of sessions.<br>|
 |sar_sum_result|cmd|Prints result of summary.<br>|
@@ -209,13 +264,13 @@
 |sar_timer_start|cmd|Starts timer.<br>|
 |sar_timer_stop|cmd|Stops timer.<br>|
 |sar_timer_time_pauses|1|Timer adds non-simulated ticks when server pauses.<br>|
-|<i title="Portal 2&#10;Aperture Tag&#10;Portal Stories: Mel&#10;INFRA">sar_togglewait</i>|cmd|Enables or disables "wait" for the command buffer.<br>|
+|<i title="Portal 2&#10;Aperture Tag&#10;Portal Stories: Mel&#10;INFRA&#10;Thinking with Time Machine">sar_togglewait</i>|cmd|Enables or disables "wait" for the command buffer.<br>|
 |sar_trace_a|cmd|Saves location A for tracing.<br>|
 |sar_trace_b|cmd|Saves location B for tracing.<br>|
 |sar_trace_reset|cmd|Resets tracer.<br>|
 |sar_trace_result|cmd|Prints tracing result.<br>|
 |sar_unbind_reload|cmd|Unbinds current save-reload rebinder.<br>|
 |sar_unbind_save|cmd|Unbinds current save rebinder.<br>|
-|<i title="Portal 2&#10;Aperture Tag">sar_workshop</i>|cmd|Same as "map" command but lists workshop maps.<br>Usage: sar_workshop \<file><br>|
+|<i title="Portal 2&#10;Aperture Tag">sar_workshop</i>|cmd|Same as "map" command but lists workshop maps.<br>Usage: sar_workshop \<file> [ss/changelevel]<br>|
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop_list</i>|cmd|Prints all workshop maps.<br>|
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop_update</i>|cmd|Updates the workshop map list.<br>|
