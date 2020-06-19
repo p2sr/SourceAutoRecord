@@ -78,6 +78,16 @@ bool Client::ShouldDrawCrosshair()
     return this->ShouldDraw(this->g_HUDQuickInfo->ThisPtr());
 }
 
+void Client::Chat(TextColor color, const char* fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+    char data[1024];
+    vsnprintf(data, sizeof(data), fmt, argptr);
+    va_end(argptr);
+    client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, "%c%s", color, data);
+}
+
 // CHLClient::HudUpdate
 DETOUR(Client::HudUpdate, unsigned int a2)
 {
@@ -258,6 +268,10 @@ bool Client::Init()
 
                 if (this->g_HUDQuickInfo = Interface::Create(CHUDQuickInfo)) {
                     this->ShouldDraw = this->g_HUDQuickInfo->Original<_ShouldDraw>(Offsets::ShouldDraw, readJmp);
+                  
+                auto CHudChat = FindElement(GetHud(-1), "CHudChat");
+                if (this->g_HudChat = Interface::Create(CHudChat, false)) {
+                    this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
                 }
             }
         }
@@ -341,6 +355,7 @@ void Client::Shutdown()
     Interface::Delete(this->s_EntityList);
     Interface::Delete(this->g_Input);
     Interface::Delete(this->g_HUDQuickInfo);
+    Interface::Delete(this->g_HudChat);
     Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 }
 

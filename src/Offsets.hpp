@@ -24,6 +24,7 @@ extern int GetMaxClients;
 extern int ServerCmdKeyValues;
 extern int GetActiveSplitScreenPlayerSlot;
 extern int GetSteamAPIContext;
+extern int IsPaused;
 
 // CHLClient
 extern int GetAllClasses;
@@ -143,6 +144,7 @@ extern int Paint;
 
 // CEngineTool
 extern int GetCurrentMap;
+extern int PrecacheModel;
 
 // CSchemeManager
 extern int GetIScheme;
@@ -180,15 +182,29 @@ extern int IsRunningSimulation;
 
 // CIVDebugOverlay
 extern int ScreenPosition;
+extern int AddBoxOverlay;
+extern int AddSphereOverlay;
+extern int AddTriangleOverlay;
+extern int AddLineOverlay;
+extern int AddScreenTextOverlay;
+extern int ClearAllOverlays;
 
 // CCommandBuffer
 extern int m_bWaitEnabled;
 
 // CServerTools
 extern int GetIServerEntity;
+extern int CreateEntityByName;
+extern int DispatchSpawn;
+extern int SetKeyValueChar;
+extern int SetKeyValueFloat;
+extern int SetKeyValueVector;
 
 // CVEngineServer
 extern int ClientCommand;
+
+//CBaseHudChat
+extern int ChatPrintf;
 
 // CSteam3Client
 extern int OnGameOverlayActivated;

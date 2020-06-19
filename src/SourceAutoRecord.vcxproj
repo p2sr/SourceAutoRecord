@@ -65,15 +65,15 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SFML_STATIC;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib</AdditionalLibraryDirectories>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
@@ -82,6 +82,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <NoEntryPoint>false</NoEntryPoint>
+      <AdditionalDependencies>winmm-d.lib;ws2_32-d.lib;sfml-system-s-d.lib;sfml-network-s-d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>call ..\copy.bat</Command>
@@ -94,19 +95,20 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SFML_STATIC;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>26495</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib</AdditionalLibraryDirectories>
       <NoEntryPoint>false</NoEntryPoint>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>call ..\copy.bat</Command>
@@ -125,7 +127,12 @@
     <ClCompile Include="Features\Cvars.cpp" />
     <ClCompile Include="Features\DataMapDumper.cpp" />
     <ClCompile Include="Features\Demo\Demo.cpp" />
+    <ClCompile Include="Features\Demo\DemoGhostEntity.cpp" />
+    <ClCompile Include="Features\Demo\DemoGhostPlayer.cpp" />
     <ClCompile Include="Features\Demo\DemoParser.cpp" />
+    <ClCompile Include="Features\Demo\GhostEntity.cpp" />
+    <ClCompile Include="Features\Demo\GhostPlayer.cpp" />
+    <ClCompile Include="Features\Demo\NetworkGhostPlayer.cpp" />
     <ClCompile Include="Features\EntityList.cpp" />
     <ClCompile Include="Features\Feature.cpp" />
     <ClCompile Include="Features\FovChanger.cpp" />
@@ -260,6 +267,42 @@
     <ClInclude Include="..\lib\minhook\hde\table64.h" />
     <ClInclude Include="..\lib\minhook\trampoline.h" />
     <ClInclude Include="..\lib\minhook\MinHook.h" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Config.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\GpuPreference.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Graphics.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Main.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Export.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Ftp.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Http.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\IpAddress.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Packet.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Socket.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\SocketHandle.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\SocketSelector.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\TcpListener.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\TcpSocket.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\UdpSocket.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Clock.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Err.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Export.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\FileInputStream.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\InputStream.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Lock.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\MemoryInputStream.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Mutex.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\NativeActivity.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\NonCopyable.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Sleep.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\String.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Thread.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\ThreadLocal.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\ThreadLocalPtr.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Time.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Utf.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Vector2.hpp" />
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Vector3.hpp" />
     <ClInclude Include="Cheats.hpp" />
     <ClInclude Include="Command.hpp" />
     <ClInclude Include="Features.hpp" />
@@ -268,7 +311,12 @@
     <ClInclude Include="Features\Cvars.hpp" />
     <ClInclude Include="Features\DataMapDumper.hpp" />
     <ClInclude Include="Features\Demo\Demo.hpp" />
+    <ClInclude Include="Features\Demo\DemoGhostEntity.hpp" />
+    <ClInclude Include="Features\Demo\DemoGhostPlayer.hpp" />
     <ClInclude Include="Features\Demo\DemoParser.hpp" />
+    <ClInclude Include="Features\Demo\GhostEntity.hpp" />
+    <ClInclude Include="Features\Demo\GhostPlayer.hpp" />
+    <ClInclude Include="Features\Demo\NetworkGhostPlayer.hpp" />
     <ClInclude Include="Features\EntityList.hpp" />
     <ClInclude Include="Features\Feature.hpp" />
     <ClInclude Include="Features\FovChanger.hpp" />
@@ -402,6 +450,14 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\lib\minhook\LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lib\SFML\include\SFML\System\String.inl" />
+    <None Include="..\lib\SFML\include\SFML\System\Thread.inl" />
+    <None Include="..\lib\SFML\include\SFML\System\ThreadLocalPtr.inl" />
+    <None Include="..\lib\SFML\include\SFML\System\Utf.inl" />
+    <None Include="..\lib\SFML\include\SFML\System\Vector2.inl" />
+    <None Include="..\lib\SFML\include\SFML\System\Vector3.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

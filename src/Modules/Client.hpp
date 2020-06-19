@@ -17,6 +17,7 @@ private:
     Interface* g_HUDQuickInfo = nullptr;
     Interface* s_EntityList = nullptr;
     Interface* g_Input = nullptr;
+    Interface* g_HudChat = nullptr;
 
 public:
     using _GetClientEntity = void*(__rescall*)(void* thisptr, int entnum);
@@ -24,12 +25,14 @@ public:
     using _KeyUp = int(__cdecl*)(void* b, const char* c);
     using _GetAllClasses = ClientClass* (*)();
     using _ShouldDraw = bool(__rescall*)(void* thisptr);
+	  using _ChatPrintf = void(*)(void* thisptr, int iPlayerIndex, int iFilter, const char* fmt, ...);
 
     _GetClientEntity GetClientEntity = nullptr;
     _KeyDown KeyDown = nullptr;
     _KeyUp KeyUp = nullptr;
     _GetAllClasses GetAllClasses = nullptr;
     _ShouldDraw ShouldDraw = nullptr;
+    _ChatPrintf ChatPrintf = nullptr;
 
     void* in_jump = nullptr;
 
@@ -42,6 +45,7 @@ public:
     void* GetPlayer(int index);
     void CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset);
     bool ShouldDrawCrosshair();
+    void Chat(TextColor color, const char* fmt, ...);
 
 public:
     // CHLClient::HudUpdate

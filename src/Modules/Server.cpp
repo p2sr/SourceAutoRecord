@@ -16,8 +16,12 @@
 #include "Features/Tas/TasTools.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
+#include "Features/Demo/GhostPlayer.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
+#include "Features/Demo/DemoGhostPlayer.hpp"
 
 #include "Engine.hpp"
+#include "Client.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -289,6 +293,18 @@ DETOUR(Server::GameFrame, bool simulating)
         engine->ExecuteCommand(cmd.c_str());
     }
 
+    if (networkManager.isConnected && simulating) {
+        networkManager.UpdateGhostsPosition();
+
+        if (networkManager.isCountdownReady) {
+            networkManager.UpdateCountdown();
+        }
+    }
+
+    if (demoGhostPlayer.IsPlaying() && simulating) {
+        demoGhostPlayer.UpdateGhostsPosition();
+    }
+
     if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
         if (!simulating && !pauseTimer->IsActive()) {
             pauseTimer->Start();
@@ -385,6 +401,13 @@ bool Server::Init()
     if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS0")) {
         auto GetIServerEntity = g_ServerTools->Original(Offsets::GetIServerEntity);
         Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
+
+		this->CreateEntityByName = g_ServerTools->Original<_CreateEntityByName>(Offsets::CreateEntityByName);
+        this->DispatchSpawn = g_ServerTools->Original<_DispatchSpawn>(Offsets::DispatchSpawn);
+        this->SetKeyValueChar = g_ServerTools->Original<_SetKeyValueChar>(Offsets::SetKeyValueChar);
+        this->SetKeyValueFloat = g_ServerTools->Original<_SetKeyValueFloat>(Offsets::SetKeyValueFloat);
+        this->SetKeyValueVector = g_ServerTools->Original<_SetKeyValueVector>(Offsets::SetKeyValueVector);
+
         Interface::Delete(g_ServerTools);
     }
 
