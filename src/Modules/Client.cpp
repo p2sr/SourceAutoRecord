@@ -10,6 +10,7 @@
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Session.hpp"
+#include "Features/Stats/Sync.hpp"
 #include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 
@@ -139,6 +140,11 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
 
     if (!in_forceuser.isReference || (in_forceuser.isReference && !in_forceuser.GetBool())) {
         inputHud.SetButtonBits(0, cmd->buttons);
+    }
+
+    
+    if (sar_strafesync.GetBool()) {
+        sync->UpdateSync(cmd);
     }
 
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
