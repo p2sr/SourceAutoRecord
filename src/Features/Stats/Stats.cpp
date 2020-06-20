@@ -188,7 +188,7 @@ CON_COMMAND(sar_import_stats, "sar_import_stats [filePath]. Import the stats fro
         return console->Print("Couldn't open the file. Are you sure the file is here ? : \"%s\".\n", path.c_str());
     }
 
-    stat->statsCounter->Print();
+    console->Print("Datas has been sucessfully loaded.\n");
 }
 
 CON_COMMAND(sar_print_stats, "sar_print_stats. Prints your statistics if those are loaded.\n")
