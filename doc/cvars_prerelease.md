@@ -18,15 +18,15 @@
 |cl_quickhudrightcolor_b|255|Changes the color of the right quickhud.<br>|
 |cl_quickhudrightcolor_g|184|Changes the color of the right quickhud.<br>|
 |cl_quickhudrightcolor_r|111|Changes the color of the right quickhud.<br>|
-|ghost_connect|cmd|Connect to server.<br>|
+|ghost_connect|cmd|Connect to the server : \<ip address> \<port> :<br>ex: 'localhost 53000' - '127.0.0.1 53000' - 89.10.20.20 53000'.<br>|
 |ghost_delete_all|cmd|Delete all ghosts.<br>|
 |ghost_delete_by_ID|cmd|ghost_delete_by_ID \<ID>. Delete the ghost selected.<br>|
 |ghost_disconnect|cmd|Disconnect.<br>|
 |ghost_height|16|Height of the ghosts.<br>|
-|ghost_message|cmd|Send message|
-|ghost_name|cmd|Change your name.<br>|
+|ghost_message|cmd|Send message to other players.<br>|
+|ghost_name|cmd|Change your online name.<br>|
 |ghost_offset|cmd|ghost_offset \<offset> \<ID>. Delay the ghost start by \<offset> frames.<br>|
-|ghost_ping|cmd|Pong !|
+|ghost_ping|cmd|Pong !<br>|
 |ghost_prop_model|cmd|Set the prop model. Example : models/props/metal_box.mdl<br>|
 |ghost_recap|cmd|Recap all ghosts setup.<br>|
 |ghost_set_demo|cmd|ghost_set_demo \<demo> [ID]. Ghost will use this demo. If ID is specified, will create or modify the ID-�me ghost.<br>|
