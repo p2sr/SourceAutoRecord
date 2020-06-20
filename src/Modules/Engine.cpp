@@ -8,6 +8,7 @@
 
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
+#include "Features/Demo/DemoParser.hpp"
 #include "EngineDemoRecorder.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Server.hpp"
@@ -196,6 +197,20 @@ DETOUR(Engine::Frame)
 
     if (engine->hoststate->m_activeGame || std::strlen(engine->m_szLevelName) == 0) {
         speedrun->PostUpdate(engine->GetTick(), engine->m_szLevelName);
+    }
+
+    //demoplayer
+    if (engine->demoplayer->demoQueueSize > 0 && !engine->demoplayer->IsPlaying()) {
+        DemoParser parser;
+        auto name = engine->demoplayer->demoQueue.front();
+        if (!engine->demoplayer->IsPlaying()) {
+            engine->ExecuteCommand(std::string("playdemo " + name).c_str());
+        }
+        engine->demoplayer->demoQueue.pop();
+        --engine->demoplayer->demoQueueSize;
+    } else if (engine->demoplayer->demoQueueSize == 0 && !engine->demoplayer->IsPlaying()) {
+        --engine->demoplayer->demoQueueSize;
+        sv_alternateticks.SetValue(1);
     }
 
     return Engine::Frame(thisptr);

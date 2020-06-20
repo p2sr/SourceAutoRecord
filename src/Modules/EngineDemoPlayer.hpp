@@ -6,6 +6,8 @@
 #include "SAR.hpp"
 #include "Utils.hpp"
 
+#include <queue>
+
 class EngineDemoPlayer : public Module {
 public:
     Interface* s_ClientDemoPlayer = nullptr;
@@ -17,6 +19,8 @@ public:
     _GetPlaybackTick GetPlaybackTick = nullptr;
 
     char* DemoName = nullptr;
+    int demoQueueSize = false;
+    std::queue<std::string> demoQueue;
 
 public:
     int GetTick();
@@ -29,3 +33,6 @@ public:
     void Shutdown() override;
     const char* Name() override { return MODULE("engine"); }
 };
+
+extern Command sar_startdemos;
+extern Command sar_stopdemos;
