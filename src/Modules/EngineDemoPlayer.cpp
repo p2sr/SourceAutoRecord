@@ -96,7 +96,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "Improved version of startdemos. 's
     }
 
     engine->demoplayer->demoQueue.push(name);
-    engine->demoplayer->demoQueueSize = 0;
+    engine->demoplayer->demoQueueSize = 1;
 
     while (ok) {
         auto tmp_dir = dir + name + "_" + std::to_string(counter);
