@@ -189,7 +189,7 @@ void NetworkManager::RunNetwork()
             this->SendPlayerData();
         }
 
-        if (this->selector.wait(sf::milliseconds(50))) {
+        if (this->selector.wait(sf::milliseconds(ghost_update_rate.GetInt()))) {
             if (this->selector.isReady(this->udpSocket)) { //UDP
                 std::vector<sf::Packet> buffer;
                 this->ReceiveUDPUpdates(buffer);
@@ -209,7 +209,7 @@ void NetworkManager::RunNetwork()
             }
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(ghost_update_rate.GetInt()));
     }
 }
 
@@ -543,7 +543,8 @@ void NetworkManager::DrawNames(HudContext* ctx)
 
 // Commands
 
-CON_COMMAND(ghost_connect, "Connect to server.\n")
+CON_COMMAND(ghost_connect, "Connect to the server : <ip address> <port> :\n"
+                           "ex: 'localhost 53000' - '127.0.0.1 53000' - 89.10.20.20 53000'.")
 {
     if (args.ArgC() < 2) {
         return console->Print(ghost_connect.ThisPtr()->m_pszHelpString);
@@ -561,7 +562,7 @@ CON_COMMAND(ghost_disconnect, "Disconnect.\n")
     networkManager.Disconnect();
 }
 
-CON_COMMAND(ghost_name, "Change your name.\n")
+CON_COMMAND(ghost_name, "Change your online name.\n")
 {
     if (networkManager.isConnected) {
         return console->Print("Can't change your name while being connected to a server.\n");
@@ -570,7 +571,7 @@ CON_COMMAND(ghost_name, "Change your name.\n")
     networkManager.name = args[1];
 }
 
-CON_COMMAND(ghost_message, "Send message")
+CON_COMMAND(ghost_message, "Send message to other players.\n")
 {
     if (args.ArgC() < 2) {
         return console->Print(ghost_message.ThisPtr()->m_pszHelpString);
@@ -584,7 +585,7 @@ CON_COMMAND(ghost_message, "Send message")
     networkManager.SendMessageToAll(msg);
 }
 
-CON_COMMAND(ghost_ping, "Pong !")
+CON_COMMAND(ghost_ping, "Pong !\n")
 {
     networkManager.SendPing();
 }

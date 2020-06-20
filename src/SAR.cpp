@@ -96,8 +96,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
                 config->Load();
 
-                stats->Get(GET_SLOT())->statsCounter->Init();
-
                 this->SearchPlugin();
 
                 console->PrintActive("Loaded SourceAutoRecord, Version %s\n", SAR_VERSION);
