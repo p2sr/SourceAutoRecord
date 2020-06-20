@@ -44,6 +44,7 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
             console->Print("Could not parse \"%s\"!\n", engine->demoplayer->DemoName);
         }
     }
+
     return result;
 }
 
@@ -108,8 +109,6 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "Improved version of startdemos. 's
     }
 
     if (engine->demoplayer->demoQueueSize > 0) {
-        sar_disable_challenge_stats_hud.SetValue(1);
-        sv_alternateticks.SetValue(0);
         engine->ExecuteCommand(std::string("playdemo " + engine->demoplayer->demoQueue.front()).c_str());
         engine->demoplayer->demoQueue.pop();
         --engine->demoplayer->demoQueueSize;
