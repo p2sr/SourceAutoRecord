@@ -544,7 +544,7 @@ void NetworkManager::DrawNames(HudContext* ctx)
 // Commands
 
 CON_COMMAND(ghost_connect, "Connect to the server : <ip address> <port> :\n"
-                           "ex: 'localhost 53000' - '127.0.0.1 53000' - 89.10.20.20 53000'.")
+                           "ex: 'localhost 53000' - '127.0.0.1 53000' - 89.10.20.20 53000'.\n")
 {
     if (args.ArgC() < 2) {
         return console->Print(ghost_connect.ThisPtr()->m_pszHelpString);
