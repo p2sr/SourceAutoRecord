@@ -114,7 +114,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "Improved version of startdemos. 's
         --engine->demoplayer->demoQueueSize;
     }
 }
-CON_COMMAND(sar_stopdemos, "Fill help string.\n")
+CON_COMMAND(sar_stopdemos, "Stop demo queue.\n")
 {
     engine->demoplayer->demoQueue = {};
     engine->demoplayer->demoQueueSize = 0;

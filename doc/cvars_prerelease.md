@@ -57,6 +57,8 @@
 |sar_quickhud_size|15|Size of the custom quickhud.<br>|
 |sar_quickhud_x|45|Horizontal distance of the custom quickhud.<br>|
 |sar_quickhud_y|0|Vertical distance of the custom quickhud.<br>|
+|sar_startdemos|cmd|Improved version of startdemos. sar_startdemos <demoname> Use 'sar_stopdemos' to stop playing demos.<br>|
+|sar_stopdemos|cmd|Stop demo queue.<br>|
 |sar_statcounter_filePath|Stats/phunkpaiDWPS.csv|Path to the statcounter .csv file.<br>|
 |sar_strafesync|0|Shows strafe sync stats.<br>|
 |sar_strafesync_noground|0|0: Always run.<br>1: Do not run when on ground.<br>|

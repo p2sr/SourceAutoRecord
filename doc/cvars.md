@@ -212,6 +212,8 @@
 |<i title="Portal Game">sar_sr_hud_font_index</i>|70|Font index of speedrun timer HUD.<br>|
 |<i title="Portal Game">sar_sr_hud_x</i>|0|X offset of speedrun timer HUD.<br>|
 |<i title="Portal Game">sar_sr_hud_y</i>|100|Y offset of speedrun timer HUD.<br>|
+|sar_startdemos|cmd|Improved version of startdemos. sar_startdemos <demoname> Use 'sar_stopdemos' to stop playing demos.<br>|
+|sar_stopdemos|cmd|Stop demo queue.<br>|
 |sar_statcounter_filePath|Stats/phunkpaiDWPS.csv|Path to the statcounter .csv file.<br>|
 |sar_stats_auto_reset|0|Resets all stats automatically.<br>0 = Default,<br>1 = Restart or disconnect only,<br>2 = Any load & sar_timer_start.<br>Note: Portal counter is not part of the "stats" feature.<br>|
 |sar_stats_jump|cmd|Prints jump stats.<br>|
