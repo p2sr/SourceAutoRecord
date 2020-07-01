@@ -202,12 +202,11 @@ DETOUR(Engine::Frame)
     //demoplayer
     if (engine->demoplayer->demoQueueSize > 0 && !engine->demoplayer->IsPlaying()) {
         DemoParser parser;
-        auto name = engine->demoplayer->demoQueue.front();
-        if (!engine->demoplayer->IsPlaying()) {
-            engine->ExecuteCommand(std::string("playdemo " + name).c_str());
+        auto name = engine->demoplayer->demoQueue[engine->demoplayer->currentDemoID];
+        engine->ExecuteCommand(std::string("playdemo " + name).c_str());
+        if (++engine->demoplayer->currentDemoID >= engine->demoplayer->demoQueueSize) {
+            engine->demoplayer->ClearDemoQueue();
         }
-        engine->demoplayer->demoQueue.pop();
-        --engine->demoplayer->demoQueueSize;
     }
 
     return Engine::Frame(thisptr);
