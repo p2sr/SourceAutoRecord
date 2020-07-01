@@ -15,6 +15,7 @@
 #include <filesystem>
 
 REDECL(EngineDemoPlayer::StartPlayback);
+REDECL(EngineDemoPlayer::stopdemo_callback);
 
 int EngineDemoPlayer::GetTick()
 {
