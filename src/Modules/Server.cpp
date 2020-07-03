@@ -12,8 +12,10 @@
 #include "Features/StepCounter.hpp"
 #include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/TasTools.hpp"
+#include "Features/Tas/TasPlayer.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
+
 
 #include "Engine.hpp"
 
@@ -41,6 +43,8 @@ Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.
 Variable sar_record_at("sar_record_at", "0", 0, "Start recording a demo at the tick specified. Will use sar_record_at_demo_name.\n");
 Variable sar_record_at_demo_name("sar_record_at_demo_name", "chamber", "Name of the demo automatically recorded.\n", 0);
 Variable sar_record_at_increment("sar_record_at_increment", "0", "Increment automatically the demo name.\n");
+
+Variable sar_printframetime("sar_printframetime", "0", "Prints frametime lmao.\n");
 
 REDECL(Server::CheckJumpButton);
 REDECL(Server::CheckJumpButtonBase);
@@ -277,6 +281,10 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
+    tasPlayer->Update();
+
+    if(sar_printframetime.GetBool())console->Print("%f\n", server->gpGlobals->frametime);
+
     if (simulating && sar_record_at.GetFloat() > 0 && sar_record_at.GetFloat() == session->GetTick()) {
         std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
         engine->ExecuteCommand(cmd.c_str());

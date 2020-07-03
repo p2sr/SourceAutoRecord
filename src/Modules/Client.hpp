@@ -74,6 +74,7 @@ extern Client* client;
 
 extern Variable cl_showpos;
 extern Variable cl_sidespeed;
+extern Variable cl_backspeed;
 extern Variable cl_forwardspeed;
 extern Variable in_forceuser;
 extern Variable cl_fov;

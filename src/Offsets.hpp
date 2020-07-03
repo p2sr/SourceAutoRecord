@@ -120,6 +120,7 @@ extern int m_pSurfaceData;
 extern int iNumPortalsPlaced;
 
 // IEngineVGuiInternal
+extern int IsGameUIVisible;
 extern int Paint;
 
 // CEngineTool

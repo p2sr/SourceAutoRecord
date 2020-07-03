@@ -167,6 +167,7 @@
     <ClCompile Include="Features\ReplaySystem\ReplayRecorder.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayView.cpp" />
     <ClCompile Include="Features\Tas\TasController.cpp" />
+    <ClCompile Include="Features\Tas\TasPlayer.cpp" />
     <ClCompile Include="Features\Tas\TasTools.cpp" />
     <ClCompile Include="Features\Teleporter.cpp" />
     <ClCompile Include="Features\Timer\PauseTimer.cpp" />
@@ -313,6 +314,7 @@
     <ClInclude Include="Features\ReplaySystem\ReplayRecorder.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayView.hpp" />
     <ClInclude Include="Features\Tas\TasController.hpp" />
+    <ClInclude Include="Features\Tas\TasPlayer.hpp" />
     <ClInclude Include="Features\Tas\TasTools.hpp" />
     <ClInclude Include="Features\Teleporter.hpp" />
     <ClInclude Include="Features\Timer\PauseTimer.hpp" />

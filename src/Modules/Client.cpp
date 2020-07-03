@@ -26,6 +26,7 @@
 
 Variable cl_showpos;
 Variable cl_sidespeed;
+Variable cl_backspeed;
 Variable cl_forwardspeed;
 Variable in_forceuser;
 Variable cl_fov;
@@ -321,6 +322,7 @@ bool Client::Init()
     cl_showpos = Variable("cl_showpos");
     cl_sidespeed = Variable("cl_sidespeed");
     cl_forwardspeed = Variable("cl_forwardspeed");
+    cl_backspeed = Variable("cl_backspeed");
     cl_fov = Variable("cl_fov");
 
     return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;

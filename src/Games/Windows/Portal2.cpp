@@ -47,6 +47,7 @@ void Portal2::LoadOffsets()
     m_szDemoBaseName = 1344; // CDemoRecorder::StartupDemoFile
     m_nDemoNumber = 1608; // CDemoRecorder::StartupDemoFile
     m_bRecording = 1606; // CDemoRecorder::SetSignonState
+    IsGameUIVisible = 2; //IEngineGui
     Paint = 14; // CEngineVGui
     ProcessTick = 1; // CClientState/IServerMessageHandler
     tickcount = 95; // CClientState::ProcessTick
