@@ -4,8 +4,11 @@
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
 #include "Features/Session.hpp"
+#include "Features/Tas/TasTool.hpp"
+#include "Features/Tas/TasTools/TestTool.hpp"
 
 Variable sar_tas2_debug("sar_tas2_debug", "0", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
 
@@ -13,10 +16,9 @@ TasPlayer* tasPlayer;
 
 TasPlayer::TasPlayer()
 {
-    framebulkQueue.push_back({ 61, { 0, 0 }, { 0, 0 }, { false,  true, false, false, false, false }});
-    framebulkQueue.push_back({ 71, { 0, -1 }, { 0, 0 }, { false, true, false, false, false, false } });
-    framebulkQueue.push_back({ 73, { 1, 0 }, { 0, 0 }, { false, true, false, false, false, false } });
-    framebulkQueue.push_back({ 201, { 0, 0 }, { 0, 0 }, { false, false, false, false, false, false }, {"pause"} });
+    framebulkQueue.push_back({ 60, { 0, 0 }, { 0, 0 }, { false, false, false, false, false, false }, {}, { { &tasTestTool, std::make_shared<TestToolParams>(1) } } });
+    framebulkQueue.push_back({ 120, { 0, 0 }, { 0, 0 }, { false, false, false, false, false, false }, {}, { { &tasTestTool, std::make_shared<TestToolParams>(2) } } });
+    framebulkQueue.push_back({ 180, { 0, 0 }, { 0, 0 }, { false, false, false, false, false, false }});
 }
 
 TasPlayer::~TasPlayer()
@@ -24,14 +26,19 @@ TasPlayer::~TasPlayer()
     framebulkQueue.clear();
 }
 
+int TasPlayer::GetTick() 
+{
+    return currentTick;
+}
+
 void TasPlayer::Activate()
 {
-    if (sar_tas2_debug.GetInt() > 0) {
-        console->Print("TAS script has been activated.\n");
+    for (TasTool* tool : TasTool::GetList()) {
+        tool->Reset();
     }
 
     active = true;
-    currentTick = -1;
+    currentTick = 0;
 
     for (TasFramebulk fb : framebulkQueue) {
         if (fb.tick > lastTick) {
@@ -46,11 +53,15 @@ void TasPlayer::Activate()
     } else {
         ready = false;
     }
+
+    if (sar_tas2_debug.GetInt() > 0) {
+        console->Print("TAS script has been activated.\n");
+    }
 }
 
 void TasPlayer::Start() {
     ready = true;
-    currentTick = -1;
+    currentTick = 0;
     tasController->Enable();
 }
 
@@ -86,7 +97,11 @@ TasFramebulk TasPlayer::GetCurrentProcessedFramebulk()
 {
     TasFramebulk rawFb = GetCurrentRawFramebulk();
 
-    //TODO: all of the tools processing goes here
+    rawFb.tick = currentTick;
+
+    for (TasTool* tool : TasTool::GetList()) {
+        tool->Apply(rawFb);
+    }
 
     return rawFb;
 }
@@ -96,9 +111,10 @@ TasFramebulk TasPlayer::GetCurrentProcessedFramebulk()
     This function is called in ControllerMove, which is what completely
     avoids sv_alternateticks behaviour. Technically speaking, the game
     fetches controller inputs on each ControllerMove, so that should be
-    perfectly legal action, BUT in case it is not, the ultimate test would
-    be to debug real controller values - if you're able to get 60 different
-    values in one second with sv_alternateticks on, a theory is proven.
+    perfectly legal action. This has been proven by printing out Steam
+    controller input after every ControllerMove call and getting three
+    different results in three consecutive ticks (shoutouts to Amtyi
+    for testing it out for us on his setup)
 */
 
 void TasPlayer::FetchInputs(TasController* controller)
@@ -114,10 +130,11 @@ void TasPlayer::FetchInputs(TasController* controller)
     for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
         controller->SetButtonState((TasControllerInput)i, fb.buttonStates[i]);
     }
-    for (char* cmd : fb.commands) {
+    for (std::string cmd : fb.commands) {
         controller->AddCommandToQueue(cmd);
     }
 }
+
 
 
 
@@ -130,7 +147,12 @@ void TasPlayer::Update()
 
         if (ready && session->isRunning) {
             currentTick++;
-            //console->Print("TasPlayer::Update (%d)\n", currentTick);
+
+            // update all tools that needs to be updated
+            TasFramebulk fb = GetCurrentRawFramebulk();
+            for (TasToolCommand cmd : fb.toolCmds) {
+                cmd.tool->SetParams(cmd.params);
+            }
         }
 
         if (currentTick > lastTick) {

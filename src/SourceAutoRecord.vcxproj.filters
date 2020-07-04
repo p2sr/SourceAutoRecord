@@ -325,6 +325,12 @@
     <ClCompile Include="Features\Tas\TasPlayer.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Tas\TasTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\TestTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -678,6 +684,12 @@
     <ClInclude Include="Features\Tas\TasPlayer.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Tas\TasTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\TestTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">
@@ -733,6 +745,9 @@
     </Filter>
     <Filter Include="SourceAutoRecord\Features\ReplaySystem">
       <UniqueIdentifier>{6d5adac2-903e-463f-8055-8677eaca4662}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Tas\TasTools">
+      <UniqueIdentifier>{56f0ee93-915f-4619-ba95-b1897f0bc83e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

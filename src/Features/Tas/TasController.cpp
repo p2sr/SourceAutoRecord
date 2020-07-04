@@ -10,6 +10,8 @@
 Variable cl_pitchdown;
 Variable cl_pitchup;
 
+Variable sar_tas2_real_controller_debug("sar_tas2_real_controller_debug", "0", "debugs controller.");
+
 
 Variable sensitivity;
 void LockMouse()
@@ -83,7 +85,7 @@ void TasController::Disable()
     UnlockMouse();
 }
 
-void TasController::AddCommandToQueue(char* c)
+void TasController::AddCommandToQueue(std::string c)
 {
     commandQueue.push_back(c);
 }
@@ -105,6 +107,11 @@ void TasController::SetButtonState(TasControllerInput i, bool state)
 
 void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
 {
+
+    if (cmd->tick_count != 0 && sar_tas2_real_controller_debug.GetBool()) {
+        console->Print("%.5f %.5f\n", cmd->forwardmove, cmd->sidemove);
+    }
+
     if (!enabled || cmd->tick_count==0) return;
 
     //console->Print("TasController::ControllerMove (%d, ", cmd->tick_count);
@@ -145,9 +152,9 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
 
     // handle all additional commands from the command queue (not in the original, but um why not?)
     if (commandQueue.size() > 0) {
-        for (char* cmd : commandQueue) {
+        for (std::string cmd : commandQueue) {
             char cmdbuf[128];
-            snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd);
+            snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
             engine->ExecuteCommand(cmdbuf);
         }
         commandQueue.clear();
@@ -175,9 +182,9 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
     //::g_pInputSystem->SetCurrentInputDevice(INPUT_DEVICE_STEAM_CONTROLLER);
     //if (!GetPerUser().m_fCameraInterceptingMouse && g_pInputStackSystem->IsTopmostEnabledContext(m_hInputContext))
 
-    viewangles.y += viewAnalog.y;
+    viewangles.y += viewAnalog.x;
 
-    viewangles.x += viewAnalog.x;
+    viewangles.x += viewAnalog.y;
     viewangles.x = std::min(std::max(viewangles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
 
     cmd->mousedx = (int)(-viewAnalog.x);

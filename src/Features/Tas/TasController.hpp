@@ -34,7 +34,7 @@ private:
     Vector moveAnalog;
     Vector viewAnalog;
     TasControllerButton buttons[TAS_CONTROLLER_INPUT_COUNT];
-    std::vector<char*> commandQueue;
+    std::vector<std::string> commandQueue;
 
     bool enabled;
 public:
@@ -51,7 +51,7 @@ public:
     void Enable();
     void Disable();
 
-    void AddCommandToQueue(char* c);
+    void AddCommandToQueue(std::string c);
 
     bool GetButtonState(TasControllerInput i);
     void SetButtonState(TasControllerInput i, bool state);

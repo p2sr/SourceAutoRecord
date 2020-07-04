@@ -2,19 +2,22 @@
 
 #include "Features/Feature.hpp"
 #include "Features/Tas/TasController.hpp"
+#include "Features/Tas/TasTool.hpp"
 
 #include "Utils/SDK.hpp"
 
 #include "Command.hpp"
 #include "Variable.hpp"
 
+class TasToolCommand;
+
 struct TasFramebulk {
     int tick = 0;
     Vector moveAnalog{ 0, 0 };
     Vector viewAnalog{ 0, 0 };
     bool buttonStates[TAS_CONTROLLER_INPUT_COUNT]{};
-    std::vector<char*> commands;
-    std::vector<char*> toolCmds;
+    std::vector<std::string> commands;
+    std::vector<TasToolCommand> toolCmds;
 };
 
 enum TasStartType {
@@ -43,6 +46,8 @@ private:
     TasFramebulk currentFramebulkBuffer;
 public:
     void Update();
+
+    int GetTick();
 
     void Activate();
     void Start();
