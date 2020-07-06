@@ -331,6 +331,9 @@
     <ClCompile Include="Features\Tas\TasTools\TestTool.cpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\AutoStrafeTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -688,6 +691,9 @@
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTools\TestTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\AutoStrafeTool.hpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClInclude>
   </ItemGroup>

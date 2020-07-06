@@ -113,7 +113,6 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
     }
 
     if (!enabled || cmd->tick_count==0) return;
-
     //console->Print("TasController::ControllerMove (%d, ", cmd->tick_count);
 
     tasPlayer->FetchInputs(this);

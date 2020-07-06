@@ -16,9 +16,10 @@ TasPlayer* tasPlayer;
 
 TasPlayer::TasPlayer()
 {
-    framebulkQueue.push_back({ 60, { 0, 0 }, { 0, 0 }, { false, false, false, false, false, false }, {}, { { &tasTestTool, std::make_shared<TestToolParams>(1) } } });
-    framebulkQueue.push_back({ 120, { 0, 0 }, { 0, 0 }, { false, false, false, false, false, false }, {}, { { &tasTestTool, std::make_shared<TestToolParams>(2) } } });
-    framebulkQueue.push_back({ 180, { 0, 0 }, { 0, 0 }, { false, false, false, false, false, false }});
+    framebulkQueue.push_back({ 61, { 0, 0 }, { 0, 0 }, { false, true, false, false, false, false } });
+    framebulkQueue.push_back({ 71, { 0, -1 }, { 0, 0 }, { false, true, false, false, false, false } });
+    framebulkQueue.push_back({ 73, { 1, 0 }, { 0, 0 }, { false, true, false, false, false, false } });
+    framebulkQueue.push_back({ 201, { 0, 0 }, { 0, 0 }, { false, false, false, false, false, false }, { "pause" } });
 }
 
 TasPlayer::~TasPlayer()
@@ -148,10 +149,17 @@ void TasPlayer::Update()
         if (ready && session->isRunning) {
             currentTick++;
 
+            //someone told me that would make physics deterministic >:(
+            if (currentTick == 0) {
+                //engine->ExecuteCommand("phys_timescale 1");
+            }
+
             // update all tools that needs to be updated
             TasFramebulk fb = GetCurrentRawFramebulk();
-            for (TasToolCommand cmd : fb.toolCmds) {
-                cmd.tool->SetParams(cmd.params);
+            if (fb.tick == currentTick) {
+                for (TasToolCommand cmd : fb.toolCmds) {
+                    cmd.tool->SetParams(cmd.params);
+                }
             }
         }
 

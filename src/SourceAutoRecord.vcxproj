@@ -170,6 +170,7 @@
     <ClCompile Include="Features\Tas\TasPlayer.cpp" />
     <ClCompile Include="Features\Tas\TasTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools.cpp" />
+    <ClCompile Include="Features\Tas\TasTools\AutoStrafeTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\TestTool.cpp" />
     <ClCompile Include="Features\Teleporter.cpp" />
     <ClCompile Include="Features\Timer\PauseTimer.cpp" />
@@ -319,6 +320,7 @@
     <ClInclude Include="Features\Tas\TasPlayer.hpp" />
     <ClInclude Include="Features\Tas\TasTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools.hpp" />
+    <ClInclude Include="Features\Tas\TasTools\AutoStrafeTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\TestTool.hpp" />
     <ClInclude Include="Features\Teleporter.hpp" />
     <ClInclude Include="Features\Timer\PauseTimer.hpp" />
