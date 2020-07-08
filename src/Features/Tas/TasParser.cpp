@@ -274,7 +274,7 @@ std::vector<std::string> TasParser::ParseTool(std::string& str)
 int TasParser::toInt(std::string& str)
 {
     std::smatch matches;
-    if (std::regex_match(str, matches, regexNumber)) { //If it's a number
+    if (TasParser::isNumber(str)) { //If it's a number
         return std::stoi(str);
     } else {
         throw TasParserException(str + " is not a number");
@@ -284,7 +284,7 @@ int TasParser::toInt(std::string& str)
 float TasParser::toFloat(std::string& str)
 {
     std::smatch matches;
-    if (std::regex_match(str, matches, regexNumber)) { //If it's a number
+    if (TasParser::isNumber(str)) { //If it's a number
         return std::stof(str);
     } else {
         throw TasParserException(str + " is not a number");
