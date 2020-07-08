@@ -5,7 +5,7 @@
 
 #include "TasPlayer.hpp"
 
-// shoutouts to Blender for making TAS script parsing
+// shoutouts to Blender for making TAS script parsing.
 
 struct TasParserException : public std::exception {
     std::string msg;
