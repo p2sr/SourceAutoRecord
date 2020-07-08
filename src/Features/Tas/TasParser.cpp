@@ -7,7 +7,7 @@
 
 #include "TasTools/StrafeTool.hpp"
 
-//FrenchSaves10Ticks
+//FrenchSaves10Tickslol
 
 std::regex const regexVector{ R"((?:(-?\d*\.?\d*)(?:\s)*(-?\d*\.?\d*))(?:\s)*)" };
 std::regex const regexTool{ R"(\s+)" };
