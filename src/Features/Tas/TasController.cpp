@@ -82,6 +82,12 @@ void TasController::Enable()
 void TasController::Disable()
 {
     enabled = false;
+    SetViewAnalog(0, 0);
+    SetMoveAnalog(0, 0);
+    for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
+        buttons[i].active = true;
+        buttons[i].state = false;
+    }
     UnlockMouse();
 }
 

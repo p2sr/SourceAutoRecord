@@ -2,6 +2,11 @@
 
 TestTool tasTestTool("testtool");
 
+TestTool* TestTool::GetTool()
+{
+    return &tasTestTool;
+}
+
 void TestTool::Apply(TasFramebulk& fb)
 {
     auto ttParams = std::static_pointer_cast<TestToolParams>(params);

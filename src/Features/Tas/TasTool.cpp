@@ -17,6 +17,11 @@ TasTool::~TasTool()
 
 }
 
+const char* TasTool::GetName()
+{
+    return this->name;
+}
+
 void TasTool::SetParams(std::shared_ptr<TasToolParams> params)
 {
     this->params = params;

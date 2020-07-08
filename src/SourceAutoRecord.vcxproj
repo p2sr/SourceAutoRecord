@@ -90,7 +90,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -166,11 +166,13 @@
     <ClCompile Include="Features\ReplaySystem\ReplayProvider.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayRecorder.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayView.cpp" />
+    <ClCompile Include="Features\Tas\TasParser.cpp" />
     <ClCompile Include="Features\Tas\TasController.cpp" />
     <ClCompile Include="Features\Tas\TasPlayer.cpp" />
     <ClCompile Include="Features\Tas\TasTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools.cpp" />
-    <ClCompile Include="Features\Tas\TasTools\AutoStrafeTool.cpp" />
+    <ClCompile Include="Features\Tas\TasTools\AutoJumpTool.cpp" />
+    <ClCompile Include="Features\Tas\TasTools\StrafeTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\TestTool.cpp" />
     <ClCompile Include="Features\Teleporter.cpp" />
     <ClCompile Include="Features\Timer\PauseTimer.cpp" />
@@ -316,11 +318,13 @@
     <ClInclude Include="Features\ReplaySystem\ReplayProvider.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayRecorder.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayView.hpp" />
+    <ClInclude Include="Features\Tas\TasParser.hpp" />
     <ClInclude Include="Features\Tas\TasController.hpp" />
     <ClInclude Include="Features\Tas\TasPlayer.hpp" />
     <ClInclude Include="Features\Tas\TasTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools.hpp" />
-    <ClInclude Include="Features\Tas\TasTools\AutoStrafeTool.hpp" />
+    <ClInclude Include="Features\Tas\TasTools\AutoJumpTool.hpp" />
+    <ClInclude Include="Features\Tas\TasTools\StrafeTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\TestTool.hpp" />
     <ClInclude Include="Features\Teleporter.hpp" />
     <ClInclude Include="Features\Timer\PauseTimer.hpp" />

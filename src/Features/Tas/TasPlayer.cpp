@@ -9,17 +9,14 @@
 #include "Features/Session.hpp"
 #include "Features/Tas/TasTool.hpp"
 #include "Features/Tas/TasTools/TestTool.hpp"
+#include "Features/Tas/TasParser.hpp"
 
-Variable sar_tas2_debug("sar_tas2_debug", "0", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
+Variable sar_tas2_debug("sar_tas2_debug", "2", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
 
 TasPlayer* tasPlayer;
 
 TasPlayer::TasPlayer()
 {
-    framebulkQueue.push_back({ 61, { 0, 0 }, { 0, 0 }, { false, true, false, false, false, false } });
-    framebulkQueue.push_back({ 71, { 0, -1 }, { 0, 0 }, { false, true, false, false, false, false } });
-    framebulkQueue.push_back({ 73, { 1, 0 }, { 0, 0 }, { false, true, false, false, false, false } });
-    framebulkQueue.push_back({ 201, { 0, 0 }, { 0, 0 }, { false, false, false, false, false, false }, { "pause" } });
 }
 
 TasPlayer::~TasPlayer()
@@ -34,6 +31,9 @@ int TasPlayer::GetTick()
 
 void TasPlayer::Activate()
 {
+    //reset the controller before using it
+    tasController->Disable();  
+
     for (TasTool* tool : TasTool::GetList()) {
         tool->Reset();
     }
@@ -41,6 +41,7 @@ void TasPlayer::Activate()
     active = true;
     currentTick = 0;
 
+    lastTick = 0;
     for (TasFramebulk fb : framebulkQueue) {
         if (fb.tick > lastTick) {
             lastTick = fb.tick;
@@ -55,8 +56,9 @@ void TasPlayer::Activate()
         ready = false;
     }
 
+    console->Print("TAS script has been activated.\n");
     if (sar_tas2_debug.GetInt() > 0) {
-        console->Print("TAS script has been activated.\n");
+        console->Print("Length: %d ticks\n", lastTick+1);
     }
 }
 
@@ -68,9 +70,7 @@ void TasPlayer::Start() {
 
 void TasPlayer::Stop()
 {
-    if (sar_tas2_debug.GetInt() > 0) {
-        console->Print("TAS script has ended after %d ticks.\n", currentTick);
-    }
+    console->Print("TAS script has ended after %d ticks.\n", currentTick);
 
     active = false;
     ready = false;
@@ -105,6 +105,11 @@ TasFramebulk TasPlayer::GetCurrentProcessedFramebulk()
     }
 
     return rawFb;
+}
+
+void TasPlayer::SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue)
+{
+    this->framebulkQueue = fbQueue;
 }
 
 
@@ -182,4 +187,29 @@ CON_COMMAND(sar_tas2_test,
     }
 
     tasPlayer->Activate();
+}
+
+
+CON_COMMAND(sar_tas2_playfile,
+    "AFHNSDAIJGFADSHGS")
+{
+    IGNORE_DEMO_PLAYER();
+
+    if (args.ArgC() != 2) {
+        return console->Print(sar_tas2_test.ThisPtr()->m_pszHelpString);
+    }
+
+    std::string fileName(args[1]);
+    std::string filePath("tas/" + fileName + ".p2tas");
+    try {
+        std::vector<TasFramebulk> fb = TasParser::ParseFile(filePath);
+
+        if (fb.size() > 0) {
+            tasPlayer->SetFrameBulkQueue(fb);
+            tasPlayer->Activate();
+        }
+    } catch (TasParserException& e) {
+        return console->ColorMsg(Color(255, 100, 100), "Error while opening TAS file: %s\n", e.what());
+    }
+    
 }

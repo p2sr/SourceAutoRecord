@@ -31,9 +31,9 @@ struct TasControllerButton {
 
 class TasController : public Feature {
 private:
-    Vector moveAnalog;
-    Vector viewAnalog;
-    TasControllerButton buttons[TAS_CONTROLLER_INPUT_COUNT];
+    Vector moveAnalog = { 0, 0 };
+    Vector viewAnalog = { 0, 0 };
+    TasControllerButton buttons[TAS_CONTROLLER_INPUT_COUNT] = {};
     std::vector<std::string> commandQueue;
 
     bool enabled;

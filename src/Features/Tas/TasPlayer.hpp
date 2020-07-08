@@ -13,9 +13,9 @@ class TasToolCommand;
 
 struct TasFramebulk {
     int tick = 0;
-    Vector moveAnalog{ 0, 0 };
-    Vector viewAnalog{ 0, 0 };
-    bool buttonStates[TAS_CONTROLLER_INPUT_COUNT]{};
+    Vector moveAnalog = { 0, 0 };
+    Vector viewAnalog = { 0, 0 };
+    bool buttonStates[TAS_CONTROLLER_INPUT_COUNT] = {0};
     std::vector<std::string> commands;
     std::vector<TasToolCommand> toolCmds;
 };
@@ -55,6 +55,7 @@ public:
 
     TasFramebulk GetCurrentRawFramebulk();
     TasFramebulk GetCurrentProcessedFramebulk();
+    void SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue);
 
     void FetchInputs(TasController* controller);
 

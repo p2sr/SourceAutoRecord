@@ -20,6 +20,9 @@ public:
     TasTool(const char* name);
     ~TasTool();
 
+    const char* GetName();
+    
+    virtual TasTool* GetTool() = 0;
     virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>) = 0;
     virtual void Apply(TasFramebulk& fb) = 0;
     virtual void Reset();
