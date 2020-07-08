@@ -11,10 +11,6 @@ void AutoStrafeTool::Apply(TasFramebulk& fb)
         asParams->strafeDir.angle = 0;
         asParams->strafeDir.processed = true;
     }
-
-    if (asParams->strafeType != NONE)
-        std::cout << "Strafing " << (asParams->strafeType == 1 ? "Vectorial" : "Angular")
-                  << " (direction : " << (asParams->strafeDir.type == CURRENT ? asParams->strafeDir.angle : asParams->strafeDir.type) << ") | ";
 }
 
 AutoStrafeTool* AutoStrafeTool::GetTool()
@@ -65,7 +61,6 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
     }
 
     return std::make_shared<AutoStraferParams>(type, dir, speed);
-    return std::make_shared<AutoStraferParams>();
 }
 
 void AutoStrafeTool::Reset()
