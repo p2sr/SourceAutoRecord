@@ -130,8 +130,8 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
     cmd->buttons = 0;
 
     LockMouse();
-    //in terms of functionality, this whole stuff below is mostly a literal copy of SteamControllerMove.
 
+    //in terms of functionality, this whole stuff below is mostly a literal copy of SteamControllerMove.
 
     //handle digital inputs
     for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {

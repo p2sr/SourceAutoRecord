@@ -15,9 +15,11 @@ struct TasFramebulk {
     int tick = 0;
     Vector moveAnalog = { 0, 0 };
     Vector viewAnalog = { 0, 0 };
-    bool buttonStates[TAS_CONTROLLER_INPUT_COUNT] = {0};
+    bool buttonStates[TAS_CONTROLLER_INPUT_COUNT] = { 0 };
     std::vector<std::string> commands;
     std::vector<TasToolCommand> toolCmds;
+
+    std::string ToString();
 };
 
 enum TasStartType {
@@ -33,7 +35,7 @@ struct TasStartInfo {
     char* param;
 };
 
-class TasPlayer : public Feature{
+class TasPlayer : public Feature {
 private:
     bool active = false;
     bool ready = false;
@@ -44,6 +46,7 @@ private:
 
     std::vector<TasFramebulk> framebulkQueue;
     TasFramebulk currentFramebulkBuffer;
+
 public:
     void Update();
 
@@ -54,7 +57,7 @@ public:
     void Stop();
 
     TasFramebulk GetCurrentRawFramebulk();
-    TasFramebulk GetCurrentProcessedFramebulk();
+    void ProcessFramebulk(TasFramebulk& fb);
     void SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue);
 
     void FetchInputs(TasController* controller);

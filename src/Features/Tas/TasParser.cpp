@@ -34,7 +34,7 @@ std::vector<TasFramebulk> TasParser::ParseFile(std::string filePath)
     try {
         fb = ParseAllLines(lines);
     } catch (TasParserException& e) {
-        throw TasParserException(e.what());
+        throw;
     }
 
     return fb;

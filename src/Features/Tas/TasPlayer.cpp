@@ -11,9 +11,30 @@
 #include "Features/Tas/TasTools/TestTool.hpp"
 #include "Features/Tas/TasParser.hpp"
 
-Variable sar_tas2_debug("sar_tas2_debug", "2", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
+Variable sar_tas2_debug("sar_tas2_debug", "1", 0, 1, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
 
 TasPlayer* tasPlayer;
+
+
+std::string TasFramebulk::ToString()
+{
+    std::string output = "[" + std::to_string(tick) + "] mov: ("
+        + std::to_string(moveAnalog.x) + " " + std::to_string(moveAnalog.y) + "), ang:"
+        + std::to_string(viewAnalog.x) + " " + std::to_string(viewAnalog.y) + "), btns:";
+    for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
+        output += (buttonStates[i]) ? "1" : "0";
+    }
+    output += ", cmds: ";
+    for (std::string command : commands) {
+        output += command + ";";
+    }
+    output += ", tools:";
+    for (TasToolCommand toolCmd : toolCmds) {
+        output += " {" + std::string(toolCmd.tool->GetName()) + "}";
+    }
+    return output;
+}
+
 
 TasPlayer::TasPlayer()
 {
@@ -94,17 +115,13 @@ TasFramebulk TasPlayer::GetCurrentRawFramebulk()
 }
 
 // returns framebulk processed using tools and game's info in current tick.
-TasFramebulk TasPlayer::GetCurrentProcessedFramebulk()
+void TasPlayer::ProcessFramebulk(TasFramebulk& rawFb)
 {
-    TasFramebulk rawFb = GetCurrentRawFramebulk();
-
     rawFb.tick = currentTick;
 
     for (TasTool* tool : TasTool::GetList()) {
         tool->Apply(rawFb);
     }
-
-    return rawFb;
 }
 
 void TasPlayer::SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue)
@@ -125,10 +142,14 @@ void TasPlayer::SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue)
 
 void TasPlayer::FetchInputs(TasController* controller)
 {
-    TasFramebulk fb = GetCurrentProcessedFramebulk();
+    TasFramebulk fb = GetCurrentRawFramebulk();
 
-    if (sar_tas2_debug.GetInt() > 1 && fb.tick == currentTick) {
-        console->Print("[%d]\n", fb.tick);
+    int fbTick = fb.tick;
+
+    ProcessFramebulk(fb);
+
+    if (sar_tas2_debug.GetInt() > 0 && fbTick == currentTick) {
+        console->Print("%s\n", fb.ToString());
     }
 
     controller->SetViewAnalog(fb.viewAnalog.x, fb.viewAnalog.y);
@@ -136,8 +157,11 @@ void TasPlayer::FetchInputs(TasController* controller)
     for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
         controller->SetButtonState((TasControllerInput)i, fb.buttonStates[i]);
     }
-    for (std::string cmd : fb.commands) {
-        controller->AddCommandToQueue(cmd);
+    //add commands only for tick when framebulk is placed. Don't preserve it to other ticks.
+    if (currentTick == fbTick) {
+        for (std::string cmd : fb.commands) {
+            controller->AddCommandToQueue(cmd);
+        }
     }
 }
 
