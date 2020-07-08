@@ -191,8 +191,7 @@ TasFramebulk TasParser::ParseRawFramebulk(RawFramebulk& raw, TasFramebulk& previ
             std::for_each(tmp.begin(), tmp.end(), [](char& c) { c = std::tolower(c); });
 
             auto tools = TasParser::Tokenize(tmp, ';'); //tools = {"strafe move", "autojump on"}
-            for (auto& toolAndParams : tools) //toolAndParams = "strafe move"
-            {
+            for (auto& toolAndParams : tools) { //toolAndParams = "strafe move"
                 auto tokens = TasParser::ParseTool(toolAndParams); //tokens = {"strafe", "move"}
 
                 for (auto& tool : TasTool::GetList()) {

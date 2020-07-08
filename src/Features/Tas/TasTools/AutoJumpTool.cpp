@@ -6,9 +6,6 @@ AutoJumpTool autoJumpTool("autojump");
 void AutoJumpTool::Apply(TasFramebulk& bulk)
 {
     auto ttParams = std::static_pointer_cast<AutoJumpToolParams>(this->params);
-
-    //if (ttParams->enabled)
-        //std::cout << "AutoJump " << (ttParams->enabled ? "On" : "Off") << " | ";
 }
 
 AutoJumpTool* AutoJumpTool::GetTool()
