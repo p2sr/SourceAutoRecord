@@ -100,11 +100,10 @@ Vector TasTools::GetAcceleration(void* player)
     auto curTick = session->GetTick();
     if (slotData->prevTick != curTick) {
         auto curVelocity = server->GetLocalVelocity(player);
-
-        // z used to represent the combined x/y acceleration axis value
-        slotData->acceleration.z = curVelocity.Length2D() - slotData->prevVelocity.Length2D();
+        
         slotData->acceleration.x = std::abs(curVelocity.x) - std::abs(slotData->prevVelocity.x);
         slotData->acceleration.y = std::abs(curVelocity.y) - std::abs(slotData->prevVelocity.y);
+        slotData->acceleration.z = std::abs(curVelocity.z) - std::abs(slotData->prevVelocity.z);
 
         slotData->prevVelocity = curVelocity;
         slotData->prevTick = curTick;
@@ -285,15 +284,18 @@ HUD_ELEMENT2(velocity_angle, "0", "Draws velocity angles.\n", HudType_InGame | H
         ctx->DrawElement("vel ang: -");
     }
 }
-HUD_ELEMENT_MODE2(acceleration, "0", 0, 2, "Draws instant acceleration.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen)
+HUD_ELEMENT_MODE2(acceleration, "0", 0, 3, "Draws instant acceleration.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen)
 {
     auto player = server->GetPlayer(ctx->slot + 1);
     if (player) {
-        auto acceleration = tasTools->GetAcceleration(player);
-        if (mode == 1) {
-            ctx->DrawElement("accel: %.3f %.3f", acceleration.x, acceleration.y);
+        auto acc = tasTools->GetAcceleration(player);
+        int fp = sar_hud_precision.GetInt();
+        if (mode >= 3) {
+            ctx->DrawElement("accel: x : %.*f y : %.*f z : %.*f", fp, acc.x, fp, acc.y, fp, acc.z);
+        } else if (mode == 2) {
+            ctx->DrawElement("accel: %.*f %.*f", fp, acc.Length2D(), fp, acc.z);
         } else {
-            ctx->DrawElement("accel: %.3f", acceleration.z);
+            ctx->DrawElement("accel: %.*f", fp, acc.Length());
         }
     } else {
         ctx->DrawElement("accel: -");
