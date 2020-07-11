@@ -41,7 +41,7 @@ public:
 
     void AimAtPoint(void* player, float x, float y, float z, int doSlerp);
     Vector GetVelocityAngles(void* player);
-    Vector GetAcceleration(void* player);
+    Vector GetAcceleration(void* player, int mode);
     void* GetPlayerInfo(void* player);
     void SetAngles(void* player);
     QAngle Slerp(QAngle a0, QAngle a1, float speedInterpolation);

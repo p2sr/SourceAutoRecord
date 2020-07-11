@@ -92,7 +92,7 @@ Vector TasTools::GetVelocityAngles(void* player)
 
     return { RAD2DEG(yaw), RAD2DEG(pitch), 0 };
 }
-Vector TasTools::GetAcceleration(void* player)
+Vector TasTools::GetAcceleration(void* player, int mode)
 {
     auto slot = server->GetSplitScreenPlayerSlot(player);
     auto slotData = this->data[slot];
@@ -100,10 +100,17 @@ Vector TasTools::GetAcceleration(void* player)
     auto curTick = session->GetTick();
     if (slotData->prevTick != curTick) {
         auto curVelocity = server->GetLocalVelocity(player);
-        
-        slotData->acceleration.x = std::abs(curVelocity.x) - std::abs(slotData->prevVelocity.x);
-        slotData->acceleration.y = std::abs(curVelocity.y) - std::abs(slotData->prevVelocity.y);
-        slotData->acceleration.z = std::abs(curVelocity.z) - std::abs(slotData->prevVelocity.z);
+
+        if (mode >= 3) {
+            slotData->acceleration.x = std::abs(curVelocity.x) - std::abs(slotData->prevVelocity.x);
+            slotData->acceleration.y = std::abs(curVelocity.y) - std::abs(slotData->prevVelocity.y);
+            slotData->acceleration.z = std::abs(curVelocity.z) - std::abs(slotData->prevVelocity.z);
+        } else if (mode == 2) {
+            slotData->acceleration.x = curVelocity.Length2D() - slotData->prevVelocity.Length2D();
+            slotData->acceleration.z = std::abs(curVelocity.z) - std::abs(slotData->prevVelocity.z);
+        } else {
+            slotData->acceleration.x = curVelocity.Length() - slotData->prevVelocity.Length();
+        }
 
         slotData->prevVelocity = curVelocity;
         slotData->prevTick = curTick;
@@ -288,14 +295,14 @@ HUD_ELEMENT_MODE2(acceleration, "0", 0, 3, "Draws instant acceleration.\n", HudT
 {
     auto player = server->GetPlayer(ctx->slot + 1);
     if (player) {
-        auto acc = tasTools->GetAcceleration(player);
+        auto acc = tasTools->GetAcceleration(player, mode);
         int fp = sar_hud_precision.GetInt();
         if (mode >= 3) {
             ctx->DrawElement("accel: x : %.*f y : %.*f z : %.*f", fp, acc.x, fp, acc.y, fp, acc.z);
         } else if (mode == 2) {
-            ctx->DrawElement("accel: %.*f %.*f", fp, acc.Length2D(), fp, acc.z);
+            ctx->DrawElement("accel: %.*f %.*f", fp, acc.x, fp, acc.z);
         } else {
-            ctx->DrawElement("accel: %.*f", fp, acc.Length());
+            ctx->DrawElement("accel: %.*f", fp, acc.x);
         }
     } else {
         ctx->DrawElement("accel: -");
