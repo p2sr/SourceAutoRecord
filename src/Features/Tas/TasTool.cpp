@@ -25,6 +25,7 @@ const char* TasTool::GetName()
 void TasTool::SetParams(std::shared_ptr<TasToolParams> params)
 {
     this->params = params;
+    this->updated = true;
 }
 
 void TasTool::Reset() {

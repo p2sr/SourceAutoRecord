@@ -15,7 +15,7 @@ class TasTool {
 protected:
     const char* name;
     std::shared_ptr<TasToolParams> params = nullptr;
-
+    bool updated = false;
 public:
     TasTool(const char* name);
     ~TasTool();

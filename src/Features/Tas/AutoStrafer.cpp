@@ -85,7 +85,7 @@ float AutoStrafer::GetStrafeAngle(const StrafeState* strafe, void* pPlayer, cons
     float tau = server->gpGlobals->frametime; // A time for one frame to pass
 
     // Getting player's friction
-    float playerFriction = *reinterpret_cast<float*>((uintptr_t)pPlayer + Offsets::m_flFriction);
+    float playerFriction = *reinterpret_cast<float*>((uintptr_t)pPlayer + 4096); //m_surfaceFriction
     float friction = sv_friction.GetFloat() * playerFriction * 1;
 
     // Creating lambda(v) - velocity after ground friction

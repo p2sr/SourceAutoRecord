@@ -4,43 +4,61 @@
 #include "../TasPlayer.hpp"
 #include "../TasTool.hpp"
 
-enum AutoStraferType {
-    NONE,
+/*
+  AUTO STRAFING TOOL
+
+*/
+
+
+enum AutoStrafeType {
+    DISABLED,
     VECTORIAL,
     ANGULAR
 };
 
-enum AutoStraferDirectionType {
-    CURRENT,
-    LEFT,
-    RIGHT,
-    SPECIFIED
+enum AutoStrafeParamType {
+    SPECIFIED,
+    CURRENT
 };
 
-struct AutoStraferDirection {
-    AutoStraferDirectionType type;
+struct AutoStrafeDirection {
+    AutoStrafeParamType type;
     float angle;
-    bool processed = false;
 };
 
-struct AutoStraferSpeed {
-    bool max;
+struct AutoStrafeSpeed {
+    AutoStrafeParamType type;
     float speed;
 };
 
-struct AutoStraferParams : public TasToolParams {
-    AutoStraferType strafeType = NONE;
-    AutoStraferDirection strafeDir{ CURRENT, 0 };
-    AutoStraferSpeed strafeSpeed{ true, 0 };
-    AutoStraferParams()
+
+struct AutoStrafePlayerInfo {
+    int slot;
+    Vector position;
+    Vector rotation;
+    Vector velocity;
+    float surfaceFriction;
+    float maxSpeed;
+    bool ducked;
+    bool grounded;
+};
+
+
+struct AutoStrafeParams : public TasToolParams {
+    AutoStrafeType strafeType = DISABLED;
+    AutoStrafeDirection strafeDir = { CURRENT, 0.0f };
+    AutoStrafeSpeed strafeSpeed = { SPECIFIED, 10000.0f };
+    bool turningPriority = false;
+    AutoStrafeParams()
         : TasToolParams()
     {}
 
-    AutoStraferParams(AutoStraferType type, AutoStraferDirection dir, AutoStraferSpeed speed)
+    AutoStrafeParams(AutoStrafeType type, AutoStrafeDirection dir, AutoStrafeSpeed speed, bool turningPriority)
         : TasToolParams()
         , strafeType(type)
         , strafeDir(dir)
         , strafeSpeed(speed)
+        , turningPriority(turningPriority)
     {
     }
 };
@@ -53,6 +71,10 @@ public:
     virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
     virtual void Apply(TasFramebulk& fb);
     virtual void Reset();
+
+    AutoStrafePlayerInfo GetCurrentPlayerInfo(int slot);
+    float GetStrafeAngle(AutoStrafePlayerInfo& player, float desiredAngle, float desiredSpeed, bool turningPriority);
+    Vector PredictNextVector(AutoStrafePlayerInfo& player, float angle);
 };
 
 extern AutoStrafeTool autoStrafeTool;
