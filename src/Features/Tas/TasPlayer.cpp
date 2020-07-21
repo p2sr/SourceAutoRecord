@@ -37,6 +37,7 @@ std::string TasFramebulk::ToString()
 
 
 TasPlayer::TasPlayer()
+    : startInfo({ TasStartType::UnknownStart, "" })
 {
 }
 
@@ -127,6 +128,11 @@ void TasPlayer::ProcessFramebulk(TasFramebulk& rawFb)
 void TasPlayer::SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue)
 {
     this->framebulkQueue = fbQueue;
+}
+
+void TasPlayer::SetStartInfo(TasStartType type, const char* param)
+{
+    this->startInfo = TasStartInfo{ type, param };
 }
 
 

@@ -13,10 +13,6 @@ std::regex const regexVector{ R"((?:(-?\d*\.?\d*)(?:\s)*(-?\d*\.?\d*))(?:\s)*)" 
 std::regex const regexTool{ R"(\s+)" };
 std::regex const regexNumber{ R"((-?\d*\.?\d*))" };
 
-TasParser::TasParser()
-{
-}
-
 std::vector<TasFramebulk> TasParser::ParseFile(std::string filePath)
 {
     std::ifstream file(filePath, std::fstream::in);
@@ -26,6 +22,18 @@ std::vector<TasFramebulk> TasParser::ParseFile(std::string filePath)
 
     std::vector<std::string> lines;
     std::string line;
+
+    if (std::getline(file, line)) {
+        if (!line.empty() || (line.size() > 2 && line[0] != '/' && line[1] != '/')) { //Commentary
+            try {
+                if (!TasParser::ParseHeader(line)) {
+                    lines.push_back(line);
+                }
+            } catch(TasParserException& e) {
+                throw;
+            }
+        }
+    }
 
     while (std::getline(file, line))
         lines.push_back(line);
@@ -40,6 +48,43 @@ std::vector<TasFramebulk> TasParser::ParseFile(std::string filePath)
     }
 
     return fb;
+}
+
+bool TasParser::ParseHeader(std::string line)
+{
+    std::stringstream ss(line);
+    std::string tmp;
+    if (!std::getline(ss, tmp))
+        throw TasParserException("Can't parse header : " + line);
+
+    std::for_each(tmp.begin(), tmp.end(), [](char& c) { c = std::tolower(c); });
+
+    auto startParams = TasParser::Tokenize(tmp); //startParams = {"start", "map", "sp_a1_intro1""}
+    if (startParams[0] != "start") {
+        tasPlayer->SetStartInfo(TasStartType::UnknownStart, "");
+        return false;
+    }
+
+    TasStartType type = TasStartType::UnknownStart;
+    if (startParams.size() > 1) {
+        if (startParams[1] == "map") {
+            type = TasStartType::ChangeLevel;
+        } else if (startParams[1] == "save") {
+            type = TasStartType::LoadQuicksave;
+        } else if (startParams[1] == "now") {
+            type = TasStartType::StartImmediately;
+        } else if (startParams[1] == "next") {
+            type = TasStartType::WaitForNewSession;
+        }
+    }
+
+    std::string param = "";
+    if (startParams.size() > 2) {
+        param = startParams[2];
+    }
+
+    tasPlayer->SetStartInfo(type, param.c_str());
+    return true;
 }
 
 std::vector<TasFramebulk> TasParser::ParseAllLines(std::vector<std::string>& lines)

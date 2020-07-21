@@ -23,18 +23,17 @@ struct RawFramebulk {
     std::string raw;
 };
 
-class TasParser {
-public:
-    TasParser();
+namespace TasParser {
+    std::vector<TasFramebulk> ParseFile(std::string filePath);
+    bool ParseHeader(std::string filePath);
+    std::vector<TasFramebulk> ParseAllLines(std::vector<std::string>& lines);
+    RawFramebulk PreParseLine(std::string& line, const unsigned int lineNumber);
+    TasFramebulk ParseRawFramebulk(RawFramebulk& bulk, TasFramebulk& previous);
+    Vector ParseVector(std::string& str);
+    std::vector<std::string> Tokenize(std::string& str, char separator = ' ');
+    std::vector<std::string> ParseTool(std::string& str);
+    int toInt(std::string& str);
+    float toFloat(std::string& str);
+    bool isNumber(std::string& str);
 
-    static std::vector<TasFramebulk> ParseFile(std::string filePath);
-    static std::vector<TasFramebulk> ParseAllLines(std::vector<std::string>& lines);
-    static RawFramebulk PreParseLine(std::string& line, const unsigned int lineNumber);
-    static TasFramebulk ParseRawFramebulk(RawFramebulk& bulk, TasFramebulk& previous);
-    static Vector ParseVector(std::string& str);
-    static std::vector<std::string> Tokenize(std::string& str, char separator = ' ');
-    static std::vector<std::string> ParseTool(std::string& str);
-    static int toInt(std::string& str);
-    static float toFloat(std::string& str);
-    static bool isNumber(std::string& str);
 };
