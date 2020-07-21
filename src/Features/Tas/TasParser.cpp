@@ -24,7 +24,7 @@ std::vector<TasFramebulk> TasParser::ParseFile(std::string filePath)
     std::string line;
 
     if (std::getline(file, line)) {
-        if (!line.empty() || (line.size() > 2 && line[0] != '/' && line[1] != '/')) { //Commentary
+        if (!line.empty() && (line.size() > 2 && line[0] != '/' && line[1] != '/')) { //Commentary
             try {
                 if (!TasParser::ParseHeader(line)) {
                     lines.push_back(line);
