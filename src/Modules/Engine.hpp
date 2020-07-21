@@ -28,6 +28,7 @@ public:
     using _SetViewAngles = int(__rescall*)(void* thisptr, QAngle& va);
     using _GetMaxClients = int (*)();
     using _GetGameDirectory = char*(__cdecl*)();
+    using _GetSaveDirName = char*(__cdecl*)();
     using _AddListener = bool(__rescall*)(void* thisptr, IGameEventListener2* listener, const char* name, bool serverside);
     using _RemoveListener = bool(__rescall*)(void* thisptr, IGameEventListener2* listener);
     using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
@@ -53,6 +54,7 @@ public:
     _SetViewAngles SetViewAngles = nullptr;
     _GetMaxClients GetMaxClients = nullptr;
     _GetGameDirectory GetGameDirectory = nullptr;
+    _GetSaveDirName GetSaveDirName = nullptr;
     _GetActiveSplitScreenPlayerSlot GetActiveSplitScreenPlayerSlot = nullptr;
     _AddListener AddListener = nullptr;
     _RemoveListener RemoveListener = nullptr;

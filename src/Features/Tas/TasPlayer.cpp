@@ -11,6 +11,8 @@
 #include "Features/Tas/TasTools/TestTool.hpp"
 #include "Features/Tas/TasParser.hpp"
 
+#include <fstream>
+
 Variable sar_tas2_debug("sar_tas2_debug", "1", 0, 1, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
 
 TasPlayer* tasPlayer;
@@ -70,12 +72,47 @@ void TasPlayer::Activate()
         }
     }
 
-    //TODO: put level change and save loading here, depending on start info
-
     if (startInfo.type == StartImmediately) {
         ready = true;
     } else {
         ready = false;
+
+        if (startInfo.type == ChangeLevel) {
+            //check if map exists
+            std::string mapPath = std::string(engine->GetGameDirectory()) + "/maps/" + startInfo.param + ".bsp";
+            std::ifstream mapf(mapPath);
+            if (mapf.good()) {
+                std::string cmd = "map ";
+                if (session->isRunning) {
+                    std::string cmd = "changelevel ";
+                }
+                cmd += startInfo.param;
+                char cmdbuf[128];
+                snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
+                engine->ExecuteCommand(cmdbuf);
+            } else {
+                console->ColorMsg(Color(255, 100, 100), "Cannot activate TAS file - unknown map '%s.'\n", startInfo.param);
+                Stop();
+                return;
+            }
+            mapf.close();
+        } else if (startInfo.type == LoadQuicksave){
+            //check if save file exists
+            std::string savePath = std::string(engine->GetGameDirectory()) + "/" + engine->GetSaveDirName() + startInfo.param + ".sav";
+            std::ifstream savef(savePath);
+            if (savef.good()) {
+                std::string cmd = "load ";
+                cmd += startInfo.param;
+                char cmdbuf[128];
+                snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
+                engine->ExecuteCommand(cmdbuf);
+            } else {
+                console->ColorMsg(Color(255, 100, 100), "Cannot activate TAS file - unknown save file '%s'.\n", startInfo.param);
+                Stop();
+                return;
+            }
+            savef.close();
+        }
     }
 
     console->Print("TAS script has been activated.\n");
@@ -92,7 +129,9 @@ void TasPlayer::Start() {
 
 void TasPlayer::Stop()
 {
-    console->Print("TAS script has ended after %d ticks.\n", currentTick);
+    if (active && ready) {
+        console->Print("TAS script has ended after %d ticks.\n", currentTick);
+    }
 
     active = false;
     ready = false;
@@ -184,7 +223,7 @@ void TasPlayer::Update()
         if (ready && session->isRunning) {
             currentTick++;
 
-            //someone told me that would make physics deterministic >:(
+            //someone told me that would make physics deterministic (it does not! >:( )
             if (currentTick == 0) {
                 //engine->ExecuteCommand("phys_timescale 1");
             }
@@ -216,7 +255,7 @@ CON_COMMAND(sar_tas2_test,
         return console->Print(sar_tas2_test.ThisPtr()->m_pszHelpString);
     }
 
-    tasPlayer->Activate();
+    console->Print("%s\n", engine->GetSaveDirName());
 }
 
 
