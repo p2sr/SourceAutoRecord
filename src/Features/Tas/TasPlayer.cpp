@@ -72,47 +72,42 @@ void TasPlayer::Activate()
         }
     }
 
-    if (startInfo.type == StartImmediately) {
-        ready = true;
-    } else {
-        ready = false;
-
-        if (startInfo.type == ChangeLevel) {
-            //check if map exists
-            std::string mapPath = std::string(engine->GetGameDirectory()) + "/maps/" + startInfo.param + ".bsp";
-            std::ifstream mapf(mapPath);
-            if (mapf.good()) {
-                std::string cmd = "map ";
-                if (session->isRunning) {
-                    std::string cmd = "changelevel ";
-                }
-                cmd += startInfo.param;
-                char cmdbuf[128];
-                snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
-                engine->ExecuteCommand(cmdbuf);
-            } else {
-                console->ColorMsg(Color(255, 100, 100), "Cannot activate TAS file - unknown map '%s.'\n", startInfo.param);
-                Stop();
-                return;
+    ready = false;
+    if (startInfo.type == ChangeLevel) {
+        //check if map exists
+        std::string mapPath = std::string(engine->GetGameDirectory()) + "/maps/" + startInfo.param + ".bsp";
+        std::ifstream mapf(mapPath);
+        if (mapf.good()) {
+            std::string cmd = "map ";
+            if (session->isRunning) {
+                std::string cmd = "changelevel ";
             }
-            mapf.close();
-        } else if (startInfo.type == LoadQuicksave){
-            //check if save file exists
-            std::string savePath = std::string(engine->GetGameDirectory()) + "/" + engine->GetSaveDirName() + startInfo.param + ".sav";
-            std::ifstream savef(savePath);
-            if (savef.good()) {
-                std::string cmd = "load ";
-                cmd += startInfo.param;
-                char cmdbuf[128];
-                snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
-                engine->ExecuteCommand(cmdbuf);
-            } else {
-                console->ColorMsg(Color(255, 100, 100), "Cannot activate TAS file - unknown save file '%s'.\n", startInfo.param);
-                Stop();
-                return;
-            }
-            savef.close();
+            cmd += startInfo.param;
+            char cmdbuf[128];
+            snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
+            engine->ExecuteCommand(cmdbuf);
+        } else {
+            console->ColorMsg(Color(255, 100, 100), "Cannot activate TAS file - unknown map '%s.'\n", startInfo.param);
+            Stop();
+            return;
         }
+        mapf.close();
+    } else if (startInfo.type == LoadQuicksave){
+        //check if save file exists
+        std::string savePath = std::string(engine->GetGameDirectory()) + "/" + engine->GetSaveDirName() + startInfo.param + ".sav";
+        std::ifstream savef(savePath);
+        if (savef.good()) {
+            std::string cmd = "load ";
+            cmd += startInfo.param;
+            char cmdbuf[128];
+            snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
+            engine->ExecuteCommand(cmdbuf);
+        } else {
+            console->ColorMsg(Color(255, 100, 100), "Cannot activate TAS file - unknown save file '%s'.\n", startInfo.param);
+            Stop();
+            return;
+        }
+        savef.close();
     }
 
     console->Print("TAS script has been activated.\n");
@@ -216,8 +211,10 @@ void TasPlayer::FetchInputs(TasController* controller)
 void TasPlayer::Update()
 {
     if (active) {
-        if (!ready && !session->isRunning) {
-            Start();
+        if (!ready) {
+            if (startInfo.type == StartImmediately || !session->isRunning) {
+                Start();
+            }
         }
 
         if (ready && session->isRunning) {
