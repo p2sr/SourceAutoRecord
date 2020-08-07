@@ -2,11 +2,12 @@
 #include "../TasTool.hpp"
 
 struct AutoJumpToolParams : public TasToolParams {
-    bool enabled = false;
-    AutoJumpToolParams() {}
-    AutoJumpToolParams(bool enabled)
+    AutoJumpToolParams()
         : TasToolParams()
-        , enabled(enabled)
+    {
+    }
+    AutoJumpToolParams(bool enabled)
+        : TasToolParams(enabled)
     {
     }
 };

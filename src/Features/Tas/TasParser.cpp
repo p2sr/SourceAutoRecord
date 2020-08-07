@@ -230,7 +230,7 @@ TasFramebulk TasParser::ParseRawFramebulk(RawFramebulk& raw, TasFramebulk& previ
             std::stringstream ss2(tmp);
             std::string tmp2;
 
-            while (std::getline(ss2, tmp2, ' '))
+            while (std::getline(ss2, tmp2, ';'))
                 bulk.commands.push_back(tmp2);
         } break;
         case 4: //Tools. ex: strafe move; autojump on

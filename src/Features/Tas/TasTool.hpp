@@ -5,9 +5,9 @@
 struct TasFramebulk;
 
 struct TasToolParams {
-    std::vector<std::string> raw;
+    bool enabled = false;
     TasToolParams() {}
-    TasToolParams(std::vector<std::string> rawParams) : raw(rawParams) {}
+    TasToolParams(bool enabled) : enabled(enabled) {}
 };
 
 

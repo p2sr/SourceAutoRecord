@@ -5,8 +5,15 @@
 
 struct TestToolParams : public TasToolParams {
     float force = 0;
-    TestToolParams(){};
-    TestToolParams(float f) : TasToolParams(), force(f) {}
+    TestToolParams()
+        : TasToolParams()
+    {
+    }
+    TestToolParams(float f)
+        : TasToolParams(true)
+        , force(f)
+    {
+    }
 };
 
 

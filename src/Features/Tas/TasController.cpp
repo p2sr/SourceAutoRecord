@@ -118,7 +118,10 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
         console->Print("%.5f %.5f\n", cmd->forwardmove, cmd->sidemove);
     }
 
+    /*ControllerMove is executed several times a frame, idk why
+    But only once with tick_count bigger than 0*/
     if (!enabled || cmd->tick_count==0) return;
+
     //console->Print("TasController::ControllerMove (%d, ", cmd->tick_count);
 
     tasPlayer->FetchInputs(this);

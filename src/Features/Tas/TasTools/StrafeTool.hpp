@@ -49,12 +49,13 @@ struct AutoStrafeParams : public TasToolParams {
     AutoStrafeDirection strafeDir = { CURRENT, 0.0f };
     AutoStrafeSpeed strafeSpeed = { SPECIFIED, 10000.0f };
     bool turningPriority = false;
+
     AutoStrafeParams()
         : TasToolParams()
     {}
 
     AutoStrafeParams(AutoStrafeType type, AutoStrafeDirection dir, AutoStrafeSpeed speed, bool turningPriority)
-        : TasToolParams()
+        : TasToolParams(true)
         , strafeType(type)
         , strafeDir(dir)
         , strafeSpeed(speed)
