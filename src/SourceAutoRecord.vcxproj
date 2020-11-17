@@ -149,6 +149,7 @@
     <ClCompile Include="Features\Rebinder.cpp" />
     <ClCompile Include="Features\Routing\EntityInspector.cpp" />
     <ClCompile Include="Features\Routing\Tracer.cpp" />
+    <ClCompile Include="Features\SegmentedTools.cpp" />
     <ClCompile Include="Features\Session.cpp" />
     <ClCompile Include="Features\Speedrun\Rules\ApertureTagRules.cpp" />
     <ClCompile Include="Features\Speedrun\Rules\DebugRule.cpp" />
@@ -336,6 +337,7 @@
     <ClInclude Include="Features\Rebinder.hpp" />
     <ClInclude Include="Features\Routing\EntityInspector.hpp" />
     <ClInclude Include="Features\Routing\Tracer.hpp" />
+    <ClInclude Include="Features\SegmentedTools.hpp" />
     <ClInclude Include="Features\Session.hpp" />
     <ClInclude Include="Features\Speedrun\Rules\ApertureTagRules.hpp" />
     <ClInclude Include="Features\Speedrun\Rules\DebugRule.hpp" />

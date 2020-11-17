@@ -29,3 +29,4 @@
 #include "Features/WorkshopList.hpp"
 #include "Features/Demo/GhostPlayer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
+#include "Features/SegmentedTools.hpp"

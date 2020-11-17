@@ -157,15 +157,15 @@ bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std:
                 {
                     int32_t length;
                     file.read((char*)&length, sizeof(length));
-                    if (outputMode >= 1) {
                         std::string cmd(length, ' ');
                         file.read(&cmd[0], length);
-                        if (!ghostRequest) {
+                        if (!ghostRequest && outputMode >= 1) {
                             console->Msg("[%i] %s\n", tick, cmd.c_str());
                         }
-                    } else {
-                        file.ignore(length);
-                    }
+
+                        if (cmd.find("__END__") != std::string::npos) {
+                            console->ColorMsg(Color(0, 255, 0, 255), "Segment length -> %d ticks : %.3fs\n", tick, tick / 60.f);
+                        }
                     break;
                 }
                 case 0x05: // UserCmd

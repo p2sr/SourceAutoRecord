@@ -14,6 +14,7 @@
 #include "Features/Summary.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Timer/Timer.hpp"
+#include "Features/SegmentedTools.hpp"
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -213,6 +214,8 @@ void Session::Ended()
     stats->Get(nSlot)->statsCounter->RecordDatas(tick);
 
     networkManager.DeleteAllGhosts();
+    
+    segmentedTools->waitTick = -1;
 
     this->isRunning = false;
 }

@@ -19,6 +19,7 @@
 #include "Features/Demo/GhostPlayer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Demo/DemoGhostPlayer.hpp"
+#include "Features/SegmentedTools.hpp"
 
 #include "Engine.hpp"
 #include "Client.hpp"
@@ -334,6 +335,10 @@ DETOUR(Server::GameFrame, bool simulating)
         } else if (server->paused && simulating && engine->GetTick() > server->pauseTick + 5) {
             server->paused = false;
         }
+    }
+
+    if (segmentedTools->waitTick == session->GetTick() && simulating) {
+        engine->ExecuteCommand(segmentedTools->pendingCommands.c_str());
     }
 
     if (session->isRunning && session->GetTick() == 16) {

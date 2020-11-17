@@ -349,6 +349,9 @@
     <ClCompile Include="Features\Hud\StrafeSyncHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\SegmentedTools.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -833,6 +836,9 @@
     </ClInclude>
     <ClInclude Include="Features\Hud\StrafeSyncHud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\SegmentedTools.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
