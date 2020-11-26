@@ -47,7 +47,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Tracer>(&tracer);
             this->features->AddFeature<SpeedrunTimer>(&speedrun);
             this->features->AddFeature<Stats>(&stats);
-            this->features->AddFeature<Sync>(&sync);
+            this->features->AddFeature<Sync>(&synchro);
             this->features->AddFeature<CommandQueuer>(&cmdQueuer);
             this->features->AddFeature<ReplayRecorder>(&replayRecorder1);
             this->features->AddFeature<ReplayRecorder>(&replayRecorder2);
@@ -247,8 +247,10 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
     auto statCounter = stats->Get(GET_SLOT())->statsCounter;
     statCounter->RecordDatas(session->GetTick());
     statCounter->ExportToFile(sar_statcounter_filePath.GetString());
-  
+
+#ifdef __NETWORK__
     networkManager.Disconnect();
+#endif
 
     if (sar.cheats) {
         sar.cheats->Shutdown();

@@ -20,7 +20,7 @@ SRCS+=$(wildcard $(SDIR)Utils/*.cpp)
 OBJS=$(patsubst $(SDIR)%.cpp, $(ODIR)%.o, $(SRCS))
 
 CC=g++-8
-STFU=-Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas
+STFU=-Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas -Who-register
 CFLAGS=-std=c++17 -m32 -fPIC -static-libstdc++ -shared -Wall -s $(STFU) -I$(SDIR)
 #CFLAGS+=-D _DEBUG
 EXPORT=cp -fu

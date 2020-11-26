@@ -66,9 +66,9 @@ inline void Math::VectorCopy(const Vector& src, Vector& dst)
 }
 inline float Math::Distance(const Vector& a, const Vector& b)
 {
-    return std::sqrtf(std::powf(b.x - a.x, 2) + std::powf(b.y - a.y, 2) + std::powf(b.z - a.z, 2));
+    return std::sqrt(std::pow(b.x - a.x, 2) + std::pow(b.y - a.y, 2) + std::pow(b.z - a.z, 2));
 }
 inline float Math::Distance(const QAngle& a, const QAngle& b)
 {
-    return std::sqrtf(std::powf(b.x - a.x, 2) + std::powf(b.y - a.y, 2) + std::powf(b.z - a.z, 2));
+    return std::sqrt(std::pow(b.x - a.x, 2) + std::pow(b.y - a.y, 2) + std::pow(b.z - a.z, 2));
 }

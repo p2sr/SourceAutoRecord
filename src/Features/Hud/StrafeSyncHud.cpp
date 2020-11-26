@@ -28,7 +28,11 @@ void StrafeSyncHud::Paint(int slot)
 {
 
     int width, height;
+#ifdef __WIN32
     engine->GetScreenSize(width, height);
+#else
+    engine->GetScreenSize(nullptr, width, height);
+#endif
 
     auto xOffset = width / 2 + sar_hud_strafesync_offset_x.GetInt();
     auto yOffset = sar_hud_strafesync_offset_y.GetInt();
@@ -36,11 +40,11 @@ void StrafeSyncHud::Paint(int slot)
     auto font = scheme->GetDefaultFont() + sar_hud_strafesync_font_index.GetInt();
     auto fontColor = this->GetColor(sar_hud_strafesync_color.GetString());
 
-    surface->DrawTxt(font, xOffset, yOffset, fontColor, "%.2f", sync->GetStrafeSync());
+    surface->DrawTxt(font, xOffset, yOffset, fontColor, "%.2f", synchro->GetStrafeSync());
 
-    for (int i = 0; i < sync->splits.size(); ++i) {
+    for (int i = 0; i < synchro->splits.size(); ++i) {
         char txt[16];
-        std::sprintf(txt, "%d: %.2f  ", i, sync->splits[i]);
+        std::sprintf(txt, "%d: %.2f  ", i, synchro->splits[i]);
 
         auto length = surface->GetFontLength(font, txt);
         surface->DrawRectAndCenterTxt(Color(255, 0, 0), i * length + 10, sar_hud_strafesync_split_offset_y.GetInt(), i * length + length, sar_hud_strafesync_split_offset_y.GetInt(), font, fontColor, txt);

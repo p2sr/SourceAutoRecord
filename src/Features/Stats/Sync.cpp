@@ -6,13 +6,15 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 
+#include <algorithm>
+
 Variable sar_strafesync("sar_strafesync", "0", "Shows strafe sync stats.\n");
 Variable sar_strafesync_session_time("sar_strafesync_session_time", "0", 0, "In seconds. How much time should pass until session is reset.\n"
                                                                             "If 0, you'll have to reset the session manually.\n");
 Variable sar_strafesync_noground("sar_strafesync_noground", "0", "0: Always run.\n"
                                                                  "1: Do not run when on ground.\n");
 
-Sync* sync;
+Sync* synchro;
 
 Sync::Sync()
     : lastButtons(0)
@@ -131,20 +133,20 @@ float Sync::GetStrafeSync()
 
 CON_COMMAND(sar_strafesync_pause, "Pause strafe sync session.\n")
 {
-    sync->PauseSyncSession();
+    synchro->PauseSyncSession();
 }
 
 CON_COMMAND(sar_strafesync_resume, "Resume strafe sync session.\n")
 {
-    sync->ResumeSyncSession();
+    synchro->ResumeSyncSession();
 }
 
 CON_COMMAND(sar_strafesync_reset, "Reset strafe sync session.\n")
 {
-    sync->ResetSyncSession();
+    synchro->ResetSyncSession();
 }
 
 CON_COMMAND(sar_strafesync_split, "Makes a new split.\n")
 {
-    sync->SplitSyncSession();
+    synchro->SplitSyncSession();
 }

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cstdarg>
 
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Imitator.hpp"
@@ -144,7 +145,7 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
 
     
     if (sar_strafesync.GetBool()) {
-        sync->UpdateSync(cmd);
+        synchro->UpdateSync(cmd);
     }
 
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);

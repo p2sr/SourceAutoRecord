@@ -3,8 +3,6 @@
 
 #include "Demo.hpp"
 
-#include "SFML/Network.hpp"
-
 struct DemoDatas {
     std::vector<DataGhost> levelDatas;
     Demo demo;
@@ -30,7 +28,7 @@ public:
     bool isAhead;
 
 public:
-    DemoGhostEntity(sf::Uint32 ID, std::string name, DataGhost data, std::string currentMap);
+    DemoGhostEntity(unsigned int ID, std::string name, DataGhost data, std::string currentMap);
     void ChangeLevel(const std::string& mapName);
     void ChangeDemo(const unsigned int demoID);
     //Add demo for full game ghost

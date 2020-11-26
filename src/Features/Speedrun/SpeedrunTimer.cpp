@@ -189,9 +189,11 @@ void SpeedrunTimer::Stop(bool addSegment, bool stopedByUser)
         this->result.get()->EndSplit(this->total);
         this->pause = 0;
 
+#ifdef __WIN32
         if (networkManager.isConnected) {
             networkManager.NotifySpeedrunFinished();
         }
+#endif
     } else {
         console->Print("Ready for new speedun!\n");
         this->pubInterface.get()->SetAction(TimerAction::Reset);

@@ -1,3 +1,4 @@
+#ifdef __NETWORK__
 #include "NetworkGhostPlayer.hpp"
 
 #include "Modules/Client.hpp"
@@ -53,7 +54,6 @@ sf::Packet& operator<<(sf::Packet& packet, const HEADER& header)
     return packet << static_cast<sf::Uint8>(header);
 }
 
-Variable ghost_sync("ghost_sync", "0", "When loading a new level, pauses the game until other players load it.\n");
 Variable ghost_TCP_only("ghost_TCP_only", "0", "Lathil's special command :).\n");
 Variable ghost_update_rate("ghost_update_rate", "50", 1, "Adjust the update rate. For people with lathil's internet.\n");
 Variable ghost_show_difference("ghost_show_difference", "0", "Display time difference between players after they load a map.\n");
@@ -589,3 +589,4 @@ CON_COMMAND(ghost_ping, "Pong !\n")
 {
     networkManager.SendPing();
 }
+#endif

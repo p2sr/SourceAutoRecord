@@ -12,6 +12,9 @@
 #include <filesystem>
 #include <fstream>
 
+
+Variable ghost_sync("ghost_sync", "0", "When loading a new level, pauses the game until other players load it.\n");
+
 DemoGhostPlayer demoGhostPlayer;
 
 DemoGhostPlayer::DemoGhostPlayer()
@@ -72,7 +75,7 @@ void DemoGhostPlayer::DeleteAllGhosts()
     this->isPlaying = false;
 }
 
-void DemoGhostPlayer::DeleteGhostsByID(const sf::Uint32 ID)
+void DemoGhostPlayer::DeleteGhostsByID(const unsigned int ID)
 {
     for (int i = 0; i < this->ghostPool.size(); ++i) {
         if (this->ghostPool[i].ID == ID) {
@@ -143,7 +146,7 @@ DemoGhostEntity* DemoGhostPlayer::GetGhostByID(int ID)
     return nullptr;
 }
 
-bool DemoGhostPlayer::SetupGhostFromDemo(const std::string& demo_path, const sf::Uint32 ghost_ID, bool fullGame)
+bool DemoGhostPlayer::SetupGhostFromDemo(const std::string& demo_path, const unsigned int ghost_ID, bool fullGame)
 {
     DemoParser parser;
     Demo demo;
@@ -225,13 +228,13 @@ void DemoGhostPlayer::DrawNames(HudContext* ctx)
     }
 }
 
-CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demo, "ghost_set_demo <demo> [ID]. Ghost will use this demo. If ID is specified, will create or modify the ID-ème ghost.\n", 0, 0, dem)
+CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demo, "ghost_set_demo <demo> [ID]. Ghost will use this demo. If ID is specified, will create or modify the ID-ï¿½me ghost.\n", 0, 0, dem)
 {
     if (args.ArgC() < 2) {
         return console->Print(ghost_set_demo.ThisPtr()->m_pszHelpString);
     }
 
-    sf::Uint32 ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
+    unsigned int ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
     if (demoGhostPlayer.SetupGhostFromDemo(engine->GetGameDirectory() + std::string("/") + args[1], ID, false)) {
         console->Print("Ghost sucessfully created ! Final time of the ghost : %s\n", SpeedrunTimer::Format(demoGhostPlayer.GetGhostByID(ID)->GetTotalTime()).c_str());
     } else {
@@ -250,7 +253,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demos, "ghost_set_demos <first_demo> [ID]
         return console->Print(ghost_set_demo.ThisPtr()->m_pszHelpString);
     }
 
-    sf::Uint32 ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
+    unsigned int ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
 
     auto dir = engine->GetGameDirectory() + std::string("/") + args[1];
     int counter = 2;
@@ -317,7 +320,7 @@ CON_COMMAND(ghost_offset, "ghost_offset <offset> <ID>. Delay the ghost start by 
         return console->Print(ghost_offset.ThisPtr()->m_pszHelpString);
     }
 
-    sf::Uint32 ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
+    unsigned int ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
 
     auto ghost = demoGhostPlayer.GetGhostByID(ID);
     if (ghost) {

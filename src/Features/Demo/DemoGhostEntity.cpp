@@ -1,5 +1,4 @@
 #include "DemoGhostEntity.hpp"
-#include "SFML/Network.hpp"
 
 #include "DemoGhostPlayer.hpp"
 #include "NetworkGhostPlayer.hpp"
@@ -8,7 +7,7 @@
 
 #include <algorithm>
 
-DemoGhostEntity::DemoGhostEntity(sf::Uint32 ID, std::string name, DataGhost data, std::string currentMap)
+DemoGhostEntity::DemoGhostEntity(unsigned int ID, std::string name, DataGhost data, std::string currentMap)
     : GhostEntity(ID, name, data, currentMap)
     , tick(0)
     , demoTick(0)

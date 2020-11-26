@@ -15,7 +15,7 @@ Variable ghost_transparency("ghost_transparency", "255", 0, 256, "Transparency o
 Variable ghost_text_offset("ghost_text_offset", "20", -1024, "Offset of the name over the ghosts.\n");
 Variable ghost_show_advancement("ghost_show_advancement", "1", "Show the advancement of the ghosts.\n");
 
-GhostEntity::GhostEntity(sf::Uint32& ID, std::string& name, DataGhost& data, std::string& current_map)
+GhostEntity::GhostEntity(unsigned int& ID, std::string& name, DataGhost& data, std::string& current_map)
     : ID(ID)
     , name(name)
     , data(data)
@@ -70,7 +70,7 @@ void GhostEntity::SetData(Vector pos, QAngle ang)
     this->lastUpdate = now;
 }
 
-void GhostEntity::SetupGhost(sf::Uint32& ID, std::string& name, DataGhost& data, std::string& current_map)
+void GhostEntity::SetupGhost(unsigned int& ID, std::string& name, DataGhost& data, std::string& current_map)
 {
     this->ID = ID;
     this->name = name;
@@ -127,8 +127,10 @@ void GhostEntity::KillGhost(const bool newEntity)
 
 HUD_ELEMENT(ghost_show_name, "1", "Display the name of the ghost over it.\n", HudType_InGame)
 {
+#ifdef __NETWORK__
     if (networkManager.isConnected)
         networkManager.DrawNames(ctx);
+#endif
 
     if (demoGhostPlayer.IsPlaying())
         demoGhostPlayer.DrawNames(ctx);
@@ -142,9 +144,11 @@ CON_COMMAND_COMPLETION(ghost_prop_model, "Set the prop model. Example : models/p
         return console->Print(ghost_prop_model.ThisPtr()->m_pszHelpString);
     }
 
+#ifdef __NETWORK__
     if (networkManager.isConnected) {
         networkManager.UpdateModel(args[1]);
     }
+#endif
 
     demoGhostPlayer.UpdateGhostsModel(args[1]);
 }

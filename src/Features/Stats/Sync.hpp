@@ -38,7 +38,7 @@ public:
     float GetStrafeSync();
 };
 
-extern Sync* sync;
+extern Sync* synchro;
 
 extern Variable sar_strafesync;
 extern Variable sar_strafesync_session_time;

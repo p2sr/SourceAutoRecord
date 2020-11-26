@@ -32,7 +32,7 @@ public:
     void PauseAllGhosts();
     void ResumeAllGhosts();
     void DeleteAllGhosts();
-    void DeleteGhostsByID(const sf::Uint32 ID);
+    void DeleteGhostsByID(const unsigned int ID);
     void KillAllGhosts(const bool newEntity);
     void UpdateGhostsPosition();
     void UpdateGhostsSameMap();
@@ -41,7 +41,7 @@ public:
 
     DemoGhostEntity* GetGhostByID(int ID);
 
-    bool SetupGhostFromDemo(const std::string& demo_path, const sf::Uint32 ghost_ID, bool fullGame);
+    bool SetupGhostFromDemo(const std::string& demo_path, const unsigned int ghost_ID, bool fullGame);
     void AddGhost(DemoGhostEntity& ghost);
     bool IsPlaying();
     bool IsFullGame();
@@ -52,6 +52,7 @@ public:
 
 extern DemoGhostPlayer demoGhostPlayer;
 
+extern Variable ghost_sync;
 extern Command ghost_set_demo;
 extern Command ghost_set_demos;
 extern Command ghost_delete_all;

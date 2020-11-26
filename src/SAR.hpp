@@ -16,6 +16,7 @@
 #define SAR_VERSION "1.11"
 #define SAR_BUILD __TIME__ " " __DATE__
 #define SAR_WEB "https://nekzor.github.io/SourceAutoRecord"
+//#define __NETWORK__
 
 #define SAFE_UNLOAD_TICK_DELAY 33
 

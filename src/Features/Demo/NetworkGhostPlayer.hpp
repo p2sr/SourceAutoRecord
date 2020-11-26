@@ -1,3 +1,4 @@
+#ifdef __NETWORK__
 #pragma once
 #include "Command.hpp"
 #include "Variable.hpp"
@@ -95,7 +96,6 @@ public:
 
 extern NetworkManager networkManager;
 
-extern Variable ghost_sync;
 extern Variable ghost_TCP_only;
 extern Variable ghost_update_rate;
 extern Variable ghost_show_difference;
@@ -104,3 +104,5 @@ extern Command ghost_disconnect;
 extern Command ghost_message;
 extern Command ghost_ping;
 extern Command ghost_name;
+
+#endif

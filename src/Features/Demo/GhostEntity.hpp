@@ -1,5 +1,7 @@
 #pragma once
+#ifdef __NETWORK__
 #include "SFML/Network.hpp"
+#endif
 
 #include "Command.hpp"
 #include "Utils/SDK.hpp"
@@ -20,7 +22,7 @@ private:
     Vector p3;
 
 public:
-    sf::Uint32 ID;
+    unsigned int ID;
     std::string name;
     DataGhost data;
     std::string currentMap;
@@ -37,13 +39,13 @@ public:
     static int ghost_type;
 
 public:
-    GhostEntity(sf::Uint32& ID, std::string& name, DataGhost& data, std::string& current_map);
+    GhostEntity(unsigned int& ID, std::string& name, DataGhost& data, std::string& current_map);
     ~GhostEntity();
 
     void Spawn();
     void DeleteGhost();
     void SetData(Vector pos, QAngle ang);
-    void SetupGhost(sf::Uint32& ID, std::string& name, DataGhost& data, std::string& current_map);
+    void SetupGhost(unsigned int& ID, std::string& name, DataGhost& data, std::string& current_map);
     void Display();
     void Lerp(float time);
     void KillGhost(const bool newEntity);
