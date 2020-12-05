@@ -142,6 +142,9 @@ int m_hActiveWeapon;
 // IEngineVGuiInternal
 int Paint;
 
+// IEngineTrace
+int TraceRay;
+
 // CEngineTool
 int GetCurrentMap;
 int PrecacheModel;

@@ -14,6 +14,7 @@
 #include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Routing/Tracer.hpp"
+#include "Features/Routing/SeamshotFind.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"

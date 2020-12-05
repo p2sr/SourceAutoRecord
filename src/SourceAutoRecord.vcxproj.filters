@@ -352,6 +352,9 @@
     <ClCompile Include="Features\SegmentedTools.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Routing\SeamshotFind.cpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -839,6 +842,9 @@
     </ClInclude>
     <ClInclude Include="Features\SegmentedTools.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Routing\SeamshotFind.hpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -385,6 +385,10 @@ bool Engine::Init()
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
             Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
         }
+
+        if (this->engineTrace = Interface::Create(this->Name(), "EngineTraceServer004")) {
+            this->TraceRay = this->engineTrace->Original<_TraceRay>(Offsets::TraceRay);
+        }
     }
 
     if (auto tool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
@@ -472,7 +476,7 @@ bool Engine::Init()
     host_framerate = Variable("host_framerate");
     net_showmsg = Variable("net_showmsg");
 
-    return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder;
+    return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace;
 }
 void Engine::Shutdown()
 {
@@ -487,6 +491,7 @@ void Engine::Shutdown()
     Interface::Delete(this->cl);
     Interface::Delete(this->eng);
     Interface::Delete(this->s_GameEventManager);
+    Interface::Delete(this->engineTrace);
 
 #ifdef _WIN32
     Command::Unhook("connect", Engine::connect_callback);

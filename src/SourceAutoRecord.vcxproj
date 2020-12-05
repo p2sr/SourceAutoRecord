@@ -147,6 +147,7 @@
     <ClCompile Include="Features\OffsetFinder.cpp" />
     <ClCompile Include="Features\Rebinder.cpp" />
     <ClCompile Include="Features\Routing\EntityInspector.cpp" />
+    <ClCompile Include="Features\Routing\SeamshotFind.cpp" />
     <ClCompile Include="Features\Routing\Tracer.cpp" />
     <ClCompile Include="Features\SegmentedTools.cpp" />
     <ClCompile Include="Features\Session.cpp" />
@@ -335,6 +336,7 @@
     <ClInclude Include="Features\OffsetFinder.hpp" />
     <ClInclude Include="Features\Rebinder.hpp" />
     <ClInclude Include="Features\Routing\EntityInspector.hpp" />
+    <ClInclude Include="Features\Routing\SeamshotFind.hpp" />
     <ClInclude Include="Features\Routing\Tracer.hpp" />
     <ClInclude Include="Features\SegmentedTools.hpp" />
     <ClInclude Include="Features\Session.hpp" />

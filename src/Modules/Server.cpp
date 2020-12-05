@@ -8,6 +8,7 @@
 #include "Features/Hud/Crosshair.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
+#include "Features/Routing/SeamshotFind.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
@@ -359,6 +360,10 @@ DETOUR(Server::GameFrame, bool simulating)
 
     if (session->isRunning && sar_speedrun_standard.GetBool()) {
         speedrun->CheckRules(engine->GetTick());
+    }
+
+    if (simulating && sar_seamshot_finder.GetBool()) {
+        seamshotFind->DrawLines();
     }
 
 #ifndef _WIN32

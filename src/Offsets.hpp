@@ -142,6 +142,9 @@ extern int m_hActiveWeapon;
 // IEngineVGuiInternal
 extern int Paint;
 
+// IEngineTrace
+extern int TraceRay;
+
 // CEngineTool
 extern int GetCurrentMap;
 extern int PrecacheModel;

@@ -21,6 +21,7 @@ public:
     Interface* eng = nullptr;
     Interface* debugoverlay = nullptr;
     Interface* s_ServerPlugin = nullptr;
+    Interface* engineTrace = nullptr;
 
     using _ClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
     using _GetLocalPlayer = int(__rescall*)(void* thisptr);
@@ -42,6 +43,7 @@ public:
 	using _AddScreenTextOverlay = void(__stdcall*)(float flXPos, float flYPos, float flDuration, int r, int g, int b, int a, const char* text);
     using _ClearAllOverlays = void(__stdcall*)();
     using _IsPaused = bool (*)(void* thisptr);
+    using _TraceRay = void(__rescall*)(void* thisptr, const Ray_t& ray, unsigned int fMask, ITraceFilter* pTraceFilter, CGameTrace* pTrace);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -78,6 +80,7 @@ public:
     _AddScreenTextOverlay AddScreenTextOverlay = nullptr;
     _ClearAllOverlays ClearAllOverlays = nullptr;
     _IsPaused IsPaused = nullptr;
+    _TraceRay TraceRay = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;

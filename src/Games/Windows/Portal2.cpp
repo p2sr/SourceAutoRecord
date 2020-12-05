@@ -196,6 +196,7 @@ void Portal2::LoadOffsets()
     CreateEntityByName = 14; //CServerTool::CreateEntityByName
     DispatchSpawn = 15; //CServerTool::DispatchSpawn
     ClientCommand = 39; // CVEngineServer
+    TraceRay = 5; // IEngineTrace
     IsPlayer = 85; // CBasePlayer
     m_pSurfaceData = 3868; // CGameMovement::CheckJumpButton
     jumpFactor = 68; // CGameMovement::CheckJumpButton
