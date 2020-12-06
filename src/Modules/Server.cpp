@@ -366,6 +366,10 @@ DETOUR(Server::GameFrame, bool simulating)
         seamshotFind->DrawLines();
     }
 
+    if (simulating && sar_crosshair_P1.GetBool()) {
+        crosshair.IsSurfacePortalable();
+    }
+
 #ifndef _WIN32
     return result;
 #endif

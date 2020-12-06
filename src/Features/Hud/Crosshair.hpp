@@ -22,6 +22,7 @@ public:
     void Paint(int slot) override;
     bool GetCurrentSize(int& xSize, int& ySize) override;
 
+    bool IsSurfacePortalable();
     int GetPortalUpgradeState();
     void GetPortalsStates(int& portalUpgradeState, bool& blue, bool& orange);
     std::vector<IHandleEntity*> GetPortalsShotByPlayer();
@@ -36,6 +37,7 @@ extern Crosshair crosshair;
 
 extern Variable sar_crosshair_mode;
 extern Variable sar_quickhud_mode;
+extern Variable sar_crosshair_P1;
 
 extern Variable cl_crosshair_t;
 extern Variable cl_crosshairgap;
