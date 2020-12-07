@@ -13,7 +13,7 @@
 
 #include <fstream>
 
-Variable sar_tas2_debug("sar_tas2_debug", "1", 0, 1, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
+Variable sar_tas_debug("sar_tas_debug", "1", 0, 1, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
 
 TasPlayer* tasPlayer;
 
@@ -111,7 +111,7 @@ void TasPlayer::Activate()
     }
 
     console->Print("TAS script has been activated.\n");
-    if (sar_tas2_debug.GetInt() > 0) {
+    if (sar_tas_debug.GetInt() > 0) {
         console->Print("Length: %d ticks\n", lastTick+1);
     }
 }
@@ -188,7 +188,7 @@ void TasPlayer::FetchInputs(TasController* controller)
 
     ProcessFramebulk(fb);
 
-    if (sar_tas2_debug.GetInt() > 0 && fbTick == currentTick) {
+    if (sar_tas_debug.GetInt() > 0 && fbTick == currentTick) {
         console->Print("%s\n", fb.ToString());
     }
 
@@ -243,26 +243,26 @@ void TasPlayer::Update()
 
 
 
-CON_COMMAND(sar_tas2_test,
+CON_COMMAND(sar_tas_test,
     "Activates test TAS.")
 {
     IGNORE_DEMO_PLAYER();
 
     if (args.ArgC() != 1) {
-        return console->Print(sar_tas2_test.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_tas_test.ThisPtr()->m_pszHelpString);
     }
 
     console->Print("%s\n", engine->GetSaveDirName());
 }
 
 
-CON_COMMAND(sar_tas2_playfile,
-    "AFHNSDAIJGFADSHGS")
+CON_COMMAND(sar_tas_playfile,
+    "Plays a TAS script.")
 {
     IGNORE_DEMO_PLAYER();
 
     if (args.ArgC() != 2) {
-        return console->Print(sar_tas2_test.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_tas_playfile.ThisPtr()->m_pszHelpString);
     }
 
     std::string fileName(args[1]);

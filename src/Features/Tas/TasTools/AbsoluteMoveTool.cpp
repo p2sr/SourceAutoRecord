@@ -1,4 +1,5 @@
 #include "AbsoluteMoveTool.hpp"
+
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 
@@ -29,7 +30,7 @@ void AbsoluteMoveTool::Apply(TasFramebulk& fb)
     fb.moveAnalog.x = X;
     fb.moveAnalog.y = Y;
 
-    if (sar_tas2_debug.GetBool()) {
+    if (sar_tas_debug.GetBool()) {
         console->Print("absmov %.3f %.3f\n", X, Y);
     }
 }

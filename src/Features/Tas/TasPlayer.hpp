@@ -67,6 +67,6 @@ public:
     ~TasPlayer();
 };
 
-extern Variable sar_tas2_debug;
+extern Variable sar_tas_debug;
 
 extern TasPlayer* tasPlayer;

@@ -10,7 +10,6 @@
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
-#include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Timer/Timer.hpp"
 
 #include "Modules/Console.hpp"
@@ -82,10 +81,6 @@ void Session::Start()
 
         rebinder->RebindSave();
         rebinder->RebindReload();
-    }
-
-    if (sar_tas_autostart.GetBool()) {
-        cmdQueuer->Start();
     }
 
     if (sar_replay_mode.GetBool()) {
@@ -164,7 +159,6 @@ void Session::Ended()
     this->lastFrame = this->currentFrame;
     this->currentFrame = 0;
 
-    cmdQueuer->Stop();
     replayRecorder1->StopRecording();
     replayRecorder2->StopRecording();
     replayPlayer1->StopPlaying();

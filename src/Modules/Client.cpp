@@ -11,8 +11,6 @@
 #include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Session.hpp"
 #include "Features/Tas/TasController.hpp"
-#include "Features/Tas/AutoStrafer.hpp"
-#include "Features/Tas/CommandQueuer.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -71,34 +69,7 @@ void Client::CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, 
 // CHLClient::HudUpdate
 DETOUR(Client::HudUpdate, unsigned int a2)
 {
-    if (cmdQueuer->isRunning) {
-        for (auto&& tas = cmdQueuer->frames.begin(); tas != cmdQueuer->frames.end();) {
-            --tas->framesLeft;
 
-            if (tas->framesLeft <= 0) {
-                console->DevMsg("[%i] %s\n", session->currentFrame, tas->command.c_str());
-
-                if (sar.game->Is(SourceGame_Portal2Engine)) {
-                    if (engine->GetMaxClients() <= 1) {
-                        engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0);
-                    } else {
-                        auto entity = engine->PEntityOfEntIndex(tas->splitScreen + 1);
-                        if (entity && !entity->IsFree() && server->IsPlayer(entity->m_pUnk)) {
-                            engine->ClientCommand(nullptr, entity, tas->command.c_str());
-                        }
-                    }
-                } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-                    engine->AddText(engine->s_CommandBuffer, tas->command.c_str(), 0);
-                }
-
-                tas = cmdQueuer->frames.erase(tas);
-            } else {
-                ++tas;
-            }
-        }
-    }
-
-    ++session->currentFrame;
     return Client::HudUpdate(thisptr, a2);
 }
 
@@ -181,17 +152,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer2, int buf, signed int sequence_number)
 // CInput::CreateMove
 DETOUR(Client::CInput_CreateMove, int sequence_number, float input_sample_frametime, bool active)
 {
-    auto originalValue = 0;
-    if (sar_tas_ss_forceuser.GetBool()) {
-        originalValue = in_forceuser.GetInt();
-        in_forceuser.SetValue(GET_SLOT());
-    }
-
     auto result = Client::CInput_CreateMove(thisptr, sequence_number, input_sample_frametime, active);
-
-    if (sar_tas_ss_forceuser.GetBool()) {
-        in_forceuser.SetValue(originalValue);
-    }
 
     return result;
 }
@@ -200,8 +161,6 @@ DETOUR(Client::CInput_CreateMove, int sequence_number, float input_sample_framet
 DETOUR(Client::GetButtonBits, bool bResetState)
 {
     auto bits = Client::GetButtonBits(thisptr, bResetState);
-
-    client->CalcButtonBits(GET_SLOT(), bits, IN_AUTOSTRAFE, 0, &autoStrafer->in_autostrafe, bResetState);
 
     return bits;
 }

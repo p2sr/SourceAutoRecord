@@ -10,8 +10,6 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
-#include "Features/Tas/AutoStrafer.hpp"
-#include "Features/Tas/TasTools.hpp"
 #include "Features/Tas/TasPlayer.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
@@ -177,8 +175,7 @@ DETOUR(Server::PlayerMove)
 DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
 {
     if (sv_cheats.GetBool()) {
-        autoStrafer->Strafe(pPlayer, pMove);
-        tasTools->SetAngles(pPlayer);
+        //TODO: in case TAS prediction idea fails, use this to "generate" input.
     }
 
     return Server::ProcessMovement(thisptr, pPlayer, pMove);

@@ -10,7 +10,7 @@
 Variable cl_pitchdown;
 Variable cl_pitchup;
 
-Variable sar_tas2_real_controller_debug("sar_tas2_real_controller_debug", "0", "debugs controller.");
+Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", "Debugs controller.");
 
 
 Variable sensitivity;
@@ -114,7 +114,7 @@ void TasController::SetButtonState(TasControllerInput i, bool state)
 void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
 {
 
-    if (cmd->tick_count != 0 && sar_tas2_real_controller_debug.GetBool()) {
+    if (cmd->tick_count != 0 && sar_tas_real_controller_debug.GetBool()) {
         console->Print("%.5f %.5f\n", cmd->forwardmove, cmd->sidemove);
     }
 

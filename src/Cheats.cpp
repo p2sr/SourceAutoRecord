@@ -12,9 +12,6 @@
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Tas/AutoStrafer.hpp"
-#include "Features/Tas/CommandQueuer.hpp"
-#include "Features/Tas/TasTools.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/WorkshopList.hpp"
 
@@ -136,7 +133,6 @@ void Cheats::Init()
     sar_duckjump.UniqueFor(SourceGame_Portal2Engine);
     sar_replay_viewmode.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_mimic.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
-    sar_tas_ss_forceuser.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     //sar_hud_pause_timer.UniqueFor(s3);
     sar_speedrun_time_pauses.UniqueFor(s3);
     sar_speedrun_smartsplit.UniqueFor(s3);
@@ -161,12 +157,7 @@ void Cheats::Init()
     sar_speedrun_resume.UniqueFor(s3);
     sar_speedrun_reset.UniqueFor(s3);
     sar_togglewait.UniqueFor(SourceGame_Portal2Game | SourceGame_INFRA);
-    sar_tas_ss.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2Game | SourceGame_HalfLife2Engine);
-    sar_tas_strafe.UniqueFor(SourceGame_Portal2Engine);
-    sar_tas_strafe_vectorial.UniqueFor(SourceGame_Portal2Engine);
-    startautostrafe.UniqueFor(SourceGame_Portal2Engine);
-    endautostrafe.UniqueFor(SourceGame_Portal2Engine);
     sar_dump_events.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
 
     cvars->Unlock();

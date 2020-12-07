@@ -133,9 +133,6 @@
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\CommandQueuer.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Timer\Timer.cpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
     </ClCompile>
@@ -268,14 +265,8 @@
     <ClCompile Include="Utils.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\TasTools.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Timer\PauseTimer.cpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Tas\AutoStrafer.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
     <ClCompile Include="Utils\Math.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
@@ -501,9 +492,6 @@
     <ClInclude Include="Features\Routing\Tracer.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Tas\CommandQueuer.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Timer\Timer.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
     </ClInclude>
@@ -635,12 +623,6 @@
     </ClInclude>
     <ClInclude Include="Features\Speedrun\TimerCategory.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Tas\TasTools.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Tas\AutoStrafer.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
     <ClInclude Include="Features\Timer\PauseTimer.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
