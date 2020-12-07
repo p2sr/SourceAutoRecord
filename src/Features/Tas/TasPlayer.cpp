@@ -164,7 +164,7 @@ void TasPlayer::SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue)
     this->framebulkQueue = fbQueue;
 }
 
-void TasPlayer::SetStartInfo(TasStartType type, const char* param)
+void TasPlayer::SetStartInfo(TasStartType type, std::string param)
 {
     this->startInfo = TasStartInfo{ type, param };
 }
@@ -189,7 +189,7 @@ void TasPlayer::FetchInputs(TasController* controller)
     ProcessFramebulk(fb);
 
     if (sar_tas_debug.GetInt() > 0 && fbTick == currentTick) {
-        console->Print("%s\n", fb.ToString());
+        console->Print("%s\n", fb.ToString().c_str());
     }
 
     controller->SetViewAnalog(fb.viewAnalog.x, fb.viewAnalog.y);

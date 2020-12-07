@@ -83,7 +83,7 @@ bool TasParser::ParseHeader(std::string line)
         param = startParams[2];
     }
 
-    tasPlayer->SetStartInfo(type, param.c_str());
+    tasPlayer->SetStartInfo(type, param);
     return true;
 }
 

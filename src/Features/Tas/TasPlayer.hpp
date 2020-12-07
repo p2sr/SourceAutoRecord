@@ -32,7 +32,7 @@ enum TasStartType {
 
 struct TasStartInfo {
     TasStartType type;
-    const char* param;
+    std::string param;
 };
 
 class TasPlayer : public Feature {
@@ -59,7 +59,7 @@ public:
     TasFramebulk GetCurrentRawFramebulk();
     void ProcessFramebulk(TasFramebulk& fb);
     void SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue);
-    void SetStartInfo(TasStartType type, const char* param);
+    void SetStartInfo(TasStartType type, std::string);
 
     void FetchInputs(TasController* controller);
 
