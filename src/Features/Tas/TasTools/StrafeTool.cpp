@@ -103,6 +103,10 @@ AutoStrafePlayerInfo AutoStrafeTool::GetCurrentPlayerInfo(int slot) {
     pi.ducked = * reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked);
     pi.maxSpeed = *reinterpret_cast<float*>((uintptr_t)player + Offsets::m_flMaxspeed);
 
+    int m_hGroundEntity = 344; 
+    unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + m_hGroundEntity);
+    pi.grounded = groundEntity != 0xFFFFFFFF;
+
     //TODO: fill in all other stuff
 
     return pi;
