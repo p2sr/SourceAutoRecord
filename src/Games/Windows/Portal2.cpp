@@ -33,6 +33,7 @@ void Portal2::LoadOffsets()
     GetMaxClients = 20; // CEngineClient
     GetGameDirectory = 35; // CEngineClient
     GetSaveDirName = 124; // CEngineClient
+    ExecuteClientCmd = 104; // CEngineClient
     GetActiveSplitScreenPlayerSlot = 127; // CEngineClient
     GetSteamAPIContext = 177; // CEngineClient
     StringToButtonCode = 31; // CInputSystem

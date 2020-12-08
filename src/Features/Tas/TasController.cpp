@@ -141,7 +141,7 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
             if (!button->state) {
                 cmdbuf[0] = '-';
             }
-            engine->ExecuteCommand(cmdbuf);
+            engine->ExecuteCommand(cmdbuf, true);
 
             //TODO: find if stuff below is needed
             /*
@@ -159,7 +159,7 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
         for (std::string cmd : commandQueue) {
             char cmdbuf[128];
             snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
-            engine->ExecuteCommand(cmdbuf);
+            engine->ExecuteCommand(cmdbuf, true);
         }
         commandQueue.clear();
     }

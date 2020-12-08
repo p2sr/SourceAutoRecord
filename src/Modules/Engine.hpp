@@ -23,6 +23,7 @@ public:
     Interface* s_ServerPlugin = nullptr;
 
     using _ClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
+    using _ExecuteClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
     using _GetLocalPlayer = int(__rescall*)(void* thisptr);
     using _GetViewAngles = int(__rescall*)(void* thisptr, QAngle& va);
     using _SetViewAngles = int(__rescall*)(void* thisptr, QAngle& va);
@@ -49,6 +50,7 @@ public:
 
     _GetScreenSize GetScreenSize = nullptr;
     _ClientCmd ClientCmd = nullptr;
+    _ExecuteClientCmd ExecuteClientCmd = nullptr;
     _GetLocalPlayer GetLocalPlayer = nullptr;
     _GetViewAngles GetViewAngles = nullptr;
     _SetViewAngles SetViewAngles = nullptr;
@@ -81,7 +83,7 @@ public:
     bool overlayActivated = false;
 
 public:
-    void ExecuteCommand(const char* cmd);
+    void ExecuteCommand(const char* cmd, bool immediately=false);
     int GetTick();
     float ToTime(int tick);
     int GetLocalPlayerIndex();

@@ -13,7 +13,7 @@
 
 #include <fstream>
 
-Variable sar_tas_debug("sar_tas_debug", "1", 0, 1, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
+Variable sar_tas_debug("sar_tas_debug", "1", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
 
 TasPlayer* tasPlayer;
 
