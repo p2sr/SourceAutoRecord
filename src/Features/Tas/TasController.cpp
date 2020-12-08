@@ -12,7 +12,6 @@ Variable cl_pitchup;
 
 Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", "Debugs controller.");
 
-
 Variable sensitivity;
 void LockMouse()
 {
@@ -22,7 +21,6 @@ void UnlockMouse()
 {
     sensitivity.SetValue(sensitivity.ThisPtr()->m_pszString);
 }
-
 
 TasController* tasController;
 
@@ -44,7 +42,6 @@ TasController::~TasController()
     commandQueue.clear();
 }
 
-
 Vector TasController::GetMoveAnalog()
 {
     return moveAnalog;
@@ -55,7 +52,7 @@ Vector TasController::GetViewAnalog()
     return viewAnalog;
 }
 
-void TasController::SetMoveAnalog(float x, float y) 
+void TasController::SetMoveAnalog(float x, float y)
 {
     moveAnalog.x = x;
     moveAnalog.y = y;
@@ -66,7 +63,6 @@ void TasController::SetViewAnalog(float x, float y)
     viewAnalog.x = x;
     viewAnalog.y = y;
 }
-
 
 bool TasController::isEnabled()
 {
@@ -110,7 +106,6 @@ void TasController::SetButtonState(TasControllerInput i, bool state)
     btn->state = state;
 }
 
-
 void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
 {
 
@@ -120,7 +115,8 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
 
     /*ControllerMove is executed several times a frame, idk why
     But only once with tick_count bigger than 0*/
-    if (!enabled || cmd->tick_count==0) return;
+    if (!enabled || cmd->tick_count == 0)
+        return;
 
     //console->Print("TasController::ControllerMove (%d, ", cmd->tick_count);
 

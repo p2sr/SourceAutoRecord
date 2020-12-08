@@ -185,40 +185,40 @@ TasFramebulk TasParser::ParseRawFramebulk(RawFramebulk& raw, TasFramebulk& previ
             for (auto& c : tmp) {
                 switch (c) {
                 case 'J':
-                    bulk.buttonStates[0] = true;
+                    bulk.buttonStates[TasControllerInput::Jump] = true;
                     break;
                 case 'j':
-                    bulk.buttonStates[0] = false;
+                    bulk.buttonStates[TasControllerInput::Jump] = false;
                     break;
                 case 'D':
-                    bulk.buttonStates[1] = true;
+                    bulk.buttonStates[TasControllerInput::Crouch] = true;
                     break;
                 case 'd':
-                    bulk.buttonStates[1] = false;
+                    bulk.buttonStates[TasControllerInput::Crouch] = false;
                     break;
                 case 'U':
-                    bulk.buttonStates[2] = true;
+                    bulk.buttonStates[TasControllerInput::Use] = true;
                     break;
                 case 'u':
-                    bulk.buttonStates[2] = false;
+                    bulk.buttonStates[TasControllerInput::Use] = false;
                     break;
                 case 'Z':
-                    bulk.buttonStates[3] = true;
+                    bulk.buttonStates[TasControllerInput::Zoom] = true;
                     break;
                 case 'z':
-                    bulk.buttonStates[3] = false;
+                    bulk.buttonStates[TasControllerInput::Zoom] = false;
                     break;
                 case 'B':
-                    bulk.buttonStates[4] = true;
+                    bulk.buttonStates[TasControllerInput::FireBlue] = true;
                     break;
                 case 'b':
-                    bulk.buttonStates[4] = false;
+                    bulk.buttonStates[TasControllerInput::FireBlue] = false;
                     break;
                 case 'O':
-                    bulk.buttonStates[5] = true;
+                    bulk.buttonStates[TasControllerInput::FireOrange] = true;
                     break;
                 case 'o':
-                    bulk.buttonStates[5] = false;
+                    bulk.buttonStates[TasControllerInput::FireOrange] = false;
                     break;
                 default:
                     break;

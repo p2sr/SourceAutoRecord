@@ -24,6 +24,10 @@ public:
     virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
     virtual void Apply(TasFramebulk & bulk);
     virtual void Reset();
+
+private:
+    bool hasJumpedLastTick = false;
+
 };
 
 extern AutoJumpTool autoJumpTool;
