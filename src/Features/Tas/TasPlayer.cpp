@@ -4,6 +4,7 @@
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Server.hpp"
 
 #include "Features/Session.hpp"
@@ -239,6 +240,14 @@ void TasPlayer::PostProcess(void* player, CMoveData* pMove)
 
     pMove->m_vecViewAngles = pMove->m_vecAbsViewAngles = pMove->m_vecAngles;
     engine->SetAngles(playerInfo.slot, pMove->m_vecAngles);
+
+    if (fb.moveAnalog.y > 0.0) {
+        pMove->m_flForwardMove += cl_forwardspeed.GetFloat() * fb.moveAnalog.y;
+    } else {
+        pMove->m_flForwardMove += cl_backspeed.GetFloat() * fb.moveAnalog.y;
+    }
+    pMove->m_flSideMove += cl_sidespeed.GetFloat() * fb.moveAnalog.x;
+
 
     pMove->m_nButtons = 0;
     for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
