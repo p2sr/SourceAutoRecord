@@ -10,7 +10,7 @@ AbsoluteMoveTool* AbsoluteMoveTool::GetTool()
     return &tasAbsoluteMoveTool;
 }
 
-void AbsoluteMoveTool::Apply(TasFramebulk& fb)
+void AbsoluteMoveTool::Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo)
 {
     auto ttParams = std::static_pointer_cast<AbsoluteMoveToolParams>(params);
     

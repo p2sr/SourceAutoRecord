@@ -178,21 +178,20 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
     cmd->sidemove += cl_sidespeed.GetFloat() * moveAnalog.x;
 
     //viewangle analog
-    QAngle viewangles;
-    viewangles = engine->GetAngles(GET_SLOT());
 
-    //TODO: check if this stuff below is important.
-    //view->StopPitchDrift();
-    //::g_pInputSystem->SetCurrentInputDevice(INPUT_DEVICE_STEAM_CONTROLLER);
-    //if (!GetPerUser().m_fCameraInterceptingMouse && g_pInputStackSystem->IsTopmostEnabledContext(m_hInputContext))
+    // don't do this part if tools are enabled.
+    // tools processing will do it instead
+    if (!sar_tas_tools_enabled.GetBool()) {
+        QAngle viewangles;
+        viewangles = engine->GetAngles(GET_SLOT());
 
-    viewangles.y += viewAnalog.x;
+        viewangles.y += viewAnalog.x;
+        viewangles.x += viewAnalog.y;
+        viewangles.x = std::min(std::max(viewangles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
 
-    viewangles.x += viewAnalog.y;
-    viewangles.x = std::min(std::max(viewangles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
+        cmd->mousedx = (int)(-viewAnalog.x);
+        cmd->mousedy = (int)(-viewAnalog.y);
 
-    cmd->mousedx = (int)(-viewAnalog.x);
-    cmd->mousedy = (int)(-viewAnalog.y);
-
-    engine->SetAngles(GET_SLOT(), viewangles);
+        engine->SetAngles(GET_SLOT(), viewangles);
+    }
 }

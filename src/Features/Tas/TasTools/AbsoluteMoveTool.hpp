@@ -22,7 +22,7 @@ public:
         : TasTool(name){};
     virtual AbsoluteMoveTool* GetTool();
     virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
-    virtual void Apply(TasFramebulk& fb);
+    virtual void Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo);
     virtual void Reset();
 };
 

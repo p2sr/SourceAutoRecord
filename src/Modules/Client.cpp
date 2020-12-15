@@ -10,6 +10,7 @@
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Session.hpp"
+#include "Features/Tas/TasPlayer.hpp"
 #include "Features/Tas/TasController.hpp"
 
 #include "Console.hpp"

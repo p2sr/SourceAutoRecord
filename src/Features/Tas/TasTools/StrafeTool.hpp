@@ -32,18 +32,6 @@ struct AutoStrafeSpeed {
 };
 
 
-struct AutoStrafePlayerInfo {
-    int slot;
-    Vector position;
-    Vector rotation;
-    Vector velocity;
-    float surfaceFriction;
-    float maxSpeed;
-    bool ducked;
-    bool grounded;
-};
-
-
 struct AutoStrafeParams : public TasToolParams {
     AutoStrafeType strafeType = DISABLED;
     AutoStrafeDirection strafeDir = { CURRENT, 0.0f };
@@ -70,12 +58,11 @@ public:
         : TasTool(name){};
     virtual AutoStrafeTool* GetTool();
     virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
-    virtual void Apply(TasFramebulk& fb);
+    virtual void Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo);
     virtual void Reset();
 
-    AutoStrafePlayerInfo GetCurrentPlayerInfo(int slot);
-    float GetStrafeAngle(AutoStrafePlayerInfo& player, float desiredAngle, float desiredSpeed, bool turningPriority);
-    Vector PredictNextVector(AutoStrafePlayerInfo& player, float angle);
+    float GetStrafeAngle(const TasPlayerInfo& player, float desiredAngle, float desiredSpeed, bool turningPriority);
+    Vector PredictNextVector(const TasPlayerInfo& player, float angle);
 };
 
 extern AutoStrafeTool autoStrafeTool;

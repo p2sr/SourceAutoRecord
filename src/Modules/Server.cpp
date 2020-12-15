@@ -174,8 +174,8 @@ DETOUR(Server::PlayerMove)
 // CGameMovement::ProcessMovement
 DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
 {
-    if (sv_cheats.GetBool()) {
-        //TODO: in case TAS prediction idea fails, use this to "generate" input.
+    if (tasPlayer->IsActive() && sar_tas_tools_enabled.GetBool()) {
+        tasPlayer->PostProcess(pPlayer, pMove);
     }
 
     return Server::ProcessMovement(thisptr, pPlayer, pMove);

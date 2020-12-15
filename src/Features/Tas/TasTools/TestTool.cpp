@@ -7,7 +7,7 @@ TestTool* TestTool::GetTool()
     return &tasTestTool;
 }
 
-void TestTool::Apply(TasFramebulk& fb)
+void TestTool::Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo)
 {
     auto ttParams = std::static_pointer_cast<TestToolParams>(params);
 

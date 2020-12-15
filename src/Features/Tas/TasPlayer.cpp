@@ -7,16 +7,16 @@
 #include "Modules/Server.hpp"
 
 #include "Features/Session.hpp"
+#include "Features/Tas/TasParser.hpp"
 #include "Features/Tas/TasTool.hpp"
 #include "Features/Tas/TasTools/TestTool.hpp"
-#include "Features/Tas/TasParser.hpp"
 
 #include <fstream>
 
 Variable sar_tas_debug("sar_tas_debug", "1", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
+Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", 0, 1, "Enables tool processing for TAS script making.");
 
 TasPlayer* tasPlayer;
-
 
 std::string TasFramebulk::ToString()
 {
@@ -37,7 +37,6 @@ std::string TasFramebulk::ToString()
     return output;
 }
 
-
 TasPlayer::TasPlayer()
     : startInfo({ TasStartType::UnknownStart, "" })
 {
@@ -48,15 +47,10 @@ TasPlayer::~TasPlayer()
     framebulkQueue.clear();
 }
 
-int TasPlayer::GetTick() 
-{
-    return currentTick;
-}
-
 void TasPlayer::Activate()
 {
     //reset the controller before using it
-    tasController->Disable();  
+    tasController->Disable();
 
     for (TasTool* tool : TasTool::GetList()) {
         tool->Reset();
@@ -92,7 +86,7 @@ void TasPlayer::Activate()
             return;
         }
         mapf.close();
-    } else if (startInfo.type == LoadQuicksave){
+    } else if (startInfo.type == LoadQuicksave) {
         //check if save file exists
         std::string savePath = std::string(engine->GetGameDirectory()) + "/" + engine->GetSaveDirName() + startInfo.param + ".sav";
         std::ifstream savef(savePath);
@@ -112,11 +106,14 @@ void TasPlayer::Activate()
 
     console->Print("TAS script has been activated.\n");
     if (sar_tas_debug.GetInt() > 0) {
-        console->Print("Length: %d ticks\n", lastTick+1);
+        console->Print("Length: %d ticks\n", lastTick + 1);
     }
 }
 
-void TasPlayer::Start() {
+void TasPlayer::Start()
+{
+    processedFramebulks.clear();
+
     ready = true;
     currentTick = 0;
     tasController->Enable();
@@ -131,16 +128,16 @@ void TasPlayer::Stop()
     active = false;
     ready = false;
     currentTick = 0;
-    tasController->Disable();   
+    tasController->Disable();
 }
 
-// returns raw framebulk that should be used right now
-TasFramebulk TasPlayer::GetCurrentRawFramebulk()
+// returns raw framebulk that should be used for given tick
+TasFramebulk TasPlayer::GetRawFramebulkAt(int tick)
 {
     int closestTime = INT_MAX;
     TasFramebulk closest;
     for (TasFramebulk framebulk : framebulkQueue) {
-        int timeDist = currentTick - framebulk.tick;
+        int timeDist = tick - framebulk.tick;
         if (timeDist >= 0 && timeDist < closestTime) {
             closestTime = timeDist;
             closest = framebulk;
@@ -149,14 +146,26 @@ TasFramebulk TasPlayer::GetCurrentRawFramebulk()
     return closest;
 }
 
-// returns framebulk processed using tools and game's info in current tick.
-void TasPlayer::ProcessFramebulk(TasFramebulk& rawFb)
+TasPlayerInfo TasPlayer::GetPlayerInfo(void* player, CMoveData* pMove)
 {
-    rawFb.tick = currentTick;
+    TasPlayerInfo pi;
 
-    for (TasTool* tool : TasTool::GetList()) {
-        tool->Apply(rawFb);
-    }
+    pi.tick = *reinterpret_cast<int*>((uintptr_t)player + 3792);
+    pi.slot = server->GetSplitScreenPlayerSlot(player);
+    pi.surfaceFriction = *reinterpret_cast<float*>((uintptr_t)player + 4096);
+    pi.ducked = *reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked);
+    pi.maxSpeed = *reinterpret_cast<float*>((uintptr_t)player + Offsets::m_flMaxspeed);
+
+    unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + 344); // m_hGroundEntity
+    pi.grounded = groundEntity != 0xFFFFFFFF;
+
+    pi.position = pMove->m_vecAbsOrigin;
+    pi.angles = pMove->m_vecAngles;
+    pi.velocity = pMove->m_vecVelocity;
+
+    pi.oldButtons = pMove->m_nOldButtons;
+
+    return pi;
 }
 
 void TasPlayer::SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue)
@@ -168,7 +177,6 @@ void TasPlayer::SetStartInfo(TasStartType type, std::string param)
 {
     this->startInfo = TasStartInfo{ type, param };
 }
-
 
 /*
     This function is called in ControllerMove, which is what completely
@@ -182,11 +190,11 @@ void TasPlayer::SetStartInfo(TasStartType type, std::string param)
 
 void TasPlayer::FetchInputs(TasController* controller)
 {
-    TasFramebulk fb = GetCurrentRawFramebulk();
+    //console->Print("TasPlayer: %d \n", GetAbsoluteTick());
+
+    TasFramebulk fb = GetRawFramebulkAt(currentTick);
 
     int fbTick = fb.tick;
-
-    ProcessFramebulk(fb);
 
     if (sar_tas_debug.GetInt() > 0 && fbTick == currentTick) {
         console->Print("%s\n", fb.ToString().c_str());
@@ -205,8 +213,43 @@ void TasPlayer::FetchInputs(TasController* controller)
     }
 }
 
+// special tools have to be parsed in input processing part.
+// because of alternateticks, a pair of inputs are created and then executed at the same time,
+// meaning that second tick in pair reads outdated info.
+void TasPlayer::PostProcess(void* player, CMoveData* pMove)
+{
+    auto playerInfo = GetPlayerInfo(player, pMove);
+    // player tickbase seems to be an accurate way of getting current time in ProcessMovement
+    // every other way of getting time is incorrect due to alternateticks
+    int tasTick = playerInfo.tick - startTick;
 
+    TasFramebulk fb = GetRawFramebulkAt(tasTick);
+    fb.tick = tasTick;
 
+    // angle has been already added. revert that before tool processing.
+
+    for (TasTool* tool : TasTool::GetList()) {
+        tool->Apply(fb, playerInfo);
+    }
+
+    // add processed framebulk to the pMove
+    pMove->m_vecAngles.y += fb.viewAnalog.x;
+    pMove->m_vecAngles.x += fb.viewAnalog.y;
+    pMove->m_vecAngles.x = std::min(std::max(pMove->m_vecAngles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
+
+    pMove->m_vecViewAngles = pMove->m_vecAbsViewAngles = pMove->m_vecAngles;
+    engine->SetAngles(playerInfo.slot, pMove->m_vecAngles);
+
+    pMove->m_nButtons = 0;
+    for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
+        if (g_TasControllerInGameButtons[i] && fb.buttonStates[i]) {
+            pMove->m_nButtons |= g_TasControllerInGameButtons[i];
+        }
+    }
+
+    // put processed framebulk in the list
+    processedFramebulks.push_back(fb);
+}
 
 void TasPlayer::Update()
 {
@@ -215,18 +258,20 @@ void TasPlayer::Update()
             if (startInfo.type == StartImmediately || !session->isRunning) {
                 Start();
             }
-        }
-
-        if (ready && session->isRunning) {
+        } else if (session->isRunning) {
+            if (currentTick == 0) {
+                startTick = server->gpGlobals->tickcount;
+            }
             currentTick++;
-
+        }
+        if (ready && session->isRunning) {
             //someone told me that would make physics deterministic (it does not! >:( )
             if (currentTick == 0) {
                 //engine->ExecuteCommand("phys_timescale 1");
             }
 
             // update all tools that needs to be updated
-            TasFramebulk fb = GetCurrentRawFramebulk();
+            TasFramebulk fb = GetRawFramebulkAt(currentTick);
             if (fb.tick == currentTick) {
                 for (TasToolCommand cmd : fb.toolCmds) {
                     cmd.tool->SetParams(cmd.params);
@@ -239,22 +284,6 @@ void TasPlayer::Update()
         }
     }
 }
-
-
-
-
-CON_COMMAND(sar_tas_test,
-    "Activates test TAS.")
-{
-    IGNORE_DEMO_PLAYER();
-
-    if (args.ArgC() != 1) {
-        return console->Print(sar_tas_test.ThisPtr()->m_pszHelpString);
-    }
-
-    console->Print("%s\n", engine->GetSaveDirName());
-}
-
 
 CON_COMMAND(sar_tas_playfile,
     "Plays a TAS script.")
@@ -277,5 +306,4 @@ CON_COMMAND(sar_tas_playfile,
     } catch (TasParserException& e) {
         return console->ColorMsg(Color(255, 100, 100), "Error while opening TAS file: %s\n", e.what());
     }
-    
 }

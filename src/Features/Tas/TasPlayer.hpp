@@ -35,38 +35,55 @@ struct TasStartInfo {
     std::string param;
 };
 
+struct TasPlayerInfo {
+    int slot;
+    int tick;
+    Vector position;
+    QAngle angles;
+    Vector velocity;
+    float surfaceFriction;
+    float maxSpeed;
+    bool ducked;
+    bool grounded;
+    int oldButtons;
+};
+
 class TasPlayer : public Feature {
 private:
     bool active = false;
     bool ready = false;
-    int currentTick = 0;
-    int lastTick = 0;
+    int startTick = 0; // used to store the absolute tick in which player started playing the script
+    int currentTick = 0; // tick position of script player, relative to its starting point.
+    int lastTick = 0; // last tick of script, relative to its starting point
 
     TasStartInfo startInfo;
 
     std::vector<TasFramebulk> framebulkQueue;
-    TasFramebulk currentFramebulkBuffer;
-
+    std::vector<TasFramebulk> processedFramebulks;
 public:
     void Update();
 
-    int GetTick();
+    inline int GetTick() const { return currentTick; };
+    inline int GetAbsoluteTick() const { return startTick+currentTick; };
+    inline bool IsActive() const { return active; };
 
     void Activate();
     void Start();
     void Stop();
 
-    TasFramebulk GetCurrentRawFramebulk();
-    void ProcessFramebulk(TasFramebulk& fb);
+    TasFramebulk GetRawFramebulkAt(int tick);
+    TasPlayerInfo GetPlayerInfo(void* player, CMoveData* pMove);
     void SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue);
     void SetStartInfo(TasStartType type, std::string);
 
     void FetchInputs(TasController* controller);
+    void PostProcess(void* player, CMoveData* pMove);
 
     TasPlayer();
     ~TasPlayer();
 };
 
 extern Variable sar_tas_debug;
+extern Variable sar_tas_tools_enabled;
 
 extern TasPlayer* tasPlayer;

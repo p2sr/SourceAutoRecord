@@ -8,7 +8,7 @@
 
 AutoStrafeTool autoStrafeTool("strafe");
 
-void AutoStrafeTool::Apply(TasFramebulk& fb)
+void AutoStrafeTool::Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo)
 {
     auto asParams = std::static_pointer_cast<AutoStrafeParams>(params);
 
@@ -92,28 +92,7 @@ void AutoStrafeTool::Reset()
 
 
 
-AutoStrafePlayerInfo AutoStrafeTool::GetCurrentPlayerInfo(int slot) {
-    AutoStrafePlayerInfo pi;
-
-    pi.slot = slot;
-
-    void* player = server->GetPlayer(slot + 1);
-
-    pi.surfaceFriction = *reinterpret_cast<float*>((uintptr_t)player + 4096); //m_surfaceFriction
-    pi.ducked = * reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked);
-    pi.maxSpeed = *reinterpret_cast<float*>((uintptr_t)player + Offsets::m_flMaxspeed);
-
-    int m_hGroundEntity = 344; 
-    unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + m_hGroundEntity);
-    pi.grounded = groundEntity != 0xFFFFFFFF;
-
-    //TODO: fill in all other stuff
-
-    return pi;
-}
-
-
-float AutoStrafeTool::GetStrafeAngle(AutoStrafePlayerInfo& player, float desiredAngle, float desiredSpeed, bool turningPriority)
+float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo& player, float desiredAngle, float desiredSpeed, bool turningPriority)
 {
     float frametime = server->gpGlobals->frametime; // A time for one frame to pass
 
@@ -164,7 +143,7 @@ float AutoStrafeTool::GetStrafeAngle(AutoStrafePlayerInfo& player, float desired
     return RAD2DEG(theta);
 }
 
-Vector AutoStrafeTool::PredictNextVector(AutoStrafePlayerInfo& player, float angle)
+Vector AutoStrafeTool::PredictNextVector(const TasPlayerInfo& player, float angle)
 {
     Vector v = { 0, 0, 0 };
     return v;

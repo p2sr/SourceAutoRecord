@@ -2,13 +2,16 @@
 
 #include "TasPlayer.hpp"
 
-struct TasFramebulk;
+
 
 struct TasToolParams {
     bool enabled = false;
     TasToolParams() {}
     TasToolParams(bool enabled) : enabled(enabled) {}
 };
+
+struct TasFramebulk;
+struct TasPlayerInfo;
 
 
 class TasTool {
@@ -24,7 +27,7 @@ public:
     
     virtual TasTool* GetTool() = 0;
     virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>) = 0;
-    virtual void Apply(TasFramebulk& fb) = 0;
+    virtual void Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo) = 0;
     virtual void Reset();
 
     void SetParams(std::shared_ptr<TasToolParams> params);
