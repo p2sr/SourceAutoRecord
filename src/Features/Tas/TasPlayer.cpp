@@ -2,9 +2,9 @@
 
 #include "Variable.hpp"
 
+#include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
-#include "Modules/Client.hpp"
 #include "Modules/Server.hpp"
 
 #include "Features/Session.hpp"
@@ -16,6 +16,7 @@
 
 Variable sar_tas_debug("sar_tas_debug", "1", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
 Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", 0, 1, "Enables tool processing for TAS script making.");
+Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "1", 0, 1, "Enables automatic saving of raw, processed TAS scripts.");
 
 TasPlayer* tasPlayer;
 
@@ -58,6 +59,7 @@ void TasPlayer::Activate()
     }
 
     active = true;
+    startTick = -1;
     currentTick = 0;
 
     lastTick = 0;
@@ -117,6 +119,12 @@ void TasPlayer::Start()
 
     ready = true;
     currentTick = 0;
+    startTick = -1;
+}
+
+void TasPlayer::PostStart()
+{
+    startTick = server->gpGlobals->tickcount;
     tasController->Enable();
 }
 
@@ -124,6 +132,10 @@ void TasPlayer::Stop()
 {
     if (active && ready) {
         console->Print("TAS script has ended after %d ticks.\n", currentTick);
+
+        if (sar_tas_autosave_raw.GetBool()) {
+            SaveProcessedFramebulks();
+        }
     }
 
     active = false;
@@ -160,9 +172,9 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void* player, CMoveData* pMove)
     unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + 344); // m_hGroundEntity
     pi.grounded = groundEntity != 0xFFFFFFFF;
 
-    pi.position = pMove->m_vecAbsOrigin;
-    pi.angles = pMove->m_vecAngles;
-    pi.velocity = pMove->m_vecVelocity;
+    pi.position = *reinterpret_cast<Vector*>((uintptr_t)player + 460);
+    pi.angles = engine->GetAngles(pi.slot);
+    pi.velocity = *reinterpret_cast<Vector*>((uintptr_t)player + 364);
 
     pi.oldButtons = pMove->m_nOldButtons;
 
@@ -179,6 +191,16 @@ void TasPlayer::SetStartInfo(TasStartType type, std::string param)
     this->startInfo = TasStartInfo{ type, param };
 }
 
+void TasPlayer::SaveProcessedFramebulks()
+{
+    if (processedFramebulks.size() > 0 && tasFileName.size() > 0) {
+        if (tasFileName.find("_raw") != std::string::npos) {
+            return;
+        }
+        TasParser::SaveFramebulksToFile(tasFileName, startInfo, processedFramebulks);
+    }
+}
+
 /*
     This function is called in ControllerMove, which is what completely
     avoids sv_alternateticks behaviour. Technically speaking, the game
@@ -188,7 +210,6 @@ void TasPlayer::SetStartInfo(TasStartType type, std::string param)
     different results in three consecutive ticks (shoutouts to Amtyi
     for testing it out for us on his setup)
 */
-
 void TasPlayer::FetchInputs(TasController* controller)
 {
     //console->Print("TasPlayer: %d \n", GetAbsoluteTick());
@@ -224,30 +245,37 @@ void TasPlayer::PostProcess(void* player, CMoveData* pMove)
     // every other way of getting time is incorrect due to alternateticks
     int tasTick = playerInfo.tick - startTick;
 
+    // do not allow inputs after TAS has ended
+    if (tasTick > lastTick) {
+        return;
+    }
+
     TasFramebulk fb = GetRawFramebulkAt(tasTick);
     fb.tick = tasTick;
-
-    // angle has been already added. revert that before tool processing.
 
     for (TasTool* tool : TasTool::GetList()) {
         tool->Apply(fb, playerInfo);
     }
 
     // add processed framebulk to the pMove
-    pMove->m_vecAngles.y += fb.viewAnalog.x;
-    pMove->m_vecAngles.x += fb.viewAnalog.y;
+    // using angles from playerInfo, as these seem to be the most accurate
+    // pMove ones are created before tool parsing and GetAngles is wacky.
+    // idk, as long as it produces the correct script file we should be fine lmfao
+    pMove->m_vecAngles.y = playerInfo.angles.y + fb.viewAnalog.x;
+    pMove->m_vecAngles.x = playerInfo.angles.x + fb.viewAnalog.y;
     pMove->m_vecAngles.x = std::min(std::max(pMove->m_vecAngles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
+
+    console->Print("%f %f %f\n", pMove->m_vecAngles.x, pMove->m_vecAngles.y, pMove->m_vecAngles.z);
 
     pMove->m_vecViewAngles = pMove->m_vecAbsViewAngles = pMove->m_vecAngles;
     engine->SetAngles(playerInfo.slot, pMove->m_vecAngles);
 
     if (fb.moveAnalog.y > 0.0) {
-        pMove->m_flForwardMove += cl_forwardspeed.GetFloat() * fb.moveAnalog.y;
+        pMove->m_flForwardMove = cl_forwardspeed.GetFloat() * fb.moveAnalog.y;
     } else {
-        pMove->m_flForwardMove += cl_backspeed.GetFloat() * fb.moveAnalog.y;
+        pMove->m_flForwardMove = cl_backspeed.GetFloat() * fb.moveAnalog.y;
     }
-    pMove->m_flSideMove += cl_sidespeed.GetFloat() * fb.moveAnalog.x;
-
+    pMove->m_flSideMove = cl_sidespeed.GetFloat() * fb.moveAnalog.x;
 
     pMove->m_nButtons = 0;
     for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
@@ -267,13 +295,14 @@ void TasPlayer::Update()
             if (startInfo.type == StartImmediately || !session->isRunning) {
                 Start();
             }
-        } else if (session->isRunning) {
-            if (currentTick == 0) {
-                startTick = server->gpGlobals->tickcount;
-            }
-            currentTick++;
         }
         if (ready && session->isRunning) {
+            if (startTick == -1) {
+                PostStart();
+            } else {
+                currentTick++;
+            }
+
             //someone told me that would make physics deterministic (it does not! >:( )
             if (currentTick == 0) {
                 //engine->ExecuteCommand("phys_timescale 1");
@@ -288,8 +317,13 @@ void TasPlayer::Update()
             }
         }
 
-        if (currentTick > lastTick) {
+        // make sure all ticks are processed by tools before stopping
+        if ((!sar_tas_tools_enabled.GetBool() && currentTick > lastTick) || processedFramebulks.size() > lastTick) {
             Stop();
+        }
+        // also do not allow inputs after TAS has ended
+        if (currentTick > lastTick) {
+            tasController->Disable();
         }
     }
 }
@@ -315,4 +349,16 @@ CON_COMMAND(sar_tas_playfile,
     } catch (TasParserException& e) {
         return console->ColorMsg(Color(255, 100, 100), "Error while opening TAS file: %s\n", e.what());
     }
+}
+
+CON_COMMAND(sar_tas_save_raw,
+    "Saves a processed version of just processed script.")
+{
+    IGNORE_DEMO_PLAYER();
+
+    if (args.ArgC() != 1) {
+        return console->Print(sar_tas_save_raw.ThisPtr()->m_pszHelpString);
+    }
+
+    tasPlayer->SaveProcessedFramebulks();
 }

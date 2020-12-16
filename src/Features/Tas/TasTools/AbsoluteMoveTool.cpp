@@ -19,10 +19,10 @@ void AbsoluteMoveTool::Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo)
 
     auto nSlot = GET_SLOT();
 
-    auto angle = engine->GetAngles(nSlot).y - 90;
-    auto desired = ttParams->direction;
+    float angle = pInfo.angles.y + fb.viewAnalog.x - 90.0;
+    float desired = ttParams->direction;
 
-    auto delta = desired - angle;
+    float delta = desired - angle;
     auto R = DEG2RAD(delta);
     auto X = std::cosf(R);
     auto Y = std::sinf(R);

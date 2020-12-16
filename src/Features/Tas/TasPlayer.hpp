@@ -57,6 +57,7 @@ private:
     int lastTick = 0; // last tick of script, relative to its starting point
 
     TasStartInfo startInfo;
+    std::string tasFileName;
 
     std::vector<TasFramebulk> framebulkQueue;
     std::vector<TasFramebulk> processedFramebulks;
@@ -69,12 +70,16 @@ public:
 
     void Activate();
     void Start();
+    void PostStart();
     void Stop();
 
     TasFramebulk GetRawFramebulkAt(int tick);
     TasPlayerInfo GetPlayerInfo(void* player, CMoveData* pMove);
     void SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue);
     void SetStartInfo(TasStartType type, std::string);
+    inline void SetLoadedFileName(std::string name) { tasFileName = name;  };
+    void SaveProcessedFramebulks();
+
 
     void FetchInputs(TasController* controller);
     void PostProcess(void* player, CMoveData* pMove);
@@ -85,5 +90,6 @@ public:
 
 extern Variable sar_tas_debug;
 extern Variable sar_tas_tools_enabled;
+extern Variable sar_tas_autosave_raw;
 
 extern TasPlayer* tasPlayer;

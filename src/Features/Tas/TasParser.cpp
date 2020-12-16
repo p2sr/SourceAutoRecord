@@ -1,6 +1,7 @@
 #include "TasParser.hpp"
 
 #include <algorithm>
+#include <iomanip>
 #include <fstream>
 #include <regex>
 #include <sstream>
@@ -45,6 +46,10 @@ std::vector<TasFramebulk> TasParser::ParseFile(std::string filePath)
         fb = ParseAllLines(lines);
     } catch (TasParserException& e) {
         throw;
+    }
+
+    if (fb.size() > 0) {
+        tasPlayer->SetLoadedFileName(filePath);
     }
 
     return fb;
@@ -340,4 +345,59 @@ float TasParser::toFloat(std::string& str)
 bool TasParser::isNumber(std::string& str)
 {
     return std::regex_match(str, regexNumber);
+}
+
+
+void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, std::vector<TasFramebulk> framebulks)
+{
+    std::string fixedName = name;
+    size_t lastdot = name.find_last_of(".");
+    if (lastdot != std::string::npos) {
+        fixedName = name.substr(0, lastdot);
+    }
+
+    std::ofstream file(fixedName + "_raw.p2tas");
+
+    std::sort(framebulks.begin(), framebulks.end(),
+        [](const TasFramebulk& a, const TasFramebulk& b) {
+            return a.tick < b.tick;
+       }
+    );
+
+    switch (startInfo.type) {
+    case TasStartType::ChangeLevel:
+        file << "start map " << startInfo.param << "";
+        break;
+    case TasStartType::LoadQuicksave:
+        file << "start save " << startInfo.param << "";
+        break;
+    case TasStartType::StartImmediately:
+        file << "start now";
+        break;
+    default:
+        file << "start next";
+        break;
+    }
+
+    for (TasFramebulk& fb : framebulks) {
+        file << "\n";
+        file << fb.tick << ">";
+        file << fb.moveAnalog.x << " " << fb.moveAnalog.y << "|";
+        file << fb.viewAnalog.x << " " << fb.viewAnalog.y << "|";
+        
+        file << (fb.buttonStates[TasControllerInput::Jump] ? "J" : "j");
+        file << (fb.buttonStates[TasControllerInput::Crouch] ? "D" : "d");
+        file << (fb.buttonStates[TasControllerInput::Use] ? "U" : "u");
+        file << (fb.buttonStates[TasControllerInput::Zoom] ? "Z" : "z");
+        file << (fb.buttonStates[TasControllerInput::FireBlue] ? "B" : "b");
+        file << (fb.buttonStates[TasControllerInput::FireOrange] ? "O" : "o");
+
+        file << "|";
+
+        for (std::string command : fb.commands) {
+            file << command << ";";
+        }
+    }
+
+    file.close();
 }

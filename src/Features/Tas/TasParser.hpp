@@ -35,4 +35,6 @@ namespace TasParser {
     int toInt(std::string& str);
     float toFloat(std::string& str);
     bool isNumber(std::string& str);
-};
+
+    void SaveFramebulksToFile(std::string name, TasStartInfo startInfo, std::vector<TasFramebulk> framebulks);
+ };
