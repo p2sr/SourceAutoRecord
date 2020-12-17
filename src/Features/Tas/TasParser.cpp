@@ -382,8 +382,10 @@ void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, s
     for (TasFramebulk& fb : framebulks) {
         file << "\n";
         file << fb.tick << ">";
-        file << fb.moveAnalog.x << " " << fb.moveAnalog.y << "|";
-        file << fb.viewAnalog.x << " " << fb.viewAnalog.y << "|";
+
+        char analogs[128];
+        snprintf(analogs, sizeof(analogs), "%.9f %.9f|%.9f %.9f|", fb.moveAnalog.x, fb.moveAnalog.y, fb.viewAnalog.x, fb.viewAnalog.y);
+        file << analogs;
         
         file << (fb.buttonStates[TasControllerInput::Jump] ? "J" : "j");
         file << (fb.buttonStates[TasControllerInput::Crouch] ? "D" : "d");

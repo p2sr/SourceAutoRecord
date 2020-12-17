@@ -126,6 +126,7 @@ void TasPlayer::PostStart()
 {
     startTick = server->gpGlobals->tickcount;
     tasController->Enable();
+    engine->ExecuteCommand("phys_timescale 1", true);
 }
 
 void TasPlayer::Stop()
@@ -212,8 +213,6 @@ void TasPlayer::SaveProcessedFramebulks()
 */
 void TasPlayer::FetchInputs(TasController* controller)
 {
-    //console->Print("TasPlayer: %d \n", GetAbsoluteTick());
-
     TasFramebulk fb = GetRawFramebulkAt(currentTick);
 
     int fbTick = fb.tick;
@@ -240,6 +239,11 @@ void TasPlayer::FetchInputs(TasController* controller)
 // meaning that second tick in pair reads outdated info.
 void TasPlayer::PostProcess(void* player, CMoveData* pMove)
 {
+
+    pMove->m_flForwardMove = 0;
+    pMove->m_flSideMove = 0;
+    pMove->m_nButtons = 0;
+
     auto playerInfo = GetPlayerInfo(player, pMove);
     // player tickbase seems to be an accurate way of getting current time in ProcessMovement
     // every other way of getting time is incorrect due to alternateticks
@@ -251,7 +255,17 @@ void TasPlayer::PostProcess(void* player, CMoveData* pMove)
     }
 
     TasFramebulk fb = GetRawFramebulkAt(tasTick);
+    
+    // update all tools that needs to be updated
+    auto fbTick = fb.tick;
     fb.tick = tasTick;
+    if (fbTick == tasTick) {
+        for (TasToolCommand cmd : fb.toolCmds) {
+            cmd.tool->SetParams(cmd.params);
+        }
+    }
+
+    
 
     for (TasTool* tool : TasTool::GetList()) {
         tool->Apply(fb, playerInfo);
@@ -264,8 +278,6 @@ void TasPlayer::PostProcess(void* player, CMoveData* pMove)
     pMove->m_vecAngles.y = playerInfo.angles.y + fb.viewAnalog.x;
     pMove->m_vecAngles.x = playerInfo.angles.x + fb.viewAnalog.y;
     pMove->m_vecAngles.x = std::min(std::max(pMove->m_vecAngles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
-
-    console->Print("%f %f %f\n", pMove->m_vecAngles.x, pMove->m_vecAngles.y, pMove->m_vecAngles.z);
 
     pMove->m_vecViewAngles = pMove->m_vecAbsViewAngles = pMove->m_vecAngles;
     engine->SetAngles(playerInfo.slot, pMove->m_vecAngles);
@@ -285,6 +297,10 @@ void TasPlayer::PostProcess(void* player, CMoveData* pMove)
     }
 
     // put processed framebulk in the list
+    if (fbTick != tasTick) {
+        std::vector<std::string> empty;
+        fb.commands = empty;
+    }
     processedFramebulks.push_back(fb);
 }
 
@@ -301,19 +317,6 @@ void TasPlayer::Update()
                 PostStart();
             } else {
                 currentTick++;
-            }
-
-            //someone told me that would make physics deterministic (it does not! >:( )
-            if (currentTick == 0) {
-                //engine->ExecuteCommand("phys_timescale 1");
-            }
-
-            // update all tools that needs to be updated
-            TasFramebulk fb = GetRawFramebulkAt(currentTick);
-            if (fb.tick == currentTick) {
-                for (TasToolCommand cmd : fb.toolCmds) {
-                    cmd.tool->SetParams(cmd.params);
-                }
             }
         }
 
