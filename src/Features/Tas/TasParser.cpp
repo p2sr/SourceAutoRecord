@@ -279,16 +279,17 @@ TasFramebulk TasParser::ParseRawFramebulk(RawFramebulk& raw, TasFramebulk& previ
 Vector TasParser::ParseVector(std::string& str)
 {
     float x = 0, y = 0;
-    std::smatch matches;
-    if (std::regex_search(str, matches, regexVector)) {
-        try {
-            x = TasParser::toFloat(matches[1].str()); //The first sub_match is the whole string; the next sub_match is the first parenthesized expression.
-            y = TasParser::toFloat(matches[2].str());
-        } catch (...) {
-            throw TasParserException("Can't parse vector { " + str + " }");
-        }
-    } else {
-        //Handle error
+    const char* vec = str.c_str();
+
+    char* pEnd;
+    x = std::strtof(vec, &pEnd);
+    if (vec == pEnd) { //If no conversion
+        throw TasParserException("Can't parse vector { " + str + " }");
+    }
+    
+    char* pEndY = pEnd;
+    y = std::strtof(pEndY, &pEnd);
+    if (pEndY == pEnd) { //If no conversion
         throw TasParserException("Can't parse vector { " + str + " }");
     }
 
@@ -324,27 +325,26 @@ std::vector<std::string> TasParser::ParseTool(std::string& str)
 
 int TasParser::toInt(std::string& str)
 {
-    std::smatch matches;
-    if (TasParser::isNumber(str)) { //If it's a number
-        return std::stoi(str);
-    } else {
+    char* pEnd;
+    const char* number = str.c_str();
+    int x = std::strtol(number, &pEnd, 10);
+    if (number == pEnd) { //If no conversion
         throw TasParserException(str + " is not a number");
     }
+
+    return x;
 }
 
 float TasParser::toFloat(std::string& str)
 {
-    std::smatch matches;
-    if (TasParser::isNumber(str)) { //If it's a number
-        return std::stof(str);
-    } else {
+    char* pEnd;
+    const char* number = str.c_str();
+    float x = std::strtof(number, &pEnd);
+    if (number == pEnd) { //If no conversion
         throw TasParserException(str + " is not a number");
     }
-}
 
-bool TasParser::isNumber(std::string& str)
-{
-    return std::regex_match(str, regexNumber);
+    return x;
 }
 
 
