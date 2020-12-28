@@ -13,17 +13,16 @@ struct DemoDatas {
 class DemoGhostEntity : public GhostEntity {
 
 private:
-    std::vector<DataGhost> currentDatas;
-    int currentMapID;
-    int tick;
+    std::vector<DataGhost> currentDatas; //Pos and ang of ghost
     int demoTick;
     size_t nbDemoTicks;
-    int demoPlaybackTicks;
     unsigned int currentDemo;
 
 public:
     std::vector<DemoDatas> datasByLevel;
+    std::string currentMap;
     int totalTicks;
+    std::string firstLevel;
     std::string lastLevel;
     bool hasFinished;
     int offset;
@@ -31,8 +30,7 @@ public:
 
 public:
     DemoGhostEntity(sf::Uint32 ID, std::string name, DataGhost data, std::string currentMap);
-    void ChangeLevel(const std::string& mapName);
-    void ChangeDemo(const unsigned int demoID);
+    void ChangeDemo(); //Change demo for FullGame ghosts
     //Add demo for full game ghost
     void AddLevelDatas(DemoDatas& datas);
     void SetFirstLevelDatas(DemoDatas& datas);
@@ -40,8 +38,10 @@ public:
     void NextDemo();
     //Update position of the ghost
     void UpdateDemoGhost();
-    //Make the ghost ready for FullGame
+    //Make the ghost ready for whole run (just classic reset for CM)
     void SetGhostOnFirstMap();
-    void Reset();
+    //Make ghost ready for spawn
+    void LevelReset();
     int GetTotalTime();
+    std::string GetCurrentMap();
 };

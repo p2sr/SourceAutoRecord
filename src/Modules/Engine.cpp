@@ -35,6 +35,7 @@ REDECL(Engine::exit_callback);
 REDECL(Engine::quit_callback);
 REDECL(Engine::help_callback);
 REDECL(Engine::gameui_activate_callback);
+REDECL(Engine::unpause_callback);
 #ifdef _WIN32
 REDECL(Engine::connect_callback);
 REDECL(Engine::ParseSmoothingInfo_Skip);
@@ -148,6 +149,15 @@ int Engine::GetMapIndex(const std::string map)
     }
 }
 
+std::string Engine::GetCurrentMapName()
+{
+    if (engine->demoplayer->IsPlaying()) {
+        return engine->demoplayer->GetLevelName();
+    } else {
+        return engine->m_szLevelName;
+    }
+}
+
 // CClientState::Disconnect
 DETOUR(Engine::Disconnect, bool bShowMainMenu)
 {
@@ -206,6 +216,20 @@ DETOUR(Engine::Frame)
         engine->ExecuteCommand(std::string("playdemo " + name).c_str());
         if (++engine->demoplayer->currentDemoID >= engine->demoplayer->demoQueueSize) {
             engine->demoplayer->ClearDemoQueue();
+        }
+    }
+
+    if (engine->currentTick != session->GetTick()) {
+        if (networkManager.isConnected && engine->isRunning()) {
+            networkManager.UpdateGhostsPosition();
+
+            if (networkManager.isCountdownReady) {
+                networkManager.UpdateCountdown();
+            }
+        }
+
+        if (demoGhostPlayer.IsPlaying() && (engine->isRunning() || engine->demoplayer->IsPlaying())) {
+            demoGhostPlayer.UpdateGhostsPosition();
         }
     }
 

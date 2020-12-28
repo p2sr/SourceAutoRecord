@@ -46,7 +46,7 @@ public:
     void SetupGhost(sf::Uint32& ID, std::string& name, DataGhost& data, std::string& current_map);
     void Display();
     void Lerp(float time);
-    void KillGhost(const bool newEntity);
+    void DeleteGhostModel(const bool newEntity);
 };
 
 extern Variable ghost_height;

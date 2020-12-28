@@ -10,11 +10,9 @@
 
 DemoGhostEntity::DemoGhostEntity(sf::Uint32 ID, std::string name, DataGhost data, std::string currentMap)
     : GhostEntity(ID, name, data, currentMap)
-    , tick(0)
     , demoTick(0)
     , nbDemoTicks(0)
-    , demoPlaybackTicks(0)
-    , currentMapID(engine->GetMapIndex(currentMap))
+    , currentMap("") //currentMapID(engine->GetMapIndex(currentMap))
     , hasFinished(false)
     , currentDemo(0)
     , offset(0)
@@ -22,22 +20,13 @@ DemoGhostEntity::DemoGhostEntity(sf::Uint32 ID, std::string name, DataGhost data
 {
 }
 
-void DemoGhostEntity::ChangeLevel(const std::string& mapName)
+void DemoGhostEntity::ChangeDemo()
 {
-    const auto data_ID = std::distance(this->datasByLevel.begin(), std::find_if(this->datasByLevel.begin(), this->datasByLevel.end(), [&mapName](const DemoDatas& d) { return d.demo.mapName == mapName; }));
-    this->ChangeDemo(data_ID);
-}
-
-void DemoGhostEntity::ChangeDemo(const unsigned int demoID)
-{
-    this->currentDemo = demoID;
-    this->currentDatas = this->datasByLevel[demoID].levelDatas;
-    this->nbDemoTicks = this->datasByLevel[demoID].levelDatas.size();
-    this->demoPlaybackTicks = this->datasByLevel[demoID].demo.playbackTicks;
-    this->currentMap = this->datasByLevel[demoID].demo.mapName;
-    this->currentMapID = engine->GetMapIndex(this->currentMap);
-    this->sameMap = engine->m_szLevelName == this->currentMap;
-    this->isAhead = this->currentMapID > engine->GetMapIndex(engine->m_szLevelName);
+    this->currentDatas = this->datasByLevel[this->currentDemo].levelDatas;
+    this->nbDemoTicks = this->datasByLevel[this->currentDemo].levelDatas.size();
+    this->currentMap = this->datasByLevel[this->currentDemo].demo.mapName;
+    this->sameMap = engine->GetCurrentMapName() == this->currentMap;
+    this->isAhead = engine->GetMapIndex(this->currentMap) > engine->GetMapIndex(engine->GetCurrentMapName());
 }
 
 void DemoGhostEntity::AddLevelDatas(DemoDatas& datas)
@@ -56,9 +45,9 @@ void DemoGhostEntity::SetFirstLevelDatas(DemoDatas& datas)
 
 void DemoGhostEntity::NextDemo()
 {
-    if (++this->currentMapID != this->datasByLevel.size()) {
-        this->ChangeDemo(++this->currentDemo);
-        this->Reset();
+    if (++this->currentDemo != this->datasByLevel.size()) {
+        this->ChangeDemo();
+        this->LevelReset();
         if (ghost_show_advancement.GetBool()) {
             client->Chat(TextColor::GREEN, "%s is now on %s", this->name.c_str(), this->currentMap.c_str());
         }
@@ -73,30 +62,32 @@ void DemoGhostEntity::NextDemo()
 
 void DemoGhostEntity::UpdateDemoGhost()
 {
-    if (++this->tick % 2 == 0) {
-        if (++this->demoTick > this->nbDemoTicks && demoGhostPlayer.IsFullGame() && this->tick >= this->demoPlaybackTicks) { //Next demo
-            this->NextDemo();
-        } else if (this->demoTick < this->nbDemoTicks && this->demoTick >= 0) {
-            this->data = this->currentDatas[this->demoTick];
-            if (this->sameMap) {
-                if (this->entity == nullptr) {
-                    this->Spawn();
-                }
-                this->Display();
+    if (++this->demoTick > this->nbDemoTicks && demoGhostPlayer.IsFullGame()) { // if played the whole demo
+        this->NextDemo();
+    } else if (this->demoTick > this->nbDemoTicks) { // If played the whole CM demo
+        this->DeleteGhost();
+    } else if (this->demoTick < this->nbDemoTicks && this->demoTick >= 0) {
+        this->data = this->currentDatas[this->demoTick];
+        if (this->sameMap) {
+            if (this->entity == nullptr) {
+                this->Spawn();
             }
+            this->Display();
         }
     }
 }
 
 void DemoGhostEntity::SetGhostOnFirstMap()
 {
-    this->ChangeLevel(0);
-    this->Reset();
+    this->currentDemo = 0;
+    this->demoTick = this->offset;
+
+    this->ChangeDemo();
+    this->LevelReset();
 }
 
-void DemoGhostEntity::Reset()
+void DemoGhostEntity::LevelReset()
 {
-    this->tick = 0;
     if (this->currentDemo == 0) {
         this->demoTick = this->offset;
     } else {
@@ -111,4 +102,9 @@ void DemoGhostEntity::Reset()
 int DemoGhostEntity::GetTotalTime()
 {
     return (this->totalTicks + this->offset) * speedrun->GetIntervalPerTick();
+}
+
+std::string DemoGhostEntity::GetCurrentMap()
+{
+    return this->currentMap;
 }

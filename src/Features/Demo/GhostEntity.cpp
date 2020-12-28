@@ -115,13 +115,15 @@ void GhostEntity::Lerp(float time)
     this->Display();
 }
 
-void GhostEntity::KillGhost(const bool newEntity)
+void GhostEntity::DeleteGhostModel(const bool newEntity)
 {
-    if (newEntity) {
-        server->SetKeyValueChar(this->entity, "targetname", "ghost_destroy");
-        engine->ExecuteCommand("ent_fire ghost_destroy kill");
-    } else {
-        engine->ExecuteCommand(std::string("ent_fire ghost_" + this->name + " kill").c_str());
+    if (this->entity != nullptr && this->ghost_type) {
+        if (newEntity) {
+            server->SetKeyValueChar(this->entity, "targetname", "ghost_destroy");
+            engine->ExecuteCommand("ent_fire ghost_destroy kill");
+        } else {
+            engine->ExecuteCommand(std::string("ent_fire ghost_" + this->name + " kill").c_str());
+        }
     }
 }
 

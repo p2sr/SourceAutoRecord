@@ -22,11 +22,13 @@ public:
     int demoQueueSize = false;
     int currentDemoID = false;
     std::vector<std::string> demoQueue;
+    std::string levelName;
 
 public:
     int GetTick();
     bool IsPlaying();
     void ClearDemoQueue();
+    std::string GetLevelName();
 
     // CDemoRecorder::StartPlayback
     DECL_DETOUR(StartPlayback, const char* filename, bool bAsTimeDemo);

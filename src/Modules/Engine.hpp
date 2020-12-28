@@ -111,6 +111,7 @@ public:
     bool isRunning();
     bool IsGamePaused();
     int GetMapIndex(const std::string map);
+    std::string GetCurrentMapName();
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);
@@ -137,6 +138,7 @@ public:
     DECL_DETOUR_COMMAND(quit);
     DECL_DETOUR_COMMAND(help);
     DECL_DETOUR_COMMAND(gameui_activate);
+    DECL_DETOUR_COMMAND(unpause);
 
 #ifdef _WIN32
     using _ReadCustomData = int(__fastcall*)(void* thisptr, int edx, void* unk1, void* unk2);
