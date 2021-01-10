@@ -59,6 +59,18 @@ CEntInfo* EntityList::GetEntityInfoByClassName(const char* name)
 
     return nullptr;
 }
+IHandleEntity* EntityList::LookupEntity(const CBaseHandle& handle)
+{
+    if (handle.m_Index == Offsets::INVALID_EHANDLE_INDEX)
+        return NULL;
+
+    auto pInfo = this->GetEntityInfoByIndex(handle.GetEntryIndex());
+
+    if (pInfo->m_SerialNumber == handle.GetSerialNumber())
+        return (IHandleEntity*)pInfo->m_pEntity;
+    else
+        return NULL;
+}
 
 // Commands
 

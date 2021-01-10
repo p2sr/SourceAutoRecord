@@ -22,6 +22,7 @@ public:
     Interface* debugoverlay = nullptr;
     Interface* s_ServerPlugin = nullptr;
     Interface* engineTool = nullptr;
+    Interface* engineTrace = nullptr;
 
     using _ClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
     using _GetLocalPlayer = int(__rescall*)(void* thisptr);
@@ -37,6 +38,15 @@ public:
     using _GetLocalClient = int (*)(int index);
     using _HostFrameTime = float (*)(void* thisptr);
     using _ClientTime = float (*)(void* thisptr);
+	using _PrecacheModel = bool(__stdcall*)(const char*, bool);
+	using _AddBoxOverlay = int(__stdcall*)(const Vector& origin, const Vector& mins, const Vector& MAX, QAngle const& orientation, int r, int g, int b, int a, float duration);
+    using _AddSphereOverlay = int(__stdcall*)(const Vector& vOrigin, float flRadius, int nTheta, int nPhi, int r, int g, int b, int a, float flDuration);
+    using _AddTriangleOverlay = int(__stdcall*)(const Vector& p1, const Vector& p2, const Vector& p3, int r, int g, int b, int a, bool noDepthTest, float duration);
+    using _AddLineOverlay = int(__stdcall*)(const Vector& origin, const Vector& dest, int r, int g, int b, bool noDepthText, float duration);
+	using _AddScreenTextOverlay = void(__stdcall*)(float flXPos, float flYPos, float flDuration, int r, int g, int b, int a, const char* text);
+    using _ClearAllOverlays = void(__stdcall*)();
+    using _IsPaused = bool (*)(void* thisptr);
+    using _TraceRay = void(__rescall*)(void* thisptr, const Ray_t& ray, unsigned int fMask, ITraceFilter* pTraceFilter, CGameTrace* pTrace);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -67,6 +77,15 @@ public:
     _GetLocalClient GetLocalClient = nullptr;
     _HostFrameTime HostFrameTime = nullptr;
     _ClientTime ClientTime = nullptr;
+    _PrecacheModel PrecacheModel = nullptr;
+    _AddBoxOverlay AddBoxOverlay = nullptr;
+    _AddSphereOverlay AddSphereOverlay = nullptr;
+    _AddTriangleOverlay AddTriangleOverlay = nullptr;
+    _AddLineOverlay AddLineOverlay = nullptr;
+    _AddScreenTextOverlay AddScreenTextOverlay = nullptr;
+    _ClearAllOverlays ClearAllOverlays = nullptr;
+    _IsPaused IsPaused = nullptr;
+    _TraceRay TraceRay = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;
@@ -96,6 +115,10 @@ public:
     void SafeUnload(const char* postCommand = nullptr);
     float GetHostFrameTime();
     float GetClientTime();
+    bool isRunning();
+    bool IsGamePaused();
+    int GetMapIndex(const std::string map);
+    std::string GetCurrentMapName();
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);
@@ -122,6 +145,7 @@ public:
     DECL_DETOUR_COMMAND(quit);
     DECL_DETOUR_COMMAND(help);
     DECL_DETOUR_COMMAND(gameui_activate);
+    DECL_DETOUR_COMMAND(unpause);
 
 #ifdef _WIN32
     using _ReadCustomData = int(__fastcall*)(void* thisptr, int edx, void* unk1, void* unk2);
@@ -149,6 +173,7 @@ extern Variable net_showmsg;
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
 #define IGNORE_DEMO_PLAYER() if (engine->demoplayer->IsPlaying()) return;
+#define NOW() std::chrono::steady_clock::now()
 
 #ifdef _WIN32
 #define GET_ACTIVE_SPLITSCREEN_SLOT() engine->GetActiveSplitScreenPlayerSlot()

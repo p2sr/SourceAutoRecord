@@ -5,6 +5,8 @@
 
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
+#include "Features/Demo/GhostEntity.hpp"
+#include "Modules/EngineDemoPlayer.hpp"
 
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
@@ -28,6 +30,10 @@ BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
 }
 bool BaseHud::ShouldDraw()
 {
+    if (engine->demoplayer->IsPlaying()) {
+        return this->type & HudType_InGame;
+    }
+
     if (engine->m_szLevelName[0] == '\0') {
         return this->type & HudType_Menu;
     }
@@ -77,11 +83,30 @@ void HudContext::DrawElement(const char* fmt, ...)
 
     ++this->elements;
 }
+void HudContext::DrawElementOnScreen(const int groupID, const float xPos, const float yPos, const char* fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+    char data[128];
+    vsnprintf(data, sizeof(data), fmt, argptr);
+    va_end(argptr);
+
+    surface->DrawTxt(font,
+        xPos - sizeof(fmt) / 2 * this->fontSize,
+        yPos + this->group[groupID] * (this->fontSize + this->spacing),
+        this->textColor,
+        data);
+
+
+    ++this->group[groupID];
+}
+
 void HudContext::Reset(int slot)
 {
     this->slot = slot;
 
     this->elements = 0;
+    this->group.fill(0);
     this->xPadding = sar_hud_default_padding_x.GetInt();
     this->yPadding = sar_hud_default_padding_y.GetInt();
     this->spacing = sar_hud_default_spacing.GetInt();

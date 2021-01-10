@@ -57,18 +57,47 @@ void Surface::DrawRectAndCenterTxt(Color clr, int x0, int y0, int x1, int y1, HF
 
     this->DrawTxt(font, xc - (tw / 2), yc - (th / 2), fontClr, data);
 }
+void Surface::DrawCircle(int x, int y, float radius, Color clr)
+{
+    this->DrawColoredCircle(this->matsurface->ThisPtr(), x, y, radius, clr.r(), clr.g(), clr.b(), clr.a());
+}
+void Surface::DrawFilledCircle(int x, int y, float radius, Color clr)
+{
+    const int r2 = radius * radius;
+
+    for (int cy = -radius; cy <= radius; cy++) {
+        int cx = sqrtf(r2 - cy * cy) + 0.5;
+        int cyy = cy + y;
+
+        surface->DrawColoredLine(x - cx, cyy, x + cx, cyy, clr);
+    }
+}
+void Surface::DrawColoredLine(int x0, int y0, int x1, int y1, Color clr)
+{
+    this->DrawSetColor(this->matsurface->ThisPtr(), clr.r(), clr.g(), clr.b(), clr.a());
+    this->DrawLine(this->matsurface->ThisPtr(), x0, y0, x1, y1);
+}
 bool Surface::Init()
 {
     this->matsurface = Interface::Create(this->Name(), "VGUI_Surface0", false);
     if (this->matsurface) {
         this->DrawSetColor = matsurface->Original<_DrawSetColor>(Offsets::DrawSetColor);
         this->DrawFilledRect = matsurface->Original<_DrawFilledRect>(Offsets::DrawFilledRect);
+        this->DrawColoredCircle = matsurface->Original<_DrawColoredCircle>(Offsets::DrawColoredCircle);
         this->DrawLine = matsurface->Original<_DrawLine>(Offsets::DrawLine);
         this->DrawSetTextFont = matsurface->Original<_DrawSetTextFont>(Offsets::DrawSetTextFont);
         this->DrawSetTextColor = matsurface->Original<_DrawSetTextColor>(Offsets::DrawSetTextColor);
         this->GetFontTall = matsurface->Original<_GetFontTall>(Offsets::GetFontTall);
         this->DrawColoredText = matsurface->Original<_DrawColoredText>(Offsets::DrawColoredText);
         this->DrawTextLen = matsurface->Original<_DrawTextLen>(Offsets::DrawTextLen);
+
+        this->DrawSetTextureFile = matsurface->Original<_DrawSetTextureFile>(Offsets::DrawSetTextureFile);
+        this->DrawSetTextureRGBA = matsurface->Original<_DrawSetTextureRGBA>(Offsets::DrawSetTextureRGBA);
+        this->DrawSetTexture = matsurface->Original<_DrawSetTexture>(Offsets::DrawSetTexture);
+        this->DrawGetTextureSize = matsurface->Original<_DrawGetTextureSize>(Offsets::DrawGetTextureSize);
+        this->DrawTexturedRect = matsurface->Original<_DrawTexturedRect>(Offsets::DrawTexturedRect);
+        this->IsTextureIDValid = matsurface->Original<_IsTextureIDValid>(Offsets::IsTextureIDValid);
+        this->CreateNewTextureID = matsurface->Original<_CreateNewTextureID>(Offsets::CreateNewTextureID);
 
         auto PaintTraverseEx = matsurface->Original(Offsets::PaintTraverseEx);
         this->StartDrawing = Memory::Read<_StartDrawing>(PaintTraverseEx + Offsets::StartDrawing);

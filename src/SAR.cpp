@@ -7,6 +7,7 @@
 
 #include "Cheats.hpp"
 #include "Command.hpp"
+#include "Features/Stats/Stats.hpp"
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Variable.hpp"
@@ -46,6 +47,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Tracer>(&tracer);
             this->features->AddFeature<SpeedrunTimer>(&speedrun);
             this->features->AddFeature<Stats>(&stats);
+            this->features->AddFeature<Sync>(&sync);
             this->features->AddFeature<CommandQueuer>(&cmdQueuer);
             this->features->AddFeature<ReplayRecorder>(&replayRecorder1);
             this->features->AddFeature<ReplayRecorder>(&replayRecorder2);
@@ -54,6 +56,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<ReplayProvider>(&replayProvider);
             this->features->AddFeature<Timer>(&timer);
             this->features->AddFeature<EntityInspector>(&inspector);
+            this->features->AddFeature<SeamshotFind>(&seamshotFind);
             this->features->AddFeature<ClassDumper>(&classDumper);
             this->features->AddFeature<EntityList>(&entityList);
             this->features->AddFeature<OffsetFinder>(&offsetFinder);
@@ -62,6 +65,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<DataMapDumper>(&dataMapDumper);
             this->features->AddFeature<FovChanger>(&fovChanger);
             this->features->AddFeature<Camera>(&camera);
+            this->features->AddFeature<SegmentedTools>(&segmentedTools);
 
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
@@ -84,6 +88,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                     this->features->AddFeature<Listener>(&listener);
                     this->features->AddFeature<WorkshopList>(&workshop);
                     this->features->AddFeature<Imitator>(&imitator);
+                    //this->features->AddFeature<NetworkGhostPlayer>(&networkGhostPlayer);
                 }
 
                 if (listener) {
@@ -241,6 +246,12 @@ CON_COMMAND(sar_rename, "Changes your name. Usage: sar_rename <name>\n")
 }
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
+    auto statCounter = stats->Get(GET_SLOT())->statsCounter;
+    statCounter->RecordDatas(session->GetTick());
+    statCounter->ExportToFile(sar_statcounter_filePath.GetString());
+  
+    networkManager.Disconnect();
+
     if (sar.cheats) {
         sar.cheats->Shutdown();
     }

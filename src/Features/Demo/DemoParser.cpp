@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 
+#include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
 
 #include "Demo.hpp"
@@ -32,7 +33,7 @@ void DemoParser::Adjust(Demo* demo)
     demo->playbackTicks = demo->LastTick();
     demo->playbackTime = ipt * demo->playbackTicks;
 }
-bool DemoParser::Parse(std::string filePath, Demo* demo)
+bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std::vector<DataGhost>* datas)
 {
     try {
         if (filePath.substr(filePath.length() - 4, 4) != ".dem")
@@ -57,6 +58,11 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
         file.read((char*)&demo->signOnLength, sizeof(demo->signOnLength));
 
         if (!headerOnly) {
+
+            //Ghosts
+            bool waitForNext = false;
+            int lastTick = 0;
+
             if (demo->demoProtocol != 4) {
                 this->hasAlignmentByte = false;
                 this->maxSplitScreenClients = 1;
@@ -83,7 +89,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
                 case 0x01: // SignOn
                 case 0x02: // Packet
                 {
-                    if (outputMode == 2) {
+                    if (outputMode == 2 || ghostRequest == true) {
                         for (auto i = 0; i < this->maxSplitScreenClients; ++i) {
                             if (i >= 1) {
                                 file.ignore(76);
@@ -115,11 +121,23 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
                             file.read((char*)&lva2_x, sizeof(lva2_x));
                             file.read((char*)&lva2_y, sizeof(lva2_y));
                             file.read((char*)&lva2_z, sizeof(lva2_z));
-                            console->Msg("[%i] flags: %i | "
-                                         "view origin: %.3f/%.3f/%.3f | "
-                                         "view angles: %.3f/%.3f/%.3f | "
-                                         "local view angles: %.3f/%.3f/%.3f\n",
-                                tick, flags, vo_x, vo_y, vo_z, va_x, va_y, va_z, lva_x, lva_y, lva_z);
+
+                            if (ghostRequest) {
+                                if (tick == 0) {
+                                    waitForNext = true;
+                                }
+
+                                if (tick > 0 && waitForNext && lastTick != tick) {
+                                    lastTick = tick;
+                                    datas->push_back(DataGhost{ { vo_x, vo_y, vo_z }, { va_x, va_y, va_z } });
+                                }
+                            } else {
+                                console->Msg("[%i] flags: %i | "
+                                             "view origin: %.3f/%.3f/%.3f | "
+                                             "view angles: %.3f/%.3f/%.3f | "
+                                             "local view angles: %.3f/%.3f/%.3f\n",
+                                    tick, flags, vo_x, vo_y, vo_z, va_x, va_y, va_z, lva_x, lva_y, lva_z);
+                            }
                         }
                         int32_t in_seq, out_seq;
                         file.read((char*)&in_seq, sizeof(in_seq));
@@ -139,13 +157,15 @@ bool DemoParser::Parse(std::string filePath, Demo* demo)
                 {
                     int32_t length;
                     file.read((char*)&length, sizeof(length));
-                    if (outputMode >= 1) {
                         std::string cmd(length, ' ');
                         file.read(&cmd[0], length);
-                        console->Msg("[%i] %s\n", tick, cmd.c_str());
-                    } else {
-                        file.ignore(length);
-                    }
+                        if (!ghostRequest && outputMode >= 1) {
+                            console->Msg("[%i] %s\n", tick, cmd.c_str());
+                        }
+
+                        if (cmd.find("__END__") != std::string::npos) {
+                            console->ColorMsg(Color(0, 255, 0, 255), "Segment length -> %d ticks : %.3fs\n", tick, tick / 60.f);
+                        }
                     break;
                 }
                 case 0x05: // UserCmd

@@ -64,6 +64,7 @@ void Portal2::LoadOffsets()
     HostFrameTime = 40; //CEngineTool
     ClientTime = 48; //CEngineTool
     m_szLevelName = 72; // CEngineTool::GetCurrentMap
+    PrecacheModel = 61; // CEngineTool::PrecacheModel
     AddListener = 4; // CGameEventManager
     RemoveListener = 6; // CGameEventManager
     FireEventClientSide = 9; // CGameEventManager
@@ -122,6 +123,11 @@ void Portal2::LoadOffsets()
     NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
     GetIServerEntity = 2; // CServerTools
     m_EntPtrArray = 48; // CServerTools::GetIServerEntity
+    SetKeyValueChar = 12; // CServerTools::SetKeyValue (const char *szValue)
+    SetKeyValueFloat = 13; // CServerTools::SetKeyValue (float flValue )
+    SetKeyValueVector = 14; // CServerTools::SetKeyValue (const Vector &vecValue )
+    CreateEntityByName = 15; // CServerTools::CreateEntityByName
+    DispatchSpawn = 16; //CServerTool::DispatchSpawn
     ClientCommand = 39; // CVEngineServer
     IsPlayer = 86; // CBasePlayer
     m_pSurfaceData = 4116; // CGameMovement::CheckJumpButton
@@ -141,6 +147,7 @@ void Portal2::LoadOffsets()
     GetName = 11; // CHud
     GetHud = 104; // cc_leaderboard_enable
     FindElement = 120; // cc_leaderboard_enable
+    ChatPrintf = 25; // CBaseHudChat
     DecodeUserCmdFromBuffer = 7; // CInput
     PerUserInput_tSize = 344; // CInput::DecodeUserCmdFromBuffer
     m_pCommands = 236; // CInput::DecodeUserCmdFromBuffer

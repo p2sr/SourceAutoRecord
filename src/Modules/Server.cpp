@@ -3,9 +3,12 @@
 #include <cstdint>
 #include <cstring>
 
+#include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
+#include "Features/Hud/Crosshair.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
+#include "Features/Routing/SeamshotFind.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
@@ -14,8 +17,10 @@
 #include "Features/Tas/TasTools.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
+#include "Features/SegmentedTools.hpp"
 
 #include "Engine.hpp"
+#include "Client.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -137,6 +142,11 @@ DETOUR(Server::PlayerMove)
 {
     auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
     auto mv = *reinterpret_cast<const CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
+
+    if (sar_crosshair_mode.GetBool()) {
+        auto m_hActiveWeapon = *reinterpret_cast<CBaseHandle*>((uintptr_t)player + Offsets::m_hActiveWeapon);
+        server->portalGun = entityList->LookupEntity(m_hActiveWeapon);
+    }
 
     auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
     auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
@@ -279,7 +289,6 @@ DETOUR(Server::GameFrame, bool simulating)
 {
     if (simulating && sar_record_at.GetFloat() > 0 && sar_record_at.GetFloat() == session->GetTick()) {
         std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
-        engine->ExecuteCommand(cmd.c_str());
     }
 
     if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
@@ -313,6 +322,10 @@ DETOUR(Server::GameFrame, bool simulating)
         }
     }
 
+    if (segmentedTools->waitTick == session->GetTick() && simulating) {
+        engine->ExecuteCommand(segmentedTools->pendingCommands.c_str());
+    }
+
     if (session->isRunning && session->GetTick() == 16) {
         fovChanger->Force();
     }
@@ -331,6 +344,14 @@ DETOUR(Server::GameFrame, bool simulating)
 
     if (session->isRunning && sar_speedrun_standard.GetBool()) {
         speedrun->CheckRules(engine->GetTick());
+    }
+
+    if (simulating && sar_seamshot_finder.GetBool()) {
+        seamshotFind->DrawLines();
+    }
+
+    if (simulating && sar_crosshair_P1.GetBool()) {
+        crosshair.IsSurfacePortalable();
     }
 
 #ifndef _WIN32
@@ -378,6 +399,13 @@ bool Server::Init()
     if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS0")) {
         auto GetIServerEntity = g_ServerTools->Original(Offsets::GetIServerEntity);
         Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
+
+		this->CreateEntityByName = g_ServerTools->Original<_CreateEntityByName>(Offsets::CreateEntityByName);
+        this->DispatchSpawn = g_ServerTools->Original<_DispatchSpawn>(Offsets::DispatchSpawn);
+        this->SetKeyValueChar = g_ServerTools->Original<_SetKeyValueChar>(Offsets::SetKeyValueChar);
+        this->SetKeyValueFloat = g_ServerTools->Original<_SetKeyValueFloat>(Offsets::SetKeyValueFloat);
+        this->SetKeyValueVector = g_ServerTools->Original<_SetKeyValueVector>(Offsets::SetKeyValueVector);
+
         Interface::Delete(g_ServerTools);
     }
 
@@ -408,6 +436,13 @@ bool Server::Init()
 
     if (sar.game->Is(SourceGame_Portal2Game)) {
         offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
+        offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);
+        offsetFinder->ServerSide("CProp_Portal", "m_bActivated", &Offsets::m_bActivated);
+        offsetFinder->ServerSide("CProp_Portal", "m_bIsPortal2", &Offsets::m_bIsPortal2);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal1", &Offsets::m_bCanFirePortal1);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal2", &Offsets::m_bCanFirePortal2);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_hPrimaryPortal", &Offsets::m_hPrimaryPortal);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
     }
 
     sv_cheats = Variable("sv_cheats");

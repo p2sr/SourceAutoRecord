@@ -8,6 +8,8 @@
 #include "Hud/InspectionHud.hpp"
 #include "Hud/SpeedrunHud.hpp"
 
+#include "Stats/Stats.hpp"
+
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
@@ -54,6 +56,7 @@ bool Config::Save()
     SAVE_CVAR(sar_ei_hud_font_color, String);
     SAVE_CVAR(sar_ei_hud_font_color2, String);
     SAVE_CVAR(sar_ei_hud_font_index, Int);
+    SAVE_CVAR(sar_statcounter_filePath, String);
 
     if (sar.game->Is(SourceGame_Portal2Game | SourceGame_Portal)) {
         SAVE_CVAR(sar_sr_hud_x, Int);
