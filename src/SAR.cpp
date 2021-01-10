@@ -74,6 +74,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->modules->AddModule<Engine>(&engine);
             this->modules->AddModule<Client>(&client);
             this->modules->AddModule<Server>(&server);
+            this->modules->AddModule<MaterialSystem>(&materialSystem);
             this->modules->InitAll();
 
             if (engine && engine->hasLoaded) {

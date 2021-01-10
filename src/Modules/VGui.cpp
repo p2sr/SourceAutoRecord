@@ -12,6 +12,7 @@
 #include "SAR.hpp"
 
 REDECL(VGui::Paint);
+REDECL(VGui::UpdateProgressBar);
 
 void VGui::Draw(Hud* const& hud)
 {
@@ -66,6 +67,22 @@ DETOUR(VGui::Paint, PaintMode_t mode)
     return result;
 }
 
+DETOUR(VGui::UpdateProgressBar, int progress)
+{
+    if (vgui->lastProgressBar != progress) {
+        vgui->lastProgressBar = progress;
+        vgui->progressBarCount = 0;
+    }
+    vgui->progressBarCount++;
+    if (sar_disable_progress_bar_update.GetInt() == 1 && vgui->progressBarCount > 1) {
+        return 0;
+    }
+    if (sar_disable_progress_bar_update.GetInt() == 2) {
+        return 0;
+    }
+    return VGui::UpdateProgressBar(thisptr, progress);
+}
+
 bool VGui::IsUIVisible(){
     return this->IsGameUIVisible(this->enginevgui->ThisPtr());
 }
@@ -77,6 +94,7 @@ bool VGui::Init()
         this->IsGameUIVisible = this->enginevgui->Original<_IsGameUIVisible>(Offsets::IsGameUIVisible);
 
         this->enginevgui->Hook(VGui::Paint_Hook, VGui::Paint, Offsets::Paint);
+        this->enginevgui->Hook(VGui::UpdateProgressBar_Hook, VGui::UpdateProgressBar, Offsets::Paint + 12);
 
         for (auto& hud : Hud::GetList()) {
             if (hud->version == SourceGame_Unknown || sar.game->Is(hud->version)) {

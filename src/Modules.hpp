@@ -7,3 +7,4 @@
 #include "Modules/Surface.hpp"
 #include "Modules/Tier1.hpp"
 #include "Modules/VGui.hpp"
+#include "Modules/MaterialSystem.hpp"

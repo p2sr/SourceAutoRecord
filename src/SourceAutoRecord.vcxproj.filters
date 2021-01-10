@@ -355,6 +355,9 @@
     <ClCompile Include="Features\Routing\SeamshotFind.cpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClCompile>
+    <ClCompile Include="Modules\MaterialSystem.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -845,6 +848,9 @@
     </ClInclude>
     <ClInclude Include="Features\Routing\SeamshotFind.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\MaterialSystem.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

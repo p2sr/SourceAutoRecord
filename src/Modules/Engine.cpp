@@ -28,6 +28,7 @@ REDECL(Engine::Disconnect2);
 REDECL(Engine::SetSignonState);
 REDECL(Engine::SetSignonState2);
 REDECL(Engine::Frame);
+REDECL(Engine::PurgeUnusedModels);
 REDECL(Engine::OnGameOverlayActivated);
 REDECL(Engine::OnGameOverlayActivatedBase);
 REDECL(Engine::plugin_load_callback);
@@ -280,6 +281,15 @@ DETOUR(Engine::Frame)
     }
 
     return Engine::Frame(thisptr);
+}
+
+DETOUR(Engine::PurgeUnusedModels)
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    auto result = Engine::PurgeUnusedModels(thisptr);
+    auto stop = std::chrono::high_resolution_clock::now();
+    console->DevMsg("PurgeUnusedModels - %dms\n", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
+    return result;
 }
 
 #ifdef _WIN32

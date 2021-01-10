@@ -226,6 +226,7 @@
     <ClCompile Include="Modules\EngineDemoPlayer.cpp" />
     <ClCompile Include="Modules\EngineDemoRecorder.cpp" />
     <ClCompile Include="Modules\InputSystem.cpp" />
+    <ClCompile Include="Modules\MaterialSystem.cpp" />
     <ClCompile Include="Modules\Module.cpp" />
     <ClCompile Include="Modules\Scheme.cpp" />
     <ClCompile Include="Modules\Server.cpp" />
@@ -440,6 +441,7 @@
     <ClInclude Include="Modules\EngineDemoPlayer.hpp" />
     <ClInclude Include="Modules\EngineDemoRecorder.hpp" />
     <ClInclude Include="Modules\InputSystem.hpp" />
+    <ClInclude Include="Modules\MaterialSystem.hpp" />
     <ClInclude Include="Modules\Module.hpp" />
     <ClInclude Include="Modules\Scheme.hpp" />
     <ClInclude Include="Modules\Server.hpp" />

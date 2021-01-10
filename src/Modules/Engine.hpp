@@ -48,6 +48,8 @@ public:
     using _ClearAllOverlays = void(__stdcall*)();
     using _IsPaused = bool (*)(void* thisptr);
     using _TraceRay = void(__rescall*)(void* thisptr, const Ray_t& ray, unsigned int fMask, ITraceFilter* pTraceFilter, CGameTrace* pTrace);
+    using _GetCount = int(__rescall*)(void* thisptr);
+    using _UnreferenceAllModels = void(__stdcall*)(int referencetype);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -88,6 +90,8 @@ public:
     _ClearAllOverlays ClearAllOverlays = nullptr;
     _IsPaused IsPaused = nullptr;
     _TraceRay TraceRay = nullptr;
+    _GetCount GetCount = nullptr;
+    _UnreferenceAllModels UnreferenceAllModels = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;
@@ -140,6 +144,9 @@ public:
 
     // CEngine::Frame
     DECL_DETOUR(Frame);
+
+    // CModelLoader
+    DECL_DETOUR(PurgeUnusedModels);
 
     // CSteam3Client::OnGameOverlayActivated
     DECL_DETOUR_B(OnGameOverlayActivated, GameOverlayActivated_t* pGameOverlayActivated);
