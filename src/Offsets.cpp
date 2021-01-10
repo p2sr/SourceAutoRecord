@@ -35,6 +35,7 @@ int JoyStickApplyMovement;
 
 // ClientModeShared
 int CreateMove;
+int OverrideView;
 
 // ConVar
 int Dtor;
@@ -66,6 +67,9 @@ int CreateNewTextureID;
 // CInputSystem
 int StringToButtonCode;
 int SleepUntilInput;
+int IsButtonDown;
+int GetCursorPosition;
+int SetCursorPosition;
 
 // CInput
 int GetButtonBits;
@@ -140,6 +144,7 @@ int m_bIsPortal2;
 int m_hActiveWeapon;
 
 // IEngineVGuiInternal
+int IsGameUIVisible;
 int Paint;
 
 // IEngineTrace
@@ -147,6 +152,8 @@ int TraceRay;
 
 // CEngineTool
 int GetCurrentMap;
+int HostFrameTime;
+int ClientTime;
 int PrecacheModel;
 
 // CSchemeManager

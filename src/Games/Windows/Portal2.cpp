@@ -101,6 +101,9 @@ void Portal2::LoadOffsets()
     GetSteamAPIContext = 177; // CEngineClient
     StringToButtonCode = 31; // CInputSystem
     SleepUntilInput = 33; // CInputSystem
+    IsButtonDown = 14; //CInputSystem
+    GetCursorPosition = 45; //CInputSystem
+    SetCursorPosition = 38; //CInputSystem
     GetRecordingTick = 1; // CDemoRecorder
     net_time = 19; // CDemoRecorder::GetRecordingTick
     SetSignonState = 3; // CDemoRecorder
@@ -112,6 +115,7 @@ void Portal2::LoadOffsets()
     m_szDemoBaseName = 1344; // CDemoRecorder::StartupDemoFile
     m_nDemoNumber = 1608; // CDemoRecorder::StartupDemoFile
     m_bRecording = 1606; // CDemoRecorder::SetSignonState
+    IsGameUIVisible = 2; //IEngineGui
     Paint = 14; // CEngineVGui
     ProcessTick = 1; // CClientState/IServerMessageHandler
     tickcount = 95; // CClientState::ProcessTick
@@ -122,6 +126,8 @@ void Portal2::LoadOffsets()
     demoplayer = 74; // CClientState::Disconnect
     demorecorder = 87; // CClientState::Disconnect
     GetCurrentMap = 25; // CEngineTool
+    HostFrameTime = 39; //CEngineTool
+    ClientTime = 47; //CEngineTool
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
     PrecacheModel = 61; // CEngineTool::PrecacheModel
     AddListener = 3; // CGameEventManager
@@ -228,6 +234,7 @@ void Portal2::LoadOffsets()
     JoyStickApplyMovement = 64; // CInput
     KeyDown = 398; // CInput::JoyStickApplyMovement
     KeyUp = 377; // CInput::JoyStickApplyMovement
+    OverrideView = 18; // ClientModeShared
 
     // vguimatsurface.dll
 

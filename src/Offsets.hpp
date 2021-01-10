@@ -35,6 +35,7 @@ extern int JoyStickApplyMovement;
 
 // ClientModeShared
 extern int CreateMove;
+extern int OverrideView;
 
 // ConVar
 extern int Dtor;
@@ -66,6 +67,9 @@ extern int CreateNewTextureID;
 // CInputSystem
 extern int StringToButtonCode;
 extern int SleepUntilInput;
+extern int IsButtonDown;
+extern int GetCursorPosition;
+extern int SetCursorPosition;
 
 // CInput
 extern int GetButtonBits;
@@ -140,6 +144,7 @@ extern int m_bIsPortal2;
 extern int m_hActiveWeapon;
 
 // IEngineVGuiInternal
+extern int IsGameUIVisible;
 extern int Paint;
 
 // IEngineTrace
@@ -147,6 +152,8 @@ extern int TraceRay;
 
 // CEngineTool
 extern int GetCurrentMap;
+extern int HostFrameTime;
+extern int ClientTime;
 extern int PrecacheModel;
 
 // CSchemeManager

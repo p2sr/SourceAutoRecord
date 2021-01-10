@@ -15,6 +15,21 @@ int InputSystem::GetButton(const char* pString)
     return this->StringToButtonCode(this->g_InputSystem->ThisPtr(), pString);
 }
 
+bool InputSystem::IsKeyDown(ButtonCode_t key)
+{
+    return this->IsButtonDown(this->g_InputSystem->ThisPtr(), key);
+}
+
+void InputSystem::GetCursorPos(int& x, int& y)
+{
+    return this->GetCursorPosition(this->g_InputSystem->ThisPtr(), x, y);
+}
+
+void InputSystem::SetCursorPos(int x, int y)
+{
+    return this->SetCursorPosition(this->g_InputSystem->ThisPtr(), x, y);
+}
+
 // CInputSystem::SleepUntilInput
 DETOUR(InputSystem::SleepUntilInput, int nMaxSleepTimeMS)
 {
@@ -33,6 +48,9 @@ bool InputSystem::Init()
 
         if (sar.game->Is(SourceGame_Portal2Engine)) {
             this->g_InputSystem->Hook(InputSystem::SleepUntilInput_Hook, InputSystem::SleepUntilInput, Offsets::SleepUntilInput);
+            this->IsButtonDown = this->g_InputSystem->Original<_IsButtonDown>(Offsets::IsButtonDown);
+            this->GetCursorPosition = this->g_InputSystem->Original<_GetCursorPosition>(Offsets::GetCursorPosition);
+            this->SetCursorPosition = this->g_InputSystem->Original<_SetCursorPosition>(Offsets::SetCursorPosition);
         }
     }
 

@@ -24,6 +24,13 @@ private:
     void Draw(HudElement* const& element);
 
 public:
+
+    using _IsGameUIVisible = bool(__rescall*)(void* thisptr);
+
+    _IsGameUIVisible IsGameUIVisible = nullptr;
+
+    bool IsUIVisible();
+
     // CEngineVGui::Paint
     DECL_DETOUR(Paint, PaintMode_t mode);
 

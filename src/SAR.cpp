@@ -64,6 +64,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<PauseTimer>(&pauseTimer);
             this->features->AddFeature<DataMapDumper>(&dataMapDumper);
             this->features->AddFeature<FovChanger>(&fovChanger);
+            this->features->AddFeature<Camera>(&camera);
             this->features->AddFeature<SegmentedTools>(&segmentedTools);
 
             this->modules->AddModule<InputSystem>(&inputSystem);

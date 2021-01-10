@@ -21,6 +21,7 @@ public:
     Interface* eng = nullptr;
     Interface* debugoverlay = nullptr;
     Interface* s_ServerPlugin = nullptr;
+    Interface* engineTool = nullptr;
     Interface* engineTrace = nullptr;
 
     using _ClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
@@ -35,6 +36,8 @@ public:
     using _AddText = void(__rescall*)(void* thisptr, const char* pText, int nTickDelay);
     using _ClientCommand = int (*)(void* thisptr, void* pEdict, const char* szFmt, ...);
     using _GetLocalClient = int (*)(int index);
+    using _HostFrameTime = float (*)(void* thisptr);
+    using _ClientTime = float (*)(void* thisptr);
 	using _PrecacheModel = bool(__stdcall*)(const char*, bool);
 	using _AddBoxOverlay = int(__stdcall*)(const Vector& origin, const Vector& mins, const Vector& MAX, QAngle const& orientation, int r, int g, int b, int a, float duration);
     using _AddSphereOverlay = int(__stdcall*)(const Vector& vOrigin, float flRadius, int nTheta, int nPhi, int r, int g, int b, int a, float flDuration);
@@ -72,6 +75,8 @@ public:
     _ConPrintEvent ConPrintEvent = nullptr;
     _ClientCommand ClientCommand = nullptr;
     _GetLocalClient GetLocalClient = nullptr;
+    _HostFrameTime HostFrameTime = nullptr;
+    _ClientTime ClientTime = nullptr;
     _PrecacheModel PrecacheModel = nullptr;
     _AddBoxOverlay AddBoxOverlay = nullptr;
     _AddSphereOverlay AddSphereOverlay = nullptr;
@@ -108,6 +113,8 @@ public:
     void SendToCommandBuffer(const char* text, int delay);
     int PointToScreen(const Vector& point, Vector& screen);
     void SafeUnload(const char* postCommand = nullptr);
+    float GetHostFrameTime();
+    float GetClientTime();
     bool isRunning();
     bool IsGamePaused();
     int GetMapIndex(const std::string map);
