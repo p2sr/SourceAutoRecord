@@ -3,13 +3,14 @@
 #include <cstring>
 
 #include "Features/Cvars.hpp"
+#include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
-#include "Features/Demo/DemoParser.hpp"
 #include "EngineDemoRecorder.hpp"
+#include "Features/Demo/DemoParser.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Server.hpp"
 
@@ -46,9 +47,13 @@ REDECL(Engine::ParseSmoothingInfo_Mid_Trampoline);
 REDECL(Engine::ReadCustomData);
 #endif
 
-void Engine::ExecuteCommand(const char* cmd)
+void Engine::ExecuteCommand(const char* cmd, bool immediately)
 {
-    this->ClientCmd(this->engineClient->ThisPtr(), cmd);
+    if (immediately) {
+        this->ExecuteClientCmd(this->engineClient->ThisPtr(), cmd);
+    } else {
+        this->ClientCmd(this->engineClient->ThisPtr(), cmd);
+    }
 }
 int Engine::GetTick()
 {
@@ -229,7 +234,38 @@ DETOUR(Engine::Frame)
         }
     }
 
-    if (engine->currentTick != session->GetTick()) {
+    //sar_record
+
+    if (sar_record_at.GetFloat() > 0 && !engine->hasRecorded && sar_record_at.GetFloat() >= session->GetTick()) {
+        std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
+        engine->ExecuteCommand(cmd.c_str(), true);
+        engine->hasRecorded = true;
+    }
+
+    //sar_pause
+
+    if (sar_pause.GetBool()) {
+        if (!engine->hasPaused && sar_pause_at.GetInt() >= session->GetTick()) {
+            engine->ExecuteCommand("pause", true);
+            engine->hasPaused = true;
+            engine->pauseTick = session->GetTick();
+        } else if (sar_pause_for.GetInt() > 0) {
+            if (engine->hasPaused && sar_pause_for.GetInt() + session->GetTick() >= engine->pauseTick) {
+                engine->ExecuteCommand("unpause", true);
+            }
+            ++engine->pauseTick;
+        }
+    }
+
+    if (segmentedTools->waitTick == session->GetTick()) {
+        if (sv_cheats.GetBool()) {
+            console->Print("\"wait\" needs sv_cheats 1.\n");
+        } else {
+            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
+        }
+    }
+
+    if (engine->GetTick() != session->GetTick()) {
         if (networkManager.isConnected && engine->isRunning()) {
             networkManager.UpdateGhostsPosition();
 
@@ -342,6 +378,7 @@ bool Engine::Init()
     if (this->engineClient) {
         this->GetScreenSize = this->engineClient->Original<_GetScreenSize>(Offsets::GetScreenSize);
         this->ClientCmd = this->engineClient->Original<_ClientCmd>(Offsets::ClientCmd);
+        this->ExecuteClientCmd = this->engineClient->Original<_ExecuteClientCmd>(Offsets::ExecuteClientCmd);
         this->GetLocalPlayer = this->engineClient->Original<_GetLocalPlayer>(Offsets::GetLocalPlayer);
         this->GetViewAngles = this->engineClient->Original<_GetViewAngles>(Offsets::GetViewAngles);
         this->SetViewAngles = this->engineClient->Original<_SetViewAngles>(Offsets::SetViewAngles);
@@ -438,9 +475,8 @@ bool Engine::Init()
 
         this->HostFrameTime = this->engineTool->Original<_HostFrameTime>(Offsets::HostFrameTime);
         this->ClientTime = this->engineTool->Original<_ClientTime>(Offsets::ClientTime);
-        Interface::Delete(tool);
 
-        this->PrecacheModel = tool->Original<_PrecacheModel>(Offsets::PrecacheModel);
+        this->PrecacheModel = this->engineTool->Original<_PrecacheModel>(Offsets::PrecacheModel);
     }
 
     if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {

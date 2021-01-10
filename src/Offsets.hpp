@@ -22,6 +22,7 @@ extern int GetViewAngles;
 extern int SetViewAngles;
 extern int GetMaxClients;
 extern int ServerCmdKeyValues;
+extern int ExecuteClientCmd;
 extern int GetActiveSplitScreenPlayerSlot;
 extern int GetSteamAPIContext;
 extern int IsPaused;

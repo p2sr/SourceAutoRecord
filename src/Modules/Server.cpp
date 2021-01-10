@@ -287,9 +287,6 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
-    if (simulating && sar_record_at.GetFloat() > 0 && sar_record_at.GetFloat() == session->GetTick()) {
-        std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
-    }
 
     if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
         if (!simulating && !pauseTimer->IsActive()) {
@@ -306,25 +303,7 @@ DETOUR(Server::GameFrame, bool simulating)
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
-    if (sar_pause.GetBool()) {
-        if (!server->paused && sar_pause_at.GetInt() == session->GetTick() && simulating) {
-            engine->ExecuteCommand("pause");
-            server->paused = true;
-            server->pauseTick = engine->GetTick();
-        } else if (server->paused && !simulating) {
-            if (sar_pause_for.GetInt() > 0 && sar_pause_for.GetInt() + engine->GetTick() == server->pauseTick) {
-                engine->ExecuteCommand("unpause");
-                server->paused = false;
-            }
-            ++server->pauseTick;
-        } else if (server->paused && simulating && engine->GetTick() > server->pauseTick + 5) {
-            server->paused = false;
-        }
-    }
-
-    if (segmentedTools->waitTick == session->GetTick() && simulating) {
-        engine->ExecuteCommand(segmentedTools->pendingCommands.c_str());
-    }
+    
 
     if (session->isRunning && session->GetTick() == 16) {
         fovChanger->Force();

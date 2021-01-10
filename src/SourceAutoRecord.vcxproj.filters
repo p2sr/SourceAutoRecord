@@ -334,9 +334,6 @@
     <ClCompile Include="Features\Demo\GhostEntity.cpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Demo\GhostPlayer.cpp">
-      <Filter>SourceAutoRecord\Features\Demo</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Demo\NetworkGhostPlayer.cpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClCompile>
@@ -718,9 +715,6 @@
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\GhostEntity.hpp">
-      <Filter>SourceAutoRecord\Features\Demo</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Demo\GhostPlayer.hpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\NetworkGhostPlayer.hpp">

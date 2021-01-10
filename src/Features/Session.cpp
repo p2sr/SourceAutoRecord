@@ -152,6 +152,8 @@ void Session::Start()
         demoGhostPlayer.SpawnAllGhosts();
     }
 
+    engine->hasRecorded = false;
+    engine->hasPaused = false;
 
     stepCounter->ResetTimer();
 
