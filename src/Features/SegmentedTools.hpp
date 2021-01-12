@@ -15,5 +15,3 @@ public:
 };
 
 extern SegmentedTools* segmentedTools;
-
-extern Command wait;
