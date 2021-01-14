@@ -10,6 +10,7 @@
 
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
 #include "Modules/VGui.hpp"
@@ -34,7 +35,7 @@ bool BaseHud::ShouldDraw()
         return this->type & HudType_InGame;
     }
 
-    if (engine->m_szLevelName[0] == '\0') {
+    if (!engine->hoststate->m_activeGame) {
         return this->type & HudType_Menu;
     }
 
