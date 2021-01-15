@@ -22,6 +22,7 @@
 
 Variable host_framerate;
 Variable net_showmsg;
+Variable sv_portal_players;
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::Disconnect2);
@@ -164,6 +165,16 @@ std::string Engine::GetCurrentMapName()
     }
 }
 
+bool Engine::IsCoop()
+{
+    return sv_portal_players.GetInt() == 2;
+}
+
+bool Engine::IsOrange()
+{
+    return this->IsCoop() && engine->signonState == SIGNONSTATE_FULL && !engine->hoststate->m_activeGame;
+}
+
 float Engine::GetHostFrameTime()
 {
     return this->HostFrameTime(this->engineTool->ThisPtr());
@@ -202,6 +213,7 @@ DETOUR(Engine::Disconnect2, int unk, bool bShowMainMenu)
 // CClientState::SetSignonState
 DETOUR(Engine::SetSignonState, int state, int count, void* unk)
 {
+    engine->signonState = state;
     session->Changed(state);
     return Engine::SetSignonState(thisptr, state, count, unk);
 }
@@ -558,6 +570,7 @@ bool Engine::Init()
 
     host_framerate = Variable("host_framerate");
     net_showmsg = Variable("net_showmsg");
+    sv_portal_players = Variable("sv_portal_players");
 
     return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace;
 }

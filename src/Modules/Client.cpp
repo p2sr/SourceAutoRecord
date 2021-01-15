@@ -141,7 +141,10 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
     }
 
     if (!in_forceuser.isReference || (in_forceuser.isReference && !in_forceuser.GetBool())) {
-        inputHud.SetButtonBits(0, cmd->buttons);
+        if (engine->IsCoop() && engine->IsOrange())
+            inputHud.SetButtonBits(1, cmd->buttons);
+        else
+            inputHud.SetButtonBits(0, cmd->buttons);
     }
 
     if (sv_cheats.GetBool() && engine->hoststate->m_activeGame) {

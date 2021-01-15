@@ -110,6 +110,7 @@ public:
     bool hasRecorded = false;
     bool hasPaused = false;
     int pauseTick;
+    int signonState = 0;
 
 public:
     void ExecuteCommand(const char* cmd, bool immediately = false);
@@ -128,6 +129,8 @@ public:
     bool IsGamePaused();
     int GetMapIndex(const std::string map);
     std::string GetCurrentMapName();
+    bool IsCoop();
+    bool IsOrange();
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);
@@ -181,6 +184,7 @@ extern Engine* engine;
 
 extern Variable host_framerate;
 extern Variable net_showmsg;
+extern Variable sv_portal_players;
 
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
