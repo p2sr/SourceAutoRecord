@@ -9,13 +9,13 @@
 
 DemoGhostEntity::DemoGhostEntity(unsigned int ID, std::string name, DataGhost data, std::string currentMap)
     : GhostEntity(ID, name, data, currentMap)
+    , currentMapID(engine->GetMapIndex(currentMap))
     , tick(0)
     , demoTick(0)
     , nbDemoTicks(0)
     , demoPlaybackTicks(0)
-    , currentMapID(engine->GetMapIndex(currentMap))
-    , hasFinished(false)
     , currentDemo(0)
+    , hasFinished(false)
     , offset(0)
     , isAhead(false)
 {

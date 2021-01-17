@@ -217,7 +217,7 @@ void DemoGhostPlayer::DrawNames(HudContext* ctx)
 {
     auto player = client->GetPlayer(GET_SLOT() + 1);
     if (player) {
-        auto pos = client->GetAbsOrigin(player);
+        //auto pos = client->GetAbsOrigin(player);
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i].sameMap && !this->ghostPool[i].hasFinished) {
                 Vector screenPos;
