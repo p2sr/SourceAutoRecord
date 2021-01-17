@@ -16,7 +16,6 @@
 #include "Features/Tas/TasTools.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
-#include "Features/Demo/GhostPlayer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/SegmentedTools.hpp"
