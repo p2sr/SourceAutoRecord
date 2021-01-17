@@ -8,6 +8,12 @@
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
 
+#ifdef _WIN32
+#define PLAT_CALL(fn, ...) fn(__VA_ARGS__)
+#else
+#define PLAT_CALL(fn, ...) fn(nullptr, __VA_ARGS__)
+#endif
+
 int GhostEntity::ghost_type = 0;
 
 Variable ghost_height("ghost_height", "16", -256, "Height of the ghosts.\n");
@@ -35,24 +41,24 @@ void GhostEntity::Spawn()
         return;
     }
 
-    this->entity = server->CreateEntityByName("prop_dynamic_override");
+    this->entity = PLAT_CALL(server->CreateEntityByName, "prop_dynamic_override");
     if (this->entity == nullptr) {
         console->Warning("CreateEntityByName() failed !\n");
         return;
     }
 
-    server->SetKeyValueChar(this->entity, "model", this->modelName.c_str());
+    PLAT_CALL(server->SetKeyValueChar, this->entity, "model", this->modelName.c_str());
     std::string ghostName = "ghost_" + this->name;
-    server->SetKeyValueChar(this->entity, "targetname", ghostName.c_str());
+    PLAT_CALL(server->SetKeyValueChar, this->entity, "targetname", ghostName.c_str());
 
     if (ghost_transparency.GetInt() < 255) {
-        server->SetKeyValueChar(this->entity, "rendermode", "1");
-        server->SetKeyValueFloat(this->entity, "renderamt", ghost_transparency.GetFloat());
+        PLAT_CALL(server->SetKeyValueChar, this->entity, "rendermode", "1");
+        PLAT_CALL(server->SetKeyValueFloat, this->entity, "renderamt", ghost_transparency.GetFloat());
     } else {
-        server->SetKeyValueChar(this->entity, "rendermode", "0");
+        PLAT_CALL(server->SetKeyValueChar, this->entity, "rendermode", "0");
     }
 
-    server->DispatchSpawn(this->entity);
+    PLAT_CALL(server->DispatchSpawn, this->entity);
 }
 
 void GhostEntity::DeleteGhost()
@@ -91,13 +97,13 @@ void GhostEntity::Display()
         p3.x += 5;
         p3.z += 10;
 
-        engine->AddTriangleOverlay(p1, p2, p3, 255, 0, 0, 255, false, 0);
-        engine->AddTriangleOverlay(p3, p2, p1, 255, 0, 0, 255, false, 0);
+        PLAT_CALL(engine->AddTriangleOverlay, p1, p2, p3, 255, 0, 0, 255, false, 0);
+        PLAT_CALL(engine->AddTriangleOverlay, p3, p2, p1, 255, 0, 0, 255, false, 0);
     } else {
         if (this->entity != nullptr) {
             this->data.position.z += ghost_height.GetInt();
-            server->SetKeyValueVector(this->entity, "origin", this->data.position);
-            server->SetKeyValueVector(this->entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z });
+            PLAT_CALL(server->SetKeyValueVector, this->entity, "origin", this->data.position);
+            PLAT_CALL(server->SetKeyValueVector, this->entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z });
         }
     }
 }
@@ -118,7 +124,7 @@ void GhostEntity::Lerp(float time)
 void GhostEntity::KillGhost(const bool newEntity)
 {
     if (newEntity) {
-        server->SetKeyValueChar(this->entity, "targetname", "ghost_destroy");
+        PLAT_CALL(server->SetKeyValueChar, this->entity, "targetname", "ghost_destroy");
         engine->ExecuteCommand("ent_fire ghost_destroy kill");
     } else {
         engine->ExecuteCommand(std::string("ent_fire ghost_" + this->name + " kill").c_str());
