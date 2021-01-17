@@ -125,7 +125,7 @@ void Session::Start()
         speedrun->Start(engine->GetTick());
     }
 
-	//Network Ghosts
+    //Network Ghosts
     if (networkManager.isConnected) {
         networkManager.NotifyMapChange();
         networkManager.UpdateGhostsSameMap();
@@ -164,7 +164,7 @@ void Session::Ended()
         return;
     }
 
-	this->previousMap = engine->m_szLevelName;
+    this->previousMap = engine->m_szLevelName;
 
     auto tick = this->GetTick();
 

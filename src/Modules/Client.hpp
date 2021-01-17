@@ -25,7 +25,7 @@ public:
     using _KeyUp = int(__cdecl*)(void* b, const char* c);
     using _GetAllClasses = ClientClass* (*)();
     using _ShouldDraw = bool(__rescall*)(void* thisptr);
-	  using _ChatPrintf = void(*)(void* thisptr, int iPlayerIndex, int iFilter, const char* fmt, ...);
+    using _ChatPrintf = void(*)(void* thisptr, int iPlayerIndex, int iFilter, const char* fmt, ...);
 
     _GetClientEntity GetClientEntity = nullptr;
     _KeyDown KeyDown = nullptr;

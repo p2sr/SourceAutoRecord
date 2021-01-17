@@ -15,7 +15,7 @@ enum SourceGameVersion {
     SourceGame_PortalStoriesMel = (1 << 6),
     SourceGame_ThinkingWithTimeMachine = (1 << 7),
 
-	SourceGame_INFRA = (1 << 8),
+    SourceGame_INFRA = (1 << 8),
 
     SourceGame_HalfLife2Episodic = (1 << 9),
     SourceGame_HalfLifeSource = (1 << 10),

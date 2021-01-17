@@ -51,7 +51,7 @@ public:
     _StartDrawing StartDrawing = nullptr;
     _FinishDrawing FinishDrawing = nullptr;
 
-	_DrawGetTextureId DrawGetTextureId = nullptr;
+    _DrawGetTextureId DrawGetTextureId = nullptr;
     _DrawGetTextureFile DrawGetTextureFile = nullptr;
     _DrawSetTextureFile DrawSetTextureFile = nullptr;
     _DrawSetTextureRGBA DrawSetTextureRGBA = nullptr;
