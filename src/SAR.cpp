@@ -248,9 +248,7 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
     statCounter->RecordDatas(session->GetTick());
     statCounter->ExportToFile(sar_statcounter_filePath.GetString());
 
-#ifdef __NETWORK__
     networkManager.Disconnect();
-#endif
 
     if (sar.cheats) {
         sar.cheats->Shutdown();

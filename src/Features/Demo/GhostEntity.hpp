@@ -1,7 +1,5 @@
 #pragma once
-#ifdef __NETWORK__
 #include "SFML/Network.hpp"
-#endif
 
 #include "Command.hpp"
 #include "Utils/SDK.hpp"

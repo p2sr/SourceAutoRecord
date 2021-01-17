@@ -1,4 +1,3 @@
-#ifdef __NETWORK__
 #include "NetworkGhostPlayer.hpp"
 #include "DemoGhostPlayer.hpp"
 
@@ -590,4 +589,3 @@ CON_COMMAND(ghost_ping, "Pong !\n")
 {
     networkManager.SendPing();
 }
-#endif

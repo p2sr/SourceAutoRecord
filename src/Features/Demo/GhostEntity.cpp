@@ -133,10 +133,8 @@ void GhostEntity::KillGhost(const bool newEntity)
 
 HUD_ELEMENT(ghost_show_name, "1", "Display the name of the ghost over it.\n", HudType_InGame)
 {
-#ifdef __NETWORK__
     if (networkManager.isConnected)
         networkManager.DrawNames(ctx);
-#endif
 
     if (demoGhostPlayer.IsPlaying())
         demoGhostPlayer.DrawNames(ctx);
@@ -150,11 +148,9 @@ CON_COMMAND_COMPLETION(ghost_prop_model, "Set the prop model. Example : models/p
         return console->Print(ghost_prop_model.ThisPtr()->m_pszHelpString);
     }
 
-#ifdef __NETWORK__
     if (networkManager.isConnected) {
         networkManager.UpdateModel(args[1]);
     }
-#endif
 
     demoGhostPlayer.UpdateGhostsModel(args[1]);
 }

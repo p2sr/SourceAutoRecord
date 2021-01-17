@@ -125,7 +125,6 @@ void Session::Start()
         speedrun->Start(engine->GetTick());
     }
 
-#ifdef __NETWORK__
 	//Network Ghosts
     if (networkManager.isConnected) {
         networkManager.NotifyMapChange();
@@ -137,7 +136,6 @@ void Session::Start()
             }
         }
     }
-#endif
 
     //Demo ghosts
     if (demoGhostPlayer.IsPlaying()) {
@@ -214,9 +212,7 @@ void Session::Ended()
     auto nSlot = GET_SLOT();
     stats->Get(nSlot)->statsCounter->RecordDatas(tick);
 
-#ifdef __NETWORK__
     networkManager.DeleteAllGhosts();
-#endif
 
     segmentedTools->waitTick = -1;
 

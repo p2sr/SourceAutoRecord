@@ -294,7 +294,6 @@ DETOUR(Server::GameFrame, bool simulating)
         engine->ExecuteCommand(cmd.c_str());
     }
 
-#ifdef __NETWORK__
     if (networkManager.isConnected && simulating) {
         networkManager.UpdateGhostsPosition();
 
@@ -302,7 +301,6 @@ DETOUR(Server::GameFrame, bool simulating)
             networkManager.UpdateCountdown();
         }
     }
-#endif
 
     if (demoGhostPlayer.IsPlaying() && simulating) {
         demoGhostPlayer.UpdateGhostsPosition();
