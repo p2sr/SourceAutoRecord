@@ -1,5 +1,6 @@
 #ifdef __NETWORK__
 #include "NetworkGhostPlayer.hpp"
+#include "DemoGhostPlayer.hpp"
 
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"

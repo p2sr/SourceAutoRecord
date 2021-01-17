@@ -13,6 +13,7 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <condition_variable>
 
 enum class HEADER {
     NONE,
