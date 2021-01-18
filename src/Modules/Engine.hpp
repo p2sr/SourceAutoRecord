@@ -186,11 +186,13 @@ extern Engine* engine;
 extern Variable host_framerate;
 extern Variable net_showmsg;
 extern Variable sv_portal_players;
+extern Variable fps_max;
+extern Variable mat_norendering;
 
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
 #define IGNORE_DEMO_PLAYER() if (engine->demoplayer->IsPlaying()) return;
-#define NOW() std::chrono::steady_clock::now()
+#define NOW() std::chrono::high_resolution_clock::now()
 
 #ifdef _WIN32
 #define GET_ACTIVE_SPLITSCREEN_SLOT() engine->GetActiveSplitScreenPlayerSlot()

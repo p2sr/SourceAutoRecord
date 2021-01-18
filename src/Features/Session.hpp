@@ -2,7 +2,10 @@
 #include "Feature.hpp"
 
 #include "Utils/SDK.hpp"
+#include "Variable.hpp"
+
 #include <string>
+#include <chrono>
 
 class Session : public Feature {
 public:
@@ -14,6 +17,10 @@ public:
     unsigned lastFrame;
     int prevState;
     std::string previousMap;
+    int oldFpsMax;
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> loadStart;
+    std::chrono::time_point<std::chrono::high_resolution_clock> loadEnd;
 
 public:
     Session();
@@ -24,6 +31,12 @@ public:
     void Ended();
     virtual void Changed();
     void Changed(int state);
+
+    void DoFastLoads();
+    void ResetLoads();
 };
 
 extern Session* session;
+
+extern Variable sar_shane_loads;
+extern Variable sar_shane_norendering;

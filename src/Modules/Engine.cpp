@@ -23,6 +23,8 @@
 Variable host_framerate;
 Variable net_showmsg;
 Variable sv_portal_players;
+Variable fps_max;
+Variable mat_norendering;
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::Disconnect2);
@@ -572,6 +574,8 @@ bool Engine::Init()
     host_framerate = Variable("host_framerate");
     net_showmsg = Variable("net_showmsg");
     sv_portal_players = Variable("sv_portal_players");
+    fps_max = Variable("fps_max");
+    mat_norendering = Variable("mat_norendering");
 
     return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace;
 }
