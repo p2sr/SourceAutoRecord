@@ -192,8 +192,8 @@ void Portal2::LoadOffsets()
     GetIServerEntity = 2; // CServerTools
     m_EntPtrArray = 48; // CServerTools::GetIServerEntity
     SetKeyValueChar = 12; // CServerTools::SetKeyValue (const char *szValue)
-    SetKeyValueFloat = 11; // CServerTools::SetKeyValue (float flValue )
-    SetKeyValueVector = 10; // CServerTools::SetKeyValue (const Vector &vecValue )
+    SetKeyValueFloat = 13; // CServerTools::SetKeyValue (float flValue )
+    SetKeyValueVector = 14; // CServerTools::SetKeyValue (const Vector &vecValue )
     CreateEntityByName = 15; // CServerTools::CreateEntityByName
     DispatchSpawn = 16; //CServerTool::DispatchSpawn
     ClientCommand = 39; // CVEngineServer
