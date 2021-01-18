@@ -270,11 +270,12 @@ DETOUR(Engine::Frame)
         }
     }
 
-    if (segmentedTools->waitTick == session->GetTick()) {
-        if (sv_cheats.GetBool()) {
+    if (segmentedTools->waitTick == session->GetTick() && !engine->hasWaited) {
+        if (!sv_cheats.GetBool()) {
             console->Print("\"wait\" needs sv_cheats 1.\n");
         } else {
             engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
+            engine->hasWaited = true;
         }
     }
 

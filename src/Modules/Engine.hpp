@@ -111,6 +111,7 @@ public:
     bool hasPaused = false;
     int pauseTick;
     int signonState = 0;
+    bool hasWaited = false;
 
 public:
     void ExecuteCommand(const char* cmd, bool immediately = false);

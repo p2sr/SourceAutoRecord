@@ -217,7 +217,7 @@ void Session::Ended()
 
     networkManager.DeleteAllGhosts();
     
-    segmentedTools->waitTick = -1;
+    engine->hasWaited = false;
 
     this->isRunning = false;
 }
