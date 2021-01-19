@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <map>
 
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
@@ -268,10 +269,38 @@ CON_COMMAND(sar_hud_default_order_reset, "Resets order of hud element.\n")
 
 // HUD
 
-HUD_ELEMENT_STRING(text, "", "Draws specified text when not empty.\n", HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
+static std::map<long, std::string> sar_hud_text_vals;
+HUD_ELEMENT(text, "", "Draws text specified by sar_hud_set_text when enabled.\n", HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
 {
-    ctx->DrawElement("%s", text);
+    for (auto& t : sar_hud_text_vals) {
+        ctx->DrawElement("%s", t.second.c_str());
+    }
 }
+CON_COMMAND(sar_hud_set_text, "Sets or clears the nth text value in the HUD.") {
+    if (args.ArgC() != 2 && args.ArgC() != 3) {
+        console->Print("Usage: sar_hud_set_text n txt\n");
+        return;
+    }
+
+    const char* idxStr = args.Arg(1);
+    char* end;
+    long idx = std::strtol(idxStr, &end, 10);
+    if (*end != 0 || end == idxStr) {
+        // Index argument is not a number
+        console->Print("Usage: sar_hud_set_text n txt\n");
+        return;
+    }
+
+    const char* str = nullptr;
+    if (args.ArgC() == 3) str = args.Arg(2);
+
+    if (!str || *str == 0) {
+        sar_hud_text_vals.erase(idx);
+    } else {
+        sar_hud_text_vals[idx] = std::string(str);
+    }
+}
+
 HUD_ELEMENT_MODE2(position, "0", 0, 2, "Draws absolute position of the client.\n"
                                        "0 = Default,\n"
                                        "1 = Player position,\n"
