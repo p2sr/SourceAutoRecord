@@ -38,6 +38,7 @@ private:
     TimerCategory* category;
     int offset;
     int pause;
+
 public:
     std::vector<std::string> visitedMaps;
 
@@ -110,7 +111,6 @@ extern Command sar_speedrun_export_pb;
 extern Command sar_speedrun_import;
 extern Command sar_speedrun_category;
 extern Command sar_speedrun_offset;
-extern Command sar_speedrun_notify;
 
 extern Variable sar_speedrun_autostart;
 extern Variable sar_speedrun_autostop;

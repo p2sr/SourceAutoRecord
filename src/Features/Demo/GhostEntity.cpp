@@ -41,29 +41,29 @@ void GhostEntity::Spawn()
         return;
     }
 
-    this->entity = PLAT_CALL(server->CreateEntityByName, "prop_dynamic_override");
-    if (this->entity == nullptr) {
+    this->prop_entity = PLAT_CALL(server->CreateEntityByName, "prop_dynamic_override");
+    if (this->prop_entity == nullptr) {
         console->Warning("CreateEntityByName() failed !\n");
         return;
     }
 
-    PLAT_CALL(server->SetKeyValueChar, this->entity, "model", this->modelName.c_str());
+    PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "model", this->modelName.c_str());
     std::string ghostName = "ghost_" + this->name;
-    PLAT_CALL(server->SetKeyValueChar, this->entity, "targetname", ghostName.c_str());
+    PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", ghostName.c_str());
 
     if (ghost_transparency.GetInt() < 255) {
-        PLAT_CALL(server->SetKeyValueChar, this->entity, "rendermode", "1");
-        PLAT_CALL(server->SetKeyValueFloat, this->entity, "renderamt", ghost_transparency.GetFloat());
+        PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "rendermode", "1");
+        PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "renderamt", ghost_transparency.GetFloat());
     } else {
-        PLAT_CALL(server->SetKeyValueChar, this->entity, "rendermode", "0");
+        PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "rendermode", "0");
     }
 
-    PLAT_CALL(server->DispatchSpawn, this->entity);
+    PLAT_CALL(server->DispatchSpawn, this->prop_entity);
 }
 
 void GhostEntity::DeleteGhost()
 {
-    this->entity = nullptr;
+    this->prop_entity = nullptr;
 }
 
 void GhostEntity::SetData(Vector pos, QAngle ang)
@@ -71,7 +71,7 @@ void GhostEntity::SetData(Vector pos, QAngle ang)
     this->oldPos = this->newPos;
     this->newPos = { pos, ang };
 
-    auto now = NOW();
+    auto now = NOW_STEADY();
     this->loopTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->lastUpdate).count();
     this->lastUpdate = now;
 }
@@ -100,10 +100,10 @@ void GhostEntity::Display()
         PLAT_CALL(engine->AddTriangleOverlay, p1, p2, p3, 255, 0, 0, 255, false, 0);
         PLAT_CALL(engine->AddTriangleOverlay, p3, p2, p1, 255, 0, 0, 255, false, 0);
     } else {
-        if (this->entity != nullptr) {
+        if (this->prop_entity != nullptr) {
             this->data.position.z += ghost_height.GetInt();
-            PLAT_CALL(server->SetKeyValueVector, this->entity, "origin", this->data.position);
-            PLAT_CALL(server->SetKeyValueVector, this->entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z });
+            PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position);
+            PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z });
         }
     }
 }
@@ -121,13 +121,15 @@ void GhostEntity::Lerp(float time)
     this->Display();
 }
 
-void GhostEntity::KillGhost(const bool newEntity)
+void GhostEntity::DeleteGhostModel(const bool newEntity)
 {
-    if (newEntity) {
-        PLAT_CALL(server->SetKeyValueChar, this->entity, "targetname", "ghost_destroy");
-        engine->ExecuteCommand("ent_fire ghost_destroy kill");
-    } else {
-        engine->ExecuteCommand(std::string("ent_fire ghost_" + this->name + " kill").c_str());
+    if (this->prop_entity != nullptr && this->ghost_type) {
+        if (newEntity) {
+            PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", "ghost_destroy");
+            engine->ExecuteCommand("ent_fire ghost_destroy kill");
+        } else {
+            engine->ExecuteCommand(std::string("ent_fire ghost_" + this->name + " kill").c_str());
+        }
     }
 }
 

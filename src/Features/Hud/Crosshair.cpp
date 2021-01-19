@@ -23,6 +23,8 @@ Variable sar_quickhud_mode("sar_quickhud_mode", "0", 0, 2, "Set the quickhud mod
                                                            "1 : Customizable quickhud\n"
                                                            "2 : quickhud from .png\n");
 
+Variable sar_crosshair_P1("sar_crosshair_P1", "0", "Use the P1 crosshair style.\n");
+
 Variable cl_crosshair_t("cl_crosshair_t", "0", "Removes the top line from the crosshair :"
                                                "0 : normal crosshair,"
                                                "1 : crosshair without top.\n");
@@ -68,6 +70,46 @@ bool Crosshair::GetCurrentSize(int& xSize, int& ySize)
     return false;
 }
 
+bool Crosshair::IsSurfacePortalable()
+{
+    void* player = server->GetPlayer(GET_SLOT() + 1);
+
+    if (player == nullptr || (int)player == -1)
+        return false;
+
+    Vector camPos = server->GetAbsOrigin(player) + server->GetViewOffset(player);
+
+    QAngle angle = engine->GetAngles(GET_SLOT());
+
+    float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);
+    auto cosX = std::cos(X), cosY = std::cos(Y);
+    auto sinX = std::sin(X), sinY = std::sin(Y);
+
+    Vector dir(cosY * cosX, sinY * cosX, -sinX);
+
+    Vector finalDir = Vector(dir.x, dir.y, dir.z).Normalize() * 65536.0;
+
+    Ray_t ray;
+    ray.m_IsRay = true;
+    ray.m_IsSwept = true;
+    ray.m_Start = VectorAligned(camPos.x, camPos.y, camPos.z);
+    ray.m_Delta = VectorAligned(finalDir.x, finalDir.y, finalDir.z);
+    ray.m_StartOffset = VectorAligned();
+    ray.m_Extents = VectorAligned();
+
+    CTraceFilterSimple filter;
+    filter.SetPassEntity(server->GetPlayer(GET_SLOT() + 1));
+
+    CGameTrace tr;
+    engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_SHOT_PORTAL, &filter, &tr);
+
+    if (tr.fraction >= 1) {
+        return false;
+    }
+
+    return !(tr.surface.flags & SURF_NOPORTAL) && std::strcmp(tr.surface.name, "**studio**") != 0;
+}
+
 int Crosshair::GetPortalUpgradeState()
 {
     if (server->portalGun != nullptr) {
@@ -99,10 +141,21 @@ std::vector<IHandleEntity*> Crosshair::GetPortalsShotByPlayer()
 
 void Crosshair::GetPortalsStates(int& portalUpgradeState, bool& isBlueActive, bool& isOrangeActive)
 {
-    isBlueActive = false;
-    isOrangeActive = false;
     portalUpgradeState = GetPortalUpgradeState();
     if (portalUpgradeState) {
+        if (sar_crosshair_P1.GetBool() && sv_cheats.GetBool()) {
+            if (this->IsSurfacePortalable()) {
+                isBlueActive = true;
+                isOrangeActive = true;
+            } else {
+                isBlueActive = false;
+                isOrangeActive = false;
+            }
+            return;
+        }
+
+        isBlueActive = false;
+        isOrangeActive = false;
         for (auto& portal : GetPortalsShotByPlayer()) {
             bool isP2 = *reinterpret_cast<bool*>((uintptr_t)portal + Offsets::m_bIsPortal2); //IsOrange
             bool isAct = *reinterpret_cast<bool*>((uintptr_t)portal + Offsets::m_bActivated); //IsActive

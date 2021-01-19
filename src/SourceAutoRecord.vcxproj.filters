@@ -319,6 +319,9 @@
     <ClCompile Include="Features\FovChanger.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Camera.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Stats\StatsCounter.cpp">
       <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClCompile>
@@ -329,9 +332,6 @@
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
     <ClCompile Include="Features\Demo\GhostEntity.cpp">
-      <Filter>SourceAutoRecord\Features\Demo</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Demo\GhostPlayer.cpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClCompile>
     <ClCompile Include="Features\Demo\NetworkGhostPlayer.cpp">
@@ -349,7 +349,19 @@
     <ClCompile Include="Features\Hud\StrafeSyncHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Hud\VphysHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
     <ClCompile Include="Features\SegmentedTools.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Routing\SeamshotFind.cpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\MaterialSystem.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\GroundFramesCounter.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
   </ItemGroup>
@@ -699,6 +711,9 @@
     <ClInclude Include="Features\FovChanger.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Camera.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
     <ClInclude Include="Features\Stats\StatsCounter.hpp">
       <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClInclude>
@@ -709,9 +724,6 @@
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\GhostEntity.hpp">
-      <Filter>SourceAutoRecord\Features\Demo</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Demo\GhostPlayer.hpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\NetworkGhostPlayer.hpp">
@@ -838,6 +850,18 @@
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
     <ClInclude Include="Features\SegmentedTools.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\VphysHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Routing\SeamshotFind.hpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\MaterialSystem.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\GroundFramesCounter.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>

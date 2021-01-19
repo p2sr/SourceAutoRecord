@@ -18,6 +18,7 @@ class DemoGhostPlayer {
 private:
     std::vector<DemoGhostEntity> ghostPool;
     bool isPlaying;
+    int currentTick;
 
 public:
     bool isFullGame;
@@ -59,5 +60,5 @@ extern Command ghost_delete_all;
 extern Command ghost_delete_by_ID;
 extern Command ghost_recap;
 extern Command ghost_start;
-extern Command ghost_stop;
+extern Command ghost_reset;
 extern Command ghost_offset;

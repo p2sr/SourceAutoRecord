@@ -105,9 +105,9 @@ CON_COMMAND(sar_trace_reset, "Resets tracer.\n")
 // HUD
 
 HUD_ELEMENT_MODE2(trace, "0", 0, 2, "Draws distance values of tracer. "
-                                   "0 = Default,\n"
-                                   "1 = Vec3,\n"
-                                   "2 = Vec2.\n",
+                                    "0 = Default,\n"
+                                    "1 = Vec3,\n"
+                                    "2 = Vec2.\n",
     HudType_InGame | HudType_Paused)
 {
     auto result = tracer->GetTraceResult(ctx->slot);

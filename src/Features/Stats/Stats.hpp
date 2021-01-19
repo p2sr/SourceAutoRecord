@@ -6,8 +6,8 @@
 #include "VelocityStats.hpp"
 #include "StatsCounter.hpp"
 
-#include "Features/Hud/Hud.hpp"
 #include "Features/Feature.hpp"
+#include "Features/Hud/Hud.hpp"
 
 #include "Variable.hpp"
 

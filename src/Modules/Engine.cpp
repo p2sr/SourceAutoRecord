@@ -3,13 +3,14 @@
 #include <cstring>
 
 #include "Features/Cvars.hpp"
+#include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
-#include "Features/Demo/DemoParser.hpp"
 #include "EngineDemoRecorder.hpp"
+#include "Features/Demo/DemoParser.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Server.hpp"
 
@@ -21,12 +22,16 @@
 
 Variable host_framerate;
 Variable net_showmsg;
+Variable sv_portal_players;
+Variable fps_max;
+Variable mat_norendering;
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::Disconnect2);
 REDECL(Engine::SetSignonState);
 REDECL(Engine::SetSignonState2);
 REDECL(Engine::Frame);
+REDECL(Engine::PurgeUnusedModels);
 REDECL(Engine::OnGameOverlayActivated);
 REDECL(Engine::OnGameOverlayActivatedBase);
 REDECL(Engine::plugin_load_callback);
@@ -35,6 +40,7 @@ REDECL(Engine::exit_callback);
 REDECL(Engine::quit_callback);
 REDECL(Engine::help_callback);
 REDECL(Engine::gameui_activate_callback);
+REDECL(Engine::unpause_callback);
 #ifdef _WIN32
 REDECL(Engine::connect_callback);
 REDECL(Engine::ParseSmoothingInfo_Skip);
@@ -45,9 +51,13 @@ REDECL(Engine::ParseSmoothingInfo_Mid_Trampoline);
 REDECL(Engine::ReadCustomData);
 #endif
 
-void Engine::ExecuteCommand(const char* cmd)
+void Engine::ExecuteCommand(const char* cmd, bool immediately)
 {
-    this->ClientCmd(this->engineClient->ThisPtr(), cmd);
+    if (immediately) {
+        this->ExecuteClientCmd(this->engineClient->ThisPtr(), cmd);
+    } else {
+        this->ClientCmd(this->engineClient->ThisPtr(), cmd);
+    }
 }
 int Engine::GetTick()
 {
@@ -148,6 +158,35 @@ int Engine::GetMapIndex(const std::string map)
     }
 }
 
+std::string Engine::GetCurrentMapName()
+{
+    if (engine->demoplayer->IsPlaying()) {
+        return engine->demoplayer->GetLevelName();
+    } else {
+        return engine->m_szLevelName;
+    }
+}
+
+bool Engine::IsCoop()
+{
+    return sv_portal_players.GetInt() == 2;
+}
+
+bool Engine::IsOrange()
+{
+    return this->IsCoop() && session->signonState == SIGNONSTATE_FULL && !engine->hoststate->m_activeGame;
+}
+
+float Engine::GetHostFrameTime()
+{
+    return this->HostFrameTime(this->engineTool->ThisPtr());
+}
+
+float Engine::GetClientTime()
+{
+    return this->ClientTime(this->engineTool->ThisPtr());
+}
+
 // CClientState::Disconnect
 DETOUR(Engine::Disconnect, bool bShowMainMenu)
 {
@@ -209,7 +248,62 @@ DETOUR(Engine::Frame)
         }
     }
 
+    //sar_record
+
+    if (sar_record_at.GetFloat() > 0 && !engine->hasRecorded && sar_record_at.GetFloat() >= session->GetTick()) {
+        std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
+        engine->ExecuteCommand(cmd.c_str(), true);
+        engine->hasRecorded = true;
+    }
+
+    //sar_pause
+
+    if (sar_pause.GetBool()) {
+        if (!engine->hasPaused && sar_pause_at.GetInt() >= session->GetTick()) {
+            engine->ExecuteCommand("pause", true);
+            engine->hasPaused = true;
+            engine->pauseTick = session->GetTick();
+        } else if (sar_pause_for.GetInt() > 0) {
+            if (engine->hasPaused && sar_pause_for.GetInt() + session->GetTick() >= engine->pauseTick) {
+                engine->ExecuteCommand("unpause", true);
+            }
+            ++engine->pauseTick;
+        }
+    }
+
+    if (segmentedTools->waitTick == session->GetTick() && !engine->hasWaited) {
+        if (!sv_cheats.GetBool()) {
+            console->Print("\"wait\" needs sv_cheats 1.\n");
+        } else {
+            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
+            engine->hasWaited = true;
+        }
+    }
+
+    if (engine->GetTick() != session->GetTick()) {
+        if (networkManager.isConnected && engine->isRunning()) {
+            networkManager.UpdateGhostsPosition();
+
+            if (networkManager.isCountdownReady) {
+                networkManager.UpdateCountdown();
+            }
+        }
+
+        if (demoGhostPlayer.IsPlaying() && (engine->isRunning() || engine->demoplayer->IsPlaying())) {
+            demoGhostPlayer.UpdateGhostsPosition();
+        }
+    }
+
     return Engine::Frame(thisptr);
+}
+
+DETOUR(Engine::PurgeUnusedModels)
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    auto result = Engine::PurgeUnusedModels(thisptr);
+    auto stop = std::chrono::high_resolution_clock::now();
+    console->DevMsg("PurgeUnusedModels - %dms\n", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
+    return result;
 }
 
 #ifdef _WIN32
@@ -308,6 +402,7 @@ bool Engine::Init()
     if (this->engineClient) {
         this->GetScreenSize = this->engineClient->Original<_GetScreenSize>(Offsets::GetScreenSize);
         this->ClientCmd = this->engineClient->Original<_ClientCmd>(Offsets::ClientCmd);
+        this->ExecuteClientCmd = this->engineClient->Original<_ExecuteClientCmd>(Offsets::ExecuteClientCmd);
         this->GetLocalPlayer = this->engineClient->Original<_GetLocalPlayer>(Offsets::GetLocalPlayer);
         this->GetViewAngles = this->engineClient->Original<_GetViewAngles>(Offsets::GetViewAngles);
         this->SetViewAngles = this->engineClient->Original<_SetViewAngles>(Offsets::SetViewAngles);
@@ -385,10 +480,14 @@ bool Engine::Init()
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
             Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
         }
+
+        if (this->engineTrace = Interface::Create(this->Name(), "EngineTraceServer004")) {
+            this->TraceRay = this->engineTrace->Original<_TraceRay>(Offsets::TraceRay);
+        }
     }
 
-    if (auto tool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
-        auto GetCurrentMap = tool->Original(Offsets::GetCurrentMap);
+    if (this->engineTool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
+        auto GetCurrentMap = this->engineTool->Original(Offsets::GetCurrentMap);
         this->m_szLevelName = Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName);
 
         if (sar.game->Is(SourceGame_HalfLife2Engine) && std::strlen(this->m_szLevelName) != 0) {
@@ -397,9 +496,11 @@ bool Engine::Init()
         }
 
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
-        Interface::Delete(tool);
 
-        this->PrecacheModel = tool->Original<_PrecacheModel>(Offsets::PrecacheModel);
+        this->HostFrameTime = this->engineTool->Original<_HostFrameTime>(Offsets::HostFrameTime);
+        this->ClientTime = this->engineTool->Original<_ClientTime>(Offsets::ClientTime);
+
+        this->PrecacheModel = this->engineTool->Original<_PrecacheModel>(Offsets::PrecacheModel);
     }
 
     if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
@@ -471,8 +572,11 @@ bool Engine::Init()
 
     host_framerate = Variable("host_framerate");
     net_showmsg = Variable("net_showmsg");
+    sv_portal_players = Variable("sv_portal_players");
+    fps_max = Variable("fps_max");
+    mat_norendering = Variable("mat_norendering");
 
-    return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder;
+    return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace;
 }
 void Engine::Shutdown()
 {
@@ -487,6 +591,8 @@ void Engine::Shutdown()
     Interface::Delete(this->cl);
     Interface::Delete(this->eng);
     Interface::Delete(this->s_GameEventManager);
+    Interface::Delete(this->engineTool);
+    Interface::Delete(this->engineTrace);
 
 #ifdef _WIN32
     Command::Unhook("connect", Engine::connect_callback);

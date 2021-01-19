@@ -101,6 +101,9 @@ void Portal2::LoadOffsets()
     GetSteamAPIContext = 178; // CEngineClient
     StringToButtonCode = 31; // CInputSystem
     SleepUntilInput = 33; // CInputSystem
+    IsButtonDown = 14; //CInputSystem
+    GetCursorPosition = 45; //CInputSystem
+    SetCursorPosition = 38; //CInputSystem
     GetRecordingTick = 1; // CDemoRecorder
     net_time = 28; // CDemoRecorder::GetRecordingTick
     SetSignonState = 3; // CDemoRecorder
@@ -112,6 +115,7 @@ void Portal2::LoadOffsets()
     m_szDemoBaseName = 1344; // CDemoRecorder::StartupDemoFile
     m_nDemoNumber = 1608; // CDemoRecorder::StartupDemoFile
     m_bRecording = 1606; // CDemoRecorder::SetSignonState
+    IsGameUIVisible = 2; // IEngineGui
     Paint = 15; // CEngineVGui
     ProcessTick = 12; // CClientState
     tickcount = 73; // CClientState::ProcessTick
@@ -122,6 +126,8 @@ void Portal2::LoadOffsets()
     demoplayer = 93; // CClientState::Disconnect
     demorecorder = 106; // CClientState::Disconnect
     GetCurrentMap = 26; // CEngineTool
+    HostFrameTime = 40; //CEngineTool
+    ClientTime = 48; //CEngineTool
     m_szLevelName = 72; // CEngineTool::GetCurrentMap
     PrecacheModel = 61; // CEngineTool::PrecacheModel
     AddListener = 4; // CGameEventManager
@@ -144,6 +150,16 @@ void Portal2::LoadOffsets()
     ClearAllOverlays = 16; // CIVDebugOverlay
     MAX_SPLITSCREEN_PLAYERS = 2; // maxplayers
     OnGameOverlayActivated = 152; // CSteam3Client
+    IsAsleep = 3; // IPhysicsObject
+    IsCollisionEnabled = 7; // IPhysicsObject
+    IsGravityEnabled = 8; // IPhysicsObject
+    IsDragEnabled = 9; // IPhysicsObject
+    IsMotionEnabled = 10; // IPhysicsObject
+    GetPosition = 49; // IPhysicsObject
+    GetVelocity = 53; // IPhysicsObject
+    SetPosition = 47; // IPhysicsObject
+    SetVelocity = 51; // IPhysicsObject
+    EnableGravity = 14; // IPhysicsObject
 
     // libvstdlib.so
 
@@ -197,9 +213,16 @@ void Portal2::LoadOffsets()
     CreateEntityByName = 15; // CServerTools::CreateEntityByName
     DispatchSpawn = 16; //CServerTool::DispatchSpawn
     ClientCommand = 39; // CVEngineServer
+    TraceRay = 5; // IEngineTrace
     IsPlayer = 86; // CBasePlayer
     m_pSurfaceData = 4116; // CGameMovement::CheckJumpButton
     jumpFactor = 72; // CGameMovement::CheckJumpButton
+    m_StatsThisLevel = 5720; // CPortal_Player
+    m_pShadowStand = 3184; // CBasePlayer
+    m_pShadowCrouch = 3188; // CBasePlayer
+    m_Local = 5084; // CBasePlayer
+    m_nTractorBeamCount = 396; // CPlayerLocalData
+    m_hTractorBeam = 392; // CPlayerLocalData
 
     // client.so
 
@@ -228,6 +251,7 @@ void Portal2::LoadOffsets()
     JoyStickApplyMovement = 64; // CInput
     KeyDown = 295; // CInput::JoyStickApplyMovement
     KeyUp = 341; // CInput::JoyStickApplyMovement
+    OverrideView = 19; // ClientModeShared
 
     // vguimatsurface.so
 

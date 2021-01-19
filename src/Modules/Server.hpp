@@ -52,8 +52,6 @@ private:
     bool jumpedLastTime = false;
     float savedVerticalVelocity = 0.0f;
     bool callFromCheckJumpButton = false;
-    bool paused = false;
-    int pauseTick;
 
 public:
     DECL_M(GetPortals, int);

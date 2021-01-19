@@ -14,18 +14,18 @@
 #define DLL_EXPORT extern "C" __declspec(dllexport)
 #define SEEK_DIR_CUR std::ios_base::_Seekdir::_Seekcur
 
-#define DECL_DETOUR(name, ...)                                  \
+#define DECL_DETOUR(name, ...)                                     \
     using _##name = int(__rescall*)(void* thisptr, ##__VA_ARGS__); \
-    static _##name name;                                        \
+    static _##name name;                                           \
     static int __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__)
-#define DECL_DETOUR_T(type, name, ...)                           \
+#define DECL_DETOUR_T(type, name, ...)                              \
     using _##name = type(__rescall*)(void* thisptr, ##__VA_ARGS__); \
-    static _##name name;                                         \
+    static _##name name;                                            \
     static type __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__)
-#define DECL_DETOUR_B(name, ...)                                \
+#define DECL_DETOUR_B(name, ...)                                   \
     using _##name = int(__rescall*)(void* thisptr, ##__VA_ARGS__); \
-    static _##name name;                                        \
-    static _##name name##Base;                                  \
+    static _##name name;                                           \
+    static _##name name##Base;                                     \
     static int __fastcall name##_Hook(void* thisptr, int edx, ##__VA_ARGS__)
 
 #define DETOUR(name, ...) \
@@ -85,18 +85,18 @@ bool mhInitialized = false;
 #define DLL_EXPORT extern "C" __attribute__((visibility("default")))
 #define SEEK_DIR_CUR std::ios_base::seekdir::_S_cur
 
-#define DECL_DETOUR(name, ...)                                  \
+#define DECL_DETOUR(name, ...)                                     \
     using _##name = int(__rescall*)(void* thisptr, ##__VA_ARGS__); \
-    static _##name name;                                        \
+    static _##name name;                                           \
     static int __rescall name##_Hook(void* thisptr, ##__VA_ARGS__)
-#define DECL_DETOUR_T(type, name, ...)                           \
+#define DECL_DETOUR_T(type, name, ...)                              \
     using _##name = type(__rescall*)(void* thisptr, ##__VA_ARGS__); \
-    static _##name name;                                         \
+    static _##name name;                                            \
     static type __rescall name##_Hook(void* thisptr, ##__VA_ARGS__)
-#define DECL_DETOUR_B(name, ...)                                \
+#define DECL_DETOUR_B(name, ...)                                   \
     using _##name = int(__rescall*)(void* thisptr, ##__VA_ARGS__); \
-    static _##name name;                                        \
-    static _##name name##Base;                                  \
+    static _##name name;                                           \
+    static _##name name##Base;                                     \
     static int __rescall name##_Hook(void* thisptr, ##__VA_ARGS__)
 
 #define DETOUR(name, ...) \

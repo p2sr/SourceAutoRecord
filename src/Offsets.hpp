@@ -22,6 +22,7 @@ extern int GetViewAngles;
 extern int SetViewAngles;
 extern int GetMaxClients;
 extern int ServerCmdKeyValues;
+extern int ExecuteClientCmd;
 extern int GetActiveSplitScreenPlayerSlot;
 extern int GetSteamAPIContext;
 extern int IsPaused;
@@ -35,6 +36,7 @@ extern int JoyStickApplyMovement;
 
 // ClientModeShared
 extern int CreateMove;
+extern int OverrideView;
 
 // ConVar
 extern int Dtor;
@@ -66,6 +68,9 @@ extern int CreateNewTextureID;
 // CInputSystem
 extern int StringToButtonCode;
 extern int SleepUntilInput;
+extern int IsButtonDown;
+extern int GetCursorPosition;
+extern int SetCursorPosition;
 
 // CInput
 extern int GetButtonBits;
@@ -124,9 +129,18 @@ extern int m_nWaterLevel;
 extern int m_bDucked;
 extern int m_flFriction;
 extern int m_pSurfaceData;
+extern int m_pShadowStand;
+extern int m_pShadowCrouch;
+extern int m_Local;
+extern int m_hGroundEntity;
+
+// CPlayerLocalData
+extern int m_nTractorBeamCount;
+extern int m_hTractorBeam;
 
 // CPortal_Player
 extern int iNumPortalsPlaced;
+extern int m_StatsThisLevel;
 
 // CWeaponPortalgun
 extern int m_bCanFirePortal1;
@@ -140,10 +154,16 @@ extern int m_bIsPortal2;
 extern int m_hActiveWeapon;
 
 // IEngineVGuiInternal
+extern int IsGameUIVisible;
 extern int Paint;
+
+// IEngineTrace
+extern int TraceRay;
 
 // CEngineTool
 extern int GetCurrentMap;
+extern int HostFrameTime;
+extern int ClientTime;
 extern int PrecacheModel;
 
 // CSchemeManager
@@ -211,6 +231,18 @@ extern int OnGameOverlayActivated;
 
 // surfacedata_t
 extern int jumpFactor;
+
+// IPhysicsObject
+extern int IsAsleep;
+extern int IsCollisionEnabled;
+extern int IsGravityEnabled;
+extern int IsDragEnabled;
+extern int IsMotionEnabled;
+extern int GetPosition;
+extern int GetVelocity;
+extern int SetPosition;
+extern int SetVelocity;
+extern int EnableGravity;
 
 // Others
 extern int tickcount;

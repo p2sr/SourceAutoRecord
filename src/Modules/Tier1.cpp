@@ -33,7 +33,7 @@ bool Tier1::Init()
 
             auto vtable =
 #ifdef _WIN32
-            sar.game->Is(SourceGame_HalfLife2Engine)
+                sar.game->Is(SourceGame_HalfLife2Engine)
                 ? &this->ConVar_VTable
                 : &this->ConVar_VTable2;
 #else

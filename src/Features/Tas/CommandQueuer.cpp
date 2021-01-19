@@ -97,7 +97,6 @@ void CommandQueuer::RandomRegex(std::string& input)
         input = std::regex_replace(input, this->floatRegex, std::to_string(rand), std::regex_constants::format_first_only);
     }
 
-
     for (std::sregex_iterator it = std::sregex_iterator(input.begin(), input.end(), this->intRegex); it != std::sregex_iterator(); ++it) {
         std::smatch m = *it;
         int rand = Math::RandomNumber(std::stoi(m.str(1)), std::stoi(m.str(6)));
