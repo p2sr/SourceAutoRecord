@@ -35,29 +35,29 @@ void GhostEntity::Spawn()
         return;
     }
 
-    this->entity = server->CreateEntityByName("prop_dynamic_override");
-    if (this->entity == nullptr) {
+    this->prop_entity = server->CreateEntityByName("prop_dynamic_override");
+    if (this->prop_entity == nullptr) {
         console->Warning("CreateEntityByName() failed !\n");
         return;
     }
 
-    server->SetKeyValueChar(this->entity, "model", this->modelName.c_str());
+    server->SetKeyValueChar(this->prop_entity, "model", this->modelName.c_str());
     std::string ghostName = "ghost_" + this->name;
-    server->SetKeyValueChar(this->entity, "targetname", ghostName.c_str());
+    server->SetKeyValueChar(this->prop_entity, "targetname", ghostName.c_str());
 
     if (ghost_transparency.GetInt() < 255) {
-        server->SetKeyValueChar(this->entity, "rendermode", "1");
-        server->SetKeyValueFloat(this->entity, "renderamt", ghost_transparency.GetFloat());
+        server->SetKeyValueChar(this->prop_entity, "rendermode", "1");
+        server->SetKeyValueFloat(this->prop_entity, "renderamt", ghost_transparency.GetFloat());
     } else {
-        server->SetKeyValueChar(this->entity, "rendermode", "0");
+        server->SetKeyValueChar(this->prop_entity, "rendermode", "0");
     }
 
-    server->DispatchSpawn(this->entity);
+    server->DispatchSpawn(this->prop_entity);
 }
 
 void GhostEntity::DeleteGhost()
 {
-    this->entity = nullptr;
+    this->prop_entity = nullptr;
 }
 
 void GhostEntity::SetData(Vector pos, QAngle ang)
@@ -94,10 +94,10 @@ void GhostEntity::Display()
         engine->AddTriangleOverlay(p1, p2, p3, 255, 0, 0, 255, false, 0);
         engine->AddTriangleOverlay(p3, p2, p1, 255, 0, 0, 255, false, 0);
     } else {
-        if (this->entity != nullptr) {
+        if (this->prop_entity != nullptr) {
             this->data.position.z += ghost_height.GetInt();
-            server->SetKeyValueVector(this->entity, "origin", this->data.position);
-            server->SetKeyValueVector(this->entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z });
+            server->SetKeyValueVector(this->prop_entity, "origin", this->data.position);
+            server->SetKeyValueVector(this->prop_entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z });
         }
     }
 }
@@ -117,9 +117,9 @@ void GhostEntity::Lerp(float time)
 
 void GhostEntity::DeleteGhostModel(const bool newEntity)
 {
-    if (this->entity != nullptr && this->ghost_type) {
+    if (this->prop_entity != nullptr && this->ghost_type) {
         if (newEntity) {
-            server->SetKeyValueChar(this->entity, "targetname", "ghost_destroy");
+            server->SetKeyValueChar(this->prop_entity, "targetname", "ghost_destroy");
             engine->ExecuteCommand("ent_fire ghost_destroy kill");
         } else {
             engine->ExecuteCommand(std::string("ent_fire ghost_" + this->name + " kill").c_str());

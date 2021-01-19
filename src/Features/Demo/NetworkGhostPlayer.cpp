@@ -407,11 +407,16 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         break;
     }
     case HEADER::MODEL_CHANGE: {
-        sf::Uint32 ID;
         std::string modelName;
-        packet >> ID >> modelName;
+        packet >> modelName;
         auto ghost = this->GetGhostByID(ID);
-        ghost->modelName = modelName;
+        if (ghost) {
+            ghost->modelName = modelName;
+            if (ghost->sameMap && engine->isRunning()) {
+                ghost->DeleteGhostModel(true);
+                ghost->Spawn();
+            }
+        }
         break;
     }
     case HEADER::UPDATE: {

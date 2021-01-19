@@ -27,7 +27,7 @@ public:
     bool sameMap;
 
     std::string modelName;
-    void* entity;
+    void* prop_entity;
 
     DataGhost oldPos;
     DataGhost newPos;
