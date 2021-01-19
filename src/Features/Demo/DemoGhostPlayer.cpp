@@ -87,7 +87,7 @@ void DemoGhostPlayer::DeleteGhostsByID(const unsigned int ID)
     }
 }
 
-void DemoGhostPlayer::KillAllGhosts(const bool newEntity)
+void DemoGhostPlayer::DeleteAllGhostModels(const bool newEntity)
 {
     for (auto& ghost : this->ghostPool) {
         ghost.DeleteGhostModel(newEntity);

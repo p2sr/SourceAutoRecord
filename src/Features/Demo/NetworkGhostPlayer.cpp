@@ -496,6 +496,16 @@ void NetworkManager::DeleteAllGhosts()
     }
 }
 
+void NetworkManager::DeleteAllGhostModels(const bool newEntity)
+{
+    for (auto& ghost : this->ghostPool) {
+        if (ghost.sameMap) {
+            ghost.DeleteGhostModel(newEntity);
+            ghost.DeleteGhost();
+        }
+    }
+}
+
 void NetworkManager::SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration)
 {
     std::string pre = "\"" + preCommands + "\"";

@@ -34,7 +34,7 @@ public:
     void ResumeAllGhosts();
     void DeleteAllGhosts();
     void DeleteGhostsByID(const unsigned int ID);
-    void KillAllGhosts(const bool newEntity);
+    void DeleteAllGhostModels(const bool newEntity);
     void UpdateGhostsPosition();
     void UpdateGhostsSameMap();
     void UpdateGhostsModel(const std::string model);
