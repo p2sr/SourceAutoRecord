@@ -22,6 +22,7 @@ public:
     bool isRecordingDemo = false;
     bool requestedStop = false;
     int lastDemoNumber = 1;
+    bool hasNotified = false;
 
 public:
     int GetTick();

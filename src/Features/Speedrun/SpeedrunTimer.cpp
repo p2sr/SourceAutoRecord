@@ -412,10 +412,6 @@ int SpeedrunTimer::GetCurrentDelta()
 }
 void SpeedrunTimer::StatusReport(const char* message)
 {
-    std::string cmd = std::string("sar_speedrun_notify ") + "(SAR " + SAR_VERSION + " : Build " SAR_BUILD + ") " + message;
-    console->Print(cmd.c_str());
-    engine->ExecuteCommand(cmd.c_str());
-
     console->Print("%s", message);
     console->DevMsg("%s\n", SpeedrunTimer::Format(this->total * this->ipt).c_str());
     
@@ -675,7 +671,4 @@ CON_COMMAND(sar_speedrun_offset, "Sets offset in ticks at which the timer should
     }
 
     console->Print("Timer will start at: %s\n", SpeedrunTimer::Format(speedrun->GetOffset() * speedrun->GetIntervalPerTick()).c_str());
-}
-CON_COMMAND(sar_speedrun_notify, "Notify when a run starts or end.\n")
-{
 }

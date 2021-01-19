@@ -333,6 +333,12 @@ DETOUR(Server::GameFrame, bool simulating)
         crosshair.IsSurfacePortalable();
     }
 
+    if (simulating && !engine->demorecorder->hasNotified && engine->demorecorder->m_bRecording) {
+        std::string cmd = std::string("echo SAR ") + SAR_VERSION + " (Build " + SAR_BUILD + ")";
+        engine->SendToCommandBuffer(cmd.c_str(), 300);
+        engine->demorecorder->hasNotified = true;
+    }
+
 #ifndef _WIN32
     return result;
 #endif

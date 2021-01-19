@@ -69,6 +69,8 @@ DETOUR(EngineDemoRecorder::StopRecording)
         engine->demorecorder->lastDemoNumber = 1;
     }
 
+    engine->demorecorder->hasNotified = false;
+
     return result;
 }
 
