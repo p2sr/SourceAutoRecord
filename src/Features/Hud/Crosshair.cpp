@@ -170,7 +170,7 @@ void Crosshair::GetPortalsStates(int& portalUpgradeState, bool& isBlueActive, bo
 
 void Crosshair::Paint(int slot)
 {
-    if (!sar_crosshair_mode.GetBool() && !sar_quickhud_mode.GetBool()) {
+    if (!sar_crosshair_mode.GetBool() && !sar_quickhud_mode.GetBool() && !sar_crosshair_P1.GetBool()) {
         return;
     }
 
@@ -231,7 +231,7 @@ void Crosshair::Paint(int slot)
     bool bluePortalState, orangePortalState;
     this->GetPortalsStates(portalGunUpgradeState, bluePortalState, orangePortalState);
 
-    if (sar_quickhud_mode.GetInt() == 1 && portalGunUpgradeState) { // Customizable quickhud
+    if ((sar_quickhud_mode.GetInt() == 1 || sar_crosshair_P1.GetBool()) && portalGunUpgradeState) { // Customizable quickhud
         Color cl(cl_quickhudleftcolor_r.GetInt(), cl_quickhudleftcolor_g.GetInt(), cl_quickhudleftcolor_b.GetInt(), cl_quickhud_alpha.GetInt());
         Color cr(cl_quickhudrightcolor_r.GetInt(), cl_quickhudrightcolor_g.GetInt(), cl_quickhudrightcolor_b.GetInt(), cl_quickhud_alpha.GetInt());
 
@@ -254,7 +254,7 @@ void Crosshair::Paint(int slot)
             }
         }
 
-    } else if (sar_quickhud_mode.GetInt() == 2 && this->isCustomQuickHudReady && portalGunUpgradeState) { // Quickhud from .png
+    } else if ((sar_quickhud_mode.GetInt() == 2 || sar_crosshair_P1.GetBool()) && this->isCustomQuickHudReady && portalGunUpgradeState) { // Quickhud from .png
 
         surface->DrawSetColor(surface->matsurface->ThisPtr(), 255, 255, 255, cl_quickhud_alpha.GetInt());
         int halfSize = cl_quickhud_size.GetInt() / 2;

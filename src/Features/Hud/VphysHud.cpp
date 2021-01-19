@@ -23,7 +23,7 @@ VphysHud::VphysHud()
 }
 bool VphysHud::ShouldDraw()
 {
-    return sar_vphys_hud.GetBool() && Hud::ShouldDraw();
+    return sar_vphys_hud.GetBool() && Hud::ShouldDraw() && sv_cheats.GetBool();
 }
 void VphysHud::Paint(int slot)
 {

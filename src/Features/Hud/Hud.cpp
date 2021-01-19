@@ -276,8 +276,9 @@ HUD_ELEMENT(text, "", "Draws text specified by sar_hud_set_text when enabled.\n"
         ctx->DrawElement("%s", t.second.c_str());
     }
 }
+
 CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets or clears the nth text value in the HUD.") {
-    if (args.ArgC() != 2 && args.ArgC() != 3) {
+    if (args.ArgC() < 3) {
         console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
         return;
     }
@@ -299,6 +300,16 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets or clears the 
     } else {
         sar_hud_text_vals[idx] = std::string(str);
     }
+}
+
+CON_COMMAND(sar_hud_remove_text, "sar_hud_remove_text <id>")
+{
+    if (args.ArgC() < 2) {
+        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    sar_hud_text_vals.erase(std::atoi(args[1]));
 }
 
 HUD_ELEMENT_MODE2(position, "0", 0, 2, "Draws absolute position of the client.\n"
