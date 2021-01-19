@@ -276,9 +276,9 @@ HUD_ELEMENT(text, "", "Draws text specified by sar_hud_set_text when enabled.\n"
         ctx->DrawElement("%s", t.second.c_str());
     }
 }
-CON_COMMAND(sar_hud_set_text, "Sets or clears the nth text value in the HUD.") {
+CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets or clears the nth text value in the HUD.") {
     if (args.ArgC() != 2 && args.ArgC() != 3) {
-        console->Print("Usage: sar_hud_set_text n txt\n");
+        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
         return;
     }
 
@@ -287,7 +287,7 @@ CON_COMMAND(sar_hud_set_text, "Sets or clears the nth text value in the HUD.") {
     long idx = std::strtol(idxStr, &end, 10);
     if (*end != 0 || end == idxStr) {
         // Index argument is not a number
-        console->Print("Usage: sar_hud_set_text n txt\n");
+        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
         return;
     }
 
