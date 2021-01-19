@@ -90,6 +90,7 @@ void SpeedrunTimer::Pause()
         this->pubInterface.get()->SetAction(TimerAction::Pause);
         this->state = TimerState::Paused;
         this->prevTotal = this->total;
+        this->session = engine->GetTick() - this->base;
         this->result.get()->AddSegment(this->session + this->pause);
     }
 }
@@ -166,6 +167,23 @@ void SpeedrunTimer::CheckRules(const int engineTicks)
         if (this->IsActive()) {
             this->Stop();
             source->madeAction = true;
+        }
+    default:
+        break;
+    }
+}
+void SpeedrunTimer::CheckRulesManually(const int engineTicks, TimerAction action)
+{
+    switch (action) {
+    case TimerAction::Split:
+        this->Split(false);
+        break;
+    case TimerAction::Start:
+        this->Start(engineTicks);
+        break;
+    case TimerAction::End:
+        if (this->IsActive()) {
+            this->Stop();
         }
     default:
         break;

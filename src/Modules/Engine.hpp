@@ -165,6 +165,7 @@ public:
     DECL_DETOUR_COMMAND(quit);
     DECL_DETOUR_COMMAND(help);
     DECL_DETOUR_COMMAND(gameui_activate);
+    DECL_DETOUR_COMMAND(playvideo_end_level_transition);
     DECL_DETOUR_COMMAND(unpause);
 
 #ifdef _WIN32

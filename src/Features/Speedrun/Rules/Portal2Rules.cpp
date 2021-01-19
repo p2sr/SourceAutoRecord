@@ -5,6 +5,8 @@
 #include "Features/Session.hpp"
 #include "Features/Speedrun/TimerCategory.hpp"
 #include "Features/Speedrun/TimerRule.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Modules/Engine.hpp"
 
 #ifdef _WIN32
 #define Offset_m_iTouchingPortalCount 1124
@@ -19,6 +21,9 @@
 #define Offset_m_bPlayerStateB 985
 #define Offset_m_flFOV 1760
 #endif
+
+int coopEndTick = -1;
+bool players_taunt_triggered = false;
 
 SAR_RULE(view_change, "sp_a1_intro1", "player", "CBasePlayer", m_hViewEntity, SearchMode::Classes)
 {
@@ -61,7 +66,17 @@ SAR_RULE3(players_taunt, "mp_coop_paint_longjump_intro", "vault-coopman_taunt", 
     auto m_bPlayerStateB = reinterpret_cast<bool*>((uintptr_t)entity + Offset_m_bPlayerStateB);
 
     if (*m_bPlayerStateA && *m_bPlayerStateB) {
-        return TimerAction::End;
+        if (players_taunt_triggered == true) {
+            if (coopEndTick == session->GetTick() + 120) {
+                coopEndTick = -1;
+                players_taunt_triggered = false;
+
+                return TimerAction::End;
+            }
+        } else {
+            players_taunt_triggered = false;
+            coopEndTick = session->GetTick();
+        }
     }
 
     return TimerAction::DoNothing;

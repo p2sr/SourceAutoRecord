@@ -41,6 +41,7 @@ REDECL(Engine::quit_callback);
 REDECL(Engine::help_callback);
 REDECL(Engine::gameui_activate_callback);
 REDECL(Engine::unpause_callback);
+REDECL(Engine::playvideo_end_level_transition_callback);
 #ifdef _WIN32
 REDECL(Engine::connect_callback);
 REDECL(Engine::ParseSmoothingInfo_Skip);
@@ -393,6 +394,15 @@ DETOUR_COMMAND(Engine::gameui_activate)
 
     Engine::gameui_activate_callback(args);
 }
+DETOUR_COMMAND(Engine::playvideo_end_level_transition)
+{
+    if (engine->GetMaxClients() >= 2) {
+        speedrun->CheckRulesManually(engine->GetTick(), TimerAction::Split);
+        speedrun->Pause();
+    }
+
+    Engine::playvideo_end_level_transition_callback(args);
+}
 
 bool Engine::Init()
 {
@@ -568,6 +578,7 @@ bool Engine::Init()
 
     if (sar.game->Is(SourceGame_Portal2Game)) {
         Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
+        Command::Hook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback_hook, Engine::playvideo_end_level_transition_callback);
     }
 
     host_framerate = Variable("host_framerate");
@@ -610,6 +621,7 @@ void Engine::Shutdown()
     Command::Unhook("quit", Engine::quit_callback);
     Command::Unhook("help", Engine::help_callback);
     Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
+    Command::Unhook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback);
 
     if (this->demoplayer) {
         this->demoplayer->Shutdown();

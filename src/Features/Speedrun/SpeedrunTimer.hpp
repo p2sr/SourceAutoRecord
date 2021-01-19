@@ -54,6 +54,7 @@ public:
     void PostUpdate(const int engineTicks, const char* engineMap);
     void CheckRules(const int engineTicks);
     void Stop(bool addSegment = true, bool stopedByUser = false);
+    void CheckRulesManually(const int engineTicks, TimerAction action);
     void Reset();
     void Split(bool visited);
 

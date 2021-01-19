@@ -131,6 +131,8 @@ void Session::Start()
 
     if (sar_speedrun_autostart.isRegistered && sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
         speedrun->Start(engine->GetTick());
+    } else if (speedrun->IsActive()) {
+        speedrun->Resume(engine->GetTick());
     }
 
     //Network Ghosts
