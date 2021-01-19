@@ -28,7 +28,7 @@ void StrafeSyncHud::Paint(int slot)
 {
 
     int width, height;
-#ifdef __WIN32
+#ifdef _WIN32
     engine->GetScreenSize(width, height);
 #else
     engine->GetScreenSize(nullptr, width, height);

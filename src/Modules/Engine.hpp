@@ -46,7 +46,6 @@ public:
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
     using _ScreenPosition = int(__stdcall*)(const Vector& point, Vector& screen);
-    using _AddLineOverlay = void(__stdcall*)(const Vector& origin, const Vector& dest, int r, int g, int b, bool noDepthTest, float duration);
     using _ConPrintEvent = int(__stdcall*)(IGameEvent* ev);
     using _PrecacheModel = int(__stdcall*)(const char*, bool);
     using _AddBoxOverlay = int(__stdcall*)(const Vector& origin, const Vector& mins, const Vector& MAX, QAngle const& orientation, int r, int g, int b, int a, float duration);
