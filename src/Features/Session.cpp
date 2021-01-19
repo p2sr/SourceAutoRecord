@@ -22,6 +22,9 @@
 
 #include "Utils/SDK.hpp"
 
+Variable sar_shane_loads("sar_shane_loads", "0", 0, 1, "Temporarily sets fps_max to 0 and mat_noredering to 1 during loads\n");
+Variable sar_shane_norendering("sar_shane_norendering", "0", 0, 1, "Temporatily set mat_noredering to 1 during loads\n");
+
 Session* session;
 
 Session::Session()
@@ -31,6 +34,7 @@ Session::Session()
     , currentFrame(0)
     , lastFrame(0)
     , prevState(HS_RUN)
+    , signonState(SIGNONSTATE_FULL)
 {
     this->hasLoaded = true;
 }
@@ -57,6 +61,10 @@ void Session::Started(bool menu)
             speedrun->Stop(false);
         } else {
             speedrun->Resume(engine->GetTick());
+        }
+
+        if (sar_shane_loads.GetBool()) {
+            this->ResetLoads();
         }
 
         this->isRunning = true;
@@ -125,8 +133,7 @@ void Session::Start()
         speedrun->Start(engine->GetTick());
     }
 
-#ifdef __NETWORK__
-	//Network Ghosts
+    //Network Ghosts
     if (networkManager.isConnected) {
         networkManager.NotifyMapChange();
         networkManager.UpdateGhostsSameMap();
@@ -137,7 +144,6 @@ void Session::Start()
             }
         }
     }
-#endif
 
     //Demo ghosts
     if (demoGhostPlayer.IsPlaying()) {
@@ -153,6 +159,8 @@ void Session::Start()
         demoGhostPlayer.SpawnAllGhosts();
     }
 
+    engine->hasRecorded = false;
+    engine->hasPaused = false;
 
     stepCounter->ResetTimer();
 
@@ -166,7 +174,7 @@ void Session::Ended()
         return;
     }
 
-	this->previousMap = engine->m_szLevelName;
+    this->previousMap = engine->m_szLevelName;
 
     auto tick = this->GetTick();
 
@@ -214,11 +222,15 @@ void Session::Ended()
     auto nSlot = GET_SLOT();
     stats->Get(nSlot)->statsCounter->RecordDatas(tick);
 
-#ifdef __NETWORK__
     networkManager.DeleteAllGhosts();
-#endif
+    
+    engine->hasWaited = false;
 
-    segmentedTools->waitTick = -1;
+    this->loadStart = NOW();
+    if (sar_shane_loads.GetBool()) {
+        this->oldFpsMax = fps_max.GetInt();
+        this->DoFastLoads();
+    }
 
     this->isRunning = false;
 }
@@ -239,15 +251,35 @@ void Session::Changed()
 void Session::Changed(int state)
 {
     console->DevMsg("state = %i\n", state);
-
+    this->signonState = state;
     // Demo recorder starts syncing from this tick
     if (state == SIGNONSTATE_FULL) {
         if (engine->GetMaxClients() <= 1) {
             this->Started();
+            this->loadEnd = NOW();
+
+            auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
+            console->Print("Load took : %dms\n", time);
         }
+    } else if (state == SIGNONSTATE_PRESPAWN && sar_shane_loads.GetBool()) {
+        this->ResetLoads();
     } else {
         this->Ended();
     }
+}
+
+void Session::DoFastLoads()
+{
+    fps_max.SetValue(0);
+    if(sar_shane_norendering.GetBool())
+        mat_norendering.SetValue(1);
+}
+
+void Session::ResetLoads()
+{
+    fps_max.SetValue(this->oldFpsMax);
+    if (sar_shane_norendering.GetBool())
+        mat_norendering.SetValue(0);
 }
 
 // HUD

@@ -8,6 +8,7 @@
 #include "Features/Hud/Crosshair.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
+#include "Features/Routing/SeamshotFind.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
@@ -16,10 +17,8 @@
 #include "Features/Tas/TasTools.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
-#include "Features/Demo/GhostPlayer.hpp"
-#include "Features/Demo/NetworkGhostPlayer.hpp"
-#include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/SegmentedTools.hpp"
+#include "Features/GroundFramesCounter.hpp"
 
 #include "Engine.hpp"
 #include "Client.hpp"
@@ -134,6 +133,8 @@ DETOUR_T(bool, Server::CheckJumpButton)
         ++stat->jumps->total;
         ++stat->steps->total;
         stat->jumps->StartTrace(server->GetAbsOrigin(player));
+
+        groundFramesCounter->HandleJump();
     }
 
     return jumped;
@@ -188,6 +189,10 @@ DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
         autoStrafer->Strafe(pPlayer, pMove);
         tasTools->SetAngles(pPlayer);
     }
+
+    unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)pPlayer + Offsets::m_hGroundEntity);
+    bool grounded = groundEntity != 0xFFFFFFFF;
+    groundFramesCounter->HandleMovementFrame(grounded);
 
     return Server::ProcessMovement(thisptr, pPlayer, pMove);
 }
@@ -289,24 +294,6 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
-    if (simulating && sar_record_at.GetFloat() > 0 && sar_record_at.GetFloat() == session->GetTick()) {
-        std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
-        engine->ExecuteCommand(cmd.c_str());
-    }
-
-#ifdef __NETWORK__
-    if (networkManager.isConnected && simulating) {
-        networkManager.UpdateGhostsPosition();
-
-        if (networkManager.isCountdownReady) {
-            networkManager.UpdateCountdown();
-        }
-    }
-#endif
-
-    if (demoGhostPlayer.IsPlaying() && simulating) {
-        demoGhostPlayer.UpdateGhostsPosition();
-    }
 
     if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
         if (!simulating && !pauseTimer->IsActive()) {
@@ -323,25 +310,7 @@ DETOUR(Server::GameFrame, bool simulating)
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
-    if (sar_pause.GetBool()) {
-        if (!server->paused && sar_pause_at.GetInt() == session->GetTick() && simulating) {
-            engine->ExecuteCommand("pause");
-            server->paused = true;
-            server->pauseTick = engine->GetTick();
-        } else if (server->paused && !simulating) {
-            if (sar_pause_for.GetInt() > 0 && sar_pause_for.GetInt() + engine->GetTick() == server->pauseTick) {
-                engine->ExecuteCommand("unpause");
-                server->paused = false;
-            }
-            ++server->pauseTick;
-        } else if (server->paused && simulating && engine->GetTick() > server->pauseTick + 5) {
-            server->paused = false;
-        }
-    }
-
-    if (segmentedTools->waitTick == session->GetTick() && simulating) {
-        engine->ExecuteCommand(segmentedTools->pendingCommands.c_str());
-    }
+    
 
     if (session->isRunning && session->GetTick() == 16) {
         fovChanger->Force();
@@ -361,6 +330,24 @@ DETOUR(Server::GameFrame, bool simulating)
 
     if (session->isRunning && sar_speedrun_standard.GetBool()) {
         speedrun->CheckRules(engine->GetTick());
+    }
+
+    if (simulating && sar_seamshot_finder.GetBool()) {
+        seamshotFind->DrawLines();
+    }
+
+    if (simulating && sar_crosshair_P1.GetBool()) {
+        crosshair.IsSurfacePortalable();
+    }
+
+    if (simulating && !engine->demorecorder->hasNotified && engine->demorecorder->m_bRecording) {
+        std::string cmd = std::string("echo SAR ") + SAR_VERSION + " (Build " + SAR_BUILD + ")";
+        engine->SendToCommandBuffer(cmd.c_str(), 300);
+        engine->demorecorder->hasNotified = true;
+    }
+
+    if (simulating) {
+        seamshotFind->DrawLines();
     }
 
 #ifndef _WIN32
@@ -409,7 +396,7 @@ bool Server::Init()
         auto GetIServerEntity = g_ServerTools->Original(Offsets::GetIServerEntity);
         Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
 
-		this->CreateEntityByName = g_ServerTools->Original<_CreateEntityByName>(Offsets::CreateEntityByName);
+        this->CreateEntityByName = g_ServerTools->Original<_CreateEntityByName>(Offsets::CreateEntityByName);
         this->DispatchSpawn = g_ServerTools->Original<_DispatchSpawn>(Offsets::DispatchSpawn);
         this->SetKeyValueChar = g_ServerTools->Original<_SetKeyValueChar>(Offsets::SetKeyValueChar);
         this->SetKeyValueFloat = g_ServerTools->Original<_SetKeyValueFloat>(Offsets::SetKeyValueFloat);
@@ -437,6 +424,7 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_fFlags", &Offsets::m_fFlags);
     offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
     offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
+    offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::m_hGroundEntity);
 
     if (sar.game->Is(SourceGame_Portal2Engine)) {
         offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);

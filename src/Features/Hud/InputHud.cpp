@@ -61,7 +61,7 @@ InputHud inputHud2;
 
 InputHud::InputHud()
     : Hud(HudType_InGame, true, SourceGame_Portal2Engine)
-    , buttonBits { 0, 0 }
+    , buttonBits{ 0, 0 }
 {
 }
 void InputHud::SetButtonBits(int slot, int buttonBits)
@@ -78,17 +78,17 @@ void InputHud::Paint(int slot)
 
     auto button = this->buttonBits[slot];
 
-    auto mvForward =button & IN_FORWARD;
-    auto mvBack =button & IN_BACK;
-    auto mvLeft =button & IN_MOVELEFT;
-    auto mvRight =button & IN_MOVERIGHT;
-    auto mvJump =button & IN_JUMP;
-    auto mvDuck =button & IN_DUCK;
-    auto mvUse =button & IN_USE;
-    auto mvAttack =button & IN_ATTACK;
-    auto mvAttack2 =button & IN_ATTACK2;
-    auto mvReload =button & IN_RELOAD;
-    auto mvSpeed =button & IN_SPEED;
+    auto mvForward = button & IN_FORWARD;
+    auto mvBack = button & IN_BACK;
+    auto mvLeft = button & IN_MOVELEFT;
+    auto mvRight = button & IN_MOVERIGHT;
+    auto mvJump = button & IN_JUMP;
+    auto mvDuck = button & IN_DUCK;
+    auto mvUse = button & IN_USE;
+    auto mvAttack = button & IN_ATTACK;
+    auto mvAttack2 = button & IN_ATTACK2;
+    auto mvReload = button & IN_RELOAD;
+    auto mvSpeed = button & IN_SPEED;
 
     auto xOffset = sar_ihud_x.GetInt();
     auto yOffset = sar_ihud_y.GetInt();

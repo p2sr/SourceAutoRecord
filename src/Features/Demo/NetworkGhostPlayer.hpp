@@ -1,4 +1,3 @@
-#ifdef __NETWORK__
 #pragma once
 #include "Command.hpp"
 #include "Variable.hpp"
@@ -13,6 +12,7 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <condition_variable>
 
 enum class HEADER {
     NONE,
@@ -104,5 +104,3 @@ extern Command ghost_disconnect;
 extern Command ghost_message;
 extern Command ghost_ping;
 extern Command ghost_name;
-
-#endif

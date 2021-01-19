@@ -2,6 +2,7 @@
 
 #include "Features/Demo/Demo.hpp"
 #include "Features/Demo/DemoParser.hpp"
+#include "Features/Camera.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -33,6 +34,11 @@ void EngineDemoPlayer::ClearDemoQueue()
     engine->demoplayer->currentDemoID = -1;
 }
 
+std::string EngineDemoPlayer::GetLevelName()
+{
+    return this->levelName;
+}
+
 DETOUR_COMMAND(EngineDemoPlayer::stopdemo)
 {
     engine->demoplayer->ClearDemoQueue();
@@ -56,10 +62,13 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
             console->Print("Ticks:    %i\n", demo.playbackTicks);
             console->Print("Time:     %.3f\n", demo.playbackTime);
             console->Print("Tickrate: %.3f\n", demo.Tickrate());
+            engine->demoplayer->levelName = demo.mapName;
         } else {
             console->Print("Could not parse \"%s\"!\n", engine->demoplayer->DemoName);
         }
     }
+
+    camera->RequestTimeOffsetRefresh();
 
     return result;
 }

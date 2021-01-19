@@ -13,7 +13,6 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3F6459A9-566E-4CAC-A412-C03FF51D67E9}</ProjectGuid>
     <RootNamespace>SourceAutoRecord</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>SourceAutoRecord</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -61,7 +60,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -102,6 +101,7 @@
       <PreprocessorDefinitions>SFML_STATIC;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>26495</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -126,28 +126,31 @@
     <ClCompile Include="Features\Config.cpp" />
     <ClCompile Include="Features\Cvars.cpp" />
     <ClCompile Include="Features\DataMapDumper.cpp" />
+    <ClCompile Include="Features\Camera.cpp" />
     <ClCompile Include="Features\Demo\Demo.cpp" />
     <ClCompile Include="Features\Demo\DemoGhostEntity.cpp" />
     <ClCompile Include="Features\Demo\DemoGhostPlayer.cpp" />
     <ClCompile Include="Features\Demo\DemoParser.cpp" />
     <ClCompile Include="Features\Demo\GhostEntity.cpp" />
-    <ClCompile Include="Features\Demo\GhostPlayer.cpp" />
     <ClCompile Include="Features\Demo\NetworkGhostPlayer.cpp" />
     <ClCompile Include="Features\EntityList.cpp" />
     <ClCompile Include="Features\Feature.cpp" />
     <ClCompile Include="Features\FovChanger.cpp" />
+    <ClCompile Include="Features\GroundFramesCounter.cpp" />
     <ClCompile Include="Features\Hud\Crosshair.cpp" />
     <ClCompile Include="Features\Hud\Hud.cpp" />
     <ClCompile Include="Features\Hud\InputHud.cpp" />
     <ClCompile Include="Features\Hud\InspectionHud.cpp" />
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp" />
     <ClCompile Include="Features\Hud\StrafeSyncHud.cpp" />
+    <ClCompile Include="Features\Hud\VphysHud.cpp" />
     <ClCompile Include="Features\Imitator.cpp" />
     <ClCompile Include="Features\InfraSession.cpp" />
     <ClCompile Include="Features\Listener.cpp" />
     <ClCompile Include="Features\OffsetFinder.cpp" />
     <ClCompile Include="Features\Rebinder.cpp" />
     <ClCompile Include="Features\Routing\EntityInspector.cpp" />
+    <ClCompile Include="Features\Routing\SeamshotFind.cpp" />
     <ClCompile Include="Features\Routing\Tracer.cpp" />
     <ClCompile Include="Features\SegmentedTools.cpp" />
     <ClCompile Include="Features\Session.cpp" />
@@ -226,6 +229,7 @@
     <ClCompile Include="Modules\EngineDemoPlayer.cpp" />
     <ClCompile Include="Modules\EngineDemoRecorder.cpp" />
     <ClCompile Include="Modules\InputSystem.cpp" />
+    <ClCompile Include="Modules\MaterialSystem.cpp" />
     <ClCompile Include="Modules\Module.cpp" />
     <ClCompile Include="Modules\Scheme.cpp" />
     <ClCompile Include="Modules\Server.cpp" />
@@ -314,28 +318,31 @@
     <ClInclude Include="Features\Config.hpp" />
     <ClInclude Include="Features\Cvars.hpp" />
     <ClInclude Include="Features\DataMapDumper.hpp" />
+    <ClInclude Include="Features\Camera.hpp" />
     <ClInclude Include="Features\Demo\Demo.hpp" />
     <ClInclude Include="Features\Demo\DemoGhostEntity.hpp" />
     <ClInclude Include="Features\Demo\DemoGhostPlayer.hpp" />
     <ClInclude Include="Features\Demo\DemoParser.hpp" />
     <ClInclude Include="Features\Demo\GhostEntity.hpp" />
-    <ClInclude Include="Features\Demo\GhostPlayer.hpp" />
     <ClInclude Include="Features\Demo\NetworkGhostPlayer.hpp" />
     <ClInclude Include="Features\EntityList.hpp" />
     <ClInclude Include="Features\Feature.hpp" />
     <ClInclude Include="Features\FovChanger.hpp" />
+    <ClInclude Include="Features\GroundFramesCounter.hpp" />
     <ClInclude Include="Features\Hud\Crosshair.hpp" />
     <ClInclude Include="Features\Hud\Hud.hpp" />
     <ClInclude Include="Features\Hud\InputHud.hpp" />
     <ClInclude Include="Features\Hud\InspectionHud.hpp" />
     <ClInclude Include="Features\Hud\SpeedrunHud.hpp" />
     <ClInclude Include="Features\Hud\StrafeSyncHud.hpp" />
+    <ClInclude Include="Features\Hud\VphysHud.hpp" />
     <ClInclude Include="Features\Imitator.hpp" />
     <ClInclude Include="Features\InfraSession.hpp" />
     <ClInclude Include="Features\Listener.hpp" />
     <ClInclude Include="Features\OffsetFinder.hpp" />
     <ClInclude Include="Features\Rebinder.hpp" />
     <ClInclude Include="Features\Routing\EntityInspector.hpp" />
+    <ClInclude Include="Features\Routing\SeamshotFind.hpp" />
     <ClInclude Include="Features\Routing\Tracer.hpp" />
     <ClInclude Include="Features\SegmentedTools.hpp" />
     <ClInclude Include="Features\Session.hpp" />
@@ -439,6 +446,7 @@
     <ClInclude Include="Modules\EngineDemoPlayer.hpp" />
     <ClInclude Include="Modules\EngineDemoRecorder.hpp" />
     <ClInclude Include="Modules\InputSystem.hpp" />
+    <ClInclude Include="Modules\MaterialSystem.hpp" />
     <ClInclude Include="Modules\Module.hpp" />
     <ClInclude Include="Modules\Scheme.hpp" />
     <ClInclude Include="Modules\Server.hpp" />

@@ -7,6 +7,7 @@
 
 #include "Features/Demo/Demo.hpp"
 #include "Features/Demo/DemoParser.hpp"
+#include "Features/Session.hpp"
 #include "NetworkGhostPlayer.hpp"
 
 #include <filesystem>
@@ -20,6 +21,7 @@ DemoGhostPlayer demoGhostPlayer;
 DemoGhostPlayer::DemoGhostPlayer()
     : isPlaying(false)
     , isFullGame(false)
+    , currentTick(0)
 {
 }
 
@@ -35,8 +37,7 @@ void DemoGhostPlayer::SpawnAllGhosts()
 void DemoGhostPlayer::StartAllGhost()
 {
     for (auto& ghost : this->ghostPool) {
-        ghost.ChangeLevel(engine->m_szLevelName);
-        ghost.Reset();
+        ghost.SetGhostOnFirstMap();
         ghost.Spawn();
     }
 
@@ -48,11 +49,9 @@ void DemoGhostPlayer::ResetAllGhosts()
     this->isPlaying = false;
     for (auto& ghost : this->ghostPool) {
         if (this->IsFullGame()) {
-            ghost.ChangeLevel(engine->m_szLevelName);
-            ghost.Reset();
-        } else {
-            ghost.Reset();
+            ghost.ChangeDemo();
         }
+        ghost.LevelReset();
     }
 }
 
@@ -69,6 +68,7 @@ void DemoGhostPlayer::ResumeAllGhosts()
 void DemoGhostPlayer::DeleteAllGhosts()
 {
     for (int i = 0; i < this->ghostPool.size(); ++i) {
+        this->ghostPool[i].DeleteGhostModel(false);
         this->ghostPool[i].DeleteGhost();
     }
     this->ghostPool.clear();
@@ -79,6 +79,7 @@ void DemoGhostPlayer::DeleteGhostsByID(const unsigned int ID)
 {
     for (int i = 0; i < this->ghostPool.size(); ++i) {
         if (this->ghostPool[i].ID == ID) {
+            this->ghostPool[i].DeleteGhostModel(false);
             this->ghostPool[i].DeleteGhost();
             this->ghostPool.erase(this->ghostPool.begin() + i);
             return;
@@ -89,19 +90,23 @@ void DemoGhostPlayer::DeleteGhostsByID(const unsigned int ID)
 void DemoGhostPlayer::KillAllGhosts(const bool newEntity)
 {
     for (auto& ghost : this->ghostPool) {
-        ghost.KillGhost(newEntity);
+        ghost.DeleteGhostModel(newEntity);
         ghost.DeleteGhost();
     }
 }
 
 void DemoGhostPlayer::UpdateGhostsPosition()
 {
-    for (auto& ghost : this->ghostPool) {
-        if (!ghost.hasFinished) {
-            if (ghost_sync.GetBool() && !ghost.sameMap) {
-                return;
+    if (this->currentTick != session->GetTick()) {
+        this->currentTick = session->GetTick();
+
+        for (auto& ghost : this->ghostPool) {
+            if (!ghost.hasFinished) {
+                if (ghost_sync.GetBool() && !ghost.sameMap) {
+                    return;
+                }
+                ghost.UpdateDemoGhost();
             }
-            ghost.UpdateDemoGhost();
         }
     }
 }
@@ -109,8 +114,8 @@ void DemoGhostPlayer::UpdateGhostsPosition()
 void DemoGhostPlayer::UpdateGhostsSameMap()
 {
     for (auto& ghost : this->ghostPool) {
-        ghost.sameMap = engine->m_szLevelName == ghost.currentMap;
-        ghost.isAhead = engine->GetMapIndex(ghost.currentMap) > engine->GetMapIndex(engine->m_szLevelName);
+        ghost.sameMap = engine->GetCurrentMapName() == ghost.GetCurrentMap();
+        ghost.isAhead = engine->GetMapIndex(ghost.GetCurrentMap()) > engine->GetMapIndex(engine->GetCurrentMapName());
     }
 }
 
@@ -119,7 +124,7 @@ void DemoGhostPlayer::UpdateGhostsModel(const std::string model)
     if (GhostEntity::ghost_type) {
         for (auto& ghost : this->ghostPool) {
             ghost.modelName = model;
-            ghost.KillGhost(true);
+            ghost.DeleteGhostModel(true);
             ghost.Spawn();
         }
     }
@@ -129,8 +134,8 @@ void DemoGhostPlayer::Sync()
 {
     for (auto& ghost : this->ghostPool) {
         if (!ghost.sameMap && !ghost.isAhead) { //isAhead prevents the ghost from restarting if the player load a save after the ghost has finished a chamber
-            ghost.ChangeLevel(engine->m_szLevelName);
-            ghost.Reset();
+            ghost.ChangeDemo();
+            ghost.LevelReset();
         }
     }
 }
@@ -156,30 +161,19 @@ bool DemoGhostPlayer::SetupGhostFromDemo(const std::string& demo_path, const uns
         parser.Adjust(&demo);
 
         DemoDatas demoDatas{ datas, demo };
-        if (demoGhostPlayer.GetGhostByID(ghost_ID) == nullptr) {
-            DemoGhostEntity ghost = { ghost_ID, demo.clientName, DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } }, demo.mapName };
-            if (fullGame) {
-                DemoDatas demoDatas{ datas, demo };
-                ghost.AddLevelDatas(demoDatas);
-            } else {
-                ghost.SetFirstLevelDatas(demoDatas);
-                ghost.lastLevel = demo.mapName;
-            }
-            ghost.totalTicks = demo.playbackTicks;
-            demoGhostPlayer.AddGhost(ghost);
-        } else {
-            auto ghost = demoGhostPlayer.GetGhostByID(ghost_ID);
-            if (fullGame) {
-                ghost->AddLevelDatas(demoDatas);
-                ghost->lastLevel = demo.mapName;
-                ghost->totalTicks += demo.playbackTicks;
-            } else {
-                ghost->name = demo.clientName;
-                ghost->currentMap = demo.mapName;
-                ghost->totalTicks = demo.playbackTicks;
-                ghost->lastLevel = demo.mapName;
-                ghost->SetFirstLevelDatas(demoDatas);
-            }
+
+        DemoGhostEntity* ghost = demoGhostPlayer.GetGhostByID(ghost_ID);
+        if (ghost == nullptr) { //New fullgame or CM ghost
+            DemoGhostEntity new_ghost = { ghost_ID, demo.clientName, DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } }, demo.mapName };
+            new_ghost.SetFirstLevelDatas(demoDatas);
+            new_ghost.firstLevel = demo.mapName;
+            new_ghost.lastLevel = demo.mapName;
+            new_ghost.totalTicks = demo.playbackTicks;
+            demoGhostPlayer.AddGhost(new_ghost);
+        } else { //Only fullGame
+            ghost->AddLevelDatas(demoDatas);
+            ghost->lastLevel = demo.mapName;
+            ghost->totalTicks += demo.playbackTicks;
         }
         return true;
     }
@@ -209,7 +203,7 @@ void DemoGhostPlayer::PrintRecap()
     console->Print("Recap of all ghosts :\n");
 
     for (auto& ghost : this->ghostPool) {
-        console->Msg("    [%i of %i] %s : %s -> %s in %s\n", current++, total, ghost.name.c_str(), "sp_a1_intro1", ghost.lastLevel.c_str(), SpeedrunTimer::Format(ghost.totalTicks * speedrun->GetIntervalPerTick()).c_str());
+        console->Msg("    [%i of %i] %s : %s -> %s in %s\n", current++, total, ghost.name.c_str(), ghost.firstLevel.c_str(), ghost.lastLevel.c_str(), SpeedrunTimer::Format(ghost.totalTicks * speedrun->GetIntervalPerTick()).c_str());
     }
 }
 
@@ -217,7 +211,7 @@ void DemoGhostPlayer::DrawNames(HudContext* ctx)
 {
     auto player = client->GetPlayer(GET_SLOT() + 1);
     if (player) {
-        auto pos = client->GetAbsOrigin(player);
+        //auto pos = client->GetAbsOrigin(player);
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i].sameMap && !this->ghostPool[i].hasFinished) {
                 Vector screenPos;
@@ -234,7 +228,8 @@ CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demo, "ghost_set_demo <demo> [ID]. Ghost 
         return console->Print(ghost_set_demo.ThisPtr()->m_pszHelpString);
     }
 
-    unsigned int ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
+    sf::Uint32 ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
+    demoGhostPlayer.DeleteGhostsByID(ID);
     if (demoGhostPlayer.SetupGhostFromDemo(engine->GetGameDirectory() + std::string("/") + args[1], ID, false)) {
         console->Print("Ghost sucessfully created ! Final time of the ghost : %s\n", SpeedrunTimer::Format(demoGhostPlayer.GetGhostByID(ID)->GetTotalTime()).c_str());
     } else {
@@ -250,10 +245,11 @@ CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demos, "ghost_set_demos <first_demo> [ID]
     0, 0, dem)
 {
     if (args.ArgC() < 2) {
-        return console->Print(ghost_set_demo.ThisPtr()->m_pszHelpString);
+        return console->Print(ghost_set_demos.ThisPtr()->m_pszHelpString);
     }
 
-    unsigned int ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
+    sf::Uint32 ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
+    demoGhostPlayer.DeleteGhostsByID(ID);
 
     auto dir = engine->GetGameDirectory() + std::string("/") + args[1];
     int counter = 2;
@@ -300,7 +296,7 @@ CON_COMMAND(ghost_recap, "Recap all ghosts setup.\n")
 
 CON_COMMAND(ghost_start, "Start ghosts")
 {
-    if (engine->m_szLevelName[0] == '\0') {
+    if (engine->m_szLevelName[0] == '\0' && !engine->demoplayer->IsPlaying()) {
         return console->Print("Can't start ghosts in menu.\n");
     }
 
@@ -308,7 +304,7 @@ CON_COMMAND(ghost_start, "Start ghosts")
     console->Print("All ghosts have started.\n");
 }
 
-CON_COMMAND(ghost_stop, "Reset ghosts.\n")
+CON_COMMAND(ghost_reset, "Reset ghosts.\n")
 {
     demoGhostPlayer.ResetAllGhosts();
     console->Print("All ghost have been reset.\n");

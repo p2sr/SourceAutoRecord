@@ -56,6 +56,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<ReplayProvider>(&replayProvider);
             this->features->AddFeature<Timer>(&timer);
             this->features->AddFeature<EntityInspector>(&inspector);
+            this->features->AddFeature<SeamshotFind>(&seamshotFind);
             this->features->AddFeature<ClassDumper>(&classDumper);
             this->features->AddFeature<EntityList>(&entityList);
             this->features->AddFeature<OffsetFinder>(&offsetFinder);
@@ -63,7 +64,9 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<PauseTimer>(&pauseTimer);
             this->features->AddFeature<DataMapDumper>(&dataMapDumper);
             this->features->AddFeature<FovChanger>(&fovChanger);
+            this->features->AddFeature<Camera>(&camera);
             this->features->AddFeature<SegmentedTools>(&segmentedTools);
+            this->features->AddFeature<GroundFramesCounter>(&groundFramesCounter);
 
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
@@ -72,6 +75,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->modules->AddModule<Engine>(&engine);
             this->modules->AddModule<Client>(&client);
             this->modules->AddModule<Server>(&server);
+            this->modules->AddModule<MaterialSystem>(&materialSystem);
             this->modules->InitAll();
 
             if (engine && engine->hasLoaded) {
@@ -248,9 +252,7 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
     statCounter->RecordDatas(session->GetTick());
     statCounter->ExportToFile(sar_statcounter_filePath.GetString());
 
-#ifdef __NETWORK__
     networkManager.Disconnect();
-#endif
 
     if (sar.cheats) {
         sar.cheats->Shutdown();
@@ -267,7 +269,7 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 
     if (sar.modules) {
         sar.modules->ShutdownAll();
-    }    
+    }
 
     SAFE_DELETE(sar.features)
     SAFE_DELETE(sar.cheats)

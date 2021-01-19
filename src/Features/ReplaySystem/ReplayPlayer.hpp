@@ -3,8 +3,8 @@
 
 #include "Features/Feature.hpp"
 
-#include "Variable.hpp"
 #include "Utils.hpp"
+#include "Variable.hpp"
 
 class ReplayPlayer : public Feature {
 private:

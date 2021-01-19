@@ -32,7 +32,7 @@ SAR_RULE3(out_of_shower, "gg_intro_wakeup", "tele_out_shower", SearchMode::Names
 SAR_RULE3(end_credits, "gg_stage_theend", "die_ending_math_final", SearchMode::Names)
 {
     // CMathCounter aka math_counter
-    auto m_bHitMax  = reinterpret_cast<bool*>((uintptr_t)entity + Offset_m_bHitMax);
+    auto m_bHitMax = reinterpret_cast<bool*>((uintptr_t)entity + Offset_m_bHitMax);
 
     if (*m_bHitMax) {
         return TimerAction::End;
@@ -44,7 +44,7 @@ SAR_RULE3(end_credits, "gg_stage_theend", "die_ending_math_final", SearchMode::N
 SAR_RULE3(door_closes, "gg_stage_theend", "ele_exit_door", SearchMode::Names)
 {
     // CRotDoor aka func_door_rotating
-    auto m_toggle_state  = reinterpret_cast<int*>((uintptr_t)entity + Offset_m_toggle_state);
+    auto m_toggle_state = reinterpret_cast<int*>((uintptr_t)entity + Offset_m_toggle_state);
 
     if (*m_toggle_state == TS_GOING_DOWN) {
         return TimerAction::End;

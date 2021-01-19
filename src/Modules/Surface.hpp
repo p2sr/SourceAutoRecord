@@ -29,7 +29,7 @@ public:
     using _StartDrawing = int(__rescall*)(void* thisptr);
     using _FinishDrawing = int(__cdecl*)();
 
-	using _DrawGetTextureId = int(__rescall*)(void* thisptr, char const* filename);
+    using _DrawGetTextureId = int(__rescall*)(void* thisptr, char const* filename);
     using _DrawGetTextureFile = int(__rescall*)(void* thisptr, int id, char* filename, int maxlen);
     using _DrawSetTextureFile = int(__rescall*)(void* thisptr, int id, const char* filename, int hardwareFilter, bool forceReload);
     using _DrawSetTextureRGBA = int(__rescall*)(void* thisptr, int id, const unsigned char* rgba, int wide, int tall);
@@ -51,7 +51,7 @@ public:
     _StartDrawing StartDrawing = nullptr;
     _FinishDrawing FinishDrawing = nullptr;
 
-	_DrawGetTextureId DrawGetTextureId = nullptr;
+    _DrawGetTextureId DrawGetTextureId = nullptr;
     _DrawGetTextureFile DrawGetTextureFile = nullptr;
     _DrawSetTextureFile DrawSetTextureFile = nullptr;
     _DrawSetTextureRGBA DrawSetTextureRGBA = nullptr;

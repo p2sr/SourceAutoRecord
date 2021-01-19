@@ -2,6 +2,7 @@
 
 #include "Feature.hpp"
 #include "Command.hpp"
+#include "Variable.hpp"
 
 class SegmentedTools : public Feature {
 
@@ -16,4 +17,5 @@ public:
 
 extern SegmentedTools* segmentedTools;
 
-extern Command wait;
+extern Command waitCmd;
+extern Variable wait_mode;

@@ -25,7 +25,7 @@ public:
     using _KeyUp = int(__cdecl*)(void* b, const char* c);
     using _GetAllClasses = ClientClass* (*)();
     using _ShouldDraw = bool(__rescall*)(void* thisptr);
-	  using _ChatPrintf = void(*)(void* thisptr, int iPlayerIndex, int iFilter, const char* fmt, ...);
+    using _ChatPrintf = void(*)(void* thisptr, int iPlayerIndex, int iFilter, const char* fmt, ...);
 
     _GetClientEntity GetClientEntity = nullptr;
     _KeyDown KeyDown = nullptr;
@@ -67,6 +67,9 @@ public:
 
     // CInput::GetButtonBits
     DECL_DETOUR(GetButtonBits, bool bResetState);
+
+    // ClientModeShared::OverrideView
+    DECL_DETOUR(OverrideView, CPortalViewSetup1* m_View);
 
     DECL_DETOUR_COMMAND(playvideo_end_level_transition);
 

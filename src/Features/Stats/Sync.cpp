@@ -18,11 +18,11 @@ Sync* synchro;
 
 Sync::Sync()
     : lastButtons(0)
+    , oldAngles({ 0, 0, 0 })
     , strafeTick(0)
-    , strafeSync(100)
     , perfectSyncTick(0)
     , accelTicks(0)
-    , oldAngles({ 0, 0, 0 })
+    , strafeSync(100)
     , run(true)
 {
     this->hasLoaded = true;

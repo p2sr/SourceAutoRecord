@@ -22,6 +22,7 @@ int GetViewAngles;
 int SetViewAngles;
 int GetMaxClients;
 int ServerCmdKeyValues;
+int ExecuteClientCmd;
 int GetActiveSplitScreenPlayerSlot;
 int GetSteamAPIContext;
 int IsPaused;
@@ -35,6 +36,7 @@ int JoyStickApplyMovement;
 
 // ClientModeShared
 int CreateMove;
+int OverrideView;
 
 // ConVar
 int Dtor;
@@ -66,6 +68,9 @@ int CreateNewTextureID;
 // CInputSystem
 int StringToButtonCode;
 int SleepUntilInput;
+int IsButtonDown;
+int GetCursorPosition;
+int SetCursorPosition;
 
 // CInput
 int GetButtonBits;
@@ -124,9 +129,18 @@ int m_nWaterLevel;
 int m_bDucked;
 int m_flFriction;
 int m_pSurfaceData;
+int m_pShadowStand;
+int m_pShadowCrouch;
+int m_Local;
+int m_hGroundEntity;
+
+// CPlayerLocalData
+int m_nTractorBeamCount;
+int m_hTractorBeam;
 
 // CPortal_Player
 int iNumPortalsPlaced;
+int m_StatsThisLevel;
 
 //CWeaponPortalgun
 int m_bCanFirePortal1;
@@ -140,10 +154,16 @@ int m_bIsPortal2;
 int m_hActiveWeapon;
 
 // IEngineVGuiInternal
+int IsGameUIVisible;
 int Paint;
+
+// IEngineTrace
+int TraceRay;
 
 // CEngineTool
 int GetCurrentMap;
+int HostFrameTime;
+int ClientTime;
 int PrecacheModel;
 
 // CSchemeManager
@@ -211,6 +231,18 @@ int OnGameOverlayActivated;
 
 // surfacedata_t
 int jumpFactor;
+
+// IPhysicsObject
+int IsAsleep;
+int IsCollisionEnabled;
+int IsGravityEnabled;
+int IsDragEnabled;
+int IsMotionEnabled;
+int GetPosition;
+int GetVelocity;
+int SetPosition;
+int SetVelocity;
+int EnableGravity;
 
 // Others
 int tickcount;

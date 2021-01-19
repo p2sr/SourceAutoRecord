@@ -1,7 +1,5 @@
 #pragma once
-#ifdef __NETWORK__
 #include "SFML/Network.hpp"
-#endif
 
 #include "Command.hpp"
 #include "Utils/SDK.hpp"
@@ -29,7 +27,7 @@ public:
     bool sameMap;
 
     std::string modelName;
-    void* entity;
+    void* prop_entity;
 
     DataGhost oldPos;
     DataGhost newPos;
@@ -48,7 +46,7 @@ public:
     void SetupGhost(unsigned int& ID, std::string& name, DataGhost& data, std::string& current_map);
     void Display();
     void Lerp(float time);
-    void KillGhost(const bool newEntity);
+    void DeleteGhostModel(const bool newEntity);
 };
 
 extern Variable ghost_height;

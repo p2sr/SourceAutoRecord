@@ -10,6 +10,7 @@
 
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
 #include "Modules/VGui.hpp"
@@ -22,6 +23,8 @@ Variable sar_hud_default_padding_y("sar_hud_default_padding_y", "2", 0, "Y paddi
 Variable sar_hud_default_font_index("sar_hud_default_font_index", "0", 0, "Font index of HUD.\n");
 Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 255", "RGBA font color of HUD.\n", 0);
 
+Variable sar_hud_precision("sar_hud_precision", "3", 0, "Precision of HUD numbers.\n");
+
 BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
     : type(type)
     , drawSecondSplitScreen(drawSecondSplitScreen)
@@ -30,11 +33,11 @@ BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
 }
 bool BaseHud::ShouldDraw()
 {
-    if (engine->demoplayer->IsPlaying()) {
+    if (engine->demoplayer->IsPlaying() || engine->IsOrange()) {
         return this->type & HudType_InGame;
     }
 
-    if (engine->m_szLevelName[0] == '\0') {
+    if (!engine->hoststate->m_activeGame) {
         return this->type & HudType_Menu;
     }
 
@@ -281,7 +284,8 @@ HUD_ELEMENT_MODE2(position, "0", 0, 2, "Draws absolute position of the client.\n
         if (mode >= 2) {
             pos = pos + client->GetViewOffset(player);
         }
-        ctx->DrawElement("pos: %.3f %.3f %.3f", pos.x, pos.y, pos.z);
+        int p = sar_hud_precision.GetInt();
+        ctx->DrawElement("pos: %.*f %.*f %.*f", p, pos.x, p, pos.y, p, pos.z);
     } else {
         ctx->DrawElement("pos: -");
     }
@@ -293,10 +297,11 @@ HUD_ELEMENT_MODE2(angles, "0", 0, 2, "Draws absolute view angles of the client.\
     HudType_InGame | HudType_Paused | HudType_LoadingScreen)
 {
     auto ang = engine->GetAngles(ctx->slot);
+    int p = sar_hud_precision.GetInt();
     if (mode == 1) {
-        ctx->DrawElement("ang: %.3f %.3f", ang.x, ang.y);
+        ctx->DrawElement("ang: %.*f %.*f", p, ang.x, p, ang.y);
     } else {
-        ctx->DrawElement("ang: %.3f %.3f %.3f", ang.x, ang.y, ang.z);
+        ctx->DrawElement("ang: %.*f %.*f %.*f", p, ang.x, p, ang.y, p, ang.z);
     }
 }
 HUD_ELEMENT_MODE2(velocity, "0", 0, 3, "Draws velocity of the client.\n"
@@ -308,14 +313,14 @@ HUD_ELEMENT_MODE2(velocity, "0", 0, 3, "Draws velocity of the client.\n"
 {
     auto player = client->GetPlayer(ctx->slot + 1);
     if (player) {
+        int p = sar_hud_precision.GetInt();
+        auto vel = client->GetLocalVelocity(player);
         if (mode >= 3) {
-            auto vel = client->GetLocalVelocity(player);
-            ctx->DrawElement("vel: x : %.3f y : %.3f z : %.3f", vel.x, vel.y, vel.z);
+            ctx->DrawElement("vel: x : %.*f y : %.*f z : %.*f", p, vel.x, p, vel.y, p, vel.z);
+        } else if (mode == 2) {
+            ctx->DrawElement("vel: xy : %.*f z: %.*f", p, vel.Length2D(), p, vel.z);
         } else {
-            auto vel = (mode == 1)
-                ? client->GetLocalVelocity(player).Length()
-                : client->GetLocalVelocity(player).Length2D();
-            ctx->DrawElement("vel: %.3f", vel);
+            ctx->DrawElement("vel: %.*f", p, vel.Length());
         }
     } else {
         ctx->DrawElement("vel: -");

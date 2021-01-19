@@ -1,5 +1,5 @@
-#ifdef __NETWORK__
 #include "NetworkGhostPlayer.hpp"
+#include "DemoGhostPlayer.hpp"
 
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
@@ -407,11 +407,16 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         break;
     }
     case HEADER::MODEL_CHANGE: {
-        sf::Uint32 ID;
         std::string modelName;
-        packet >> ID >> modelName;
+        packet >> modelName;
         auto ghost = this->GetGhostByID(ID);
-        ghost->modelName = modelName;
+        if (ghost) {
+            ghost->modelName = modelName;
+            if (ghost->sameMap && engine->isRunning()) {
+                ghost->DeleteGhostModel(true);
+                ghost->Spawn();
+            }
+        }
         break;
     }
     case HEADER::UPDATE: {
@@ -433,7 +438,7 @@ void NetworkManager::UpdateGhostsPosition()
 {
     for (auto& ghost : this->ghostPool) {
         if (ghost.sameMap) {
-            auto time = std::chrono::duration_cast<std::chrono::milliseconds>(NOW() - ghost.lastUpdate).count();
+            auto time = std::chrono::duration_cast<std::chrono::milliseconds>(NOW_STEADY() - ghost.lastUpdate).count();
             ghost.Lerp(((float)time / (ghost.loopTime)));
         }
     }
@@ -498,19 +503,19 @@ void NetworkManager::SetupCountdown(std::string preCommands, std::string postCom
     engine->ExecuteCommand(pre.c_str());
     this->postCountdownCommands = postCommands;
     this->countdownStep = duration;
-    this->timeLeft = NOW();
+    this->timeLeft = NOW_STEADY();
 }
 
 void NetworkManager::StartCountdown()
 {
-    auto ping = std::chrono::duration_cast<std::chrono::milliseconds>(NOW() - this->timeLeft);
-    this->timeLeft = NOW() + std::chrono::seconds(3) - ping;
+    auto ping = std::chrono::duration_cast<std::chrono::milliseconds>(NOW_STEADY() - this->timeLeft);
+    this->timeLeft = NOW_STEADY() + std::chrono::seconds(3) - ping;
     this->isCountdownReady = true;
 }
 
 void NetworkManager::UpdateCountdown()
 {
-    auto now = NOW();
+    auto now = NOW_STEADY();
     if (std::chrono::duration_cast<std::chrono::milliseconds>(now - this->timeLeft).count() >= 1000) {
         if (this->countdownStep == 0) {
             client->Chat(TextColor::GREEN, "0 ! GO !");
@@ -530,7 +535,7 @@ void NetworkManager::DrawNames(HudContext* ctx)
 {
     auto player = client->GetPlayer(GET_SLOT() + 1);
     if (player) {
-        auto pos = client->GetAbsOrigin(player);
+        //auto pos = client->GetAbsOrigin(player);
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i].sameMap) {
                 Vector screenPos;
@@ -589,4 +594,3 @@ CON_COMMAND(ghost_ping, "Pong !\n")
 {
     networkManager.SendPing();
 }
-#endif
