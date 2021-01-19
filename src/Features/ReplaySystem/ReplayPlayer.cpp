@@ -6,8 +6,8 @@
 
 #include "Modules/Server.hpp"
 
-#include "Variable.hpp"
 #include "Utils.hpp"
+#include "Variable.hpp"
 
 Variable sar_replay_autoloop("sar_replay_autoloop", "0", "Plays replay again when it ended.\n");
 

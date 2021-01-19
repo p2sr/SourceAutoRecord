@@ -349,6 +349,9 @@
     <ClCompile Include="Features\Hud\StrafeSyncHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Hud\VphysHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
     <ClCompile Include="Features\SegmentedTools.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
@@ -357,6 +360,9 @@
     </ClCompile>
     <ClCompile Include="Modules\MaterialSystem.cpp">
       <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\GroundFramesCounter.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -846,11 +852,17 @@
     <ClInclude Include="Features\SegmentedTools.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Hud\VphysHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
     <ClInclude Include="Features\Routing\SeamshotFind.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
     <ClInclude Include="Modules\MaterialSystem.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\GroundFramesCounter.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

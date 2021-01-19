@@ -2,8 +2,8 @@
 
 #include <cstring>
 
-#include "Modules/Server.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
 #include "Platform.hpp"
 
@@ -41,7 +41,7 @@ kbutton_t::Split_t& kbutton_t::GetPerUser(int nSlot)
     return m_PerUser[nSlot];
 }
 
-inline int ENTINDEX(edict_t *pEdict)
+inline int ENTINDEX(edict_t* pEdict)
 {
     return (pEdict) ? pEdict - server->gpGlobals->pEdicts : 0;
 }

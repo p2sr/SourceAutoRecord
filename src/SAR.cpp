@@ -66,6 +66,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<FovChanger>(&fovChanger);
             this->features->AddFeature<Camera>(&camera);
             this->features->AddFeature<SegmentedTools>(&segmentedTools);
+            this->features->AddFeature<GroundFramesCounter>(&groundFramesCounter);
 
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
@@ -268,7 +269,7 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 
     if (sar.modules) {
         sar.modules->ShutdownAll();
-    }    
+    }
 
     SAFE_DELETE(sar.features)
     SAFE_DELETE(sar.cheats)

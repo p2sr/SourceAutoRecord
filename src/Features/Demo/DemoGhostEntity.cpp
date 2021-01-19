@@ -69,7 +69,7 @@ void DemoGhostEntity::UpdateDemoGhost()
     } else if (this->demoTick < this->nbDemoTicks && this->demoTick >= 0) {
         this->data = this->currentDatas[this->demoTick];
         if (this->sameMap) {
-            if (this->entity == nullptr) {
+            if (this->prop_entity == nullptr) {
                 this->Spawn();
             }
             this->Display();

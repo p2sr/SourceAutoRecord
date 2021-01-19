@@ -38,6 +38,7 @@ private:
     TimerCategory* category;
     int offset;
     int pause;
+
 public:
     std::vector<std::string> visitedMaps;
 

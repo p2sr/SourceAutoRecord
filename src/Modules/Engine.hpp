@@ -43,22 +43,22 @@ public:
 	using _AddBoxOverlay = int(__stdcall*)(const Vector& origin, const Vector& mins, const Vector& MAX, QAngle const& orientation, int r, int g, int b, int a, float duration);
     using _AddSphereOverlay = int(__stdcall*)(const Vector& vOrigin, float flRadius, int nTheta, int nPhi, int r, int g, int b, int a, float flDuration);
     using _AddTriangleOverlay = int(__stdcall*)(const Vector& p1, const Vector& p2, const Vector& p3, int r, int g, int b, int a, bool noDepthTest, float duration);
-    using _AddLineOverlay = int(__stdcall*)(const Vector& origin, const Vector& dest, int r, int g, int b, bool noDepthText, float duration);
 	using _AddScreenTextOverlay = void(__stdcall*)(float flXPos, float flYPos, float flDuration, int r, int g, int b, int a, const char* text);
     using _ClearAllOverlays = void(__stdcall*)();
     using _IsPaused = bool (*)(void* thisptr);
     using _TraceRay = void(__rescall*)(void* thisptr, const Ray_t& ray, unsigned int fMask, ITraceFilter* pTraceFilter, CGameTrace* pTrace);
     using _GetCount = int(__rescall*)(void* thisptr);
-    using _UnreferenceAllModels = void(__stdcall*)(int referencetype);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
     using _ScreenPosition = int(__stdcall*)(const Vector& point, Vector& screen);
+    using _AddLineOverlay = void(__stdcall*)(const Vector& origin, const Vector& dest, int r, int g, int b, bool noDepthTest, float duration);
     using _ConPrintEvent = int(__stdcall*)(IGameEvent* ev);
 #else
     using _GetScreenSize = int(__cdecl*)(void* thisptr, int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)(void* thisptr);
     using _ScreenPosition = int(__stdcall*)(void* thisptr, const Vector& point, Vector& screen);
+    using _AddLineOverlay = void(__stdcall*)(void* thisptr, const Vector& origin, const Vector& dest, int r, int g, int b, bool noDepthTest, float duration);
     using _ConPrintEvent = int(__cdecl*)(void* thisptr, IGameEvent* ev);
 #endif
 
@@ -91,7 +91,6 @@ public:
     _IsPaused IsPaused = nullptr;
     _TraceRay TraceRay = nullptr;
     _GetCount GetCount = nullptr;
-    _UnreferenceAllModels UnreferenceAllModels = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;
@@ -110,7 +109,6 @@ public:
     bool hasRecorded = false;
     bool hasPaused = false;
     int pauseTick;
-    int signonState = 0;
     bool hasWaited = false;
 
 public:
@@ -191,7 +189,9 @@ extern Variable mat_norendering;
 
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
-#define IGNORE_DEMO_PLAYER() if (engine->demoplayer->IsPlaying()) return;
+#define IGNORE_DEMO_PLAYER()             \
+    if (engine->demoplayer->IsPlaying()) \
+        return;
 #define NOW() std::chrono::high_resolution_clock::now()
 
 #ifdef _WIN32

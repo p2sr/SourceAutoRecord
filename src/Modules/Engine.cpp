@@ -174,7 +174,7 @@ bool Engine::IsCoop()
 
 bool Engine::IsOrange()
 {
-    return this->IsCoop() && engine->signonState == SIGNONSTATE_FULL && !engine->hoststate->m_activeGame;
+    return this->IsCoop() && session->signonState == SIGNONSTATE_FULL && !engine->hoststate->m_activeGame;
 }
 
 float Engine::GetHostFrameTime()
@@ -215,7 +215,6 @@ DETOUR(Engine::Disconnect2, int unk, bool bShowMainMenu)
 // CClientState::SetSignonState
 DETOUR(Engine::SetSignonState, int state, int count, void* unk)
 {
-    engine->signonState = state;
     session->Changed(state);
     return Engine::SetSignonState(thisptr, state, count, unk);
 }

@@ -13,6 +13,7 @@
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
+#include "Features/Routing/SeamshotFind.hpp"
 #include "Features/Routing/Tracer.hpp"
 #include "Features/Routing/SeamshotFind.hpp"
 #include "Features/Session.hpp"
@@ -31,3 +32,4 @@
 #include "Features/Camera.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/SegmentedTools.hpp"
+#include "Features/GroundFramesCounter.hpp"

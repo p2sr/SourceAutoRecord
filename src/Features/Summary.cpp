@@ -5,7 +5,6 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
-
 #include "Command.hpp"
 #include "Variable.hpp"
 

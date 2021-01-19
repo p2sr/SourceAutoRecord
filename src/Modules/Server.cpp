@@ -18,6 +18,7 @@
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/SegmentedTools.hpp"
+#include "Features/GroundFramesCounter.hpp"
 
 #include "Engine.hpp"
 #include "Client.hpp"
@@ -132,6 +133,8 @@ DETOUR_T(bool, Server::CheckJumpButton)
         ++stat->jumps->total;
         ++stat->steps->total;
         stat->jumps->StartTrace(server->GetAbsOrigin(player));
+
+        groundFramesCounter->HandleJump();
     }
 
     return jumped;
@@ -186,6 +189,10 @@ DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
         autoStrafer->Strafe(pPlayer, pMove);
         tasTools->SetAngles(pPlayer);
     }
+
+    unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)pPlayer + Offsets::m_hGroundEntity);
+    bool grounded = groundEntity != 0xFFFFFFFF;
+    groundFramesCounter->HandleMovementFrame(grounded);
 
     return Server::ProcessMovement(thisptr, pPlayer, pMove);
 }
@@ -339,6 +346,10 @@ DETOUR(Server::GameFrame, bool simulating)
         engine->demorecorder->hasNotified = true;
     }
 
+    if (simulating) {
+        seamshotFind->DrawLines();
+    }
+
 #ifndef _WIN32
     return result;
 #endif
@@ -413,6 +424,7 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_fFlags", &Offsets::m_fFlags);
     offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
     offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
+    offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::m_hGroundEntity);
 
     if (sar.game->Is(SourceGame_Portal2Engine)) {
         offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);

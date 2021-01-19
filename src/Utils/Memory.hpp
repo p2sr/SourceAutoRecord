@@ -53,7 +53,8 @@ struct Pattern {
 typedef std::vector<int> Offset;
 typedef std::vector<const Pattern*> Patterns;
 
-#define PATTERN(name, sig, ...) Memory::Pattern name { sig, Memory::Offset({ __VA_ARGS__ }) }
+#define PATTERN(name, sig, ...) \
+    Memory::Pattern name { sig, Memory::Offset({ __VA_ARGS__ }) }
 #define PATTERNS(name, ...) Memory::Patterns name({ __VA_ARGS__ })
 
 std::vector<uintptr_t> Scan(const char* moduleName, const Pattern* pattern);

@@ -34,6 +34,7 @@ Session::Session()
     , currentFrame(0)
     , lastFrame(0)
     , prevState(HS_RUN)
+    , signonState(SIGNONSTATE_FULL)
 {
     this->hasLoaded = true;
 }
@@ -251,7 +252,7 @@ void Session::Changed()
 void Session::Changed(int state)
 {
     console->DevMsg("state = %i\n", state);
-
+    this->signonState = state;
     // Demo recorder starts syncing from this tick
     if (state == SIGNONSTATE_FULL) {
         if (engine->GetMaxClients() <= 1) {

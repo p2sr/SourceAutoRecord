@@ -21,6 +21,7 @@ public:
 
     std::chrono::time_point<std::chrono::high_resolution_clock> loadStart;
     std::chrono::time_point<std::chrono::high_resolution_clock> loadEnd;
+    int signonState;
 
 public:
     Session();
