@@ -84,6 +84,7 @@ public:
     bool AreAllGhostsOnSameMap();
     void SpawnAllGhosts();
     void DeleteAllGhosts();
+    void DeleteAllGhostModels(const bool newEntity);
 
     void SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration);
     //Need this function to mesure the ping in order to start the countdown at the same time

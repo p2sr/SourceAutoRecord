@@ -123,7 +123,7 @@ void GhostEntity::Lerp(float time)
 
 void GhostEntity::DeleteGhostModel(const bool newEntity)
 {
-    if (this->prop_entity != nullptr && this->ghost_type) {
+    if (this->prop_entity != nullptr) {
         if (newEntity) {
             PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", "ghost_destroy");
             engine->ExecuteCommand("ent_fire ghost_destroy kill");
@@ -167,8 +167,15 @@ CON_COMMAND(ghost_type, "ghost_type <0/1>:\n"
 
     if (GhostEntity::ghost_type == 0 && std::atoi(args[1]) == 1) {
         GhostEntity::ghost_type = 1;
+        demoGhostPlayer.SpawnAllGhosts();
+        if (networkManager.isConnected) {
+            networkManager.SpawnAllGhosts();
+        }
     } else if (GhostEntity::ghost_type == 1 && std::atoi(args[1]) == 0) {
         GhostEntity::ghost_type = 0;
-        demoGhostPlayer.KillAllGhosts(false);
+        demoGhostPlayer.DeleteAllGhostModels(false);
+        if (networkManager.isConnected) {
+            networkManager.DeleteAllGhostModels(false);
+        }
     }
 }
