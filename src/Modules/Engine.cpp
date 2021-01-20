@@ -251,7 +251,7 @@ DETOUR(Engine::Frame)
 
     //sar_record
 
-    if (sar_record_at.GetFloat() > 0 && !engine->hasRecorded && sar_record_at.GetFloat() >= session->GetTick()) {
+    if (sar_record_at.GetFloat() != -1 && !engine->hasRecorded && sar_record_at.GetFloat() == session->GetTick()) {
         std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
         engine->ExecuteCommand(cmd.c_str(), true);
         engine->hasRecorded = true;
