@@ -229,7 +229,7 @@ void Session::Ended()
     engine->hasWaited = false;
 
     this->loadStart = NOW();
-    if (sar_shane_loads.GetBool()) {
+    if (sar_shane_loads.GetBool() && !engine->demoplayer->IsPlaying()) {
         this->oldFpsMax = fps_max.GetInt();
         this->DoFastLoads();
     }
