@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <iomanip>
+#include <sstream>
 
 #include "Features/Cvars.hpp"
 #include "Features/SegmentedTools.hpp"
