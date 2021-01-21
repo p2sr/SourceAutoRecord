@@ -1,8 +1,6 @@
 #include "Engine.hpp"
 
 #include <cstring>
-#include <iomanip>
-#include <sstream>
 
 #include "Features/Cvars.hpp"
 #include "Features/SegmentedTools.hpp"
@@ -295,27 +293,6 @@ DETOUR(Engine::Frame)
         if (demoGhostPlayer.IsPlaying() && (engine->isRunning() || engine->demoplayer->IsPlaying())) {
             demoGhostPlayer.UpdateGhostsPosition();
         }
-    }
-
-
-    if (engine->GetTick() < engine->lastTickTimeOutput || engine->GetTick() >= engine->lastTickTimeOutput + 60) {
-        auto tick = engine->GetTick();
-
-        auto now = std::chrono::system_clock::now();
-        auto time = std::chrono::system_clock::to_time_t(now);
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
-
-
-        // man c++ streams are dumb
-        std::ostringstream oss;
-        oss << std::put_time(std::localtime(&time), "%H:%M:%S");
-        oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
-
-        std::string timestr = oss.str();
-
-        console->Print("tick %d at %s\n", tick, timestr.c_str());
-
-        engine->lastTickTimeOutput = tick;
     }
 
     return Engine::Frame(thisptr);
