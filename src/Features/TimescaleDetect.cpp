@@ -12,9 +12,9 @@
 // Timescale will be measured over 30 ticks
 #define TICKS_MEASURE 30
 
-// The measured timescale tends to act a bit weirdly when a level first
-// loads - we ignore discrepancies for the first 20 ticks
-#define TICKS_IGNORE 20
+// The measured timescale tends to act a bit weirdly shortly after
+// spawning - we ignore discrepancies for the first 60 ticks
+#define TICKS_IGNORE 60
 
 TimescaleDetect* timescaleDetect;
 
@@ -28,7 +28,7 @@ void TimescaleDetect::Update()
 {
     int tick = engine->GetTick();
 
-    if (tick < TICKS_IGNORE) {
+    if (tick - this->spawnTick < TICKS_IGNORE) {
         this->startTick = -1;
         return;
     }
@@ -66,4 +66,10 @@ void TimescaleDetect::Update()
 void TimescaleDetect::Cancel()
 {
     this->startTick = -1;
+}
+
+void TimescaleDetect::Spawn()
+{
+    this->startTick = -1;
+    this->spawnTick = engine->GetTick();
 }

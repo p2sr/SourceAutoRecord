@@ -14,6 +14,7 @@
 #include "Features/Summary.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Timer/Timer.hpp"
+#include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
 
 #include "Modules/Console.hpp"
@@ -256,6 +257,7 @@ void Session::Changed(int state)
     this->signonState = state;
     // Demo recorder starts syncing from this tick
     if (state == SIGNONSTATE_FULL) {
+        timescaleDetect->Spawn();
         if (engine->GetMaxClients() <= 1) {
             this->Started();
             this->loadEnd = NOW();
