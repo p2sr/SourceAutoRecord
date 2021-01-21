@@ -1,7 +1,6 @@
-.POSIX:
-.PHONY: all clean cvars get-deps
+.PHONY: all clean cvars
 
-CXX=g++
+CXX=g++-8
 SDIR=src
 ODIR=obj
 
