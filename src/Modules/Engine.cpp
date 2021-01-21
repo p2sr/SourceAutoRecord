@@ -297,7 +297,8 @@ DETOUR(Engine::Frame)
         }
     }
 
-    if (engine->GetTick() >= engine->lastTickTimeOutput + 60) {
+
+    if (engine->GetTick() < engine->lastTickTimeOutput || engine->GetTick() >= engine->lastTickTimeOutput + 60) {
         auto tick = engine->GetTick();
 
         auto now = std::chrono::system_clock::now();
@@ -310,9 +311,9 @@ DETOUR(Engine::Frame)
         oss << std::put_time(std::localtime(&time), "%H:%M:%S");
         oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
 
-        const char* timestr = oss.str().c_str();
+        std::string timestr = oss.str();
 
-        console->Print("tick %d at %s\n", tick, timestr);
+        console->Print("tick %d at %s\n", tick, timestr.c_str());
 
         engine->lastTickTimeOutput = tick;
     }
