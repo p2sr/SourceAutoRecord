@@ -312,7 +312,7 @@ DETOUR(Server::GameFrame, bool simulating)
 
     
 
-    if (session->isRunning && session->GetTick() == 16) {
+    if ((session->isRunning && session->GetTick() == 16) || fovChanger->needToUpdate) {
         fovChanger->Force();
     }
 

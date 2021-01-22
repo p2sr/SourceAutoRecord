@@ -90,6 +90,7 @@ int ProcessMovement;
 // CDemoRecorder
 int GetRecordingTick;
 int SetSignonState;
+int StartRecording;
 int StopRecording;
 int m_szDemoBaseName;
 int m_bRecording;

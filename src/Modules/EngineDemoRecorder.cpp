@@ -3,6 +3,7 @@
 #include "Features/Rebinder.hpp"
 #include "Features/Session.hpp"
 #include "Features/Timer/Timer.hpp"
+#include "Features/FovChanger.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -13,6 +14,7 @@
 #include "Utils.hpp"
 
 REDECL(EngineDemoRecorder::SetSignonState);
+REDECL(EngineDemoRecorder::StartRecording);
 REDECL(EngineDemoRecorder::StopRecording);
 REDECL(EngineDemoRecorder::stop_callback);
 
@@ -48,6 +50,16 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state)
     }
 
     return EngineDemoRecorder::SetSignonState(thisptr, state);
+}
+
+// CDemoRecorder::StartRecording
+DETOUR(EngineDemoRecorder::StartRecording)
+{
+    fovChanger->needToUpdate = true;
+
+    auto result = EngineDemoRecorder::StartRecording(thisptr);
+
+    return result;
 }
 
 // CDemoRecorder::StopRecording
@@ -87,6 +99,7 @@ bool EngineDemoRecorder::Init()
     auto demorecorder = Memory::DerefDeref<void*>(disconnect + Offsets::demorecorder);
     if (this->s_ClientDemoRecorder = Interface::Create(demorecorder)) {
         this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::SetSignonState_Hook, EngineDemoRecorder::SetSignonState, Offsets::SetSignonState);
+        this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::StartRecording_Hook, EngineDemoRecorder::StartRecording, Offsets::StartRecording);
         this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::StopRecording_Hook, EngineDemoRecorder::StopRecording, Offsets::StopRecording);
 
         this->GetRecordingTick = s_ClientDemoRecorder->Original<_GetRecordingTick>(Offsets::GetRecordingTick);

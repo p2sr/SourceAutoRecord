@@ -21,6 +21,8 @@ Variable::Variable()
     , version(SourceGame_Unknown)
     , isRegistered(false)
     , isReference(false)
+    , hasCustomCallback(false)
+    , isUnlocked(false)
 {
 }
 Variable::~Variable()
@@ -36,29 +38,29 @@ Variable::Variable(const char* name)
     this->isReference = true;
 }
 // Boolean or String
-Variable::Variable(const char* name, const char* value, const char* helpstr, int flags)
+Variable::Variable(const char* name, const char* value, const char* helpstr, int flags, FnChangeCallback_t callback)
     : Variable()
 {
     if (flags != 0)
-        Create(name, value, flags, helpstr, true, 0, true, 1);
+        Create(name, value, flags, helpstr, true, 0, true, 1, callback);
     else
-        Create(name, value, flags, helpstr);
+        Create(name, value, flags, helpstr, false, 0, false, 0, callback);
 }
 // Float
-Variable::Variable(const char* name, const char* value, float min, const char* helpstr, int flags)
+Variable::Variable(const char* name, const char* value, float min, const char* helpstr, int flags, FnChangeCallback_t callback)
     : Variable()
 {
-    Create(name, value, flags, helpstr, true, min);
+    Create(name, value, flags, helpstr, true, min, false, 0, callback);
 }
 // Float
-Variable::Variable(const char* name, const char* value, float min, float max, const char* helpstr, int flags)
+Variable::Variable(const char* name, const char* value, float min, float max, const char* helpstr, int flags, FnChangeCallback_t callback)
     : Variable()
 {
-    Create(name, value, flags, helpstr, true, min, true, max);
+    Create(name, value, flags, helpstr, true, min, true, max, callback);
 }
-void Variable::Create(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
+void Variable::Create(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max, FnChangeCallback_t callback)
 {
-    this->ptr = new ConVar(name, value, flags, helpstr, hasmin, min, hasmax, max);
+    this->ptr = new ConVar(name, value, flags, helpstr, hasmin, min, hasmax, max, callback);
 
     Variable::GetList().push_back(this);
 }
@@ -76,6 +78,14 @@ void Variable::Realloc()
             this->ptr->m_fMaxVal);
         delete this->ptr;
         this->ptr = reinterpret_cast<ConVar*>(newptr);
+    }
+}
+void Variable::AddCallBack(FnChangeCallback_t callback)
+{
+    if (sar.game->Is(SourceGame_Portal2) && callback != nullptr) {
+        this->ThisPtr2()->m_fnChangeCallback.Append(callback);
+        this->hasCustomCallback = true;
+        this->GetList().push_back(this);
     }
 }
 ConVar* Variable::ThisPtr()
@@ -140,6 +150,7 @@ void Variable::Unlock(bool asCheat)
         }
 
         if (this->isReference) {
+            this->isUnlocked = true;
             this->GetList().push_back(this);
         }
     }
@@ -149,6 +160,7 @@ void Variable::Lock()
     if (this->ptr) {
         this->SetFlags(this->originalFlags);
         this->SetValue(this->ptr->m_pszDefaultValue);
+        this->isUnlocked = false;
     }
 }
 void Variable::DisableChange()
@@ -181,6 +193,7 @@ void Variable::Register()
 {
     if (!this->isRegistered && !this->isReference && this->ptr) {
         this->isRegistered = true;
+        FnChangeCallback_t callback = this->ptr->m_fnChangeCallback;
         this->Realloc();
         this->ptr->ConCommandBase_VTable = tier1->ConVar_VTable;
         this->ptr->ConVar_VTable = tier1->ConVar_VTable2;
@@ -193,7 +206,7 @@ void Variable::Register()
             this->ptr->m_fMinVal,
             this->ptr->m_bHasMax,
             this->ptr->m_fMaxVal,
-            nullptr);
+            callback);
     }
 }
 void Variable::Unregister()
@@ -212,6 +225,15 @@ void Variable::Unregister()
 bool Variable::operator!()
 {
     return this->ptr == nullptr;
+}
+void Variable::ClearAllCallbacks()
+{
+    for (auto var : Variable::GetList()) {
+        if (var->hasCustomCallback) {
+            var->ThisPtr2()->m_fnChangeCallback.Clear();
+            var->hasCustomCallback = false;
+        }
+    }
 }
 int Variable::RegisterAll()
 {
