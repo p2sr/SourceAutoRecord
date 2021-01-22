@@ -269,16 +269,24 @@ CON_COMMAND(sar_hud_default_order_reset, "Resets order of hud element.\n")
 
 // HUD
 
-static std::map<long, std::string> sar_hud_text_vals;
+struct DanielAskingForAdvancedTextSmh
+{
+    bool draw;
+    std::string text;
+};
+
+static std::map<long, DanielAskingForAdvancedTextSmh> sar_hud_text_vals;
 HUD_ELEMENT(text, "", "Draws text specified by sar_hud_set_text when enabled.\n", HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
 {
     for (auto& t : sar_hud_text_vals) {
-        ctx->DrawElement("%s", t.second.c_str());
+        if (t.second.draw) {
+            ctx->DrawElement("%s", t.second.text.c_str());
+        }
     }
 }
 
-CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets or clears the nth text value in the HUD.") {
-    if (args.ArgC() < 3) {
+CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets or clears the nth text value in the HUD.\n") {
+    if (args.ArgC() < 2) {
         console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
         return;
     }
@@ -293,23 +301,21 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets or clears the 
     }
 
     const char* str = nullptr;
-    if (args.ArgC() == 3) str = args.Arg(2);
-
-    if (!str || *str == 0) {
-        sar_hud_text_vals.erase(idx);
-    } else {
-        sar_hud_text_vals[idx] = std::string(str);
+    if (args.ArgC() > 1)
+        sar_hud_text_vals[idx].draw = true;
+    if (args.ArgC() > 2) {
+        sar_hud_text_vals[idx].text = args.Arg(2);
     }
 }
 
-CON_COMMAND(sar_hud_remove_text, "sar_hud_remove_text <id>")
+CON_COMMAND(sar_hud_remove_text, "sar_hud_remove_text <id>.\n")
 {
     if (args.ArgC() < 2) {
         console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
         return;
     }
 
-    sar_hud_text_vals.erase(std::atoi(args[1]));
+    sar_hud_text_vals[std::atoi(args[1])].draw = false;
 }
 
 HUD_ELEMENT_MODE2(position, "0", 0, 2, "Draws absolute position of the client.\n"
