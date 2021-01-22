@@ -35,12 +35,12 @@ void TimescaleDetect::Update()
 
     if (this->startTick == -1 || tick < this->startTick) {
         this->startTick = tick;
-        this->startTickTime = NOW_STEADY();
+        this->startTickTime = std::chrono::system_clock::now();
         return;
     }
 
     if (tick >= this->startTick + TICKS_MEASURE) {
-        auto now = NOW_STEADY();
+        auto now = std::chrono::system_clock::now();
 
         int tickDelta = tick - this->startTick;
 

@@ -13,7 +13,7 @@ public:
 private:
     int spawnTick;
     int startTick;
-    std::chrono::time_point<std::chrono::steady_clock> startTickTime;
+    std::chrono::time_point<std::chrono::system_clock> startTickTime;
 };
 
 extern TimescaleDetect* timescaleDetect;
