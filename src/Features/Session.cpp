@@ -261,7 +261,7 @@ void Session::Changed(int state)
             this->loadEnd = NOW();
 
             auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
-            console->Print("Load took : %dms\n", time);
+            console->DevMsg("Load took : %dms\n", time);
         }
     } else if (state == SIGNONSTATE_PRESPAWN && sar_shane_loads.GetBool()) {
         this->ResetLoads();
