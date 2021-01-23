@@ -17,6 +17,7 @@
 #include "Features/Tas/TasTools.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
+#include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/GroundFramesCounter.hpp"
 
@@ -348,6 +349,12 @@ DETOUR(Server::GameFrame, bool simulating)
 
     if (simulating) {
         seamshotFind->DrawLines();
+    }
+
+    if (simulating) {
+        timescaleDetect->Update();
+    } else {
+        timescaleDetect->Cancel();
     }
 
 #ifndef _WIN32

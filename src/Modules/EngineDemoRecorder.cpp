@@ -53,11 +53,11 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state)
 }
 
 // CDemoRecorder::StartRecording
-DETOUR(EngineDemoRecorder::StartRecording)
+DETOUR(EngineDemoRecorder::StartRecording, const char* filename, bool continuously)
 {
     fovChanger->needToUpdate = true;
 
-    auto result = EngineDemoRecorder::StartRecording(thisptr);
+    auto result = EngineDemoRecorder::StartRecording(thisptr, filename, continuously);
 
     return result;
 }

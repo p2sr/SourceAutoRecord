@@ -106,6 +106,59 @@ CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
     }
 }
 
+CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Sets all loading fixes to preset values.\n", ({ "none", "sla", "normal", "full" }))
+{
+    if (args.ArgC() != 2) {
+        console->Print(sar_fast_load_preset.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    const char* preset = args.Arg(1);
+
+#define CMD(x) engine->ExecuteCommand(x)
+    if (!strcmp(preset, "none")) {
+        CMD("ui_loadingscreen_transition_time 1.0");
+        CMD("ui_loadingscreen_fadein_time 1.0");
+        CMD("ui_loadingscreen_mintransition_time 0.5");
+        CMD("sar_disable_progress_bar_update 0");
+        CMD("sar_prevent_mat_snapshot_recompute 0");
+        CMD("sar_prevent_peti_materials_loading 0");
+        CMD("sar_shane_loads 0");
+        CMD("sar_shane_norendering 0");
+    } else if (!strcmp(preset, "sla")) {
+        CMD("ui_loadingscreen_transition_time 0.0");
+        CMD("ui_loadingscreen_fadein_time 0.0");
+        CMD("ui_loadingscreen_mintransition_time 0.0");
+        CMD("sar_disable_progress_bar_update 1");
+        CMD("sar_prevent_mat_snapshot_recompute 1");
+        CMD("sar_prevent_peti_materials_loading 1");
+        CMD("sar_shane_loads 0");
+        CMD("sar_shane_norendering 0");
+    } else if (!strcmp(preset, "normal")) {
+        CMD("ui_loadingscreen_transition_time 0.0");
+        CMD("ui_loadingscreen_fadein_time 0.0");
+        CMD("ui_loadingscreen_mintransition_time 0.0");
+        CMD("sar_disable_progress_bar_update 1");
+        CMD("sar_prevent_mat_snapshot_recompute 1");
+        CMD("sar_prevent_peti_materials_loading 1");
+        CMD("sar_shane_loads 1");
+        CMD("sar_shane_norendering 0");
+    } else if (!strcmp(preset, "full")) {
+        CMD("ui_loadingscreen_transition_time 0.0");
+        CMD("ui_loadingscreen_fadein_time 0.0");
+        CMD("ui_loadingscreen_mintransition_time 0.0");
+        CMD("sar_disable_progress_bar_update 2");
+        CMD("sar_prevent_mat_snapshot_recompute 1");
+        CMD("sar_prevent_peti_materials_loading 1");
+        CMD("sar_shane_loads 1");
+        CMD("sar_shane_norendering 1");
+    } else {
+        console->Print("Unknown preset %s!\n", preset);
+        console->Print(sar_fast_load_preset.ThisPtr()->m_pszHelpString);
+    }
+#undef CMD
+}
+
 void Cheats::Init()
 {
     if (sar.game->Is(SourceGame_Portal2Game)) {
