@@ -3,6 +3,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Client.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 
 #include <chrono>
 
@@ -50,12 +51,20 @@ void TimescaleDetect::Update()
 
         float timescale = expected / delta;
 
+        char msg[128];
+        msg[0] = 0;
+
         if (timescale > 1 + THRESHOLD) {
-            //console->Print("Potential timescale increase detected! Approximate timescale: %.2f\n", timescale);
-            client->Chat(TextColor::ORANGE, "Potential timescale increase detected! Approximate timescale: %.2f\n", timescale);
+            snprintf(msg, sizeof msg, "Potential timescale increase to %.2f", timescale);
         } else if (timescale < 1 - THRESHOLD) {
-            //console->Print("Potential timescale decrease detected! Approximate timescale: %.2f\n", timescale);
-            client->Chat(TextColor::ORANGE, "Potential timescale decrease detected! Approximate timescale: %.2f\n", timescale);
+            snprintf(msg, sizeof msg, "Potential timescale decrease to %.2f", timescale);
+        }
+
+        if (msg[0]) {
+            speedrun->StatusReportHidden(msg);
+#if 0
+            client->Chat(TextColor::ORANGE, msg);
+#endif
         }
 
         this->startTick = tick;

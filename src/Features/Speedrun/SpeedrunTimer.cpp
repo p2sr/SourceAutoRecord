@@ -436,6 +436,12 @@ void SpeedrunTimer::StatusReport(const char* message)
     console->DevMsg("%s\n", SpeedrunTimer::Format(this->total * this->ipt).c_str());
     
 }
+void SpeedrunTimer::StatusReportHidden(const char* message)
+{
+    if (!this->IsActive()) return;
+    std::string cmd = std::string("sar_speedrun_notify ") + std::string(message);
+    engine->ExecuteCommand(cmd.c_str());
+}
 SpeedrunTimer::~SpeedrunTimer()
 {
     this->pubInterface.reset();
@@ -691,4 +697,7 @@ CON_COMMAND(sar_speedrun_offset, "Sets offset in ticks at which the timer should
     }
 
     console->Print("Timer will start at: %s\n", SpeedrunTimer::Format(speedrun->GetOffset() * speedrun->GetIntervalPerTick()).c_str());
+}
+CON_COMMAND(sar_speedrun_notify, "Notify information about a run.\n")
+{
 }
