@@ -129,6 +129,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
         sar.modules->ShutdownAll();
     }
 
+    Variable::ClearAllCallbacks();
     SAFE_DELETE(sar.features)
     SAFE_DELETE(sar.cheats)
     SAFE_DELETE(sar.modules)
@@ -254,6 +255,8 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
     statCounter->ExportToFile(sar_statcounter_filePath.GetString());
 
     networkManager.Disconnect();
+
+    Variable::ClearAllCallbacks();
 
     if (sar.cheats) {
         sar.cheats->Shutdown();

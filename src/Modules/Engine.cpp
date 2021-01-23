@@ -251,7 +251,7 @@ DETOUR(Engine::Frame)
 
     //sar_record
 
-    if (sar_record_at.GetFloat() > 0 && !engine->hasRecorded && sar_record_at.GetFloat() >= session->GetTick()) {
+    if (sar_record_at.GetFloat() != -1 && !engine->hasRecorded && sar_record_at.GetFloat() == session->GetTick()) {
         std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
         engine->ExecuteCommand(cmd.c_str(), true);
         engine->hasRecorded = true;
@@ -275,6 +275,7 @@ DETOUR(Engine::Frame)
     if (segmentedTools->waitTick == session->GetTick() && !engine->hasWaited) {
         if (!sv_cheats.GetBool()) {
             console->Print("\"wait\" needs sv_cheats 1.\n");
+            engine->hasWaited = true;
         } else {
             engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
             engine->hasWaited = true;

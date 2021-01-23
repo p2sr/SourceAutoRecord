@@ -33,7 +33,7 @@ Variable sar_speedrun_standard("sar_speedrun_standard", "1",
     "Timer automatically starts, splits and stops.\n");
 Variable sar_speedrun_time_pauses("sar_speedrun_time_pauses", "1",
     "Timer automatically adds non-simulated ticks when server pauses.\n");
-Variable sar_speedrun_smartsplit("sar_speedrun_smartsplit", "0",
+Variable sar_speedrun_smartsplit("sar_speedrun_smartsplit", "1",
     "Timer interface only splits once per level change.\n");
 
 SpeedrunTimer* speedrun;

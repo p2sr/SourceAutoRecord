@@ -1,9 +1,11 @@
 #include "Client.hpp"
 
+#include <cstdarg>
 #include <cstdint>
 #include <cstring>
-#include <cstdarg>
 
+#include "Features/Camera.hpp"
+#include "Features/FovChanger.hpp"
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Imitator.hpp"
 #include "Features/OffsetFinder.hpp"
@@ -14,7 +16,6 @@
 #include "Features/Stats/Sync.hpp"
 #include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
-#include "Features/Camera.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -30,8 +31,8 @@ Variable cl_showpos;
 Variable cl_sidespeed;
 Variable cl_forwardspeed;
 Variable in_forceuser;
-Variable cl_fov;
 Variable crosshairVariable;
+Variable cl_fov;
 
 REDECL(Client::HudUpdate);
 REDECL(Client::CreateMove);
@@ -48,6 +49,12 @@ MDECL(Client::GetAbsOrigin, Vector, C_m_vecAbsOrigin);
 MDECL(Client::GetAbsAngles, QAngle, C_m_angAbsRotation);
 MDECL(Client::GetLocalVelocity, Vector, C_m_vecVelocity);
 MDECL(Client::GetViewOffset, Vector, C_m_vecViewOffset);
+
+DECL_CVAR_CALLBACK(cl_fov)
+{
+    if (engine->demoplayer->IsPlaying())
+        fovChanger->Force();
+}
 
 void* Client::GetPlayer(int index)
 {
@@ -151,7 +158,7 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
     if (sv_cheats.GetBool() && engine->hoststate->m_activeGame) {
         camera->OverrideMovement(cmd);
     }
-    
+
     if (sar_strafesync.GetBool()) {
         synchro->UpdateSync(cmd);
     }
@@ -290,7 +297,7 @@ bool Client::Init()
                 if (this->g_HUDQuickInfo = Interface::Create(CHUDQuickInfo)) {
                     this->ShouldDraw = this->g_HUDQuickInfo->Original<_ShouldDraw>(Offsets::ShouldDraw, readJmp);
                 }
-                  
+
                 auto CHudChat = FindElement(GetHud(-1), "CHudChat");
                 if (this->g_HudChat = Interface::Create(CHudChat, false)) {
                     this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
@@ -366,8 +373,9 @@ bool Client::Init()
     cl_showpos = Variable("cl_showpos");
     cl_sidespeed = Variable("cl_sidespeed");
     cl_forwardspeed = Variable("cl_forwardspeed");
-    cl_fov = Variable("cl_fov");
     crosshairVariable = Variable("crosshair");
+
+    CVAR_HOOK_AND_CALLBACK(cl_fov);
 
     return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }

@@ -259,7 +259,7 @@ struct ConVar : ConCommandBase {
     float m_fMaxVal; // 64
     FnChangeCallback_t m_fnChangeCallback; // 68
 
-    ConVar(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
+    ConVar(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max, FnChangeCallback_t callback = nullptr)
         : ConCommandBase(name, flags, helpstr)
         , ConVar_VTable(nullptr)
         , m_pParent(nullptr)
@@ -271,7 +271,7 @@ struct ConVar : ConCommandBase {
         , m_fMinVal(min)
         , m_bHasMax(hasmax)
         , m_fMaxVal(max)
-        , m_fnChangeCallback(nullptr)
+        , m_fnChangeCallback(callback)
     {
     }
 };
@@ -288,6 +288,30 @@ struct CUtlVector {
     A m_Memory;
     int m_Size;
     T* m_pElements;
+
+    void Append(const T& val)
+    {
+        if (this->m_Size == this->m_Memory.m_nAllocationCount) {
+            int grow = this->m_Memory.m_nGrowSize;
+            if (grow == 0)
+                grow = 1;
+            this->m_Memory.m_nAllocationCount += grow;
+            this->m_Memory.m_pMemory = static_cast<T*>(realloc(this->m_Memory.m_pMemory, sizeof(T) * this->m_Memory.m_nAllocationCount));
+            this->m_pElements = this->m_Memory.m_pMemory;
+        }
+        this->m_Memory.m_pMemory[this->m_Size] = val;
+        this->m_Size++;
+    }
+
+    void Clear()
+    {
+        if (this->m_Memory.m_pMemory) {
+            free(this->m_Memory.m_pMemory);
+            this->m_Memory.m_pMemory = 0;
+        }
+        this->m_Size = 0;
+        this->m_Memory.m_nAllocationCount = 0;
+    }
 };
 
 struct ConVar2 : ConCommandBase {

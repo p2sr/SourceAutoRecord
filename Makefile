@@ -1,7 +1,6 @@
-.POSIX:
-.PHONY: all clean cvars get-deps
+.PHONY: all clean cvars
 
-CXX=g++
+CXX=g++-8
 SDIR=src
 ODIR=obj
 
@@ -29,8 +28,8 @@ DEPS=$(OBJS:%.o=%.d)
 include config.mk
 
 WARNINGS=-Wall -Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas -Wno-register -Wno-sign-compare
-CXXFLAGS=-std=c++17 -m32 $(WARNINGS) -I$(SDIR) $(PKGCONFIG_CXXFLAGS)
-LDFLAGS=-m32 -fPIC -shared -lstdc++fs $(PKGCONFIG_LDFLAGS)
+CXXFLAGS=-std=c++17 -m32 $(WARNINGS) -I$(SDIR) $(PKGCONFIG_CXXFLAGS) -fPIC
+LDFLAGS=-m32 -shared -lstdc++fs $(PKGCONFIG_LDFLAGS)
 
 all: sar.so
 clean:

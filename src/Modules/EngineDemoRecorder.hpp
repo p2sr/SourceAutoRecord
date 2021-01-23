@@ -30,6 +30,9 @@ public:
     // CDemoRecorder::SetSignonState
     DECL_DETOUR(SetSignonState, int state);
 
+    // CDemoRecorder::StartRecording
+    DECL_DETOUR(StartRecording, const char* filename, bool continuously);
+
     // CDemoRecorder::StopRecording
     DECL_DETOUR(StopRecording);
 

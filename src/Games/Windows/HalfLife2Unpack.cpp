@@ -104,6 +104,7 @@ void HalfLife2Unpack::LoadOffsets()
     GetRecordingTick = 1; // CDemoRecorder
     net_time = 19; // CDemoRecorder::GetRecordingTick (TODO)
     SetSignonState = 3; // CDemoRecorder
+    StartRecording = 2; // CDemoRecorder
     StopRecording = 7; // CDemoRecorder
     m_szDemoBaseName = 1344; // CDemoRecorder::StartupDemoFile
     m_nDemoNumber = 1608; // CDemoRecorder::StartupDemoFile
