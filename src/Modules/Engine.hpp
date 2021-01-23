@@ -117,8 +117,6 @@ public:
     int pauseTick;
     bool hasWaited = false;
 
-    int lastTickTimeOutput;
-
 public:
     void ExecuteCommand(const char* cmd, bool immediately = false);
     int GetTick();
