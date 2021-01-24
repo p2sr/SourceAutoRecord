@@ -20,6 +20,7 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
+#include "Modules/Client.hpp"
 
 #include "Utils/SDK.hpp"
 
@@ -258,6 +259,7 @@ void Session::Changed(int state)
     // Demo recorder starts syncing from this tick
     if (state == SIGNONSTATE_FULL) {
         timescaleDetect->Spawn();
+        client->FlushChatQueue();
         if (engine->GetMaxClients() <= 1) {
             this->Started();
             this->loadEnd = NOW();

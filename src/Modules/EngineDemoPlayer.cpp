@@ -70,9 +70,9 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 #ifdef SAR_MODERATOR_BUILD
     auto filepath = std::string(engine->GetGameDirectory()) + "/" + filename;
     if (VerifyDemoChecksum(filepath.c_str())) {
-        client->Chat(TextColor::GREEN, "Demo checksum verified");
+        client->QueueChat(TextColor::GREEN, "Demo checksum verified");
     } else {
-        client->Chat(TextColor::ORANGE, "Demo checksum invalid! Has the demo been tampered with?");
+        client->QueueChat(TextColor::ORANGE, "Demo checksum invalid! Has the demo been tampered with?");
     }
 #endif
 
