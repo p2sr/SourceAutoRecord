@@ -232,6 +232,10 @@ void Cheats::Init()
 
     Variable::RegisterAll();
     Command::RegisterAll();
+
+    // putting this here is really dumb but i dont even care any
+    // more
+    sar_hud_text.AddCallBack(sar_hud_text_callback);
 }
 void Cheats::Shutdown()
 {

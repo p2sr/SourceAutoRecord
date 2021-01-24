@@ -141,6 +141,12 @@ HudElement::HudElement(Variable* variable, _PaintCallback callback, int type, bo
 {
     this->callbackDefault = callback;
 }
+HudElement::HudElement(const char* name, _PaintCallback callback, int type, bool drawSecondSplitScreen, int version)
+    : HudElement(nullptr, type, drawSecondSplitScreen, version)
+{
+    this->name = name;
+    this->callbackDefault = callback;
+}
 
 HudModeElement::HudModeElement(Variable* variable, _PaintCallbackMode callback, int type, bool drawSecondSplitScreen, int version)
     : HudElement(variable, type, drawSecondSplitScreen, version)
@@ -190,7 +196,7 @@ void HudElement::IndexAll()
 
     for (const auto& name : elementOrder) {
         auto element = std::find_if(elements.begin(), elements.end(), [name](HudElement* element) {
-            return Utils::ICompare(element->variable->ThisPtr()->m_pszName + 8, name);
+            return Utils::ICompare(element->ElementName() + 8, name);
         });
 
         if (element != elements.end()) {
@@ -216,7 +222,7 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_top, "Orders hud element to top. Us
     auto name = std::string("sar_hud_") + std::string(args[1]);
 
     auto result = std::find_if(elements->begin(), elements->end(), [name](const HudElement* a) {
-        if (Utils::ICompare(a->variable->ThisPtr()->m_pszName, name)) {
+        if (Utils::ICompare(a->ElementName(), name)) {
             return true;
         }
         return false;
@@ -243,7 +249,7 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "Orders hud element to bott
     auto name = std::string("sar_hud_") + std::string(args[1]);
 
     auto result = std::find_if(elements->begin(), elements->end(), [name](const HudElement* a) {
-        if (Utils::ICompare(a->variable->ThisPtr()->m_pszName, name)) {
+        if (Utils::ICompare(a->ElementName(), name)) {
             return true;
         }
         return false;
@@ -269,14 +275,14 @@ CON_COMMAND(sar_hud_default_order_reset, "Resets order of hud element.\n")
 
 // HUD
 
-struct DanielAskingForAdvancedTextSmh
+struct TextLine
 {
     bool draw;
     std::string text;
 };
 
-static std::map<long, DanielAskingForAdvancedTextSmh> sar_hud_text_vals;
-HUD_ELEMENT(text, "", "Draws text specified by sar_hud_set_text when enabled.\n", HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
+static std::map<long, TextLine> sar_hud_text_vals;
+HUD_ELEMENT_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
 {
     for (auto& t : sar_hud_text_vals) {
         if (t.second.draw) {
@@ -285,37 +291,74 @@ HUD_ELEMENT(text, "", "Draws text specified by sar_hud_set_text when enabled.\n"
     }
 }
 
-CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets or clears the nth text value in the HUD.\n") {
-    if (args.ArgC() < 2) {
-        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
-        return;
-    }
+Variable sar_hud_text("sar_hud_text", "", "DEPRECATED: Use sar_hud_set_text.", 0);
+void sar_hud_text_callback(void* var, const char* pOldVal, float fOldVal)
+{
+    console->Print("WARNING: sar_hud_text is deprecated. Please use sar_hud_set_text instead.\n");
+    sar_hud_text_vals[0] = {
+        .draw = true,
+        .text = std::string(sar_hud_text.GetString()),
+    };
+}
 
-    const char* idxStr = args.Arg(1);
+long parseIdx(const char* idxStr)
+{
     char* end;
     long idx = std::strtol(idxStr, &end, 10);
     if (*end != 0 || end == idxStr) {
-        // Index argument is not a number
-        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
-        return;
+        return -1;
     }
-
-    const char* str = nullptr;
-    if (args.ArgC() > 1)
-        sar_hud_text_vals[idx].draw = true;
-    if (args.ArgC() > 2) {
-        sar_hud_text_vals[idx].text = args.Arg(2);
-    }
+    return idx;
 }
 
-CON_COMMAND(sar_hud_remove_text, "sar_hud_remove_text <id>.\n")
-{
-    if (args.ArgC() < 2) {
+CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets and shows the nth text value in the HUD.\n") {
+    if (args.ArgC() != 3) {
         console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
         return;
     }
 
-    sar_hud_text_vals[std::atoi(args[1])].draw = false;
+    long idx = parseIdx(args[1]);
+    if (idx == -1) {
+        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    sar_hud_text_vals[idx] = {
+        .draw = true,
+        .text = std::string(args[2]),
+    };
+}
+
+CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id>. Hides the nth text value in the HUD.\n")
+{
+    if (args.ArgC() < 2) {
+        console->Print(sar_hud_hide_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    long idx = parseIdx(args[1]);
+    if (idx == -1) {
+        console->Print(sar_hud_hide_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    sar_hud_text_vals[idx].draw = false;
+}
+
+CON_COMMAND(sar_hud_show_text, "sar_hud_show_text <id>. Shows the nth text value in the HUD.\n")
+{
+    if (args.ArgC() < 2) {
+        console->Print(sar_hud_show_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    long idx = parseIdx(args[1]);
+    if (idx == -1) {
+        console->Print(sar_hud_hide_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    sar_hud_text_vals[idx].draw = true;
 }
 
 HUD_ELEMENT_MODE2(position, "0", 0, 2, "Draws absolute position of the client.\n"
