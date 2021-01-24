@@ -26,6 +26,7 @@ public:
 
 public:
     int GetTick();
+    std::string GetDemoFilename();
 
     // CDemoRecorder::SetSignonState
     DECL_DETOUR(SetSignonState, int state);
@@ -41,4 +42,5 @@ public:
     bool Init() override;
     void Shutdown() override;
     const char* Name() override { return MODULE("engine"); }
+    void RecordData(const void* data, unsigned long length);
 };

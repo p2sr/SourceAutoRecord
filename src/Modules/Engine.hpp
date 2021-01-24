@@ -42,6 +42,7 @@ public:
     using _IsPaused = bool (*)(void* thisptr);
     using _TraceRay = void(__rescall*)(void* thisptr, const Ray_t& ray, unsigned int fMask, ITraceFilter* pTraceFilter, CGameTrace* pTrace);
     using _GetCount = int(__rescall*)(void* thisptr);
+    using _RecordDemoCustomData = void(__rescall*)(void* thisptr, void(*callback)(unsigned char*, unsigned long), void* data, size_t length);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -97,6 +98,7 @@ public:
     _IsPaused IsPaused = nullptr;
     _TraceRay TraceRay = nullptr;
     _GetCount GetCount = nullptr;
+    _RecordDemoCustomData RecordDemoCustomData = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;
@@ -136,6 +138,7 @@ public:
     std::string GetCurrentMapName();
     bool IsCoop();
     bool IsOrange();
+    void RecordDemoData(void* data, size_t len);
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);

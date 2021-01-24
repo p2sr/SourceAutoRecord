@@ -13,6 +13,7 @@
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Server.hpp"
+#include "Client.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"

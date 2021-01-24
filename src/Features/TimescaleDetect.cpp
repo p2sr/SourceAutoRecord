@@ -1,9 +1,9 @@
 #include "TimescaleDetect.hpp"
 
 #include "Modules/Engine.hpp"
+#include "Modules/EngineDemoRecorder.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Client.hpp"
-#include "Features/Speedrun/SpeedrunTimer.hpp"
 
 #include <chrono>
 
@@ -61,7 +61,7 @@ void TimescaleDetect::Update()
         }
 
         if (msg[0]) {
-            speedrun->StatusReportHidden(msg);
+            engine->demorecorder->RecordData(nullptr, 0);
 #if 0
             client->Chat(TextColor::ORANGE, msg);
 #endif

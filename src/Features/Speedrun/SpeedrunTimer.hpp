@@ -90,7 +90,6 @@ public:
     int GetCurrentDelta();
 
     void StatusReport(const char* message);
-    void StatusReportHidden(const char* message);
 
     ~SpeedrunTimer();
 

@@ -109,6 +109,7 @@ void Portal2::LoadOffsets()
     SetSignonState = 3; // CDemoRecorder
     StartRecording = 2; // CDemoRecorder
     StopRecording = 7; // CDemoRecorder
+    RecordCustomData = 14; // CDemoRecorder
     GetPlaybackTick = 4; // CDemoPlayer
     StartPlayback = 6; // CDemoPlayer
     IsPlayingBack = 7; // CDemoPlayer
