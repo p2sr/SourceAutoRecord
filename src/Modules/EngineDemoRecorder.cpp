@@ -3,6 +3,7 @@
 #include "Features/Rebinder.hpp"
 #include "Features/Session.hpp"
 #include "Features/Timer/Timer.hpp"
+#include "Features/TimescaleDetect.hpp"
 #include "Features/FovChanger.hpp"
 
 #include "Console.hpp"
@@ -88,6 +89,8 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state)
 DETOUR(EngineDemoRecorder::StartRecording, const char* filename, bool continuously)
 {
     fovChanger->needToUpdate = true;
+
+    timescaleDetect->Spawn();
 
     auto result = EngineDemoRecorder::StartRecording(thisptr, filename, continuously);
 
