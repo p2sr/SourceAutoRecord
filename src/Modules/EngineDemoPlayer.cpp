@@ -13,6 +13,7 @@
 #include "Offsets.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
+#include "Checksum.hpp"
 
 #include <filesystem>
 
@@ -44,15 +45,15 @@ void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
 {
 #ifdef SAR_MODERATOR_BUILD
     if (data[0] == 0xFF) {
-        // Checksum data should be at tick -1, so this suggestes a
-        // tampered demo
-        client->Chat(TextColor::ORANGE, "Unexpected checksum data! Has demo been tampered with?");
+        // Checksum data should be at tick -1 (and hence never run
+        // through this callback), so this suggestes a tampered demo
+        client->Chat(TextColor::ORANGE, "Unexpected checksum data! Has the demo been tampered with?");
     } else if (data[0] == 0x01 && length == 5) {
         // Timescale cheat warning
         client->Chat(TextColor::ORANGE, "CHEAT: timescale %.2f", *(float*)(data+1));
     } else {
         // Unknown or invalid data
-        client->Chat(TextColor::ORANGE, "Malformed custom demo info! Has demo been tampered with?");
+        client->Chat(TextColor::ORANGE, "Malformed custom demo info! Has the demo been tampered with?");
     }
 #endif
 }
@@ -66,6 +67,15 @@ DETOUR_COMMAND(EngineDemoPlayer::stopdemo)
 // CDemoRecorder::StartPlayback
 DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 {
+#ifdef SAR_MODERATOR_BUILD
+    auto filepath = std::string(engine->GetGameDirectory()) + "/" + filename;
+    if (VerifyDemoChecksum(filepath.c_str())) {
+        client->Chat(TextColor::GREEN, "Demo checksum verified");
+    } else {
+        client->Chat(TextColor::ORANGE, "Demo checksum invalid! Has the demo been tampered with?");
+    }
+#endif
+
     auto result = EngineDemoPlayer::StartPlayback(thisptr, filename, bAsTimeDemo);
 
     if (result) {

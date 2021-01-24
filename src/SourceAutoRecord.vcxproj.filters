@@ -184,6 +184,9 @@
     <ClCompile Include="Cheats.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
+    <ClCompile Include="Checksum.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
     <ClCompile Include="Command.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
@@ -574,6 +577,9 @@
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Cheats.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Checksum.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Command.hpp">
