@@ -21,10 +21,10 @@ REDECL(EngineDemoRecorder::StopRecording);
 REDECL(EngineDemoRecorder::stop_callback);
 
 #define BINARY_LE32(x)        \
-    (char)(x & 0xFF),         \
-    (char)((x >> 8) & 0xFF),  \
-    (char)((x >> 16) & 0xFF), \
-    (char)((x >> 24) & 0xFF)
+    (uint8_t)(x & 0xFF),         \
+    (uint8_t)((x >> 8) & 0xFF),  \
+    (uint8_t)((x >> 16) & 0xFF), \
+    (uint8_t)((x >> 24) & 0xFF)
 
 static const uint32_t crcTable[256] = {
     0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA,
@@ -139,14 +139,15 @@ static bool AddDemoChecksum(const char* filename)
 
     free(buf);
 
-    char checkBuf[] = {
+    uint8_t checkBuf[] = {
         0x08,                    // Type: CustomData
         BINARY_LE32(0xFFFFFFFF), // Tick
         0x00,                    // Slot (TODO: what is this?)
         // CustomData packet data:
         BINARY_LE32(0x00),     // ID - see RecordData for an explanation of why we use 0
-        BINARY_LE32(0x04),     // Size: 4 bytes
-        BINARY_LE32(checksum), // Data
+        BINARY_LE32(0x05),     // Size: 5 bytes
+        0xFF,                  // First byte of data: SAR message ID (0xFF = checksum)
+        BINARY_LE32(checksum), // Actual checksum data
     };
 
     // Stage 3: write checksum to demo

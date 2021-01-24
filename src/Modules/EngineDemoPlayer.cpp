@@ -7,6 +7,7 @@
 #include "Console.hpp"
 #include "Engine.hpp"
 #include "Server.hpp"
+#include "Client.hpp"
 
 #include "Interface.hpp"
 #include "Offsets.hpp"
@@ -37,6 +38,23 @@ void EngineDemoPlayer::ClearDemoQueue()
 std::string EngineDemoPlayer::GetLevelName()
 {
     return this->levelName;
+}
+
+void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
+{
+#ifdef SAR_MODERATOR_BUILD
+    if (data[0] == 0xFF) {
+        // Checksum data should be at tick -1, so this suggestes a
+        // tampered demo
+        client->Chat(TextColor::ORANGE, "Unexpected checksum data! Has demo been tampered with?");
+    } else if (data[0] == 0x01 && length == 5) {
+        // Timescale cheat warning
+        client->Chat(TextColor::ORANGE, "CHEAT: timescale %.2f", *(float*)(data+1));
+    } else {
+        // Unknown or invalid data
+        client->Chat(TextColor::ORANGE, "Malformed custom demo info! Has demo been tampered with?");
+    }
+#endif
 }
 
 DETOUR_COMMAND(EngineDemoPlayer::stopdemo)

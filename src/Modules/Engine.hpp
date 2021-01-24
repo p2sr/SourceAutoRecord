@@ -169,7 +169,7 @@ public:
     DECL_DETOUR_COMMAND(playvideo_end_level_transition);
     DECL_DETOUR_COMMAND(unpause);
 
-    DECL_DETOUR(ReadCustomData, int* callbackIndex, void* data);
+    DECL_DETOUR(ReadCustomData, int* callbackIndex, char** data);
 
 #ifdef _WIN32
     // CDemoSmootherPanel::ParseSmoothingInfo

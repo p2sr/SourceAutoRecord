@@ -51,20 +51,12 @@ void TimescaleDetect::Update()
 
         float timescale = expected / delta;
 
-        char msg[128];
-        msg[0] = 0;
-
-        if (timescale > 1 + THRESHOLD) {
-            snprintf(msg, sizeof msg, "Potential timescale increase to %.2f", timescale);
-        } else if (timescale < 1 - THRESHOLD) {
-            snprintf(msg, sizeof msg, "Potential timescale decrease to %.2f", timescale);
-        }
-
-        if (msg[0]) {
-            engine->demorecorder->RecordData(nullptr, 0);
-#if 0
-            client->Chat(TextColor::ORANGE, msg);
-#endif
+        if (timescale > 1 + THRESHOLD || timescale < 1 - THRESHOLD) {
+            char data[5];
+            data[0] = 0x01;
+            // THIS IS REALLY BAD AND HACKY but whatever it'll work
+            *(float*)(data+1) = timescale;
+            engine->demorecorder->RecordData(data, sizeof data);
         }
 
         this->startTick = tick;

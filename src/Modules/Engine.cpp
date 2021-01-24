@@ -316,13 +316,13 @@ DETOUR(Engine::PurgeUnusedModels)
     return result;
 }
 
-DETOUR(Engine::ReadCustomData, int* callbackIndex, void* data)
+DETOUR(Engine::ReadCustomData, int* callbackIndex, char** data)
 {
-    auto result = Engine::ReadCustomData(thisptr, callbackIndex, data);
-    if (*callbackIndex == 0) {
-        client->Chat(TextColor::ORANGE, "Demo callback");
+    auto size = Engine::ReadCustomData(thisptr, callbackIndex, data);
+    if (*callbackIndex == 0 && size > 8) {
+        engine->demoplayer->CustomDemoData(*data + 8, size - 8);
     }
-    return result;
+    return size;
 }
 
 #ifdef _WIN32
