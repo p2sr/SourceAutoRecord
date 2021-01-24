@@ -127,13 +127,17 @@ static bool AddDemoChecksum(const char* filename)
 
     if (fseek(fp, 0, SEEK_SET)) FP_ERR;
 
-    char buf[size];
+    // what the fuck c++ why do you not have vlas
+    char *buf = (char*)malloc(size);
+
     fread(buf, 1, size, fp);
     if (ferror(fp)) FP_ERR;
 
     // Stage 2: calculate checksum
 
     uint32_t checksum = crc32(buf, size);
+
+    free(buf);
 
     char checkBuf[] = {
         0x08,                    // Type: CustomData
@@ -287,8 +291,10 @@ void EngineDemoRecorder::RecordData(const void* data, unsigned long length)
     // to do weird things in co-op demos with menus! TODO: track the
     // actual cursor x and y and send them to fix that
 
-    char buf[length+8];
+    // once again, what the fuck c++, i just want a vla
+    char *buf = (char*)malloc(length+8);
     memset(buf, 0xFF, 8); // Actual cursor x and y pos
     memcpy(buf+8, data, length);
     RecordCustomData(this->s_ClientDemoRecorder->ThisPtr(), 0, buf, length+8);
+    free(buf);
 }
