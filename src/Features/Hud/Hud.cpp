@@ -295,10 +295,8 @@ Variable sar_hud_text("sar_hud_text", "", "DEPRECATED: Use sar_hud_set_text.", 0
 void sar_hud_text_callback(void* var, const char* pOldVal, float fOldVal)
 {
     console->Print("WARNING: sar_hud_text is deprecated. Please use sar_hud_set_text instead.\n");
-    sar_hud_text_vals[0] = {
-        .draw = true,
-        .text = std::string(sar_hud_text.GetString()),
-    };
+    sar_hud_text_vals[0].draw = true;
+    sar_hud_text_vals[0].text = std::string(sar_hud_text.GetString());
 }
 
 long parseIdx(const char* idxStr)
@@ -323,10 +321,8 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets and shows the 
         return;
     }
 
-    sar_hud_text_vals[idx] = {
-        .draw = true,
-        .text = std::string(args[2]),
-    };
+    sar_hud_text_vals[idx].draw = true;
+    sar_hud_text_vals[idx].text = std::string(args[2]);
 }
 
 CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id>. Hides the nth text value in the HUD.\n")
