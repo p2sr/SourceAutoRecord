@@ -588,9 +588,8 @@ bool Engine::Init()
         // Pesky memory protection doesn't want us overwriting code - we
         // get around it with a call to mprotect or VirtualProtect
         void* injectPageAddr = (void*)(readPacketInjectAddr & 0xFFFFF000); // TODO: could the instruction cross a page boundary? hope not lol
-
 #ifdef _WIN32
-        uint32_t wtf_microsoft_why_cant_this_be_null;
+        DWORD wtf_microsoft_why_cant_this_be_null;
         VirtualProtect(injectPageAddr, 0x1000, PAGE_EXECUTE_READWRITE, &wtf_microsoft_why_cant_this_be_null);
 #else
         mprotect(injectPageAddr, 0x1000, PROT_READ | PROT_WRITE | PROT_EXEC);
