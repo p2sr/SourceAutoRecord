@@ -95,7 +95,7 @@ static uint32_t crc32(const char* buf, size_t len)
 
 static bool demoChecksum(FILE* fp, size_t ignoreEnd, uint32_t* crcOut)
 {
-    if (fseek(fp, -ignoreEnd, SEEK_END)) return false;
+    if (fseek(fp, -(long)ignoreEnd, SEEK_END)) return false;
 
     size_t size = ftell(fp);
     if (size == -1) return false;
