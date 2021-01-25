@@ -46,7 +46,7 @@ public:
     void CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset);
     bool ShouldDrawCrosshair();
     void Chat(TextColor color, const char* fmt, ...);
-    void QueueChat(TextColor color, const char* msg);
+    void QueueChat(TextColor color, const char* fmt, ...);
     void FlushChatQueue();
 
 public:

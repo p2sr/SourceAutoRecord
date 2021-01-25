@@ -1,7 +1,16 @@
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
+#include <string>
 #include "Checksum.hpp"
+
+#ifdef _WIN32
+#include <Windows.h>
+#include <dbghelp.h>
+#else
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#endif
 
 #define WRITE_LE32(x)            \
     (uint8_t)(x & 0xFF),         \
@@ -94,7 +103,7 @@ static uint32_t crc32(const char* buf, size_t len)
     return ~sum;
 }
 
-static bool demoChecksum(FILE* fp, size_t ignoreEnd, uint32_t* crcOut)
+static bool fileChecksum(FILE* fp, size_t ignoreEnd, uint32_t* crcOut)
 {
     if (fseek(fp, -(long)ignoreEnd, SEEK_END)) return false;
 
@@ -118,28 +127,32 @@ static bool demoChecksum(FILE* fp, size_t ignoreEnd, uint32_t* crcOut)
     return true;
 }
 
+static uint32_t sarChecksum;
+
 bool AddDemoChecksum(const char* filename)
 {
     FILE* fp = fopen(filename, "ab+"); // Open for binary appending and reading
     if (!fp) return false;
 
     uint32_t checksum;
-    if (!demoChecksum(fp, 0, &checksum)) {
+    if (!fileChecksum(fp, 0, &checksum)) {
         fclose(fp);
         return false;
     }
 
     uint8_t checkBuf[] = {
-        0x08,                   // Type: CustomData
-        WRITE_LE32(0xFFFFFFFF), // Tick
-        0x00,                   // Slot (TODO: what is this?)
+        0x08,                    // Type: CustomData
+        WRITE_LE32(0xFFFFFFFF),  // Tick
+        0x00,                    // Slot (TODO: what is this?)
+
         // CustomData packet data:
-        WRITE_LE32(0x00),       // ID - see RecordData for an explanation of why we use 0
-        WRITE_LE32(0x0D),       // Size: 13 bytes
-        WRITE_LE32(0xFFFFFFFF), // Cursor x
-        WRITE_LE32(0xFFFFFFFF), // Cursor y
-        0xFF,                   // First byte of data: SAR message ID (0xFF = checksum)
-        WRITE_LE32(checksum),   // Actual checksum data
+        WRITE_LE32(0x00),        // ID - see RecordData for an explanation of why we use 0
+        WRITE_LE32(0x0D),        // Size: 13 bytes
+        WRITE_LE32(0xFFFFFFFF),  // Cursor x
+        WRITE_LE32(0xFFFFFFFF),  // Cursor y
+        0xFF,                    // First byte of data: SAR message ID (0xFF = checksum)
+        WRITE_LE32(checksum),    // Demo checksum
+        WRITE_LE32(sarChecksum), // SAR checksum
     };
 
     if (fwrite(checkBuf, 1, sizeof checkBuf, fp) != sizeof checkBuf) {
@@ -151,28 +164,28 @@ bool AddDemoChecksum(const char* filename)
     return true;
 }
 
-VerifyResult VerifyDemoChecksum(const char* filename)
+std::pair<VerifyResult, uint32_t> VerifyDemoChecksum(const char* filename)
 {
     FILE* fp = fopen(filename, "rb");
-    if (!fp) return VERIFY_BAD_DEMO;
+    if (!fp) return std::pair(VERIFY_BAD_DEMO, 0);
 
     uint32_t realChecksum;
-    if (!demoChecksum(fp, 27, &realChecksum)) {
+    if (!fileChecksum(fp, 31, &realChecksum)) {
         fclose(fp);
-        return VERIFY_BAD_DEMO;
+        return std::pair(VERIFY_BAD_DEMO, 0);
     }
 
-    // The start of the checksum should come 27 bytes before the end
-    if (fseek(fp, -27, SEEK_END)) {
+    // The start of the checksum should come 31 bytes before the end
+    if (fseek(fp, -31, SEEK_END)) {
         fclose(fp);
-        return VERIFY_BAD_DEMO;
+        return std::pair(VERIFY_BAD_DEMO, 0);
     }
 
-    uint8_t buf[27];
+    uint8_t buf[31];
     fread(buf, 1, sizeof buf, fp);
     if (ferror(fp)) {
         fclose(fp);
-        return VERIFY_BAD_DEMO;
+        return std::pair(VERIFY_BAD_DEMO, 0);
     }
 
     // We've got all the data we need from the file
@@ -182,7 +195,7 @@ VerifyResult VerifyDemoChecksum(const char* filename)
      || READ_LE32(buf, 1) != 0xFFFFFFFF
      || buf[5] != 0x00) {
         // Couldn't find checksum field!
-        return VERIFY_NO_CHECKSUM;
+        return std::pair(VERIFY_NO_CHECKSUM, 0);
     }
 
     if (READ_LE32(buf, 6) != 0x00
@@ -191,10 +204,40 @@ VerifyResult VerifyDemoChecksum(const char* filename)
      || READ_LE32(buf, 18) != 0xFFFFFFFF
      || buf[22] != 0xFF) {
         // SAR message field not a valid checksum!
-        return VERIFY_NO_CHECKSUM;
+        return std::pair(VERIFY_NO_CHECKSUM, 0);
     }
 
     uint32_t storedChecksum = READ_LE32(buf, 23);
+    uint32_t storedSarChecksum = READ_LE32(buf, 27);
 
-    return realChecksum == storedChecksum ? VERIFY_VALID_CHECKSUM : VERIFY_INVALID_CHECKSUM;
+    VerifyResult res = realChecksum == storedChecksum ? VERIFY_VALID_CHECKSUM : VERIFY_INVALID_CHECKSUM;
+
+    return std::pair(res, storedSarChecksum);
+}
+
+static std::string getSARPath()
+{
+#ifdef _WIN32
+    DWORD module = SymGetModuleBase(GetCurrentProcess(), (void*)&getSARPath);
+    char filename[MAX_PATH+1];
+    GetModuleFileNameA(module, filename, MAX_PATH);
+    return std::string(filename);
+
+#else
+    Dl_info info;
+    dladdr((void*)&getSARPath, &info);
+    return std::string(info.dli_fname);
+#endif
+}
+
+void InitSARChecksum()
+{
+    std::string path = getSARPath();
+
+    FILE* fp = fopen(path.c_str(), "rb"); // Open for binary reading
+    if (!fp) return;
+
+    fileChecksum(fp, 0, &sarChecksum);
+
+    fclose(fp);
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 bool AddDemoChecksum(const char* filename);
 
 enum VerifyResult {
@@ -8,5 +10,6 @@ enum VerifyResult {
     VERIFY_INVALID_CHECKSUM,
     VERIFY_VALID_CHECKSUM,
 };
+std::pair<VerifyResult, uint32_t> VerifyDemoChecksum(const char* filename);
 
-VerifyResult VerifyDemoChecksum(const char* filename);
+void InitSARChecksum();

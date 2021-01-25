@@ -69,7 +69,8 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 {
 #ifdef SAR_MODERATOR_BUILD
     auto filepath = std::string(engine->GetGameDirectory()) + "/" + filename;
-    switch (VerifyDemoChecksum(filepath.c_str())) {
+    auto res = VerifyDemoChecksum(filepath.c_str());
+    switch (res.first) {
     case VERIFY_BAD_DEMO:
         // Normal chat rather than queue as we probably aren't loading
         // into the demo (it seems invalid)
@@ -82,10 +83,12 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 
     case VERIFY_INVALID_CHECKSUM:
         client->QueueChat(TextColor::ORANGE, "Demo checksum invalid! Has the demo been tampered with?");
+        client->QueueChat(TextColor::ORANGE, "SAR checksum: %.8X", res.second);
         break;
 
     case VERIFY_VALID_CHECKSUM:
         client->QueueChat(TextColor::GREEN, "Demo checksum verified");
+        client->QueueChat(TextColor::ORANGE, "SAR checksum: %.8X", res.second);
         break;
     }
 #endif
