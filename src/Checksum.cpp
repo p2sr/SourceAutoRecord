@@ -218,9 +218,9 @@ std::pair<VerifyResult, uint32_t> VerifyDemoChecksum(const char* filename)
 static std::string getSARPath()
 {
 #ifdef _WIN32
-    DWORD module = SymGetModuleBase(GetCurrentProcess(), (void*)&getSARPath);
+    DWORD module = SymGetModuleBase(GetCurrentProcess(), (DWORD)&getSARPath);
     char filename[MAX_PATH+1];
-    GetModuleFileNameA(module, filename, MAX_PATH);
+    GetModuleFileNameA((HMODULE)module, filename, MAX_PATH);
     return std::string(filename);
 
 #else
