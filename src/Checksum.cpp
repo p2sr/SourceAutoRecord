@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
+#include "Checksum.hpp"
 
 #define WRITE_LE32(x)            \
     (uint8_t)(x & 0xFF),         \
@@ -150,28 +151,28 @@ bool AddDemoChecksum(const char* filename)
     return true;
 }
 
-bool VerifyDemoChecksum(const char* filename)
+VerifyResult VerifyDemoChecksum(const char* filename)
 {
     FILE* fp = fopen(filename, "rb");
-    if (!fp) return false;
+    if (!fp) return VERIFY_BAD_DEMO;
 
     uint32_t realChecksum;
     if (!demoChecksum(fp, 27, &realChecksum)) {
         fclose(fp);
-        return false;
+        return VERIFY_BAD_DEMO;
     }
 
     // The start of the checksum should come 27 bytes before the end
     if (fseek(fp, -27, SEEK_END)) {
         fclose(fp);
-        return false;
+        return VERIFY_BAD_DEMO;
     }
 
     uint8_t buf[27];
     fread(buf, 1, sizeof buf, fp);
     if (ferror(fp)) {
         fclose(fp);
-        return false;
+        return VERIFY_BAD_DEMO;
     }
 
     // We've got all the data we need from the file
@@ -181,7 +182,7 @@ bool VerifyDemoChecksum(const char* filename)
      || READ_LE32(buf, 1) != 0xFFFFFFFF
      || buf[5] != 0x00) {
         // Couldn't find checksum field!
-        return false;
+        return VERIFY_NO_CHECKSUM;
     }
 
     if (READ_LE32(buf, 6) != 0x00
@@ -190,10 +191,10 @@ bool VerifyDemoChecksum(const char* filename)
      || READ_LE32(buf, 18) != 0xFFFFFFFF
      || buf[22] != 0xFF) {
         // SAR message field not a valid checksum!
-        return false;
+        return VERIFY_NO_CHECKSUM;
     }
 
     uint32_t storedChecksum = READ_LE32(buf, 23);
 
-    return realChecksum == storedChecksum;
+    return realChecksum == storedChecksum ? VERIFY_VALID_CHECKSUM : VERIFY_INVALID_CHECKSUM;
 }
