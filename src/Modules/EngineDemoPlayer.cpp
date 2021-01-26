@@ -53,13 +53,26 @@ void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
             // Checksum data should be at tick -1 (and hence never run
             // through this callback), so this suggestes a tampered demo
             client->Chat(TextColor::ORANGE, "Unexpected checksum data! Has the demo been tampered with?");
+            return;
         } else if (data[0] == 0x01 && length == 5) {
             // Timescale cheat warning
             client->Chat(TextColor::ORANGE, "CHEAT: timescale %.2f", *(float*)(data+1));
-        } else {
-            // Unknown or invalid data
-            client->Chat(TextColor::ORANGE, "Malformed custom demo info! Has the demo been tampered with?");
+            return;
+        } else if (data[0] == 0x02) {
+            // Initial variable value
+            const char* name = data + 1;
+            size_t nameLen = strlen(name);
+            if (nameLen < length - 2) {
+                const char* value = data + nameLen + 2;
+                size_t valueLen = strlen(value);
+                if (nameLen + valueLen + 3 == length) {
+                    client->Chat(TextColor::LIGHT_GREEN, "INITIAL: %s = %s", name, value);
+                    return;
+                }
+            }
         }
+        // Unknown or invalid data
+        client->Chat(TextColor::ORANGE, "Malformed custom demo info! Has the demo been tampered with?");
     }
 #endif
 }
@@ -90,12 +103,12 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 
         case VERIFY_INVALID_CHECKSUM:
             client->QueueChat(TextColor::ORANGE, "Demo checksum invalid! Has the demo been tampered with?");
-            client->QueueChat(TextColor::ORANGE, "SAR checksum: %.8X", res.second);
+            client->QueueChat(TextColor::LIGHT_GREEN, "SAR checksum: %.8X", res.second);
             break;
 
         case VERIFY_VALID_CHECKSUM:
             client->QueueChat(TextColor::GREEN, "Demo checksum verified");
-            client->QueueChat(TextColor::ORANGE, "SAR checksum: %.8X", res.second);
+            client->QueueChat(TextColor::LIGHT_GREEN, "SAR checksum: %.8X", res.second);
             break;
         }
     }

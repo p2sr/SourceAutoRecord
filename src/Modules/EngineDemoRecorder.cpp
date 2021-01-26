@@ -38,6 +38,29 @@ std::string EngineDemoRecorder::GetDemoFilename()
 #undef PATH_SEP
 }
 
+bool needToRecordInitialVals = false;
+
+static void RecordInitialVal(const char* name)
+{
+    size_t nameLen = strlen(name);
+
+    const char* val = Variable(name).GetString();
+    size_t valLen = strlen(val);
+
+    size_t bufLen = nameLen + valLen + 3;
+
+    char* buf = (char*)malloc(bufLen);
+    buf[0] = 0x02;
+    strcpy(buf + 1, name);
+    buf[nameLen + 1] = 0x00;
+    strcpy(buf + nameLen + 2, val);
+    buf[nameLen + valLen + 2] = 0x00;
+
+    engine->demorecorder->RecordData(buf, bufLen);
+
+    free(buf);
+}
+
 // CDemoRecorder::SetSignonState
 DETOUR(EngineDemoRecorder::SetSignonState, int state)
 {
@@ -82,6 +105,16 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state)
         }
     }
 
+    if (state == SIGNONSTATE_FULL && needToRecordInitialVals) {
+        needToRecordInitialVals = false;
+        RecordInitialVal("host_timescale");
+        RecordInitialVal("m_yaw");
+        RecordInitialVal("cl_fov");
+        RecordInitialVal("sv_allow_mobile_portals");
+        RecordInitialVal("fps_max");
+        RecordInitialVal("sv_portal_placement_debug");
+    }
+
     return result;
 }
 
@@ -93,6 +126,8 @@ DETOUR(EngineDemoRecorder::StartRecording, const char* filename, bool continuous
     timescaleDetect->Spawn();
 
     auto result = EngineDemoRecorder::StartRecording(thisptr, filename, continuously);
+
+    needToRecordInitialVals = true;
 
     return result;
 }
