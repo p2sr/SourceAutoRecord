@@ -196,6 +196,10 @@ extern Variable sv_portal_players;
 extern Variable fps_max;
 extern Variable mat_norendering;
 
+extern Variable sar_record_at;
+extern Variable sar_record_at_demo_name;
+extern Variable sar_record_at_increment;
+
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
 #define IGNORE_DEMO_PLAYER()             \
