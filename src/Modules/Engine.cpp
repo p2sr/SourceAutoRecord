@@ -6,6 +6,7 @@
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Stats/ZachStats.hpp"
 
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
@@ -306,6 +307,8 @@ DETOUR(Engine::Frame)
             demoGhostPlayer.UpdateGhostsPosition();
         }
     }
+
+    zachStats->UpdateRects();
 
     return Engine::Frame(thisptr);
 }
