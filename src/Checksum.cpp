@@ -6,7 +6,7 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#include <dbghelp.h>
+#include <ImageHlp.h>
 #else
 #define _GNU_SOURCE
 #include <dlfcn.h>
@@ -218,11 +218,11 @@ std::pair<VerifyResult, uint32_t> VerifyDemoChecksum(const char* filename)
 static std::string getSARPath()
 {
 #ifdef _WIN32
+    SymInitialize(GetCurrentProcess(), 0, true);
     DWORD module = SymGetModuleBase(GetCurrentProcess(), (DWORD)&getSARPath);
     char filename[MAX_PATH+1];
     GetModuleFileNameA((HMODULE)module, filename, MAX_PATH);
     return std::string(filename);
-
 #else
     Dl_info info;
     dladdr((void*)&getSARPath, &info);
