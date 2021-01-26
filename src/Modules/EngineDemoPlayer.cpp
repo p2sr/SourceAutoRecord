@@ -17,6 +17,10 @@
 
 #include <filesystem>
 
+#ifdef SAR_MODERATOR_BUILD
+Variable sar_demo_cheat_info("sar_demo_cheat_info", "0", 0, 1, "Display anticheat info in demo playback.\n");
+#endif
+
 REDECL(EngineDemoPlayer::StartPlayback);
 REDECL(EngineDemoPlayer::stopdemo_callback);
 
@@ -44,16 +48,18 @@ std::string EngineDemoPlayer::GetLevelName()
 void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
 {
 #ifdef SAR_MODERATOR_BUILD
-    if (data[0] == 0xFF) {
-        // Checksum data should be at tick -1 (and hence never run
-        // through this callback), so this suggestes a tampered demo
-        client->Chat(TextColor::ORANGE, "Unexpected checksum data! Has the demo been tampered with?");
-    } else if (data[0] == 0x01 && length == 5) {
-        // Timescale cheat warning
-        client->Chat(TextColor::ORANGE, "CHEAT: timescale %.2f", *(float*)(data+1));
-    } else {
-        // Unknown or invalid data
-        client->Chat(TextColor::ORANGE, "Malformed custom demo info! Has the demo been tampered with?");
+    if (sar_demo_cheat_info.GetBool()) {
+        if (data[0] == 0xFF) {
+            // Checksum data should be at tick -1 (and hence never run
+            // through this callback), so this suggestes a tampered demo
+            client->Chat(TextColor::ORANGE, "Unexpected checksum data! Has the demo been tampered with?");
+        } else if (data[0] == 0x01 && length == 5) {
+            // Timescale cheat warning
+            client->Chat(TextColor::ORANGE, "CHEAT: timescale %.2f", *(float*)(data+1));
+        } else {
+            // Unknown or invalid data
+            client->Chat(TextColor::ORANGE, "Malformed custom demo info! Has the demo been tampered with?");
+        }
     }
 #endif
 }
@@ -68,28 +74,30 @@ DETOUR_COMMAND(EngineDemoPlayer::stopdemo)
 DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 {
 #ifdef SAR_MODERATOR_BUILD
-    auto filepath = std::string(engine->GetGameDirectory()) + "/" + filename;
-    auto res = VerifyDemoChecksum(filepath.c_str());
-    switch (res.first) {
-    case VERIFY_BAD_DEMO:
-        // Normal chat rather than queue as we probably aren't loading
-        // into the demo (it seems invalid)
-        client->Chat(TextColor::ORANGE, "Could not read checksum for demo!");
-        break;
+    if (sar_demo_cheat_info.GetBool()) {
+        auto filepath = std::string(engine->GetGameDirectory()) + "/" + filename;
+        auto res = VerifyDemoChecksum(filepath.c_str());
+        switch (res.first) {
+        case VERIFY_BAD_DEMO:
+            // Normal chat rather than queue as we probably aren't loading
+            // into the demo (it seems invalid)
+            client->Chat(TextColor::ORANGE, "Could not read checksum for demo!");
+            break;
 
-    case VERIFY_NO_CHECKSUM:
-        client->QueueChat(TextColor::ORANGE, "No checksum found! Was the demo recorded without SAR?");
-        break;
+        case VERIFY_NO_CHECKSUM:
+            client->QueueChat(TextColor::ORANGE, "No checksum found! Was the demo recorded without SAR?");
+            break;
 
-    case VERIFY_INVALID_CHECKSUM:
-        client->QueueChat(TextColor::ORANGE, "Demo checksum invalid! Has the demo been tampered with?");
-        client->QueueChat(TextColor::ORANGE, "SAR checksum: %.8X", res.second);
-        break;
+        case VERIFY_INVALID_CHECKSUM:
+            client->QueueChat(TextColor::ORANGE, "Demo checksum invalid! Has the demo been tampered with?");
+            client->QueueChat(TextColor::ORANGE, "SAR checksum: %.8X", res.second);
+            break;
 
-    case VERIFY_VALID_CHECKSUM:
-        client->QueueChat(TextColor::GREEN, "Demo checksum verified");
-        client->QueueChat(TextColor::ORANGE, "SAR checksum: %.8X", res.second);
-        break;
+        case VERIFY_VALID_CHECKSUM:
+            client->QueueChat(TextColor::GREEN, "Demo checksum verified");
+            client->QueueChat(TextColor::ORANGE, "SAR checksum: %.8X", res.second);
+            break;
+        }
     }
 #endif
 
