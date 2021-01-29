@@ -228,7 +228,9 @@ void Session::Ended()
 
     networkManager.DeleteAllGhosts();
     
-    engine->hasWaited = false;
+    if (!wait_persist_across_loads.GetBool()) {
+        engine->hasWaited = true;
+    }
 
     this->loadStart = NOW();
     if (sar_shane_loads.GetBool() && !engine->demoplayer->IsPlaying()) {

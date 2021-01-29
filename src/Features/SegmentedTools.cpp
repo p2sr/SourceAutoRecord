@@ -3,6 +3,7 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
+Variable wait_persist_across_loads("wait_persist_across_loads", "0", 0, 1, "Whether pending commands should be carried across loads (1) or just be dropped (0).\n");
 
 Variable wait_mode("wait_mode", "0", "When the pending commands should be executed. 0 is absolute, 1 is relative to when you entered the wait command.\n");
 
