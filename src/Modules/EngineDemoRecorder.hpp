@@ -24,6 +24,8 @@ public:
     int lastDemoNumber = 1;
     bool hasNotified = false;
 
+    char coopRadialMenuLastPos[8];
+
 public:
     int GetTick();
     std::string GetDemoFilename();
@@ -36,6 +38,9 @@ public:
 
     // CDemoRecorder::StopRecording
     DECL_DETOUR(StopRecording);
+
+    // CDemoRecorder::RecordCustomData
+    DECL_DETOUR(RecordCustomData, int id, const void* data, unsigned long length);
 
     DECL_DETOUR_COMMAND(stop);
 

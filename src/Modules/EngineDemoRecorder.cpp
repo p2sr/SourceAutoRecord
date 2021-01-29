@@ -20,6 +20,7 @@
 REDECL(EngineDemoRecorder::SetSignonState);
 REDECL(EngineDemoRecorder::StartRecording);
 REDECL(EngineDemoRecorder::StopRecording);
+REDECL(EngineDemoRecorder::RecordCustomData);
 REDECL(EngineDemoRecorder::stop_callback);
 
 int EngineDemoRecorder::GetTick()
@@ -163,6 +164,16 @@ DETOUR(EngineDemoRecorder::StopRecording)
     return result;
 }
 
+DETOUR(EngineDemoRecorder::RecordCustomData, int id, const void* data, unsigned long length)
+{
+    if (id == 0 && length == 8) {
+        // Radial menu mouse pos data - store it so we can put it in
+        // our custom data messages
+        memcpy(engine->demorecorder->coopRadialMenuLastPos, data, 8);
+    }
+    return EngineDemoRecorder::RecordCustomData(thisptr, id, data, length);
+}
+
 DETOUR_COMMAND(EngineDemoRecorder::stop)
 {
     engine->demorecorder->requestedStop = true;
@@ -178,6 +189,7 @@ bool EngineDemoRecorder::Init()
         this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::SetSignonState_Hook, EngineDemoRecorder::SetSignonState, Offsets::SetSignonState);
         this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::StartRecording_Hook, EngineDemoRecorder::StartRecording, Offsets::StartRecording);
         this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::StopRecording_Hook, EngineDemoRecorder::StopRecording, Offsets::StopRecording);
+        this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::RecordCustomData_Hook, EngineDemoRecorder::RecordCustomData, Offsets::RecordCustomData);
 
         this->GetRecordingTick = s_ClientDemoRecorder->Original<_GetRecordingTick>(Offsets::GetRecordingTick);
         this->m_szDemoBaseName = reinterpret_cast<char*>((uintptr_t)demorecorder + Offsets::m_szDemoBaseName);
@@ -198,21 +210,20 @@ void EngineDemoRecorder::Shutdown()
 }
 void EngineDemoRecorder::RecordData(const void* data, unsigned long length)
 {
-    using _RecordCustomData = void(__rescall*)(void* thisptr, int id, const void* data, unsigned long length);
-    _RecordCustomData RecordCustomData = this->s_ClientDemoRecorder->Original<_RecordCustomData>(Offsets::RecordCustomData);
-
     // We record custom data as type 0. This custom data type is present
     // in the base game (the only one in fact), so we won't cause
     // crashes by using it. It corresponds to RadialMenuMouseCallback -
     // a callback for setting the cursor position in the co-op radial
-    // menu. That means these custom data messages will cause the cursor
-    // to do weird things in co-op demos with menus! TODO: track the
-    // actual cursor x and y and send them to fix that
+    // menu. We hook RecordCustomData so that when this custom data type
+    // is actually used, we remember the last cursor position - this
+    // allows us to use the last-recorded position at the start of our
+    // custom data, and stops us from doing weird things in co-op demos
+    // with menus.
 
     // once again, what the fuck c++, i just want a vla
     char *buf = (char*)malloc(length+8);
-    memset(buf, 0xFF, 8); // Actual cursor x and y pos
+    memcpy(buf, engine->demorecorder->coopRadialMenuLastPos, 8); // Actual cursor x and y pos
     memcpy(buf+8, data, length);
-    RecordCustomData(this->s_ClientDemoRecorder->ThisPtr(), 0, buf, length+8);
+    EngineDemoRecorder::RecordCustomData(this->s_ClientDemoRecorder->ThisPtr(), 0, buf, length+8);
     free(buf);
 }
