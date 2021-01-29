@@ -13,9 +13,9 @@
 
 VphysHud vphysHud;
 
-Variable sar_vphys_hud("sar_vphys_hud", "0", 0, "Agony.\n");
-Variable sar_vphys_hud_x("sar_vphys_hud_x", "0", 0, "AAAAA.\n");
-Variable sar_vphys_hud_y("sar_vphys_hud_y", "0", 0, "Fuck you bets.\n");
+Variable sar_vphys_hud("sar_vphys_hud", "0", 0, "Enables or disables the vphys HUD.\n");
+Variable sar_vphys_hud_x("sar_vphys_hud_x", "0", 0, "The x position of the vphys HUD.\n");
+Variable sar_vphys_hud_y("sar_vphys_hud_y", "0", 0, "The y position of the vphys HUD.\n");
 
 VphysHud::VphysHud()
     : Hud(HudType_InGame, false, SourceGame_SupportsS3)
