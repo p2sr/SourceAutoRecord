@@ -477,7 +477,7 @@ DECL_COMMAND_COMPLETION(sar_cam_path_showkf)
         }
 
         char camString[64] = {};
-        CameraState cam = state.second;
+        //CameraState cam = state.second;
         sprintf(camString, "%d", state.first);
 
         std::string camStringString = camString;

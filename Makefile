@@ -28,7 +28,7 @@ DEPS=$(OBJS:%.o=%.d)
 include config.mk
 
 WARNINGS=-Wall -Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas -Wno-register -Wno-sign-compare
-CXXFLAGS=-std=c++17 -m32 $(WARNINGS) -I$(SDIR) $(PKGCONFIG_CXXFLAGS) -fPIC
+CXXFLAGS=-std=c++17 -m32 $(WARNINGS) -I$(SDIR) $(PKGCONFIG_CXXFLAGS) -fPIC -D_GNU_SOURCE
 LDFLAGS=-m32 -shared -lstdc++fs $(PKGCONFIG_LDFLAGS)
 
 all: sar.so

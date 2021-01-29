@@ -20,8 +20,8 @@ DemoGhostPlayer demoGhostPlayer;
 
 DemoGhostPlayer::DemoGhostPlayer()
     : isPlaying(false)
-    , isFullGame(false)
     , currentTick(0)
+    , isFullGame(false)
 {
 }
 

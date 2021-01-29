@@ -8,7 +8,6 @@
 #include <Windows.h>
 #include <ImageHlp.h>
 #else
-#define _GNU_SOURCE
 #include <dlfcn.h>
 #endif
 
