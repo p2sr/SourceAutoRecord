@@ -27,6 +27,6 @@ ldflags=$(pkg-config --libs $PKGS)
 set +f
 
 {
-	echo "PKGCONFIG_CXXFLAGS=$cxxflags"
-	echo "PKGCONFIG_LDFLAGS=$ldflags"
+	echo "CXXFLAGS+=$cxxflags"
+	echo "LDFLAGS+=$ldflags"
 } >config.mk
