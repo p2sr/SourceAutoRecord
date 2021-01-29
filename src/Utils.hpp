@@ -11,6 +11,11 @@
 #define MODULE(name) name MODULE_EXTENSION
 #define GAME(x) GAME_PATH(x)
 
+//CSV export
+#define CSV_EXTENSION ".csv"
+#define CSV_SEPARATOR ','
+#define MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD "sep=,"
+
 namespace Utils {
 
 bool EndsWith(const std::string& str, const std::string& suffix);

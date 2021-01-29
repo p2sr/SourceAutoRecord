@@ -190,6 +190,48 @@ bool Engine::IsOrange()
     return this->IsCoop() && session->signonState == SIGNONSTATE_FULL && !engine->hoststate->m_activeGame;
 }
 
+bool Engine::Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr)
+{
+    float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);
+    auto cosX = std::cos(X), cosY = std::cos(Y);
+    auto sinX = std::sin(X), sinY = std::sin(Y);
+
+    Vector dir(cosY * cosX, sinY * cosX, -sinX);
+
+    Vector finalDir = Vector(dir.x, dir.y, dir.z).Normalize() * distMax;
+
+    Ray_t ray;
+    ray.m_IsRay = true;
+    ray.m_IsSwept = true;
+    ray.m_Start = VectorAligned(pos.x, pos.y, pos.z);
+    ray.m_Delta = VectorAligned(finalDir.x, finalDir.y, finalDir.z);
+    ray.m_StartOffset = VectorAligned();
+    ray.m_Extents = VectorAligned();
+
+    engine->TraceRay(this->engineTrace->ThisPtr(), ray, MASK_SHOT_PORTAL, &filter, &tr);
+
+    if (tr.fraction >= 1) {
+        return false;
+    }
+    return true;
+}
+
+bool Engine::TraceFromCamera(float distMax, CGameTrace& tr)
+{
+    void* player = server->GetPlayer(GET_SLOT() + 1);
+
+    if (player == nullptr || (int)player == -1)
+        return false;
+
+    Vector camPos = server->GetAbsOrigin(player) + server->GetViewOffset(player);
+    QAngle angle = engine->GetAngles(GET_SLOT());
+
+    CTraceFilterSimple filter;
+    filter.SetPassEntity(server->GetPlayer(GET_SLOT() + 1));
+
+    return this->Trace(camPos, angle, distMax, filter, tr);
+}
+
 float Engine::GetHostFrameTime()
 {
     return this->HostFrameTime(this->engineTool->ThisPtr());
@@ -294,7 +336,7 @@ DETOUR(Engine::Frame)
         }
     }
 
-    if (engine->GetTick() != session->GetTick()) {
+    if (engine->lastTick != session->GetTick()) {
         if (networkManager.isConnected && engine->isRunning()) {
             networkManager.UpdateGhostsPosition();
 
@@ -308,7 +350,11 @@ DETOUR(Engine::Frame)
         }
     }
 
-    zachStats->UpdateRects();
+    if (engine->lastTick != session->GetTick()) {
+        zachStats->UpdateTriggers();
+    }
+
+    engine->lastTick = session->GetTick();
 
     return Engine::Frame(thisptr);
 }

@@ -110,6 +110,7 @@ public:
     void* s_CommandBuffer = nullptr;
     bool* m_bWaitEnabled = nullptr;
     bool* m_bWaitEnabled2 = nullptr;
+    int lastTick = 0;
 
     bool overlayActivated = false;
     bool hasRecorded = false;
@@ -138,6 +139,8 @@ public:
     std::string GetCurrentMapName();
     bool IsCoop();
     bool IsOrange();
+    bool Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr);
+    bool TraceFromCamera(float distMax, CGameTrace& tr);
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);

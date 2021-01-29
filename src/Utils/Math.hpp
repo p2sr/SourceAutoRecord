@@ -72,3 +72,33 @@ inline float Math::Distance(const QAngle& a, const QAngle& b)
 {
     return std::sqrt(std::pow(b.x - a.x, 2) + std::pow(b.y - a.y, 2) + std::pow(b.z - a.z, 2));
 }
+
+
+class Matrix {
+
+public:
+    Matrix(int rows, int cols, const double init);
+
+    double& operator()(const unsigned int x, const unsigned int y) { return mat[x][y]; }
+    const double& operator()(const unsigned int x, const unsigned int y) const { return mat[x][y]; }
+
+    Matrix& operator=(const Matrix& rhs);
+    Matrix operator+(const Matrix& rhs);
+    Matrix& operator+=(const Matrix& rhs);
+    Matrix operator*(const Matrix& rhs);
+    Matrix& operator*=(const Matrix& rhs);
+    Vector operator*(const Vector& rhs);
+    Vector Matrix::operator*=(const Vector& rhs);
+
+    Matrix transpose();
+
+    void Print();
+
+public:
+    unsigned int rows;
+    unsigned int cols;
+
+private:
+    std::vector<std::vector<double>> mat;
+};
+
