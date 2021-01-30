@@ -350,7 +350,7 @@ DETOUR(Engine::Frame)
         }
     }
 
-    if (engine->lastTick != session->GetTick()) {
+    if ((engine->demoplayer->IsPlaying() || engine->IsOrange()) && engine->lastTick != session->GetTick()) {
         zachStats->UpdateTriggers();
     }
 

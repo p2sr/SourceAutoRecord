@@ -77,7 +77,6 @@ public:
     ZachTrigger(const Vector& A, const Vector& G, unsigned ID, double angle = 0)
         : Box::Box(A, G, ID, angle)
     { }
-    bool show = true;
     bool isInside = false;
     bool triggered = false;
 
@@ -97,22 +96,21 @@ public:
     std::vector<ZachTrigger>& GetTriggers();
     ZachTrigger* GetTriggerByID(unsigned int ID);
     void ResetTriggers();
-    void ExportTriggers();
+    bool ExportTriggers();
 
     std::stringstream& GetStream() { return this->output; }
     void ResetStream() { this->output.str(""); }
-    void ExportCSV();
+    bool ExportCSV();
 
-
-    void SetHeader(std::string& header) { this->header = header; };
+    void NewSession();
 
     bool isFirstPlaced;
     Vector A;
+    int lastFrameDrawn;
+    int lastTriggerTick;
 
 private:
 
-    int lastFrameDrawn;
-    std::string header;
     std::stringstream output;
 };
 
@@ -122,6 +120,8 @@ extern Variable sar_zach_stats_file;
 extern Variable sar_zach_triggers_file;
 extern Variable sar_zach_name;
 extern Variable sar_zach_show_triggers;
+extern Variable sar_zach_header;
+extern Variable sar_zach_show_chat;
 extern Command sar_zach_export;
 extern Command sar_zach_reset;
 extern Command sar_zach_trigger_add;

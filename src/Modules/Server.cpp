@@ -20,6 +20,7 @@
 #include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/GroundFramesCounter.hpp"
+#include "Features/Stats/ZachStats.hpp"
 
 #include "Engine.hpp"
 #include "Client.hpp"
@@ -302,6 +303,10 @@ DETOUR(Server::GameFrame, bool simulating)
         }
     }
 
+    if (simulating) {
+        zachStats->UpdateTriggers();
+    }
+    
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else

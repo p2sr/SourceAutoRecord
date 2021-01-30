@@ -164,6 +164,7 @@ void Session::Start()
     }
 
     zachStats->ResetTriggers();
+    zachStats->NewSession();
 
     engine->hasRecorded = false;
     engine->hasPaused = false;

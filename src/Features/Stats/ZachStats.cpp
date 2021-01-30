@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <iomanip>
 
 #ifdef _WIN32
 #define PLAT_CALL(fn, ...) fn(__VA_ARGS__)
@@ -13,31 +14,37 @@
 #define PLAT_CALL(fn, ...) fn(nullptr, __VA_ARGS__)
 #endif
 
-DECL_CVAR_CALLBACK(sar_zach_name)
-{
-    auto& stream = zachStats->GetStream();
-    stream.clear(); // Clear flags
-    if (stream.tellp() != std::streampos(0))
-        stream << "\n";
-    stream << sar_zach_name.GetString();
     zachStats->ResetTriggers();
-}
-
 Variable sar_zach_stats_file("sar_zach_stats_file", "zach.csv", "Name of the file to export stats to.\n", 0);
 Variable sar_zach_triggers_file("sar_zach_triggers_file", "zach.cfg", "Name of the file to export triggers to.\n", 0);
-Variable sar_zach_name("sar_zach_name", "FrenchSaves10ticks", "Name of the current player. Re-enables all triggers when changed.\n", 0, &sar_zach_name_callback);
+Variable sar_zach_name("sar_zach_name", "FrenchSaves10ticks", "Name of the current player. Re-enables all triggers when changed.\n", 0);
 Variable sar_zach_show_triggers("sar_zach_show_triggers", "0", 0, 2, "How to draw the triggers in-game. 0: do not show. 1: show outline. 2: show full box (appears through walls).\n");
+Variable sar_zach_show_chat("sar_zach_show_chat", "1", "Show trigger times in chat.\n");
+Variable sar_zach_header("sar_zach_header", "Name, Times", "Header of the csv file.\n", 0);
 
-//plugin_load sar; sar_shane_loads 1; sar_disable_progress_bar_update 2; bind mouse5 "sar_zach_trigger_place 1"
+//plugin_load sar; sar_shane_loads 1; sar_disable_progress_bar_update 2; sar_zach_show_triggers 1; sar_zach_header "Name,Door,Floor,Blue Portal,Office window"; exec zach
 
 //Triggers
-
+    
 void ZachTrigger::Trigger(std::stringstream& output)
 {
-    console->Print("%s -> %d (%.3f)\n", sar_zach_name.GetString(), session->GetTick(), session->GetTick() / 60.f);
+    auto tick = session->GetTick();
+    char out[128];
+    std::snprintf(out, 128, "%s -> %.3f (%.3f)", sar_zach_name.GetString(), tick / 60.f, zachStats->lastTriggerTick == -1 ? tick / 60.f : (tick - zachStats->lastTriggerTick) / 60.f);
+    
+    if (sar_zach_show_chat.GetBool()) {
+        client->Chat(TextColor::ORANGE, out);
+    } else {
+        std::strncat(out, "\n", 2);
+        console->Print(out);
+    }
+
     output.clear(); // Clear flags
-    output << CSV_SEPARATOR << session->GetTick() << " (" << (session->GetTick() / 60.f) << ")";
+    //Stop annoy me
+    output << CSV_SEPARATOR << std::fixed << std::setprecision(3) << tick / 60.f << " (" << (zachStats->lastTriggerTick == -1 ? tick / 60.f : (tick - zachStats->lastTriggerTick) / 60.f) << ")";
+
     this->triggered = true;
+    zachStats->lastTriggerTick = tick;
 }
 
 //Stats
@@ -47,18 +54,14 @@ ZachStats* zachStats;
 ZachStats::ZachStats()
     : isFirstPlaced(false)
     , lastFrameDrawn(0)
-    , header("Name,Times")
     , output("", std::ios_base::out)
+    , lastTriggerTick(-1)
 {
     this->hasLoaded = true;
 }
 
 void ZachStats::UpdateTriggers()
 {
-    if (this->output.tellp() == std::streampos(0)) {
-        this->output.clear(); // Clear flags
-        this->output << sar_zach_name.GetString();
-    }
     auto player = client->GetPlayer(GET_SLOT() + 1);
     if (!player)
         return;
@@ -66,7 +69,7 @@ void ZachStats::UpdateTriggers()
     auto pos = client->GetAbsOrigin(player);
 
     for (auto& trigger : this->GetTriggers()) {
-        if (sar_zach_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 60 <= session->GetTick()) {
+        if (sar_zach_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 59 <= session->GetTick()) {
             this->DrawTrigger(trigger);
         }
 
@@ -75,7 +78,7 @@ void ZachStats::UpdateTriggers()
         }
     }
 
-    if (sar_zach_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 60 <= session->GetTick()) {
+    if (sar_zach_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 59 <= session->GetTick()) {
         this->lastFrameDrawn = session->GetTick();
     }
 
@@ -99,7 +102,7 @@ void ZachStats::AddTrigger(Vector& A, Vector& G, float angle, unsigned int ID)
     ZachTrigger trigger(A, G, ID, angle);
 
     this->GetTriggers().push_back(trigger);
-    console->Print("Trigger added\n");
+    console->Print("Trigger added !\n");
 }
 
 void ZachStats::DeleteTrigger(unsigned int ID)
@@ -171,11 +174,12 @@ void ZachStats::ResetTriggers()
     for (auto& trigger : this->GetTriggers()) {
         trigger.isInside = false;
         trigger.triggered = false;
-        this->lastFrameDrawn = 0;
     }
+    this->lastTriggerTick = -1;
+    this->lastFrameDrawn = 0;
 }
 
-void ZachStats::ExportTriggers()
+bool ZachStats::ExportTriggers()
 {
     std::string filePath = sar_zach_triggers_file.GetString();
 
@@ -186,7 +190,7 @@ void ZachStats::ExportTriggers()
     std::ofstream file(filePath, std::ios::out | std::ios::trunc);
     if (!file.good()) {
         file.close();
-        return console->Print("Could not export triggers.\n");
+        return false;
     }
 
     file << "// Explanation: sar_zach_trigger_add ID A.x A.y A.z B.x B.y B.z angle" << std::endl;
@@ -200,10 +204,10 @@ void ZachStats::ExportTriggers()
     }
 
     file.close();
-    console->Print("Successfully exported to %s.\n", filePath.c_str());
+    return true;
 }
 
-void ZachStats::ExportCSV()
+bool ZachStats::ExportCSV()
 {
     std::string filePath = sar_zach_stats_file.GetString();
 
@@ -214,7 +218,7 @@ void ZachStats::ExportCSV()
     std::ofstream file(filePath, std::ios::out | std::ios::trunc);
     if (!file.good()) {
         file.close();
-        return console->Print("Could not export stats.\n");
+        return false;
     }
 
     this->output.clear(); // Clear flags
@@ -222,11 +226,20 @@ void ZachStats::ExportCSV()
     // Fine Microsoft we'll do your dumb thing
     file << MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD << std::endl;
 #endif
-    file << this->header << std::endl;
+    file << sar_zach_header.GetString() << std::endl;
     file << this->output.str() << std::endl;
 
     file.close();
-    console->Print("Successfully exported to %s.\n", filePath.c_str());
+    return true;
+}
+
+void ZachStats::NewSession()
+{
+    auto& stream = zachStats->GetStream();
+    stream.clear(); // Clear flags
+    if (stream.tellp() != std::streampos(0))
+        stream << "\n";
+    stream << sar_zach_name.GetString();
 }
 
 bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
@@ -300,7 +313,7 @@ CON_COMMAND(sar_zach_trigger_add, "sar_zach_trigger_add <id> <A.x> <A.y> <A.z> <
 
     float angle = 0;
     if (args.ArgC() == 9) {
-        angle = std::atof(args[7]);
+        angle = std::atof(args[8]);
     }
 
     zachStats->AddTrigger(A, G, angle, id);
@@ -392,17 +405,24 @@ CON_COMMAND(sar_zach_trigger_delete, "sar_zach_trigger_delete <id> - deletes the
 
 CON_COMMAND(sar_zach_export_stats, "Export the current stats output the the csv file specified by sar_zach_stats_file.\n")
 {
-    zachStats->ExportCSV();
+    if (zachStats->ExportCSV()) {
+        console->Print("Successfully exported to %s.\n", sar_zach_stats_file.GetString());
+    } else {
+        console->Print("Could not export stats.\n");
+    }
 }
 
 CON_COMMAND(sar_zach_export_triggers, "Export the current triggers to the cfg file specified by sar_zach_triggers_file.\n")
 {
-    zachStats->ExportTriggers();
+    if (zachStats->ExportTriggers()) {
+        console->Print("Successfully exported to %s.\n", sar_zach_triggers_file.GetString());
+    } else {
+        console->Print("Could not export triggers.\n");
+    }
 }
 
 CON_COMMAND(sar_zach_reset, "Resets the state of the output and all triggers, ready for gathering stats.\n")
 {
     zachStats->ResetTriggers();
     zachStats->ResetStream();
-    zachStats->GetStream() << sar_zach_name.GetString();
 }
