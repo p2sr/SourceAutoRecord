@@ -14,7 +14,6 @@
 #define PLAT_CALL(fn, ...) fn(nullptr, __VA_ARGS__)
 #endif
 
-    zachStats->ResetTriggers();
 Variable sar_zach_stats_file("sar_zach_stats_file", "zach.csv", "Name of the file to export stats to.\n", 0);
 Variable sar_zach_triggers_file("sar_zach_triggers_file", "zach.cfg", "Name of the file to export triggers to.\n", 0);
 Variable sar_zach_name("sar_zach_name", "FrenchSaves10ticks", "Name of the current player. Re-enables all triggers when changed.\n", 0);
