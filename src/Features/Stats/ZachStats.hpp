@@ -13,14 +13,14 @@
 
 class Box {
 public:
-
+    std::array<Vector, 2> origVerts;
     std::array<Vector, 8> verts;
     Vector origin;
     unsigned int ID;
 
     float angle = 0;
 
-    void Box::Rotate(double angle)
+    void Rotate(double angle)
     {
         auto rad = DEG2RAD(angle);
         Matrix rot(3, 3, 0);
@@ -46,7 +46,7 @@ public:
             v += this->origin;
         }
 
-        this->angle = angle;
+        this->angle += angle;
     }
 };
 

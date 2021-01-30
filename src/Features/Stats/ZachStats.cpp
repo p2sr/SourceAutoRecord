@@ -78,6 +78,12 @@ void ZachStats::UpdateTriggers()
 
 void ZachStats::AddTrigger(Vector& A, Vector& G, float angle, unsigned int ID)
 {
+    // 'A' must have minimum coordinates, 'G' must have max
+#define SWAP(a,b) do { float tmp = a; a = b; b = tmp; } while (0)
+    if (A.x > G.x) SWAP(A.x, G.x);
+    if (A.y > G.y) SWAP(A.y, G.y);
+    if (A.z > G.z) SWAP(A.z, G.z);
+#undef SWAP
     auto trigger = this->GetTriggerByID(ID);
     if (trigger == nullptr) { //Trigger ID doesn't exist
 
@@ -86,18 +92,18 @@ void ZachStats::AddTrigger(Vector& A, Vector& G, float angle, unsigned int ID)
         float lengthZ = G.z - A.z;
 
         Vector B{ A.x + lengthX, A.y, A.z };
-        Vector C{ A.x + lengthX, A.y, A.z + lengthZ };
-        Vector D{ A.x, A.y, A.z + lengthZ };
+        Vector C{ A.x + lengthX, A.y + lengthY, A.z };
+        Vector D{ A.x, A.y + lengthY, A.z };
 
-        Vector E{ A.x, A.y + lengthY, A.z };
-        Vector F{ A.x + lengthX, A.y + lengthY, A.z };
+        Vector E{ A.x, A.y, A.z + lengthZ };
+        Vector F{ A.x + lengthX, A.y, A.z + lengthZ };
         Vector H{ A.x, A.y + lengthY, A.z + lengthZ };
 
         //"mouse5" = "sar_stats_rect -150 -400 960 -82 -331 1003"
 
         Vector origin{ (G.x + A.x) / 2, (G.y + A.y) / 2, (G.z + A.z) / 2 };
 
-        ZachTrigger trigger{ A, B, C, D, E, F, G, H, origin, ID };
+        ZachTrigger trigger{ { {A, G}, {A, B, C, D, E, F, G, H}, origin, ID } };
 
         trigger.Rotate(angle);
 
@@ -116,12 +122,12 @@ void ZachStats::DeleteTrigger(unsigned int ID)
     auto& v = this->GetTriggers();
     unsigned int idx = 0;
     for (auto& it : v) {
-        if (it.ID == ID)
+        if (it.ID == ID) {
+            v.erase(v.begin() + idx);
             break;
+        }
         ++idx;
     }
-
-    v.erase(v.begin() + idx);
 }
 
 void ZachStats::DrawTrigger(ZachTrigger& trigger)
@@ -224,8 +230,8 @@ void ZachStats::ExportTriggers()
     file << "//Explanation : sar_trigger A.x A.y A.z B.x B.y B.z angle ID" << std::endl;
 
     for (auto& trigger : this->GetTriggers()) {
-        file << "sar_trigger " << trigger.verts[0].x << " " << trigger.verts[0].y << " " << trigger.verts[0].z
-             << " " << trigger.verts[6].x << " " << trigger.verts[6].y << " " << trigger.verts[6].z
+        file << "sar_trigger " << trigger.origVerts[0].x << " " << trigger.origVerts[0].y << " " << trigger.origVerts[0].z
+             << " " << trigger.origVerts[1].x << " " << trigger.origVerts[1].y << " " << trigger.origVerts[1].z
              << " " << trigger.angle
              << " " << trigger.ID
              << std::endl;
@@ -261,45 +267,45 @@ bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
         return false;
     }
 
-    // Step 1: collide on y. As the box is effectively axis-aligned on
-    // this axis, we can just compare the point's y coordinate to the top
+    // Step 1: collide on z (vertical). As the box is effectively axis-aligned on
+    // this axis, we can just compare the point's z coordinate to the top
     // and bottom of the cuboid
 
-    float yMin = trigger.verts[0].z, yMax = trigger.verts[4].z; // A point on the bottom and top respectively
-    if (pos.z < yMin || pos.z > yMax) {
+    float zMin = trigger.verts[0].z, zMax = trigger.verts[4].z; // A point on the bottom and top respectively
+    if (pos.z < zMin || pos.z > zMax) {
         /*if (trigger.ID == 1) {
             console->Print("triggered %d\n", trigger.ID);
         }*/
         return false;
     }
 
-    // Step 2: collide on x and z. We can now ignore the y axis entirely,
-    // and instead look at colliding the point {p.x, p.z} with the
+    // Step 2: collide on x and y. We can now ignore the y axis entirely,
+    // and instead look at colliding the point {p.x, p.y} with the
     // rectangle defined by the top or bottom face of the cuboid
 
     // Algorithm stolen from https://stackoverflow.com/a/2752754/13932065
 
     float bax = trigger.verts[1].x - trigger.verts[0].x;
-    float baz = trigger.verts[1].y - trigger.verts[0].y;
+    float bay = trigger.verts[1].y - trigger.verts[0].y;
     float dax = trigger.verts[3].x - trigger.verts[0].x;
-    float daz = trigger.verts[3].y - trigger.verts[0].y;
+    float day = trigger.verts[3].y - trigger.verts[0].y;
 
-    if ((pos.x - trigger.verts[0].x) * bax + (pos.y - trigger.verts[0].y) * baz < 0) {
+    if ((pos.x - trigger.verts[0].x) * bax + (pos.y - trigger.verts[0].y) * bay < 0) {
         if (trigger.ID == 1) {
         }
         return false;
     }
-    if ((pos.x - trigger.verts[1].x) * bax + (pos.y - trigger.verts[1].y) * baz > 0) {
+    if ((pos.x - trigger.verts[1].x) * bax + (pos.y - trigger.verts[1].y) * bay > 0) {
         if (trigger.ID == 1) {
         }
         return false;
     }
-    if ((pos.x - trigger.verts[0].x) * dax + (pos.y - trigger.verts[0].y) * daz < 0) {
+    if ((pos.x - trigger.verts[0].x) * dax + (pos.y - trigger.verts[0].y) * day < 0) {
         if (trigger.ID == 1) {
         }
         return false;
     }
-    if ((pos.x - trigger.verts[3].x) * dax + (pos.y - trigger.verts[3].y) * daz > 0) {
+    if ((pos.x - trigger.verts[3].x) * dax + (pos.y - trigger.verts[3].y) * day > 0) {
         if (trigger.ID == 1) {
         }
         return false;

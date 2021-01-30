@@ -88,7 +88,7 @@ public:
     Matrix operator*(const Matrix& rhs);
     Matrix& operator*=(const Matrix& rhs);
     Vector operator*(const Vector& rhs);
-    Vector Matrix::operator*=(const Vector& rhs);
+    Vector operator*=(const Vector& rhs);
 
     Matrix transpose();
 
