@@ -100,13 +100,12 @@ public:
     void ExportTriggers();
 
     std::stringstream& GetStream() { return this->output; }
-    void ResetStream() { this->output.clear(); }
+    void ResetStream() { this->output.str(""); }
     void ExportCSV();
 
 
     void SetHeader(std::string& header) { this->header = header; };
 
-    Matrix m;
     bool isFirstPlaced;
     Vector A;
 
