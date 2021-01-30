@@ -43,10 +43,10 @@ ZachStats* zachStats;
 
 ZachStats::ZachStats()
     : m(3, 3, 0)
-    , output(MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD "\n")
-    , header("Triggers,Door,Floor breaks,Blue Portal,Office window")
     , isFirstPlaced(false)
     , lastFrameDrawn(0)
+    , header("Triggers,Door,Floor breaks,Blue Portal,Office window")
+    , output(MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD "\n")
 {
     this->hasLoaded = true;
 }
@@ -179,7 +179,7 @@ void ZachStats::ExportTriggers()
         return console->Print("Could not export triggers.\n");
     }
 
-    file << "// Explanation : sar_zach_trigger_add A.x A.y A.z B.x B.y B.z angle ID" << std::endl;
+    file << "// Explanation: sar_zach_trigger_add A.x A.y A.z B.x B.y B.z angle ID" << std::endl;
 
     for (auto& trigger : this->GetTriggers()) {
         file << "sar_zach_trigger_add " << trigger.origVerts[0].x << " " << trigger.origVerts[0].y << " " << trigger.origVerts[0].z
