@@ -5,6 +5,7 @@
 #include "Modules/Server.hpp"
 
 #include <cmath>
+#include <cstdlib>
 
 #ifdef _WIN32
 #define PLAT_CALL(fn, ...) fn(__VA_ARGS__)
@@ -15,23 +16,27 @@
 DECL_CVAR_CALLBACK(sar_zach_name)
 {
     auto& stream = zachStats->GetStream();
+    stream.clear(); // Clear flags
     if (stream.tellp() != std::streampos(0))
         stream << "\n";
     stream << sar_zach_name.GetString();
+    zachStats->ResetTriggers();
 }
 
-Variable sar_zach_file("sar_zach_file", "zach.csv", "Name of the file to export.\n", 0);
-Variable sar_zach_name("sar_zach_name", "FrenchSaves10ticks", "Name of the current player.\n", 0, &sar_zach_name_callback);
-Variable sar_zach_show_triggers("sar_zach_show_triggers", "1", "Draw the triggers in-game");
+Variable sar_zach_stats_file("sar_zach_stats_file", "zach.csv", "Name of the file to export stats to.\n", 0);
+Variable sar_zach_triggers_file("sar_zach_triggers_file", "zach.cfg", "Name of the file to export triggers to.\n", 0);
+Variable sar_zach_name("sar_zach_name", "FrenchSaves10ticks", "Name of the current player. Re-enables all triggers when changed.\n", 0, &sar_zach_name_callback);
+Variable sar_zach_show_triggers("sar_zach_show_triggers", "0", 0, 2, "How to draw the triggers in-game. 0: do not show. 1: show outline. 2: show full box (appears through walls).\n");
 
-//plugin_load sar; sar_shane_loads 1; sar_disable_progress_bar_update 2; bind mouse5 "sar_trigger_place 1"
+//plugin_load sar; sar_shane_loads 1; sar_disable_progress_bar_update 2; bind mouse5 "sar_zach_trigger_place 1"
 
 //Triggers
 
 void ZachTrigger::Trigger(std::stringstream& output)
 {
     console->Print("%s -> %d (%.3f)\n", sar_zach_name.GetString(), session->GetTick(), session->GetTick() / 60.f);
-    output << CSV_SEPARATOR << session->GetTick() << " (" << session->GetTick() / 60.f << ")";
+    output.clear(); // Clear flags
+    output << CSV_SEPARATOR << session->GetTick() << " (" << (session->GetTick() / 60.f) << ")";
     this->triggered = true;
 }
 
@@ -40,17 +45,20 @@ void ZachTrigger::Trigger(std::stringstream& output)
 ZachStats* zachStats;
 
 ZachStats::ZachStats()
-    : m(3, 3, 0)
-    , output(MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD "\n")
-    , header("Triggers,Door,Floor breaks,Blue Portal,Office window")
-    , isFirstPlaced(false)
+    : isFirstPlaced(false)
     , lastFrameDrawn(0)
+    , header("Name,Times")
+    , output("", std::ios_base::out)
 {
     this->hasLoaded = true;
 }
 
 void ZachStats::UpdateTriggers()
 {
+    if (this->output.tellp() == std::streampos(0)) {
+        this->output.clear(); // Clear flags
+        this->output << sar_zach_name.GetString();
+    }
     auto player = client->GetPlayer(GET_SLOT() + 1);
     if (!player)
         return;
@@ -58,7 +66,7 @@ void ZachStats::UpdateTriggers()
     auto pos = client->GetAbsOrigin(player);
 
     for (auto& trigger : this->GetTriggers()) {
-        if (sar_zach_show_triggers.GetBool() && this->lastFrameDrawn + 60 <= session->GetTick()) {
+        if (sar_zach_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 60 <= session->GetTick()) {
             this->DrawTrigger(trigger);
         }
 
@@ -67,7 +75,7 @@ void ZachStats::UpdateTriggers()
         }
     }
 
-    if (sar_zach_show_triggers.GetBool() && this->lastFrameDrawn + 60 <= session->GetTick()) {
+    if (sar_zach_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 60 <= session->GetTick()) {
         this->lastFrameDrawn = session->GetTick();
     }
 
@@ -78,37 +86,20 @@ void ZachStats::UpdateTriggers()
 
 void ZachStats::AddTrigger(Vector& A, Vector& G, float angle, unsigned int ID)
 {
-    auto trigger = this->GetTriggerByID(ID);
-    if (trigger == nullptr) { //Trigger ID doesn't exist
+    // 'A' must have minimum coordinates, 'G' must have max
+#define SWAP(a,b) do { float tmp = a; a = b; b = tmp; } while (0)
+    if (A.x > G.x) SWAP(A.x, G.x);
+    if (A.y > G.y) SWAP(A.y, G.y);
+    if (A.z > G.z) SWAP(A.z, G.z);
+#undef SWAP
 
-        float lengthX = G.x - A.x;
-        float lengthY = G.y - A.y;
-        float lengthZ = G.z - A.z;
+    this->DeleteTrigger(ID); // Make sure there's not already a trigger with that ID
 
-        Vector B{ A.x + lengthX, A.y, A.z };
-        Vector C{ A.x + lengthX, A.y, A.z + lengthZ };
-        Vector D{ A.x, A.y, A.z + lengthZ };
 
-        Vector E{ A.x, A.y + lengthY, A.z };
-        Vector F{ A.x + lengthX, A.y + lengthY, A.z };
-        Vector H{ A.x, A.y + lengthY, A.z + lengthZ };
+    ZachTrigger trigger(A, G, ID, angle);
 
-        //"mouse5" = "sar_stats_rect -150 -400 960 -82 -331 1003"
-
-        Vector origin{ (G.x + A.x) / 2, (G.y + A.y) / 2, (G.z + A.z) / 2 };
-
-        ZachTrigger trigger{ A, B, C, D, E, F, G, H, origin, ID };
-
-        trigger.Rotate(angle);
-
-        this->GetTriggers().push_back(trigger);
-        console->Print("Trigger added\n");
-    } else { //There's already a trigger with that ID
-        auto oldAngle = trigger->angle;
-
-        this->DeleteTrigger(ID);
-        this->AddTrigger(A, G, oldAngle, ID);
-    }
+    this->GetTriggers().push_back(trigger);
+    console->Print("Trigger added\n");
 }
 
 void ZachStats::DeleteTrigger(unsigned int ID)
@@ -116,35 +107,25 @@ void ZachStats::DeleteTrigger(unsigned int ID)
     auto& v = this->GetTriggers();
     unsigned int idx = 0;
     for (auto& it : v) {
-        if (it.ID == ID)
+        if (it.ID == ID) {
+            v.erase(v.begin() + idx);
             break;
+        }
         ++idx;
     }
-
-    v.erase(v.begin() + idx);
 }
 
 void ZachStats::DrawTrigger(ZachTrigger& trigger)
 {
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[0], trigger.verts[1], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[0], trigger.verts[3], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[3], trigger.verts[2], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[2], trigger.verts[1], 255, 0, 0, false, 1);
-
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[4], trigger.verts[7], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[4], trigger.verts[5], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[7], trigger.verts[6], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[5], trigger.verts[6], 255, 0, 0, false, 1);
-
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[0], trigger.verts[4], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[3], trigger.verts[7], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[2], trigger.verts[6], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[1], trigger.verts[5], 255, 0, 0, false, 1);
-
-    //const Vector& origin, const Vector& mins, const Vector& MAX, QAngle const& orientation, int r, int g, int b, int a, float duration
-    //Vector origin = trigger.origin;
-
-    //PLAT_CALL(engien->AddBoxOverlay, )
+    PLAT_CALL(
+        engine->AddBoxOverlay,
+        trigger.origin,
+        trigger.origVerts[0] - trigger.origin,
+        trigger.origVerts[1] - trigger.origin,
+        {0, trigger.angle, 0},
+        255, 0, 0, sar_zach_show_triggers.GetInt() == 2 ? 100 : 0,
+        1
+    );
 }
 
 void ZachStats::PreviewSecond()
@@ -156,34 +137,17 @@ void ZachStats::PreviewSecond()
     auto const& G = tr.endpos;
 
     //Draw the box
-    float lengthX = G.x - A.x;
-    float lengthY = G.y - A.y;
-    float lengthZ = G.z - A.z;
-
-    Vector B{ A.x + lengthX, A.y, A.z };
-    Vector C{ A.x + lengthX, A.y, A.z + lengthZ };
-    Vector D{ A.x, A.y, A.z + lengthZ };
-
-    Vector E{ A.x, A.y + lengthY, A.z };
-    Vector F{ A.x + lengthX, A.y + lengthY, A.z };
-    Vector H{ A.x, A.y + lengthY, A.z + lengthZ };
 
     Vector origin{ (G.x + A.x) / 2, (G.y + A.y) / 2, (G.z + A.z) / 2 };
-
-    PLAT_CALL(engine->AddLineOverlay, A, B, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, A, D, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, D, C, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, C, B, 255, 0, 0, false, 0);
-
-    PLAT_CALL(engine->AddLineOverlay, E, H, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, E, F, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, H, G, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, F, G, 255, 0, 0, false, 0);
-
-    PLAT_CALL(engine->AddLineOverlay, A, E, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, D, H, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, C, G, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, B, F, 255, 0, 0, false, 0);
+    PLAT_CALL(
+        engine->AddBoxOverlay,
+        origin,
+        A - origin,
+        G - origin,
+        {0, 0, 0},
+        255, 0, 0, 0,
+        0
+    );
 }
 
 std::vector<ZachTrigger>& ZachStats::GetTriggers()
@@ -194,9 +158,11 @@ std::vector<ZachTrigger>& ZachStats::GetTriggers()
 
 ZachTrigger* ZachStats::GetTriggerByID(unsigned int ID)
 {
-    for (auto& trigger : this->GetTriggers())
-        if (trigger.ID == ID)
+    for (auto& trigger : this->GetTriggers()) {
+        if (trigger.ID == ID) {
             return &trigger;
+        }
+    }
     return nullptr;
 }
 
@@ -211,48 +177,56 @@ void ZachStats::ResetTriggers()
 
 void ZachStats::ExportTriggers()
 {
-    std::string filePath = sar_zach_file.GetString();
-    if (filePath.substr(filePath.length() - 4, 4) != ".cfg")
+    std::string filePath = sar_zach_triggers_file.GetString();
+
+    if (filePath.substr(filePath.length() - 4, 4) != ".cfg") {
         filePath += ".cfg";
+    }
 
     std::ofstream file(filePath, std::ios::out | std::ios::trunc);
     if (!file.good()) {
         file.close();
-        return console->Print("Can't export the file.\n");
+        return console->Print("Could not export triggers.\n");
     }
 
-    file << "//Explanation : sar_trigger A.x A.y A.z B.x B.y B.z angle ID" << std::endl;
+    file << "// Explanation: sar_zach_trigger_add ID A.x A.y A.z B.x B.y B.z angle" << std::endl;
 
     for (auto& trigger : this->GetTriggers()) {
-        file << "sar_trigger " << trigger.verts[0].x << " " << trigger.verts[0].y << " " << trigger.verts[0].z
-             << " " << trigger.verts[6].x << " " << trigger.verts[6].y << " " << trigger.verts[6].z
+        file << "sar_zach_trigger_add " << trigger.ID
+             << " " << trigger.origVerts[0].x << " " << trigger.origVerts[0].y << " " << trigger.origVerts[0].z
+             << " " << trigger.origVerts[1].x << " " << trigger.origVerts[1].y << " " << trigger.origVerts[1].z
              << " " << trigger.angle
-             << " " << trigger.ID
              << std::endl;
     }
 
     file.close();
-    console->Print("Successfully exported to %s.\n", sar_zach_file.GetString());
+    console->Print("Successfully exported to %s.\n", filePath.c_str());
 }
 
-bool ZachStats::ExportCSV()
+void ZachStats::ExportCSV()
 {
-    std::string filePath = sar_zach_file.GetString();
-    if (filePath.substr(filePath.length() - 4, 4) != ".csv")
+    std::string filePath = sar_zach_stats_file.GetString();
+
+    if (filePath.substr(filePath.length() - 4, 4) != ".csv") {
         filePath += ".csv";
+    }
 
     std::ofstream file(filePath, std::ios::out | std::ios::trunc);
     if (!file.good()) {
         file.close();
-        return false;
+        return console->Print("Could not export stats.\n");
     }
 
+    this->output.clear(); // Clear flags
+#ifdef _WIN32
+    // Fine Microsoft we'll do your dumb thing
     file << MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD << std::endl;
+#endif
     file << this->header << std::endl;
     file << this->output.str() << std::endl;
 
     file.close();
-    return true;
+    console->Print("Successfully exported to %s.\n", filePath.c_str());
 }
 
 bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
@@ -261,45 +235,45 @@ bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
         return false;
     }
 
-    // Step 1: collide on y. As the box is effectively axis-aligned on
-    // this axis, we can just compare the point's y coordinate to the top
+    // Step 1: collide on z (vertical). As the box is effectively axis-aligned on
+    // this axis, we can just compare the point's z coordinate to the top
     // and bottom of the cuboid
 
-    float yMin = trigger.verts[0].z, yMax = trigger.verts[4].z; // A point on the bottom and top respectively
-    if (pos.z < yMin || pos.z > yMax) {
+    float zMin = trigger.verts[0].z, zMax = trigger.verts[4].z; // A point on the bottom and top respectively
+    if (pos.z < zMin || pos.z > zMax) {
         /*if (trigger.ID == 1) {
             console->Print("triggered %d\n", trigger.ID);
         }*/
         return false;
     }
 
-    // Step 2: collide on x and z. We can now ignore the y axis entirely,
-    // and instead look at colliding the point {p.x, p.z} with the
+    // Step 2: collide on x and y. We can now ignore the y axis entirely,
+    // and instead look at colliding the point {p.x, p.y} with the
     // rectangle defined by the top or bottom face of the cuboid
 
     // Algorithm stolen from https://stackoverflow.com/a/2752754/13932065
 
     float bax = trigger.verts[1].x - trigger.verts[0].x;
-    float baz = trigger.verts[1].y - trigger.verts[0].y;
+    float bay = trigger.verts[1].y - trigger.verts[0].y;
     float dax = trigger.verts[3].x - trigger.verts[0].x;
-    float daz = trigger.verts[3].y - trigger.verts[0].y;
+    float day = trigger.verts[3].y - trigger.verts[0].y;
 
-    if ((pos.x - trigger.verts[0].x) * bax + (pos.y - trigger.verts[0].y) * baz < 0) {
+    if ((pos.x - trigger.verts[0].x) * bax + (pos.y - trigger.verts[0].y) * bay < 0) {
         if (trigger.ID == 1) {
         }
         return false;
     }
-    if ((pos.x - trigger.verts[1].x) * bax + (pos.y - trigger.verts[1].y) * baz > 0) {
+    if ((pos.x - trigger.verts[1].x) * bax + (pos.y - trigger.verts[1].y) * bay > 0) {
         if (trigger.ID == 1) {
         }
         return false;
     }
-    if ((pos.x - trigger.verts[0].x) * dax + (pos.y - trigger.verts[0].y) * daz < 0) {
+    if ((pos.x - trigger.verts[0].x) * dax + (pos.y - trigger.verts[0].y) * day < 0) {
         if (trigger.ID == 1) {
         }
         return false;
     }
-    if ((pos.x - trigger.verts[3].x) * dax + (pos.y - trigger.verts[3].y) * daz > 0) {
+    if ((pos.x - trigger.verts[3].x) * dax + (pos.y - trigger.verts[3].y) * day > 0) {
         if (trigger.ID == 1) {
         }
         return false;
@@ -308,37 +282,55 @@ bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
     return true;
 }
 
-CON_COMMAND(sar_trigger, "test")
+CON_COMMAND(sar_zach_trigger_add, "sar_zach_trigger_add <id> <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> [angle] - add a trigger with the specified ID, position, and optional angle.\n")
 {
-    if (args.ArgC() < 8) {
-        return console->Print(sar_trigger.ThisPtr()->m_pszHelpString);
+    if (args.ArgC() != 8 && args.ArgC() != 9) {
+        return console->Print(sar_zach_trigger_add.ThisPtr()->m_pszHelpString);
     }
 
-    Vector A = Vector(std::atof(args[1]), std::atof(args[2]), std::atof(args[3]));
-    Vector G = Vector(std::atof(args[4]), std::atof(args[5]), std::atof(args[6]));
+    char* end;
+    int id = std::strtol(args[1], &end, 10);
+    if (*end != 0 || end == args[1]) {
+        // ID argument is not a number
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+    }
 
-    unsigned int ID = 0;
+    Vector A = Vector(std::atof(args[2]), std::atof(args[3]), std::atof(args[4]));
+    Vector G = Vector(std::atof(args[5]), std::atof(args[6]), std::atof(args[7]));
+
     float angle = 0;
-    if (args.ArgC() >= 9) {
+    if (args.ArgC() == 9) {
         angle = std::atof(args[7]);
-        ID = std::atoi(args[8]);
-    } else {
-        ID = std::atoi(args[7]);
     }
 
-    zachStats->AddTrigger(A, G, angle, ID);
+    zachStats->AddTrigger(A, G, angle, id);
 }
 
-CON_COMMAND(sar_trigger_place, "test")
+CON_COMMAND(sar_zach_trigger_place, "sar_zach_trigger_place <id> - place a trigger with the given ID at the position being aimed at.\n")
 {
-    if (args.ArgC() < 2) {
-        return console->Print(sar_trigger_place.ThisPtr()->m_pszHelpString);
+    if (args.ArgC() != 2) {
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+    }
+
+    if (!sv_cheats.GetBool()) {
+        // Trigger placement adds an overlay (even if temporarily),
+        // hence is a cheat
+        console->Print("sar_zach_trigger_place requires sv_cheats.\n");
+        return;
+    }
+
+    char* end;
+    int id = std::strtol(args[1], &end, 10);
+    if (*end != 0 || end == args[1]) {
+        // ID argument is not a number
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
     }
 
     CGameTrace tr;
     bool hit = engine->TraceFromCamera(65535.0f, tr);
-    if (!hit)
+    if (!hit) {
         return console->Print("You aimed at the void.\n");
+    }
 
     if (!sar_zach_show_triggers.GetBool()) {
         console->Print("sar_zach_show_triggers set to 1 !\n");
@@ -349,45 +341,68 @@ CON_COMMAND(sar_trigger_place, "test")
         zachStats->A = tr.endpos;
         zachStats->isFirstPlaced = true;
     } else {
-        zachStats->AddTrigger(zachStats->A, tr.endpos, 0.0f, std::atoi(args[1]));
+        zachStats->AddTrigger(zachStats->A, tr.endpos, 0.0f, id);
         zachStats->isFirstPlaced = false;
     }
 }
 
-CON_COMMAND(sar_trigger_rotate, "test")
+CON_COMMAND(sar_zach_trigger_rotate, "sar_zach_trigger_rotate <id> <angle> - changes the rotation of a trigger to the given angle, in degrees.\n")
 {
-    if (args.ArgC() < 3) {
-        return console->Print(sar_trigger_rotate.ThisPtr()->m_pszHelpString);
+    if (args.ArgC() != 3) {
+        return console->Print(sar_zach_trigger_rotate.ThisPtr()->m_pszHelpString);
     }
 
-    auto trigger = zachStats->GetTriggerByID(std::atoi(args[2]));
-    if (trigger == nullptr)
-        return console->Print("No trigger\n");
+    char* end;
 
-    trigger->Rotate(std::atoi(args[1]));
-}
-
-CON_COMMAND(sar_trigger_delete, "test")
-{
-    if (args.ArgC() < 2) {
-        return console->Print(sar_trigger_delete.ThisPtr()->m_pszHelpString);
+    int id = std::strtol(args[1], &end, 10);
+    if (*end != 0 || end == args[1]) {
+        // ID argument is not a number
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
     }
 
-    zachStats->DeleteTrigger(std::atoi(args[1]));
+    int angle = std::strtol(args[2], &end, 10);
+    if (*end != 0 || end == args[2]) {
+        // ID argument is not a number
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+    }
+
+    auto trigger = zachStats->GetTriggerByID(id);
+    if (trigger == nullptr) {
+        return console->Print("No such trigger!\n");
+    }
+
+    trigger->SetRotation(angle);
 }
 
-CON_COMMAND(sar_zach_export_stats, "test")
+CON_COMMAND(sar_zach_trigger_delete, "sar_zach_trigger_delete <id> - deletes the trigger with the given ID.\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print(sar_zach_trigger_delete.ThisPtr()->m_pszHelpString);
+    }
+
+    char* end;
+    int id = std::strtol(args[1], &end, 10);
+    if (*end != 0 || end == args[1]) {
+        // ID argument is not a number
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+    }
+
+    zachStats->DeleteTrigger(id);
+}
+
+CON_COMMAND(sar_zach_export_stats, "Export the current stats output the the csv file specified by sar_zach_stats_file.\n")
 {
     zachStats->ExportCSV();
 }
 
-CON_COMMAND(sar_zach_export_triggers, "test")
+CON_COMMAND(sar_zach_export_triggers, "Export the current triggers to the cfg file specified by sar_zach_triggers_file.\n")
 {
     zachStats->ExportTriggers();
 }
 
-CON_COMMAND(sar_zach_reset, "test")
+CON_COMMAND(sar_zach_reset, "Resets the state of the output and all triggers, ready for gathering stats.\n")
 {
     zachStats->ResetTriggers();
     zachStats->ResetStream();
+    zachStats->GetStream() << sar_zach_name.GetString();
 }
