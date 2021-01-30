@@ -179,6 +179,10 @@ void ZachStats::ExportTriggers()
 {
     std::string filePath = sar_zach_triggers_file.GetString();
 
+    if (filePath.substr(filePath.length() - 4, 4) != ".cfg") {
+        filePath += ".cfg";
+    }
+
     std::ofstream file(filePath, std::ios::out | std::ios::trunc);
     if (!file.good()) {
         file.close();
@@ -196,12 +200,16 @@ void ZachStats::ExportTriggers()
     }
 
     file.close();
-    console->Print("Successfully exported to %s.\n", sar_zach_triggers_file.GetString());
+    console->Print("Successfully exported to %s.\n", filePath.c_str());
 }
 
 void ZachStats::ExportCSV()
 {
     std::string filePath = sar_zach_stats_file.GetString();
+
+    if (filePath.substr(filePath.length() - 4, 4) != ".csv") {
+        filePath += ".csv";
+    }
 
     std::ofstream file(filePath, std::ios::out | std::ios::trunc);
     if (!file.good()) {
@@ -210,11 +218,15 @@ void ZachStats::ExportCSV()
     }
 
     this->output.clear(); // Clear flags
+#ifdef _WIN32
+    // Fine Microsoft we'll do your dumb thing
+    file << MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD << std::endl;
+#endif
     file << this->header << std::endl;
     file << this->output.str() << std::endl;
 
     file.close();
-    console->Print("Successfully exported to %s.\n", sar_zach_stats_file.GetString());
+    console->Print("Successfully exported to %s.\n", filePath.c_str());
 }
 
 bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
