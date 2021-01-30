@@ -5,6 +5,7 @@
 #include "Modules/Server.hpp"
 
 #include <cmath>
+#include <cstdlib>
 
 #ifdef _WIN32
 #define PLAT_CALL(fn, ...) fn(__VA_ARGS__)
@@ -22,9 +23,9 @@ DECL_CVAR_CALLBACK(sar_zach_name)
 
 Variable sar_zach_file("sar_zach_file", "zach.csv", "Name of the file to export.\n", 0);
 Variable sar_zach_name("sar_zach_name", "FrenchSaves10ticks", "Name of the current player.\n", 0, &sar_zach_name_callback);
-Variable sar_zach_show_triggers("sar_zach_show_triggers", "1", "Draw the triggers in-game");
+Variable sar_zach_show_triggers("sar_zach_show_triggers", "1", "Draw the triggers in-game.\n");
 
-//plugin_load sar; sar_shane_loads 1; sar_disable_progress_bar_update 2; bind mouse5 "sar_trigger_place 1"
+//plugin_load sar; sar_shane_loads 1; sar_disable_progress_bar_update 2; bind mouse5 "sar_zach_trigger_place 1"
 
 //Triggers
 
@@ -87,25 +88,8 @@ void ZachStats::AddTrigger(Vector& A, Vector& G, float angle, unsigned int ID)
 
     this->DeleteTrigger(ID); // Make sure there's not already a trigger with that ID
 
-    float lengthX = G.x - A.x;
-    float lengthY = G.y - A.y;
-    float lengthZ = G.z - A.z;
 
-    Vector B{ A.x + lengthX, A.y, A.z };
-    Vector C{ A.x + lengthX, A.y + lengthY, A.z };
-    Vector D{ A.x, A.y + lengthY, A.z };
-
-    Vector E{ A.x, A.y, A.z + lengthZ };
-    Vector F{ A.x + lengthX, A.y, A.z + lengthZ };
-    Vector H{ A.x, A.y + lengthY, A.z + lengthZ };
-
-    //"mouse5" = "sar_stats_rect -150 -400 960 -82 -331 1003"
-
-    Vector origin{ (G.x + A.x) / 2, (G.y + A.y) / 2, (G.z + A.z) / 2 };
-
-    ZachTrigger trigger{ { {A, G}, {A, B, C, D, E, F, G, H}, origin, ID } };
-
-    trigger.Rotate(angle);
+    ZachTrigger trigger(A, G, ID, angle);
 
     this->GetTriggers().push_back(trigger);
     console->Print("Trigger added\n");
@@ -198,10 +182,10 @@ void ZachStats::ExportTriggers()
         return console->Print("Can't export the file.\n");
     }
 
-    file << "//Explanation : sar_trigger A.x A.y A.z B.x B.y B.z angle ID" << std::endl;
+    file << "// Explanation : sar_zach_trigger_add A.x A.y A.z B.x B.y B.z angle ID" << std::endl;
 
     for (auto& trigger : this->GetTriggers()) {
-        file << "sar_trigger " << trigger.origVerts[0].x << " " << trigger.origVerts[0].y << " " << trigger.origVerts[0].z
+        file << "sar_zach_trigger_add " << trigger.origVerts[0].x << " " << trigger.origVerts[0].y << " " << trigger.origVerts[0].z
              << " " << trigger.origVerts[1].x << " " << trigger.origVerts[1].y << " " << trigger.origVerts[1].z
              << " " << trigger.angle
              << " " << trigger.ID
@@ -285,10 +269,10 @@ bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
     return true;
 }
 
-CON_COMMAND(sar_trigger, "test")
+CON_COMMAND(sar_zach_trigger_add, "sar_zach_trigger_add <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> <angle> <id> - add a trigger with the specified position, angle and ID.\n")
 {
-    if (args.ArgC() < 8) {
-        return console->Print(sar_trigger.ThisPtr()->m_pszHelpString);
+    if (args.ArgC() != 9) {
+        return console->Print(sar_zach_trigger_add.ThisPtr()->m_pszHelpString);
     }
 
     Vector A = Vector(std::atof(args[1]), std::atof(args[2]), std::atof(args[3]));
@@ -306,16 +290,24 @@ CON_COMMAND(sar_trigger, "test")
     zachStats->AddTrigger(A, G, angle, ID);
 }
 
-CON_COMMAND(sar_trigger_place, "test")
+CON_COMMAND(sar_zach_trigger_place, "sar_zach_trigger_place <id> - place a trigger with the given ID at the position being aimed at.\n")
 {
-    if (args.ArgC() < 2) {
-        return console->Print(sar_trigger_place.ThisPtr()->m_pszHelpString);
+    if (args.ArgC() != 2) {
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+    }
+
+    char* end;
+    int id = std::strtol(args[1], &end, 10);
+    if (*end != 0 || end == args[1]) {
+        // ID argument is not a number
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
     }
 
     CGameTrace tr;
     bool hit = engine->TraceFromCamera(65535.0f, tr);
-    if (!hit)
+    if (!hit) {
         return console->Print("You aimed at the void.\n");
+    }
 
     if (!sar_zach_show_triggers.GetBool()) {
         console->Print("sar_zach_show_triggers set to 1 !\n");
@@ -326,31 +318,53 @@ CON_COMMAND(sar_trigger_place, "test")
         zachStats->A = tr.endpos;
         zachStats->isFirstPlaced = true;
     } else {
-        zachStats->AddTrigger(zachStats->A, tr.endpos, 0.0f, std::atoi(args[1]));
+        zachStats->AddTrigger(zachStats->A, tr.endpos, 0.0f, id);
         zachStats->isFirstPlaced = false;
     }
 }
 
-CON_COMMAND(sar_trigger_rotate, "test")
+CON_COMMAND(sar_zach_trigger_rotate, "sar_zach_trigger_rotate <id> <angle> - changes the rotation of a trigger to the given angle, in degrees.\n")
 {
-    if (args.ArgC() < 3) {
-        return console->Print(sar_trigger_rotate.ThisPtr()->m_pszHelpString);
+    if (args.ArgC() != 3) {
+        return console->Print(sar_zach_trigger_rotate.ThisPtr()->m_pszHelpString);
     }
 
-    auto trigger = zachStats->GetTriggerByID(std::atoi(args[2]));
-    if (trigger == nullptr)
-        return console->Print("No trigger\n");
+    char* end;
 
-    trigger->Rotate(std::atoi(args[1]));
+    int id = std::strtol(args[1], &end, 10);
+    if (*end != 0 || end == args[1]) {
+        // ID argument is not a number
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+    }
+
+    int angle = std::strtol(args[2], &end, 10);
+    if (*end != 0 || end == args[2]) {
+        // ID argument is not a number
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+    }
+
+    auto trigger = zachStats->GetTriggerByID(id);
+    if (trigger == nullptr) {
+        return console->Print("No such trigger!\n");
+    }
+
+    trigger->SetRotation(angle);
 }
 
-CON_COMMAND(sar_trigger_delete, "test")
+CON_COMMAND(sar_zach_trigger_delete, "sar_zach_trigger_delete <id> - deletes the trigger with the given ID.\n")
 {
-    if (args.ArgC() < 2) {
-        return console->Print(sar_trigger_delete.ThisPtr()->m_pszHelpString);
+    if (args.ArgC() != 2) {
+        return console->Print(sar_zach_trigger_delete.ThisPtr()->m_pszHelpString);
     }
 
-    zachStats->DeleteTrigger(std::atoi(args[1]));
+    char* end;
+    int id = std::strtol(args[1], &end, 10);
+    if (*end != 0 || end == args[1]) {
+        // ID argument is not a number
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+    }
+
+    zachStats->DeleteTrigger(id);
 }
 
 CON_COMMAND(sar_zach_export_stats, "test")
