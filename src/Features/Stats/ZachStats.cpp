@@ -185,13 +185,13 @@ void ZachStats::ExportTriggers()
         return console->Print("Could not export triggers.\n");
     }
 
-    file << "// Explanation: sar_zach_trigger_add A.x A.y A.z B.x B.y B.z angle ID" << std::endl;
+    file << "// Explanation: sar_zach_trigger_add ID A.x A.y A.z B.x B.y B.z angle" << std::endl;
 
     for (auto& trigger : this->GetTriggers()) {
-        file << "sar_zach_trigger_add " << trigger.origVerts[0].x << " " << trigger.origVerts[0].y << " " << trigger.origVerts[0].z
+        file << "sar_zach_trigger_add " << trigger.ID
+             << " " << trigger.origVerts[0].x << " " << trigger.origVerts[0].y << " " << trigger.origVerts[0].z
              << " " << trigger.origVerts[1].x << " " << trigger.origVerts[1].y << " " << trigger.origVerts[1].z
              << " " << trigger.angle
-             << " " << trigger.ID
              << std::endl;
     }
 
@@ -270,25 +270,28 @@ bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
     return true;
 }
 
-CON_COMMAND(sar_zach_trigger_add, "sar_zach_trigger_add <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> <angle> <id> - add a trigger with the specified position, angle and ID.\n")
+CON_COMMAND(sar_zach_trigger_add, "sar_zach_trigger_add <id> <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> [angle] - add a trigger with the specified ID, position, and optional angle.\n")
 {
-    if (args.ArgC() != 9) {
+    if (args.ArgC() != 8 && args.ArgC() != 9) {
         return console->Print(sar_zach_trigger_add.ThisPtr()->m_pszHelpString);
     }
 
-    Vector A = Vector(std::atof(args[1]), std::atof(args[2]), std::atof(args[3]));
-    Vector G = Vector(std::atof(args[4]), std::atof(args[5]), std::atof(args[6]));
-
-    unsigned int ID = 0;
-    float angle = 0;
-    if (args.ArgC() >= 9) {
-        angle = std::atof(args[7]);
-        ID = std::atoi(args[8]);
-    } else {
-        ID = std::atoi(args[7]);
+    char* end;
+    int id = std::strtol(args[1], &end, 10);
+    if (*end != 0 || end == args[1]) {
+        // ID argument is not a number
+        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
     }
 
-    zachStats->AddTrigger(A, G, angle, ID);
+    Vector A = Vector(std::atof(args[2]), std::atof(args[3]), std::atof(args[4]));
+    Vector G = Vector(std::atof(args[5]), std::atof(args[6]), std::atof(args[7]));
+
+    float angle = 0;
+    if (args.ArgC() == 9) {
+        angle = std::atof(args[7]);
+    }
+
+    zachStats->AddTrigger(A, G, angle, id);
 }
 
 CON_COMMAND(sar_zach_trigger_place, "sar_zach_trigger_place <id> - place a trigger with the given ID at the position being aimed at.\n")
