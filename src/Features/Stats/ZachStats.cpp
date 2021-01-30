@@ -23,7 +23,7 @@ DECL_CVAR_CALLBACK(sar_zach_name)
 
 Variable sar_zach_file("sar_zach_file", "zach.csv", "Name of the file to export.\n", 0);
 Variable sar_zach_name("sar_zach_name", "FrenchSaves10ticks", "Name of the current player.\n", 0, &sar_zach_name_callback);
-Variable sar_zach_show_triggers("sar_zach_show_triggers", "1", "Draw the triggers in-game.\n");
+Variable sar_zach_show_triggers("sar_zach_show_triggers", "1", 0, 2, "How to draw the triggers in-game. 0: do not show. 1: show outline. 2: show full box (appears through walls).\n");
 
 //plugin_load sar; sar_shane_loads 1; sar_disable_progress_bar_update 2; bind mouse5 "sar_zach_trigger_place 1"
 
@@ -116,8 +116,7 @@ void ZachStats::DrawTrigger(ZachTrigger& trigger)
         trigger.origVerts[0] - trigger.origin,
         trigger.origVerts[1] - trigger.origin,
         {0, trigger.angle, 0},
-        255, 0, 0,
-        false,
+        255, 0, 0, sar_zach_show_triggers.GetInt() == 2 ? 100 : 0,
         1
     );
 }
@@ -139,8 +138,7 @@ void ZachStats::PreviewSecond()
         A - origin,
         G - origin,
         {0, 0, 0},
-        255, 0, 0,
-        false,
+        255, 0, 0, 0,
         0
     );
 }
