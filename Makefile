@@ -1,6 +1,6 @@
 .PHONY: all clean cvars
 
-CXX=i686-pc-linux-gnu-g++
+CXX=g++-8
 SDIR=src
 ODIR=obj
 
