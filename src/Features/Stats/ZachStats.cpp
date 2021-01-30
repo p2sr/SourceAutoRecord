@@ -84,37 +84,31 @@ void ZachStats::AddTrigger(Vector& A, Vector& G, float angle, unsigned int ID)
     if (A.y > G.y) SWAP(A.y, G.y);
     if (A.z > G.z) SWAP(A.z, G.z);
 #undef SWAP
-    auto trigger = this->GetTriggerByID(ID);
-    if (trigger == nullptr) { //Trigger ID doesn't exist
 
-        float lengthX = G.x - A.x;
-        float lengthY = G.y - A.y;
-        float lengthZ = G.z - A.z;
+    this->DeleteTrigger(ID); // Make sure there's not already a trigger with that ID
 
-        Vector B{ A.x + lengthX, A.y, A.z };
-        Vector C{ A.x + lengthX, A.y + lengthY, A.z };
-        Vector D{ A.x, A.y + lengthY, A.z };
+    float lengthX = G.x - A.x;
+    float lengthY = G.y - A.y;
+    float lengthZ = G.z - A.z;
 
-        Vector E{ A.x, A.y, A.z + lengthZ };
-        Vector F{ A.x + lengthX, A.y, A.z + lengthZ };
-        Vector H{ A.x, A.y + lengthY, A.z + lengthZ };
+    Vector B{ A.x + lengthX, A.y, A.z };
+    Vector C{ A.x + lengthX, A.y + lengthY, A.z };
+    Vector D{ A.x, A.y + lengthY, A.z };
 
-        //"mouse5" = "sar_stats_rect -150 -400 960 -82 -331 1003"
+    Vector E{ A.x, A.y, A.z + lengthZ };
+    Vector F{ A.x + lengthX, A.y, A.z + lengthZ };
+    Vector H{ A.x, A.y + lengthY, A.z + lengthZ };
 
-        Vector origin{ (G.x + A.x) / 2, (G.y + A.y) / 2, (G.z + A.z) / 2 };
+    //"mouse5" = "sar_stats_rect -150 -400 960 -82 -331 1003"
 
-        ZachTrigger trigger{ { {A, G}, {A, B, C, D, E, F, G, H}, origin, ID } };
+    Vector origin{ (G.x + A.x) / 2, (G.y + A.y) / 2, (G.z + A.z) / 2 };
 
-        trigger.Rotate(angle);
+    ZachTrigger trigger{ { {A, G}, {A, B, C, D, E, F, G, H}, origin, ID } };
 
-        this->GetTriggers().push_back(trigger);
-        console->Print("Trigger added\n");
-    } else { //There's already a trigger with that ID
-        auto oldAngle = trigger->angle;
+    trigger.Rotate(angle);
 
-        this->DeleteTrigger(ID);
-        this->AddTrigger(A, G, oldAngle, ID);
-    }
+    this->GetTriggers().push_back(trigger);
+    console->Print("Trigger added\n");
 }
 
 void ZachStats::DeleteTrigger(unsigned int ID)
@@ -132,25 +126,16 @@ void ZachStats::DeleteTrigger(unsigned int ID)
 
 void ZachStats::DrawTrigger(ZachTrigger& trigger)
 {
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[0], trigger.verts[1], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[0], trigger.verts[3], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[3], trigger.verts[2], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[2], trigger.verts[1], 255, 0, 0, false, 1);
-
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[4], trigger.verts[7], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[4], trigger.verts[5], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[7], trigger.verts[6], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[5], trigger.verts[6], 255, 0, 0, false, 1);
-
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[0], trigger.verts[4], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[3], trigger.verts[7], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[2], trigger.verts[6], 255, 0, 0, false, 1);
-    PLAT_CALL(engine->AddLineOverlay, trigger.verts[1], trigger.verts[5], 255, 0, 0, false, 1);
-
-    //const Vector& origin, const Vector& mins, const Vector& MAX, QAngle const& orientation, int r, int g, int b, int a, float duration
-    //Vector origin = trigger.origin;
-
-    //PLAT_CALL(engien->AddBoxOverlay, )
+    PLAT_CALL(
+        engine->AddBoxOverlay,
+        trigger.origin,
+        trigger.origVerts[0] - trigger.origin,
+        trigger.origVerts[1] - trigger.origin,
+        {0, trigger.angle, 0},
+        255, 0, 0,
+        false,
+        1
+    );
 }
 
 void ZachStats::PreviewSecond()
@@ -162,34 +147,18 @@ void ZachStats::PreviewSecond()
     auto const& G = tr.endpos;
 
     //Draw the box
-    float lengthX = G.x - A.x;
-    float lengthY = G.y - A.y;
-    float lengthZ = G.z - A.z;
-
-    Vector B{ A.x + lengthX, A.y, A.z };
-    Vector C{ A.x + lengthX, A.y, A.z + lengthZ };
-    Vector D{ A.x, A.y, A.z + lengthZ };
-
-    Vector E{ A.x, A.y + lengthY, A.z };
-    Vector F{ A.x + lengthX, A.y + lengthY, A.z };
-    Vector H{ A.x, A.y + lengthY, A.z + lengthZ };
 
     Vector origin{ (G.x + A.x) / 2, (G.y + A.y) / 2, (G.z + A.z) / 2 };
-
-    PLAT_CALL(engine->AddLineOverlay, A, B, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, A, D, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, D, C, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, C, B, 255, 0, 0, false, 0);
-
-    PLAT_CALL(engine->AddLineOverlay, E, H, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, E, F, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, H, G, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, F, G, 255, 0, 0, false, 0);
-
-    PLAT_CALL(engine->AddLineOverlay, A, E, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, D, H, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, C, G, 255, 0, 0, false, 0);
-    PLAT_CALL(engine->AddLineOverlay, B, F, 255, 0, 0, false, 0);
+    PLAT_CALL(
+        engine->AddBoxOverlay,
+        origin,
+        A - origin,
+        G - origin,
+        {0, 0, 0},
+        255, 0, 0,
+        false,
+        0
+    );
 }
 
 std::vector<ZachTrigger>& ZachStats::GetTriggers()
@@ -200,9 +169,11 @@ std::vector<ZachTrigger>& ZachStats::GetTriggers()
 
 ZachTrigger* ZachStats::GetTriggerByID(unsigned int ID)
 {
-    for (auto& trigger : this->GetTriggers())
-        if (trigger.ID == ID)
+    for (auto& trigger : this->GetTriggers()) {
+        if (trigger.ID == ID) {
             return &trigger;
+        }
+    }
     return nullptr;
 }
 

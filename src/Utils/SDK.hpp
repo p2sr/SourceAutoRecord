@@ -55,7 +55,7 @@ struct Vector {
         z = z + vec.z;
         return *this;
     }
-    inline Vector operator+(Vector vec)
+    inline Vector operator+(const Vector vec) const
     {
         Vector res;
         res.x = x + vec.x;
@@ -70,7 +70,7 @@ struct Vector {
         z -= vec.z;
         return *this;
     }
-    inline Vector operator-(Vector vec)
+    inline Vector operator-(const Vector vec) const
     {
         Vector res;
         res.x = x - vec.x;
