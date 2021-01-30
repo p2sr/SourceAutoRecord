@@ -92,6 +92,7 @@ int GetRecordingTick;
 int SetSignonState;
 int StartRecording;
 int StopRecording;
+int RecordCustomData;
 int m_szDemoBaseName;
 int m_bRecording;
 int m_nDemoNumber;

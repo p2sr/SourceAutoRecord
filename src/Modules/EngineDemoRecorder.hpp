@@ -24,8 +24,11 @@ public:
     int lastDemoNumber = 1;
     bool hasNotified = false;
 
+    char coopRadialMenuLastPos[8];
+
 public:
     int GetTick();
+    std::string GetDemoFilename();
 
     // CDemoRecorder::SetSignonState
     DECL_DETOUR(SetSignonState, int state);
@@ -36,9 +39,13 @@ public:
     // CDemoRecorder::StopRecording
     DECL_DETOUR(StopRecording);
 
+    // CDemoRecorder::RecordCustomData
+    DECL_DETOUR(RecordCustomData, int id, const void* data, unsigned long length);
+
     DECL_DETOUR_COMMAND(stop);
 
     bool Init() override;
     void Shutdown() override;
     const char* Name() override { return MODULE("engine"); }
+    void RecordData(const void* data, unsigned long length);
 };

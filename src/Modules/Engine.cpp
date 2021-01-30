@@ -14,12 +14,20 @@
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Server.hpp"
+#include "Client.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+
+#ifdef _WIN32
+#include <Windows.h>
+#include <Memoryapi.h>
+#else
+#include <sys/mman.h>
+#endif
 
 Variable host_framerate;
 Variable net_showmsg;
@@ -46,6 +54,7 @@ REDECL(Engine::Frame);
 REDECL(Engine::PurgeUnusedModels);
 REDECL(Engine::OnGameOverlayActivated);
 REDECL(Engine::OnGameOverlayActivatedBase);
+REDECL(Engine::ReadCustomData);
 REDECL(Engine::plugin_load_callback);
 REDECL(Engine::plugin_unload_callback);
 REDECL(Engine::exit_callback);
@@ -61,7 +70,6 @@ REDECL(Engine::ParseSmoothingInfo_Default);
 REDECL(Engine::ParseSmoothingInfo_Continue);
 REDECL(Engine::ParseSmoothingInfo_Mid);
 REDECL(Engine::ParseSmoothingInfo_Mid_Trampoline);
-REDECL(Engine::ReadCustomData);
 #endif
 
 void Engine::ExecuteCommand(const char* cmd, bool immediately)
@@ -368,11 +376,20 @@ DETOUR(Engine::PurgeUnusedModels)
     return result;
 }
 
+DETOUR(Engine::ReadCustomData, int* callbackIndex, char** data)
+{
+    auto size = Engine::ReadCustomData(thisptr, callbackIndex, data);
+    if (*callbackIndex == 0 && size > 8) {
+        engine->demoplayer->CustomDemoData(*data + 8, size - 8);
+    }
+    return size;
+}
+
 #ifdef _WIN32
 // CDemoFile::ReadCustomData
 void __fastcall ReadCustomData_Wrapper(int demoFile, int edx, int unk1, int unk2)
 {
-    Engine::ReadCustomData((void*)demoFile, 0, nullptr, nullptr);
+    Engine::ReadCustomData((void*)demoFile, nullptr, nullptr);
 }
 // CDemoSmootherPanel::ParseSmoothingInfo
 DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
@@ -598,27 +615,50 @@ bool Engine::Init()
         }
     }
 
-#ifdef _WIN32
     if (sar.game->Is(SourceGame_Portal2Game)) {
+#ifdef _WIN32
+        // Note: we don't get readCustomDataAddr anymore as we find this
+        // below anyway
         auto parseSmoothingInfoAddr = Memory::Scan(this->Name(), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
-        auto readCustomDataAddr = Memory::Scan(this->Name(), "55 8B EC F6 05 ? ? ? ? ? 53 56 57 8B F1 75 2F");
+        //auto readCustomDataAddr = Memory::Scan(this->Name(), "55 8B EC F6 05 ? ? ? ? ? 53 56 57 8B F1 75 2F");
 
         console->DevMsg("CDemoSmootherPanel::ParseSmoothingInfo = %p\n", parseSmoothingInfoAddr);
-        console->DevMsg("CDemoFile::ReadCustomData = %p\n", readCustomDataAddr);
+        //console->DevMsg("CDemoFile::ReadCustomData = %p\n", readCustomDataAddr);
 
-        if (parseSmoothingInfoAddr && readCustomDataAddr) {
+        if (parseSmoothingInfoAddr) {
             MH_HOOK_MID(Engine::ParseSmoothingInfo_Mid, parseSmoothingInfoAddr); // Hook switch-case
             Engine::ParseSmoothingInfo_Continue = parseSmoothingInfoAddr + 8; // Back to original function
             Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133; // Default case
             Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29; // Continue loop
-            Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(readCustomDataAddr); // Function that handles dem_customdata
+            //Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(readCustomDataAddr); // Function that handles dem_customdata
 
             this->demoSmootherPatch = new Memory::Patch();
             unsigned char nop3[] = { 0x90, 0x90, 0x90 };
             this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3); // Nop rest
         }
-    }
 #endif
+
+        // This is the address of the one interesting call to ReadCustomData - the E8 byte indicates the start of the call instruction
+#ifdef _WIN32
+        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12); 
+#else
+        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "8B 95 94 FE FF FF 8D 4D D8 8D 45 D4 89 4C 24 08 89 44 24 04 89 14 24 E8", 24);
+#endif
+
+        // Pesky memory protection doesn't want us overwriting code - we
+        // get around it with a call to mprotect or VirtualProtect
+        void* injectPageAddr = (void*)(readPacketInjectAddr & 0xFFFFF000); // TODO: could the instruction cross a page boundary? hope not lol
+#ifdef _WIN32
+        DWORD wtf_microsoft_why_cant_this_be_null;
+        VirtualProtect(injectPageAddr, 0x1000, PAGE_EXECUTE_READWRITE, &wtf_microsoft_why_cant_this_be_null);
+#else
+        mprotect(injectPageAddr, 0x1000, PROT_READ | PROT_WRITE | PROT_EXEC);
+#endif
+
+        // It's a relative call, so we have to do some weird fuckery lol
+        Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)readPacketInjectAddr + (readPacketInjectAddr+4));
+        *(uint32_t*)readPacketInjectAddr = (uint32_t)&ReadCustomData_Hook - (readPacketInjectAddr+4); // Add 4 to get address of next instruction
+    }
 
     if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
         ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);

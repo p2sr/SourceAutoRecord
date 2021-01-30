@@ -7,6 +7,7 @@
 
 #include "Cheats.hpp"
 #include "Command.hpp"
+#include "Checksum.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -79,6 +80,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->modules->AddModule<Server>(&server);
             this->modules->AddModule<MaterialSystem>(&materialSystem);
             this->modules->InitAll();
+
+            InitSARChecksum();
 
             if (engine && engine->hasLoaded) {
                 engine->demoplayer->Init();

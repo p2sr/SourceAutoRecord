@@ -114,8 +114,8 @@ void GhostEntity::Lerp(float time)
     this->data.position.y = (1 - time) * this->oldPos.position.y + time * this->newPos.position.y;
     this->data.position.z = (1 - time) * this->oldPos.position.z + time * this->newPos.position.z;
 
-    this->data.view_angle.z = (1 - time) * this->oldPos.view_angle.z + time * this->newPos.view_angle.z;
-    this->data.view_angle.z = (1 - time) * this->oldPos.view_angle.z + time * this->newPos.view_angle.z;
+    this->data.view_angle.x = (1 - time) * this->oldPos.view_angle.x + time * this->newPos.view_angle.x;
+    this->data.view_angle.y = (1 - time) * this->oldPos.view_angle.y + time * this->newPos.view_angle.y;
     this->data.view_angle.z = 0;
 
     this->Display();

@@ -46,6 +46,8 @@ public:
     void CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset);
     bool ShouldDrawCrosshair();
     void Chat(TextColor color, const char* fmt, ...);
+    void QueueChat(TextColor color, const char* fmt, ...);
+    void FlushChatQueue();
 
 public:
     // CHLClient::HudUpdate
@@ -76,6 +78,9 @@ public:
     bool Init() override;
     void Shutdown() override;
     const char* Name() override { return MODULE("client"); }
+
+private:
+    std::vector<std::pair<TextColor, std::string>> chatQueue;
 };
 
 extern Client* client;

@@ -2,7 +2,9 @@
 #include "Session.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
+Variable wait_persist_across_loads("wait_persist_across_loads", "0", 0, 1, "Whether pending commands should be carried across loads (1) or just be dropped (0).\n");
 
 Variable wait_mode("wait_mode", "0", "When the pending commands should be executed. 0 is absolute, 1 is relative to when you entered the wait command.\n");
 
@@ -25,6 +27,11 @@ void wait_callback(const CCommand& args)
 {
     if (args.ArgC() <= 2) {
         return console->Print(waitCmd.ThisPtr()->m_pszHelpString);
+    }
+
+    if (!sv_cheats.GetBool()) {
+        console->Print("\"wait\" needs sv_cheats 1.\n");
+        return;
     }
 
     segmentedTools->waitTick = wait_mode.GetBool() ? std::atoi(args[1]) + session->GetTick() : std::atoi(args[1]);

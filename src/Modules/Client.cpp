@@ -99,6 +99,24 @@ void Client::Chat(TextColor color, const char* fmt, ...)
     client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, "%c%s", color, data);
 }
 
+void Client::QueueChat(TextColor color, const char* fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+    char data[1024];
+    vsnprintf(data, sizeof data, fmt, argptr);
+    va_end(argptr);
+    this->chatQueue.push_back(std::pair(color, std::string(data)));
+}
+
+void Client::FlushChatQueue()
+{
+    for (auto& s : this->chatQueue) {
+        this->Chat(s.first, "%s", s.second.c_str());
+    }
+    this->chatQueue.clear();
+}
+
 // CHLClient::HudUpdate
 DETOUR(Client::HudUpdate, unsigned int a2)
 {

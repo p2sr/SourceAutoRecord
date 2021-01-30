@@ -29,6 +29,7 @@ public:
     bool IsPlaying();
     void ClearDemoQueue();
     std::string GetLevelName();
+    void CustomDemoData(char* data, size_t length);
 
     // CDemoRecorder::StartPlayback
     DECL_DETOUR(StartPlayback, const char* filename, bool bAsTimeDemo);

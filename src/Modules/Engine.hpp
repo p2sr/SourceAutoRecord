@@ -118,8 +118,6 @@ public:
     int pauseTick;
     bool hasWaited = false;
 
-    int lastTickTimeOutput;
-
 public:
     void ExecuteCommand(const char* cmd, bool immediately = false);
     int GetTick();
@@ -139,6 +137,7 @@ public:
     std::string GetCurrentMapName();
     bool IsCoop();
     bool IsOrange();
+    void RecordDemoData(void* data, size_t len);
     bool Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr);
     bool TraceFromCamera(float distMax, CGameTrace& tr);
 
@@ -173,10 +172,9 @@ public:
     DECL_DETOUR_COMMAND(playvideo_end_level_transition);
     DECL_DETOUR_COMMAND(unpause);
 
-#ifdef _WIN32
-    using _ReadCustomData = int(__fastcall*)(void* thisptr, int edx, void* unk1, void* unk2);
-    static _ReadCustomData ReadCustomData;
+    DECL_DETOUR(ReadCustomData, int* callbackIndex, char** data);
 
+#ifdef _WIN32
     // CDemoSmootherPanel::ParseSmoothingInfo
     static uintptr_t ParseSmoothingInfo_Skip;
     static uintptr_t ParseSmoothingInfo_Default;
