@@ -28,6 +28,11 @@ void wait_callback(const CCommand& args)
         return console->Print(waitCmd.ThisPtr()->m_pszHelpString);
     }
 
+    if (!sv_cheats.GetBool()) {
+        console->Print("\"wait\" needs sv_cheats 1.\n");
+        return;
+    }
+
     segmentedTools->waitTick = wait_mode.GetBool() ? std::atoi(args[1]) + session->GetTick() : std::atoi(args[1]);
     segmentedTools->pendingCommands = args[2];
     engine->hasWaited = false;
