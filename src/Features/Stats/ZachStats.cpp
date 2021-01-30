@@ -21,7 +21,8 @@ DECL_CVAR_CALLBACK(sar_zach_name)
     stream << sar_zach_name.GetString();
 }
 
-Variable sar_zach_file("sar_zach_file", "zach.csv", "Name of the file to export.\n", 0);
+Variable sar_zach_stats_file("sar_zach_stats_file", "zach.csv", "Name of the file to export stats to.\n", 0);
+Variable sar_zach_triggers_file("sar_zach_triggers_file", "zach.cfg", "Name of the file to export triggers to.\n", 0);
 Variable sar_zach_name("sar_zach_name", "FrenchSaves10ticks", "Name of the current player.\n", 0, &sar_zach_name_callback);
 Variable sar_zach_show_triggers("sar_zach_show_triggers", "1", 0, 2, "How to draw the triggers in-game. 0: do not show. 1: show outline. 2: show full box (appears through walls).\n");
 
@@ -170,14 +171,12 @@ void ZachStats::ResetTriggers()
 
 void ZachStats::ExportTriggers()
 {
-    std::string filePath = sar_zach_file.GetString();
-    if (filePath.substr(filePath.length() - 4, 4) != ".cfg")
-        filePath += ".cfg";
+    std::string filePath = sar_zach_triggers_file.GetString();
 
     std::ofstream file(filePath, std::ios::out | std::ios::trunc);
     if (!file.good()) {
         file.close();
-        return console->Print("Can't export the file.\n");
+        return console->Print("Could not export triggers.\n");
     }
 
     file << "// Explanation : sar_zach_trigger_add A.x A.y A.z B.x B.y B.z angle ID" << std::endl;
@@ -191,19 +190,17 @@ void ZachStats::ExportTriggers()
     }
 
     file.close();
-    console->Print("Successfully exported to %s.\n", sar_zach_file.GetString());
+    console->Print("Successfully exported to %s.\n", sar_zach_triggers_file.GetString());
 }
 
-bool ZachStats::ExportCSV()
+void ZachStats::ExportCSV()
 {
-    std::string filePath = sar_zach_file.GetString();
-    if (filePath.substr(filePath.length() - 4, 4) != ".csv")
-        filePath += ".csv";
+    std::string filePath = sar_zach_stats_file.GetString();
 
     std::ofstream file(filePath, std::ios::out | std::ios::trunc);
     if (!file.good()) {
         file.close();
-        return false;
+        return console->Print("Could not export stats.\n");
     }
 
     file << MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD << std::endl;
@@ -211,7 +208,7 @@ bool ZachStats::ExportCSV()
     file << this->output.str() << std::endl;
 
     file.close();
-    return true;
+    console->Print("Successfully exported to %s.\n", sar_zach_stats_file.GetString());
 }
 
 bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)

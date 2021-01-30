@@ -101,7 +101,7 @@ public:
 
     std::stringstream& GetStream() { return this->output; }
     void ResetStream() { this->output.clear(); }
-    bool ExportCSV();
+    void ExportCSV();
 
 
     void SetHeader(std::string& header) { this->header = header; };
@@ -119,7 +119,8 @@ private:
 
 extern ZachStats* zachStats;
 
-extern Variable sar_zach_file;
+extern Variable sar_zach_stats_file;
+extern Variable sar_zach_triggers_file;
 extern Variable sar_zach_name;
 extern Variable sar_zach_show_triggers;
 extern Command sar_zach_export;
