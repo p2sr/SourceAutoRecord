@@ -7,10 +7,6 @@
 #include "Utils.hpp"
 #include "Variable.hpp"
 
-#define CSV_EXTENSION ".csv"
-#define CSV_SEPARATOR ','
-#define MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD "sep=,"
-
 #define SAR_CM_COUNTER_EXPORT_HEADER "Map Name,CM Retries,CM Time Spent,FullGame Reloads,FullGame Time Spent"
 #define SAR_FULLGAME_COUNTER_EXPORT_HEADER "Completed Runs,Avg Reset Time,Nb Reset,Total Time SP,Portal Count"
 #define SAR_TOTAL_COUNTER_EXPORT_HEADER "Total Time In-Game"

@@ -48,7 +48,14 @@ struct Vector {
     {
         return *this * (1 / fl);
     }
-    inline Vector operator+(Vector vec)
+    inline Vector& operator+=(Vector& vec)
+    {
+        x = x + vec.x;
+        y = y + vec.y;
+        z = z + vec.z;
+        return *this;
+    }
+    inline Vector operator+(const Vector vec) const
     {
         Vector res;
         res.x = x + vec.x;
@@ -56,7 +63,14 @@ struct Vector {
         res.z = z + vec.z;
         return res;
     }
-    inline Vector operator-(Vector vec)
+    inline Vector& operator-=(Vector& vec)
+    {
+        x -= vec.x;
+        y -= vec.y;
+        z -= vec.z;
+        return *this;
+    }
+    inline Vector operator-(const Vector vec) const
     {
         Vector res;
         res.x = x - vec.x;

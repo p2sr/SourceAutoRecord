@@ -110,6 +110,7 @@ public:
     void* s_CommandBuffer = nullptr;
     bool* m_bWaitEnabled = nullptr;
     bool* m_bWaitEnabled2 = nullptr;
+    int lastTick = 0;
 
     bool overlayActivated = false;
     bool hasRecorded = false;
@@ -137,6 +138,8 @@ public:
     bool IsCoop();
     bool IsOrange();
     void RecordDemoData(void* data, size_t len);
+    bool Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr);
+    bool TraceFromCamera(float distMax, CGameTrace& tr);
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);
@@ -193,6 +196,10 @@ extern Variable net_showmsg;
 extern Variable sv_portal_players;
 extern Variable fps_max;
 extern Variable mat_norendering;
+
+extern Variable sar_record_at;
+extern Variable sar_record_at_demo_name;
+extern Variable sar_record_at_increment;
 
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1

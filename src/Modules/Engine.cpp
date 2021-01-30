@@ -6,6 +6,7 @@
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Stats/ZachStats.hpp"
 
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
@@ -33,6 +34,17 @@ Variable net_showmsg;
 Variable sv_portal_players;
 Variable fps_max;
 Variable mat_norendering;
+
+DECL_CVAR_CALLBACK(sar_record_fix)
+{
+    //Fix weird bug where tick 1 doesn't work
+    if (sar_record_at.GetInt() == 1)
+        sar_record_at.SetValue(0);
+}
+
+Variable sar_record_at("sar_record_at", "-1", -1, "Start recording a demo at the tick specified. Will use sar_record_at_demo_name.\n", 0, &sar_record_fix_callback);
+Variable sar_record_at_demo_name("sar_record_at_demo_name", "chamber", "Name of the demo automatically recorded.\n", 0);
+Variable sar_record_at_increment("sar_record_at_increment", "0", "Increment automatically the demo name.\n");
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::Disconnect2);
@@ -186,6 +198,48 @@ bool Engine::IsOrange()
     return this->IsCoop() && session->signonState == SIGNONSTATE_FULL && !engine->hoststate->m_activeGame;
 }
 
+bool Engine::Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr)
+{
+    float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);
+    auto cosX = std::cos(X), cosY = std::cos(Y);
+    auto sinX = std::sin(X), sinY = std::sin(Y);
+
+    Vector dir(cosY * cosX, sinY * cosX, -sinX);
+
+    Vector finalDir = Vector(dir.x, dir.y, dir.z).Normalize() * distMax;
+
+    Ray_t ray;
+    ray.m_IsRay = true;
+    ray.m_IsSwept = true;
+    ray.m_Start = VectorAligned(pos.x, pos.y, pos.z);
+    ray.m_Delta = VectorAligned(finalDir.x, finalDir.y, finalDir.z);
+    ray.m_StartOffset = VectorAligned();
+    ray.m_Extents = VectorAligned();
+
+    engine->TraceRay(this->engineTrace->ThisPtr(), ray, MASK_SHOT_PORTAL, &filter, &tr);
+
+    if (tr.fraction >= 1) {
+        return false;
+    }
+    return true;
+}
+
+bool Engine::TraceFromCamera(float distMax, CGameTrace& tr)
+{
+    void* player = server->GetPlayer(GET_SLOT() + 1);
+
+    if (player == nullptr || (int)player == -1)
+        return false;
+
+    Vector camPos = server->GetAbsOrigin(player) + server->GetViewOffset(player);
+    QAngle angle = engine->GetAngles(GET_SLOT());
+
+    CTraceFilterSimple filter;
+    filter.SetPassEntity(server->GetPlayer(GET_SLOT() + 1));
+
+    return this->Trace(camPos, angle, distMax, filter, tr);
+}
+
 float Engine::GetHostFrameTime()
 {
     return this->HostFrameTime(this->engineTool->ThisPtr());
@@ -290,7 +344,7 @@ DETOUR(Engine::Frame)
         }
     }
 
-    if (engine->GetTick() != session->GetTick()) {
+    if (engine->lastTick != session->GetTick()) {
         if (networkManager.isConnected && engine->isRunning()) {
             networkManager.UpdateGhostsPosition();
 
@@ -303,6 +357,12 @@ DETOUR(Engine::Frame)
             demoGhostPlayer.UpdateGhostsPosition();
         }
     }
+
+    if ((engine->demoplayer->IsPlaying() || engine->IsOrange()) && engine->lastTick != session->GetTick()) {
+        zachStats->UpdateTriggers();
+    }
+
+    engine->lastTick = session->GetTick();
 
     return Engine::Frame(thisptr);
 }

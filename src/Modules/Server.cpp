@@ -20,6 +20,7 @@
 #include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/GroundFramesCounter.hpp"
+#include "Features/Stats/ZachStats.hpp"
 
 #include "Engine.hpp"
 #include "Client.hpp"
@@ -45,9 +46,6 @@ Variable sv_gravity;
 Variable sar_pause("sar_pause", "0", "Enable pause after a load.\n");
 Variable sar_pause_at("sar_pause_at", "0", 0, "Pause at the specified tick.\n");
 Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.\n");
-Variable sar_record_at("sar_record_at", "-1", -1, "Start recording a demo at the tick specified. Will use sar_record_at_demo_name.\n");
-Variable sar_record_at_demo_name("sar_record_at_demo_name", "chamber", "Name of the demo automatically recorded.\n", 0);
-Variable sar_record_at_increment("sar_record_at_increment", "0", "Increment automatically the demo name.\n");
 
 REDECL(Server::CheckJumpButton);
 REDECL(Server::CheckJumpButtonBase);
@@ -305,6 +303,10 @@ DETOUR(Server::GameFrame, bool simulating)
         }
     }
 
+    if (simulating) {
+        zachStats->UpdateTriggers();
+    }
+    
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else

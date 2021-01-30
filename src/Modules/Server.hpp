@@ -125,6 +125,3 @@ extern Variable sv_gravity;
 extern Variable sar_pause;
 extern Variable sar_pause_at;
 extern Variable sar_pause_for;
-extern Variable sar_record_at;
-extern Variable sar_record_at_demo_name;
-extern Variable sar_record_at_increment;

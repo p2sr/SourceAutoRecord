@@ -69,6 +69,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<SegmentedTools>(&segmentedTools);
             this->features->AddFeature<GroundFramesCounter>(&groundFramesCounter);
             this->features->AddFeature<TimescaleDetect>(&timescaleDetect);
+            this->features->AddFeature<ZachStats>(&zachStats);
 
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
