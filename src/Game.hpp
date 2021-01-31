@@ -37,6 +37,7 @@ public:
     virtual const char* Version();
     virtual const float Tickrate() = 0;
     inline bool Is(int game) { return this->version & game; }
+    inline SourceGameVersion GetVersion() { return this->version; }
 
     static Game* CreateNew();
 

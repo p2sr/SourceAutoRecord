@@ -18,6 +18,7 @@ public:
 
 public:
     TimerCategory(int gameVersion, const char* name, std::vector<TimerRule*> rules);
+    ~TimerCategory();
 
     static int FilterByGame(Game* game);
     static void ResetAll();

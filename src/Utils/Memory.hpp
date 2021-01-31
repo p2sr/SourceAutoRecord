@@ -1,8 +1,10 @@
 #pragma once
 #ifdef _WIN32
 #include <windows.h>
+#include <memoryapi.h>
 #else
 #include <dlfcn.h>
+#include <sys/mman.h>
 #define MAX_PATH 4096
 #endif
 
@@ -127,5 +129,18 @@ T Scan(const char* moduleName, const char* pattern, int offset = 0)
         }
     }
     return reinterpret_cast<T>(result);
+}
+
+inline void UnProtect(void* addr, size_t len)
+{
+    uintptr_t startPage = (uintptr_t)addr & 0xFFFFF000;
+    uintptr_t endPage = ((uintptr_t)addr + len) & 0xFFFFF000;
+    uintptr_t pageLen = endPage - startPage + 0x1000;
+#ifdef _WIN32
+    DWORD wtf_microsoft_why_cant_this_be_null;
+    VirtualProtect((void*)startPage, pageLen, PAGE_EXECUTE_READWRITE, &wtf_microsoft_why_cant_this_be_null);
+#else
+    mprotect((void*)startPage, pageLen, PROT_READ | PROT_WRITE | PROT_EXEC);
+#endif
 }
 }

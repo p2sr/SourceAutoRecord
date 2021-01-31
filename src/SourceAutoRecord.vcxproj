@@ -167,6 +167,7 @@
     <ClCompile Include="Features\Speedrun\TimerResult.cpp" />
     <ClCompile Include="Features\Speedrun\TimerRule.cpp" />
     <ClCompile Include="Features\Speedrun\TimerSplit.cpp" />
+    <ClCompile Include="Features\Speedrun\CustomCategories.cpp" />
     <ClCompile Include="Features\Stats\StatsCounter.cpp" />
     <ClCompile Include="Features\Stats\JumpStats.cpp" />
     <ClCompile Include="Features\Stats\Stats.cpp" />
@@ -364,6 +365,7 @@
     <ClInclude Include="Features\Speedrun\TimerRule.hpp" />
     <ClInclude Include="Features\Speedrun\TimerSplit.hpp" />
     <ClInclude Include="Features\Speedrun\TimerState.hpp" />
+    <ClInclude Include="Features\Speedrun\CustomCategories.hpp" />
     <ClInclude Include="Features\Stats\StatsCounter.hpp" />
     <ClInclude Include="Features\Stats\JumpStats.hpp" />
     <ClInclude Include="Features\Stats\Stats.hpp" />

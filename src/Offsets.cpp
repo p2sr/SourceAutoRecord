@@ -123,6 +123,7 @@ int m_flMaxspeed;
 int m_flGravity;
 int S_m_vecViewOffset;
 int IsPlayer;
+int AcceptInput;
 
 // CBasePlayer
 int m_fFlags;

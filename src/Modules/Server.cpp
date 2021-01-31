@@ -11,6 +11,7 @@
 #include "Features/Routing/SeamshotFind.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Speedrun/CustomCategories.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Tas/AutoStrafer.hpp"
@@ -286,6 +287,89 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 }
 #endif
 
+// Not a normal detour! Only gets first 4 args and doesn't have to call
+// original function
+static __cdecl void AcceptInput_Detour(void* thisptr, const char* inputName, void* activator, void* caller)
+{
+    CheckCustomCategoryRules(thisptr, inputName);
+}
+
+// This is kinda annoying - it's got to be in a separate function
+// because we need a reference to an entity vtable to find the address
+// of CBaseEntity::AcceptInput, but we generally can't do that until
+// we've loaded into a level.
+static bool IsAcceptInputTrampolineInitialized = false;
+static void InitAcceptInputTrampoline()
+{
+    void* ent = (CEntInfo2*)(server->m_EntPtrArray + 0)->m_pEntity;
+    if (ent == nullptr) return;
+    IsAcceptInputTrampolineInitialized = true;
+    server->AcceptInput = Memory::VMT<Server::_AcceptInput>(ent, Offsets::AcceptInput);
+
+    // Trampoline! Bouncy bouncy!
+
+    // Get around memory protection so we can modify code
+    Memory::UnProtect((void*)server->AcceptInput, 8);
+
+#ifdef _WIN32
+    // Create our code
+    static uint8_t trampolineCode[] = {
+        0x55,             // 00: push ebp                 (we overwrote these 2 instructions)
+        0x89, 0xE5,       // 01: mov ebp, esp
+        0xFF, 0x75, 0x14, // 03: push dword [ebp + 0x10]  (we want to take the first 4 args in our detour function)
+        0xFF, 0x75, 0x10, // 06: push dword [ebp + 0x0C]
+        0xFF, 0x75, 0x0C, // 09: push dword [ebp + 0x08]
+        0x51,             // 0C: push ecx                 (ecx=thisptr, because of thiscall convention)
+        0xE8, 0, 0, 0, 0, // 0D: call ??                  (to be filled with address of detour function)
+        0x59,             // 12: pop ecx                  (it may have been clobbered by the cdecl detour function)
+        0x83, 0xC4, 0x0C, // 13: add esp, 0x0C            (pop the other args to the detour function
+        0xA1, 0, 0, 0, 0, // 16: mov eax, ??              (to be filled with the address from the other instruction we overwrote)
+        0xE9, 0, 0, 0, 0, // 1b: jmp ??                   (to be filled with the address of code to return to
+    };
+
+    *(uint32_t*)(trampolineCode + 0x0E) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x0E + 4);
+    *(uint32_t*)(trampolineCode + 0x17) = *(uint32_t*)((uint32_t)server->AcceptInput + 4); // The address we need to steal is 4 bytes into the function
+    *(uint32_t*)(trampolineCode + 0x1C) = (uint32_t)server->AcceptInput + 8 - ((uint32_t)trampolineCode + 0x1C + 4);
+
+    Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
+
+    // Write the trampoline instruction, followed by some NOPs
+    *(uint8_t*)server->AcceptInput = 0xE9; // 32-bit relative JMP
+    uint32_t jumpAddr = (uint32_t)server->AcceptInput + 1;
+    *(uint32_t*)jumpAddr = (uint32_t)trampolineCode - (jumpAddr + 4);
+    // 3 NOPs - not strictly necessary as we jump past them anyway, but
+    // it'll stop disassemblers getting confused which is nice
+    ((uint8_t*)server->AcceptInput)[5] = 0x90;
+    ((uint8_t*)server->AcceptInput)[6] = 0x90;
+    ((uint8_t*)server->AcceptInput)[7] = 0x90;
+#else
+    // Create our code
+    static uint8_t trampolineCode[] = {
+        0x55,             // 00: push ebp                 (we overwrote these 4 instructions)
+        0x89, 0xE5,       // 01: mov ebp, esp
+        0x57,             // 03: push edi
+        0x56,             // 04: push esi
+        0xFF, 0x75, 0x14, // 05: push dword [ebp + 0x14]  (we want to take the first 4 args in our detour function)
+        0xFF, 0x75, 0x10, // 08: push dword [ebp + 0x10]
+        0xFF, 0x75, 0x0C, // 0B: push dword [ebp + 0x0C]
+        0xFF, 0x75, 0x08, // 0E: push dword [ebp + 0x08]
+        0xE8, 0, 0, 0, 0, // 11: call ??                  (to be filled with address of detour function)
+        0x83, 0xC4, 0x10, // 16: add esp, 0x10            (pop the args to the detour function)
+        0xE9, 0, 0, 0, 0, // 19: jmp ??                   (to be filled with address of code to return to)
+    };
+
+    *(uint32_t*)(trampolineCode + 0x12) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x12 + 4);
+    *(uint32_t*)(trampolineCode + 0x1A) = (uint32_t)server->AcceptInput + 5 - ((uint32_t)trampolineCode + 0x1A + 4); // Return just after the code we overwrote (hence +5)
+
+    Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
+
+    // Write the trampoline instruction
+    *(uint8_t*)server->AcceptInput = 0xE9; // 32-bit relative JMP
+    uint32_t jumpAddr = (uint32_t)server->AcceptInput + 1;
+    *(uint32_t*)jumpAddr = (uint32_t)trampolineCode - (jumpAddr + 4);
+#endif
+}
+
 // CServerGameDLL::GameFrame
 #ifdef _WIN32
 DETOUR_STD(void, Server::GameFrame, bool simulating)
@@ -293,6 +377,8 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
+    if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
+    TickCustomCategories();
 
     if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
         if (!simulating && !pauseTimer->IsActive()) {
@@ -426,6 +512,7 @@ bool Server::Init()
             this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
         }
     }
+
 
     offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);
     offsetFinder->ServerSide("CBasePlayer", "m_iName", &Offsets::m_iName);

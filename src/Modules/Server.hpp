@@ -5,6 +5,7 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+#include "Utils/SDK.hpp"
 
 #ifdef _WIN32
 #define AirMove_Mid_Offset 679
@@ -21,6 +22,7 @@ public:
     using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
     using _GetAllServerClasses = ServerClass* (*)();
     using _IsRestoring = bool(*)();
+    using _AcceptInput = bool(__rescall*)(void* thisptr, const char* inputName, void* activator, void* caller, variant_t value, int outputID);
 #ifdef _WIN32
     using _CreateEntityByName = void*(__stdcall*)(const char *);
     using _DispatchSpawn = void(__stdcall*)(void*);
@@ -43,6 +45,7 @@ public:
     _SetKeyValueChar SetKeyValueChar = nullptr;
     _SetKeyValueFloat SetKeyValueFloat = nullptr;
     _SetKeyValueVector SetKeyValueVector = nullptr;
+    _AcceptInput AcceptInput = nullptr;
 
     CGlobalVars* gpGlobals = nullptr;
     CEntInfo* m_EntPtrArray = nullptr;

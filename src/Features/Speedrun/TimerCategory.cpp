@@ -23,6 +23,16 @@ TimerCategory::TimerCategory(int gameVersion, const char* name, std::vector<Time
 {
     TimerCategory::GetList().push_back(this);
 }
+TimerCategory::~TimerCategory()
+{
+    std::vector<TimerCategory*>& cats = TimerCategory::GetList();
+    for (size_t i = 0; i < cats.size(); ++i) {
+        if (cats[i] == this) {
+            cats.erase(cats.begin() + i);
+            break;
+        }
+    }
+}
 int TimerCategory::FilterByGame(Game* game)
 {
     auto count = 0;
