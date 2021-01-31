@@ -11,8 +11,8 @@ struct InputInfo {
     std::string input;
 };
 
-static std::map<const char*, TimerCategory*> customCategories;
-static std::map<std::string*, std::string> customRuleInputs;
+static std::map<char*, TimerCategory*> customCategories;
+static std::map<char*, char*> customRuleInputs;
 static std::vector<InputInfo> inputInfos;
 
 void TickCustomCategories()
@@ -31,7 +31,7 @@ void CheckCustomCategoryRules(void* entity, const char* input)
 
 static TimerAction customRuleStartCallback(void* entity, void* user)
 {
-    const char* inputName = customRuleInputs[(std::string*)user].c_str();
+    const char* inputName = customRuleInputs[(char*)user];
     for (auto& inp : inputInfos) {
         if (inp.entity == entity && !strcmp(inputName, inp.input.c_str())) {
             return TimerAction::Start;
@@ -42,13 +42,19 @@ static TimerAction customRuleStartCallback(void* entity, void* user)
 
 static TimerAction customRuleEndCallback(void* entity, void* user)
 {
-    const char* inputName = customRuleInputs[(std::string*)user].c_str();
+    const char* inputName = customRuleInputs[(char*)user];
     for (auto& inp : inputInfos) {
         if (inp.entity == entity && !strcmp(inputName, inp.input.c_str())) {
             return TimerAction::End;
         }
     }
     return TimerAction::DoNothing;
+}
+
+static char* dupString(const char* str)
+{
+    char* newStr = (char*)malloc(strlen(str) + 1);
+    return strcpy(newStr, str);
 }
 
 CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <name> <map> <entity> <input> <map> <entity> <input> - creates a custom category with the given name and start/end rules.\n")
@@ -58,8 +64,7 @@ CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <name> <
         return;
     }
 
-    char* catName = (char*)malloc(strlen(args[1]) + 1);
-    strcpy(catName, args[1]);
+    char* catName = dupString(args[1]);
 
     if (customCategories.find(catName) != customCategories.end()) {
         console->Print("Category '%s' already exists!\n", catName);
@@ -69,17 +74,18 @@ CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <name> <
     std::vector<TimerRule*> rules;
 
     for (int i = 2; i < 8; i += 3) { // Loops twice
-        const char *map = args[i], *entityName = args[i+1], *input = args[i+2];
+        char *map = dupString(args[i]);
+        char *entityName = dupString(args[i+1]);
+        char *input = dupString(args[i+2]);
 
-        std::string* ruleName = new std::string(catName);
+        char* ruleName = (char*)malloc(strlen(catName) + 7);
+        strcpy(ruleName, catName);
+        strcat(ruleName, i == 2 ? "_start" : "_end");
 
-        if (i == 2) *ruleName += "_start";
-        else *ruleName += "_end";
-
-        customRuleInputs[ruleName] = std::string(input);
+        customRuleInputs[ruleName] = input;
 
         _TimerRuleCallback3 callback = i == 2 ? &customRuleStartCallback : &customRuleEndCallback;
-        rules.push_back(new TimerRule(ruleName->c_str(), map, entityName, ruleName, callback));
+        rules.push_back(new TimerRule(ruleName, map, entityName, ruleName, callback));
     }
 
     customCategories[catName] = new TimerCategory(sar.game->GetVersion(), catName, rules);
@@ -94,23 +100,22 @@ CON_COMMAND(sar_speedrun_category_remove, "sar_speedrun_category_remove <name> -
         return;
     }
 
-    const char* catName = args[1];
-
-    const char* key = nullptr;
+    const char* catNameGiven = args[1];
+    char* catNameKey = nullptr;
 
     for (auto it = customCategories.begin(); it != customCategories.end(); ++it) {
-        if (!strcmp(it->first, catName)) {
-            key = it->first;
+        if (!strcmp(it->first, catNameGiven)) {
+            catNameKey = it->first;
             break;
         }
     }
 
-    if (!key) {
-        console->Print("Custom category '%s' does not exist!\n", catName);
+    if (!catNameKey) {
+        console->Print("Custom category '%s' does not exist!\n", catNameGiven);
         return;
     }
 
-    TimerCategory* cat = customCategories[key];
+    TimerCategory* cat = customCategories[catNameKey];
 
     TimerCategory* cur = speedrun->GetCategory();
     if (cur == cat) {
@@ -119,13 +124,27 @@ CON_COMMAND(sar_speedrun_category_remove, "sar_speedrun_category_remove <name> -
     }
 
     for (TimerRule* r : cat->rules) {
-        std::string* ruleName = (std::string*)r->user;
+        char* ruleName = (char*)r->user;
+
+        // Free input string
+        free(customRuleInputs[ruleName]);
         customRuleInputs.erase(ruleName);
-        delete ruleName;
+
+        // Free ruleName string
+        free(ruleName);
+
+        // Free mapName string
+        free((void*)r->mapName);
+
+        // Free entityName string
+        free((void*)r->entityName);
+
+        // Free the rule
+        delete r;
     }
 
-    customCategories.erase(catName);
+    customCategories.erase(catNameKey);
     delete cat;
 
-		console->Print("Successfully deleted category '%s'!\n", catName);
+    console->Print("Successfully deleted category '%s'!\n", catNameGiven);
 }

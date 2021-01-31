@@ -20,11 +20,11 @@ public:
     const char* mapName;
     void* user;
 
-private:
     const char* entityName;
     const char* className;
     const char* propName;
 
+private:
     union {
         _TimerRuleCallback0 callback0;
         _TimerRuleCallback1 callback1;
