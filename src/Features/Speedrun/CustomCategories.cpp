@@ -64,12 +64,14 @@ CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <name> <
         return;
     }
 
-    char* catName = dupString(args[1]);
-
-    if (customCategories.find(catName) != customCategories.end()) {
-        console->Print("Category '%s' already exists!\n", catName);
-        return;
+    for (auto& c : TimerCategory::GetList()) {
+        if (!strcmp(c->name, args[1])) {
+            console->Print("Category '%s' already exists!\n", args[1]);
+            return;
+        }
     }
+
+    char* catName = dupString(args[1]);
 
     std::vector<TimerRule*> rules;
 
