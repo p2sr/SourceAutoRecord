@@ -17,7 +17,7 @@ Variable sar_hud_strafesync_font_index("sar_hud_strafesync_font_index", "1", 0, 
 StrafeSyncHud strafeSyncHud;
 
 StrafeSyncHud::StrafeSyncHud()
-    : Hud(HudType_InGame | HudType_Paused | HudType_Menu, true, SourceGame_Portal2)
+    : Hud(HudType_InGame | HudType_Paused | HudType_Menu, true, SourceGame_Portal2Engine)
 {
 }
 bool StrafeSyncHud::ShouldDraw()
