@@ -688,6 +688,14 @@ bool Engine::Init()
     fps_max = Variable("fps_max");
     mat_norendering = Variable("mat_norendering");
 
+    // Dumb fix for valve cutting off convar descriptions at 80
+    // characters for some reason
+    char* s = (char*)Memory::Scan(this->Name(), "25 2d 38 30 73 20 2d 20 25 2e 38 30 73 0a 00"); // "%-80s - %.80s"
+    if (s) {
+        Memory::UnProtect(s, 11);
+        strcpy(s, "%-80s - %s");
+    }
+
     return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace;
 }
 void Engine::Shutdown()
