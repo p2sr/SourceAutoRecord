@@ -280,6 +280,18 @@ DETOUR(Client::OverrideView, CPortalViewSetup1* m_View)
     return Client::OverrideView(thisptr, m_View);
 }
 
+static _CommandCallback originalLeaderboardCallback;
+
+static void LeaderboardCallback(const CCommand& args)
+{
+    // There's not really much rhyme or reason behind this check, it's
+		// just that this is the specific command the game runs at the end
+    if (sar_challenge_autostop.GetBool() && sv_bonus_challenge.GetBool() && args.ArgC() == 2 && !strcmp(args[1], "1")) {
+        engine->ExecuteCommand("stop");
+    }
+    originalLeaderboardCallback(args);
+}
+
 bool Client::Init()
 {
     bool readJmp = false;
@@ -305,6 +317,8 @@ bool Client::Init()
                 auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
                 auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
                 auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
+
+                Command::Hook("leaderboard_open", &LeaderboardCallback, originalLeaderboardCallback);
 
                 if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
                     this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);

@@ -40,6 +40,7 @@ Variable sar_disable_no_focus_sleep("sar_disable_no_focus_sleep", "0", "Does not
 Variable sar_disable_progress_bar_update("sar_disable_progress_bar_update", "0", 0, 2, "Disables excessive usage of progress bar.\n");
 Variable sar_prevent_mat_snapshot_recompute("sar_prevent_mat_snapshot_recompute", "0", "Shortens loading times by preventing state snapshot recomputation.\n");
 Variable sar_prevent_peti_materials_loading("sar_prevent_peti_materials_loading", "1", "Fixes memory leak by blocking PeTI from loading its materials outside of map editor.\n");
+Variable sar_challenge_autostop("sar_challenge_autostop", "0", "Automatically stops recording demos when the leaderboard opens after a CM run.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
