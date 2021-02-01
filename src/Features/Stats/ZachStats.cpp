@@ -53,8 +53,8 @@ ZachStats* zachStats;
 ZachStats::ZachStats()
     : isFirstPlaced(false)
     , lastFrameDrawn(0)
-    , output("", std::ios_base::out)
     , lastTriggerTick(-1)
+    , output("", std::ios_base::out)
 {
     this->hasLoaded = true;
 }
