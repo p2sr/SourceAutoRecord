@@ -3,6 +3,7 @@
 #include "Command.hpp"
 #include "SAR.hpp"
 #include "Modules/Console.hpp"
+#include "Features/Session.hpp"
 #include <map>
 #include <string>
 
@@ -18,7 +19,11 @@ static std::vector<InputInfo> inputInfos;
 void TickCustomCategories()
 {
     // Runs at start of tick - empty list ready
-    inputInfos.clear();
+    // This is kinda weird. The session doesn't start til tick 2, but we
+    // get events on ticks 0 and 1; therefore, if we clear the events
+    // before tick 3, we lose out on inputs that triggered on those
+    // first couple ticks, which is bad
+    if (session->GetTick() >= 3) inputInfos.clear();
 }
 
 void CheckCustomCategoryRules(void* entity, const char* input)
@@ -57,7 +62,7 @@ static char* dupString(const char* str)
     return strcpy(newStr, str);
 }
 
-CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <name> <map> <entity> <input> <map> <entity> <input> - creates a custom category with the given name and start/end rules.\n")
+CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <name> <map> <entity> <input> <map> <entity> <input> - creates a custom category with the given name and start/end rules.\nEntity names may begin with ! to specify a classname rather than a targetname.\n")
 {
     if (args.ArgC() != 8) {
         console->Print(sar_speedrun_category_create.ThisPtr()->m_pszHelpString);
@@ -76,8 +81,10 @@ CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <name> <
     std::vector<TimerRule*> rules;
 
     for (int i = 2; i < 8; i += 3) { // Loops twice
+        bool isClass = args[i+1][0] == '!';
+
         char *map = dupString(args[i]);
-        char *entityName = dupString(args[i+1]);
+        char *entityName = dupString(args[i+1] + (isClass ? 1 : 0));
         char *input = dupString(args[i+2]);
 
         char* ruleName = (char*)malloc(strlen(catName) + 7);
@@ -87,7 +94,7 @@ CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <name> <
         customRuleInputs[ruleName] = input;
 
         _TimerRuleCallback3 callback = i == 2 ? &customRuleStartCallback : &customRuleEndCallback;
-        rules.push_back(new TimerRule(ruleName, map, entityName, ruleName, callback));
+        rules.push_back(new TimerRule(ruleName, map, entityName, ruleName, callback, isClass ? SearchMode::Classes : SearchMode::Names));
     }
 
     customCategories[catName] = new TimerCategory(sar.game->GetVersion(), catName, rules);

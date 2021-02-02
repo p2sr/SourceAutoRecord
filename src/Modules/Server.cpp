@@ -292,6 +292,7 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, void* activator, void* caller)
 {
     CheckCustomCategoryRules(thisptr, inputName);
+    //console->DevMsg("%.4d INPUT %s TARGETNAME %s CLASSNAME %s\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr));
 }
 
 // This is kinda annoying - it's got to be in a separate function

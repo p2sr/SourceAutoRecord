@@ -43,8 +43,8 @@ TimerRule::TimerRule(const char* name, const char* mapName, const char* entityNa
     this->callbackType = 2;
 }
 TimerRule::TimerRule(const char* name, const char* mapName, const char* entityName, void* user,
-    _TimerRuleCallback3 callback)
-    : TimerRule(name, mapName, entityName, nullptr, SearchMode::Names)
+    _TimerRuleCallback3 callback, SearchMode searchMode)
+    : TimerRule(name, mapName, entityName, nullptr, searchMode)
 {
     this->callback3 = callback;
     this->callbackType = 3;
