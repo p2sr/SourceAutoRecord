@@ -91,11 +91,13 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
                 this->features->AddFeature<TasTools>(&tasTools);
 
-                if (this->game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+                if (this->game->Is(SourceGame_Portal2Game)) {
                     this->features->AddFeature<Listener>(&listener);
-                    this->features->AddFeature<WorkshopList>(&workshop);
                     this->features->AddFeature<Imitator>(&imitator);
-                    //this->features->AddFeature<NetworkGhostPlayer>(&networkGhostPlayer);
+                }
+
+                if (this->game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+                    this->features->AddFeature<WorkshopList>(&workshop);
                 }
 
                 if (listener) {

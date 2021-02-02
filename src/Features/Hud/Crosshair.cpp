@@ -51,7 +51,7 @@ Variable cl_quickhud_alpha("cl_quickhud_alpha", "255", 0, 255, "Change the amoun
 Crosshair crosshair;
 
 Crosshair::Crosshair()
-    : Hud(HudType_InGame, true, SourceGame_Portal2)
+    : Hud(HudType_InGame, true, SourceGame_Portal2Game)
     , crosshairTextureID(0)
     , quickhudTextureID{ -1, -1, -1, -1 }
     , isCustomCrosshairReady(false)

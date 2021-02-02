@@ -603,7 +603,7 @@ bool Engine::Init()
         Interface::Delete(s_EngineAPI);
     }
 
-    if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+    if (sar.game->Is(SourceGame_Portal2Game)) {
         this->s_GameEventManager = Interface::Create(this->Name(), "GAMEEVENTSMANAGER002", false);
         if (this->s_GameEventManager) {
             this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
