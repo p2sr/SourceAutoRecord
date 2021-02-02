@@ -16,14 +16,16 @@ static std::map<char*, TimerCategory*> customCategories;
 static std::map<char*, char*> customRuleInputs;
 static std::vector<InputInfo> inputInfos;
 
+static bool sessionWasRunningLastTick;
 void TickCustomCategories()
 {
     // Runs at start of tick - empty list ready
     // This is kinda weird. The session doesn't start til tick 2, but we
     // get events on ticks 0 and 1; therefore, if we clear the events
-    // before tick 3, we lose out on inputs that triggered on those
-    // first couple ticks, which is bad
-    if (session->GetTick() >= 3) inputInfos.clear();
+    // before the session starts, we lose out on inputs that triggered
+    // on those first couple ticks, which is bad
+    if (sessionWasRunningLastTick) inputInfos.clear();
+    sessionWasRunningLastTick = session->isRunning;
 }
 
 void CheckCustomCategoryRules(void* entity, const char* input)
