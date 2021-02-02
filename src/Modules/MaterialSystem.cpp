@@ -32,7 +32,11 @@ DETOUR(MaterialSystem::CreateMaterial, const char* pMaterialName, void* pVMTKeyV
     // load the game. This simply prevents that from happening.
     bool isPetiMaterial = sMaterialName.find("props_map_editor") != std::string::npos;
     bool isWhiteMaterial = sMaterialName.find("vgui/white") != std::string::npos;
+#ifdef _WIN32
     bool isPetiMap = sMapName.find("puzzlemaker\\") != std::string::npos;
+#else
+    bool isPetiMap = sMapName.find("puzzlemaker/") != std::string::npos;
+#endif
 
     if (sar_prevent_peti_materials_loading.GetBool() && (isPetiMaterial || isWhiteMaterial) && !isPetiMap) {
         return 0;
