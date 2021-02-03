@@ -603,7 +603,7 @@ bool Engine::Init()
         Interface::Delete(s_EngineAPI);
     }
 
-    if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+    if (sar.game->Is(SourceGame_Portal2Game)) {
         this->s_GameEventManager = Interface::Create(this->Name(), "GAMEEVENTSMANAGER002", false);
         if (this->s_GameEventManager) {
             this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
@@ -687,6 +687,14 @@ bool Engine::Init()
     sv_portal_players = Variable("sv_portal_players");
     fps_max = Variable("fps_max");
     mat_norendering = Variable("mat_norendering");
+
+    // Dumb fix for valve cutting off convar descriptions at 80
+    // characters for some reason
+    char* s = (char*)Memory::Scan(this->Name(), "25 2d 38 30 73 20 2d 20 25 2e 38 30 73 0a 00"); // "%-80s - %.80s"
+    if (s) {
+        Memory::UnProtect(s, 11);
+        strcpy(s, "%-80s - %s");
+    }
 
     return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace;
 }

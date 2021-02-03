@@ -6,6 +6,7 @@
 using _TimerRuleCallback0 = TimerAction (*)(void* entity);
 using _TimerRuleCallback1 = TimerAction (*)(void* entity, int* prop);
 using _TimerRuleCallback2 = TimerAction (*)(void* entity, int prop_offset);
+using _TimerRuleCallback3 = TimerAction (*)(void* entity, void* user);
 
 enum class SearchMode {
     Classes,
@@ -17,16 +18,18 @@ public:
     bool madeAction;
     const char* name;
     const char* mapName;
+    void* user;
 
-private:
     const char* entityName;
     const char* className;
     const char* propName;
 
+private:
     union {
         _TimerRuleCallback0 callback0;
         _TimerRuleCallback1 callback1;
         _TimerRuleCallback2 callback2;
+        _TimerRuleCallback3 callback3;
     };
 
     void* entityPtr;
@@ -42,6 +45,8 @@ public:
         _TimerRuleCallback1, const char* className, const char* propName, SearchMode searchMode = SearchMode::Names);
     TimerRule(const char* name, const char* mapName, const char* entityName,
         _TimerRuleCallback2, const char* className, const char* propName, SearchMode searchMode = SearchMode::Names);
+    TimerRule(const char* name, const char* mapName, const char* entityName, void* user,
+        _TimerRuleCallback3, SearchMode searchMode = SearchMode::Names);
 
     bool Load();
     void Unload();

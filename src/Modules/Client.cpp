@@ -280,6 +280,18 @@ DETOUR(Client::OverrideView, CPortalViewSetup1* m_View)
     return Client::OverrideView(thisptr, m_View);
 }
 
+static _CommandCallback originalLeaderboardCallback;
+
+static void LeaderboardCallback(const CCommand& args)
+{
+    // There's not really much rhyme or reason behind this check, it's
+    // just that this is the specific command the game runs at the end
+    if (sar_challenge_autostop.GetBool() && sv_bonus_challenge.GetBool() && args.ArgC() == 2 && !strcmp(args[1], "1")) {
+        engine->ExecuteCommand("stop");
+    }
+    originalLeaderboardCallback(args);
+}
+
 bool Client::Init()
 {
     bool readJmp = false;
@@ -295,7 +307,7 @@ bool Client::Init()
 
         this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);
 
-        if (sar.game->Is(SourceGame_Portal2)) {
+        if (sar.game->Is(SourceGame_Portal2Game)) {
             auto leaderboard = Command("+leaderboard");
             if (!!leaderboard) {
                 using _GetHud = void*(__cdecl*)(int unk);
@@ -305,6 +317,8 @@ bool Client::Init()
                 auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
                 auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
                 auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
+
+                Command::Hook("leaderboard_open", &LeaderboardCallback, originalLeaderboardCallback);
 
                 if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
                     this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
@@ -338,7 +352,7 @@ bool Client::Init()
                 if (sar.game->Is(SourceGame_TheStanleyParable)) {
                     auto GetButtonBits = g_Input->Original(Offsets::GetButtonBits, readJmp);
                     Memory::Deref(GetButtonBits + Offsets::in_jump, &this->in_jump);
-                } else if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+                } else if (sar.game->Is(SourceGame_Portal2Game)) {
                     in_forceuser = Variable("in_forceuser");
                     if (!!in_forceuser && this->g_Input) {
                         this->g_Input->Hook(CInput_CreateMove_Hook, CInput_CreateMove, Offsets::GetButtonBits + 1);
@@ -355,7 +369,7 @@ bool Client::Init()
         void* clientMode = nullptr;
         void* clientMode2 = nullptr;
         if (sar.game->Is(SourceGame_Portal2Engine)) {
-            if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+            if (sar.game->Is(SourceGame_Portal2Game)) {
                 auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
                 auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
                 clientMode = Memory::Deref<void*>(g_pClientMode);

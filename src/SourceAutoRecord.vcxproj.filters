@@ -61,6 +61,9 @@
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Speedrun\CustomCategories.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Demo\Demo.cpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClCompile>
@@ -466,6 +469,9 @@
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
     <ClInclude Include="Features\Speedrun\TimerState.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\CustomCategories.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\Demo.hpp">

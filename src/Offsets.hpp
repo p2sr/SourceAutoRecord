@@ -123,6 +123,7 @@ extern int m_flMaxspeed;
 extern int m_flGravity;
 extern int S_m_vecViewOffset;
 extern int IsPlayer;
+extern int AcceptInput;
 
 // CBasePlayer
 extern int m_fFlags;

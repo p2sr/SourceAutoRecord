@@ -82,7 +82,7 @@ void Variable::Realloc()
 }
 void Variable::AddCallBack(FnChangeCallback_t callback)
 {
-    if (sar.game->Is(SourceGame_Portal2) && callback != nullptr) {
+    if (sar.game->Is(SourceGame_Portal2Engine) && callback != nullptr) {
         this->ThisPtr2()->m_fnChangeCallback.Append(callback);
         this->hasCustomCallback = true;
         this->GetList().push_back(this);

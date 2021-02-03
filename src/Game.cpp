@@ -55,7 +55,20 @@ Game* Game::CreateNew()
         return modDir;
     };
 
-    auto modDir = GetModDir(TARGET_MOD);
+    auto modDir = GetModDir(TARGET_MOD2);
+
+    // This check is at the top because aptag's server dll is in a
+    // portal2 bin folder so it gets detected as portal 2 otherwise
+    if (Utils::ICompare(modDir, ApertureTag::GameDir())) {
+        return new ApertureTag();
+    }
+
+    // May as well do the same thing here too then
+    if (Utils::ICompare(modDir, ThinkingWithTimeMachine::GameDir())) {
+        return new ThinkingWithTimeMachine();
+    }
+
+    modDir = GetModDir(TARGET_MOD);
 
     if (Utils::ICompare(modDir, Portal2::ModDir())) {
         return new Portal2();
@@ -104,14 +117,6 @@ Game* Game::CreateNew()
         return new INFRA();
     }
 #endif
-
-    modDir = GetModDir(TARGET_MOD2);
-    if (Utils::ICompare(modDir, ApertureTag::GameDir())) {
-        return new ApertureTag();
-    }
-    if (Utils::ICompare(modDir, ThinkingWithTimeMachine::GameDir())) {
-        return new ThinkingWithTimeMachine();
-    }
 
     return nullptr;
 }

@@ -217,6 +217,7 @@ void Portal2::LoadOffsets()
     ClientCommand = 39; // CVEngineServer
     TraceRay = 5; // IEngineTrace
     IsPlayer = 85; // CBasePlayer
+    AcceptInput = 40; // CBasePlayer
     m_pSurfaceData = 3868; // CGameMovement::CheckJumpButton
     jumpFactor = 68; // CGameMovement::CheckJumpButton
     m_StatsThisLevel = 5696; // CPortal_Player

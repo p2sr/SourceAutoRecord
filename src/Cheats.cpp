@@ -40,6 +40,7 @@ Variable sar_disable_no_focus_sleep("sar_disable_no_focus_sleep", "0", "Does not
 Variable sar_disable_progress_bar_update("sar_disable_progress_bar_update", "0", 0, 2, "Disables excessive usage of progress bar.\n");
 Variable sar_prevent_mat_snapshot_recompute("sar_prevent_mat_snapshot_recompute", "0", "Shortens loading times by preventing state snapshot recomputation.\n");
 Variable sar_prevent_peti_materials_loading("sar_prevent_peti_materials_loading", "1", "Fixes memory leak by blocking PeTI from loading its materials outside of map editor.\n");
+Variable sar_challenge_autostop("sar_challenge_autostop", "0", "Automatically stops recording demos when the leaderboard opens after a CM run.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -180,10 +181,10 @@ void Cheats::Init()
     //sar_hud_portals.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
     sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
     sar_disable_steam_pause.UniqueFor(SourceGame_Portal2Game);
-    sar_disable_progress_bar_update.UniqueFor(SourceGame_Portal2);
-    sar_prevent_mat_snapshot_recompute.UniqueFor(SourceGame_Portal2);
-    sar_prevent_peti_materials_loading.UniqueFor(SourceGame_Portal2);
-    sar_debug_listener.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_disable_progress_bar_update.UniqueFor(SourceGame_Portal2Game);
+    sar_prevent_mat_snapshot_recompute.UniqueFor(SourceGame_Portal2Game);
+    sar_prevent_peti_materials_loading.UniqueFor(SourceGame_Portal2Game);
+    sar_debug_listener.UniqueFor(SourceGame_Portal2Game);
     sar_sr_hud.UniqueFor(s3);
     sar_sr_hud_x.UniqueFor(s3);
     sar_sr_hud_y.UniqueFor(s3);
@@ -193,9 +194,9 @@ void Cheats::Init()
     sar_speedrun_autostop.UniqueFor(s3);
     sar_speedrun_standard.UniqueFor(s3);
     sar_duckjump.UniqueFor(SourceGame_Portal2Engine);
-    sar_replay_viewmode.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
-    sar_mimic.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
-    sar_tas_ss_forceuser.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_replay_viewmode.UniqueFor(SourceGame_Portal2Game);
+    sar_mimic.UniqueFor(SourceGame_Portal2Game);
+    sar_tas_ss_forceuser.UniqueFor(SourceGame_Portal2Game);
     //sar_hud_pause_timer.UniqueFor(s3);
     sar_speedrun_time_pauses.UniqueFor(s3);
     sar_speedrun_smartsplit.UniqueFor(s3);
@@ -220,13 +221,13 @@ void Cheats::Init()
     sar_speedrun_resume.UniqueFor(s3);
     sar_speedrun_reset.UniqueFor(s3);
     sar_togglewait.UniqueFor(SourceGame_Portal2Game | SourceGame_INFRA);
-    sar_tas_ss.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_tas_ss.UniqueFor(SourceGame_Portal2Game);
     sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2Game | SourceGame_HalfLife2Engine);
     sar_tas_strafe.UniqueFor(SourceGame_Portal2Engine);
     sar_tas_strafe_vectorial.UniqueFor(SourceGame_Portal2Engine);
     startautostrafe.UniqueFor(SourceGame_Portal2Engine);
     endautostrafe.UniqueFor(SourceGame_Portal2Engine);
-    sar_dump_events.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_dump_events.UniqueFor(SourceGame_Portal2Game);
 
     cvars->Unlock();
 

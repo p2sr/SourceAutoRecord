@@ -44,7 +44,7 @@ bool Tier1::Init()
             this->Create = Memory::VMT<_Create>(vtable, Offsets::Create);
         }
 
-        if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+        if (sar.game->Is(SourceGame_Portal2Game)) {
             this->InstallGlobalChangeCallback = this->g_pCVar->Original<_InstallGlobalChangeCallback>(Offsets::InstallGlobalChangeCallback);
             this->RemoveGlobalChangeCallback = this->g_pCVar->Original<_RemoveGlobalChangeCallback>(Offsets::RemoveGlobalChangeCallback);
         }
