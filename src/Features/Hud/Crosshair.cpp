@@ -13,6 +13,7 @@
 
 #include <filesystem>
 #include <string>
+#include <cctype>
 
 Variable sar_crosshair_mode("sar_crosshair_mode", "0", 0, 2, "Set the crosshair mode :\n"
                                                              "0 : Default crosshair\n"
