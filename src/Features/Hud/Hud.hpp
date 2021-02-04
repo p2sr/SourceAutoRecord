@@ -125,6 +125,10 @@ public:
     HudModeElement sar_hud_element_##name(&sar_hud##name, sar_hud_element_##name##_callback, type); \
     void sar_hud_element_##name##_callback(HudContext* ctx, int mode)
 // First+second screen
+#define HUD_ELEMENT2_NO_DISABLE(name, type)                                                        \
+    void sar_hud_element_##name##_callback(HudContext* ctx);                                      \
+    HudElement sar_hud_element_##name("sar_hud_" #name, sar_hud_element_##name##_callback, type, true); \
+    void sar_hud_element_##name##_callback(HudContext* ctx)
 #define HUD_ELEMENT2(name, value, desc, type)                                                         \
     Variable sar_hud##name("sar_hud_" #name, value, desc);                                            \
     void sar_hud_element_##name##_callback(HudContext* ctx);                                          \

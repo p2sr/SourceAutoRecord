@@ -133,7 +133,7 @@ void GhostEntity::DeleteGhostModel(const bool newEntity)
     }
 }
 
-HUD_ELEMENT(ghost_show_name, "1", "Display the name of the ghost over it.\n", HudType_InGame)
+HUD_ELEMENT2(ghost_show_name, "1", "Display the name of the ghost over it.\n", HudType_InGame)
 {
     if (networkManager.isConnected)
         networkManager.DrawNames(ctx);

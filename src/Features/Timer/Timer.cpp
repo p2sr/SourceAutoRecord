@@ -179,17 +179,17 @@ CON_COMMAND(sar_cps_result, "Prints result of timer checkpoints.\n")
 
 // HUD
 
-HUD_ELEMENT(timer, "0", "Draws current value of timer.\n", HudType_InGame | HudType_Paused)
+HUD_ELEMENT2(timer, "0", "Draws current value of timer.\n", HudType_InGame | HudType_Paused)
 {
     auto tick = (!timer->isPaused) ? timer->GetTick(engine->GetTick()) : timer->totalTicks;
     auto time = engine->ToTime(tick);
     ctx->DrawElement("timer: %i (%.3f)", tick, time);
 }
-HUD_ELEMENT(avg, "0", "Draws calculated average of timer.\n", HudType_InGame | HudType_Paused)
+HUD_ELEMENT2(avg, "0", "Draws calculated average of timer.\n", HudType_InGame | HudType_Paused)
 {
     ctx->DrawElement("avg: %i (%.3f)", timer->avg->averageTicks, timer->avg->averageTime);
 }
-HUD_ELEMENT(cps, "0", "Draws latest checkpoint of timer.\n", HudType_InGame | HudType_Paused)
+HUD_ELEMENT2(cps, "0", "Draws latest checkpoint of timer.\n", HudType_InGame | HudType_Paused)
 {
     ctx->DrawElement("last cp: %i (%.3f)", timer->cps->latestTick, timer->cps->latestTime);
 }

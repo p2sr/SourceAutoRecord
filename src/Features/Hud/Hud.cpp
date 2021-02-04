@@ -282,7 +282,7 @@ struct TextLine
 };
 
 static std::map<long, TextLine> sar_hud_text_vals;
-HUD_ELEMENT_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
+HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
 {
     for (auto& t : sar_hud_text_vals) {
         if (t.second.draw) {

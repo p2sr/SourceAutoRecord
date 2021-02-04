@@ -308,7 +308,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "Parses multiple demos and prints t
 
 // HUD
 
-HUD_ELEMENT(demo, "0", "Draws name, tick and time of current demo.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen)
+HUD_ELEMENT2(demo, "0", "Draws name, tick and time of current demo.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen)
 {
     if (!*engine->m_bLoadgame && *engine->demorecorder->m_bRecording && !engine->demorecorder->currentDemo.empty()) {
         auto tick = engine->demorecorder->GetTick();
