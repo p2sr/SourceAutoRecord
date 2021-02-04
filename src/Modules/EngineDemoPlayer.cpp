@@ -129,6 +129,12 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
             console->Print("Time:     %.3f\n", demo.playbackTime);
             console->Print("Tickrate: %.3f\n", demo.Tickrate());
             engine->demoplayer->levelName = demo.mapName;
+
+#ifdef SAR_MODERATOR_BUILD
+            if (sar_demo_cheat_info.GetBool()) {
+                client->QueueChat(TextColor::LIGHT_GREEN, "Average of %.2fTPS", (float)demo.playbackTicks / demo.playbackTime);
+            }
+#endif
         } else {
             console->Print("Could not parse \"%s\"!\n", engine->demoplayer->DemoName);
         }
