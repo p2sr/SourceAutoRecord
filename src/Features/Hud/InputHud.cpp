@@ -60,7 +60,7 @@ InputHud inputHud;
 InputHud inputHud2;
 
 InputHud::InputHud()
-    : Hud(HudType_InGame, true, SourceGame_Portal2Engine)
+    : Hud(HudType_InGame | HudType_LoadingScreen, true, SourceGame_Portal2Engine)
     , buttonBits{ 0, 0 }
 {
 }
