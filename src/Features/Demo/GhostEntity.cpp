@@ -110,6 +110,9 @@ void GhostEntity::Display()
 
 void GhostEntity::Lerp(float time)
 {
+    if (time > 1) time = 1;
+    if (time < 0) time = 0;
+
     this->data.position.x = (1 - time) * this->oldPos.position.x + time * this->newPos.position.x;
     this->data.position.y = (1 - time) * this->oldPos.position.y + time * this->newPos.position.y;
     this->data.position.z = (1 - time) * this->oldPos.position.z + time * this->newPos.position.z;
