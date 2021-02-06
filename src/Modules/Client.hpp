@@ -35,6 +35,7 @@ public:
     _ChatPrintf ChatPrintf = nullptr;
 
     void* in_jump = nullptr;
+    QAngle lastViewAngles;
 
 public:
     DECL_M(GetAbsOrigin, Vector);

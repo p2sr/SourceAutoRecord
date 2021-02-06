@@ -382,6 +382,9 @@ HUD_ELEMENT_MODE2(angles, "0", 0, 2, "Draws absolute view angles of the client.\
     HudType_InGame | HudType_Paused | HudType_LoadingScreen)
 {
     auto ang = engine->GetAngles(ctx->slot);
+    if (engine->IsCoop() && engine->IsOrange() && !session->isRunning) { // Orange and not splitscreen
+        ang = client->lastViewAngles;
+    }
     int p = sar_hud_precision.GetInt();
     if (mode == 1) {
         ctx->DrawElement("ang: %.*f %.*f", p, ang.x, p, ang.y);

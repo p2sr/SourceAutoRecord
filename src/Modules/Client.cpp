@@ -181,6 +181,8 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
         synchro->UpdateSync(cmd);
     }
 
+    client->lastViewAngles = cmd->viewangles;
+
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
 DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
