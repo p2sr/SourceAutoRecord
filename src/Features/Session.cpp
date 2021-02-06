@@ -86,7 +86,9 @@ void Session::Start()
 
     this->Rebase(tick);
     timer->Rebase(tick);
-    speedrun->Resume(tick);
+    if (!engine->IsCoop() || !engine->demorecorder->isRecordingDemo) {
+        speedrun->Resume(tick);
+    }
 
     if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
         if (engine->demorecorder->isRecordingDemo) {
@@ -132,10 +134,12 @@ void Session::Start()
         }
     }
 
-    if (sar_speedrun_autostart.isRegistered && sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
-        speedrun->Start(engine->GetTick());
-    } else if (speedrun->IsActive()) {
-        speedrun->Resume(engine->GetTick());
+    if (!engine->IsCoop() || !engine->demorecorder->isRecordingDemo) {
+        if (sar_speedrun_autostart.isRegistered && sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
+            speedrun->Start(engine->GetTick());
+        } else if (speedrun->IsActive()) {
+            speedrun->Resume(engine->GetTick());
+        }
     }
 
     //Network Ghosts
@@ -220,7 +224,9 @@ void Session::Ended()
     replayRecorder2->StopRecording();
     replayPlayer1->StopPlaying();
     replayPlayer2->StopPlaying();
-    speedrun->Pause();
+    if (!engine->IsCoop()) {
+        speedrun->Pause();
+    }
     speedrun->UnloadRules();
 
     if (listener) {

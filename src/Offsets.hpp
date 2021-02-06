@@ -93,6 +93,7 @@ extern int SetSignonState;
 extern int StartRecording;
 extern int StopRecording;
 extern int RecordCustomData;
+extern int RecordCommand;
 extern int m_szDemoBaseName;
 extern int m_bRecording;
 extern int m_nDemoNumber;

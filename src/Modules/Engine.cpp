@@ -6,6 +6,7 @@
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Speedrun/Rules/Portal2Rules.hpp"
 #include "Features/Stats/ZachStats.hpp"
 
 #include "Console.hpp"
@@ -63,6 +64,7 @@ REDECL(Engine::help_callback);
 REDECL(Engine::gameui_activate_callback);
 REDECL(Engine::unpause_callback);
 REDECL(Engine::playvideo_end_level_transition_callback);
+REDECL(Engine::playvideo_exitcommand_nointerrupt_callback);
 #ifdef _WIN32
 REDECL(Engine::connect_callback);
 REDECL(Engine::ParseSmoothingInfo_Skip);
@@ -481,6 +483,23 @@ DETOUR_COMMAND(Engine::playvideo_end_level_transition)
 
     Engine::playvideo_end_level_transition_callback(args);
 }
+DETOUR_COMMAND(Engine::playvideo_exitcommand_nointerrupt)
+{
+    if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "dlc1_endmovie")) {
+        course6End = true;
+    }
+
+    Engine::playvideo_exitcommand_nointerrupt_callback(args);
+}
+DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
+{
+    if (engine->GetMaxClients() >= 2 && ss_force_primary_fullscreen.GetInt() == 0 && session->isRunning) {
+        speedrun->Resume(engine->GetTick());
+        if (sar_speedrun_autostart.isRegistered && sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
+            speedrun->Start(engine->GetTick());
+        }
+    }
+}
 
 bool Engine::Init()
 {
@@ -680,6 +699,8 @@ bool Engine::Init()
     if (sar.game->Is(SourceGame_Portal2Game)) {
         Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
         Command::Hook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback_hook, Engine::playvideo_end_level_transition_callback);
+        Command::Hook("playvideo_exitcommand_nointerrupt", Engine::playvideo_exitcommand_nointerrupt_callback_hook, Engine::playvideo_exitcommand_nointerrupt_callback);
+        CVAR_HOOK_AND_CALLBACK(ss_force_primary_fullscreen);
     }
 
     host_framerate = Variable("host_framerate");
@@ -731,6 +752,7 @@ void Engine::Shutdown()
     Command::Unhook("help", Engine::help_callback);
     Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
     Command::Unhook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback);
+    Command::Unhook("playvideo_exitcommand_nointerrupt", Engine::playvideo_exitcommand_nointerrupt_callback);
 
     if (this->demoplayer) {
         this->demoplayer->Shutdown();

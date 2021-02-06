@@ -22,8 +22,9 @@
 #define Offset_m_flFOV 1760
 #endif
 
-int coopEndTick = -1;
+int coopEndTick = -1000;
 bool players_taunt_triggered = false;
+bool course6End = false;
 
 SAR_RULE(view_change, "sp_a1_intro1", "player", "CBasePlayer", m_hViewEntity, SearchMode::Classes)
 {
@@ -67,16 +68,16 @@ SAR_RULE3(players_taunt, "mp_coop_paint_longjump_intro", "vault-coopman_taunt", 
 
     if (*m_bPlayerStateA && *m_bPlayerStateB) {
         if (players_taunt_triggered == true) {
-            if (coopEndTick == session->GetTick() + 120) {
-                coopEndTick = -1;
-                players_taunt_triggered = false;
-
+            if (session->GetTick() == coopEndTick + 121) {
+                coopEndTick = -1000;
                 return TimerAction::End;
             }
         } else {
-            players_taunt_triggered = false;
+            players_taunt_triggered = true;
             coopEndTick = session->GetTick();
         }
+    } else {
+        players_taunt_triggered = false;
     }
 
     return TimerAction::DoNothing;
@@ -89,7 +90,12 @@ SAR_RULE3(gate_opens, "mp_coop_paint_crazy_box", "coopman_airlock_success", Sear
     auto m_bPlayerStateB = reinterpret_cast<bool*>((uintptr_t)entity + Offset_m_bPlayerStateB);
 
     if (*m_bPlayerStateA && *m_bPlayerStateB) {
-        return TimerAction::End;
+        if (course6End) {
+            course6End = false;
+            return TimerAction::End;
+        }
+    } else {
+        course6End = false;
     }
 
     return TimerAction::DoNothing;
@@ -119,5 +125,6 @@ SAR_RULE3(vehicle_lock, "e1912", "crash-vehicle_outro", SearchMode::Names)
 }
 
 SAR_CATEGORY(Portal2, SinglePlayer, _Rules({ &view_change, &moon_shot }));
-SAR_CATEGORY(Portal2, Cooperative,  _Rules({ &players_teleport, &players_taunt, &gate_opens }));
+SAR_CATEGORY(Portal2, Coop_AMC_Any, _Rules({ &players_teleport, &players_taunt }));
+SAR_CATEGORY(Portal2, Coop_AC,      _Rules({ &players_teleport, &gate_opens }));
 SAR_CATEGORY(Portal2, Super8,       _Rules({ &gain_control, &vehicle_lock }));

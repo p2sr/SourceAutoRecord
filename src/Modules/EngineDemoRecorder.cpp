@@ -5,6 +5,7 @@
 #include "Features/Timer/Timer.hpp"
 #include "Features/TimescaleDetect.hpp"
 #include "Features/FovChanger.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
