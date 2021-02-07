@@ -86,7 +86,7 @@ void Session::Start()
 
     this->Rebase(tick);
     timer->Rebase(tick);
-    if (!engine->IsCoop() || !engine->demorecorder->isRecordingDemo) {
+    if (!engine->IsCoop()) {
         speedrun->Resume(tick);
     }
 
@@ -134,7 +134,7 @@ void Session::Start()
         }
     }
 
-    if (!engine->IsCoop() || !engine->demorecorder->isRecordingDemo) {
+    if (!engine->IsCoop()) {
         if (sar_speedrun_autostart.isRegistered && sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
             speedrun->Start(engine->GetTick());
         } else if (speedrun->IsActive()) {
@@ -224,9 +224,13 @@ void Session::Ended()
     replayRecorder2->StopRecording();
     replayPlayer1->StopPlaying();
     replayPlayer2->StopPlaying();
-    if (!engine->IsCoop()) {
-        speedrun->Pause();
-    }
+
+    // This pause generally won't do anything in co-op; it will have
+    // already happened in the playvideo_end_level_transition detour.
+    // However, if a level ends prematurely (e.g. restart_level), that
+    // command is never run, so we use session timing to pause instead
+    speedrun->Pause();
+
     speedrun->UnloadRules();
 
     if (listener) {
