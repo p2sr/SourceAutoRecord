@@ -44,10 +44,6 @@ Variable sv_stopspeed;
 Variable sv_maxvelocity;
 Variable sv_gravity;
 
-Variable sar_pause("sar_pause", "0", "Enable pause after a load.\n");
-Variable sar_pause_at("sar_pause_at", "0", 0, "Pause at the specified tick.\n");
-Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.\n");
-
 REDECL(Server::CheckJumpButton);
 REDECL(Server::CheckJumpButtonBase);
 REDECL(Server::PlayerMove);
@@ -445,6 +441,8 @@ DETOUR(Server::GameFrame, bool simulating)
     } else {
         timescaleDetect->Cancel();
     }
+
+    ++server->tickCount;
 
 #ifndef _WIN32
     return result;

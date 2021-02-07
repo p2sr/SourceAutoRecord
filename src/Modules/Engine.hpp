@@ -115,6 +115,7 @@ public:
     bool overlayActivated = false;
     bool hasRecorded = false;
     bool hasPaused = false;
+    bool isPausing = false;
     int pauseTick;
     bool hasWaited = false;
 
@@ -200,6 +201,9 @@ extern Variable mat_norendering;
 extern Variable sar_record_at;
 extern Variable sar_record_at_demo_name;
 extern Variable sar_record_at_increment;
+
+extern Variable sar_pause_at;
+extern Variable sar_pause_for;
 
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1

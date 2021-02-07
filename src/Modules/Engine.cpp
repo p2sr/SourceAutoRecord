@@ -8,13 +8,13 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/ZachStats.hpp"
 
+#include "Client.hpp"
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
 #include "EngineDemoRecorder.hpp"
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Server.hpp"
-#include "Client.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -23,8 +23,8 @@
 #include "Variable.hpp"
 
 #ifdef _WIN32
-#include <Windows.h>
 #include <Memoryapi.h>
+#include <Windows.h>
 #else
 #include <sys/mman.h>
 #endif
@@ -45,6 +45,9 @@ DECL_CVAR_CALLBACK(sar_record_fix)
 Variable sar_record_at("sar_record_at", "-1", -1, "Start recording a demo at the tick specified. Will use sar_record_at_demo_name.\n", 0, &sar_record_fix_callback);
 Variable sar_record_at_demo_name("sar_record_at_demo_name", "chamber", "Name of the demo automatically recorded.\n", 0);
 Variable sar_record_at_increment("sar_record_at_increment", "0", "Increment automatically the demo name.\n");
+
+Variable sar_pause_at("sar_pause_at", "-1", 0, "Pause at the specified tick. -1 to deactivate it.\n");
+Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.\n");
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::Disconnect2);
@@ -321,16 +324,15 @@ DETOUR(Engine::Frame)
 
     //sar_pause
 
-    if (sar_pause.GetBool()) {
-        if (!engine->hasPaused && sar_pause_at.GetInt() >= session->GetTick()) {
+    if (sar_pause_at.GetInt() != -1 && !engine->demoplayer->IsPlaying()) {
+        if (!engine->hasPaused && sar_pause_at.GetInt() == session->GetTick()) {
             engine->ExecuteCommand("pause", true);
             engine->hasPaused = true;
-            engine->pauseTick = session->GetTick();
-        } else if (sar_pause_for.GetInt() > 0) {
-            if (engine->hasPaused && sar_pause_for.GetInt() + session->GetTick() >= engine->pauseTick) {
-                engine->ExecuteCommand("unpause", true);
-            }
-            ++engine->pauseTick;
+            engine->isPausing = true;
+            engine->pauseTick = server->tickCount;
+        } else if (sar_pause_for.GetInt() > 0 && engine->isPausing && server->tickCount == sar_pause_for.GetInt() + engine->pauseTick) {
+            engine->ExecuteCommand("unpause", true);
+            engine->isPausing = false;
         }
     }
 
@@ -640,7 +642,7 @@ bool Engine::Init()
 
         // This is the address of the one interesting call to ReadCustomData - the E8 byte indicates the start of the call instruction
 #ifdef _WIN32
-        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12); 
+        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12);
 #else
         uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "8B 95 94 FE FF FF 8D 4D D8 8D 45 D4 89 4C 24 08 89 44 24 04 89 14 24 E8", 24);
 #endif
@@ -656,8 +658,8 @@ bool Engine::Init()
 #endif
 
         // It's a relative call, so we have to do some weird fuckery lol
-        Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)readPacketInjectAddr + (readPacketInjectAddr+4));
-        *(uint32_t*)readPacketInjectAddr = (uint32_t)&ReadCustomData_Hook - (readPacketInjectAddr+4); // Add 4 to get address of next instruction
+        Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)readPacketInjectAddr + (readPacketInjectAddr + 4));
+        *(uint32_t*)readPacketInjectAddr = (uint32_t)&ReadCustomData_Hook - (readPacketInjectAddr + 4); // Add 4 to get address of next instruction
     }
 
     if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
