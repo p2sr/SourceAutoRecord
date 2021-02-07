@@ -173,6 +173,8 @@ void Session::Start()
 
     engine->hasRecorded = false;
     engine->hasPaused = false;
+    engine->isPausing = false;
+    server->tickCount = 0;
 
     stepCounter->ResetTimer();
 

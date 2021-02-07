@@ -51,6 +51,8 @@ public:
     CEntInfo* m_EntPtrArray = nullptr;
     IHandleEntity* portalGun = nullptr;
 
+    int tickCount = 0;
+
 private:
     bool jumpedLastTime = false;
     float savedVerticalVelocity = 0.0f;
@@ -124,7 +126,3 @@ extern Variable sv_maxspeed;
 extern Variable sv_stopspeed;
 extern Variable sv_maxvelocity;
 extern Variable sv_gravity;
-
-extern Variable sar_pause;
-extern Variable sar_pause_at;
-extern Variable sar_pause_for;
