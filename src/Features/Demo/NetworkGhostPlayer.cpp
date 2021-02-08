@@ -7,6 +7,65 @@
 
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 
+#include <queue>
+
+struct ScheduledEvent {
+    virtual ~ScheduledEvent();
+    virtual void doEvent() = 0;
+};
+
+struct ScheduledConnect : public ScheduledEvent {
+    int ID;
+    ScheduledConnect(int ID) : ID(ID) {}
+    virtual void doEvent() {
+        auto ghost = networkManager.GetGhostByID(ID);
+        client->Chat(TextColor::GREEN, "%s has just connected in %s!", ghost->name.c_str(), ghost->currentMap.c_str());
+
+        networkManager.UpdateGhostsSameMap();
+        if (ghost->sameMap && engine->isRunning()) {
+            ghost->Spawn();
+        }
+    }
+};
+
+struct ScheduledMapChange : public ScheduledEvent {
+    int ID;
+    ScheduledMapChange(int ID) : ID(ID) {}
+    virtual void doEvent() {
+        auto ghost = networkManager.GetGhostByID(ID);
+        networkManager.UpdateGhostsSameMap();
+        if (ghost_show_advancement.GetBool()) {
+            client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+        }
+
+        if (ghost->sameMap) {
+            ghost->Spawn();
+        } else {
+            ghost->DeleteGhost();
+        }
+
+        if (ghost_sync.GetBool()) {
+            if (networkManager.AreAllGhostsOnSameMap()) {
+                engine->SendToCommandBuffer("unpause", 40);
+            }
+        }
+    }
+};
+
+struct ScheduledModelChange : public ScheduledEvent {
+    int ID;
+    ScheduledModelChange(int ID) : ID(ID) {}
+    virtual void doEvent() {
+        auto ghost = networkManager.GetGhostByID(ID);
+        if (ghost->sameMap && engine->isRunning()) {
+            ghost->DeleteGhostModel(true);
+            ghost->Spawn();
+        }
+    }
+};
+
+static std::queue<ScheduledEvent*> g_scheduledEvents;
+
 //DataGhost
 
 sf::Packet& operator>>(sf::Packet& packet, QAngle& angle)
@@ -328,10 +387,7 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
 
         client->Chat(TextColor::GREEN, "%s has just connected in %s !", name.c_str(), current_map.c_str());
 
-        this->UpdateGhostsSameMap();
-        if (ghost.sameMap && engine->isRunning()) {
-            ghost.Spawn();
-        }
+        g_scheduledEvents.push(new ScheduledConnect(ID));
 
         break;
     }
@@ -354,21 +410,8 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             std::string map;
             packet >> map;
             ghost->currentMap = map;
-            this->UpdateGhostsSameMap();
-            if (ghost_show_advancement.GetBool()) {
-                client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
-            }
-            if (ghost->sameMap) {
-                ghost->Spawn();
-            } else {
-                ghost->DeleteGhost();
-            }
 
-            if (ghost_sync.GetBool()) {
-                if (this->AreAllGhostsOnSameMap()) {
-                    engine->SendToCommandBuffer("unpause", 40);
-                }
-            }
+            g_scheduledEvents.push(new ScheduledMapChange(ID));
         }
         break;
     }
@@ -425,10 +468,7 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         auto ghost = this->GetGhostByID(ID);
         if (ghost) {
             ghost->modelName = modelName;
-            if (ghost->sameMap && engine->isRunning()) {
-                ghost->DeleteGhostModel(true);
-                ghost->Spawn();
-            }
+            g_scheduledEvents.push(new ScheduledModelChange(ID));
         }
         break;
     }
@@ -566,6 +606,17 @@ void NetworkManager::DrawNames(HudContext* ctx)
                 ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y - ghost_text_offset.GetInt() - ghost_height.GetInt(), this->ghostPool[i].name.c_str());
             }
         }
+    }
+}
+
+void NetworkManager::DispatchQueuedEvents()
+{
+    while (!g_scheduledEvents.empty()) {
+        ScheduledEvent* e = g_scheduledEvents.front();
+        g_scheduledEvents.pop();
+
+        e->doEvent();
+        delete e;
     }
 }
 

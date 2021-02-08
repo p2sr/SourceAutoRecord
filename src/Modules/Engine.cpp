@@ -348,6 +348,8 @@ DETOUR(Engine::Frame)
         }
     }
 
+    networkManager.DispatchQueuedEvents();
+
     if (engine->lastTick != session->GetTick()) {
         if (networkManager.isConnected && engine->isRunning()) {
             networkManager.UpdateGhostsPosition();

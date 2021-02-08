@@ -94,6 +94,8 @@ public:
     //Print the state of the countdown
     void UpdateCountdown();
 
+    void DispatchQueuedEvents();
+
     void DrawNames(HudContext *ctx);
 };
 
