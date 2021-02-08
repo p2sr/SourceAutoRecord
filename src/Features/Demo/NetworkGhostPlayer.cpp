@@ -10,13 +10,14 @@
 #include <queue>
 
 struct ScheduledEvent {
-    virtual ~ScheduledEvent();
-    virtual void doEvent() = 0;
+    virtual ~ScheduledEvent() { };
+    virtual void doEvent() { };
 };
 
 struct ScheduledConnect : public ScheduledEvent {
     int ID;
     ScheduledConnect(int ID) : ID(ID) {}
+   virtual ~ScheduledConnect() { }
     virtual void doEvent() {
         auto ghost = networkManager.GetGhostByID(ID);
         client->Chat(TextColor::GREEN, "%s has just connected in %s!", ghost->name.c_str(), ghost->currentMap.c_str());
@@ -31,6 +32,7 @@ struct ScheduledConnect : public ScheduledEvent {
 struct ScheduledMapChange : public ScheduledEvent {
     int ID;
     ScheduledMapChange(int ID) : ID(ID) {}
+    virtual ~ScheduledMapChange() { }
     virtual void doEvent() {
         auto ghost = networkManager.GetGhostByID(ID);
         networkManager.UpdateGhostsSameMap();
@@ -56,6 +58,7 @@ struct ScheduledMapChange : public ScheduledEvent {
 struct ScheduledModelChange : public ScheduledEvent {
     int ID;
     ScheduledModelChange(int ID) : ID(ID) {}
+    virtual ~ScheduledModelChange() { }
     virtual void doEvent() {
         auto ghost = networkManager.GetGhostByID(ID);
         if (ghost->sameMap && engine->isRunning()) {
