@@ -185,8 +185,17 @@ void NetworkManager::RunNetwork()
             this->waitForRunning.wait(lck, [this] { return this->runThread.load(); });
         }
 
-        if (engine->isRunning() && !engine->IsGamePaused()) {
-            this->SendPlayerData();
+        auto now = NOW_STEADY();
+
+        if (now > this->lastUpdateTime + std::chrono::milliseconds(ghost_update_rate.GetInt())) {
+            // It's been one update rate interval - send our data again
+            // if we neeed to
+
+            if (engine->isRunning() && !engine->IsGamePaused()) {
+                this->SendPlayerData();
+            }
+
+            this->lastUpdateTime = now;
         }
 
         if (this->selector.wait(sf::milliseconds(ghost_update_rate.GetInt()))) {
@@ -208,8 +217,6 @@ void NetworkManager::RunNetwork()
                 this->TreatTCP(packet);
             }
         }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(ghost_update_rate.GetInt()));
     }
 }
 

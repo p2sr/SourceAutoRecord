@@ -51,6 +51,8 @@ private:
     std::chrono::time_point<std::chrono::steady_clock> timeLeft;
     int countdownStep;
 
+    std::chrono::time_point<std::chrono::steady_clock> lastUpdateTime;
+
 public:
     std::atomic<bool> isConnected;
     std::atomic<bool> runThread;
