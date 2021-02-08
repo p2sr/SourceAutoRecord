@@ -189,7 +189,7 @@ void NetworkManager::RunNetwork()
 
         if (now > this->lastUpdateTime + std::chrono::milliseconds(ghost_update_rate.GetInt())) {
             // It's been one update rate interval - send our data again
-            // if we neeed to
+            // if we need to
 
             if (engine->isRunning() && !engine->IsGamePaused()) {
                 this->SendPlayerData();
