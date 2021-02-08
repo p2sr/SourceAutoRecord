@@ -242,7 +242,7 @@ void Session::Ended()
     auto nSlot = GET_SLOT();
     stats->Get(nSlot)->statsCounter->RecordDatas(tick);
 
-    networkManager.DeleteAllGhosts();
+    networkManager.DeleteAllGhostModels(false);
     
     if (!wait_persist_across_loads.GetBool()) {
         engine->hasWaited = true;

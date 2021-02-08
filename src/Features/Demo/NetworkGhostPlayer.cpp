@@ -41,6 +41,7 @@ struct ScheduledMapChange : public ScheduledEvent {
         if (ghost->sameMap) {
             ghost->Spawn();
         } else {
+            ghost->DeleteGhostModel(false);
             ghost->DeleteGhost();
         }
 
@@ -395,6 +396,7 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i].ID == ID) {
                 client->Chat(TextColor::GREEN, "%s has disconnected !", this->ghostPool[i].name.c_str());
+                this->ghostPool[i].DeleteGhostModel(false);
                 this->ghostPool[i].DeleteGhost();
                 this->ghostPool.erase(this->ghostPool.begin() + i);
             }
