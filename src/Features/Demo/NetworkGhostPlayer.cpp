@@ -365,8 +365,14 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         }
         break;
     }
-    case HEADER::HEART_BEAT:
+    case HEADER::HEART_BEAT: {
+        sf::Uint32 token;
+        packet >> token;
+        sf::Packet response;
+        response << HEADER::HEART_BEAT << this->ID << token;
+        this->tcpSocket.send(response);
         break;
+    }
     case HEADER::MESSAGE: {
         auto ghost = this->GetGhostByID(ID);
         if (ghost) {
