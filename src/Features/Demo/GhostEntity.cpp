@@ -128,8 +128,8 @@ void GhostEntity::DeleteGhostModel(const bool newEntity)
 {
     if (this->prop_entity != nullptr) {
         if (newEntity) {
-            PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", "ghost_destroy");
-            engine->ExecuteCommand("ent_fire ghost_destroy kill");
+            PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", "_ghost_destroy");
+            engine->ExecuteCommand("ent_fire _ghost_destroy kill");
         } else {
             engine->ExecuteCommand(std::string("ent_fire ghost_" + this->name + " kill").c_str());
         }
