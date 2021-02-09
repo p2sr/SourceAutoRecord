@@ -360,7 +360,7 @@ void NetworkManager::TreatUDP(std::vector<sf::Packet>& buffer)
             if (g.ID == ID) {
                 DataGhost data;
                 packet >> data;
-                g.SetData(data.position, data.view_angle);
+                g.SetData(data.position, data.view_angle, true);
             }
         }
     }
@@ -483,7 +483,7 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             if (g.ID == ID) {
                 DataGhost data;
                 packet >> data;
-                g.SetData(data.position, data.view_angle);
+                g.SetData(data.position, data.view_angle, true);
             }
         }
         break;

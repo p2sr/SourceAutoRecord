@@ -43,7 +43,7 @@ public:
 
     void Spawn();
     void DeleteGhost();
-    void SetData(Vector pos, QAngle ang);
+    void SetData(Vector pos, QAngle ang, bool network = false);
     void SetupGhost(unsigned int& ID, std::string& name, DataGhost& data, std::string& current_map);
     void Display();
     void Lerp(float time);

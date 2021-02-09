@@ -67,13 +67,25 @@ void GhostEntity::DeleteGhost()
     this->prop_entity = nullptr;
 }
 
-void GhostEntity::SetData(Vector pos, QAngle ang)
+void GhostEntity::SetData(Vector pos, QAngle ang, bool network)
 {
     this->oldPos = this->newPos;
     this->newPos = { pos, ang };
 
     auto now = NOW_STEADY();
-    this->loopTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->lastUpdate).count();
+    long long newLoopTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->lastUpdate).count();
+    if (network) {
+        // Loop time could do strange things due to network latency etc.
+        // Try to smooth it using a biased average of the new time with
+        // the old one
+        if (this->loopTime = 0) {
+            this->loopTime = newLoopTime;
+        } else {
+            this->loopTime = (2 * this->loopTime + 1 * newLoopTime) / 3;
+        }
+    } else {
+        this->loopTime = newLoopTime;
+    }
     this->lastUpdate = now;
 }
 
