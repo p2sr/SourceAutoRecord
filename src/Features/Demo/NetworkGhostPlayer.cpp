@@ -20,7 +20,6 @@ struct ScheduledConnect : public ScheduledEvent {
    virtual ~ScheduledConnect() { }
     virtual void doEvent() {
         auto ghost = networkManager.GetGhostByID(ID);
-        client->Chat(TextColor::GREEN, "%s has just connected in %s!", ghost->name.c_str(), ghost->currentMap.c_str());
 
         networkManager.UpdateGhostsSameMap();
         if (ghost->sameMap && engine->isRunning()) {
