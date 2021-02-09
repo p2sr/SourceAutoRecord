@@ -266,7 +266,9 @@ void NetworkManager::RunNetwork()
                 std::vector<sf::Packet> buffer;
                 this->ReceiveUDPUpdates(buffer);
                 this->TreatUDP(buffer);
-            } else if (this->selector.isReady(this->tcpSocket)) { //TCP
+            }
+
+            if (this->selector.isReady(this->tcpSocket)) { //TCP
                 sf::Packet packet;
                 sf::Socket::Status status;
                 status = this->tcpSocket.receive(packet);
