@@ -148,7 +148,7 @@ void Session::Start()
         networkManager.UpdateGhostsSameMap();
         networkManager.SpawnAllGhosts();
         if (ghost_sync.GetBool()) {
-            if (!networkManager.AreAllGhostsOnSameMap() && this->previousMap != engine->m_szLevelName) { //Don't pause if just reloading save
+            if (!networkManager.AreAllGhostsAheadOrSameMap() && this->previousMap != engine->m_szLevelName) { //Don't pause if just reloading save
                 engine->SendToCommandBuffer("pause", 20);
             }
         }

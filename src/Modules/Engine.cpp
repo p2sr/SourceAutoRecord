@@ -180,7 +180,7 @@ int Engine::GetMapIndex(const std::string map)
     if (it != Game::mapNames.end()) {
         return std::distance(Game::mapNames.begin(), it);
     } else {
-        return 0;
+        return -1;
     }
 }
 

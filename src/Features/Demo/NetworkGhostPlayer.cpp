@@ -47,7 +47,7 @@ struct ScheduledMapChange : public ScheduledEvent {
         }
 
         if (ghost_sync.GetBool()) {
-            if (networkManager.AreAllGhostsOnSameMap()) {
+            if (networkManager.AreAllGhostsAheadOrSameMap()) {
                 engine->SendToCommandBuffer("unpause", 40);
             }
         }
@@ -515,8 +515,11 @@ GhostEntity* NetworkManager::GetGhostByID(sf::Uint32 ID)
 
 void NetworkManager::UpdateGhostsSameMap()
 {
+    int mapIdx = engine->GetMapIndex(engine->m_szLevelName);
     for (auto& ghost : this->ghostPool) {
         ghost.sameMap = ghost.currentMap == engine->m_szLevelName;
+        if (mapIdx == -1) ghost.isAhead = false; // Fallback - unknown map
+        else ghost.isAhead = engine->GetMapIndex(ghost.currentMap) > mapIdx;
     }
 }
 
@@ -528,10 +531,10 @@ void NetworkManager::UpdateModel(const std::string modelName)
     this->tcpSocket.send(packet);
 }
 
-bool NetworkManager::AreAllGhostsOnSameMap()
+bool NetworkManager::AreAllGhostsAheadOrSameMap()
 {
     for (auto& ghost : this->ghostPool) {
-        if (!ghost.sameMap) {
+        if (!ghost.isAhead && !ghost.sameMap) {
             return false;
         }
     }

@@ -83,7 +83,7 @@ public:
     GhostEntity* GetGhostByID(sf::Uint32 ID);
     void UpdateGhostsSameMap();
     void UpdateModel(const std::string modelName);
-    bool AreAllGhostsOnSameMap();
+    bool AreAllGhostsAheadOrSameMap();
     void SpawnAllGhosts();
     void DeleteAllGhosts();
     void DeleteAllGhostModels(const bool newEntity);

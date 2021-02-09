@@ -25,6 +25,7 @@ public:
     DataGhost data;
     std::string currentMap;
     bool sameMap;
+    bool isAhead;
 
     std::string modelName;
     void* prop_entity;
