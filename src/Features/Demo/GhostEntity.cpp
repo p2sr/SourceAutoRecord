@@ -32,6 +32,7 @@ GhostEntity::GhostEntity(unsigned int& ID, std::string& name, DataGhost& data, s
 
 GhostEntity::~GhostEntity()
 {
+    this->DeleteGhostModel(false);
     this->DeleteGhost();
 }
 
