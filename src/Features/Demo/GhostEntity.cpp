@@ -154,9 +154,7 @@ CON_COMMAND_COMPLETION(ghost_prop_model, "Set the prop model. Example : models/p
         return console->Print(ghost_prop_model.ThisPtr()->m_pszHelpString);
     }
 
-    if (networkManager.isConnected) {
-        networkManager.UpdateModel(args[1]);
-    }
+    networkManager.UpdateModel(args[1]);
 
     demoGhostPlayer.UpdateGhostsModel(args[1]);
 }

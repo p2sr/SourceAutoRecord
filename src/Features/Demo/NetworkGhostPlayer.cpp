@@ -526,9 +526,11 @@ void NetworkManager::UpdateGhostsSameMap()
 void NetworkManager::UpdateModel(const std::string modelName)
 {
     this->modelName = modelName;
-    sf::Packet packet;
-    packet << HEADER::MODEL_CHANGE << this->ID << this->modelName.c_str();
-    this->tcpSocket.send(packet);
+    if (this->isConnected) {
+        sf::Packet packet;
+        packet << HEADER::MODEL_CHANGE << this->ID << this->modelName.c_str();
+        this->tcpSocket.send(packet);
+    }
 }
 
 bool NetworkManager::AreAllGhostsAheadOrSameMap()
