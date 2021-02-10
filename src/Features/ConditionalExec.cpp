@@ -14,6 +14,7 @@ struct Condition {
         CM,
         SAME_MAP,
         MAP,
+        PREV_MAP,
         NOT,
         AND,
         OR,
@@ -31,6 +32,7 @@ struct Condition {
 static void FreeCondition(Condition *c) {
     switch (c->type) {
     case Condition::MAP:
+    case Condition::PREV_MAP:
         free(c->map);
         break;
     case Condition::NOT:
@@ -55,49 +57,12 @@ static bool EvalCondition(Condition *c) {
     case Condition::CM: return sv_bonus_challenge.GetBool();
     case Condition::SAME_MAP: return !strcmp(session->previousMap.c_str(), engine->m_szLevelName);
     case Condition::MAP: return !strcmp(c->map, engine->m_szLevelName);
+    case Condition::PREV_MAP: return !strcmp(c->map, session->previousMap.c_str());
     case Condition::NOT: return !EvalCondition(c->unop_cond);
     case Condition::AND: return EvalCondition(c->binop_l) && EvalCondition(c->binop_r);
     case Condition::OR: return EvalCondition(c->binop_l) || EvalCondition(c->binop_r);
     }
     return false;
-}
-
-static void PrintCondition(Condition *c) {
-    switch (c->type) {
-    case Condition::ORANGE:
-        console->Print("orange");
-        break;
-    case Condition::COOP:
-        console->Print("coop");
-        break;
-    case Condition::CM:
-        console->Print("cm");
-        break;
-    case Condition::SAME_MAP:
-        console->Print("same_map");
-        break;
-    case Condition::MAP:
-        console->Print("map=%s", c->map);
-        break;
-    case Condition::NOT:
-        console->Print("!");
-        PrintCondition(c->unop_cond);
-        break;
-    case Condition::AND:
-        console->Print("(");
-        PrintCondition(c->binop_l);
-        console->Print("&");
-        PrintCondition(c->binop_r);
-        console->Print(")");
-        break;
-    case Condition::OR:
-        console->Print("(");
-        PrintCondition(c->binop_l);
-        console->Print("|");
-        PrintCondition(c->binop_r);
-        console->Print(")");
-        break;
-    }
 }
 
 // Parsing {{{
@@ -231,9 +196,12 @@ static Condition *ParseCondition(std::queue<Token> toks) {
                 c->type = Condition::CM;
             } else if (t.len == 8 && !strncmp(t.str, "same_map", t.len)) {
                 c->type = Condition::SAME_MAP;
-            } else if (!strncmp(t.str, "map", t.len)) {
+            } else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len)) {
+                bool is_prev_map = t.len == 8;
+
                 if (toks.front().type != TOK_EQUALS) {
-                    console->Print("Expected = after 'map'\n");
+                    if (is_prev_map) console->Print("Expected = after 'prev_map'\n");
+                    else console->Print("Expected = after 'map'\n");
                     CLEAR_OUT_STACK;
                     return NULL;
                 }
@@ -244,12 +212,13 @@ static Condition *ParseCondition(std::queue<Token> toks) {
                 toks.pop();
 
                 if (map_tok.type != TOK_STR) {
-                    console->Print("Expected string token after 'map='\n");
+                    if (is_prev_map) console->Print("Expected string token after 'prev_map='\n");
+                    else console->Print("Expected string token after 'map='\n");
                     CLEAR_OUT_STACK;
                     return NULL;
                 }
 
-                c->type = Condition::MAP;
+                c->type = is_prev_map ? Condition::PREV_MAP : Condition::MAP;
                 c->map = (char *)malloc(map_tok.len + 1);
                 strncpy(c->map, map_tok.str, map_tok.len);
                 c->map[map_tok.len] = 0; // Null terminator
