@@ -79,12 +79,12 @@ NetworkManager::NetworkManager()
 void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
 {
     if (this->tcpSocket.connect(ip, port, sf::seconds(5))) {
-        client->Chat(TextColor::GREEN, "Timeout reached ! Can't connect to the server %s:%d !\n", ip.toString().c_str(), port);
+        client->Chat(TextColor::GREEN, "Timeout reached! Cannot connect to the server at %s:%d.\n", ip.toString().c_str(), port);
         return;
     }
 
     if (this->udpSocket.bind(sf::Socket::AnyPort) != sf::Socket::Done) {
-        client->Chat(TextColor::GREEN, "Can't connect to the server %s:%d !\n", ip.toString().c_str(), port);
+        client->Chat(TextColor::GREEN, "Cannot connect to the server at %s:%d.\n", ip.toString().c_str(), port);
         return;
     }
 
@@ -108,7 +108,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
                 client->Chat(TextColor::GREEN, "Error\n");
             }
         } else {
-            client->Chat(TextColor::GREEN, "Timeout reached ! Can't connect to the server %s:%d !\n", ip.toString().c_str(), port);
+            client->Chat(TextColor::GREEN, "Timeout reached! Can't connect to the server %s:%d.\n", ip.toString().c_str(), port);
             return;
         }
 
@@ -136,7 +136,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
         if (engine->isRunning()) {
             this->SpawnAllGhosts();
         }
-        client->Chat(TextColor::GREEN, "Successfully connected to the server !\n%d other players connected\n", nb_players);
+        client->Chat(TextColor::GREEN, "Successfully connected to the server!\n%d other players connected\n", nb_players);
     } //End of the scope. Will kill the Selector
 
     this->isConnected = true;
@@ -164,7 +164,7 @@ void NetworkManager::Disconnect()
         this->udpSocket.unbind();
 
         g_scheduledEvents.push([=]() {
-            client->Chat(TextColor::GREEN, "You have been disconnected !");
+            client->Chat(TextColor::GREEN, "You have been disconnected!");
         });
     }
 }
@@ -574,7 +574,7 @@ void NetworkManager::UpdateCountdown()
     auto now = NOW_STEADY();
     if (std::chrono::duration_cast<std::chrono::milliseconds>(now - this->timeLeft).count() >= 1000) {
         if (this->countdownStep == 0) {
-            client->Chat(TextColor::GREEN, "0 ! GO !");
+            client->Chat(TextColor::GREEN, "0! GO!");
             if (!this->postCountdownCommands.empty()) {
                 engine->ExecuteCommand(this->postCountdownCommands.c_str());
             }
@@ -635,7 +635,7 @@ CON_COMMAND(ghost_disconnect, "Disconnect.\n")
 CON_COMMAND(ghost_name, "Change your online name.\n")
 {
     if (networkManager.isConnected) {
-        return console->Print("Can't change your name while being connected to a server.\n");
+        return console->Print("Cannot change name while connected to a server.\n");
     }
 
     networkManager.name = args[1];
@@ -655,7 +655,7 @@ CON_COMMAND(ghost_message, "Send message to other players.\n")
     networkManager.SendMessageToAll(msg);
 }
 
-CON_COMMAND(ghost_ping, "Pong !\n")
+CON_COMMAND(ghost_ping, "Pong!\n")
 {
     networkManager.SendPing();
 }
