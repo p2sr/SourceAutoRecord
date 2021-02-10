@@ -345,9 +345,10 @@ void NetworkManager::Treat(sf::Packet& packet)
         int toErase = -1;
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i]->ID == ID) {
+                auto ghost = this->ghostPool[i];
                 g_scheduledEvents.push([=]() {
-                    client->Chat(TextColor::GREEN, "%s has disconnected!", this->ghostPool[i]->name.c_str());
-                    this->ghostPool[i]->DeleteGhost();
+                    client->Chat(TextColor::GREEN, "%s has disconnected!", ghost->name.c_str());
+                    ghost->DeleteGhost();
                 });
                 this->ghostPool[i]->isDestroyed = true;
                 toErase = i;

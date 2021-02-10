@@ -28,6 +28,7 @@ GhostEntity::GhostEntity(unsigned int& ID, std::string& name, DataGhost& data, s
     , currentMap(current_map)
     , modelName("models/props/food_can/food_can_open.mdl")
     , prop_entity(nullptr)
+    , isDestroyed(false)
 {
 }
 
