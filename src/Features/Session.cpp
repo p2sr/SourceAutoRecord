@@ -17,6 +17,7 @@
 #include "Features/Timer/Timer.hpp"
 #include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
+#include "Features/ConditionalExec.hpp"
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -170,6 +171,8 @@ void Session::Start()
 
     zachStats->ResetTriggers();
     zachStats->NewSession();
+
+    RunConditionalExecs();
 
     engine->hasRecorded = false;
     engine->hasPaused = false;
