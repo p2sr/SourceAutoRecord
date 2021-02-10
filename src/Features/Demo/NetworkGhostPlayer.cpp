@@ -128,7 +128,9 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
 
             auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map);
             ghost->modelName = model_name;
+            this->ghostPoolLock.lock();
             this->ghostPool.push_back(ghost);
+            this->ghostPoolLock.unlock();
         }
         this->UpdateGhostsSameMap();
         if (engine->isRunning()) {
@@ -149,7 +151,9 @@ void NetworkManager::Disconnect()
     if (this->isConnected) {
         this->isConnected = false;
         this->waitForRunning.notify_one();
+        this->ghostPoolLock.lock();
         this->ghostPool.clear();
+        this->ghostPoolLock.unlock();
 
         sf::Packet packet;
         packet << HEADER::DISCONNECT << this->ID;
@@ -296,16 +300,11 @@ void NetworkManager::TreatUDP(std::vector<sf::Packet>& buffer)
 {
     for (auto& packet : buffer) {
         HEADER header;
-        packet >> header;
         sf::Uint32 ID;
-        packet >> ID;
-        for (auto g : this->ghostPool) {
-            if (g->ID == ID) {
-                DataGhost data;
-                packet >> data;
-                g->SetData(data.position, data.view_angle, true);
-            }
-        }
+        DataGhost data;
+        packet >> header >> ID >> data;
+        auto ghost = this->GetGhostByID(ID);
+        if (ghost) ghost->SetData(data.position, data.view_angle, true);
     }
 }
 
@@ -331,7 +330,9 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         packet >> name >> data >> model_name >> current_map;
         auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map);
         ghost->modelName = model_name;
+        this->ghostPoolLock.lock();
         this->ghostPool.push_back(ghost);
+        this->ghostPoolLock.unlock();
 
         client->Chat(TextColor::GREEN, "%s has just connected in %s !", name.c_str(), current_map.c_str());
 
@@ -345,13 +346,16 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         break;
     }
     case HEADER::DISCONNECT: {
+        this->ghostPoolLock.lock();
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i]->ID == ID) {
                 client->Chat(TextColor::GREEN, "%s has disconnected !", this->ghostPool[i]->name.c_str());
                 this->ghostPool[i]->DeleteGhost();
+                this->ghostPool[i]->isDestroyed = true;
                 this->ghostPool.erase(this->ghostPool.begin() + i);
             }
         }
+        this->ghostPoolLock.unlock();
         break;
     }
     case HEADER::STOP_SERVER:
@@ -448,12 +452,11 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         break;
     }
     case HEADER::UPDATE: {
-        for (auto g : this->ghostPool) {
-            if (g->ID == ID) {
-                DataGhost data;
-                packet >> data;
-                g->SetData(data.position, data.view_angle, true);
-            }
+        DataGhost data;
+        packet >> data;
+        auto ghost = this->GetGhostByID(ID);
+        if (ghost) {
+            ghost->SetData(data.position, data.view_angle, true);
         }
         break;
     }
@@ -464,32 +467,39 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
 
 void NetworkManager::UpdateGhostsPosition()
 {
+    this->ghostPoolLock.lock();
     for (auto ghost : this->ghostPool) {
         if (ghost->sameMap) {
             auto time = std::chrono::duration_cast<std::chrono::milliseconds>(NOW_STEADY() - ghost->lastUpdate).count();
             ghost->Lerp(((float)time / (ghost->loopTime)));
         }
     }
+    this->ghostPoolLock.unlock();
 }
 
 std::shared_ptr<GhostEntity> NetworkManager::GetGhostByID(sf::Uint32 ID)
 {
+    this->ghostPoolLock.lock();
     for (auto ghost : this->ghostPool) {
         if (ghost->ID == ID) {
+            this->ghostPoolLock.unlock();
             return ghost;
         }
     }
+    this->ghostPoolLock.unlock();
     return nullptr;
 }
 
 void NetworkManager::UpdateGhostsSameMap()
 {
     int mapIdx = engine->GetMapIndex(engine->m_szLevelName);
+    this->ghostPoolLock.lock();
     for (auto ghost : this->ghostPool) {
         ghost->sameMap = ghost->currentMap == engine->m_szLevelName;
         if (mapIdx == -1) ghost->isAhead = false; // Fallback - unknown map
         else ghost->isAhead = engine->GetMapIndex(ghost->currentMap) > mapIdx;
     }
+    this->ghostPoolLock.unlock();
 }
 
 void NetworkManager::UpdateModel(const std::string modelName)
@@ -504,29 +514,36 @@ void NetworkManager::UpdateModel(const std::string modelName)
 
 bool NetworkManager::AreAllGhostsAheadOrSameMap()
 {
+    this->ghostPoolLock.lock();
     for (auto ghost : this->ghostPool) {
         if (!ghost->isAhead && !ghost->sameMap) {
+            this->ghostPoolLock.unlock();
             return false;
         }
     }
+    this->ghostPoolLock.unlock();
 
     return true;
 }
 
 void NetworkManager::SpawnAllGhosts()
 {
+    this->ghostPoolLock.lock();
     for (auto ghost : this->ghostPool) {
         if (ghost->sameMap) {
             ghost->Spawn();
         }
     }
+    this->ghostPoolLock.unlock();
 }
 
 void NetworkManager::DeleteAllGhosts()
 {
+    this->ghostPoolLock.lock();
     for (auto ghost : this->ghostPool) {
         ghost->DeleteGhost();
     }
+    this->ghostPoolLock.unlock();
 }
 
 void NetworkManager::SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration)
@@ -568,7 +585,7 @@ void NetworkManager::DrawNames(HudContext* ctx)
 {
     auto player = client->GetPlayer(GET_SLOT() + 1);
     if (player) {
-        //auto pos = client->GetAbsOrigin(player);
+        this->ghostPoolLock.lock();
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i]->sameMap) {
                 Vector screenPos;
@@ -576,6 +593,7 @@ void NetworkManager::DrawNames(HudContext* ctx)
                 ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y - ghost_text_offset.GetInt() - ghost_height.GetInt(), this->ghostPool[i]->name.c_str());
             }
         }
+        this->ghostPoolLock.unlock();
     }
 }
 

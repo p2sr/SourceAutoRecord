@@ -37,6 +37,8 @@ public:
 
     static int ghost_type;
 
+    bool isDestroyed; // used by NetworkGhostPlayer for sync reasons
+
 public:
     GhostEntity(unsigned int& ID, std::string& name, DataGhost& data, std::string& current_map);
     ~GhostEntity();

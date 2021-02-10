@@ -40,6 +40,7 @@ private:
     unsigned short int serverPort;
     sf::Uint32 ID;
 
+    std::mutex ghostPoolLock;
     std::vector<std::shared_ptr<GhostEntity>> ghostPool;
 
     std::thread networkThread;
@@ -81,7 +82,7 @@ public:
     void TreatTCP(sf::Packet& packet);
 
     void UpdateGhostsPosition();
-		std::shared_ptr<GhostEntity> GetGhostByID(sf::Uint32 ID);
+    std::shared_ptr<GhostEntity> GetGhostByID(sf::Uint32 ID);
     void UpdateGhostsSameMap();
     void UpdateModel(const std::string modelName);
     bool AreAllGhostsAheadOrSameMap();
