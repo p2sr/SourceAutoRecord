@@ -347,14 +347,17 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
     }
     case HEADER::DISCONNECT: {
         this->ghostPoolLock.lock();
+        int toErase = -1;
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i]->ID == ID) {
                 client->Chat(TextColor::GREEN, "%s has disconnected !", this->ghostPool[i]->name.c_str());
                 this->ghostPool[i]->DeleteGhost();
                 this->ghostPool[i]->isDestroyed = true;
-                this->ghostPool.erase(this->ghostPool.begin() + i);
+                toErase = i;
+                break;
             }
         }
+        if (toErase != -1) this->ghostPool.erase(this->ghostPool.begin() + toErase);
         this->ghostPoolLock.unlock();
         break;
     }
