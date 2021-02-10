@@ -8,65 +8,9 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 
 #include <queue>
+#include <functional>
 
-struct ScheduledEvent {
-    virtual ~ScheduledEvent() { };
-    virtual void doEvent() { };
-};
-
-struct ScheduledConnect : public ScheduledEvent {
-    int ID;
-    ScheduledConnect(int ID) : ID(ID) {}
-   virtual ~ScheduledConnect() { }
-    virtual void doEvent() {
-        auto ghost = networkManager.GetGhostByID(ID);
-
-        networkManager.UpdateGhostsSameMap();
-        if (ghost->sameMap && engine->isRunning()) {
-            ghost->Spawn();
-        }
-    }
-};
-
-struct ScheduledMapChange : public ScheduledEvent {
-    int ID;
-    ScheduledMapChange(int ID) : ID(ID) {}
-    virtual ~ScheduledMapChange() { }
-    virtual void doEvent() {
-        auto ghost = networkManager.GetGhostByID(ID);
-        networkManager.UpdateGhostsSameMap();
-        if (ghost_show_advancement.GetBool()) {
-            client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
-        }
-
-        if (ghost->sameMap) {
-            ghost->Spawn();
-        } else {
-            ghost->DeleteGhost();
-        }
-
-        if (ghost_sync.GetBool()) {
-            if (networkManager.AreAllGhostsAheadOrSameMap()) {
-                engine->SendToCommandBuffer("unpause", 40);
-            }
-        }
-    }
-};
-
-struct ScheduledModelChange : public ScheduledEvent {
-    int ID;
-    ScheduledModelChange(int ID) : ID(ID) {}
-    virtual ~ScheduledModelChange() { }
-    virtual void doEvent() {
-        auto ghost = networkManager.GetGhostByID(ID);
-        if (ghost->sameMap && engine->isRunning()) {
-            ghost->DeleteGhost();
-            ghost->Spawn();
-        }
-    }
-};
-
-static std::queue<ScheduledEvent*> g_scheduledEvents;
+static std::queue<std::function<void ()>> g_scheduledEvents;
 
 //DataGhost
 
@@ -391,7 +335,14 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
 
         client->Chat(TextColor::GREEN, "%s has just connected in %s !", name.c_str(), current_map.c_str());
 
-        g_scheduledEvents.push(new ScheduledConnect(ID));
+        g_scheduledEvents.push([=]() {
+            auto ghost = this->GetGhostByID(ID);
+            if (!ghost) return;
+            this->UpdateGhostsSameMap();
+            if (ghost->sameMap && engine->isRunning()) {
+                ghost->Spawn();
+            }
+        });
 
         break;
     }
@@ -415,7 +366,25 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             packet >> map;
             ghost->currentMap = map;
 
-            g_scheduledEvents.push(new ScheduledMapChange(ID));
+            g_scheduledEvents.push([=]() {
+                auto ghost = this->GetGhostByID(ID);
+                this->UpdateGhostsSameMap();
+                if (ghost_show_advancement.GetBool()) {
+                    client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+                }
+
+                if (ghost->sameMap) {
+                    ghost->Spawn();
+                } else {
+                    ghost->DeleteGhost();
+                }
+
+                if (ghost_sync.GetBool()) {
+                    if (this->AreAllGhostsAheadOrSameMap()) {
+                        engine->SendToCommandBuffer("unpause", 40);
+                    }
+                }
+            });
         }
         break;
     }
@@ -472,7 +441,13 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         auto ghost = this->GetGhostByID(ID);
         if (ghost) {
             ghost->modelName = modelName;
-            g_scheduledEvents.push(new ScheduledModelChange(ID));
+            g_scheduledEvents.push([=]() {
+                auto ghost = this->GetGhostByID(ID);
+                if (ghost->sameMap && engine->isRunning()) {
+                    ghost->DeleteGhost();
+                    ghost->Spawn();
+                }
+            });
         }
         break;
     }
@@ -611,11 +586,8 @@ void NetworkManager::DrawNames(HudContext* ctx)
 void NetworkManager::DispatchQueuedEvents()
 {
     while (!g_scheduledEvents.empty()) {
-        ScheduledEvent* e = g_scheduledEvents.front();
+        g_scheduledEvents.front()(); // Dispatch event
         g_scheduledEvents.pop();
-
-        e->doEvent();
-        delete e;
     }
 }
 
