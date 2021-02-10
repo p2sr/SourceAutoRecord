@@ -163,7 +163,9 @@ void NetworkManager::Disconnect()
         this->tcpSocket.disconnect();
         this->udpSocket.unbind();
 
-        client->Chat(TextColor::GREEN, "You have been disconnected !");
+        g_scheduledEvents.push([=]() {
+            client->Chat(TextColor::GREEN, "You have been disconnected !");
+        });
     }
 }
 
@@ -309,7 +311,9 @@ void NetworkManager::Treat(sf::Packet& packet)
         break;
     case HEADER::PING: {
         auto ping = this->pingClock.getElapsedTime();
-        client->Chat(TextColor::GREEN, "Ping ! (%d ms)", ping.asMilliseconds());
+        g_scheduledEvents.push([=]() {
+            client->Chat(TextColor::GREEN, "Ping: %d ms", ping.asMilliseconds());
+        });
         break;
     }
     case HEADER::CONNECT: {
@@ -320,13 +324,14 @@ void NetworkManager::Treat(sf::Packet& packet)
         packet >> name >> data >> model_name >> current_map;
         auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map);
         ghost->modelName = model_name;
+
         this->ghostPoolLock.lock();
         this->ghostPool.push_back(ghost);
         this->ghostPoolLock.unlock();
 
-        client->Chat(TextColor::GREEN, "%s has just connected in %s !", name.c_str(), current_map.c_str());
-
         g_scheduledEvents.push([=]() {
+            client->Chat(TextColor::GREEN, "%s has connected in %s!", name.c_str(), current_map.c_str());
+
             this->UpdateGhostsSameMap();
             if (ghost->sameMap && engine->isRunning()) {
                 ghost->Spawn();
@@ -340,7 +345,9 @@ void NetworkManager::Treat(sf::Packet& packet)
         int toErase = -1;
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i]->ID == ID) {
-                client->Chat(TextColor::GREEN, "%s has disconnected !", this->ghostPool[i]->name.c_str());
+                g_scheduledEvents.push([=]() {
+                    client->Chat(TextColor::GREEN, "%s has disconnected!", this->ghostPool[i]->name.c_str());
+                });
                 this->ghostPool[i]->DeleteGhost();
                 this->ghostPool[i]->isDestroyed = true;
                 toErase = i;
@@ -395,7 +402,9 @@ void NetworkManager::Treat(sf::Packet& packet)
         if (ghost) {
             std::string message;
             packet >> message;
-            client->Chat(TextColor::LIGHT_GREEN, "%s: %s", ghost->name.c_str(), message.c_str());
+            g_scheduledEvents.push([=]() {
+                client->Chat(TextColor::LIGHT_GREEN, "%s: %s", ghost->name.c_str(), message.c_str());
+            });
         }
         break;
     }
@@ -424,7 +433,9 @@ void NetworkManager::Treat(sf::Packet& packet)
         auto ghost = this->GetGhostByID(ID);
         if (ghost) {
             if (ghost_show_advancement.GetBool()) {
-                client->Chat(TextColor::GREEN, "%s has finished in %s", ghost->name.c_str(), timer.c_str());
+                g_scheduledEvents.push([=]() {
+                    client->Chat(TextColor::GREEN, "%s has finished in %s", ghost->name.c_str(), timer.c_str());
+                });
             }
         }
         break;
@@ -543,7 +554,9 @@ void NetworkManager::SetupCountdown(std::string preCommands, std::string postCom
 {
     std::string pre = "\"" + preCommands + "\"";
     std::string post = "\"" + postCommands + "\"";
-    engine->ExecuteCommand(pre.c_str());
+    g_scheduledEvents.push([=]() {
+        engine->ExecuteCommand(pre.c_str());
+    });
     this->postCountdownCommands = postCommands;
     this->countdownStep = duration;
     this->timeLeft = NOW_STEADY();
