@@ -83,7 +83,7 @@ void GhostEntity::SetData(Vector pos, QAngle ang, bool network)
         // Loop time could do strange things due to network latency etc.
         // Try to smooth it using a biased average of the new time with
         // the old one
-        if (this->loopTime = 0) {
+        if (this->loopTime == 0) {
             this->loopTime = newLoopTime;
         } else {
             this->loopTime = (2 * this->loopTime + 1 * newLoopTime) / 3;
