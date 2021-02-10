@@ -91,6 +91,8 @@ public:
 
     void StatusReport(const char* message);
 
+    void ManualSplitWithTime(int ticks);
+
     ~SpeedrunTimer();
 
     static std::string Format(float raw);
