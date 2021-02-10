@@ -42,7 +42,6 @@ struct ScheduledMapChange : public ScheduledEvent {
         if (ghost->sameMap) {
             ghost->Spawn();
         } else {
-            ghost->DeleteGhostModel(false);
             ghost->DeleteGhost();
         }
 
@@ -61,7 +60,7 @@ struct ScheduledModelChange : public ScheduledEvent {
     virtual void doEvent() {
         auto ghost = networkManager.GetGhostByID(ID);
         if (ghost->sameMap && engine->isRunning()) {
-            ghost->DeleteGhostModel(true);
+            ghost->DeleteGhost();
             ghost->Spawn();
         }
     }
@@ -400,7 +399,6 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i].ID == ID) {
                 client->Chat(TextColor::GREEN, "%s has disconnected !", this->ghostPool[i].name.c_str());
-                this->ghostPool[i].DeleteGhostModel(false);
                 this->ghostPool[i].DeleteGhost();
                 this->ghostPool.erase(this->ghostPool.begin() + i);
             }
@@ -557,16 +555,6 @@ void NetworkManager::DeleteAllGhosts()
 {
     for (auto& ghost : this->ghostPool) {
         ghost.DeleteGhost();
-    }
-}
-
-void NetworkManager::DeleteAllGhostModels(const bool newEntity)
-{
-    for (auto& ghost : this->ghostPool) {
-        if (ghost.sameMap) {
-            ghost.DeleteGhostModel(newEntity);
-            ghost.DeleteGhost();
-        }
     }
 }
 

@@ -32,7 +32,6 @@ GhostEntity::GhostEntity(unsigned int& ID, std::string& name, DataGhost& data, s
 
 GhostEntity::~GhostEntity()
 {
-    this->DeleteGhostModel(false);
     this->DeleteGhost();
 }
 
@@ -64,7 +63,11 @@ void GhostEntity::Spawn()
 
 void GhostEntity::DeleteGhost()
 {
-    this->prop_entity = nullptr;
+    if (this->prop_entity != nullptr) {
+        PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", "_ghost_destroy");
+        engine->ExecuteCommand("ent_fire _ghost_destroy kill");
+        this->prop_entity = nullptr;
+    }
 }
 
 void GhostEntity::SetData(Vector pos, QAngle ang, bool network)
@@ -137,18 +140,6 @@ void GhostEntity::Lerp(float time)
     this->Display();
 }
 
-void GhostEntity::DeleteGhostModel(const bool newEntity)
-{
-    if (this->prop_entity != nullptr) {
-        if (newEntity) {
-            PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", "_ghost_destroy");
-            engine->ExecuteCommand("ent_fire _ghost_destroy kill");
-        } else {
-            engine->ExecuteCommand(std::string("ent_fire ghost_" + this->name + " kill").c_str());
-        }
-    }
-}
-
 HUD_ELEMENT2(ghost_show_name, "1", "Display the name of the ghost over it.\n", HudType_InGame)
 {
     if (networkManager.isConnected)
@@ -187,9 +178,9 @@ CON_COMMAND(ghost_type, "ghost_type <0/1>:\n"
         }
     } else if (GhostEntity::ghost_type == 1 && std::atoi(args[1]) == 0) {
         GhostEntity::ghost_type = 0;
-        demoGhostPlayer.DeleteAllGhostModels(false);
+        demoGhostPlayer.DeleteAllGhosts();
         if (networkManager.isConnected) {
-            networkManager.DeleteAllGhostModels(false);
+            networkManager.DeleteAllGhosts();
         }
     }
 }
