@@ -347,8 +347,8 @@ void NetworkManager::Treat(sf::Packet& packet)
             if (this->ghostPool[i]->ID == ID) {
                 g_scheduledEvents.push([=]() {
                     client->Chat(TextColor::GREEN, "%s has disconnected!", this->ghostPool[i]->name.c_str());
+                    this->ghostPool[i]->DeleteGhost();
                 });
-                this->ghostPool[i]->DeleteGhost();
                 this->ghostPool[i]->isDestroyed = true;
                 toErase = i;
                 break;
