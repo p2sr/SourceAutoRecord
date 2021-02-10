@@ -211,7 +211,9 @@ void NetworkManager::RunNetwork()
             if (this->selector.isReady(this->udpSocket)) { //UDP
                 std::vector<sf::Packet> buffer;
                 this->ReceiveUDPUpdates(buffer);
-                this->TreatUDP(buffer);
+                for (auto& packet : buffer) {
+                    this->Treat(packet);
+                }
             }
 
             if (this->selector.isReady(this->tcpSocket)) { //TCP
@@ -225,7 +227,7 @@ void NetworkManager::RunNetwork()
                     }
                     continue;
                 }
-                this->TreatTCP(packet);
+                this->Treat(packet);
             }
         }
     }
@@ -296,19 +298,7 @@ void NetworkManager::ReceiveUDPUpdates(std::vector<sf::Packet>& buffer)
     } while (status == sf::Socket::Done);
 }
 
-void NetworkManager::TreatUDP(std::vector<sf::Packet>& buffer)
-{
-    for (auto& packet : buffer) {
-        HEADER header;
-        sf::Uint32 ID;
-        DataGhost data;
-        packet >> header >> ID >> data;
-        auto ghost = this->GetGhostByID(ID);
-        if (ghost) ghost->SetData(data.position, data.view_angle, true);
-    }
-}
-
-void NetworkManager::TreatTCP(sf::Packet& packet)
+void NetworkManager::Treat(sf::Packet& packet)
 {
     HEADER header;
     sf::Uint32 ID;
