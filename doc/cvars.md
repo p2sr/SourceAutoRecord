@@ -190,7 +190,7 @@
 |<i title="Portal 2&#10;Aperture Tag">sar_replay_viewmode</i>|0|Fallback mode of replay system.<br>0 = Default,<br>1 = Automatically records first view and plays second view after a load,<br>2 = Automatically records second view and plays first view after a load.<br>|
 |sar_save_flag|#SAVE#|Echo message when using sar_bind_save.<br>Default is "#SAVE#", a SourceRuns standard.<br>Keep this empty if no echo message should be binded.<br>|
 |sar_session|cmd|Prints the current tick of the server since it has loaded.<br>|
-|<i title="Portal Game">sar_speedrun_autostart</i>|0|Starts speedrun timer automatically on first frame after a load.<br>|
+|<i title="Portal Game">sar_speedrun_start_on_load</i>|0|Starts speedrun timer automatically on first frame after a load.<br>|
 |<i title="Portal Game">sar_speedrun_autostop</i>|0|Stops speedrun timer automatically when going into the menu.<br>|
 |<i title="Portal Game">sar_speedrun_category</i>|cmd|Sets the category for a speedrun.<br>|
 |<i title="Portal Game">sar_speedrun_export</i>|cmd|Saves speedrun result to a csv file.<br>Usage: sar_speedrun_export \<file_name><br>|

@@ -135,7 +135,7 @@ void Session::Start()
     }
 
     if (!engine->IsCoop()) {
-        if (sar_speedrun_autostart.isRegistered && sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
+        if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !speedrun->IsActive()) {
             speedrun->Start(engine->GetTick());
         } else if (speedrun->IsActive()) {
             speedrun->Resume(engine->GetTick());

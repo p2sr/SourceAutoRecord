@@ -499,7 +499,7 @@ DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
 {
     if (engine->GetMaxClients() >= 2 && ss_force_primary_fullscreen.GetInt() == 0 && session->isRunning) {
         speedrun->Resume(engine->GetTick());
-        if (sar_speedrun_autostart.isRegistered && sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
+        if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !speedrun->IsActive()) {
             speedrun->Start(engine->GetTick());
         }
     }
