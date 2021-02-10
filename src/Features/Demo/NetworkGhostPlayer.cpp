@@ -369,6 +369,8 @@ void NetworkManager::Treat(sf::Packet& packet)
             ghost->currentMap = map;
 
             g_scheduledEvents.push([=]() {
+                if (ghost->isDestroyed) return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
+
                 this->UpdateGhostsSameMap();
                 if (ghost_show_advancement.GetBool()) {
                     client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
@@ -447,6 +449,7 @@ void NetworkManager::Treat(sf::Packet& packet)
         if (ghost) {
             ghost->modelName = modelName;
             g_scheduledEvents.push([=]() {
+                if (ghost->isDestroyed) return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
                 if (ghost->sameMap && engine->isRunning()) {
                     ghost->DeleteGhost();
                     ghost->Spawn();
