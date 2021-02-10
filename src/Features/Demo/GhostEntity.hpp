@@ -26,6 +26,7 @@ public:
     std::string currentMap;
     bool sameMap;
     bool isAhead;
+    float lastTransparency;
 
     std::string modelName;
     void* prop_entity;

@@ -20,6 +20,7 @@ Variable ghost_height("ghost_height", "16", -256, "Height of the ghosts.\n");
 Variable ghost_transparency("ghost_transparency", "255", 0, 256, "Transparency of the ghosts.\n");
 Variable ghost_text_offset("ghost_text_offset", "20", -1024, "Offset of the name over the ghosts.\n");
 Variable ghost_show_advancement("ghost_show_advancement", "1", "Show the advancement of the ghosts.\n");
+Variable ghost_proximity_fade("ghost_proximity_fade", "200", 0, 2000, "Distance from ghosts at which their models fade out.\n");
 
 GhostEntity::GhostEntity(unsigned int& ID, std::string& name, DataGhost& data, std::string& current_map)
     : ID(ID)
@@ -53,12 +54,10 @@ void GhostEntity::Spawn()
     std::string ghostName = "ghost_" + this->name;
     PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", ghostName.c_str());
 
-    if (ghost_transparency.GetInt() < 255) {
-        PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "rendermode", "1");
-        PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "renderamt", ghost_transparency.GetFloat());
-    } else {
-        PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "rendermode", "0");
-    }
+    this->lastTransparency = ghost_transparency.GetFloat();
+
+    PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "rendermode", "1");
+    PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "renderamt", ghost_transparency.GetInt());
 
     PLAT_CALL(server->DispatchSpawn, this->prop_entity);
 }
@@ -119,10 +118,34 @@ void GhostEntity::Display()
         PLAT_CALL(engine->AddTriangleOverlay, p3, p2, p1, 255, 0, 0, 255, false, 0);
     } else {
         if (this->prop_entity != nullptr) {
-            this->data.position.z += ghost_height.GetInt();
             PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position);
-            PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z });
+            PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z + ghost_height.GetInt() });
         }
+    }
+
+    auto player = client->GetPlayer(GET_SLOT() + 1);
+    if (ghost_proximity_fade.GetInt() != 0 && player && this->prop_entity) {
+        float start_fade_at = ghost_proximity_fade.GetFloat();
+        float end_fade_at = ghost_proximity_fade.GetFloat() / 2;
+
+        Vector d = client->GetAbsOrigin(player) - this->data.position;
+        float dist = sqrt(d.x*d.x + d.y*d.y + d.z*d.z); // We can't use squared distance or the fade becomes nonlinear
+
+        float transparency = ghost_transparency.GetInt();
+        if (dist > start_fade_at) {
+            // Current value correct
+        } else if (dist < end_fade_at) {
+            transparency = 0;
+        } else {
+            float ratio = (dist - end_fade_at) / (start_fade_at - end_fade_at);
+            transparency *= ratio;
+        }
+
+        if (transparency != this->lastTransparency) {
+            PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "renderamt", transparency);
+        }
+
+        this->lastTransparency = transparency;
     }
 }
 
