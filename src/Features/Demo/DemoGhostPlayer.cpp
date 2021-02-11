@@ -203,7 +203,7 @@ void DemoGhostPlayer::DrawNames(HudContext* ctx)
     if (player) {
         //auto pos = client->GetAbsOrigin(player);
         for (int i = 0; i < this->ghostPool.size(); ++i) {
-            if (this->ghostPool[i].sameMap && !this->ghostPool[i].hasFinished) {
+            if (this->ghostPool[i].sameMap && !this->ghostPool[i].hasFinished && this->ghostPool[i].demoTick <= this->ghostPool[i].nbDemoTicks) {
                 Vector screenPos;
                 engine->PointToScreen(this->ghostPool[i].data.position, screenPos);
                 ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y - ghost_text_offset.GetInt() - ghost_height.GetInt(), this->ghostPool[i].name.c_str());

@@ -51,7 +51,13 @@ void GhostEntity::Spawn()
         return;
     }
 
-    PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "model", this->modelName.c_str());
+    if (GhostEntity::ghost_type == 1) {
+        PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "model", this->modelName.c_str());
+    } else {
+        PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "model", "models/props/prop_portalgun.mdl");
+        PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "modelscale", 0.4);
+    }
+
     std::string ghostName = "ghost_" + this->name;
     PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", ghostName.c_str());
 
@@ -104,7 +110,7 @@ void GhostEntity::SetupGhost(unsigned int& ID, std::string& name, DataGhost& dat
 
 void GhostEntity::Display()
 {
-    if (!GhostEntity::ghost_type) {
+    if (GhostEntity::ghost_type != 1) {
         this->data.position.z += ghost_height.GetInt();
 
         this->p1 = this->data.position;
@@ -117,15 +123,19 @@ void GhostEntity::Display()
 
         PLAT_CALL(engine->AddTriangleOverlay, p1, p2, p3, 255, 0, 0, 255, false, 0);
         PLAT_CALL(engine->AddTriangleOverlay, p3, p2, p1, 255, 0, 0, 255, false, 0);
-    } else {
-        if (this->prop_entity != nullptr) {
+    }
+
+    if (this->prop_entity != nullptr) {
+        if (GhostEntity::ghost_type == 1) {
             PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position);
             PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z + ghost_height.GetInt() });
+        } else if (GhostEntity::ghost_type == 2) {
+            PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position + Vector{8, 2, 7});
         }
     }
 
     auto player = client->GetPlayer(GET_SLOT() + 1);
-    if (ghost_proximity_fade.GetInt() != 0 && player && this->prop_entity) {
+    if (ghost_proximity_fade.GetInt() != 0 && player && GhostEntity::ghost_type == 1 && this->prop_entity) {
         float start_fade_at = ghost_proximity_fade.GetFloat();
         float end_fade_at = ghost_proximity_fade.GetFloat() / 2;
 
@@ -190,25 +200,35 @@ CON_COMMAND_COMPLETION(ghost_prop_model, "Set the prop model. Example : models/p
     demoGhostPlayer.UpdateGhostsModel(args[1]);
 }
 
-CON_COMMAND(ghost_type, "ghost_type <0/1>:\n"
-                        "0: Ghost not recorded in demos.\n"
-                        "1: Ghost using props model but recorded in demos (NOT RECOMMANDED !).\n")
+CON_COMMAND(ghost_type, "ghost_type <0/1/2>:\n"
+                        "0: Ghost not recorded in demos\n"
+                        "1: Ghost using props model but recorded in demos (NOT RECOMMENDED!)\n"
+                        "2: Ghost has mini portalgun which is recorded in demos (NOT RECOMMENDED!)\n")
 {
-    if (args.ArgC() < 2) {
+    if (args.ArgC() != 2) {
         return console->Print(ghost_type.ThisPtr()->m_pszHelpString);
     }
 
-    if (GhostEntity::ghost_type == 0 && std::atoi(args[1]) == 1) {
-        GhostEntity::ghost_type = 1;
-        demoGhostPlayer.SpawnAllGhosts();
-        if (networkManager.isConnected) {
-            networkManager.SpawnAllGhosts();
-        }
-    } else if (GhostEntity::ghost_type == 1 && std::atoi(args[1]) == 0) {
-        GhostEntity::ghost_type = 0;
-        demoGhostPlayer.DeleteAllGhosts();
-        if (networkManager.isConnected) {
-            networkManager.DeleteAllGhosts();
+    int type = std::atoi(args[1]);
+
+    if (GhostEntity::ghost_type != type) {
+        GhostEntity::ghost_type = type;
+        switch (type) {
+        case 0:
+            demoGhostPlayer.DeleteAllGhosts();
+            if (networkManager.isConnected) {
+                networkManager.DeleteAllGhosts();
+            }
+            break;
+        case 1:
+        case 2:
+            demoGhostPlayer.DeleteAllGhosts();
+            demoGhostPlayer.SpawnAllGhosts();
+            if (networkManager.isConnected) {
+                networkManager.DeleteAllGhosts();
+                networkManager.SpawnAllGhosts();
+            }
+            break;
         }
     }
 }
