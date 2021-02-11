@@ -438,6 +438,7 @@ void SpeedrunTimer::StatusReport(const char* message)
 }
 void SpeedrunTimer::ManualSplitWithTime(int ticks)
 {
+    if (!this->IsActive()) return;
     int old_session = this->session;
     int old_total = this->total;
     this->session = ticks;
