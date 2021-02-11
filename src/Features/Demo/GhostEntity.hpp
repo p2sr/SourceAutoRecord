@@ -37,6 +37,7 @@ public:
     long long loopTime;
 
     static int ghost_type;
+    static std::string defaultModelName;
 
     bool isDestroyed; // used by NetworkGhostPlayer for sync reasons
 

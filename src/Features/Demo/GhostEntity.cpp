@@ -15,6 +15,7 @@
 #endif
 
 int GhostEntity::ghost_type = 0;
+std::string GhostEntity::defaultModelName = "models/props/food_can/food_can_open.mdl";
 
 Variable ghost_height("ghost_height", "16", -256, "Height of the ghosts.\n");
 Variable ghost_transparency("ghost_transparency", "255", 0, 256, "Transparency of the ghosts.\n");
@@ -27,7 +28,7 @@ GhostEntity::GhostEntity(unsigned int& ID, std::string& name, DataGhost& data, s
     , name(name)
     , data(data)
     , currentMap(current_map)
-    , modelName("models/props/food_can/food_can_open.mdl")
+    , modelName(GhostEntity::defaultModelName)
     , prop_entity(nullptr)
     , isDestroyed(false)
 {
@@ -181,6 +182,8 @@ CON_COMMAND_COMPLETION(ghost_prop_model, "Set the prop model. Example : models/p
     if (args.ArgC() <= 1) {
         return console->Print(ghost_prop_model.ThisPtr()->m_pszHelpString);
     }
+
+    GhostEntity::defaultModelName = args[1];
 
     networkManager.UpdateModel(args[1]);
 
