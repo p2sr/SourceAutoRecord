@@ -191,6 +191,8 @@ void Session::Ended()
         return;
     }
 
+    engine->hadInitialForcePrimaryFullscreen = false;
+
     this->previousMap = engine->m_szLevelName;
 
     auto tick = this->GetTick();

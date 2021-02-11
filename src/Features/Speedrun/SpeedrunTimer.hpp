@@ -41,6 +41,7 @@ private:
 
 public:
     std::vector<std::string> visitedMaps;
+    bool hasSplitThisSession;
 
 public:
     SpeedrunTimer();
