@@ -160,6 +160,16 @@ CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Set
 #undef CMD
 }
 
+CON_COMMAND(sar_clear_lines, "Clears all active drawline overlays.\n")
+{
+    // So, hooking this would be really annoying, however Valve's code
+    // is dumb and bad and only allows 20 lines (after which it'll start
+    // overwriting old ones), so let's just draw 20 zero-length lines!
+    for (int i = 0; i < 20; ++i) {
+        engine->ExecuteCommand("drawline 0 0 0 0 0 0", true);
+    }
+}
+
 void Cheats::Init()
 {
     if (sar.game->Is(SourceGame_Portal2Game)) {
