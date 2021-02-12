@@ -146,13 +146,13 @@ static std::queue<Token> LexCondition(const char *str, size_t len) {
 }
 
 static Condition *ParseCondition(std::queue<Token> toks) {
-    std::stack<TokenType> op_stack;
+    std::stack<enum TokenType> op_stack;
     std::stack<Condition *> out_stack;
 
 #define CLEAR_OUT_STACK do { while (!out_stack.empty()) { FreeCondition(out_stack.top()); out_stack.pop(); } } while (0)
 
 #define POP_OP_TO_OUTPUT do { \
-    TokenType op = op_stack.top(); \
+    enum TokenType op = op_stack.top(); \
     op_stack.pop(); \
     if (out_stack.empty()) { \
         console->Print("Malformed input\n"); \

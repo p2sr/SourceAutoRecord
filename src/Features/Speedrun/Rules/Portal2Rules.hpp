@@ -12,3 +12,4 @@ extern TimerCategory Portal2_RTA;
 extern TimerCategory Portal2_CoopRTA;
 
 extern bool course6End;
+extern bool course5End;

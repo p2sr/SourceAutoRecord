@@ -25,6 +25,7 @@
 int coopEndTick = -1000;
 bool players_taunt_triggered = false;
 bool course6End = false;
+bool course5End = false;
 
 SAR_RULE(view_change, "sp_a1_intro1", "player", "CBasePlayer", m_hViewEntity, SearchMode::Classes)
 {
@@ -67,17 +68,12 @@ SAR_RULE3(players_taunt, "mp_coop_paint_longjump_intro", "vault-coopman_taunt", 
     auto m_bPlayerStateB = reinterpret_cast<bool*>((uintptr_t)entity + Offset_m_bPlayerStateB);
 
     if (*m_bPlayerStateA && *m_bPlayerStateB) {
-        if (players_taunt_triggered == true) {
-            if (session->GetTick() == coopEndTick + 121) {
-                coopEndTick = -1000;
-                return TimerAction::End;
-            }
-        } else {
-            players_taunt_triggered = true;
-            coopEndTick = session->GetTick();
+        if (course5End) {
+            course5End = false;
+            return TimerAction::End;
         }
     } else {
-        players_taunt_triggered = false;
+        course5End = false;
     }
 
     return TimerAction::DoNothing;
