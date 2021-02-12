@@ -341,3 +341,38 @@ void RunConditionalExecs() {
         }
     }
 }
+
+struct Seq {
+    std::queue<std::string> commands;
+};
+
+std::vector<Seq> seqs;
+
+CON_COMMAND(seq, "seq [command]... - runs a sequence of commands one tick after one another.\n")
+{
+    if (args.ArgC() < 2) {
+        return console->Print(seq.ThisPtr()->m_pszHelpString);
+    }
+
+    std::queue<std::string> cmds;
+    for (int i = 1; i < args.ArgC(); ++i) {
+        cmds.push(std::string(args[i]));
+    }
+
+    seqs.push_back({cmds});
+}
+
+void RunSeqs() {
+    for (size_t i = 0; i < seqs.size(); ++i) {
+        if (seqs[i].commands.empty()) {
+            seqs.erase(seqs.begin() + i);
+            i--; // Decrement the index to account for the removed element
+            continue;
+        }
+
+        std::string cmd = seqs[i].commands.front();
+        seqs[i].commands.pop();
+
+        engine->ExecuteCommand(cmd.c_str(), true);
+    }
+}
