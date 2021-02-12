@@ -503,7 +503,7 @@ void NetworkManager::UpdateGhostsSameMap()
     int mapIdx = engine->GetMapIndex(engine->m_szLevelName);
     this->ghostPoolLock.lock();
     for (auto ghost : this->ghostPool) {
-        ghost->sameMap = ghost->currentMap == engine->m_szLevelName;
+        ghost->sameMap = strcmp(ghost->currentMap.c_str(), "") && ghost->currentMap == engine->m_szLevelName;
         if (mapIdx == -1) ghost->isAhead = false; // Fallback - unknown map
         else ghost->isAhead = engine->GetMapIndex(ghost->currentMap) > mapIdx;
     }
