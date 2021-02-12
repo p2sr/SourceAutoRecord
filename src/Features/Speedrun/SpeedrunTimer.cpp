@@ -26,7 +26,7 @@
 
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 
-Variable sar_speedrun_autostart("sar_speedrun_autostart", "0",
+Variable sar_speedrun_start_on_load("sar_speedrun_start_on_load", "0",
     "Starts speedrun timer automatically on first frame after a load.\n");
 Variable sar_speedrun_autostop("sar_speedrun_autostop", "0",
     "Stops speedrun timer automatically when going into the menu.\n");

@@ -116,7 +116,7 @@ extern Command sar_speedrun_import;
 extern Command sar_speedrun_category;
 extern Command sar_speedrun_offset;
 
-extern Variable sar_speedrun_autostart;
+extern Variable sar_speedrun_start_on_load;
 extern Variable sar_speedrun_autostop;
 extern Variable sar_speedrun_standard;
 extern Variable sar_speedrun_time_pauses;

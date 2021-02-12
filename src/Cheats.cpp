@@ -190,7 +190,7 @@ void Cheats::Init()
     sar_sr_hud_y.UniqueFor(s3);
     sar_sr_hud_font_color.UniqueFor(s3);
     sar_sr_hud_font_index.UniqueFor(s3);
-    sar_speedrun_autostart.UniqueFor(s3);
+    sar_speedrun_start_on_load.UniqueFor(s3);
     sar_speedrun_autostop.UniqueFor(s3);
     sar_speedrun_standard.UniqueFor(s3);
     sar_duckjump.UniqueFor(SourceGame_Portal2Engine);

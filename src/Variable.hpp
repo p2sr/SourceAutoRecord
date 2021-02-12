@@ -13,6 +13,7 @@ private:
     ConVar* ptr;
 
     int originalFlags;
+    CUtlVector<FnChangeCallback_t> originalCallbacks;
 
     union {
         FnChangeCallback_t originalFnChangeCallback;

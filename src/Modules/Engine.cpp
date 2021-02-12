@@ -47,7 +47,7 @@ Variable sar_record_at("sar_record_at", "-1", -1, "Start recording a demo at the
 Variable sar_record_at_demo_name("sar_record_at_demo_name", "chamber", "Name of the demo automatically recorded.\n", 0);
 Variable sar_record_at_increment("sar_record_at_increment", "0", "Increment automatically the demo name.\n");
 
-Variable sar_pause_at("sar_pause_at", "-1", 0, "Pause at the specified tick. -1 to deactivate it.\n");
+Variable sar_pause_at("sar_pause_at", "-1", -1, "Pause at the specified tick. -1 to deactivate it.\n");
 Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.\n");
 
 REDECL(Engine::Disconnect);
@@ -502,7 +502,7 @@ DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
     if (engine->GetMaxClients() >= 2 && ss_force_primary_fullscreen.GetInt() == 0) {
         if (engine->hadInitialForcePrimaryFullscreen) {
             speedrun->Resume(engine->GetTick());
-            if (sar_speedrun_autostart.isRegistered && sar_speedrun_autostart.GetBool() && !speedrun->IsActive()) {
+            if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !speedrun->IsActive()) {
                 speedrun->Start(engine->GetTick());
             }
         }
