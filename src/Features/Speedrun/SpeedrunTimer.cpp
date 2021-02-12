@@ -1,6 +1,7 @@
 #include "SpeedrunTimer.hpp"
 
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <memory>
@@ -434,7 +435,18 @@ void SpeedrunTimer::StatusReport(const char* message)
 {
     console->Print("%s", message);
     console->DevMsg("%s\n", SpeedrunTimer::Format(this->total * this->ipt).c_str());
-    
+}
+void SpeedrunTimer::ManualSplitWithTime(int ticks)
+{
+    if (!this->IsActive()) return;
+    int old_session = this->session;
+    int old_total = this->total;
+    this->session = ticks;
+    this->total = this->prevTotal + ticks;
+    this->Split(false);
+    this->prevTotal = this->total;
+    this->session = old_session;
+    this->total = old_total + ticks;
 }
 SpeedrunTimer::~SpeedrunTimer()
 {
@@ -691,4 +703,19 @@ CON_COMMAND(sar_speedrun_offset, "Sets offset in ticks at which the timer should
     }
 
     console->Print("Timer will start at: %s\n", SpeedrunTimer::Format(speedrun->GetOffset() * speedrun->GetIntervalPerTick()).c_str());
+}
+CON_COMMAND(sar_speedrun_do_split_with_time, "sar_speedrun_do_split_with_time [ticks] - perform a split whose (non-cumulative) time is precisely the number of ticks specified. Any time in this session so far is added to the next split.\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print(sar_speedrun_do_split_with_time.ThisPtr()->m_pszHelpString);
+    }
+
+    char *end;
+    long ticks = std::strtol(args[1], &end, 10);
+    if (*end || end == args[1]) {
+        // Ticks argument is not a number
+        return console->Print(sar_speedrun_do_split_with_time.ThisPtr()->m_pszHelpString);
+    }
+
+    speedrun->ManualSplitWithTime(ticks);
 }

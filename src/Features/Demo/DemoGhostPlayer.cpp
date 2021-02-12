@@ -68,7 +68,6 @@ void DemoGhostPlayer::ResumeAllGhosts()
 void DemoGhostPlayer::DeleteAllGhosts()
 {
     for (int i = 0; i < this->ghostPool.size(); ++i) {
-        this->ghostPool[i].DeleteGhostModel(false);
         this->ghostPool[i].DeleteGhost();
     }
     this->ghostPool.clear();
@@ -79,19 +78,10 @@ void DemoGhostPlayer::DeleteGhostsByID(const unsigned int ID)
 {
     for (int i = 0; i < this->ghostPool.size(); ++i) {
         if (this->ghostPool[i].ID == ID) {
-            this->ghostPool[i].DeleteGhostModel(false);
             this->ghostPool[i].DeleteGhost();
             this->ghostPool.erase(this->ghostPool.begin() + i);
             return;
         }
-    }
-}
-
-void DemoGhostPlayer::DeleteAllGhostModels(const bool newEntity)
-{
-    for (auto& ghost : this->ghostPool) {
-        ghost.DeleteGhostModel(newEntity);
-        ghost.DeleteGhost();
     }
 }
 
@@ -124,7 +114,7 @@ void DemoGhostPlayer::UpdateGhostsModel(const std::string model)
     if (GhostEntity::ghost_type) {
         for (auto& ghost : this->ghostPool) {
             ghost.modelName = model;
-            ghost.DeleteGhostModel(true);
+            ghost.DeleteGhost();
             ghost.Spawn();
         }
     }
@@ -213,7 +203,7 @@ void DemoGhostPlayer::DrawNames(HudContext* ctx)
     if (player) {
         //auto pos = client->GetAbsOrigin(player);
         for (int i = 0; i < this->ghostPool.size(); ++i) {
-            if (this->ghostPool[i].sameMap && !this->ghostPool[i].hasFinished) {
+            if (this->ghostPool[i].sameMap && !this->ghostPool[i].hasFinished && this->ghostPool[i].demoTick <= this->ghostPool[i].nbDemoTicks) {
                 Vector screenPos;
                 engine->PointToScreen(this->ghostPool[i].data.position, screenPos);
                 ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y - ghost_text_offset.GetInt() - ghost_height.GetInt(), this->ghostPool[i].name.c_str());

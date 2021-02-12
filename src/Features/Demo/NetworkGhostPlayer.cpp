@@ -8,67 +8,9 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 
 #include <queue>
+#include <functional>
 
-struct ScheduledEvent {
-    virtual ~ScheduledEvent() { };
-    virtual void doEvent() { };
-};
-
-struct ScheduledConnect : public ScheduledEvent {
-    int ID;
-    ScheduledConnect(int ID) : ID(ID) {}
-   virtual ~ScheduledConnect() { }
-    virtual void doEvent() {
-        auto ghost = networkManager.GetGhostByID(ID);
-        client->Chat(TextColor::GREEN, "%s has just connected in %s!", ghost->name.c_str(), ghost->currentMap.c_str());
-
-        networkManager.UpdateGhostsSameMap();
-        if (ghost->sameMap && engine->isRunning()) {
-            ghost->Spawn();
-        }
-    }
-};
-
-struct ScheduledMapChange : public ScheduledEvent {
-    int ID;
-    ScheduledMapChange(int ID) : ID(ID) {}
-    virtual ~ScheduledMapChange() { }
-    virtual void doEvent() {
-        auto ghost = networkManager.GetGhostByID(ID);
-        networkManager.UpdateGhostsSameMap();
-        if (ghost_show_advancement.GetBool()) {
-            client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
-        }
-
-        if (ghost->sameMap) {
-            ghost->Spawn();
-        } else {
-            ghost->DeleteGhostModel(false);
-            ghost->DeleteGhost();
-        }
-
-        if (ghost_sync.GetBool()) {
-            if (networkManager.AreAllGhostsOnSameMap()) {
-                engine->SendToCommandBuffer("unpause", 40);
-            }
-        }
-    }
-};
-
-struct ScheduledModelChange : public ScheduledEvent {
-    int ID;
-    ScheduledModelChange(int ID) : ID(ID) {}
-    virtual ~ScheduledModelChange() { }
-    virtual void doEvent() {
-        auto ghost = networkManager.GetGhostByID(ID);
-        if (ghost->sameMap && engine->isRunning()) {
-            ghost->DeleteGhostModel(true);
-            ghost->Spawn();
-        }
-    }
-};
-
-static std::queue<ScheduledEvent*> g_scheduledEvents;
+static std::queue<std::function<void ()>> g_scheduledEvents;
 
 //DataGhost
 
@@ -137,12 +79,12 @@ NetworkManager::NetworkManager()
 void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
 {
     if (this->tcpSocket.connect(ip, port, sf::seconds(5))) {
-        client->Chat(TextColor::GREEN, "Timeout reached ! Can't connect to the server %s:%d !\n", ip.toString().c_str(), port);
+        client->Chat(TextColor::GREEN, "Timeout reached! Cannot connect to the server at %s:%d.\n", ip.toString().c_str(), port);
         return;
     }
 
     if (this->udpSocket.bind(sf::Socket::AnyPort) != sf::Socket::Done) {
-        client->Chat(TextColor::GREEN, "Can't connect to the server %s:%d !\n", ip.toString().c_str(), port);
+        client->Chat(TextColor::GREEN, "Cannot connect to the server at %s:%d.\n", ip.toString().c_str(), port);
         return;
     }
 
@@ -166,7 +108,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
                 client->Chat(TextColor::GREEN, "Error\n");
             }
         } else {
-            client->Chat(TextColor::GREEN, "Timeout reached ! Can't connect to the server %s:%d !\n", ip.toString().c_str(), port);
+            client->Chat(TextColor::GREEN, "Timeout reached! Can't connect to the server %s:%d.\n", ip.toString().c_str(), port);
             return;
         }
 
@@ -184,15 +126,17 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
             std::string current_map;
             confirm_connection >> ID >> name >> data >> model_name >> current_map;
 
-            GhostEntity ghost(ID, name, data, current_map);
-            ghost.modelName = model_name;
+            auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map);
+            ghost->modelName = model_name;
+            this->ghostPoolLock.lock();
             this->ghostPool.push_back(ghost);
+            this->ghostPoolLock.unlock();
         }
         this->UpdateGhostsSameMap();
         if (engine->isRunning()) {
             this->SpawnAllGhosts();
         }
-        client->Chat(TextColor::GREEN, "Successfully connected to the server !\n%d other players connected\n", nb_players);
+        client->Chat(TextColor::GREEN, "Successfully connected to the server!\n%d other players connected\n", nb_players);
     } //End of the scope. Will kill the Selector
 
     this->isConnected = true;
@@ -207,7 +151,9 @@ void NetworkManager::Disconnect()
     if (this->isConnected) {
         this->isConnected = false;
         this->waitForRunning.notify_one();
+        this->ghostPoolLock.lock();
         this->ghostPool.clear();
+        this->ghostPoolLock.unlock();
 
         sf::Packet packet;
         packet << HEADER::DISCONNECT << this->ID;
@@ -217,7 +163,9 @@ void NetworkManager::Disconnect()
         this->tcpSocket.disconnect();
         this->udpSocket.unbind();
 
-        client->Chat(TextColor::GREEN, "You have been disconnected !");
+        g_scheduledEvents.push([=]() {
+            client->Chat(TextColor::GREEN, "You have been disconnected!");
+        });
     }
 }
 
@@ -265,8 +213,12 @@ void NetworkManager::RunNetwork()
             if (this->selector.isReady(this->udpSocket)) { //UDP
                 std::vector<sf::Packet> buffer;
                 this->ReceiveUDPUpdates(buffer);
-                this->TreatUDP(buffer);
-            } else if (this->selector.isReady(this->tcpSocket)) { //TCP
+                for (auto& packet : buffer) {
+                    this->Treat(packet);
+                }
+            }
+
+            if (this->selector.isReady(this->tcpSocket)) { //TCP
                 sf::Packet packet;
                 sf::Socket::Status status;
                 status = this->tcpSocket.receive(packet);
@@ -277,7 +229,7 @@ void NetworkManager::RunNetwork()
                     }
                     continue;
                 }
-                this->TreatTCP(packet);
+                this->Treat(packet);
             }
         }
     }
@@ -348,24 +300,7 @@ void NetworkManager::ReceiveUDPUpdates(std::vector<sf::Packet>& buffer)
     } while (status == sf::Socket::Done);
 }
 
-void NetworkManager::TreatUDP(std::vector<sf::Packet>& buffer)
-{
-    for (auto& packet : buffer) {
-        HEADER header;
-        packet >> header;
-        sf::Uint32 ID;
-        packet >> ID;
-        for (auto& g : this->ghostPool) {
-            if (g.ID == ID) {
-                DataGhost data;
-                packet >> data;
-                g.SetData(data.position, data.view_angle);
-            }
-        }
-    }
-}
-
-void NetworkManager::TreatTCP(sf::Packet& packet)
+void NetworkManager::Treat(sf::Packet& packet)
 {
     HEADER header;
     sf::Uint32 ID;
@@ -376,7 +311,9 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         break;
     case HEADER::PING: {
         auto ping = this->pingClock.getElapsedTime();
-        client->Chat(TextColor::GREEN, "Ping ! (%d ms)", ping.asMilliseconds());
+        g_scheduledEvents.push([=]() {
+            client->Chat(TextColor::GREEN, "Ping: %d ms", ping.asMilliseconds());
+        });
         break;
     }
     case HEADER::CONNECT: {
@@ -385,25 +322,41 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         std::string model_name;
         std::string current_map;
         packet >> name >> data >> model_name >> current_map;
-        GhostEntity ghost(ID, name, data, current_map);
-        ghost.modelName = model_name;
+        auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map);
+        ghost->modelName = model_name;
+
+        this->ghostPoolLock.lock();
         this->ghostPool.push_back(ghost);
+        this->ghostPoolLock.unlock();
 
-        client->Chat(TextColor::GREEN, "%s has just connected in %s !", name.c_str(), current_map.c_str());
+        g_scheduledEvents.push([=]() {
+            client->Chat(TextColor::GREEN, "%s has connected in %s!", name.c_str(), current_map.c_str());
 
-        g_scheduledEvents.push(new ScheduledConnect(ID));
+            this->UpdateGhostsSameMap();
+            if (ghost->sameMap && engine->isRunning()) {
+                ghost->Spawn();
+            }
+        });
 
         break;
     }
     case HEADER::DISCONNECT: {
+        this->ghostPoolLock.lock();
+        int toErase = -1;
         for (int i = 0; i < this->ghostPool.size(); ++i) {
-            if (this->ghostPool[i].ID == ID) {
-                client->Chat(TextColor::GREEN, "%s has disconnected !", this->ghostPool[i].name.c_str());
-                this->ghostPool[i].DeleteGhostModel(false);
-                this->ghostPool[i].DeleteGhost();
-                this->ghostPool.erase(this->ghostPool.begin() + i);
+            if (this->ghostPool[i]->ID == ID) {
+                auto ghost = this->ghostPool[i];
+                g_scheduledEvents.push([=]() {
+                    client->Chat(TextColor::GREEN, "%s has disconnected!", ghost->name.c_str());
+                    ghost->DeleteGhost();
+                });
+                this->ghostPool[i]->isDestroyed = true;
+                toErase = i;
+                break;
             }
         }
+        if (toErase != -1) this->ghostPool.erase(this->ghostPool.begin() + toErase);
+        this->ghostPoolLock.unlock();
         break;
     }
     case HEADER::STOP_SERVER:
@@ -416,7 +369,26 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
             packet >> map;
             ghost->currentMap = map;
 
-            g_scheduledEvents.push(new ScheduledMapChange(ID));
+            g_scheduledEvents.push([=]() {
+                if (ghost->isDestroyed) return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
+
+                this->UpdateGhostsSameMap();
+                if (ghost_show_advancement.GetBool()) {
+                    client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+                }
+
+                if (ghost->sameMap) {
+                    ghost->Spawn();
+                } else {
+                    ghost->DeleteGhost();
+                }
+
+                if (ghost_sync.GetBool()) {
+                    if (this->AreAllGhostsAheadOrSameMap()) {
+                        engine->SendToCommandBuffer("unpause", 40);
+                    }
+                }
+            });
         }
         break;
     }
@@ -433,7 +405,9 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         if (ghost) {
             std::string message;
             packet >> message;
-            client->Chat(TextColor::LIGHT_GREEN, "%s: %s", ghost->name.c_str(), message.c_str());
+            g_scheduledEvents.push([=]() {
+                client->Chat(TextColor::LIGHT_GREEN, "%s: %s", ghost->name.c_str(), message.c_str());
+            });
         }
         break;
     }
@@ -462,7 +436,9 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         auto ghost = this->GetGhostByID(ID);
         if (ghost) {
             if (ghost_show_advancement.GetBool()) {
-                client->Chat(TextColor::GREEN, "%s has finished in %s", ghost->name.c_str(), timer.c_str());
+                g_scheduledEvents.push([=]() {
+                    client->Chat(TextColor::GREEN, "%s has finished in %s", ghost->name.c_str(), timer.c_str());
+                });
             }
         }
         break;
@@ -473,17 +449,22 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
         auto ghost = this->GetGhostByID(ID);
         if (ghost) {
             ghost->modelName = modelName;
-            g_scheduledEvents.push(new ScheduledModelChange(ID));
+            g_scheduledEvents.push([=]() {
+                if (ghost->isDestroyed) return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
+                if (ghost->sameMap && engine->isRunning()) {
+                    ghost->DeleteGhost();
+                    ghost->Spawn();
+                }
+            });
         }
         break;
     }
     case HEADER::UPDATE: {
-        for (auto& g : this->ghostPool) {
-            if (g.ID == ID) {
-                DataGhost data;
-                packet >> data;
-                g.SetData(data.position, data.view_angle);
-            }
+        DataGhost data;
+        packet >> data;
+        auto ghost = this->GetGhostByID(ID);
+        if (ghost) {
+            ghost->SetData(data.position, data.view_angle, true);
         }
         break;
     }
@@ -494,81 +475,92 @@ void NetworkManager::TreatTCP(sf::Packet& packet)
 
 void NetworkManager::UpdateGhostsPosition()
 {
-    for (auto& ghost : this->ghostPool) {
-        if (ghost.sameMap) {
-            auto time = std::chrono::duration_cast<std::chrono::milliseconds>(NOW_STEADY() - ghost.lastUpdate).count();
-            ghost.Lerp(((float)time / (ghost.loopTime)));
+    this->ghostPoolLock.lock();
+    for (auto ghost : this->ghostPool) {
+        if (ghost->sameMap) {
+            auto time = std::chrono::duration_cast<std::chrono::milliseconds>(NOW_STEADY() - ghost->lastUpdate).count();
+            ghost->Lerp(((float)time / (ghost->loopTime)));
         }
     }
+    this->ghostPoolLock.unlock();
 }
 
-GhostEntity* NetworkManager::GetGhostByID(sf::Uint32 ID)
+std::shared_ptr<GhostEntity> NetworkManager::GetGhostByID(sf::Uint32 ID)
 {
-    for (auto& ghost : this->ghostPool) {
-        if (ghost.ID == ID) {
-            return &ghost;
+    this->ghostPoolLock.lock();
+    for (auto ghost : this->ghostPool) {
+        if (ghost->ID == ID) {
+            this->ghostPoolLock.unlock();
+            return ghost;
         }
     }
+    this->ghostPoolLock.unlock();
     return nullptr;
 }
 
 void NetworkManager::UpdateGhostsSameMap()
 {
-    for (auto& ghost : this->ghostPool) {
-        ghost.sameMap = ghost.currentMap == engine->m_szLevelName;
+    int mapIdx = engine->GetMapIndex(engine->m_szLevelName);
+    this->ghostPoolLock.lock();
+    for (auto ghost : this->ghostPool) {
+        ghost->sameMap = strcmp(ghost->currentMap.c_str(), "") && ghost->currentMap == engine->m_szLevelName;
+        if (mapIdx == -1) ghost->isAhead = false; // Fallback - unknown map
+        else ghost->isAhead = engine->GetMapIndex(ghost->currentMap) > mapIdx;
     }
+    this->ghostPoolLock.unlock();
 }
 
 void NetworkManager::UpdateModel(const std::string modelName)
 {
     this->modelName = modelName;
-    sf::Packet packet;
-    packet << HEADER::MODEL_CHANGE << this->ID << this->modelName.c_str();
-    this->tcpSocket.send(packet);
+    if (this->isConnected) {
+        sf::Packet packet;
+        packet << HEADER::MODEL_CHANGE << this->ID << this->modelName.c_str();
+        this->tcpSocket.send(packet);
+    }
 }
 
-bool NetworkManager::AreAllGhostsOnSameMap()
+bool NetworkManager::AreAllGhostsAheadOrSameMap()
 {
-    for (auto& ghost : this->ghostPool) {
-        if (!ghost.sameMap) {
+    this->ghostPoolLock.lock();
+    for (auto ghost : this->ghostPool) {
+        if (!ghost->isAhead && !ghost->sameMap) {
+            this->ghostPoolLock.unlock();
             return false;
         }
     }
+    this->ghostPoolLock.unlock();
 
     return true;
 }
 
 void NetworkManager::SpawnAllGhosts()
 {
-    for (auto& ghost : this->ghostPool) {
-        if (ghost.sameMap) {
-            ghost.Spawn();
+    this->ghostPoolLock.lock();
+    for (auto ghost : this->ghostPool) {
+        if (ghost->sameMap) {
+            ghost->Spawn();
         }
     }
+    this->ghostPoolLock.unlock();
 }
 
 void NetworkManager::DeleteAllGhosts()
 {
-    for (auto& ghost : this->ghostPool) {
-        ghost.DeleteGhost();
+    this->ghostPoolLock.lock();
+    for (auto ghost : this->ghostPool) {
+        ghost->DeleteGhost();
     }
-}
-
-void NetworkManager::DeleteAllGhostModels(const bool newEntity)
-{
-    for (auto& ghost : this->ghostPool) {
-        if (ghost.sameMap) {
-            ghost.DeleteGhostModel(newEntity);
-            ghost.DeleteGhost();
-        }
-    }
+    this->ghostPoolLock.unlock();
 }
 
 void NetworkManager::SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration)
 {
     std::string pre = "\"" + preCommands + "\"";
     std::string post = "\"" + postCommands + "\"";
-    engine->ExecuteCommand(pre.c_str());
+    g_scheduledEvents.push([=]() {
+        engine->ExecuteCommand(pre.c_str());
+    });
     this->postCountdownCommands = postCommands;
     this->countdownStep = duration;
     this->timeLeft = NOW_STEADY();
@@ -586,7 +578,7 @@ void NetworkManager::UpdateCountdown()
     auto now = NOW_STEADY();
     if (std::chrono::duration_cast<std::chrono::milliseconds>(now - this->timeLeft).count() >= 1000) {
         if (this->countdownStep == 0) {
-            client->Chat(TextColor::GREEN, "0 ! GO !");
+            client->Chat(TextColor::GREEN, "0! GO!");
             if (!this->postCountdownCommands.empty()) {
                 engine->ExecuteCommand(this->postCountdownCommands.c_str());
             }
@@ -603,25 +595,23 @@ void NetworkManager::DrawNames(HudContext* ctx)
 {
     auto player = client->GetPlayer(GET_SLOT() + 1);
     if (player) {
-        //auto pos = client->GetAbsOrigin(player);
+        this->ghostPoolLock.lock();
         for (int i = 0; i < this->ghostPool.size(); ++i) {
-            if (this->ghostPool[i].sameMap) {
+            if (this->ghostPool[i]->sameMap) {
                 Vector screenPos;
-                engine->PointToScreen(this->ghostPool[i].data.position, screenPos);
-                ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y - ghost_text_offset.GetInt() - ghost_height.GetInt(), this->ghostPool[i].name.c_str());
+                engine->PointToScreen(this->ghostPool[i]->data.position, screenPos);
+                ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y - ghost_text_offset.GetInt() - ghost_height.GetInt(), this->ghostPool[i]->name.c_str());
             }
         }
+        this->ghostPoolLock.unlock();
     }
 }
 
 void NetworkManager::DispatchQueuedEvents()
 {
     while (!g_scheduledEvents.empty()) {
-        ScheduledEvent* e = g_scheduledEvents.front();
+        g_scheduledEvents.front()(); // Dispatch event
         g_scheduledEvents.pop();
-
-        e->doEvent();
-        delete e;
     }
 }
 
@@ -649,7 +639,7 @@ CON_COMMAND(ghost_disconnect, "Disconnect.\n")
 CON_COMMAND(ghost_name, "Change your online name.\n")
 {
     if (networkManager.isConnected) {
-        return console->Print("Can't change your name while being connected to a server.\n");
+        return console->Print("Cannot change name while connected to a server.\n");
     }
 
     networkManager.name = args[1];
@@ -669,7 +659,7 @@ CON_COMMAND(ghost_message, "Send message to other players.\n")
     networkManager.SendMessageToAll(msg);
 }
 
-CON_COMMAND(ghost_ping, "Pong !\n")
+CON_COMMAND(ghost_ping, "Pong!\n")
 {
     networkManager.SendPing();
 }

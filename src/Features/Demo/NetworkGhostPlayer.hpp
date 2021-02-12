@@ -10,6 +10,7 @@
 #include <atomic>
 #include <chrono>
 #include <mutex>
+#include <memory>
 #include <thread>
 #include <vector>
 #include <condition_variable>
@@ -39,7 +40,8 @@ private:
     unsigned short int serverPort;
     sf::Uint32 ID;
 
-    std::vector<GhostEntity> ghostPool;
+    std::mutex ghostPoolLock;
+    std::vector<std::shared_ptr<GhostEntity>> ghostPool;
 
     std::thread networkThread;
     std::condition_variable waitForRunning;
@@ -76,17 +78,15 @@ public:
     void SendMessageToAll(std::string msg);
     void SendPing();
     void ReceiveUDPUpdates(std::vector<sf::Packet>& buffer);
-    void TreatUDP(std::vector<sf::Packet>& buffer);
-    void TreatTCP(sf::Packet& packet);
+    void Treat(sf::Packet& packet);
 
     void UpdateGhostsPosition();
-    GhostEntity* GetGhostByID(sf::Uint32 ID);
+    std::shared_ptr<GhostEntity> GetGhostByID(sf::Uint32 ID);
     void UpdateGhostsSameMap();
     void UpdateModel(const std::string modelName);
-    bool AreAllGhostsOnSameMap();
+    bool AreAllGhostsAheadOrSameMap();
     void SpawnAllGhosts();
     void DeleteAllGhosts();
-    void DeleteAllGhostModels(const bool newEntity);
 
     void SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration);
     //Need this function to mesure the ping in order to start the countdown at the same time

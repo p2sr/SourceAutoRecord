@@ -41,6 +41,7 @@ private:
 
 public:
     std::vector<std::string> visitedMaps;
+    bool hasSplitThisSession;
 
 public:
     SpeedrunTimer();
@@ -90,6 +91,8 @@ public:
     int GetCurrentDelta();
 
     void StatusReport(const char* message);
+
+    void ManualSplitWithTime(int ticks);
 
     ~SpeedrunTimer();
 

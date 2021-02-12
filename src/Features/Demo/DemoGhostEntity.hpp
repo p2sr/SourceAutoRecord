@@ -12,11 +12,11 @@ class DemoGhostEntity : public GhostEntity {
 
 private:
     std::vector<DataGhost> currentDatas; //Pos and ang of ghost
-    int demoTick;
-    size_t nbDemoTicks;
     unsigned int currentDemo;
 
 public:
+    int demoTick;
+    size_t nbDemoTicks;
     std::vector<DemoDatas> datasByLevel;
     std::string currentMap;
     int totalTicks;

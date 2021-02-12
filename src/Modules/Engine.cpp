@@ -180,7 +180,7 @@ int Engine::GetMapIndex(const std::string map)
     if (it != Game::mapNames.end()) {
         return std::distance(Game::mapNames.begin(), it);
     } else {
-        return 0;
+        return -1;
     }
 }
 
@@ -481,7 +481,6 @@ DETOUR_COMMAND(Engine::gameui_activate)
 DETOUR_COMMAND(Engine::playvideo_end_level_transition)
 {
     if (engine->GetMaxClients() >= 2) {
-        speedrun->CheckRulesManually(engine->GetTick(), TimerAction::Split);
         speedrun->Pause();
     }
 
@@ -491,17 +490,23 @@ DETOUR_COMMAND(Engine::playvideo_exitcommand_nointerrupt)
 {
     if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "dlc1_endmovie")) {
         course6End = true;
+    } else if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "coop_outro")) {
+        course5End = true;
     }
 
     Engine::playvideo_exitcommand_nointerrupt_callback(args);
 }
+
 DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
 {
-    if (engine->GetMaxClients() >= 2 && ss_force_primary_fullscreen.GetInt() == 0 && session->isRunning) {
-        speedrun->Resume(engine->GetTick());
-        if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !speedrun->IsActive()) {
-            speedrun->Start(engine->GetTick());
+    if (engine->GetMaxClients() >= 2 && ss_force_primary_fullscreen.GetInt() == 0) {
+        if (engine->hadInitialForcePrimaryFullscreen) {
+            speedrun->Resume(engine->GetTick());
+            if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !speedrun->IsActive()) {
+                speedrun->Start(engine->GetTick());
+            }
         }
+        engine->hadInitialForcePrimaryFullscreen = !engine->hadInitialForcePrimaryFullscreen;
     }
 }
 

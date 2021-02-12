@@ -9,9 +9,9 @@
 
 DemoGhostEntity::DemoGhostEntity(unsigned int ID, std::string name, DataGhost data, std::string currentMap)
     : GhostEntity(ID, name, data, currentMap)
+    , currentDemo(0)
     , demoTick(0)
     , nbDemoTicks(0)
-    , currentDemo(0)
     , currentMap("") //currentMapID(engine->GetMapIndex(currentMap))
     , hasFinished(false)
     , offset(0)

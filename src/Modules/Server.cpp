@@ -22,6 +22,7 @@
 #include "Features/SegmentedTools.hpp"
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/Stats/ZachStats.hpp"
+#include "Features/ConditionalExec.hpp"
 
 #include "Engine.hpp"
 #include "Client.hpp"
@@ -376,6 +377,7 @@ DETOUR(Server::GameFrame, bool simulating)
 {
     if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
     TickCustomCategories();
+    RunSeqs();
 
     if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
         if (!simulating && !pauseTimer->IsActive()) {

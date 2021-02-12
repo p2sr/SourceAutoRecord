@@ -128,6 +128,7 @@
     <ClCompile Include="Features\Cvars.cpp" />
     <ClCompile Include="Features\DataMapDumper.cpp" />
     <ClCompile Include="Features\Camera.cpp" />
+    <ClCompile Include="Features\ConditionalExec.cpp" />
     <ClCompile Include="Features\Demo\Demo.cpp" />
     <ClCompile Include="Features\Demo\DemoGhostEntity.cpp" />
     <ClCompile Include="Features\Demo\DemoGhostPlayer.cpp" />
@@ -324,6 +325,7 @@
     <ClInclude Include="Features\Cvars.hpp" />
     <ClInclude Include="Features\DataMapDumper.hpp" />
     <ClInclude Include="Features\Camera.hpp" />
+    <ClInclude Include="Features\ConditionalExec.hpp" />
     <ClInclude Include="Features\Demo\Demo.hpp" />
     <ClInclude Include="Features\Demo\DemoGhostEntity.hpp" />
     <ClInclude Include="Features\Demo\DemoGhostPlayer.hpp" />

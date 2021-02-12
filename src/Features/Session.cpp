@@ -17,6 +17,7 @@
 #include "Features/Timer/Timer.hpp"
 #include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
+#include "Features/ConditionalExec.hpp"
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -148,7 +149,7 @@ void Session::Start()
         networkManager.UpdateGhostsSameMap();
         networkManager.SpawnAllGhosts();
         if (ghost_sync.GetBool()) {
-            if (!networkManager.AreAllGhostsOnSameMap() && this->previousMap != engine->m_szLevelName) { //Don't pause if just reloading save
+            if (!networkManager.AreAllGhostsAheadOrSameMap() && this->previousMap != engine->m_szLevelName) { //Don't pause if just reloading save
                 engine->SendToCommandBuffer("pause", 20);
             }
         }
@@ -171,6 +172,8 @@ void Session::Start()
     zachStats->ResetTriggers();
     zachStats->NewSession();
 
+    RunConditionalExecs();
+
     engine->hasRecorded = false;
     engine->hasPaused = false;
     engine->isPausing = false;
@@ -187,6 +190,8 @@ void Session::Ended()
     if (!this->isRunning) {
         return;
     }
+
+    engine->hadInitialForcePrimaryFullscreen = false;
 
     this->previousMap = engine->m_szLevelName;
 
@@ -242,7 +247,8 @@ void Session::Ended()
     auto nSlot = GET_SLOT();
     stats->Get(nSlot)->statsCounter->RecordDatas(tick);
 
-    networkManager.DeleteAllGhostModels(false);
+    demoGhostPlayer.DeleteAllGhosts();
+    networkManager.DeleteAllGhosts();
     
     if (!wait_persist_across_loads.GetBool()) {
         engine->hasWaited = true;
