@@ -38,7 +38,7 @@ clean:
 -include $(DEPS)
 
 sar.so: $(OBJS)
-	$(CXX) $(LDFLAGS) $^ -o $@
+	$(CXX) $^ $(LDFLAGS) -o $@
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
 	@mkdir -p $(dir $@)
