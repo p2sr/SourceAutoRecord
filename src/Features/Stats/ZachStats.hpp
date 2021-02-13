@@ -16,16 +16,14 @@ public:
     std::array<Vector, 2> origVerts;
     std::array<Vector, 8> verts;
     Vector origin;
-    unsigned int ID;
 
     float angle = 0;
 
-    Box(const Vector& A, const Vector& G, unsigned ID, double angle = 0)
+    Box(const Vector& A, const Vector& G, double angle = 0)
     {
         this->origVerts = {A, G};
         this->origin = (A + G) / 2;
         this->SetRotation(angle); // Initializes 'verts' for us too
-        this->ID = ID;
     }
 
     void SetRotation(double angle)
@@ -72,29 +70,64 @@ public:
     }
 };
 
-class ZachTrigger : public Box {
-public:
-    ZachTrigger(const Vector& A, const Vector& G, unsigned ID, double angle = 0)
-        : Box::Box(A, G, ID, angle)
-    { }
-    bool isInside = false;
-    bool triggered = false;
-
-    void Trigger(std::stringstream& output);
+enum class TriggerType {
+    ZYPEH,
+    ZYNTEX
 };
+
+class Trigger {
+public:
+    Trigger(const unsigned int ID, TriggerType type)
+        : ID(ID)
+        , type(type)
+    {
+    }
+
+    TriggerType type;
+    bool triggered = false;
+    unsigned int ID;
+
+    void Output(std::stringstream& output);
+};
+
+class ZypehTrigger : public Trigger, public Box {
+public:
+    ZypehTrigger(const Vector& A, const Vector& G, unsigned ID, double angle = 0)
+        : Trigger(ID, TriggerType::ZYPEH)
+        , Box::Box(A, G, angle)
+    {
+    }
+};
+
+class ZyntexTrigger : public Trigger {
+public:
+    ZyntexTrigger(const std::string entName, const std::string input, const unsigned int ID)
+        : Trigger(ID, TriggerType::ZYNTEX)
+        , entName(entName)
+        , input(input)
+    {
+    }
+
+    std::string entName;
+    std::string input;
+};
+
+static std::vector<Trigger*> g_triggers;
 
 class ZachStats : public Feature {
 
 public:
     ZachStats();
     void UpdateTriggers();
-    bool CheckTriggers(ZachTrigger& trigger, Vector& pos);
-    void AddTrigger(Vector& a, Vector& B, float angle, unsigned int ID);
+    bool CheckZypehTriggers(ZypehTrigger* trigger, Vector& pos);
+    void CheckZyntexTriggers(void* entity, const char* input);
+    void AddZypehTrigger(Vector& a, Vector& B, float angle, unsigned int ID);
+    void AddZyntexTrigger(const std::string entName, const std::string input, unsigned int ID);
     void DeleteTrigger(unsigned int ID);
-    void DrawTrigger(ZachTrigger& trigger);
+    void DrawTrigger(ZypehTrigger* trigger);
     void PreviewSecond();
-    std::vector<ZachTrigger>& GetTriggers();
-    ZachTrigger* GetTriggerByID(unsigned int ID);
+    std::vector<Trigger*>& GetTriggers();
+    Trigger* GetTriggerByID(unsigned int ID);
     void ResetTriggers();
     bool ExportTriggers();
 
@@ -117,14 +150,18 @@ private:
 extern ZachStats* zachStats;
 
 extern Variable sar_zach_stats_file;
-extern Variable sar_zach_triggers_file;
+extern Variable sar_zach_file;
 extern Variable sar_zach_name;
-extern Variable sar_zach_show_triggers;
 extern Variable sar_zach_header;
 extern Variable sar_zach_show_chat;
-extern Command sar_zach_export;
+
+extern Variable sar_zypeh_show_triggers;
+
+extern Command sar_zach_export_triggers;
+extern Command sar_zach_export_stats;
 extern Command sar_zach_reset;
 extern Command sar_zach_trigger_add;
-extern Command sar_zach_trigger_place;
-extern Command sar_zach_trigger_rotate;
 extern Command sar_zach_trigger_delete;
+
+extern Command sar_zypeh_trigger_place;
+extern Command sar_zypeh_trigger_rotate;

@@ -17,20 +17,20 @@
 Variable sar_zach_stats_file("sar_zach_stats_file", "zach.csv", "Name of the file to export stats to.\n", 0);
 Variable sar_zach_triggers_file("sar_zach_triggers_file", "zach.cfg", "Name of the file to export triggers to.\n", 0);
 Variable sar_zach_name("sar_zach_name", "FrenchSaves10ticks", "Name of the current player. Re-enables all triggers when changed.\n", 0);
-Variable sar_zach_show_triggers("sar_zach_show_triggers", "0", 0, 2, "How to draw the triggers in-game. 0: do not show. 1: show outline. 2: show full box (appears through walls).\n");
+Variable sar_zypeh_show_triggers("sar_zypeh_show_triggers", "0", 0, 2, "How to draw the triggers in-game. 0: do not show. 1: show outline. 2: show full box (appears through walls).\n");
 Variable sar_zach_show_chat("sar_zach_show_chat", "1", "Show trigger times in chat.\n");
 Variable sar_zach_header("sar_zach_header", "Name, Times", "Header of the csv file.\n", 0);
 
 //plugin_load sar; sar_shane_loads 1; sar_disable_progress_bar_update 2; sar_zach_show_triggers 1; sar_zach_header "Name,Door,Floor,Blue Portal,Office window"; exec zach
 
 //Triggers
-    
-void ZachTrigger::Trigger(std::stringstream& output)
+
+void Trigger::Output(std::stringstream& output)
 {
     auto tick = session->GetTick();
     char out[128];
     std::snprintf(out, 128, "%s -> %.3f (%.3f)", sar_zach_name.GetString(), tick / 60.f, zachStats->lastTriggerTick == -1 ? tick / 60.f : (tick - zachStats->lastTriggerTick) / 60.f);
-    
+
     if (sar_zach_show_chat.GetBool()) {
         client->Chat(TextColor::ORANGE, out);
     } else {
@@ -67,17 +67,21 @@ void ZachStats::UpdateTriggers()
 
     auto pos = client->GetAbsOrigin(player);
 
-    for (auto& trigger : this->GetTriggers()) {
-        if (sar_zach_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 59 <= session->GetTick()) {
-            this->DrawTrigger(trigger);
-        }
+    for (auto trigger : this->GetTriggers()) {
+        if (trigger->type == TriggerType::ZYPEH) {
+            ZypehTrigger* zypehTrigger = static_cast<ZypehTrigger*>(trigger);
 
-        if (this->CheckTriggers(trigger, pos)) {
-            trigger.Trigger(this->output);
+            if (sar_zypeh_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 59 <= session->GetTick()) {
+                this->DrawTrigger(zypehTrigger);
+            }
+
+            if (this->CheckZypehTriggers(zypehTrigger, pos)) {
+                zypehTrigger->Output(this->output);
+            }
         }
     }
 
-    if (sar_zach_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 59 <= session->GetTick()) {
+    if (sar_zypeh_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 59 <= session->GetTick()) {
         this->lastFrameDrawn = session->GetTick();
     }
 
@@ -86,7 +90,7 @@ void ZachStats::UpdateTriggers()
     }
 }
 
-void ZachStats::AddTrigger(Vector& A, Vector& G, float angle, unsigned int ID)
+void ZachStats::AddZypehTrigger(Vector& A, Vector& G, float angle, unsigned int ID)
 {
     // 'A' must have minimum coordinates, 'G' must have max
 #define SWAP(a,b) do { float tmp = a; a = b; b = tmp; } while (0)
@@ -97,8 +101,17 @@ void ZachStats::AddTrigger(Vector& A, Vector& G, float angle, unsigned int ID)
 
     this->DeleteTrigger(ID); // Make sure there's not already a trigger with that ID
 
+    ZypehTrigger* trigger = new ZypehTrigger(A, G, ID, angle);
 
-    ZachTrigger trigger(A, G, ID, angle);
+    this->GetTriggers().push_back(trigger);
+    console->Print("Trigger added !\n");
+}
+
+void ZachStats::AddZyntexTrigger(const std::string entName, const std::string input, unsigned int ID)
+{
+    this->DeleteTrigger(ID); // Make sure there's not already a trigger with that ID
+
+    ZyntexTrigger* trigger = new ZyntexTrigger(entName, input, ID);
 
     this->GetTriggers().push_back(trigger);
     console->Print("Trigger added !\n");
@@ -106,10 +119,11 @@ void ZachStats::AddTrigger(Vector& A, Vector& G, float angle, unsigned int ID)
 
 void ZachStats::DeleteTrigger(unsigned int ID)
 {
-    auto& v = this->GetTriggers();
+    auto &v = this->GetTriggers();
     unsigned int idx = 0;
-    for (auto& it : v) {
-        if (it.ID == ID) {
+    for (auto it : v) {
+        if (it->ID == ID) {
+            delete it;
             v.erase(v.begin() + idx);
             break;
         }
@@ -117,17 +131,16 @@ void ZachStats::DeleteTrigger(unsigned int ID)
     }
 }
 
-void ZachStats::DrawTrigger(ZachTrigger& trigger)
+void ZachStats::DrawTrigger(ZypehTrigger* trigger)
 {
     PLAT_CALL(
         engine->AddBoxOverlay,
-        trigger.origin,
-        trigger.origVerts[0] - trigger.origin,
-        trigger.origVerts[1] - trigger.origin,
-        {0, trigger.angle, 0},
-        255, 0, 0, sar_zach_show_triggers.GetInt() == 2 ? 100 : 0,
-        1
-    );
+        trigger->origin,
+        trigger->origVerts[0] - trigger->origin,
+        trigger->origVerts[1] - trigger->origin,
+        { 0, trigger->angle, 0 },
+        255, 0, 0, sar_zypeh_show_triggers.GetInt() == 2 ? 100 : 0,
+        1);
 }
 
 void ZachStats::PreviewSecond()
@@ -146,23 +159,21 @@ void ZachStats::PreviewSecond()
         origin,
         A - origin,
         G - origin,
-        {0, 0, 0},
+        { 0, 0, 0 },
         255, 0, 0, 0,
-        0
-    );
+        0);
 }
 
-std::vector<ZachTrigger>& ZachStats::GetTriggers()
+std::vector<Trigger*>& ZachStats::GetTriggers()
 {
-    static std::vector<ZachTrigger> rects;
-    return rects;
+    return g_triggers;
 }
 
-ZachTrigger* ZachStats::GetTriggerByID(unsigned int ID)
+Trigger* ZachStats::GetTriggerByID(unsigned int ID)
 {
-    for (auto& trigger : this->GetTriggers()) {
-        if (trigger.ID == ID) {
-            return &trigger;
+    for (auto trigger : this->GetTriggers()) {
+        if (trigger->ID == ID) {
+            return trigger;
         }
     }
     return nullptr;
@@ -170,9 +181,8 @@ ZachTrigger* ZachStats::GetTriggerByID(unsigned int ID)
 
 void ZachStats::ResetTriggers()
 {
-    for (auto& trigger : this->GetTriggers()) {
-        trigger.isInside = false;
-        trigger.triggered = false;
+    for (auto trigger : this->GetTriggers()) {
+        trigger->triggered = false;
     }
     this->lastTriggerTick = -1;
     this->lastFrameDrawn = 0;
@@ -192,14 +202,21 @@ bool ZachStats::ExportTriggers()
         return false;
     }
 
-    file << "// Explanation: sar_zach_trigger_add ID A.x A.y A.z B.x B.y B.z angle" << std::endl;
+    file << "// Explanation: sar_zach_trigger_add ID A.x A.y A.z B.x B.y B.z angle OR sar_zach_trigger_add entity_name input" << std::endl;
 
-    for (auto& trigger : this->GetTriggers()) {
-        file << "sar_zach_trigger_add " << trigger.ID
-             << " " << trigger.origVerts[0].x << " " << trigger.origVerts[0].y << " " << trigger.origVerts[0].z
-             << " " << trigger.origVerts[1].x << " " << trigger.origVerts[1].y << " " << trigger.origVerts[1].z
-             << " " << trigger.angle
-             << std::endl;
+    for (auto trigger : this->GetTriggers()) {
+        if (trigger->type == TriggerType::ZYPEH) {
+            ZypehTrigger* zypehTrigger = static_cast<ZypehTrigger*>(trigger);
+            file << "sar_zach_trigger_add " << zypehTrigger->ID
+                 << " " << zypehTrigger->origVerts[0].x << " " << zypehTrigger->origVerts[0].y << " " << zypehTrigger->origVerts[0].z
+                 << " " << zypehTrigger->origVerts[1].x << " " << zypehTrigger->origVerts[1].y << " " << zypehTrigger->origVerts[1].z
+                 << " " << zypehTrigger->angle
+                 << std::endl;
+        } else if (trigger->type == TriggerType::ZYNTEX) {
+            ZyntexTrigger* zyntexTrigger = static_cast<ZyntexTrigger*>(trigger);
+            file << "sar_zach_trigger_add " << zyntexTrigger->ID << " " << zyntexTrigger->entName << " " << zyntexTrigger->input
+                 << std::endl;
+        }
     }
 
     file.close();
@@ -241,9 +258,9 @@ void ZachStats::NewSession()
     stream << sar_zach_name.GetString();
 }
 
-bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
+bool ZachStats::CheckZypehTriggers(ZypehTrigger* trigger, Vector& pos)
 {
-    if (trigger.triggered) {
+    if (trigger->triggered) {
         return false;
     }
 
@@ -251,10 +268,10 @@ bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
     // this axis, we can just compare the point's z coordinate to the top
     // and bottom of the cuboid
 
-    float zMin = trigger.verts[0].z, zMax = trigger.verts[4].z; // A point on the bottom and top respectively
+    float zMin = trigger->verts[0].z, zMax = trigger->verts[4].z; // A point on the bottom and top respectively
     if (pos.z < zMin || pos.z > zMax) {
-        /*if (trigger.ID == 1) {
-            console->Print("triggered %d\n", trigger.ID);
+        /*if (trigger->ID == 1) {
+            console->Print("triggered %d\n", trigger->ID);
         }*/
         return false;
     }
@@ -265,28 +282,28 @@ bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
 
     // Algorithm stolen from https://stackoverflow.com/a/2752754/13932065
 
-    float bax = trigger.verts[1].x - trigger.verts[0].x;
-    float bay = trigger.verts[1].y - trigger.verts[0].y;
-    float dax = trigger.verts[3].x - trigger.verts[0].x;
-    float day = trigger.verts[3].y - trigger.verts[0].y;
+    float bax = trigger->verts[1].x - trigger->verts[0].x;
+    float bay = trigger->verts[1].y - trigger->verts[0].y;
+    float dax = trigger->verts[3].x - trigger->verts[0].x;
+    float day = trigger->verts[3].y - trigger->verts[0].y;
 
-    if ((pos.x - trigger.verts[0].x) * bax + (pos.y - trigger.verts[0].y) * bay < 0) {
-        if (trigger.ID == 1) {
+    if ((pos.x - trigger->verts[0].x) * bax + (pos.y - trigger->verts[0].y) * bay < 0) {
+        if (trigger->ID == 1) {
         }
         return false;
     }
-    if ((pos.x - trigger.verts[1].x) * bax + (pos.y - trigger.verts[1].y) * bay > 0) {
-        if (trigger.ID == 1) {
+    if ((pos.x - trigger->verts[1].x) * bax + (pos.y - trigger->verts[1].y) * bay > 0) {
+        if (trigger->ID == 1) {
         }
         return false;
     }
-    if ((pos.x - trigger.verts[0].x) * dax + (pos.y - trigger.verts[0].y) * day < 0) {
-        if (trigger.ID == 1) {
+    if ((pos.x - trigger->verts[0].x) * dax + (pos.y - trigger->verts[0].y) * day < 0) {
+        if (trigger->ID == 1) {
         }
         return false;
     }
-    if ((pos.x - trigger.verts[3].x) * dax + (pos.y - trigger.verts[3].y) * day > 0) {
-        if (trigger.ID == 1) {
+    if ((pos.x - trigger->verts[3].x) * dax + (pos.y - trigger->verts[3].y) * day > 0) {
+        if (trigger->ID == 1) {
         }
         return false;
     }
@@ -294,9 +311,25 @@ bool ZachStats::CheckTriggers(ZachTrigger& trigger, Vector& pos)
     return true;
 }
 
-CON_COMMAND(sar_zach_trigger_add, "sar_zach_trigger_add <id> <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> [angle] - add a trigger with the specified ID, position, and optional angle.\n")
+void ZachStats::CheckZyntexTriggers(void* entity, const char* input)
 {
-    if (args.ArgC() != 8 && args.ArgC() != 9) {
+    for (auto trigger : g_triggers) {
+        if (!trigger->triggered) {
+            if (trigger->type == TriggerType::ZYNTEX) {
+                ZyntexTrigger* zyntexTrigger = static_cast<ZyntexTrigger*>(trigger);
+                if (zyntexTrigger->input == input && zyntexTrigger->entName == server->GetEntityName(entity)) {
+                    zyntexTrigger->Output(this->GetStream());
+                }
+            }
+            trigger->triggered = false;
+        }
+    }
+}
+
+CON_COMMAND(sar_zach_trigger_add, "Usage 1 -> sar_zach_trigger_add <id> <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> [angle] - add a trigger with the specified ID, position, and optional angle.\n"
+                                  "Usage 2 -> sar_zach_trigger_add <id> <entity name> <input> - add a trigger with the specified ID that will trigger at a specific entity input.\n")
+{
+    if (args.ArgC() != 4 && args.ArgC() != 8 && args.ArgC() != 9) {
         return console->Print(sar_zach_trigger_add.ThisPtr()->m_pszHelpString);
     }
 
@@ -304,30 +337,37 @@ CON_COMMAND(sar_zach_trigger_add, "sar_zach_trigger_add <id> <A.x> <A.y> <A.z> <
     int id = std::strtol(args[1], &end, 10);
     if (*end != 0 || end == args[1]) {
         // ID argument is not a number
-        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_zach_trigger_add.ThisPtr()->m_pszHelpString);
     }
 
-    Vector A = Vector(std::atof(args[2]), std::atof(args[3]), std::atof(args[4]));
-    Vector G = Vector(std::atof(args[5]), std::atof(args[6]), std::atof(args[7]));
+    if (args.ArgC() >= 8) {
+        Vector A = Vector(std::atof(args[2]), std::atof(args[3]), std::atof(args[4]));
+        Vector G = Vector(std::atof(args[5]), std::atof(args[6]), std::atof(args[7]));
 
-    float angle = 0;
-    if (args.ArgC() == 9) {
-        angle = std::atof(args[8]);
+        float angle = 0;
+        if (args.ArgC() == 9) {
+            angle = std::atof(args[8]);
+        }
+
+        zachStats->AddZypehTrigger(A, G, angle, id);
+    } else {
+        std::string entName = args[2];
+        std::string input = args[3];
+
+        zachStats->AddZyntexTrigger(entName, input, id);
     }
-
-    zachStats->AddTrigger(A, G, angle, id);
 }
 
-CON_COMMAND(sar_zach_trigger_place, "sar_zach_trigger_place <id> - place a trigger with the given ID at the position being aimed at.\n")
+CON_COMMAND(sar_zypeh_trigger_place, "sar_zypeh_trigger_place <id> - place a trigger with the given ID at the position being aimed at.\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_zypeh_trigger_place.ThisPtr()->m_pszHelpString);
     }
 
     if (!sv_cheats.GetBool()) {
         // Trigger placement adds an overlay (even if temporarily),
         // hence is a cheat
-        console->Print("sar_zach_trigger_place requires sv_cheats.\n");
+        console->Print("sar_zypeh_trigger_place requires sv_cheats.\n");
         return;
     }
 
@@ -335,7 +375,7 @@ CON_COMMAND(sar_zach_trigger_place, "sar_zach_trigger_place <id> - place a trigg
     int id = std::strtol(args[1], &end, 10);
     if (*end != 0 || end == args[1]) {
         // ID argument is not a number
-        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_zypeh_trigger_place.ThisPtr()->m_pszHelpString);
     }
 
     CGameTrace tr;
@@ -344,24 +384,24 @@ CON_COMMAND(sar_zach_trigger_place, "sar_zach_trigger_place <id> - place a trigg
         return console->Print("You aimed at the void.\n");
     }
 
-    if (!sar_zach_show_triggers.GetBool()) {
-        console->Print("sar_zach_show_triggers set to 1 !\n");
-        sar_zach_show_triggers.SetValue(1);
+    if (!sar_zypeh_show_triggers.GetBool()) {
+        console->Print("sar_zypeh_show_triggers set to 1 !\n");
+        sar_zypeh_show_triggers.SetValue(1);
     }
 
     if (!zachStats->isFirstPlaced) {
         zachStats->A = tr.endpos;
         zachStats->isFirstPlaced = true;
     } else {
-        zachStats->AddTrigger(zachStats->A, tr.endpos, 0.0f, id);
+        zachStats->AddZypehTrigger(zachStats->A, tr.endpos, 0.0f, id);
         zachStats->isFirstPlaced = false;
     }
 }
 
-CON_COMMAND(sar_zach_trigger_rotate, "sar_zach_trigger_rotate <id> <angle> - changes the rotation of a trigger to the given angle, in degrees.\n")
+CON_COMMAND(sar_zypeh_trigger_rotate, "sar_zypeh_trigger_rotate <id> <angle> - changes the rotation of a trigger to the given angle, in degrees.\n")
 {
     if (args.ArgC() != 3) {
-        return console->Print(sar_zach_trigger_rotate.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_zypeh_trigger_rotate.ThisPtr()->m_pszHelpString);
     }
 
     char* end;
@@ -369,21 +409,24 @@ CON_COMMAND(sar_zach_trigger_rotate, "sar_zach_trigger_rotate <id> <angle> - cha
     int id = std::strtol(args[1], &end, 10);
     if (*end != 0 || end == args[1]) {
         // ID argument is not a number
-        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_zypeh_trigger_rotate.ThisPtr()->m_pszHelpString);
     }
 
     int angle = std::strtol(args[2], &end, 10);
     if (*end != 0 || end == args[2]) {
         // ID argument is not a number
-        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_zypeh_trigger_rotate.ThisPtr()->m_pszHelpString);
     }
 
     auto trigger = zachStats->GetTriggerByID(id);
     if (trigger == nullptr) {
-        return console->Print("No such trigger!\n");
+        return console->Print("No such trigger !\n");
+    } else if (trigger->type != TriggerType::ZYPEH) {
+        return console->Print("Not a zypeh trigger !\n");
     }
 
-    trigger->SetRotation(angle);
+    ZypehTrigger* zypehTrigger = static_cast<ZypehTrigger*>(trigger);
+    zypehTrigger->SetRotation(angle);
 }
 
 CON_COMMAND(sar_zach_trigger_delete, "sar_zach_trigger_delete <id> - deletes the trigger with the given ID.\n")
@@ -396,7 +439,7 @@ CON_COMMAND(sar_zach_trigger_delete, "sar_zach_trigger_delete <id> - deletes the
     int id = std::strtol(args[1], &end, 10);
     if (*end != 0 || end == args[1]) {
         // ID argument is not a number
-        return console->Print(sar_zach_trigger_place.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_zach_trigger_delete.ThisPtr()->m_pszHelpString);
     }
 
     zachStats->DeleteTrigger(id);
