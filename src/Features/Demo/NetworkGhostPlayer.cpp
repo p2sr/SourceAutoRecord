@@ -262,7 +262,7 @@ void NetworkManager::NotifyMapChange()
         auto ipt = speedrun->GetIntervalPerTick();
         std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
         std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
-        client->Chat(TextColor::GREEN, "%s is now on %s (%s)", this->name.c_str(), engine->m_szLevelName, time.c_str());
+        client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", this->name.c_str(), engine->m_szLevelName, time.c_str(), totalTime.c_str());
     } else {
         client->Chat(TextColor::GREEN, "%s is now on %s", this->name.c_str(), engine->m_szLevelName);
     }
