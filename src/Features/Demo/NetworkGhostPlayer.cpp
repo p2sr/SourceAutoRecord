@@ -4,6 +4,7 @@
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -276,16 +277,19 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM)
     sf::Packet packet;
     packet << HEADER::SPEEDRUN_FINISH << this->ID;
 
-    int total = 0;
+    float totalSecs = 0;
     auto ipt = speedrun->GetIntervalPerTick();
 
     if (CM) {
-        total = session->GetTick();
+        uintptr_t player = (uintptr_t)server->GetPlayer(1);
+        if (player) {
+            totalSecs = *(float *)(player + Offsets::m_StatsThisLevel + 12) - ipt;
+        }
     } else {
-        total = speedrun->GetTotal();
+        totalSecs = speedrun->GetTotal() * ipt;
     }
 
-    std::string time = SpeedrunTimer::Format(total * ipt);
+    std::string time = SpeedrunTimer::Format(totalSecs);
 
     client->Chat(TextColor::GREEN, "%s has finished in %s", this->name.c_str(), time.c_str());
 
