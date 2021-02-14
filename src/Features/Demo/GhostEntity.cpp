@@ -51,15 +51,14 @@ void GhostEntity::Spawn()
         return;
     }
 
+    PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", "_ghost_normal");
+
     if (GhostEntity::ghost_type == 1) {
         PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "model", this->modelName.c_str());
     } else {
         PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "model", "models/props/prop_portalgun.mdl");
         PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "modelscale", 0.4);
     }
-
-    std::string ghostName = "ghost_" + this->name;
-    PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", ghostName.c_str());
 
     this->lastTransparency = ghost_transparency.GetFloat();
 
@@ -73,7 +72,7 @@ void GhostEntity::DeleteGhost()
 {
     if (this->prop_entity != nullptr) {
         PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", "_ghost_destroy");
-        engine->ExecuteCommand("ent_fire _ghost_destroy kill");
+        engine->ExecuteCommand("ent_fire _ghost_destroy kill", true);
         this->prop_entity = nullptr;
     }
 }

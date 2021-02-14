@@ -280,6 +280,15 @@ void Session::Changed(int state)
 {
     console->DevMsg("state = %i\n", state);
     this->signonState = state;
+
+    // Ghosts are in saves, and just sorta stay there unless we kill
+    // them. We have to do this in prespawn - if we do it at session
+    // start, it kills ghosts that were just spawned and hence
+    // invalidates entity pointers and bad things happen
+    if (state == SIGNONSTATE_PRESPAWN && networkManager.isConnected) {
+        engine->ExecuteCommand("ent_fire _ghost_normal kill", true);
+    }
+
     // Demo recorder starts syncing from this tick
     if (state == SIGNONSTATE_FULL) {
         timescaleDetect->Spawn();
