@@ -265,8 +265,12 @@ void NetworkManager::NotifySpeedrunFinished()
     auto total = speedrun->GetTotal();
     auto ipt = speedrun->GetIntervalPerTick();
 
+    std::string time = SpeedrunTimer::Format(total * ipt);
+
+    client->Chat(TextColor::GREEN, "%s has finished in %s", this->name, time.c_str());
+
     sf::Packet packet;
-    packet << HEADER::SPEEDRUN_FINISH << this->ID << SpeedrunTimer::Format(total * ipt).c_str();
+    packet << HEADER::SPEEDRUN_FINISH << this->ID << time.c_str();
     this->tcpSocket.send(packet);
 }
 
