@@ -287,7 +287,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM)
 
     std::string time = SpeedrunTimer::Format(total * ipt);
 
-    client->Chat(TextColor::GREEN, "%s has finished in %s", this->name, time.c_str());
+    client->Chat(TextColor::GREEN, "%s has finished in %s", this->name.c_str(), time.c_str());
 
     packet << time.c_str();
 
