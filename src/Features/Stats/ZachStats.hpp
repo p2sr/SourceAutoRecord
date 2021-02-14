@@ -86,8 +86,6 @@ public:
     TriggerType type;
     bool triggered = false;
     unsigned int ID;
-
-    void Output(std::stringstream& output);
 };
 
 class ZypehTrigger : public Trigger, public Box {
@@ -132,6 +130,7 @@ public:
     void ResetTriggers();
     bool ExportTriggers();
 
+    static void Output(std::stringstream& output);
     std::stringstream& GetStream() { return this->output; }
     void ResetStream() { this->output.str(""); }
     bool ExportCSV();
