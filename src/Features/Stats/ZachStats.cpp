@@ -131,6 +131,14 @@ void ZachStats::DeleteTrigger(unsigned int ID)
     }
 }
 
+void ZachStats::DeleteAll()
+{
+    auto& v = this->GetTriggers();
+    for (auto it : v)
+        delete it;
+    v.clear();
+}
+
 void ZachStats::DrawTrigger(ZypehTrigger* trigger)
 {
     PLAT_CALL(
@@ -326,8 +334,8 @@ void ZachStats::CheckZyntexTriggers(void* entity, const char* input)
     }
 }
 
-CON_COMMAND(sar_zach_trigger_add, "Usage 1 -> sar_zach_trigger_add <id> <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> [angle] - add a trigger with the specified ID, position, and optional angle.\n"
-                                  "Usage 2 -> sar_zach_trigger_add <id> <entity name> <input> - add a trigger with the specified ID that will trigger at a specific entity input.\n")
+CON_COMMAND(sar_zach_trigger_add, "Usage 1 -> sar_zach_trigger_add <id> <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> [angle] : add a trigger with the specified ID, position, and optional angle.\n"
+                                  "Usage 2 -> sar_zach_trigger_add <id> <entity name> <input> : add a trigger with the specified ID that will trigger at a specific entity input.\n")
 {
     if (args.ArgC() != 4 && args.ArgC() != 8 && args.ArgC() != 9) {
         return console->Print(sar_zach_trigger_add.ThisPtr()->m_pszHelpString);
@@ -358,7 +366,7 @@ CON_COMMAND(sar_zach_trigger_add, "Usage 1 -> sar_zach_trigger_add <id> <A.x> <A
     }
 }
 
-CON_COMMAND(sar_zypeh_trigger_place, "sar_zypeh_trigger_place <id> - place a trigger with the given ID at the position being aimed at.\n")
+CON_COMMAND(sar_zypeh_trigger_place, "sar_zypeh_trigger_place <id> : place a trigger with the given ID at the position being aimed at.\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_zypeh_trigger_place.ThisPtr()->m_pszHelpString);
@@ -398,7 +406,7 @@ CON_COMMAND(sar_zypeh_trigger_place, "sar_zypeh_trigger_place <id> - place a tri
     }
 }
 
-CON_COMMAND(sar_zypeh_trigger_rotate, "sar_zypeh_trigger_rotate <id> <angle> - changes the rotation of a trigger to the given angle, in degrees.\n")
+CON_COMMAND(sar_zypeh_trigger_rotate, "sar_zypeh_trigger_rotate <id> <angle> : changes the rotation of a trigger to the given angle, in degrees.\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_zypeh_trigger_rotate.ThisPtr()->m_pszHelpString);
@@ -429,7 +437,7 @@ CON_COMMAND(sar_zypeh_trigger_rotate, "sar_zypeh_trigger_rotate <id> <angle> - c
     zypehTrigger->SetRotation(angle);
 }
 
-CON_COMMAND(sar_zach_trigger_delete, "sar_zach_trigger_delete <id> - deletes the trigger with the given ID.\n")
+CON_COMMAND(sar_zach_trigger_delete, "sar_zach_trigger_delete <id> : deletes the trigger with the given ID.\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_zach_trigger_delete.ThisPtr()->m_pszHelpString);

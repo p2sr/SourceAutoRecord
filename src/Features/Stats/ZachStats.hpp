@@ -124,6 +124,7 @@ public:
     void AddZypehTrigger(Vector& a, Vector& B, float angle, unsigned int ID);
     void AddZyntexTrigger(const std::string entName, const std::string input, unsigned int ID);
     void DeleteTrigger(unsigned int ID);
+    void DeleteAll();
     void DrawTrigger(ZypehTrigger* trigger);
     void PreviewSecond();
     std::vector<Trigger*>& GetTriggers();
@@ -162,6 +163,7 @@ extern Command sar_zach_export_stats;
 extern Command sar_zach_reset;
 extern Command sar_zach_trigger_add;
 extern Command sar_zach_trigger_delete;
+extern Command sar_zach_trigger_delete_all;
 
 extern Command sar_zypeh_trigger_place;
 extern Command sar_zypeh_trigger_rotate;
