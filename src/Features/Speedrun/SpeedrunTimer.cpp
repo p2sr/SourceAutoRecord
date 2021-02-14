@@ -237,6 +237,12 @@ void SpeedrunTimer::Split(bool visited)
         if (!visited) {
             this->pubInterface.get()->SetAction(TimerAction::Split);
         }
+
+        if (visited) {
+            networkManager.NotifyMapChange(this->result->prevSplit->GetTotal(), this->GetTotal());
+        } else {
+            networkManager.NotifyMapChange(-1, - 1);
+        }
     }
 }
 void SpeedrunTimer::IncrementPauseTime()

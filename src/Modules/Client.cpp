@@ -294,6 +294,10 @@ static void LeaderboardCallback(const CCommand& args)
         engine->ExecuteCommand("stop");
     }
 
+    if (networkManager.isConnected && sv_bonus_challenge.GetBool()) {
+        networkManager.NotifySpeedrunFinished(true);
+    }
+
     if (!zachStats->GetTriggers().empty()) {
         ZachStats::Output(zachStats->GetStream());
     }

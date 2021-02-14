@@ -5,12 +5,13 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
+#include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 
-#include <queue>
 #include <functional>
+#include <queue>
 
-static std::queue<std::function<void ()>> g_scheduledEvents;
+static std::queue<std::function<void()>> g_scheduledEvents;
 
 //DataGhost
 
@@ -253,20 +254,28 @@ void NetworkManager::SendPlayerData()
     }
 }
 
-void NetworkManager::NotifyMapChange(const sf::Uint32 ticks)
+void NetworkManager::NotifyMapChange(const sf::Uint32 ticksIL, const sf::Uint32 ticksTotal)
 {
     sf::Packet packet;
-    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName << ticks;
+    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName << ticksIL << ticksTotal;
     this->tcpSocket.send(packet);
 }
 
-void NetworkManager::NotifySpeedrunFinished()
+void NetworkManager::NotifySpeedrunFinished(const bool CM)
 {
-    auto total = speedrun->GetTotal();
+    sf::Packet packet;
+    packet << HEADER::SPEEDRUN_FINISH << this->ID;
+
+    int total = 0;
     auto ipt = speedrun->GetIntervalPerTick();
 
-    sf::Packet packet;
-    packet << HEADER::SPEEDRUN_FINISH << this->ID << SpeedrunTimer::Format(total * ipt).c_str();
+    if (CM) {
+        total = session->GetTick();
+    } else {
+        total = speedrun->GetTotal();
+    }
+
+    packet << SpeedrunTimer::Format(total * ipt).c_str();
     this->tcpSocket.send(packet);
 }
 
@@ -355,7 +364,8 @@ void NetworkManager::Treat(sf::Packet& packet)
                 break;
             }
         }
-        if (toErase != -1) this->ghostPool.erase(this->ghostPool.begin() + toErase);
+        if (toErase != -1)
+            this->ghostPool.erase(this->ghostPool.begin() + toErase);
         this->ghostPoolLock.unlock();
         break;
     }
@@ -366,17 +376,22 @@ void NetworkManager::Treat(sf::Packet& packet)
         auto ghost = this->GetGhostByID(ID);
         if (ghost) {
             std::string map;
-            sf::Uint32 ticks;
-            packet >> map >> ticks;
+            sf::Uint32 ticksIL, ticksTotal;
+            packet >> map >> ticksIL >> ticksTotal;
             ghost->currentMap = map;
 
             g_scheduledEvents.push([=]() {
-                if (ghost->isDestroyed) return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
+                if (ghost->isDestroyed)
+                    return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
 
                 this->UpdateGhostsSameMap();
                 if (ghost_show_advancement.GetBool()) {
-                    auto ipt = speedrun->GetIntervalPerTick();
-                    client->Chat(TextColor::GREEN, "%s is now on %s (%ss)", ghost->name.c_str(), ghost->currentMap.c_str(), SpeedrunTimer::Format(ticks * ipt));
+                    if (ticksIL == -1) {
+                        client->Chat(TextColor::GREEN, "%s reloaded %s", ghost->name.c_str(), ghost->currentMap.c_str());
+                    } else {
+                        auto ipt = speedrun->GetIntervalPerTick();
+                        client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", ghost->name.c_str(), ghost->currentMap.c_str(), SpeedrunTimer::Format(ticksIL * ipt).c_str(), SpeedrunTimer::Format(ticksTotal * ipt).c_str());
+                    }
                 }
 
                 if (ghost->sameMap) {
@@ -452,7 +467,8 @@ void NetworkManager::Treat(sf::Packet& packet)
         if (ghost) {
             ghost->modelName = modelName;
             g_scheduledEvents.push([=]() {
-                if (ghost->isDestroyed) return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
+                if (ghost->isDestroyed)
+                    return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
                 if (ghost->sameMap && engine->isRunning()) {
                     ghost->DeleteGhost();
                     ghost->Spawn();
@@ -506,8 +522,10 @@ void NetworkManager::UpdateGhostsSameMap()
     this->ghostPoolLock.lock();
     for (auto ghost : this->ghostPool) {
         ghost->sameMap = strcmp(ghost->currentMap.c_str(), "") && ghost->currentMap == engine->m_szLevelName;
-        if (mapIdx == -1) ghost->isAhead = false; // Fallback - unknown map
-        else ghost->isAhead = engine->GetMapIndex(ghost->currentMap) > mapIdx;
+        if (mapIdx == -1)
+            ghost->isAhead = false; // Fallback - unknown map
+        else
+            ghost->isAhead = engine->GetMapIndex(ghost->currentMap) > mapIdx;
     }
     this->ghostPoolLock.unlock();
 }

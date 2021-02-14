@@ -145,7 +145,6 @@ void Session::Start()
 
     //Network Ghosts
     if (networkManager.isConnected) {
-        networkManager.NotifyMapChange(server->tickCount);
         networkManager.UpdateGhostsSameMap();
         networkManager.SpawnAllGhosts();
         if (ghost_sync.GetBool()) {
