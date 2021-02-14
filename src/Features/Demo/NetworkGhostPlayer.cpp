@@ -334,7 +334,11 @@ void NetworkManager::Treat(sf::Packet& packet)
         this->ghostPoolLock.unlock();
 
         g_scheduledEvents.push([=]() {
-            client->Chat(TextColor::GREEN, "%s has connected in %s!", name.c_str(), current_map.c_str());
+            if (!strcmp("", current_map.c_str())) {
+                client->Chat(TextColor::GREEN, "%s has connected in the menu!", name.c_str());
+            } else {
+                client->Chat(TextColor::GREEN, "%s has connected in %s!", name.c_str(), current_map.c_str());
+            }
 
             this->UpdateGhostsSameMap();
             if (ghost->sameMap && engine->isRunning()) {
