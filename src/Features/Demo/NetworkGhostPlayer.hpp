@@ -1,19 +1,19 @@
 #pragma once
 #include "Command.hpp"
-#include "Variable.hpp"
 #include "Features/Demo/GhostEntity.hpp"
-#include "Utils/SDK.hpp"
 #include "Features/Hud/Hud.hpp"
+#include "Utils/SDK.hpp"
+#include "Variable.hpp"
 
 #include "SFML/Network.hpp"
 
 #include <atomic>
 #include <chrono>
-#include <mutex>
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <vector>
-#include <condition_variable>
 
 enum class HEADER {
     NONE,
@@ -63,6 +63,7 @@ public:
     std::string modelName;
 
     sf::Uint32 splitTicks = -1;
+    sf::Uint32 splitTicksTotal = -1;
 
 public:
     NetworkManager();
@@ -76,7 +77,7 @@ public:
 
     void SendPlayerData();
     void NotifyMapChange();
-    void NotifySpeedrunFinished();
+    void NotifySpeedrunFinished(const bool CM = false);
     void SendMessageToAll(std::string msg);
     void SendPing();
     void ReceiveUDPUpdates(std::vector<sf::Packet>& buffer);
@@ -98,7 +99,7 @@ public:
 
     void DispatchQueuedEvents();
 
-    void DrawNames(HudContext *ctx);
+    void DrawNames(HudContext* ctx);
 };
 
 extern NetworkManager networkManager;

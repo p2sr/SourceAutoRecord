@@ -23,29 +23,6 @@ Variable sar_zach_header("sar_zach_header", "Name, Times", "Header of the csv fi
 
 //plugin_load sar; sar_shane_loads 1; sar_disable_progress_bar_update 2; sar_zach_show_triggers 1; sar_zach_header "Name,Door,Floor,Blue Portal,Office window"; exec zach
 
-//Triggers
-
-void Trigger::Output(std::stringstream& output)
-{
-    auto tick = session->GetTick();
-    char out[128];
-    std::snprintf(out, 128, "%s -> %.3f (%.3f)", sar_zach_name.GetString(), tick / 60.f, zachStats->lastTriggerTick == -1 ? tick / 60.f : (tick - zachStats->lastTriggerTick) / 60.f);
-
-    if (sar_zach_show_chat.GetBool()) {
-        client->Chat(TextColor::ORANGE, out);
-    } else {
-        std::strncat(out, "\n", 2);
-        console->Print(out);
-    }
-
-    output.clear(); // Clear flags
-    //Stop annoy me
-    output << CSV_SEPARATOR << std::fixed << std::setprecision(3) << tick / 60.f << " (" << (zachStats->lastTriggerTick == -1 ? tick / 60.f : (tick - zachStats->lastTriggerTick) / 60.f) << ")";
-
-    this->triggered = true;
-    zachStats->lastTriggerTick = tick;
-}
-
 //Stats
 
 ZachStats* zachStats;
@@ -76,7 +53,8 @@ void ZachStats::UpdateTriggers()
             }
 
             if (this->CheckZypehTriggers(zypehTrigger, pos)) {
-                zypehTrigger->Output(this->output);
+                ZachStats::Output(this->output);
+                zypehTrigger->triggered = true;
             }
         }
     }
@@ -119,16 +97,26 @@ void ZachStats::AddZyntexTrigger(const std::string entName, const std::string in
 
 void ZachStats::DeleteTrigger(unsigned int ID)
 {
-    auto &v = this->GetTriggers();
+    auto& v = this->GetTriggers();
     unsigned int idx = 0;
     for (auto it : v) {
         if (it->ID == ID) {
             delete it;
             v.erase(v.begin() + idx);
+            console->Print("Trigger deleted\n");
             break;
         }
         ++idx;
     }
+}
+
+void ZachStats::DeleteAll()
+{
+    auto& v = this->GetTriggers();
+    for (auto it : v)
+        delete it;
+    v.clear();
+    console->Print("Triggers deleted\n");
 }
 
 void ZachStats::DrawTrigger(ZypehTrigger* trigger)
@@ -221,6 +209,26 @@ bool ZachStats::ExportTriggers()
 
     file.close();
     return true;
+}
+
+void ZachStats::Output(std::stringstream& output)
+{
+    auto tick = session->GetTick();
+    char out[128];
+    std::snprintf(out, 128, "%s -> %.3f (%.3f)", sar_zach_name.GetString(), tick / 60.f, zachStats->lastTriggerTick == -1 ? tick / 60.f : (tick - zachStats->lastTriggerTick) / 60.f);
+
+    if (sar_zach_show_chat.GetBool()) {
+        client->Chat(TextColor::ORANGE, out);
+    } else {
+        std::strncat(out, "\n", 2);
+        console->Print(out);
+    }
+
+    output.clear(); // Clear flags
+    //Stop annoy me
+    output << CSV_SEPARATOR << std::fixed << std::setprecision(3) << tick / 60.f << " (" << (zachStats->lastTriggerTick == -1 ? tick / 60.f : (tick - zachStats->lastTriggerTick) / 60.f) << ")";
+
+    zachStats->lastTriggerTick = tick;
 }
 
 bool ZachStats::ExportCSV()
@@ -318,16 +326,16 @@ void ZachStats::CheckZyntexTriggers(void* entity, const char* input)
             if (trigger->type == TriggerType::ZYNTEX) {
                 ZyntexTrigger* zyntexTrigger = static_cast<ZyntexTrigger*>(trigger);
                 if (zyntexTrigger->input == input && zyntexTrigger->entName == server->GetEntityName(entity)) {
-                    zyntexTrigger->Output(this->GetStream());
+                    ZachStats::Output(this->GetStream());
+                    zyntexTrigger->triggered = true;
                 }
             }
-            trigger->triggered = false;
         }
     }
 }
 
-CON_COMMAND(sar_zach_trigger_add, "Usage 1 -> sar_zach_trigger_add <id> <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> [angle] - add a trigger with the specified ID, position, and optional angle.\n"
-                                  "Usage 2 -> sar_zach_trigger_add <id> <entity name> <input> - add a trigger with the specified ID that will trigger at a specific entity input.\n")
+CON_COMMAND(sar_zach_trigger_add, "Usage 1 -> sar_zach_trigger_add <id> <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> [angle] : add a trigger with the specified ID, position, and optional angle.\n"
+                                  "Usage 2 -> sar_zach_trigger_add <id> <entity name> <input> : add a trigger with the specified ID that will trigger at a specific entity input.\n")
 {
     if (args.ArgC() != 4 && args.ArgC() != 8 && args.ArgC() != 9) {
         return console->Print(sar_zach_trigger_add.ThisPtr()->m_pszHelpString);
@@ -358,7 +366,7 @@ CON_COMMAND(sar_zach_trigger_add, "Usage 1 -> sar_zach_trigger_add <id> <A.x> <A
     }
 }
 
-CON_COMMAND(sar_zypeh_trigger_place, "sar_zypeh_trigger_place <id> - place a trigger with the given ID at the position being aimed at.\n")
+CON_COMMAND(sar_zypeh_trigger_place, "sar_zypeh_trigger_place <id> : place a trigger with the given ID at the position being aimed at.\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_zypeh_trigger_place.ThisPtr()->m_pszHelpString);
@@ -398,7 +406,7 @@ CON_COMMAND(sar_zypeh_trigger_place, "sar_zypeh_trigger_place <id> - place a tri
     }
 }
 
-CON_COMMAND(sar_zypeh_trigger_rotate, "sar_zypeh_trigger_rotate <id> <angle> - changes the rotation of a trigger to the given angle, in degrees.\n")
+CON_COMMAND(sar_zypeh_trigger_rotate, "sar_zypeh_trigger_rotate <id> <angle> : changes the rotation of a trigger to the given angle, in degrees.\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_zypeh_trigger_rotate.ThisPtr()->m_pszHelpString);
@@ -429,7 +437,7 @@ CON_COMMAND(sar_zypeh_trigger_rotate, "sar_zypeh_trigger_rotate <id> <angle> - c
     zypehTrigger->SetRotation(angle);
 }
 
-CON_COMMAND(sar_zach_trigger_delete, "sar_zach_trigger_delete <id> - deletes the trigger with the given ID.\n")
+CON_COMMAND(sar_zach_trigger_delete, "sar_zach_trigger_delete <id> : deletes the trigger with the given ID.\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_zach_trigger_delete.ThisPtr()->m_pszHelpString);
@@ -443,6 +451,15 @@ CON_COMMAND(sar_zach_trigger_delete, "sar_zach_trigger_delete <id> - deletes the
     }
 
     zachStats->DeleteTrigger(id);
+}
+
+CON_COMMAND(sar_zach_trigger_delete_all, "sar_zach_trigger_delete_all : deletes every triggers.\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print(sar_zach_trigger_delete_all.ThisPtr()->m_pszHelpString);
+    }
+
+    zachStats->DeleteAll();
 }
 
 CON_COMMAND(sar_zach_export_stats, "Export the current stats output the the csv file specified by sar_zach_stats_file.\n")

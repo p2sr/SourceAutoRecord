@@ -233,6 +233,7 @@ void SpeedrunTimer::Split()
         this->pubInterface.get()->SetAction(TimerAction::Split);
         if (networkManager.isConnected) {
             networkManager.splitTicks = this->result->prevSplit->GetTotal();
+            networkManager.splitTicksTotal = this->total;
         }
     }
 }

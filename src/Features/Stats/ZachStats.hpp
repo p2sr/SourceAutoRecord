@@ -86,8 +86,6 @@ public:
     TriggerType type;
     bool triggered = false;
     unsigned int ID;
-
-    void Output(std::stringstream& output);
 };
 
 class ZypehTrigger : public Trigger, public Box {
@@ -124,6 +122,7 @@ public:
     void AddZypehTrigger(Vector& a, Vector& B, float angle, unsigned int ID);
     void AddZyntexTrigger(const std::string entName, const std::string input, unsigned int ID);
     void DeleteTrigger(unsigned int ID);
+    void DeleteAll();
     void DrawTrigger(ZypehTrigger* trigger);
     void PreviewSecond();
     std::vector<Trigger*>& GetTriggers();
@@ -131,6 +130,7 @@ public:
     void ResetTriggers();
     bool ExportTriggers();
 
+    static void Output(std::stringstream& output);
     std::stringstream& GetStream() { return this->output; }
     void ResetStream() { this->output.str(""); }
     bool ExportCSV();
@@ -162,6 +162,7 @@ extern Command sar_zach_export_stats;
 extern Command sar_zach_reset;
 extern Command sar_zach_trigger_add;
 extern Command sar_zach_trigger_delete;
+extern Command sar_zach_trigger_delete_all;
 
 extern Command sar_zypeh_trigger_place;
 extern Command sar_zypeh_trigger_rotate;

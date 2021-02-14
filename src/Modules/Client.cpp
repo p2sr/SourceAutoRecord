@@ -16,6 +16,8 @@
 #include "Features/Stats/Sync.hpp"
 #include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
+#include "Features/Stats/ZachStats.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -291,6 +293,15 @@ static void LeaderboardCallback(const CCommand& args)
     if (sar_challenge_autostop.GetBool() && sv_bonus_challenge.GetBool() && args.ArgC() == 2 && !strcmp(args[1], "1")) {
         engine->ExecuteCommand("stop");
     }
+
+    if (networkManager.isConnected && sv_bonus_challenge.GetBool()) {
+        networkManager.NotifySpeedrunFinished(true);
+    }
+
+    if (!zachStats->GetTriggers().empty()) {
+        ZachStats::Output(zachStats->GetStream());
+    }
+
     originalLeaderboardCallback(args);
 }
 

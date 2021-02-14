@@ -5,12 +5,13 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
+#include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 
-#include <queue>
 #include <functional>
+#include <queue>
 
-static std::queue<std::function<void ()>> g_scheduledEvents;
+static std::queue<std::function<void()>> g_scheduledEvents;
 
 //DataGhost
 
@@ -260,26 +261,36 @@ void NetworkManager::NotifyMapChange()
     if (this->splitTicks != -1) {
         auto ipt = speedrun->GetIntervalPerTick();
         std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
+        std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
         client->Chat(TextColor::GREEN, "%s is now on %s (%s)", this->name.c_str(), engine->m_szLevelName, time.c_str());
     } else {
         client->Chat(TextColor::GREEN, "%s is now on %s", this->name.c_str(), engine->m_szLevelName);
     }
 
-    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName << this->splitTicks;
+    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName << this->splitTicks << this->splitTicksTotal;
     this->tcpSocket.send(packet);
 }
 
-void NetworkManager::NotifySpeedrunFinished()
+void NetworkManager::NotifySpeedrunFinished(const bool CM)
 {
-    auto total = speedrun->GetTotal();
+    sf::Packet packet;
+    packet << HEADER::SPEEDRUN_FINISH << this->ID;
+
+    int total = 0;
     auto ipt = speedrun->GetIntervalPerTick();
+
+    if (CM) {
+        total = session->GetTick();
+    } else {
+        total = speedrun->GetTotal();
+    }
 
     std::string time = SpeedrunTimer::Format(total * ipt);
 
     client->Chat(TextColor::GREEN, "%s has finished in %s", this->name, time.c_str());
 
-    sf::Packet packet;
-    packet << HEADER::SPEEDRUN_FINISH << this->ID << time.c_str();
+    packet << time.c_str();
+
     this->tcpSocket.send(packet);
 }
 
@@ -372,7 +383,8 @@ void NetworkManager::Treat(sf::Packet& packet)
                 break;
             }
         }
-        if (toErase != -1) this->ghostPool.erase(this->ghostPool.begin() + toErase);
+        if (toErase != -1)
+            this->ghostPool.erase(this->ghostPool.begin() + toErase);
         this->ghostPoolLock.unlock();
         break;
     }
@@ -383,21 +395,23 @@ void NetworkManager::Treat(sf::Packet& packet)
         auto ghost = this->GetGhostByID(ID);
         if (ghost) {
             std::string map;
-            sf::Uint32 ticks;
-            packet >> map >> ticks;
+            sf::Uint32 ticksIL, ticksTotal;
+            packet >> map >> ticksIL >> ticksTotal;
             ghost->currentMap = map;
 
             g_scheduledEvents.push([=]() {
-                if (ghost->isDestroyed) return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
+                if (ghost->isDestroyed)
+                    return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
 
                 this->UpdateGhostsSameMap();
                 if (ghost_show_advancement.GetBool()) {
-                    auto ipt = speedrun->GetIntervalPerTick();
-                    if (ticks != -1) {
-                        std::string time = SpeedrunTimer::Format(ticks * ipt);
-                        client->Chat(TextColor::GREEN, "%s is now on %s (%s)", ghost->name.c_str(), ghost->currentMap.c_str(), time.c_str());
-                    } else {
+                    if (ticksIL == -1) {
                         client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+                    } else {
+                        auto ipt = speedrun->GetIntervalPerTick();
+                        std::string time = SpeedrunTimer::Format(ticksIL * ipt);
+                        std::string timeTotal = SpeedrunTimer::Format(ticksTotal * ipt);
+                        client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", ghost->name.c_str(), ghost->currentMap.c_str(), time.c_str(), timeTotal.c_str());
                     }
                 }
 
@@ -474,7 +488,8 @@ void NetworkManager::Treat(sf::Packet& packet)
         if (ghost) {
             ghost->modelName = modelName;
             g_scheduledEvents.push([=]() {
-                if (ghost->isDestroyed) return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
+                if (ghost->isDestroyed)
+                    return; // FIXME: this probably works in practice, but it isn't entirely thread-safe
                 if (ghost->sameMap && engine->isRunning()) {
                     ghost->DeleteGhost();
                     ghost->Spawn();
@@ -528,8 +543,10 @@ void NetworkManager::UpdateGhostsSameMap()
     this->ghostPoolLock.lock();
     for (auto ghost : this->ghostPool) {
         ghost->sameMap = strcmp(ghost->currentMap.c_str(), "") && ghost->currentMap == engine->m_szLevelName;
-        if (mapIdx == -1) ghost->isAhead = false; // Fallback - unknown map
-        else ghost->isAhead = engine->GetMapIndex(ghost->currentMap) > mapIdx;
+        if (mapIdx == -1)
+            ghost->isAhead = false; // Fallback - unknown map
+        else
+            ghost->isAhead = engine->GetMapIndex(ghost->currentMap) > mapIdx;
     }
     this->ghostPoolLock.unlock();
 }
