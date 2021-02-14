@@ -253,10 +253,19 @@ void NetworkManager::SendPlayerData()
     }
 }
 
-void NetworkManager::NotifyMapChange(const sf::Uint32 ticks)
+void NetworkManager::NotifyMapChange()
 {
     sf::Packet packet;
-    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName << ticks;
+
+    if (this->splitTicks != -1) {
+        auto ipt = speedrun->GetIntervalPerTick();
+        std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
+        client->Chat(TextColor::GREEN, "%s is now on %s (%s)", this->name.c_str(), engine->m_szLevelName, time.c_str());
+    } else {
+        client->Chat(TextColor::GREEN, "%s is now on %s", this->name.c_str(), engine->m_szLevelName);
+    }
+
+    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName << this->splitTicks;
     this->tcpSocket.send(packet);
 }
 
@@ -384,7 +393,12 @@ void NetworkManager::Treat(sf::Packet& packet)
                 this->UpdateGhostsSameMap();
                 if (ghost_show_advancement.GetBool()) {
                     auto ipt = speedrun->GetIntervalPerTick();
-                    client->Chat(TextColor::GREEN, "%s is now on %s (%ss)", ghost->name.c_str(), ghost->currentMap.c_str(), SpeedrunTimer::Format(ticks * ipt));
+                    if (ticks != -1) {
+                        std::string time = SpeedrunTimer::Format(ticks * ipt);
+                        client->Chat(TextColor::GREEN, "%s is now on %s (%s)", ghost->name.c_str(), ghost->currentMap.c_str(), time.c_str());
+                    } else {
+                        client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+                    }
                 }
 
                 if (ghost->sameMap) {

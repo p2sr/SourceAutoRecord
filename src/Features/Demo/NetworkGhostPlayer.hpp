@@ -62,6 +62,8 @@ public:
     bool isCountdownReady;
     std::string modelName;
 
+    sf::Uint32 splitTicks = -1;
+
 public:
     NetworkManager();
 
@@ -73,7 +75,7 @@ public:
     void RunNetwork();
 
     void SendPlayerData();
-    void NotifyMapChange(const sf::Uint32 ticks);
+    void NotifyMapChange();
     void NotifySpeedrunFinished();
     void SendMessageToAll(std::string msg);
     void SendPing();

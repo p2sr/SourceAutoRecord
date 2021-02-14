@@ -145,7 +145,7 @@ void Session::Start()
 
     //Network Ghosts
     if (networkManager.isConnected) {
-        networkManager.NotifyMapChange(server->tickCount);
+        networkManager.NotifyMapChange();
         networkManager.UpdateGhostsSameMap();
         networkManager.SpawnAllGhosts();
         if (ghost_sync.GetBool()) {
@@ -249,6 +249,8 @@ void Session::Ended()
 
     demoGhostPlayer.DeleteAllGhosts();
     networkManager.DeleteAllGhosts();
+
+    if (networkManager.isConnected) networkManager.splitTicks = -1;
     
     if (!wait_persist_across_loads.GetBool()) {
         engine->hasWaited = true;

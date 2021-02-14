@@ -57,7 +57,7 @@ public:
     void Stop(bool addSegment = true, bool stopedByUser = false);
     void CheckRulesManually(const int engineTicks, TimerAction action);
     void Reset();
-    void Split(bool visited);
+    void Split();
 
     void IncrementPauseTime();
 
