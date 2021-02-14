@@ -253,10 +253,10 @@ void NetworkManager::SendPlayerData()
     }
 }
 
-void NetworkManager::NotifyMapChange()
+void NetworkManager::NotifyMapChange(const sf::Uint32 ticks)
 {
     sf::Packet packet;
-    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName;
+    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName << ticks;
     this->tcpSocket.send(packet);
 }
 
@@ -366,7 +366,8 @@ void NetworkManager::Treat(sf::Packet& packet)
         auto ghost = this->GetGhostByID(ID);
         if (ghost) {
             std::string map;
-            packet >> map;
+            sf::Uint32 ticks;
+            packet >> map >> ticks;
             ghost->currentMap = map;
 
             g_scheduledEvents.push([=]() {
@@ -374,7 +375,8 @@ void NetworkManager::Treat(sf::Packet& packet)
 
                 this->UpdateGhostsSameMap();
                 if (ghost_show_advancement.GetBool()) {
-                    client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+                    auto ipt = speedrun->GetIntervalPerTick();
+                    client->Chat(TextColor::GREEN, "%s is now on %s (%ss)", ghost->name.c_str(), ghost->currentMap.c_str(), SpeedrunTimer::Format(ticks * ipt));
                 }
 
                 if (ghost->sameMap) {

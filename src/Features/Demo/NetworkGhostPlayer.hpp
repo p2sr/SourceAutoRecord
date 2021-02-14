@@ -73,7 +73,7 @@ public:
     void RunNetwork();
 
     void SendPlayerData();
-    void NotifyMapChange();
+    void NotifyMapChange(const sf::Uint32 ticks);
     void NotifySpeedrunFinished();
     void SendMessageToAll(std::string msg);
     void SendPing();
