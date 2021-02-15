@@ -21,8 +21,6 @@ Variable sar_zypeh_show_triggers("sar_zypeh_show_triggers", "0", 0, 2, "How to d
 Variable sar_zach_show_chat("sar_zach_show_chat", "1", "Show trigger times in chat.\n");
 Variable sar_zach_header("sar_zach_header", "Name, Times", "Header of the csv file.\n", 0);
 
-//plugin_load sar; sar_shane_loads 1; sar_disable_progress_bar_update 2; sar_zach_show_triggers 1; sar_zach_header "Name,Door,Floor,Blue Portal,Office window"; exec zach
-
 //Stats
 
 ZachStats* zachStats;

@@ -39,5 +39,5 @@ public:
 
 extern Session* session;
 
-extern Variable sar_shane_loads;
-extern Variable sar_shane_norendering;
+extern Variable sar_loads_uncap;
+extern Variable sar_loads_norender;

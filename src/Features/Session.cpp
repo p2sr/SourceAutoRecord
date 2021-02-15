@@ -26,8 +26,8 @@
 
 #include "Utils/SDK.hpp"
 
-Variable sar_shane_loads("sar_shane_loads", "0", 0, 1, "Temporarily sets fps_max to 0 and mat_noredering to 1 during loads\n");
-Variable sar_shane_norendering("sar_shane_norendering", "0", 0, 1, "Temporatily set mat_noredering to 1 during loads\n");
+Variable sar_loads_uncap("sar_loads_uncap", "0", 0, 1, "Temporarily set fps_max to 0 during loads\n");
+Variable sar_loads_norender("sar_loads_norender", "0", 0, 1, "Temporatily set mat_noredering to 1 during loads\n");
 
 Session* session;
 
@@ -312,23 +312,23 @@ void Session::Changed(int state)
 
 void Session::DoFastLoads()
 {
-    if (sar_shane_loads.GetBool()) {
+    if (sar_loads_uncap.GetBool()) {
         this->oldFpsMax = fps_max.GetInt();
         fps_max.SetValue(0);
     }
 
-    if (sar_shane_norendering.GetBool()) {
+    if (sar_loads_norender.GetBool()) {
         mat_norendering.SetValue(1);
     }
 }
 
 void Session::ResetLoads()
 {
-    if (sar_shane_loads.GetBool()) {
+    if (sar_loads_uncap.GetBool()) {
         fps_max.SetValue(this->oldFpsMax);
     }
 
-    if (sar_shane_norendering.GetBool()) {
+    if (sar_loads_norender.GetBool()) {
         mat_norendering.SetValue(0);
     }
 }
