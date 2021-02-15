@@ -174,6 +174,7 @@ public:
     DECL_DETOUR_COMMAND(playvideo_end_level_transition);
     DECL_DETOUR_COMMAND(playvideo_exitcommand_nointerrupt);
     DECL_DETOUR_COMMAND(unpause);
+    DECL_DETOUR_COMMAND(load);
 
     DECL_DETOUR(ReadCustomData, int* callbackIndex, char** data);
 

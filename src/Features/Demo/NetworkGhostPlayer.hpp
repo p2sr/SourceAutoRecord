@@ -65,6 +65,8 @@ public:
     sf::Uint32 splitTicks = -1;
     sf::Uint32 splitTicksTotal = -1;
 
+    bool disableSyncForLoad = false;
+
 public:
     NetworkManager();
 
