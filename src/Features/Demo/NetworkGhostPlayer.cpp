@@ -673,6 +673,10 @@ CON_COMMAND(ghost_connect, "Connect to the server : <ip address> <port> :\n"
         return console->Print("Please change your name with \"ghost_name\" before connecting to the server.\n");
     }
 
+    if (networkManager.isConnected) {
+        return console->Print("You must disconnect from your current ghost server before connecting to another.\n");
+    }
+
     networkManager.Connect(args[1], std::atoi(args[2]));
 }
 
