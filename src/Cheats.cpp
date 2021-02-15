@@ -124,8 +124,8 @@ CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Set
         CMD("sar_disable_progress_bar_update 0");
         CMD("sar_prevent_mat_snapshot_recompute 0");
         CMD("sar_prevent_peti_materials_loading 0");
-        CMD("sar_shane_loads 0");
-        CMD("sar_shane_norendering 0");
+        CMD("sar_loads_uncap 0");
+        CMD("sar_loads_norender 0");
     } else if (!strcmp(preset, "sla")) {
         CMD("ui_loadingscreen_transition_time 0.0");
         CMD("ui_loadingscreen_fadein_time 0.0");
@@ -133,8 +133,8 @@ CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Set
         CMD("sar_disable_progress_bar_update 1");
         CMD("sar_prevent_mat_snapshot_recompute 1");
         CMD("sar_prevent_peti_materials_loading 1");
-        CMD("sar_shane_loads 0");
-        CMD("sar_shane_norendering 0");
+        CMD("sar_loads_uncap 0");
+        CMD("sar_loads_norender 0");
     } else if (!strcmp(preset, "normal")) {
         CMD("ui_loadingscreen_transition_time 0.0");
         CMD("ui_loadingscreen_fadein_time 0.0");
@@ -142,8 +142,8 @@ CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Set
         CMD("sar_disable_progress_bar_update 1");
         CMD("sar_prevent_mat_snapshot_recompute 1");
         CMD("sar_prevent_peti_materials_loading 1");
-        CMD("sar_shane_loads 1");
-        CMD("sar_shane_norendering 0");
+        CMD("sar_loads_uncap 1");
+        CMD("sar_loads_norender 0");
     } else if (!strcmp(preset, "full")) {
         CMD("ui_loadingscreen_transition_time 0.0");
         CMD("ui_loadingscreen_fadein_time 0.0");
@@ -151,13 +151,23 @@ CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Set
         CMD("sar_disable_progress_bar_update 2");
         CMD("sar_prevent_mat_snapshot_recompute 1");
         CMD("sar_prevent_peti_materials_loading 1");
-        CMD("sar_shane_loads 1");
-        CMD("sar_shane_norendering 1");
+        CMD("sar_loads_uncap 1");
+        CMD("sar_loads_norender 1");
     } else {
         console->Print("Unknown preset %s!\n", preset);
         console->Print(sar_fast_load_preset.ThisPtr()->m_pszHelpString);
     }
 #undef CMD
+}
+
+CON_COMMAND(sar_clear_lines, "Clears all active drawline overlays.\n")
+{
+    // So, hooking this would be really annoying, however Valve's code
+    // is dumb and bad and only allows 20 lines (after which it'll start
+    // overwriting old ones), so let's just draw 20 zero-length lines!
+    for (int i = 0; i < 20; ++i) {
+        engine->ExecuteCommand("drawline 0 0 0 0 0 0", true);
+    }
 }
 
 void Cheats::Init()

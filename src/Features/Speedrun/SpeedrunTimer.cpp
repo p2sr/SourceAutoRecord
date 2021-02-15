@@ -125,9 +125,7 @@ void SpeedrunTimer::PreUpdate(const int engineTicks, const char* engineMap)
             }
 
             console->DevMsg("Speedrun map change: %s\n", this->GetCurrentMap());
-            if (this->state == TimerState::Paused && !visited) {
-                this->Split(visited);
-            }
+            if (!visited) this->Split();
             this->InitRules();
         }
     }
@@ -157,7 +155,7 @@ void SpeedrunTimer::CheckRules(const int engineTicks)
 
     switch (action) {
     case TimerAction::Split:
-        this->Split(false);
+        this->Split();
         source->madeAction = true;
         break;
     case TimerAction::Start:
@@ -177,7 +175,7 @@ void SpeedrunTimer::CheckRulesManually(const int engineTicks, TimerAction action
 {
     switch (action) {
     case TimerAction::Split:
-        this->Split(false);
+        this->Split();
         break;
     case TimerAction::Start:
         this->Start(engineTicks);
@@ -208,11 +206,9 @@ void SpeedrunTimer::Stop(bool addSegment, bool stopedByUser)
         this->result.get()->EndSplit(this->total);
         this->pause = 0;
 
-#ifdef __WIN32
         if (networkManager.isConnected) {
             networkManager.NotifySpeedrunFinished();
         }
-#endif
     } else {
         console->Print("Ready for new speedun!\n");
         this->pubInterface.get()->SetAction(TimerAction::Reset);
@@ -228,20 +224,16 @@ void SpeedrunTimer::Reset()
     TimerCategory::ResetAll();
     this->InitRules();
 }
-void SpeedrunTimer::Split(bool visited)
+void SpeedrunTimer::Split()
 {
     if (this->IsActive()) {
         this->StatusReport("Speedrun split!\n");
         this->result.get()->Split(this->total, this->GetCurrentMap());
         this->pb.get()->UpdateSplit(this->GetCurrentMap());
-        if (!visited) {
-            this->pubInterface.get()->SetAction(TimerAction::Split);
-        }
-
-        if (visited) {
-            networkManager.NotifyMapChange(this->result->prevSplit->GetTotal(), this->GetTotal());
-        } else {
-            networkManager.NotifyMapChange(-1, - 1);
+        this->pubInterface.get()->SetAction(TimerAction::Split);
+        if (networkManager.isConnected) {
+            networkManager.splitTicks = this->result->prevSplit->GetTotal();
+            networkManager.splitTicksTotal = this->total;
         }
     }
 }
@@ -449,7 +441,7 @@ void SpeedrunTimer::ManualSplitWithTime(int ticks)
     int old_total = this->total;
     this->session = ticks;
     this->total = this->prevTotal + ticks;
-    this->Split(false);
+    this->Split();
     this->prevTotal = this->total;
     this->session = old_session;
     this->total = old_total + ticks;
@@ -561,7 +553,7 @@ CON_COMMAND(sar_speedrun_stop, "Stops speedrun timer manually.\n")
 }
 CON_COMMAND(sar_speedrun_split, "Splits speedrun timer manually.\n")
 {
-    speedrun->Split(false);
+    speedrun->Split();
 }
 CON_COMMAND(sar_speedrun_pause, "Pauses speedrun timer manually.\n")
 {

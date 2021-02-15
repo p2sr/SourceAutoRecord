@@ -62,6 +62,11 @@ public:
     bool isCountdownReady;
     std::string modelName;
 
+    sf::Uint32 splitTicks = -1;
+    sf::Uint32 splitTicksTotal = -1;
+
+    bool disableSyncForLoad = false;
+
 public:
     NetworkManager();
 
@@ -73,7 +78,7 @@ public:
     void RunNetwork();
 
     void SendPlayerData();
-    void NotifyMapChange(const sf::Uint32 ticksIL, const sf::Uint32 ticksTotal);
+    void NotifyMapChange();
     void NotifySpeedrunFinished(const bool CM = false);
     void SendMessageToAll(std::string msg);
     void SendPing();
@@ -103,7 +108,6 @@ extern NetworkManager networkManager;
 
 extern Variable ghost_TCP_only;
 extern Variable ghost_update_rate;
-extern Variable ghost_show_difference;
 extern Command ghost_connect;
 extern Command ghost_disconnect;
 extern Command ghost_message;

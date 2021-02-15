@@ -4,6 +4,7 @@
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -62,7 +63,6 @@ sf::Packet& operator<<(sf::Packet& packet, const HEADER& header)
 
 Variable ghost_TCP_only("ghost_TCP_only", "0", "Lathil's special command :).\n");
 Variable ghost_update_rate("ghost_update_rate", "50", 1, "Adjust the update rate. For people with lathil's internet.\n");
-Variable ghost_show_difference("ghost_show_difference", "0", "Display time difference between players after they load a map.\n");
 
 std::mutex mutex;
 
@@ -254,10 +254,20 @@ void NetworkManager::SendPlayerData()
     }
 }
 
-void NetworkManager::NotifyMapChange(const sf::Uint32 ticksIL, const sf::Uint32 ticksTotal)
+void NetworkManager::NotifyMapChange()
 {
     sf::Packet packet;
-    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName << ticksIL << ticksTotal;
+
+    if (this->splitTicks != -1) {
+        auto ipt = speedrun->GetIntervalPerTick();
+        std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
+        std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
+        client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", this->name.c_str(), engine->m_szLevelName, time.c_str(), totalTime.c_str());
+    } else {
+        client->Chat(TextColor::GREEN, "%s is now on %s", this->name.c_str(), engine->m_szLevelName);
+    }
+
+    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName << this->splitTicks << this->splitTicksTotal;
     this->tcpSocket.send(packet);
 }
 
@@ -266,16 +276,24 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM)
     sf::Packet packet;
     packet << HEADER::SPEEDRUN_FINISH << this->ID;
 
-    int total = 0;
+    float totalSecs = 0;
     auto ipt = speedrun->GetIntervalPerTick();
 
     if (CM) {
-        total = session->GetTick();
+        uintptr_t player = (uintptr_t)server->GetPlayer(1);
+        if (player) {
+            totalSecs = *(float *)(player + Offsets::m_StatsThisLevel + 12) - ipt;
+        }
     } else {
-        total = speedrun->GetTotal();
+        totalSecs = speedrun->GetTotal() * ipt;
     }
 
-    packet << SpeedrunTimer::Format(total * ipt).c_str();
+    std::string time = SpeedrunTimer::Format(totalSecs);
+
+    client->Chat(TextColor::GREEN, "%s has finished in %s", this->name.c_str(), time.c_str());
+
+    packet << time.c_str();
+
     this->tcpSocket.send(packet);
 }
 
@@ -339,7 +357,11 @@ void NetworkManager::Treat(sf::Packet& packet)
         this->ghostPoolLock.unlock();
 
         g_scheduledEvents.push([=]() {
-            client->Chat(TextColor::GREEN, "%s has connected in %s!", name.c_str(), current_map.c_str());
+            if (!strcmp("", current_map.c_str())) {
+                client->Chat(TextColor::GREEN, "%s has connected in the menu!", name.c_str());
+            } else {
+                client->Chat(TextColor::GREEN, "%s has connected in %s!", name.c_str(), current_map.c_str());
+            }
 
             this->UpdateGhostsSameMap();
             if (ghost->sameMap && engine->isRunning()) {
@@ -387,10 +409,12 @@ void NetworkManager::Treat(sf::Packet& packet)
                 this->UpdateGhostsSameMap();
                 if (ghost_show_advancement.GetBool()) {
                     if (ticksIL == -1) {
-                        client->Chat(TextColor::GREEN, "%s reloaded %s", ghost->name.c_str(), ghost->currentMap.c_str());
+                        client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
                     } else {
                         auto ipt = speedrun->GetIntervalPerTick();
-                        client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", ghost->name.c_str(), ghost->currentMap.c_str(), SpeedrunTimer::Format(ticksIL * ipt).c_str(), SpeedrunTimer::Format(ticksTotal * ipt).c_str());
+                        std::string time = SpeedrunTimer::Format(ticksIL * ipt);
+                        std::string timeTotal = SpeedrunTimer::Format(ticksTotal * ipt);
+                        client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", ghost->name.c_str(), ghost->currentMap.c_str(), time.c_str(), timeTotal.c_str());
                     }
                 }
 
@@ -646,6 +670,10 @@ CON_COMMAND(ghost_connect, "Connect to the server : <ip address> <port> :\n"
 
     if (networkManager.name == "") {
         return console->Print("Please change your name with \"ghost_name\" before connecting to the server.\n");
+    }
+
+    if (networkManager.isConnected) {
+        return console->Print("You must disconnect from your current ghost server before connecting to another.\n");
     }
 
     networkManager.Connect(args[1], std::atoi(args[2]));

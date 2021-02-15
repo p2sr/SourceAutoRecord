@@ -36,14 +36,7 @@ Variable sv_portal_players;
 Variable fps_max;
 Variable mat_norendering;
 
-DECL_CVAR_CALLBACK(sar_record_fix)
-{
-    //Fix weird bug where tick 1 doesn't work
-    if (sar_record_at.GetInt() == 1)
-        sar_record_at.SetValue(0);
-}
-
-Variable sar_record_at("sar_record_at", "-1", -1, "Start recording a demo at the tick specified. Will use sar_record_at_demo_name.\n", 0, &sar_record_fix_callback);
+Variable sar_record_at("sar_record_at", "-1", -1, "Start recording a demo at the tick specified. Will use sar_record_at_demo_name.\n", 0);
 Variable sar_record_at_demo_name("sar_record_at_demo_name", "chamber", "Name of the demo automatically recorded.\n", 0);
 Variable sar_record_at_increment("sar_record_at_increment", "0", "Increment automatically the demo name.\n");
 
@@ -68,6 +61,7 @@ REDECL(Engine::gameui_activate_callback);
 REDECL(Engine::unpause_callback);
 REDECL(Engine::playvideo_end_level_transition_callback);
 REDECL(Engine::playvideo_exitcommand_nointerrupt_callback);
+REDECL(Engine::load_callback);
 #ifdef _WIN32
 REDECL(Engine::connect_callback);
 REDECL(Engine::ParseSmoothingInfo_Skip);
@@ -489,6 +483,15 @@ DETOUR_COMMAND(Engine::playvideo_exitcommand_nointerrupt)
 
     Engine::playvideo_exitcommand_nointerrupt_callback(args);
 }
+DETOUR_COMMAND(Engine::load)
+{
+    // Loading a save should bypass ghost_sync if there's no map
+    // list for this game
+    if (Game::mapNames.empty() && networkManager.isConnected) {
+        networkManager.disableSyncForLoad = true;
+    }
+    Engine::load_callback(args);
+}
 
 DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
 {
@@ -697,6 +700,7 @@ bool Engine::Init()
     Command::Hook("exit", Engine::exit_callback_hook, Engine::exit_callback);
     Command::Hook("quit", Engine::quit_callback_hook, Engine::quit_callback);
     Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
+    Command::Hook("load", Engine::load_callback_hook, Engine::load_callback);
 
     if (sar.game->Is(SourceGame_Portal2Game)) {
         Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
@@ -752,6 +756,7 @@ void Engine::Shutdown()
     Command::Unhook("exit", Engine::exit_callback);
     Command::Unhook("quit", Engine::quit_callback);
     Command::Unhook("help", Engine::help_callback);
+    Command::Unhook("load", Engine::load_callback);
     Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
     Command::Unhook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback);
     Command::Unhook("playvideo_exitcommand_nointerrupt", Engine::playvideo_exitcommand_nointerrupt_callback);

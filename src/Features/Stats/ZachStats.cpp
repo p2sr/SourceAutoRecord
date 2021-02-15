@@ -19,8 +19,6 @@ Variable sar_mtrigger_draw("sar_mtrigger_draw", "0", 0, 2, "How to draw the trig
 Variable sar_mtrigger_show_chat("sar_mtrigger_show_chat", "1", "Show trigger times in chat.\n");
 Variable sar_mtrigger_header("sar_mtrigger_header", "Name, Times", "Header of the csv file.\n", 0);
 
-//plugin_load sar; sar_shane_loads 1; sar_disable_progress_bar_update 2; sar_zach_show_triggers 1; sar_zach_header "Name,Door,Floor,Blue Portal,Office window"; exec zach
-
 //Stats
 
 ZachStats* zachStats;

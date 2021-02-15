@@ -26,8 +26,8 @@
 
 #include "Utils/SDK.hpp"
 
-Variable sar_shane_loads("sar_shane_loads", "0", 0, 1, "Temporarily sets fps_max to 0 and mat_noredering to 1 during loads\n");
-Variable sar_shane_norendering("sar_shane_norendering", "0", 0, 1, "Temporatily set mat_noredering to 1 during loads\n");
+Variable sar_loads_uncap("sar_loads_uncap", "0", 0, 1, "Temporarily set fps_max to 0 during loads\n");
+Variable sar_loads_norender("sar_loads_norender", "0", 0, 1, "Temporatily set mat_noredering to 1 during loads\n");
 
 Session* session;
 
@@ -67,9 +67,7 @@ void Session::Started(bool menu)
             speedrun->Resume(engine->GetTick());
         }
 
-        if (sar_shane_loads.GetBool()) {
-            this->ResetLoads();
-        }
+        this->ResetLoads();
 
         this->isRunning = true;
     } else {
@@ -145,11 +143,16 @@ void Session::Start()
 
     //Network Ghosts
     if (networkManager.isConnected) {
+        networkManager.NotifyMapChange();
         networkManager.UpdateGhostsSameMap();
         networkManager.SpawnAllGhosts();
         if (ghost_sync.GetBool()) {
-            if (!networkManager.AreAllGhostsAheadOrSameMap() && this->previousMap != engine->m_szLevelName) { //Don't pause if just reloading save
-                engine->SendToCommandBuffer("pause", 20);
+            if (networkManager.disableSyncForLoad) {
+                networkManager.disableSyncForLoad = false;
+            } else {
+                if (!networkManager.AreAllGhostsAheadOrSameMap() && this->previousMap != engine->m_szLevelName) { //Don't pause if just reloading save
+                    engine->SendToCommandBuffer("pause", 20);
+                }
             }
         }
     }
@@ -171,7 +174,7 @@ void Session::Start()
     zachStats->ResetTriggers();
     zachStats->NewSession();
 
-    RunConditionalExecs();
+    RunLoadExecs();
 
     engine->hasRecorded = false;
     engine->hasPaused = false;
@@ -248,14 +251,15 @@ void Session::Ended()
 
     demoGhostPlayer.DeleteAllGhostModels();
     networkManager.DeleteAllGhosts();
+
+    if (networkManager.isConnected) networkManager.splitTicks = -1;
     
     if (!wait_persist_across_loads.GetBool()) {
         engine->hasWaited = true;
     }
 
     this->loadStart = NOW();
-    if (sar_shane_loads.GetBool() && !engine->demoplayer->IsPlaying()) {
-        this->oldFpsMax = fps_max.GetInt();
+    if (!engine->demoplayer->IsPlaying()) {
         this->DoFastLoads();
     }
 
@@ -279,6 +283,15 @@ void Session::Changed(int state)
 {
     console->DevMsg("state = %i\n", state);
     this->signonState = state;
+
+    // Ghosts are in saves, and just sorta stay there unless we kill
+    // them. We have to do this in prespawn - if we do it at session
+    // start, it kills ghosts that were just spawned and hence
+    // invalidates entity pointers and bad things happen
+    if (state == SIGNONSTATE_PRESPAWN && networkManager.isConnected) {
+        engine->ExecuteCommand("ent_fire _ghost_normal kill", true);
+    }
+
     // Demo recorder starts syncing from this tick
     if (state == SIGNONSTATE_FULL) {
         timescaleDetect->Spawn();
@@ -290,7 +303,7 @@ void Session::Changed(int state)
             auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
             console->DevMsg("Load took : %dms\n", time);
         }
-    } else if (state == SIGNONSTATE_PRESPAWN && sar_shane_loads.GetBool()) {
+    } else if (state == SIGNONSTATE_PRESPAWN) {
         this->ResetLoads();
     } else {
         this->Ended();
@@ -299,16 +312,25 @@ void Session::Changed(int state)
 
 void Session::DoFastLoads()
 {
-    fps_max.SetValue(0);
-    if(sar_shane_norendering.GetBool())
+    if (sar_loads_uncap.GetBool()) {
+        this->oldFpsMax = fps_max.GetInt();
+        fps_max.SetValue(0);
+    }
+
+    if (sar_loads_norender.GetBool()) {
         mat_norendering.SetValue(1);
+    }
 }
 
 void Session::ResetLoads()
 {
-    fps_max.SetValue(this->oldFpsMax);
-    if (sar_shane_norendering.GetBool())
+    if (sar_loads_uncap.GetBool()) {
+        fps_max.SetValue(this->oldFpsMax);
+    }
+
+    if (sar_loads_norender.GetBool()) {
         mat_norendering.SetValue(0);
+    }
 }
 
 // HUD
