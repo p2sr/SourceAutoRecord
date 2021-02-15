@@ -251,7 +251,7 @@ void Session::Ended()
     auto nSlot = GET_SLOT();
     stats->Get(nSlot)->statsCounter->RecordDatas(tick);
 
-    demoGhostPlayer.DeleteAllGhosts();
+    demoGhostPlayer.DeleteAllGhostModels();
     networkManager.DeleteAllGhosts();
 
     if (networkManager.isConnected) networkManager.splitTicks = -1;

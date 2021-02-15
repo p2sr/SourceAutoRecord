@@ -67,11 +67,15 @@ void DemoGhostPlayer::ResumeAllGhosts()
 
 void DemoGhostPlayer::DeleteAllGhosts()
 {
+    this->ghostPool.clear();
+    this->isPlaying = false;
+}
+
+void DemoGhostPlayer::DeleteAllGhostModels()
+{
     for (int i = 0; i < this->ghostPool.size(); ++i) {
         this->ghostPool[i].DeleteGhost();
     }
-    this->ghostPool.clear();
-    this->isPlaying = false;
 }
 
 void DemoGhostPlayer::DeleteGhostsByID(const unsigned int ID)
@@ -275,6 +279,7 @@ CON_COMMAND(ghost_delete_by_ID, "ghost_delete_by_ID <ID>. Delete the ghost selec
 
 CON_COMMAND(ghost_delete_all, "Delete all ghosts.\n")
 {
+    demoGhostPlayer.DeleteAllGhostModels();
     demoGhostPlayer.DeleteAllGhosts();
     console->Print("All ghosts have been deleted !\n");
 }
@@ -310,7 +315,7 @@ CON_COMMAND(ghost_offset, "ghost_offset <offset> <ID>. Delay the ghost start by 
 
     auto ghost = demoGhostPlayer.GetGhostByID(ID);
     if (ghost) {
-        ghost->offset = std::atoi(args[1]);
+        ghost->offset = -std::atoi(args[1]);
         console->Print("Final time of ghost %d : %s\n", ID, SpeedrunTimer::Format(demoGhostPlayer.GetGhostByID(ID)->GetTotalTime()).c_str());
     } else {
         return console->Print("No ghost with that ID\n");

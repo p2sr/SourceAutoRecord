@@ -27,7 +27,7 @@ public:
     bool isAhead;
 
 public:
-    DemoGhostEntity(sf::Uint32 ID, std::string name, DataGhost data, std::string currentMap);
+    DemoGhostEntity(unsigned int ID, std::string name, DataGhost data, std::string currentMap);
     void ChangeDemo(); //Change demo for FullGame ghosts
     //Add demo for full game ghost
     void AddLevelDatas(DemoDatas& datas);
@@ -40,6 +40,6 @@ public:
     void SetGhostOnFirstMap();
     //Make ghost ready for spawn
     void LevelReset();
-    int GetTotalTime();
+    float GetTotalTime();
     std::string GetCurrentMap();
 };

@@ -389,9 +389,9 @@ DETOUR(Server::GameFrame, bool simulating)
         }
     }
 
-    if (simulating) {
-        zachStats->UpdateTriggers();
-    }
+    
+    engine->NewTick(session->GetTick());
+
     
 #ifdef _WIN32
     Server::GameFrame(simulating);
