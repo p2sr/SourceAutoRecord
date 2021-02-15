@@ -306,17 +306,33 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 // }}}
 
-struct Exec {
-    Condition *cond;
-    char *cmd;
+std::vector<std::string> g_execs;
+
+CON_COMMAND(sar_on_load, "sar_on_load [command] [args]... - registers a command to run on level load. Will pass further args as args to the command; do not quote the command.\n")
+{
+    if (args.ArgC() < 2) {
+        return console->Print(sar_on_load.ThisPtr()->m_pszHelpString);
+    }
+
+    g_execs.push_back(std::string(args.m_pArgSBuffer + args.m_nArgv0Size));
+}
+
+void RunLoadExecs() {
+    for (auto cmd : g_execs) {
+        engine->ExecuteCommand(cmd.c_str(), true);
+    }
+}
+
+struct Seq {
+    std::queue<std::string> commands;
 };
 
-std::vector<Exec> g_execs;
+std::vector<Seq> seqs;
 
-CON_COMMAND(sar_exec_condition, "sar_exec_condition [condition] [command] - registers a command to run on level load in certain conditions.\n")
+CON_COMMAND(cond, "cond [condition] [command] - runs a command only if a given condition is met.\n")
 {
     if (args.ArgC() != 3) {
-        return console->Print(sar_exec_condition.ThisPtr()->m_pszHelpString);
+        return console->Print(cond.ThisPtr()->m_pszHelpString);
     }
 
     const char *cond_str = args[1];
@@ -328,25 +344,10 @@ CON_COMMAND(sar_exec_condition, "sar_exec_condition [condition] [command] - regi
         return;
     }
 
-    char *cmd = (char *)malloc(strlen(args[2]) + 1);
-    strcpy(cmd, args[2]);
-
-    g_execs.push_back({cond, cmd});
-}
-
-void RunConditionalExecs() {
-    for (auto e : g_execs) {
-        if (EvalCondition(e.cond)) {
-            engine->ExecuteCommand(e.cmd, true);
-        }
+    if (EvalCondition(cond)) {
+        engine->ExecuteCommand(args[2]);
     }
 }
-
-struct Seq {
-    std::queue<std::string> commands;
-};
-
-std::vector<Seq> seqs;
 
 CON_COMMAND(seq, "seq [command]... - runs a sequence of commands one tick after one another.\n")
 {

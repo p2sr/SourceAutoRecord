@@ -174,7 +174,7 @@ void Session::Start()
     zachStats->ResetTriggers();
     zachStats->NewSession();
 
-    RunConditionalExecs();
+    RunLoadExecs();
 
     engine->hasRecorded = false;
     engine->hasPaused = false;
