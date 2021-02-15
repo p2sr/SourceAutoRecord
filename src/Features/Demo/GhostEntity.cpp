@@ -126,8 +126,8 @@ void GhostEntity::Display()
 
     if (this->prop_entity != nullptr) {
         if (GhostEntity::ghost_type == 1) {
-            PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position);
-            PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z + ghost_height.GetInt() });
+            PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position + Vector{ 0, 0, ghost_height.GetInt() });
+            PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z });
         } else if (GhostEntity::ghost_type == 2) {
             PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position + Vector{8, 2, 7});
         }
