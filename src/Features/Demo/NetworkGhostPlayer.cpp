@@ -63,7 +63,6 @@ sf::Packet& operator<<(sf::Packet& packet, const HEADER& header)
 
 Variable ghost_TCP_only("ghost_TCP_only", "0", "Lathil's special command :).\n");
 Variable ghost_update_rate("ghost_update_rate", "50", 1, "Adjust the update rate. For people with lathil's internet.\n");
-Variable ghost_show_difference("ghost_show_difference", "0", "Display time difference between players after they load a map.\n");
 
 std::mutex mutex;
 

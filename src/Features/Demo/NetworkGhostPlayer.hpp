@@ -108,7 +108,6 @@ extern NetworkManager networkManager;
 
 extern Variable ghost_TCP_only;
 extern Variable ghost_update_rate;
-extern Variable ghost_show_difference;
 extern Command ghost_connect;
 extern Command ghost_disconnect;
 extern Command ghost_message;
