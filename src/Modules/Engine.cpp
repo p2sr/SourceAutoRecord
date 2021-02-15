@@ -5,8 +5,8 @@
 #include "Features/Cvars.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
-#include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Speedrun/Rules/Portal2Rules.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/ZachStats.hpp"
 
 #include "Client.hpp"
@@ -245,6 +245,57 @@ bool Engine::TraceFromCamera(float distMax, CGameTrace& tr)
     return this->Trace(camPos, angle, distMax, filter, tr);
 }
 
+void Engine::NewTick(const int tick)
+{
+    //sar_record
+
+    if (sar_record_at.GetFloat() != -1 && !engine->hasRecorded && sar_record_at.GetFloat() == tick) {
+        std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
+        engine->ExecuteCommand(cmd.c_str(), true);
+        engine->hasRecorded = true;
+    }
+
+    //sar_pause
+
+    if (sar_pause_at.GetInt() != -1 && !engine->demoplayer->IsPlaying()) {
+        if (!engine->hasPaused && sar_pause_at.GetInt() == tick) {
+            engine->ExecuteCommand("pause", true);
+            engine->hasPaused = true;
+            engine->isPausing = true;
+            engine->pauseTick = server->tickCount;
+        } else if (sar_pause_for.GetInt() > 0 && engine->isPausing && server->tickCount == sar_pause_for.GetInt() + engine->pauseTick) {
+            engine->ExecuteCommand("unpause", true);
+            engine->isPausing = false;
+        }
+    }
+
+    if (segmentedTools->waitTick == tick && !engine->hasWaited) {
+        if (!sv_cheats.GetBool()) {
+            console->Print("\"wait\" needs sv_cheats 1.\n");
+            engine->hasWaited = true;
+        } else {
+            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
+            engine->hasWaited = true;
+        }
+    }
+
+    networkManager.DispatchQueuedEvents();
+
+    if (networkManager.isConnected && engine->isRunning()) {
+        networkManager.UpdateGhostsPosition();
+
+        if (networkManager.isCountdownReady) {
+            networkManager.UpdateCountdown();
+        }
+    }
+
+    if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
+        demoGhostPlayer.UpdateGhostsPosition();
+    }
+
+    zachStats->UpdateTriggers();
+}
+
 float Engine::GetHostFrameTime()
 {
     return this->HostFrameTime(this->engineTool->ThisPtr());
@@ -306,66 +357,8 @@ DETOUR(Engine::Frame)
         speedrun->PostUpdate(engine->GetTick(), engine->m_szLevelName);
     }
 
-    //demoplayer
-    if (engine->demoplayer->demoQueueSize > 0 && !engine->demoplayer->IsPlaying()) {
-        DemoParser parser;
-        auto name = engine->demoplayer->demoQueue[engine->demoplayer->currentDemoID];
-        engine->ExecuteCommand(std::string("playdemo " + name).c_str());
-        if (++engine->demoplayer->currentDemoID >= engine->demoplayer->demoQueueSize) {
-            engine->demoplayer->ClearDemoQueue();
-        }
-    }
-
-    //sar_record
-
-    if (sar_record_at.GetFloat() != -1 && !engine->hasRecorded && sar_record_at.GetFloat() == session->GetTick()) {
-        std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
-        engine->ExecuteCommand(cmd.c_str(), true);
-        engine->hasRecorded = true;
-    }
-
-    //sar_pause
-
-    if (sar_pause_at.GetInt() != -1 && !engine->demoplayer->IsPlaying()) {
-        if (!engine->hasPaused && sar_pause_at.GetInt() == session->GetTick()) {
-            engine->ExecuteCommand("pause", true);
-            engine->hasPaused = true;
-            engine->isPausing = true;
-            engine->pauseTick = server->tickCount;
-        } else if (sar_pause_for.GetInt() > 0 && engine->isPausing && server->tickCount == sar_pause_for.GetInt() + engine->pauseTick) {
-            engine->ExecuteCommand("unpause", true);
-            engine->isPausing = false;
-        }
-    }
-
-    if (segmentedTools->waitTick == session->GetTick() && !engine->hasWaited) {
-        if (!sv_cheats.GetBool()) {
-            console->Print("\"wait\" needs sv_cheats 1.\n");
-            engine->hasWaited = true;
-        } else {
-            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
-            engine->hasWaited = true;
-        }
-    }
-
-    networkManager.DispatchQueuedEvents();
-
-    if (engine->lastTick != session->GetTick()) {
-        if (networkManager.isConnected && engine->isRunning()) {
-            networkManager.UpdateGhostsPosition();
-
-            if (networkManager.isCountdownReady) {
-                networkManager.UpdateCountdown();
-            }
-        }
-
-        if (demoGhostPlayer.IsPlaying() && (engine->isRunning() || engine->demoplayer->IsPlaying())) {
-            demoGhostPlayer.UpdateGhostsPosition();
-        }
-    }
-
     if ((engine->demoplayer->IsPlaying() || engine->IsOrange()) && engine->lastTick != session->GetTick()) {
-        zachStats->UpdateTriggers();
+        engine->NewTick(session->GetTick());
     }
 
     engine->lastTick = session->GetTick();

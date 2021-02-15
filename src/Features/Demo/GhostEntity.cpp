@@ -215,14 +215,14 @@ CON_COMMAND(ghost_type, "ghost_type <0/1/2>:\n"
         GhostEntity::ghost_type = type;
         switch (type) {
         case 0:
-            demoGhostPlayer.DeleteAllGhosts();
+            demoGhostPlayer.DeleteAllGhostModels();
             if (networkManager.isConnected) {
                 networkManager.DeleteAllGhosts();
             }
             break;
         case 1:
         case 2:
-            demoGhostPlayer.DeleteAllGhosts();
+            demoGhostPlayer.DeleteAllGhostModels();
             demoGhostPlayer.SpawnAllGhosts();
             if (networkManager.isConnected) {
                 networkManager.DeleteAllGhosts();

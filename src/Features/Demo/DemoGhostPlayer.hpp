@@ -33,6 +33,7 @@ public:
     void PauseAllGhosts();
     void ResumeAllGhosts();
     void DeleteAllGhosts();
+    void DeleteAllGhostModels();
     void DeleteGhostsByID(const unsigned int ID);
     void UpdateGhostsPosition();
     void UpdateGhostsSameMap();

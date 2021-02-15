@@ -5,6 +5,8 @@
 
 #include "Modules/Client.hpp"
 
+#include "Features/Session.hpp"
+
 #include <algorithm>
 
 DemoGhostEntity::DemoGhostEntity(unsigned int ID, std::string name, DataGhost data, std::string currentMap)
@@ -61,12 +63,22 @@ void DemoGhostEntity::NextDemo()
 
 void DemoGhostEntity::UpdateDemoGhost()
 {
-    if (++this->demoTick > this->nbDemoTicks && demoGhostPlayer.IsFullGame()) { // if played the whole demo
+    if (session->GetTick() % 2 == 0)
+        ++this->demoTick;
+
+    if (this->demoTick > this->nbDemoTicks && demoGhostPlayer.IsFullGame()) { // if played the whole demo
         this->NextDemo();
     } else if (this->demoTick > this->nbDemoTicks) { // If played the whole CM demo
         this->DeleteGhost();
     } else if (this->demoTick < this->nbDemoTicks && this->demoTick >= 0) {
-        this->data = this->currentDatas[this->demoTick];
+        if (session->GetTick() % 2 == 1) { // Smooth the ghost movement
+            this->oldPos = this->data;
+            this->data = this->currentDatas[this->demoTick+1];
+            Math::Lerp(this->oldPos.position, this->data.position, 0.5, this->data.position);
+        } else {
+            this->data = this->currentDatas[this->demoTick];
+        }
+
         if (this->sameMap) {
             if (this->prop_entity == nullptr) {
                 this->Spawn();
@@ -98,9 +110,9 @@ void DemoGhostEntity::LevelReset()
     }
 }
 
-int DemoGhostEntity::GetTotalTime()
+float DemoGhostEntity::GetTotalTime()
 {
-    return (this->totalTicks + this->offset) * speedrun->GetIntervalPerTick();
+    return (this->totalTicks + -this->offset) * speedrun->GetIntervalPerTick();
 }
 
 std::string DemoGhostEntity::GetCurrentMap()
