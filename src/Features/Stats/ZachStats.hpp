@@ -128,12 +128,12 @@ public:
     std::vector<Trigger*>& GetTriggers();
     Trigger* GetTriggerByID(unsigned int ID);
     void ResetTriggers();
-    bool ExportTriggers();
+    bool ExportTriggers(std::string filePath);
 
     static void Output(std::stringstream& output);
     std::stringstream& GetStream() { return this->output; }
     void ResetStream() { this->output.str(""); }
-    bool ExportCSV();
+    bool ExportCSV(std::string filename);
 
     void NewSession();
 
@@ -149,20 +149,18 @@ private:
 
 extern ZachStats* zachStats;
 
-extern Variable sar_zach_stats_file;
-extern Variable sar_zach_file;
-extern Variable sar_zach_name;
-extern Variable sar_zach_header;
-extern Variable sar_zach_show_chat;
+extern Variable sar_mtrigger_name;
+extern Variable sar_mtrigger_header;
+extern Variable sar_mtrigger_show_chat;
 
-extern Variable sar_zypeh_show_triggers;
+extern Variable sar_mtrigger_draw;
 
-extern Command sar_zach_export_triggers;
-extern Command sar_zach_export_stats;
-extern Command sar_zach_reset;
-extern Command sar_zach_trigger_add;
-extern Command sar_zach_trigger_delete;
-extern Command sar_zach_trigger_delete_all;
+extern Command sar_mtrigger_export_triggers;
+extern Command sar_mtrigger_export_stats;
+extern Command sar_mtrigger_reset;
+extern Command sar_mtrigger_add;
+extern Command sar_mtrigger_delete;
+extern Command sar_mtrigger_delete_all;
 
-extern Command sar_zypeh_trigger_place;
-extern Command sar_zypeh_trigger_rotate;
+extern Command sar_mtrigger_place;
+extern Command sar_mtrigger_rotate;

@@ -14,12 +14,10 @@
 #define PLAT_CALL(fn, ...) fn(nullptr, __VA_ARGS__)
 #endif
 
-Variable sar_zach_stats_file("sar_zach_stats_file", "zach.csv", "Name of the file to export stats to.\n", 0);
-Variable sar_zach_triggers_file("sar_zach_triggers_file", "zach.cfg", "Name of the file to export triggers to.\n", 0);
-Variable sar_zach_name("sar_zach_name", "FrenchSaves10ticks", "Name of the current player. Re-enables all triggers when changed.\n", 0);
-Variable sar_zypeh_show_triggers("sar_zypeh_show_triggers", "0", 0, 2, "How to draw the triggers in-game. 0: do not show. 1: show outline. 2: show full box (appears through walls).\n");
-Variable sar_zach_show_chat("sar_zach_show_chat", "1", "Show trigger times in chat.\n");
-Variable sar_zach_header("sar_zach_header", "Name, Times", "Header of the csv file.\n", 0);
+Variable sar_mtrigger_name("sar_mtrigger_name", "FrenchSaves10ticks", "Name of the current player. Re-enables all triggers when changed.\n", 0);
+Variable sar_mtrigger_draw("sar_mtrigger_draw", "0", 0, 2, "How to draw the triggers in-game. 0: do not show. 1: show outline. 2: show full box (appears through walls).\n");
+Variable sar_mtrigger_show_chat("sar_mtrigger_show_chat", "1", "Show trigger times in chat.\n");
+Variable sar_mtrigger_header("sar_mtrigger_header", "Name, Times", "Header of the csv file.\n", 0);
 
 //Stats
 
@@ -46,7 +44,7 @@ void ZachStats::UpdateTriggers()
         if (trigger->type == TriggerType::ZYPEH) {
             ZypehTrigger* zypehTrigger = static_cast<ZypehTrigger*>(trigger);
 
-            if (sar_zypeh_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 59 <= session->GetTick()) {
+            if (sar_mtrigger_draw.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 59 <= session->GetTick()) {
                 this->DrawTrigger(zypehTrigger);
             }
 
@@ -57,7 +55,7 @@ void ZachStats::UpdateTriggers()
         }
     }
 
-    if (sar_zypeh_show_triggers.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 59 <= session->GetTick()) {
+    if (sar_mtrigger_draw.GetBool() && sv_cheats.GetBool() && this->lastFrameDrawn + 59 <= session->GetTick()) {
         this->lastFrameDrawn = session->GetTick();
     }
 
@@ -125,7 +123,7 @@ void ZachStats::DrawTrigger(ZypehTrigger* trigger)
         trigger->origVerts[0] - trigger->origin,
         trigger->origVerts[1] - trigger->origin,
         { 0, trigger->angle, 0 },
-        255, 0, 0, sar_zypeh_show_triggers.GetInt() == 2 ? 100 : 0,
+        255, 0, 0, sar_mtrigger_draw.GetInt() == 2 ? 100 : 0,
         1);
 }
 
@@ -174,10 +172,8 @@ void ZachStats::ResetTriggers()
     this->lastFrameDrawn = 0;
 }
 
-bool ZachStats::ExportTriggers()
+bool ZachStats::ExportTriggers(std::string filePath)
 {
-    std::string filePath = sar_zach_triggers_file.GetString();
-
     if (filePath.substr(filePath.length() - 4, 4) != ".cfg") {
         filePath += ".cfg";
     }
@@ -188,7 +184,9 @@ bool ZachStats::ExportTriggers()
         return false;
     }
 
-    file << "// Explanation: sar_zach_trigger_add ID A.x A.y A.z B.x B.y B.z angle OR sar_zach_trigger_add entity_name input" << std::endl;
+    file << "// Explanation: sar_zach_trigger_add ID A.x A.y A.z B.x B.y B.z angle OR sar_zach_trigger_add entity_name input"
+         << "sar_zach_header " << sar_mtrigger_header.GetString()
+         << std::endl;
 
     for (auto trigger : this->GetTriggers()) {
         if (trigger->type == TriggerType::ZYPEH) {
@@ -197,10 +195,11 @@ bool ZachStats::ExportTriggers()
                  << " " << zypehTrigger->origVerts[0].x << " " << zypehTrigger->origVerts[0].y << " " << zypehTrigger->origVerts[0].z
                  << " " << zypehTrigger->origVerts[1].x << " " << zypehTrigger->origVerts[1].y << " " << zypehTrigger->origVerts[1].z
                  << " " << zypehTrigger->angle
+                 << ";"
                  << std::endl;
         } else if (trigger->type == TriggerType::ZYNTEX) {
             ZyntexTrigger* zyntexTrigger = static_cast<ZyntexTrigger*>(trigger);
-            file << "sar_zach_trigger_add " << zyntexTrigger->ID << " " << zyntexTrigger->entName << " " << zyntexTrigger->input
+            file << "sar_zach_trigger_add " << zyntexTrigger->ID << " " << zyntexTrigger->entName << " " << zyntexTrigger->input << ";"
                  << std::endl;
         }
     }
@@ -213,9 +212,9 @@ void ZachStats::Output(std::stringstream& output)
 {
     auto tick = session->GetTick();
     char out[128];
-    std::snprintf(out, 128, "%s -> %.3f (%.3f)", sar_zach_name.GetString(), tick / 60.f, zachStats->lastTriggerTick == -1 ? tick / 60.f : (tick - zachStats->lastTriggerTick) / 60.f);
+    std::snprintf(out, 128, "%s -> %.3f (%.3f)", sar_mtrigger_name.GetString(), tick / 60.f, zachStats->lastTriggerTick == -1 ? tick / 60.f : (tick - zachStats->lastTriggerTick) / 60.f);
 
-    if (sar_zach_show_chat.GetBool()) {
+    if (sar_mtrigger_show_chat.GetBool()) {
         client->Chat(TextColor::ORANGE, out);
     } else {
         std::strncat(out, "\n", 2);
@@ -229,10 +228,8 @@ void ZachStats::Output(std::stringstream& output)
     zachStats->lastTriggerTick = tick;
 }
 
-bool ZachStats::ExportCSV()
+bool ZachStats::ExportCSV(std::string filePath)
 {
-    std::string filePath = sar_zach_stats_file.GetString();
-
     if (filePath.substr(filePath.length() - 4, 4) != ".csv") {
         filePath += ".csv";
     }
@@ -248,7 +245,7 @@ bool ZachStats::ExportCSV()
     // Fine Microsoft we'll do your dumb thing
     file << MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD << std::endl;
 #endif
-    file << sar_zach_header.GetString() << std::endl;
+    file << sar_mtrigger_header.GetString() << std::endl;
     file << this->output.str() << std::endl;
 
     file.close();
@@ -261,7 +258,7 @@ void ZachStats::NewSession()
     stream.clear(); // Clear flags
     if (stream.tellp() != std::streampos(0))
         stream << "\n";
-    stream << sar_zach_name.GetString();
+    stream << sar_mtrigger_name.GetString();
 }
 
 bool ZachStats::CheckZypehTriggers(ZypehTrigger* trigger, Vector& pos)
@@ -332,18 +329,18 @@ void ZachStats::CheckZyntexTriggers(void* entity, const char* input)
     }
 }
 
-CON_COMMAND(sar_zach_trigger_add, "Usage 1 -> sar_zach_trigger_add <id> <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> [angle] : add a trigger with the specified ID, position, and optional angle.\n"
-                                  "Usage 2 -> sar_zach_trigger_add <id> <entity name> <input> : add a trigger with the specified ID that will trigger at a specific entity input.\n")
+CON_COMMAND(sar_mtrigger_add, "Usage 1 -> sar_mtrigger_add <id> <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> [angle] : add a trigger with the specified ID, position, and optional angle.\n"
+                                  "Usage 2 -> sar_mtrigger_add <id> <entity name> <input> : add a trigger with the specified ID that will trigger at a specific entity input.\n")
 {
     if (args.ArgC() != 4 && args.ArgC() != 8 && args.ArgC() != 9) {
-        return console->Print(sar_zach_trigger_add.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_mtrigger_add.ThisPtr()->m_pszHelpString);
     }
 
     char* end;
     int id = std::strtol(args[1], &end, 10);
     if (*end != 0 || end == args[1]) {
         // ID argument is not a number
-        return console->Print(sar_zach_trigger_add.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_mtrigger_add.ThisPtr()->m_pszHelpString);
     }
 
     if (args.ArgC() >= 8) {
@@ -364,16 +361,16 @@ CON_COMMAND(sar_zach_trigger_add, "Usage 1 -> sar_zach_trigger_add <id> <A.x> <A
     }
 }
 
-CON_COMMAND(sar_zypeh_trigger_place, "sar_zypeh_trigger_place <id> : place a trigger with the given ID at the position being aimed at.\n")
+CON_COMMAND(sar_mtrigger_place, "sar_mtrigger_place <id> : place a trigger with the given ID at the position being aimed at.\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print(sar_zypeh_trigger_place.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_mtrigger_place.ThisPtr()->m_pszHelpString);
     }
 
     if (!sv_cheats.GetBool()) {
         // Trigger placement adds an overlay (even if temporarily),
         // hence is a cheat
-        console->Print("sar_zypeh_trigger_place requires sv_cheats.\n");
+        console->Print("sar_mtrigger_place requires sv_cheats.\n");
         return;
     }
 
@@ -381,7 +378,7 @@ CON_COMMAND(sar_zypeh_trigger_place, "sar_zypeh_trigger_place <id> : place a tri
     int id = std::strtol(args[1], &end, 10);
     if (*end != 0 || end == args[1]) {
         // ID argument is not a number
-        return console->Print(sar_zypeh_trigger_place.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_mtrigger_place.ThisPtr()->m_pszHelpString);
     }
 
     CGameTrace tr;
@@ -390,9 +387,9 @@ CON_COMMAND(sar_zypeh_trigger_place, "sar_zypeh_trigger_place <id> : place a tri
         return console->Print("You aimed at the void.\n");
     }
 
-    if (!sar_zypeh_show_triggers.GetBool()) {
-        console->Print("sar_zypeh_show_triggers set to 1 !\n");
-        sar_zypeh_show_triggers.SetValue(1);
+    if (!sar_mtrigger_draw.GetBool()) {
+        console->Print("sar_mtrigger_draw set to 1 !\n");
+        sar_mtrigger_draw.SetValue(1);
     }
 
     if (!zachStats->isFirstPlaced) {
@@ -404,10 +401,10 @@ CON_COMMAND(sar_zypeh_trigger_place, "sar_zypeh_trigger_place <id> : place a tri
     }
 }
 
-CON_COMMAND(sar_zypeh_trigger_rotate, "sar_zypeh_trigger_rotate <id> <angle> : changes the rotation of a trigger to the given angle, in degrees.\n")
+CON_COMMAND(sar_mtrigger_rotate, "sar_mtrigger_rotate <id> <angle> : changes the rotation of a trigger to the given angle, in degrees.\n")
 {
     if (args.ArgC() != 3) {
-        return console->Print(sar_zypeh_trigger_rotate.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_mtrigger_rotate.ThisPtr()->m_pszHelpString);
     }
 
     char* end;
@@ -415,13 +412,13 @@ CON_COMMAND(sar_zypeh_trigger_rotate, "sar_zypeh_trigger_rotate <id> <angle> : c
     int id = std::strtol(args[1], &end, 10);
     if (*end != 0 || end == args[1]) {
         // ID argument is not a number
-        return console->Print(sar_zypeh_trigger_rotate.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_mtrigger_rotate.ThisPtr()->m_pszHelpString);
     }
 
     int angle = std::strtol(args[2], &end, 10);
     if (*end != 0 || end == args[2]) {
         // ID argument is not a number
-        return console->Print(sar_zypeh_trigger_rotate.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_mtrigger_rotate.ThisPtr()->m_pszHelpString);
     }
 
     auto trigger = zachStats->GetTriggerByID(id);
@@ -435,50 +432,58 @@ CON_COMMAND(sar_zypeh_trigger_rotate, "sar_zypeh_trigger_rotate <id> <angle> : c
     zypehTrigger->SetRotation(angle);
 }
 
-CON_COMMAND(sar_zach_trigger_delete, "sar_zach_trigger_delete <id> : deletes the trigger with the given ID.\n")
+CON_COMMAND(sar_mtrigger_delete, "sar_mtrigger_delete <id> : deletes the trigger with the given ID.\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print(sar_zach_trigger_delete.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_mtrigger_delete.ThisPtr()->m_pszHelpString);
     }
 
     char* end;
     int id = std::strtol(args[1], &end, 10);
     if (*end != 0 || end == args[1]) {
         // ID argument is not a number
-        return console->Print(sar_zach_trigger_delete.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_mtrigger_delete.ThisPtr()->m_pszHelpString);
     }
 
     zachStats->DeleteTrigger(id);
 }
 
-CON_COMMAND(sar_zach_trigger_delete_all, "sar_zach_trigger_delete_all : deletes every triggers.\n")
+CON_COMMAND(sar_mtrigger_delete_all, "sar_mtrigger_delete_all : deletes every triggers.\n")
 {
     if (args.ArgC() != 2) {
-        return console->Print(sar_zach_trigger_delete_all.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_mtrigger_delete_all.ThisPtr()->m_pszHelpString);
     }
 
     zachStats->DeleteAll();
 }
 
-CON_COMMAND(sar_zach_export_stats, "Export the current stats output the the csv file specified by sar_zach_stats_file.\n")
+CON_COMMAND(sar_mtrigger_export_stats, "sar_mtrigger_export_stats <filename> : Export the current stats to the specified .csv file.\n")
 {
-    if (zachStats->ExportCSV()) {
-        console->Print("Successfully exported to %s.\n", sar_zach_stats_file.GetString());
+    if (args.ArgC() != 2) {
+        return console->Print(sar_mtrigger_export_stats.ThisPtr()->m_pszHelpString);
+    }
+
+    if (zachStats->ExportCSV(args[1])) {
+        console->Print("Successfully exported to %s.\n", args[1]);
     } else {
         console->Print("Could not export stats.\n");
     }
 }
 
-CON_COMMAND(sar_zach_export_triggers, "Export the current triggers to the cfg file specified by sar_zach_triggers_file.\n")
+CON_COMMAND(sar_mtrigger_export_triggers, "sar_mtrigger_export_triggers <filename> : Export the current triggers to the specified .csv file.\n")
 {
-    if (zachStats->ExportTriggers()) {
-        console->Print("Successfully exported to %s.\n", sar_zach_triggers_file.GetString());
+    if (args.ArgC() != 2) {
+        return console->Print(sar_mtrigger_export_triggers.ThisPtr()->m_pszHelpString);
+    }
+
+    if (zachStats->ExportTriggers(args[1])) {
+        console->Print("Successfully exported to %s.\n", args[1]);
     } else {
         console->Print("Could not export triggers.\n");
     }
 }
 
-CON_COMMAND(sar_zach_reset, "Resets the state of the output and all triggers, ready for gathering stats.\n")
+CON_COMMAND(sar_mtrigger_reset, "Resets the state of the output and all triggers, ready for gathering stats.\n")
 {
     zachStats->ResetTriggers();
     zachStats->ResetStream();
