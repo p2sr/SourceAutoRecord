@@ -67,9 +67,7 @@ void Session::Started(bool menu)
             speedrun->Resume(engine->GetTick());
         }
 
-        if (sar_shane_loads.GetBool()) {
-            this->ResetLoads();
-        }
+        this->ResetLoads();
 
         this->isRunning = true;
     } else {
@@ -261,8 +259,7 @@ void Session::Ended()
     }
 
     this->loadStart = NOW();
-    if (sar_shane_loads.GetBool() && !engine->demoplayer->IsPlaying()) {
-        this->oldFpsMax = fps_max.GetInt();
+    if (!engine->demoplayer->IsPlaying()) {
         this->DoFastLoads();
     }
 
@@ -306,7 +303,7 @@ void Session::Changed(int state)
             auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
             console->DevMsg("Load took : %dms\n", time);
         }
-    } else if (state == SIGNONSTATE_PRESPAWN && sar_shane_loads.GetBool()) {
+    } else if (state == SIGNONSTATE_PRESPAWN) {
         this->ResetLoads();
     } else {
         this->Ended();
@@ -315,16 +312,25 @@ void Session::Changed(int state)
 
 void Session::DoFastLoads()
 {
-    fps_max.SetValue(0);
-    if(sar_shane_norendering.GetBool())
+    if (sar_shane_loads.GetBool()) {
+        this->oldFpsMax = fps_max.GetInt();
+        fps_max.SetValue(0);
+    }
+
+    if (sar_shane_norendering.GetBool()) {
         mat_norendering.SetValue(1);
+    }
 }
 
 void Session::ResetLoads()
 {
-    fps_max.SetValue(this->oldFpsMax);
-    if (sar_shane_norendering.GetBool())
+    if (sar_shane_loads.GetBool()) {
+        fps_max.SetValue(this->oldFpsMax);
+    }
+
+    if (sar_shane_norendering.GetBool()) {
         mat_norendering.SetValue(0);
+    }
 }
 
 // HUD
