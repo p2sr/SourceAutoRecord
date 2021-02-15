@@ -36,14 +36,7 @@ Variable sv_portal_players;
 Variable fps_max;
 Variable mat_norendering;
 
-DECL_CVAR_CALLBACK(sar_record_fix)
-{
-    //Fix weird bug where tick 1 doesn't work
-    if (sar_record_at.GetInt() == 1)
-        sar_record_at.SetValue(0);
-}
-
-Variable sar_record_at("sar_record_at", "-1", -1, "Start recording a demo at the tick specified. Will use sar_record_at_demo_name.\n", 0, &sar_record_fix_callback);
+Variable sar_record_at("sar_record_at", "-1", -1, "Start recording a demo at the tick specified. Will use sar_record_at_demo_name.\n", 0);
 Variable sar_record_at_demo_name("sar_record_at_demo_name", "chamber", "Name of the demo automatically recorded.\n", 0);
 Variable sar_record_at_increment("sar_record_at_increment", "0", "Increment automatically the demo name.\n");
 
