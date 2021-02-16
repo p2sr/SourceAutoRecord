@@ -450,7 +450,7 @@ CON_COMMAND(sar_mtrigger_delete, "sar_mtrigger_delete <id> : deletes the trigger
 
 CON_COMMAND(sar_mtrigger_delete_all, "sar_mtrigger_delete_all : deletes every triggers.\n")
 {
-    if (args.ArgC() != 2) {
+    if (args.ArgC() != 1) {
         return console->Print(sar_mtrigger_delete_all.ThisPtr()->m_pszHelpString);
     }
 
