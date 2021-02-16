@@ -221,6 +221,7 @@ static std::string getSARPath()
     DWORD module = SymGetModuleBase(GetCurrentProcess(), (DWORD)&getSARPath);
     char filename[MAX_PATH+1];
     GetModuleFileNameA((HMODULE)module, filename, MAX_PATH);
+    SymCleanup(GetCurrentProcess());
     return std::string(filename);
 #else
     Dl_info info;
