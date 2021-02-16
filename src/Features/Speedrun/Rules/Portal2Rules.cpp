@@ -27,13 +27,16 @@ bool players_taunt_triggered = false;
 bool course6End = false;
 bool course5End = false;
 
+static int g_lastViewEntity;
 SAR_RULE(view_change, "sp_a1_intro1", "player", "CBasePlayer", m_hViewEntity, SearchMode::Classes)
 {
     // Wait some ticks till camera_intro gets enabled
-    if (session->GetTick() > 13 && *m_hViewEntity == -1) {
+    if (session->GetTick() > 13 && *m_hViewEntity == -1 && g_lastViewEntity != -1) {
+        g_lastViewEntity = *m_hViewEntity;
         return TimerAction::Start;
     }
 
+    g_lastViewEntity = *m_hViewEntity;
     return TimerAction::DoNothing;
 }
 
@@ -49,15 +52,18 @@ SAR_RULE3(moon_shot, "sp_a4_finale4", "moon_portal_detector", SearchMode::Names)
     return TimerAction::DoNothing;
 }
 
+static bool g_playersTeleportWasDisabled = true;
 SAR_RULE3(players_teleport, "mp_coop_start", "teleport_start", SearchMode::Names)
 {
     // CTriggerTeleport aka trigger_teleport
-    auto m_bDisabled = reinterpret_cast<int*>((uintptr_t)entity + Offset_m_bDisabled);
+    int* m_bDisabled = reinterpret_cast<int*>((uintptr_t)entity + Offset_m_bDisabled);
 
-    if (!*m_bDisabled) {
+    if (g_playersTeleportWasDisabled && !*m_bDisabled) {
+        g_playersTeleportWasDisabled = *m_bDisabled;
         return TimerAction::Start;
     }
 
+    g_playersTeleportWasDisabled = *m_bDisabled;
     return TimerAction::DoNothing;
 }
 
