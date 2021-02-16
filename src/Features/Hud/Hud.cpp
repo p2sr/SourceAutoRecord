@@ -392,23 +392,31 @@ HUD_ELEMENT_MODE2(angles, "0", 0, 2, "Draws absolute view angles of the client.\
         ctx->DrawElement("ang: %.*f %.*f %.*f", p, ang.x, p, ang.y, p, ang.z);
     }
 }
-HUD_ELEMENT_MODE2(velocity, "0", 0, 3, "Draws velocity of the client.\n"
+HUD_ELEMENT_MODE2(velocity, "0", 0, 4, "Draws velocity of the client.\n"
                                        "0 = Default,\n"
-                                       "1 = X/Y/Z,\n"
-                                       "2 = X/Y,\n"
-                                       "3 = X : Y : Z.\n",
+                                       "1 = X, Y, Z\n"
+                                       "2 = X:Y\n"
+                                       "3 = X:Y, Z\n"
+                                       "4 = X:Y:Z\n",
     HudType_InGame | HudType_Paused | HudType_LoadingScreen)
 {
     auto player = client->GetPlayer(ctx->slot + 1);
     if (player) {
         int p = sar_hud_precision.GetInt();
         auto vel = client->GetLocalVelocity(player);
-        if (mode >= 3) {
-            ctx->DrawElement("vel: x : %.*f y : %.*f z : %.*f", p, vel.x, p, vel.y, p, vel.z);
-        } else if (mode == 2) {
-            ctx->DrawElement("vel: xy : %.*f z: %.*f", p, vel.Length2D(), p, vel.z);
-        } else {
+        switch (mode) {
+        case 1:
+            ctx->DrawElement("vel: %.*f %.*f %.*f", p, vel.x, p, vel.y, p, vel.z);
+            break;
+        case 2:
+            ctx->DrawElement("vel: %.*f", p, vel.Length2D());
+            break;
+        case 3:
+            ctx->DrawElement("vel: %.*f %.*f", p, vel.Length2D(), p, vel.z);
+            break;
+        case 4:
             ctx->DrawElement("vel: %.*f", p, vel.Length());
+            break;
         }
     } else {
         ctx->DrawElement("vel: -");
