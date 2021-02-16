@@ -184,14 +184,14 @@ bool ZachStats::ExportTriggers(std::string filePath)
         return false;
     }
 
-    file << "// Explanation: sar_zach_trigger_add ID A.x A.y A.z B.x B.y B.z angle OR sar_zach_trigger_add entity_name input"
-         << "sar_zach_header " << sar_mtrigger_header.GetString()
+    file << "// Explanation: sar_mtrigger_add ID A.x A.y A.z B.x B.y B.z angle OR sar_zach_trigger_add entity_name input"
+         << "sar_mtrigger_header " << sar_mtrigger_header.GetString()
          << std::endl;
 
     for (auto trigger : this->GetTriggers()) {
         if (trigger->type == TriggerType::ZYPEH) {
             ZypehTrigger* zypehTrigger = static_cast<ZypehTrigger*>(trigger);
-            file << "sar_zach_trigger_add " << zypehTrigger->ID
+            file << "sar_mtrigger_add " << zypehTrigger->ID
                  << " " << zypehTrigger->origVerts[0].x << " " << zypehTrigger->origVerts[0].y << " " << zypehTrigger->origVerts[0].z
                  << " " << zypehTrigger->origVerts[1].x << " " << zypehTrigger->origVerts[1].y << " " << zypehTrigger->origVerts[1].z
                  << " " << zypehTrigger->angle
@@ -199,7 +199,7 @@ bool ZachStats::ExportTriggers(std::string filePath)
                  << std::endl;
         } else if (trigger->type == TriggerType::ZYNTEX) {
             ZyntexTrigger* zyntexTrigger = static_cast<ZyntexTrigger*>(trigger);
-            file << "sar_zach_trigger_add " << zyntexTrigger->ID << " " << zyntexTrigger->entName << " " << zyntexTrigger->input << ";"
+            file << "sar_mtrigger_add " << zyntexTrigger->ID << " " << zyntexTrigger->entName << " " << zyntexTrigger->input << ";"
                  << std::endl;
         }
     }
@@ -425,7 +425,7 @@ CON_COMMAND(sar_mtrigger_rotate, "sar_mtrigger_rotate <id> <angle> : changes the
     if (trigger == nullptr) {
         return console->Print("No such trigger !\n");
     } else if (trigger->type != TriggerType::ZYPEH) {
-        return console->Print("Not a zypeh trigger !\n");
+        return console->Print("Not a zone trigger !\n");
     }
 
     ZypehTrigger* zypehTrigger = static_cast<ZypehTrigger*>(trigger);
