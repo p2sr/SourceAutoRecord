@@ -262,7 +262,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
         // TOK_AND / TOK_OR {{{
         case TOK_AND:
         case TOK_OR: {
-            while (op_stack.top() == TOK_NOT || op_stack.top() == TOK_AND) {
+            while (!op_stack.empty() && (op_stack.top() == TOK_NOT || op_stack.top() == TOK_AND)) {
                 POP_OP_TO_OUTPUT;
             }
             op_stack.push(t.type);
