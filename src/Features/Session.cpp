@@ -302,6 +302,8 @@ void Session::Changed(int state)
 
             auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
             console->DevMsg("Load took : %dms\n", time);
+        } else if (engine->IsOrange()) {
+            RunLoadExecs();
         }
     } else if (state == SIGNONSTATE_PRESPAWN) {
         this->ResetLoads();
