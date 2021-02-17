@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include "Features/Demo/GhostEntity.hpp"
 
 #include "Modules/Client.hpp"
@@ -71,8 +73,7 @@ void GhostEntity::Spawn()
 void GhostEntity::DeleteGhost()
 {
     if (this->prop_entity != nullptr) {
-        PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", "_ghost_destroy");
-        engine->ExecuteCommand("ent_fire _ghost_destroy kill", true);
+        server->KillEntity(this->prop_entity);
         this->prop_entity = nullptr;
     }
 }
@@ -228,6 +229,20 @@ CON_COMMAND(ghost_type, "ghost_type <0/1/2>:\n"
                 networkManager.SpawnAllGhosts();
             }
             break;
+        }
+    }
+}
+
+void GhostEntity::KillAllGhosts() {
+    for (size_t i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+        auto info = ((CEntInfo2*)server->m_EntPtrArray)[i];
+        if (!info.m_pEntity) {
+            continue;
+        }
+
+        auto name = server->GetEntityName(info.m_pEntity);
+        if (name && !strcmp(name, "_ghost_normal")) {
+            server->KillEntity(info.m_pEntity);
         }
     }
 }

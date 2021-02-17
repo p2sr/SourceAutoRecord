@@ -289,7 +289,7 @@ void Session::Changed(int state)
     // start, it kills ghosts that were just spawned and hence
     // invalidates entity pointers and bad things happen
     if (state == SIGNONSTATE_PRESPAWN && networkManager.isConnected) {
-        engine->ExecuteCommand("ent_fire _ghost_normal kill", true);
+        GhostEntity::KillAllGhosts();
     }
 
     // Demo recorder starts syncing from this tick

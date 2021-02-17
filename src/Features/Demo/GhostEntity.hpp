@@ -41,6 +41,8 @@ public:
 
     bool isDestroyed; // used by NetworkGhostPlayer for sync reasons
 
+    static void KillAllGhosts();
+
 public:
     GhostEntity(unsigned int& ID, std::string& name, DataGhost& data, std::string& current_map);
     ~GhostEntity();

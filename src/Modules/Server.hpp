@@ -22,7 +22,14 @@ public:
     using _UTIL_PlayerByIndex = void*(__cdecl*)(int index);
     using _GetAllServerClasses = ServerClass* (*)();
     using _IsRestoring = bool(*)();
+
+    // For some reason the variant_t is passed as a pointer on Linux?
+#ifdef _WIN32
     using _AcceptInput = bool(__rescall*)(void* thisptr, const char* inputName, void* activator, void* caller, variant_t value, int outputID);
+#else
+    using _AcceptInput = bool(__rescall*)(void* thisptr, const char* inputName, void* activator, void* caller, variant_t *value, int outputID);
+#endif
+
 #ifdef _WIN32
     using _CreateEntityByName = void*(__stdcall*)(const char *);
     using _DispatchSpawn = void(__stdcall*)(void*);
@@ -75,6 +82,7 @@ public:
     bool IsPlayer(void* entity);
     bool AllowsMovementChanges();
     int GetSplitScreenPlayerSlot(void* entity);
+    void KillEntity(void* entity);
 
 public:
     // CGameMovement::ProcessMovement

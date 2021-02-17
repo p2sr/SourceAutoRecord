@@ -95,6 +95,17 @@ int Server::GetSplitScreenPlayerSlot(void* entity)
 
     return 0;
 }
+void Server::KillEntity(void* entity)
+{
+    variant_t val = {0};
+    val.fieldType = FIELD_VOID;
+    void* player = this->GetPlayer(1);
+#ifdef _WIN32
+    server->AcceptInput(entity, "Kill", player, player, val, 0);
+#else
+    server->AcceptInput(entity, "Kill", player, player, &val, 0);
+#endif
+}
 
 // CGameMovement::CheckJumpButton
 DETOUR_T(bool, Server::CheckJumpButton)
