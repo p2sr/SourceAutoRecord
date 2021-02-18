@@ -49,6 +49,7 @@ public:
     void Chat(TextColor color, const char* fmt, ...);
     void QueueChat(TextColor color, const char* fmt, ...);
     void FlushChatQueue();
+    float GetCMTimer();
 
 public:
     // CHLClient::HudUpdate

@@ -119,6 +119,17 @@ void Client::FlushChatQueue()
     this->chatQueue.clear();
 }
 
+float Client::GetCMTimer()
+{
+    if (sv_bonus_challenge.GetBool()) {
+        uintptr_t player = (uintptr_t)client->GetPlayer(1);
+        if (player) {
+            return *(float*)(player + Offsets::m_StatsThisLevel + 12) - speedrun->GetIntervalPerTick();
+        }
+    }
+    return 0.0f;
+}
+
 // CHLClient::HudUpdate
 DETOUR(Client::HudUpdate, unsigned int a2)
 {
@@ -299,7 +310,7 @@ static void LeaderboardCallback(const CCommand& args)
     }
 
     if (!zachStats->GetTriggers().empty()) {
-        ZachStats::Output(zachStats->GetStream());
+        ZachStats::Output(zachStats->GetStream(), client->GetCMTimer());
     }
 
     originalLeaderboardCallback(args);
@@ -414,6 +425,7 @@ bool Client::Init()
 
     offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
     offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
+    offsetFinder->ClientSide("CPortal_Player", "m_StatsThisLevel", &Offsets::m_StatsThisLevel);
 
     cl_showpos = Variable("cl_showpos");
     cl_sidespeed = Variable("cl_sidespeed");

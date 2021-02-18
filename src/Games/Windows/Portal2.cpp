@@ -221,7 +221,6 @@ void Portal2::LoadOffsets()
     AcceptInput = 40; // CBasePlayer
     m_pSurfaceData = 3868; // CGameMovement::CheckJumpButton
     jumpFactor = 68; // CGameMovement::CheckJumpButton
-    m_StatsThisLevel = 5696; // CPortal_Player
     m_pShadowStand = 3160; // CBasePlayer
     m_pShadowCrouch = 3164; // CBasePlayer
     m_Local = 5060; // CBasePlayer
