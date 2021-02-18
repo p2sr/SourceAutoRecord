@@ -141,6 +141,10 @@ void Session::Start()
         }
     }
 
+    if (sar_speedrun_IL.GetBool() && sv_bonus_challenge.GetBool()) {
+        speedrun->Start((client->GetCMTimer() * 1 / speedrun->GetIntervalPerTick()));
+    }
+
     //Network Ghosts
     if (networkManager.isConnected) {
         networkManager.NotifyMapChange();

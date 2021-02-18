@@ -4,6 +4,8 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 
+#include "Features/Speedrun/SpeedrunTimer.hpp"
+
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
@@ -226,6 +228,9 @@ void ZachStats::Output(std::stringstream& output, const float time)
 
     zachStats->lastTriggerSplit = time;
 
+    if (sar_speedrun_IL.GetBool() && sv_bonus_challenge.GetBool()) {
+        speedrun->Split();
+    }
 }
 
 bool ZachStats::ExportCSV(std::string filePath)

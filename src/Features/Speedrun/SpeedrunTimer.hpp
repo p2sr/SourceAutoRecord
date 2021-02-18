@@ -38,6 +38,7 @@ private:
     TimerCategory* category;
     int offset;
     int pause;
+    int lastSplit;
 
 public:
     std::vector<std::string> visitedMaps;
@@ -121,3 +122,4 @@ extern Variable sar_speedrun_autostop;
 extern Variable sar_speedrun_standard;
 extern Variable sar_speedrun_time_pauses;
 extern Variable sar_speedrun_smartsplit;
+extern Variable sar_speedrun_IL;

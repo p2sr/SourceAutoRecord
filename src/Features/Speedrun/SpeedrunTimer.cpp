@@ -19,6 +19,8 @@
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
+#include "Modules/Client.hpp"
 
 #include "Command.hpp"
 #include "Game.hpp"
@@ -36,6 +38,8 @@ Variable sar_speedrun_time_pauses("sar_speedrun_time_pauses", "1",
     "Timer automatically adds non-simulated ticks when server pauses.\n");
 Variable sar_speedrun_smartsplit("sar_speedrun_smartsplit", "1",
     "Timer interface only splits once per level change.\n");
+Variable sar_speedrun_IL("sar_speedrun_IL", "0",
+    "Makes the speedrun timer to split in CM chambers using mtriggers.\n");
 
 SpeedrunTimer* speedrun;
 
@@ -52,6 +56,7 @@ SpeedrunTimer::SpeedrunTimer()
     , offset(0)
     , pause(0)
     , visitedMaps()
+    , lastSplit(0)
 {
     this->pubInterface = std::make_unique<TimerInterface>();
     this->result = std::make_unique<TimerResult>();
@@ -134,8 +139,16 @@ void SpeedrunTimer::PostUpdate(const int engineTicks, const char* engineMap)
 {
     if (this->state == TimerState::Running) {
         this->session = engineTicks - this->base;
-        this->total = this->prevTotal + this->session + this->pause;
+        if (sar_speedrun_IL.GetBool() && sv_bonus_challenge.GetBool()) {
+            this->total = client->GetCMTimer() / this->GetIntervalPerTick();
+        } else {
+            this->total = this->prevTotal + this->session + this->pause;
+        }
         this->pubInterface.get()->Update(this);
+
+        if (sar_speedrun_IL.GetBool() && this->pubInterface.get()->action == TimerAction::Split && this->total - this->lastSplit > 10) {
+            this->pubInterface.get()->SetAction(TimerAction::Resume);
+        }
     }
 }
 void SpeedrunTimer::CheckRules(const int engineTicks)
@@ -221,6 +234,7 @@ void SpeedrunTimer::Reset()
     this->prevTotal = 0;
     this->base = 0;
     this->pause = 0;
+    this->lastSplit = 0;
     TimerCategory::ResetAll();
     this->InitRules();
 }
