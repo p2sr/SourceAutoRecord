@@ -146,7 +146,7 @@ bool AddDemoChecksum(const char* filename)
 
         // CustomData packet data:
         WRITE_LE32(0x00),        // ID - see RecordData for an explanation of why we use 0
-        WRITE_LE32(0x0D),        // Size: 13 bytes
+        WRITE_LE32(0x11),        // Size: 17 bytes
         WRITE_LE32(0xFFFFFFFF),  // Cursor x
         WRITE_LE32(0xFFFFFFFF),  // Cursor y
         0xFF,                    // First byte of data: SAR message ID (0xFF = checksum)
@@ -198,7 +198,7 @@ std::pair<VerifyResult, uint32_t> VerifyDemoChecksum(const char* filename)
     }
 
     if (READ_LE32(buf, 6) != 0x00
-     || READ_LE32(buf, 10) != 0x0D
+     || (READ_LE32(buf, 10) != 0x11 && READ_LE32(buf, 10) != 0x0D) // workaround for bug in initial 1.12 release
      || READ_LE32(buf, 14) != 0xFFFFFFFF
      || READ_LE32(buf, 18) != 0xFFFFFFFF
      || buf[22] != 0xFF) {
