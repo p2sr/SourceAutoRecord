@@ -4,6 +4,8 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 
+#include "Features/Speedrun/SpeedrunTimer.hpp"
+
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
@@ -26,7 +28,7 @@ ZachStats* zachStats;
 ZachStats::ZachStats()
     : isFirstPlaced(false)
     , lastFrameDrawn(0)
-    , lastTriggerTick(-1)
+    , lastTriggerSplit(-1)
     , output("", std::ios_base::out)
 {
     this->hasLoaded = true;
@@ -49,7 +51,7 @@ void ZachStats::UpdateTriggers()
             }
 
             if (this->CheckZypehTriggers(zypehTrigger, pos)) {
-                ZachStats::Output(this->output);
+                ZachStats::Output(this->GetStream(), client->GetCMTimer());
                 zypehTrigger->triggered = true;
             }
         }
@@ -168,7 +170,7 @@ void ZachStats::ResetTriggers()
     for (auto trigger : this->GetTriggers()) {
         trigger->triggered = false;
     }
-    this->lastTriggerTick = -1;
+    this->lastTriggerSplit = -1;
     this->lastFrameDrawn = 0;
 }
 
@@ -208,11 +210,10 @@ bool ZachStats::ExportTriggers(std::string filePath)
     return true;
 }
 
-void ZachStats::Output(std::stringstream& output)
+void ZachStats::Output(std::stringstream& output, const float time)
 {
-    auto tick = session->GetTick();
     char out[128];
-    std::snprintf(out, 128, "%s -> %.3f (%.3f)", sar_mtrigger_name.GetString(), tick / 60.f, zachStats->lastTriggerTick == -1 ? tick / 60.f : (tick - zachStats->lastTriggerTick) / 60.f);
+    std::snprintf(out, 128, "%s -> %.3f (%.3f)", sar_mtrigger_name.GetString(), time, zachStats->lastTriggerSplit < 0 ? time : (time - zachStats->lastTriggerSplit));
 
     if (sar_mtrigger_show_chat.GetBool()) {
         client->Chat(TextColor::ORANGE, out);
@@ -223,9 +224,13 @@ void ZachStats::Output(std::stringstream& output)
 
     output.clear(); // Clear flags
     //Stop annoy me
-    output << CSV_SEPARATOR << std::fixed << std::setprecision(3) << tick / 60.f << " (" << (zachStats->lastTriggerTick == -1 ? tick / 60.f : (tick - zachStats->lastTriggerTick) / 60.f) << ")";
+    output << CSV_SEPARATOR << std::fixed << std::setprecision(3) << time << " (" << (zachStats->lastTriggerSplit < 0 ? time : (time - zachStats->lastTriggerSplit)) << ")";
 
-    zachStats->lastTriggerTick = tick;
+    zachStats->lastTriggerSplit = time;
+
+    if (sar_speedrun_IL.GetBool() && sv_bonus_challenge.GetBool()) {
+        speedrun->Split();
+    }
 }
 
 bool ZachStats::ExportCSV(std::string filePath)
@@ -321,7 +326,7 @@ void ZachStats::CheckZyntexTriggers(void* entity, const char* input)
             if (trigger->type == TriggerType::ZYNTEX) {
                 ZyntexTrigger* zyntexTrigger = static_cast<ZyntexTrigger*>(trigger);
                 if (zyntexTrigger->input == input && zyntexTrigger->entName == server->GetEntityName(entity)) {
-                    ZachStats::Output(this->GetStream());
+                    ZachStats::Output(this->GetStream(), client->GetCMTimer());
                     zyntexTrigger->triggered = true;
                 }
             }
@@ -330,7 +335,7 @@ void ZachStats::CheckZyntexTriggers(void* entity, const char* input)
 }
 
 CON_COMMAND(sar_mtrigger_add, "Usage 1 -> sar_mtrigger_add <id> <A.x> <A.y> <A.z> <B.x> <B.y> <B.z> [angle] : add a trigger with the specified ID, position, and optional angle.\n"
-                                  "Usage 2 -> sar_mtrigger_add <id> <entity name> <input> : add a trigger with the specified ID that will trigger at a specific entity input.\n")
+                              "Usage 2 -> sar_mtrigger_add <id> <entity name> <input> : add a trigger with the specified ID that will trigger at a specific entity input.\n")
 {
     if (args.ArgC() != 4 && args.ArgC() != 8 && args.ArgC() != 9) {
         return console->Print(sar_mtrigger_add.ThisPtr()->m_pszHelpString);

@@ -130,7 +130,7 @@ public:
     void ResetTriggers();
     bool ExportTriggers(std::string filePath);
 
-    static void Output(std::stringstream& output);
+    static void Output(std::stringstream& output, const float time);
     std::stringstream& GetStream() { return this->output; }
     void ResetStream() { this->output.str(""); }
     bool ExportCSV(std::string filename);
@@ -140,7 +140,7 @@ public:
     bool isFirstPlaced;
     Vector A;
     int lastFrameDrawn;
-    int lastTriggerTick;
+    float lastTriggerSplit;
 
 private:
 

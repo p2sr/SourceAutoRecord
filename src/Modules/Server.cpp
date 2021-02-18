@@ -400,8 +400,8 @@ DETOUR(Server::GameFrame, bool simulating)
         }
     }
 
-    
-    engine->NewTick(session->GetTick());
+    if (session->isRunning)
+        engine->NewTick(session->GetTick());
 
     
 #ifdef _WIN32
