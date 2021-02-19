@@ -122,17 +122,17 @@ void Portal2::LoadOffsets()
     IsGameUIVisible = 2; // IEngineGui
     Paint = 15; // CEngineVGui
     ProcessTick = 12; // CClientState
-    tickcount = 73; // CClientState::ProcessTick
-    interval_per_tick = 81; // CClientState::ProcessTick
-    HostState_OnClientConnected = 735; // CClientState::SetSignonState
+    tickcount = 74; // CClientState::ProcessTick
+    interval_per_tick = 82; // CClientState::ProcessTick
+    HostState_OnClientConnected = 1523; // CClientState::SetSignonState
     hoststate = 9; // HostState_OnClientConnected
     Disconnect = 37; //  CClientState
-    demoplayer = 93; // CClientState::Disconnect
-    demorecorder = 106; // CClientState::Disconnect
+    demoplayer = 92; // CClientState::Disconnect
+    demorecorder = 105; // CClientState::Disconnect
     GetCurrentMap = 26; // CEngineTool
     HostFrameTime = 40; //CEngineTool
     ClientTime = 48; //CEngineTool
-    m_szLevelName = 72; // CEngineTool::GetCurrentMap
+    m_szLevelName = 64; // CEngineTool::GetCurrentMap
     PrecacheModel = 61; // CEngineTool::PrecacheModel
     AddListener = 4; // CGameEventManager
     RemoveListener = 6; // CGameEventManager
@@ -237,7 +237,7 @@ void Portal2::LoadOffsets()
     C_m_vecAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
     C_m_angAbsRotation = 172; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
-    GetClientMode = 12; // CHLClient::HudProcessInput
+    GetClientMode = 11; // CHLClient::HudProcessInput
     g_pClientMode = 25; // GetClientMode
     CreateMove = 25; // ClientModeShared
     GetName = 11; // CHud
@@ -268,8 +268,8 @@ void Portal2::LoadOffsets()
     DrawSetTextColor = 24; // CMatSystemSurface
     GetFontTall = 72; // CMatSystemSurface
     PaintTraverseEx = 117; // CMatSystemSurface
-    StartDrawing = 193; // CMatSystemSurface::PaintTraverseEx
-    FinishDrawing = 590; // CMatSystemSurface::PaintTraverseEx
+    StartDrawing = 692; // CMatSystemSurface::PaintTraverseEx
+    FinishDrawing = 627; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 160; // CMatSystemSurface
     DrawTextLen = 163; // CMatSystemSurface
 
