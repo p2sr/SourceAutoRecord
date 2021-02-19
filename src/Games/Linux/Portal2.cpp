@@ -93,7 +93,7 @@ void Portal2::LoadOffsets()
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient
     SetViewAngles = 19; // CEngineClient
-    GetLocalClient = 85; // CEngineClient::SetViewAngles
+    GetLocalClient = 92; // CEngineClient::SetViewAngles
     viewangles = 19012; // CEngineClient::SetViewAngles
     GetMaxClients = 20; // CEngineClient
     GetGameDirectory = 35; // CEngineClient
@@ -106,7 +106,7 @@ void Portal2::LoadOffsets()
     GetCursorPosition = 45; //CInputSystem
     SetCursorPosition = 38; //CInputSystem
     GetRecordingTick = 1; // CDemoRecorder
-    net_time = 28; // CDemoRecorder::GetRecordingTick
+    net_time = 24; // CDemoRecorder::GetRecordingTick
     SetSignonState = 3; // CDemoRecorder
     StartRecording = 2; // CDemoRecorder
     StopRecording = 7; // CDemoRecorder
