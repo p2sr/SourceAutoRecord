@@ -5,6 +5,8 @@
 
 #include "Hud/Hud.hpp"
 
+#include "Features/Timer/PauseTimer.hpp"
+
 GroundFramesCounter* groundFramesCounter;
 
 GroundFramesCounter::GroundFramesCounter()
@@ -21,6 +23,8 @@ void GroundFramesCounter::HandleJump()
 
 void GroundFramesCounter::HandleMovementFrame(bool newGrounded)
 {
+    if (pauseTimer->IsActive()) return;
+
     if (newGrounded) {
         counter++;
     }
