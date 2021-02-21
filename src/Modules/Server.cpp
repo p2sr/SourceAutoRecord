@@ -463,6 +463,9 @@ DETOUR(Server::GameFrame, bool simulating)
 #endif
 }
 
+static int (*GlobalEntity_GetIndex)(const char *);
+static void (*GlobalEntity_SetFlags)(int, int);
+
 bool Server::Init()
 {
     this->g_GameMovement = Interface::Create(this->Name(), "GameMovement0");
@@ -526,6 +529,14 @@ bool Server::Init()
         }
     }
 
+#ifdef _WIN32
+    GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "55 8B EC 51 8B 45 08 50 8D 4D FC 51 B9 ? ? ? ? E8 4A E9 33 00 66 8B 55 FC B8 FF FF 00 00", 0);
+    GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "55 8B EC 80 3D ? ? ? ? 0 75 1F 8B 45 08 85 C0 78 18 3B 05 ? ? ? ? 7D 10 8B 4D 0C", 0);
+#else
+    GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "55 89 E5 53 8D 45 F6 83 EC 24 8B 55 08 C7 44 24 04 ? ? ? ? 89 04 24 89 54 24 08", 0);
+    GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "80 3D ? ? ? ? 00 55 89 E5 8B 45 08 75 1E 85 C0 78 1A 3B 05 ? ? ? ? 7D 12 8B 15", 0);
+#endif
+
 
     offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);
     offsetFinder->ServerSide("CBasePlayer", "m_iName", &Offsets::m_iName);
@@ -564,6 +575,12 @@ bool Server::Init()
     sv_gravity = Variable("sv_gravity");
 
     return this->hasLoaded = this->g_GameMovement && this->g_ServerGameDLL;
+}
+CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop progress.\n")
+{
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags2"), 0);
+    engine->ExecuteCommand("mp_mark_all_maps_incomplete", true);
+    engine->ExecuteCommand("mp_lock_all_taunts", true);
 }
 void Server::Shutdown()
 {
