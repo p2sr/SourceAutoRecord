@@ -578,7 +578,10 @@ bool Server::Init()
 }
 CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop progress.\n")
 {
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags0"), 0);
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags1"), 0);
     GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags2"), 0);
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags3"), 0);
     engine->ExecuteCommand("mp_mark_all_maps_incomplete", true);
     engine->ExecuteCommand("mp_lock_all_taunts", true);
 }
