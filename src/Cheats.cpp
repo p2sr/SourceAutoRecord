@@ -39,7 +39,6 @@ Variable sar_disable_steam_pause("sar_disable_steam_pause", "0", "Prevents pause
 Variable sar_disable_no_focus_sleep("sar_disable_no_focus_sleep", "0", "Does not yield the CPU when game is not focused.\n");
 Variable sar_disable_progress_bar_update("sar_disable_progress_bar_update", "0", 0, 2, "Disables excessive usage of progress bar.\n");
 Variable sar_prevent_mat_snapshot_recompute("sar_prevent_mat_snapshot_recompute", "0", "Shortens loading times by preventing state snapshot recomputation.\n");
-Variable sar_prevent_peti_materials_loading("sar_prevent_peti_materials_loading", "1", "Fixes memory leak by blocking PeTI from loading its materials outside of map editor.\n");
 Variable sar_challenge_autostop("sar_challenge_autostop", "0", "Automatically stops recording demos when the leaderboard opens after a CM run.\n");
 
 Variable sv_laser_cube_autoaim;
@@ -123,7 +122,6 @@ CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Set
         CMD("ui_loadingscreen_mintransition_time 0.5");
         CMD("sar_disable_progress_bar_update 0");
         CMD("sar_prevent_mat_snapshot_recompute 0");
-        CMD("sar_prevent_peti_materials_loading 0");
         CMD("sar_loads_uncap 0");
         CMD("sar_loads_norender 0");
     } else if (!strcmp(preset, "sla")) {
@@ -132,7 +130,6 @@ CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Set
         CMD("ui_loadingscreen_mintransition_time 0.0");
         CMD("sar_disable_progress_bar_update 1");
         CMD("sar_prevent_mat_snapshot_recompute 1");
-        CMD("sar_prevent_peti_materials_loading 1");
         CMD("sar_loads_uncap 0");
         CMD("sar_loads_norender 0");
     } else if (!strcmp(preset, "normal")) {
@@ -141,7 +138,6 @@ CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Set
         CMD("ui_loadingscreen_mintransition_time 0.0");
         CMD("sar_disable_progress_bar_update 1");
         CMD("sar_prevent_mat_snapshot_recompute 1");
-        CMD("sar_prevent_peti_materials_loading 1");
         CMD("sar_loads_uncap 1");
         CMD("sar_loads_norender 0");
     } else if (!strcmp(preset, "full")) {
@@ -150,7 +146,6 @@ CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Set
         CMD("ui_loadingscreen_mintransition_time 0.0");
         CMD("sar_disable_progress_bar_update 2");
         CMD("sar_prevent_mat_snapshot_recompute 1");
-        CMD("sar_prevent_peti_materials_loading 1");
         CMD("sar_loads_uncap 1");
         CMD("sar_loads_norender 1");
     } else {
@@ -193,7 +188,6 @@ void Cheats::Init()
     sar_disable_steam_pause.UniqueFor(SourceGame_Portal2Game);
     sar_disable_progress_bar_update.UniqueFor(SourceGame_Portal2Game);
     sar_prevent_mat_snapshot_recompute.UniqueFor(SourceGame_Portal2Game);
-    sar_prevent_peti_materials_loading.UniqueFor(SourceGame_Portal2Game);
     sar_debug_listener.UniqueFor(SourceGame_Portal2Game);
     sar_sr_hud.UniqueFor(s3);
     sar_sr_hud_x.UniqueFor(s3);

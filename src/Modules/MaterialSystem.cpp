@@ -24,6 +24,7 @@ DETOUR(MaterialSystem::UncacheUnusedMaterials, bool bRecomputeStateSnapshots)
 
 DETOUR(MaterialSystem::CreateMaterial, const char* pMaterialName, void* pVMTKeyValues)
 {
+/*
     std::string sMaterialName(pMaterialName);
     std::string sMapName(engine->m_szLevelName);
 
@@ -41,6 +42,10 @@ DETOUR(MaterialSystem::CreateMaterial, const char* pMaterialName, void* pVMTKeyV
     if (sar_prevent_peti_materials_loading.GetBool() && (isPetiMaterial || isWhiteMaterial) && !isPetiMap) {
         return 0;
     }
+*/
+
+    // rip krzyhau memory leak ultimate fix
+    // gone but not forgotten
 
     //console->Print("CreateMaterial: %s\n", pMaterialName);
 
