@@ -105,6 +105,9 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state)
         if (!AddDemoChecksum(lastName.c_str())) {
             // TODO: report failure?
         }
+
+        timescaleDetect->Spawn();
+        needToRecordInitialVals = true;
     }
 
     if (state == SIGNONSTATE_FULL && needToRecordInitialVals) {
