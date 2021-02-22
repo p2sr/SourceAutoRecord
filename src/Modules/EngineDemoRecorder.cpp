@@ -116,6 +116,7 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state)
         RecordInitialVal("fps_max");
         RecordInitialVal("sv_portal_placement_debug");
         RecordInitialVal("sv_use_trace_duration");
+        RecordInitialVal("sv_alternateticks");
     }
 
     return result;
