@@ -355,6 +355,16 @@ DETOUR(Engine::Frame)
         engine->NewTick(session->GetTick());
     }
 
+    //demoplayer
+    if (engine->demoplayer->demoQueueSize > 0 && !engine->demoplayer->IsPlaying()) {
+        DemoParser parser;
+        auto name = engine->demoplayer->demoQueue[engine->demoplayer->currentDemoID];
+        engine->ExecuteCommand(std::string("playdemo " + name).c_str());
+        if (++engine->demoplayer->currentDemoID >= engine->demoplayer->demoQueueSize) {
+            engine->demoplayer->ClearDemoQueue();
+        }
+    }
+
     engine->lastTick = session->GetTick();
 
     return Engine::Frame(thisptr);
