@@ -297,10 +297,32 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 
 // Not a normal detour! Only gets first 4 args and doesn't have to call
 // original function
-static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, void* activator, void* caller)
+static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, void* activator, void* caller, variant_t *parameter)
 {
     CheckCustomCategoryRules(thisptr, inputName);
     zachStats->CheckZyntexTriggers(thisptr, inputName);
+    if (engine->demorecorder->isRecordingDemo) {
+        const char *entName = server->GetEntityName(thisptr);
+        const char *className = server->GetEntityClassName(thisptr);
+        if (!entName) entName = "";
+        if (!className) className = "";
+
+        size_t entNameLen = strlen(entName);
+        size_t classNameLen = strlen(className);
+        size_t inputNameLen = strlen(inputName);
+
+        const char *paramStr = parameter->ToString();
+
+        size_t len = entNameLen + classNameLen + inputNameLen + strlen(paramStr) + 5;
+        char *data = (char *)malloc(len);
+        data[0] = 0x03;
+        strcpy(data + 1, entName);
+        strcpy(data + 2 + entNameLen, className);
+        strcpy(data + 3 + entNameLen + classNameLen, inputName);
+        strcpy(data + 4 + entNameLen + classNameLen + inputNameLen, paramStr);
+        engine->demorecorder->RecordData(data, len);
+        free(data);
+    }
     //console->DevMsg("%.4d INPUT %s TARGETNAME %s CLASSNAME %s\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr));
 }
 
@@ -326,20 +348,22 @@ static void InitAcceptInputTrampoline()
     static uint8_t trampolineCode[] = {
         0x55,             // 00: push ebp                 (we overwrote these 2 instructions)
         0x89, 0xE5,       // 01: mov ebp, esp
-        0xFF, 0x75, 0x10, // 03: push dword [ebp + 0x10]  (we want to take the first 4 args in our detour function)
-        0xFF, 0x75, 0x0C, // 06: push dword [ebp + 0x0C]
-        0xFF, 0x75, 0x08, // 09: push dword [ebp + 0x08]
-        0x51,             // 0C: push ecx                 (ecx=thisptr, because of thiscall convention)
-        0xE8, 0, 0, 0, 0, // 0D: call ??                  (to be filled with address of detour function)
-        0x59,             // 12: pop ecx                  (it may have been clobbered by the cdecl detour function)
-        0x83, 0xC4, 0x0C, // 13: add esp, 0x0C            (pop the other args to the detour function)
-        0xA1, 0, 0, 0, 0, // 16: mov eax, ??              (to be filled with the address from the other instruction we overwrote)
-        0xE9, 0, 0, 0, 0, // 1B: jmp ??                   (to be filled with the address of code to return to)
+        0x8D, 0x45, 0x14  // 03: lea eax, [ebp + 0x14]    (we take a pointer to the variant_t, for simplicity and consistency with Linux)
+        0x50,             // 06: push eax                 (we want to take the first 5 args in our detour function)
+        0xFF, 0x75, 0x10, // 07: push dword [ebp + 0x10]
+        0xFF, 0x75, 0x0C, // 0A: push dword [ebp + 0x0C]
+        0xFF, 0x75, 0x08, // 0D: push dword [ebp + 0x08]
+        0x51,             // 10: push ecx                 (ecx=thisptr, because of thiscall convention)
+        0xE8, 0, 0, 0, 0, // 11: call ??                  (to be filled with address of detour function)
+        0x59,             // 16: pop ecx                  (it may have been clobbered by the cdecl detour function)
+        0x83, 0xC4, 0x0C, // 17: add esp, 0x0C            (pop the other args to the detour function)
+        0xA1, 0, 0, 0, 0, // 1A: mov eax, ??              (to be filled with the address from the other instruction we overwrote)
+        0xE9, 0, 0, 0, 0, // 1F: jmp ??                   (to be filled with the address of code to return to)
     };
 
-    *(uint32_t*)(trampolineCode + 0x0E) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x0E + 4);
-    *(uint32_t*)(trampolineCode + 0x17) = *(uint32_t*)((uint32_t)server->AcceptInput + 4); // The address we need to steal is 4 bytes into the function
-    *(uint32_t*)(trampolineCode + 0x1C) = (uint32_t)server->AcceptInput + 8 - ((uint32_t)trampolineCode + 0x1C + 4);
+    *(uint32_t*)(trampolineCode + 0x12) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x12 + 4);
+    *(uint32_t*)(trampolineCode + 0x1B) = *(uint32_t*)((uint32_t)server->AcceptInput + 4); // The address we need to steal is 4 bytes into the function
+    *(uint32_t*)(trampolineCode + 0x20) = (uint32_t)server->AcceptInput + 8 - ((uint32_t)trampolineCode + 0x20 + 4);
 
     Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
 
@@ -359,17 +383,18 @@ static void InitAcceptInputTrampoline()
         0x89, 0xE5,       // 01: mov ebp, esp
         0x57,             // 03: push edi
         0x56,             // 04: push esi
-        0xFF, 0x75, 0x14, // 05: push dword [ebp + 0x14]  (we want to take the first 4 args in our detour function)
-        0xFF, 0x75, 0x10, // 08: push dword [ebp + 0x10]
-        0xFF, 0x75, 0x0C, // 0B: push dword [ebp + 0x0C]
-        0xFF, 0x75, 0x08, // 0E: push dword [ebp + 0x08]
-        0xE8, 0, 0, 0, 0, // 11: call ??                  (to be filled with address of detour function)
-        0x83, 0xC4, 0x10, // 16: add esp, 0x10            (pop the args to the detour function)
-        0xE9, 0, 0, 0, 0, // 19: jmp ??                   (to be filled with address of code to return to)
+        0xFF, 0x75, 0x18, // 05: push dword [ebp + 0x18]  (we want to take the first 5 args in our detour function)
+        0xFF, 0x75, 0x14, // 08: push dword [ebp + 0x14]
+        0xFF, 0x75, 0x10, // 0B: push dword [ebp + 0x10]
+        0xFF, 0x75, 0x0C, // 0E: push dword [ebp + 0x0C]
+        0xFF, 0x75, 0x08, // 11: push dword [ebp + 0x08]
+        0xE8, 0, 0, 0, 0, // 14: call ??                  (to be filled with address of detour function)
+        0x83, 0xC4, 0x14, // 19: add esp, 0x14            (pop the args to the detour function)
+        0xE9, 0, 0, 0, 0, // 1C: jmp ??                   (to be filled with address of code to return to)
     };
 
-    *(uint32_t*)(trampolineCode + 0x12) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x12 + 4);
-    *(uint32_t*)(trampolineCode + 0x1A) = (uint32_t)server->AcceptInput + 5 - ((uint32_t)trampolineCode + 0x1A + 4); // Return just after the code we overwrote (hence +5)
+    *(uint32_t*)(trampolineCode + 0x15) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x15 + 4);
+    *(uint32_t*)(trampolineCode + 0x1D) = (uint32_t)server->AcceptInput + 5 - ((uint32_t)trampolineCode + 0x1D + 4); // Return just after the code we overwrote (hence +5)
 
     Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
 

@@ -47,6 +47,18 @@ std::string EngineDemoPlayer::GetLevelName()
 
 void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
 {
+    if (data[0] == 0x03) { // Entity input data
+        char *targetname = data + 1;
+        size_t targetnameLen = targetname;
+        char *classname = data + 2 + targetnameLen;
+        size_t classnameLen = strlen(classname);
+        char *inputname = data + 3 + targetnameLen + classnameLen;
+        size_t inputnameLen = strlen(inputname);
+        char *parameter = data + 4 + targetnameLen + classnameLen + inputnameLen;
+        // TODO: send to mtrigger/custom category stuff
+        return;
+    }
+
 #ifdef SAR_MODERATOR_BUILD
     if (sar_demo_cheat_info.GetBool()) {
         if (data[0] == 0xFF) {

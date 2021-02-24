@@ -1,6 +1,7 @@
 #include "SDK.hpp"
 
 #include <cstring>
+#include <cstdlib>
 
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -52,4 +53,20 @@ inline edict_t* INDEXENT(int iEdictNum)
         return (pEdict->IsFree()) ? nullptr : pEdict;
     }
     return nullptr;
+}
+
+const char *variant_t::ToString() const
+{
+    switch (this->fieldType) {
+      case FIELD_STRING:
+          return this->iszVal;
+      case FIELD_INTEGER:
+          static char istr[32];
+          sprintf(istr, "%i", this->iVal);
+          return istr;
+      case FIELD_BOOLEAN:
+          return this->bVal ? "true" : "false";
+      default:
+          return "";
+    }
 }

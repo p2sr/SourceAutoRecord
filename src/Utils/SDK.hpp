@@ -1109,6 +1109,8 @@ struct variant_t
     static typedescription_t m_SaveVMatrix[];
     static typedescription_t m_SaveVMatrixWorldspace[];
     static typedescription_t m_SaveMatrix3x4Worldspace[];
+
+    const char *ToString() const;
 };
 
 #pragma region RayTracing
