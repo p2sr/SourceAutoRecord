@@ -348,7 +348,7 @@ static void InitAcceptInputTrampoline()
     static uint8_t trampolineCode[] = {
         0x55,             // 00: push ebp                 (we overwrote these 2 instructions)
         0x89, 0xE5,       // 01: mov ebp, esp
-        0x8D, 0x45, 0x14  // 03: lea eax, [ebp + 0x14]    (we take a pointer to the variant_t, for simplicity and consistency with Linux)
+        0x8D, 0x45, 0x14, // 03: lea eax, [ebp + 0x14]    (we take a pointer to the variant_t, for simplicity and consistency with Linux)
         0x50,             // 06: push eax                 (we want to take the first 5 args in our detour function)
         0xFF, 0x75, 0x10, // 07: push dword [ebp + 0x10]
         0xFF, 0x75, 0x0C, // 0A: push dword [ebp + 0x0C]

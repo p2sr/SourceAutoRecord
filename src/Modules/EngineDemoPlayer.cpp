@@ -49,7 +49,7 @@ void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
 {
     if (data[0] == 0x03) { // Entity input data
         char *targetname = data + 1;
-        size_t targetnameLen = targetname;
+        size_t targetnameLen = strlen(targetname);
         char *classname = data + 2 + targetnameLen;
         size_t classnameLen = strlen(classname);
         char *inputname = data + 3 + targetnameLen + classnameLen;
