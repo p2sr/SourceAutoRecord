@@ -176,7 +176,7 @@ void ZachStats::ResetTriggers()
 
 bool ZachStats::ExportTriggers(std::string filePath)
 {
-    if (filePath.substr(filePath.length() - 4, 4) != ".cfg") {
+    if (filePath.length() < 4 || filePath.substr(filePath.length() - 4, 4) != ".cfg") {
         filePath += ".cfg";
     }
 
@@ -235,7 +235,7 @@ void ZachStats::Output(std::stringstream& output, const float time)
 
 bool ZachStats::ExportCSV(std::string filePath)
 {
-    if (filePath.substr(filePath.length() - 4, 4) != ".csv") {
+    if (filePath.length() < 4 || filePath.substr(filePath.length() - 4, 4) != ".csv") {
         filePath += ".csv";
     }
 
