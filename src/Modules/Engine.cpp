@@ -372,7 +372,7 @@ DETOUR(Engine::PurgeUnusedModels)
 DETOUR(Engine::ReadCustomData, int* callbackIndex, char** data)
 {
     auto size = Engine::ReadCustomData(thisptr, callbackIndex, data);
-    if (*callbackIndex == 0 && size > 8) {
+    if (callbackIndex && data && *callbackIndex == 0 && size > 8) {
         engine->demoplayer->CustomDemoData(*data + 8, size - 8);
     }
     return size;
