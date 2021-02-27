@@ -280,7 +280,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM)
     auto ipt = speedrun->GetIntervalPerTick();
 
     if (CM) {
-        uintptr_t player = (uintptr_t)server->GetPlayer(1);
+        uintptr_t player = (uintptr_t)client->GetPlayer(1);
         if (player) {
             totalSecs = *(float *)(player + Offsets::m_StatsThisLevel + 12) - ipt;
         }
