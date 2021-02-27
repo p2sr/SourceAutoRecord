@@ -1,5 +1,8 @@
 #include "Session.hpp"
 
+#include <chrono>
+#include <thread>
+
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
@@ -28,6 +31,8 @@
 
 Variable sar_loads_uncap("sar_loads_uncap", "0", 0, 1, "Temporarily set fps_max to 0 during loads\n");
 Variable sar_loads_norender("sar_loads_norender", "0", 0, 1, "Temporatily set mat_noredering to 1 during loads\n");
+
+Variable sar_load_delay("sar_load_delay", "0", 0, "Delay for this number of milliseconds at the end of a load.\n");
 
 Session* session;
 
@@ -309,6 +314,7 @@ void Session::Changed(int state)
         } else if (engine->IsOrange()) {
             RunLoadExecs();
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(sar_load_delay.GetInt()));
     } else if (state == SIGNONSTATE_PRESPAWN) {
         this->ResetLoads();
     } else {
