@@ -72,7 +72,9 @@ void Session::Started(bool menu)
             speedrun->Resume(engine->GetTick());
         }
 
-        this->ResetLoads();
+        if (!engine->IsOrange()) {
+            this->ResetLoads();
+        }
 
         this->isRunning = true;
     } else {
@@ -183,7 +185,10 @@ void Session::Start()
     zachStats->ResetTriggers();
     zachStats->NewSession();
 
-    RunLoadExecs();
+    // we don't do this as blue because we run it earlier in this case
+    if (!engine->IsCoop() || engine->IsOrange()) {
+        RunLoadExecs();
+    }
 
     engine->hasRecorded = false;
     engine->hasPaused = false;
@@ -268,7 +273,7 @@ void Session::Ended()
     }
 
     this->loadStart = NOW();
-    if (!engine->demoplayer->IsPlaying()) {
+    if (!engine->demoplayer->IsPlaying() && !engine->IsOrange()) {
         this->DoFastLoads();
     }
 
@@ -305,18 +310,23 @@ void Session::Changed(int state)
     if (state == SIGNONSTATE_FULL) {
         timescaleDetect->Spawn();
         client->FlushChatQueue();
-        if (engine->GetMaxClients() <= 1) {
+        if (engine->GetMaxClients() <= 1 || engine->IsOrange()) {
             this->Started();
             this->loadEnd = NOW();
 
             auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
             console->DevMsg("Load took : %dms\n", time);
-        } else if (engine->IsOrange()) {
+        } else { // blue
             RunLoadExecs();
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(sar_load_delay.GetInt()));
+
+        if (sar_load_delay.GetInt()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(sar_load_delay.GetInt()));
+        }
     } else if (state == SIGNONSTATE_PRESPAWN) {
-        this->ResetLoads();
+        if (!engine->IsOrange()) {
+            this->ResetLoads();
+        }
     } else {
         this->Ended();
     }
