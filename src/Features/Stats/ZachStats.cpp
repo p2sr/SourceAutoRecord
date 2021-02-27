@@ -325,7 +325,9 @@ void ZachStats::CheckZyntexTriggers(void* entity, const char* input)
         if (!trigger->triggered) {
             if (trigger->type == TriggerType::ZYNTEX) {
                 ZyntexTrigger* zyntexTrigger = static_cast<ZyntexTrigger*>(trigger);
-                if (zyntexTrigger->input == input && zyntexTrigger->entName == server->GetEntityName(entity)) {
+                char* entName = server->GetEntityName(entity);
+                if (!entName) entName = ""; // Apparently comparing a string to a null pointer is UB for some reason
+                if (zyntexTrigger->input == input && zyntexTrigger->entName == entName) {
                     ZachStats::Output(this->GetStream(), client->GetCMTimer());
                     zyntexTrigger->triggered = true;
                 }
