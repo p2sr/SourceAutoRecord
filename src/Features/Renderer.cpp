@@ -8,6 +8,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cinttypes>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -54,17 +58,17 @@ static Variable sar_render_autostop("sar_render_autostop", "1", "Whether to auto
 
 static inline int GetScreenWidth()
 {
-    return Memory::VMT<int __rescall (*)(void *)>(*g_videomode, Offsets::GetModeWidth)(*g_videomode);
+    return Memory::VMT<int (__rescall *)(void *)>(*g_videomode, Offsets::GetModeWidth)(*g_videomode);
 }
 
 static inline int GetScreenHeight()
 {
-    return Memory::VMT<int __rescall (*)(void *)>(*g_videomode, Offsets::GetModeHeight)(*g_videomode);
+    return Memory::VMT<int (__rescall *)(void *)>(*g_videomode, Offsets::GetModeHeight)(*g_videomode);
 }
 
 static inline void ReadScreenPixels(int x, int y, int w, int h, void *buf, ImageFormat fmt)
 {
-    return Memory::VMT<void __rescall (*)(void *, int, int, int, int, void *, ImageFormat)>(*g_videomode, Offsets::ReadScreenPixels)(*g_videomode, x, y, w, h, buf, fmt);
+    return Memory::VMT<void (__rescall *)(void *, int, int, int, int, void *, ImageFormat)>(*g_videomode, Offsets::ReadScreenPixels)(*g_videomode, x, y, w, h, buf, fmt);
 }
 
 // }}}
@@ -79,10 +83,19 @@ struct Stream {
     int nextPts;
 };
 
+enum class WorkerMsg {
+    NONE,
+    VIDEO_FRAME_READY,
+    AUDIO_FRAME_READY,
+    STOP_RENDERING_ERROR,
+    STOP_RENDERING_REQUESTED,
+};
+
 // The global renderer state
 static struct {
-    bool isRendering = false;
+    std::atomic<bool> isRendering;
     int fps;
+    int channels;
     Stream videoStream;
     Stream audioStream;
     std::string filename;
@@ -92,15 +105,31 @@ static struct {
     // The audio stream's temporary frame needs nb_samples worth of
     // audio before we resample and submit, so we keep track of how far
     // in we are with this
+    int16_t *audioBuf[8]; // Temporary buffer - contains the planar audio info from the game
     size_t audioBufSz;
     size_t audioBufIdx;
 
-    // Frameblending! The buffers below aren't allocated if toBlend == 1.
+    // This buffer stores the image data
+    uint8_t *imageBuf; // Temporary buffer - contains the raw pixel data read from the screen
+
     int toBlend;
     int nextBlendIdx; // How many frames in this blend have we seen so far?
-    uint8_t *blendTmpBuf; // Temporary buffer - contains the raw pixel data read from the screen
-    uint16_t *blendSumBuf; // Blending buffer - contains the sum of the pixel values during blending (we only divide at the end of the blend to prevent rounding errors)
+    uint16_t *blendSumBuf; // Blending buffer - contains the sum of the pixel values during blending (we only divide at the end of the blend to prevent rounding errors). Not allocated if toBlend == 1.
+
+    // Synchronisation
+    std::thread worker;
+    std::mutex workerUpdateLock;
+    std::condition_variable workerUpdate;
+    std::atomic<WorkerMsg> workerMsg;
+    std::mutex imageBufLock;
+    std::mutex audioBufLock;
 } g_render;
+
+static inline void msgStopRender(bool error) {
+    std::lock_guard<std::mutex> lock(g_render.workerUpdateLock);
+    g_render.workerMsg.store(error ? WorkerMsg::STOP_RENDERING_ERROR : WorkerMsg::STOP_RENDERING_REQUESTED);
+    g_render.workerUpdate.notify_all();
+}
 
 // Utilities {{{
 
@@ -135,14 +164,14 @@ static AVCodecID audioCodecFromName(const char *name) {
 static _CommandCallback startmovie_origCbk;
 static _CommandCallback endmovie_origCbk;
 static void startmovie_cbk(const CCommand &args) {
-    if (g_render.isRendering) {
+    if (g_render.isRendering.load()) {
         console->Print("Cannot startmovie while a SAR render is active! Stop the render with sar_render_finish.\n");
         return;
     }
     startmovie_origCbk(args);
 }
 static void endmovie_cbk(const CCommand &args) {
-    if (g_render.isRendering) {
+    if (g_render.isRendering.load()) {
         console->Print("Cannot endmovie while a SAR render is active! Did you mean sar_render_finish?\n");
         return;
     }
@@ -269,7 +298,7 @@ static bool addStream(Stream *out, AVFormatContext *outputCtx, AVCodecID codecId
     }
 
     out->enc->bit_rate = bitrate;
-    out->stream->time_base = (AVRational){ 1, framerate };
+    out->stream->time_base = { 1, framerate };
 
     switch (out->codec->type) {
     case AVMEDIA_TYPE_AUDIO:
@@ -444,12 +473,409 @@ static bool openAudio(AVFormatContext *outputCtx, Stream *s, AVDictionary **opti
 
 // }}}
 
-// startRender, finishRender {{{
+// Worker thread {{{
+
+static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_t videoBitrate, int64_t audioBitrate, AVDictionary *options) {
+    if (avformat_alloc_output_context2(&g_render.outCtx, NULL, NULL, g_render.filename.c_str()) == AVERROR(EINVAL)) {
+        console->Print("Failed to deduce output format from file extension - using MP4\n");
+        avformat_alloc_output_context2(&g_render.outCtx, NULL, "mp4", g_render.filename.c_str());
+    }
+
+    if (!g_render.outCtx) {
+        console->Print("Failed to allocate output context\n");
+        return;
+    }
+
+    if (!addStream(&g_render.videoStream, g_render.outCtx, videoCodec, videoBitrate, g_render.fps, 0, g_render.width, g_render.height)) {
+        console->Print("Failed to create video stream\n");
+        avformat_free_context(g_render.outCtx);
+        return;
+    }
+
+    if (!addStream(&g_render.audioStream, g_render.outCtx, audioCodec, audioBitrate, 44100, 4410)) { // offset the start by 0.1s because idk
+        console->Print("Failed to create audio stream\n");
+        closeStream(&g_render.videoStream);
+        avformat_free_context(g_render.outCtx);
+        return;
+    }
+
+    if (!openVideo(g_render.outCtx, &g_render.videoStream, &options)) {
+        console->Print("Failed to open video stream\n");
+        closeStream(&g_render.audioStream);
+        closeStream(&g_render.videoStream);
+        avformat_free_context(g_render.outCtx);
+        return;
+    }
+
+    if (!openAudio(g_render.outCtx, &g_render.audioStream, &options)) {
+        console->Print("Failed to open audio stream\n");
+        closeStream(&g_render.audioStream);
+        closeStream(&g_render.videoStream);
+        avformat_free_context(g_render.outCtx);
+        return;
+    }
+
+    if (avio_open(&g_render.outCtx->pb, g_render.filename.c_str(), AVIO_FLAG_WRITE) < 0) {
+        console->Print("Failed to open output file\n");
+        closeStream(&g_render.audioStream);
+        closeStream(&g_render.videoStream);
+        avformat_free_context(g_render.outCtx);
+        return;
+    }
+
+    if (avformat_write_header(g_render.outCtx, &options) < 0) {
+        console->Print("Failed to write output file\n");
+        closeStream(&g_render.audioStream);
+        closeStream(&g_render.videoStream);
+        avio_closep(&g_render.outCtx->pb);
+        avformat_free_context(g_render.outCtx);
+        return;
+    }
+
+    g_render.audioBufIdx = 0;
+    g_render.audioBufSz = g_render.audioStream.tmpFrame->nb_samples;
+
+    g_render.channels = g_render.audioStream.enc->channels;
+
+    g_render.imageBuf = (uint8_t *)malloc(3 * g_render.width * g_render.height);
+    for (int i = 0; i < g_render.channels; ++i) {
+        g_render.audioBuf[i] = (int16_t *)malloc(g_render.audioBufSz * sizeof g_render.audioBuf[i][0]);
+    }
+
+    g_render.nextBlendIdx = 0;
+    if (g_render.toBlend > 1) {
+        g_render.blendSumBuf = (uint16_t *)calloc(3 * g_render.width * g_render.height, sizeof g_render.blendSumBuf[0]);
+    }
+
+    g_movieInfo->moviename[0] = 'a'; // Just something nonzero to make the game think there's a movie in progress
+    g_movieInfo->moviename[1] = 0;
+    g_movieInfo->movieframe = 0;
+    g_movieInfo->type = 0; // Should stop anything actually being output
+
+    g_render.isRendering.store(true);
+
+    console->Print("Started rendering to '%s'\n", g_render.filename.c_str());
+
+    console->Print(
+        "    video: %s (%dx%d @ %d fps, %" PRId64 " kb/s, %s)\n",
+        g_render.videoStream.codec->name,
+        g_render.width,
+        g_render.height,
+        g_render.fps,
+        g_render.videoStream.enc->bit_rate / 1000,
+        av_get_pix_fmt_name(g_render.videoStream.enc->pix_fmt)
+    );
+
+    console->Print(
+        "    audio: %s (%d Hz, %" PRId64 " kb/s, %s)\n",
+        g_render.audioStream.codec->name, g_render.audioStream.enc->sample_rate,
+        g_render.audioStream.enc->bit_rate / 1000,
+        av_get_sample_fmt_name(g_render.audioStream.enc->sample_fmt)
+    );
+}
+
+static void workerFinishRender(bool error) {
+    if (error) {
+        console->Print("A fatal error occurred; stopping render early\n");
+    } else {
+        console->Print("Stopping render...\n");
+    }
+
+    g_render.isRendering.store(false);
+
+    flushStream(&g_render.videoStream, true);
+    flushStream(&g_render.audioStream, true);
+
+    av_write_trailer(g_render.outCtx);
+
+    console->Print("Rendered %d frames to '%s'\n", g_render.videoStream.nextPts, g_render.filename.c_str());
+
+    g_render.imageBufLock.lock();
+    g_render.audioBufLock.lock();
+
+    closeStream(&g_render.videoStream);
+    closeStream(&g_render.audioStream);
+    avio_closep(&g_render.outCtx->pb);
+    avformat_free_context(g_render.outCtx);
+    free(g_render.imageBuf);
+    for (int i = 0; i < g_render.channels; ++i) {
+        free(g_render.audioBuf[i]);
+    }
+    if (g_render.toBlend > 1) {
+        free(g_render.blendSumBuf);
+    }
+
+    g_render.imageBufLock.unlock();
+    g_render.audioBufLock.unlock();
+
+    // Reset all the Source movieinfo struct to its default values
+    g_movieInfo->moviename[0] = 0;
+    g_movieInfo->movieframe = 0;
+    g_movieInfo->type = MovieInfo_t::FMOVIE_TGA | MovieInfo_t::FMOVIE_WAV;
+    g_movieInfo->jpeg_quality = 50;
+}
+
+// handleVideoFrame {{{
+
+static bool handleVideoFrame() {
+    g_render.imageBufLock.lock();
+    g_render.workerMsg.store(WorkerMsg::NONE); // It's important that we do this *after* locking the image buffer
+    size_t size = g_render.width * g_render.height * 3;
+    if (g_render.toBlend == 1) {
+        // We can just copy the data directly
+        memcpy(g_render.videoStream.tmpFrame->data[0], g_render.imageBuf, size);
+        g_render.imageBufLock.unlock();
+    } else {
+        for (size_t i = 0; i < size; ++i) {
+            g_render.blendSumBuf[i] += g_render.imageBuf[i];
+        }
+        g_render.imageBufLock.unlock();
+
+        if (++g_render.nextBlendIdx != g_render.toBlend) {
+            // We've added in this frame, but not done blending yet
+            return true;
+        }
+
+        int shift = g_render.toBlend; // FIXME TEST
+
+        for (size_t i = 0; i < size; ++i) {
+            g_render.videoStream.tmpFrame->data[0][i] = g_render.blendSumBuf[i] / shift;
+            g_render.blendSumBuf[i] = 0;
+        }
+
+        g_render.nextBlendIdx = 0;
+    }
+
+    // tmpFrame is now our final frame; convert to the output format and
+    // process it
+
+    sws_scale(g_render.videoStream.swsCtx, (const uint8_t *const *)g_render.videoStream.tmpFrame->data, g_render.videoStream.tmpFrame->linesize, 0, g_render.height, g_render.videoStream.frame->data, g_render.videoStream.frame->linesize);
+
+    g_render.videoStream.frame->pts = g_render.videoStream.nextPts;
+
+    if (avcodec_send_frame(g_render.videoStream.enc, g_render.videoStream.frame) < 0) {
+        console->Print("Failed to send video frame for encoding!\n");
+        return false;
+    }
+
+    if (!flushStream(&g_render.videoStream)) {
+        console->Print("Failed to flush video stream!\n");
+        return false;
+    }
+
+    ++g_render.videoStream.nextPts;
+
+    return true;
+}
+
+// }}}
+
+// handleAudioFrame {{{
+
+static bool handleAudioFrame() {
+    g_render.audioBufLock.lock();
+    g_render.workerMsg.store(WorkerMsg::NONE); // It's important that we do this *after* locking the audio buffer
+
+    Stream *s = &g_render.audioStream;
+    for (int i = 0; i < g_render.channels; ++i) {
+        memcpy(s->tmpFrame->data[i], g_render.audioBuf[i], g_render.audioBufSz * sizeof g_render.audioBuf[i][0]);
+    }
+    g_render.audioBufLock.unlock();
+
+
+    s->tmpFrame->pts = s->nextPts;
+    s->nextPts += s->frame->nb_samples;
+
+    if (av_frame_make_writable(s->frame) < 0) {
+        console->Print("Failed to make audio frame writable!\n");
+        return false;
+    }
+
+    if (swr_convert(s->swrCtx, s->frame->data, s->frame->nb_samples, (const uint8_t **)s->tmpFrame->data, s->tmpFrame->nb_samples) < 0) {
+        console->Print("Failed to resample audio frame!\n");
+        return false;
+    }
+
+    s->frame->pts = av_rescale_q(s->tmpFrame->pts, { 1, s->enc->sample_rate }, s->enc->time_base);
+
+    if (avcodec_send_frame(s->enc, s->frame) < 0) {
+        console->Print("Failed to send audio frame for encoding!\n");
+        return false;
+    }
+
+    if (!flushStream(s)) {
+        console->Print("Failed to flush audio stream!\n");
+        return false;
+    }
+
+    return true;
+}
+
+// }}}
+
+static void worker(AVCodecID videoCodec, AVCodecID audioCodec, int64_t videoBitrate, int64_t audioBitrate, AVDictionary *options) {
+    workerStartRender(videoCodec, audioCodec, videoBitrate, audioBitrate, options);
+    if (!g_render.isRendering.load()) return;
+    std::unique_lock<std::mutex> lock(g_render.workerUpdateLock);
+    while (true) {
+        g_render.workerUpdate.wait(lock);
+        switch (g_render.workerMsg.load()) {
+        case WorkerMsg::VIDEO_FRAME_READY:
+            if (!handleVideoFrame()) {
+                workerFinishRender(true);
+                return;
+            }
+            break;
+        case WorkerMsg::AUDIO_FRAME_READY:
+            if (!handleAudioFrame()) {
+                workerFinishRender(true);
+                return;
+            }
+            break;
+        case WorkerMsg::STOP_RENDERING_ERROR:
+            workerFinishRender(true);
+            return;
+        case WorkerMsg::STOP_RENDERING_REQUESTED:
+            workerFinishRender(false);
+            return;
+        case WorkerMsg::NONE:
+            break;
+        }
+    }
+}
+
+// }}}
+
+// Audio output {{{
+
+static inline short clip16(int x) {
+    if (x < -32768) return -32768; // Source uses -32767, but that's, like, not how two's complement works
+    if (x > 32767) return 32767;
+    return x;
+}
+
+// returns whether to run the og function
+static bool SND_RecordBuffer_Hook(void) {
+    if (!g_render.isRendering.load()) return true;
+    if (engine->ConsoleVisible()) return false;
+
+    // If the worker has received a message it hasn't yet handled,
+    // busy-wait; this is a really obscure race condition that should
+    // never happen
+    while (g_render.isRendering.load() && g_render.workerMsg.load() != WorkerMsg::NONE);
+
+    if (snd_surround_speakers.GetInt() != 2) {
+        console->Print("Speaker configuration changed!\n");
+        msgStopRender(true);
+        return false;
+    }
+
+    g_render.audioBufLock.lock();
+
+    for (int i = 0; i < *g_snd_linear_count; i += g_render.channels) {
+        for (int c = 0; c < g_render.channels; ++c) {
+            g_render.audioBuf[c][g_render.audioBufIdx] = clip16(((*g_snd_p)[i + c] * *g_snd_vol) >> 8);
+        }
+
+        ++g_render.audioBufIdx;
+        if (g_render.audioBufIdx == g_render.audioBufSz) {
+            g_render.audioBufLock.unlock();
+
+            g_render.workerUpdateLock.lock();
+            g_render.workerMsg.store(WorkerMsg::AUDIO_FRAME_READY);
+            g_render.workerUpdate.notify_all();
+            g_render.workerUpdateLock.unlock();
+
+            // Busy-wait until the worker locks the audio buffer; not
+            // ideal, but shouldn't take long
+            while (g_render.isRendering.load() && g_render.workerMsg.load() != WorkerMsg::NONE);
+
+            if (!g_render.isRendering.load()) {
+                // We shouldn't write to that buffer anymore, it's been
+                // invalidated
+                break;
+            }
+
+            g_render.audioBufLock.lock();
+            g_render.audioBufIdx = 0;
+        }
+    }
+
+    g_render.audioBufLock.unlock();
+
+    return false;
+}
+
+// }}}
+
+// Video output {{{
+
+void Renderer::Frame()
+{
+    // If performance is an issue, we might want to look into stopping
+    // RecordMovieFrame being run. It's not doing anything bad, but it
+    // *is* pulling the screen pixel data (and then immediately
+    // discarding it) every frame, which isn't great
+
+    if (!g_render.isRendering.load()) return;
+    if (engine->ConsoleVisible()) return;
+
+    // If the worker has received a message it hasn't yet handled,
+    // busy-wait; this is a really obscure race condition that should
+    // never happen
+    while (g_render.isRendering.load() && g_render.workerMsg.load() != WorkerMsg::NONE);
+
+    if (GetScreenWidth() != g_render.width) {
+        console->Print("Screen resolution has changed!\n");
+        msgStopRender(true);
+        return;
+    }
+
+    if (GetScreenHeight() != g_render.height) {
+        console->Print("Screen resolution has changed!\n");
+        msgStopRender(true);
+        return;
+    }
+
+    if (av_frame_make_writable(g_render.videoStream.frame) < 0) {
+        console->Print("Failed to make video frame writable!\n");
+        msgStopRender(true);
+        return;
+    }
+
+    g_render.imageBufLock.lock();
+
+    // Double check the buffer hasn't at some point between the start of
+    // the function and now been invalidated
+    if (!g_render.isRendering.load()) return;
+
+    ReadScreenPixels(0, 0, g_render.width, g_render.height, g_render.imageBuf, IMAGE_FORMAT_BGR888);
+
+    g_render.imageBufLock.unlock();
+
+    // Signal to the worker thread that there is image data for it to
+    // process
+    {
+        std::lock_guard<std::mutex> lock(g_render.workerUpdateLock);
+        g_render.workerMsg.store(WorkerMsg::VIDEO_FRAME_READY);
+        g_render.workerUpdate.notify_all();
+    }
+
+    // If this is the end tick, signal the worker thread to stop
+    // rendering
+    if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() >= Renderer::segmentEndTick) {
+        msgStopRender(false);
+    }
+}
+
+// }}}
+
+// startRender {{{
 
 static void startRender() {
     AVDictionary *options = NULL;
 
-    if (g_render.isRendering) {
+    if (g_render.isRendering.load()) {
         console->Print("Already rendering\n");
         return;
     }
@@ -529,297 +955,14 @@ static void startRender() {
     g_render.width = GetScreenWidth();
     g_render.height = GetScreenHeight();
 
-    // All data gotten; start actually doing things!
-
-    if (avformat_alloc_output_context2(&g_render.outCtx, NULL, NULL, g_render.filename.c_str()) == AVERROR(EINVAL)) {
-        console->Print("Failed to deduce output format from file extension - using MP4\n");
-        avformat_alloc_output_context2(&g_render.outCtx, NULL, "mp4", g_render.filename.c_str());
+    g_render.workerMsg.store(WorkerMsg::NONE);
+    if (g_render.worker.joinable()) {
+        g_render.worker.join();
     }
-
-    if (!g_render.outCtx) {
-        console->Print("Failed to allocate output context\n");
-        return;
-    }
-
-    if (!addStream(&g_render.videoStream, g_render.outCtx, videoCodec, videoBitrate * 1000, g_render.fps, 0, g_render.width, g_render.height)) {
-        console->Print("Failed to create video stream\n");
-        avformat_free_context(g_render.outCtx);
-        return;
-    }
-
-    if (!addStream(&g_render.audioStream, g_render.outCtx, audioCodec, audioBitrate * 1000, 44100, 4410)) { // offset the start by 0.1s because idk
-        console->Print("Failed to create audio stream\n");
-        closeStream(&g_render.videoStream);
-        avformat_free_context(g_render.outCtx);
-        return;
-    }
-
-    if (!openVideo(g_render.outCtx, &g_render.videoStream, &options)) {
-        console->Print("Failed to open video stream\n");
-        closeStream(&g_render.audioStream);
-        closeStream(&g_render.videoStream);
-        avformat_free_context(g_render.outCtx);
-        return;
-    }
-
-    if (!openAudio(g_render.outCtx, &g_render.audioStream, &options)) {
-        console->Print("Failed to open audio stream\n");
-        closeStream(&g_render.audioStream);
-        closeStream(&g_render.videoStream);
-        avformat_free_context(g_render.outCtx);
-        return;
-    }
-
-    if (avio_open(&g_render.outCtx->pb, g_render.filename.c_str(), AVIO_FLAG_WRITE) < 0) {
-        console->Print("Failed to open output file\n");
-        closeStream(&g_render.audioStream);
-        closeStream(&g_render.videoStream);
-        avformat_free_context(g_render.outCtx);
-        return;
-    }
-
-    if (avformat_write_header(g_render.outCtx, &options) < 0) {
-        console->Print("Failed to write output file\n");
-        closeStream(&g_render.audioStream);
-        closeStream(&g_render.videoStream);
-        avio_closep(&g_render.outCtx->pb);
-        avformat_free_context(g_render.outCtx);
-        return;
-    }
-
-    g_render.audioBufIdx = 0;
-    g_render.audioBufSz = g_render.audioStream.tmpFrame->nb_samples;
-
-    g_render.nextBlendIdx = 0;
-    if (g_render.toBlend > 1) {
-        g_render.blendTmpBuf = (uint8_t *)malloc(3 * g_render.width * g_render.height);
-        g_render.blendSumBuf = (uint16_t *)calloc(3 * g_render.width * g_render.height, sizeof g_render.blendSumBuf[0]);
-    }
-
-    g_movieInfo->moviename[0] = 'a'; // Just something nonzero to make the game think there's a movie in progress
-    g_movieInfo->moviename[1] = 0;
-    g_movieInfo->movieframe = 0;
-    g_movieInfo->type = 0; // Should stop anything actually being output
-
-    g_render.isRendering = true;
-
-    console->Print("Started rendering to '%s'\n", g_render.filename.c_str());
-
-    console->Print(
-        "    video: %s (%dx%d @ %d fps, %" PRId64 " kb/s, %s)\n",
-        g_render.videoStream.codec->name,
-        g_render.width,
-        g_render.height,
-        g_render.fps,
-        g_render.videoStream.enc->bit_rate / 1000,
-        av_get_pix_fmt_name(g_render.videoStream.enc->pix_fmt)
-    );
-
-    console->Print(
-        "    audio: %s (%d Hz, %" PRId64 " kb/s, %s)\n",
-        g_render.audioStream.codec->name, g_render.audioStream.enc->sample_rate,
-        g_render.audioStream.enc->bit_rate / 1000,
-        av_get_sample_fmt_name(g_render.audioStream.enc->sample_fmt)
-    );
-}
-
-static void finishRender(bool wasError = true) {
-    if (!g_render.isRendering) {
-        console->Print("Not rendering!\n");
-        return;
-    }
-
-    if (wasError) {
-        console->Print("A fatal error occurred; finishing render early\n");
-    }
-
-    flushStream(&g_render.videoStream, true);
-    flushStream(&g_render.audioStream, true);
-
-    av_write_trailer(g_render.outCtx);
-
-    closeStream(&g_render.videoStream);
-    closeStream(&g_render.audioStream);
-    avio_closep(&g_render.outCtx->pb);
-    avformat_free_context(g_render.outCtx);
-    if (g_render.toBlend > 1) {
-        free(g_render.blendTmpBuf);
-        free(g_render.blendSumBuf);
-    }
-
-    g_render.isRendering = false;
-    console->Print("Rendered %d frames to '%s'\n", g_render.videoStream.nextPts, g_render.filename.c_str());
-
-    // Reset all the Source movieinfo struct to its default values
-    g_movieInfo->moviename[0] = 0;
-    g_movieInfo->movieframe = 0;
-    g_movieInfo->type = MovieInfo_t::FMOVIE_TGA | MovieInfo_t::FMOVIE_WAV;
-    g_movieInfo->jpeg_quality = 50;
+    g_render.worker = std::thread(worker, videoCodec, audioCodec, videoBitrate * 1000, audioBitrate * 1000, options);
 }
 
 // }}}
-
-
-// Audio output {{{
-
-static short clip16(int x) {
-    if (x < -32768) return -32768; // Source uses -32767, but that's, like, not how two's complement works
-    if (x > 32767) return 32767;
-    return x;
-}
-
-static bool flushAudioBuf(void) {
-    Stream *s = &g_render.audioStream;
-
-    s->tmpFrame->pts = s->nextPts;
-    s->nextPts += s->frame->nb_samples;
-
-    if (av_frame_make_writable(s->frame) < 0) {
-        console->Print("Failed to make audio frame writable!\n");
-        finishRender();
-        return false;
-    }
-
-    if (swr_convert(s->swrCtx, s->frame->data, s->frame->nb_samples, (const uint8_t **)s->tmpFrame->data, s->tmpFrame->nb_samples) < 0) {
-        console->Print("Failed to resample audio frame!\n");
-        finishRender();
-        return false;
-    }
-
-    s->frame->pts = av_rescale_q(s->tmpFrame->pts, (AVRational){ 1, s->enc->sample_rate }, s->enc->time_base);
-
-    if (avcodec_send_frame(s->enc, s->frame) < 0) {
-        console->Print("Failed to send audio frame for encoding!\n");
-        finishRender();
-        return false;
-    }
-
-    if (!flushStream(s)) {
-        console->Print("Failed to flush audio stream!\n");
-        finishRender();
-        return false;
-    }
-
-    return true;
-}
-
-// returns whether to run the og function
-static bool SND_RecordBuffer_Hook(void) {
-    if (!g_render.isRendering) {
-        return true;
-    }
-
-    if (engine->ConsoleVisible()) {
-        return false;
-    }
-
-    int16_t **buf = (int16_t **)g_render.audioStream.tmpFrame->data;
-
-    if (snd_surround_speakers.GetInt() != 2) {
-        console->Print("Speaker configuration changed!\n");
-        finishRender();
-        return false;
-    }
-
-    int chans = g_render.audioStream.enc->channels;
-
-    for (int i = 0; i < *g_snd_linear_count; i += chans) {
-        for (int c = 0; c < chans; ++c) {
-            buf[c][g_render.audioBufIdx] = clip16(((*g_snd_p)[i + c] * *g_snd_vol) >> 8);
-        }
-
-        ++g_render.audioBufIdx;
-        if (g_render.audioBufIdx == g_render.audioBufSz) {
-            if (!flushAudioBuf()) {
-                return false;
-            }
-            g_render.audioBufIdx = 0;
-        }
-    }
-
-    return false;
-}
-
-// }}}
-
-// Video output {{{
-
-void Renderer::Frame()
-{
-    // If performance is an issue, we might want to look into stopping
-    // RecordMovieFrame being run. It's not doing anything bad, but it
-    // *is* pulling the screen pixel data (and then immediately
-    // discarding it) every frame, which isn't great
-
-    if (!g_render.isRendering) return;
-    if (engine->ConsoleVisible()) return;
-
-    if (GetScreenWidth() != g_render.width) {
-        console->Print("Screen resolution has changed!\n");
-        finishRender();
-        return;
-    }
-
-    if (GetScreenHeight() != g_render.height) {
-        console->Print("Screen resolution has changed!\n");
-        finishRender();
-        return;
-    }
-
-    if (av_frame_make_writable(g_render.videoStream.frame) < 0) {
-        console->Print("Failed to make video frame writable!\n");
-        finishRender();
-        return;
-    }
-
-    if (g_render.toBlend == 1) {
-        // We're not blending, so just write directly to the buffer
-        ReadScreenPixels(0, 0, g_render.width, g_render.height, g_render.videoStream.tmpFrame->data[0], IMAGE_FORMAT_BGR888);
-    } else {
-        // Write to our temporary buffer, and then add the values in to
-        // the frame buffer
-        ReadScreenPixels(0, 0, g_render.width, g_render.height, g_render.blendTmpBuf, IMAGE_FORMAT_BGR888);
-        int size = g_render.width * g_render.height * 3;
-        for (size_t i = 0; i < size; ++i) {
-            g_render.blendSumBuf[i] += g_render.blendTmpBuf[i];
-        }
-
-        if (++g_render.nextBlendIdx != g_render.toBlend) return; // not done blending yet
-
-        g_render.nextBlendIdx = 0;
-
-        for (size_t i = 0; i < size; ++i) {
-            g_render.videoStream.tmpFrame->data[0][i] = g_render.blendSumBuf[i] / g_render.toBlend;
-            g_render.blendSumBuf[i] = 0;
-        }
-    }
-
-    // convert to output format
-    sws_scale(g_render.videoStream.swsCtx, (const uint8_t *const *)g_render.videoStream.tmpFrame->data, g_render.videoStream.tmpFrame->linesize, 0, g_render.height, g_render.videoStream.frame->data, g_render.videoStream.frame->linesize);
-
-    g_render.videoStream.frame->pts = g_render.videoStream.nextPts;
-
-    if (avcodec_send_frame(g_render.videoStream.enc, g_render.videoStream.frame) < 0) {
-        console->Print("Failed to send video frame for encoding!\n");
-        finishRender();
-        return;
-    }
-
-    if (!flushStream(&g_render.videoStream)) {
-        console->Print("Failed to flush video stream!\n");
-        finishRender();
-        return;
-    }
-
-    ++g_render.videoStream.nextPts;
-
-    if (Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() >= Renderer::segmentEndTick) {
-        finishRender(false);
-    }
-}
-
-// }}}
-
 
 // Init {{{
 
@@ -898,7 +1041,6 @@ void Renderer::Init(void **videomode)
 
 // }}}
 
-
 // Commands {{{
 
 CON_COMMAND(sar_render_start, "sar_render_start <file> - start rendering frames to the given video file\n")
@@ -920,7 +1062,12 @@ CON_COMMAND(sar_render_finish, "sar_render_finish - stop rendering frames\n")
         return;
     }
 
-    finishRender(false);
+    if (!g_render.isRendering.load()) {
+        console->Print("Not rendering!\n");
+        return;
+    }
+
+    msgStopRender(false);
 }
 
 // }}}
