@@ -42,6 +42,7 @@ public:
     using _IsPaused = bool (*)(void* thisptr);
     using _TraceRay = void(__rescall*)(void* thisptr, const Ray_t& ray, unsigned int fMask, ITraceFilter* pTraceFilter, CGameTrace* pTrace);
     using _GetCount = int(__rescall*)(void* thisptr);
+    using _Con_IsVisible = bool(__rescall*)(void* thisptr);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -97,6 +98,7 @@ public:
     _IsPaused IsPaused = nullptr;
     _TraceRay TraceRay = nullptr;
     _GetCount GetCount = nullptr;
+    _Con_IsVisible Con_IsVisible = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;
@@ -143,6 +145,7 @@ public:
     bool Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr);
     bool TraceFromCamera(float distMax, CGameTrace& tr);
     void NewTick(const int tick);
+    bool ConsoleVisible();
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);

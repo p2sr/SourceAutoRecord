@@ -3,6 +3,7 @@
 #include "Features/Demo/Demo.hpp"
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Camera.hpp"
+#include "Features/Renderer.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -141,6 +142,8 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
             console->Print("Time:     %.3f\n", demo.playbackTime);
             console->Print("Tickrate: %.3f\n", demo.Tickrate());
             engine->demoplayer->levelName = demo.mapName;
+
+            Renderer::segmentEndTick = demo.segmentTicks;
 
 #ifdef SAR_MODERATOR_BUILD
             if (sar_demo_cheat_info.GetBool()) {

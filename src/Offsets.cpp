@@ -26,6 +26,7 @@ int ExecuteClientCmd;
 int GetActiveSplitScreenPlayerSlot;
 int GetSteamAPIContext;
 int IsPaused;
+int Con_IsVisible;
 
 // CHLClient
 int GetAllClasses;
@@ -203,6 +204,7 @@ int Frame;
 
 // CEngineAPI
 int IsRunningSimulation;
+int Init;
 
 // CIVDebugOverlay
 int ScreenPosition;
@@ -247,6 +249,11 @@ int GetVelocity;
 int SetPosition;
 int SetVelocity;
 int EnableGravity;
+
+// IVideoMode
+int GetModeWidth;
+int GetModeHeight;
+int ReadScreenPixels;
 
 // Others
 int tickcount;
@@ -295,4 +302,9 @@ int PerUserInput_tSize;
 int GetLocalClient;
 int MAX_SPLITSCREEN_PLAYERS;
 int net_time;
+int VideoMode_Create;
+int videomode;
+int snd_linear_count;
+int snd_p;
+int snd_vol;
 }

@@ -8,6 +8,7 @@
 #include "Features/Speedrun/Rules/Portal2Rules.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/ZachStats.hpp"
+#include "Features/Renderer.hpp"
 
 #include "Client.hpp"
 #include "Console.hpp"
@@ -290,6 +291,11 @@ void Engine::NewTick(const int tick)
     zachStats->UpdateTriggers();
 }
 
+bool Engine::ConsoleVisible()
+{
+    return this->Con_IsVisible(this->engineClient->ThisPtr());
+}
+
 float Engine::GetHostFrameTime()
 {
     return this->HostFrameTime(this->engineTool->ThisPtr());
@@ -356,6 +362,8 @@ DETOUR(Engine::Frame)
     }
 
     engine->lastTick = session->GetTick();
+
+    Renderer::Frame();
 
     return Engine::Frame(thisptr);
 }
@@ -521,6 +529,7 @@ bool Engine::Init()
         this->GetMaxClients = this->engineClient->Original<_GetMaxClients>(Offsets::GetMaxClients);
         this->GetGameDirectory = this->engineClient->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
         this->IsPaused = this->engineClient->Original<_IsPaused>(Offsets::IsPaused);
+        this->Con_IsVisible = this->engineClient->Original<_Con_IsVisible>(Offsets::Con_IsVisible);
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
@@ -624,6 +633,12 @@ bool Engine::Init()
                 this->eng->Hook(Engine::Frame_Hook, Engine::Frame, Offsets::Frame);
             }
         }
+
+        uintptr_t Init = s_EngineAPI->Original(Offsets::Init);
+        uintptr_t VideoMode_Create = Memory::Read(Init + Offsets::VideoMode_Create);
+        void **videomode = *(void ***)(VideoMode_Create + Offsets::videomode);
+        Renderer::Init(videomode);
+
         Interface::Delete(s_EngineAPI);
     }
 

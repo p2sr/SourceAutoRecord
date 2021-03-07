@@ -87,6 +87,7 @@ void Portal2::LoadOffsets()
     GetClientStateFunction = 11; // CEngineClient::ClientCmd
     Cbuf_AddText = 45; // CEngineClient::ClientCmd
     IsPaused = 86; // CEngineClient
+    Con_IsVisible = 11; // CEngineClient
     s_CommandBuffer = 69; // Cbuf_AddText
     CCommandBufferSize = 9556; // Cbuf_AddText
     m_bWaitEnabled = 8265; // CCommandBuffer::AddText
@@ -142,6 +143,7 @@ void Portal2::LoadOffsets()
     AutoCompletionFunc = 37; // listdemo_CompletionFunc
     Key_SetBinding = 60; // unbind
     IsRunningSimulation = 12; // CEngineAPI
+    Init = 3; // CEngineAPI
     eng = 7; // CEngineAPI::IsRunningSimulation
     Frame = 6; // CEngine
     m_bLoadGame = 440; // CGameClient::ActivatePlaye/CBaseServer::m_szLevelName
@@ -164,6 +166,14 @@ void Portal2::LoadOffsets()
     SetPosition = 47; // IPhysicsObject
     SetVelocity = 51; // IPhysicsObject
     EnableGravity = 14; // IPhysicsObject
+    VideoMode_Create = 104; // CEngineAPI::Init
+    videomode = 183; // VideoMode_Create
+    GetModeWidth = 15; // IVideoMode
+    GetModeHeight = 16; // IVideoMode
+    ReadScreenPixels = 29; // IVideoMode
+    snd_linear_count = 57; // SND_RecordBuffer
+    snd_p = 65; // SND_RecordBuffer
+    snd_vol = 71; // SND_RecordBuffer
 
     // libvstdlib.so
 

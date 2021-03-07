@@ -57,6 +57,8 @@ bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std:
         file.read((char*)&demo->playbackFrames, sizeof(demo->playbackFrames));
         file.read((char*)&demo->signOnLength, sizeof(demo->signOnLength));
 
+        demo->segmentTicks = -1;
+
         if (!headerOnly) {
 
             //Ghosts
@@ -165,6 +167,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std:
 
                         if (cmd.find("__END__") != std::string::npos) {
                             console->ColorMsg(Color(0, 255, 0, 255), "Segment length -> %d ticks : %.3fs\n", tick, tick / 60.f);
+                            demo->segmentTicks = tick;
                         }
                     break;
                 }
