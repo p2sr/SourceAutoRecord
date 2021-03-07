@@ -259,6 +259,9 @@
     <ClCompile Include="Features\ReplaySystem\ReplayView.cpp">
       <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Renderer.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Games\Linux\ApertureTag.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
@@ -650,6 +653,9 @@
     </ClInclude>
     <ClInclude Include="Features\ReplaySystem\ReplayView.hpp">
       <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Renderer.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\ReplaySystem\Replay.hpp">
       <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
