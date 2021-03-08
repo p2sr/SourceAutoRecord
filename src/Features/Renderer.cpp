@@ -126,6 +126,7 @@ static struct
     std::atomic<WorkerMsg> workerMsg;
     std::mutex imageBufLock;
     std::mutex audioBufLock;
+    std::atomic<bool> workerFailedToStart;
 } g_render;
 
 static inline void msgStopRender(bool error)
@@ -736,7 +737,10 @@ static bool workerHandleAudioFrame()
 static void worker(AVCodecID videoCodec, AVCodecID audioCodec, int64_t videoBitrate, int64_t audioBitrate, AVDictionary *options)
 {
     workerStartRender(videoCodec, audioCodec, videoBitrate, audioBitrate, options);
-    if (!g_render.isRendering.load()) return;
+    if (!g_render.isRendering.load()) {
+        g_render.workerFailedToStart.store(true);
+        return;
+    }
     std::unique_lock<std::mutex> lock(g_render.workerUpdateLock);
     while (true) {
         g_render.workerUpdate.wait(lock);
@@ -886,7 +890,7 @@ void Renderer::Frame()
 
     // If this is the end tick, signal the worker thread to stop
     // rendering
-    if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() >= Renderer::segmentEndTick) {
+    if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() > Renderer::segmentEndTick) {
         msgStopRender(false);
     }
 }
@@ -897,6 +901,12 @@ void Renderer::Frame()
 
 static void startRender()
 {
+    // We can't start rendering if we haven't stopped yet, so make sure
+    // the worker thread isn't running
+    if (g_render.worker.joinable()) {
+        g_render.worker.join();
+    }
+
     AVDictionary *options = NULL;
 
     if (g_render.isRendering.load()) {
@@ -979,11 +989,14 @@ static void startRender()
     g_render.width = GetScreenWidth();
     g_render.height = GetScreenHeight();
 
+    g_render.workerFailedToStart.store(false);
+
     g_render.workerMsg.store(WorkerMsg::NONE);
-    if (g_render.worker.joinable()) {
-        g_render.worker.join();
-    }
     g_render.worker = std::thread(worker, videoCodec, audioCodec, videoBitrate * 1000, audioBitrate * 1000, options);
+
+    // Busy-wait until the rendering has started so that we don't miss
+    // any frames
+    while (!g_render.isRendering.load() && !g_render.workerFailedToStart.load()) return;
 }
 
 // }}}
