@@ -35,6 +35,9 @@ static MovieInfo_t *g_movieInfo;
 // this tick if sar_render_autostop is set)
 int Renderer::segmentEndTick = -1;
 
+// Whether a demo is loading; used to detect whether we should autostart
+bool Renderer::isDemoLoading = false;
+
 // We reference this so we can make sure the output is stereo.
 // Supporting other output options is quite tricky; because Source
 // movies only support stereo output, the functions for outputting
@@ -52,6 +55,7 @@ static Variable sar_render_acodec("sar_render_acodec", "vorbis", "Audio codec us
 static Variable sar_render_quality("sar_render_quality", "35", 0, 50, "Render output quality, higher is better (50=lossless)\n");
 static Variable sar_render_fps("sar_render_fps", "60", 1, "Render output FPS\n");
 static Variable sar_render_blend("sar_render_blend", "0", 0, "How many frames to blend for each output frame; 1 = do not blend, 0 = automatically determine based on host_framerate\n");
+static Variable sar_render_autostart("sar_render_autostart", "0", "Whether to automatically start when demo playback begins\n");
 static Variable sar_render_autostop("sar_render_autostop", "1", "Whether to automatically stop when __END__ is seen in demo playback\n");
 
 // g_videomode VMT wrappers {{{
@@ -771,132 +775,6 @@ static void worker(AVCodecID videoCodec, AVCodecID audioCodec, int64_t videoBitr
 
 // }}}
 
-// Audio output {{{
-
-static inline short clip16(int x)
-{
-    if (x < -32768) return -32768; // Source uses -32767, but that's, like, not how two's complement works
-    if (x > 32767) return 32767;
-    return x;
-}
-
-// returns whether to run the og function
-static bool SND_RecordBuffer_Hook(void)
-{
-    if (!g_render.isRendering.load()) return true;
-    if (engine->ConsoleVisible()) return false;
-
-    // If the worker has received a message it hasn't yet handled,
-    // busy-wait; this is a really obscure race condition that should
-    // never happen
-    while (g_render.isRendering.load() && g_render.workerMsg.load() != WorkerMsg::NONE);
-
-    if (snd_surround_speakers.GetInt() != 2) {
-        console->Print("Speaker configuration changed!\n");
-        msgStopRender(true);
-        return false;
-    }
-
-    g_render.audioBufLock.lock();
-
-    for (int i = 0; i < *g_snd_linear_count; i += g_render.channels) {
-        for (int c = 0; c < g_render.channels; ++c) {
-            g_render.audioBuf[c][g_render.audioBufIdx] = clip16(((*g_snd_p)[i + c] * *g_snd_vol) >> 8);
-        }
-
-        ++g_render.audioBufIdx;
-        if (g_render.audioBufIdx == g_render.audioBufSz) {
-            g_render.audioBufLock.unlock();
-
-            g_render.workerUpdateLock.lock();
-            g_render.workerMsg.store(WorkerMsg::AUDIO_FRAME_READY);
-            g_render.workerUpdate.notify_all();
-            g_render.workerUpdateLock.unlock();
-
-            // Busy-wait until the worker locks the audio buffer; not
-            // ideal, but shouldn't take long
-            while (g_render.isRendering.load() && g_render.workerMsg.load() != WorkerMsg::NONE);
-
-            if (!g_render.isRendering.load()) {
-                // We shouldn't write to that buffer anymore, it's been
-                // invalidated
-                break;
-            }
-
-            g_render.audioBufLock.lock();
-            g_render.audioBufIdx = 0;
-        }
-    }
-
-    g_render.audioBufLock.unlock();
-
-    return false;
-}
-
-// }}}
-
-// Video output {{{
-
-void Renderer::Frame()
-{
-    // If performance is an issue, we might want to look into stopping
-    // RecordMovieFrame being run. It's not doing anything bad, but it
-    // *is* pulling the screen pixel data (and then immediately
-    // discarding it) every frame, which isn't great
-
-    if (!g_render.isRendering.load()) return;
-    if (engine->ConsoleVisible()) return;
-
-    // If the worker has received a message it hasn't yet handled,
-    // busy-wait; this is a really obscure race condition that should
-    // never happen
-    while (g_render.isRendering.load() && g_render.workerMsg.load() != WorkerMsg::NONE);
-
-    if (GetScreenWidth() != g_render.width) {
-        console->Print("Screen resolution has changed!\n");
-        msgStopRender(true);
-        return;
-    }
-
-    if (GetScreenHeight() != g_render.height) {
-        console->Print("Screen resolution has changed!\n");
-        msgStopRender(true);
-        return;
-    }
-
-    if (av_frame_make_writable(g_render.videoStream.frame) < 0) {
-        console->Print("Failed to make video frame writable!\n");
-        msgStopRender(true);
-        return;
-    }
-
-    g_render.imageBufLock.lock();
-
-    // Double check the buffer hasn't at some point between the start of
-    // the function and now been invalidated
-    if (!g_render.isRendering.load()) return;
-
-    ReadScreenPixels(0, 0, g_render.width, g_render.height, g_render.imageBuf, IMAGE_FORMAT_BGR888);
-
-    g_render.imageBufLock.unlock();
-
-    // Signal to the worker thread that there is image data for it to
-    // process
-    {
-        std::lock_guard<std::mutex> lock(g_render.workerUpdateLock);
-        g_render.workerMsg.store(WorkerMsg::VIDEO_FRAME_READY);
-        g_render.workerUpdate.notify_all();
-    }
-
-    // If this is the end tick, signal the worker thread to stop
-    // rendering
-    if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() > Renderer::segmentEndTick) {
-        msgStopRender(false);
-    }
-}
-
-// }}}
-
 // startRender {{{
 
 static void startRender()
@@ -997,6 +875,133 @@ static void startRender()
     // Busy-wait until the rendering has started so that we don't miss
     // any frames
     while (!g_render.isRendering.load() && !g_render.workerFailedToStart.load()) return;
+}
+
+// }}}
+
+// Audio output {{{
+
+static inline short clip16(int x)
+{
+    if (x < -32768) return -32768; // Source uses -32767, but that's, like, not how two's complement works
+    if (x > 32767) return 32767;
+    return x;
+}
+
+// returns whether to run the og function
+static bool SND_RecordBuffer_Hook(void)
+{
+    if (!g_render.isRendering.load()) return true;
+    if (engine->ConsoleVisible()) return false;
+
+    // If the worker has received a message it hasn't yet handled,
+    // busy-wait; this is a really obscure race condition that should
+    // never happen
+    while (g_render.isRendering.load() && g_render.workerMsg.load() != WorkerMsg::NONE);
+
+    if (snd_surround_speakers.GetInt() != 2) {
+        console->Print("Speaker configuration changed!\n");
+        msgStopRender(true);
+        return false;
+    }
+
+    g_render.audioBufLock.lock();
+
+    for (int i = 0; i < *g_snd_linear_count; i += g_render.channels) {
+        for (int c = 0; c < g_render.channels; ++c) {
+            g_render.audioBuf[c][g_render.audioBufIdx] = clip16(((*g_snd_p)[i + c] * *g_snd_vol) >> 8);
+        }
+
+        ++g_render.audioBufIdx;
+        if (g_render.audioBufIdx == g_render.audioBufSz) {
+            g_render.audioBufLock.unlock();
+
+            g_render.workerUpdateLock.lock();
+            g_render.workerMsg.store(WorkerMsg::AUDIO_FRAME_READY);
+            g_render.workerUpdate.notify_all();
+            g_render.workerUpdateLock.unlock();
+
+            // Busy-wait until the worker locks the audio buffer; not
+            // ideal, but shouldn't take long
+            while (g_render.isRendering.load() && g_render.workerMsg.load() != WorkerMsg::NONE);
+
+            if (!g_render.isRendering.load()) {
+                // We shouldn't write to that buffer anymore, it's been
+                // invalidated
+                break;
+            }
+
+            g_render.audioBufLock.lock();
+            g_render.audioBufIdx = 0;
+        }
+    }
+
+    g_render.audioBufLock.unlock();
+
+    return false;
+}
+
+// }}}
+
+// Video output {{{
+
+void Renderer::Frame()
+{
+    if (!g_render.isRendering.load() && Renderer::isDemoLoading && sar_render_autostart.GetBool() && engine->hoststate->m_currentState == HS_RUN) {
+        Renderer::isDemoLoading = false;
+        g_render.filename = std::string(engine->GetGameDirectory()) + "/" + std::string(engine->demoplayer->DemoName) + ".mp4";
+        startRender();
+    }
+
+    if (!g_render.isRendering.load()) return;
+    if (engine->ConsoleVisible()) return;
+
+    // If the worker has received a message it hasn't yet handled,
+    // busy-wait; this is a really obscure race condition that should
+    // never happen
+    while (g_render.isRendering.load() && g_render.workerMsg.load() != WorkerMsg::NONE);
+
+    if (GetScreenWidth() != g_render.width) {
+        console->Print("Screen resolution has changed!\n");
+        msgStopRender(true);
+        return;
+    }
+
+    if (GetScreenHeight() != g_render.height) {
+        console->Print("Screen resolution has changed!\n");
+        msgStopRender(true);
+        return;
+    }
+
+    if (av_frame_make_writable(g_render.videoStream.frame) < 0) {
+        console->Print("Failed to make video frame writable!\n");
+        msgStopRender(true);
+        return;
+    }
+
+    g_render.imageBufLock.lock();
+
+    // Double check the buffer hasn't at some point between the start of
+    // the function and now been invalidated
+    if (!g_render.isRendering.load()) return;
+
+    ReadScreenPixels(0, 0, g_render.width, g_render.height, g_render.imageBuf, IMAGE_FORMAT_BGR888);
+
+    g_render.imageBufLock.unlock();
+
+    // Signal to the worker thread that there is image data for it to
+    // process
+    {
+        std::lock_guard<std::mutex> lock(g_render.workerUpdateLock);
+        g_render.workerMsg.store(WorkerMsg::VIDEO_FRAME_READY);
+        g_render.workerUpdate.notify_all();
+    }
+
+    // If this is the end tick, signal the worker thread to stop
+    // rendering
+    if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() > Renderer::segmentEndTick) {
+        msgStopRender(false);
+    }
 }
 
 // }}}

@@ -157,6 +157,8 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 
     camera->RequestTimeOffsetRefresh();
 
+    Renderer::isDemoLoading = true;
+
     return result;
 }
 
