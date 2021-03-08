@@ -947,13 +947,33 @@ static bool SND_RecordBuffer_Hook(void)
 
 void Renderer::Frame()
 {
-    if (!g_render.isRendering.load() && Renderer::isDemoLoading && sar_render_autostart.GetBool() && engine->hoststate->m_currentState == HS_RUN) {
+    if (Renderer::isDemoLoading && engine->hoststate->m_currentState == HS_RUN) {
         Renderer::isDemoLoading = false;
-        g_render.filename = std::string(engine->GetGameDirectory()) + "/" + std::string(engine->demoplayer->DemoName) + ".mp4";
-        startRender();
+        if (!g_render.isRendering.load() && sar_render_autostart.GetBool()) {
+            g_render.filename = std::string(engine->GetGameDirectory()) + "/" + std::string(engine->demoplayer->DemoName) + ".mp4";
+            startRender();
+        }
     }
 
     if (!g_render.isRendering.load()) return;
+
+    // autostop: if it's the __END__ tick, or the demo is over, stop
+    // rendering
+
+    static bool wasDemoPlayingLastFrame = false;
+    if (sar_render_autostop.GetBool() && wasDemoPlayingLastFrame && !engine->demoplayer->IsPlaying()) {
+        msgStopRender(false);
+        wasDemoPlayingLastFrame = false;
+        return;
+    }
+    wasDemoPlayingLastFrame = engine->demoplayer->IsPlaying();
+
+    if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() > Renderer::segmentEndTick) {
+        msgStopRender(false);
+        return;
+    }
+
+    // Don't render if the console is visible
     if (engine->ConsoleVisible()) return;
 
     // If the worker has received a message it hasn't yet handled,
@@ -995,12 +1015,6 @@ void Renderer::Frame()
         std::lock_guard<std::mutex> lock(g_render.workerUpdateLock);
         g_render.workerMsg.store(WorkerMsg::VIDEO_FRAME_READY);
         g_render.workerUpdate.notify_all();
-    }
-
-    // If this is the end tick, signal the worker thread to stop
-    // rendering
-    if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() > Renderer::segmentEndTick) {
-        msgStopRender(false);
     }
 }
 
