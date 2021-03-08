@@ -73,7 +73,8 @@ static inline void ReadScreenPixels(int x, int y, int w, int h, void *buf, Image
 
 // }}}
 
-struct Stream {
+struct Stream
+{
     AVStream *stream;
     AVCodecContext *enc;
     AVCodec *codec;
@@ -83,7 +84,8 @@ struct Stream {
     int nextPts;
 };
 
-enum class WorkerMsg {
+enum class WorkerMsg
+{
     NONE,
     VIDEO_FRAME_READY,
     AUDIO_FRAME_READY,
@@ -92,7 +94,8 @@ enum class WorkerMsg {
 };
 
 // The global renderer state
-static struct {
+static struct
+{
     std::atomic<bool> isRendering;
     int fps;
     int channels;
@@ -125,7 +128,8 @@ static struct {
     std::mutex audioBufLock;
 } g_render;
 
-static inline void msgStopRender(bool error) {
+static inline void msgStopRender(bool error)
+{
     std::lock_guard<std::mutex> lock(g_render.workerUpdateLock);
     g_render.workerMsg.store(error ? WorkerMsg::STOP_RENDERING_ERROR : WorkerMsg::STOP_RENDERING_REQUESTED);
     g_render.workerUpdate.notify_all();
@@ -133,7 +137,8 @@ static inline void msgStopRender(bool error) {
 
 // Utilities {{{
 
-static AVCodecID videoCodecFromName(const char *name) {
+static AVCodecID videoCodecFromName(const char *name)
+{
   if (!strcmp(name, "h264")) return AV_CODEC_ID_H264;
   if (!strcmp(name, "hevc")) return AV_CODEC_ID_HEVC;
   if (!strcmp(name, "vp8")) return AV_CODEC_ID_VP8;
@@ -142,7 +147,8 @@ static AVCodecID videoCodecFromName(const char *name) {
   return AV_CODEC_ID_NONE;
 }
 
-static AVCodecID audioCodecFromName(const char *name) {
+static AVCodecID audioCodecFromName(const char *name)
+{
   if (!strcmp(name, "aac")) return AV_CODEC_ID_AAC;
   if (!strcmp(name, "ac3")) return AV_CODEC_ID_AC3;
   if (!strcmp(name, "mp3")) return AV_CODEC_ID_MP3;
@@ -163,14 +169,16 @@ static AVCodecID audioCodecFromName(const char *name) {
 
 static _CommandCallback startmovie_origCbk;
 static _CommandCallback endmovie_origCbk;
-static void startmovie_cbk(const CCommand &args) {
+static void startmovie_cbk(const CCommand &args)
+{
     if (g_render.isRendering.load()) {
         console->Print("Cannot startmovie while a SAR render is active! Stop the render with sar_render_finish.\n");
         return;
     }
     startmovie_origCbk(args);
 }
-static void endmovie_cbk(const CCommand &args) {
+static void endmovie_cbk(const CCommand &args)
+{
     if (g_render.isRendering.load()) {
         console->Print("Cannot endmovie while a SAR render is active! Did you mean sar_render_finish?\n");
         return;
@@ -475,7 +483,10 @@ static bool openAudio(AVFormatContext *outputCtx, Stream *s, AVDictionary **opti
 
 // Worker thread {{{
 
-static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_t videoBitrate, int64_t audioBitrate, AVDictionary *options) {
+// workerStartRender {{{
+
+static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_t videoBitrate, int64_t audioBitrate, AVDictionary *options)
+{
     if (avformat_alloc_output_context2(&g_render.outCtx, NULL, NULL, g_render.filename.c_str()) == AVERROR(EINVAL)) {
         console->Print("Failed to deduce output format from file extension - using MP4\n");
         avformat_alloc_output_context2(&g_render.outCtx, NULL, "mp4", g_render.filename.c_str());
@@ -574,7 +585,12 @@ static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_
     );
 }
 
-static void workerFinishRender(bool error) {
+// }}}
+
+// workerFinishRender {{{
+
+static void workerFinishRender(bool error)
+{
     if (error) {
         console->Print("A fatal error occurred; stopping render early\n");
     } else {
@@ -615,9 +631,12 @@ static void workerFinishRender(bool error) {
     g_movieInfo->jpeg_quality = 50;
 }
 
-// handleVideoFrame {{{
+// }}}
 
-static bool handleVideoFrame() {
+// workerHandleVideoFrame {{{
+
+static bool workerHandleVideoFrame()
+{
     g_render.imageBufLock.lock();
     g_render.workerMsg.store(WorkerMsg::NONE); // It's important that we do this *after* locking the image buffer
     size_t size = g_render.width * g_render.height * 3;
@@ -670,9 +689,10 @@ static bool handleVideoFrame() {
 
 // }}}
 
-// handleAudioFrame {{{
+// workerHandleAudioFrame {{{
 
-static bool handleAudioFrame() {
+static bool workerHandleAudioFrame()
+{
     g_render.audioBufLock.lock();
     g_render.workerMsg.store(WorkerMsg::NONE); // It's important that we do this *after* locking the audio buffer
 
@@ -713,7 +733,8 @@ static bool handleAudioFrame() {
 
 // }}}
 
-static void worker(AVCodecID videoCodec, AVCodecID audioCodec, int64_t videoBitrate, int64_t audioBitrate, AVDictionary *options) {
+static void worker(AVCodecID videoCodec, AVCodecID audioCodec, int64_t videoBitrate, int64_t audioBitrate, AVDictionary *options)
+{
     workerStartRender(videoCodec, audioCodec, videoBitrate, audioBitrate, options);
     if (!g_render.isRendering.load()) return;
     std::unique_lock<std::mutex> lock(g_render.workerUpdateLock);
@@ -721,13 +742,13 @@ static void worker(AVCodecID videoCodec, AVCodecID audioCodec, int64_t videoBitr
         g_render.workerUpdate.wait(lock);
         switch (g_render.workerMsg.load()) {
         case WorkerMsg::VIDEO_FRAME_READY:
-            if (!handleVideoFrame()) {
+            if (!workerHandleVideoFrame()) {
                 workerFinishRender(true);
                 return;
             }
             break;
         case WorkerMsg::AUDIO_FRAME_READY:
-            if (!handleAudioFrame()) {
+            if (!workerHandleAudioFrame()) {
                 workerFinishRender(true);
                 return;
             }
@@ -748,14 +769,16 @@ static void worker(AVCodecID videoCodec, AVCodecID audioCodec, int64_t videoBitr
 
 // Audio output {{{
 
-static inline short clip16(int x) {
+static inline short clip16(int x)
+{
     if (x < -32768) return -32768; // Source uses -32767, but that's, like, not how two's complement works
     if (x > 32767) return 32767;
     return x;
 }
 
 // returns whether to run the og function
-static bool SND_RecordBuffer_Hook(void) {
+static bool SND_RecordBuffer_Hook(void)
+{
     if (!g_render.isRendering.load()) return true;
     if (engine->ConsoleVisible()) return false;
 
@@ -872,7 +895,8 @@ void Renderer::Frame()
 
 // startRender {{{
 
-static void startRender() {
+static void startRender()
+{
     AVDictionary *options = NULL;
 
     if (g_render.isRendering.load()) {
