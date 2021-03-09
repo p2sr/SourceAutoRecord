@@ -142,7 +142,7 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
             console->Print("Time:     %.3f\n", demo.playbackTime);
             console->Print("Tickrate: %.3f\n", demo.Tickrate());
             engine->demoplayer->levelName = demo.mapName;
-
+            Renderer::demoStart = demo.firstPositivePacketTick;
             Renderer::segmentEndTick = demo.segmentTicks;
 
 #ifdef SAR_MODERATOR_BUILD

@@ -91,6 +91,10 @@ bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std:
                 case 0x01: // SignOn
                 case 0x02: // Packet
                 {
+                    if (tick > 0 && (demo->firstPositivePacketTick == 0 || demo->firstPositivePacketTick > tick)) {
+                        demo->firstPositivePacketTick = tick;
+                    }
+
                     if (outputMode == 2 || ghostRequest == true) {
                         for (auto i = 0; i < this->maxSplitScreenClients; ++i) {
                             if (i >= 1) {

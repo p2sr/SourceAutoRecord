@@ -35,6 +35,9 @@ static MovieInfo_t *g_movieInfo;
 // this tick if sar_render_autostop is set)
 int Renderer::segmentEndTick = -1;
 
+// The first non-zero tick of the current demo (If none exist, assume the demo starts immediately)
+int Renderer::demoStart = 0;
+
 // Whether a demo is loading; used to detect whether we should autostart
 bool Renderer::isDemoLoading = false;
 
@@ -56,6 +59,7 @@ static Variable sar_render_quality("sar_render_quality", "35", 0, 50, "Render ou
 static Variable sar_render_fps("sar_render_fps", "60", 1, "Render output FPS\n");
 static Variable sar_render_blend("sar_render_blend", "0", 0, "How many frames to blend for each output frame; 1 = do not blend, 0 = automatically determine based on host_framerate\n");
 static Variable sar_render_autostart("sar_render_autostart", "0", "Whether to automatically start when demo playback begins\n");
+static Variable sar_render_remove_broken("sar_render_remove_broken", "1", "Whether to remove broken frames from demo playback; only applies with sar_render_autostart 1\n");
 static Variable sar_render_autostop("sar_render_autostop", "1", "Whether to automatically stop when __END__ is seen in demo playback\n");
 
 // g_videomode VMT wrappers {{{
@@ -874,7 +878,7 @@ static void startRender()
 
     // Busy-wait until the rendering has started so that we don't miss
     // any frames
-    while (!g_render.isRendering.load() && !g_render.workerFailedToStart.load()) return;
+    while (!g_render.isRendering.load() && !g_render.workerFailedToStart.load());
 }
 
 // }}}
@@ -948,11 +952,23 @@ static bool SND_RecordBuffer_Hook(void)
 void Renderer::Frame()
 {
     if (Renderer::isDemoLoading && engine->hoststate->m_currentState == HS_RUN) {
-        Renderer::isDemoLoading = false;
         if (!g_render.isRendering.load() && sar_render_autostart.GetBool()) {
+
+            if (sar_render_remove_broken.GetBool()) {
+                // If the parity of the current tick matches the parity of the first non-zero demo packet, don't start rendering
+                if (engine->demoplayer->GetTick() < Renderer::demoStart - 1) {
+                    sv_alternateticks.SetValue(0);
+                    return;
+                } else {
+                    sv_alternateticks.SetValue(1);
+                }
+            }
+
             g_render.filename = std::string(engine->GetGameDirectory()) + "/" + std::string(engine->demoplayer->DemoName) + ".mp4";
             startRender();
         }
+
+        Renderer::isDemoLoading = false;
     }
 
     if (!g_render.isRendering.load()) return;
