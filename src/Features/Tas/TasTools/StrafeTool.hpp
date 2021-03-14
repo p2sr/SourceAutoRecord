@@ -18,7 +18,9 @@ enum AutoStrafeType {
 
 enum AutoStrafeParamType {
     SPECIFIED,
-    CURRENT
+    CURRENT,
+    TURN,
+    STRAIGHT
 };
 
 struct AutoStrafeDirection {
@@ -37,17 +39,19 @@ struct AutoStrafeParams : public TasToolParams {
     AutoStrafeDirection strafeDir = { CURRENT, 0.0f };
     AutoStrafeSpeed strafeSpeed = { SPECIFIED, 10000.0f };
     bool turningPriority = false;
+    int direction = 1;
 
     AutoStrafeParams()
         : TasToolParams()
     {}
 
-    AutoStrafeParams(AutoStrafeType type, AutoStrafeDirection dir, AutoStrafeSpeed speed, bool turningPriority)
+    AutoStrafeParams(AutoStrafeType type, AutoStrafeDirection dir, AutoStrafeSpeed speed, bool turningPriority, int direction)
         : TasToolParams(true)
         , strafeType(type)
         , strafeDir(dir)
         , strafeSpeed(speed)
         , turningPriority(turningPriority)
+        , direction(direction)
     {
     }
 };
@@ -61,7 +65,7 @@ public:
     virtual void Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo);
     virtual void Reset();
 
-    float GetStrafeAngle(const TasPlayerInfo& player, float desiredAngle, float desiredSpeed, bool turningPriority);
+    float GetStrafeAngle(const TasPlayerInfo& player, AutoStrafeParams &dir, const TasFramebulk fb);
     Vector PredictNextVector(const TasPlayerInfo& player, float angle);
 };
 

@@ -319,9 +319,6 @@
     <ClCompile Include="Features\Tas\TasTool.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\TasTools\TestTool.cpp">
-      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Tas\TasTools\AutoJumpTool.cpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClCompile>
@@ -332,6 +329,9 @@
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
     <ClCompile Include="Features\Tas\TasTools\AbsoluteMoveTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\TasUtils.cpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClCompile>
   </ItemGroup>
@@ -681,9 +681,6 @@
     <ClInclude Include="Features\Tas\TasTool.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Tas\TasTools\TestTool.hpp">
-      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Tas\TasTools\AutoJumpTool.hpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClInclude>
@@ -694,6 +691,9 @@
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTools\AbsoluteMoveTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\TasUtils.hpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClInclude>
   </ItemGroup>

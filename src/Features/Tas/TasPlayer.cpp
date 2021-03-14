@@ -10,7 +10,6 @@
 #include "Features/Session.hpp"
 #include "Features/Tas/TasParser.hpp"
 #include "Features/Tas/TasTool.hpp"
-#include "Features/Tas/TasTools/TestTool.hpp"
 
 #include <fstream>
 
@@ -352,6 +351,11 @@ CON_COMMAND(sar_tas_playfile,
     } catch (TasParserException& e) {
         return console->ColorMsg(Color(255, 100, 100), "Error while opening TAS file: %s\n", e.what());
     }
+}
+
+CON_COMMAND(sar_tas_stop, "Stop TAS playing\n")
+{
+    tasPlayer->Stop();
 }
 
 CON_COMMAND(sar_tas_save_raw,
