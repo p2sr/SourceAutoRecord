@@ -105,7 +105,7 @@ void DemoGhostEntity::LevelReset()
         this->demoTick = 0;
     }
 
-    if (GhostEntity::ghost_type) {
+    if (GhostEntity::ghost_type != GhostType::CIRCLE && GhostEntity::ghost_type != GhostType::PYRAMID) {
         this->DeleteGhost();
     }
 }

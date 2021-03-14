@@ -115,7 +115,7 @@ void DemoGhostPlayer::UpdateGhostsSameMap()
 
 void DemoGhostPlayer::UpdateGhostsModel(const std::string model)
 {
-    if (GhostEntity::ghost_type) {
+    if (GhostEntity::ghost_type != GhostType::CIRCLE && GhostEntity::ghost_type != GhostType::PYRAMID) {
         for (auto& ghost : this->ghostPool) {
             ghost.modelName = model;
             ghost.DeleteGhost();
@@ -208,9 +208,7 @@ void DemoGhostPlayer::DrawNames(HudContext* ctx)
         //auto pos = client->GetAbsOrigin(player);
         for (int i = 0; i < this->ghostPool.size(); ++i) {
             if (this->ghostPool[i].sameMap && !this->ghostPool[i].hasFinished && this->ghostPool[i].demoTick <= this->ghostPool[i].nbDemoTicks) {
-                Vector screenPos;
-                engine->PointToScreen(this->ghostPool[i].data.position, screenPos);
-                ctx->DrawElementOnScreen(i, screenPos.x, screenPos.y - ghost_text_offset.GetInt() - ghost_height.GetInt(), this->ghostPool[i].name.c_str());
+                this->ghostPool[i].DrawName(ctx, i);
             }
         }
     }

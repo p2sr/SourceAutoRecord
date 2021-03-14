@@ -4,6 +4,7 @@
 #include "Command.hpp"
 #include "Utils/SDK.hpp"
 #include "Variable.hpp"
+#include "Features/Hud/Hud.hpp"
 
 #include <chrono>
 
@@ -12,13 +13,14 @@ struct DataGhost {
     QAngle view_angle;
 };
 
+enum class GhostType {
+    CIRCLE = 0,
+    PYRAMID = 1,
+    PYRAMID_PGUN = 2,
+    MODEL = 3,
+};
+
 class GhostEntity {
-
-private:
-    Vector p1;
-    Vector p2;
-    Vector p3;
-
 public:
     unsigned int ID;
     std::string name;
@@ -26,7 +28,7 @@ public:
     std::string currentMap;
     bool sameMap;
     bool isAhead;
-    float lastTransparency;
+    float lastOpacity;
 
     std::string modelName;
     void* prop_entity;
@@ -36,7 +38,7 @@ public:
     std::chrono::time_point<std::chrono::steady_clock> lastUpdate;
     long long loopTime;
 
-    static int ghost_type;
+    static GhostType ghost_type;
     static std::string defaultModelName;
 
     bool isDestroyed; // used by NetworkGhostPlayer for sync reasons
@@ -53,10 +55,12 @@ public:
     void SetupGhost(unsigned int& ID, std::string& name, DataGhost& data, std::string& current_map);
     void Display();
     void Lerp(float time);
+    float GetOpacity();
+    void DrawName(HudContext *ctx, int id);
 };
 
 extern Variable ghost_height;
-extern Variable ghost_transparency;
+extern Variable ghost_opacity;
 extern Variable ghost_text_offset;
 extern Variable ghost_show_advancement;
 extern Command ghost_prop_model;

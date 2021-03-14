@@ -95,8 +95,10 @@ void HudContext::DrawElementOnScreen(const int groupID, const float xPos, const 
     vsnprintf(data, sizeof(data), fmt, argptr);
     va_end(argptr);
 
+    int pixLength = surface->GetFontLength(this->font, "%s", data);
+
     surface->DrawTxt(font,
-        xPos - sizeof(fmt) / 2 * this->fontSize,
+        xPos - pixLength / 2,
         yPos + this->group[groupID] * (this->fontSize + this->spacing),
         this->textColor,
         data);

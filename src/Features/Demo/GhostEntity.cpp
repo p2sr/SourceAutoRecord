@@ -16,14 +16,17 @@
 #define PLAT_CALL(fn, ...) fn(nullptr, __VA_ARGS__)
 #endif
 
-int GhostEntity::ghost_type = 0;
+GhostType GhostEntity::ghost_type = GhostType::CIRCLE;
 std::string GhostEntity::defaultModelName = "models/props/food_can/food_can_open.mdl";
 
-Variable ghost_height("ghost_height", "16", -256, "Height of the ghosts.\n");
-Variable ghost_transparency("ghost_transparency", "255", 0, 256, "Transparency of the ghosts.\n");
-Variable ghost_text_offset("ghost_text_offset", "20", -1024, "Offset of the name over the ghosts.\n");
+Variable ghost_height("ghost_height", "16", -256, "Height of the ghosts. (For prop models, only affects their position).\n");
+Variable ghost_opacity("ghost_opacity", "255", 0, 255, "Opacity of the ghosts.\n");
+Variable ghost_color_r("ghost_color_r", "255", 0, 255, "Red component of ghost color (linear RGB).\n");
+Variable ghost_color_g("ghost_color_g", "255", 0, 255, "Green component of ghost color (linear RGB).\n");
+Variable ghost_color_b("ghost_color_b", "255", 0, 255, "Blue component of ghost color (linear RGB).\n");
+Variable ghost_text_offset("ghost_text_offset", "7", -1024, "Offset of the name over the ghosts.\n");
 Variable ghost_show_advancement("ghost_show_advancement", "1", "Show the advancement of the ghosts.\n");
-Variable ghost_proximity_fade("ghost_proximity_fade", "200", 0, 2000, "Distance from ghosts at which their models fade out.\n");
+Variable ghost_proximity_fade("ghost_proximity_fade", "100", 0, 2000, "Distance from ghosts at which their models fade out.\n");
 
 GhostEntity::GhostEntity(unsigned int& ID, std::string& name, DataGhost& data, std::string& current_map)
     : ID(ID)
@@ -41,9 +44,37 @@ GhostEntity::~GhostEntity()
     this->DeleteGhost();
 }
 
+float GhostEntity::GetOpacity()
+{
+    float opacity = ghost_opacity.GetFloat();
+
+    if (ghost_proximity_fade.GetInt() != 0) {
+        auto player = client->GetPlayer(GET_SLOT() + 1);
+        if (player) {
+            float start_fade_at = ghost_proximity_fade.GetFloat();
+            float end_fade_at = ghost_proximity_fade.GetFloat() / 2;
+
+            Vector d = client->GetAbsOrigin(player) - this->data.position;
+            float dist = sqrt(d.x*d.x + d.y*d.y + d.z*d.z); // We can't use squared distance or the fade becomes nonlinear
+
+            if (dist > start_fade_at) {
+                // Current value correct
+            } else if (dist < end_fade_at) {
+                opacity = 0;
+            } else {
+                float ratio = (dist - end_fade_at) / (start_fade_at - end_fade_at);
+                opacity *= ratio;
+            }
+        }
+    }
+
+    return opacity;
+}
+
 void GhostEntity::Spawn()
 {
-    if (!GhostEntity::ghost_type) {
+    if (GhostEntity::ghost_type == GhostType::CIRCLE || GhostEntity::ghost_type == GhostType::PYRAMID) {
+        this->prop_entity = nullptr;
         return;
     }
 
@@ -55,17 +86,17 @@ void GhostEntity::Spawn()
 
     PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", "_ghost_normal");
 
-    if (GhostEntity::ghost_type == 1) {
+    if (GhostEntity::ghost_type == GhostType::MODEL) {
         PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "model", this->modelName.c_str());
-    } else {
+    } else { // GhostType::PYRAMID_PGUN
         PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "model", "models/props/prop_portalgun.mdl");
-        PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "modelscale", 0.4);
+        PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "modelscale", 0.5);
     }
 
-    this->lastTransparency = ghost_transparency.GetFloat();
+    this->lastOpacity = ghost_opacity.GetFloat();
 
     PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "rendermode", "1");
-    PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "renderamt", ghost_transparency.GetInt());
+    PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "renderamt", this->lastOpacity);
 
     PLAT_CALL(server->DispatchSpawn, this->prop_entity);
 }
@@ -110,54 +141,111 @@ void GhostEntity::SetupGhost(unsigned int& ID, std::string& name, DataGhost& dat
 
 void GhostEntity::Display()
 {
-    if (GhostEntity::ghost_type != 1) {
-        this->data.position.z += ghost_height.GetInt();
+    int col_r = ghost_color_r.GetInt();
+    int col_g = ghost_color_g.GetInt();
+    int col_b = ghost_color_b.GetInt();
+    float opacity = this->GetOpacity();
 
-        this->p1 = this->data.position;
-        this->p2 = this->data.position;
-        this->p3 = this->data.position;
+#define TRIANGLE(a, b, c) PLAT_CALL(engine->AddTriangleOverlay, a, b, c, col_r, col_g, col_b, opacity, false, 0)
+    switch (GhostEntity::ghost_type) {
+    case GhostType::CIRCLE: {
+        double rad = ghost_height.GetFloat() / 2;
+        Vector origin = this->data.position + Vector{ 0, 0, rad };
 
-        p2.x += 10;
-        p3.x += 5;
-        p3.z += 10;
+        const int tris = 30;
 
-        PLAT_CALL(engine->AddTriangleOverlay, p1, p2, p3, 255, 0, 0, 255, false, 0);
-        PLAT_CALL(engine->AddTriangleOverlay, p3, p2, p1, 255, 0, 0, 255, false, 0);
+        auto player = client->GetPlayer(GET_SLOT() + 1);
+        Vector pos = client->GetAbsOrigin(player) + client->GetViewOffset(player);
+
+        float dx = origin.x - pos.x;
+        float dy = origin.y - pos.y;
+        float hdist = sqrt(dx * dx + dy * dy);
+
+        double yaw =
+            origin.x == pos.x ?
+            (origin.y > pos.y ? M_PI_2 : -M_PI_2) :
+            atan((origin.y - pos.y) / (origin.x - pos.x));
+
+        double pitch =
+            hdist == 0 ?
+            (origin.z > pos.z ? M_PI_2 : -M_PI_2) :
+            atan((origin.z - pos.z) / hdist);
+
+        // i have no idea why this is necessary but it seems to work
+        if (origin.x > pos.x) yaw += M_PI;
+
+        double syaw = sin(yaw);
+        double cyaw = cos(yaw);
+        double spitch = sin(pitch);
+        double cpitch = cos(pitch);
+
+        // yaw+pitch rotation matrix
+        Matrix rot{3, 3, 0};
+        rot(0, 0) = cyaw * cpitch;
+        rot(0, 1) = -syaw;
+        rot(0, 2) = cyaw * spitch;
+        rot(1, 0) = syaw * cpitch;
+        rot(1, 1) = cyaw;
+        rot(1, 2) = syaw * spitch;
+        rot(2, 0) = -spitch;
+        rot(2, 1) = 0;
+        rot(2, 2) = cpitch;
+
+        for (int i = 0; i < tris; ++i) {
+            double lang = M_PI * 2 * i / tris;
+            double rang = M_PI * 2 * (i + 1) / tris;
+
+            Vector dl{0, cos(lang) * rad, sin(lang) * rad};
+            Vector dr{0, cos(rang) * rad, sin(rang) * rad};
+
+            Vector l = origin + rot * dl;
+            Vector r = origin + rot * dr;
+
+            TRIANGLE(r, l, origin);
+        }
+
+        break;
     }
 
-    if (this->prop_entity != nullptr) {
-        if (GhostEntity::ghost_type == 1) {
+    case GhostType::PYRAMID:
+    case GhostType::PYRAMID_PGUN: {
+        Vector top = this->data.position + Vector{ 0, 0, ghost_height.GetFloat() };
+
+        Vector a = this->data.position + Vector{ 5, 5, 0 };
+        Vector b = this->data.position + Vector{ 5, -5, 0 };
+        Vector c = this->data.position + Vector{ -5, -5, 0 };
+        Vector d = this->data.position + Vector{ -5, 5, 0 };
+
+        TRIANGLE(a, b, top);
+        TRIANGLE(b, c, top);
+        TRIANGLE(c, d, top);
+        TRIANGLE(d, a, top);
+        TRIANGLE(b, a, c);
+        TRIANGLE(c, a, d);
+
+        break;
+    }
+
+    default:
+        break;
+    }
+#undef TRIANGLE
+
+    if (this->prop_entity) {
+        if (GhostEntity::ghost_type == GhostType::MODEL) {
             PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position + Vector{ 0, 0, ghost_height.GetFloat() });
             PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "angles", Vector{ this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z });
-        } else if (GhostEntity::ghost_type == 2) {
-            PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position + Vector{8, 2, 7});
+        } else if (GhostEntity::ghost_type == GhostType::PYRAMID_PGUN) {
+            float dz = ghost_height.GetFloat() * 2 / 3;
+            PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position + Vector{4, 2, dz});
+        }
+
+        if (opacity != this->lastOpacity) {
+            PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "renderamt", opacity);
         }
     }
 
-    auto player = client->GetPlayer(GET_SLOT() + 1);
-    if (ghost_proximity_fade.GetInt() != 0 && player && GhostEntity::ghost_type == 1 && this->prop_entity) {
-        float start_fade_at = ghost_proximity_fade.GetFloat();
-        float end_fade_at = ghost_proximity_fade.GetFloat() / 2;
-
-        Vector d = client->GetAbsOrigin(player) - this->data.position;
-        float dist = sqrt(d.x*d.x + d.y*d.y + d.z*d.z); // We can't use squared distance or the fade becomes nonlinear
-
-        float transparency = ghost_transparency.GetInt();
-        if (dist > start_fade_at) {
-            // Current value correct
-        } else if (dist < end_fade_at) {
-            transparency = 0;
-        } else {
-            float ratio = (dist - end_fade_at) / (start_fade_at - end_fade_at);
-            transparency *= ratio;
-        }
-
-        if (transparency != this->lastTransparency) {
-            PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "renderamt", transparency);
-        }
-
-        this->lastTransparency = transparency;
-    }
+    this->lastOpacity = opacity;
 }
 
 void GhostEntity::Lerp(float time)
@@ -200,10 +288,11 @@ CON_COMMAND_COMPLETION(ghost_prop_model, "Set the prop model. Example : models/p
     demoGhostPlayer.UpdateGhostsModel(args[1]);
 }
 
-CON_COMMAND(ghost_type, "ghost_type <0/1/2>:\n"
-                        "0: Ghost not recorded in demos\n"
-                        "1: Ghost using props model but recorded in demos (NOT RECOMMENDED!)\n"
-                        "2: Ghost has mini portalgun which is recorded in demos (NOT RECOMMENDED!)\n")
+CON_COMMAND(ghost_type, "ghost_type <0/1/2/3>:\n"
+                        "0: Colored circle\n"
+                        "1: Colored pyramid\n"
+                        "2: Colored pyramid with portal gun (RECORDED IN DEMOS)\n"
+                        "3: Prop model (RECORDED IN DEMOS)\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(ghost_type.ThisPtr()->m_pszHelpString);
@@ -211,26 +300,61 @@ CON_COMMAND(ghost_type, "ghost_type <0/1/2>:\n"
 
     int type = std::atoi(args[1]);
 
-    if (GhostEntity::ghost_type != type) {
-        GhostEntity::ghost_type = type;
-        switch (type) {
-        case 0:
+    if (type < 0 || type > 3) {
+        return console->Print(ghost_type.ThisPtr()->m_pszHelpString);
+    }
+
+    if (GhostEntity::ghost_type != (GhostType)type) {
+        GhostEntity::ghost_type = (GhostType)type;
+        switch (GhostEntity::ghost_type) {
+        case GhostType::CIRCLE:
+        case GhostType::PYRAMID:
             demoGhostPlayer.DeleteAllGhostModels();
             if (networkManager.isConnected) {
                 networkManager.DeleteAllGhosts();
             }
             break;
-        case 1:
-        case 2:
+        case GhostType::PYRAMID_PGUN:
+        case GhostType::MODEL:
             demoGhostPlayer.DeleteAllGhostModels();
             demoGhostPlayer.SpawnAllGhosts();
             if (networkManager.isConnected) {
                 networkManager.DeleteAllGhosts();
                 networkManager.SpawnAllGhosts();
             }
+            console->Print("WARNING: This ghost_type will invalidate your run! Use type 0 or 1 if you plan to submit the run to leaderboards.\n");
             break;
         }
     }
+}
+
+static int convertSrgbComponent(int s)
+{
+    double s_ = (double)s / 255;
+    double l = s <= 0.04045 ? s_ / 12.92 : pow((s_ + 0.055) / 1.055, 2.4);
+    return (int)(l * 255);
+}
+
+CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color to the specified sRGB color code.\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print(ghost_set_color.ThisPtr()->m_pszHelpString);
+    }
+
+    const char *color = args[1];
+    if (color[0] == '#') {
+        ++color;
+    }
+
+    int r, g, b;
+    int end;
+    if (sscanf(color, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
+        return console->Print("Invalid color code!\n");
+    }
+
+    ghost_color_r.SetValue(convertSrgbComponent(r));
+    ghost_color_g.SetValue(convertSrgbComponent(g));
+    ghost_color_b.SetValue(convertSrgbComponent(b));
 }
 
 void GhostEntity::KillAllGhosts() {
@@ -245,4 +369,13 @@ void GhostEntity::KillAllGhosts() {
             server->KillEntity(info.m_pEntity);
         }
     }
+}
+
+void GhostEntity::DrawName(HudContext *ctx, int id)
+{
+    Vector nameCoords = this->data.position;
+    nameCoords.z += ghost_text_offset.GetFloat() + ghost_height.GetFloat();
+    Vector screenPos;
+    engine->PointToScreen(nameCoords, screenPos);
+    ctx->DrawElementOnScreen(id, screenPos.x, screenPos.y, this->name.c_str());
 }
