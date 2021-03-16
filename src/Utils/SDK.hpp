@@ -946,10 +946,7 @@ struct kbutton_t {
     struct Split_t {
         int down[2];
         int state;
-    };
-
-    Split_t& GetPerUser(int nSlot = -1);
-    Split_t m_PerUser[2];
+    } m_PerUser[2];
 };
 
 enum TOGGLE_STATE {

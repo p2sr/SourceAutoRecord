@@ -34,14 +34,6 @@ DLL_EXPORT void* CreateInterface(const char* pName, int* pReturnCode)
     return CreateInterfaceInternal(pName, pReturnCode);
 }
 
-kbutton_t::Split_t& kbutton_t::GetPerUser(int nSlot)
-{
-    if (nSlot == -1) {
-        nSlot = GET_ACTIVE_SPLITSCREEN_SLOT();
-    }
-    return m_PerUser[nSlot];
-}
-
 inline int ENTINDEX(edict_t* pEdict)
 {
     return (pEdict) ? pEdict - server->gpGlobals->pEdicts : 0;

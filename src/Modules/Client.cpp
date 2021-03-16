@@ -64,7 +64,7 @@ void* Client::GetPlayer(int index)
 }
 void Client::CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, kbutton_t* button, bool reset)
 {
-    auto pButtonState = &button->GetPerUser(nSlot);
+    auto pButtonState = &button->m_PerUser[nSlot];
     if (pButtonState->state & 3) {
         bits |= in_button;
     }
