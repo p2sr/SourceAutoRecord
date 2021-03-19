@@ -4,17 +4,18 @@
 #include "Demo.hpp"
 
 struct DemoDatas {
-    std::vector<DataGhost> levelDatas;
+    std::map<int, DataGhost> levelDatas;
     Demo demo;
 };
 
 class DemoGhostEntity : public GhostEntity {
 
 private:
-    std::vector<DataGhost> currentDatas; //Pos and ang of ghost
+    std::map<int, DataGhost> currentDatas; //Pos and ang of ghost
     unsigned int currentDemo;
 
 public:
+    int lastGameTick;
     int demoTick;
     size_t nbDemoTicks;
     std::vector<DemoDatas> datasByLevel;

@@ -149,7 +149,7 @@ bool DemoGhostPlayer::SetupGhostFromDemo(const std::string& demo_path, const uns
 {
     DemoParser parser;
     Demo demo;
-    std::vector<DataGhost> datas;
+    std::map<int, DataGhost> datas;
 
     if (parser.Parse(demo_path, &demo, true, &datas)) {
         parser.Adjust(&demo);
@@ -232,7 +232,8 @@ CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demo, "ghost_set_demo <demo> [ID]. Ghost 
     demoGhostPlayer.isFullGame = false;
 }
 
-CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demos, "ghost_set_demos <first_demo> [ID]. Ghost will setup a speedrun with first_demo, first_demo_2, etc.\n"
+CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demos, "ghost_set_demos <first_demo> [first_id] [ID]. Ghost will setup a speedrun with first_demo, first_demo_2, etc.\n"
+                                              "If first_id is specified as e.g. 5, will instead start from first_demo_5, then first_demo_6, etc. Specifying first_id as 1 will use first_demo, first_demo_2 etc as normal.\n"
                                               "If ID is specified, will create or modify the ID-th ghost.\n",
     0, 0, dem)
 {
@@ -240,16 +241,23 @@ CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demos, "ghost_set_demos <first_demo> [ID]
         return console->Print(ghost_set_demos.ThisPtr()->m_pszHelpString);
     }
 
-    sf::Uint32 ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
+    int firstDemoId = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
+
+    sf::Uint32 ID = args.ArgC() > 3 ? std::atoi(args[3]) : 0;
     demoGhostPlayer.DeleteGhostsByID(ID);
 
     auto dir = engine->GetGameDirectory() + std::string("/") + args[1];
-    int counter = 2;
+    int counter = firstDemoId > 1 ? firstDemoId : 2;
 
-    bool ok = std::filesystem::exists(dir + ".dem");
-    if (!ok || !demoGhostPlayer.SetupGhostFromDemo(dir, ID, true)) {
-        return console->Print("Could not parse \"%s\"!\n", engine->GetGameDirectory() + std::string("/") + args[1]);
+    bool ok = true;
+
+    if (firstDemoId < 2) {
+        ok = std::filesystem::exists(dir + ".dem");
+        if (!ok || !demoGhostPlayer.SetupGhostFromDemo(dir, ID, true)) {
+            return console->Print("Could not parse \"%s\"!\n", engine->GetGameDirectory() + std::string("/") + args[1]);
+        }
     }
+
     while (ok) {
         auto tmp_dir = dir + "_" + std::to_string(counter) + ".dem";
         ok = std::filesystem::exists(tmp_dir);

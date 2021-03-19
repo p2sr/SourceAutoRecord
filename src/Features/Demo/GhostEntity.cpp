@@ -162,17 +162,14 @@ void GhostEntity::Display()
         float hdist = sqrt(dx * dx + dy * dy);
 
         double yaw =
-            origin.x == pos.x ?
-            (origin.y > pos.y ? M_PI_2 : -M_PI_2) :
-            atan((origin.y - pos.y) / (origin.x - pos.x));
+            origin.x == pos.x && origin.y == pos.y ?
+            M_PI_2 :
+            atan2(origin.y - pos.y, origin.x - pos.x) + M_PI;
 
         double pitch =
-            hdist == 0 ?
-            (origin.z > pos.z ? M_PI_2 : -M_PI_2) :
-            atan((origin.z - pos.z) / hdist);
-
-        // i have no idea why this is necessary but it seems to work
-        if (origin.x > pos.x) yaw += M_PI;
+            hdist == 0 && origin.z == pos.z ?
+            M_PI_2 :
+            atan2(origin.z - pos.z, hdist);
 
         double syaw = sin(yaw);
         double cyaw = cos(yaw);
