@@ -254,7 +254,7 @@ void Portal2::LoadOffsets()
     FindElement = 135; // cc_leaderboard_enable
     ChatPrintf = 22; // CBaseHudChat
     DecodeUserCmdFromBuffer = 7; // CInput
-    PerUserInput_tSize = 368; // CInput::DecodeUserCmdFromBuffer
+    PerUserInput_tSize = 376; // CInput::DecodeUserCmdFromBuffer
     m_pCommands = 244; // CInput::DecodeUserCmdFromBuffer
     CUserCmdSize = 96; // CInput::DecodeUserCmdFromBuffer
     MULTIPLAYER_BACKUP = 150; // CInput::DecodeUserCmdFromBuffer
