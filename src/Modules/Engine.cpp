@@ -269,8 +269,8 @@ void Engine::NewTick(const int tick)
             console->Print("\"wait\" needs sv_cheats 1.\n");
             engine->hasWaited = true;
         } else {
-            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
             engine->hasWaited = true;
+            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
         }
     }
 
