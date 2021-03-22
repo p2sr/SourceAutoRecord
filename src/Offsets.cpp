@@ -138,6 +138,7 @@ int m_pShadowStand;
 int m_pShadowCrouch;
 int m_Local;
 int m_hGroundEntity;
+int m_iBonusChallenge;
 
 // CPlayerLocalData
 int m_nTractorBeamCount;

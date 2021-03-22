@@ -46,7 +46,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Summary>(&summary);
             this->features->AddFeature<Teleporter>(&teleporter);
             this->features->AddFeature<Tracer>(&tracer);
-            this->features->AddFeature<SpeedrunTimer>(&speedrun);
+            SpeedrunTimer::Init();
             this->features->AddFeature<Stats>(&stats);
             this->features->AddFeature<Sync>(&synchro);
             this->features->AddFeature<CommandQueuer>(&cmdQueuer);
@@ -103,8 +103,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 if (listener) {
                     listener->Init();
                 }
-
-                speedrun->LoadRules(this->game);
 
                 config->Load();
 

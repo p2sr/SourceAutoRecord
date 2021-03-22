@@ -66,10 +66,10 @@ void Session::Started(bool menu)
         console->Print("Session started! (menu)\n");
         this->Rebase(engine->GetTick());
 
-        if (sar_speedrun_autostop.isRegistered && sar_speedrun_autostop.GetBool()) {
-            speedrun->Stop(false);
+        if (sar_speedrun_stop_in_menu.isRegistered && sar_speedrun_stop_in_menu.GetBool()) {
+            SpeedrunTimer::Stop();
         } else {
-            speedrun->Resume(engine->GetTick());
+            SpeedrunTimer::Resume();
         }
 
         if (!engine->IsOrange()) {
@@ -93,7 +93,7 @@ void Session::Start()
     this->Rebase(tick);
     timer->Rebase(tick);
     if (!engine->IsCoop()) {
-        speedrun->Resume(tick);
+        SpeedrunTimer::Resume();
     }
 
     if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
@@ -140,16 +140,12 @@ void Session::Start()
         }
     }
 
-    if (!engine->IsCoop()) {
-        if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !speedrun->IsActive()) {
-            speedrun->Start(engine->GetTick());
-        } else if (speedrun->IsActive()) {
-            speedrun->Resume(engine->GetTick());
+    if (!engine->IsCoop() && sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool()) {
+        if (SpeedrunTimer::IsRunning()) {
+            SpeedrunTimer::Resume();
+        } else {
+            SpeedrunTimer::Start();
         }
-    }
-
-    if (sar_speedrun_IL.GetBool() && sv_bonus_challenge.GetBool()) {
-        speedrun->Start((client->GetCMTimer() * 1 / speedrun->GetIntervalPerTick()));
     }
 
     //Network Ghosts
@@ -197,7 +193,6 @@ void Session::Start()
 
     stepCounter->ResetTimer();
 
-    speedrun->ReloadRules();
     this->currentFrame = 0;
     this->isRunning = true;
 }
@@ -252,9 +247,7 @@ void Session::Ended()
     // already happened in the playvideo_end_level_transition detour.
     // However, if a level ends prematurely (e.g. restart_level), that
     // command is never run, so we use session timing to pause instead
-    speedrun->Pause();
-
-    speedrun->UnloadRules();
+    SpeedrunTimer::Pause();
 
     if (listener) {
         listener->Reset();
@@ -327,6 +320,7 @@ void Session::Changed(int state)
         if (!engine->IsOrange()) {
             this->ResetLoads();
         }
+        SpeedrunTimer::FinishLoad();
     } else {
         this->Ended();
     }

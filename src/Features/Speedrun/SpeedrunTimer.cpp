@@ -1,478 +1,367 @@
 #include "SpeedrunTimer.hpp"
 
 #include <cmath>
-#include <cstdlib>
 #include <cstring>
-#include <fstream>
-#include <memory>
-#include <sstream>
-#include <string>
 #include <vector>
+#include <string>
 
-#include "TimerCategory.hpp"
-#include "TimerInterface.hpp"
-#include "TimerResult.hpp"
-#include "TimerRule.hpp"
-#include "TimerSplit.hpp"
-
-#include "Features/Stats/Stats.hpp"
-
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
-#include "Modules/Server.hpp"
 #include "Modules/Client.hpp"
+#include "Modules/Server.hpp"
+#include "Modules/Engine.hpp"
 
-#include "Command.hpp"
-#include "Game.hpp"
-#include "Variable.hpp"
+// TimerAction {{{
 
-#include "Features/Demo/NetworkGhostPlayer.hpp"
+enum class TimerAction
+{
+    NONE,
+    START,
+    RESTART,
+    SPLIT,
+    END,
+    RESET,
+    // The old interface also had Pause and Resume but they were kinda
+    // pointless
+};
 
-Variable sar_speedrun_start_on_load("sar_speedrun_start_on_load", "0",
-    "Starts speedrun timer automatically on first frame after a load.\n");
-Variable sar_speedrun_autostop("sar_speedrun_autostop", "0",
-    "Stops speedrun timer automatically when going into the menu.\n");
-Variable sar_speedrun_standard("sar_speedrun_standard", "1",
-    "Timer automatically starts, splits and stops.\n");
-Variable sar_speedrun_time_pauses("sar_speedrun_time_pauses", "1",
-    "Timer automatically adds non-simulated ticks when server pauses.\n");
-Variable sar_speedrun_smartsplit("sar_speedrun_smartsplit", "1",
-    "Timer interface only splits once per level change.\n");
-Variable sar_speedrun_IL("sar_speedrun_IL", "0",
-    "Makes the speedrun timer to split in CM chambers using mtriggers.\n");
+// }}}
 
-SpeedrunTimer* speedrun;
+// TimerInterface {{{
 
-SpeedrunTimer::SpeedrunTimer()
-    : session(0)
-    , base(0)
+struct TimerInterface
+{
+    char start[16];
+    int total;
+    float ipt;
+    TimerAction action;
+    char end[14];
+
+    TimerInterface();
+};
+
+TimerInterface::TimerInterface()
+    : start("SAR_TIMER_START")
     , total(0)
-    , prevTotal(0)
-    , map("unknown")
     , ipt(0.0f)
-    , state(TimerState::NotRunning)
-    , rules()
-    , category(nullptr)
-    , offset(0)
-    , pause(0)
-    , visitedMaps()
-    , lastSplit(0)
+    , action(TimerAction::NONE)
+    , end("SAR_TIMER_END")
 {
-    this->pubInterface = std::make_unique<TimerInterface>();
-    this->result = std::make_unique<TimerResult>();
-    this->pb = std::make_unique<TimerResult>();
-
-    this->hasLoaded = true;
 }
-bool SpeedrunTimer::IsActive()
-{
-    return this->state == TimerState::Running
-        || this->state == TimerState::Paused;
-}
-void SpeedrunTimer::Start(const int engineTicks)
-{
-    this->StatusReport("Speedrun started!\n");
-    this->base = engineTicks;
 
-    if (this->IsActive()) {
-        this->pubInterface.get()->SetAction(TimerAction::Restart);
-    } else {
-        this->pubInterface.get()->SetAction(TimerAction::Start);
+// }}}
+
+// Segment, SplitInfo {{{
+
+struct Segment
+{
+    std::string name;
+    int ticks;
+};
+
+struct SplitInfo
+{
+    std::vector<Segment> segments;
+    std::string name;
+    int ticks;
+};
+
+// }}}
+
+// This really should just be a plain global rather than being
+// heap-allocated; however, since it was previously heap-allocated,
+// timers may rely on this for detection, hence we still put it on the
+// heap for back compat
+static TimerInterface *g_timerInterface;
+
+static struct
+{
+    bool isRunning;
+    bool isPaused;
+    bool isReset;
+
+    bool hasSplitLoad;
+
+    int saved;
+    int base;
+
+    std::vector<Segment> currentSplit;
+    std::vector<SplitInfo> splits;
+
+    std::vector<std::string> visitedMaps;
+    std::string lastMap;
+} g_speedrun;
+
+void SpeedrunTimer::Init()
+{
+    g_timerInterface = new TimerInterface();
+    SpeedrunTimer::Reset(false);
+}
+
+void SpeedrunTimer::SetIpt(float ipt)
+{
+    g_timerInterface->ipt = ipt;
+}
+
+// Interface action fuckery {{{
+
+static std::chrono::time_point<std::chrono::steady_clock> g_actionResetTime;
+
+static void setTimerAction(TimerAction action)
+{
+    g_timerInterface->action = action;
+    g_actionResetTime = NOW_STEADY() + std::chrono::milliseconds(50); // Bit of a hack - should be enough time for timers to pick up on it
+}
+
+// }}}
+
+// Getting time {{{
+
+static int getCurrentTick()
+{
+    if (server->GetChallengeStatus() == CMStatus::CHALLENGE) {
+        return client->GetCMTimer() / *engine->interval_per_tick;
     }
 
-    this->total = this->prevTotal = this->offset;
-    this->pause = 0;
-    this->state = TimerState::Running;
-    this->visitedMaps.clear();
-    this->visitedMaps.push_back(this->map);
-
-    this->result.get()->Reset();
-    this->result.get()->NewSplit(this->total, this->GetCurrentMap());
+    return engine->GetTick();
 }
+
+int SpeedrunTimer::GetSegmentTicks()
+{
+    if (g_speedrun.isReset) {
+        return sar_speedrun_offset.GetInt();
+    }
+
+    if (!g_speedrun.isRunning) {
+        return 0;
+    }
+
+    int ticks = 0;
+    ticks += g_speedrun.saved;
+    if (!g_speedrun.isPaused) {
+        ticks += getCurrentTick() - g_speedrun.base;
+    }
+
+    if (ticks < 0) {
+        // This can happen for precisely one tick if you
+        // sar_speedrun_start then unpause, because for some dumb
+        // reason, console unpausing makes the engine go back one tick
+        ticks = 0;
+    }
+
+    return ticks;
+}
+
+int SpeedrunTimer::GetTotalTicks()
+{
+    int ticks = 0;
+
+    for (SplitInfo split : g_speedrun.splits) {
+        ticks += split.ticks;
+    }
+
+    for (Segment seg : g_speedrun.currentSplit) {
+        ticks += seg.ticks;
+    }
+
+    ticks += SpeedrunTimer::GetSegmentTicks();
+
+    return ticks;
+}
+
+// }}}
+
+void SpeedrunTimer::Update()
+{
+    if (g_timerInterface->action != TimerAction::NONE && NOW_STEADY() >= g_actionResetTime) {
+        g_timerInterface->action = TimerAction::NONE;
+    }
+
+    std::string map = std::string(engine->m_szLevelName);
+    if (map != g_speedrun.lastMap) {
+        bool visited = false;
+
+        for (std::string v : g_speedrun.visitedMaps) {
+            if (map == v) {
+                visited = true;
+                break;
+            }
+        }
+
+        if (!visited) {
+            g_speedrun.visitedMaps.push_back(map);
+        }
+
+        bool newSplit = !visited || !sar_speedrun_smartsplit.GetBool();
+        SpeedrunTimer::Split(newSplit, g_speedrun.lastMap);
+
+        g_speedrun.hasSplitLoad = true;
+
+        g_speedrun.lastMap = map;
+    }
+
+    g_timerInterface->total = SpeedrunTimer::GetTotalTicks();
+}
+
+void SpeedrunTimer::AddPauseTick()
+{
+    if (!g_speedrun.isRunning || g_speedrun.isPaused || !sar_speedrun_time_pauses.GetBool()) {
+        return;
+    }
+
+    if (engine->IsCoop()) {
+        return;
+    }
+
+    ++g_speedrun.saved;
+}
+
+void SpeedrunTimer::FinishLoad()
+{
+    if (!g_speedrun.hasSplitLoad) {
+        // We went through a load that kept us on the same map; perform
+        // a segment split
+        SpeedrunTimer::Split(false, std::string(engine->m_szLevelName), false);
+    }
+
+    // Ready for next load
+    g_speedrun.hasSplitLoad = false;
+}
+
+// Timer control {{{
+
+void SpeedrunTimer::Start()
+{
+    bool wasRunning = g_speedrun.isRunning;
+
+    SpeedrunTimer::Reset(false);
+
+    setTimerAction(wasRunning ? TimerAction::RESTART : TimerAction::START);
+
+    g_speedrun.isRunning = true;
+    g_speedrun.isReset = false;
+    g_speedrun.base = getCurrentTick();
+    g_speedrun.saved = sar_speedrun_offset.GetInt();
+
+    console->Print("Speedrun started!\n");
+}
+
 void SpeedrunTimer::Pause()
 {
-    if (this->state == TimerState::Running) {
-        this->StatusReport("Speedrun paused!\n");
-        this->pubInterface.get()->SetAction(TimerAction::Pause);
-        this->state = TimerState::Paused;
-        this->prevTotal = this->total;
-        this->session = engine->GetTick() - this->base;
-        this->result.get()->AddSegment(this->session + this->pause);
-    }
-}
-void SpeedrunTimer::Resume(const int engineTicks)
-{
-    if (this->state == TimerState::Paused) {
-        this->StatusReport("Speedrun resumed!\n");
-        this->pubInterface.get()->SetAction(TimerAction::Resume);
-        this->state = TimerState::Running;
-        this->base = engineTicks;
-        this->pause = 0;
-    }
-}
-void SpeedrunTimer::PreUpdate(const int engineTicks, const char* engineMap)
-{
-    if (this->state != TimerState::Running) {
-        if (std::strncmp(this->map, engineMap, sizeof(this->map))) {
-            std::strncpy(this->map, engineMap, sizeof(this->map));
-
-            auto visited = false;
-            if (this->state == TimerState::Paused && sar_speedrun_smartsplit.GetBool() && std::strlen(this->map) != 0) {
-                for (auto& map : this->visitedMaps) {
-                    if (!map.compare(this->map)) {
-                        visited = true;
-                    }
-                }
-
-                if (!visited) {
-                    this->visitedMaps.push_back(this->map);
-                }
-            }
-
-            console->DevMsg("Speedrun map change: %s\n", this->GetCurrentMap());
-            if (!visited) this->Split();
-            this->InitRules();
-        }
-    }
-}
-void SpeedrunTimer::PostUpdate(const int engineTicks, const char* engineMap)
-{
-    if (this->state == TimerState::Running) {
-        this->session = engineTicks - this->base;
-        if (sar_speedrun_IL.GetBool() && sv_bonus_challenge.GetBool()) {
-            this->total = client->GetCMTimer() / this->GetIntervalPerTick();
-        } else {
-            this->total = this->prevTotal + this->session + this->pause;
-        }
-        this->pubInterface.get()->Update(this);
-
-        if (sar_speedrun_IL.GetBool() && this->pubInterface.get()->action == TimerAction::Split && this->total - this->lastSplit > 10) {
-            this->pubInterface.get()->SetAction(TimerAction::Resume);
-        }
-    }
-}
-void SpeedrunTimer::CheckRules(const int engineTicks)
-{
-    auto action = TimerAction::DoNothing;
-    TimerRule* source = nullptr;
-
-    for (auto& rule : this->rules) {
-        if (!rule->madeAction) {
-            action = rule->Dispatch();
-            if (action != TimerAction::DoNothing) {
-                source = rule;
-                break; // Only allow one action
-            }
-        }
+    if (!g_speedrun.isRunning || g_speedrun.isPaused) {
+        return;
     }
 
-    switch (action) {
-    case TimerAction::Split:
-        this->Split();
-        source->madeAction = true;
-        break;
-    case TimerAction::Start:
-        this->Start(engineTicks);
-        source->madeAction = true;
-        break;
-    case TimerAction::End:
-        if (this->IsActive()) {
-            this->Stop();
-            source->madeAction = true;
-        }
-    default:
-        break;
-    }
+    // On resume, the base will be replaced, so save the full segment
+    // time so far
+    g_speedrun.saved = SpeedrunTimer::GetSegmentTicks();
+
+    g_speedrun.isPaused = true;
+
+    console->Print("Speedrun paused!\n");
 }
-void SpeedrunTimer::CheckRulesManually(const int engineTicks, TimerAction action)
+
+void SpeedrunTimer::Resume()
 {
-    switch (action) {
-    case TimerAction::Split:
-        this->Split();
-        break;
-    case TimerAction::Start:
-        this->Start(engineTicks);
-        break;
-    case TimerAction::End:
-        if (this->IsActive()) {
-            this->Stop();
-        }
-    default:
-        break;
+    if (!g_speedrun.isRunning || !g_speedrun.isPaused) {
+        return;
     }
+
+    g_speedrun.base = getCurrentTick();
+
+    g_speedrun.isPaused = false;
+
+    console->Print("Speedrun resumed!\n");
 }
-void SpeedrunTimer::Stop(bool addSegment, bool stopedByUser)
+
+void SpeedrunTimer::Stop()
 {
-    if (this->IsActive()) {
-        if (!stopedByUser) {
-            stats->Get(GET_SLOT())->statsCounter->IncrementRunFinished(this->total * this->ipt);
-        } else {
-            stats->Get(GET_SLOT())->statsCounter->IncrementReset(this->total * this->ipt);
+    if (!g_speedrun.isRunning) {
+        return;
+    }
+
+    SpeedrunTimer::Split(true, engine->m_szLevelName, false);
+
+    setTimerAction(TimerAction::END);
+
+    g_speedrun.isRunning = false;
+
+    console->Print("Speedrun stopped!\n");
+}
+
+void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested)
+{
+    if (!g_speedrun.isRunning) {
+        return;
+    }
+
+    g_speedrun.currentSplit.push_back(Segment{
+        segName,
+        SpeedrunTimer::GetSegmentTicks(),
+    });
+
+    if (newSplit) {
+        int ticks = 0;
+
+        for (Segment seg : g_speedrun.currentSplit) {
+            ticks += seg.ticks;
         }
 
-        this->StatusReport("Speedrun stopped!\n");
-        this->pubInterface.get()->SetAction(TimerAction::End);
-        this->state = TimerState::NotRunning;
-        if (addSegment) {
-            this->result.get()->AddSegment(this->session + this->pause);
+        g_speedrun.splits.push_back(SplitInfo{
+            g_speedrun.currentSplit,
+            segName,
+            ticks,
+        });
+
+        g_speedrun.currentSplit.clear();
+    }
+
+    g_speedrun.saved = 0;
+    g_speedrun.base = getCurrentTick();
+
+    if (requested) {
+        if (newSplit) {
+            setTimerAction(TimerAction::SPLIT);
         }
-        this->result.get()->EndSplit(this->total);
-        this->pause = 0;
-
-        if (networkManager.isConnected) {
-            networkManager.NotifySpeedrunFinished();
-        }
-    } else {
-        console->Print("Ready for new speedun!\n");
-        this->pubInterface.get()->SetAction(TimerAction::Reset);
-        this->Reset();
+        console->Print("Speedrun split!\n");
     }
 }
-void SpeedrunTimer::Reset()
+
+void SpeedrunTimer::Reset(bool requested)
 {
-    this->total = this->offset;
-    this->prevTotal = 0;
-    this->base = 0;
-    this->pause = 0;
-    this->lastSplit = 0;
-    TimerCategory::ResetAll();
-    this->InitRules();
-}
-void SpeedrunTimer::Split()
-{
-    if (this->IsActive()) {
-        this->StatusReport("Speedrun split!\n");
-        this->result.get()->Split(this->total, this->GetCurrentMap());
-        this->pb.get()->UpdateSplit(this->GetCurrentMap());
-        this->pubInterface.get()->SetAction(TimerAction::Split);
-        this->lastSplit = this->total;
-        if (networkManager.isConnected) {
-            networkManager.splitTicks = this->result->prevSplit->GetTotal();
-            networkManager.splitTicksTotal = this->total;
-        }
+    SpeedrunTimer::ResetCategory();
+
+    g_speedrun.isRunning = false;
+    g_speedrun.isPaused = false;
+    g_speedrun.isReset = true;
+
+    g_speedrun.hasSplitLoad = false;
+
+    g_speedrun.saved = 0;
+    g_speedrun.base = 0;
+    g_speedrun.currentSplit.clear();
+    g_speedrun.splits.clear();
+    g_speedrun.visitedMaps.clear();
+
+    if (requested) {
+        setTimerAction(TimerAction::RESET);
+        console->Print("Ready for new speedrun!\n");
     }
 }
-void SpeedrunTimer::IncrementPauseTime()
-{
-    ++this->pause;
-}
-int SpeedrunTimer::GetSession()
-{
-    return this->session;
-}
-int SpeedrunTimer::GetTotal()
-{
-    return this->total;
-}
-const char* SpeedrunTimer::GetCurrentMap()
-{
-    return (std::strlen(this->map) != 0) ? this->map : "menu";
-}
-void SpeedrunTimer::LoadRules(Game* game)
-{
-    auto filtered = TimerCategory::FilterByGame(game);
-    if (filtered != 0) {
-        this->category = TimerCategory::GetList()[0];
-        console->DevMsg("Loaded %i speedrun %s!\n", filtered, (filtered == 1) ? "category" : "categories");
-    }
-}
-void SpeedrunTimer::InitRules()
-{
-    this->rules.clear();
-    if (this->category) {
-        for (const auto& rule : this->category->rules) {
-            if (rule->IsEmpty() || !std::strcmp(this->map, rule->mapName)) {
-                this->rules.push_back(rule);
-            }
-        }
-    }
-}
-void SpeedrunTimer::ReloadRules()
-{
-    for (const auto& rule : this->rules) {
-        if (!rule->Load()) {
-            console->Warning("Failed to load rule: %s -> %s\n", rule->name, rule->mapName);
-        } else {
-            console->DevMsg("Loaded rule: %s -> %s\n", rule->name, rule->mapName);
-        }
-    }
-}
-void SpeedrunTimer::UnloadRules()
-{
-    for (const auto& rule : this->rules) {
-        rule->Unload();
-    }
-}
-const std::vector<TimerRule*>& SpeedrunTimer::GetRules()
-{
-    return this->rules;
-}
-void SpeedrunTimer::SetIntervalPerTick(const float* ipt)
-{
-    this->ipt = *ipt;
-    this->pubInterface->SetIntervalPerTick(ipt);
-}
-const float SpeedrunTimer::GetIntervalPerTick()
-{
-    return this->ipt;
-}
-void SpeedrunTimer::SetCategory(TimerCategory* category)
-{
-    this->category = category;
-}
-TimerCategory* SpeedrunTimer::GetCategory()
-{
-    return this->category;
-}
-void SpeedrunTimer::SetOffset(const int offset)
-{
-    this->offset = this->total = offset;
-}
-const int SpeedrunTimer::GetOffset()
-{
-    return this->offset;
-}
-TimerResult* SpeedrunTimer::GetResult()
-{
-    return this->result.get();
-}
-TimerResult* SpeedrunTimer::GetPersonalBest()
-{
-    return this->pb.get();
-}
-bool SpeedrunTimer::ExportResult(std::string filePath, bool pb)
-{
-    auto result = (pb)
-        ? this->GetPersonalBest()
-        : this->GetResult();
 
-    if (result->splits.empty()) {
-        return false;
-    }
+// }}}
 
-    std::ofstream file(filePath, std::ios::out | std::ios::trunc);
-    if (!file.good()) {
-        return false;
-    }
-
-    file << SAR_SPEEDRUN_EXPORT_HEADER << std::endl;
-
-    auto segment = 0;
-
-    for (auto& split : result->splits) {
-        auto ticks = split->GetTotal();
-        auto time = SpeedrunTimer::Format(ticks * this->ipt);
-
-        for (const auto& seg : split->segments) {
-            auto total = split->GetTotal();
-            file << split->map << ","
-                 << seg.session << ","
-                 << SpeedrunTimer::Format(seg.session * this->ipt).c_str() << ","
-                 << ticks << ","
-                 << time.c_str() << ","
-                 << total << ","
-                 << SpeedrunTimer::Format(total * this->ipt).c_str() << ","
-                 << ++segment << std::endl;
-        }
-    }
-
-    file.close();
-    return true;
-}
-bool SpeedrunTimer::ExportPersonalBest(std::string filePath)
+bool SpeedrunTimer::IsRunning()
 {
-    return this->ExportResult(filePath, true);
+    return g_speedrun.isRunning;
 }
-bool SpeedrunTimer::ImportPersonalBest(std::string filePath)
-{
-    std::ifstream file(filePath, std::ios::in);
-    if (!file.good()) {
-        return false;
-    }
 
-    std::string buffer;
-    std::getline(file, buffer);
+// Time formatting {{{
 
-    if (buffer == std::string(SAR_SPEEDRUN_EXPORT_HEADER)) {
-        auto pb = new TimerResult();
-        std::string buffer;
-        std::string lastMap;
-        auto row = 0;
-        auto totaltotal = 0;
-        while (std::getline(file, buffer)) {
-            std::stringstream line(buffer);
-            std::string element;
-            std::vector<std::string> elements;
-            while (std::getline(line, element, ',')) {
-                elements.push_back(element);
-            }
-
-            auto map = elements[0].c_str();
-            auto segment = std::atoi(elements[1].c_str());
-            auto total = std::atoi(elements[5].c_str());
-
-            if (row == 0) {
-                pb->NewSplit(total - segment, map);
-            } else if (elements[0] != lastMap) {
-                pb->Split(total - segment, map);
-            }
-
-            pb->AddSegment(segment);
-            lastMap = elements[0];
-
-            totaltotal = total;
-            ++row;
-        }
-
-        if (!pb->splits.empty()) {
-            pb->EndSplit(totaltotal);
-            pb->total = totaltotal;
-        }
-
-        this->pb.reset(pb);
-        file.close();
-        return true;
-    }
-
-    return false;
-}
-int SpeedrunTimer::GetSplitDelta()
-{
-    return this->result.get()->curSplit->entered - this->pb.get()->prevSplit->entered;
-}
-int SpeedrunTimer::GetCurrentDelta()
-{
-    return this->total - this->pb.get()->curSplit->entered;
-}
-void SpeedrunTimer::StatusReport(const char* message)
-{
-    console->Print("%s", message);
-    console->DevMsg("%s\n", SpeedrunTimer::Format(this->total * this->ipt).c_str());
-}
-void SpeedrunTimer::ManualSplitWithTime(int ticks)
-{
-    if (!this->IsActive()) return;
-    int old_session = this->session;
-    int old_total = this->total;
-    this->session = ticks;
-    this->total = this->prevTotal + ticks;
-    this->Split();
-    this->prevTotal = this->total;
-    this->session = old_session;
-    this->total = old_total + ticks;
-}
-SpeedrunTimer::~SpeedrunTimer()
-{
-    this->pubInterface.reset();
-    this->result.reset();
-    this->pb.reset();
-}
 std::string SpeedrunTimer::Format(float raw)
 {
-    char format[16];
+    char format[32];
 
     auto sec = int(std::floor(raw));
-    auto ms = int(std::ceil((raw - sec) * 1000));
+    auto ms = int(std::round((raw - sec) * 1000));
 
     if (sec >= 60) {
         auto min = sec / 60;
@@ -493,10 +382,10 @@ std::string SpeedrunTimer::Format(float raw)
 
 std::string SpeedrunTimer::SimpleFormat(float raw)
 {
-    char format[16];
+    char format[32];
 
     auto sec = int(std::floor(raw));
-    auto ms = int(std::ceil((raw - sec) * 1000));
+    auto ms = int(std::round((raw - sec) * 1000));
 
     auto min = sec / 60;
     sec = sec % 60;
@@ -519,216 +408,76 @@ float SpeedrunTimer::UnFormat(std::string& formated_time)
     return total;
 }
 
-// Completion Function
+// }}}
 
-int sar_category_CompletionFunc(const char* partial,
-    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+Variable sar_speedrun_smartsplit("sar_speedrun_smartsplit", "1", "Only split the speedrun timer a maximum of once per map.\n");
+Variable sar_speedrun_time_pauses("sar_speedrun_time_pauses", "0", "Include time spent paused in the speedrun timer.\n");
+Variable sar_speedrun_stop_in_menu("sar_speedrun_stop_in_menu", "0", "Automatically stop the speedrun timer when the menu is loaded.\n");
+Variable sar_speedrun_start_on_load("sar_speedrun_start_on_load", "0", "Automatically start the speedrun timer when a map is loaded.\n");
+Variable sar_speedrun_offset("sar_speedrun_offset", "0", 0, "Start speedruns with this many ticks on the timer.\n");
+
+CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer.\n")
 {
-    const char* cmd = "sar_speedrun_category ";
-    char* match = (char*)partial;
-    if (std::strstr(partial, cmd) == partial) {
-        match = match + std::strlen(cmd);
+    SpeedrunTimer::Start();
+}
+
+CON_COMMAND(sar_speedrun_stop, "sar_speedrun_start - stop the speedrun timer.\n")
+{
+    SpeedrunTimer::Stop();
+}
+
+CON_COMMAND(sar_speedrun_split, "sar_speedrun_split - perform a split on the speedrun timer.\n")
+{
+    SpeedrunTimer::Split(true, std::string(engine->m_szLevelName));
+}
+
+CON_COMMAND(sar_speedrun_pause, "sar_speedrun_pause - pause the speedrun timer.\n")
+{
+    SpeedrunTimer::Pause();
+}
+
+CON_COMMAND(sar_speedrun_resume, "sar_speedrun_resume - resume the speedrun timer.\n")
+{
+    SpeedrunTimer::Resume();
+}
+
+CON_COMMAND(sar_speedrun_reset, "sar_speedrun_reset - reset the speedrun timer.\n")
+{
+    SpeedrunTimer::Reset();
+}
+
+CON_COMMAND(sar_speedrun_result, "sar_speedrun_result - print the speedrun result.\n")
+{
+    if (g_speedrun.isReset) {
+        console->Print("No active or completed speedrun!\n");
+        return;
     }
 
-    // Filter items
-    static auto items = std::vector<std::string>();
-    items.clear();
-    for (auto& cat : TimerCategory::GetList()) {
-        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
-            break;
-        }
-
-        if (std::strlen(match) != std::strlen(cmd)) {
-            if (std::strstr(cat->name, match)) {
-                items.push_back(cat->name);
+    for (SplitInfo split : g_speedrun.splits) {
+        console->Print("%s (%d -> %s)\n", split.name.c_str(), split.ticks, SpeedrunTimer::Format(split.ticks * *engine->interval_per_tick).c_str());
+        if (split.segments.size() > 1) {
+            for (Segment seg : split.segments) {
+                console->Print("    %s (%d -> %s)\n", seg.name.c_str(), seg.ticks, SpeedrunTimer::Format(seg.ticks * *engine->interval_per_tick).c_str());
             }
-        } else {
-            items.push_back(cat->name);
         }
+        console->Print("\n");
     }
 
-    // Copy items into list buffer
-    auto count = 0;
-    for (auto& item : items) {
-        std::strcpy(commands[count++], (std::string(cmd) + item).c_str());
-    }
-
-    return count;
-}
-
-// Commands
-
-CON_COMMAND(sar_speedrun_start, "Starts speedrun timer manually.\n")
-{
-    speedrun->Start(engine->GetTick());
-}
-CON_COMMAND(sar_speedrun_stop, "Stops speedrun timer manually.\n")
-{
-    speedrun->Stop(true, true);
-}
-CON_COMMAND(sar_speedrun_split, "Splits speedrun timer manually.\n")
-{
-    speedrun->Split();
-}
-CON_COMMAND(sar_speedrun_pause, "Pauses speedrun timer manually.\n")
-{
-    speedrun->Pause();
-}
-CON_COMMAND(sar_speedrun_resume, "Resumes speedrun timer manually.\n")
-{
-    speedrun->Resume(engine->GetTick());
-}
-CON_COMMAND(sar_speedrun_reset, "Resets speedrun timer.\n")
-{
-    if (speedrun->IsActive()) {
-        speedrun->Stop(true, true);
-    }
-    speedrun->Stop();
-}
-CON_COMMAND(sar_speedrun_result, "Prints result of speedrun.\n")
-{
-    auto pb = (args.ArgC() == 2 && !std::strcmp(args[1], "pb"));
-
-    auto session = speedrun->GetSession();
-    auto total = speedrun->GetTotal();
-    auto ipt = speedrun->GetIntervalPerTick();
-
-    auto result = (pb)
-        ? speedrun->GetPersonalBest()
-        : speedrun->GetResult();
-
-    if (!pb && speedrun->IsActive()) {
-        console->PrintActive("Session: %s (%i)\n", SpeedrunTimer::Format(session * ipt).c_str(), session);
-    }
-
-    auto segments = 0;
-    for (auto& split : result->splits) {
-        auto completedIn = split->GetTotal();
-        console->Print("%s -> %s (%i)\n", split->map, SpeedrunTimer::Format(completedIn * ipt).c_str(), completedIn);
-        for (const auto& seg : split->segments) {
-            console->Msg("  -> %s (%i)\n", SpeedrunTimer::Format(seg.session * ipt).c_str(), seg.session);
-            ++segments;
+    if (g_speedrun.isRunning) {
+        console->Print("[current split]\n");
+        for (Segment seg : g_speedrun.currentSplit) {
+            console->Print("    %s (%d -> %s)\n", seg.name.c_str(), seg.ticks, SpeedrunTimer::Format(seg.ticks * *engine->interval_per_tick).c_str());
         }
+        int segTicks = SpeedrunTimer::GetSegmentTicks();
+        console->Print("    [current segment] (%d -> %s)\n", segTicks, SpeedrunTimer::Format(segTicks * *engine->interval_per_tick).c_str());
+        console->Print("\n");
     }
 
-    if (!pb && speedrun->IsActive()) {
-        console->PrintActive("Segments: %i\n", segments);
-        console->PrintActive("Total:    %s (%i)\n", SpeedrunTimer::Format(total * ipt).c_str(), total);
-    } else {
-        console->Print("Segments: %i\n", segments);
-        console->Print("Total:    %s (%i)\n", SpeedrunTimer::Format(result->total * ipt).c_str(), result->total);
-    }
+    int total = SpeedrunTimer::GetTotalTicks();
+    console->Print("Total: %d -> %s\n", total, SpeedrunTimer::Format(total * *engine->interval_per_tick).c_str());
 }
-CON_COMMAND(sar_speedrun_export, "Saves speedrun result to a csv file.\n"
-                                 "Usage: sar_speedrun_export <file_name>\n")
+
+CON_COMMAND(sar_speedrun_export, "sar_speedrun_export <filename> - export the speedrun result to the specified CSV file.\n")
 {
-    if (args.ArgC() != 2) {
-        return console->Print(sar_speedrun_export.ThisPtr()->m_pszHelpString);
-    }
-
-    auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
-    if (filePath.substr(filePath.length() - 4, 4) != ".csv")
-        filePath += ".csv";
-
-    if (speedrun->ExportResult(filePath)) {
-        console->Print("Exported result!\n");
-    } else {
-        console->Warning("Failed to export result!\n");
-    }
-}
-CON_COMMAND(sar_speedrun_export_pb, "Saves speedrun personal best to a csv file.\n"
-                                    "Usage: sar_speedrun_export_pb <file_name>\n")
-{
-    if (args.ArgC() != 2) {
-        return console->Print(sar_speedrun_export_pb.ThisPtr()->m_pszHelpString);
-    }
-
-    auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
-    if (filePath.substr(filePath.length() - 4, 4) != ".csv")
-        filePath += ".csv";
-
-    if (speedrun->ExportPersonalBest(filePath)) {
-        console->Print("Exported personal best!\n");
-    } else {
-        console->Warning("Failed to export personal best!\n");
-    }
-}
-CON_COMMAND_AUTOCOMPLETEFILE(sar_speedrun_import, "Imports speedrun data file.\n"
-                                                  "Usage: sar_speedrun_import <file_name>\n",
-    0, 0, csv)
-{
-    if (args.ArgC() != 2) {
-        return console->Print(sar_speedrun_import.ThisPtr()->m_pszHelpString);
-    }
-
-    auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
-    if (filePath.substr(filePath.length() - 4, 4) != ".csv")
-        filePath += ".csv";
-
-    if (speedrun->ImportPersonalBest(filePath)) {
-        console->Print("Imported %s!\n", args[1]);
-    } else {
-        console->Warning("Failed to import file!\n");
-    }
-}
-CON_COMMAND_F_COMPLETION(sar_speedrun_category, "Sets the category for a speedrun.\n", 0, sar_category_CompletionFunc)
-{
-    if (!speedrun->GetCategory() || TimerCategory::GetList().empty()) {
-        return console->Print("This game does not have any categories!\n");
-    }
-
-    auto PrintCategory = []() {
-        auto category = speedrun->GetCategory();
-        console->Print("Current category: %s\n", category->name);
-        console->Msg("Rules:\n");
-        for (auto const& rule : category->rules) {
-            console->Msg("  -> %s (%s)\n", rule->name, rule->mapName);
-        }
-    };
-
-    if (args.ArgC() != 2) {
-        return PrintCategory();
-    }
-
-    for (auto const& category : TimerCategory::GetList()) {
-        if (!std::strcmp(category->name, args[1])) {
-            speedrun->SetCategory(category);
-            speedrun->InitRules();
-        }
-    }
-
-    return PrintCategory();
-}
-CON_COMMAND(sar_speedrun_offset, "Sets offset in ticks at which the timer should start.\n")
-{
-    if (args.ArgC() == 2) {
-        if (speedrun->IsActive()) {
-            return console->Print("Cannot change offset during an active speedrun!\n");
-        }
-
-        auto offset = std::atoi(args[1]);
-        if (offset < 0) {
-            return console->Print("Offset cannot be negative!\n");
-        }
-
-
-        speedrun->SetOffset(offset);
-    }
-
-    console->Print("Timer will start at: %s\n", SpeedrunTimer::Format(speedrun->GetOffset() * speedrun->GetIntervalPerTick()).c_str());
-}
-CON_COMMAND(sar_speedrun_do_split_with_time, "sar_speedrun_do_split_with_time [ticks] - perform a split whose (non-cumulative) time is precisely the number of ticks specified. Any time in this session so far is added to the next split.\n")
-{
-    if (args.ArgC() != 2) {
-        return console->Print(sar_speedrun_do_split_with_time.ThisPtr()->m_pszHelpString);
-    }
-
-    char *end;
-    long ticks = std::strtol(args[1], &end, 10);
-    if (*end || end == args[1]) {
-        // Ticks argument is not a number
-        return console->Print(sar_speedrun_do_split_with_time.ThisPtr()->m_pszHelpString);
-    }
-
-    speedrun->ManualSplitWithTime(ticks);
+    // TODO
 }

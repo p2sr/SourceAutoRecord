@@ -124,7 +124,7 @@ float Client::GetCMTimer()
     if (sv_bonus_challenge.GetBool()) {
         uintptr_t player = (uintptr_t)client->GetPlayer(1);
         if (player) {
-            return *(float*)(player + Offsets::m_StatsThisLevel + 12) - speedrun->GetIntervalPerTick();
+            return *(float*)(player + Offsets::m_StatsThisLevel + 12);
         }
     }
     return 0.0f;

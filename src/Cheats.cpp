@@ -195,8 +195,7 @@ void Cheats::Init()
     sar_sr_hud_font_color.UniqueFor(s3);
     sar_sr_hud_font_index.UniqueFor(s3);
     sar_speedrun_start_on_load.UniqueFor(s3);
-    sar_speedrun_autostop.UniqueFor(s3);
-    sar_speedrun_standard.UniqueFor(s3);
+    sar_speedrun_stop_in_menu.UniqueFor(s3);
     sar_duckjump.UniqueFor(SourceGame_Portal2Engine);
     sar_replay_viewmode.UniqueFor(SourceGame_Portal2Game);
     sar_mimic.UniqueFor(SourceGame_Portal2Game);
@@ -214,8 +213,6 @@ void Cheats::Init()
     sar_workshop_list.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_speedrun_result.UniqueFor(s3);
     sar_speedrun_export.UniqueFor(s3);
-    sar_speedrun_export_pb.UniqueFor(s3);
-    sar_speedrun_import.UniqueFor(s3);
     sar_speedrun_category.UniqueFor(s3);
     sar_speedrun_offset.UniqueFor(s3);
     sar_speedrun_start.UniqueFor(s3);

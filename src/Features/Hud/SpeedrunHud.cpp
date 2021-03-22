@@ -4,6 +4,7 @@
 
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
+#include "Modules/Engine.hpp"
 
 #include "Variable.hpp"
 
@@ -25,8 +26,8 @@ bool SpeedrunHud::ShouldDraw()
 }
 void SpeedrunHud::Paint(int slot)
 {
-    auto total = speedrun->GetTotal();
-    auto ipt = speedrun->GetIntervalPerTick();
+    auto total = SpeedrunTimer::GetTotalTicks();
+    auto ipt = *engine->interval_per_tick;
 
     auto xOffset = sar_sr_hud_x.GetInt();
     auto yOffset = sar_sr_hud_y.GetInt();

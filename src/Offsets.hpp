@@ -138,6 +138,7 @@ extern int m_pShadowStand;
 extern int m_pShadowCrouch;
 extern int m_Local;
 extern int m_hGroundEntity;
+extern int m_iBonusChallenge;
 
 // CPlayerLocalData
 extern int m_nTractorBeamCount;

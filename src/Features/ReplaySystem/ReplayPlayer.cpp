@@ -46,7 +46,7 @@ void ReplayPlayer::Play(Replay* replay, CUserCmd* cmd)
 }
 void ReplayPlayer::StartPlaying(Replay* replay)
 {
-    if ((!speedrun->IsActive() && !sv_bonus_challenge.GetBool()) || sv_cheats.GetBool()) {
+    if ((!SpeedrunTimer::IsRunning() && !sv_bonus_challenge.GetBool()) || sv_cheats.GetBool()) {
         replay->GetView(this->viewIndex)->Reset();
         this->isPlaying = true;
     }

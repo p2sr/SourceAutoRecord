@@ -5,7 +5,6 @@
 #include "Features/Cvars.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
-#include "Features/Speedrun/Rules/Portal2Rules.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/ZachStats.hpp"
 #include "Features/Renderer.hpp"
@@ -346,15 +345,14 @@ DETOUR(Engine::SetSignonState2, int state, int count)
 // CEngine::Frame
 DETOUR(Engine::Frame)
 {
-    speedrun->PreUpdate(engine->GetTick(), engine->m_szLevelName);
-
     if (engine->hoststate->m_currentState != session->prevState) {
         session->Changed();
     }
     session->prevState = engine->hoststate->m_currentState;
 
+
     if (engine->hoststate->m_activeGame || std::strlen(engine->m_szLevelName) == 0) {
-        speedrun->PostUpdate(engine->GetTick(), engine->m_szLevelName);
+        SpeedrunTimer::Update();
     }
 
     if ((engine->demoplayer->IsPlaying() || engine->IsOrange()) && engine->lastTick != session->GetTick()) {
@@ -486,7 +484,7 @@ DETOUR_COMMAND(Engine::gameui_activate)
 DETOUR_COMMAND(Engine::playvideo_end_level_transition)
 {
     if (engine->GetMaxClients() >= 2) {
-        speedrun->Pause();
+        SpeedrunTimer::Pause();
     }
 
     Engine::playvideo_end_level_transition_callback(args);
@@ -494,9 +492,11 @@ DETOUR_COMMAND(Engine::playvideo_end_level_transition)
 DETOUR_COMMAND(Engine::playvideo_exitcommand_nointerrupt)
 {
     if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "dlc1_endmovie")) {
-        course6End = true;
+        console->Print("%d: course 6 end\n", session->GetTick());
+        //course6End = true;
     } else if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "coop_outro")) {
-        course5End = true;
+        console->Print("%d: course 5 end\n", session->GetTick());
+        //course5End = true;
     }
 
     Engine::playvideo_exitcommand_nointerrupt_callback(args);
@@ -515,9 +515,9 @@ DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
 {
     if (engine->GetMaxClients() >= 2 && ss_force_primary_fullscreen.GetInt() == 0) {
         if (engine->hadInitialForcePrimaryFullscreen) {
-            speedrun->Resume(engine->GetTick());
-            if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !speedrun->IsActive()) {
-                speedrun->Start(engine->GetTick());
+            SpeedrunTimer::Resume();
+            if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !SpeedrunTimer::IsRunning()) {
+                SpeedrunTimer::Start();
             }
         }
         engine->hadInitialForcePrimaryFullscreen = !engine->hadInitialForcePrimaryFullscreen;
@@ -605,7 +605,7 @@ bool Engine::Init()
 #endif
             tickcount = Memory::Deref<int*>(ProcessTick + Offsets::tickcount);
             interval_per_tick = Memory::Deref<float*>(ProcessTick + Offsets::interval_per_tick);
-            speedrun->SetIntervalPerTick(interval_per_tick);
+            SpeedrunTimer::SetIpt(*interval_per_tick);
 
             auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);

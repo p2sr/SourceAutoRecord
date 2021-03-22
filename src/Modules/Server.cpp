@@ -11,7 +11,6 @@
 #include "Features/Routing/SeamshotFind.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Speedrun/CustomCategories.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Tas/AutoStrafer.hpp"
@@ -105,6 +104,23 @@ void Server::KillEntity(void* entity)
 #else
     server->AcceptInput(entity, "Kill", player, player, &val, 0);
 #endif
+}
+CMStatus Server::GetChallengeStatus()
+{
+    auto player = GetPlayer(GET_SLOT() + 1);
+    if (!player) {
+        return CMStatus::NONE;
+    }
+
+    int bonusChallenge = *(int *)((uintptr_t)player + Offsets::m_iBonusChallenge);
+
+    if (bonusChallenge) {
+        return CMStatus::CHALLENGE;
+    } else if (sv_bonus_challenge.GetBool()) {
+        return CMStatus::WRONG_WARP;
+    } else {
+        return CMStatus::NONE;
+    }
 }
 
 // CGameMovement::CheckJumpButton
@@ -299,13 +315,15 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 // original function
 static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, void* activator, void* caller, variant_t *parameter)
 {
-    CheckCustomCategoryRules(thisptr, inputName);
     zachStats->CheckZyntexTriggers(thisptr, inputName);
+    const char *entName = server->GetEntityName(thisptr);
+    const char *className = server->GetEntityClassName(thisptr);
+    if (!entName) entName = "";
+    if (!className) className = "";
+
+    SpeedrunTimer::TestInputRules(entName, className, inputName, parameter->ToString(), OutputType::OTHER);
+
     if (engine->demorecorder->isRecordingDemo) {
-        const char *entName = server->GetEntityName(thisptr);
-        const char *className = server->GetEntityClassName(thisptr);
-        if (!entName) entName = "";
-        if (!className) className = "";
 
         size_t entNameLen = strlen(entName);
         size_t classNameLen = strlen(className);
@@ -323,7 +341,7 @@ static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, voi
         engine->demorecorder->RecordData(data, len);
         free(data);
     }
-    //console->DevMsg("%.4d INPUT %s TARGETNAME %s CLASSNAME %s\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr));
+    //console->DevMsg("%.4d INPUT '%s' TARGETNAME '%s' CLASSNAME '%s' PARAM '%s'\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr), parameter->ToString());
 }
 
 // This is kinda annoying - it's got to be in a separate function
@@ -413,7 +431,6 @@ DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
     if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
-    TickCustomCategories();
     RunSeqs();
 
     if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
@@ -435,7 +452,9 @@ DETOUR(Server::GameFrame, bool simulating)
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
-    
+    if (simulating) {
+        SpeedrunTimer::TestTickRules();
+    }
 
     if ((session->isRunning && session->GetTick() == 16) || fovChanger->needToUpdate) {
         fovChanger->Force();
@@ -444,17 +463,11 @@ DETOUR(Server::GameFrame, bool simulating)
     if (session->isRunning && pauseTimer->IsActive()) {
         pauseTimer->Increment();
 
-        if (speedrun->IsActive() && sar_speedrun_time_pauses.GetBool()) {
-            speedrun->IncrementPauseTime();
-        }
+        SpeedrunTimer::AddPauseTick();
 
         if (timer->isRunning && sar_timer_time_pauses.GetBool()) {
             ++timer->totalTicks;
         }
-    }
-
-    if (session->isRunning && sar_speedrun_standard.GetBool()) {
-        speedrun->CheckRules(engine->GetTick());
     }
 
     if (simulating && sar_seamshot_finder.GetBool()) {
@@ -570,6 +583,7 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
     offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
     offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::m_hGroundEntity);
+    offsetFinder->ServerSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
 
     if (sar.game->Is(SourceGame_Portal2Engine)) {
         offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);

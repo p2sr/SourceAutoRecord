@@ -197,7 +197,7 @@ void DemoGhostPlayer::PrintRecap()
     console->Print("Recap of all ghosts :\n");
 
     for (auto& ghost : this->ghostPool) {
-        console->Msg("    [%i of %i] %s : %s -> %s in %s\n", current++, total, ghost.name.c_str(), ghost.firstLevel.c_str(), ghost.lastLevel.c_str(), SpeedrunTimer::Format(ghost.totalTicks * speedrun->GetIntervalPerTick()).c_str());
+        console->Msg("    [%i of %i] %s : %s -> %s in %s\n", current++, total, ghost.name.c_str(), ghost.firstLevel.c_str(), ghost.lastLevel.c_str(), SpeedrunTimer::Format(ghost.totalTicks * *engine->interval_per_tick).c_str());
     }
 }
 

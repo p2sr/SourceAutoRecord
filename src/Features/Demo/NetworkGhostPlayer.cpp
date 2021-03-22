@@ -259,7 +259,7 @@ void NetworkManager::NotifyMapChange()
     sf::Packet packet;
 
     if (this->splitTicks != -1) {
-        auto ipt = speedrun->GetIntervalPerTick();
+        auto ipt = *engine->interval_per_tick;
         std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
         std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
         client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", this->name.c_str(), engine->m_szLevelName, time.c_str(), totalTime.c_str());
@@ -277,7 +277,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM)
     packet << HEADER::SPEEDRUN_FINISH << this->ID;
 
     float totalSecs = 0;
-    auto ipt = speedrun->GetIntervalPerTick();
+    auto ipt = *engine->interval_per_tick;
 
     if (CM) {
         uintptr_t player = (uintptr_t)client->GetPlayer(1);
@@ -285,7 +285,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM)
             totalSecs = *(float *)(player + Offsets::m_StatsThisLevel + 12) - ipt;
         }
     } else {
-        totalSecs = speedrun->GetTotal() * ipt;
+        totalSecs = SpeedrunTimer::GetTotalTicks() * ipt;
     }
 
     std::string time = SpeedrunTimer::Format(totalSecs);
@@ -411,7 +411,7 @@ void NetworkManager::Treat(sf::Packet& packet)
                     if (ticksIL == -1) {
                         client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
                     } else {
-                        auto ipt = speedrun->GetIntervalPerTick();
+                        auto ipt = *engine->interval_per_tick;
                         std::string time = SpeedrunTimer::Format(ticksIL * ipt);
                         std::string timeTotal = SpeedrunTimer::Format(ticksTotal * ipt);
                         client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", ghost->name.c_str(), ghost->currentMap.c_str(), time.c_str(), timeTotal.c_str());
