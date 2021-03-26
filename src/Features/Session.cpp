@@ -346,7 +346,7 @@ void Session::DoFastLoads()
 
 void Session::ResetLoads()
 {
-    if (sar_loads_uncap.GetBool()) {
+    if (sar_loads_uncap.GetBool() && fps_max.GetInt() == 0) {
         fps_max.SetValue(this->oldFpsMax);
     }
 
