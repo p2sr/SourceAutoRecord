@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "Features/Cvars.hpp"
+#include "Features/ConditionalExec.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/Rules/Portal2Rules.hpp"
@@ -153,6 +154,8 @@ int Engine::PointToScreen(const Vector& point, Vector& screen)
 }
 void Engine::SafeUnload(const char* postCommand)
 {
+    RunExitExecs();
+
     // The exit command will handle everything
     this->ExecuteCommand("sar_exit");
 
