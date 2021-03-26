@@ -31,6 +31,11 @@ static int **g_snd_p;
 static int *g_snd_vol;
 static MovieInfo_t *g_movieInfo;
 
+// For disabling the trampoline
+static uintptr_t SND_RecordBuffer;
+static uint8_t SND_RecordBuffer_Original[10];
+static bool trampolineInitialized = false;;
+
 // The demoplayer tick this segment ends on (we'll stop recording at
 // this tick if sar_render_autostop is set)
 int Renderer::segmentEndTick = -1;
@@ -1045,7 +1050,9 @@ void Renderer::Init(void **videomode)
     snd_surround_speakers = Variable("snd_surround_speakers");
 
 #ifdef _WIN32
-    uintptr_t SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 68 DE 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
+    SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 68 DE 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
+
+    memcpy(SND_RecordBuffer_Original, (void *)SND_RecordBuffer, sizeof SND_RecordBuffer_Original);
 
     g_movieInfo = *(MovieInfo_t **)(SND_RecordBuffer + 5);
 
@@ -1076,7 +1083,9 @@ void Renderer::Init(void **videomode)
     ((uint8_t *)SND_RecordBuffer)[8] = 0x90;
     ((uint8_t *)SND_RecordBuffer)[9] = 0x90;
 #else
-    uintptr_t SND_RecordBuffer = Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 3C 65 A1 ? ? ? ? 89 45 E4 31 C0 E8 ? ? ? ? 84 C0 75 1B");
+    SND_RecordBuffer = Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 3C 65 A1 ? ? ? ? 89 45 E4 31 C0 E8 ? ? ? ? 84 C0 75 1B");
+
+    memcpy(SND_RecordBuffer_Original, (void *)SND_RecordBuffer, sizeof SND_RecordBuffer_Original);
 
     uintptr_t SND_IsRecording = Memory::Read(SND_RecordBuffer + 21);
     g_movieInfo = *(MovieInfo_t **)(SND_IsRecording + 2);
@@ -1109,6 +1118,17 @@ void Renderer::Init(void **videomode)
 
     Command::Hook("startmovie", &startmovie_cbk, startmovie_origCbk);
     Command::Hook("endmovie", &endmovie_cbk, endmovie_origCbk);
+
+    trampolineInitialized = true;
+}
+
+void Renderer::Cleanup()
+{
+    if (trampolineInitialized) {
+        memcpy((void *)SND_RecordBuffer, SND_RecordBuffer_Original, sizeof SND_RecordBuffer_Original);
+        Command::Unhook("startmovie", startmovie_origCbk);
+        Command::Unhook("endmovie", endmovie_origCbk);
+    }
 }
 
 // }}}
