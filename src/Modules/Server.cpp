@@ -470,7 +470,7 @@ DETOUR(Server::GameFrame, bool simulating)
         const int MAX_SPLITSCREEN = 2; // HACK: we can't use MAX_SPLITSCREEN_PLAYERS since it's not a compile-time constant
         static std::optional<Vector> portalPositions[MAX_SPLITSCREEN][2];
         for (int slot = 0; slot < MAX_SPLITSCREEN; ++slot) {
-            void *player = server->GetPlayer(slot);
+            void *player = server->GetPlayer(slot + 1);
             if (!player) {
                 portalPositions[slot][0] = {};
                 portalPositions[slot][1] = {};
@@ -507,11 +507,11 @@ DETOUR(Server::GameFrame, bool simulating)
                     continue;
                 }
 
-                Vector pos = server->GetAbsOrigin(bluePortal);
-                if (pos != portalPositions[slot][0]) {
+                Vector pos = server->GetAbsOrigin(portal);
+                if (pos != portalPositions[slot][i]) {
                     // Portal position changed
                     SpeedrunTimer::TestPortalRules(pos, slot, i ? PortalColor::ORANGE : PortalColor::BLUE);
-                    portalPositions[slot][0] = pos;
+                    portalPositions[slot][i] = pos;
                     if (engine->demorecorder->isRecordingDemo) {
                         // Record in demo
                         char data[15];

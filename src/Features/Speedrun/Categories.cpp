@@ -6,6 +6,7 @@
 #include <memory>
 #include <set>
 #include <variant>
+#include <cstdlib>
 
 template<typename V>
 static inline V *lookupMap(std::map<std::string, V> &m, std::string k)
@@ -412,6 +413,11 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
         rule->onlyAfter = "";
     } else {
         rule->onlyAfter = *after;
+    }
+
+    auto slotStr = lookupMap(params, "player");
+    if (slotStr) {
+        rule->slot = atoi(slotStr->c_str());
     }
 
     rule->fired = false;
