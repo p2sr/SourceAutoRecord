@@ -321,10 +321,15 @@ static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, voi
     if (!entName) entName = "";
     if (!className) className = "";
 
-    SpeedrunTimer::TestInputRules(entName, className, inputName, parameter->ToString(), OutputType::OTHER);
+    std::optional<int> activatorSlot;
+
+    if (activator && server->IsPlayer(activator)) {
+        activatorSlot = server->GetSplitScreenPlayerSlot(activator);
+    }
+
+    SpeedrunTimer::TestInputRules(entName, className, inputName, parameter->ToString(), activatorSlot);
 
     if (engine->demorecorder->isRecordingDemo) {
-
         size_t entNameLen = strlen(entName);
         size_t classNameLen = strlen(className);
         size_t inputNameLen = strlen(inputName);
@@ -332,8 +337,17 @@ static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, voi
         const char *paramStr = parameter->ToString();
 
         size_t len = entNameLen + classNameLen + inputNameLen + strlen(paramStr) + 5;
+        if (activatorSlot) {
+            len += 1;
+        }
         char *data = (char *)malloc(len);
-        data[0] = 0x03;
+        if (activatorSlot) {
+            data[0] = 0x03;
+        } else {
+            data[0] = 0x04;
+            data[1] = *activatorSlot;
+            ++data;
+        }
         strcpy(data + 1, entName);
         strcpy(data + 2 + entNameLen, className);
         strcpy(data + 3 + entNameLen + classNameLen, inputName);
@@ -453,7 +467,65 @@ DETOUR(Server::GameFrame, bool simulating)
 #endif
 
     if (simulating) {
-        SpeedrunTimer::TestTickRules();
+        const int MAX_SPLITSCREEN = 2; // HACK: we can't use MAX_SPLITSCREEN_PLAYERS since it's not a compile-time constant
+        static std::optional<Vector> portalPositions[MAX_SPLITSCREEN][2];
+        for (int slot = 0; slot < MAX_SPLITSCREEN; ++slot) {
+            void *player = server->GetPlayer(slot);
+            if (!player) {
+                portalPositions[slot][0] = {};
+                portalPositions[slot][1] = {};
+                continue;
+            }
+
+            SpeedrunTimer::TestZoneRules(server->GetAbsOrigin(player), slot);
+
+            auto m_hActiveWeapon = *(CBaseHandle *)((uintptr_t)player + Offsets::m_hActiveWeapon);
+            auto portalGun = entityList->LookupEntity(m_hActiveWeapon);
+
+            if (!portalGun) {
+                portalPositions[slot][0] = {};
+                portalPositions[slot][1] = {};
+                continue;
+            }
+
+            auto m_hPrimaryPortal = *(CBaseHandle *)((uintptr_t)portalGun + Offsets::m_hPrimaryPortal);
+            auto m_hSecondaryPortal = *(CBaseHandle *)((uintptr_t)portalGun + Offsets::m_hSecondaryPortal);
+
+            auto bluePortal = entityList->LookupEntity(m_hPrimaryPortal);
+            auto orangePortal = entityList->LookupEntity(m_hSecondaryPortal);
+
+            for (int i = 0; i < 2; ++i) {
+                auto portal = i == 0 ? bluePortal : orangePortal;
+                if (!portal) {
+                    portalPositions[slot][i] = {};
+                    continue;
+                }
+
+                bool m_bActivated = *(bool *)((uintptr_t)portal + Offsets::m_bActivated);
+                if (!m_bActivated) {
+                    portalPositions[slot][i] = {};
+                    continue;
+                }
+
+                Vector pos = server->GetAbsOrigin(bluePortal);
+                if (pos != portalPositions[slot][0]) {
+                    // Portal position changed
+                    SpeedrunTimer::TestPortalRules(pos, slot, i ? PortalColor::ORANGE : PortalColor::BLUE);
+                    portalPositions[slot][0] = pos;
+                    if (engine->demorecorder->isRecordingDemo) {
+                        // Record in demo
+                        char data[15];
+                        data[0] = 0x05;
+                        data[1] = slot;
+                        data[2] = i;
+                        *(float *)(data + 3) = pos.x;
+                        *(float *)(data + 7) = pos.y;
+                        *(float *)(data + 11) = pos.z;
+                        engine->demorecorder->RecordData(data, sizeof data);
+                    }
+                }
+            }
+        }
     }
 
     if ((session->isRunning && session->GetTick() == 16) || fovChanger->needToUpdate) {

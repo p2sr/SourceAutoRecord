@@ -86,6 +86,14 @@ struct Vector {
     {
         return ((float*)this)[i];
     }
+    inline bool operator==(const Vector vec) const
+    {
+        return x == vec.x && y == vec.y && z == vec.z;
+    }
+    inline bool operator!=(const Vector vec) const
+    {
+        return !(*this == vec);
+    }
     static inline float DotProduct(const Vector& a, const Vector& b)
     {
         return a.x * b.x + a.y * b.y + a.z * b.z;

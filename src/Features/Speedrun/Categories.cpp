@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <set>
+#include <variant>
 
 template<typename V>
 static inline V *lookupMap(std::map<std::string, V> &m, std::string k)
@@ -16,232 +17,14 @@ static inline V *lookupMap(std::map<std::string, V> &m, std::string k)
     return &search->second;
 }
 
-enum class RuleAction
-{
-    START, // Only start if not already running
-    FORCE_START, // Restart timer if already running
-    STOP,
-    SPLIT,
-    PAUSE,
-    RESUME,
-};
-
-static const char *printRuleAction(RuleAction action)
-{
-    switch (action) {
-    case RuleAction::START:
-        return "start";
-    case RuleAction::FORCE_START:
-        return "force-start";
-    case RuleAction::STOP:
-        return "stop";
-    case RuleAction::SPLIT:
-        return "split";
-    case RuleAction::PAUSE:
-        return "pause";
-    case RuleAction::RESUME:
-        return "resume";
-    }
-    return "(unknown)";
-}
-
-// Rule types {{{
-
-// Base rule type {{{
-
-struct SpeedrunRule
-{
-    RuleAction action;
-    std::string map;
-    std::string onlyAfter;
-    
-    bool fired;
-
-    virtual bool TestTick()
-    {
-        return false;
-    }
-
-    virtual bool TestInput(std::string targetname, std::string classname, std::string inputname, std::string parameter, OutputType caller)
-    {
-        return false;
-    }
-
-    virtual std::string Describe()
-    {
-        std::string s = std::string("action='") + printRuleAction(this->action) + "'";
-        s += " map='" + this->map + "'";
-        if (this->onlyAfter != "") {
-            s += " after='" + this->onlyAfter + "'";
-        }
-        return s;
-    }
-
-    SpeedrunRule(RuleAction action, std::string map, std::string onlyAfter)
-        : action(action)
-        , map(map)
-        , onlyAfter(onlyAfter)
-        , fired(false)
-    {
-    }
-
-    SpeedrunRule()
-        : fired(false)
-    {
-    }
-};
-
-// }}}
-
-// EntityInputRule {{{
-
-#define ENTRULE_TARGETNAME (1 << 0)
-#define ENTRULE_CLASSNAME (1 << 1)
-#define ENTRULE_PARAMETER (1 << 2)
-
-struct EntityInputRule : public SpeedrunRule
-{
-    int typeMask;
-    std::string targetname;
-    std::string classname;
-    std::string inputname;
-    std::string parameter;
-
-    bool TestInput(std::string targetname, std::string classname, std::string inputname, std::string parameter, OutputType caller) override
-    {
-        if ((this->typeMask & ENTRULE_TARGETNAME) && targetname != this->targetname) return false;
-        if ((this->typeMask & ENTRULE_CLASSNAME) && classname != this->classname) return false;
-        if (inputname != this->inputname) return false;
-        if ((this->typeMask & ENTRULE_PARAMETER) && parameter != this->parameter) return false;
-        return true;
-    }
-
-    std::string Describe() override
-    {
-        std::string s = "[entity] " + SpeedrunRule::Describe();
-        if (this->typeMask & ENTRULE_TARGETNAME) {
-            s += " targetname='" + this->targetname + "'";
-        }
-        if (this->typeMask & ENTRULE_CLASSNAME) {
-            s += " classname='" + this->classname + "'";
-        }
-        s += " inputname='" + this->inputname + "'";
-        if (this->typeMask & ENTRULE_PARAMETER) {
-            s += " parameter='" + this->parameter + "'";
-        }
-        return s;
-    }
-
-    static std::shared_ptr<EntityInputRule> Create(std::map<std::string, std::string> params)
-    {
-        std::string *targetname = lookupMap(params, "targetname");
-        std::string *classname = lookupMap(params, "classname");
-        std::string *inputname = lookupMap(params, "inputname");
-        std::string *parameter = lookupMap(params, "parameter");
-
-        auto rule = std::make_shared<EntityInputRule>();
-
-        if (targetname) {
-            rule->targetname = *targetname;
-            rule->typeMask |= ENTRULE_TARGETNAME;
-        }
-
-        if (classname) {
-            rule->classname = *classname;
-            rule->typeMask |= ENTRULE_CLASSNAME;
-        }
-
-        if (!inputname) {
-            console->Print("inputname not specified\n");
-            return nullptr;
-        }
-        rule->inputname = *inputname;
-
-        if (parameter) {
-            rule->parameter = *parameter;
-            rule->typeMask |= ENTRULE_PARAMETER;
-        }
-
-        return rule;
-    }
-
-    EntityInputRule()
-        : SpeedrunRule()
-        , typeMask(0)
-    {
-    }
-
-    EntityInputRule(RuleAction action, std::string map, std::string onlyAfter, int typeMask, std::string targetname, std::string classname, std::string inputname, std::string parameter)
-        : SpeedrunRule(action, map, onlyAfter)
-        , typeMask(typeMask)
-        , targetname(targetname)
-        , classname(classname)
-        , inputname(inputname)
-        , parameter(parameter)
-    {
-    }
-
-    // The most common cases
-
-    EntityInputRule(RuleAction action, std::string map, std::string targetname, std::string inputname)
-        : EntityInputRule(action, map, "", ENTRULE_TARGETNAME, targetname, "", inputname, "")
-    {
-    }
-
-    EntityInputRule(RuleAction action, std::string map, std::string targetname, std::string inputname, std::string parameter)
-        : EntityInputRule(action, map, "", ENTRULE_TARGETNAME | ENTRULE_PARAMETER, targetname, "", inputname, parameter)
-    {
-    }
-};
-
-// }}}
-
-// ZoneTriggerRule {{{
-
-struct ZoneTriggerRule : public SpeedrunRule
-{
-    Vector center;
-    Vector size;
-    float rotation;
-
-    bool TestTick()
-    {
-        // TODO
-        return false;
-    }
-
-    static std::shared_ptr<ZoneTriggerRule> Create(std::map<std::string, std::string> params)
-    {
-        // TODO
-        return nullptr;
-    }
-};
-
-// }}}
-
-// PortalPlacementRule TODO {{{
-
-struct PortalPlacementRule : public SpeedrunRule
-{
-    static std::shared_ptr<PortalPlacementRule> Create(std::map<std::string, std::string> params)
-    {
-        // TODO
-        return nullptr;
-    }
-};
-
-// }}}
-
-// }}}
-
 struct SpeedrunCategory
 {
     std::set<std::string> rules;
 };
 
-static std::string g_currentCategory = "singleplayer";
-
 // Pre-set rules and categories {{{
+
+static std::string g_currentCategory = "singleplayer";
 
 static std::map<std::string, SpeedrunCategory> g_categories = {
     { "singleplayer", { { "container-ride-start", "container-vault-start", "moon-shot" } } },
@@ -251,69 +34,99 @@ static std::map<std::string, SpeedrunCategory> g_categories = {
 
 // It's important that this map stores pointers rather than plain rules
 // due to object slicing.
-static std::map<std::string, std::shared_ptr<SpeedrunRule>> g_rules = {
+static std::map<std::string, SpeedrunRule> g_rules = {
     {
         "container-ride-start",
-        std::make_shared<EntityInputRule>(
+        SpeedrunRule(
             RuleAction::START,
             "sp_a1_intro1",
-            "camera_intro",
-            "TeleportToView"
+            EntityInputRule{
+                ENTRULE_TARGETNAME,
+                "camera_intro",
+                "",
+                "TeleportToView",
+                "",
+            }
         ),
     },
     {
         "container-vault-start",
-        std::make_shared<EntityInputRule>(
+        SpeedrunRule(
             RuleAction::START,
             "sp_a1_intro1",
-            "camera_1",
-            "TeleportPlayerToProxy"
+            EntityInputRule{
+                ENTRULE_TARGETNAME,
+                "camera_1",
+                "",
+                "TeleportPlayerToProxy",
+                "",
+            }
         ),
     },
     {
         "moon-shot",
-        std::make_shared<EntityInputRule>(
+        SpeedrunRule(
             RuleAction::STOP,
             "sp_a4_finale4",
-            "@glados",
-            "RunScriptCode",
-            "BBPortalPlaced()"
+            EntityInputRule{
+                ENTRULE_TARGETNAME | ENTRULE_PARAMETER,
+                "@glados",
+                "",
+                "RunScriptCode",
+                "BBPortalPlaced()",
+            }
         ),
     },
     {
         "coop-start",
-        std::make_shared<EntityInputRule>(
+        SpeedrunRule(
             RuleAction::START,
             "mp_coop_start",
-            "teleport_start",
-            "Enable"
+            EntityInputRule{
+                ENTRULE_TARGETNAME,
+                "teleport_start",
+                "",
+                "Enable",
+                "",
+            }
         ),
     },
     {
         "coop-course5-end",
-        std::make_shared<EntityInputRule>(
+        SpeedrunRule(
             RuleAction::STOP,
             "mp_coop_paint_longjump_intro",
-            "vault-movie_outro",
-            "PlayMovieForAllPlayers"
+            EntityInputRule{
+                ENTRULE_TARGETNAME,
+                "vault-movie_outro",
+                "",
+                "PlayMovieForAllPlayers",
+                "",
+            }
         ),
     },
     {
         "coop-course6-end",
-        std::make_shared<EntityInputRule>(
+        SpeedrunRule(
             RuleAction::STOP,
             "mp_coop_paint_crazy_box",
-            "movie_outro",
-            "PlayMovieForAllPlayers"
+            EntityInputRule{
+                ENTRULE_TARGETNAME,
+                "movie_outro",
+                "",
+                "PlayMovieForAllPlayers",
+                "",
+            }
         ),
     },
 };
 
+
 // }}}
 
-// Helper functions {{{
+// Testing rules {{{
 
-static void dispatchRule(std::string name, std::shared_ptr<SpeedrunRule> rule)
+static void dispatchRule(std::string name, SpeedrunRule *rule)
 {
     switch (rule->action) {
     case RuleAction::START:
@@ -344,72 +157,53 @@ static void dispatchRule(std::string name, std::shared_ptr<SpeedrunRule> rule)
     }
 }
 
-static std::shared_ptr<SpeedrunRule> getRule(std::string name)
+template<typename RuleType, typename... Ts>
+static void GeneralTestRules(std::optional<int> slot, Ts... args)
+{
+    for (std::string ruleName : g_categories[g_currentCategory].rules) {
+        auto rule = SpeedrunTimer::GetRule(ruleName);
+        if (!rule) continue;
+        if (!std::holds_alternative<RuleType>(rule->rule)) continue;
+        if (!rule->TestGeneral(slot)) continue;
+        if (!std::get<RuleType>(rule->rule).Test(args...)) continue;
+
+        dispatchRule(ruleName, rule);
+
+        rule->fired = true;
+    }
+}
+
+void SpeedrunTimer::TestInputRules(std::string targetname, std::string classname, std::string inputname, std::string parameter, std::optional<int> triggerSlot)
+{
+    GeneralTestRules<EntityInputRule>(triggerSlot, targetname, classname, inputname, parameter);
+}
+
+void SpeedrunTimer::TestZoneRules(Vector pos, int slot)
+{
+    GeneralTestRules<ZoneTriggerRule>(slot, pos);
+}
+
+void SpeedrunTimer::TestPortalRules(Vector pos, int slot, PortalColor portal)
+{
+    GeneralTestRules<PortalPlacementRule>(slot, pos, portal);
+}
+
+// }}}
+
+SpeedrunRule *SpeedrunTimer::GetRule(std::string name)
 {
     auto search = g_rules.find(name);
     if (search == g_rules.end()) {
         return nullptr;
     }
 
-    return search->second;
+    return &search->second;
 }
-
-// }}}
-
-// Testing rules {{{
-
-void SpeedrunTimer::TestInputRules(std::string targetname, std::string classname, std::string inputname, std::string parameter, OutputType caller)
-{
-    for (std::string ruleName : g_categories[g_currentCategory].rules) {
-        auto rule = getRule(ruleName);
-        if (!rule) continue;
-
-        if (rule->fired) continue;
-
-        if (rule->onlyAfter != "") {
-            auto prereq = getRule(rule->onlyAfter);
-            if (!prereq) continue;
-            if (!prereq->fired) continue;
-        }
-
-        if (strcmp(engine->m_szLevelName, rule->map.c_str())) continue;
-        if (!rule->TestInput(targetname, classname, inputname, parameter, caller)) continue;
-
-        dispatchRule(ruleName, rule);
-
-        rule->fired = true;
-    }
-}
-
-void SpeedrunTimer::TestTickRules()
-{
-    for (std::string ruleName : g_categories[g_currentCategory].rules) {
-        auto rule = getRule(ruleName);
-        if (!rule) continue;
-
-        if (rule->fired) continue;
-
-        if (rule->onlyAfter != "") {
-            auto prereq = getRule(rule->onlyAfter);
-            if (!prereq) continue;
-            if (!prereq->fired) continue;
-        }
-
-        if (strcmp(engine->m_szLevelName, rule->map.c_str())) continue;
-        if (!rule->TestTick()) continue;
-
-        dispatchRule(ruleName, rule);
-
-        rule->fired = true;
-    }
-}
-
-// }}}
 
 void SpeedrunTimer::ResetCategory()
 {
     for (std::string ruleName : g_categories[g_currentCategory].rules) {
-        auto rule = getRule(ruleName);
+        auto rule = SpeedrunTimer::GetRule(ruleName);
         if (!rule) continue;
         rule->fired = false;
     }
@@ -446,10 +240,10 @@ CON_COMMAND(sar_speedrun_rule, "sar_speedrun_rule [rule] - show information abou
 {
     if (args.ArgC() == 1) {
         for (auto rule : g_rules) {
-            console->Print("%s %s\n", rule.first.c_str(), rule.second->Describe().c_str());
+            console->Print("%s %s\n", rule.first.c_str(), rule.second.Describe().c_str());
         }
     } else if (args.ArgC() == 2) {
-        auto rule = getRule(args[1]);
+        auto rule = SpeedrunTimer::GetRule(args[1]);
         if (!rule) {
             console->Print("Rule %s does not exist!\n", args[1]);
         } else {
@@ -555,7 +349,7 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
         return console->Print("Rule name cannot be empty\n");
     }
 
-    if (getRule(name)) {
+    if (SpeedrunTimer::GetRule(name)) {
         return console->Print("Rule %s already exists\n", args[1]);
     }
 
@@ -600,17 +394,11 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
         return console->Print("map not specified\n");
     }
 
-    std::shared_ptr<SpeedrunRule> rule = nullptr;
-
-    if (type == "entity") {
-        rule = EntityInputRule::Create(params);
-    } else if (type == "zone") {
-        rule = ZoneTriggerRule::Create(params);
-    } else if (type == "portal") {
-        rule = PortalPlacementRule::Create(params);
-    } else {
-        return console->Print("Unknown rule type %s\n", args[2]);
-    }
+    std::optional<SpeedrunRule> rule =
+        type == "entity" ? EntityInputRule::Create(params) :
+        type == "zone" ? ZoneTriggerRule::Create(params) :
+        type == "portal" ? PortalPlacementRule::Create(params) :
+        std::optional<SpeedrunRule>{};
 
     if (!rule) {
         return console->Print("Failed to create rule\n");
@@ -628,7 +416,7 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
 
     rule->fired = false;
 
-    g_rules[name] = rule;
+    g_rules.insert({name, *rule});
 }
 
 CON_COMMAND(sar_speedrun_rule_remove, "sar_speedrun_rule_remove <rule> - delete the given speedrun rule.\n")
@@ -639,7 +427,7 @@ CON_COMMAND(sar_speedrun_rule_remove, "sar_speedrun_rule_remove <rule> - delete 
 
     std::string ruleName = args[1];
 
-    auto rule = getRule(ruleName);
+    auto rule = SpeedrunTimer::GetRule(ruleName);
     if (!rule) {
         return console->Print("Rule %s does not exist\n", args[1]);
     }
