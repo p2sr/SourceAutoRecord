@@ -341,17 +341,18 @@ static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, voi
             len += 1;
         }
         char *data = (char *)malloc(len);
-        if (activatorSlot) {
+        char *data1 = data;
+        if (!activatorSlot) {
             data[0] = 0x03;
         } else {
             data[0] = 0x04;
             data[1] = *activatorSlot;
-            ++data;
+            ++data1;
         }
-        strcpy(data + 1, entName);
-        strcpy(data + 2 + entNameLen, className);
-        strcpy(data + 3 + entNameLen + classNameLen, inputName);
-        strcpy(data + 4 + entNameLen + classNameLen + inputNameLen, paramStr);
+        strcpy(data1 + 1, entName);
+        strcpy(data1 + 2 + entNameLen, className);
+        strcpy(data1 + 3 + entNameLen + classNameLen, inputName);
+        strcpy(data1 + 4 + entNameLen + classNameLen + inputNameLen, paramStr);
         engine->demorecorder->RecordData(data, len);
         free(data);
     }
