@@ -78,6 +78,10 @@ struct Vector {
         res.z = z - vec.z;
         return res;
     }
+    inline Vector operator-() const
+    {
+        return Vector{0, 0, 0} - *this;
+    }
     inline float& operator[](int i)
     {
         return ((float*)this)[i];

@@ -5,6 +5,7 @@
 #include <optional>
 #include <map>
 #include "Utils/Math.hpp"
+#include "Features/Hud/Hud.hpp"
 
 enum class RuleAction
 {
@@ -45,7 +46,11 @@ struct ZoneTriggerRule {
     Vector size;
     double rotation;
 
+    int overlayId;
+
     bool Test(Vector pos);
+    void DrawInWorld(float time);
+    void OverlayInfo(HudContext *ctx, SpeedrunRule *rule);
 
     static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
 };
@@ -56,27 +61,37 @@ struct PortalPlacementRule {
     double rotation;
     std::optional<PortalColor> portal;
 
+    int overlayId;
+
     bool Test(Vector pos, PortalColor portal);
+    void DrawInWorld(float time);
+    void OverlayInfo(HudContext *ctx, SpeedrunRule *rule);
 
     static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
 };
 
 struct SpeedrunRule {
+    using _RuleTypes = std::variant<
+        EntityInputRule,
+        ZoneTriggerRule,
+        PortalPlacementRule
+    >;
+
     RuleAction action;
 
     std::string map;
-    std::string onlyAfter;
+    std::optional<std::string> onlyAfter;
     std::optional<int> slot;
-    std::variant<EntityInputRule, ZoneTriggerRule, PortalPlacementRule> rule;
+    _RuleTypes rule;
 
     bool fired;
 
     std::string Describe();
 
-    SpeedrunRule(RuleAction action, std::string map, std::variant<EntityInputRule, ZoneTriggerRule, PortalPlacementRule> rule)
+    SpeedrunRule(RuleAction action, std::string map, _RuleTypes rule)
         : action(action)
         , map(map)
-        , onlyAfter("")
+        , onlyAfter()
         , slot()
         , rule(rule)
         , fired(false)

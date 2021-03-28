@@ -2,11 +2,15 @@
 #include "SpeedrunTimer.hpp"
 
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
+#include "Features/Hud/Hud.hpp"
 
 #include <memory>
 #include <set>
 #include <variant>
 #include <cstdlib>
+
+Variable sar_speedrun_draw_triggers("sar_speedrun_draw_triggers", "0", "Draw the triggers associated with speedrun rules in the world.\n");
 
 template<typename V>
 static inline V *lookupMap(std::map<std::string, V> &m, std::string k)
@@ -210,6 +214,47 @@ void SpeedrunTimer::ResetCategory()
     }
 }
 
+void SpeedrunTimer::DrawTriggers()
+{
+    const int drawDelta = 30;
+    static int lastDrawTick = -1000;
+
+    if (!sar_speedrun_draw_triggers.GetBool()) return;
+    if (!sv_cheats.GetBool()) return;
+
+    int tick = engine->GetTick();
+    if (tick > lastDrawTick && tick < lastDrawTick + drawDelta) return;
+
+    lastDrawTick = tick;
+
+    for (std::string ruleName : g_categories[g_currentCategory].rules) {
+        auto rule = SpeedrunTimer::GetRule(ruleName);
+        if (!rule) continue;
+        if (rule->map != engine->m_szLevelName) continue;
+        if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
+            std::get<ZoneTriggerRule>(rule->rule).DrawInWorld((drawDelta + 1) * *engine->interval_per_tick);
+        } else if (std::holds_alternative<PortalPlacementRule>(rule->rule)) {
+            std::get<PortalPlacementRule>(rule->rule).DrawInWorld((drawDelta + 1) * *engine->interval_per_tick);
+        }
+    }
+}
+
+HUD_ELEMENT2_NO_DISABLE(speedrun_triggers, HudType_InGame)
+{
+    if (sar_speedrun_draw_triggers.GetBool() && sv_cheats.GetBool()) {
+        for (std::string ruleName : g_categories[g_currentCategory].rules) {
+            auto rule = SpeedrunTimer::GetRule(ruleName);
+            if (!rule) continue;
+            if (rule->map != engine->m_szLevelName) continue;
+            if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
+                std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(ctx, rule);
+            } else if (std::holds_alternative<PortalPlacementRule>(rule->rule)) {
+                std::get<PortalPlacementRule>(rule->rule).OverlayInfo(ctx, rule);
+            }
+        }
+    }
+}
+
 // Setting/printing categories {{{
 
 CON_COMMAND(sar_speedrun_category, "sar_speedrun_category [category] - get or set the speedrun category.\n")
@@ -410,7 +455,7 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
     
     auto after = lookupMap(params, "after");
     if (!after) {
-        rule->onlyAfter = "";
+        rule->onlyAfter = {};
     } else {
         rule->onlyAfter = *after;
     }

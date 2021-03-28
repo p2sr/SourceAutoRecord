@@ -467,6 +467,8 @@ DETOUR(Server::GameFrame, bool simulating)
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
+    SpeedrunTimer::DrawTriggers();
+
     if (simulating) {
         const int MAX_SPLITSCREEN = 2; // HACK: we can't use MAX_SPLITSCREEN_PLAYERS since it's not a compile-time constant
         static std::optional<Vector> portalPositions[MAX_SPLITSCREEN][2];

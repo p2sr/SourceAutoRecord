@@ -5,6 +5,14 @@
 
 #define TAU 6.28318530718
 
+#ifdef _WIN32
+#    define PLAT_CALL(fn, ...) fn(__VA_ARGS__)
+#else
+#    define PLAT_CALL(fn, ...) fn(nullptr, __VA_ARGS__)
+#endif
+
+static int g_overlayId = 100;
+
 template<typename V>
 static inline V *lookupMap(std::map<std::string, V> &m, std::string k)
 {
@@ -87,6 +95,35 @@ bool ZoneTriggerRule::Test(Vector pos)
     return pointInBox(pos, this->center, this->size, this->rotation);
 }
 
+void ZoneTriggerRule::DrawInWorld(float time)
+{
+    PLAT_CALL(
+        engine->AddBoxOverlay,
+        this->center,
+        -this->size / 2,
+        this->size / 2,
+        { 0, (float)(this->rotation * 360.0f / TAU), 0 },
+        140, 6, 195, 100,
+        time
+    );
+}
+
+void ZoneTriggerRule::OverlayInfo(HudContext *ctx, SpeedrunRule *rule)
+{
+    Vector screenPos;
+    engine->PointToScreen(this->center, screenPos);
+    ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "type: zone");
+    ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "center: %.2f, %.2f, %.2f", this->center.x, this->center.y, this->center.z);
+    ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "size: %.2f, %.2f, %.2f", this->size.x, this->size.y, this->size.z);
+    ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "angle: %.2f", this->rotation * 360.0f / TAU);
+    if (rule->slot) {
+        ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "player: %d", *rule->slot);
+    }
+    if (rule->onlyAfter) {
+        ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "after: %s", rule->onlyAfter->c_str());
+    }
+}
+
 std::optional<SpeedrunRule> ZoneTriggerRule::Create(std::map<std::string, std::string> params)
 {
     std::string *posStr = lookupMap(params, "pos");
@@ -109,7 +146,12 @@ std::optional<SpeedrunRule> ZoneTriggerRule::Create(std::map<std::string, std::s
         pos,
         size,
         angle / 360.0f * TAU,
+        g_overlayId++,
     };
+
+    if (g_overlayId > 255) {
+        g_overlayId = 100;
+    }
 
     return SpeedrunRule(RuleAction::START, "", rule);
 }
@@ -118,6 +160,55 @@ bool PortalPlacementRule::Test(Vector pos, PortalColor portal)
 {
     if (this->portal && portal != this->portal) return false;
     return pointInBox(pos, this->center, this->size, this->rotation);
+}
+
+void PortalPlacementRule::DrawInWorld(float time)
+{
+    int r = 255, g = 0, b = 0;
+
+    if (this->portal) {
+        switch (*this->portal) {
+        case PortalColor::BLUE:
+            r = 0;
+            g = 28;
+            b = 188;
+            break;
+        case PortalColor::ORANGE:
+            r = 218;
+            g = 64;
+            b = 3;
+            break;
+        }
+    }
+
+    PLAT_CALL(
+        engine->AddBoxOverlay,
+        this->center,
+        -this->size / 2,
+        this->size / 2,
+        { 0, (float)(this->rotation * 360.0f / TAU), 0 },
+        r, g, b, 100,
+        time
+    );
+}
+
+void PortalPlacementRule::OverlayInfo(HudContext *ctx, SpeedrunRule *rule)
+{
+    Vector screenPos;
+    engine->PointToScreen(this->center, screenPos);
+    ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "type: portal");
+    ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "center: %.2f, %.2f, %.2f", this->center.x, this->center.y, this->center.z);
+    ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "size: %.2f, %.2f, %.2f", this->size.x, this->size.y, this->size.z);
+    ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "angle: %.2f", this->rotation * 360.0f / TAU);
+    if (rule->slot) {
+        ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "player: %d", *rule->slot);
+    }
+    if (this->portal) {
+        ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "portal: %s", *this->portal == PortalColor::BLUE ? "blue (primary)" : "orange (secondary)");
+    }
+    if (rule->onlyAfter) {
+        ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "after: %s", rule->onlyAfter->c_str());
+    }
 }
 
 std::optional<SpeedrunRule> PortalPlacementRule::Create(std::map<std::string, std::string> params)
@@ -157,7 +248,13 @@ std::optional<SpeedrunRule> PortalPlacementRule::Create(std::map<std::string, st
         size,
         angle / 360.0f * TAU,
         portal,
+        g_overlayId++,
     };
+
+    if (g_overlayId > 255) {
+        g_overlayId = 100;
+    }
+
 
     return SpeedrunRule(RuleAction::START, "", rule);
 }
@@ -165,8 +262,8 @@ std::optional<SpeedrunRule> PortalPlacementRule::Create(std::map<std::string, st
 bool SpeedrunRule::TestGeneral(std::optional<int> slot)
 {
     if (this->fired) return false;
-    if (this->onlyAfter != "") {
-        auto prereq = SpeedrunTimer::GetRule(this->onlyAfter);
+    if (this->onlyAfter) {
+        auto prereq = SpeedrunTimer::GetRule(*this->onlyAfter);
         if (!prereq || !prereq->fired) return false;
     }
     if (strcmp(engine->m_szLevelName, this->map.c_str())) return false;
@@ -201,8 +298,11 @@ std::string SpeedrunRule::Describe()
 {
     std::string s = std::string("action='") + printRuleAction(this->action) + "'";
     s += " map='" + this->map + "'";
-    if (this->onlyAfter != "") {
-        s += " after='" + this->onlyAfter + "'";
+    if (this->onlyAfter) {
+        s += " after='" + *this->onlyAfter + "'";
+    }
+    if (this->slot) {
+        s += " slot='" + std::to_string(*this->slot) + "'";
     }
 
     switch (this->rule.index()) {

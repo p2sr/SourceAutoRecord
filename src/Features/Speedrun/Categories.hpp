@@ -12,6 +12,7 @@ namespace SpeedrunTimer {
     void TestZoneRules(Vector pos, int slot);
     void TestPortalRules(Vector pos, int slot, PortalColor portal);
     void ResetCategory();
+    void DrawTriggers();
     SpeedrunRule *GetRule(std::string name);
 };
 
