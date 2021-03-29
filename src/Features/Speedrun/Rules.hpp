@@ -70,11 +70,17 @@ struct PortalPlacementRule {
     static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
 };
 
+struct ChallengeFlagsRule {
+    static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
+    bool Test();
+};
+
 struct SpeedrunRule {
     using _RuleTypes = std::variant<
         EntityInputRule,
         ZoneTriggerRule,
-        PortalPlacementRule
+        PortalPlacementRule,
+        ChallengeFlagsRule
     >;
 
     RuleAction action;
@@ -99,4 +105,8 @@ struct SpeedrunRule {
     }
 
     bool TestGeneral(std::optional<int> slot);
+};
+
+namespace SpeedrunTimer {
+    void TickRules();
 };

@@ -272,13 +272,13 @@ void SpeedrunTimer::Resume()
     console->Print("Speedrun resumed!\n");
 }
 
-void SpeedrunTimer::Stop()
+void SpeedrunTimer::Stop(std::string segName)
 {
     if (!g_speedrun.isRunning) {
         return;
     }
 
-    SpeedrunTimer::Split(true, engine->m_szLevelName, false);
+    SpeedrunTimer::Split(true, segName, false);
 
     setTimerAction(TimerAction::END);
 
@@ -423,7 +423,7 @@ CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer.\
 
 CON_COMMAND(sar_speedrun_stop, "sar_speedrun_start - stop the speedrun timer.\n")
 {
-    SpeedrunTimer::Stop();
+    SpeedrunTimer::Stop(std::string(engine->m_szLevelName));
 }
 
 CON_COMMAND(sar_speedrun_split, "sar_speedrun_split - perform a split on the speedrun timer.\n")

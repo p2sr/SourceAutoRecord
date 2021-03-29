@@ -145,7 +145,7 @@ static void dispatchRule(std::string name, SpeedrunRule *rule)
         break;
 
     case RuleAction::STOP:
-        SpeedrunTimer::Stop();
+        SpeedrunTimer::Stop(name);
         break;
 
     case RuleAction::SPLIT:
@@ -191,6 +191,11 @@ void SpeedrunTimer::TestZoneRules(Vector pos, int slot)
 void SpeedrunTimer::TestPortalRules(Vector pos, int slot, PortalColor portal)
 {
     GeneralTestRules<PortalPlacementRule>(slot, pos, portal);
+}
+
+void SpeedrunTimer::TestFlagRules(int slot)
+{
+    GeneralTestRules<ChallengeFlagsRule>(slot);
 }
 
 // }}}
@@ -444,6 +449,7 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
         type == "entity" ? EntityInputRule::Create(params) :
         type == "zone" ? ZoneTriggerRule::Create(params) :
         type == "portal" ? PortalPlacementRule::Create(params) :
+        type == "flags" ? ChallengeFlagsRule::Create(params) :
         std::optional<SpeedrunRule>{};
 
     if (!rule) {

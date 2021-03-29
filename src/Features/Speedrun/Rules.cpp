@@ -2,6 +2,9 @@
 #include "Categories.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
+#include "Features/EntityList.hpp"
+#include "Features/Session.hpp"
 
 #define TAU 6.28318530718
 
@@ -259,6 +262,21 @@ std::optional<SpeedrunRule> PortalPlacementRule::Create(std::map<std::string, st
     return SpeedrunRule(RuleAction::START, "", rule);
 }
 
+std::optional<SpeedrunRule> ChallengeFlagsRule::Create(std::map<std::string, std::string> params)
+{
+    if (!lookupMap(params, "player")) {
+        console->Print("player must be specified\n");
+        return {};
+    }
+
+    return SpeedrunRule(RuleAction::START, "", ChallengeFlagsRule{});
+}
+
+bool ChallengeFlagsRule::Test()
+{
+    return true;
+}
+
 bool SpeedrunRule::TestGeneral(std::optional<int> slot)
 {
     if (this->fired) return false;
@@ -350,9 +368,136 @@ std::string SpeedrunRule::Describe()
         }
         break;
     }
+
+    case 3: { // ChallengeFlagsRule
+        s = std::string("[flags] ") + s;
+        break;
+    }
     }
 
     return s;
 }
 
 // }}}
+
+void SpeedrunTimer::TickRules()
+{
+    const int MAX_SPLITSCREEN = 2; // HACK: we can't use MAX_SPLITSCREEN_PLAYERS since it's not a compile-time constant
+
+    static std::optional<Vector> portalPositions[MAX_SPLITSCREEN][2];
+
+    for (int slot = 0; slot < MAX_SPLITSCREEN; ++slot) {
+        void *player = server->GetPlayer(slot + 1);
+        if (!player) {
+            portalPositions[slot][0] = {};
+            portalPositions[slot][1] = {};
+            continue;
+        }
+
+        SpeedrunTimer::TestZoneRules(server->GetAbsOrigin(player), slot);
+
+        auto m_hActiveWeapon = *(CBaseHandle *)((uintptr_t)player + Offsets::m_hActiveWeapon);
+        auto portalGun = entityList->LookupEntity(m_hActiveWeapon);
+
+        if (!portalGun) {
+            portalPositions[slot][0] = {};
+            portalPositions[slot][1] = {};
+            continue;
+        }
+
+        auto m_hPrimaryPortal = *(CBaseHandle *)((uintptr_t)portalGun + Offsets::m_hPrimaryPortal);
+        auto m_hSecondaryPortal = *(CBaseHandle *)((uintptr_t)portalGun + Offsets::m_hSecondaryPortal);
+
+        auto bluePortal = entityList->LookupEntity(m_hPrimaryPortal);
+        auto orangePortal = entityList->LookupEntity(m_hSecondaryPortal);
+
+        for (int i = 0; i < 2; ++i) {
+            auto portal = i == 0 ? bluePortal : orangePortal;
+            if (!portal) {
+                portalPositions[slot][i] = {};
+                continue;
+            }
+
+            bool m_bActivated = *(bool *)((uintptr_t)portal + Offsets::m_bActivated);
+            if (!m_bActivated) {
+                portalPositions[slot][i] = {};
+                continue;
+            }
+
+            Vector pos = server->GetAbsOrigin(portal);
+            if (pos != portalPositions[slot][i]) {
+                // Portal position changed
+                SpeedrunTimer::TestPortalRules(pos, slot, i ? PortalColor::ORANGE : PortalColor::BLUE);
+                portalPositions[slot][i] = pos;
+                if (engine->demorecorder->isRecordingDemo) {
+                    // Record in demo
+                    char data[15];
+                    data[0] = 0x05;
+                    data[1] = slot;
+                    data[2] = i;
+                    *(float *)(data + 3) = pos.x;
+                    *(float *)(data + 7) = pos.y;
+                    *(float *)(data + 11) = pos.z;
+                    engine->demorecorder->RecordData(data, sizeof data);
+                }
+            }
+        }
+    }
+
+    static bool hadBlueCompleted = false;
+    static bool hadOrangeCompleted = false;
+    static int prevFlagCount = 0;
+
+    bool blueCompleted = false;
+    bool orangeCompleted = false;
+
+    int nflags = 0;
+
+    for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+        auto info = entityList->GetEntityInfoByIndex(i);
+        if (!info->m_pEntity) continue;
+
+        auto classname = server->GetEntityClassName(info->m_pEntity);
+        if (!classname || strcmp(classname, "challenge_mode_end_node")) continue;
+
+        ++nflags;
+
+#ifdef _WIN32
+        uintptr_t blueStatus = (uintptr_t)info->m_pEntity + 0x4B0;
+        uintptr_t orangeStatus = (uintptr_t)info->m_pEntity + 0x4B1;
+#else
+        uintptr_t blueStatus = (uintptr_t)info->m_pEntity + 0x4C8;
+        uintptr_t orangeStatus = (uintptr_t)info->m_pEntity + 0x4C9;
+#endif
+
+        if (*(uint8_t *)blueStatus) {
+            blueCompleted = true;
+        }
+
+        if (*(uint8_t *)orangeStatus) {
+            orangeCompleted = true;
+        }
+    }
+
+    if (session->isRunning && session->GetTick() > 1 && server->GetChallengeStatus() != CMStatus::NONE && nflags < prevFlagCount) {
+        // We're in an active CM session, and some flags have gone, so
+        // the map must have been completed
+        blueCompleted = true;
+        orangeCompleted = engine->IsCoop();
+    }
+
+    bool newBlue = blueCompleted && !hadBlueCompleted;
+    bool newOrange = orangeCompleted && !hadOrangeCompleted;
+
+    hadBlueCompleted = blueCompleted;
+    hadOrangeCompleted = orangeCompleted;
+    prevFlagCount = nflags;
+
+    if (newBlue) {
+        SpeedrunTimer::TestFlagRules(0);
+    }
+
+    if (newOrange) {
+        SpeedrunTimer::TestFlagRules(1);
+    }
+}

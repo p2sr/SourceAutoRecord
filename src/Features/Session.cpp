@@ -67,7 +67,7 @@ void Session::Started(bool menu)
         this->Rebase(engine->GetTick());
 
         if (sar_speedrun_stop_in_menu.isRegistered && sar_speedrun_stop_in_menu.GetBool()) {
-            SpeedrunTimer::Stop();
+            SpeedrunTimer::Stop("menu");
         } else {
             SpeedrunTimer::Resume();
         }
