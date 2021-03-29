@@ -494,10 +494,20 @@ void SpeedrunTimer::TickRules()
     prevFlagCount = nflags;
 
     if (newBlue) {
+        if (engine->demorecorder->isRecordingDemo) {
+            // Record in demo
+            char data[2] = { 0x06, 0 };
+            engine->demorecorder->RecordData(data, sizeof data);
+        }
         SpeedrunTimer::TestFlagRules(0);
     }
 
     if (newOrange) {
+        if (engine->demorecorder->isRecordingDemo) {
+            // Record in demo
+            char data[2] = { 0x06, 1 };
+            engine->demorecorder->RecordData(data, sizeof data);
+        }
         SpeedrunTimer::TestFlagRules(1);
     }
 }

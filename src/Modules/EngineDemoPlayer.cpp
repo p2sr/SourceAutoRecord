@@ -51,6 +51,7 @@ std::string EngineDemoPlayer::GetLevelName()
 // 0x03: entity input
 // 0x04: entity input triggered by slot
 // 0x05: portal placement
+// 0x06: hit cm flags
 void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
 {
     if (data[0] == 0x03 || data[0] == 0x04) { // Entity input data
@@ -81,6 +82,14 @@ void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
         pos.z = *(float *)(data + 11);
 
         SpeedrunTimer::TestPortalRules(pos, slot, portal);
+
+        return;
+    }
+
+    if (data[0] == 0x06) { // CM flags
+        int slot = data[1];
+
+        SpeedrunTimer::TestFlagRules(slot);
 
         return;
     }
