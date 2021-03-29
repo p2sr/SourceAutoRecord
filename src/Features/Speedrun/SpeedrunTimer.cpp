@@ -354,6 +354,14 @@ bool SpeedrunTimer::IsRunning()
     return g_speedrun.isRunning;
 }
 
+bool SpeedrunTimer::ShouldStartOnLoad()
+{
+    if (!sar_speedrun_start_on_load.isRegistered) return false;
+    if (sar_speedrun_start_on_load.GetInt() == 2) return true;
+    if (sar_speedrun_start_on_load.GetInt() == 1) return SpeedrunTimer::IsRunning();
+    return false;
+}
+
 // Time formatting {{{
 
 std::string SpeedrunTimer::Format(float raw)
@@ -413,7 +421,7 @@ float SpeedrunTimer::UnFormat(std::string& formated_time)
 Variable sar_speedrun_smartsplit("sar_speedrun_smartsplit", "1", "Only split the speedrun timer a maximum of once per map.\n");
 Variable sar_speedrun_time_pauses("sar_speedrun_time_pauses", "0", "Include time spent paused in the speedrun timer.\n");
 Variable sar_speedrun_stop_in_menu("sar_speedrun_stop_in_menu", "0", "Automatically stop the speedrun timer when the menu is loaded.\n");
-Variable sar_speedrun_start_on_load("sar_speedrun_start_on_load", "0", "Automatically start the speedrun timer when a map is loaded.\n");
+Variable sar_speedrun_start_on_load("sar_speedrun_start_on_load", "0", 0, 2, "Automatically start the speedrun timer when a map is loaded. 2 = restart if active.\n");
 Variable sar_speedrun_offset("sar_speedrun_offset", "0", 0, "Start speedruns with this many ticks on the timer.\n");
 
 CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer.\n")

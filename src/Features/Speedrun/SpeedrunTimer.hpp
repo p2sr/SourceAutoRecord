@@ -28,6 +28,8 @@ namespace SpeedrunTimer {
     void Reset(bool requested = true);
 
     bool IsRunning();
+
+    bool ShouldStartOnLoad();
 };
 
 extern Variable sar_speedrun_smartsplit;

@@ -140,12 +140,8 @@ void Session::Start()
         }
     }
 
-    if (!engine->IsCoop() && sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool()) {
-        if (SpeedrunTimer::IsRunning()) {
-            SpeedrunTimer::Resume();
-        } else {
-            SpeedrunTimer::Start();
-        }
+    if (!engine->IsCoop() && SpeedrunTimer::ShouldStartOnLoad()) {
+        SpeedrunTimer::Start();
     }
 
     //Network Ghosts
