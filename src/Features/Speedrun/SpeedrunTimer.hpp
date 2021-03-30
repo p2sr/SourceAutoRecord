@@ -38,8 +38,11 @@ private:
     TimerCategory* category;
     int offset;
     int pause;
+    int lastSplit;
+
 public:
     std::vector<std::string> visitedMaps;
+    bool hasSplitThisSession;
 
 public:
     SpeedrunTimer();
@@ -52,9 +55,10 @@ public:
     void PreUpdate(const int engineTicks, const char* engineMap);
     void PostUpdate(const int engineTicks, const char* engineMap);
     void CheckRules(const int engineTicks);
-    void Stop(bool addSegment = true);
+    void Stop(bool addSegment = true, bool stopedByUser = false);
+    void CheckRulesManually(const int engineTicks, TimerAction action);
     void Reset();
-    void Split(bool visited);
+    void Split();
 
     void IncrementPauseTime();
 
@@ -89,9 +93,13 @@ public:
 
     void StatusReport(const char* message);
 
+    void ManualSplitWithTime(int ticks);
+
     ~SpeedrunTimer();
 
     static std::string Format(float raw);
+    static std::string SimpleFormat(float raw);
+    static float UnFormat(std::string& formated_time);
 };
 
 extern SpeedrunTimer* speedrun;
@@ -109,8 +117,9 @@ extern Command sar_speedrun_import;
 extern Command sar_speedrun_category;
 extern Command sar_speedrun_offset;
 
-extern Variable sar_speedrun_autostart;
+extern Variable sar_speedrun_start_on_load;
 extern Variable sar_speedrun_autostop;
 extern Variable sar_speedrun_standard;
 extern Variable sar_speedrun_time_pauses;
 extern Variable sar_speedrun_smartsplit;
+extern Variable sar_speedrun_IL;

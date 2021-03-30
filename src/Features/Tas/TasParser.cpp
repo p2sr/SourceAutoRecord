@@ -62,7 +62,7 @@ bool TasParser::ParseHeader(std::string line)
     if (!std::getline(ss, tmp))
         throw TasParserException("Can't parse header : " + line);
 
-    std::for_each(tmp.begin(), tmp.end(), [](char& c) { c = std::tolower(c); });
+    std::for_each(tmp.begin(), tmp.end(), [](char& c) { c = tolower(c); });
 
     auto startParams = TasParser::Tokenize(tmp); //startParams = {"start", "map", "sp_a1_intro1""}
     if (startParams[0] != "start") {
@@ -240,7 +240,7 @@ TasFramebulk TasParser::ParseRawFramebulk(RawFramebulk& raw, TasFramebulk& previ
         } break;
         case 4: //Tools. ex: strafe move; autojump on
         {
-            std::for_each(tmp.begin(), tmp.end(), [](char& c) { c = std::tolower(c); });
+            std::for_each(tmp.begin(), tmp.end(), [](char& c) { c = tolower(c); });
 
             auto tools = TasParser::Tokenize(tmp, ';'); //tools = {"strafe move", "autojump on"}
             for (auto& toolAndParams : tools) { //toolAndParams = "strafe move"
@@ -293,7 +293,7 @@ Vector TasParser::ParseVector(std::string& str)
         throw TasParserException("Can't parse vector { " + str + " }");
     }
 
-    return Vector{ x, y };
+    return Vector( x, y, 0 );
 }
 
 std::vector<std::string> TasParser::Tokenize(std::string& str, char separator)

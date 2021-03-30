@@ -2,12 +2,16 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <map>
 
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
+#include "Features/Demo/GhostEntity.hpp"
+#include "Modules/EngineDemoPlayer.hpp"
 
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
 #include "Modules/VGui.hpp"
@@ -29,7 +33,11 @@ BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
 }
 bool BaseHud::ShouldDraw()
 {
-    if (engine->m_szLevelName[0] == '\0') {
+    if (engine->demoplayer->IsPlaying() || engine->IsOrange()) {
+        return this->type & HudType_InGame;
+    }
+
+    if (!engine->hoststate->m_activeGame) {
         return this->type & HudType_Menu;
     }
 
@@ -78,11 +86,30 @@ void HudContext::DrawElement(const char* fmt, ...)
 
     ++this->elements;
 }
+void HudContext::DrawElementOnScreen(const int groupID, const float xPos, const float yPos, const char* fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+    char data[128];
+    vsnprintf(data, sizeof(data), fmt, argptr);
+    va_end(argptr);
+
+    surface->DrawTxt(font,
+        xPos - sizeof(fmt) / 2 * this->fontSize,
+        yPos + this->group[groupID] * (this->fontSize + this->spacing),
+        this->textColor,
+        data);
+
+
+    ++this->group[groupID];
+}
+
 void HudContext::Reset(int slot)
 {
     this->slot = slot;
 
     this->elements = 0;
+    this->group.fill(0);
     this->xPadding = sar_hud_default_padding_x.GetInt();
     this->yPadding = sar_hud_default_padding_y.GetInt();
     this->spacing = sar_hud_default_spacing.GetInt();
@@ -111,6 +138,12 @@ HudElement::HudElement(Variable* variable, int type, bool drawSecondSplitScreen,
 HudElement::HudElement(Variable* variable, _PaintCallback callback, int type, bool drawSecondSplitScreen, int version)
     : HudElement(variable, type, drawSecondSplitScreen, version)
 {
+    this->callbackDefault = callback;
+}
+HudElement::HudElement(const char* name, _PaintCallback callback, int type, bool drawSecondSplitScreen, int version)
+    : HudElement(nullptr, type, drawSecondSplitScreen, version)
+{
+    this->name = name;
     this->callbackDefault = callback;
 }
 
@@ -162,7 +195,7 @@ void HudElement::IndexAll()
 
     for (const auto& name : elementOrder) {
         auto element = std::find_if(elements.begin(), elements.end(), [name](HudElement* element) {
-            return Utils::ICompare(element->variable->ThisPtr()->m_pszName + 8, name);
+            return Utils::ICompare(element->ElementName() + 8, name);
         });
 
         if (element != elements.end()) {
@@ -188,7 +221,7 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_top, "Orders hud element to top. Us
     auto name = std::string("sar_hud_") + std::string(args[1]);
 
     auto result = std::find_if(elements->begin(), elements->end(), [name](const HudElement* a) {
-        if (Utils::ICompare(a->variable->ThisPtr()->m_pszName, name)) {
+        if (Utils::ICompare(a->ElementName(), name)) {
             return true;
         }
         return false;
@@ -215,7 +248,7 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "Orders hud element to bott
     auto name = std::string("sar_hud_") + std::string(args[1]);
 
     auto result = std::find_if(elements->begin(), elements->end(), [name](const HudElement* a) {
-        if (Utils::ICompare(a->variable->ThisPtr()->m_pszName, name)) {
+        if (Utils::ICompare(a->ElementName(), name)) {
             return true;
         }
         return false;
@@ -241,10 +274,88 @@ CON_COMMAND(sar_hud_default_order_reset, "Resets order of hud element.\n")
 
 // HUD
 
-HUD_ELEMENT_STRING(text, "", "Draws specified text when not empty.\n", HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
+struct TextLine
 {
-    ctx->DrawElement("%s", text);
+    bool draw;
+    std::string text;
+};
+
+static std::map<long, TextLine> sar_hud_text_vals;
+HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
+{
+    for (auto& t : sar_hud_text_vals) {
+        if (t.second.draw) {
+            ctx->DrawElement("%s", t.second.text.c_str());
+        }
+    }
 }
+
+Variable sar_hud_text("sar_hud_text", "", "DEPRECATED: Use sar_hud_set_text.", 0);
+void sar_hud_text_callback(void* var, const char* pOldVal, float fOldVal)
+{
+    console->Print("WARNING: sar_hud_text is deprecated. Please use sar_hud_set_text instead.\n");
+    sar_hud_text_vals[0].draw = true;
+    sar_hud_text_vals[0].text = std::string(sar_hud_text.GetString());
+}
+
+long parseIdx(const char* idxStr)
+{
+    char* end;
+    long idx = std::strtol(idxStr, &end, 10);
+    if (*end != 0 || end == idxStr) {
+        return -1;
+    }
+    return idx;
+}
+
+CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets and shows the nth text value in the HUD.\n") {
+    if (args.ArgC() != 3) {
+        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    long idx = parseIdx(args[1]);
+    if (idx == -1) {
+        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    sar_hud_text_vals[idx].draw = true;
+    sar_hud_text_vals[idx].text = std::string(args[2]);
+}
+
+CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id>. Hides the nth text value in the HUD.\n")
+{
+    if (args.ArgC() < 2) {
+        console->Print(sar_hud_hide_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    long idx = parseIdx(args[1]);
+    if (idx == -1) {
+        console->Print(sar_hud_hide_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    sar_hud_text_vals[idx].draw = false;
+}
+
+CON_COMMAND(sar_hud_show_text, "sar_hud_show_text <id>. Shows the nth text value in the HUD.\n")
+{
+    if (args.ArgC() < 2) {
+        console->Print(sar_hud_show_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    long idx = parseIdx(args[1]);
+    if (idx == -1) {
+        console->Print(sar_hud_hide_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    sar_hud_text_vals[idx].draw = true;
+}
+
 HUD_ELEMENT_MODE2(position, "0", 0, 2, "Draws absolute position of the client.\n"
                                        "0 = Default,\n"
                                        "1 = Player position,\n"
@@ -257,8 +368,8 @@ HUD_ELEMENT_MODE2(position, "0", 0, 2, "Draws absolute position of the client.\n
         if (mode >= 2) {
             pos = pos + client->GetViewOffset(player);
         }
-        int fp = sar_hud_precision.GetInt();
-        ctx->DrawElement("pos: %.*f %.*f %.*f", fp, pos.x, fp, pos.y, fp, pos.z);
+        int p = sar_hud_precision.GetInt();
+        ctx->DrawElement("pos: %.*f %.*f %.*f", p, pos.x, p, pos.y, p, pos.z);
     } else {
         ctx->DrawElement("pos: -");
     }
@@ -270,30 +381,41 @@ HUD_ELEMENT_MODE2(angles, "0", 0, 2, "Draws absolute view angles of the client.\
     HudType_InGame | HudType_Paused | HudType_LoadingScreen)
 {
     auto ang = engine->GetAngles(ctx->slot);
-    int fp = sar_hud_precision.GetInt();
+    if (engine->IsCoop() && engine->IsOrange() && !session->isRunning) { // Orange and not splitscreen
+        ang = client->lastViewAngles;
+    }
+    int p = sar_hud_precision.GetInt();
     if (mode == 1) {
-        ctx->DrawElement("ang: %.*f %.*f", fp, ang.x, fp, ang.y);
+        ctx->DrawElement("ang: %.*f %.*f", p, ang.x, p, ang.y);
     } else {
-        ctx->DrawElement("ang: %.*f %.*f %.*f", fp, ang.x, fp, ang.y, fp, ang.z);
+        ctx->DrawElement("ang: %.*f %.*f %.*f", p, ang.x, p, ang.y, p, ang.z);
     }
 }
-HUD_ELEMENT_MODE2(velocity, "0", 0, 3, "Draws velocity of the client.\n"
+HUD_ELEMENT_MODE2(velocity, "0", 0, 4, "Draws velocity of the client.\n"
                                        "0 = Default,\n"
-                                       "1 = X/Y/Z,\n"
-                                       "2 = X/Y : Z,\n"
-                                       "3 = X : Y : Z.\n",
+                                       "1 = X, Y, Z\n"
+                                       "2 = X:Y\n"
+                                       "3 = X:Y, Z\n"
+                                       "4 = X:Y:Z\n",
     HudType_InGame | HudType_Paused | HudType_LoadingScreen)
 {
     auto player = client->GetPlayer(ctx->slot + 1);
     if (player) {
-        int fp = sar_hud_precision.GetInt();
+        int p = sar_hud_precision.GetInt();
         auto vel = client->GetLocalVelocity(player);
-        if (mode >= 3) {
-            ctx->DrawElement("vel: x : %.*f y : %.*f z : %.*f", fp, vel.x, fp, vel.y, fp, vel.z);
-        } else if (mode == 2){
-            ctx->DrawElement("vel: %.*f %.*f", fp, vel.Length2D(), fp, vel.z);
-        } else {
-            ctx->DrawElement("vel: %.*f", fp, vel.Length());
+        switch (mode) {
+        case 1:
+            ctx->DrawElement("vel: %.*f %.*f %.*f", p, vel.x, p, vel.y, p, vel.z);
+            break;
+        case 2:
+            ctx->DrawElement("vel: %.*f", p, vel.Length2D());
+            break;
+        case 3:
+            ctx->DrawElement("vel: %.*f %.*f", p, vel.Length2D(), p, vel.z);
+            break;
+        case 4:
+            ctx->DrawElement("vel: %.*f", p, vel.Length());
+            break;
         }
     } else {
         ctx->DrawElement("vel: -");

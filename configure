@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# Note that multiarch compilation details are highly system-dependent.
+
+# The sfml dependency is resolved with pkg-config; you may have to set
+# the PKG_CONFIG_PATH environment variable to something like
+# /usr/lib/i386-linux-gnu/pkgconfig before running configure.
+
+PKGS='sfml-network'
+
+if [ "$1" = "get-deps" ]; then
+	sudo apt-get install -y g++-8-multilib libsfml-dev:i386
+	exit 0
+fi
+
+pkg_not_found() {
+	echo 'pkg-config could not find a required package. Do you need to set PKG_CONFIG_PATH?'
+	echo 'On Debian and derivatives, you can use ./configure get-deps to automatically fetch dependencies.'
+	exit 1
+}
+
+pkg-config $PKGS || pkg_not_found
+
+set -f
+cxxflags=$(pkg-config --cflags $PKGS)
+ldflags=$(pkg-config --libs $PKGS)
+set +f
+
+{
+	echo "CXXFLAGS+=$cxxflags"
+	echo "LDFLAGS+=$ldflags"
+} >config.mk

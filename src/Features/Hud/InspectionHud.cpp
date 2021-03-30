@@ -39,7 +39,7 @@ void InspectionHud::Paint(int slot)
 
     auto data = inspector->GetData();
 
-    auto offset = Vector {
+    auto offset = Vector{
         (float)sar_ei_hud_x.GetInt(),
         (float)sar_ei_hud_y.GetInt(),
         (float)sar_ei_hud_z.GetInt()

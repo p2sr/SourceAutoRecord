@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 enum SourceGameVersion {
     SourceGame_Unknown = 0,
@@ -14,7 +15,7 @@ enum SourceGameVersion {
     SourceGame_PortalStoriesMel = (1 << 6),
     SourceGame_ThinkingWithTimeMachine = (1 << 7),
 
-	SourceGame_INFRA = (1 << 8),
+    SourceGame_INFRA = (1 << 8),
 
     SourceGame_HalfLife2Episodic = (1 << 9),
     SourceGame_HalfLifeSource = (1 << 10),
@@ -36,8 +37,10 @@ public:
     virtual const char* Version();
     virtual const float Tickrate() = 0;
     inline bool Is(int game) { return this->version & game; }
+    inline SourceGameVersion GetVersion() { return this->version; }
 
     static Game* CreateNew();
 
     static std::string VersionToString(int version);
+    static std::vector<std::string> mapNames;
 };

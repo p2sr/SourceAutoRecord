@@ -13,9 +13,9 @@
 #include "Plugin.hpp"
 #include "Variable.hpp"
 
-#define SAR_VERSION "1.11"
+#define SAR_VERSION "1.12.1"
 #define SAR_BUILD __TIME__ " " __DATE__
-#define SAR_WEB "https://nekzor.github.io/SourceAutoRecord"
+#define SAR_WEB "https://nekzor.github.io/SourceAutoRecord or https://wiki.portal2.sr/SAR"
 
 #define SAFE_UNLOAD_TICK_DELAY 33
 

@@ -42,6 +42,14 @@ TimerRule::TimerRule(const char* name, const char* mapName, const char* entityNa
     this->callback2 = callback;
     this->callbackType = 2;
 }
+TimerRule::TimerRule(const char* name, const char* mapName, const char* entityName, void* user,
+    _TimerRuleCallback3 callback, SearchMode searchMode)
+    : TimerRule(name, mapName, entityName, nullptr, searchMode)
+{
+    this->callback3 = callback;
+    this->callbackType = 3;
+    this->user = user;
+}
 bool TimerRule::Load()
 {
     if (this->IsEmpty()) {
@@ -62,7 +70,7 @@ bool TimerRule::Load()
         }
     }
 
-    if (this->callbackType != 0) {
+    if (this->callbackType != 0 && this->callbackType != 3) {
         offsetFinder->ServerSide(this->className, this->propName, &this->propOffset);
         return this->isActive = (this->entityPtr != nullptr && this->propOffset != 0);
     }
@@ -84,7 +92,12 @@ TimerAction TimerRule::Dispatch()
         } else if (this->callbackType == 2) {
             return this->callback2(this->entityPtr, this->propOffset);
         }
-        return this->callback0(this->entityPtr);
+
+        if (this->callbackType == 3) {
+            return this->callback3(this->entityPtr, this->user);
+        } else {
+            return this->callback0(this->entityPtr);
+        }
     }
 
     return TimerAction::DoNothing;

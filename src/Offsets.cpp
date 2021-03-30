@@ -26,6 +26,7 @@ int GetSaveDirName;
 int ExecuteClientCmd;
 int GetActiveSplitScreenPlayerSlot;
 int GetSteamAPIContext;
+int IsPaused;
 
 // CHLClient
 int GetAllClasses;
@@ -37,6 +38,7 @@ int JoyStickApplyMovement;
 
 // ClientModeShared
 int CreateMove;
+int OverrideView;
 
 // ConVar
 int Dtor;
@@ -48,6 +50,7 @@ int Create;
 // CMatSystemSurface
 int DrawSetColor;
 int DrawFilledRect;
+int DrawColoredCircle;
 int DrawLine;
 int DrawSetTextFont;
 int DrawSetTextColor;
@@ -56,9 +59,20 @@ int PaintTraverseEx;
 int DrawColoredText;
 int DrawTextLen;
 
+int DrawSetTextureFile;
+int DrawSetTextureRGBA;
+int DrawSetTexture;
+int DrawGetTextureSize;
+int DrawTexturedRect;
+int IsTextureIDValid;
+int CreateNewTextureID;
+
 // CInputSystem
 int StringToButtonCode;
 int SleepUntilInput;
+int IsButtonDown;
+int GetCursorPosition;
+int SetCursorPosition;
 
 // CInput
 int GetButtonBits;
@@ -78,7 +92,10 @@ int ProcessMovement;
 // CDemoRecorder
 int GetRecordingTick;
 int SetSignonState;
+int StartRecording;
 int StopRecording;
+int RecordCustomData;
+int RecordCommand;
 int m_szDemoBaseName;
 int m_bRecording;
 int m_nDemoNumber;
@@ -109,6 +126,7 @@ int m_flMaxspeed;
 int m_flGravity;
 int S_m_vecViewOffset;
 int IsPlayer;
+int AcceptInput;
 
 // CBasePlayer
 int m_fFlags;
@@ -117,16 +135,42 @@ int m_nWaterLevel;
 int m_bDucked;
 int m_flFriction;
 int m_pSurfaceData;
+int m_pShadowStand;
+int m_pShadowCrouch;
+int m_Local;
+int m_hGroundEntity;
+
+// CPlayerLocalData
+int m_nTractorBeamCount;
+int m_hTractorBeam;
 
 // CPortal_Player
 int iNumPortalsPlaced;
+int m_StatsThisLevel;
+
+//CWeaponPortalgun
+int m_bCanFirePortal1;
+int m_bCanFirePortal2;
+int m_hPrimaryPortal;
+int m_hSecondaryPortal;
+
+// CProp_Portal
+int m_bActivated;
+int m_bIsPortal2;
+int m_hActiveWeapon;
 
 // IEngineVGuiInternal
 int IsGameUIVisible;
 int Paint;
 
+// IEngineTrace
+int TraceRay;
+
 // CEngineTool
 int GetCurrentMap;
+int HostFrameTime;
+int ClientTime;
+int PrecacheModel;
 
 // CSchemeManager
 int GetIScheme;
@@ -146,6 +190,9 @@ int IsRestoring;
 // CHud
 int GetName;
 
+//CHUDQuickInfo
+int ShouldDraw;
+
 // CGameEventManager
 int AddListener;
 int RemoveListener;
@@ -161,21 +208,47 @@ int IsRunningSimulation;
 
 // CIVDebugOverlay
 int ScreenPosition;
+int AddBoxOverlay;
+int AddSphereOverlay;
+int AddTriangleOverlay;
+int AddLineOverlay;
+int AddScreenTextOverlay;
+int ClearAllOverlays;
 
 // CCommandBuffer
 int m_bWaitEnabled;
 
 // CServerTools
 int GetIServerEntity;
+int CreateEntityByName;
+int DispatchSpawn;
+int SetKeyValueChar;
+int SetKeyValueFloat;
+int SetKeyValueVector;
 
 // CVEngineServer
 int ClientCommand;
+
+// CBaseHudChat
+int ChatPrintf;
 
 // CSteam3Client
 int OnGameOverlayActivated;
 
 // surfacedata_t
 int jumpFactor;
+
+// IPhysicsObject
+int IsAsleep;
+int IsCollisionEnabled;
+int IsGravityEnabled;
+int IsDragEnabled;
+int IsMotionEnabled;
+int GetPosition;
+int GetVelocity;
+int SetPosition;
+int SetVelocity;
+int EnableGravity;
 
 // Others
 int tickcount;
@@ -210,6 +283,9 @@ int HostState_OnClientConnected;
 int hoststate;
 int m_bLoadGame;
 int NUM_ENT_ENTRIES;
+int ENT_ENTRY_MASK;
+int INVALID_EHANDLE_INDEX;
+int NUM_SERIAL_NUM_SHIFT_BITS;
 int m_iClassName;
 int m_iName;
 int m_EntPtrArray;

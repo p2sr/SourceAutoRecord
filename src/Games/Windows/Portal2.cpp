@@ -6,6 +6,70 @@
 Portal2::Portal2()
 {
     this->version = SourceGame_Portal2;
+    Game::mapNames = {
+        "sp_a1_intro1",
+        "sp_a1_intro2",
+        "sp_a1_intro3",
+        "sp_a1_intro4",
+        "sp_a1_intro5",
+        "sp_a1_intro6",
+        "sp_a1_intro7",
+        "sp_a1_wakeup",
+        "sp_a2_intro",
+        "sp_a2_laser_intro",
+        "sp_a2_laser_stairs",
+        "sp_a2_dual_lasers",
+        "sp_a2_laser_over_goo",
+        "sp_a2_catapult_intro",
+        "sp_a2_trust_fling",
+        "sp_a2_pit_flings",
+        "sp_a2_fizzler_intro",
+        "sp_a2_sphere_peek",
+        "sp_a2_ricochet",
+        "sp_a2_bridge_intro",
+        "sp_a2_bridge_the_gap",
+        "sp_a2_turret_intro",
+        "sp_a2_laser_relays",
+        "sp_a2_turret_blocker",
+        "sp_a2_laser_vs_turret",
+        "sp_a2_pull_the_rug",
+        "sp_a2_column_blocker",
+        "sp_a2_laser_chaining",
+        "sp_a2_triple_laser",
+        "sp_a2_bts1",
+        "sp_a2_bts2",
+        "sp_a2_bts3",
+        "sp_a2_bts4",
+        "sp_a2_bts5",
+        "sp_a2_bts6",
+        "sp_a2_core",
+        "sp_a3_00",
+        "sp_a3_01",
+        "sp_a3_03",
+        "sp_a3_jump_intro",
+        "sp_a3_bomb_flings",
+        "sp_a3_crazy_box",
+        "sp_a3_transition01",
+        "sp_a3_speed_ramp",
+        "sp_a3_speed_flings",
+        "sp_a3_portal_intro",
+        "sp_a3_end",
+        "sp_a4_intro",
+        "sp_a4_tb_intro",
+        "sp_a4_tb_trust_drop",
+        "sp_a4_tb_wall_button",
+        "sp_a4_tb_polarity",
+        "sp_a4_tb_catch",
+        "sp_a4_stop_the_box",
+        "sp_a4_laser_catapult",
+        "sp_a4_laser_platform",
+        "sp_a4_speed_catch",
+        "sp_a4_jump_polarity",
+        "sp_a4_finale1",
+        "sp_a4_finale2",
+        "sp_a4_finale3",
+        "sp_a4_finale4",
+    };
 }
 void Portal2::LoadOffsets()
 {
@@ -22,6 +86,7 @@ void Portal2::LoadOffsets()
     ClientCmd = 7; // CEngineClient
     GetClientStateFunction = 4; // CEngineClient::ClientCmd
     Cbuf_AddText = 46; // CEngineClient::ClientCmd
+    IsPaused = 86; // CEngineClient
     s_CommandBuffer = 82; // Cbuf_AddText
     CCommandBufferSize = 9556; // Cbuf_AddText
     m_bWaitEnabled = 8265; // CCommandBuffer::AddText
@@ -38,10 +103,16 @@ void Portal2::LoadOffsets()
     GetSteamAPIContext = 177; // CEngineClient
     StringToButtonCode = 31; // CInputSystem
     SleepUntilInput = 33; // CInputSystem
+    IsButtonDown = 14; //CInputSystem
+    GetCursorPosition = 45; //CInputSystem
+    SetCursorPosition = 38; //CInputSystem
     GetRecordingTick = 1; // CDemoRecorder
     net_time = 19; // CDemoRecorder::GetRecordingTick
     SetSignonState = 3; // CDemoRecorder
+    StartRecording = 2; // CDemoRecorder
     StopRecording = 7; // CDemoRecorder
+    RecordCustomData = 14; // CDemoRecorder
+    RecordCommand = 8; // CDemoRecorder
     GetPlaybackTick = 3; // CDemoPlayer
     StartPlayback = 5; // CDemoPlayer
     IsPlayingBack = 6; // CDemoPlayer
@@ -60,7 +131,10 @@ void Portal2::LoadOffsets()
     demoplayer = 74; // CClientState::Disconnect
     demorecorder = 87; // CClientState::Disconnect
     GetCurrentMap = 25; // CEngineTool
+    HostFrameTime = 39; //CEngineTool
+    ClientTime = 47; //CEngineTool
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
+    PrecacheModel = 61; // CEngineTool::PrecacheModel
     AddListener = 3; // CGameEventManager
     RemoveListener = 5; // CGameEventManager
     FireEventClientSide = 8; // CGameEventManager
@@ -73,8 +147,24 @@ void Portal2::LoadOffsets()
     Frame = 5; // CEngine
     m_bLoadGame = 448; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
     ScreenPosition = 12; // CIVDebugOverlay
+    AddBoxOverlay = 1; // CIVDebugOverlay
+    AddSphereOverlay = 2; // CIVDebugOverlay
+    AddTriangleOverlay = 3; // CIVDebugOverlay
+    AddLineOverlay = 4; // CIVDebugOverlay
+    AddScreenTextOverlay = 7; // CIVDebugOverlay
+    ClearAllOverlays = 16; // CIVDebugOverlay
     MAX_SPLITSCREEN_PLAYERS = 2; // maxplayers
     OnGameOverlayActivated = 144; // CSteam3Client
+    IsAsleep = 2; // IPhysicsObject
+    IsCollisionEnabled = 6; // IPhysicsObject
+    IsGravityEnabled = 7; // IPhysicsObject
+    IsDragEnabled = 8; // IPhysicsObject
+    IsMotionEnabled = 9; // IPhysicsObject
+    GetPosition = 48; // IPhysicsObject
+    GetVelocity = 52; // IPhysicsObject
+    SetPosition = 46; // IPhysicsObject
+    SetVelocity = 50; // IPhysicsObject
+    EnableGravity = 13; // IPhysicsObject
 
     // vstdlib.dll
 
@@ -116,12 +206,27 @@ void Portal2::LoadOffsets()
     m_iEFlags = 200; // CBaseEntity
     m_flGravity = 772; // CBaseEntity
     NUM_ENT_ENTRIES = 8192; // CBaseEntityList::CBaseEntityList
+    ENT_ENTRY_MASK = 65535; //CBaseEntityList::CBaseEntityList
+    INVALID_EHANDLE_INDEX = 0xFFFFFFFF; //CBaseEntityList::CBaseEntityList
+    NUM_SERIAL_NUM_SHIFT_BITS = 16; //CBaseEntityList::CBaseEntityList
     GetIServerEntity = 1; // CServerTools
     m_EntPtrArray = 61; // CServerTools::GetIServerEntity
+    SetKeyValueChar = 13; // CServerTools::SetKeyValue (const char *szValue)
+    SetKeyValueFloat = 12; // CServerTools::SetKeyValue (float flValue )
+    SetKeyValueVector = 11; // CServerTools::SetKeyValue (const Vector &vecValue )
+    CreateEntityByName = 14; //CServerTool::CreateEntityByName
+    DispatchSpawn = 15; //CServerTool::DispatchSpawn
     ClientCommand = 39; // CVEngineServer
+    TraceRay = 5; // IEngineTrace
     IsPlayer = 85; // CBasePlayer
+    AcceptInput = 40; // CBasePlayer
     m_pSurfaceData = 3868; // CGameMovement::CheckJumpButton
     jumpFactor = 68; // CGameMovement::CheckJumpButton
+    m_pShadowStand = 3160; // CBasePlayer
+    m_pShadowCrouch = 3164; // CBasePlayer
+    m_Local = 5060; // CBasePlayer
+    m_nTractorBeamCount = 396; // CPlayerLocalData
+    m_hTractorBeam = 392; // CPlayerLocalData
 
     // client.dll
 
@@ -135,11 +240,13 @@ void Portal2::LoadOffsets()
     g_pClientMode = 19; // GetClientMode
     CreateMove = 24; // ClientModeShared
     GetName = 10; // CHud
+    ShouldDraw = 11; // CHUDQuickInfo
     GetHud = 125; // cc_leaderboard_enable
     FindElement = 135; // cc_leaderboard_enable
+    ChatPrintf = 22; // CBaseHudChat
     DecodeUserCmdFromBuffer = 7; // CInput
     PerUserInput_tSize = 368; // CInput::DecodeUserCmdFromBuffer
-    m_pCommands = 236; // CInput::DecodeUserCmdFromBuffer
+    m_pCommands = 244; // CInput::DecodeUserCmdFromBuffer
     CUserCmdSize = 96; // CInput::DecodeUserCmdFromBuffer
     MULTIPLAYER_BACKUP = 150; // CInput::DecodeUserCmdFromBuffer
     IN_ActivateMouse = 15; // CHLClient
@@ -149,12 +256,14 @@ void Portal2::LoadOffsets()
     JoyStickApplyMovement = 64; // CInput
     KeyDown = 398; // CInput::JoyStickApplyMovement
     KeyUp = 377; // CInput::JoyStickApplyMovement
+    OverrideView = 18; // ClientModeShared
 
     // vguimatsurface.dll
 
     DrawSetColor = 14; // CMatSystemSurface
     DrawFilledRect = 15; // CMatSystemSurface
     DrawLine = 18; // CMatSystemSurface
+    DrawColoredCircle = 159; // CMatSystemSurface
     DrawSetTextFont = 22; // CMatSystemSurface
     DrawSetTextColor = 23; // CMatSystemSurface
     GetFontTall = 72; // CMatSystemSurface
@@ -163,6 +272,14 @@ void Portal2::LoadOffsets()
     FinishDrawing = 603; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 160; // CMatSystemSurface
     DrawTextLen = 163; // CMatSystemSurface
+
+    DrawSetTextureFile = 35; // CMatSystemSurface
+    DrawSetTextureRGBA = 36; // CMatSystemSurface
+    DrawSetTexture = 37; // CMatSystemSurface
+    DrawGetTextureSize = 38; // CMatSystemSurface
+    DrawTexturedRect = 39; // CMatSystemSurface
+    IsTextureIDValid = 40; // CMatSystemSurface
+    CreateNewTextureID = 41; // CMatSystemSurface
 }
 const char* Portal2::Version()
 {

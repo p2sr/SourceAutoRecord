@@ -3,19 +3,29 @@
 #include <cstdint>
 #include <cstring>
 
+#include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
+#include "Features/Hud/Crosshair.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
+#include "Features/Routing/SeamshotFind.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Speedrun/CustomCategories.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Tas/TasPlayer.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
+#include "Features/TimescaleDetect.hpp"
+#include "Features/SegmentedTools.hpp"
+#include "Features/GroundFramesCounter.hpp"
+#include "Features/Stats/ZachStats.hpp"
+#include "Features/ConditionalExec.hpp"
 
 
 #include "Engine.hpp"
+#include "Client.hpp"
 
 #include "Game.hpp"
 #include "Interface.hpp"
@@ -34,15 +44,6 @@ Variable sv_maxspeed;
 Variable sv_stopspeed;
 Variable sv_maxvelocity;
 Variable sv_gravity;
-
-Variable sar_pause("sar_pause", "0", "Enable pause after a load.\n");
-Variable sar_pause_at("sar_pause_at", "0", 0, "Pause at the specified tick.\n");
-Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.\n");
-Variable sar_record_at("sar_record_at", "0", 0, "Start recording a demo at the tick specified. Will use sar_record_at_demo_name.\n");
-Variable sar_record_at_demo_name("sar_record_at_demo_name", "chamber", "Name of the demo automatically recorded.\n", 0);
-Variable sar_record_at_increment("sar_record_at_increment", "0", "Increment automatically the demo name.\n");
-
-Variable sar_printframetime("sar_printframetime", "0", "Prints frametime lmao.\n");
 
 REDECL(Server::CheckJumpButton);
 REDECL(Server::CheckJumpButtonBase);
@@ -94,6 +95,17 @@ int Server::GetSplitScreenPlayerSlot(void* entity)
 
     return 0;
 }
+void Server::KillEntity(void* entity)
+{
+    variant_t val = {0};
+    val.fieldType = FIELD_VOID;
+    void* player = this->GetPlayer(1);
+#ifdef _WIN32
+    server->AcceptInput(entity, "Kill", player, player, val, 0);
+#else
+    server->AcceptInput(entity, "Kill", player, player, &val, 0);
+#endif
+}
 
 // CGameMovement::CheckJumpButton
 DETOUR_T(bool, Server::CheckJumpButton)
@@ -129,6 +141,8 @@ DETOUR_T(bool, Server::CheckJumpButton)
         ++stat->jumps->total;
         ++stat->steps->total;
         stat->jumps->StartTrace(server->GetAbsOrigin(player));
+
+        groundFramesCounter->HandleJump();
     }
 
     return jumped;
@@ -139,6 +153,11 @@ DETOUR(Server::PlayerMove)
 {
     auto player = *reinterpret_cast<void**>((uintptr_t)thisptr + Offsets::player);
     auto mv = *reinterpret_cast<const CHLMoveData**>((uintptr_t)thisptr + Offsets::mv);
+
+    if (sar_crosshair_mode.GetBool() || sar_quickhud_mode.GetBool() || sar_crosshair_P1.GetBool()) {
+        auto m_hActiveWeapon = *reinterpret_cast<CBaseHandle*>((uintptr_t)player + Offsets::m_hActiveWeapon);
+        server->portalGun = entityList->LookupEntity(m_hActiveWeapon);
+    }
 
     auto m_fFlags = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_fFlags);
     auto m_MoveType = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_MoveType);
@@ -177,6 +196,10 @@ DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
     if (tasPlayer->IsActive() && sar_tas_tools_enabled.GetBool()) {
         tasPlayer->PostProcess(pPlayer, pMove);
     }
+
+    unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)pPlayer + Offsets::m_hGroundEntity);
+    bool grounded = groundEntity != 0xFFFFFFFF;
+    groundFramesCounter->HandleMovementFrame(grounded);
 
     return Server::ProcessMovement(thisptr, pPlayer, pMove);
 }
@@ -271,6 +294,116 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 }
 #endif
 
+// Not a normal detour! Only gets first 4 args and doesn't have to call
+// original function
+static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, void* activator, void* caller, variant_t *parameter)
+{
+    CheckCustomCategoryRules(thisptr, inputName);
+    zachStats->CheckZyntexTriggers(thisptr, inputName);
+    if (engine->demorecorder->isRecordingDemo) {
+        const char *entName = server->GetEntityName(thisptr);
+        const char *className = server->GetEntityClassName(thisptr);
+        if (!entName) entName = "";
+        if (!className) className = "";
+
+        size_t entNameLen = strlen(entName);
+        size_t classNameLen = strlen(className);
+        size_t inputNameLen = strlen(inputName);
+
+        const char *paramStr = parameter->ToString();
+
+        size_t len = entNameLen + classNameLen + inputNameLen + strlen(paramStr) + 5;
+        char *data = (char *)malloc(len);
+        data[0] = 0x03;
+        strcpy(data + 1, entName);
+        strcpy(data + 2 + entNameLen, className);
+        strcpy(data + 3 + entNameLen + classNameLen, inputName);
+        strcpy(data + 4 + entNameLen + classNameLen + inputNameLen, paramStr);
+        engine->demorecorder->RecordData(data, len);
+        free(data);
+    }
+    //console->DevMsg("%.4d INPUT %s TARGETNAME %s CLASSNAME %s\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr));
+}
+
+// This is kinda annoying - it's got to be in a separate function
+// because we need a reference to an entity vtable to find the address
+// of CBaseEntity::AcceptInput, but we generally can't do that until
+// we've loaded into a level.
+static bool IsAcceptInputTrampolineInitialized = false;
+static void InitAcceptInputTrampoline()
+{
+    void* ent = (CEntInfo2*)(server->m_EntPtrArray + 0)->m_pEntity;
+    if (ent == nullptr) return;
+    IsAcceptInputTrampolineInitialized = true;
+    server->AcceptInput = Memory::VMT<Server::_AcceptInput>(ent, Offsets::AcceptInput);
+
+    // Trampoline! Bouncy bouncy!
+
+    // Get around memory protection so we can modify code
+    Memory::UnProtect((void*)server->AcceptInput, 8);
+
+#ifdef _WIN32
+    // Create our code
+    static uint8_t trampolineCode[] = {
+        0x55,             // 00: push ebp                 (we overwrote these 2 instructions)
+        0x89, 0xE5,       // 01: mov ebp, esp
+        0x8D, 0x45, 0x14, // 03: lea eax, [ebp + 0x14]    (we take a pointer to the variant_t, for simplicity and consistency with Linux)
+        0x50,             // 06: push eax                 (we want to take the first 5 args in our detour function)
+        0xFF, 0x75, 0x10, // 07: push dword [ebp + 0x10]
+        0xFF, 0x75, 0x0C, // 0A: push dword [ebp + 0x0C]
+        0xFF, 0x75, 0x08, // 0D: push dword [ebp + 0x08]
+        0x51,             // 10: push ecx                 (ecx=thisptr, because of thiscall convention)
+        0xE8, 0, 0, 0, 0, // 11: call ??                  (to be filled with address of detour function)
+        0x59,             // 16: pop ecx                  (it may have been clobbered by the cdecl detour function)
+        0x83, 0xC4, 0x0C, // 17: add esp, 0x0C            (pop the other args to the detour function)
+        0xA1, 0, 0, 0, 0, // 1A: mov eax, ??              (to be filled with the address from the other instruction we overwrote)
+        0xE9, 0, 0, 0, 0, // 1F: jmp ??                   (to be filled with the address of code to return to)
+    };
+
+    *(uint32_t*)(trampolineCode + 0x12) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x12 + 4);
+    *(uint32_t*)(trampolineCode + 0x1B) = *(uint32_t*)((uint32_t)server->AcceptInput + 4); // The address we need to steal is 4 bytes into the function
+    *(uint32_t*)(trampolineCode + 0x20) = (uint32_t)server->AcceptInput + 8 - ((uint32_t)trampolineCode + 0x20 + 4);
+
+    Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
+
+    // Write the trampoline instruction, followed by some NOPs
+    *(uint8_t*)server->AcceptInput = 0xE9; // 32-bit relative JMP
+    uint32_t jumpAddr = (uint32_t)server->AcceptInput + 1;
+    *(uint32_t*)jumpAddr = (uint32_t)trampolineCode - (jumpAddr + 4);
+    // 3 NOPs - not strictly necessary as we jump past them anyway, but
+    // it'll stop disassemblers getting confused which is nice
+    ((uint8_t*)server->AcceptInput)[5] = 0x90;
+    ((uint8_t*)server->AcceptInput)[6] = 0x90;
+    ((uint8_t*)server->AcceptInput)[7] = 0x90;
+#else
+    // Create our code
+    static uint8_t trampolineCode[] = {
+        0x55,             // 00: push ebp                 (we overwrote these 4 instructions)
+        0x89, 0xE5,       // 01: mov ebp, esp
+        0x57,             // 03: push edi
+        0x56,             // 04: push esi
+        0xFF, 0x75, 0x18, // 05: push dword [ebp + 0x18]  (we want to take the first 5 args in our detour function)
+        0xFF, 0x75, 0x14, // 08: push dword [ebp + 0x14]
+        0xFF, 0x75, 0x10, // 0B: push dword [ebp + 0x10]
+        0xFF, 0x75, 0x0C, // 0E: push dword [ebp + 0x0C]
+        0xFF, 0x75, 0x08, // 11: push dword [ebp + 0x08]
+        0xE8, 0, 0, 0, 0, // 14: call ??                  (to be filled with address of detour function)
+        0x83, 0xC4, 0x14, // 19: add esp, 0x14            (pop the args to the detour function)
+        0xE9, 0, 0, 0, 0, // 1C: jmp ??                   (to be filled with address of code to return to)
+    };
+
+    *(uint32_t*)(trampolineCode + 0x15) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x15 + 4);
+    *(uint32_t*)(trampolineCode + 0x1D) = (uint32_t)server->AcceptInput + 5 - ((uint32_t)trampolineCode + 0x1D + 4); // Return just after the code we overwrote (hence +5)
+
+    Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
+
+    // Write the trampoline instruction
+    *(uint8_t*)server->AcceptInput = 0xE9; // 32-bit relative JMP
+    uint32_t jumpAddr = (uint32_t)server->AcceptInput + 1;
+    *(uint32_t*)jumpAddr = (uint32_t)trampolineCode - (jumpAddr + 4);
+#endif
+}
+
 // CServerGameDLL::GameFrame
 #ifdef _WIN32
 DETOUR_STD(void, Server::GameFrame, bool simulating)
@@ -279,13 +412,10 @@ DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
     tasPlayer->Update();
-
-    if(sar_printframetime.GetBool())console->Print("%f\n", server->gpGlobals->frametime);
-
-    if (simulating && sar_record_at.GetFloat() > 0 && sar_record_at.GetFloat() == session->GetTick()) {
-        std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
-        engine->ExecuteCommand(cmd.c_str());
-    }
+    
+    if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
+    TickCustomCategories();
+    RunSeqs();
 
     if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
         if (!simulating && !pauseTimer->IsActive()) {
@@ -296,29 +426,19 @@ DETOUR(Server::GameFrame, bool simulating)
         }
     }
 
+    if (session->isRunning)
+        engine->NewTick(session->GetTick());
+
+    
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
-    if (sar_pause.GetBool()) {
-        if (!server->paused && sar_pause_at.GetInt() == session->GetTick() && simulating) {
-            engine->ExecuteCommand("pause");
-            server->paused = true;
-            server->pauseTick = engine->GetTick();
-        } else if (server->paused && !simulating) {
-            if (sar_pause_for.GetInt() > 0 && sar_pause_for.GetInt() + engine->GetTick() == server->pauseTick) {
-                engine->ExecuteCommand("unpause");
-                server->paused = false;
-            }
-            ++server->pauseTick;
-        } else if (server->paused && simulating && engine->GetTick() > server->pauseTick + 5) {
-            server->paused = false;
-        }
-    }
+    
 
-    if (session->isRunning && session->GetTick() == 16) {
+    if ((session->isRunning && session->GetTick() == 16) || fovChanger->needToUpdate) {
         fovChanger->Force();
     }
 
@@ -338,10 +458,39 @@ DETOUR(Server::GameFrame, bool simulating)
         speedrun->CheckRules(engine->GetTick());
     }
 
+    if (simulating && sar_seamshot_finder.GetBool()) {
+        seamshotFind->DrawLines();
+    }
+
+    if (simulating && sar_crosshair_P1.GetBool()) {
+        crosshair.IsSurfacePortalable();
+    }
+
+    if (simulating && !engine->demorecorder->hasNotified && engine->demorecorder->m_bRecording) {
+        std::string cmd = std::string("echo SAR ") + SAR_VERSION + " (Build " + SAR_BUILD + ")";
+        engine->SendToCommandBuffer(cmd.c_str(), 300);
+        engine->demorecorder->hasNotified = true;
+    }
+
+    if (simulating) {
+        seamshotFind->DrawLines();
+    }
+
+    if (simulating) {
+        timescaleDetect->Update();
+    } else {
+        timescaleDetect->Cancel();
+    }
+
+    ++server->tickCount;
+
 #ifndef _WIN32
     return result;
 #endif
 }
+
+static int (*GlobalEntity_GetIndex)(const char *);
+static void (*GlobalEntity_SetFlags)(int, int);
 
 bool Server::Init()
 {
@@ -383,6 +532,13 @@ bool Server::Init()
     if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS0")) {
         auto GetIServerEntity = g_ServerTools->Original(Offsets::GetIServerEntity);
         Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
+
+        this->CreateEntityByName = g_ServerTools->Original<_CreateEntityByName>(Offsets::CreateEntityByName);
+        this->DispatchSpawn = g_ServerTools->Original<_DispatchSpawn>(Offsets::DispatchSpawn);
+        this->SetKeyValueChar = g_ServerTools->Original<_SetKeyValueChar>(Offsets::SetKeyValueChar);
+        this->SetKeyValueFloat = g_ServerTools->Original<_SetKeyValueFloat>(Offsets::SetKeyValueFloat);
+        this->SetKeyValueVector = g_ServerTools->Original<_SetKeyValueVector>(Offsets::SetKeyValueVector);
+
         Interface::Delete(g_ServerTools);
     }
 
@@ -399,12 +555,22 @@ bool Server::Init()
         }
     }
 
+#ifdef _WIN32
+    GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "55 8B EC 51 8B 45 08 50 8D 4D FC 51 B9 ? ? ? ? E8 ? ? ? ? 66 8B 55 FC B8 FF FF 00 00", 0);
+    GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "55 8B EC 80 3D ? ? ? ? 00 75 1F 8B 45 08 85 C0 78 18 3B 05 ? ? ? ? 7D 10 8B 4D 0C 8B 15 ? ? ? ? 8D 04 40 89 4C 82 08", 0);
+#else
+    GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "55 89 E5 53 8D 45 F6 83 EC 24 8B 55 08 C7 44 24 04 ? ? ? ? 89 04 24 89 54 24 08", 0);
+    GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "80 3D ? ? ? ? 00 55 89 E5 8B 45 08 75 1E 85 C0 78 1A 3B 05 ? ? ? ? 7D 12 8B 15", 0);
+#endif
+
+
     offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);
     offsetFinder->ServerSide("CBasePlayer", "m_iName", &Offsets::m_iName);
     offsetFinder->ServerSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::S_m_vecVelocity);
     offsetFinder->ServerSide("CBasePlayer", "m_fFlags", &Offsets::m_fFlags);
     offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
     offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
+    offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::m_hGroundEntity);
 
     if (sar.game->Is(SourceGame_Portal2Engine)) {
         offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
@@ -413,6 +579,13 @@ bool Server::Init()
 
     if (sar.game->Is(SourceGame_Portal2Game)) {
         offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
+        offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);
+        offsetFinder->ServerSide("CProp_Portal", "m_bActivated", &Offsets::m_bActivated);
+        offsetFinder->ServerSide("CProp_Portal", "m_bIsPortal2", &Offsets::m_bIsPortal2);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal1", &Offsets::m_bCanFirePortal1);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal2", &Offsets::m_bCanFirePortal2);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_hPrimaryPortal", &Offsets::m_hPrimaryPortal);
+        offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
     }
 
     sv_cheats = Variable("sv_cheats");
@@ -428,6 +601,15 @@ bool Server::Init()
     sv_gravity = Variable("sv_gravity");
 
     return this->hasLoaded = this->g_GameMovement && this->g_ServerGameDLL;
+}
+CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop progress.\n")
+{
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags0"), 0);
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags1"), 0);
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags2"), 0);
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags3"), 0);
+    engine->ExecuteCommand("mp_mark_all_maps_incomplete", true);
+    engine->ExecuteCommand("mp_lock_all_taunts", true);
 }
 void Server::Shutdown()
 {

@@ -34,6 +34,9 @@ Variable sar_duckjump("sar_duckjump", "0", "Allows duck-jumping even when fully 
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
 Variable sar_disable_steam_pause("sar_disable_steam_pause", "0", "Prevents pauses from steam overlay.\n");
 Variable sar_disable_no_focus_sleep("sar_disable_no_focus_sleep", "0", "Does not yield the CPU when game is not focused.\n");
+Variable sar_disable_progress_bar_update("sar_disable_progress_bar_update", "0", 0, 2, "Disables excessive usage of progress bar.\n");
+Variable sar_prevent_mat_snapshot_recompute("sar_prevent_mat_snapshot_recompute", "0", "Shortens loading times by preventing state snapshot recomputation.\n");
+Variable sar_challenge_autostop("sar_challenge_autostop", "0", "Automatically stops recording demos when the leaderboard opens after a CM run.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -100,6 +103,65 @@ CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
     }
 }
 
+CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Sets all loading fixes to preset values.\n", ({ "none", "sla", "normal", "full" }))
+{
+    if (args.ArgC() != 2) {
+        console->Print(sar_fast_load_preset.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    const char* preset = args.Arg(1);
+
+#define CMD(x) engine->ExecuteCommand(x)
+    if (!strcmp(preset, "none")) {
+        CMD("ui_loadingscreen_transition_time 1.0");
+        CMD("ui_loadingscreen_fadein_time 1.0");
+        CMD("ui_loadingscreen_mintransition_time 0.5");
+        CMD("sar_disable_progress_bar_update 0");
+        CMD("sar_prevent_mat_snapshot_recompute 0");
+        CMD("sar_loads_uncap 0");
+        CMD("sar_loads_norender 0");
+    } else if (!strcmp(preset, "sla")) {
+        CMD("ui_loadingscreen_transition_time 0.0");
+        CMD("ui_loadingscreen_fadein_time 0.0");
+        CMD("ui_loadingscreen_mintransition_time 0.0");
+        CMD("sar_disable_progress_bar_update 1");
+        CMD("sar_prevent_mat_snapshot_recompute 1");
+        CMD("sar_loads_uncap 0");
+        CMD("sar_loads_norender 0");
+    } else if (!strcmp(preset, "normal")) {
+        CMD("ui_loadingscreen_transition_time 0.0");
+        CMD("ui_loadingscreen_fadein_time 0.0");
+        CMD("ui_loadingscreen_mintransition_time 0.0");
+        CMD("sar_disable_progress_bar_update 1");
+        CMD("sar_prevent_mat_snapshot_recompute 1");
+        CMD("sar_loads_uncap 1");
+        CMD("sar_loads_norender 0");
+    } else if (!strcmp(preset, "full")) {
+        CMD("ui_loadingscreen_transition_time 0.0");
+        CMD("ui_loadingscreen_fadein_time 0.0");
+        CMD("ui_loadingscreen_mintransition_time 0.0");
+        CMD("sar_disable_progress_bar_update 2");
+        CMD("sar_prevent_mat_snapshot_recompute 1");
+        CMD("sar_loads_uncap 1");
+        CMD("sar_loads_norender 1");
+    } else {
+        console->Print("Unknown preset %s!\n", preset);
+        console->Print(sar_fast_load_preset.ThisPtr()->m_pszHelpString);
+    }
+#undef CMD
+}
+
+CON_COMMAND(sar_clear_lines, "Clears all active drawline overlays.\n")
+{
+    // So, hooking this would be really annoying, however Valve's code
+    // is dumb and bad and only allows 20 lines (after which it'll start
+    // overwriting old ones), so let's just draw 20 zero-length lines!
+    for (int i = 0; i < 20; ++i) {
+        engine->ExecuteCommand("drawline 0 0 0 0 0 0", true);
+    }
+}
+
 void Cheats::Init()
 {
     if (sar.game->Is(SourceGame_Portal2Game)) {
@@ -121,18 +183,20 @@ void Cheats::Init()
     //sar_hud_portals.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
     sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
     sar_disable_steam_pause.UniqueFor(SourceGame_Portal2Game);
-    sar_debug_listener.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_disable_progress_bar_update.UniqueFor(SourceGame_Portal2Game);
+    sar_prevent_mat_snapshot_recompute.UniqueFor(SourceGame_Portal2Game);
+    sar_debug_listener.UniqueFor(SourceGame_Portal2Game);
     sar_sr_hud.UniqueFor(s3);
     sar_sr_hud_x.UniqueFor(s3);
     sar_sr_hud_y.UniqueFor(s3);
     sar_sr_hud_font_color.UniqueFor(s3);
     sar_sr_hud_font_index.UniqueFor(s3);
-    sar_speedrun_autostart.UniqueFor(s3);
+    sar_speedrun_start_on_load.UniqueFor(s3);
     sar_speedrun_autostop.UniqueFor(s3);
     sar_speedrun_standard.UniqueFor(s3);
     sar_duckjump.UniqueFor(SourceGame_Portal2Engine);
-    sar_replay_viewmode.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
-    sar_mimic.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+    sar_replay_viewmode.UniqueFor(SourceGame_Portal2Game);
+    sar_mimic.UniqueFor(SourceGame_Portal2Game);
     //sar_hud_pause_timer.UniqueFor(s3);
     sar_speedrun_time_pauses.UniqueFor(s3);
     sar_speedrun_smartsplit.UniqueFor(s3);
@@ -164,6 +228,10 @@ void Cheats::Init()
 
     Variable::RegisterAll();
     Command::RegisterAll();
+
+    // putting this here is really dumb but i dont even care any
+    // more
+    sar_hud_text.AddCallBack(sar_hud_text_callback);
 }
 void Cheats::Shutdown()
 {

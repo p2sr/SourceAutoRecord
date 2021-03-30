@@ -26,6 +26,7 @@ extern int GetSaveDirName;
 extern int ExecuteClientCmd;
 extern int GetActiveSplitScreenPlayerSlot;
 extern int GetSteamAPIContext;
+extern int IsPaused;
 
 // CHLClient
 extern int GetAllClasses;
@@ -37,6 +38,7 @@ extern int JoyStickApplyMovement;
 
 // ClientModeShared
 extern int CreateMove;
+extern int OverrideView;
 
 // ConVar
 extern int Dtor;
@@ -48,6 +50,7 @@ extern int Create;
 // CMatSystemSurface
 extern int DrawSetColor;
 extern int DrawFilledRect;
+extern int DrawColoredCircle;
 extern int DrawLine;
 extern int DrawSetTextFont;
 extern int DrawSetTextColor;
@@ -56,9 +59,20 @@ extern int PaintTraverseEx;
 extern int DrawColoredText;
 extern int DrawTextLen;
 
+extern int DrawSetTextureFile;
+extern int DrawSetTextureRGBA;
+extern int DrawSetTexture;
+extern int DrawGetTextureSize;
+extern int DrawTexturedRect;
+extern int IsTextureIDValid;
+extern int CreateNewTextureID;
+
 // CInputSystem
 extern int StringToButtonCode;
 extern int SleepUntilInput;
+extern int IsButtonDown;
+extern int GetCursorPosition;
+extern int SetCursorPosition;
 
 // CInput
 extern int GetButtonBits;
@@ -78,7 +92,10 @@ extern int ProcessMovement;
 // CDemoRecorder
 extern int GetRecordingTick;
 extern int SetSignonState;
+extern int StartRecording;
 extern int StopRecording;
+extern int RecordCustomData;
+extern int RecordCommand;
 extern int m_szDemoBaseName;
 extern int m_bRecording;
 extern int m_nDemoNumber;
@@ -109,6 +126,7 @@ extern int m_flMaxspeed;
 extern int m_flGravity;
 extern int S_m_vecViewOffset;
 extern int IsPlayer;
+extern int AcceptInput;
 
 // CBasePlayer
 extern int m_fFlags;
@@ -117,16 +135,42 @@ extern int m_nWaterLevel;
 extern int m_bDucked;
 extern int m_flFriction;
 extern int m_pSurfaceData;
+extern int m_pShadowStand;
+extern int m_pShadowCrouch;
+extern int m_Local;
+extern int m_hGroundEntity;
+
+// CPlayerLocalData
+extern int m_nTractorBeamCount;
+extern int m_hTractorBeam;
 
 // CPortal_Player
 extern int iNumPortalsPlaced;
+extern int m_StatsThisLevel;
+
+// CWeaponPortalgun
+extern int m_bCanFirePortal1;
+extern int m_bCanFirePortal2;
+extern int m_hPrimaryPortal;
+extern int m_hSecondaryPortal;
+
+// CProp_Portal
+extern int m_bActivated;
+extern int m_bIsPortal2;
+extern int m_hActiveWeapon;
 
 // IEngineVGuiInternal
 extern int IsGameUIVisible;
 extern int Paint;
 
+// IEngineTrace
+extern int TraceRay;
+
 // CEngineTool
 extern int GetCurrentMap;
+extern int HostFrameTime;
+extern int ClientTime;
+extern int PrecacheModel;
 
 // CSchemeManager
 extern int GetIScheme;
@@ -146,6 +190,9 @@ extern int IsRestoring;
 // CHud
 extern int GetName;
 
+//CHUDQuickInfo
+extern int ShouldDraw;
+
 // CGameEventManager
 extern int AddListener;
 extern int RemoveListener;
@@ -161,21 +208,47 @@ extern int IsRunningSimulation;
 
 // CIVDebugOverlay
 extern int ScreenPosition;
+extern int AddBoxOverlay;
+extern int AddSphereOverlay;
+extern int AddTriangleOverlay;
+extern int AddLineOverlay;
+extern int AddScreenTextOverlay;
+extern int ClearAllOverlays;
 
 // CCommandBuffer
 extern int m_bWaitEnabled;
 
 // CServerTools
 extern int GetIServerEntity;
+extern int CreateEntityByName;
+extern int DispatchSpawn;
+extern int SetKeyValueChar;
+extern int SetKeyValueFloat;
+extern int SetKeyValueVector;
 
 // CVEngineServer
 extern int ClientCommand;
+
+//CBaseHudChat
+extern int ChatPrintf;
 
 // CSteam3Client
 extern int OnGameOverlayActivated;
 
 // surfacedata_t
 extern int jumpFactor;
+
+// IPhysicsObject
+extern int IsAsleep;
+extern int IsCollisionEnabled;
+extern int IsGravityEnabled;
+extern int IsDragEnabled;
+extern int IsMotionEnabled;
+extern int GetPosition;
+extern int GetVelocity;
+extern int SetPosition;
+extern int SetVelocity;
+extern int EnableGravity;
 
 // Others
 extern int tickcount;
@@ -210,6 +283,9 @@ extern int HostState_OnClientConnected;
 extern int hoststate;
 extern int m_bLoadGame;
 extern int NUM_ENT_ENTRIES;
+extern int ENT_ENTRY_MASK;
+extern int INVALID_EHANDLE_INDEX;
+extern int NUM_SERIAL_NUM_SHIFT_BITS;
 extern int m_iClassName;
 extern int m_iName;
 extern int m_EntPtrArray;

@@ -7,6 +7,8 @@
 
 #include "Cheats.hpp"
 #include "Command.hpp"
+#include "Checksum.hpp"
+#include "Features/Stats/Stats.hpp"
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Variable.hpp"
@@ -46,6 +48,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Tracer>(&tracer);
             this->features->AddFeature<SpeedrunTimer>(&speedrun);
             this->features->AddFeature<Stats>(&stats);
+            this->features->AddFeature<Sync>(&synchro);
             this->features->AddFeature<ReplayRecorder>(&replayRecorder1);
             this->features->AddFeature<ReplayRecorder>(&replayRecorder2);
             this->features->AddFeature<ReplayPlayer>(&replayPlayer1);
@@ -53,6 +56,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<ReplayProvider>(&replayProvider);
             this->features->AddFeature<Timer>(&timer);
             this->features->AddFeature<EntityInspector>(&inspector);
+            this->features->AddFeature<SeamshotFind>(&seamshotFind);
             this->features->AddFeature<ClassDumper>(&classDumper);
             this->features->AddFeature<EntityList>(&entityList);
             this->features->AddFeature<OffsetFinder>(&offsetFinder);
@@ -61,6 +65,11 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<PauseTimer>(&pauseTimer);
             this->features->AddFeature<DataMapDumper>(&dataMapDumper);
             this->features->AddFeature<FovChanger>(&fovChanger);
+            this->features->AddFeature<Camera>(&camera);
+            this->features->AddFeature<SegmentedTools>(&segmentedTools);
+            this->features->AddFeature<GroundFramesCounter>(&groundFramesCounter);
+            this->features->AddFeature<TimescaleDetect>(&timescaleDetect);
+            this->features->AddFeature<ZachStats>(&zachStats);
 
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
@@ -69,7 +78,10 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->modules->AddModule<Engine>(&engine);
             this->modules->AddModule<Client>(&client);
             this->modules->AddModule<Server>(&server);
+            this->modules->AddModule<MaterialSystem>(&materialSystem);
             this->modules->InitAll();
+
+            InitSARChecksum();
 
             if (engine && engine->hasLoaded) {
                 engine->demoplayer->Init();
@@ -77,10 +89,13 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
                 this->cheats->Init();
 
-                if (this->game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+                if (this->game->Is(SourceGame_Portal2Game)) {
                     this->features->AddFeature<Listener>(&listener);
-                    this->features->AddFeature<WorkshopList>(&workshop);
                     this->features->AddFeature<Imitator>(&imitator);
+                }
+
+                if (this->game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+                    this->features->AddFeature<WorkshopList>(&workshop);
                 }
 
                 if (listener) {
@@ -118,6 +133,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
         sar.modules->ShutdownAll();
     }
 
+    Variable::ClearAllCallbacks();
     SAFE_DELETE(sar.features)
     SAFE_DELETE(sar.cheats)
     SAFE_DELETE(sar.modules)
@@ -238,6 +254,14 @@ CON_COMMAND(sar_rename, "Changes your name. Usage: sar_rename <name>\n")
 }
 CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
 {
+    auto statCounter = stats->Get(GET_SLOT())->statsCounter;
+    statCounter->RecordDatas(session->GetTick());
+    statCounter->ExportToFile(sar_statcounter_filePath.GetString());
+
+    networkManager.Disconnect();
+
+    Variable::ClearAllCallbacks();
+
     if (sar.cheats) {
         sar.cheats->Shutdown();
     }
@@ -253,7 +277,7 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 
     if (sar.modules) {
         sar.modules->ShutdownAll();
-    }    
+    }
 
     SAFE_DELETE(sar.features)
     SAFE_DELETE(sar.cheats)

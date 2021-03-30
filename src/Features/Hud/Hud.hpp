@@ -2,6 +2,7 @@
 #include "Utils/SDK.hpp"
 
 #include <vector>
+#include <array>
 
 #include "Game.hpp"
 #include "Variable.hpp"
@@ -47,12 +48,14 @@ private:
     int spacing = 0;
     Color textColor = Color(255, 255, 255);
     int elements = 0;
+    std::array<int, 256> group { 0 };
 
 public:
     int slot = 0;
 
 public:
     void DrawElement(const char* fmt, ...);
+    void DrawElementOnScreen(const int nbElement, const float xPos, const float yPos, const char* fmt, ...);
     void Reset(int slot);
 };
 
@@ -63,13 +66,16 @@ using _PaintCallbackString = void (*)(HudContext* ctx, const char* text);
 class HudElement : public BaseHud {
 public:
     int orderIndex;
-    Variable* variable;
 
     union {
         _PaintCallback callbackDefault;
         _PaintCallbackMode callbackMode;
         _PaintCallbackString callbackString;
     };
+
+protected:
+    Variable* variable;
+    const char* name;
 
 public:
     static std::vector<HudElement*>& GetList();
@@ -78,8 +84,10 @@ public:
 public:
     HudElement(Variable* variable, int type, bool drawSecondSplitScreen, int version);
     HudElement(Variable* variable, _PaintCallback callback, int type, bool drawSecondSplitScreen = false, int version = SourceGame_Unknown);
-    bool ShouldDraw() override { return this->variable->GetBool() && BaseHud::ShouldDraw(); }
+    HudElement(const char* name, _PaintCallback callback, int type, bool drawSecondSplitScreen = false, int version = SourceGame_Unknown);
+    bool ShouldDraw() override { return (!this->variable || this->variable->GetBool()) && BaseHud::ShouldDraw(); }
     virtual void Paint(HudContext* ctx) { this->callbackDefault(ctx); }
+    const char* ElementName() const { return this->variable ? this->variable->ThisPtr()->m_pszName : this->name; }
 };
 
 class HudModeElement : public HudElement {
@@ -97,6 +105,10 @@ public:
 };
 
 // First screen
+#define HUD_ELEMENT_NO_DISABLE(name, type)                                                        \
+    void sar_hud_element_##name##_callback(HudContext* ctx);                                      \
+    HudElement sar_hud_element_##name("sar_hud_" #name, sar_hud_element_##name##_callback, type); \
+    void sar_hud_element_##name##_callback(HudContext* ctx)
 #define HUD_ELEMENT(name, value, desc, type)                                                    \
     Variable sar_hud##name("sar_hud_" #name, value, desc);                                      \
     void sar_hud_element_##name##_callback(HudContext* ctx);                                    \
@@ -113,17 +125,21 @@ public:
     HudModeElement sar_hud_element_##name(&sar_hud##name, sar_hud_element_##name##_callback, type); \
     void sar_hud_element_##name##_callback(HudContext* ctx, int mode)
 // First+second screen
-#define HUD_ELEMENT2(name, value, desc, type)                                                          \
+#define HUD_ELEMENT2_NO_DISABLE(name, type)                                                        \
+    void sar_hud_element_##name##_callback(HudContext* ctx);                                      \
+    HudElement sar_hud_element_##name("sar_hud_" #name, sar_hud_element_##name##_callback, type, true); \
+    void sar_hud_element_##name##_callback(HudContext* ctx)
+#define HUD_ELEMENT2(name, value, desc, type)                                                         \
     Variable sar_hud##name("sar_hud_" #name, value, desc);                                            \
     void sar_hud_element_##name##_callback(HudContext* ctx);                                          \
     HudElement sar_hud_element_##name(&sar_hud##name, sar_hud_element_##name##_callback, type, true); \
     void sar_hud_element_##name##_callback(HudContext* ctx)
-#define HUD_ELEMENT_STRING2(name, value, desc, type)                                                         \
+#define HUD_ELEMENT_STRING2(name, value, desc, type)                                                        \
     Variable sar_hud##name("sar_hud_" #name, value, desc, 0);                                               \
     void sar_hud_element_##name##_callback(HudContext* ctx, const char* text);                              \
     HudStringElement sar_hud_element_##name(&sar_hud##name, sar_hud_element_##name##_callback, type, true); \
     void sar_hud_element_##name##_callback(HudContext* ctx, const char* text)
-#define HUD_ELEMENT_MODE2(name, value, min, max, desc, type)                                               \
+#define HUD_ELEMENT_MODE2(name, value, min, max, desc, type)                                              \
     Variable sar_hud##name("sar_hud_" #name, value, min, max, desc);                                      \
     void sar_hud_element_##name##_callback(HudContext* ctx, int mode);                                    \
     HudModeElement sar_hud_element_##name(&sar_hud##name, sar_hud_element_##name##_callback, type, true); \
@@ -151,3 +167,5 @@ extern Variable sar_hud_default_padding_y;
 extern Variable sar_hud_default_font_index;
 extern Variable sar_hud_default_font_color;
 extern Variable sar_hud_precision;
+extern Variable sar_hud_text;
+void sar_hud_text_callback(void*, const char*, float);

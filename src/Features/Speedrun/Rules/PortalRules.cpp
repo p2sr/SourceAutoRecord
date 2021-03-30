@@ -8,8 +8,8 @@
 
 #include "Games/Windows/PortalUnpack.hpp"
 
-#include "Utils/SDK.hpp"
 #include "SAR.hpp"
+#include "Utils/SDK.hpp"
 
 #ifdef _WIN32
 #define testchmb_a_00 "testchmb_a_00"
@@ -34,7 +34,7 @@ SAR_RULE3(waking_up, testchmb_a_00, "blackout_viewcontroller", SearchMode::Names
     static auto isUnpack = false;
 #endif
 
-    // CTriggerCamera aka point_viewcontrol    
+    // CTriggerCamera aka point_viewcontrol
     auto m_state = reinterpret_cast<int*>((uintptr_t)entity + (isUnpack ? Offset_m_state_Unpack : Offset_m_state));
 
     // Give it some time to get enabled...

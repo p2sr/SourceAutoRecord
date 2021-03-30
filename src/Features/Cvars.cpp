@@ -118,7 +118,16 @@ void Cvars::ListAll()
             }
             console->Msg("%s", ptr->m_pszHelpString);
         } else if (variable->isReference) {
-            console->Print("\n%s (unlocked)\n", ptr->m_pszName);
+            std::string str = "";
+            
+            if (variable->hasCustomCallback && variable->isUnlocked)
+                str = "(custom callback && unlocked)";
+            else if (variable->hasCustomCallback)
+                str += "(custom callback)";
+            else if (variable->isUnlocked)
+                str += "(unlocked)";
+
+            console->Print("\n%s %s\n", ptr->m_pszName, str.c_str());
             if (std::strlen(ptr->m_pszHelpString) != 0) {
                 console->Msg("%s\n", ptr->m_pszHelpString);
             }

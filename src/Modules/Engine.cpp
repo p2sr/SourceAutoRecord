@@ -3,12 +3,18 @@
 #include <cstring>
 
 #include "Features/Cvars.hpp"
+#include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
+#include "Features/Speedrun/Rules/Portal2Rules.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Stats/ZachStats.hpp"
 
+#include "Client.hpp"
 #include "Console.hpp"
 #include "EngineDemoPlayer.hpp"
 #include "EngineDemoRecorder.hpp"
+#include "Features/Demo/DemoParser.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Server.hpp"
 
 #include "Game.hpp"
@@ -17,22 +23,45 @@
 #include "Utils.hpp"
 #include "Variable.hpp"
 
+#ifdef _WIN32
+#include <Memoryapi.h>
+#include <Windows.h>
+#else
+#include <sys/mman.h>
+#endif
+
 Variable host_framerate;
 Variable net_showmsg;
+Variable sv_portal_players;
+Variable fps_max;
+Variable mat_norendering;
+
+Variable sar_record_at("sar_record_at", "-1", -1, "Start recording a demo at the tick specified. Will use sar_record_at_demo_name.\n", 0);
+Variable sar_record_at_demo_name("sar_record_at_demo_name", "chamber", "Name of the demo automatically recorded.\n", 0);
+Variable sar_record_at_increment("sar_record_at_increment", "0", "Increment automatically the demo name.\n");
+
+Variable sar_pause_at("sar_pause_at", "-1", -1, "Pause at the specified tick. -1 to deactivate it.\n");
+Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.\n");
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::Disconnect2);
 REDECL(Engine::SetSignonState);
 REDECL(Engine::SetSignonState2);
 REDECL(Engine::Frame);
+REDECL(Engine::PurgeUnusedModels);
 REDECL(Engine::OnGameOverlayActivated);
 REDECL(Engine::OnGameOverlayActivatedBase);
+REDECL(Engine::ReadCustomData);
 REDECL(Engine::plugin_load_callback);
 REDECL(Engine::plugin_unload_callback);
 REDECL(Engine::exit_callback);
 REDECL(Engine::quit_callback);
 REDECL(Engine::help_callback);
 REDECL(Engine::gameui_activate_callback);
+REDECL(Engine::unpause_callback);
+REDECL(Engine::playvideo_end_level_transition_callback);
+REDECL(Engine::playvideo_exitcommand_nointerrupt_callback);
+REDECL(Engine::load_callback);
 #ifdef _WIN32
 REDECL(Engine::connect_callback);
 REDECL(Engine::ParseSmoothingInfo_Skip);
@@ -40,7 +69,6 @@ REDECL(Engine::ParseSmoothingInfo_Default);
 REDECL(Engine::ParseSmoothingInfo_Continue);
 REDECL(Engine::ParseSmoothingInfo_Mid);
 REDECL(Engine::ParseSmoothingInfo_Mid_Trampoline);
-REDECL(Engine::ReadCustomData);
 #endif
 
 void Engine::ExecuteCommand(const char* cmd, bool immediately)
@@ -131,6 +159,146 @@ void Engine::SafeUnload(const char* postCommand)
         this->SendToCommandBuffer(postCommand, SAFE_UNLOAD_TICK_DELAY);
     }
 }
+bool Engine::isRunning()
+{
+    return engine->hoststate->m_activeGame && engine->hoststate->m_currentState == HOSTSTATES::HS_RUN;
+}
+bool Engine::IsGamePaused()
+{
+    return this->IsPaused(this->engineClient->ThisPtr());
+}
+
+int Engine::GetMapIndex(const std::string map)
+{
+    auto it = std::find(Game::mapNames.begin(), Game::mapNames.end(), map);
+    if (it != Game::mapNames.end()) {
+        return std::distance(Game::mapNames.begin(), it);
+    } else {
+        return -1;
+    }
+}
+
+std::string Engine::GetCurrentMapName()
+{
+    if (engine->demoplayer->IsPlaying()) {
+        return engine->demoplayer->GetLevelName();
+    } else {
+        return engine->m_szLevelName;
+    }
+}
+
+bool Engine::IsCoop()
+{
+    return sv_portal_players.GetInt() == 2;
+}
+
+bool Engine::IsOrange()
+{
+    return this->IsCoop() && session->signonState == SIGNONSTATE_FULL && !engine->hoststate->m_activeGame;
+}
+
+bool Engine::Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr)
+{
+    float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);
+    auto cosX = std::cos(X), cosY = std::cos(Y);
+    auto sinX = std::sin(X), sinY = std::sin(Y);
+
+    Vector dir(cosY * cosX, sinY * cosX, -sinX);
+
+    Vector finalDir = Vector(dir.x, dir.y, dir.z).Normalize() * distMax;
+
+    Ray_t ray;
+    ray.m_IsRay = true;
+    ray.m_IsSwept = true;
+    ray.m_Start = VectorAligned(pos.x, pos.y, pos.z);
+    ray.m_Delta = VectorAligned(finalDir.x, finalDir.y, finalDir.z);
+    ray.m_StartOffset = VectorAligned();
+    ray.m_Extents = VectorAligned();
+
+    engine->TraceRay(this->engineTrace->ThisPtr(), ray, MASK_SHOT_PORTAL, &filter, &tr);
+
+    if (tr.fraction >= 1) {
+        return false;
+    }
+    return true;
+}
+
+bool Engine::TraceFromCamera(float distMax, CGameTrace& tr)
+{
+    void* player = server->GetPlayer(GET_SLOT() + 1);
+
+    if (player == nullptr || (int)player == -1)
+        return false;
+
+    Vector camPos = server->GetAbsOrigin(player) + server->GetViewOffset(player);
+    QAngle angle = engine->GetAngles(GET_SLOT());
+
+    CTraceFilterSimple filter;
+    filter.SetPassEntity(server->GetPlayer(GET_SLOT() + 1));
+
+    return this->Trace(camPos, angle, distMax, filter, tr);
+}
+
+void Engine::NewTick(const int tick)
+{
+    //sar_record
+
+    if (sar_record_at.GetFloat() != -1 && !engine->hasRecorded && sar_record_at.GetFloat() == tick) {
+        std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
+        engine->ExecuteCommand(cmd.c_str(), true);
+        engine->hasRecorded = true;
+    }
+
+    //sar_pause
+
+    if (sar_pause_at.GetInt() != -1 && !engine->demoplayer->IsPlaying()) {
+        if (!engine->hasPaused && sar_pause_at.GetInt() == tick) {
+            engine->ExecuteCommand("pause", true);
+            engine->hasPaused = true;
+            engine->isPausing = true;
+            engine->pauseTick = server->tickCount;
+        } else if (sar_pause_for.GetInt() > 0 && engine->isPausing && server->tickCount == sar_pause_for.GetInt() + engine->pauseTick) {
+            engine->ExecuteCommand("unpause", true);
+            engine->isPausing = false;
+        }
+    }
+
+    if (segmentedTools->waitTick == tick && !engine->hasWaited) {
+        if (!sv_cheats.GetBool()) {
+            console->Print("\"wait\" needs sv_cheats 1.\n");
+            engine->hasWaited = true;
+        } else {
+            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
+            engine->hasWaited = true;
+        }
+    }
+
+    networkManager.DispatchQueuedEvents();
+
+    if (networkManager.isConnected && engine->isRunning()) {
+        networkManager.UpdateGhostsPosition();
+
+        if (networkManager.isCountdownReady) {
+            networkManager.UpdateCountdown();
+        }
+    }
+
+    if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
+        demoGhostPlayer.UpdateGhostsPosition();
+    }
+
+    zachStats->UpdateTriggers();
+}
+
+float Engine::GetHostFrameTime()
+{
+    return this->HostFrameTime(this->engineTool->ThisPtr());
+}
+
+float Engine::GetClientTime()
+{
+    return this->ClientTime(this->engineTool->ThisPtr());
+}
 
 // CClientState::Disconnect
 DETOUR(Engine::Disconnect, bool bShowMainMenu)
@@ -183,14 +351,48 @@ DETOUR(Engine::Frame)
         speedrun->PostUpdate(engine->GetTick(), engine->m_szLevelName);
     }
 
+    if ((engine->demoplayer->IsPlaying() || engine->IsOrange()) && engine->lastTick != session->GetTick()) {
+        engine->NewTick(session->GetTick());
+    }
+
+    //demoplayer
+    if (engine->demoplayer->demoQueueSize > 0 && !engine->demoplayer->IsPlaying()) {
+        DemoParser parser;
+        auto name = engine->demoplayer->demoQueue[engine->demoplayer->currentDemoID];
+        engine->ExecuteCommand(std::string("playdemo " + name).c_str());
+        if (++engine->demoplayer->currentDemoID >= engine->demoplayer->demoQueueSize) {
+            engine->demoplayer->ClearDemoQueue();
+        }
+    }
+
+    engine->lastTick = session->GetTick();
+
     return Engine::Frame(thisptr);
+}
+
+DETOUR(Engine::PurgeUnusedModels)
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    auto result = Engine::PurgeUnusedModels(thisptr);
+    auto stop = std::chrono::high_resolution_clock::now();
+    console->DevMsg("PurgeUnusedModels - %dms\n", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
+    return result;
+}
+
+DETOUR(Engine::ReadCustomData, int* callbackIndex, char** data)
+{
+    auto size = Engine::ReadCustomData(thisptr, callbackIndex, data);
+    if (callbackIndex && data && *callbackIndex == 0 && size > 8) {
+        engine->demoplayer->CustomDemoData(*data + 8, size - 8);
+    }
+    return size;
 }
 
 #ifdef _WIN32
 // CDemoFile::ReadCustomData
 void __fastcall ReadCustomData_Wrapper(int demoFile, int edx, int unk1, int unk2)
 {
-    Engine::ReadCustomData((void*)demoFile, 0, nullptr, nullptr);
+    Engine::ReadCustomData((void*)demoFile, nullptr, nullptr);
 }
 // CDemoSmootherPanel::ParseSmoothingInfo
 DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
@@ -208,7 +410,7 @@ DETOUR_MID_MH(Engine::ParseSmoothingInfo_Mid)
 
         jmp Engine::ParseSmoothingInfo_Skip
 
-_orig:  // Original overwritten instructions
+_orig: // Original overwritten instructions
         add eax, -3
         cmp eax, 6
         ja _def
@@ -273,6 +475,46 @@ DETOUR_COMMAND(Engine::gameui_activate)
 
     Engine::gameui_activate_callback(args);
 }
+DETOUR_COMMAND(Engine::playvideo_end_level_transition)
+{
+    if (engine->GetMaxClients() >= 2) {
+        speedrun->Pause();
+    }
+
+    Engine::playvideo_end_level_transition_callback(args);
+}
+DETOUR_COMMAND(Engine::playvideo_exitcommand_nointerrupt)
+{
+    if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "dlc1_endmovie")) {
+        course6End = true;
+    } else if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "coop_outro")) {
+        course5End = true;
+    }
+
+    Engine::playvideo_exitcommand_nointerrupt_callback(args);
+}
+DETOUR_COMMAND(Engine::load)
+{
+    // Loading a save should bypass ghost_sync if there's no map
+    // list for this game
+    if (Game::mapNames.empty() && networkManager.isConnected) {
+        networkManager.disableSyncForLoad = true;
+    }
+    Engine::load_callback(args);
+}
+
+DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
+{
+    if (engine->GetMaxClients() >= 2 && ss_force_primary_fullscreen.GetInt() == 0) {
+        if (engine->hadInitialForcePrimaryFullscreen) {
+            speedrun->Resume(engine->GetTick());
+            if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !speedrun->IsActive()) {
+                speedrun->Start(engine->GetTick());
+            }
+        }
+        engine->hadInitialForcePrimaryFullscreen = !engine->hadInitialForcePrimaryFullscreen;
+    }
+}
 
 bool Engine::Init()
 {
@@ -289,6 +531,7 @@ bool Engine::Init()
         this->GetMaxClients = this->engineClient->Original<_GetMaxClients>(Offsets::GetMaxClients);
         this->GetGameDirectory = this->engineClient->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
         this->GetSaveDirName = this->engineClient->Original<_GetSaveDirName>(Offsets::GetSaveDirName);
+        this->IsPaused = this->engineClient->Original<_IsPaused>(Offsets::IsPaused);
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
@@ -360,10 +603,14 @@ bool Engine::Init()
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
             Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
         }
+
+        if (this->engineTrace = Interface::Create(this->Name(), "EngineTraceServer004")) {
+            this->TraceRay = this->engineTrace->Original<_TraceRay>(Offsets::TraceRay);
+        }
     }
 
-    if (auto tool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
-        auto GetCurrentMap = tool->Original(Offsets::GetCurrentMap);
+    if (this->engineTool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
+        auto GetCurrentMap = this->engineTool->Original(Offsets::GetCurrentMap);
         this->m_szLevelName = Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName);
 
         if (sar.game->Is(SourceGame_HalfLife2Engine) && std::strlen(this->m_szLevelName) != 0) {
@@ -372,7 +619,11 @@ bool Engine::Init()
         }
 
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
-        Interface::Delete(tool);
+
+        this->HostFrameTime = this->engineTool->Original<_HostFrameTime>(Offsets::HostFrameTime);
+        this->ClientTime = this->engineTool->Original<_ClientTime>(Offsets::ClientTime);
+
+        this->PrecacheModel = this->engineTool->Original<_PrecacheModel>(Offsets::PrecacheModel);
     }
 
     if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
@@ -387,7 +638,7 @@ bool Engine::Init()
         Interface::Delete(s_EngineAPI);
     }
 
-    if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+    if (sar.game->Is(SourceGame_Portal2Game)) {
         this->s_GameEventManager = Interface::Create(this->Name(), "GAMEEVENTSMANAGER002", false);
         if (this->s_GameEventManager) {
             this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
@@ -399,30 +650,59 @@ bool Engine::Init()
         }
     }
 
-#ifdef _WIN32
     if (sar.game->Is(SourceGame_Portal2Game)) {
+#ifdef _WIN32
+        // Note: we don't get readCustomDataAddr anymore as we find this
+        // below anyway
         auto parseSmoothingInfoAddr = Memory::Scan(this->Name(), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
-        auto readCustomDataAddr = Memory::Scan(this->Name(), "55 8B EC F6 05 ? ? ? ? ? 53 56 57 8B F1 75 2F");
+        //auto readCustomDataAddr = Memory::Scan(this->Name(), "55 8B EC F6 05 ? ? ? ? ? 53 56 57 8B F1 75 2F");
 
         console->DevMsg("CDemoSmootherPanel::ParseSmoothingInfo = %p\n", parseSmoothingInfoAddr);
-        console->DevMsg("CDemoFile::ReadCustomData = %p\n", readCustomDataAddr);
+        //console->DevMsg("CDemoFile::ReadCustomData = %p\n", readCustomDataAddr);
 
-        if (parseSmoothingInfoAddr && readCustomDataAddr) {
-            MH_HOOK_MID(Engine::ParseSmoothingInfo_Mid, parseSmoothingInfoAddr);            // Hook switch-case
-            Engine::ParseSmoothingInfo_Continue = parseSmoothingInfoAddr + 8;               // Back to original function
-            Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133;              // Default case
-            Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29;                  // Continue loop
-            Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(readCustomDataAddr); // Function that handles dem_customdata
+        if (parseSmoothingInfoAddr) {
+            MH_HOOK_MID(Engine::ParseSmoothingInfo_Mid, parseSmoothingInfoAddr); // Hook switch-case
+            Engine::ParseSmoothingInfo_Continue = parseSmoothingInfoAddr + 8; // Back to original function
+            Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133; // Default case
+            Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29; // Continue loop
+            //Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(readCustomDataAddr); // Function that handles dem_customdata
 
             this->demoSmootherPatch = new Memory::Patch();
             unsigned char nop3[] = { 0x90, 0x90, 0x90 };
-            this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3);             // Nop rest
+            this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3); // Nop rest
         }
-    }
 #endif
+
+        // This is the address of the one interesting call to ReadCustomData - the E8 byte indicates the start of the call instruction
+#ifdef _WIN32
+        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12);
+#else
+        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
+#endif
+
+        // Pesky memory protection doesn't want us overwriting code - we
+        // get around it with a call to mprotect or VirtualProtect
+        void* injectPageAddr = (void*)(readPacketInjectAddr & 0xFFFFF000); // TODO: could the instruction cross a page boundary? hope not lol
+#ifdef _WIN32
+        DWORD wtf_microsoft_why_cant_this_be_null;
+        VirtualProtect(injectPageAddr, 0x1000, PAGE_EXECUTE_READWRITE, &wtf_microsoft_why_cant_this_be_null);
+#else
+        mprotect(injectPageAddr, 0x1000, PROT_READ | PROT_WRITE | PROT_EXEC);
+#endif
+
+        // It's a relative call, so we have to do some weird fuckery lol
+        Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)readPacketInjectAddr + (readPacketInjectAddr + 4));
+        *(uint32_t*)readPacketInjectAddr = (uint32_t)&ReadCustomData_Hook - (readPacketInjectAddr + 4); // Add 4 to get address of next instruction
+    }
 
     if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
         ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
+        AddBoxOverlay = debugoverlay->Original<_AddBoxOverlay>(Offsets::AddBoxOverlay);
+        AddSphereOverlay = debugoverlay->Original<_AddSphereOverlay>(Offsets::AddSphereOverlay);
+        AddTriangleOverlay = debugoverlay->Original<_AddTriangleOverlay>(Offsets::AddTriangleOverlay);
+        AddLineOverlay = debugoverlay->Original<_AddLineOverlay>(Offsets::AddLineOverlay);
+        AddScreenTextOverlay = debugoverlay->Original<_AddScreenTextOverlay>(Offsets::AddScreenTextOverlay);
+        ClearAllOverlays = debugoverlay->Original<_ClearAllOverlays>(Offsets::ClearAllOverlays);
         Interface::Delete(debugoverlay);
     }
 
@@ -431,15 +711,30 @@ bool Engine::Init()
     Command::Hook("exit", Engine::exit_callback_hook, Engine::exit_callback);
     Command::Hook("quit", Engine::quit_callback_hook, Engine::quit_callback);
     Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
+    Command::Hook("load", Engine::load_callback_hook, Engine::load_callback);
 
     if (sar.game->Is(SourceGame_Portal2Game)) {
         Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
+        Command::Hook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback_hook, Engine::playvideo_end_level_transition_callback);
+        Command::Hook("playvideo_exitcommand_nointerrupt", Engine::playvideo_exitcommand_nointerrupt_callback_hook, Engine::playvideo_exitcommand_nointerrupt_callback);
+        CVAR_HOOK_AND_CALLBACK(ss_force_primary_fullscreen);
     }
 
     host_framerate = Variable("host_framerate");
     net_showmsg = Variable("net_showmsg");
+    sv_portal_players = Variable("sv_portal_players");
+    fps_max = Variable("fps_max");
+    mat_norendering = Variable("mat_norendering");
 
-    return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder;
+    // Dumb fix for valve cutting off convar descriptions at 80
+    // characters for some reason
+    char* s = (char*)Memory::Scan(this->Name(), "25 2d 38 30 73 20 2d 20 25 2e 38 30 73 0a 00"); // "%-80s - %.80s"
+    if (s) {
+        Memory::UnProtect(s, 11);
+        strcpy(s, "%-80s - %s");
+    }
+
+    return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace;
 }
 void Engine::Shutdown()
 {
@@ -454,6 +749,8 @@ void Engine::Shutdown()
     Interface::Delete(this->cl);
     Interface::Delete(this->eng);
     Interface::Delete(this->s_GameEventManager);
+    Interface::Delete(this->engineTool);
+    Interface::Delete(this->engineTrace);
 
 #ifdef _WIN32
     Command::Unhook("connect", Engine::connect_callback);
@@ -470,7 +767,10 @@ void Engine::Shutdown()
     Command::Unhook("exit", Engine::exit_callback);
     Command::Unhook("quit", Engine::quit_callback);
     Command::Unhook("help", Engine::help_callback);
+    Command::Unhook("load", Engine::load_callback);
     Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
+    Command::Unhook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback);
+    Command::Unhook("playvideo_exitcommand_nointerrupt", Engine::playvideo_exitcommand_nointerrupt_callback);
 
     if (this->demoplayer) {
         this->demoplayer->Shutdown();

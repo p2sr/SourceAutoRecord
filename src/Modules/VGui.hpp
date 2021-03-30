@@ -16,6 +16,9 @@ private:
     HudContext context = HudContext();
     std::vector<Hud*> huds = std::vector<Hud*>();
 
+    int lastProgressBar = 0;
+    int progressBarCount = 0;
+
 public:
     std::vector<HudElement*> elements = std::vector<HudElement*>();
 
@@ -33,6 +36,7 @@ public:
 
     // CEngineVGui::Paint
     DECL_DETOUR(Paint, PaintMode_t mode);
+    DECL_DETOUR(UpdateProgressBar, int progress);
 
     bool Init() override;
     void Shutdown() override;

@@ -1,8 +1,11 @@
 #include "Client.hpp"
 
+#include <cstdarg>
 #include <cstdint>
 #include <cstring>
 
+#include "Features/Camera.hpp"
+#include "Features/FovChanger.hpp"
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Imitator.hpp"
 #include "Features/OffsetFinder.hpp"
@@ -12,6 +15,9 @@
 #include "Features/Session.hpp"
 #include "Features/Tas/TasPlayer.hpp"
 #include "Features/Tas/TasController.hpp"
+#include "Features/Stats/Sync.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
+#include "Features/Stats/ZachStats.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -28,6 +34,7 @@ Variable cl_sidespeed;
 Variable cl_backspeed;
 Variable cl_forwardspeed;
 Variable in_forceuser;
+Variable crosshairVariable;
 Variable cl_fov;
 
 REDECL(Client::HudUpdate);
@@ -40,11 +47,18 @@ REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
 REDECL(Client::SteamControllerMove);
 REDECL(Client::playvideo_end_level_transition_callback);
+REDECL(Client::OverrideView);
 
 MDECL(Client::GetAbsOrigin, Vector, C_m_vecAbsOrigin);
 MDECL(Client::GetAbsAngles, QAngle, C_m_angAbsRotation);
 MDECL(Client::GetLocalVelocity, Vector, C_m_vecVelocity);
 MDECL(Client::GetViewOffset, Vector, C_m_vecViewOffset);
+
+DECL_CVAR_CALLBACK(cl_fov)
+{
+    if (engine->demoplayer->IsPlaying())
+        fovChanger->Force();
+}
 
 void* Client::GetPlayer(int index)
 {
@@ -65,6 +79,57 @@ void Client::CalcButtonBits(int nSlot, int& bits, int in_button, int in_ignore, 
     if (reset) {
         pButtonState->state &= clearmask;
     }
+}
+
+bool Client::ShouldDrawCrosshair()
+{
+    if (!crosshairVariable.GetBool()) {
+        crosshairVariable.SetValue(1);
+        auto value = this->ShouldDraw(this->g_HUDQuickInfo->ThisPtr());
+        crosshairVariable.SetValue(0);
+        return value;
+    }
+
+    return this->ShouldDraw(this->g_HUDQuickInfo->ThisPtr());
+}
+
+void Client::Chat(TextColor color, const char* fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+    char data[1024];
+    vsnprintf(data, sizeof(data), fmt, argptr);
+    va_end(argptr);
+    client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, "%c%s", color, data);
+}
+
+void Client::QueueChat(TextColor color, const char* fmt, ...)
+{
+    va_list argptr;
+    va_start(argptr, fmt);
+    char data[1024];
+    vsnprintf(data, sizeof data, fmt, argptr);
+    va_end(argptr);
+    this->chatQueue.push_back(std::pair(color, std::string(data)));
+}
+
+void Client::FlushChatQueue()
+{
+    for (auto& s : this->chatQueue) {
+        this->Chat(s.first, "%s", s.second.c_str());
+    }
+    this->chatQueue.clear();
+}
+
+float Client::GetCMTimer()
+{
+    if (sv_bonus_challenge.GetBool()) {
+        uintptr_t player = (uintptr_t)client->GetPlayer(1);
+        if (player) {
+            return *(float*)(player + Offsets::m_StatsThisLevel + 12) - speedrun->GetIntervalPerTick();
+        }
+    }
+    return 0.0f;
 }
 
 // CHLClient::HudUpdate
@@ -90,8 +155,21 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
     }
 
     if (!in_forceuser.isReference || (in_forceuser.isReference && !in_forceuser.GetBool())) {
-        inputHud.SetButtonBits(0, cmd->buttons);
+        if (engine->IsCoop() && engine->IsOrange())
+            inputHud.SetButtonBits(1, cmd->buttons);
+        else
+            inputHud.SetButtonBits(0, cmd->buttons);
     }
+
+    if (sv_cheats.GetBool() && engine->hoststate->m_activeGame) {
+        camera->OverrideMovement(cmd);
+    }
+
+    if (sar_strafesync.GetBool()) {
+        synchro->UpdateSync(cmd);
+    }
+
+    client->lastViewAngles = cmd->viewangles;
 
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
@@ -184,6 +262,33 @@ DETOUR_COMMAND(Client::playvideo_end_level_transition)
     return Client::playvideo_end_level_transition_callback(args);
 }
 
+DETOUR(Client::OverrideView, CPortalViewSetup1* m_View)
+{
+    camera->OverrideView(m_View);
+    return Client::OverrideView(thisptr, m_View);
+}
+
+static _CommandCallback originalLeaderboardCallback;
+
+static void LeaderboardCallback(const CCommand& args)
+{
+    // There's not really much rhyme or reason behind this check, it's
+    // just that this is the specific command the game runs at the end
+    if (sar_challenge_autostop.GetBool() && sv_bonus_challenge.GetBool() && args.ArgC() == 2 && !strcmp(args[1], "1")) {
+        engine->ExecuteCommand("stop");
+    }
+
+    if (networkManager.isConnected && sv_bonus_challenge.GetBool()) {
+        networkManager.NotifySpeedrunFinished(true);
+    }
+
+    if (!zachStats->GetTriggers().empty()) {
+        ZachStats::Output(zachStats->GetStream(), client->GetCMTimer());
+    }
+
+    originalLeaderboardCallback(args);
+}
+
 bool Client::Init()
 {
     bool readJmp = false;
@@ -199,7 +304,7 @@ bool Client::Init()
 
         this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);
 
-        if (sar.game->Is(SourceGame_Portal2)) {
+        if (sar.game->Is(SourceGame_Portal2Game)) {
             auto leaderboard = Command("+leaderboard");
             if (!!leaderboard) {
                 using _GetHud = void*(__cdecl*)(int unk);
@@ -210,8 +315,21 @@ bool Client::Init()
                 auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
                 auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
 
+                Command::Hook("leaderboard_open", &LeaderboardCallback, originalLeaderboardCallback);
+
                 if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
                     this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
+                }
+
+                auto CHUDQuickInfo = FindElement(GetHud(-1), "CHUDQuickInfo");
+
+                if (this->g_HUDQuickInfo = Interface::Create(CHUDQuickInfo)) {
+                    this->ShouldDraw = this->g_HUDQuickInfo->Original<_ShouldDraw>(Offsets::ShouldDraw, readJmp);
+                }
+
+                auto CHudChat = FindElement(GetHud(-1), "CHudChat");
+                if (this->g_HudChat = Interface::Create(CHudChat, false)) {
+                    this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
                 }
             }
         }
@@ -232,7 +350,7 @@ bool Client::Init()
                 if (sar.game->Is(SourceGame_TheStanleyParable)) {
                     auto GetButtonBits = g_Input->Original(Offsets::GetButtonBits, readJmp);
                     Memory::Deref(GetButtonBits + Offsets::in_jump, &this->in_jump);
-                } else if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+                } else if (sar.game->Is(SourceGame_Portal2Game)) {
                     in_forceuser = Variable("in_forceuser");
                     if (!!in_forceuser && this->g_Input) {
                         this->g_Input->Hook(CInput_CreateMove_Hook, CInput_CreateMove, Offsets::GetButtonBits + 1);
@@ -249,7 +367,7 @@ bool Client::Init()
         void* clientMode = nullptr;
         void* clientMode2 = nullptr;
         if (sar.game->Is(SourceGame_Portal2Engine)) {
-            if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
+            if (sar.game->Is(SourceGame_Portal2Game)) {
                 auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
                 auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
                 clientMode = Memory::Deref<void*>(g_pClientMode);
@@ -265,6 +383,9 @@ bool Client::Init()
 
         if (this->g_pClientMode = Interface::Create(clientMode)) {
             this->g_pClientMode->Hook(Client::CreateMove_Hook, Client::CreateMove, Offsets::CreateMove);
+            if (sar.game->Is(SourceGame_Portal2Engine)) {
+                this->g_pClientMode->Hook(Client::OverrideView_Hook, Client::OverrideView, Offsets::OverrideView);
+            }
         }
 
         if (this->g_pClientMode2 = Interface::Create(clientMode2)) {
@@ -278,12 +399,16 @@ bool Client::Init()
 
     offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
     offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
+    offsetFinder->ClientSide("CPortal_Player", "m_StatsThisLevel", &Offsets::m_StatsThisLevel);
 
     cl_showpos = Variable("cl_showpos");
     cl_sidespeed = Variable("cl_sidespeed");
     cl_forwardspeed = Variable("cl_forwardspeed");
     cl_backspeed = Variable("cl_backspeed");
     cl_fov = Variable("cl_fov");
+    crosshairVariable = Variable("crosshair");
+
+    CVAR_HOOK_AND_CALLBACK(cl_fov);
 
     return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }
@@ -295,6 +420,8 @@ void Client::Shutdown()
     Interface::Delete(this->g_HUDChallengeStats);
     Interface::Delete(this->s_EntityList);
     Interface::Delete(this->g_Input);
+    Interface::Delete(this->g_HUDQuickInfo);
+    Interface::Delete(this->g_HudChat);
     Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 }
 
