@@ -258,7 +258,15 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
     auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)thisptr + nSlot * Offsets::PerUserInput_tSize + Offsets::m_pCommands);
     auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + Offsets::CUserCmdSize * (sequence_number % Offsets::MULTIPLAYER_BACKUP));
 
-    inputHud.SetButtonBits(0, cmd->buttons);
+    if (nSlot == 0) {
+        // A bit weird - for some reason, when playing back Orange
+        // demos, nSlot is 0 even though the player's actual slot
+        // (including in HUD stuff) is 1. This works as a workaround
+        inputHud.SetButtonBits(0, cmd->buttons);
+        inputHud.SetButtonBits(1, cmd->buttons);
+    } else if (nSlot == 1) {
+        inputHud.SetButtonBits(1, cmd->buttons);
+    }
 
     return result;
 }
