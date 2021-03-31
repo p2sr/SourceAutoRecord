@@ -23,6 +23,7 @@ public:
     bool requestedStop = false;
     int lastDemoNumber = 1;
     bool hasNotified = false;
+    bool customDataReady = false;
 
     char coopRadialMenuLastPos[8];
 

@@ -91,6 +91,18 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state)
         }
     }
 
+    // When we hit SIGNONSTATE_NEW, the recording is about to start, but
+    // the custom data handler info won't be written immediately.
+    // Therefore, suppress any custom data til SIGNONSTATE_FULL happens
+
+    if (state == SIGNONSTATE_NEW) {
+        engine->demorecorder->customDataReady = false;
+    }
+
+    if (state == SIGNONSTATE_FULL) {
+        engine->demorecorder->customDataReady = true;
+    }
+
     auto result = EngineDemoRecorder::SetSignonState(thisptr, state);
 
     if (wasRecording && state == SIGNONSTATE_NEW) {
@@ -225,6 +237,8 @@ void EngineDemoRecorder::RecordData(const void* data, unsigned long length)
     // allows us to use the last-recorded position at the start of our
     // custom data, and stops us from doing weird things in co-op demos
     // with menus.
+
+    if (!this->customDataReady) return;
 
     // once again, what the fuck c++, i just want a vla
     char *buf = (char*)malloc(length+8);
