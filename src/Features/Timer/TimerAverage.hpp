@@ -1,10 +1,11 @@
 #pragma once
 #include <vector>
+#include <string>
 
 struct TimerAverageItem {
     int ticks;
     float time;
-    char* map;
+    std::string map;
 };
 
 class TimerAverage {
@@ -17,5 +18,5 @@ public:
 public:
     TimerAverage();
     void Start();
-    void Add(int ticks, float time, char* map);
+    void Add(int ticks, float time, std::string map);
 };

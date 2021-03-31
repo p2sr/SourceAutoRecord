@@ -55,8 +55,8 @@ static bool EvalCondition(Condition *c) {
     case Condition::ORANGE: return engine->IsOrange();
     case Condition::COOP: return engine->IsCoop();
     case Condition::CM: return sv_bonus_challenge.GetBool();
-    case Condition::SAME_MAP: return !strcmp(session->previousMap.c_str(), engine->m_szLevelName);
-    case Condition::MAP: return !strcmp(c->map, engine->m_szLevelName);
+    case Condition::SAME_MAP: return session->previousMap == engine->GetCurrentMapName();
+    case Condition::MAP: return !strcmp(c->map, engine->GetCurrentMapName().c_str());
     case Condition::PREV_MAP: return !strcmp(c->map, session->previousMap.c_str());
     case Condition::NOT: return !EvalCondition(c->unop_cond);
     case Condition::AND: return EvalCondition(c->binop_l) && EvalCondition(c->binop_r);

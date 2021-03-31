@@ -94,7 +94,7 @@ CON_COMMAND(sar_timer_stop, "Stops timer.\n")
 
     if (timer->avg->isEnabled) {
         auto tick = timer->GetTick(engine->GetTick());
-        timer->avg->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
+        timer->avg->Add(tick, engine->ToTime(tick), engine->GetCurrentMapName());
     }
 }
 CON_COMMAND(sar_timer_result, "Prints result of timer.\n")
@@ -143,7 +143,7 @@ CON_COMMAND(sar_cps_add, "Saves current time of timer.\n")
     }
 
     auto tick = timer->GetTick(session->GetTick());
-    timer->cps->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
+    timer->cps->Add(tick, engine->ToTime(tick), engine->GetCurrentMapName());
 }
 CON_COMMAND(sar_cps_clear, "Resets saved times of timer.\n")
 {

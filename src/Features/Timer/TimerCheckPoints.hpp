@@ -1,10 +1,11 @@
 #pragma once
 #include <vector>
+#include <string>
 
 struct TimerCheckPointItem {
     int ticks;
     float time;
-    char* map;
+    std::string map;
 };
 
 class TimerCheckPoints {
@@ -15,6 +16,6 @@ public:
 
 public:
     TimerCheckPoints();
-    void Add(int ticks, float time, char* map);
+    void Add(int ticks, float time, std::string map);
     void Reset();
 };

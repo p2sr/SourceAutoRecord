@@ -161,7 +161,7 @@ void Session::Start()
             if (networkManager.disableSyncForLoad) {
                 networkManager.disableSyncForLoad = false;
             } else {
-                if (!networkManager.AreAllGhostsAheadOrSameMap() && this->previousMap != engine->m_szLevelName) { //Don't pause if just reloading save
+                if (!networkManager.AreAllGhostsAheadOrSameMap() && this->previousMap != engine->GetCurrentMapName()) { //Don't pause if just reloading save
                     engine->SendToCommandBuffer("pause", 20);
                 }
             }
@@ -209,7 +209,7 @@ void Session::Ended()
 
     engine->hadInitialForcePrimaryFullscreen = false;
 
-    this->previousMap = engine->m_szLevelName;
+    this->previousMap = engine->GetCurrentMapName();
 
     auto tick = this->GetTick();
 
@@ -219,7 +219,7 @@ void Session::Ended()
     }
 
     if (summary->isRunning) {
-        summary->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
+        summary->Add(tick, engine->ToTime(tick), engine->GetCurrentMapName().c_str());
         console->Print("Total: %i (%.3f)\n", summary->totalTicks, engine->ToTime(summary->totalTicks));
     }
 

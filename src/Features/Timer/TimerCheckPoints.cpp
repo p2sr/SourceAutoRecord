@@ -6,7 +6,7 @@ TimerCheckPoints::TimerCheckPoints()
     , latestTime(0)
 {
 }
-void TimerCheckPoints::Add(int ticks, float time, char* map)
+void TimerCheckPoints::Add(int ticks, float time, std::string map)
 {
     this->items.push_back(TimerCheckPointItem{
         ticks,

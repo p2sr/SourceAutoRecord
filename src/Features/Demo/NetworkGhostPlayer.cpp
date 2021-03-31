@@ -96,7 +96,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
     this->serverPort = port;
 
     sf::Packet connection_packet;
-    connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } } << this->modelName.c_str() << engine->m_szLevelName << ghost_TCP_only.GetBool();
+    connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } } << this->modelName.c_str() << engine->GetCurrentMapName().c_str() << ghost_TCP_only.GetBool();
     this->tcpSocket.send(connection_packet);
 
     {
@@ -262,12 +262,12 @@ void NetworkManager::NotifyMapChange()
         auto ipt = speedrun->GetIntervalPerTick();
         std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
         std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
-        client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", this->name.c_str(), engine->m_szLevelName, time.c_str(), totalTime.c_str());
+        client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str(), totalTime.c_str());
     } else {
-        client->Chat(TextColor::GREEN, "%s is now on %s", this->name.c_str(), engine->m_szLevelName);
+        client->Chat(TextColor::GREEN, "%s is now on %s", this->name.c_str(), engine->GetCurrentMapName().c_str());
     }
 
-    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName << this->splitTicks << this->splitTicksTotal;
+    packet << HEADER::MAP_CHANGE << this->ID << engine->GetCurrentMapName().c_str() << this->splitTicks << this->splitTicksTotal;
     this->tcpSocket.send(packet);
 }
 
@@ -542,10 +542,10 @@ std::shared_ptr<GhostEntity> NetworkManager::GetGhostByID(sf::Uint32 ID)
 
 void NetworkManager::UpdateGhostsSameMap()
 {
-    int mapIdx = engine->GetMapIndex(engine->m_szLevelName);
+    int mapIdx = engine->GetMapIndex(engine->GetCurrentMapName());
     this->ghostPoolLock.lock();
     for (auto ghost : this->ghostPool) {
-        ghost->sameMap = strcmp(ghost->currentMap.c_str(), "") && ghost->currentMap == engine->m_szLevelName;
+        ghost->sameMap = strcmp(ghost->currentMap.c_str(), "") && ghost->currentMap == engine->GetCurrentMapName();
         if (mapIdx == -1)
             ghost->isAhead = false; // Fallback - unknown map
         else

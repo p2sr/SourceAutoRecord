@@ -25,7 +25,7 @@ void Summary::Start()
     this->totalTicks = 0;
     this->isRunning = true;
 }
-void Summary::Add(int ticks, float time, char* map)
+void Summary::Add(int ticks, float time, std::string map)
 {
     this->items.push_back(SummaryItem{
         ticks,
@@ -50,7 +50,7 @@ CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
 
     if (sar_sum_during_session.GetBool()) {
         auto tick = session->GetTick();
-        summary->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
+        summary->Add(tick, engine->ToTime(tick), engine->GetCurrentMapName().c_str());
     }
 
     summary->isRunning = false;
@@ -78,7 +78,7 @@ CON_COMMAND(sar_sum_result, "Prints result of summary.\n")
     if (summary->isRunning) {
         auto tick = session->GetTick();
         auto time = engine->ToTime(tick);
-        console->PrintActive("%s -> ", *engine->m_szLevelName);
+        console->PrintActive("%s -> ", engine->GetCurrentMapName().c_str());
         console->PrintActive("%i ticks ", tick);
         console->PrintActive("(%.3f)\n", time);
         console->Print("---------------\n");
