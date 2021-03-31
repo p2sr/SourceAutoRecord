@@ -18,6 +18,7 @@ private:
     Interface* s_EntityList = nullptr;
     Interface* g_Input = nullptr;
     Interface* g_HudChat = nullptr;
+    Interface* g_HudMultiplayerBasicInfo = nullptr;
 
 public:
     using _GetClientEntity = void*(__rescall*)(void* thisptr, int entnum);
@@ -61,6 +62,9 @@ public:
 
     // CHud::GetName
     DECL_DETOUR_T(const char*, GetName);
+
+    // CHudMultiplayerBasicInfo::ShouldDraw
+    DECL_DETOUR_T(bool, ShouldDraw_BasicInfo);
 
     // CInput::_DecodeUserCmdFromBuffer
     DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number);

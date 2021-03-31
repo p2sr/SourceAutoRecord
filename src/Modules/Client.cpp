@@ -36,10 +36,13 @@ Variable in_forceuser;
 Variable crosshairVariable;
 Variable cl_fov;
 
+Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
+
 REDECL(Client::HudUpdate);
 REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
 REDECL(Client::GetName);
+REDECL(Client::ShouldDraw_BasicInfo);
 REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::DecodeUserCmdFromBuffer2);
 REDECL(Client::CInput_CreateMove);
@@ -229,6 +232,16 @@ DETOUR_T(const char*, Client::GetName)
     return Client::GetName(thisptr);
 }
 
+// CHudMultiplayerBasicInfo::ShouldDraw
+DETOUR_T(bool, Client::ShouldDraw_BasicInfo)
+{
+    if (sar_disable_coop_score_hud.GetBool()) {
+        return false;
+    }
+
+    return Client::ShouldDraw_BasicInfo(thisptr);
+}
+
 // CInput::DecodeUserCmdFromBuffer
 DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
 {
@@ -357,6 +370,11 @@ bool Client::Init()
                 auto CHudChat = FindElement(GetHud(-1), "CHudChat");
                 if (this->g_HudChat = Interface::Create(CHudChat, false)) {
                     this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
+                }
+
+                auto CHudMultiplayerBasicInfo = FindElement(GetHud(-1), "CHudMultiplayerBasicInfo");
+                if (this->g_HudMultiplayerBasicInfo = Interface::Create(CHudMultiplayerBasicInfo)) {
+                    this->g_HudMultiplayerBasicInfo->Hook(Client::ShouldDraw_BasicInfo_Hook, Client::ShouldDraw_BasicInfo, Offsets::ShouldDraw);
                 }
             }
         }
