@@ -241,6 +241,7 @@ void Portal2::LoadOffsets()
     // client.so
 
     GetAllClasses = 8; // CHLClient
+    LevelInitPreEntity = 5; // CHLClient
     HudProcessInput = 10; // CHLClient
     HudUpdate = 11; // CHLClient
     C_m_vecAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin

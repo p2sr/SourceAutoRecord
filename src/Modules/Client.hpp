@@ -37,6 +37,7 @@ public:
 
     void* in_jump = nullptr;
     QAngle lastViewAngles;
+    std::string lastLevelName;
 
 public:
     DECL_M(GetAbsOrigin, Vector);
@@ -55,6 +56,9 @@ public:
 public:
     // CHLClient::HudUpdate
     DECL_DETOUR(HudUpdate, unsigned int a2);
+
+    // CHLClient::LevelInitPreEntity
+    DECL_DETOUR(LevelInitPreEntity, const char *levelName);
 
     // ClientModeShared::CreateMove
     DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd);

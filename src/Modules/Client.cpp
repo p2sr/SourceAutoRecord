@@ -39,6 +39,7 @@ Variable cl_fov;
 Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
 
 REDECL(Client::HudUpdate);
+REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
 REDECL(Client::GetName);
@@ -165,6 +166,13 @@ DETOUR(Client::HudUpdate, unsigned int a2)
 
     ++session->currentFrame;
     return Client::HudUpdate(thisptr, a2);
+}
+
+// CHLClient::LevelInitPreEntity
+DETOUR(Client::LevelInitPreEntity, const char *levelName)
+{
+    client->lastLevelName = std::string(levelName);
+    return Client::LevelInitPreEntity(thisptr, levelName);
 }
 
 // ClientModeShared::CreateMove
@@ -343,6 +351,7 @@ bool Client::Init()
         this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses, readJmp);
 
         this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);
+        this->g_ClientDLL->Hook(Client::LevelInitPreEntity_Hook, Client::LevelInitPreEntity, Offsets::LevelInitPreEntity);
 
         if (sar.game->Is(SourceGame_Portal2Game)) {
             auto leaderboard = Command("+leaderboard");

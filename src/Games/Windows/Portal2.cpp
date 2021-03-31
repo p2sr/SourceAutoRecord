@@ -240,6 +240,7 @@ void Portal2::LoadOffsets()
     // client.dll
 
     GetAllClasses = 8; // CHLClient
+    LevelInitPreEntity = 5; // CHLClient
     HudProcessInput = 10; // CHLClient
     HudUpdate = 11; // CHLClient
     C_m_vecAbsOrigin = 156; // C_BasePlayer::GetAbsOrigin

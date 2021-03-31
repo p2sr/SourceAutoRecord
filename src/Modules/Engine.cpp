@@ -186,6 +186,8 @@ std::string Engine::GetCurrentMapName()
 {
     if (engine->demoplayer->IsPlaying()) {
         return engine->demoplayer->GetLevelName();
+    } else if (engine->IsOrange()) {
+        return client->lastLevelName;
     } else {
         return engine->m_szLevelName;
     }
