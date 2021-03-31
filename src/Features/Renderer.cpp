@@ -15,7 +15,6 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
-#include <libavcodec/dnxhddata.h>
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
 #include <libavutil/opt.h>
@@ -25,7 +24,7 @@ extern "C" {
 };
 
 // Stuff pulled from the engine
-static void **g_videomode; 
+static void **g_videomode;
 static int *g_snd_linear_count;
 static int **g_snd_p;
 static int *g_snd_vol;
@@ -265,38 +264,48 @@ static bool addStream(Stream *out, AVFormatContext *outputCtx, AVCodecID codecId
         // resolution, so check our resolution is supported and find the
         // closest bitrate to what was requested
 
-        int64_t realBitrate = -1;
-        int64_t lastDelta = INT64_MAX;
-        
-        for (int cid = 1235; cid <= 1274; ++cid) {
-            const CIDEntry *e = ff_dnxhd_get_cid_table(cid);
-            if (!e) continue;
+        // rates here are in Mbps
+        int64_t *rates;
+        size_t nrates;
 
-            if (e->width != width) continue;
-            if (e->height != height) continue;
-            if (e->flags & DNXHD_INTERLACED) continue;
-            if (e->flags & DNXHD_444) continue;
-            if (e->bit_depth != 8) continue;
-
-            for (size_t j = 0; j < FF_ARRAY_ELEMS(e->bit_rates); ++j) {
-                int64_t rate = e->bit_rates[j] * 1000000;
-                if (rate == 0) continue;
-
-                int64_t delta = rate - bitrate;
-                if (delta < 0) {
-                    delta = -delta;
-                }
-
-                if (delta < lastDelta) {
-                    lastDelta = delta;
-                    realBitrate = rate;
-                }
-            }
-        }
-
-        if (realBitrate == -1) {
+        if (width == 1920 && height == 1080) { // 1080p 16:9
+            static int64_t rates1080[] = {
+                36, 45, 75, 90, 115, 120, 145, 175, 180, 190, 220, 240, 365, 440,
+            };
+            rates = rates1080;
+            nrates = sizeof rates1080 / sizeof rates1080[0];
+        } else if (width == 1280 && height == 720) { // 720p 16:9
+            static int64_t rates720[] = {
+                60, 75, 90, 110, 120, 145, 180, 220,
+            };
+            rates = rates720;
+            nrates = sizeof rates720 / sizeof rates720[0];
+        } else if (width == 1440 && height == 1080) { // 1080p 4:3
+            static int64_t rates1080[] = {
+                63, 84, 100, 110,
+            };
+            rates = rates1080;
+            nrates = sizeof rates1080 / sizeof rates1080[0];
+        } else if (width == 960 && height == 720) { // 720p 4:3
+            static int64_t rates720[] = {
+                42, 60, 75, 115,
+            };
+            rates = rates720;
+            nrates = sizeof rates720 / sizeof rates720[0];
+        } else {
             console->Print("Resolution not supported by dnxhd\n");
             return false;
+        }
+
+        int64_t realBitrate = -1;
+        int64_t lastDelta = INT64_MAX;
+
+        for (size_t i = 0; i < nrates; ++i) {
+            int64_t rate = rates[i] * 1000000;
+            int64_t delta = rate > bitrate ? rate - bitrate : bitrate - rate;
+            if (delta < lastDelta) {
+                realBitrate = rate;
+            }
         }
 
         if (realBitrate != bitrate) {
