@@ -10,6 +10,8 @@
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
 
+#include "Utils/Math.hpp"
+
 #ifdef _WIN32
 #define PLAT_CALL(fn, ...) fn(__VA_ARGS__)
 #else
@@ -150,7 +152,7 @@ void GhostEntity::Display()
     switch (GhostEntity::ghost_type) {
     case GhostType::CIRCLE: {
         double rad = ghost_height.GetFloat() / 2;
-        Vector origin = this->data.position + Vector{ 0, 0, rad };
+        Vector origin = this->data.position + Vector{ 0, 0, (float)rad };
 
         const int tris = 30;
 
@@ -163,12 +165,12 @@ void GhostEntity::Display()
 
         double yaw =
             origin.x == pos.x && origin.y == pos.y ?
-            M_PI_2 :
+            M_PI / 2 :
             atan2(origin.y - pos.y, origin.x - pos.x) + M_PI;
 
         double pitch =
             hdist == 0 && origin.z == pos.z ?
-            M_PI_2 :
+            M_PI / 2 :
             atan2(origin.z - pos.z, hdist);
 
         double syaw = sin(yaw);
@@ -192,8 +194,8 @@ void GhostEntity::Display()
             double lang = M_PI * 2 * i / tris;
             double rang = M_PI * 2 * (i + 1) / tris;
 
-            Vector dl{0, cos(lang) * rad, sin(lang) * rad};
-            Vector dr{0, cos(rang) * rad, sin(rang) * rad};
+            Vector dl{0, (float)(cos(lang) * rad), (float)(sin(lang) * rad)};
+            Vector dr{0, (float)(cos(rang) * rad), (float)(sin(rang) * rad)};
 
             Vector l = origin + rot * dl;
             Vector r = origin + rot * dr;
