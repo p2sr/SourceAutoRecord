@@ -36,7 +36,6 @@ public:
     _ChatPrintf ChatPrintf = nullptr;
 
     void* in_jump = nullptr;
-    QAngle lastViewAngles;
     std::string lastLevelName;
 
 public:
