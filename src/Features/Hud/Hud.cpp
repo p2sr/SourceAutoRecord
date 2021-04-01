@@ -265,7 +265,7 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "Orders hud element to bott
     elements->erase(result);
     elements->insert(elements->end(), element);
 
-    console->Print("Moved HUD element %s to top.\n", args[1]);
+    console->Print("Moved HUD element %s to bottom.\n", args[1]);
 }
 CON_COMMAND(sar_hud_default_order_reset, "Resets order of hud element.\n")
 {
