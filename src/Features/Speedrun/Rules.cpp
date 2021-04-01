@@ -284,7 +284,7 @@ bool SpeedrunRule::TestGeneral(std::optional<int> slot)
         auto prereq = SpeedrunTimer::GetRule(*this->onlyAfter);
         if (!prereq || !prereq->fired) return false;
     }
-    if (strcmp(engine->m_szLevelName, this->map.c_str())) return false;
+    if (engine->GetCurrentMapName() != this->map) return false;
     if (this->slot) {
         if (this->slot != slot) return false;
     }

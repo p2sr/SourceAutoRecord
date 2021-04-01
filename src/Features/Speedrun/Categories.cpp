@@ -235,7 +235,7 @@ void SpeedrunTimer::DrawTriggers()
     for (std::string ruleName : g_categories[g_currentCategory].rules) {
         auto rule = SpeedrunTimer::GetRule(ruleName);
         if (!rule) continue;
-        if (rule->map != engine->m_szLevelName) continue;
+        if (rule->map != engine->GetCurrentMapName()) continue;
         if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
             std::get<ZoneTriggerRule>(rule->rule).DrawInWorld((drawDelta + 1) * *engine->interval_per_tick);
         } else if (std::holds_alternative<PortalPlacementRule>(rule->rule)) {
@@ -250,7 +250,7 @@ HUD_ELEMENT2_NO_DISABLE(speedrun_triggers, HudType_InGame)
         for (std::string ruleName : g_categories[g_currentCategory].rules) {
             auto rule = SpeedrunTimer::GetRule(ruleName);
             if (!rule) continue;
-            if (rule->map != engine->m_szLevelName) continue;
+            if (rule->map != engine->GetCurrentMapName()) continue;
             if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
                 std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(ctx, rule);
             } else if (std::holds_alternative<PortalPlacementRule>(rule->rule)) {

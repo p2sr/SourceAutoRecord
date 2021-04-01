@@ -175,7 +175,7 @@ void SpeedrunTimer::Update()
         g_timerInterface->action = TimerAction::NONE;
     }
 
-    std::string map = std::string(engine->m_szLevelName);
+    std::string map = engine->GetCurrentMapName();
     if (map != g_speedrun.lastMap) {
         bool visited = false;
 
@@ -219,7 +219,7 @@ void SpeedrunTimer::FinishLoad()
     if (!g_speedrun.hasSplitLoad) {
         // We went through a load that kept us on the same map; perform
         // a segment split
-        SpeedrunTimer::Split(false, std::string(engine->m_szLevelName), false);
+        SpeedrunTimer::Split(false, engine->GetCurrentMapName(), false);
     }
 
     // Ready for next load
@@ -431,12 +431,12 @@ CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer.\
 
 CON_COMMAND(sar_speedrun_stop, "sar_speedrun_start - stop the speedrun timer.\n")
 {
-    SpeedrunTimer::Stop(std::string(engine->m_szLevelName));
+    SpeedrunTimer::Stop(engine->GetCurrentMapName());
 }
 
 CON_COMMAND(sar_speedrun_split, "sar_speedrun_split - perform a split on the speedrun timer.\n")
 {
-    SpeedrunTimer::Split(true, std::string(engine->m_szLevelName));
+    SpeedrunTimer::Split(true, engine->GetCurrentMapName());
 }
 
 CON_COMMAND(sar_speedrun_pause, "sar_speedrun_pause - pause the speedrun timer.\n")
