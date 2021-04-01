@@ -1059,7 +1059,11 @@ void Renderer::Init(void **videomode)
     snd_surround_speakers = Variable("snd_surround_speakers");
 
 #ifdef _WIN32
-    SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 68 DE 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
+    if (sar.game->Is(SourceGame_Portal2)) {
+        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 68 DE 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
+    } else { // Pre-update engine
+        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 78 D9 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
+    }
 
     memcpy(SND_RecordBuffer_Original, (void *)SND_RecordBuffer, sizeof SND_RecordBuffer_Original);
 
@@ -1092,12 +1096,21 @@ void Renderer::Init(void **videomode)
     ((uint8_t *)SND_RecordBuffer)[8] = 0x90;
     ((uint8_t *)SND_RecordBuffer)[9] = 0x90;
 #else
-    SND_RecordBuffer = Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 3C 65 A1 ? ? ? ? 89 45 E4 31 C0 E8 ? ? ? ? 84 C0 75 1B");
+    if (sar.game->Is(SourceGame_Portal2)) {
+        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 3C 65 A1 ? ? ? ? 89 45 E4 31 C0 E8 ? ? ? ? 84 C0 75 1B");
+    } else { // Pre-update engine
+        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 2C E8 ? ? ? ? 84 C0 75 0E 8D 65 F4 5B 5E 5F 5D C3");
+    }
 
     memcpy(SND_RecordBuffer_Original, (void *)SND_RecordBuffer, sizeof SND_RecordBuffer_Original);
 
-    uintptr_t SND_IsRecording = Memory::Read(SND_RecordBuffer + 21);
-    g_movieInfo = *(MovieInfo_t **)(SND_IsRecording + 2);
+    if (sar.game->Is(SourceGame_Portal2)) {
+        uintptr_t SND_IsRecording = Memory::Read(SND_RecordBuffer + 21);
+        g_movieInfo = *(MovieInfo_t **)(SND_IsRecording + 2);
+    } else { // Pre-update engine
+        uintptr_t SND_IsRecording = Memory::Read(SND_RecordBuffer + 10);
+        g_movieInfo = *(MovieInfo_t **)(SND_IsRecording + 11);
+    }
 
     static uint8_t trampoline[] = {
       0x55,                   // 00: push ebp
