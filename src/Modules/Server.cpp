@@ -364,6 +364,7 @@ static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, voi
 // of CBaseEntity::AcceptInput, but we generally can't do that until
 // we've loaded into a level.
 static bool IsAcceptInputTrampolineInitialized = false;
+static uint8_t OriginalAcceptInputCode[8];
 static void InitAcceptInputTrampoline()
 {
     void* ent = (CEntInfo2*)(server->m_EntPtrArray + 0)->m_pEntity;
@@ -375,6 +376,8 @@ static void InitAcceptInputTrampoline()
 
     // Get around memory protection so we can modify code
     Memory::UnProtect((void*)server->AcceptInput, 8);
+
+    memcpy(OriginalAcceptInputCode, (void*)server->AcceptInput, sizeof OriginalAcceptInputCode);
 
 #ifdef _WIN32
     // Create our code
@@ -642,6 +645,9 @@ CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop 
 }
 void Server::Shutdown()
 {
+    if (IsAcceptInputTrampolineInitialized) {
+        memcpy((void*)server->AcceptInput, OriginalAcceptInputCode, 8);
+    }
 #if _WIN32
     MH_UNHOOK(this->AirMove_Mid);
 #endif

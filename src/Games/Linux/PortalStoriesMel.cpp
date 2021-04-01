@@ -40,6 +40,18 @@ void PortalStoriesMel::LoadOffsets()
     // client.dll
 
     m_pCommands = 228; // CInput::DecodeUserCmdFromBuffer
+    GetLocalClient = 85; // CEngineClient::SetViewAngles
+    net_time = 28; // CDemoRecorder::GetRecordingTick
+    tickcount = 73; // CClientState::ProcessTick
+    interval_per_tick = 81; // CClientState::ProcessTick
+    HostState_OnClientConnected = 735; // CClientState::SetSignonState
+    demoplayer = 93; // CClientState::Disconnect
+    demorecorder = 106; // CClientState::Disconnect
+    m_szLevelName = 72; // CEngineTool::GetCurrentMap
+    GetClientMode = 12; // CHLClient::HudProcessInput
+    StartDrawing = 193; // CMatSystemSurface::PaintTraverseEx
+    FinishDrawing = 590; // CMatSystemSurface::PaintTraverseEx
+    VideoMode_Create = 103; // CEngineAPI::Init
 }
 const char* PortalStoriesMel::Version()
 {

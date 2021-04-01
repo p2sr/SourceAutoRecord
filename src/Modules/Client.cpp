@@ -36,10 +36,14 @@ Variable in_forceuser;
 Variable crosshairVariable;
 Variable cl_fov;
 
+Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
+
 REDECL(Client::HudUpdate);
+REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
 REDECL(Client::GetName);
+REDECL(Client::ShouldDraw_BasicInfo);
 REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::DecodeUserCmdFromBuffer2);
 REDECL(Client::CInput_CreateMove);
@@ -164,6 +168,13 @@ DETOUR(Client::HudUpdate, unsigned int a2)
     return Client::HudUpdate(thisptr, a2);
 }
 
+// CHLClient::LevelInitPreEntity
+DETOUR(Client::LevelInitPreEntity, const char *levelName)
+{
+    client->lastLevelName = std::string(levelName);
+    return Client::LevelInitPreEntity(thisptr, levelName);
+}
+
 // ClientModeShared::CreateMove
 DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
 {
@@ -193,8 +204,6 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
     if (sar_strafesync.GetBool()) {
         synchro->UpdateSync(cmd);
     }
-
-    client->lastViewAngles = cmd->viewangles;
 
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
@@ -229,6 +238,16 @@ DETOUR_T(const char*, Client::GetName)
     return Client::GetName(thisptr);
 }
 
+// CHudMultiplayerBasicInfo::ShouldDraw
+DETOUR_T(bool, Client::ShouldDraw_BasicInfo)
+{
+    if (sar_disable_coop_score_hud.GetBool()) {
+        return false;
+    }
+
+    return Client::ShouldDraw_BasicInfo(thisptr);
+}
+
 // CInput::DecodeUserCmdFromBuffer
 DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
 {
@@ -237,7 +256,15 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
     auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)thisptr + nSlot * Offsets::PerUserInput_tSize + Offsets::m_pCommands);
     auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + Offsets::CUserCmdSize * (sequence_number % Offsets::MULTIPLAYER_BACKUP));
 
-    inputHud.SetButtonBits(0, cmd->buttons);
+    if (nSlot == 0) {
+        // A bit weird - for some reason, when playing back Orange
+        // demos, nSlot is 0 even though the player's actual slot
+        // (including in HUD stuff) is 1. This works as a workaround
+        inputHud.SetButtonBits(0, cmd->buttons);
+        inputHud.SetButtonBits(1, cmd->buttons);
+    } else if (nSlot == 1) {
+        inputHud.SetButtonBits(1, cmd->buttons);
+    }
 
     return result;
 }
@@ -330,6 +357,7 @@ bool Client::Init()
         this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses, readJmp);
 
         this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);
+        this->g_ClientDLL->Hook(Client::LevelInitPreEntity_Hook, Client::LevelInitPreEntity, Offsets::LevelInitPreEntity);
 
         if (sar.game->Is(SourceGame_Portal2Game)) {
             auto leaderboard = Command("+leaderboard");
@@ -357,6 +385,11 @@ bool Client::Init()
                 auto CHudChat = FindElement(GetHud(-1), "CHudChat");
                 if (this->g_HudChat = Interface::Create(CHudChat, false)) {
                     this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
+                }
+
+                auto CHudMultiplayerBasicInfo = FindElement(GetHud(-1), "CHudMultiplayerBasicInfo");
+                if (this->g_HudMultiplayerBasicInfo = Interface::Create(CHudMultiplayerBasicInfo)) {
+                    this->g_HudMultiplayerBasicInfo->Hook(Client::ShouldDraw_BasicInfo_Hook, Client::ShouldDraw_BasicInfo, Offsets::ShouldDraw);
                 }
             }
         }

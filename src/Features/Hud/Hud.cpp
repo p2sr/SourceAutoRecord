@@ -265,7 +265,7 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "Orders hud element to bott
     elements->erase(result);
     elements->insert(elements->end(), element);
 
-    console->Print("Moved HUD element %s to top.\n", args[1]);
+    console->Print("Moved HUD element %s to bottom.\n", args[1]);
 }
 CON_COMMAND(sar_hud_default_order_reset, "Resets order of hud element.\n")
 {
@@ -383,10 +383,10 @@ HUD_ELEMENT_MODE2(angles, "0", 0, 2, "Draws absolute view angles of the client.\
                                      "2 = XYZ.\n",
     HudType_InGame | HudType_Paused | HudType_LoadingScreen)
 {
-    auto ang = engine->GetAngles(ctx->slot);
-    if (engine->IsCoop() && engine->IsOrange() && !session->isRunning) { // Orange and not splitscreen
-        ang = client->lastViewAngles;
-    }
+    // When we're orange (and not splitscreen), for some fucking reason,
+    // the *engine* thinks we're slot 0, but everything else thinks
+    // we're slot 1
+    auto ang = engine->GetAngles(engine->IsOrange() ? 0 : ctx->slot);
     int p = sar_hud_precision.GetInt();
     if (mode == 1) {
         ctx->DrawElement("ang: %.*f %.*f", p, ang.x, p, ang.y);

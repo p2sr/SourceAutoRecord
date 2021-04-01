@@ -14,7 +14,7 @@ void TimerAverage::Start()
     this->averageTime = 0;
     this->isEnabled = true;
 }
-void TimerAverage::Add(int ticks, float time, char* map)
+void TimerAverage::Add(int ticks, float time, std::string map)
 {
     this->items.push_back(TimerAverageItem{
         ticks,

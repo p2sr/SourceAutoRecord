@@ -15,7 +15,6 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
-#include <libavcodec/dnxhddata.h>
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
 #include <libavutil/opt.h>
@@ -25,11 +24,16 @@ extern "C" {
 };
 
 // Stuff pulled from the engine
-static void **g_videomode; 
+static void **g_videomode;
 static int *g_snd_linear_count;
 static int **g_snd_p;
 static int *g_snd_vol;
 static MovieInfo_t *g_movieInfo;
+
+// For disabling the trampoline
+static uintptr_t SND_RecordBuffer;
+static uint8_t SND_RecordBuffer_Original[10];
+static bool trampolineInitialized = false;;
 
 // The demoplayer tick this segment ends on (we'll stop recording at
 // this tick if sar_render_autostop is set)
@@ -260,38 +264,48 @@ static bool addStream(Stream *out, AVFormatContext *outputCtx, AVCodecID codecId
         // resolution, so check our resolution is supported and find the
         // closest bitrate to what was requested
 
-        int64_t realBitrate = -1;
-        int64_t lastDelta = INT64_MAX;
-        
-        for (int cid = 1235; cid <= 1274; ++cid) {
-            const CIDEntry *e = ff_dnxhd_get_cid_table(cid);
-            if (!e) continue;
+        // rates here are in Mbps
+        int64_t *rates;
+        size_t nrates;
 
-            if (e->width != width) continue;
-            if (e->height != height) continue;
-            if (e->flags & DNXHD_INTERLACED) continue;
-            if (e->flags & DNXHD_444) continue;
-            if (e->bit_depth != 8) continue;
-
-            for (size_t j = 0; j < FF_ARRAY_ELEMS(e->bit_rates); ++j) {
-                int64_t rate = e->bit_rates[j] * 1000000;
-                if (rate == 0) continue;
-
-                int64_t delta = rate - bitrate;
-                if (delta < 0) {
-                    delta = -delta;
-                }
-
-                if (delta < lastDelta) {
-                    lastDelta = delta;
-                    realBitrate = rate;
-                }
-            }
-        }
-
-        if (realBitrate == -1) {
+        if (width == 1920 && height == 1080) { // 1080p 16:9
+            static int64_t rates1080[] = {
+                36, 45, 75, 90, 115, 120, 145, 175, 180, 190, 220, 240, 365, 440,
+            };
+            rates = rates1080;
+            nrates = sizeof rates1080 / sizeof rates1080[0];
+        } else if (width == 1280 && height == 720) { // 720p 16:9
+            static int64_t rates720[] = {
+                60, 75, 90, 110, 120, 145, 180, 220,
+            };
+            rates = rates720;
+            nrates = sizeof rates720 / sizeof rates720[0];
+        } else if (width == 1440 && height == 1080) { // 1080p 4:3
+            static int64_t rates1080[] = {
+                63, 84, 100, 110,
+            };
+            rates = rates1080;
+            nrates = sizeof rates1080 / sizeof rates1080[0];
+        } else if (width == 960 && height == 720) { // 720p 4:3
+            static int64_t rates720[] = {
+                42, 60, 75, 115,
+            };
+            rates = rates720;
+            nrates = sizeof rates720 / sizeof rates720[0];
+        } else {
             console->Print("Resolution not supported by dnxhd\n");
             return false;
+        }
+
+        int64_t realBitrate = -1;
+        int64_t lastDelta = INT64_MAX;
+
+        for (size_t i = 0; i < nrates; ++i) {
+            int64_t rate = rates[i] * 1000000;
+            int64_t delta = rate > bitrate ? rate - bitrate : bitrate - rate;
+            if (delta < lastDelta) {
+                realBitrate = rate;
+            }
         }
 
         if (realBitrate != bitrate) {
@@ -1045,7 +1059,13 @@ void Renderer::Init(void **videomode)
     snd_surround_speakers = Variable("snd_surround_speakers");
 
 #ifdef _WIN32
-    uintptr_t SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 68 DE 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
+    if (sar.game->Is(SourceGame_Portal2)) {
+        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 68 DE 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
+    } else { // Pre-update engine
+        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 78 D9 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
+    }
+
+    memcpy(SND_RecordBuffer_Original, (void *)SND_RecordBuffer, sizeof SND_RecordBuffer_Original);
 
     g_movieInfo = *(MovieInfo_t **)(SND_RecordBuffer + 5);
 
@@ -1076,10 +1096,21 @@ void Renderer::Init(void **videomode)
     ((uint8_t *)SND_RecordBuffer)[8] = 0x90;
     ((uint8_t *)SND_RecordBuffer)[9] = 0x90;
 #else
-    uintptr_t SND_RecordBuffer = Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 3C 65 A1 ? ? ? ? 89 45 E4 31 C0 E8 ? ? ? ? 84 C0 75 1B");
+    if (sar.game->Is(SourceGame_Portal2)) {
+        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 3C 65 A1 ? ? ? ? 89 45 E4 31 C0 E8 ? ? ? ? 84 C0 75 1B");
+    } else { // Pre-update engine
+        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 2C E8 ? ? ? ? 84 C0 75 0E 8D 65 F4 5B 5E 5F 5D C3");
+    }
 
-    uintptr_t SND_IsRecording = Memory::Read(SND_RecordBuffer + 21);
-    g_movieInfo = *(MovieInfo_t **)(SND_IsRecording + 2);
+    memcpy(SND_RecordBuffer_Original, (void *)SND_RecordBuffer, sizeof SND_RecordBuffer_Original);
+
+    if (sar.game->Is(SourceGame_Portal2)) {
+        uintptr_t SND_IsRecording = Memory::Read(SND_RecordBuffer + 21);
+        g_movieInfo = *(MovieInfo_t **)(SND_IsRecording + 2);
+    } else { // Pre-update engine
+        uintptr_t SND_IsRecording = Memory::Read(SND_RecordBuffer + 10);
+        g_movieInfo = *(MovieInfo_t **)(SND_IsRecording + 11);
+    }
 
     static uint8_t trampoline[] = {
       0x55,                   // 00: push ebp
@@ -1109,6 +1140,17 @@ void Renderer::Init(void **videomode)
 
     Command::Hook("startmovie", &startmovie_cbk, startmovie_origCbk);
     Command::Hook("endmovie", &endmovie_cbk, endmovie_origCbk);
+
+    trampolineInitialized = true;
+}
+
+void Renderer::Cleanup()
+{
+    if (trampolineInitialized) {
+        memcpy((void *)SND_RecordBuffer, SND_RecordBuffer_Original, sizeof SND_RecordBuffer_Original);
+        Command::Unhook("startmovie", startmovie_origCbk);
+        Command::Unhook("endmovie", endmovie_origCbk);
+    }
 }
 
 // }}}

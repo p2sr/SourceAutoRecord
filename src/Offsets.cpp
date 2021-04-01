@@ -34,6 +34,7 @@ int HudProcessInput;
 int HudUpdate;
 int IN_ActivateMouse;
 int JoyStickApplyMovement;
+int LevelInitPreEntity;
 
 // ClientModeShared
 int CreateMove;

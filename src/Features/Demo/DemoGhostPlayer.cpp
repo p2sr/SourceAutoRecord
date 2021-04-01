@@ -297,7 +297,7 @@ CON_COMMAND(ghost_recap, "Recap all ghosts setup.\n")
 
 CON_COMMAND(ghost_start, "Start ghosts")
 {
-    if (engine->m_szLevelName[0] == '\0' && !engine->demoplayer->IsPlaying()) {
+    if (engine->GetCurrentMapName().length() == 0 && !engine->demoplayer->IsPlaying()) {
         return console->Print("Can't start ghosts in menu.\n");
     }
 

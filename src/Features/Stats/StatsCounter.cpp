@@ -192,11 +192,11 @@ void StatsCounter::Print()
 void StatsCounter::RecordDatas(const int tick)
 {
     if (sv_bonus_challenge.GetBool()) {
-        this->CMMapsStats[engine->m_szLevelName].secondSpent += engine->ToTime(tick);
-        this->CMMapsStats[engine->m_szLevelName].retries++;
+        this->CMMapsStats[engine->GetCurrentMapName()].secondSpent += engine->ToTime(tick);
+        this->CMMapsStats[engine->GetCurrentMapName()].retries++;
     } else {
-        this->fullGameMapsStats[engine->m_szLevelName].secondSpent += engine->ToTime(tick);
-        this->fullGameMapsStats[engine->m_szLevelName].retries++;
+        this->fullGameMapsStats[engine->GetCurrentMapName()].secondSpent += engine->ToTime(tick);
+        this->fullGameMapsStats[engine->GetCurrentMapName()].retries++;
         this->totalTimeSP += engine->ToTime(tick);
     }
 

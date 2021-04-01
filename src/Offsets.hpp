@@ -34,6 +34,7 @@ extern int HudProcessInput;
 extern int HudUpdate;
 extern int IN_ActivateMouse;
 extern int JoyStickApplyMovement;
+extern int LevelInitPreEntity;
 
 // ClientModeShared
 extern int CreateMove;

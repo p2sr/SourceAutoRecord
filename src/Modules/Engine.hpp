@@ -195,6 +195,9 @@ public:
     bool Init() override;
     void Shutdown() override;
     const char* Name() override { return MODULE("engine"); }
+
+private:
+    uintptr_t readPacketInjectAddr;
 };
 
 extern Engine* engine;

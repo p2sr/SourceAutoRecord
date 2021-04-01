@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "Features/Cvars.hpp"
+#include "Features/ConditionalExec.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -152,6 +153,8 @@ int Engine::PointToScreen(const Vector& point, Vector& screen)
 }
 void Engine::SafeUnload(const char* postCommand)
 {
+    RunExitExecs();
+
     // The exit command will handle everything
     this->ExecuteCommand("sar_exit");
 
@@ -182,6 +185,8 @@ std::string Engine::GetCurrentMapName()
 {
     if (engine->demoplayer->IsPlaying()) {
         return engine->demoplayer->GetLevelName();
+    } else if (engine->IsOrange()) {
+        return client->lastLevelName;
     } else {
         return engine->m_szLevelName;
     }
@@ -689,24 +694,22 @@ bool Engine::Init()
 
         // This is the address of the one interesting call to ReadCustomData - the E8 byte indicates the start of the call instruction
 #ifdef _WIN32
-        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12);
+        this->readPacketInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12);
 #else
-        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
+        if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+            this->readPacketInjectAddr = Memory::Scan(this->Name(), "8B 95 94 FE FF FF 8D 4D D8 8D 45 D4 89 4C 24 08 89 44 24 04 89 14 24 E8", 24);
+        } else {
+            this->readPacketInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
+        }
 #endif
 
         // Pesky memory protection doesn't want us overwriting code - we
         // get around it with a call to mprotect or VirtualProtect
-        void* injectPageAddr = (void*)(readPacketInjectAddr & 0xFFFFF000); // TODO: could the instruction cross a page boundary? hope not lol
-#ifdef _WIN32
-        DWORD wtf_microsoft_why_cant_this_be_null;
-        VirtualProtect(injectPageAddr, 0x1000, PAGE_EXECUTE_READWRITE, &wtf_microsoft_why_cant_this_be_null);
-#else
-        mprotect(injectPageAddr, 0x1000, PROT_READ | PROT_WRITE | PROT_EXEC);
-#endif
+        Memory::UnProtect((void*)this->readPacketInjectAddr, 4);
 
         // It's a relative call, so we have to do some weird fuckery lol
-        Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)readPacketInjectAddr + (readPacketInjectAddr + 4));
-        *(uint32_t*)readPacketInjectAddr = (uint32_t)&ReadCustomData_Hook - (readPacketInjectAddr + 4); // Add 4 to get address of next instruction
+        Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)this->readPacketInjectAddr + (this->readPacketInjectAddr + 4));
+        *(uint32_t*)this->readPacketInjectAddr = (uint32_t)&ReadCustomData_Hook - (this->readPacketInjectAddr + 4); // Add 4 to get address of next instruction
     }
 
     if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
@@ -758,6 +761,8 @@ void Engine::Shutdown()
         *OnGameOverlayActivated = Engine::OnGameOverlayActivatedBase;
     }
 
+    Renderer::Cleanup();
+
     Interface::Delete(this->engineClient);
     Interface::Delete(this->s_ServerPlugin);
     Interface::Delete(this->cl);
@@ -765,6 +770,13 @@ void Engine::Shutdown()
     Interface::Delete(this->s_GameEventManager);
     Interface::Delete(this->engineTool);
     Interface::Delete(this->engineTrace);
+
+    // Reset to the offsets that were originally in the code
+#ifdef _WIN32
+    *(uint32_t*)this->readPacketInjectAddr = 0x50E8458D;
+#else
+    *(uint32_t*)this->readPacketInjectAddr = 0x08244489;
+#endif
 
 #ifdef _WIN32
     Command::Unhook("connect", Engine::connect_callback);
