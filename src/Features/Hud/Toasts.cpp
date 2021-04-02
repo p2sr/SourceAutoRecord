@@ -79,6 +79,7 @@ static std::vector<std::string> splitIntoLines(Surface::HFont font, std::string 
         if (str[i] == '\n') {
             lines.push_back({str, i + 1});
             str += i + 1;
+            length -= i + 1;
             i = 1;
             continue;
         }

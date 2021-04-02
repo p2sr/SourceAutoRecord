@@ -18,6 +18,7 @@ namespace SpeedrunTimer {
     void FinishLoad();
 
     int GetSegmentTicks();
+    int GetSplitTicks();
     int GetTotalTicks();
 
     void Start();

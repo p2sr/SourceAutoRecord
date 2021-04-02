@@ -150,6 +150,19 @@ int SpeedrunTimer::GetSegmentTicks()
     return ticks;
 }
 
+int SpeedrunTimer::GetSplitTicks()
+{
+    int ticks = 0;
+
+    for (Segment seg : g_speedrun.currentSplit) {
+        ticks += seg.ticks;
+    }
+
+    ticks += SpeedrunTimer::GetSegmentTicks();
+
+    return ticks;
+}
+
 int SpeedrunTimer::GetTotalTicks()
 {
     int ticks = 0;
@@ -158,11 +171,7 @@ int SpeedrunTimer::GetTotalTicks()
         ticks += split.ticks;
     }
 
-    for (Segment seg : g_speedrun.currentSplit) {
-        ticks += seg.ticks;
-    }
-
-    ticks += SpeedrunTimer::GetSegmentTicks();
+    ticks += SpeedrunTimer::GetSplitTicks();
 
     return ticks;
 }

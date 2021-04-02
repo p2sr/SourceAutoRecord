@@ -10,7 +10,7 @@
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
 
-#include "Utils/Math.hpp"
+#include "Utils.hpp"
 
 #ifdef _WIN32
 #define PLAT_CALL(fn, ...) fn(__VA_ARGS__)
@@ -327,13 +327,6 @@ CON_COMMAND(ghost_type, "ghost_type <0/1/2/3>:\n"
     }
 }
 
-static int convertSrgbComponent(int s)
-{
-    double s_ = (double)s / 255;
-    double l = s <= 0.04045 ? s_ / 12.92 : pow((s_ + 0.055) / 1.055, 2.4);
-    return (int)(l * 255);
-}
-
 CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color to the specified sRGB color code.\n")
 {
     if (args.ArgC() != 2) {
@@ -351,9 +344,9 @@ CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color 
         return console->Print("Invalid color code!\n");
     }
 
-    ghost_color_r.SetValue(convertSrgbComponent(r));
-    ghost_color_g.SetValue(convertSrgbComponent(g));
-    ghost_color_b.SetValue(convertSrgbComponent(b));
+    ghost_color_r.SetValue(Utils::ConvertFromSrgb(r));
+    ghost_color_g.SetValue(Utils::ConvertFromSrgb(g));
+    ghost_color_b.SetValue(Utils::ConvertFromSrgb(b));
 }
 
 void GhostEntity::KillAllGhosts() {
