@@ -58,19 +58,19 @@ struct SpeedrunCategory
 
 // Pre-set rules and categories {{{
 
-static std::string g_currentCategory = "singleplayer";
+static std::string g_currentCategory = "Singleplayer";
 
 static std::map<std::string, SpeedrunCategory> g_categories = {
-    { "singleplayer", { { "container-ride-start", "container-vault-start", "moon-shot" } } },
-    { "coop-any-amc", { { "coop-start", "coop-course5-end" } } },
-    { "coop-ac", { { "coop-start", "coop-course6-end" } } },
+    { "Singleplayer", { { "Container Ride Start", "Vault Start", "Moon Shot" } } },
+    { "Coop", { { "Coop Start", "Coop Course 5 End" } } },
+    { "Coop AC", { { "Coop Start", "Coop Course 6 End" } } },
 };
 
 // It's important that this map stores pointers rather than plain rules
 // due to object slicing.
 static std::map<std::string, SpeedrunRule> g_rules = {
     {
-        "container-ride-start",
+        "Container Ride Start",
         SpeedrunRule(
             RuleAction::START,
             "sp_a1_intro1",
@@ -84,7 +84,7 @@ static std::map<std::string, SpeedrunRule> g_rules = {
         ),
     },
     {
-        "container-vault-start",
+        "Vault Start",
         SpeedrunRule(
             RuleAction::START,
             "sp_a1_intro1",
@@ -98,7 +98,7 @@ static std::map<std::string, SpeedrunRule> g_rules = {
         ),
     },
     {
-        "moon-shot",
+        "Moon Shot",
         SpeedrunRule(
             RuleAction::STOP,
             "sp_a4_finale4",
@@ -112,7 +112,7 @@ static std::map<std::string, SpeedrunRule> g_rules = {
         ),
     },
     {
-        "coop-start",
+        "Coop Start",
         SpeedrunRule(
             RuleAction::START,
             "mp_coop_start",
@@ -126,7 +126,7 @@ static std::map<std::string, SpeedrunRule> g_rules = {
         ),
     },
     {
-        "coop-course5-end",
+        "Coop Course 5 End",
         SpeedrunRule(
             RuleAction::STOP,
             "mp_coop_paint_longjump_intro",
@@ -140,7 +140,7 @@ static std::map<std::string, SpeedrunRule> g_rules = {
         ),
     },
     {
-        "coop-course6-end",
+        "Coop Course 6 End",
         SpeedrunRule(
             RuleAction::STOP,
             "mp_coop_paint_crazy_box",
