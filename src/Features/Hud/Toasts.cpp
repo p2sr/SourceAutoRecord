@@ -3,6 +3,7 @@
 #include <deque>
 #include <chrono>
 #include <algorithm>
+#include <cstdint>
 #include "Modules/Engine.hpp"
 #include "Modules/Surface.hpp"
 #include "Modules/Scheme.hpp"
@@ -76,7 +77,7 @@ static std::vector<std::string> splitIntoLines(Surface::HFont font, std::string 
 
     std::vector<std::string> lines;
 
-    ssize_t lastSpace = -1;
+    int32_t lastSpace = -1;
 
     size_t i = 1;
     while (i < length) {
