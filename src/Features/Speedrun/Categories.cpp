@@ -296,9 +296,52 @@ HUD_ELEMENT2_NO_DISABLE(speedrun_triggers, HudType_InGame)
     }
 }
 
+static std::string maybeQuote(std::string arg)
+{
+    if (arg.find(' ') != std::string::npos) {
+        return "\"" + arg + "\"";
+    }
+
+    return arg;
+}
+
+static int vectorCompletion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH], std::vector<std::string> possible)
+{
+    size_t i = 0;
+    for (std::string cmd : possible) {
+        const char *cmd_c = cmd.c_str();
+
+        if (strstr(cmd_c, partial) != cmd_c) {
+            continue;
+        }
+
+        strncpy(commands[i], cmd_c, COMMAND_COMPLETION_ITEM_LENGTH - 1);
+        commands[i][COMMAND_COMPLETION_ITEM_LENGTH - 1] = 0;
+
+        if (++i == COMMAND_COMPLETION_MAXITEMS) {
+            break;
+        }
+    }
+
+    return i;
+}
+
 // Setting/printing categories {{{
 
-CON_COMMAND(sar_speedrun_category, "sar_speedrun_category [category] - get or set the speedrun category.\n")
+static int _sar_speedrun_category_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    std::vector<std::string> possible;
+
+    possible.push_back("sar_speedrun_category");
+
+    for (auto cat : g_categories) {
+        possible.push_back("sar_speedrun_category " + maybeQuote(cat.first));
+    }
+
+    return vectorCompletion(partial, commands, possible);
+}
+
+CON_COMMAND_F_COMPLETION(sar_speedrun_category, "sar_speedrun_category [category] - get or set the speedrun category.\n", 0, &_sar_speedrun_category_completion)
 {
     if (args.ArgC() > 1) {
         if (!lookupMap(g_categories, args[1])) {
@@ -323,7 +366,21 @@ CON_COMMAND(sar_speedrun_category, "sar_speedrun_category [category] - get or se
 
 // Showing rules {{{
 
-CON_COMMAND(sar_speedrun_rule, "sar_speedrun_rule [rule] - show information about speedrun rules.\n")
+static int _sar_speedrun_rule_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    std::vector<std::string> possible;
+
+    possible.push_back("sar_speedrun_rule");
+
+    for (auto rule : g_rules) {
+        possible.push_back("sar_speedrun_rule " + maybeQuote(rule.first));
+    }
+
+    return vectorCompletion(partial, commands, possible);
+}
+
+
+CON_COMMAND_F_COMPLETION(sar_speedrun_rule, "sar_speedrun_rule [rule] - show information about speedrun rules.\n", 0, &_sar_speedrun_rule_completion)
 {
     if (args.ArgC() == 1) {
         for (auto rule : g_rules) {
@@ -362,7 +419,18 @@ CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <categor
     g_categories[catName] = SpeedrunCategory{ { } };
 }
 
-CON_COMMAND(sar_speedrun_category_remove, "sar_speedrun_category_remove <category> - delete the given speedrun category.\n")
+static int _sar_speedrun_category_remove_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    std::vector<std::string> possible;
+
+    for (auto cat : g_categories) {
+        possible.push_back("sar_speedrun_category_remove " + maybeQuote(cat.first));
+    }
+
+    return vectorCompletion(partial, commands, possible);
+}
+
+CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove, "sar_speedrun_category_remove <category> - delete the given speedrun category.\n", 0, &_sar_speedrun_category_remove_completion)
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_speedrun_category_remove.ThisPtr()->m_pszHelpString);
@@ -385,7 +453,22 @@ CON_COMMAND(sar_speedrun_category_remove, "sar_speedrun_category_remove <categor
 
 // Category rule management {{{
 
-CON_COMMAND(sar_speedrun_category_add_rule, "sar_speedrun_category_add_rule <category> <rule> - add a rule to a speedrun category.\n")
+static int _sar_speedrun_category_add_rule_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    std::vector<std::string> possible;
+
+    for (auto cat : g_categories) {
+        for (auto rule : g_rules) {
+            if (cat.second.rules.find(rule.first) == cat.second.rules.end()) {
+                possible.push_back(Utils::ssprintf("sar_speedrun_category_add_rule %s %s", maybeQuote(cat.first).c_str(), maybeQuote(rule.first).c_str()));
+            }
+        }
+    }
+
+    return vectorCompletion(partial, commands, possible);
+}
+
+CON_COMMAND_F_COMPLETION(sar_speedrun_category_add_rule, "sar_speedrun_category_add_rule <category> <rule> - add a rule to a speedrun category.\n", 0, &_sar_speedrun_category_add_rule_completion)
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_speedrun_category_add_rule.ThisPtr()->m_pszHelpString);
@@ -405,7 +488,20 @@ CON_COMMAND(sar_speedrun_category_add_rule, "sar_speedrun_category_add_rule <cat
     cat->rules.insert(ruleName);
 }
 
-CON_COMMAND(sar_speedrun_category_remove_rule, "sar_speedrun_category_remove_rule <category> <rule> - remove a rule from a speedrun category.\n")
+static int _sar_speedrun_category_remove_rule_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    std::vector<std::string> possible;
+
+    for (auto cat : g_categories) {
+        for (auto rule : cat.second.rules) {
+            possible.push_back(Utils::ssprintf("sar_speedrun_category_remove_rule %s %s", maybeQuote(cat.first.c_str()), maybeQuote(rule.c_str())));
+        }
+    }
+
+    return vectorCompletion(partial, commands, possible);
+}
+
+CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove_rule, "sar_speedrun_category_remove_rule <category> <rule> - remove a rule from a speedrun category.\n", 0, &_sar_speedrun_category_remove_rule_completion)
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_speedrun_category_add_rule.ThisPtr()->m_pszHelpString);
@@ -512,7 +608,19 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
     g_rules.insert({name, *rule});
 }
 
-CON_COMMAND(sar_speedrun_rule_remove, "sar_speedrun_rule_remove <rule> - delete the given speedrun rule.\n")
+static int _sar_speedrun_rule_remove_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    std::vector<std::string> possible;
+
+    for (auto rule : g_rules) {
+        possible.push_back("sar_speedrun_rule_remove " + maybeQuote(rule.first));
+    }
+
+    return vectorCompletion(partial, commands, possible);
+}
+
+
+CON_COMMAND_F_COMPLETION(sar_speedrun_rule_remove, "sar_speedrun_rule_remove <rule> - delete the given speedrun rule.\n", 0, &_sar_speedrun_rule_remove_completion)
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_speedrun_rule_remove.ThisPtr()->m_pszHelpString);
