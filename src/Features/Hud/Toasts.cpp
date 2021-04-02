@@ -40,13 +40,17 @@ bool ToastHud::GetCurrentSize(int &xSize, int &ySize)
     return false;
 }
 
-void ToastHud::AddToast(std::string text, Color color, double duration)
+void ToastHud::AddToast(std::string text, Color color, double duration, bool doConsole)
 {
     g_toasts.push_back({
         text,
         color,
         NOW_STEADY() + std::chrono::microseconds((int64_t)(duration * 1000000)),
     });
+
+    if (doConsole) {
+        console->ColorMsg(color, "%s\n", text.c_str());
+    }
 }
 
 void ToastHud::Update()
