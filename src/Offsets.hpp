@@ -58,6 +58,7 @@ extern int GetFontTall;
 extern int PaintTraverseEx;
 extern int DrawColoredText;
 extern int DrawTextLen;
+extern int GetKernedCharWidth;
 
 extern int DrawSetTextureFile;
 extern int DrawSetTextureRGBA;

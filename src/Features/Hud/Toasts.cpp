@@ -8,7 +8,6 @@
 #include "Modules/Surface.hpp"
 #include "Modules/Scheme.hpp"
 
-#define SLOTS 2
 #define PADDING 6
 #define TOAST_GAP 10
 #define TOAST_BACKGROUND Color{0, 0, 0, 192}

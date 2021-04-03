@@ -22,7 +22,20 @@ int Surface::GetFontLength(HFont font, const char* fmt, ...)
     char data[1024];
     vsnprintf(data, sizeof(data), fmt, argptr);
     va_end(argptr);
+#ifdef _WIN32
     return this->DrawTextLen(this->matsurface->ThisPtr(), font, data);
+#else
+    int length = 0;
+    for (size_t i = 0; data[i]; ++i) {
+        wchar_t prev = i == 0 ? 0 : data[i - 1];
+        wchar_t next = data[i + 1];
+        wchar_t ch = data[i];
+        float wide, a, c;
+        this->GetKernedCharWidth(this->matsurface->ThisPtr(), font, ch, prev, next, wide, a, c);
+        length += floor(wide + a + c);
+    }
+    return length;
+#endif
 }
 void Surface::DrawTxt(HFont font, int x, int y, Color clr, const char* fmt, ...)
 {
@@ -90,6 +103,7 @@ bool Surface::Init()
         this->GetFontTall = matsurface->Original<_GetFontTall>(Offsets::GetFontTall);
         this->DrawColoredText = matsurface->Original<_DrawColoredText>(Offsets::DrawColoredText);
         this->DrawTextLen = matsurface->Original<_DrawTextLen>(Offsets::DrawTextLen);
+        this->GetKernedCharWidth = matsurface->Original<_GetKernedCharWidth>(Offsets::GetKernedCharWidth);
 
         this->DrawSetTextureFile = matsurface->Original<_DrawSetTextureFile>(Offsets::DrawSetTextureFile);
         this->DrawSetTextureRGBA = matsurface->Original<_DrawSetTextureRGBA>(Offsets::DrawSetTextureRGBA);
