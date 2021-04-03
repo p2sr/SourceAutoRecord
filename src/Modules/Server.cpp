@@ -392,7 +392,7 @@ static void InitAcceptInputTrampoline()
         0x51,             // 10: push ecx                 (ecx=thisptr, because of thiscall convention)
         0xE8, 0, 0, 0, 0, // 11: call ??                  (to be filled with address of detour function)
         0x59,             // 16: pop ecx                  (it may have been clobbered by the cdecl detour function)
-        0x83, 0xC4, 0x0C, // 17: add esp, 0x0C            (pop the other args to the detour function)
+        0x83, 0xC4, 0x10, // 17: add esp, 0x10            (pop the other args to the detour function)
         0xA1, 0, 0, 0, 0, // 1A: mov eax, ??              (to be filled with the address from the other instruction we overwrote)
         0xE9, 0, 0, 0, 0, // 1F: jmp ??                   (to be filled with the address of code to return to)
     };
