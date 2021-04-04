@@ -385,21 +385,22 @@ static void InitAcceptInputTrampoline()
         0x55,             // 00: push ebp                 (we overwrote these 2 instructions)
         0x89, 0xE5,       // 01: mov ebp, esp
         0x8D, 0x45, 0x14, // 03: lea eax, [ebp + 0x14]    (we take a pointer to the variant_t, for simplicity and consistency with Linux)
-        0x50,             // 06: push eax                 (we want to take the first 5 args in our detour function)
-        0xFF, 0x75, 0x10, // 07: push dword [ebp + 0x10]
-        0xFF, 0x75, 0x0C, // 0A: push dword [ebp + 0x0C]
-        0xFF, 0x75, 0x08, // 0D: push dword [ebp + 0x08]
-        0x51,             // 10: push ecx                 (ecx=thisptr, because of thiscall convention)
-        0xE8, 0, 0, 0, 0, // 11: call ??                  (to be filled with address of detour function)
-        0x59,             // 16: pop ecx                  (it may have been clobbered by the cdecl detour function)
-        0x83, 0xC4, 0x10, // 17: add esp, 0x10            (pop the other args to the detour function)
-        0xA1, 0, 0, 0, 0, // 1A: mov eax, ??              (to be filled with the address from the other instruction we overwrote)
-        0xE9, 0, 0, 0, 0, // 1F: jmp ??                   (to be filled with the address of code to return to)
+        0x51,             // 06: push ecx                 (store thisptr for later)
+        0x50,             // 07: push eax                 (we want to take the first 5 args in our detour function)
+        0xFF, 0x75, 0x10, // 08: push dword [ebp + 0x10]
+        0xFF, 0x75, 0x0C, // 0B: push dword [ebp + 0x0C]
+        0xFF, 0x75, 0x08, // 0E: push dword [ebp + 0x08]
+        0x51,             // 11: push ecx                 (ecx=thisptr, because of thiscall convention)
+        0xE8, 0, 0, 0, 0, // 12: call ??                  (to be filled with address of detour function)
+        0x83, 0xC4, 0x14, // 17: add esp, 0x14            (pop the other args to the detour function)
+        0x59,             // 1A: pop ecx                  (it may have been clobbered by the cdecl detour function)
+        0xA1, 0, 0, 0, 0, // 1B: mov eax, ??              (to be filled with the address from the other instruction we overwrote)
+        0xE9, 0, 0, 0, 0, // 20: jmp ??                   (to be filled with the address of code to return to)
     };
 
-    *(uint32_t*)(trampolineCode + 0x12) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x12 + 4);
-    *(uint32_t*)(trampolineCode + 0x1B) = *(uint32_t*)((uint32_t)server->AcceptInput + 4); // The address we need to steal is 4 bytes into the function
-    *(uint32_t*)(trampolineCode + 0x20) = (uint32_t)server->AcceptInput + 8 - ((uint32_t)trampolineCode + 0x20 + 4);
+    *(uint32_t*)(trampolineCode + 0x13) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x13 + 4);
+    *(uint32_t*)(trampolineCode + 0x1C) = *(uint32_t*)((uint32_t)server->AcceptInput + 4); // The address we need to steal is 4 bytes into the function
+    *(uint32_t*)(trampolineCode + 0x21) = (uint32_t)server->AcceptInput + 8 - ((uint32_t)trampolineCode + 0x21 + 4);
 
     Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
 
