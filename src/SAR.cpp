@@ -12,6 +12,7 @@
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Variable.hpp"
+#include "CrashHandler.hpp"
 
 SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
@@ -33,6 +34,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
     if (this->game) {
         this->game->LoadOffsets();
+
+        CrashHandler::Init();
 
         tier1 = new Tier1();
         if (tier1->Init()) {
@@ -143,6 +146,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
     SAFE_DELETE(sar.game)
     SAFE_DELETE(tier1)
     SAFE_DELETE(console)
+    CrashHandler::Cleanup();
     return false;
 }
 
@@ -291,6 +295,7 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 
     SAFE_DELETE(tier1)
     SAFE_DELETE(console)
+    CrashHandler::Cleanup();
 }
 
 #pragma region Unused callbacks

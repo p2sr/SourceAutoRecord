@@ -122,6 +122,7 @@
     <ClCompile Include="..\lib\minhook\hook.c" />
     <ClCompile Include="..\lib\minhook\trampoline.c" />
     <ClCompile Include="Cheats.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="Checksum.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="Features\ClassDumper.cpp" />
@@ -319,6 +320,7 @@
     <ClInclude Include="..\lib\SFML\include\SFML\System\Vector2.hpp" />
     <ClInclude Include="..\lib\SFML\include\SFML\System\Vector3.hpp" />
     <ClInclude Include="Cheats.hpp" />
+    <ClInclude Include="CrashHandler.hpp" />
     <ClInclude Include="Checksum.hpp" />
     <ClInclude Include="Command.hpp" />
     <ClInclude Include="Features.hpp" />
