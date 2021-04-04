@@ -479,6 +479,7 @@ void Client::Shutdown()
     Interface::Delete(this->g_Input);
     Interface::Delete(this->g_HUDQuickInfo);
     Interface::Delete(this->g_HudChat);
+    Interface::Delete(this->g_HudMultiplayerBasicInfo);
     Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 }
 
