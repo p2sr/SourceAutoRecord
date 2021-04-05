@@ -118,12 +118,18 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
         PSYMBOL_INFO symbol = (PSYMBOL_INFO)buffer;
         symbol->SizeOfStruct = sizeof (SYMBOL_INFO);
         symbol->MaxNameLen = MAX_SYM_NAME;
-        SymFromAddr(process, (ULONG64)addr, &displacement, symbol);
+        const char *symname;
+        if (SymFromAddr(process, (ULONG64)addr, &displacement, symbol)) {
+            symname = symbol->Name;
+        } else {
+            symname = "";
+            displacement = (uint32_t)addr - (uint32_t)symbol->ModBase;
+        }
 
         char modulefile[MAX_PATH + 1];
         GetModuleFileNameA((HMODULE)symbol->ModBase, modulefile, MAX_PATH);
 
-        fprintf(f, "\t%s(%s+0x%x) [0x%08x]\n", modulefile, symbol->Name, (uint32_t)displacement, (uint32_t)addr);
+        fprintf(f, "\t%s(%s+0x%x) [0x%08x]\n", modulefile, symname, (uint32_t)displacement, (uint32_t)addr);
     }
 
     SymCleanup(process);
@@ -155,14 +161,12 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
 
 #ifdef _WIN32
 
-static LPTOP_LEVEL_EXCEPTION_FILTER g_old_filter;
-
 void CrashHandler::Init() {
-    g_old_filter = SetUnhandledExceptionFilter(&handler);
+    AddVectoredExceptionHandler(1, &handler);
 }
 
 void CrashHandler::Cleanup() {
-    SetUnhandledExceptionFilter(g_old_filter);
+    RemoveVectoredExceptionHandler(&handler);
 }
 
 #else
