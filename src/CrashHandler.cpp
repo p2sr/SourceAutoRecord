@@ -9,6 +9,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 #include <direct.h>
+#include <DbgHelp.h>
 #else
 #include <signal.h>
 #include <execinfo.h>
@@ -33,12 +34,12 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
 
 #ifdef _WIN32
     switch (ExceptionInfo->ExceptionRecord->ExceptionCode) {
-    case EXECPTION_ACCESS_VIOLATION:
+    case EXCEPTION_ACCESS_VIOLATION:
     case EXCEPTION_STACK_OVERFLOW:
-        exceptname = "Segmentation fault";
+        signame = "Segmentation fault";
         break;
-    case EXECPTION_ILLEGAL_INSTRUCTION:
-        exceptname = "Illegal instruction";
+    case EXCEPTION_ILLEGAL_INSTRUCTION:
+        signame = "Illegal instruction";
         break;
     case EXCEPTION_FLT_DENORMAL_OPERAND:
     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -47,9 +48,9 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
     case EXCEPTION_FLT_OVERFLOW:
     case EXCEPTION_FLT_STACK_CHECK:
     case EXCEPTION_FLT_UNDERFLOW:
-    case EXECPTION_INT_DIVIDE_BY_ZERO:
+    case EXCEPTION_INT_DIVIDE_BY_ZERO:
     case EXCEPTION_INT_OVERFLOW:
-        exceptname = "Arithmetic exception";
+        signame = "Arithmetic exception";
         break;
     default:
         finish;
@@ -114,7 +115,7 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
         DWORD64 displacement;
 
         char buffer[sizeof (SYMBOL_INFO) + MAX_SYM_NAME * sizeof (TCHAR)];
-        PSYMBOL_INFO symbol = (PYMBOL_INFO)buffer;
+        PSYMBOL_INFO symbol = (PSYMBOL_INFO)buffer;
         symbol->SizeOfStruct = sizeof (SYMBOL_INFO);
         symbol->MaxNameLen = MAX_SYM_NAME;
         SymFromAddr(process, (ULONG64)addr, &displacement, symbol);
