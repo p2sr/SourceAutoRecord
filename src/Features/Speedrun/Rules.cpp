@@ -329,13 +329,13 @@ static const char *printRuleAction(RuleAction action)
 
 std::string SpeedrunRule::Describe()
 {
-    std::string s = std::string("action='") + printRuleAction(this->action) + "'";
-    s += " map='" + this->map + "'";
+    std::string s = std::string("action=") + printRuleAction(this->action);
+    s += " map=" + this->map;
     if (this->onlyAfter) {
-        s += " after='" + *this->onlyAfter + "'";
+        s += " after=" + *this->onlyAfter;
     }
     if (this->slot) {
-        s += " player='" + std::to_string(*this->slot) + "'";
+        s += " player=" + std::to_string(*this->slot);
     }
 
     switch (this->rule.index()) {
@@ -343,14 +343,14 @@ std::string SpeedrunRule::Describe()
         s = std::string("[entity] ") + s;
         EntityInputRule entRule = std::get<EntityInputRule>(this->rule);
         if (entRule.typeMask & ENTRULE_TARGETNAME) {
-            s += " targetname='" + entRule.targetname + "'";
+            s += " targetname=" + entRule.targetname;
         }
         if (entRule.typeMask & ENTRULE_CLASSNAME) {
-            s += " classname='" + entRule.classname + "'";
+            s += " classname=" + entRule.classname;
         }
-        s += " inputname='" + entRule.inputname + "'";
+        s += " inputname=" + entRule.inputname;
         if (entRule.typeMask & ENTRULE_PARAMETER) {
-            s += " parameter='" + entRule.parameter + "'";
+            s += " parameter=" + entRule.parameter;
         }
         break;
     }
@@ -359,11 +359,11 @@ std::string SpeedrunRule::Describe()
         s = std::string("[zone] ") + s;
         ZoneTriggerRule zoneRule = std::get<ZoneTriggerRule>(this->rule);
         char buf[128];
-        snprintf(buf, sizeof buf, " pos='%f,%f,%f'", zoneRule.center.x, zoneRule.center.y, zoneRule.center.z);
+        snprintf(buf, sizeof buf, " pos=%f,%f,%f", zoneRule.center.x, zoneRule.center.y, zoneRule.center.z);
         s += buf;
-        snprintf(buf, sizeof buf, " size='%f,%f,%f'", zoneRule.size.x, zoneRule.size.y, zoneRule.size.z);
+        snprintf(buf, sizeof buf, " size=%f,%f,%f", zoneRule.size.x, zoneRule.size.y, zoneRule.size.z);
         s += buf;
-        s += std::string(" angle='") + std::to_string(zoneRule.rotation) + "'";
+        s += std::string(" angle=") + std::to_string(zoneRule.rotation);
         break;
     }
 
@@ -371,15 +371,14 @@ std::string SpeedrunRule::Describe()
         s = std::string("[portal] ") + s;
         PortalPlacementRule portalRule = std::get<PortalPlacementRule>(this->rule);
         char buf[128];
-        snprintf(buf, sizeof buf, " pos='%f,%f,%f'", portalRule.center.x, portalRule.center.y, portalRule.center.z);
+        snprintf(buf, sizeof buf, " pos=%f,%f,%f", portalRule.center.x, portalRule.center.y, portalRule.center.z);
         s += buf;
-        snprintf(buf, sizeof buf, " size='%f,%f,%f'", portalRule.size.x, portalRule.size.y, portalRule.size.z);
+        snprintf(buf, sizeof buf, " size=%f,%f,%f", portalRule.size.x, portalRule.size.y, portalRule.size.z);
         s += buf;
-        s += std::string(" angle='") + std::to_string(portalRule.rotation) + "'";
+        s += std::string(" angle=") + std::to_string(portalRule.rotation);
         if (portalRule.portal) {
-            s += " portal='";
+            s += " portal=";
             s += *portalRule.portal == PortalColor::BLUE ? "blue" : "orange";
-            s += "'";
         }
         break;
     }
