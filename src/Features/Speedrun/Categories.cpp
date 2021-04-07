@@ -438,7 +438,7 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove, "sar_speedrun_category_re
 
     std::string catName = args[1];
 
-    if (lookupMap(g_categories, catName)) {
+    if (!lookupMap(g_categories, catName)) {
         return console->Print("Category %s does not exist\n", args[1]);
     }
 
