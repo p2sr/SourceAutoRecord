@@ -320,7 +320,7 @@ std::string SpeedrunRule::Describe()
         s += " after='" + *this->onlyAfter + "'";
     }
     if (this->slot) {
-        s += " slot='" + std::to_string(*this->slot) + "'";
+        s += " player='" + std::to_string(*this->slot) + "'";
     }
 
     switch (this->rule.index()) {
