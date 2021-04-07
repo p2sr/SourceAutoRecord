@@ -471,6 +471,7 @@ DETOUR(Server::GameFrame, bool simulating)
 #endif
 
     SpeedrunTimer::DrawTriggers();
+    SpeedrunTimer::DrawCategoryCreatorPlacement();
 
     if (simulating) {
         SpeedrunTimer::TickRules();

@@ -5,6 +5,7 @@
 #include "Command.hpp"
 #include "Categories.hpp"
 #include "Rules.hpp"
+#include "CategoryCreator.hpp"
 
 namespace SpeedrunTimer {
     std::string Format(float raw);
