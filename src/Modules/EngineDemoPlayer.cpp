@@ -52,6 +52,7 @@ std::string EngineDemoPlayer::GetLevelName()
 // 0x04: entity input triggered by slot
 // 0x05: portal placement
 // 0x06: hit cm flags
+// 0x07: got crouchfly
 void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
 {
     if (data[0] == 0x03 || data[0] == 0x04) { // Entity input data
@@ -90,6 +91,14 @@ void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
         int slot = data[1];
 
         SpeedrunTimer::TestFlagRules(slot);
+
+        return;
+    }
+
+    if (data[0] == 0x07) { // Crouch fly
+        int slot = data[1];
+
+        SpeedrunTimer::TestFlyRules(slot);
 
         return;
     }

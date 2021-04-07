@@ -140,8 +140,8 @@ void Session::Start()
         }
     }
 
-    if (!engine->IsCoop() && SpeedrunTimer::ShouldStartOnLoad()) {
-        SpeedrunTimer::Start();
+    if (!engine->IsCoop()) {
+        SpeedrunTimer::OnLoad();
     }
 
     //Network Ghosts

@@ -234,6 +234,16 @@ void SpeedrunTimer::TestFlagRules(int slot)
     GeneralTestRules<ChallengeFlagsRule>(slot);
 }
 
+void SpeedrunTimer::TestFlyRules(int slot)
+{
+    GeneralTestRules<CrouchFlyRule>(slot);
+}
+
+void SpeedrunTimer::TestLoadRules()
+{
+    GeneralTestRules<MapLoadRule>(0);
+}
+
 // }}}
 
 SpeedrunRule *SpeedrunTimer::GetRule(std::string name)
@@ -582,6 +592,8 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
         type == "zone" ? ZoneTriggerRule::Create(params) :
         type == "portal" ? PortalPlacementRule::Create(params) :
         type == "flags" ? ChallengeFlagsRule::Create(params) :
+        type == "fly" ? CrouchFlyRule::Create(params) :
+        type == "load" ? MapLoadRule::Create(params) :
         std::optional<SpeedrunRule>{};
 
     if (!rule) {
@@ -599,7 +611,7 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
     }
 
     auto slotStr = lookupMap(params, "player");
-    if (slotStr) {
+    if (slotStr && type != "load") {
         rule->slot = atoi(slotStr->c_str());
     }
 

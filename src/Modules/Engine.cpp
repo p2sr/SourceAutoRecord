@@ -521,9 +521,7 @@ DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
     if (engine->GetMaxClients() >= 2 && ss_force_primary_fullscreen.GetInt() == 0) {
         if (engine->hadInitialForcePrimaryFullscreen) {
             SpeedrunTimer::Resume();
-            if (SpeedrunTimer::ShouldStartOnLoad()) {
-                SpeedrunTimer::Start();
-            }
+            SpeedrunTimer::OnLoad();
         }
         engine->hadInitialForcePrimaryFullscreen = !engine->hadInitialForcePrimaryFullscreen;
     }

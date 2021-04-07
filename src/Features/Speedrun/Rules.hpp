@@ -75,12 +75,24 @@ struct ChallengeFlagsRule {
     bool Test();
 };
 
+struct MapLoadRule {
+    static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
+    bool Test();
+};
+
+struct CrouchFlyRule {
+    static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
+    bool Test();
+};
+
 struct SpeedrunRule {
     using _RuleTypes = std::variant<
         EntityInputRule,
         ZoneTriggerRule,
         PortalPlacementRule,
-        ChallengeFlagsRule
+        ChallengeFlagsRule,
+        MapLoadRule,
+        CrouchFlyRule
     >;
 
     RuleAction action;

@@ -363,12 +363,19 @@ bool SpeedrunTimer::IsRunning()
     return g_speedrun.isRunning;
 }
 
-bool SpeedrunTimer::ShouldStartOnLoad()
+void SpeedrunTimer::OnLoad()
 {
-    if (!sar_speedrun_start_on_load.isRegistered) return false;
-    if (sar_speedrun_start_on_load.GetInt() == 2) return true;
-    if (sar_speedrun_start_on_load.GetInt() == 1) return SpeedrunTimer::IsRunning();
-    return false;
+    SpeedrunTimer::TestLoadRules();
+
+    if (!sar_speedrun_start_on_load.isRegistered) {
+        return;
+    }
+
+    if (sar_speedrun_start_on_load.GetInt() == 2) {
+        SpeedrunTimer::Start();
+    } else if (sar_speedrun_start_on_load.GetInt() == 1 && !SpeedrunTimer::IsRunning()) {
+        SpeedrunTimer::Start();
+    }
 }
 
 // Time formatting {{{

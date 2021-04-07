@@ -30,7 +30,7 @@ namespace SpeedrunTimer {
 
     bool IsRunning();
 
-    bool ShouldStartOnLoad();
+    void OnLoad();
 };
 
 extern Variable sar_speedrun_smartsplit;

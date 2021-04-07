@@ -277,6 +277,26 @@ bool ChallengeFlagsRule::Test()
     return true;
 }
 
+std::optional<SpeedrunRule> MapLoadRule::Create(std::map<std::string, std::string> params)
+{
+    return SpeedrunRule(RuleAction::START, "", MapLoadRule{});
+}
+
+bool MapLoadRule::Test()
+{
+    return true;
+}
+
+std::optional<SpeedrunRule> CrouchFlyRule::Create(std::map<std::string, std::string> params)
+{
+    return SpeedrunRule(RuleAction::START, "", CrouchFlyRule{});
+}
+
+bool CrouchFlyRule::Test()
+{
+    return true;
+}
+
 bool SpeedrunRule::TestGeneral(std::optional<int> slot)
 {
     if (this->fired) return false;
@@ -371,6 +391,16 @@ std::string SpeedrunRule::Describe()
 
     case 3: { // ChallengeFlagsRule
         s = std::string("[flags] ") + s;
+        break;
+    }
+
+    case 4: { // MapLoadRule
+        s = std::string("[load] ") + s;
+        break;
+    }
+
+    case 5: { // CrouchFlyRule
+        s = std::string("[fly] ")   + s;
         break;
     }
     }
@@ -509,5 +539,34 @@ void SpeedrunTimer::TickRules()
             engine->demorecorder->RecordData(data, sizeof data);
         }
         SpeedrunTimer::TestFlagRules(1);
+    }
+
+    static bool flyStates[MAX_SPLITSCREEN];
+
+    for (int slot = 0; slot < MAX_SPLITSCREEN; ++slot) {
+        void *player = server->GetPlayer(slot + 1);
+        if (!player) {
+            flyStates[slot] = false;
+            continue;
+        }
+
+        uintptr_t m_Local = (uintptr_t)player + Offsets::m_Local;
+
+        int m_nTractorBeamCount = *(int *)(m_Local + Offsets::m_nTractorBeamCount);
+        uint32_t m_hTractorBeam = *(uint32_t *)(m_Local + Offsets::m_hTractorBeam);
+
+        bool fly = m_nTractorBeamCount > 0 && m_hTractorBeam == Offsets::INVALID_EHANDLE_INDEX;
+        
+        console->Print("%d beams, %08X handle, fly %d\n", m_nTractorBeamCount, m_hTractorBeam, fly ? 1 : 0);
+
+        if (fly && !flyStates[slot]) {
+            if (engine->demorecorder->isRecordingDemo) {
+                char data[2] = { 0x07, (char)slot };
+                engine->demorecorder->RecordData(data, sizeof data);
+            }
+            SpeedrunTimer::TestFlyRules(slot);
+        }
+
+        flyStates[slot] = fly;
     }
 }
