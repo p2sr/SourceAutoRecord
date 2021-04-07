@@ -264,11 +264,6 @@ std::optional<SpeedrunRule> PortalPlacementRule::Create(std::map<std::string, st
 
 std::optional<SpeedrunRule> ChallengeFlagsRule::Create(std::map<std::string, std::string> params)
 {
-    if (!lookupMap(params, "player")) {
-        console->Print("player must be specified\n");
-        return {};
-    }
-
     return SpeedrunRule(RuleAction::START, "", ChallengeFlagsRule{});
 }
 
@@ -556,8 +551,6 @@ void SpeedrunTimer::TickRules()
         uint32_t m_hTractorBeam = *(uint32_t *)(m_Local + Offsets::m_hTractorBeam);
 
         bool fly = m_nTractorBeamCount > 0 && m_hTractorBeam == Offsets::INVALID_EHANDLE_INDEX;
-        
-        console->Print("%d beams, %08X handle, fly %d\n", m_nTractorBeamCount, m_hTractorBeam, fly ? 1 : 0);
 
         if (fly && !flyStates[slot]) {
             if (engine->demorecorder->isRecordingDemo) {
