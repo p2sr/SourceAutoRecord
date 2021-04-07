@@ -299,7 +299,7 @@ static const char *printRuleAction(RuleAction action)
     case RuleAction::START:
         return "start";
     case RuleAction::FORCE_START:
-        return "force-start";
+        return "force_start";
     case RuleAction::STOP:
         return "stop";
     case RuleAction::SPLIT:

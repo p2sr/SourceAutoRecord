@@ -559,7 +559,7 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
 
     if (*actionStr == "start") {
         action = RuleAction::START;
-    } else if (*actionStr == "force-start") {
+    } else if (*actionStr == "force_start") {
         action = RuleAction::FORCE_START;
     } else if (*actionStr == "stop") {
         action = RuleAction::STOP;
