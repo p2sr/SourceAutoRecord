@@ -256,7 +256,7 @@ void Session::Ended()
     networkManager.DeleteAllGhosts();
 
     if (networkManager.isConnected) networkManager.splitTicks = -1;
-    
+
     if (!wait_persist_across_loads.GetBool()) {
         engine->hasWaited = true;
     }

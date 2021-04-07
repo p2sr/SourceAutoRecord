@@ -602,7 +602,7 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
 
     rule->action = action;
     rule->map = params["map"];
-    
+
     auto after = lookupMap(params, "after");
     if (!after) {
         rule->onlyAfter = {};

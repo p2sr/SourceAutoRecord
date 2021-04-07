@@ -205,7 +205,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
                     CLEAR_OUT_STACK;
                     return NULL;
                 }
-                
+
                 toks.pop();
 
                 Token map_tok = toks.front();

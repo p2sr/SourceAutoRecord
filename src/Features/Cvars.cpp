@@ -119,7 +119,7 @@ void Cvars::ListAll()
             console->Msg("%s", ptr->m_pszHelpString);
         } else if (variable->isReference) {
             std::string str = "";
-            
+
             if (variable->hasCustomCallback && variable->isUnlocked)
                 str = "(custom callback && unlocked)";
             else if (variable->hasCustomCallback)

@@ -116,7 +116,7 @@ static std::vector<std::string> splitIntoLines(Surface::HFont font, std::string 
 
         ++i;
     }
-    
+
     if (length > 0) {
         lines.push_back({str});
     }
