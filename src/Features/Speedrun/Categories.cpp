@@ -504,7 +504,7 @@ static int _sar_speedrun_category_remove_rule_completion(const char *partial, ch
 
     for (auto cat : g_categories) {
         for (auto rule : cat.second.rules) {
-            possible.push_back(Utils::ssprintf("sar_speedrun_category_remove_rule %s %s", maybeQuote(cat.first.c_str()), maybeQuote(rule.c_str())));
+            possible.push_back(Utils::ssprintf("sar_speedrun_category_remove_rule %s %s", maybeQuote(cat.first).c_str(), maybeQuote(rule).c_str()));
         }
     }
 
