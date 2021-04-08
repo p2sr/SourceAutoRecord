@@ -205,6 +205,7 @@ static void GeneralTestRules(std::optional<int> slot, Ts... args)
         auto rule = SpeedrunTimer::GetRule(ruleName);
         if (!rule) continue;
         if (!std::holds_alternative<RuleType>(rule->rule)) continue;
+        if (!SpeedrunTimer::IsRunning() && rule->action != RuleAction::START && rule->action != RuleAction::FORCE_START) continue;
         if (!rule->TestGeneral(slot)) continue;
         if (!std::get<RuleType>(rule->rule).Test(args...)) continue;
 
