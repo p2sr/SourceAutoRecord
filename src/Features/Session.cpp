@@ -92,7 +92,7 @@ void Session::Start()
 
     this->Rebase(tick);
     timer->Rebase(tick);
-    if (!engine->IsCoop()) {
+    if (!engine->IsCoop() || server->GetChallengeStatus() == CMStatus::CHALLENGE) {
         SpeedrunTimer::Resume();
     }
 
@@ -140,7 +140,7 @@ void Session::Start()
         }
     }
 
-    if (!engine->IsCoop()) {
+    if (!engine->IsCoop() || server->GetChallengeStatus() == CMStatus::CHALLENGE) {
         SpeedrunTimer::OnLoad();
     }
 
@@ -177,10 +177,7 @@ void Session::Start()
     zachStats->ResetTriggers();
     zachStats->NewSession();
 
-    // we don't do this as blue because we run it earlier in this case
-    if (!engine->IsCoop() || engine->IsOrange()) {
-        RunLoadExecs();
-    }
+    RunLoadExecs();
 
     engine->hasRecorded = false;
     engine->hasPaused = false;
@@ -188,6 +185,8 @@ void Session::Start()
     server->tickCount = 0;
 
     stepCounter->ResetTimer();
+
+    engine->nForcePrimaryFullscreen = false;
 
     this->currentFrame = 0;
     this->isRunning = true;
@@ -197,8 +196,6 @@ void Session::Ended()
     if (!this->isRunning) {
         return;
     }
-
-    engine->hadInitialForcePrimaryFullscreen = false;
 
     this->previousMap = engine->GetCurrentMapName();
 
@@ -299,15 +296,11 @@ void Session::Changed(int state)
     if (state == SIGNONSTATE_FULL) {
         timescaleDetect->Spawn();
         client->FlushChatQueue();
-        if (engine->GetMaxClients() <= 1 || engine->IsOrange()) {
-            this->Started();
-            this->loadEnd = NOW();
+        this->Started();
+        this->loadEnd = NOW();
 
-            auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
-            console->DevMsg("Load took : %dms\n", time);
-        } else { // blue
-            RunLoadExecs();
-        }
+        auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
+        console->DevMsg("Load took : %dms\n", time);
 
         if (sar_load_delay.GetInt()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(sar_load_delay.GetInt()));

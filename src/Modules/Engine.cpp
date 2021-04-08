@@ -518,12 +518,12 @@ DETOUR_COMMAND(Engine::load)
 
 DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
 {
-    if (engine->GetMaxClients() >= 2 && ss_force_primary_fullscreen.GetInt() == 0) {
-        if (engine->hadInitialForcePrimaryFullscreen) {
+    if (engine->GetMaxClients() >= 2 && server->GetChallengeStatus() != CMStatus::CHALLENGE && ss_force_primary_fullscreen.GetInt() == 0) {
+        ++engine->nForcePrimaryFullscreen;
+        if (engine->nForcePrimaryFullscreen == 2) {
             SpeedrunTimer::Resume();
             SpeedrunTimer::OnLoad();
         }
-        engine->hadInitialForcePrimaryFullscreen = !engine->hadInitialForcePrimaryFullscreen;
     }
 }
 
