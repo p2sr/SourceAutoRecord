@@ -178,13 +178,23 @@ int SpeedrunTimer::GetTotalTicks()
 
 // }}}
 
+static std::string getEffectiveMapName()
+{
+    std::string map = engine->GetCurrentMapName();
+    if (map == "") {
+        return "(menu)";
+    }
+    return map;
+}
+
 void SpeedrunTimer::Update()
 {
     if (g_timerInterface->action != TimerAction::NONE && NOW_STEADY() >= g_actionResetTime) {
         g_timerInterface->action = TimerAction::NONE;
     }
 
-    std::string map = engine->GetCurrentMapName();
+    std::string map = getEffectiveMapName();
+
     if (map != g_speedrun.lastMap) {
         bool visited = false;
 
@@ -193,6 +203,12 @@ void SpeedrunTimer::Update()
                 visited = true;
                 break;
             }
+        }
+
+        if (map == "(menu)") {
+            // We're in the menu - we don't want to split here, just
+            // treat it as if we've visited
+            visited = true;
         }
 
         if (!visited) {
@@ -228,7 +244,7 @@ void SpeedrunTimer::FinishLoad()
     if (!g_speedrun.hasSplitLoad) {
         // We went through a load that kept us on the same map; perform
         // a segment split
-        SpeedrunTimer::Split(false, engine->GetCurrentMapName(), false);
+        SpeedrunTimer::Split(false, getEffectiveMapName(), false);
     }
 
     // Ready for next load
@@ -245,10 +261,14 @@ void SpeedrunTimer::Start()
 
     setTimerAction(wasRunning ? TimerAction::RESTART : TimerAction::START);
 
+    std::string map = getEffectiveMapName();
+
     g_speedrun.isRunning = true;
     g_speedrun.isReset = false;
     g_speedrun.base = getCurrentTick();
     g_speedrun.saved = sar_speedrun_offset.GetInt();
+    g_speedrun.lastMap = map;
+    g_speedrun.visitedMaps.push_back(map);
 
     console->Print("Speedrun started!\n");
 }
@@ -447,12 +467,12 @@ CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer.\
 
 CON_COMMAND(sar_speedrun_stop, "sar_speedrun_start - stop the speedrun timer.\n")
 {
-    SpeedrunTimer::Stop(engine->GetCurrentMapName());
+    SpeedrunTimer::Stop(getEffectiveMapName());
 }
 
 CON_COMMAND(sar_speedrun_split, "sar_speedrun_split - perform a split on the speedrun timer.\n")
 {
-    SpeedrunTimer::Split(true, engine->GetCurrentMapName());
+    SpeedrunTimer::Split(true, getEffectiveMapName());
 }
 
 CON_COMMAND(sar_speedrun_pause, "sar_speedrun_pause - pause the speedrun timer.\n")
