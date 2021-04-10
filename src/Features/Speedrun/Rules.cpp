@@ -294,7 +294,7 @@ bool CrouchFlyRule::Test()
 
 bool SpeedrunRule::TestGeneral(std::optional<int> slot)
 {
-    if (this->fired) return false;
+    if (this->fired && this->action != RuleAction::FORCE_START) return false;
     if (this->onlyAfter) {
         auto prereq = SpeedrunTimer::GetRule(*this->onlyAfter);
         if (!prereq || !prereq->fired) return false;
