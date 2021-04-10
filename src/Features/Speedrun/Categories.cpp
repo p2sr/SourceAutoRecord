@@ -13,7 +13,7 @@
 #include <cstdlib>
 
 Variable sar_speedrun_draw_triggers("sar_speedrun_draw_triggers", "0", "Draw the triggers associated with speedrun rules in the world.\n");
-Variable sar_speedrun_notify_duration("sar_speedrun_notify_duration", "3", "Number of seconds to show the speedrun notification on-screen for.\n");
+Variable sar_speedrun_notify_duration("sar_speedrun_notify_duration", "6", "Number of seconds to show the speedrun notification on-screen for.\n");
 
 static int g_notifyR = 255;
 static int g_notifyG = 255;
