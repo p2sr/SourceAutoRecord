@@ -9,9 +9,38 @@
 #include "Modules/Server.hpp"
 #include "Modules/Engine.hpp"
 #include "Features/NetMessage.hpp"
+#include "Features/Hud/Toasts.hpp"
 
 #define SPEEDRUN_PACKET_TYPE "srtimer"
 #define SYNC_INTERVAL 300 // Sync every 5 seconds, just in case
+
+Variable sar_speedrun_notify_duration("sar_speedrun_notify_duration", "6", "Number of seconds to show the speedrun notification on-screen for.\n");
+
+static int g_notifyR = 255;
+static int g_notifyG = 255;
+static int g_notifyB = 255;
+
+CON_COMMAND(sar_speedrun_notify_set_color, "sar_speedrun_notify_set_color <hex code> - sets the speedrun notification color to the specified sRGB color code.\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print(sar_speedrun_notify_set_color.ThisPtr()->m_pszHelpString);
+    }
+
+    const char *color = args[1];
+    if (color[0] == '#') {
+        ++color;
+    }
+
+    int r, g, b;
+    int end;
+    if (sscanf(color, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
+        return console->Print("Invalid color code!\n");
+    }
+
+    g_notifyR = Utils::ConvertFromSrgb(r);
+    g_notifyG = Utils::ConvertFromSrgb(g);
+    g_notifyB = Utils::ConvertFromSrgb(b);
+}
 
 // FIXME: because of how NetMessage is currently implemented, some
 // splits will be lost for orange as there is a cap on how quickly you
@@ -144,6 +173,8 @@ static int g_coopLastSyncEngineTick;
 
 static void handleCoopPacket(void *data, size_t size)
 {
+    if (!engine->IsOrange()) return;
+
     char *data_ = (char *)data;
 
     if (size < 5) return;
@@ -380,7 +411,9 @@ void SpeedrunTimer::Start()
     g_speedrun.visitedMaps.push_back(map);
 
     sendCoopPacket(PacketType::START);
-    console->Print("Speedrun started!\n");
+    if (sar_speedrun_notify_duration.GetFloat() > 0) {
+        toastHud.AddToast("Speedrun started!", { g_notifyR, g_notifyG, g_notifyB, 255 }, sar_speedrun_notify_duration.GetFloat());
+    }
 }
 
 void SpeedrunTimer::Pause()
@@ -426,7 +459,6 @@ void SpeedrunTimer::Stop(std::string segName)
     g_speedrun.isRunning = false;
 
     sendCoopPacket(PacketType::STOP, &segName);
-    console->Print("Speedrun stopped!\n");
 }
 
 void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested)
@@ -461,9 +493,15 @@ void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested)
 
     if (requested) {
         sendCoopPacket(PacketType::SPLIT, &segName, newSplit);
-        if (newSplit) {
-            setTimerAction(TimerAction::SPLIT);
-            console->Print("Speedrun split!\n");
+    }
+
+    if (newSplit) {
+        setTimerAction(TimerAction::SPLIT);
+        if (sar_speedrun_notify_duration.GetFloat() > 0) {
+            float totalTime = SpeedrunTimer::GetTotalTicks() * *engine->interval_per_tick;
+            float splitTime = g_speedrun.splits.back().ticks;
+            std::string text = Utils::ssprintf("%s\n%s (%s)", segName.c_str(), SpeedrunTimer::Format(totalTime).c_str(), SpeedrunTimer::Format(splitTime).c_str());
+            toastHud.AddToast(text, { g_notifyR, g_notifyG, g_notifyB, 255 }, sar_speedrun_notify_duration.GetFloat());
         }
     }
 }
