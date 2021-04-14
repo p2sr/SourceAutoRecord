@@ -331,7 +331,10 @@ void SpeedrunTimer::Update()
 
     std::string map = getEffectiveMapName();
 
-    if (map != g_speedrun.lastMap && !engine->IsOrange()) {
+    // FIXME: in theory we don't want to do this for orange, however
+    // currently NetMessage cannot send messages mid-load, so we have to
+    // do this manually
+    if (map != g_speedrun.lastMap) {
         bool visited = false;
 
         for (std::string v : g_speedrun.visitedMaps) {
