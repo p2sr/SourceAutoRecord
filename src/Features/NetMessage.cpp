@@ -18,7 +18,7 @@ static inline void handleMessage(const char *type, void *data, size_t size)
     }
 }
 
-void NetMessage::SendMessage(const char *type, void *data, size_t size)
+void NetMessage::SendMsg(const char *type, void *data, size_t size)
 {
     char *data_ = (char *)data;
     std::string cmd = std::string("say !SAR:") + type + ":";
