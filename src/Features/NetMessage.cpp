@@ -2,6 +2,7 @@
 #include "Modules/Engine.hpp"
 #include "Utils.hpp"
 #include <map>
+#include <stdexcept>
 
 static std::map<const char *, void (*)(void *, size_t)> g_handlers;
 
@@ -63,8 +64,12 @@ bool NetMessage::ChatData(std::string str)
 
     for (size_t i = 0; i < str.size(); ++i) {
         if (str[i] == '#') {
-            int c = stoi(str.substr(i, 2), 0, 16);
-            buf.push_back((uint8_t)c);
+            try {
+                int c = stoi(str.substr(i + 1, 2), 0, 16);
+                buf.push_back((uint8_t)c);
+            } catch (std::invalid_argument &e) {
+                return false;
+            }
             i += 2;
         } else {
             buf.push_back((uint8_t)str[i]);
