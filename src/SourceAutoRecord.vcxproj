@@ -197,6 +197,7 @@
     <ClCompile Include="Features\Timer\TimerCheckPoints.cpp" />
     <ClCompile Include="Features\TimescaleDetect.cpp" />
     <ClCompile Include="Features\WorkshopList.cpp" />
+    <ClCompile Include="Features\NetMessage.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Games\Linux\ApertureTag.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -400,6 +401,7 @@
     <ClInclude Include="Features\Timer\TimerCheckPoints.hpp" />
     <ClInclude Include="Features\TimescaleDetect.hpp" />
     <ClInclude Include="Features\WorkshopList.hpp" />
+    <ClInclude Include="Features\NetMessage.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="Games\Linux\ApertureTag.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

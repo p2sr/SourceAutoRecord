@@ -69,6 +69,9 @@ public:
     // CHudMultiplayerBasicInfo::ShouldDraw
     DECL_DETOUR_T(bool, ShouldDraw_BasicInfo);
 
+    // CHudChat::MsgFunc_SayText2
+    DECL_DETOUR(MsgFunc_SayText2, bf_read &msg);
+
     // CInput::_DecodeUserCmdFromBuffer
     DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number);
     DECL_DETOUR(DecodeUserCmdFromBuffer2, int buf, signed int sequence_number);

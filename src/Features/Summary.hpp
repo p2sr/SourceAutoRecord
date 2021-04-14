@@ -6,7 +6,7 @@
 struct SummaryItem {
     int ticks;
     float time;
-		std::string map;
+    std::string map;
 };
 
 class Summary : public Feature {

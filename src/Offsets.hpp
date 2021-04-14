@@ -232,6 +232,7 @@ extern int ClientCommand;
 
 //CBaseHudChat
 extern int ChatPrintf;
+extern int MsgFunc_SayText2;
 
 // CSteam3Client
 extern int OnGameOverlayActivated;
