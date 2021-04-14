@@ -201,6 +201,7 @@ static void dispatchRule(std::string name, SpeedrunRule *rule)
 template<typename RuleType, typename... Ts>
 static void GeneralTestRules(std::optional<int> slot, Ts... args)
 {
+    if (engine->IsOrange()) return;
     for (std::string ruleName : g_categories[g_currentCategory].rules) {
         auto rule = SpeedrunTimer::GetRule(ruleName);
         if (!rule) continue;

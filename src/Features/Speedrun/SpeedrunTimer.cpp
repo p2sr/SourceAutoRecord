@@ -8,6 +8,25 @@
 #include "Modules/Client.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Engine.hpp"
+#include "Features/NetMessage.hpp"
+
+#define SPEEDRUN_PACKET_TYPE "srtimer"
+#define SYNC_INTERVAL 300 // Sync every 5 seconds, just in case
+
+// FIXME: because of how NetMessage is currently implemented, some
+// splits will be lost for orange as there is a cap on how quickly you
+// can send chat messages
+
+enum PacketType
+{
+    SYNC,
+    START,
+    PAUSE,
+    RESUME,
+    STOP,
+    SPLIT,
+    RESET,
+};
 
 // TimerAction {{{
 
@@ -90,10 +109,13 @@ static struct
     std::string lastMap;
 } g_speedrun;
 
+static void handleCoopPacket(void *data, size_t size);
+
 void SpeedrunTimer::Init()
 {
     g_timerInterface = new TimerInterface();
     SpeedrunTimer::Reset(false);
+    NetMessage::RegisterHandler(SPEEDRUN_PACKET_TYPE, &handleCoopPacket);
 }
 
 void SpeedrunTimer::SetIpt(float ipt)
@@ -115,13 +137,92 @@ static void setTimerAction(TimerAction action)
 
 // Getting time {{{
 
+// Both Orange and Blue - the tick we synced
+static int g_coopLastSyncTick;
+// Orange only - the tick we synced, as reported by the engine
+static int g_coopLastSyncEngineTick;
+
+static void handleCoopPacket(void *data, size_t size)
+{
+    char *data_ = (char *)data;
+
+    if (size < 5) return;
+
+    PacketType t = (PacketType)data_[0];
+    int tick = *(int *)(data_ + 1);
+
+    g_coopLastSyncTick = tick;
+    g_coopLastSyncEngineTick = engine->GetTick();
+
+    switch (t) {
+    case PacketType::SYNC:
+        break;
+    case PacketType::START:
+        SpeedrunTimer::Start();
+        break;
+    case PacketType::PAUSE:
+        SpeedrunTimer::Pause();
+        break;
+    case PacketType::RESUME:
+        SpeedrunTimer::Resume();
+        break;
+    case PacketType::STOP:
+        SpeedrunTimer::Stop(std::string(data_ + 5, size - 5));
+        break;
+    case PacketType::SPLIT:
+        if (size < 6) return;
+        SpeedrunTimer::Split(data_[5], std::string(data_ + 6, size - 6));
+        break;
+    case PacketType::RESET:
+        SpeedrunTimer::Reset();
+        break;
+    }
+}
+
 static int getCurrentTick()
 {
+    if (engine->IsOrange()) {
+        int delta = engine->GetTick() - g_coopLastSyncEngineTick;
+        if (delta < 0) delta = 0;
+        return g_coopLastSyncTick + delta;
+    }
+
     if (server->GetChallengeStatus() == CMStatus::CHALLENGE) {
         return client->GetCMTimer() / *engine->interval_per_tick;
     }
 
     return engine->GetTick();
+}
+
+static void sendCoopPacket(PacketType t, std::string *splitName = NULL, int newSplit = -1) {
+    size_t size = 5;
+
+    if (newSplit != -1) {
+        ++size;
+    }
+
+    if (splitName) {
+        size += splitName->size();
+    }
+
+    char *buf = (char *)malloc(size);
+
+    buf[0] = (char)t;
+    *(int *)(buf + 1) = getCurrentTick();
+
+    char *ptr = buf + 5;
+
+    if (newSplit != -1) {
+        *(ptr++) = newSplit;
+    }
+
+    if (splitName) {
+        memcpy(ptr, splitName->c_str(), splitName->size());
+    }
+
+    NetMessage::SendMsg(SPEEDRUN_PACKET_TYPE, buf, size);
+
+    free(buf);
 }
 
 int SpeedrunTimer::GetSegmentTicks()
@@ -195,7 +296,7 @@ void SpeedrunTimer::Update()
 
     std::string map = getEffectiveMapName();
 
-    if (map != g_speedrun.lastMap) {
+    if (map != g_speedrun.lastMap && !engine->IsOrange()) {
         bool visited = false;
 
         for (std::string v : g_speedrun.visitedMaps) {
@@ -223,6 +324,14 @@ void SpeedrunTimer::Update()
         g_speedrun.lastMap = map;
     }
 
+    if (engine->IsCoop() && !engine->IsOrange()) {
+        int tick = getCurrentTick();
+        if (tick < g_coopLastSyncTick || tick >= g_coopLastSyncTick + SYNC_INTERVAL) {
+            sendCoopPacket(PacketType::SYNC);
+            g_coopLastSyncTick = tick;
+        }
+    }
+
     g_timerInterface->total = SpeedrunTimer::GetTotalTicks();
 }
 
@@ -241,10 +350,10 @@ void SpeedrunTimer::AddPauseTick()
 
 void SpeedrunTimer::FinishLoad()
 {
-    if (!g_speedrun.hasSplitLoad) {
+    if (!g_speedrun.hasSplitLoad && !engine->IsOrange()) {
         // We went through a load that kept us on the same map; perform
         // a segment split
-        SpeedrunTimer::Split(false, getEffectiveMapName(), false);
+        SpeedrunTimer::Split(false, getEffectiveMapName());
     }
 
     // Ready for next load
@@ -270,6 +379,7 @@ void SpeedrunTimer::Start()
     g_speedrun.lastMap = map;
     g_speedrun.visitedMaps.push_back(map);
 
+    sendCoopPacket(PacketType::START);
     console->Print("Speedrun started!\n");
 }
 
@@ -285,6 +395,7 @@ void SpeedrunTimer::Pause()
 
     g_speedrun.isPaused = true;
 
+    sendCoopPacket(PacketType::PAUSE);
     console->Print("Speedrun paused!\n");
 }
 
@@ -298,6 +409,7 @@ void SpeedrunTimer::Resume()
 
     g_speedrun.isPaused = false;
 
+    sendCoopPacket(PacketType::RESUME);
     console->Print("Speedrun resumed!\n");
 }
 
@@ -313,6 +425,7 @@ void SpeedrunTimer::Stop(std::string segName)
 
     g_speedrun.isRunning = false;
 
+    sendCoopPacket(PacketType::STOP, &segName);
     console->Print("Speedrun stopped!\n");
 }
 
@@ -347,10 +460,11 @@ void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested)
     g_speedrun.base = getCurrentTick();
 
     if (requested) {
+        sendCoopPacket(PacketType::SPLIT, &segName, newSplit);
         if (newSplit) {
             setTimerAction(TimerAction::SPLIT);
+            console->Print("Speedrun split!\n");
         }
-        console->Print("Speedrun split!\n");
     }
 }
 
@@ -371,6 +485,7 @@ void SpeedrunTimer::Reset(bool requested)
     g_speedrun.visitedMaps.clear();
 
     if (requested) {
+        sendCoopPacket(PacketType::RESET);
         setTimerAction(TimerAction::RESET);
         console->Print("Ready for new speedrun!\n");
     }

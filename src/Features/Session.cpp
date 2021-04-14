@@ -92,7 +92,7 @@ void Session::Start()
 
     this->Rebase(tick);
     timer->Rebase(tick);
-    if (!engine->IsCoop() || server->GetChallengeStatus() == CMStatus::CHALLENGE) {
+    if (!engine->IsCoop() || (server->GetChallengeStatus() == CMStatus::CHALLENGE && !engine->IsOrange())) {
         SpeedrunTimer::Resume();
     }
 
@@ -240,7 +240,9 @@ void Session::Ended()
     // already happened in the playvideo_end_level_transition detour.
     // However, if a level ends prematurely (e.g. restart_level), that
     // command is never run, so we use session timing to pause instead
-    SpeedrunTimer::Pause();
+    if (!engine->IsOrange()) {
+        SpeedrunTimer::Pause();
+    }
 
     if (listener) {
         listener->Reset();
