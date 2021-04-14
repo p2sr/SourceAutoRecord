@@ -4,16 +4,16 @@
 #include <map>
 #include <stdexcept>
 
-static std::map<const char *, void (*)(void *, size_t)> g_handlers;
+static std::map<std::string, void (*)(void *, size_t)> g_handlers;
 
 void NetMessage::RegisterHandler(const char *type, void (*handler)(void *, size_t))
 {
-    g_handlers[type] = handler;
+    g_handlers[std::string(type)] = handler;
 }
 
 static inline void handleMessage(const char *type, void *data, size_t size)
 {
-    auto match = g_handlers.find(type);
+    auto match = g_handlers.find(std::string(type));
     if (match != g_handlers.end()) {
         (*match->second)(data, size);
     }
