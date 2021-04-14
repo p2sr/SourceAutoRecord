@@ -596,6 +596,22 @@ bool Server::Init()
     GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "80 3D ? ? ? ? 00 55 89 E5 8B 45 08 75 1E 85 C0 78 1A 3B 05 ? ? ? ? 7D 12 8B 15", 0);
 #endif
 
+    // Remove the limit on how quickly you can use 'say'
+    {
+        void *say_callback = Command("say").ThisPtr()->m_pCommandCallback;
+#ifdef _WIN32
+        uintptr_t insn_addr = (uintptr_t)say_callback + 52;
+#else
+        uintptr_t insn_addr = (uintptr_t)say_callback + 88;
+#endif
+        // This is the location of an ADDSD instruction which adds 0.66
+        // to the current time. If we instead *subtract* 0.66, we'll
+        // always be able to chat again! We can just do this by changing
+        // the third byte from 0x58 to 0x5C, hence making the full
+        // opcode start with F2 0F 5C.
+        Memory::UnProtect((void *)(insn_addr + 2), 1);
+        *(char *)(insn_addr + 2) = 0x5C;
+    }
 
     offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);
     offsetFinder->ServerSide("CBasePlayer", "m_iName", &Offsets::m_iName);
