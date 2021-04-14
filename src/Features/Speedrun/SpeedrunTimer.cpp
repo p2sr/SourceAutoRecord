@@ -185,6 +185,8 @@ static void handleCoopPacket(void *data, size_t size)
     g_coopLastSyncTick = tick;
     g_coopLastSyncEngineTick = engine->GetTick();
 
+    g_timerInterface->total = SpeedrunTimer::GetTotalTicks();
+
     switch (t) {
     case PacketType::SYNC:
         break;
@@ -226,6 +228,8 @@ static int getCurrentTick()
 }
 
 static void sendCoopPacket(PacketType t, std::string *splitName = NULL, int newSplit = -1) {
+    if (engine->IsOrange()) return;
+
     size_t size = 5;
 
     if (newSplit != -1) {
