@@ -178,7 +178,13 @@
     <ClCompile Include="Features\WorkshopList.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\NetMessage.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Cheats.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="CrashHandler.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
     <ClCompile Include="Checksum.cpp">
@@ -552,7 +558,13 @@
     <ClInclude Include="Features\WorkshopList.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
+    <ClInclude Include="Features\NetMessage.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
     <ClInclude Include="Cheats.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="CrashHandler.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Checksum.hpp">

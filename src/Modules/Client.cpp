@@ -18,6 +18,7 @@
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Stats/ZachStats.hpp"
+#include "Features/NetMessage.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -44,6 +45,7 @@ REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
 REDECL(Client::GetName);
 REDECL(Client::ShouldDraw_BasicInfo);
+REDECL(Client::MsgFunc_SayText2);
 REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::DecodeUserCmdFromBuffer2);
 REDECL(Client::CInput_CreateMove);
@@ -248,6 +250,33 @@ DETOUR_T(bool, Client::ShouldDraw_BasicInfo)
     return Client::ShouldDraw_BasicInfo(thisptr);
 }
 
+// CHudChat::MsgFunc_SayText2
+DETOUR(Client::MsgFunc_SayText2, bf_read &msg)
+{
+    // copy old state in case we need to recover it
+    bf_read pre = msg;
+
+    // skip client id
+    msg.ReadUnsigned(8);
+
+    std::string str = "";
+    while (true) {
+        char c = (char)(uint8_t)msg.ReadUnsigned(8);
+        if (!c) break;
+        str += c;
+    }
+
+    if (NetMessage::ChatData(str)) {
+        // skip the other crap, just in case it matters
+        msg.ReadUnsigned(8);
+        return 0;
+    }
+
+    msg = pre;
+
+    return Client::MsgFunc_SayText2(thisptr, msg);
+}
+
 // CInput::DecodeUserCmdFromBuffer
 DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
 {
@@ -383,8 +412,9 @@ bool Client::Init()
                 }
 
                 auto CHudChat = FindElement(GetHud(-1), "CHudChat");
-                if (this->g_HudChat = Interface::Create(CHudChat, false)) {
+                if (this->g_HudChat = Interface::Create(CHudChat)) {
                     this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
+                    this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayText2);
                 }
 
                 auto CHudMultiplayerBasicInfo = FindElement(GetHud(-1), "CHudMultiplayerBasicInfo");
@@ -479,6 +509,7 @@ void Client::Shutdown()
     Interface::Delete(this->g_Input);
     Interface::Delete(this->g_HUDQuickInfo);
     Interface::Delete(this->g_HudChat);
+    Interface::Delete(this->g_HudMultiplayerBasicInfo);
     Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 }
 
