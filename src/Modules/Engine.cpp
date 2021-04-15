@@ -199,7 +199,11 @@ bool Engine::IsCoop()
 
 bool Engine::IsOrange()
 {
-    return this->IsCoop() && session->signonState == SIGNONSTATE_FULL && !engine->hoststate->m_activeGame;
+    static bool isOrange;
+    if (session->signonState == SIGNONSTATE_FULL) {
+        isOrange = this->IsCoop() && !engine->hoststate->m_activeGame;
+    }
+    return isOrange;
 }
 
 bool Engine::Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr)
