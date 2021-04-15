@@ -1,7 +1,10 @@
 #include "NetMessage.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
+#include "Features/Session.hpp"
 #include "Utils.hpp"
 #include <map>
+#include <queue>
 #include <stdexcept>
 
 static std::map<std::string, void (*)(void *, size_t)> g_handlers;
@@ -18,6 +21,19 @@ static inline void handleMessage(const char *type, void *data, size_t size)
         (*match->second)(data, size);
     }
 }
+
+static bool readyToSend()
+{
+    if (!engine->IsCoop()) {
+        return true;
+    } else if (engine->IsOrange()) {
+        return session->isRunning;
+    } else {
+        return server->GetPlayer(2);
+    }
+}
+
+static std::queue<std::string> g_queued;
 
 void NetMessage::SendMsg(const char *type, void *data, size_t size)
 {
@@ -41,7 +57,21 @@ void NetMessage::SendMsg(const char *type, void *data, size_t size)
         // TODO: AHHHHHHHHHH
     }
 
-    engine->ExecuteCommand(cmd.c_str());
+    if (readyToSend()) {
+        engine->ExecuteCommand(cmd.c_str());
+    } else {
+        g_queued.push(cmd);
+    }
+}
+
+void NetMessage::Update()
+{
+    if (readyToSend()) {
+        while (!g_queued.empty()) {
+            engine->ExecuteCommand(g_queued.front().c_str());
+            g_queued.pop();
+        }
+    }
 }
 
 bool NetMessage::ChatData(std::string str)

@@ -9,6 +9,7 @@
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Renderer.hpp"
+#include "Features/NetMessage.hpp"
 
 #include "Client.hpp"
 #include "Console.hpp"
@@ -378,6 +379,8 @@ DETOUR(Engine::Frame)
     engine->lastTick = session->GetTick();
 
     Renderer::Frame();
+
+    NetMessage::Update();
 
     return Engine::Frame(thisptr);
 }
