@@ -54,11 +54,11 @@ bool Renderer::isDemoLoading = false;
 static Variable snd_surround_speakers;
 
 // h264, hevc, vp8, vp9, dnxhd
-// aac, ac3, mp3, vorbis, opus, flac
+// aac, ac3, vorbis, opus, flac
 static Variable sar_render_vbitrate("sar_render_vbitrate", "40000", 1, "Video bitrate used in renders (kbit/s)\n");
 static Variable sar_render_abitrate("sar_render_abitrate", "160", 1, "Audio bitrate used in renders (kbit/s)\n");
 static Variable sar_render_vcodec("sar_render_vcodec", "h264", "Video codec used in renders (h264, hevc, vp8, vp9, dnxhd)\n", 0);
-static Variable sar_render_acodec("sar_render_acodec", "vorbis", "Audio codec used in renders (aac, ac3, mp3, vorbis, opus, flac)\n", 0);
+static Variable sar_render_acodec("sar_render_acodec", "vorbis", "Audio codec used in renders (aac, ac3, vorbis, opus, flac)\n", 0);
 static Variable sar_render_quality("sar_render_quality", "35", 0, 50, "Render output quality, higher is better (50=lossless)\n");
 static Variable sar_render_fps("sar_render_fps", "60", 1, "Render output FPS\n");
 static Variable sar_render_blend("sar_render_blend", "0", 0, "How many frames to blend for each output frame; 1 = do not blend, 0 = automatically determine based on host_framerate\n");
@@ -164,7 +164,6 @@ static AVCodecID audioCodecFromName(const char *name)
 {
   if (!strcmp(name, "aac")) return AV_CODEC_ID_AAC;
   if (!strcmp(name, "ac3")) return AV_CODEC_ID_AC3;
-  if (!strcmp(name, "mp3")) return AV_CODEC_ID_MP3;
   if (!strcmp(name, "vorbis")) return AV_CODEC_ID_VORBIS;
   if (!strcmp(name, "opus")) return AV_CODEC_ID_OPUS;
   if (!strcmp(name, "flac")) return AV_CODEC_ID_FLAC;
