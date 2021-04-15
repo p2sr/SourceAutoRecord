@@ -7,6 +7,10 @@
 #include <queue>
 #include <stdexcept>
 
+// if blue: whether orange is ready
+// if orange: whether we've sent the ready packet
+static bool g_orangeReady = false;
+
 static std::map<std::string, void (*)(void *, size_t)> g_handlers;
 
 void NetMessage::RegisterHandler(const char *type, void (*handler)(void *, size_t))
@@ -16,6 +20,13 @@ void NetMessage::RegisterHandler(const char *type, void (*handler)(void *, size_
 
 static inline void handleMessage(const char *type, void *data, size_t size)
 {
+    if (!strcmp(type, "__sync")) {
+        if (size == 6 && !strcmp((char *)data, "ready")) {
+            g_orangeReady = true;
+        }
+        return;
+    }
+
     auto match = g_handlers.find(std::string(type));
     if (match != g_handlers.end()) {
         (*match->second)(data, size);
@@ -29,7 +40,7 @@ static bool readyToSend()
     } else if (engine->IsOrange()) {
         return session->isRunning;
     } else {
-        return server->GetPlayer(2);
+        return g_orangeReady;
     }
 }
 
@@ -66,6 +77,15 @@ void NetMessage::SendMsg(const char *type, void *data, size_t size)
 
 void NetMessage::Update()
 {
+    if (!session->isRunning) {
+        g_orangeReady = false;
+    }
+
+    if (engine->IsOrange() && !g_orangeReady && readyToSend()) {
+        NetMessage::SendMsg("__sync", (void *)"ready", 6);
+        g_orangeReady = true;
+    }
+
     if (readyToSend()) {
         while (!g_queued.empty()) {
             engine->ExecuteCommand(g_queued.front().c_str());
