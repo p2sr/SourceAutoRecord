@@ -120,7 +120,42 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
         };
         // }}}
     } else if (sar.game->Is(SourceGame_ThinkingWithTimeMachine)) {
-        // TODO
+        // TWTM {{{
+         *defaultCat = "RTA";
+        *cats = {
+            { "RTA", { { "Start", "Finish" } } },
+        };
+        *rules = {
+            {
+                "Start",
+                SpeedrunRule(
+                    RuleAction::START,
+                    "tm_intro_01",
+                    EntityInputRule{
+                        ENTRULE_TARGETNAME | ENTRULE_PARAMETER,
+                        "wall_fall",
+                        "",
+                        "SetAnimation",
+                        "fall2",
+                    }
+                ),
+            },
+            {
+                "Finish",
+                SpeedrunRule(
+                    RuleAction::STOP,
+                    "tm_map_final",
+                    EntityInputRule{
+                        ENTRULE_TARGETNAME,
+                        "player_br",
+                        "",
+                        "Enable",
+                        "",
+                    }
+                ),
+            },
+        };
+        // }}}
     } else {
         // Portal 2 {{{
         *defaultCat = "Singleplayer";
