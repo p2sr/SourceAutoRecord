@@ -2,12 +2,12 @@
 
 #include <cstring>
 
+#include "Features/Camera.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/ConditionalExec.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Stats/ZachStats.hpp"
 #include "Features/Renderer.hpp"
 
 #include "Client.hpp"
@@ -295,8 +295,6 @@ void Engine::NewTick(const int tick)
     if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
         demoGhostPlayer.UpdateGhostsPosition();
     }
-
-    zachStats->UpdateTriggers();
 }
 
 bool Engine::ConsoleVisible()

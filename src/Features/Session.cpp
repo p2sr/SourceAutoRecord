@@ -13,7 +13,6 @@
 #include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
-#include "Features/Stats/ZachStats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
@@ -173,9 +172,6 @@ void Session::Start()
         }
         demoGhostPlayer.SpawnAllGhosts();
     }
-
-    zachStats->ResetTriggers();
-    zachStats->NewSession();
 
     RunLoadExecs();
 

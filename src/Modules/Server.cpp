@@ -20,7 +20,6 @@
 #include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/GroundFramesCounter.hpp"
-#include "Features/Stats/ZachStats.hpp"
 #include "Features/ConditionalExec.hpp"
 
 #include "Engine.hpp"
@@ -315,7 +314,6 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 // original function
 static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, void* activator, void* caller, variant_t *parameter)
 {
-    zachStats->CheckZyntexTriggers(thisptr, inputName);
     const char *entName = server->GetEntityName(thisptr);
     const char *className = server->GetEntityClassName(thisptr);
     if (!entName) entName = "";

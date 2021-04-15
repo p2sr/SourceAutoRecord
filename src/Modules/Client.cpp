@@ -17,7 +17,6 @@
 #include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
-#include "Features/Stats/ZachStats.hpp"
 #include "Features/NetMessage.hpp"
 
 #include "Console.hpp"
@@ -363,10 +362,6 @@ static void LeaderboardCallback(const CCommand& args)
 
     if (networkManager.isConnected && sv_bonus_challenge.GetBool()) {
         networkManager.NotifySpeedrunFinished(true);
-    }
-
-    if (!zachStats->GetTriggers().empty()) {
-        ZachStats::Output(zachStats->GetStream(), client->GetCMTimer());
     }
 
     originalLeaderboardCallback(args);
