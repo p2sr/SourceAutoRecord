@@ -597,7 +597,7 @@ bool Server::Init()
 #endif
 
     // Remove the limit on how quickly you can use 'say'
-    {
+    if (sar.game->Is(SourceGame_Portal2)) {
         void *say_callback = Command("say").ThisPtr()->m_pCommandCallback;
 #ifdef _WIN32
         uintptr_t insn_addr = (uintptr_t)say_callback + 52;
