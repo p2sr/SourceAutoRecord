@@ -1,5 +1,6 @@
 #include "Categories.hpp"
 #include "SpeedrunTimer.hpp"
+#include "CategoriesPreset.hpp"
 
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -23,110 +24,16 @@ static inline V *lookupMap(std::map<std::string, V> &m, std::string k)
     return &search->second;
 }
 
-struct SpeedrunCategory
-{
-    std::set<std::string> rules;
-};
-
 // Pre-set rules and categories {{{
 
 static std::string g_currentCategory = "Singleplayer";
+static std::map<std::string, SpeedrunCategory> g_categories;
+static std::map<std::string, SpeedrunRule> g_rules;
 
-static std::map<std::string, SpeedrunCategory> g_categories = {
-    { "Singleplayer", { { "Container Ride Start", "Vault Start", "Moon Shot" } } },
-    { "Coop", { { "Coop Start", "Coop Course 5 End" } } },
-    { "Coop AC", { { "Coop Start", "Coop Course 6 End" } } },
-};
-
-// It's important that this map stores pointers rather than plain rules
-// due to object slicing.
-static std::map<std::string, SpeedrunRule> g_rules = {
-    {
-        "Container Ride Start",
-        SpeedrunRule(
-            RuleAction::START,
-            "sp_a1_intro1",
-            EntityInputRule{
-                ENTRULE_TARGETNAME,
-                "camera_intro",
-                "",
-                "TeleportToView",
-                "",
-            }
-        ),
-    },
-    {
-        "Vault Start",
-        SpeedrunRule(
-            RuleAction::START,
-            "sp_a1_intro1",
-            EntityInputRule{
-                ENTRULE_TARGETNAME,
-                "camera_1",
-                "",
-                "TeleportPlayerToProxy",
-                "",
-            }
-        ),
-    },
-    {
-        "Moon Shot",
-        SpeedrunRule(
-            RuleAction::STOP,
-            "sp_a4_finale4",
-            EntityInputRule{
-                ENTRULE_TARGETNAME | ENTRULE_PARAMETER,
-                "@glados",
-                "",
-                "RunScriptCode",
-                "BBPortalPlaced()",
-            }
-        ),
-    },
-    {
-        "Coop Start",
-        SpeedrunRule(
-            RuleAction::START,
-            "mp_coop_start",
-            EntityInputRule{
-                ENTRULE_TARGETNAME,
-                "teleport_start",
-                "",
-                "Enable",
-                "",
-            }
-        ),
-    },
-    {
-        "Coop Course 5 End",
-        SpeedrunRule(
-            RuleAction::STOP,
-            "mp_coop_paint_longjump_intro",
-            EntityInputRule{
-                ENTRULE_TARGETNAME,
-                "vault-movie_outro",
-                "",
-                "PlayMovieForAllPlayers",
-                "",
-            }
-        ),
-    },
-    {
-        "Coop Course 6 End",
-        SpeedrunRule(
-            RuleAction::STOP,
-            "mp_coop_paint_crazy_box",
-            EntityInputRule{
-                ENTRULE_TARGETNAME,
-                "movie_outro",
-                "",
-                "PlayMovieForAllPlayers",
-                "",
-            }
-        ),
-    },
-};
-
+void SpeedrunTimer::InitCategories()
+{
+    InitSpeedrunCategoriesTo(&g_categories, &g_rules, &g_currentCategory);
+}
 
 // }}}
 

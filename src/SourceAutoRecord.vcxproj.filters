@@ -55,6 +55,9 @@
     <ClCompile Include="Features\Speedrun\Categories.cpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Speedrun\CategoriesPreset.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Speedrun\CategoryCreator.cpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClCompile>
@@ -445,6 +448,9 @@
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
     <ClInclude Include="Features\Speedrun\Categories.hpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Speedrun\CategoriesPreset.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\Demo.hpp">

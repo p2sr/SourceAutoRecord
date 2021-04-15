@@ -145,6 +145,7 @@ void SpeedrunTimer::Init()
     g_timerInterface = new TimerInterface();
     SpeedrunTimer::Reset(false);
     NetMessage::RegisterHandler(SPEEDRUN_PACKET_TYPE, &handleCoopPacket);
+    SpeedrunTimer::InitCategories();
 }
 
 void SpeedrunTimer::SetIpt(float ipt)

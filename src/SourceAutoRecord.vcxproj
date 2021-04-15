@@ -163,6 +163,7 @@
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp" />
     <ClCompile Include="Features\Speedrun\Rules.cpp" />
     <ClCompile Include="Features\Speedrun\Categories.cpp" />
+    <ClCompile Include="Features\Speedrun\CategoriesPreset.cpp" />
     <ClCompile Include="Features\Speedrun\CategoryCreator.cpp" />
     <ClCompile Include="Features\Stats\StatsCounter.cpp" />
     <ClCompile Include="Features\Stats\JumpStats.cpp" />
@@ -355,6 +356,7 @@
     <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp" />
     <ClInclude Include="Features\Speedrun\Rules.hpp" />
     <ClInclude Include="Features\Speedrun\Categories.hpp" />
+    <ClInclude Include="Features\Speedrun\CategoriesPreset.hpp" />
     <ClInclude Include="Features\Stats\StatsCounter.hpp" />
     <ClInclude Include="Features\Stats\JumpStats.hpp" />
     <ClInclude Include="Features\Stats\Stats.hpp" />

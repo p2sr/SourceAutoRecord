@@ -3,9 +3,15 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <set>
 
 #include "Command.hpp"
 #include "Rules.hpp"
+
+struct SpeedrunCategory
+{
+    std::set<std::string> rules;
+};
 
 namespace SpeedrunTimer {
     void TestInputRules(std::string targetname, std::string classname, std::string inputname, std::string parameter, std::optional<int> triggerSlot);
@@ -16,6 +22,7 @@ namespace SpeedrunTimer {
     void TestLoadRules();
     void ResetCategory();
     void DrawTriggers();
+    void InitCategories();
     SpeedrunRule *GetRule(std::string name);
 };
 
