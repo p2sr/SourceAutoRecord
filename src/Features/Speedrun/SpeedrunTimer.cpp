@@ -1,6 +1,7 @@
 #include "SpeedrunTimer.hpp"
 
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <vector>
 #include <string>
@@ -10,6 +11,7 @@
 #include "Modules/Engine.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/Hud/Toasts.hpp"
+#include "Utils.hpp"
 
 #define SPEEDRUN_PACKET_TYPE "srtimer"
 #define SYNC_INTERVAL 300 // Sync every 5 seconds, just in case
@@ -681,5 +683,50 @@ CON_COMMAND(sar_speedrun_result, "sar_speedrun_result - print the speedrun resul
 
 CON_COMMAND(sar_speedrun_export, "sar_speedrun_export <filename> - export the speedrun result to the specified CSV file.\n")
 {
-    // TODO
+    if (args.ArgC() != 2) {
+        console->Print(sar_speedrun_export.ThisPtr()->m_pszHelpString);
+        return;
+    }
+    
+    if (g_speedrun.isReset) {
+        console->Print("No active or completed speedrun!\n");
+        return;
+    }
+    
+    if (g_speedrun.isRunning) {
+        console->Print("Only completed speedruns can be exported!\n");
+        return;
+    }
+
+    std::string filename = args[1];
+    if (filename.length() < 4 || filename.substr(filename.length() - 4, 4) != ".csv") {
+        filename += ".csv";
+    }
+
+    FILE *f = fopen(filename.c_str(), "w");
+    if (!f) {
+        console->Print("Could not open file '%s'\n", filename.c_str());
+        return;
+    }
+
+    // I'll give in and do Microsoft's stupid thing only on the platform
+    // where people are probably using Excel.
+#ifdef _WIN32
+    fputs(MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD "\n", f);
+#endif
+
+    fputs("Split Name,Ticks,Time,Total Ticks,Total Time\n", f);
+
+    int total = 0;
+
+    for (SplitInfo split : g_speedrun.splits) {
+        total += split.ticks;
+        auto fmtdTicks = SpeedrunTimer::Format(split.ticks * *engine->interval_per_tick);
+        auto fmtdTotal = SpeedrunTimer::Format(total * *engine->interval_per_tick);
+        fprintf(f, "%s,%d,%s,%d,%s\n", split.name.c_str(), split.ticks, fmtdTicks.c_str(), total, fmtdTotal.c_str());
+    }
+
+    fclose(f);
+
+    console->Print("Speedrun successfully exported to '%s'!\n", filename.c_str());
 }
