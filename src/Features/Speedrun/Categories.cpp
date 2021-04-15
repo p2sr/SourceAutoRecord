@@ -85,6 +85,7 @@ static void GeneralTestRules(std::optional<int> slot, Ts... args)
         dispatchRule(ruleName, rule);
 
         rule->fired = true;
+        return; // We don't want to dispatch any more rules in this tick lest shit get fucked
     }
 }
 
