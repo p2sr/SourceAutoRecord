@@ -14,7 +14,7 @@
 #define SPEEDRUN_PACKET_TYPE "srtimer"
 #define SYNC_INTERVAL 300 // Sync every 5 seconds, just in case
 
-Variable sar_speedrun_notify_duration("sar_speedrun_notify_duration", "6", "Number of seconds to show the speedrun notification on-screen for.\n");
+Variable sar_speedrun_notify_duration("sar_speedrun_notify_duration", "6", 0, "Number of seconds to show the speedrun notification on-screen for.\n");
 
 static int g_notifyR = 255;
 static int g_notifyG = 255;
