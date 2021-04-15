@@ -489,7 +489,7 @@ DETOUR_COMMAND(Engine::gameui_activate)
 }
 DETOUR_COMMAND(Engine::playvideo_end_level_transition)
 {
-    if (engine->GetMaxClients() >= 2 && !engine->IsOrange()) {
+    if (engine->GetMaxClients() >= 2 && !engine->IsOrange() && server->GetChallengeStatus() != CMStatus::CHALLENGE) {
         SpeedrunTimer::Pause();
     }
 
