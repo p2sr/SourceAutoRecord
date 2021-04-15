@@ -14,7 +14,7 @@
 #include "Utils.hpp"
 
 #define SPEEDRUN_PACKET_TYPE "srtimer"
-#define SYNC_INTERVAL 300 // Sync every 5 seconds, just in case
+#define SYNC_INTERVAL 60 // Sync every second, just in case
 
 Variable sar_speedrun_notify_duration("sar_speedrun_notify_duration", "6", 0, "Number of seconds to show the speedrun notification on-screen for.\n");
 
