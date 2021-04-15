@@ -61,6 +61,7 @@ static Variable sar_render_vcodec("sar_render_vcodec", "h264", "Video codec used
 static Variable sar_render_acodec("sar_render_acodec", "vorbis", "Audio codec used in renders (aac, ac3, vorbis, opus, flac)\n", 0);
 static Variable sar_render_quality("sar_render_quality", "35", 0, 50, "Render output quality, higher is better (50=lossless)\n");
 static Variable sar_render_fps("sar_render_fps", "60", 1, "Render output FPS\n");
+static Variable sar_render_sample_rate("sar_render_sample_rate", "44100", 1000, "Audio output sample rate\n");
 static Variable sar_render_blend("sar_render_blend", "0", 0, "How many frames to blend for each output frame; 1 = do not blend, 0 = automatically determine based on host_framerate\n");
 static Variable sar_render_autostart("sar_render_autostart", "0", "Whether to automatically start when demo playback begins\n");
 static Variable sar_render_remove_broken("sar_render_remove_broken", "1", "Whether to remove broken frames from demo playback; only applies with sar_render_autostart 1\n");
@@ -110,6 +111,7 @@ static struct
 {
     std::atomic<bool> isRendering;
     int fps;
+    int samplerate;
     int channels;
     Stream videoStream;
     Stream audioStream;
@@ -487,7 +489,7 @@ static bool openAudio(AVFormatContext *outputCtx, Stream *s, AVDictionary **opti
     }
 
     av_opt_set_int(s->swrCtx, "in_channel_count", s->enc->channels, 0);
-    av_opt_set_int(s->swrCtx, "in_sample_rate", s->enc->sample_rate, 0);
+    av_opt_set_int(s->swrCtx, "in_sample_rate", 44100, 0);
     av_opt_set_sample_fmt(s->swrCtx, "in_sample_fmt", AV_SAMPLE_FMT_S16P, 0);
     av_opt_set_int(s->swrCtx, "out_channel_count", s->enc->channels, 0);
     av_opt_set_int(s->swrCtx, "out_sample_rate", s->enc->sample_rate, 0);
@@ -525,7 +527,7 @@ static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_
         return;
     }
 
-    if (!addStream(&g_render.audioStream, g_render.outCtx, audioCodec, audioBitrate, 44100, 4410)) { // offset the start by 0.1s because idk
+    if (!addStream(&g_render.audioStream, g_render.outCtx, audioCodec, audioBitrate, g_render.samplerate, g_render.samplerate / 10)) { // offset the start by 0.1s because idk
         console->Print("Failed to create audio stream\n");
         closeStream(&g_render.videoStream);
         avformat_free_context(g_render.outCtx);
@@ -814,6 +816,7 @@ static void startRender()
         return;
     }
 
+    g_render.samplerate = sar_render_sample_rate.GetInt();
     g_render.fps = sar_render_fps.GetInt();
 
     if (sar_render_blend.GetInt() == 0 && host_framerate.GetInt() == 0) {
@@ -1069,15 +1072,15 @@ void Renderer::Init(void **videomode)
     g_movieInfo = *(MovieInfo_t **)(SND_RecordBuffer + 5);
 
     static uint8_t trampoline[] = {
-      0x55,                         // 00: push ebp
-      0x89, 0xE5,                   // 01: mov ebp, esp
-      0xE8, 0, 0, 0, 0,             // 03: call ? (to be filled with SND_RecordBuffer_Hook)
-      0x85, 0xC0,                   // 08: test eax, eax
-      0x74, 0x0C,                   // 0A: jz $+E (18)
-      0x80, 0x3D, 0, 0, 0, 0, 0x00, // 0C: cmp ?, 0 (to be filled with ptr to movieinfo, replacing overwritten instruction)
-      0xE9, 0, 0, 0, 0,             // 13: jmp ? (to be filled with original function addr)
-      0x5D,                         // 18: pop ebp
-      0xC3,                         // 19: ret
+        0x55,                         // 00: push ebp
+        0x89, 0xE5,                   // 01: mov ebp, esp
+        0xE8, 0, 0, 0, 0,             // 03: call ? (to be filled with SND_RecordBuffer_Hook)
+        0x85, 0xC0,                   // 08: test eax, eax
+        0x74, 0x0C,                   // 0A: jz $+E (18)
+        0x80, 0x3D, 0, 0, 0, 0, 0x00, // 0C: cmp ?, 0 (to be filled with ptr to movieinfo, replacing overwritten instruction)
+        0xE9, 0, 0, 0, 0,             // 13: jmp ? (to be filled with original function addr)
+        0x5D,                         // 18: pop ebp
+        0xC3,                         // 19: ret
     };
 
     Memory::UnProtect((void*)SND_RecordBuffer, 10);
@@ -1112,17 +1115,17 @@ void Renderer::Init(void **videomode)
     }
 
     static uint8_t trampoline[] = {
-      0x55,                   // 00: push ebp
-      0x89, 0xE5,             // 01: mov ebp, esp
-      0xE8, 0, 0, 0, 0,       // 03: call ? (to be filled with SND_RecordBuffer_Hook)
-      0x57,                   // 08: push edi
-      0x56,                   // 09: push esi
-      0x85, 0xC0,             // 0A: test eax, eax
-      0x0F, 0x85, 0, 0, 0, 0, // 0C: jnz ? (to be filled with original function addr)
-      0x5E,                   // 12: pop esi
-      0x5F,                   // 13: pop edi
-      0x5D,                   // 14: pop ebp
-      0xC3,                   // 15: ret
+        0x55,                   // 00: push ebp
+        0x89, 0xE5,             // 01: mov ebp, esp
+        0xE8, 0, 0, 0, 0,       // 03: call ? (to be filled with SND_RecordBuffer_Hook)
+        0x57,                   // 08: push edi
+        0x56,                   // 09: push esi
+        0x85, 0xC0,             // 0A: test eax, eax
+        0x0F, 0x85, 0, 0, 0, 0, // 0C: jnz ? (to be filled with original function addr)
+        0x5E,                   // 12: pop esi
+        0x5F,                   // 13: pop edi
+        0x5D,                   // 14: pop ebp
+        0xC3,                   // 15: ret
     };
 
     Memory::UnProtect((void*)SND_RecordBuffer, 5);

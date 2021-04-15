@@ -52,6 +52,9 @@ void PortalStoriesMel::LoadOffsets()
     StartDrawing = 193; // CMatSystemSurface::PaintTraverseEx
     FinishDrawing = 590; // CMatSystemSurface::PaintTraverseEx
     VideoMode_Create = 103; // CEngineAPI::Init
+    snd_linear_count = 33; // SND_RecordBuffer
+    snd_p = 72; // SND_RecordBuffer
+    snd_vol = 80; // SND_RecordBuffer
 }
 const char* PortalStoriesMel::Version()
 {
