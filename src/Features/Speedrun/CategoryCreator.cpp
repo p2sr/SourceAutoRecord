@@ -1,7 +1,9 @@
 #include <string>
+#include <map>
 #include "Command.hpp"
 #include "Modules/Engine.hpp"
 #include "CategoryCreator.hpp"
+#include "Categories.hpp"
 #include "Modules/Server.hpp"
 
 #define MAX_TRACE 65535.0f
@@ -14,13 +16,35 @@
 
 static bool g_creatorActive;
 static std::string g_creatorCategory;
-static std::string g_creatorDefaults;
+static std::map<std::string, std::string> g_creatorDefaults;
 
 static int g_placementStage;
 static std::string g_placementName;
 static std::string g_placementType;
-static std::string g_placementOptions;
+static std::map<std::string, std::string> g_placementOptions;
 static Vector g_placementStart;
+
+static std::optional<std::map<std::string, std::string>> parseParams(size_t argc, const char *const *argv)
+{
+    std::map<std::string, std::string> params;
+    for (size_t i = 0; i < argc; ++i) {
+        const char *pair = argv[i];
+        const char *mid = pair;
+        while (*mid && *mid != '=') ++mid;
+        if (!*mid) {
+            console->Print("Invalid argument '%s'\n", argv[i]);
+            return {};
+        }
+        std::string key = std::string(pair, mid - pair);
+        std::string val = std::string(mid + 1);
+        if (key == "ccafter") {
+            key = "after";
+            val = g_creatorCategory + " - " + val;
+        }
+        params[key] = val;
+    }
+    return params;
+}
 
 CON_COMMAND(sar_speedrun_cc_start, "sar_speedrun_cc_start <category name> [default options]... - start the category creator.\n")
 {
@@ -30,29 +54,36 @@ CON_COMMAND(sar_speedrun_cc_start, "sar_speedrun_cc_start <category name> [defau
     }
 
     if (g_creatorActive) {
-        console->Print("Category creation already in progress!\n");
+        console->Print("[cc] category creation already in progress\n");
         return;
     }
 
     if (!strcmp(args[1], "")) {
-        console->Print("Category name cannot be empty\n");
+        console->Print("[cc] category name cannot be empty\n");
+        return;
+    }
+
+    g_creatorCategory = args[1];
+
+    auto params = parseParams(args.ArgC() - 2, args.m_ppArgv + 2);
+    if (!params) {
+        console->Print("[cc] failed to parse options\n");
+        return;
+    }
+
+    g_creatorDefaults = *params;
+
+    if (!SpeedrunTimer::CreateCategory(g_creatorCategory)) {
+        console->Print("[cc] failed to create category\n");
         return;
     }
 
     g_creatorActive = true;
-    g_creatorCategory = args[1];
-    g_creatorDefaults = "";
-    for (int i = 2; i < args.ArgC(); ++i) {
-        g_creatorDefaults += std::string("\"") + args[i] + "\" ";
-    }
 
     g_placementStage = 0;
     g_placementName = "";
     g_placementType = "";
-    g_placementOptions = "";
-
-    std::string cmd = "sar_speedrun_category_create \"" + g_creatorCategory + "\"";
-    engine->ExecuteCommand(cmd.c_str());
+    g_placementOptions = {};
 }
 
 CON_COMMAND(sar_speedrun_cc_rule, "sar_speedrun_rule <rule name> <rule type> [options]... - add a rule to the category currently being created.\n")
@@ -63,22 +94,31 @@ CON_COMMAND(sar_speedrun_cc_rule, "sar_speedrun_rule <rule name> <rule type> [op
     }
 
     if (!g_creatorActive) {
-        console->Print("No category creation in progress!\n");
+        console->Print("[cc] no category creation in progress\n");
         return;
     }
 
-    std::string options = g_creatorDefaults;
-    for (int i = 3; i < args.ArgC(); ++i) {
-        options += std::string("\"") + args[i] + "\" ";
+    auto params = parseParams(args.ArgC() - 3, args.m_ppArgv + 3);
+    if (!params) {
+        console->Print("[cc] failed to parse options\n");
+        return;
     }
+
+    // Copy, as merge mutates the map
+    auto defaults = g_creatorDefaults;
+    params->merge(defaults);
 
     std::string ruleName = g_creatorCategory + " - " + args[1];
 
-    std::string cmd = "sar_speedrun_rule_create \"" + ruleName + "\" \"" + args[2] + "\" " + options;
-    engine->ExecuteCommand(cmd.c_str());
+    if (!SpeedrunTimer::CreateRule(ruleName, args[2], *params)) {
+        console->Print("[cc] failed to create rule\n");
+        return;
+    }
 
-    cmd = "sar_speedrun_category_add_rule \"" + g_creatorCategory + "\" \"" + ruleName + "\"";
-    engine->ExecuteCommand(cmd.c_str());
+    if (!SpeedrunTimer::AddRuleToCategory(g_creatorCategory, ruleName)) {
+        console->Print("[cc] failed to add rule to category\n");
+        return;
+    }
 }
 
 CON_COMMAND(sar_speedrun_cc_place_start, "sar_speedrun_cc_place_start <rule name> <rule type> [options]... - start placing a trigger-ey rule in the world.\n")
@@ -89,17 +129,17 @@ CON_COMMAND(sar_speedrun_cc_place_start, "sar_speedrun_cc_place_start <rule name
     }
 
     if (!g_creatorActive) {
-        console->Print("No category creation in progress!\n");
+        console->Print("[cc] no category creation in progress\n");
         return;
     }
 
     if (!sv_cheats.GetBool()) {
-        console->Print("Trigger placement cannot occur without sv_cheats!\n");
+        console->Print("[cc] trigger placement cannot occur without sv_cheats\n");
         return;
     }
 
     if (g_placementStage != 0) {
-        console->Print("Trigger placement already in progress!\n");
+        console->Print("[cc] trigger placement already in progress\n");
         return;
     }
 
@@ -107,36 +147,37 @@ CON_COMMAND(sar_speedrun_cc_place_start, "sar_speedrun_cc_place_start <rule name
     std::string ruleType = args[2];
 
     if (ruleType != "portal" && ruleType != "zone") {
-        console->Print("'%s' is not a valid trigger-ey rule type!\n", ruleType.c_str());
+        console->Print("[cc] '%s' is not a valid trigger-ey rule type\n", ruleType.c_str());
         return;
     }
 
-    std::string options = "";
-    for (int i = 3; i < args.ArgC(); ++i) {
-        options += std::string("\"") + args[i] + "\" ";
+    auto params = parseParams(args.ArgC() - 3, args.m_ppArgv + 3);
+    if (!params) {
+        console->Print("[cc] failed to parse options\n");
+        return;
     }
 
     g_placementStage = 1;
     g_placementName = ruleName;
     g_placementType = ruleType;
-    g_placementOptions = options;
+    g_placementOptions = *params;
 }
 
 CON_COMMAND(sar_speedrun_cc_place, "sar_speedrun_cc_place - place a trigger-ey rule in the world.\n")
 {
     if (!g_creatorActive) {
-        console->Print("No category creation in progress!\n");
+        console->Print("[cc] no category creation in progress\n");
         return;
     }
 
     if (!sv_cheats.GetBool()) {
-        console->Print("Trigger placement cannot occur without sv_cheats!\n");
+        console->Print("[cc] trigger placement cannot occur without sv_cheats\n");
         return;
     }
 
     switch (g_placementStage) {
     case 0: {
-        console->Print("No trigger placement in progress!\n");
+        console->Print("[cc] no trigger placement in progress\n");
         return;
     }
     case 1: {
@@ -174,10 +215,27 @@ CON_COMMAND(sar_speedrun_cc_place, "sar_speedrun_cc_place - place a trigger-ey r
 
         float angle = 0;
 
-        std::string cmd = Utils::ssprintf("sar_speedrun_rule_create \"%s\" \"%s\" %s pos=%f,%f,%f size=%f,%f,%f angle=%f %s", g_placementName.c_str(), g_placementType.c_str(), g_creatorDefaults.c_str(), center.x, center.y, center.z, size.x, size.y, size.z, angle, g_placementOptions.c_str());
-        engine->ExecuteCommand(cmd.c_str());
-        cmd = Utils::ssprintf("sar_speedrun_category_add_rule \"%s\" \"%s\"", g_creatorCategory.c_str(), g_placementName.c_str());
-        engine->ExecuteCommand(cmd.c_str());
+        auto params = g_placementOptions;
+        params.merge(std::map<std::string, std::string>{
+            { "center", Utils::ssprintf("%f,%f,%f", center.x, center.y, center.z) },
+            { "size", Utils::ssprintf("%f,%f,%f", size.x, size.y, size.z) },
+            { "angle", Utils::ssprintf("%f", angle) },
+        });
+        // Copy, as merge mutates the map
+        auto defaults = g_creatorDefaults;
+        params.merge(defaults);
+
+        if (!SpeedrunTimer::CreateRule(g_placementName, g_placementType, params)) {
+            console->Print("[cc] failed to create rule\n");
+            g_placementStage = 0;
+            return;
+        }
+
+        if (!SpeedrunTimer::AddRuleToCategory(g_creatorCategory, g_placementName)) {
+            console->Print("[cc] failed to add rule to category\n");
+            g_placementStage = 0;
+            return;
+        }
 
         g_placementStage = 0;
 
@@ -189,25 +247,25 @@ CON_COMMAND(sar_speedrun_cc_place, "sar_speedrun_cc_place - place a trigger-ey r
 CON_COMMAND(sar_speedrun_cc_finish, "sar_speedrun_cc_finish - finish the category creator.\n")
 {
     if (!g_creatorActive) {
-        console->Print("No category creation in progress!\n");
+        console->Print("[cc] no category creation in progress\n");
         return;
     }
 
     if (g_placementStage != 0) {
-        console->Print("A trigger placement still in progress!\n");
+        console->Print("[cc] a trigger placement is still in progress\n");
         return;
     }
 
-    console->Print("Created category '%s'\n", g_creatorCategory.c_str());
+    console->Print("[cc] created category '%s'\n", g_creatorCategory.c_str());
 
     g_creatorActive = false;
     g_creatorCategory = "";
-    g_creatorDefaults = "";
+    g_creatorDefaults = {};
 
     g_placementStage = 0;
     g_placementName = "";
     g_placementType = "";
-    g_placementOptions = "";
+    g_placementOptions = {};
 }
 
 void SpeedrunTimer::DrawCategoryCreatorPlacement()
