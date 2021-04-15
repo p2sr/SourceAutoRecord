@@ -284,23 +284,29 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_rule, "sar_speedrun_rule [rule] - show inf
 
 // Category creation/deletion {{{
 
+bool SpeedrunTimer::CreateCategory(std::string name)
+{
+    if (name == "") {
+        console->Print("Category name cannot be empty\n");
+        return false;
+    }
+
+    if (lookupMap(g_categories, name)) {
+        console->Print("Category %s already exists\n", name.c_str());
+        return false;
+    }
+
+    g_categories[name] = SpeedrunCategory{ { } };
+    return true;
+}
+
 CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <category> - create a new speedrun category with the given name.\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_speedrun_category_create.ThisPtr()->m_pszHelpString);
     }
 
-    std::string catName = args[1];
-
-    if (catName == "") {
-        return console->Print("Category name cannot be empty\n");
-    }
-
-    if (lookupMap(g_categories, catName)) {
-        return console->Print("Category %s already exists\n", args[1]);
-    }
-
-    g_categories[catName] = SpeedrunCategory{ { } };
+    SpeedrunTimer::CreateCategory(args[1]);
 }
 
 static int _sar_speedrun_category_remove_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
@@ -352,24 +358,30 @@ static int _sar_speedrun_category_add_rule_completion(const char *partial, char 
     return vectorCompletion(partial, commands, possible);
 }
 
+bool SpeedrunTimer::AddRuleToCategory(std::string category, std::string rule)
+{
+    auto cat = lookupMap(g_categories, category);
+    if (!cat) {
+        console->Print("Category %s does not exist\n", category.c_str());
+        return false;
+    }
+
+    if (!lookupMap(g_rules, rule)) {
+        console->Print("Rule %s does not exist\n", rule.c_str());
+        return false;
+    }
+
+    cat->rules.insert(rule);
+    return true;
+}
+
 CON_COMMAND_F_COMPLETION(sar_speedrun_category_add_rule, "sar_speedrun_category_add_rule <category> <rule> - add a rule to a speedrun category.\n", 0, &_sar_speedrun_category_add_rule_completion)
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_speedrun_category_add_rule.ThisPtr()->m_pszHelpString);
     }
 
-    std::string ruleName = args[2];
-
-    auto cat = lookupMap(g_categories, args[1]);
-    if (!cat) {
-        return console->Print("Category %s does not exist\n", args[1]);
-    }
-
-    if (!lookupMap(g_rules, ruleName)) {
-        return console->Print("Rule %s does not exist\n", args[2]);
-    }
-
-    cat->rules.insert(ruleName);
+    SpeedrunTimer::AddRuleToCategory(args[1], args[2]);
 }
 
 static int _sar_speedrun_category_remove_rule_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
@@ -403,42 +415,24 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove_rule, "sar_speedrun_catego
 
 // Rule creation/deletion {{{
 
-CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [option=value]... - create a speedrun rule with the given name, type, and options.\n")
+bool SpeedrunTimer::CreateRule(std::string name, std::string type, std::map<std::string, std::string> params)
 {
-    if (args.ArgC() < 3) {
-        return console->Print(sar_speedrun_rule_create.ThisPtr()->m_pszHelpString);
-    }
-
-    std::string name = args[1];
-    std::string type = args[2];
-
     if (name == "") {
-        return console->Print("Rule name cannot be empty\n");
+        console->Print("Rule name cannot be empty\n");
+        return false;
     }
 
     if (SpeedrunTimer::GetRule(name)) {
-        return console->Print("Rule %s already exists\n", args[1]);
-    }
-
-    std::map<std::string, std::string> params;
-
-    for (size_t i = 3; i < args.ArgC(); ++i) {
-        const char *pair = args[i];
-        const char *mid = pair;
-        while (*mid && *mid != '=') ++mid;
-        if (!*mid) {
-            return console->Print("Invalid argument '%s'\n", args[i]);
-        }
-        std::string key = std::string(pair, mid - pair);
-        std::string val = std::string(mid + 1);
-        params[key] = val;
+        console->Print("Rule %s already exists\n", name.c_str());
+        return false;
     }
 
     RuleAction action;
 
     auto actionStr = lookupMap(params, "action");
     if (!actionStr) {
-        return console->Print("action not specified\n");
+        console->Print("action not specified\n");
+        return false;
     }
 
     if (*actionStr == "start") {
@@ -454,11 +448,13 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
     } else if (*actionStr == "resume") {
         action = RuleAction::RESUME;
     } else {
-        return console->Print("Unknown action %s\n", actionStr->c_str());
+        console->Print("Unknown action %s\n", actionStr->c_str());
+        return false;
     }
 
     if (!lookupMap(params, "map")) {
-        return console->Print("map not specified\n");
+        console->Print("map not specified\n");
+        return false;
     }
 
     std::optional<SpeedrunRule> rule =
@@ -471,7 +467,8 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
         std::optional<SpeedrunRule>{};
 
     if (!rule) {
-        return console->Print("Failed to create rule\n");
+        console->Print("Failed to create rule\n");
+        return false;
     }
 
     rule->action = action;
@@ -492,6 +489,31 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
     rule->fired = false;
 
     g_rules.insert({name, *rule});
+
+    return true;
+}
+
+CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [option=value]... - create a speedrun rule with the given name, type, and options.\n")
+{
+    if (args.ArgC() < 3) {
+        return console->Print(sar_speedrun_rule_create.ThisPtr()->m_pszHelpString);
+    }
+
+    std::map<std::string, std::string> params;
+
+    for (size_t i = 3; i < args.ArgC(); ++i) {
+        const char *pair = args[i];
+        const char *mid = pair;
+        while (*mid && *mid != '=') ++mid;
+        if (!*mid) {
+            return console->Print("Invalid argument '%s'\n", args[i]);
+        }
+        std::string key = std::string(pair, mid - pair);
+        std::string val = std::string(mid + 1);
+        params[key] = val;
+    }
+
+    SpeedrunTimer::CreateRule(args[1], args[2], params);
 }
 
 static int _sar_speedrun_rule_remove_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])

@@ -24,6 +24,10 @@ namespace SpeedrunTimer {
     void DrawTriggers();
     void InitCategories();
     SpeedrunRule *GetRule(std::string name);
+
+    bool CreateCategory(std::string name);
+    bool AddRuleToCategory(std::string category, std::string rule);
+    bool CreateRule(std::string name, std::string type, std::map<std::string, std::string> params);
 };
 
 extern Command sar_speedrun_category;
