@@ -129,12 +129,12 @@ void ZoneTriggerRule::OverlayInfo(HudContext *ctx, SpeedrunRule *rule)
 
 std::optional<SpeedrunRule> ZoneTriggerRule::Create(std::map<std::string, std::string> params)
 {
-    std::string *posStr = lookupMap(params, "pos");
+    std::string *posStr = lookupMap(params, "center");
     std::string *sizeStr = lookupMap(params, "size");
     std::string *angleStr = lookupMap(params, "angle");
 
     if (!posStr || !sizeStr || !angleStr) {
-        console->Print("pos, size, and angle must all be specified\n");
+        console->Print("center, size, and angle must all be specified\n");
         return {};
     }
 
@@ -216,13 +216,13 @@ void PortalPlacementRule::OverlayInfo(HudContext *ctx, SpeedrunRule *rule)
 
 std::optional<SpeedrunRule> PortalPlacementRule::Create(std::map<std::string, std::string> params)
 {
-    std::string *posStr = lookupMap(params, "pos");
+    std::string *posStr = lookupMap(params, "center");
     std::string *sizeStr = lookupMap(params, "size");
     std::string *angleStr = lookupMap(params, "angle");
     std::string *portalStr = lookupMap(params, "portal");
 
     if (!posStr || !sizeStr || !angleStr) {
-        console->Print("pos, size, and angle must all be specified\n");
+        console->Print("center, size, and angle must all be specified\n");
         return {};
     }
 
@@ -359,7 +359,7 @@ std::string SpeedrunRule::Describe()
         s = std::string("[zone] ") + s;
         ZoneTriggerRule zoneRule = std::get<ZoneTriggerRule>(this->rule);
         char buf[128];
-        snprintf(buf, sizeof buf, " pos=%f,%f,%f", zoneRule.center.x, zoneRule.center.y, zoneRule.center.z);
+        snprintf(buf, sizeof buf, " center=%f,%f,%f", zoneRule.center.x, zoneRule.center.y, zoneRule.center.z);
         s += buf;
         snprintf(buf, sizeof buf, " size=%f,%f,%f", zoneRule.size.x, zoneRule.size.y, zoneRule.size.z);
         s += buf;
@@ -371,7 +371,7 @@ std::string SpeedrunRule::Describe()
         s = std::string("[portal] ") + s;
         PortalPlacementRule portalRule = std::get<PortalPlacementRule>(this->rule);
         char buf[128];
-        snprintf(buf, sizeof buf, " pos=%f,%f,%f", portalRule.center.x, portalRule.center.y, portalRule.center.z);
+        snprintf(buf, sizeof buf, " center=%f,%f,%f", portalRule.center.x, portalRule.center.y, portalRule.center.z);
         s += buf;
         snprintf(buf, sizeof buf, " size=%f,%f,%f", portalRule.size.x, portalRule.size.y, portalRule.size.z);
         s += buf;
