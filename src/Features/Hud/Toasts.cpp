@@ -21,9 +21,9 @@ struct Toast
 
 static std::deque<Toast> g_toasts;
 
-Variable sar_toasts_disable("sar_toasts_disable", "0", "Disable all toasts from showing.\n");
-Variable sar_toasts_font("sar_toasts_font", "6", 0, "The font index to use for toasts.\n");
-Variable sar_toasts_width("sar_toasts_width", "250", 2 * PADDING, "The maximum width for toasts.\n");
+Variable sar_toast_disable("sar_toast_disable", "0", "Disable all toasts from showing.\n");
+Variable sar_toast_font("sar_toast_font", "6", 0, "The font index to use for toasts.\n");
+Variable sar_toast_width("sar_toast_width", "250", 2 * PADDING, "The maximum width for toasts.\n");
 
 ToastHud::ToastHud()
     : Hud(HudType_InGame | HudType_Paused | HudType_Menu, true)
@@ -32,7 +32,7 @@ ToastHud::ToastHud()
 
 bool ToastHud::ShouldDraw()
 {
-    return Hud::ShouldDraw() && !sar_toasts_disable.GetBool();
+    return Hud::ShouldDraw() && !sar_toast_disable.GetBool();
 }
 
 bool ToastHud::GetCurrentSize(int &xSize, int &ySize)
@@ -133,7 +133,7 @@ void ToastHud::Paint(int slot)
 
     Update();
 
-    Surface::HFont font = scheme->GetDefaultFont() + sar_toasts_font.GetInt();
+    Surface::HFont font = scheme->GetDefaultFont() + sar_toast_font.GetInt();
 
     int screenWidth, screenHeight;
 #ifdef _WIN32
@@ -142,7 +142,7 @@ void ToastHud::Paint(int slot)
     engine->GetScreenSize(nullptr, screenWidth, screenHeight);
 #endif
 
-    int maxWidth = sar_toasts_width.GetInt();
+    int maxWidth = sar_toast_width.GetInt();
 
     int lineHeight = surface->GetFontHeight(font) + PADDING;
 
