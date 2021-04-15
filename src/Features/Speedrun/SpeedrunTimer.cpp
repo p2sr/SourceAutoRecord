@@ -506,7 +506,7 @@ void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested)
         setTimerAction(TimerAction::SPLIT);
         if (sar_speedrun_notify_duration.GetFloat() > 0) {
             float totalTime = SpeedrunTimer::GetTotalTicks() * *engine->interval_per_tick;
-            float splitTime = g_speedrun.splits.back().ticks;
+            float splitTime = g_speedrun.splits.back().ticks * *engine->interval_per_tick;
             std::string text = Utils::ssprintf("%s\n%s (%s)", segName.c_str(), SpeedrunTimer::Format(totalTime).c_str(), SpeedrunTimer::Format(splitTime).c_str());
             toastHud.AddToast(text, { g_notifyR, g_notifyG, g_notifyB, 255 }, sar_speedrun_notify_duration.GetFloat());
         }
