@@ -555,3 +555,13 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_rule_remove, "sar_speedrun_rule_remove <ru
 }
 
 // }}}
+
+CON_COMMAND(sar_speedrun_reset_categories, "sar_speedrun_reset_categories - delete all custom categories and rules, reverting to the builtin ones.\n")
+{
+    if (args.ArgC() != 2 || std::string(args[1]) != "yes") {
+        console->Print("WARNING: this will delete all custom categories! Run 'sar_speedrun_reset_categories yes' to confirm.\n");
+        return;
+    }
+
+    SpeedrunTimer::InitCategories();
+}
