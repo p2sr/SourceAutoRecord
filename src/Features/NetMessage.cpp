@@ -32,7 +32,7 @@ void NetMessage::SendMsg(const char *type, void *data, size_t size)
             cmd += c;
         } else {
             char hex[4];
-            snprintf(hex, sizeof hex, "#%02X", (int)c);
+            snprintf(hex, sizeof hex, "#%02X", (int)(unsigned char)c);
             cmd += hex;
         }
     }
