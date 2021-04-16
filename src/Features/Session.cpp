@@ -20,6 +20,7 @@
 #include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/ConditionalExec.hpp"
+#include "Features/NetMessage.hpp"
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -231,6 +232,8 @@ void Session::Ended()
     replayRecorder2->StopRecording();
     replayPlayer1->StopPlaying();
     replayPlayer2->StopPlaying();
+
+    NetMessage::SessionEnded();
 
     // This pause generally won't do anything in co-op; it will have
     // already happened in the playvideo_end_level_transition detour.

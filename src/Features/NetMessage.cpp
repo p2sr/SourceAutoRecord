@@ -44,6 +44,11 @@ static bool readyToSend()
     }
 }
 
+void NetMessage::SessionEnded()
+{
+    g_orangeReady = false;
+}
+
 static std::queue<std::string> g_queued;
 
 void NetMessage::SendMsg(const char *type, void *data, size_t size)
