@@ -132,6 +132,8 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state)
         RecordInitialVal("sv_portal_placement_debug");
         RecordInitialVal("sv_use_trace_duration");
         RecordInitialVal("sv_alternateticks");
+        RecordInitialVal("cl_cmdrate");
+        RecordInitialVal("cl_updaterate");
     }
 
     return result;
