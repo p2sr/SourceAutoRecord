@@ -1,5 +1,4 @@
 #include <cstdlib>
-
 #include "Features/Demo/GhostEntity.hpp"
 
 #include "Modules/Client.hpp"
@@ -150,7 +149,7 @@ void GhostEntity::Display()
     switch (GhostEntity::ghost_type) {
     case GhostType::CIRCLE: {
         double rad = ghost_height.GetFloat() / 2;
-        Vector origin = this->data.position + Vector{ 0, 0, rad };
+        Vector origin = this->data.position + Vector(0, 0, rad);
 
         const int tris = 30;
 
@@ -195,8 +194,8 @@ void GhostEntity::Display()
             double lang = M_PI * 2 * i / tris;
             double rang = M_PI * 2 * (i + 1) / tris;
 
-            Vector dl{0, cos(lang) * rad, sin(lang) * rad};
-            Vector dr{0, cos(rang) * rad, sin(rang) * rad};
+            Vector dl(0, cos(lang) * rad, sin(lang) * rad);
+            Vector dr(0, cos(rang) * rad, sin(rang) * rad);
 
             Vector l = origin + rot * dl;
             Vector r = origin + rot * dr;
