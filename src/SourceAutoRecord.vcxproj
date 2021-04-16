@@ -149,6 +149,7 @@
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp" />
     <ClCompile Include="Features\Hud\StrafeSyncHud.cpp" />
     <ClCompile Include="Features\Hud\VphysHud.cpp" />
+    <ClCompile Include="Features\Hud\LPHud.cpp" />
     <ClCompile Include="Features\Hud\Toasts.cpp" />
     <ClCompile Include="Features\Imitator.cpp" />
     <ClCompile Include="Features\InfraSession.cpp" />
@@ -341,6 +342,7 @@
     <ClInclude Include="Features\Hud\SpeedrunHud.hpp" />
     <ClInclude Include="Features\Hud\StrafeSyncHud.hpp" />
     <ClInclude Include="Features\Hud\VphysHud.hpp" />
+    <ClInclude Include="Features\Hud\LPHud.hpp" />
     <ClInclude Include="Features\Hud\Toasts.hpp" />
     <ClInclude Include="Features\Imitator.hpp" />
     <ClInclude Include="Features\InfraSession.hpp" />

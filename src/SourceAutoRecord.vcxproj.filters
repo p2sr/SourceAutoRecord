@@ -349,6 +349,9 @@
     <ClCompile Include="Features\Hud\VphysHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Hud\LPHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Hud\Toasts.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
@@ -841,6 +844,9 @@
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Hud\VphysHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\LPHud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
     <ClInclude Include="Features\Hud\Toasts.hpp">
