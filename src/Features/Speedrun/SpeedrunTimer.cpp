@@ -11,6 +11,7 @@
 #include "Modules/Engine.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/Hud/Toasts.hpp"
+#include "Features/Session.hpp"
 #include "Utils.hpp"
 
 #define SPEEDRUN_PACKET_TYPE "srtimer"
@@ -218,7 +219,11 @@ static void handleCoopPacket(void *data, size_t size)
 static int getCurrentTick()
 {
     if (engine->IsOrange()) {
-        int delta = engine->GetTick() - g_coopLastSyncEngineTick;
+        static int lastEngine;
+        if (session->isRunning) {
+            lastEngine = engine->GetTick();
+        }
+        int delta = lastEngine - g_coopLastSyncEngineTick;
         if (delta < 0) delta = 0;
         return g_coopLastSyncTick + delta;
     }
