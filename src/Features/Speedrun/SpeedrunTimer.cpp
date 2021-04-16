@@ -340,7 +340,7 @@ void SpeedrunTimer::Update()
 
     std::string map = getEffectiveMapName();
 
-    if (map != g_speedrun.lastMap && !engine->IsOrange()) {
+    if (map != g_speedrun.lastMap && SpeedrunTimer::IsRunning() && !engine->IsOrange()) {
         bool visited = false;
 
         for (std::string v : g_speedrun.visitedMaps) {
