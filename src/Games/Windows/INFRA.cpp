@@ -41,7 +41,6 @@ void INFRA::LoadOffsets()
 
     GetAllClasses = 9; // CHLClient
     HudProcessInput = 11; // CHLClient
-    HudUpdate = 12; // CHLClient
     IN_ActivateMouse = 16; // CHLClient
     PerUserInput_tSize = 388; // CInput::DecodeUserCmdFromBuffer
     m_pCommands = 380; // CInput::DecodeUserCmdFromBuffer

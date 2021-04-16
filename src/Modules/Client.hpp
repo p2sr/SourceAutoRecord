@@ -52,9 +52,6 @@ public:
     float GetCMTimer();
 
 public:
-    // CHLClient::HudUpdate
-    DECL_DETOUR(HudUpdate, unsigned int a2);
-
     // ClientModeShared::CreateMove
     DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd);
     DECL_DETOUR(CreateMove2, float flInputSampleTime, CUserCmd* cmd);

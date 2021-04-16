@@ -31,7 +31,6 @@ int Con_IsVisible;
 // CHLClient
 int GetAllClasses;
 int HudProcessInput;
-int HudUpdate;
 int IN_ActivateMouse;
 int JoyStickApplyMovement;
 

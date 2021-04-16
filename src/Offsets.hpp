@@ -31,7 +31,6 @@ extern int Con_IsVisible;
 // CHLClient
 extern int GetAllClasses;
 extern int HudProcessInput;
-extern int HudUpdate;
 extern int IN_ActivateMouse;
 extern int JoyStickApplyMovement;
 

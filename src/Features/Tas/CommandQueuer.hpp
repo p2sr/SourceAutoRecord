@@ -36,6 +36,8 @@ public:
     void Start();
     void DelayQueueBy(int frames);
     void RandomRegex(std::string& input);
+    
+    void Execute();
 };
 
 extern CommandQueuer* cmdQueuer;

@@ -122,7 +122,7 @@ void TasTools::SetAngles(void* player)
     }
 
     auto angles = engine->GetAngles(slot);
-    slotData->currentAngles = { angles.x, angles.y, 0 };
+    slotData->currentAngles = { angles.x, angles.y, angles.z };
     QAngle m = this->Slerp(slotData->currentAngles, slotData->targetAngles, slotData->speedInterpolation);
 
     engine->SetAngles(slot, m);

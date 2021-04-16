@@ -36,7 +36,6 @@ Variable in_forceuser;
 Variable crosshairVariable;
 Variable cl_fov;
 
-REDECL(Client::HudUpdate);
 REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
 REDECL(Client::GetName);
@@ -130,43 +129,13 @@ float Client::GetCMTimer()
     return 0.0f;
 }
 
-// CHLClient::HudUpdate
-DETOUR(Client::HudUpdate, unsigned int a2)
-{
-    if (cmdQueuer->isRunning) {
-        for (auto&& tas = cmdQueuer->frames.begin(); tas != cmdQueuer->frames.end();) {
-            --tas->framesLeft;
-
-            if (tas->framesLeft <= 0) {
-                console->DevMsg("[%i] %s\n", session->currentFrame, tas->command.c_str());
-
-                if (sar.game->Is(SourceGame_Portal2Engine)) {
-                    if (engine->GetMaxClients() <= 1) {
-                        engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0);
-                    } else {
-                        auto entity = engine->PEntityOfEntIndex(tas->splitScreen + 1);
-                        if (entity && !entity->IsFree() && server->IsPlayer(entity->m_pUnk)) {
-                            engine->ClientCommand(nullptr, entity, tas->command.c_str());
-                        }
-                    }
-                } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-                    engine->AddText(engine->s_CommandBuffer, tas->command.c_str(), 0);
-                }
-
-                tas = cmdQueuer->frames.erase(tas);
-            } else {
-                ++tas;
-            }
-        }
-    }
-
-    ++session->currentFrame;
-    return Client::HudUpdate(thisptr, a2);
-}
 
 // ClientModeShared::CreateMove
 DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
 {
+    //TAS
+    cmdQueuer->Execute();
+
     if (cmd->command_number) {
         if (replayPlayer1->IsPlaying()) {
             replayPlayer1->Play(replayProvider->GetCurrentReplay(), cmd);
@@ -328,8 +297,6 @@ bool Client::Init()
 
     if (this->g_ClientDLL) {
         this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses, readJmp);
-
-        this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);
 
         if (sar.game->Is(SourceGame_Portal2Game)) {
             auto leaderboard = Command("+leaderboard");

@@ -242,7 +242,6 @@ void Portal2::LoadOffsets()
 
     GetAllClasses = 8; // CHLClient
     HudProcessInput = 10; // CHLClient
-    HudUpdate = 11; // CHLClient
     C_m_vecAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
     C_m_angAbsRotation = 172; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList

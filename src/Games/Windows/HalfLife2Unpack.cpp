@@ -174,7 +174,6 @@ void HalfLife2Unpack::LoadOffsets()
     GetAllClasses = 6; // CHLClient
     HudProcessInput = 8; // CHLClient
     GetClientMode = 2; // CHLClient::HudProcessInput
-    HudUpdate = 9; // CHLClient
     IN_ActivateMouse = 13; // CHLClient
     g_Input = 2; // CHLClient::IN_ActivateMouse
     C_m_vecAbsOrigin = 504; // C_BasePlayer::GetAbsOrigin

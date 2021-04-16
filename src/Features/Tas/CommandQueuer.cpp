@@ -4,6 +4,8 @@
 #include <array>
 #include <string>
 
+#include "Features/Session.hpp"
+
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -102,6 +104,40 @@ void CommandQueuer::RandomRegex(std::string& input)
         int rand = Math::RandomNumber(std::stoi(m.str(1)), std::stoi(m.str(6)));
         input = std::regex_replace(input, this->intRegex, std::to_string(rand), std::regex_constants::format_first_only);
     }
+}
+
+void CommandQueuer::Execute()
+{
+    //FIX FOR PIKACHU <3
+
+    if (cmdQueuer->isRunning) {
+        for (auto&& tas = cmdQueuer->frames.begin(); tas != cmdQueuer->frames.end();) {
+            --tas->framesLeft;
+
+            if (tas->framesLeft <= 0) {
+                console->DevMsg("[%i] %s\n", session->currentFrame, tas->command.c_str());
+
+                if (sar.game->Is(SourceGame_Portal2Engine)) {
+                    if (engine->GetMaxClients() <= 1) {
+                        engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0);
+                    } else {
+                        auto entity = engine->PEntityOfEntIndex(tas->splitScreen + 1);
+                        if (entity && !entity->IsFree() && server->IsPlayer(entity->m_pUnk)) {
+                            engine->ClientCommand(nullptr, entity, tas->command.c_str());
+                        }
+                    }
+                } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
+                    engine->AddText(engine->s_CommandBuffer, tas->command.c_str(), 0);
+                }
+
+                tas = cmdQueuer->frames.erase(tas);
+            } else {
+                ++tas;
+            }
+        }
+    }
+
+    ++session->currentFrame;
 }
 
 // Commands
