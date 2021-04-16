@@ -217,7 +217,7 @@ void NetworkManager::RunNetwork()
                 std::vector<sf::Packet> buffer;
                 this->ReceiveUDPUpdates(buffer);
                 for (auto& packet : buffer) {
-                    this->Treat(packet);
+                    this->Treat(packet, true);
                 }
             }
 
@@ -232,7 +232,7 @@ void NetworkManager::RunNetwork()
                     }
                     continue;
                 }
-                this->Treat(packet);
+                this->Treat(packet, false);
             }
         }
     }
@@ -331,7 +331,7 @@ void NetworkManager::ReceiveUDPUpdates(std::vector<sf::Packet>& buffer)
     } while (status == sf::Socket::Done);
 }
 
-void NetworkManager::Treat(sf::Packet& packet)
+void NetworkManager::Treat(sf::Packet& packet, bool udp)
 {
     HEADER header;
     sf::Uint32 ID;
@@ -444,7 +444,11 @@ void NetworkManager::Treat(sf::Packet& packet)
         packet >> token;
         sf::Packet response;
         response << HEADER::HEART_BEAT << this->ID << token;
-        this->tcpSocket.send(response);
+        if (udp) {
+            this->udpSocket.send(response, this->serverIP, this->serverPort);
+        } else {
+            this->tcpSocket.send(response);
+        }
         break;
     }
     case HEADER::MESSAGE: {

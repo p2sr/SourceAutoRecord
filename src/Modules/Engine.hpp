@@ -121,6 +121,7 @@ public:
     int pauseTick;
     bool hasWaited = false;
     int nForcePrimaryFullscreen = 0; // Happens twice in each coop load, we want the second one for timing shit
+    bool shouldPauseForSync = false;
 
 public:
     void ExecuteCommand(const char* cmd, bool immediately = false);

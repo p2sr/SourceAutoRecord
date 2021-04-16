@@ -154,7 +154,7 @@ void Session::Start()
                 networkManager.disableSyncForLoad = false;
             } else {
                 if (!networkManager.AreAllGhostsAheadOrSameMap() && this->previousMap != engine->GetCurrentMapName()) { //Don't pause if just reloading save
-                    engine->SendToCommandBuffer("pause", 20);
+                    engine->shouldPauseForSync = true;
                 }
             }
         }

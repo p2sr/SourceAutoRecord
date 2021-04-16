@@ -9,6 +9,7 @@
 #include "Modules/Client.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Engine.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/Session.hpp"
@@ -361,6 +362,12 @@ void SpeedrunTimer::Update()
 
         bool newSplit = !visited || !sar_speedrun_smartsplit.GetBool();
         SpeedrunTimer::Split(newSplit, g_speedrun.lastMap);
+        if (newSplit) {
+            int total = SpeedrunTimer::GetTotalTicks();
+            int prevTotal = networkManager.splitTicksTotal == -1 ? 0 : networkManager.splitTicksTotal;
+            networkManager.splitTicks = total - prevTotal;
+            networkManager.splitTicksTotal = total;
+        }
 
         g_speedrun.hasSplitLoad = true;
 

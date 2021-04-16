@@ -83,7 +83,7 @@ public:
     void SendMessageToAll(std::string msg);
     void SendPing();
     void ReceiveUDPUpdates(std::vector<sf::Packet>& buffer);
-    void Treat(sf::Packet& packet);
+    void Treat(sf::Packet& packet, bool udp);
 
     void UpdateGhostsPosition();
     std::shared_ptr<GhostEntity> GetGhostByID(sf::Uint32 ID);

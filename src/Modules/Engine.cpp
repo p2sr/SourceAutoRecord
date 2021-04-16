@@ -273,6 +273,11 @@ void Engine::NewTick(const int tick)
         }
     }
 
+    if (engine->shouldPauseForSync && tick >= 0) {
+        engine->ExecuteCommand("pause", true);
+        engine->shouldPauseForSync = false;
+    }
+
     if (segmentedTools->waitTick == tick && !engine->hasWaited) {
         if (!sv_cheats.GetBool()) {
             console->Print("\"wait\" needs sv_cheats 1.\n");
