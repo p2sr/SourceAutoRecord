@@ -17,7 +17,7 @@
 #include "Features/Tas/AutoStrafer.hpp"
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
-#include "Features/Stats/ZachStats.hpp"
+#include "Features/NetMessage.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -36,9 +36,14 @@ Variable in_forceuser;
 Variable crosshairVariable;
 Variable cl_fov;
 
+Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
+
+REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
 REDECL(Client::GetName);
+REDECL(Client::ShouldDraw_BasicInfo);
+REDECL(Client::MsgFunc_SayText2);
 REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::DecodeUserCmdFromBuffer2);
 REDECL(Client::CInput_CreateMove);
@@ -123,12 +128,19 @@ float Client::GetCMTimer()
     if (sv_bonus_challenge.GetBool()) {
         uintptr_t player = (uintptr_t)client->GetPlayer(1);
         if (player) {
-            return *(float*)(player + Offsets::m_StatsThisLevel + 12) - speedrun->GetIntervalPerTick();
+            return *(float*)(player + Offsets::m_StatsThisLevel + 12);
         }
     }
     return 0.0f;
 }
 
+
+// CHLClient::LevelInitPreEntity
+DETOUR(Client::LevelInitPreEntity, const char *levelName)
+{
+    client->lastLevelName = std::string(levelName);
+    return Client::LevelInitPreEntity(thisptr, levelName);
+}
 
 // ClientModeShared::CreateMove
 DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
@@ -163,8 +175,6 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
         synchro->UpdateSync(cmd);
     }
 
-    client->lastViewAngles = cmd->viewangles;
-
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
 DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
@@ -198,6 +208,43 @@ DETOUR_T(const char*, Client::GetName)
     return Client::GetName(thisptr);
 }
 
+// CHudMultiplayerBasicInfo::ShouldDraw
+DETOUR_T(bool, Client::ShouldDraw_BasicInfo)
+{
+    if (sar_disable_coop_score_hud.GetBool()) {
+        return false;
+    }
+
+    return Client::ShouldDraw_BasicInfo(thisptr);
+}
+
+// CHudChat::MsgFunc_SayText2
+DETOUR(Client::MsgFunc_SayText2, bf_read &msg)
+{
+    // copy old state in case we need to recover it
+    bf_read pre = msg;
+
+    // skip client id
+    msg.ReadUnsigned(8);
+
+    std::string str = "";
+    while (true) {
+        char c = (char)(uint8_t)msg.ReadUnsigned(8);
+        if (!c) break;
+        str += c;
+    }
+
+    if (NetMessage::ChatData(str)) {
+        // skip the other crap, just in case it matters
+        msg.ReadUnsigned(8);
+        return 0;
+    }
+
+    msg = pre;
+
+    return Client::MsgFunc_SayText2(thisptr, msg);
+}
+
 // CInput::DecodeUserCmdFromBuffer
 DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number)
 {
@@ -206,7 +253,15 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
     auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)thisptr + nSlot * Offsets::PerUserInput_tSize + Offsets::m_pCommands);
     auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + Offsets::CUserCmdSize * (sequence_number % Offsets::MULTIPLAYER_BACKUP));
 
-    inputHud.SetButtonBits(0, cmd->buttons);
+    if (nSlot == 0) {
+        // A bit weird - for some reason, when playing back Orange
+        // demos, nSlot is 0 even though the player's actual slot
+        // (including in HUD stuff) is 1. This works as a workaround
+        inputHud.SetButtonBits(0, cmd->buttons);
+        inputHud.SetButtonBits(1, cmd->buttons);
+    } else if (nSlot == 1) {
+        inputHud.SetButtonBits(1, cmd->buttons);
+    }
 
     return result;
 }
@@ -278,10 +333,6 @@ static void LeaderboardCallback(const CCommand& args)
         networkManager.NotifySpeedrunFinished(true);
     }
 
-    if (!zachStats->GetTriggers().empty()) {
-        ZachStats::Output(zachStats->GetStream(), client->GetCMTimer());
-    }
-
     originalLeaderboardCallback(args);
 }
 
@@ -298,6 +349,8 @@ bool Client::Init()
     if (this->g_ClientDLL) {
         this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses, readJmp);
 
+        this->g_ClientDLL->Hook(Client::LevelInitPreEntity_Hook, Client::LevelInitPreEntity, Offsets::LevelInitPreEntity);
+        
         if (sar.game->Is(SourceGame_Portal2Game)) {
             auto leaderboard = Command("+leaderboard");
             if (!!leaderboard) {
@@ -322,8 +375,14 @@ bool Client::Init()
                 }
 
                 auto CHudChat = FindElement(GetHud(-1), "CHudChat");
-                if (this->g_HudChat = Interface::Create(CHudChat, false)) {
+                if (this->g_HudChat = Interface::Create(CHudChat)) {
                     this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
+                    this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayText2);
+                }
+
+                auto CHudMultiplayerBasicInfo = FindElement(GetHud(-1), "CHudMultiplayerBasicInfo");
+                if (this->g_HudMultiplayerBasicInfo = Interface::Create(CHudMultiplayerBasicInfo)) {
+                    this->g_HudMultiplayerBasicInfo->Hook(Client::ShouldDraw_BasicInfo_Hook, Client::ShouldDraw_BasicInfo, Offsets::ShouldDraw);
                 }
             }
         }
@@ -413,6 +472,7 @@ void Client::Shutdown()
     Interface::Delete(this->g_Input);
     Interface::Delete(this->g_HUDQuickInfo);
     Interface::Delete(this->g_HudChat);
+    Interface::Delete(this->g_HudMultiplayerBasicInfo);
     Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 }
 

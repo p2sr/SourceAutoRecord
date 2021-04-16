@@ -33,6 +33,7 @@ extern int GetAllClasses;
 extern int HudProcessInput;
 extern int IN_ActivateMouse;
 extern int JoyStickApplyMovement;
+extern int LevelInitPreEntity;
 
 // ClientModeShared
 extern int CreateMove;
@@ -56,6 +57,7 @@ extern int GetFontTall;
 extern int PaintTraverseEx;
 extern int DrawColoredText;
 extern int DrawTextLen;
+extern int GetKernedCharWidth;
 
 extern int DrawSetTextureFile;
 extern int DrawSetTextureRGBA;
@@ -137,6 +139,7 @@ extern int m_pShadowStand;
 extern int m_pShadowCrouch;
 extern int m_Local;
 extern int m_hGroundEntity;
+extern int m_iBonusChallenge;
 
 // CPlayerLocalData
 extern int m_nTractorBeamCount;
@@ -230,6 +233,7 @@ extern int ClientCommand;
 
 //CBaseHudChat
 extern int ChatPrintf;
+extern int MsgFunc_SayText2;
 
 // CSteam3Client
 extern int OnGameOverlayActivated;

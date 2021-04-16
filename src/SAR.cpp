@@ -12,6 +12,7 @@
 #include "Game.hpp"
 #include "Interface.hpp"
 #include "Variable.hpp"
+#include "CrashHandler.hpp"
 
 SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
@@ -34,6 +35,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
     if (this->game) {
         this->game->LoadOffsets();
 
+        CrashHandler::Init();
+
         tier1 = new Tier1();
         if (tier1->Init()) {
             this->features->AddFeature<Config>(&config);
@@ -46,7 +49,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Summary>(&summary);
             this->features->AddFeature<Teleporter>(&teleporter);
             this->features->AddFeature<Tracer>(&tracer);
-            this->features->AddFeature<SpeedrunTimer>(&speedrun);
+            SpeedrunTimer::Init();
             this->features->AddFeature<Stats>(&stats);
             this->features->AddFeature<Sync>(&synchro);
             this->features->AddFeature<CommandQueuer>(&cmdQueuer);
@@ -69,7 +72,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<SegmentedTools>(&segmentedTools);
             this->features->AddFeature<GroundFramesCounter>(&groundFramesCounter);
             this->features->AddFeature<TimescaleDetect>(&timescaleDetect);
-            this->features->AddFeature<ZachStats>(&zachStats);
 
             this->modules->AddModule<InputSystem>(&inputSystem);
             this->modules->AddModule<Scheme>(&scheme);
@@ -103,8 +105,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 if (listener) {
                     listener->Init();
                 }
-
-                speedrun->LoadRules(this->game);
 
                 config->Load();
 
@@ -143,6 +143,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
     SAFE_DELETE(sar.game)
     SAFE_DELETE(tier1)
     SAFE_DELETE(console)
+    CrashHandler::Cleanup();
     return false;
 }
 
@@ -291,6 +292,7 @@ CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloa
 
     SAFE_DELETE(tier1)
     SAFE_DELETE(console)
+    CrashHandler::Cleanup();
 }
 
 #pragma region Unused callbacks

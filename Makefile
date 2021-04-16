@@ -25,11 +25,11 @@ OBJS=$(patsubst $(SDIR)/%.cpp, $(ODIR)/%.o, $(SRCS))
 DEPS=$(OBJS:%.o=%.d)
 
 WARNINGS=-Wall -Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas -Wno-register -Wno-sign-compare
-CXXFLAGS=-std=c++17 -m32 $(WARNINGS) -I$(SDIR) -fPIC -D_GNU_SOURCE
-LDFLAGS=-m32 -shared -lstdc++fs
+CXXFLAGS=-std=c++17 -m32 $(WARNINGS) -I$(SDIR) -fPIC -D_GNU_SOURCE -Ilib/ffmpeg/include -Ilib/SFML/include -DSFML_STATIC
+LDFLAGS=-m32 -shared -lstdc++fs -Llib/ffmpeg/lib/linux -lavformat -lavcodec -lavutil -lswscale -lswresample -lx264 -lx265 -lvorbis -lvorbisenc -lvorbisfile -logg -lopus -lvpx -Llib/SFML/lib/linux -lsfml
 
-# Import config.mk, which extends flags with pkgconfig info etc
-include config.mk
+# Import config.mk, which can be used for optional config
+-include config.mk
 
 all: sar.so
 clean:

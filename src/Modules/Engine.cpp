@@ -2,13 +2,14 @@
 
 #include <cstring>
 
+#include "Features/Camera.hpp"
 #include "Features/Cvars.hpp"
+#include "Features/ConditionalExec.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
-#include "Features/Speedrun/Rules/Portal2Rules.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Stats/ZachStats.hpp"
 #include "Features/Renderer.hpp"
+#include "Features/NetMessage.hpp"
 
 #include "Client.hpp"
 #include "Console.hpp"
@@ -153,6 +154,8 @@ int Engine::PointToScreen(const Vector& point, Vector& screen)
 }
 void Engine::SafeUnload(const char* postCommand)
 {
+    RunExitExecs();
+
     // The exit command will handle everything
     this->ExecuteCommand("sar_exit");
 
@@ -183,6 +186,8 @@ std::string Engine::GetCurrentMapName()
 {
     if (engine->demoplayer->IsPlaying()) {
         return engine->demoplayer->GetLevelName();
+    } else if (engine->IsOrange()) {
+        return client->lastLevelName;
     } else {
         return engine->m_szLevelName;
     }
@@ -195,7 +200,11 @@ bool Engine::IsCoop()
 
 bool Engine::IsOrange()
 {
-    return this->IsCoop() && session->signonState == SIGNONSTATE_FULL && !engine->hoststate->m_activeGame;
+    static bool isOrange;
+    if (session->signonState == SIGNONSTATE_FULL) {
+        isOrange = this->IsCoop() && !engine->hoststate->m_activeGame;
+    }
+    return isOrange;
 }
 
 bool Engine::Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr)
@@ -269,8 +278,8 @@ void Engine::NewTick(const int tick)
             console->Print("\"wait\" needs sv_cheats 1.\n");
             engine->hasWaited = true;
         } else {
-            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
             engine->hasWaited = true;
+            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
         }
     }
 
@@ -287,8 +296,6 @@ void Engine::NewTick(const int tick)
     if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
         demoGhostPlayer.UpdateGhostsPosition();
     }
-
-    zachStats->UpdateTriggers();
 }
 
 bool Engine::ConsoleVisible()
@@ -346,15 +353,13 @@ DETOUR(Engine::SetSignonState2, int state, int count)
 // CEngine::Frame
 DETOUR(Engine::Frame)
 {
-    speedrun->PreUpdate(engine->GetTick(), engine->m_szLevelName);
-
     if (engine->hoststate->m_currentState != session->prevState) {
         session->Changed();
     }
     session->prevState = engine->hoststate->m_currentState;
 
     if (engine->hoststate->m_activeGame || std::strlen(engine->m_szLevelName) == 0) {
-        speedrun->PostUpdate(engine->GetTick(), engine->m_szLevelName);
+        SpeedrunTimer::Update();
     }
 
     if ((engine->demoplayer->IsPlaying() || engine->IsOrange()) && engine->lastTick != session->GetTick()) {
@@ -374,6 +379,8 @@ DETOUR(Engine::Frame)
     engine->lastTick = session->GetTick();
 
     Renderer::Frame();
+
+    NetMessage::Update();
 
     return Engine::Frame(thisptr);
 }
@@ -485,8 +492,8 @@ DETOUR_COMMAND(Engine::gameui_activate)
 }
 DETOUR_COMMAND(Engine::playvideo_end_level_transition)
 {
-    if (engine->GetMaxClients() >= 2) {
-        speedrun->Pause();
+    if (engine->GetMaxClients() >= 2 && !engine->IsOrange() && server->GetChallengeStatus() != CMStatus::CHALLENGE) {
+        SpeedrunTimer::Pause();
     }
 
     Engine::playvideo_end_level_transition_callback(args);
@@ -494,9 +501,11 @@ DETOUR_COMMAND(Engine::playvideo_end_level_transition)
 DETOUR_COMMAND(Engine::playvideo_exitcommand_nointerrupt)
 {
     if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "dlc1_endmovie")) {
-        course6End = true;
+        console->Print("%d: course 6 end\n", session->GetTick());
+        //course6End = true;
     } else if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "coop_outro")) {
-        course5End = true;
+        console->Print("%d: course 5 end\n", session->GetTick());
+        //course5End = true;
     }
 
     Engine::playvideo_exitcommand_nointerrupt_callback(args);
@@ -513,14 +522,12 @@ DETOUR_COMMAND(Engine::load)
 
 DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
 {
-    if (engine->GetMaxClients() >= 2 && ss_force_primary_fullscreen.GetInt() == 0) {
-        if (engine->hadInitialForcePrimaryFullscreen) {
-            speedrun->Resume(engine->GetTick());
-            if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !speedrun->IsActive()) {
-                speedrun->Start(engine->GetTick());
-            }
+    if (engine->GetMaxClients() >= 2 && server->GetChallengeStatus() != CMStatus::CHALLENGE && ss_force_primary_fullscreen.GetInt() == 0) {
+        ++engine->nForcePrimaryFullscreen;
+        if (engine->nForcePrimaryFullscreen == 2 && !engine->IsOrange()) {
+            SpeedrunTimer::Resume();
+            SpeedrunTimer::OnLoad();
         }
-        engine->hadInitialForcePrimaryFullscreen = !engine->hadInitialForcePrimaryFullscreen;
     }
 }
 
@@ -605,7 +612,7 @@ bool Engine::Init()
 #endif
             tickcount = Memory::Deref<int*>(ProcessTick + Offsets::tickcount);
             interval_per_tick = Memory::Deref<float*>(ProcessTick + Offsets::interval_per_tick);
-            speedrun->SetIntervalPerTick(interval_per_tick);
+            SpeedrunTimer::SetIpt(*interval_per_tick);
 
             auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
@@ -689,24 +696,22 @@ bool Engine::Init()
 
         // This is the address of the one interesting call to ReadCustomData - the E8 byte indicates the start of the call instruction
 #ifdef _WIN32
-        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12);
+        this->readPacketInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12);
 #else
-        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
+        if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+            this->readPacketInjectAddr = Memory::Scan(this->Name(), "8B 95 94 FE FF FF 8D 4D D8 8D 45 D4 89 4C 24 08 89 44 24 04 89 14 24 E8", 24);
+        } else {
+            this->readPacketInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
+        }
 #endif
 
         // Pesky memory protection doesn't want us overwriting code - we
         // get around it with a call to mprotect or VirtualProtect
-        void* injectPageAddr = (void*)(readPacketInjectAddr & 0xFFFFF000); // TODO: could the instruction cross a page boundary? hope not lol
-#ifdef _WIN32
-        DWORD wtf_microsoft_why_cant_this_be_null;
-        VirtualProtect(injectPageAddr, 0x1000, PAGE_EXECUTE_READWRITE, &wtf_microsoft_why_cant_this_be_null);
-#else
-        mprotect(injectPageAddr, 0x1000, PROT_READ | PROT_WRITE | PROT_EXEC);
-#endif
+        Memory::UnProtect((void*)this->readPacketInjectAddr, 4);
 
         // It's a relative call, so we have to do some weird fuckery lol
-        Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)readPacketInjectAddr + (readPacketInjectAddr + 4));
-        *(uint32_t*)readPacketInjectAddr = (uint32_t)&ReadCustomData_Hook - (readPacketInjectAddr + 4); // Add 4 to get address of next instruction
+        Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)this->readPacketInjectAddr + (this->readPacketInjectAddr + 4));
+        *(uint32_t*)this->readPacketInjectAddr = (uint32_t)&ReadCustomData_Hook - (this->readPacketInjectAddr + 4); // Add 4 to get address of next instruction
     }
 
     if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
@@ -758,6 +763,8 @@ void Engine::Shutdown()
         *OnGameOverlayActivated = Engine::OnGameOverlayActivatedBase;
     }
 
+    Renderer::Cleanup();
+
     Interface::Delete(this->engineClient);
     Interface::Delete(this->s_ServerPlugin);
     Interface::Delete(this->cl);
@@ -765,6 +772,13 @@ void Engine::Shutdown()
     Interface::Delete(this->s_GameEventManager);
     Interface::Delete(this->engineTool);
     Interface::Delete(this->engineTrace);
+
+    // Reset to the offsets that were originally in the code
+#ifdef _WIN32
+    *(uint32_t*)this->readPacketInjectAddr = 0x50E8458D;
+#else
+    *(uint32_t*)this->readPacketInjectAddr = 0x08244489;
+#endif
 
 #ifdef _WIN32
     Command::Unhook("connect", Engine::connect_callback);

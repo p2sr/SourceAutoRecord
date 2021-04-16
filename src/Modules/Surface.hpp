@@ -26,6 +26,7 @@ public:
 #endif
     using _DrawColoredText = int(__cdecl*)(void* thisptr, HFont font, int x, int y, int r, int g, int b, int a, char* fmt, ...);
     using _DrawTextLen = int(__cdecl*)(void* thisptr, HFont font, char* fmt, ...);
+    using _GetKernedCharWidth = void(__rescall*)(void* thisptr, HFont font, wchar_t ch, wchar_t prev, wchar_t next, float &wide, float &a, float &c);
     using _StartDrawing = int(__rescall*)(void* thisptr);
     using _FinishDrawing = int(__cdecl*)();
 
@@ -48,6 +49,7 @@ public:
     _DrawSetTextColor DrawSetTextColor = nullptr;
     _DrawColoredText DrawColoredText = nullptr;
     _DrawTextLen DrawTextLen = nullptr;
+    _GetKernedCharWidth GetKernedCharWidth = nullptr;
     _StartDrawing StartDrawing = nullptr;
     _FinishDrawing FinishDrawing = nullptr;
 

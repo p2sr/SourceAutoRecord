@@ -120,7 +120,7 @@ public:
     bool isPausing = false;
     int pauseTick;
     bool hasWaited = false;
-    bool hadInitialForcePrimaryFullscreen = false; // Happens twice in each coop load, we want the second one for timing shit
+    int nForcePrimaryFullscreen = 0; // Happens twice in each coop load, we want the second one for timing shit
 
 public:
     void ExecuteCommand(const char* cmd, bool immediately = false);
@@ -195,6 +195,9 @@ public:
     bool Init() override;
     void Shutdown() override;
     const char* Name() override { return MODULE("engine"); }
+
+private:
+    uintptr_t readPacketInjectAddr;
 };
 
 extern Engine* engine;

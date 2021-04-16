@@ -8,6 +8,8 @@
 #include <unistd.h>
 #endif
 
+#include <string>
+
 #define MODULE(name) name MODULE_EXTENSION
 #define GAME(x) GAME_PATH(x)
 
@@ -21,6 +23,8 @@ namespace Utils {
 bool EndsWith(const std::string& str, const std::string& suffix);
 bool StartsWith(const char* str, const char* subStr);
 bool ICompare(const std::string& a, const std::string& b);
+std::string ssprintf(const char *fmt, ...);
+int ConvertFromSrgb(int s);
 }
 
 #define REDECL(name) \

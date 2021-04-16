@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <map>
 
 #include "Variable.hpp"
 #include "DemoGhostPlayer.hpp"
@@ -17,7 +18,7 @@ public:
 public:
     DemoParser();
     void Adjust(Demo* demo);
-    bool Parse(std::string filePath, Demo* demo, bool ghostRequest = false, std::vector<DataGhost>* datas = nullptr);
+    bool Parse(std::string filePath, Demo* demo, bool ghostRequest = false, std::map<int, DataGhost>* datas = nullptr);
 };
 
 extern Variable sar_time_demo_dev;

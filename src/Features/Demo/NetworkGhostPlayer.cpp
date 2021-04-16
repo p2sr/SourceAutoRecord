@@ -1,5 +1,6 @@
 #include "NetworkGhostPlayer.hpp"
 #include "DemoGhostPlayer.hpp"
+#include "GhostEntity.hpp"
 
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
@@ -8,6 +9,7 @@
 
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Hud/Toasts.hpp"
 
 #include <functional>
 #include <queue>
@@ -96,7 +98,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port)
     this->serverPort = port;
 
     sf::Packet connection_packet;
-    connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } } << this->modelName.c_str() << engine->m_szLevelName << ghost_TCP_only.GetBool();
+    connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{ { 0, 0, 0 }, { 0, 0, 0 } } << this->modelName.c_str() << engine->GetCurrentMapName().c_str() << ghost_TCP_only.GetBool();
     this->tcpSocket.send(connection_packet);
 
     {
@@ -165,7 +167,7 @@ void NetworkManager::Disconnect()
         this->udpSocket.unbind();
 
         g_scheduledEvents.push([=]() {
-            client->Chat(TextColor::GREEN, "You have been disconnected!");
+            toastHud.AddToast("You have been disconnected", g_ghostToastColor, ghost_notify_duration.GetFloat());
         });
     }
 }
@@ -259,15 +261,17 @@ void NetworkManager::NotifyMapChange()
     sf::Packet packet;
 
     if (this->splitTicks != -1) {
-        auto ipt = speedrun->GetIntervalPerTick();
+        auto ipt = *engine->interval_per_tick;
         std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
         std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
-        client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", this->name.c_str(), engine->m_szLevelName, time.c_str(), totalTime.c_str());
+        std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str(), totalTime.c_str());
+        toastHud.AddToast(msg, g_ghostToastColor, ghost_notify_duration.GetFloat());
     } else {
-        client->Chat(TextColor::GREEN, "%s is now on %s", this->name.c_str(), engine->m_szLevelName);
+        std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), engine->GetCurrentMapName().c_str());
+        toastHud.AddToast(msg, g_ghostToastColor, ghost_notify_duration.GetFloat());
     }
 
-    packet << HEADER::MAP_CHANGE << this->ID << engine->m_szLevelName << this->splitTicks << this->splitTicksTotal;
+    packet << HEADER::MAP_CHANGE << this->ID << engine->GetCurrentMapName().c_str() << this->splitTicks << this->splitTicksTotal;
     this->tcpSocket.send(packet);
 }
 
@@ -277,7 +281,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM)
     packet << HEADER::SPEEDRUN_FINISH << this->ID;
 
     float totalSecs = 0;
-    auto ipt = speedrun->GetIntervalPerTick();
+    auto ipt = *engine->interval_per_tick;
 
     if (CM) {
         uintptr_t player = (uintptr_t)client->GetPlayer(1);
@@ -285,12 +289,12 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM)
             totalSecs = *(float *)(player + Offsets::m_StatsThisLevel + 12) - ipt;
         }
     } else {
-        totalSecs = speedrun->GetTotal() * ipt;
+        totalSecs = SpeedrunTimer::GetTotalTicks() * ipt;
     }
 
     std::string time = SpeedrunTimer::Format(totalSecs);
 
-    client->Chat(TextColor::GREEN, "%s has finished in %s", this->name.c_str(), time.c_str());
+    toastHud.AddToast(Utils::ssprintf("%s has finished in %s", this->name.c_str(), time.c_str()), g_ghostToastColor, ghost_notify_duration.GetFloat());
 
     packet << time.c_str();
 
@@ -358,9 +362,9 @@ void NetworkManager::Treat(sf::Packet& packet)
 
         g_scheduledEvents.push([=]() {
             if (!strcmp("", current_map.c_str())) {
-                client->Chat(TextColor::GREEN, "%s has connected in the menu!", name.c_str());
+                toastHud.AddToast(Utils::ssprintf("%s has connected in the menu!", name.c_str()), g_ghostToastColor, ghost_notify_duration.GetFloat());
             } else {
-                client->Chat(TextColor::GREEN, "%s has connected in %s!", name.c_str(), current_map.c_str());
+                toastHud.AddToast(Utils::ssprintf("%s has connected in %s!", name.c_str(), current_map.c_str()), g_ghostToastColor, ghost_notify_duration.GetFloat());
             }
 
             this->UpdateGhostsSameMap();
@@ -378,7 +382,7 @@ void NetworkManager::Treat(sf::Packet& packet)
             if (this->ghostPool[i]->ID == ID) {
                 auto ghost = this->ghostPool[i];
                 g_scheduledEvents.push([=]() {
-                    client->Chat(TextColor::GREEN, "%s has disconnected!", ghost->name.c_str());
+                    toastHud.AddToast(Utils::ssprintf("%s has disconnected!", ghost->name.c_str()), g_ghostToastColor, ghost_notify_duration.GetFloat());
                     ghost->DeleteGhost();
                 });
                 this->ghostPool[i]->isDestroyed = true;
@@ -409,12 +413,14 @@ void NetworkManager::Treat(sf::Packet& packet)
                 this->UpdateGhostsSameMap();
                 if (ghost_show_advancement.GetBool()) {
                     if (ticksIL == -1) {
-                        client->Chat(TextColor::GREEN, "%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+                        std::string msg = Utils::ssprintf("%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+                        toastHud.AddToast(msg, g_ghostToastColor, ghost_notify_duration.GetFloat());
                     } else {
-                        auto ipt = speedrun->GetIntervalPerTick();
+                        auto ipt = *engine->interval_per_tick;
                         std::string time = SpeedrunTimer::Format(ticksIL * ipt);
                         std::string timeTotal = SpeedrunTimer::Format(ticksTotal * ipt);
-                        client->Chat(TextColor::GREEN, "%s is now on %s (%s -> %s)", ghost->name.c_str(), ghost->currentMap.c_str(), time.c_str(), timeTotal.c_str());
+                        std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", ghost->name.c_str(), ghost->currentMap.c_str(), time.c_str(), timeTotal.c_str());
+                        toastHud.AddToast(msg, g_ghostToastColor, ghost_notify_duration.GetFloat());
                     }
                 }
 
@@ -478,7 +484,7 @@ void NetworkManager::Treat(sf::Packet& packet)
         if (ghost) {
             if (ghost_show_advancement.GetBool()) {
                 g_scheduledEvents.push([=]() {
-                    client->Chat(TextColor::GREEN, "%s has finished in %s", ghost->name.c_str(), timer.c_str());
+                    toastHud.AddToast(Utils::ssprintf("%s has finished in %s", ghost->name.c_str(), timer.c_str()), g_ghostToastColor, ghost_notify_duration.GetFloat());
                 });
             }
         }
@@ -542,10 +548,10 @@ std::shared_ptr<GhostEntity> NetworkManager::GetGhostByID(sf::Uint32 ID)
 
 void NetworkManager::UpdateGhostsSameMap()
 {
-    int mapIdx = engine->GetMapIndex(engine->m_szLevelName);
+    int mapIdx = engine->GetMapIndex(engine->GetCurrentMapName());
     this->ghostPoolLock.lock();
     for (auto ghost : this->ghostPool) {
-        ghost->sameMap = strcmp(ghost->currentMap.c_str(), "") && ghost->currentMap == engine->m_szLevelName;
+        ghost->sameMap = strcmp(ghost->currentMap.c_str(), "") && ghost->currentMap == engine->GetCurrentMapName();
         if (mapIdx == -1)
             ghost->isAhead = false; // Fallback - unknown map
         else

@@ -46,9 +46,21 @@ std::string EngineDemoPlayer::GetLevelName()
     return this->levelName;
 }
 
+// 0x01: timescale detection
+// 0x02: initial cvar
+// 0x03: entity input
+// 0x04: entity input triggered by slot
+// 0x05: portal placement
+// 0x06: hit cm flags
+// 0x07: got crouchfly
 void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
 {
-    if (data[0] == 0x03) { // Entity input data
+    if (data[0] == 0x03 || data[0] == 0x04) { // Entity input data
+        std::optional<int> slot;
+        if (data[0] == 0x04) {
+            slot = data[1];
+            ++data;
+        }
         char *targetname = data + 1;
         size_t targetnameLen = strlen(targetname);
         char *classname = data + 2 + targetnameLen;
@@ -56,7 +68,38 @@ void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
         char *inputname = data + 3 + targetnameLen + classnameLen;
         size_t inputnameLen = strlen(inputname);
         char *parameter = data + 4 + targetnameLen + classnameLen + inputnameLen;
-        // TODO: send to mtrigger/custom category stuff
+
+        SpeedrunTimer::TestInputRules(targetname, classname, inputname, parameter, slot);
+
+        return;
+    }
+
+    if (data[0] == 0x05) { // Portal placement
+        int slot = data[1];
+        PortalColor portal = data[2] ? PortalColor::ORANGE : PortalColor::BLUE;
+        Vector pos;
+        pos.x = *(float *)(data + 3);
+        pos.y = *(float *)(data + 7);
+        pos.z = *(float *)(data + 11);
+
+        SpeedrunTimer::TestPortalRules(pos, slot, portal);
+
+        return;
+    }
+
+    if (data[0] == 0x06) { // CM flags
+        int slot = data[1];
+
+        SpeedrunTimer::TestFlagRules(slot);
+
+        return;
+    }
+
+    if (data[0] == 0x07) { // Crouch fly
+        int slot = data[1];
+
+        SpeedrunTimer::TestFlyRules(slot);
+
         return;
     }
 

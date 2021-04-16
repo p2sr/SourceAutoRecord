@@ -11,7 +11,6 @@
 #include "Features/Routing/SeamshotFind.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Speedrun/CustomCategories.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Tas/AutoStrafer.hpp"
@@ -21,7 +20,6 @@
 #include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/GroundFramesCounter.hpp"
-#include "Features/Stats/ZachStats.hpp"
 #include "Features/ConditionalExec.hpp"
 
 #include "Engine.hpp"
@@ -105,6 +103,23 @@ void Server::KillEntity(void* entity)
 #else
     server->AcceptInput(entity, "Kill", player, player, &val, 0);
 #endif
+}
+CMStatus Server::GetChallengeStatus()
+{
+    auto player = GetPlayer(GET_SLOT() + 1);
+    if (!player) {
+        return CMStatus::NONE;
+    }
+
+    int bonusChallenge = *(int *)((uintptr_t)player + Offsets::m_iBonusChallenge);
+
+    if (bonusChallenge) {
+        return CMStatus::CHALLENGE;
+    } else if (sv_bonus_challenge.GetBool()) {
+        return CMStatus::WRONG_WARP;
+    } else {
+        return CMStatus::NONE;
+    }
 }
 
 // CGameMovement::CheckJumpButton
@@ -299,14 +314,20 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 // original function
 static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, void* activator, void* caller, variant_t *parameter)
 {
-    CheckCustomCategoryRules(thisptr, inputName);
-    zachStats->CheckZyntexTriggers(thisptr, inputName);
-    if (engine->demorecorder->isRecordingDemo) {
-        const char *entName = server->GetEntityName(thisptr);
-        const char *className = server->GetEntityClassName(thisptr);
-        if (!entName) entName = "";
-        if (!className) className = "";
+    const char *entName = server->GetEntityName(thisptr);
+    const char *className = server->GetEntityClassName(thisptr);
+    if (!entName) entName = "";
+    if (!className) className = "";
 
+    std::optional<int> activatorSlot;
+
+    if (activator && server->IsPlayer(activator)) {
+        activatorSlot = server->GetSplitScreenPlayerSlot(activator);
+    }
+
+    SpeedrunTimer::TestInputRules(entName, className, inputName, parameter->ToString(), activatorSlot);
+
+    if (engine->demorecorder->isRecordingDemo) {
         size_t entNameLen = strlen(entName);
         size_t classNameLen = strlen(className);
         size_t inputNameLen = strlen(inputName);
@@ -314,16 +335,26 @@ static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, voi
         const char *paramStr = parameter->ToString();
 
         size_t len = entNameLen + classNameLen + inputNameLen + strlen(paramStr) + 5;
+        if (activatorSlot) {
+            len += 1;
+        }
         char *data = (char *)malloc(len);
-        data[0] = 0x03;
-        strcpy(data + 1, entName);
-        strcpy(data + 2 + entNameLen, className);
-        strcpy(data + 3 + entNameLen + classNameLen, inputName);
-        strcpy(data + 4 + entNameLen + classNameLen + inputNameLen, paramStr);
+        char *data1 = data;
+        if (!activatorSlot) {
+            data[0] = 0x03;
+        } else {
+            data[0] = 0x04;
+            data[1] = *activatorSlot;
+            ++data1;
+        }
+        strcpy(data1 + 1, entName);
+        strcpy(data1 + 2 + entNameLen, className);
+        strcpy(data1 + 3 + entNameLen + classNameLen, inputName);
+        strcpy(data1 + 4 + entNameLen + classNameLen + inputNameLen, paramStr);
         engine->demorecorder->RecordData(data, len);
         free(data);
     }
-    //console->DevMsg("%.4d INPUT %s TARGETNAME %s CLASSNAME %s\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr));
+    //console->DevMsg("%.4d INPUT '%s' TARGETNAME '%s' CLASSNAME '%s' PARAM '%s'\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr), parameter->ToString());
 }
 
 // This is kinda annoying - it's got to be in a separate function
@@ -331,6 +362,7 @@ static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, voi
 // of CBaseEntity::AcceptInput, but we generally can't do that until
 // we've loaded into a level.
 static bool IsAcceptInputTrampolineInitialized = false;
+static uint8_t OriginalAcceptInputCode[8];
 static void InitAcceptInputTrampoline()
 {
     void* ent = (CEntInfo2*)(server->m_EntPtrArray + 0)->m_pEntity;
@@ -343,27 +375,30 @@ static void InitAcceptInputTrampoline()
     // Get around memory protection so we can modify code
     Memory::UnProtect((void*)server->AcceptInput, 8);
 
+    memcpy(OriginalAcceptInputCode, (void*)server->AcceptInput, sizeof OriginalAcceptInputCode);
+
 #ifdef _WIN32
     // Create our code
     static uint8_t trampolineCode[] = {
         0x55,             // 00: push ebp                 (we overwrote these 2 instructions)
         0x89, 0xE5,       // 01: mov ebp, esp
         0x8D, 0x45, 0x14, // 03: lea eax, [ebp + 0x14]    (we take a pointer to the variant_t, for simplicity and consistency with Linux)
-        0x50,             // 06: push eax                 (we want to take the first 5 args in our detour function)
-        0xFF, 0x75, 0x10, // 07: push dword [ebp + 0x10]
-        0xFF, 0x75, 0x0C, // 0A: push dword [ebp + 0x0C]
-        0xFF, 0x75, 0x08, // 0D: push dword [ebp + 0x08]
-        0x51,             // 10: push ecx                 (ecx=thisptr, because of thiscall convention)
-        0xE8, 0, 0, 0, 0, // 11: call ??                  (to be filled with address of detour function)
-        0x59,             // 16: pop ecx                  (it may have been clobbered by the cdecl detour function)
-        0x83, 0xC4, 0x0C, // 17: add esp, 0x0C            (pop the other args to the detour function)
-        0xA1, 0, 0, 0, 0, // 1A: mov eax, ??              (to be filled with the address from the other instruction we overwrote)
-        0xE9, 0, 0, 0, 0, // 1F: jmp ??                   (to be filled with the address of code to return to)
+        0x51,             // 06: push ecx                 (store thisptr for later)
+        0x50,             // 07: push eax                 (we want to take the first 5 args in our detour function)
+        0xFF, 0x75, 0x10, // 08: push dword [ebp + 0x10]
+        0xFF, 0x75, 0x0C, // 0B: push dword [ebp + 0x0C]
+        0xFF, 0x75, 0x08, // 0E: push dword [ebp + 0x08]
+        0x51,             // 11: push ecx                 (ecx=thisptr, because of thiscall convention)
+        0xE8, 0, 0, 0, 0, // 12: call ??                  (to be filled with address of detour function)
+        0x83, 0xC4, 0x14, // 17: add esp, 0x14            (pop the other args to the detour function)
+        0x59,             // 1A: pop ecx                  (it may have been clobbered by the cdecl detour function)
+        0xA1, 0, 0, 0, 0, // 1B: mov eax, ??              (to be filled with the address from the other instruction we overwrote)
+        0xE9, 0, 0, 0, 0, // 20: jmp ??                   (to be filled with the address of code to return to)
     };
 
-    *(uint32_t*)(trampolineCode + 0x12) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x12 + 4);
-    *(uint32_t*)(trampolineCode + 0x1B) = *(uint32_t*)((uint32_t)server->AcceptInput + 4); // The address we need to steal is 4 bytes into the function
-    *(uint32_t*)(trampolineCode + 0x20) = (uint32_t)server->AcceptInput + 8 - ((uint32_t)trampolineCode + 0x20 + 4);
+    *(uint32_t*)(trampolineCode + 0x13) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x13 + 4);
+    *(uint32_t*)(trampolineCode + 0x1C) = *(uint32_t*)((uint32_t)server->AcceptInput + 4); // The address we need to steal is 4 bytes into the function
+    *(uint32_t*)(trampolineCode + 0x21) = (uint32_t)server->AcceptInput + 8 - ((uint32_t)trampolineCode + 0x21 + 4);
 
     Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
 
@@ -413,7 +448,6 @@ DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
     if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
-    TickCustomCategories();
     RunSeqs();
 
     if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
@@ -428,14 +462,18 @@ DETOUR(Server::GameFrame, bool simulating)
     if (session->isRunning)
         engine->NewTick(session->GetTick());
 
-    
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
-    
+    SpeedrunTimer::DrawTriggers();
+    SpeedrunTimer::DrawCategoryCreatorPlacement();
+
+    if (simulating) {
+        SpeedrunTimer::TickRules();
+    }
 
     if ((session->isRunning && session->GetTick() == 16) || fovChanger->needToUpdate) {
         fovChanger->Force();
@@ -444,17 +482,11 @@ DETOUR(Server::GameFrame, bool simulating)
     if (session->isRunning && pauseTimer->IsActive()) {
         pauseTimer->Increment();
 
-        if (speedrun->IsActive() && sar_speedrun_time_pauses.GetBool()) {
-            speedrun->IncrementPauseTime();
-        }
+        SpeedrunTimer::AddPauseTick();
 
         if (timer->isRunning && sar_timer_time_pauses.GetBool()) {
             ++timer->totalTicks;
         }
-    }
-
-    if (session->isRunning && sar_speedrun_standard.GetBool()) {
-        speedrun->CheckRules(engine->GetTick());
     }
 
     if (simulating && sar_seamshot_finder.GetBool()) {
@@ -562,6 +594,22 @@ bool Server::Init()
     GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "80 3D ? ? ? ? 00 55 89 E5 8B 45 08 75 1E 85 C0 78 1A 3B 05 ? ? ? ? 7D 12 8B 15", 0);
 #endif
 
+    // Remove the limit on how quickly you can use 'say'
+    if (sar.game->Is(SourceGame_Portal2)) {
+        void *say_callback = Command("say").ThisPtr()->m_pCommandCallback;
+#ifdef _WIN32
+        uintptr_t insn_addr = (uintptr_t)say_callback + 52;
+#else
+        uintptr_t insn_addr = (uintptr_t)say_callback + 88;
+#endif
+        // This is the location of an ADDSD instruction which adds 0.66
+        // to the current time. If we instead *subtract* 0.66, we'll
+        // always be able to chat again! We can just do this by changing
+        // the third byte from 0x58 to 0x5C, hence making the full
+        // opcode start with F2 0F 5C.
+        Memory::UnProtect((void *)(insn_addr + 2), 1);
+        *(char *)(insn_addr + 2) = 0x5C;
+    }
 
     offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);
     offsetFinder->ServerSide("CBasePlayer", "m_iName", &Offsets::m_iName);
@@ -570,6 +618,7 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
     offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
     offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::m_hGroundEntity);
+    offsetFinder->ServerSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
 
     if (sar.game->Is(SourceGame_Portal2Engine)) {
         offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
@@ -612,6 +661,9 @@ CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop 
 }
 void Server::Shutdown()
 {
+    if (IsAcceptInputTrampolineInitialized) {
+        memcpy((void*)server->AcceptInput, OriginalAcceptInputCode, 8);
+    }
 #if _WIN32
     MH_UNHOOK(this->AirMove_Mid);
 #endif

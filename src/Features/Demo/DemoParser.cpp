@@ -33,7 +33,7 @@ void DemoParser::Adjust(Demo* demo)
     demo->playbackTicks = demo->LastTick();
     demo->playbackTime = ipt * demo->playbackTicks;
 }
-bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std::vector<DataGhost>* datas)
+bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std::map<int, DataGhost>* datas)
 {
     try {
         if (filePath.substr(filePath.length() - 4, 4) != ".dem")
@@ -135,7 +135,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std:
 
                                 if (tick > 0 && waitForNext && lastTick != tick) {
                                     lastTick = tick;
-                                    datas->push_back(DataGhost{ { vo_x, vo_y, vo_z }, { va_x, va_y, va_z } });
+                                    (*datas)[tick] = DataGhost{ { vo_x, vo_y, vo_z }, { va_x, va_y, va_z } };
                                 }
                             } else {
                                 console->Msg("[%i] flags: %i | "

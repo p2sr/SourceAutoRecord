@@ -240,6 +240,7 @@ void Portal2::LoadOffsets()
     // client.dll
 
     GetAllClasses = 8; // CHLClient
+    LevelInitPreEntity = 5; // CHLClient
     HudProcessInput = 10; // CHLClient
     C_m_vecAbsOrigin = 156; // C_BasePlayer::GetAbsOrigin
     C_m_angAbsRotation = 192; // C_BasePlayer::GetAbsAngles
@@ -252,8 +253,9 @@ void Portal2::LoadOffsets()
     GetHud = 125; // cc_leaderboard_enable
     FindElement = 135; // cc_leaderboard_enable
     ChatPrintf = 22; // CBaseHudChat
+    MsgFunc_SayText2 = 26; // CBaseHudChat
     DecodeUserCmdFromBuffer = 7; // CInput
-    PerUserInput_tSize = 368; // CInput::DecodeUserCmdFromBuffer
+    PerUserInput_tSize = 376; // CInput::DecodeUserCmdFromBuffer
     m_pCommands = 244; // CInput::DecodeUserCmdFromBuffer
     CUserCmdSize = 96; // CInput::DecodeUserCmdFromBuffer
     MULTIPLAYER_BACKUP = 150; // CInput::DecodeUserCmdFromBuffer
@@ -279,6 +281,7 @@ void Portal2::LoadOffsets()
     FinishDrawing = 603; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 160; // CMatSystemSurface
     DrawTextLen = 163; // CMatSystemSurface
+    GetKernedCharWidth = 147; // CMatSystemSurface
 
     DrawSetTextureFile = 35; // CMatSystemSurface
     DrawSetTextureRGBA = 36; // CMatSystemSurface

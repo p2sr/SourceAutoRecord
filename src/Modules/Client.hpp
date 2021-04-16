@@ -18,6 +18,7 @@ private:
     Interface* s_EntityList = nullptr;
     Interface* g_Input = nullptr;
     Interface* g_HudChat = nullptr;
+    Interface* g_HudMultiplayerBasicInfo = nullptr;
 
 public:
     using _GetClientEntity = void*(__rescall*)(void* thisptr, int entnum);
@@ -35,7 +36,7 @@ public:
     _ChatPrintf ChatPrintf = nullptr;
 
     void* in_jump = nullptr;
-    QAngle lastViewAngles;
+    std::string lastLevelName;
 
 public:
     DECL_M(GetAbsOrigin, Vector);
@@ -52,12 +53,21 @@ public:
     float GetCMTimer();
 
 public:
+    // CHLClient::LevelInitPreEntity
+    DECL_DETOUR(LevelInitPreEntity, const char *levelName);
+
     // ClientModeShared::CreateMove
     DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd);
     DECL_DETOUR(CreateMove2, float flInputSampleTime, CUserCmd* cmd);
 
     // CHud::GetName
     DECL_DETOUR_T(const char*, GetName);
+
+    // CHudMultiplayerBasicInfo::ShouldDraw
+    DECL_DETOUR_T(bool, ShouldDraw_BasicInfo);
+
+    // CHudChat::MsgFunc_SayText2
+    DECL_DETOUR(MsgFunc_SayText2, bf_read &msg);
 
     // CInput::_DecodeUserCmdFromBuffer
     DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number);

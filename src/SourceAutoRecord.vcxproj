@@ -27,7 +27,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
@@ -95,9 +95,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>SFML_STATIC;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>26495</DisableSpecificWarnings>
@@ -107,9 +107,10 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows</AdditionalLibraryDirectories>
       <NoEntryPoint>false</NoEntryPoint>
-      <AdditionalDependencies>imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
       <Command>call ..\copy.bat</Command>
@@ -122,6 +123,7 @@
     <ClCompile Include="..\lib\minhook\hook.c" />
     <ClCompile Include="..\lib\minhook\trampoline.c" />
     <ClCompile Include="Cheats.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="Checksum.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="Features\ClassDumper.cpp" />
@@ -147,6 +149,8 @@
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp" />
     <ClCompile Include="Features\Hud\StrafeSyncHud.cpp" />
     <ClCompile Include="Features\Hud\VphysHud.cpp" />
+    <ClCompile Include="Features\Hud\LPHud.cpp" />
+    <ClCompile Include="Features\Hud\Toasts.cpp" />
     <ClCompile Include="Features\Imitator.cpp" />
     <ClCompile Include="Features\InfraSession.cpp" />
     <ClCompile Include="Features\Listener.cpp" />
@@ -157,26 +161,17 @@
     <ClCompile Include="Features\Routing\Tracer.cpp" />
     <ClCompile Include="Features\SegmentedTools.cpp" />
     <ClCompile Include="Features\Session.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\ApertureTagRules.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\DebugRule.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\Portal2Rules.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\PortalRules.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\PortalStoriesMelRules.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.cpp" />
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp" />
-    <ClCompile Include="Features\Speedrun\TimerCategory.cpp" />
-    <ClCompile Include="Features\Speedrun\TimerInterface.cpp" />
-    <ClCompile Include="Features\Speedrun\TimerResult.cpp" />
-    <ClCompile Include="Features\Speedrun\TimerRule.cpp" />
-    <ClCompile Include="Features\Speedrun\TimerSplit.cpp" />
-    <ClCompile Include="Features\Speedrun\CustomCategories.cpp" />
+    <ClCompile Include="Features\Speedrun\Rules.cpp" />
+    <ClCompile Include="Features\Speedrun\Categories.cpp" />
+    <ClCompile Include="Features\Speedrun\CategoriesPreset.cpp" />
+    <ClCompile Include="Features\Speedrun\CategoryCreator.cpp" />
     <ClCompile Include="Features\Stats\StatsCounter.cpp" />
     <ClCompile Include="Features\Stats\JumpStats.cpp" />
     <ClCompile Include="Features\Stats\Stats.cpp" />
     <ClCompile Include="Features\Stats\StepStats.cpp" />
     <ClCompile Include="Features\Stats\Sync.cpp" />
     <ClCompile Include="Features\Stats\VelocityStats.cpp" />
-    <ClCompile Include="Features\Stats\ZachStats.cpp" />
     <ClCompile Include="Features\StepCounter.cpp" />
     <ClCompile Include="Features\Summary.cpp" />
     <ClCompile Include="Features\Tas\AutoStrafer.cpp" />
@@ -195,6 +190,7 @@
     <ClCompile Include="Features\Timer\TimerCheckPoints.cpp" />
     <ClCompile Include="Features\TimescaleDetect.cpp" />
     <ClCompile Include="Features\WorkshopList.cpp" />
+    <ClCompile Include="Features\NetMessage.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Games\Linux\ApertureTag.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -319,6 +315,7 @@
     <ClInclude Include="..\lib\SFML\include\SFML\System\Vector2.hpp" />
     <ClInclude Include="..\lib\SFML\include\SFML\System\Vector3.hpp" />
     <ClInclude Include="Cheats.hpp" />
+    <ClInclude Include="CrashHandler.hpp" />
     <ClInclude Include="Checksum.hpp" />
     <ClInclude Include="Command.hpp" />
     <ClInclude Include="Features.hpp" />
@@ -345,6 +342,8 @@
     <ClInclude Include="Features\Hud\SpeedrunHud.hpp" />
     <ClInclude Include="Features\Hud\StrafeSyncHud.hpp" />
     <ClInclude Include="Features\Hud\VphysHud.hpp" />
+    <ClInclude Include="Features\Hud\LPHud.hpp" />
+    <ClInclude Include="Features\Hud\Toasts.hpp" />
     <ClInclude Include="Features\Imitator.hpp" />
     <ClInclude Include="Features\InfraSession.hpp" />
     <ClInclude Include="Features\Listener.hpp" />
@@ -355,21 +354,10 @@
     <ClInclude Include="Features\Routing\Tracer.hpp" />
     <ClInclude Include="Features\SegmentedTools.hpp" />
     <ClInclude Include="Features\Session.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\ApertureTagRules.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\DebugRule.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\Portal2Rules.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\PortalRules.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\PortalStoriesMelRules.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.hpp" />
     <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerAction.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerCategory.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerInterface.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerResult.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerRule.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerSplit.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerState.hpp" />
-    <ClInclude Include="Features\Speedrun\CustomCategories.hpp" />
+    <ClInclude Include="Features\Speedrun\Rules.hpp" />
+    <ClInclude Include="Features\Speedrun\Categories.hpp" />
+    <ClInclude Include="Features\Speedrun\CategoriesPreset.hpp" />
     <ClInclude Include="Features\Stats\StatsCounter.hpp" />
     <ClInclude Include="Features\Stats\JumpStats.hpp" />
     <ClInclude Include="Features\Stats\Stats.hpp" />
@@ -377,7 +365,6 @@
     <ClInclude Include="Features\Stats\StepStats.hpp" />
     <ClInclude Include="Features\Stats\Sync.hpp" />
     <ClInclude Include="Features\Stats\VelocityStats.hpp" />
-    <ClInclude Include="Features\Stats\ZachStats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
     <ClInclude Include="Features\Tas\AutoStrafer.hpp" />
@@ -397,6 +384,7 @@
     <ClInclude Include="Features\Timer\TimerCheckPoints.hpp" />
     <ClInclude Include="Features\TimescaleDetect.hpp" />
     <ClInclude Include="Features\WorkshopList.hpp" />
+    <ClInclude Include="Features\NetMessage.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="Games\Linux\ApertureTag.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

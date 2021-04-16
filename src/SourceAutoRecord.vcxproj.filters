@@ -46,22 +46,19 @@
     <ClCompile Include="Games\Linux\TheBeginnersGuide.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Speedrun\TimerInterface.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\TimerResult.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\TimerRule.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\TimerSplit.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Speedrun\CustomCategories.cpp">
+    <ClCompile Include="Features\Speedrun\Rules.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\Categories.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\CategoriesPreset.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\CategoryCreator.cpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClCompile>
     <ClCompile Include="Features\Demo\Demo.cpp">
@@ -184,7 +181,13 @@
     <ClCompile Include="Features\WorkshopList.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\NetMessage.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Cheats.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="CrashHandler.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
     <ClCompile Include="Checksum.cpp">
@@ -219,21 +222,6 @@
     </ClCompile>
     <ClCompile Include="Utils\Memory.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\ApertureTagRules.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\DebugRule.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\Portal2Rules.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\PortalRules.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\PortalStoriesMelRules.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
     </ClCompile>
     <ClCompile Include="Features\EntityList.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
@@ -274,9 +262,6 @@
     <ClCompile Include="Games\Windows\PortalStoriesMel.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Speedrun\TimerCategory.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
@@ -312,9 +297,6 @@
     </ClCompile>
     <ClCompile Include="Games\Linux\ThinkingWithTimeMachine.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
     </ClCompile>
     <ClCompile Include="Games\Windows\HalfLife2Episodic.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
@@ -367,6 +349,12 @@
     <ClCompile Include="Features\Hud\VphysHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Hud\LPHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\Toasts.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
     <ClCompile Include="Features\SegmentedTools.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
@@ -378,9 +366,6 @@
     </ClCompile>
     <ClCompile Include="Features\GroundFramesCounter.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Stats\ZachStats.cpp">
-      <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -456,28 +441,16 @@
     <ClInclude Include="Utils\Platform.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerInterface.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerResult.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerRule.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerSplit.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerAction.hpp">
+    <ClInclude Include="Features\Speedrun\Rules.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerState.hpp">
+    <ClInclude Include="Features\Speedrun\Categories.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Speedrun\CustomCategories.hpp">
+    <ClInclude Include="Features\Speedrun\CategoriesPreset.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\Demo.hpp">
@@ -591,7 +564,13 @@
     <ClInclude Include="Features\WorkshopList.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
+    <ClInclude Include="Features\NetMessage.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
     <ClInclude Include="Cheats.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="CrashHandler.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Checksum.hpp">
@@ -626,21 +605,6 @@
     </ClInclude>
     <ClInclude Include="Games\Linux\Portal.hpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\ApertureTagRules.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\DebugRule.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\Portal2Rules.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\PortalRules.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\PortalStoriesMelRules.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
     </ClInclude>
     <ClInclude Include="Features\EntityList.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
@@ -684,9 +648,6 @@
     <ClInclude Include="Games\Windows\PortalStoriesMel.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerCategory.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Tas\TasTools.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
@@ -722,9 +683,6 @@
     </ClInclude>
     <ClInclude Include="Games\Linux\ThinkingWithTimeMachine.hpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
     </ClInclude>
     <ClInclude Include="Games\Windows\HalfLife2Episodic.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
@@ -888,6 +846,12 @@
     <ClInclude Include="Features\Hud\VphysHud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Hud\LPHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\Toasts.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
     <ClInclude Include="Features\Routing\SeamshotFind.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
@@ -896,9 +860,6 @@
     </ClInclude>
     <ClInclude Include="Features\GroundFramesCounter.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Stats\ZachStats.hpp">
-      <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

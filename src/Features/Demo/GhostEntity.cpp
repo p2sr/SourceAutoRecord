@@ -9,6 +9,8 @@
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
 
+#include "Utils.hpp"
+
 #ifdef _WIN32
 #define PLAT_CALL(fn, ...) fn(__VA_ARGS__)
 #else
@@ -161,17 +163,14 @@ void GhostEntity::Display()
         float hdist = sqrt(dx * dx + dy * dy);
 
         double yaw =
-            origin.x == pos.x ?
-            (origin.y > pos.y ? M_PI_2 : -M_PI_2) :
-            atan((origin.y - pos.y) / (origin.x - pos.x));
+            origin.x == pos.x && origin.y == pos.y ?
+            M_PI / 2 :
+            atan2(origin.y - pos.y, origin.x - pos.x) + M_PI;
 
         double pitch =
-            hdist == 0 ?
-            (origin.z > pos.z ? M_PI_2 : -M_PI_2) :
-            atan((origin.z - pos.z) / hdist);
-
-        // i have no idea why this is necessary but it seems to work
-        if (origin.x > pos.x) yaw += M_PI;
+            hdist == 0 && origin.z == pos.z ?
+            M_PI / 2 :
+            atan2(origin.z - pos.z, hdist);
 
         double syaw = sin(yaw);
         double cyaw = cos(yaw);
@@ -327,13 +326,6 @@ CON_COMMAND(ghost_type, "ghost_type <0/1/2/3>:\n"
     }
 }
 
-static int convertSrgbComponent(int s)
-{
-    double s_ = (double)s / 255;
-    double l = s <= 0.04045 ? s_ / 12.92 : pow((s_ + 0.055) / 1.055, 2.4);
-    return (int)(l * 255);
-}
-
 CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color to the specified sRGB color code.\n")
 {
     if (args.ArgC() != 2) {
@@ -351,9 +343,9 @@ CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color 
         return console->Print("Invalid color code!\n");
     }
 
-    ghost_color_r.SetValue(convertSrgbComponent(r));
-    ghost_color_g.SetValue(convertSrgbComponent(g));
-    ghost_color_b.SetValue(convertSrgbComponent(b));
+    ghost_color_r.SetValue(Utils::ConvertFromSrgb(r));
+    ghost_color_g.SetValue(Utils::ConvertFromSrgb(g));
+    ghost_color_b.SetValue(Utils::ConvertFromSrgb(b));
 }
 
 void GhostEntity::KillAllGhosts() {
@@ -377,4 +369,30 @@ void GhostEntity::DrawName(HudContext *ctx, int id)
     Vector screenPos;
     engine->PointToScreen(nameCoords, screenPos);
     ctx->DrawElementOnScreen(id, screenPos.x, screenPos.y, this->name.c_str());
+}
+
+Color g_ghostToastColor = { 255, 255, 255, 255 };
+
+Variable ghost_notify_duration("ghost_notify_duration", "6", 0, "Number of seconds to show ghost notifications on-screen for.\n");
+
+CON_COMMAND(ghost_notify_set_color, "ghost_notify_set_color <hex code> - sets the ghost notification color to the specified sRGB color code.\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print(ghost_notify_set_color.ThisPtr()->m_pszHelpString);
+    }
+
+    const char *color = args[1];
+    if (color[0] == '#') {
+        ++color;
+    }
+
+    int r, g, b;
+    int end;
+    if (sscanf(color, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
+        return console->Print("Invalid color code!\n");
+    }
+
+    g_ghostToastColor._color[0] = Utils::ConvertFromSrgb(r);
+    g_ghostToastColor._color[1] = Utils::ConvertFromSrgb(g);
+    g_ghostToastColor._color[2] = Utils::ConvertFromSrgb(b);
 }
