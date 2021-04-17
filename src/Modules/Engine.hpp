@@ -177,7 +177,6 @@ public:
     DECL_DETOUR_COMMAND(help);
     DECL_DETOUR_COMMAND(gameui_activate);
     DECL_DETOUR_COMMAND(playvideo_end_level_transition);
-    DECL_DETOUR_COMMAND(playvideo_exitcommand_nointerrupt);
     DECL_DETOUR_COMMAND(unpause);
     DECL_DETOUR_COMMAND(load);
 

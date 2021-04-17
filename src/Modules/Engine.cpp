@@ -62,7 +62,6 @@ REDECL(Engine::help_callback);
 REDECL(Engine::gameui_activate_callback);
 REDECL(Engine::unpause_callback);
 REDECL(Engine::playvideo_end_level_transition_callback);
-REDECL(Engine::playvideo_exitcommand_nointerrupt_callback);
 REDECL(Engine::load_callback);
 #ifdef _WIN32
 REDECL(Engine::connect_callback);
@@ -503,18 +502,6 @@ DETOUR_COMMAND(Engine::playvideo_end_level_transition)
 
     Engine::playvideo_end_level_transition_callback(args);
 }
-DETOUR_COMMAND(Engine::playvideo_exitcommand_nointerrupt)
-{
-    if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "dlc1_endmovie")) {
-        console->Print("%d: course 6 end\n", session->GetTick());
-        //course6End = true;
-    } else if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "coop_outro")) {
-        console->Print("%d: course 5 end\n", session->GetTick());
-        //course5End = true;
-    }
-
-    Engine::playvideo_exitcommand_nointerrupt_callback(args);
-}
 DETOUR_COMMAND(Engine::load)
 {
     // Loading a save should bypass ghost_sync if there's no map
@@ -740,7 +727,6 @@ bool Engine::Init()
     if (sar.game->Is(SourceGame_Portal2Game)) {
         Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
         Command::Hook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback_hook, Engine::playvideo_end_level_transition_callback);
-        Command::Hook("playvideo_exitcommand_nointerrupt", Engine::playvideo_exitcommand_nointerrupt_callback_hook, Engine::playvideo_exitcommand_nointerrupt_callback);
         CVAR_HOOK_AND_CALLBACK(ss_force_primary_fullscreen);
     }
 
@@ -803,7 +789,6 @@ void Engine::Shutdown()
     Command::Unhook("load", Engine::load_callback);
     Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
     Command::Unhook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback);
-    Command::Unhook("playvideo_exitcommand_nointerrupt", Engine::playvideo_exitcommand_nointerrupt_callback);
 
     if (this->demoplayer) {
         this->demoplayer->Shutdown();
