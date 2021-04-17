@@ -362,7 +362,7 @@ void SpeedrunTimer::Update()
 
         bool newSplit = !visited || !sar_speedrun_smartsplit.GetBool();
         SpeedrunTimer::Split(newSplit, g_speedrun.lastMap);
-        if (newSplit) {
+        if (newSplit && networkManager.isConnected) {
             int total = SpeedrunTimer::GetTotalTicks();
             int prevTotal = networkManager.splitTicksTotal == -1 ? 0 : networkManager.splitTicksTotal;
             networkManager.splitTicks = total - prevTotal;

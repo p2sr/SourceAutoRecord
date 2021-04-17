@@ -116,7 +116,7 @@ void SpeedrunTimer::TestFlyRules(int slot)
 
 void SpeedrunTimer::TestLoadRules()
 {
-    GeneralTestRules<MapLoadRule>(0);
+    GeneralTestRules<MapLoadRule>({});
 }
 
 // }}}
