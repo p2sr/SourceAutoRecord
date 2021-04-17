@@ -35,9 +35,7 @@ static inline void handleMessage(const char *type, void *data, size_t size)
 
 static bool readyToSend()
 {
-    if (!engine->IsCoop()) {
-        return true;
-    } else if (engine->IsOrange()) {
+    if (!engine->IsCoop() || engine->IsOrange()) {
         return session->isRunning;
     } else {
         return g_orangeReady;
