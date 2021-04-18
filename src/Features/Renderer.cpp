@@ -948,7 +948,8 @@ static bool SND_RecordBuffer_Hook(void)
             if (!g_render.isRendering.load()) {
                 // We shouldn't write to that buffer anymore, it's been
                 // invalidated
-                break;
+                // We've already unlocked audioBufLock so just return
+                return false;
             }
 
             g_render.audioBufLock.lock();
