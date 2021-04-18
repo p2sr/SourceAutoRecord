@@ -51,6 +51,11 @@ static std::queue<std::string> g_queued;
 
 void NetMessage::SendMsg(const char *type, void *data, size_t size)
 {
+    if (!engine->IsCoop()) {
+        // It doesn't make sense to send messages in SP
+        return;
+    }
+
     char *data_ = (char *)data;
     std::string cmd = std::string("say !SAR:") + type + ":";
     for (size_t i = 0; i < size; ++i) {
