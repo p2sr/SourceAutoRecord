@@ -1064,6 +1064,8 @@ void Renderer::Init(void **videomode)
 #ifdef _WIN32
     if (sar.game->Is(SourceGame_Portal2)) {
         SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 68 DE 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
+    } else if (sar.game->Is(SourceGame_PortalReloaded)) { // Super bloody old engine
+        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 78 D6 1D 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
     } else { // Pre-update engine
         SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 78 D9 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
     }

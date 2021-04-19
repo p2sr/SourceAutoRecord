@@ -15,6 +15,7 @@
 #include GAME(TheStanleyParable)
 #include GAME(ApertureTag)
 #include GAME(PortalStoriesMel)
+#include GAME(PortalReloaded)
 #include GAME(ThinkingWithTimeMachine)
 #ifdef _WIN32
 #include GAME(INFRA)
@@ -78,6 +79,10 @@ Game* Game::CreateNew()
         return new PortalStoriesMel();
     }
 
+    if (Utils::ICompare(modDir, PortalReloaded::ModDir())) {
+        return new PortalReloaded();
+    }
+
     if (Utils::ICompare(modDir, HalfLife2::ModDir())) {
 #ifdef _WIN32
         if (Memory::TryGetModule(MODULE("filesystem_steam"), nullptr)) {
@@ -139,6 +144,7 @@ std::string Game::VersionToString(int version)
         HAS_GAME_FLAG(SourceGame_ThinkingWithTimeMachine,          "Thinking with Time Machine")
         HAS_GAME_FLAG(SourceGame_HalfLife2Episodic,                "Half-Life 2: Episode One/Two")
         HAS_GAME_FLAG(SourceGame_HalfLifeSource,                   "Half-Life: Source")
+        HAS_GAME_FLAG(SourceGame_PortalReloaded,                   "Portal Reloaded")
     }
     return games;
 }

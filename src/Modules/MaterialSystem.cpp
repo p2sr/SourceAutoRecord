@@ -24,30 +24,29 @@ DETOUR(MaterialSystem::UncacheUnusedMaterials, bool bRecomputeStateSnapshots)
 
 DETOUR(MaterialSystem::CreateMaterial, const char* pMaterialName, void* pVMTKeyValues)
 {
-/*
-    std::string sMaterialName(pMaterialName);
-    std::string sMapName(engine->m_szLevelName);
-
-    // Memory leak ultimate fix! -route credits to krzyhau
-    // apparently the game loads PeTI related materials into the memory every time you
-    // load the game. This simply prevents that from happening.
-    bool isPetiMaterial = sMaterialName.find("props_map_editor") != std::string::npos;
-    bool isWhiteMaterial = sMaterialName.find("vgui/white") != std::string::npos;
-#ifdef _WIN32
-    bool isPetiMap = sMapName.find("puzzlemaker\\") != std::string::npos;
-#else
-    bool isPetiMap = sMapName.find("puzzlemaker/") != std::string::npos;
-#endif
-
-    if (sar_prevent_peti_materials_loading.GetBool() && (isPetiMaterial || isWhiteMaterial) && !isPetiMap) {
-        return 0;
-    }
-*/
 
     // rip krzyhau memory leak ultimate fix
     // gone but not forgotten
+    // annnd apparently we need it in portal reloaded, sadge
+    if (sar.game->Is(SourceGame_PortalReloaded)) {
+        std::string sMaterialName(pMaterialName);
+        std::string sMapName(engine->m_szLevelName);
 
-    //console->Print("CreateMaterial: %s\n", pMaterialName);
+        // Memory leak ultimate fix! -route credits to krzyhau
+        // apparently the game loads PeTI related materials into the memory every time you
+        // load the game. This simply prevents that from happening.
+        bool isPetiMaterial = sMaterialName.find("props_map_editor") != std::string::npos;
+        bool isWhiteMaterial = sMaterialName.find("vgui/white") != std::string::npos;
+#ifdef _WIN32
+        bool isPetiMap = sMapName.find("puzzlemaker\\") != std::string::npos;
+#else
+        bool isPetiMap = sMapName.find("puzzlemaker/") != std::string::npos;
+#endif
+
+        if ((isPetiMaterial || isWhiteMaterial) && !isPetiMap) {
+            return 0;
+        }
+    }
 
     return MaterialSystem::CreateMaterial(thisptr, pMaterialName, pVMTKeyValues);
 }

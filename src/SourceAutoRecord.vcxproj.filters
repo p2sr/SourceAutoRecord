@@ -259,6 +259,9 @@
     <ClCompile Include="Games\Windows\ApertureTag.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="Games\Windows\PortalReloaded.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="Games\Windows\PortalStoriesMel.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
@@ -646,6 +649,9 @@
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
     <ClInclude Include="Games\Windows\ApertureTag.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\PortalReloaded.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
     <ClInclude Include="Games\Windows\PortalStoriesMel.hpp">

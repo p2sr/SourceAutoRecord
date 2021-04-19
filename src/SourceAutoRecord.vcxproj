@@ -223,6 +223,7 @@
     <ClCompile Include="Games\Windows\INFRA.cpp" />
     <ClCompile Include="Games\Windows\ApertureTag.cpp" />
     <ClCompile Include="Games\Windows\Portal.cpp" />
+    <ClCompile Include="Games\Windows\PortalReloaded.cpp" />
     <ClCompile Include="Games\Windows\PortalStoriesMel.cpp" />
     <ClCompile Include="Games\Windows\PortalUnpack.cpp" />
     <ClCompile Include="Games\Windows\ThinkingWithTimeMachine.cpp" />
@@ -436,6 +437,7 @@
     <ClInclude Include="Games\Windows\HalfLife2.hpp" />
     <ClInclude Include="Games\Windows\Portal.hpp" />
     <ClInclude Include="Games\Windows\Portal2.hpp" />
+    <ClInclude Include="Games\Windows\PortalReloaded.hpp" />
     <ClInclude Include="Games\Windows\PortalStoriesMel.hpp" />
     <ClInclude Include="Games\Windows\PortalUnpack.hpp" />
     <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp" />

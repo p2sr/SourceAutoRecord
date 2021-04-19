@@ -121,7 +121,7 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
         // }}}
     } else if (sar.game->Is(SourceGame_ThinkingWithTimeMachine)) {
         // TWTM {{{
-         *defaultCat = "RTA";
+        *defaultCat = "RTA";
         *cats = {
             { "RTA", { { "Start", "Finish" } } },
         };
@@ -154,6 +154,86 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
                     }
                 ),
             },
+        };
+        // }}}
+    } else if (sar.game->Is(SourceGame_PortalReloaded)) {
+        // Portal Reloaded {{{
+        *defaultCat = "Chambers RTA";
+        *cats = {
+            { "Chambers RTA", { { "Tube Start", "Portal Save Start", "Tube Ending", "Escape Ending", "02", "03", "04", "06", "07", "09", "11", "13", "14", "16", "17", "19", "21", "23" } } },
+            { "RTA", { { "Tube Start", "Portal Save Start", "Tube Ending", "Escape Ending" } } },
+        };
+        *rules = {
+            {
+                "Tube Start",
+                SpeedrunRule(
+                    RuleAction::START,
+                    "sp_a1_pr_map_002",
+                    EntityInputRule{
+                        ENTRULE_TARGETNAME,
+                        "announcer1",
+                        "",
+                        "Trigger",
+                        "",
+                    }
+                ),
+            },
+            {
+                "Portal Save Start",
+                SpeedrunRule(
+                    RuleAction::START,
+                    "sp_a1_pr_map_002",
+                    EntityInputRule{
+                        ENTRULE_TARGETNAME,
+                        "@wportal1",
+                        "",
+                        "Open",
+                        "",
+                    }
+                ),
+            },
+            {
+                "Tube Ending",
+                SpeedrunRule(
+                    RuleAction::STOP,
+                    "sp_a1_pr_map_012",
+                    EntityInputRule{
+                        ENTRULE_TARGETNAME,
+                        "finale-finale_pc1",
+                        "",
+                        "InPass",
+                        "",
+                    }
+                ),
+            },
+            {
+                "Escape Ending",
+                SpeedrunRule(
+                    RuleAction::STOP,
+                    "sp_a1_pr_map_012",
+                    EntityInputRule{
+                        ENTRULE_TARGETNAME,
+                        "finale-escape_ending",
+                        "",
+                        "EnableRefire",
+                        "",
+                    }
+                ),
+            },
+            { "02", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_003", ZoneTriggerRule{ {336,   432,   100}, {150, 150, 200}, 0 }) },
+            { "03", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_003", ZoneTriggerRule{ {-2400, -2080, 100}, {150, 150, 200}, 0 }) },
+            { "04", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_003", ZoneTriggerRule{ {-2400, 416,   200}, {150, 150, 200}, 0 }) },
+            { "06", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_004", ZoneTriggerRule{ {1952,  208,   100}, {150, 150, 200}, 0 }) },
+            { "07", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_004", ZoneTriggerRule{ {4864,  6784,  100}, {150, 150, 200}, 0 }) },
+            { "09", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_005", ZoneTriggerRule{ {160,   -1472, 100}, {150, 150, 200}, 0 }) },
+            { "11", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_006", ZoneTriggerRule{ {-2816, -288,  100}, {150, 150, 200}, 0 }) },
+            { "13", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_007", ZoneTriggerRule{ {544,   -320,  100}, {150, 150, 200}, 0 }) },
+            { "14", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_007", ZoneTriggerRule{ {-1472, -1312, 100}, {150, 150, 200}, 0 }) },
+            { "16", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_008", ZoneTriggerRule{ {-608,  1024,  676}, {150, 150, 200}, 0 }) },
+            { "17", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_008", ZoneTriggerRule{ {4096,  6528,  676}, {150, 150, 200}, 0 }) },
+            { "19", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_009", ZoneTriggerRule{ {-2048, -3488, 548}, {150, 150, 200}, 0 }) },
+            { "21", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_010", ZoneTriggerRule{ {1344,  288,   260}, {150, 150, 200}, 0 }) },
+            { "23", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_011", ZoneTriggerRule{ {-2336, -2944, 484}, {150, 150, 200}, 0 }) },
         };
         // }}}
     } else {
