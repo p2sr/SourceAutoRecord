@@ -88,17 +88,6 @@ void Session::Start()
         return;
     }
 
-    // mlugg 20210418: this is a *really* weird bug; for some reason,
-    // mat_norendering is sometimes never unset for blue. It feels like
-    // prespawn must be being skipped for some reason, however it can't
-    // be that simple, because this is a 1.12.2 regression. It might be
-    // something to do with NetMessage? Regardless, hacky workaround -
-    // just reset the loads here too, just in case they weren't already
-    // reset.
-    if (!engine->IsOrange()) {
-        this->ResetLoads();
-    }
-
     auto tick = engine->GetTick();
 
     this->Rebase(tick);
@@ -318,9 +307,7 @@ void Session::Changed(int state)
             std::this_thread::sleep_for(std::chrono::milliseconds(sar_load_delay.GetInt()));
         }
     } else if (state == SIGNONSTATE_PRESPAWN) {
-        if (!engine->IsOrange()) {
-            this->ResetLoads();
-        }
+        this->ResetLoads();
         SpeedrunTimer::FinishLoad();
     } else {
         this->Ended();
