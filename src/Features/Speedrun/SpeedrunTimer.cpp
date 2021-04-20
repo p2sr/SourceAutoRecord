@@ -545,6 +545,10 @@ void SpeedrunTimer::Reset(bool requested)
     g_speedrun.splits.clear();
     g_speedrun.visitedMaps.clear();
 
+    if (networkManager.isConnected) {
+        networkManager.splitTicksTotal = -1;
+    }
+
     if (requested) {
         sendCoopPacket(PacketType::RESET);
         setTimerAction(TimerAction::RESET);
