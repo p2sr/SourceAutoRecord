@@ -478,6 +478,10 @@ void SpeedrunTimer::Stop(std::string segName)
     g_speedrun.isRunning = false;
 
     sendCoopPacket(PacketType::STOP, &segName);
+
+    if (networkManager.isConnected) {
+        networkManager.NotifySpeedrunFinished(false);
+    }
 }
 
 void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested)
