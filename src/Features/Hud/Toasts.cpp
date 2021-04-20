@@ -49,7 +49,11 @@ void ToastHud::AddToast(std::string text, Color color, double duration, bool doC
     });
 
     if (doConsole) {
-        console->ColorMsg(color, "%s\n", text.c_str());
+        Color conCol = color;
+        if (color.r() == 255 && color.g() == 255 && color.b() == 255 && color.a() == 255) {
+            conCol.SetColor(255, 150, 50, 255);
+        }
+        console->ColorMsg(conCol, "%s\n", text.c_str());
     }
 }
 
