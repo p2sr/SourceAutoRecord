@@ -1087,7 +1087,7 @@ void Renderer::Init(void **videomode)
     Memory::UnProtect((void*)SND_RecordBuffer, 10);
     Memory::UnProtect(trampoline, sizeof trampoline);
     *(uint32_t *)(trampoline + 0x04) = (uintptr_t)SND_RecordBuffer_Hook - ((uintptr_t)trampoline + 0x04 + 4);
-    *(uint32_t *)(trampoline + 0x0E) = (uintptr_t)g_movieInfo - ((uintptr_t)trampoline + 0x0E + 4);
+    *(uint32_t *)(trampoline + 0x0E) = (uintptr_t)g_movieInfo;
     *(uint32_t *)(trampoline + 0x14) = (uintptr_t)SND_RecordBuffer + 10 - ((uintptr_t)trampoline + 0x14 + 4);
     ((uint8_t *)SND_RecordBuffer)[0] = 0xE9; // jmp
     *(uint32_t *)(SND_RecordBuffer + 1) = (uintptr_t)trampoline - (SND_RecordBuffer + 1 + 4);
