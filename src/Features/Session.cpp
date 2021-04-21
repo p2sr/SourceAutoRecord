@@ -92,6 +92,9 @@ void Session::Start()
 
     this->Rebase(tick);
     timer->Rebase(tick);
+
+    RunLoadExecs();
+
     if (!engine->IsCoop() || (server->GetChallengeStatus() == CMStatus::CHALLENGE && !engine->IsOrange())) {
         SpeedrunTimer::Resume();
     }
@@ -173,8 +176,6 @@ void Session::Start()
         }
         demoGhostPlayer.SpawnAllGhosts();
     }
-
-    RunLoadExecs();
 
     engine->hasRecorded = false;
     engine->hasPaused = false;
