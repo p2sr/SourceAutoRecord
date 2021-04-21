@@ -308,7 +308,7 @@ DETOUR(Client::GetButtonBits, bool bResetState)
 DETOUR_COMMAND(Client::playvideo_end_level_transition)
 {
     console->DevMsg("%s\n", args.m_pArgSBuffer);
-    session->Ended();
+    //session->Ended();
 
     return Client::playvideo_end_level_transition_callback(args);
 }
