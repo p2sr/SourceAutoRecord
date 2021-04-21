@@ -154,6 +154,7 @@ int m_bCanFirePortal1;
 int m_bCanFirePortal2;
 int m_hPrimaryPortal;
 int m_hSecondaryPortal;
+int m_iPortalLinkageGroupID;
 
 // CProp_Portal
 int m_bActivated;

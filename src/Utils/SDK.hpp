@@ -1089,7 +1089,6 @@ public:
         return m_Index >> Offsets::NUM_SERIAL_NUM_SHIFT_BITS;
     }
 
-protected:
     unsigned long m_Index;
 };
 

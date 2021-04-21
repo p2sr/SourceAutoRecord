@@ -154,6 +154,7 @@ extern int m_bCanFirePortal1;
 extern int m_bCanFirePortal2;
 extern int m_hPrimaryPortal;
 extern int m_hSecondaryPortal;
+extern int m_iPortalLinkageGroupID;
 
 // CProp_Portal
 extern int m_bActivated;
