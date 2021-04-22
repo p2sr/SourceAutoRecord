@@ -432,7 +432,7 @@ void NetworkManager::Treat(sf::Packet& packet, bool udp)
 
                 if (ghost_sync.GetBool()) {
                     if (this->AreAllGhostsAheadOrSameMap()) {
-                        engine->SendToCommandBuffer("unpause", 40);
+                        engine->ExecuteCommand("unpause", true);
                     }
                 }
             });
