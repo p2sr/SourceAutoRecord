@@ -345,9 +345,9 @@ struct Seq {
 
 std::vector<Seq> seqs;
 
-CON_COMMAND(cond, "cond [condition] [command] - runs a command only if a given condition is met.\n")
+CON_COMMAND(cond, "cond [condition] [command] [args]... - runs a command only if a given condition is met.\n")
 {
-    if (args.ArgC() != 3) {
+    if (args.ArgC() < 3) {
         return console->Print(cond.ThisPtr()->m_pszHelpString);
     }
 
@@ -361,7 +361,11 @@ CON_COMMAND(cond, "cond [condition] [command] - runs a command only if a given c
     }
 
     if (EvalCondition(cond)) {
-        engine->ExecuteCommand(args[2]);
+        std::string cmd = args[2];
+        for (int i = 3; i < args.ArgC(); ++i) {
+            cmd += Utils::ssprintf(" \"%s\"", args[i]);
+        }
+        engine->ExecuteCommand(cmd.c_str());
     }
 }
 
