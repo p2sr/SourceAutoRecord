@@ -120,7 +120,7 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
         symbol->MaxNameLen = MAX_SYM_NAME;
         const char *symname;
         if (SymFromAddr(process, (ULONG64)addr, &displacement, symbol)) {
-            symname = symbol->Name;
+            symname = symbol->NameLen ? symbol->Name : "";
         } else {
             symname = "";
             displacement = (uint32_t)addr - (uint32_t)symbol->ModBase;
