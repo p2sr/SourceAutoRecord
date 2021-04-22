@@ -21,6 +21,7 @@
 #include "Features/SegmentedTools.hpp"
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/ConditionalExec.hpp"
+#include "Features/NetMessage.hpp"
 
 #include "Engine.hpp"
 #include "Client.hpp"
@@ -30,6 +31,8 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+
+#define RESET_COOP_PROGRESS_MESSAGE_TYPE "coop-reset"
 
 Variable sv_cheats;
 Variable sv_footsteps;
@@ -523,6 +526,17 @@ DETOUR(Server::GameFrame, bool simulating)
 static int (*GlobalEntity_GetIndex)(const char *);
 static void (*GlobalEntity_SetFlags)(int, int);
 
+static void resetCoopProgress(void *data, size_t size)
+{
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags0"), 0);
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags1"), 0);
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags2"), 0);
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags3"), 0);
+    engine->ExecuteCommand("mp_mark_all_maps_incomplete", true);
+    engine->ExecuteCommand("mp_lock_all_taunts", true);
+}
+
+
 bool Server::Init()
 {
     this->g_GameMovement = Interface::Create(this->Name(), "GameMovement0");
@@ -611,6 +625,8 @@ bool Server::Init()
         *(char *)(insn_addr + 2) = 0x5C;
     }
 
+    NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &resetCoopProgress);
+
     offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);
     offsetFinder->ServerSide("CBasePlayer", "m_iName", &Offsets::m_iName);
     offsetFinder->ServerSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::S_m_vecVelocity);
@@ -653,12 +669,10 @@ bool Server::Init()
 }
 CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop progress.\n")
 {
-    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags0"), 0);
-    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags1"), 0);
-    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags2"), 0);
-    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags3"), 0);
-    engine->ExecuteCommand("mp_mark_all_maps_incomplete", true);
-    engine->ExecuteCommand("mp_lock_all_taunts", true);
+    if (engine->IsCoop()) {
+        NetMessage::SendMsg(RESET_COOP_PROGRESS_MESSAGE_TYPE, nullptr, 0);
+        resetCoopProgress(nullptr, 0);
+    }
 }
 void Server::Shutdown()
 {

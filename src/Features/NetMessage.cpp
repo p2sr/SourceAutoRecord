@@ -7,6 +7,9 @@
 #include <queue>
 #include <stdexcept>
 
+// FIXME: currently, we receieve messages sent by ourselves. Probably
+// don't do that
+
 // if blue: whether orange is ready
 // if orange: whether we've sent the ready packet
 static bool g_orangeReady = false;
