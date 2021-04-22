@@ -178,6 +178,8 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void* player, CMoveData* pMove)
 
     pi.oldButtons = pMove->m_nOldButtons;
 
+    pi.ticktime = 1.0f / 60.0f; // TODO: find actual tickrate variable and put it there
+
     return pi;
 }
 

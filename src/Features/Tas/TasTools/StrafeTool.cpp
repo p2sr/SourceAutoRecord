@@ -2,6 +2,7 @@
 #include "../TasParser.hpp"
 
 #include "Modules/Server.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Console.hpp"
 #include "Utils/SDK.hpp"
@@ -14,46 +15,149 @@ void AutoStrafeTool::Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo)
 {
     auto asParams = std::static_pointer_cast<AutoStrafeParams>(params);
 
-    if (asParams->enabled) {
-        float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
-        float angle = velAngle + this->GetStrafeAngle(pInfo, *asParams, fb);
+    if (!asParams->enabled)
+        return;
 
-        if (asParams->strafeType == AutoStrafeType::VECTORIAL) {
-            angle = DEG2RAD(angle - pInfo.angles.y);
-            fb.moveAnalog.x = -sinf(angle);
-            fb.moveAnalog.y = cosf(angle);
-        } else if (asParams->strafeType == AutoStrafeType::ANGULAR) {
-            float lookAngle = RAD2DEG(atan2f(fb.moveAnalog.x, fb.moveAnalog.y));
+    float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
 
-            QAngle newAngle = { 0, angle + lookAngle, 0 };
-            fb.viewAnalog.x = newAngle.y - pInfo.angles.y;
-        }
-
-        if (asParams->strafeDir.type == AutoStrafeParamType::STRAIGHT) {
-            asParams->direction *= -1;
-        }
-    }
-
+    // update parameters that has type CURRENT
     if (this->updated) {
+        this->reachedAngle = false;
+        this->reachedVelocity = false;
 
-        //TODO: update parameters that has type CURRENT here!
+        if (asParams->strafeDir.type == CURRENT) {
+            asParams->strafeDir.angle = velAngle;
+            MarkAngleReached(pInfo);
+        }
+
+        if (asParams->strafeSpeed.type == CURRENT) {
+            asParams->strafeSpeed.speed = pInfo.velocity.Length2D();
+            this->reachedVelocity = true;
+        }
 
         this->updated = false;
     }
+
+    
+    float angle = velAngle + this->GetStrafeAngle(pInfo, *asParams);
+
+    // applying the calculated angle depending on the type of strafing
+    if (asParams->strafeType == AutoStrafeType::VECTORIAL) {
+        angle = DEG2RAD(angle - pInfo.angles.y);
+        fb.moveAnalog.x = -sinf(angle);
+        fb.moveAnalog.y = cosf(angle);
+    } else if (asParams->strafeType == AutoStrafeType::ANGULAR) {
+        float lookAngle = RAD2DEG(atan2f(fb.moveAnalog.x, fb.moveAnalog.y));
+
+        QAngle newAngle = { 0, angle + lookAngle, 0 };
+        fb.viewAnalog.x = newAngle.y - pInfo.angles.y;
+    }
+    
 }
 
-AutoStrafeTool* AutoStrafeTool::GetTool()
+// returns player's velocity after its been affected by ground friction
+Vector AutoStrafeTool::GetGroundFrictionVelocity(const TasPlayerInfo& player)
 {
-    return &autoStrafeTool;
+    // Getting player's friction
+    // it is important to include a right value, as it is modified on a slowfly effect.
+    float friction = sv_friction.GetFloat() * player.surfaceFriction;
+
+    Vector vel = player.velocity;
+
+    if (player.grounded) {
+        if (vel.Length2D() >= sv_stopspeed.GetFloat()) {
+            vel = vel * (1.0f - player.ticktime * friction);
+        } else if (vel.Length2D() >= fmaxf(0.1f, player.ticktime * sv_stopspeed.GetFloat() * friction)) {
+            // lambda -= v * tau * stop * friction
+            vel = vel - (vel.Normalize() * (player.ticktime * sv_stopspeed.GetFloat() * friction)); 
+        } else {
+            vel = Vector(0, 0, 0);
+        }
+    }
+
+    return vel;
+}
+
+// returns max speed value which is used by autostrafer math
+float AutoStrafeTool::GetMaxSpeed(const TasPlayerInfo& player, Vector wishDir, bool notAired)
+{
+    float duckMultiplier = (player.grounded && player.ducked) ? (1.0f / 3.0f) : 1.0f;
+
+    wishDir.y *= cl_forwardspeed.GetFloat();
+    wishDir.x *= cl_sidespeed.GetFloat();
+
+    float maxSpeed = fminf(player.maxSpeed, wishDir.Length2D()) * duckMultiplier;
+
+    float maxAiredSpeed = (player.grounded || notAired) ? maxSpeed : fminf(60, maxSpeed);
+
+    return maxAiredSpeed;
+}
+
+float AutoStrafeTool::GetMaxAccel(const TasPlayerInfo& player, Vector wishDir)
+{
+
+    float accel = (player.grounded) ? sv_accelerate.GetFloat() : sv_paintairacceleration.GetFloat();
+    float realAccel = player.surfaceFriction * player.ticktime * GetMaxSpeed(player,wishDir,true) * accel;
+    return realAccel;
+}
+
+// returns the predicted velocity in the next tick
+Vector AutoStrafeTool::GetVelocityAfterMove(const TasPlayerInfo& player, Vector wishDir)
+{
+    Vector velocity = GetGroundFrictionVelocity(player);
+
+    if (wishDir.Length2D() == 0) return velocity;
+
+    if (!player.grounded) wishDir.y *= cos(player.angles.x);
+
+    float maxSpeed = GetMaxSpeed(player, wishDir);
+    float maxAccel = GetMaxAccel(player, wishDir);
+
+    float pitch = DEG2RAD(player.angles.y);
+    Vector rotWishDir(sin(pitch) * wishDir.x + cos(pitch) * wishDir.y, -cos(pitch) * wishDir.x + sin(pitch) * wishDir.y);
+    float accelDiff = maxSpeed - velocity.Dot(rotWishDir.Normalize());
+
+    if (accelDiff <= 0) return velocity;
+
+    float accelForce = fminf(maxAccel, accelDiff);
+
+    return velocity + rotWishDir.Normalize() * accelForce;
+}
+
+// get horizontal angle of wishdir that would give you the fastest acceleration
+// angle is relative to your current velocity direction.
+float AutoStrafeTool::GetFastestStrafeAngle(const TasPlayerInfo& player)
+{
+    return 0;
+}
+
+// get horizontal angle of wishdir that would maintain current velocity
+// angle is relative to your current velocity direction.
+float AutoStrafeTool::GetMaintainStrafeAngle(const TasPlayerInfo& player)
+{
+    return 0;
+}
+
+// get horizontal angle of wishdir that does correct thing based on given parameters
+// angle is relative to your current velocity direction.
+float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo& player, AutoStrafeParams &params)
+{
+    return 0;
+}
+
+//change boolean, but also generates a line an autostrafer will follow later on.
+void AutoStrafeTool::MarkAngleReached(const TasPlayerInfo& pInfo)
+{
+    this->reachedAngle = true;
+
 }
 
 std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::string> vp)
 {
     AutoStrafeType type = VECTORIAL;
-    AutoStrafeDirection dir{ STRAIGHT, 0 };
+    AutoStrafeDirection dir{ CURRENT, 0 };
     AutoStrafeSpeed speed = { SPECIFIED, 10000.0f };
     bool turningPriority = false;
-    int direction = 1;
 
     if (vp.size() == 0) {
         return std::make_shared<AutoStrafeParams>();
@@ -77,7 +181,7 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
         //speed
         else if (param == "max") {
             speed.type = SPECIFIED;
-            speed.speed = 10000.0f;
+            speed.speed = 10000.0f; // as long as it's higher than max speed times square root of 2, we should be fine?
         } else if (param == "maintain") {
             speed.type = CURRENT;
         } else if (param.size() > 3 && param.substr(param.size() - 3, 3) == "ups") {
@@ -85,8 +189,8 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
             speed.speed = TasParser::toFloat(param.substr(0, param.size() - 3));
         }
 
-        /*//dir (using large numbers for left and right because angle is clamped to range -180 and 180)
-        else if (param == "current") {
+        //dir (using large numbers for left and right because angle is clamped to range -180 and 180)
+        else if (param == "straight") {
             dir.type = CURRENT;
         } else if (param == "left") {
             dir.type = SPECIFIED;
@@ -97,102 +201,24 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
         } else if (param.size() > 3 && param.substr(param.size() - 3, 3) == "deg") {
             dir.type = SPECIFIED;
             dir.angle = TasParser::toFloat(param.substr(0, param.size() - 3));
-        }*/
-
-        else if (param == "straight") {
-            dir.type = STRAIGHT;
-        } else if (param == "left") {
-            dir.type = TURN;
-            direction = -1;
-        } else if (param == "right") {
-            dir.type = TURN;
-            direction = 1;
         }
 
         //unknown parameter...
         else {
-        
+            // do we even handle unknown parameters?!
+            // mlugg is going to be pissed
         }
     }
 
-    return std::make_shared<AutoStrafeParams>(type, dir, speed, turningPriority, direction);
+    return std::make_shared<AutoStrafeParams>(type, dir, speed, turningPriority);
+}
+
+AutoStrafeTool* AutoStrafeTool::GetTool()
+{
+    return &autoStrafeTool;
 }
 
 void AutoStrafeTool::Reset()
 {
     params = std::make_shared<AutoStrafeParams>();
-}
-
-
-
-float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo& player, AutoStrafeParams &params, const TasFramebulk fb)
-{
-    float frametime = server->gpGlobals->frametime; // A time for one frame to pass
-
-    // Getting player's friction
-    float friction = sv_friction.GetFloat() * player.surfaceFriction;
-
-    // Ground friction
-    Vector velocity = player.velocity;
-    Vector lambda = velocity;
-
-    if (player.grounded) {
-        if (velocity.Length2D() >= sv_stopspeed.GetFloat()) {
-            lambda = lambda * (1.0f - frametime * friction);
-        } else if (velocity.Length2D() >= std::fmax(0.1, frametime * sv_stopspeed.GetFloat() * friction)) {
-            Vector normalizedVelocity = velocity;
-            Math::VectorNormalize(normalizedVelocity);
-            lambda = lambda + (normalizedVelocity * (frametime * sv_stopspeed.GetFloat() * friction)) * -1; // lambda -= v * tau * stop * friction
-        } else {
-            lambda = lambda * 0;
-        }
-    }
-
-    // Getting M
-
-    float forwardMove = fb.moveAnalog.x * 175.f;
-    float sideMove = fb.moveAnalog.y * 175.f;
-
-    float duckMultiplier = (player.grounded && player.ducked) ? 1.0f / 3.0f : 1.0f;
-
-    float stateLen = sqrt(forwardMove * forwardMove + sideMove * sideMove);
-    float F = forwardMove * player.maxSpeed * duckMultiplier / stateLen;
-    float S = sideMove * player.maxSpeed * duckMultiplier / stateLen;
-
-    float M = std::fminf(player.maxSpeed, sqrt(F * F + S * S));
-
-    // Getting other stuff
-    float A = (player.grounded) ? sv_accelerate.GetFloat() : sv_airaccelerate.GetFloat() / 2;
-    float L = (player.grounded) ? M : std::fminf(60, M);
-
-    // Getting the most optimal angle
-    float cosTheta;
-    if (params.strafeDir.type != AutoStrafeParamType::STRAIGHT && !player.grounded) {
-        cosTheta = (player.surfaceFriction * frametime * M * A) / (2 * velocity.Length2D());
-    } else if (params.strafeDir.type != AutoStrafeParamType::STRAIGHT && player.grounded) {
-        cosTheta = std::cos(velocity.Length2D() * velocity.Length2D() - std::pow(player.surfaceFriction * frametime * M * A, 2) - lambda.Length2D() * lambda.Length2D()) / (2 * player.surfaceFriction * frametime * M * A * lambda.Length2D());
-    } else {
-        cosTheta = (L - player.surfaceFriction * frametime * M * A) / lambda.Length2D();
-    }
-
-
-    if (cosTheta < 0)
-        cosTheta = M_PI_F / 2;
-    if (cosTheta > 1)
-        cosTheta = 0;
-
-    float theta;
-    if (params.strafeDir.type != AutoStrafeParamType::STRAIGHT) {
-        theta = (M_PI_F - acosf(cosTheta)) * ((params.direction > 0) ? -1 : 1);
-    } else {
-        theta = acosf(cosTheta) * params.direction;
-    }
-
-    return RAD2DEG(theta);
-}
-
-Vector AutoStrafeTool::PredictNextVector(const TasPlayerInfo& player, float angle)
-{
-    Vector v = { 0, 0, 0 };
-    return v;
 }

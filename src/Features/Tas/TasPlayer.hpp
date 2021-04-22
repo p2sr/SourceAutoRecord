@@ -46,6 +46,7 @@ struct TasPlayerInfo {
     bool ducked;
     bool grounded;
     int oldButtons;
+    float ticktime;
 };
 
 class TasPlayer : public Feature {

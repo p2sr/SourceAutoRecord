@@ -15,6 +15,7 @@
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Tas/TasPlayer.hpp"
+#include "Features/Tas/TasTools/StrafeTool.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/TimescaleDetect.hpp"
@@ -39,6 +40,7 @@ Variable sv_alternateticks;
 Variable sv_bonus_challenge;
 Variable sv_accelerate;
 Variable sv_airaccelerate;
+Variable sv_paintairacceleration;
 Variable sv_friction;
 Variable sv_maxspeed;
 Variable sv_stopspeed;
@@ -190,12 +192,25 @@ DETOUR(Server::PlayerMove)
     return Server::PlayerMove(thisptr);
 }
 
+float g_predictedVel = 0;
 // CGameMovement::ProcessMovement
 DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
 {
     if (tasPlayer->IsActive() && sar_tas_tools_enabled.GetBool()) {
         tasPlayer->PostProcess(pPlayer, pMove);
     }
+    
+    TasPlayerInfo pi = tasPlayer->GetPlayerInfo(pPlayer, pMove);
+
+    float currVel = pi.velocity.Length2D();
+    float diff = abs(g_predictedVel - currVel);
+
+    if (!engine->IsGamePaused()) {
+        console->Print("Predicted: %fups, got: %fups  (diff %fups)\n", g_predictedVel, currVel, diff);
+    }
+    
+    Vector wishdir(pMove->m_flSideMove / 175.0f, pMove->m_flForwardMove / 175.0f);
+    g_predictedVel = autoStrafeTool.GetVelocityAfterMove(pi, wishdir).Length2D();
 
     unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)pPlayer + Offsets::m_hGroundEntity);
     bool grounded = groundEntity != 0xFFFFFFFF;
@@ -594,6 +609,7 @@ bool Server::Init()
     sv_bonus_challenge = Variable("sv_bonus_challenge");
     sv_accelerate = Variable("sv_accelerate");
     sv_airaccelerate = Variable("sv_airaccelerate");
+    sv_paintairacceleration = Variable("sv_paintairacceleration");
     sv_friction = Variable("sv_friction");
     sv_maxspeed = Variable("sv_maxspeed");
     sv_stopspeed = Variable("sv_stopspeed");
