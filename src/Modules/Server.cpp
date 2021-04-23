@@ -209,8 +209,9 @@ DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
         console->Print("Predicted: %fups, got: %fups  (diff %fups)\n", g_predictedVel, currVel, diff);
     }
     
-    Vector wishdir(pMove->m_flSideMove / 175.0f, pMove->m_flForwardMove / 175.0f);
-    g_predictedVel = autoStrafeTool.GetVelocityAfterMove(pi, wishdir).Length2D();
+    float forwardMove = pMove->m_flForwardMove / 175.0f;
+    float sideMove = pMove->m_flSideMove / 175.0f;
+    g_predictedVel = autoStrafeTool.GetVelocityAfterMove(pi, forwardMove, sideMove).Length2D();
 
     unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)pPlayer + Offsets::m_hGroundEntity);
     bool grounded = groundEntity != 0xFFFFFFFF;

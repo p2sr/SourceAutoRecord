@@ -71,7 +71,11 @@ Vector AutoStrafeTool::GetGroundFrictionVelocity(const TasPlayerInfo& player)
             // lambda -= v * tau * stop * friction
             vel = vel - (vel.Normalize() * (player.ticktime * sv_stopspeed.GetFloat() * friction)); 
         } else {
-            vel = Vector(0, 0, 0);
+            vel = Vector();
+        }
+
+        if (vel.Length2D() < 1.0) {
+            vel = Vector();
         }
     }
 
@@ -81,47 +85,79 @@ Vector AutoStrafeTool::GetGroundFrictionVelocity(const TasPlayerInfo& player)
 // returns max speed value which is used by autostrafer math
 float AutoStrafeTool::GetMaxSpeed(const TasPlayerInfo& player, Vector wishDir, bool notAired)
 {
+    // calculate max speed based on player inputs, grounded and ducking states.
     float duckMultiplier = (player.grounded && player.ducked) ? (1.0f / 3.0f) : 1.0f;
-
-    wishDir.y *= cl_forwardspeed.GetFloat();
-    wishDir.x *= cl_sidespeed.GetFloat();
-
+    wishDir.y *= player.maxSpeed;
+    wishDir.x *= player.maxSpeed;
     float maxSpeed = fminf(player.maxSpeed, wishDir.Length2D()) * duckMultiplier;
-
     float maxAiredSpeed = (player.grounded || notAired) ? maxSpeed : fminf(60, maxSpeed);
 
     return maxAiredSpeed;
 }
 
+
 float AutoStrafeTool::GetMaxAccel(const TasPlayerInfo& player, Vector wishDir)
 {
-
     float accel = (player.grounded) ? sv_accelerate.GetFloat() : sv_paintairacceleration.GetFloat();
     float realAccel = player.surfaceFriction * player.ticktime * GetMaxSpeed(player,wishDir,true) * accel;
     return realAccel;
 }
 
+
+Vector AutoStrafeTool::CreateWishDir(const TasPlayerInfo& player, float forwardMove, float sideMove)
+{
+    Vector wishDir(sideMove, forwardMove);
+    if (wishDir.Length() > 1.f) {
+        wishDir = wishDir.Normalize();
+    }
+
+    // forwardmove is affected by player pitch when in air
+    if (!player.grounded) {
+        wishDir.y *= cos(DEG2RAD(player.angles.x));
+    }
+
+    //rotating wishDir
+    float yaw = DEG2RAD(player.angles.y);
+    wishDir = Vector(sin(yaw) * wishDir.x + cos(yaw) * wishDir.y, -cos(yaw) * wishDir.x + sin(yaw) * wishDir.y);
+
+    // air control limit
+    float airConLimit = 300;
+    if (!player.grounded && player.velocity.Length2D() > airConLimit) {
+        if (abs(player.velocity.x) > airConLimit * 0.5 && player.velocity.x * wishDir.x < 0) {
+            wishDir.x = 0;
+        }
+        if (abs(player.velocity.y) > airConLimit * 0.5 && player.velocity.y * wishDir.y < 0) {
+            wishDir.y = 0;
+        }
+    }
+
+    return wishDir;
+}
+
+
 // returns the predicted velocity in the next tick
-Vector AutoStrafeTool::GetVelocityAfterMove(const TasPlayerInfo& player, Vector wishDir)
+Vector AutoStrafeTool::GetVelocityAfterMove(const TasPlayerInfo& player, float forwardMove, float sideMove)
 {
     Vector velocity = GetGroundFrictionVelocity(player);
 
+    //create wishdir for calculations
+    Vector wishDir = CreateWishDir(player, forwardMove, sideMove);
+
+    //no movement means velocity is only affected by ground friction
     if (wishDir.Length2D() == 0) return velocity;
 
-    if (!player.grounded) wishDir.y *= cos(player.angles.x);
-
+    // get max speed and acceleration
     float maxSpeed = GetMaxSpeed(player, wishDir);
     float maxAccel = GetMaxAccel(player, wishDir);
 
-    float pitch = DEG2RAD(player.angles.y);
-    Vector rotWishDir(sin(pitch) * wishDir.x + cos(pitch) * wishDir.y, -cos(pitch) * wishDir.x + sin(pitch) * wishDir.y);
-    float accelDiff = maxSpeed - velocity.Dot(rotWishDir.Normalize());
+    // limiting the velocity
+    float accelDiff = maxSpeed - velocity.Dot(wishDir.Normalize());
 
     if (accelDiff <= 0) return velocity;
 
     float accelForce = fminf(maxAccel, accelDiff);
 
-    return velocity + rotWishDir.Normalize() * accelForce;
+    return velocity + wishDir.Normalize() * accelForce;
 }
 
 // get horizontal angle of wishdir that would give you the fastest acceleration

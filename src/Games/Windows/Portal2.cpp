@@ -227,6 +227,7 @@ void Portal2::LoadOffsets()
     m_Local = 5060; // CBasePlayer
     m_nTractorBeamCount = 396; // CPlayerLocalData
     m_hTractorBeam = 392; // CPlayerLocalData
+    UseSpeedPower = 518; // CPortal_Player
 
     // client.dll
 

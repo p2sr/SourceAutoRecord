@@ -65,11 +65,12 @@ public:
     bool reachedAngle = false;
     bool reachedVelocity = false;
 
+    Vector CreateWishDir(const TasPlayerInfo& player, float forwardMove, float sideMove);
     Vector GetGroundFrictionVelocity(const TasPlayerInfo& player);
     float GetMaxSpeed(const TasPlayerInfo& player, Vector wishDir, bool notAired = false);
     float GetMaxAccel(const TasPlayerInfo& player, Vector wishDir);
 
-    Vector GetVelocityAfterMove(const TasPlayerInfo& player, Vector wishDir);
+    Vector GetVelocityAfterMove(const TasPlayerInfo& player, float forwardMove, float sideMove);
     float GetFastestStrafeAngle(const TasPlayerInfo& player);
     float GetMaintainStrafeAngle(const TasPlayerInfo& player);
 

@@ -167,10 +167,16 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void* player, CMoveData* pMove)
     pi.slot = server->GetSplitScreenPlayerSlot(player);
     pi.surfaceFriction = *reinterpret_cast<float*>((uintptr_t)player + 4096);
     pi.ducked = *reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked);
+
     pi.maxSpeed = *reinterpret_cast<float*>((uintptr_t)player + Offsets::m_flMaxspeed);
 
     unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + 344); // m_hGroundEntity
     pi.grounded = groundEntity != 0xFFFFFFFF;
+
+    // predict the grounded state after jump.
+    if (pi.grounded && (pMove->m_nButtons & IN_JUMP) && !(pMove->m_nOldButtons & IN_JUMP)) {
+        pi.grounded = false;
+    }
 
     pi.position = *reinterpret_cast<Vector*>((uintptr_t)player + 460);
     pi.angles = engine->GetAngles(pi.slot);
