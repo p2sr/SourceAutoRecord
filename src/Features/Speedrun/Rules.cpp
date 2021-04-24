@@ -43,7 +43,7 @@ std::optional<SpeedrunRule> EntityInputRule::Create(std::map<std::string, std::s
     std::string *inputname = lookupMap(params, "inputname");
     std::string *parameter = lookupMap(params, "parameter");
 
-    EntityInputRule rule;
+    EntityInputRule rule = {0};
 
     if (targetname) {
         rule.targetname = *targetname;
