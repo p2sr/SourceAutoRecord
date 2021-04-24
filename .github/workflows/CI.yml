@@ -6,12 +6,11 @@ jobs:
   build-lin:
     name: Linux Build
     runs-on: ubuntu-16.04
-    if: "contains(github.event.head_commit.message, '[ci build]')"
     steps:
     - name: Checkout
       uses: actions/checkout@v1
     - name: Install Dependencies
-      run: make get-deps
+      run: sudo apt-get install -y g++-8-multilib
     - name: Build
       run: |
         make
@@ -25,7 +24,6 @@ jobs:
   build-win:
     name: Windows Build
     runs-on: windows-2019
-    if: "contains(github.event.head_commit.message, '[ci build]')"
     steps:
       - name: Checkout
         uses: actions/checkout@v1
