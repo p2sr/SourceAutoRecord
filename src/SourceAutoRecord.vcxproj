@@ -153,7 +153,6 @@
     <ClCompile Include="Features\Hud\LPHud.cpp" />
     <ClCompile Include="Features\Hud\Toasts.cpp" />
     <ClCompile Include="Features\Imitator.cpp" />
-    <ClCompile Include="Features\InfraSession.cpp" />
     <ClCompile Include="Features\Listener.cpp" />
     <ClCompile Include="Features\OffsetFinder.cpp" />
     <ClCompile Include="Features\Rebinder.cpp" />
@@ -197,17 +196,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Games\Linux\HalfLife2Episodic.cpp">
+    <ClCompile Include="Games\Linux\Portal2.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Games\Linux\HalfLifeSource.cpp">
+    <ClCompile Include="Games\Linux\PortalReloaded.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\Portal.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Games\Linux\PortalStoriesMel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -217,15 +212,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLife2Episodic.cpp" />
-    <ClCompile Include="Games\Windows\HalfLife2Unpack.cpp" />
-    <ClCompile Include="Games\Windows\HalfLifeSource.cpp" />
-    <ClCompile Include="Games\Windows\INFRA.cpp" />
     <ClCompile Include="Games\Windows\ApertureTag.cpp" />
-    <ClCompile Include="Games\Windows\Portal.cpp" />
+    <ClCompile Include="Games\Windows\Portal2.cpp" />
     <ClCompile Include="Games\Windows\PortalReloaded.cpp" />
     <ClCompile Include="Games\Windows\PortalStoriesMel.cpp" />
-    <ClCompile Include="Games\Windows\PortalUnpack.cpp" />
     <ClCompile Include="Games\Windows\ThinkingWithTimeMachine.cpp" />
     <ClCompile Include="Interface.cpp" />
     <ClCompile Include="Modules\Client.cpp" />
@@ -241,26 +231,6 @@
     <ClCompile Include="Modules\Surface.cpp" />
     <ClCompile Include="Modules\Tier1.cpp" />
     <ClCompile Include="Modules\VGui.cpp" />
-    <ClCompile Include="Games\Linux\HalfLife2.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\Portal2.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\TheBeginnersGuide.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\TheStanleyParable.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLife2.cpp" />
-    <ClCompile Include="Games\Windows\Portal2.cpp" />
-    <ClCompile Include="Games\Windows\TheBeginnersGuide.cpp" />
-    <ClCompile Include="Games\Windows\TheStanleyParable.cpp" />
     <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
@@ -348,7 +318,6 @@
     <ClInclude Include="Features\Hud\LPHud.hpp" />
     <ClInclude Include="Features\Hud\Toasts.hpp" />
     <ClInclude Include="Features\Imitator.hpp" />
-    <ClInclude Include="Features\InfraSession.hpp" />
     <ClInclude Include="Features\Listener.hpp" />
     <ClInclude Include="Features\OffsetFinder.hpp" />
     <ClInclude Include="Features\Rebinder.hpp" />
@@ -393,55 +362,26 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLife2.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLife2Episodic.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLifeSource.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\Portal.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="Games\Linux\Portal2.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\PortalReloaded.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Games\Linux\PortalStoriesMel.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="Games\Linux\TheBeginnersGuide.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\TheStanleyParable.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="Games\Linux\ThinkingWithTimeMachine.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="Games\Windows\HalfLife2Episodic.hpp" />
-    <ClInclude Include="Games\Windows\HalfLife2Unpack.hpp" />
-    <ClInclude Include="Games\Windows\HalfLifeSource.hpp" />
-    <ClInclude Include="Games\Windows\INFRA.hpp" />
     <ClInclude Include="Games\Windows\ApertureTag.hpp" />
-    <ClInclude Include="Games\Windows\HalfLife2.hpp" />
-    <ClInclude Include="Games\Windows\Portal.hpp" />
     <ClInclude Include="Games\Windows\Portal2.hpp" />
     <ClInclude Include="Games\Windows\PortalReloaded.hpp" />
     <ClInclude Include="Games\Windows\PortalStoriesMel.hpp" />
-    <ClInclude Include="Games\Windows\PortalUnpack.hpp" />
-    <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp" />
-    <ClInclude Include="Games\Windows\TheStanleyParable.hpp" />
     <ClInclude Include="Games\Windows\ThinkingWithTimeMachine.hpp" />
     <ClInclude Include="Interface.hpp" />
     <ClInclude Include="Modules.hpp" />

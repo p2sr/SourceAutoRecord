@@ -20,7 +20,7 @@ Variable sar_lphud_y("sar_lphud_y", "-10", -99999, 99999, "y pos of lp counter.\
 Variable sar_lphud_font("sar_lphud_font", "92", 0, "Change font of portal counter.\n");
 
 LPHud::LPHud()
-    : Hud(HudType_InGame, true, SourceGame_SupportsS3)
+    : Hud(HudType_InGame, true)
 {
 }
 bool LPHud::ShouldDraw()

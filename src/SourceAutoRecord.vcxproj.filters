@@ -22,28 +22,34 @@
     <ClCompile Include="Features\Hud\Hud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Games\Windows\ApertureTag.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="Games\Windows\Portal2.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\TheBeginnersGuide.cpp">
+    <ClCompile Include="Games\Windows\PortalReloaded.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLife2.cpp">
+    <ClCompile Include="Games\Windows\PortalStoriesMel.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\TheStanleyParable.cpp">
+    <ClCompile Include="Games\Windows\ThinkingWithTimeMachine.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Linux\TheStanleyParable.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\HalfLife2.cpp">
+    <ClCompile Include="Games\Linux\ApertureTag.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
     <ClCompile Include="Games\Linux\Portal2.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Linux\TheBeginnersGuide.cpp">
+    <ClCompile Include="Games\Linux\PortalReloaded.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\PortalStoriesMel.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Linux\ThinkingWithTimeMachine.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp">
@@ -214,12 +220,6 @@
     <ClCompile Include="Variable.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\Portal.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\Portal.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\Memory.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
@@ -250,21 +250,6 @@
     <ClCompile Include="Features\Renderer.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Linux\ApertureTag.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\PortalStoriesMel.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\ApertureTag.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\PortalReloaded.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\PortalStoriesMel.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
@@ -280,38 +265,8 @@
     <ClCompile Include="Utils\Math.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\INFRA.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\InfraSession.cpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClCompile>
     <ClCompile Include="Features\DataMapDumper.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLife2Unpack.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\PortalUnpack.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\ThinkingWithTimeMachine.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\ThinkingWithTimeMachine.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLife2Episodic.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\HalfLife2Episodic.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLifeSource.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\HalfLifeSource.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
     <ClCompile Include="Features\FovChanger.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
@@ -405,32 +360,38 @@
     <ClInclude Include="Utils\SDK.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Linux\Portal2.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\TheBeginnersGuide.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\TheStanleyParable.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    <ClInclude Include="Games\Windows\ApertureTag.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
     <ClInclude Include="Games\Windows\Portal2.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp">
+    <ClInclude Include="Games\Windows\PortalReloaded.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Windows\TheStanleyParable.hpp">
+    <ClInclude Include="Games\Windows\PortalStoriesMel.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\ThinkingWithTimeMachine.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\ApertureTag.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\Portal2.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\PortalReloaded.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\PortalStoriesMel.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\ThinkingWithTimeMachine.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Memory.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\HalfLife2.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLife2.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
     <ClInclude Include="Features\Hud\InspectionHud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
@@ -606,12 +567,6 @@
     <ClInclude Include="Variable.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Windows\Portal.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\Portal.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
     <ClInclude Include="Features\EntityList.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
@@ -642,21 +597,6 @@
     <ClInclude Include="Features\ReplaySystem\ReplayRecorder.hpp">
       <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Linux\ApertureTag.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\PortalStoriesMel.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\ApertureTag.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\PortalReloaded.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\PortalStoriesMel.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Tas\TasTools.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
@@ -666,44 +606,14 @@
     <ClInclude Include="Features\Timer\PauseTimer.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Windows\INFRA.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="Modules.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Features.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Features\InfraSession.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
     <ClInclude Include="Features\DataMapDumper.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\HalfLife2Unpack.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\PortalUnpack.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\ThinkingWithTimeMachine.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\ThinkingWithTimeMachine.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\HalfLife2Episodic.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLife2Episodic.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\HalfLifeSource.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLifeSource.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
     <ClInclude Include="Features\FovChanger.hpp">
       <Filter>SourceAutoRecord\Features</Filter>

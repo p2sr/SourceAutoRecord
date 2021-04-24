@@ -17,7 +17,7 @@ Variable sar_sr_hud_font_index("sar_sr_hud_font_index", "70", 0, "Font index of 
 SpeedrunHud speedrunHud;
 
 SpeedrunHud::SpeedrunHud()
-    : Hud(HudType_InGame | HudType_Menu | HudType_Paused | HudType_LoadingScreen, true, SourceGame_SupportsS3)
+    : Hud(HudType_InGame | HudType_Menu | HudType_Paused | HudType_LoadingScreen, true)
 {
 }
 bool SpeedrunHud::ShouldDraw()

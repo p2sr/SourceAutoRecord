@@ -58,12 +58,10 @@ bool Config::Save()
     SAVE_CVAR(sar_ei_hud_font_index, Int);
     SAVE_CVAR(sar_statcounter_filePath, String);
 
-    if (sar.game->Is(SourceGame_Portal2Game | SourceGame_Portal)) {
-        SAVE_CVAR(sar_sr_hud_x, Int);
-        SAVE_CVAR(sar_sr_hud_y, Int);
-        SAVE_CVAR(sar_sr_hud_font_color, String);
-        SAVE_CVAR(sar_sr_hud_font_index, Int);
-    }
+    SAVE_CVAR(sar_sr_hud_x, Int);
+    SAVE_CVAR(sar_sr_hud_y, Int);
+    SAVE_CVAR(sar_sr_hud_font_color, String);
+    SAVE_CVAR(sar_sr_hud_font_index, Int);
 
     file.close();
     return true;

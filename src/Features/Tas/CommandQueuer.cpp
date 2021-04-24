@@ -117,17 +117,13 @@ void CommandQueuer::Execute()
             if (tas->framesLeft <= 0) {
                 console->DevMsg("[%i] %s\n", session->currentFrame, tas->command.c_str());
 
-                if (sar.game->Is(SourceGame_Portal2Engine)) {
-                    if (engine->GetMaxClients() <= 1) {
-                        engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0);
-                    } else {
-                        auto entity = engine->PEntityOfEntIndex(tas->splitScreen + 1);
-                        if (entity && !entity->IsFree() && server->IsPlayer(entity->m_pUnk)) {
-                            engine->ClientCommand(nullptr, entity, tas->command.c_str());
-                        }
+                if (engine->GetMaxClients() <= 1) {
+                    engine->Cbuf_AddText(tas->splitScreen, tas->command.c_str(), 0);
+                } else {
+                    auto entity = engine->PEntityOfEntIndex(tas->splitScreen + 1);
+                    if (entity && !entity->IsFree() && server->IsPlayer(entity->m_pUnk)) {
+                        engine->ClientCommand(nullptr, entity, tas->command.c_str());
                     }
-                } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-                    engine->AddText(engine->s_CommandBuffer, tas->command.c_str(), 0);
                 }
 
                 tas = cmdQueuer->frames.erase(tas);

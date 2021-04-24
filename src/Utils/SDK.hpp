@@ -271,37 +271,6 @@ struct ConCommand : ConCommandBase {
     }
 };
 
-struct ConVar : ConCommandBase {
-    void* ConVar_VTable; // 24
-    ConVar* m_pParent; // 28
-    const char* m_pszDefaultValue; // 32
-    char* m_pszString; // 36
-    int m_StringLength; // 40
-    float m_fValue; // 44
-    int m_nValue; // 48
-    bool m_bHasMin; // 52
-    float m_fMinVal; // 56
-    bool m_bHasMax; // 60
-    float m_fMaxVal; // 64
-    FnChangeCallback_t m_fnChangeCallback; // 68
-
-    ConVar(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max, FnChangeCallback_t callback = nullptr)
-        : ConCommandBase(name, flags, helpstr)
-        , ConVar_VTable(nullptr)
-        , m_pParent(nullptr)
-        , m_pszDefaultValue(value)
-        , m_pszString(nullptr)
-        , m_fValue(0.0f)
-        , m_nValue(0)
-        , m_bHasMin(hasmin)
-        , m_fMinVal(min)
-        , m_bHasMax(hasmax)
-        , m_fMaxVal(max)
-        , m_fnChangeCallback(callback)
-    {
-    }
-};
-
 template <class T, class I = int>
 struct CUtlMemory {
     T* m_pMemory;
@@ -340,9 +309,9 @@ struct CUtlVector {
     }
 };
 
-struct ConVar2 : ConCommandBase {
+struct ConVar : ConCommandBase {
     void* ConVar_VTable; // 24
-    ConVar2* m_pParent; // 28
+    ConVar* m_pParent; // 28
     const char* m_pszDefaultValue; // 32
     char* m_pszString; // 36
     int m_StringLength; // 40
@@ -354,7 +323,7 @@ struct ConVar2 : ConCommandBase {
     float m_fMaxVal; // 64
     CUtlVector<FnChangeCallback_t> m_fnChangeCallback; // 68
 
-    ConVar2(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
+    ConVar(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
         : ConCommandBase(name, flags, helpstr)
         , ConVar_VTable(nullptr)
         , m_pParent(nullptr)
@@ -464,17 +433,6 @@ typedef enum {
     HS_GAME_SHUTDOWN = 5,
     HS_SHUTDOWN = 6,
     HS_RESTART = 7,
-
-    INFRA_HS_NEW_GAME = 0,
-    INFRA_HS_LOAD_GAME = 1,
-    INFRA_HS_LOAD_GAME_WITHOUT_RESTART = 2,
-    INFRA_HS_CHANGE_LEVEL_SP = 3,
-    INFRA_HS_CHANGE_LEVEL_MP = 4,
-    INFRA_HS_RUN = 5,
-    INFRA_HS_GAME_SHUTDOWN = 6,
-    INFRA_HS_SHUTDOWN = 7,
-    INFRA_HS_RESTART = 8,
-    INFRA_HS_RESTART_WITHOUT_RESTART = 9
 } HOSTSTATES;
 
 struct CHostState {
@@ -593,9 +551,6 @@ struct CEntInfo {
     int m_SerialNumber; // 4
     CEntInfo* m_pPrev; // 8
     CEntInfo* m_pNext; // 12
-};
-
-struct CEntInfo2 : CEntInfo {
     void* unk1; // 16
     void* unk2; // 20
 };
@@ -658,29 +613,6 @@ struct SendProp {
     float m_fLowValue; // 16
     float m_fHighValue; // 20
     SendProp* m_pArrayProp; // 24
-    ArrayLengthSendProxyFn m_ArrayLengthProxy; // 28
-    int m_nElements; // 32
-    int m_ElementStride; // 36
-    char* m_pExcludeDTName; // 40
-    char* m_pParentArrayPropName; // 44
-    char* m_pVarName; // 48
-    float m_fHighLowMul; // 52
-    int m_Flags; // 56
-    SendVarProxyFn m_ProxyFn; // 60
-    SendTableProxyFn m_DataTableProxyFn; // 64
-    SendTable* m_pDataTable; // 68
-    int m_Offset; // 72
-    const void* m_pExtraData; // 76
-};
-
-struct SendProp2 {
-    void* VMT; // 0
-    RecvProp* m_pMatchingRecvProp; // 4
-    SendPropType m_Type; // 8
-    int m_nBits; // 12
-    float m_fLowValue; // 16
-    float m_fHighValue; // 20
-    SendProp2* m_pArrayProp; // 24
     ArrayLengthSendProxyFn m_ArrayLengthProxy; // 28
     int m_nElements; // 32
     int m_ElementStride; // 36
@@ -770,27 +702,8 @@ struct inputdata_t;
 typedef void (*inputfunc_t)(inputdata_t& data);
 
 struct datamap_t;
-struct typedescription_t {
-    fieldtype_t fieldType; // 0
-    const char* fieldName; // 4
-    int fieldOffset[TD_OFFSET_COUNT]; // 8
-    unsigned short fieldSize; // 16
-    short flags; // 18
-    const char* externalName; // 20
-    void* pSaveRestoreOps; // 24
-#ifndef _WIN32
-    void* unk; // 28
-#endif
-    inputfunc_t inputFunc; // 28/32
-    datamap_t* td; // 32/36
-    int fieldSizeInBytes; // 36/40
-    struct typedescription_t* override_field; // 40/44
-    int override_count; // 44/48
-    float fieldTolerance; // 48/52
-};
 
-struct datamap_t2;
-struct typedescription_t2 {
+struct typedescription_t {
     fieldtype_t fieldType; // 0
     const char* fieldName; // 4
     int fieldOffset; // 8
@@ -802,9 +715,9 @@ struct typedescription_t2 {
     void* unk1; // 24
 #endif
     inputfunc_t inputFunc; // 24/28
-    datamap_t2* td; // 28/32
+    datamap_t* td; // 28/32
     int fieldSizeInBytes; // 32/36
-    struct typedescription_t2* override_field; // 36/40
+    struct typedescription_t* override_field; // 36/40
     int override_count; // 40/44
     float fieldTolerance; // 44/48
     int flatOffset[TD_OFFSET_COUNT]; // 48/52
@@ -816,16 +729,6 @@ struct datamap_t {
     int dataNumFields; // 4
     char const* dataClassName; // 8
     datamap_t* baseMap; // 12
-    bool chains_validated; // 16
-    bool packed_offsets_computed; // 20
-    int packed_size; // 24
-};
-
-struct datamap_t2 {
-    typedescription_t2* dataDesc; // 0
-    int dataNumFields; // 4
-    char const* dataClassName; // 8
-    datamap_t2* baseMap; // 12
     int m_nPackedSize; // 16
     void* m_pOptimizedDataMap; // 20
 };

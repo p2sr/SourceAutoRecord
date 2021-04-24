@@ -19,8 +19,7 @@
 ClassDumper* classDumper;
 
 ClassDumper::ClassDumper()
-    : sendPropSize(sar.game->Is(SourceGame_Portal2Engine) ? sizeof(SendProp2) : sizeof(SendProp))
-    , serverClassesFile("server_classes.json")
+    : serverClassesFile("server_classes.json")
     , clientClassesFile("client_classes.json")
 {
     this->hasLoaded = true;
@@ -62,20 +61,12 @@ void ClassDumper::DumpSendTable(std::ofstream& file, SendTable* table)
     file << "{\"name\":\"" << table->m_pNetTableName << "\",\"props\":[";
 
     for (auto i = 0; i < table->m_nProps; ++i) {
-        auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + this->sendPropSize * i);
+        auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + sizeof (SendProp) * i);
 
         auto name = prop.m_pVarName;
         auto offset = prop.m_Offset;
         auto type = prop.m_Type;
         auto nextTable = prop.m_pDataTable;
-
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            auto temp = *reinterpret_cast<SendProp2*>(&prop);
-            name = temp.m_pVarName;
-            offset = temp.m_Offset;
-            type = temp.m_Type;
-            nextTable = temp.m_pDataTable;
-        }
 
         auto sanitized = std::string("");
         auto c = name;
@@ -181,20 +172,12 @@ CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props
     DumpTable = [&DumpTable](SendTable* table, int& level) {
         console->Print("%*s%s\n", level * 4, "", table->m_pNetTableName);
         for (auto i = 0; i < table->m_nProps; ++i) {
-            auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + classDumper->sendPropSize * i);
+            auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + sizeof (SendProp) * i);
 
             auto name = prop.m_pVarName;
             auto offset = prop.m_Offset;
             auto type = prop.m_Type;
             auto nextTable = prop.m_pDataTable;
-
-            if (sar.game->Is(SourceGame_Portal2Engine)) {
-                auto temp = *reinterpret_cast<SendProp2*>(&prop);
-                name = temp.m_pVarName;
-                offset = temp.m_Offset;
-                type = temp.m_Type;
-                nextTable = temp.m_pDataTable;
-            }
 
             console->Msg("%*s%s -> %d\n", level * 4, "", name, (int16_t)offset);
 

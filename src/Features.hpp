@@ -5,7 +5,6 @@
 #include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
 #include "Features/Imitator.hpp"
-#include "Features/InfraSession.hpp"
 #include "Features/Listener.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/Rebinder.hpp"

@@ -45,7 +45,6 @@ REDECL(Client::GetName);
 REDECL(Client::ShouldDraw_BasicInfo);
 REDECL(Client::MsgFunc_SayText2);
 REDECL(Client::DecodeUserCmdFromBuffer);
-REDECL(Client::DecodeUserCmdFromBuffer2);
 REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
 REDECL(Client::playvideo_end_level_transition_callback);
@@ -265,17 +264,6 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 
     return result;
 }
-DETOUR(Client::DecodeUserCmdFromBuffer2, int buf, signed int sequence_number)
-{
-    auto result = Client::DecodeUserCmdFromBuffer2(thisptr, buf, sequence_number);
-
-    auto m_pCommands = *reinterpret_cast<uintptr_t*>((uintptr_t)thisptr + Offsets::m_pCommands);
-    auto cmd = reinterpret_cast<CUserCmd*>(m_pCommands + Offsets::CUserCmdSize * (sequence_number % Offsets::MULTIPLAYER_BACKUP));
-
-    inputHud.SetButtonBits(1, cmd->buttons);
-
-    return result;
-}
 
 // CInput::CreateMove
 DETOUR(Client::CInput_CreateMove, int sequence_number, float input_sample_frametime, bool active)
@@ -339,9 +327,6 @@ static void LeaderboardCallback(const CCommand& args)
 bool Client::Init()
 {
     bool readJmp = false;
-#ifdef _WIN32
-    readJmp = sar.game->Is(SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide);
-#endif
 
     this->g_ClientDLL = Interface::Create(this->Name(), "VClient0");
     this->s_EntityList = Interface::Create(this->Name(), "VClientEntityList0", false);
@@ -351,39 +336,37 @@ bool Client::Init()
 
         this->g_ClientDLL->Hook(Client::LevelInitPreEntity_Hook, Client::LevelInitPreEntity, Offsets::LevelInitPreEntity);
         
-        if (sar.game->Is(SourceGame_Portal2Game)) {
-            auto leaderboard = Command("+leaderboard");
-            if (!!leaderboard) {
-                using _GetHud = void*(__cdecl*)(int unk);
-                using _FindElement = void*(__rescall*)(void* thisptr, const char* pName);
+        auto leaderboard = Command("+leaderboard");
+        if (!!leaderboard) {
+            using _GetHud = void*(__cdecl*)(int unk);
+            using _FindElement = void*(__rescall*)(void* thisptr, const char* pName);
 
-                auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
-                auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
-                auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
-                auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
+            auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
+            auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
+            auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
+            auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
 
-                Command::Hook("leaderboard_open", &LeaderboardCallback, originalLeaderboardCallback);
+            Command::Hook("leaderboard_open", &LeaderboardCallback, originalLeaderboardCallback);
 
-                if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
-                    this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
-                }
+            if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
+                this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
+            }
 
-                auto CHUDQuickInfo = FindElement(GetHud(-1), "CHUDQuickInfo");
+            auto CHUDQuickInfo = FindElement(GetHud(-1), "CHUDQuickInfo");
 
-                if (this->g_HUDQuickInfo = Interface::Create(CHUDQuickInfo)) {
-                    this->ShouldDraw = this->g_HUDQuickInfo->Original<_ShouldDraw>(Offsets::ShouldDraw, readJmp);
-                }
+            if (this->g_HUDQuickInfo = Interface::Create(CHUDQuickInfo)) {
+                this->ShouldDraw = this->g_HUDQuickInfo->Original<_ShouldDraw>(Offsets::ShouldDraw, readJmp);
+            }
 
-                auto CHudChat = FindElement(GetHud(-1), "CHudChat");
-                if (this->g_HudChat = Interface::Create(CHudChat)) {
-                    this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
-                    this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayText2);
-                }
+            auto CHudChat = FindElement(GetHud(-1), "CHudChat");
+            if (this->g_HudChat = Interface::Create(CHudChat)) {
+                this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
+                this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayText2);
+            }
 
-                auto CHudMultiplayerBasicInfo = FindElement(GetHud(-1), "CHudMultiplayerBasicInfo");
-                if (this->g_HudMultiplayerBasicInfo = Interface::Create(CHudMultiplayerBasicInfo)) {
-                    this->g_HudMultiplayerBasicInfo->Hook(Client::ShouldDraw_BasicInfo_Hook, Client::ShouldDraw_BasicInfo, Offsets::ShouldDraw);
-                }
+            auto CHudMultiplayerBasicInfo = FindElement(GetHud(-1), "CHudMultiplayerBasicInfo");
+            if (this->g_HudMultiplayerBasicInfo = Interface::Create(CHudMultiplayerBasicInfo)) {
+                this->g_HudMultiplayerBasicInfo->Hook(Client::ShouldDraw_BasicInfo_Hook, Client::ShouldDraw_BasicInfo, Offsets::ShouldDraw);
             }
         }
 
@@ -391,53 +374,30 @@ bool Client::Init()
         auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
 
         if (g_Input = Interface::Create(g_InputAddr)) {
-            if (sar.game->Is(SourceGame_Portal2Engine)) {
-                g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
-                g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
+            g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
+            g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
 
-                auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
-                Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
-                Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &this->KeyUp);
+            auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
+            Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
+            Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &this->KeyUp);
 
-                if (sar.game->Is(SourceGame_TheStanleyParable)) {
-                    auto GetButtonBits = g_Input->Original(Offsets::GetButtonBits, readJmp);
-                    Memory::Deref(GetButtonBits + Offsets::in_jump, &this->in_jump);
-                } else if (sar.game->Is(SourceGame_Portal2Game)) {
-                    in_forceuser = Variable("in_forceuser");
-                    if (!!in_forceuser && this->g_Input) {
-                        this->g_Input->Hook(CInput_CreateMove_Hook, CInput_CreateMove, Offsets::GetButtonBits + 1);
-                    }
-
-                    Command::Hook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback_hook, Client::playvideo_end_level_transition_callback);
-                }
-            } else {
-                g_Input->Hook(Client::DecodeUserCmdFromBuffer2_Hook, Client::DecodeUserCmdFromBuffer2, Offsets::DecodeUserCmdFromBuffer);
+            in_forceuser = Variable("in_forceuser");
+            if (!!in_forceuser && this->g_Input) {
+                this->g_Input->Hook(CInput_CreateMove_Hook, CInput_CreateMove, Offsets::GetButtonBits + 1);
             }
+
+            Command::Hook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback_hook, Client::playvideo_end_level_transition_callback);
         }
 
         auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
-        void* clientMode = nullptr;
-        void* clientMode2 = nullptr;
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            if (sar.game->Is(SourceGame_Portal2Game)) {
-                auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
-                auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
-                clientMode = Memory::Deref<void*>(g_pClientMode);
-                clientMode2 = Memory::Deref<void*>(g_pClientMode + sizeof(void*));
-            } else {
-                typedef void* (*_GetClientMode)();
-                auto GetClientMode = Memory::Read<_GetClientMode>(HudProcessInput + Offsets::GetClientMode);
-                clientMode = GetClientMode();
-            }
-        } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-            clientMode = Memory::DerefDeref<void*>(HudProcessInput + Offsets::GetClientMode);
-        }
+        auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
+        auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
+        void *clientMode = Memory::Deref<void*>(g_pClientMode);
+        void *clientMode2 = Memory::Deref<void*>(g_pClientMode + sizeof(void*));
 
         if (this->g_pClientMode = Interface::Create(clientMode)) {
             this->g_pClientMode->Hook(Client::CreateMove_Hook, Client::CreateMove, Offsets::CreateMove);
-            if (sar.game->Is(SourceGame_Portal2Engine)) {
-                this->g_pClientMode->Hook(Client::OverrideView_Hook, Client::OverrideView, Offsets::OverrideView);
-            }
+            this->g_pClientMode->Hook(Client::OverrideView_Hook, Client::OverrideView, Offsets::OverrideView);
         }
 
         if (this->g_pClientMode2 = Interface::Create(clientMode2)) {

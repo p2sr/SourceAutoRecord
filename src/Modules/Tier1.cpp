@@ -33,9 +33,7 @@ bool Tier1::Init()
 
             auto vtable =
 #ifdef _WIN32
-                sar.game->Is(SourceGame_HalfLife2Engine)
-                ? &this->ConVar_VTable
-                : &this->ConVar_VTable2;
+                &this->ConVar_VTable2;
 #else
                 &this->ConVar_VTable;
 #endif
@@ -44,10 +42,8 @@ bool Tier1::Init()
             this->Create = Memory::VMT<_Create>(vtable, Offsets::Create);
         }
 
-        if (sar.game->Is(SourceGame_Portal2Game)) {
-            this->InstallGlobalChangeCallback = this->g_pCVar->Original<_InstallGlobalChangeCallback>(Offsets::InstallGlobalChangeCallback);
-            this->RemoveGlobalChangeCallback = this->g_pCVar->Original<_RemoveGlobalChangeCallback>(Offsets::RemoveGlobalChangeCallback);
-        }
+        this->InstallGlobalChangeCallback = this->g_pCVar->Original<_InstallGlobalChangeCallback>(Offsets::InstallGlobalChangeCallback);
+        this->RemoveGlobalChangeCallback = this->g_pCVar->Original<_RemoveGlobalChangeCallback>(Offsets::RemoveGlobalChangeCallback);
     }
 
     return this->hasLoaded = this->g_pCVar

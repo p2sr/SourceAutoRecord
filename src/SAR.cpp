@@ -42,9 +42,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<Config>(&config);
             this->features->AddFeature<Cvars>(&cvars);
             this->features->AddFeature<Rebinder>(&rebinder);
-            this->game->Is(SourceGame_INFRA)
-                ? this->features->AddFeature<InfraSession>(reinterpret_cast<InfraSession**>(&session))
-                : this->features->AddFeature<Session>(&session);
+            this->features->AddFeature<Session>(&session);
             this->features->AddFeature<StepCounter>(&stepCounter);
             this->features->AddFeature<Summary>(&summary);
             this->features->AddFeature<Teleporter>(&teleporter);
@@ -93,10 +91,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
                 this->features->AddFeature<TasTools>(&tasTools);
 
-                if (this->game->Is(SourceGame_Portal2Game)) {
-                    this->features->AddFeature<Listener>(&listener);
-                    this->features->AddFeature<Imitator>(&imitator);
-                }
+                this->features->AddFeature<Listener>(&listener);
+                this->features->AddFeature<Imitator>(&imitator);
 
                 if (this->game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
                     this->features->AddFeature<WorkshopList>(&workshop);

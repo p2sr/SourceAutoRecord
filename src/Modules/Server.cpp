@@ -368,7 +368,7 @@ static bool IsAcceptInputTrampolineInitialized = false;
 static uint8_t OriginalAcceptInputCode[8];
 static void InitAcceptInputTrampoline()
 {
-    void* ent = (CEntInfo2*)(server->m_EntPtrArray + 0)->m_pEntity;
+    void* ent = server->m_EntPtrArray[0].m_pEntity;
     if (ent == nullptr) return;
     IsAcceptInputTrampolineInitialized = true;
     server->AcceptInput = Memory::VMT<Server::_AcceptInput>(ent, Offsets::AcceptInput);
@@ -546,32 +546,28 @@ bool Server::Init()
         this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
         this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
-            this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
-            this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
+        this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
+        this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
+        this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
 
-            auto ctor = this->g_GameMovement->Original(0);
-            auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
-            auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
-            Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*), &Server::AirMoveBase);
+        auto ctor = this->g_GameMovement->Original(0);
+        auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
+        auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
+        Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*), &Server::AirMoveBase);
 
-            Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &Server::CheckJumpButtonBase);
+        Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &Server::CheckJumpButtonBase);
 
 #ifdef _WIN32
-            if (!sar.game->Is(SourceGame_INFRA)) {
-                auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
-                if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
-                    MH_HOOK_MID(this->AirMove_Mid, airMoveMid);
-                    this->AirMove_Continue = airMoveMid + AirMove_Continue_Offset;
-                    this->AirMove_Skip = airMoveMid + AirMove_Skip_Offset;
-                    console->DevMsg("SAR: Verified sar_aircontrol 1!\n");
-                } else {
-                    console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
-                }
-            }
-#endif
+        auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
+        if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
+            MH_HOOK_MID(this->AirMove_Mid, airMoveMid);
+            this->AirMove_Continue = airMoveMid + AirMove_Continue_Offset;
+            this->AirMove_Skip = airMoveMid + AirMove_Skip_Offset;
+            console->DevMsg("SAR: Verified sar_aircontrol 1!\n");
+        } else {
+            console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
         }
+#endif
     }
 
     if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS0")) {
@@ -595,9 +591,7 @@ bool Server::Init()
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
         this->IsRestoring = this->g_ServerGameDLL->Original<_IsRestoring>(Offsets::IsRestoring);
 
-        if (sar.game->Is(SourceGame_Portal2Game | SourceGame_Portal)) {
-            this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
-        }
+        this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
     }
 
 #ifdef _WIN32
@@ -609,21 +603,19 @@ bool Server::Init()
 #endif
 
     // Remove the limit on how quickly you can use 'say'
-    if (sar.game->Is(SourceGame_Portal2)) {
-        void *say_callback = Command("say").ThisPtr()->m_pCommandCallback;
+    void *say_callback = Command("say").ThisPtr()->m_pCommandCallback;
 #ifdef _WIN32
-        uintptr_t insn_addr = (uintptr_t)say_callback + 52;
+    uintptr_t insn_addr = (uintptr_t)say_callback + 52;
 #else
-        uintptr_t insn_addr = (uintptr_t)say_callback + 88;
+    uintptr_t insn_addr = (uintptr_t)say_callback + 88;
 #endif
-        // This is the location of an ADDSD instruction which adds 0.66
-        // to the current time. If we instead *subtract* 0.66, we'll
-        // always be able to chat again! We can just do this by changing
-        // the third byte from 0x58 to 0x5C, hence making the full
-        // opcode start with F2 0F 5C.
-        Memory::UnProtect((void *)(insn_addr + 2), 1);
-        *(char *)(insn_addr + 2) = 0x5C;
-    }
+    // This is the location of an ADDSD instruction which adds 0.66
+    // to the current time. If we instead *subtract* 0.66, we'll
+    // always be able to chat again! We can just do this by changing
+    // the third byte from 0x58 to 0x5C, hence making the full
+    // opcode start with F2 0F 5C.
+    Memory::UnProtect((void *)(insn_addr + 2), 1);
+    *(char *)(insn_addr + 2) = 0x5C;
 
     NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &resetCoopProgress);
 
@@ -635,23 +627,18 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
     offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::m_hGroundEntity);
     offsetFinder->ServerSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
+    offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
+    offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
 
-    if (sar.game->Is(SourceGame_Portal2Engine)) {
-        offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
-        offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
-    }
-
-    if (sar.game->Is(SourceGame_Portal2Game)) {
-        offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
-        offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);
-        offsetFinder->ServerSide("CProp_Portal", "m_bActivated", &Offsets::m_bActivated);
-        offsetFinder->ServerSide("CProp_Portal", "m_bIsPortal2", &Offsets::m_bIsPortal2);
-        offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal1", &Offsets::m_bCanFirePortal1);
-        offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal2", &Offsets::m_bCanFirePortal2);
-        offsetFinder->ServerSide("CWeaponPortalgun", "m_hPrimaryPortal", &Offsets::m_hPrimaryPortal);
-        offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
-        offsetFinder->ServerSide("CWeaponPortalgun", "m_iPortalLinkageGroupID", &Offsets::m_iPortalLinkageGroupID);
-    }
+    offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
+    offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);
+    offsetFinder->ServerSide("CProp_Portal", "m_bActivated", &Offsets::m_bActivated);
+    offsetFinder->ServerSide("CProp_Portal", "m_bIsPortal2", &Offsets::m_bIsPortal2);
+    offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal1", &Offsets::m_bCanFirePortal1);
+    offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal2", &Offsets::m_bCanFirePortal2);
+    offsetFinder->ServerSide("CWeaponPortalgun", "m_hPrimaryPortal", &Offsets::m_hPrimaryPortal);
+    offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
+    offsetFinder->ServerSide("CWeaponPortalgun", "m_iPortalLinkageGroupID", &Offsets::m_iPortalLinkageGroupID);
 
     sv_cheats = Variable("sv_cheats");
     sv_footsteps = Variable("sv_footsteps");

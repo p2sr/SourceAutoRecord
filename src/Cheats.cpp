@@ -47,23 +47,6 @@ Variable ui_loadingscreen_fadein_time;
 Variable ui_loadingscreen_mintransition_time;
 Variable hide_gun_when_holding;
 
-// TSP only
-void IN_BhopDown(const CCommand& args) { client->KeyDown(client->in_jump, (args.ArgC() > 1) ? args[1] : nullptr); }
-void IN_BhopUp(const CCommand& args) { client->KeyUp(client->in_jump, (args.ArgC() > 1) ? args[1] : nullptr); }
-
-Command startbhop("+bhop", IN_BhopDown, "Client sends a key-down event for the in_jump state.\n");
-Command endbhop("-bhop", IN_BhopUp, "Client sends a key-up event for the in_jump state.\n");
-
-CON_COMMAND(sar_anti_anti_cheat, "Sets sv_cheats to 1.\n")
-{
-    sv_cheats.ThisPtr()->m_nValue = 1;
-}
-
-// TSP & TBG only
-DECLARE_AUTOCOMPLETION_FUNCTION(map, "maps", bsp);
-DECLARE_AUTOCOMPLETION_FUNCTION(changelevel, "maps", bsp);
-DECLARE_AUTOCOMPLETION_FUNCTION(changelevel2, "maps", bsp);
-
 // P2 only
 CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer.\n")
 {
@@ -167,68 +150,17 @@ CON_COMMAND(sar_clear_lines, "Clears all active drawline overlays.\n")
 
 void Cheats::Init()
 {
-    if (sar.game->Is(SourceGame_Portal2Game)) {
-        sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
-        ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
-        ui_loadingscreen_fadein_time = Variable("ui_loadingscreen_fadein_time");
-        ui_loadingscreen_mintransition_time = Variable("ui_loadingscreen_mintransition_time");
-        hide_gun_when_holding = Variable("hide_gun_when_holding");
-    } else if (sar.game->Is(SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
-        Command::ActivateAutoCompleteFile("map", map_CompletionFunc);
-        Command::ActivateAutoCompleteFile("changelevel", changelevel_CompletionFunc);
-        Command::ActivateAutoCompleteFile("changelevel2", changelevel2_CompletionFunc);
-    }
+    sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
+    ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
+    ui_loadingscreen_fadein_time = Variable("ui_loadingscreen_fadein_time");
+    ui_loadingscreen_mintransition_time = Variable("ui_loadingscreen_mintransition_time");
+    hide_gun_when_holding = Variable("hide_gun_when_holding");
 
-    auto s3 = SourceGame_Portal2Game | SourceGame_Portal;
-
-    sar_jumpboost.UniqueFor(SourceGame_Portal2Engine);
-    sar_aircontrol.UniqueFor(SourceGame_Portal2Engine);
-    //sar_hud_portals.UniqueFor(SourceGame_Portal2Game | SourceGame_Portal);
     sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
-    sar_disable_steam_pause.UniqueFor(SourceGame_Portal2Game);
-    sar_disable_progress_bar_update.UniqueFor(SourceGame_Portal2Game);
-    sar_prevent_mat_snapshot_recompute.UniqueFor(SourceGame_Portal2Game);
-    sar_debug_listener.UniqueFor(SourceGame_Portal2Game);
-    sar_sr_hud.UniqueFor(s3);
-    sar_sr_hud_x.UniqueFor(s3);
-    sar_sr_hud_y.UniqueFor(s3);
-    sar_sr_hud_font_color.UniqueFor(s3);
-    sar_sr_hud_font_index.UniqueFor(s3);
-    sar_speedrun_start_on_load.UniqueFor(s3);
-    sar_speedrun_stop_in_menu.UniqueFor(s3);
-    sar_duckjump.UniqueFor(SourceGame_Portal2Engine);
-    sar_replay_viewmode.UniqueFor(SourceGame_Portal2Game);
-    sar_mimic.UniqueFor(SourceGame_Portal2Game);
-    sar_tas_ss_forceuser.UniqueFor(SourceGame_Portal2Game);
-    //sar_hud_pause_timer.UniqueFor(s3);
-    sar_speedrun_time_pauses.UniqueFor(s3);
-    sar_speedrun_smartsplit.UniqueFor(s3);
-    sar_disable_no_focus_sleep.UniqueFor(SourceGame_Portal2Engine);
 
-    startbhop.UniqueFor(SourceGame_TheStanleyParable);
-    endbhop.UniqueFor(SourceGame_TheStanleyParable);
-    sar_anti_anti_cheat.UniqueFor(SourceGame_TheStanleyParable);
     sar_workshop.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_workshop_update.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
     sar_workshop_list.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
-    sar_speedrun_result.UniqueFor(s3);
-    sar_speedrun_export.UniqueFor(s3);
-    sar_speedrun_category.UniqueFor(s3);
-    sar_speedrun_offset.UniqueFor(s3);
-    sar_speedrun_start.UniqueFor(s3);
-    sar_speedrun_stop.UniqueFor(s3);
-    sar_speedrun_split.UniqueFor(s3);
-    sar_speedrun_pause.UniqueFor(s3);
-    sar_speedrun_resume.UniqueFor(s3);
-    sar_speedrun_reset.UniqueFor(s3);
-    sar_togglewait.UniqueFor(SourceGame_Portal2Game | SourceGame_INFRA);
-    sar_tas_ss.UniqueFor(SourceGame_Portal2Game);
-    sar_delete_alias_cmds.UniqueFor(SourceGame_Portal2Game | SourceGame_HalfLife2Engine);
-    sar_tas_strafe.UniqueFor(SourceGame_Portal2Engine);
-    sar_tas_strafe_vectorial.UniqueFor(SourceGame_Portal2Engine);
-    startautostrafe.UniqueFor(SourceGame_Portal2Engine);
-    endautostrafe.UniqueFor(SourceGame_Portal2Engine);
-    sar_dump_events.UniqueFor(SourceGame_Portal2Game);
 
     cvars->Unlock();
 
@@ -241,12 +173,6 @@ void Cheats::Init()
 }
 void Cheats::Shutdown()
 {
-    if (sar.game->Is(SourceGame_TheStanleyParable | SourceGame_TheBeginnersGuide)) {
-        Command::DectivateAutoCompleteFile("map");
-        Command::DectivateAutoCompleteFile("changelevel");
-        Command::DectivateAutoCompleteFile("changelevel2");
-    }
-
     cvars->Lock();
 
     Variable::UnregisterAll();

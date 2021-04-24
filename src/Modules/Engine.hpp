@@ -150,16 +150,9 @@ public:
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);
-#ifdef _WIN32
-    DECL_DETOUR(Disconnect2, int unk1, int unk2, int unk3);
-    DECL_DETOUR_COMMAND(connect);
-#else
-    DECL_DETOUR(Disconnect2, int unk, bool bShowMainMenu);
-#endif
 
     // CClientState::SetSignonState
     DECL_DETOUR(SetSignonState, int state, int count, void* unk);
-    DECL_DETOUR(SetSignonState2, int state, int count);
 
     // CEngine::Frame
     DECL_DETOUR(Frame);

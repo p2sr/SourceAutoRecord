@@ -350,7 +350,7 @@ CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color 
 
 void GhostEntity::KillAllGhosts() {
     for (size_t i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
-        auto info = ((CEntInfo2*)server->m_EntPtrArray)[i];
+        auto info = server->m_EntPtrArray[i];
         if (!info.m_pEntity) {
             continue;
         }

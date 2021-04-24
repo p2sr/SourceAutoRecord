@@ -15,7 +15,7 @@ Variable sar_portalgun_hud_x("sar_portalgun_hud_x", "5", 0, "The x position of t
 Variable sar_portalgun_hud_y("sar_portalgun_hud_y", "5", 0, "The y position of the portalgun HUD.\n");
 
 PortalgunHud::PortalgunHud()
-    : Hud(HudType_InGame, true, SourceGame_Portal2Game)
+    : Hud(HudType_InGame, true)
 {
 }
 

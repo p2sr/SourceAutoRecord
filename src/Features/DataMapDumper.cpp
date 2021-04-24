@@ -62,7 +62,7 @@ void DataMapDumper::Dump(bool dumpServer)
                     file << "\"name\":\"" << field->fieldName << "\",";
                 }
 
-                file << "\"offset\":" << field->fieldOffset[0];
+                file << "\"offset\":" << field->fieldOffset;
 
                 if (field->externalName) {
                     file << ",\"external\":\"" << field->externalName << "\"";
@@ -82,43 +82,9 @@ void DataMapDumper::Dump(bool dumpServer)
         file.seekp(-1, SEEK_DIR_CUR);
         file << "]}";
     };
-    std::function<void(datamap_t2 * map)> DumpMap2;
-    DumpMap2 = [&DumpMap2, &file](datamap_t2* map) {
-        file << "{\"type\":\"" << map->dataClassName << "\",\"fields\":[";
-        while (map) {
-            for (auto i = 0; i < map->dataNumFields; ++i) {
-                auto field = &map->dataDesc[i];
-
-                file << "{";
-
-                if (field->fieldName) {
-                    file << "\"name\":\"" << field->fieldName << "\",";
-                }
-
-                file << "\"offset\":" << field->fieldOffset;
-
-                if (field->externalName) {
-                    file << ",\"external\":\"" << field->externalName << "\"";
-                }
-
-                if (field->fieldType == FIELD_EMBEDDED) {
-                    file << ",\"type\":";
-                    DumpMap2(field->td);
-                } else {
-                    file << ",\"type\":" << field->fieldType;
-                }
-
-                file << "},";
-            }
-            map = map->baseMap;
-        }
-        file.seekp(-1, SEEK_DIR_CUR);
-        file << "]}";
-    };
 
     auto results = (dumpServer) ? &this->serverResult : &this->clientResult;
     if (results->empty()) {
-        auto hl2 = sar.game->Is(SourceGame_HalfLife2Engine);
         auto moduleName = (dumpServer) ? server->Name() : client->Name();
 
         *results = Memory::MultiScan(moduleName, &DATAMAP_PATTERNS);
@@ -126,11 +92,7 @@ void DataMapDumper::Dump(bool dumpServer)
             auto num = Memory::Deref<int>(result[0]);
             if (num > 0 && num < 1000) {
                 auto ptr = Memory::Deref<void*>(result[1]);
-                if (hl2) {
-                    DumpMap(reinterpret_cast<datamap_t*>(ptr));
-                } else {
-                    DumpMap2(reinterpret_cast<datamap_t2*>(ptr));
-                }
+                DumpMap(reinterpret_cast<datamap_t*>(ptr));
                 file << ",";
             }
         }

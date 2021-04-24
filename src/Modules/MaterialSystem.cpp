@@ -55,10 +55,8 @@ bool MaterialSystem::Init()
 {
     this->materials = Interface::Create(this->Name(), "VMaterialSystem0");
     if (this->materials) {
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            this->materials->Hook(MaterialSystem::UncacheUnusedMaterials_Hook, MaterialSystem::UncacheUnusedMaterials, 77);
-            this->materials->Hook(MaterialSystem::CreateMaterial_Hook, MaterialSystem::CreateMaterial, 81);
-        }
+        this->materials->Hook(MaterialSystem::UncacheUnusedMaterials_Hook, MaterialSystem::UncacheUnusedMaterials, 77);
+        this->materials->Hook(MaterialSystem::CreateMaterial_Hook, MaterialSystem::CreateMaterial, 81);
     }
 
     return this->hasLoaded = this->materials;

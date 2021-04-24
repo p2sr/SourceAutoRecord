@@ -6,22 +6,11 @@
 #include "Command.hpp"
 #include "Utils.hpp"
 
-#include GAME(HalfLife2)
-#include GAME(HalfLife2Episodic)
-#include GAME(HalfLifeSource)
-#include GAME(Portal)
 #include GAME(Portal2)
-#include GAME(TheBeginnersGuide)
-#include GAME(TheStanleyParable)
 #include GAME(ApertureTag)
 #include GAME(PortalStoriesMel)
 #include GAME(PortalReloaded)
 #include GAME(ThinkingWithTimeMachine)
-#ifdef _WIN32
-#include GAME(INFRA)
-#include GAME(HalfLife2Unpack)
-#include GAME(PortalUnpack)
-#endif
 
 #define HAS_GAME_FLAG(flag, name)        \
     if (version & (flag)) {              \
@@ -83,68 +72,17 @@ Game* Game::CreateNew()
         return new PortalReloaded();
     }
 
-    if (Utils::ICompare(modDir, HalfLife2::ModDir())) {
-#ifdef _WIN32
-        if (Memory::TryGetModule(MODULE("filesystem_steam"), nullptr)) {
-            return new HalfLife2Unpack();
-        }
-#endif
-        return new HalfLife2();
-    }
-
-    if (Utils::ICompare(modDir, HalfLife2Episodic::ModDir())) {
-        return new HalfLife2Episodic();
-    }
-
-    if (Utils::ICompare(modDir, HalfLifeSource::ModDir())) {
-        return new HalfLifeSource();
-    }
-
-    if (Utils::ICompare(modDir, Portal::ModDir())) {
-#ifdef _WIN32
-        if (Memory::TryGetModule(MODULE("filesystem_steam"), nullptr)) {
-            return new PortalUnpack();
-        }
-#endif
-        return new Portal();
-    }
-
-    if (Utils::ICompare(modDir, TheStanleyParable::ModDir())) {
-        return new TheStanleyParable();
-    }
-
-    if (Utils::ICompare(modDir, TheBeginnersGuide::ModDir())) {
-        return new TheBeginnersGuide();
-    }
-
-#ifdef _WIN32
-    if (Utils::ICompare(modDir, INFRA::ModDir())) {
-        return new INFRA();
-    }
-#endif
-
     return nullptr;
 }
 std::string Game::VersionToString(int version)
 {
     auto games = std::string("");
     while (version > 0) {
-        HAS_GAME_FLAGS(SourceGame_Portal2Game | SourceGame_Portal, "Portal Game")
-        HAS_GAME_FLAGS(SourceGame_Portal2Engine,                   "Portal 2 Engine")
-        HAS_GAME_FLAGS(SourceGame_Portal2Game,                     "Portal 2 Game")
-        HAS_GAME_FLAGS(SourceGame_HalfLife2Engine,                 "Half-Life 2 Engine")
-        HAS_GAME_FLAG(SourceGame_Portal2,                          "Portal 2")
-        HAS_GAME_FLAG(SourceGame_Portal,                           "Portal")
-        HAS_GAME_FLAG(SourceGame_TheStanleyParable,                "The Stanley Parable")
-        HAS_GAME_FLAG(SourceGame_TheBeginnersGuide,                "The Beginners Guide")
-        HAS_GAME_FLAG(SourceGame_HalfLife2,                        "Half-Life 2")
-        HAS_GAME_FLAG(SourceGame_ApertureTag,                      "Aperture Tag")
-        HAS_GAME_FLAG(SourceGame_PortalStoriesMel,                 "Portal Stories: Mel")
-        HAS_GAME_FLAG(SourceGame_INFRA,                            "INFRA")
-        HAS_GAME_FLAG(SourceGame_ThinkingWithTimeMachine,          "Thinking with Time Machine")
-        HAS_GAME_FLAG(SourceGame_HalfLife2Episodic,                "Half-Life 2: Episode One/Two")
-        HAS_GAME_FLAG(SourceGame_HalfLifeSource,                   "Half-Life: Source")
-        HAS_GAME_FLAG(SourceGame_PortalReloaded,                   "Portal Reloaded")
+        HAS_GAME_FLAG(SourceGame_Portal2,                 "Portal 2")
+        HAS_GAME_FLAG(SourceGame_ApertureTag,             "Aperture Tag")
+        HAS_GAME_FLAG(SourceGame_PortalStoriesMel,        "Portal Stories: Mel")
+        HAS_GAME_FLAG(SourceGame_ThinkingWithTimeMachine, "Thinking with Time Machine")
+        HAS_GAME_FLAG(SourceGame_PortalReloaded,          "Portal Reloaded")
     }
     return games;
 }
