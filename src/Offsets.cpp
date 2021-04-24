@@ -147,6 +147,7 @@ int m_hTractorBeam;
 // CPortal_Player
 int iNumPortalsPlaced;
 int m_StatsThisLevel;
+int GetPaintPower;
 int UseSpeedPower;
 
 //CWeaponPortalgun

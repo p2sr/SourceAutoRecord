@@ -168,7 +168,22 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void* player, CMoveData* pMove)
     pi.surfaceFriction = *reinterpret_cast<float*>((uintptr_t)player + 4096);
     pi.ducked = *reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked);
 
-    pi.maxSpeed = *reinterpret_cast<float*>((uintptr_t)player + Offsets::m_flMaxspeed);
+    float* m_flMaxspeed = reinterpret_cast<float*>((uintptr_t)player + Offsets::m_flMaxspeed);
+    float oldMaxSpeed = *m_flMaxspeed;
+    // TODO: maxSpeed will be inaccurate without proper prediction. figure out these DAMN offsets to make it work.
+
+    // maxSpeed is modified within ProcessMovement function. This cheesy hack allows us to "predict" its next value
+    /*using _GetPaintPower = const PaintPowerInfo_t&(__rescall*)(void* thisptr, unsigned paintId);
+    _GetPaintPower GetPaintPower = Memory::VMT<_GetPaintPower>(player, Offsets::GetPaintPower);
+    const PaintPowerInfo_t& paintInfo = GetPaintPower(player, 2);*/
+
+    /*using _UseSpeedPower = void(__rescall*)(void* thisptr, PaintPowerInfo_t& info);
+    _UseSpeedPower UseSpeedPower = Memory::VMT<_UseSpeedPower>(player, Offsets::UseSpeedPower);
+    UseSpeedPower(player, paintInfo);
+    */
+
+    pi.maxSpeed = *m_flMaxspeed;
+    *m_flMaxspeed = oldMaxSpeed;
 
     unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + 344); // m_hGroundEntity
     pi.grounded = groundEntity != 0xFFFFFFFF;

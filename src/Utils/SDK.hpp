@@ -1113,6 +1113,15 @@ struct variant_t
     const char *ToString() const;
 };
 
+struct PaintPowerInfo_t {
+    Vector m_SurfaceNormal;
+    Vector m_ContactPoint;
+    int m_PaintPowerType;
+    CBaseHandle m_HandleToOther;
+    int m_State;
+    bool m_IsOnThinSurface;
+};
+
 #pragma region RayTracing
 
 #define CONTENTS_EMPTY 0x0

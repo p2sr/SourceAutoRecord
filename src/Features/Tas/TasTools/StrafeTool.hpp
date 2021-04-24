@@ -36,7 +36,6 @@ struct AutoStrafeParams : public TasToolParams {
     AutoStrafeType strafeType = DISABLED;
     AutoStrafeDirection strafeDir = { CURRENT, 0.0f };
     AutoStrafeSpeed strafeSpeed = { SPECIFIED, 10000.0f };
-    bool turningPriority = false;
 
     AutoStrafeParams()
         : TasToolParams()
@@ -47,10 +46,10 @@ struct AutoStrafeParams : public TasToolParams {
         , strafeType(type)
         , strafeDir(dir)
         , strafeSpeed(speed)
-        , turningPriority(turningPriority)
     {
     }
 };
+
 
 class AutoStrafeTool : public TasTool {
 public:
@@ -61,22 +60,24 @@ public:
     virtual void Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo);
     virtual void Reset();
 
-    Vector followLine;
-    bool reachedAngle = false;
-    bool reachedVelocity = false;
+    Vector followLinePoint;
+    bool shouldFollowLine = false;
+    int lastTurnDir = 0;
 
-    Vector CreateWishDir(const TasPlayerInfo& player, float forwardMove, float sideMove);
     Vector GetGroundFrictionVelocity(const TasPlayerInfo& player);
     float GetMaxSpeed(const TasPlayerInfo& player, Vector wishDir, bool notAired = false);
     float GetMaxAccel(const TasPlayerInfo& player, Vector wishDir);
+    Vector CreateWishDir(const TasPlayerInfo& player, float forwardMove, float sideMove);
 
     Vector GetVelocityAfterMove(const TasPlayerInfo& player, float forwardMove, float sideMove);
     float GetFastestStrafeAngle(const TasPlayerInfo& player);
     float GetMaintainStrafeAngle(const TasPlayerInfo& player);
+    float GetTurningStrafeAngle(const TasPlayerInfo& player);
 
     float GetStrafeAngle(const TasPlayerInfo& player, AutoStrafeParams &dir);
 
-    void MarkAngleReached(const TasPlayerInfo& pInfo);
+    int GetTurningDirection(const TasPlayerInfo& pInfo);
+    void FollowLine(const TasPlayerInfo& pInfo);
 };
 
 extern AutoStrafeTool autoStrafeTool;
