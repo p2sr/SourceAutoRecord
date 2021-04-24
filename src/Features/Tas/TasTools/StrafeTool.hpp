@@ -6,14 +6,14 @@
 
 /*
   AUTO STRAFING TOOL
-
 */
 
 
 enum AutoStrafeType {
     DISABLED,
     VECTORIAL,
-    ANGULAR
+    ANGULAR,
+    VECTORIAL_CAM
 };
 
 enum AutoStrafeParamType {
@@ -41,7 +41,7 @@ struct AutoStrafeParams : public TasToolParams {
         : TasToolParams()
     {}
 
-    AutoStrafeParams(AutoStrafeType type, AutoStrafeDirection dir, AutoStrafeSpeed speed, bool turningPriority)
+    AutoStrafeParams(AutoStrafeType type, AutoStrafeDirection dir, AutoStrafeSpeed speed)
         : TasToolParams(true)
         , strafeType(type)
         , strafeDir(dir)
@@ -71,12 +71,12 @@ public:
 
     Vector GetVelocityAfterMove(const TasPlayerInfo& player, float forwardMove, float sideMove);
     float GetFastestStrafeAngle(const TasPlayerInfo& player);
-    float GetMaintainStrafeAngle(const TasPlayerInfo& player);
+    float GetTargetStrafeAngle(const TasPlayerInfo& player, float targetSpeed);
     float GetTurningStrafeAngle(const TasPlayerInfo& player);
 
     float GetStrafeAngle(const TasPlayerInfo& player, AutoStrafeParams &dir);
 
-    int GetTurningDirection(const TasPlayerInfo& pInfo);
+    int GetTurningDirection(const TasPlayerInfo& pInfo, float desAngle);
     void FollowLine(const TasPlayerInfo& pInfo);
 };
 

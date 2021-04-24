@@ -8,21 +8,37 @@
 #include "Utils/SDK.hpp"
 
 #include "TasUtils.hpp"
+#include "AutoJumpTool.hpp"
 
 AutoStrafeTool autoStrafeTool("strafe");
 
-void AutoStrafeTool::Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo)
+void AutoStrafeTool::Apply(TasFramebulk& fb, const TasPlayerInfo& rawPInfo)
 {
     auto asParams = std::static_pointer_cast<AutoStrafeParams>(params);
 
     if (!asParams->enabled)
         return;
 
+    //create fake player info for a sake of values being correct
+    TasPlayerInfo pInfo = rawPInfo;
+    if (autoJumpTool.GetCurrentParams()->enabled) {
+        // if autojump is enabled, we're never grounded.
+        pInfo.grounded = false;
+    }
+
+    // forcing pitch to be 0 at all times
+    pInfo.angles.x = 0;
+    fb.viewAnalog.y = -pInfo.angles.x;
+    
+    // adjusting fake pinfo to have proper angles
+    pInfo.angles.y += fb.viewAnalog.x;
+
     float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
 
     // update parameters that has type CURRENT
     if (this->updated) {
         this->shouldFollowLine = false;
+        this->lastTurnDir = 0;
 
         if (asParams->strafeDir.type == CURRENT) {
             asParams->strafeDir.angle = velAngle;
@@ -37,13 +53,19 @@ void AutoStrafeTool::Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo)
     }
 
     
-    float angle = velAngle + this->GetStrafeAngle(pInfo, *asParams);
+    float angle = velAngle + RAD2DEG(this->GetStrafeAngle(pInfo, *asParams));
 
     // applying the calculated angle depending on the type of strafing
     if (asParams->strafeType == AutoStrafeType::VECTORIAL) {
-        angle = DEG2RAD(angle - pInfo.angles.y);
-        fb.moveAnalog.x = -sinf(angle);
-        fb.moveAnalog.y = cosf(angle);
+        float moveAngle = DEG2RAD(angle - pInfo.angles.y);
+        fb.moveAnalog.x = -sinf(moveAngle);
+        fb.moveAnalog.y = cosf(moveAngle);
+    } else if (asParams->strafeType == AutoStrafeType::VECTORIAL_CAM) {
+        float lookAngle = this->shouldFollowLine ? asParams->strafeDir.angle : velAngle;
+        fb.viewAnalog.x = lookAngle - pInfo.angles.y;
+        float moveAngle = DEG2RAD(angle - lookAngle);
+        fb.moveAnalog.x = -sinf(moveAngle);
+        fb.moveAnalog.y = cosf(moveAngle);
     } else if (asParams->strafeType == AutoStrafeType::ANGULAR) {
 
         //making sure moveAnalog is always at maximum value.
@@ -56,12 +78,8 @@ void AutoStrafeTool::Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo)
         float lookAngle = RAD2DEG(atan2f(fb.moveAnalog.x, fb.moveAnalog.y));
 
         QAngle newAngle = { 0, angle + lookAngle, 0 };
-        fb.viewAnalog.x = newAngle.y - pInfo.angles.y;
+        fb.viewAnalog.x += newAngle.y - pInfo.angles.y;
     }
-
-    // forcing pitch to be 0
-    fb.viewAnalog.y = -pInfo.angles.x;
-    
 }
 
 // returns player's velocity after its been affected by ground friction
@@ -190,30 +208,21 @@ float AutoStrafeTool::GetFastestStrafeAngle(const TasPlayerInfo& player)
     return acosf(cosAng);
 }
 
-// get horizontal angle of wishdir that would maintain current velocity
+// get horizontal angle of wishdir that would achieve given velocity
 // angle is relative to your current velocity direction.
-float AutoStrafeTool::GetMaintainStrafeAngle(const TasPlayerInfo& player)
+float AutoStrafeTool::GetTargetStrafeAngle(const TasPlayerInfo& player, float targetSpeed)
 {
-    Vector vel = player.velocity;
-    Vector gfVel = GetGroundFrictionVelocity(player);
+    Vector vel = GetGroundFrictionVelocity(player);
 
-    if (gfVel.Length2D() == 0) return 0;
+    if (vel.Length2D() == 0) return 0;
 
     Vector wishDir(0, 1);
     float maxSpeed = GetMaxSpeed(player, wishDir);
     float maxAccel = GetMaxAccel(player, wishDir);
 
-    float cosAng;
+    float cosAng = (pow(vel.Length2D(), 2) + pow(maxAccel, 2) - pow(targetSpeed, 2)) / (2.0f * vel.Length2D() * maxAccel);
 
-    if (!player.grounded)
-        cosAng = maxAccel / (2 * vel.Length2D());
-    else
-        cosAng = cosf(powf(vel.Length2D(), 2) - powf(maxAccel, 2) - powf(gfVel.Length2D(), 2)) / (2 * maxAccel * gfVel.Length2D());
-
-    if (cosAng < 0) cosAng = M_PI_F / 2;
-    if (cosAng > 1) cosAng = 0;
-
-    return (M_PI_F - acosf(cosAng));
+    return acosf(-cosAng);
 }
 
 // get horizontal angle of wishdir that would give the biggest turning angle in given tick
@@ -244,33 +253,73 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo& player, AutoStrafePara
     float speedDiff = params.strafeSpeed.speed - speed;
     if (abs(speedDiff) < 0.001) speedDiff = 0;
 
+    int turningDir = GetTurningDirection(player, params.strafeDir.angle);
+
     float ang = 0;
+    bool passedTargetSpeed = false;
 
-    if (speedDiff == 0)
-        ang = GetMaintainStrafeAngle(player);
-    else if (speedDiff > 0)
-        ang = GetFastestStrafeAngle(player);
-    else if (speedDiff < 0)
-        ang = GetTurningStrafeAngle(player);
- 
-    ang *= GetTurningDirection(player);
+    if (speedDiff > 0) {
+        ang = GetFastestStrafeAngle(player) * turningDir;
+    } else if (speedDiff < 0) {
+        ang = GetTurningStrafeAngle(player) * turningDir;
+    }
 
-    // TODO: here, we need to check if the velocity is about to reach its target.
-    // also check for limited air control conditions.
+    // check if the velocity is about to reach its target.
+    if (speedDiff != 0) {
+        float angRad = DEG2RAD(ang);
+        Vector predictedVel = GetVelocityAfterMove(player, cos(ang), sin(ang));
+        if ((speedDiff > 0 && predictedVel.Length2D() > params.strafeSpeed.speed)
+            || (speedDiff < 0 && predictedVel.Length2D() < params.strafeSpeed.speed)) {
+            passedTargetSpeed = true;
+        }
+    }
+
+    if (passedTargetSpeed || speedDiff == 0) {
+        ang = GetTargetStrafeAngle(player, params.strafeSpeed.speed) * turningDir;
+    }
+    
+    // TODO: handle air control limit correctly
+    
+
 
     return ang;
 }
 
 // returns 1 or -1 depending on what direction player should strafe (right and left accordingly)
-int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo& pInfo)
+int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo& pInfo, float desAngle)
 {
     if (this->shouldFollowLine) {
-        //TODO: here figure out on which side of line we're in, then return angle depending on that
+        // figure out on which side of line we're in, then return angle depending on that
+
+        float desAngleRad = DEG2RAD(desAngle);
+        Vector flForward(cos(desAngleRad), sin(desAngleRad));
+        Vector flRight(flForward.y, -flForward.x);
+        Vector vel = pInfo.velocity;
+        Vector ppos = pInfo.position + vel * pInfo.ticktime;
+
+        // translate the follow point so it's closer to player's position
+        Vector flPoint = this->followLinePoint;
+        flPoint += flForward + flForward * ((ppos - flPoint).Dot(flForward));
+
+        // return direction based on what side of the line player is on
+        float relPos = (ppos - flPoint).Normalize().Dot(flRight);
+        return relPos < 0 ? -1 : 1;
     } else {
+        // figure out the strafe direction based on a difference in angles
         float turnDir = 1;
+        if (desAngle < -180.0f) {
+            turnDir = -1;
+        } else if(desAngle <= 180.0f){
+            float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
+            
+            float diff = desAngle - velAngle;
+            if (abs(diff - 180) < abs(diff)) diff -= 180;
+            if (abs(diff + 180) < abs(diff)) diff += 180;
 
-        //TODO: calculate correct difference between current and desired angle, then make a turning direction out of that.
+            if (diff < 0) turnDir = -1;
+        }
 
+        // reached the angle. follow the line from this point.
         if (this->lastTurnDir != 0 && this->lastTurnDir != turnDir) {
             FollowLine(pInfo);
         }
@@ -294,7 +343,6 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
     AutoStrafeType type = VECTORIAL;
     AutoStrafeDirection dir{ CURRENT, 0 };
     AutoStrafeSpeed speed = { SPECIFIED, 10000.0f };
-    bool turningPriority = false;
 
     if (vp.size() == 0) {
         return std::make_shared<AutoStrafeParams>();
@@ -304,17 +352,19 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
         //type
         if (param == "off") {
             return std::make_shared<AutoStrafeParams>();
-        } else if (param == "vectorial") {
+        } else if (param == "vec") {
             type = VECTORIAL;
-        } else if (param == "angular") {
+        } else if (param == "ang") {
             type = ANGULAR;
+        } else if (param == "veccam") {
+            type = VECTORIAL_CAM;
         }
 
         //speed
         else if (param == "max") {
             speed.type = SPECIFIED;
             speed.speed = 10000.0f; // as long as it's higher than max speed times square root of 2, we should be fine?
-        } else if (param == "maintain") {
+        } else if (param == "keep") {
             speed.type = CURRENT;
         } else if (param.size() > 3 && param.substr(param.size() - 3, 3) == "ups") {
             speed.type = SPECIFIED;
@@ -322,14 +372,14 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
         }
 
         //dir (using large numbers for left and right because angle is clamped to range -180 and 180)
-        else if (param == "straight") {
+        else if (param == "forward") {
             dir.type = CURRENT;
         } else if (param == "left") {
             dir.type = SPECIFIED;
-            dir.angle = 360.0f;
+            dir.angle = 10000.0f;
         } else if (param == "right") {
             dir.type = SPECIFIED;
-            dir.angle = -360.0f;
+            dir.angle = -10000.0f;
         } else if (param.size() > 3 && param.substr(param.size() - 3, 3) == "deg") {
             dir.type = SPECIFIED;
             dir.angle = TasParser::toFloat(param.substr(0, param.size() - 3));
@@ -342,7 +392,7 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
         }
     }
 
-    return std::make_shared<AutoStrafeParams>(type, dir, speed, turningPriority);
+    return std::make_shared<AutoStrafeParams>(type, dir, speed);
 }
 
 AutoStrafeTool* AutoStrafeTool::GetTool()

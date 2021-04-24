@@ -287,8 +287,6 @@ void TasPlayer::PostProcess(void* player, CMoveData* pMove)
         }
     }
 
-    
-
     for (TasTool* tool : TasTool::GetList()) {
         tool->Apply(fb, playerInfo);
     }

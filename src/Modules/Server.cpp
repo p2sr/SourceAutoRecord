@@ -206,7 +206,7 @@ DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
     float diff = abs(g_predictedVel - currVel);
 
     if (!engine->IsGamePaused()) {
-        console->Print("Predicted: %fups, got: %fups  (diff %fups)\n", g_predictedVel, currVel, diff);
+        //console->Print("Predicted: %fups, got: %fups  (diff %fups)\n", g_predictedVel, currVel, diff);
     }
     
     float forwardMove = pMove->m_flForwardMove / 175.0f;

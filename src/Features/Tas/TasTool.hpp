@@ -32,7 +32,6 @@ public:
 
     void SetParams(std::shared_ptr<TasToolParams> params);
     std::shared_ptr<TasToolParams> GetCurrentParams();
-
 public:
     static std::vector<TasTool*>& GetList();
 };
