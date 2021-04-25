@@ -270,3 +270,5 @@ __pycache__/
 
 # Linux build config
 config.mk
+
+src/Version.hpp

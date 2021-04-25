@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "SAR.hpp"
+#include "Version.hpp"
 
 #define CRASH_REPORTS_DIR "crash_reports"
 
@@ -82,7 +83,7 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
         finish;
     }
 
-    fputs("SAR " SAR_VERSION " (Built " SAR_BUILD ")\n", f);
+    fputs("SAR " SAR_VERSION " (Built " SAR_BUILT ")\n", f);
     fprintf(f, "%s caused by address 0x%08x\n", signame, (uint32_t)faultaddr);
 
 #ifdef _WIN32

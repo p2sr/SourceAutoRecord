@@ -13,8 +13,7 @@
 #include "Plugin.hpp"
 #include "Variable.hpp"
 
-#define SAR_VERSION "1.12.2.2"
-#define SAR_BUILD __TIME__ " " __DATE__
+#define SAR_BUILT __TIME__ " " __DATE__
 #define SAR_WEB "https://nekzor.github.io/SourceAutoRecord or https://wiki.portal2.sr/SAR"
 
 #define SAFE_UNLOAD_TICK_DELAY 33
@@ -54,10 +53,6 @@ public:
     virtual void OnQueryCvarValueFinished(int iCookie, void* pPlayerEntity, int eStatus, const char* pCvarName, const char* pCvarValue);
     virtual void OnEdictAllocated(void* edict);
     virtual void OnEdictFreed(const void* edict);
-
-    inline const char* Version() { return SAR_VERSION; }
-    inline const char* Build() { return SAR_BUILD; }
-    inline const char* Website() { return SAR_WEB; }
 
     bool GetPlugin();
     void SearchPlugin();

@@ -9,6 +9,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-16.04
+    if: github.repository == 'Blenderiste09/SourceAutoRecord'
     steps:
     - name: Get Release Version
       id: get_release

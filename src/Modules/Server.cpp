@@ -31,6 +31,7 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+#include "Version.hpp"
 
 #define RESET_COOP_PROGRESS_MESSAGE_TYPE "coop-reset"
 
@@ -501,8 +502,8 @@ DETOUR(Server::GameFrame, bool simulating)
     }
 
     if (simulating && !engine->demorecorder->hasNotified && engine->demorecorder->m_bRecording) {
-        std::string cmd = std::string("echo SAR ") + SAR_VERSION + " (Build " + SAR_BUILD + ")";
-        engine->SendToCommandBuffer(cmd.c_str(), 300);
+        const char* cmd = "echo SAR " SAR_VERSION " (Built " SAR_BUILT ")";
+        engine->SendToCommandBuffer(cmd, 300);
         engine->demorecorder->hasNotified = true;
     }
 
