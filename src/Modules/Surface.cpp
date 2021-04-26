@@ -22,9 +22,7 @@ int Surface::GetFontLength(HFont font, const char* fmt, ...)
     char data[1024];
     vsnprintf(data, sizeof(data), fmt, argptr);
     va_end(argptr);
-#ifdef _WIN32
-    return this->DrawTextLen(this->matsurface->ThisPtr(), font, data);
-#else
+
     int length = 0;
     for (size_t i = 0; data[i]; ++i) {
         wchar_t prev = i == 0 ? 0 : data[i - 1];
@@ -35,7 +33,6 @@ int Surface::GetFontLength(HFont font, const char* fmt, ...)
         length += floor(wide + a + c);
     }
     return length;
-#endif
 }
 void Surface::DrawTxt(HFont font, int x, int y, Color clr, const char* fmt, ...)
 {
