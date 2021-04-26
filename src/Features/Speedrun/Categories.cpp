@@ -289,6 +289,8 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_category, "sar_speedrun_category [category
             console->Print("Category %s does not exist!\n", args[1]);
         } else {
             g_currentCategory = args[1];
+            console->Print("Using category '%s'\n", g_currentCategory.c_str());
+            return;
         }
     }
 
