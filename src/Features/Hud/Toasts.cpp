@@ -12,6 +12,8 @@
 #define TOAST_GAP 10
 #define TOAST_BACKGROUND Color{0, 0, 0, 192}
 
+#define SLIDE_RATE 200 // pix/s
+
 struct Toast
 {
     std::string text;
@@ -21,9 +23,13 @@ struct Toast
 
 static std::deque<Toast> g_toasts;
 
+static int g_slideOff = 0;
+static std::chrono::time_point<std::chrono::steady_clock> g_slideOffTime;
+
 Variable sar_toast_disable("sar_toast_disable", "0", "Disable all toasts from showing.\n");
 Variable sar_toast_font("sar_toast_font", "6", 0, "The font index to use for toasts.\n");
 Variable sar_toast_width("sar_toast_width", "250", 2 * PADDING, "The maximum width for toasts.\n");
+Variable sar_toast_pos("sar_toast_pos", "0", 0, 3, "The position to display toasts in. 0 = bottom left, 1 = bottom right, 2 = top left, 3 = top right.\n");
 
 ToastHud::ToastHud()
     : Hud(HudType_InGame | HudType_Paused | HudType_Menu, true)
@@ -38,39 +44,6 @@ bool ToastHud::ShouldDraw()
 bool ToastHud::GetCurrentSize(int &xSize, int &ySize)
 {
     return false;
-}
-
-void ToastHud::AddToast(std::string text, Color color, double duration, bool doConsole)
-{
-    g_toasts.push_back({
-        text,
-        color,
-        NOW_STEADY() + std::chrono::microseconds((int64_t)(duration * 1000000)),
-    });
-
-    if (doConsole) {
-        Color conCol = color;
-        if (color.r() == 255 && color.g() == 255 && color.b() == 255 && color.a() == 255) {
-            conCol.SetColor(255, 150, 50, 255);
-        }
-        console->ColorMsg(conCol, "%s\n", text.c_str());
-    }
-}
-
-void ToastHud::Update()
-{
-    auto now = NOW_STEADY();
-
-    g_toasts.erase(
-        std::remove_if(
-            g_toasts.begin(),
-            g_toasts.end(),
-            [=](Toast toast) {
-                return now >= toast.dismissAt;
-            }
-        ),
-        g_toasts.end()
-    );
 }
 
 static std::vector<std::string> splitIntoLines(Surface::HFont font, std::string text, int maxWidth) {
@@ -128,6 +101,51 @@ static std::vector<std::string> splitIntoLines(Surface::HFont font, std::string 
     return lines;
 }
 
+void ToastHud::AddToast(std::string text, Color color, double duration, bool doConsole)
+{
+    g_toasts.push_back({
+        text,
+        color,
+        NOW_STEADY() + std::chrono::microseconds((int64_t)(duration * 1000000)),
+    });
+
+    Surface::HFont font = scheme->GetDefaultFont() + sar_toast_font.GetInt();
+    int lineHeight = surface->GetFontHeight(font) + PADDING;
+    int maxWidth = sar_toast_width.GetInt();
+    auto lines = splitIntoLines(font, text, maxWidth - 2 * PADDING);
+    g_slideOff += lines.size() * lineHeight + PADDING + TOAST_GAP;
+
+    if (doConsole) {
+        Color conCol = color;
+        if (color.r() == 255 && color.g() == 255 && color.b() == 255 && color.a() == 255) {
+            conCol.SetColor(255, 150, 50, 255);
+        }
+        console->ColorMsg(conCol, "%s\n", text.c_str());
+    }
+}
+
+void ToastHud::Update()
+{
+    auto now = NOW_STEADY();
+
+    g_toasts.erase(
+        std::remove_if(
+            g_toasts.begin(),
+            g_toasts.end(),
+            [=](Toast toast) {
+                return now >= toast.dismissAt;
+            }
+        ),
+        g_toasts.end()
+    );
+
+    g_slideOff -= SLIDE_RATE * std::chrono::duration_cast<std::chrono::milliseconds>(now - g_slideOffTime).count() / 1000;
+    if (g_slideOff < 0) {
+        g_slideOff = 0;
+    }
+    g_slideOffTime = now;
+}
+
 void ToastHud::Paint(int slot)
 {
     if (slot != 0 && !engine->IsOrange()) {
@@ -150,10 +168,17 @@ void ToastHud::Paint(int slot)
 
     int lineHeight = surface->GetFontHeight(font) + PADDING;
 
-    int yOffset = TOAST_GAP;
-    int xRight = screenWidth - TOAST_GAP;
+    bool alignRight = sar_toast_pos.GetInt() & 1;
+    bool alignTop = sar_toast_pos.GetInt() & 2;
 
-    for (Toast toast : g_toasts) {
+    int yOffset = TOAST_GAP - g_slideOff;
+    if (!alignTop) {
+        yOffset = screenHeight - yOffset;
+    }
+
+    for (auto iter = g_toasts.rbegin(); iter != g_toasts.rend(); ++iter) {
+        auto toast = *iter;
+
         auto lines = splitIntoLines(font, toast.text, maxWidth - 2 * PADDING);
 
         if (lines.size() == 0) {
@@ -171,7 +196,12 @@ void ToastHud::Paint(int slot)
         int width = longestLine + 2 * PADDING;
         int height = lines.size() * lineHeight + PADDING;
 
-        int xLeft = xRight - width;
+        int xLeft = alignRight ? screenWidth - TOAST_GAP - width : TOAST_GAP;
+        int xRight = xLeft + width;
+        
+        if (!alignTop) {
+            yOffset -= height;
+        }
 
         surface->DrawRect(TOAST_BACKGROUND, xLeft, yOffset, xRight, yOffset + height);
 
@@ -183,7 +213,11 @@ void ToastHud::Paint(int slot)
             yOffset += lineHeight;
         }
 
-        yOffset += TOAST_GAP;
+        if (alignTop) {
+            yOffset += TOAST_GAP;
+        } else {
+            yOffset -= height + TOAST_GAP;
+        }
     }
 }
 
