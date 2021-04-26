@@ -12,7 +12,7 @@
 #define TOAST_GAP 10
 #define TOAST_BACKGROUND Color{0, 0, 0, 192}
 
-#define SLIDE_RATE 200 // pix/s
+#define SLIDE_RATE 200 // thousandths of screen / s
 
 struct Toast
 {
@@ -139,7 +139,14 @@ void ToastHud::Update()
         g_toasts.end()
     );
 
-    g_slideOff -= SLIDE_RATE * std::chrono::duration_cast<std::chrono::milliseconds>(now - g_slideOffTime).count() / 1000;
+    int screenWidth, screenHeight;
+#ifdef _WIN32
+    engine->GetScreenSize(screenWidth, screenHeight);
+#else
+    engine->GetScreenSize(nullptr, screenWidth, screenHeight);
+#endif
+
+    g_slideOff -= SLIDE_RATE * std::chrono::duration_cast<std::chrono::milliseconds>(now - g_slideOffTime).count() * screenHeight / 1000 / 1000;
     if (g_slideOff < 0) {
         g_slideOff = 0;
     }
@@ -197,13 +204,12 @@ void ToastHud::Paint(int slot)
         int height = lines.size() * lineHeight + PADDING;
 
         int xLeft = alignRight ? screenWidth - TOAST_GAP - width : TOAST_GAP;
-        int xRight = xLeft + width;
-        
+
         if (!alignTop) {
             yOffset -= height;
         }
 
-        surface->DrawRect(TOAST_BACKGROUND, xLeft, yOffset, xRight, yOffset + height);
+        surface->DrawRect(TOAST_BACKGROUND, xLeft, yOffset, xLeft + width, yOffset + height);
 
         yOffset += PADDING;
 
