@@ -10,9 +10,46 @@
 #include <memory>
 #include <set>
 #include <variant>
+#include <optional>
 #include <cstdlib>
+#include <cctype>
 
 Variable sar_speedrun_draw_triggers("sar_speedrun_draw_triggers", "0", "Draw the triggers associated with speedrun rules in the world.\n");
+
+static std::optional<std::vector<std::string>> extractPartialArgs(const char *str, const char *cmd)
+{
+    while (*cmd) {
+        if (*str != *cmd) {
+            return {};
+        }
+        ++str, ++cmd;
+    }
+
+    if (!isspace(*str) && *str != '"' && *str) {
+        return {};
+    }
+
+    std::vector<std::string> args;
+
+    while (*str) {
+        while (isspace(*str)) ++str;
+
+        if (*str == '"') {
+            ++str;
+            size_t i = 0;
+            while (str[i] && str[i] != '"') ++i;
+            args.push_back({str, i});
+            str += i + 1;
+        } else {
+            size_t i = 0;
+            while (!isspace(str[i]) && str[i]) ++i;
+            args.push_back({str, i});
+            str += i;
+        }
+    }
+
+    return args;
+}
 
 template<typename V>
 static inline V *lookupMap(std::map<std::string, V> &m, std::string k)
@@ -190,40 +227,59 @@ static std::string maybeQuote(std::string arg)
     return arg;
 }
 
-static int vectorCompletion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH], std::vector<std::string> possible)
+static int vectorCompletion(const char *partial, const char *cmd, char completionsOut[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH], std::vector<std::vector<std::string>> options)
 {
-    size_t i = 0;
-    for (std::string cmd : possible) {
-        const char *cmd_c = cmd.c_str();
+    auto existing = extractPartialArgs(partial, cmd);
+    if (!existing || existing->size() == 0) {
+        return {};
+    }
 
-        if (strstr(cmd_c, partial) != cmd_c) {
-            continue;
-        }
+    size_t argIdx = existing->size() - 1;
+    if (argIdx >= options.size()) {
+        return {};
+    }
 
-        strncpy(commands[i], cmd_c, COMMAND_COMPLETION_ITEM_LENGTH - 1);
-        commands[i][COMMAND_COMPLETION_ITEM_LENGTH - 1] = 0;
+    auto argOpts = options[argIdx];
 
-        if (++i == COMMAND_COMPLETION_MAXITEMS) {
-            break;
+    std::string argPart = (*existing)[argIdx];
+
+    int completionIdx = 0;
+
+    for (size_t i = 0; i < argOpts.size(); ++i) {
+        if (argOpts[i].substr(0, argPart.size()) == argPart) {
+            auto compArgs = *existing;
+            compArgs[compArgs.size() - 1] = argOpts[i];
+            std::string comp = cmd;
+            for (std::string arg : compArgs) {
+                comp += " " + maybeQuote(arg);
+            }
+            strncpy(completionsOut[completionIdx], comp.c_str(), COMMAND_COMPLETION_ITEM_LENGTH - 1);
+            completionsOut[completionIdx][COMMAND_COMPLETION_ITEM_LENGTH - 1] = 0;
+            if (++completionIdx == COMMAND_COMPLETION_MAXITEMS) {
+                break;
+            }
         }
     }
 
-    return i;
+    return completionIdx;
+}
+
+template<typename K, typename V>
+static std::vector<K> mapKeys(std::map<K, V> m)
+{
+    std::vector<K> keys;
+    keys.reserve(m.size());
+    for (const auto &x : m) {
+        keys.push_back(x.first);
+    }
+    return keys;
 }
 
 // Setting/printing categories {{{
 
 static int _sar_speedrun_category_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
-    std::vector<std::string> possible;
-
-    possible.push_back("sar_speedrun_category");
-
-    for (auto cat : g_categories) {
-        possible.push_back("sar_speedrun_category " + maybeQuote(cat.first));
-    }
-
-    return vectorCompletion(partial, commands, possible);
+    return vectorCompletion(partial, "sar_speedrun_category", commands, { mapKeys(g_categories) });
 }
 
 CON_COMMAND_F_COMPLETION(sar_speedrun_category, "sar_speedrun_category [category] - get or set the speedrun category.\n", 0, &_sar_speedrun_category_completion)
@@ -253,17 +309,8 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_category, "sar_speedrun_category [category
 
 static int _sar_speedrun_rule_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
-    std::vector<std::string> possible;
-
-    possible.push_back("sar_speedrun_rule");
-
-    for (auto rule : g_rules) {
-        possible.push_back("sar_speedrun_rule " + maybeQuote(rule.first));
-    }
-
-    return vectorCompletion(partial, commands, possible);
+    return vectorCompletion(partial, "sar_speedrun_rule", commands, { mapKeys(g_rules) });
 }
-
 
 CON_COMMAND_F_COMPLETION(sar_speedrun_rule, "sar_speedrun_rule [rule] - show information about speedrun rules.\n", 0, &_sar_speedrun_rule_completion)
 {
@@ -312,13 +359,7 @@ CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <categor
 
 static int _sar_speedrun_category_remove_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
-    std::vector<std::string> possible;
-
-    for (auto cat : g_categories) {
-        possible.push_back("sar_speedrun_category_remove " + maybeQuote(cat.first));
-    }
-
-    return vectorCompletion(partial, commands, possible);
+    return vectorCompletion(partial, "sar_speedrun_category_remove", commands, { mapKeys(g_categories) });
 }
 
 CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove, "sar_speedrun_category_remove <category> - delete the given speedrun category.\n", 0, &_sar_speedrun_category_remove_completion)
@@ -346,17 +387,7 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove, "sar_speedrun_category_re
 
 static int _sar_speedrun_category_add_rule_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
-    std::vector<std::string> possible;
-
-    for (auto cat : g_categories) {
-        for (auto rule : g_rules) {
-            if (cat.second.rules.find(rule.first) == cat.second.rules.end()) {
-                possible.push_back(Utils::ssprintf("sar_speedrun_category_add_rule %s %s", maybeQuote(cat.first).c_str(), maybeQuote(rule.first).c_str()));
-            }
-        }
-    }
-
-    return vectorCompletion(partial, commands, possible);
+    return vectorCompletion(partial, "sar_speedrun_category_add_rule", commands, { mapKeys(g_categories), mapKeys(g_rules) });
 }
 
 bool SpeedrunTimer::AddRuleToCategory(std::string category, std::string rule)
@@ -387,15 +418,7 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_category_add_rule, "sar_speedrun_category_
 
 static int _sar_speedrun_category_remove_rule_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
-    std::vector<std::string> possible;
-
-    for (auto cat : g_categories) {
-        for (auto rule : cat.second.rules) {
-            possible.push_back(Utils::ssprintf("sar_speedrun_category_remove_rule %s %s", maybeQuote(cat.first).c_str(), maybeQuote(rule).c_str()));
-        }
-    }
-
-    return vectorCompletion(partial, commands, possible);
+    return vectorCompletion(partial, "sar_speedrun_category_remove_rule", commands, { mapKeys(g_categories), mapKeys(g_rules) });
 }
 
 CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove_rule, "sar_speedrun_category_remove_rule <category> <rule> - remove a rule from a speedrun category.\n", 0, &_sar_speedrun_category_remove_rule_completion)
@@ -519,13 +542,7 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
 
 static int _sar_speedrun_rule_remove_completion(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
-    std::vector<std::string> possible;
-
-    for (auto rule : g_rules) {
-        possible.push_back("sar_speedrun_rule_remove " + maybeQuote(rule.first));
-    }
-
-    return vectorCompletion(partial, commands, possible);
+    return vectorCompletion(partial, "sar_speedrun_rule_remove", commands, { mapKeys(g_rules) });
 }
 
 
