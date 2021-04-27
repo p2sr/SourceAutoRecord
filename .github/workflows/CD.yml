@@ -9,7 +9,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-16.04
-    if: github.repository == 'Blenderiste09/SourceAutoRecord'
+    if: github.repository == 'p2sr/SourceAutoRecord'
     steps:
     - name: Get Release Version
       id: get_release
@@ -22,12 +22,12 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
         body: |
-          ![CD](https://github.com/Blenderiste09/SourceAutoRecord/workflows/CD/badge.svg)
+          ![CD](https://github.com/p2sr/SourceAutoRecord/workflows/CD/badge.svg)
 
           **Installation**
           - Download:
-            - [Windows](https://github.com/Blenderiste09/SourceAutoRecord/releases/download/${{ steps.get_release.output.version }}/sar.dll)
-            - [Linux](https://github.com/Blenderiste09/SourceAutoRecord/releases/download/${{ steps.get_release.output.version }}/sar.so)
+            - [Windows](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.output.version }}/sar.dll)
+            - [Linux](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.output.version }}/sar.so)
           - Place the binary into the game folder e.g. `Portal 2`
           - Open developer console and enter `plugin_load sar`
 
@@ -50,13 +50,13 @@ jobs:
       run: make
     - name: Fetch Latest Release
       id: latest_release
-      run: echo ::set-output name=release_id::$(node -e "require('https').request({hostname:'api.github.com',path:'/repos/Blenderiste09/SourceAutoRecord/releases',headers:{'User-Agent':'n^'}},(r)=>{let b='';r.on('data',(d)=>b+=d);r.on('end',()=>process.stdout.write(JSON.parse(b)[0].id.toString()));}).end();")
+      run: echo ::set-output name=release_id::$(node -e "require('https').request({hostname:'api.github.com',path:'/repos/p2sr/SourceAutoRecord/releases',headers:{'User-Agent':'n^'}},(r)=>{let b='';r.on('data',(d)=>b+=d);r.on('end',()=>process.stdout.write(JSON.parse(b)[0].id.toString()));}).end();")
     - name: Upload Asset
       uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: https://uploads.github.com/repos/Blenderiste09/SourceAutoRecord/releases/${{ steps.latest_release.outputs.release_id }}/assets{?name,label}
+        upload_url: https://uploads.github.com/repos/p2sr/SourceAutoRecord/releases/${{ steps.latest_release.outputs.release_id }}/assets{?name,label}
         asset_path: sar.so
         asset_name: sar.so
         asset_content_type: application/octet-stream
@@ -73,13 +73,13 @@ jobs:
           .\MSBuild.exe $Env:GITHUB_WORKSPACE\SourceAutoRecordv16.sln /t:SourceAutoRecord /p:Configuration=Release /p:Platform=x86
       - name: Fetch Latest Release
         id: latest_release
-        run: echo ::set-output name=release_id::$(node -e "require('https').request({hostname:'api.github.com',path:'/repos/Blenderiste09/SourceAutoRecord/releases',headers:{'User-Agent':'n^'}},(r)=>{let b='';r.on('data',(d)=>b+=d);r.on('end',()=>process.stdout.write(JSON.parse(b)[0].id.toString()));}).end();")
+        run: echo ::set-output name=release_id::$(node -e "require('https').request({hostname:'api.github.com',path:'/repos/p2sr/SourceAutoRecord/releases',headers:{'User-Agent':'n^'}},(r)=>{let b='';r.on('data',(d)=>b+=d);r.on('end',()=>process.stdout.write(JSON.parse(b)[0].id.toString()));}).end();")
       - name: Upload Windows Asset
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: https://uploads.github.com/repos/Blenderiste09/SourceAutoRecord/releases/${{ steps.latest_release.outputs.release_id }}/assets{?name,label}
+          upload_url: https://uploads.github.com/repos/p2sr/SourceAutoRecord/releases/${{ steps.latest_release.outputs.release_id }}/assets{?name,label}
           asset_path: bin/sar.dll
           asset_name: sar.dll
           asset_content_type: application/octet-stream
