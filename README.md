@@ -1,5 +1,5 @@
-[![CI](https://github.com/Blenderiste09/SourceAutoRecord/workflows/CI/badge.svg)](https://github.com/Blenderiste09/SourceAutoRecord/actions?query=workflow%3ACI+branch%3Amaster)
-[![CD](https://github.com/Blenderiste09/SourceAutoRecord/workflows/CD/badge.svg)](https://github.com/Blenderiste09/SourceAutoRecord/actions?query=workflow%3ACD+branch%3Amaster)
+[![CI](https://github.com/p2sr/SourceAutoRecord/workflows/CI/badge.svg)](https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACI+branch%3Amaster)
+[![CD](https://github.com/p2sr/SourceAutoRecord/workflows/CD/badge.svg)](https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACD+branch%3Amaster)
 
 ## Features
 
