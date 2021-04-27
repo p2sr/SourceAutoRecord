@@ -23,8 +23,9 @@ struct Toast
 
 static std::deque<Toast> g_toasts;
 
-static int g_slideOff = 0;
 static std::chrono::time_point<std::chrono::steady_clock> g_slideOffTime;
+static int g_slideOffStart;
+static int g_slideOff;
 
 Variable sar_toast_disable("sar_toast_disable", "0", "Disable all toasts from showing.\n");
 Variable sar_toast_font("sar_toast_font", "6", 0, "The font index to use for toasts.\n");
@@ -103,17 +104,20 @@ static std::vector<std::string> splitIntoLines(Surface::HFont font, std::string 
 
 void ToastHud::AddToast(std::string text, Color color, double duration, bool doConsole)
 {
+    auto now = NOW_STEADY();
+
     g_toasts.push_back({
         text,
         color,
-        NOW_STEADY() + std::chrono::microseconds((int64_t)(duration * 1000000)),
+        now + std::chrono::microseconds((int64_t)(duration * 1000000)),
     });
 
     Surface::HFont font = scheme->GetDefaultFont() + sar_toast_font.GetInt();
     int lineHeight = surface->GetFontHeight(font) + PADDING;
     int maxWidth = sar_toast_width.GetInt();
     auto lines = splitIntoLines(font, text, maxWidth - 2 * PADDING);
-    g_slideOff += lines.size() * lineHeight + PADDING + TOAST_GAP;
+    g_slideOffStart = g_slideOff + (lines.size() * lineHeight + PADDING + TOAST_GAP);
+    g_slideOffTime = now;
 
     if (doConsole) {
         Color conCol = color;
@@ -146,11 +150,10 @@ void ToastHud::Update()
     engine->GetScreenSize(nullptr, screenWidth, screenHeight);
 #endif
 
-    g_slideOff -= SLIDE_RATE * std::chrono::duration_cast<std::chrono::milliseconds>(now - g_slideOffTime).count() * screenHeight / 1000 / 1000;
+    g_slideOff = g_slideOffStart - SLIDE_RATE * std::chrono::duration_cast<std::chrono::milliseconds>(now - g_slideOffTime).count() * screenHeight / 1000 / 1000;
     if (g_slideOff < 0) {
         g_slideOff = 0;
     }
-    g_slideOffTime = now;
 }
 
 void ToastHud::Paint(int slot)
