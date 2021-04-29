@@ -52,6 +52,7 @@ REDECL(Engine::PurgeUnusedModels);
 REDECL(Engine::OnGameOverlayActivated);
 REDECL(Engine::OnGameOverlayActivatedBase);
 REDECL(Engine::ReadCustomData);
+REDECL(Engine::ReadConsoleCommand);
 REDECL(Engine::plugin_load_callback);
 REDECL(Engine::plugin_unload_callback);
 REDECL(Engine::exit_callback);
@@ -377,6 +378,15 @@ DETOUR(Engine::ReadCustomData, int* callbackIndex, char** data)
     return size;
 }
 
+DETOUR_T(const char *, Engine::ReadConsoleCommand)
+{
+    const char *cmd = Engine::ReadConsoleCommand(thisptr);
+    if (engine->demoplayer->ShouldBlacklistCommand(cmd)) {
+        return "";
+    }
+    return cmd;
+}
+
 #ifdef _WIN32
 // CDemoFile::ReadCustomData
 void __fastcall ReadCustomData_Wrapper(int demoFile, int edx, int unk1, int unk2)
@@ -627,22 +637,28 @@ bool Engine::Init()
 
     // This is the address of the one interesting call to ReadCustomData - the E8 byte indicates the start of the call instruction
 #ifdef _WIN32
-    this->readPacketInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12);
+    this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12);
+    this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "8B 45 F4 50 68 FE 04 00 00 68 ? ? ? ? 8D 4D 90 E8 ? ? ? ? 8D 4F 04 E8", 26);
 #else
     if (sar.game->Is(SourceGame_PortalStoriesMel)) {
-        this->readPacketInjectAddr = Memory::Scan(this->Name(), "8B 95 94 FE FF FF 8D 4D D8 8D 45 D4 89 4C 24 08 89 44 24 04 89 14 24 E8", 24);
+        this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "8B 95 94 FE FF FF 8D 4D D8 8D 45 D4 89 4C 24 08 89 44 24 04 89 14 24 E8", 24);
     } else {
-        this->readPacketInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
+        this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
+        this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "89 44 24 0C 8D 85 C0 FE FF FF 89 04 24 E8 ? ? ? ? 8B 85 8C FE FF FF 89 04 24 E8", 28);
     }
 #endif
 
     // Pesky memory protection doesn't want us overwriting code - we
     // get around it with a call to mprotect or VirtualProtect
-    Memory::UnProtect((void*)this->readPacketInjectAddr, 4);
+    Memory::UnProtect((void*)this->readCustomDataInjectAddr, 4);
+    Memory::UnProtect((void*)this->readConsoleCommandInjectAddr, 4);
 
     // It's a relative call, so we have to do some weird fuckery lol
-    Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)this->readPacketInjectAddr + (this->readPacketInjectAddr + 4));
-    *(uint32_t*)this->readPacketInjectAddr = (uint32_t)&ReadCustomData_Hook - (this->readPacketInjectAddr + 4); // Add 4 to get address of next instruction
+    Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)this->readCustomDataInjectAddr + (this->readCustomDataInjectAddr + 4));
+    *(uint32_t*)this->readCustomDataInjectAddr = (uint32_t)&ReadCustomData_Hook - (this->readCustomDataInjectAddr + 4); // Add 4 to get address of next instruction
+
+    Engine::ReadConsoleCommand = (_ReadConsoleCommand)Memory::Read(this->readConsoleCommandInjectAddr);
+    *(uint32_t*)this->readConsoleCommandInjectAddr = (uint32_t)&ReadConsoleCommand_Hook - (this->readConsoleCommandInjectAddr + 4);
 
     if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
         ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
@@ -702,9 +718,11 @@ void Engine::Shutdown()
 
     // Reset to the offsets that were originally in the code
 #ifdef _WIN32
-    *(uint32_t*)this->readPacketInjectAddr = 0x50E8458D;
+    *(uint32_t*)this->readCustomDataInjectAddr = 0x50E8458D;
+    *(uint32_t*)this->readConsoleCommandInjectAddr = 0x000491E3;
 #else
-    *(uint32_t*)this->readPacketInjectAddr = 0x08244489;
+    *(uint32_t*)this->readCustomDataInjectAddr = 0x08244489;
+    *(uint32_t*)this->readConsoleCommandInjectAddr = 0x0008155A;
 #endif
 
 #ifdef _WIN32

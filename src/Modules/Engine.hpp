@@ -174,6 +174,7 @@ public:
     DECL_DETOUR_COMMAND(load);
 
     DECL_DETOUR(ReadCustomData, int* callbackIndex, char** data);
+    DECL_DETOUR_T(const char *, ReadConsoleCommand);
 
 #ifdef _WIN32
     // CDemoSmootherPanel::ParseSmoothingInfo
@@ -190,7 +191,8 @@ public:
     const char* Name() override { return MODULE("engine"); }
 
 private:
-    uintptr_t readPacketInjectAddr;
+    uintptr_t readCustomDataInjectAddr;
+    uintptr_t readConsoleCommandInjectAddr;
 };
 
 extern Engine* engine;

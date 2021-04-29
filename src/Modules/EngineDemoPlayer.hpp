@@ -38,6 +38,8 @@ public:
     bool Init() override;
     void Shutdown() override;
     const char* Name() override { return MODULE("engine"); }
+
+    bool ShouldBlacklistCommand(const char *cmd);
 };
 
 extern Command sar_startdemos;

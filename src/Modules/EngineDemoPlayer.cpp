@@ -17,9 +17,51 @@
 #include "Checksum.hpp"
 
 #include <filesystem>
+#include <vector>
 
 REDECL(EngineDemoPlayer::StartPlayback);
 REDECL(EngineDemoPlayer::stopdemo_callback);
+
+static std::vector<std::string> g_demoBlacklist;
+
+Variable sar_demo_blacklist("sar_demo_blacklist", "0", "Stop a set of commands from being run by demo playback.\n");
+CON_COMMAND(sar_demo_blacklist_addcmd, "sar_demo_blacklist_addcmd <command> - add a command to the demo blacklist.\n")
+{
+    if (args.ArgC() == 1) {
+        console->Print(sar_demo_blacklist_addcmd.ThisPtr()->m_pszHelpString);
+    } else {
+        g_demoBlacklist.push_back({args.m_pArgSBuffer + args.m_nArgv0Size});
+    }
+}
+
+static bool startsWith(const char *pre, const char *str)
+{
+    while (*pre && *str) {
+        if (*pre != *str) {
+            return false;
+        }
+        ++pre, ++str;
+    }
+
+    return !*pre;
+}
+
+bool EngineDemoPlayer::ShouldBlacklistCommand(const char *cmd)
+{
+    if (startsWith("sar_demo_blacklist", cmd)) {
+        return true;
+    }
+
+    if (sar_demo_blacklist.GetBool()) {
+        for (auto &s : g_demoBlacklist) {
+            if (startsWith(s.c_str(), cmd)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 int EngineDemoPlayer::GetTick()
 {
