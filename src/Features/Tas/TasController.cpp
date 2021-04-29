@@ -152,6 +152,10 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
             */
         }
         button->active = false;
+
+        if (button->state) {
+            cmd->buttons |= g_TasControllerInGameButtons[i];
+        }
     }
 
     // handle all additional commands from the command queue (not in the original, but um why not?)

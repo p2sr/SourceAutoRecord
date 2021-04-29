@@ -287,9 +287,26 @@ void TasPlayer::PostProcess(void* player, CMoveData* pMove)
         }
     }
 
+    // applying tools
     for (TasTool* tool : TasTool::GetList()) {
         tool->Apply(fb, playerInfo);
     }
+
+    
+    // all behaviour that is prevented before ProcessMovement (We have to manually recreate them)
+
+    // ducking midair
+    if (prevent_crouch_jump.GetBool()) {
+        void** pplocaldata = reinterpret_cast<void**>((uintptr_t)player + Offsets::m_Local);
+        int m_InAirState = *reinterpret_cast<int*>((uintptr_t)pplocaldata + 380);
+
+        if (m_InAirState == 1) { //in air jumped
+            fb.buttonStates[Crouch] = false;
+        }
+    }
+
+    // TODO: implement all other pre-ProcessMovement stuff (i believe coop taunt is one of them? but we don't have coop support yet)
+
 
     // add processed framebulk to the pMove
     // using angles from playerInfo, as these seem to be the most accurate

@@ -36,6 +36,7 @@ Variable cl_forwardspeed;
 Variable in_forceuser;
 Variable crosshairVariable;
 Variable cl_fov;
+Variable prevent_crouch_jump;
 
 REDECL(Client::HudUpdate);
 REDECL(Client::CreateMove);
@@ -407,6 +408,7 @@ bool Client::Init()
     cl_backspeed = Variable("cl_backspeed");
     cl_fov = Variable("cl_fov");
     crosshairVariable = Variable("crosshair");
+    prevent_crouch_jump = Variable("prevent_crouch_jump");
 
     CVAR_HOOK_AND_CALLBACK(cl_fov);
 

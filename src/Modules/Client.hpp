@@ -96,3 +96,4 @@ extern Variable cl_backspeed;
 extern Variable cl_forwardspeed;
 extern Variable in_forceuser;
 extern Variable cl_fov;
+extern Variable prevent_crouch_jump;
