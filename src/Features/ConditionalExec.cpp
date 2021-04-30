@@ -469,6 +469,8 @@ CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, 
     } else if (!old) {
         Command alias(args[1], &aliasCallback, "A SAR alias.\n");
         alias.isRegistered = false; // for some reason this isn't set?
+        alias.isReference = false; // for some reason this isn't set?
+        alias.version = SourceGame_Unknown; // for some reason this isn't set?
         alias.Register();
         g_aliasCmds.push_back(alias);
     }
