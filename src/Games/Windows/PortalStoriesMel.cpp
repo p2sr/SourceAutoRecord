@@ -34,12 +34,6 @@ PortalStoriesMel::PortalStoriesMel()
 void PortalStoriesMel::LoadOffsets()
 {
     Portal2::LoadOffsets();
-
-    using namespace Offsets;
-
-    // client.dll
-
-    m_pCommands = 228; // CInput::DecodeUserCmdFromBuffer
 }
 const char* PortalStoriesMel::Version()
 {
