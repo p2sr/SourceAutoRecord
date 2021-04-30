@@ -430,14 +430,19 @@ void RunSeqs() {
     }
 }
 
-static std::vector<Command> g_aliasCmds;
 static std::map<std::string, std::string> g_aliases;
 
-static void aliasCallback(const CCommand &args) {
-    std::string cmd = g_aliases[std::string(args[0])];
+CON_COMMAND(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, passing on any additional arguments.\n")
+{
+    if (args.ArgC() < 2) {
+        return console->Print(sar_alias_run.ThisPtr()->m_pszHelpString);
+    }
+
+    std::string cmd = g_aliases[std::string(args[1])];
     for (int i = 2; i < args.ArgC(); ++i) {
         cmd += Utils::ssprintf(" \"%s\"", args[i]);
     }
+
     engine->ExecuteCommand(cmd.c_str(), true);
 }
 
@@ -462,18 +467,6 @@ CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, 
         cmd += Utils::ssprintf(" \"%s\"", args[i]);
     }
 
-    ConCommand *old = Command(args[1]).ThisPtr();
-    if (old && old->m_fnCommandCallback != &aliasCallback) {
-        console->Print("SAR aliases cannot override existing commands\n");
-        return;
-    } else if (!old) {
-        Command alias(args[1], &aliasCallback, "A SAR alias.\n");
-        alias.isRegistered = false; // for some reason this isn't set?
-        alias.isReference = false; // for some reason this isn't set?
-        alias.version = SourceGame_Unknown; // for some reason this isn't set?
-        alias.Register();
-        g_aliasCmds.push_back(alias);
-    }
-
+    engine->ExecuteCommand(Utils::ssprintf("alias \"%s\" sar_alias_run \"%s\"", args[1], args[1]).c_str());
     g_aliases[std::string(args[1])] = cmd;
 }
