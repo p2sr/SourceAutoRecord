@@ -33,6 +33,8 @@ public:
 
     // CDemoRecorder::StartPlayback
     DECL_DETOUR(StartPlayback, const char* filename, bool bAsTimeDemo);
+    // CDemoRecorder::StopPlayback
+    DECL_DETOUR(StopPlayback);
     DECL_DETOUR_COMMAND(stopdemo);
 
     bool Init() override;

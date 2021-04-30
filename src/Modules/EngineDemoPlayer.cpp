@@ -4,6 +4,7 @@
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Camera.hpp"
 #include "Features/Renderer.hpp"
+#include "Features/ConditionalExec.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -20,6 +21,7 @@
 #include <vector>
 
 REDECL(EngineDemoPlayer::StartPlayback);
+REDECL(EngineDemoPlayer::StopPlayback);
 REDECL(EngineDemoPlayer::stopdemo_callback);
 
 static std::vector<std::string> g_demoBlacklist;
@@ -148,7 +150,7 @@ DETOUR_COMMAND(EngineDemoPlayer::stopdemo)
     EngineDemoPlayer::stopdemo_callback(args);
 }
 
-// CDemoRecorder::StartPlayback
+// CDemoPlayer::StartPlayback
 DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 {
     auto result = EngineDemoPlayer::StartPlayback(thisptr, filename, bAsTimeDemo);
@@ -168,6 +170,7 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
             engine->demoplayer->levelName = demo.mapName;
             Renderer::demoStart = demo.firstPositivePacketTick;
             Renderer::segmentEndTick = demo.segmentTicks;
+            RunDemoStartExecs(); // Only run these execs if the demo should start okay
         } else {
             console->Print("Could not parse \"%s\"!\n", engine->demoplayer->DemoName);
         }
@@ -180,12 +183,22 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
     return result;
 }
 
+// CDemoPlayer::StopPlayback
+DETOUR(EngineDemoPlayer::StopPlayback)
+{
+    if (engine->demoplayer->IsPlaying()) {
+        RunDemoStopExecs();
+    }
+    return EngineDemoPlayer::StopPlayback(thisptr);
+}
+
 bool EngineDemoPlayer::Init()
 {
     auto disconnect = engine->cl->Original(Offsets::Disconnect);
     auto demoplayer = Memory::DerefDeref<void*>(disconnect + Offsets::demoplayer);
     if (this->s_ClientDemoPlayer = Interface::Create(demoplayer)) {
         this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StartPlayback_Hook, EngineDemoPlayer::StartPlayback, Offsets::StartPlayback);
+        this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StopPlayback_Hook, EngineDemoPlayer::StopPlayback, Offsets::StopPlayback);
 
         this->GetPlaybackTick = s_ClientDemoPlayer->Original<_GetPlaybackTick>(Offsets::GetPlaybackTick);
         this->IsPlayingBack = s_ClientDemoPlayer->Original<_IsPlayingBack>(Offsets::IsPlayingBack);

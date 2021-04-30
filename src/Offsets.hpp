@@ -103,6 +103,7 @@ extern int m_nDemoNumber;
 // CDemoPlayer
 extern int GetPlaybackTick;
 extern int StartPlayback;
+extern int StopPlayback;
 extern int IsPlayingBack;
 extern int m_szFileName;
 

@@ -307,7 +307,6 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 // }}}
 
 static std::vector<std::string> g_loadExecs;
-
 CON_COMMAND(sar_on_load, "sar_on_load [command] [args]... - registers a command to run on level load. Will pass further args as args to the command; do not quote the command.\n")
 {
     if (args.ArgC() < 2) {
@@ -327,7 +326,7 @@ static std::vector<std::string> g_exitExecs;
 CON_COMMAND(sar_on_exit, "sar_on_exit [command] [args]... - registers a command to be run on game exit.\n")
 {
     if (args.ArgC() < 2) {
-        return console->Print(sar_on_load.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_on_exit.ThisPtr()->m_pszHelpString);
     }
 
     g_exitExecs.push_back(std::string(args.m_pArgSBuffer + args.m_nArgv0Size));
@@ -336,6 +335,38 @@ CON_COMMAND(sar_on_exit, "sar_on_exit [command] [args]... - registers a command 
 void RunExitExecs() {
     for (auto cmd : g_exitExecs) {
         engine->ExecuteCommand(cmd.c_str());
+    }
+}
+
+static std::vector<std::string> g_demoStartExecs;
+CON_COMMAND(sar_on_demo_start, "sar_on_demo_start [command] [args]... - registers a command to be run when demo playback starts.\n")
+{
+    if (args.ArgC() < 2) {
+        return console->Print(sar_on_demo_start.ThisPtr()->m_pszHelpString);
+    }
+
+    g_demoStartExecs.push_back(std::string(args.m_pArgSBuffer + args.m_nArgv0Size));
+}
+
+void RunDemoStartExecs() {
+    for (auto cmd : g_demoStartExecs) {
+        engine->ExecuteCommand(cmd.c_str(), true);
+    }
+}
+
+static std::vector<std::string> g_demoStopExecs;
+CON_COMMAND(sar_on_demo_stop, "sar_on_demo_stop [command] [args]... - registers a command to be run when demo playback stops.\n")
+{
+    if (args.ArgC() < 2) {
+        return console->Print(sar_on_demo_stop.ThisPtr()->m_pszHelpString);
+    }
+
+    g_demoStopExecs.push_back(std::string(args.m_pArgSBuffer + args.m_nArgv0Size));
+}
+
+void RunDemoStopExecs() {
+    for (auto cmd : g_demoStopExecs) {
+        engine->ExecuteCommand(cmd.c_str(), true);
     }
 }
 
