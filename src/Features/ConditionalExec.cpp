@@ -1,4 +1,5 @@
 #include <vector>
+#include <map>
 #include <queue>
 #include <stack>
 #include <cstring>
@@ -427,4 +428,50 @@ void RunSeqs() {
 
         engine->ExecuteCommand(cmd.c_str(), true);
     }
+}
+
+static std::vector<Command> g_aliasCmds;
+static std::map<std::string, std::string> g_aliases;
+
+static void aliasCallback(const CCommand &args) {
+    std::string cmd = g_aliases[std::string(args[0])];
+    for (int i = 2; i < args.ArgC(); ++i) {
+        cmd += Utils::ssprintf(" \"%s\"", args[i]);
+    }
+    engine->ExecuteCommand(cmd.c_str(), true);
+}
+
+CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, similar to the 'alias' command but not requiring quoting. If no command is specified, prints the given alias.\n")
+{
+    if (args.ArgC() < 2) {
+        return console->Print(sar_alias.ThisPtr()->m_pszHelpString);
+    }
+
+    if (args.ArgC() == 2) {
+        auto alias = g_aliases.find({args[1]});
+        if (alias == g_aliases.end()) {
+            console->Print("Alias %s does not exist!\n", args[1]);
+        } else {
+            console->Print("%s\n", alias->second.c_str());
+        }
+        return;
+    }
+
+    std::string cmd = args[2];
+    for (int i = 3; i < args.ArgC(); ++i) {
+        cmd += Utils::ssprintf(" \"%s\"", args[i]);
+    }
+
+    ConCommand *old = Command(args[1]).ThisPtr();
+    if (old && old->m_fnCommandCallback != &aliasCallback) {
+        console->Print("SAR aliases cannot override existing commands\n");
+        return;
+    } else if (!old) {
+        Command alias(args[1], &aliasCallback, "A SAR alias.\n");
+        alias.isRegistered = false; // for some reason this isn't set?
+        alias.Register();
+        g_aliasCmds.push_back(alias);
+    }
+
+    g_aliases[std::string(args[1])] = cmd;
 }
