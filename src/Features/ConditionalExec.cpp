@@ -351,7 +351,7 @@ CON_COMMAND(sar_on_demo_start, "sar_on_demo_start [command] [args]... - register
 
 void RunDemoStartExecs() {
     for (auto cmd : g_demoStartExecs) {
-        engine->ExecuteCommand(cmd.c_str(), true);
+        engine->ExecuteCommand(cmd.c_str());
     }
 }
 
@@ -367,7 +367,7 @@ CON_COMMAND(sar_on_demo_stop, "sar_on_demo_stop [command] [args]... - registers 
 
 void RunDemoStopExecs() {
     for (auto cmd : g_demoStopExecs) {
-        engine->ExecuteCommand(cmd.c_str(), true);
+        engine->ExecuteCommand(cmd.c_str());
     }
 }
 
