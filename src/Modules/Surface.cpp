@@ -30,7 +30,7 @@ int Surface::GetFontLength(HFont font, const char* fmt, ...)
         wchar_t ch = data[i];
         float wide, a, c;
         this->GetKernedCharWidth(this->matsurface->ThisPtr(), font, ch, prev, next, wide, a, c);
-        length += floor(wide + a + c);
+        length += floor(wide + 0.6);
     }
     return length;
 }
