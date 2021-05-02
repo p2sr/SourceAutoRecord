@@ -994,14 +994,6 @@ void Renderer::Frame()
     // autostop: if it's the __END__ tick, or the demo is over, stop
     // rendering
 
-    static bool wasDemoPlayingLastFrame = false;
-    if (sar_render_autostop.GetBool() && wasDemoPlayingLastFrame && !engine->demoplayer->IsPlaying()) {
-        msgStopRender(false);
-        wasDemoPlayingLastFrame = false;
-        return;
-    }
-    wasDemoPlayingLastFrame = engine->demoplayer->IsPlaying();
-
     if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() > Renderer::segmentEndTick) {
         msgStopRender(false);
         return;
@@ -1053,6 +1045,13 @@ void Renderer::Frame()
 }
 
 // }}}
+
+void Renderer::OnDemoEnd()
+{
+    if (g_render.isRendering.load() && sar_render_autostop.GetBool()) {
+        msgStopRender(false);
+    }
+}
 
 // Init {{{
 
