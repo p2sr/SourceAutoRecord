@@ -110,6 +110,10 @@ void Server::KillEntity(void* entity)
 }
 CMStatus Server::GetChallengeStatus()
 {
+    if (engine->IsOrange()) {
+        return sv_bonus_challenge.GetBool() ? CMStatus::CHALLENGE : CMStatus::NONE;
+    }
+
     auto player = GetPlayer(GET_SLOT() + 1);
     if (!player) {
         return CMStatus::NONE;
