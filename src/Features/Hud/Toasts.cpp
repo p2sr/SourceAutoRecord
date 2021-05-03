@@ -10,15 +10,25 @@
 
 #define PADDING 6
 #define TOAST_GAP 10
-#define TOAST_BACKGROUND Color{0, 0, 0, 192}
+#define TOAST_BACKGROUND(a) Color{0, 0, 0, 192 * (a) / 255}
 
 #define SLIDE_RATE 200 // thousandths of screen / s
+#define FADE_TIME 300 // ms
+
+enum class Alignment
+{
+    LEFT,
+    CENTER,
+    RIGHT,
+};
 
 struct Toast
 {
     std::string text;
     Color color;
-    std::chrono::time_point<std::chrono::steady_clock> dismissAt;
+    std::chrono::time_point<std::chrono::steady_clock> created;
+    uint32_t duration; // ms
+    uint8_t opacity;
 };
 
 static std::deque<Toast> g_toasts;
@@ -27,10 +37,50 @@ static std::chrono::time_point<std::chrono::steady_clock> g_slideOffTime;
 static int g_slideOffStart;
 static int g_slideOff;
 
+#define STR(s) #s
+#define EXP_STR(s) STR(s)
+
 Variable sar_toast_disable("sar_toast_disable", "0", "Disable all toasts from showing.\n");
 Variable sar_toast_font("sar_toast_font", "6", 0, "The font index to use for toasts.\n");
 Variable sar_toast_width("sar_toast_width", "250", 2 * PADDING, "The maximum width for toasts.\n");
 Variable sar_toast_pos("sar_toast_pos", "0", 0, 3, "The position to display toasts in. 0 = bottom left, 1 = bottom right, 2 = top left, 3 = top right.\n");
+Variable sar_toast_x("sar_toast_x", EXP_STR(TOAST_GAP), 0, "The horizontal position of the toasts HUD.\n");
+Variable sar_toast_y("sar_toast_y", EXP_STR(TOAST_GAP), 0, "The vertical position of the toasts HUD.\n");
+Variable sar_toast_align("sar_toast_align", "0", 0, 2, "The side to align toasts to horizontally. 0 = left, 1 = center, 2 = right.\n");
+Variable sar_toast_anchor("sar_toast_anchor", "1", 0, 1, "Where to put new toasts. 0 = bottom, 1 = top.\n");
+
+CON_COMMAND(sar_toast_setpos, "sar_toast_setpos <bottom/top> <left/center/right> - set the position of the toasts HUD.\n")
+{
+    if (args.ArgC() != 3) {
+        return console->Print(sar_toast_setpos.ThisPtr()->m_pszHelpString);
+    }
+
+    int screenWidth, screenHeight;
+#ifdef _WIN32
+    engine->GetScreenSize(screenWidth, screenHeight);
+#else
+    engine->GetScreenSize(nullptr, screenWidth, screenHeight);
+#endif
+
+    if (!strcmp(args[1], "bottom")) {
+        sar_toast_anchor.SetValue(0);
+        sar_toast_y.SetValue(screenHeight - TOAST_GAP);
+    } else {
+        sar_toast_anchor.SetValue(1);
+        sar_toast_y.SetValue(TOAST_GAP);
+    }
+
+    if (!strcmp(args[2], "left")) {
+        sar_toast_align.SetValue(0);
+        sar_toast_x.SetValue(TOAST_GAP);
+    } else if (!strcmp(args[2], "center")) {
+        sar_toast_align.SetValue(1);
+        sar_toast_x.SetValue((screenWidth - sar_toast_width.GetInt()) / 2);
+    } else {
+        sar_toast_align.SetValue(2);
+        sar_toast_x.SetValue(screenWidth - sar_toast_width.GetInt() - TOAST_GAP);
+    }
+}
 
 ToastHud::ToastHud()
     : Hud(HudType_InGame | HudType_Paused | HudType_Menu, true)
@@ -109,8 +159,12 @@ void ToastHud::AddToast(std::string text, Color color, double duration, bool doC
     g_toasts.push_back({
         text,
         color,
-        now + std::chrono::microseconds((int64_t)(duration * 1000000)),
+        now,
+        (uint32_t)(duration * 1000),
+        255,
     });
+
+    color._color[3] = 255;
 
     Surface::HFont font = scheme->GetDefaultFont() + sar_toast_font.GetInt();
     int lineHeight = surface->GetFontHeight(font) + PADDING;
@@ -121,7 +175,7 @@ void ToastHud::AddToast(std::string text, Color color, double duration, bool doC
 
     if (doConsole) {
         Color conCol = color;
-        if (color.r() == 255 && color.g() == 255 && color.b() == 255 && color.a() == 255) {
+        if (color.r() == 255 && color.g() == 255 && color.b() == 255) {
             conCol.SetColor(255, 150, 50, 255);
         }
         console->ColorMsg(conCol, "%s\n", text.c_str());
@@ -137,11 +191,23 @@ void ToastHud::Update()
             g_toasts.begin(),
             g_toasts.end(),
             [=](Toast toast) {
-                return now >= toast.dismissAt;
+                return now >= toast.created + std::chrono::milliseconds(toast.duration);
             }
         ),
         g_toasts.end()
     );
+
+    for (Toast &toast : g_toasts) {
+        uint32_t age = std::chrono::duration_cast<std::chrono::milliseconds>(now - toast.created).count();
+        uint32_t op = 255;
+        if (age < FADE_TIME) {
+            op = 255 * age / FADE_TIME;
+        } else if (toast.duration - age < FADE_TIME) {
+            op = 255 * (toast.duration - age) / FADE_TIME;
+        }
+        toast.opacity = op;
+        toast.color._color[3] = op;
+    }
 
     int screenWidth, screenHeight;
 #ifdef _WIN32
@@ -167,24 +233,16 @@ void ToastHud::Paint(int slot)
 
     Surface::HFont font = scheme->GetDefaultFont() + sar_toast_font.GetInt();
 
-    int screenWidth, screenHeight;
-#ifdef _WIN32
-    engine->GetScreenSize(screenWidth, screenHeight);
-#else
-    engine->GetScreenSize(nullptr, screenWidth, screenHeight);
-#endif
-
     int maxWidth = sar_toast_width.GetInt();
 
     int lineHeight = surface->GetFontHeight(font) + PADDING;
 
-    bool alignRight = sar_toast_pos.GetInt() & 1;
-    bool alignTop = sar_toast_pos.GetInt() & 2;
+    Alignment align = (Alignment)sar_toast_align.GetInt();
+    bool againstTop = sar_toast_anchor.GetBool();
 
-    int yOffset = TOAST_GAP - g_slideOff;
-    if (!alignTop) {
-        yOffset = screenHeight - yOffset;
-    }
+    int mainX = sar_toast_x.GetInt();
+
+    int yOffset = sar_toast_y.GetInt() + (againstTop ? -1 : 1) * g_slideOff;
 
     for (auto iter = g_toasts.rbegin(); iter != g_toasts.rend(); ++iter) {
         auto toast = *iter;
@@ -206,13 +264,16 @@ void ToastHud::Paint(int slot)
         int width = longestLine + 2 * PADDING;
         int height = lines.size() * lineHeight + PADDING;
 
-        int xLeft = alignRight ? screenWidth - TOAST_GAP - width : TOAST_GAP;
+        int xLeft =
+            align == Alignment::LEFT ? mainX :
+            align == Alignment::RIGHT ? mainX + maxWidth - width :
+            mainX + (maxWidth - width) / 2;
 
-        if (!alignTop) {
+        if (!againstTop) {
             yOffset -= height;
         }
 
-        surface->DrawRect(TOAST_BACKGROUND, xLeft, yOffset, xLeft + width, yOffset + height);
+        surface->DrawRect(TOAST_BACKGROUND(toast.opacity), xLeft, yOffset, xLeft + width, yOffset + height);
 
         yOffset += PADDING;
 
@@ -222,7 +283,7 @@ void ToastHud::Paint(int slot)
             yOffset += lineHeight;
         }
 
-        if (alignTop) {
+        if (againstTop) {
             yOffset += TOAST_GAP;
         } else {
             yOffset -= height + TOAST_GAP;
