@@ -164,7 +164,7 @@ static std::chrono::time_point<std::chrono::steady_clock> g_actionResetTime;
 static void setTimerAction(TimerAction action)
 {
     g_timerInterface->action = action;
-    g_actionResetTime = NOW_STEADY() + std::chrono::milliseconds(50); // Bit of a hack - should be enough time for timers to pick up on it
+    g_actionResetTime = NOW_STEADY() + std::chrono::milliseconds(20); // Bit of a hack - should be enough time for timers to pick up on it
 }
 
 // }}}
