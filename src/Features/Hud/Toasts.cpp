@@ -26,6 +26,13 @@ enum class Alignment
     RIGHT,
 };
 
+enum class Background
+{
+    NONE,
+    TEXT_ONLY,
+    FULL,
+};
+
 struct Toast
 {
     std::string text;
@@ -47,12 +54,12 @@ static int g_slideOff;
 Variable sar_toast_disable("sar_toast_disable", "0", "Disable all toasts from showing.\n");
 Variable sar_toast_font("sar_toast_font", "6", 0, "The font index to use for toasts.\n");
 Variable sar_toast_width("sar_toast_width", "250", 2 * SIDE_PAD + 10, "The maximum width for toasts.\n");
-Variable sar_toast_pos("sar_toast_pos", "0", 0, 3, "The position to display toasts in. 0 = bottom left, 1 = bottom right, 2 = top left, 3 = top right.\n");
 Variable sar_toast_x("sar_toast_x", EXP_STR(TOAST_GAP), 0, "The horizontal position of the toasts HUD.\n");
 Variable sar_toast_y("sar_toast_y", EXP_STR(TOAST_GAP), 0, "The vertical position of the toasts HUD.\n");
 Variable sar_toast_align("sar_toast_align", "0", 0, 2, "The side to align toasts to horizontally. 0 = left, 1 = center, 2 = right.\n");
 Variable sar_toast_anchor("sar_toast_anchor", "1", 0, 1, "Where to put new toasts. 0 = bottom, 1 = top.\n");
 Variable sar_toast_compact("sar_toast_compact", "0", "Enables a compact form of the toasts HUD.\n");
+Variable sar_toast_background("sar_toast_background", "1", 0, 2, "Sets the background highlight for toasts. 0 = no background, 1 = text width only, 2 = full width.\n");
 
 CON_COMMAND(sar_toast_setpos, "sar_toast_setpos <bottom/top> <left/center/right> - set the position of the toasts HUD.\n")
 {
@@ -264,6 +271,8 @@ void ToastHud::Paint(int slot)
 
     int lineHeight = surface->GetFontHeight(font) + linePadding;
 
+    Background bg = (Background)sar_toast_background.GetInt();
+
     for (auto iter = g_toasts.rbegin(); iter != g_toasts.rend(); ++iter) {
         auto toast = *iter;
 
@@ -293,9 +302,11 @@ void ToastHud::Paint(int slot)
             yOffset -= height;
         }
 
-        int rectLeft = compact ? mainX : xLeft;
-
-        surface->DrawRect(TOAST_BACKGROUND(toast.opacity), rectLeft, yOffset, rectLeft + (compact ? maxWidth : width), yOffset + height);
+        if (bg != Background::NONE) {
+            bool full = bg == Background::FULL;
+            int rectLeft = full ? mainX : xLeft;
+            surface->DrawRect(TOAST_BACKGROUND(toast.opacity), rectLeft, yOffset, rectLeft + (full ? maxWidth : width), yOffset + height);
+        }
 
         yOffset += linePadding + toastPadding;
 
