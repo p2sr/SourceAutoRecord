@@ -8,8 +8,12 @@
 #include "Modules/Surface.hpp"
 #include "Modules/Scheme.hpp"
 
-#define PADDING 6
 #define TOAST_GAP 10
+#define LINE_PAD 6
+#define COMPACT_TOAST_PAD 2
+#define SIDE_PAD 6
+#define COMPACT_SIDE_PAD 3
+
 #define TOAST_BACKGROUND(a) Color{0, 0, 0, 192 * (a) / 255}
 
 #define SLIDE_RATE 200 // thousandths of screen / s
@@ -42,12 +46,13 @@ static int g_slideOff;
 
 Variable sar_toast_disable("sar_toast_disable", "0", "Disable all toasts from showing.\n");
 Variable sar_toast_font("sar_toast_font", "6", 0, "The font index to use for toasts.\n");
-Variable sar_toast_width("sar_toast_width", "250", 2 * PADDING, "The maximum width for toasts.\n");
+Variable sar_toast_width("sar_toast_width", "250", 2 * SIDE_PAD + 10, "The maximum width for toasts.\n");
 Variable sar_toast_pos("sar_toast_pos", "0", 0, 3, "The position to display toasts in. 0 = bottom left, 1 = bottom right, 2 = top left, 3 = top right.\n");
 Variable sar_toast_x("sar_toast_x", EXP_STR(TOAST_GAP), 0, "The horizontal position of the toasts HUD.\n");
 Variable sar_toast_y("sar_toast_y", EXP_STR(TOAST_GAP), 0, "The vertical position of the toasts HUD.\n");
 Variable sar_toast_align("sar_toast_align", "0", 0, 2, "The side to align toasts to horizontally. 0 = left, 1 = center, 2 = right.\n");
 Variable sar_toast_anchor("sar_toast_anchor", "1", 0, 1, "Where to put new toasts. 0 = bottom, 1 = top.\n");
+Variable sar_toast_compact("sar_toast_compact", "0", "Enables a compact form of the toasts HUD.\n");
 
 CON_COMMAND(sar_toast_setpos, "sar_toast_setpos <bottom/top> <left/center/right> - set the position of the toasts HUD.\n")
 {
@@ -167,10 +172,19 @@ void ToastHud::AddToast(std::string text, Color color, double duration, bool doC
     color._color[3] = 255;
 
     Surface::HFont font = scheme->GetDefaultFont() + sar_toast_font.GetInt();
-    int lineHeight = surface->GetFontHeight(font) + PADDING;
+
+    bool compact = sar_toast_compact.GetBool();
+    int linePadding = compact ? 0 : LINE_PAD;
+    int gap = compact ? 0 : TOAST_GAP;
+    int toastPadding = compact ? COMPACT_TOAST_PAD : 0;
+    int sidePadding = compact ? COMPACT_SIDE_PAD : SIDE_PAD;
+
+    int lineHeight = surface->GetFontHeight(font) + linePadding;
     int maxWidth = sar_toast_width.GetInt();
-    auto lines = splitIntoLines(font, text, maxWidth - 2 * PADDING);
-    g_slideOffStart = g_slideOff + (lines.size() * lineHeight + PADDING + TOAST_GAP);
+
+    auto lines = splitIntoLines(font, text, maxWidth - 2 * sidePadding);
+
+    g_slideOffStart = g_slideOff + (lines.size() * lineHeight + linePadding + 2 * toastPadding + gap);
     g_slideOffTime = now;
 
     if (doConsole) {
@@ -235,8 +249,6 @@ void ToastHud::Paint(int slot)
 
     int maxWidth = sar_toast_width.GetInt();
 
-    int lineHeight = surface->GetFontHeight(font) + PADDING;
-
     Alignment align = (Alignment)sar_toast_align.GetInt();
     bool againstTop = sar_toast_anchor.GetBool();
 
@@ -244,10 +256,18 @@ void ToastHud::Paint(int slot)
 
     int yOffset = sar_toast_y.GetInt() + (againstTop ? -1 : 1) * g_slideOff;
 
+    bool compact = sar_toast_compact.GetBool();
+    int linePadding = compact ? 0 : LINE_PAD;
+    int gap = compact ? 0 : TOAST_GAP;
+    int toastPadding = compact ? COMPACT_TOAST_PAD : 0;
+    int sidePadding = compact ? COMPACT_SIDE_PAD : SIDE_PAD;
+
+    int lineHeight = surface->GetFontHeight(font) + linePadding;
+
     for (auto iter = g_toasts.rbegin(); iter != g_toasts.rend(); ++iter) {
         auto toast = *iter;
 
-        auto lines = splitIntoLines(font, toast.text, maxWidth - 2 * PADDING);
+        auto lines = splitIntoLines(font, toast.text, maxWidth - 2 * sidePadding);
 
         if (lines.size() == 0) {
             continue;
@@ -261,8 +281,8 @@ void ToastHud::Paint(int slot)
             }
         }
 
-        int width = longestLine + 2 * PADDING;
-        int height = lines.size() * lineHeight + PADDING;
+        int width = longestLine + 2 * sidePadding;
+        int height = lines.size() * lineHeight + linePadding + 2 * toastPadding;
 
         int xLeft =
             align == Alignment::LEFT ? mainX :
@@ -273,20 +293,24 @@ void ToastHud::Paint(int slot)
             yOffset -= height;
         }
 
-        surface->DrawRect(TOAST_BACKGROUND(toast.opacity), xLeft, yOffset, xLeft + width, yOffset + height);
+        int rectLeft = compact ? mainX : xLeft;
 
-        yOffset += PADDING;
+        surface->DrawRect(TOAST_BACKGROUND(toast.opacity), rectLeft, yOffset, rectLeft + (compact ? maxWidth : width), yOffset + height);
+
+        yOffset += linePadding + toastPadding;
 
         for (std::string line : lines) {
             int length = surface->GetFontLength(font, "%s", line.c_str());
-            surface->DrawTxt(font, xLeft + PADDING, yOffset, toast.color, "%s", line.c_str());
+            surface->DrawTxt(font, xLeft + sidePadding, yOffset, toast.color, "%s", line.c_str());
             yOffset += lineHeight;
         }
 
+        yOffset += toastPadding;
+
         if (againstTop) {
-            yOffset += TOAST_GAP;
+            yOffset += gap;
         } else {
-            yOffset -= height + TOAST_GAP;
+            yOffset -= height + gap;
         }
     }
 }
