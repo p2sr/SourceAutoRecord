@@ -36,7 +36,7 @@ jobs:
           **Changelog**
           TODO
         draft: false
-        prerelease: false
+        prerelease: ${{ contains(github.ref, '-pre') }}
   build-lin:
     name: Linux Build
     runs-on: ubuntu-16.04
