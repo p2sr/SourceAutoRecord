@@ -24,12 +24,6 @@ PortalReloaded::PortalReloaded()
 void PortalReloaded::LoadOffsets()
 {
     Portal2::LoadOffsets();
-
-    using namespace Offsets;
-
-    // client.dll
-
-    m_pCommands = 236; // CInput::DecodeUserCmdFromBuffer
 }
 const char* PortalReloaded::Version()
 {
