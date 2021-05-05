@@ -52,14 +52,14 @@ void DemoGhostEntity::NextDemo()
         this->LevelReset();
         if (ghost_show_advancement.GetBool()) {
             std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), this->currentMap.c_str());
-            toastHud.AddToast(msg, g_ghostToastColor, ghost_notify_duration.GetFloat());
+            toastHud.AddToast(GHOST_TOAST_TAG, msg);
         }
     } else {
         this->hasFinished = true;
         this->sameMap = false; //Make the ghost to disapear
         if (ghost_show_advancement.GetBool()) {
             std::string msg = Utils::ssprintf("%s has finished", this->name.c_str());
-            toastHud.AddToast(msg, g_ghostToastColor, ghost_notify_duration.GetFloat());
+            toastHud.AddToast(GHOST_TOAST_TAG, msg);
         }
     }
 }

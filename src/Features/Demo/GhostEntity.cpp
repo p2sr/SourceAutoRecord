@@ -370,29 +370,3 @@ void GhostEntity::DrawName(HudContext *ctx, int id)
     engine->PointToScreen(nameCoords, screenPos);
     ctx->DrawElementOnScreen(id, screenPos.x, screenPos.y, this->name.c_str());
 }
-
-Color g_ghostToastColor = { 255, 255, 255, 255 };
-
-Variable ghost_notify_duration("ghost_notify_duration", "6", 0, "Number of seconds to show ghost notifications on-screen for.\n");
-
-CON_COMMAND(ghost_notify_set_color, "ghost_notify_set_color <hex code> - sets the ghost notification color to the specified sRGB color code.\n")
-{
-    if (args.ArgC() != 2) {
-        return console->Print(ghost_notify_set_color.ThisPtr()->m_pszHelpString);
-    }
-
-    const char *color = args[1];
-    if (color[0] == '#') {
-        ++color;
-    }
-
-    int r, g, b;
-    int end;
-    if (sscanf(color, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
-        return console->Print("Invalid color code!\n");
-    }
-
-    g_ghostToastColor._color[0] = Utils::ConvertFromSrgb(r);
-    g_ghostToastColor._color[1] = Utils::ConvertFromSrgb(g);
-    g_ghostToastColor._color[2] = Utils::ConvertFromSrgb(b);
-}

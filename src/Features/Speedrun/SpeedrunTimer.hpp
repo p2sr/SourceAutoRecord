@@ -7,6 +7,8 @@
 #include "Rules.hpp"
 #include "CategoryCreator.hpp"
 
+#define SPEEDRUN_TOAST_TAG "speedrun"
+
 namespace SpeedrunTimer {
     std::string Format(float raw);
     std::string SimpleFormat(float raw);

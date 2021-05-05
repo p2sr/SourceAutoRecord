@@ -8,6 +8,8 @@
 
 #include <chrono>
 
+#define GHOST_TOAST_TAG "ghost"
+
 struct DataGhost {
     Vector position;
     QAngle view_angle;
@@ -65,6 +67,3 @@ extern Variable ghost_text_offset;
 extern Variable ghost_show_advancement;
 extern Command ghost_prop_model;
 extern Command ghost_type;
-extern Command ghost_notify_set_color;
-extern Variable ghost_notify_duration;
-extern Color g_ghostToastColor;

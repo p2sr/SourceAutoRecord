@@ -4,6 +4,7 @@
 #include <chrono>
 #include <algorithm>
 #include <cstdint>
+#include <map>
 #include "Modules/Engine.hpp"
 #include "Modules/Surface.hpp"
 #include "Modules/Scheme.hpp"
@@ -35,10 +36,9 @@ enum class Background
 
 struct Toast
 {
+    std::string tag;
     std::string text;
-    Color color;
     std::chrono::time_point<std::chrono::steady_clock> created;
-    uint32_t duration; // ms
     uint8_t opacity;
 };
 
@@ -60,6 +60,118 @@ Variable sar_toast_align("sar_toast_align", "0", 0, 2, "The side to align toasts
 Variable sar_toast_anchor("sar_toast_anchor", "1", 0, 1, "Where to put new toasts. 0 = bottom, 1 = top.\n");
 Variable sar_toast_compact("sar_toast_compact", "0", "Enables a compact form of the toasts HUD.\n");
 Variable sar_toast_background("sar_toast_background", "1", 0, 2, "Sets the background highlight for toasts. 0 = no background, 1 = text width only, 2 = full width.\n");
+
+struct TagInfo {
+    uint8_t r, g, b;
+    uint32_t duration; // ms
+};
+
+static std::map<std::string, TagInfo> g_tags;
+
+static TagInfo getTagInfo(std::string tag) {
+    auto res = g_tags.find(tag);
+
+    if (res != g_tags.end()) {
+        return res->second;
+    }
+
+    return TagInfo{
+        255, 255, 255,
+        5000,
+    };
+}
+
+CON_COMMAND(sar_toast_tag_set_color, "sar_toast_tag_set_color <tag> <color> - set the color of the specified toast tag to an sRGB color.\n")
+{
+    if (args.ArgC() != 3 && args.ArgC() != 5) {
+        return console->Print(sar_toast_tag_set_color.ThisPtr()->m_pszHelpString);
+    }
+
+    std::string tag(args[1]);
+
+    auto info = getTagInfo(tag);
+
+    if (args.ArgC() == 3) {
+        const char *col = args[2];
+        if (col[0] == '#') {
+            ++col;
+        }
+
+        int r, g, b;
+        int end = -1;
+        if (sscanf(col, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
+            return console->Print("Invalid color code '%s'\n", args[2]);
+        }
+        info.r = Utils::ConvertFromSrgb(r);
+        info.g = Utils::ConvertFromSrgb(g);
+        info.b = Utils::ConvertFromSrgb(b);
+    } else {
+        char *end;
+
+        info.r = Utils::ConvertFromSrgb(strtol(args[2], &end, 10));
+        if (*end || end == args[2]) {
+            return console->Print("Invalid color component '%s'\n", args[2]);
+        }
+
+        info.g = Utils::ConvertFromSrgb(strtol(args[3], &end, 10));
+        if (*end || end == args[3]) {
+            return console->Print("Invalid color component '%s'\n", args[3]);
+        }
+
+        info.b = Utils::ConvertFromSrgb(strtol(args[4], &end, 10));
+        if (*end || end == args[4]) {
+            return console->Print("Invalid color component '%s'\n", args[4]);
+        }
+    }
+
+    g_tags[tag] = info;
+}
+
+CON_COMMAND(sar_toast_tag_set_duration, "sar_toast_tag_set_duration <tag> <duration> - set the duration of the specified toast tag in secods. The duration may be given as 'forever'.\n")
+{
+    if (args.ArgC() != 3) {
+        return console->Print(sar_toast_tag_set_duration.ThisPtr()->m_pszHelpString);
+    }
+
+    std::string tag(args[1]);
+
+    auto info = getTagInfo(tag);
+
+    if (!strcmp(args[2], "forever")) {
+        info.duration = UINT32_MAX;
+    } else {
+        char *end;
+
+        float duration = strtof(args[2], &end);
+        if (*end || end == args[2]) {
+            return console->Print("Invalid duration '%s'\n", args[2]);
+        }
+
+        info.duration = duration * 1000;
+    }
+
+    g_tags[tag] = info;
+}
+
+CON_COMMAND(sar_toast_tag_dismiss_all, "sar_toast_tag_dismiss_all <tag> - dismiss all active toasts with the given tag.\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print(sar_toast_tag_dismiss_all.ThisPtr()->m_pszHelpString);
+    }
+
+    std::string tag(args[1]);
+
+    g_toasts.erase(
+        std::remove_if(
+            g_toasts.begin(),
+            g_toasts.end(),
+            [=](Toast toast) {
+                return toast.tag == tag;
+            }
+        ),
+        g_toasts.end()
+    );
+}
 
 CON_COMMAND(sar_toast_setpos, "sar_toast_setpos <bottom/top> <left/center/right> - set the position of the toasts HUD.\n")
 {
@@ -164,19 +276,16 @@ static std::vector<std::string> splitIntoLines(Surface::HFont font, std::string 
     return lines;
 }
 
-void ToastHud::AddToast(std::string text, Color color, double duration, bool doConsole)
+void ToastHud::AddToast(std::string tag, std::string text, bool doConsole)
 {
     auto now = NOW_STEADY();
 
     g_toasts.push_back({
+        tag,
         text,
-        color,
         now,
-        (uint32_t)(duration * 1000),
         255,
     });
-
-    color._color[3] = 255;
 
     Surface::HFont font = scheme->GetDefaultFont() + sar_toast_font.GetInt();
 
@@ -195,10 +304,8 @@ void ToastHud::AddToast(std::string text, Color color, double duration, bool doC
     g_slideOffTime = now;
 
     if (doConsole) {
-        Color conCol = color;
-        if (color.r() == 255 && color.g() == 255 && color.b() == 255) {
-            conCol.SetColor(255, 150, 50, 255);
-        }
+        auto info = getTagInfo(tag);
+        Color conCol{info.r, info.g, info.b, 255};
         console->ColorMsg(conCol, "%s\n", text.c_str());
     }
 }
@@ -212,22 +319,23 @@ void ToastHud::Update()
             g_toasts.begin(),
             g_toasts.end(),
             [=](Toast toast) {
-                return now >= toast.created + std::chrono::milliseconds(toast.duration);
+                auto info = getTagInfo(toast.tag);
+                return now >= toast.created + std::chrono::milliseconds(info.duration);
             }
         ),
         g_toasts.end()
     );
 
     for (Toast &toast : g_toasts) {
+        auto info = getTagInfo(toast.tag);
         uint32_t age = std::chrono::duration_cast<std::chrono::milliseconds>(now - toast.created).count();
         uint32_t op = 255;
         if (age < FADE_TIME) {
             op = 255 * age / FADE_TIME;
-        } else if (toast.duration - age < FADE_TIME) {
-            op = 255 * (toast.duration - age) / FADE_TIME;
+        } else if (info.duration - age < FADE_TIME) {
+            op = 255 * (info.duration - age) / FADE_TIME;
         }
         toast.opacity = op;
-        toast.color._color[3] = op;
     }
 
     int screenWidth, screenHeight;
@@ -310,9 +418,13 @@ void ToastHud::Paint(int slot)
 
         yOffset += linePadding + toastPadding;
 
+        auto info = getTagInfo(toast.tag);
+
+        Color textCol{info.r, info.g, info.b, toast.opacity};
+
         for (std::string line : lines) {
             int length = surface->GetFontLength(font, "%s", line.c_str());
-            surface->DrawTxt(font, xLeft + sidePadding, yOffset, toast.color, "%s", line.c_str());
+            surface->DrawTxt(font, xLeft + sidePadding, yOffset, textCol, "%s", line.c_str());
             yOffset += lineHeight;
         }
 
@@ -326,20 +438,14 @@ void ToastHud::Paint(int slot)
     }
 }
 
-CON_COMMAND(sar_toast_create, "sar_toast_create <duration> <r> <g> <b> <text> - create a toast.\n")
+CON_COMMAND(sar_toast_create, "sar_toast_create <tag> <text> - create a toast.\n")
 {
-    if (args.ArgC() != 6) {
+    if (args.ArgC() != 3) {
         console->Print(sar_toast_create.ThisPtr()->m_pszHelpString);
         return;
     }
 
-    double duration = atof(args[1]);
-    int r = atoi(args[2]);
-    int g = atoi(args[3]);
-    int b = atoi(args[4]);
-    std::string text(args[5]);
-
-    toastHud.AddToast(text, Color{r, g, b, 255}, duration);
+    toastHud.AddToast(args[1], args[2]);
 }
 
 CON_COMMAND(sar_toast_dismiss_all, "sar_toast_dismiss_all - dismiss all active toasts.\n")

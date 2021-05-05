@@ -167,7 +167,7 @@ void NetworkManager::Disconnect()
         this->udpSocket.unbind();
 
         g_scheduledEvents.push([=]() {
-            toastHud.AddToast("You have been disconnected", g_ghostToastColor, ghost_notify_duration.GetFloat());
+            toastHud.AddToast(GHOST_TOAST_TAG, "You have been disconnected");
         });
     }
 }
@@ -265,10 +265,10 @@ void NetworkManager::NotifyMapChange()
         std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
         std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
         std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str(), totalTime.c_str());
-        toastHud.AddToast(msg, g_ghostToastColor, ghost_notify_duration.GetFloat());
+        toastHud.AddToast(GHOST_TOAST_TAG, msg);
     } else {
         std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), engine->GetCurrentMapName().c_str());
-        toastHud.AddToast(msg, g_ghostToastColor, ghost_notify_duration.GetFloat());
+        toastHud.AddToast(GHOST_TOAST_TAG, msg);
     }
 
     packet << HEADER::MAP_CHANGE << this->ID << engine->GetCurrentMapName().c_str() << this->splitTicks << this->splitTicksTotal;
@@ -294,7 +294,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM)
 
     std::string time = SpeedrunTimer::Format(totalSecs);
 
-    toastHud.AddToast(Utils::ssprintf("%s has finished in %s", this->name.c_str(), time.c_str()), g_ghostToastColor, ghost_notify_duration.GetFloat());
+    toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished in %s", this->name.c_str(), time.c_str()));
 
     packet << time.c_str();
 
@@ -362,9 +362,9 @@ void NetworkManager::Treat(sf::Packet& packet, bool udp)
 
         g_scheduledEvents.push([=]() {
             if (!strcmp("", current_map.c_str())) {
-                toastHud.AddToast(Utils::ssprintf("%s has connected in the menu!", name.c_str()), g_ghostToastColor, ghost_notify_duration.GetFloat());
+                toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has connected in the menu!", name.c_str()));
             } else {
-                toastHud.AddToast(Utils::ssprintf("%s has connected in %s!", name.c_str(), current_map.c_str()), g_ghostToastColor, ghost_notify_duration.GetFloat());
+                toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has connected in %s!", name.c_str(), current_map.c_str()));
             }
 
             this->UpdateGhostsSameMap();
@@ -382,7 +382,7 @@ void NetworkManager::Treat(sf::Packet& packet, bool udp)
             if (this->ghostPool[i]->ID == ID) {
                 auto ghost = this->ghostPool[i];
                 g_scheduledEvents.push([=]() {
-                    toastHud.AddToast(Utils::ssprintf("%s has disconnected!", ghost->name.c_str()), g_ghostToastColor, ghost_notify_duration.GetFloat());
+                    toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has disconnected!", ghost->name.c_str()));
                     ghost->DeleteGhost();
                 });
                 this->ghostPool[i]->isDestroyed = true;
@@ -414,13 +414,13 @@ void NetworkManager::Treat(sf::Packet& packet, bool udp)
                 if (ghost_show_advancement.GetBool()) {
                     if (ticksIL == -1) {
                         std::string msg = Utils::ssprintf("%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
-                        toastHud.AddToast(msg, g_ghostToastColor, ghost_notify_duration.GetFloat());
+                        toastHud.AddToast(GHOST_TOAST_TAG, msg);
                     } else {
                         auto ipt = *engine->interval_per_tick;
                         std::string time = SpeedrunTimer::Format(ticksIL * ipt);
                         std::string timeTotal = SpeedrunTimer::Format(ticksTotal * ipt);
                         std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", ghost->name.c_str(), ghost->currentMap.c_str(), time.c_str(), timeTotal.c_str());
-                        toastHud.AddToast(msg, g_ghostToastColor, ghost_notify_duration.GetFloat());
+                        toastHud.AddToast(GHOST_TOAST_TAG, msg);
                     }
                 }
 
@@ -488,7 +488,7 @@ void NetworkManager::Treat(sf::Packet& packet, bool udp)
         if (ghost) {
             if (ghost_show_advancement.GetBool()) {
                 g_scheduledEvents.push([=]() {
-                    toastHud.AddToast(Utils::ssprintf("%s has finished in %s", ghost->name.c_str(), timer.c_str()), g_ghostToastColor, ghost_notify_duration.GetFloat());
+                    toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished in %s", ghost->name.c_str(), timer.c_str()));
                 });
             }
         }
