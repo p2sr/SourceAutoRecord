@@ -10,11 +10,14 @@ jobs:
     name: Release
     runs-on: ubuntu-16.04
     if: github.repository == 'p2sr/SourceAutoRecord'
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - name: Get Release Version
       id: get_release
       run: echo ::set-output name=version::${GITHUB_REF:10}
     - name: Create Release
+      id: create_release
       uses: actions/create-release@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,15 +51,12 @@ jobs:
       run: sudo apt-get install -y g++-8-multilib
     - name: Build
       run: make
-    - name: Fetch Latest Release
-      id: latest_release
-      run: echo ::set-output name=release_id::$(node -e "require('https').request({hostname:'api.github.com',path:'/repos/p2sr/SourceAutoRecord/releases',headers:{'User-Agent':'n^'}},(r)=>{let b='';r.on('data',(d)=>b+=d);r.on('end',()=>process.stdout.write(JSON.parse(b)[0].id.toString()));}).end();")
     - name: Upload Asset
       uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: https://uploads.github.com/repos/p2sr/SourceAutoRecord/releases/${{ steps.latest_release.outputs.release_id }}/assets{?name,label}
+        upload_url: ${{ needs.release.outputs.upload_url }}
         asset_path: sar.so
         asset_name: sar.so
         asset_content_type: application/octet-stream
@@ -65,21 +65,18 @@ jobs:
     runs-on: windows-2019
     needs: release
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Build
-        run: |
-          cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
-          .\MSBuild.exe $Env:GITHUB_WORKSPACE\SourceAutoRecordv16.sln /t:SourceAutoRecord /p:Configuration=Release /p:Platform=x86
-      - name: Fetch Latest Release
-        id: latest_release
-        run: echo ::set-output name=release_id::$(node -e "require('https').request({hostname:'api.github.com',path:'/repos/p2sr/SourceAutoRecord/releases',headers:{'User-Agent':'n^'}},(r)=>{let b='';r.on('data',(d)=>b+=d);r.on('end',()=>process.stdout.write(JSON.parse(b)[0].id.toString()));}).end();")
-      - name: Upload Windows Asset
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: https://uploads.github.com/repos/p2sr/SourceAutoRecord/releases/${{ steps.latest_release.outputs.release_id }}/assets{?name,label}
-          asset_path: bin/sar.dll
-          asset_name: sar.dll
-          asset_content_type: application/octet-stream
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Build
+      run: |
+        cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+        .\MSBuild.exe $Env:GITHUB_WORKSPACE\SourceAutoRecordv16.sln /t:SourceAutoRecord /p:Configuration=Release /p:Platform=x86
+    - name: Upload Windows Asset
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.release.outputs.upload_url }}
+        asset_path: bin/sar.dll
+        asset_name: sar.dll
+        asset_content_type: application/octet-stream
