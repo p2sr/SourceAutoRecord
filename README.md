@@ -19,7 +19,7 @@ Game|Windows|Linux
 [Aperture Tag](https://store.steampowered.com/app/280740)|✔|✔
 [Portal Stories: Mel](https://store.steampowered.com/app/317400)|✔|✔
 [Thinking with Time Machine](https://store.steampowered.com/app/286080)|✔|✔
-[Portal Reloaded](https://store.steampowered.com/app/1255980)|✔|➖
+[Portal Reloaded](https://store.steampowered.com/app/1255980)|✔|✔
 
 ## Docs
 
