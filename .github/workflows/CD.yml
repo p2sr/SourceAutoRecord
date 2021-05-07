@@ -29,8 +29,8 @@ jobs:
 
           **Installation**
           - Download:
-            - [Windows](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.output.version }}/sar.dll)
-            - [Linux](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.output.version }}/sar.so)
+            - [Windows](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.outputs.version }}/sar.dll)
+            - [Linux](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.outputs.version }}/sar.so)
           - Place the binary into the game folder e.g. `Portal 2`
           - Open developer console and enter `plugin_load sar`
 
