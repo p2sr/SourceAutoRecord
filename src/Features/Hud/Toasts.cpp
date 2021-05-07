@@ -102,23 +102,23 @@ CON_COMMAND(sar_toast_tag_set_color, "sar_toast_tag_set_color <tag> <color> - se
         if (sscanf(col, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
             return console->Print("Invalid color code '%s'\n", args[2]);
         }
-        info.r = Utils::ConvertFromSrgb(r);
-        info.g = Utils::ConvertFromSrgb(g);
-        info.b = Utils::ConvertFromSrgb(b);
+        info.r = r;
+        info.g = g;
+        info.b = b;
     } else {
         char *end;
 
-        info.r = Utils::ConvertFromSrgb(strtol(args[2], &end, 10));
+        info.r = strtol(args[2], &end, 10);
         if (*end || end == args[2]) {
             return console->Print("Invalid color component '%s'\n", args[2]);
         }
 
-        info.g = Utils::ConvertFromSrgb(strtol(args[3], &end, 10));
+        info.g = strtol(args[3], &end, 10);
         if (*end || end == args[3]) {
             return console->Print("Invalid color component '%s'\n", args[3]);
         }
 
-        info.b = Utils::ConvertFromSrgb(strtol(args[4], &end, 10));
+        info.b = strtol(args[4], &end, 10);
         if (*end || end == args[4]) {
             return console->Print("Invalid color component '%s'\n", args[4]);
         }
