@@ -19,9 +19,9 @@
 #include "Features/Timer/Timer.hpp"
 #include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
-#include "Features/GroundFramesCounter.hpp"
 #include "Features/ConditionalExec.hpp"
 #include "Features/NetMessage.hpp"
+#include "Features/GroundFramesCounter.hpp"
 
 #include "Engine.hpp"
 #include "Client.hpp"
@@ -164,8 +164,6 @@ DETOUR_T(bool, Server::CheckJumpButton)
         ++stat->jumps->total;
         ++stat->steps->total;
         stat->jumps->StartTrace(server->GetAbsOrigin(player));
-
-        groundFramesCounter->HandleJump();
     }
 
     return jumped;
@@ -214,18 +212,20 @@ DETOUR(Server::PlayerMove)
 }
 
 // CGameMovement::ProcessMovement
-DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
+DETOUR(Server::ProcessMovement, void* player, CMoveData* move)
 {
     if (sv_cheats.GetBool()) {
-        autoStrafer->Strafe(pPlayer, pMove);
-        tasTools->SetAngles(pPlayer);
+        autoStrafer->Strafe(player, move);
+        tasTools->SetAngles(player);
     }
 
-    unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)pPlayer + Offsets::m_hGroundEntity);
-    bool grounded = groundEntity != 0xFFFFFFFF;
-    groundFramesCounter->HandleMovementFrame(grounded);
+    unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
+    bool grounded = groundHandle != 0xFFFFFFFF;
+    int slot = client->GetSplitScreenPlayerSlot(player);
+    bool jumped = move->m_outJumpVel != Vector{0, 0, 0};
+    groundFramesCounter->HandleMovementFrame(slot, grounded, jumped);
 
-    return Server::ProcessMovement(thisptr, pPlayer, pMove);
+    return Server::ProcessMovement(thisptr, player, move);
 }
 
 // CGameMovement::FinishGravity
@@ -630,7 +630,7 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_fFlags", &Offsets::m_fFlags);
     offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
     offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
-    offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::m_hGroundEntity);
+    offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::S_m_hGroundEntity);
     offsetFinder->ServerSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
     offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
     offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);

@@ -18,6 +18,7 @@
 #include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/NetMessage.hpp"
+#include "Features/GroundFramesCounter.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -49,6 +50,7 @@ REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
 REDECL(Client::playvideo_end_level_transition_callback);
 REDECL(Client::OverrideView);
+REDECL(Client::ProcessMovement);
 
 MDECL(Client::GetAbsOrigin, Vector, C_m_vecAbsOrigin);
 MDECL(Client::GetAbsAngles, QAngle, C_m_angAbsRotation);
@@ -131,6 +133,17 @@ float Client::GetCMTimer()
         }
     }
     return 0.0f;
+}
+
+int Client::GetSplitScreenPlayerSlot(void *entity)
+{
+    for (auto i = 0; i < Offsets::MAX_SPLITSCREEN_PLAYERS; ++i) {
+        if (client->GetPlayer(i + 1) == entity) {
+            return i;
+        }
+    }
+
+    return 0;
 }
 
 
@@ -307,6 +320,35 @@ DETOUR(Client::OverrideView, CPortalViewSetup1* m_View)
     return Client::OverrideView(thisptr, m_View);
 }
 
+DETOUR(Client::ProcessMovement, void *player, CMoveData *move)
+{
+    // This should only be run if prediction is occurring, i.e. if we
+    // are orange, but check anyway
+    if (engine->IsOrange() && session->isRunning) {
+        // The client does prediction very often (twice per frame?) so
+        // we have to do some weird stuff
+        static int lastTick;
+        static bool jumpedThisTick;
+
+        int tick = session->GetTick();
+
+        bool jumped = move->m_outJumpVel != Vector{0, 0, 0};
+
+        if (jumped) jumpedThisTick = true;
+
+        if (tick != lastTick) {
+            unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
+            bool grounded = groundHandle != 0xFFFFFFFF;
+            int slot = client->GetSplitScreenPlayerSlot(player);
+            groundFramesCounter->HandleMovementFrame(slot, grounded, jumped);
+            lastTick = tick;
+            jumpedThisTick = false;
+        }
+    }
+
+    return Client::ProcessMovement(thisptr, player, move);
+}
+
 static _CommandCallback originalLeaderboardCallback;
 
 static void LeaderboardCallback(const CCommand& args)
@@ -330,6 +372,11 @@ bool Client::Init()
 
     this->g_ClientDLL = Interface::Create(this->Name(), "VClient0");
     this->s_EntityList = Interface::Create(this->Name(), "VClientEntityList0", false);
+    this->g_GameMovement = Interface::Create(this->Name(), "GameMovement0");
+
+    if (this->g_GameMovement) {
+        this->g_GameMovement->Hook(Client::ProcessMovement_Hook, Client::ProcessMovement, Offsets::ProcessMovement);
+    }
 
     if (this->g_ClientDLL) {
         this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses, readJmp);
@@ -411,6 +458,7 @@ bool Client::Init()
 
     offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
     offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
+    offsetFinder->ClientSide("CBasePlayer", "m_hGroundEntity", &Offsets::C_m_hGroundEntity);
     offsetFinder->ClientSide("CPortal_Player", "m_StatsThisLevel", &Offsets::m_StatsThisLevel);
 
     cl_showpos = Variable("cl_showpos");
@@ -433,6 +481,7 @@ void Client::Shutdown()
     Interface::Delete(this->g_HUDQuickInfo);
     Interface::Delete(this->g_HudChat);
     Interface::Delete(this->g_HudMultiplayerBasicInfo);
+    Interface::Delete(this->g_GameMovement);
     Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 }
 

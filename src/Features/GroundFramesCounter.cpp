@@ -2,6 +2,7 @@
 
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
 
 #include "Hud/Hud.hpp"
 
@@ -14,31 +15,22 @@ GroundFramesCounter::GroundFramesCounter()
     this->hasLoaded = true;
 }
 
-void GroundFramesCounter::HandleJump()
+void GroundFramesCounter::HandleMovementFrame(int slot, bool grounded, bool jumped)
 {
-    if (!grounded) {
-        counter = 0;
-    }
-}
+    if (pauseTimer->IsActive() && !engine->IsCoop()) return;
 
-void GroundFramesCounter::HandleMovementFrame(bool newGrounded)
-{
-    if (pauseTimer->IsActive()) return;
-
-    if (newGrounded) {
-        counter++;
+    if (!this->grounded[slot] && (grounded || jumped)) {
+        this->counter[slot] = 0;
+    } else if (grounded) {
+        this->counter[slot]++;
     }
 
-    if (!grounded && newGrounded) {
-        counter = 0;
-    }
-
-    grounded = newGrounded;
+    this->grounded[slot] = grounded;
 }
 
 
 HUD_ELEMENT_MODE2(groundframes, "0", 0, 1, "Draws the number of ground frames since last landing.\n",
     HudType_InGame | HudType_Paused | HudType_LoadingScreen)
 {
-    ctx->DrawElement("groundframes: %d", groundFramesCounter->counter);
+    ctx->DrawElement("groundframes: %d", groundFramesCounter->counter[ctx->slot]);
 }

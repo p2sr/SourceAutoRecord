@@ -139,7 +139,8 @@ extern int m_pSurfaceData;
 extern int m_pShadowStand;
 extern int m_pShadowCrouch;
 extern int m_Local;
-extern int m_hGroundEntity;
+extern int S_m_hGroundEntity;
+extern int C_m_hGroundEntity;
 extern int m_iBonusChallenge;
 
 // CPlayerLocalData

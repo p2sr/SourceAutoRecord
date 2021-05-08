@@ -19,6 +19,7 @@ private:
     Interface* g_Input = nullptr;
     Interface* g_HudChat = nullptr;
     Interface* g_HudMultiplayerBasicInfo = nullptr;
+    Interface* g_GameMovement = nullptr;
 
 public:
     using _GetClientEntity = void*(__rescall*)(void* thisptr, int entnum);
@@ -51,8 +52,12 @@ public:
     void QueueChat(TextColor color, const char* fmt, ...);
     void FlushChatQueue();
     float GetCMTimer();
+    int GetSplitScreenPlayerSlot(void *entity);
 
 public:
+    // CGameMovement::ProcessMovement
+    DECL_DETOUR(ProcessMovement, void *player, CMoveData *move);
+
     // CHLClient::LevelInitPreEntity
     DECL_DETOUR(LevelInitPreEntity, const char *levelName);
 
