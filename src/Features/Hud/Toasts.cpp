@@ -305,6 +305,11 @@ void ToastHud::AddToast(std::string tag, std::string text, bool doConsole)
 
     if (doConsole) {
         auto info = getTagInfo(tag);
+        if (info.r == 255 && info.g == 255 && info.b == 255) {
+            info.r = 255;
+            info.g = 150;
+            info.b = 50;
+        }
         Color conCol{info.r, info.g, info.b, 255};
         console->ColorMsg(conCol, "%s\n", text.c_str());
     }
