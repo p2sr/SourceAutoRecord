@@ -181,6 +181,9 @@
     <ClCompile Include="Features\Summary.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Updater.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Teleporter.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
@@ -282,6 +285,9 @@
     </ClCompile>
     <ClCompile Include="Features\Hud\Crosshair.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\json11.cpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
     <ClCompile Include="Utils\lodepng.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
@@ -525,6 +531,9 @@
     <ClInclude Include="Features\Summary.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Updater.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
     <ClInclude Include="Features\Teleporter.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
@@ -629,6 +638,9 @@
     </ClInclude>
     <ClInclude Include="Features\Hud\Crosshair.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\json11.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\lodepng.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>

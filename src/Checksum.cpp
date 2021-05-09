@@ -3,13 +3,7 @@
 #include <cstdlib>
 #include <string>
 #include "Checksum.hpp"
-
-#ifdef _WIN32
-#include <Windows.h>
-#include <ImageHlp.h>
-#else
-#include <dlfcn.h>
-#endif
+#include "Utils.hpp"
 
 #define WRITE_LE32(x)            \
     (uint8_t)(x & 0xFF),         \
@@ -214,25 +208,9 @@ std::pair<VerifyResult, uint32_t> VerifyDemoChecksum(const char* filename)
     return std::pair(res, storedSarChecksum);
 }
 
-static std::string getSARPath()
-{
-#ifdef _WIN32
-    SymInitialize(GetCurrentProcess(), 0, true);
-    DWORD module = SymGetModuleBase(GetCurrentProcess(), (DWORD)&getSARPath);
-    char filename[MAX_PATH+1];
-    GetModuleFileNameA((HMODULE)module, filename, MAX_PATH);
-    SymCleanup(GetCurrentProcess());
-    return std::string(filename);
-#else
-    Dl_info info;
-    dladdr((void*)&getSARPath, &info);
-    return std::string(info.dli_fname);
-#endif
-}
-
 void InitSARChecksum()
 {
-    std::string path = getSARPath();
+    std::string path = Utils::GetSARPath();
 
     FILE* fp = fopen(path.c_str(), "rb"); // Open for binary reading
     if (!fp) return;

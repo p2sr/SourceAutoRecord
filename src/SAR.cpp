@@ -3,6 +3,10 @@
 
 #include <cstring>
 
+#ifdef _WIN32
+#include <filesystem>
+#endif
+
 #include "Features.hpp"
 #include "Modules.hpp"
 
@@ -32,6 +36,17 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
     console = new Console();
     if (!console->Init())
         return false;
+
+#ifdef _WIN32
+    // The auto-updater can create this file on Windows; we should try
+    // to delete it.
+    try {
+        if (std::filesystem::exists("sar.dll.old-auto")) {
+            std::filesystem::remove("sar.dll.old-auto");
+        }
+    } catch (...) {
+    }
+#endif
 
     if (this->game) {
         this->game->LoadOffsets();

@@ -25,6 +25,7 @@ bool StartsWith(const char* str, const char* subStr);
 bool ICompare(const std::string& a, const std::string& b);
 std::string ssprintf(const char *fmt, ...);
 int ConvertFromSrgb(int s);
+std::string GetSARPath();
 }
 
 #define REDECL(name) \

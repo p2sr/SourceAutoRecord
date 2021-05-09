@@ -5,6 +5,13 @@
 #include <string>
 #include <cstdarg>
 
+#ifdef _WIN32
+#include <Windows.h>
+#include <ImageHlp.h>
+#else
+#include <dlfcn.h>
+#endif
+
 bool Utils::EndsWith(const std::string& str, const std::string& suffix)
 {
     return str.size() >= suffix.size() && !str.compare(str.size() - suffix.size(), suffix.size(), suffix);
@@ -38,4 +45,19 @@ int Utils::ConvertFromSrgb(int s)
     double s_ = (double)s / 255;
     double l = s <= 0.04045 ? s_ / 12.92 : pow((s_ + 0.055) / 1.055, 2.4);
     return (int)(l * 255);
+}
+std::string Utils::GetSARPath()
+{
+#ifdef _WIN32
+    SymInitialize(GetCurrentProcess(), 0, true);
+    DWORD module = SymGetModuleBase(GetCurrentProcess(), (DWORD)&Utils::GetSARPath);
+    char filename[MAX_PATH+1];
+    GetModuleFileNameA((HMODULE)module, filename, MAX_PATH);
+    SymCleanup(GetCurrentProcess());
+    return std::string(filename);
+#else
+    Dl_info info;
+    dladdr((void*)&Utils::GetSARPath, &info);
+    return std::string(info.dli_fname);
+#endif
 }

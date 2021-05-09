@@ -20,7 +20,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>false</CLRSupport>
   </PropertyGroup>
@@ -65,15 +65,15 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SFML_STATIC;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>SFML_STATIC;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include;$(SolutionDir)\lib\curl\include</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows;$(SolutionDir)\lib\curl\lib\windows</AdditionalLibraryDirectories>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
@@ -82,7 +82,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <NoEntryPoint>false</NoEntryPoint>
-      <AdditionalDependencies>imagehlp.lib;winmm-d.lib;ws2_32-d.lib;sfml-system-s-d.lib;sfml-network-s-d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl_a.lib;wldap32.lib;crypt32.lib;normaliz.lib;imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>call ..\genversion.bat</Command>
@@ -100,9 +100,9 @@
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include;$(SolutionDir)\lib\curl\include</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
-      <PreprocessorDefinitions>SFML_STATIC;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SFML_STATIC;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>26495</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -110,9 +110,9 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows;$(SolutionDir)\lib\curl\lib\windows</AdditionalLibraryDirectories>
       <NoEntryPoint>false</NoEntryPoint>
-      <AdditionalDependencies>imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl_a.lib;wldap32.lib;crypt32.lib;normaliz.lib;imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>
@@ -182,6 +182,7 @@
     <ClCompile Include="Features\Summary.cpp" />
     <ClCompile Include="Features\Tas\AutoStrafer.cpp" />
     <ClCompile Include="Features\Tas\CommandQueuer.cpp" />
+    <ClCompile Include="Features\Updater.cpp" />
     <ClCompile Include="Features\ReplaySystem\Replay.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayPlayer.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayProvider.cpp" />
@@ -241,6 +242,7 @@
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="Utils\json11.cpp" />
     <ClCompile Include="Utils\lodepng.cpp" />
     <ClCompile Include="Utils\Math.cpp" />
     <ClCompile Include="Utils\Memory.cpp" />
@@ -347,6 +349,7 @@
     <ClInclude Include="Features\Summary.hpp" />
     <ClInclude Include="Features\Tas\AutoStrafer.hpp" />
     <ClInclude Include="Features\Tas\CommandQueuer.hpp" />
+    <ClInclude Include="Features\Updater.hpp" />
     <ClInclude Include="Features\ReplaySystem\Replay.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayFrame.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayPlayer.hpp" />
@@ -408,6 +411,7 @@
     <ClInclude Include="Plugin.hpp" />
     <ClInclude Include="SAR.hpp" />
     <ClInclude Include="Utils.hpp" />
+    <ClInclude Include="Utils\json11.hpp" />
     <ClInclude Include="Utils\lodepng.hpp" />
     <ClInclude Include="Utils\Math.hpp" />
     <ClInclude Include="Utils\Memory.hpp" />
