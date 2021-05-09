@@ -33,3 +33,4 @@
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/GroundFramesCounter.hpp"
+#include "Features/Hud/Toasts.hpp"

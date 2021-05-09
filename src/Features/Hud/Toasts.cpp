@@ -8,6 +8,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Surface.hpp"
 #include "Modules/Scheme.hpp"
+#include "Features/NetMessage.hpp"
 
 #define TOAST_GAP 10
 #define LINE_PAD 6
@@ -19,6 +20,8 @@
 
 #define SLIDE_RATE 200 // thousandths of screen / s
 #define FADE_TIME 300 // ms
+
+#define TOAST_PACKET_TYPE "nettoast"
 
 enum class Alignment
 {
@@ -60,6 +63,7 @@ Variable sar_toast_align("sar_toast_align", "0", 0, 2, "The side to align toasts
 Variable sar_toast_anchor("sar_toast_anchor", "1", 0, 1, "Where to put new toasts. 0 = bottom, 1 = top.\n");
 Variable sar_toast_compact("sar_toast_compact", "0", "Enables a compact form of the toasts HUD.\n");
 Variable sar_toast_background("sar_toast_background", "1", 0, 2, "Sets the background highlight for toasts. 0 = no background, 1 = text width only, 2 = full width.\n");
+Variable sar_toast_net_disable("sar_toast_net_disable", "0", "Disable network toasts.\n");
 
 struct TagInfo {
     uint8_t r, g, b;
@@ -206,9 +210,25 @@ CON_COMMAND(sar_toast_setpos, "sar_toast_setpos <bottom/top> <left/center/right>
     }
 }
 
+static void toastMessage(void *data, size_t size)
+{
+    if (sar_toast_net_disable.GetBool()) return;
+    const char *tag = (char *)data;
+    size_t tagLen = strnlen(tag, size);
+    if (tagLen >= size - 1) return;
+    const char *toast = (char *)data + tagLen + 1;
+    if (((char *)data)[size - 1]) return;
+    toastHud.AddToast(tag, toast);
+}
+
 ToastHud::ToastHud()
     : Hud(HudType_InGame | HudType_Paused | HudType_Menu, true)
 {
+}
+
+void ToastHud::InitMessageHandler()
+{
+    NetMessage::RegisterHandler(TOAST_PACKET_TYPE, &toastMessage);
 }
 
 bool ToastHud::ShouldDraw()
@@ -451,6 +471,32 @@ CON_COMMAND(sar_toast_create, "sar_toast_create <tag> <text> - create a toast.\n
     }
 
     toastHud.AddToast(args[1], args[2]);
+}
+
+CON_COMMAND(sar_toast_net_create, "sar_toast_net_create <tag> <text> - create a toast, also sending it to your coop partner.\n")
+{
+    if (args.ArgC() != 3) {
+        console->Print(sar_toast_net_create.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    const char *tag = args[1], *toast = args[2];
+
+    // FIXME: this currently abuses the fact that we receive our own
+    // NetMessages, which is definitely a bug
+    if (engine->IsCoop()) {
+        size_t tagLen = strlen(tag), toastLen = strlen(toast);
+        size_t len = tagLen + toastLen + 2;
+        char *data = (char *)malloc(len);
+        strcpy(data, tag);
+        data[tagLen] = 0;
+        strcpy(data + tagLen + 1, toast);
+        data[tagLen + 1 + toastLen] = 0;
+        NetMessage::SendMsg(TOAST_PACKET_TYPE, data, len);
+        free(data);
+    } else {
+        toastHud.AddToast(tag, toast);
+    }
 }
 
 CON_COMMAND(sar_toast_dismiss_all, "sar_toast_dismiss_all - dismiss all active toasts.\n")
