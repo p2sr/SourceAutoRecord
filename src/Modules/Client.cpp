@@ -340,7 +340,7 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move)
             unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
             bool grounded = groundHandle != 0xFFFFFFFF;
             int slot = client->GetSplitScreenPlayerSlot(player);
-            groundFramesCounter->HandleMovementFrame(slot, grounded, jumped);
+            groundFramesCounter->HandleMovementFrame(slot, grounded, jumpedThisTick);
             lastTick = tick;
             jumpedThisTick = false;
         }
