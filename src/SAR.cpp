@@ -18,6 +18,7 @@
 #include "Interface.hpp"
 #include "Variable.hpp"
 #include "CrashHandler.hpp"
+#include "Events.hpp"
 
 SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
@@ -52,6 +53,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
         this->game->LoadOffsets();
 
         CrashHandler::Init();
+
+        SarInitHandler::RunAll();
 
         tier1 = new Tier1();
         if (tier1->Init()) {
