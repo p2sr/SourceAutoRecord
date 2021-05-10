@@ -21,7 +21,7 @@
 #include "Features/SegmentedTools.hpp"
 #include "Features/ConfigPlus.hpp"
 #include "Features/NetMessage.hpp"
-#include "Events.hpp"
+#include "Event.hpp"
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -94,7 +94,7 @@ void Session::Start()
     this->Rebase(tick);
     timer->Rebase(tick);
 
-    Events::Trigger(Event::SESSION_START);
+    Event::Trigger(Event::SESSION_START);
 
     if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
         if (engine->demorecorder->isRecordingDemo) {

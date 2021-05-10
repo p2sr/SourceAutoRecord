@@ -16,6 +16,7 @@
 #include "SAR.hpp"
 #include "Utils.hpp"
 #include "Checksum.hpp"
+#include "Event.hpp"
 
 #include <filesystem>
 #include <vector>
@@ -170,7 +171,7 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
             engine->demoplayer->levelName = demo.mapName;
             Renderer::demoStart = demo.firstPositivePacketTick;
             Renderer::segmentEndTick = demo.segmentTicks;
-            RunDemoStartExecs(); // Only run these execs if the demo should start okay
+            Event::Trigger(Event::DEMO_START);
         } else {
             console->Print("Could not parse \"%s\"!\n", engine->demoplayer->DemoName);
         }
@@ -188,7 +189,7 @@ DETOUR(EngineDemoPlayer::StopPlayback)
 {
     if (engine->demoplayer->IsPlaying()) {
         Renderer::OnDemoEnd();
-        RunDemoStopExecs();
+        Event::Trigger(Event::DEMO_STOP);
     }
     return EngineDemoPlayer::StopPlayback(thisptr);
 }

@@ -1,4 +1,4 @@
-#include "Events.hpp"
+#include "Event.hpp"
 
 #include <map>
 
@@ -19,9 +19,9 @@ struct EventReg {
     int32_t priority;
 };
 
-static std::map<Event, std::vector<EventReg>> _g_callbacks;
+static std::map<Event::EventType, std::vector<EventReg>> _g_callbacks;
 
-void Events::Trigger(Event e) {
+void Event::Trigger(Event::EventType e) {
     auto it = _g_callbacks.find(e);
     if (it != _g_callbacks.end()) {
         for (auto &cb : it->second) {
@@ -30,7 +30,7 @@ void Events::Trigger(Event e) {
     }
 }
 
-void Events::RegisterCallback(Event e, std::function<void()> cb, int32_t priority) {
+void Event::RegisterCallback(Event::EventType e, std::function<void()> cb, int32_t priority) {
     EventReg reg{ cb, priority };
 
     auto mit = _g_callbacks.find(e);

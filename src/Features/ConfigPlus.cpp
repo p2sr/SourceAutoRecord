@@ -7,7 +7,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Features/Session.hpp"
-#include "Events.hpp"
+#include "Event.hpp"
 
 struct Condition {
     enum {
@@ -308,69 +308,26 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 // }}}
 
-static std::vector<std::string> g_loadExecs;
-CON_COMMAND(sar_on_load, "sar_on_load [command] [args]... - registers a command to run on level load. Will pass further args as args to the command; do not quote the command.\n")
-{
-    if (args.ArgC() < 2) {
-        return console->Print(sar_on_load.ThisPtr()->m_pszHelpString);
+#define MK_SAR_ON(name, when, immediately) \
+    static std::vector<std::string> _g_execs_##name; \
+    CON_COMMAND(sar_on_##name, "sar_on_" #name " <command> [args]... - registers a command to be run " when ".\n") { \
+        if (args.ArgC() < 2) { \
+            return console->Print(sar_on_##name.ThisPtr()->m_pszHelpString); \
+        } \
+        _g_execs_##name.push_back(std::string(args.m_pArgSBuffer + args.m_nArgv0Size)); \
+    } \
+    static void _runExecs_##name() { \
+        for (auto cmd : _g_execs_##name) { \
+            engine->ExecuteCommand(cmd.c_str(), immediately); \
+        } \
     }
 
-    g_loadExecs.push_back(std::string(args.m_pArgSBuffer + args.m_nArgv0Size));
-}
+#define RUN_EXECS(x) _runExecs_##x()
 
-void RunLoadExecs() {
-    for (auto cmd : g_loadExecs) {
-        engine->ExecuteCommand(cmd.c_str(), true);
-    }
-}
-
-static std::vector<std::string> g_exitExecs;
-CON_COMMAND(sar_on_exit, "sar_on_exit [command] [args]... - registers a command to be run on game exit.\n")
-{
-    if (args.ArgC() < 2) {
-        return console->Print(sar_on_exit.ThisPtr()->m_pszHelpString);
-    }
-
-    g_exitExecs.push_back(std::string(args.m_pArgSBuffer + args.m_nArgv0Size));
-}
-
-void RunExitExecs() {
-    for (auto cmd : g_exitExecs) {
-        engine->ExecuteCommand(cmd.c_str());
-    }
-}
-
-static std::vector<std::string> g_demoStartExecs;
-CON_COMMAND(sar_on_demo_start, "sar_on_demo_start [command] [args]... - registers a command to be run when demo playback starts.\n")
-{
-    if (args.ArgC() < 2) {
-        return console->Print(sar_on_demo_start.ThisPtr()->m_pszHelpString);
-    }
-
-    g_demoStartExecs.push_back(std::string(args.m_pArgSBuffer + args.m_nArgv0Size));
-}
-
-void RunDemoStartExecs() {
-    for (auto cmd : g_demoStartExecs) {
-        engine->ExecuteCommand(cmd.c_str());
-    }
-}
-
-static std::vector<std::string> g_demoStopExecs;
-CON_COMMAND(sar_on_demo_stop, "sar_on_demo_stop [command] [args]... - registers a command to be run when demo playback stops.\n")
-{
-    if (args.ArgC() < 2) {
-        return console->Print(sar_on_demo_stop.ThisPtr()->m_pszHelpString);
-    }
-
-    g_demoStopExecs.push_back(std::string(args.m_pArgSBuffer + args.m_nArgv0Size));
-}
-
-void RunDemoStopExecs() {
-    for (auto cmd : g_demoStopExecs) {
-        engine->ExecuteCommand(cmd.c_str());
-    }
-}
+MK_SAR_ON(load, "on level load", true)
+MK_SAR_ON(exit, "on game exit", false)
+MK_SAR_ON(demo_start, "when demo playback starts", false)
+MK_SAR_ON(demo_stop, "when demo playback stops", false)
 
 struct Seq {
     std::queue<std::string> commands;
@@ -472,6 +429,7 @@ CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, 
     g_aliases[std::string(args[1])] = cmd;
 }
 
-ON_INIT {
-    Events::RegisterCallback(Event::SESSION_START, &RunLoadExecs, 1000000);
-}
+ON_EVENT_P(SESSION_START, 1000000) { RUN_EXECS(load); }
+ON_EVENT(SAR_UNLOAD) { RUN_EXECS(exit); }
+ON_EVENT(DEMO_START) { RUN_EXECS(demo_start); }
+ON_EVENT(DEMO_STOP) { RUN_EXECS(demo_stop); }

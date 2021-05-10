@@ -14,7 +14,7 @@
 #include "Features/Hud/Toasts.hpp"
 #include "Features/Session.hpp"
 #include "Utils.hpp"
-#include "Events.hpp"
+#include "Event.hpp"
 
 #define SPEEDRUN_PACKET_TYPE "srtimer"
 #define SYNC_INTERVAL 60 // Sync every second, just in case
@@ -544,7 +544,7 @@ void SpeedrunTimer::OnLoad()
 }
 
 ON_INIT {
-    Events::RegisterCallback(Event::SESSION_START, []() {
+    Event::RegisterCallback(Event::SESSION_START, []() {
         if (!engine->IsCoop() || (server->GetChallengeStatus() == CMStatus::CHALLENGE && !engine->IsOrange())) {
             if (!engine->IsOrange()) {
                 SpeedrunTimer::Resume();

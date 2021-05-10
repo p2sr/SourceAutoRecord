@@ -18,7 +18,7 @@
 #include "Interface.hpp"
 #include "Variable.hpp"
 #include "CrashHandler.hpp"
-#include "Events.hpp"
+#include "Event.hpp"
 
 SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);

@@ -24,6 +24,7 @@
 #include "SAR.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+#include "Event.hpp"
 
 #ifdef _WIN32
 #include <Memoryapi.h>
@@ -147,7 +148,7 @@ int Engine::PointToScreen(const Vector& point, Vector& screen)
 }
 void Engine::SafeUnload(const char* postCommand)
 {
-    RunExitExecs();
+    Event::Trigger(Event::SAR_UNLOAD);
 
     // The exit command will handle everything
     this->ExecuteCommand("sar_exit");
