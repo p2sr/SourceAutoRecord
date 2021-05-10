@@ -5,7 +5,6 @@
 #include "Command.hpp"
 #include "Categories.hpp"
 #include "Rules.hpp"
-#include "CategoryCreator.hpp"
 
 #define SPEEDRUN_TOAST_TAG "speedrun"
 

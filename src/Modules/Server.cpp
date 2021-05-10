@@ -32,6 +32,7 @@
 #include "Utils.hpp"
 #include "Variable.hpp"
 #include "Version.hpp"
+#include "Event.hpp"
 
 #define RESET_COOP_PROGRESS_MESSAGE_TYPE "coop-reset"
 
@@ -476,8 +477,7 @@ DETOUR(Server::GameFrame, bool simulating)
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
-    SpeedrunTimer::DrawTriggers();
-    SpeedrunTimer::DrawCategoryCreatorPlacement();
+    Event::Trigger(Event::TICK);
 
     if (simulating) {
         SpeedrunTimer::TickRules();

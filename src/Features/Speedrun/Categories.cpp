@@ -6,6 +6,7 @@
 #include "Modules/Server.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Utils.hpp"
+#include "Event.hpp"
 
 #include <memory>
 #include <set>
@@ -177,8 +178,7 @@ void SpeedrunTimer::ResetCategory()
     }
 }
 
-void SpeedrunTimer::DrawTriggers()
-{
+ON_EVENT(TICK) {
     const int drawDelta = 30;
     static int lastDrawTick = -1000;
 

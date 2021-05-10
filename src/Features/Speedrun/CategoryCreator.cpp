@@ -2,9 +2,9 @@
 #include <map>
 #include "Command.hpp"
 #include "Modules/Engine.hpp"
-#include "CategoryCreator.hpp"
 #include "Categories.hpp"
 #include "Modules/Server.hpp"
+#include "Event.hpp"
 
 #define MAX_TRACE 65535.0f
 
@@ -268,8 +268,7 @@ CON_COMMAND(sar_speedrun_cc_finish, "sar_speedrun_cc_finish - finish the categor
     g_placementOptions = {};
 }
 
-void SpeedrunTimer::DrawCategoryCreatorPlacement()
-{
+ON_EVENT(TICK) {
     if (!sv_cheats.GetBool()) {
         return;
     }

@@ -33,6 +33,7 @@ namespace Event {
         SAR_UNLOAD,
         DEMO_START,
         DEMO_STOP,
+        TICK,
     };
 
     void Trigger(Event::EventType e);

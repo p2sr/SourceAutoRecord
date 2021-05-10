@@ -21,7 +21,6 @@ namespace SpeedrunTimer {
     void TestFlyRules(int slot);
     void TestLoadRules();
     void ResetCategory();
-    void DrawTriggers();
     void InitCategories();
     SpeedrunRule *GetRule(std::string name);
 
