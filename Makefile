@@ -29,7 +29,7 @@ DEPS=$(OBJS:%.o=%.d)
 
 WARNINGS=-Wall -Wno-unused-function -Wno-unused-variable -Wno-parentheses -Wno-unknown-pragmas -Wno-register -Wno-sign-compare
 CXXFLAGS=-std=c++17 -m32 $(WARNINGS) -I$(SDIR) -fPIC -D_GNU_SOURCE -Ilib/ffmpeg/include -Ilib/SFML/include -Ilib/curl/include -DSFML_STATIC -DCURL_STATICLIB
-LDFLAGS=-m32 -shared -lstdc++fs -Llib/ffmpeg/lib/linux -lavformat -lavcodec -lavutil -lswscale -lswresample -lx264 -lx265 -lvorbis -lvorbisenc -lvorbisfile -logg -lopus -lvpx -Llib/SFML/lib/linux -lsfml -Llib/curl/lib/linux -lcurl -lssl -lcrypto -lnghttp2 -lssh2
+LDFLAGS=-m32 -shared -lstdc++fs -Llib/ffmpeg/lib/linux -lavformat -lavcodec -lavutil -lswscale -lswresample -lx264 -lx265 -lvorbis -lvorbisenc -lvorbisfile -logg -lopus -lvpx -Llib/SFML/lib/linux -lsfml -Llib/curl/lib/linux -lcurl -lssl -lcrypto -lnghttp2 -lssh2 -lzstd
 
 # Import config.mk, which can be used for optional config
 -include config.mk
