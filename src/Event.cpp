@@ -39,7 +39,7 @@ void Event::RegisterCallback(Event::EventType e, std::function<void()> cb, int32
         return;
     }
 
-    auto vec = mit->second;
+    auto &vec = mit->second;
 
     auto vit = vec.begin();
     while (vit != vec.end()) {
