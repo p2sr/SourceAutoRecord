@@ -277,7 +277,7 @@
     <ClCompile Include="Features\Camera.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
-    <ClCompile Include="Features\ConditionalExec.cpp">
+    <ClCompile Include="Features\ConfigPlus.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
     <ClCompile Include="Features\Stats\StatsCounter.cpp">
@@ -630,7 +630,7 @@
     <ClInclude Include="Features\Camera.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
-    <ClInclude Include="Features\ConditionalExec.hpp">
+    <ClInclude Include="Features\ConfigPlus.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Stats\StatsCounter.hpp">
