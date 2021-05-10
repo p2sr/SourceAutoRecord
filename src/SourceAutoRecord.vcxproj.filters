@@ -636,9 +636,6 @@
     <ClInclude Include="Features\Camera.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
-    <ClInclude Include="Features\ConfigPlus.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Stats\StatsCounter.hpp">
       <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClInclude>

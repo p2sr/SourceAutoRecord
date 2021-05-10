@@ -4,7 +4,6 @@
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Camera.hpp"
 #include "Features/Renderer.hpp"
-#include "Features/ConfigPlus.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"

@@ -15,6 +15,8 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 #include "Checksum.hpp"
+#include "Event.hpp"
+#include "Version.hpp"
 
 #include <cstdio>
 
@@ -277,4 +279,12 @@ void EngineDemoRecorder::RecordData(const void* data, unsigned long length)
     memcpy(buf+8, data, length);
     EngineDemoRecorder::RecordCustomData(this->s_ClientDemoRecorder->ThisPtr(), 0, buf, length+8);
     free(buf);
+}
+
+ON_EVENT(TICK) {
+    if (event.simulating && !engine->demorecorder->hasNotified && engine->demorecorder->m_bRecording) {
+        const char *cmd = "echo SAR " SAR_VERSION " (Built " SAR_BUILT ")";
+        engine->SendToCommandBuffer(cmd, 300);
+        engine->demorecorder->hasNotified = true;
+    }
 }

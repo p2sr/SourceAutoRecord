@@ -9,6 +9,7 @@
 
 #include "Command.hpp"
 #include "Variable.hpp"
+#include "Event.hpp"
 
 Variable sar_seamshot_finder("sar_seamshot_finder", "0", 0, 1, "Enables or disables seamshot finder overlay.\n");
 Variable sar_seamshot_helper("sar_seamshot_helper", "0", 0, 1, "Enables or disables seamshot helper overlay.\n");
@@ -46,8 +47,7 @@ CGameTrace TracePortalShot(const Vector& start, const Vector& dir, float length)
     return tr;
 }
 
-void SeamshotFind::DrawLines()
-{
+ON_EVENT(TICK) {
     if (sv_cheats.GetBool() && (sar_seamshot_finder.GetBool() || sar_seamshot_helper.GetBool())) {
         void* player = server->GetPlayer(GET_SLOT() + 1);
 

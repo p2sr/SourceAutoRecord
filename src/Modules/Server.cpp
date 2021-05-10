@@ -19,7 +19,6 @@
 #include "Features/Timer/Timer.hpp"
 #include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
-#include "Features/ConfigPlus.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/GroundFramesCounter.hpp"
 
@@ -31,7 +30,6 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
-#include "Version.hpp"
 #include "Event.hpp"
 
 #define RESET_COOP_PROGRESS_MESSAGE_TYPE "coop-reset"
@@ -457,16 +455,6 @@ DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
     if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
-    RunSeqs();
-
-    if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
-        if (!simulating && !pauseTimer->IsActive()) {
-            pauseTimer->Start();
-        } else if (simulating && pauseTimer->IsActive()) {
-            pauseTimer->Stop();
-            console->DevMsg("Paused for %i non-simulated ticks.\n", pauseTimer->GetTotal());
-        }
-    }
 
     if (session->isRunning)
         engine->NewTick(session->GetTick());
@@ -477,48 +465,10 @@ DETOUR(Server::GameFrame, bool simulating)
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
-    Event::Trigger<Event::TICK>({});
-
-    if (simulating) {
-        SpeedrunTimer::TickRules();
-    }
+    Event::Trigger<Event::TICK>({ simulating });
 
     if ((session->isRunning && session->GetTick() == 16) || fovChanger->needToUpdate) {
         fovChanger->Force();
-    }
-
-    if (session->isRunning && pauseTimer->IsActive()) {
-        pauseTimer->Increment();
-
-        SpeedrunTimer::AddPauseTick();
-
-        if (timer->isRunning && sar_timer_time_pauses.GetBool()) {
-            ++timer->totalTicks;
-        }
-    }
-
-    if (simulating && sar_seamshot_finder.GetBool()) {
-        seamshotFind->DrawLines();
-    }
-
-    if (simulating && sar_crosshair_P1.GetBool()) {
-        crosshair.IsSurfacePortalable();
-    }
-
-    if (simulating && !engine->demorecorder->hasNotified && engine->demorecorder->m_bRecording) {
-        const char* cmd = "echo SAR " SAR_VERSION " (Built " SAR_BUILT ")";
-        engine->SendToCommandBuffer(cmd, 300);
-        engine->demorecorder->hasNotified = true;
-    }
-
-    if (simulating) {
-        seamshotFind->DrawLines();
-    }
-
-    if (simulating) {
-        timescaleDetect->Update();
-    } else {
-        timescaleDetect->Cancel();
     }
 
     ++server->tickCount;

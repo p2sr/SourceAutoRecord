@@ -8,7 +8,6 @@
 class SeamshotFind : public Feature {
 public:
     SeamshotFind();
-    void DrawLines();
 };
 
 extern SeamshotFind* seamshotFind;

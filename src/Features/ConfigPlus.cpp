@@ -373,7 +373,7 @@ CON_COMMAND(seq, "seq [command]... - runs a sequence of commands one tick after 
     seqs.push_back({cmds});
 }
 
-void RunSeqs() {
+ON_EVENT(TICK) {
     for (size_t i = 0; i < seqs.size(); ++i) {
         if (seqs[i].commands.empty()) {
             seqs.erase(seqs.begin() + i);

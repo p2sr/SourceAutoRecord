@@ -45,6 +45,8 @@ public:
 
     DECL_DETOUR_COMMAND(stop);
 
+    DECL_DETOUR_COMMAND(record);
+
     bool Init() override;
     void Shutdown() override;
     const char* Name() override { return MODULE("engine"); }

@@ -13,6 +13,7 @@
 #include "Features/NetMessage.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/Session.hpp"
+#include "Features/Timer/PauseTimer.hpp"
 #include "Utils.hpp"
 #include "Event.hpp"
 
@@ -354,8 +355,12 @@ void SpeedrunTimer::Update()
     g_timerInterface->total = SpeedrunTimer::GetTotalTicks();
 }
 
-void SpeedrunTimer::AddPauseTick()
+ON_EVENT(TICK)
 {
+    if (!session->isRunning || !pauseTimer->IsActive()) {
+        return;
+    }
+
     if (!g_speedrun.isRunning || g_speedrun.isPaused || !sar_speedrun_time_pauses.GetBool()) {
         return;
     }
@@ -543,16 +548,20 @@ void SpeedrunTimer::OnLoad()
     }
 }
 
-ON_INIT {
-    Event::RegisterCallback<Event::SESSION_START>([](Event::EventData<Event::SESSION_START>) {
-        if (!engine->IsCoop() || (server->GetChallengeStatus() == CMStatus::CHALLENGE && !engine->IsOrange())) {
-            if (!engine->IsOrange()) {
-                SpeedrunTimer::Resume();
-            }
-
-            SpeedrunTimer::OnLoad();
+ON_EVENT(SESSION_START) {
+    if (!engine->IsCoop() || (server->GetChallengeStatus() == CMStatus::CHALLENGE && !engine->IsOrange())) {
+        if (!engine->IsOrange()) {
+            SpeedrunTimer::Resume();
         }
-    });
+
+        SpeedrunTimer::OnLoad();
+    }
+}
+
+ON_EVENT(TICK) {
+    if (event.simulating) {
+        SpeedrunTimer::TickRules();
+    }
 }
 
 // Time formatting {{{

@@ -1,5 +1,6 @@
 #include "Timer.hpp"
 
+#include "PauseTimer.hpp"
 #include "TimerAverage.hpp"
 #include "TimerCheckPoints.hpp"
 
@@ -13,6 +14,7 @@
 #include "Command.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+#include "Event.hpp"
 
 Variable sar_timer_always_running("sar_timer_always_running", "1", "Timer will save current value when disconnecting.\n");
 Variable sar_timer_time_pauses("sar_timer_time_pauses", "1", "Timer adds non-simulated ticks when server pauses.\n");
@@ -192,4 +194,10 @@ HUD_ELEMENT2(avg, "0", "Draws calculated average of timer.\n", HudType_InGame | 
 HUD_ELEMENT2(cps, "0", "Draws latest checkpoint of timer.\n", HudType_InGame | HudType_Paused)
 {
     ctx->DrawElement("last cp: %i (%.3f)", timer->cps->latestTick, timer->cps->latestTime);
+}
+
+ON_EVENT(TICK) {
+    if (session->isRunning && pauseTimer->IsActive() && timer->isRunning && sar_timer_time_pauses.GetBool()) {
+        ++timer->totalTicks;
+    }
 }

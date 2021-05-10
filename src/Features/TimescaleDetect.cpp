@@ -4,6 +4,7 @@
 #include "Modules/EngineDemoRecorder.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Client.hpp"
+#include "Event.hpp"
 
 #include <chrono>
 
@@ -25,27 +26,32 @@ TimescaleDetect::TimescaleDetect()
     this->startTick = -1;
 }
 
-void TimescaleDetect::Update()
+ON_EVENT(TICK)
 {
+    if (!event.simulating) {
+        timescaleDetect->Cancel();
+        return;
+    }
+
     int tick = engine->GetTick();
 
-    if (tick - this->spawnTick < TICKS_IGNORE) {
-        this->startTick = -1;
+    if (tick - timescaleDetect->spawnTick < TICKS_IGNORE) {
+        timescaleDetect->startTick = -1;
         return;
     }
 
-    if (this->startTick == -1 || tick < this->startTick) {
-        this->startTick = tick;
-        this->startTickTime = std::chrono::system_clock::now();
+    if (timescaleDetect->startTick == -1 || tick < timescaleDetect->startTick) {
+        timescaleDetect->startTick = tick;
+        timescaleDetect->startTickTime = std::chrono::system_clock::now();
         return;
     }
 
-    if (tick >= this->startTick + TICKS_MEASURE) {
+    if (tick >= timescaleDetect->startTick + TICKS_MEASURE) {
         auto now = std::chrono::system_clock::now();
 
-        int tickDelta = tick - this->startTick;
+        int tickDelta = tick - timescaleDetect->startTick;
 
-        std::chrono::duration<float> deltaDur = now - this->startTickTime;
+        std::chrono::duration<float> deltaDur = now - timescaleDetect->startTickTime;
         float delta = deltaDur.count();
         float expected = *engine->interval_per_tick * tickDelta;
 
@@ -59,8 +65,8 @@ void TimescaleDetect::Update()
             engine->demorecorder->RecordData(data, sizeof data);
         }
 
-        this->startTick = tick;
-        this->startTickTime = now;
+        timescaleDetect->startTick = tick;
+        timescaleDetect->startTickTime = now;
     }
 }
 

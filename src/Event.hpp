@@ -10,9 +10,9 @@
 #define ON_INIT _ON_INIT(__COUNTER__)
 
 #define _ON_EVENT1(ev, x, pri) \
-    static void _sar_event_fn_##x(Event::EventData<Event::ev> data); \
+    static void _sar_event_fn_##x(Event::EventData<Event::ev> event); \
     ON_INIT { Event::RegisterCallback<Event::ev>(&_sar_event_fn_##x, pri); } \
-    static void _sar_event_fn_##x(Event::EventData<Event::ev> data)
+    static void _sar_event_fn_##x(Event::EventData<Event::ev> event)
 #define _ON_EVENT(ev, x, pri) _ON_EVENT1(ev, x, pri)
 #define ON_EVENT(ev) _ON_EVENT(ev, __COUNTER__, 0)
 #define ON_EVENT_P(ev, pri) _ON_EVENT(ev, __COUNTER__, pri)
@@ -36,6 +36,7 @@ namespace Event {
     };
 
     template <EventType E> struct EventData { };
+    template <> struct EventData<TICK> { bool simulating; };
 
     template <EventType E> struct _EventReg {
         std::function<void(EventData<E>)> cb;
