@@ -9,6 +9,17 @@
 #include "Features/Session.hpp"
 #include "Event.hpp"
 
+static std::map<std::string, std::string> g_svars;
+
+CON_COMMAND(svar_set, "svar_set <variable> <value> - set a svar (SAR variable) to a given value.\n")
+{
+    if (args.ArgC() != 3) {
+        return console->Print(svar_set.ThisPtr()->m_pszHelpString);
+    }
+
+    g_svars[std::string(args[1])] = args[2];
+}
+
 struct Condition {
     enum {
         ORANGE,
@@ -20,6 +31,7 @@ struct Condition {
         NOT,
         AND,
         OR,
+        SVAR,
     } type;
 
     union {
@@ -28,6 +40,9 @@ struct Condition {
         struct {
             Condition *binop_l, *binop_r;
         };
+        struct {
+            char *var, *val;
+        } svar;
     };
 };
 
@@ -36,6 +51,10 @@ static void FreeCondition(Condition *c) {
     case Condition::MAP:
     case Condition::PREV_MAP:
         free(c->map);
+        break;
+    case Condition::SVAR:
+        free(c->svar.var);
+        free(c->svar.val);
         break;
     case Condition::NOT:
         FreeCondition(c->unop_cond);
@@ -52,6 +71,12 @@ static void FreeCondition(Condition *c) {
     free(c);
 }
 
+static std::string GetSvar(std::string name) {
+    auto it = g_svars.find(name);
+    if (it == g_svars.end()) return "";
+    return it->second;
+}
+
 static bool EvalCondition(Condition *c) {
     switch (c->type) {
     case Condition::ORANGE: return engine->IsOrange();
@@ -63,6 +88,7 @@ static bool EvalCondition(Condition *c) {
     case Condition::NOT: return !EvalCondition(c->unop_cond);
     case Condition::AND: return EvalCondition(c->binop_l) && EvalCondition(c->binop_r);
     case Condition::OR: return EvalCondition(c->binop_l) || EvalCondition(c->binop_r);
+    case Condition::SVAR: return GetSvar({ c->svar.var }) == c->svar.val;
     }
     return false;
 }
@@ -198,12 +224,11 @@ static Condition *ParseCondition(std::queue<Token> toks) {
                 c->type = Condition::CM;
             } else if (t.len == 8 && !strncmp(t.str, "same_map", t.len)) {
                 c->type = Condition::SAME_MAP;
-            } else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len)) {
-                bool is_prev_map = t.len == 8;
+            } else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len) || t.len > 4 && !strncmp(t.str, "var:", 4)) {
+                bool is_var = !strncmp(t.str, "var:", 4);
 
                 if (toks.front().type != TOK_EQUALS) {
-                    if (is_prev_map) console->Print("Expected = after 'prev_map'\n");
-                    else console->Print("Expected = after 'map'\n");
+                    console->Print("Expected = after '%*s'\n", t.len, t.str);
                     CLEAR_OUT_STACK;
                     return NULL;
                 }
@@ -214,16 +239,25 @@ static Condition *ParseCondition(std::queue<Token> toks) {
                 toks.pop();
 
                 if (map_tok.type != TOK_STR) {
-                    if (is_prev_map) console->Print("Expected string token after 'prev_map='\n");
-                    else console->Print("Expected string token after 'map='\n");
+                    console->Print("Expected string token after '%*s='\n", t.len, t.str);
                     CLEAR_OUT_STACK;
                     return NULL;
                 }
 
-                c->type = is_prev_map ? Condition::PREV_MAP : Condition::MAP;
-                c->map = (char *)malloc(map_tok.len + 1);
-                strncpy(c->map, map_tok.str, map_tok.len);
-                c->map[map_tok.len] = 0; // Null terminator
+                if (is_var) {
+                    c->type = Condition::SVAR;
+                    c->svar.var = (char *)malloc(t.len - 4 + 1);
+                    strncpy(c->svar.var, t.str + 4, t.len - 4);
+                    c->svar.var[t.len - 4] = 0; // Null terminator
+                    c->svar.val = (char *)malloc(map_tok.len + 1);
+                    strncpy(c->svar.val, map_tok.str, map_tok.len);
+                    c->svar.val[map_tok.len] = 0; // Null terminator
+                } else {
+                    c->type = t.len == 8 ? Condition::PREV_MAP : Condition::MAP;
+                    c->map = (char *)malloc(map_tok.len + 1);
+                    strncpy(c->map, map_tok.str, map_tok.len);
+                    c->map[map_tok.len] = 0; // Null terminator
+                }
             } else {
                 console->Print("Bad token '%.*s'\n", t.len, t.str);
                 CLEAR_OUT_STACK;
