@@ -23,6 +23,7 @@ REDECL(EngineDemoRecorder::StartRecording);
 REDECL(EngineDemoRecorder::StopRecording);
 REDECL(EngineDemoRecorder::RecordCustomData);
 REDECL(EngineDemoRecorder::stop_callback);
+REDECL(EngineDemoRecorder::record_callback);
 
 int EngineDemoRecorder::GetTick()
 {
@@ -201,6 +202,32 @@ DETOUR_COMMAND(EngineDemoRecorder::stop)
     engine->demorecorder->requestedStop = false;
 }
 
+Variable sar_record_prefix("sar_record_prefix", "", "A string to prepend to recorded demo names. Can include strftime format codes.\n", 0);
+
+DETOUR_COMMAND(EngineDemoRecorder::record)
+{
+    if (sar_record_prefix.GetString()[0]) {
+        time_t t = time(nullptr);
+        struct tm *tm = localtime(&t);
+        size_t fmtlen = 4 * strlen(sar_record_prefix.GetString()) + 1;
+        size_t len = fmtlen + strlen(args[1]);
+        char *buf = new char[len];
+        if (strftime(buf, fmtlen, sar_record_prefix.GetString(), tm)) {
+            strcat(buf, args[1]);
+            CCommand newArgs = args;
+            newArgs.m_ppArgv[1] = buf;
+            EngineDemoRecorder::record_callback(newArgs);
+        } else {
+            console->Print("failed to add sar_record_prefix\n");
+            EngineDemoRecorder::record_callback(args);
+        }
+        delete[] buf;
+        return;
+    }
+
+    EngineDemoRecorder::record_callback(args);
+}
+
 bool EngineDemoRecorder::Init()
 {
     auto disconnect = engine->cl->Original(Offsets::Disconnect);
@@ -220,6 +247,7 @@ bool EngineDemoRecorder::Init()
     }
 
     Command::Hook("stop", EngineDemoRecorder::stop_callback_hook, EngineDemoRecorder::stop_callback);
+    Command::Hook("record", EngineDemoRecorder::record_callback_hook, EngineDemoRecorder::record_callback);
 
     return this->hasLoaded = this->s_ClientDemoRecorder;
 }
@@ -227,6 +255,7 @@ void EngineDemoRecorder::Shutdown()
 {
     Interface::Delete(this->s_ClientDemoRecorder);
     Command::Unhook("stop", EngineDemoRecorder::stop_callback);
+    Command::Unhook("record", EngineDemoRecorder::record_callback);
 }
 void EngineDemoRecorder::RecordData(const void* data, unsigned long length)
 {
