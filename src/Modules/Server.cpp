@@ -477,7 +477,7 @@ DETOUR(Server::GameFrame, bool simulating)
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
-    Event::Trigger(Event::TICK);
+    Event::Trigger<Event::TICK>({});
 
     if (simulating) {
         SpeedrunTimer::TickRules();

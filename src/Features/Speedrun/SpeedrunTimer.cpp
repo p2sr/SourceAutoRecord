@@ -544,7 +544,7 @@ void SpeedrunTimer::OnLoad()
 }
 
 ON_INIT {
-    Event::RegisterCallback(Event::SESSION_START, []() {
+    Event::RegisterCallback<Event::SESSION_START>([](Event::EventData<Event::SESSION_START>) {
         if (!engine->IsCoop() || (server->GetChallengeStatus() == CMStatus::CHALLENGE && !engine->IsOrange())) {
             if (!engine->IsOrange()) {
                 SpeedrunTimer::Resume();

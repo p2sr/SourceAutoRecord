@@ -94,7 +94,7 @@ void Session::Start()
     this->Rebase(tick);
     timer->Rebase(tick);
 
-    Event::Trigger(Event::SESSION_START);
+    Event::Trigger<Event::SESSION_START>({});
 
     if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
         if (engine->demorecorder->isRecordingDemo) {

@@ -10,9 +10,9 @@
 #define ON_INIT _ON_INIT(__COUNTER__)
 
 #define _ON_EVENT1(ev, x, pri) \
-    static void _sar_event_fn_##x(); \
-    ON_INIT { Event::RegisterCallback(Event::ev, &_sar_event_fn_##x, pri); } \
-    static void _sar_event_fn_##x()
+    static void _sar_event_fn_##x(Event::EventData<Event::ev> data); \
+    ON_INIT { Event::RegisterCallback<Event::ev>(&_sar_event_fn_##x, pri); } \
+    static void _sar_event_fn_##x(Event::EventData<Event::ev> data)
 #define _ON_EVENT(ev, x, pri) _ON_EVENT1(ev, x, pri)
 #define ON_EVENT(ev) _ON_EVENT(ev, __COUNTER__, 0)
 #define ON_EVENT_P(ev, pri) _ON_EVENT(ev, __COUNTER__, pri)
@@ -26,7 +26,6 @@ public:
     static void RunAll();
 };
 
-
 namespace Event {
     enum EventType {
         SESSION_START,
@@ -36,6 +35,32 @@ namespace Event {
         TICK,
     };
 
-    void Trigger(Event::EventType e);
-    void RegisterCallback(Event::EventType e, std::function<void()> cb, int32_t priority = 0);
+    template <EventType E> struct EventData { };
+
+    template <EventType E> struct _EventReg {
+        std::function<void(EventData<E>)> cb;
+        int32_t priority;
+    };
+
+    template <EventType E> std::vector<_EventReg<E>> _g_eventCallbacks;
+
+    template <EventType E> void Trigger(EventData<E> data) {
+        for (auto &cb : _g_eventCallbacks<E>) {
+            cb.cb(data);
+        }
+    }
+
+    template <EventType E> void RegisterCallback(std::function<void(EventData<E>)> cb, int32_t priority = 0) {
+        _EventReg<E> reg{ cb, priority };
+
+        auto &vec = _g_eventCallbacks<E>;
+
+        auto vit = vec.begin();
+        while (vit != vec.end()) {
+            if (vit->priority <= priority) break;
+            ++vit;
+        }
+
+        vec.insert(vit, reg);
+    }
 }

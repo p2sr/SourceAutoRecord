@@ -171,7 +171,7 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
             engine->demoplayer->levelName = demo.mapName;
             Renderer::demoStart = demo.firstPositivePacketTick;
             Renderer::segmentEndTick = demo.segmentTicks;
-            Event::Trigger(Event::DEMO_START);
+            Event::Trigger<Event::DEMO_START>({});
         } else {
             console->Print("Could not parse \"%s\"!\n", engine->demoplayer->DemoName);
         }
@@ -189,7 +189,7 @@ DETOUR(EngineDemoPlayer::StopPlayback)
 {
     if (engine->demoplayer->IsPlaying()) {
         Renderer::OnDemoEnd();
-        Event::Trigger(Event::DEMO_STOP);
+        Event::Trigger<Event::DEMO_STOP>({});
     }
     return EngineDemoPlayer::StopPlayback(thisptr);
 }

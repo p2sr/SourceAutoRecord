@@ -148,7 +148,7 @@ int Engine::PointToScreen(const Vector& point, Vector& screen)
 }
 void Engine::SafeUnload(const char* postCommand)
 {
-    Event::Trigger(Event::SAR_UNLOAD);
+    Event::Trigger<Event::SAR_UNLOAD>({});
 
     // The exit command will handle everything
     this->ExecuteCommand("sar_exit");
