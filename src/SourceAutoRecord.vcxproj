@@ -132,6 +132,7 @@
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="Checksum.cpp" />
     <ClCompile Include="Command.cpp" />
+    <ClCompile Include="Events.cpp" />
     <ClCompile Include="Features\ClassDumper.cpp" />
     <ClCompile Include="Features\Config.cpp" />
     <ClCompile Include="Features\Cvars.cpp" />
@@ -298,6 +299,7 @@
     <ClInclude Include="CrashHandler.hpp" />
     <ClInclude Include="Checksum.hpp" />
     <ClInclude Include="Command.hpp" />
+    <ClInclude Include="Events.hpp" />
     <ClInclude Include="Features.hpp" />
     <ClInclude Include="Features\ClassDumper.hpp" />
     <ClInclude Include="Features\Config.hpp" />

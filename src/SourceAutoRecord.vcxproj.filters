@@ -205,6 +205,9 @@
     <ClCompile Include="Command.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
+    <ClCompile Include="Events.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
     <ClCompile Include="Game.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
@@ -553,6 +556,9 @@
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Command.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Events.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Game.hpp">
