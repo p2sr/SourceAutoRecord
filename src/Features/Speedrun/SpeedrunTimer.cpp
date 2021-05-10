@@ -14,6 +14,7 @@
 #include "Features/Hud/Toasts.hpp"
 #include "Features/Session.hpp"
 #include "Utils.hpp"
+#include "Events.hpp"
 
 #define SPEEDRUN_PACKET_TYPE "srtimer"
 #define SYNC_INTERVAL 60 // Sync every second, just in case
@@ -540,6 +541,18 @@ void SpeedrunTimer::OnLoad()
     } else if (sar_speedrun_start_on_load.GetInt() == 1 && !SpeedrunTimer::IsRunning()) {
         SpeedrunTimer::Start();
     }
+}
+
+ON_INIT {
+    Events::RegisterCallback(Event::SESSION_START, []() {
+        if (!engine->IsCoop() || (server->GetChallengeStatus() == CMStatus::CHALLENGE && !engine->IsOrange())) {
+            if (!engine->IsOrange()) {
+                SpeedrunTimer::Resume();
+            }
+
+            SpeedrunTimer::OnLoad();
+        }
+    });
 }
 
 // Time formatting {{{

@@ -21,6 +21,7 @@
 #include "Features/SegmentedTools.hpp"
 #include "Features/ConfigPlus.hpp"
 #include "Features/NetMessage.hpp"
+#include "Events.hpp"
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -93,11 +94,7 @@ void Session::Start()
     this->Rebase(tick);
     timer->Rebase(tick);
 
-    RunLoadExecs();
-
-    if (!engine->IsCoop() || (server->GetChallengeStatus() == CMStatus::CHALLENGE && !engine->IsOrange())) {
-        SpeedrunTimer::Resume();
-    }
+    Events::Trigger(Event::SESSION_START);
 
     if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
         if (engine->demorecorder->isRecordingDemo) {
@@ -141,10 +138,6 @@ void Session::Start()
                 replayPlayer1->StartPlaying(replay);
             }
         }
-    }
-
-    if (!engine->IsCoop() || server->GetChallengeStatus() == CMStatus::CHALLENGE) {
-        SpeedrunTimer::OnLoad();
     }
 
     //Network Ghosts

@@ -7,6 +7,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Features/Session.hpp"
+#include "Events.hpp"
 
 struct Condition {
     enum {
@@ -469,4 +470,8 @@ CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, 
 
     engine->ExecuteCommand(Utils::ssprintf("alias \"%s\" sar_alias_run \"%s\"", args[1], args[1]).c_str());
     g_aliases[std::string(args[1])] = cmd;
+}
+
+ON_INIT {
+    Events::RegisterCallback(Event::SESSION_START, &RunLoadExecs, 1000000);
 }
