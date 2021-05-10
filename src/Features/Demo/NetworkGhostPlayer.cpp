@@ -11,6 +11,8 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Hud/Toasts.hpp"
 
+#include "Event.hpp"
+
 #include <functional>
 #include <queue>
 
@@ -659,11 +661,22 @@ void NetworkManager::DrawNames(HudContext* ctx)
     }
 }
 
-void NetworkManager::DispatchQueuedEvents()
+ON_EVENT(TICK)
 {
     while (!g_scheduledEvents.empty()) {
         g_scheduledEvents.front()(); // Dispatch event
         g_scheduledEvents.pop();
+    }
+}
+
+ON_EVENT(TICK)
+{
+    if (networkManager.isConnected && engine->isRunning()) {
+        networkManager.UpdateGhostsPosition();
+
+        if (networkManager.isCountdownReady) {
+            networkManager.UpdateCountdown();
+        }
     }
 }
 

@@ -3,6 +3,7 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
+#include "Event.hpp"
 
 Variable wait_persist_across_loads("wait_persist_across_loads", "0", 0, 1, "Whether pending commands should be carried across loads (1) or just be dropped (0).\n");
 
@@ -39,3 +40,15 @@ void wait_callback(const CCommand& args)
     engine->hasWaited = false;
 }
 Command waitCmd = Command("wait", wait_callback, "wait <tick> <commands>. Wait for the amount of tick specified.\n");
+
+ON_EVENT(TICK) {
+    if (event.tick >= segmentedTools->waitTick && !engine->hasWaited) {
+        if (!sv_cheats.GetBool()) {
+            console->Print("\"wait\" needs sv_cheats 1.\n");
+            engine->hasWaited = true;
+        } else {
+            engine->hasWaited = true;
+            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
+        }
+    }
+}

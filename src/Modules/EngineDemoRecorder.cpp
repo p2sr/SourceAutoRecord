@@ -288,3 +288,13 @@ ON_EVENT(TICK) {
         engine->demorecorder->hasNotified = true;
     }
 }
+
+ON_EVENT(TICK) {
+    if (!engine->demoplayer->IsPlaying()) {
+        if (sar_record_at.GetInt() != -1 && !engine->hasRecorded && event.tick >= sar_record_at.GetInt()) {
+            std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
+            engine->ExecuteCommand(cmd.c_str(), true);
+            engine->hasRecorded = true;
+        }
+    }
+}

@@ -242,57 +242,26 @@ bool Engine::TraceFromCamera(float distMax, CGameTrace& tr)
     return this->Trace(camPos, angle, distMax, filter, tr);
 }
 
-void Engine::NewTick(const int tick)
-{
-    //sar_record
-
-    if (sar_record_at.GetFloat() != -1 && !engine->hasRecorded && sar_record_at.GetFloat() == tick) {
-        std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
-        engine->ExecuteCommand(cmd.c_str(), true);
-        engine->hasRecorded = true;
-    }
-
-    //sar_pause
-
-    if (sar_pause_at.GetInt() != -1 && !engine->demoplayer->IsPlaying()) {
-        if (!engine->hasPaused && sar_pause_at.GetInt() == tick) {
-            engine->ExecuteCommand("pause", true);
-            engine->hasPaused = true;
-            engine->isPausing = true;
-            engine->pauseTick = server->tickCount;
-        } else if (sar_pause_for.GetInt() > 0 && engine->isPausing && server->tickCount == sar_pause_for.GetInt() + engine->pauseTick) {
-            engine->ExecuteCommand("unpause", true);
-            engine->isPausing = false;
+ON_EVENT(TICK) {
+    if (!engine->demoplayer->IsPlaying()) {
+        if (sar_pause_at.GetInt() != -1) {
+            if (!engine->hasPaused && event.tick >= sar_pause_at.GetInt()) {
+                engine->ExecuteCommand("pause", true);
+                engine->hasPaused = true;
+                engine->isPausing = true;
+                engine->pauseTick = server->tickCount;
+            } else if (sar_pause_for.GetInt() > 0 && engine->isPausing && server->tickCount >= sar_pause_for.GetInt() + engine->pauseTick) {
+                engine->ExecuteCommand("unpause", true);
+                engine->isPausing = false;
+            }
         }
     }
+}
 
-    if (engine->shouldPauseForSync && tick >= 0) {
+ON_EVENT(TICK) {
+    if (engine->shouldPauseForSync && event.tick >= 0) {
         engine->ExecuteCommand("pause", true);
         engine->shouldPauseForSync = false;
-    }
-
-    if (segmentedTools->waitTick == tick && !engine->hasWaited) {
-        if (!sv_cheats.GetBool()) {
-            console->Print("\"wait\" needs sv_cheats 1.\n");
-            engine->hasWaited = true;
-        } else {
-            engine->hasWaited = true;
-            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
-        }
-    }
-
-    networkManager.DispatchQueuedEvents();
-
-    if (networkManager.isConnected && engine->isRunning()) {
-        networkManager.UpdateGhostsPosition();
-
-        if (networkManager.isCountdownReady) {
-            networkManager.UpdateCountdown();
-        }
-    }
-
-    if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
-        demoGhostPlayer.UpdateGhostsPosition();
     }
 }
 
@@ -338,7 +307,7 @@ DETOUR(Engine::Frame)
     }
 
     if ((engine->demoplayer->IsPlaying() || engine->IsOrange()) && engine->lastTick != session->GetTick()) {
-        engine->NewTick(session->GetTick());
+        Event::Trigger<Event::TICK>({ false, session->GetTick() });
     }
 
     //demoplayer

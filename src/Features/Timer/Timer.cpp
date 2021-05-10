@@ -197,6 +197,10 @@ HUD_ELEMENT2(cps, "0", "Draws latest checkpoint of timer.\n", HudType_InGame | H
 }
 
 ON_EVENT(TICK) {
+    if (engine->IsOrange() || engine->demoplayer->IsPlaying()) {
+        return;
+    }
+
     if (session->isRunning && pauseTimer->IsActive() && timer->isRunning && sar_timer_time_pauses.GetBool()) {
         ++timer->totalTicks;
     }

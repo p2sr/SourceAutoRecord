@@ -4,6 +4,7 @@
 #include "Modules/Engine.hpp"
 
 #include "Utils.hpp"
+#include "Event.hpp"
 
 #include "Features/Demo/Demo.hpp"
 #include "Features/Demo/DemoParser.hpp"
@@ -325,5 +326,11 @@ CON_COMMAND(ghost_offset, "ghost_offset <offset> <ID>. Delay the ghost start by 
         console->Print("Final time of ghost %d : %s\n", ID, SpeedrunTimer::Format(demoGhostPlayer.GetGhostByID(ID)->GetTotalTime()).c_str());
     } else {
         return console->Print("No ghost with that ID\n");
+    }
+}
+
+ON_EVENT(TICK) {
+    if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
+        demoGhostPlayer.UpdateGhostsPosition();
     }
 }

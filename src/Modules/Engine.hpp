@@ -145,7 +145,6 @@ public:
     void RecordDemoData(void* data, size_t len);
     bool Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr);
     bool TraceFromCamera(float distMax, CGameTrace& tr);
-    void NewTick(const int tick);
     bool ConsoleVisible();
 
     // CClientState::Disconnect

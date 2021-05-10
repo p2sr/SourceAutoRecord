@@ -36,7 +36,7 @@ namespace Event {
     };
 
     template <EventType E> struct EventData { };
-    template <> struct EventData<TICK> { bool simulating; };
+    template <> struct EventData<TICK> { bool simulating; int tick; };
 
     template <EventType E> struct _EventReg {
         std::function<void(EventData<E>)> cb;

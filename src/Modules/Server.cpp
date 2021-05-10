@@ -456,16 +456,13 @@ DETOUR(Server::GameFrame, bool simulating)
 {
     if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
 
-    if (session->isRunning)
-        engine->NewTick(session->GetTick());
-
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
-    Event::Trigger<Event::TICK>({ simulating });
+    Event::Trigger<Event::TICK>({ simulating, session->GetTick() });
 
     if ((session->isRunning && session->GetTick() == 16) || fovChanger->needToUpdate) {
         fovChanger->Force();
