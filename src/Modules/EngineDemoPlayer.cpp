@@ -187,7 +187,6 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 DETOUR(EngineDemoPlayer::StopPlayback)
 {
     if (engine->demoplayer->IsPlaying()) {
-        Renderer::OnDemoEnd();
         Event::Trigger<Event::DEMO_STOP>({});
     }
     return EngineDemoPlayer::StopPlayback(thisptr);

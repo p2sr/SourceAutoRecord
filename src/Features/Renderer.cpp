@@ -4,6 +4,7 @@
 #include "Utils/SDK.hpp"
 #include "Modules/Server.hpp"
 #include "Hook.hpp"
+#include "Event.hpp"
 #include <string>
 #include <cstdint>
 #include <cstdio>
@@ -1050,7 +1051,7 @@ void Renderer::Frame()
 
 // }}}
 
-void Renderer::OnDemoEnd()
+ON_EVENT(DEMO_STOP)
 {
     if (g_render.isRendering.load() && sar_render_autostop.GetBool()) {
         msgStopRender(false);
