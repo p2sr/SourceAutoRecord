@@ -47,7 +47,7 @@ HUD_ELEMENT(pause_timer, "0", "Draws current value of pause timer.\n", HudType_I
     ctx->DrawElement("pause: %i (%.3f)", tick, time);
 }
 
-ON_EVENT(TICK) {
+ON_EVENT(PRE_TICK) {
     if (engine->IsOrange() || engine->demoplayer->IsPlaying()) {
         return;
     }

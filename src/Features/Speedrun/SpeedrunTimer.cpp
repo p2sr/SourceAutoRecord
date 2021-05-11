@@ -112,6 +112,9 @@ static struct
     std::string lastMap;
 } g_speedrun;
 
+static std::map<std::string, int> g_activeRun;
+static std::vector<std::map<std::string, int>> g_runs;
+
 static void handleCoopPacket(void *data, size_t size);
 
 void SpeedrunTimer::Init()
@@ -355,7 +358,7 @@ void SpeedrunTimer::Update()
     g_timerInterface->total = SpeedrunTimer::GetTotalTicks();
 }
 
-ON_EVENT(TICK)
+ON_EVENT(PRE_TICK)
 {
     if (!session->isRunning || !pauseTimer->IsActive()) {
         return;
@@ -445,6 +448,8 @@ void SpeedrunTimer::Stop(std::string segName)
 
     SpeedrunTimer::Split(true, segName, false);
 
+    g_runs.push_back(g_activeRun);
+
     setTimerAction(TimerAction::END);
 
     g_speedrun.isRunning = false;
@@ -480,6 +485,8 @@ void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested)
             ticks,
         });
 
+        g_activeRun[segName] = ticks;
+
         g_speedrun.currentSplit.clear();
     }
 
@@ -502,6 +509,12 @@ void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested)
 void SpeedrunTimer::Reset(bool requested)
 {
     SpeedrunTimer::ResetCategory();
+
+    if (g_speedrun.isRunning) {
+        g_runs.push_back(g_activeRun);
+    }
+
+    g_activeRun.clear();
 
     g_speedrun.isRunning = false;
     g_speedrun.isPaused = false;
@@ -558,7 +571,7 @@ ON_EVENT(SESSION_START) {
     }
 }
 
-ON_EVENT(TICK) {
+ON_EVENT(POST_TICK) {
     if (event.simulating) {
         SpeedrunTimer::TickRules();
     }
@@ -735,4 +748,83 @@ CON_COMMAND(sar_speedrun_export, "sar_speedrun_export <filename> - export the sp
     fclose(f);
 
     console->Print("Speedrun successfully exported to '%s'!\n", filename.c_str());
+}
+
+CON_COMMAND(sar_speedrun_export_all, "sar_speedrun_export_all <filename> - export the results of many speedruns to the specified CSV file.\n")
+{
+    // TODO: this kinda isn't good, and should probably be revamped when the
+    // speedrun system is modified to track all splits.
+
+    if (args.ArgC() != 2) {
+        return console->Print(sar_speedrun_export_all.ThisPtr()->m_pszHelpString);
+    }
+
+    if (SpeedrunTimer::IsRunning()) {
+        console->Print("Note: incomplete speedruns are not included in the export\n");
+    }
+
+    if (g_runs.size() == 0) {
+        return console->Print("No completed runs to export!\n");
+    }
+
+    std::vector<std::string> header;
+    for (std::string ruleName : SpeedrunTimer::GetCategoryRules()) {
+        auto rule = SpeedrunTimer::GetRule(ruleName);
+        if (!rule) continue;
+        if (rule->action != RuleAction::SPLIT && rule->action != RuleAction::STOP) continue;
+        header.push_back(ruleName);
+    }
+
+    std::string filename = args[1];
+    if (filename.length() < 4 || filename.substr(filename.length() - 4, 4) != ".csv") {
+        filename += ".csv";
+    }
+
+    FILE *f = fopen(filename.c_str(), "w");
+    if (!f) {
+        console->Print("Could not open file '%s'\n", filename.c_str());
+        return;
+    }
+
+    // I'll give in and do Microsoft's stupid thing only on the platform
+    // where people are probably using Excel.
+#ifdef _WIN32
+    fputs(MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD "\n", f);
+#endif
+
+    for (size_t i = 0; i < header.size(); ++i) {
+        if (i != 0) fputc(',', f);
+        fputs(header[i].c_str(), f);
+    }
+
+    fputc('\n', f);
+
+    for (auto &run : g_runs) {
+        int total = 0;
+        for (size_t i = 0; i < header.size(); ++i) {
+            if (i != 0) fputc(',', f);
+            auto it = run.find(header[i]);
+            if (it != run.end()) {
+                int ticks = it->second;
+                total += ticks;
+                auto fmtdTicks = SpeedrunTimer::Format(ticks * *engine->interval_per_tick);
+                auto fmtdTotal = SpeedrunTimer::Format(total * *engine->interval_per_tick);
+                fprintf(f, "%s (%s)", fmtdTotal.c_str(), fmtdTicks.c_str());
+            }
+        }
+        fputc('\n', f);
+    }
+
+    fclose(f);
+
+    console->Print("Speedruns successfully exported to '%s'!\n", filename.c_str());
+}
+
+void SpeedrunTimer::CategoryChanged() {
+    g_runs.clear();
+}
+
+CON_COMMAND(sar_speedrun_reset_export, "sar_speedrun_reset_export - reset the log of complete and incomplete runs to be exported.\n")
+{
+    g_runs.clear();
 }

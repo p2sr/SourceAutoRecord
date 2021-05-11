@@ -26,6 +26,7 @@ namespace SpeedrunTimer {
     bool CreateCategory(std::string name);
     bool AddRuleToCategory(std::string category, std::string rule);
     bool CreateRule(std::string name, std::string type, std::map<std::string, std::string> params);
+    std::vector<std::string> GetCategoryRules();
 };
 
 extern Command sar_speedrun_category;

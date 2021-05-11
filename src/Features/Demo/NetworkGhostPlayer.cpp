@@ -661,7 +661,7 @@ void NetworkManager::DrawNames(HudContext* ctx)
     }
 }
 
-ON_EVENT(TICK)
+ON_EVENT(PRE_TICK)
 {
     while (!g_scheduledEvents.empty()) {
         g_scheduledEvents.front()(); // Dispatch event
@@ -669,7 +669,7 @@ ON_EVENT(TICK)
     }
 }
 
-ON_EVENT(TICK)
+ON_EVENT(PRE_TICK)
 {
     if (networkManager.isConnected && engine->isRunning()) {
         networkManager.UpdateGhostsPosition();

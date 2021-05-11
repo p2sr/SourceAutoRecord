@@ -268,7 +268,7 @@ CON_COMMAND(sar_speedrun_cc_finish, "sar_speedrun_cc_finish - finish the categor
     g_placementOptions = {};
 }
 
-ON_EVENT(TICK) {
+ON_EVENT(PRE_TICK) {
     if (!sv_cheats.GetBool()) {
         return;
     }

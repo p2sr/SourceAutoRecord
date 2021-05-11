@@ -281,7 +281,7 @@ void EngineDemoRecorder::RecordData(const void* data, unsigned long length)
     free(buf);
 }
 
-ON_EVENT(TICK) {
+ON_EVENT(PRE_TICK) {
     if (event.simulating && !engine->demorecorder->hasNotified && engine->demorecorder->m_bRecording) {
         const char *cmd = "echo SAR " SAR_VERSION " (Built " SAR_BUILT ")";
         engine->SendToCommandBuffer(cmd, 300);
@@ -289,7 +289,7 @@ ON_EVENT(TICK) {
     }
 }
 
-ON_EVENT(TICK) {
+ON_EVENT(PRE_TICK) {
     if (!engine->demoplayer->IsPlaying()) {
         if (sar_record_at.GetInt() != -1 && !engine->hasRecorded && event.tick >= sar_record_at.GetInt()) {
             std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();

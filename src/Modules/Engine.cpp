@@ -242,7 +242,7 @@ bool Engine::TraceFromCamera(float distMax, CGameTrace& tr)
     return this->Trace(camPos, angle, distMax, filter, tr);
 }
 
-ON_EVENT(TICK) {
+ON_EVENT(PRE_TICK) {
     if (!engine->demoplayer->IsPlaying()) {
         if (sar_pause_at.GetInt() != -1) {
             if (!engine->hasPaused && event.tick >= sar_pause_at.GetInt()) {
@@ -258,7 +258,7 @@ ON_EVENT(TICK) {
     }
 }
 
-ON_EVENT(TICK) {
+ON_EVENT(PRE_TICK) {
     if (engine->shouldPauseForSync && event.tick >= 0) {
         engine->ExecuteCommand("pause", true);
         engine->shouldPauseForSync = false;
@@ -307,7 +307,8 @@ DETOUR(Engine::Frame)
     }
 
     if ((engine->demoplayer->IsPlaying() || engine->IsOrange()) && engine->lastTick != session->GetTick()) {
-        Event::Trigger<Event::TICK>({ false, session->GetTick() });
+        Event::Trigger<Event::PRE_TICK>({ false, session->GetTick() });
+        Event::Trigger<Event::POST_TICK>({ false, session->GetTick() });
     }
 
     //demoplayer

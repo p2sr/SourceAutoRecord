@@ -168,6 +168,11 @@ SpeedrunRule *SpeedrunTimer::GetRule(std::string name)
     return &search->second;
 }
 
+std::vector<std::string> SpeedrunTimer::GetCategoryRules()
+{
+    return g_categories[g_currentCategory].rules;
+}
+
 void SpeedrunTimer::ResetCategory()
 {
     for (std::string ruleName : g_categories[g_currentCategory].rules) {
@@ -177,7 +182,7 @@ void SpeedrunTimer::ResetCategory()
     }
 }
 
-ON_EVENT(TICK) {
+ON_EVENT(PRE_TICK) {
     const int drawDelta = 30;
     static int lastDrawTick = -1000;
 
@@ -287,7 +292,11 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_category, "sar_speedrun_category [category
         if (!lookupMap(g_categories, args[1])) {
             console->Print("Category %s does not exist!\n", args[1]);
         } else {
-            g_currentCategory = args[1];
+            bool same = g_currentCategory == args[1];
+            if (!same) {
+                g_currentCategory = args[1];
+                SpeedrunTimer::CategoryChanged();
+            }
             console->Print("Using category '%s'\n", g_currentCategory.c_str());
             return;
         }
@@ -593,4 +602,5 @@ CON_COMMAND(sar_speedrun_reset_categories, "sar_speedrun_reset_categories - dele
     }
 
     SpeedrunTimer::InitCategories();
+    SpeedrunTimer::CategoryChanged();
 }

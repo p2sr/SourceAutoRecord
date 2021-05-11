@@ -32,11 +32,13 @@ namespace Event {
         SAR_UNLOAD,
         DEMO_START,
         DEMO_STOP,
-        TICK,
+        PRE_TICK,
+        POST_TICK,
     };
 
     template <EventType E> struct EventData { };
-    template <> struct EventData<TICK> { bool simulating; int tick; };
+    template <> struct EventData<PRE_TICK> { bool simulating; int tick; };
+    template <> struct EventData<POST_TICK> { bool simulating; int tick; };
 
     template <EventType E> struct _EventReg {
         std::function<void(EventData<E>)> cb;

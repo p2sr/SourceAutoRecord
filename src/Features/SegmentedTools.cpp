@@ -41,7 +41,7 @@ void wait_callback(const CCommand& args)
 }
 Command waitCmd = Command("wait", wait_callback, "wait <tick> <commands>. Wait for the amount of tick specified.\n");
 
-ON_EVENT(TICK) {
+ON_EVENT(PRE_TICK) {
     if (event.tick >= segmentedTools->waitTick && !engine->hasWaited) {
         if (!sv_cheats.GetBool()) {
             console->Print("\"wait\" needs sv_cheats 1.\n");

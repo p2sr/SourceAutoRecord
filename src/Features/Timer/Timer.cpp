@@ -196,7 +196,7 @@ HUD_ELEMENT2(cps, "0", "Draws latest checkpoint of timer.\n", HudType_InGame | H
     ctx->DrawElement("last cp: %i (%.3f)", timer->cps->latestTick, timer->cps->latestTime);
 }
 
-ON_EVENT(TICK) {
+ON_EVENT(PRE_TICK) {
     if (engine->IsOrange() || engine->demoplayer->IsPlaying()) {
         return;
     }

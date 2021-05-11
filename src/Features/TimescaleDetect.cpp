@@ -26,7 +26,7 @@ TimescaleDetect::TimescaleDetect()
     this->startTick = -1;
 }
 
-ON_EVENT(TICK)
+ON_EVENT(PRE_TICK)
 {
     if (!event.simulating) {
         timescaleDetect->Cancel();

@@ -456,13 +456,17 @@ DETOUR(Server::GameFrame, bool simulating)
 {
     if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
 
-    Event::Trigger<Event::TICK>({ simulating, session->GetTick() });
+    int tick = session->GetTick();
+
+    Event::Trigger<Event::PRE_TICK>({ simulating, tick });
 
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
+
+    Event::Trigger<Event::POST_TICK>({ simulating, tick });
 
     ++server->tickCount;
 
