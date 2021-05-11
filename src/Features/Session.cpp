@@ -95,88 +95,11 @@ void Session::Start()
 
     Event::Trigger<Event::SESSION_START>({});
 
-    if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
-        if (engine->demorecorder->isRecordingDemo) {
-            rebinder->UpdateIndex(*engine->demorecorder->m_nDemoNumber);
-        } else {
-            rebinder->UpdateIndex(rebinder->lastIndexNumber + 1);
-        }
-
-        rebinder->RebindSave();
-        rebinder->RebindReload();
-    }
-
-    if (sar_tas_autostart.GetBool()) {
-        cmdQueuer->Start();
-    }
-
-    if (sar_replay_mode.GetBool()) {
-        if (sar_replay_mode.GetInt() == 1) {
-            replayProvider->CreateNewReplay();
-            replayRecorder1->StartRecording();
-
-            if (replayProvider->GetCurrentReplay()->GetViewSize() > 1) {
-                replayRecorder2->StartRecording();
-            }
-        } else if (replayProvider->AnyReplaysLoaded()) {
-            auto replay = replayProvider->GetCurrentReplay();
-            replayPlayer1->StartPlaying(replay);
-
-            if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
-                replayPlayer2->StartPlaying(replay);
-            }
-        }
-    } else if (sar_replay_viewmode.isRegistered && sar_replay_viewmode.GetBool() && replayProvider->AnyReplaysLoaded()) {
-        auto replay = replayProvider->GetCurrentReplay();
-        if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
-            if (sar_replay_viewmode.GetInt() == 1) {
-                replayRecorder1->StartRecording();
-                replayPlayer2->StartPlaying(replay);
-            } else {
-                replayRecorder2->StartRecording();
-                replayPlayer1->StartPlaying(replay);
-            }
-        }
-    }
-
-    //Network Ghosts
-    if (networkManager.isConnected) {
-        networkManager.NotifyMapChange();
-        networkManager.UpdateGhostsSameMap();
-        networkManager.SpawnAllGhosts();
-        if (ghost_sync.GetBool()) {
-            if (networkManager.disableSyncForLoad) {
-                networkManager.disableSyncForLoad = false;
-            } else {
-                if (!networkManager.AreAllGhostsAheadOrSameMap() && this->previousMap != engine->GetCurrentMapName()) { //Don't pause if just reloading save
-                    engine->shouldPauseForSync = true;
-                }
-            }
-        }
-    }
-
-    //Demo ghosts
-    if (demoGhostPlayer.IsPlaying()) {
-        demoGhostPlayer.UpdateGhostsSameMap();
-        if (demoGhostPlayer.IsFullGame()) {
-            if (ghost_sync.GetBool()) {
-                demoGhostPlayer.Sync();
-            }
-        } else {
-            demoGhostPlayer.ResetAllGhosts();
-            demoGhostPlayer.ResumeAllGhosts();
-        }
-        demoGhostPlayer.SpawnAllGhosts();
-    }
-
     engine->hasRecorded = false;
     engine->hasPaused = false;
     engine->isPausing = false;
+    engine->nForcePrimaryFullscreen = 0;
     server->tickCount = 0;
-
-    stepCounter->ResetTimer();
-
-    engine->nForcePrimaryFullscreen = false;
 
     this->currentFrame = 0;
     this->isRunning = true;

@@ -3,10 +3,12 @@
 #include <string>
 
 #include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
 #include "Modules/InputSystem.hpp"
 
 #include "Command.hpp"
 #include "Variable.hpp"
+#include "Event.hpp"
 
 Variable sar_save_flag("sar_save_flag", "#SAVE#", "Echo message when using sar_bind_save.\n"
                                                   "Default is \"#SAVE#\", a SourceRuns standard.\n"
@@ -150,4 +152,18 @@ CON_COMMAND(sar_unbind_reload,
     }
 
     rebinder->ResetReloadBind();
+}
+
+ON_EVENT(SESSION_START)
+{
+    if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
+        if (engine->demorecorder->isRecordingDemo) {
+            rebinder->UpdateIndex(*engine->demorecorder->m_nDemoNumber);
+        } else {
+            rebinder->UpdateIndex(rebinder->lastIndexNumber + 1);
+        }
+
+        rebinder->RebindSave();
+        rebinder->RebindReload();
+    }
 }

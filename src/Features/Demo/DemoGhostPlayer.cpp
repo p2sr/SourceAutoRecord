@@ -334,3 +334,18 @@ ON_EVENT(TICK) {
         demoGhostPlayer.UpdateGhostsPosition();
     }
 }
+
+ON_EVENT(SESSION_START) {
+    if (demoGhostPlayer.IsPlaying()) {
+        demoGhostPlayer.UpdateGhostsSameMap();
+        if (demoGhostPlayer.IsFullGame()) {
+            if (ghost_sync.GetBool()) {
+                demoGhostPlayer.Sync();
+            }
+        } else {
+            demoGhostPlayer.ResetAllGhosts();
+            demoGhostPlayer.ResumeAllGhosts();
+        }
+        demoGhostPlayer.SpawnAllGhosts();
+    }
+}

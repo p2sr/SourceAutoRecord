@@ -12,6 +12,7 @@
 
 #include "Command.hpp"
 #include "Variable.hpp"
+#include "Event.hpp"
 
 Variable sar_replay_mode("sar_replay_mode", "0", 0,
     "Mode of replay system.\n"
@@ -475,5 +476,37 @@ CON_COMMAND(sar_replay_list, "Lists all currently imported replays.\n")
         console->Print("[%i] %s\n", index++, replay->GetSource());
         console->Msg("  -> ");
         console->Print("views: %i | frames: %i\n", replay->GetViewSize(), replay->GetFrameSize());
+    }
+}
+
+ON_EVENT(SESSION_START)
+{
+    if (sar_replay_mode.GetBool()) {
+        if (sar_replay_mode.GetInt() == 1) {
+            replayProvider->CreateNewReplay();
+            replayRecorder1->StartRecording();
+
+            if (replayProvider->GetCurrentReplay()->GetViewSize() > 1) {
+                replayRecorder2->StartRecording();
+            }
+        } else if (replayProvider->AnyReplaysLoaded()) {
+            auto replay = replayProvider->GetCurrentReplay();
+            replayPlayer1->StartPlaying(replay);
+
+            if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
+                replayPlayer2->StartPlaying(replay);
+            }
+        }
+    } else if (sar_replay_viewmode.isRegistered && sar_replay_viewmode.GetBool() && replayProvider->AnyReplaysLoaded()) {
+        auto replay = replayProvider->GetCurrentReplay();
+        if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
+            if (sar_replay_viewmode.GetInt() == 1) {
+                replayRecorder1->StartRecording();
+                replayPlayer2->StartPlaying(replay);
+            } else {
+                replayRecorder2->StartRecording();
+                replayPlayer1->StartPlaying(replay);
+            }
+        }
     }
 }

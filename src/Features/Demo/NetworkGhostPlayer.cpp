@@ -680,6 +680,24 @@ ON_EVENT(TICK)
     }
 }
 
+ON_EVENT(SESSION_START)
+{
+    if (networkManager.isConnected) {
+        networkManager.NotifyMapChange();
+        networkManager.UpdateGhostsSameMap();
+        networkManager.SpawnAllGhosts();
+        if (ghost_sync.GetBool()) {
+            if (networkManager.disableSyncForLoad) {
+                networkManager.disableSyncForLoad = false;
+            } else {
+                if (!networkManager.AreAllGhostsAheadOrSameMap() && session->previousMap != engine->GetCurrentMapName()) { //Don't pause if just reloading save
+                    engine->shouldPauseForSync = true;
+                }
+            }
+        }
+    }
+}
+
 // Commands
 
 CON_COMMAND(ghost_connect, "Connect to the server : <ip address> <port> :\n"

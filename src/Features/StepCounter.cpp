@@ -1,6 +1,7 @@
 #include "StepCounter.hpp"
 
 #include "Utils/SDK.hpp"
+#include "Event.hpp"
 
 StepCounter* stepCounter;
 
@@ -43,4 +44,9 @@ void StepCounter::Increment(int m_fFlags, int m_MoveType, Vector m_vecVelocity, 
 void StepCounter::ResetTimer()
 {
     this->stepSoundTime = 0;
+}
+
+ON_EVENT(SESSION_START)
+{
+    stepCounter->ResetTimer();
 }

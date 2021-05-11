@@ -12,6 +12,7 @@
 
 #include "Command.hpp"
 #include "Variable.hpp"
+#include "Event.hpp"
 
 Variable sar_tas_autostart("sar_tas_autostart", "1", "Starts queued commands automatically on first frame after a load.\n");
 Variable sar_tas_ss_forceuser("sar_tas_ss_forceuser", "0", "Forces engine to calculate movement for every splitescreen client.\n");
@@ -304,4 +305,11 @@ CON_COMMAND(sar_tas_frame_after_for,
 
     cmdQueuer->AddFrame(std::atoi(args[1]), std::string(args[3]), true);
     cmdQueuer->AddFrame(std::atoi(args[1]) + std::atoi(args[2]), std::string(args[4]), true);
+}
+
+ON_EVENT(SESSION_START)
+{
+    if (sar_tas_autostart.GetBool()) {
+        cmdQueuer->Start();
+    }
 }
