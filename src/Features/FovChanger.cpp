@@ -2,9 +2,13 @@
 
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+
+#include "Features/Session.hpp"
 
 #include "Command.hpp"
 #include "Variable.hpp"
+#include "Event.hpp"
 
 FovChanger* fovChanger;
 
@@ -22,6 +26,13 @@ void FovChanger::Force()
 {
     if (this->defaultFov != 0) {
         cl_fov.SetValue(this->defaultFov);
+    }
+}
+
+ON_EVENT(TICK) {
+    if (engine->demoplayer->IsPlaying()) return;
+    if ((session->isRunning && session->GetTick() == 16) || fovChanger->needToUpdate) {
+        fovChanger->Force();
     }
 }
 
