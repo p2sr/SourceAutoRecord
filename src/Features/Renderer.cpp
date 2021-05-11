@@ -3,6 +3,7 @@
 #include "Command.hpp"
 #include "Utils/SDK.hpp"
 #include "Modules/Server.hpp"
+#include "Hook.hpp"
 #include <string>
 #include <cstdint>
 #include <cstdio>
@@ -29,11 +30,6 @@ static int *g_snd_linear_count;
 static int **g_snd_p;
 static int *g_snd_vol;
 static MovieInfo_t *g_movieInfo;
-
-// For disabling the trampoline
-static uintptr_t SND_RecordBuffer;
-static uint8_t SND_RecordBuffer_Original[10];
-static bool trampolineInitialized = false;;
 
 // The demoplayer tick this segment ends on (we'll stop recording at
 // this tick if sar_render_autostop is set)
@@ -909,11 +905,19 @@ static inline short clip16(int x)
     return x;
 }
 
-// returns whether to run the og function
-static bool SND_RecordBuffer_Hook(void)
+static void (*SND_RecordBuffer)();
+static void SND_RecordBuffer_Hook();
+static Hook g_RecordBufferHook(&SND_RecordBuffer_Hook);
+static void SND_RecordBuffer_Hook()
 {
-    if (!g_render.isRendering.load()) return true;
-    if (engine->ConsoleVisible()) return false;
+    if (!g_render.isRendering.load()) {
+        g_RecordBufferHook.Disable();
+        SND_RecordBuffer();
+        g_RecordBufferHook.Enable();
+        return;
+    }
+
+    if (engine->ConsoleVisible()) return;
 
     // If the worker has received a message it hasn't yet handled,
     // busy-wait; this is a really obscure race condition that should
@@ -923,7 +927,7 @@ static bool SND_RecordBuffer_Hook(void)
     if (snd_surround_speakers.GetInt() != 2) {
         console->Print("Speaker configuration changed!\n");
         msgStopRender(true);
-        return false;
+        return;
     }
 
     g_render.audioBufLock.lock();
@@ -950,7 +954,7 @@ static bool SND_RecordBuffer_Hook(void)
                 // We shouldn't write to that buffer anymore, it's been
                 // invalidated
                 // We've already unlocked audioBufLock so just return
-                return false;
+                return;
             }
 
             g_render.audioBufLock.lock();
@@ -960,7 +964,7 @@ static bool SND_RecordBuffer_Hook(void)
 
     g_render.audioBufLock.unlock();
 
-    return false;
+    return;
 }
 
 // }}}
@@ -1063,97 +1067,43 @@ void Renderer::Init(void **videomode)
 
 #ifdef _WIN32
     if (sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
-        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 68 DE 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
+        SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 68 DE 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
     } else { // Pre-update engine
-        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 78 D9 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
+        SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 78 D9 08 00 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
     }
 
-    memcpy(SND_RecordBuffer_Original, (void *)SND_RecordBuffer, sizeof SND_RecordBuffer_Original);
-
-    g_movieInfo = *(MovieInfo_t **)(SND_RecordBuffer + 5);
-
-    static uint8_t trampoline[] = {
-        0x55,                         // 00: push ebp
-        0x89, 0xE5,                   // 01: mov ebp, esp
-        0xE8, 0, 0, 0, 0,             // 03: call ? (to be filled with SND_RecordBuffer_Hook)
-        0x85, 0xC0,                   // 08: test eax, eax
-        0x74, 0x0C,                   // 0A: jz $+E (18)
-        0x80, 0x3D, 0, 0, 0, 0, 0x00, // 0C: cmp ?, 0 (to be filled with ptr to movieinfo, replacing overwritten instruction)
-        0xE9, 0, 0, 0, 0,             // 13: jmp ? (to be filled with original function addr)
-        0x5D,                         // 18: pop ebp
-        0xC3,                         // 19: ret
-    };
-
-    Memory::UnProtect((void*)SND_RecordBuffer, 10);
-    Memory::UnProtect(trampoline, sizeof trampoline);
-    *(uint32_t *)(trampoline + 0x04) = (uintptr_t)SND_RecordBuffer_Hook - ((uintptr_t)trampoline + 0x04 + 4);
-    *(uint32_t *)(trampoline + 0x0E) = (uintptr_t)g_movieInfo;
-    *(uint32_t *)(trampoline + 0x14) = (uintptr_t)SND_RecordBuffer + 10 - ((uintptr_t)trampoline + 0x14 + 4);
-    ((uint8_t *)SND_RecordBuffer)[0] = 0xE9; // jmp
-    *(uint32_t *)(SND_RecordBuffer + 1) = (uintptr_t)trampoline - (SND_RecordBuffer + 1 + 4);
-    // We follow our code with some NOPs - not necessary as we jump past
-    // them, but stops in-memory disassemblers getting confused
-    ((uint8_t *)SND_RecordBuffer)[5] = 0x90;
-    ((uint8_t *)SND_RecordBuffer)[6] = 0x90;
-    ((uint8_t *)SND_RecordBuffer)[7] = 0x90;
-    ((uint8_t *)SND_RecordBuffer)[8] = 0x90;
-    ((uint8_t *)SND_RecordBuffer)[9] = 0x90;
+    g_movieInfo = *(MovieInfo_t **)((uintptr_t)SND_RecordBuffer + 5);
 #else
     if (sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
-        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 3C 65 A1 ? ? ? ? 89 45 E4 31 C0 E8 ? ? ? ? 84 C0 75 1B");
+        SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 3C 65 A1 ? ? ? ? 89 45 E4 31 C0 E8 ? ? ? ? 84 C0 75 1B");
     } else { // Pre-update engine
-        SND_RecordBuffer = Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 2C E8 ? ? ? ? 84 C0 75 0E 8D 65 F4 5B 5E 5F 5D C3");
+        SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 2C E8 ? ? ? ? 84 C0 75 0E 8D 65 F4 5B 5E 5F 5D C3");
     }
-
-    memcpy(SND_RecordBuffer_Original, (void *)SND_RecordBuffer, sizeof SND_RecordBuffer_Original);
 
     if (sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
-        uintptr_t SND_IsRecording = Memory::Read(SND_RecordBuffer + 21);
+        uintptr_t SND_IsRecording = Memory::Read((uintptr_t)SND_RecordBuffer + 21);
         g_movieInfo = *(MovieInfo_t **)(SND_IsRecording + 2);
     } else { // Pre-update engine
-        uintptr_t SND_IsRecording = Memory::Read(SND_RecordBuffer + 10);
+        uintptr_t SND_IsRecording = Memory::Read((uintptr_t)SND_RecordBuffer + 10);
         g_movieInfo = *(MovieInfo_t **)(SND_IsRecording + 11);
     }
-
-    static uint8_t trampoline[] = {
-        0x55,                   // 00: push ebp
-        0x89, 0xE5,             // 01: mov ebp, esp
-        0xE8, 0, 0, 0, 0,       // 03: call ? (to be filled with SND_RecordBuffer_Hook)
-        0x57,                   // 08: push edi
-        0x56,                   // 09: push esi
-        0x85, 0xC0,             // 0A: test eax, eax
-        0x0F, 0x85, 0, 0, 0, 0, // 0C: jnz ? (to be filled with original function addr)
-        0x5E,                   // 12: pop esi
-        0x5F,                   // 13: pop edi
-        0x5D,                   // 14: pop ebp
-        0xC3,                   // 15: ret
-    };
-
-    Memory::UnProtect((void*)SND_RecordBuffer, 5);
-    Memory::UnProtect(trampoline, sizeof trampoline);
-    *(uint32_t *)(trampoline + 0x04) = (uintptr_t)SND_RecordBuffer_Hook - ((uintptr_t)trampoline + 0x04 + 4);
-    *(uint32_t *)(trampoline + 0x0E) = (uintptr_t)SND_RecordBuffer + 5 - ((uintptr_t)trampoline + 0x0E + 4);
-    ((uint8_t *)SND_RecordBuffer)[0] = 0xE9; // jmp
-    *(uint32_t *)(SND_RecordBuffer + 1) = (uintptr_t)trampoline - (SND_RecordBuffer + 1 + 4);
 #endif
 
-    g_snd_linear_count = *(int **)(SND_RecordBuffer + Offsets::snd_linear_count);
-    g_snd_p = *(int ***)(SND_RecordBuffer + Offsets::snd_p);
-    g_snd_vol = *(int **)(SND_RecordBuffer + Offsets::snd_vol);
+    g_RecordBufferHook.SetFunc(SND_RecordBuffer);
+
+    g_snd_linear_count = *(int **)((uintptr_t)SND_RecordBuffer + Offsets::snd_linear_count);
+    g_snd_p = *(int ***)((uintptr_t)SND_RecordBuffer + Offsets::snd_p);
+    g_snd_vol = *(int **)((uintptr_t)SND_RecordBuffer + Offsets::snd_vol);
 
     Command::Hook("startmovie", &startmovie_cbk, startmovie_origCbk);
     Command::Hook("endmovie", &endmovie_cbk, endmovie_origCbk);
-
-    trampolineInitialized = true;
 }
 
 void Renderer::Cleanup()
 {
-    if (trampolineInitialized) {
-        memcpy((void *)SND_RecordBuffer, SND_RecordBuffer_Original, sizeof SND_RecordBuffer_Original);
-        Command::Unhook("startmovie", startmovie_origCbk);
-        Command::Unhook("endmovie", endmovie_origCbk);
-    }
+    g_RecordBufferHook.Disable();
+    Command::Unhook("startmovie", startmovie_origCbk);
+    Command::Unhook("endmovie", endmovie_origCbk);
 }
 
 // }}}
