@@ -9,7 +9,6 @@
 #include "Event.hpp"
 
 #include <memory>
-#include <set>
 #include <variant>
 #include <optional>
 #include <cstdlib>
@@ -405,7 +404,12 @@ bool SpeedrunTimer::AddRuleToCategory(std::string category, std::string rule)
         return false;
     }
 
-    cat->rules.insert(rule);
+    if (std::find(cat->rules.begin(), cat->rules.end(), rule) != cat->rules.end()) {
+        console->Print("Rule %s already in category %s\n", rule.c_str(), category.c_str());
+        return false;
+    }
+
+    cat->rules.push_back(rule);
     return true;
 }
 
@@ -434,7 +438,12 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove_rule, "sar_speedrun_catego
         return console->Print("Category %s does not exist\n", args[1]);
     }
 
-    cat->rules.erase(args[2]);
+    auto it = std::find(cat->rules.begin(), cat->rules.end(), std::string(args[2]));
+    if (it == cat->rules.end()) {
+        return console->Print("Rule %s is not in category %s\n", args[2], args[1]);
+    }
+
+    cat->rules.erase(it);
 }
 
 // }}}
@@ -563,7 +572,7 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_rule_remove, "sar_speedrun_rule_remove <ru
 
     bool canDelete = true;
     for (auto cat : g_categories) {
-        if (cat.second.rules.find(ruleName) != cat.second.rules.end()) {
+        if (std::find(cat.second.rules.begin(), cat.second.rules.end(), ruleName) != cat.second.rules.end()) {
             console->Print("Cannot delete rule %s as it exists in the category %s\n", ruleName.c_str(), cat.first.c_str());
             canDelete = false;
         }

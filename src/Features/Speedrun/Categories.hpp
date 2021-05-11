@@ -3,14 +3,13 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <set>
 
 #include "Command.hpp"
 #include "Rules.hpp"
 
 struct SpeedrunCategory
 {
-    std::set<std::string> rules;
+    std::vector<std::string> rules;
 };
 
 namespace SpeedrunTimer {
