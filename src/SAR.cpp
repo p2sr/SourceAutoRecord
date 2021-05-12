@@ -211,7 +211,7 @@ CON_COMMAND(sar_session, "Prints the current tick of the server since it has loa
 CON_COMMAND(sar_about, "Prints info about SAR plugin.\n")
 {
     console->Print("SourceAutoRecord is a speedrun plugin for Source Engine games.\n");
-    console->Print("More information at: https://github.com/Blenderiste09/SourceAutoRecord or https://wiki.portal2.sr/SAR\n");
+    console->Print("More information at: https://github.com/p2sr/SourceAutoRecord or https://wiki.portal2.sr/SAR\n");
     console->Print("Game: %s\n", sar.game->Version());
     console->Print("Version: " SAR_VERSION "\n");
     console->Print("Built: " SAR_BUILT "\n");
