@@ -24,6 +24,7 @@ public:
     std::string numberRegex;
     std::regex floatRegex;
     std::regex intRegex;
+    int currentFrame;
 
 public:
     CommandQueuer();
@@ -36,7 +37,7 @@ public:
     void Start();
     void DelayQueueBy(int frames);
     void RandomRegex(std::string& input);
-    
+
     void Execute();
 };
 

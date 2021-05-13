@@ -11,8 +11,8 @@
 #include "Modules/Server.hpp"
 
 #include "Command.hpp"
-#include "Variable.hpp"
 #include "Event.hpp"
+#include "Variable.hpp"
 
 Variable sar_tas_autostart("sar_tas_autostart", "1", "Starts queued commands automatically on first frame after a load.\n");
 Variable sar_tas_ss_forceuser("sar_tas_ss_forceuser", "0", "Forces engine to calculate movement for every splitescreen client.\n");
@@ -28,6 +28,7 @@ CommandQueuer::CommandQueuer()
     , numberRegex("([-+]?\\d*(\\d|(\\.\\d))\\d*([eE]([+-]?\\d+))?)")
     , floatRegex("\\[" + numberRegex + ":" + numberRegex + "\\]")
     , intRegex("\\{" + numberRegex + ":" + numberRegex + "\\}")
+    , currentFrame(-1)
 {
     this->hasLoaded = true;
 }
@@ -86,6 +87,7 @@ void CommandQueuer::Start()
             return a.framesLeft < b.framesLeft;
         });
         this->isRunning = true;
+        this->currentFrame = 0;
     }
 }
 void CommandQueuer::DelayQueueBy(int frames)
@@ -111,6 +113,10 @@ void CommandQueuer::Execute()
 {
     //FIX FOR PIKACHU <3
 
+    auto tick = session->GetTick();
+    if (this->currentFrame == tick)
+        return;
+
     if (cmdQueuer->isRunning) {
         for (auto&& tas = cmdQueuer->frames.begin(); tas != cmdQueuer->frames.end();) {
             --tas->framesLeft;
@@ -132,6 +138,7 @@ void CommandQueuer::Execute()
                 ++tas;
             }
         }
+        currentFrame++;
     }
 
     ++session->currentFrame;
