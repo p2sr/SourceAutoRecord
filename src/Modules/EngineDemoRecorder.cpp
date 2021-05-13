@@ -19,6 +19,7 @@
 #include "Version.hpp"
 
 #include <cstdio>
+#include <filesystem>
 
 REDECL(EngineDemoRecorder::SetSignonState);
 REDECL(EngineDemoRecorder::StartRecording);
@@ -205,29 +206,47 @@ DETOUR_COMMAND(EngineDemoRecorder::stop)
 }
 
 Variable sar_record_prefix("sar_record_prefix", "", "A string to prepend to recorded demo names. Can include strftime format codes.\n", 0);
+Variable sar_record_mkdir("sar_record_mkdir", "1", "Automatically create directories for demos if necessary.\n");
 
 DETOUR_COMMAND(EngineDemoRecorder::record)
 {
-    if (sar_record_prefix.GetString()[0]) {
+    CCommand newArgs = args;
+    bool prefixed = false;
+
+    if (args.ArgC() >= 2 && sar_record_prefix.GetString()[0]) {
         time_t t = time(nullptr);
         struct tm *tm = localtime(&t);
-        size_t fmtlen = 4 * strlen(sar_record_prefix.GetString()) + 1;
-        size_t len = fmtlen + strlen(args[1]);
-        char *buf = new char[len];
-        if (strftime(buf, fmtlen, sar_record_prefix.GetString(), tm)) {
-            strcat(buf, args[1]);
-            CCommand newArgs = args;
+        char *buf = new char[MAX_PATH + 1];
+        size_t timelen = strftime(buf, MAX_PATH + 1, sar_record_prefix.GetString(), tm);
+        if (timelen) {
+            strncat(buf, args[1], MAX_PATH - timelen);
             newArgs.m_ppArgv[1] = buf;
-            EngineDemoRecorder::record_callback(newArgs);
+            prefixed = true;
         } else {
             console->Print("failed to add sar_record_prefix\n");
-            EngineDemoRecorder::record_callback(args);
+            delete[] buf;
         }
-        delete[] buf;
-        return;
     }
 
-    EngineDemoRecorder::record_callback(args);
+    if (newArgs.ArgC() >= 2 && sar_record_mkdir.GetBool()) {
+        try {
+            std::string pStr = engine->GetGameDirectory();
+            pStr += '/';
+            pStr += newArgs[1];
+            std::filesystem::path p(pStr);
+            auto dir = p.parent_path();
+            if (!std::filesystem::exists(dir)) {
+                std::filesystem::create_directories(dir);
+            }
+        } catch (std::filesystem::filesystem_error &e) {
+        }
+    }
+
+    EngineDemoRecorder::record_callback(newArgs);
+
+    if (prefixed) {
+        delete[] newArgs.m_ppArgv[1];
+    }
 }
 
 bool EngineDemoRecorder::Init()
