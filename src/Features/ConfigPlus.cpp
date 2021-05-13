@@ -467,3 +467,6 @@ ON_EVENT_P(SESSION_START, 1000000) { RUN_EXECS(load); }
 ON_EVENT(SAR_UNLOAD) { RUN_EXECS(exit); }
 ON_EVENT(DEMO_START) { RUN_EXECS(demo_start); }
 ON_EVENT(DEMO_STOP) { RUN_EXECS(demo_stop); }
+
+CON_COMMAND(nop, "nop [args]... - nop ignores all its arguments and does nothing.\n")
+{ }
