@@ -212,6 +212,7 @@ DETOUR_COMMAND(EngineDemoRecorder::record)
 {
     CCommand newArgs = args;
     bool prefixed = false;
+    bool suppress = false;
 
     if (args.ArgC() >= 2 && sar_record_prefix.GetString()[0]) {
         time_t t = time(nullptr);
@@ -242,7 +243,24 @@ DETOUR_COMMAND(EngineDemoRecorder::record)
         }
     }
 
-    EngineDemoRecorder::record_callback(newArgs);
+    if (newArgs.ArgC() >= 2) {
+        try {
+            std::string pStr = engine->GetGameDirectory();
+            pStr += '/';
+            pStr += newArgs[1];
+            std::filesystem::path p(pStr);
+            auto dir = p.parent_path();
+            if (!std::filesystem::is_directory(dir)) {
+                console->Print("directory %s does not exist\n", dir.string().c_str());
+                suppress = true;
+            }
+        } catch (std::filesystem::filesystem_error &e) {
+        }
+    }
+
+    if (!suppress) {
+        EngineDemoRecorder::record_callback(newArgs);
+    }
 
     if (prefixed) {
         delete[] newArgs.m_ppArgv[1];
