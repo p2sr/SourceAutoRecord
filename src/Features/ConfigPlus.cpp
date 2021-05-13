@@ -424,20 +424,6 @@ ON_EVENT(PRE_TICK) {
 
 static std::map<std::string, std::string> g_aliases;
 
-CON_COMMAND(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, passing on any additional arguments.\n")
-{
-    if (args.ArgC() < 2) {
-        return console->Print(sar_alias_run.ThisPtr()->m_pszHelpString);
-    }
-
-    std::string cmd = g_aliases[std::string(args[1])];
-    for (int i = 2; i < args.ArgC(); ++i) {
-        cmd += Utils::ssprintf(" \"%s\"", args[i]);
-    }
-
-    engine->ExecuteCommand(cmd.c_str(), true);
-}
-
 CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, similar to the 'alias' command but not requiring quoting. If no command is specified, prints the given alias.\n")
 {
     if (args.ArgC() < 2) {
@@ -447,7 +433,7 @@ CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, 
     if (args.ArgC() == 2) {
         auto alias = g_aliases.find({args[1]});
         if (alias == g_aliases.end()) {
-            console->Print("Alias %s does not exist!\n", args[1]);
+            console->Print("Alias %s does not exist\n", args[1]);
         } else {
             console->Print("%s\n", alias->second.c_str());
         }
@@ -468,6 +454,34 @@ CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, 
 
     engine->ExecuteCommand(Utils::ssprintf("alias \"%s\" sar_alias_run \"%s\"", args[1], args[1]).c_str());
     g_aliases[std::string(args[1])] = cmd;
+}
+
+CON_COMMAND(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, passing on any additional arguments.\n")
+{
+    if (args.ArgC() < 2) {
+        return console->Print(sar_alias_run.ThisPtr()->m_pszHelpString);
+    }
+
+    auto it = g_aliases.find({args[1]});
+    if (it == g_aliases.end()) {
+        return console->Print("Alias %s does not exist\n", args[1]);
+    }
+
+    const char *argstr = args.m_pArgSBuffer + args.m_nArgv0Size;
+
+    while (isspace(*argstr)) ++argstr;
+
+    if (*argstr == '"') {
+        argstr += strlen(args[1]) + 2;
+    } else {
+        argstr += strlen(args[1]);
+    }
+
+    while (isspace(*argstr)) ++argstr;
+
+    std::string cmd = it->second + argstr;
+
+    engine->ExecuteCommand(cmd.c_str(), true);
 }
 
 ON_EVENT_P(SESSION_START, 1000000) { RUN_EXECS(load); }
