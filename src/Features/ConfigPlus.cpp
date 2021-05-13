@@ -454,10 +454,17 @@ CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, 
         return;
     }
 
-    std::string cmd = args[2];
-    for (int i = 3; i < args.ArgC(); ++i) {
-        cmd += Utils::ssprintf(" \"%s\"", args[i]);
+    const char *cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
+
+    while (isspace(*cmd)) ++cmd;
+
+    if (*cmd == '"') {
+        cmd += strlen(args[1]) + 2;
+    } else {
+        cmd += strlen(args[1]);
     }
+
+    while (isspace(*cmd)) ++cmd;
 
     engine->ExecuteCommand(Utils::ssprintf("alias \"%s\" sar_alias_run \"%s\"", args[1], args[1]).c_str());
     g_aliases[std::string(args[1])] = cmd;
