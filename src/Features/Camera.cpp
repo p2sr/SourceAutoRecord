@@ -18,11 +18,12 @@
 
 Camera* camera;
 
-Variable sar_cam_control("sar_cam_control", "0", 0, 2,
+Variable sar_cam_control("sar_cam_control", "0", 0, 3,
     "sar_cam_control <type>: Change type of camera control.\n"
     "0 = Default (camera is controlled by game engine),\n"
     "1 = Drive mode (camera is separated and can be controlled by user input),\n"
-    "2 = Cinematic mode (camera is controlled by predefined path).\n");
+    "2 = Cinematic mode (camera is controlled by predefined path).\n"
+    "3 = Follow mode (Camera is following the player but not rotating, useful when strafing on gel).\n");
 
 Variable sar_cam_drive("sar_cam_drive", "1", 0, 1,
     "Enables or disables camera drive mode in-game "
@@ -65,7 +66,7 @@ bool Camera::IsDriving()
     bool wantingToDrive = inputSystem->IsKeyDown(ButtonCode_t::MOUSE_LEFT);
     bool isUI = vgui->IsUIVisible();
 
-    return camera->controlType == Drive && wantingToDrive && (drivingInGame || drivingInDemo) && !isUI;
+    return (camera->controlType == Drive || camera->controlType == Follow) && wantingToDrive && (drivingInGame || drivingInDemo) && !isUI;
 }
 
 //used by camera state interpolation function. all the math is here.
@@ -253,6 +254,18 @@ void Camera::OverrideView(CPortalViewSetup1* m_View)
         sar_cam_control.SetValue(controlType);
     }
 
+    //don't allow follow mode when not using sv_cheats
+    if (newControlType == Follow && !sv_cheats.GetBool() && !engine->demoplayer->IsPlaying()) {
+        if (controlType != Follow) {
+            console->Print("Follow mode requires sv_cheats 1 or demo player.\n");
+        } else {
+            controlType = Default;
+            ResetCameraRelatedCvars();
+        }
+        newControlType = controlType;
+        sar_cam_control.SetValue(controlType);
+    }
+
     //janky hack mate
     //overriding cvar values, boolean (int) values only.
     //this way the cvar themselves are unchanged
@@ -266,7 +279,8 @@ void Camera::OverrideView(CPortalViewSetup1* m_View)
     if (newControlType != controlType) {
         if (controlType == Default && newControlType != Default) {
             //enabling
-            //sorry nothing
+            if (newControlType == Follow)
+                this->RequestCameraRefresh();
         } else if (controlType != Default && newControlType == Default) {
             //disabling
             //resetting cvars to their actual values when swithing control off
@@ -279,7 +293,7 @@ void Camera::OverrideView(CPortalViewSetup1* m_View)
     //don't do anything if not in game or demo player
     if (engine->hoststate->m_activeGame || engine->demoplayer->IsPlaying()) {
         if (controlType == Default || cameraRefreshRequested) {
-            currentState.origin = m_View->origin;
+            currentState.origin = (controlType == Follow ?  Vector(0, 0, 64) : m_View->origin);
             currentState.angles = m_View->angles;
             currentState.fov = m_View->fov;
             if (cameraRefreshRequested)
@@ -287,7 +301,7 @@ void Camera::OverrideView(CPortalViewSetup1* m_View)
         }
         if (controlType != Default) {
             //manual camera view control
-            if (controlType == Drive) {
+            if (controlType == Drive || controlType == Follow) {
                 if (IsDriving()) {
                     if (!manualActive) {
                         inputSystem->GetCursorPos(mouseHoldPos[0], mouseHoldPos[1]);
@@ -371,7 +385,13 @@ void Camera::OverrideView(CPortalViewSetup1* m_View)
                 }
             }
             //applying custom view
-            m_View->origin = currentState.origin;
+            if (controlType == Follow) {
+                auto player = client->GetPlayer(GET_SLOT() + 1);
+                if (player)
+                    m_View->origin = (client->GetAbsOrigin(player) + currentState.origin);
+            } else {
+                m_View->origin = currentState.origin;
+            }
             m_View->angles = currentState.angles;
             m_View->fov = currentState.fov;
         }

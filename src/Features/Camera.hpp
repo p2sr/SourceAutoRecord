@@ -43,6 +43,7 @@ enum CameraControlType {
     Default,
     Drive,
     Cinematic,
+    Follow
 };
 
 class Camera : public Feature {
