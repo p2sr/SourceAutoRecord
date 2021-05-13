@@ -15,6 +15,7 @@
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Tas/TasPlayer.hpp"
+#include "Features/Tas/TasController.hpp"
 #include "Features/Tas/TasTools/StrafeTool.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
@@ -192,26 +193,20 @@ DETOUR(Server::PlayerMove)
     return Server::PlayerMove(thisptr);
 }
 
-float g_predictedVel = 0;
 // CGameMovement::ProcessMovement
 DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
 {
+    if (!engine->IsGamePaused()) {
+        auto playerInfo = tasPlayer->GetPlayerInfo(pPlayer, pMove);
+        if (sar_tas_real_controller_debug.GetInt() == 3) {
+            console->Print("Jump input state at tick %d: %s\n", playerInfo.tick, (pMove->m_nButtons & IN_JUMP) ? "true" : "false");
+        }
+    }
+    
+
     if (tasPlayer->IsActive() && sar_tas_tools_enabled.GetBool()) {
         tasPlayer->PostProcess(pPlayer, pMove);
     }
-    
-    TasPlayerInfo pi = tasPlayer->GetPlayerInfo(pPlayer, pMove);
-
-    float currVel = pi.velocity.Length2D();
-    float diff = abs(g_predictedVel - currVel);
-
-    if (!engine->IsGamePaused()) {
-        //console->Print("Predicted: %fups, got: %fups  (diff %fups)\n", g_predictedVel, currVel, diff);
-    }
-    
-    float forwardMove = pMove->m_flForwardMove / 175.0f;
-    float sideMove = pMove->m_flSideMove / 175.0f;
-    g_predictedVel = autoStrafeTool.GetVelocityAfterMove(pi, forwardMove, sideMove).Length2D();
 
     unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)pPlayer + Offsets::m_hGroundEntity);
     bool grounded = groundEntity != 0xFFFFFFFF;

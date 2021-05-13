@@ -225,13 +225,15 @@ void TasPlayer::SaveProcessedFramebulks()
 }
 
 /*
-    This function is called in ControllerMove, which is what completely
-    avoids sv_alternateticks behaviour. Technically speaking, the game
-    fetches controller inputs on each ControllerMove, so that should be
-    perfectly legal action. This has been proven by printing out Steam
-    controller input after every ControllerMove call and getting three
-    different results in three consecutive ticks (shoutouts to Amtyi
-    for testing it out for us on his setup)
+    This function is called by TAS controller's ControllerMove function.
+    Even with alternateticks, the shortest interval between two ticks
+    parsing inputs is about 0.5ms, and because it's alternateticks, it
+    will oscillate between short and long (1/30th of a second) interval. 
+    Steam Controller's response time is 1ms, so it's perfectly fine to
+    assume it would be able to deliver different inputs for each
+    subsequent tick, which has been confirmed by testing. Because of that,
+    we assume the response time for our "virtual controller" to be
+    non-existing and just let it parse inputs corresponding to given tick.
 */
 void TasPlayer::FetchInputs(TasController* controller)
 {
@@ -248,7 +250,7 @@ void TasPlayer::FetchInputs(TasController* controller)
     for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
         controller->SetButtonState((TasControllerInput)i, fb.buttonStates[i]);
     }
-    //add commands only for tick when framebulk is placed. Don't preserve it to other ticks.
+    // add commands only for tick when framebulk is placed. Don't preserve it to other ticks.
     if (currentTick == fbTick) {
         for (std::string cmd : fb.commands) {
             controller->AddCommandToQueue(cmd);
@@ -261,7 +263,6 @@ void TasPlayer::FetchInputs(TasController* controller)
 // meaning that second tick in pair reads outdated info.
 void TasPlayer::PostProcess(void* player, CMoveData* pMove)
 {
-
     pMove->m_flForwardMove = 0;
     pMove->m_flSideMove = 0;
     pMove->m_nButtons = 0;

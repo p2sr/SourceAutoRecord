@@ -7,10 +7,12 @@
 #include "Modules/Engine.hpp"
 #include "Modules/VGui.hpp"
 
+#include <chrono>
+
 Variable cl_pitchdown;
 Variable cl_pitchup;
 
-Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", "Debugs controller.");
+Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 3, "Debugs controller.");
 
 Variable sensitivity;
 void LockMouse()
@@ -106,17 +108,32 @@ void TasController::SetButtonState(TasControllerInput i, bool state)
     btn->state = state;
 }
 
+std::chrono::time_point <std::chrono::high_resolution_clock> g_lastControllerMove;
+
 void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
 {
+    // ControllerMove is executed several times for one tick, idk why,
+    // but only once with tick_count bigger than 0. Working only
+    // on these seems to work fine, so I assume these are correct.
+    if (cmd->tick_count == 0) return;
 
-    if (cmd->tick_count != 0 && sar_tas_real_controller_debug.GetBool()) {
-        console->Print("%.5f %.5f\n", cmd->forwardmove, cmd->sidemove);
+    // doing some debugs to test the behaviour of the real controller
+    if (sar_tas_real_controller_debug.GetBool()) {
+        int debugType = sar_tas_real_controller_debug.GetInt();
+        if (debugType == 1) {
+            console->Print("forwardmove: %.5f, sidemove: %.5f\n", cmd->forwardmove, cmd->sidemove);
+        }
+        
+        auto now = std::chrono::high_resolution_clock::now();
+        if (debugType == 2) {
+            auto timePassed = std::chrono::duration_cast<std::chrono::microseconds>(now - g_lastControllerMove).count();
+            console->Print("Time since last valid ControllerMove: %dus\n", timePassed);
+        }
+        g_lastControllerMove = now;
     }
 
-    /*ControllerMove is executed several times a frame, idk why
-    But only once with tick_count bigger than 0*/
-    if (!enabled || cmd->tick_count == 0)
-        return;
+    // affect inputs only if the virtual controller is enabled
+    if (!enabled) return;
 
     //console->Print("TasController::ControllerMove (%d, ", cmd->tick_count);
 
