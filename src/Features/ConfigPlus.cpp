@@ -470,3 +470,70 @@ ON_EVENT(DEMO_STOP) { RUN_EXECS(demo_stop); }
 
 CON_COMMAND(nop, "nop [args]... - nop ignores all its arguments and does nothing.\n")
 { }
+
+static std::map<std::string, std::string> g_functions;
+
+CON_COMMAND(sar_function, "sar_function <name> [command] [args]... - create a function, replacing $1, $2 etc up to $9 in the command string with the respective argument. If no command is specified, prints the given function.\n")
+{
+    if (args.ArgC() < 2) {
+        return console->Print(sar_function.ThisPtr()->m_pszHelpString);
+    }
+
+    if (args.ArgC() == 2) {
+        auto func = g_functions.find({args[1]});
+        if (func == g_functions.end()) {
+            console->Print("Function %s does not exist\n", args[1]);
+        } else {
+            console->Print("%s\n", func->second.c_str());
+        }
+        return;
+    }
+
+    const char *cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
+
+    while (isspace(*cmd)) ++cmd;
+
+    if (*cmd == '"') {
+        cmd += strlen(args[1]) + 2;
+    } else {
+        cmd += strlen(args[1]);
+    }
+
+    while (isspace(*cmd)) ++cmd;
+
+    g_functions[std::string(args[1])] = cmd;
+}
+
+CON_COMMAND(sar_function_run, "sar_function_run <name> [args]... - run a function with the given arguments.\n")
+{
+    if (args.ArgC() < 2) {
+        return console->Print(sar_function_run.ThisPtr()->m_pszHelpString);
+    }
+
+    auto it = g_functions.find({args[1]});
+    if (it == g_functions.end()) {
+        return console->Print("Function %s does not exist\n", args[1]);
+    }
+
+    auto func = it->second;
+
+    std::string cmd;
+
+    for (size_t i = 0; i < func.size(); ++i) {
+        if (func[i] == '$') {
+            if (func[i + 1] >= '1' && func[i + 1] <= '9') {
+                int arg = func[i + 1] - '0';
+                cmd += arg + 1 < args.ArgC() ? args[arg + 1] : "";
+                ++i;
+                continue;
+            } else if (func[i + 1] == '$') {
+                cmd += '$';
+                ++i;
+                continue;
+            }
+        }
+        cmd += func[i];
+    }
+
+    engine->ExecuteCommand(cmd.c_str(), true);
+}
