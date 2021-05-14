@@ -40,7 +40,7 @@ public:
 };
 
 class HudContext {
-private:
+public:
     int font = 0;
     int xPadding = 0;
     int yPadding = 0;

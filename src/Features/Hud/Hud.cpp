@@ -281,16 +281,20 @@ struct TextLine
 {
     bool draw;
     std::string text;
+    Color color;
 };
 
 static std::map<long, TextLine> sar_hud_text_vals;
 HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
 {
+    Color old = ctx->textColor;
     for (auto& t : sar_hud_text_vals) {
         if (t.second.draw) {
+            ctx->textColor = t.second.color;
             ctx->DrawElement("%s", t.second.text.c_str());
         }
     }
+    ctx->textColor = old;
 }
 
 Variable sar_hud_text("sar_hud_text", "", "DEPRECATED: Use sar_hud_set_text.", 0);
@@ -299,6 +303,7 @@ void sar_hud_text_callback(void* var, const char* pOldVal, float fOldVal)
     console->Print("WARNING: sar_hud_text is deprecated. Please use sar_hud_set_text instead.\n");
     sar_hud_text_vals[0].draw = true;
     sar_hud_text_vals[0].text = std::string(sar_hud_text.GetString());
+    sar_hud_text_vals[0].color = Color{ 255, 255, 255, 255 };
 }
 
 long parseIdx(const char* idxStr)
@@ -325,6 +330,54 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets and shows the 
 
     sar_hud_text_vals[idx].draw = true;
     sar_hud_text_vals[idx].text = std::string(args[2]);
+    sar_hud_text_vals[idx].color = Color{ 255, 255, 255, 255 };
+}
+
+CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color>. Sets the color of the nth text value in the HUD.\n")
+{
+    if (args.ArgC() != 3 && args.ArgC() != 5) {
+        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    long idx = parseIdx(args[1]);
+    if (idx == -1) {
+        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    int r, g, b;
+
+    if (args.ArgC() == 3) {
+        const char *col = args[2];
+        if (col[0] == '#') {
+            ++col;
+        }
+
+        int end = -1;
+        if (sscanf(col, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
+            return console->Print("Invalid color code '%s'\n", args[2]);
+        }
+    } else {
+        char *end;
+
+        r = strtol(args[2], &end, 10);
+        if (*end || end == args[2]) {
+            return console->Print("Invalid color component '%s'\n", args[2]);
+        }
+
+        g = strtol(args[3], &end, 10);
+        if (*end || end == args[3]) {
+            return console->Print("Invalid color component '%s'\n", args[3]);
+        }
+
+        b = strtol(args[4], &end, 10);
+        if (*end || end == args[4]) {
+            return console->Print("Invalid color component '%s'\n", args[4]);
+        }
+    }
+
+    sar_hud_text_vals[idx].color = Color{ r, g, b, 255 };
 }
 
 CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id>. Hides the nth text value in the HUD.\n")
