@@ -17,7 +17,7 @@ Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 
 Variable sensitivity;
 void LockMouse()
 {
-    sensitivity.SetValue(std::to_string(sensitivity.ThisPtr()->m_fValue).c_str());
+    //sensitivity.SetValue(std::to_string(sensitivity.ThisPtr()->m_fValue).c_str());
     sensitivity.ThisPtr()->m_fValue = 0;
 }
 void UnlockMouse()

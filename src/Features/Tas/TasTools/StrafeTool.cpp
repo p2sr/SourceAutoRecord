@@ -45,7 +45,7 @@ void AutoStrafeTool::Apply(TasFramebulk& fb, const TasPlayerInfo& rawPInfo)
             if (asParams->strafeDir.useVelAngle) {
                 asParams->strafeDir.angle = velAngle;
             } else {
-                asParams->strafeDir.angle = pInfo.angles.x;
+                asParams->strafeDir.angle = rawPInfo.angles.y; //using real angles instead of fake ones here.
             }
             
             FollowLine(pInfo);
