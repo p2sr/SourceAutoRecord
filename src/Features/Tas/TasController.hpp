@@ -54,6 +54,8 @@ public:
     void Enable();
     void Disable();
 
+    void ResetDigitalInputs();
+
     void AddCommandToQueue(std::string c);
 
     bool GetButtonState(TasControllerInput i);

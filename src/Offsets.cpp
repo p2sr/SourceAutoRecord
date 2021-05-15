@@ -230,6 +230,8 @@ int SetKeyValueVector;
 
 // CVEngineServer
 int ClientCommand;
+int IsServerPaused;
+int ServerPause;
 
 // CBaseHudChat
 int ChatPrintf;

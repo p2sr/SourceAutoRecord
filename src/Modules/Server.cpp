@@ -422,7 +422,9 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
+
     tasPlayer->Update();
+    
     
     if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
     TickCustomCategories();

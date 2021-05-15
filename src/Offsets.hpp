@@ -230,6 +230,8 @@ extern int SetKeyValueVector;
 
 // CVEngineServer
 extern int ClientCommand;
+extern int IsServerPaused;
+extern int ServerPause;
 
 //CBaseHudChat
 extern int ChatPrintf;

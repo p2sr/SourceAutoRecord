@@ -552,9 +552,10 @@ bool Engine::Init()
                 *OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated>(Engine::OnGameOverlayActivated_Hook);
             }
 
-            if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
-                this->ClientCommand = g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
-                Interface::Delete(g_VEngineServer);
+            if (this->g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
+                this->ClientCommand = this->g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
+                this->IsServerPaused = this->g_VEngineServer->Original<_IsServerPaused>(Offsets::IsServerPaused);
+                this->ServerPause = this->g_VEngineServer->Original<_ServerPause>(Offsets::ServerPause);
             }
         }
 
@@ -751,6 +752,7 @@ void Engine::Shutdown()
     Interface::Delete(this->s_GameEventManager);
     Interface::Delete(this->engineTool);
     Interface::Delete(this->engineTrace);
+    Interface::Delete(this->g_VEngineServer);
 
 #ifdef _WIN32
     Command::Unhook("connect", Engine::connect_callback);

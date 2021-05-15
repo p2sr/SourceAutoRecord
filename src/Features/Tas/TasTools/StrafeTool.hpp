@@ -23,6 +23,7 @@ enum AutoStrafeParamType {
 
 struct AutoStrafeDirection {
     AutoStrafeParamType type;
+    bool useVelAngle;
     float angle;
 };
 
@@ -34,7 +35,7 @@ struct AutoStrafeSpeed {
 
 struct AutoStrafeParams : public TasToolParams {
     AutoStrafeType strafeType = DISABLED;
-    AutoStrafeDirection strafeDir = { CURRENT, 0.0f };
+    AutoStrafeDirection strafeDir = { CURRENT, true, 0.0f };
     AutoStrafeSpeed strafeSpeed = { SPECIFIED, 10000.0f };
 
     AutoStrafeParams()

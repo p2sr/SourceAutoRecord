@@ -12,10 +12,14 @@
 #include "Features/Tas/TasTool.hpp"
 
 #include <fstream>
+#include <filesystem>
 
 Variable sar_tas_debug("sar_tas_debug", "1", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
 Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", 0, 1, "Enables tool processing for TAS script making.");
 Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "1", 0, 1, "Enables automatic saving of raw, processed TAS scripts.");
+
+Variable sar_tas_skipto("sar_tas_skipto", "0", 0, "Fast-forwards the TAS playback until given playback tick.");
+Variable sar_tas_pauseat("sar_tas_pauseat", "0", 0, "Pauses the TAS playback on specified tick.");
 
 TasPlayer* tasPlayer;
 
@@ -56,10 +60,13 @@ void TasPlayer::Activate()
     for (TasTool* tool : TasTool::GetList()) {
         tool->Reset();
     }
+    processedFramebulks.clear();
 
     active = true;
     startTick = -1;
     currentTick = 0;
+
+    pauseTick = sar_tas_pauseat.GetInt();
 
     lastTick = 0;
     for (TasFramebulk fb : framebulkQueue) {
@@ -69,7 +76,7 @@ void TasPlayer::Activate()
     }
 
     ready = false;
-    if (startInfo.type == ChangeLevel) {
+    if (startInfo.type == ChangeLevel || startInfo.type == ChangeLevelCM) {
         //check if map exists
         std::string mapPath = std::string(engine->GetGameDirectory()) + "/maps/" + startInfo.param + ".bsp";
         std::ifstream mapf(mapPath);
@@ -114,7 +121,15 @@ void TasPlayer::Activate()
 
 void TasPlayer::Start()
 {
+    console->Print("TAS script has been started.\n");
+    if (sar_tas_debug.GetInt() > 0) {
+        console->Print("Length: %d ticks\n", lastTick + 1);
+    }
     processedFramebulks.clear();
+
+    if (startInfo.type == ChangeLevelCM) {
+        sv_bonus_challenge.SetValue(1);
+    }
 
     ready = true;
     currentTick = 0;
@@ -124,8 +139,11 @@ void TasPlayer::Start()
 void TasPlayer::PostStart()
 {
     startTick = server->gpGlobals->tickcount;
+    if (sar_tas_debug.GetInt() > 1) {
+        console->Print("Start tick: %d\n", startTick);
+    }
     tasController->Enable();
-    engine->ExecuteCommand("phys_timescale 1", true);
+    engine->ExecuteCommand("phys_timescale 1", true); // technically it was supposed to fix the consistency issue
 }
 
 void TasPlayer::Stop()
@@ -136,12 +154,30 @@ void TasPlayer::Stop()
         if (sar_tas_autosave_raw.GetBool()) {
             SaveProcessedFramebulks();
         }
+    } else {
+        console->Print("TAS player is no longer active.\n");
     }
 
     active = false;
     ready = false;
     currentTick = 0;
     tasController->Disable();
+}
+
+void TasPlayer::Pause()
+{
+    paused = true;
+}
+
+void TasPlayer::Resume()
+{
+    paused = false;
+}
+
+void TasPlayer::AdvanceFrame()
+{
+    Resume();
+    pauseTick = currentTick + 2;
 }
 
 // returns raw framebulk that should be used for given tick
@@ -263,6 +299,8 @@ void TasPlayer::FetchInputs(TasController* controller)
 // meaning that second tick in pair reads outdated info.
 void TasPlayer::PostProcess(void* player, CMoveData* pMove)
 {
+    if (paused) return;
+
     pMove->m_flForwardMove = 0;
     pMove->m_flSideMove = 0;
     pMove->m_nButtons = 0;
@@ -313,8 +351,8 @@ void TasPlayer::PostProcess(void* player, CMoveData* pMove)
     // using angles from playerInfo, as these seem to be the most accurate
     // pMove ones are created before tool parsing and GetAngles is wacky.
     // idk, as long as it produces the correct script file we should be fine lmfao
-    pMove->m_vecAngles.y = playerInfo.angles.y + fb.viewAnalog.x;
-    pMove->m_vecAngles.x = playerInfo.angles.x + fb.viewAnalog.y;
+    pMove->m_vecAngles.y = playerInfo.angles.y - fb.viewAnalog.x; // positive values should rotate right.
+    pMove->m_vecAngles.x = playerInfo.angles.x - fb.viewAnalog.y; // positive values should rotate up.
     pMove->m_vecAngles.x = std::min(std::max(pMove->m_vecAngles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
 
     pMove->m_vecViewAngles = pMove->m_vecAbsViewAngles = pMove->m_vecAngles;
@@ -344,7 +382,7 @@ void TasPlayer::PostProcess(void* player, CMoveData* pMove)
 
 void TasPlayer::Update()
 {
-    if (active) {
+    if (active && !paused) {
         if (!ready) {
             if (startInfo.type == StartImmediately || !session->isRunning) {
                 Start();
@@ -352,34 +390,85 @@ void TasPlayer::Update()
         }
         if (ready && session->isRunning) {
             if (startTick == -1) {
-                PostStart();
+                PostStart(); // script has started its playback. Adjust the tick counter and offset
             } else {
                 currentTick++;
+            }
+
+            if (sar_tas_pauseat.GetInt() > pauseTick) {
+                pauseTick = sar_tas_pauseat.GetInt();
+            }
+                
+            if (currentTick == pauseTick && pauseTick > 0) {
+                Pause();
+            }
+
+            // fast-forward feature. We're just changing host_framerate lol.
+            if (currentTick < sar_tas_skipto.GetInt()) {
+                host_framerate.ThisPtr()->m_fValue = 1;
+            } else if (currentTick == sar_tas_skipto.GetInt() || currentTick > lastTick) {
+                host_framerate.SetValue(host_framerate.GetString());
             }
         }
 
         // make sure all ticks are processed by tools before stopping
-        if ((!sar_tas_tools_enabled.GetBool() && currentTick > lastTick) || processedFramebulks.size() > lastTick) {
+        if ((!sar_tas_tools_enabled.GetBool() && currentTick > lastTick) 
+            || processedFramebulks.size() > lastTick 
+            || (!session->isRunning && startTick!=-1)) {
             Stop();
         }
         // also do not allow inputs after TAS has ended
         if (currentTick > lastTick) {
             tasController->Disable();
         }
+
+        // prevent usage of TAS tools in CM without cheats
+        if (sv_bonus_challenge.GetBool() && !sv_cheats.GetBool()) {
+            sv_cheats.SetValue(true);
+        }
+    }
+
+    if (startTick != -1 && active && ready) {
+        if (paused) {
+            engine->ExecuteCommand("setpause", true);
+        } else {
+            engine->ExecuteCommand("unpause", true);
+        }
     }
 }
 
-CON_COMMAND(sar_tas_playfile,
-    "Plays a TAS script.")
+DECL_COMMAND_COMPLETION(sar_tas_play)
+{
+    for (auto const& file : std::filesystem::recursive_directory_iterator(TAS_SCRIPTS_DIR)) {
+        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+            break;
+        }
+
+        auto scriptName = file.path().stem().string();
+        auto scriptExt = file.path().extension().string();
+        if (Utils::EndsWith(scriptExt, TAS_SCRIPT_EXT)) {
+            if (std::strstr(scriptName.c_str(), match)) {
+                items.push_back(scriptName);
+            }
+        }
+    }
+
+    FINISH_COMMAND_COMPLETION();
+}
+
+CON_COMMAND_F_COMPLETION(
+    sar_tas_play,
+    "sar_tas_play [filename] : Plays a TAS script with given name.\n",
+    0, AUTOCOMPLETION_FUNCTION(sar_tas_play))
 {
     IGNORE_DEMO_PLAYER();
 
     if (args.ArgC() != 2) {
-        return console->Print(sar_tas_playfile.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_tas_play.ThisPtr()->m_pszHelpString);
     }
 
     std::string fileName(args[1]);
-    std::string filePath("tas/" + fileName + ".p2tas");
+    std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + fileName + "." + TAS_SCRIPT_EXT);
     try {
         std::vector<TasFramebulk> fb = TasParser::ParseFile(filePath);
 
@@ -390,6 +479,21 @@ CON_COMMAND(sar_tas_playfile,
     } catch (TasParserException& e) {
         return console->ColorMsg(Color(255, 100, 100), "Error while opening TAS file: %s\n", e.what());
     }
+}
+
+CON_COMMAND(sar_tas_pause, "Pauses TAS playback.\n")
+{
+    tasPlayer->Pause();
+}
+
+CON_COMMAND(sar_tas_resume, "Resumes TAS playback.\n")
+{
+    tasPlayer->Resume();
+}
+
+CON_COMMAND(sar_tas_advance, "Advances TAS playback by one tick.\n")
+{
+    tasPlayer->AdvanceFrame();
 }
 
 CON_COMMAND(sar_tas_stop, "Stop TAS playing\n")

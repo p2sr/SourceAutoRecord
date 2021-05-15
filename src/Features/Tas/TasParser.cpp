@@ -80,6 +80,8 @@ bool TasParser::ParseHeader(std::string line)
             type = TasStartType::StartImmediately;
         } else if (startParams[1] == "next") {
             type = TasStartType::WaitForNewSession;
+        } else if (startParams[1] == "cm") {
+            type = TasStartType::ChangeLevelCM;
         }
     }
 
@@ -356,7 +358,7 @@ void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, s
         fixedName = name.substr(0, lastdot);
     }
 
-    std::ofstream file(fixedName + "_raw.p2tas");
+    std::ofstream file(fixedName + "_raw." + TAS_SCRIPT_EXT);
 
     std::sort(framebulks.begin(), framebulks.end(),
         [](const TasFramebulk& a, const TasFramebulk& b) {
@@ -373,6 +375,9 @@ void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, s
         break;
     case TasStartType::StartImmediately:
         file << "start now";
+        break;
+    case TasStartType::ChangeLevelCM:
+        file << "start cm";
         break;
     default:
         file << "start next";

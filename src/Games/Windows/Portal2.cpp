@@ -217,6 +217,8 @@ void Portal2::LoadOffsets()
     CreateEntityByName = 14; //CServerTool::CreateEntityByName
     DispatchSpawn = 15; //CServerTool::DispatchSpawn
     ClientCommand = 39; // CVEngineServer
+    IsServerPaused = 81; // CVEngineServer
+    ServerPause = 121; // CVEngineServer
     TraceRay = 5; // IEngineTrace
     IsPlayer = 85; // CBasePlayer
     AcceptInput = 40; // CBasePlayer

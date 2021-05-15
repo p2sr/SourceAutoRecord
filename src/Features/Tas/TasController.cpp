@@ -12,11 +12,12 @@
 Variable cl_pitchdown;
 Variable cl_pitchup;
 
-Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 3, "Debugs controller.");
+Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 4, "Debugs controller.");
 
 Variable sensitivity;
 void LockMouse()
 {
+    sensitivity.SetValue(std::to_string(sensitivity.ThisPtr()->m_fValue).c_str());
     sensitivity.ThisPtr()->m_fValue = 0;
 }
 void UnlockMouse()
@@ -87,7 +88,23 @@ void TasController::Disable()
         buttons[i].state = false;
     }
     UnlockMouse();
+    ResetDigitalInputs();
 }
+
+
+void TasController::ResetDigitalInputs()
+{
+    for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
+        TasControllerButton* button = &buttons[i];
+        if (button->command[0] == '+') {
+            char cmdbuf[128];
+            snprintf(cmdbuf, sizeof(cmdbuf), "%s", button->command);
+            cmdbuf[0] = '-';
+            engine->ExecuteCommand(cmdbuf, true);
+        }
+    }
+}
+
 
 void TasController::AddCommandToQueue(std::string c)
 {
@@ -129,7 +146,12 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
             auto timePassed = std::chrono::duration_cast<std::chrono::microseconds>(now - g_lastControllerMove).count();
             console->Print("Time since last valid ControllerMove: %dus\n", timePassed);
         }
+
         g_lastControllerMove = now;
+
+        if (debugType == 4) {
+            console->Print("ControllerMove tick count: %d\n", cmd->tick_count);
+        }
     }
 
     // affect inputs only if the virtual controller is enabled
@@ -206,8 +228,8 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd* cmd)
         QAngle viewangles;
         viewangles = engine->GetAngles(GET_SLOT());
 
-        viewangles.y += viewAnalog.x;
-        viewangles.x += viewAnalog.y;
+        viewangles.y -= viewAnalog.x; // positive values should rotate right.
+        viewangles.x -= viewAnalog.y; // positive values should rotate up.
         viewangles.x = std::min(std::max(viewangles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
 
         cmd->mousedx = (int)(-viewAnalog.x);

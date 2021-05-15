@@ -9,6 +9,9 @@
 #include "Command.hpp"
 #include "Variable.hpp"
 
+#define TAS_SCRIPTS_DIR "tas"
+#define TAS_SCRIPT_EXT "p2tas"
+
 class TasToolCommand;
 
 struct TasFramebulk {
@@ -25,6 +28,7 @@ struct TasFramebulk {
 enum TasStartType {
     UnknownStart,
     ChangeLevel,
+    ChangeLevelCM,
     LoadQuicksave,
     StartImmediately,
     WaitForNewSession,
@@ -53,9 +57,12 @@ class TasPlayer : public Feature {
 private:
     bool active = false;
     bool ready = false;
+    bool paused = false;
     int startTick = 0; // used to store the absolute tick in which player started playing the script
     int currentTick = 0; // tick position of script player, relative to its starting point.
     int lastTick = 0; // last tick of script, relative to its starting point
+
+    int pauseTick = 0; // the tick TasPlayer should pause the game at, used for frame advancing.
 
     TasStartInfo startInfo;
     std::string tasFileName;
@@ -73,6 +80,11 @@ public:
     void Start();
     void PostStart();
     void Stop();
+
+    void Pause();
+    void Resume();
+    void AdvanceFrame();
+    bool IsPaused();
 
     TasFramebulk GetRawFramebulkAt(int tick);
     TasPlayerInfo GetPlayerInfo(void* player, CMoveData* pMove);
@@ -92,5 +104,8 @@ public:
 extern Variable sar_tas_debug;
 extern Variable sar_tas_tools_enabled;
 extern Variable sar_tas_autosave_raw;
+
+extern Variable sar_tas_skipto;
+extern Variable sar_tas_pauseat;
 
 extern TasPlayer* tasPlayer;

@@ -27,11 +27,12 @@ void AutoStrafeTool::Apply(TasFramebulk& fb, const TasPlayerInfo& rawPInfo)
     }
 
     // forcing pitch to be 0 at all times
+    fb.viewAnalog.y = pInfo.angles.x;
     pInfo.angles.x = 0;
-    fb.viewAnalog.y = -pInfo.angles.x;
+    
     
     // adjusting fake pinfo to have proper angles
-    pInfo.angles.y += fb.viewAnalog.x;
+    pInfo.angles.y -= fb.viewAnalog.x;
 
     float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
 
@@ -41,7 +42,12 @@ void AutoStrafeTool::Apply(TasFramebulk& fb, const TasPlayerInfo& rawPInfo)
         this->lastTurnDir = 0;
 
         if (asParams->strafeDir.type == CURRENT) {
-            asParams->strafeDir.angle = velAngle;
+            if (asParams->strafeDir.useVelAngle) {
+                asParams->strafeDir.angle = velAngle;
+            } else {
+                asParams->strafeDir.angle = pInfo.angles.x;
+            }
+            
             FollowLine(pInfo);
         }
 
@@ -62,7 +68,7 @@ void AutoStrafeTool::Apply(TasFramebulk& fb, const TasPlayerInfo& rawPInfo)
         fb.moveAnalog.y = cosf(moveAngle);
     } else if (asParams->strafeType == AutoStrafeType::VECTORIAL_CAM) {
         float lookAngle = this->shouldFollowLine ? asParams->strafeDir.angle : velAngle;
-        fb.viewAnalog.x = lookAngle - pInfo.angles.y;
+        fb.viewAnalog.x = -(lookAngle - pInfo.angles.y);
         float moveAngle = DEG2RAD(angle - lookAngle);
         fb.moveAnalog.x = -sinf(moveAngle);
         fb.moveAnalog.y = cosf(moveAngle);
@@ -78,7 +84,7 @@ void AutoStrafeTool::Apply(TasFramebulk& fb, const TasPlayerInfo& rawPInfo)
         float lookAngle = RAD2DEG(atan2f(fb.moveAnalog.x, fb.moveAnalog.y));
 
         QAngle newAngle = { 0, angle + lookAngle, 0 };
-        fb.viewAnalog.x += newAngle.y - pInfo.angles.y;
+        fb.viewAnalog.x -= newAngle.y - pInfo.angles.y;
     }
 }
 
@@ -341,7 +347,7 @@ void AutoStrafeTool::FollowLine(const TasPlayerInfo& pInfo)
 std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::string> vp)
 {
     AutoStrafeType type = VECTORIAL;
-    AutoStrafeDirection dir{ CURRENT, 0 };
+    AutoStrafeDirection dir{ CURRENT, false, 0 };
     AutoStrafeSpeed speed = { SPECIFIED, 10000.0f };
 
     if (vp.size() == 0) {
@@ -372,9 +378,15 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
         }
 
         //dir (using large numbers for left and right because angle is clamped to range -180 and 180)
+        else if (param == "forwardvel") {
+            dir.type = CURRENT;
+            dir.useVelAngle = true;
+        } 
         else if (param == "forward") {
             dir.type = CURRENT;
-        } else if (param == "left") {
+            dir.useVelAngle = false;
+        }
+        else if (param == "left") {
             dir.type = SPECIFIED;
             dir.angle = 10000.0f;
         } else if (param == "right") {

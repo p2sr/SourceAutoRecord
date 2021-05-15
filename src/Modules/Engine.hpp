@@ -23,6 +23,7 @@ public:
     Interface* s_ServerPlugin = nullptr;
     Interface* engineTool = nullptr;
     Interface* engineTrace = nullptr;
+    Interface* g_VEngineServer = nullptr;
 
     using _ClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
     using _ExecuteClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
@@ -37,6 +38,8 @@ public:
     using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
     using _AddText = void(__rescall*)(void* thisptr, const char* pText, int nTickDelay);
     using _ClientCommand = int (*)(void* thisptr, void* pEdict, const char* szFmt, ...);
+    using _IsServerPaused = bool(*)(void* thisptr);
+    using _ServerPause = bool(*)(void* thisptr, bool bPause, bool bForce);
     using _GetLocalClient = int (*)(int index);
     using _HostFrameTime = float (*)(void* thisptr);
     using _ClientTime = float (*)(void* thisptr);
@@ -86,6 +89,8 @@ public:
     _ScreenPosition ScreenPosition = nullptr;
     _ConPrintEvent ConPrintEvent = nullptr;
     _ClientCommand ClientCommand = nullptr;
+    _IsServerPaused IsServerPaused = nullptr;
+    _ServerPause ServerPause = nullptr;
     _GetLocalClient GetLocalClient = nullptr;
     _HostFrameTime HostFrameTime = nullptr;
     _ClientTime ClientTime = nullptr;
