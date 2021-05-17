@@ -244,7 +244,10 @@ bool Engine::TraceFromCamera(float distMax, CGameTrace& tr)
 
 ON_EVENT(PRE_TICK) {
     if (!engine->demoplayer->IsPlaying()) {
-        if (sar_pause_at.GetInt() != -1) {
+        if (sar_pause_at.GetInt() == -1) {
+            engine->hasPaused = true; // We don't want to randomly pause if the user sets sar_pause_at in this session
+            engine->isPausing = false;
+        } else {
             if (!engine->hasPaused && event.tick >= sar_pause_at.GetInt()) {
                 engine->ExecuteCommand("pause", true);
                 engine->hasPaused = true;
