@@ -328,7 +328,9 @@ ON_EVENT(PRE_TICK) {
 
 ON_EVENT(PRE_TICK) {
     if (!engine->demoplayer->IsPlaying()) {
-        if (sar_record_at.GetInt() != -1 && !engine->hasRecorded && event.tick >= sar_record_at.GetInt()) {
+        if (sar_record_at.GetInt() == -1) {
+            engine->hasRecorded = true; // We don't want to randomly start recording if the user sets sar_record_at in this session
+        } else if (!engine->hasRecorded && event.tick >= sar_record_at.GetInt()) {
             std::string cmd = std::string("record \"") + sar_record_at_demo_name.GetString() + "\"";
             engine->ExecuteCommand(cmd.c_str(), true);
             engine->hasRecorded = true;
