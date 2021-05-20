@@ -49,7 +49,7 @@ void Sync::UpdateSync(const CUserCmd* cmd)
     auto currentAngles = server->GetAbsAngles(player);
 
     if (sar_strafesync_noground.GetBool()) {
-        unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + 344); // m_hGroundEntity
+        unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + Offsets::S_m_hGroundEntity);
         bool grounded = groundEntity != 0xFFFFFFFF;
         if (grounded) {
             return;
@@ -63,11 +63,8 @@ void Sync::UpdateSync(const CUserCmd* cmd)
         }
     }
 
-    auto mvLeft = cmd->buttons & IN_MOVELEFT;
-    auto mvRight = cmd->buttons & IN_MOVERIGHT;
-
-    auto oldMvLeft = this->lastButtons & IN_MOVELEFT;
-    auto oldMvRight = this->lastButtons & IN_MOVERIGHT;
+    bool mvLeft = cmd->buttons & IN_MOVELEFT;
+    bool mvRight = cmd->buttons & IN_MOVERIGHT;
 
     float dtAngle = currentAngles.y - this->oldAngles.y;
     if (dtAngle > 180.f) {
@@ -76,7 +73,7 @@ void Sync::UpdateSync(const CUserCmd* cmd)
         dtAngle += 360.f;
     }
 
-    if (dtAngle > 0 && (mvLeft || mvRight)) { //Player turned left
+    if (dtAngle > 0 && (mvLeft ^ mvRight)) { //Player turned left
         ++this->strafeTick;
         if (mvLeft && !mvRight) {
             ++this->perfectSyncTick;
@@ -84,7 +81,7 @@ void Sync::UpdateSync(const CUserCmd* cmd)
         if (cmd->sidemove < 0) {
             ++this->accelTicks;
         }
-    } else if (dtAngle < 0 && (mvLeft || mvRight)) { //Player turned right
+    } else if (dtAngle < 0 && (mvLeft ^ mvRight)) { //Player turned right
         ++this->strafeTick;
         if (mvRight && !mvLeft) {
             ++this->perfectSyncTick;
