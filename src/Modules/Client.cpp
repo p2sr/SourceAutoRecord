@@ -284,6 +284,19 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
         inputHud.SetButtonBits(1, cmd->buttons);
     }
 
+    if (sar_strafesync.GetBool()) {
+        synchro->UpdateSync(nSlot, cmd);
+    }
+
+    strafeQuality.OnUserCmd(nSlot, *cmd);
+    void *player = client->GetPlayer(nSlot + 1);
+    if (player) {
+        unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
+        bool grounded = groundHandle != 0xFFFFFFFF;
+        groundFramesCounter->HandleMovementFrame(nSlot, grounded);
+        strafeQuality.OnMovement(nSlot, grounded);
+    }
+
     return result;
 }
 
