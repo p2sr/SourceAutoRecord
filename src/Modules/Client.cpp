@@ -185,7 +185,7 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
     }
 
     if (sar_strafesync.GetBool()) {
-        synchro->UpdateSync(cmd);
+        synchro->UpdateSync(engine->IsOrange() ? 1 : 0, cmd);
     }
 
     strafeQuality.OnUserCmd(engine->IsOrange() ? 1 : 0, *cmd);
@@ -209,6 +209,12 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
     if (in_forceuser.GetBool()) {
         inputHud.SetButtonBits(1, cmd->buttons);
     }
+
+    if (sar_strafesync.GetBool()) {
+        synchro->UpdateSync(1, cmd);
+    }
+
+    strafeQuality.OnUserCmd(1, *cmd);
 
     return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
 }

@@ -17,38 +17,25 @@ Variable sar_strafesync_noground("sar_strafesync_noground", "1", "0: Always run.
 Sync* synchro;
 
 Sync::Sync()
-    : lastButtons(0)
-    , oldAngles({ 0, 0, 0 })
-    , totalStrafeDelta(0)
-    , syncedStrafeDelta(0)
-    , strafeSync(100)
+    : totalStrafeDelta{0, 0}
+    , syncedStrafeDelta{0, 0}
+    , strafeSync{100, 100}
     , run(true)
 {
     this->hasLoaded = true;
     this->start = std::chrono::steady_clock::now();
 }
 
-void Sync::SetLastDatas(const int buttons, const QAngle& ang)
-{
-    this->lastButtons = buttons;
-    this->oldAngles = ang;
-}
-
-void Sync::UpdateSync(const CUserCmd* cmd)
+void Sync::UpdateSync(int slot, const CUserCmd* cmd)
 {
     if (!this->run) {
         return;
     }
 
-    auto player = server->GetPlayer(GET_SLOT() + 1);
-        if (!player) {
-            return;
-    }
-
-    auto currentAngles = server->GetAbsAngles(player);
+    auto player = client->GetPlayer(slot + 1);
 
     if (sar_strafesync_noground.GetBool()) {
-        unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + Offsets::S_m_hGroundEntity);
+        unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + Offsets::C_m_hGroundEntity);
         bool grounded = groundEntity != 0xFFFFFFFF;
         if (grounded) {
             return;
@@ -68,22 +55,20 @@ void Sync::UpdateSync(const CUserCmd* cmd)
     int dtAngle = cmd->mousedx;
 
     if (dtAngle < 0 && (mvLeft ^ mvRight)) { //Player turned left
-        this->totalStrafeDelta -= dtAngle;
+        this->totalStrafeDelta[slot] -= dtAngle;
         if (mvLeft && !mvRight) {
-            this->syncedStrafeDelta -= dtAngle;
+            this->syncedStrafeDelta[slot] -= dtAngle;
         }
     } else if (dtAngle > 0 && (mvLeft ^ mvRight)) { //Player turned right
-        this->totalStrafeDelta += dtAngle;
+        this->totalStrafeDelta[slot] += dtAngle;
         if (mvRight && !mvLeft) {
-            this->syncedStrafeDelta += dtAngle;
+            this->syncedStrafeDelta[slot] += dtAngle;
         }
     }
 
-    if (this->totalStrafeDelta) {
-        this->strafeSync = ((float)this->syncedStrafeDelta / (float)this->totalStrafeDelta) * 100.0f;
+    if (this->totalStrafeDelta[slot]) {
+        this->strafeSync[slot] = ((float)this->syncedStrafeDelta[slot] / (float)this->totalStrafeDelta[slot]) * 100.0f;
     }
-
-    this->SetLastDatas(cmd->buttons, currentAngles);
 }
 
 void Sync::PauseSyncSession()
@@ -98,20 +83,20 @@ void Sync::ResumeSyncSession()
 
 void Sync::ResetSyncSession()
 {
-    this->syncedStrafeDelta = 0;
-    this->totalStrafeDelta = 0;
-    this->strafeSync = 100;
+    this->syncedStrafeDelta[0] = this->syncedStrafeDelta[1] = 0;
+    this->totalStrafeDelta[0] = this->totalStrafeDelta[1] = 0;
+    this->strafeSync[0] = this->strafeSync[1] = 100;
     this->splits.clear();
 }
 
 void Sync::SplitSyncSession()
 {
-    this->splits.push_back(this->strafeSync);
+    this->splits.push_back(this->strafeSync[0]);
 }
 
-float Sync::GetStrafeSync()
+float Sync::GetStrafeSync(int slot)
 {
-    return std::clamp(this->strafeSync, 0.0f, 100.0f);
+    return std::clamp(this->strafeSync[slot], 0.0f, 100.0f);
 }
 
 // Commands

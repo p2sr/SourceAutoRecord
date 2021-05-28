@@ -10,12 +10,9 @@
 class Sync : public Feature {
 
 private:
-    int lastButtons;
-    QAngle oldAngles;
-
-    unsigned totalStrafeDelta;
-    unsigned syncedStrafeDelta;
-    float strafeSync;
+    unsigned totalStrafeDelta[2];
+    unsigned syncedStrafeDelta[2];
+    float strafeSync[2];
 
     bool run;
 
@@ -26,15 +23,14 @@ public:
 
 public:
     Sync();
-    void SetLastDatas(const int buttons, const QAngle& ang);
 
-    void UpdateSync(const CUserCmd* pMove);
+    void UpdateSync(int slot, const CUserCmd* pMove);
     void PauseSyncSession();
     void ResumeSyncSession();
     void ResetSyncSession();
     void SplitSyncSession();
 
-    float GetStrafeSync();
+    float GetStrafeSync(int slot);
 };
 
 extern Sync* synchro;

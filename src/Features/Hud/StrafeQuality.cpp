@@ -64,7 +64,7 @@ static inline void getSyncForTick(const TickInfo &tick, int *totalStrafe, int *s
 
 static inline void purgeOldTicks(int slot)
 {
-    while (g_ticks[slot].size() >= sar_strafe_quality_width.GetInt() + sar_strafe_quality_ticks.GetInt() - 1) {
+    while (g_ticks[slot].size() >= sar_strafe_quality_width.GetInt() + sar_strafe_quality_ticks.GetInt()) {
         g_ticks[slot].erase(g_ticks[slot].begin());
     }
 }
