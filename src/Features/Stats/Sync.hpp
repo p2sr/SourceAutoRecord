@@ -13,9 +13,8 @@ private:
     int lastButtons;
     QAngle oldAngles;
 
-    int strafeTick;
-    int perfectSyncTick;
-    int accelTicks;
+    unsigned totalStrafeDelta;
+    unsigned syncedStrafeDelta;
     float strafeSync;
 
     bool run;

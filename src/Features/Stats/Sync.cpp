@@ -11,7 +11,7 @@
 Variable sar_strafesync("sar_strafesync", "0", "Shows strafe sync stats.\n");
 Variable sar_strafesync_session_time("sar_strafesync_session_time", "0", 0, "In seconds. How much time should pass until session is reset.\n"
                                                                             "If 0, you'll have to reset the session manually.\n");
-Variable sar_strafesync_noground("sar_strafesync_noground", "0", "0: Always run.\n"
+Variable sar_strafesync_noground("sar_strafesync_noground", "1", "0: Always run.\n"
                                                                  "1: Do not run when on ground.\n");
 
 Sync* synchro;
@@ -19,9 +19,8 @@ Sync* synchro;
 Sync::Sync()
     : lastButtons(0)
     , oldAngles({ 0, 0, 0 })
-    , strafeTick(0)
-    , perfectSyncTick(0)
-    , accelTicks(0)
+    , totalStrafeDelta(0)
+    , syncedStrafeDelta(0)
     , strafeSync(100)
     , run(true)
 {
@@ -66,33 +65,26 @@ void Sync::UpdateSync(const CUserCmd* cmd)
     bool mvLeft = cmd->buttons & IN_MOVELEFT;
     bool mvRight = cmd->buttons & IN_MOVERIGHT;
 
-    float dtAngle = currentAngles.y - this->oldAngles.y;
-    if (dtAngle > 180.f) {
-        dtAngle -= 360.f;
-    } else if (dtAngle < -180.f) {
-        dtAngle += 360.f;
-    }
+    int dtAngle = cmd->mousedx;
 
-    if (dtAngle > 0 && (mvLeft ^ mvRight)) { //Player turned left
-        ++this->strafeTick;
+		// If you go through a portal, your angle changes quickly; let's try
+		// and detect that.
+
+
+    if (dtAngle < 0 && (mvLeft ^ mvRight)) { //Player turned left
+        this->totalStrafeDelta -= dtAngle;
         if (mvLeft && !mvRight) {
-            ++this->perfectSyncTick;
+            this->syncedStrafeDelta -= dtAngle;
         }
-        if (cmd->sidemove < 0) {
-            ++this->accelTicks;
-        }
-    } else if (dtAngle < 0 && (mvLeft ^ mvRight)) { //Player turned right
-        ++this->strafeTick;
+    } else if (dtAngle > 0 && (mvLeft ^ mvRight)) { //Player turned right
+        this->totalStrafeDelta += dtAngle;
         if (mvRight && !mvLeft) {
-            ++this->perfectSyncTick;
-        }
-        if (cmd->sidemove > 0) {
-            ++this->accelTicks;
+            this->syncedStrafeDelta += dtAngle;
         }
     }
 
-    if (this->strafeTick && this->accelTicks && this->perfectSyncTick) {
-        this->strafeSync = (float(this->perfectSyncTick) / float(this->strafeTick)) * 100.0f;
+    if (this->totalStrafeDelta) {
+        this->strafeSync = ((float)this->syncedStrafeDelta / (float)this->totalStrafeDelta) * 100.0f;
     }
 
     this->SetLastDatas(cmd->buttons, currentAngles);
@@ -110,8 +102,8 @@ void Sync::ResumeSyncSession()
 
 void Sync::ResetSyncSession()
 {
-    this->perfectSyncTick = 0;
-    this->strafeTick = 0;
+    this->syncedStrafeDelta = 0;
+    this->totalStrafeDelta = 0;
     this->strafeSync = 100;
     this->splits.clear();
 }
