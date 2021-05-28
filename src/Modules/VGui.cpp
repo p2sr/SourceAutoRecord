@@ -94,7 +94,7 @@ bool VGui::IsUIVisible(){
 
 bool VGui::Init()
 {
-    this->enginevgui = Interface::Create(this->Name(), "VEngineVGui0");
+    this->enginevgui = Interface::Create(this->Name(), "VEngineVGui001");
     if (this->enginevgui) {
         this->IsGameUIVisible = this->enginevgui->Original<_IsGameUIVisible>(Offsets::IsGameUIVisible);
 

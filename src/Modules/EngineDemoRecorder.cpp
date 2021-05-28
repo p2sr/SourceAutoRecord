@@ -270,7 +270,13 @@ DETOUR_COMMAND(EngineDemoRecorder::record)
 bool EngineDemoRecorder::Init()
 {
     auto disconnect = engine->cl->Original(Offsets::Disconnect);
-    auto demorecorder = Memory::DerefDeref<void*>(disconnect + Offsets::demorecorder);
+    void *demorecorder;
+#ifndef _WIN32
+    if (sar.game->Is(SourceGame_EIPRelPIC)) {
+        demorecorder = *(void **)(disconnect + 10 + *(uint32_t *)(disconnect + 12) + *(uint32_t *)(disconnect + 116));
+    } else
+#endif
+    demorecorder = Memory::DerefDeref<void*>(disconnect + Offsets::demorecorder);
     if (this->s_ClientDemoRecorder = Interface::Create(demorecorder)) {
         this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::SetSignonState_Hook, EngineDemoRecorder::SetSignonState, Offsets::SetSignonState);
         this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::StartRecording_Hook, EngineDemoRecorder::StartRecording, Offsets::StartRecording);
@@ -282,6 +288,11 @@ bool EngineDemoRecorder::Init()
         this->m_nDemoNumber = reinterpret_cast<int*>((uintptr_t)demorecorder + Offsets::m_nDemoNumber);
         this->m_bRecording = reinterpret_cast<bool*>((uintptr_t)demorecorder + Offsets::m_bRecording);
 
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            engine->net_time = (double *)((uintptr_t)this->GetRecordingTick + 6 + *(uint32_t *)((uintptr_t)this->GetRecordingTick + 8) + *(uint32_t *)((uintptr_t)this->GetRecordingTick + 31));
+        } else
+#endif
         engine->net_time = Memory::Deref<double*>((uintptr_t)this->GetRecordingTick + Offsets::net_time);
     }
 

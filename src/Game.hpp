@@ -10,6 +10,10 @@ enum SourceGameVersion {
     SourceGame_PortalStoriesMel = (1 << 6),
     SourceGame_ThinkingWithTimeMachine = (1 << 7),
     SourceGame_PortalReloaded = (1 << 11),
+
+#ifndef _WIN32
+    SourceGame_EIPRelPIC = SourceGame_Portal2,
+#endif
 };
 
 class Game {

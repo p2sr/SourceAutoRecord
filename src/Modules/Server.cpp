@@ -31,6 +31,7 @@
 #include "Utils.hpp"
 #include "Variable.hpp"
 #include "Event.hpp"
+#include "Hook.hpp"
 
 #define RESET_COOP_PROGRESS_MESSAGE_TYPE "coop-reset"
 
@@ -317,9 +318,20 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 }
 #endif
 
-// Not a normal detour! Only gets first 4 args and doesn't have to call
-// original function
-static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, void* activator, void* caller, variant_t *parameter)
+#ifndef _WIN32
+extern Hook g_AcceptInputHook;
+#endif
+
+// FIXME: THIS HOOK IS FUCKING ATROCIOUS!!!!
+// We have to trampoline it rather than vtable patching, but because
+// Linux has more variations, we use Hook for it there. However, because
+// on Windows it's thiscall, we can't do that! We should add thiscall
+// support to Hook.
+#ifdef _WIN32
+static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void* activator, void* caller, variant_t parameter)
+#else
+static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void* activator, void* caller, variant_t &parameter, int outputID)
+#endif
 {
     const char *entName = server->GetEntityName(thisptr);
     const char *className = server->GetEntityClassName(thisptr);
@@ -332,14 +344,14 @@ static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, voi
         activatorSlot = server->GetSplitScreenPlayerSlot(activator);
     }
 
-    SpeedrunTimer::TestInputRules(entName, className, inputName, parameter->ToString(), activatorSlot);
+    SpeedrunTimer::TestInputRules(entName, className, inputName, parameter.ToString(), activatorSlot);
 
     if (engine->demorecorder->isRecordingDemo) {
         size_t entNameLen = strlen(entName);
         size_t classNameLen = strlen(className);
         size_t inputNameLen = strlen(inputName);
 
-        const char *paramStr = parameter->ToString();
+        const char *paramStr = parameter.ToString();
 
         size_t len = entNameLen + classNameLen + inputNameLen + strlen(paramStr) + 5;
         if (activatorSlot) {
@@ -361,7 +373,13 @@ static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, voi
         engine->demorecorder->RecordData(data, len);
         free(data);
     }
-    //console->DevMsg("%.4d INPUT '%s' TARGETNAME '%s' CLASSNAME '%s' PARAM '%s'\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr), parameter->ToString());
+    //console->DevMsg("%.4d INPUT '%s' TARGETNAME '%s' CLASSNAME '%s' PARAM '%s'\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr), parameter.ToString());
+
+#ifndef _WIN32
+    g_AcceptInputHook.Disable();
+    server->AcceptInput(thisptr, inputName, activator, caller, &parameter, outputID);
+    g_AcceptInputHook.Enable();
+#endif
 }
 
 // This is kinda annoying - it's got to be in a separate function
@@ -369,7 +387,11 @@ static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, voi
 // of CBaseEntity::AcceptInput, but we generally can't do that until
 // we've loaded into a level.
 static bool IsAcceptInputTrampolineInitialized = false;
+#ifdef _WIN32
 static uint8_t OriginalAcceptInputCode[8];
+#else
+Hook g_AcceptInputHook(&AcceptInput_Hook);
+#endif
 static void InitAcceptInputTrampoline()
 {
     void* ent = server->m_EntPtrArray[0].m_pEntity;
@@ -377,14 +399,12 @@ static void InitAcceptInputTrampoline()
     IsAcceptInputTrampolineInitialized = true;
     server->AcceptInput = Memory::VMT<Server::_AcceptInput>(ent, Offsets::AcceptInput);
 
-    // Trampoline! Bouncy bouncy!
-
+#ifdef _WIN32
     // Get around memory protection so we can modify code
     Memory::UnProtect((void*)server->AcceptInput, 8);
 
     memcpy(OriginalAcceptInputCode, (void*)server->AcceptInput, sizeof OriginalAcceptInputCode);
 
-#ifdef _WIN32
     // Create our code
     static uint8_t trampolineCode[] = {
         0x55,             // 00: push ebp                 (we overwrote these 2 instructions)
@@ -403,7 +423,7 @@ static void InitAcceptInputTrampoline()
         0xE9, 0, 0, 0, 0, // 20: jmp ??                   (to be filled with the address of code to return to)
     };
 
-    *(uint32_t*)(trampolineCode + 0x13) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x13 + 4);
+    *(uint32_t*)(trampolineCode + 0x13) = (uint32_t)&AcceptInput_Hook - ((uint32_t)trampolineCode + 0x13 + 4);
     *(uint32_t*)(trampolineCode + 0x1C) = *(uint32_t*)((uint32_t)server->AcceptInput + 4); // The address we need to steal is 4 bytes into the function
     *(uint32_t*)(trampolineCode + 0x21) = (uint32_t)server->AcceptInput + 8 - ((uint32_t)trampolineCode + 0x21 + 4);
 
@@ -419,31 +439,7 @@ static void InitAcceptInputTrampoline()
     ((uint8_t*)server->AcceptInput)[6] = 0x90;
     ((uint8_t*)server->AcceptInput)[7] = 0x90;
 #else
-    // Create our code
-    static uint8_t trampolineCode[] = {
-        0x55,             // 00: push ebp                 (we overwrote these 4 instructions)
-        0x89, 0xE5,       // 01: mov ebp, esp
-        0x57,             // 03: push edi
-        0x56,             // 04: push esi
-        0xFF, 0x75, 0x18, // 05: push dword [ebp + 0x18]  (we want to take the first 5 args in our detour function)
-        0xFF, 0x75, 0x14, // 08: push dword [ebp + 0x14]
-        0xFF, 0x75, 0x10, // 0B: push dword [ebp + 0x10]
-        0xFF, 0x75, 0x0C, // 0E: push dword [ebp + 0x0C]
-        0xFF, 0x75, 0x08, // 11: push dword [ebp + 0x08]
-        0xE8, 0, 0, 0, 0, // 14: call ??                  (to be filled with address of detour function)
-        0x83, 0xC4, 0x14, // 19: add esp, 0x14            (pop the args to the detour function)
-        0xE9, 0, 0, 0, 0, // 1C: jmp ??                   (to be filled with address of code to return to)
-    };
-
-    *(uint32_t*)(trampolineCode + 0x15) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x15 + 4);
-    *(uint32_t*)(trampolineCode + 0x1D) = (uint32_t)server->AcceptInput + 5 - ((uint32_t)trampolineCode + 0x1D + 4); // Return just after the code we overwrote (hence +5)
-
-    Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
-
-    // Write the trampoline instruction
-    *(uint8_t*)server->AcceptInput = 0xE9; // 32-bit relative JMP
-    uint32_t jumpAddr = (uint32_t)server->AcceptInput + 1;
-    *(uint32_t*)jumpAddr = (uint32_t)trampolineCode - (jumpAddr + 4);
+    g_AcceptInputHook.SetFunc(server->AcceptInput);
 #endif
 }
 
@@ -491,8 +487,8 @@ static void resetCoopProgress(void *data, size_t size)
 
 bool Server::Init()
 {
-    this->g_GameMovement = Interface::Create(this->Name(), "GameMovement0");
-    this->g_ServerGameDLL = Interface::Create(this->Name(), "ServerGameDLL0");
+    this->g_GameMovement = Interface::Create(this->Name(), "GameMovement001");
+    this->g_ServerGameDLL = Interface::Create(this->Name(), "ServerGameDLL005");
 
     if (this->g_GameMovement) {
         this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
@@ -504,7 +500,13 @@ bool Server::Init()
 
         auto ctor = this->g_GameMovement->Original(0);
         auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
-        auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
+        uintptr_t baseOffset;
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            baseOffset = baseCtor + 5 + *(uint32_t *)(baseCtor + 6) + *(uint32_t *)(baseCtor + 19);
+        } else
+#endif
+        baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
         Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*), &Server::AirMoveBase);
 
         Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &Server::CheckJumpButtonBase);
@@ -522,8 +524,13 @@ bool Server::Init()
 #endif
     }
 
-    if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS0")) {
+    if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS001")) {
         auto GetIServerEntity = g_ServerTools->Original(Offsets::GetIServerEntity);
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            this->m_EntPtrArray = (CEntInfo *)(GetIServerEntity + 12 + *(uint32_t *)(GetIServerEntity + 14) + *(uint32_t *)(GetIServerEntity + 54) + 4);
+        } else
+#endif
         Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
 
         this->CreateEntityByName = g_ServerTools->Original<_CreateEntityByName>(Offsets::CreateEntityByName);
@@ -538,6 +545,11 @@ bool Server::Init()
     if (this->g_ServerGameDLL) {
         auto Think = this->g_ServerGameDLL->Original(Offsets::Think);
         Memory::Read<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex, &this->UTIL_PlayerByIndex);
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            this->gpGlobals = *(CGlobalVars **)((uintptr_t)this->UTIL_PlayerByIndex + 5 + *(uint32_t *)((uintptr_t)UTIL_PlayerByIndex + 7) + *(uint32_t *)((uintptr_t)UTIL_PlayerByIndex + 21));
+        } else
+#endif
         Memory::DerefDeref<CGlobalVars*>((uintptr_t)this->UTIL_PlayerByIndex + Offsets::gpGlobals, &this->gpGlobals);
 
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
@@ -550,8 +562,13 @@ bool Server::Init()
     GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "55 8B EC 51 8B 45 08 50 8D 4D FC 51 B9 ? ? ? ? E8 ? ? ? ? 66 8B 55 FC B8 FF FF 00 00", 0);
     GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "55 8B EC 80 3D ? ? ? ? 00 75 1F 8B 45 08 85 C0 78 18 3B 05 ? ? ? ? 7D 10 8B 4D 0C 8B 15 ? ? ? ? 8D 04 40 89 4C 82 08", 0);
 #else
-    GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "55 89 E5 53 8D 45 F6 83 EC 24 8B 55 08 C7 44 24 04 ? ? ? ? 89 04 24 89 54 24 08", 0);
-    GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "80 3D ? ? ? ? 00 55 89 E5 8B 45 08 75 1E 85 C0 78 1A 3B 05 ? ? ? ? 7D 12 8B 15", 0);
+    if (sar.game->Is(SourceGame_EIPRelPIC)) {
+        GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "53 E8 ? ? ? ? 81 ? ? ? ? 00 83 EC 18 8D 44 24 0E 83 EC 04 FF 74 24 24 8D ? ? ? ? ? 52 50 E8 ? ? ? ? 0F B7 4C 24 1A", 0);
+        GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "E8 ? ? ? ? 05 ? ? ? ? 8B 54 24 04 80 B8 ? ? ? ? 01 74 21 85 D2 78 1D 3B 90 ? ? ? ? 7D 15 8B 88 ? ? ? ? 8D 14 52 8D 14 91", 0);
+    } else {
+        GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "55 89 E5 53 8D 45 F6 83 EC 24 8B 55 08 C7 44 24 04 ? ? ? ? 89 04 24 89 54 24 08", 0);
+        GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "80 3D ? ? ? ? 00 55 89 E5 8B 45 08 75 1E 85 C0 78 1A 3B 05 ? ? ? ? 7D 12 8B 15", 0);
+    }
 #endif
 
     // Remove the limit on how quickly you can use 'say'
@@ -559,7 +576,7 @@ bool Server::Init()
 #ifdef _WIN32
     uintptr_t insn_addr = (uintptr_t)say_callback + 52;
 #else
-    uintptr_t insn_addr = (uintptr_t)say_callback + 88;
+    uintptr_t insn_addr = (uintptr_t)say_callback + (sar.game->Is(SourceGame_EIPRelPIC) ? 67 : 88);
 #endif
     // This is the location of an ADDSD instruction which adds 0.66
     // to the current time. If we instead *subtract* 0.66, we'll
@@ -615,10 +632,10 @@ CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop 
 }
 void Server::Shutdown()
 {
+#if _WIN32
     if (IsAcceptInputTrampolineInitialized) {
         memcpy((void*)server->AcceptInput, OriginalAcceptInputCode, 8);
     }
-#if _WIN32
     MH_UNHOOK(this->AirMove_Mid);
 #endif
     Interface::Delete(this->g_GameMovement);

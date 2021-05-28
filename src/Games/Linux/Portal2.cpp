@@ -84,7 +84,7 @@ void Portal2::LoadOffsets()
     Create = 25; // ConVar
     GetScreenSize = 5; // CEngineClient
     ClientCmd = 7; // CEngineClient
-    GetClientStateFunction = 11; // CEngineClient::ClientCmd
+    GetClientStateFunction = 16; // CEngineClient::ClientCmd
     Cbuf_AddText = 45; // CEngineClient::ClientCmd
     IsPaused = 86; // CEngineClient
     Con_IsVisible = 11; // CEngineClient
@@ -94,7 +94,7 @@ void Portal2::LoadOffsets()
     GetLocalPlayer = 12; // CEngineClient
     GetViewAngles = 18; // CEngineClient
     SetViewAngles = 19; // CEngineClient
-    GetLocalClient = 92; // CEngineClient::SetViewAngles
+    GetLocalClient = 98; // CEngineClient::SetViewAngles
     viewangles = 19012; // CEngineClient::SetViewAngles
     GetMaxClients = 20; // CEngineClient
     GetGameDirectory = 35; // CEngineClient
@@ -126,7 +126,7 @@ void Portal2::LoadOffsets()
     ProcessTick = 12; // CClientState
     tickcount = 74; // CClientState::ProcessTick
     interval_per_tick = 82; // CClientState::ProcessTick
-    HostState_OnClientConnected = 1523; // CClientState::SetSignonState
+    HostState_OnClientConnected = 1503; // CClientState::SetSignonState
     hoststate = 9; // HostState_OnClientConnected
     Disconnect = 37; //  CClientState
     demoplayer = 92; // CClientState::Disconnect
@@ -139,10 +139,10 @@ void Portal2::LoadOffsets()
     AddListener = 4; // CGameEventManager
     RemoveListener = 6; // CGameEventManager
     FireEventClientSide = 9; // CGameEventManager
-    FireEventIntern = 36; // CGameEventManager::FireEventClientSide
-    ConPrintEvent = 254; // CGameEventManager::FireEventIntern
-    AutoCompletionFunc = 37; // listdemo_CompletionFunc
-    Key_SetBinding = 60; // unbind
+    FireEventIntern = 16; // CGameEventManager::FireEventClientSide
+    ConPrintEvent = 320; // CGameEventManager::FireEventIntern
+    AutoCompletionFunc = 46; // listdemo_CompletionFunc
+    Key_SetBinding = 73; // unbind
     IsRunningSimulation = 12; // CEngineAPI
     Init = 3; // CEngineAPI
     eng = 7; // CEngineAPI::IsRunningSimulation
@@ -167,7 +167,7 @@ void Portal2::LoadOffsets()
     SetPosition = 47; // IPhysicsObject
     SetVelocity = 51; // IPhysicsObject
     EnableGravity = 14; // IPhysicsObject
-    VideoMode_Create = 104; // CEngineAPI::Init
+    VideoMode_Create = 120; // CEngineAPI::Init
     videomode = 183; // VideoMode_Create
     GetModeWidth = 15; // IVideoMode
     GetModeHeight = 16; // IVideoMode
@@ -197,7 +197,7 @@ void Portal2::LoadOffsets()
     PlayerMove = 16; // CPortalGameMovement
     AirAccelerate = 23; // CPortalGameMovement
     AirMove = 24; // CPortalGameMovement
-    AirMove_Offset1 = 14; // CPortalGameMovement::~CPortalGameMovement
+    AirMove_Offset1 = 29; // CPortalGameMovement::~CPortalGameMovement
     AirMove_Offset2 = 12; // CGameMovement::~CGameMovement
     FinishGravity = 35; // CPortalGameMovement
     CheckJumpButton = 37; // CPortalGameMovement
@@ -207,7 +207,7 @@ void Portal2::LoadOffsets()
     GetAllServerClasses = 10; // CServerGameDLL
     IsRestoring = 24; // CServerGameDLL
     Think = 31; // CServerGameDLL
-    UTIL_PlayerByIndex = 61; // CServerGameDLL::Think
+    UTIL_PlayerByIndex = 70; // CServerGameDLL::Think
     gpGlobals = 12; // UTIL_PlayerByIndex
     player = 4; // CPortalGameMovement::PlayerMove
     m_MoveType = 226; // CBasePlayer::UpdateStepSound
@@ -247,13 +247,13 @@ void Portal2::LoadOffsets()
     C_m_vecAbsOrigin = 136; // C_BasePlayer::GetAbsOrigin
     C_m_angAbsRotation = 172; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
-    GetClientMode = 11; // CHLClient::HudProcessInput
+    GetClientMode = 21; // CHLClient::HudProcessInput
     g_pClientMode = 25; // GetClientMode
     CreateMove = 25; // ClientModeShared
     GetName = 11; // CHud
     ShouldDraw = 12; // CHUDQuickInfo
-    GetHud = 104; // cc_leaderboard_enable
-    FindElement = 120; // cc_leaderboard_enable
+    GetHud = 146; // cc_leaderboard_enable
+    FindElement = 161; // cc_leaderboard_enable
     ChatPrintf = 25; // CBaseHudChat
     MsgFunc_SayText2 = 32; // CBaseHudChat
     DecodeUserCmdFromBuffer = 7; // CInput
@@ -265,8 +265,8 @@ void Portal2::LoadOffsets()
     g_Input = 1; // CHLClient::IN_ActivateMouse
     GetButtonBits = 2; // CInput
     JoyStickApplyMovement = 64; // CInput
-    KeyDown = 295; // CInput::JoyStickApplyMovement
-    KeyUp = 341; // CInput::JoyStickApplyMovement
+    KeyDown = 208; // CInput::JoyStickApplyMovement
+    KeyUp = 284; // CInput::JoyStickApplyMovement
     OverrideView = 19; // ClientModeShared
 
     // vguimatsurface.so
@@ -279,8 +279,8 @@ void Portal2::LoadOffsets()
     DrawSetTextColor = 24; // CMatSystemSurface
     GetFontTall = 72; // CMatSystemSurface
     PaintTraverseEx = 117; // CMatSystemSurface
-    StartDrawing = 692; // CMatSystemSurface::PaintTraverseEx
-    FinishDrawing = 627; // CMatSystemSurface::PaintTraverseEx
+    StartDrawing = 559; // CMatSystemSurface::PaintTraverseEx
+    FinishDrawing = 430; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 160; // CMatSystemSurface
     DrawTextLen = 163; // CMatSystemSurface
     GetKernedCharWidth = 147; // CMatSystemSurface

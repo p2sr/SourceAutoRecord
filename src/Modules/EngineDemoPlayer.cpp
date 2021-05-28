@@ -195,7 +195,13 @@ DETOUR(EngineDemoPlayer::StopPlayback)
 bool EngineDemoPlayer::Init()
 {
     auto disconnect = engine->cl->Original(Offsets::Disconnect);
-    auto demoplayer = Memory::DerefDeref<void*>(disconnect + Offsets::demoplayer);
+    void *demoplayer;
+#ifndef _WIN32
+    if (sar.game->Is(SourceGame_EIPRelPIC)) {
+        demoplayer = *(void **)(disconnect + 10 + *(uint32_t *)(disconnect + 12) + *(uint32_t *)(disconnect + 100));
+    } else
+#endif
+    demoplayer = Memory::DerefDeref<void*>(disconnect + Offsets::demoplayer);
     if (this->s_ClientDemoPlayer = Interface::Create(demoplayer)) {
         this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StartPlayback_Hook, EngineDemoPlayer::StartPlayback, Offsets::StartPlayback);
         this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StopPlayback_Hook, EngineDemoPlayer::StopPlayback, Offsets::StopPlayback);

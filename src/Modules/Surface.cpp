@@ -89,7 +89,7 @@ void Surface::DrawColoredLine(int x0, int y0, int x1, int y1, Color clr)
 }
 bool Surface::Init()
 {
-    this->matsurface = Interface::Create(this->Name(), "VGUI_Surface0", false);
+    this->matsurface = Interface::Create(this->Name(), "VGUI_Surface031", false);
     if (this->matsurface) {
         this->DrawSetColor = matsurface->Original<_DrawSetColor>(Offsets::DrawSetColor);
         this->DrawFilledRect = matsurface->Original<_DrawFilledRect>(Offsets::DrawFilledRect);

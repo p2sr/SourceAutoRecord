@@ -42,7 +42,7 @@ DETOUR(InputSystem::SleepUntilInput, int nMaxSleepTimeMS)
 
 bool InputSystem::Init()
 {
-    this->g_InputSystem = Interface::Create(this->Name(), "InputSystemVersion0");
+    this->g_InputSystem = Interface::Create(this->Name(), "InputSystemVersion001");
     if (this->g_InputSystem) {
         this->StringToButtonCode = this->g_InputSystem->Original<_StringToButtonCode>(Offsets::StringToButtonCode);
 

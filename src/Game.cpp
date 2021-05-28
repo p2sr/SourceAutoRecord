@@ -39,7 +39,17 @@ Game* Game::CreateNew()
         auto target = Memory::ModuleInfo();
         if (Memory::TryGetModule(targetMod, &target)) {
             modDir = std::string(target.path);
-            modDir = modDir.substr(0, modDir.length() - std::strlen(targetMod) - 5);
+            modDir = modDir.substr(0, modDir.length() - std::strlen(targetMod));
+#ifndef _WIN32
+            if (modDir.length() >= 9 && modDir.substr(modDir.length() - 9) == "/linux32/") {
+                modDir = modDir.substr(0, modDir.length() - 8);
+            }
+            if (modDir.length() >= 2 && modDir.substr(modDir.length() - 2) == "//") {
+                // I don't really know why this happens but it sometimes does
+                modDir = modDir.substr(0, modDir.length() - 1);
+            }
+#endif
+            modDir = modDir.substr(0, modDir.length() - 5);
             modDir = modDir.substr(modDir.find_last_of("\\/") + 1);
         }
         return modDir;

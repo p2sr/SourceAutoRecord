@@ -478,8 +478,8 @@ DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
 
 bool Engine::Init()
 {
-    this->engineClient = Interface::Create(this->Name(), "VEngineClient0", false);
-    this->s_ServerPlugin = Interface::Create(this->Name(), "ISERVERPLUGINHELPERS0", false);
+    this->engineClient = Interface::Create(this->Name(), "VEngineClient015", false);
+    this->s_ServerPlugin = Interface::Create(this->Name(), "ISERVERPLUGINHELPERS001", false);
 
     if (this->engineClient) {
         this->GetScreenSize = this->engineClient->Original<_GetScreenSize>(Offsets::GetScreenSize);
@@ -494,6 +494,11 @@ bool Engine::Init()
         this->Con_IsVisible = this->engineClient->Original<_Con_IsVisible>(Offsets::Con_IsVisible);
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            this->s_CommandBuffer = (void *)((uintptr_t)this->Cbuf_AddText + 9 + *(uint32_t *)((uintptr_t)this->Cbuf_AddText + 11) + *(uint32_t *)((uintptr_t)this->Cbuf_AddText + 71));
+        } else
+#endif
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
 
         Memory::Read((uintptr_t)this->SetViewAngles + Offsets::GetLocalClient, &this->GetLocalClient);
@@ -507,7 +512,7 @@ bool Engine::Init()
         Engine::OnGameOverlayActivatedBase = *OnGameOverlayActivated;
         *OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated>(Engine::OnGameOverlayActivated_Hook);
 
-        if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
+        if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer022", false)) {
             this->ClientCommand = g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
             Interface::Delete(g_VEngineServer);
         }
@@ -532,12 +537,29 @@ bool Engine::Init()
 #else
             auto ProcessTick = this->cl->Original(Offsets::ProcessTick);
 #endif
+
+#ifndef _WIN32
+            if (sar.game->Is(SourceGame_EIPRelPIC)) {
+                tickcount = (int *)(ProcessTick + 12 + *(uint32_t *)(ProcessTick + 14) + *(uint32_t *)(ProcessTick + 86) + 0x18);
+            } else
+#endif
             tickcount = Memory::Deref<int*>(ProcessTick + Offsets::tickcount);
+
+#ifndef _WIN32
+            if (sar.game->Is(SourceGame_EIPRelPIC)) {
+                interval_per_tick = (float *)(ProcessTick + 12 + *(uint32_t *)(ProcessTick + 14) + *(uint32_t *)(ProcessTick + 72) + 8);
+            } else
+#endif
             interval_per_tick = Memory::Deref<float*>(ProcessTick + Offsets::interval_per_tick);
             SpeedrunTimer::SetIpt(*interval_per_tick);
 
             auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
+#ifndef _WIN32
+            if (sar.game->Is(SourceGame_EIPRelPIC)) {
+                hoststate = (CHostState *)(HostState_OnClientConnected + 5 + *(uint32_t *)(HostState_OnClientConnected + 6) + *(uint32_t *)(HostState_OnClientConnected + 15));
+            } else
+#endif
             Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
         }
 
@@ -546,8 +568,13 @@ bool Engine::Init()
         }
     }
 
-    if (this->engineTool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
+    if (this->engineTool = Interface::Create(this->Name(), "VENGINETOOL003", false)) {
         auto GetCurrentMap = this->engineTool->Original(Offsets::GetCurrentMap);
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            this->m_szLevelName = (char *)(GetCurrentMap + 7 + *(uint32_t *)(GetCurrentMap + 9) + *(uint32_t *)(GetCurrentMap + 18) + 16);
+        } else
+#endif
         this->m_szLevelName = Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName);
 
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
@@ -558,9 +585,15 @@ bool Engine::Init()
         this->PrecacheModel = this->engineTool->Original<_PrecacheModel>(Offsets::PrecacheModel);
     }
 
-    if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
+    if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION004", false)) {
         auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
-        auto engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
+        void *engAddr;
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            engAddr = *(void **)(IsRunningSimulation + 5 + *(uint32_t *)(IsRunningSimulation + 6) + *(uint32_t *)(IsRunningSimulation + 15));
+        } else
+#endif
+        engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
 
         if (this->eng = Interface::Create(engAddr)) {
             if (this->tickcount && this->hoststate && this->m_szLevelName) {
@@ -570,7 +603,13 @@ bool Engine::Init()
 
         uintptr_t Init = s_EngineAPI->Original(Offsets::Init);
         uintptr_t VideoMode_Create = Memory::Read(Init + Offsets::VideoMode_Create);
-        void **videomode = *(void ***)(VideoMode_Create + Offsets::videomode);
+        void **videomode;
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            videomode = (void **)(VideoMode_Create + 6 + *(uint32_t *)(VideoMode_Create + 8) + *(uint32_t *)(VideoMode_Create + 193));
+        } else
+#endif
+        videomode = *(void ***)(VideoMode_Create + Offsets::videomode);
         Renderer::Init(videomode);
 
         Interface::Delete(s_EngineAPI);
@@ -590,17 +629,14 @@ bool Engine::Init()
     // Note: we don't get readCustomDataAddr anymore as we find this
     // below anyway
     auto parseSmoothingInfoAddr = Memory::Scan(this->Name(), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
-    //auto readCustomDataAddr = Memory::Scan(this->Name(), "55 8B EC F6 05 ? ? ? ? ? 53 56 57 8B F1 75 2F");
 
     console->DevMsg("CDemoSmootherPanel::ParseSmoothingInfo = %p\n", parseSmoothingInfoAddr);
-    //console->DevMsg("CDemoFile::ReadCustomData = %p\n", readCustomDataAddr);
 
     if (parseSmoothingInfoAddr) {
         MH_HOOK_MID(Engine::ParseSmoothingInfo_Mid, parseSmoothingInfoAddr); // Hook switch-case
         Engine::ParseSmoothingInfo_Continue = parseSmoothingInfoAddr + 8; // Back to original function
         Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133; // Default case
         Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29; // Continue loop
-        //Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(readCustomDataAddr); // Function that handles dem_customdata
 
         this->demoSmootherPatch = new Memory::Patch();
         unsigned char nop3[] = { 0x90, 0x90, 0x90 };
@@ -613,8 +649,13 @@ bool Engine::Init()
     this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12);
     this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "8B 45 F4 50 68 FE 04 00 00 68 ? ? ? ? 8D 4D 90 E8 ? ? ? ? 8D 4F 04 E8", 26);
 #else
-    this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
-    this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "89 44 24 0C 8D 85 C0 FE FF FF 89 04 24 E8 ? ? ? ? 8B 85 8C FE FF FF 89 04 24 E8", 28);
+    if (sar.game->Is(SourceGame_EIPRelPIC)) {
+        this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "8B 9D 94 FE FF FF 8D 85 C0 FE FF FF 83 EC 04 50 8D 85 B0 FE FF FF 50 FF B5 8C FE FF FF E8", 30);
+        this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "68 FE 04 00 00 FF B5 68 FE FF FF 50 89 85 90 FE FF FF E8 ? ? ? ? 58 FF B5 8C FE FF FF E8", 31);
+    } else {
+        this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
+        this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "89 44 24 0C 8D 85 C0 FE FF FF 89 04 24 E8 ? ? ? ? 8B 85 8C FE FF FF 89 04 24 E8", 28);
+    }
 #endif
 
     // Pesky memory protection doesn't want us overwriting code - we
@@ -629,7 +670,7 @@ bool Engine::Init()
     Engine::ReadConsoleCommand = (_ReadConsoleCommand)Memory::Read(this->readConsoleCommandInjectAddr);
     *(uint32_t*)this->readConsoleCommandInjectAddr = (uint32_t)&ReadConsoleCommand_Hook - (this->readConsoleCommandInjectAddr + 4);
 
-    if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
+    if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay004", false)) {
         ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
         AddBoxOverlay = debugoverlay->Original<_AddBoxOverlay>(Offsets::AddBoxOverlay);
         AddSphereOverlay = debugoverlay->Original<_AddSphereOverlay>(Offsets::AddSphereOverlay);

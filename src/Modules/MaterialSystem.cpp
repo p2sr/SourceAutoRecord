@@ -52,7 +52,7 @@ DETOUR(MaterialSystem::CreateMaterial, const char* pMaterialName, void* pVMTKeyV
 
 bool MaterialSystem::Init()
 {
-    this->materials = Interface::Create(this->Name(), "VMaterialSystem0");
+    this->materials = Interface::Create(this->Name(), "VMaterialSystem080");
     if (this->materials) {
         this->materials->Hook(MaterialSystem::UncacheUnusedMaterials_Hook, MaterialSystem::UncacheUnusedMaterials, 77);
         this->materials->Hook(MaterialSystem::CreateMaterial_Hook, MaterialSystem::CreateMaterial, 81);

@@ -11,7 +11,7 @@ unsigned long Scheme::GetDefaultFont()
 }
 bool Scheme::Init()
 {
-    if (auto g_pVGuiSchemeManager = Interface::Create(this->Name(), "VGUI_Scheme0", false)) {
+    if (auto g_pVGuiSchemeManager = Interface::Create(this->Name(), "VGUI_Scheme010", false)) {
         using _GetIScheme = void*(__rescall*)(void* thisptr, unsigned long scheme);
         auto GetIScheme = g_pVGuiSchemeManager->Original<_GetIScheme>(Offsets::GetIScheme);
 

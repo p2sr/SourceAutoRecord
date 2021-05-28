@@ -370,9 +370,9 @@ bool Client::Init()
 {
     bool readJmp = false;
 
-    this->g_ClientDLL = Interface::Create(this->Name(), "VClient0");
-    this->s_EntityList = Interface::Create(this->Name(), "VClientEntityList0", false);
-    this->g_GameMovement = Interface::Create(this->Name(), "GameMovement0");
+    this->g_ClientDLL = Interface::Create(this->Name(), "VClient016");
+    this->s_EntityList = Interface::Create(this->Name(), "VClientEntityList003", false);
+    this->g_GameMovement = Interface::Create(this->Name(), "GameMovement001");
 
     if (this->g_GameMovement) {
         this->g_GameMovement->Hook(Client::ProcessMovement_Hook, Client::ProcessMovement, Offsets::ProcessMovement);
@@ -418,7 +418,13 @@ bool Client::Init()
         }
 
         auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
-        auto g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
+        void *g_InputAddr;
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            g_InputAddr = *(void **)(IN_ActivateMouse + 5 + *(uint32_t *)(IN_ActivateMouse + 6) + *(uint32_t *)(IN_ActivateMouse + 12));
+        } else
+#endif
+        g_InputAddr = Memory::DerefDeref<void*>(IN_ActivateMouse + Offsets::g_Input);
 
         if (g_Input = Interface::Create(g_InputAddr)) {
             g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
@@ -438,7 +444,13 @@ bool Client::Init()
 
         auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
         auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
-        auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
+        uintptr_t g_pClientMode;
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            g_pClientMode = GetClientMode + 6 + *(uint32_t *)(GetClientMode + 8) + *(uint32_t *)(GetClientMode + 35);
+        } else
+#endif
+        g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
         void *clientMode = Memory::Deref<void*>(g_pClientMode);
         void *clientMode2 = Memory::Deref<void*>(g_pClientMode + sizeof(void*));
 
