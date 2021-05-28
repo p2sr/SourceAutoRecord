@@ -17,7 +17,7 @@ GroundFramesCounter::GroundFramesCounter()
 
 void GroundFramesCounter::HandleMovementFrame(int slot, bool grounded)
 {
-    if (pauseTimer->IsActive() && !engine->IsCoop()) return;
+    if (pauseTimer->IsActive() && !engine->IsCoop() && !engine->demoplayer->IsPlaying()) return;
 
     if (!this->grounded[slot] && grounded) {
         this->counter[slot] = 0;
