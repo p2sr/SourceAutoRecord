@@ -7,6 +7,7 @@ extern "C" {
 #include "Command.hpp"
 #include "Version.hpp"
 #include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
 #include "Utils/json11.hpp"
 #include "Utils.hpp"
 
@@ -229,7 +230,7 @@ void checkUpdate(bool allowPre) {
     }
 }
 
-void doUpdate(bool allowPre) {
+void doUpdate(bool allowPre, bool exitOnSuccess) {
     std::string name, dlUrl;
 
     console->Print("Querying for latest version...\n");
@@ -272,6 +273,10 @@ void doUpdate(bool allowPre) {
     std::filesystem::remove(tmp);
 
     console->Print("Success! You should now restart your game.\n");
+
+    if (exitOnSuccess) {
+        engine->ExecuteCommand("quit");
+    }
 }
 
 CON_COMMAND(sar_check_update, "sar_check_update [release|pre] - check whether the latest version of SAR is being used.\n")
@@ -286,14 +291,28 @@ CON_COMMAND(sar_check_update, "sar_check_update [release|pre] - check whether th
     g_worker = std::thread(checkUpdate, allowPre);
 }
 
-CON_COMMAND(sar_update, "sar_check_update [release|pre] - update SAR to the latest version.\n")
+CON_COMMAND(sar_update, "sar_update [release|pre] [exit] - update SAR to the latest version. If exit is given, exit the game upon successful update.\n")
 {
     if (args.ArgC() > 2) {
         return console->Print(sar_update.ThisPtr()->m_pszHelpString);
     }
 
-    bool allowPre = args.ArgC() == 2 && !strcmp(args[1], "pre");
+    bool allowPre = false, exitOnSuccess = false;
+
+    for (int i = 1; i < args.ArgC(); ++i) {
+        if (!strcmp(args[i], "pre")) {
+            allowPre = true;
+        } else if (!strcmp(args[i], "release")) {
+            allowPre = false;
+        } else if (!strcmp(args[i], "exit")) {
+            exitOnSuccess = true;
+        } else {
+            console->Print("Invalid argument '%s'\n", args[i]);
+            console->Print(sar_update.ThisPtr()->m_pszHelpString);
+            return;
+        }
+    }
 
     if (g_worker.joinable()) g_worker.join();
-    g_worker = std::thread(doUpdate, allowPre);
+    g_worker = std::thread(doUpdate, allowPre, exitOnSuccess);
 }
