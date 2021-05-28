@@ -6,6 +6,7 @@
 #include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
 #include "Features/Hud/Crosshair.hpp"
+#include "Features/Hud/StrafeQuality.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Routing/SeamshotFind.hpp"
@@ -222,8 +223,8 @@ DETOUR(Server::ProcessMovement, void* player, CMoveData* move)
     unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
     bool grounded = groundHandle != 0xFFFFFFFF;
     int slot = client->GetSplitScreenPlayerSlot(player);
-    bool jumped = move->m_outJumpVel != Vector{0, 0, 0};
-    groundFramesCounter->HandleMovementFrame(slot, grounded, jumped);
+    groundFramesCounter->HandleMovementFrame(slot, grounded);
+    strafeQuality.OnMovement(slot, grounded);
 
     return Server::ProcessMovement(thisptr, player, move);
 }

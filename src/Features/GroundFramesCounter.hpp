@@ -8,7 +8,7 @@ public:
     bool grounded[2] = {false};
 public:
     GroundFramesCounter();
-    void HandleMovementFrame(int slot, bool grounded, bool jumped);
+    void HandleMovementFrame(int slot, bool grounded);
 };
 
 extern GroundFramesCounter* groundFramesCounter;

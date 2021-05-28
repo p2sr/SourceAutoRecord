@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Hud.hpp"
 #include <vector>
 

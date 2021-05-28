@@ -67,10 +67,6 @@ void Sync::UpdateSync(const CUserCmd* cmd)
 
     int dtAngle = cmd->mousedx;
 
-		// If you go through a portal, your angle changes quickly; let's try
-		// and detect that.
-
-
     if (dtAngle < 0 && (mvLeft ^ mvRight)) { //Player turned left
         this->totalStrafeDelta -= dtAngle;
         if (mvLeft && !mvRight) {

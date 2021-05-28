@@ -15,11 +15,11 @@ GroundFramesCounter::GroundFramesCounter()
     this->hasLoaded = true;
 }
 
-void GroundFramesCounter::HandleMovementFrame(int slot, bool grounded, bool jumped)
+void GroundFramesCounter::HandleMovementFrame(int slot, bool grounded)
 {
     if (pauseTimer->IsActive() && !engine->IsCoop()) return;
 
-    if (!this->grounded[slot] && (grounded || jumped)) {
+    if (!this->grounded[slot] && grounded) {
         this->counter[slot] = 0;
     } else if (grounded) {
         this->counter[slot]++;

@@ -7,6 +7,7 @@
 #include "Features/Camera.hpp"
 #include "Features/FovChanger.hpp"
 #include "Features/Hud/InputHud.hpp"
+#include "Features/Hud/StrafeQuality.hpp"
 #include "Features/Imitator.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/ReplaySystem/ReplayPlayer.hpp"
@@ -187,6 +188,8 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
         synchro->UpdateSync(cmd);
     }
 
+    strafeQuality.OnUserCmd(engine->IsOrange() ? 1 : 0, *cmd);
+
     return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
 DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd* cmd)
@@ -328,21 +331,16 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move)
         // The client does prediction very often (twice per frame?) so
         // we have to do some weird stuff
         static int lastTick;
-        static bool jumpedThisTick;
 
         int tick = session->GetTick();
-
-        bool jumped = move->m_outJumpVel != Vector{0, 0, 0};
-
-        if (jumped) jumpedThisTick = true;
 
         if (tick != lastTick) {
             unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
             bool grounded = groundHandle != 0xFFFFFFFF;
             int slot = client->GetSplitScreenPlayerSlot(player);
-            groundFramesCounter->HandleMovementFrame(slot, grounded, jumpedThisTick);
+            groundFramesCounter->HandleMovementFrame(slot, grounded);
+            strafeQuality.OnMovement(slot, grounded);
             lastTick = tick;
-            jumpedThisTick = false;
         }
     }
 
