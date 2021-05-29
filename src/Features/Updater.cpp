@@ -293,10 +293,6 @@ CON_COMMAND(sar_check_update, "sar_check_update [release|pre] - check whether th
 
 CON_COMMAND(sar_update, "sar_update [release|pre] [exit] - update SAR to the latest version. If exit is given, exit the game upon successful update.\n")
 {
-    if (args.ArgC() > 2) {
-        return console->Print(sar_update.ThisPtr()->m_pszHelpString);
-    }
-
     bool allowPre = false, exitOnSuccess = false;
 
     for (int i = 1; i < args.ArgC(); ++i) {
