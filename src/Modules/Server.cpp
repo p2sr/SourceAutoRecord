@@ -329,7 +329,7 @@ extern Hook g_AcceptInputHook;
 // on Windows it's thiscall, we can't do that! We should add thiscall
 // support to Hook.
 #ifdef _WIN32
-static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void* activator, void* caller, variant_t parameter)
+static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void* activator, void* caller, variant_t &parameter)
 #else
 static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void* activator, void* caller, variant_t &parameter, int outputID)
 #endif
