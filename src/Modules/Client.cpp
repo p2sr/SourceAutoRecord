@@ -122,6 +122,15 @@ void Client::FlushChatQueue()
     this->chatQueue.clear();
 }
 
+void Client::SetMouseActivated(bool state)
+{
+    if (state) {
+        this->ActivateMouse(g_Input->ThisPtr());
+    } else {
+        this->DeactivateMouse(g_Input->ThisPtr());
+    }
+}
+
 float Client::GetCMTimer()
 {
     if (sv_bonus_challenge.GetBool()) {
@@ -343,6 +352,9 @@ bool Client::Init()
                 g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
                 g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
                 g_Input->Hook(Client::SteamControllerMove_Hook, Client::SteamControllerMove, Offsets::SteamControllerMove);
+
+                this->ActivateMouse = g_Input->Original<_ActivateMouse>(Offsets::ActivateMouse, readJmp);
+                this->DeactivateMouse = g_Input->Original<_DeactivateMouse>(Offsets::DeactivateMouse, readJmp);
 
                 auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
                 Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);

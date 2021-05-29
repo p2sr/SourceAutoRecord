@@ -26,6 +26,8 @@ public:
     using _GetAllClasses = ClientClass* (*)();
     using _ShouldDraw = bool(__rescall*)(void* thisptr);
     using _ChatPrintf = void(*)(void* thisptr, int iPlayerIndex, int iFilter, const char* fmt, ...);
+    using _ActivateMouse = void(*)(void* thisptr);
+    using _DeactivateMouse = void(*)(void* thisptr);
 
     _GetClientEntity GetClientEntity = nullptr;
     _KeyDown KeyDown = nullptr;
@@ -33,6 +35,8 @@ public:
     _GetAllClasses GetAllClasses = nullptr;
     _ShouldDraw ShouldDraw = nullptr;
     _ChatPrintf ChatPrintf = nullptr;
+    _ActivateMouse ActivateMouse = nullptr;
+    _DeactivateMouse DeactivateMouse = nullptr;
 
     void* in_jump = nullptr;
     QAngle lastViewAngles;
@@ -49,6 +53,7 @@ public:
     void Chat(TextColor color, const char* fmt, ...);
     void QueueChat(TextColor color, const char* fmt, ...);
     void FlushChatQueue();
+    void SetMouseActivated(bool state);
     float GetCMTimer();
 
 public:

@@ -14,15 +14,13 @@ Variable cl_pitchup;
 
 Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 4, "Debugs controller.");
 
-Variable sensitivity;
 void LockMouse()
 {
-    //sensitivity.SetValue(std::to_string(sensitivity.ThisPtr()->m_fValue).c_str());
-    sensitivity.ThisPtr()->m_fValue = 0;
+    //client->SetMouseActivated(false);
 }
 void UnlockMouse()
 {
-    sensitivity.SetValue(sensitivity.ThisPtr()->m_pszString);
+    //client->SetMouseActivated(true);
 }
 
 TasController* tasController;
@@ -36,7 +34,6 @@ TasController::TasController()
 
     cl_pitchdown = Variable("cl_pitchdown");
     cl_pitchup = Variable("cl_pitchup");
-    sensitivity = Variable("sensitivity");
 }
 
 TasController::~TasController()

@@ -319,8 +319,8 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo& pInfo, float desAng
             float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
             
             float diff = desAngle - velAngle;
-            if (abs(diff - 180) < abs(diff)) diff -= 180;
-            if (abs(diff + 180) < abs(diff)) diff += 180;
+            if (abs(diff - 360) < abs(diff)) diff -= 360;
+            if (abs(diff + 360) < abs(diff)) diff += 360;
 
             if (diff < 0) turnDir = -1;
         }

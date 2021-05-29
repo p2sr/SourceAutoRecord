@@ -76,6 +76,8 @@ int SetCursorPosition;
 
 // CInput
 int GetButtonBits;
+int ActivateMouse;
+int DeactivateMouse;
 int DecodeUserCmdFromBuffer;
 
 // CGameMovement

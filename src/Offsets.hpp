@@ -76,6 +76,8 @@ extern int SetCursorPosition;
 
 // CInput
 extern int GetButtonBits;
+extern int ActivateMouse;
+extern int DeactivateMouse;
 extern int DecodeUserCmdFromBuffer;
 
 // CGameMovement

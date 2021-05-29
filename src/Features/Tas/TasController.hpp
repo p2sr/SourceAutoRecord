@@ -70,4 +70,3 @@ extern Variable sar_tas_real_controller_debug;
 
 extern Variable cl_pitchdown;
 extern Variable cl_pitchup;
-extern Variable sensitivity;
