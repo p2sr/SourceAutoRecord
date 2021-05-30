@@ -6,6 +6,10 @@
 #include <vector>
 #include <string>
 
+#ifdef _WIN32
+#include <io.h>
+#endif
+
 #include "Modules/Client.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Engine.hpp"
@@ -780,7 +784,17 @@ CON_COMMAND(sar_speedrun_export_all, "sar_speedrun_export_all <filename> - expor
         filename += ".csv";
     }
 
-    FILE *f = fopen(filename.c_str(), "w");
+#ifdef _WIN32
+    bool exists = !_access(filename.c_str(), 0);
+#else
+    bool exists = !access(filename.c_str(), F_OK);
+#endif
+
+    if (exists) {
+        console->Print("File exists; appending data. Warning: if the file is for a different set of splits, the data exported will be incorrect!\n");
+    }
+
+    FILE *f = fopen(filename.c_str(), "a");
     if (!f) {
         console->Print("Could not open file '%s'\n", filename.c_str());
         return;
@@ -792,12 +806,14 @@ CON_COMMAND(sar_speedrun_export_all, "sar_speedrun_export_all <filename> - expor
     fputs(MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD "\n", f);
 #endif
 
-    for (size_t i = 0; i < header.size(); ++i) {
-        if (i != 0) fputc(',', f);
-        fputs(header[i].c_str(), f);
-    }
+    if (!exists) {
+        for (size_t i = 0; i < header.size(); ++i) {
+            if (i != 0) fputc(',', f);
+            fputs(header[i].c_str(), f);
+        }
 
-    fputc('\n', f);
+        fputc('\n', f);
+    }
 
     for (auto &run : g_runs) {
         int total = 0;
@@ -816,6 +832,8 @@ CON_COMMAND(sar_speedrun_export_all, "sar_speedrun_export_all <filename> - expor
     }
 
     fclose(f);
+
+    g_runs.clear();
 
     console->Print("Speedruns successfully exported to '%s'!\n", filename.c_str());
 }
