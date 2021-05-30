@@ -39,12 +39,14 @@ Variable crosshairVariable;
 Variable cl_fov;
 
 Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
+Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disables the saving/saved HUD which appears when you make a save.\n");
 
 REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
 REDECL(Client::GetName);
 REDECL(Client::ShouldDraw_BasicInfo);
+REDECL(Client::ShouldDraw_SaveStatus);
 REDECL(Client::MsgFunc_SayText2);
 REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::CInput_CreateMove);
@@ -237,6 +239,16 @@ DETOUR_T(bool, Client::ShouldDraw_BasicInfo)
     }
 
     return Client::ShouldDraw_BasicInfo(thisptr);
+}
+
+// CHudSaveStatus::ShouldDraw
+DETOUR_T(bool, Client::ShouldDraw_SaveStatus)
+{
+    if (sar_disable_save_status_hud.GetBool()) {
+        return false;
+    }
+
+    return Client::ShouldDraw_SaveStatus(thisptr);
 }
 
 // CHudChat::MsgFunc_SayText2
@@ -432,6 +444,11 @@ bool Client::Init()
             if (this->g_HudMultiplayerBasicInfo = Interface::Create(CHudMultiplayerBasicInfo)) {
                 this->g_HudMultiplayerBasicInfo->Hook(Client::ShouldDraw_BasicInfo_Hook, Client::ShouldDraw_BasicInfo, Offsets::ShouldDraw);
             }
+
+            auto CHudSaveStatus = FindElement(GetHud(-1), "CHudSaveStatus");
+            if (this->g_HudSaveStatus = Interface::Create(CHudSaveStatus)) {
+                this->g_HudSaveStatus->Hook(Client::ShouldDraw_SaveStatus_Hook, Client::ShouldDraw_SaveStatus, Offsets::ShouldDraw);
+            }
         }
 
         auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
@@ -510,6 +527,7 @@ void Client::Shutdown()
     Interface::Delete(this->g_HUDQuickInfo);
     Interface::Delete(this->g_HudChat);
     Interface::Delete(this->g_HudMultiplayerBasicInfo);
+    Interface::Delete(this->g_HudSaveStatus);
     Interface::Delete(this->g_GameMovement);
     Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 }

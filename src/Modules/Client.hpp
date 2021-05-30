@@ -19,6 +19,7 @@ private:
     Interface* g_Input = nullptr;
     Interface* g_HudChat = nullptr;
     Interface* g_HudMultiplayerBasicInfo = nullptr;
+    Interface* g_HudSaveStatus = nullptr;
     Interface* g_GameMovement = nullptr;
 
 public:
@@ -70,6 +71,9 @@ public:
 
     // CHudMultiplayerBasicInfo::ShouldDraw
     DECL_DETOUR_T(bool, ShouldDraw_BasicInfo);
+
+    // CHudSaveStatus::ShouldDraw
+    DECL_DETOUR_T(bool, ShouldDraw_SaveStatus);
 
     // CHudChat::MsgFunc_SayText2
     DECL_DETOUR(MsgFunc_SayText2, bf_read &msg);
