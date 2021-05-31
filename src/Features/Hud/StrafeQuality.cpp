@@ -3,6 +3,7 @@
 #include "Modules/Surface.hpp"
 #include "Modules/Engine.hpp"
 #include "Features/Session.hpp"
+#include "Features/Timer/PauseTimer.hpp"
 
 #include <vector>
 #include <cstring>
@@ -139,13 +140,7 @@ void StrafeQualityHud::OnUserCmd(int slot, const CUserCmd &cmd)
 }
 void StrafeQualityHud::OnMovement(int slot, bool grounded)
 {
-    static int lastMovementTick = 0;
-
-    int tick = session->GetTick();
-
-    if (tick == lastMovementTick) return;
-
-    lastMovementTick = tick;
+    if (pauseTimer->IsActive() && !engine->IsCoop() && !engine->demoplayer->IsPlaying()) return;
 
     CUserCmd &cmd = g_lastUserCmd[slot];
 
