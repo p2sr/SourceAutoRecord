@@ -16,7 +16,7 @@
 
 static std::map<std::string, std::string> g_svars;
 
-CON_COMMAND(svar_set, "svar_set <variable> <value> - set a svar (SAR variable) to a given value.\n")
+CON_COMMAND_F(svar_set, "svar_set <variable> <value> - set a svar (SAR variable) to a given value.\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() != 3) {
         return console->Print(svar_set.ThisPtr()->m_pszHelpString);
@@ -349,7 +349,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 #define MK_SAR_ON(name, when, immediately) \
     static std::vector<std::string> _g_execs_##name; \
-    CON_COMMAND(sar_on_##name, "sar_on_" #name " <command> [args]... - registers a command to be run " when ".\n") { \
+    CON_COMMAND_F(sar_on_##name, "sar_on_" #name " <command> [args]... - registers a command to be run " when ".\n", FCVAR_DONTRECORD) { \
         if (args.ArgC() < 2) { \
             return console->Print(sar_on_##name.ThisPtr()->m_pszHelpString); \
         } \
@@ -374,7 +374,7 @@ struct Seq {
 
 std::vector<Seq> seqs;
 
-CON_COMMAND(cond, "cond [condition] [command] [args]... - runs a command only if a given condition is met.\n")
+CON_COMMAND_F(cond, "cond [condition] [command] [args]... - runs a command only if a given condition is met.\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 3) {
         return console->Print(cond.ThisPtr()->m_pszHelpString);
@@ -398,7 +398,7 @@ CON_COMMAND(cond, "cond [condition] [command] [args]... - runs a command only if
     }
 }
 
-CON_COMMAND(seq, "seq [command]... - runs a sequence of commands one tick after one another.\n")
+CON_COMMAND_F(seq, "seq [command]... - runs a sequence of commands one tick after one another.\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 2) {
         return console->Print(seq.ThisPtr()->m_pszHelpString);
@@ -440,7 +440,7 @@ static void _aliasCallback(const CCommand &args)
     engine->ExecuteCommand(Utils::ssprintf("sar_alias_run %s", args.m_pArgSBuffer).c_str(), true);
 }
 
-CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, similar to the 'alias' command but not requiring quoting. If no command is specified, prints the given alias.\n")
+CON_COMMAND_F(sar_alias, "sar_alias <name> [command] [args]... - create an alias, similar to the 'alias' command but not requiring quoting. If no command is specified, prints the given alias.\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_alias.ThisPtr()->m_pszHelpString);
@@ -488,12 +488,12 @@ CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, 
     }
 
     char *name = strdup(args[1]); // We do this so that the ConCommand has a persistent handle to the command name
-    Command *c = new Command(name, &_aliasCallback, "SAR alias command.\n");
+    Command *c = new Command(name, &_aliasCallback, "SAR alias command.\n", FCVAR_DONTRECORD);
     c->Register();
     g_aliases[std::string(args[1])] = { c, cmd, name };
 }
 
-CON_COMMAND(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, passing on any additional arguments.\n")
+CON_COMMAND_F(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, passing on any additional arguments.\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_alias_run.ThisPtr()->m_pszHelpString);
@@ -526,7 +526,7 @@ ON_EVENT(SAR_UNLOAD) { RUN_EXECS(exit); }
 ON_EVENT(DEMO_START) { RUN_EXECS(demo_start); }
 ON_EVENT(DEMO_STOP) { RUN_EXECS(demo_stop); }
 
-CON_COMMAND(nop, "nop [args]... - nop ignores all its arguments and does nothing.\n")
+CON_COMMAND_F(nop, "nop [args]... - nop ignores all its arguments and does nothing.\n", FCVAR_DONTRECORD)
 { }
 
 static std::map<std::string, AliasInfo> g_functions;
@@ -536,7 +536,7 @@ static void _functionCallback(const CCommand &args)
     engine->ExecuteCommand(Utils::ssprintf("sar_function_run %s", args.m_pArgSBuffer).c_str(), true);
 }
 
-CON_COMMAND(sar_function, "sar_function <name> [command] [args]... - create a function, replacing $1, $2 etc up to $9 in the command string with the respective argument. If no command is specified, prints the given function.\n")
+CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a function, replacing $1, $2 etc up to $9 in the command string with the respective argument. If no command is specified, prints the given function.\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_function.ThisPtr()->m_pszHelpString);
@@ -584,12 +584,12 @@ CON_COMMAND(sar_function, "sar_function <name> [command] [args]... - create a fu
     }
 
     char *name = strdup(args[1]); // We do this so that the ConCommand has a persistent handle to the command name
-    Command *c = new Command(name, &_functionCallback, "SAR function command.\n");
+    Command *c = new Command(name, &_functionCallback, "SAR function command.\n", FCVAR_DONTRECORD);
     c->Register();
     g_functions[std::string(args[1])] = { c, cmd, name };
 }
 
-CON_COMMAND(sar_function_run, "sar_function_run <name> [args]... - run a function with the given arguments.\n")
+CON_COMMAND_F(sar_function_run, "sar_function_run <name> [args]... - run a function with the given arguments.\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_function_run.ThisPtr()->m_pszHelpString);
