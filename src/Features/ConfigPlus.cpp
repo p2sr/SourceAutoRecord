@@ -16,6 +16,12 @@
 
 static std::map<std::string, std::string> g_svars;
 
+static std::string GetSvar(std::string name) {
+    auto it = g_svars.find(name);
+    if (it == g_svars.end()) return "";
+    return it->second;
+}
+
 CON_COMMAND_F(svar_set, "svar_set <variable> <value> - set a svar (SAR variable) to a given value.\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() != 3) {
@@ -24,6 +30,54 @@ CON_COMMAND_F(svar_set, "svar_set <variable> <value> - set a svar (SAR variable)
 
     g_svars[std::string(args[1])] = args[2];
 }
+
+CON_COMMAND_F(svar_get, "svar_get <variable> - get the value of a svar.\n", FCVAR_DONTRECORD)
+{
+    if (args.ArgC() != 2) {
+        return console->Print(svar_get.ThisPtr()->m_pszHelpString);
+    }
+
+    console->Print("%s = %s\n", args[1], GetSvar({args[1]}));
+}
+
+#define SVAR_OP(name, op) \
+    CON_COMMAND_F(svar_##name, "svar_" #name " <variable> <variable|value> - perform the given operation on an svar.\n", FCVAR_DONTRECORD) \
+    { \
+        if (args.ArgC() != 3) { \
+            return console->Print(svar_##name.ThisPtr()->m_pszHelpString); \
+        } \
+\
+        long cur; \
+\
+        { \
+            auto it = g_svars.find({args[1]}); \
+            if (it == g_svars.end()) { \
+                cur = 0; \
+            } else { \
+                cur = atoi(it->second.c_str()); \
+            } \
+        } \
+\
+        char *end; \
+        long other = strtol(args[2], &end, 10); \
+\
+        if (end == args[2] || *end) { \
+            auto it = g_svars.find({args[2]}); \
+            if (it == g_svars.end()) { \
+                other = 0; \
+            } else { \
+                other = atoi(it->second.c_str()); \
+            } \
+        } \
+\
+        g_svars[std::string(args[1])] = Utils::ssprintf("%d", cur op other); \
+    }
+
+SVAR_OP(add, +)
+SVAR_OP(sub, -)
+SVAR_OP(mul, *)
+SVAR_OP(div, /)
+SVAR_OP(mod, %)
 
 struct Condition {
     enum {
@@ -74,12 +128,6 @@ static void FreeCondition(Condition *c) {
     }
 
     free(c);
-}
-
-static std::string GetSvar(std::string name) {
-    auto it = g_svars.find(name);
-    if (it == g_svars.end()) return "";
-    return it->second;
 }
 
 static bool EvalCondition(Condition *c) {
@@ -606,14 +654,38 @@ CON_COMMAND_F(sar_function_run, "sar_function_run <name> [args]... - run a funct
 
     for (size_t i = 0; i < func.size(); ++i) {
         if (func[i] == '$') {
-            if (func[i + 1] >= '1' && func[i + 1] <= '9') {
+            if (func[i + 1] == '$') {
+                cmd += '$';
+                ++i;
+                continue;
+            } else if (func[i + 1] >= '1' && func[i + 1] <= '9') {
                 int arg = func[i + 1] - '0';
                 cmd += arg + 1 < args.ArgC() ? args[arg + 1] : "";
                 ++i;
                 continue;
-            } else if (func[i + 1] == '$') {
-                cmd += '$';
-                ++i;
+            } else {
+                size_t len = 0;
+
+                while (1) {
+                    char c = func[i + ++len];
+                    if (c >= 'a' && c <= 'z') continue;
+                    if (c >= 'A' && c <= 'Z') continue;
+                    if (c >= '0' && c <= '9') continue;
+                    if (c == '_' || c == '-') continue;
+                    break;
+                }
+
+                --len;
+
+                if (len == 0) {
+                    cmd += '$';
+                    continue;
+                }
+
+                std::string var = func.substr(i + 1, len);
+                cmd += GetSvar(var);
+                i += len;
+
                 continue;
             }
         }
