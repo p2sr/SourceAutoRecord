@@ -440,17 +440,23 @@ CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, 
         return;
     }
 
-    const char *cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
+    const char *cmd;
 
-    while (isspace(*cmd)) ++cmd;
-
-    if (*cmd == '"') {
-        cmd += strlen(args[1]) + 2;
+    if (args.ArgC() == 3) {
+        cmd = args[2];
     } else {
-        cmd += strlen(args[1]);
-    }
+        cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
 
-    while (isspace(*cmd)) ++cmd;
+        while (isspace(*cmd)) ++cmd;
+
+        if (*cmd == '"') {
+            cmd += strlen(args[1]) + 2;
+        } else {
+            cmd += strlen(args[1]);
+        }
+
+        while (isspace(*cmd)) ++cmd;
+    }
 
     engine->ExecuteCommand(Utils::ssprintf("alias \"%s\" sar_alias_run \"%s\"", args[1], args[1]).c_str());
     g_aliases[std::string(args[1])] = cmd;
@@ -510,17 +516,23 @@ CON_COMMAND(sar_function, "sar_function <name> [command] [args]... - create a fu
         return;
     }
 
-    const char *cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
+    const char *cmd;
 
-    while (isspace(*cmd)) ++cmd;
-
-    if (*cmd == '"') {
-        cmd += strlen(args[1]) + 2;
+    if (args.ArgC() == 3) {
+        cmd = args[2];
     } else {
-        cmd += strlen(args[1]);
-    }
+        cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
 
-    while (isspace(*cmd)) ++cmd;
+        while (isspace(*cmd)) ++cmd;
+
+        if (*cmd == '"') {
+            cmd += strlen(args[1]) + 2;
+        } else {
+            cmd += strlen(args[1]);
+        }
+
+        while (isspace(*cmd)) ++cmd;
+    }
 
     g_functions[std::string(args[1])] = cmd;
 }
