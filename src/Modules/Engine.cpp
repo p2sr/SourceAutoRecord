@@ -449,7 +449,7 @@ DETOUR_COMMAND(Engine::gameui_activate)
 }
 DETOUR_COMMAND(Engine::playvideo_end_level_transition)
 {
-    if (engine->GetMaxClients() >= 2 && !engine->IsOrange() && server->GetChallengeStatus() != CMStatus::CHALLENGE) {
+    if (engine->GetMaxClients() >= 2 && !engine->IsOrange() && client->GetChallengeStatus() != CMStatus::CHALLENGE) {
         SpeedrunTimer::Pause();
     }
 
@@ -467,7 +467,7 @@ DETOUR_COMMAND(Engine::load)
 
 DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
 {
-    if (engine->GetMaxClients() >= 2 && server->GetChallengeStatus() != CMStatus::CHALLENGE && ss_force_primary_fullscreen.GetInt() == 0) {
+    if (engine->GetMaxClients() >= 2 && client->GetChallengeStatus() != CMStatus::CHALLENGE && ss_force_primary_fullscreen.GetInt() == 0) {
         ++engine->nForcePrimaryFullscreen;
         if (engine->nForcePrimaryFullscreen == 2 && !engine->IsOrange()) {
             SpeedrunTimer::Resume();

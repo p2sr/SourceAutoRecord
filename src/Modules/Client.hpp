@@ -8,6 +8,12 @@
 #include "Utils.hpp"
 #include "Variable.hpp"
 
+enum class CMStatus {
+    CHALLENGE,
+    WRONG_WARP,
+    NONE,
+};
+
 class Client : public Module {
 private:
     Interface* g_ClientDLL = nullptr;
@@ -53,6 +59,7 @@ public:
     void QueueChat(TextColor color, const char* fmt, ...);
     void FlushChatQueue();
     float GetCMTimer();
+    CMStatus GetChallengeStatus();
     int GetSplitScreenPlayerSlot(void *entity);
 
 public:

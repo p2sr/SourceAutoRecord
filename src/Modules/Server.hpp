@@ -14,12 +14,6 @@
 #define AirMove_Skip_Offset 142
 #endif
 
-enum class CMStatus {
-    CHALLENGE,
-    WRONG_WARP,
-    NONE,
-};
-
 class Server : public Module {
 public:
     Interface* g_GameMovement = nullptr;
@@ -89,7 +83,6 @@ public:
     bool AllowsMovementChanges();
     int GetSplitScreenPlayerSlot(void* entity);
     void KillEntity(void* entity);
-    CMStatus GetChallengeStatus();
 
 public:
     // CGameMovement::ProcessMovement

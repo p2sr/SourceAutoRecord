@@ -194,6 +194,11 @@ static void handleCoopPacket(void *data, size_t size)
     }
 }
 
+static bool g_inDemoLoad = false;
+
+ON_EVENT_P(SESSION_START,  1000) { if (engine->demoplayer->IsPlaying()) g_inDemoLoad = true; }
+ON_EVENT_P(SESSION_START, -1000) { g_inDemoLoad = false; }
+
 static int getCurrentTick()
 {
     if (engine->IsOrange()) {
@@ -206,8 +211,9 @@ static int getCurrentTick()
         return g_coopLastSyncTick + delta;
     }
 
-    if (server->GetChallengeStatus() == CMStatus::CHALLENGE) {
-        return client->GetCMTimer() / *engine->interval_per_tick;
+    if (client->GetChallengeStatus() == CMStatus::CHALLENGE) {
+        if (g_inDemoLoad) return 0; // HACKHACK
+        return roundf(client->GetCMTimer() / *engine->interval_per_tick);
     }
 
     return engine->GetTick();
@@ -566,7 +572,7 @@ void SpeedrunTimer::OnLoad()
 }
 
 ON_EVENT(SESSION_START) {
-    if (!engine->IsCoop() || (server->GetChallengeStatus() == CMStatus::CHALLENGE && !engine->IsOrange())) {
+    if (!engine->IsCoop() || (client->GetChallengeStatus() == CMStatus::CHALLENGE && !engine->IsOrange())) {
         if (!engine->IsOrange()) {
             SpeedrunTimer::Resume();
         }

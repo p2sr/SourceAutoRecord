@@ -3,6 +3,7 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
+#include "Modules/Client.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/Session.hpp"
 
@@ -503,7 +504,7 @@ void SpeedrunTimer::TickRules()
         }
     }
 
-    if (session->isRunning && session->GetTick() > 1 && server->GetChallengeStatus() != CMStatus::NONE && nflags < prevFlagCount) {
+    if (session->isRunning && session->GetTick() > 1 && client->GetChallengeStatus() != CMStatus::NONE && nflags < prevFlagCount) {
         // We're in an active CM session, and some flags have gone, so
         // the map must have been completed
         blueCompleted = true;

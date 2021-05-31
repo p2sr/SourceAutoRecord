@@ -129,13 +129,35 @@ void Client::FlushChatQueue()
 
 float Client::GetCMTimer()
 {
-    if (sv_bonus_challenge.GetBool()) {
+    if (client->GetChallengeStatus() != CMStatus::NONE) {
         uintptr_t player = (uintptr_t)client->GetPlayer(1);
         if (player) {
             return *(float*)(player + Offsets::m_StatsThisLevel + 12);
         }
     }
     return 0.0f;
+}
+
+CMStatus Client::GetChallengeStatus()
+{
+    if (engine->IsOrange()) {
+        return sv_bonus_challenge.GetBool() ? CMStatus::CHALLENGE : CMStatus::NONE;
+    }
+
+    auto player = client->GetPlayer(1);
+    if (!player) {
+        return CMStatus::NONE;
+    }
+
+    int bonusChallenge = *(int *)((uintptr_t)player + Offsets::m_iBonusChallenge);
+
+    if (bonusChallenge) {
+        return CMStatus::CHALLENGE;
+    } else if (sv_bonus_challenge.GetBool()) {
+        return CMStatus::WRONG_WARP;
+    } else {
+        return CMStatus::NONE;
+    }
 }
 
 int Client::GetSplitScreenPlayerSlot(void *entity)
@@ -505,6 +527,7 @@ bool Client::Init()
     offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
     offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
     offsetFinder->ClientSide("CBasePlayer", "m_hGroundEntity", &Offsets::C_m_hGroundEntity);
+    offsetFinder->ServerSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
     offsetFinder->ClientSide("CPortal_Player", "m_StatsThisLevel", &Offsets::m_StatsThisLevel);
 
     cl_showpos = Variable("cl_showpos");

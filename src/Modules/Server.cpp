@@ -105,27 +105,6 @@ void Server::KillEntity(void* entity)
     void* player = this->GetPlayer(1);
     server->AcceptInput(entity, "Kill", player, player, val, 0);
 }
-CMStatus Server::GetChallengeStatus()
-{
-    if (engine->IsOrange()) {
-        return sv_bonus_challenge.GetBool() ? CMStatus::CHALLENGE : CMStatus::NONE;
-    }
-
-    auto player = GetPlayer(GET_SLOT() + 1);
-    if (!player) {
-        return CMStatus::NONE;
-    }
-
-    int bonusChallenge = *(int *)((uintptr_t)player + Offsets::m_iBonusChallenge);
-
-    if (bonusChallenge) {
-        return CMStatus::CHALLENGE;
-    } else if (sv_bonus_challenge.GetBool()) {
-        return CMStatus::WRONG_WARP;
-    } else {
-        return CMStatus::NONE;
-    }
-}
 
 // CGameMovement::CheckJumpButton
 DETOUR_T(bool, Server::CheckJumpButton)
@@ -540,7 +519,6 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
     offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
     offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::S_m_hGroundEntity);
-    offsetFinder->ServerSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
     offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
     offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
 
