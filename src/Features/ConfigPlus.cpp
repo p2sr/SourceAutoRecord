@@ -422,7 +422,18 @@ ON_EVENT(PRE_TICK) {
     }
 }
 
-static std::map<std::string, std::string> g_aliases;
+struct AliasInfo {
+    Command *cmd;
+    std::string run;
+    char *name;
+};
+
+static std::map<std::string, AliasInfo> g_aliases;
+
+static void _aliasCallback(const CCommand &args)
+{
+    engine->ExecuteCommand(Utils::ssprintf("sar_alias_run %s", args.m_pArgSBuffer).c_str(), true);
+}
 
 CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, similar to the 'alias' command but not requiring quoting. If no command is specified, prints the given alias.\n")
 {
@@ -435,7 +446,7 @@ CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, 
         if (alias == g_aliases.end()) {
             console->Print("Alias %s does not exist\n", args[1]);
         } else {
-            console->Print("%s\n", alias->second.c_str());
+            console->Print("%s\n", alias->second.run.c_str());
         }
         return;
     }
@@ -458,8 +469,23 @@ CON_COMMAND(sar_alias, "sar_alias <name> [command] [args]... - create an alias, 
         while (isspace(*cmd)) ++cmd;
     }
 
-    engine->ExecuteCommand(Utils::ssprintf("alias \"%s\" sar_alias_run \"%s\"", args[1], args[1]).c_str());
-    g_aliases[std::string(args[1])] = cmd;
+    auto existing = g_aliases.find({args[1]});
+    if (existing != g_aliases.end()) {
+        AliasInfo info = g_aliases[std::string(args[1])];
+        info.cmd->Unregister();
+        delete info.cmd;
+        free(info.name);
+    }
+
+    if (Command(args[1]).ThisPtr()) {
+        console->Print("Command %s already exists! Cannot shadow.\n", args[1]);
+        return;
+    }
+
+    char *name = strdup(args[1]); // We do this so that the ConCommand has a persistent handle to the command name
+    Command *c = new Command(name, &_aliasCallback, "SAR alias command.\n");
+    c->Register();
+    g_aliases[std::string(args[1])] = { c, cmd, name };
 }
 
 CON_COMMAND(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, passing on any additional arguments.\n")
@@ -485,7 +511,7 @@ CON_COMMAND(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, pa
 
     while (isspace(*argstr)) ++argstr;
 
-    std::string cmd = it->second + argstr;
+    std::string cmd = it->second.run + " " + argstr;
 
     engine->ExecuteCommand(cmd.c_str(), true);
 }
@@ -498,7 +524,12 @@ ON_EVENT(DEMO_STOP) { RUN_EXECS(demo_stop); }
 CON_COMMAND(nop, "nop [args]... - nop ignores all its arguments and does nothing.\n")
 { }
 
-static std::map<std::string, std::string> g_functions;
+static std::map<std::string, AliasInfo> g_functions;
+
+static void _functionCallback(const CCommand &args)
+{
+    engine->ExecuteCommand(Utils::ssprintf("sar_function_run %s", args.m_pArgSBuffer).c_str(), true);
+}
 
 CON_COMMAND(sar_function, "sar_function <name> [command] [args]... - create a function, replacing $1, $2 etc up to $9 in the command string with the respective argument. If no command is specified, prints the given function.\n")
 {
@@ -511,7 +542,7 @@ CON_COMMAND(sar_function, "sar_function <name> [command] [args]... - create a fu
         if (func == g_functions.end()) {
             console->Print("Function %s does not exist\n", args[1]);
         } else {
-            console->Print("%s\n", func->second.c_str());
+            console->Print("%s\n", func->second.run.c_str());
         }
         return;
     }
@@ -534,7 +565,23 @@ CON_COMMAND(sar_function, "sar_function <name> [command] [args]... - create a fu
         while (isspace(*cmd)) ++cmd;
     }
 
-    g_functions[std::string(args[1])] = cmd;
+    auto existing = g_functions.find({args[1]});
+    if (existing != g_functions.end()) {
+        AliasInfo info = g_functions[std::string(args[1])];
+        info.cmd->Unregister();
+        delete info.cmd;
+        free(info.name);
+    }
+
+    if (Command(args[1]).ThisPtr()) {
+        console->Print("Command %s already exists! Cannot shadow.\n", args[1]);
+        return;
+    }
+
+    char *name = strdup(args[1]); // We do this so that the ConCommand has a persistent handle to the command name
+    Command *c = new Command(name, &_functionCallback, "SAR function command.\n");
+    c->Register();
+    g_functions[std::string(args[1])] = { c, cmd, name };
 }
 
 CON_COMMAND(sar_function_run, "sar_function_run <name> [args]... - run a function with the given arguments.\n")
@@ -548,7 +595,7 @@ CON_COMMAND(sar_function_run, "sar_function_run <name> [args]... - run a functio
         return console->Print("Function %s does not exist\n", args[1]);
     }
 
-    auto func = it->second;
+    auto func = it->second.run;
 
     std::string cmd;
 
