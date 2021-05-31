@@ -9,6 +9,11 @@
 #include "Features/Session.hpp"
 #include "Event.hpp"
 
+// Fuck you Windows
+#ifdef _WIN32
+#define strdup _strdup
+#endif
+
 static std::map<std::string, std::string> g_svars;
 
 CON_COMMAND(svar_set, "svar_set <variable> <value> - set a svar (SAR variable) to a given value.\n")
