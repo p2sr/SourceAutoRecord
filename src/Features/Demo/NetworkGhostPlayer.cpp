@@ -619,6 +619,8 @@ void NetworkManager::SetupCountdown(std::string preCommands, std::string postCom
     });
     this->postCountdownCommands = postCommands;
     this->countdownStep = duration;
+    this->countdownShow = duration != 0;
+
     this->timeLeft = NOW_STEADY();
 }
 
@@ -634,7 +636,9 @@ void NetworkManager::UpdateCountdown()
     auto now = NOW_STEADY();
     if (std::chrono::duration_cast<std::chrono::milliseconds>(now - this->timeLeft).count() >= 1000) {
         if (this->countdownStep == 0) {
-            client->Chat(TextColor::GREEN, "0! GO!");
+            if (this->countdownShow) {
+                client->Chat(TextColor::GREEN, "0! GO!");
+            }
             if (!this->postCountdownCommands.empty()) {
                 engine->ExecuteCommand(this->postCountdownCommands.c_str());
             }

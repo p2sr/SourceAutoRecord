@@ -52,6 +52,7 @@ private:
     std::string postCountdownCommands;
     std::chrono::time_point<std::chrono::steady_clock> timeLeft;
     int countdownStep;
+    bool countdownShow;
 
     std::chrono::time_point<std::chrono::steady_clock> lastUpdateTime;
 
