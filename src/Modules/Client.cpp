@@ -527,7 +527,7 @@ bool Client::Init()
     offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
     offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
     offsetFinder->ClientSide("CBasePlayer", "m_hGroundEntity", &Offsets::C_m_hGroundEntity);
-    offsetFinder->ServerSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
+    offsetFinder->ClientSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
     offsetFinder->ClientSide("CPortal_Player", "m_StatsThisLevel", &Offsets::m_StatsThisLevel);
 
     cl_showpos = Variable("cl_showpos");
