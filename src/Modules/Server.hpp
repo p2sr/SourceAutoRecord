@@ -33,7 +33,7 @@ public:
 #ifdef _WIN32
     using _AcceptInput = bool(__rescall*)(void* thisptr, const char* inputName, void* activator, void* caller, variant_t value, int outputID);
 #else
-    using _AcceptInput = bool(__rescall*)(void* thisptr, const char* inputName, void* activator, void* caller, variant_t *value, int outputID);
+    using _AcceptInput = bool(__rescall*)(void* thisptr, const char* inputName, void* activator, void* caller, variant_t &value, int outputID);
 #endif
 
 #ifdef _WIN32

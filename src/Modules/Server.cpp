@@ -103,11 +103,7 @@ void Server::KillEntity(void* entity)
     variant_t val = {0};
     val.fieldType = FIELD_VOID;
     void* player = this->GetPlayer(1);
-#ifdef _WIN32
     server->AcceptInput(entity, "Kill", player, player, val, 0);
-#else
-    server->AcceptInput(entity, "Kill", player, player, &val, 0);
-#endif
 }
 CMStatus Server::GetChallengeStatus()
 {
@@ -323,13 +319,8 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 extern Hook g_AcceptInputHook;
 #endif
 
-// FIXME: THIS HOOK IS FUCKING ATROCIOUS!!!!
-// We have to trampoline it rather than vtable patching, but because
-// Linux has more variations, we use Hook for it there. However, because
-// on Windows it's thiscall, we can't do that! We should add thiscall
-// support to Hook.
 #ifdef _WIN32
-static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void* activator, void* caller, variant_t &parameter)
+static void __thiscall AcceptInput_Hook(void* thisptr, const char* inputName, void* activator, void* caller, variant_t parameter, int outputID)
 #else
 static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void* activator, void* caller, variant_t &parameter, int outputID)
 #endif
@@ -376,11 +367,9 @@ static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void*
     }
     //console->DevMsg("%.4d INPUT '%s' TARGETNAME '%s' CLASSNAME '%s' PARAM '%s'\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr), parameter.ToString());
 
-#ifndef _WIN32
     g_AcceptInputHook.Disable();
-    server->AcceptInput(thisptr, inputName, activator, caller, &parameter, outputID);
+    server->AcceptInput(thisptr, inputName, activator, caller, parameter, outputID);
     g_AcceptInputHook.Enable();
-#endif
 }
 
 // This is kinda annoying - it's got to be in a separate function
@@ -388,11 +377,7 @@ static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void*
 // of CBaseEntity::AcceptInput, but we generally can't do that until
 // we've loaded into a level.
 static bool IsAcceptInputTrampolineInitialized = false;
-#ifdef _WIN32
-static uint8_t OriginalAcceptInputCode[8];
-#else
 Hook g_AcceptInputHook(&AcceptInput_Hook);
-#endif
 static void InitAcceptInputTrampoline()
 {
     void* ent = server->m_EntPtrArray[0].m_pEntity;
@@ -400,48 +385,7 @@ static void InitAcceptInputTrampoline()
     IsAcceptInputTrampolineInitialized = true;
     server->AcceptInput = Memory::VMT<Server::_AcceptInput>(ent, Offsets::AcceptInput);
 
-#ifdef _WIN32
-    // Get around memory protection so we can modify code
-    Memory::UnProtect((void*)server->AcceptInput, 8);
-
-    memcpy(OriginalAcceptInputCode, (void*)server->AcceptInput, sizeof OriginalAcceptInputCode);
-
-    // Create our code
-    static uint8_t trampolineCode[] = {
-        0x55,             // 00: push ebp                 (we overwrote these 2 instructions)
-        0x89, 0xE5,       // 01: mov ebp, esp
-        0x8D, 0x45, 0x14, // 03: lea eax, [ebp + 0x14]    (we take a pointer to the variant_t, for simplicity and consistency with Linux)
-        0x51,             // 06: push ecx                 (store thisptr for later)
-        0x50,             // 07: push eax                 (we want to take the first 5 args in our detour function)
-        0xFF, 0x75, 0x10, // 08: push dword [ebp + 0x10]
-        0xFF, 0x75, 0x0C, // 0B: push dword [ebp + 0x0C]
-        0xFF, 0x75, 0x08, // 0E: push dword [ebp + 0x08]
-        0x51,             // 11: push ecx                 (ecx=thisptr, because of thiscall convention)
-        0xE8, 0, 0, 0, 0, // 12: call ??                  (to be filled with address of detour function)
-        0x83, 0xC4, 0x14, // 17: add esp, 0x14            (pop the other args to the detour function)
-        0x59,             // 1A: pop ecx                  (it may have been clobbered by the cdecl detour function)
-        0xA1, 0, 0, 0, 0, // 1B: mov eax, ??              (to be filled with the address from the other instruction we overwrote)
-        0xE9, 0, 0, 0, 0, // 20: jmp ??                   (to be filled with the address of code to return to)
-    };
-
-    *(uint32_t*)(trampolineCode + 0x13) = (uint32_t)&AcceptInput_Hook - ((uint32_t)trampolineCode + 0x13 + 4);
-    *(uint32_t*)(trampolineCode + 0x1C) = *(uint32_t*)((uint32_t)server->AcceptInput + 4); // The address we need to steal is 4 bytes into the function
-    *(uint32_t*)(trampolineCode + 0x21) = (uint32_t)server->AcceptInput + 8 - ((uint32_t)trampolineCode + 0x21 + 4);
-
-    Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
-
-    // Write the trampoline instruction, followed by some NOPs
-    *(uint8_t*)server->AcceptInput = 0xE9; // 32-bit relative JMP
-    uint32_t jumpAddr = (uint32_t)server->AcceptInput + 1;
-    *(uint32_t*)jumpAddr = (uint32_t)trampolineCode - (jumpAddr + 4);
-    // 3 NOPs - not strictly necessary as we jump past them anyway, but
-    // it'll stop disassemblers getting confused which is nice
-    ((uint8_t*)server->AcceptInput)[5] = 0x90;
-    ((uint8_t*)server->AcceptInput)[6] = 0x90;
-    ((uint8_t*)server->AcceptInput)[7] = 0x90;
-#else
     g_AcceptInputHook.SetFunc(server->AcceptInput);
-#endif
 }
 
 // CServerGameDLL::GameFrame
