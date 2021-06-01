@@ -40,6 +40,63 @@ CON_COMMAND_F(svar_get, "svar_get <variable> - get the value of a svar.\n", FCVA
     console->Print("%s = %s\n", args[1], GetSvar({args[1]}).c_str());
 }
 
+static ConsoleListener *g_svarListener;
+static std::string g_svarListenerTarget;
+static std::string g_svarListenerOutput;
+
+CON_COMMAND_F(_sar_svar_capture_stop, "Internal SAR command. Do not use.\n", FCVAR_DONTRECORD | FCVAR_HIDDEN)
+{
+    delete g_svarListener;
+
+    _sar_svar_capture_stop.ThisPtr()->m_nFlags |= FCVAR_HIDDEN;
+
+    std::string out = g_svarListenerOutput;
+    out.erase(std::remove(out.begin(), out.end(), '\n'), out.end());
+
+    g_svars[g_svarListenerTarget] = out;
+}
+
+CON_COMMAND_F(svar_capture, "svar_capture <variable> <command> [args]... - capture a command's output and place it into an svar, removing newlines.\n", FCVAR_DONTRECORD)
+{
+    if (args.ArgC() < 2) {
+        return console->Print(svar_capture.ThisPtr()->m_pszHelpString);
+    }
+
+    const char *cmd;
+
+    if (args.ArgC() == 3) {
+        cmd = args[2];
+    } else {
+        cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
+
+        while (isspace(*cmd)) ++cmd;
+
+        if (*cmd == '"') {
+            cmd += strlen(args[1]) + 2;
+        } else {
+            cmd += strlen(args[1]);
+        }
+
+        while (isspace(*cmd)) ++cmd;
+    }
+
+    g_svarListenerTarget = args[1];
+    g_svarListenerOutput = "";
+
+    g_svarListener = new ConsoleListener([&](const char *msg) {
+        g_svarListenerOutput += msg;
+    });
+
+    _sar_svar_capture_stop.ThisPtr()->m_nFlags &= ~FCVAR_HIDDEN;
+
+    // The engine won't let us execute a command during execution of
+    // this one; instead, they're added to the front of the cbuf, to be
+    // executed next. So we have to do this jank to get the output
+    // properly
+    engine->ExecuteCommand(cmd, true);
+    engine->ExecuteCommand("_sar_svar_capture_stop", true);
+}
+
 #define SVAR_OP(name, op) \
     CON_COMMAND_F(svar_##name, "svar_" #name " <variable> <variable|value> - perform the given operation on an svar.\n", FCVAR_DONTRECORD) \
     { \

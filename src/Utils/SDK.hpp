@@ -1340,3 +1340,31 @@ public:
     const uint32_t *m_pBufferEnd;
     const uint32_t *m_pData;
 };
+
+enum class LoggingSeverity
+{
+    MESSAGE,
+    WARNING,
+    ASSERT,
+    ERROR,
+};
+
+enum LoggingChannelFlags
+{
+    LCF_CONSOLE_ONLY = 0x1,
+    LCF_DO_NOT_ECHO  = 0x2,
+};
+
+struct LoggingContext
+{
+    int channelID;
+    LoggingChannelFlags flags;
+    LoggingSeverity severity;
+    Color color;
+};
+
+class ILoggingListener
+{
+public:
+    virtual void Log(const LoggingContext *ctx, const char *msg) = 0;
+};
