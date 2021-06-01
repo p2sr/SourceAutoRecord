@@ -452,12 +452,16 @@ CON_COMMAND_F(seq, "seq [command]... - runs a sequence of commands one tick afte
         return console->Print(seq.ThisPtr()->m_pszHelpString);
     }
 
-    std::queue<std::string> cmds;
-    for (int i = 1; i < args.ArgC(); ++i) {
-        cmds.push(std::string(args[i]));
-    }
+    engine->ExecuteCommand(args[1], true);
 
-    seqs.push_back({cmds});
+    if (args.ArgC() > 2) {
+        std::queue<std::string> cmds;
+        for (int i = 2; i < args.ArgC(); ++i) {
+            cmds.push(std::string(args[i]));
+        }
+
+        seqs.push_back({cmds});
+    }
 }
 
 ON_EVENT(PRE_TICK) {
