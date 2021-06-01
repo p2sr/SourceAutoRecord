@@ -294,12 +294,13 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 }
 #endif
 
-#ifndef _WIN32
 extern Hook g_AcceptInputHook;
-#endif
 
+// TODO: the windows signature is a bit dumb. fastcall is like thiscall
+// but for normal functions and takes an arg in edx, so we use it
+// because msvc won't let us use thiscall on a non-member function
 #ifdef _WIN32
-static void __thiscall AcceptInput_Hook(void* thisptr, const char* inputName, void* activator, void* caller, variant_t parameter, int outputID)
+static void __fastcall AcceptInput_Hook(void* thisptr, void* unused, const char* inputName, void* activator, void* caller, variant_t parameter, int outputID)
 #else
 static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void* activator, void* caller, variant_t &parameter, int outputID)
 #endif
@@ -555,10 +556,7 @@ CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop 
 }
 void Server::Shutdown()
 {
-#if _WIN32
-    if (IsAcceptInputTrampolineInitialized) {
-        memcpy((void*)server->AcceptInput, OriginalAcceptInputCode, 8);
-    }
+#ifdef _WIN32
     MH_UNHOOK(this->AirMove_Mid);
 #endif
     Interface::Delete(this->g_GameMovement);
