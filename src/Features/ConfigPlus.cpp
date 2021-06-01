@@ -47,6 +47,7 @@ static std::string g_svarListenerOutput;
 CON_COMMAND_F(_sar_svar_capture_stop, "Internal SAR command. Do not use.\n", FCVAR_DONTRECORD | FCVAR_HIDDEN)
 {
     delete g_svarListener;
+    g_svarListener = nullptr;
 
     _sar_svar_capture_stop.ThisPtr()->m_nFlags |= FCVAR_HIDDEN;
 
@@ -58,7 +59,7 @@ CON_COMMAND_F(_sar_svar_capture_stop, "Internal SAR command. Do not use.\n", FCV
 
 CON_COMMAND_F(svar_capture, "svar_capture <variable> <command> [args]... - capture a command's output and place it into an svar, removing newlines.\n", FCVAR_DONTRECORD)
 {
-    if (args.ArgC() < 2) {
+    if (args.ArgC() < 3) {
         return console->Print(svar_capture.ThisPtr()->m_pszHelpString);
     }
 
@@ -95,6 +96,21 @@ CON_COMMAND_F(svar_capture, "svar_capture <variable> <command> [args]... - captu
     // properly
     engine->ExecuteCommand(cmd, true);
     engine->ExecuteCommand("_sar_svar_capture_stop", true);
+}
+
+CON_COMMAND_F(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvars's value and place it into an svar, removing newlines.\n", FCVAR_DONTRECORD)
+{
+    if (args.ArgC() != 3) {
+        return console->Print(svar_from_cvar.ThisPtr()->m_pszHelpString);
+    }
+
+    Variable cvar(args[2]);
+
+    if (cvar.ThisPtr()) {
+        std::string val = cvar.GetFlags() & FCVAR_NEVER_AS_STRING ? std::to_string(cvar.GetInt()) : cvar.GetString();
+        val.erase(std::remove(val.begin(), val.end(), '\n'), val.end());
+        g_svars[std::string(args[1])] = val;
+    }
 }
 
 #define SVAR_OP(name, op) \

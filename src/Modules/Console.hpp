@@ -67,7 +67,7 @@ public:
 class ConsoleListener : private ILoggingListener {
 public:
     ConsoleListener(std::function<void (const char *)> cbk);
-    ~ConsoleListener();
+    virtual ~ConsoleListener();
 private:
     virtual void Log(const LoggingContext *ctx, const char *msg) override;
     std::function<void (const char *)> cbk;
