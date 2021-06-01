@@ -277,33 +277,43 @@ CON_COMMAND(sar_hud_default_order_reset, "Resets order of hud element.\n")
 
 // HUD
 
+struct TextComponent
+{
+    std::optional<Color> color;
+    std::string text;
+};
+
 struct TextLine
 {
     bool draw;
-    std::string text;
-    Color color;
+    Color defaultColor;
+    std::vector<TextComponent> components;
 };
 
 static std::map<long, TextLine> sar_hud_text_vals;
 HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
 {
-    Color old = ctx->textColor;
     for (auto& t : sar_hud_text_vals) {
+        int x = ctx->xPadding;
+        int y = ctx->yPadding + ctx->elements * (ctx->fontSize + ctx->spacing);
         if (t.second.draw) {
-            ctx->textColor = t.second.color;
-            ctx->DrawElement("%s", t.second.text.c_str());
+            for (auto &c : t.second.components) {
+                Color color = c.color ? *c.color : t.second.defaultColor;
+                int pixLen = surface->GetFontLength(ctx->font, "%s", c.text.c_str());
+                surface->DrawTxt(ctx->font, x, y, color, c.text.c_str());
+                x += pixLen;
+            }
+            ++ctx->elements;
         }
     }
-    ctx->textColor = old;
 }
 
 Variable sar_hud_text("sar_hud_text", "", "DEPRECATED: Use sar_hud_set_text.", 0);
 void sar_hud_text_callback(void* var, const char* pOldVal, float fOldVal)
 {
     console->Print("WARNING: sar_hud_text is deprecated. Please use sar_hud_set_text instead.\n");
-    sar_hud_text_vals[0].draw = true;
-    sar_hud_text_vals[0].text = std::string(sar_hud_text.GetString());
-    sar_hud_text_vals[0].color = Color{ 255, 255, 255, 255 };
+    sar_hud_text_vals[0].draw = sar_hud_text.GetString()[0];
+    sar_hud_text_vals[0].components = { { { { 255, 255, 255, 255 } }, { sar_hud_text.GetString() } } };
 }
 
 long parseIdx(const char* idxStr)
@@ -328,9 +338,45 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets and shows the 
         return;
     }
 
+    if (sar_hud_text_vals.find(idx) == sar_hud_text_vals.end()) {
+        sar_hud_text_vals[idx].defaultColor = Color{ 255, 255, 255, 255 };
+    }
+
+    std::optional<Color> curColor;
+    std::string component = "";
+
+    std::vector<TextComponent> components;
+
+    const char *txt = args[2];
+    while (*txt) {
+        if (*txt == '#') {
+            ++txt;
+            if (*txt == '#') {
+                component += '#';
+                ++txt;
+                continue;
+            } else {
+                int r, g, b;
+                int end = -1;
+                if (sscanf(txt, "%2x%2x%2x%n", &r, &g, &b, &end) == 3 && end == 6) {
+                    txt += 6;
+                    components.push_back({ curColor, component });
+                    component = "";
+                    curColor = Color{ r, g, b, 255 };
+                    continue;
+                }
+                component += '#';
+                continue;
+            }
+        }
+        component += *txt;
+        ++txt;
+    }
+
+    components.push_back({ curColor, component });
+
     sar_hud_text_vals[idx].draw = true;
-    sar_hud_text_vals[idx].text = std::string(args[2]);
-    sar_hud_text_vals[idx].color = Color{ 255, 255, 255, 255 };
+    sar_hud_text_vals[idx].components = components;
 }
 
 CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color>. Sets the color of the nth text value in the HUD.\n")
@@ -377,7 +423,7 @@ CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color>. Sets t
         }
     }
 
-    sar_hud_text_vals[idx].color = Color{ r, g, b, 255 };
+    sar_hud_text_vals[idx].defaultColor = Color{ r, g, b, 255 };
 }
 
 CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id>. Hides the nth text value in the HUD.\n")
