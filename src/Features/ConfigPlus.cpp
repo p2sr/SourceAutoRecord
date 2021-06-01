@@ -37,7 +37,7 @@ CON_COMMAND_F(svar_get, "svar_get <variable> - get the value of a svar.\n", FCVA
         return console->Print(svar_get.ThisPtr()->m_pszHelpString);
     }
 
-    console->Print("%s = %s\n", args[1], GetSvar({args[1]}));
+    console->Print("%s = %s\n", args[1], GetSvar({args[1]}).c_str());
 }
 
 #define SVAR_OP(name, op) \
