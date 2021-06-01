@@ -1341,19 +1341,19 @@ public:
     const uint32_t *m_pData;
 };
 
-enum class LoggingSeverity
+typedef enum
 {
-    MESSAGE,
-    WARNING,
-    ASSERT,
-    ERROR,
-};
+    LSEV_MESSAGE,
+    LSEV_WARNING,
+    LSEV_ASSERT,
+    LSEV_ERROR,
+} LoggingSeverity;
 
-enum LoggingChannelFlags
+typedef enum
 {
     LCF_CONSOLE_ONLY = 0x1,
     LCF_DO_NOT_ECHO  = 0x2,
-};
+} LoggingChannelFlags;
 
 struct LoggingContext
 {

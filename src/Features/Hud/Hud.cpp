@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <map>
+#include <optional>
 
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"

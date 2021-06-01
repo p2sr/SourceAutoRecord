@@ -37,7 +37,7 @@ ConsoleListener::ConsoleListener(std::function<void (const char *)> cbk)
 {
     console->LoggingSystem_PushLoggingState(false, false);
     console->LoggingSystem_RegisterLoggingListener(this);
-    console->LoggingSystem_SetChannelSpewLevelByTag("Console", LoggingSeverity::MESSAGE);
+    console->LoggingSystem_SetChannelSpewLevelByTag("Console", LSEV_MESSAGE);
 }
 
 void ConsoleListener::Log(const LoggingContext *ctx, const char *msg) {
