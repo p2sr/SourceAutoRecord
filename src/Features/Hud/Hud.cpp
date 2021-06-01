@@ -400,13 +400,13 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
 CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color>. Sets the color of the nth text value in the HUD.\n")
 {
     if (args.ArgC() != 3 && args.ArgC() != 5) {
-        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
+        console->Print(sar_hud_set_text_color.ThisPtr()->m_pszHelpString);
         return;
     }
 
     long idx = parseIdx(args[1]);
     if (idx == -1) {
-        console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
+        console->Print(sar_hud_set_text_color.ThisPtr()->m_pszHelpString);
         return;
     }
 
