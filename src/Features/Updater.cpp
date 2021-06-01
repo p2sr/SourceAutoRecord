@@ -65,7 +65,7 @@ static std::optional<SarVersion> getVersionComponents(const char *str)
     return v;
 }
 
-static bool isNewerVersion(const char *verStr, bool allowPre)
+static bool isNewerVersion(const char *verStr)
 {
     auto current = getVersionComponents(SAR_VERSION);
     auto version = getVersionComponents(verStr);
@@ -87,11 +87,7 @@ static bool isNewerVersion(const char *verStr, bool allowPre)
         }
     }
 
-    if (allowPre) {
-        return version->pre > current->pre;
-    }
-
-    return false;
+    return version->pre > current->pre;
 }
 
 static bool curlPrepare(const char *url, int timeout)
@@ -223,7 +219,7 @@ void checkUpdate(bool allowPre) {
 
     console->Print("Latest version is %s\n", name.c_str());
 
-    if (!isNewerVersion(name.c_str(), allowPre)) {
+    if (!isNewerVersion(name.c_str())) {
         console->Print("You're all up-to-date!\n");
     } else {
         console->Print("Update with sar_update, or at %s\n", dlUrl.c_str());
@@ -240,7 +236,7 @@ void doUpdate(bool allowPre, bool exitOnSuccess) {
         return;
     }
 
-    if (!isNewerVersion(name.c_str(), allowPre)) {
+    if (!isNewerVersion(name.c_str())) {
         console->Print("You're already up-to-date!\n");
         return;
     }
