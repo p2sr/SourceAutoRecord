@@ -326,8 +326,8 @@ long parseIdx(const char* idxStr)
     return idx;
 }
 
-CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets and shows the nth text value in the HUD.\n") {
-    if (args.ArgC() != 3) {
+CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows the nth text value in the HUD.\n") {
+    if (args.ArgC() < 3) {
         console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
         return;
     }
@@ -342,12 +342,29 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets and shows the 
         sar_hud_text_vals[idx].defaultColor = Color{ 255, 255, 255, 255 };
     }
 
+    const char *txt;
+
+    if (args.ArgC() == 3) {
+        txt = args[2];
+    } else {
+        txt = args.m_pArgSBuffer + args.m_nArgv0Size;
+
+        while (isspace(*txt)) ++txt;
+
+        if (*txt == '"') {
+            txt += strlen(args[1]) + 2;
+        } else {
+            txt += strlen(args[1]);
+        }
+
+        while (isspace(*txt)) ++txt;
+    }
+
     std::optional<Color> curColor;
     std::string component = "";
 
     std::vector<TextComponent> components;
 
-    const char *txt = args[2];
     while (*txt) {
         if (*txt == '#') {
             ++txt;
