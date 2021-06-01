@@ -29,6 +29,7 @@ public:
     using _GetKernedCharWidth = void(__rescall*)(void* thisptr, HFont font, wchar_t ch, wchar_t prev, wchar_t next, float &wide, float &a, float &c);
     using _StartDrawing = int(__rescall*)(void* thisptr);
     using _FinishDrawing = int(__cdecl*)();
+    using _GetFontName = const char *(__rescall *)(void *thisptr, HFont font);
 
     using _DrawGetTextureId = int(__rescall*)(void* thisptr, char const* filename);
     using _DrawGetTextureFile = int(__rescall*)(void* thisptr, int id, char* filename, int maxlen);
@@ -52,6 +53,7 @@ public:
     _GetKernedCharWidth GetKernedCharWidth = nullptr;
     _StartDrawing StartDrawing = nullptr;
     _FinishDrawing FinishDrawing = nullptr;
+    _GetFontName GetFontName = nullptr;
 
     _DrawGetTextureId DrawGetTextureId = nullptr;
     _DrawGetTextureFile DrawGetTextureFile = nullptr;

@@ -58,6 +58,7 @@ int PaintTraverseEx;
 int DrawColoredText;
 int DrawTextLen;
 int GetKernedCharWidth;
+int GetFontName;
 
 int DrawSetTextureFile;
 int DrawSetTextureRGBA;

@@ -2,10 +2,24 @@
 
 #include <stdarg.h>
 
+#include "Console.hpp"
+
 #include "Interface.hpp"
 #include "Module.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
+#include "Command.hpp"
+
+CON_COMMAND(sar_font_get_name, "sar_font_get_name <id> - gets the name of a font from its index.\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print(sar_font_get_name.ThisPtr()->m_pszHelpString);
+    }
+
+    int id = atoi(args[1]);
+    const char *name = surface->GetFontName(surface->matsurface->ThisPtr(), id);
+    console->Print("%s\n", name);
+}
 
 int Surface::GetFontHeight(HFont font)
 {
@@ -101,6 +115,7 @@ bool Surface::Init()
         this->DrawColoredText = matsurface->Original<_DrawColoredText>(Offsets::DrawColoredText);
         this->DrawTextLen = matsurface->Original<_DrawTextLen>(Offsets::DrawTextLen);
         this->GetKernedCharWidth = matsurface->Original<_GetKernedCharWidth>(Offsets::GetKernedCharWidth);
+        this->GetFontName = matsurface->Original<_GetFontName>(Offsets::GetFontName);
 
         this->DrawSetTextureFile = matsurface->Original<_DrawSetTextureFile>(Offsets::DrawSetTextureFile);
         this->DrawSetTextureRGBA = matsurface->Original<_DrawSetTextureRGBA>(Offsets::DrawSetTextureRGBA);
