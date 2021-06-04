@@ -64,6 +64,7 @@ static Variable sar_render_autostart("sar_render_autostart", "0", "Whether to au
 static Variable sar_render_autostart_extension("sar_render_autostart_extension", "mp4", "The file extension (and hence container format) to use for automatically started renders.\n", 0);
 static Variable sar_render_remove_broken("sar_render_remove_broken", "1", "Whether to remove broken frames from demo playback; only applies with sar_render_autostart 1\n");
 static Variable sar_render_autostop("sar_render_autostop", "1", "Whether to automatically stop when __END__ is seen in demo playback\n");
+static Variable sar_render_shutter_angle("sar_render_shutter_angle", "180", 30, 360, "The shutter angle to use for rendering in degrees.\n");
 
 // g_videomode VMT wrappers {{{
 
@@ -128,6 +129,8 @@ static struct
     uint8_t *imageBuf; // Temporary buffer - contains the raw pixel data read from the screen
 
     int toBlend;
+    int toBlendStart; // Inclusive
+    int toBlendEnd;   // Exclusive
     int nextBlendIdx; // How many frames in this blend have we seen so far?
     uint16_t *blendSumBuf; // Blending buffer - contains the sum of the pixel values during blending (we only divide at the end of the blend to prevent rounding errors). Not allocated if toBlend == 1.
 
@@ -667,8 +670,10 @@ static bool workerHandleVideoFrame()
         memcpy(g_render.videoStream.tmpFrame->data[0], g_render.imageBuf, size);
         g_render.imageBufLock.unlock();
     } else {
-        for (size_t i = 0; i < size; ++i) {
-            g_render.blendSumBuf[i] += g_render.imageBuf[i];
+        if (g_render.nextBlendIdx >= g_render.toBlendStart && g_render.nextBlendIdx < g_render.toBlendEnd) {
+            for (size_t i = 0; i < size; ++i) {
+                g_render.blendSumBuf[i] += g_render.imageBuf[i];
+            }
         }
         g_render.imageBufLock.unlock();
 
@@ -677,7 +682,7 @@ static bool workerHandleVideoFrame()
             return true;
         }
 
-        int shift = g_render.toBlend; // FIXME TEST
+        int shift = g_render.toBlendEnd - g_render.toBlendStart;
 
         for (size_t i = 0; i < size; ++i) {
             g_render.videoStream.tmpFrame->data[0][i] = g_render.blendSumBuf[i] / shift;
@@ -834,6 +839,16 @@ static void startRender()
             return;
         }
         g_render.toBlend = framerate / g_render.fps;
+    }
+
+    {
+        float shutter = (float)sar_render_shutter_angle.GetInt() / 360.0f;
+        int toExclude = (int)round(g_render.toBlend * (1 - shutter) / 2);
+        if (toExclude * 2 >= g_render.toBlend) {
+            toExclude = g_render.toBlend / 2 - 1;
+        }
+        g_render.toBlendStart = toExclude;
+        g_render.toBlendEnd = g_render.toBlend - toExclude;
     }
 
     if (snd_surround_speakers.GetInt() != 2) {
