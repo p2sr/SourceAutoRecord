@@ -35,6 +35,7 @@ void DemoParser::Adjust(Demo* demo)
 }
 bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std::map<int, DataGhost>* datas)
 {
+    bool gotFirstPositivePacket = false;
     try {
         if (filePath.substr(filePath.length() - 4, 4) != ".dem")
             filePath += ".dem";
@@ -91,8 +92,9 @@ bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std:
                 case 0x01: // SignOn
                 case 0x02: // Packet
                 {
-                    if (tick > 0 && (demo->firstPositivePacketTick == 0 || demo->firstPositivePacketTick > tick)) {
+                    if (tick > 0 && !gotFirstPositivePacket) {
                         demo->firstPositivePacketTick = tick;
+                        gotFirstPositivePacket = true;
                     }
 
                     if (outputMode == 2 || ghostRequest == true) {

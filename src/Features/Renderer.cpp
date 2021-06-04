@@ -979,7 +979,7 @@ void Renderer::Frame()
 
             if (sar_render_remove_broken.GetBool()) {
                 // If the parity of the current tick matches the parity of the first non-zero demo packet, don't start rendering
-                if (engine->demoplayer->GetTick() < Renderer::demoStart) {
+                if (engine->demoplayer->GetTick() <= Renderer::demoStart) {
                     sv_alternateticks.SetValue(0);
                     return;
                 } else {
