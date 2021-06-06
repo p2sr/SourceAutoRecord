@@ -176,6 +176,9 @@ int GetCurrentMap;
 int HostFrameTime;
 int ClientTime;
 int PrecacheModel;
+int ClientTick;
+int ServerTick;
+int HostTick;
 
 // CSchemeManager
 int GetIScheme;

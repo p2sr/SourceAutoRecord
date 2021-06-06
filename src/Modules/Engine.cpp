@@ -24,6 +24,7 @@
 #include "Utils.hpp"
 #include "Variable.hpp"
 #include "Event.hpp"
+#include "Hook.hpp"
 
 #ifdef _WIN32
 #include <Memoryapi.h>
@@ -44,6 +45,8 @@ Variable sar_record_at_increment("sar_record_at_increment", "0", "Increment auto
 
 Variable sar_pause_at("sar_pause_at", "-1", -1, "Pause at the specified tick. -1 to deactivate it.\n");
 Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.\n");
+
+Variable sar_tick_debug("sar_tick_debug", "0", 0, 3, "Output debugging information to the console related to ticks and frames.\n");
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::SetSignonState);
@@ -293,13 +296,38 @@ DETOUR(Engine::Disconnect, bool bShowMainMenu)
 // CClientState::SetSignonState
 DETOUR(Engine::SetSignonState, int state, int count, void* unk)
 {
+    if (sar_tick_debug.GetInt() >= 2) {
+        int host, server, client;
+        engine->GetTicks(host, server, client);
+        console->Print("CClientState::SetSignonState %d (host=%d server=%d client=%d)\n", state, host, server, client);
+    }
     session->Changed(state);
     return Engine::SetSignonState(thisptr, state, count, unk);
+}
+
+void Engine::GetTicks(int &host, int &server, int &client)
+{
+    auto &et = this->engineTool;
+    using _Fn = int (__rescall *)(void *thisptr);
+    host = et->Original<_Fn>(Offsets::HostTick)(et->ThisPtr());
+    server = et->Original<_Fn>(Offsets::ServerTick)(et->ThisPtr());
+    client = et->Original<_Fn>(Offsets::ClientTick)(et->ThisPtr());
 }
 
 // CEngine::Frame
 DETOUR(Engine::Frame)
 {
+    if (sar_tick_debug.GetInt() >= 2) {
+        static int lastServer, lastClient;
+        int host, server, client;
+        engine->GetTicks(host, server, client);
+        if (server != lastServer || client != lastClient || sar_tick_debug.GetInt() >= 3) {
+            console->Print("CEngine::Frame host=%d server=%d client=%d\n", host, server, client);
+            lastServer = server;
+            lastClient = client;
+        }
+    }
+
     if (engine->hoststate->m_currentState != session->prevState) {
         session->Changed();
     }
@@ -476,6 +504,33 @@ DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
     }
 }
 
+static bool (__rescall *g_ProcessTick)(void *thisptr, void *pack);
+
+#ifdef _WIN32
+bool __fastcall ProcessTick_Detour(void *thisptr, void *unused, void *pack);
+#else
+bool ProcessTick_Detour(void *thisptr, void *pack);
+#endif
+
+static Hook ProcessTick_Hook(&ProcessTick_Detour);
+
+#ifdef _WIN32
+bool __fastcall ProcessTick_Detour(void *thisptr, void *unused, void *pack)
+#else
+bool ProcessTick_Detour(void *thisptr, void *pack)
+#endif
+{
+    if (sar_tick_debug.GetInt() >= 1) {
+        int host, server, client;
+        engine->GetTicks(host, server, client);
+        console->Print("NET_Tick %d (host=%d server=%d client=%d)\n", *(int *)((char *)pack + 16), host, server, client);
+    }
+    ProcessTick_Hook.Disable();
+    bool ret = g_ProcessTick(thisptr, pack);
+    ProcessTick_Hook.Enable();
+    return ret;
+}
+
 bool Engine::Init()
 {
     this->engineClient = Interface::Create(this->Name(), "VEngineClient015", false);
@@ -537,6 +592,9 @@ bool Engine::Init()
 #else
             auto ProcessTick = this->cl->Original(Offsets::ProcessTick);
 #endif
+
+            g_ProcessTick = (decltype(g_ProcessTick))ProcessTick;
+            ProcessTick_Hook.SetFunc(ProcessTick);
 
 #ifndef _WIN32
             if (sar.game->Is(SourceGame_EIPRelPIC)) {

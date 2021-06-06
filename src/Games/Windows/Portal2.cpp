@@ -134,6 +134,9 @@ void Portal2::LoadOffsets()
     GetCurrentMap = 25; // CEngineTool
     HostFrameTime = 39; //CEngineTool
     ClientTime = 47; //CEngineTool
+    ClientTick = 49; // CEngineTool
+    ServerTick = 45; // CEngineTool
+    HostTick = 41; // CEngineTool
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
     PrecacheModel = 61; // CEngineTool::PrecacheModel
     AddListener = 3; // CGameEventManager

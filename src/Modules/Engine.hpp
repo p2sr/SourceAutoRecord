@@ -146,6 +146,7 @@ public:
     bool Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr);
     bool TraceFromCamera(float distMax, CGameTrace& tr);
     bool ConsoleVisible();
+    void GetTicks(int &host, int &server, int &client);
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);
@@ -208,6 +209,8 @@ extern Variable sar_record_at_increment;
 
 extern Variable sar_pause_at;
 extern Variable sar_pause_for;
+
+extern Variable sar_tick_debug;
 
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
