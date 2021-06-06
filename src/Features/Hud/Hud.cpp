@@ -26,6 +26,7 @@ Variable sar_hud_default_font_index("sar_hud_default_font_index", "0", 0, "Font 
 Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 255", "RGBA font color of HUD.\n", 0);
 
 Variable sar_hud_precision("sar_hud_precision", "3", 0, "Precision of HUD numbers.\n");
+Variable sar_hud_velocity_precision("sar_hud_velocity_precision", "2", 0, "Precision of velocity HUD numbers.\n");
 
 BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
     : type(type)
@@ -523,7 +524,7 @@ HUD_ELEMENT_MODE2(velocity, "0", 0, 4, "Draws velocity of the client.\n"
 {
     auto player = client->GetPlayer(ctx->slot + 1);
     if (player) {
-        int p = sar_hud_precision.GetInt();
+        int p = sar_hud_velocity_precision.GetInt();
         auto vel = client->GetLocalVelocity(player);
         switch (mode) {
         case 1:
