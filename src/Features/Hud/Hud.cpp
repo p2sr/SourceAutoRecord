@@ -28,6 +28,17 @@ Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 2
 Variable sar_hud_precision("sar_hud_precision", "3", 0, "Precision of HUD numbers.\n");
 Variable sar_hud_velocity_precision("sar_hud_velocity_precision", "2", 0, "Precision of velocity HUD numbers.\n");
 
+static inline int getPrecision(bool velocity = false)
+{
+    int p = velocity ? sar_hud_velocity_precision.GetInt() : sar_hud_precision.GetInt();
+    if (p < 0) p = 0;
+    if (!sv_cheats.GetBool()) {
+        const int max = velocity ? 2 : 6;
+        if (p > max) p = max;
+    }
+    return p;
+}
+
 BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
     : type(type)
     , drawSecondSplitScreen(drawSecondSplitScreen)
@@ -491,7 +502,7 @@ HUD_ELEMENT_MODE2(position, "0", 0, 2, "Draws absolute position of the client.\n
         if (mode >= 2) {
             pos = pos + client->GetViewOffset(player);
         }
-        int p = sar_hud_precision.GetInt();
+        int p = getPrecision();
         ctx->DrawElement("pos: %.*f %.*f %.*f", p, pos.x, p, pos.y, p, pos.z);
     } else {
         ctx->DrawElement("pos: -");
@@ -507,7 +518,7 @@ HUD_ELEMENT_MODE2(angles, "0", 0, 2, "Draws absolute view angles of the client.\
     // the *engine* thinks we're slot 0, but everything else thinks
     // we're slot 1
     auto ang = engine->GetAngles(engine->IsOrange() ? 0 : ctx->slot);
-    int p = sar_hud_precision.GetInt();
+    int p = getPrecision();
     if (mode == 1) {
         ctx->DrawElement("ang: %.*f %.*f", p, ang.x, p, ang.y);
     } else {
@@ -524,7 +535,7 @@ HUD_ELEMENT_MODE2(velocity, "0", 0, 4, "Draws velocity of the client.\n"
 {
     auto player = client->GetPlayer(ctx->slot + 1);
     if (player) {
-        int p = sar_hud_velocity_precision.GetInt();
+        int p = getPrecision(true);
         auto vel = client->GetLocalVelocity(player);
         switch (mode) {
         case 1:
