@@ -301,8 +301,9 @@ DETOUR(Engine::SetSignonState, int state, int count, void* unk)
         engine->GetTicks(host, server, client);
         console->Print("CClientState::SetSignonState %d (host=%d server=%d client=%d)\n", state, host, server, client);
     }
+    auto ret = Engine::SetSignonState(thisptr, state, count, unk);
     session->Changed(state);
-    return Engine::SetSignonState(thisptr, state, count, unk);
+    return ret;
 }
 
 void Engine::GetTicks(int &host, int &server, int &client)
