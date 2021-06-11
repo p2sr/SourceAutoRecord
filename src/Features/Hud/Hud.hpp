@@ -48,6 +48,7 @@ public:
     int spacing = 0;
     Color textColor = Color(255, 255, 255);
     int elements = 0;
+    int maxWidth = 0;
     std::array<int, 256> group { 0 };
 
 public:

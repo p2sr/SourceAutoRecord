@@ -99,6 +99,9 @@ void HudContext::DrawElement(const char* fmt, ...)
         data);
 
     ++this->elements;
+
+    int width = surface->GetFontLength(this->font, "%s", data);
+    if (width > this->maxWidth) this->maxWidth = width;
 }
 void HudContext::DrawElementOnScreen(const int groupID, const float xPos, const float yPos, const char* fmt, ...)
 {
@@ -129,6 +132,7 @@ void HudContext::Reset(int slot)
     this->xPadding = sar_hud_default_padding_x.GetInt();
     this->yPadding = sar_hud_default_padding_y.GetInt();
     this->spacing = sar_hud_default_spacing.GetInt();
+    this->maxWidth = 0;
 
     this->font = scheme->GetDefaultFont() + sar_hud_default_font_index.GetInt();
     this->fontSize = surface->GetFontHeight(font);
@@ -316,7 +320,11 @@ HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | H
                 surface->DrawTxt(ctx->font, x, y, color, c.text.c_str());
                 x += pixLen;
             }
+
             ++ctx->elements;
+
+            int width = x - ctx->xPadding;
+            if (width > ctx->maxWidth) ctx->maxWidth = width;
         }
     }
 }
