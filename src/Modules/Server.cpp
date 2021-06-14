@@ -380,7 +380,7 @@ DETOUR(Server::GameFrame, bool simulating)
     if (sar_tick_debug.GetInt() >= 3 || (sar_tick_debug.GetInt() >= 2 && simulating)) {
         int host, server, client;
         engine->GetTicks(host, server, client);
-        console->Print("CServerGameDLL:GameFrame %s (host=%d server=%d client=%d)\n", simulating ? "simulating" : "non-simulating", host, server, client);
+        console->Print("CServerGameDLL::GameFrame %s (host=%d server=%d client=%d)\n", simulating ? "simulating" : "non-simulating", host, server, client);
     }
 
     int tick = session->GetTick();

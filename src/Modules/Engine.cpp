@@ -323,7 +323,7 @@ DETOUR(Engine::Frame)
         int host, server, client;
         engine->GetTicks(host, server, client);
         if (server != lastServer || client != lastClient || sar_tick_debug.GetInt() >= 3) {
-            console->Print("CEngine::Frame host=%d server=%d client=%d\n", host, server, client);
+            console->Print("CEngine::Frame (host=%d server=%d client=%d)\n", host, server, client);
             lastServer = server;
             lastClient = client;
         }
