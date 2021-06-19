@@ -93,6 +93,7 @@ std::string EngineDemoPlayer::GetLevelName()
 // 0x05: portal placement
 // 0x06: hit cm flags
 // 0x07: got crouchfly
+// 0x08: pause duration
 void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
 {
     if (data[0] == 0x03 || data[0] == 0x04) { // Entity input data

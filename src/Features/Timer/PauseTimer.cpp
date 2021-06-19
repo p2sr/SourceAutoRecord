@@ -28,6 +28,12 @@ void PauseTimer::Increment()
 void PauseTimer::Stop()
 {
     this->isActive = false;
+    if (engine->demorecorder->isRecordingDemo) {
+        char data[5];
+        data[0] = 0x08;
+        *(int *)(data + 1) = this->ticks;
+        engine->demorecorder->RecordData(data, sizeof data);
+    }
 }
 bool PauseTimer::IsActive()
 {
