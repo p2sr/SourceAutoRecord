@@ -6,6 +6,7 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
+#include "Modules/Surface.hpp"
 
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -15,6 +16,100 @@
 
 #include <functional>
 #include <queue>
+#include <chrono>
+
+#define DrawTxtRightAlign(font, x, y, clr, ...) do { \
+    int _txtwidth = surface->GetFontLength(font, __VA_ARGS__); \
+    surface->DrawTxt(font, x - _txtwidth, y, clr, __VA_ARGS__); \
+} while (0)
+
+class SyncUi : public Hud {
+public:
+    bool active = false;
+    std::optional<std::chrono::time_point<std::chrono::steady_clock>> countdownEnd;
+    std::vector<uint32_t> ready;
+    std::vector<uint32_t> waiting;
+
+    SyncUi()
+        : Hud(HudType_InGame | HudType_Paused, false)
+    {
+    }
+
+    void StartCountdown() {
+        this->countdownEnd = NOW_STEADY() + std::chrono::milliseconds(3000);
+    }
+
+    virtual bool GetCurrentSize(int &w, int &h) override {
+        return false;
+    }
+
+    virtual void Paint(int slot) override {
+        if (slot != 0) return;
+
+        auto now = NOW_STEADY();
+
+        if (this->countdownEnd && now >= *this->countdownEnd) {
+            this->countdownEnd = {};
+            this->active = false;
+            engine->ExecuteCommand("unpause");
+        }
+
+        if (!this->active) return;
+
+        int screenWidth, screenHeight;
+#ifdef _WIN32
+        engine->GetScreenSize(screenWidth, screenHeight);
+#else
+        engine->GetScreenSize(nullptr, screenWidth, screenHeight);
+#endif
+
+        surface->DrawRect(Color{0, 0, 0, 192}, 0, 0, screenWidth, screenHeight);
+
+        Surface::HFont font = 6;
+        Color white{255, 255, 255, 255};
+        Color grey{200, 200, 200, 255};
+
+        if (this->countdownEnd) {
+            unsigned ms = std::chrono::duration_cast<std::chrono::milliseconds>(*this->countdownEnd - now).count();
+            console->Print("%dms");
+            unsigned secs = (ms + 999) / 1000; // poor man's ceil
+            int length = surface->GetFontLength(font, "%d", secs);
+            surface->DrawTxt(font, (screenWidth - length) / 2, 100, white, "%d", secs);
+        } else {
+            int height = surface->GetFontHeight(font);
+
+            {
+                int y = 100;
+                DrawTxtRightAlign(font, screenWidth / 2 - 20, y, white, "Waiting for:");
+                y += height + 15;
+
+                for (uint32_t id : this->waiting) {
+                    auto ghost = networkManager.GetGhostByID(id);
+                    if (ghost) {
+                        DrawTxtRightAlign(font, screenWidth / 2 - 20, y, grey, ghost->name.c_str());
+                        y += height + 5;
+                    }
+                }
+            }
+
+            {
+                int y = 100;
+                surface->DrawTxt(font, screenWidth / 2 + 20, y, white, "Ready:");
+                y += height + 15;
+
+                for (uint32_t id : this->ready) {
+                    auto ghost = networkManager.GetGhostByID(id);
+                    if (ghost) {
+                        surface->DrawTxt(font, screenWidth / 2 + 20, y, grey, ghost->name.c_str());
+                        y += height + 5;
+                    }
+                }
+            }
+        }
+    }
+};
+
+SyncUi syncUi;
 
 static std::queue<std::function<void()>> g_scheduledEvents;
 
@@ -434,7 +529,7 @@ void NetworkManager::Treat(sf::Packet& packet, bool udp)
 
                 if (ghost_sync.GetBool()) {
                     if (this->AreAllGhostsAheadOrSameMap()) {
-                        engine->ExecuteCommand("unpause", true);
+                        syncUi.StartCountdown();
                     }
                 }
             });
@@ -579,15 +674,20 @@ void NetworkManager::UpdateModel(const std::string modelName)
 bool NetworkManager::AreAllGhostsAheadOrSameMap()
 {
     this->ghostPoolLock.lock();
+    syncUi.ready.clear();
+    syncUi.waiting.clear();
+    bool allReady = true;
     for (auto ghost : this->ghostPool) {
         if (!ghost->isAhead && !ghost->sameMap) {
-            this->ghostPoolLock.unlock();
-            return false;
+            syncUi.waiting.push_back(ghost->ID);
+            allReady = false;
+        } else {
+            syncUi.ready.push_back(ghost->ID);
         }
     }
     this->ghostPoolLock.unlock();
 
-    return true;
+    return allReady;
 }
 
 void NetworkManager::SpawnAllGhosts()
@@ -696,6 +796,7 @@ ON_EVENT(SESSION_START)
             } else {
                 if (!networkManager.AreAllGhostsAheadOrSameMap() && session->previousMap != engine->GetCurrentMapName()) { //Don't pause if just reloading save
                     engine->shouldPauseForSync = true;
+                    syncUi.active = true;
                 }
             }
         }
