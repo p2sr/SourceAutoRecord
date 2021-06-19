@@ -29,6 +29,7 @@ public:
 namespace Event {
     enum EventType {
         SESSION_START,
+        SESSION_END,
         SAR_UNLOAD,
         DEMO_START,
         DEMO_STOP,

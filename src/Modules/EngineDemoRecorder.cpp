@@ -67,6 +67,13 @@ static void RecordInitialVal(const char* name)
     free(buf);
 }
 
+ON_EVENT(SESSION_END)
+{
+    if (engine->demorecorder->isRecordingDemo && sar_autorecord.GetInt() == -1) {
+        engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr());
+    }
+}
+
 // CDemoRecorder::SetSignonState
 DETOUR(EngineDemoRecorder::SetSignonState, int state)
 {
@@ -172,7 +179,7 @@ DETOUR(EngineDemoRecorder::StopRecording)
         }
     }
 
-    if (engine->demorecorder->isRecordingDemo && sar_autorecord.GetBool() && !engine->demorecorder->requestedStop) {
+    if (engine->demorecorder->isRecordingDemo && sar_autorecord.GetInt() == 1 && !engine->demorecorder->requestedStop) {
         *engine->demorecorder->m_nDemoNumber = engine->demorecorder->lastDemoNumber;
         *engine->demorecorder->m_bRecording = true;
     } else if (sar_record_at_increment.GetBool()) {

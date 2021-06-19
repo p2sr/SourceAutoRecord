@@ -114,6 +114,8 @@ void Session::Ended()
 
     auto tick = this->GetTick();
 
+    Event::Trigger<Event::SESSION_END>({});
+
     if (tick != 0) {
         console->Print("Session: %i (%.3f)\n", tick, engine->ToTime(tick));
         this->lastSession = tick;
