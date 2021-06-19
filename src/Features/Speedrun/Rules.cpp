@@ -419,7 +419,10 @@ void SpeedrunTimer::TickRules()
             continue;
         }
 
-        SpeedrunTimer::TestZoneRules(server->GetAbsOrigin(player), slot);
+        {
+            void *clPlayer = client->GetPlayer(slot + 1);
+            SpeedrunTimer::TestZoneRules(client->GetAbsOrigin(clPlayer), slot);
+        }
 
         auto m_hActiveWeapon = *(CBaseHandle *)((uintptr_t)player + Offsets::m_hActiveWeapon);
         auto portalGun = entityList->LookupEntity(m_hActiveWeapon);
