@@ -48,6 +48,8 @@ Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.
 
 Variable sar_tick_debug("sar_tick_debug", "0", 0, 3, "Output debugging information to the console related to ticks and frames.\n");
 
+Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
+
 REDECL(Engine::Disconnect);
 REDECL(Engine::SetSignonState);
 REDECL(Engine::Frame);
@@ -490,6 +492,9 @@ DETOUR_COMMAND(Engine::load)
     // list for this game
     if (Game::mapNames.empty() && networkManager.isConnected) {
         networkManager.disableSyncForLoad = true;
+    }
+    if (sar_cm_rightwarp.GetBool() && sv_bonus_challenge.GetBool()) {
+        sv_bonus_challenge.SetValue(false);
     }
     Engine::load_callback(args);
 }
