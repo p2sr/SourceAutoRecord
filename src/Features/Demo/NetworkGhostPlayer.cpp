@@ -71,7 +71,6 @@ public:
 
         if (this->countdownEnd) {
             unsigned ms = std::chrono::duration_cast<std::chrono::milliseconds>(*this->countdownEnd - now).count();
-            console->Print("%dms");
             unsigned secs = (ms + 999) / 1000; // poor man's ceil
             int length = surface->GetFontLength(font, "%d", secs);
             surface->DrawTxt(font, (screenWidth - length) / 2, 100, white, "%d", secs);
