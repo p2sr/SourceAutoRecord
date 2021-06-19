@@ -173,10 +173,6 @@ void Session::Ended()
 
     if (networkManager.isConnected) networkManager.splitTicks = -1;
 
-    if (!wait_persist_across_loads.GetBool()) {
-        engine->hasWaited = true;
-    }
-
     this->loadStart = NOW();
     if (!engine->demoplayer->IsPlaying() && !engine->IsOrange()) {
         this->DoFastLoads();
