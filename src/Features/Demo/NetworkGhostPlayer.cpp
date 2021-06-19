@@ -31,7 +31,7 @@ public:
     std::vector<uint32_t> waiting;
 
     SyncUi()
-        : Hud(HudType_InGame | HudType_Paused, false)
+        : Hud(HudType_Paused, false)
     {
     }
 
