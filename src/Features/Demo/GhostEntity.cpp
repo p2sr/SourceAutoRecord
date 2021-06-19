@@ -156,7 +156,7 @@ void GhostEntity::Display()
         const int tris = 30;
 
         auto player = client->GetPlayer(GET_SLOT() + 1);
-        Vector pos = client->GetAbsOrigin(player) + client->GetViewOffset(player);
+        Vector pos = player ? client->GetAbsOrigin(player) + client->GetViewOffset(player) : Vector{ 0, 0, 0 };
 
         float dx = origin.x - pos.x;
         float dy = origin.y - pos.y;
