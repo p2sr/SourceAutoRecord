@@ -109,11 +109,11 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
                     RuleAction::STOP,
                     "gg_stage_theend",
                     EntityInputRule{
-                        ENTRULE_TARGETNAME | ENTRULE_PARAMETER,
-                        "die_ending_math_final",
+                        ENTRULE_TARGETNAME,
+                        "credits_video",
                         "",
-                        "Add",
-                        "1",
+                        "PlayMovie",
+                        "",
                     }
                 ),
             },
