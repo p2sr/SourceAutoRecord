@@ -30,7 +30,7 @@
 #include "Utils/SDK.hpp"
 
 Variable sar_loads_uncap("sar_loads_uncap", "0", 0, 1, "Temporarily set fps_max to 0 during loads\n");
-Variable sar_loads_norender("sar_loads_norender", "0", 0, 1, "Temporatily set mat_noredering to 1 during loads\n");
+Variable sar_loads_norender("sar_loads_norender", "0", 0, 1, "Temporarily set mat_noredering to 1 during loads\n");
 
 Variable sar_load_delay("sar_load_delay", "0", 0, "Delay for this number of milliseconds at the end of a load.\n");
 

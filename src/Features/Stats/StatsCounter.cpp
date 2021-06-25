@@ -44,7 +44,7 @@ void StatsCounter::Init()
         console->Print("Couldn't open the file. Are you sure the file is here ? : \"%s\".\n", sar_statcounter_filePath.GetString());
         return;
     }
-    console->Print("Datas has been sucessfully loaded.\n");
+    console->Print("Datas has been successfully loaded.\n");
 }
 
 bool StatsCounter::LoadFromFile(const std::string& path)
