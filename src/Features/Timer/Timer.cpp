@@ -72,7 +72,7 @@ void Timer::Stop(int engineTick)
 
 // Commands
 
-CON_COMMAND(sar_timer_start, "Starts timer.\n")
+CON_COMMAND(sar_timer_start, "sar_timer_start - starts timer\n")
 {
     if (timer->isRunning) {
         console->DevMsg("Restarting timer!\n");
@@ -86,7 +86,7 @@ CON_COMMAND(sar_timer_start, "Starts timer.\n")
         stats->ResetAll();
     }
 }
-CON_COMMAND(sar_timer_stop, "Stops timer.\n")
+CON_COMMAND(sar_timer_stop, "sar_timer_stop - stops timer\n")
 {
     if (!timer->isRunning) {
         return console->DevMsg("Timer isn't running!\n");
@@ -99,7 +99,7 @@ CON_COMMAND(sar_timer_stop, "Stops timer.\n")
         timer->avg->Add(tick, engine->ToTime(tick), engine->GetCurrentMapName());
     }
 }
-CON_COMMAND(sar_timer_result, "Prints result of timer.\n")
+CON_COMMAND(sar_timer_result, "sar_timer_result - prints result of timer\n")
 {
     auto tick = timer->GetTick(engine->GetTick());
     auto time = engine->ToTime(tick);
@@ -110,15 +110,15 @@ CON_COMMAND(sar_timer_result, "Prints result of timer.\n")
         console->Print("Result: %i (%.3f)\n", tick, time);
     }
 }
-CON_COMMAND(sar_avg_start, "Starts calculating the average when using timer.\n")
+CON_COMMAND(sar_avg_start, "sar_avg_start - starts calculating the average when using timer\n")
 {
     timer->avg->Start();
 }
-CON_COMMAND(sar_avg_stop, "Stops average calculation.\n")
+CON_COMMAND(sar_avg_stop, "sar_avg_stop - stops average calculation\n")
 {
     timer->avg->isEnabled = false;
 }
-CON_COMMAND(sar_avg_result, "Prints result of average.\n")
+CON_COMMAND(sar_avg_result, "sar_avg_result - prints result of average\n")
 {
     auto average = timer->avg->items.size();
     if (!average) {
@@ -138,7 +138,7 @@ CON_COMMAND(sar_avg_result, "Prints result of average.\n")
         console->Print("Result: %i (%.3f)\n", timer->avg->averageTicks, timer->avg->averageTime);
     }
 }
-CON_COMMAND(sar_cps_add, "Saves current time of timer.\n")
+CON_COMMAND(sar_cps_add, "sar_cps_add - saves current time of timer\n")
 {
     if (!timer->isRunning) {
         return console->DevMsg("Timer isn't running!\n");
@@ -147,11 +147,11 @@ CON_COMMAND(sar_cps_add, "Saves current time of timer.\n")
     auto tick = timer->GetTick(session->GetTick());
     timer->cps->Add(tick, engine->ToTime(tick), engine->GetCurrentMapName());
 }
-CON_COMMAND(sar_cps_clear, "Resets saved times of timer.\n")
+CON_COMMAND(sar_cps_clear, "sar_cps_clear - resets saved times of timer\n")
 {
     timer->cps->Reset();
 }
-CON_COMMAND(sar_cps_result, "Prints result of timer checkpoints.\n")
+CON_COMMAND(sar_cps_result, "sar_cps_result - prints result of timer checkpoints\n")
 {
     auto cps = timer->cps->items.size();
     if (cps > 0) {

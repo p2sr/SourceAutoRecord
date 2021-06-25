@@ -215,7 +215,7 @@ void Session::Changed(int state)
         this->loadEnd = NOW();
 
         auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
-        console->DevMsg("Load took : %dms\n", time);
+        console->DevMsg("Load took: %dms\n", time);
 
         if (sar_load_delay.GetInt()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(sar_load_delay.GetInt()));

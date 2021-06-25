@@ -56,7 +56,7 @@ void DemoGhostEntity::NextDemo()
         }
     } else {
         this->hasFinished = true;
-        this->sameMap = false; //Make the ghost to dissapear
+        this->sameMap = false; //Make the ghost to disappear
         if (ghost_show_advancement.GetBool()) {
             std::string msg = Utils::ssprintf("%s has finished", this->name.c_str());
             toastHud.AddToast(GHOST_TOAST_TAG, msg);

@@ -67,7 +67,7 @@ float Tracer::CalculateLength(const TraceResult* trace, TracerLengthType type)
 
 // Commands
 
-CON_COMMAND(sar_trace_a, "Saves location A for tracing.\n")
+CON_COMMAND(sar_trace_a, "sar_trace_a - saves location A for tracing\n")
 {
     auto nSlot = GET_SLOT();
     auto player = server->GetPlayer(nSlot + 1);
@@ -76,7 +76,7 @@ CON_COMMAND(sar_trace_a, "Saves location A for tracing.\n")
         console->Print("Saved location A for tracing!\n");
     }
 }
-CON_COMMAND(sar_trace_b, "Saves location B for tracing.\n")
+CON_COMMAND(sar_trace_b, "sar_trace_b - saves location B for tracing\n")
 {
     auto nSlot = GET_SLOT();
     auto player = server->GetPlayer(nSlot + 1);
@@ -85,7 +85,7 @@ CON_COMMAND(sar_trace_b, "Saves location B for tracing.\n")
         console->Print("Saved location B for tracing!\n");
     }
 }
-CON_COMMAND(sar_trace_result, "Prints tracing result.\n")
+CON_COMMAND(sar_trace_result, "sar_trace_result - prints tracing result\n")
 {
     auto result = tracer->GetTraceResult(GET_SLOT());
     auto xyz = tracer->CalculateDifferences(result);
@@ -97,7 +97,7 @@ CON_COMMAND(sar_trace_result, "Prints tracing result.\n")
     console->Print("dXY: %.3f\n", tracer->CalculateLength(result, TracerLengthType::VEC2));
     console->Print("dXYZ: %.3f\n", tracer->CalculateLength(result, TracerLengthType::VEC3));
 }
-CON_COMMAND(sar_trace_reset, "Resets tracer.\n")
+CON_COMMAND(sar_trace_reset, "sar_trace_reset - resets tracer\n")
 {
     tracer->Reset(GET_SLOT());
 }

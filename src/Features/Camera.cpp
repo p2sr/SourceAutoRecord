@@ -451,7 +451,7 @@ DECL_COMMAND_COMPLETION(sar_cam_path_setkf)
 
 CON_COMMAND_F_COMPLETION(
     sar_cam_path_setkf,
-    "sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov]: Sets the camera path keyframe.\n",
+    "sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov] - sets the camera path keyframe\n",
     0, AUTOCOMPLETION_FUNCTION(sar_cam_path_setkf))
 {
     if (!engine->demoplayer->IsPlaying())
@@ -516,7 +516,7 @@ DECL_COMMAND_COMPLETION(sar_cam_path_showkf)
 
 CON_COMMAND_F_COMPLETION(
     sar_cam_path_showkf,
-    "sar_cam_path_showkf [frame] : Display information about camera path keyframe at specified frame.\n",
+    "sar_cam_path_showkf <frame> - display information about camera path keyframe at specified frame\n",
     0, AUTOCOMPLETION_FUNCTION(sar_cam_path_showkf))
 {
     if (!engine->demoplayer->IsPlaying())
@@ -535,7 +535,7 @@ CON_COMMAND_F_COMPLETION(
     }
 }
 
-CON_COMMAND(sar_cam_path_showkfs, "sar_cam_path_showkfs : Display information about all camera path keyframes.\n")
+CON_COMMAND(sar_cam_path_showkfs, "sar_cam_path_showkfs - display information about all camera path keyframes\n")
 {
     if (!engine->demoplayer->IsPlaying())
         return console->Print("Cinematic mode cannot be used outside of demo player.\n");
@@ -551,7 +551,7 @@ CON_COMMAND(sar_cam_path_showkfs, "sar_cam_path_showkfs : Display information ab
     }
 }
 
-CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs : Exports commands for recreating currently made camera path.\n")
+CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs - exports commands for recreating currently made camera path\n")
 {
     if (!engine->demoplayer->IsPlaying())
         return console->Print("Cinematic mode cannot be used outside of demo player.\n");
@@ -570,7 +570,7 @@ CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs : Exports commands for rec
 
 CON_COMMAND_F_COMPLETION(
     sar_cam_path_remkf,
-    "sar_cam_path_remkf [frame] : Removes camera path keyframe at specified frame.\n",
+    "sar_cam_path_remkf <frame> - removes camera path keyframe at specified frame\n",
     0, AUTOCOMPLETION_FUNCTION(sar_cam_path_showkf))
 {
     if (!engine->demoplayer->IsPlaying())
@@ -589,7 +589,7 @@ CON_COMMAND_F_COMPLETION(
     }
 }
 
-CON_COMMAND(sar_cam_path_remkfs, "sar_cam_path_remkfs : Removes all camera path keyframes.\n")
+CON_COMMAND(sar_cam_path_remkfs, "sar_cam_path_remkfs - removes all camera path keyframes\n")
 {
     if (!engine->demoplayer->IsPlaying())
         return console->Print("Cinematic mode cannot be used outside of demo player.\n");
@@ -602,7 +602,7 @@ CON_COMMAND(sar_cam_path_remkfs, "sar_cam_path_remkfs : Removes all camera path 
     }
 }
 
-CON_COMMAND(sar_cam_setang, "sar_cam_setang <pitch> <yaw> [roll] : Sets camera angle (requires camera Drive Mode).\n")
+CON_COMMAND(sar_cam_setang, "sar_cam_setang <pitch> <yaw> [roll] - sets camera angle (requires camera Drive Mode)\n")
 {
     if (camera->controlType != Drive) {
         console->Print("Camera not in drive mode! Switching.\n");
@@ -622,7 +622,7 @@ CON_COMMAND(sar_cam_setang, "sar_cam_setang <pitch> <yaw> [roll] : Sets camera a
     }
 }
 
-CON_COMMAND(sar_cam_setpos, "sar_cam_setpos <x> <y> <z> : Sets camera position (requires camera Drive Mode).\n")
+CON_COMMAND(sar_cam_setpos, "sar_cam_setpos <x> <y> <z> - sets camera position (requires camera Drive Mode)\n")
 {
     if (camera->controlType != Drive) {
         console->Print("Camera not in drive mode! Switching.\n");
@@ -642,7 +642,7 @@ CON_COMMAND(sar_cam_setpos, "sar_cam_setpos <x> <y> <z> : Sets camera position (
     }
 }
 
-CON_COMMAND(sar_cam_setfov, "sar_cam_setfov <fov>: Sets camera field of view (requires camera Drive Mode).\n")
+CON_COMMAND(sar_cam_setfov, "sar_cam_setfov <fov> - sets camera field of view (requires camera Drive Mode)\n")
 {
     if (camera->controlType != Drive) {
         console->Print("Camera not in drive mode! Switching.\n");
@@ -657,7 +657,7 @@ CON_COMMAND(sar_cam_setfov, "sar_cam_setfov <fov>: Sets camera field of view (re
     }
 }
 
-CON_COMMAND(sar_cam_reset, "sar_cam_reset: Resets camera to its default position.\n")
+CON_COMMAND(sar_cam_reset, "sar_cam_reset - resets camera to its default position\n")
 {
     if (args.ArgC() == 1) {
         if (camera->controlType == Drive) {

@@ -90,9 +90,9 @@ void Rebinder::UpdateIndex(int newIndex)
 // Commands
 
 CON_COMMAND(sar_bind_save,
+    "sar_bind_save <key> [save_name]\n"
     "Automatic save rebinding when server has loaded.\n"
-    "File indexing will be synced when recording demos.\n"
-    "Usage: sar_bind_save <key> [save_name]\n")
+    "File indexing will be synced when recording demos.\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_bind_save.ThisPtr()->m_pszHelpString);
@@ -113,9 +113,9 @@ CON_COMMAND(sar_bind_save,
     rebinder->RebindSave();
 }
 CON_COMMAND(sar_bind_reload,
+    "sar_bind_reload <key> [save_name]\n"
     "Automatic save-reload rebinding when server has loaded.\n"
-    "File indexing will be synced when recording demos.\n"
-    "Usage: sar_bind_reload <key> [save_name]\n")
+    "File indexing will be synced when recording demos.\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_bind_reload.ThisPtr()->m_pszHelpString);
@@ -135,8 +135,7 @@ CON_COMMAND(sar_bind_reload,
     rebinder->SetReloadBind(button, args[2]);
     rebinder->RebindReload();
 }
-CON_COMMAND(sar_unbind_save,
-    "Unbinds current save rebinder.\n")
+CON_COMMAND(sar_unbind_save, "sar_unbind_save - unbinds current save rebinder\n")
 {
     if (!rebinder->isSaveBinding) {
         return console->Print("There's nothing to unbind.\n");
@@ -144,8 +143,7 @@ CON_COMMAND(sar_unbind_save,
 
     rebinder->ResetSaveBind();
 }
-CON_COMMAND(sar_unbind_reload,
-    "Unbinds current save-reload rebinder.\n")
+CON_COMMAND(sar_unbind_reload, "sar_unbind_reload - unbinds current save-reload rebinder\n")
 {
     if (!rebinder->isReloadBinding) {
         return console->Print("There's nothing to unbind.\n");

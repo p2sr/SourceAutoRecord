@@ -46,7 +46,7 @@ static std::optional<std::map<std::string, std::string>> parseParams(size_t argc
     return params;
 }
 
-CON_COMMAND(sar_speedrun_cc_start, "sar_speedrun_cc_start <category name> [default options]... - start the category creator.\n")
+CON_COMMAND(sar_speedrun_cc_start, "sar_speedrun_cc_start <category name> [default options]... - start the category creator\n")
 {
     if (args.ArgC() < 2) {
         console->Print(sar_speedrun_cc_start.ThisPtr()->m_pszHelpString);
@@ -86,7 +86,7 @@ CON_COMMAND(sar_speedrun_cc_start, "sar_speedrun_cc_start <category name> [defau
     g_placementOptions = {};
 }
 
-CON_COMMAND(sar_speedrun_cc_rule, "sar_speedrun_rule <rule name> <rule type> [options]... - add a rule to the category currently being created.\n")
+CON_COMMAND(sar_speedrun_cc_rule, "sar_speedrun_rule <rule name> <rule type> [options]... - add a rule to the category currently being created\n")
 {
     if (args.ArgC() < 3) {
         console->Print(sar_speedrun_cc_rule.ThisPtr()->m_pszHelpString);
@@ -121,7 +121,7 @@ CON_COMMAND(sar_speedrun_cc_rule, "sar_speedrun_rule <rule name> <rule type> [op
     }
 }
 
-CON_COMMAND(sar_speedrun_cc_place_start, "sar_speedrun_cc_place_start <rule name> <rule type> [options]... - start placing a trigger-ey rule in the world.\n")
+CON_COMMAND(sar_speedrun_cc_place_start, "sar_speedrun_cc_place_start <rule name> <rule type> [options]... - start placing a trigger-ey rule in the world\n")
 {
     if (args.ArgC() < 3) {
         console->Print(sar_speedrun_cc_place_start.ThisPtr()->m_pszHelpString);
@@ -163,7 +163,7 @@ CON_COMMAND(sar_speedrun_cc_place_start, "sar_speedrun_cc_place_start <rule name
     g_placementOptions = *params;
 }
 
-CON_COMMAND(sar_speedrun_cc_place, "sar_speedrun_cc_place - place a trigger-ey rule in the world.\n")
+CON_COMMAND(sar_speedrun_cc_place, "sar_speedrun_cc_place - place a trigger-ey rule in the world\n")
 {
     if (!g_creatorActive) {
         console->Print("[cc] no category creation in progress\n");
@@ -244,7 +244,7 @@ CON_COMMAND(sar_speedrun_cc_place, "sar_speedrun_cc_place - place a trigger-ey r
     }
 }
 
-CON_COMMAND(sar_speedrun_cc_finish, "sar_speedrun_cc_finish - finish the category creator.\n")
+CON_COMMAND(sar_speedrun_cc_finish, "sar_speedrun_cc_finish - finish the category creator\n")
 {
     if (!g_creatorActive) {
         console->Print("[cc] no category creation in progress\n");

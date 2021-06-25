@@ -172,7 +172,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std:
                         }
 
                         if (cmd.find("__END__") != std::string::npos) {
-                            console->ColorMsg(Color(0, 255, 0, 255), "Segment length -> %d ticks : %.3fs\n", tick, tick / 60.f);
+                            console->ColorMsg(Color(0, 255, 0, 255), "Segment length -> %d ticks: %.3fs\n", tick, tick / 60.f);
                             demo->segmentTicks = tick;
                         }
                     break;
@@ -235,8 +235,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std:
 
 // Commands
 
-CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "Parses a demo and prints some information about it.\n"
-                                            "Usage: sar_time_demo <demo_name>\n",
+CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "sar_time_demo <demo_name> - parses a demo and prints some information about it\n",
     0, 0, dem)
 {
     if (args.ArgC() != 2) {
@@ -271,8 +270,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "Parses a demo and prints some infor
         console->Print("Could not parse \"%s\"!\n", name.c_str());
     }
 }
-CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "Parses multiple demos and prints the total sum of them.\n"
-                                             "Usage: sar_time_demos <demo_name> <demo_name2> <etc.>\n",
+CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "sar_time_demos <demo_name> [demo_name2]... - parses multiple demos and prints the total sum of them\n",
     0, 0, dem)
 {
     if (args.ArgC() <= 1) {

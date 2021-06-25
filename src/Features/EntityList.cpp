@@ -71,7 +71,7 @@ IHandleEntity* EntityList::LookupEntity(const CBaseHandle& handle)
 
 // Commands
 
-CON_COMMAND(sar_list_ents, "Lists entities.\n")
+CON_COMMAND(sar_list_ents, "sar_list_ents - lists entities\n")
 {
     console->Print("[index] address | m_iClassName | m_iName\n");
 
@@ -103,8 +103,7 @@ CON_COMMAND(sar_list_ents, "Lists entities.\n")
     }
     console->Print("[page %i of %i]\n", page, pages);
 }
-CON_COMMAND(sar_find_ent, "Finds entity in the entity list by name.\n"
-                          "Usage: sar_find_ent <m_iName>\n")
+CON_COMMAND(sar_find_ent, "sar_find_ent <m_iName> - finds entity in the entity list by name\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_find_ent.ThisPtr()->m_pszHelpString);
@@ -129,8 +128,7 @@ CON_COMMAND(sar_find_ent, "Finds entity in the entity list by name.\n"
         break;
     }
 }
-CON_COMMAND(sar_find_ents, "Finds entities in the entity list by class name.\n"
-                           "Usage: sar_find_ents <m_iClassName>\n")
+CON_COMMAND(sar_find_ents, "sar_find_ents <m_iClassName> - finds entities in the entity list by class name\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_find_ents.ThisPtr()->m_pszHelpString);

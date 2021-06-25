@@ -97,7 +97,7 @@ void Listener::OnCheatsChanged(IConVar* pVar, const char* pOldString, float flOl
 
 // Commands
 
-CON_COMMAND(sar_dump_events, "Dumps all registered game events of the game event manager.\n")
+CON_COMMAND(sar_dump_events, "sar_dump_events - dumps all registered game events of the game event manager\n")
 {
     if (!engine->s_GameEventManager) {
         return;

@@ -158,7 +158,7 @@ void IN_AutoStrafeUp(const CCommand& args) { client->KeyUp(&autoStrafer->in_auto
 Command startautostrafe("+autostrafe", IN_AutoStrafeDown, "Auto-strafe button.\n");
 Command endautostrafe("-autostrafe", IN_AutoStrafeUp, "Auto-strafe button.\n");
 
-CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <type> <direction> : Automatic strafing.\n"
+CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <type> <direction> - automatic strafing\n"
                             "Type: 0 = off, 1 = straight, 2 = turning and keeping velocity, 3 = turning with velocity gain.\n"
                             "Direction: -1 = left, 1 = right.\n")
 {
@@ -180,7 +180,7 @@ CON_COMMAND(sar_tas_strafe, "sar_tas_strafe <type> <direction> : Automatic straf
     autoStrafer->states[nSlot]->type = type;
     autoStrafer->states[nSlot]->direction = direction;
 }
-CON_COMMAND(sar_tas_strafe_vectorial, "sar_tas_strafe_vectorial <type>: Change type of vectorial strafing.\n"
+CON_COMMAND(sar_tas_strafe_vectorial, "sar_tas_strafe_vectorial <type> - change type of vectorial strafing\n"
                                       "0 = Auto-strafer calculates perfect viewangle,\n"
                                       "1 = Auto-strafer calculates perfect forward-side movement,\n"
                                       "2 = Auto-strafer calculates perfect forward-side movement, "

@@ -108,8 +108,7 @@ int16_t OffsetFinder::Find(RecvTable* table, const char* propName)
 
 // Commands
 
-CON_COMMAND(sar_find_server_offset, "Finds prop offset in specified server class.\n"
-                                    "Usage: sar_find_server_offset <class_name> <prop_name>\n")
+CON_COMMAND(sar_find_server_offset, "sar_find_server_offset <class_name> <prop_name> - finds prop offset in specified server class\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_find_server_offset.ThisPtr()->m_pszHelpString);
@@ -119,8 +118,7 @@ CON_COMMAND(sar_find_server_offset, "Finds prop offset in specified server class
     offsetFinder->ServerSide(args[1], args[2], &offset);
     console->Print("%s::%s = %d\n", args[1], args[2], offset);
 }
-CON_COMMAND(sar_find_client_offset, "Finds prop offset in specified client class.\n"
-                                    "Usage: sar_find_client_offset <class_name> <prop_name>\n")
+CON_COMMAND(sar_find_client_offset, "sar_find_client_offset <class_name> <prop_name> - finds prop offset in specified client class\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_find_client_offset.ThisPtr()->m_pszHelpString);

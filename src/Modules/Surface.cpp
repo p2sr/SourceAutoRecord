@@ -10,7 +10,7 @@
 #include "Utils.hpp"
 #include "Command.hpp"
 
-CON_COMMAND(sar_font_get_name, "sar_font_get_name <id> - gets the name of a font from its index.\n")
+CON_COMMAND(sar_font_get_name, "sar_font_get_name <id> - gets the name of a font from its index\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_font_get_name.ThisPtr()->m_pszHelpString);

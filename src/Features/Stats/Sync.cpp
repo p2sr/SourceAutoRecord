@@ -101,22 +101,22 @@ float Sync::GetStrafeSync(int slot)
 
 // Commands
 
-CON_COMMAND(sar_strafesync_pause, "Pause strafe sync session.\n")
+CON_COMMAND(sar_strafesync_pause, "sar_strafesync_pause - pause strafe sync session\n")
 {
     synchro->PauseSyncSession();
 }
 
-CON_COMMAND(sar_strafesync_resume, "Resume strafe sync session.\n")
+CON_COMMAND(sar_strafesync_resume, "sar_strafesync_resume - resume strafe sync session\n")
 {
     synchro->ResumeSyncSession();
 }
 
-CON_COMMAND(sar_strafesync_reset, "Reset strafe sync session.\n")
+CON_COMMAND(sar_strafesync_reset, "sar_strafesync_reset - reset strafe sync session\n")
 {
     synchro->ResetSyncSession();
 }
 
-CON_COMMAND(sar_strafesync_split, "Makes a new split.\n")
+CON_COMMAND(sar_strafesync_split, "sar_strafesync_split - makes a new split\n")
 {
     synchro->SplitSyncSession();
 }

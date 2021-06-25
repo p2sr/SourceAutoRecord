@@ -85,7 +85,7 @@ static TagInfo getTagInfo(std::string tag) {
     };
 }
 
-CON_COMMAND(sar_toast_tag_set_color, "sar_toast_tag_set_color <tag> <color> - set the color of the specified toast tag to an sRGB color.\n")
+CON_COMMAND(sar_toast_tag_set_color, "sar_toast_tag_set_color <tag> <color> - set the color of the specified toast tag to an sRGB color\n")
 {
     if (args.ArgC() != 3 && args.ArgC() != 5) {
         return console->Print(sar_toast_tag_set_color.ThisPtr()->m_pszHelpString);
@@ -131,7 +131,7 @@ CON_COMMAND(sar_toast_tag_set_color, "sar_toast_tag_set_color <tag> <color> - se
     g_tags[tag] = info;
 }
 
-CON_COMMAND(sar_toast_tag_set_duration, "sar_toast_tag_set_duration <tag> <duration> - set the duration of the specified toast tag in seconds. The duration may be given as 'forever'.\n")
+CON_COMMAND(sar_toast_tag_set_duration, "sar_toast_tag_set_duration <tag> <duration> - set the duration of the specified toast tag in seconds. The duration may be given as 'forever'\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_toast_tag_set_duration.ThisPtr()->m_pszHelpString);
@@ -157,7 +157,7 @@ CON_COMMAND(sar_toast_tag_set_duration, "sar_toast_tag_set_duration <tag> <durat
     g_tags[tag] = info;
 }
 
-CON_COMMAND(sar_toast_tag_dismiss_all, "sar_toast_tag_dismiss_all <tag> - dismiss all active toasts with the given tag.\n")
+CON_COMMAND(sar_toast_tag_dismiss_all, "sar_toast_tag_dismiss_all <tag> - dismiss all active toasts with the given tag\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_toast_tag_dismiss_all.ThisPtr()->m_pszHelpString);
@@ -177,7 +177,7 @@ CON_COMMAND(sar_toast_tag_dismiss_all, "sar_toast_tag_dismiss_all <tag> - dismis
     );
 }
 
-CON_COMMAND(sar_toast_setpos, "sar_toast_setpos <bottom/top> <left/center/right> - set the position of the toasts HUD.\n")
+CON_COMMAND(sar_toast_setpos, "sar_toast_setpos <bottom|top> <left|center|right> - set the position of the toasts HUD\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_toast_setpos.ThisPtr()->m_pszHelpString);
@@ -463,7 +463,7 @@ void ToastHud::Paint(int slot)
     }
 }
 
-CON_COMMAND(sar_toast_create, "sar_toast_create <tag> <text> - create a toast.\n")
+CON_COMMAND(sar_toast_create, "sar_toast_create <tag> <text> - create a toast\n")
 {
     if (args.ArgC() != 3) {
         console->Print(sar_toast_create.ThisPtr()->m_pszHelpString);
@@ -473,7 +473,7 @@ CON_COMMAND(sar_toast_create, "sar_toast_create <tag> <text> - create a toast.\n
     toastHud.AddToast(args[1], args[2]);
 }
 
-CON_COMMAND(sar_toast_net_create, "sar_toast_net_create <tag> <text> - create a toast, also sending it to your coop partner.\n")
+CON_COMMAND(sar_toast_net_create, "sar_toast_net_create <tag> <text> - create a toast, also sending it to your coop partner\n")
 {
     if (args.ArgC() != 3) {
         console->Print(sar_toast_net_create.ThisPtr()->m_pszHelpString);
@@ -499,7 +499,7 @@ CON_COMMAND(sar_toast_net_create, "sar_toast_net_create <tag> <text> - create a 
     }
 }
 
-CON_COMMAND(sar_toast_dismiss_all, "sar_toast_dismiss_all - dismiss all active toasts.\n")
+CON_COMMAND(sar_toast_dismiss_all, "sar_toast_dismiss_all - dismiss all active toasts\n")
 {
     g_toasts.clear();
 }

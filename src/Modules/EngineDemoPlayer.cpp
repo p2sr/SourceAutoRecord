@@ -27,7 +27,7 @@ REDECL(EngineDemoPlayer::stopdemo_callback);
 static std::vector<std::string> g_demoBlacklist;
 
 Variable sar_demo_blacklist("sar_demo_blacklist", "0", "Stop a set of commands from being run by demo playback.\n");
-CON_COMMAND(sar_demo_blacklist_addcmd, "sar_demo_blacklist_addcmd <command> - add a command to the demo blacklist.\n")
+CON_COMMAND(sar_demo_blacklist_addcmd, "sar_demo_blacklist_addcmd <command> - add a command to the demo blacklist\n")
 {
     if (args.ArgC() == 1) {
         console->Print(sar_demo_blacklist_addcmd.ThisPtr()->m_pszHelpString);
@@ -227,7 +227,7 @@ void EngineDemoPlayer::Shutdown()
 
 // Commands
 
-CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "Improved version of startdemos. 'sar_startdemos <demoname>' Use 'stopdemo' to stop playing demos.\n",
+CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "sar_startdemos <demoname> - improved version of startdemos. Use 'stopdemo' to stop playing demos\n",
     0, 0, dem)
 {
     // Always print a useful message for the user if not used correctly
@@ -273,7 +273,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "Improved version of startdemos. 's
 
     //Demos are played in Engine::Frame
 }
-CON_COMMAND(sar_startdemosfolder, "sar_startdemosfolder <folder name>. Plays all the demos in the specified folder by alphabetic order.\n")
+CON_COMMAND(sar_startdemosfolder, "sar_startdemosfolder <folder name> - plays all the demos in the specified folder by alphabetic order\n")
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_startdemosfolder.ThisPtr()->m_pszHelpString);
@@ -304,7 +304,7 @@ CON_COMMAND(sar_startdemosfolder, "sar_startdemosfolder <folder name>. Plays all
 
     EngineDemoPlayer::stopdemo_callback(args);
 }
-CON_COMMAND_COMPLETION(sar_skiptodemo, "sar_skiptodemo <demoname>. Skip demos in demo queue to this demo.\n", ({ engine->demoplayer->demoQueue }))
+CON_COMMAND_COMPLETION(sar_skiptodemo, "sar_skiptodemo <demoname> - skip demos in demo queue to this demo\n", ({ engine->demoplayer->demoQueue }))
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_skiptodemo.ThisPtr()->m_pszHelpString);
@@ -318,7 +318,7 @@ CON_COMMAND_COMPLETION(sar_skiptodemo, "sar_skiptodemo <demoname>. Skip demos in
 
     EngineDemoPlayer::stopdemo_callback(args);
 }
-CON_COMMAND(sar_nextdemo, "Plays the next demo in demo queue.\n")
+CON_COMMAND(sar_nextdemo, "sar_nextdemo - plays the next demo in demo queue\n")
 {
     if (++engine->demoplayer->currentDemoID >= engine->demoplayer->demoQueueSize) {
         return engine->demoplayer->ClearDemoQueue();

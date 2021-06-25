@@ -48,7 +48,7 @@ Variable ui_loadingscreen_mintransition_time;
 Variable hide_gun_when_holding;
 
 // P2 only
-CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer.\n")
+CON_COMMAND(sar_togglewait, "sar_togglewait - enables or disables \"wait\" for the command buffer\n")
 {
     auto state = !*engine->m_bWaitEnabled;
     *engine->m_bWaitEnabled = *engine->m_bWaitEnabled2 = state;
@@ -65,7 +65,7 @@ CON_COMMAND(sar_togglewait, "Enables or disables \"wait\" for the command buffer
 #define TRACE_SHUTDOWN_OFFSET1 11
 #define TRACE_SHUTDOWN_OFFSET2 10
 #endif
-CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
+CON_COMMAND(sar_delete_alias_cmds, "sar_delete_alias_cmds - deletes all alias commands\n")
 {
     using _Cmd_Shutdown = int (*)();
     static _Cmd_Shutdown Cmd_Shutdown = nullptr;
@@ -89,7 +89,7 @@ CON_COMMAND(sar_delete_alias_cmds, "Deletes all alias commands.\n")
     }
 }
 
-CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Sets all loading fixes to preset values.\n", ({ "none", "sla", "normal", "full" }))
+CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset> - sets all loading fixes to preset values\n", ({ "none", "sla", "normal", "full" }))
 {
     if (args.ArgC() != 2) {
         console->Print(sar_fast_load_preset.ThisPtr()->m_pszHelpString);
@@ -138,7 +138,7 @@ CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset>. Set
 #undef CMD
 }
 
-CON_COMMAND(sar_clear_lines, "Clears all active drawline overlays.\n")
+CON_COMMAND(sar_clear_lines, "sar_clear_lines - clears all active drawline overlays\n")
 {
     // So, hooking this would be really annoying, however Valve's code
     // is dumb and bad and only allows 20 lines (after which it'll start

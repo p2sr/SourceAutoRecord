@@ -54,7 +54,7 @@ void wait_callback(const CCommand& args)
 
     g_entries.push_back({ wait_persist_across_loads.GetBool(), session->GetTick() >= tick, tick, cmd });
 }
-Command waitCmd("wait", wait_callback, "wait <tick> <commands>. Wait for the amount of ticks specified.\n", FCVAR_DONTRECORD);
+Command waitCmd("wait", wait_callback, "wait <tick> <commands> - wait for the amount of ticks specified\n", FCVAR_DONTRECORD);
 
 ON_EVENT(SESSION_END) {
     for (size_t i = 0; i < g_entries.size(); ++i) {

@@ -553,7 +553,7 @@ bool Server::Init()
 
     return this->hasLoaded = this->g_GameMovement && this->g_ServerGameDLL;
 }
-CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop progress.\n")
+CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop progress\n")
 {
     if (engine->IsCoop()) {
         NetMessage::SendMsg(RESET_COOP_PROGRESS_MESSAGE_TYPE, nullptr, 0);

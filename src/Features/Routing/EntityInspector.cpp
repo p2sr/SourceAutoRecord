@@ -121,22 +121,21 @@ bool EntityInspector::ExportData(std::string filePath)
 
 // Commands
 
-CON_COMMAND(sar_inspection_start, "Starts recording entity data.\n")
+CON_COMMAND(sar_inspection_start, "sar_inspection_start - starts recording entity data\n")
 {
     inspector->Start();
     console->Print("Started recording data at tick %i!\n", session->GetTick());
 }
-CON_COMMAND(sar_inspection_stop, "Stops recording entity data.\n")
+CON_COMMAND(sar_inspection_stop, "sar_inspection_stop - stops recording entity data\n")
 {
     inspector->Stop();
     console->Print("Stopped recording data at tick %i!\n", session->GetTick());
 }
-CON_COMMAND(sar_inspection_print, "Prints recorded entity data.\n")
+CON_COMMAND(sar_inspection_print, "sar_inspection_print - prints recorded entity data\n")
 {
     inspector->PrintData();
 }
-CON_COMMAND(sar_inspection_export, "Saves recorded entity data to a csv file.\n"
-                                   "Usage: sar_inspection_export <file_name>\n")
+CON_COMMAND(sar_inspection_export, "sar_inspection_export <file_name> - saves recorded entity data to a csv file\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_inspection_export.ThisPtr()->m_pszHelpString);
@@ -152,7 +151,7 @@ CON_COMMAND(sar_inspection_export, "Saves recorded entity data to a csv file.\n"
         console->Warning("Failed to export data!\n");
     }
 }
-CON_COMMAND(sar_inspection_index, "Sets entity index for inspection.\n")
+CON_COMMAND(sar_inspection_index, "sar_inspection_index - sets entity index for inspection\n")
 {
     if (args.ArgC() != 2) {
         return console->Print("Current index: %i\n", inspector->entityIndex);
