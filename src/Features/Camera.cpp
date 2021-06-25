@@ -283,7 +283,7 @@ void Camera::OverrideView(CPortalViewSetup1* m_View)
                 this->RequestCameraRefresh();
         } else if (controlType != Default && newControlType == Default) {
             //disabling
-            //resetting cvars to their actual values when swithing control off
+            //resetting cvars to their actual values when switching control off
             ResetCameraRelatedCvars();
             this->manualActive = false;
         }

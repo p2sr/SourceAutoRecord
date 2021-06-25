@@ -81,7 +81,7 @@ bool DemoParser::Parse(std::string filePath, Demo* demo, bool ghostRequest, std:
 
                 file.read((char*)&tick, sizeof(tick));
 
-                // Save postive ticks to keep adjustments simple
+                // Save positive ticks to keep adjustments simple
                 if (tick >= 0)
                     demo->messageTicks.push_back(tick);
 

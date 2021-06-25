@@ -131,7 +131,7 @@ CON_COMMAND(sar_toast_tag_set_color, "sar_toast_tag_set_color <tag> <color> - se
     g_tags[tag] = info;
 }
 
-CON_COMMAND(sar_toast_tag_set_duration, "sar_toast_tag_set_duration <tag> <duration> - set the duration of the specified toast tag in secods. The duration may be given as 'forever'.\n")
+CON_COMMAND(sar_toast_tag_set_duration, "sar_toast_tag_set_duration <tag> <duration> - set the duration of the specified toast tag in seconds. The duration may be given as 'forever'.\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_toast_tag_set_duration.ThisPtr()->m_pszHelpString);

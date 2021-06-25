@@ -224,7 +224,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demo, "ghost_set_demo <demo> [ID]. Ghost 
     sf::Uint32 ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
     demoGhostPlayer.DeleteGhostsByID(ID);
     if (demoGhostPlayer.SetupGhostFromDemo(engine->GetGameDirectory() + std::string("/") + args[1], ID, false)) {
-        console->Print("Ghost sucessfully created ! Final time of the ghost : %s\n", SpeedrunTimer::Format(demoGhostPlayer.GetGhostByID(ID)->GetTotalTime()).c_str());
+        console->Print("Ghost successfully created ! Final time of the ghost : %s\n", SpeedrunTimer::Format(demoGhostPlayer.GetGhostByID(ID)->GetTotalTime()).c_str());
     } else {
         console->Print("Could not parse \"%s\"!\n", engine->GetGameDirectory() + std::string("/") + args[1]);
     }
@@ -268,7 +268,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demos, "ghost_set_demos <first_demo> [fir
         ++counter;
     }
 
-    console->Print("Ghost sucessfully created ! Final time of the ghost : %s\n", SpeedrunTimer::Format(demoGhostPlayer.GetGhostByID(ID)->GetTotalTime()).c_str());
+    console->Print("Ghost successfully created ! Final time of the ghost : %s\n", SpeedrunTimer::Format(demoGhostPlayer.GetGhostByID(ID)->GetTotalTime()).c_str());
 
     demoGhostPlayer.UpdateGhostsSameMap();
     demoGhostPlayer.isFullGame = true;
