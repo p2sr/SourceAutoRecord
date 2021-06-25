@@ -71,8 +71,7 @@ DECL_COMMAND_COMPLETION(sar_workshop)
 
 // Commands
 
-CON_COMMAND_F_COMPLETION(sar_workshop, "Same as \"map\" command but lists workshop maps.\n"
-                                       "Usage: sar_workshop <file> [ss/changelevel]\n",
+CON_COMMAND_F_COMPLETION(sar_workshop, "sar_workshop <file> [ss/changelevel] - same as \"map\" command but lists workshop maps\n",
     0,
     sar_workshop_CompletionFunc)
 {
@@ -92,11 +91,11 @@ CON_COMMAND_F_COMPLETION(sar_workshop, "Same as \"map\" command but lists worksh
 
     engine->ExecuteCommand((command + std::string(" workshop/") + std::string(args[1])).c_str());
 }
-CON_COMMAND(sar_workshop_update, "Updates the workshop map list.\n")
+CON_COMMAND(sar_workshop_update, "sar_workshop_update - updates the workshop map list\n")
 {
     console->Print("Added or removed %i map(s) to or from the list.\n", workshop->Update());
 }
-CON_COMMAND(sar_workshop_list, "Prints all workshop maps.\n")
+CON_COMMAND(sar_workshop_list, "sar_workshop_list - prints all workshop maps\n")
 {
     if (workshop->maps.empty()) {
         workshop->Update();

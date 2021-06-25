@@ -230,10 +230,10 @@ void HudElement::IndexAll()
 
 // Commands
 
-CON_COMMAND_COMPLETION(sar_hud_default_order_top, "Orders hud element to top. Usage: sar_hud_default_order_top <name>\n", (elementOrder))
+CON_COMMAND_COMPLETION(sar_hud_default_order_top, "sar_hud_default_order_top <name> - orders hud element to top\n", (elementOrder))
 {
     if (args.ArgC() != 2) {
-        return console->Print("Orders hud element to top : sar_hud_default_order_top <name>\n");
+        return console->Print("Orders hud element to top: sar_hud_default_order_top <name>\n");
     }
 
     auto elements = &vgui->elements;
@@ -257,7 +257,7 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_top, "Orders hud element to top. Us
 
     console->Print("Moved HUD element %s to top.\n", args[1]);
 }
-CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "Orders hud element to bottom : sar_hud_default_order_bottom <name>\n", (elementOrder))
+CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "sar_hud_default_order_bottom <name> - orders hud element to bottom\n", (elementOrder))
 {
     if (args.ArgC() != 2) {
         return console->Print("Set!\n");
@@ -284,7 +284,7 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "Orders hud element to bott
 
     console->Print("Moved HUD element %s to bottom.\n", args[1]);
 }
-CON_COMMAND(sar_hud_default_order_reset, "Resets order of hud element.\n")
+CON_COMMAND(sar_hud_default_order_reset, "sar_hud_default_order_reset - resets order of hud element\n")
 {
     std::sort(vgui->elements.begin(), vgui->elements.end(), [](const HudElement* a, const HudElement* b) {
         return a->orderIndex < b->orderIndex;
@@ -347,7 +347,7 @@ long parseIdx(const char* idxStr)
     return idx;
 }
 
-CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows the nth text value in the HUD.\n") {
+CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows the nth text value in the HUD\n") {
     if (args.ArgC() < 3) {
         console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
         return;
@@ -419,7 +419,7 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
     sar_hud_text_vals[idx].components = components;
 }
 
-CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color>. Sets the color of the nth text value in the HUD.\n")
+CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color> - sets the color of the nth text value in the HUD\n")
 {
     if (args.ArgC() != 3 && args.ArgC() != 5) {
         console->Print(sar_hud_set_text_color.ThisPtr()->m_pszHelpString);
@@ -466,7 +466,7 @@ CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color>. Sets t
     sar_hud_text_vals[idx].defaultColor = Color{ r, g, b, 255 };
 }
 
-CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id>. Hides the nth text value in the HUD.\n")
+CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id> - hides the nth text value in the HUD\n")
 {
     if (args.ArgC() < 2) {
         console->Print(sar_hud_hide_text.ThisPtr()->m_pszHelpString);
@@ -482,7 +482,7 @@ CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id>. Hides the nth text value
     sar_hud_text_vals[idx].draw = false;
 }
 
-CON_COMMAND(sar_hud_show_text, "sar_hud_show_text <id>. Shows the nth text value in the HUD.\n")
+CON_COMMAND(sar_hud_show_text, "sar_hud_show_text <id> - shows the nth text value in the HUD\n")
 {
     if (args.ArgC() < 2) {
         console->Print(sar_hud_show_text.ThisPtr()->m_pszHelpString);

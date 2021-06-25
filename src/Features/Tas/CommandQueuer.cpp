@@ -147,8 +147,7 @@ void CommandQueuer::Execute()
 // Commands
 
 CON_COMMAND(sar_tas_frame_at,
-    "Adds command frame to the queue at specified frame.\n"
-    "Usage: sar_tas_frame_at <frame> [command_to_execute]\n")
+    "sar_tas_frame_at <frame> [command_to_execute] - adds command frame to the queue at specified frame\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -166,8 +165,7 @@ CON_COMMAND(sar_tas_frame_at,
     cmdQueuer->AddFrame(std::atoi(tab_args[0].c_str()), tab_args[1]);
 }
 CON_COMMAND(sar_tas_frames_at,
-    "Adds command frame multiple times to the queue at specified frame.\n"
-    "Usage: sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute]\n")
+    "sar_tas_frames_at <frame> <interval> <last_frame> [command_to_execute] - adds command frame multiple times to the queue at specified frame\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -185,8 +183,7 @@ CON_COMMAND(sar_tas_frames_at,
     cmdQueuer->AddFrames(std::atoi(tab_args[0].c_str()), std::atoi(tab_args[1].c_str()), std::atoi(tab_args[2].c_str()), tab_args[3]);
 }
 CON_COMMAND(sar_tas_frame_next,
-    "Adds command frame to the queue after waiting for specified amount of frames.\n"
-    "Usage: sar_tas_frame_next <frames_to_wait> [command_to_execute]\n")
+    "sar_tas_frame_next <frames_to_wait> [command_to_execute] - adds command frame to the queue after waiting for specified amount of frames\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -198,8 +195,7 @@ CON_COMMAND(sar_tas_frame_next,
     cmdQueuer->AddFrame(0, std::string(args[2]), true);
 }
 CON_COMMAND(sar_tas_frame_after,
-    "Adds command frame to the queue after waiting for specified amount of frames.\n"
-    "Usage: sar_tas_frame_after <frames_to_wait> [command_to_execute]\n")
+    "sar_tas_frame_after <frames_to_wait> [command_to_execute] - adds command frame to the queue after waiting for specified amount of frames\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -217,8 +213,7 @@ CON_COMMAND(sar_tas_frame_after,
     cmdQueuer->AddFrame(std::atoi(tab_args[0].c_str()), tab_args[1], true);
 }
 CON_COMMAND(sar_tas_frames_after,
-    "Adds command frame multiple times to the queue after waiting for specified amount of frames.\n"
-    "Usage: sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute]\n")
+    "sar_tas_frames_after <frames_to_wait> <interval> <length> [command_to_execute] - adds command frame multiple times to the queue after waiting for specified amount of frames\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -236,8 +231,7 @@ CON_COMMAND(sar_tas_frames_after,
     cmdQueuer->AddFrames(std::atoi(tab_args[0].c_str()), std::atoi(tab_args[1].c_str()), std::atoi(tab_args[2].c_str()), tab_args[3], true);
 }
 CON_COMMAND(sar_tas_frame_offset,
-    "sar_tas_frame_after rely on the last sar_tas_frame_offset.\n"
-    "Usage: sar_tas_frame_offset <frame>\n")
+    "sar_tas_frame_offset <frame> - sar_tas_frame_after rely on the last sar_tas_frame_offset\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -247,20 +241,19 @@ CON_COMMAND(sar_tas_frame_offset,
 
     cmdQueuer->CalculateOffset(std::atoi(args[1]));
 }
-CON_COMMAND(sar_tas_start, "Starts executing queued commands.\n")
+CON_COMMAND(sar_tas_start, "sar_tas_start - starts executing queued commands\n")
 {
     IGNORE_DEMO_PLAYER();
 
     cmdQueuer->Start();
 }
-CON_COMMAND(sar_tas_reset, "Stops executing commands and clears them from the queue.\n")
+CON_COMMAND(sar_tas_reset, "sar_tas_reset - stops executing commands and clears them from the queue\n")
 {
     IGNORE_DEMO_PLAYER();
 
     cmdQueuer->Reset();
 }
-CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\n"
-                        "Usage: sar_tas_ss <index>\n")
+CON_COMMAND(sar_tas_ss, "sar_tas_ss <index> - select split screen index for command buffer (0 or 1)\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -275,8 +268,7 @@ CON_COMMAND(sar_tas_ss, "Select split screen index for command buffer (0 or 1).\
         console->Print("Invalid split screen index!\n");
     }
 }
-CON_COMMAND(sar_tas_delay, "Delays command queue by specified amount of frames.\n"
-                           "Usage: sar_tas_delay <frames_to_wait>\n")
+CON_COMMAND(sar_tas_delay, "sar_tas_delay <frames_to_wait> - delays command queue by specified amount of frames\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -287,8 +279,7 @@ CON_COMMAND(sar_tas_delay, "Delays command queue by specified amount of frames.\
     cmdQueuer->DelayQueueBy(std::atoi(args[1]));
 }
 CON_COMMAND(sar_tas_frame_at_for,
-    "Adds two command frames to the queue at specified frame, the last frame will be executed after a delay.\n"
-    "Usage: sar_tas_frame_at_for <frame> <delay> <first_command> <last_command>\n")
+    "sar_tas_frame_at_for <frame> <delay> <first_command> <last_command> - adds two command frames to the queue at specified frame, the last frame will be executed after a delay\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -300,9 +291,8 @@ CON_COMMAND(sar_tas_frame_at_for,
     cmdQueuer->AddFrame(std::atoi(args[1]) + std::atoi(args[2]), std::string(args[4]));
 }
 CON_COMMAND(sar_tas_frame_after_for,
-    "Adds two command frames to the queue after waiting for specified amount of frames, "
-    "the last frame will be executed after a delay.\n"
-    "Usage: sar_tas_frame_after_for <frames_to_wait> <delay> <first_command> <last_command>\n")
+    "sar_tas_frame_after_for <frames_to_wait> <delay> <first_command> <last_command> - adds two command frames to the queue after waiting for specified amount of frames, "
+    "the last frame will be executed after a delay\n")
 {
     IGNORE_DEMO_PLAYER();
 

@@ -271,7 +271,7 @@ HUD_ELEMENT2(ghost_show_name, "1", "Display the name of the ghost over it.\n", H
         demoGhostPlayer.DrawNames(ctx);
 }
 
-CON_COMMAND_COMPLETION(ghost_prop_model, "Set the prop model. Example : models/props/metal_box.mdl\n",
+CON_COMMAND_COMPLETION(ghost_prop_model, "ghost_prop_model <filepath> - set the prop model. Example: models/props/metal_box.mdl\n",
     ({ "models/props/metal_box.mdl", "models/player/chell/player.mdl", "models/player/eggbot/eggbot.mdl", "models/player/ballbot/ballbot.mdl", "models/props/radio_reference.mdl",
         "models/props/food_can/food_can_open.mdl", "models/npcs/turret/turret.mdl", "models/npcs/bird/bird.mdl" }))
 {
@@ -326,7 +326,7 @@ CON_COMMAND(ghost_type, "ghost_type <0/1/2/3>:\n"
     }
 }
 
-CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color to the specified sRGB color code.\n")
+CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color to the specified sRGB color code\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(ghost_set_color.ThisPtr()->m_pszHelpString);

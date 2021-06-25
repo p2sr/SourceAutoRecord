@@ -107,11 +107,11 @@ void DataMapDumper::Dump(bool dumpServer)
 
 // Commands
 
-CON_COMMAND(sar_dump_server_datamap, "Dumps server datamap to a file.\n")
+CON_COMMAND(sar_dump_server_datamap, "sar_dump_server_datamap - dumps server datamap to a file\n")
 {
     dataMapDumper->Dump();
 }
-CON_COMMAND(sar_dump_client_datamap, "Dumps client datmap to a file.\n")
+CON_COMMAND(sar_dump_client_datamap, "sar_dump_client_datamap - dumps client datmap to a file\n")
 {
     dataMapDumper->Dump(false);
 }

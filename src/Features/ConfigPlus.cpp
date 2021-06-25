@@ -22,7 +22,7 @@ static std::string GetSvar(std::string name) {
     return it->second;
 }
 
-CON_COMMAND_F(svar_set, "svar_set <variable> <value> - set a svar (SAR variable) to a given value.\n", FCVAR_DONTRECORD)
+CON_COMMAND_F(svar_set, "svar_set <variable> <value> - set a svar (SAR variable) to a given value\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() != 3) {
         return console->Print(svar_set.ThisPtr()->m_pszHelpString);
@@ -31,7 +31,7 @@ CON_COMMAND_F(svar_set, "svar_set <variable> <value> - set a svar (SAR variable)
     g_svars[std::string(args[1])] = args[2];
 }
 
-CON_COMMAND_F(svar_get, "svar_get <variable> - get the value of a svar.\n", FCVAR_DONTRECORD)
+CON_COMMAND_F(svar_get, "svar_get <variable> - get the value of a svar\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() != 2) {
         return console->Print(svar_get.ThisPtr()->m_pszHelpString);
@@ -40,11 +40,22 @@ CON_COMMAND_F(svar_get, "svar_get <variable> - get the value of a svar.\n", FCVA
     console->Print("%s = %s\n", args[1], GetSvar({args[1]}).c_str());
 }
 
+CON_COMMAND_F(svar_count, "svar_count - prints a count of all the defined svars\n", FCVAR_DONTRECORD)
+{
+    if (args.ArgC() != 1) {
+        return console->Print(svar_count.ThisPtr()->m_pszHelpString);
+    }
+
+    int size = g_svars.size();
+
+    console->Print("%d svar defined\n", size);
+}
+
 static ConsoleListener *g_svarListener;
 static std::string g_svarListenerTarget;
 static std::string g_svarListenerOutput;
 
-CON_COMMAND_F(_sar_svar_capture_stop, "Internal SAR command. Do not use.\n", FCVAR_DONTRECORD | FCVAR_HIDDEN)
+CON_COMMAND_F(_sar_svar_capture_stop, "Internal SAR command. Do not use\n", FCVAR_DONTRECORD | FCVAR_HIDDEN)
 {
     delete g_svarListener;
     g_svarListener = nullptr;
@@ -57,7 +68,7 @@ CON_COMMAND_F(_sar_svar_capture_stop, "Internal SAR command. Do not use.\n", FCV
     g_svars[g_svarListenerTarget] = out;
 }
 
-CON_COMMAND_F(svar_capture, "svar_capture <variable> <command> [args]... - capture a command's output and place it into an svar, removing newlines.\n", FCVAR_DONTRECORD)
+CON_COMMAND_F(svar_capture, "svar_capture <variable> <command> [args]... - capture a command's output and place it into an svar, removing newlines\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 3) {
         return console->Print(svar_capture.ThisPtr()->m_pszHelpString);
@@ -98,7 +109,7 @@ CON_COMMAND_F(svar_capture, "svar_capture <variable> <command> [args]... - captu
     engine->ExecuteCommand("_sar_svar_capture_stop", true);
 }
 
-CON_COMMAND_F(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvars's value and place it into an svar, removing newlines.\n", FCVAR_DONTRECORD)
+CON_COMMAND_F(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvars's value and place it into an svar, removing newlines\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() != 3) {
         return console->Print(svar_from_cvar.ThisPtr()->m_pszHelpString);
@@ -114,7 +125,7 @@ CON_COMMAND_F(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvar
 }
 
 #define SVAR_OP(name, op) \
-    CON_COMMAND_F(svar_##name, "svar_" #name " <variable> <variable|value> - perform the given operation on an svar.\n", FCVAR_DONTRECORD) \
+    CON_COMMAND_F(svar_##name, "svar_" #name " <variable> <variable|value> - perform the given operation on an svar\n", FCVAR_DONTRECORD) \
     { \
         if (args.ArgC() != 3) { \
             return console->Print(svar_##name.ThisPtr()->m_pszHelpString); \
@@ -470,7 +481,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 #define MK_SAR_ON(name, when, immediately) \
     static std::vector<std::string> _g_execs_##name; \
-    CON_COMMAND_F(sar_on_##name, "sar_on_" #name " <command> [args]... - registers a command to be run " when ".\n", FCVAR_DONTRECORD) { \
+    CON_COMMAND_F(sar_on_##name, "sar_on_" #name " <command> [args]... - registers a command to be run " when "\n", FCVAR_DONTRECORD) { \
         if (args.ArgC() < 2) { \
             return console->Print(sar_on_##name.ThisPtr()->m_pszHelpString); \
         } \
@@ -495,7 +506,7 @@ struct Seq {
 
 std::vector<Seq> seqs;
 
-CON_COMMAND_F(cond, "cond [condition] [command] [args]... - runs a command only if a given condition is met.\n", FCVAR_DONTRECORD)
+CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only if a given condition is met\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 3) {
         return console->Print(cond.ThisPtr()->m_pszHelpString);
@@ -519,7 +530,7 @@ CON_COMMAND_F(cond, "cond [condition] [command] [args]... - runs a command only 
     }
 }
 
-CON_COMMAND_F(seq, "seq [command]... - runs a sequence of commands one tick after one another.\n", FCVAR_DONTRECORD)
+CON_COMMAND_F(seq, "seq <commands>... - runs a sequence of commands one tick after one another\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 2) {
         return console->Print(seq.ThisPtr()->m_pszHelpString);
@@ -561,7 +572,7 @@ static void _aliasCallback(const CCommand &args)
     engine->ExecuteCommand(Utils::ssprintf("sar_alias_run %s", args.m_pArgSBuffer).c_str(), true);
 }
 
-CON_COMMAND_F(sar_alias, "sar_alias <name> [command] [args]... - create an alias, similar to the 'alias' command but not requiring quoting. If no command is specified, prints the given alias.\n", FCVAR_DONTRECORD)
+CON_COMMAND_F(sar_alias, "sar_alias <name> [command] [args]... - create an alias, similar to the 'alias' command but not requiring quoting. If no command is specified, prints the given alias\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_alias.ThisPtr()->m_pszHelpString);
@@ -614,7 +625,7 @@ CON_COMMAND_F(sar_alias, "sar_alias <name> [command] [args]... - create an alias
     g_aliases[std::string(args[1])] = { c, cmd, name };
 }
 
-CON_COMMAND_F(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, passing on any additional arguments.\n", FCVAR_DONTRECORD)
+CON_COMMAND_F(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, passing on any additional arguments\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_alias_run.ThisPtr()->m_pszHelpString);
@@ -647,7 +658,7 @@ ON_EVENT(SAR_UNLOAD) { RUN_EXECS(exit); }
 ON_EVENT(DEMO_START) { RUN_EXECS(demo_start); }
 ON_EVENT(DEMO_STOP) { RUN_EXECS(demo_stop); }
 
-CON_COMMAND_F(nop, "nop [args]... - nop ignores all its arguments and does nothing.\n", FCVAR_DONTRECORD)
+CON_COMMAND_F(nop, "nop [args]... - nop ignores all its arguments and does nothing\n", FCVAR_DONTRECORD)
 { }
 
 static std::map<std::string, AliasInfo> g_functions;
@@ -657,7 +668,7 @@ static void _functionCallback(const CCommand &args)
     engine->ExecuteCommand(Utils::ssprintf("sar_function_run %s", args.m_pArgSBuffer).c_str(), true);
 }
 
-CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a function, replacing $1, $2 etc up to $9 in the command string with the respective argument. If no command is specified, prints the given function.\n", FCVAR_DONTRECORD)
+CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a function, replacing $1, $2 etc up to $9 in the command string with the respective argument. If no command is specified, prints the given function\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_function.ThisPtr()->m_pszHelpString);
@@ -710,7 +721,7 @@ CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a 
     g_functions[std::string(args[1])] = { c, cmd, name };
 }
 
-CON_COMMAND_F(sar_function_run, "sar_function_run <name> [args]... - run a function with the given arguments.\n", FCVAR_DONTRECORD)
+CON_COMMAND_F(sar_function_run, "sar_function_run <name> [args]... - run a function with the given arguments\n", FCVAR_DONTRECORD)
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_function_run.ThisPtr()->m_pszHelpString);

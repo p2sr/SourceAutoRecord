@@ -286,7 +286,7 @@ static int _sar_speedrun_category_completion(const char *partial, char commands[
     return vectorCompletion(partial, "sar_speedrun_category", commands, { mapKeys(g_categories) });
 }
 
-CON_COMMAND_F_COMPLETION(sar_speedrun_category, "sar_speedrun_category [category] - get or set the speedrun category.\n", 0, &_sar_speedrun_category_completion)
+CON_COMMAND_F_COMPLETION(sar_speedrun_category, "sar_speedrun_category [category] - get or set the speedrun category\n", 0, &_sar_speedrun_category_completion)
 {
     if (args.ArgC() > 1) {
         if (!lookupMap(g_categories, args[1])) {
@@ -322,7 +322,7 @@ static int _sar_speedrun_rule_completion(const char *partial, char commands[COMM
     return vectorCompletion(partial, "sar_speedrun_rule", commands, { mapKeys(g_rules) });
 }
 
-CON_COMMAND_F_COMPLETION(sar_speedrun_rule, "sar_speedrun_rule [rule] - show information about speedrun rules.\n", 0, &_sar_speedrun_rule_completion)
+CON_COMMAND_F_COMPLETION(sar_speedrun_rule, "sar_speedrun_rule [rule] - show information about speedrun rules\n", 0, &_sar_speedrun_rule_completion)
 {
     if (args.ArgC() == 1) {
         for (auto rule : g_rules) {
@@ -358,7 +358,7 @@ bool SpeedrunTimer::CreateCategory(std::string name)
     return true;
 }
 
-CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <category> - create a new speedrun category with the given name.\n")
+CON_COMMAND(sar_speedrun_category_create, "sar_speedrun_category_create <category> - create a new speedrun category with the given name\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_speedrun_category_create.ThisPtr()->m_pszHelpString);
@@ -372,7 +372,7 @@ static int _sar_speedrun_category_remove_completion(const char *partial, char co
     return vectorCompletion(partial, "sar_speedrun_category_remove", commands, { mapKeys(g_categories) });
 }
 
-CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove, "sar_speedrun_category_remove <category> - delete the given speedrun category.\n", 0, &_sar_speedrun_category_remove_completion)
+CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove, "sar_speedrun_category_remove <category> - delete the given speedrun category\n", 0, &_sar_speedrun_category_remove_completion)
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_speedrun_category_remove.ThisPtr()->m_pszHelpString);
@@ -422,7 +422,7 @@ bool SpeedrunTimer::AddRuleToCategory(std::string category, std::string rule)
     return true;
 }
 
-CON_COMMAND_F_COMPLETION(sar_speedrun_category_add_rule, "sar_speedrun_category_add_rule <category> <rule> - add a rule to a speedrun category.\n", 0, &_sar_speedrun_category_add_rule_completion)
+CON_COMMAND_F_COMPLETION(sar_speedrun_category_add_rule, "sar_speedrun_category_add_rule <category> <rule> - add a rule to a speedrun category\n", 0, &_sar_speedrun_category_add_rule_completion)
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_speedrun_category_add_rule.ThisPtr()->m_pszHelpString);
@@ -436,7 +436,7 @@ static int _sar_speedrun_category_remove_rule_completion(const char *partial, ch
     return vectorCompletion(partial, "sar_speedrun_category_remove_rule", commands, { mapKeys(g_categories), mapKeys(g_rules) });
 }
 
-CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove_rule, "sar_speedrun_category_remove_rule <category> <rule> - remove a rule from a speedrun category.\n", 0, &_sar_speedrun_category_remove_rule_completion)
+CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove_rule, "sar_speedrun_category_remove_rule <category> <rule> - remove a rule from a speedrun category\n", 0, &_sar_speedrun_category_remove_rule_completion)
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_speedrun_category_add_rule.ThisPtr()->m_pszHelpString);
@@ -537,7 +537,7 @@ bool SpeedrunTimer::CreateRule(std::string name, std::string type, std::map<std:
     return true;
 }
 
-CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [option=value]... - create a speedrun rule with the given name, type, and options.\n")
+CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [option=value]... - create a speedrun rule with the given name, type, and options\n")
 {
     if (args.ArgC() < 3) {
         return console->Print(sar_speedrun_rule_create.ThisPtr()->m_pszHelpString);
@@ -566,7 +566,7 @@ static int _sar_speedrun_rule_remove_completion(const char *partial, char comman
 }
 
 
-CON_COMMAND_F_COMPLETION(sar_speedrun_rule_remove, "sar_speedrun_rule_remove <rule> - delete the given speedrun rule.\n", 0, &_sar_speedrun_rule_remove_completion)
+CON_COMMAND_F_COMPLETION(sar_speedrun_rule_remove, "sar_speedrun_rule_remove <rule> - delete the given speedrun rule\n", 0, &_sar_speedrun_rule_remove_completion)
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_speedrun_rule_remove.ThisPtr()->m_pszHelpString);
@@ -594,7 +594,7 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_rule_remove, "sar_speedrun_rule_remove <ru
 
 // }}}
 
-CON_COMMAND(sar_speedrun_reset_categories, "sar_speedrun_reset_categories - delete all custom categories and rules, reverting to the builtin ones.\n")
+CON_COMMAND(sar_speedrun_reset_categories, "sar_speedrun_reset_categories - delete all custom categories and rules, reverting to the builtin ones\n")
 {
     if (args.ArgC() != 2 || std::string(args[1]) != "yes") {
         console->Print("WARNING: this will delete all custom categories! Run 'sar_speedrun_reset_categories yes' to confirm.\n");

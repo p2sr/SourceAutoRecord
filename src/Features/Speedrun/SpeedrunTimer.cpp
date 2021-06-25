@@ -649,37 +649,37 @@ Variable sar_speedrun_stop_in_menu("sar_speedrun_stop_in_menu", "0", "Automatica
 Variable sar_speedrun_start_on_load("sar_speedrun_start_on_load", "0", 0, 2, "Automatically start the speedrun timer when a map is loaded. 2 = restart if active.\n");
 Variable sar_speedrun_offset("sar_speedrun_offset", "0", 0, "Start speedruns with this many ticks on the timer.\n");
 
-CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer.\n")
+CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer\n")
 {
     SpeedrunTimer::Start();
 }
 
-CON_COMMAND(sar_speedrun_stop, "sar_speedrun_start - stop the speedrun timer.\n")
+CON_COMMAND(sar_speedrun_stop, "sar_speedrun_start - stop the speedrun timer\n")
 {
     SpeedrunTimer::Stop(getEffectiveMapName());
 }
 
-CON_COMMAND(sar_speedrun_split, "sar_speedrun_split - perform a split on the speedrun timer.\n")
+CON_COMMAND(sar_speedrun_split, "sar_speedrun_split - perform a split on the speedrun timer\n")
 {
     SpeedrunTimer::Split(true, getEffectiveMapName());
 }
 
-CON_COMMAND(sar_speedrun_pause, "sar_speedrun_pause - pause the speedrun timer.\n")
+CON_COMMAND(sar_speedrun_pause, "sar_speedrun_pause - pause the speedrun timer\n")
 {
     SpeedrunTimer::Pause();
 }
 
-CON_COMMAND(sar_speedrun_resume, "sar_speedrun_resume - resume the speedrun timer.\n")
+CON_COMMAND(sar_speedrun_resume, "sar_speedrun_resume - resume the speedrun timer\n")
 {
     SpeedrunTimer::Resume();
 }
 
-CON_COMMAND(sar_speedrun_reset, "sar_speedrun_reset - reset the speedrun timer.\n")
+CON_COMMAND(sar_speedrun_reset, "sar_speedrun_reset - reset the speedrun timer\n")
 {
     SpeedrunTimer::Reset();
 }
 
-CON_COMMAND(sar_speedrun_result, "sar_speedrun_result - print the speedrun result.\n")
+CON_COMMAND(sar_speedrun_result, "sar_speedrun_result - print the speedrun result\n")
 {
     if (g_speedrun.isReset) {
         console->Print("No active or completed speedrun!\n");
@@ -710,7 +710,7 @@ CON_COMMAND(sar_speedrun_result, "sar_speedrun_result - print the speedrun resul
     console->Print("Total: %d -> %s\n", total, SpeedrunTimer::Format(total * *engine->interval_per_tick).c_str());
 }
 
-CON_COMMAND(sar_speedrun_export, "sar_speedrun_export <filename> - export the speedrun result to the specified CSV file.\n")
+CON_COMMAND(sar_speedrun_export, "sar_speedrun_export <filename> - export the speedrun result to the specified CSV file\n")
 {
     if (args.ArgC() != 2) {
         console->Print(sar_speedrun_export.ThisPtr()->m_pszHelpString);
@@ -760,7 +760,7 @@ CON_COMMAND(sar_speedrun_export, "sar_speedrun_export <filename> - export the sp
     console->Print("Speedrun successfully exported to '%s'!\n", filename.c_str());
 }
 
-CON_COMMAND(sar_speedrun_export_all, "sar_speedrun_export_all <filename> - export the results of many speedruns to the specified CSV file.\n")
+CON_COMMAND(sar_speedrun_export_all, "sar_speedrun_export_all <filename> - export the results of many speedruns to the specified CSV file\n")
 {
     // TODO: this kinda isn't good, and should probably be revamped when the
     // speedrun system is modified to track all splits.
@@ -848,7 +848,7 @@ void SpeedrunTimer::CategoryChanged() {
     g_runs.clear();
 }
 
-CON_COMMAND(sar_speedrun_reset_export, "sar_speedrun_reset_export - reset the log of complete and incomplete runs to be exported.\n")
+CON_COMMAND(sar_speedrun_reset_export, "sar_speedrun_reset_export - reset the log of complete and incomplete runs to be exported\n")
 {
     g_runs.clear();
 }

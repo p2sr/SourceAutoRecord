@@ -34,7 +34,7 @@ void Summary::Add(int ticks, float time, std::string map)
     this->totalTicks += ticks;
 }
 
-CON_COMMAND(sar_sum_here, "Starts counting total ticks of sessions.\n")
+CON_COMMAND(sar_sum_here, "sar_sum_here - starts counting total ticks of sessions\n")
 {
     if (summary->isRunning) {
         return console->Print("Summary has already started!\n");
@@ -42,7 +42,7 @@ CON_COMMAND(sar_sum_here, "Starts counting total ticks of sessions.\n")
 
     summary->Start();
 }
-CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
+CON_COMMAND(sar_sum_stop, "sar_sum_stop - stops summary counter\n")
 {
     if (!summary->isRunning) {
         return console->Print("There's no summary to stop!\n");
@@ -55,7 +55,7 @@ CON_COMMAND(sar_sum_stop, "Stops summary counter.\n")
 
     summary->isRunning = false;
 }
-CON_COMMAND(sar_sum_result, "Prints result of summary.\n")
+CON_COMMAND(sar_sum_result, "sar_sum_result - prints result of summary\n")
 {
     auto sessions = summary->items.size();
     if (summary->isRunning && sessions == 0) {

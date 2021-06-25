@@ -142,7 +142,7 @@ void LPHud::Set(int count)
     countHistory.push_back({ engine->GetTick(), count });
 }
 
-CON_COMMAND(sar_lphud_set, "sar_lphud_set <number> : Sets lp counter to given number.\n")
+CON_COMMAND(sar_lphud_set, "sar_lphud_set <number> - sets lp counter to given number\n")
 {
     IGNORE_DEMO_PLAYER();
 

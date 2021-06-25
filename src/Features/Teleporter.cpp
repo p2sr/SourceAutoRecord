@@ -56,7 +56,7 @@ void Teleporter::Teleport(int nSlot)
 
 // Commands
 
-CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
+CON_COMMAND(sar_teleport, "sar_teleport - teleports the player to the last saved location\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -71,7 +71,7 @@ CON_COMMAND(sar_teleport, "Teleports the player to the last saved location.\n")
 
     teleporter->Teleport(slot);
 }
-CON_COMMAND(sar_teleport_setpos, "Saves current location for teleportation.\n")
+CON_COMMAND(sar_teleport_setpos, "sar_teleport_setpos - saves current location for teleportation\n")
 {
     teleporter->Save(GET_SLOT());
 }

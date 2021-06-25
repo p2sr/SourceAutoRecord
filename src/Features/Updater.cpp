@@ -275,7 +275,7 @@ void doUpdate(bool allowPre, bool exitOnSuccess) {
     }
 }
 
-CON_COMMAND(sar_check_update, "sar_check_update [release|pre] - check whether the latest version of SAR is being used.\n")
+CON_COMMAND(sar_check_update, "sar_check_update [release|pre] - check whether the latest version of SAR is being used\n")
 {
     if (args.ArgC() > 2) {
         return console->Print(sar_check_update.ThisPtr()->m_pszHelpString);
@@ -287,7 +287,7 @@ CON_COMMAND(sar_check_update, "sar_check_update [release|pre] - check whether th
     g_worker = std::thread(checkUpdate, allowPre);
 }
 
-CON_COMMAND(sar_update, "sar_update [release|pre] [exit] - update SAR to the latest version. If exit is given, exit the game upon successful update.\n")
+CON_COMMAND(sar_update, "sar_update [release|pre] [exit] - update SAR to the latest version. If exit is given, exit the game upon successful update\n")
 {
     bool allowPre = false, exitOnSuccess = false;
 

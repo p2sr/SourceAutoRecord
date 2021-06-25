@@ -804,7 +804,7 @@ ON_EVENT(SESSION_START)
 
 // Commands
 
-CON_COMMAND(ghost_connect, "Connect to the server : <ip address> <port> :\n"
+CON_COMMAND(ghost_connect, "ghost_connect <ip address> <port> - connect to the server\n"
                            "ex: 'localhost 53000' - '127.0.0.1 53000' - 89.10.20.20 53000'.\n")
 {
     if (args.ArgC() < 2) {
@@ -822,12 +822,12 @@ CON_COMMAND(ghost_connect, "Connect to the server : <ip address> <port> :\n"
     networkManager.Connect(args[1], std::atoi(args[2]));
 }
 
-CON_COMMAND(ghost_disconnect, "Disconnect.\n")
+CON_COMMAND(ghost_disconnect, "ghost_disconnect - disconnect\n")
 {
     networkManager.Disconnect();
 }
 
-CON_COMMAND(ghost_name, "Change your online name.\n")
+CON_COMMAND(ghost_name, "ghost_name - change your online name\n")
 {
     if (networkManager.isConnected) {
         return console->Print("Cannot change name while connected to a server.\n");
@@ -836,7 +836,7 @@ CON_COMMAND(ghost_name, "Change your online name.\n")
     networkManager.name = args[1];
 }
 
-CON_COMMAND(ghost_message, "Send message to other players.\n")
+CON_COMMAND(ghost_message, "ghost_message - send message to other players\n")
 {
     if (args.ArgC() < 2) {
         return console->Print(ghost_message.ThisPtr()->m_pszHelpString);

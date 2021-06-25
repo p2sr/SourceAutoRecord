@@ -154,7 +154,7 @@ QAngle TasTools::Slerp(QAngle a0, QAngle a1, float speedInterpolation)
 
 // Commands
 
-CON_COMMAND(sar_tas_aim_at_point, "sar_tas_aim_at_point <x> <y> <z> [speed] : Aims at point {x, y, z} specified.\n"
+CON_COMMAND(sar_tas_aim_at_point, "sar_tas_aim_at_point <x> <y> <z> [speed] - aims at point {x, y, z} specified.\n"
                                   "Setting the [speed] parameter will make a time interpolation between current player angles and the targeted point.\n")
 {
     IGNORE_DEMO_PLAYER();
@@ -178,7 +178,7 @@ CON_COMMAND(sar_tas_aim_at_point, "sar_tas_aim_at_point <x> <y> <z> [speed] : Ai
         tasTools->AimAtPoint(player, static_cast<float>(std::atof(args[1])), static_cast<float>(std::atof(args[2])), static_cast<float>(std::atof(args[3])), 1);
     }
 }
-CON_COMMAND(sar_tas_set_prop, "sar_tas_set_prop <prop_name> : Sets value for sar_hud_player_info.\n")
+CON_COMMAND(sar_tas_set_prop, "sar_tas_set_prop <prop_name> - sets value for sar_hud_player_info\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -214,7 +214,7 @@ CON_COMMAND(sar_tas_set_prop, "sar_tas_set_prop <prop_name> : Sets value for sar
 
     console->Print("Current prop: %s::%s\n", tasTools->className, tasTools->propName);
 }
-CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] : Adds {x, y, z} degrees to {x, y, z} view axis.\n")
+CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] - Adds {x, y, z} degrees to {x, y, z} view axis\n")
 {
     IGNORE_DEMO_PLAYER();
 
@@ -237,7 +237,7 @@ CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] : Adds {x, y, z} degrees
 
     engine->SetAngles(nSlot, angles);
 }
-CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] [speed] : Sets {x, y, z} degrees to view axis.\n"
+CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] [speed] - sets {x, y, z} degrees to view axis\n"
                             "Setting the [speed] parameter will make a time interpolation between current player angles and the targeted angles.\n")
 {
     IGNORE_DEMO_PLAYER();

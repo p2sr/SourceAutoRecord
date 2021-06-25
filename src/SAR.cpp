@@ -194,7 +194,7 @@ void SAR::SearchPlugin()
     this->findPluginThread.detach();
 }
 
-CON_COMMAND(sar_session, "Prints the current tick of the server since it has loaded.\n")
+CON_COMMAND(sar_session, "sar_session - prints the current tick of the server since it has loaded\n")
 {
     auto tick = session->GetTick();
     console->Print("Session Tick: %i (%.3f)\n", tick, engine->ToTime(tick));
@@ -207,7 +207,7 @@ CON_COMMAND(sar_session, "Prints the current tick of the server since it has loa
         console->Print("Demo Player Tick: %i (%.3f)\n", tick, engine->ToTime(tick));
     }
 }
-CON_COMMAND(sar_about, "Prints info about SAR plugin.\n")
+CON_COMMAND(sar_about, "sar_about - prints info about SAR plugin\n")
 {
     console->Print("SourceAutoRecord is a speedrun plugin for Source Engine games.\n");
     console->Print("More information at: https://github.com/p2sr/SourceAutoRecord or https://wiki.portal2.sr/SAR\n");
@@ -215,7 +215,7 @@ CON_COMMAND(sar_about, "Prints info about SAR plugin.\n")
     console->Print("Version: " SAR_VERSION "\n");
     console->Print("Built: " SAR_BUILT "\n");
 }
-CON_COMMAND(sar_cvars_save, "Saves important SAR cvars.\n")
+CON_COMMAND(sar_cvars_save, "sar_cvars_save - saves important SAR cvars\n")
 {
     if (!config->Save()) {
         console->Print("Failed to create config file!\n");
@@ -223,13 +223,13 @@ CON_COMMAND(sar_cvars_save, "Saves important SAR cvars.\n")
         console->Print("Saved important settings to cfg/_sar_cvars.cfg!\n");
     }
 }
-CON_COMMAND(sar_cvars_load, "Loads important SAR cvars.\n")
+CON_COMMAND(sar_cvars_load, "sar_cvars_load - loads important SAR cvars\n")
 {
     if (!config->Load()) {
         console->Print("Config file not found!\n");
     }
 }
-CON_COMMAND(sar_cvars_dump, "Dumps all cvars to a file.\n")
+CON_COMMAND(sar_cvars_dump, "sar_cvars_dump - dumps all cvars to a file\n")
 {
     std::ofstream file("game.cvars", std::ios::out | std::ios::trunc | std::ios::binary);
     auto result = cvars->Dump(file);
@@ -237,7 +237,7 @@ CON_COMMAND(sar_cvars_dump, "Dumps all cvars to a file.\n")
 
     console->Print("Dumped %i cvars to game.cvars!\n", result);
 }
-CON_COMMAND(sar_cvars_dump_doc, "Dumps all SAR cvars to a file.\n")
+CON_COMMAND(sar_cvars_dump_doc, "sar_cvars_dump_doc - dumps all SAR cvars to a file\n")
 {
     std::ofstream file("sar.cvars", std::ios::out | std::ios::trunc | std::ios::binary);
     auto result = cvars->DumpDoc(file);
@@ -245,19 +245,19 @@ CON_COMMAND(sar_cvars_dump_doc, "Dumps all SAR cvars to a file.\n")
 
     console->Print("Dumped %i cvars to sar.cvars!\n", result);
 }
-CON_COMMAND(sar_cvars_lock, "Restores default flags of unlocked cvars.\n")
+CON_COMMAND(sar_cvars_lock, "sar_cvars_lock - restores default flags of unlocked cvars\n")
 {
     cvars->Lock();
 }
-CON_COMMAND(sar_cvars_unlock, "Unlocks all special cvars.\n")
+CON_COMMAND(sar_cvars_unlock, "sar_cvars_unlock - unlocks all special cvars\n")
 {
     cvars->Unlock();
 }
-CON_COMMAND(sar_cvarlist, "Lists all SAR cvars and unlocked engine cvars.\n")
+CON_COMMAND(sar_cvarlist, "sar_cvarlist - lists all SAR cvars and unlocked engine cvars\n")
 {
     cvars->ListAll();
 }
-CON_COMMAND(sar_rename, "Changes your name. Usage: sar_rename <name>\n")
+CON_COMMAND(sar_rename, "sar_rename <name> - changes your name\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_rename.ThisPtr()->m_pszHelpString);
@@ -270,7 +270,7 @@ CON_COMMAND(sar_rename, "Changes your name. Usage: sar_rename <name>\n")
         name.EnableChange();
     }
 }
-CON_COMMAND(sar_exit, "Removes all function hooks, registered commands and unloads the module.\n")
+CON_COMMAND(sar_exit, "sar_exit - removes all function hooks, registered commands and unloads the module\n")
 {
     auto statCounter = stats->Get(GET_SLOT())->statsCounter;
     statCounter->RecordDatas(session->GetTick());

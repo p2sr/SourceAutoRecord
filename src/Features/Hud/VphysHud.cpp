@@ -101,7 +101,7 @@ bool VphysHud::GetCurrentSize(int& xSize, int& ySize)
     return false;
 }
 
-CON_COMMAND(sar_vphys_setgravity, "sar_vphys_setgravity <hitbox> <enabled>: Sets gravity flag state to either standing (0) or crouching (1) havok collision shadow.\n")
+CON_COMMAND(sar_vphys_setgravity, "sar_vphys_setgravity <hitbox> <enabled> - sets gravity flag state to either standing (0) or crouching (1) havok collision shadow\n")
 {
     if (engine->demoplayer->IsPlaying()) {
         return;
@@ -127,7 +127,7 @@ CON_COMMAND(sar_vphys_setgravity, "sar_vphys_setgravity <hitbox> <enabled>: Sets
     EnableGravity(hitbox ? m_pShadowCrouch : m_pShadowStand, enabled);
 }
 
-CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle>: Sets rotation angle to either standing (0) or crouching (1) havok collision shadow.\n")
+CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> - sets rotation angle to either standing (0) or crouching (1) havok collision shadow\n")
 {
     if (engine->demoplayer->IsPlaying()) {
         return;
@@ -161,7 +161,7 @@ CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle>: Sets rotat
     SetPosition(selected, v, q, false);
 }
 
-CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel>: Sets rotation speed to either standing (0) or crouching (1) havok collision shadow.\n")
+CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> - sets rotation speed to either standing (0) or crouching (1) havok collision shadow\n")
 {
     if (engine->demoplayer->IsPlaying()) {
         return;
