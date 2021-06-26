@@ -81,7 +81,7 @@ void GhostEntity::Spawn()
 
     this->prop_entity = PLAT_CALL(server->CreateEntityByName, "prop_dynamic_override");
     if (this->prop_entity == nullptr) {
-        console->Warning("CreateEntityByName() failed !\n");
+        console->Warning("CreateEntityByName() failed!\n");
         return;
     }
 

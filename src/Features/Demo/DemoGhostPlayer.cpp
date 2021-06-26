@@ -281,14 +281,14 @@ CON_COMMAND(ghost_delete_by_ID, "ghost_delete_by_ID <ID> - delete the ghost sele
     }
 
     demoGhostPlayer.DeleteGhostsByID(std::atoi(args[1]));
-    console->Print("Ghost %d has been deleted !\n", std::atoi(args[1]));
+    console->Print("Ghost %d has been deleted!\n", std::atoi(args[1]));
 }
 
 CON_COMMAND(ghost_delete_all, "ghost_delete_all - delete all ghosts\n")
 {
     demoGhostPlayer.DeleteAllGhostModels();
     demoGhostPlayer.DeleteAllGhosts();
-    console->Print("All ghosts have been deleted !\n");
+    console->Print("All ghosts have been deleted!\n");
 }
 
 CON_COMMAND(ghost_recap, "ghost_recap - recap all ghosts setup\n")
