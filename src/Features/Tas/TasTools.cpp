@@ -223,7 +223,7 @@ CON_COMMAND(sar_tas_addang, "sar_tas_addang <x> <y> [z] - Adds {x, y, z} degrees
     }
 
     if (args.ArgC() < 3) {
-        return console->Print("Missing arguments : sar_tas_addang <x> <y> [z].\n");
+        return console->Print(sar_tas_addang.ThisPtr()->m_pszHelpString);
     }
 
     auto nSlot = GET_SLOT();
@@ -247,7 +247,7 @@ CON_COMMAND(sar_tas_setang, "sar_tas_setang <x> <y> [z] [speed] - sets {x, y, z}
     }
 
     if (args.ArgC() < 3) {
-        return console->Print("Missing arguments : sar_tas_setang <x> <y> [z] [speed].\n");
+        return console->Print(sar_tas_setang.ThisPtr()->m_pszHelpString);
     }
 
     auto nSlot = GET_SLOT();

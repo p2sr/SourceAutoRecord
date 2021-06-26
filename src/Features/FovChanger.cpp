@@ -41,7 +41,7 @@ ON_EVENT(PRE_TICK) {
 CON_COMMAND_COMPLETION(sar_force_fov, "sar_force_fov <fov> - forces player FOV\n", ({ "0", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140" }))
 {
     if (args.ArgC() != 2) {
-        return console->Print(sar_find_ents.ThisPtr()->m_pszHelpString);
+        return console->Print(sar_force_fov.ThisPtr()->m_pszHelpString);
     }
 
     auto fov = std::atoi(args[1]);
