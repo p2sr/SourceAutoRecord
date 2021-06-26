@@ -41,7 +41,7 @@ void StatsCounter::IncrementRunFinished(const float time)
 void StatsCounter::Init()
 {
     if (!this->LoadFromFile(sar_statcounter_filePath.GetString())) {
-        console->Print("Couldn't open the file. Are you sure the file is here ? : \"%s\".\n", sar_statcounter_filePath.GetString());
+        console->Print("Couldn't open the file. Are you sure the file is here? : \"%s\".\n", sar_statcounter_filePath.GetString());
         return;
     }
     console->Print("Datas has been successfully loaded.\n");
@@ -181,12 +181,12 @@ void StatsCounter::Print()
     }
 
     console->Print("\nOther Full Game stats:\n");
-    console->Msg("    -> Completed runs : %d\n", this->completedRuns);
-    console->Msg("    -> Average Reset Time : %s\n", SpeedrunTimer::Format(this->avgResetTime).c_str());
-    console->Msg("    -> Reset count : %d\n", this->nbReset);
-    console->Msg("    -> Total Time SP : %s\n", SpeedrunTimer::Format(this->totalTimeSP).c_str());
-    console->Msg("    -> Total Portal count : %d\n", this->portalCount);
-    console->Msg("    -> Total Time In-Game : %s\n", SpeedrunTimer::Format(this->totalTimeInGame).c_str());
+    console->Msg("    -> Completed runs: %d\n", this->completedRuns);
+    console->Msg("    -> Average Reset Time: %s\n", SpeedrunTimer::Format(this->avgResetTime).c_str());
+    console->Msg("    -> Reset count: %d\n", this->nbReset);
+    console->Msg("    -> Total Time SP: %s\n", SpeedrunTimer::Format(this->totalTimeSP).c_str());
+    console->Msg("    -> Total Portal count: %d\n", this->portalCount);
+    console->Msg("    -> Total Time In-Game: %s\n", SpeedrunTimer::Format(this->totalTimeInGame).c_str());
 }
 
 void StatsCounter::RecordDatas(const int tick)

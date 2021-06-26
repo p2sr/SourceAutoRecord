@@ -286,9 +286,9 @@ HUD_ELEMENT_MODE2(acceleration, "0", 0, 3, "Draws instant acceleration.\n", HudT
         int p = sar_hud_precision.GetInt();
         auto accel = tasTools->GetAcceleration(player);
         if (mode >= 3) {
-            ctx->DrawElement("accel: x : %.*f y : %.*f z : %.*f", p, accel.x, p, accel.y, p, accel.z);
+            ctx->DrawElement("accel: x: %.*f y: %.*f z: %.*f", p, accel.x, p, accel.y, p, accel.z);
         } else if (mode == 2) {
-            ctx->DrawElement("accel: xy : %.*f z: %.*f", p, accel.Length2D(), p, accel.z);
+            ctx->DrawElement("accel: xy: %.*f z: %.*f", p, accel.Length2D(), p, accel.z);
         } else {
             ctx->DrawElement("accel: %.*f", p, accel.Length());
         }
