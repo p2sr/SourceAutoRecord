@@ -120,15 +120,16 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
         symbol->SizeOfStruct = sizeof (SYMBOL_INFO);
         symbol->MaxNameLen = MAX_SYM_NAME;
         const char *symname;
+        char modulefile[MAX_PATH + 1];
+        modulefile[0] = 0;
         if (SymFromAddr(process, (ULONG64)addr, &displacement, symbol)) {
             symname = symbol->NameLen ? symbol->Name : "";
+            displacement = (uint32_t)addr - (uint32_t)symbol->ModBase;
+            GetModuleFileNameA((HMODULE)symbol->ModBase, modulefile, MAX_PATH);
         } else {
             symname = "";
-            displacement = (uint32_t)addr - (uint32_t)symbol->ModBase;
         }
 
-        char modulefile[MAX_PATH + 1];
-        GetModuleFileNameA((HMODULE)symbol->ModBase, modulefile, MAX_PATH);
 
         fprintf(f, "\t%s(%s+0x%x) [0x%08x]\n", modulefile, symname, (uint32_t)displacement, (uint32_t)addr);
     }
