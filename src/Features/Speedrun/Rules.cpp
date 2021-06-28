@@ -421,7 +421,9 @@ void SpeedrunTimer::TickRules()
 
         {
             void *clPlayer = client->GetPlayer(slot + 1);
-            SpeedrunTimer::TestZoneRules(client->GetAbsOrigin(clPlayer), slot);
+            if (clPlayer) {
+                SpeedrunTimer::TestZoneRules(client->GetAbsOrigin(clPlayer), slot);
+            }
         }
 
         auto m_hActiveWeapon = *(CBaseHandle *)((uintptr_t)player + Offsets::m_hActiveWeapon);
