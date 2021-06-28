@@ -253,7 +253,7 @@ ON_EVENT(PRE_TICK) {
             engine->hasPaused = true; // We don't want to randomly pause if the user sets sar_pause_at in this session
             engine->isPausing = false;
         } else {
-            if (!engine->hasPaused && event.tick >= sar_pause_at.GetInt()) {
+            if (!engine->hasPaused && session->isRunning && event.tick >= sar_pause_at.GetInt()) {
                 engine->ExecuteCommand("pause", true);
                 engine->hasPaused = true;
                 engine->isPausing = true;
