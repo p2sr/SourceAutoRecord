@@ -95,13 +95,13 @@ DETOUR(VGui::Paint, PaintMode_t mode)
             }
         }
 
-        lastCtx[1] = *ctx;
-
         for (auto const& element : vgui->elements) {
             if (element->drawSecondSplitScreen) {
                 vgui->Draw(element);
             }
         }
+
+        lastCtx[1] = *ctx;
     }
 
     surface->FinishDrawing();
