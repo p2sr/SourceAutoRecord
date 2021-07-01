@@ -34,3 +34,4 @@
 #include "Features/SegmentedTools.hpp"
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/Hud/Toasts.hpp"
+#include "Features/PlayerTrace.hpp"
