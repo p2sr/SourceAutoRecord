@@ -49,6 +49,7 @@ $(ODIR)/%.o: $(SDIR)/%.cpp
 
 src/Version.hpp: .FORCE
 	echo "#define SAR_VERSION \"$(VERSION)\"" >"$@"
+	if [ -z "$$RELEASE_BUILD" ]; then echo "#define SAR_DEV_BUILD 1" >>"$@"; fi
 
 cvars: doc/cvars.md
 doc/cvars.md:

@@ -328,6 +328,9 @@
     <ClCompile Include="Features\Hud\Toasts.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Hud\Watermark.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
     <ClCompile Include="Features\SegmentedTools.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
