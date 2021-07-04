@@ -8,6 +8,7 @@
 #include "Features/FovChanger.hpp"
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
+#include "Features/Hud/ScrollSpeed.hpp"
 #include "Features/Imitator.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/ReplaySystem/ReplayPlayer.hpp"
@@ -393,6 +394,7 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move)
             int slot = client->GetSplitScreenPlayerSlot(player);
             groundFramesCounter->HandleMovementFrame(slot, grounded);
             strafeQuality.OnMovement(slot, grounded);
+            if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
             lastTick = tick;
         }
     }

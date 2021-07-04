@@ -316,6 +316,9 @@
     <ClCompile Include="Features\Hud\StrafeQuality.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Hud\ScrollSpeed.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Hud\VphysHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
@@ -781,6 +784,9 @@
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
     <ClInclude Include="Features\Hud\StrafeQuality.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\ScrollSpeed.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
     <ClInclude Include="Features\SegmentedTools.hpp">
