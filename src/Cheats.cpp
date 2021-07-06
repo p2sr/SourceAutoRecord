@@ -39,7 +39,7 @@ Variable sar_disable_steam_pause("sar_disable_steam_pause", "0", "Prevents pause
 Variable sar_disable_no_focus_sleep("sar_disable_no_focus_sleep", "0", "Does not yield the CPU when game is not focused.\n");
 Variable sar_disable_progress_bar_update("sar_disable_progress_bar_update", "0", 0, 2, "Disables excessive usage of progress bar.\n");
 Variable sar_prevent_mat_snapshot_recompute("sar_prevent_mat_snapshot_recompute", "0", "Shortens loading times by preventing state snapshot recomputation.\n");
-Variable sar_challenge_autostop("sar_challenge_autostop", "0", "Automatically stops recording demos when the leaderboard opens after a CM run.\n");
+Variable sar_challenge_autostop("sar_challenge_autostop", "0", 0, 2, "Automatically stops recording demos when the leaderboard opens after a CM run. If 2, automatically appends the run time to the demo name.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;

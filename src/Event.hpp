@@ -35,11 +35,13 @@ namespace Event {
         DEMO_STOP,
         PRE_TICK,
         POST_TICK,
+        CM_FLAGS,
     };
 
     template <EventType E> struct EventData { };
     template <> struct EventData<PRE_TICK> { bool simulating; int tick; };
     template <> struct EventData<POST_TICK> { bool simulating; int tick; };
+    template <> struct EventData<CM_FLAGS> { int slot; float time; bool end; };
 
     template <EventType E> struct _EventReg {
         std::function<void(EventData<E>)> cb;

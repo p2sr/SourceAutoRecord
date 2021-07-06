@@ -435,8 +435,6 @@ bool Client::Init()
             auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
             auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
 
-            Command::Hook("leaderboard_open", &LeaderboardCallback, originalLeaderboardCallback);
-
             if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
                 this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
             }

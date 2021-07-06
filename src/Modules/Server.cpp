@@ -36,6 +36,7 @@
 #include "Hook.hpp"
 
 #define RESET_COOP_PROGRESS_MESSAGE_TYPE "coop-reset"
+#define CM_FLAGS_MESSAGE_TYPE "cm-flags"
 
 Variable sv_cheats;
 Variable sv_footsteps;
@@ -214,23 +215,50 @@ DETOUR(Server::ProcessMovement, void* player, CMoveData* move)
     return Server::ProcessMovement(thisptr, player, move);
 }
 
+ON_INIT {
+    NetMessage::RegisterHandler(CM_FLAGS_MESSAGE_TYPE, +[](void *data, size_t size) {
+        if (size == 6 && engine->IsOrange()) {
+            char slot = *(char *)data;
+            float time = *(float *)((uintptr_t)data + 1);
+            bool end = !!*(char *)((uintptr_t)data + 5);
+            Event::Trigger<Event::CM_FLAGS>({ slot, time, end });
+        }
+    });
+}
+
+static inline bool hasSlotCompleted(void *thisptr, int slot) {
+#ifdef _WIN32
+    return *(uint8_t *)((uintptr_t)thisptr + 0x4B0 + slot);
+#else
+    return *(uint8_t *)((uintptr_t)thisptr + 0x4C8 + slot);
+#endif
+}
+
+static void TriggerCMFlag(int slot, float time, bool end)
+{
+    Event::Trigger<Event::CM_FLAGS>({ slot, time, end });
+    if (engine->IsCoop()) {
+        char data[6];
+        data[0] = (char)slot;
+        *(float *)(data + 1) = time;
+        data[5] = (char)end;
+        NetMessage::SendMsg(CM_FLAGS_MESSAGE_TYPE, data, sizeof data);
+    }
+}
+
 extern Hook g_flagStartTouchHook;
 DETOUR(Server::StartTouchChallengeNode, void* entity)
 {
-    if (server->IsPlayer(entity)) {
-        int slot = server->GetSplitScreenPlayerSlot(entity);
-
-        if (engine->demorecorder->isRecordingDemo) {
-            char data[2] = { 0x06, slot };
-            engine->demorecorder->RecordData(data, sizeof data);
-        }
-
-        SpeedrunTimer::TestFlagRules(slot);
-    }
-
     g_flagStartTouchHook.Disable();
     auto ret = Server::StartTouchChallengeNode(thisptr, entity);
     g_flagStartTouchHook.Enable();
+
+    if (server->IsPlayer(entity)) {
+        int slot = server->GetSplitScreenPlayerSlot(entity);
+        float time = server->GetCMTimer();
+        bool end = !engine->IsCoop() || hasSlotCompleted(thisptr, slot == 1 ? 0 : 1);
+        TriggerCMFlag(slot, time, end);
+    }
 
     return ret;
 }
@@ -378,6 +406,18 @@ static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void*
         free(data);
     }
     //console->DevMsg("%.4d INPUT '%s' TARGETNAME '%s' CLASSNAME '%s' PARAM '%s'\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr), parameter.ToString());
+
+    // HACKHACK
+    // Deals with maps where you hit a normal transition trigger
+    if (!strcmp(className, "portal_stats_controller") && !strcmp(inputName, "OnLevelEnd") && client->GetChallengeStatus() == CMStatus::CHALLENGE) {
+        float time = server->GetCMTimer();
+        if (engine->IsCoop()) {
+            TriggerCMFlag(0, time, false);
+            TriggerCMFlag(1, time, true);
+        } else {
+            TriggerCMFlag(0, time, true);
+        }
+    }
 
     g_AcceptInputHook.Disable();
     server->AcceptInput(thisptr, inputName, activator, caller, parameter, outputID);

@@ -156,6 +156,12 @@ void SpeedrunTimer::TestLoadRules()
     GeneralTestRules<MapLoadRule>({});
 }
 
+ON_EVENT(CM_FLAGS) {
+    if (!engine->IsOrange()) {
+        SpeedrunTimer::TestFlagRules(event.slot);
+    }
+}
+
 // }}}
 
 SpeedrunRule *SpeedrunTimer::GetRule(std::string name)

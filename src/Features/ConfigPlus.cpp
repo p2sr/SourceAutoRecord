@@ -499,6 +499,7 @@ MK_SAR_ON(load, "on level load", true)
 MK_SAR_ON(exit, "on game exit", false)
 MK_SAR_ON(demo_start, "when demo playback starts", false)
 MK_SAR_ON(demo_stop, "when demo playback stops", false)
+MK_SAR_ON(flags, "when CM flags are hit", false)
 
 struct Seq {
     std::queue<std::string> commands;
@@ -657,6 +658,7 @@ ON_EVENT_P(SESSION_START, 1000000) { RUN_EXECS(load); }
 ON_EVENT(SAR_UNLOAD) { RUN_EXECS(exit); }
 ON_EVENT(DEMO_START) { RUN_EXECS(demo_start); }
 ON_EVENT(DEMO_STOP) { RUN_EXECS(demo_stop); }
+ON_EVENT(CM_FLAGS) { RUN_EXECS(flags); }
 
 CON_COMMAND_F(nop, "nop [args]... - nop ignores all its arguments and does nothing\n", FCVAR_DONTRECORD)
 { }
