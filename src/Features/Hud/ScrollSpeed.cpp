@@ -43,35 +43,35 @@ void ScrollSpeedHud::Paint(int slot) {
 }
 
 ON_EVENT(SESSION_START) {
-		for (int slot = 0; slot < 2; ++slot) {
-				g_total[slot] = 0;
-				g_scrolls[slot] = 0;
-				g_lastScroll[slot] = -100;
-				g_lastSps[slot] = 0;
-		}
+    for (int slot = 0; slot < 2; ++slot) {
+        g_total[slot] = 0;
+        g_scrolls[slot] = 0;
+        g_lastScroll[slot] = -100;
+        g_lastSps[slot] = 0;
+    }
 }
 
 ON_EVENT(POST_TICK) {
-		for (int slot = 0; slot < 2; ++slot) {
-				// Cache the sps iff total > TOTAL_THRESHOLD
-				if (g_total[slot] > TOTAL_THRESHOLD) g_lastSps[slot] = (float)g_scrolls[slot] / g_total[slot] * 60.0f;
-		}
+    for (int slot = 0; slot < 2; ++slot) {
+        // Cache the sps iff total > TOTAL_THRESHOLD
+        if (g_total[slot] > TOTAL_THRESHOLD) g_lastSps[slot] = (float)g_scrolls[slot] / g_total[slot] * 60.0f;
+    }
 }
 
 void ScrollSpeedHud::OnJump(int slot) {
-		int tick = session->GetTick();
+    int tick = session->GetTick();
 
-		// Reset if it's been long enough
-		if (tick < g_lastScroll[slot] || tick > g_lastScroll[slot] + CONSECUTIVE_END) {
-				g_total[slot] = 1;
-				g_scrolls[slot] = 0;
-		} else {
-				g_total[slot] += tick - g_lastScroll[slot];
-		}
+    // Reset if it's been long enough
+    if (tick < g_lastScroll[slot] || tick > g_lastScroll[slot] + CONSECUTIVE_END) {
+        g_total[slot] = 1;
+        g_scrolls[slot] = 0;
+    } else {
+        g_total[slot] += tick - g_lastScroll[slot];
+    }
 
-		// Count the scroll
-		g_lastScroll[slot] = tick;
-		++g_scrolls[slot];
+    // Count the scroll
+    g_lastScroll[slot] = tick;
+    ++g_scrolls[slot];
 }
 
 ScrollSpeedHud scrollSpeedHud;
