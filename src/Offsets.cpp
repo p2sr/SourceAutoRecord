@@ -317,4 +317,5 @@ int videomode;
 int snd_linear_count;
 int snd_p;
 int snd_vol;
+int StartTouch;
 }

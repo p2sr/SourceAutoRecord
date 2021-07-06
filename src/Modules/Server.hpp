@@ -83,10 +83,13 @@ public:
     bool AllowsMovementChanges();
     int GetSplitScreenPlayerSlot(void* entity);
     void KillEntity(void* entity);
+    float GetCMTimer();
 
 public:
     // CGameMovement::ProcessMovement
     DECL_DETOUR(ProcessMovement, void* pPlayer, CMoveData* pMove);
+
+    DECL_DETOUR(StartTouchChallengeNode, void *entity);
 
     // CGameMovement::CheckJumpButton
     DECL_DETOUR_T(bool, CheckJumpButton);

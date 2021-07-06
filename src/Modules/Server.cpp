@@ -57,6 +57,7 @@ REDECL(Server::AirMove);
 REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
 REDECL(Server::ProcessMovement);
+REDECL(Server::StartTouchChallengeNode);
 #ifdef _WIN32
 REDECL(Server::AirMove_Skip);
 REDECL(Server::AirMove_Continue);
@@ -105,6 +106,13 @@ void Server::KillEntity(void* entity)
     val.fieldType = FIELD_VOID;
     void* player = this->GetPlayer(1);
     server->AcceptInput(entity, "Kill", player, player, val, 0);
+}
+
+float Server::GetCMTimer()
+{
+    void *player = this->GetPlayer(1);
+    if (!player) return 0.0f;
+    return *(float *)((uintptr_t)player + Offsets::m_StatsThisLevel + 12);
 }
 
 // CGameMovement::CheckJumpButton
@@ -205,6 +213,28 @@ DETOUR(Server::ProcessMovement, void* player, CMoveData* move)
 
     return Server::ProcessMovement(thisptr, player, move);
 }
+
+extern Hook g_flagStartTouchHook;
+DETOUR(Server::StartTouchChallengeNode, void* entity)
+{
+    if (server->IsPlayer(entity)) {
+        int slot = server->GetSplitScreenPlayerSlot(entity);
+
+        if (engine->demorecorder->isRecordingDemo) {
+            char data[2] = { 0x06, slot };
+            engine->demorecorder->RecordData(data, sizeof data);
+        }
+
+        SpeedrunTimer::TestFlagRules(slot);
+    }
+
+    g_flagStartTouchHook.Disable();
+    auto ret = Server::StartTouchChallengeNode(thisptr, entity);
+    g_flagStartTouchHook.Enable();
+
+    return ret;
+}
+Hook g_flagStartTouchHook(&Server::StartTouchChallengeNode_Hook);
 
 // CGameMovement::FinishGravity
 DETOUR(Server::FinishGravity)
@@ -370,6 +400,24 @@ static void InitAcceptInputTrampoline()
     g_AcceptInputHook.SetFunc(server->AcceptInput);
 }
 
+static bool g_IsCMFlagHookInitialized = false;
+static void InitCMFlagHook()
+{
+    for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+        void* ent = server->m_EntPtrArray[i].m_pEntity;
+        if (!ent) continue;
+
+        auto classname = server->GetEntityClassName(ent);
+        if (!classname || strcmp(classname, "challenge_mode_end_node")) continue;
+
+        Server::StartTouchChallengeNode = Memory::VMT<Server::_StartTouchChallengeNode>(ent, Offsets::StartTouch);
+        g_flagStartTouchHook.SetFunc(Server::StartTouchChallengeNode);
+        g_IsCMFlagHookInitialized = true;
+
+        break;
+    }
+}
+
 // CServerGameDLL::GameFrame
 #ifdef _WIN32
 DETOUR_STD(void, Server::GameFrame, bool simulating)
@@ -378,6 +426,7 @@ DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
     if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
+    if (!g_IsCMFlagHookInitialized) InitCMFlagHook();
 
     if (sar_tick_debug.GetInt() >= 3 || (sar_tick_debug.GetInt() >= 2 && simulating)) {
         int host, server, client;
@@ -530,6 +579,7 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::S_m_hGroundEntity);
     offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
     offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
+    offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::m_StatsThisLevel);
 
     offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
     offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);

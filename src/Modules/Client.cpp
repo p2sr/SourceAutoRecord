@@ -128,17 +128,6 @@ void Client::FlushChatQueue()
     this->chatQueue.clear();
 }
 
-float Client::GetCMTimer()
-{
-    if (client->GetChallengeStatus() != CMStatus::NONE) {
-        uintptr_t player = (uintptr_t)client->GetPlayer(1);
-        if (player) {
-            return *(float*)(player + Offsets::m_StatsThisLevel + 12);
-        }
-    }
-    return 0.0f;
-}
-
 CMStatus Client::GetChallengeStatus()
 {
     if (engine->IsOrange()) {
@@ -530,7 +519,6 @@ bool Client::Init()
     offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
     offsetFinder->ClientSide("CBasePlayer", "m_hGroundEntity", &Offsets::C_m_hGroundEntity);
     offsetFinder->ClientSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
-    offsetFinder->ClientSide("CPortal_Player", "m_StatsThisLevel", &Offsets::m_StatsThisLevel);
 
     cl_showpos = Variable("cl_showpos");
     cl_sidespeed = Variable("cl_sidespeed");

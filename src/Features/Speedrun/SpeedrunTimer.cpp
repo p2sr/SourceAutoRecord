@@ -213,7 +213,7 @@ static int getCurrentTick()
 
     if (client->GetChallengeStatus() == CMStatus::CHALLENGE) {
         if (g_inDemoLoad) return 0; // HACKHACK
-        return roundf(client->GetCMTimer() / *engine->interval_per_tick);
+        return roundf(server->GetCMTimer() / *engine->interval_per_tick);
     }
 
     return engine->GetTick();

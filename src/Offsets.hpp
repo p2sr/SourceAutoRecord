@@ -319,4 +319,5 @@ extern int VID_ProcessMovieFrame_2;
 extern int snd_linear_count;
 extern int snd_p;
 extern int snd_vol;
+extern int StartTouch;
 }
