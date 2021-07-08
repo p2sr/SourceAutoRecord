@@ -582,7 +582,7 @@ ON_EVENT(SESSION_START) {
 }
 
 ON_EVENT(POST_TICK) {
-    if (event.simulating) {
+    if (event.simulating || engine->demoplayer->IsPlaying()) {
         SpeedrunTimer::TickRules();
     }
 }

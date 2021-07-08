@@ -412,18 +412,18 @@ void SpeedrunTimer::TickRules()
     static std::optional<Vector> portalPositions[MAX_SPLITSCREEN][2];
 
     for (int slot = 0; slot < MAX_SPLITSCREEN; ++slot) {
-        void *player = server->GetPlayer(slot + 1);
-        if (!player) {
-            portalPositions[slot][0] = {};
-            portalPositions[slot][1] = {};
-            continue;
-        }
-
         {
             void *clPlayer = client->GetPlayer(slot + 1);
             if (clPlayer) {
                 SpeedrunTimer::TestZoneRules(client->GetAbsOrigin(clPlayer), slot);
             }
+        }
+
+        void *player = server->GetPlayer(slot + 1);
+        if (!player) {
+            portalPositions[slot][0] = {};
+            portalPositions[slot][1] = {};
+            continue;
         }
 
         auto m_hActiveWeapon = *(CBaseHandle *)((uintptr_t)player + Offsets::m_hActiveWeapon);
