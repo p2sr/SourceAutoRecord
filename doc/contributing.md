@@ -38,8 +38,8 @@
 
 ### Windows
 
-- Visual Studio 2017 or 2019
-- MSVC Toolset v141
+- Visual Studio 2019
+- MSVC Toolset v142
 - Configure SDK version in `src/SourceAutoRecord.vcxproj` or `src/SourceAutoRecord16.vcxproj`
 - Configure paths in `copy.bat`
 
