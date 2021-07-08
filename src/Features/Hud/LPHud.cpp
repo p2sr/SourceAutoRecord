@@ -7,7 +7,7 @@
 
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
-#include "Modules/Server.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Surface.hpp"
 
 #include "Variable.hpp"
@@ -49,11 +49,11 @@ void LPHud::Update()
     if (!enabled)
         return;
 
-    void* player = server->GetPlayer(1);
+    void* player = client->GetPlayer(1);
     if (player == nullptr) {
         //portalsCountFull = 0;
     } else {
-        int* iNumPortalsPlaced = reinterpret_cast<int*>((uintptr_t)player + Offsets::m_StatsThisLevel + 4);
+        int* iNumPortalsPlaced = reinterpret_cast<int*>((uintptr_t)player + Offsets::C_m_StatsThisLevel + 4);
 
         if (oldInGamePortalCounter != *iNumPortalsPlaced) {
             if (oldInGamePortalCounter < *iNumPortalsPlaced) {

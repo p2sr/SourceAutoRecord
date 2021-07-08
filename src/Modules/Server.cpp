@@ -112,8 +112,12 @@ void Server::KillEntity(void* entity)
 float Server::GetCMTimer()
 {
     void *player = this->GetPlayer(1);
-    if (!player) return 0.0f;
-    return *(float *)((uintptr_t)player + Offsets::m_StatsThisLevel + 12);
+    if (!player) {
+        void *clPlayer = client->GetPlayer(1);
+        if (!clPlayer) return 0.0f;
+        return *(float *)((uintptr_t)clPlayer + Offsets::C_m_StatsThisLevel + 12);
+    }
+    return *(float *)((uintptr_t)player + Offsets::S_m_StatsThisLevel + 12);
 }
 
 // CGameMovement::CheckJumpButton
@@ -405,7 +409,7 @@ static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void*
         engine->demorecorder->RecordData(data, len);
         free(data);
     }
-    //console->DevMsg("%.4d INPUT '%s' TARGETNAME '%s' CLASSNAME '%s' PARAM '%s'\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr), parameter.ToString());
+    //console->DevMsg("%.4d %s.%s(%s)\n", session->GetTick(), server->GetEntityName(thisptr), inputName, parameter.ToString());
 
     // HACKHACK
     // Deals with maps where you hit a normal transition trigger
@@ -619,7 +623,7 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::S_m_hGroundEntity);
     offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
     offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
-    offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::m_StatsThisLevel);
+    offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);
 
     offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
     offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);

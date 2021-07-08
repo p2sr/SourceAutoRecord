@@ -380,10 +380,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM)
     auto ipt = *engine->interval_per_tick;
 
     if (CM) {
-        uintptr_t player = (uintptr_t)client->GetPlayer(1);
-        if (player) {
-            totalSecs = *(float *)(player + Offsets::m_StatsThisLevel + 12) - ipt;
-        }
+        totalSecs = server->GetCMTimer();
     } else {
         totalSecs = SpeedrunTimer::GetTotalTicks() * ipt;
     }

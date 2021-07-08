@@ -150,7 +150,8 @@ extern int m_hTractorBeam;
 
 // CPortal_Player
 extern int iNumPortalsPlaced;
-extern int m_StatsThisLevel;
+extern int S_m_StatsThisLevel;
+extern int C_m_StatsThisLevel;
 
 // CWeaponPortalgun
 extern int m_bCanFirePortal1;

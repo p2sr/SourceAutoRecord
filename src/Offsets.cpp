@@ -150,7 +150,8 @@ int m_hTractorBeam;
 
 // CPortal_Player
 int iNumPortalsPlaced;
-int m_StatsThisLevel;
+int S_m_StatsThisLevel;
+int C_m_StatsThisLevel;
 
 //CWeaponPortalgun
 int m_bCanFirePortal1;
