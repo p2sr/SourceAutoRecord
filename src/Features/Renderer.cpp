@@ -65,6 +65,7 @@ static Variable sar_render_autostart_extension("sar_render_autostart_extension",
 static Variable sar_render_remove_broken("sar_render_remove_broken", "1", "Whether to remove broken frames from demo playback; only applies with sar_render_autostart 1\n");
 static Variable sar_render_autostop("sar_render_autostop", "1", "Whether to automatically stop when __END__ is seen in demo playback\n");
 static Variable sar_render_shutter_angle("sar_render_shutter_angle", "180", 30, 360, "The shutter angle to use for rendering in degrees.\n");
+static Variable sar_render_merge("sar_render_merge", "0", "When set, merge all the renders until sar_render_finish is entered\n");
 
 // g_videomode VMT wrappers {{{
 
@@ -1014,7 +1015,7 @@ void Renderer::Frame()
     // autostop: if it's the __END__ tick, or the demo is over, stop
     // rendering
 
-    if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() > Renderer::segmentEndTick) {
+    if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() > Renderer::segmentEndTick && !sar_render_merge.GetBool()) {
         msgStopRender(false);
         return;
     }
@@ -1068,7 +1069,7 @@ void Renderer::Frame()
 
 ON_EVENT(DEMO_STOP)
 {
-    if (g_render.isRendering.load() && sar_render_autostop.GetBool()) {
+    if (g_render.isRendering.load() && sar_render_autostop.GetBool() && !sar_render_merge.GetBool()) {
         msgStopRender(false);
     }
 }
