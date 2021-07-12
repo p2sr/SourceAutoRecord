@@ -1,6 +1,6 @@
 #include "Version.hpp"
 
-#ifdef SAR_DEV_BUILD
+#if defined(SAR_DEV_BUILD) && !defined(NO_DEV_WATERMARK)
 
 #include "Modules/Engine.hpp"
 #include "Modules/Surface.hpp"
