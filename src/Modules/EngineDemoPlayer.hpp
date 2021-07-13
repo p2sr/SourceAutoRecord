@@ -14,9 +14,11 @@ public:
 
     using _IsPlayingBack = bool(__rescall*)(void* thisptr);
     using _GetPlaybackTick = int(__rescall*)(void* thisptr);
+    using _SkipToTick = int(__rescall*)(void* thisptr, int tick, bool relative, bool pause);
 
     _IsPlayingBack IsPlayingBack = nullptr;
     _GetPlaybackTick GetPlaybackTick = nullptr;
+    _SkipToTick SkipToTick = nullptr;
 
     char* DemoName = nullptr;
     int demoQueueSize = false;
@@ -30,6 +32,7 @@ public:
     void ClearDemoQueue();
     std::string GetLevelName();
     void CustomDemoData(char* data, size_t length);
+    void SkipTo(int tick, bool relative, bool pause);
 
     // CDemoRecorder::StartPlayback
     DECL_DETOUR(StartPlayback, const char* filename, bool bAsTimeDemo);

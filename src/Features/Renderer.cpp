@@ -992,14 +992,20 @@ void Renderer::Frame()
 {
     if (Renderer::isDemoLoading && engine->hoststate->m_currentState == HS_RUN) {
         if (!g_render.isRendering.load() && sar_render_autostart.GetBool()) {
-
             if (sar_render_remove_broken.GetBool()) {
-                // If the parity of the current tick matches the parity of the first non-zero demo packet, don't start rendering
-                if (engine->demoplayer->GetTick() <= Renderer::demoStart) {
+                static bool startedSkip = false;
+                if (!startedSkip) {
                     sv_alternateticks.SetValue(0);
+                    engine->demoplayer->SkipTo(Renderer::demoStart + 1, false, true);
+                    engine->ExecuteCommand("demo_resume");
+                    startedSkip = true;
                     return;
-                } else {
+                } else if (engine->demoplayer->GetTick() == Renderer::demoStart + 1) {
+                    engine->ExecuteCommand("demo_resume");
                     sv_alternateticks.SetValue(1);
+                    startedSkip = false;
+                } else {
+                    return;
                 }
             }
 

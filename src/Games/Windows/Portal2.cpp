@@ -117,6 +117,7 @@ void Portal2::LoadOffsets()
     StartPlayback = 5; // CDemoPlayer
     StopPlayback = 16; // CDemoPlayer
     IsPlayingBack = 6; // CDemoPlayer
+    SkipToTick = 13; // CDemoPlayer
     m_szFileName = 4; // CDemoPlayer::SkipToTick
     m_szDemoBaseName = 1344; // CDemoRecorder::StartupDemoFile
     m_nDemoNumber = 1608; // CDemoRecorder::StartupDemoFile

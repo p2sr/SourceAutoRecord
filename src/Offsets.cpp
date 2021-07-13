@@ -106,6 +106,7 @@ int GetPlaybackTick;
 int StartPlayback;
 int StopPlayback;
 int IsPlayingBack;
+int SkipToTick;
 int m_szFileName;
 
 // CClientState
