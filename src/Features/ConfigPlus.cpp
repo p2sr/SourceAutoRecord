@@ -529,6 +529,8 @@ CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only 
         }
         engine->ExecuteCommand(cmd.c_str());
     }
+
+    FreeCondition(cond);
 }
 
 CON_COMMAND_F(seq, "seq <commands>... - runs a sequence of commands one tick after one another\n", FCVAR_DONTRECORD)
