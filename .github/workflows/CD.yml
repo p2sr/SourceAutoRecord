@@ -72,8 +72,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v1
     - name: Build
+      env:
+        RELEASE_BUILD: 1
       run: |
-        export RELEASE_BUILD=1
         cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
         .\MSBuild.exe $Env:GITHUB_WORKSPACE\SourceAutoRecordv16.sln /t:SourceAutoRecord /p:Configuration=Release /p:Platform=x86
     - name: Upload Windows Asset
