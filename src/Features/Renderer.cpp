@@ -110,6 +110,7 @@ enum class WorkerMsg
 static struct
 {
     std::atomic<bool> isRendering;
+    std::atomic<bool> isPaused;
     int fps;
     int samplerate;
     int channels;
@@ -934,6 +935,9 @@ static void SND_RecordBuffer_Hook()
         return;
     }
 
+    if (g_render.isPaused.load())
+        return;
+
     if (engine->ConsoleVisible()) return;
 
     // If the worker has received a message it hasn't yet handled,
@@ -991,7 +995,7 @@ static void SND_RecordBuffer_Hook()
 void Renderer::Frame()
 {
     if (Renderer::isDemoLoading && engine->hoststate->m_currentState == HS_RUN) {
-        if (!g_render.isRendering.load() && sar_render_autostart.GetBool()) {
+        if (sar_render_autostart.GetBool()) {
             if (sar_render_remove_broken.GetBool()) {
                 static bool startedSkip = false;
                 if (!startedSkip) {
@@ -999,18 +1003,22 @@ void Renderer::Frame()
                     engine->demoplayer->SkipTo(Renderer::demoStart + 1, false, true);
                     engine->ExecuteCommand("demo_resume");
                     startedSkip = true;
+                    g_render.isPaused.store(true);
                     return;
                 } else if (engine->demoplayer->GetTick() == Renderer::demoStart + 1) {
                     engine->ExecuteCommand("demo_resume");
                     sv_alternateticks.SetValue(1);
                     startedSkip = false;
+                    g_render.isPaused.store(false);
                 } else {
                     return;
                 }
             }
 
             g_render.filename = std::string(engine->GetGameDirectory()) + "/" + std::string(engine->demoplayer->DemoName) + "." + sar_render_autostart_extension.GetString();
-            startRender();
+
+            if (!g_render.isRendering.load())
+                startRender();
         }
 
         Renderer::isDemoLoading = false;
@@ -1021,8 +1029,13 @@ void Renderer::Frame()
     // autostop: if it's the __END__ tick, or the demo is over, stop
     // rendering
 
-    if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() > Renderer::segmentEndTick && !sar_render_merge.GetBool()) {
-        msgStopRender(false);
+
+
+    if (sar_render_autostop.GetBool() && Renderer::segmentEndTick != -1 && engine->demoplayer->IsPlaying() && engine->demoplayer->GetTick() > Renderer::segmentEndTick) {
+        if (!sar_render_merge.GetBool())
+            msgStopRender(false);
+        else
+            g_render.isPaused.store(true);
         return;
     }
 
