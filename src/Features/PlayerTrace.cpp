@@ -20,9 +20,13 @@ PlayerTrace* playerTrace;
 #define ADD_LINE_OVERLAY(...) engine->AddLineOverlay(nullptr, __VA_ARGS__)
 #endif
 
-Variable sar_player_trace_draw("sar_player_trace_draw", "0", "Display the recorded player trace\n");
 Variable sar_player_trace_record("sar_player_trace_record", "0", "Record player trace while set to 1\n");
 Variable sar_player_trace_size("sar_player_trace_size", "0", 0, "Maximum size of the player trace (in ticks), 0 for unlimited\n");
+Variable sar_player_trace_autoclear("sar_player_trace_autoclear", "1", "Automatically clear the trace on session start\n");
+
+Variable sar_player_trace_draw("sar_player_trace_draw", "0", "Display the recorded player trace. Requires cheats\n");
+Variable sar_player_trace_draw_through_walls("sar_player_trace_draw_through_walls", "1", "Display the player trace through walls. Requires sar_player_trace_draw\n");
+Variable sar_player_trace_draw_speed_deltas("sar_player_trace_draw_speed_deltas", "1", "Display the speed deltas. Requires sar_player_trace_draw\n");
 
 PlayerTrace::PlayerTrace()
 {
@@ -53,6 +57,7 @@ void PlayerTrace::DrawInWorld(float time) const
 {
     int r, g, b;
     size_t groundframes_idx = 0;
+    bool draw_through_walls = sar_player_trace_draw_through_walls.GetBool();
 
     if (trace.size() == 0) return;
     for (size_t i = 0; i < trace.size()-1; i++) {
@@ -67,7 +72,7 @@ void PlayerTrace::DrawInWorld(float time) const
         ADD_LINE_OVERLAY(
             trace[i], trace[i+1],
             r, g, b,
-            true,
+            draw_through_walls,
             time
         );
     }
@@ -147,12 +152,14 @@ ON_EVENT(PRE_TICK) {
 }
 
 ON_EVENT(SESSION_START) {
-    playerTrace->Clear();
+    if (sar_player_trace_autoclear.GetBool())
+        playerTrace->Clear();
 }
 
-HUD_ELEMENT2(player_trace_draw_speed, "1", "Toggles drawing the speed deltas on the player traces\n", HudType_InGame) {
+HUD_ELEMENT2_NO_DISABLE(player_trace_draw_speed, HudType_InGame) {
 
     if (!sar_player_trace_draw.GetBool()) return;
+    if (!sar_player_trace_draw_speed_deltas.GetBool()) return;
     if (!sv_cheats.GetBool()) return;
 
     playerTrace->DrawSpeedDeltas(ctx);
