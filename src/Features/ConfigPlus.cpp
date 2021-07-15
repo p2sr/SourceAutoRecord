@@ -725,37 +725,30 @@ CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a 
     g_functions[std::string(args[1])] = { c, cmd, name };
 }
 
-CON_COMMAND_F(sar_function_run, "sar_function_run <name> [args]... - run a function with the given arguments\n", FCVAR_DONTRECORD)
-{
-    if (args.ArgC() < 2) {
-        return console->Print(sar_function_run.ThisPtr()->m_pszHelpString);
-    }
-
-    auto it = g_functions.find({args[1]});
-    if (it == g_functions.end()) {
-        return console->Print("Function %s does not exist\n", args[1]);
-    }
-
-    auto func = it->second.run;
-
+static void expand(size_t nargs, const char *const *args, std::string body) {
     std::string cmd;
 
-    for (size_t i = 0; i < func.size(); ++i) {
-        if (func[i] == '$') {
-            if (func[i + 1] == '$') {
+    for (size_t i = 0; i < body.size(); ++i) {
+        if (body[i] == '$') {
+            if (body[i + 1] == '$') {
                 cmd += '$';
                 ++i;
                 continue;
-            } else if (func[i + 1] >= '1' && func[i + 1] <= '9') {
-                int arg = func[i + 1] - '0';
-                cmd += arg + 1 < args.ArgC() ? args[arg + 1] : "";
+            } else if (body[i + 1] == '-') {
+                // $- is just a no-op, so that you can have strings next
+                // to svar subs
+                ++i;
+                continue;
+            } else if (body[i + 1] >= '1' && body[i + 1] <= '9') {
+                int arg = body[i + 1] - '0';
+                cmd += arg - 1 < nargs ? args[arg - 1] : "";
                 ++i;
                 continue;
             } else {
                 size_t len = 0;
 
                 while (1) {
-                    char c = func[i + ++len];
+                    char c = body[i + ++len];
                     if (c >= 'a' && c <= 'z') continue;
                     if (c >= 'A' && c <= 'Z') continue;
                     if (c >= '0' && c <= '9') continue;
@@ -770,15 +763,38 @@ CON_COMMAND_F(sar_function_run, "sar_function_run <name> [args]... - run a funct
                     continue;
                 }
 
-                std::string var = func.substr(i + 1, len);
+                std::string var = body.substr(i + 1, len);
                 cmd += GetSvar(var);
                 i += len;
 
                 continue;
             }
         }
-        cmd += func[i];
+        cmd += body[i];
     }
 
     engine->ExecuteCommand(cmd.c_str(), true);
+}
+
+CON_COMMAND_F(sar_expand, "sar_expand [cmd]... - run a command after expanding svar substitutions\n", FCVAR_DONTRECORD)
+{
+    if (args.ArgC() < 2) {
+        return console->Print(sar_expand.ThisPtr()->m_pszHelpString);
+    }
+
+    expand(0, nullptr, std::string(args.m_pArgSBuffer + args.m_nArgv0Size));
+}
+
+CON_COMMAND_F(sar_function_run, "sar_function_run <name> [args]... - run a function with the given arguments\n", FCVAR_DONTRECORD)
+{
+    if (args.ArgC() < 2) {
+        return console->Print(sar_function_run.ThisPtr()->m_pszHelpString);
+    }
+
+    auto it = g_functions.find({args[1]});
+    if (it == g_functions.end()) {
+        return console->Print("Function %s does not exist\n", args[1]);
+    }
+
+    expand(args.ArgC() - 2, args.m_ppArgv + 2, it->second.run);
 }
