@@ -7,8 +7,12 @@
 class PlayerTrace : public Feature {
 private:
     std::vector<Vector> trace;
-    // Records at which indexes into the trace the player was grounded
-    std::vector<size_t> groundframes;
+    // Records at which indexes into the trace the grounded state changes
+    std::vector<size_t> groundframe_swaps;
+    // Records whether player started grounded or not
+    bool started_grounded;
+
+    void DrawSpeedDelta(HudContext *ctx, int *hud_id, size_t begin_tick, size_t end_tick) const;
 
 public:
     PlayerTrace();
@@ -17,7 +21,7 @@ public:
     // Clear all the points
     void Clear();
     // Add a groundframe to the groundframe list
-    void AddGroundFrame();
+    void AddGroundFrame(bool grounded);
     // Display the trace in the world
     void DrawInWorld(float time) const;
     // Display XY-speed delta overlay

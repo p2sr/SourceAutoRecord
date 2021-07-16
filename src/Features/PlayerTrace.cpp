@@ -36,11 +36,11 @@ void PlayerTrace::AddPoint(const Vector point)
 {
     if (sar_player_trace_size.GetInt() && (trace.size() > sar_player_trace_size.GetInt())) {
         trace.erase(trace.begin());
-        for (size_t &groundframe: groundframes) {
-            groundframe--;
+        for (size_t &swap: groundframe_swaps) {
+            swap--;
         }
-        if (groundframes[0] == -1)
-            groundframes.erase(groundframes.begin());
+        if (groundframe_swaps[0] == -1)
+            groundframe_swaps.erase(groundframe_swaps.begin());
     }
 
     trace.push_back(point);
@@ -48,10 +48,22 @@ void PlayerTrace::AddPoint(const Vector point)
 void PlayerTrace::Clear()
 {
     this->trace.clear();
-    this->groundframes.clear();
+    this->groundframe_swaps.clear();
 }
-void PlayerTrace::AddGroundFrame() {
-    this->groundframes.push_back(trace.size());
+void PlayerTrace::AddGroundFrame(bool grounded)
+{
+    static bool last_grounded_state;
+
+    // If this is a new trace, init the variables
+    if (trace.size() == 1) {
+        started_grounded = grounded;
+        last_grounded_state = grounded;
+    }
+    
+    if (last_grounded_state != grounded)
+        this->groundframe_swaps.push_back(trace.size());
+    
+    last_grounded_state = grounded;
 }
 void PlayerTrace::DrawInWorld(float time) const
 {
@@ -60,10 +72,15 @@ void PlayerTrace::DrawInWorld(float time) const
     bool draw_through_walls = sar_player_trace_draw_through_walls.GetBool();
 
     if (trace.size() == 0) return;
-    for (size_t i = 0; i < trace.size()-1; i++) {
 
-        if (groundframes_idx < groundframes.size() && groundframes[groundframes_idx] == i) {
+    bool is_grounded = started_grounded;
+    for (size_t i = 0; i < trace.size()-1; i++) {
+        if (groundframes_idx < groundframe_swaps.size() && groundframe_swaps[groundframes_idx] == i) {
             groundframes_idx++;
+            is_grounded = !is_grounded;
+        }
+
+        if (is_grounded) {
             r = 255; g = 0; b = 0;
         } else {
             r = 255; g = 255; b = 255;
@@ -79,47 +96,39 @@ void PlayerTrace::DrawInWorld(float time) const
 }
 void PlayerTrace::DrawSpeedDeltas(HudContext *ctx) const
 {
-    if (groundframes.size() == 0) return;
+    if (trace.size() < 5) return;
 
     int hud_id = 10;
 
-    size_t first_groundframe_tick = 0;
-    size_t last_groundframe_tick = 0;
-    size_t idx_offset = 2; // To account for alt ticks
-
-    // We're only interested in the places where we change grounded state
-    for (size_t i = 0; i < groundframes.size(); i++) {
-        if (groundframes[i] == last_groundframe_tick + 1) {
-            last_groundframe_tick++;
-        } else {
-            const Vector hud_offset = {0.0, 0.0, 10.0};
-            Vector screen_pos;
-            Vector speed_a, speed_b;
-            float speed_delta;
-
-            if (first_groundframe_tick == 0) first_groundframe_tick += idx_offset;
-            if (first_groundframe_tick != last_groundframe_tick) {
-                // Display speed delta between first and last groundframe
-                speed_a = (trace[first_groundframe_tick - idx_offset] - trace[first_groundframe_tick])/idx_offset;
-                speed_b = (trace[last_groundframe_tick - idx_offset] - trace[last_groundframe_tick])/idx_offset;
-                speed_delta = sqrt(speed_b.x*speed_b.x + speed_b.y*speed_b.y) - sqrt(speed_a.x*speed_a.x + speed_a.y*speed_a.y);
-
-                engine->PointToScreen(trace[first_groundframe_tick + (last_groundframe_tick - first_groundframe_tick)/2] + hud_offset, screen_pos);
-                ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "%10.2f", speed_delta * 60);
+    switch (groundframe_swaps.size()) {
+        case 0:
+            DrawSpeedDelta(ctx, &hud_id, 0, trace.size()-1);
+            break;
+        case 1:
+            DrawSpeedDelta(ctx, &hud_id, 0, groundframe_swaps[0]);
+            DrawSpeedDelta(ctx, &hud_id, groundframe_swaps[0], trace.size()-1);
+            break;
+        default:
+            DrawSpeedDelta(ctx, &hud_id, 0, groundframe_swaps[0]);
+            DrawSpeedDelta(ctx, &hud_id, groundframe_swaps[groundframe_swaps.size()-1], trace.size()-1);
+            for (size_t i = 1; i < groundframe_swaps.size(); i++) {
+                DrawSpeedDelta(ctx, &hud_id, groundframe_swaps[i-1], groundframe_swaps[i]);
             }
-            // Display speed delta between last groundframe and current tick
-            // aka speed delta for the current hop
-            speed_a = (trace[last_groundframe_tick - idx_offset] - trace[last_groundframe_tick])/idx_offset;
-            speed_b = (trace[groundframes[i] - idx_offset] - trace[groundframes[i]])/idx_offset;
-            speed_delta = sqrt(speed_b.x*speed_b.x + speed_b.y*speed_b.y) - sqrt(speed_a.x*speed_a.x + speed_a.y*speed_a.y);
-
-            engine->PointToScreen(trace[last_groundframe_tick + (groundframes[i] - last_groundframe_tick)/2] + hud_offset, screen_pos);
-            ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "%10.2f", speed_delta * 60);
-
-            first_groundframe_tick = groundframes[i];
-            last_groundframe_tick = groundframes[i];
-        }
+            break;
     }
+}
+void PlayerTrace::DrawSpeedDelta(HudContext *ctx, int *hud_id, size_t begin_tick, size_t end_tick) const {
+    const Vector hud_offset = {0.0, 0.0, 10.0};
+    const size_t idx_offset = 2; // To account for alt ticks
+    Vector screen_pos;
+
+    if (begin_tick == 0) begin_tick += idx_offset;
+    Vector speed_a = (trace[begin_tick - idx_offset] - trace[begin_tick])/idx_offset;
+    Vector speed_b = (trace[end_tick - idx_offset] - trace[end_tick])/idx_offset;
+    float speed_delta = speed_b.Length2D() - speed_a.Length2D();
+
+    engine->PointToScreen(trace[begin_tick + (end_tick - begin_tick)/2] + hud_offset, screen_pos);
+    ctx->DrawElementOnScreen((*hud_id)++, screen_pos.x, screen_pos.y, "%10.2f", speed_delta * 60);
 }
 
 ON_EVENT(PRE_TICK) {
@@ -130,9 +139,7 @@ ON_EVENT(PRE_TICK) {
         auto player = client->GetPlayer(nSlot + 1);
         if (player) {
             playerTrace->AddPoint(client->GetAbsOrigin(player));
-            if (groundFramesCounter->grounded[nSlot]) {
-                playerTrace->AddGroundFrame();
-            }
+            playerTrace->AddGroundFrame(groundFramesCounter->grounded[nSlot]);
         }
     }
 
@@ -163,7 +170,6 @@ HUD_ELEMENT2_NO_DISABLE(player_trace_draw_speed, HudType_InGame) {
     if (!sv_cheats.GetBool()) return;
 
     playerTrace->DrawSpeedDeltas(ctx);
-
 }
 
 CON_COMMAND(sar_player_trace_clear, "sar_player_trace_clear - Clear the recorded player trace\n") {
