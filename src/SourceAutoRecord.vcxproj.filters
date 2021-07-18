@@ -412,9 +412,6 @@
     <ClCompile Include="Features\GroundFramesCounter.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Stats\ZachStats.cpp">
-      <Filter>SourceAutoRecord\Features\Stats</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Tas\TasTools\AutoAimTool.cpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClCompile>
@@ -1070,9 +1067,6 @@
     </ClInclude>
     <ClInclude Include="Features\GroundFramesCounter.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Stats\ZachStats.hpp">
-      <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTools\AutoAimTool.hpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
