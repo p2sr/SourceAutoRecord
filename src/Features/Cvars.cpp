@@ -119,7 +119,7 @@ void Cvars::ListAll()
             console->Msg("%s", ptr->m_pszHelpString);
         } else if (variable->isReference) {
             std::string str = "";
-            
+
             if (variable->hasCustomCallback && variable->isUnlocked)
                 str = "(custom callback && unlocked)";
             else if (variable->hasCustomCallback)
@@ -170,14 +170,12 @@ void Cvars::Lock()
         sv_footsteps.Lock();
         net_showmsg.Lock();
 
-        if (sar.game->Is(SourceGame_Portal2Game)) {
-            sv_bonus_challenge.Lock();
-            sv_laser_cube_autoaim.Lock();
-            ui_loadingscreen_transition_time.Lock();
-            ui_loadingscreen_fadein_time.Lock();
-            ui_loadingscreen_mintransition_time.Lock();
-            hide_gun_when_holding.Lock();
-        }
+        sv_bonus_challenge.Lock();
+        sv_laser_cube_autoaim.Lock();
+        ui_loadingscreen_transition_time.Lock();
+        ui_loadingscreen_fadein_time.Lock();
+        ui_loadingscreen_mintransition_time.Lock();
+        hide_gun_when_holding.Lock();
 
         this->locked = true;
     }
@@ -194,15 +192,13 @@ void Cvars::Unlock()
         sv_footsteps.Unlock();
         net_showmsg.Unlock();
 
-        if (sar.game->Is(SourceGame_Portal2Game)) {
-            // Don't find a way to abuse this, ok?
-            sv_bonus_challenge.Unlock(false);
-            sv_laser_cube_autoaim.Unlock();
-            ui_loadingscreen_transition_time.Unlock(false);
-            ui_loadingscreen_fadein_time.Unlock(false);
-            ui_loadingscreen_mintransition_time.Unlock(false);
-            hide_gun_when_holding.Unlock(false);
-        }
+        // Don't find a way to abuse this, ok?
+        sv_bonus_challenge.Unlock(false);
+        sv_laser_cube_autoaim.Unlock();
+        ui_loadingscreen_transition_time.Unlock(false);
+        ui_loadingscreen_fadein_time.Unlock(false);
+        ui_loadingscreen_mintransition_time.Unlock(false);
+        hide_gun_when_holding.Unlock(false);
 
         this->locked = false;
     }

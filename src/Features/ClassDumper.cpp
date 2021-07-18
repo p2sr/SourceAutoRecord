@@ -19,8 +19,7 @@
 ClassDumper* classDumper;
 
 ClassDumper::ClassDumper()
-    : sendPropSize(sar.game->Is(SourceGame_Portal2Engine) ? sizeof(SendProp2) : sizeof(SendProp))
-    , serverClassesFile("server_classes.json")
+    : serverClassesFile("server_classes.json")
     , clientClassesFile("client_classes.json")
 {
     this->hasLoaded = true;
@@ -62,20 +61,12 @@ void ClassDumper::DumpSendTable(std::ofstream& file, SendTable* table)
     file << "{\"name\":\"" << table->m_pNetTableName << "\",\"props\":[";
 
     for (auto i = 0; i < table->m_nProps; ++i) {
-        auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + this->sendPropSize * i);
+        auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + sizeof (SendProp) * i);
 
         auto name = prop.m_pVarName;
         auto offset = prop.m_Offset;
         auto type = prop.m_Type;
         auto nextTable = prop.m_pDataTable;
-
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            auto temp = *reinterpret_cast<SendProp2*>(&prop);
-            name = temp.m_pVarName;
-            offset = temp.m_Offset;
-            type = temp.m_Type;
-            nextTable = temp.m_pDataTable;
-        }
 
         auto sanitized = std::string("");
         auto c = name;
@@ -150,28 +141,27 @@ void ClassDumper::DumpRecvTable(std::ofstream& file, RecvTable* table)
 
 // Commands
 
-CON_COMMAND(sar_dump_server_classes, "Dumps all server classes to a file.\n")
+CON_COMMAND(sar_dump_server_classes, "sar_dump_server_classes - dumps all server classes to a file\n")
 {
     classDumper->Dump();
 }
-CON_COMMAND(sar_dump_client_classes, "Dumps all client classes to a file.\n")
+CON_COMMAND(sar_dump_client_classes, "sar_dump_client_classes - dumps all client classes to a file\n")
 {
     classDumper->Dump(false);
 }
-CON_COMMAND(sar_list_server_classes, "Lists all server classes.\n")
+CON_COMMAND(sar_list_server_classes, "sar_list_server_classes - lists all server classes\n")
 {
     for (auto sclass = server->GetAllServerClasses(); sclass; sclass = sclass->m_pNext) {
         console->Print("%s\n", sclass->m_pNetworkName);
     }
 }
-CON_COMMAND(sar_list_client_classes, "Lists all client classes.\n")
+CON_COMMAND(sar_list_client_classes, "sar_list_client_classes - lists all client classes\n")
 {
     for (auto cclass = client->GetAllClasses(); cclass; cclass = cclass->m_pNext) {
         console->Print("%s\n", cclass->m_pNetworkName);
     }
 }
-CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props with their offset.\n"
-                                   "Usage: sar_find_serverclass <class_name>\n")
+CON_COMMAND(sar_find_server_class, "sar_find_server_class <class_name> - finds specific server class tables and props with their offset\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_find_server_class.ThisPtr()->m_pszHelpString);
@@ -181,20 +171,12 @@ CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props
     DumpTable = [&DumpTable](SendTable* table, int& level) {
         console->Print("%*s%s\n", level * 4, "", table->m_pNetTableName);
         for (auto i = 0; i < table->m_nProps; ++i) {
-            auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + classDumper->sendPropSize * i);
+            auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + sizeof (SendProp) * i);
 
             auto name = prop.m_pVarName;
             auto offset = prop.m_Offset;
             auto type = prop.m_Type;
             auto nextTable = prop.m_pDataTable;
-
-            if (sar.game->Is(SourceGame_Portal2Engine)) {
-                auto temp = *reinterpret_cast<SendProp2*>(&prop);
-                name = temp.m_pVarName;
-                offset = temp.m_Offset;
-                type = temp.m_Type;
-                nextTable = temp.m_pDataTable;
-            }
 
             console->Msg("%*s%s -> %d\n", level * 4, "", name, (int16_t)offset);
 
@@ -217,8 +199,7 @@ CON_COMMAND(sar_find_server_class, "Finds specific server class tables and props
         }
     }
 }
-CON_COMMAND(sar_find_client_class, "Finds specific client class tables and props with their offset.\n"
-                                   "Usage: sar_find_clientclass <class_name>\n")
+CON_COMMAND(sar_find_client_class, "sar_find_clientclass <class_name> - finds specific client class tables and props with their offset\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_find_client_class.ThisPtr()->m_pszHelpString);

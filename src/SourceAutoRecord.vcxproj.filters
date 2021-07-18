@@ -22,46 +22,49 @@
     <ClCompile Include="Features\Hud\Hud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Games\Windows\ApertureTag.cpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="Games\Windows\Portal2.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\TheBeginnersGuide.cpp">
+    <ClCompile Include="Games\Windows\PortalReloaded.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLife2.cpp">
+    <ClCompile Include="Games\Windows\PortalStoriesMel.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\TheStanleyParable.cpp">
+    <ClCompile Include="Games\Windows\ThinkingWithTimeMachine.cpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Linux\TheStanleyParable.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\HalfLife2.cpp">
+    <ClCompile Include="Games\Linux\ApertureTag.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
     <ClCompile Include="Games\Linux\Portal2.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Linux\TheBeginnersGuide.cpp">
+    <ClCompile Include="Games\Linux\PortalReloaded.cpp">
       <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Speedrun\TimerInterface.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    <ClCompile Include="Games\Linux\PortalStoriesMel.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Speedrun\TimerResult.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\TimerRule.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\TimerSplit.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    <ClCompile Include="Games\Linux\ThinkingWithTimeMachine.cpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClCompile>
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Speedrun\CustomCategories.cpp">
+    <ClCompile Include="Features\Speedrun\Rules.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\Categories.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\CategoriesPreset.cpp">
+      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Speedrun\CategoryCreator.cpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClCompile>
     <ClCompile Include="Features\Demo\Demo.cpp">
@@ -163,6 +166,9 @@
     <ClCompile Include="Features\Listener.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\PlayerTrace.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Rebinder.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
@@ -175,19 +181,31 @@
     <ClCompile Include="Features\Summary.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Updater.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Teleporter.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
     <ClCompile Include="Features\WorkshopList.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\NetMessage.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Cheats.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="CrashHandler.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
     <ClCompile Include="Checksum.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
     <ClCompile Include="Command.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
+    <ClCompile Include="Event.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp">
@@ -208,29 +226,8 @@
     <ClCompile Include="Variable.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\Portal.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\Portal.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\Memory.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\ApertureTagRules.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\DebugRule.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\Portal2Rules.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\PortalRules.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\PortalStoriesMelRules.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
     </ClCompile>
     <ClCompile Include="Features\EntityList.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
@@ -256,20 +253,8 @@
     <ClCompile Include="Features\ReplaySystem\ReplayView.cpp">
       <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Linux\ApertureTag.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\PortalStoriesMel.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\ApertureTag.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\PortalStoriesMel.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\TimerCategory.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
+    <ClCompile Include="Features\Renderer.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>SourceAutoRecord</Filter>
@@ -280,43 +265,79 @@
     <ClCompile Include="Utils\Math.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\INFRA.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\InfraSession.cpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClCompile>
     <ClCompile Include="Features\DataMapDumper.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLife2Unpack.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\PortalUnpack.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\ThinkingWithTimeMachine.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\ThinkingWithTimeMachine.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.cpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLife2Episodic.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\HalfLife2Episodic.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLifeSource.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\HalfLifeSource.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
     <ClCompile Include="Features\FovChanger.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Camera.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\ConfigPlus.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Stats\StatsCounter.cpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\Crosshair.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\json11.cpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\lodepng.cpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Demo\GhostEntity.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Demo\NetworkGhostPlayer.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Demo\DemoGhostPlayer.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Demo\DemoGhostEntity.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Stats\Sync.cpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\StrafeSyncHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\StrafeQuality.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\ScrollSpeed.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\VphysHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\PortalgunHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\LPHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\Toasts.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\Watermark.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\SegmentedTools.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Routing\SeamshotFind.cpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\MaterialSystem.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\GroundFramesCounter.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
     <ClCompile Include="Features\Tas\TasController.cpp">
@@ -429,32 +450,38 @@
     <ClInclude Include="Utils\SDK.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Linux\Portal2.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\TheBeginnersGuide.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\TheStanleyParable.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    <ClInclude Include="Games\Windows\ApertureTag.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
     <ClInclude Include="Games\Windows\Portal2.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp">
+    <ClInclude Include="Games\Windows\PortalReloaded.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Windows\TheStanleyParable.hpp">
+    <ClInclude Include="Games\Windows\PortalStoriesMel.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\ThinkingWithTimeMachine.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\ApertureTag.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\Portal2.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\PortalReloaded.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\PortalStoriesMel.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\ThinkingWithTimeMachine.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Memory.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\HalfLife2.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLife2.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
     <ClInclude Include="Features\Hud\InspectionHud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
@@ -471,28 +498,16 @@
     <ClInclude Include="Utils\Platform.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerInterface.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerResult.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerRule.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerSplit.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerAction.hpp">
+    <ClInclude Include="Features\Speedrun\Rules.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerState.hpp">
+    <ClInclude Include="Features\Speedrun\Categories.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Speedrun\CustomCategories.hpp">
+    <ClInclude Include="Features\Speedrun\CategoriesPreset.hpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\Demo.hpp">
@@ -597,19 +612,31 @@
     <ClInclude Include="Features\Summary.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Updater.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
     <ClInclude Include="Features\Teleporter.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\WorkshopList.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
+    <ClInclude Include="Features\NetMessage.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
     <ClInclude Include="Cheats.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="CrashHandler.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Checksum.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Command.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Event.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Game.hpp">
@@ -633,27 +660,6 @@
     <ClInclude Include="Variable.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Windows\Portal.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\Portal.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\ApertureTagRules.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\DebugRule.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\Portal2Rules.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\PortalRules.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\PortalStoriesMelRules.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClInclude>
     <ClInclude Include="Features\EntityList.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
@@ -665,6 +671,9 @@
     </ClInclude>
     <ClInclude Include="Features\ReplaySystem\ReplayView.hpp">
       <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Renderer.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\ReplaySystem\Replay.hpp">
       <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
@@ -693,14 +702,8 @@
     <ClInclude Include="Games\Windows\PortalStoriesMel.hpp">
       <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Speedrun\TimerCategory.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Timer\PauseTimer.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\INFRA.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
     <ClInclude Include="Modules.hpp">
       <Filter>SourceAutoRecord</Filter>
@@ -708,40 +711,184 @@
     <ClInclude Include="Features.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
-    <ClInclude Include="Features\InfraSession.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
     <ClInclude Include="Features\DataMapDumper.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Windows\HalfLife2Unpack.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\PortalUnpack.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\ThinkingWithTimeMachine.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\ThinkingWithTimeMachine.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.hpp">
-      <Filter>SourceAutoRecord\Features\Speedrun\Rules</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\HalfLife2Episodic.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLife2Episodic.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\HalfLifeSource.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLifeSource.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
     <ClInclude Include="Features\FovChanger.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Camera.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\PlayerTrace.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats\StatsCounter.hpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\Crosshair.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\json11.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\lodepng.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\GhostEntity.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\NetworkGhostPlayer.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Export.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Ftp.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Http.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\IpAddress.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Packet.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Socket.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\SocketHandle.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\SocketSelector.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\TcpListener.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\TcpSocket.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\UdpSocket.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Clock.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Err.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Export.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\FileInputStream.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\InputStream.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Lock.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\MemoryInputStream.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Mutex.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\NativeActivity.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\NonCopyable.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Sleep.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\String.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Thread.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\ThreadLocal.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\ThreadLocalPtr.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Time.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Utf.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Vector2.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Vector3.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Config.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\GpuPreference.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Graphics.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Main.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\DemoGhostPlayer.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\DemoGhostEntity.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats\Sync.hpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\StrafeSyncHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\StrafeQuality.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\ScrollSpeed.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\SegmentedTools.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\VphysHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\PortalgunHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\LPHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\Toasts.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Routing\SeamshotFind.hpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\MaterialSystem.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\GroundFramesCounter.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Tas\TasController.hpp">
@@ -979,9 +1126,6 @@
     </Filter>
     <Filter Include="SourceAutoRecord\Features\Routing">
       <UniqueIdentifier>{74d18c35-2424-4dab-bb78-11a5aefde796}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SourceAutoRecord\Features\Speedrun\Rules">
-      <UniqueIdentifier>{338d75c8-ceab-4c59-932b-0129e629742f}</UniqueIdentifier>
     </Filter>
     <Filter Include="SourceAutoRecord\Features\ReplaySystem">
       <UniqueIdentifier>{6d5adac2-903e-463f-8055-8677eaca4662}</UniqueIdentifier>

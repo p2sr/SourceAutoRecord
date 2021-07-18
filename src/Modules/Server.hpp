@@ -27,7 +27,7 @@ public:
 #ifdef _WIN32
     using _AcceptInput = bool(__rescall*)(void* thisptr, const char* inputName, void* activator, void* caller, variant_t value, int outputID);
 #else
-    using _AcceptInput = bool(__rescall*)(void* thisptr, const char* inputName, void* activator, void* caller, variant_t *value, int outputID);
+    using _AcceptInput = bool(__rescall*)(void* thisptr, const char* inputName, void* activator, void* caller, variant_t &value, int outputID);
 #endif
 
 #ifdef _WIN32
@@ -83,10 +83,13 @@ public:
     bool AllowsMovementChanges();
     int GetSplitScreenPlayerSlot(void* entity);
     void KillEntity(void* entity);
+    float GetCMTimer();
 
 public:
     // CGameMovement::ProcessMovement
     DECL_DETOUR(ProcessMovement, void* pPlayer, CMoveData* pMove);
+
+    DECL_DETOUR(StartTouchChallengeNode, void *entity);
 
     // CGameMovement::CheckJumpButton
     DECL_DETOUR_T(bool, CheckJumpButton);

@@ -16,6 +16,8 @@ public:
     int32_t playbackFrames;
     int32_t signOnLength;
     std::vector<int32_t> messageTicks;
+    int32_t firstPositivePacketTick;
+    int32_t segmentTicks;
 
 public:
     int32_t LastTick();

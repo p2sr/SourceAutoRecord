@@ -12,6 +12,7 @@
 
 #include "Command.hpp"
 #include "Variable.hpp"
+#include "Event.hpp"
 
 Variable sar_replay_mode("sar_replay_mode", "0", 0,
     "Mode of replay system.\n"
@@ -245,7 +246,7 @@ void ReplayProvider::Import(const char* fileName)
 
 // Commands
 
-CON_COMMAND(sar_replay_record, "Starts recording a replay.\n")
+CON_COMMAND(sar_replay_record, "sar_replay_record - starts recording a replay\n")
 {
     auto replay = replayProvider->GetCurrentReplay();
     auto coop = engine->GetMaxClients() > 1 && replay->GetViewSize() > 1;
@@ -273,8 +274,7 @@ CON_COMMAND(sar_replay_record, "Starts recording a replay.\n")
 
     console->Print((playbackActive) ? "Recording!\n" : "Re-Recording!\n");
 }
-CON_COMMAND(sar_replay_record_view, "Starts recording a specific view for a replay.\n"
-                                    "Usage: sar_replay_record_view <view_index>\n")
+CON_COMMAND(sar_replay_record_view, "sar_replay_record_view <view_index> - starts recording a specific view for a replay\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_replay_record_view.ThisPtr()->m_pszHelpString);
@@ -306,7 +306,7 @@ CON_COMMAND(sar_replay_record_view, "Starts recording a specific view for a repl
 
     console->Print((playbackActive) ? "Recording!\n" : "Re-Recording!\n");
 }
-CON_COMMAND(sar_replay_play, "Plays back a replay.\n")
+CON_COMMAND(sar_replay_play, "sar_replay_play - plays back a replay\n")
 {
     if (!replayProvider->AnyReplaysLoaded()) {
         return console->Print("Nothing has been recorded or imported!\n");
@@ -330,8 +330,7 @@ CON_COMMAND(sar_replay_play, "Plays back a replay.\n")
 
     console->Print("Playing!\n");
 }
-CON_COMMAND(sar_replay_play_view, "Plays back a specific view of a replay.\n"
-                                  "Usage: sar_replay_play_view <view_index>\n")
+CON_COMMAND(sar_replay_play_view, "sar_replay_play_view <view_index> - plays back a specific view of a replay\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_replay_play_view.ThisPtr()->m_pszHelpString);
@@ -364,7 +363,7 @@ CON_COMMAND(sar_replay_play_view, "Plays back a specific view of a replay.\n"
 
     console->Print("Playing view %i!\n", view);
 }
-CON_COMMAND(sar_replay_stop, "Stops recording or playing user inputs.\n")
+CON_COMMAND(sar_replay_stop, "sar_replay_stop - stops recording or playing user inputs\n")
 {
     replayRecorder1->StopRecording();
     replayRecorder2->StopRecording();
@@ -372,12 +371,11 @@ CON_COMMAND(sar_replay_stop, "Stops recording or playing user inputs.\n")
     replayPlayer2->StopPlaying();
     console->Print("Stopped playing and recording!\n");
 }
-CON_COMMAND(sar_replay_merge_all, "Merges all replays into one.\n")
+CON_COMMAND(sar_replay_merge_all, "sar_replay_merge_all - merges all replays into one\n")
 {
     replayProvider->MergeAll();
 }
-CON_COMMAND(sar_replay_merge_views, "Merges one view to another of two replays.\n"
-                                    "Usage: sar_replay_merge_views <replay_index1> <replay_index2> <view_index1> <view_index2>\n")
+CON_COMMAND(sar_replay_merge_views, "sar_replay_merge_views <replay_index1> <replay_index2> <view_index1> <view_index2> - merges one view to another of two replays\n")
 {
     if (args.ArgC() != 5) {
         return console->Print(sar_replay_merge_views.ThisPtr()->m_pszHelpString);
@@ -408,8 +406,7 @@ CON_COMMAND(sar_replay_merge_views, "Merges one view to another of two replays.\
 
     replayProvider->MergeViews(replayIndex1, replayIndex2, viewIndex1, viewIndex2);
 }
-CON_COMMAND(sar_replay_clone_views, "Clones view to another of a replay.\n"
-                                    "Usage: sar_replay_clone_views <replay_index> <view_index>\n")
+CON_COMMAND(sar_replay_clone_views, "sar_replay_clone_views <replay_index> <view_index> - clones view to another of a replay\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_replay_clone_views.ThisPtr()->m_pszHelpString);
@@ -429,7 +426,7 @@ CON_COMMAND(sar_replay_clone_views, "Clones view to another of a replay.\n"
 
     replayProvider->MergeViews(replaxIndex, replaxIndex, viewIndex, viewIndex);
 }
-CON_COMMAND(sar_replay_export, "Exports replay to a file.\nUsage: sar_replay_export <file>\n")
+CON_COMMAND(sar_replay_export, "sar_replay_export <file> - exports replay to a file\n")
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_replay_export.ThisPtr()->m_pszHelpString);
@@ -437,7 +434,7 @@ CON_COMMAND(sar_replay_export, "Exports replay to a file.\nUsage: sar_replay_exp
 
     replayProvider->Export(args[1]);
 }
-CON_COMMAND(sar_replay_export_at, "Exports specific replay to a file.\nUsage: sar_replay_export_at <index> <file>\n")
+CON_COMMAND(sar_replay_export_at, "sar_replay_export_at <index> <file> - exports specific replay to a file\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_replay_export_at.ThisPtr()->m_pszHelpString);
@@ -445,7 +442,7 @@ CON_COMMAND(sar_replay_export_at, "Exports specific replay to a file.\nUsage: sa
 
     replayProvider->Export(args[2], std::atoi(args[1]));
 }
-CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import, "Imports replay file.\nUsage: sar_replay_import <file>\n", 0, 0, str)
+CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import, "sar_replay_import <file> - imports replay file\n", 0, 0, str)
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_replay_import.ThisPtr()->m_pszHelpString);
@@ -454,8 +451,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import, "Imports replay file.\nUsage: sa
     replayProvider->DeleteAll();
     replayProvider->Import(args[1]);
 }
-CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import_add, "Imports replay file but doesn't delete already added replays.\n"
-                                                    "Usage: sar_replay_import_add <file>\n",
+CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import_add, "sar_replay_import_add <file> - imports replay file but doesn't delete already added replays\n",
     0, 0, str)
 {
     if (args.ArgC() != 2) {
@@ -464,7 +460,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_replay_import_add, "Imports replay file but doe
 
     replayProvider->Import(args[1]);
 }
-CON_COMMAND(sar_replay_list, "Lists all currently imported replays.\n")
+CON_COMMAND(sar_replay_list, "sar_replay_list - lists all currently imported replays\n")
 {
     if (!replayProvider->AnyReplaysLoaded()) {
         return console->Print("No replays have been recorded or imported!\n");
@@ -475,5 +471,37 @@ CON_COMMAND(sar_replay_list, "Lists all currently imported replays.\n")
         console->Print("[%i] %s\n", index++, replay->GetSource());
         console->Msg("  -> ");
         console->Print("views: %i | frames: %i\n", replay->GetViewSize(), replay->GetFrameSize());
+    }
+}
+
+ON_EVENT(SESSION_START)
+{
+    if (sar_replay_mode.GetBool()) {
+        if (sar_replay_mode.GetInt() == 1) {
+            replayProvider->CreateNewReplay();
+            replayRecorder1->StartRecording();
+
+            if (replayProvider->GetCurrentReplay()->GetViewSize() > 1) {
+                replayRecorder2->StartRecording();
+            }
+        } else if (replayProvider->AnyReplaysLoaded()) {
+            auto replay = replayProvider->GetCurrentReplay();
+            replayPlayer1->StartPlaying(replay);
+
+            if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
+                replayPlayer2->StartPlaying(replay);
+            }
+        }
+    } else if (sar_replay_viewmode.isRegistered && sar_replay_viewmode.GetBool() && replayProvider->AnyReplaysLoaded()) {
+        auto replay = replayProvider->GetCurrentReplay();
+        if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
+            if (sar_replay_viewmode.GetInt() == 1) {
+                replayRecorder1->StartRecording();
+                replayPlayer2->StartPlaying(replay);
+            } else {
+                replayRecorder2->StartRecording();
+                replayPlayer1->StartPlaying(replay);
+            }
+        }
     }
 }

@@ -52,6 +52,7 @@ private:
     std::string postCountdownCommands;
     std::chrono::time_point<std::chrono::steady_clock> timeLeft;
     int countdownStep;
+    bool countdownShow;
 
     std::chrono::time_point<std::chrono::steady_clock> lastUpdateTime;
 
@@ -83,7 +84,7 @@ public:
     void SendMessageToAll(std::string msg);
     void SendPing();
     void ReceiveUDPUpdates(std::vector<sf::Packet>& buffer);
-    void Treat(sf::Packet& packet);
+    void Treat(sf::Packet& packet, bool udp);
 
     void UpdateGhostsPosition();
     std::shared_ptr<GhostEntity> GetGhostByID(sf::Uint32 ID);
@@ -94,12 +95,10 @@ public:
     void DeleteAllGhosts();
 
     void SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration);
-    //Need this function to mesure the ping in order to start the countdown at the same time
+    //Need this function to measure the ping in order to start the countdown at the same time
     void StartCountdown();
     //Print the state of the countdown
     void UpdateCountdown();
-
-    void DispatchQueuedEvents();
 
     void DrawNames(HudContext* ctx);
 };

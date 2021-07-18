@@ -23,6 +23,7 @@ public:
     bool requestedStop = false;
     int lastDemoNumber = 1;
     bool hasNotified = false;
+    bool customDataReady = false;
 
     char coopRadialMenuLastPos[8];
 
@@ -43,6 +44,8 @@ public:
     DECL_DETOUR(RecordCustomData, int id, const void* data, unsigned long length);
 
     DECL_DETOUR_COMMAND(stop);
+
+    DECL_DETOUR_COMMAND(record);
 
     bool Init() override;
     void Shutdown() override;

@@ -3,6 +3,7 @@
 #include "Features/Demo/Demo.hpp"
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Camera.hpp"
+#include "Features/Renderer.hpp"
 
 #include "Console.hpp"
 #include "Engine.hpp"
@@ -14,15 +15,55 @@
 #include "SAR.hpp"
 #include "Utils.hpp"
 #include "Checksum.hpp"
+#include "Event.hpp"
 
 #include <filesystem>
-
-#ifdef SAR_MODERATOR_BUILD
-Variable sar_demo_cheat_info("sar_demo_cheat_info", "0", 0, 1, "Display anticheat info in demo playback.\n");
-#endif
+#include <vector>
 
 REDECL(EngineDemoPlayer::StartPlayback);
+REDECL(EngineDemoPlayer::StopPlayback);
 REDECL(EngineDemoPlayer::stopdemo_callback);
+
+static std::vector<std::string> g_demoBlacklist;
+
+Variable sar_demo_blacklist("sar_demo_blacklist", "0", "Stop a set of commands from being run by demo playback.\n");
+CON_COMMAND(sar_demo_blacklist_addcmd, "sar_demo_blacklist_addcmd <command> - add a command to the demo blacklist\n")
+{
+    if (args.ArgC() == 1) {
+        console->Print(sar_demo_blacklist_addcmd.ThisPtr()->m_pszHelpString);
+    } else {
+        g_demoBlacklist.push_back({args.m_pArgSBuffer + args.m_nArgv0Size});
+    }
+}
+
+static bool startsWith(const char *pre, const char *str)
+{
+    while (*pre && *str) {
+        if (*pre != *str) {
+            return false;
+        }
+        ++pre, ++str;
+    }
+
+    return !*pre;
+}
+
+bool EngineDemoPlayer::ShouldBlacklistCommand(const char *cmd)
+{
+    if (startsWith("sar_demo_blacklist", cmd)) {
+        return true;
+    }
+
+    if (sar_demo_blacklist.GetBool()) {
+        for (auto &s : g_demoBlacklist) {
+            if (startsWith(s.c_str(), cmd)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 int EngineDemoPlayer::GetTick()
 {
@@ -31,6 +72,11 @@ int EngineDemoPlayer::GetTick()
 bool EngineDemoPlayer::IsPlaying()
 {
     return this->IsPlayingBack(this->s_ClientDemoPlayer->ThisPtr());
+}
+
+void EngineDemoPlayer::SkipTo(int tick, bool relative, bool pause)
+{
+    this->SkipToTick(this->s_ClientDemoPlayer->ThisPtr(), tick, relative, pause);
 }
 
 void EngineDemoPlayer::ClearDemoQueue()
@@ -45,9 +91,22 @@ std::string EngineDemoPlayer::GetLevelName()
     return this->levelName;
 }
 
+// 0x01: timescale detection
+// 0x02: initial cvar
+// 0x03: entity input
+// 0x04: entity input triggered by slot
+// 0x05: portal placement
+// 0x06: hit cm flags
+// 0x07: got crouchfly
+// 0x08: pause duration
 void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
 {
-    if (data[0] == 0x03) { // Entity input data
+    if (data[0] == 0x03 || data[0] == 0x04) { // Entity input data
+        std::optional<int> slot;
+        if (data[0] == 0x04) {
+            slot = data[1];
+            ++data;
+        }
         char *targetname = data + 1;
         size_t targetnameLen = strlen(targetname);
         char *classname = data + 2 + targetnameLen;
@@ -55,38 +114,42 @@ void EngineDemoPlayer::CustomDemoData(char* data, size_t length)
         char *inputname = data + 3 + targetnameLen + classnameLen;
         size_t inputnameLen = strlen(inputname);
         char *parameter = data + 4 + targetnameLen + classnameLen + inputnameLen;
-        // TODO: send to mtrigger/custom category stuff
+
+        //console->Print("[%4d] %s.%s(%s)\n", this->GetTick(), targetname, inputname, parameter);
+
+        SpeedrunTimer::TestInputRules(targetname, classname, inputname, parameter, slot);
+
         return;
     }
 
-#ifdef SAR_MODERATOR_BUILD
-    if (sar_demo_cheat_info.GetBool()) {
-        if (data[0] == 0xFF) {
-            // Checksum data should be at tick -1 (and hence never run
-            // through this callback), so this suggestes a tampered demo
-            client->Chat(TextColor::ORANGE, "Unexpected checksum data! Has the demo been tampered with?");
-            return;
-        } else if (data[0] == 0x01 && length == 5) {
-            // Timescale cheat warning
-            client->Chat(TextColor::ORANGE, "CHEAT: timescale %.2f", *(float*)(data+1));
-            return;
-        } else if (data[0] == 0x02) {
-            // Initial variable value
-            const char* name = data + 1;
-            size_t nameLen = strlen(name);
-            if (nameLen < length - 2) {
-                const char* value = data + nameLen + 2;
-                size_t valueLen = strlen(value);
-                if (nameLen + valueLen + 3 == length) {
-                    client->Chat(TextColor::LIGHT_GREEN, "INITIAL: %s = %s", name, value);
-                    return;
-                }
-            }
-        }
-        // Unknown or invalid data
-        client->Chat(TextColor::ORANGE, "Malformed custom demo info! Has the demo been tampered with?");
+    if (data[0] == 0x05) { // Portal placement
+        int slot = data[1];
+        PortalColor portal = data[2] ? PortalColor::ORANGE : PortalColor::BLUE;
+        Vector pos;
+        pos.x = *(float *)(data + 3);
+        pos.y = *(float *)(data + 7);
+        pos.z = *(float *)(data + 11);
+
+        SpeedrunTimer::TestPortalRules(pos, slot, portal);
+
+        return;
     }
-#endif
+
+    if (data[0] == 0x06) { // CM flags
+        int slot = data[1];
+
+        SpeedrunTimer::TestFlagRules(slot);
+
+        return;
+    }
+
+    if (data[0] == 0x07) { // Crouch fly
+        int slot = data[1];
+
+        SpeedrunTimer::TestFlyRules(slot);
+
+        return;
+    }
 }
 
 DETOUR_COMMAND(EngineDemoPlayer::stopdemo)
@@ -95,7 +158,7 @@ DETOUR_COMMAND(EngineDemoPlayer::stopdemo)
     EngineDemoPlayer::stopdemo_callback(args);
 }
 
-// CDemoRecorder::StartPlayback
+// CDemoPlayer::StartPlayback
 DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 {
 #ifdef SAR_MODERATOR_BUILD
@@ -141,12 +204,9 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
             console->Print("Time:     %.3f\n", demo.playbackTime);
             console->Print("Tickrate: %.3f\n", demo.Tickrate());
             engine->demoplayer->levelName = demo.mapName;
-
-#ifdef SAR_MODERATOR_BUILD
-            if (sar_demo_cheat_info.GetBool()) {
-                client->QueueChat(TextColor::LIGHT_GREEN, "Average of %.2fTPS", (float)demo.playbackTicks / demo.playbackTime);
-            }
-#endif
+            Renderer::demoStart = demo.firstPositivePacketTick;
+            Renderer::segmentEndTick = demo.segmentTicks;
+            Event::Trigger<Event::DEMO_START>({});
         } else {
             console->Print("Could not parse \"%s\"!\n", engine->demoplayer->DemoName);
         }
@@ -154,18 +214,37 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 
     camera->RequestTimeOffsetRefresh();
 
+    Renderer::isDemoLoading = true;
+
     return result;
+}
+
+// CDemoPlayer::StopPlayback
+DETOUR(EngineDemoPlayer::StopPlayback)
+{
+    if (engine->demoplayer->IsPlaying()) {
+        Event::Trigger<Event::DEMO_STOP>({});
+    }
+    return EngineDemoPlayer::StopPlayback(thisptr);
 }
 
 bool EngineDemoPlayer::Init()
 {
     auto disconnect = engine->cl->Original(Offsets::Disconnect);
-    auto demoplayer = Memory::DerefDeref<void*>(disconnect + Offsets::demoplayer);
+    void *demoplayer;
+#ifndef _WIN32
+    if (sar.game->Is(SourceGame_EIPRelPIC)) {
+        demoplayer = *(void **)(disconnect + 10 + *(uint32_t *)(disconnect + 12) + *(uint32_t *)(disconnect + 100));
+    } else
+#endif
+    demoplayer = Memory::DerefDeref<void*>(disconnect + Offsets::demoplayer);
     if (this->s_ClientDemoPlayer = Interface::Create(demoplayer)) {
         this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StartPlayback_Hook, EngineDemoPlayer::StartPlayback, Offsets::StartPlayback);
+        this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StopPlayback_Hook, EngineDemoPlayer::StopPlayback, Offsets::StopPlayback);
 
         this->GetPlaybackTick = s_ClientDemoPlayer->Original<_GetPlaybackTick>(Offsets::GetPlaybackTick);
         this->IsPlayingBack = s_ClientDemoPlayer->Original<_IsPlayingBack>(Offsets::IsPlayingBack);
+        this->SkipToTick = s_ClientDemoPlayer->Original<_SkipToTick>(Offsets::SkipToTick);
         this->DemoName = reinterpret_cast<char*>((uintptr_t)demoplayer + Offsets::m_szFileName);
     }
 
@@ -184,7 +263,7 @@ void EngineDemoPlayer::Shutdown()
 
 // Commands
 
-CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "Improved version of startdemos. 'sar_startdemos <demoname>' Use 'stopdemo' to stop playing demos.\n",
+CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "sar_startdemos <demoname> - improved version of startdemos. Use 'stopdemo' to stop playing demos\n",
     0, 0, dem)
 {
     // Always print a useful message for the user if not used correctly
@@ -230,7 +309,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "Improved version of startdemos. 's
 
     //Demos are played in Engine::Frame
 }
-CON_COMMAND(sar_startdemosfolder, "sar_startdemosfolder <folder name>. Plays all the demos in the specified folder by alphabetic order.\n")
+CON_COMMAND(sar_startdemosfolder, "sar_startdemosfolder <folder name> - plays all the demos in the specified folder by alphabetic order\n")
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_startdemosfolder.ThisPtr()->m_pszHelpString);
@@ -261,7 +340,7 @@ CON_COMMAND(sar_startdemosfolder, "sar_startdemosfolder <folder name>. Plays all
 
     EngineDemoPlayer::stopdemo_callback(args);
 }
-CON_COMMAND_COMPLETION(sar_skiptodemo, "sar_skiptodemo <demoname>. Skip demos in demo queue to this demo.\n", ({ engine->demoplayer->demoQueue }))
+CON_COMMAND_COMPLETION(sar_skiptodemo, "sar_skiptodemo <demoname> - skip demos in demo queue to this demo\n", ({ engine->demoplayer->demoQueue }))
 {
     if (args.ArgC() < 2) {
         return console->Print(sar_skiptodemo.ThisPtr()->m_pszHelpString);
@@ -275,7 +354,7 @@ CON_COMMAND_COMPLETION(sar_skiptodemo, "sar_skiptodemo <demoname>. Skip demos in
 
     EngineDemoPlayer::stopdemo_callback(args);
 }
-CON_COMMAND(sar_nextdemo, "Plays the next demo in demo queue.\n")
+CON_COMMAND(sar_nextdemo, "sar_nextdemo - plays the next demo in demo queue\n")
 {
     if (++engine->demoplayer->currentDemoID >= engine->demoplayer->demoQueueSize) {
         return engine->demoplayer->ClearDemoQueue();

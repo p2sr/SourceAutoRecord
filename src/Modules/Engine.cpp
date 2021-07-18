@@ -2,12 +2,13 @@
 
 #include <cstring>
 
+#include "Features/Camera.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
-#include "Features/Speedrun/Rules/Portal2Rules.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Stats/ZachStats.hpp"
+#include "Features/Renderer.hpp"
+#include "Features/NetMessage.hpp"
 
 #include "Client.hpp"
 #include "Console.hpp"
@@ -22,6 +23,15 @@
 #include "SAR.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+#include "Event.hpp"
+#include "Hook.hpp"
+
+#ifdef _WIN32
+#include <Memoryapi.h>
+#include <Windows.h>
+#else
+#include <sys/mman.h>
+#endif
 
 #ifdef _WIN32
 #include <Memoryapi.h>
@@ -43,15 +53,18 @@ Variable sar_record_at_increment("sar_record_at_increment", "0", "Increment auto
 Variable sar_pause_at("sar_pause_at", "-1", -1, "Pause at the specified tick. -1 to deactivate it.\n");
 Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.\n");
 
+Variable sar_tick_debug("sar_tick_debug", "0", 0, 3, "Output debugging information to the console related to ticks and frames.\n");
+
+Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
+
 REDECL(Engine::Disconnect);
-REDECL(Engine::Disconnect2);
 REDECL(Engine::SetSignonState);
-REDECL(Engine::SetSignonState2);
 REDECL(Engine::Frame);
 REDECL(Engine::PurgeUnusedModels);
 REDECL(Engine::OnGameOverlayActivated);
 REDECL(Engine::OnGameOverlayActivatedBase);
 REDECL(Engine::ReadCustomData);
+REDECL(Engine::ReadConsoleCommand);
 REDECL(Engine::plugin_load_callback);
 REDECL(Engine::plugin_unload_callback);
 REDECL(Engine::exit_callback);
@@ -60,10 +73,8 @@ REDECL(Engine::help_callback);
 REDECL(Engine::gameui_activate_callback);
 REDECL(Engine::unpause_callback);
 REDECL(Engine::playvideo_end_level_transition_callback);
-REDECL(Engine::playvideo_exitcommand_nointerrupt_callback);
 REDECL(Engine::load_callback);
 #ifdef _WIN32
-REDECL(Engine::connect_callback);
 REDECL(Engine::ParseSmoothingInfo_Skip);
 REDECL(Engine::ParseSmoothingInfo_Default);
 REDECL(Engine::ParseSmoothingInfo_Continue);
@@ -131,16 +142,12 @@ void Engine::SetAngles(int nSlot, QAngle va)
 }
 void Engine::SendToCommandBuffer(const char* text, int delay)
 {
-    if (sar.game->Is(SourceGame_Portal2Engine)) {
 #ifdef _WIN32
-        auto slot = this->GetActiveSplitScreenPlayerSlot();
+    auto slot = this->GetActiveSplitScreenPlayerSlot();
 #else
-        auto slot = this->GetActiveSplitScreenPlayerSlot(nullptr);
+    auto slot = this->GetActiveSplitScreenPlayerSlot(nullptr);
 #endif
-        this->Cbuf_AddText(slot, text, delay);
-    } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-        this->AddText(this->s_CommandBuffer, text, delay);
-    }
+    this->Cbuf_AddText(slot, text, delay);
 }
 int Engine::PointToScreen(const Vector& point, Vector& screen)
 {
@@ -152,6 +159,8 @@ int Engine::PointToScreen(const Vector& point, Vector& screen)
 }
 void Engine::SafeUnload(const char* postCommand)
 {
+    Event::Trigger<Event::SAR_UNLOAD>({});
+
     // The exit command will handle everything
     this->ExecuteCommand("sar_exit");
 
@@ -182,6 +191,8 @@ std::string Engine::GetCurrentMapName()
 {
     if (engine->demoplayer->IsPlaying()) {
         return engine->demoplayer->GetLevelName();
+    } else if (engine->IsOrange()) {
+        return client->lastLevelName;
     } else {
         return engine->m_szLevelName;
     }
@@ -194,7 +205,11 @@ bool Engine::IsCoop()
 
 bool Engine::IsOrange()
 {
-    return this->IsCoop() && session->signonState == SIGNONSTATE_FULL && !engine->hoststate->m_activeGame;
+    static bool isOrange;
+    if (session->signonState == SIGNONSTATE_FULL) {
+        isOrange = this->IsCoop() && !engine->hoststate->m_activeGame;
+    }
+    return isOrange;
 }
 
 bool Engine::Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr)
@@ -239,55 +254,35 @@ bool Engine::TraceFromCamera(float distMax, CGameTrace& tr)
     return this->Trace(camPos, angle, distMax, filter, tr);
 }
 
-void Engine::NewTick(const int tick)
-{
-    //sar_record
-
-    if (sar_record_at.GetFloat() != -1 && !engine->hasRecorded && sar_record_at.GetFloat() == tick) {
-        std::string cmd = std::string("record ") + sar_record_at_demo_name.GetString();
-        engine->ExecuteCommand(cmd.c_str(), true);
-        engine->hasRecorded = true;
-    }
-
-    //sar_pause
-
-    if (sar_pause_at.GetInt() != -1 && !engine->demoplayer->IsPlaying()) {
-        if (!engine->hasPaused && sar_pause_at.GetInt() == tick) {
-            engine->ExecuteCommand("pause", true);
-            engine->hasPaused = true;
-            engine->isPausing = true;
-            engine->pauseTick = server->tickCount;
-        } else if (sar_pause_for.GetInt() > 0 && engine->isPausing && server->tickCount == sar_pause_for.GetInt() + engine->pauseTick) {
-            engine->ExecuteCommand("unpause", true);
+ON_EVENT(PRE_TICK) {
+    if (!engine->demoplayer->IsPlaying()) {
+        if (sar_pause_at.GetInt() == -1) {
+            engine->hasPaused = true; // We don't want to randomly pause if the user sets sar_pause_at in this session
             engine->isPausing = false;
-        }
-    }
-
-    if (segmentedTools->waitTick == tick && !engine->hasWaited) {
-        if (!sv_cheats.GetBool()) {
-            console->Print("\"wait\" needs sv_cheats 1.\n");
-            engine->hasWaited = true;
         } else {
-            engine->ExecuteCommand(segmentedTools->pendingCommands.c_str(), true);
-            engine->hasWaited = true;
+            if (!engine->hasPaused && session->isRunning && event.tick >= sar_pause_at.GetInt()) {
+                engine->ExecuteCommand("pause", true);
+                engine->hasPaused = true;
+                engine->isPausing = true;
+                engine->pauseTick = server->tickCount;
+            } else if (sar_pause_for.GetInt() > 0 && engine->isPausing && server->tickCount >= sar_pause_for.GetInt() + engine->pauseTick) {
+                engine->ExecuteCommand("unpause", true);
+                engine->isPausing = false;
+            }
         }
     }
+}
 
-    networkManager.DispatchQueuedEvents();
-
-    if (networkManager.isConnected && engine->isRunning()) {
-        networkManager.UpdateGhostsPosition();
-
-        if (networkManager.isCountdownReady) {
-            networkManager.UpdateCountdown();
-        }
+ON_EVENT(PRE_TICK) {
+    if (engine->shouldPauseForSync && event.tick >= 0) {
+        engine->ExecuteCommand("pause", true);
+        engine->shouldPauseForSync = false;
     }
+}
 
-    if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
-        demoGhostPlayer.UpdateGhostsPosition();
-    }
-
-    zachStats->UpdateTriggers();
+bool Engine::ConsoleVisible()
+{
+    return this->Con_IsVisible(this->engineClient->ThisPtr());
 }
 
 float Engine::GetHostFrameTime()
@@ -306,41 +301,42 @@ DETOUR(Engine::Disconnect, bool bShowMainMenu)
     session->Ended();
     return Engine::Disconnect(thisptr, bShowMainMenu);
 }
-#ifdef _WIN32
-DETOUR(Engine::Disconnect2, int unk1, int unk2, int unk3)
-{
-    session->Ended();
-    return Engine::Disconnect2(thisptr, unk1, unk2, unk3);
-}
-DETOUR_COMMAND(Engine::connect)
-{
-    session->Ended();
-    Engine::connect_callback(args);
-}
-#else
-DETOUR(Engine::Disconnect2, int unk, bool bShowMainMenu)
-{
-    session->Ended();
-    return Engine::Disconnect2(thisptr, unk, bShowMainMenu);
-}
-#endif
 
 // CClientState::SetSignonState
 DETOUR(Engine::SetSignonState, int state, int count, void* unk)
 {
+    if (sar_tick_debug.GetInt() >= 2) {
+        int host, server, client;
+        engine->GetTicks(host, server, client);
+        console->Print("CClientState::SetSignonState %d (host=%d server=%d client=%d)\n", state, host, server, client);
+    }
+    auto ret = Engine::SetSignonState(thisptr, state, count, unk);
     session->Changed(state);
-    return Engine::SetSignonState(thisptr, state, count, unk);
+    return ret;
 }
-DETOUR(Engine::SetSignonState2, int state, int count)
+
+void Engine::GetTicks(int &host, int &server, int &client)
 {
-    session->Changed(state);
-    return Engine::SetSignonState2(thisptr, state, count);
+    auto &et = this->engineTool;
+    using _Fn = int (__rescall *)(void *thisptr);
+    host = et->Original<_Fn>(Offsets::HostTick)(et->ThisPtr());
+    server = et->Original<_Fn>(Offsets::ServerTick)(et->ThisPtr());
+    client = et->Original<_Fn>(Offsets::ClientTick)(et->ThisPtr());
 }
 
 // CEngine::Frame
 DETOUR(Engine::Frame)
 {
-    speedrun->PreUpdate(engine->GetTick(), engine->m_szLevelName);
+    if (sar_tick_debug.GetInt() >= 2) {
+        static int lastServer, lastClient;
+        int host, server, client;
+        engine->GetTicks(host, server, client);
+        if (server != lastServer || client != lastClient || sar_tick_debug.GetInt() >= 3) {
+            console->Print("CEngine::Frame (host=%d server=%d client=%d)\n", host, server, client);
+            lastServer = server;
+            lastClient = client;
+        }
+    }
 
     if (engine->hoststate->m_currentState != session->prevState) {
         session->Changed();
@@ -348,11 +344,12 @@ DETOUR(Engine::Frame)
     session->prevState = engine->hoststate->m_currentState;
 
     if (engine->hoststate->m_activeGame || std::strlen(engine->m_szLevelName) == 0) {
-        speedrun->PostUpdate(engine->GetTick(), engine->m_szLevelName);
+        SpeedrunTimer::Update();
     }
 
     if ((engine->demoplayer->IsPlaying() || engine->IsOrange()) && engine->lastTick != session->GetTick()) {
-        engine->NewTick(session->GetTick());
+        Event::Trigger<Event::PRE_TICK>({ false, session->GetTick() });
+        Event::Trigger<Event::POST_TICK>({ false, session->GetTick() });
     }
 
     //demoplayer
@@ -366,6 +363,10 @@ DETOUR(Engine::Frame)
     }
 
     engine->lastTick = session->GetTick();
+
+    Renderer::Frame();
+
+    NetMessage::Update();
 
     return Engine::Frame(thisptr);
 }
@@ -386,6 +387,15 @@ DETOUR(Engine::ReadCustomData, int* callbackIndex, char** data)
         engine->demoplayer->CustomDemoData(*data + 8, size - 8);
     }
     return size;
+}
+
+DETOUR_T(const char *, Engine::ReadConsoleCommand)
+{
+    const char *cmd = Engine::ReadConsoleCommand(thisptr);
+    if (engine->demoplayer->ShouldBlacklistCommand(cmd)) {
+        return "";
+    }
+    return cmd;
 }
 
 #ifdef _WIN32
@@ -477,21 +487,11 @@ DETOUR_COMMAND(Engine::gameui_activate)
 }
 DETOUR_COMMAND(Engine::playvideo_end_level_transition)
 {
-    if (engine->GetMaxClients() >= 2) {
-        speedrun->Pause();
+    if (engine->GetMaxClients() >= 2 && !engine->IsOrange() && client->GetChallengeStatus() != CMStatus::CHALLENGE) {
+        SpeedrunTimer::Pause();
     }
 
     Engine::playvideo_end_level_transition_callback(args);
-}
-DETOUR_COMMAND(Engine::playvideo_exitcommand_nointerrupt)
-{
-    if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "dlc1_endmovie")) {
-        course6End = true;
-    } else if (engine->GetMaxClients() >= 2 && args.ArgC() == 4 && !strcmp(args[1], "coop_outro")) {
-        course5End = true;
-    }
-
-    Engine::playvideo_exitcommand_nointerrupt_callback(args);
 }
 DETOUR_COMMAND(Engine::load)
 {
@@ -500,26 +500,54 @@ DETOUR_COMMAND(Engine::load)
     if (Game::mapNames.empty() && networkManager.isConnected) {
         networkManager.disableSyncForLoad = true;
     }
+    if (sar_cm_rightwarp.GetBool() && sv_bonus_challenge.GetBool()) {
+        sv_bonus_challenge.SetValue(false);
+    }
     Engine::load_callback(args);
 }
 
 DECL_CVAR_CALLBACK(ss_force_primary_fullscreen)
 {
-    if (engine->GetMaxClients() >= 2 && ss_force_primary_fullscreen.GetInt() == 0) {
-        if (engine->hadInitialForcePrimaryFullscreen) {
-            speedrun->Resume(engine->GetTick());
-            if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !speedrun->IsActive()) {
-                speedrun->Start(engine->GetTick());
-            }
+    if (engine->GetMaxClients() >= 2 && client->GetChallengeStatus() != CMStatus::CHALLENGE && ss_force_primary_fullscreen.GetInt() == 0) {
+        ++engine->nForcePrimaryFullscreen;
+        if (engine->nForcePrimaryFullscreen == 2 && !engine->IsOrange()) {
+            SpeedrunTimer::Resume();
+            SpeedrunTimer::OnLoad();
         }
-        engine->hadInitialForcePrimaryFullscreen = !engine->hadInitialForcePrimaryFullscreen;
     }
+}
+
+static bool (__rescall *g_ProcessTick)(void *thisptr, void *pack);
+
+#ifdef _WIN32
+bool __fastcall ProcessTick_Detour(void *thisptr, void *unused, void *pack);
+#else
+bool ProcessTick_Detour(void *thisptr, void *pack);
+#endif
+
+static Hook ProcessTick_Hook(&ProcessTick_Detour);
+
+#ifdef _WIN32
+bool __fastcall ProcessTick_Detour(void *thisptr, void *unused, void *pack)
+#else
+bool ProcessTick_Detour(void *thisptr, void *pack)
+#endif
+{
+    if (sar_tick_debug.GetInt() >= 1) {
+        int host, server, client;
+        engine->GetTicks(host, server, client);
+        console->Print("NET_Tick %d (host=%d server=%d client=%d)\n", *(int *)((char *)pack + 16), host, server, client);
+    }
+    ProcessTick_Hook.Disable();
+    bool ret = g_ProcessTick(thisptr, pack);
+    ProcessTick_Hook.Enable();
+    return ret;
 }
 
 bool Engine::Init()
 {
-    this->engineClient = Interface::Create(this->Name(), "VEngineClient0", false);
-    this->s_ServerPlugin = Interface::Create(this->Name(), "ISERVERPLUGINHELPERS0", false);
+    this->engineClient = Interface::Create(this->Name(), "VEngineClient015", false);
+    this->s_ServerPlugin = Interface::Create(this->Name(), "ISERVERPLUGINHELPERS001", false);
 
     if (this->engineClient) {
         this->GetScreenSize = this->engineClient->Original<_GetScreenSize>(Offsets::GetScreenSize);
@@ -532,46 +560,38 @@ bool Engine::Init()
         this->GetGameDirectory = this->engineClient->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
         this->GetSaveDirName = this->engineClient->Original<_GetSaveDirName>(Offsets::GetSaveDirName);
         this->IsPaused = this->engineClient->Original<_IsPaused>(Offsets::IsPaused);
+        this->Con_IsVisible = this->engineClient->Original<_Con_IsVisible>(Offsets::Con_IsVisible);
 
         Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            this->s_CommandBuffer = (void *)((uintptr_t)this->Cbuf_AddText + 9 + *(uint32_t *)((uintptr_t)this->Cbuf_AddText + 11) + *(uint32_t *)((uintptr_t)this->Cbuf_AddText + 71));
+        } else
+#endif
         Memory::Deref<void*>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
 
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            Memory::Read((uintptr_t)this->SetViewAngles + Offsets::GetLocalClient, &this->GetLocalClient);
+        Memory::Read((uintptr_t)this->SetViewAngles + Offsets::GetLocalClient, &this->GetLocalClient);
 
-            if (sar.game->Is(SourceGame_Portal2Game | SourceGame_INFRA)) {
-                this->m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
-                this->m_bWaitEnabled2 = reinterpret_cast<bool*>((uintptr_t)this->m_bWaitEnabled + Offsets::CCommandBufferSize);
-            }
+        this->m_bWaitEnabled = reinterpret_cast<bool*>((uintptr_t)s_CommandBuffer + Offsets::m_bWaitEnabled);
+        this->m_bWaitEnabled2 = reinterpret_cast<bool*>((uintptr_t)this->m_bWaitEnabled + Offsets::CCommandBufferSize);
 
-            if (sar.game->Is(SourceGame_Portal2Game)) {
-                auto GetSteamAPIContext = this->engineClient->Original<uintptr_t (*)()>(Offsets::GetSteamAPIContext);
-                auto OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated*>(GetSteamAPIContext() + Offsets::OnGameOverlayActivated);
+        auto GetSteamAPIContext = this->engineClient->Original<uintptr_t (*)()>(Offsets::GetSteamAPIContext);
+        auto OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated*>(GetSteamAPIContext() + Offsets::OnGameOverlayActivated);
 
-                Engine::OnGameOverlayActivatedBase = *OnGameOverlayActivated;
-                *OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated>(Engine::OnGameOverlayActivated_Hook);
-            }
+        Engine::OnGameOverlayActivatedBase = *OnGameOverlayActivated;
+        *OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated>(Engine::OnGameOverlayActivated_Hook);
 
-            if (this->g_VEngineServer = Interface::Create(this->Name(), "VEngineServer0", false)) {
-                this->ClientCommand = this->g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
-                this->IsServerPaused = this->g_VEngineServer->Original<_IsServerPaused>(Offsets::IsServerPaused);
-                this->ServerPause = this->g_VEngineServer->Original<_ServerPause>(Offsets::ServerPause);
-            }
+        if (this->g_VEngineServer = Interface::Create(this->Name(), "VEngineServer022", false)) {
+            this->ClientCommand = this->g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
+            this->IsServerPaused = this->g_VEngineServer->Original<_IsServerPaused>(Offsets::IsServerPaused);
+            this->ServerPause = this->g_VEngineServer->Original<_ServerPause>(Offsets::ServerPause);
         }
 
-        void* clPtr = nullptr;
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            typedef void* (*_GetClientState)();
-            auto GetClientState = Memory::Read<_GetClientState>((uintptr_t)this->ClientCmd + Offsets::GetClientStateFunction);
-            clPtr = GetClientState();
+        typedef void* (*_GetClientState)();
+        auto GetClientState = Memory::Read<_GetClientState>((uintptr_t)this->ClientCmd + Offsets::GetClientStateFunction);
+        void *clPtr = GetClientState();
 
-            this->GetActiveSplitScreenPlayerSlot = this->engineClient->Original<_GetActiveSplitScreenPlayerSlot>(Offsets::GetActiveSplitScreenPlayerSlot);
-        } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-            auto ServerCmdKeyValues = this->engineClient->Original(Offsets::ServerCmdKeyValues);
-            clPtr = Memory::Deref<void*>(ServerCmdKeyValues + Offsets::cl);
-
-            Memory::Read<_AddText>((uintptr_t)this->Cbuf_AddText + Offsets::AddText, &this->AddText);
-        }
+        this->GetActiveSplitScreenPlayerSlot = this->engineClient->Original<_GetActiveSplitScreenPlayerSlot>(Offsets::GetActiveSplitScreenPlayerSlot);
 
         if (this->cl = Interface::Create(clPtr)) {
             if (!this->demoplayer)
@@ -579,29 +599,40 @@ bool Engine::Init()
             if (!this->demorecorder)
                 this->demorecorder = new EngineDemoRecorder();
 
-            if (sar.game->Is(SourceGame_Portal2Engine)) {
-                this->cl->Hook(Engine::SetSignonState_Hook, Engine::SetSignonState, Offsets::Disconnect - 1);
-                this->cl->Hook(Engine::Disconnect_Hook, Engine::Disconnect, Offsets::Disconnect);
-            } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-                this->cl->Hook(Engine::SetSignonState2_Hook, Engine::SetSignonState2, Offsets::Disconnect - 1);
-#ifdef _WIN32
-                Command::Hook("connect", Engine::connect_callback_hook, Engine::connect_callback);
-#else
-                this->cl->Hook(Engine::Disconnect2_Hook, Engine::Disconnect2, Offsets::Disconnect);
-#endif
-            }
+            this->cl->Hook(Engine::SetSignonState_Hook, Engine::SetSignonState, Offsets::Disconnect - 1);
+            this->cl->Hook(Engine::Disconnect_Hook, Engine::Disconnect, Offsets::Disconnect);
 #if _WIN32
             auto IServerMessageHandler_VMT = Memory::Deref<uintptr_t>((uintptr_t)this->cl->ThisPtr() + IServerMessageHandler_VMT_Offset);
             auto ProcessTick = Memory::Deref<uintptr_t>(IServerMessageHandler_VMT + sizeof(uintptr_t) * Offsets::ProcessTick);
 #else
             auto ProcessTick = this->cl->Original(Offsets::ProcessTick);
 #endif
+
+            g_ProcessTick = (decltype(g_ProcessTick))ProcessTick;
+            ProcessTick_Hook.SetFunc(ProcessTick);
+
+#ifndef _WIN32
+            if (sar.game->Is(SourceGame_EIPRelPIC)) {
+                tickcount = (int *)(ProcessTick + 12 + *(uint32_t *)(ProcessTick + 14) + *(uint32_t *)(ProcessTick + 86) + 0x18);
+            } else
+#endif
             tickcount = Memory::Deref<int*>(ProcessTick + Offsets::tickcount);
+
+#ifndef _WIN32
+            if (sar.game->Is(SourceGame_EIPRelPIC)) {
+                interval_per_tick = (float *)(ProcessTick + 12 + *(uint32_t *)(ProcessTick + 14) + *(uint32_t *)(ProcessTick + 72) + 8);
+            } else
+#endif
             interval_per_tick = Memory::Deref<float*>(ProcessTick + Offsets::interval_per_tick);
-            speedrun->SetIntervalPerTick(interval_per_tick);
+            SpeedrunTimer::SetIpt(*interval_per_tick);
 
             auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
             auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
+#ifndef _WIN32
+            if (sar.game->Is(SourceGame_EIPRelPIC)) {
+                hoststate = (CHostState *)(HostState_OnClientConnected + 5 + *(uint32_t *)(HostState_OnClientConnected + 6) + *(uint32_t *)(HostState_OnClientConnected + 15));
+            } else
+#endif
             Memory::Deref<CHostState*>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
         }
 
@@ -610,14 +641,14 @@ bool Engine::Init()
         }
     }
 
-    if (this->engineTool = Interface::Create(this->Name(), "VENGINETOOL0", false)) {
+    if (this->engineTool = Interface::Create(this->Name(), "VENGINETOOL003", false)) {
         auto GetCurrentMap = this->engineTool->Original(Offsets::GetCurrentMap);
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            this->m_szLevelName = (char *)(GetCurrentMap + 7 + *(uint32_t *)(GetCurrentMap + 9) + *(uint32_t *)(GetCurrentMap + 18) + 16);
+        } else
+#endif
         this->m_szLevelName = Memory::Deref<char*>(GetCurrentMap + Offsets::m_szLevelName);
-
-        if (sar.game->Is(SourceGame_HalfLife2Engine) && std::strlen(this->m_szLevelName) != 0) {
-            console->Warning("SAR: DO NOT load this plugin when the server is active!\n");
-            return false;
-        }
 
         this->m_bLoadgame = reinterpret_cast<bool*>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
 
@@ -627,76 +658,92 @@ bool Engine::Init()
         this->PrecacheModel = this->engineTool->Original<_PrecacheModel>(Offsets::PrecacheModel);
     }
 
-    if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION0", false)) {
+    if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION004", false)) {
         auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
-        auto engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
+        void *engAddr;
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            engAddr = *(void **)(IsRunningSimulation + 5 + *(uint32_t *)(IsRunningSimulation + 6) + *(uint32_t *)(IsRunningSimulation + 15));
+        } else
+#endif
+        engAddr = Memory::DerefDeref<void*>(IsRunningSimulation + Offsets::eng);
 
         if (this->eng = Interface::Create(engAddr)) {
             if (this->tickcount && this->hoststate && this->m_szLevelName) {
                 this->eng->Hook(Engine::Frame_Hook, Engine::Frame, Offsets::Frame);
             }
         }
+
+        uintptr_t Init = s_EngineAPI->Original(Offsets::Init);
+        uintptr_t VideoMode_Create = Memory::Read(Init + Offsets::VideoMode_Create);
+        void **videomode;
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            videomode = (void **)(VideoMode_Create + 6 + *(uint32_t *)(VideoMode_Create + 8) + *(uint32_t *)(VideoMode_Create + 193));
+        } else
+#endif
+        videomode = *(void ***)(VideoMode_Create + Offsets::videomode);
+        Renderer::Init(videomode);
+
         Interface::Delete(s_EngineAPI);
     }
 
-    if (sar.game->Is(SourceGame_Portal2Game)) {
-        this->s_GameEventManager = Interface::Create(this->Name(), "GAMEEVENTSMANAGER002", false);
-        if (this->s_GameEventManager) {
-            this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
-            this->RemoveListener = this->s_GameEventManager->Original<_RemoveListener>(Offsets::RemoveListener);
+    this->s_GameEventManager = Interface::Create(this->Name(), "GAMEEVENTSMANAGER002", false);
+    if (this->s_GameEventManager) {
+        this->AddListener = this->s_GameEventManager->Original<_AddListener>(Offsets::AddListener);
+        this->RemoveListener = this->s_GameEventManager->Original<_RemoveListener>(Offsets::RemoveListener);
 
-            auto FireEventClientSide = s_GameEventManager->Original(Offsets::FireEventClientSide);
-            auto FireEventIntern = Memory::Read(FireEventClientSide + Offsets::FireEventIntern);
-            Memory::Read<_ConPrintEvent>(FireEventIntern + Offsets::ConPrintEvent, &this->ConPrintEvent);
-        }
+        auto FireEventClientSide = s_GameEventManager->Original(Offsets::FireEventClientSide);
+        auto FireEventIntern = Memory::Read(FireEventClientSide + Offsets::FireEventIntern);
+        Memory::Read<_ConPrintEvent>(FireEventIntern + Offsets::ConPrintEvent, &this->ConPrintEvent);
     }
 
-    if (sar.game->Is(SourceGame_Portal2Game)) {
 #ifdef _WIN32
-        // Note: we don't get readCustomDataAddr anymore as we find this
-        // below anyway
-        auto parseSmoothingInfoAddr = Memory::Scan(this->Name(), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
-        //auto readCustomDataAddr = Memory::Scan(this->Name(), "55 8B EC F6 05 ? ? ? ? ? 53 56 57 8B F1 75 2F");
+    // Note: we don't get readCustomDataAddr anymore as we find this
+    // below anyway
+    auto parseSmoothingInfoAddr = Memory::Scan(this->Name(), "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", 178);
 
-        console->DevMsg("CDemoSmootherPanel::ParseSmoothingInfo = %p\n", parseSmoothingInfoAddr);
-        //console->DevMsg("CDemoFile::ReadCustomData = %p\n", readCustomDataAddr);
+    console->DevMsg("CDemoSmootherPanel::ParseSmoothingInfo = %p\n", parseSmoothingInfoAddr);
 
-        if (parseSmoothingInfoAddr) {
-            MH_HOOK_MID(Engine::ParseSmoothingInfo_Mid, parseSmoothingInfoAddr); // Hook switch-case
-            Engine::ParseSmoothingInfo_Continue = parseSmoothingInfoAddr + 8; // Back to original function
-            Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133; // Default case
-            Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29; // Continue loop
-            //Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(readCustomDataAddr); // Function that handles dem_customdata
+    if (parseSmoothingInfoAddr) {
+        MH_HOOK_MID(Engine::ParseSmoothingInfo_Mid, parseSmoothingInfoAddr); // Hook switch-case
+        Engine::ParseSmoothingInfo_Continue = parseSmoothingInfoAddr + 8; // Back to original function
+        Engine::ParseSmoothingInfo_Default = parseSmoothingInfoAddr + 133; // Default case
+        Engine::ParseSmoothingInfo_Skip = parseSmoothingInfoAddr - 29; // Continue loop
 
-            this->demoSmootherPatch = new Memory::Patch();
-            unsigned char nop3[] = { 0x90, 0x90, 0x90 };
-            this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3); // Nop rest
-        }
-#endif
-
-        // This is the address of the one interesting call to ReadCustomData - the E8 byte indicates the start of the call instruction
-#ifdef _WIN32
-        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12);
-#else
-        uint32_t readPacketInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
-#endif
-
-        // Pesky memory protection doesn't want us overwriting code - we
-        // get around it with a call to mprotect or VirtualProtect
-        void* injectPageAddr = (void*)(readPacketInjectAddr & 0xFFFFF000); // TODO: could the instruction cross a page boundary? hope not lol
-#ifdef _WIN32
-        DWORD wtf_microsoft_why_cant_this_be_null;
-        VirtualProtect(injectPageAddr, 0x1000, PAGE_EXECUTE_READWRITE, &wtf_microsoft_why_cant_this_be_null);
-#else
-        mprotect(injectPageAddr, 0x1000, PROT_READ | PROT_WRITE | PROT_EXEC);
-#endif
-
-        // It's a relative call, so we have to do some weird fuckery lol
-        Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)readPacketInjectAddr + (readPacketInjectAddr + 4));
-        *(uint32_t*)readPacketInjectAddr = (uint32_t)&ReadCustomData_Hook - (readPacketInjectAddr + 4); // Add 4 to get address of next instruction
+        this->demoSmootherPatch = new Memory::Patch();
+        unsigned char nop3[] = { 0x90, 0x90, 0x90 };
+        this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3); // Nop rest
     }
+#endif
 
-    if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay0", false)) {
+    // This is the address of the one interesting call to ReadCustomData - the E8 byte indicates the start of the call instruction
+#ifdef _WIN32
+    this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", 12);
+    this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "8B 45 F4 50 68 FE 04 00 00 68 ? ? ? ? 8D 4D 90 E8 ? ? ? ? 8D 4F 04 E8", 26);
+#else
+    if (sar.game->Is(SourceGame_EIPRelPIC)) {
+        this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "8B 9D 94 FE FF FF 8D 85 C0 FE FF FF 83 EC 04 50 8D 85 B0 FE FF FF 50 FF B5 8C FE FF FF E8", 30);
+        this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "68 FE 04 00 00 FF B5 68 FE FF FF 50 89 85 90 FE FF FF E8 ? ? ? ? 58 FF B5 8C FE FF FF E8", 31);
+    } else {
+        this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
+        this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "89 44 24 0C 8D 85 C0 FE FF FF 89 04 24 E8 ? ? ? ? 8B 85 8C FE FF FF 89 04 24 E8", 28);
+    }
+#endif
+
+    // Pesky memory protection doesn't want us overwriting code - we
+    // get around it with a call to mprotect or VirtualProtect
+    Memory::UnProtect((void*)this->readCustomDataInjectAddr, 4);
+    Memory::UnProtect((void*)this->readConsoleCommandInjectAddr, 4);
+
+    // It's a relative call, so we have to do some weird fuckery lol
+    Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t*)this->readCustomDataInjectAddr + (this->readCustomDataInjectAddr + 4));
+    *(uint32_t*)this->readCustomDataInjectAddr = (uint32_t)&ReadCustomData_Hook - (this->readCustomDataInjectAddr + 4); // Add 4 to get address of next instruction
+
+    Engine::ReadConsoleCommand = (_ReadConsoleCommand)Memory::Read(this->readConsoleCommandInjectAddr);
+    *(uint32_t*)this->readConsoleCommandInjectAddr = (uint32_t)&ReadConsoleCommand_Hook - (this->readConsoleCommandInjectAddr + 4);
+
+    if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay004", false)) {
         ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
         AddBoxOverlay = debugoverlay->Original<_AddBoxOverlay>(Offsets::AddBoxOverlay);
         AddSphereOverlay = debugoverlay->Original<_AddSphereOverlay>(Offsets::AddSphereOverlay);
@@ -714,12 +761,9 @@ bool Engine::Init()
     Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
     Command::Hook("load", Engine::load_callback_hook, Engine::load_callback);
 
-    if (sar.game->Is(SourceGame_Portal2Game)) {
-        Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
-        Command::Hook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback_hook, Engine::playvideo_end_level_transition_callback);
-        Command::Hook("playvideo_exitcommand_nointerrupt", Engine::playvideo_exitcommand_nointerrupt_callback_hook, Engine::playvideo_exitcommand_nointerrupt_callback);
-        CVAR_HOOK_AND_CALLBACK(ss_force_primary_fullscreen);
-    }
+    Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
+    Command::Hook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback_hook, Engine::playvideo_end_level_transition_callback);
+    CVAR_HOOK_AND_CALLBACK(ss_force_primary_fullscreen);
 
     host_framerate = Variable("host_framerate");
     net_showmsg = Variable("net_showmsg");
@@ -739,11 +783,13 @@ bool Engine::Init()
 }
 void Engine::Shutdown()
 {
-    if (this->engineClient && sar.game->Is(SourceGame_Portal2Game)) {
+    if (this->engineClient) {
         auto GetSteamAPIContext = this->engineClient->Original<uintptr_t (*)()>(Offsets::GetSteamAPIContext);
         auto OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated*>(GetSteamAPIContext() + Offsets::OnGameOverlayActivated);
         *OnGameOverlayActivated = Engine::OnGameOverlayActivatedBase;
     }
+
+    Renderer::Cleanup();
 
     Interface::Delete(this->engineClient);
     Interface::Delete(this->s_ServerPlugin);
@@ -754,9 +800,16 @@ void Engine::Shutdown()
     Interface::Delete(this->engineTrace);
     Interface::Delete(this->g_VEngineServer);
 
+    // Reset to the offsets that were originally in the code
 #ifdef _WIN32
-    Command::Unhook("connect", Engine::connect_callback);
+    *(uint32_t*)this->readCustomDataInjectAddr = 0x50E8458D;
+    *(uint32_t*)this->readConsoleCommandInjectAddr = 0x000491E3;
+#else
+    *(uint32_t*)this->readCustomDataInjectAddr = 0x08244489;
+    *(uint32_t*)this->readConsoleCommandInjectAddr = 0x0008155A;
+#endif
 
+#ifdef _WIN32
     MH_UNHOOK(Engine::ParseSmoothingInfo_Mid);
 
     if (this->demoSmootherPatch) {
@@ -772,7 +825,6 @@ void Engine::Shutdown()
     Command::Unhook("load", Engine::load_callback);
     Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
     Command::Unhook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback);
-    Command::Unhook("playvideo_exitcommand_nointerrupt", Engine::playvideo_exitcommand_nointerrupt_callback);
 
     if (this->demoplayer) {
         this->demoplayer->Shutdown();

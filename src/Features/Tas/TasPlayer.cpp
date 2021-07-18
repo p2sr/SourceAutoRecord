@@ -13,6 +13,7 @@
 
 #include <fstream>
 #include <filesystem>
+#include <climits>
 
 Variable sar_tas_debug("sar_tas_debug", "1", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
 Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", 0, 1, "Enables tool processing for TAS script making.");

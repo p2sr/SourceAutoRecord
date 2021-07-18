@@ -2,10 +2,24 @@
 
 #include <stdarg.h>
 
+#include "Console.hpp"
+
 #include "Interface.hpp"
 #include "Module.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
+#include "Command.hpp"
+
+CON_COMMAND(sar_font_get_name, "sar_font_get_name <id> - gets the name of a font from its index\n")
+{
+    if (args.ArgC() != 2) {
+        return console->Print(sar_font_get_name.ThisPtr()->m_pszHelpString);
+    }
+
+    int id = atoi(args[1]);
+    const char *name = surface->GetFontName(surface->matsurface->ThisPtr(), id);
+    console->Print("%s\n", name);
+}
 
 int Surface::GetFontHeight(HFont font)
 {
@@ -22,7 +36,17 @@ int Surface::GetFontLength(HFont font, const char* fmt, ...)
     char data[1024];
     vsnprintf(data, sizeof(data), fmt, argptr);
     va_end(argptr);
-    return this->DrawTextLen(this->matsurface->ThisPtr(), font, data);
+
+    int length = 0;
+    for (size_t i = 0; data[i]; ++i) {
+        wchar_t prev = i == 0 ? 0 : data[i - 1];
+        wchar_t next = data[i + 1];
+        wchar_t ch = data[i];
+        float wide, a, c;
+        this->GetKernedCharWidth(this->matsurface->ThisPtr(), font, ch, prev, next, wide, a, c);
+        length += floor(wide + 0.6);
+    }
+    return length;
 }
 void Surface::DrawTxt(HFont font, int x, int y, Color clr, const char* fmt, ...)
 {
@@ -79,7 +103,7 @@ void Surface::DrawColoredLine(int x0, int y0, int x1, int y1, Color clr)
 }
 bool Surface::Init()
 {
-    this->matsurface = Interface::Create(this->Name(), "VGUI_Surface0", false);
+    this->matsurface = Interface::Create(this->Name(), "VGUI_Surface031", false);
     if (this->matsurface) {
         this->DrawSetColor = matsurface->Original<_DrawSetColor>(Offsets::DrawSetColor);
         this->DrawFilledRect = matsurface->Original<_DrawFilledRect>(Offsets::DrawFilledRect);
@@ -90,6 +114,16 @@ bool Surface::Init()
         this->GetFontTall = matsurface->Original<_GetFontTall>(Offsets::GetFontTall);
         this->DrawColoredText = matsurface->Original<_DrawColoredText>(Offsets::DrawColoredText);
         this->DrawTextLen = matsurface->Original<_DrawTextLen>(Offsets::DrawTextLen);
+        this->GetKernedCharWidth = matsurface->Original<_GetKernedCharWidth>(Offsets::GetKernedCharWidth);
+        this->GetFontName = matsurface->Original<_GetFontName>(Offsets::GetFontName);
+
+        this->DrawSetTextureFile = matsurface->Original<_DrawSetTextureFile>(Offsets::DrawSetTextureFile);
+        this->DrawSetTextureRGBA = matsurface->Original<_DrawSetTextureRGBA>(Offsets::DrawSetTextureRGBA);
+        this->DrawSetTexture = matsurface->Original<_DrawSetTexture>(Offsets::DrawSetTexture);
+        this->DrawGetTextureSize = matsurface->Original<_DrawGetTextureSize>(Offsets::DrawGetTextureSize);
+        this->DrawTexturedRect = matsurface->Original<_DrawTexturedRect>(Offsets::DrawTexturedRect);
+        this->IsTextureIDValid = matsurface->Original<_IsTextureIDValid>(Offsets::IsTextureIDValid);
+        this->CreateNewTextureID = matsurface->Original<_CreateNewTextureID>(Offsets::CreateNewTextureID);
 
         this->DrawSetTextureFile = matsurface->Original<_DrawSetTextureFile>(Offsets::DrawSetTextureFile);
         this->DrawSetTextureRGBA = matsurface->Original<_DrawSetTextureRGBA>(Offsets::DrawSetTextureRGBA);

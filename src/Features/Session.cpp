@@ -13,13 +13,13 @@
 #include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
-#include "Features/Stats/ZachStats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
-#include "Features/ConditionalExec.hpp"
+#include "Features/NetMessage.hpp"
+#include "Event.hpp"
 
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -29,7 +29,7 @@
 #include "Utils/SDK.hpp"
 
 Variable sar_loads_uncap("sar_loads_uncap", "0", 0, 1, "Temporarily set fps_max to 0 during loads\n");
-Variable sar_loads_norender("sar_loads_norender", "0", 0, 1, "Temporatily set mat_noredering to 1 during loads\n");
+Variable sar_loads_norender("sar_loads_norender", "0", 0, 1, "Temporarily set mat_noredering to 1 during loads\n");
 
 Variable sar_load_delay("sar_load_delay", "0", 0, "Delay for this number of milliseconds at the end of a load.\n");
 
@@ -65,10 +65,14 @@ void Session::Started(bool menu)
         console->Print("Session started! (menu)\n");
         this->Rebase(engine->GetTick());
 
-        if (sar_speedrun_autostop.isRegistered && sar_speedrun_autostop.GetBool()) {
-            speedrun->Stop(false);
+        if (sar_speedrun_stop_in_menu.isRegistered && sar_speedrun_stop_in_menu.GetBool()) {
+            SpeedrunTimer::Stop("menu");
         } else {
-            speedrun->Resume(engine->GetTick());
+            SpeedrunTimer::Resume();
+        }
+
+        if (!engine->IsOrange()) {
+            this->ResetLoads();
         }
 
         if (!engine->IsOrange()) {
@@ -91,108 +95,6 @@ void Session::Start()
 
     this->Rebase(tick);
     timer->Rebase(tick);
-    if (!engine->IsCoop()) {
-        speedrun->Resume(tick);
-    }
-
-    if (rebinder->isSaveBinding || rebinder->isReloadBinding) {
-        if (engine->demorecorder->isRecordingDemo) {
-            rebinder->UpdateIndex(*engine->demorecorder->m_nDemoNumber);
-        } else {
-            rebinder->UpdateIndex(rebinder->lastIndexNumber + 1);
-        }
-
-        rebinder->RebindSave();
-        rebinder->RebindReload();
-    }
-
-    if (sar_replay_mode.GetBool()) {
-        if (sar_replay_mode.GetInt() == 1) {
-            replayProvider->CreateNewReplay();
-            replayRecorder1->StartRecording();
-
-            if (replayProvider->GetCurrentReplay()->GetViewSize() > 1) {
-                replayRecorder2->StartRecording();
-            }
-        } else if (replayProvider->AnyReplaysLoaded()) {
-            auto replay = replayProvider->GetCurrentReplay();
-            replayPlayer1->StartPlaying(replay);
-
-            if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
-                replayPlayer2->StartPlaying(replay);
-            }
-        }
-    } else if (sar_replay_viewmode.isRegistered && sar_replay_viewmode.GetBool() && replayProvider->AnyReplaysLoaded()) {
-        auto replay = replayProvider->GetCurrentReplay();
-        if (engine->GetMaxClients() > 1 && replay->GetViewSize() > 1) {
-            if (sar_replay_viewmode.GetInt() == 1) {
-                replayRecorder1->StartRecording();
-                replayPlayer2->StartPlaying(replay);
-            } else {
-                replayRecorder2->StartRecording();
-                replayPlayer1->StartPlaying(replay);
-            }
-        }
-    }
-
-    if (!engine->IsCoop()) {
-        if (sar_speedrun_start_on_load.isRegistered && sar_speedrun_start_on_load.GetBool() && !speedrun->IsActive()) {
-            speedrun->Start(engine->GetTick());
-        } else if (speedrun->IsActive()) {
-            speedrun->Resume(engine->GetTick());
-        }
-    }
-
-    if (sar_speedrun_IL.GetBool() && sv_bonus_challenge.GetBool()) {
-        speedrun->Start((client->GetCMTimer() * 1 / speedrun->GetIntervalPerTick()));
-    }
-
-    //Network Ghosts
-    if (networkManager.isConnected) {
-        networkManager.NotifyMapChange();
-        networkManager.UpdateGhostsSameMap();
-        networkManager.SpawnAllGhosts();
-        if (ghost_sync.GetBool()) {
-            if (networkManager.disableSyncForLoad) {
-                networkManager.disableSyncForLoad = false;
-            } else {
-                if (!networkManager.AreAllGhostsAheadOrSameMap() && this->previousMap != engine->m_szLevelName) { //Don't pause if just reloading save
-                    engine->SendToCommandBuffer("pause", 20);
-                }
-            }
-        }
-    }
-
-    //Demo ghosts
-    if (demoGhostPlayer.IsPlaying()) {
-        demoGhostPlayer.UpdateGhostsSameMap();
-        if (demoGhostPlayer.IsFullGame()) {
-            if (ghost_sync.GetBool()) {
-                demoGhostPlayer.Sync();
-            }
-        } else {
-            demoGhostPlayer.ResetAllGhosts();
-            demoGhostPlayer.ResumeAllGhosts();
-        }
-        demoGhostPlayer.SpawnAllGhosts();
-    }
-
-    zachStats->ResetTriggers();
-    zachStats->NewSession();
-
-    // we don't do this as blue because we run it earlier in this case
-    if (!engine->IsCoop() || engine->IsOrange()) {
-        RunLoadExecs();
-    }
-
-    engine->hasRecorded = false;
-    engine->hasPaused = false;
-    engine->isPausing = false;
-    server->tickCount = 0;
-
-    stepCounter->ResetTimer();
-
-    speedrun->ReloadRules();
     this->currentFrame = 0;
     this->isRunning = true;
 }
@@ -202,11 +104,11 @@ void Session::Ended()
         return;
     }
 
-    engine->hadInitialForcePrimaryFullscreen = false;
-
-    this->previousMap = engine->m_szLevelName;
+    this->previousMap = engine->GetCurrentMapName();
 
     auto tick = this->GetTick();
+
+    Event::Trigger<Event::SESSION_END>({});
 
     if (tick != 0) {
         console->Print("Session: %i (%.3f)\n", tick, engine->ToTime(tick));
@@ -214,7 +116,7 @@ void Session::Ended()
     }
 
     if (summary->isRunning) {
-        summary->Add(tick, engine->ToTime(tick), engine->m_szLevelName);
+        summary->Add(tick, engine->ToTime(tick), engine->GetCurrentMapName().c_str());
         console->Print("Total: %i (%.3f)\n", summary->totalTicks, engine->ToTime(summary->totalTicks));
     }
 
@@ -242,13 +144,15 @@ void Session::Ended()
     replayPlayer1->StopPlaying();
     replayPlayer2->StopPlaying();
 
+    NetMessage::SessionEnded();
+
     // This pause generally won't do anything in co-op; it will have
     // already happened in the playvideo_end_level_transition detour.
     // However, if a level ends prematurely (e.g. restart_level), that
     // command is never run, so we use session timing to pause instead
-    speedrun->Pause();
-
-    speedrun->UnloadRules();
+    if (!engine->IsOrange()) {
+        SpeedrunTimer::Pause();
+    }
 
     if (listener) {
         listener->Reset();
@@ -261,10 +165,6 @@ void Session::Ended()
     networkManager.DeleteAllGhosts();
 
     if (networkManager.isConnected) networkManager.splitTicks = -1;
-    
-    if (!wait_persist_across_loads.GetBool()) {
-        engine->hasWaited = true;
-    }
 
     this->loadStart = NOW();
     if (!engine->demoplayer->IsPlaying() && !engine->IsOrange()) {
@@ -304,23 +204,18 @@ void Session::Changed(int state)
     if (state == SIGNONSTATE_FULL) {
         timescaleDetect->Spawn();
         client->FlushChatQueue();
-        if (engine->GetMaxClients() <= 1 || engine->IsOrange()) {
-            this->Started();
-            this->loadEnd = NOW();
+        this->Started();
+        this->loadEnd = NOW();
 
-            auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
-            console->DevMsg("Load took : %dms\n", time);
-        } else { // blue
-            RunLoadExecs();
-        }
+        auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
+        console->DevMsg("Load took: %dms\n", time);
 
         if (sar_load_delay.GetInt()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(sar_load_delay.GetInt()));
         }
     } else if (state == SIGNONSTATE_PRESPAWN) {
-        if (!engine->IsOrange()) {
-            this->ResetLoads();
-        }
+        this->ResetLoads();
+        SpeedrunTimer::FinishLoad();
     } else {
         this->Ended();
     }
@@ -340,7 +235,7 @@ void Session::DoFastLoads()
 
 void Session::ResetLoads()
 {
-    if (sar_loads_uncap.GetBool()) {
+    if (sar_loads_uncap.GetBool() && fps_max.GetInt() == 0) {
         fps_max.SetValue(this->oldFpsMax);
     }
 

@@ -9,9 +9,6 @@
 #include "Command.hpp"
 
 class ClassDumper : public Feature {
-public:
-    int sendPropSize;
-
 private:
     std::string serverClassesFile;
     std::string clientClassesFile;

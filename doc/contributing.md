@@ -38,8 +38,8 @@
 
 ### Windows
 
-- Visual Studio 2017 or 2019
-- MSVC Toolset v141
+- Visual Studio 2019
+- MSVC Toolset v142
 - Configure SDK version in `src/SourceAutoRecord.vcxproj` or `src/SourceAutoRecord16.vcxproj`
 - Configure paths in `copy.bat`
 
@@ -163,7 +163,7 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
 }
 
 // Somewhere in Client::Init
-this->g_ClientDLL->Hook(Client::HudUpdate_Hook, Client::HudUpdate, Offsets::HudUpdate);
+this->g_ClientDLL->Hook(Client::CreateMove_Hook, Client::CreateMove, Offsets::CreateMove);
 ```
 
 Calling conventions will automatically be resolved using the `__rescall` macro. On Linux it will be `__cdecl` and on Windows `__thiscall`. Hooks on Windows will be declared as `__fastcall` with unused `edx` register. Use `DETOUR_T` for custom return types and `DETOUR_STD` for `__stdcall`.

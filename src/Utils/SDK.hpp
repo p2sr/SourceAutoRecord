@@ -78,6 +78,10 @@ struct Vector {
         res.z = z - vec.z;
         return res;
     }
+    inline Vector operator-() const
+    {
+        return Vector{0, 0, 0} - *this;
+    }
     inline float& operator[](int i)
     {
         return ((float*)this)[i];
@@ -85,6 +89,14 @@ struct Vector {
     inline float operator[](int i) const
     {
         return ((float*)this)[i];
+    }
+    inline bool operator==(const Vector vec) const
+    {
+        return x == vec.x && y == vec.y && z == vec.z;
+    }
+    inline bool operator!=(const Vector vec) const
+    {
+        return !(*this == vec);
     }
     static inline float DotProduct(const Vector& a, const Vector& b)
     {
@@ -155,6 +167,7 @@ enum class TextColor {
 #define FCVAR_HIDDEN (1 << 4)
 #define FCVAR_NEVER_AS_STRING (1 << 12)
 #define FCVAR_CHEAT (1 << 14)
+#define FCVAR_DONTRECORD (1 << 17)
 
 #define COMMAND_COMPLETION_MAXITEMS 64
 #define COMMAND_COMPLETION_ITEM_LENGTH 64
@@ -259,37 +272,6 @@ struct ConCommand : ConCommandBase {
     }
 };
 
-struct ConVar : ConCommandBase {
-    void* ConVar_VTable; // 24
-    ConVar* m_pParent; // 28
-    const char* m_pszDefaultValue; // 32
-    char* m_pszString; // 36
-    int m_StringLength; // 40
-    float m_fValue; // 44
-    int m_nValue; // 48
-    bool m_bHasMin; // 52
-    float m_fMinVal; // 56
-    bool m_bHasMax; // 60
-    float m_fMaxVal; // 64
-    FnChangeCallback_t m_fnChangeCallback; // 68
-
-    ConVar(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max, FnChangeCallback_t callback = nullptr)
-        : ConCommandBase(name, flags, helpstr)
-        , ConVar_VTable(nullptr)
-        , m_pParent(nullptr)
-        , m_pszDefaultValue(value)
-        , m_pszString(nullptr)
-        , m_fValue(0.0f)
-        , m_nValue(0)
-        , m_bHasMin(hasmin)
-        , m_fMinVal(min)
-        , m_bHasMax(hasmax)
-        , m_fMaxVal(max)
-        , m_fnChangeCallback(callback)
-    {
-    }
-};
-
 template <class T, class I = int>
 struct CUtlMemory {
     T* m_pMemory;
@@ -328,9 +310,9 @@ struct CUtlVector {
     }
 };
 
-struct ConVar2 : ConCommandBase {
+struct ConVar : ConCommandBase {
     void* ConVar_VTable; // 24
-    ConVar2* m_pParent; // 28
+    ConVar* m_pParent; // 28
     const char* m_pszDefaultValue; // 32
     char* m_pszString; // 36
     int m_StringLength; // 40
@@ -342,7 +324,7 @@ struct ConVar2 : ConCommandBase {
     float m_fMaxVal; // 64
     CUtlVector<FnChangeCallback_t> m_fnChangeCallback; // 68
 
-    ConVar2(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
+    ConVar(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max)
         : ConCommandBase(name, flags, helpstr)
         , ConVar_VTable(nullptr)
         , m_pParent(nullptr)
@@ -452,17 +434,6 @@ typedef enum {
     HS_GAME_SHUTDOWN = 5,
     HS_SHUTDOWN = 6,
     HS_RESTART = 7,
-
-    INFRA_HS_NEW_GAME = 0,
-    INFRA_HS_LOAD_GAME = 1,
-    INFRA_HS_LOAD_GAME_WITHOUT_RESTART = 2,
-    INFRA_HS_CHANGE_LEVEL_SP = 3,
-    INFRA_HS_CHANGE_LEVEL_MP = 4,
-    INFRA_HS_RUN = 5,
-    INFRA_HS_GAME_SHUTDOWN = 6,
-    INFRA_HS_SHUTDOWN = 7,
-    INFRA_HS_RESTART = 8,
-    INFRA_HS_RESTART_WITHOUT_RESTART = 9
 } HOSTSTATES;
 
 struct CHostState {
@@ -581,9 +552,6 @@ struct CEntInfo {
     int m_SerialNumber; // 4
     CEntInfo* m_pPrev; // 8
     CEntInfo* m_pNext; // 12
-};
-
-struct CEntInfo2 : CEntInfo {
     void* unk1; // 16
     void* unk2; // 20
 };
@@ -646,29 +614,6 @@ struct SendProp {
     float m_fLowValue; // 16
     float m_fHighValue; // 20
     SendProp* m_pArrayProp; // 24
-    ArrayLengthSendProxyFn m_ArrayLengthProxy; // 28
-    int m_nElements; // 32
-    int m_ElementStride; // 36
-    char* m_pExcludeDTName; // 40
-    char* m_pParentArrayPropName; // 44
-    char* m_pVarName; // 48
-    float m_fHighLowMul; // 52
-    int m_Flags; // 56
-    SendVarProxyFn m_ProxyFn; // 60
-    SendTableProxyFn m_DataTableProxyFn; // 64
-    SendTable* m_pDataTable; // 68
-    int m_Offset; // 72
-    const void* m_pExtraData; // 76
-};
-
-struct SendProp2 {
-    void* VMT; // 0
-    RecvProp* m_pMatchingRecvProp; // 4
-    SendPropType m_Type; // 8
-    int m_nBits; // 12
-    float m_fLowValue; // 16
-    float m_fHighValue; // 20
-    SendProp2* m_pArrayProp; // 24
     ArrayLengthSendProxyFn m_ArrayLengthProxy; // 28
     int m_nElements; // 32
     int m_ElementStride; // 36
@@ -758,27 +703,8 @@ struct inputdata_t;
 typedef void (*inputfunc_t)(inputdata_t& data);
 
 struct datamap_t;
-struct typedescription_t {
-    fieldtype_t fieldType; // 0
-    const char* fieldName; // 4
-    int fieldOffset[TD_OFFSET_COUNT]; // 8
-    unsigned short fieldSize; // 16
-    short flags; // 18
-    const char* externalName; // 20
-    void* pSaveRestoreOps; // 24
-#ifndef _WIN32
-    void* unk; // 28
-#endif
-    inputfunc_t inputFunc; // 28/32
-    datamap_t* td; // 32/36
-    int fieldSizeInBytes; // 36/40
-    struct typedescription_t* override_field; // 40/44
-    int override_count; // 44/48
-    float fieldTolerance; // 48/52
-};
 
-struct datamap_t2;
-struct typedescription_t2 {
+struct typedescription_t {
     fieldtype_t fieldType; // 0
     const char* fieldName; // 4
     int fieldOffset; // 8
@@ -790,9 +716,9 @@ struct typedescription_t2 {
     void* unk1; // 24
 #endif
     inputfunc_t inputFunc; // 24/28
-    datamap_t2* td; // 28/32
+    datamap_t* td; // 28/32
     int fieldSizeInBytes; // 32/36
-    struct typedescription_t2* override_field; // 36/40
+    struct typedescription_t* override_field; // 36/40
     int override_count; // 40/44
     float fieldTolerance; // 44/48
     int flatOffset[TD_OFFSET_COUNT]; // 48/52
@@ -804,16 +730,6 @@ struct datamap_t {
     int dataNumFields; // 4
     char const* dataClassName; // 8
     datamap_t* baseMap; // 12
-    bool chains_validated; // 16
-    bool packed_offsets_computed; // 20
-    int packed_size; // 24
-};
-
-struct datamap_t2 {
-    typedescription_t2* dataDesc; // 0
-    int dataNumFields; // 4
-    char const* dataClassName; // 8
-    datamap_t2* baseMap; // 12
     int m_nPackedSize; // 16
     void* m_pOptimizedDataMap; // 20
 };
@@ -946,10 +862,7 @@ struct kbutton_t {
     struct Split_t {
         int down[2];
         int state;
-    };
-
-    Split_t& GetPerUser(int nSlot = -1);
-    Split_t m_PerUser[2];
+    } m_PerUser[2];
 };
 
 enum TOGGLE_STATE {
@@ -1080,7 +993,6 @@ public:
         return m_Index >> Offsets::NUM_SERIAL_NUM_SHIFT_BITS;
     }
 
-protected:
     unsigned long m_Index;
 };
 
@@ -1299,3 +1211,169 @@ private:
 };
 
 #pragma endregion
+
+enum ImageFormat
+{
+    IMAGE_FORMAT_DEFAULT = -2,    // Use this image format if you want to perform tool operations on the texture
+    IMAGE_FORMAT_UNKNOWN = -1,
+    IMAGE_FORMAT_RGBA8888 = 0,
+    IMAGE_FORMAT_ABGR8888,
+    IMAGE_FORMAT_RGB888,
+    IMAGE_FORMAT_BGR888,
+    IMAGE_FORMAT_RGB565,
+    IMAGE_FORMAT_I8,
+    IMAGE_FORMAT_IA88,
+    IMAGE_FORMAT_P8,
+    IMAGE_FORMAT_A8,
+    IMAGE_FORMAT_RGB888_BLUESCREEN,
+    IMAGE_FORMAT_BGR888_BLUESCREEN,
+    IMAGE_FORMAT_ARGB8888,
+    IMAGE_FORMAT_BGRA8888,
+    IMAGE_FORMAT_DXT1,
+    IMAGE_FORMAT_DXT3,
+    IMAGE_FORMAT_DXT5,
+    IMAGE_FORMAT_BGRX8888,
+    IMAGE_FORMAT_BGR565,
+    IMAGE_FORMAT_BGRX5551,
+    IMAGE_FORMAT_BGRA4444,
+    IMAGE_FORMAT_DXT1_ONEBITALPHA,
+    IMAGE_FORMAT_BGRA5551,
+    IMAGE_FORMAT_UV88,
+    IMAGE_FORMAT_UVWQ8888,
+    IMAGE_FORMAT_RGBA16161616F,
+    IMAGE_FORMAT_RGBA16161616,
+    IMAGE_FORMAT_UVLX8888,
+    IMAGE_FORMAT_R32F,            // Single-channel 32-bit floating point
+    IMAGE_FORMAT_RGB323232F,    // NOTE: D3D9 does not have this format
+    IMAGE_FORMAT_RGBA32323232F,
+    IMAGE_FORMAT_RG1616F,
+    IMAGE_FORMAT_RG3232F,
+    IMAGE_FORMAT_RGBX8888,
+
+    IMAGE_FORMAT_NULL,            // Dummy format which takes no video memory
+
+    // Compressed normal map formats
+    IMAGE_FORMAT_ATI2N,            // One-surface ATI2N / DXN format
+    IMAGE_FORMAT_ATI1N,            // Two-surface ATI1N format
+
+    IMAGE_FORMAT_RGBA1010102,    // 10 bit-per component render targets
+    IMAGE_FORMAT_BGRA1010102,
+    IMAGE_FORMAT_R16F,            // 16 bit FP format
+
+    // Depth-stencil texture formats
+    IMAGE_FORMAT_D16,
+    IMAGE_FORMAT_D15S1,
+    IMAGE_FORMAT_D32,
+    IMAGE_FORMAT_D24S8,
+    IMAGE_FORMAT_LINEAR_D24S8,
+    IMAGE_FORMAT_D24X8,
+    IMAGE_FORMAT_D24X4S4,
+    IMAGE_FORMAT_D24FS8,
+    IMAGE_FORMAT_D16_SHADOW,    // Specific formats for shadow mapping
+    IMAGE_FORMAT_D24X8_SHADOW,    // Specific formats for shadow mapping
+
+    // supporting these specific formats as non-tiled for procedural cpu access (360-specific)
+    IMAGE_FORMAT_LINEAR_BGRX8888,
+    IMAGE_FORMAT_LINEAR_RGBA8888,
+    IMAGE_FORMAT_LINEAR_ABGR8888,
+    IMAGE_FORMAT_LINEAR_ARGB8888,
+    IMAGE_FORMAT_LINEAR_BGRA8888,
+    IMAGE_FORMAT_LINEAR_RGB888,
+    IMAGE_FORMAT_LINEAR_BGR888,
+    IMAGE_FORMAT_LINEAR_BGRX5551,
+    IMAGE_FORMAT_LINEAR_I8,
+    IMAGE_FORMAT_LINEAR_RGBA16161616,
+    IMAGE_FORMAT_LINEAR_A8,
+    IMAGE_FORMAT_LINEAR_DXT1,
+    IMAGE_FORMAT_LINEAR_DXT3,
+    IMAGE_FORMAT_LINEAR_DXT5,
+
+    IMAGE_FORMAT_LE_BGRX8888,
+    IMAGE_FORMAT_LE_BGRA8888,
+
+    // these are used for runtime conversion to DXT1/5
+    IMAGE_FORMAT_DXT1_RUNTIME,
+    IMAGE_FORMAT_DXT5_RUNTIME,
+
+    // special depth format
+    IMAGE_FORMAT_INTZ,
+
+    NUM_IMAGE_FORMATS
+};
+
+struct MovieInfo_t
+{
+    enum {
+        FMOVIE_TGA = 1 << 0,
+        FMOVIE_AVI = 1 << 1,
+        FMOVIE_WAV = 1 << 2,
+        FMOVIE_AVISOUND = 1 << 3,
+        FMOVIE_JPG = 1 << 4,
+    };
+
+    char moviename[256];
+    int movieframe;
+    int type;
+    int jpeg_quality;
+};
+
+class bf_read
+{
+public:
+    uint32_t ReadUnsigned(int nbits) {
+        if (m_nBitsAvail >= nbits) {
+            unsigned val = m_nInBufWord & ((1 << nbits) - 1);
+            m_nBitsAvail -= nbits;
+            m_nInBufWord >>= nbits;
+            if (m_nBitsAvail == 0) {
+                m_nBitsAvail = 32;
+                m_nInBufWord = *(m_pDataIn++);
+            }
+            return val;
+        }
+
+        int rem = nbits - m_nBitsAvail;
+        uint32_t hi = m_nInBufWord << rem;
+        m_nBitsAvail = 32;
+        m_nInBufWord = *(m_pDataIn++);
+        uint32_t lo = m_nInBufWord & ((1 << rem) - 1);
+        return (hi | lo) & ((1 << nbits) - 1);
+    }
+    const char *m_pDebugName;
+    bool m_bOverflow;
+    int m_nDataBits;
+    size_t m_nDataBytes;
+    uint32_t m_nInBufWord;
+    int m_nBitsAvail;
+    const uint32_t *m_pDataIn;
+    const uint32_t *m_pBufferEnd;
+    const uint32_t *m_pData;
+};
+
+typedef enum
+{
+    LSEV_MESSAGE,
+    LSEV_WARNING,
+    LSEV_ASSERT,
+    LSEV_ERROR,
+} LoggingSeverity;
+
+typedef enum
+{
+    LCF_CONSOLE_ONLY = 0x1,
+    LCF_DO_NOT_ECHO  = 0x2,
+} LoggingChannelFlags;
+
+struct LoggingContext
+{
+    int channelID;
+    LoggingChannelFlags flags;
+    LoggingSeverity severity;
+    Color color;
+};
+
+class ILoggingListener
+{
+public:
+    virtual void Log(const LoggingContext *ctx, const char *msg) = 0;
+};

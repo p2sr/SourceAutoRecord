@@ -46,6 +46,7 @@ public:
     using _IsPaused = bool (*)(void* thisptr);
     using _TraceRay = void(__rescall*)(void* thisptr, const Ray_t& ray, unsigned int fMask, ITraceFilter* pTraceFilter, CGameTrace* pTrace);
     using _GetCount = int(__rescall*)(void* thisptr);
+    using _Con_IsVisible = bool(__rescall*)(void* thisptr);
 #ifdef _WIN32
     using _GetScreenSize = int(__stdcall*)(int& width, int& height);
     using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -104,6 +105,7 @@ public:
     _IsPaused IsPaused = nullptr;
     _TraceRay TraceRay = nullptr;
     _GetCount GetCount = nullptr;
+    _Con_IsVisible Con_IsVisible = nullptr;
 
     EngineDemoPlayer* demoplayer = nullptr;
     EngineDemoRecorder* demorecorder = nullptr;
@@ -125,7 +127,8 @@ public:
     bool isPausing = false;
     int pauseTick;
     bool hasWaited = false;
-    bool hadInitialForcePrimaryFullscreen = false; // Happens twice in each coop load, we want the second one for timing shit
+    int nForcePrimaryFullscreen = 0; // Happens twice in each coop load, we want the second one for timing shit
+    bool shouldPauseForSync = false;
 
 public:
     void ExecuteCommand(const char* cmd, bool immediately = false);
@@ -149,20 +152,14 @@ public:
     void RecordDemoData(void* data, size_t len);
     bool Trace(Vector& pos, QAngle& angle, float distMax, CTraceFilterSimple& filter, CGameTrace& tr);
     bool TraceFromCamera(float distMax, CGameTrace& tr);
-    void NewTick(const int tick);
+    bool ConsoleVisible();
+    void GetTicks(int &host, int &server, int &client);
 
     // CClientState::Disconnect
     DECL_DETOUR(Disconnect, bool bShowMainMenu);
-#ifdef _WIN32
-    DECL_DETOUR(Disconnect2, int unk1, int unk2, int unk3);
-    DECL_DETOUR_COMMAND(connect);
-#else
-    DECL_DETOUR(Disconnect2, int unk, bool bShowMainMenu);
-#endif
 
     // CClientState::SetSignonState
     DECL_DETOUR(SetSignonState, int state, int count, void* unk);
-    DECL_DETOUR(SetSignonState2, int state, int count);
 
     // CEngine::Frame
     DECL_DETOUR(Frame);
@@ -180,11 +177,11 @@ public:
     DECL_DETOUR_COMMAND(help);
     DECL_DETOUR_COMMAND(gameui_activate);
     DECL_DETOUR_COMMAND(playvideo_end_level_transition);
-    DECL_DETOUR_COMMAND(playvideo_exitcommand_nointerrupt);
     DECL_DETOUR_COMMAND(unpause);
     DECL_DETOUR_COMMAND(load);
 
     DECL_DETOUR(ReadCustomData, int* callbackIndex, char** data);
+    DECL_DETOUR_T(const char *, ReadConsoleCommand);
 
 #ifdef _WIN32
     // CDemoSmootherPanel::ParseSmoothingInfo
@@ -199,6 +196,10 @@ public:
     bool Init() override;
     void Shutdown() override;
     const char* Name() override { return MODULE("engine"); }
+
+private:
+    uintptr_t readCustomDataInjectAddr;
+    uintptr_t readConsoleCommandInjectAddr;
 };
 
 extern Engine* engine;
@@ -215,6 +216,8 @@ extern Variable sar_record_at_increment;
 
 extern Variable sar_pause_at;
 extern Variable sar_pause_for;
+
+extern Variable sar_tick_debug;
 
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1

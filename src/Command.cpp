@@ -32,6 +32,9 @@ Command::Command(const char* name)
     this->isReference = true;
 }
 Command::Command(const char* pName, _CommandCallback callback, const char* pHelpString, int flags, _CommandCompletionCallback completionFunc)
+    : isReference(false)
+    , isRegistered(false)
+    , version(SourceGame_Unknown)
 {
     this->ptr = new ConCommand(pName, callback, pHelpString, flags, completionFunc);
 

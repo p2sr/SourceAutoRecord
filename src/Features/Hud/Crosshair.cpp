@@ -16,19 +16,19 @@
 #include <cctype>
 
 Variable sar_crosshair_mode("sar_crosshair_mode", "0", 0, 2, "Set the crosshair mode :\n"
-                                                             "0 : Default crosshair\n"
-                                                             "1 : Customizable crosshair\n"
-                                                             "2 : Crosshair from .png\n");
+                                                             "0: Default crosshair\n"
+                                                             "1: Customizable crosshair\n"
+                                                             "2: Crosshair from .png\n");
 Variable sar_quickhud_mode("sar_quickhud_mode", "0", 0, 2, "Set the quickhud mode :\n"
-                                                           "0 : Default quickhud\n"
-                                                           "1 : Customizable quickhud\n"
-                                                           "2 : quickhud from .png\n");
+                                                           "0: Default quickhud\n"
+                                                           "1: Customizable quickhud\n"
+                                                           "2: quickhud from .png\n");
 
 Variable sar_crosshair_P1("sar_crosshair_P1", "0", "Use the P1 crosshair style.\n");
 
 Variable cl_crosshair_t("cl_crosshair_t", "0", "Removes the top line from the crosshair :"
-                                               "0 : normal crosshair,"
-                                               "1 : crosshair without top.\n");
+                                               "0: normal crosshair,"
+                                               "1: crosshair without top.\n");
 Variable cl_crosshairgap("cl_crosshairgap", "5", 0, "Changes the distance of the crosshair lines from the center of screen.\n");
 Variable cl_crosshaircolor_r("cl_crosshaircolor_r", "0", 0, 255, "Changes the color of the crosshair.\n");
 Variable cl_crosshaircolor_g("cl_crosshaircolor_g", "255", 0, 255, "Changes the color of the crosshair.\n");
@@ -52,7 +52,7 @@ Variable cl_quickhud_alpha("cl_quickhud_alpha", "255", 0, 255, "Change the amoun
 Crosshair crosshair;
 
 Crosshair::Crosshair()
-    : Hud(HudType_InGame, true, SourceGame_Portal2Game)
+    : Hud(HudType_InGame, true)
     , crosshairTextureID(0)
     , quickhudTextureID{ -1, -1, -1, -1 }
     , isCustomCrosshairReady(false)
@@ -414,7 +414,7 @@ DECL_COMMAND_COMPLETION(sar_quickhud_set_texture)
     FINISH_COMMAND_COMPLETION();
 }
 
-CON_COMMAND_F_COMPLETION(sar_quickhud_set_texture, "sar_quickhud_set_texture <filepath>. Enter the base name, it will search for <filepath>1.png, <filepath>2.png, <filepath>3.png and <filepath>4.png\n"
+CON_COMMAND_F_COMPLETION(sar_quickhud_set_texture, "sar_quickhud_set_texture <filepath> - enter the base name, it will search for <filepath>1.png, <filepath>2.png, <filepath>3.png and <filepath>4.png\n"
                                                    "ex: sar_quickhud_set_texture \"E:\\Steam\\steamapps\\common\\Portal 2\\portal2\\krzyhau\"\n",
     0, sar_quickhud_set_texture_CompletionFunc)
 {

@@ -65,16 +65,16 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SFML_STATIC;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>SFML_STATIC;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include;$(SolutionDir)\lib\curl\include</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows;$(SolutionDir)\lib\curl\lib\windows</AdditionalLibraryDirectories>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
@@ -83,8 +83,11 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <NoEntryPoint>false</NoEntryPoint>
-      <AdditionalDependencies>imagehlp.lib;winmm-d.lib;ws2_32-d.lib;sfml-system-s-d.lib;sfml-network-s-d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl_a.lib;wldap32.lib;crypt32.lib;normaliz.lib;imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>call ..\genversion.bat</Command>
+    </PreBuildEvent>
     <PostBuildEvent>
       <Command>call ..\copy.bat</Command>
     </PostBuildEvent>
@@ -98,9 +101,9 @@
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include;$(SolutionDir)\lib\curl\include</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
-      <PreprocessorDefinitions>SFML_STATIC;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SFML_STATIC;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>26495</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -108,10 +111,14 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows;$(SolutionDir)\lib\curl\lib\windows</AdditionalLibraryDirectories>
       <NoEntryPoint>false</NoEntryPoint>
-      <AdditionalDependencies>imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl_a.lib;wldap32.lib;crypt32.lib;normaliz.lib;imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <PreBuildEvent>
+      <Command>call ..\genversion.bat</Command>
+    </PreBuildEvent>
     <PostBuildEvent>
       <Command>call ..\copy.bat</Command>
     </PostBuildEvent>
@@ -123,14 +130,16 @@
     <ClCompile Include="..\lib\minhook\hook.c" />
     <ClCompile Include="..\lib\minhook\trampoline.c" />
     <ClCompile Include="Cheats.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="Checksum.cpp" />
     <ClCompile Include="Command.cpp" />
+    <ClCompile Include="Event.cpp" />
     <ClCompile Include="Features\ClassDumper.cpp" />
     <ClCompile Include="Features\Config.cpp" />
     <ClCompile Include="Features\Cvars.cpp" />
     <ClCompile Include="Features\DataMapDumper.cpp" />
     <ClCompile Include="Features\Camera.cpp" />
-    <ClCompile Include="Features\ConditionalExec.cpp" />
+    <ClCompile Include="Features\ConfigPlus.cpp" />
     <ClCompile Include="Features\Demo\Demo.cpp" />
     <ClCompile Include="Features\Demo\DemoGhostEntity.cpp" />
     <ClCompile Include="Features\Demo\DemoGhostPlayer.cpp" />
@@ -147,30 +156,28 @@
     <ClCompile Include="Features\Hud\InspectionHud.cpp" />
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp" />
     <ClCompile Include="Features\Hud\StrafeSyncHud.cpp" />
+    <ClCompile Include="Features\Hud\StrafeQuality.cpp" />
+    <ClCompile Include="Features\Hud\ScrollSpeed.cpp" />
     <ClCompile Include="Features\Hud\VphysHud.cpp" />
+    <ClCompile Include="Features\Hud\PortalgunHud.cpp" />
+    <ClCompile Include="Features\Hud\LPHud.cpp" />
+    <ClCompile Include="Features\Hud\Toasts.cpp" />
+    <ClCompile Include="Features\Hud\Watermark.cpp" />
     <ClCompile Include="Features\Imitator.cpp" />
-    <ClCompile Include="Features\InfraSession.cpp" />
     <ClCompile Include="Features\Listener.cpp" />
     <ClCompile Include="Features\OffsetFinder.cpp" />
+    <ClCompile Include="Features\PlayerTrace.cpp" />
     <ClCompile Include="Features\Rebinder.cpp" />
     <ClCompile Include="Features\Routing\EntityInspector.cpp" />
     <ClCompile Include="Features\Routing\SeamshotFind.cpp" />
     <ClCompile Include="Features\Routing\Tracer.cpp" />
     <ClCompile Include="Features\SegmentedTools.cpp" />
     <ClCompile Include="Features\Session.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\ApertureTagRules.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\DebugRule.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\Portal2Rules.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\PortalRules.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\PortalStoriesMelRules.cpp" />
-    <ClCompile Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.cpp" />
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp" />
-    <ClCompile Include="Features\Speedrun\TimerCategory.cpp" />
-    <ClCompile Include="Features\Speedrun\TimerInterface.cpp" />
-    <ClCompile Include="Features\Speedrun\TimerResult.cpp" />
-    <ClCompile Include="Features\Speedrun\TimerRule.cpp" />
-    <ClCompile Include="Features\Speedrun\TimerSplit.cpp" />
-    <ClCompile Include="Features\Speedrun\CustomCategories.cpp" />
+    <ClCompile Include="Features\Speedrun\Rules.cpp" />
+    <ClCompile Include="Features\Speedrun\Categories.cpp" />
+    <ClCompile Include="Features\Speedrun\CategoriesPreset.cpp" />
+    <ClCompile Include="Features\Speedrun\CategoryCreator.cpp" />
     <ClCompile Include="Features\Stats\StatsCounter.cpp" />
     <ClCompile Include="Features\Stats\JumpStats.cpp" />
     <ClCompile Include="Features\Stats\Stats.cpp" />
@@ -180,6 +187,7 @@
     <ClCompile Include="Features\Stats\ZachStats.cpp" />
     <ClCompile Include="Features\StepCounter.cpp" />
     <ClCompile Include="Features\Summary.cpp" />
+    <ClCompile Include="Features\Updater.cpp" />
     <ClCompile Include="Features\ReplaySystem\Replay.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayPlayer.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayProvider.cpp" />
@@ -193,6 +201,7 @@
     <ClCompile Include="Features\Tas\TasTools\AutoJumpTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\StrafeTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\TasUtils.cpp" />
+    <ClCompile Include="Features\Renderer.cpp" />
     <ClCompile Include="Features\Teleporter.cpp" />
     <ClCompile Include="Features\Timer\PauseTimer.cpp" />
     <ClCompile Include="Features\Timer\Timer.cpp" />
@@ -200,22 +209,19 @@
     <ClCompile Include="Features\Timer\TimerCheckPoints.cpp" />
     <ClCompile Include="Features\TimescaleDetect.cpp" />
     <ClCompile Include="Features\WorkshopList.cpp" />
+    <ClCompile Include="Features\NetMessage.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Games\Linux\ApertureTag.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Games\Linux\HalfLife2Episodic.cpp">
+    <ClCompile Include="Games\Linux\Portal2.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Games\Linux\HalfLifeSource.cpp">
+    <ClCompile Include="Games\Linux\PortalReloaded.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\Portal.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Games\Linux\PortalStoriesMel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -225,14 +231,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLife2Episodic.cpp" />
-    <ClCompile Include="Games\Windows\HalfLife2Unpack.cpp" />
-    <ClCompile Include="Games\Windows\HalfLifeSource.cpp" />
-    <ClCompile Include="Games\Windows\INFRA.cpp" />
     <ClCompile Include="Games\Windows\ApertureTag.cpp" />
-    <ClCompile Include="Games\Windows\Portal.cpp" />
+    <ClCompile Include="Games\Windows\Portal2.cpp" />
+    <ClCompile Include="Games\Windows\PortalReloaded.cpp" />
     <ClCompile Include="Games\Windows\PortalStoriesMel.cpp" />
-    <ClCompile Include="Games\Windows\PortalUnpack.cpp" />
     <ClCompile Include="Games\Windows\ThinkingWithTimeMachine.cpp" />
     <ClCompile Include="Interface.cpp" />
     <ClCompile Include="Modules\Client.cpp" />
@@ -248,30 +250,11 @@
     <ClCompile Include="Modules\Surface.cpp" />
     <ClCompile Include="Modules\Tier1.cpp" />
     <ClCompile Include="Modules\VGui.cpp" />
-    <ClCompile Include="Games\Linux\HalfLife2.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\Portal2.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\TheBeginnersGuide.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\TheStanleyParable.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\HalfLife2.cpp" />
-    <ClCompile Include="Games\Windows\Portal2.cpp" />
-    <ClCompile Include="Games\Windows\TheBeginnersGuide.cpp" />
-    <ClCompile Include="Games\Windows\TheStanleyParable.cpp" />
     <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="Utils\json11.cpp" />
     <ClCompile Include="Utils\lodepng.cpp" />
     <ClCompile Include="Utils\Math.cpp" />
     <ClCompile Include="Utils\Memory.cpp" />
@@ -324,15 +307,16 @@
     <ClInclude Include="..\lib\SFML\include\SFML\System\Vector2.hpp" />
     <ClInclude Include="..\lib\SFML\include\SFML\System\Vector3.hpp" />
     <ClInclude Include="Cheats.hpp" />
+    <ClInclude Include="CrashHandler.hpp" />
     <ClInclude Include="Checksum.hpp" />
     <ClInclude Include="Command.hpp" />
+    <ClInclude Include="Event.hpp" />
     <ClInclude Include="Features.hpp" />
     <ClInclude Include="Features\ClassDumper.hpp" />
     <ClInclude Include="Features\Config.hpp" />
     <ClInclude Include="Features\Cvars.hpp" />
     <ClInclude Include="Features\DataMapDumper.hpp" />
     <ClInclude Include="Features\Camera.hpp" />
-    <ClInclude Include="Features\ConditionalExec.hpp" />
     <ClInclude Include="Features\Demo\Demo.hpp" />
     <ClInclude Include="Features\Demo\DemoGhostEntity.hpp" />
     <ClInclude Include="Features\Demo\DemoGhostPlayer.hpp" />
@@ -349,32 +333,26 @@
     <ClInclude Include="Features\Hud\InspectionHud.hpp" />
     <ClInclude Include="Features\Hud\SpeedrunHud.hpp" />
     <ClInclude Include="Features\Hud\StrafeSyncHud.hpp" />
+    <ClInclude Include="Features\Hud\StrafeQuality.hpp" />
+    <ClInclude Include="Features\Hud\ScrollSpeed.hpp" />
     <ClInclude Include="Features\Hud\VphysHud.hpp" />
+    <ClInclude Include="Features\Hud\PortalgunHud.hpp" />
+    <ClInclude Include="Features\Hud\LPHud.hpp" />
+    <ClInclude Include="Features\Hud\Toasts.hpp" />
     <ClInclude Include="Features\Imitator.hpp" />
-    <ClInclude Include="Features\InfraSession.hpp" />
     <ClInclude Include="Features\Listener.hpp" />
     <ClInclude Include="Features\OffsetFinder.hpp" />
+    <ClInclude Include="Features\PlayerTrace.hpp" />
     <ClInclude Include="Features\Rebinder.hpp" />
     <ClInclude Include="Features\Routing\EntityInspector.hpp" />
     <ClInclude Include="Features\Routing\SeamshotFind.hpp" />
     <ClInclude Include="Features\Routing\Tracer.hpp" />
     <ClInclude Include="Features\SegmentedTools.hpp" />
     <ClInclude Include="Features\Session.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\ApertureTagRules.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\DebugRule.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\Portal2Rules.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\PortalRules.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\PortalStoriesMelRules.hpp" />
-    <ClInclude Include="Features\Speedrun\Rules\ThinkingWithTimeMachineRules.hpp" />
     <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerAction.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerCategory.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerInterface.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerResult.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerRule.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerSplit.hpp" />
-    <ClInclude Include="Features\Speedrun\TimerState.hpp" />
-    <ClInclude Include="Features\Speedrun\CustomCategories.hpp" />
+    <ClInclude Include="Features\Speedrun\Rules.hpp" />
+    <ClInclude Include="Features\Speedrun\Categories.hpp" />
+    <ClInclude Include="Features\Speedrun\CategoriesPreset.hpp" />
     <ClInclude Include="Features\Stats\StatsCounter.hpp" />
     <ClInclude Include="Features\Stats\JumpStats.hpp" />
     <ClInclude Include="Features\Stats\Stats.hpp" />
@@ -385,6 +363,7 @@
     <ClInclude Include="Features\Stats\ZachStats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
+    <ClInclude Include="Features\Updater.hpp" />
     <ClInclude Include="Features\ReplaySystem\Replay.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayFrame.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayPlayer.hpp" />
@@ -399,6 +378,7 @@
     <ClInclude Include="Features\Tas\TasTools\AutoJumpTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\StrafeTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\TasUtils.hpp" />
+    <ClInclude Include="Features\Renderer.hpp" />
     <ClInclude Include="Features\Teleporter.hpp" />
     <ClInclude Include="Features\Timer\PauseTimer.hpp" />
     <ClInclude Include="Features\Timer\Timer.hpp" />
@@ -406,59 +386,32 @@
     <ClInclude Include="Features\Timer\TimerCheckPoints.hpp" />
     <ClInclude Include="Features\TimescaleDetect.hpp" />
     <ClInclude Include="Features\WorkshopList.hpp" />
+    <ClInclude Include="Features\NetMessage.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="Games\Linux\ApertureTag.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLife2.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLife2Episodic.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\HalfLifeSource.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\Portal.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="Games\Linux\Portal2.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Games\Linux\PortalReloaded.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Games\Linux\PortalStoriesMel.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="Games\Linux\TheBeginnersGuide.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\TheStanleyParable.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="Games\Linux\ThinkingWithTimeMachine.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="Games\Windows\HalfLife2Episodic.hpp" />
-    <ClInclude Include="Games\Windows\HalfLife2Unpack.hpp" />
-    <ClInclude Include="Games\Windows\HalfLifeSource.hpp" />
-    <ClInclude Include="Games\Windows\INFRA.hpp" />
     <ClInclude Include="Games\Windows\ApertureTag.hpp" />
-    <ClInclude Include="Games\Windows\HalfLife2.hpp" />
-    <ClInclude Include="Games\Windows\Portal.hpp" />
     <ClInclude Include="Games\Windows\Portal2.hpp" />
+    <ClInclude Include="Games\Windows\PortalReloaded.hpp" />
     <ClInclude Include="Games\Windows\PortalStoriesMel.hpp" />
-    <ClInclude Include="Games\Windows\PortalUnpack.hpp" />
-    <ClInclude Include="Games\Windows\TheBeginnersGuide.hpp" />
-    <ClInclude Include="Games\Windows\TheStanleyParable.hpp" />
     <ClInclude Include="Games\Windows\ThinkingWithTimeMachine.hpp" />
     <ClInclude Include="Interface.hpp" />
     <ClInclude Include="Modules.hpp" />
@@ -479,6 +432,7 @@
     <ClInclude Include="Plugin.hpp" />
     <ClInclude Include="SAR.hpp" />
     <ClInclude Include="Utils.hpp" />
+    <ClInclude Include="Utils\json11.hpp" />
     <ClInclude Include="Utils\lodepng.hpp" />
     <ClInclude Include="Utils\Math.hpp" />
     <ClInclude Include="Utils\Memory.hpp" />

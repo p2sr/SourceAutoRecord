@@ -6,7 +6,7 @@
 struct SummaryItem {
     int ticks;
     float time;
-    char* map;
+    std::string map;
 };
 
 class Summary : public Feature {
@@ -18,7 +18,7 @@ public:
 public:
     Summary();
     void Start();
-    void Add(int ticks, float time, char* map);
+    void Add(int ticks, float time, std::string map);
 };
 
 extern Summary* summary;

@@ -87,6 +87,7 @@ void Portal2::LoadOffsets()
     GetClientStateFunction = 4; // CEngineClient::ClientCmd
     Cbuf_AddText = 46; // CEngineClient::ClientCmd
     IsPaused = 86; // CEngineClient
+    Con_IsVisible = 11; // CEngineClient
     s_CommandBuffer = 82; // Cbuf_AddText
     CCommandBufferSize = 9556; // Cbuf_AddText
     m_bWaitEnabled = 8265; // CCommandBuffer::AddText
@@ -115,7 +116,9 @@ void Portal2::LoadOffsets()
     RecordCommand = 8; // CDemoRecorder
     GetPlaybackTick = 3; // CDemoPlayer
     StartPlayback = 5; // CDemoPlayer
+    StopPlayback = 16; // CDemoPlayer
     IsPlayingBack = 6; // CDemoPlayer
+    SkipToTick = 13; // CDemoPlayer
     m_szFileName = 4; // CDemoPlayer::SkipToTick
     m_szDemoBaseName = 1344; // CDemoRecorder::StartupDemoFile
     m_nDemoNumber = 1608; // CDemoRecorder::StartupDemoFile
@@ -133,6 +136,9 @@ void Portal2::LoadOffsets()
     GetCurrentMap = 25; // CEngineTool
     HostFrameTime = 39; //CEngineTool
     ClientTime = 47; //CEngineTool
+    ClientTick = 49; // CEngineTool
+    ServerTick = 45; // CEngineTool
+    HostTick = 41; // CEngineTool
     m_szLevelName = 36; // CEngineTool::GetCurrentMap
     PrecacheModel = 61; // CEngineTool::PrecacheModel
     AddListener = 3; // CGameEventManager
@@ -143,6 +149,7 @@ void Portal2::LoadOffsets()
     AutoCompletionFunc = 66; // listdemo_CompletionFunc
     Key_SetBinding = 135; // unbind
     IsRunningSimulation = 12; // CEngineAPI
+    Init = 3; // CEngineAPI
     eng = 2; // CEngineAPI::IsRunningSimulation
     Frame = 5; // CEngine
     m_bLoadGame = 448; // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
@@ -165,6 +172,14 @@ void Portal2::LoadOffsets()
     SetPosition = 46; // IPhysicsObject
     SetVelocity = 50; // IPhysicsObject
     EnableGravity = 13; // IPhysicsObject
+    VideoMode_Create = 88; // CEngineAPI::Init
+    videomode = 35; // VideoMode_Create
+    GetModeWidth = 14; // IVideoMode
+    GetModeHeight = 15; // IVideoMode
+    ReadScreenPixels = 28; // IVideoMode
+    snd_linear_count = 63; // SND_RecordBuffer
+    snd_p = 98; // SND_RecordBuffer
+    snd_vol = 108; // SND_RecordBuffer
 
     // vstdlib.dll
 
@@ -231,12 +246,13 @@ void Portal2::LoadOffsets()
     m_hTractorBeam = 392; // CPlayerLocalData
     GetPaintPower = 512; // CPortal_Player
     UseSpeedPower = 518; // CPortal_Player
+    StartTouch = 102;
 
     // client.dll
 
     GetAllClasses = 8; // CHLClient
+    LevelInitPreEntity = 5; // CHLClient
     HudProcessInput = 10; // CHLClient
-    HudUpdate = 11; // CHLClient
     C_m_vecAbsOrigin = 156; // C_BasePlayer::GetAbsOrigin
     C_m_angAbsRotation = 192; // C_BasePlayer::GetAbsAngles
     GetClientEntity = 3; // CClientEntityList
@@ -248,8 +264,9 @@ void Portal2::LoadOffsets()
     GetHud = 125; // cc_leaderboard_enable
     FindElement = 135; // cc_leaderboard_enable
     ChatPrintf = 22; // CBaseHudChat
+    MsgFunc_SayText2 = 26; // CBaseHudChat
     DecodeUserCmdFromBuffer = 7; // CInput
-    PerUserInput_tSize = 368; // CInput::DecodeUserCmdFromBuffer
+    PerUserInput_tSize = 376; // CInput::DecodeUserCmdFromBuffer
     m_pCommands = 244; // CInput::DecodeUserCmdFromBuffer
     CUserCmdSize = 96; // CInput::DecodeUserCmdFromBuffer
     MULTIPLAYER_BACKUP = 150; // CInput::DecodeUserCmdFromBuffer
@@ -278,6 +295,8 @@ void Portal2::LoadOffsets()
     FinishDrawing = 603; // CMatSystemSurface::PaintTraverseEx
     DrawColoredText = 160; // CMatSystemSurface
     DrawTextLen = 163; // CMatSystemSurface
+    GetKernedCharWidth = 147; // CMatSystemSurface
+    GetFontName = 132; // CMatSystemSurface
 
     DrawSetTextureFile = 35; // CMatSystemSurface
     DrawSetTextureRGBA = 36; // CMatSystemSurface

@@ -27,14 +27,15 @@ extern int ExecuteClientCmd;
 extern int GetActiveSplitScreenPlayerSlot;
 extern int GetSteamAPIContext;
 extern int IsPaused;
+extern int Con_IsVisible;
 
 // CHLClient
 extern int GetAllClasses;
 extern int HudProcessInput;
-extern int HudUpdate;
 extern int IN_ActivateMouse;
 extern int SteamControllerMove;
 extern int JoyStickApplyMovement;
+extern int LevelInitPreEntity;
 
 // ClientModeShared
 extern int CreateMove;
@@ -58,6 +59,16 @@ extern int GetFontTall;
 extern int PaintTraverseEx;
 extern int DrawColoredText;
 extern int DrawTextLen;
+extern int GetKernedCharWidth;
+extern int GetFontName;
+
+extern int DrawSetTextureFile;
+extern int DrawSetTextureRGBA;
+extern int DrawSetTexture;
+extern int DrawGetTextureSize;
+extern int DrawTexturedRect;
+extern int IsTextureIDValid;
+extern int CreateNewTextureID;
 
 extern int DrawSetTextureFile;
 extern int DrawSetTextureRGBA;
@@ -105,7 +116,9 @@ extern int m_nDemoNumber;
 // CDemoPlayer
 extern int GetPlaybackTick;
 extern int StartPlayback;
+extern int StopPlayback;
 extern int IsPlayingBack;
+extern int SkipToTick;
 extern int m_szFileName;
 
 // CClientState
@@ -140,7 +153,9 @@ extern int m_pSurfaceData;
 extern int m_pShadowStand;
 extern int m_pShadowCrouch;
 extern int m_Local;
-extern int m_hGroundEntity;
+extern int S_m_hGroundEntity;
+extern int C_m_hGroundEntity;
+extern int m_iBonusChallenge;
 
 // CPlayerLocalData
 extern int m_nTractorBeamCount;
@@ -148,15 +163,17 @@ extern int m_hTractorBeam;
 
 // CPortal_Player
 extern int iNumPortalsPlaced;
-extern int m_StatsThisLevel;
 extern int GetPaintPower;
 extern int UseSpeedPower;
+extern int S_m_StatsThisLevel;
+extern int C_m_StatsThisLevel;
 
 // CWeaponPortalgun
 extern int m_bCanFirePortal1;
 extern int m_bCanFirePortal2;
 extern int m_hPrimaryPortal;
 extern int m_hSecondaryPortal;
+extern int m_iPortalLinkageGroupID;
 
 // CProp_Portal
 extern int m_bActivated;
@@ -175,6 +192,9 @@ extern int GetCurrentMap;
 extern int HostFrameTime;
 extern int ClientTime;
 extern int PrecacheModel;
+extern int ClientTick;
+extern int ServerTick;
+extern int HostTick;
 
 // CSchemeManager
 extern int GetIScheme;
@@ -209,6 +229,7 @@ extern int Frame;
 
 // CEngineAPI
 extern int IsRunningSimulation;
+extern int Init;
 
 // CIVDebugOverlay
 extern int ScreenPosition;
@@ -238,6 +259,10 @@ extern int ServerPause;
 //CBaseHudChat
 extern int ChatPrintf;
 
+//CBaseHudChat
+extern int ChatPrintf;
+extern int MsgFunc_SayText2;
+
 // CSteam3Client
 extern int OnGameOverlayActivated;
 
@@ -255,6 +280,11 @@ extern int GetVelocity;
 extern int SetPosition;
 extern int SetVelocity;
 extern int EnableGravity;
+
+// IVideoMode
+extern int GetModeWidth;
+extern int GetModeHeight;
+extern int ReadScreenPixels;
 
 // Others
 extern int tickcount;
@@ -303,4 +333,12 @@ extern int PerUserInput_tSize;
 extern int GetLocalClient;
 extern int MAX_SPLITSCREEN_PLAYERS;
 extern int net_time;
+extern int VideoMode_Create;
+extern int videomode;
+extern int VID_ProcessMovieFrame_1;
+extern int VID_ProcessMovieFrame_2;
+extern int snd_linear_count;
+extern int snd_p;
+extern int snd_vol;
+extern int StartTouch;
 }

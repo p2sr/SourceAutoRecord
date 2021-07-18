@@ -55,7 +55,7 @@ void Stats::ResetAll()
 
 // Commands
 
-CON_COMMAND(sar_stats_jump, "Prints jump stats.\n")
+CON_COMMAND(sar_stats_jump, "sar_stats_jump - prints jump stats\n")
 {
     auto stat = stats->Get(GET_SLOT());
 
@@ -70,12 +70,12 @@ CON_COMMAND(sar_stats_jump, "Prints jump stats.\n")
     console->Print("Peak: %.3f %s\n", stat->jumps->distancePeak, type.c_str());
     console->Print("Jumps: %i\n", stat->jumps->total);
 }
-CON_COMMAND(sar_stats_steps, "Prints total amount of steps.\n")
+CON_COMMAND(sar_stats_steps, "sar_stats_steps - prints total amount of steps\n")
 {
     auto stat = stats->Get(GET_SLOT());
     console->Print("Steps: %i\n", stat->jumps->total);
 }
-CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
+CON_COMMAND(sar_stats_velocity, "sar_stats_velocity - prints velocity stats\n")
 {
     auto nSlot = GET_SLOT();
     auto stat = stats->Get(nSlot);
@@ -95,19 +95,19 @@ CON_COMMAND(sar_stats_velocity, "Prints velocity stats.\n")
 
     console->Print("Peak: %.3f %s\n", stat->velocity->peak, type.c_str());
 }
-CON_COMMAND(sar_stats_jumps_reset, "Resets total jump count and jump distance peak.\n")
+CON_COMMAND(sar_stats_jumps_reset, "sar_stats_jumps_reset - resets total jump count and jump distance peak\n")
 {
     stats->Get(GET_SLOT())->jumps->Reset();
 }
-CON_COMMAND(sar_stats_steps_reset, "Resets total step count.\n")
+CON_COMMAND(sar_stats_steps_reset, "sar_stats_steps_reset - resets total step count\n")
 {
     stats->Get(GET_SLOT())->steps->Reset();
 }
-CON_COMMAND(sar_stats_velocity_reset, "Resets velocity peak.\n")
+CON_COMMAND(sar_stats_velocity_reset, "sar_stats_velocity_reset - resets velocity peak\n")
 {
     stats->Get(GET_SLOT())->velocity->Reset();
 }
-CON_COMMAND(sar_stats_reset, "Resets all saved stats.\n")
+CON_COMMAND(sar_stats_reset, "sar_stats_reset - resets all saved stats\n")
 {
     stats->Get(GET_SLOT())->Reset();
 }
@@ -119,7 +119,7 @@ HUD_ELEMENT2(jumps, "0", "Draws total jump count.\n", HudType_InGame | HudType_P
     auto stat = stats->Get(ctx->slot);
     ctx->DrawElement("jumps: %i", stat->jumps->total);
 }
-HUD_ELEMENT3(portals, "0", "Draws total portal count.\n", HudType_InGame | HudType_Paused, true, SourceGame_Portal2Game | SourceGame_Portal)
+HUD_ELEMENT2(portals, "0", "Draws total portal count.\n", HudType_InGame | HudType_Paused)
 {
     auto player = server->GetPlayer(ctx->slot + 1);
     if (player) {
@@ -149,7 +149,7 @@ HUD_ELEMENT2(velocity_peak, "0", "Draws last saved velocity peak.\n", HudType_In
     ctx->DrawElement("vel peak: %.3f", stat->velocity->peak);
 }
 
-CON_COMMAND(sar_export_stats, "sar_export_stats [filePath]. Export the stats to the specifed path in a .csv file.\n")
+CON_COMMAND(sar_export_stats, "sar_export_stats <filepath> -  export the stats to the specifed path in a .csv file\n")
 {
     auto nSlot = GET_SLOT();
     auto stat = stats->Get(nSlot);
@@ -164,13 +164,13 @@ CON_COMMAND(sar_export_stats, "sar_export_stats [filePath]. Export the stats to 
     }
 
     if (!result) {
-        return console->Print("Couldn't write to this path. Please verify you actually can write here or the folder exits : \"%s\".\n", path.c_str());
+        return console->Print("Couldn't write to this path. Please verify you actually can write here or the folder exits: \"%s\".\n", path.c_str());
     }
 
-    console->Print("Datas has been sucessfully exported.\n");
+    console->Print("Datas has been successfully exported.\n");
 }
 
-CON_COMMAND(sar_import_stats, "sar_import_stats [filePath]. Import the stats from the specified .csv file.\n")
+CON_COMMAND(sar_import_stats, "sar_import_stats <filePath> - import the stats from the specified .csv file\n")
 {
     auto nSlot = GET_SLOT();
     auto stat = stats->Get(nSlot);
@@ -185,13 +185,13 @@ CON_COMMAND(sar_import_stats, "sar_import_stats [filePath]. Import the stats fro
     }
 
     if (!result) {
-        return console->Print("Couldn't open the file. Are you sure the file is here ? : \"%s\".\n", path.c_str());
+        return console->Print("Couldn't open the file. Are you sure the file is here? : \"%s\".\n", path.c_str());
     }
 
-    console->Print("Datas has been sucessfully loaded.\n");
+    console->Print("Datas has been successfully loaded.\n");
 }
 
-CON_COMMAND(sar_print_stats, "sar_print_stats. Prints your statistics if those are loaded.\n")
+CON_COMMAND(sar_print_stats, "sar_print_stats - prints your statistics if those are loaded\n")
 {
     auto current = 1;
     auto nSlot = GET_SLOT();

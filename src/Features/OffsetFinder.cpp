@@ -57,23 +57,13 @@ void OffsetFinder::ClientSide(const char* className, const char* propName, int* 
 }
 int16_t OffsetFinder::Find(SendTable* table, const char* propName)
 {
-    auto size = sar.game->Is(SourceGame_Portal2Engine) ? sizeof(SendProp2) : sizeof(SendProp);
-
     for (auto i = 0; i < table->m_nProps; ++i) {
-        auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + size * i);
+        auto prop = *reinterpret_cast<SendProp*>((uintptr_t)table->m_pProps + sizeof (SendProp) * i);
 
         auto name = prop.m_pVarName;
         auto offset = prop.m_Offset;
         auto type = prop.m_Type;
         auto nextTable = prop.m_pDataTable;
-
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            auto temp = *reinterpret_cast<SendProp2*>(&prop);
-            name = temp.m_pVarName;
-            offset = temp.m_Offset;
-            type = temp.m_Type;
-            nextTable = temp.m_pDataTable;
-        }
 
         if (!std::strcmp(name, propName)) {
             return offset;
@@ -118,8 +108,7 @@ int16_t OffsetFinder::Find(RecvTable* table, const char* propName)
 
 // Commands
 
-CON_COMMAND(sar_find_server_offset, "Finds prop offset in specified server class.\n"
-                                    "Usage: sar_find_server_offset <class_name> <prop_name>\n")
+CON_COMMAND(sar_find_server_offset, "sar_find_server_offset <class_name> <prop_name> - finds prop offset in specified server class\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_find_server_offset.ThisPtr()->m_pszHelpString);
@@ -129,8 +118,7 @@ CON_COMMAND(sar_find_server_offset, "Finds prop offset in specified server class
     offsetFinder->ServerSide(args[1], args[2], &offset);
     console->Print("%s::%s = %d\n", args[1], args[2], offset);
 }
-CON_COMMAND(sar_find_client_offset, "Finds prop offset in specified client class.\n"
-                                    "Usage: sar_find_client_offset <class_name> <prop_name>\n")
+CON_COMMAND(sar_find_client_offset, "sar_find_client_offset <class_name> <prop_name> - finds prop offset in specified client class\n")
 {
     if (args.ArgC() != 3) {
         return console->Print(sar_find_client_offset.ThisPtr()->m_pszHelpString);

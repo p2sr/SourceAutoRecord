@@ -7,7 +7,7 @@
 
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
-#include "Modules/Server.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Surface.hpp"
 
 #include "Variable.hpp"
@@ -20,7 +20,7 @@ Variable sar_lphud_y("sar_lphud_y", "-10", -99999, 99999, "y pos of lp counter.\
 Variable sar_lphud_font("sar_lphud_font", "92", 0, "Change font of portal counter.\n");
 
 LPHud::LPHud()
-    : Hud(HudType_InGame, true, SourceGame_SupportsS3)
+    : Hud(HudType_InGame, true)
 {
 }
 bool LPHud::ShouldDraw()
@@ -49,11 +49,11 @@ void LPHud::Update()
     if (!enabled)
         return;
 
-    void* player = server->GetPlayer(1);
+    void* player = client->GetPlayer(1);
     if (player == nullptr) {
         //portalsCountFull = 0;
     } else {
-        int* iNumPortalsPlaced = reinterpret_cast<int*>((uintptr_t)player + Offsets::m_StatsThisLevel + 4);
+        int* iNumPortalsPlaced = reinterpret_cast<int*>((uintptr_t)player + Offsets::C_m_StatsThisLevel + 4);
 
         if (oldInGamePortalCounter != *iNumPortalsPlaced) {
             if (oldInGamePortalCounter < *iNumPortalsPlaced) {
@@ -142,7 +142,7 @@ void LPHud::Set(int count)
     countHistory.push_back({ engine->GetTick(), count });
 }
 
-CON_COMMAND(sar_lphud_set, "sar_lphud_set <number> : Sets lp counter to given number.\n")
+CON_COMMAND(sar_lphud_set, "sar_lphud_set <number> - sets lp counter to given number\n")
 {
     IGNORE_DEMO_PLAYER();
 

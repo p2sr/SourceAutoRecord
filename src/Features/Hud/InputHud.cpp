@@ -60,7 +60,7 @@ InputHud inputHud;
 InputHud inputHud2;
 
 InputHud::InputHud()
-    : Hud(HudType_InGame | HudType_LoadingScreen, true, SourceGame_Portal2Engine)
+    : Hud(HudType_InGame | HudType_LoadingScreen, true)
     , buttonBits{ 0, 0 }
 {
 }
@@ -276,8 +276,7 @@ int sar_ihud_setlayout_CompletionFunc(const char* partial,
 
 // Commands
 
-CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of input HUD.\n"
-                                          "Usage: sar_ihud_setpos <top, center or bottom> <left, center or right>\n",
+CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "sar_ihud_setpos <top|center|bottom> <left|center|right> - automatically sets the position of input HUD\n",
     0,
     sar_ihud_setpos_CompletionFunc)
 {
@@ -323,7 +322,7 @@ CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "Sets automatically the position of in
     sar_ihud_y.SetValue(yPos);
 }
 
-CON_COMMAND_F_COMPLETION(sar_ihud_setlayout, "Suggests keyboard layouts for sar_ihud_layout.\n", 0, sar_ihud_setlayout_CompletionFunc)
+CON_COMMAND_F_COMPLETION(sar_ihud_setlayout, "sar_ihud_setlayout - suggests keyboard layouts for sar_ihud_layout\n", 0, sar_ihud_setlayout_CompletionFunc)
 {
     if (args.ArgC() != 2) {
         return console->Print(sar_ihud_setlayout.ThisPtr()->m_pszHelpString);

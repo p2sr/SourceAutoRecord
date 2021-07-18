@@ -17,7 +17,7 @@ Variable sar_hud_strafesync_font_index("sar_hud_strafesync_font_index", "1", 0, 
 StrafeSyncHud strafeSyncHud;
 
 StrafeSyncHud::StrafeSyncHud()
-    : Hud(HudType_InGame | HudType_Paused | HudType_Menu, true, SourceGame_Portal2Engine)
+    : Hud(HudType_InGame | HudType_Paused | HudType_Menu, true)
 {
 }
 bool StrafeSyncHud::ShouldDraw()
@@ -26,7 +26,6 @@ bool StrafeSyncHud::ShouldDraw()
 }
 void StrafeSyncHud::Paint(int slot)
 {
-
     int width, height;
 #ifdef _WIN32
     engine->GetScreenSize(width, height);
@@ -40,7 +39,7 @@ void StrafeSyncHud::Paint(int slot)
     auto font = scheme->GetDefaultFont() + sar_hud_strafesync_font_index.GetInt();
     auto fontColor = this->GetColor(sar_hud_strafesync_color.GetString());
 
-    surface->DrawTxt(font, xOffset, yOffset, fontColor, "%.2f", synchro->GetStrafeSync());
+    surface->DrawTxt(font, xOffset, yOffset, fontColor, "%.2f", synchro->GetStrafeSync(slot));
 
     for (int i = 0; i < synchro->splits.size(); ++i) {
         char txt[16];

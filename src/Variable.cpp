@@ -60,31 +60,30 @@ Variable::Variable(const char* name, const char* value, float min, float max, co
 }
 void Variable::Create(const char* name, const char* value, int flags, const char* helpstr, bool hasmin, float min, bool hasmax, float max, FnChangeCallback_t callback)
 {
-    this->ptr = new ConVar(name, value, flags, helpstr, hasmin, min, hasmax, max, callback);
+    this->ptr = new ConVar(name, value, flags, helpstr, hasmin, min, hasmax, max);
+    this->AddCallBack(callback);
 
     Variable::GetList().push_back(this);
 }
 void Variable::Realloc()
 {
-    if (sar.game->Is(SourceGame_Portal2Engine)) {
-        auto newptr = new ConVar2(
-            this->ptr->m_pszName,
-            this->ptr->m_pszDefaultValue,
-            this->ptr->m_nFlags,
-            this->ptr->m_pszHelpString,
-            this->ptr->m_bHasMin,
-            this->ptr->m_fMinVal,
-            this->ptr->m_bHasMax,
-            this->ptr->m_fMaxVal);
-        delete this->ptr;
-        this->ptr = reinterpret_cast<ConVar*>(newptr);
-    }
+    auto newptr = new ConVar(
+        this->ptr->m_pszName,
+        this->ptr->m_pszDefaultValue,
+        this->ptr->m_nFlags,
+        this->ptr->m_pszHelpString,
+        this->ptr->m_bHasMin,
+        this->ptr->m_fMinVal,
+        this->ptr->m_bHasMax,
+        this->ptr->m_fMaxVal);
+    delete this->ptr;
+    this->ptr = newptr;
 }
 void Variable::AddCallBack(FnChangeCallback_t callback)
 {
-    if (sar.game->Is(SourceGame_Portal2Engine) && callback != nullptr) {
-        this->originalCallbacks = this->ThisPtr2()->m_fnChangeCallback;
-        this->ThisPtr2()->m_fnChangeCallback.Append(callback);
+    if (callback != nullptr) {
+        this->originalCallbacks = this->ThisPtr()->m_fnChangeCallback;
+        this->ThisPtr()->m_fnChangeCallback.Append(callback);
         this->hasCustomCallback = true;
         this->GetList().push_back(this);
     }
@@ -92,10 +91,6 @@ void Variable::AddCallBack(FnChangeCallback_t callback)
 ConVar* Variable::ThisPtr()
 {
     return this->ptr;
-}
-ConVar2* Variable::ThisPtr2()
-{
-    return reinterpret_cast<ConVar2*>(this->ptr);
 }
 bool Variable::GetBool()
 {
@@ -167,23 +162,14 @@ void Variable::Lock()
 void Variable::DisableChange()
 {
     if (this->ptr) {
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            this->originalSize = ((ConVar2*)this->ptr)->m_fnChangeCallback.m_Size;
-            ((ConVar2*)this->ptr)->m_fnChangeCallback.m_Size = 0;
-        } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-            this->originalFnChangeCallback = this->ptr->m_fnChangeCallback;
-            this->ptr->m_fnChangeCallback = nullptr;
-        }
+        this->originalSize = this->ptr->m_fnChangeCallback.m_Size;
+        this->ptr->m_fnChangeCallback.m_Size = 0;
     }
 }
 void Variable::EnableChange()
 {
     if (this->ptr) {
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            ((ConVar2*)this->ptr)->m_fnChangeCallback.m_Size = this->originalSize;
-        } else if (sar.game->Is(SourceGame_HalfLife2Engine)) {
-            this->ptr->m_fnChangeCallback = this->originalFnChangeCallback;
-        }
+        this->ptr->m_fnChangeCallback.m_Size = this->originalSize;
     }
 }
 void Variable::UniqueFor(int version)
@@ -194,7 +180,7 @@ void Variable::Register()
 {
     if (!this->isRegistered && !this->isReference && this->ptr) {
         this->isRegistered = true;
-        FnChangeCallback_t callback = this->ptr->m_fnChangeCallback;
+        FnChangeCallback_t callback = this->ptr->m_fnChangeCallback.m_Size > 0 ? this->ptr->m_fnChangeCallback.m_pElements[0] : nullptr;
         this->Realloc();
         this->ptr->ConCommandBase_VTable = tier1->ConVar_VTable;
         this->ptr->ConVar_VTable = tier1->ConVar_VTable2;
@@ -231,7 +217,7 @@ void Variable::ClearAllCallbacks()
 {
     for (auto var : Variable::GetList()) {
         if (var->hasCustomCallback) {
-            var->ThisPtr2()->m_fnChangeCallback = var->originalCallbacks;
+            var->ThisPtr()->m_fnChangeCallback = var->originalCallbacks;
             var->hasCustomCallback = false;
         }
     }

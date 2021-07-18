@@ -42,16 +42,14 @@ DETOUR(InputSystem::SleepUntilInput, int nMaxSleepTimeMS)
 
 bool InputSystem::Init()
 {
-    this->g_InputSystem = Interface::Create(this->Name(), "InputSystemVersion0");
+    this->g_InputSystem = Interface::Create(this->Name(), "InputSystemVersion001");
     if (this->g_InputSystem) {
         this->StringToButtonCode = this->g_InputSystem->Original<_StringToButtonCode>(Offsets::StringToButtonCode);
 
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            this->g_InputSystem->Hook(InputSystem::SleepUntilInput_Hook, InputSystem::SleepUntilInput, Offsets::SleepUntilInput);
-            this->IsButtonDown = this->g_InputSystem->Original<_IsButtonDown>(Offsets::IsButtonDown);
-            this->GetCursorPosition = this->g_InputSystem->Original<_GetCursorPosition>(Offsets::GetCursorPosition);
-            this->SetCursorPosition = this->g_InputSystem->Original<_SetCursorPosition>(Offsets::SetCursorPosition);
-        }
+        this->g_InputSystem->Hook(InputSystem::SleepUntilInput_Hook, InputSystem::SleepUntilInput, Offsets::SleepUntilInput);
+        this->IsButtonDown = this->g_InputSystem->Original<_IsButtonDown>(Offsets::IsButtonDown);
+        this->GetCursorPosition = this->g_InputSystem->Original<_GetCursorPosition>(Offsets::GetCursorPosition);
+        this->SetCursorPosition = this->g_InputSystem->Original<_SetCursorPosition>(Offsets::SetCursorPosition);
     }
 
     auto unbind = Command("unbind");

@@ -6,12 +6,13 @@
 #include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
 #include "Features/Hud/Crosshair.hpp"
+#include "Features/Hud/StrafeQuality.hpp"
+#include "Features/Hud/ScrollSpeed.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Routing/SeamshotFind.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Speedrun/CustomCategories.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Tas/TasPlayer.hpp"
@@ -21,10 +22,8 @@
 #include "Features/Timer/Timer.hpp"
 #include "Features/TimescaleDetect.hpp"
 #include "Features/SegmentedTools.hpp"
+#include "Features/NetMessage.hpp"
 #include "Features/GroundFramesCounter.hpp"
-#include "Features/Stats/ZachStats.hpp"
-#include "Features/ConditionalExec.hpp"
-
 
 #include "Engine.hpp"
 #include "Client.hpp"
@@ -34,6 +33,11 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+#include "Event.hpp"
+#include "Hook.hpp"
+
+#define RESET_COOP_PROGRESS_MESSAGE_TYPE "coop-reset"
+#define CM_FLAGS_MESSAGE_TYPE "cm-flags"
 
 Variable sv_cheats;
 Variable sv_footsteps;
@@ -56,6 +60,7 @@ REDECL(Server::AirMove);
 REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
 REDECL(Server::ProcessMovement);
+REDECL(Server::StartTouchChallengeNode);
 #ifdef _WIN32
 REDECL(Server::AirMove_Skip);
 REDECL(Server::AirMove_Continue);
@@ -103,11 +108,18 @@ void Server::KillEntity(void* entity)
     variant_t val = {0};
     val.fieldType = FIELD_VOID;
     void* player = this->GetPlayer(1);
-#ifdef _WIN32
     server->AcceptInput(entity, "Kill", player, player, val, 0);
-#else
-    server->AcceptInput(entity, "Kill", player, player, &val, 0);
-#endif
+}
+
+float Server::GetCMTimer()
+{
+    void *player = this->GetPlayer(1);
+    if (!player) {
+        void *clPlayer = client->GetPlayer(1);
+        if (!clPlayer) return 0.0f;
+        return *(float *)((uintptr_t)clPlayer + Offsets::C_m_StatsThisLevel + 12);
+    }
+    return *(float *)((uintptr_t)player + Offsets::S_m_StatsThisLevel + 12);
 }
 
 // CGameMovement::CheckJumpButton
@@ -144,8 +156,6 @@ DETOUR_T(bool, Server::CheckJumpButton)
         ++stat->jumps->total;
         ++stat->steps->total;
         stat->jumps->StartTrace(server->GetAbsOrigin(player));
-
-        groundFramesCounter->HandleJump();
     }
 
     return jumped;
@@ -194,26 +204,78 @@ DETOUR(Server::PlayerMove)
 }
 
 // CGameMovement::ProcessMovement
-DETOUR(Server::ProcessMovement, void* pPlayer, CMoveData* pMove)
+DETOUR(Server::ProcessMovement, void* player, CMoveData* move)
 {
     if (!engine->IsGamePaused()) {
-        auto playerInfo = tasPlayer->GetPlayerInfo(pPlayer, pMove);
+        auto playerInfo = tasPlayer->GetPlayerInfo(player, move);
         if (sar_tas_real_controller_debug.GetInt() == 3) {
-            console->Print("Jump input state at tick %d: %s\n", playerInfo.tick, (pMove->m_nButtons & IN_JUMP) ? "true" : "false");
+            console->Print("Jump input state at tick %d: %s\n", playerInfo.tick, (move->m_nButtons & IN_JUMP) ? "true" : "false");
         }
     }
     
 
     if (tasPlayer->IsActive() && sar_tas_tools_enabled.GetBool()) {
-        tasPlayer->PostProcess(pPlayer, pMove);
+        tasPlayer->PostProcess(player, move);
     }
 
-    unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)pPlayer + Offsets::m_hGroundEntity);
-    bool grounded = groundEntity != 0xFFFFFFFF;
-    groundFramesCounter->HandleMovementFrame(grounded);
+    unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
+    bool grounded = groundHandle != 0xFFFFFFFF;
+    int slot = client->GetSplitScreenPlayerSlot(player);
+    groundFramesCounter->HandleMovementFrame(slot, grounded);
+    strafeQuality.OnMovement(slot, grounded);
+    if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
 
-    return Server::ProcessMovement(thisptr, pPlayer, pMove);
+    return Server::ProcessMovement(thisptr, player, move);
 }
+
+ON_INIT {
+    NetMessage::RegisterHandler(CM_FLAGS_MESSAGE_TYPE, +[](void *data, size_t size) {
+        if (size == 6 && engine->IsOrange()) {
+            char slot = *(char *)data;
+            float time = *(float *)((uintptr_t)data + 1);
+            bool end = !!*(char *)((uintptr_t)data + 5);
+            Event::Trigger<Event::CM_FLAGS>({ slot, time, end });
+        }
+    });
+}
+
+static inline bool hasSlotCompleted(void *thisptr, int slot) {
+#ifdef _WIN32
+    return *(uint8_t *)((uintptr_t)thisptr + 0x4B0 + slot);
+#else
+    return *(uint8_t *)((uintptr_t)thisptr + 0x4C8 + slot);
+#endif
+}
+
+static void TriggerCMFlag(int slot, float time, bool end)
+{
+    Event::Trigger<Event::CM_FLAGS>({ slot, time, end });
+    if (engine->IsCoop()) {
+        char data[6];
+        data[0] = (char)slot;
+        *(float *)(data + 1) = time;
+        data[5] = (char)end;
+        NetMessage::SendMsg(CM_FLAGS_MESSAGE_TYPE, data, sizeof data);
+    }
+}
+
+extern Hook g_flagStartTouchHook;
+DETOUR(Server::StartTouchChallengeNode, void* entity)
+{
+    g_flagStartTouchHook.Disable();
+    auto ret = Server::StartTouchChallengeNode(thisptr, entity);
+    g_flagStartTouchHook.Enable();
+
+    if (server->IsPlayer(entity)) {
+        int slot = server->GetSplitScreenPlayerSlot(entity);
+        float time = server->GetCMTimer();
+        bool end = !engine->IsCoop() || hasSlotCompleted(thisptr, slot == 1 ? 0 : 1);
+        TriggerCMFlag(slot, time, end);
+    }
+
+    return ret;
+}
+Hook g_flagStartTouchHook(&Server::StartTouchChallengeNode_Hook);
 
 // CGameMovement::FinishGravity
 DETOUR(Server::FinishGravity)
@@ -305,35 +367,74 @@ DETOUR_MID_MH(Server::AirMove_Mid)
 }
 #endif
 
-// Not a normal detour! Only gets first 4 args and doesn't have to call
-// original function
-static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, void* activator, void* caller, variant_t *parameter)
-{
-    CheckCustomCategoryRules(thisptr, inputName);
-    zachStats->CheckZyntexTriggers(thisptr, inputName);
-    if (engine->demorecorder->isRecordingDemo) {
-        const char *entName = server->GetEntityName(thisptr);
-        const char *className = server->GetEntityClassName(thisptr);
-        if (!entName) entName = "";
-        if (!className) className = "";
+extern Hook g_AcceptInputHook;
 
+// TODO: the windows signature is a bit dumb. fastcall is like thiscall
+// but for normal functions and takes an arg in edx, so we use it
+// because msvc won't let us use thiscall on a non-member function
+#ifdef _WIN32
+static void __fastcall AcceptInput_Hook(void* thisptr, void* unused, const char* inputName, void* activator, void* caller, variant_t parameter, int outputID)
+#else
+static void __cdecl AcceptInput_Hook(void* thisptr, const char* inputName, void* activator, void* caller, variant_t &parameter, int outputID)
+#endif
+{
+    const char *entName = server->GetEntityName(thisptr);
+    const char *className = server->GetEntityClassName(thisptr);
+    if (!entName) entName = "";
+    if (!className) className = "";
+
+    std::optional<int> activatorSlot;
+
+    if (activator && server->IsPlayer(activator)) {
+        activatorSlot = server->GetSplitScreenPlayerSlot(activator);
+    }
+
+    SpeedrunTimer::TestInputRules(entName, className, inputName, parameter.ToString(), activatorSlot);
+
+    if (engine->demorecorder->isRecordingDemo) {
         size_t entNameLen = strlen(entName);
         size_t classNameLen = strlen(className);
         size_t inputNameLen = strlen(inputName);
 
-        const char *paramStr = parameter->ToString();
+        const char *paramStr = parameter.ToString();
 
         size_t len = entNameLen + classNameLen + inputNameLen + strlen(paramStr) + 5;
+        if (activatorSlot) {
+            len += 1;
+        }
         char *data = (char *)malloc(len);
-        data[0] = 0x03;
-        strcpy(data + 1, entName);
-        strcpy(data + 2 + entNameLen, className);
-        strcpy(data + 3 + entNameLen + classNameLen, inputName);
-        strcpy(data + 4 + entNameLen + classNameLen + inputNameLen, paramStr);
+        char *data1 = data;
+        if (!activatorSlot) {
+            data[0] = 0x03;
+        } else {
+            data[0] = 0x04;
+            data[1] = *activatorSlot;
+            ++data1;
+        }
+        strcpy(data1 + 1, entName);
+        strcpy(data1 + 2 + entNameLen, className);
+        strcpy(data1 + 3 + entNameLen + classNameLen, inputName);
+        strcpy(data1 + 4 + entNameLen + classNameLen + inputNameLen, paramStr);
         engine->demorecorder->RecordData(data, len);
         free(data);
     }
-    //console->DevMsg("%.4d INPUT %s TARGETNAME %s CLASSNAME %s\n", session->GetTick(), inputName, server->GetEntityName(thisptr), server->GetEntityClassName(thisptr));
+    //console->DevMsg("%.4d %s.%s(%s)\n", session->GetTick(), server->GetEntityName(thisptr), inputName, parameter.ToString());
+
+    // HACKHACK
+    // Deals with maps where you hit a normal transition trigger
+    if (!strcmp(className, "portal_stats_controller") && !strcmp(inputName, "OnLevelEnd") && client->GetChallengeStatus() == CMStatus::CHALLENGE) {
+        float time = server->GetCMTimer();
+        if (engine->IsCoop()) {
+            TriggerCMFlag(0, time, false);
+            TriggerCMFlag(1, time, true);
+        } else {
+            TriggerCMFlag(0, time, true);
+        }
+    }
+
+    g_AcceptInputHook.Disable();
+    server->AcceptInput(thisptr, inputName, activator, caller, parameter, outputID);
+    g_AcceptInputHook.Enable();
 }
 
 // This is kinda annoying - it's got to be in a separate function
@@ -341,78 +442,33 @@ static void __cdecl AcceptInput_Detour(void* thisptr, const char* inputName, voi
 // of CBaseEntity::AcceptInput, but we generally can't do that until
 // we've loaded into a level.
 static bool IsAcceptInputTrampolineInitialized = false;
+Hook g_AcceptInputHook(&AcceptInput_Hook);
 static void InitAcceptInputTrampoline()
 {
-    void* ent = (CEntInfo2*)(server->m_EntPtrArray + 0)->m_pEntity;
+    void* ent = server->m_EntPtrArray[0].m_pEntity;
     if (ent == nullptr) return;
     IsAcceptInputTrampolineInitialized = true;
     server->AcceptInput = Memory::VMT<Server::_AcceptInput>(ent, Offsets::AcceptInput);
 
-    // Trampoline! Bouncy bouncy!
+    g_AcceptInputHook.SetFunc(server->AcceptInput);
+}
 
-    // Get around memory protection so we can modify code
-    Memory::UnProtect((void*)server->AcceptInput, 8);
+static bool g_IsCMFlagHookInitialized = false;
+static void InitCMFlagHook()
+{
+    for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+        void* ent = server->m_EntPtrArray[i].m_pEntity;
+        if (!ent) continue;
 
-#ifdef _WIN32
-    // Create our code
-    static uint8_t trampolineCode[] = {
-        0x55,             // 00: push ebp                 (we overwrote these 2 instructions)
-        0x89, 0xE5,       // 01: mov ebp, esp
-        0x8D, 0x45, 0x14, // 03: lea eax, [ebp + 0x14]    (we take a pointer to the variant_t, for simplicity and consistency with Linux)
-        0x50,             // 06: push eax                 (we want to take the first 5 args in our detour function)
-        0xFF, 0x75, 0x10, // 07: push dword [ebp + 0x10]
-        0xFF, 0x75, 0x0C, // 0A: push dword [ebp + 0x0C]
-        0xFF, 0x75, 0x08, // 0D: push dword [ebp + 0x08]
-        0x51,             // 10: push ecx                 (ecx=thisptr, because of thiscall convention)
-        0xE8, 0, 0, 0, 0, // 11: call ??                  (to be filled with address of detour function)
-        0x59,             // 16: pop ecx                  (it may have been clobbered by the cdecl detour function)
-        0x83, 0xC4, 0x0C, // 17: add esp, 0x0C            (pop the other args to the detour function)
-        0xA1, 0, 0, 0, 0, // 1A: mov eax, ??              (to be filled with the address from the other instruction we overwrote)
-        0xE9, 0, 0, 0, 0, // 1F: jmp ??                   (to be filled with the address of code to return to)
-    };
+        auto classname = server->GetEntityClassName(ent);
+        if (!classname || strcmp(classname, "challenge_mode_end_node")) continue;
 
-    *(uint32_t*)(trampolineCode + 0x12) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x12 + 4);
-    *(uint32_t*)(trampolineCode + 0x1B) = *(uint32_t*)((uint32_t)server->AcceptInput + 4); // The address we need to steal is 4 bytes into the function
-    *(uint32_t*)(trampolineCode + 0x20) = (uint32_t)server->AcceptInput + 8 - ((uint32_t)trampolineCode + 0x20 + 4);
+        Server::StartTouchChallengeNode = Memory::VMT<Server::_StartTouchChallengeNode>(ent, Offsets::StartTouch);
+        g_flagStartTouchHook.SetFunc(Server::StartTouchChallengeNode);
+        g_IsCMFlagHookInitialized = true;
 
-    Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
-
-    // Write the trampoline instruction, followed by some NOPs
-    *(uint8_t*)server->AcceptInput = 0xE9; // 32-bit relative JMP
-    uint32_t jumpAddr = (uint32_t)server->AcceptInput + 1;
-    *(uint32_t*)jumpAddr = (uint32_t)trampolineCode - (jumpAddr + 4);
-    // 3 NOPs - not strictly necessary as we jump past them anyway, but
-    // it'll stop disassemblers getting confused which is nice
-    ((uint8_t*)server->AcceptInput)[5] = 0x90;
-    ((uint8_t*)server->AcceptInput)[6] = 0x90;
-    ((uint8_t*)server->AcceptInput)[7] = 0x90;
-#else
-    // Create our code
-    static uint8_t trampolineCode[] = {
-        0x55,             // 00: push ebp                 (we overwrote these 4 instructions)
-        0x89, 0xE5,       // 01: mov ebp, esp
-        0x57,             // 03: push edi
-        0x56,             // 04: push esi
-        0xFF, 0x75, 0x18, // 05: push dword [ebp + 0x18]  (we want to take the first 5 args in our detour function)
-        0xFF, 0x75, 0x14, // 08: push dword [ebp + 0x14]
-        0xFF, 0x75, 0x10, // 0B: push dword [ebp + 0x10]
-        0xFF, 0x75, 0x0C, // 0E: push dword [ebp + 0x0C]
-        0xFF, 0x75, 0x08, // 11: push dword [ebp + 0x08]
-        0xE8, 0, 0, 0, 0, // 14: call ??                  (to be filled with address of detour function)
-        0x83, 0xC4, 0x14, // 19: add esp, 0x14            (pop the args to the detour function)
-        0xE9, 0, 0, 0, 0, // 1C: jmp ??                   (to be filled with address of code to return to)
-    };
-
-    *(uint32_t*)(trampolineCode + 0x15) = (uint32_t)&AcceptInput_Detour     - ((uint32_t)trampolineCode + 0x15 + 4);
-    *(uint32_t*)(trampolineCode + 0x1D) = (uint32_t)server->AcceptInput + 5 - ((uint32_t)trampolineCode + 0x1D + 4); // Return just after the code we overwrote (hence +5)
-
-    Memory::UnProtect(trampolineCode, sizeof trampolineCode); // So it can be executed
-
-    // Write the trampoline instruction
-    *(uint8_t*)server->AcceptInput = 0xE9; // 32-bit relative JMP
-    uint32_t jumpAddr = (uint32_t)server->AcceptInput + 1;
-    *(uint32_t*)jumpAddr = (uint32_t)trampolineCode - (jumpAddr + 4);
-#endif
+        break;
+    }
 }
 
 // CServerGameDLL::GameFrame
@@ -422,78 +478,28 @@ DETOUR_STD(void, Server::GameFrame, bool simulating)
 DETOUR(Server::GameFrame, bool simulating)
 #endif
 {
+    if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
+    if (!g_IsCMFlagHookInitialized) InitCMFlagHook();
 
     tasPlayer->Update();
-    
-    
-    if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
-    TickCustomCategories();
-    RunSeqs();
 
-    if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
-        if (!simulating && !pauseTimer->IsActive()) {
-            pauseTimer->Start();
-        } else if (simulating && pauseTimer->IsActive()) {
-            pauseTimer->Stop();
-            console->DevMsg("Paused for %i non-simulated ticks.\n", pauseTimer->GetTotal());
-        }
+    if (sar_tick_debug.GetInt() >= 3 || (sar_tick_debug.GetInt() >= 2 && simulating)) {
+        int host, server, client;
+        engine->GetTicks(host, server, client);
+        console->Print("CServerGameDLL::GameFrame %s (host=%d server=%d client=%d)\n", simulating ? "simulating" : "non-simulating", host, server, client);
     }
 
-    if (session->isRunning)
-        engine->NewTick(session->GetTick());
+    int tick = session->GetTick();
 
-    
+    Event::Trigger<Event::PRE_TICK>({ simulating, tick });
+
 #ifdef _WIN32
     Server::GameFrame(simulating);
 #else
     auto result = Server::GameFrame(thisptr, simulating);
 #endif
 
-    
-
-    if ((session->isRunning && session->GetTick() == 16) || fovChanger->needToUpdate) {
-        fovChanger->Force();
-    }
-
-    if (session->isRunning && pauseTimer->IsActive()) {
-        pauseTimer->Increment();
-
-        if (speedrun->IsActive() && sar_speedrun_time_pauses.GetBool()) {
-            speedrun->IncrementPauseTime();
-        }
-
-        if (timer->isRunning && sar_timer_time_pauses.GetBool()) {
-            ++timer->totalTicks;
-        }
-    }
-
-    if (session->isRunning && sar_speedrun_standard.GetBool()) {
-        speedrun->CheckRules(engine->GetTick());
-    }
-
-    if (simulating && sar_seamshot_finder.GetBool()) {
-        seamshotFind->DrawLines();
-    }
-
-    if (simulating && sar_crosshair_P1.GetBool()) {
-        crosshair.IsSurfacePortalable();
-    }
-
-    if (simulating && !engine->demorecorder->hasNotified && engine->demorecorder->m_bRecording) {
-        std::string cmd = std::string("echo SAR ") + SAR_VERSION + " (Build " + SAR_BUILD + ")";
-        engine->SendToCommandBuffer(cmd.c_str(), 300);
-        engine->demorecorder->hasNotified = true;
-    }
-
-    if (simulating) {
-        seamshotFind->DrawLines();
-    }
-
-    if (simulating) {
-        timescaleDetect->Update();
-    } else {
-        timescaleDetect->Cancel();
-    }
+    Event::Trigger<Event::POST_TICK>({ simulating, tick });
 
     ++server->tickCount;
 
@@ -505,45 +511,62 @@ DETOUR(Server::GameFrame, bool simulating)
 static int (*GlobalEntity_GetIndex)(const char *);
 static void (*GlobalEntity_SetFlags)(int, int);
 
+static void resetCoopProgress(void *data, size_t size)
+{
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags0"), 0);
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags1"), 0);
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags2"), 0);
+    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags3"), 0);
+    engine->ExecuteCommand("mp_mark_all_maps_incomplete", true);
+    engine->ExecuteCommand("mp_lock_all_taunts", true);
+}
+
 bool Server::Init()
 {
-    this->g_GameMovement = Interface::Create(this->Name(), "GameMovement0");
-    this->g_ServerGameDLL = Interface::Create(this->Name(), "ServerGameDLL0");
+    this->g_GameMovement = Interface::Create(this->Name(), "GameMovement001");
+    this->g_ServerGameDLL = Interface::Create(this->Name(), "ServerGameDLL005");
 
     if (this->g_GameMovement) {
         this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
         this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
-        if (sar.game->Is(SourceGame_Portal2Engine)) {
-            this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
-            this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
-            this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
+        this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
+        this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
+        this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
 
-            auto ctor = this->g_GameMovement->Original(0);
-            auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
-            auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
-            Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*), &Server::AirMoveBase);
+        auto ctor = this->g_GameMovement->Original(0);
+        auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
+        uintptr_t baseOffset;
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            baseOffset = baseCtor + 5 + *(uint32_t *)(baseCtor + 6) + *(uint32_t *)(baseCtor + 19);
+        } else
+#endif
+        baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
+        Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t*), &Server::AirMoveBase);
 
-            Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &Server::CheckJumpButtonBase);
+        Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t*), &Server::CheckJumpButtonBase);
 
 #ifdef _WIN32
-            if (!sar.game->Is(SourceGame_INFRA)) {
-                auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
-                if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
-                    MH_HOOK_MID(this->AirMove_Mid, airMoveMid);
-                    this->AirMove_Continue = airMoveMid + AirMove_Continue_Offset;
-                    this->AirMove_Skip = airMoveMid + AirMove_Skip_Offset;
-                    console->DevMsg("SAR: Verified sar_aircontrol 1!\n");
-                } else {
-                    console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
-                }
-            }
-#endif
+        auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
+        if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
+            MH_HOOK_MID(this->AirMove_Mid, airMoveMid);
+            this->AirMove_Continue = airMoveMid + AirMove_Continue_Offset;
+            this->AirMove_Skip = airMoveMid + AirMove_Skip_Offset;
+            console->DevMsg("SAR: Verified sar_aircontrol 1!\n");
+        } else {
+            console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
         }
+#endif
     }
 
-    if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS0")) {
+    if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS001")) {
         auto GetIServerEntity = g_ServerTools->Original(Offsets::GetIServerEntity);
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            this->m_EntPtrArray = (CEntInfo *)(GetIServerEntity + 12 + *(uint32_t *)(GetIServerEntity + 14) + *(uint32_t *)(GetIServerEntity + 54) + 4);
+        } else
+#endif
         Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
 
         this->CreateEntityByName = g_ServerTools->Original<_CreateEntityByName>(Offsets::CreateEntityByName);
@@ -558,24 +581,48 @@ bool Server::Init()
     if (this->g_ServerGameDLL) {
         auto Think = this->g_ServerGameDLL->Original(Offsets::Think);
         Memory::Read<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex, &this->UTIL_PlayerByIndex);
+#ifndef _WIN32
+        if (sar.game->Is(SourceGame_EIPRelPIC)) {
+            this->gpGlobals = *(CGlobalVars **)((uintptr_t)this->UTIL_PlayerByIndex + 5 + *(uint32_t *)((uintptr_t)UTIL_PlayerByIndex + 7) + *(uint32_t *)((uintptr_t)UTIL_PlayerByIndex + 21));
+        } else
+#endif
         Memory::DerefDeref<CGlobalVars*>((uintptr_t)this->UTIL_PlayerByIndex + Offsets::gpGlobals, &this->gpGlobals);
 
         this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
         this->IsRestoring = this->g_ServerGameDLL->Original<_IsRestoring>(Offsets::IsRestoring);
 
-        if (sar.game->Is(SourceGame_Portal2Game | SourceGame_Portal)) {
-            this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
-        }
+        this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
     }
 
 #ifdef _WIN32
     GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "55 8B EC 51 8B 45 08 50 8D 4D FC 51 B9 ? ? ? ? E8 ? ? ? ? 66 8B 55 FC B8 FF FF 00 00", 0);
     GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "55 8B EC 80 3D ? ? ? ? 00 75 1F 8B 45 08 85 C0 78 18 3B 05 ? ? ? ? 7D 10 8B 4D 0C 8B 15 ? ? ? ? 8D 04 40 89 4C 82 08", 0);
 #else
-    GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "55 89 E5 53 8D 45 F6 83 EC 24 8B 55 08 C7 44 24 04 ? ? ? ? 89 04 24 89 54 24 08", 0);
-    GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "80 3D ? ? ? ? 00 55 89 E5 8B 45 08 75 1E 85 C0 78 1A 3B 05 ? ? ? ? 7D 12 8B 15", 0);
+    if (sar.game->Is(SourceGame_EIPRelPIC)) {
+        GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "53 E8 ? ? ? ? 81 ? ? ? ? 00 83 EC 18 8D 44 24 0E 83 EC 04 FF 74 24 24 8D ? ? ? ? ? 52 50 E8 ? ? ? ? 0F B7 4C 24 1A", 0);
+        GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "E8 ? ? ? ? 05 ? ? ? ? 8B 54 24 04 80 B8 ? ? ? ? 01 74 21 85 D2 78 1D 3B 90 ? ? ? ? 7D 15 8B 88 ? ? ? ? 8D 14 52 8D 14 91", 0);
+    } else {
+        GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "55 89 E5 53 8D 45 F6 83 EC 24 8B 55 08 C7 44 24 04 ? ? ? ? 89 04 24 89 54 24 08", 0);
+        GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "80 3D ? ? ? ? 00 55 89 E5 8B 45 08 75 1E 85 C0 78 1A 3B 05 ? ? ? ? 7D 12 8B 15", 0);
+    }
 #endif
 
+    // Remove the limit on how quickly you can use 'say'
+    void *say_callback = Command("say").ThisPtr()->m_pCommandCallback;
+#ifdef _WIN32
+    uintptr_t insn_addr = (uintptr_t)say_callback + 52;
+#else
+    uintptr_t insn_addr = (uintptr_t)say_callback + (sar.game->Is(SourceGame_EIPRelPIC) ? 67 : 88);
+#endif
+    // This is the location of an ADDSD instruction which adds 0.66
+    // to the current time. If we instead *subtract* 0.66, we'll
+    // always be able to chat again! We can just do this by changing
+    // the third byte from 0x58 to 0x5C, hence making the full
+    // opcode start with F2 0F 5C.
+    Memory::UnProtect((void *)(insn_addr + 2), 1);
+    *(char *)(insn_addr + 2) = 0x5C;
+
+    NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &resetCoopProgress);
 
     offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);
     offsetFinder->ServerSide("CBasePlayer", "m_iName", &Offsets::m_iName);
@@ -583,23 +630,20 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_fFlags", &Offsets::m_fFlags);
     offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
     offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
-    offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::m_hGroundEntity);
+    offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::S_m_hGroundEntity);
+    offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
+    offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
+    offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);
 
-    if (sar.game->Is(SourceGame_Portal2Engine)) {
-        offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
-        offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
-    }
-
-    if (sar.game->Is(SourceGame_Portal2Game)) {
-        offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
-        offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);
-        offsetFinder->ServerSide("CProp_Portal", "m_bActivated", &Offsets::m_bActivated);
-        offsetFinder->ServerSide("CProp_Portal", "m_bIsPortal2", &Offsets::m_bIsPortal2);
-        offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal1", &Offsets::m_bCanFirePortal1);
-        offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal2", &Offsets::m_bCanFirePortal2);
-        offsetFinder->ServerSide("CWeaponPortalgun", "m_hPrimaryPortal", &Offsets::m_hPrimaryPortal);
-        offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
-    }
+    offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
+    offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);
+    offsetFinder->ServerSide("CProp_Portal", "m_bActivated", &Offsets::m_bActivated);
+    offsetFinder->ServerSide("CProp_Portal", "m_bIsPortal2", &Offsets::m_bIsPortal2);
+    offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal1", &Offsets::m_bCanFirePortal1);
+    offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal2", &Offsets::m_bCanFirePortal2);
+    offsetFinder->ServerSide("CWeaponPortalgun", "m_hPrimaryPortal", &Offsets::m_hPrimaryPortal);
+    offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
+    offsetFinder->ServerSide("CWeaponPortalgun", "m_iPortalLinkageGroupID", &Offsets::m_iPortalLinkageGroupID);
 
     sv_cheats = Variable("sv_cheats");
     sv_footsteps = Variable("sv_footsteps");
@@ -616,18 +660,16 @@ bool Server::Init()
 
     return this->hasLoaded = this->g_GameMovement && this->g_ServerGameDLL;
 }
-CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop progress.\n")
+CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop progress\n")
 {
-    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags0"), 0);
-    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags1"), 0);
-    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags2"), 0);
-    GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags3"), 0);
-    engine->ExecuteCommand("mp_mark_all_maps_incomplete", true);
-    engine->ExecuteCommand("mp_lock_all_taunts", true);
+    if (engine->IsCoop()) {
+        NetMessage::SendMsg(RESET_COOP_PROGRESS_MESSAGE_TYPE, nullptr, 0);
+        resetCoopProgress(nullptr, 0);
+    }
 }
 void Server::Shutdown()
 {
-#if _WIN32
+#ifdef _WIN32
     MH_UNHOOK(this->AirMove_Mid);
 #endif
     Interface::Delete(this->g_GameMovement);

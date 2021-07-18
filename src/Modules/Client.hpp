@@ -8,6 +8,12 @@
 #include "Utils.hpp"
 #include "Variable.hpp"
 
+enum class CMStatus {
+    CHALLENGE,
+    WRONG_WARP,
+    NONE,
+};
+
 class Client : public Module {
 private:
     Interface* g_ClientDLL = nullptr;
@@ -18,6 +24,9 @@ private:
     Interface* s_EntityList = nullptr;
     Interface* g_Input = nullptr;
     Interface* g_HudChat = nullptr;
+    Interface* g_HudMultiplayerBasicInfo = nullptr;
+    Interface* g_HudSaveStatus = nullptr;
+    Interface* g_GameMovement = nullptr;
 
 public:
     using _GetClientEntity = void*(__rescall*)(void* thisptr, int entnum);
@@ -38,8 +47,7 @@ public:
     _ActivateMouse ActivateMouse = nullptr;
     _DeactivateMouse DeactivateMouse = nullptr;
 
-    void* in_jump = nullptr;
-    QAngle lastViewAngles;
+    std::string lastLevelName;
 
 public:
     DECL_M(GetAbsOrigin, Vector);
@@ -54,11 +62,15 @@ public:
     void QueueChat(TextColor color, const char* fmt, ...);
     void FlushChatQueue();
     void SetMouseActivated(bool state);
-    float GetCMTimer();
+    CMStatus GetChallengeStatus();
+    int GetSplitScreenPlayerSlot(void *entity);
 
 public:
-    // CHLClient::HudUpdate
-    DECL_DETOUR(HudUpdate, unsigned int a2);
+    // CGameMovement::ProcessMovement
+    DECL_DETOUR(ProcessMovement, void *player, CMoveData *move);
+
+    // CHLClient::LevelInitPreEntity
+    DECL_DETOUR(LevelInitPreEntity, const char *levelName);
 
     // ClientModeShared::CreateMove
     DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd* cmd);
@@ -67,9 +79,17 @@ public:
     // CHud::GetName
     DECL_DETOUR_T(const char*, GetName);
 
+    // CHudMultiplayerBasicInfo::ShouldDraw
+    DECL_DETOUR_T(bool, ShouldDraw_BasicInfo);
+
+    // CHudSaveStatus::ShouldDraw
+    DECL_DETOUR_T(bool, ShouldDraw_SaveStatus);
+
+    // CHudChat::MsgFunc_SayText2
+    DECL_DETOUR(MsgFunc_SayText2, bf_read &msg);
+
     // CInput::_DecodeUserCmdFromBuffer
     DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number);
-    DECL_DETOUR(DecodeUserCmdFromBuffer2, int buf, signed int sequence_number);
 
     // CInput::CreateMove
     DECL_DETOUR(CInput_CreateMove, int sequence_number, float input_sample_frametime, bool active);

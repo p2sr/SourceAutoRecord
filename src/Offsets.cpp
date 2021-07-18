@@ -27,14 +27,15 @@ int ExecuteClientCmd;
 int GetActiveSplitScreenPlayerSlot;
 int GetSteamAPIContext;
 int IsPaused;
+int Con_IsVisible;
 
 // CHLClient
 int GetAllClasses;
 int HudProcessInput;
-int HudUpdate;
 int IN_ActivateMouse;
 int SteamControllerMove;
 int JoyStickApplyMovement;
+int LevelInitPreEntity;
 
 // ClientModeShared
 int CreateMove;
@@ -58,6 +59,8 @@ int GetFontTall;
 int PaintTraverseEx;
 int DrawColoredText;
 int DrawTextLen;
+int GetKernedCharWidth;
+int GetFontName;
 
 int DrawSetTextureFile;
 int DrawSetTextureRGBA;
@@ -105,7 +108,9 @@ int m_nDemoNumber;
 // CDemoPlayer
 int GetPlaybackTick;
 int StartPlayback;
+int StopPlayback;
 int IsPlayingBack;
+int SkipToTick;
 int m_szFileName;
 
 // CClientState
@@ -140,7 +145,9 @@ int m_pSurfaceData;
 int m_pShadowStand;
 int m_pShadowCrouch;
 int m_Local;
-int m_hGroundEntity;
+int S_m_hGroundEntity;
+int C_m_hGroundEntity;
+int m_iBonusChallenge;
 
 // CPlayerLocalData
 int m_nTractorBeamCount;
@@ -148,15 +155,17 @@ int m_hTractorBeam;
 
 // CPortal_Player
 int iNumPortalsPlaced;
-int m_StatsThisLevel;
 int GetPaintPower;
 int UseSpeedPower;
+int S_m_StatsThisLevel;
+int C_m_StatsThisLevel;
 
 //CWeaponPortalgun
 int m_bCanFirePortal1;
 int m_bCanFirePortal2;
 int m_hPrimaryPortal;
 int m_hSecondaryPortal;
+int m_iPortalLinkageGroupID;
 
 // CProp_Portal
 int m_bActivated;
@@ -175,6 +184,9 @@ int GetCurrentMap;
 int HostFrameTime;
 int ClientTime;
 int PrecacheModel;
+int ClientTick;
+int ServerTick;
+int HostTick;
 
 // CSchemeManager
 int GetIScheme;
@@ -209,6 +221,7 @@ int Frame;
 
 // CEngineAPI
 int IsRunningSimulation;
+int Init;
 
 // CIVDebugOverlay
 int ScreenPosition;
@@ -237,6 +250,7 @@ int ServerPause;
 
 // CBaseHudChat
 int ChatPrintf;
+int MsgFunc_SayText2;
 
 // CSteam3Client
 int OnGameOverlayActivated;
@@ -255,6 +269,11 @@ int GetVelocity;
 int SetPosition;
 int SetVelocity;
 int EnableGravity;
+
+// IVideoMode
+int GetModeWidth;
+int GetModeHeight;
+int ReadScreenPixels;
 
 // Others
 int tickcount;
@@ -303,4 +322,10 @@ int PerUserInput_tSize;
 int GetLocalClient;
 int MAX_SPLITSCREEN_PLAYERS;
 int net_time;
+int VideoMode_Create;
+int videomode;
+int snd_linear_count;
+int snd_p;
+int snd_vol;
+int StartTouch;
 }

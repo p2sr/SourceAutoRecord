@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <map>
+#include <optional>
 
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
@@ -23,7 +24,20 @@ Variable sar_hud_default_padding_x("sar_hud_default_padding_x", "2", 0, "X paddi
 Variable sar_hud_default_padding_y("sar_hud_default_padding_y", "2", 0, "Y padding of HUD.\n");
 Variable sar_hud_default_font_index("sar_hud_default_font_index", "0", 0, "Font index of HUD.\n");
 Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 255", "RGBA font color of HUD.\n", 0);
-Variable sar_hud_precision("sar_hud_precision", "3", 0, 9, "Floats precision of Hud.\n");
+
+Variable sar_hud_precision("sar_hud_precision", "3", 0, "Precision of HUD numbers.\n");
+Variable sar_hud_velocity_precision("sar_hud_velocity_precision", "2", 0, "Precision of velocity HUD numbers.\n");
+
+static inline int getPrecision(bool velocity = false)
+{
+    int p = velocity ? sar_hud_velocity_precision.GetInt() : sar_hud_precision.GetInt();
+    if (p < 0) p = 0;
+    if (!sv_cheats.GetBool()) {
+        const int max = velocity ? 2 : 6;
+        if (p > max) p = max;
+    }
+    return p;
+}
 
 BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
     : type(type)
@@ -85,6 +99,9 @@ void HudContext::DrawElement(const char* fmt, ...)
         data);
 
     ++this->elements;
+
+    int width = surface->GetFontLength(this->font, "%s", data);
+    if (width > this->maxWidth) this->maxWidth = width;
 }
 void HudContext::DrawElementOnScreen(const int groupID, const float xPos, const float yPos, const char* fmt, ...)
 {
@@ -94,8 +111,10 @@ void HudContext::DrawElementOnScreen(const int groupID, const float xPos, const 
     vsnprintf(data, sizeof(data), fmt, argptr);
     va_end(argptr);
 
+    int pixLength = surface->GetFontLength(this->font, "%s", data);
+
     surface->DrawTxt(font,
-        xPos - sizeof(fmt) / 2 * this->fontSize,
+        xPos - pixLength / 2,
         yPos + this->group[groupID] * (this->fontSize + this->spacing),
         this->textColor,
         data);
@@ -113,6 +132,7 @@ void HudContext::Reset(int slot)
     this->xPadding = sar_hud_default_padding_x.GetInt();
     this->yPadding = sar_hud_default_padding_y.GetInt();
     this->spacing = sar_hud_default_spacing.GetInt();
+    this->maxWidth = 0;
 
     this->font = scheme->GetDefaultFont() + sar_hud_default_font_index.GetInt();
     this->fontSize = surface->GetFontHeight(font);
@@ -210,10 +230,10 @@ void HudElement::IndexAll()
 
 // Commands
 
-CON_COMMAND_COMPLETION(sar_hud_default_order_top, "Orders hud element to top. Usage: sar_hud_default_order_top <name>\n", (elementOrder))
+CON_COMMAND_COMPLETION(sar_hud_default_order_top, "sar_hud_default_order_top <name> - orders hud element to top\n", (elementOrder))
 {
     if (args.ArgC() != 2) {
-        return console->Print("Orders hud element to top : sar_hud_default_order_top <name>\n");
+        return console->Print("Orders hud element to top: sar_hud_default_order_top <name>\n");
     }
 
     auto elements = &vgui->elements;
@@ -237,7 +257,7 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_top, "Orders hud element to top. Us
 
     console->Print("Moved HUD element %s to top.\n", args[1]);
 }
-CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "Orders hud element to bottom : sar_hud_default_order_bottom <name>\n", (elementOrder))
+CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "sar_hud_default_order_bottom <name> - orders hud element to bottom\n", (elementOrder))
 {
     if (args.ArgC() != 2) {
         return console->Print("Set!\n");
@@ -262,9 +282,9 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "Orders hud element to bott
     elements->erase(result);
     elements->insert(elements->end(), element);
 
-    console->Print("Moved HUD element %s to top.\n", args[1]);
+    console->Print("Moved HUD element %s to bottom.\n", args[1]);
 }
-CON_COMMAND(sar_hud_default_order_reset, "Resets order of hud element.\n")
+CON_COMMAND(sar_hud_default_order_reset, "sar_hud_default_order_reset - resets order of hud element\n")
 {
     std::sort(vgui->elements.begin(), vgui->elements.end(), [](const HudElement* a, const HudElement* b) {
         return a->orderIndex < b->orderIndex;
@@ -274,18 +294,37 @@ CON_COMMAND(sar_hud_default_order_reset, "Resets order of hud element.\n")
 
 // HUD
 
+struct TextComponent
+{
+    std::optional<Color> color;
+    std::string text;
+};
+
 struct TextLine
 {
     bool draw;
-    std::string text;
+    Color defaultColor;
+    std::vector<TextComponent> components;
 };
 
 static std::map<long, TextLine> sar_hud_text_vals;
 HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen)
 {
     for (auto& t : sar_hud_text_vals) {
+        int x = ctx->xPadding;
+        int y = ctx->yPadding + ctx->elements * (ctx->fontSize + ctx->spacing);
         if (t.second.draw) {
-            ctx->DrawElement("%s", t.second.text.c_str());
+            for (auto &c : t.second.components) {
+                Color color = c.color ? *c.color : t.second.defaultColor;
+                int pixLen = surface->GetFontLength(ctx->font, "%s", c.text.c_str());
+                surface->DrawTxt(ctx->font, x, y, color, c.text.c_str());
+                x += pixLen;
+            }
+
+            ++ctx->elements;
+
+            int width = x - ctx->xPadding;
+            if (width > ctx->maxWidth) ctx->maxWidth = width;
         }
     }
 }
@@ -294,8 +333,8 @@ Variable sar_hud_text("sar_hud_text", "", "DEPRECATED: Use sar_hud_set_text.", 0
 void sar_hud_text_callback(void* var, const char* pOldVal, float fOldVal)
 {
     console->Print("WARNING: sar_hud_text is deprecated. Please use sar_hud_set_text instead.\n");
-    sar_hud_text_vals[0].draw = true;
-    sar_hud_text_vals[0].text = std::string(sar_hud_text.GetString());
+    sar_hud_text_vals[0].draw = sar_hud_text.GetString()[0];
+    sar_hud_text_vals[0].components = { { { { 255, 255, 255, 255 } }, { sar_hud_text.GetString() } } };
 }
 
 long parseIdx(const char* idxStr)
@@ -308,8 +347,8 @@ long parseIdx(const char* idxStr)
     return idx;
 }
 
-CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets and shows the nth text value in the HUD.\n") {
-    if (args.ArgC() != 3) {
+CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows the nth text value in the HUD\n") {
+    if (args.ArgC() < 3) {
         console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
         return;
     }
@@ -320,11 +359,114 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>. Sets and shows the 
         return;
     }
 
+    if (sar_hud_text_vals.find(idx) == sar_hud_text_vals.end()) {
+        sar_hud_text_vals[idx].defaultColor = Color{ 255, 255, 255, 255 };
+    }
+
+    const char *txt;
+
+    if (args.ArgC() == 3) {
+        txt = args[2];
+    } else {
+        txt = args.m_pArgSBuffer + args.m_nArgv0Size;
+
+        while (isspace(*txt)) ++txt;
+
+        if (*txt == '"') {
+            txt += strlen(args[1]) + 2;
+        } else {
+            txt += strlen(args[1]);
+        }
+
+        while (isspace(*txt)) ++txt;
+    }
+
+    std::optional<Color> curColor;
+    std::string component = "";
+
+    std::vector<TextComponent> components;
+
+    while (*txt) {
+        if (*txt == '#') {
+            ++txt;
+            if (*txt == '#') {
+                component += '#';
+                ++txt;
+                continue;
+            } else {
+                int r, g, b;
+                int end = -1;
+                if (sscanf(txt, "%2x%2x%2x%n", &r, &g, &b, &end) == 3 && end == 6) {
+                    txt += 6;
+                    if (!curColor || curColor->r() != r || curColor->g() != g || curColor->b() != b) {
+                        components.push_back({ curColor, component });
+                        curColor = Color{ r, g, b, 255 };
+                        component = "";
+                    }
+                    continue;
+                }
+                component += '#';
+                continue;
+            }
+        }
+        component += *txt;
+        ++txt;
+    }
+
+    components.push_back({ curColor, component });
+
     sar_hud_text_vals[idx].draw = true;
-    sar_hud_text_vals[idx].text = std::string(args[2]);
+    sar_hud_text_vals[idx].components = components;
 }
 
-CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id>. Hides the nth text value in the HUD.\n")
+CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color> - sets the color of the nth text value in the HUD\n")
+{
+    if (args.ArgC() != 3 && args.ArgC() != 5) {
+        console->Print(sar_hud_set_text_color.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    long idx = parseIdx(args[1]);
+    if (idx == -1) {
+        console->Print(sar_hud_set_text_color.ThisPtr()->m_pszHelpString);
+        return;
+    }
+
+    int r, g, b;
+
+    if (args.ArgC() == 3) {
+        const char *col = args[2];
+        if (col[0] == '#') {
+            ++col;
+        }
+
+        int end = -1;
+        if (sscanf(col, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
+            return console->Print("Invalid color code '%s'\n", args[2]);
+        }
+    } else {
+        char *end;
+
+        r = strtol(args[2], &end, 10);
+        if (*end || end == args[2]) {
+            return console->Print("Invalid color component '%s'\n", args[2]);
+        }
+
+        g = strtol(args[3], &end, 10);
+        if (*end || end == args[3]) {
+            return console->Print("Invalid color component '%s'\n", args[3]);
+        }
+
+        b = strtol(args[4], &end, 10);
+        if (*end || end == args[4]) {
+            return console->Print("Invalid color component '%s'\n", args[4]);
+        }
+    }
+
+    sar_hud_text_vals[idx].defaultColor = Color{ r, g, b, 255 };
+}
+
+CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id> - hides the nth text value in the HUD\n")
 {
     if (args.ArgC() < 2) {
         console->Print(sar_hud_hide_text.ThisPtr()->m_pszHelpString);
@@ -340,7 +482,7 @@ CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id>. Hides the nth text value
     sar_hud_text_vals[idx].draw = false;
 }
 
-CON_COMMAND(sar_hud_show_text, "sar_hud_show_text <id>. Shows the nth text value in the HUD.\n")
+CON_COMMAND(sar_hud_show_text, "sar_hud_show_text <id> - shows the nth text value in the HUD\n")
 {
     if (args.ArgC() < 2) {
         console->Print(sar_hud_show_text.ThisPtr()->m_pszHelpString);
@@ -368,7 +510,7 @@ HUD_ELEMENT_MODE2(position, "0", 0, 2, "Draws absolute position of the client.\n
         if (mode >= 2) {
             pos = pos + client->GetViewOffset(player);
         }
-        int p = sar_hud_precision.GetInt();
+        int p = getPrecision();
         ctx->DrawElement("pos: %.*f %.*f %.*f", p, pos.x, p, pos.y, p, pos.z);
     } else {
         ctx->DrawElement("pos: -");
@@ -380,11 +522,11 @@ HUD_ELEMENT_MODE2(angles, "0", 0, 2, "Draws absolute view angles of the client.\
                                      "2 = XYZ.\n",
     HudType_InGame | HudType_Paused | HudType_LoadingScreen)
 {
-    auto ang = engine->GetAngles(ctx->slot);
-    if (engine->IsCoop() && engine->IsOrange() && !session->isRunning) { // Orange and not splitscreen
-        ang = client->lastViewAngles;
-    }
-    int p = sar_hud_precision.GetInt();
+    // When we're orange (and not splitscreen), for some fucking reason,
+    // the *engine* thinks we're slot 0, but everything else thinks
+    // we're slot 1
+    auto ang = engine->GetAngles(engine->IsOrange() ? 0 : ctx->slot);
+    int p = getPrecision();
     if (mode == 1) {
         ctx->DrawElement("ang: %.*f %.*f", p, ang.x, p, ang.y);
     } else {
@@ -401,7 +543,7 @@ HUD_ELEMENT_MODE2(velocity, "0", 0, 4, "Draws velocity of the client.\n"
 {
     auto player = client->GetPlayer(ctx->slot + 1);
     if (player) {
-        int p = sar_hud_precision.GetInt();
+        int p = getPrecision(true);
         auto vel = client->GetLocalVelocity(player);
         switch (mode) {
         case 1:

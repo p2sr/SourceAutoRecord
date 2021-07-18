@@ -44,7 +44,6 @@ public:
     void AddCallBack(FnChangeCallback_t callback);
 
     ConVar* ThisPtr();
-    ConVar2* ThisPtr2();
 
     bool GetBool();
     int GetInt();

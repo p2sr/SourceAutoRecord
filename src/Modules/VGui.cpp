@@ -8,11 +8,14 @@
 
 #include "Modules/Engine.hpp"
 #include "Modules/Surface.hpp"
+#include "Modules/Server.hpp"
 
 #include "SAR.hpp"
 
 REDECL(VGui::Paint);
 REDECL(VGui::UpdateProgressBar);
+
+Variable sar_hud_bg("sar_hud_bg", "0", "Enable the SAR HUD background.\n");
 
 void VGui::Draw(Hud* const& hud)
 {
@@ -27,9 +30,39 @@ void VGui::Draw(HudElement* const& element)
     }
 }
 
+static void DrawHudBackground(int slot, HudContext &ctx) {
+    if (!sar_hud_bg.GetBool()) return;
+
+    int height =
+        ctx.elements == 0 ?
+        0 :
+        ctx.elements * ctx.fontSize + (ctx.elements - 1) * ctx.spacing + 4;
+
+    static int maxWidths[2][100];
+    memmove(maxWidths[slot], maxWidths[slot] + 1, sizeof maxWidths[slot] - sizeof maxWidths[slot][0]);
+    maxWidths[slot][99] = ctx.maxWidth;
+
+    int width = 0;
+
+    for (size_t i = 0; i < sizeof maxWidths[slot] / sizeof maxWidths[slot][0]; ++i) {
+        if (maxWidths[slot][i] > width) width = maxWidths[slot][i];
+    }
+
+    if (width % 5) width += 5 - width % 5;
+
+    if (width != 0) width += 4;
+
+    int x = ctx.xPadding - 2;
+    int y = ctx.yPadding - 2;
+
+    surface->DrawRect(Color{ 0, 0, 0, 192 }, x, y, x + width, y + height);
+}
+
 // CEngineVGui::Paint
 DETOUR(VGui::Paint, PaintMode_t mode)
 {
+    static HudContext lastCtx[2];
+
     auto result = VGui::Paint(thisptr, mode);
 
     surface->StartDrawing(surface->matsurface->ThisPtr());
@@ -40,6 +73,8 @@ DETOUR(VGui::Paint, PaintMode_t mode)
 
     if (ctx->slot == 0) {
         if (mode & PAINT_UIPANELS) {
+            DrawHudBackground(0, lastCtx[0]);
+
             for (auto const& hud : vgui->huds) {
                 vgui->Draw(hud);
             }
@@ -47,8 +82,12 @@ DETOUR(VGui::Paint, PaintMode_t mode)
             for (auto const& element : vgui->elements) {
                 vgui->Draw(element);
             }
+
+            lastCtx[0] = *ctx;
         }
     } else if (ctx->slot == 1) {
+        DrawHudBackground(1, lastCtx[1]);
+
         for (auto const& hud : vgui->huds) {
             if (hud->drawSecondSplitScreen) {
                 vgui->Draw(hud);
@@ -60,6 +99,8 @@ DETOUR(VGui::Paint, PaintMode_t mode)
                 vgui->Draw(element);
             }
         }
+
+        lastCtx[1] = *ctx;
     }
 
     surface->FinishDrawing();
@@ -90,7 +131,7 @@ bool VGui::IsUIVisible()
 
 bool VGui::Init()
 {
-    this->enginevgui = Interface::Create(this->Name(), "VEngineVGui0");
+    this->enginevgui = Interface::Create(this->Name(), "VEngineVGui001");
     if (this->enginevgui) {
         this->IsGameUIVisible = this->enginevgui->Original<_IsGameUIVisible>(Offsets::IsGameUIVisible);
 
