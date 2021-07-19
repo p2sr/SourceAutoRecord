@@ -216,6 +216,7 @@ void Portal2::LoadOffsets()
     player = 4; // CPortalGameMovement::PlayerMove
     m_MoveType = 218; // CBasePlayer::UpdateStepSound
     m_iClassName = 96; // CBaseEntity
+    S_m_vecAbsVelocity = 364; // CBaseEntity
     S_m_vecAbsOrigin = 460; // CBaseEntity
     S_m_angAbsRotation = 472; // CBaseEntity
     m_iEFlags = 200; // CBaseEntity
@@ -242,6 +243,7 @@ void Portal2::LoadOffsets()
     m_pShadowStand = 3160; // CBasePlayer
     m_pShadowCrouch = 3164; // CBasePlayer
     m_Local = 5060; // CBasePlayer
+    m_surfaceFriction = 4096; // CBasePlayer
     m_nTractorBeamCount = 396; // CPlayerLocalData
     m_hTractorBeam = 392; // CPlayerLocalData
     GetPaintPower = 512; // CPortal_Player

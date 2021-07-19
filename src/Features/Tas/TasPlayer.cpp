@@ -200,9 +200,9 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void* player, CMoveData* pMove)
 {
     TasPlayerInfo pi;
 
-    pi.tick = *reinterpret_cast<int*>((uintptr_t)player + 3792);
+    pi.tick = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_nTickBase);
     pi.slot = server->GetSplitScreenPlayerSlot(player);
-    pi.surfaceFriction = *reinterpret_cast<float*>((uintptr_t)player + 4096);
+    pi.surfaceFriction = *reinterpret_cast<float*>((uintptr_t)player + Offsets::m_surfaceFriction);
     pi.ducked = *reinterpret_cast<bool*>((uintptr_t)player + Offsets::m_bDucked);
 
     float* m_flMaxspeed = reinterpret_cast<float*>((uintptr_t)player + Offsets::m_flMaxspeed);
@@ -222,7 +222,7 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void* player, CMoveData* pMove)
     pi.maxSpeed = *m_flMaxspeed;
     *m_flMaxspeed = oldMaxSpeed;
 
-    unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + 344); // m_hGroundEntity
+    unsigned int groundEntity = *reinterpret_cast<unsigned int*>((uintptr_t)player + Offsets::S_m_hGroundEntity);
     pi.grounded = groundEntity != 0xFFFFFFFF;
 
     // predict the grounded state after jump.
@@ -230,9 +230,9 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void* player, CMoveData* pMove)
         pi.grounded = false;
     }
 
-    pi.position = *reinterpret_cast<Vector*>((uintptr_t)player + 460);
+    pi.position = *reinterpret_cast<Vector*>((uintptr_t)player + Offsets::S_m_vecAbsOrigin);
     pi.angles = engine->GetAngles(pi.slot);
-    pi.velocity = *reinterpret_cast<Vector*>((uintptr_t)player + 364);
+    pi.velocity = *reinterpret_cast<Vector*>((uintptr_t)player + Offsets::S_m_vecAbsVelocity);
 
     pi.oldButtons = pMove->m_nOldButtons;
 
@@ -338,7 +338,7 @@ void TasPlayer::PostProcess(void* player, CMoveData* pMove)
     // ducking midair
     if (prevent_crouch_jump.GetBool()) {
         void** pplocaldata = reinterpret_cast<void**>((uintptr_t)player + Offsets::m_Local);
-        int m_InAirState = *reinterpret_cast<int*>((uintptr_t)pplocaldata + 380);
+        int m_InAirState = *reinterpret_cast<int*>((uintptr_t)pplocaldata + Offsets::m_InAirState);
 
         if (m_InAirState == 1) { //in air jumped
             fb.buttonStates[Crouch] = false;
@@ -440,18 +440,21 @@ void TasPlayer::Update()
 
 DECL_COMMAND_COMPLETION(sar_tas_play)
 {
-    for (auto const& file : std::filesystem::recursive_directory_iterator(TAS_SCRIPTS_DIR)) {
-        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
-            break;
-        }
+    try {
+        for (auto const& file : std::filesystem::recursive_directory_iterator(TAS_SCRIPTS_DIR)) {
+            if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+                break;
+            }
 
-        auto scriptName = file.path().stem().string();
-        auto scriptExt = file.path().extension().string();
-        if (Utils::EndsWith(scriptExt, TAS_SCRIPT_EXT)) {
-            if (std::strstr(scriptName.c_str(), match)) {
-                items.push_back(scriptName);
+            auto scriptName = file.path().stem().string();
+            auto scriptExt = file.path().extension().string();
+            if (Utils::EndsWith(scriptExt, TAS_SCRIPT_EXT)) {
+                if (std::strstr(scriptName.c_str(), match)) {
+                    items.push_back(scriptName);
+                }
             }
         }
+    } catch (std::filesystem::filesystem_error &e) {
     }
 
     FINISH_COMMAND_COMPLETION();

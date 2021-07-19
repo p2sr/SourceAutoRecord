@@ -305,7 +305,7 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo& pInfo, float desAng
 
         // translate the follow point so it's closer to player's position
         Vector flPoint = this->followLinePoint;
-        flPoint += flForward + flForward * ((ppos - flPoint).Dot(flForward));
+        flPoint = flPoint + flForward + flForward * (ppos - flPoint).Dot(flForward);
 
         // return direction based on what side of the line player is on
         float relPos = (ppos - flPoint).Normalize().Dot(flRight);

@@ -65,7 +65,7 @@ bool TasParser::ParseHeader(std::string line)
     std::for_each(tmp.begin(), tmp.end(), [](char& c) { c = tolower(c); });
 
     auto startParams = TasParser::Tokenize(tmp); //startParams = {"start", "map", "sp_a1_intro1""}
-    if (startParams[0] != "start") {
+    if (startParams.size() < 1 || startParams[0] != "start") {
         tasPlayer->SetStartInfo(TasStartType::UnknownStart, "");
         return false;
     }
@@ -115,7 +115,7 @@ std::vector<TasFramebulk> TasParser::ParseAllLines(std::vector<std::string>& lin
 
         ++lineCounter;
     }
-    std::sort(raws.begin(), raws.end(), [](RawFramebulk a, RawFramebulk b) { return b.tick > b.tick; });
+    std::sort(raws.begin(), raws.end(), [](RawFramebulk a, RawFramebulk b) { return a.tick < b.tick; });
 
     if (raws.empty())
         return bulks;
@@ -248,6 +248,8 @@ TasFramebulk TasParser::ParseRawFramebulk(RawFramebulk& raw, TasFramebulk& previ
             for (auto& toolAndParams : tools) { //toolAndParams = "strafe move"
                 auto tokens = TasParser::ParseTool(toolAndParams); //tokens = {"strafe", "move"}
 
+                if (tokens.size() == 0) continue;
+
                 for (auto& tool : TasTool::GetList()) {
                     if (tool->GetName() == tokens[0]) {
 
@@ -337,7 +339,7 @@ int TasParser::toInt(std::string& str)
     return x;
 }
 
-float TasParser::toFloat(std::string& str)
+float TasParser::toFloat(std::string str)
 {
     char* pEnd;
     const char* number = str.c_str();

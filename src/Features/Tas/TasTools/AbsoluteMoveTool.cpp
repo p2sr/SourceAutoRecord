@@ -24,8 +24,8 @@ void AbsoluteMoveTool::Apply(TasFramebulk& fb, const TasPlayerInfo& pInfo)
 
     float delta = desired - angle;
     auto R = DEG2RAD(delta);
-    auto X = std::cosf(R);
-    auto Y = std::sinf(R);
+    auto X = cosf(R);
+    auto Y = sinf(R);
 
     fb.moveAnalog.x = X;
     fb.moveAnalog.y = Y;

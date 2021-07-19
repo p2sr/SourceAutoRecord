@@ -633,6 +633,8 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::S_m_hGroundEntity);
     offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
     offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
+    offsetFinder->ServerSide("CBasePlayer", "m_nTickBase", &Offsets::m_nTickBase);
+    offsetFinder->ServerSide("CBasePlayer", "m_InAirState", &Offsets::m_InAirState);
     offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);
 
     offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);

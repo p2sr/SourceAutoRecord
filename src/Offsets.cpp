@@ -125,6 +125,7 @@ int C_m_vecVelocity;
 int C_m_vecViewOffset;
 
 // CBaseEntity
+int S_m_vecAbsVelocity;
 int S_m_vecAbsOrigin;
 int S_m_angAbsRotation;
 int S_m_vecVelocity;
@@ -148,6 +149,9 @@ int m_Local;
 int S_m_hGroundEntity;
 int C_m_hGroundEntity;
 int m_iBonusChallenge;
+int m_surfaceFriction;
+int m_nTickBase;
+int m_InAirState;
 
 // CPlayerLocalData
 int m_nTractorBeamCount;
