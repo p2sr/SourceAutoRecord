@@ -36,7 +36,7 @@ struct Vector {
     {
         return Vector::DotProduct(*this, vOther);
     }
-    inline Vector operator*(float fl)
+    inline Vector operator*(float fl) const
     {
         Vector res;
         res.x = x * fl;
@@ -44,7 +44,7 @@ struct Vector {
         res.z = z * fl;
         return res;
     }
-    inline Vector operator/(float fl)
+    inline Vector operator/(float fl) const
     {
         return *this * (1 / fl);
     }
