@@ -12,12 +12,12 @@ public:
         : func(nullptr)
         , hook((void *)hook)
         , enabled(false)
-    { }
+    {
+        Hook::hooks.push_back(this);
+    }
 
     ~Hook()
-    {
-        this->Disable();
-    }
+    { }
 
     template <typename T = void *>
     void SetFunc(T func, bool enable = true)
@@ -45,9 +45,13 @@ public:
         this->enabled = false;
     }
 
+    static void DisableAll();
+
 private:
     void *func;
     void *hook;
     bool enabled;
     uint8_t origCode[5];
+
+    static std::vector<Hook *> hooks;
 };
