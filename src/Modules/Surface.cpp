@@ -125,14 +125,6 @@ bool Surface::Init()
         this->IsTextureIDValid = matsurface->Original<_IsTextureIDValid>(Offsets::IsTextureIDValid);
         this->CreateNewTextureID = matsurface->Original<_CreateNewTextureID>(Offsets::CreateNewTextureID);
 
-        this->DrawSetTextureFile = matsurface->Original<_DrawSetTextureFile>(Offsets::DrawSetTextureFile);
-        this->DrawSetTextureRGBA = matsurface->Original<_DrawSetTextureRGBA>(Offsets::DrawSetTextureRGBA);
-        this->DrawSetTexture = matsurface->Original<_DrawSetTexture>(Offsets::DrawSetTexture);
-        this->DrawGetTextureSize = matsurface->Original<_DrawGetTextureSize>(Offsets::DrawGetTextureSize);
-        this->DrawTexturedRect = matsurface->Original<_DrawTexturedRect>(Offsets::DrawTexturedRect);
-        this->IsTextureIDValid = matsurface->Original<_IsTextureIDValid>(Offsets::IsTextureIDValid);
-        this->CreateNewTextureID = matsurface->Original<_CreateNewTextureID>(Offsets::CreateNewTextureID);
-
         auto PaintTraverseEx = matsurface->Original(Offsets::PaintTraverseEx);
         this->StartDrawing = Memory::Read<_StartDrawing>(PaintTraverseEx + Offsets::StartDrawing);
         this->FinishDrawing = Memory::Read<_FinishDrawing>(PaintTraverseEx + Offsets::FinishDrawing);

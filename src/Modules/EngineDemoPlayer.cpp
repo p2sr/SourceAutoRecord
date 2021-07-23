@@ -161,34 +161,6 @@ DETOUR_COMMAND(EngineDemoPlayer::stopdemo)
 // CDemoPlayer::StartPlayback
 DETOUR(EngineDemoPlayer::StartPlayback, const char* filename, bool bAsTimeDemo)
 {
-#ifdef SAR_MODERATOR_BUILD
-    if (sar_demo_cheat_info.GetBool()) {
-        auto filepath = std::string(engine->GetGameDirectory()) + "/" + filename;
-        auto res = VerifyDemoChecksum(filepath.c_str());
-        switch (res.first) {
-        case VERIFY_BAD_DEMO:
-            // Normal chat rather than queue as we probably aren't loading
-            // into the demo (it seems invalid)
-            client->Chat(TextColor::ORANGE, "Could not read checksum for demo!");
-            break;
-
-        case VERIFY_NO_CHECKSUM:
-            client->QueueChat(TextColor::ORANGE, "No checksum found! Was the demo recorded without SAR?");
-            break;
-
-        case VERIFY_INVALID_CHECKSUM:
-            client->QueueChat(TextColor::ORANGE, "Demo checksum invalid! Has the demo been tampered with?");
-            client->QueueChat(TextColor::LIGHT_GREEN, "SAR checksum: %.8X", res.second);
-            break;
-
-        case VERIFY_VALID_CHECKSUM:
-            client->QueueChat(TextColor::GREEN, "Demo checksum verified");
-            client->QueueChat(TextColor::LIGHT_GREEN, "SAR checksum: %.8X", res.second);
-            break;
-        }
-    }
-#endif
-
     auto result = EngineDemoPlayer::StartPlayback(thisptr, filename, bAsTimeDemo);
 
     if (result) {

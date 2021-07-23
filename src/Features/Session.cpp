@@ -75,10 +75,6 @@ void Session::Started(bool menu)
             this->ResetLoads();
         }
 
-        if (!engine->IsOrange()) {
-            this->ResetLoads();
-        }
-
         this->isRunning = true;
     } else {
         console->Print("Session Started!\n");
@@ -95,6 +91,15 @@ void Session::Start()
 
     this->Rebase(tick);
     timer->Rebase(tick);
+
+    Event::Trigger<Event::SESSION_START>({});
+
+    engine->hasRecorded = false;
+    engine->hasPaused = false;
+    engine->isPausing = false;
+    engine->nForcePrimaryFullscreen = 0;
+    server->tickCount = 0;
+
     this->currentFrame = 0;
     this->isRunning = true;
 }
