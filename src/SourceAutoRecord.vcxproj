@@ -252,6 +252,7 @@
     <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
+    <ClCompile Include="SARHook.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Utils\json11.cpp" />
     <ClCompile Include="Utils\lodepng.cpp" />

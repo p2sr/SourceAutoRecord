@@ -223,6 +223,9 @@
     <ClCompile Include="SAR.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
+    <ClCompile Include="SARHook.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
     <ClCompile Include="Variable.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>

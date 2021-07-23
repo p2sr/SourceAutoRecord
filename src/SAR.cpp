@@ -19,6 +19,7 @@
 #include "Variable.hpp"
 #include "CrashHandler.hpp"
 #include "Event.hpp"
+#include "Hook.hpp"
 
 SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
@@ -278,6 +279,8 @@ CON_COMMAND(sar_exit, "sar_exit - removes all function hooks, registered command
     networkManager.Disconnect();
 
     Variable::ClearAllCallbacks();
+
+    Hook::DisableAll();
 
     if (sar.cheats) {
         sar.cheats->Shutdown();
