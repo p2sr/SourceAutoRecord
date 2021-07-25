@@ -50,6 +50,7 @@ Game* Game::CreateNew()
             }
 #endif
             modDir = modDir.substr(0, modDir.length() - 5);
+            if (modDir[modDir.size() - 1] == '/') modDir = modDir.substr(0, modDir.length() - 1);
             modDir = modDir.substr(modDir.find_last_of("\\/") + 1);
         }
         return modDir;
