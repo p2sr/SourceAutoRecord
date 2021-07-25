@@ -6,7 +6,8 @@
 #include "Utils.hpp"
 #include "Features/Hud/Hud.hpp"
 
-#define TRACE_SCALE 10
+#define TRACE_SCALE_DELTA 10
+#define TRACE_SCALE_UPDATE 32
 // Stores a position delta as a fixed point number
 struct TraceDelta {
     int16_t dx : 10;
@@ -51,6 +52,8 @@ public:
     void AddPoint(size_t trace_idx, void *player);
     // Clear all the points
     void Clear(const size_t trace_idx);
+    // Clear all the traces
+    void ClearAll();
     // Display the trace in the world
     void DrawInWorld(float time) const;
     // Display XY-speed delta overlay
