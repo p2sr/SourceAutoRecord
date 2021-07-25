@@ -256,7 +256,10 @@ bool Engine::TraceFromCamera(float distMax, CGameTrace& tr)
 
 ON_EVENT(PRE_TICK) {
     if (!engine->demoplayer->IsPlaying()) {
-        if (sar_pause_at.GetInt() == -1) {
+        if (sar_pause_at.GetInt() == -1 || (!sv_cheats.GetBool() && sar_pause_at.GetInt() > 0)) {
+            if (sar_pause_at.GetInt() != -1 && !engine->hasPaused) {
+                console->Print("sar_pause_at values over 0 are only usable with sv_cheats\n");
+            }
             engine->hasPaused = true; // We don't want to randomly pause if the user sets sar_pause_at in this session
             engine->isPausing = false;
         } else {
