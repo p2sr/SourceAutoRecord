@@ -337,8 +337,7 @@ void TasPlayer::PostProcess(void* player, CMoveData* pMove)
 
     // ducking midair
     if (prevent_crouch_jump.GetBool()) {
-        void** pplocaldata = reinterpret_cast<void**>((uintptr_t)player + Offsets::m_Local);
-        int m_InAirState = *reinterpret_cast<int*>((uintptr_t)pplocaldata + Offsets::m_InAirState);
+        int m_InAirState = *reinterpret_cast<int*>((uintptr_t)player + Offsets::m_InAirState);
 
         if (m_InAirState == 1) { //in air jumped
             fb.buttonStates[Crouch] = false;
