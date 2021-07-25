@@ -461,7 +461,7 @@ DECL_COMMAND_COMPLETION(sar_tas_play)
 
 CON_COMMAND_F_COMPLETION(
     sar_tas_play,
-    "sar_tas_play [filename] : Plays a TAS script with given name.\n",
+    "sar_tas_play <filename> - plays a TAS script with given name\n",
     0, AUTOCOMPLETION_FUNCTION(sar_tas_play))
 {
     IGNORE_DEMO_PLAYER();
@@ -484,28 +484,28 @@ CON_COMMAND_F_COMPLETION(
     }
 }
 
-CON_COMMAND(sar_tas_pause, "Pauses TAS playback.\n")
+CON_COMMAND(sar_tas_pause, "sar_tas_pause - pauses TAS playback\n")
 {
     tasPlayer->Pause();
 }
 
-CON_COMMAND(sar_tas_resume, "Resumes TAS playback.\n")
+CON_COMMAND(sar_tas_resume, "sar_tas_resume - resumes TAS playback\n")
 {
     tasPlayer->Resume();
 }
 
-CON_COMMAND(sar_tas_advance, "Advances TAS playback by one tick.\n")
+CON_COMMAND(sar_tas_advance, "sar_tas_advance - advances TAS playback by one tick\n")
 {
     tasPlayer->AdvanceFrame();
 }
 
-CON_COMMAND(sar_tas_stop, "Stop TAS playing\n")
+CON_COMMAND(sar_tas_stop, "sar_tas_stop - stop TAS playing\n")
 {
     tasPlayer->Stop();
 }
 
 CON_COMMAND(sar_tas_save_raw,
-    "Saves a processed version of just processed script.")
+    "sar_tas_save_raw - saves a processed version of just processed script\n")
 {
     IGNORE_DEMO_PLAYER();
 
