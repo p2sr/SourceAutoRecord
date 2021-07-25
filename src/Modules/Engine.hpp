@@ -23,6 +23,7 @@ public:
     Interface* s_ServerPlugin = nullptr;
     Interface* engineTool = nullptr;
     Interface* engineTrace = nullptr;
+    Interface* g_VEngineServer = nullptr;
 
     using _ClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
     using _ExecuteClientCmd = int(__rescall*)(void* thisptr, const char* szCmdString);
@@ -31,11 +32,14 @@ public:
     using _SetViewAngles = int(__rescall*)(void* thisptr, QAngle& va);
     using _GetMaxClients = int (*)();
     using _GetGameDirectory = char*(__cdecl*)();
+    using _GetSaveDirName = char*(__cdecl*)();
     using _AddListener = bool(__rescall*)(void* thisptr, IGameEventListener2* listener, const char* name, bool serverside);
     using _RemoveListener = bool(__rescall*)(void* thisptr, IGameEventListener2* listener);
     using _Cbuf_AddText = void(__cdecl*)(int slot, const char* pText, int nTickDelay);
     using _AddText = void(__rescall*)(void* thisptr, const char* pText, int nTickDelay);
     using _ClientCommand = int (*)(void* thisptr, void* pEdict, const char* szFmt, ...);
+    using _IsServerPaused = bool(*)(void* thisptr);
+    using _ServerPause = bool(*)(void* thisptr, bool bPause, bool bForce);
     using _GetLocalClient = int (*)(int index);
     using _HostFrameTime = float (*)(void* thisptr);
     using _ClientTime = float (*)(void* thisptr);
@@ -77,6 +81,7 @@ public:
     _SetViewAngles SetViewAngles = nullptr;
     _GetMaxClients GetMaxClients = nullptr;
     _GetGameDirectory GetGameDirectory = nullptr;
+    _GetSaveDirName GetSaveDirName = nullptr;
     _GetActiveSplitScreenPlayerSlot GetActiveSplitScreenPlayerSlot = nullptr;
     _AddListener AddListener = nullptr;
     _RemoveListener RemoveListener = nullptr;
@@ -85,6 +90,8 @@ public:
     _ScreenPosition ScreenPosition = nullptr;
     _ConPrintEvent ConPrintEvent = nullptr;
     _ClientCommand ClientCommand = nullptr;
+    _IsServerPaused IsServerPaused = nullptr;
+    _ServerPause ServerPause = nullptr;
     _GetLocalClient GetLocalClient = nullptr;
     _HostFrameTime HostFrameTime = nullptr;
     _ClientTime ClientTime = nullptr;

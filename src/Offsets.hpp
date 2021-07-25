@@ -22,6 +22,7 @@ extern int GetViewAngles;
 extern int SetViewAngles;
 extern int GetMaxClients;
 extern int ServerCmdKeyValues;
+extern int GetSaveDirName;
 extern int ExecuteClientCmd;
 extern int GetActiveSplitScreenPlayerSlot;
 extern int GetSteamAPIContext;
@@ -32,6 +33,7 @@ extern int Con_IsVisible;
 extern int GetAllClasses;
 extern int HudProcessInput;
 extern int IN_ActivateMouse;
+extern int SteamControllerMove;
 extern int JoyStickApplyMovement;
 extern int LevelInitPreEntity;
 
@@ -68,6 +70,14 @@ extern int DrawTexturedRect;
 extern int IsTextureIDValid;
 extern int CreateNewTextureID;
 
+extern int DrawSetTextureFile;
+extern int DrawSetTextureRGBA;
+extern int DrawSetTexture;
+extern int DrawGetTextureSize;
+extern int DrawTexturedRect;
+extern int IsTextureIDValid;
+extern int CreateNewTextureID;
+
 // CInputSystem
 extern int StringToButtonCode;
 extern int SleepUntilInput;
@@ -77,6 +87,8 @@ extern int SetCursorPosition;
 
 // CInput
 extern int GetButtonBits;
+extern int ActivateMouse;
+extern int DeactivateMouse;
 extern int DecodeUserCmdFromBuffer;
 
 // CGameMovement
@@ -121,6 +133,7 @@ extern int C_m_vecVelocity;
 extern int C_m_vecViewOffset;
 
 // CBaseEntity
+extern int S_m_vecAbsVelocity;
 extern int S_m_vecAbsOrigin;
 extern int S_m_angAbsRotation;
 extern int S_m_vecVelocity;
@@ -144,6 +157,9 @@ extern int m_Local;
 extern int S_m_hGroundEntity;
 extern int C_m_hGroundEntity;
 extern int m_iBonusChallenge;
+extern int m_surfaceFriction;
+extern int m_nTickBase;
+extern int m_InAirState;
 
 // CPlayerLocalData
 extern int m_nTractorBeamCount;
@@ -151,6 +167,8 @@ extern int m_hTractorBeam;
 
 // CPortal_Player
 extern int iNumPortalsPlaced;
+extern int GetPaintPower;
+extern int UseSpeedPower;
 extern int S_m_StatsThisLevel;
 extern int C_m_StatsThisLevel;
 
@@ -239,6 +257,11 @@ extern int SetKeyValueVector;
 
 // CVEngineServer
 extern int ClientCommand;
+extern int IsServerPaused;
+extern int ServerPause;
+
+//CBaseHudChat
+extern int ChatPrintf;
 
 //CBaseHudChat
 extern int ChatPrintf;

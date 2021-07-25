@@ -98,6 +98,7 @@ void Portal2::LoadOffsets()
     viewangles = 19012; // CEngineClient::SetViewAngles
     GetMaxClients = 20; // CEngineClient
     GetGameDirectory = 35; // CEngineClient
+    GetSaveDirName = 124; // CEngineClient
     ExecuteClientCmd = 104; // CEngineClient
     GetActiveSplitScreenPlayerSlot = 127; // CEngineClient
     GetSteamAPIContext = 178; // CEngineClient
@@ -216,6 +217,7 @@ void Portal2::LoadOffsets()
     player = 4; // CPortalGameMovement::PlayerMove
     m_MoveType = 226; // CBasePlayer::UpdateStepSound
     m_iClassName = 104; // CBaseEntity
+    S_m_vecAbsVelocity = 372; // CBaseEntity
     S_m_vecAbsOrigin = 468; // CBaseEntity
     S_m_angAbsRotation = 480; // CBaseEntity
     m_iEFlags = 208; // CBaseEntity
@@ -232,6 +234,8 @@ void Portal2::LoadOffsets()
     CreateEntityByName = 15; // CServerTools::CreateEntityByName
     DispatchSpawn = 16; //CServerTool::DispatchSpawn
     ClientCommand = 39; // CVEngineServer
+    IsServerPaused = 81; // CVEngineServer
+    ServerPause = 121; // CVEngineServer
     TraceRay = 5; // IEngineTrace
     IsPlayer = 86; // CBasePlayer
     AcceptInput = 41; // CBasePlayer
@@ -240,8 +244,11 @@ void Portal2::LoadOffsets()
     m_pShadowStand = 3184; // CBasePlayer
     m_pShadowCrouch = 3188; // CBasePlayer
     m_Local = 5084; // CBasePlayer
+    m_surfaceFriction = 4120; // CBasePlayer
     m_nTractorBeamCount = 396; // CPlayerLocalData
     m_hTractorBeam = 392; // CPlayerLocalData
+    GetPaintPower = 513; // CPortal_Player
+    UseSpeedPower = 519; // CPortal_Player
     StartTouch = 103;
 
     // client.so
@@ -269,6 +276,9 @@ void Portal2::LoadOffsets()
     IN_ActivateMouse = 15; // CHLClient
     g_Input = 1; // CHLClient::IN_ActivateMouse
     GetButtonBits = 2; // CInput
+    ActivateMouse = 27; // CInput
+    DeactivateMouse = 28; // CInput
+    SteamControllerMove = 58; // CInput
     JoyStickApplyMovement = 64; // CInput
     KeyDown = 208; // CInput::JoyStickApplyMovement
     KeyUp = 284; // CInput::JoyStickApplyMovement

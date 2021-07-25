@@ -71,6 +71,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include;$(SolutionDir)\lib\curl\include</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows;$(SolutionDir)\lib\curl\lib\windows</AdditionalLibraryDirectories>
@@ -185,16 +186,21 @@
     <ClCompile Include="Features\Stats\VelocityStats.cpp" />
     <ClCompile Include="Features\StepCounter.cpp" />
     <ClCompile Include="Features\Summary.cpp" />
-    <ClCompile Include="Features\Tas\AutoStrafer.cpp" />
-    <ClCompile Include="Features\Tas\CommandQueuer.cpp" />
     <ClCompile Include="Features\Updater.cpp" />
     <ClCompile Include="Features\ReplaySystem\Replay.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayPlayer.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayProvider.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayRecorder.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayView.cpp" />
+    <ClCompile Include="Features\Tas\TasParser.cpp" />
+    <ClCompile Include="Features\Tas\TasController.cpp" />
+    <ClCompile Include="Features\Tas\TasPlayer.cpp" />
+    <ClCompile Include="Features\Tas\TasTool.cpp" />
+    <ClCompile Include="Features\Tas\TasTools\AbsoluteMoveTool.cpp" />
+    <ClCompile Include="Features\Tas\TasTools\AutoJumpTool.cpp" />
+    <ClCompile Include="Features\Tas\TasTools\StrafeTool.cpp" />
+    <ClCompile Include="Features\Tas\TasTools\TasUtils.cpp" />
     <ClCompile Include="Features\Renderer.cpp" />
-    <ClCompile Include="Features\Tas\TasTools.cpp" />
     <ClCompile Include="Features\Teleporter.cpp" />
     <ClCompile Include="Features\Timer\PauseTimer.cpp" />
     <ClCompile Include="Features\Timer\Timer.cpp" />
@@ -356,8 +362,6 @@
     <ClInclude Include="Features\Stats\VelocityStats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
-    <ClInclude Include="Features\Tas\AutoStrafer.hpp" />
-    <ClInclude Include="Features\Tas\CommandQueuer.hpp" />
     <ClInclude Include="Features\Updater.hpp" />
     <ClInclude Include="Features\ReplaySystem\Replay.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayFrame.hpp" />
@@ -365,8 +369,15 @@
     <ClInclude Include="Features\ReplaySystem\ReplayProvider.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayRecorder.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayView.hpp" />
+    <ClInclude Include="Features\Tas\TasParser.hpp" />
+    <ClInclude Include="Features\Tas\TasController.hpp" />
+    <ClInclude Include="Features\Tas\TasPlayer.hpp" />
+    <ClInclude Include="Features\Tas\TasTool.hpp" />
+    <ClInclude Include="Features\Tas\TasTools\AbsoluteMoveTool.hpp" />
+    <ClInclude Include="Features\Tas\TasTools\AutoJumpTool.hpp" />
+    <ClInclude Include="Features\Tas\TasTools\StrafeTool.hpp" />
+    <ClInclude Include="Features\Tas\TasTools\TasUtils.hpp" />
     <ClInclude Include="Features\Renderer.hpp" />
-    <ClInclude Include="Features\Tas\TasTools.hpp" />
     <ClInclude Include="Features\Teleporter.hpp" />
     <ClInclude Include="Features\Timer\PauseTimer.hpp" />
     <ClInclude Include="Features\Timer\Timer.hpp" />

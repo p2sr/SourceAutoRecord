@@ -18,7 +18,7 @@ struct Vector {
         , z(0)
     {
     }
-    inline Vector(float x, float y, float z)
+    inline Vector(float x, float y, float z = 0)
         : x(x)
         , y(y)
         , z(z)
@@ -36,7 +36,7 @@ struct Vector {
     {
         return Vector::DotProduct(*this, vOther);
     }
-    inline Vector operator*(float fl)
+    inline Vector operator*(float fl) const
     {
         Vector res;
         res.x = x * fl;
@@ -44,7 +44,7 @@ struct Vector {
         res.z = z * fl;
         return res;
     }
-    inline Vector operator/(float fl)
+    inline Vector operator/(float fl) const
     {
         return *this * (1 / fl);
     }
@@ -1023,6 +1023,15 @@ struct variant_t
     static typedescription_t m_SaveMatrix3x4Worldspace[];
 
     const char *ToString() const;
+};
+
+struct PaintPowerInfo_t {
+    Vector m_SurfaceNormal;
+    Vector m_ContactPoint;
+    int m_PaintPowerType;
+    CBaseHandle m_HandleToOther;
+    int m_State;
+    bool m_IsOnThinSurface;
 };
 
 #pragma region RayTracing

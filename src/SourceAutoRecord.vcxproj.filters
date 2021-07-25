@@ -139,9 +139,6 @@
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\CommandQueuer.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Timer\Timer.cpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
     </ClCompile>
@@ -169,9 +166,9 @@
     <ClCompile Include="Features\Listener.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
-	<ClCompile Include="Features\PlayerTrace.cpp">
+    <ClCompile Include="Features\PlayerTrace.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
-	</ClCompile>
+    </ClCompile>
     <ClCompile Include="Features\Rebinder.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
@@ -265,14 +262,8 @@
     <ClCompile Include="Utils.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\TasTools.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Timer\PauseTimer.cpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\Tas\AutoStrafer.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
     <ClCompile Include="Utils\Math.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
@@ -351,6 +342,81 @@
     </ClCompile>
     <ClCompile Include="Features\GroundFramesCounter.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasController.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasPlayer.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\AutoJumpTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\StrafeTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasParser.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\AbsoluteMoveTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\TasUtils.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Camera.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\ConditionalExec.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Stats\StatsCounter.cpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\Crosshair.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\lodepng.cpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Demo\GhostEntity.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Demo\NetworkGhostPlayer.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Demo\DemoGhostPlayer.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Demo\DemoGhostEntity.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Stats\Sync.cpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\StrafeSyncHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Hud\VphysHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\SegmentedTools.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Routing\SeamshotFind.cpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\MaterialSystem.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\GroundFramesCounter.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\AutoAimTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -507,9 +573,6 @@
     <ClInclude Include="Features\Routing\Tracer.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Tas\CommandQueuer.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Timer\Timer.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
     </ClInclude>
@@ -627,11 +690,17 @@
     <ClInclude Include="Features\ReplaySystem\ReplayRecorder.hpp">
       <Filter>SourceAutoRecord\Features\ReplaySystem</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Tas\TasTools.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    <ClInclude Include="Games\Linux\ApertureTag.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Tas\AutoStrafer.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    <ClInclude Include="Games\Linux\PortalStoriesMel.hpp">
+      <Filter>SourceAutoRecord\Games\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\ApertureTag.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Windows\PortalStoriesMel.hpp">
+      <Filter>SourceAutoRecord\Games\Windows</Filter>
     </ClInclude>
     <ClInclude Include="Features\Timer\PauseTimer.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
@@ -822,6 +891,189 @@
     <ClInclude Include="Features\GroundFramesCounter.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Tas\TasController.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasPlayer.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\AutoJumpTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\StrafeTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasParser.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\AbsoluteMoveTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\TasUtils.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Camera.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ConditionalExec.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats\StatsCounter.hpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\Crosshair.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\lodepng.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\GhostEntity.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\NetworkGhostPlayer.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Export.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Ftp.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Http.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\IpAddress.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Packet.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\Socket.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\SocketHandle.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\SocketSelector.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\TcpListener.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\TcpSocket.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network\UdpSocket.hpp">
+      <Filter>lib\SFML\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Clock.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Err.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Export.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\FileInputStream.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\InputStream.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Lock.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\MemoryInputStream.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Mutex.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\NativeActivity.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\NonCopyable.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Sleep.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\String.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Thread.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\ThreadLocal.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\ThreadLocalPtr.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Time.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Utf.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Vector2.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System\Vector3.hpp">
+      <Filter>lib\SFML\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Config.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\GpuPreference.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Graphics.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Main.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\Network.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\SFML\include\SFML\System.hpp">
+      <Filter>lib\SFML</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\DemoGhostPlayer.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\DemoGhostEntity.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stats\Sync.hpp">
+      <Filter>SourceAutoRecord\Features\Stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\StrafeSyncHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\SegmentedTools.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\VphysHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Routing\SeamshotFind.hpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\MaterialSystem.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\GroundFramesCounter.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\AutoAimTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">
@@ -872,11 +1124,11 @@
     <Filter Include="SourceAutoRecord\Features\Routing">
       <UniqueIdentifier>{74d18c35-2424-4dab-bb78-11a5aefde796}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SourceAutoRecord\Features\Speedrun\Rules">
-      <UniqueIdentifier>{338d75c8-ceab-4c59-932b-0129e629742f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="SourceAutoRecord\Features\ReplaySystem">
       <UniqueIdentifier>{6d5adac2-903e-463f-8055-8677eaca4662}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Tas\TasTools">
+      <UniqueIdentifier>{56f0ee93-915f-4619-ba95-b1897f0bc83e}</UniqueIdentifier>
     </Filter>
     <Filter Include="lib\SFML">
       <UniqueIdentifier>{25544dbf-4c2c-4076-9dc4-94be31cd7b11}</UniqueIdentifier>

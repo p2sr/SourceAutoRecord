@@ -132,6 +132,7 @@ extern Variable sv_alternateticks;
 extern Variable sv_bonus_challenge;
 extern Variable sv_accelerate;
 extern Variable sv_airaccelerate;
+extern Variable sv_paintairacceleration;
 extern Variable sv_friction;
 extern Variable sv_maxspeed;
 extern Variable sv_stopspeed;

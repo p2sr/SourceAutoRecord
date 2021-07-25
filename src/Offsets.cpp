@@ -22,6 +22,7 @@ int GetViewAngles;
 int SetViewAngles;
 int GetMaxClients;
 int ServerCmdKeyValues;
+int GetSaveDirName;
 int ExecuteClientCmd;
 int GetActiveSplitScreenPlayerSlot;
 int GetSteamAPIContext;
@@ -32,6 +33,7 @@ int Con_IsVisible;
 int GetAllClasses;
 int HudProcessInput;
 int IN_ActivateMouse;
+int SteamControllerMove;
 int JoyStickApplyMovement;
 int LevelInitPreEntity;
 
@@ -77,6 +79,8 @@ int SetCursorPosition;
 
 // CInput
 int GetButtonBits;
+int ActivateMouse;
+int DeactivateMouse;
 int DecodeUserCmdFromBuffer;
 
 // CGameMovement
@@ -121,6 +125,7 @@ int C_m_vecVelocity;
 int C_m_vecViewOffset;
 
 // CBaseEntity
+int S_m_vecAbsVelocity;
 int S_m_vecAbsOrigin;
 int S_m_angAbsRotation;
 int S_m_vecVelocity;
@@ -144,6 +149,9 @@ int m_Local;
 int S_m_hGroundEntity;
 int C_m_hGroundEntity;
 int m_iBonusChallenge;
+int m_surfaceFriction;
+int m_nTickBase;
+int m_InAirState;
 
 // CPlayerLocalData
 int m_nTractorBeamCount;
@@ -151,6 +159,8 @@ int m_hTractorBeam;
 
 // CPortal_Player
 int iNumPortalsPlaced;
+int GetPaintPower;
+int UseSpeedPower;
 int S_m_StatsThisLevel;
 int C_m_StatsThisLevel;
 
@@ -239,6 +249,8 @@ int SetKeyValueVector;
 
 // CVEngineServer
 int ClientCommand;
+int IsServerPaused;
+int ServerPause;
 
 // CBaseHudChat
 int ChatPrintf;

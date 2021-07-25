@@ -35,6 +35,8 @@ public:
     using _GetAllClasses = ClientClass* (*)();
     using _ShouldDraw = bool(__rescall*)(void* thisptr);
     using _ChatPrintf = void(*)(void* thisptr, int iPlayerIndex, int iFilter, const char* fmt, ...);
+    using _ActivateMouse = void(*)(void* thisptr);
+    using _DeactivateMouse = void(*)(void* thisptr);
 
     _GetClientEntity GetClientEntity = nullptr;
     _KeyDown KeyDown = nullptr;
@@ -42,8 +44,9 @@ public:
     _GetAllClasses GetAllClasses = nullptr;
     _ShouldDraw ShouldDraw = nullptr;
     _ChatPrintf ChatPrintf = nullptr;
+    _ActivateMouse ActivateMouse = nullptr;
+    _DeactivateMouse DeactivateMouse = nullptr;
 
-    void* in_jump = nullptr;
     std::string lastLevelName;
 
 public:
@@ -58,6 +61,7 @@ public:
     void Chat(TextColor color, const char* fmt, ...);
     void QueueChat(TextColor color, const char* fmt, ...);
     void FlushChatQueue();
+    void SetMouseActivated(bool state);
     CMStatus GetChallengeStatus();
     int GetSplitScreenPlayerSlot(void *entity);
 
@@ -93,6 +97,9 @@ public:
     // CInput::GetButtonBits
     DECL_DETOUR(GetButtonBits, bool bResetState);
 
+    // CInput::SteamControllerMove
+    DECL_DETOUR(SteamControllerMove, int nSlot, float flFrametime, CUserCmd* cmd); //is it slot though? :thinking:
+    
     // ClientModeShared::OverrideView
     DECL_DETOUR(OverrideView, CPortalViewSetup1* m_View);
 
@@ -110,6 +117,8 @@ extern Client* client;
 
 extern Variable cl_showpos;
 extern Variable cl_sidespeed;
+extern Variable cl_backspeed;
 extern Variable cl_forwardspeed;
 extern Variable in_forceuser;
 extern Variable cl_fov;
+extern Variable prevent_crouch_jump;

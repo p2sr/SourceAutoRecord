@@ -15,9 +15,9 @@
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Session.hpp"
+#include "Features/Tas/TasPlayer.hpp"
+#include "Features/Tas/TasController.hpp"
 #include "Features/Stats/Sync.hpp"
-#include "Features/Tas/AutoStrafer.hpp"
-#include "Features/Tas/CommandQueuer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/GroundFramesCounter.hpp"
@@ -34,10 +34,12 @@
 
 Variable cl_showpos;
 Variable cl_sidespeed;
+Variable cl_backspeed;
 Variable cl_forwardspeed;
 Variable in_forceuser;
 Variable crosshairVariable;
 Variable cl_fov;
+Variable prevent_crouch_jump;
 
 Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
 Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disables the saving/saved HUD which appears when you make a save.\n");
@@ -52,6 +54,7 @@ REDECL(Client::MsgFunc_SayText2);
 REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
+REDECL(Client::SteamControllerMove);
 REDECL(Client::playvideo_end_level_transition_callback);
 REDECL(Client::OverrideView);
 REDECL(Client::ProcessMovement);
@@ -128,6 +131,15 @@ void Client::FlushChatQueue()
     this->chatQueue.clear();
 }
 
+void Client::SetMouseActivated(bool state)
+{
+    if (state) {
+        this->ActivateMouse(g_Input->ThisPtr());
+    } else {
+        this->DeactivateMouse(g_Input->ThisPtr());
+    }
+}
+
 CMStatus Client::GetChallengeStatus()
 {
     if (engine->IsOrange()) {
@@ -157,10 +169,8 @@ int Client::GetSplitScreenPlayerSlot(void *entity)
             return i;
         }
     }
-
     return 0;
 }
-
 
 // CHLClient::LevelInitPreEntity
 DETOUR(Client::LevelInitPreEntity, const char *levelName)
@@ -172,9 +182,6 @@ DETOUR(Client::LevelInitPreEntity, const char *levelName)
 // ClientModeShared::CreateMove
 DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd)
 {
-    //TAS
-    cmdQueuer->Execute();
-
     if (cmd->command_number) {
         if (replayPlayer1->IsPlaying()) {
             replayPlayer1->Play(replayProvider->GetCurrentReplay(), cmd);
@@ -327,17 +334,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 // CInput::CreateMove
 DETOUR(Client::CInput_CreateMove, int sequence_number, float input_sample_frametime, bool active)
 {
-    auto originalValue = 0;
-    if (sar_tas_ss_forceuser.GetBool()) {
-        originalValue = in_forceuser.GetInt();
-        in_forceuser.SetValue(GET_SLOT());
-    }
-
     auto result = Client::CInput_CreateMove(thisptr, sequence_number, input_sample_frametime, active);
-
-    if (sar_tas_ss_forceuser.GetBool()) {
-        in_forceuser.SetValue(originalValue);
-    }
 
     return result;
 }
@@ -347,9 +344,17 @@ DETOUR(Client::GetButtonBits, bool bResetState)
 {
     auto bits = Client::GetButtonBits(thisptr, bResetState);
 
-    client->CalcButtonBits(GET_SLOT(), bits, IN_AUTOSTRAFE, 0, &autoStrafer->in_autostrafe, bResetState);
-
     return bits;
+}
+
+// CInput::SteamControllerMove
+DETOUR(Client::SteamControllerMove, int nSlot, float flFrametime, CUserCmd* cmd)
+{
+    auto result = Client::SteamControllerMove(thisptr, nSlot, flFrametime, cmd);
+
+    tasController->ControllerMove(nSlot, flFrametime, cmd);
+
+    return result;
 }
 
 DETOUR_COMMAND(Client::playvideo_end_level_transition)
@@ -474,6 +479,7 @@ bool Client::Init()
         if (g_Input = Interface::Create(g_InputAddr)) {
             g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
             g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
+            g_Input->Hook(Client::SteamControllerMove_Hook, Client::SteamControllerMove, Offsets::SteamControllerMove);
 
             auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
             Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
@@ -522,6 +528,8 @@ bool Client::Init()
     cl_showpos = Variable("cl_showpos");
     cl_sidespeed = Variable("cl_sidespeed");
     cl_forwardspeed = Variable("cl_forwardspeed");
+    cl_backspeed = Variable("cl_backspeed");
+    prevent_crouch_jump = Variable("prevent_crouch_jump");
     crosshairVariable = Variable("crosshair");
 
     CVAR_HOOK_AND_CALLBACK(cl_fov);

@@ -33,6 +33,13 @@
 #include <sys/mman.h>
 #endif
 
+#ifdef _WIN32
+#include <Memoryapi.h>
+#include <Windows.h>
+#else
+#include <sys/mman.h>
+#endif
+
 Variable host_framerate;
 Variable net_showmsg;
 Variable sv_portal_players;
@@ -551,6 +558,7 @@ bool Engine::Init()
         this->SetViewAngles = this->engineClient->Original<_SetViewAngles>(Offsets::SetViewAngles);
         this->GetMaxClients = this->engineClient->Original<_GetMaxClients>(Offsets::GetMaxClients);
         this->GetGameDirectory = this->engineClient->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
+        this->GetSaveDirName = this->engineClient->Original<_GetSaveDirName>(Offsets::GetSaveDirName);
         this->IsPaused = this->engineClient->Original<_IsPaused>(Offsets::IsPaused);
         this->Con_IsVisible = this->engineClient->Original<_Con_IsVisible>(Offsets::Con_IsVisible);
 
@@ -573,9 +581,10 @@ bool Engine::Init()
         Engine::OnGameOverlayActivatedBase = *OnGameOverlayActivated;
         *OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated>(Engine::OnGameOverlayActivated_Hook);
 
-        if (auto g_VEngineServer = Interface::Create(this->Name(), "VEngineServer022", false)) {
-            this->ClientCommand = g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
-            Interface::Delete(g_VEngineServer);
+        if (this->g_VEngineServer = Interface::Create(this->Name(), "VEngineServer022", false)) {
+            this->ClientCommand = this->g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
+            this->IsServerPaused = this->g_VEngineServer->Original<_IsServerPaused>(Offsets::IsServerPaused);
+            this->ServerPause = this->g_VEngineServer->Original<_ServerPause>(Offsets::ServerPause);
         }
 
         typedef void* (*_GetClientState)();
@@ -789,6 +798,7 @@ void Engine::Shutdown()
     Interface::Delete(this->s_GameEventManager);
     Interface::Delete(this->engineTool);
     Interface::Delete(this->engineTrace);
+    Interface::Delete(this->g_VEngineServer);
 
     // Reset to the offsets that were originally in the code
 #ifdef _WIN32

@@ -15,8 +15,9 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/StepCounter.hpp"
-#include "Features/Tas/AutoStrafer.hpp"
-#include "Features/Tas/TasTools.hpp"
+#include "Features/Tas/TasPlayer.hpp"
+#include "Features/Tas/TasController.hpp"
+#include "Features/Tas/TasTools/StrafeTool.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/TimescaleDetect.hpp"
@@ -44,6 +45,7 @@ Variable sv_alternateticks;
 Variable sv_bonus_challenge;
 Variable sv_accelerate;
 Variable sv_airaccelerate;
+Variable sv_paintairacceleration;
 Variable sv_friction;
 Variable sv_maxspeed;
 Variable sv_stopspeed;
@@ -204,9 +206,16 @@ DETOUR(Server::PlayerMove)
 // CGameMovement::ProcessMovement
 DETOUR(Server::ProcessMovement, void* player, CMoveData* move)
 {
-    if (sv_cheats.GetBool()) {
-        autoStrafer->Strafe(player, move);
-        tasTools->SetAngles(player);
+    if (!engine->IsGamePaused()) {
+        auto playerInfo = tasPlayer->GetPlayerInfo(player, move);
+        if (sar_tas_real_controller_debug.GetInt() == 3) {
+            console->Print("Jump input state at tick %d: %s\n", playerInfo.tick, (move->m_nButtons & IN_JUMP) ? "true" : "false");
+        }
+    }
+    
+
+    if (tasPlayer->IsActive() && sar_tas_tools_enabled.GetBool()) {
+        tasPlayer->PostProcess(player, move);
     }
 
     unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
@@ -472,6 +481,8 @@ DETOUR(Server::GameFrame, bool simulating)
     if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
     if (!g_IsCMFlagHookInitialized) InitCMFlagHook();
 
+    tasPlayer->Update();
+
     if (sar_tick_debug.GetInt() >= 3 || (sar_tick_debug.GetInt() >= 2 && simulating)) {
         int host, server, client;
         engine->GetTicks(host, server, client);
@@ -509,7 +520,6 @@ static void resetCoopProgress(void *data, size_t size)
     engine->ExecuteCommand("mp_mark_all_maps_incomplete", true);
     engine->ExecuteCommand("mp_lock_all_taunts", true);
 }
-
 
 bool Server::Init()
 {
@@ -623,6 +633,8 @@ bool Server::Init()
     offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::S_m_hGroundEntity);
     offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
     offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
+    offsetFinder->ServerSide("CBasePlayer", "m_nTickBase", &Offsets::m_nTickBase);
+    offsetFinder->ServerSide("CPortal_Player", "m_InAirState", &Offsets::m_InAirState);
     offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);
 
     offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
@@ -641,6 +653,7 @@ bool Server::Init()
     sv_bonus_challenge = Variable("sv_bonus_challenge");
     sv_accelerate = Variable("sv_accelerate");
     sv_airaccelerate = Variable("sv_airaccelerate");
+    sv_paintairacceleration = Variable("sv_paintairacceleration");
     sv_friction = Variable("sv_friction");
     sv_maxspeed = Variable("sv_maxspeed");
     sv_stopspeed = Variable("sv_stopspeed");

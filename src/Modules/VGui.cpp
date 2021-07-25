@@ -5,7 +5,6 @@
 #include "Features/Hud/Hud.hpp"
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
-#include "Features/Tas/CommandQueuer.hpp"
 
 #include "Modules/Engine.hpp"
 #include "Modules/Surface.hpp"
@@ -106,9 +105,6 @@ DETOUR(VGui::Paint, PaintMode_t mode)
 
     surface->FinishDrawing();
 
-    if (!server->GetPlayer(GET_SLOT() + 1))
-        cmdQueuer->Execute();
-
     return result;
 }
 
@@ -128,7 +124,8 @@ DETOUR(VGui::UpdateProgressBar, int progress)
     return VGui::UpdateProgressBar(thisptr, progress);
 }
 
-bool VGui::IsUIVisible(){
+bool VGui::IsUIVisible()
+{
     return this->IsGameUIVisible(this->enginevgui->ThisPtr());
 }
 

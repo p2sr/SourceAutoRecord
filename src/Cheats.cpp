@@ -12,9 +12,6 @@
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
-#include "Features/Tas/AutoStrafer.hpp"
-#include "Features/Tas/CommandQueuer.hpp"
-#include "Features/Tas/TasTools.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/WorkshopList.hpp"
 

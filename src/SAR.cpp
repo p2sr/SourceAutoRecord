@@ -70,7 +70,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             SpeedrunTimer::Init();
             this->features->AddFeature<Stats>(&stats);
             this->features->AddFeature<Sync>(&synchro);
-            this->features->AddFeature<CommandQueuer>(&cmdQueuer);
             this->features->AddFeature<ReplayRecorder>(&replayRecorder1);
             this->features->AddFeature<ReplayRecorder>(&replayRecorder2);
             this->features->AddFeature<ReplayPlayer>(&replayPlayer1);
@@ -82,7 +81,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
             this->features->AddFeature<ClassDumper>(&classDumper);
             this->features->AddFeature<EntityList>(&entityList);
             this->features->AddFeature<OffsetFinder>(&offsetFinder);
-            this->features->AddFeature<AutoStrafer>(&autoStrafer);
+            this->features->AddFeature<TasController>(&tasController);
+            this->features->AddFeature<TasPlayer>(&tasPlayer);
             this->features->AddFeature<PauseTimer>(&pauseTimer);
             this->features->AddFeature<DataMapDumper>(&dataMapDumper);
             this->features->AddFeature<FovChanger>(&fovChanger);
@@ -109,8 +109,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
                 engine->demorecorder->Init();
 
                 this->cheats->Init();
-
-                this->features->AddFeature<TasTools>(&tasTools);
 
                 this->features->AddFeature<Listener>(&listener);
                 this->features->AddFeature<Imitator>(&imitator);

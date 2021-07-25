@@ -103,7 +103,6 @@ void DemoGhostEntity::UpdateDemoGhost()
         }
     }
 
-
     // Thanks to demo delay, this isn't necessarily called once every
     // tick, meaning we can get out of sync! Correct for that by seeing
     // how many ticks have *actually* elapsed.
