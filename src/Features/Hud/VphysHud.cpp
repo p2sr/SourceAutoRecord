@@ -25,6 +25,8 @@ void VphysHud::Paint(int slot) {
 	auto font = scheme->GetDefaultFont() + 1;
 
 	void *player = server->GetPlayer(1);
+	if (!player) return;
+
 	void **pplocaldata = reinterpret_cast<void **>((uintptr_t)player + Offsets::m_Local);  //apparently it's a struct and not a pointer lmfao
 
 	int m_nTractorBeamCount = *reinterpret_cast<int *>((uintptr_t)pplocaldata + Offsets::m_nTractorBeamCount);
