@@ -195,7 +195,8 @@ float AutoStrafeTool::GetFastestStrafeAngle(const TasPlayerInfo &player) {
 	float maxSpeed = GetMaxSpeed(player, wishDir);
 	float maxAccel = GetMaxAccel(player, wishDir);
 
-	//finding the most optimal angle
+	// finding the most optimal angle. 
+	// formula shamelessly taken from https://www.jwchong.com/hl/movement.html
 	float cosAng = (maxSpeed - maxAccel) / velocity.Length2D();
 
 	if (cosAng < 0) cosAng = M_PI_F / 2;
@@ -215,8 +216,11 @@ float AutoStrafeTool::GetTargetStrafeAngle(const TasPlayerInfo &player, float ta
 	float maxSpeed = GetMaxSpeed(player, wishDir);
 	float maxAccel = GetMaxAccel(player, wishDir);
 
+	// Assuming that it is possible to achieve a velocity of a given length,
+	// I'm using a law of cosines to get the right angle for acceleration.
 	float cosAng = (pow(vel.Length2D(), 2) + pow(maxAccel, 2) - pow(targetSpeed, 2)) / (2.0f * vel.Length2D() * maxAccel);
 
+	// Also, questionable trig to get the right angle lol.
 	return acosf(-cosAng);
 }
 
@@ -228,9 +232,13 @@ float AutoStrafeTool::GetTurningStrafeAngle(const TasPlayerInfo &player) {
 	if (velocity.Length2D() == 0) return 0;
 
 	Vector wishDir(0, 1);
-	float maxSpeed = GetMaxSpeed(player, wishDir);
 	float maxAccel = GetMaxAccel(player, wishDir);
 
+	// In order to maximize the angle between old and new velocity, the angle between
+	// acceleration vector and new velocity must be 90 degrees, meaning that I can
+	// easily calculate the desired angle using simple cosine formula. The angle from 
+	// old velocity to acceleration (which is what we actually want to return) is simply 
+	// 90 degrees larger, so I'm doing some questionable trig math here to achieve this lol.
 	float cosAng = -maxAccel / velocity.Length2D();
 	if (cosAng < -1) cosAng = 0;
 
