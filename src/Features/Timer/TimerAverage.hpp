@@ -1,22 +1,22 @@
 #pragma once
-#include <vector>
 #include <string>
+#include <vector>
 
 struct TimerAverageItem {
-    int ticks;
-    float time;
-    std::string map;
+	int ticks;
+	float time;
+	std::string map;
 };
 
 class TimerAverage {
 public:
-    bool isEnabled;
-    std::vector<TimerAverageItem> items;
-    int averageTicks;
-    float averageTime;
+	bool isEnabled;
+	std::vector<TimerAverageItem> items;
+	int averageTicks;
+	float averageTime;
 
 public:
-    TimerAverage();
-    void Start();
-    void Add(int ticks, float time, std::string map);
+	TimerAverage();
+	void Start();
+	void Add(int ticks, float time, std::string map);
 };

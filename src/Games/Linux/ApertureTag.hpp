@@ -3,9 +3,9 @@
 
 class ApertureTag : public Portal2 {
 public:
-    ApertureTag();
-    void LoadOffsets() override;
-    const char* Version() override;
+	ApertureTag();
+	void LoadOffsets() override;
+	const char *Version() override;
 
-    static const char* GameDir();
+	static const char *GameDir();
 };

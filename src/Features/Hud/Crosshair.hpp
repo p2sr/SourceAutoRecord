@@ -1,36 +1,34 @@
 #pragma once
 
-#include "Hud.hpp"
-
 #include "Command.hpp"
+#include "Hud.hpp"
 #include "Variable.hpp"
 
 class Crosshair : public Hud {
-
 private:
-    int crosshairTextureID;
-    int quickhudTextureID[4];
+	int crosshairTextureID;
+	int quickhudTextureID[4];
 
 public:
-    bool isCustomCrosshairReady;
-    bool isCustomQuickHudReady;
-    std::vector<std::string> images;
+	bool isCustomCrosshairReady;
+	bool isCustomQuickHudReady;
+	std::vector<std::string> images;
 
 public:
-    Crosshair();
-    bool ShouldDraw() override;
-    void Paint(int slot) override;
-    bool GetCurrentSize(int& xSize, int& ySize) override;
+	Crosshair();
+	bool ShouldDraw() override;
+	void Paint(int slot) override;
+	bool GetCurrentSize(int &xSize, int &ySize) override;
 
-    bool IsSurfacePortalable();
-    int GetPortalUpgradeState();
-    void GetPortalsStates(int& portalUpgradeState, bool& blue, bool& orange);
-    std::vector<IHandleEntity*> GetPortalsShotByPlayer();
+	bool IsSurfacePortalable();
+	int GetPortalUpgradeState();
+	void GetPortalsStates(int &portalUpgradeState, bool &blue, bool &orange);
+	std::vector<IHandleEntity *> GetPortalsShotByPlayer();
 
-    int SetCrosshairTexture(const std::string filename);
-    bool SetQuickHudTexture(const std::string filename);
+	int SetCrosshairTexture(const std::string filename);
+	bool SetQuickHudTexture(const std::string filename);
 
-    void UpdateImages();
+	void UpdateImages();
 };
 
 extern Crosshair crosshair;

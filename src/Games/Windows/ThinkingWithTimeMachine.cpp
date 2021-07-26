@@ -3,25 +3,21 @@
 #include "Game.hpp"
 #include "Offsets.hpp"
 
-ThinkingWithTimeMachine::ThinkingWithTimeMachine()
-{
-    this->version = SourceGame_ThinkingWithTimeMachine;
+ThinkingWithTimeMachine::ThinkingWithTimeMachine() {
+	this->version = SourceGame_ThinkingWithTimeMachine;
 }
-void ThinkingWithTimeMachine::LoadOffsets()
-{
-    Portal2::LoadOffsets();
+void ThinkingWithTimeMachine::LoadOffsets() {
+	Portal2::LoadOffsets();
 
-    using namespace Offsets;
+	using namespace Offsets;
 
-    // client.dll
+	// client.dll
 
-    m_pCommands = 228; // CInput::DecodeUserCmdFromBuffer
+	m_pCommands = 228;  // CInput::DecodeUserCmdFromBuffer
 }
-const char* ThinkingWithTimeMachine::Version()
-{
-    return "Thinking with Time Machine (5723)";
+const char *ThinkingWithTimeMachine::Version() {
+	return "Thinking with Time Machine (5723)";
 }
-const char* ThinkingWithTimeMachine::GameDir()
-{
-    return "Thinking with Time Machine";
+const char *ThinkingWithTimeMachine::GameDir() {
+	return "Thinking with Time Machine";
 }

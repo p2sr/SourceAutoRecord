@@ -1,64 +1,58 @@
 #include "SDK.hpp"
 
-#include <cstring>
-#include <cstdlib>
-
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
-
 #include "Platform.hpp"
 
-InterfaceReg* InterfaceReg::s_pInterfaceRegs = nullptr;
+#include <cstdlib>
+#include <cstring>
 
-static void* CreateInterfaceInternal(const char* pName, int* pReturnCode)
-{
-    InterfaceReg* pCur;
+InterfaceReg *InterfaceReg::s_pInterfaceRegs = nullptr;
 
-    for (pCur = InterfaceReg::s_pInterfaceRegs; pCur; pCur = pCur->m_pNext) {
-        if (!std::strcmp(pCur->m_pName, pName)) {
-            if (pReturnCode) {
-                *pReturnCode = 0;
-            }
-            return pCur->m_CreateFn();
-        }
-    }
+static void *CreateInterfaceInternal(const char *pName, int *pReturnCode) {
+	InterfaceReg *pCur;
 
-    if (pReturnCode) {
-        *pReturnCode = 1;
-    }
-    return nullptr;
+	for (pCur = InterfaceReg::s_pInterfaceRegs; pCur; pCur = pCur->m_pNext) {
+		if (!std::strcmp(pCur->m_pName, pName)) {
+			if (pReturnCode) {
+				*pReturnCode = 0;
+			}
+			return pCur->m_CreateFn();
+		}
+	}
+
+	if (pReturnCode) {
+		*pReturnCode = 1;
+	}
+	return nullptr;
 }
 
-DLL_EXPORT void* CreateInterface(const char* pName, int* pReturnCode)
-{
-    return CreateInterfaceInternal(pName, pReturnCode);
+DLL_EXPORT void *CreateInterface(const char *pName, int *pReturnCode) {
+	return CreateInterfaceInternal(pName, pReturnCode);
 }
 
-inline int ENTINDEX(edict_t* pEdict)
-{
-    return (pEdict) ? pEdict - server->gpGlobals->pEdicts : 0;
+inline int ENTINDEX(edict_t *pEdict) {
+	return (pEdict) ? pEdict - server->gpGlobals->pEdicts : 0;
 }
-inline edict_t* INDEXENT(int iEdictNum)
-{
-    if (server->gpGlobals->pEdicts) {
-        auto pEdict = server->gpGlobals->pEdicts + iEdictNum;
-        return (pEdict->IsFree()) ? nullptr : pEdict;
-    }
-    return nullptr;
+inline edict_t *INDEXENT(int iEdictNum) {
+	if (server->gpGlobals->pEdicts) {
+		auto pEdict = server->gpGlobals->pEdicts + iEdictNum;
+		return (pEdict->IsFree()) ? nullptr : pEdict;
+	}
+	return nullptr;
 }
 
-const char *variant_t::ToString() const
-{
-    switch (this->fieldType) {
-      case FIELD_STRING:
-          return this->iszVal;
-      case FIELD_INTEGER:
-          static char istr[32];
-          sprintf(istr, "%i", this->iVal);
-          return istr;
-      case FIELD_BOOLEAN:
-          return this->bVal ? "true" : "false";
-      default:
-          return "";
-    }
+const char *variant_t::ToString() const {
+	switch (this->fieldType) {
+	case FIELD_STRING:
+		return this->iszVal;
+	case FIELD_INTEGER:
+		static char istr[32];
+		sprintf(istr, "%i", this->iVal);
+		return istr;
+	case FIELD_BOOLEAN:
+		return this->bVal ? "true" : "false";
+	default:
+		return "";
+	}
 }

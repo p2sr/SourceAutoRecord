@@ -2,8 +2,8 @@
 
 class StepStats {
 public:
-    int total;
+	int total;
 
 public:
-    void Reset();
+	void Reset();
 };

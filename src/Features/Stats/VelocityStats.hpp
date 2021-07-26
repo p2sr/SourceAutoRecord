@@ -5,10 +5,10 @@ struct Vector;
 
 class VelocityStats {
 public:
-    float peak;
-    StatsResultType type;
+	float peak;
+	StatsResultType type;
 
 public:
-    void Save(Vector velocity, bool xyOnly);
-    void Reset();
+	void Save(Vector velocity, bool xyOnly);
+	void Reset();
 };

@@ -4,14 +4,14 @@
 
 class FovChanger : public Feature {
 private:
-    int defaultFov;
+	int defaultFov;
 
 public:
-    FovChanger();
-    void SetFov(const int fov);
-    void Force();
+	FovChanger();
+	void SetFov(const int fov);
+	void Force();
 
-    bool needToUpdate = false;
+	bool needToUpdate = false;
 };
 
-extern FovChanger* fovChanger;
+extern FovChanger *fovChanger;

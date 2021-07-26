@@ -1,14 +1,13 @@
 #pragma once
 #include "Hud.hpp"
-
 #include "Variable.hpp"
 
 class InspectionHud : public Hud {
 public:
-    InspectionHud();
-    bool GetCurrentSize(int& xSize, int& ySize) override;
-    bool ShouldDraw() override;
-    void Paint(int slot) override;
+	InspectionHud();
+	bool GetCurrentSize(int &xSize, int &ySize) override;
+	bool ShouldDraw() override;
+	void Paint(int slot) override;
 };
 
 extern InspectionHud inspectionHud;

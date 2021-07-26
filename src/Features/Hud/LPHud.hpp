@@ -1,31 +1,31 @@
 #pragma once
-#include "Hud.hpp"
-#include <climits>
-
 #include "Command.hpp"
+#include "Hud.hpp"
 #include "Variable.hpp"
 
+#include <climits>
+
 struct LPHudCountHistoryInfo {
-    int tick = 0;
-    int count = 0;
+	int tick = 0;
+	int count = 0;
 };
 
 class LPHud : public Hud {
 private:
-    int oldInGamePortalCounter = 0;
-    int portalsCountFull = 0;
-    bool enabled = false;
-    std::vector<LPHudCountHistoryInfo> countHistory;
-    char oldLevelName[260];
-    int oldUpdateTick = INT_MAX;
+	int oldInGamePortalCounter = 0;
+	int portalsCountFull = 0;
+	bool enabled = false;
+	std::vector<LPHudCountHistoryInfo> countHistory;
+	char oldLevelName[260];
+	int oldUpdateTick = INT_MAX;
 
 public:
-    LPHud();
-    bool ShouldDraw() override;
-    void Paint(int slot) override;
-    bool GetCurrentSize(int& xSize, int& ySize) override;
-    void Set(int count);
-    void Update();
+	LPHud();
+	bool ShouldDraw() override;
+	void Paint(int slot) override;
+	bool GetCurrentSize(int &xSize, int &ySize) override;
+	void Set(int count);
+	void Update();
 };
 
 extern LPHud lpHud;

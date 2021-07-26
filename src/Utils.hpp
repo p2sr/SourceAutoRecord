@@ -5,7 +5,7 @@
 #include "Utils/SDK.hpp"
 
 #ifndef _WIN32
-#include <unistd.h>
+#	include <unistd.h>
 #endif
 
 #include <string>
@@ -20,25 +20,25 @@
 
 namespace Utils {
 
-bool EndsWith(const std::string& str, const std::string& suffix);
-bool StartsWith(const char* str, const char* subStr);
-bool ICompare(const std::string& a, const std::string& b);
-std::string ssprintf(const char *fmt, ...);
-int ConvertFromSrgb(int s);
-std::string GetSARPath();
-}
+	bool EndsWith(const std::string &str, const std::string &suffix);
+	bool StartsWith(const char *str, const char *subStr);
+	bool ICompare(const std::string &a, const std::string &b);
+	std::string ssprintf(const char *fmt, ...);
+	int ConvertFromSrgb(int s);
+	std::string GetSARPath();
+}  // namespace Utils
 
 #define REDECL(name) \
-    decltype(name) name
+	decltype(name) name
 
 #define SAFE_DELETE(ptr) \
-    if (ptr) {           \
-        delete ptr;      \
-        ptr = nullptr;   \
-    }
+	if (ptr) {              \
+		delete ptr;            \
+		ptr = nullptr;         \
+	}
 
 #if _WIN32
-#define GO_THE_FUCK_TO_SLEEP(ms) Sleep(ms)
+#	define GO_THE_FUCK_TO_SLEEP(ms) Sleep(ms)
 #else
-#define GO_THE_FUCK_TO_SLEEP(ms) usleep(ms * 1000)
+#	define GO_THE_FUCK_TO_SLEEP(ms) usleep(ms * 1000)
 #endif

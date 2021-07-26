@@ -3,9 +3,9 @@
 
 class PortalReloaded : public Portal2 {
 public:
-    PortalReloaded();
-    void LoadOffsets() override;
-    const char* Version() override;
+	PortalReloaded();
+	void LoadOffsets() override;
+	const char *Version() override;
 
-    static const char* ModDir();
+	static const char *ModDir();
 };

@@ -4,11 +4,12 @@
 
 class GroundFramesCounter : public Feature {
 public:
-    int counter[2] = {0};
-    bool grounded[2] = {false};
+	int counter[2] = {0};
+	bool grounded[2] = {false};
+
 public:
-    GroundFramesCounter();
-    void HandleMovementFrame(int slot, bool grounded);
+	GroundFramesCounter();
+	void HandleMovementFrame(int slot, bool grounded);
 };
 
-extern GroundFramesCounter* groundFramesCounter;
+extern GroundFramesCounter *groundFramesCounter;

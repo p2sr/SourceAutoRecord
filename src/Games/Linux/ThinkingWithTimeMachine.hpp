@@ -3,9 +3,9 @@
 
 class ThinkingWithTimeMachine : public Portal2 {
 public:
-    ThinkingWithTimeMachine();
-    void LoadOffsets() override;
-    const char* Version() override;
+	ThinkingWithTimeMachine();
+	void LoadOffsets() override;
+	const char *Version() override;
 
-    static const char* GameDir();
+	static const char *GameDir();
 };

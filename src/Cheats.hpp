@@ -4,8 +4,8 @@
 
 class Cheats {
 public:
-    void Init();
-    void Shutdown();
+	void Init();
+	void Shutdown();
 };
 
 extern Variable sar_autorecord;

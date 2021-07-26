@@ -1,39 +1,37 @@
 #pragma once
 
 #include "Command.hpp"
-#include "Variable.hpp"
-
 #include "Features/Feature.hpp"
+#include "Variable.hpp"
 
 #include <chrono>
 
 class Sync : public Feature {
-
 private:
-    unsigned totalStrafeDelta[2];
-    unsigned syncedStrafeDelta[2];
-    float strafeSync[2];
+	unsigned totalStrafeDelta[2];
+	unsigned syncedStrafeDelta[2];
+	float strafeSync[2];
 
-    bool run;
+	bool run;
 
-    std::chrono::time_point<std::chrono::steady_clock> start;
-
-public:
-    std::vector<float> splits;
+	std::chrono::time_point<std::chrono::steady_clock> start;
 
 public:
-    Sync();
+	std::vector<float> splits;
 
-    void UpdateSync(int slot, const CUserCmd* pMove);
-    void PauseSyncSession();
-    void ResumeSyncSession();
-    void ResetSyncSession();
-    void SplitSyncSession();
+public:
+	Sync();
 
-    float GetStrafeSync(int slot);
+	void UpdateSync(int slot, const CUserCmd *pMove);
+	void PauseSyncSession();
+	void ResumeSyncSession();
+	void ResetSyncSession();
+	void SplitSyncSession();
+
+	float GetStrafeSync(int slot);
 };
 
-extern Sync* synchro;
+extern Sync *synchro;
 
 extern Variable sar_strafesync;
 extern Variable sar_strafesync_session_time;

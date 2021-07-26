@@ -1,54 +1,51 @@
 #pragma once
+#include "Command.hpp"
 #include "Demo.hpp"
 #include "DemoGhostEntity.hpp"
-#include "GhostEntity.hpp"
-
-#include "Command.hpp"
-#include "Variable.hpp"
-
-#include "Modules/Console.hpp"
-#include "Modules/Engine.hpp"
-
 #include "Features/Hud/Hud.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "GhostEntity.hpp"
+#include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+#include "Variable.hpp"
 
 #include <algorithm>
 
 class DemoGhostPlayer {
 private:
-    std::vector<DemoGhostEntity> ghostPool;
-    bool isPlaying;
-    int currentTick;
+	std::vector<DemoGhostEntity> ghostPool;
+	bool isPlaying;
+	int currentTick;
 
 public:
-    bool isFullGame;
-    int nbDemos;
+	bool isFullGame;
+	int nbDemos;
 
 public:
-    DemoGhostPlayer();
+	DemoGhostPlayer();
 
-    void SpawnAllGhosts();
-    void StartAllGhost();
-    void ResetAllGhosts();
-    void PauseAllGhosts();
-    void ResumeAllGhosts();
-    void DeleteAllGhosts();
-    void DeleteAllGhostModels();
-    void DeleteGhostsByID(const unsigned int ID);
-    void UpdateGhostsPosition();
-    void UpdateGhostsSameMap();
-    void UpdateGhostsModel(const std::string model);
-    void Sync();
+	void SpawnAllGhosts();
+	void StartAllGhost();
+	void ResetAllGhosts();
+	void PauseAllGhosts();
+	void ResumeAllGhosts();
+	void DeleteAllGhosts();
+	void DeleteAllGhostModels();
+	void DeleteGhostsByID(const unsigned int ID);
+	void UpdateGhostsPosition();
+	void UpdateGhostsSameMap();
+	void UpdateGhostsModel(const std::string model);
+	void Sync();
 
-    DemoGhostEntity* GetGhostByID(int ID);
+	DemoGhostEntity *GetGhostByID(int ID);
 
-    bool SetupGhostFromDemo(const std::string& demo_path, const unsigned int ghost_ID, bool fullGame);
-    void AddGhost(DemoGhostEntity& ghost);
-    bool IsPlaying();
-    bool IsFullGame();
+	bool SetupGhostFromDemo(const std::string &demo_path, const unsigned int ghost_ID, bool fullGame);
+	void AddGhost(DemoGhostEntity &ghost);
+	bool IsPlaying();
+	bool IsFullGame();
 
-    void PrintRecap();
-    void DrawNames(HudContext* ctx);
+	void PrintRecap();
+	void DrawNames(HudContext *ctx);
 };
 
 extern DemoGhostPlayer demoGhostPlayer;

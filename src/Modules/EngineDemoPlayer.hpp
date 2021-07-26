@@ -1,7 +1,6 @@
 #pragma once
-#include "Module.hpp"
-
 #include "Interface.hpp"
+#include "Module.hpp"
 #include "Offsets.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
@@ -10,41 +9,41 @@
 
 class EngineDemoPlayer : public Module {
 public:
-    Interface* s_ClientDemoPlayer = nullptr;
+	Interface *s_ClientDemoPlayer = nullptr;
 
-    using _IsPlayingBack = bool(__rescall*)(void* thisptr);
-    using _GetPlaybackTick = int(__rescall*)(void* thisptr);
-    using _SkipToTick = int(__rescall*)(void* thisptr, int tick, bool relative, bool pause);
+	using _IsPlayingBack = bool(__rescall *)(void *thisptr);
+	using _GetPlaybackTick = int(__rescall *)(void *thisptr);
+	using _SkipToTick = int(__rescall *)(void *thisptr, int tick, bool relative, bool pause);
 
-    _IsPlayingBack IsPlayingBack = nullptr;
-    _GetPlaybackTick GetPlaybackTick = nullptr;
-    _SkipToTick SkipToTick = nullptr;
+	_IsPlayingBack IsPlayingBack = nullptr;
+	_GetPlaybackTick GetPlaybackTick = nullptr;
+	_SkipToTick SkipToTick = nullptr;
 
-    char* DemoName = nullptr;
-    int demoQueueSize = false;
-    int currentDemoID = false;
-    std::vector<std::string> demoQueue;
-    std::string levelName;
+	char *DemoName = nullptr;
+	int demoQueueSize = false;
+	int currentDemoID = false;
+	std::vector<std::string> demoQueue;
+	std::string levelName;
 
 public:
-    int GetTick();
-    bool IsPlaying();
-    void ClearDemoQueue();
-    std::string GetLevelName();
-    void CustomDemoData(char* data, size_t length);
-    void SkipTo(int tick, bool relative, bool pause);
+	int GetTick();
+	bool IsPlaying();
+	void ClearDemoQueue();
+	std::string GetLevelName();
+	void CustomDemoData(char *data, size_t length);
+	void SkipTo(int tick, bool relative, bool pause);
 
-    // CDemoRecorder::StartPlayback
-    DECL_DETOUR(StartPlayback, const char* filename, bool bAsTimeDemo);
-    // CDemoRecorder::StopPlayback
-    DECL_DETOUR(StopPlayback);
-    DECL_DETOUR_COMMAND(stopdemo);
+	// CDemoRecorder::StartPlayback
+	DECL_DETOUR(StartPlayback, const char *filename, bool bAsTimeDemo);
+	// CDemoRecorder::StopPlayback
+	DECL_DETOUR(StopPlayback);
+	DECL_DETOUR_COMMAND(stopdemo);
 
-    bool Init() override;
-    void Shutdown() override;
-    const char* Name() override { return MODULE("engine"); }
+	bool Init() override;
+	void Shutdown() override;
+	const char *Name() override { return MODULE("engine"); }
 
-    bool ShouldBlacklistCommand(const char *cmd);
+	bool ShouldBlacklistCommand(const char *cmd);
 };
 
 extern Command sar_startdemos;

@@ -1,16 +1,16 @@
 #pragma once
-#include <string>
-
 #include "Feature.hpp"
+
+#include <string>
 
 class Config : public Feature {
 public:
-    std::string filePath;
+	std::string filePath;
 
 public:
-    Config();
-    bool Save();
-    bool Load();
+	Config();
+	bool Save();
+	bool Load();
 };
 
-extern Config* config;
+extern Config *config;

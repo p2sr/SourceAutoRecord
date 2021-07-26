@@ -3,34 +3,29 @@
 #include <vector>
 
 Modules::Modules()
-    : list()
-{
+	: list() {
 }
-void Modules::InitAll()
-{
-    for (const auto& mod : this->list) {
-        if (!mod->hasLoaded) {
-            mod->Init();
-        }
-    }
+void Modules::InitAll() {
+	for (const auto &mod : this->list) {
+		if (!mod->hasLoaded) {
+			mod->Init();
+		}
+	}
 }
-void Modules::ShutdownAll()
-{
-    for (const auto& mod : this->list) {
-        mod->Shutdown();
-        mod->hasLoaded = false;
-    }
+void Modules::ShutdownAll() {
+	for (const auto &mod : this->list) {
+		mod->Shutdown();
+		mod->hasLoaded = false;
+	}
 }
-void Modules::DeleteAll()
-{
-    for (auto& mod : this->list) {
-        if (mod) {
-            delete mod;
-        }
-    }
+void Modules::DeleteAll() {
+	for (auto &mod : this->list) {
+		if (mod) {
+			delete mod;
+		}
+	}
 }
-Modules::~Modules()
-{
-    this->DeleteAll();
-    this->list.clear();
+Modules::~Modules() {
+	this->DeleteAll();
+	this->list.clear();
 }

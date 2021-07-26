@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Feature.hpp"
 #include "Command.hpp"
+#include "Feature.hpp"
 #include "Variable.hpp"
 
 extern Command waitCmd;

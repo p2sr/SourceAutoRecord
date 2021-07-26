@@ -1,18 +1,17 @@
 #pragma once
 #include "Hud.hpp"
-
 #include "Variable.hpp"
 
 class InputHud : public Hud {
 private:
-    int buttonBits[2];
+	int buttonBits[2];
 
 public:
-    InputHud();
-    void SetButtonBits(int slot, int buttonBits);
-    bool ShouldDraw() override;
-    void Paint(int slot) override;
-    bool GetCurrentSize(int& xSize, int& ySize) override;
+	InputHud();
+	void SetButtonBits(int slot, int buttonBits);
+	bool ShouldDraw() override;
+	void Paint(int slot) override;
+	bool GetCurrentSize(int &xSize, int &ySize) override;
 };
 
 extern InputHud inputHud;

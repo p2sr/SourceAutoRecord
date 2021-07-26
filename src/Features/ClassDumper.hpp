@@ -1,28 +1,26 @@
 #pragma once
+#include "Command.hpp"
 #include "Feature.hpp"
+#include "Utils/SDK.hpp"
 
 #include <fstream>
 #include <string>
 
-#include "Utils/SDK.hpp"
-
-#include "Command.hpp"
-
 class ClassDumper : public Feature {
 private:
-    std::string serverClassesFile;
-    std::string clientClassesFile;
+	std::string serverClassesFile;
+	std::string clientClassesFile;
 
 public:
-    ClassDumper();
-    void Dump(bool dumpServer = true);
+	ClassDumper();
+	void Dump(bool dumpServer = true);
 
 private:
-    void DumpSendTable(std::ofstream& file, SendTable* table);
-    void DumpRecvTable(std::ofstream& file, RecvTable* table);
+	void DumpSendTable(std::ofstream &file, SendTable *table);
+	void DumpRecvTable(std::ofstream &file, RecvTable *table);
 };
 
-extern ClassDumper* classDumper;
+extern ClassDumper *classDumper;
 
 extern Command sar_dump_server_classes;
 extern Command sar_dump_client_classes;

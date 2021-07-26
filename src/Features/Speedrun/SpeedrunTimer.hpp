@@ -1,40 +1,41 @@
 #pragma once
 
-#include <string>
-#include "Variable.hpp"
-#include "Command.hpp"
 #include "Categories.hpp"
+#include "Command.hpp"
 #include "Rules.hpp"
+#include "Variable.hpp"
+
+#include <string>
 
 #define SPEEDRUN_TOAST_TAG "speedrun"
 
 namespace SpeedrunTimer {
-    std::string Format(float raw);
-    std::string SimpleFormat(float raw);
-    float UnFormat(std::string& formated_time);
+	std::string Format(float raw);
+	std::string SimpleFormat(float raw);
+	float UnFormat(std::string &formated_time);
 
-    void Init();
-    void SetIpt(float ipt);
-    void Update();
-    void AddPauseTick();
-    void FinishLoad();
+	void Init();
+	void SetIpt(float ipt);
+	void Update();
+	void AddPauseTick();
+	void FinishLoad();
 
-    int GetSegmentTicks();
-    int GetSplitTicks();
-    int GetTotalTicks();
+	int GetSegmentTicks();
+	int GetSplitTicks();
+	int GetTotalTicks();
 
-    void Start();
-    void Pause();
-    void Resume();
-    void Stop(std::string segName);
-    void Split(bool newSplit, std::string segName, bool requested = true);
-    void Reset(bool requested = true);
+	void Start();
+	void Pause();
+	void Resume();
+	void Stop(std::string segName);
+	void Split(bool newSplit, std::string segName, bool requested = true);
+	void Reset(bool requested = true);
 
-    bool IsRunning();
+	bool IsRunning();
 
-    void OnLoad();
-    void CategoryChanged();
-};
+	void OnLoad();
+	void CategoryChanged();
+};  // namespace SpeedrunTimer
 
 extern Variable sar_speedrun_smartsplit;
 extern Variable sar_speedrun_time_pauses;

@@ -2,19 +2,18 @@
 
 class ScrollSpeedHud : public Hud {
 public:
-    ScrollSpeedHud()
-        : Hud(HudType_InGame, true)
-    { }
+	ScrollSpeedHud()
+		: Hud(HudType_InGame, true) {}
 
-    bool ShouldDraw() override;
+	bool ShouldDraw() override;
 
-    void Paint(int slot) override;
+	void Paint(int slot) override;
 
-    bool GetCurrentSize(int& xSize, int& ySize) override {
-        return false;
-    }
+	bool GetCurrentSize(int &xSize, int &ySize) override {
+		return false;
+	}
 
-    void OnJump(int slot);
+	void OnJump(int slot);
 };
 
 extern ScrollSpeedHud scrollSpeedHud;

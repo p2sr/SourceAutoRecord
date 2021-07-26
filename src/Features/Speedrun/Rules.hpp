@@ -1,26 +1,25 @@
 #pragma once
 
+#include "Features/Hud/Hud.hpp"
+#include "Utils/Math.hpp"
+
+#include <map>
+#include <optional>
 #include <string>
 #include <variant>
-#include <optional>
-#include <map>
-#include "Utils/Math.hpp"
-#include "Features/Hud/Hud.hpp"
 
-enum class RuleAction
-{
-    START, // Only start if not already running
-    FORCE_START, // Restart timer if already running
-    STOP,
-    SPLIT,
-    PAUSE,
-    RESUME,
+enum class RuleAction {
+	START,        // Only start if not already running
+	FORCE_START,  // Restart timer if already running
+	STOP,
+	SPLIT,
+	PAUSE,
+	RESUME,
 };
 
-enum PortalColor
-{
-    BLUE,
-    ORANGE,
+enum PortalColor {
+	BLUE,
+	ORANGE,
 };
 
 class SpeedrunRule;
@@ -30,95 +29,93 @@ class SpeedrunRule;
 #define ENTRULE_PARAMETER (1 << 2)
 
 struct EntityInputRule {
-    int typeMask;
-    std::string targetname;
-    std::string classname;
-    std::string inputname;
-    std::string parameter;
+	int typeMask;
+	std::string targetname;
+	std::string classname;
+	std::string inputname;
+	std::string parameter;
 
-    bool Test(std::string targetname, std::string classname, std::string inputname, std::string parameter);
+	bool Test(std::string targetname, std::string classname, std::string inputname, std::string parameter);
 
-    static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
+	static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
 };
 
 struct ZoneTriggerRule {
-    Vector center;
-    Vector size;
-    double rotation;
+	Vector center;
+	Vector size;
+	double rotation;
 
-    int overlayId;
+	int overlayId;
 
-    bool Test(Vector pos);
-    void DrawInWorld(float time);
-    void OverlayInfo(HudContext *ctx, SpeedrunRule *rule);
+	bool Test(Vector pos);
+	void DrawInWorld(float time);
+	void OverlayInfo(HudContext *ctx, SpeedrunRule *rule);
 
-    static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
+	static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
 };
 
 struct PortalPlacementRule {
-    Vector center;
-    Vector size;
-    double rotation;
-    std::optional<PortalColor> portal;
+	Vector center;
+	Vector size;
+	double rotation;
+	std::optional<PortalColor> portal;
 
-    int overlayId;
+	int overlayId;
 
-    bool Test(Vector pos, PortalColor portal);
-    void DrawInWorld(float time);
-    void OverlayInfo(HudContext *ctx, SpeedrunRule *rule);
+	bool Test(Vector pos, PortalColor portal);
+	void DrawInWorld(float time);
+	void OverlayInfo(HudContext *ctx, SpeedrunRule *rule);
 
-    static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
+	static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
 };
 
 struct ChallengeFlagsRule {
-    static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
-    bool Test();
+	static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
+	bool Test();
 };
 
 struct MapLoadRule {
-    static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
-    bool Test();
+	static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
+	bool Test();
 };
 
 struct CrouchFlyRule {
-    static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
-    bool Test();
+	static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
+	bool Test();
 };
 
 struct SpeedrunRule {
-    using _RuleTypes = std::variant<
-        EntityInputRule,
-        ZoneTriggerRule,
-        PortalPlacementRule,
-        ChallengeFlagsRule,
-        MapLoadRule,
-        CrouchFlyRule
-    >;
+	using _RuleTypes = std::variant<
+		EntityInputRule,
+		ZoneTriggerRule,
+		PortalPlacementRule,
+		ChallengeFlagsRule,
+		MapLoadRule,
+		CrouchFlyRule>;
 
-    RuleAction action;
+	RuleAction action;
 
-    std::string map;
-    std::optional<std::string> onlyAfter;
-    std::optional<int> slot;
-    _RuleTypes rule;
+	std::string map;
+	std::optional<std::string> onlyAfter;
+	std::optional<int> slot;
+	_RuleTypes rule;
 
-    bool fired;
+	bool fired;
 
-    std::string Describe();
+	std::string Describe();
 
-    SpeedrunRule(RuleAction action, std::string map, _RuleTypes rule)
-        : action(action)
-        , map(map)
-        , onlyAfter()
-        , slot()
-        , rule(rule)
-        , fired(false)
-    {
-    }
+	SpeedrunRule(RuleAction action, std::string map, _RuleTypes rule)
+		: action(action)
+		, map(map)
+		, onlyAfter()
+		, slot()
+		, rule(rule)
+		, fired(false) {
+	}
 
-    bool TestGeneral(std::optional<int> slot);
+	bool TestGeneral(std::optional<int> slot);
 };
 
 namespace SpeedrunTimer {
-    void TickRules();
+	void TickRules();
 };

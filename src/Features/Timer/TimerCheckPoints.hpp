@@ -1,21 +1,21 @@
 #pragma once
-#include <vector>
 #include <string>
+#include <vector>
 
 struct TimerCheckPointItem {
-    int ticks;
-    float time;
-    std::string map;
+	int ticks;
+	float time;
+	std::string map;
 };
 
 class TimerCheckPoints {
 public:
-    std::vector<TimerCheckPointItem> items;
-    int latestTick;
-    float latestTime;
+	std::vector<TimerCheckPointItem> items;
+	int latestTick;
+	float latestTime;
 
 public:
-    TimerCheckPoints();
-    void Add(int ticks, float time, std::string map);
-    void Reset();
+	TimerCheckPoints();
+	void Add(int ticks, float time, std::string map);
+	void Reset();
 };

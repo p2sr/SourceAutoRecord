@@ -1,9 +1,7 @@
 #pragma once
-#include "Replay.hpp"
-
-#include "Features/Feature.hpp"
-
 #include "Command.hpp"
+#include "Features/Feature.hpp"
+#include "Replay.hpp"
 #include "Variable.hpp"
 
 #define SAR_TAS_REPLAY_HEADER001 "sar-tas-replay v1.7"
@@ -12,24 +10,24 @@
 
 class ReplayProvider : public Feature {
 public:
-    std::vector<Replay*> replays;
+	std::vector<Replay *> replays;
 
 public:
-    ReplayProvider();
-    ~ReplayProvider();
-    void CreateNewReplay();
-    Replay* GetCurrentReplay();
-    bool AnyReplaysLoaded();
-    void DeleteAll();
-    void MergeAll();
-    void MergeViews(int firstReplay, int secondReplay, int firstView, int secondView);
+	ReplayProvider();
+	~ReplayProvider();
+	void CreateNewReplay();
+	Replay *GetCurrentReplay();
+	bool AnyReplaysLoaded();
+	void DeleteAll();
+	void MergeAll();
+	void MergeViews(int firstReplay, int secondReplay, int firstView, int secondView);
 
 public:
-    void Export(const char* fileName, int index = 0);
-    void Import(const char* fileName);
+	void Export(const char *fileName, int index = 0);
+	void Import(const char *fileName);
 };
 
-extern ReplayProvider* replayProvider;
+extern ReplayProvider *replayProvider;
 
 extern Variable sar_replay_mode;
 extern Variable sar_replay_viewmode;

@@ -6,13 +6,13 @@
 
 class TimescaleDetect : public Feature {
 public:
-    TimescaleDetect();
-    void Cancel();
-    void Spawn();
+	TimescaleDetect();
+	void Cancel();
+	void Spawn();
 
-    int spawnTick;
-    int startTick;
-    std::chrono::time_point<std::chrono::system_clock> startTickTime;
+	int spawnTick;
+	int startTick;
+	std::chrono::time_point<std::chrono::system_clock> startTickTime;
 };
 
-extern TimescaleDetect* timescaleDetect;
+extern TimescaleDetect *timescaleDetect;

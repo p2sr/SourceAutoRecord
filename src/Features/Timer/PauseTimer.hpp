@@ -3,16 +3,16 @@
 
 class PauseTimer : public Feature {
 private:
-    bool isActive;
-    int ticks;
+	bool isActive;
+	int ticks;
 
 public:
-    PauseTimer();
-    void Start();
-    void Increment();
-    void Stop();
-    bool IsActive();
-    int GetTotal();
+	PauseTimer();
+	void Start();
+	void Increment();
+	void Stop();
+	bool IsActive();
+	int GetTotal();
 };
 
-extern PauseTimer* pauseTimer;
+extern PauseTimer *pauseTimer;

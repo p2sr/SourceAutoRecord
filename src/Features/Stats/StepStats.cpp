@@ -1,6 +1,5 @@
 #include "StepStats.hpp"
 
-void StepStats::Reset()
-{
-    this->total = 0;
+void StepStats::Reset() {
+	this->total = 0;
 }

@@ -4,10 +4,10 @@
 
 class PortalgunHud : public Hud {
 public:
-    PortalgunHud();
-    bool ShouldDraw() override;
-    bool GetCurrentSize(int &w, int &h) override;
-    void Paint(int slot) override;
+	PortalgunHud();
+	bool ShouldDraw() override;
+	bool GetCurrentSize(int &w, int &h) override;
+	void Paint(int slot) override;
 };
 
 extern PortalgunHud portalgunHud;

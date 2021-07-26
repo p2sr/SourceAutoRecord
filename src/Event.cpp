@@ -5,11 +5,12 @@
 std::vector<SarInitHandler *> SarInitHandler::handlers;
 
 SarInitHandler::SarInitHandler(std::function<void()> cb)
-    : cb(cb)
-    { handlers.push_back(this); }
+	: cb(cb) {
+	handlers.push_back(this);
+}
 
 void SarInitHandler::RunAll() {
-    for (auto h : SarInitHandler::handlers) {
-        h->cb();
-    }
+	for (auto h : SarInitHandler::handlers) {
+		h->cb();
+	}
 }
