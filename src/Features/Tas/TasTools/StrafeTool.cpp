@@ -286,9 +286,25 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 
 // returns 1 or -1 depending on what direction player should strafe (right and left accordingly)
 int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAngle) {
-	if (this->shouldFollowLine) {
-		// figure out on which side of line we're in, then return angle depending on that
 
+	float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
+	float diff = desAngle - velAngle;
+	if (abs(diff - 360) < abs(diff)) diff -= 360;
+	if (abs(diff + 360) < abs(diff)) diff += 360;
+
+	if (this->shouldFollowLine) {
+		// check if deviated too far from the line
+		// using the math from max angle change strafing to determine whether
+		// line following is too "wobbly"
+		Vector velocity = GetGroundFrictionVelocity(pInfo);
+		float maxAccel = GetMaxAccel(pInfo, Vector(0, 1));
+		float maxRotAng = RAD2DEG(asinf(maxAccel / velocity.Length2D()));
+		if (abs(diff) > maxRotAng) {
+			this->shouldFollowLine = false;
+			return GetTurningDirection(pInfo, desAngle);
+		}
+
+		// figure out on which side of line we're in, then return angle depending on that
 		float desAngleRad = DEG2RAD(desAngle);
 		Vector flForward(cos(desAngleRad), sin(desAngleRad));
 		Vector flRight(flForward.y, -flForward.x);
@@ -308,12 +324,6 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 		if (desAngle < -180.0f) {
 			turnDir = -1;
 		} else if (desAngle <= 180.0f) {
-			float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
-
-			float diff = desAngle - velAngle;
-			if (abs(diff - 360) < abs(diff)) diff -= 360;
-			if (abs(diff + 360) < abs(diff)) diff += 360;
-
 			if (diff < 0) turnDir = -1;
 		}
 
