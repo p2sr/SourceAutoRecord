@@ -319,16 +319,38 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "sar_time_demos <demo_name> [demo_n
 
 // HUD
 
-HUD_ELEMENT2(demo, "0", "Draws name, tick and time of current demo.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+HUD_ELEMENT_MODE2(demo, "0", 0, 2, "Draws name, tick and time of current demo.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	int tick;
+	float time;
+	const char *demoName;
+
 	if (!*engine->m_bLoadgame && *engine->demorecorder->m_bRecording && !engine->demorecorder->currentDemo.empty()) {
-		auto tick = engine->demorecorder->GetTick();
-		auto time = engine->ToTime(tick);
-		ctx->DrawElement("demo: %s %i (%.3f)", engine->demorecorder->currentDemo.c_str(), tick, time);
+		tick = engine->demorecorder->GetTick();
+		time = engine->ToTime(tick);
+		demoName = engine->demorecorder->currentDemo.c_str();
 	} else if (!*engine->m_bLoadgame && engine->demoplayer->IsPlaying()) {
-		auto tick = engine->demoplayer->GetTick();
-		auto time = engine->ToTime(tick);
-		ctx->DrawElement("demo: %s %i (%.3f)", engine->demoplayer->DemoName, tick, time);
+		tick = engine->demoplayer->GetTick();
+		time = engine->ToTime(tick);
+		demoName = engine->demoplayer->DemoName;
 	} else {
 		ctx->DrawElement("demo: -");
+		return;
+	}
+
+	if (mode == 1) {
+		ctx->DrawElement("demo: %s %i (%.3f)", demoName, tick, time);
+	} else { // mode == 2
+		const char *name = demoName;
+
+		while (*name) ++name; // Find end of path
+
+		// Go back until slash
+		while (name >= demoName && *name != '/' && *name != '\\') {
+			--name;
+		}
+
+		++name;
+
+		ctx->DrawElement("demo: %s %i", name, tick);
 	}
 }
