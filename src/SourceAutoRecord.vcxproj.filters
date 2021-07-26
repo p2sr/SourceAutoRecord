@@ -370,9 +370,6 @@
     <ClCompile Include="Features\Camera.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
-    <ClCompile Include="Features\ConditionalExec.cpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Stats\StatsCounter.cpp">
       <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClCompile>
@@ -416,6 +413,9 @@
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
     <ClCompile Include="Features\Tas\TasTools\AutoAimTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\SetAngleTool.cpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClCompile>
   </ItemGroup>
@@ -918,9 +918,6 @@
     <ClInclude Include="Features\Camera.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
-    <ClInclude Include="Features\ConditionalExec.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Stats\StatsCounter.hpp">
       <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClInclude>
@@ -1072,6 +1069,9 @@
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTools\AutoAimTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\SetAngleTool.hpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClInclude>
   </ItemGroup>
