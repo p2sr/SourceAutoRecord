@@ -525,3 +525,18 @@ HUD_ELEMENT_MODE2(velocity, "0", 0, 4,
 		ctx->DrawElement("vel: -");
 	}
 }
+HUD_ELEMENT2(groundspeed, "0", "Draw the speed of the player upon leaving the ground.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	static float speeds[2];
+	auto player = client->GetPlayer(ctx->slot + 1);
+	if (!player) {
+		ctx->DrawElement("groundspeed: -");
+		return;
+	}
+
+	unsigned groundHandle = *(unsigned *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
+	if (groundHandle != 0xFFFFFFFF) {
+		speeds[ctx->slot] = client->GetLocalVelocity(player).Length();
+	}
+
+	ctx->DrawElement("groundspeed: %.*f", getPrecision(true), speeds[ctx->slot]);
+}
