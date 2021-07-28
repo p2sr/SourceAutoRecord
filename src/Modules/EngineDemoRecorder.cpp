@@ -360,8 +360,26 @@ ON_EVENT(CM_FLAGS) {
 #endif
 
 			if (sar_challenge_autostop.GetInt() == 2) {
-				float time = floor(event.time * 100) / 100;
-				auto newName = Utils::ssprintf("%s_%.2f.dem", demoFile.substr(0, demoFile.size() - 4).c_str(), time);
+				unsigned total = floor(event.time * 100);
+				unsigned cs = total % 100;
+				total /= 100;
+				unsigned secs = total % 60;
+				total /= 60;
+				unsigned mins = total % 60;
+				total /= 60;
+				unsigned hrs = total;
+
+				std::string time;
+
+				if (hrs) {
+					time = Utils::ssprintf("%d-%02d-%02d-%02d", hrs, mins, secs, cs);
+				} else if (mins) {
+					time = Utils::ssprintf("%d-%02d-%02d", mins, secs, cs);
+				} else {
+					time = Utils::ssprintf("%d-%02d", secs, cs);
+				}
+
+				auto newName = Utils::ssprintf("%s_%s.dem", demoFile.substr(0, demoFile.size() - 4).c_str(), time.c_str());
 				std::filesystem::rename(demoFile, newName);
 			}
 		}
