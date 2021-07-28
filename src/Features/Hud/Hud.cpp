@@ -270,7 +270,7 @@ struct TextComponent {
 };
 
 struct TextLine {
-	bool draw;
+	bool draw = true;
 	Color defaultColor;
 	std::vector<TextComponent> components;
 };
@@ -380,7 +380,6 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
 
 	components.push_back({curColor, component});
 
-	sar_hud_text_vals[idx].draw = true;
 	sar_hud_text_vals[idx].components = components;
 }
 
