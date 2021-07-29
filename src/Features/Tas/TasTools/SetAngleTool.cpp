@@ -42,6 +42,9 @@ void SetAngleTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 
 	Vector requiredDelta = QAngleToVector(playerInfo.angles) - Vector{params->pitch, params->yaw};
 
+	while (requiredDelta.y < 0.0f) requiredDelta.y += 360.0f;
+	if (requiredDelta.y > 180.0f) requiredDelta.y -= 360.0f;
+
 	float pitchDelta = requiredDelta.x / remaining;
 	float yawDelta = requiredDelta.y / remaining;
 
