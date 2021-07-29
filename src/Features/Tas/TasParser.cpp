@@ -97,6 +97,7 @@ std::vector<TasFramebulk> TasParser::ParseAllLines(std::vector<std::string> &lin
 	std::vector<TasFramebulk> bulks;
 
 	int lineCounter = 1;
+	int lastTick = -1;
 	for (auto &line : lines) {
 		if (line.empty() || (line.size() > 2 && line[0] == '/' && line[1] == '/')) {  //Commentary
 			++lineCounter;
@@ -105,6 +106,10 @@ std::vector<TasFramebulk> TasParser::ParseAllLines(std::vector<std::string> &lin
 
 		try {
 			auto raw = TasParser::PreParseLine(line, lineCounter);
+			if (raw.tick <= lastTick) {
+				throw TasParserException(Utils::ssprintf("Framebulk does not occur after previous framebulk tick (%d <= %d)", raw.tick, lastTick));
+			}
+			lastTick = raw.tick;
 			raws.push_back(raw);
 		} catch (TasParserException &e) {
 			throw TasParserException("(" + std::string(e.what()) + ") at line " + std::to_string(lineCounter));
@@ -112,7 +117,6 @@ std::vector<TasFramebulk> TasParser::ParseAllLines(std::vector<std::string> &lin
 
 		++lineCounter;
 	}
-	std::sort(raws.begin(), raws.end(), [](RawFramebulk a, RawFramebulk b) { return a.tick < b.tick; });
 
 	if (raws.empty())
 		return bulks;
