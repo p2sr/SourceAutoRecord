@@ -119,13 +119,13 @@ CON_COMMAND_F(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvar
 	}
 }
 
-#define SVAR_OP(name, op)                                                                                                                \
+#define SVAR_OP(name, op, disallowSecondZero)                                                                                            \
 	CON_COMMAND_F(svar_##name, "svar_" #name " <variable> <variable|value> - perform the given operation on an svar\n", FCVAR_DONTRECORD) { \
 		if (args.ArgC() != 3) {                                                                                                                \
 			return console->Print(svar_##name.ThisPtr()->m_pszHelpString);                                                                        \
 		}                                                                                                                                      \
                                                                                                                                          \
-		long cur;                                                                                                                              \
+		int cur;                                                                                                                               \
                                                                                                                                          \
 		{                                                                                                                                      \
 			auto it = g_svars.find({args[1]});                                                                                                    \
@@ -137,7 +137,7 @@ CON_COMMAND_F(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvar
 		}                                                                                                                                      \
                                                                                                                                          \
 		char *end;                                                                                                                             \
-		long other = strtol(args[2], &end, 10);                                                                                                \
+		int other = strtol(args[2], &end, 10);                                                                                                 \
                                                                                                                                          \
 		if (end == args[2] || *end) {                                                                                                          \
 			auto it = g_svars.find({args[2]});                                                                                                    \
@@ -148,14 +148,15 @@ CON_COMMAND_F(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvar
 			}                                                                                                                                     \
 		}                                                                                                                                      \
                                                                                                                                          \
-		g_svars[std::string(args[1])] = Utils::ssprintf("%d", cur op other);                                                                   \
+		int val = (disallowSecondZero && other == 0) ? 0 : cur op other;                                                                       \
+		g_svars[std::string(args[1])] = Utils::ssprintf("%d", val);                                                                            \
 	}
 
-SVAR_OP(add, +)
-SVAR_OP(sub, -)
-SVAR_OP(mul, *)
-SVAR_OP(div, /)
-SVAR_OP(mod, %)
+SVAR_OP(add, +, false)
+SVAR_OP(sub, -, false)
+SVAR_OP(mul, *, false)
+SVAR_OP(div, /, true)
+SVAR_OP(mod, %, true)
 
 struct Condition {
 	enum {
