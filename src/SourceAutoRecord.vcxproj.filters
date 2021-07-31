@@ -418,6 +418,9 @@
     <ClCompile Include="Features\Tas\TasTools\SetAngleTool.cpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Hud\TasControllerHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1073,6 +1076,9 @@
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTools\SetAngleTool.hpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\TasControllerHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

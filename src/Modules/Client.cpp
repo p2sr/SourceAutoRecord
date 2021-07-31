@@ -10,6 +10,7 @@
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Hud/ScrollSpeed.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
+#include "Features/Hud/TasControllerHud.hpp"
 #include "Features/Imitator.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OffsetFinder.hpp"
@@ -306,6 +307,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 		bool grounded = groundHandle != 0xFFFFFFFF;
 		groundFramesCounter->HandleMovementFrame(nSlot, grounded);
 		strafeQuality.OnMovement(nSlot, grounded);
+		tasControllerHud.AddData({cmd->sidemove, cmd->forwardmove, cmd->upmove});
 	}
 
 	return result;
