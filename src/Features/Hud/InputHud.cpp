@@ -14,7 +14,8 @@ Variable sar_ihud("sar_ihud", "0", 0,
                   "1 = forward;back;moveleft;moveright,\n"
                   "2 = 1 + duck;jump;use,\n"
                   "3 = 2 + attack;attack2,\n"
-                  "4 = 3 + speed;reload.\n");
+                  "4 = 3 + speed;reload.\n"
+                  "5 = duck;jump;use;attack;attack2.\n");
 Variable sar_ihud_x("sar_ihud_x", "0", 0, "X offset of input HUD.\n");
 Variable sar_ihud_y("sar_ihud_y", "0", 0, "Y offset of input HUD.\n");
 Variable sar_ihud_button_padding("sar_ihud_button_padding", "2", 0, "Padding between buttons of input HUD.\n");
@@ -117,30 +118,46 @@ void InputHud::Paint(int slot) {
 		++element;
 	};
 
-	/*
-        Layout:
+	if (mode != 5) {
+		/*
+			Layout:
 
-            row|col0|1|2|3|4|5|6|7|8
-            ---|---------------------
-              0|       w|e|r
-              1|shft|a|s|d
-              2|ctrl|spacebar   |l|r
-    */
+				row|col0|1|2|3|4|5|6|7|8
+				---|---------------------
+				  0|       w|e|r
+				  1|shft|a|s|d
+				  2|ctrl|spacebar   |l|r
+		*/
 
-	DrawElement(1, mvForward, col2, row0);
-	DrawElement(1, mvLeft, col1, row1);
-	DrawElement(1, mvBack, col2, row1);
-	DrawElement(1, mvRight, col3, row1);
+		DrawElement(1, mvForward, col2, row0);
+		DrawElement(1, mvLeft, col1, row1);
+		DrawElement(1, mvBack, col2, row1);
+		DrawElement(1, mvRight, col3, row1);
 
-	DrawElement(2, mvDuck, col0, row2);
-	DrawElement(2, mvJump, col1, row2, col6);
-	DrawElement(2, mvUse, col3, row0);
+		DrawElement(2, mvDuck, col0, row2);
+		DrawElement(2, mvJump, col1, row2, col6);
+		DrawElement(2, mvUse, col3, row0);
 
-	DrawElement(3, mvAttack, col7, row2);
-	DrawElement(3, mvAttack2, col8, row2);
+		DrawElement(3, mvAttack, col7, row2);
+		DrawElement(3, mvAttack2, col8, row2);
 
-	DrawElement(4, mvSpeed, col0, row1);
-	DrawElement(4, mvReload, col4, row0);
+		DrawElement(4, mvSpeed, col0, row1);
+		DrawElement(4, mvReload, col4, row0);
+	} else {
+		/*
+			Layout:
+
+				row|col0|1|2|3|4 |5|6|7
+				---|---------------------
+				  2|ctrl|spacebar|e|l|r
+		*/
+		element = 4;
+		DrawElement(5, mvDuck, col0, row2);
+		DrawElement(5, mvJump, col1, row2, col4);
+		DrawElement(5, mvUse, col5, row2);
+		DrawElement(5, mvAttack, col6, row2);
+		DrawElement(5, mvAttack2, col7, row2);
+	}
 }
 bool InputHud::GetCurrentSize(int &xSize, int &ySize) {
 	auto mode = sar_ihud.GetInt();
