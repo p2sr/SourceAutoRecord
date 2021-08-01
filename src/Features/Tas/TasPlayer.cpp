@@ -3,6 +3,7 @@
 #include "Features/Session.hpp"
 #include "Features/Tas/TasParser.hpp"
 #include "Features/Tas/TasTool.hpp"
+#include "Features/Hud/Hud.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -483,4 +484,14 @@ CON_COMMAND(sar_tas_save_raw, "sar_tas_save_raw - saves a processed version of j
 	}
 
 	tasPlayer->SaveProcessedFramebulks();
+}
+
+
+HUD_ELEMENT2(tastick, "0", "Draws current TAS playback tick.\n", HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen) {
+	if (!tasPlayer->IsActive()) {
+		ctx->DrawElement("tastick: -");
+	} else {
+		int tick = tasPlayer->GetTick();
+		ctx->DrawElement("tastick: %i (%.3f)", tick, engine->ToTime(tick));
+	}
 }
