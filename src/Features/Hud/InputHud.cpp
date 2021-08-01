@@ -58,7 +58,6 @@ const int col7 = 7;
 const int col8 = 8;
 
 InputHud inputHud;
-InputHud inputHud2;
 
 InputHud::InputHud()
 	: Hud(HudType_InGame | HudType_LoadingScreen, true)
