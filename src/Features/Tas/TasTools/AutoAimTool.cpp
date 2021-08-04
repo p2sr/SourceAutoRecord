@@ -9,11 +9,15 @@ struct AutoAimParams : public TasToolParams {
 	AutoAimParams()
 		: TasToolParams(false) {}
 
-	AutoAimParams(Vector point)
+	AutoAimParams(Vector point, int ticks)
 		: TasToolParams(true)
-		, point(point) {}
+		, point(point)
+		, ticks(ticks)
+		, elapsed(0) {}
 
 	Vector point;
+	int ticks;
+	int elapsed;
 };
 
 AutoAimTool *AutoAimTool::GetTool() {
@@ -25,11 +29,13 @@ std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string>
 		return std::make_shared<AutoAimParams>();
 	}
 
-	if (args.size() == 3) {
+	if (args.size() == 3 || args.size() == 4) {
 		float x = atof(args[0].c_str());
 		float y = atof(args[1].c_str());
 		float z = atof(args[2].c_str());
-		return std::make_shared<AutoAimParams>(Vector{x, y, z});
+		int ticks = args.size() == 4 ? atoi(args[3].c_str()) : 1;
+
+		return std::make_shared<AutoAimParams>(Vector{x, y, z}, ticks);
 	}
 
 	return nullptr;
@@ -42,6 +48,12 @@ void AutoAimTool::Reset() {
 void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	auto params = std::static_pointer_cast<AutoAimParams>(this->params);
 	if (!params->enabled) return;
+
+	int remaining = 1; // If there are no lerp ticks left, pretend we're on the last tick, so that we jump all the way to the final angle
+	if (params->elapsed < params->ticks) {
+		remaining = params->ticks - params->elapsed;
+		++params->elapsed;
+	}
 
 	void *player = server->GetPlayer(playerInfo.slot + 1);
 	if (!player) return;
@@ -57,12 +69,17 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	pitch *= 180.0f / M_PI;
 	yaw *= 180.0f / M_PI;
 
-	float pitchDelta = pitch - playerInfo.angles.x;
-	float yawDelta = yaw - playerInfo.angles.y;
+	Vector requiredDelta = QAngleToVector(playerInfo.angles) - Vector{pitch, yaw};
+
+	while (requiredDelta.y < 0.0f) requiredDelta.y += 360.0f;
+	if (requiredDelta.y > 180.0f) requiredDelta.y -= 360.0f;
+
+	float pitchDelta = requiredDelta.x / remaining;
+	float yawDelta = requiredDelta.y / remaining;
 
 	if (sar_tas_debug.GetBool()) {
 		console->Print("autoaim pitch:%.2f yaw:%.2f\n", pitch, yaw);
 	}
 
-	bulk.viewAnalog = Vector{-yawDelta, -pitchDelta};
+	bulk.viewAnalog = Vector{yawDelta, pitchDelta};
 }
