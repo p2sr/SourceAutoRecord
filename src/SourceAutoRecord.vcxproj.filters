@@ -421,6 +421,9 @@
     <ClCompile Include="Features\Hud\TasControllerHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\ReloadedFix.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1079,6 +1082,9 @@
     </ClInclude>
     <ClInclude Include="Features\Hud\TasControllerHud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ReloadedFix.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

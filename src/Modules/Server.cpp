@@ -12,6 +12,7 @@
 #include "Features/Hud/TasControllerHud.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OffsetFinder.hpp"
+#include "Features/ReloadedFix.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Routing/SeamshotFind.hpp"
 #include "Features/SegmentedTools.hpp"
@@ -411,6 +412,9 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 			TriggerCMFlag(0, time, true);
 		}
 	}
+
+	// allow reloaded fix to override some commands from point_servercommand
+	reloadedFix->OverrideInput(className, inputName, &parameter);
 
 	g_AcceptInputHook.Disable();
 	server->AcceptInput(thisptr, inputName, activator, caller, parameter, outputID);

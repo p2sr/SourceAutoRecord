@@ -13,6 +13,7 @@
 #include "Features/OffsetFinder.hpp"
 #include "Features/PlayerTrace.hpp"
 #include "Features/Rebinder.hpp"
+#include "Features/ReloadedFix.hpp"
 #include "Features/ReplaySystem/ReplayPlayer.hpp"
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/ReplaySystem/ReplayRecorder.hpp"

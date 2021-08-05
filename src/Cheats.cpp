@@ -6,6 +6,7 @@
 #include "Features/Hud/SpeedrunHud.hpp"
 #include "Features/Imitator.hpp"
 #include "Features/Listener.hpp"
+#include "Features/ReloadedFix.hpp"
 #include "Features/ReplaySystem/ReplayPlayer.hpp"
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/Routing/EntityInspector.hpp"
@@ -152,6 +153,8 @@ void Cheats::Init() {
 	sar_workshop.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
 	sar_workshop_update.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
 	sar_workshop_list.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
+
+	sar_fix_reloaded_cheats.UniqueFor(SourceGame_PortalReloaded);
 
 	cvars->Unlock();
 

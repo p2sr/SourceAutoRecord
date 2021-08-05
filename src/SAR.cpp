@@ -68,6 +68,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			SpeedrunTimer::Init();
 			this->features->AddFeature<Stats>(&stats);
 			this->features->AddFeature<Sync>(&synchro);
+			this->features->AddFeature<ReloadedFix>(&reloadedFix);
 			this->features->AddFeature<ReplayRecorder>(&replayRecorder1);
 			this->features->AddFeature<ReplayRecorder>(&replayRecorder2);
 			this->features->AddFeature<ReplayPlayer>(&replayPlayer1);
