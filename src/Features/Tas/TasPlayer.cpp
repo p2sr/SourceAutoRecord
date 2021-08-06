@@ -40,7 +40,7 @@ std::string TasFramebulk::ToString() {
 }
 
 TasPlayer::TasPlayer()
-	: startInfo({TasStartType::UnknownStart, ""}) {
+	: startInfo({TasStartType::StartImmediately, ""}) {
 }
 
 TasPlayer::~TasPlayer() {

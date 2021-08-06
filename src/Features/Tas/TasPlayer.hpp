@@ -24,7 +24,6 @@ struct TasFramebulk {
 };
 
 enum TasStartType {
-	UnknownStart,
 	ChangeLevel,
 	ChangeLevelCM,
 	LoadQuicksave,
