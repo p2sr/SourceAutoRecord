@@ -58,7 +58,7 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player) {
 	unsigned ground_handle = *(unsigned *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
 	bool grounded = ground_handle != 0xFFFFFFFF;
 
-	bool update = (trace.updates.size() == 0) || (grounded != trace.updates.back().grounded) || (delta.Length() > 60);
+	bool update = (trace.updates.size() == 0) || (grounded != trace.updates.back().grounded) || (delta.Length() > 127);
 	if (update) {
 		trace.updates.push_back({trace.deltas.size(), speed, (int32_t)pos.x * TRACE_SCALE_UPDATE, (int32_t)pos.y * TRACE_SCALE_UPDATE, (int32_t)pos.z * TRACE_SCALE_UPDATE, grounded});
 		trace.last_pos = pos;
@@ -71,9 +71,9 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player) {
 	if (new_pos_needed) {
 		if (delta_speed > 31) delta_speed = 31;
 		if (delta_speed < -31) delta_speed = -31;
-		TraceDelta del(delta * TRACE_SCALE_DELTA, delta_speed);
+		TraceDelta del(delta * TRACE_SCALE_DELTA, delta_speed * TRACE_SCALE_DELTA);
 		trace.deltas.push_back(del);
-		trace.last_pos = trace.last_pos + del.asVector() / TRACE_SCALE_DELTA;
+		trace.last_pos = trace.last_pos + delta;
 		trace.last_speed += delta_speed;
 	}
 }
@@ -120,7 +120,7 @@ void PlayerTrace::DrawInWorld(float time) const {
 		float speed = trace.updates[0].speed;
 		for (size_t i = 1; i < trace.deltas.size(); i++) {
 			Vector new_pos = pos + trace.deltas[i].asVector() / TRACE_SCALE_DELTA;
-			speed += trace.deltas[i].dv;
+			speed += trace.deltas[i].dv / TRACE_SCALE_DELTA;
 
 			if (update_idx < trace.updates.size() && i == trace.updates[update_idx].tick) {
 				// We want to show only when there is more than 1 groundframe
@@ -157,7 +157,6 @@ void PlayerTrace::DrawInWorld(float time) const {
 						// Didn't hit anything; use this point
 						closest_dist = dist;
 						closest_pos = new_pos;
-						pos - new_pos;
 						closest_vel = speed;
 					}
 				}
@@ -165,9 +164,16 @@ void PlayerTrace::DrawInWorld(float time) const {
 
 			// Don't draw a line when going through a portal
 			if ((pos - new_pos).Length() < 127) {
+				// Colors:
+				// red: grounded
+				// green: speed>300
 				if (is_grounded) {
 					r = 255;
 					g = 0;
+					b = 0;
+				} else if (speed >= 300) {
+					r = 0;
+					g = 255;
 					b = 0;
 				} else {
 					r = 255;
@@ -230,18 +236,11 @@ ON_EVENT(PRE_TICK) {
 	}
 
 	// Draw trace
-	const int drawDelta = 30;
-	static int lastDrawTick = -1000;
-
 	if (!sar_player_trace_draw.GetBool()) return;
 	if (!sv_cheats.GetBool()) return;
 
-	int tick = engine->GetTick();
-	if (tick > lastDrawTick && tick < lastDrawTick + drawDelta) return;
-
-	lastDrawTick = tick;
-
-	playerTrace->DrawInWorld((drawDelta + 1) * *engine->interval_per_tick);
+	// Kind of an arbitrary number, prevents flickers
+	playerTrace->DrawInWorld(.05);
 }
 
 ON_EVENT(SESSION_START) {
@@ -268,7 +267,7 @@ HUD_ELEMENT2_NO_DISABLE(player_trace_draw_hover, HudType_InGame) {
 	for (auto &h : hovers) {
 		engine->PointToScreen(h.pos + hud_offset, screen_pos);
 		ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y - 15, "pos: %.1f %.1f %.1f", h.pos.x, h.pos.y, h.pos.z);
-		ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "horiz. speed: %.0f", h.speed);
+		ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "horiz. speed: %.2f", h.speed);
 	}
 }
 

@@ -6,14 +6,14 @@
 
 #include <map>
 
-#define TRACE_SCALE_DELTA 10
+#define TRACE_SCALE_DELTA 16
 #define TRACE_SCALE_UPDATE 32
 // Stores a position delta as a fixed point number
 struct TraceDelta {
-	int16_t dx : 9;
-	int16_t dy : 9;
-	int16_t dz : 9;
-	int16_t dv : 6;
+	int16_t dx : 12;
+	int16_t dy : 12;
+	int16_t dz : 12;
+	int16_t dv : 12;
 
 	inline TraceDelta(const Vector vect, int vel)
 		: dx(vect.x)
@@ -43,7 +43,6 @@ struct Trace {
 	// Keeps track of groudframes, speed at important moments in the hops
 	std::vector<TraceUpdate> updates;
 	// Remember the last pos, in order to compute deltas
-	// Note: it is actually position times TRACE_SCALE
 	Vector last_pos;
 	float last_speed;
 };
