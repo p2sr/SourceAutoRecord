@@ -23,6 +23,9 @@ struct Vector {
 		, y(y)
 		, z(z) {
 	}
+	inline float SquaredLength() const {
+		return x*x + y*y + z*z;
+	}
 	inline float Length() const {
 		return std::sqrt(x * x + y * y + z * z);
 	}

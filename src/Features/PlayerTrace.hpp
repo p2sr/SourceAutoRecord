@@ -10,14 +10,16 @@
 #define TRACE_SCALE_UPDATE 32
 // Stores a position delta as a fixed point number
 struct TraceDelta {
-	int16_t dx : 10;
-	int16_t dy : 10;
-	int16_t dz : 10;
+	int16_t dx : 9;
+	int16_t dy : 9;
+	int16_t dz : 9;
+	int16_t dv : 6;
 
-	inline TraceDelta(const Vector vect)
+	inline TraceDelta(const Vector vect, int vel)
 		: dx(vect.x)
 		, dy(vect.y)
-		, dz(vect.z) {}
+		, dz(vect.z)
+		, dv(vel) {}
 	inline Vector asVector() const {
 		return Vector(dx, dy, dz);
 	}
@@ -43,6 +45,7 @@ struct Trace {
 	// Remember the last pos, in order to compute deltas
 	// Note: it is actually position times TRACE_SCALE
 	Vector last_pos;
+	float last_speed;
 };
 
 class PlayerTrace : public Feature {
