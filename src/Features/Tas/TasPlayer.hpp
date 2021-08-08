@@ -73,11 +73,12 @@ public:
 	inline int GetTick() const { return currentTick; };
 	inline int GetAbsoluteTick() const { return startTick + currentTick; };
 	inline bool IsActive() const { return active; };
+	inline bool IsRunning() const { return active && startTick != -1; }
 
 	void Activate();
 	void Start();
 	void PostStart();
-	void Stop();
+	void Stop(bool interrupted=false);
 
 	void Pause();
 	void Resume();

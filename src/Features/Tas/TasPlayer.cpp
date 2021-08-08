@@ -138,9 +138,13 @@ void TasPlayer::PostStart() {
 	engine->ExecuteCommand("phys_timescale 1", true);  // technically it was supposed to fix the consistency issue
 }
 
-void TasPlayer::Stop() {
+void TasPlayer::Stop(bool interrupted) {
 	if (active && ready) {
-		console->Print("TAS script has ended after %d ticks.\n", currentTick);
+		console->Print(
+			"TAS script has %s after %d ticks.\n", 
+			interrupted ? "been interrupted" : "ended", 
+			currentTick
+		);
 
 		if (sar_tas_autosave_raw.GetBool()) {
 			SaveProcessedFramebulks();
@@ -372,7 +376,7 @@ void TasPlayer::Update() {
 			}
 		}
 		if (ready && session->isRunning) {
-			if (startTick == -1) {
+			if (!IsRunning()) {
 				PostStart();  // script has started its playback. Adjust the tick counter and offset
 			} else {
 				currentTick++;
@@ -477,7 +481,7 @@ CON_COMMAND(sar_tas_advance, "sar_tas_advance - advances TAS playback by one tic
 }
 
 CON_COMMAND(sar_tas_stop, "sar_tas_stop - stop TAS playing\n") {
-	tasPlayer->Stop();
+	tasPlayer->Stop(true);
 }
 
 CON_COMMAND(sar_tas_save_raw, "sar_tas_save_raw - saves a processed version of just processed script\n") {

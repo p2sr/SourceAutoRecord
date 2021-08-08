@@ -14,6 +14,7 @@
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Tas/TasPlayer.hpp"
 #include "Game.hpp"
 #include "Hook.hpp"
 #include "Interface.hpp"
@@ -338,6 +339,11 @@ DETOUR(Engine::Frame) {
 	Renderer::Frame();
 
 	NetMessage::Update();
+
+	// stopping TAS player if outside of the game
+	if (!engine->hoststate->m_activeGame && tasPlayer->IsRunning()) {
+		tasPlayer->Stop(true);
+	}
 
 	return Engine::Frame(thisptr);
 }
