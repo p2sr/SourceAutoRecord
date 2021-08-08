@@ -411,9 +411,9 @@ void TasPlayer::Update() {
 
 	if (startTick != -1 && active && ready) {
 		if (paused) {
-			engine->ExecuteCommand("setpause", true);
+			//engine->ExecuteCommand("setpause", true);
 		} else {
-			engine->ExecuteCommand("unpause", true);
+			//engine->ExecuteCommand("unpause", true);
 		}
 	}
 }
