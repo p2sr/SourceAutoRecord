@@ -424,14 +424,26 @@ void TasPlayer::Update() {
 
 DECL_COMMAND_COMPLETION(sar_tas_play) {
 	try {
-		for (auto const &file : std::filesystem::recursive_directory_iterator(TAS_SCRIPTS_DIR)) {
+		for (
+			auto i = std::filesystem::recursive_directory_iterator(TAS_SCRIPTS_DIR);
+			i != std::filesystem::recursive_directory_iterator();
+			++i
+		) {
 			if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
 				break;
 			}
 
-			auto scriptName = file.path().stem().string();
+			auto file = *i;
+
 			auto scriptExt = file.path().extension().string();
 			if (Utils::EndsWith(scriptExt, TAS_SCRIPT_EXT)) {
+				auto scriptPath = file.path();
+				auto scriptName = scriptPath.stem().string();
+				for (int d = 0; d < i.depth(); d++) {
+					scriptPath = scriptPath.parent_path();
+					scriptName = scriptPath.stem().string() + "/" + scriptName;
+				}
+
 				if (std::strstr(scriptName.c_str(), match)) {
 					items.push_back(scriptName);
 				}
