@@ -33,6 +33,7 @@
 #include "Utils.hpp"
 #include "Variable.hpp"
 
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 
@@ -346,6 +347,21 @@ DETOUR_MID_MH(Server::AirMove_Mid) {
         jmp Server::AirMove_Continue
 	}
 }
+#else
+static void setAircontrol(int val) {
+	switch (val) {
+	case 0:
+		*server->aircontrol_fling_speed_addr = 300.0f * 300.0f;
+		break;
+	default:
+		*server->aircontrol_fling_speed_addr = INFINITY;
+		break;
+	}
+}
+// cvar callbacks dont want to fucking work so we'll just do this bs
+ON_EVENT(PRE_TICK) {
+	setAircontrol(sar_aircontrol.GetInt());
+}
 #endif
 
 extern Hook g_AcceptInputHook;
@@ -537,6 +553,12 @@ bool Server::Init() {
 		} else {
 			console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
 		}
+#else
+		{
+			uintptr_t airMove = (uintptr_t)AirMove;
+			this->aircontrol_fling_speed_addr = (float *)(airMove + 9 + *(uint32_t *)(airMove + 11) + *(uint32_t *)(airMove + 568));
+			Memory::UnProtect(this->aircontrol_fling_speed_addr, 4);
+		}
 #endif
 	}
 
@@ -651,6 +673,8 @@ CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop 
 void Server::Shutdown() {
 #ifdef _WIN32
 	MH_UNHOOK(this->AirMove_Mid);
+#else
+	setAircontrol(0);
 #endif
 	Interface::Delete(this->g_GameMovement);
 	Interface::Delete(this->g_ServerGameDLL);

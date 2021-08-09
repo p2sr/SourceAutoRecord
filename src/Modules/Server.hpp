@@ -109,6 +109,8 @@ public:
 	static uintptr_t AirMove_Skip;
 	static uintptr_t AirMove_Continue;
 	DECL_DETOUR_MID_MH(AirMove_Mid);
+#else
+	float *aircontrol_fling_speed_addr;
 #endif
 
 // CServerGameDLL::GameFrame

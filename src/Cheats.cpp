@@ -29,7 +29,7 @@ Variable sar_jumpboost("sar_jumpboost", "0", 0,
                        "0 = Default,\n"
                        "1 = Orange Box Engine,\n"
                        "2 = Pre-OBE.\n");
-Variable sar_aircontrol("sar_aircontrol", "0", 0, "Enables more air-control on the server.\n");
+Variable sar_aircontrol("sar_aircontrol", "0", 0, 2, "Enables more air-control on the server.\n");
 Variable sar_duckjump("sar_duckjump", "0", "Allows duck-jumping even when fully crouched, similar to prevent_crouch_jump.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", "Disables opening the challenge mode stats HUD.\n");
 Variable sar_disable_steam_pause("sar_disable_steam_pause", "0", "Prevents pauses from steam overlay.\n");
