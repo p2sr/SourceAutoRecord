@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TasPlayer.hpp"
-
+#include <list>
 
 struct TasToolParams {
 	bool enabled = false;
@@ -35,7 +35,7 @@ public:
 	std::shared_ptr<TasToolParams> GetCurrentParams();
 
 public:
-	static std::vector<TasTool *> &GetList();
+	static std::list<TasTool *> &GetList();
 };
 
 

@@ -1,9 +1,10 @@
 #include "TasTool.hpp"
 
 #include "TasPlayer.hpp"
+#include <algorithm>
 
-std::vector<TasTool *> &TasTool::GetList() {
-	static std::vector<TasTool *> list;
+std::list<TasTool *> &TasTool::GetList() {
+	static std::list<TasTool *> list;
 	return list;
 }
 
@@ -22,6 +23,10 @@ const char *TasTool::GetName() {
 void TasTool::SetParams(std::shared_ptr<TasToolParams> params) {
 	this->params = params;
 	this->updated = true;
+
+	// the tool has been updated. prioritize it by moving it to the end of the global list
+	// mlugg please don't kill me
+	GetList().splice(GetList().end(), GetList(), std::find(GetList().begin(), GetList().end(), this));
 }
 
 void TasTool::Reset() {
