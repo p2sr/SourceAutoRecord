@@ -17,14 +17,14 @@
 #	define ADD_LINE_OVERLAY(...) engine->AddLineOverlay(nullptr, __VA_ARGS__)
 #endif
 
-Variable sar_aim_point_hud("sar_aim_point_hud", "0", "Overlay a marker with coordinates at the point you're aiming at\n");
+Variable sar_aim_point_hud("sar_aim_point_hud", "0", "Overlays a marker with coordinates at the point you're aiming at\n");
 
 static bool g_last_trace_valid;
 static CGameTrace g_last_trace;
 
 std::vector<CGameTrace> g_frozen;
 
-CON_COMMAND(sar_aim_point_add, "Add frozen aimpoint at current position\n") {
+CON_COMMAND(sar_aim_point_add, "sar_aim_point_add - add frozen aimpoint at current position\n") {
 	if (!g_last_trace_valid) {
 		console->Print("Cannot freeze aimpoint; no point\n");
 		return;
@@ -33,7 +33,7 @@ CON_COMMAND(sar_aim_point_add, "Add frozen aimpoint at current position\n") {
 	g_frozen.push_back(g_last_trace);
 }
 
-CON_COMMAND(sar_aim_point_clear, "Clear all frozen aimpoints\n") {
+CON_COMMAND(sar_aim_point_clear, "sar_aim_point_cleat - clear all frozen aimpoints\n") {
 	console->Print("Unfreezing all aimpoints\n");
 	g_frozen.clear();
 }
