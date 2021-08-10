@@ -360,7 +360,7 @@ static void setAircontrol(int val) {
 }
 // cvar callbacks dont want to fucking work so we'll just do this bs
 ON_EVENT(PRE_TICK) {
-	setAircontrol(sar_aircontrol.GetInt());
+	setAircontrol(server->AllowsMovementChanges() ? sar_aircontrol.GetInt() : 0);
 }
 #endif
 
