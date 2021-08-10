@@ -328,6 +328,9 @@
     <ClCompile Include="Features\Hud\Toasts.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Hud\AimPointHud.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Hud\Watermark.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
@@ -886,6 +889,9 @@
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
     <ClInclude Include="Features\Hud\Toasts.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\AimPointHud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
     <ClInclude Include="Features\Routing\SeamshotFind.hpp">
