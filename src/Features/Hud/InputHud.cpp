@@ -1,5 +1,6 @@
 #include "InputHud.hpp"
 
+#include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
@@ -8,327 +9,418 @@
 
 #include <cstring>
 
-Variable sar_ihud("sar_ihud", "0", 0,
-                  "Draws movement inputs of client.\n"
-                  "0 = Default,\n"
-                  "1 = forward;back;moveleft;moveright,\n"
-                  "2 = 1 + duck;jump;use,\n"
-                  "3 = 2 + attack;attack2,\n"
-                  "4 = 3 + speed;reload.\n"
-                  "5 = duck;jump;use;attack;attack2.\n");
-Variable sar_ihud_x("sar_ihud_x", "0", 0, "X offset of input HUD.\n");
-Variable sar_ihud_y("sar_ihud_y", "0", 0, "Y offset of input HUD.\n");
-Variable sar_ihud_button_padding("sar_ihud_button_padding", "2", 0, "Padding between buttons of input HUD.\n");
-Variable sar_ihud_button_size("sar_ihud_button_size", "60", 0, "Button size of input HUD.\n");
-Variable sar_ihud_button_color("sar_ihud_button_color", "0 0 0 255", "RGBA button color of input HUD.\n", 0);
-Variable sar_ihud_font_color("sar_ihud_font_color", "255 255 255 255", "RGBA font color of input HUD.\n", 0);
-Variable sar_ihud_font_index("sar_ihud_font_index", "1", 0, "Font index of input HUD.\n");
-Variable sar_ihud_layout("sar_ihud_layout", "WASDCSELRSR",
-                         "Layout of input HUD.\n"
-                         "Labels are in this order:\n"
-                         "forward,\n"
-                         "moveleft,\n"
-                         "back,\n"
-                         "moveright,\n"
-                         "duck,\n"
-                         "jump,\n"
-                         "use,\n"
-                         "attack,\n"
-                         "attack2,\n"
-                         "speed,\n"
-                         "reload.\n"
-                         "Pass an empty string to disable drawing labels completely.\n",
-                         0);
-Variable sar_ihud_shadow("sar_ihud_shadow", "1", "Draws button shadows of input HUD.\n");
-Variable sar_ihud_shadow_color("sar_ihud_shadow_color", "0 0 0 64", "RGBA button shadow color of input HUD.\n", 0);
-Variable sar_ihud_shadow_font_color("sar_ihud_shadow_font_color", "255 255 255 64", "RGBA button shadow font color of input HUD.\n", 0);
-
-const int row0 = 0;
-const int row1 = 1;
-const int row2 = 2;
-
-const int col0 = 0;
-const int col1 = 1;
-const int col2 = 2;
-const int col3 = 3;
-const int col4 = 4;
-const int col5 = 5;
-const int col6 = 6;
-const int col7 = 7;
-const int col8 = 8;
+Variable sar_ihud("sar_ihud", "0", 0, 1, "Enabled or disables movement inputs HUD of client.\n");
+Variable sar_ihud_x("sar_ihud_x", "2", -99999, 99999, "X position of input HUD.\n");
+Variable sar_ihud_y("sar_ihud_y", "2", -99999, 99999, "Y position of input HUD.\n");
+Variable sar_ihud_grid_padding("sar_ihud_button_padding", "2", 0, "Padding between buttons of input HUD.\n");
+Variable sar_ihud_grid_size("sar_ihud_button_size", "60", 0, "Button size of input HUD.\n");
 
 InputHud inputHud;
 
 InputHud::InputHud()
-	: Hud(HudType_InGame | HudType_LoadingScreen, true)
-	, buttonBits{0, 0} {
+	: Hud(HudType_InGame | HudType_LoadingScreen, true) {
+
+	elements = {
+		{"forward", false, IN_FORWARD},
+		{"back", false, IN_BACK},
+		{"moveleft", false, IN_MOVELEFT},
+		{"moveright", false, IN_MOVERIGHT},
+		{"jump", false, IN_JUMP},
+		{"duck", false, IN_DUCK},
+		{"use", false, IN_USE},
+		{"attack", false, IN_ATTACK},
+		{"attack2", false, IN_ATTACK2},
+		{"movement", true, 0},
+		{"angles", true, 1},
+	};
+
+	ApplyPreset("normal", true);
 }
-void InputHud::SetButtonBits(int slot, int buttonBits) {
-	this->buttonBits[slot] = buttonBits;
+
+void InputHud::SetInputInfo(int slot, int buttonBits, Vector movement) {
+
+	auto &info = this->inputInfo[slot];
+
+	// this was supposed to ensures that the button press is visible for at least one frame
+	// idk doesn't seem to make much difference lmfao
+	if (info.awaitingFrameDraw) {
+		info.buttonBits |= buttonBits;
+	} else {
+		info.buttonBits = buttonBits;
+	}
+	
+	info.movement = movement;
+	info.awaitingFrameDraw = true;
 }
+
 bool InputHud::ShouldDraw() {
 	return sar_ihud.GetBool() && Hud::ShouldDraw();
 }
+
 void InputHud::Paint(int slot) {
-	auto mode = sar_ihud.GetInt();
 
-	auto button = this->buttonBits[slot];
+	auto &inputInfo = this->inputInfo[slot];
 
-	auto mvForward = button & IN_FORWARD;
-	auto mvBack = button & IN_BACK;
-	auto mvLeft = button & IN_MOVELEFT;
-	auto mvRight = button & IN_MOVERIGHT;
-	auto mvJump = button & IN_JUMP;
-	auto mvDuck = button & IN_DUCK;
-	auto mvUse = button & IN_USE;
-	auto mvAttack = button & IN_ATTACK;
-	auto mvAttack2 = button & IN_ATTACK2;
-	auto mvReload = button & IN_RELOAD;
-	auto mvSpeed = button & IN_SPEED;
-
-	auto xOffset = sar_ihud_x.GetInt();
-	auto yOffset = sar_ihud_y.GetInt();
-	auto size = sar_ihud_button_size.GetInt();
-	auto padding = sar_ihud_button_padding.GetInt();
-
-	auto color = this->GetColor(sar_ihud_button_color.GetString());
-	auto fontColor = this->GetColor(sar_ihud_font_color.GetString());
-	auto font = scheme->GetDefaultFont() + sar_ihud_font_index.GetInt();
-
-	auto symbols = std::string("WASDCSELRSR");
-	auto layout = std::string(sar_ihud_layout.GetString());
-	if (layout.length() == symbols.length()) {
-		symbols = layout;
-	} else if (layout.length() == 0) {
-		symbols = "           ";
+	// update angles array
+	if (inputInfo.awaitingFrameDraw) {
+		inputInfo.angles[1] = inputInfo.angles[0];
+		inputInfo.angles[0] = engine->GetAngles(slot);
+		inputInfo.awaitingFrameDraw = false;
 	}
 
-	auto shadow = sar_ihud_shadow.GetBool();
-	auto shadowColor = this->GetColor(sar_ihud_shadow_color.GetString());
-	auto shadowFontColor = this->GetColor(sar_ihud_shadow_font_color.GetString());
+	// do the actual drawing
+	auto hudX = sar_ihud_x.GetInt();
+	auto hudY = sar_ihud_y.GetInt();
 
-	auto element = 0;
-	auto DrawElement = [xOffset, yOffset, mode, shadow, color, size, shadowColor, font, fontColor, shadowFontColor, padding, symbols, &element](int value, bool button, int col, int row, int length = 1) {
-		auto x = xOffset + (col * size) + ((col + 1) * padding);
-		auto y = yOffset + (row * size) + ((row + 1) * padding);
-		if (mode >= value && (button || shadow)) {
-			surface->DrawRectAndCenterTxt((button) ? color : shadowColor, x + ((col + 1) * padding), y + ((row + 1) * padding), x + ((((col + 1) * padding) + size) * length), y + ((row + 1) * padding + size), font, (button) ? fontColor : shadowFontColor, "%c", symbols[element]);
-		}
-		++element;
-	};
-
-	if (mode != 5) {
-		/*
-			Layout:
-
-				row|col0|1|2|3|4|5|6|7|8
-				---|---------------------
-				  0|       w|e|r
-				  1|shft|a|s|d
-				  2|ctrl|spacebar   |l|r
-		*/
-
-		DrawElement(1, mvForward, col2, row0);
-		DrawElement(1, mvLeft, col1, row1);
-		DrawElement(1, mvBack, col2, row1);
-		DrawElement(1, mvRight, col3, row1);
-
-		DrawElement(2, mvDuck, col0, row2);
-		DrawElement(2, mvJump, col1, row2, col6);
-		DrawElement(2, mvUse, col3, row0);
-
-		DrawElement(3, mvAttack, col7, row2);
-		DrawElement(3, mvAttack2, col8, row2);
-
-		DrawElement(4, mvSpeed, col0, row1);
-		DrawElement(4, mvReload, col4, row0);
-	} else {
-		/*
-			Layout:
-
-				row|col0|1|2|3|4 |5|6|7
-				---|---------------------
-				  2|ctrl|spacebar|e|l|r
-		*/
-		element = 4;
-		DrawElement(5, mvDuck, col0, row2);
-		DrawElement(5, mvJump, col1, row2, col4);
-		DrawElement(5, mvUse, col5, row2);
-		DrawElement(5, mvAttack, col6, row2);
-		DrawElement(5, mvAttack2, col7, row2);
-	}
-}
-bool InputHud::GetCurrentSize(int &xSize, int &ySize) {
-	auto mode = sar_ihud.GetInt();
-	if (mode == 0) {
-		return false;
-	}
-
-	auto size = sar_ihud_button_size.GetInt();
-	auto padding = sar_ihud_button_padding.GetInt();
-
-	switch (mode) {
-	case 1:
-		xSize = (col4 + 1) * (size + (2 * padding));
-		ySize = (row1 + 1) * (size + (2 * padding));
-		break;
-	case 2:
-		xSize = (col6 + 1) * (size + (2 * padding));
-		ySize = (row2 + 1) * (size + (2 * padding));
-		break;
-	default:
-		xSize = (col8 + 1) * (size + (2 * padding));
-		ySize = (row2 + 1) * (size + (2 * padding));
-		break;
-	}
-
-	return true;
-}
-
-// Completion Functions
-
-int sar_ihud_setpos_CompletionFunc(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) {
-	const char *cmd = "sar_ihud_setpos ";
-	char *match = (char *)partial;
-	if (std::strstr(partial, cmd) == partial) {
-		match = match + std::strlen(cmd);
-	}
-
-	static auto positions = std::vector<std::string>{
-		std::string("top left"),
-		std::string("top center"),
-		std::string("top right"),
-		std::string("center left"),
-		std::string("center center"),
-		std::string("center right"),
-		std::string("bottom left"),
-		std::string("bottom center"),
-		std::string("bottom right")};
-
-	// Filter items
-	static auto items = std::vector<std::string>();
-	items.clear();
-	for (auto &pos : positions) {
-		if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
-			break;
-		}
-
-		if (std::strlen(match) != std::strlen(cmd)) {
-			if (std::strstr(pos.c_str(), match)) {
-				items.push_back(pos);
-			}
-		} else {
-			items.push_back(pos);
-		}
-	}
-
-	// Copy items into list buffer
-	auto count = 0;
-	for (auto &item : items) {
-		std::strcpy(commands[count++], (std::string(cmd) + item).c_str());
-	}
-
-	return count;
-}
-
-int sar_ihud_setlayout_CompletionFunc(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) {
-	const char *cmd = "sar_ihud_setlayout ";
-	char *match = (char *)partial;
-	if (std::strstr(partial, cmd) == partial) {
-		match = match + std::strlen(cmd);
-	}
-
-	static auto layouts = std::vector<std::string>{
-		std::string("WASDCSELRSR"),
-		std::string("ZQSDCSELRSR"),
-		std::string("wasdcselrsr"),
-		std::string("zqsdcselrsr")};
-
-	// Filter items
-	static auto items = std::vector<std::string>();
-	items.clear();
-	for (auto &layout : layouts) {
-		if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
-			break;
-		}
-
-		if (std::strlen(match) != std::strlen(cmd)) {
-			if (std::strstr(layout.c_str(), match)) {
-				items.push_back(layout);
-			}
-		} else {
-			items.push_back(layout);
-		}
-	}
-
-	// Copy items into list buffer
-	auto count = 0;
-	for (auto &item : items) {
-		std::strcpy(commands[count++], (std::string(cmd) + item).c_str());
-	}
-
-	return count;
-}
-
-// Commands
-
-CON_COMMAND_F_COMPLETION(sar_ihud_setpos, "sar_ihud_setpos <top|center|bottom> <left|center|right> - automatically sets the position of input HUD\n", 0, sar_ihud_setpos_CompletionFunc) {
-	if (args.ArgC() != 3) {
-		return console->Print(sar_ihud_setpos.ThisPtr()->m_pszHelpString);
-	}
-
-	auto xSize = 0;
-	auto ySize = 0;
-
-	if (!inputHud.GetCurrentSize(xSize, ySize)) {
-		return console->Print("HUD not active!\n");
-	}
-
-	auto xScreen = 0;
-	auto yScreen = 0;
+	// TODO: That should be moved somewhere into HUD function
+	// so that every HUD interface could actually use it
+	int hudWidth, hudHeight;
+	GetCurrentSize(hudWidth, hudHeight);
+	int xScreen, yScreen;
 #if _WIN32
 	engine->GetScreenSize(xScreen, yScreen);
 #else
 	engine->GetScreenSize(nullptr, xScreen, yScreen);
 #endif
+	if (hudX < 0)
+		hudX = xScreen + hudX - hudWidth;
+	if (hudY < 0)
+		hudY = yScreen + hudY - hudHeight;
 
-	auto xPos = sar_ihud_x.GetInt();
-	auto yPos = sar_ihud_y.GetInt();
+	auto btnSize = sar_ihud_grid_size.GetInt();
+	auto btnPadding = sar_ihud_grid_padding.GetInt();
 
-	if (!std::strcmp(args[1], "top")) {
-		yPos = 0;
-	} else if (!std::strcmp(args[1], "center")) {
-		yPos = (yScreen / 2) - (ySize / 2);
-	} else if (!std::strcmp(args[1], "bottom")) {
-		yPos = yScreen - ySize;
+
+	for (auto &element : elements) {
+		if (!element.enabled) continue;
+
+		int eX = hudX + element.x * (btnSize + btnPadding);
+		int eY = hudY + element.y * (btnSize + btnPadding);
+
+		int eWidth = element.width * btnSize + std::max(0, element.width - 1) * btnPadding;
+		int eHeight = element.height * btnSize + std::max(0, element.height -1) * btnPadding;
+
+		if (element.isVector) { 
+			//drawing movement and angles vector displays
+			surface->DrawRect(element.background, eX, eY, eX + eWidth, eY + eHeight);
+
+			int font = scheme->GetDefaultFont() + element.textFont;
+
+			int fontHeight = surface->GetFontHeight(font);
+
+			// trying some kind of responsiveness here and getting the smallest side
+			const int joystickSize = std::min((int)(eHeight - fontHeight * 2.2), eWidth);
+			int r = joystickSize / 2;
+
+			int jX = eX + eWidth/2 - r;
+			int jY = eY + eHeight/2 - r;
+
+			Color linesColor1 = element.textHighlight;
+			Color linesColor2 = linesColor1;
+			linesColor2._color[3] /= 2;
+
+			surface->DrawColoredLine(jX, jY, jX + joystickSize, jY, linesColor1);
+			surface->DrawColoredLine(jX, jY, jX, jY + joystickSize, linesColor1);
+			surface->DrawColoredLine(jX + joystickSize, jY, jX + joystickSize, jY + joystickSize, linesColor1);
+			surface->DrawColoredLine(jX, jY + joystickSize, jX + joystickSize, jY + joystickSize, linesColor1);
+
+			//surface->DrawFilledCircle(jX + r, jY + r, r, Color(0,0,0,40));
+			surface->DrawCircle(jX + r, jY + r, r, linesColor1);
+
+			surface->DrawColoredLine(jX, jY + r, jX + joystickSize, jY + r, linesColor2);
+			surface->DrawColoredLine(jX + r, jY, jX + r, jY + joystickSize, linesColor2);
+
+			Vector v, visV;
+			if (element.type == 0) {
+				// recalculate movement values into controller inputs
+				v = inputInfo.movement;
+				v.y /= cl_forwardspeed.GetFloat();
+				v.x /= cl_sidespeed.GetFloat();
+				visV = v;
+				visV.y *= -1;
+			} else {
+				// calculating the difference between angles in two frames
+				v = {
+					inputInfo.angles[1].y - inputInfo.angles[0].y,
+					inputInfo.angles[1].x - inputInfo.angles[0].x,
+				};
+
+				while (v.x < -180.0f) v.x += 360.0f;
+				if (v.x > 180.0f) v.x -= 360.0f;
+
+				// make lower range of inputs easier to notice
+				if (v.Length() > 0) {
+					visV = v.Normalize() * pow(v.Length() / 180.0f, 0.2);
+					visV.y *= -1;
+				}
+			}
+
+			Color pointerColor = element.highlight;
+			Vector pointerPoint = {jX + r + r * visV.x, jY + r + r * visV.y};
+			surface->DrawColoredLine(jX + r, jY + r, pointerPoint.x, pointerPoint.y, pointerColor);
+			surface->DrawFilledCircle(pointerPoint.x, pointerPoint.y, 5, pointerColor);
+
+			Color textColor = element.textColor;
+			surface->DrawTxt(font, jX, jY + joystickSize + 2, textColor, "x:%.3f", v.x);
+			surface->DrawTxt(font, jX + r, jY + joystickSize + 2, textColor, "y:%.3f", v.y);
+			surface->DrawTxt(font, jX, jY - fontHeight, textColor, element.text.c_str(), v.x);
+		} else { 
+			// drawing normal buttons
+			bool pressed = inputInfo.buttonBits & element.type;
+
+			surface->DrawRectAndCenterTxt(
+				pressed ? element.highlight : element.background,
+				eX, eY, eX + eWidth, eY + eHeight,
+				scheme->GetDefaultFont() + element.textFont,
+				pressed ? element.textHighlight : element.textColor,
+				element.text.c_str()
+			);
+		}
 	}
 
-	if (!std::strcmp(args[2], "left")) {
-		xPos = 0;
-	} else if (!std::strcmp(args[2], "center")) {
-		xPos = (xScreen / 2) - (xSize / 2);
-	} else if (!std::strcmp(args[2], "right")) {
-		xPos = xScreen - xSize;
-	}
-
-	sar_ihud_x.SetValue(xPos);
-	sar_ihud_y.SetValue(yPos);
+	// now that we've drawn pressed buttons, we can release them
 }
 
-CON_COMMAND_F_COMPLETION(sar_ihud_setlayout, "sar_ihud_setlayout - suggests keyboard layouts for sar_ihud_layout\n", 0, sar_ihud_setlayout_CompletionFunc) {
+bool InputHud::GetCurrentSize(int &xSize, int &ySize) {
+	// getting the size in grid cells
+	int gridWidth = 0;
+	int gridHeight = 0;
+	for (auto &element : elements) {
+		if (!element.enabled)continue;
+		gridWidth = std::max(gridWidth, element.x + element.width);
+		gridHeight = std::max(gridHeight, element.y + element.height);
+	}
+
+	//transforming them into actual hud width and height
+	auto btnSize = sar_ihud_grid_size.GetInt();
+	auto btnPadding = sar_ihud_grid_padding.GetInt();
+
+	xSize = gridWidth * btnSize + std::max(0, gridWidth - 1) * btnPadding;
+	ySize = gridHeight * btnSize + std::max(0, gridHeight - 1) * btnPadding;
+
+	return true;
+}
+
+void InputHud::ModifyElementParam(std::string name, std::string parameter, std::string value) {
+	// recursively handling the "all" name to apply changes to all of the elements
+	if (name.compare("all") == 0) {
+		for (auto &element : elements) {
+			ModifyElementParam(element.name, parameter, value);
+		}
+	}
+
+	// finding element by name
+	int elementIndex = -1;
+	for (int i = 0; i < elements.size();i++) {
+		if (elements[i].name.compare(name) == 0) {
+			elementIndex = i;
+			break;
+		}
+	}
+
+	if (elementIndex < 0) return;
+
+	int valueInt = std::atoi(value.c_str());
+	auto valueColor = Utils::GetColor(value.c_str(), false);
+
+	// changing given parameter
+	if (parameter.compare("enabled") == 0) {
+		elements[elementIndex].enabled = valueInt > 0;
+	} else if (parameter.compare("background") == 0) {
+		elements[elementIndex].background = valueColor.value_or(elements[elementIndex].background);
+	} else if (parameter.compare("highlight") == 0) {
+		elements[elementIndex].highlight = valueColor.value_or(elements[elementIndex].highlight);
+	} else if (parameter.compare("font") == 0) {
+		elements[elementIndex].textFont = valueInt;
+	} else if (parameter.compare("textcolor") == 0) {
+		elements[elementIndex].textColor = valueColor.value_or(elements[elementIndex].textColor);
+	} else if (parameter.compare("texthighlight") == 0) {
+		elements[elementIndex].textHighlight = valueColor.value_or(elements[elementIndex].textHighlight);
+	} else if (parameter.compare("text") == 0) {
+		elements[elementIndex].text = value;
+	} else if (parameter.compare("x") == 0) {
+		elements[elementIndex].x = valueInt;
+	} else if (parameter.compare("y") == 0) {
+		elements[elementIndex].y = valueInt;
+	} else if (parameter.compare("width") == 0) {
+		elements[elementIndex].width = valueInt;
+	} else if (parameter.compare("height") == 0) {
+		elements[elementIndex].height = valueInt;
+	} else if (parameter.compare("pos") == 0) {
+		int x, y, width, height;
+		if (sscanf(value.c_str(), "%u %u %u %u", &x, &y, &width, &height) == 4) {
+			elements[elementIndex].x = x;
+			elements[elementIndex].y = y;
+			elements[elementIndex].width = width;
+			elements[elementIndex].height = height;
+		} else if (sscanf(value.c_str(), "%u %u", &x, &y) == 2) {
+			elements[elementIndex].x = x;
+			elements[elementIndex].y = y;
+		}
+	}
+}
+
+void InputHud::ApplyPreset(const char* preset, bool start) {
+
+#define PARAM(x, y, z) ModifyElementParam(x, y, z)
+	if (!strcmp(preset, "normal") || !strcmp(preset, "normal_mouse")) {
+		PARAM("all", "background", "0 0 0 200");
+		PARAM("all", "textcolor", "255 255 255 255");
+		PARAM("all", "highlight", "255 255 255 255");
+		PARAM("all", "texthighlight", "255 255 255 255");
+		PARAM("all", "font", "1");
+		PARAM("all", "enabled", "1");
+
+		PARAM("forward", "text", "W");
+		PARAM("back", "text", "S");
+		PARAM("moveleft", "text", "A");
+		PARAM("moveright", "text", "D");
+		PARAM("jump", "text", "Jump");
+		PARAM("use", "text", "+use");
+		PARAM("duck", "text", "Duck");
+		PARAM("attack", "text", "LMB");
+		PARAM("attack2", "text", "RMB");
+
+		PARAM("forward", "pos", "2 0 1 1");
+		PARAM("back", "pos", "2 1 1 1");
+		PARAM("moveleft", "pos", "1 1 1 1");
+		PARAM("moveright", "pos", "3 1 1 1");
+		PARAM("jump", "pos", "1 2 3 1");
+		PARAM("use", "pos", "3 0 1 1");
+		PARAM("duck", "pos", "0 2 1 1");
+		PARAM("attack", "pos", "4 2 1 1");
+		PARAM("attack2", "pos", "5 2 1 1");
+
+		PARAM("movement", "enabled", "0");
+		PARAM("angles", "enabled", "0");
+
+		if (!start) sar_ihud_grid_size.SetValue(60);
+
+		if (!strcmp(preset, "normal_mouse")) {
+			PARAM("forward", "pos", "1 0 1 1");
+			PARAM("back", "pos", "1 1 1 1");
+			PARAM("moveleft", "pos", "0 1 1 1");
+			PARAM("moveright", "pos", "2 1 1 1");
+			PARAM("use", "pos", "2 0 1 1");
+			PARAM("jump", "pos", "1 2 2 1");
+			PARAM("attack", "pos", "4 0 1 1");
+			PARAM("attack2", "pos", "5 0 1 1");
+
+			PARAM("angles", "enabled", "1");
+			PARAM("angles", "pos", "4 1 2 2");
+			PARAM("angles", "font", "-5");
+			PARAM("angles", "texthighlight", "255 255 255 20");
+		}
+	} else if (!strcmp(preset, "tas")) {
+		PARAM("all", "background", "0 0 0 200");
+		PARAM("all", "textcolor", "255 255 255 255");
+		PARAM("all", "highlight", "255 255 255 255");
+		PARAM("all", "texthighlight", "255 255 255 255");
+		PARAM("all", "font", "1");
+		PARAM("all", "enabled", "1");
+
+		PARAM("forward", "enabled", "0");
+		PARAM("back", "enabled", "0");
+		PARAM("moveleft", "enabled", "0");
+		PARAM("moveright", "enabled", "0");
+
+		PARAM("jump", "text", "Jump");
+		PARAM("use", "text", "Use");
+		PARAM("duck", "text", "Duck");
+		PARAM("attack", "text", "Blue");
+		PARAM("attack2", "text", "Orange");
+
+		PARAM("movement", "pos", "0 0 5 5");
+		PARAM("angles", "pos", "5 0 5 5");
+		PARAM("duck", "pos", "0 5 2 1");
+		PARAM("use", "pos", "2 5 2 1");
+		PARAM("jump", "pos", "4 5 2 1");
+		PARAM("attack", "pos", "6 5 2 1");
+		PARAM("attack2", "pos", "8 5 2 1");
+
+		PARAM("movement", "highlight", "255 150 0 255");
+		PARAM("angles", "highlight", "0 150 255 255");
+		PARAM("movement", "texthighlight", "255 200 100 100");
+		PARAM("angles", "texthighlight", "100 200 255 100");
+		PARAM("movement", "font", "13");
+		PARAM("angles", "font", "13");
+		PARAM("movement", "text", "move analog");
+		PARAM("angles", "text", "view analog");
+
+		if (!start) sar_ihud_grid_size.SetValue(40);
+	} else {
+		console->Print("Unknown input hud preset %s!\n", preset);
+	}
+
+#undef PARAM
+}
+
+bool InputHud::HasElement(const char* elementName) {
+	bool elementExists = false;
+	for (auto &element : elements) {
+		if (element.name.compare(elementName) == 0) {
+			elementExists = true;
+			break;
+		}
+	}
+	return elementExists;
+}
+
+bool InputHud::IsValidParameter(const char* param) {
+	const char *validParams[] = {"enabled", "text", "font", "pos", "x", "y", "width", "height", "font", "background", "highlight", "textcolor", "texthighlight"};
+	
+	for (const char *validParam : validParams) {
+		if (!strcmp(validParam, param)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+
+
+CON_COMMAND_COMPLETION(sar_ihud_preset, "sar_ihud_preset <preset> - modifies input hud based on given preset\n", ({"normal", "normal_mouse", "tas"})) {
 	if (args.ArgC() != 2) {
-		return console->Print(sar_ihud_setlayout.ThisPtr()->m_pszHelpString);
+		console->Print(sar_ihud_preset.ThisPtr()->m_pszHelpString);
+		return;
 	}
 
-	auto layout = args[1];
-	auto length = std::strlen(layout);
+	const char *preset = args.Arg(1);
+	inputHud.ApplyPreset(preset, false);
+}
 
-	if (length != 11 && length != 0) {
-		return console->Print(
-			"Invalid layout!\n"
-			"Labels are in this order: forward, moveleft, back, moveright, duck, jump, use, attack, attack2, speed, reload.\n"
-			"Pass an empty string to disable drawing labels completely.\n");
+CON_COMMAND(sar_ihud_modify, 
+	"sar_ihud_modify <element|all> [param=value]... - modifies parameters in given element.\n"
+    "Elements: forward, back, moveleft, moveright, jump, duck, use, attack, attack2, movement, angles.\n"
+    "Params: enabled, text, font, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight.\n"
+) {
+	if (args.ArgC() < 3) {
+		console->Print(sar_ihud_modify.ThisPtr()->m_pszHelpString);
+		return;
 	}
 
-	sar_ihud_layout.SetValue(layout);
+	// checking if element exists
+	const char *elementName = args[1];
+	if (!inputHud.HasElement(elementName) || !strcmp(elementName, "all")) {
+		console->Print("Input HUD element %s doesn't exist.\n", elementName);
+		//console->Print(sar_ihud_modify.ThisPtr()->m_pszHelpString);
+		return;
+	}
+
+	// looping through every parameter
+	for (int i = 2; i < args.ArgC(); i++) {
+		std::string fullArg = args[i];
+		auto separator = fullArg.find('=');
+		if (separator == std::string::npos) continue;
+
+		std::string param = fullArg.substr(0, separator);
+		std::string value = fullArg.substr(separator + 1);
+
+		if (inputHud.IsValidParameter(param.c_str())) {
+			inputHud.ModifyElementParam(elementName, param, value);
+		} else {
+			console->Print("Unknown input HUD parameter %s.\n", param.c_str());
+		}
+	}
+
 }

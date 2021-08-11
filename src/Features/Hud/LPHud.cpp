@@ -117,10 +117,10 @@ void LPHud::Paint(int slot) {
 
 	surface->DrawRect(Color(0, 0, 0, 192), cX, cY, cX + bgWidth, cY + bgHeight);
 
-	surface->DrawTxt(font, cX + paddingSide, cY + paddingTop, this->GetColor("255 255 255 255"), "Portals:");
+	surface->DrawTxt(font, cX + paddingSide, cY + paddingTop, Color(255,255,255,255), "Portals:");
 
 	int digitCount = fmax(ceil(log10(portalsCountFull + 1)), 1);
-	surface->DrawTxt(font, cX + bgWidth - digitWidth * digitCount - paddingSide, cY + paddingTop, this->GetColor("255 255 255 255"), "%d", portalsCountFull);
+	surface->DrawTxt(font, cX + bgWidth - digitWidth * digitCount - paddingSide, cY + paddingTop, Color(255, 255, 255, 255), "%d", portalsCountFull);
 }
 
 bool LPHud::GetCurrentSize(int &xSize, int &ySize) {

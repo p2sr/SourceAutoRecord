@@ -3,6 +3,7 @@
 #include "Utils/Memory.hpp"
 #include "Utils/Platform.hpp"
 #include "Utils/SDK.hpp"
+#include <optional>
 
 #ifndef _WIN32
 #	include <unistd.h>
@@ -26,6 +27,7 @@ namespace Utils {
 	std::string ssprintf(const char *fmt, ...);
 	int ConvertFromSrgb(int s);
 	std::string GetSARPath();
+	std::optional<Color> GetColor(const char *str, bool to_linear);
 }  // namespace Utils
 
 #define REDECL(name) \

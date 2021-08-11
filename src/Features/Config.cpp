@@ -37,14 +37,8 @@ bool Config::Save() {
 	SAVE_CVAR(sar_hud_default_font_color, String);
 	SAVE_CVAR(sar_ihud_x, Int);
 	SAVE_CVAR(sar_ihud_y, Int);
-	SAVE_CVAR(sar_ihud_button_padding, Int);
-	SAVE_CVAR(sar_ihud_button_size, Int);
-	SAVE_CVAR(sar_ihud_button_color, String);
-	SAVE_CVAR(sar_ihud_font_color, String);
-	SAVE_CVAR(sar_ihud_font_index, Int);
-	SAVE_CVAR(sar_ihud_layout, String);
-	SAVE_CVAR(sar_ihud_shadow_color, String);
-	SAVE_CVAR(sar_ihud_shadow_font_color, String);
+	SAVE_CVAR(sar_ihud_grid_padding, Int);
+	SAVE_CVAR(sar_ihud_grid_size, Int);
 	SAVE_CVAR(sar_ei_hud_x, Int);
 	SAVE_CVAR(sar_ei_hud_y, Int);
 	SAVE_CVAR(sar_ei_hud_z, Int);

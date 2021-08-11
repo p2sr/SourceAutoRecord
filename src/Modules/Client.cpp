@@ -10,7 +10,6 @@
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Hud/ScrollSpeed.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
-#include "Features/Hud/TasControllerHud.hpp"
 #include "Features/Imitator.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OffsetFinder.hpp"
@@ -183,9 +182,9 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd *cmd) {
 
 	if (!in_forceuser.isReference || (in_forceuser.isReference && !in_forceuser.GetBool())) {
 		if (engine->IsCoop() && engine->IsOrange())
-			inputHud.SetButtonBits(1, cmd->buttons);
+			inputHud.SetInputInfo(1, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
 		else
-			inputHud.SetButtonBits(0, cmd->buttons);
+			inputHud.SetInputInfo(0, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
 	}
 
 	if (sv_cheats.GetBool() && engine->hoststate->m_activeGame) {
@@ -214,7 +213,7 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd *cmd) {
 	}
 
 	if (in_forceuser.GetBool()) {
-		inputHud.SetButtonBits(1, cmd->buttons);
+		inputHud.SetInputInfo(1, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
 	}
 
 	if (sar_strafesync.GetBool()) {
@@ -286,14 +285,15 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 	auto m_pCommands = *reinterpret_cast<uintptr_t *>((uintptr_t)thisptr + nSlot * Offsets::PerUserInput_tSize + Offsets::m_pCommands);
 	auto cmd = reinterpret_cast<CUserCmd *>(m_pCommands + Offsets::CUserCmdSize * (sequence_number % Offsets::MULTIPLAYER_BACKUP));
 
+	Vector cmdMove = {cmd->sidemove, cmd->forwardmove, cmd->upmove};
 	if (nSlot == 0) {
 		// A bit weird - for some reason, when playing back Orange
 		// demos, nSlot is 0 even though the player's actual slot
 		// (including in HUD stuff) is 1. This works as a workaround
-		inputHud.SetButtonBits(0, cmd->buttons);
-		inputHud.SetButtonBits(1, cmd->buttons);
+		inputHud.SetInputInfo(0, cmd->buttons, cmdMove);
+		inputHud.SetInputInfo(1, cmd->buttons, cmdMove);
 	} else if (nSlot == 1) {
-		inputHud.SetButtonBits(1, cmd->buttons);
+		inputHud.SetInputInfo(1, cmd->buttons, cmdMove);
 	}
 
 	if (sar_strafesync.GetBool()) {
@@ -307,7 +307,6 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 		bool grounded = groundHandle != 0xFFFFFFFF;
 		groundFramesCounter->HandleMovementFrame(nSlot, grounded);
 		strafeQuality.OnMovement(nSlot, grounded);
-		tasControllerHud.AddData({cmd->sidemove, cmd->forwardmove, cmd->upmove});
 	}
 
 	return result;

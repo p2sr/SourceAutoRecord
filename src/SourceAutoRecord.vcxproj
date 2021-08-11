@@ -158,7 +158,6 @@
     <ClCompile Include="Features\Hud\StrafeSyncHud.cpp" />
     <ClCompile Include="Features\Hud\StrafeQuality.cpp" />
     <ClCompile Include="Features\Hud\ScrollSpeed.cpp" />
-    <ClCompile Include="Features\Hud\TasControllerHud.cpp" />
     <ClCompile Include="Features\Hud\VphysHud.cpp" />
     <ClCompile Include="Features\Hud\PortalgunHud.cpp" />
     <ClCompile Include="Features\Hud\LPHud.cpp" />
@@ -340,7 +339,6 @@
     <ClInclude Include="Features\Hud\StrafeSyncHud.hpp" />
     <ClInclude Include="Features\Hud\StrafeQuality.hpp" />
     <ClInclude Include="Features\Hud\ScrollSpeed.hpp" />
-    <ClInclude Include="Features\Hud\TasControllerHud.hpp" />
     <ClInclude Include="Features\Hud\VphysHud.hpp" />
     <ClInclude Include="Features\Hud\PortalgunHud.hpp" />
     <ClInclude Include="Features\Hud\LPHud.hpp" />

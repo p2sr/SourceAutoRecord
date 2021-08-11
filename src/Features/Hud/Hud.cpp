@@ -70,11 +70,6 @@ Hud::Hud(int type, bool drawSecondSplitScreen, int version)
 	: BaseHud(type, drawSecondSplitScreen, version) {
 	Hud::GetList().push_back(this);
 }
-Color Hud::GetColor(const char *source) {
-	int r, g, b, a;
-	std::sscanf(source, "%i%i%i%i", &r, &g, &b, &a);
-	return Color(r, g, b, a);
-}
 
 void HudContext::DrawElement(const char *fmt, ...) {
 	va_list argptr;

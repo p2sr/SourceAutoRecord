@@ -57,3 +57,42 @@ std::string Utils::GetSARPath() {
 	return std::string(info.dli_fname);
 #endif
 }
+std::optional<Color> Utils::GetColor(const char *str, bool to_linear) {
+#define RET(r, g, b, a) \
+	return to_linear ? Color{ConvertFromSrgb(r), ConvertFromSrgb(g), ConvertFromSrgb(b), a} : Color { r, g, b, a }
+
+	while (isspace(*str)) ++str;
+	size_t len = strlen(str);
+	for (size_t i = len - 1; i; --i) {
+		if (!isspace(str[i])) break;
+		--len;
+	}
+
+	bool had_hash = str[0] == '#';
+	if (had_hash) ++str, --len;
+
+	int r, g, b, a;
+	int end;
+
+	if (len == 8 && sscanf(str, "%2x%2x%2x%2x%n", &r, &g, &b, &a, &end) == 4 && end >= 8) {
+		RET(r, g, b, a);
+	}
+
+	if (len == 6 && sscanf(str, "%2x%2x%2x%n", &r, &g, &b, &end) == 3 && end >= 6) {
+		RET(r, g, b, 255);
+	}
+
+	if (had_hash) return {};
+
+	if (sscanf(str, "%u %u %u %u%n", &r, &g, &b, &a, &end) == 4 && end >= len) {
+		RET(r, g, b, a);
+	}
+
+	if (sscanf(str, "%u %u %u%n", &r, &g, &b, &end) == 3 && end >= len) {
+		RET(r, g, b, 255);
+	}
+
+	return {};
+
+#undef RET
+}

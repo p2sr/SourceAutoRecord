@@ -36,8 +36,8 @@ void VphysHud::Paint(int slot) {
 	int cX = sar_vphys_hud_x.GetInt();
 	int cY = sar_vphys_hud_y.GetInt();
 
-	surface->DrawTxt(font, cX + 5, cY + 10, this->GetColor("255 255 255 255"), "m_hTractorBeam: %#08X", m_hTractorBeam);
-	surface->DrawTxt(font, cX + 5, cY + 30, this->GetColor("255 255 255 255"), "m_nTractorBeamCount: %X", m_nTractorBeamCount);
+	surface->DrawTxt(font, cX + 5, cY + 10, Color(255, 255, 255, 255), "m_hTractorBeam: %#08X", m_hTractorBeam);
+	surface->DrawTxt(font, cX + 5, cY + 30, Color(255, 255, 255, 255), "m_nTractorBeamCount: %X", m_nTractorBeamCount);
 
 	void *m_pShadowStand = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowStand);
 	void *m_pShadowCrouch = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowCrouch);
@@ -66,9 +66,9 @@ void VphysHud::Paint(int slot) {
 		bool drag = IsDragEnabled(shadow);
 		bool motion = IsMotionEnabled(shadow);
 
-		Color posColor = this->GetColor("255 255 255 255");
-		Color enableColor = this->GetColor("128 255 128 255");
-		Color disableColor = this->GetColor("255 128 128 255");
+		Color posColor = Color(255,255,255,255);
+		Color enableColor = Color(128, 255, 128, 255);
+		Color disableColor = Color(255, 128, 128, 255);
 
 		if (!collisionEnabled) {
 			posColor._color[3] = 100;

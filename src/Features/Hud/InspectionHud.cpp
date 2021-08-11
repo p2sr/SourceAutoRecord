@@ -30,7 +30,7 @@ void InspectionHud::Paint(int slot) {
 	auto fontColorStr = !inspector->IsRunning()
 		? sar_ei_hud_font_color.GetString()
 		: sar_ei_hud_font_color2.GetString();
-	auto fontColor = this->GetColor(fontColorStr);
+	auto fontColor = Utils::GetColor(fontColorStr,false).value_or(Color(255,255,255,255));
 
 	auto data = inspector->GetData();
 

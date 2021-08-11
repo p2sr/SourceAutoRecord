@@ -9,7 +9,7 @@
 #include "Features/Hud/Crosshair.hpp"
 #include "Features/Hud/ScrollSpeed.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
-#include "Features/Hud/TasControllerHud.hpp"
+#include "Features/Hud/InputHud.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/ReloadedFix.hpp"
@@ -210,7 +210,7 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	groundFramesCounter->HandleMovementFrame(slot, grounded);
 	strafeQuality.OnMovement(slot, grounded);
 	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
-	tasControllerHud.AddData(Vector(move->m_flSideMove, move->m_flForwardMove, move->m_flUpMove));
+	inputHud.SetInputInfo(GET_SLOT(), move->m_nButtons, Vector(move->m_flSideMove, move->m_flForwardMove, move->m_flUpMove));
 
 	return Server::ProcessMovement(thisptr, player, move);
 }

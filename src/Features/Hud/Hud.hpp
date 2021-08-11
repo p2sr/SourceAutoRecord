@@ -31,7 +31,6 @@ public:
 
 public:
 	Hud(int type, bool drawSecondSplitScreen = false, int version = SourceGame_Unknown);
-	Color GetColor(const char *source);
 
 public:
 	virtual bool GetCurrentSize(int &xSize, int &ySize) = 0;
