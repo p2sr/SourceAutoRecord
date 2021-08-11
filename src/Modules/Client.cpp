@@ -372,22 +372,6 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 	return Client::ProcessMovement(thisptr, player, move);
 }
 
-static _CommandCallback originalLeaderboardCallback;
-
-static void LeaderboardCallback(const CCommand &args) {
-	// There's not really much rhyme or reason behind this check, it's
-	// just that this is the specific command the game runs at the end
-	if (sar_challenge_autostop.GetBool() && sv_bonus_challenge.GetBool() && args.ArgC() == 2 && !strcmp(args[1], "1")) {
-		engine->ExecuteCommand("stop");
-	}
-
-	if (networkManager.isConnected && sv_bonus_challenge.GetBool()) {
-		networkManager.NotifySpeedrunFinished(true);
-	}
-
-	originalLeaderboardCallback(args);
-}
-
 bool Client::Init() {
 	bool readJmp = false;
 
