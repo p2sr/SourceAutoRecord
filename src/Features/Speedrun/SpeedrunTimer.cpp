@@ -15,6 +15,7 @@
 #include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/Session.hpp"
+#include "Features/Stats/Stats.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
@@ -438,6 +439,8 @@ void SpeedrunTimer::Stop(std::string segName) {
 		return;
 	}
 
+	stats->Get(0)->statsCounter->IncrementRunFinished(SpeedrunTimer::GetTotalTicks());
+
 	SpeedrunTimer::Split(true, segName, false);
 
 	g_runs.push_back(g_activeRun);
@@ -501,6 +504,7 @@ void SpeedrunTimer::Reset(bool requested) {
 	SpeedrunTimer::ResetCategory();
 
 	if (g_speedrun.isRunning) {
+		stats->Get(0)->statsCounter->IncrementReset(SpeedrunTimer::GetTotalTicks());
 		g_runs.push_back(g_activeRun);
 	}
 
