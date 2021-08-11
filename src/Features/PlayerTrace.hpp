@@ -13,13 +13,17 @@ struct TraceDelta {
 	int16_t dx : 12;
 	int16_t dy : 12;
 	int16_t dz : 12;
-	int16_t dv : 12;
+	int16_t dv : 10;
+	bool speedlocked : 1; // true if player has >150ups on both axes and >300ups xy
+	bool maxed_turn : 1;  // true if player has >60ups on an axis and >300ups xy
 
-	inline TraceDelta(const Vector vect, int vel)
+	inline TraceDelta(const Vector vect, int vel, bool speedlocked, bool maxed_turn)
 		: dx(vect.x)
 		, dy(vect.y)
 		, dz(vect.z)
-		, dv(vel) {}
+		, dv(vel)
+		, speedlocked(speedlocked)
+		, maxed_turn(maxed_turn) {}
 	inline Vector asVector() const {
 		return Vector(dx, dy, dz);
 	}

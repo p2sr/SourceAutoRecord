@@ -42,9 +42,9 @@ PlayerTrace::PlayerTrace() {
 	this->hasLoaded = true;
 }
 void PlayerTrace::AddPoint(size_t trace_idx, void *player) {
-	// Multiply by the scaling factor for fixed point
 	auto pos = client->GetAbsOrigin(player);
-	auto speed = client->GetLocalVelocity(player).Length2D();
+	auto vel = client->GetLocalVelocity(player);
+	auto speed = vel.Length2D();
 
 	if (traces.count(trace_idx) == 0) {
 		traces[trace_idx] = Trace();
@@ -69,9 +69,11 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player) {
 
 	bool new_pos_needed = update || (session->GetTick() % 2 == 0);
 	if (new_pos_needed) {
-		if (delta_speed > 31) delta_speed = 31;
-		if (delta_speed < -31) delta_speed = -31;
-		TraceDelta del(delta * TRACE_SCALE_DELTA, delta_speed * TRACE_SCALE_DELTA);
+		if (delta_speed > 63) delta_speed = 63;
+		if (delta_speed < -63) delta_speed = -63;
+		bool speedlocked = (speed >= 300) && (std::abs(vel.x) >= 150) && (std::abs(vel.y) >= 150);
+		bool maxed_turn = (speed >= 300) && (std::abs(vel.x) >= 60) && (std::abs(vel.y) >= 60);
+		TraceDelta del(delta * TRACE_SCALE_DELTA, delta_speed * TRACE_SCALE_DELTA, speedlocked, maxed_turn);
 		trace.deltas.push_back(del);
 		trace.last_pos = trace.last_pos + delta;
 		trace.last_speed += delta_speed;
@@ -166,10 +168,20 @@ void PlayerTrace::DrawInWorld(float time) const {
 			if ((pos - new_pos).Length() < 127) {
 				// Colors:
 				// red: grounded
+				// brown: speedlocked
+				// yellow: can't turn further
 				// green: speed>300
 				if (is_grounded) {
 					r = 255;
 					g = 0;
+					b = 0;
+				} else if (trace.deltas[i].speedlocked) {
+					r = 150;
+					g = 75;
+					b = 0;
+				} else if (trace.deltas[i].maxed_turn) {
+					r = 255;
+					g = 220;
 					b = 0;
 				} else if (speed >= 300) {
 					r = 0;
