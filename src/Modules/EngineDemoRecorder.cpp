@@ -180,6 +180,10 @@ DETOUR(EngineDemoRecorder::StartRecording, const char *filename, bool continuous
 
 	timescaleDetect->Spawn();
 
+	if (!engine->demorecorder->isRecordingDemo) {
+		engine->demorecorder->autorecordStartNum = *engine->demorecorder->m_nDemoNumber + 1;
+	}
+
 	auto result = EngineDemoRecorder::StartRecording(thisptr, filename, continuously);
 
 	needToRecordInitialVals = true;

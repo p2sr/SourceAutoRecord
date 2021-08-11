@@ -1,8 +1,10 @@
 #include "SpeedrunTimer.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -439,7 +441,9 @@ void SpeedrunTimer::Stop(std::string segName) {
 		return;
 	}
 
-	stats->Get(0)->statsCounter->IncrementRunFinished(SpeedrunTimer::GetTotalTicks());
+	int total = SpeedrunTimer::GetTotalTicks();
+
+	stats->Get(0)->statsCounter->IncrementRunFinished(total);
 
 	SpeedrunTimer::Split(true, segName, false);
 
@@ -453,6 +457,42 @@ void SpeedrunTimer::Stop(std::string segName) {
 
 	if (networkManager.isConnected) {
 		networkManager.NotifySpeedrunFinished(false);
+	}
+
+	switch (sar_speedrun_autostop.GetInt()) {
+		case 1:
+			EngineDemoRecorder::stop_callback_hook({});
+			break;
+		case 2:
+			{
+				std::string base = std::string(engine->GetGameDirectory()) + "/" + engine->demorecorder->m_szDemoBaseName;
+				int min_demo_num = engine->demorecorder->autorecordStartNum;
+				int max_demo_num = *engine->demorecorder->m_nDemoNumber;
+
+				EngineDemoRecorder::stop_callback_hook({});
+
+				auto time_str = SpeedrunTimer::Format(total * *engine->interval_per_tick);
+				std::replace(time_str.begin(), time_str.end(), ':', '-');
+				std::replace(time_str.begin(), time_str.end(), '.', '-');
+
+				const char *c_base = base.c_str();
+				const char *c_time = time_str.c_str();
+
+				for (int i = min_demo_num; i <= max_demo_num; ++i) {
+					std::string demo_file =
+						i == 1 ? Utils::ssprintf("%s.dem", c_base)
+						: Utils::ssprintf("%s_%d.dem", c_base, i);
+
+					std::string new_name =
+						i == 1 ? Utils::ssprintf("%s_%s.dem", c_base, c_time)
+						: Utils::ssprintf("%s_%s_%d.dem", c_base, c_time, i);
+
+					std::filesystem::rename(demo_file, new_name);
+				}
+			}
+			break;
+		default:
+			break;
 	}
 }
 
@@ -627,6 +667,7 @@ Variable sar_speedrun_time_pauses("sar_speedrun_time_pauses", "0", "Include time
 Variable sar_speedrun_stop_in_menu("sar_speedrun_stop_in_menu", "0", "Automatically stop the speedrun timer when the menu is loaded.\n");
 Variable sar_speedrun_start_on_load("sar_speedrun_start_on_load", "0", 0, 2, "Automatically start the speedrun timer when a map is loaded. 2 = restart if active.\n");
 Variable sar_speedrun_offset("sar_speedrun_offset", "0", 0, "Start speedruns with this many ticks on the timer.\n");
+Variable sar_speedrun_autostop("sar_speedrun_autostop", "0", 0, 2, "Automatically stop recording demos when a speedrun finishes. If 2, automatically append the run time to the demo name.\n");
 
 CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer\n") {
 	SpeedrunTimer::Start();
