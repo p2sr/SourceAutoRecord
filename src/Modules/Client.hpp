@@ -34,8 +34,8 @@ public:
 	using _GetAllClasses = ClientClass *(*)();
 	using _ShouldDraw = bool(__rescall *)(void *thisptr);
 	using _ChatPrintf = void (*)(void *thisptr, int iPlayerIndex, int iFilter, const char *fmt, ...);
-	using _ActivateMouse = void (*)(void *thisptr);
-	using _DeactivateMouse = void (*)(void *thisptr);
+	using _IN_ActivateMouse = void (*)(void *thisptr);
+	using _IN_DeactivateMouse = void (*)(void *thisptr);
 
 	_GetClientEntity GetClientEntity = nullptr;
 	_KeyDown KeyDown = nullptr;
@@ -43,8 +43,8 @@ public:
 	_GetAllClasses GetAllClasses = nullptr;
 	_ShouldDraw ShouldDraw = nullptr;
 	_ChatPrintf ChatPrintf = nullptr;
-	_ActivateMouse ActivateMouse = nullptr;
-	_DeactivateMouse DeactivateMouse = nullptr;
+	_IN_ActivateMouse IN_ActivateMouse = nullptr;
+	_IN_DeactivateMouse IN_DeactivateMouse = nullptr;
 
 	std::string lastLevelName;
 

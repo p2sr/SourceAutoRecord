@@ -33,6 +33,7 @@ namespace Offsets {
 	int GetAllClasses;
 	int HudProcessInput;
 	int IN_ActivateMouse;
+	int IN_DeactivateMouse;
 	int SteamControllerMove;
 	int JoyStickApplyMovement;
 	int LevelInitPreEntity;

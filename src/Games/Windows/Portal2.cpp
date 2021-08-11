@@ -271,6 +271,7 @@ void Portal2::LoadOffsets() {
 	CUserCmdSize = 96;            // CInput::DecodeUserCmdFromBuffer
 	MULTIPLAYER_BACKUP = 150;     // CInput::DecodeUserCmdFromBuffer
 	IN_ActivateMouse = 15;        // CHLClient
+	IN_DeactivateMouse = 16;      // CHLClient
 	g_Input = 2;                  // CHLClient::IN_ActivateMouse
 	GetButtonBits = 2;            // CInput
 	ActivateMouse = 27;           // CInput

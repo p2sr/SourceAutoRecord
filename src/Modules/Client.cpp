@@ -125,9 +125,9 @@ void Client::FlushChatQueue() {
 
 void Client::SetMouseActivated(bool state) {
 	if (state) {
-		this->ActivateMouse(g_Input->ThisPtr());
+		this->IN_ActivateMouse(g_Input->ThisPtr());
 	} else {
-		this->DeactivateMouse(g_Input->ThisPtr());
+		this->IN_DeactivateMouse(g_Input->ThisPtr());
 	}
 }
 
@@ -424,6 +424,9 @@ bool Client::Init() {
 				this->g_HudSaveStatus->Hook(Client::ShouldDraw_SaveStatus_Hook, Client::ShouldDraw_SaveStatus, Offsets::ShouldDraw);
 			}
 		}
+
+		this->IN_ActivateMouse = this->g_ClientDLL->Original<_IN_ActivateMouse>(Offsets::IN_ActivateMouse, readJmp);
+		this->IN_DeactivateMouse = this->g_ClientDLL->Original<_IN_DeactivateMouse>(Offsets::IN_DeactivateMouse, readJmp);
 
 		auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
 		void *g_InputAddr;

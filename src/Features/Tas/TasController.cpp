@@ -14,10 +14,10 @@ Variable cl_pitchup;
 Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 4, "Debugs controller.");
 
 void LockMouse() {
-	//client->SetMouseActivated(false);
+	client->SetMouseActivated(false);
 }
 void UnlockMouse() {
-	//client->SetMouseActivated(true);
+	client->SetMouseActivated(true); 
 }
 
 TasController *tasController;
