@@ -26,6 +26,33 @@ REDECL(EngineDemoRecorder::RecordCustomData);
 REDECL(EngineDemoRecorder::stop_callback);
 REDECL(EngineDemoRecorder::record_callback);
 
+CON_COMMAND(sar_stop, "sar_stop [rename|suffix] [str] - stop demo recording and potentially rename the demo\n") {
+	if (args.ArgC() == 1) {
+		EngineDemoRecorder::stop_callback_hook({});
+		return;
+	}
+
+	std::string demoFile = engine->demorecorder->GetDemoFilename();
+
+	if (args.ArgC() == 3) {
+		if (!strcmp(args[1], "rename") && *args[2]) {
+			EngineDemoRecorder::stop_callback_hook({});
+			std::string newName = std::string(engine->GetGameDirectory()) + "/" + args[2] + ".dem";
+			std::filesystem::rename(demoFile, newName);
+			return;
+		}
+
+		if (!strcmp(args[1], "suffix")) {
+			EngineDemoRecorder::stop_callback_hook({});
+			std::string newName = demoFile.substr(0, demoFile.size() - 4) + args[2] + ".dem";
+			std::filesystem::rename(demoFile, newName);
+			return;
+		}
+	}
+
+	console->Print(sar_stop.ThisPtr()->m_pszHelpString);
+}
+
 int EngineDemoRecorder::GetTick() {
 	return this->GetRecordingTick(this->s_ClientDemoRecorder->ThisPtr());
 }
