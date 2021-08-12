@@ -12,8 +12,8 @@
 Variable sar_ihud("sar_ihud", "0", 0, 1, "Enabled or disables movement inputs HUD of client.\n");
 Variable sar_ihud_x("sar_ihud_x", "2", -99999, 99999, "X position of input HUD.\n");
 Variable sar_ihud_y("sar_ihud_y", "2", -99999, 99999, "Y position of input HUD.\n");
-Variable sar_ihud_grid_padding("sar_ihud_button_padding", "2", 0, "Padding between buttons of input HUD.\n");
-Variable sar_ihud_grid_size("sar_ihud_button_size", "60", 0, "Button size of input HUD.\n");
+Variable sar_ihud_grid_padding("sar_ihud_grid_padding", "2", 0, "Padding between grid squares of input HUD.\n");
+Variable sar_ihud_grid_size("sar_ihud_grid_size", "60", 0, "Grid square size of input HUD.\n");
 
 InputHud inputHud;
 
