@@ -220,7 +220,7 @@ void checkUpdate(bool allowPre) {
 	}
 }
 
-void doUpdate(bool allowPre, bool exitOnSuccess) {
+void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 	std::string name, dlUrl;
 
 	console->Print("Querying for latest version...\n");
@@ -230,7 +230,7 @@ void doUpdate(bool allowPre, bool exitOnSuccess) {
 		return;
 	}
 
-	if (!isNewerVersion(name.c_str())) {
+	if (!force && !isNewerVersion(name.c_str())) {
 		console->Print("You're already up-to-date!\n");
 		return;
 	}
@@ -280,8 +280,8 @@ CON_COMMAND(sar_check_update, "sar_check_update [release|pre] - check whether th
 	g_worker = std::thread(checkUpdate, allowPre);
 }
 
-CON_COMMAND(sar_update, "sar_update [release|pre] [exit] - update SAR to the latest version. If exit is given, exit the game upon successful update\n") {
-	bool allowPre = false, exitOnSuccess = false;
+CON_COMMAND(sar_update, "sar_update [release|pre] [exit] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade\n") {
+	bool allowPre = false, exitOnSuccess = false, force = false;
 
 	for (int i = 1; i < args.ArgC(); ++i) {
 		if (!strcmp(args[i], "pre")) {
@@ -290,6 +290,8 @@ CON_COMMAND(sar_update, "sar_update [release|pre] [exit] - update SAR to the lat
 			allowPre = false;
 		} else if (!strcmp(args[i], "exit")) {
 			exitOnSuccess = true;
+		} else if (!strcmp(args[i], "force")) {
+			force = true;
 		} else {
 			console->Print("Invalid argument '%s'\n", args[i]);
 			console->Print(sar_update.ThisPtr()->m_pszHelpString);
@@ -298,5 +300,5 @@ CON_COMMAND(sar_update, "sar_update [release|pre] [exit] - update SAR to the lat
 	}
 
 	if (g_worker.joinable()) g_worker.join();
-	g_worker = std::thread(doUpdate, allowPre, exitOnSuccess);
+	g_worker = std::thread(doUpdate, allowPre, exitOnSuccess, force);
 }
