@@ -166,6 +166,7 @@ struct Condition {
 		SAME_MAP,
 		MAP,
 		PREV_MAP,
+		GAME,
 		NOT,
 		AND,
 		OR,
@@ -173,7 +174,7 @@ struct Condition {
 	} type;
 
 	union {
-		char *map;
+		char *map; // also actually used for game name now lol
 		Condition *unop_cond;
 		struct {
 			Condition *binop_l, *binop_r;
@@ -188,6 +189,7 @@ static void FreeCondition(Condition *c) {
 	switch (c->type) {
 	case Condition::MAP:
 	case Condition::PREV_MAP:
+	case Condition::GAME:
 		free(c->map);
 		break;
 	case Condition::SVAR:
@@ -209,6 +211,47 @@ static void FreeCondition(Condition *c) {
 	free(c);
 }
 
+static bool isSpeedrunMod() {
+	static bool checked = false;
+	static bool srm = false;
+
+	if (!checked) {
+		auto serverPlugin = (uintptr_t)(engine->s_ServerPlugin->ThisPtr());
+		auto count = *(int *)(serverPlugin + 16); // CServerPlugin::m_Size
+		if (count > 0) {
+			auto plugins = *(uintptr_t *)(serverPlugin + 4); // CServerPlugin::m_Plugins
+			for (size_t i = 0; i < count; ++i) {
+				auto ptr = *(CPlugin **)(plugins + i * sizeof (uintptr_t));
+				if (!strcmp(ptr->m_szName, "Speedrun Mod was a mistake.")) {
+					srm = true;
+					break;
+				}
+			}
+		}
+
+		checked = true;
+	}
+
+	return srm;
+}
+
+static const char *gameName() {
+	switch (sar.game->GetVersion()) {
+	case SourceGame_ApertureTag:
+		return "aptag";
+	case SourceGame_PortalStoriesMel:
+		return "mel";
+	case SourceGame_ThinkingWithTimeMachine:
+		return "twtm";
+	case SourceGame_PortalReloaded:
+		return "reloaded";
+	case SourceGame_Portal2:
+		return isSpeedrunMod() ? "srm" : "portal2";
+	default:
+		return "other";
+	}
+}
+
 static bool EvalCondition(Condition *c) {
 	switch (c->type) {
 	case Condition::ORANGE: return engine->IsOrange();
@@ -217,6 +260,7 @@ static bool EvalCondition(Condition *c) {
 	case Condition::SAME_MAP: return session->previousMap == engine->GetCurrentMapName();
 	case Condition::MAP: return !strcmp(c->map, engine->GetCurrentMapName().c_str());
 	case Condition::PREV_MAP: return !strcmp(c->map, session->previousMap.c_str());
+	case Condition::GAME: return !strcmp(c->map, gameName());
 	case Condition::NOT: return !EvalCondition(c->unop_cond);
 	case Condition::AND: return EvalCondition(c->binop_l) && EvalCondition(c->binop_r);
 	case Condition::OR: return EvalCondition(c->binop_l) || EvalCondition(c->binop_r);
@@ -362,7 +406,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				c->type = Condition::CM;
 			} else if (t.len == 8 && !strncmp(t.str, "same_map", t.len)) {
 				c->type = Condition::SAME_MAP;
-			} else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len) || t.len > 4 && !strncmp(t.str, "var:", 4)) {
+			} else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len) || t.len == 4 && !strncmp(t.str, "game", t.len) || t.len > 4 && !strncmp(t.str, "var:", 4)) {
 				bool is_var = !strncmp(t.str, "var:", 4);
 
 				if (toks.front().type != TOK_EQUALS) {
@@ -391,7 +435,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 					strncpy(c->svar.val, map_tok.str, map_tok.len);
 					c->svar.val[map_tok.len] = 0;  // Null terminator
 				} else {
-					c->type = t.len == 8 ? Condition::PREV_MAP : Condition::MAP;
+					c->type = t.len == 8 ? Condition::PREV_MAP : t.len == 4 ? Condition::GAME : Condition::MAP;
 					c->map = (char *)malloc(map_tok.len + 1);
 					strncpy(c->map, map_tok.str, map_tok.len);
 					c->map[map_tok.len] = 0;  // Null terminator
