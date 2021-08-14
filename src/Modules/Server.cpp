@@ -349,6 +349,7 @@ DETOUR_MID_MH(Server::AirMove_Mid) {
 }
 #else
 static void setAircontrol(int val) {
+	if (!sar.game->Is(SourceGame_Portal2)) return; // TODO: other engine branches
 	switch (val) {
 	case 0:
 		*server->aircontrol_fling_speed_addr = 300.0f * 300.0f;
