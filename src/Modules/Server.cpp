@@ -416,7 +416,10 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 		engine->demorecorder->RecordData(data, len);
 		free(data);
 	}
-	//console->DevMsg("%.4d %s.%s(%s)\n", session->GetTick(), server->GetEntityName(thisptr), inputName, parameter.ToString());
+
+	if (sar_show_entinp.GetBool() && sv_cheats.GetBool()) {
+		console->Print("%.4d %s.%s(%s)\n", session->GetTick(), server->GetEntityName(thisptr), inputName, parameter.ToString());
+	}
 
 	// HACKHACK
 	// Deals with maps where you hit a normal transition trigger
