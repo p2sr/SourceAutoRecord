@@ -188,9 +188,9 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 					"sp_a1_pr_map_012",
 					EntityInputRule{
 						ENTRULE_TARGETNAME,
-						"finale-finale_pc1",
+						"finale-finale_vc",
 						"",
-						"InPass",
+						"Enable",
 						"",
 					}),
 			},
