@@ -49,7 +49,7 @@ TasPlayer::~TasPlayer() {
 
 void TasPlayer::Activate() {
 	//reset the controller before using it
-	tasController->Disable();
+	Stop(true);
 
 	for (TasTool *tool : TasTool::GetList()) {
 		tool->Reset();
