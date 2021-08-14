@@ -45,6 +45,7 @@ public:
 	using _TraceRay = void(__rescall *)(void *thisptr, const Ray_t &ray, unsigned int fMask, ITraceFilter *pTraceFilter, CGameTrace *pTrace);
 	using _GetCount = int(__rescall *)(void *thisptr);
 	using _Con_IsVisible = bool(__rescall *)(void *thisptr);
+	using _GetLevelNameShort = const char *(__rescall *)(void *thisptr);
 #ifdef _WIN32
 	using _GetScreenSize = int(__stdcall *)(int &width, int &height);
 	using _GetActiveSplitScreenPlayerSlot = int (*)();
@@ -104,6 +105,7 @@ public:
 	_TraceRay TraceRay = nullptr;
 	_GetCount GetCount = nullptr;
 	_Con_IsVisible Con_IsVisible = nullptr;
+	_GetLevelNameShort GetLevelNameShort = nullptr;
 
 	EngineDemoPlayer *demoplayer = nullptr;
 	EngineDemoRecorder *demorecorder = nullptr;

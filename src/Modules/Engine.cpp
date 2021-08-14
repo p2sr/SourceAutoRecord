@@ -169,13 +169,12 @@ int Engine::GetMapIndex(const std::string map) {
 }
 
 std::string Engine::GetCurrentMapName() {
-	if (engine->demoplayer->IsPlaying()) {
-		return engine->demoplayer->GetLevelName();
-	} else if (engine->IsOrange()) {
-		return client->lastLevelName;
-	} else {
-		return engine->m_szLevelName;
-	}
+	std::string map = this->GetLevelNameShort(this->engineClient->ThisPtr());
+
+	// Forward-ify all the slashes
+	std::replace(map.begin(), map.end(), '\\', '/');
+
+	return map;
 }
 
 bool Engine::IsCoop() {
@@ -522,6 +521,7 @@ bool Engine::Init() {
 		this->GetSaveDirName = this->engineClient->Original<_GetSaveDirName>(Offsets::GetSaveDirName);
 		this->IsPaused = this->engineClient->Original<_IsPaused>(Offsets::IsPaused);
 		this->Con_IsVisible = this->engineClient->Original<_Con_IsVisible>(Offsets::Con_IsVisible);
+		this->GetLevelNameShort = this->engineClient->Original<_GetLevelNameShort>(Offsets::GetLevelNameShort);
 
 		Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
 #ifndef _WIN32

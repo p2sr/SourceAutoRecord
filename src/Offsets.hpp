@@ -28,6 +28,7 @@ namespace Offsets {
 	extern int GetSteamAPIContext;
 	extern int IsPaused;
 	extern int Con_IsVisible;
+	extern int GetLevelNameShort;
 
 	// CHLClient
 	extern int GetAllClasses;
