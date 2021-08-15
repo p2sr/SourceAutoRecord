@@ -14,6 +14,7 @@ REDECL(VGui::Paint);
 REDECL(VGui::UpdateProgressBar);
 
 Variable sar_hud_bg("sar_hud_bg", "0", "Enable the SAR HUD background.\n");
+Variable sar_hud_orange_only("sar_hud_orange_only", "0", "Only display the SAR HUD for orange, for solo coop (fullscreen PIP).\n");
 
 void VGui::Draw(Hud *const &hud) {
 	if (hud->ShouldDraw()) {
@@ -65,7 +66,7 @@ DETOUR(VGui::Paint, PaintMode_t mode) {
 	ctx->Reset(GET_SLOT());
 
 	if (ctx->slot == 0) {
-		if (mode & PAINT_UIPANELS) {
+		if ((mode & PAINT_UIPANELS) && !sar_hud_orange_only.GetBool()) {
 			DrawHudBackground(0, lastCtx[0]);
 
 			for (auto const &hud : vgui->huds) {
