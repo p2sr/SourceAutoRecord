@@ -57,7 +57,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
 		tier1 = new Tier1();
 		if (tier1->Init()) {
-			this->features->AddFeature<Config>(&config);
 			this->features->AddFeature<Cvars>(&cvars);
 			this->features->AddFeature<Rebinder>(&rebinder);
 			this->features->AddFeature<Session>(&session);
@@ -119,8 +118,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 				if (listener) {
 					listener->Init();
 				}
-
-				config->Load();
 
 				this->SearchPlugin();
 
@@ -209,18 +206,6 @@ CON_COMMAND(sar_about, "sar_about - prints info about SAR plugin\n") {
 	console->Print("Game: %s\n", sar.game->Version());
 	console->Print("Version: " SAR_VERSION "\n");
 	console->Print("Built: " SAR_BUILT "\n");
-}
-CON_COMMAND(sar_cvars_save, "sar_cvars_save - saves important SAR cvars\n") {
-	if (!config->Save()) {
-		console->Print("Failed to create config file!\n");
-	} else {
-		console->Print("Saved important settings to cfg/_sar_cvars.cfg!\n");
-	}
-}
-CON_COMMAND(sar_cvars_load, "sar_cvars_load - loads important SAR cvars\n") {
-	if (!config->Load()) {
-		console->Print("Config file not found!\n");
-	}
 }
 CON_COMMAND(sar_cvars_dump, "sar_cvars_dump - dumps all cvars to a file\n") {
 	std::ofstream file("game.cvars", std::ios::out | std::ios::trunc | std::ios::binary);

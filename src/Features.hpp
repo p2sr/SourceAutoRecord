@@ -1,6 +1,5 @@
 #include "Features/Camera.hpp"
 #include "Features/ClassDumper.hpp"
-#include "Features/Config.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/DataMapDumper.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
