@@ -281,7 +281,9 @@ HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | H
 				x += pixLen;
 			}
 
-			++ctx->elements;
+			if (t.second.components.size() > 0) {
+				++ctx->elements;
+			}
 
 			int width = x - ctx->xPadding;
 			if (width > ctx->maxWidth) ctx->maxWidth = width;
@@ -371,7 +373,9 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
 		++txt;
 	}
 
-	components.push_back({curColor, component});
+	if (component.size() != 0) {
+		components.push_back({curColor, component});
+	}
 
 	sar_hud_text_vals[idx].components = components;
 }
