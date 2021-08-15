@@ -210,7 +210,7 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	groundFramesCounter->HandleMovementFrame(slot, grounded);
 	strafeQuality.OnMovement(slot, grounded);
 	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
-	inputHud.SetInputInfo(GET_SLOT(), move->m_nButtons, Vector(move->m_flSideMove, move->m_flForwardMove, move->m_flUpMove));
+	inputHud.SetInputInfo(slot, move->m_nButtons, Vector(move->m_flSideMove, move->m_flForwardMove, move->m_flUpMove));
 
 	return Server::ProcessMovement(thisptr, player, move);
 }

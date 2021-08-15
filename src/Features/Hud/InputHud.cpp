@@ -64,7 +64,7 @@ void InputHud::Paint(int slot) {
 	// update angles array
 	if (inputInfo.awaitingFrameDraw) {
 		inputInfo.angles[1] = inputInfo.angles[0];
-		inputInfo.angles[0] = engine->GetAngles(slot);
+		inputInfo.angles[0] = engine->GetAngles(engine->IsOrange() ? 0 : slot);
 		inputInfo.awaitingFrameDraw = false;
 	}
 
