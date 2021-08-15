@@ -167,7 +167,6 @@
     <ClCompile Include="Features\Listener.cpp" />
     <ClCompile Include="Features\OffsetFinder.cpp" />
     <ClCompile Include="Features\PlayerTrace.cpp" />
-    <ClCompile Include="Features\Rebinder.cpp" />
     <ClCompile Include="Features\ReloadedFix.cpp" />
     <ClCompile Include="Features\Routing\EntityInspector.cpp" />
     <ClCompile Include="Features\Routing\SeamshotFind.cpp" />
@@ -346,7 +345,6 @@
     <ClInclude Include="Features\Listener.hpp" />
     <ClInclude Include="Features\OffsetFinder.hpp" />
     <ClInclude Include="Features\PlayerTrace.hpp" />
-    <ClInclude Include="Features\Rebinder.hpp" />
     <ClInclude Include="Features\ReloadedFix.hpp" />
     <ClInclude Include="Features\Routing\EntityInspector.hpp" />
     <ClInclude Include="Features\Routing\SeamshotFind.hpp" />

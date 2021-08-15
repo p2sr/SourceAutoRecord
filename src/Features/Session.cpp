@@ -6,7 +6,6 @@
 #include "Features/Hud/Hud.hpp"
 #include "Features/Listener.hpp"
 #include "Features/NetMessage.hpp"
-#include "Features/Rebinder.hpp"
 #include "Features/ReplaySystem/ReplayPlayer.hpp"
 #include "Features/ReplaySystem/ReplayProvider.hpp"
 #include "Features/ReplaySystem/ReplayRecorder.hpp"

@@ -166,9 +166,6 @@
     <ClCompile Include="Features\PlayerTrace.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Rebinder.cpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Session.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
@@ -598,9 +595,6 @@
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Listener.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Rebinder.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Session.hpp">

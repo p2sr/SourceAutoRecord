@@ -58,7 +58,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 		tier1 = new Tier1();
 		if (tier1->Init()) {
 			this->features->AddFeature<Cvars>(&cvars);
-			this->features->AddFeature<Rebinder>(&rebinder);
 			this->features->AddFeature<Session>(&session);
 			this->features->AddFeature<StepCounter>(&stepCounter);
 			this->features->AddFeature<Summary>(&summary);
