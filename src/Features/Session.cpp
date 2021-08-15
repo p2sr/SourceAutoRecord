@@ -89,7 +89,8 @@ void Session::Start() {
 	engine->hasRecorded = false;
 	engine->hasPaused = false;
 	engine->isPausing = false;
-	engine->nForcePrimaryFullscreen = 0;
+	engine->startedTransitionFadeout = false;
+	engine->forcedPrimaryFullscreen = false;
 	server->tickCount = 0;
 
 	this->currentFrame = 0;

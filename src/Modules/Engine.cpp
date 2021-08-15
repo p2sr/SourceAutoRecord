@@ -67,6 +67,7 @@ REDECL(Engine::help_callback);
 REDECL(Engine::gameui_activate_callback);
 REDECL(Engine::unpause_callback);
 REDECL(Engine::playvideo_end_level_transition_callback);
+REDECL(Engine::stop_transition_videos_fadeout_callback);
 REDECL(Engine::load_callback);
 #ifdef _WIN32
 REDECL(Engine::ParseSmoothingInfo_Skip);
@@ -456,6 +457,10 @@ DETOUR_COMMAND(Engine::playvideo_end_level_transition) {
 
 	Engine::playvideo_end_level_transition_callback(args);
 }
+DETOUR_COMMAND(Engine::stop_transition_videos_fadeout) {
+	engine->startedTransitionFadeout = true;
+	Engine::stop_transition_videos_fadeout_callback(args);
+}
 DETOUR_COMMAND(Engine::load) {
 	// Loading a save should bypass ghost_sync if there's no map
 	// list for this game
@@ -470,8 +475,8 @@ DETOUR_COMMAND(Engine::load) {
 
 DECL_CVAR_CALLBACK(ss_force_primary_fullscreen) {
 	if (engine->GetMaxClients() >= 2 && client->GetChallengeStatus() != CMStatus::CHALLENGE && ss_force_primary_fullscreen.GetInt() == 0) {
-		++engine->nForcePrimaryFullscreen;
-		if (engine->nForcePrimaryFullscreen == 2 && !engine->IsOrange()) {
+		if (engine->startedTransitionFadeout && !engine->forcedPrimaryFullscreen && !engine->IsOrange()) {
+			engine->forcedPrimaryFullscreen = true;
 			SpeedrunTimer::Resume();
 			SpeedrunTimer::OnLoad();
 		}
@@ -724,6 +729,7 @@ bool Engine::Init() {
 
 	Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
 	Command::Hook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback_hook, Engine::playvideo_end_level_transition_callback);
+	Command::Hook("stop_transition_videos_fadeout", Engine::stop_transition_videos_fadeout_callback_hook, Engine::stop_transition_videos_fadeout_callback);
 	CVAR_HOOK_AND_CALLBACK(ss_force_primary_fullscreen);
 
 	host_framerate = Variable("host_framerate");
@@ -785,6 +791,7 @@ void Engine::Shutdown() {
 	Command::Unhook("load", Engine::load_callback);
 	Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
 	Command::Unhook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback);
+	Command::Unhook("stop_transition_videos_fadeout", Engine::stop_transition_videos_fadeout_callback);
 
 	if (this->demoplayer) {
 		this->demoplayer->Shutdown();
