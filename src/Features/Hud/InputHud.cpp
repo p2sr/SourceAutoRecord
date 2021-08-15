@@ -401,7 +401,7 @@ CON_COMMAND(sar_ihud_modify,
 
 	// checking if element exists
 	const char *elementName = args[1];
-	if (!inputHud.HasElement(elementName) || !strcmp(elementName, "all")) {
+	if (!inputHud.HasElement(elementName) && strcmp(elementName, "all")) {
 		console->Print("Input HUD element %s doesn't exist.\n", elementName);
 		//console->Print(sar_ihud_modify.ThisPtr()->m_pszHelpString);
 		return;
