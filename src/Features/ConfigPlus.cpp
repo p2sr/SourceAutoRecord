@@ -781,6 +781,10 @@ static void expand(size_t nargs, const char *const *args, std::string body) {
 				cmd += '$';
 				++i;
 				continue;
+			} else if (body[i + 1] == '\'') {
+				cmd += '"';
+				++i;
+				continue;
 			} else if (body[i + 1] == '-') {
 				// $- is just a no-op, so that you can have strings next
 				// to svar subs
