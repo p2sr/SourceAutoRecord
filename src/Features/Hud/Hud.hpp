@@ -160,11 +160,11 @@ public:
 	HudModeElement sar_hud_element_##name(&sar_hud_##name, sar_hud_element_##name##_callback, type, showOnSecondScreen, version); \
 	void sar_hud_element_##name##_callback(HudContext *ctx, int mode)
 
-extern Variable sar_hud_default_spacing;
-extern Variable sar_hud_default_padding_x;
-extern Variable sar_hud_default_padding_y;
-extern Variable sar_hud_default_font_index;
-extern Variable sar_hud_default_font_color;
+extern Variable sar_hud_spacing;
+extern Variable sar_hud_x;
+extern Variable sar_hud_y;
+extern Variable sar_hud_font_index;
+extern Variable sar_hud_font_color;
 extern Variable sar_hud_precision;
 extern Variable sar_hud_text;
 void sar_hud_text_callback(void *, const char *, float);

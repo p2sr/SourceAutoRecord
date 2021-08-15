@@ -17,11 +17,11 @@
 #include <map>
 #include <optional>
 
-Variable sar_hud_default_spacing("sar_hud_default_spacing", "1", 0, "Spacing between elements of HUD.\n");
-Variable sar_hud_default_padding_x("sar_hud_default_padding_x", "2", 0, "X padding of HUD.\n");
-Variable sar_hud_default_padding_y("sar_hud_default_padding_y", "2", 0, "Y padding of HUD.\n");
-Variable sar_hud_default_font_index("sar_hud_default_font_index", "0", 0, "Font index of HUD.\n");
-Variable sar_hud_default_font_color("sar_hud_default_font_color", "255 255 255 255", "RGBA font color of HUD.\n", 0);
+Variable sar_hud_spacing("sar_hud_spacing", "1", 0, "Spacing between elements of HUD.\n");
+Variable sar_hud_x("sar_hud_x", "2", 0, "X padding of HUD.\n");
+Variable sar_hud_y("sar_hud_y", "2", 0, "Y padding of HUD.\n");
+Variable sar_hud_font_index("sar_hud_font_index", "0", 0, "Font index of HUD.\n");
+Variable sar_hud_font_color("sar_hud_font_color", "255 255 255 255", "RGBA font color of HUD.\n", 0);
 
 Variable sar_hud_precision("sar_hud_precision", "3", 0, "Precision of HUD numbers.\n");
 Variable sar_hud_velocity_precision("sar_hud_velocity_precision", "2", 0, "Precision of velocity HUD numbers.\n");
@@ -105,16 +105,16 @@ void HudContext::Reset(int slot) {
 
 	this->elements = 0;
 	this->group.fill(0);
-	this->xPadding = sar_hud_default_padding_x.GetInt();
-	this->yPadding = sar_hud_default_padding_y.GetInt();
-	this->spacing = sar_hud_default_spacing.GetInt();
+	this->xPadding = sar_hud_x.GetInt();
+	this->yPadding = sar_hud_y.GetInt();
+	this->spacing = sar_hud_spacing.GetInt();
 	this->maxWidth = 0;
 
-	this->font = scheme->GetDefaultFont() + sar_hud_default_font_index.GetInt();
+	this->font = scheme->GetDefaultFont() + sar_hud_font_index.GetInt();
 	this->fontSize = surface->GetFontHeight(font);
 
 	int r, g, b, a;
-	sscanf(sar_hud_default_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
+	sscanf(sar_hud_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
 	this->textColor = Color(r, g, b, a);
 }
 
@@ -196,9 +196,9 @@ void HudElement::IndexAll() {
 
 // Commands
 
-CON_COMMAND_COMPLETION(sar_hud_default_order_top, "sar_hud_default_order_top <name> - orders hud element to top\n", (elementOrder)) {
+CON_COMMAND_COMPLETION(sar_hud_order_top, "sar_hud_order_top <name> - orders hud element to top\n", (elementOrder)) {
 	if (args.ArgC() != 2) {
-		return console->Print("Orders hud element to top: sar_hud_default_order_top <name>\n");
+		return console->Print("Orders hud element to top: sar_hud_order_top <name>\n");
 	}
 
 	auto elements = &vgui->elements;
@@ -222,7 +222,7 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_top, "sar_hud_default_order_top <na
 
 	console->Print("Moved HUD element %s to top.\n", args[1]);
 }
-CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "sar_hud_default_order_bottom <name> - orders hud element to bottom\n", (elementOrder)) {
+CON_COMMAND_COMPLETION(sar_hud_order_bottom, "sar_hud_order_bottom <name> - orders hud element to bottom\n", (elementOrder)) {
 	if (args.ArgC() != 2) {
 		return console->Print("Set!\n");
 	}
@@ -248,7 +248,7 @@ CON_COMMAND_COMPLETION(sar_hud_default_order_bottom, "sar_hud_default_order_bott
 
 	console->Print("Moved HUD element %s to bottom.\n", args[1]);
 }
-CON_COMMAND(sar_hud_default_order_reset, "sar_hud_default_order_reset - resets order of hud element\n") {
+CON_COMMAND(sar_hud_order_reset, "sar_hud_order_reset - resets order of hud element\n") {
 	std::sort(vgui->elements.begin(), vgui->elements.end(), [](const HudElement *a, const HudElement *b) {
 		return a->orderIndex < b->orderIndex;
 	});
