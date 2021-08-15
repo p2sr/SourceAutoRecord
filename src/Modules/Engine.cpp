@@ -29,6 +29,7 @@
 // clang-format off
 #	include <Windows.h>
 #	include <Memoryapi.h>
+#	define strcasecmp _stricmp
 // clang-format on
 #else
 #	include <sys/mman.h>
@@ -69,6 +70,7 @@ REDECL(Engine::unpause_callback);
 REDECL(Engine::playvideo_end_level_transition_callback);
 REDECL(Engine::stop_transition_videos_fadeout_callback);
 REDECL(Engine::load_callback);
+REDECL(Engine::give_callback);
 #ifdef _WIN32
 REDECL(Engine::ParseSmoothingInfo_Skip);
 REDECL(Engine::ParseSmoothingInfo_Default);
@@ -478,6 +480,13 @@ DETOUR_COMMAND(Engine::load) {
 	}
 	Engine::load_callback(args);
 }
+DETOUR_COMMAND(Engine::give) {
+	if (!sv_cheats.GetBool() && !strcasecmp(args[1], "challenge_mode_end_node")) {
+		console->Print("This is cheating! If you really want to do it, set sv_cheats 1\n");
+		return;
+	}
+	Engine::give_callback(args);
+}
 
 DECL_CVAR_CALLBACK(ss_force_primary_fullscreen) {
 	if (engine->GetMaxClients() >= 2 && client->GetChallengeStatus() != CMStatus::CHALLENGE && ss_force_primary_fullscreen.GetInt() == 0) {
@@ -732,6 +741,7 @@ bool Engine::Init() {
 	Command::Hook("quit", Engine::quit_callback_hook, Engine::quit_callback);
 	Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
 	Command::Hook("load", Engine::load_callback_hook, Engine::load_callback);
+	Command::Hook("give", Engine::give_callback_hook, Engine::give_callback);
 
 	Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
 	Command::Hook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback_hook, Engine::playvideo_end_level_transition_callback);
@@ -795,6 +805,7 @@ void Engine::Shutdown() {
 	Command::Unhook("quit", Engine::quit_callback);
 	Command::Unhook("help", Engine::help_callback);
 	Command::Unhook("load", Engine::load_callback);
+	Command::Unhook("give", Engine::give_callback);
 	Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
 	Command::Unhook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback);
 	Command::Unhook("stop_transition_videos_fadeout", Engine::stop_transition_videos_fadeout_callback);

@@ -181,6 +181,7 @@ public:
 	DECL_DETOUR_COMMAND(stop_transition_videos_fadeout);
 	DECL_DETOUR_COMMAND(unpause);
 	DECL_DETOUR_COMMAND(load);
+	DECL_DETOUR_COMMAND(give);
 
 	DECL_DETOUR(ReadCustomData, int *callbackIndex, char **data);
 	DECL_DETOUR_T(const char *, ReadConsoleCommand);
