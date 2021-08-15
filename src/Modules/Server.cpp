@@ -206,7 +206,7 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 
 	unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
 	bool grounded = groundHandle != 0xFFFFFFFF;
-	int slot = client->GetSplitScreenPlayerSlot(player);
+	int slot = server->GetSplitScreenPlayerSlot(player);
 	groundFramesCounter->HandleMovementFrame(slot, grounded);
 	strafeQuality.OnMovement(slot, grounded);
 	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
