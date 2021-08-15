@@ -48,8 +48,8 @@ CON_COMMAND_COMPLETION(sar_force_fov, "sar_force_fov <fov> - forces player FOV\n
 		return console->Print("Disabled forcing FOV!\n");
 	}
 
-	if (fov < 75 || fov > 150) {
-		return console->Print("FOV value has to be between 75 to 150!\n");
+	if (fov < 45 || fov > 140) {
+		return console->Print("FOV value has to be between 45 to 140!\n");
 	}
 
 	fovChanger->SetFov(fov);
