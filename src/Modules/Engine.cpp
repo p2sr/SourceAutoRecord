@@ -170,12 +170,18 @@ int Engine::GetMapIndex(const std::string map) {
 }
 
 std::string Engine::GetCurrentMapName() {
+	static std::string last_map;
+
 	std::string map = this->GetLevelNameShort(this->engineClient->ThisPtr());
 
-	// Forward-ify all the slashes
-	std::replace(map.begin(), map.end(), '\\', '/');
+	if (session->isRunning || map != "") {
+		// Forward-ify all the slashes
+		std::replace(map.begin(), map.end(), '\\', '/');
 
-	return map;
+		last_map = map;
+	}
+
+	return last_map;
 }
 
 bool Engine::IsCoop() {
