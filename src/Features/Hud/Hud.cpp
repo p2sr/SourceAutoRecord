@@ -173,9 +173,7 @@ std::vector<std::string> elementOrder = {
 	"frame",
 	"last_frame",
 	"inspection",
-	"velocity_angle",
-	"acceleration",
-	"player_info"};
+};
 
 void HudElement::IndexAll() {
 	auto elements = HudElement::GetList();
