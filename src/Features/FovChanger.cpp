@@ -24,9 +24,13 @@ void FovChanger::Force() {
 	}
 }
 
+ON_EVENT(SESSION_START) {
+	fovChanger->needToUpdate = true;
+}
+
 ON_EVENT(PRE_TICK) {
 	if (engine->demoplayer->IsPlaying()) return;
-	if ((session->isRunning && session->GetTick() == 16) || fovChanger->needToUpdate) {
+	if (fovChanger->needToUpdate) {
 		fovChanger->Force();
 	}
 }
