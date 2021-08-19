@@ -245,7 +245,9 @@ DETOUR_COMMAND(EngineDemoRecorder::record) {
 		}
 	}
 
-	if (newArgs.ArgC() >= 2 && sar_record_mkdir.GetBool()) {
+	bool menu = engine->GetCurrentMapName() == "" && engine->hoststate->m_currentState == HS_RUN;
+
+	if (newArgs.ArgC() >= 2 && sar_record_mkdir.GetBool() && !menu && !engine->demorecorder->isRecordingDemo) {
 		try {
 			std::string pStr = engine->GetGameDirectory();
 			pStr += '/';
