@@ -53,7 +53,7 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player) {
 	}
 	Trace &trace = traces[trace_idx];
 	auto delta = pos - trace.last_pos;
-	int delta_speed = speed - trace.last_speed;
+	float delta_speed = speed - trace.last_speed;
 
 	unsigned ground_handle = *(unsigned *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
 	bool grounded = ground_handle != 0xFFFFFFFF;
@@ -73,10 +73,18 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player) {
 		if (delta_speed < -63) delta_speed = -63;
 		bool speedlocked = (speed >= 300) && (std::abs(vel.x) >= 150) && (std::abs(vel.y) >= 150);
 		bool maxed_turn = (speed >= 300) && (std::abs(vel.x) >= 60) && (std::abs(vel.y) >= 60);
-		TraceDelta del(delta * TRACE_SCALE_DELTA, delta_speed * TRACE_SCALE_DELTA, speedlocked, maxed_turn);
+
+		Vector delta_scaled = delta * TRACE_SCALE_DELTA;
+		delta_scaled.x = (int)delta_scaled.x;
+		delta_scaled.y = (int)delta_scaled.y;
+		delta_scaled.z = (int)delta_scaled.z;
+		int delta_speed_scaled = (int)(delta_speed * TRACE_SCALE_DELTA);
+
+		TraceDelta del(delta_scaled, delta_speed_scaled, speedlocked, maxed_turn);
+
 		trace.deltas.push_back(del);
-		trace.last_pos = trace.last_pos + delta;
-		trace.last_speed += delta_speed;
+		trace.last_pos = trace.last_pos + delta_scaled / TRACE_SCALE_DELTA;
+		trace.last_speed += delta_speed_scaled / TRACE_SCALE_DELTA;
 	}
 }
 void PlayerTrace::Clear(const size_t trace_idx) {

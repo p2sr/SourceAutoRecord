@@ -10,10 +10,10 @@
 #define TRACE_SCALE_UPDATE 32
 // Stores a position delta as a fixed point number
 struct TraceDelta {
-	int16_t dx : 12;
-	int16_t dy : 12;
-	int16_t dz : 12;
-	int16_t dv : 10;
+	int16_t dx : 11;
+	int16_t dy : 11;
+	int16_t dz : 11;
+	int16_t dv : 11;
 	bool speedlocked : 1; // true if player has >150ups on both axes and >300ups xy
 	bool maxed_turn : 1;  // true if player has >60ups on an axis and >300ups xy
 
