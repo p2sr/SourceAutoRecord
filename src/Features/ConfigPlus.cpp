@@ -832,7 +832,8 @@ CON_COMMAND_F(sar_expand, "sar_expand [cmd]... - run a command after expanding s
 		return console->Print(sar_expand.ThisPtr()->m_pszHelpString);
 	}
 
-	expand(0, nullptr, std::string(args.m_pArgSBuffer + args.m_nArgv0Size));
+	const char *cmd = args.ArgC() == 2 ? args[1] : args.m_pArgSBuffer + args.m_nArgv0Size;
+	expand(0, nullptr, std::string(cmd));
 }
 
 CON_COMMAND_F(sar_function_run, "sar_function_run <name> [args]... - run a function with the given arguments\n", FCVAR_DONTRECORD) {
