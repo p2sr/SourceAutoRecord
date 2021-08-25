@@ -6,24 +6,66 @@ on:
     - '*'
 
 jobs:
+  build-lin:
+    name: Linux Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++-10-multilib
+    - name: Build
+      run: |
+        export RELEASE_BUILD=1
+        make
+    - name: Create Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: sar-linux
+        path: sar.so
+  build-win:
+    name: Windows Build
+    runs-on: windows-2019
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Build
+      env:
+        RELEASE_BUILD: 1
+      run: |
+        cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+        .\MSBuild.exe $Env:GITHUB_WORKSPACE\SourceAutoRecordv16.sln /t:SourceAutoRecord /p:Configuration=Release /p:Platform=x86
+    - name: Create Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: sar-windows
+        path: bin/sar.dll
   release:
     name: Release
     runs-on: ubuntu-latest
     if: github.repository == 'p2sr/SourceAutoRecord'
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
+    needs:
+    - build-lin
+    - build-win
     steps:
     - name: Get Release Version
       id: get_release
       run: echo ::set-output name=version::${GITHUB_REF:10}
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Download Linux Build
+      uses: actions/download-artifact@v2
       with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
+        name: sar-linux
+    - name: Download Windows Build
+      uses: actions/download-artifact@v2
+      with:
+        name: sar-windows
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
         body: |
           ![CD](https://github.com/p2sr/SourceAutoRecord/workflows/CD/badge.svg)
 
@@ -39,50 +81,7 @@ jobs:
           **Changelog**
           TODO
         draft: false
+        files: |
+          sar.so
+          sar.dll
         prerelease: ${{ contains(github.ref, '-pre') }}
-  build-lin:
-    name: Linux Build
-    runs-on: ubuntu-latest
-    needs: release
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y g++-10-multilib
-    - name: Build
-      run: |
-        export RELEASE_BUILD=1
-        make
-    - name: Upload Asset
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.release.outputs.upload_url }}
-        asset_path: sar.so
-        asset_name: sar.so
-        asset_content_type: application/octet-stream
-  build-win:
-    name: Windows Build
-    runs-on: windows-2019
-    needs: release
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Build
-      env:
-        RELEASE_BUILD: 1
-      run: |
-        cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
-        .\MSBuild.exe $Env:GITHUB_WORKSPACE\SourceAutoRecordv16.sln /t:SourceAutoRecord /p:Configuration=Release /p:Platform=x86
-    - name: Upload Windows Asset
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.release.outputs.upload_url }}
-        asset_path: bin/sar.dll
-        asset_name: sar.dll
-        asset_content_type: application/octet-stream
