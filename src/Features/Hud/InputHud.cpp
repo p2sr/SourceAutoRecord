@@ -10,8 +10,8 @@
 #include <cstring>
 
 Variable sar_ihud("sar_ihud", "0", 0, 1, "Enabled or disables movement inputs HUD of client.\n");
-Variable sar_ihud_x("sar_ihud_x", "2", -99999, 99999, "X position of input HUD.\n");
-Variable sar_ihud_y("sar_ihud_y", "2", -99999, 99999, "Y position of input HUD.\n");
+Variable sar_ihud_x("sar_ihud_x", "2", "X position of input HUD.\n", 0);
+Variable sar_ihud_y("sar_ihud_y", "2", "Y position of input HUD.\n", 0);
 Variable sar_ihud_grid_padding("sar_ihud_grid_padding", "2", 0, "Padding between grid squares of input HUD.\n");
 Variable sar_ihud_grid_size("sar_ihud_grid_size", "60", 0, "Grid square size of input HUD.\n");
 
@@ -69,27 +69,11 @@ void InputHud::Paint(int slot) {
 	}
 
 	// do the actual drawing
-	auto hudX = sar_ihud_x.GetInt();
-	auto hudY = sar_ihud_y.GetInt();
-
-	// TODO: That should be moved somewhere into HUD function
-	// so that every HUD interface could actually use it
-	int hudWidth, hudHeight;
-	GetCurrentSize(hudWidth, hudHeight);
-	int xScreen, yScreen;
-#if _WIN32
-	engine->GetScreenSize(xScreen, yScreen);
-#else
-	engine->GetScreenSize(nullptr, xScreen, yScreen);
-#endif
-	if (hudX < 0)
-		hudX = xScreen + hudX - hudWidth;
-	if (hudY < 0)
-		hudY = yScreen + hudY - hudHeight;
+	auto hudX = PositionFromString(sar_ihud_x.GetString(), true);
+	auto hudY = PositionFromString(sar_ihud_y.GetString(), false);
 
 	auto btnSize = sar_ihud_grid_size.GetInt();
 	auto btnPadding = sar_ihud_grid_padding.GetInt();
-
 
 	for (auto &element : elements) {
 		if (!element.enabled) continue;
@@ -424,3 +408,5 @@ CON_COMMAND(sar_ihud_modify,
 	}
 
 }
+
+CON_COMMAND_HUD_SETPOS(sar_ihud, "input HUD")

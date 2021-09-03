@@ -35,6 +35,8 @@ public:
 public:
 	virtual bool GetCurrentSize(int &xSize, int &ySize) = 0;
 	virtual void Paint(int slot) = 0;
+
+	float PositionFromString(const char *str, bool isX);
 };
 
 class HudContext {
@@ -168,3 +170,17 @@ extern Variable sar_hud_font_color;
 extern Variable sar_hud_precision;
 extern Variable sar_hud_text;
 void sar_hud_text_callback(void *, const char *, float);
+
+int HudSetPos_CompleteFunc(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+
+#define CON_COMMAND_HUD_SETPOS(name, helpname) \
+    CON_COMMAND_F_COMPLETION( \
+        name##_setpos,                                                                              \
+        "Automatically sets the position of " helpname ".\n"                                          \
+        "Usage: " #name "_setpos <top|center|bottom|y|y\%> <left|center|right|x|x\%>\n",              \
+        0, HudSetPos_CompleteFunc                                                                     \
+    ) {                                                                                               \
+        if (args.ArgC() != 3) return console->Print(name##_setpos.ThisPtr()->m_pszHelpString);      \
+        name##_x.SetValue(args[2]);                                                                 \
+        name##_y.SetValue(args[1]);                                                                 \
+	}

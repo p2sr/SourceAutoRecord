@@ -13,8 +13,8 @@
 LPHud lpHud;
 
 Variable sar_lphud("sar_lphud", "0", "Enables or disables the portals display on screen.\n");
-Variable sar_lphud_x("sar_lphud_x", "-10", -99999, 99999, "x pos of lp counter.\n");
-Variable sar_lphud_y("sar_lphud_y", "-10", -99999, 99999, "y pos of lp counter.\n");
+Variable sar_lphud_x("sar_lphud_x", "-10", "x pos of lp counter.\n", 0);
+Variable sar_lphud_y("sar_lphud_y", "-10", "y pos of lp counter.\n", 0);
 Variable sar_lphud_font("sar_lphud_font", "92", 0, "Change font of portal counter.\n");
 
 LPHud::LPHud()
@@ -92,25 +92,13 @@ void LPHud::Update() {
 void LPHud::Paint(int slot) {
 	auto font = scheme->GetDefaultFont() + sar_lphud_font.GetInt();
 
-	int cX = sar_lphud_x.GetInt();
-	int cY = sar_lphud_y.GetInt();
-
-	int xScreen, yScreen;
-#if _WIN32
-	engine->GetScreenSize(xScreen, yScreen);
-#else
-	engine->GetScreenSize(nullptr, xScreen, yScreen);
-#endif
+	int cX = PositionFromString(sar_lphud_x.GetString(), true);
+	int cY = PositionFromString(sar_lphud_y.GetString(), false);
 
 	int digitWidth = surface->GetFontLength(font, "3");
 	int charHeight = surface->GetFontHeight(font);
 	int bgWidth = surface->GetFontLength(font, "Portals:") * 2;
 	int bgHeight = (int)(charHeight * 1.5);
-
-	if (cX < 0)
-		cX = xScreen + cX - bgWidth;
-	if (cY < 0)
-		cY = yScreen + cY - bgHeight;
 
 	int paddingTop = (int)(charHeight * 0.22);
 	int paddingSide = (int)(digitWidth * 1);
@@ -124,7 +112,14 @@ void LPHud::Paint(int slot) {
 }
 
 bool LPHud::GetCurrentSize(int &xSize, int &ySize) {
-	return false;
+	auto font = scheme->GetDefaultFont() + sar_lphud_font.GetInt();
+
+	int digitWidth = surface->GetFontLength(font, "3");
+	int charHeight = surface->GetFontHeight(font);
+	xSize = surface->GetFontLength(font, "Portals:") * 2;
+	ySize = (int)(charHeight * 1.5);
+
+	return true;
 }
 
 void LPHud::Set(int count) {
@@ -141,3 +136,5 @@ CON_COMMAND(sar_lphud_set, "sar_lphud_set <number> - sets lp counter to given nu
 
 	lpHud.Set(static_cast<int>(std::atoi(args[1])));
 }
+
+CON_COMMAND_HUD_SETPOS(sar_lphud, "least portals HUD")

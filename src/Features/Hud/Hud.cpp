@@ -71,6 +71,63 @@ Hud::Hud(int type, bool drawSecondSplitScreen, int version)
 	Hud::GetList().push_back(this);
 }
 
+/*
+	Converting one component of the position into a number.
+	Possible inputs:
+	 - aliases: names which have certain percentage value assigned, fuck you bets.
+	 - percentage: position taking size of the screen into consideration
+	 - normal: pixel offset from top right corner. negative value changes the corner.
+*/
+float Hud::PositionFromString(const char *str, bool isX) {
+	float value = 0;
+	bool isPercent = false;
+
+	// checking if string is an alias
+	const char *aliases[] = {"top", "left", "begin", "middle", "center", "bottom", "right", "end"};
+	const char aliasTypes[] = {'y', 'x', 'a', 'a', 'a', 'y', 'x', 'a'};
+	const float aliasValues[] = {0, 0, 0, 50, 50, 100, 100, 100};
+	bool isAlias = false;
+	for (int i = 0; i < 8; i++) {
+		if ((isX && aliasTypes[i] == 'y') || (!isX && aliasTypes[i] == 'x')) continue;
+		if (strcmp(str, aliases[i]) == 0) {
+			value = aliasValues[i];
+			isPercent = true;
+			isAlias = true;
+			break;
+		}
+	}
+
+	// doing normal string to number conversion
+	int strLen = strlen(str);
+	if (!isAlias && strLen>0) {
+		sscanf(str, "%f", &value);
+		isPercent =  str[strLen - 1] == '%';
+	}
+
+	//converting value into actual position
+	int xScreen, yScreen;
+#if _WIN32
+	engine->GetScreenSize(xScreen, yScreen);
+#else
+	engine->GetScreenSize(nullptr, xScreen, yScreen);
+#endif
+
+	int xHud, yHud;
+	GetCurrentSize(xHud, yHud);
+
+	int screenSize = (isX) ? xScreen : yScreen;
+	int hudSize = (isX) ? xHud : yHud;
+
+	float pos = value;
+	if (isPercent) {
+		pos = (screenSize - hudSize) * value * 0.01;
+	} else if (pos < 0) {
+		pos = screenSize + value - hudSize;
+	}
+
+	return pos;
+}
+
 void HudContext::DrawElement(const char *fmt, ...) {
 	va_list argptr;
 	va_start(argptr, fmt);
@@ -297,6 +354,72 @@ void sar_hud_text_callback(void *var, const char *pOldVal, float fOldVal) {
 	sar_hud_text_vals[0].draw = sar_hud_text.GetString()[0];
 	sar_hud_text_vals[0].components = {{{{255, 255, 255, 255}}, {sar_hud_text.GetString()}}};
 }
+
+
+// autocomplete function used for "setpos" commands.
+int HudSetPos_CompleteFunc(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) {
+	//separate command from parameters
+	std::string partialStr = partial;
+	std::string cmdStr, matchStr;
+	auto cmdSpace = partialStr.find(' ');
+	if (cmdSpace != std::string::npos) {
+		cmdStr = partialStr.substr(0, cmdSpace + 1);
+		matchStr = partialStr.substr(cmdSpace + 1);
+	}
+	const char *cmd = cmdStr.c_str();
+
+	static auto items = std::vector<std::string>();
+	items.clear();
+
+	// do the autocomplete here
+	auto space = matchStr.find(' ');
+
+	std::string prefix = "";      // already typed part
+	std::string main = matchStr;  // currently autocompleted part
+
+	bool isX = false;
+	if (space != std::string::npos) {
+		// autocompleting second (x) component
+		isX = true;
+		prefix = matchStr.substr(0, space + 1);
+		main = matchStr.substr(space + 1);
+	}
+
+	// double space, disable autocomplete
+	if (isX && prefix.length() <= 1) {
+		return 0;
+	}
+
+	const char *aliases[] = {"top", "left", "begin", "middle", "center", "bottom", "right", "end"};
+	const char aliasTypes[] = {'y', 'x', 'a', 'a', 'a', 'y', 'x', 'a'};
+
+	for (int i = 0; i < 8; i++) {
+		if ((isX && aliasTypes[i] == 'y') || (!isX && aliasTypes[i] == 'x')) continue;
+		if (std::strstr(aliases[i], main.c_str())) {
+			items.push_back(prefix + aliases[i]);
+		}
+	}
+
+	bool isnum = true;
+	for (char l : main) {
+		if ((l < '0' || l > '9') && l != '-' && l != '+' && l != '.') {
+			isnum = false;
+			break;
+		}
+	}
+
+	if (isnum && main.length() > 0) {
+		items.push_back(prefix + main);
+		items.push_back(prefix + main + "%");
+	}
+
+	auto count = 0;
+	for (auto &item : items) {
+		std::strcpy(commands[count++], (std::string(cmd) + item).c_str());
+	}
+	return count;
+}
+
 
 long parseIdx(const char *idxStr) {
 	char *end;
