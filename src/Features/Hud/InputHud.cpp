@@ -90,7 +90,7 @@ void InputHud::Paint(int slot) {
 
 			int font = scheme->GetDefaultFont() + element.textFont;
 
-			int fontHeight = surface->GetFontHeight(font);
+			int fontHeight = font >= 0 ? surface->GetFontHeight(font) : 0;
 
 			// trying some kind of responsiveness here and getting the smallest side
 			const int joystickSize = std::min((int)(eHeight - fontHeight * 2.2), eWidth);
@@ -145,9 +145,11 @@ void InputHud::Paint(int slot) {
 			surface->DrawFilledCircle(pointerPoint.x, pointerPoint.y, 5, pointerColor);
 
 			Color textColor = element.textColor;
-			surface->DrawTxt(font, jX, jY + joystickSize + 2, textColor, "x:%.3f", v.x);
-			surface->DrawTxt(font, jX + r, jY + joystickSize + 2, textColor, "y:%.3f", v.y);
-			surface->DrawTxt(font, jX, jY - fontHeight, textColor, element.text.c_str(), v.x);
+			if (fontHeight > 0) {
+				surface->DrawTxt(font, jX, jY + joystickSize + 2, textColor, "x:%.3f", v.x);
+				surface->DrawTxt(font, jX + r, jY + joystickSize + 2, textColor, "y:%.3f", v.y);
+				surface->DrawTxt(font, jX, jY - fontHeight, textColor, element.text.c_str(), v.x);
+			}
 		} else { 
 			// drawing normal buttons
 			bool pressed = inputInfo.buttonBits & element.type;
