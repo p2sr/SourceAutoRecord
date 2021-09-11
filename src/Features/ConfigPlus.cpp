@@ -582,9 +582,20 @@ CON_COMMAND_F(seq, "seq <commands>... - runs a sequence of commands one tick aft
 		return console->Print(seq.ThisPtr()->m_pszHelpString);
 	}
 
+	int tick = session->GetTick();
+
 	std::queue<std::string> cmds;
 	for (int i = 1; i < args.ArgC(); ++i) {
 		cmds.push(std::string(args[i]));
+		if (engine->demorecorder->isRecordingDemo && *args[i]) {
+			size_t size = strlen(args[i]) + 6;
+			char *data = new char[size];
+			data[0] = 0x09;
+			*(int *)(data + 1) = tick + i;
+			strcpy(data + 5, args[i]);
+			engine->demorecorder->RecordData(data, size);
+			delete[] data;
+		}
 	}
 
 	seqs.push_back({cmds});

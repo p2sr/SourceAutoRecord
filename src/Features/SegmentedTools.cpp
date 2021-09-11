@@ -51,6 +51,16 @@ void wait_callback(const CCommand &args) {
 		while (isspace(*cmd)) ++cmd;
 	}
 
+	if (engine->demorecorder->isRecordingDemo) {
+		size_t size = strlen(cmd) + 6;
+		char *data = new char[size];
+		data[0] = 0x09;
+		*(int *)(data + 1) = tick;
+		strcpy(data + 5, cmd);
+		engine->demorecorder->RecordData(data, size);
+		delete[] data;
+	}
+
 	g_entries.push_back({wait_persist_across_loads.GetBool(), session->GetTick() >= tick, tick, cmd});
 }
 Command waitCmd("wait", wait_callback, "wait <tick> <commands> - wait for the amount of ticks specified\n", FCVAR_DONTRECORD);
