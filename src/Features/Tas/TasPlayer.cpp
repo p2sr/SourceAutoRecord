@@ -77,7 +77,7 @@ void TasPlayer::Activate() {
 		if (mapf.good()) {
 			std::string cmd = "map ";
 			if (session->isRunning) {
-				std::string cmd = "changelevel ";
+				cmd = "changelevel ";
 			}
 			cmd += startInfo.param;
 			char cmdbuf[128];
