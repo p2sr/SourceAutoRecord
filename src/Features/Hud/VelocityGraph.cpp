@@ -102,8 +102,8 @@ void VelocityGraph::Paint(int slot) {
 		const auto current = data[slot][i];
 		const auto next = data[slot][i + 1];
 
-		const auto clamped_current_speed = std::clamp(current.speed, 0, 1000);
-		const auto clamped_next_speed = std::clamp(next.speed, 0, 1000);
+		const auto clamped_current_speed = std::clamp(current.speed, 0, 600);
+		const auto clamped_next_speed = std::clamp(next.speed, 0, 600);
 
 		int current_speed = (clamped_current_speed * 75 / 320);
 		int next_speed = (clamped_next_speed * 75 / 320);
