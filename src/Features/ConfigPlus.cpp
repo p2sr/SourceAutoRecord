@@ -164,6 +164,8 @@ struct Condition {
 		COOP,
 		CM,
 		SAME_MAP,
+		WORKSHOP,
+		MENU,
 		MAP,
 		PREV_MAP,
 		GAME,
@@ -258,6 +260,8 @@ static bool EvalCondition(Condition *c) {
 	case Condition::COOP: return engine->IsCoop();
 	case Condition::CM: return client->GetChallengeStatus() == CMStatus::CHALLENGE;
 	case Condition::SAME_MAP: return session->previousMap == engine->GetCurrentMapName();
+	case Condition::WORKSHOP: return !strncmp("workshop/", engine->GetCurrentMapName().c_str(), 9);
+	case Condition::MENU: return engine->GetCurrentMapName().size() == 0;
 	case Condition::MAP: return !strcmp(c->map, engine->GetCurrentMapName().c_str());
 	case Condition::PREV_MAP: return !strcmp(c->map, session->previousMap.c_str());
 	case Condition::GAME: return !strcmp(c->map, gameName());
@@ -406,6 +410,10 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				c->type = Condition::CM;
 			} else if (t.len == 8 && !strncmp(t.str, "same_map", t.len)) {
 				c->type = Condition::SAME_MAP;
+			} else if (t.len == 8 && !strncmp(t.str, "workshop", t.len)) {
+				c->type = Condition::WORKSHOP;
+			} else if (t.len == 4 && !strncmp(t.str, "menu", t.len)) {
+				c->type = Condition::MENU;
 			} else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len) || t.len == 4 && !strncmp(t.str, "game", t.len) || t.len > 4 && !strncmp(t.str, "var:", 4)) {
 				bool is_var = !strncmp(t.str, "var:", 4);
 
