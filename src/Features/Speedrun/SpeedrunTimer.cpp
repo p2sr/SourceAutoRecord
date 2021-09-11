@@ -715,7 +715,6 @@ CON_COMMAND(sar_speedrun_result, "sar_speedrun_result - print the speedrun resul
 				console->Print("    %s - %s (%d) - %s\n", seg.name.c_str(), ticksStr.c_str(), seg.ticks, totalStr.c_str());
 			}
 		}
-		console->Print("\n");
 	}
 
 	if (g_speedrun.isRunning) {
@@ -731,7 +730,6 @@ CON_COMMAND(sar_speedrun_result, "sar_speedrun_result - print the speedrun resul
 		auto ticksStr = SpeedrunTimer::Format(segTicks * *engine->interval_per_tick);
 		auto totalStr = SpeedrunTimer::Format(total * *engine->interval_per_tick);
 		console->Print("    [current segment] - %s (%d) - %s\n", ticksStr.c_str(), segTicks, totalStr.c_str());
-		console->Print("\n");
 	}
 
 	total = SpeedrunTimer::GetTotalTicks();
