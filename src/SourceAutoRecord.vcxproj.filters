@@ -418,7 +418,9 @@
     <ClCompile Include="Features\ReloadedFix.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Hud\VelocityGraph.cpp" />
+    <ClCompile Include="Features\Hud\VelocityGraph.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1075,7 +1077,9 @@
     <ClInclude Include="Features\ReloadedFix.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Hud\VelocityGraph.hpp" />
+    <ClInclude Include="Features\Hud\VelocityGraph.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

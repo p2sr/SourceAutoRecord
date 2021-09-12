@@ -11,7 +11,10 @@
 #include <deque>
 
 Variable sar_velocitygraph("sar_velocitygraph", "0", "Shows velocity graph.\n");
-Variable sar_velocitygraph_font_index("sar_velocitygraph_font_index", "1", 0, "Font index of velocity graph.\n");
+Variable sar_velocitygraph_font_index("sar_velocitygraph_font_index", "21", 0, "Font index of velocity graph.\n"); // 21 looks pretty good
+Variable sar_velocitygraph_background("sar_velocitygraph_background", "0", "Background of velocity graph.\n"); // imo this should be off by default
+Variable sar_velocitygraph_show_speed_on_graph("sar_velocitygraph_show_speed_on_graph", "1", "Show speed between jumps.\n");
+Variable sar_velocitygraph_rainbow("sar_velocitygraph_rainbow", "0", "Rainbow mode of velocity graph text.\n");
 
 VelocityGraph velocityGraph;
 
@@ -63,6 +66,34 @@ ON_EVENT(PRE_TICK) {
 	velocityGraph.GatherData(1);
 }
 
+Color VelocityGraph::HSVtoRGB(float H, float S, float V) {
+	float s = S / 100;
+	float v = V / 100;
+	float C = s * v;
+	float X = C * (1 - abs(fmod(H / 60.0, 2) - 1));
+	float m = v - C;
+	float r, g, b;
+
+	if (H >= 0 && H < 60)
+		r = C, g = X, b = 0;
+	else if (H >= 60 && H < 120)
+		r = X, g = C, b = 0;
+	else if (H >= 120 && H < 180)
+		r = 0, g = C, b = X;
+	else if (H >= 180 && H < 240)
+		r = 0, g = X, b = C;
+	else if (H >= 240 && H < 300)
+		r = X, g = 0, b = C;
+	else
+		r = C, g = 0, b = X;
+
+	int R = (r + m) * 255;
+	int G = (g + m) * 255;
+	int B = (b + m) * 255;
+
+	return Color(R, G, B);
+}
+
 static int last_vel[2] = {0, 0};
 static int tick_prev[2] = {0, 0};
 
@@ -96,7 +127,8 @@ void VelocityGraph::Paint(int slot) {
 		y - 175
 	};
 
-	surface->DrawRect({ 0, 0, 0, 192 }, graph_pos[0] - 250 - 5, graph_pos[1] - 150 - 5, graph_pos[0] + 5, graph_pos[1] + 5);
+	if (sar_velocitygraph_background.GetBool())
+		surface->DrawRect({ 0, 0, 0, 192 }, graph_pos[0] - 250 - 5, graph_pos[1] - 150 - 5, graph_pos[0] + 5, graph_pos[1] + 5);
 
 	for (auto i = 0ul; i < data[slot].size() - 1; i++) {
 		const auto current = data[slot][i];
@@ -108,8 +140,13 @@ void VelocityGraph::Paint(int slot) {
 		int current_speed = (clamped_current_speed * 75 / 320);
 		int next_speed = (clamped_next_speed * 75 / 320);
 
-		if (current.on_ground != next.on_ground && !current.on_ground) // forgot to implement this originally
-			surface->DrawTxt(scheme->GetDefaultFont(), graph_pos[0] - i / 2, graph_pos[1] - next_speed - 15, Color(255, 255, 255), std::to_string(next.speed).c_str());
+		if (current.on_ground != next.on_ground && !current.on_ground) {
+			if (sar_velocitygraph_show_speed_on_graph.GetBool()) {
+				auto height = 15;
+
+				surface->DrawTxt(scheme->GetDefaultFont() + 2, graph_pos[0] - i / 2, graph_pos[1] - next_speed - height, Color(255, 255, 255), std::to_string(next.speed).c_str());
+			}
+		}
 
 		if (i > 0)
 			surface->DrawColoredLine(
@@ -134,7 +171,7 @@ void VelocityGraph::Paint(int slot) {
 
 	bool should_draw_takeoff = !on_ground || take_off_display_timeout[slot] > engine->GetClientTime();
 
-	Color c = speed == last_vel[slot] ? Color(255, 199, 89) : speed < last_vel[slot] ? Color(255, 119, 119)	: Color(30, 255, 109);
+	Color c = sar_velocitygraph_rainbow.GetBool() ? HSVtoRGB(speed, 100, 100) : speed == last_vel[slot] ? Color(255, 199, 89) : speed < last_vel[slot] ? Color(255, 119, 119) : Color(30, 255, 109);
 
 
 	auto font = scheme->GetDefaultFont() + sar_velocitygraph_font_index.GetInt();
@@ -142,7 +179,7 @@ void VelocityGraph::Paint(int slot) {
 
 	surface->DrawTxt(font, x / 2 - length / 2, y - 150, c, should_draw_takeoff ? "%i (%i)\n" : "%i", speed, take_off[slot]);
 
-	if (tick_prev[slot] + 2 < engine->GetTick()) {
+	if (tick_prev[slot] + 10 < engine->GetTick()) { // every 10 tick to stop color from flashing
 		last_vel[slot] = speed;
 		tick_prev[slot] = engine->GetTick();
 	}
