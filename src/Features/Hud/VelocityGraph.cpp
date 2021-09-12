@@ -123,12 +123,12 @@ void VelocityGraph::Paint(int slot) {
 #endif
 
 	const int graph_pos[2] = {
-		x / 2 + 125,
+		x / 2 + 250,
 		y - 175
 	};
 
 	if (sar_velocitygraph_background.GetBool())
-		surface->DrawRect({ 0, 0, 0, 192 }, graph_pos[0] - 250 - 5, graph_pos[1] - 150 - 5, graph_pos[0] + 5, graph_pos[1] + 5);
+		surface->DrawRect({ 0, 0, 0, 192 }, graph_pos[0] - 500 - 5, graph_pos[1] - 150 - 5, graph_pos[0] + 5, graph_pos[1] + 5);
 
 	for (auto i = 0ul; i < data[slot].size() - 1; i++) {
 		const auto current = data[slot][i];
@@ -144,16 +144,26 @@ void VelocityGraph::Paint(int slot) {
 			if (sar_velocitygraph_show_speed_on_graph.GetBool()) {
 				auto height = 15;
 
-				surface->DrawTxt(scheme->GetDefaultFont() + 2, graph_pos[0] - i / 2, graph_pos[1] - next_speed - height, Color(255, 255, 255), std::to_string(next.speed).c_str());
+				surface->DrawTxt(scheme->GetDefaultFont() + 2, graph_pos[0] - i, graph_pos[1] - next_speed - height, Color(255, 255, 255), std::to_string(next.speed).c_str());
 			}
 		}
 
+		if (data[slot].size() < 500)
+			surface->DrawColoredLine(
+				graph_pos[0] - 500,
+				graph_pos[1],
+
+				graph_pos[0] - data[slot].size() + 2,
+				graph_pos[1],
+
+				Color(255, 255, 255));
+
 		if (i > 0)
 			surface->DrawColoredLine(
-				graph_pos[0] - (i - 1) / 2,
+				graph_pos[0] - (i - 1),
 				graph_pos[1] - current_speed,
 
-				graph_pos[0] - i / 2,
+				graph_pos[0] - i,
 				graph_pos[1] - next_speed,
 
 				Color(255, 255, 255));
