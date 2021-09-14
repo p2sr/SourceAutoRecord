@@ -80,11 +80,9 @@ void TasPlayer::Activate() {
 				cmd = "changelevel ";
 			}
 			cmd += startInfo.param;
-			char cmdbuf[128];
-			snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
-			engine->ExecuteCommand(cmdbuf);
+			engine->ExecuteCommand(cmd.c_str());
 		} else {
-			console->ColorMsg(Color(255, 100, 100), "Cannot activate TAS file - unknown map '%s.'\n", startInfo.param);
+			console->ColorMsg(Color(255, 100, 100), "Cannot activate TAS file - unknown map '%s.'\n", startInfo.param.c_str());
 			Stop();
 			return;
 		}
@@ -96,11 +94,9 @@ void TasPlayer::Activate() {
 		if (savef.good()) {
 			std::string cmd = "load ";
 			cmd += startInfo.param;
-			char cmdbuf[128];
-			snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
-			engine->ExecuteCommand(cmdbuf);
+			engine->ExecuteCommand(cmd.c_str());
 		} else {
-			console->ColorMsg(Color(255, 100, 100), "Cannot activate TAS file - unknown save file '%s'.\n", startInfo.param);
+			console->ColorMsg(Color(255, 100, 100), "Cannot activate TAS file - unknown save file '%s'.\n", startInfo.param.c_str());
 			Stop();
 			return;
 		}
