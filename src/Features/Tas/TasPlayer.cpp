@@ -14,6 +14,10 @@
 #include <filesystem>
 #include <fstream>
 
+#ifndef _WIN32
+#include <dirent.h>
+#endif
+
 Variable sar_tas_debug("sar_tas_debug", "0", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
 Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", 0, 1, "Enables tool processing for TAS script making.");
 Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "0", 0, 1, "Enables automatic saving of raw, processed TAS scripts.");
@@ -46,6 +50,34 @@ TasPlayer::TasPlayer()
 TasPlayer::~TasPlayer() {
 	framebulkQueue.clear();
 }
+
+#ifdef _WIN32
+#define getSaveDir engine->GetSaveDirName
+#else
+static std::string findSubCapitalization(const char *base, const char *sub) {
+	DIR *d = opendir(base);
+	if (!d) return std::string(sub);
+
+	struct dirent *ent;
+	while ((ent = readdir(d))) {
+		if (!strcasecmp(ent->d_name, sub)) {
+			closedir(d);
+			return std::string(ent->d_name);
+		}
+	}
+
+	closedir(d);
+	return std::string(sub);
+}
+// Apparently, GetSaveDirName has the wrong capitalization sometimes
+// kill me
+static std::string getSaveDir() {
+	std::string path = std::string(engine->GetGameDirectory()) + "/";
+	std::string dir = findSubCapitalization(path.c_str(), "save");
+	dir += (engine->GetSaveDirName() + 4);
+	return dir;
+}
+#endif
 
 void TasPlayer::Activate() {
 	//reset the controller before using it
@@ -89,7 +121,7 @@ void TasPlayer::Activate() {
 		mapf.close();
 	} else if (startInfo.type == LoadQuicksave) {
 		//check if save file exists
-		std::string savePath = std::string(engine->GetGameDirectory()) + "/" + engine->GetSaveDirName() + startInfo.param + ".sav";
+		std::string savePath = std::string(engine->GetGameDirectory()) + "/" + getSaveDir() + startInfo.param + ".sav";
 		std::ifstream savef(savePath);
 		if (savef.good()) {
 			std::string cmd = "load ";
