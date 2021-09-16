@@ -112,6 +112,8 @@ namespace Offsets {
 	int StartPlayback;
 	int StopPlayback;
 	int IsPlayingBack;
+	int IsPlaybackPaused;
+	int IsSkipping;
 	int SkipToTick;
 	int m_szFileName;
 

@@ -997,34 +997,61 @@ static void SND_RecordBuffer_Hook() {
 
 // Video output {{{
 
+static bool g_waitingForSession = false;
+ON_EVENT(SESSION_START) { g_waitingForSession = false; }
+
 void Renderer::Frame() {
-	if (Renderer::isDemoLoading && engine->hoststate->m_currentState == HS_RUN) {
-		if (sar_render_autostart.GetBool()) {
-			if (sar_render_remove_broken.GetBool()) {
-				static bool startedSkip = false;
-				if (!startedSkip) {
-					sv_alternateticks.SetValue(0);
-					engine->demoplayer->SkipTo(Renderer::demoStart + 1, false, true);
-					engine->ExecuteCommand("demo_resume");
-					startedSkip = true;
-					g_render.isPaused.store(true);
-					return;
-				} else if (engine->demoplayer->GetTick() == Renderer::demoStart + 1) {
-					engine->ExecuteCommand("demo_resume");
-					sv_alternateticks.SetValue(1);
-					startedSkip = false;
+	if (Renderer::isDemoLoading && sar_render_autostart.GetBool() && sar_render_remove_broken.GetBool()) {
+		bool start = true;
+
+		if (sar_render_remove_broken.GetBool()) {
+			// 0 = not done anything
+			// 1 = queued skip
+			// 2 = in skip
+			static int state = 0;
+			static int nfails = 0;
+
+			int tick = engine->demoplayer->GetTick();
+
+			if (state == 0) {
+				if (tick > Renderer::demoStart + 2) {
+					console->Print("Beginning playback; skipping\n");
+					g_waitingForSession = true;
+					engine->ExecuteCommand("demo_resume; demo_gototick 1");
+					state = 1;
+				}
+				g_render.isPaused.store(true);
+				start = false;
+			} else if (state == 1) {
+				if (engine->hoststate->m_currentState == HS_RUN && !g_waitingForSession) {
+					state = 2;
+				}
+				start = false;
+			} else if (state == 2) {
+				if (!engine->demoplayer->IsSkipping()) {
+					if (tick % 2 == Renderer::demoStart % 2) {
+						console->Print("Correcting start tick\n");
+						engine->SendToCommandBuffer("sv_alternateticks 0", 0);
+						engine->SendToCommandBuffer("sv_alternateticks 1", 1);
+					}
+					console->Print("Successful start\n");
 					g_render.isPaused.store(false);
+					state = 0;
 				} else {
-					return;
+					start = false;
 				}
 			}
-
-			g_render.filename = std::string(engine->GetGameDirectory()) + "/" + std::string(engine->demoplayer->DemoName) + "." + sar_render_autostart_extension.GetString();
-
-			if (!g_render.isRendering.load())
-				startRender();
 		}
 
+		if (!start) return;
+
+		Renderer::isDemoLoading = false;
+
+		if (!g_render.isRendering.load()) {
+			g_render.filename = std::string(engine->GetGameDirectory()) + "/" + std::string(engine->demoplayer->DemoName) + "." + sar_render_autostart_extension.GetString();
+			startRender();
+		}
+	} else {
 		Renderer::isDemoLoading = false;
 	}
 

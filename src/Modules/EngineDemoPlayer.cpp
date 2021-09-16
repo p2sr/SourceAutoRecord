@@ -66,6 +66,12 @@ int EngineDemoPlayer::GetTick() {
 bool EngineDemoPlayer::IsPlaying() {
 	return this->IsPlayingBack(this->s_ClientDemoPlayer->ThisPtr());
 }
+bool EngineDemoPlayer::IsPaused() {
+	return this->IsPlaybackPaused(this->s_ClientDemoPlayer->ThisPtr());
+}
+bool EngineDemoPlayer::IsSkipping() {
+	return this->IsSkipping_(this->s_ClientDemoPlayer->ThisPtr());
+}
 
 void EngineDemoPlayer::SkipTo(int tick, bool relative, bool pause) {
 	this->SkipToTick(this->s_ClientDemoPlayer->ThisPtr(), tick, relative, pause);
@@ -201,6 +207,8 @@ bool EngineDemoPlayer::Init() {
 
 		this->GetPlaybackTick = s_ClientDemoPlayer->Original<_GetPlaybackTick>(Offsets::GetPlaybackTick);
 		this->IsPlayingBack = s_ClientDemoPlayer->Original<_IsPlayingBack>(Offsets::IsPlayingBack);
+		this->IsPlaybackPaused = s_ClientDemoPlayer->Original<_IsPlaybackPaused>(Offsets::IsPlaybackPaused);
+		this->IsSkipping_ = s_ClientDemoPlayer->Original<_IsSkipping>(Offsets::IsSkipping);
 		this->SkipToTick = s_ClientDemoPlayer->Original<_SkipToTick>(Offsets::SkipToTick);
 		this->DemoName = reinterpret_cast<char *>((uintptr_t)demoplayer + Offsets::m_szFileName);
 	}

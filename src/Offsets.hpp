@@ -120,6 +120,8 @@ namespace Offsets {
 	extern int StartPlayback;
 	extern int StopPlayback;
 	extern int IsPlayingBack;
+	extern int IsPlaybackPaused;
+	extern int IsSkipping;
 	extern int SkipToTick;
 	extern int m_szFileName;
 

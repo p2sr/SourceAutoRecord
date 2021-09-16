@@ -12,10 +12,14 @@ public:
 	Interface *s_ClientDemoPlayer = nullptr;
 
 	using _IsPlayingBack = bool(__rescall *)(void *thisptr);
+	using _IsPlaybackPaused = bool(__rescall *)(void *thisptr);
+	using _IsSkipping = bool(__rescall *)(void *thisptr);
 	using _GetPlaybackTick = int(__rescall *)(void *thisptr);
 	using _SkipToTick = int(__rescall *)(void *thisptr, int tick, bool relative, bool pause);
 
 	_IsPlayingBack IsPlayingBack = nullptr;
+	_IsPlaybackPaused IsPlaybackPaused = nullptr;
+	_IsSkipping IsSkipping_ = nullptr;
 	_GetPlaybackTick GetPlaybackTick = nullptr;
 	_SkipToTick SkipToTick = nullptr;
 
@@ -28,6 +32,8 @@ public:
 public:
 	int GetTick();
 	bool IsPlaying();
+	bool IsPaused();
+	bool IsSkipping();
 	void ClearDemoQueue();
 	std::string GetLevelName();
 	void CustomDemoData(char *data, size_t length);
