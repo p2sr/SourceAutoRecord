@@ -16,7 +16,7 @@ private:
 	int portalsCountFull = 0;
 	bool enabled = false;
 	std::vector<LPHudCountHistoryInfo> countHistory;
-	char oldLevelName[260];
+	std::string oldLevelName;
 	int oldUpdateTick = INT_MAX;
 
 public:

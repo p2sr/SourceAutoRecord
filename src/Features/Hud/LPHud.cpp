@@ -28,7 +28,7 @@ bool LPHud::ShouldDraw() {
 }
 
 void LPHud::Update() {
-	if (engine->m_szLevelName[0] == '\0')
+	if (!session->isRunning || engine->GetCurrentMapName().size() == 0)
 		return;
 
 	if (sar_lphud.GetBool() && !enabled) {
@@ -64,9 +64,9 @@ void LPHud::Update() {
 		int currentTime = engine->GetTick();
 		if (oldUpdateTick > currentTime && session->signonState != SIGNONSTATE_FULL) {
 			//detect save loading or map reset/change
-			if (oldLevelName == nullptr || (strcmp(oldLevelName, engine->m_szLevelName) != 0)) {
+			if (oldLevelName.size() == 0 || oldLevelName != engine->GetCurrentMapName()) {
 				//clear history of portal count on new map
-				strcpy(oldLevelName, engine->m_szLevelName);
+				oldLevelName = engine->GetCurrentMapName();
 				countHistory.clear();
 				countHistory.push_back({engine->GetTick(), portalsCountFull});
 			} else {
