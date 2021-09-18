@@ -108,7 +108,7 @@ void TasPlayer::Activate() {
 		std::ifstream mapf(mapPath);
 		if (mapf.good()) {
 			std::string cmd = "map ";
-			if (session->isRunning) {
+			if (session->isRunning && engine->GetCurrentMapName().size() > 0) {
 				cmd = "changelevel ";
 			}
 			cmd += startInfo.param;
