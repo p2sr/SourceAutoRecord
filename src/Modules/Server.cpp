@@ -248,16 +248,18 @@ static void TriggerCMFlag(int slot, float time, bool end) {
 
 extern Hook g_flagStartTouchHook;
 DETOUR(Server::StartTouchChallengeNode, void *entity) {
+	if (server->IsPlayer(entity)) {
+		int slot = server->GetSplitScreenPlayerSlot(entity);
+		if (!hasSlotCompleted(thisptr, slot)) {
+			float time = server->GetCMTimer();
+			bool end = !engine->IsCoop() || hasSlotCompleted(thisptr, slot == 1 ? 0 : 1);
+			TriggerCMFlag(slot, time, end);
+		}
+	}
+
 	g_flagStartTouchHook.Disable();
 	auto ret = Server::StartTouchChallengeNode(thisptr, entity);
 	g_flagStartTouchHook.Enable();
-
-	if (server->IsPlayer(entity)) {
-		int slot = server->GetSplitScreenPlayerSlot(entity);
-		float time = server->GetCMTimer();
-		bool end = !engine->IsCoop() || hasSlotCompleted(thisptr, slot == 1 ? 0 : 1);
-		TriggerCMFlag(slot, time, end);
-	}
 
 	return ret;
 }
