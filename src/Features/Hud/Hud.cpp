@@ -212,6 +212,8 @@ std::vector<std::string> elementOrder = {
 	"position",
 	"angles",
 	"velocity",
+	"velang",
+	"groundspeed",
 	"session",
 	"last_session",
 	"sum",
@@ -642,6 +644,16 @@ HUD_ELEMENT_MODE2(velocity, "0", 0, 4,
 		}
 	} else {
 		ctx->DrawElement("vel: -");
+	}
+}
+HUD_ELEMENT2(velang, "0", "Draw the angle of the player's horizontal velocity vector.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	auto player = client->GetPlayer(ctx->slot + 1);
+	if (player) {
+		auto vel = client->GetLocalVelocity(player);
+		float ang = RAD2DEG(atan2(vel.y, vel.x));
+		ctx->DrawElement("velang: %.*f", getPrecision(true), ang);
+	} else {
+		ctx->DrawElement("velang: -");
 	}
 }
 HUD_ELEMENT2(groundspeed, "0", "Draw the speed of the player upon leaving the ground.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
