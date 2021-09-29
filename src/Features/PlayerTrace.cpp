@@ -42,50 +42,20 @@ PlayerTrace::PlayerTrace() {
 	this->hasLoaded = true;
 }
 void PlayerTrace::AddPoint(size_t trace_idx, void *player) {
-	auto pos = client->GetAbsOrigin(player);
-	auto vel = client->GetLocalVelocity(player);
-	auto speed = vel.Length2D();
-
 	if (traces.count(trace_idx) == 0) {
 		traces[trace_idx] = Trace();
-		traces[trace_idx].last_pos = pos;
-		traces[trace_idx].last_speed = speed;
 	}
 	Trace &trace = traces[trace_idx];
-	auto delta = pos - trace.last_pos;
-	float delta_speed = speed - trace.last_speed;
 
 	unsigned ground_handle = *(unsigned *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
 	bool grounded = ground_handle != 0xFFFFFFFF;
 
-	bool update = (trace.updates.size() == 0) || (grounded != trace.updates.back().grounded) || (delta.Length() > 127);
-	if (update) {
-		trace.updates.push_back({trace.deltas.size(), speed, (int32_t)pos.x * TRACE_SCALE_UPDATE, (int32_t)pos.y * TRACE_SCALE_UPDATE, (int32_t)pos.z * TRACE_SCALE_UPDATE, grounded});
-		trace.last_pos = pos;
-		trace.last_speed = speed;
-		delta = {0, 0, 0};
-		delta_speed = 0;
-	}
+	auto pos = client->GetAbsOrigin(player);
+	auto vel = client->GetLocalVelocity(player);
 
-	bool new_pos_needed = update || (session->GetTick() % 2 == 0);
-	if (new_pos_needed) {
-		if (delta_speed > 63) delta_speed = 63;
-		if (delta_speed < -63) delta_speed = -63;
-		bool speedlocked = (speed >= 300) && (std::abs(vel.x) >= 150) && (std::abs(vel.y) >= 150);
-		bool maxed_turn = (speed >= 300) && (std::abs(vel.x) >= 60) && (std::abs(vel.y) >= 60);
-
-		Vector delta_scaled = delta * TRACE_SCALE_DELTA;
-		delta_scaled.x = (int)delta_scaled.x;
-		delta_scaled.y = (int)delta_scaled.y;
-		delta_scaled.z = (int)delta_scaled.z;
-		int delta_speed_scaled = (int)(delta_speed * TRACE_SCALE_DELTA);
-
-		TraceDelta del(delta_scaled, delta_speed_scaled, speedlocked, maxed_turn);
-
-		trace.deltas.push_back(del);
-		trace.last_pos = trace.last_pos + delta_scaled / TRACE_SCALE_DELTA;
-		trace.last_speed += delta_speed_scaled / TRACE_SCALE_DELTA;
-	}
+	trace.positions.push_back(pos);
+	trace.velocities.push_back(vel);
+	trace.grounded.push_back(grounded);
 }
 void PlayerTrace::Clear(const size_t trace_idx) {
 	traces.erase(trace_idx);
@@ -118,27 +88,21 @@ void PlayerTrace::DrawInWorld(float time) const {
 	}
 
 	for (const auto [trace_idx, trace] : traces) {
-		if (trace.deltas.size() < 2) continue;
+		if (trace.positions.size() < 2) continue;
 
 		float closest_dist = 1.0f; // Something stupid high
 		Vector closest_pos;
 		float closest_vel;
 
-		size_t update_idx = 1;
-		bool is_grounded = trace.updates[0].grounded;
-		Vector pos = Vector(trace.updates[0].x, trace.updates[0].y, trace.updates[0].z) / TRACE_SCALE_UPDATE;
-		float speed = trace.updates[0].speed;
-		for (size_t i = 1; i < trace.deltas.size(); i++) {
-			Vector new_pos = pos + trace.deltas[i].asVector() / TRACE_SCALE_DELTA;
-			speed += trace.deltas[i].dv / TRACE_SCALE_DELTA;
+		Vector pos = trace.positions[0];
+		float speed = trace.velocities[0].Length2D();
+		bool is_grounded = trace.grounded[0];
 
-			if (update_idx < trace.updates.size() && i == trace.updates[update_idx].tick) {
-				// We want to show only when there is more than 1 groundframe
-				is_grounded = trace.updates[update_idx].grounded && !(update_idx < trace.updates.size() && trace.updates[update_idx + 1].tick == i + 1);
-				new_pos = Vector(trace.updates[update_idx].x, trace.updates[update_idx].y, trace.updates[update_idx].z) / TRACE_SCALE_UPDATE;
-				speed = trace.updates[update_idx].speed;
-				update_idx++;
-			}
+		size_t update_idx = 1;
+		for (size_t i = 1; i < trace.positions.size(); i++) {
+			Vector new_pos = trace.positions[i];
+			speed = trace.velocities[i].Length2D();
+			is_grounded = trace.grounded[i];
 
 			if ((new_pos - cam_pos).SquaredLength() < 300*300) {
 				// It's close enough to test
@@ -172,8 +136,9 @@ void PlayerTrace::DrawInWorld(float time) const {
 				}
 			}
 
-			// Don't draw a line when going through a portal
-			if ((pos - new_pos).Length() < 127) {
+			// Don't draw a line when going through a portal or 0 length line
+			float pos_delta = (pos - new_pos).Length();
+			if (pos_delta < 127 && pos_delta > 0.001) {
 				// Colors:
 				// red: grounded
 				// brown: speedlocked
@@ -183,18 +148,21 @@ void PlayerTrace::DrawInWorld(float time) const {
 					r = 255;
 					g = 0;
 					b = 0;
-				} else if (trace.deltas[i].speedlocked) {
-					r = 150;
-					g = 75;
-					b = 0;
-				} else if (trace.deltas[i].maxed_turn) {
-					r = 255;
-					g = 220;
-					b = 0;
-				} else if (speed >= 300) {
-					r = 0;
-					g = 255;
-					b = 0;
+				} else if (speed > 300) {
+					Vector vel = trace.velocities[i];
+					if (fabsf(vel.x) >= 150 && fabsf(vel.y) >= 150) { // Speedlocked
+						r = 150;
+						g = 75;
+						b = 0;
+					} else if (fabsf(vel.x) >= 60 && fabsf(vel.y) >= 60) { // Max turn
+						r = 255;
+						g = 220;
+						b = 0;
+					} else {
+						r = 0;
+						g = 255;
+						b = 0;
+					}
 				} else {
 					r = 255;
 					g = 255;
@@ -202,9 +170,13 @@ void PlayerTrace::DrawInWorld(float time) const {
 				}
 
 				ADD_LINE_OVERLAY(
-					pos, new_pos, r, g, b, draw_through_walls, time);
+					pos, new_pos,
+					r, g, b,
+					draw_through_walls,
+					time
+				);
+				pos = new_pos;
 			}
-			pos = new_pos;
 		}
 
 		if (closest_dist < 1.0f) {
@@ -219,28 +191,25 @@ void PlayerTrace::DrawSpeedDeltas(HudContext *ctx) const {
 	int hud_id = 10;
 
 	for (const auto [trace_idx, trace] : traces) {
-		if (trace.updates.size() < 2) continue;
+		if (trace.velocities.size() < 2) continue;
 
-		TraceUpdate begin_update = trace.updates[0];
-		for (int i = 1; i < trace.updates.size(); i++) {
-			TraceUpdate end_update = trace.updates[i];
+		size_t last_delta_end = 0;
+		bool grounded_state = trace.grounded[0];
+		for (int i = 1; i < trace.velocities.size()-1; i++) {
+			// If we go grounded -> ungrounded
+			// or ungrounded -> grounded for 2 frames
+			if (grounded_state != trace.grounded[i]) {
+				
+				float speed_delta = trace.velocities[i].Length2D() - trace.velocities[last_delta_end].Length2D();
+				Vector update_pos = trace.positions[(last_delta_end + i) / 2];
+				Vector draw_pos = update_pos + hud_offset;
 
-			// Ignore speed delta when only 1 groundframe
-			if (begin_update.grounded && (begin_update.tick + 1 == end_update.tick)) continue;
+				engine->PointToScreen(draw_pos, screen_pos);
+				ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "%10.2f", speed_delta);
 
-			float speed_delta = end_update.speed - begin_update.speed;
-			int begin_tick = begin_update.tick;
-			int end_tick = end_update.tick;
-
-			Vector update_pos = Vector(begin_update.x, begin_update.y, begin_update.z) / TRACE_SCALE_UPDATE;
-			Vector draw_pos = update_pos + hud_offset;
-			for (int j = begin_tick + 1; j < begin_tick + (end_tick - begin_tick) / 2; j++)
-				draw_pos = draw_pos + trace.deltas[j].asVector() / TRACE_SCALE_DELTA;
-
-			engine->PointToScreen(draw_pos, screen_pos);
-			ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "%10.2f", speed_delta);
-
-			begin_update = end_update;
+				last_delta_end = i;
+				grounded_state = trace.grounded[i];
+			}
 		}
 	}
 }
