@@ -3,6 +3,7 @@
 #include "Command.hpp"
 #include "Console.hpp"
 #include "Engine.hpp"
+#include "Event.hpp"
 #include "Features/Camera.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/FovChanger.hpp"
@@ -307,6 +308,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 		bool grounded = groundHandle != 0xFFFFFFFF;
 		groundFramesCounter->HandleMovementFrame(nSlot, grounded);
 		strafeQuality.OnMovement(nSlot, grounded);
+		Event::Trigger<Event::PROCESS_MOVEMENT>({ nSlot, false }); // There isn't really one, just pretend it's here lol
 	}
 
 	return result;
@@ -364,6 +366,7 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 			groundFramesCounter->HandleMovementFrame(slot, grounded);
 			strafeQuality.OnMovement(slot, grounded);
 			if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
+			Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, false });
 			lastTick = tick;
 		}
 	}

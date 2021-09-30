@@ -36,6 +36,7 @@ namespace Event {
 		PRE_TICK,
 		POST_TICK,
 		CM_FLAGS,
+		PROCESS_MOVEMENT,
 	};
 
 	template <EventType E>
@@ -55,6 +56,11 @@ namespace Event {
 		int slot;
 		float time;
 		bool end;
+	};
+	template <>
+	struct EventData<PROCESS_MOVEMENT> {
+		int slot;
+		bool server;
 	};
 
 	template <EventType E>
