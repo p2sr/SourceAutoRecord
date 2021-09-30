@@ -41,17 +41,26 @@ std::vector<TraceHoverInfo> hovers;
 PlayerTrace::PlayerTrace() {
 	this->hasLoaded = true;
 }
-void PlayerTrace::AddPoint(size_t trace_idx, void *player) {
+void PlayerTrace::AddPoint(size_t trace_idx, void *player, bool use_client_offset) {
 	if (traces.count(trace_idx) == 0) {
 		traces[trace_idx] = Trace();
 	}
 	Trace &trace = traces[trace_idx];
 
-	unsigned ground_handle = *(unsigned *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
-	bool grounded = ground_handle != 0xFFFFFFFF;
+	Vector pos;
+	Vector vel;
 
-	auto pos = client->GetAbsOrigin(player);
-	auto vel = client->GetLocalVelocity(player);
+	unsigned ground_handle;
+	if (use_client_offset) {
+		ground_handle = *(unsigned *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
+		pos = client->GetAbsOrigin(player);
+		vel = client->GetLocalVelocity(player);
+	} else {
+		ground_handle = *(unsigned *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
+		pos = server->GetAbsOrigin(player);
+		vel = server->GetLocalVelocity(player);
+	}
+	bool grounded = ground_handle != 0xFFFFFFFF;
 
 	trace.positions.push_back(pos);
 	trace.velocities.push_back(vel);
@@ -96,13 +105,18 @@ void PlayerTrace::DrawInWorld(float time) const {
 
 		Vector pos = trace.positions[0];
 		float speed = trace.velocities[0].Length2D();
-		bool is_grounded = trace.grounded[0];
+		unsigned groundframes = trace.grounded[0];
 
 		size_t update_idx = 1;
 		for (size_t i = 1; i < trace.positions.size(); i++) {
 			Vector new_pos = trace.positions[i];
 			speed = trace.velocities[i].Length2D();
-			is_grounded = trace.grounded[i];
+			
+			if (trace.grounded[i]) {
+				groundframes++;
+			} else {
+				groundframes = 0;
+			}
 
 			if ((new_pos - cam_pos).SquaredLength() < 300*300) {
 				// It's close enough to test
@@ -144,7 +158,7 @@ void PlayerTrace::DrawInWorld(float time) const {
 				// brown: speedlocked
 				// yellow: can't turn further
 				// green: speed>300
-				if (is_grounded) {
+				if (groundframes > 1) {
 					r = 255;
 					g = 0;
 					b = 0;
@@ -175,8 +189,8 @@ void PlayerTrace::DrawInWorld(float time) const {
 					draw_through_walls,
 					time
 				);
-				pos = new_pos;
 			}
+			if (pos_delta > 0.001) pos = new_pos;
 		}
 
 		if (closest_dist < 1.0f) {
@@ -194,11 +208,17 @@ void PlayerTrace::DrawSpeedDeltas(HudContext *ctx) const {
 		if (trace.velocities.size() < 2) continue;
 
 		size_t last_delta_end = 0;
-		bool grounded_state = trace.grounded[0];
-		for (int i = 1; i < trace.velocities.size()-1; i++) {
-			// If we go grounded -> ungrounded
-			// or ungrounded -> grounded for 2 frames
-			if (grounded_state != trace.grounded[i]) {
+		unsigned groundframes = trace.grounded[0];
+		for (int i = 1; i < trace.velocities.size(); i++) {
+			unsigned last_groundframes = groundframes;
+			
+			if (trace.grounded[i]) {
+				groundframes++;
+			} else {
+				groundframes = 0;
+			}
+
+			if ((groundframes == 2) || (!groundframes && last_groundframes>0)) {
 				
 				float speed_delta = trace.velocities[i].Length2D() - trace.velocities[last_delta_end].Length2D();
 				Vector update_pos = trace.positions[(last_delta_end + i) / 2];
@@ -208,19 +228,29 @@ void PlayerTrace::DrawSpeedDeltas(HudContext *ctx) const {
 				ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "%10.2f", speed_delta);
 
 				last_delta_end = i;
-				grounded_state = trace.grounded[i];
 			}
 		}
 	}
 }
 
-ON_EVENT(PRE_TICK) {
+ON_EVENT(PROCESS_MOVEMENT) {
 	// Record trace
 	if (recording_trace_to && !engine->IsGamePaused()) {
-		auto nSlot = GET_SLOT();
-		auto player = client->GetPlayer(nSlot + 1);
+		void* player = NULL;
+		bool use_client_offset;
+
+		// Get info from the server in game (for accuracy)
+		// In demos get info from the client
+		if (event.server) {
+			player = server->GetPlayer(event.slot + 1);
+			use_client_offset = false;
+		} else {
+			player = client->GetPlayer(event.slot + 1);
+			use_client_offset = true;
+		}
+
 		if (player) {
-			playerTrace->AddPoint(recording_trace_to, player);
+			playerTrace->AddPoint(recording_trace_to, player, use_client_offset);
 		}
 	}
 

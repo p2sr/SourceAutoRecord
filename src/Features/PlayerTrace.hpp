@@ -20,7 +20,7 @@ private:
 public:
 	PlayerTrace();
 	// Add a point to the player trace
-	void AddPoint(size_t trace_idx, void *player);
+	void AddPoint(size_t trace_idx, void *player, bool use_client_offset);
 	// Clear all the points
 	void Clear(const size_t trace_idx);
 	// Clear all the traces
