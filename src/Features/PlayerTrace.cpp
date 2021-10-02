@@ -26,6 +26,8 @@ Variable sar_player_trace_draw("sar_player_trace_draw", "0", "Display the record
 Variable sar_player_trace_draw_through_walls("sar_player_trace_draw_through_walls", "1", "Display the player trace through walls. Requires sar_player_trace_draw\n");
 Variable sar_player_trace_draw_speed_deltas("sar_player_trace_draw_speed_deltas", "1", "Display the speed deltas. Requires sar_player_trace_draw\n");
 
+Variable sar_player_trace_bbox_at("sar_player_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.");
+
 // Index of the index we are currently recording at
 // 0 stands for not recording
 static unsigned recording_trace_to = 0;
@@ -232,6 +234,36 @@ void PlayerTrace::DrawSpeedDeltas(HudContext *ctx) const {
 		}
 	}
 }
+void PlayerTrace::DrawBboxAt(int tick) const {
+	static const Vector player_size = {32, 32, 72};
+
+	for (const auto [trace_idx, trace] : traces) {
+		// Clamp tick to the number of positions in the trace
+		if (trace.positions.size() < tick)
+			tick = trace.positions.size()-1;
+		
+		Vector center = trace.positions[tick] + Vector(0, 0, 36);
+		// We trace a big player bbox and a small box to indicate exactly which tick is displayed
+		ADD_BOX_OVERLAY(
+			center,
+			-player_size/2,
+			player_size/2,
+			{0, 0, 0},
+			255, 255, 0,
+			sar_player_trace_draw_through_walls.GetBool(),
+			0.05
+		);
+		ADD_BOX_OVERLAY(
+			trace.positions[tick],
+			{-1,-1,-1},
+			{1,1,1},
+			{0, 0, 0},
+			0, 255, 0,
+			sar_player_trace_draw_through_walls.GetBool(),
+			0.05
+		);
+	}
+}
 
 ON_EVENT(PROCESS_MOVEMENT) {
 	// Record trace
@@ -273,6 +305,16 @@ HUD_ELEMENT2_NO_DISABLE(player_trace_draw_speed, HudType_InGame) {
 	if (!sv_cheats.GetBool()) return;
 
 	playerTrace->DrawSpeedDeltas(ctx);
+}
+
+HUD_ELEMENT2_NO_DISABLE(player_trace_bbox, HudType_InGame) {
+	if (!sar_player_trace_draw.GetBool()) return;
+	if (!sv_cheats.GetBool()) return;
+
+	int tick = sar_player_trace_bbox_at.GetInt();
+	if (tick == -1) return;
+
+	playerTrace->DrawBboxAt(tick);
 }
 
 HUD_ELEMENT2_NO_DISABLE(player_trace_draw_hover, HudType_InGame) {

@@ -29,6 +29,8 @@ public:
 	void DrawInWorld(float time) const;
 	// Display XY-speed delta overlay
 	void DrawSpeedDeltas(HudContext *ctx) const;
+	// Display a bbox at the given tick
+	void DrawBboxAt(int tick) const;
 };
 
 extern PlayerTrace *playerTrace;
