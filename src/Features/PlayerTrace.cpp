@@ -63,10 +63,12 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player, bool use_client_offse
 		vel = server->GetLocalVelocity(player);
 	}
 	bool grounded = ground_handle != 0xFFFFFFFF;
+	auto ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::m_bDucked);
 
 	trace.positions.push_back(pos);
 	trace.velocities.push_back(vel);
 	trace.grounded.push_back(grounded);
+	trace.crouched.push_back(ducked);
 }
 void PlayerTrace::Clear(const size_t trace_idx) {
 	traces.erase(trace_idx);
@@ -235,14 +237,18 @@ void PlayerTrace::DrawSpeedDeltas(HudContext *ctx) const {
 	}
 }
 void PlayerTrace::DrawBboxAt(int tick) const {
-	static const Vector player_size = {32, 32, 72};
+	static const Vector player_standing_size = {32, 32, 72};
+	static const Vector player_ducked_size = {32, 32, 36};
 
 	for (const auto [trace_idx, trace] : traces) {
 		// Clamp tick to the number of positions in the trace
 		if (trace.positions.size() < tick)
 			tick = trace.positions.size()-1;
 		
-		Vector center = trace.positions[tick] + Vector(0, 0, 36);
+		Vector player_size = trace.crouched[tick] ? player_ducked_size : player_standing_size;
+		Vector offset = trace.crouched[tick] ? Vector{0, 0, 18} : Vector{0, 0, 36};
+		
+		Vector center = trace.positions[tick] + offset;
 		// We trace a big player bbox and a small box to indicate exactly which tick is displayed
 		ADD_BOX_OVERLAY(
 			center,

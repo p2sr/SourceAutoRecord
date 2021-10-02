@@ -10,6 +10,7 @@ struct Trace {
 	std::vector<Vector> positions;
 	std::vector<Vector> velocities;
 	std::vector<bool> grounded;
+	std::vector<bool> crouched;
 };
 
 class PlayerTrace : public Feature {
