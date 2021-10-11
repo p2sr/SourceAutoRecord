@@ -538,7 +538,8 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 		if (args.ArgC() < 2) {                                                                                                             \
 			return console->Print(sar_on_##name.ThisPtr()->m_pszHelpString);                                                                  \
 		}                                                                                                                                  \
-		_g_execs_##name.push_back(std::string(args.m_pArgSBuffer + args.m_nArgv0Size));                                                    \
+		const char *cmd = args.ArgC() == 2 ? args[1] : args.m_pArgSBuffer + args.m_nArgv0Size;                                             \
+		_g_execs_##name.push_back(std::string(cmd));                                                                                       \
 	}                                                                                                                                   \
 	static void _runExecs_##name() {                                                                                                    \
 		for (auto cmd : _g_execs_##name) {                                                                                                 \
