@@ -21,16 +21,13 @@ PlayerTrace *playerTrace;
 #endif
 
 Variable sar_player_trace_autoclear("sar_player_trace_autoclear", "1", "Automatically clear the trace on session start\n");
+Variable sar_player_trace_record("sar_player_trace_record", "0", 0, "Record the trace to a slot. Set to 0 for not recording\n");
 
 Variable sar_player_trace_draw("sar_player_trace_draw", "0", "Display the recorded player trace. Requires cheats\n");
 Variable sar_player_trace_draw_through_walls("sar_player_trace_draw_through_walls", "1", "Display the player trace through walls. Requires sar_player_trace_draw\n");
 Variable sar_player_trace_draw_speed_deltas("sar_player_trace_draw_speed_deltas", "1", "Display the speed deltas. Requires sar_player_trace_draw\n");
 
 Variable sar_player_trace_bbox_at("sar_player_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.");
-
-// Index of the index we are currently recording at
-// 0 stands for not recording
-static unsigned recording_trace_to = 0;
 
 struct TraceHoverInfo {
 	unsigned trace_idx;
@@ -273,7 +270,7 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 
 ON_EVENT(PROCESS_MOVEMENT) {
 	// Record trace
-	if (recording_trace_to && !engine->IsGamePaused()) {
+	if (sar_player_trace_record.GetInt() && !engine->IsGamePaused()) {
 		void* player = NULL;
 		bool use_client_offset;
 
@@ -288,7 +285,7 @@ ON_EVENT(PROCESS_MOVEMENT) {
 		}
 
 		if (player) {
-			playerTrace->AddPoint(recording_trace_to, player, use_client_offset);
+			playerTrace->AddPoint(sar_player_trace_record.GetInt(), player, use_client_offset);
 		}
 	}
 
@@ -351,15 +348,4 @@ CON_COMMAND(sar_player_trace_clear, "sar_player_trace_clear <index> - Clear the 
 
 CON_COMMAND(sar_player_trace_clear_all, "sar_player_trace_clear_all - Clear all the traces\n") {
 	playerTrace->ClearAll();
-}
-
-CON_COMMAND(sar_player_trace_record, "sar_player_trace_record <index> - Record the player trace to the given slot. Set to 0 for don't record\n") {
-	if (args.ArgC() != 2)
-		return console->Print(sar_player_trace_record.ThisPtr()->m_pszHelpString);
-
-	int trace_idx = std::stoi(args[1]);
-	if (trace_idx < 0)
-		return console->Print("Trace index must be 0 or positive.\n");
-
-	recording_trace_to = trace_idx;
 }
