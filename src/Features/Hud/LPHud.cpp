@@ -43,7 +43,7 @@ void LPHud::Update() {
 	if (!enabled)
 		return;
 
-	void *player = client->GetPlayer(1);
+	void *player = client->GetPlayer(GET_SLOT()+1);
 	if (player == nullptr) {
 		//portalsCountFull = 0;
 	} else {
