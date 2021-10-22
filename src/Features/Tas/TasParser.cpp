@@ -82,6 +82,7 @@ static std::vector<Line> tokenize(std::ifstream &file) {
 				bool quoted = false;
 				std::string cmd;
 				while (idx < line.size() && (line[idx] != '|' || quoted)) {
+					if (idx < line.size() - 1 && line[idx] == '/' && line[idx+1] == '/' && !quoted) break;
 					cmd += line[idx];
 					if (line[idx] == '"') quoted = !quoted;
 					++idx;
@@ -97,6 +98,7 @@ static std::vector<Line> tokenize(std::ifstream &file) {
 					if (fieldnum == 0 && c == '+') break;
 					if (fieldnum == 0 && c == '>') break;
 					if (c == '|' || c == ';') break;
+					if (idx < line.size() - 1 && line[idx] == '/' && line[idx+1] == '/') break;
 
 					if (fieldnum == 3 && tok.size() > 0) {
 						// Buttons should parse each alphabetical character as
