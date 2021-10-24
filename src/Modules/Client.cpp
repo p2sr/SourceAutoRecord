@@ -344,7 +344,7 @@ DETOUR_COMMAND(Client::playvideo_end_level_transition) {
 	return Client::playvideo_end_level_transition_callback(args);
 }
 
-DETOUR(Client::OverrideView, CPortalViewSetup1 *m_View) {
+DETOUR(Client::OverrideView, CViewSetup *m_View) {
 	camera->OverrideView(m_View);
 	return Client::OverrideView(thisptr, m_View);
 }

@@ -891,7 +891,7 @@ enum PaintMode_t {
 	PAINT_INGAMEPANELS = (1 << 1),
 };
 
-struct CPortalViewSetup1 {
+struct CViewSetup {
 	int x;
 	int m_nUnscaledX;
 	int y;
@@ -911,8 +911,6 @@ struct CPortalViewSetup1 {
 	float fovViewmodel;
 	Vector origin;
 	QAngle angles;
-
-	//TODO: stuff below not tested - verify
 	float zNear;
 	float zFar;
 	float zNearViewmodel;
@@ -943,7 +941,6 @@ struct CPortalViewSetup1 {
 	bool m_bDrawWorldNormal : 1;
 	bool m_bCullFrontFaces : 1;
 	bool m_bCacheFullSceneState : 1;
-	bool m_bCSMView : 1;
 };
 class IHandleEntity;
 

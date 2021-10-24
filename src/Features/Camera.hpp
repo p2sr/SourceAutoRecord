@@ -10,10 +10,14 @@
 
 extern Variable sar_cam_control;
 extern Variable sar_cam_drive;
+extern Variable sar_cam_ortho;
+extern Variable sar_cam_ortho_scale;
+extern Variable sar_cam_ortho_nearz;
 
 extern Variable cl_skip_player_render_in_main_view;
 extern Variable r_drawviewmodel;
 extern Variable ss_force_primary_fullscreen;
+
 
 struct CameraState {
 	Vector origin = Vector();
@@ -60,7 +64,7 @@ public:
 	Camera();
 	~Camera();
 	bool IsDriving();
-	void OverrideView(CPortalViewSetup1 *m_View);
+	void OverrideView(CViewSetup *m_View);
 	CameraState InterpolateStates(float time);
 	void RequestTimeOffsetRefresh();
 	void RequestCameraRefresh();

@@ -27,6 +27,10 @@ Variable sar_cam_drive("sar_cam_drive", "1", 0, 1,
                        "Enables or disables camera drive mode in-game "
                        "(turning it on is not required for demo player)\n");
 
+Variable sar_cam_ortho("sar_cam_ortho", "0", 0, 1, "Enables or disables camera orthographic projection");
+Variable sar_cam_ortho_scale("sar_cam_ortho_scale", "1", 0.001, "Changes the scale of orthographic projection (how many units per pixel)");
+Variable sar_cam_ortho_nearz("sar_cam_ortho_nearz", "1", -10000, 10000, "Changes the near Z plane of orthographic projection.");
+
 Variable cl_skip_player_render_in_main_view;
 Variable r_drawviewmodel;
 Variable ss_force_primary_fullscreen;
@@ -213,7 +217,7 @@ CameraState Camera::InterpolateStates(float time) {
 }
 
 //Overrides view.
-void Camera::OverrideView(CPortalViewSetup1 *m_View) {
+void Camera::OverrideView(CViewSetup *m_View) {
 	if (timeOffsetRefreshRequested) {
 		timeOffset = engine->GetClientTime() - engine->demoplayer->GetTick() / 60.0f;
 		timeOffsetRefreshRequested = false;
@@ -386,6 +390,26 @@ void Camera::OverrideView(CPortalViewSetup1 *m_View) {
 			m_View->angles = currentState.angles;
 			m_View->fov = currentState.fov;
 		}
+	}
+	if (sar_cam_ortho.GetBool() && sv_cheats.GetBool()) {
+		m_View->m_bOrtho = true;
+
+		int width, height;
+#if _WIN32
+		engine->GetScreenSize(width, height);
+#else
+		engine->GetScreenSize(nullptr, width, height);
+#endif
+
+		float halfWidth = width * 0.5f * sar_cam_ortho_scale.GetFloat();
+		float halfHeight = height * 0.5f * sar_cam_ortho_scale.GetFloat();
+
+		m_View->m_OrthoRight = halfWidth;
+		m_View->m_OrthoLeft = -halfWidth;
+		m_View->m_OrthoBottom = halfHeight;
+		m_View->m_OrthoTop = -halfHeight;
+
+		m_View->zNear = sar_cam_ortho_nearz.GetFloat();
 	}
 }
 
