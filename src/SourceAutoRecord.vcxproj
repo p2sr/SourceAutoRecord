@@ -162,6 +162,7 @@
     <ClCompile Include="Features\Hud\PortalgunHud.cpp" />
     <ClCompile Include="Features\Hud\LPHud.cpp" />
     <ClCompile Include="Features\Hud\Toasts.cpp" />
+    <ClCompile Include="Features\Hud\Minimap.cpp" />
     <ClCompile Include="Features\Hud\AimPointHud.cpp" />
     <ClCompile Include="Features\Hud\Watermark.cpp" />
     <ClCompile Include="Features\Imitator.cpp" />
