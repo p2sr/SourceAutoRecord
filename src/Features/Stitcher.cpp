@@ -282,9 +282,18 @@ static void submitRegion() {
 	std::vector<uint8_t> buf(w * h * 4);
 	Memory::VMT<void(__rescall *)(void *, int, int, int, int, void *, ImageFormat)>(*g_videomode, Offsets::ReadScreenPixels)(*g_videomode, minx, miny, w, h, buf.data(), IMAGE_FORMAT_RGBA8888);
 
-	// XXX: the game seems to invert the alpha?
 	for (int i = 0; i < w*h; ++i) {
-		buf[4*i + 3] = 255 - buf[4*i + 3];
+		// Most transparent stuff is OOB space, but unfortunately goo also
+		// seems to be transparent. That said, we can replace white OOB with
+		// black OOB at least!
+		// Also, the game gets the transparency backwards, so we have to fix
+		// that.
+		if (buf[4*i] == 255 && buf[4*i+1] == 255 && buf[4*i+2] == 255 && buf[4*i+3] != 0) {
+			buf[4*i+0] = 0;
+			buf[4*i+1] = 0;
+			buf[4*i+2] = 0;
+		}
+		buf[4*i+3] = 255;
 	}
 
 	int texture_id = surface->CreateNewTextureID(surface->matsurface->ThisPtr(), true);
@@ -642,8 +651,10 @@ void Stitcher::OverrideView(CViewSetup *view) {
 		static float last_cl_time = 0;
 		float cl_time = engine->GetClientTime();
 		float delta = cl_time - last_cl_time;
-		if (delta < 0) delta = 0;
-		if (delta >= 1.0f / 60.0f) {
+		if (delta < 0) {
+			delta = 0;
+			last_cl_time = cl_time;
+		} else if (delta >= 1.0f / 60.0f) {
 			doMovement(delta);
 			last_cl_time = cl_time;
 		}
