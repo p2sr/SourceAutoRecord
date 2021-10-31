@@ -240,7 +240,7 @@ static void doMovement(float delta) {
 		g_stitcher.stitch_view_x += vx * speed * delta;
 		g_stitcher.stitch_view_y += vy * speed * delta;
 		g_stitcher.stitch_view_scale *= 1.0 + (float)-vz * zspeed * delta;
-	} else {
+	} else if (!g_stitcher.select_done) {
 		const int speed = 300; // ups
 		const int zspeed = 100; // ups
 
@@ -254,10 +254,6 @@ static void doMovement(float delta) {
 		g_stitcher.x_part -= (int)g_stitcher.x_part;
 		g_stitcher.y_part -= (int)g_stitcher.y_part;
 		g_stitcher.z_part -= (int)g_stitcher.z_part;
-
-		if (vx || vy || vz) {
-			g_stitcher.select_done = false;
-		}
 	}
 }
 
@@ -565,13 +561,10 @@ static void updateUi() {
 	}
 	
 	if (g_stitcher.select_done) {
-		static bool was_r_down = false;
-		bool r_down = inputSystem->IsKeyDown(ButtonCode_t::KEY_R);
-		if (r_down && !was_r_down) {
-			g_stitcher.select_edge += 1;
-			g_stitcher.select_edge %= 4;
-		}
-		was_r_down = r_down;
+		if (inputSystem->IsKeyDown(ButtonCode_t::KEY_W)) g_stitcher.select_edge = 0;
+		if (inputSystem->IsKeyDown(ButtonCode_t::KEY_D)) g_stitcher.select_edge = 1;
+		if (inputSystem->IsKeyDown(ButtonCode_t::KEY_S)) g_stitcher.select_edge = 2;
+		if (inputSystem->IsKeyDown(ButtonCode_t::KEY_A)) g_stitcher.select_edge = 3;
 
 		static bool had_up = false;
 		static bool had_down = false;
