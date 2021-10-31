@@ -157,6 +157,8 @@ static void initStitch(bool stitching) {
 	static bool specular;
 	static bool fogoverride;
 	static bool fogenable;
+	static bool disablebloom;
+	static float tonemaprate;
 
 	if (stitching && !was_stitching) {
 		// Store the cvars
@@ -168,6 +170,8 @@ static void initStitch(bool stitching) {
 		specular = Variable("mat_specular").GetBool();
 		fogoverride = Variable("fog_override").GetBool();
 		fogenable = Variable("fog_enable").GetBool();
+		disablebloom = Variable("mat_disable_bloom").GetBool();
+		tonemaprate = Variable("mat_hdr_manual_tonemap_rate").GetFloat();
 
 		// Set them to our values
 		Variable("r_portalsopenall").SetValue(true);
@@ -178,6 +182,8 @@ static void initStitch(bool stitching) {
 		Variable("mat_specular").SetValue(false);
 		Variable("fog_override").SetValue(true);
 		Variable("fog_enable").SetValue(false);
+		Variable("mat_disable_bloom").SetValue(true);
+		Variable("mat_hdr_manual_tonemap_rate").SetValue(-1.0f);
 
 		// Set our initial coords to just above the player position
 		g_stitcher.x = g_stitcher.y = g_stitcher.z = 0;
@@ -208,6 +214,8 @@ static void initStitch(bool stitching) {
 		Variable("mat_specular").SetValue(specular);
 		Variable("fog_override").SetValue(fogoverride);
 		Variable("fog_enable").SetValue(fogenable);
+		Variable("mat_disable_bloom").SetValue(disablebloom);
+		Variable("mat_hdr_manual_tonemap_rate").SetValue(tonemaprate);
 	}
 
 	was_stitching = stitching;
@@ -534,6 +542,12 @@ static void updateUi() {
 	} else if (!selecting && g_stitcher.select_active) {
 		g_stitcher.select_active = false;
 		g_stitcher.select_done = true;
+	}
+
+	if (inputSystem->IsKeyDown(ButtonCode_t::KEY_T)) {
+		Variable("mat_hdr_manual_tonemap_rate").SetValue(0.0f);
+	} else {
+		Variable("mat_hdr_manual_tonemap_rate").SetValue(-1.0f);
 	}
 
 	if (g_stitcher.select_active) {
