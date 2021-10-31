@@ -2,6 +2,7 @@
 
 #include "Features/Hud/Hud.hpp"
 #include "Features/Session.hpp"
+#include "Features/Stitcher.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -66,7 +67,7 @@ DETOUR(VGui::Paint, PaintMode_t mode) {
 	ctx->Reset(GET_SLOT());
 
 	if (ctx->slot == 0) {
-		if ((mode & PAINT_UIPANELS) && !sar_hud_orange_only.GetBool()) {
+		if ((mode & PAINT_UIPANELS) && !sar_hud_orange_only.GetBool() && !Stitcher::Paint()) {
 			DrawHudBackground(0, lastCtx[0]);
 
 			for (auto const &hud : vgui->huds) {

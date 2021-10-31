@@ -172,6 +172,9 @@
     <ClCompile Include="Features\StepCounter.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Stitcher.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Summary.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
@@ -607,6 +610,9 @@
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\StepCounter.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Stitcher.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Summary.hpp">

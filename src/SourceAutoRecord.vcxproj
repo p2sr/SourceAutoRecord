@@ -187,6 +187,7 @@
     <ClCompile Include="Features\Stats\Sync.cpp" />
     <ClCompile Include="Features\Stats\VelocityStats.cpp" />
     <ClCompile Include="Features\StepCounter.cpp" />
+    <ClCompile Include="Features\Stitcher.cpp" />
     <ClCompile Include="Features\Summary.cpp" />
     <ClCompile Include="Features\Tas\TasTools\AutoAimTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\SetAngleTool.cpp" />
@@ -366,6 +367,7 @@
     <ClInclude Include="Features\Stats\Sync.hpp" />
     <ClInclude Include="Features\Stats\VelocityStats.hpp" />
     <ClInclude Include="Features\StepCounter.hpp" />
+    <ClInclude Include="Features\Stitcher.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
     <ClInclude Include="Features\Tas\TasTools\AutoAimTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\SetAngleTool.hpp" />
