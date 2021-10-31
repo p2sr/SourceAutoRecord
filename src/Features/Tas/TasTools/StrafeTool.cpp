@@ -395,10 +395,8 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 		}
 
 		//unknown parameter...
-		else {
-			// do we even handle unknown parameters?!
-			// mlugg is going to be pissed
-		}
+		else 
+			throw TasParserException(Utils::ssprintf("Bad parameter for tool %s: %s", this->GetName(), param.c_str()));
 	}
 
 	return std::make_shared<AutoStrafeParams>(type, dir, speed);

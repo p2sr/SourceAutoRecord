@@ -261,9 +261,6 @@ static std::optional<TasToolCommand> parseToolCmd(const std::vector<std::string>
 			std::vector<std::string> args = std::vector(toks.begin() + 1, toks.end());
 
 			auto params = tool->GetTool()->ParseParams(args);
-			if (!params) {
-				throw TasParserException(Utils::ssprintf("bad parameters for tool %s", tool->GetName()));
-			}
 
 			return TasToolCommand{tool->GetTool(), params};
 		}

@@ -2,6 +2,7 @@
 
 #include "Modules/Console.hpp"
 #include "Modules/Server.hpp"
+#include "Features/Tas/TasParser.hpp"
 
 AutoAimTool autoAimTool;
 
@@ -25,15 +26,44 @@ AutoAimTool *AutoAimTool::GetTool() {
 }
 
 std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string> args) {
-	if (args.size() == 1 && args[0] == "off") {
-		return std::make_shared<AutoAimParams>();
-	}
+	if (args.size() != 1 && args.size() != 3 && args.size() != 4)
+		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), args.size()));
+	
+	if (args.size() == 1)
+		if  (args[0] == "off")
+			return std::make_shared<AutoAimParams>();
+		else 
+			throw TasParserException(Utils::ssprintf("Bad argument for tool %s: %s", this->GetName(), args[0].c_str()));
 
 	if (args.size() == 3 || args.size() == 4) {
-		float x = atof(args[0].c_str());
-		float y = atof(args[1].c_str());
-		float z = atof(args[2].c_str());
-		int ticks = args.size() == 4 ? atoi(args[3].c_str()) : 1;
+		float x;
+		float y;
+		float z;
+		int ticks;
+
+		try {
+			x = std::stof(args[0]);
+		} catch (...) {
+			throw TasParserException(Utils::ssprintf("Bad x value for tool %s: %s", this->GetName(), args[0].c_str()));
+		}
+
+		try {
+			y = std::stof(args[1]);
+		} catch (...) {
+			throw TasParserException(Utils::ssprintf("Bad y value for tool %s: %s", this->GetName(), args[1].c_str()));
+		}
+
+		try {
+			z = std::stof(args[2]);
+		} catch (...) {
+			throw TasParserException(Utils::ssprintf("Bad z value for tool %s: %s", this->GetName(), args[2].c_str()));
+		}
+
+		try {
+			ticks = args.size() == 4 ? std::stoi(args[3]) : 1;
+		} catch (...) {
+			throw TasParserException(Utils::ssprintf("Bad tick value for tool %s: %s", this->GetName(), args[3].c_str()));
+		}
 
 		return std::make_shared<AutoAimParams>(Vector{x, y, z}, ticks);
 	}

@@ -2,6 +2,7 @@
 
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
+#include "Features/Tas/TasParser.hpp"
 
 AutoJumpTool autoJumpTool("autojump");
 
@@ -25,8 +26,8 @@ AutoJumpTool *AutoJumpTool::GetTool() {
 }
 
 std::shared_ptr<TasToolParams> AutoJumpTool::ParseParams(std::vector<std::string> vp) {
-	if (vp.empty())
-		return nullptr;
+	if (vp.size() != 1)
+		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
 
 	bool arg = vp[0] == "on";
 

@@ -2,6 +2,7 @@
 
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
+#include "Features/Tas/TasParser.hpp"
 
 struct SetAngleParams : public TasToolParams {
 	SetAngleParams()
@@ -58,14 +59,33 @@ void SetAngleTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 }
 
 std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string> vp) {
-	if (vp.size() != 2 && vp.size() != 3) {
-		return nullptr;
+	if (vp.size() != 2 && vp.size() != 3) 
+		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+
+	float pitch;
+	float yaw = atof(vp[1].c_str());
+	int ticks = vp.size() == 3 ? atoi(vp[2].c_str()) : 1;
+
+	// pitch
+	try {
+		pitch = std::stof(vp[0]);
+	} catch (...) {
+		throw TasParserException(Utils::ssprintf("Bad pitch value for tool %s: %s", this->GetName(), vp[0].c_str()));
 	}
 
-	float pitch = atof(vp[0].c_str());
-	float yaw = atof(vp[1].c_str());
+	// yaw
+	try {
+		yaw = std::stof(vp[1]);
+	} catch (...) {
+		throw TasParserException(Utils::ssprintf("Bad yaw value for tool %s: %s", this->GetName(), vp[1].c_str()));
+	}
 
-	int ticks = vp.size() == 3 ? atoi(vp[2].c_str()) : 1;
+	// ticks
+	try {
+		ticks = vp.size() == 3 ? std::stoi(vp[2]) : 1;
+	} catch (...) {
+		throw TasParserException(Utils::ssprintf("Bad tick value for tool %s: %s", this->GetName(), vp[2].c_str()));
+	}
 
 	return std::make_shared<SetAngleParams>(ticks, pitch, yaw);
 }
