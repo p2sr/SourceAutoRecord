@@ -36,8 +36,36 @@ static std::vector<Line> tokenize(std::ifstream &file) {
 	std::vector<Line> lines;
 
 	unsigned line_num = 1;
+	bool commentOpen = false;
 	std::string line;
 	while (std::getline(file, line)) {
+		// FIXME: This doesn't work with nested comments e.g.: /* ... /* ... */ */
+		auto multilineCommentStart = line.find("/*");
+		auto multilineCommentEnd = line.find("*/");
+
+		bool didOpenComment = false;
+
+		if (multilineCommentStart != std::string::npos) {
+			if (multilineCommentEnd != std::string::npos)
+				line = line.erase(multilineCommentStart, (multilineCommentEnd - multilineCommentStart) + 2);
+			else {
+				line = line.substr(0, multilineCommentStart);
+				commentOpen = true;
+				didOpenComment = true;
+			}
+		}
+
+		if (commentOpen && !didOpenComment) {
+			if (multilineCommentEnd != std::string::npos) {
+				line = line.substr(multilineCommentEnd + 2, line.length());
+				commentOpen = false;
+			} else {
+				continue;
+			}
+		}
+
+		if (line.empty()) continue;
+
 		std::vector<TasToken> toks;
 
 		int fieldnum = 0;
