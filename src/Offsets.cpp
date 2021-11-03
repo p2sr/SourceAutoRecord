@@ -136,6 +136,7 @@ namespace Offsets {
 	int m_iEFlags;
 	int m_flMaxspeed;
 	int m_flGravity;
+	int m_takedamage;
 	int S_m_vecViewOffset;
 	int IsPlayer;
 	int AcceptInput;

@@ -222,6 +222,7 @@ void Portal2::LoadOffsets() {
 	S_m_angAbsRotation = 472;            // CBaseEntity
 	m_iEFlags = 200;                     // CBaseEntity
 	m_flGravity = 772;                   // CBaseEntity
+	m_takedamage = 554;                  // CBaseEntity
 	NUM_ENT_ENTRIES = 8192;              // CBaseEntityList::CBaseEntityList
 	ENT_ENTRY_MASK = 65535;              //CBaseEntityList::CBaseEntityList
 	INVALID_EHANDLE_INDEX = 0xFFFFFFFF;  //CBaseEntityList::CBaseEntityList

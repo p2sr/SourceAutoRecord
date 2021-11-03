@@ -36,6 +36,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <cfloat>
 
 #define RESET_COOP_PROGRESS_MESSAGE_TYPE "coop-reset"
 #define CM_FLAGS_MESSAGE_TYPE "cm-flags"
@@ -675,6 +676,26 @@ CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop 
 	if (engine->IsCoop()) {
 		NetMessage::SendMsg(RESET_COOP_PROGRESS_MESSAGE_TYPE, nullptr, 0);
 		resetCoopProgress(nullptr, 0);
+	}
+}
+CON_COMMAND(sar_give_fly, "sar_give_fly [n] - gives the player in slot n (0 by default) preserved crouchfly.\n") {
+	if (args.ArgC() > 2) return console->Print(sar_give_fly.ThisPtr()->m_pszHelpString);
+	if (!sv_cheats.GetBool()) return console->Print("sar_give_fly requires sv_cheats.\n");
+	int slot = args.ArgC() == 2 ? atoi(args[1]) : 0;
+	void *player = server->GetPlayer(slot + 1);
+	if (player) {
+		*(float *)((uintptr_t)player + Offsets::m_flGravity) = FLT_MIN;
+		console->Print("Gave fly to player %d\n", slot);
+	}
+}
+CON_COMMAND(sar_give_betsrighter, "sar_give_betsrighter [n] - gives the player in slot n (0 by default) betsrighter.\n") {
+	if (args.ArgC() > 2) return console->Print(sar_give_fly.ThisPtr()->m_pszHelpString);
+	if (!sv_cheats.GetBool()) return console->Print("sar_give_betsrighter requires sv_cheats.\n");
+	int slot = args.ArgC() == 2 ? atoi(args[1]) : 0;
+	void *player = server->GetPlayer(slot + 1);
+	if (player) {
+		*(char *)((uintptr_t)player + Offsets::m_takedamage) = 0;
+		console->Print("Gave betsrighter to player %d\n", slot);
 	}
 }
 void Server::Shutdown() {
