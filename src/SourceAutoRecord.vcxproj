@@ -190,6 +190,7 @@
     <ClCompile Include="Features\Stitcher.cpp" />
     <ClCompile Include="Features\Summary.cpp" />
     <ClCompile Include="Features\Tas\TasTools\AutoAimTool.cpp" />
+    <ClCompile Include="Features\Tas\TasTools\DecelTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\SetAngleTool.cpp" />
     <ClCompile Include="Features\Updater.cpp" />
     <ClCompile Include="Features\ReplaySystem\Replay.cpp" />
@@ -370,6 +371,7 @@
     <ClInclude Include="Features\Stitcher.hpp" />
     <ClInclude Include="Features\Summary.hpp" />
     <ClInclude Include="Features\Tas\TasTools\AutoAimTool.hpp" />
+    <ClInclude Include="Features\Tas\TasTools\DecelTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\SetAngleTool.hpp" />
     <ClInclude Include="Features\Updater.hpp" />
     <ClInclude Include="Features\ReplaySystem\Replay.hpp" />
