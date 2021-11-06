@@ -208,6 +208,8 @@ HudStringElement::HudStringElement(Variable *variable, _PaintCallbackString call
 
 // Default order
 std::vector<std::string> elementOrder = {
+	"tastick",
+	"groundframes",
 	"text",
 	"position",
 	"angles",
