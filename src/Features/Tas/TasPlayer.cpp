@@ -312,7 +312,7 @@ void TasPlayer::FetchInputs(TasController *controller) {
 // because of alternateticks, a pair of inputs are created and then executed at the same time,
 // meaning that second tick in pair reads outdated info.
 void TasPlayer::PostProcess(void *player, CMoveData *pMove) {
-	if (paused) return;
+	if (paused || engine->IsGamePaused()) return;
 
 	pMove->m_flForwardMove = 0;
 	pMove->m_flSideMove = 0;
@@ -407,7 +407,14 @@ void TasPlayer::Update() {
 			if (!IsRunning()) {
 				PostStart();  // script has started its playback. Adjust the tick counter and offset
 			} else {
-				currentTick++;
+				if (engine->IsGamePaused() && !wasEnginePaused) {
+					wasEnginePaused = true;
+					currentTick--;
+				}
+				if (!engine->IsGamePaused()) {
+					wasEnginePaused = false;
+					currentTick++;
+				}
 			}
 
 			if (sar_tas_pauseat.GetInt() > pauseTick) {
