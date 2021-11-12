@@ -133,7 +133,7 @@ CON_COMMAND(sar_lphud_set, "sar_lphud_set <number> - sets lp counter to given nu
 	IGNORE_DEMO_PLAYER();
 
 	if (args.ArgC() != 2) {
-		return console->Print("you twat.\n");
+		return console->Print(sar_lphud_set.ThisPtr()->m_pszHelpString);
 	}
 
 	lpHud.Set(static_cast<int>(std::atoi(args[1])));
