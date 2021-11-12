@@ -632,7 +632,7 @@ void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, s
 		file << "start now";
 		break;
 	case TasStartType::ChangeLevelCM:
-		file << "start cm" << startInfo.param << "";
+		file << "start cm " << startInfo.param << "";
 		break;
 	default:
 		file << "start next";
