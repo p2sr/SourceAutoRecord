@@ -436,6 +436,36 @@ void SpeedrunTimer::Resume() {
 	console->Print("Speedrun resumed!\n");
 }
 
+static inline void appendStr(const std::string &str, std::vector<uint8_t> &vec) {
+	vec.reserve(vec.size() + str.size());
+	std::copy(str.begin(), str.end(), std::back_inserter(vec));
+	vec.push_back(0);
+}
+
+static inline void appendI32(int x, std::vector<uint8_t> &vec) {
+	vec.push_back((x >> 0)  & 0xFF);
+	vec.push_back((x >> 8)  & 0xFF);
+	vec.push_back((x >> 16) & 0xFF);
+	vec.push_back((x >> 24) & 0xFF);
+}
+
+static void recordDemoResult() {
+	std::vector<uint8_t> data({0x0A});
+
+	appendI32(g_speedrun.splits.size(), data);
+
+	for (SplitInfo split : g_speedrun.splits) {
+		appendStr(split.name, data);
+		appendI32(split.segments.size(), data);
+		for (Segment seg : split.segments) {
+			appendStr(seg.name, data);
+			appendI32(seg.ticks, data);
+		}
+	}
+
+	engine->demorecorder->RecordData(data.data(), data.size());
+}
+
 void SpeedrunTimer::Stop(std::string segName) {
 	if (!g_speedrun.isRunning) {
 		return;
@@ -457,6 +487,10 @@ void SpeedrunTimer::Stop(std::string segName) {
 
 	if (networkManager.isConnected) {
 		networkManager.NotifySpeedrunFinished(false);
+	}
+
+	if (engine->demorecorder->isRecordingDemo) {
+		recordDemoResult();
 	}
 
 	switch (sar_speedrun_autostop.GetInt()) {
