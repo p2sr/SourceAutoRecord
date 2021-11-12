@@ -9,9 +9,6 @@
 #include <queue>
 #include <stdexcept>
 
-// FIXME: currently, we receieve messages sent by ourselves. Probably
-// don't do that
-
 // if blue: whether orange is ready
 // if orange: whether we've sent the ready packet
 static bool g_orangeReady = false;
@@ -56,8 +53,10 @@ void NetMessage::SendMsg(const char *type, const void *data, size_t size) {
 		return;
 	}
 
+	char player = engine->IsOrange() ? 'o' : 'b';
+
 	char *data_ = (char *)data;
-	std::string cmd = std::string("say !SAR:") + type + ":";
+	std::string cmd = std::string("say !SAR:") + player + ":" + type + ":";
 	for (size_t i = 0; i < size; ++i) {
 		char c = data_[i];
 		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
@@ -106,6 +105,15 @@ bool NetMessage::ChatData(std::string str) {
 
 	// Strips header and trailing newline
 	str = str.substr(pos + 7, str.size() - pos - 8);
+
+	if (str[0] != 'o' && str[0] != 'b') return false;
+	if (str[1] != ':') return false;
+
+	char player = engine->IsOrange() ? 'o' : 'b';
+	if (str[0] == player) return true; // Ignore messages we sent
+
+	// Strip o: or b:
+	str = str.substr(2, str.size() - 2);
 
 	pos = str.find(":");
 	if (pos == std::string::npos) return false;
