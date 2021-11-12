@@ -517,7 +517,7 @@ DETOUR(Server::GameFrame, bool simulating)
 static int (*GlobalEntity_GetIndex)(const char *);
 static void (*GlobalEntity_SetFlags)(int, int);
 
-static void resetCoopProgress(void *data, size_t size) {
+static void resetCoopProgress() {
 	GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags0"), 0);
 	GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags1"), 0);
 	GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags2"), 0);
@@ -525,6 +525,28 @@ static void resetCoopProgress(void *data, size_t size) {
 	GlobalEntity_SetFlags(GlobalEntity_GetIndex("have_seen_dlc_tubes_reveal"), 0);
 	engine->ExecuteCommand("mp_mark_all_maps_incomplete", true);
 	engine->ExecuteCommand("mp_lock_all_taunts", true);
+}
+
+static int g_sendResetDoneAt = -1;
+
+ON_EVENT(SESSION_START) {
+	g_sendResetDoneAt = -1;
+}
+
+ON_EVENT(POST_TICK) {
+	if (g_sendResetDoneAt != -1 && session->GetTick() >= g_sendResetDoneAt) {
+		g_sendResetDoneAt = -1;
+		NetMessage::SendMsg(RESET_COOP_PROGRESS_MESSAGE_TYPE, (void *)"done", 4);
+	}
+}
+
+static void netResetCoopProgress(void *data, size_t size) {
+	if (size == 4 && !memcmp(data, "done", 4)) {
+		Event::Trigger<Event::COOP_RESET_DONE>({});
+	} else {
+		resetCoopProgress();
+		g_sendResetDoneAt = session->GetTick() + 10; // send done message in 10 ticks, to be safe
+	}
 }
 
 bool Server::Init() {
@@ -633,7 +655,7 @@ bool Server::Init() {
 	Memory::UnProtect((void *)(insn_addr + 2), 1);
 	*(char *)(insn_addr + 2) = 0x5C;
 
-	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &resetCoopProgress);
+	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);
 
 	offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);
 	offsetFinder->ServerSide("CBasePlayer", "m_iName", &Offsets::m_iName);
@@ -676,7 +698,7 @@ bool Server::Init() {
 CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop progress\n") {
 	if (engine->IsCoop()) {
 		NetMessage::SendMsg(RESET_COOP_PROGRESS_MESSAGE_TYPE, nullptr, 0);
-		resetCoopProgress(nullptr, 0);
+		resetCoopProgress();
 	}
 }
 CON_COMMAND(sar_give_fly, "sar_give_fly [n] - gives the player in slot n (0 by default) preserved crouchfly.\n") {

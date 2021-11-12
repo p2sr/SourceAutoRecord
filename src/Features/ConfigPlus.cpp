@@ -554,6 +554,7 @@ MK_SAR_ON(exit, "on game exit", false)
 MK_SAR_ON(demo_start, "when demo playback starts", false)
 MK_SAR_ON(demo_stop, "when demo playback stops", false)
 MK_SAR_ON(flags, "when CM flags are hit", false)
+MK_SAR_ON(coop_reset_done, "when coop reset is completed", false)
 
 struct Seq {
 	std::queue<std::string> commands;
@@ -730,6 +731,9 @@ ON_EVENT(DEMO_STOP) {
 }
 ON_EVENT(CM_FLAGS) {
 	RUN_EXECS(flags);
+}
+ON_EVENT(COOP_RESET_DONE) {
+	RUN_EXECS(coop_reset_done);
 }
 
 CON_COMMAND_F(nop, "nop [args]... - nop ignores all its arguments and does nothing\n", FCVAR_DONTRECORD) {}

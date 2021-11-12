@@ -37,6 +37,7 @@ namespace Event {
 		POST_TICK,
 		CM_FLAGS,
 		PROCESS_MOVEMENT,
+		COOP_RESET_DONE,
 	};
 
 	template <EventType E>
