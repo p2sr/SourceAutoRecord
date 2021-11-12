@@ -145,6 +145,10 @@ void SpeedrunTimer::TestLoadRules() {
 	GeneralTestRules<MapLoadRule>({});
 }
 
+ON_EVENT(SESSION_END) {
+	GeneralTestRules<MapEndRule>({});
+}
+
 ON_EVENT(CM_FLAGS) {
 	if (!engine->IsOrange()) {
 		SpeedrunTimer::TestFlagRules(event.slot);
@@ -481,6 +485,7 @@ bool SpeedrunTimer::CreateRule(std::string name, std::string type, std::map<std:
 		: type == "flags"                                                   ? ChallengeFlagsRule::Create(params)
 		: type == "fly"                                                     ? CrouchFlyRule::Create(params)
 		: type == "load"                                                    ? MapLoadRule::Create(params)
+		: type == "end"                                                     ? MapEndRule::Create(params)
 																																																																						: std::optional<SpeedrunRule>{};
 
 	if (!rule) {

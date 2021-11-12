@@ -272,6 +272,14 @@ bool MapLoadRule::Test() {
 	return true;
 }
 
+std::optional<SpeedrunRule> MapEndRule::Create(std::map<std::string, std::string> params) {
+	return SpeedrunRule(RuleAction::START, "", MapEndRule{});
+}
+
+bool MapEndRule::Test() {
+	return true;
+}
+
 std::optional<SpeedrunRule> CrouchFlyRule::Create(std::map<std::string, std::string> params) {
 	return SpeedrunRule(RuleAction::START, "", CrouchFlyRule{});
 }
@@ -378,7 +386,12 @@ std::string SpeedrunRule::Describe() {
 		break;
 	}
 
-	case 5: {  // CrouchFlyRule
+	case 5: {  // MapEndRule
+		s = std::string("[end] ") + s;
+		break;
+	}
+
+	case 6: {  // CrouchFlyRule
 		s = std::string("[fly] ") + s;
 		break;
 	}

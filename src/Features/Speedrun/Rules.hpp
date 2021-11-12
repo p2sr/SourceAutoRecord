@@ -79,6 +79,11 @@ struct MapLoadRule {
 	bool Test();
 };
 
+struct MapEndRule {
+	static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
+	bool Test();
+};
+
 struct CrouchFlyRule {
 	static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
 	bool Test();
@@ -91,6 +96,7 @@ struct SpeedrunRule {
 		PortalPlacementRule,
 		ChallengeFlagsRule,
 		MapLoadRule,
+		MapEndRule,
 		CrouchFlyRule>;
 
 	RuleAction action;
