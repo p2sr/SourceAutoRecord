@@ -13,11 +13,21 @@ Variable cl_pitchup;
 
 Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 4, "Debugs controller.");
 
+static bool g_forcingUser;
+static int g_oldForceUser;
+
 void LockMouse() {
-	client->SetMouseActivated(false);
+	if (!g_forcingUser) {
+		g_forcingUser = true;
+		g_oldForceUser = in_forceuser.GetInt();
+		in_forceuser.SetValue(100);
+	}
 }
 void UnlockMouse() {
-	client->SetMouseActivated(true); 
+	if (g_forcingUser) {
+		g_forcingUser = false;
+		in_forceuser.SetValue(g_oldForceUser);
+	}
 }
 
 TasController *tasController;
