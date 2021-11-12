@@ -549,7 +549,8 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 #define RUN_EXECS(x) _runExecs_##x()
 
-MK_SAR_ON(load, "on level load", true)
+MK_SAR_ON(load, "on session start", true)
+MK_SAR_ON(session_end, "on session end", true)
 MK_SAR_ON(exit, "on game exit", false)
 MK_SAR_ON(demo_start, "when demo playback starts", false)
 MK_SAR_ON(demo_stop, "when demo playback stops", false)
@@ -720,6 +721,9 @@ CON_COMMAND_F(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, 
 
 ON_EVENT_P(SESSION_START, 1000000) {
 	RUN_EXECS(load);
+}
+ON_EVENT(SESSION_END) {
+	RUN_EXECS(session_end);
 }
 ON_EVENT(SAR_UNLOAD) {
 	RUN_EXECS(exit);
