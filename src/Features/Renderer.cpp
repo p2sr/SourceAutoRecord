@@ -38,9 +38,6 @@ static MovieInfo_t *g_movieInfo;
 // this tick if sar_render_autostop is set)
 int Renderer::segmentEndTick = -1;
 
-// The first non-zero tick of the current demo (If none exist, assume the demo starts immediately)
-int Renderer::demoStart = 0;
-
 // Whether a demo is loading; used to detect whether we should autostart
 bool Renderer::isDemoLoading = false;
 
@@ -64,7 +61,6 @@ static Variable sar_render_sample_rate("sar_render_sample_rate", "44100", 1000, 
 static Variable sar_render_blend("sar_render_blend", "0", 0, "How many frames to blend for each output frame; 1 = do not blend, 0 = automatically determine based on host_framerate\n");
 static Variable sar_render_autostart("sar_render_autostart", "0", "Whether to automatically start when demo playback begins\n");
 static Variable sar_render_autostart_extension("sar_render_autostart_extension", "mp4", "The file extension (and hence container format) to use for automatically started renders.\n", 0);
-static Variable sar_render_remove_broken("sar_render_remove_broken", "1", "Whether to remove broken frames from demo playback; only applies with sar_render_autostart 1\n");
 static Variable sar_render_autostop("sar_render_autostop", "1", "Whether to automatically stop when __END__ is seen in demo playback\n");
 static Variable sar_render_shutter_angle("sar_render_shutter_angle", "180", 30, 360, "The shutter angle to use for rendering in degrees.\n");
 static Variable sar_render_merge("sar_render_merge", "0", "When set, merge all the renders until sar_render_finish is entered\n");
@@ -997,52 +993,10 @@ static void SND_RecordBuffer_Hook() {
 
 // Video output {{{
 
-static bool g_waitingForSession = false;
-ON_EVENT(SESSION_START) { g_waitingForSession = false; }
-
 void Renderer::Frame() {
-	if (Renderer::isDemoLoading && sar_render_autostart.GetBool() && sar_render_remove_broken.GetBool()) {
-		bool start = true;
-
-		if (sar_render_remove_broken.GetBool()) {
-			// 0 = not done anything
-			// 1 = queued skip
-			// 2 = in skip
-			static int state = 0;
-			static int nfails = 0;
-
-			int tick = engine->demoplayer->GetTick();
-
-			if (state == 0) {
-				if (tick > Renderer::demoStart + 2) {
-					console->Print("Beginning playback; skipping\n");
-					g_waitingForSession = true;
-					engine->ExecuteCommand("demo_resume; demo_gototick 1");
-					state = 1;
-				}
-				g_render.isPaused.store(true);
-				start = false;
-			} else if (state == 1) {
-				if (engine->hoststate->m_currentState == HS_RUN && !g_waitingForSession) {
-					state = 2;
-				}
-				start = false;
-			} else if (state == 2) {
-				if (!engine->demoplayer->IsSkipping()) {
-					if (tick % 2 == Renderer::demoStart % 2) {
-						console->Print("Correcting start tick\n");
-						engine->SendToCommandBuffer("sv_alternateticks 0", 0);
-						engine->SendToCommandBuffer("sv_alternateticks 1", 1);
-					}
-					console->Print("Successful start\n");
-					g_render.isPaused.store(false);
-					state = 0;
-				} else {
-					start = false;
-				}
-			}
-		}
-
+	if (Renderer::isDemoLoading && sar_render_autostart.GetBool()) {
+		bool start = engine->demoplayer->IsPlaybackFixReady();
+		g_render.isPaused.store(!start);
 		if (!start) return;
 
 		Renderer::isDemoLoading = false;

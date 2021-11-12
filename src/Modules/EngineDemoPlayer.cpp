@@ -60,6 +60,52 @@ bool EngineDemoPlayer::ShouldBlacklistCommand(const char *cmd) {
 	return false;
 }
 
+static Variable sar_demo_remove_broken("sar_demo_remove_broken", "1", "Whether to remove broken frames from demo playback\n");
+
+static bool g_waitingForSession = false;
+ON_EVENT(SESSION_START) { g_waitingForSession = false; }
+
+static bool g_demoFixing = false;
+static int g_demoStart;
+void EngineDemoPlayer::HandlePlaybackFix() {
+	if (!g_demoFixing) return;
+
+	// 0 = not done anything
+	// 1 = queued skip
+	// 2 = in skip
+	static int state = 0;
+	static int nfails = 0;
+
+	int tick = GetTick();
+
+	if (state == 0) {
+		if (tick > g_demoStart + 2) {
+			console->Print("Beginning playback; skipping\n");
+			g_waitingForSession = true;
+			engine->ExecuteCommand("demo_resume; demo_gototick 1");
+			state = 1;
+		}
+	} else if (state == 1) {
+		if (engine->hoststate->m_currentState == HS_RUN && !g_waitingForSession) {
+			state = 2;
+		}
+	} else if (state == 2) {
+		if (!IsSkipping()) {
+			if (tick % 2 == g_demoStart % 2) {
+				console->Print("Correcting start tick\n");
+				engine->SendToCommandBuffer("sv_alternateticks 0", 0);
+				engine->SendToCommandBuffer("sv_alternateticks 1", 1);
+			}
+			console->Print("Successful start\n");
+			state = 0;
+			g_demoFixing = false;
+		}
+	}
+}
+bool EngineDemoPlayer::IsPlaybackFixReady() {
+	return !g_demoFixing;
+}
+
 int EngineDemoPlayer::GetTick() {
 	return this->GetPlaybackTick(this->s_ClientDemoPlayer->ThisPtr());
 }
@@ -170,9 +216,10 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char *filename, bool bAsTimeDemo) 
 			console->Print("Time:     %.3f\n", demo.playbackTime);
 			console->Print("Tickrate: %.3f\n", demo.Tickrate());
 			engine->demoplayer->levelName = demo.mapName;
-			Renderer::demoStart = demo.firstPositivePacketTick;
+			g_demoStart = demo.firstPositivePacketTick;
 			Renderer::segmentEndTick = demo.segmentTicks;
 			Event::Trigger<Event::DEMO_START>({});
+			g_demoFixing = sar_demo_remove_broken.GetBool();
 		} else {
 			console->Print("Could not parse \"%s\"!\n", engine->demoplayer->DemoName);
 		}
@@ -181,6 +228,7 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char *filename, bool bAsTimeDemo) 
 	camera->RequestTimeOffsetRefresh();
 
 	Renderer::isDemoLoading = true;
+	g_demoFixing = true;
 
 	return result;
 }

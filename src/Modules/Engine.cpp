@@ -346,6 +346,7 @@ DETOUR(Engine::Frame) {
 	engine->lastTick = session->GetTick();
 
 	Renderer::Frame();
+	engine->demoplayer->HandlePlaybackFix();
 
 	NetMessage::Update();
 

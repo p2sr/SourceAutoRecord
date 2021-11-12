@@ -39,6 +39,9 @@ public:
 	void CustomDemoData(char *data, size_t length);
 	void SkipTo(int tick, bool relative, bool pause);
 
+	void HandlePlaybackFix();
+	bool IsPlaybackFixReady();
+
 	// CDemoRecorder::StartPlayback
 	DECL_DETOUR(StartPlayback, const char *filename, bool bAsTimeDemo);
 	// CDemoRecorder::StopPlayback
