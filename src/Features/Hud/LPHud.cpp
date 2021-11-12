@@ -43,20 +43,22 @@ void LPHud::Update() {
 	if (!enabled)
 		return;
 
-	void *player = client->GetPlayer(GET_SLOT()+1);
-	if (player == nullptr) {
-		//portalsCountFull = 0;
-	} else {
-		int *iNumPortalsPlaced = reinterpret_cast<int *>((uintptr_t)player + Offsets::C_m_StatsThisLevel + 4);
+	void *player = client->GetPlayer(1);
+	void *player2 = client->GetPlayer(2);
 
-		if (oldInGamePortalCounter != *iNumPortalsPlaced) {
-			if (oldInGamePortalCounter < *iNumPortalsPlaced) {
+	if (player && (!engine->IsCoop() || player2)) {
+		int portals1 = *(int *)((uintptr_t)player + Offsets::C_m_StatsThisLevel + 4);
+		int portals2 = player2 ? *(int *)((uintptr_t)player2 + Offsets::C_m_StatsThisLevel + 4) : 0;
+		int iNumPortalsPlaced = portals1 + portals2;
+
+		if (oldInGamePortalCounter != iNumPortalsPlaced) {
+			if (oldInGamePortalCounter < iNumPortalsPlaced) {
 				if (oldInGamePortalCounter != -1) {
-					portalsCountFull += *iNumPortalsPlaced - oldInGamePortalCounter;
+					portalsCountFull += iNumPortalsPlaced - oldInGamePortalCounter;
 					countHistory.push_back({engine->GetTick(), portalsCountFull});
 				}
 			}
-			oldInGamePortalCounter = *iNumPortalsPlaced;
+			oldInGamePortalCounter = iNumPortalsPlaced;
 		}
 	}
 
