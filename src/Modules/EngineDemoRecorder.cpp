@@ -261,7 +261,7 @@ DETOUR_COMMAND(EngineDemoRecorder::record) {
 		}
 	}
 
-	if (newArgs.ArgC() >= 2) {
+	if (newArgs.ArgC() >= 2 && !menu && !engine->demorecorder->isRecordingDemo) {
 		try {
 			std::string pStr = engine->GetGameDirectory();
 			pStr += '/';
