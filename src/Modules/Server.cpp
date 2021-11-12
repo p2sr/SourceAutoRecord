@@ -522,6 +522,7 @@ static void resetCoopProgress(void *data, size_t size) {
 	GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags1"), 0);
 	GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags2"), 0);
 	GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags3"), 0);
+	GlobalEntity_SetFlags(GlobalEntity_GetIndex("have_seen_dlc_tubes_reveal"), 0);
 	engine->ExecuteCommand("mp_mark_all_maps_incomplete", true);
 	engine->ExecuteCommand("mp_lock_all_taunts", true);
 }
