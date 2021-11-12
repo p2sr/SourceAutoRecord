@@ -545,6 +545,7 @@ static void netResetCoopProgress(void *data, size_t size) {
 		Event::Trigger<Event::COOP_RESET_DONE>({});
 	} else {
 		resetCoopProgress();
+		Event::Trigger<Event::COOP_RESET_REMOTE>({});
 		g_sendResetDoneAt = session->GetTick() + 10; // send done message in 10 ticks, to be safe
 	}
 }

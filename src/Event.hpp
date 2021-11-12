@@ -38,6 +38,7 @@ namespace Event {
 		CM_FLAGS,
 		PROCESS_MOVEMENT,
 		COOP_RESET_DONE,
+		COOP_RESET_REMOTE,
 	};
 
 	template <EventType E>
