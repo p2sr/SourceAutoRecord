@@ -40,6 +40,7 @@ Variable in_forceuser;
 Variable crosshairVariable;
 Variable cl_fov;
 Variable prevent_crouch_jump;
+Variable r_portaltestents;
 
 Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
 Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disables the saving/saved HUD which appears when you make a save.\n");
@@ -484,6 +485,8 @@ bool Client::Init() {
 		}
 	}
 
+	Variable("r_PortalTestEnts").RemoveFlag(FCVAR_CHEAT);
+
 	if (this->s_EntityList) {
 		this->GetClientEntity = this->s_EntityList->Original<_GetClientEntity>(Offsets::GetClientEntity, readJmp);
 	}
@@ -500,12 +503,17 @@ bool Client::Init() {
 	cl_backspeed = Variable("cl_backspeed");
 	prevent_crouch_jump = Variable("prevent_crouch_jump");
 	crosshairVariable = Variable("crosshair");
+	r_portaltestents = Variable("r_portaltestents");
+
+	// Useful for fixing rendering bugs
+	r_portaltestents.RemoveFlag(FCVAR_CHEAT);
 
 	CVAR_HOOK_AND_CALLBACK(cl_fov);
 
 	return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }
 void Client::Shutdown() {
+	r_portaltestents.AddFlag(FCVAR_CHEAT);
 	Interface::Delete(this->g_ClientDLL);
 	Interface::Delete(this->g_pClientMode);
 	Interface::Delete(this->g_pClientMode2);
