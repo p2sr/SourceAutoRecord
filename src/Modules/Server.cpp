@@ -89,7 +89,7 @@ bool Server::IsPlayer(void *entity) {
 	return Memory::VMT<bool (*)(void *)>(entity, Offsets::IsPlayer)(entity);
 }
 bool Server::AllowsMovementChanges() {
-	return !sv_bonus_challenge.GetBool() || sv_cheats.GetBool();
+	return sv_cheats.GetBool();
 }
 int Server::GetSplitScreenPlayerSlot(void *entity) {
 	// Simplified version of CBasePlayer::GetSplitScreenPlayerSlot
