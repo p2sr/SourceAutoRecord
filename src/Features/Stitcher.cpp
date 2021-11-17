@@ -167,7 +167,7 @@ static void initStitch(bool stitching) {
 		drawviewmodel = Variable("r_drawviewmodel").GetBool();
 		glclear = Variable("gl_clear").GetBool();
 		crosshair = Variable("crosshair").GetBool();
-		specular = Variable("mat_specular").GetBool();
+		specular = Variable("mat_fastspecular").GetBool();
 		fogoverride = Variable("fog_override").GetBool();
 		fogenable = Variable("fog_enable").GetBool();
 		disablebloom = Variable("mat_disable_bloom").GetBool();
@@ -179,7 +179,7 @@ static void initStitch(bool stitching) {
 		Variable("r_drawviewmodel").SetValue(false);
 		Variable("gl_clear").SetValue(true);
 		Variable("crosshair").SetValue(false);
-		Variable("mat_specular").SetValue(false);
+		Variable("mat_fastspecular").SetValue(false);
 		Variable("fog_override").SetValue(true);
 		Variable("fog_enable").SetValue(false);
 		Variable("mat_disable_bloom").SetValue(true);
@@ -207,7 +207,7 @@ static void initStitch(bool stitching) {
 		Variable("r_drawviewmodel").SetValue(drawviewmodel);
 		Variable("gl_clear").SetValue(glclear);
 		Variable("crosshair").SetValue(crosshair);
-		Variable("mat_specular").SetValue(specular);
+		Variable("mat_fastspecular").SetValue(specular);
 		Variable("fog_override").SetValue(fogoverride);
 		Variable("fog_enable").SetValue(fogenable);
 		Variable("mat_disable_bloom").SetValue(disablebloom);
