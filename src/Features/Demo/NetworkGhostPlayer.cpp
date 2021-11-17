@@ -34,6 +34,8 @@ public:
 	}
 
 	void StartCountdown() {
+		if (!this->active) return;
+		if (this->countdownEnd) return;
 		this->countdownEnd = NOW_STEADY() + std::chrono::milliseconds(3000);
 	}
 
@@ -103,6 +105,19 @@ public:
 };
 
 SyncUi syncUi;
+
+static bool syncPauseDone = true;
+
+ON_EVENT(PRE_TICK) {
+	if (engine->IsGamePaused()) {
+		syncPauseDone = true;
+	}
+
+	if (!engine->IsGamePaused() && syncPauseDone) {
+		syncUi.active = false;
+		syncUi.countdownEnd = {};
+	}
+}
 
 static std::queue<std::function<void()>> g_scheduledEvents;
 
@@ -458,6 +473,14 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		if (toErase != -1)
 			this->ghostPool.erase(this->ghostPool.begin() + toErase);
 		this->ghostPoolLock.unlock();
+
+		g_scheduledEvents.push([=]() {
+			if (ghost_sync.GetBool()) {
+				if (this->AreAllGhostsAheadOrSameMap()) {
+					syncUi.StartCountdown();
+				}
+			}
+		});
 		break;
 	}
 	case HEADER::STOP_SERVER:
@@ -744,13 +767,16 @@ ON_EVENT(SESSION_START) {
 		networkManager.NotifyMapChange();
 		networkManager.UpdateGhostsSameMap();
 		networkManager.SpawnAllGhosts();
+		syncPauseDone = false;
 		if (ghost_sync.GetBool()) {
 			if (networkManager.disableSyncForLoad) {
 				networkManager.disableSyncForLoad = false;
 			} else {
-				if (!networkManager.AreAllGhostsAheadOrSameMap() && session->previousMap != engine->GetCurrentMapName()) {  //Don't pause if just reloading save
+				if (session->previousMap != engine->GetCurrentMapName()) {  //Don't pause if just reloading save
 					engine->shouldPauseForSync = true;
 					syncUi.active = true;
+					syncUi.countdownEnd = {};
+					if (networkManager.AreAllGhostsAheadOrSameMap()) syncUi.StartCountdown();
 				}
 			}
 		}
@@ -805,3 +831,27 @@ CON_COMMAND(ghost_message, "ghost_message - send message to other players\n") {
 CON_COMMAND(ghost_ping, "Pong!\n") {
 	networkManager.SendPing();
 }
+
+/*
+CON_COMMAND(ghost_debug, "ghost_debug - output a fuckton of debug info about network ghosts\n") {
+	if (!networkManager.isConnected) {
+		return console->Print("Not connected to a server\n");
+	}
+
+	console->Print("Connected to %s:%hu with name \"%s\" and id 0x%02X\n", networkManager.serverIP.toString().c_str(), networkManager.serverPort, networkManager.name.c_str(), networkManager.ID);
+
+	console->Print("Current ghost pool:\n");
+
+	auto now = NOW_STEADY();
+
+	networkManager.ghostPoolLock.lock();
+	for (int i = 0; i < networkManager.ghostPool.size(); ++i) {
+		auto ghost = networkManager.ghostPool[i];
+		uint32_t update_delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - ghost->lastUpdate).count();
+		console->Print("  [0x%02X] 0x%02X: \"%s\" on \"%s\" (%s), last updated %dms ago", i, ghost->ID, ghost->name.c_str(), ghost->currentMap.c_str(), ghost->sameMap ? "same map" : ghost->isAhead ? "ahead" : "behind", update_delta);
+		if (ghost->isDestroyed) console->Print(" [DESTROYED]\n");
+		else console->Print("\n");
+	}
+	networkManager.ghostPoolLock.unlock();
+}
+*/

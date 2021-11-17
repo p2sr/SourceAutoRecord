@@ -30,7 +30,7 @@ enum class HEADER {
 };
 
 class NetworkManager {
-private:
+public:
 	sf::TcpSocket tcpSocket;
 	sf::UdpSocket udpSocket;
 	sf::SocketSelector selector;

@@ -132,6 +132,8 @@ void GhostEntity::Display() {
 	int col_b = ghost_color_b.GetInt();
 	float opacity = this->GetOpacity();
 
+	if (engine->IsGamePaused()) return;
+
 #define TRIANGLE(a, b, c) engine->AddTriangleOverlay(nullptr, a, b, c, col_r, col_g, col_b, opacity, false, 0)
 	switch (GhostEntity::ghost_type) {
 	case GhostType::CIRCLE: {
