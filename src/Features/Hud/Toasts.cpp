@@ -179,11 +179,7 @@ CON_COMMAND(sar_toast_setpos, "sar_toast_setpos <bottom|top> <left|center|right>
 	}
 
 	int screenWidth, screenHeight;
-#ifdef _WIN32
-	engine->GetScreenSize(screenWidth, screenHeight);
-#else
 	engine->GetScreenSize(nullptr, screenWidth, screenHeight);
-#endif
 
 	if (!strcmp(args[1], "bottom")) {
 		sar_toast_anchor.SetValue(0);
@@ -350,11 +346,7 @@ void ToastHud::Update() {
 	}
 
 	int screenWidth, screenHeight;
-#ifdef _WIN32
-	engine->GetScreenSize(screenWidth, screenHeight);
-#else
 	engine->GetScreenSize(nullptr, screenWidth, screenHeight);
-#endif
 
 	g_slideOff = g_slideOffStart - SLIDE_RATE * std::chrono::duration_cast<std::chrono::milliseconds>(now - g_slideOffTime).count() * screenHeight / 1000 / 1000;
 	if (g_slideOff < 0) {

@@ -18,11 +18,7 @@ public:
 	using _DrawLine = int(__rescall *)(void *thisptr, int x0, int y0, int x1, int y1);
 	using _DrawSetTextFont = int(__rescall *)(void *thisptr, HFont font);
 	using _DrawSetTextColor = int(__rescall *)(void *thisptr, Color color);
-#ifdef _WIN32
-	using _GetFontTall = int(__stdcall *)(HFont font);
-#else
-	using _GetFontTall = int(__cdecl *)(void *thisptr, HFont font);
-#endif
+	using _GetFontTall = int(__rescall *)(void *thisptr, HFont font);
 	using _DrawColoredText = int(__cdecl *)(void *thisptr, HFont font, int x, int y, int r, int g, int b, int a, char *fmt, ...);
 	using _DrawTextLen = int(__cdecl *)(void *thisptr, HFont font, char *fmt, ...);
 	using _GetKernedCharWidth = void(__rescall *)(void *thisptr, HFont font, wchar_t ch, wchar_t prev, wchar_t next, float &wide, float &a, float &c);

@@ -171,11 +171,7 @@ void Crosshair::Paint(int slot) {
 	surface->StartDrawing(surface->matsurface->ThisPtr());
 
 	int xScreen, yScreen, xCenter, yCenter;
-#if _WIN32
-	engine->GetScreenSize(xScreen, yScreen);
-#else
 	engine->GetScreenSize(nullptr, xScreen, yScreen);
-#endif
 
 	xCenter = xScreen / 2;
 	yCenter = yScreen / 2;

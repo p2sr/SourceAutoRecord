@@ -12,14 +12,6 @@
 
 PlayerTrace *playerTrace;
 
-#ifdef _WIN32
-#	define ADD_LINE_OVERLAY(...) engine->AddLineOverlay(__VA_ARGS__)
-#	define ADD_BOX_OVERLAY(...) engine->AddBoxOverlay(__VA_ARGS__)
-#else
-#	define ADD_LINE_OVERLAY(...) engine->AddLineOverlay(nullptr, __VA_ARGS__)
-#	define ADD_BOX_OVERLAY(...) engine->AddBoxOverlay(nullptr, __VA_ARGS__)
-#endif
-
 Variable sar_player_trace_autoclear("sar_player_trace_autoclear", "1", "Automatically clear the trace on session start\n");
 Variable sar_player_trace_record("sar_player_trace_record", "0", 0, "Record the trace to a slot. Set to 0 for not recording\n");
 
@@ -184,7 +176,8 @@ void PlayerTrace::DrawInWorld(float time) const {
 					b = 255;
 				}
 
-				ADD_LINE_OVERLAY(
+				engine->AddLineOverlay(
+					nullptr,
 					pos, new_pos,
 					r, g, b,
 					draw_through_walls,
@@ -195,7 +188,7 @@ void PlayerTrace::DrawInWorld(float time) const {
 		}
 
 		if (closest_dist < 1.0f) {
-			ADD_BOX_OVERLAY(closest_pos, {-1,-1,-1}, {1,1,1}, {0,0,0}, 255, 0, 255, draw_through_walls, time);
+			engine->AddBoxOverlay(nullptr, closest_pos, {-1,-1,-1}, {1,1,1}, {0,0,0}, 255, 0, 255, draw_through_walls, time);
 			hovers.push_back({ trace_idx, closest_pos, closest_vel });
 		}
 	}
@@ -247,7 +240,8 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 		
 		Vector center = trace.positions[tick] + offset;
 		// We trace a big player bbox and a small box to indicate exactly which tick is displayed
-		ADD_BOX_OVERLAY(
+		engine->AddBoxOverlay(
+			nullptr,
 			center,
 			-player_size/2,
 			player_size/2,
@@ -256,7 +250,8 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 			sar_player_trace_draw_through_walls.GetBool(),
 			0.05
 		);
-		ADD_BOX_OVERLAY(
+		engine->AddBoxOverlay(
+			nullptr,
 			trace.positions[tick],
 			{-1,-1,-1},
 			{1,1,1},

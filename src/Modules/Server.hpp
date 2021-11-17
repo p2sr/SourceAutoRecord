@@ -29,19 +29,11 @@ public:
 	using _AcceptInput = bool(__rescall *)(void *thisptr, const char *inputName, void *activator, void *caller, variant_t &value, int outputID);
 #endif
 
-#ifdef _WIN32
-	using _CreateEntityByName = void *(__stdcall *)(const char *);
-	using _DispatchSpawn = void(__stdcall *)(void *);
-	using _SetKeyValueChar = bool(__stdcall *)(void *, const char *, const char *);
-	using _SetKeyValueFloat = bool(__stdcall *)(void *, const char *, float);
-	using _SetKeyValueVector = bool(__stdcall *)(void *, const char *, const Vector &);
-#else
-	using _CreateEntityByName = void *(__cdecl *)(void *, const char *);
-	using _DispatchSpawn = void(__cdecl *)(void *, void *);
-	using _SetKeyValueChar = bool(__cdecl *)(void *, void *, const char *, const char *);
-	using _SetKeyValueFloat = bool(__cdecl *)(void *, void *, const char *, float);
-	using _SetKeyValueVector = bool(__cdecl *)(void *, void *, const char *, const Vector &);
-#endif
+	using _CreateEntityByName = void *(__rescall *)(void *, const char *);
+	using _DispatchSpawn = void(__rescall *)(void *, void *);
+	using _SetKeyValueChar = bool(__rescall *)(void *, void *, const char *, const char *);
+	using _SetKeyValueFloat = bool(__rescall *)(void *, void *, const char *, float);
+	using _SetKeyValueVector = bool(__rescall *)(void *, void *, const char *, const Vector &);
 
 	_UTIL_PlayerByIndex UTIL_PlayerByIndex = nullptr;
 	_GetAllServerClasses GetAllServerClasses = nullptr;
@@ -113,12 +105,8 @@ public:
 	float *aircontrol_fling_speed_addr;
 #endif
 
-// CServerGameDLL::GameFrame
-#ifdef _WIN32
-	DECL_DETOUR_STD(void, GameFrame, bool simulating);
-#else
+	// CServerGameDLL::GameFrame
 	DECL_DETOUR(GameFrame, bool simulating);
-#endif
 
 	bool Init() override;
 	void Shutdown() override;

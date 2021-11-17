@@ -132,19 +132,11 @@ void Engine::SetAngles(int nSlot, QAngle va) {
 	}
 }
 void Engine::SendToCommandBuffer(const char *text, int delay) {
-#ifdef _WIN32
-	auto slot = this->GetActiveSplitScreenPlayerSlot();
-#else
 	auto slot = this->GetActiveSplitScreenPlayerSlot(nullptr);
-#endif
 	this->Cbuf_AddText(slot, text, delay);
 }
 int Engine::PointToScreen(const Vector &point, Vector &screen) {
-#ifdef _WIN32
-	return this->ScreenPosition(point, screen);
-#else
 	return this->ScreenPosition(nullptr, point, screen);
-#endif
 }
 void Engine::SafeUnload(const char *postCommand) {
 	Event::Trigger<Event::SAR_UNLOAD>({});

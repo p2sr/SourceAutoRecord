@@ -10,12 +10,6 @@
 
 #define TAU 6.28318530718
 
-#ifdef _WIN32
-#	define PLAT_CALL(fn, ...) fn(__VA_ARGS__)
-#else
-#	define PLAT_CALL(fn, ...) fn(nullptr, __VA_ARGS__)
-#endif
-
 static int g_overlayId = 100;
 
 template <typename V>
@@ -96,8 +90,8 @@ bool ZoneTriggerRule::Test(Vector pos) {
 }
 
 void ZoneTriggerRule::DrawInWorld(float time) {
-	PLAT_CALL(
-		engine->AddBoxOverlay,
+	engine->AddBoxOverlay(
+		nullptr,
 		this->center,
 		-this->size / 2,
 		this->size / 2,
@@ -178,8 +172,8 @@ void PortalPlacementRule::DrawInWorld(float time) {
 		}
 	}
 
-	PLAT_CALL(
-		engine->AddBoxOverlay,
+	engine->AddBoxOverlay(
+		nullptr,
 		this->center,
 		-this->size / 2,
 		this->size / 2,

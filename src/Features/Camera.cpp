@@ -395,11 +395,7 @@ void Camera::OverrideView(CViewSetup *m_View) {
 		m_View->m_bOrtho = true;
 
 		int width, height;
-#if _WIN32
-		engine->GetScreenSize(width, height);
-#else
 		engine->GetScreenSize(nullptr, width, height);
-#endif
 
 		float halfWidth = width * 0.5f * sar_cam_ortho_scale.GetFloat();
 		float halfHeight = height * 0.5f * sar_cam_ortho_scale.GetFloat();

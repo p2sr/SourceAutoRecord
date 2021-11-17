@@ -9,12 +9,6 @@
 
 #define MAX_TRACE 65535.0f
 
-#ifdef _WIN32
-#	define PLAT_CALL(fn, ...) fn(__VA_ARGS__)
-#else
-#	define PLAT_CALL(fn, ...) fn(nullptr, __VA_ARGS__)
-#endif
-
 static bool g_creatorActive;
 static std::string g_creatorCategory;
 static std::map<std::string, std::string> g_creatorDefaults;
@@ -272,8 +266,8 @@ ON_EVENT(PRE_TICK) {
 		CGameTrace tr;
 		engine->TraceFromCamera(MAX_TRACE, tr);
 
-		PLAT_CALL(
-			engine->AddBoxOverlay,
+		engine->AddBoxOverlay(
+			nullptr,
 			Vector{0, 0, 0},
 			g_placementStart,
 			tr.endpos,

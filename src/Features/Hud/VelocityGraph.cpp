@@ -116,11 +116,7 @@ void VelocityGraph::Paint(int slot) {
 		return;
 
 	int x, y;
-#ifdef _WIN32
-	engine->GetScreenSize(x, y);
-#else
 	engine->GetScreenSize(nullptr, x, y);
-#endif
 
 	const int graph_pos[2] = {
 		x / 2 + 250,

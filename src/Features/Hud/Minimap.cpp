@@ -136,11 +136,7 @@ static void drawMinimap(Minimap m, MinimapSettings s) {
 	int x = s.x, y = s.y;
 
 	int sw, sh;
-#ifdef _WIN32
-	engine->GetScreenSize(sw, sh);
-#else
 	engine->GetScreenSize(nullptr, sw, sh);
-#endif
 
 	if (x < 0) x += sw - width;
 	if (y < 0) y += sh - height;

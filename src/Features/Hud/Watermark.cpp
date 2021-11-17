@@ -24,11 +24,7 @@ public:
 
 	void Paint(int slot) override {
 		int screenWidth, screenHeight;
-#	ifdef _WIN32
-		engine->GetScreenSize(screenWidth, screenHeight);
-#	else
 		engine->GetScreenSize(nullptr, screenWidth, screenHeight);
-#	endif
 
 		Surface::HFont font = 6;
 

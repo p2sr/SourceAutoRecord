@@ -73,11 +73,7 @@ void StrafeQualityHud::Paint(int slot) {
 	int ticksAvg = sar_strafe_quality_ticks.GetInt();
 
 	int screenWidth, screenHeight;
-#ifdef _WIN32
-	engine->GetScreenSize(screenWidth, screenHeight);
-#else
 	engine->GetScreenSize(nullptr, screenWidth, screenHeight);
-#endif
 
 	int width = sar_strafe_quality_width.GetInt();
 	int height = sar_strafe_quality_height.GetInt();

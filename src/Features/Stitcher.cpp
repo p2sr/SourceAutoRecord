@@ -197,11 +197,7 @@ static void initStitch(bool stitching) {
 
 		// Set initial mouse position
 		int width, height;
-#ifdef _WIN32
-		engine->GetScreenSize(width, height);
-#else
 		engine->GetScreenSize(nullptr, width, height);
-#endif
 		g_stitcher.mousex = width / 2;
 		g_stitcher.mousey = height / 2;
 	} else if (!stitching && was_stitching) {
@@ -259,11 +255,7 @@ static void doMovement(float delta) {
 
 static void submitRegion() {
 	int width, height;
-#ifdef _WIN32
-	engine->GetScreenSize(width, height);
-#else
 	engine->GetScreenSize(nullptr, width, height);
-#endif
 
 	int minx = std::min(g_stitcher.select_x0, g_stitcher.select_x1);
 	int maxx = std::max(g_stitcher.select_x0, g_stitcher.select_x1);
@@ -509,11 +501,7 @@ static void updateUi() {
 		g_stitcher.stitch_view = !g_stitcher.stitch_view;
 		if (g_stitcher.stitch_view) {
 			int width, height;
-#ifdef _WIN32
-			engine->GetScreenSize(width, height);
-#else
 			engine->GetScreenSize(nullptr, width, height);
-#endif
 
 			g_stitcher.stitch_view_x = (g_stitch.xmin + g_stitch.xmax) / 2;
 			g_stitcher.stitch_view_y = (g_stitch.ymin + g_stitch.ymax) / 2;
@@ -603,11 +591,7 @@ static void updateUi() {
 		}
 
 		int width, height;
-#ifdef _WIN32
-		engine->GetScreenSize(width, height);
-#else
 		engine->GetScreenSize(nullptr, width, height);
-#endif
 
 		if (minx < 0) minx = 0;
 		if (maxx > width) maxx = width;
@@ -656,11 +640,7 @@ void Stitcher::OverrideView(CViewSetup *view) {
 	updateUi();
 
 	int width, height;
-#ifdef _WIN32
-	engine->GetScreenSize(width, height);
-#else
 	engine->GetScreenSize(nullptr, width, height);
-#endif
 
 	view->origin = Vector{
 		(float)g_stitcher.x,
@@ -693,11 +673,7 @@ void Stitcher::OverrideMovement(CUserCmd *cmd) {
 	g_stitcher.mousey += cmd->mousedy;
 
 	int width, height;
-#ifdef _WIN32
-	engine->GetScreenSize(width, height);
-#else
 	engine->GetScreenSize(nullptr, width, height);
-#endif
 
 	if (g_stitcher.mousex < 0) g_stitcher.mousex = 0;
 	if (g_stitcher.mousex > width) g_stitcher.mousex = width;
@@ -707,11 +683,7 @@ void Stitcher::OverrideMovement(CUserCmd *cmd) {
 
 static void paintStitchView() {
 	int width, height;
-#ifdef _WIN32
-	engine->GetScreenSize(width, height);
-#else
 	engine->GetScreenSize(nullptr, width, height);
-#endif
 
 	surface->DrawRect({ 200, 200, 200, 255 }, 0, 0, width, height);
 
@@ -801,11 +773,7 @@ bool Stitcher::Paint() {
 
 	if (g_stitcher.select_active || g_stitcher.select_done) {
 		int width, height;
-#ifdef _WIN32
-		engine->GetScreenSize(width, height);
-#else
 		engine->GetScreenSize(nullptr, width, height);
-#endif
 
 		int minx = std::min(g_stitcher.select_x0, g_stitcher.select_x1);
 		int maxx = std::max(g_stitcher.select_x0, g_stitcher.select_x1);

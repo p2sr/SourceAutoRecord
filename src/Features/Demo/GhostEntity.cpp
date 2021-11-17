@@ -10,12 +10,6 @@
 
 #include <cstdlib>
 
-#ifdef _WIN32
-#	define PLAT_CALL(fn, ...) fn(__VA_ARGS__)
-#else
-#	define PLAT_CALL(fn, ...) fn(nullptr, __VA_ARGS__)
-#endif
-
 GhostType GhostEntity::ghost_type = GhostType::CIRCLE;
 std::string GhostEntity::defaultModelName = "models/props/food_can/food_can_open.mdl";
 
@@ -74,27 +68,27 @@ void GhostEntity::Spawn() {
 		return;
 	}
 
-	this->prop_entity = PLAT_CALL(server->CreateEntityByName, "prop_dynamic_override");
+	this->prop_entity = server->CreateEntityByName(nullptr, "prop_dynamic_override");
 	if (this->prop_entity == nullptr) {
 		console->Warning("CreateEntityByName() failed!\n");
 		return;
 	}
 
-	PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "targetname", "_ghost_normal");
+	server->SetKeyValueChar(nullptr, this->prop_entity, "targetname", "_ghost_normal");
 
 	if (GhostEntity::ghost_type == GhostType::MODEL) {
-		PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "model", this->modelName.c_str());
+		server->SetKeyValueChar(nullptr, this->prop_entity, "model", this->modelName.c_str());
 	} else {  // GhostType::PYRAMID_PGUN
-		PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "model", "models/props/prop_portalgun.mdl");
-		PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "modelscale", 0.5);
+		server->SetKeyValueChar(nullptr, this->prop_entity, "model", "models/props/prop_portalgun.mdl");
+		server->SetKeyValueFloat(nullptr, this->prop_entity, "modelscale", 0.5);
 	}
 
 	this->lastOpacity = ghost_opacity.GetFloat();
 
-	PLAT_CALL(server->SetKeyValueChar, this->prop_entity, "rendermode", "1");
-	PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "renderamt", this->lastOpacity);
+	server->SetKeyValueChar(nullptr, this->prop_entity, "rendermode", "1");
+	server->SetKeyValueFloat(nullptr, this->prop_entity, "renderamt", this->lastOpacity);
 
-	PLAT_CALL(server->DispatchSpawn, this->prop_entity);
+	server->DispatchSpawn(nullptr, this->prop_entity);
 }
 
 void GhostEntity::DeleteGhost() {
@@ -138,7 +132,7 @@ void GhostEntity::Display() {
 	int col_b = ghost_color_b.GetInt();
 	float opacity = this->GetOpacity();
 
-#define TRIANGLE(a, b, c) PLAT_CALL(engine->AddTriangleOverlay, a, b, c, col_r, col_g, col_b, opacity, false, 0)
+#define TRIANGLE(a, b, c) engine->AddTriangleOverlay(nullptr, a, b, c, col_r, col_g, col_b, opacity, false, 0)
 	switch (GhostEntity::ghost_type) {
 	case GhostType::CIRCLE: {
 		double rad = ghost_height.GetFloat() / 2;
@@ -218,15 +212,15 @@ void GhostEntity::Display() {
 
 	if (this->prop_entity) {
 		if (GhostEntity::ghost_type == GhostType::MODEL) {
-			PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position + Vector{0, 0, ghost_height.GetFloat()});
-			PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "angles", Vector{this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z});
+			server->SetKeyValueVector(nullptr, this->prop_entity, "origin", this->data.position + Vector{0, 0, ghost_height.GetFloat()});
+			server->SetKeyValueVector(nullptr, this->prop_entity, "angles", Vector{this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z});
 		} else if (GhostEntity::ghost_type == GhostType::PYRAMID_PGUN) {
 			float dz = ghost_height.GetFloat() * 2 / 3;
-			PLAT_CALL(server->SetKeyValueVector, this->prop_entity, "origin", this->data.position + Vector{4, 2, dz});
+			server->SetKeyValueVector(nullptr, this->prop_entity, "origin", this->data.position + Vector{4, 2, dz});
 		}
 
 		if (opacity != this->lastOpacity) {
-			PLAT_CALL(server->SetKeyValueFloat, this->prop_entity, "renderamt", opacity);
+			server->SetKeyValueFloat(nullptr, this->prop_entity, "renderamt", opacity);
 		}
 	}
 

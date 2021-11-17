@@ -106,11 +106,7 @@ float Hud::PositionFromString(const char *str, bool isX) {
 
 	//converting value into actual position
 	int xScreen, yScreen;
-#if _WIN32
-	engine->GetScreenSize(xScreen, yScreen);
-#else
 	engine->GetScreenSize(nullptr, xScreen, yScreen);
-#endif
 
 	int xHud, yHud;
 	GetCurrentSize(xHud, yHud);

@@ -20,11 +20,7 @@ CON_COMMAND(sar_font_get_name, "sar_font_get_name <id> - gets the name of a font
 }
 
 int Surface::GetFontHeight(HFont font) {
-#ifdef _WIN32
-	return this->GetFontTall(font);
-#else
 	return this->GetFontTall(this->matsurface->ThisPtr(), font);
-#endif
 }
 int Surface::GetFontLength(HFont font, const char *fmt, ...) {
 	va_list argptr;

@@ -55,11 +55,7 @@ public:
 		if (!this->active) return;
 
 		int screenWidth, screenHeight;
-#ifdef _WIN32
-		engine->GetScreenSize(screenWidth, screenHeight);
-#else
 		engine->GetScreenSize(nullptr, screenWidth, screenHeight);
-#endif
 
 		surface->DrawRect(Color{0, 0, 0, 192}, 0, 0, screenWidth, screenHeight);
 

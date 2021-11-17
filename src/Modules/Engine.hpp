@@ -46,31 +46,17 @@ public:
 	using _GetCount = int(__rescall *)(void *thisptr);
 	using _Con_IsVisible = bool(__rescall *)(void *thisptr);
 	using _GetLevelNameShort = const char *(__rescall *)(void *thisptr);
-#ifdef _WIN32
-	using _GetScreenSize = int(__stdcall *)(int &width, int &height);
-	using _GetActiveSplitScreenPlayerSlot = int (*)();
-	using _ScreenPosition = int(__stdcall *)(const Vector &point, Vector &screen);
-	using _ConPrintEvent = int(__stdcall *)(IGameEvent *ev);
-	using _PrecacheModel = int(__stdcall *)(const char *, bool);
-	using _AddBoxOverlay = int(__stdcall *)(const Vector &origin, const Vector &mins, const Vector &MAX, QAngle const &orientation, int r, int g, int b, int a, float duration);
-	using _AddSphereOverlay = int(__stdcall *)(const Vector &vOrigin, float flRadius, int nTheta, int nPhi, int r, int g, int b, int a, float flDuration);
-	using _AddTriangleOverlay = int(__stdcall *)(const Vector &p1, const Vector &p2, const Vector &p3, int r, int g, int b, int a, bool noDepthTest, float duration);
-	using _AddLineOverlay = int(__stdcall *)(const Vector &origin, const Vector &dest, int r, int g, int b, bool noDepthText, float duration);
-	using _AddScreenTextOverlay = void(__stdcall *)(float flXPos, float flYPos, float flDuration, int r, int g, int b, int a, const char *text);
-	using _ClearAllOverlays = void(__stdcall *)();
-#else
-	using _GetScreenSize = int(__cdecl *)(void *thisptr, int &width, int &height);
-	using _GetActiveSplitScreenPlayerSlot = int (*)(void *thisptr);
-	using _ScreenPosition = int(__cdecl *)(void *thisptr, const Vector &point, Vector &screen);
-	using _ConPrintEvent = int(__cdecl *)(void *thisptr, IGameEvent *ev);
-	using _PrecacheModel = int(__cdecl *)(void *thisptr, const char *, bool);
-	using _AddBoxOverlay = int(__cdecl *)(void *thisptr, const Vector &origin, const Vector &mins, const Vector &MAX, QAngle const &orientation, int r, int g, int b, int a, float duration);
-	using _AddSphereOverlay = int(__cdecl *)(void *thisptr, const Vector &vOrigin, float flRadius, int nTheta, int nPhi, int r, int g, int b, int a, float flDuration);
-	using _AddTriangleOverlay = int(__cdecl *)(void *thisptr, const Vector &p1, const Vector &p2, const Vector &p3, int r, int g, int b, int a, bool noDepthTest, float duration);
-	using _AddLineOverlay = int(__cdecl *)(void *thisptr, const Vector &origin, const Vector &dest, int r, int g, int b, bool noDepthText, float duration);
-	using _AddScreenTextOverlay = void(__cdecl *)(void *thisptr, float flXPos, float flYPos, float flDuration, int r, int g, int b, int a, const char *text);
-	using _ClearAllOverlays = void(__cdecl *)(void *thisptr);
-#endif
+	using _GetScreenSize = int(__rescall *)(void *thisptr, int &width, int &height);
+	using _GetActiveSplitScreenPlayerSlot = int (__rescall *)(void *thisptr);
+	using _ScreenPosition = int(__rescall *)(void *thisptr, const Vector &point, Vector &screen);
+	using _ConPrintEvent = int(__rescall *)(void *thisptr, IGameEvent *ev);
+	using _PrecacheModel = int(__rescall *)(void *thisptr, const char *, bool);
+	using _AddBoxOverlay = int(__rescall *)(void *thisptr, const Vector &origin, const Vector &mins, const Vector &MAX, QAngle const &orientation, int r, int g, int b, int a, float duration);
+	using _AddSphereOverlay = int(__rescall *)(void *thisptr, const Vector &vOrigin, float flRadius, int nTheta, int nPhi, int r, int g, int b, int a, float flDuration);
+	using _AddTriangleOverlay = int(__rescall *)(void *thisptr, const Vector &p1, const Vector &p2, const Vector &p3, int r, int g, int b, int a, bool noDepthTest, float duration);
+	using _AddLineOverlay = int(__rescall *)(void *thisptr, const Vector &origin, const Vector &dest, int r, int g, int b, bool noDepthText, float duration);
+	using _AddScreenTextOverlay = void(__rescall *)(void *thisptr, float flXPos, float flYPos, float flDuration, int r, int g, int b, int a, const char *text);
+	using _ClearAllOverlays = void(__rescall *)(void *thisptr);
 
 	_GetScreenSize GetScreenSize = nullptr;
 	_ClientCmd ClientCmd = nullptr;
@@ -230,8 +216,4 @@ extern Variable sar_tick_debug;
 #define NOW() std::chrono::high_resolution_clock::now()
 #define NOW_STEADY() std::chrono::steady_clock::now()
 
-#ifdef _WIN32
-#	define GET_ACTIVE_SPLITSCREEN_SLOT() engine->GetActiveSplitScreenPlayerSlot()
-#else
-#	define GET_ACTIVE_SPLITSCREEN_SLOT() engine->GetActiveSplitScreenPlayerSlot(nullptr)
-#endif
+#define GET_ACTIVE_SPLITSCREEN_SLOT() engine->GetActiveSplitScreenPlayerSlot(nullptr)

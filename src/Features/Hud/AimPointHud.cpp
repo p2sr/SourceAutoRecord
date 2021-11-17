@@ -11,12 +11,6 @@
 
 #define TRACE_LENGTH 2500
 
-#ifdef _WIN32
-#	define ADD_LINE_OVERLAY(...) engine->AddLineOverlay(__VA_ARGS__)
-#else
-#	define ADD_LINE_OVERLAY(...) engine->AddLineOverlay(nullptr, __VA_ARGS__)
-#endif
-
 Variable sar_aim_point_hud("sar_aim_point_hud", "0", "Overlays a marker with coordinates at the point you're aiming at\n");
 
 static bool g_last_trace_valid;
@@ -111,10 +105,10 @@ static void renderTrace(const CGameTrace &tr) {
 			continue;
 		}
 
-		ADD_LINE_OVERLAY(p, p + dir * 7, 255, 255, 255, false, 0.06);
+		engine->AddLineOverlay(nullptr, p, p + dir * 7, 255, 255, 255, false, 0.06);
 	}
 
-	ADD_LINE_OVERLAY(p, p + norm * 7, 255, 0, 0, false, 0.06);
+	engine->AddLineOverlay(nullptr, p, p + norm * 7, 255, 0, 0, false, 0.06);
 
 	Vector screen_pos;
 	engine->PointToScreen(p + Vector{0,0,7}, screen_pos);

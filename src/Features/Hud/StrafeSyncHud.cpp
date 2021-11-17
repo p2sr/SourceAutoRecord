@@ -22,11 +22,7 @@ bool StrafeSyncHud::ShouldDraw() {
 }
 void StrafeSyncHud::Paint(int slot) {
 	int width, height;
-#ifdef _WIN32
-	engine->GetScreenSize(width, height);
-#else
 	engine->GetScreenSize(nullptr, width, height);
-#endif
 
 	auto xOffset = width / 2 + sar_hud_strafesync_offset_x.GetInt();
 	auto yOffset = sar_hud_strafesync_offset_y.GetInt();

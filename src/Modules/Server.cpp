@@ -478,11 +478,7 @@ static void InitCMFlagHook() {
 }
 
 // CServerGameDLL::GameFrame
-#ifdef _WIN32
-DETOUR_STD(void, Server::GameFrame, bool simulating)
-#else
 DETOUR(Server::GameFrame, bool simulating)
-#endif
 {
 	if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
 	if (!g_IsCMFlagHookInitialized) InitCMFlagHook();
@@ -499,11 +495,7 @@ DETOUR(Server::GameFrame, bool simulating)
 
 	Event::Trigger<Event::PRE_TICK>({simulating, tick});
 
-#ifdef _WIN32
-	Server::GameFrame(simulating);
-#else
 	auto result = Server::GameFrame(thisptr, simulating);
-#endif
 
 	Event::Trigger<Event::POST_TICK>({simulating, tick});
 

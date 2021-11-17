@@ -80,7 +80,6 @@ namespace {
 // clang-format on
 #	define __rescall __attribute__((__cdecl__))
 #	define __cdecl __attribute__((__cdecl__))
-#	define __stdcall __attribute__((__stdcall__))
 #	define __fastcall __attribute__((__fastcall__))
 #	define DLL_EXPORT extern "C" __attribute__((visibility("default")))
 #	define SEEK_DIR_CUR std::ios_base::seekdir::_S_cur
@@ -106,10 +105,3 @@ namespace {
 #	define DETOUR_B(name, ...) \
 		int __rescall name##_Hook(void *thisptr, ##__VA_ARGS__)
 #endif
-
-#define DECL_DETOUR_STD(type, name, ...)           \
-	using _##name = type(__stdcall *)(##__VA_ARGS__); \
-	static _##name name;                              \
-	static type __stdcall name##_Hook(##__VA_ARGS__)
-#define DETOUR_STD(type, name, ...) \
-	type __stdcall name##_Hook(##__VA_ARGS__)

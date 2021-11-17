@@ -25,11 +25,7 @@ void ScrollSpeedHud::Paint(int slot) {
 	float sps = g_lastSps[slot];
 
 	int screenWidth, screenHeight;
-#ifdef _WIN32
-	engine->GetScreenSize(screenWidth, screenHeight);
-#else
 	engine->GetScreenSize(nullptr, screenWidth, screenHeight);
-#endif
 
 	int x = 150;
 	int y = screenHeight / 2 - 100;
