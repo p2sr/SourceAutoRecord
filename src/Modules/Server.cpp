@@ -501,9 +501,7 @@ DETOUR(Server::GameFrame, bool simulating)
 
 	++server->tickCount;
 
-#ifndef _WIN32
 	return result;
-#endif
 }
 
 static int (*GlobalEntity_GetIndex)(const char *);
