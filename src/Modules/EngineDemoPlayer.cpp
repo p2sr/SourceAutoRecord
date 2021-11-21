@@ -25,6 +25,7 @@ REDECL(EngineDemoPlayer::stopdemo_callback);
 static std::vector<std::string> g_demoBlacklist;
 
 Variable sar_demo_blacklist("sar_demo_blacklist", "0", "Stop a set of commands from being run by demo playback.\n");
+Variable sar_demo_blacklist_all("sar_demo_blacklist_all", "0", "Stop all commands from being run by demo playback.\n");
 CON_COMMAND(sar_demo_blacklist_addcmd, "sar_demo_blacklist_addcmd <command> - add a command to the demo blacklist\n") {
 	if (args.ArgC() == 1) {
 		console->Print(sar_demo_blacklist_addcmd.ThisPtr()->m_pszHelpString);
@@ -48,6 +49,8 @@ bool EngineDemoPlayer::ShouldBlacklistCommand(const char *cmd) {
 	if (startsWith("sar_demo_blacklist", cmd)) {
 		return true;
 	}
+
+	if (sar_demo_blacklist_all.GetBool()) return true;
 
 	if (sar_demo_blacklist.GetBool()) {
 		for (auto &s : g_demoBlacklist) {
