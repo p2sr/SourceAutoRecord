@@ -652,42 +652,53 @@ void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, s
 
 	switch (startInfo.type) {
 	case TasStartType::ChangeLevel:
-		file << "start map " << startInfo.param << "";
+		file << "start map " << startInfo.param << "\n";
 		break;
 	case TasStartType::LoadQuicksave:
-		file << "start save " << startInfo.param << "";
+		file << "start save " << startInfo.param << "\n";
 		break;
 	case TasStartType::StartImmediately:
-		file << "start now";
+		file << "start now\n";
 		break;
 	case TasStartType::ChangeLevelCM:
-		file << "start cm " << startInfo.param << "";
+		file << "start cm " << startInfo.param << "\n";
 		break;
 	default:
-		file << "start next";
+		file << "start next\n";
 		break;
 	}
 
+	std::string prevInput = "";
+
 	for (TasFramebulk &fb : framebulks) {
-		file << "\n";
-		file << fb.tick << ">";
+		std::string line = ">";
 
-		char analogs[128];
-		snprintf(analogs, sizeof(analogs), "%.*g %.*g|%.*g %.*g|", FLT_DECIMAL_DIG, fb.moveAnalog.x, FLT_DECIMAL_DIG, fb.moveAnalog.y, FLT_DECIMAL_DIG, fb.viewAnalog.x, FLT_DECIMAL_DIG, fb.viewAnalog.y);
-		file << analogs;
+		line += Utils::ssprintf("%.*g %.*g|%.*g %.*g|", FLT_DECIMAL_DIG, fb.moveAnalog.x, FLT_DECIMAL_DIG, fb.moveAnalog.y, FLT_DECIMAL_DIG, fb.viewAnalog.x, FLT_DECIMAL_DIG, fb.viewAnalog.y);
 
-		file << (fb.buttonStates[TasControllerInput::Jump] ? "J" : "j");
-		file << (fb.buttonStates[TasControllerInput::Crouch] ? "D" : "d");
-		file << (fb.buttonStates[TasControllerInput::Use] ? "U" : "u");
-		file << (fb.buttonStates[TasControllerInput::Zoom] ? "Z" : "z");
-		file << (fb.buttonStates[TasControllerInput::FireBlue] ? "B" : "b");
-		file << (fb.buttonStates[TasControllerInput::FireOrange] ? "O" : "o");
+		line += fb.buttonStates[TasControllerInput::Jump] ? "J" : "j";
+		line += fb.buttonStates[TasControllerInput::Crouch] ? "D" : "d";
+		line += fb.buttonStates[TasControllerInput::Use] ? "U" : "u";
+		line += fb.buttonStates[TasControllerInput::Zoom] ? "Z" : "z";
+		line += fb.buttonStates[TasControllerInput::FireBlue] ? "B" : "b";
+		line += fb.buttonStates[TasControllerInput::FireOrange] ? "O" : "o";
 
-		file << "|";
-
-		for (std::string command : fb.commands) {
-			file << command << ";";
+		if (line == prevInput) {
+			line = ">||";
+		} else {
+			prevInput = line;
 		}
+
+		line += "|";
+
+		for (size_t i = 0; i < fb.commands.size(); ++i) {
+			if (i != 0) line += ";";
+			line += fb.commands[i];
+		}
+
+		if (line != ">|||") {
+			file << fb.tick << line << "\n";
+		}
+
 	}
 
 	file.close();
