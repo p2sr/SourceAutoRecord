@@ -481,6 +481,8 @@ DECL_COMMAND_COMPLETION(sar_tas_play) {
 	FINISH_COMMAND_COMPLETION();
 }
 
+static std::string g_replayTas;
+
 CON_COMMAND_F_COMPLETION(
 	sar_tas_play,
 	"sar_tas_play <filename> - plays a TAS script with given name\n",
@@ -497,6 +499,8 @@ CON_COMMAND_F_COMPLETION(
 	try {
 		std::vector<TasFramebulk> fb = TasParser::ParseFile(filePath);
 
+		g_replayTas = args[1];
+
 		if (fb.size() > 0) {
 			tasPlayer->SetFrameBulkQueue(fb);
 			tasPlayer->Activate();
@@ -504,6 +508,15 @@ CON_COMMAND_F_COMPLETION(
 	} catch (TasParserException &e) {
 		return console->ColorMsg(Color(255, 100, 100), "Error while opening TAS file: %s\n", e.what());
 	}
+}
+
+CON_COMMAND(sar_tas_replay, "sar_tas_replay - replays the last played TAS\n") {
+	if (g_replayTas.size() == 0) {
+		return console->Print("No TAS to replay\n");
+	}
+
+	console->Print("Replaying \"%s\"\n", g_replayTas.c_str());
+	engine->ExecuteCommand(Utils::ssprintf("sar_tas_play \"%s\"", g_replayTas.c_str()).c_str());
 }
 
 CON_COMMAND(sar_tas_pause, "sar_tas_pause - pauses TAS playback\n") {
