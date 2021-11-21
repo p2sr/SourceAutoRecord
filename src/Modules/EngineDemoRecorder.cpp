@@ -64,7 +64,7 @@ static void RecordInitialVal(const char *name) {
 }
 
 ON_EVENT(SESSION_END) {
-	if (engine->demorecorder->isRecordingDemo && sar_autorecord.GetInt() == -1) {
+	if (*engine->demorecorder->m_bRecording && sar_autorecord.GetInt() == -1) {
 #ifdef _WIN32
 		engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr(), 0);
 #else
