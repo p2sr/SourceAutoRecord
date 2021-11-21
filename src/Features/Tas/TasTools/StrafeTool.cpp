@@ -24,13 +24,22 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 		pInfo.grounded = false;
 	}
 
-	// forcing pitch to be 0 at all times
-	fb.viewAnalog.y = pInfo.angles.x;
-	pInfo.angles.x = 0;
+	// when not grounded, air acceleration is not optimal if pitch is not
+	// in a range between -30 and 30 degrees (both exclusive). making sure
+	// it's in the right range, unless specifically asked to not do it.
+	bool compensatePitchMult = false;
+	if (!pInfo.grounded && abs(pInfo.angles.x - fb.viewAnalog.y) >= 30.0f) {
+		if (!asParams->noPitchLock) {
+			float diff = pInfo.angles.x - (29.9999f * (pInfo.angles.x / abs(pInfo.angles.x)));
+			fb.viewAnalog.y = diff;
+		} else {
+			compensatePitchMult = true;
+		}
+	}
 
-
-	// adjusting fake pinfo to have proper angles
+	// adjusting fake pinfo to have proper angles (after rotation)
 	pInfo.angles.y -= fb.viewAnalog.x;
+	pInfo.angles.x -= fb.viewAnalog.y;
 
 	float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
 
@@ -82,6 +91,12 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 		QAngle newAngle = {0, angle + lookAngle, 0};
 		fb.viewAnalog.x -= newAngle.y - pInfo.angles.y;
 	}
+
+	//pitch lock isn't used. try to compensate the pitch movement multiplication by dividing it now
+	if (compensatePitchMult) {
+		fb.moveAnalog.y /= cos(DEG2RAD(pInfo.angles.x));
+	}
+
 }
 
 // returns player's velocity after its been affected by ground friction
@@ -137,8 +152,11 @@ Vector AutoStrafeTool::CreateWishDir(const TasPlayerInfo &player, float forwardM
 	}
 
 	// forwardmove is affected by player pitch when in air
+	// but only with pitch outside of range from -30 to 30 deg (both exclusive)
 	if (!player.grounded) {
-		wishDir.y *= cos(DEG2RAD(player.angles.x));
+		if (abs(player.angles.x) >= 30.0f) {
+			wishDir.y *= cos(DEG2RAD(player.angles.x));
+		}
 	}
 
 	//rotating wishDir
@@ -199,10 +217,7 @@ float AutoStrafeTool::GetFastestStrafeAngle(const TasPlayerInfo &player) {
 	// formula shamelessly taken from https://www.jwchong.com/hl/movement.html
 	float cosAng = (maxSpeed - maxAccel) / velocity.Length2D();
 
-	if (cosAng < 0) cosAng = M_PI_F / 2;
-	if (cosAng > 1) cosAng = 0;
-
-	return acosf(cosAng);
+	return acosf(fminf(fmaxf(cosAng,0.0f),1.0f));
 }
 
 // get horizontal angle of wishdir that would achieve given velocity
@@ -348,6 +363,7 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 	AutoStrafeType type = VECTORIAL;
 	AutoStrafeDirection dir{CURRENT, false, 0};
 	AutoStrafeSpeed speed = {SPECIFIED, 10000.0f};
+	bool noPitchLock = false;
 
 	if (vp.size() == 0) {
 		return std::make_shared<AutoStrafeParams>();
@@ -394,12 +410,16 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 			dir.angle = TasParser::toFloat(param.substr(0, param.size() - 3));
 		}
 
+		else if (param == "nopitchlock") {
+			noPitchLock = true;
+		}
+
 		//unknown parameter...
 		else 
 			throw TasParserException(Utils::ssprintf("Bad parameter for tool %s: %s", this->GetName(), param.c_str()));
 	}
 
-	return std::make_shared<AutoStrafeParams>(type, dir, speed);
+	return std::make_shared<AutoStrafeParams>(type, dir, speed, noPitchLock);
 }
 
 void AutoStrafeTool::Reset() {
