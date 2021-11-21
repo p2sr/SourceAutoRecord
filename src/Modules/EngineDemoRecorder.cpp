@@ -202,6 +202,15 @@ DETOUR(EngineDemoRecorder::StopRecording) {
 		engine->demorecorder->lastDemoNumber = 1;
 	}
 
+	if (!engine->demorecorder->isRecordingDemo) {
+		// only set replay name once the autorecord chain is done
+		std::string name = engine->demorecorder->m_szDemoBaseName;
+		if (engine->demorecorder->autorecordStartNum > 1) {
+			name += std::string("_") + std::to_string(engine->demorecorder->autorecordStartNum);
+		}
+		engine->demoplayer->replayName = name;
+	}
+
 	engine->demorecorder->hasNotified = false;
 
 	return result;
@@ -400,6 +409,9 @@ ON_EVENT(CM_FLAGS) {
 
 				auto newName = Utils::ssprintf("%s_%s.dem", demoFile.substr(0, demoFile.size() - 4).c_str(), time.c_str());
 				std::filesystem::rename(demoFile, newName);
+
+				engine->demoplayer->replayName += "_";
+				engine->demoplayer->replayName += time;
 			}
 		}
 	}

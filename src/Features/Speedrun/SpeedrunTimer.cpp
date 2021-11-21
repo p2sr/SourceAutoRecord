@@ -523,6 +523,13 @@ void SpeedrunTimer::Stop(std::string segName) {
 
 					std::filesystem::rename(demo_file, new_name);
 				}
+
+				// set replay name to renamed start of autorecord chain
+				if (min_demo_num == 1) {
+					engine->demoplayer->replayName = Utils::ssprintf("%s_%s", engine->demorecorder->m_szDemoBaseName, c_time);
+				} else {
+					engine->demoplayer->replayName = Utils::ssprintf("%s_%s_%d", engine->demorecorder->m_szDemoBaseName, c_time, min_demo_num);
+				}
 			}
 			break;
 		default:

@@ -232,6 +232,12 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char *filename, bool bAsTimeDemo) 
 
 	Renderer::isDemoLoading = true;
 
+	engine->demoplayer->replayName = filename;
+	size_t namelen = strlen(filename);
+	if (namelen >= 4 && !strcmp(filename + namelen - 4, ".dem")) {
+		engine->demoplayer->replayName = engine->demoplayer->replayName.substr(0, namelen - 4);
+	}
+
 	return result;
 }
 
@@ -371,4 +377,12 @@ CON_COMMAND(sar_nextdemo, "sar_nextdemo - plays the next demo in demo queue\n") 
 	}
 
 	EngineDemoPlayer::stopdemo_callback(args);
+}
+CON_COMMAND(sar_demo_replay, "sar_demo_replay - play the last recorded or played demo\n") {
+	if (engine->demoplayer->replayName.size() == 0) {
+		return console->Print("No demo to replay\n");
+	}
+
+	console->Print("Replaying \"%s\"\n", engine->demoplayer->replayName.c_str());
+	engine->ExecuteCommand(Utils::ssprintf("playdemo \"%s\"", engine->demoplayer->replayName.c_str()).c_str());
 }

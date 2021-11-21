@@ -28,6 +28,7 @@ public:
 	int currentDemoID = false;
 	std::vector<std::string> demoQueue;
 	std::string levelName;
+	std::string replayName;
 
 public:
 	int GetTick();
