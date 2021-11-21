@@ -12,22 +12,39 @@ Variable cl_pitchdown;
 Variable cl_pitchup;
 
 Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 4, "Debugs controller.");
+Variable sar_tas_playback_rate("sar_tas_playback_rate", "1.0", 0.02, "The rate at which to play back TAS scripts.");
+Variable sar_tas_skipto("sar_tas_skipto", "0", 0, "Fast-forwards the TAS playback until given playback tick.");
 
-static bool g_forcingUser;
-static int g_oldForceUser;
+static bool g_setPlaybackVars;
 
-void LockMouse() {
-	if (!g_forcingUser) {
-		g_forcingUser = true;
-		g_oldForceUser = in_forceuser.GetInt();
+void SetPlaybackVars(bool active) {
+	static bool was_active;
+	static int old_forceuser;
+	static int old_fpsmax;
+	static int old_hostframerate;
+
+	if (active && !was_active) {
+		old_forceuser = in_forceuser.GetInt();
+		old_fpsmax = fps_max.GetInt();
+		old_hostframerate = host_framerate.GetInt();
 		in_forceuser.SetValue(100);
+		host_framerate.SetValue(60);
+	} else if (!active && was_active) {
+		in_forceuser.SetValue(old_forceuser);
+		fps_max.SetValue(old_fpsmax);
+		host_framerate.SetValue(old_hostframerate);
 	}
-}
-void UnlockMouse() {
-	if (g_forcingUser) {
-		g_forcingUser = false;
-		in_forceuser.SetValue(g_oldForceUser);
+
+
+	if (active) {
+		if (tasPlayer->GetTick() < sar_tas_skipto.GetInt()) {
+			fps_max.SetValue(0);
+		} else if (tasPlayer->GetTick() >= sar_tas_skipto.GetInt()) {
+			fps_max.SetValue((int)(sar_tas_playback_rate.GetFloat() * 60.0f));
+		}
 	}
+
+	was_active = active;
 }
 
 TasController *tasController;
@@ -71,7 +88,7 @@ bool TasController::isEnabled() {
 
 void TasController::Enable() {
 	enabled = true;
-	LockMouse();
+	SetPlaybackVars(true);
 }
 
 void TasController::Disable() {
@@ -82,7 +99,7 @@ void TasController::Disable() {
 		buttons[i].active = true;
 		buttons[i].state = false;
 	}
-	UnlockMouse();
+	SetPlaybackVars(false);
 	ResetDigitalInputs();
 }
 
@@ -157,7 +174,7 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 	cmd->upmove = 0;
 	cmd->buttons = 0;
 
-	LockMouse();
+	SetPlaybackVars(true);
 
 	//in terms of functionality, this whole stuff below is mostly a literal copy of SteamControllerMove.
 
