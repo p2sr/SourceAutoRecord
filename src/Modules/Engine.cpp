@@ -339,6 +339,7 @@ DETOUR(Engine::Frame) {
 
 	Renderer::Frame();
 	engine->demoplayer->HandlePlaybackFix();
+	Event::Trigger<Event::FRAME>({});
 
 	NetMessage::Update();
 

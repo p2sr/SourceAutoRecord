@@ -39,6 +39,7 @@ namespace Event {
 		PROCESS_MOVEMENT,
 		COOP_RESET_DONE,
 		COOP_RESET_REMOTE,
+		FRAME,
 	};
 
 	template <EventType E>

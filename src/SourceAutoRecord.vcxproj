@@ -134,6 +134,7 @@
     <ClCompile Include="Checksum.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="Event.cpp" />
+    <ClCompile Include="Scheduler.cpp" />
     <ClCompile Include="Features\ClassDumper.cpp" />
     <ClCompile Include="Features\Cvars.cpp" />
     <ClCompile Include="Features\DataMapDumper.cpp" />
@@ -317,6 +318,7 @@
     <ClInclude Include="Checksum.hpp" />
     <ClInclude Include="Command.hpp" />
     <ClInclude Include="Event.hpp" />
+    <ClInclude Include="Scheduler.hpp" />
     <ClInclude Include="Features.hpp" />
     <ClInclude Include="Features\ClassDumper.hpp" />
     <ClInclude Include="Features\Cvars.hpp" />
