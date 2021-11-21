@@ -540,6 +540,14 @@ static void netResetCoopProgress(void *data, size_t size) {
 	}
 }
 
+float hostTimeWrap() {
+	auto &et = engine->engineTool;
+	return et->Original<float (__rescall *)(void *thisptr)>(Offsets::HostTick - 1)(et->ThisPtr());
+}
+
+static char g_orig_check_stuck_code[6];
+static void *g_check_stuck_code;
+
 bool Server::Init() {
 	this->g_GameMovement = Interface::Create(this->Name(), "GameMovement001");
 	this->g_ServerGameDLL = Interface::Create(this->Name(), "ServerGameDLL005");
@@ -646,6 +654,25 @@ bool Server::Init() {
 	Memory::UnProtect((void *)(insn_addr + 2), 1);
 	*(char *)(insn_addr + 2) = 0x5C;
 
+	{
+		// a call to Plat_FloatTime in CGameMovement::CheckStuck
+#ifdef _WIN32
+		uintptr_t code = Memory::Scan(this->Name(), "FF ? ? ? ? ? D9 5D F8 8B 56 04 8B 42 1C 8B ? ? ? ? ? 3B C3 75 04 33 C9 EB 08 8B C8 2B 4A 58 C1 F9 04 F3 0F 10 84 CE 70", 0);
+#else
+		uintptr_t code = Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 46 04 66 0F EF C0 DD 5C 24 08 F2 0F 5A 44 24 08 8B 40 24 85 C0", 0);
+#endif
+		Memory::UnProtect((void *)code, sizeof g_orig_check_stuck_code);
+		memcpy(g_orig_check_stuck_code, (void *)code, sizeof g_orig_check_stuck_code);
+
+		*(uint8_t *)code = 0xE8;
+		*(uint32_t *)(code + 1) = (uint32_t)&hostTimeWrap - (code + 5);
+#ifdef _WIN32
+		*(uint8_t *)(code + 5) = 0x90; // nop
+#endif
+
+		g_check_stuck_code = (void *)code;
+	}
+
 	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);
 
 	offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);
@@ -718,6 +745,7 @@ void Server::Shutdown() {
 #else
 	setAircontrol(0);
 #endif
+	if (g_check_stuck_code) memcpy(g_check_stuck_code, g_orig_check_stuck_code, sizeof g_orig_check_stuck_code);
 	Interface::Delete(this->g_GameMovement);
 	Interface::Delete(this->g_ServerGameDLL);
 }
