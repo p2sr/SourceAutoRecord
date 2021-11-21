@@ -448,6 +448,8 @@ static std::vector<TasFramebulk> parseFramebulks(const char *filepath, const Lin
 			for (int tick = last_tick + 1; tick < fb_tick; ++tick) {
 				TasFramebulk mid_bulk = last;
 				mid_bulk.tick = tick;
+				mid_bulk.commands.clear();
+				mid_bulk.toolCmds.clear();
 				bool dirty = false;
 
 				for (size_t i = 0; i < TAS_CONTROLLER_INPUT_COUNT; ++i) {
