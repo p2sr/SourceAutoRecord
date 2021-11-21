@@ -7,6 +7,7 @@
 #include <memory>
 #include <sstream>
 #include <optional>
+#include <cfloat>
 
 struct TasToken {
 	enum {
@@ -672,7 +673,7 @@ void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, s
 		file << fb.tick << ">";
 
 		char analogs[128];
-		snprintf(analogs, sizeof(analogs), "%.9f %.9f|%.9f %.9f|", fb.moveAnalog.x, fb.moveAnalog.y, fb.viewAnalog.x, fb.viewAnalog.y);
+		snprintf(analogs, sizeof(analogs), "%.*g %.*g|%.*g %.*g|", FLT_DECIMAL_DIG, fb.moveAnalog.x, FLT_DECIMAL_DIG, fb.moveAnalog.y, FLT_DECIMAL_DIG, fb.viewAnalog.x, FLT_DECIMAL_DIG, fb.viewAnalog.y);
 		file << analogs;
 
 		file << (fb.buttonStates[TasControllerInput::Jump] ? "J" : "j");
