@@ -13,6 +13,7 @@
 #endif
 
 #include "Event.hpp"
+#include "Scheduler.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
@@ -493,48 +494,50 @@ void SpeedrunTimer::Stop(std::string segName) {
 		recordDemoResult();
 	}
 
-	switch (sar_speedrun_autostop.GetInt()) {
-		case 1:
-			EngineDemoRecorder::stop_callback_hook({});
-			break;
-		case 2:
-			{
-				std::string base = std::string(engine->GetGameDirectory()) + "/" + engine->demorecorder->m_szDemoBaseName;
-				int min_demo_num = engine->demorecorder->autorecordStartNum;
-				int max_demo_num = *engine->demorecorder->m_nDemoNumber;
-
+	Scheduler::InHostTicks(DEMO_AUTOSTOP_DELAY, [=]() {
+		switch (sar_speedrun_autostop.GetInt()) {
+			case 1:
 				EngineDemoRecorder::stop_callback_hook({});
+				break;
+			case 2:
+				{
+					std::string base = std::string(engine->GetGameDirectory()) + "/" + engine->demorecorder->m_szDemoBaseName;
+					int min_demo_num = engine->demorecorder->autorecordStartNum;
+					int max_demo_num = *engine->demorecorder->m_nDemoNumber;
 
-				auto time_str = SpeedrunTimer::Format(total * *engine->interval_per_tick);
-				std::replace(time_str.begin(), time_str.end(), ':', '-');
-				std::replace(time_str.begin(), time_str.end(), '.', '-');
+					EngineDemoRecorder::stop_callback_hook({});
 
-				const char *c_base = base.c_str();
-				const char *c_time = time_str.c_str();
+					auto time_str = SpeedrunTimer::Format(total * *engine->interval_per_tick);
+					std::replace(time_str.begin(), time_str.end(), ':', '-');
+					std::replace(time_str.begin(), time_str.end(), '.', '-');
 
-				for (int i = min_demo_num; i <= max_demo_num; ++i) {
-					std::string demo_file =
-						i == 1 ? Utils::ssprintf("%s.dem", c_base)
-						: Utils::ssprintf("%s_%d.dem", c_base, i);
+					const char *c_base = base.c_str();
+					const char *c_time = time_str.c_str();
 
-					std::string new_name =
-						i == 1 ? Utils::ssprintf("%s_%s.dem", c_base, c_time)
-						: Utils::ssprintf("%s_%s_%d.dem", c_base, c_time, i);
+					for (int i = min_demo_num; i <= max_demo_num; ++i) {
+						std::string demo_file =
+							i == 1 ? Utils::ssprintf("%s.dem", c_base)
+							: Utils::ssprintf("%s_%d.dem", c_base, i);
 
-					std::filesystem::rename(demo_file, new_name);
+						std::string new_name =
+							i == 1 ? Utils::ssprintf("%s_%s.dem", c_base, c_time)
+							: Utils::ssprintf("%s_%s_%d.dem", c_base, c_time, i);
+
+						std::filesystem::rename(demo_file, new_name);
+					}
+
+					// set replay name to renamed start of autorecord chain
+					if (min_demo_num == 1) {
+						engine->demoplayer->replayName = Utils::ssprintf("%s_%s", engine->demorecorder->m_szDemoBaseName, c_time);
+					} else {
+						engine->demoplayer->replayName = Utils::ssprintf("%s_%s_%d", engine->demorecorder->m_szDemoBaseName, c_time, min_demo_num);
+					}
 				}
-
-				// set replay name to renamed start of autorecord chain
-				if (min_demo_num == 1) {
-					engine->demoplayer->replayName = Utils::ssprintf("%s_%s", engine->demorecorder->m_szDemoBaseName, c_time);
-				} else {
-					engine->demoplayer->replayName = Utils::ssprintf("%s_%s_%d", engine->demorecorder->m_szDemoBaseName, c_time, min_demo_num);
-				}
-			}
-			break;
-		default:
-			break;
-	}
+				break;
+			default:
+				break;
+		}
+	});
 }
 
 void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested) {

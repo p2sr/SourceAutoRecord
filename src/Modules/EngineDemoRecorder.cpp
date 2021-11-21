@@ -5,6 +5,7 @@
 #include "Console.hpp"
 #include "Engine.hpp"
 #include "Event.hpp"
+#include "Scheduler.hpp"
 #include "Features/FovChanger.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -375,44 +376,46 @@ ON_EVENT(PRE_TICK) {
 
 ON_EVENT(CM_FLAGS) {
 	if (engine->demorecorder->isRecordingDemo && event.end) {
-		char data[2] = {0x06, (char)event.slot};
-		engine->demorecorder->RecordData(data, sizeof data);
+		Scheduler::InHostTicks(DEMO_AUTOSTOP_DELAY, [=]() {
+			char data[2] = {0x06, (char)event.slot};
+			engine->demorecorder->RecordData(data, sizeof data);
 
-		if (sar_challenge_autostop.GetInt() > 0) {
-			std::string demoFile = engine->demorecorder->GetDemoFilename();
+			if (sar_challenge_autostop.GetInt() > 0) {
+				std::string demoFile = engine->demorecorder->GetDemoFilename();
 
 #ifdef _WIN32
-			engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr(), 0);
+				engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr(), 0);
 #else
-			engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr());
+				engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr());
 #endif
 
-			if (sar_challenge_autostop.GetInt() == 2) {
-				unsigned total = floor(event.time * 100);
-				unsigned cs = total % 100;
-				total /= 100;
-				unsigned secs = total % 60;
-				total /= 60;
-				unsigned mins = total % 60;
-				total /= 60;
-				unsigned hrs = total;
+				if (sar_challenge_autostop.GetInt() == 2) {
+					unsigned total = floor(event.time * 100);
+					unsigned cs = total % 100;
+					total /= 100;
+					unsigned secs = total % 60;
+					total /= 60;
+					unsigned mins = total % 60;
+					total /= 60;
+					unsigned hrs = total;
 
-				std::string time;
+					std::string time;
 
-				if (hrs) {
-					time = Utils::ssprintf("%d-%02d-%02d-%02d", hrs, mins, secs, cs);
-				} else if (mins) {
-					time = Utils::ssprintf("%d-%02d-%02d", mins, secs, cs);
-				} else {
-					time = Utils::ssprintf("%d-%02d", secs, cs);
+					if (hrs) {
+						time = Utils::ssprintf("%d-%02d-%02d-%02d", hrs, mins, secs, cs);
+					} else if (mins) {
+						time = Utils::ssprintf("%d-%02d-%02d", mins, secs, cs);
+					} else {
+						time = Utils::ssprintf("%d-%02d", secs, cs);
+					}
+
+					auto newName = Utils::ssprintf("%s_%s.dem", demoFile.substr(0, demoFile.size() - 4).c_str(), time.c_str());
+					std::filesystem::rename(demoFile, newName);
+
+					engine->demoplayer->replayName += "_";
+					engine->demoplayer->replayName += time;
 				}
-
-				auto newName = Utils::ssprintf("%s_%s.dem", demoFile.substr(0, demoFile.size() - 4).c_str(), time.c_str());
-				std::filesystem::rename(demoFile, newName);
-
-				engine->demoplayer->replayName += "_";
-				engine->demoplayer->replayName += time;
 			}
-		}
+		});
 	}
 }

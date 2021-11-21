@@ -6,6 +6,9 @@
 
 #include <string>
 
+// Ticks before demo autostop
+#define DEMO_AUTOSTOP_DELAY 15
+
 class EngineDemoRecorder : public Module {
 public:
 	Interface *s_ClientDemoRecorder = nullptr;
