@@ -204,6 +204,16 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd *cmd) {
 
 	strafeQuality.OnUserCmd(engine->IsOrange() ? 1 : 0, *cmd);
 
+	if (cmd->buttons & IN_ATTACK) {
+		int slot = engine->IsOrange() ? 1 : 0;
+		g_bluePortalAngles[slot] = engine->GetAngles(slot);
+	}
+
+	if (cmd->buttons & IN_ATTACK2) {
+		int slot = engine->IsOrange() ? 1 : 0;
+		g_orangePortalAngles[slot] = engine->GetAngles(slot);
+	}
+
 	return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
 DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd *cmd) {
@@ -228,6 +238,14 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd *cmd) {
 	}
 
 	strafeQuality.OnUserCmd(1, *cmd);
+	
+	if (cmd->buttons & IN_ATTACK) {
+		g_bluePortalAngles[1] = engine->GetAngles(1);
+	}
+	
+	if (cmd->buttons & IN_ATTACK2) {
+		g_orangePortalAngles[1] = engine->GetAngles(1);
+	}
 
 	return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
 }
@@ -316,6 +334,15 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 		strafeQuality.OnMovement(nSlot, grounded);
 		Event::Trigger<Event::PROCESS_MOVEMENT>({ nSlot, false }); // There isn't really one, just pretend it's here lol
 	}
+
+	if (cmd->buttons & IN_ATTACK) {
+		g_bluePortalAngles[nSlot] = engine->GetAngles(nSlot);
+	}
+
+	if (cmd->buttons & IN_ATTACK2) {
+		g_orangePortalAngles[nSlot] = engine->GetAngles(nSlot);
+	}
+
 
 	return result;
 }

@@ -209,6 +209,8 @@ std::vector<std::string> elementOrder = {
 	"text",
 	"position",
 	"angles",
+	"portal_angles",
+	"portal_angles_2",
 	"velocity",
 	"velang",
 	"groundspeed",
@@ -677,4 +679,24 @@ HUD_ELEMENT2(groundspeed, "0", "Draw the speed of the player upon leaving the gr
 	}
 
 	ctx->DrawElement("groundspeed: %.*f", getPrecision(true), drawSpeeds[ctx->slot]);
+}
+QAngle g_bluePortalAngles[2];
+QAngle g_orangePortalAngles[2];
+HUD_ELEMENT_MODE2(portal_angles, "0", 0, 2, "Draw the camera angles of the last primary portal shot.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	auto ang = g_bluePortalAngles[engine->IsOrange() ? 0 : ctx->slot];
+	int p = getPrecision();
+	if (mode == 1) {
+		ctx->DrawElement("portal ang: %.*f %.*f", p, ang.x, p, ang.y);
+	} else {
+		ctx->DrawElement("portal ang: %.*f %.*f %.*f", p, ang.x, p, ang.y, p, ang.z);
+	}
+}
+HUD_ELEMENT_MODE2(portal_angles_2, "0", 0, 2, "Draw the camera angles of the last secondary portal shot.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	auto ang = g_orangePortalAngles[engine->IsOrange() ? 0 : ctx->slot];
+	int p = getPrecision();
+	if (mode == 1) {
+		ctx->DrawElement("portal ang 2: %.*f %.*f", p, ang.x, p, ang.y);
+	} else {
+		ctx->DrawElement("portal ang 2: %.*f %.*f %.*f", p, ang.x, p, ang.y, p, ang.z);
+	}
 }
