@@ -18,10 +18,10 @@
 #include <dirent.h>
 #endif
 
-Variable sar_tas_debug("sar_tas_debug", "0", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.");
-Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", 0, 1, "Enables tool processing for TAS script making.");
-Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "0", 0, 1, "Enables automatic saving of raw, processed TAS scripts.");
-Variable sar_tas_pauseat("sar_tas_pauseat", "0", 0, "Pauses the TAS playback on specified tick.");
+Variable sar_tas_debug("sar_tas_debug", "0", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.\n");
+Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", 0, 1, "Enables tool processing for TAS script making.\n");
+Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "0", 0, 1, "Enables automatic saving of raw, processed TAS scripts.\n");
+Variable sar_tas_pauseat("sar_tas_pauseat", "0", 0, "Pauses the TAS playback on specified tick.\n");
 
 TasPlayer *tasPlayer;
 

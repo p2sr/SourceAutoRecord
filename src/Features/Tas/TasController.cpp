@@ -11,10 +11,10 @@
 Variable cl_pitchdown;
 Variable cl_pitchup;
 
-Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 4, "Debugs controller.");
-Variable sar_tas_playback_rate("sar_tas_playback_rate", "1.0", 0.02, "The rate at which to play back TAS scripts.");
-Variable sar_tas_skipto("sar_tas_skipto", "0", 0, "Fast-forwards the TAS playback until given playback tick.");
-Variable sar_tas_restore_fps("sar_tas_restore_fps", "1", 0, "Restore fps_max and host_framerate after TAS playback.");
+Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 4, "Debugs controller.\n");
+Variable sar_tas_playback_rate("sar_tas_playback_rate", "1.0", 0.02, "The rate at which to play back TAS scripts.\n");
+Variable sar_tas_skipto("sar_tas_skipto", "0", 0, "Fast-forwards the TAS playback until given playback tick.\n");
+Variable sar_tas_restore_fps("sar_tas_restore_fps", "1", 0, "Restore fps_max and host_framerate after TAS playback.\n");
 
 static bool g_setPlaybackVars;
 
