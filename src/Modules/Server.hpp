@@ -66,6 +66,7 @@ public:
 	DECL_M(GetMaxSpeed, float);
 	DECL_M(GetGravity, float);
 	DECL_M(GetViewOffset, Vector);
+	DECL_M(GetPortalLocal, CPortalPlayerLocalData);
 	DECL_M(GetEntityName, char *);
 	DECL_M(GetEntityClassName, char *);
 

@@ -128,6 +128,7 @@ namespace Offsets {
 	int C_m_vecVelocity;
 	int C_m_vecViewOffset;
 
+
 	// CBaseEntity
 	int S_m_vecAbsVelocity;
 	int S_m_vecAbsOrigin;
@@ -150,7 +151,6 @@ namespace Offsets {
 	int m_pSurfaceData;
 	int m_pShadowStand;
 	int m_pShadowCrouch;
-	int m_Local;
 	int S_m_hGroundEntity;
 	int C_m_hGroundEntity;
 	int m_iBonusChallenge;
@@ -158,11 +158,9 @@ namespace Offsets {
 	int m_nTickBase;
 	int m_InAirState;
 
-	// CPlayerLocalData
-	int m_nTractorBeamCount;
-	int m_hTractorBeam;
-
 	// CPortal_Player
+	int C_m_PortalLocal;
+	int S_m_PortalLocal;
 	int iNumPortalsPlaced;
 	int GetPaintPower;
 	int UseSpeedPower;

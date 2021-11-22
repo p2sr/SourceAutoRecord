@@ -53,6 +53,7 @@ public:
 	DECL_M(GetAbsAngles, QAngle);
 	DECL_M(GetLocalVelocity, Vector);
 	DECL_M(GetViewOffset, Vector);
+	DECL_M(GetPortalLocal, CPortalPlayerLocalData);
 
 	void *GetPlayer(int index);
 	void CalcButtonBits(int nSlot, int &bits, int in_button, int in_ignore, kbutton_t *button, bool reset);

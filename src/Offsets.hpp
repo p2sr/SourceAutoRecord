@@ -158,7 +158,6 @@ namespace Offsets {
 	extern int m_pSurfaceData;
 	extern int m_pShadowStand;
 	extern int m_pShadowCrouch;
-	extern int m_Local;
 	extern int S_m_hGroundEntity;
 	extern int C_m_hGroundEntity;
 	extern int m_iBonusChallenge;
@@ -166,11 +165,9 @@ namespace Offsets {
 	extern int m_nTickBase;
 	extern int m_InAirState;
 
-	// CPlayerLocalData
-	extern int m_nTractorBeamCount;
-	extern int m_hTractorBeam;
-
 	// CPortal_Player
+	extern int C_m_PortalLocal;
+	extern int S_m_PortalLocal;
 	extern int iNumPortalsPlaced;
 	extern int GetPaintPower;
 	extern int UseSpeedPower;

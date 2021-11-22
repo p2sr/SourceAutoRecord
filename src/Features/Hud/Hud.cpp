@@ -585,13 +585,13 @@ HUD_ELEMENT_MODE2(position, "0", 0, 2,
                   "Draws absolute position of the client.\n"
                   "0 = Default,\n"
                   "1 = Player position,\n"
-                  "2 = Camera position.\n",
+                  "2 = Camera (shoot) position.\n",
                   HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
 	auto player = client->GetPlayer(ctx->slot + 1);
 	if (player) {
 		auto pos = client->GetAbsOrigin(player);
 		if (mode >= 2) {
-			pos = pos + client->GetViewOffset(player);
+			pos = pos + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
 		}
 		int p = getPrecision();
 		ctx->DrawElement("pos: %.*f %.*f %.*f", p, pos.x, p, pos.y, p, pos.z);

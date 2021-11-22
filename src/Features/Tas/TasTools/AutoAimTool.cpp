@@ -84,7 +84,7 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	void *player = server->GetPlayer(playerInfo.slot + 1);
 	if (!player) return;
 
-	Vector cam = playerInfo.position + server->GetViewOffset(player);
+	Vector cam = playerInfo.position + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
 	Vector target = params->point;
 
 	Vector forward = target - cam;

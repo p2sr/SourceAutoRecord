@@ -79,6 +79,7 @@ MDECL(Server::GetEFlags, int, m_iEFlags);
 MDECL(Server::GetMaxSpeed, float, m_flMaxspeed);
 MDECL(Server::GetGravity, float, m_flGravity);
 MDECL(Server::GetViewOffset, Vector, S_m_vecViewOffset);
+MDECL(Server::GetPortalLocal, CPortalPlayerLocalData, S_m_PortalLocal);
 MDECL(Server::GetEntityName, char *, m_iName);
 MDECL(Server::GetEntityClassName, char *, m_iClassName);
 
@@ -688,6 +689,7 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CPortal_Player", "m_lifeState", &Offsets::m_lifeState);
 	offsetFinder->ServerSide("CPortal_Player", "m_InAirState", &Offsets::m_InAirState);
 	offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);
+	offsetFinder->ServerSide("CPortal_Player", "m_PortalLocal", &Offsets::S_m_PortalLocal);
 
 	offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
 	offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);
@@ -698,6 +700,7 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_hPrimaryPortal", &Offsets::m_hPrimaryPortal);
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_iPortalLinkageGroupID", &Offsets::m_iPortalLinkageGroupID);
+
 
 	sv_cheats = Variable("sv_cheats");
 	sv_footsteps = Variable("sv_footsteps");

@@ -245,10 +245,7 @@ void Portal2::LoadOffsets() {
 	jumpFactor = 72;                     // CGameMovement::CheckJumpButton
 	m_pShadowStand = 3184;               // CBasePlayer
 	m_pShadowCrouch = 3188;              // CBasePlayer
-	m_Local = 5084;                      // CBasePlayer
 	m_surfaceFriction = 4120;            // CBasePlayer
-	m_nTractorBeamCount = 396;           // CPlayerLocalData
-	m_hTractorBeam = 392;                // CPlayerLocalData
 	GetPaintPower = 513;                 // CPortal_Player
 	UseSpeedPower = 519;                 // CPortal_Player
 	StartTouch = 103;

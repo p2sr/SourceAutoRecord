@@ -27,17 +27,13 @@ void VphysHud::Paint(int slot) {
 	void *player = server->GetPlayer(1);
 	if (!player) return;
 
-	void **pplocaldata = reinterpret_cast<void **>((uintptr_t)player + Offsets::m_Local);  //apparently it's a struct and not a pointer lmfao
-
-	int m_nTractorBeamCount = *reinterpret_cast<int *>((uintptr_t)pplocaldata + Offsets::m_nTractorBeamCount);
-
-	void *m_hTractorBeam = *reinterpret_cast<void **>((uintptr_t)pplocaldata + Offsets::m_hTractorBeam);
+	auto portalLocal = server->GetPortalLocal(player);
 
 	int cX = sar_vphys_hud_x.GetInt();
 	int cY = sar_vphys_hud_y.GetInt();
 
-	surface->DrawTxt(font, cX + 5, cY + 10, Color(255, 255, 255, 255), "m_hTractorBeam: %#08X", m_hTractorBeam);
-	surface->DrawTxt(font, cX + 5, cY + 30, Color(255, 255, 255, 255), "m_nTractorBeamCount: %X", m_nTractorBeamCount);
+	surface->DrawTxt(font, cX + 5, cY + 10, Color(255, 255, 255, 255), "m_hTractorBeam: %#08X", portalLocal.m_hTractorBeam);
+	surface->DrawTxt(font, cX + 5, cY + 30, Color(255, 255, 255, 255), "m_nTractorBeamCount: %X", portalLocal.m_nTractorBeamCount);
 
 	void *m_pShadowStand = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowStand);
 	void *m_pShadowCrouch = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowCrouch);

@@ -473,10 +473,10 @@ void SpeedrunTimer::TickRules() {
 			continue;
 		}
 
-		uintptr_t m_Local = (uintptr_t)player + Offsets::m_Local;
+		auto portalLocal = server->GetPortalLocal(player);
 
-		int m_nTractorBeamCount = *(int *)(m_Local + Offsets::m_nTractorBeamCount);
-		uint32_t m_hTractorBeam = *(uint32_t *)(m_Local + Offsets::m_hTractorBeam);
+		int m_nTractorBeamCount = portalLocal.m_nTractorBeamCount;
+		uint32_t m_hTractorBeam = portalLocal.m_hTractorBeam;
 
 		bool fly = m_nTractorBeamCount > 0 && m_hTractorBeam == Offsets::INVALID_EHANDLE_INDEX;
 

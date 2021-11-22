@@ -64,6 +64,7 @@ MDECL(Client::GetAbsOrigin, Vector, C_m_vecAbsOrigin);
 MDECL(Client::GetAbsAngles, QAngle, C_m_angAbsRotation);
 MDECL(Client::GetLocalVelocity, Vector, C_m_vecVelocity);
 MDECL(Client::GetViewOffset, Vector, C_m_vecViewOffset);
+MDECL(Client::GetPortalLocal, CPortalPlayerLocalData, C_m_PortalLocal);
 
 DECL_CVAR_CALLBACK(cl_fov) {
 	if (engine->demoplayer->IsPlaying())
@@ -523,6 +524,7 @@ bool Client::Init() {
 	offsetFinder->ClientSide("CBasePlayer", "m_hGroundEntity", &Offsets::C_m_hGroundEntity);
 	offsetFinder->ClientSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
 	offsetFinder->ClientSide("CPortal_Player", "m_StatsThisLevel", &Offsets::C_m_StatsThisLevel);
+	offsetFinder->ClientSide("CPortal_Player", "m_PortalLocal", &Offsets::C_m_PortalLocal);
 
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");
