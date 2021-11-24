@@ -88,8 +88,9 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	Vector cam = playerInfo.position + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
 
 	// attempt to predict the position next frame. can't be worse than being always a tick behind.
-	Vector newVel = autoStrafeTool.GetVelocityAfterMove(playerInfo, bulk.moveAnalog.y, bulk.moveAnalog.x);
-	cam += newVel * playerInfo.ticktime;
+	// TODO: FIGURE OUT WHAT THE FCK IS WRONG WITH THIS I JUST DONT GET IT?!?!?!
+	//Vector newVel = autoStrafeTool.GetVelocityAfterMove(playerInfo, bulk.moveAnalog.y, bulk.moveAnalog.x);
+	//cam += newVel * playerInfo.ticktime;
 
 	Vector target = params->point;
 
@@ -116,8 +117,8 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	bulk.viewAnalog = Vector{yawDelta, pitchDelta};
 
 	//do not let autoaim affect current movement direction. this will allow autoaim to be more precise with its prediction
-	float yawRaw = DEG2RAD(yawDelta);
-	Vector oldMove = bulk.moveAnalog;
-	bulk.moveAnalog.x = cosf(yawRaw) * oldMove.x - sinf(yawRaw) * oldMove.y;
-	bulk.moveAnalog.y = sinf(yawRaw) * oldMove.x + cosf(yawRaw) * oldMove.y;
+	//float yawRaw = DEG2RAD(yawDelta);
+	//Vector oldMove = bulk.moveAnalog;
+	//bulk.moveAnalog.x = cosf(yawRaw) * oldMove.x - sinf(yawRaw) * oldMove.y;
+	//bulk.moveAnalog.y = sinf(yawRaw) * oldMove.x + cosf(yawRaw) * oldMove.y;
 }
