@@ -11,6 +11,7 @@
 #include "Modules/Surface.hpp"
 #include "Modules/VGui.hpp"
 #include "Variable.hpp"
+#include "InputHud.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -646,6 +647,26 @@ HUD_ELEMENT_MODE2(velocity, "0", 0, 4,
 		ctx->DrawElement("vel: -");
 	}
 }
+HUD_ELEMENT_MODE2(eyeoffset, "0", 0, 2,
+                  "Draws player's eye offset.\n"
+                  "0 = Default,\n"
+                  "1 = eye offset including precision error,\n"
+                  "2 = raw eye offset.\n",
+                  HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	auto player = client->GetPlayer(ctx->slot + 1);
+	if (player) {
+		auto eyepos = client->GetPortalLocal(player).m_vEyeOffset;
+		if (mode == 1) {
+			auto viewOffset = client->GetAbsOrigin(player) + client->GetViewOffset(player);
+			auto realPos = viewOffset + eyepos;
+			eyepos = realPos - viewOffset;
+		}
+		int p = getPrecision();
+		ctx->DrawElement("eyeoff: %.*f %.*f %.*f", p, eyepos.x, p, eyepos.y, p, eyepos.z);
+	} else {
+		ctx->DrawElement("eyeoff: -");
+	}
+}
 HUD_ELEMENT2(velang, "0", "Draw the angle of the player's horizontal velocity vector.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
 	auto player = client->GetPlayer(ctx->slot + 1);
 	if (player) {
@@ -699,4 +720,49 @@ HUD_ELEMENT_MODE2(portal_angles_2, "0", 0, 2, "Draw the camera angles of the las
 	} else {
 		ctx->DrawElement("portal ang 2: %.*f %.*f %.*f", p, ang.x, p, ang.y, p, ang.z);
 	}
+}
+
+
+HUD_ELEMENT2(duckstate, "0", "Draw the state of player ducking.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	auto player = client->GetPlayer(ctx->slot + 1);
+	if (!player) {
+		ctx->DrawElement("duck: -");
+		return;
+	}
+	bool holdingDuck = (inputHud.GetButtonBits(ctx->slot) & IN_DUCK);
+	bool ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::C_m_bDucked);
+	bool ducking = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::C_m_bDucking);
+	bool inDuckJump = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::C_m_bInDuckJump);
+	int duckTimeMsecs = *reinterpret_cast<int *>((uintptr_t)player + Offsets::C_m_nDuckTimeMsecs);
+	int duckJumpTimeMsecs = *reinterpret_cast<int *>((uintptr_t)player + Offsets::C_m_nDuckJumpTimeMsecs);
+	bool duckedInAir = client->GetPortalLocal(player).m_bDuckedInAir;
+
+	std::string duckState = "standing";
+	if (ducking) {
+		duckState = "ducking";
+		int length = 400;
+		if (ducked || !holdingDuck) {
+			duckState = "unducking";
+			length = 200;
+		}
+		int remaining = (length - (1000 - duckTimeMsecs))/16 + 1;
+		duckState += " (" + std::to_string(remaining) + " ticks left)";
+		if (duckedInAir) duckState = "air " + duckState;
+	}
+	else if (ducked) {
+		//TODO: figure out how QC works and make a proper debug for it
+		/*if (duckJumpTimeMsecs>0) {
+			duckState = "forced duck";
+		}
+		else if (inDuckJump) {
+			duckState = "quantum crouch";
+			if (duckedInAir) duckState += " (low variant)";
+		} else {
+			duckState = "ducked";
+		}*/
+
+		duckState = "ducked";
+	}
+
+	ctx->DrawElement("duckstate: %s", duckState.c_str());
 }

@@ -52,7 +52,7 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player, bool use_client_offse
 		vel = server->GetLocalVelocity(player);
 	}
 	bool grounded = ground_handle != 0xFFFFFFFF;
-	auto ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::m_bDucked);
+	auto ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);
 
 	trace.positions.push_back(pos);
 	trace.velocities.push_back(vel);

@@ -153,7 +153,7 @@ namespace Offsets {
 	extern int m_fFlags;
 	extern int m_MoveType;
 	extern int m_nWaterLevel;
-	extern int m_bDucked;
+	extern int S_m_bDucked;
 	extern int m_flFriction;
 	extern int m_pSurfaceData;
 	extern int m_pShadowStand;
@@ -164,6 +164,11 @@ namespace Offsets {
 	extern int m_surfaceFriction;
 	extern int m_nTickBase;
 	extern int m_InAirState;
+	extern int C_m_bDucked;
+	extern int C_m_bDucking;
+	extern int C_m_bInDuckJump;
+	extern int C_m_nDuckTimeMsecs;
+	extern int C_m_nDuckJumpTimeMsecs;
 
 	// CPortal_Player
 	extern int C_m_PortalLocal;

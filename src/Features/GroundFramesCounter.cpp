@@ -28,3 +28,7 @@ void GroundFramesCounter::HandleMovementFrame(int slot, bool grounded) {
 HUD_ELEMENT_MODE2(groundframes, "0", 0, 1, "Draws the number of ground frames since last landing.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
 	ctx->DrawElement("groundframes: %d", groundFramesCounter->counter[ctx->slot]);
 }
+
+HUD_ELEMENT_MODE2(grounded, "0", 0, 1, "Draws the state of player being on ground.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	ctx->DrawElement("grounded: %s", groundFramesCounter->grounded[ctx->slot] ? "yes" : "no");
+}

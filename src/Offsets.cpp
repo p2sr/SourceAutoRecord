@@ -146,7 +146,7 @@ namespace Offsets {
 	int m_fFlags;
 	int m_MoveType;
 	int m_nWaterLevel;
-	int m_bDucked;
+	int S_m_bDucked;
 	int m_flFriction;
 	int m_pSurfaceData;
 	int m_pShadowStand;
@@ -157,6 +157,11 @@ namespace Offsets {
 	int m_surfaceFriction;
 	int m_nTickBase;
 	int m_InAirState;
+	int C_m_bDucked;
+	int C_m_bDucking;
+	int C_m_bInDuckJump;
+	int C_m_nDuckTimeMsecs;
+	int C_m_nDuckJumpTimeMsecs;
 
 	// CPortal_Player
 	int C_m_PortalLocal;

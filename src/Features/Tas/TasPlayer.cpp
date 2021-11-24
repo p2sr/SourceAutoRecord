@@ -228,7 +228,7 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CMoveData *pMove) {
 	pi.tick = *reinterpret_cast<int *>((uintptr_t)player + Offsets::m_nTickBase);
 	pi.slot = server->GetSplitScreenPlayerSlot(player);
 	pi.surfaceFriction = *reinterpret_cast<float *>((uintptr_t)player + Offsets::m_surfaceFriction);
-	pi.ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::m_bDucked);
+	pi.ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);
 
 	float *m_flMaxspeed = reinterpret_cast<float *>((uintptr_t)player + Offsets::m_flMaxspeed);
 	float oldMaxSpeed = *m_flMaxspeed;

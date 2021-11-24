@@ -276,7 +276,7 @@ DETOUR(Server::FinishGravity) {
 			auto mv = *reinterpret_cast<CHLMoveData **>((uintptr_t)thisptr + Offsets::mv);
 
 			auto m_pSurfaceData = *reinterpret_cast<uintptr_t *>(player + Offsets::m_pSurfaceData);
-			auto m_bDucked = *reinterpret_cast<bool *>(player + Offsets::m_bDucked);
+			auto m_bDucked = *reinterpret_cast<bool *>(player + Offsets::S_m_bDucked);
 			auto m_fFlags = *reinterpret_cast<int *>(player + Offsets::m_fFlags);
 
 			auto flGroundFactor = (m_pSurfaceData) ? *reinterpret_cast<float *>(m_pSurfaceData + Offsets::jumpFactor) : 1.0f;
@@ -293,7 +293,7 @@ DETOUR(Server::FinishGravity) {
 			auto player = *reinterpret_cast<uintptr_t *>((uintptr_t)thisptr + Offsets::player);
 			auto mv = *reinterpret_cast<CHLMoveData **>((uintptr_t)thisptr + Offsets::mv);
 
-			auto m_bDucked = *reinterpret_cast<bool *>(player + Offsets::m_bDucked);
+			auto m_bDucked = *reinterpret_cast<bool *>(player + Offsets::S_m_bDucked);
 
 			Vector vecForward;
 			Math::AngleVectors(mv->m_vecViewAngles, &vecForward);
@@ -683,7 +683,7 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
 	offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
 	offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::S_m_hGroundEntity);
-	offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
+	offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::S_m_bDucked);
 	offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
 	offsetFinder->ServerSide("CBasePlayer", "m_nTickBase", &Offsets::m_nTickBase);
 	offsetFinder->ServerSide("CPortal_Player", "m_lifeState", &Offsets::m_lifeState);

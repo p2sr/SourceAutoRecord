@@ -9,8 +9,8 @@ private:
 	// info about current user input
 	struct {
 		int buttonBits = 0;
-		Vector movement{0,0};
-		QAngle angles[2]{0,0}; //storing two angles to calculate delta
+		Vector movement{0, 0};
+		QAngle angles[2]{0, 0};  //storing two angles to calculate delta
 		bool awaitingFrameDraw = true;
 	} inputInfo[2];
 
@@ -47,6 +47,8 @@ public:
 	void ApplyPreset(const char *preset, bool start);
 	bool HasElement(const char *elementName);
 	bool IsValidParameter(const char *parameter);
+
+	int GetButtonBits(int slot) { return inputInfo[slot].buttonBits; }
 };
 
 extern InputHud inputHud;

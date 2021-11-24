@@ -523,6 +523,11 @@ bool Client::Init() {
 	offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
 	offsetFinder->ClientSide("CBasePlayer", "m_hGroundEntity", &Offsets::C_m_hGroundEntity);
 	offsetFinder->ClientSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
+	offsetFinder->ClientSide("CBasePlayer", "m_bDucked", &Offsets::C_m_bDucked);
+	offsetFinder->ClientSide("CBasePlayer", "m_bDucking", &Offsets::C_m_bDucking);
+	offsetFinder->ClientSide("CBasePlayer", "m_bInDuckJump", &Offsets::C_m_bInDuckJump);
+	offsetFinder->ClientSide("CBasePlayer", "m_nDuckTimeMsecs", &Offsets::C_m_nDuckTimeMsecs);
+	offsetFinder->ClientSide("CBasePlayer", "m_nDuckJumpTimeMsecs", &Offsets::C_m_nDuckJumpTimeMsecs);
 	offsetFinder->ClientSide("CPortal_Player", "m_StatsThisLevel", &Offsets::C_m_StatsThisLevel);
 	offsetFinder->ClientSide("CPortal_Player", "m_PortalLocal", &Offsets::C_m_PortalLocal);
 
