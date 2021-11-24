@@ -3,6 +3,7 @@
 #include "Command.hpp"
 #include "Event.hpp"
 #include "Features/Session.hpp"
+#include "Features/Tas/TasPlayer.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -18,10 +19,19 @@ Variable sar_player_trace_record("sar_player_trace_record", "0", 0, "Record the 
 Variable sar_player_trace_draw("sar_player_trace_draw", "0", "Display the recorded player trace. Requires cheats\n");
 Variable sar_player_trace_draw_through_walls("sar_player_trace_draw_through_walls", "1", "Display the player trace through walls. Requires sar_player_trace_draw\n");
 Variable sar_player_trace_draw_speed_deltas("sar_player_trace_draw_speed_deltas", "1", "Display the speed deltas. Requires sar_player_trace_draw\n");
+Variable sar_player_trace_draw_time("sar_player_trace_draw_time", "3", 0, 3, 
+	"Display tick above trace hover info\n"
+	"0 = hide tick info\n"
+	"1 = ticks since trace recording started\n"
+	"2 = session timer\n"
+	"3 = TAS timer (if no TAS was played, uses 1 instead)\n"
+);
 
 Variable sar_player_trace_bbox_at("sar_player_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.");
+Variable sar_player_trace_bbox_use_hover("sar_player_trace_bbox_use_hover", "0", 0, "Move trace bbox to hovered trace point tick on given trace.");
 
 struct TraceHoverInfo {
+	size_t tick;
 	unsigned trace_idx;
 	Vector pos;
 	float speed;
@@ -35,8 +45,18 @@ PlayerTrace::PlayerTrace() {
 void PlayerTrace::AddPoint(size_t trace_idx, void *player, bool use_client_offset) {
 	if (traces.count(trace_idx) == 0) {
 		traces[trace_idx] = Trace();
+		traces[trace_idx].startSessionTick = session->GetTick();
 	}
+
 	Trace &trace = traces[trace_idx];
+
+	// update this bad boy every tick because it doesn't like being tinkered with at the
+	// very beginning of the level. fussy guy, lemme tell ya
+	if (tasPlayer->IsRunning()) {
+		int ticksSinceStartup = (int)trace.positions.size() + 1; // include point we're about to add
+		traces[trace_idx].startTasTick = tasPlayer->GetTick() - ticksSinceStartup;
+	}
+	
 
 	Vector pos;
 	Vector vel;
@@ -58,6 +78,11 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player, bool use_client_offse
 	trace.velocities.push_back(vel);
 	trace.grounded.push_back(grounded);
 	trace.crouched.push_back(ducked);
+}
+Trace* PlayerTrace::GetTrace(const size_t trace_idx) {
+	auto trace = traces.find(trace_idx);
+	if (trace == traces.end()) return nullptr;
+	return &traces.find(trace_idx)->second;
 }
 void PlayerTrace::Clear(const size_t trace_idx) {
 	traces.erase(trace_idx);
@@ -92,6 +117,7 @@ void PlayerTrace::DrawInWorld(float time) const {
 	for (const auto [trace_idx, trace] : traces) {
 		if (trace.positions.size() < 2) continue;
 
+		size_t closest_id = 0;
 		float closest_dist = 1.0f; // Something stupid high
 		Vector closest_pos;
 		float closest_vel;
@@ -136,6 +162,7 @@ void PlayerTrace::DrawInWorld(float time) const {
 
 					if (draw_through_walls || tr.plane.normal.Length() <= 0.9) {
 						// Didn't hit anything; use this point
+						closest_id = i;
 						closest_dist = dist;
 						closest_pos = new_pos;
 						closest_vel = speed;
@@ -189,7 +216,7 @@ void PlayerTrace::DrawInWorld(float time) const {
 
 		if (closest_dist < 1.0f) {
 			engine->AddBoxOverlay(nullptr, closest_pos, {-1,-1,-1}, {1,1,1}, {0,0,0}, 255, 0, 255, draw_through_walls, time);
-			hovers.push_back({ trace_idx, closest_pos, closest_vel });
+			hovers.push_back({closest_id, trace_idx, closest_pos, closest_vel});
 		}
 	}
 }
@@ -309,6 +336,19 @@ HUD_ELEMENT2_NO_DISABLE(player_trace_bbox, HudType_InGame) {
 	if (!sar_player_trace_draw.GetBool()) return;
 	if (!sv_cheats.GetBool()) return;
 
+	// overriding the value of sar_player_trace_bbox_at if hovered position is used
+	size_t trace_idx = sar_player_trace_bbox_use_hover.GetInt();
+	if (trace_idx>0) {
+		int tick = -1;
+		for (auto &h : hovers) {
+			if (h.trace_idx == trace_idx) {
+				tick = (int)h.tick;
+				break;
+			}
+		}
+		sar_player_trace_bbox_at.SetValue(tick);
+	}
+
 	int tick = sar_player_trace_bbox_at.GetInt();
 	if (tick == -1) return;
 
@@ -325,6 +365,16 @@ HUD_ELEMENT2_NO_DISABLE(player_trace_draw_hover, HudType_InGame) {
 
 	for (auto &h : hovers) {
 		engine->PointToScreen(h.pos + hud_offset, screen_pos);
+		int timeType = sar_player_trace_draw_time.GetInt();
+		if (timeType > 0) {
+			int tick = h.tick;
+			auto trace = playerTrace->GetTrace(h.trace_idx);
+			if (trace) {
+				if (timeType == 2) tick += trace->startSessionTick;
+				if (timeType == 3 && trace->startTasTick > 0) tick += trace->startTasTick;
+			}
+			ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y - 30, "tick: %d", tick);
+		}
 		ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y - 15, "pos: %.1f %.1f %.1f", h.pos.x, h.pos.y, h.pos.z);
 		ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "horiz. speed: %.2f", h.speed);
 	}

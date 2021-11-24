@@ -74,6 +74,7 @@ public:
 
 	inline int GetTick() const { return currentTick; };
 	inline int GetAbsoluteTick() const { return startTick + currentTick; };
+	inline int GetStartTick() const { return startTick; };
 	inline bool IsActive() const { return active; };
 	inline bool IsRunning() const { return active && startTick != -1; }
 

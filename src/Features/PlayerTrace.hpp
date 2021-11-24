@@ -7,6 +7,8 @@
 #include <map>
 
 struct Trace {
+	int startSessionTick;
+	int startTasTick;
 	std::vector<Vector> positions;
 	std::vector<Vector> velocities;
 	std::vector<bool> grounded;
@@ -22,6 +24,8 @@ public:
 	PlayerTrace();
 	// Add a point to the player trace
 	void AddPoint(size_t trace_idx, void *player, bool use_client_offset);
+	// Returns trace with given id
+	Trace* GetTrace(const size_t trace_idx);
 	// Clear all the points
 	void Clear(const size_t trace_idx);
 	// Clear all the traces
