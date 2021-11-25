@@ -47,7 +47,7 @@ void SetPlaybackVars(bool active) {
 	was_active = active;
 }
 
-TasController *tasController;
+TasController *tasControllers[2];
 
 TasController::TasController() {
 	for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
@@ -166,7 +166,7 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 
 	//console->Print("TasController::ControllerMove (%d, ", cmd->tick_count);
 
-	tasPlayer->FetchInputs(this);
+	tasPlayer->FetchInputs(nSlot, this);
 
 	//TAS is now controlling inputs. Reset everything we can.
 	cmd->forwardmove = 0;

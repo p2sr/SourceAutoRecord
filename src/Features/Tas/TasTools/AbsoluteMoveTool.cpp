@@ -4,11 +4,10 @@
 #include "Modules/Server.hpp"
 #include "Features/Tas/TasParser.hpp"
 
-AbsoluteMoveTool tasAbsoluteMoveTool("absmov");
-
-AbsoluteMoveTool *AbsoluteMoveTool::GetTool() {
-	return &tasAbsoluteMoveTool;
-}
+AbsoluteMoveTool tasAbsoluteMoveTool[2] = {
+	{ "absmov", 0 },
+	{ "absmov", 1 },
+};
 
 void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 	auto ttParams = std::static_pointer_cast<AbsoluteMoveToolParams>(params);

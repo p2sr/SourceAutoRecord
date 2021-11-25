@@ -52,9 +52,8 @@ struct AutoStrafeParams : public TasToolParams {
 
 class AutoStrafeTool : public TasTool {
 public:
-	AutoStrafeTool(const char *name)
-		: TasTool(name){};
-	virtual AutoStrafeTool *GetTool();
+	AutoStrafeTool(int slot)
+		: TasTool("strafe", slot){};
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
 	virtual void Reset();
@@ -79,4 +78,4 @@ public:
 	void FollowLine(const TasPlayerInfo &pInfo);
 };
 
-extern AutoStrafeTool autoStrafeTool;
+extern AutoStrafeTool autoStrafeTool[2];

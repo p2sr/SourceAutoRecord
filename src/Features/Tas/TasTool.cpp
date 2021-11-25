@@ -3,14 +3,15 @@
 #include "TasPlayer.hpp"
 #include <algorithm>
 
-std::list<TasTool *> &TasTool::GetList() {
-	static std::list<TasTool *> list;
-	return list;
+std::list<TasTool *> &TasTool::GetList(int slot) {
+	static std::list<TasTool *> list[2];
+	return list[slot];
 }
 
-TasTool::TasTool(const char *name)
-	: name(name) {
-	this->GetList().push_back(this);
+TasTool::TasTool(const char *name, int slot)
+	: name(name)
+	, slot(slot) {
+	this->GetList(slot).push_back(this);
 }
 
 TasTool::~TasTool() {
@@ -26,7 +27,7 @@ void TasTool::SetParams(std::shared_ptr<TasToolParams> params) {
 
 	// the tool has been updated. prioritize it by moving it to the end of the global list
 	// mlugg please don't kill me
-	GetList().splice(GetList().end(), GetList(), std::find(GetList().begin(), GetList().end(), this));
+	GetList(slot).splice(GetList(slot).end(), GetList(slot), std::find(GetList(slot).begin(), GetList(slot).end(), this));
 }
 
 void TasTool::Reset() {

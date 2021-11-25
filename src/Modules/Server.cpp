@@ -202,7 +202,7 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 
 
 	if (tasPlayer->IsActive() && sar_tas_tools_enabled.GetBool()) {
-		tasPlayer->PostProcess(player, move);
+		tasPlayer->PostProcess(server->GetSplitScreenPlayerSlot(player), player, move);
 	}
 
 	unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
@@ -662,15 +662,15 @@ bool Server::Init() {
 		uintptr_t code = Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 46 04 66 0F EF C0 DD 5C 24 08 F2 0F 5A 44 24 08 8B 40 24 85 C0", 0);
 #endif
 		Memory::UnProtect((void *)code, sizeof g_orig_check_stuck_code);
-		memcpy(g_orig_check_stuck_code, (void *)code, sizeof g_orig_check_stuck_code);
+		//memcpy(g_orig_check_stuck_code, (void *)code, sizeof g_orig_check_stuck_code);
 
-		*(uint8_t *)code = 0xE8;
-		*(uint32_t *)(code + 1) = (uint32_t)&hostTimeWrap - (code + 5);
+		//*(uint8_t *)code = 0xE8;
+		//*(uint32_t *)(code + 1) = (uint32_t)&hostTimeWrap - (code + 5);
 #ifdef _WIN32
 		*(uint8_t *)(code + 5) = 0x90; // nop
 #endif
 
-		g_check_stuck_code = (void *)code;
+		//g_check_stuck_code = (void *)code;
 	}
 
 	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);
@@ -685,6 +685,7 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::m_bDucked);
 	offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
 	offsetFinder->ServerSide("CBasePlayer", "m_nTickBase", &Offsets::m_nTickBase);
+	offsetFinder->ServerSide("CPortal_Player", "m_lifeState", &Offsets::m_lifeState);
 	offsetFinder->ServerSide("CPortal_Player", "m_InAirState", &Offsets::m_InAirState);
 	offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);
 

@@ -17,7 +17,7 @@ struct TasParserException : public std::exception {
 };
 
 namespace TasParser {
-	std::vector<TasFramebulk> ParseFile(std::string filePath);
+	std::vector<TasFramebulk> ParseFile(int slot, std::string filePath);
 	void SaveFramebulksToFile(std::string name, TasStartInfo startInfo, std::vector<TasFramebulk> framebulks);
 	int toInt(std::string &str);
 	float toFloat(std::string str);

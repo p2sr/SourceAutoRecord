@@ -4,10 +4,9 @@
 
 class AutoAimTool : public TasTool {
 public:
-	AutoAimTool()
-		: TasTool("autoaim") {}
+	AutoAimTool(int slot)
+		: TasTool("autoaim", slot) {}
 
-	virtual AutoAimTool *GetTool();
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
 	virtual void Reset();

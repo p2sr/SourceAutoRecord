@@ -17,11 +17,7 @@ struct DecelParams : public TasToolParams {
 	float targetVel;
 };
 
-DecelTool decelTool;
-
-DecelTool *DecelTool::GetTool() {
-	return &decelTool;
-}
+DecelTool decelTool[2] = {{0}, {1}};
 
 void DecelTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	auto params = std::static_pointer_cast<DecelParams>(this->params);
@@ -31,7 +27,7 @@ void DecelTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	}
 
 	float targetVel = params->targetVel;
-	float playerVel = autoStrafeTool.GetGroundFrictionVelocity(playerInfo).Length2D(); 
+	float playerVel = autoStrafeTool[this->slot].GetGroundFrictionVelocity(playerInfo).Length2D(); 
 
 	// cant decelerate by accelerating lmfao
 	if (targetVel >= playerVel) {
@@ -45,7 +41,7 @@ void DecelTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	bulk.moveAnalog.y = cosf(moveAngle);
 
 	// make sure to move only the necessary amount
-	float maxAccel = autoStrafeTool.GetMaxAccel(playerInfo, autoStrafeTool.CreateWishDir(playerInfo,bulk.moveAnalog.y, bulk.moveAnalog.x));
+	float maxAccel = autoStrafeTool[this->slot].GetMaxAccel(playerInfo, autoStrafeTool[this->slot].CreateWishDir(playerInfo,bulk.moveAnalog.y, bulk.moveAnalog.x));
 	if (playerVel - targetVel < maxAccel) {
 		bulk.moveAnalog = bulk.moveAnalog.Normalize() * ((playerVel - targetVel) / maxAccel);
 		// dont need to decelerate next tick

@@ -19,14 +19,14 @@ protected:
 	const char *name;
 	std::shared_ptr<TasToolParams> params = nullptr;
 	bool updated = false;
+	int slot;
 
 public:
-	TasTool(const char *name);
+	TasTool(const char *name, int slot);
 	~TasTool();
 
 	const char *GetName();
 
-	virtual TasTool *GetTool() = 0;
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>) = 0;
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) = 0;
 	virtual void Reset();
@@ -35,7 +35,7 @@ public:
 	std::shared_ptr<TasToolParams> GetCurrentParams();
 
 public:
-	static std::list<TasTool *> &GetList();
+	static std::list<TasTool *> &GetList(int slot);
 };
 
 

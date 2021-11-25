@@ -168,6 +168,7 @@ namespace Offsets {
 	int UseSpeedPower;
 	int S_m_StatsThisLevel;
 	int C_m_StatsThisLevel;
+	int m_lifeState;
 
 	//CWeaponPortalgun
 	int m_bCanFirePortal1;

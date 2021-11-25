@@ -21,11 +21,7 @@ struct SetAngleParams : public TasToolParams {
 	float yaw;
 };
 
-SetAngleTool setAngleTool;
-
-SetAngleTool *SetAngleTool::GetTool() {
-	return &setAngleTool;
-}
+SetAngleTool setAngleTool[2] = {{0}, {1}};
 
 void SetAngleTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	auto params = std::static_pointer_cast<SetAngleParams>(this->params);

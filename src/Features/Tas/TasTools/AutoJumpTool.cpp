@@ -4,7 +4,7 @@
 #include "Modules/Server.hpp"
 #include "Features/Tas/TasParser.hpp"
 
-AutoJumpTool autoJumpTool("autojump");
+AutoJumpTool autoJumpTool[2] = {{0}, {1}};
 
 void AutoJumpTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 	auto ttParams = std::static_pointer_cast<AutoJumpToolParams>(this->params);
@@ -19,10 +19,6 @@ void AutoJumpTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 	} else {
 		hasJumpedLastTick = false;
 	}
-}
-
-AutoJumpTool *AutoJumpTool::GetTool() {
-	return &autoJumpTool;
 }
 
 std::shared_ptr<TasToolParams> AutoJumpTool::ParseParams(std::vector<std::string> vp) {

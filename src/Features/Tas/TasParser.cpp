@@ -282,16 +282,16 @@ static int parseFramebulkTick(int last_tick, const Line &line, size_t *tokens_ou
 	throw TasParserException("expected tick at start of line");
 }
 
-static std::optional<TasToolCommand> parseToolCmd(const std::vector<std::string> &toks) {
+static std::optional<TasToolCommand> parseToolCmd(int slot, const std::vector<std::string> &toks) {
 	if (toks.size() == 0) return {};
 
-	for (auto &tool : TasTool::GetList()) {
+	for (auto &tool : TasTool::GetList(slot)) {
 		if (tool->GetName() == toks[0]) {
 			std::vector<std::string> args = std::vector(toks.begin() + 1, toks.end());
 
-			auto params = tool->GetTool()->ParseParams(args);
+			auto params = tool->ParseParams(args);
 
-			return TasToolCommand{tool->GetTool(), params};
+			return TasToolCommand{tool, params};
 		}
 	}
 
@@ -319,7 +319,7 @@ static Vector parseVector(const Line &line, size_t idx) {
 	return vec;
 }
 
-static TasFramebulk parseFramebulk(int last_tick, const TasFramebulk &base, const Line &line, int (*button_timeouts)[TAS_CONTROLLER_INPUT_COUNT]) {
+static TasFramebulk parseFramebulk(int slot, int last_tick, const TasFramebulk &base, const Line &line, int (*button_timeouts)[TAS_CONTROLLER_INPUT_COUNT]) {
 	TasFramebulk bulk = base;
 	size_t toks_off;
 	bulk.tick = parseFramebulkTick(last_tick, line, &toks_off);
@@ -419,7 +419,7 @@ static TasFramebulk parseFramebulk(int last_tick, const TasFramebulk &base, cons
 					}
 				}
 
-				auto cmd = parseToolCmd(args);
+				auto cmd = parseToolCmd(slot, args);
 				if (cmd) bulk.toolCmds.push_back(*cmd);
 			}
 			break;
@@ -429,7 +429,7 @@ static TasFramebulk parseFramebulk(int last_tick, const TasFramebulk &base, cons
 	return bulk;
 }
 
-static std::vector<TasFramebulk> parseFramebulks(const char *filepath, const Line *lines, size_t nlines) {
+static std::vector<TasFramebulk> parseFramebulks(int slot, const char *filepath, const Line *lines, size_t nlines) {
 	int last_tick = -1;
 	TasFramebulk last;
 	std::vector<TasFramebulk> bulks;
@@ -479,7 +479,7 @@ static std::vector<TasFramebulk> parseFramebulks(const char *filepath, const Lin
 				}
 			}
 
-			TasFramebulk bulk = parseFramebulk(last_tick, base, line, &button_timeouts);
+			TasFramebulk bulk = parseFramebulk(slot, last_tick, base, line, &button_timeouts);
 
 			bulks.push_back(bulk);
 			last_tick = bulk.tick;
@@ -583,7 +583,7 @@ static std::vector<Line> preProcess(const char *filepath, const Line *lines, siz
 	return current;
 }
 
-std::vector<TasFramebulk> TasParser::ParseFile(std::string filePath) {
+std::vector<TasFramebulk> TasParser::ParseFile(int slot, std::string filePath) {
 	std::ifstream file(filePath, std::fstream::in);
 	if (!file) {
 		throw TasParserException(Utils::ssprintf("[%s] failed to open the file", filePath.c_str()));
@@ -605,7 +605,7 @@ std::vector<TasFramebulk> TasParser::ParseFile(std::string filePath) {
 		throw TasParserException(Utils::ssprintf("[%s:%u] %s", filePath.c_str(), lines[0].num, e.msg.c_str()));
 	}
 
-	std::vector<TasFramebulk> fb = parseFramebulks(filePath.c_str(), lines.data() + 1, lines.size() - 1); // skip start line
+	std::vector<TasFramebulk> fb = parseFramebulks(slot, filePath.c_str(), lines.data() + 1, lines.size() - 1); // skip start line
 
 	if (fb.size() == 0) {
 		throw TasParserException(Utils::ssprintf("[%s] no framebulks in TAS script", filePath.c_str()));

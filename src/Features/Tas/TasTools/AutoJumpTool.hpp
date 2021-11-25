@@ -12,11 +12,10 @@ struct AutoJumpToolParams : public TasToolParams {
 
 class AutoJumpTool : public TasTool {
 public:
-	AutoJumpTool(const char *name)
-		: TasTool(name) {
+	AutoJumpTool(int slot)
+		: TasTool("autojump", slot) {
 	}
 
-	virtual AutoJumpTool *GetTool();
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
 	virtual void Reset();
@@ -25,4 +24,4 @@ private:
 	bool hasJumpedLastTick = false;
 };
 
-extern AutoJumpTool autoJumpTool;
+extern AutoJumpTool autoJumpTool[2];

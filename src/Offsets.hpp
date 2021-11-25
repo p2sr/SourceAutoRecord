@@ -176,6 +176,7 @@ namespace Offsets {
 	extern int UseSpeedPower;
 	extern int S_m_StatsThisLevel;
 	extern int C_m_StatsThisLevel;
+	extern int m_lifeState;
 
 	// CWeaponPortalgun
 	extern int m_bCanFirePortal1;

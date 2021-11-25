@@ -192,7 +192,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->features->AddFeature<ClassDumper>(&classDumper);
 			this->features->AddFeature<EntityList>(&entityList);
 			this->features->AddFeature<OffsetFinder>(&offsetFinder);
-			this->features->AddFeature<TasController>(&tasController);
+			this->features->AddFeature<TasController>(&tasControllers[0]);
+			this->features->AddFeature<TasController>(&tasControllers[1]);
 			this->features->AddFeature<TasPlayer>(&tasPlayer);
 			this->features->AddFeature<PauseTimer>(&pauseTimer);
 			this->features->AddFeature<DataMapDumper>(&dataMapDumper);

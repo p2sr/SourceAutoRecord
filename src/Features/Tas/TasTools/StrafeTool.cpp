@@ -9,7 +9,7 @@
 #include "TasUtils.hpp"
 #include "Utils/SDK.hpp"
 
-AutoStrafeTool autoStrafeTool("strafe");
+AutoStrafeTool autoStrafeTool[2] = {{0}, {1}};
 
 void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 	auto asParams = std::static_pointer_cast<AutoStrafeParams>(params);
@@ -19,7 +19,7 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 
 	//create fake player info for a sake of values being correct
 	TasPlayerInfo pInfo = rawPInfo;
-	if (autoJumpTool.GetCurrentParams()->enabled) {
+	if (autoJumpTool[this->slot].GetCurrentParams()->enabled) {
 		// if autojump is enabled, we're never grounded.
 		pInfo.grounded = false;
 	}
@@ -400,10 +400,6 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 	}
 
 	return std::make_shared<AutoStrafeParams>(type, dir, speed);
-}
-
-AutoStrafeTool *AutoStrafeTool::GetTool() {
-	return &autoStrafeTool;
 }
 
 void AutoStrafeTool::Reset() {

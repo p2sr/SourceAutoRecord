@@ -4,9 +4,8 @@
 
 class DecelTool : public TasTool {
 public:
-	DecelTool()
-		: TasTool("decel") {}
-	virtual DecelTool *GetTool();
+	DecelTool(int slot)
+		: TasTool("decel", slot) {}
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
 	virtual void Reset();

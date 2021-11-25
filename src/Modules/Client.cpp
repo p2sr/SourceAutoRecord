@@ -365,7 +365,7 @@ DETOUR(Client::GetButtonBits, bool bResetState) {
 DETOUR(Client::SteamControllerMove, int nSlot, float flFrametime, CUserCmd *cmd) {
 	auto result = Client::SteamControllerMove(thisptr, nSlot, flFrametime, cmd);
 
-	tasController->ControllerMove(nSlot, flFrametime, cmd);
+	tasControllers[nSlot]->ControllerMove(nSlot, flFrametime, cmd);
 
 	return result;
 }

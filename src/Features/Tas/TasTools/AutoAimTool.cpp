@@ -4,7 +4,7 @@
 #include "Modules/Server.hpp"
 #include "Features/Tas/TasParser.hpp"
 
-AutoAimTool autoAimTool;
+AutoAimTool autoAimTool[2] = {{0}, {1}};
 
 struct AutoAimParams : public TasToolParams {
 	AutoAimParams()
@@ -20,10 +20,6 @@ struct AutoAimParams : public TasToolParams {
 	int ticks;
 	int elapsed;
 };
-
-AutoAimTool *AutoAimTool::GetTool() {
-	return &autoAimTool;
-}
 
 std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string> args) {
 	if (args.size() != 1 && args.size() != 3 && args.size() != 4)

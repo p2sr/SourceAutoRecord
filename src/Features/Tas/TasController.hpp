@@ -61,7 +61,7 @@ public:
 	void ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd);
 };
 
-extern TasController *tasController;
+extern TasController *tasControllers[2];
 
 extern Variable sar_tas_real_controller_debug;
 

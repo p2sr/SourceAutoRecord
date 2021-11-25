@@ -46,7 +46,8 @@ TasPlayer::TasPlayer()
 }
 
 TasPlayer::~TasPlayer() {
-	framebulkQueue.clear();
+	framebulkQueue[0].clear();
+	framebulkQueue[1].clear();
 }
 
 #ifdef _WIN32
@@ -81,10 +82,14 @@ void TasPlayer::Activate() {
 	//reset the controller before using it
 	Stop(true);
 
-	for (TasTool *tool : TasTool::GetList()) {
+	for (TasTool *tool : TasTool::GetList(0)) {
 		tool->Reset();
 	}
-	processedFramebulks.clear();
+	for (TasTool *tool : TasTool::GetList(1)) {
+		tool->Reset();
+	}
+	processedFramebulks[0].clear();
+	processedFramebulks[1].clear();
 
 	active = true;
 	startTick = -1;
@@ -93,9 +98,11 @@ void TasPlayer::Activate() {
 	pauseTick = sar_tas_pauseat.GetInt();
 
 	lastTick = 0;
-	for (TasFramebulk fb : framebulkQueue) {
-		if (fb.tick > lastTick) {
-			lastTick = fb.tick;
+	for (int slot = 0; slot < (this->isCoop ? 2 : 1); ++slot) {
+		for (TasFramebulk fb : framebulkQueue[slot]) {
+			if (fb.tick > lastTick) {
+				lastTick = fb.tick;
+			}
 		}
 	}
 
@@ -105,7 +112,7 @@ void TasPlayer::Activate() {
 		std::string mapPath = std::string(engine->GetGameDirectory()) + "/maps/" + startInfo.param + ".bsp";
 		std::ifstream mapf(mapPath);
 		if (mapf.good()) {
-			std::string cmd = "map ";
+			std::string cmd = this->isCoop ? "ss_map " : "map ";
 			if (session->isRunning && engine->GetCurrentMapName().size() > 0) {
 				cmd = "changelevel ";
 			}
@@ -144,7 +151,8 @@ void TasPlayer::Start() {
 	if (sar_tas_debug.GetInt() > 0) {
 		console->Print("Length: %d ticks\n", lastTick + 1);
 	}
-	processedFramebulks.clear();
+	processedFramebulks[0].clear();
+	processedFramebulks[1].clear();
 
 	if (startInfo.type == ChangeLevelCM) {
 		sv_bonus_challenge.SetValue(1);
@@ -160,7 +168,8 @@ void TasPlayer::PostStart() {
 	if (sar_tas_debug.GetInt() > 1) {
 		console->Print("Start tick: %d\n", startTick);
 	}
-	tasController->Enable();
+	tasControllers[0]->Enable();
+	if (this->isCoop) tasControllers[1]->Enable();
 	engine->ExecuteCommand("phys_timescale 1", true);  // technically it was supposed to fix the consistency issue
 }
 
@@ -182,7 +191,8 @@ void TasPlayer::Stop(bool interrupted) {
 	active = false;
 	ready = false;
 	currentTick = 0;
-	tasController->Disable();
+	tasControllers[0]->Disable();
+	tasControllers[1]->Disable();
 }
 
 void TasPlayer::Pause() {
@@ -199,10 +209,10 @@ void TasPlayer::AdvanceFrame() {
 }
 
 // returns raw framebulk that should be used for given tick
-TasFramebulk TasPlayer::GetRawFramebulkAt(int tick) {
+TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick) {
 	int closestTime = INT_MAX;
 	TasFramebulk closest;
-	for (TasFramebulk framebulk : framebulkQueue) {
+	for (TasFramebulk framebulk : framebulkQueue[slot]) {
 		int timeDist = tick - framebulk.tick;
 		if (timeDist >= 0 && timeDist < closestTime) {
 			closestTime = timeDist;
@@ -256,20 +266,22 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CMoveData *pMove) {
 	return pi;
 }
 
-void TasPlayer::SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue) {
-	this->framebulkQueue = fbQueue;
+void TasPlayer::SetFrameBulkQueue(int slot, std::vector<TasFramebulk> fbQueue) {
+	this->framebulkQueue[slot] = fbQueue;
 }
 
 void TasPlayer::SetStartInfo(TasStartType type, std::string param) {
+	// TODO: ensure start infos are the same in coop
 	this->startInfo = TasStartInfo{type, param};
 }
 
 void TasPlayer::SaveProcessedFramebulks() {
-	if (processedFramebulks.size() > 0 && tasFileName.size() > 0) {
+	// TODO: coop
+	if (processedFramebulks[0].size() > 0 && tasFileName.size() > 0) {
 		if (tasFileName.find("_raw") != std::string::npos) {
 			return;
 		}
-		TasParser::SaveFramebulksToFile(tasFileName, startInfo, processedFramebulks);
+		TasParser::SaveFramebulksToFile(tasFileName, startInfo, processedFramebulks[0]);
 	}
 }
 
@@ -284,8 +296,8 @@ void TasPlayer::SaveProcessedFramebulks() {
     we assume the response time for our "virtual controller" to be
     non-existing and just let it parse inputs corresponding to given tick.
 */
-void TasPlayer::FetchInputs(TasController *controller) {
-	TasFramebulk fb = GetRawFramebulkAt(currentTick);
+void TasPlayer::FetchInputs(int slot, TasController *controller) {
+	TasFramebulk fb = GetRawFramebulkAt(slot, currentTick);
 
 	int fbTick = fb.tick;
 
@@ -309,7 +321,7 @@ void TasPlayer::FetchInputs(TasController *controller) {
 // special tools have to be parsed in input processing part.
 // because of alternateticks, a pair of inputs are created and then executed at the same time,
 // meaning that second tick in pair reads outdated info.
-void TasPlayer::PostProcess(void *player, CMoveData *pMove) {
+void TasPlayer::PostProcess(int slot, void *player, CMoveData *pMove) {
 	if (paused || engine->IsGamePaused()) return;
 
 	pMove->m_flForwardMove = 0;
@@ -326,7 +338,7 @@ void TasPlayer::PostProcess(void *player, CMoveData *pMove) {
 		return;
 	}
 
-	TasFramebulk fb = GetRawFramebulkAt(tasTick);
+	TasFramebulk fb = GetRawFramebulkAt(slot, tasTick);
 
 	// update all tools that needs to be updated
 	auto fbTick = fb.tick;
@@ -338,12 +350,17 @@ void TasPlayer::PostProcess(void *player, CMoveData *pMove) {
 	}
 
 	// applying tools
-	for (TasTool *tool : TasTool::GetList()) {
+	for (TasTool *tool : TasTool::GetList(slot)) {
 		tool->Apply(fb, playerInfo);
 	}
 
 
 	// all behaviour that is prevented before ProcessMovement (We have to manually recreate them)
+	
+	int m_lifeState = *(int *)((uintptr_t)player + Offsets::m_lifeState);
+	if (m_lifeState == 2) { // LIFE_DEAD
+		fb.buttonStates[Use] = false;
+	}
 
 	// ducking midair
 	if (prevent_crouch_jump.GetBool()) {
@@ -391,7 +408,7 @@ void TasPlayer::PostProcess(void *player, CMoveData *pMove) {
 		std::vector<std::string> empty;
 		fb.commands = empty;
 	}
-	processedFramebulks.push_back(fb);
+	processedFramebulks[slot].push_back(fb);
 }
 
 void TasPlayer::Update() {
@@ -425,12 +442,13 @@ void TasPlayer::Update() {
 		}
 
 		// make sure all ticks are processed by tools before stopping
-		if ((!sar_tas_tools_enabled.GetBool() && currentTick > lastTick) || processedFramebulks.size() > lastTick || (!session->isRunning && startTick != -1)) {
+		if ((!sar_tas_tools_enabled.GetBool() && currentTick > lastTick) || processedFramebulks[0].size() > lastTick || (!session->isRunning && startTick != -1)) {
 			Stop();
 		}
 		// also do not allow inputs after TAS has ended
 		if (currentTick > lastTick) {
-			tasController->Disable();
+			tasControllers[0]->Disable();
+			tasControllers[1]->Disable();
 		}
 
 		// prevent usage of TAS tools in CM without cheats
@@ -449,6 +467,14 @@ void TasPlayer::Update() {
 }
 
 DECL_COMMAND_COMPLETION(sar_tas_play) {
+	// cursed code to get the current "complete" arg
+
+	std::string part;
+	if (match[strlen(match) - 1] == ' ') {
+		part = match;
+		match += strlen(match);
+	}
+
 	try {
 		for (
 			auto i = std::filesystem::recursive_directory_iterator(TAS_SCRIPTS_DIR);
@@ -471,7 +497,7 @@ DECL_COMMAND_COMPLETION(sar_tas_play) {
 				}
 
 				if (std::strstr(scriptName.c_str(), match)) {
-					items.push_back(scriptName);
+					items.push_back(part + scriptName);
 				}
 			}
 		}
@@ -481,28 +507,43 @@ DECL_COMMAND_COMPLETION(sar_tas_play) {
 	FINISH_COMMAND_COMPLETION();
 }
 
-static std::string g_replayTas;
+static std::string g_replayTas[2];
+static bool g_replayTasCoop;
 
 CON_COMMAND_F_COMPLETION(
 	sar_tas_play,
-	"sar_tas_play <filename> - plays a TAS script with given name\n",
+	"sar_tas_play <filename> [filename2] - plays a TAS script with given name. If two script names are given, play coop\n",
 	0,
 	AUTOCOMPLETION_FUNCTION(sar_tas_play)) {
 	IGNORE_DEMO_PLAYER();
 
-	if (args.ArgC() != 2) {
+	if (args.ArgC() != 2 && args.ArgC() != 3) {
 		return console->Print(sar_tas_play.ThisPtr()->m_pszHelpString);
 	}
 
-	std::string fileName(args[1]);
-	std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + fileName + "." + TAS_SCRIPT_EXT);
+	bool coop = args.ArgC() == 3;
+
+	g_replayTas[0] = args[1];
+	if (coop) g_replayTas[1] = args[2];
+	g_replayTasCoop = coop;
+		
 	try {
-		std::vector<TasFramebulk> fb = TasParser::ParseFile(filePath);
+		std::string fileName(args[1]);
+		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + fileName + "." + TAS_SCRIPT_EXT);
+		std::vector<TasFramebulk> fb = TasParser::ParseFile(0, filePath);
+		std::vector<TasFramebulk> fb2;
 
-		g_replayTas = args[1];
+		if (coop) {
+			std::string fileName2(args[2]);
+			std::string filePath2(std::string(TAS_SCRIPTS_DIR) + "/" + fileName2 + "." + TAS_SCRIPT_EXT);
+			fb2 = TasParser::ParseFile(1, filePath2);
+		}
 
-		if (fb.size() > 0) {
-			tasPlayer->SetFrameBulkQueue(fb);
+
+		if (fb.size() > 0 || fb2.size() > 0) {
+			tasPlayer->isCoop = coop;
+			tasPlayer->SetFrameBulkQueue(0, fb);
+			tasPlayer->SetFrameBulkQueue(1, fb2);
 			tasPlayer->Activate();
 		}
 	} catch (TasParserException &e) {
@@ -511,12 +552,16 @@ CON_COMMAND_F_COMPLETION(
 }
 
 CON_COMMAND(sar_tas_replay, "sar_tas_replay - replays the last played TAS\n") {
-	if (g_replayTas.size() == 0) {
+	if (g_replayTas[0].size() == 0) {
 		return console->Print("No TAS to replay\n");
 	}
 
-	console->Print("Replaying \"%s\"\n", g_replayTas.c_str());
-	engine->ExecuteCommand(Utils::ssprintf("sar_tas_play \"%s\"", g_replayTas.c_str()).c_str());
+	console->Print("Replaying \"%s\"\n", g_replayTas[0].c_str());
+	if (g_replayTasCoop) {
+		engine->ExecuteCommand(Utils::ssprintf("sar_tas_play \"%s\" \"%s\"", g_replayTas[0].c_str(), g_replayTas[1].c_str()).c_str());
+	} else {
+		engine->ExecuteCommand(Utils::ssprintf("sar_tas_play \"%s\"", g_replayTas[0].c_str()).c_str());
+	}
 }
 
 CON_COMMAND(sar_tas_pause, "sar_tas_pause - pauses TAS playback\n") {

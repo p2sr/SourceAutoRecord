@@ -66,8 +66,8 @@ private:
 	TasStartInfo startInfo;
 	std::string tasFileName;
 
-	std::vector<TasFramebulk> framebulkQueue;
-	std::vector<TasFramebulk> processedFramebulks;
+	std::vector<TasFramebulk> framebulkQueue[2];
+	std::vector<TasFramebulk> processedFramebulks[2];
 
 public:
 	void Update();
@@ -87,16 +87,17 @@ public:
 	void AdvanceFrame();
 	bool IsPaused();
 
-	TasFramebulk GetRawFramebulkAt(int tick);
+	TasFramebulk GetRawFramebulkAt(int slot, int tick);
 	TasPlayerInfo GetPlayerInfo(void *player, CMoveData *pMove);
-	void SetFrameBulkQueue(std::vector<TasFramebulk> fbQueue);
+	void SetFrameBulkQueue(int slot, std::vector<TasFramebulk> fbQueue);
 	void SetStartInfo(TasStartType type, std::string);
 	inline void SetLoadedFileName(std::string name) { tasFileName = name; };
 	void SaveProcessedFramebulks();
 
+	void FetchInputs(int slot, TasController *controller);
+	void PostProcess(int slot, void *player, CMoveData *pMove);
 
-	void FetchInputs(TasController *controller);
-	void PostProcess(void *player, CMoveData *pMove);
+	bool isCoop;
 
 	TasPlayer();
 	~TasPlayer();
