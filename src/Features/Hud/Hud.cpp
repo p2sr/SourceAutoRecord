@@ -726,7 +726,7 @@ HUD_ELEMENT_MODE2(portal_angles_2, "0", 0, 2, "Draw the camera angles of the las
 HUD_ELEMENT2(duckstate, "0", "Draw the state of player ducking.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
 	auto player = client->GetPlayer(ctx->slot + 1);
 	if (!player) {
-		ctx->DrawElement("duck: -");
+		ctx->DrawElement("duckstate: -");
 		return;
 	}
 	bool holdingDuck = (inputHud.GetButtonBits(ctx->slot) & IN_DUCK);
@@ -736,8 +736,14 @@ HUD_ELEMENT2(duckstate, "0", "Draw the state of player ducking.\n", HudType_InGa
 	int duckTimeMsecs = *reinterpret_cast<int *>((uintptr_t)player + Offsets::C_m_nDuckTimeMsecs);
 	int duckJumpTimeMsecs = *reinterpret_cast<int *>((uintptr_t)player + Offsets::C_m_nDuckJumpTimeMsecs);
 	bool duckedInAir = client->GetPortalLocal(player).m_bDuckedInAir;
+	Vector viewOffset = client->GetViewOffset(player);
 
 	std::string duckState = "standing";
+	//recovering from duck jump. standing, but can't crouch until interpolation is over
+	if (!ducking && !ducked && duckJumpTimeMsecs > 0) {
+		int remaining = (200 - (1000 - duckJumpTimeMsecs)) / 16 + 1;
+		duckState += " (duck jump recovery, " + std::to_string(remaining) + " ticks left)";
+	}
 	if (ducking) {
 		duckState = "ducking";
 		int length = 400;
@@ -750,18 +756,16 @@ HUD_ELEMENT2(duckstate, "0", "Draw the state of player ducking.\n", HudType_InGa
 		if (duckedInAir) duckState = "air " + duckState;
 	}
 	else if (ducked) {
-		//TODO: figure out how QC works and make a proper debug for it
-		/*if (duckJumpTimeMsecs>0) {
-			duckState = "forced duck";
-		}
-		else if (inDuckJump) {
+		if (holdingDuck && inDuckJump && (duckJumpTimeMsecs > 0 || viewOffset.z > 28.0)) {
 			duckState = "quantum crouch";
 			if (duckedInAir) duckState += " (low variant)";
-		} else {
+		}
+		else if (inDuckJump && duckJumpTimeMsecs==0) {
+			duckState = "forced duck";
+		}
+		else {
 			duckState = "ducked";
-		}*/
-
-		duckState = "ducked";
+		}
 	}
 
 	ctx->DrawElement("duckstate: %s", duckState.c_str());
