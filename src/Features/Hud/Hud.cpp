@@ -723,50 +723,58 @@ HUD_ELEMENT_MODE2(portal_angles_2, "0", 0, 2, "Draw the camera angles of the las
 }
 
 
-HUD_ELEMENT2(duckstate, "0", "Draw the state of player ducking.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+HUD_ELEMENT_MODE2(duckstate, "0", 0, 2, 
+	"Draw the state of player ducking.\n"
+	"1 - shows either ducked or standing state\n"
+	"2 - shows detailed report (requires sv_cheats)\n", 
+	HudType_InGame | HudType_Paused | HudType_LoadingScreen) 
+{
 	auto player = client->GetPlayer(ctx->slot + 1);
 	if (!player) {
 		ctx->DrawElement("duckstate: -");
 		return;
 	}
-	bool holdingDuck = (inputHud.GetButtonBits(ctx->slot) & IN_DUCK);
 	bool ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::C_m_bDucked);
-	bool ducking = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::C_m_bDucking);
-	bool inDuckJump = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::C_m_bInDuckJump);
-	int duckTimeMsecs = *reinterpret_cast<int *>((uintptr_t)player + Offsets::C_m_nDuckTimeMsecs);
-	int duckJumpTimeMsecs = *reinterpret_cast<int *>((uintptr_t)player + Offsets::C_m_nDuckJumpTimeMsecs);
-	bool duckedInAir = client->GetPortalLocal(player).m_bDuckedInAir;
-	Vector viewOffset = client->GetViewOffset(player);
+	
+	if (mode == 1 || !sv_cheats.GetBool()) {
+		ctx->DrawElement("duckstate: %s", ducked ? "ducked" : "standing");
+	} else {
+		bool holdingDuck = (inputHud.GetButtonBits(ctx->slot) & IN_DUCK);
+		bool ducking = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::C_m_bDucking);
+		bool inDuckJump = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::C_m_bInDuckJump);
+		int duckTimeMsecs = *reinterpret_cast<int *>((uintptr_t)player + Offsets::C_m_nDuckTimeMsecs);
+		int duckJumpTimeMsecs = *reinterpret_cast<int *>((uintptr_t)player + Offsets::C_m_nDuckJumpTimeMsecs);
+		bool duckedInAir = client->GetPortalLocal(player).m_bDuckedInAir;
+		Vector viewOffset = client->GetViewOffset(player);
 
-	std::string duckState = "standing";
-	//recovering from duck jump. standing, but can't crouch until interpolation is over
-	if (!ducking && !ducked && duckJumpTimeMsecs > 0) {
-		int remaining = (200 - (1000 - duckJumpTimeMsecs)) / 16 + 1;
-		duckState += " (duck jump recovery, " + std::to_string(remaining) + " ticks left)";
-	}
-	if (ducking) {
-		duckState = "ducking";
-		int length = 400;
-		if (ducked || !holdingDuck) {
-			duckState = "unducking";
-			length = 200;
+		std::string duckState = "standing";
+		//recovering from duck jump. standing, but can't crouch until interpolation is over
+		if (!ducking && !ducked && duckJumpTimeMsecs > 0) {
+			int remaining = (200 - (1000 - duckJumpTimeMsecs)) / 16 + 1;
+			duckState += " (duck jump recovery, " + std::to_string(remaining) + " ticks left)";
 		}
-		int remaining = (length - (1000 - duckTimeMsecs))/16 + 1;
-		duckState += " (" + std::to_string(remaining) + " ticks left)";
-		if (duckedInAir) duckState = "air " + duckState;
-	}
-	else if (ducked) {
-		if (holdingDuck && inDuckJump && (duckJumpTimeMsecs > 0 || viewOffset.z > 28.0)) {
-			duckState = "quantum crouch";
-			if (duckedInAir) duckState += " (low variant)";
+		if (ducking) {
+			duckState = "ducking";
+			int length = 400;
+			if (ducked || !holdingDuck) {
+				duckState = "unducking";
+				length = 200;
+			}
+			int remaining = (length - (1000 - duckTimeMsecs)) / 16 + 1;
+			duckState += " (" + std::to_string(remaining) + " ticks left)";
+			if (duckedInAir) duckState = "air " + duckState;
+		} else if (ducked) {
+			if (holdingDuck && inDuckJump && (duckJumpTimeMsecs > 0 || viewOffset.z > 28.0)) {
+				duckState = "quantum crouch";
+				if (duckedInAir) duckState += " (low variant)";
+			} else if (inDuckJump && duckJumpTimeMsecs == 0) {
+				duckState = "forced duck";
+			} else {
+				duckState = "ducked";
+			}
 		}
-		else if (inDuckJump && duckJumpTimeMsecs==0) {
-			duckState = "forced duck";
-		}
-		else {
-			duckState = "ducked";
-		}
-	}
 
-	ctx->DrawElement("duckstate: %s", duckState.c_str());
+		ctx->DrawElement("duckstate: %s", duckState.c_str());
+	}
 }
+
