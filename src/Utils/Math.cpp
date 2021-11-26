@@ -40,8 +40,8 @@ void Math::AngleVectors(const QAngle &angles, Vector *forward) {
 void Math::AngleVectors(const QAngle &angles, Vector *forward, Vector *right, Vector *up) {
 	float sr, sp, sy, cr, cp, cy;
 
-	Math::SinCos(DEG2RAD(angles.x), &sy, &cy);
-	Math::SinCos(DEG2RAD(angles.y), &sp, &cp);
+	Math::SinCos(DEG2RAD(angles.y), &sy, &cy);
+	Math::SinCos(DEG2RAD(angles.x), &sp, &cp);
 	Math::SinCos(DEG2RAD(angles.z), &sr, &cr);
 
 	if (forward) {
@@ -60,6 +60,23 @@ void Math::AngleVectors(const QAngle &angles, Vector *forward, Vector *right, Ve
 		up->x = cr * sp * cy + -sr * -sy;
 		up->y = cr * sp * sy + -sr * cy;
 		up->z = cr * cp;
+	}
+}
+void Math::VectorAngles(Vector& forward, Vector& pseudoup, QAngle* angles) {
+	if (!angles) return;
+	Vector left = pseudoup.Cross(forward).Normalize();
+
+	float xyDist = forward.Length2D();
+
+	if (xyDist > 0.001f) {
+		angles->y = RAD2DEG(atan2f(forward.y, forward.x));
+		angles->x = RAD2DEG(atan2f(-forward.z, xyDist));
+		float up_z = (left.y * forward.x) - (left.x * forward.y);
+		angles->z = RAD2DEG(atan2f(left.z, up_z));
+	} else {
+		angles->y = RAD2DEG(atan2f(-left.x, left.y));
+		angles->x = RAD2DEG(atan2f(-forward.z, xyDist));
+		angles->z = 0;
 	}
 }
 float Math::RandomNumber(const float &min, const float &max) {

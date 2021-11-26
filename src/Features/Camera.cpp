@@ -31,6 +31,9 @@ Variable sar_cam_ortho("sar_cam_ortho", "0", 0, 1, "Enables or disables camera o
 Variable sar_cam_ortho_scale("sar_cam_ortho_scale", "1", 0.001, "Changes the scale of orthographic projection (how many units per pixel)");
 Variable sar_cam_ortho_nearz("sar_cam_ortho_nearz", "1", -10000, 10000, "Changes the near Z plane of orthographic projection.");
 
+Variable sar_cam_force_eye_pos("sar_cam_force_eye_pos", "0", 0, 1,
+                       "Forces camera to be placed exactly on the player's eye position\n");
+
 Variable cl_skip_player_render_in_main_view;
 Variable r_drawviewmodel;
 Variable ss_force_primary_fullscreen;
@@ -218,6 +221,41 @@ CameraState Camera::InterpolateStates(float time) {
 
 //Overrides view.
 void Camera::OverrideView(CViewSetup *m_View) {
+
+	if (sar_cam_force_eye_pos.GetBool() && sv_cheats.GetBool()) {
+		auto player = client->GetPlayer(GET_SLOT() + 1);
+		if (player) {
+			auto vEye = client->GetAbsOrigin(player) + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
+			auto angles = engine->GetAngles(engine->IsOrange() ? 0 : GET_SLOT());
+
+			CBaseHandle portalHandle = *reinterpret_cast<CBaseHandle *>((uintptr_t)player + Offsets::m_hPortalEnvironment);
+			//TODO: LookupEntity didn't work for me so I'm doing some good ol' hacks to get the entity out of handle. replace that.
+			unsigned int portalID = portalHandle.GetEntryIndex();
+			void *portalEntity = client->GetPlayer(portalID);
+			if (portalEntity != nullptr) {
+				Vector portalPos = *reinterpret_cast<Vector *>((uintptr_t)portalEntity + Offsets::m_ptOrigin);
+				Vector portalForward = *reinterpret_cast<Vector *>((uintptr_t)portalEntity + Offsets::m_vPortalForward);
+
+				Vector vEyeToPortalCenter = portalPos - vEye;
+
+				// eyes are behind a portal, should translate that
+				if (portalForward.Dot(vEyeToPortalCenter) > 0.0f) {
+					VMatrix portalMatrix = *reinterpret_cast<VMatrix *>((uintptr_t)portalEntity + Offsets::m_matrixThisToLinked);
+
+					vEye = portalMatrix.PointTransform(vEye);
+					Vector forward, up;
+					Math::AngleVectors(angles, &forward, nullptr, &up);
+					forward = portalMatrix.VectorTransform(forward);
+					up = portalMatrix.VectorTransform(up);
+					Math::VectorAngles(forward, up, &angles);
+				}
+			}
+
+			m_View->angles = angles;
+			m_View->origin = vEye;
+		}
+	}
+
 	if (timeOffsetRefreshRequested) {
 		timeOffset = engine->GetClientTime() - engine->demoplayer->GetTick() / 60.0f;
 		timeOffsetRefreshRequested = false;

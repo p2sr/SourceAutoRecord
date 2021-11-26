@@ -172,6 +172,7 @@ namespace Offsets {
 	int S_m_StatsThisLevel;
 	int C_m_StatsThisLevel;
 	int m_lifeState;
+	int m_hPortalEnvironment;
 
 	//CWeaponPortalgun
 	int m_bCanFirePortal1;
@@ -184,6 +185,9 @@ namespace Offsets {
 	int m_bActivated;
 	int m_bIsPortal2;
 	int m_hActiveWeapon;
+	int m_ptOrigin;
+	int m_vPortalForward;
+	int m_matrixThisToLinked;
 
 	// IEngineVGuiInternal
 	int IsGameUIVisible;

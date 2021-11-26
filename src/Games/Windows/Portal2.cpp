@@ -282,6 +282,8 @@ void Portal2::LoadOffsets() {
 	KeyDown = 398;                // CInput::JoyStickApplyMovement
 	KeyUp = 377;                  // CInput::JoyStickApplyMovement
 	OverrideView = 18;            // ClientModeShared
+	m_matrixThisToLinked = 3516;  // CPortal_Base2D
+	m_vPortalForward = 4128;      // CPortal_Base2D
 
 	// vguimatsurface.dll
 

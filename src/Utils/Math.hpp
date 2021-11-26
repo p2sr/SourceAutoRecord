@@ -17,6 +17,7 @@ namespace Math {
 	void VectorAdd(const Vector &a, const Vector &b, Vector &c);
 	void AngleVectors(const QAngle &angles, Vector *forward);
 	void AngleVectors(const QAngle &angles, Vector *forward, Vector *right, Vector *up);
+	void VectorAngles(Vector &forward, Vector &pseudoup, QAngle *angles);
 	void VectorScale(Vector const &src, float b, Vector &dst);
 	void VectorCopy(const Vector &src, Vector &dst);
 	float RandomNumber(const float &min, const float &max);

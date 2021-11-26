@@ -1125,6 +1125,22 @@ struct matrix3x4_t {
 
 struct VMatrix {
 	float m[4][4];
+
+	inline Vector VectorTransform(Vector vVec) const {
+		return Vector(
+			m[0][0] * vVec.x + m[0][1] * vVec.y + m[0][2] * vVec.z,
+			m[1][0] * vVec.x + m[1][1] * vVec.y + m[1][2] * vVec.z,
+			m[2][0] * vVec.x + m[2][1] * vVec.y + m[2][2] * vVec.z
+		);
+	}
+
+	inline Vector PointTransform(Vector vVec) const {
+		return Vector(
+			m[0][0] * vVec.x + m[0][1] * vVec.y + m[0][2] * vVec.z + m[0][3],
+			m[1][0] * vVec.x + m[1][1] * vVec.y + m[1][2] * vVec.z + m[1][3],
+			m[2][0] * vVec.x + m[2][1] * vVec.y + m[2][2] * vVec.z + m[2][3]
+		);
+	}
 };
 
 struct Ray_t {
