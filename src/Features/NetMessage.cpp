@@ -4,6 +4,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Utils.hpp"
+#include "Event.hpp"
 
 #include <map>
 #include <queue>
@@ -23,6 +24,7 @@ static inline void handleMessage(const char *type, void *data, size_t size) {
 	if (!strcmp(type, "__sync")) {
 		if (size == 6 && !strcmp((char *)data, "ready")) {
 			g_orangeReady = true;
+			Event::Trigger<Event::ORANGE_READY>({});
 		}
 		return;
 	}

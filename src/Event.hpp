@@ -40,6 +40,7 @@ namespace Event {
 		COOP_RESET_DONE,
 		COOP_RESET_REMOTE,
 		FRAME,
+		ORANGE_READY,
 	};
 
 	template <EventType E>
