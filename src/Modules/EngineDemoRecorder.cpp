@@ -6,6 +6,7 @@
 #include "Engine.hpp"
 #include "Event.hpp"
 #include "Scheduler.hpp"
+#include "Features/AutoSubmit.hpp"
 #include "Features/FovChanger.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -414,7 +415,11 @@ ON_EVENT(CM_FLAGS) {
 
 					engine->demoplayer->replayName += "_";
 					engine->demoplayer->replayName += time;
+
+					demoFile = newName;
 				}
+
+				AutoSubmit::FinishRun(event.time, demoFile.c_str());
 			}
 		});
 	}

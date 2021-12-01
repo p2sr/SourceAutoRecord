@@ -194,6 +194,7 @@
     <ClCompile Include="Features\Tas\TasTools\DecelTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\SetAngleTool.cpp" />
     <ClCompile Include="Features\Updater.cpp" />
+    <ClCompile Include="Features\AutoSubmit.cpp" />
     <ClCompile Include="Features\ReplaySystem\Replay.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayPlayer.cpp" />
     <ClCompile Include="Features\ReplaySystem\ReplayProvider.cpp" />
@@ -376,6 +377,7 @@
     <ClInclude Include="Features\Tas\TasTools\DecelTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\SetAngleTool.hpp" />
     <ClInclude Include="Features\Updater.hpp" />
+    <ClInclude Include="Features\AutoSubmit.hpp" />
     <ClInclude Include="Features\ReplaySystem\Replay.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayFrame.hpp" />
     <ClInclude Include="Features\ReplaySystem\ReplayPlayer.hpp" />

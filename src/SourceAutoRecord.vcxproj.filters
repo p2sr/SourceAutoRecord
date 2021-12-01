@@ -181,6 +181,9 @@
     <ClCompile Include="Features\Updater.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\AutoSubmit.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Teleporter.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
@@ -625,6 +628,9 @@
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Updater.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\AutoSubmit.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Teleporter.hpp">
