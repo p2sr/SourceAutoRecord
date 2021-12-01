@@ -662,15 +662,15 @@ bool Server::Init() {
 		uintptr_t code = Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 46 04 66 0F EF C0 DD 5C 24 08 F2 0F 5A 44 24 08 8B 40 24 85 C0", 0);
 #endif
 		Memory::UnProtect((void *)code, sizeof g_orig_check_stuck_code);
-		//memcpy(g_orig_check_stuck_code, (void *)code, sizeof g_orig_check_stuck_code);
+		memcpy(g_orig_check_stuck_code, (void *)code, sizeof g_orig_check_stuck_code);
 
-		//*(uint8_t *)code = 0xE8;
-		//*(uint32_t *)(code + 1) = (uint32_t)&hostTimeWrap - (code + 5);
+		*(uint8_t *)code = 0xE8;
+		*(uint32_t *)(code + 1) = (uint32_t)&hostTimeWrap - (code + 5);
 #ifdef _WIN32
 		*(uint8_t *)(code + 5) = 0x90; // nop
 #endif
 
-		//g_check_stuck_code = (void *)code;
+		g_check_stuck_code = (void *)code;
 	}
 
 	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);
