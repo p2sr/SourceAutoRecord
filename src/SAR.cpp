@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include <ctime>
+#include <curl/curl.h>
 
 #ifdef _WIN32
 #	include <filesystem>
@@ -168,6 +169,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 		CrashHandler::Init();
 
 		SarInitHandler::RunAll();
+
+		curl_global_init(CURL_GLOBAL_ALL);
 
 		tier1 = new Tier1();
 		if (tier1->Init()) {
