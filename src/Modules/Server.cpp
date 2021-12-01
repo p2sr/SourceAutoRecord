@@ -250,7 +250,7 @@ static void TriggerCMFlag(int slot, float time, bool end) {
 
 extern Hook g_flagStartTouchHook;
 DETOUR(Server::StartTouchChallengeNode, void *entity) {
-	if (server->IsPlayer(entity)) {
+	if (server->IsPlayer(entity) && client->GetChallengeStatus() == CMStatus::CHALLENGE) {
 		int slot = server->GetSplitScreenPlayerSlot(entity);
 		if (!hasSlotCompleted(thisptr, slot)) {
 			float time = server->GetCMTimer();
