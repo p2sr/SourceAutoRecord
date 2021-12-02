@@ -398,7 +398,7 @@ void TasPlayer::PostProcess(int slot, void *player, CMoveData *pMove) {
 
 	// making sure none of the move values are NaN
 	if (std::isnan(pMove->m_flForwardMove)) pMove->m_flForwardMove = 0;
-	if (std::isnan(pMove->m_flSideMove)) pMove->m_flForwardMove = 0;
+	if (std::isnan(pMove->m_flSideMove)) pMove->m_flSideMove = 0;
 
 	pMove->m_nButtons = 0;
 	for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
