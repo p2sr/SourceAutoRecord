@@ -64,7 +64,7 @@ private:
 	int wasEnginePaused; // Used to check if we need to revert incrementing a tick
 
 	TasStartInfo startInfo;
-	std::string tasFileName;
+	std::string tasFileName[2];
 
 	std::vector<TasFramebulk> framebulkQueue[2];
 	std::vector<TasFramebulk> processedFramebulks[2];
@@ -91,7 +91,7 @@ public:
 	TasPlayerInfo GetPlayerInfo(void *player, CMoveData *pMove);
 	void SetFrameBulkQueue(int slot, std::vector<TasFramebulk> fbQueue);
 	void SetStartInfo(TasStartType type, std::string);
-	inline void SetLoadedFileName(std::string name) { tasFileName = name; };
+	inline void SetLoadedFileName(int slot, std::string name) { tasFileName[slot] = name; };
 	void SaveProcessedFramebulks();
 
 	void FetchInputs(int slot, TasController *controller);

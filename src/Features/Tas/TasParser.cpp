@@ -611,7 +611,7 @@ std::vector<TasFramebulk> TasParser::ParseFile(int slot, std::string filePath) {
 		throw TasParserException(Utils::ssprintf("[%s] no framebulks in TAS script", filePath.c_str()));
 	}
 
-	tasPlayer->SetLoadedFileName(filePath);
+	tasPlayer->SetLoadedFileName(slot, filePath);
 
 	return fb;
 }

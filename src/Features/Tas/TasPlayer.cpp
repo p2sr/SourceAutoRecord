@@ -276,12 +276,16 @@ void TasPlayer::SetStartInfo(TasStartType type, std::string param) {
 }
 
 void TasPlayer::SaveProcessedFramebulks() {
-	// TODO: coop
-	if (processedFramebulks[0].size() > 0 && tasFileName.size() > 0) {
-		if (tasFileName.find("_raw") != std::string::npos) {
-			return;
+	if (processedFramebulks[0].size() > 0 && tasFileName[0].size() > 0) {
+		if (tasFileName[0].find("_raw") == std::string::npos) {
+			TasParser::SaveFramebulksToFile(tasFileName[0], startInfo, processedFramebulks[0]);
 		}
-		TasParser::SaveFramebulksToFile(tasFileName, startInfo, processedFramebulks[0]);
+	}
+
+	if (processedFramebulks[1].size() > 0 && tasFileName[1].size() > 0) {
+		if (tasFileName[1].find("_raw") == std::string::npos) {
+			TasParser::SaveFramebulksToFile(tasFileName[1], startInfo, processedFramebulks[1]);
+		}
 	}
 }
 
