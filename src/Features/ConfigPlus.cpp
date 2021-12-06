@@ -579,15 +579,30 @@ CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only 
 		return;
 	}
 
-	if (EvalCondition(cond)) {
-		std::string cmd = args[2];
-		for (int i = 3; i < args.ArgC(); ++i) {
-			cmd += Utils::ssprintf(" \"%s\"", args[i]);
+	bool should_run = EvalCondition(cond);
+	FreeCondition(cond);
+
+	if (!should_run) return;
+
+	const char *cmd;
+
+	if (args.ArgC() == 3) {
+		cmd = args[2];
+	} else {
+		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
+
+		while (isspace(*cmd)) ++cmd;
+
+		if (*cmd == '"') {
+			cmd += strlen(args[1]) + 2;
+		} else {
+			cmd += strlen(args[1]);
 		}
-		engine->ExecuteCommand(cmd.c_str());
+
+		while (isspace(*cmd)) ++cmd;
 	}
 
-	FreeCondition(cond);
+	engine->ExecuteCommand(cmd);
 }
 
 CON_COMMAND_F(seq, "seq <commands>... - runs a sequence of commands one tick after one another\n", FCVAR_DONTRECORD) {
