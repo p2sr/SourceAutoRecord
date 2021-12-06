@@ -147,6 +147,7 @@ std::string EngineDemoPlayer::GetLevelName() {
 // 0x09: 'wait' run
 // 0x0A: speedrun finish
 // 0x0B: timestamp (UTC)
+// 0x0C: file checksum
 void EngineDemoPlayer::CustomDemoData(char *data, size_t length) {
 	if (data[0] == 0x03 || data[0] == 0x04) {  // Entity input data
 		std::optional<int> slot;

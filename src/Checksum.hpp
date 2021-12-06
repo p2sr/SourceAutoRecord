@@ -4,6 +4,7 @@
 #include <cstdint>
 
 bool AddDemoChecksum(const char *filename);
+void AddDemoFileChecksums();
 
 enum VerifyResult {
 	VERIFY_BAD_DEMO,

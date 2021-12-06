@@ -1,11 +1,17 @@
 #include "Checksum.hpp"
 
 #include "Utils.hpp"
+#include "Modules/Engine.hpp"
 
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <algorithm>
 #include <string>
+#include <thread>
+#include <map>
+#include <filesystem>
 
 #define WRITE_LE32(x)          \
 	(uint8_t)(x & 0xFF),          \
@@ -200,7 +206,78 @@ std::pair<VerifyResult, uint32_t> VerifyDemoChecksum(const char *filename) {
 	return std::pair(res, storedSarChecksum);
 }
 
+#define NUM_FILE_SUM_THREADS 4
+
+static std::thread g_sumthreads[NUM_FILE_SUM_THREADS];
+static std::map<std::string, uint32_t> g_filesums[NUM_FILE_SUM_THREADS];
+
+static void calcFileSums(std::map<std::string, uint32_t> *out, std::vector<std::string> paths) {
+	for (auto &path : paths) {
+		uint32_t sum = 0; // if error, just use 0
+
+		FILE *fp = fopen(path.c_str(), "rb");  // Open for binary reading
+		if (fp) {
+			fileChecksum(fp, 0, &sum);
+			fclose(fp);
+		}
+
+		(*out)[path] = sum;
+	}
+}
+
+static void initFileSums() {
+	std::vector<std::string> paths;
+	for (auto &ent : std::filesystem::recursive_directory_iterator(".")) {
+		if (ent.status().type() == std::filesystem::file_type::regular || ent.status().type() == std::filesystem::file_type::symlink) {
+			auto path = ent.path().string();
+			std::replace(path.begin(), path.end(), '\\', '/');
+			if (Utils::EndsWith(path, ".nut")
+				|| Utils::EndsWith(path, ".so")
+				|| Utils::EndsWith(path, ".dll")
+				|| (Utils::EndsWith(path, ".vpk") && path.find("portal2_dlc") != std::string::npos)
+				|| path.find("scripts/talker") != std::string::npos)
+			{
+				paths.push_back(path);
+			}
+		}
+	}
+
+	size_t idx = 0;
+	for (size_t i = 0; i < NUM_FILE_SUM_THREADS; ++i) {
+		size_t end = paths.size() * (i+1) / NUM_FILE_SUM_THREADS;
+		g_sumthreads[i] = std::thread(calcFileSums, &g_filesums[i], std::vector<std::string>(paths.begin() + idx, paths.begin() + end));
+		idx = end;
+	}
+}
+
+static void addFileChecksum(const char *path, uint32_t sum) {
+	size_t bufLen = strlen(path) + 6;
+	uint8_t *buf = new uint8_t[bufLen];
+
+	buf[0] = 0x0C;
+	*(uint32_t *)(buf + 1) = sum;
+	strcpy((char *)(buf + 5), path);
+	engine->demorecorder->RecordData(buf, bufLen);
+
+	delete[] buf;
+}
+
+void AddDemoFileChecksums() {
+	// make sure all file sums are fully calculated first
+	for (auto &thrd : g_sumthreads) {
+		if (thrd.joinable()) thrd.join();
+	}
+
+	for (auto &sums : g_filesums) {
+		for (auto [path, sum] : sums) {
+			addFileChecksum(path.c_str(), sum);
+		}
+	}
+}
+
 void InitSARChecksum() {
+	initFileSums();
+
 	std::string path = Utils::GetSARPath();
 
 	FILE *fp = fopen(path.c_str(), "rb");  // Open for binary reading

@@ -153,6 +153,7 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 	if (state == SIGNONSTATE_FULL && needToRecordInitialVals) {
 		needToRecordInitialVals = false;
 		RecordTimestamp();
+		AddDemoFileChecksums();
 		RecordInitialVal("host_timescale");
 		RecordInitialVal("m_yaw");
 		RecordInitialVal("cl_fov");
