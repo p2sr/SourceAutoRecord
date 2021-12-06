@@ -65,6 +65,23 @@ static void RecordInitialVal(const char *name) {
 	free(buf);
 }
 
+static void RecordTimestamp() {
+	time_t t = time(NULL);
+	struct tm *tm = gmtime(&t);
+
+	uint8_t buf[8];
+
+	buf[0] = 0x0B;
+	*(uint16_t *)(buf + 1) = tm->tm_year + 1900;
+	buf[3] = tm->tm_mon;
+	buf[4] = tm->tm_mday;
+	buf[5] = tm->tm_hour;
+	buf[6] = tm->tm_min;
+	buf[7] = tm->tm_sec;
+
+	engine->demorecorder->RecordData(buf, sizeof buf);
+}
+
 ON_EVENT(SESSION_END) {
 	if (*engine->demorecorder->m_bRecording && sar_autorecord.GetInt() == -1) {
 #ifdef _WIN32
@@ -135,6 +152,7 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 
 	if (state == SIGNONSTATE_FULL && needToRecordInitialVals) {
 		needToRecordInitialVals = false;
+		RecordTimestamp();
 		RecordInitialVal("host_timescale");
 		RecordInitialVal("m_yaw");
 		RecordInitialVal("cl_fov");
