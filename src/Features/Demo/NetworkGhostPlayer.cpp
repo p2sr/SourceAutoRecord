@@ -793,7 +793,7 @@ CON_COMMAND(ghost_connect,
 	}
 
 	if (networkManager.name == "") {
-		return console->Print("Please change your name with \"ghost_name\" before connecting to the server.\n");
+		networkManager.name = Variable("name").GetString();
 	}
 
 	if (networkManager.isConnected) {
