@@ -27,7 +27,7 @@ REDECL(EngineDemoRecorder::RecordCustomData);
 REDECL(EngineDemoRecorder::stop_callback);
 REDECL(EngineDemoRecorder::record_callback);
 
-Variable sar_demo_overwrite_bak("sar_demo_overwrite_bak", "0", "Rename demos to (name)_bak if they would be overwritten by recording\n");
+Variable sar_demo_overwrite_bak("sar_demo_overwrite_bak", "0", 0, "Rename demos to (name)_bak if they would be overwritten by recording\n");
 
 int EngineDemoRecorder::GetTick() {
 	return this->GetRecordingTick(this->s_ClientDemoRecorder->ThisPtr());
@@ -169,6 +169,25 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 	return result;
 }
 
+static std::string getDemoBakName(const char *base, int idx) {
+	if (idx == 0) return Utils::ssprintf("%s/%s.dem", engine->GetGameDirectory(), base);
+	if (idx == 1 && sar_demo_overwrite_bak.GetInt() == 1) return Utils::ssprintf("%s/%s_bak.dem", engine->GetGameDirectory(), base);
+	return Utils::ssprintf("%s/%s_bak%d.dem", engine->GetGameDirectory(), base, idx);
+}
+
+static void preventOverwrite(const char *filename, int idx) {
+	if (idx >= sar_demo_overwrite_bak.GetInt()) return;
+	try {
+		auto cur = getDemoBakName(filename, idx);
+		auto bak = getDemoBakName(filename, idx+1);
+		if (std::filesystem::exists(cur)) {
+			preventOverwrite(filename, idx+1);
+			std::filesystem::rename(cur, bak);
+		}
+	} catch (...) {
+	}
+}
+
 // CDemoRecorder::StartRecording
 DETOUR(EngineDemoRecorder::StartRecording, const char *filename, bool continuously) {
 	fovChanger->needToUpdate = true;
@@ -176,15 +195,7 @@ DETOUR(EngineDemoRecorder::StartRecording, const char *filename, bool continuous
 	timescaleDetect->Spawn();
 
 	if (sar_demo_overwrite_bak.GetBool()) {
-		try {
-			std::string path = engine->GetGameDirectory();
-			path += "/";
-			path += filename;
-			if (std::filesystem::exists(path + ".dem")) {
-				std::filesystem::rename(path + ".dem", path + "_bak.dem");
-			}
-		} catch (...) {
-		}
+		preventOverwrite(filename, 0);
 	}
 
 	if (!engine->demorecorder->isRecordingDemo) {
