@@ -17,7 +17,7 @@ bool Tier1::Init() {
 
 		auto listdemo = reinterpret_cast<ConCommand *>(this->FindCommandBase(this->g_pCVar->ThisPtr(), "listdemo"));
 		if (listdemo) {
-			this->ConCommand_VTable = listdemo->ConCommandBase_VTable;
+			this->ConCommand_VTable = *(void **)listdemo;
 
 			if (listdemo->m_fnCompletionCallback) {
 				auto callback = (uintptr_t)listdemo->m_fnCompletionCallback + Offsets::AutoCompletionFunc;
@@ -27,7 +27,7 @@ bool Tier1::Init() {
 
 		auto sv_lan = reinterpret_cast<ConVar *>(this->FindCommandBase(this->g_pCVar->ThisPtr(), "sv_lan"));
 		if (sv_lan) {
-			this->ConVar_VTable = sv_lan->ConCommandBase_VTable;
+			this->ConVar_VTable = *(void **)sv_lan;
 			this->ConVar_VTable2 = sv_lan->ConVar_VTable;
 
 			auto vtable =

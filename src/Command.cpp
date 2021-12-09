@@ -42,7 +42,7 @@ void Command::UniqueFor(int version) {
 }
 void Command::Register() {
 	if (!this->isRegistered) {
-		this->ptr->ConCommandBase_VTable = tier1->ConCommand_VTable;
+		*(void **)this->ptr = tier1->ConCommand_VTable; // stealing vtable from the game
 		tier1->RegisterConCommand(tier1->g_pCVar->ThisPtr(), this->ptr);
 		tier1->m_pConCommandList = this->ptr;
 	}

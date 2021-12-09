@@ -153,7 +153,7 @@ void Variable::Register() {
 		this->isRegistered = true;
 		FnChangeCallback_t callback = this->ptr->m_fnChangeCallback.m_Size > 0 ? this->ptr->m_fnChangeCallback.m_pElements[0] : nullptr;
 		this->Realloc();
-		this->ptr->ConCommandBase_VTable = tier1->ConVar_VTable;
+		*(void **)this->ptr = tier1->ConVar_VTable; // stealing vtable from the game
 		this->ptr->ConVar_VTable = tier1->ConVar_VTable2;
 		tier1->Create(this->ptr, this->ptr->m_pszName, this->ptr->m_pszDefaultValue, this->ptr->m_nFlags, this->ptr->m_pszHelpString, this->ptr->m_bHasMin, this->ptr->m_fMinVal, this->ptr->m_bHasMax, this->ptr->m_fMaxVal, callback);
 	}

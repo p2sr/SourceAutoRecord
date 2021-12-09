@@ -181,21 +181,23 @@ public:
 };
 
 struct ConCommandBase {
-	void *ConCommandBase_VTable;  // 0
-	ConCommandBase *m_pNext;      // 4
-	bool m_bRegistered;           // 8
-	const char *m_pszName;        // 12
-	const char *m_pszHelpString;  // 16
-	int m_nFlags;                 // 20
-
 	ConCommandBase(const char *name, int flags, const char *helpstr)
-		: ConCommandBase_VTable(nullptr)
-		, m_pNext(nullptr)
+		: m_pNext(nullptr)
 		, m_bRegistered(false)
 		, m_pszName(name)
 		, m_pszHelpString(helpstr)
 		, m_nFlags(flags) {
 	}
+
+	virtual ~ConCommandBase() {};
+	virtual bool IsCommand() const { return false; }; // will get overwritten anyway lol
+	// Note: vtable incomplete, but sufficient
+
+	ConCommandBase *m_pNext;      // 4
+	bool m_bRegistered;           // 8
+	const char *m_pszName;        // 12
+	const char *m_pszHelpString;  // 16
+	int m_nFlags;                 // 20
 };
 
 struct CCommand {

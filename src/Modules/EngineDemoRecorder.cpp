@@ -45,10 +45,8 @@ std::string EngineDemoRecorder::GetDemoFilename() {
 
 bool needToRecordInitialVals = false;
 
-static void RecordInitialVal(const char *name) {
+static void RecordInitialVal(const char *name, const char *val) {
 	size_t nameLen = strlen(name);
-
-	const char *val = Variable(name).GetString();
 	size_t valLen = strlen(val);
 
 	size_t bufLen = nameLen + valLen + 3;
@@ -154,6 +152,7 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 		needToRecordInitialVals = false;
 		RecordTimestamp();
 		AddDemoFileChecksums();
+		/*
 		RecordInitialVal("host_timescale");
 		RecordInitialVal("m_yaw");
 		RecordInitialVal("cl_fov");
@@ -164,6 +163,15 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 		RecordInitialVal("sv_alternateticks");
 		RecordInitialVal("cl_cmdrate");
 		RecordInitialVal("cl_updaterate");
+		*/
+		for (ConCommandBase *cmd = tier1->m_pConCommandList; cmd; cmd = cmd->m_pNext) {
+			if (!cmd->m_bRegistered) continue;
+			if (cmd->IsCommand()) continue;
+			if (Utils::StartsWith(cmd->m_pszName, "sar_")) continue;
+			ConVar *var = (ConVar *)cmd;
+			if (!strcmp(var->m_pszString, var->m_pszDefaultValue)) continue;
+			RecordInitialVal(var->m_pszName, var->m_pszString);
+		}
 	}
 
 	return result;
