@@ -16,6 +16,8 @@
 #include <functional>
 #include <queue>
 
+Variable ghost_sync_countdown("ghost_sync_countdown", "3", 0, "The number of seconds of countdown to show at the start of every synced map. 0 to disable.\n");
+
 #define DrawTxtRightAlign(font, x, y, clr, ...)               \
 	do {                                                         \
 		int _txtwidth = surface->GetFontLength(font, __VA_ARGS__);  \
@@ -36,7 +38,16 @@ public:
 	void StartCountdown() {
 		if (!this->active) return;
 		if (this->countdownEnd) return;
-		this->countdownEnd = NOW_STEADY() + std::chrono::milliseconds(3000);
+		if (ghost_sync_countdown.GetFloat() == 0) {
+			this->active = false;
+			if (engine->shouldPauseForSync) {
+				engine->shouldPauseForSync = false;
+			} else {
+				engine->ExecuteCommand("unpause");
+			}
+		} else {
+			this->countdownEnd = NOW_STEADY() + std::chrono::milliseconds((int)(ghost_sync_countdown.GetFloat() * 1000));
+		}
 	}
 
 	virtual bool GetCurrentSize(int &w, int &h) override {
@@ -67,9 +78,15 @@ public:
 
 		if (this->countdownEnd) {
 			unsigned ms = std::chrono::duration_cast<std::chrono::milliseconds>(*this->countdownEnd - now).count();
-			unsigned secs = (ms + 999) / 1000;  // poor man's ceil
-			int length = surface->GetFontLength(font, "%d", secs);
-			surface->DrawTxt(font, (screenWidth - length) / 2, 100, white, "%d", secs);
+			if (ghost_sync_countdown.GetFloat() > 1) {
+				unsigned secs = (ms + 999) / 1000;  // poor man's ceil
+				int length = surface->GetFontLength(font, "%d", secs);
+				surface->DrawTxt(font, (screenWidth - length) / 2, 100, white, "%d", secs);
+			} else {
+				float secs = (float)ms / 1000.0f + 0.049f; // poor man's ceil, but weirder
+				int length = surface->GetFontLength(font, "%.1f", secs);
+				surface->DrawTxt(font, (screenWidth - length) / 2, 100, white, "%.1f", secs);
+			}
 		} else {
 			int height = surface->GetFontHeight(font);
 
