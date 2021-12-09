@@ -805,7 +805,7 @@ ON_EVENT(SESSION_START) {
 CON_COMMAND(ghost_connect,
             "ghost_connect <ip address> <port> - connect to the server\n"
             "ex: 'localhost 53000' - '127.0.0.1 53000' - 89.10.20.20 53000'.\n") {
-	if (args.ArgC() < 2) {
+	if (args.ArgC() != 2 && args.ArgC() != 3) {
 		return console->Print(ghost_connect.ThisPtr()->m_pszHelpString);
 	}
 
@@ -817,7 +817,7 @@ CON_COMMAND(ghost_connect,
 		return console->Print("You must disconnect from your current ghost server before connecting to another.\n");
 	}
 
-	networkManager.Connect(args[1], std::atoi(args[2]));
+	networkManager.Connect(args[1], args.ArgC() == 3 ? std::atoi(args[2]) : 53000);
 }
 
 CON_COMMAND(ghost_disconnect, "ghost_disconnect - disconnect\n") {
