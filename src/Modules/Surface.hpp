@@ -19,7 +19,7 @@ public:
 	using _DrawSetTextFont = int(__rescall *)(void *thisptr, HFont font);
 	using _DrawSetTextColor = int(__rescall *)(void *thisptr, Color color);
 	using _GetFontTall = int(__rescall *)(void *thisptr, HFont font);
-	using _DrawColoredText = int(__cdecl *)(void *thisptr, HFont font, int x, int y, int r, int g, int b, int a, char *fmt, ...);
+	using _DrawColoredText = int(__cdecl *)(void *thisptr, HFont font, int x, int y, int r, int g, int b, int a, const char *fmt, ...);
 	using _DrawTextLen = int(__cdecl *)(void *thisptr, HFont font, char *fmt, ...);
 	using _GetKernedCharWidth = void(__rescall *)(void *thisptr, HFont font, wchar_t ch, wchar_t prev, wchar_t next, float &wide, float &a, float &c);
 	using _StartDrawing = int(__rescall *)(void *thisptr);

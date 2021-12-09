@@ -336,7 +336,7 @@ HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | H
 			for (auto &c : t.second.components) {
 				Color color = c.color ? *c.color : t.second.defaultColor;
 				int pixLen = surface->GetFontLength(ctx->font, "%s", c.text.c_str());
-				surface->DrawTxt(ctx->font, x, y, color, c.text.c_str());
+				surface->DrawTxt(ctx->font, x, y, color, "%s", c.text.c_str());
 				x += pixLen;
 			}
 
