@@ -187,7 +187,7 @@ static std::optional<std::string> request(const char *url) {
 	curl_easy_setopt(g_curl, CURLOPT_URL, url);
 	curl_easy_setopt(g_curl, CURLOPT_NOPROGRESS, 1);
 	curl_easy_setopt(g_curl, CURLOPT_FOLLOWLOCATION, 1);
-	curl_easy_setopt(g_curl, CURLOPT_TIMEOUT, 10);
+	curl_easy_setopt(g_curl, CURLOPT_TIMEOUT, 30);
 
 	curl_easy_setopt(
 		g_curl,
