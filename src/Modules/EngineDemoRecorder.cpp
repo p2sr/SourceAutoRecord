@@ -415,10 +415,10 @@ ON_EVENT(PRE_TICK) {
 
 ON_EVENT(CM_FLAGS) {
 	if (engine->demorecorder->isRecordingDemo && event.end) {
-		Scheduler::InHostTicks(DEMO_AUTOSTOP_DELAY, [=]() {
-			char data[2] = {0x06, (char)event.slot};
-			engine->demorecorder->RecordData(data, sizeof data);
+		char data[2] = {0x06, (char)event.slot};
+		engine->demorecorder->RecordData(data, sizeof data);
 
+		Scheduler::InHostTicks(DEMO_AUTOSTOP_DELAY, [=]() {
 			if (sar_challenge_autostop.GetInt() > 0) {
 				std::string demoFile = engine->demorecorder->GetDemoFilename();
 
