@@ -298,7 +298,6 @@ static void addDemoMapSum(std::string path) {
 	uint32_t sum;
 
 	if (it == g_mapsums.end()) {
-		console->Print("CACHE MISS :(\n");
 		// not calculated - add it now
 		sum = 0; // if error, use 0
 		FILE *fp = fopen(path.c_str(), "rb");  // Open for binary reading
@@ -308,7 +307,6 @@ static void addDemoMapSum(std::string path) {
 		}
 		g_mapsums[path] = sum;
 	} else {
-		console->Print("cache hit :)\n");
 		sum = it->second;
 	}
 
@@ -331,8 +329,6 @@ void AddDemoFileChecksums() {
 
 	std::string map = engine->GetCurrentMapName();
 	map = "/" + map + ".bsp";
-
-	console->Print("note: looking for %s\n", map.c_str());
 
 	for (auto &s : g_mapfiles) {
 		if (Utils::EndsWith(s, map)) {
