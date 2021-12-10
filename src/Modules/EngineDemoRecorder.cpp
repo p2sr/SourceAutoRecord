@@ -429,7 +429,10 @@ ON_EVENT(CM_FLAGS) {
 				engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr());
 #endif
 
-				if (sar_challenge_autostop.GetInt() == 2) {
+				std::optional<std::string> rename_if_pb = {};
+				std::optional<std::string> replay_append_if_pb = {};
+
+				if (sar_challenge_autostop.GetInt() == 2 || sar_challenge_autostop.GetInt() == 3) {
 					unsigned total = floor(event.time * 100);
 					unsigned cs = total % 100;
 					total /= 100;
@@ -450,15 +453,18 @@ ON_EVENT(CM_FLAGS) {
 					}
 
 					auto newName = Utils::ssprintf("%s_%s.dem", demoFile.substr(0, demoFile.size() - 4).c_str(), time.c_str());
-					std::filesystem::rename(demoFile, newName);
-
-					engine->demoplayer->replayName += "_";
-					engine->demoplayer->replayName += time;
-
-					demoFile = newName;
+					if (sar_challenge_autostop.GetInt() == 2) {
+						std::filesystem::rename(demoFile, newName);
+						demoFile = newName;
+						engine->demoplayer->replayName += "_";
+						engine->demoplayer->replayName += time;
+					} else { // autostop 3
+						rename_if_pb = newName;
+						replay_append_if_pb = std::string("_") + time;
+					}
 				}
 
-				AutoSubmit::FinishRun(event.time, demoFile.c_str());
+				AutoSubmit::FinishRun(event.time, demoFile.c_str(), rename_if_pb, replay_append_if_pb);
 			}
 		});
 	}

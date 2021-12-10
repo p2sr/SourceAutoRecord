@@ -9,6 +9,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <filesystem>
 #include <curl/curl.h>
 
 #define API_BASE "https://board.portal2.sr/api-v2"
@@ -277,19 +278,33 @@ static std::optional<int> getCurrentPbScore(const char *map_id) {
 	return atoi(str.c_str());
 }
 
-static void submitTime(int score, std::string demopath, bool coop, const char *map_id) {
+static void submitTime(int score, std::string demopath, bool coop, const char *map_id, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
 	auto score_str = std::to_string(score);
 
 	if (!g_key_valid) return;
 
 	auto cur_pb = getCurrentPbScore(map_id);
-	if (!cur_pb) {
-		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "An error occurred submitting this time");
-		return;
+	if (cur_pb) {
+		if (*cur_pb > -1 && score >= *cur_pb) {
+			console->Print("Not PB; not submitting.\n");
+			return;
+		}
 	}
 
-	if (*cur_pb > -1 && score >= *cur_pb) {
-		console->Print("Not PB; not submitting.\n");
+	// If we couldn't detect if this run PBd, rename the demo anyway to be
+	// safe
+
+	if (rename_if_pb) {
+		std::filesystem::rename(demopath, *rename_if_pb);
+		demopath = *rename_if_pb;
+	}
+
+	if (replay_append_if_pb) {
+		engine->demoplayer->replayName += *replay_append_if_pb;
+	}
+
+	if (!cur_pb) {
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "An error occurred submitting this time");
 		return;
 	}
 
@@ -364,7 +379,7 @@ CON_COMMAND_F(sar_challenge_autosubmit_set_api_key, "sar_challenge_autosubmit_se
 	g_worker = std::thread(testApiKey);
 }
 
-void AutoSubmit::FinishRun(float final_time, const char *demopath) {
+void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
 	if (g_cheated) {
 		console->Print("Cheated; not autosubmitting\n");
 		return;
@@ -381,5 +396,5 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath) {
 	int score = floor(final_time * 100);
 
 	if (g_worker.joinable()) g_worker.join();
-	g_worker = std::thread(submitTime, score, std::string(demopath), Utils::StartsWith(engine->GetCurrentMapName().c_str(), "mp_"), map_id);
+	g_worker = std::thread(submitTime, score, std::string(demopath), Utils::StartsWith(engine->GetCurrentMapName().c_str(), "mp_"), map_id, rename_if_pb, replay_append_if_pb);
 }
