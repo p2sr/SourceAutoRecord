@@ -258,14 +258,15 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 	static const Vector player_ducked_size = {32, 32, 36};
 
 	for (const auto [trace_idx, trace] : traces) {
+		int localtick = tick;
 		// Clamp tick to the number of positions in the trace
-		if (trace.positions.size() < tick)
-			tick = trace.positions.size()-1;
+		if (trace.positions.size() <= localtick)
+			localtick = trace.positions.size()-1;
 		
-		Vector player_size = trace.crouched[tick] ? player_ducked_size : player_standing_size;
-		Vector offset = trace.crouched[tick] ? Vector{0, 0, 18} : Vector{0, 0, 36};
+		Vector player_size = trace.crouched[localtick] ? player_ducked_size : player_standing_size;
+		Vector offset = trace.crouched[localtick] ? Vector{0, 0, 18} : Vector{0, 0, 36};
 		
-		Vector center = trace.positions[tick] + offset;
+		Vector center = trace.positions[localtick] + offset;
 		// We trace a big player bbox and a small box to indicate exactly which tick is displayed
 		engine->AddBoxOverlay(
 			nullptr,
@@ -279,7 +280,7 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 		);
 		engine->AddBoxOverlay(
 			nullptr,
-			trace.positions[tick],
+			trace.positions[localtick],
 			{-1,-1,-1},
 			{1,1,1},
 			{0, 0, 0},
