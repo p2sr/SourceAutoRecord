@@ -495,6 +495,7 @@ void SpeedrunTimer::Stop(std::string segName) {
 	}
 
 	Scheduler::InHostTicks(DEMO_AUTOSTOP_DELAY, [=]() {
+		if (!engine->demorecorder->isRecordingDemo) return; // manual stop before autostop
 		switch (sar_speedrun_autostop.GetInt()) {
 			case 1:
 				EngineDemoRecorder::stop_callback_hook({});
