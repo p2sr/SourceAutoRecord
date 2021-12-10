@@ -9,13 +9,53 @@
 #include <queue>
 #include <stack>
 #include <vector>
+#include <unordered_set>
+#include <fstream>
 
 // Fuck you Windows
 #ifdef _WIN32
 #	define strdup _strdup
 #endif
 
+#define PERSISTENT_SVAR_FILENAME "svars_persist"
+
 static std::map<std::string, std::string> g_svars;
+static std::unordered_set<std::string> g_persistentSvars;
+
+ON_INIT {
+	std::ifstream file(PERSISTENT_SVAR_FILENAME);
+
+	std::string line;
+	std::getline(file, line);
+
+	while (file) {
+		std::string oldline = line;
+		std::getline(file, line);
+		if (oldline == "") continue; // skip empty lines
+		if (!file) break;
+
+		g_svars[oldline] = line;
+
+		// get the next line so we don't re-use the value line
+		std::getline(file, line);
+	}
+}
+
+static void SavePersistentSvars() {
+	FILE *fp = fopen(PERSISTENT_SVAR_FILENAME, "w");
+	if (fp) {
+		for (auto &name : g_persistentSvars) {
+			auto val = g_svars[name];
+			fprintf(fp, "%s\n%s\n", name.c_str(), val.c_str());
+		}
+		fclose(fp);
+	}
+}
+
+static void SetSvar(std::string name, std::string val) {
+	g_svars[name] = val;
+	if (g_persistentSvars.count(name) != 0) SavePersistentSvars();
+}
 
 static std::string GetSvar(std::string name) {
 	auto it = g_svars.find(name);
@@ -28,7 +68,7 @@ CON_COMMAND_F(svar_set, "svar_set <variable> <value> - set a svar (SAR variable)
 		return console->Print(svar_set.ThisPtr()->m_pszHelpString);
 	}
 
-	g_svars[std::string(args[1])] = args[2];
+	SetSvar({args[1]}, {args[2]});
 }
 
 CON_COMMAND_F(svar_get, "svar_get <variable> - get the value of a svar\n", FCVAR_DONTRECORD) {
@@ -46,7 +86,25 @@ CON_COMMAND_F(svar_count, "svar_count - prints a count of all the defined svars\
 
 	int size = g_svars.size();
 
-	console->Print("%d svar defined\n", size);
+	console->Print("%d svars defined\n", size);
+}
+
+CON_COMMAND_F(svar_persist, "svar_persist <variable> - mark an svar as persistent\n", FCVAR_DONTRECORD) {
+	if (args.ArgC() != 2) {
+		return console->Print(svar_persist.ThisPtr()->m_pszHelpString);
+	}
+
+	g_persistentSvars.insert({args[1]});
+	SavePersistentSvars();
+}
+
+CON_COMMAND_F(svar_no_persist, "svar_no_persist <variable> - unmark an svar as persistent\n", FCVAR_DONTRECORD) {
+	if (args.ArgC() != 2) {
+		return console->Print(svar_no_persist.ThisPtr()->m_pszHelpString);
+	}
+
+	g_persistentSvars.erase({args[1]});
+	SavePersistentSvars();
 }
 
 static ConsoleListener *g_svarListener;
@@ -62,7 +120,7 @@ CON_COMMAND_F(_sar_svar_capture_stop, "Internal SAR command. Do not use\n", FCVA
 	std::string out = g_svarListenerOutput;
 	out.erase(std::remove(out.begin(), out.end(), '\n'), out.end());
 
-	g_svars[g_svarListenerTarget] = out;
+	SetSvar(g_svarListenerTarget, out);
 }
 
 CON_COMMAND_F(svar_capture, "svar_capture <variable> <command> [args]... - capture a command's output and place it into an svar, removing newlines\n", FCVAR_DONTRECORD) {
@@ -115,7 +173,7 @@ CON_COMMAND_F(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvar
 	if (cvar.ThisPtr()) {
 		std::string val = cvar.GetFlags() & FCVAR_NEVER_AS_STRING ? std::to_string(cvar.GetInt()) : cvar.GetString();
 		val.erase(std::remove(val.begin(), val.end(), '\n'), val.end());
-		g_svars[std::string(args[1])] = val;
+		SetSvar({args[1]}, val);
 	}
 }
 
@@ -149,7 +207,7 @@ CON_COMMAND_F(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvar
 		}                                                                                                                                      \
                                                                                                                                          \
 		int val = (disallowSecondZero && other == 0) ? 0 : cur op other;                                                                       \
-		g_svars[std::string(args[1])] = Utils::ssprintf("%d", val);                                                                            \
+		SetSvar({args[1]}, Utils::ssprintf("%d", val));													                                                                           \
 	}
 
 SVAR_OP(add, +, false)
