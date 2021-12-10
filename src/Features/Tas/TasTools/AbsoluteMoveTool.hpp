@@ -4,13 +4,15 @@
 
 struct AbsoluteMoveToolParams : public TasToolParams {
 	float direction = 0;
+	float strength = 1;
 	AbsoluteMoveToolParams()
 		: TasToolParams() {
 	}
 
-	AbsoluteMoveToolParams(float direction)
+	AbsoluteMoveToolParams(float direction, float strength)
 		: TasToolParams(true)
-		, direction(direction) {
+		, direction(direction)
+		, strength(strength) {
 	}
 };
 

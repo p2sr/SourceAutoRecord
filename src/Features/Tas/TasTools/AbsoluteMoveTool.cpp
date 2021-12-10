@@ -22,8 +22,8 @@ void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 
 	float delta = desired - angle;
 	auto R = DEG2RAD(delta);
-	auto X = cosf(R);
-	auto Y = sinf(R);
+	auto X = cosf(R) * ttParams->strength;
+	auto Y = sinf(R) * ttParams->strength;
 
 	fb.moveAnalog.x = X;
 	fb.moveAnalog.y = Y;
@@ -34,7 +34,7 @@ void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 }
 
 std::shared_ptr<TasToolParams> AbsoluteMoveTool::ParseParams(std::vector<std::string> vp) {
-	if (vp.size() != 1)
+	if (vp.size() != 1 && vp.size() != 2)
 		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
 
 	if (vp[0] == "off")
@@ -44,10 +44,19 @@ std::shared_ptr<TasToolParams> AbsoluteMoveTool::ParseParams(std::vector<std::st
 	try {
 		angle = std::stof(vp[0]);
 	} catch (...) {
-		throw TasParserException(Utils::ssprintf("Bad parameter for tool %s: %s", this->GetName(), vp[0].c_str()));
+		throw TasParserException(Utils::ssprintf("Bad direction for tool %s: %s", this->GetName(), vp[0].c_str()));
+	}
+	
+	float strength;
+	try {
+		strength = (vp.size()==2) ? std::stof(vp[1]) : 1;
+		if (strength > 1) strength = 1;
+		if (strength < 0) strength = 0;
+	} catch (...) {
+		throw TasParserException(Utils::ssprintf("Bad strength for tool %s: %s", this->GetName(), vp[0].c_str()));
 	}
 
-	return std::make_shared<AbsoluteMoveToolParams>(angle);
+	return std::make_shared<AbsoluteMoveToolParams>(angle, strength);
 }
 
 void AbsoluteMoveTool::Reset() {
