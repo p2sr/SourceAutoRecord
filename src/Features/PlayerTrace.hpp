@@ -9,10 +9,10 @@
 struct Trace {
 	int startSessionTick;
 	int startTasTick;
-	std::vector<Vector> positions;
-	std::vector<Vector> velocities;
-	std::vector<bool> grounded;
-	std::vector<bool> crouched;
+	std::vector<Vector> positions[2];
+	std::vector<Vector> velocities[2];
+	std::vector<bool> grounded[2];
+	std::vector<bool> crouched[2];
 };
 
 class PlayerTrace : public Feature {
@@ -23,7 +23,7 @@ private:
 public:
 	PlayerTrace();
 	// Add a point to the player trace
-	void AddPoint(size_t trace_idx, void *player, bool use_client_offset);
+	void AddPoint(size_t trace_idx, void *player, int slot, bool use_client_offset);
 	// Returns trace with given id
 	Trace* GetTrace(const size_t trace_idx);
 	// Clear all the points
@@ -37,7 +37,7 @@ public:
 	// Display a bbox at the given tick
 	void DrawBboxAt(int tick) const;
 	// Teleport to given tick on given trace
-	void TeleportAt(size_t trace, int tick);
+	void TeleportAt(size_t trace, int slot, int tick);
 };
 
 extern PlayerTrace *playerTrace;

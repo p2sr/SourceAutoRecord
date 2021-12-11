@@ -45,7 +45,7 @@ std::vector<TraceHoverInfo> hovers;
 PlayerTrace::PlayerTrace() {
 	this->hasLoaded = true;
 }
-void PlayerTrace::AddPoint(size_t trace_idx, void *player, bool use_client_offset) {
+void PlayerTrace::AddPoint(size_t trace_idx, void *player, int slot, bool use_client_offset) {
 	if (traces.count(trace_idx) == 0) {
 		traces[trace_idx] = Trace();
 		traces[trace_idx].startSessionTick = session->GetTick();
@@ -56,7 +56,7 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player, bool use_client_offse
 	// update this bad boy every tick because it doesn't like being tinkered with at the
 	// very beginning of the level. fussy guy, lemme tell ya
 	if (tasPlayer->IsRunning()) {
-		int ticksSinceStartup = (int)trace.positions.size() + 1; // include point we're about to add
+		int ticksSinceStartup = (int)trace.positions[0].size() + 1; // include point we're about to add
 		traces[trace_idx].startTasTick = tasPlayer->GetTick() - ticksSinceStartup;
 	}
 	
@@ -77,10 +77,10 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player, bool use_client_offse
 	bool grounded = ground_handle != 0xFFFFFFFF;
 	auto ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);
 
-	trace.positions.push_back(pos);
-	trace.velocities.push_back(vel);
-	trace.grounded.push_back(grounded);
-	trace.crouched.push_back(ducked);
+	trace.positions[slot].push_back(pos);
+	trace.velocities[slot].push_back(vel);
+	trace.grounded[slot].push_back(grounded);
+	trace.crouched[slot].push_back(ducked);
 }
 Trace* PlayerTrace::GetTrace(const size_t trace_idx) {
 	auto trace = traces.find(trace_idx);
@@ -101,7 +101,7 @@ void PlayerTrace::DrawInWorld(float time) const {
 
 	Vector cam_pos{0, 0, 0};
 	{
-		void *player = client->GetPlayer(1);
+		void *player = client->GetPlayer(GET_SLOT()+1);
 		if (player) {
 			cam_pos = client->GetAbsOrigin(player) + client->GetViewOffset(player);
 		}
@@ -118,108 +118,110 @@ void PlayerTrace::DrawInWorld(float time) const {
 	}
 
 	for (const auto [trace_idx, trace] : traces) {
-		if (trace.positions.size() < 2) continue;
+		for (int slot = 0; slot < 2; slot++) {
+			if (trace.positions[slot].size() < 2) continue;
 
-		size_t closest_id = 0;
-		float closest_dist = 1.0f; // Something stupid high
-		Vector closest_pos;
-		float closest_vel;
+			size_t closest_id = 0;
+			float closest_dist = 1.0f; // Something stupid high
+			Vector closest_pos;
+			float closest_vel;
 
-		Vector pos = trace.positions[0];
-		float speed = trace.velocities[0].Length2D();
-		unsigned groundframes = trace.grounded[0];
+			Vector pos = trace.positions[slot][0];
+			float speed = trace.velocities[slot][0].Length2D();
+			unsigned groundframes = trace.grounded[slot][0];
 
-		size_t update_idx = 1;
-		for (size_t i = 1; i < trace.positions.size(); i++) {
-			Vector new_pos = trace.positions[i];
-			speed = trace.velocities[i].Length2D();
-			
-			if (trace.grounded[i]) {
-				groundframes++;
-			} else {
-				groundframes = 0;
-			}
-
-			if ((new_pos - cam_pos).SquaredLength() < 300*300) {
-				// It's close enough to test
-				Vector dir = new_pos - cam_pos;
-				float dist = fabsf(1 - dir.Normalize().Dot(view_vec));
-				if (dist < 0.1 && dist < closest_dist) {
-					// Check whether the point is actually visible
-					CGameTrace tr;
-
-					if (!draw_through_walls) {
-						Ray_t ray;
-						ray.m_IsRay = true;
-						ray.m_IsSwept = true;
-						ray.m_Start = VectorAligned(cam_pos.x, cam_pos.y, cam_pos.z);
-						ray.m_Delta = VectorAligned(dir.x, dir.y, dir.z);
-						ray.m_StartOffset = VectorAligned();
-						ray.m_Extents = VectorAligned();
-
-						CTraceFilterSimple filter;
-						filter.SetPassEntity(server->GetPlayer(1));
-
-						engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_VISIBLE, &filter, &tr);
-					}
-
-					if (draw_through_walls || tr.plane.normal.Length() <= 0.9) {
-						// Didn't hit anything; use this point
-						closest_id = i;
-						closest_dist = dist;
-						closest_pos = new_pos;
-						closest_vel = speed;
-					}
-				}
-			}
-
-			// Don't draw a line when going through a portal or 0 length line
-			float pos_delta = (pos - new_pos).Length();
-			if (pos_delta < 127 && pos_delta > 0.001) {
-				// Colors:
-				// red: grounded
-				// brown: speedlocked
-				// yellow: can't turn further
-				// green: speed>300
-				if (groundframes > 1) {
-					r = 255;
-					g = 0;
-					b = 0;
-				} else if (speed > 300) {
-					Vector vel = trace.velocities[i];
-					if (fabsf(vel.x) >= 150 && fabsf(vel.y) >= 150) { // Speedlocked
-						r = 150;
-						g = 75;
-						b = 0;
-					} else if (fabsf(vel.x) >= 60 && fabsf(vel.y) >= 60) { // Max turn
-						r = 255;
-						g = 220;
-						b = 0;
-					} else {
-						r = 0;
-						g = 255;
-						b = 0;
-					}
+			size_t update_idx = 1;
+			for (size_t i = 1; i < trace.positions[slot].size(); i++) {
+				Vector new_pos = trace.positions[slot][i];
+				speed = trace.velocities[slot][i].Length2D();
+				
+				if (trace.grounded[slot][i]) {
+					groundframes++;
 				} else {
-					r = 255;
-					g = 255;
-					b = 255;
+					groundframes = 0;
 				}
 
-				engine->AddLineOverlay(
-					nullptr,
-					pos, new_pos,
-					r, g, b,
-					draw_through_walls,
-					time
-				);
-			}
-			if (pos_delta > 0.001) pos = new_pos;
-		}
+				if ((new_pos - cam_pos).SquaredLength() < 300*300) {
+					// It's close enough to test
+					Vector dir = new_pos - cam_pos;
+					float dist = fabsf(1 - dir.Normalize().Dot(view_vec));
+					if (dist < 0.1 && dist < closest_dist) {
+						// Check whether the point is actually visible
+						CGameTrace tr;
 
-		if (closest_dist < 1.0f) {
-			engine->AddBoxOverlay(nullptr, closest_pos, {-1,-1,-1}, {1,1,1}, {0,0,0}, 255, 0, 255, draw_through_walls, time);
-			hovers.push_back({closest_id, trace_idx, closest_pos, closest_vel});
+						if (!draw_through_walls) {
+							Ray_t ray;
+							ray.m_IsRay = true;
+							ray.m_IsSwept = true;
+							ray.m_Start = VectorAligned(cam_pos.x, cam_pos.y, cam_pos.z);
+							ray.m_Delta = VectorAligned(dir.x, dir.y, dir.z);
+							ray.m_StartOffset = VectorAligned();
+							ray.m_Extents = VectorAligned();
+
+							CTraceFilterSimple filter;
+							filter.SetPassEntity(server->GetPlayer(GET_SLOT()+1));
+
+							engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_VISIBLE, &filter, &tr);
+						}
+
+						if (draw_through_walls || tr.plane.normal.Length() <= 0.9) {
+							// Didn't hit anything; use this point
+							closest_id = i;
+							closest_dist = dist;
+							closest_pos = new_pos;
+							closest_vel = speed;
+						}
+					}
+				}
+
+				// Don't draw a line when going through a portal or 0 length line
+				float pos_delta = (pos - new_pos).Length();
+				if (pos_delta < 127 && pos_delta > 0.001) {
+					// Colors:
+					// red: grounded
+					// brown: speedlocked
+					// yellow: can't turn further
+					// green: speed>300
+					if (groundframes > 1) {
+						r = 255;
+						g = 0;
+						b = 0;
+					} else if (speed > 300) {
+						Vector vel = trace.velocities[slot][i];
+						if (fabsf(vel.x) >= 150 && fabsf(vel.y) >= 150) { // Speedlocked
+							r = 150;
+							g = 75;
+							b = 0;
+						} else if (fabsf(vel.x) >= 60 && fabsf(vel.y) >= 60) { // Max turn
+							r = 255;
+							g = 220;
+							b = 0;
+						} else {
+							r = 0;
+							g = 255;
+							b = 0;
+						}
+					} else {
+						r = 255;
+						g = 255;
+						b = 255;
+					}
+
+					engine->AddLineOverlay(
+						nullptr,
+						pos, new_pos,
+						r, g, b,
+						draw_through_walls,
+						time
+					);
+				}
+				if (pos_delta > 0.001) pos = new_pos;
+			}
+
+			if (closest_dist < 1.0f) {
+				engine->AddBoxOverlay(nullptr, closest_pos, {-1,-1,-1}, {1,1,1}, {0,0,0}, 255, 0, 255, draw_through_walls, time);
+				hovers.push_back({closest_id, trace_idx, closest_pos, closest_vel});
+			}
 		}
 	}
 }
@@ -229,29 +231,31 @@ void PlayerTrace::DrawSpeedDeltas(HudContext *ctx) const {
 	int hud_id = 10;
 
 	for (const auto [trace_idx, trace] : traces) {
-		if (trace.velocities.size() < 2) continue;
+		for (int slot = 0; slot < 2; slot++) {
+			if (trace.velocities[slot].size() < 2) continue;
 
-		size_t last_delta_end = 0;
-		unsigned groundframes = trace.grounded[0];
-		for (int i = 1; i < trace.velocities.size(); i++) {
-			unsigned last_groundframes = groundframes;
-			
-			if (trace.grounded[i]) {
-				groundframes++;
-			} else {
-				groundframes = 0;
-			}
-
-			if ((groundframes == 2) || (!groundframes && last_groundframes>0)) {
+			size_t last_delta_end = 0;
+			unsigned groundframes = trace.grounded[slot][0];
+			for (int i = 1; i < trace.velocities[slot].size(); i++) {
+				unsigned last_groundframes = groundframes;
 				
-				float speed_delta = trace.velocities[i].Length2D() - trace.velocities[last_delta_end].Length2D();
-				Vector update_pos = trace.positions[(last_delta_end + i) / 2];
-				Vector draw_pos = update_pos + hud_offset;
+				if (trace.grounded[slot][i]) {
+					groundframes++;
+				} else {
+					groundframes = 0;
+				}
 
-				engine->PointToScreen(draw_pos, screen_pos);
-				ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "%10.2f", speed_delta);
+				if ((groundframes == 2) || (!groundframes && last_groundframes>0)) {
+					
+					float speed_delta = trace.velocities[slot][i].Length2D() - trace.velocities[slot][last_delta_end].Length2D();
+					Vector update_pos = trace.positions[slot][(last_delta_end + i) / 2];
+					Vector draw_pos = update_pos + hud_offset;
 
-				last_delta_end = i;
+					engine->PointToScreen(draw_pos, screen_pos);
+					ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "%10.2f", speed_delta);
+
+					last_delta_end = i;
+				}
 			}
 		}
 	}
@@ -259,59 +263,67 @@ void PlayerTrace::DrawSpeedDeltas(HudContext *ctx) const {
 void PlayerTrace::DrawBboxAt(int tick) const {
 	static const Vector player_standing_size = {32, 32, 72};
 	static const Vector player_ducked_size = {32, 32, 36};
-
-	for (const auto [trace_idx, trace] : traces) {
-		int localtick = tick;
-		// Clamp tick to the number of positions in the trace
-		if (trace.positions.size() <= localtick)
-			localtick = trace.positions.size()-1;
 		
-		Vector player_size = trace.crouched[localtick] ? player_ducked_size : player_standing_size;
-		Vector offset = trace.crouched[localtick] ? Vector{0, 0, 18} : Vector{0, 0, 36};
-		
-		Vector center = trace.positions[localtick] + offset;
-		// We trace a big player bbox and a small box to indicate exactly which tick is displayed
-		engine->AddBoxOverlay(
-			nullptr,
-			center,
-			-player_size/2,
-			player_size/2,
-			{0, 0, 0},
-			255, 255, 0,
-			sar_player_trace_draw_through_walls.GetBool(),
-			0.05
-		);
-		engine->AddBoxOverlay(
-			nullptr,
-			trace.positions[localtick],
-			{-1,-1,-1},
-			{1,1,1},
-			{0, 0, 0},
-			0, 255, 0,
-			sar_player_trace_draw_through_walls.GetBool(),
-			0.05
-		);
+	for (int slot = 0; slot < 2; slot++) {
+		for (const auto [trace_idx, trace] : traces) {
+			int localtick = tick;
+			// Clamp tick to the number of positions in the trace
+			if (trace.positions[slot].size() <= localtick)
+				localtick = trace.positions[slot].size()-1;
+			
+			Vector player_size = trace.crouched[slot][localtick] ? player_ducked_size : player_standing_size;
+			Vector offset = trace.crouched[slot][localtick] ? Vector{0, 0, 18} : Vector{0, 0, 36};
+			
+			Vector center = trace.positions[slot][localtick] + offset;
+			// We trace a big player bbox and a small box to indicate exactly which tick is displayed
+			engine->AddBoxOverlay(
+				nullptr,
+				center,
+				-player_size/2,
+				player_size/2,
+				{0, 0, 0},
+				255, 255, 0,
+				sar_player_trace_draw_through_walls.GetBool(),
+				0.05
+			);
+			engine->AddBoxOverlay(
+				nullptr,
+				trace.positions[slot][localtick],
+				{-1,-1,-1},
+				{1,1,1},
+				{0, 0, 0},
+				0, 255, 0,
+				sar_player_trace_draw_through_walls.GetBool(),
+				0.05
+			);
+		}
 	}
 }
 
-void PlayerTrace::TeleportAt(size_t trace_idx, int tick) {
+void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick) {
 	if (traces.count(trace_idx) == 0) {
 		console->Print("No trace with ID %d!\n", trace_idx);
 		return;
 	}
 
-	if (tick >= traces[trace_idx].positions.size())
-		tick = traces[trace_idx].positions.size()-1;
+	if (tick >= traces[trace_idx].positions[slot].size())
+		tick = traces[trace_idx].positions[slot].size()-1;
 	
 	if (tick < 0) tick = 0;
 
-	g_playerTraceTeleportLocation = traces[trace_idx].positions[tick];
+	g_playerTraceTeleportLocation = traces[trace_idx].positions[slot][tick];
 	g_playerTraceNeedsTeleport = true;
 }
 
 ON_EVENT(PROCESS_MOVEMENT) {
+
 	// Record trace
 	if (sar_player_trace_record.GetInt() && !engine->IsGamePaused()) {
+		if (engine->IsOrange()) {
+			sar_player_trace_record.SetValue(0);
+			console->Print("The trace only works for the host! Turning off trace recording.\n");
+		}
+		
 		void* player = NULL;
 		bool use_client_offset;
 
@@ -326,7 +338,7 @@ ON_EVENT(PROCESS_MOVEMENT) {
 		}
 
 		if (player) {
-			playerTrace->AddPoint(sar_player_trace_record.GetInt(), player, use_client_offset);
+			playerTrace->AddPoint(sar_player_trace_record.GetInt(), player, event.slot, use_client_offset);
 		}
 	}
 
@@ -414,13 +426,18 @@ CON_COMMAND(sar_player_trace_clear_all, "sar_player_trace_clear_all - Clear all 
 	playerTrace->ClearAll();
 }
 
-CON_COMMAND(sar_player_trace_teleport_at, "sar_player_trace_teleport_at <tick> [trace index] - teleports the player at the given trace tick on the given trace ID (defaults to 1).") {
+CON_COMMAND(sar_player_trace_teleport_at, "sar_player_trace_teleport_at <tick> [player slot] [trace index] - teleports the player at the given trace tick on the given trace ID (defaults to 1) in the given slot (defaults to 0).\n") {
 	if (!sv_cheats.GetBool()) return;
 
-	if (args.ArgC() != 2 && args.ArgC() != 3)
+	if (args.ArgC() < 2 || args.ArgC() > 4)
 		return console->Print(sar_player_trace_teleport_at.ThisPtr()->m_pszHelpString);
 	
-	size_t trace_idx = (args.ArgC()==3) ? std::stoi(args[2]) : 1;
+	size_t trace_idx = (args.ArgC()==4) ? std::stoi(args[3]) : 1;
+	int slot = (args.ArgC()>=3 && engine->IsCoop()) ?std::stoi(args[2]) : 0;
 	int tick = std::stoi(args[1]);
-	playerTrace->TeleportAt(trace_idx, tick);
+
+	if (slot > 1) slot = 1;
+	if (slot < 0) slot = 0;
+
+	playerTrace->TeleportAt(trace_idx, slot, tick);
 }
