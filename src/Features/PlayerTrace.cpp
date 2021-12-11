@@ -30,6 +30,9 @@ Variable sar_player_trace_draw_time("sar_player_trace_draw_time", "3", 0, 3,
 Variable sar_player_trace_bbox_at("sar_player_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.");
 Variable sar_player_trace_bbox_use_hover("sar_player_trace_bbox_use_hover", "0", 0, "Move trace bbox to hovered trace point tick on given trace.");
 
+Vector g_playerTraceTeleportLocation;
+bool g_playerTraceNeedsTeleport = false;
+
 struct TraceHoverInfo {
 	size_t tick;
 	unsigned trace_idx;
@@ -291,6 +294,21 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 	}
 }
 
+void PlayerTrace::TeleportAt(size_t trace_idx, int tick) {
+	if (traces.count(trace_idx) == 0) {
+		console->Print("No trace with ID %d!\n", trace_idx);
+		return;
+	}
+
+	if (tick >= traces[trace_idx].positions.size())
+		tick = traces[trace_idx].positions.size()-1;
+	
+	if (tick < 0) tick = 0;
+
+	g_playerTraceTeleportLocation = traces[trace_idx].positions[tick];
+	g_playerTraceNeedsTeleport = true;
+}
+
 ON_EVENT(PROCESS_MOVEMENT) {
 	// Record trace
 	if (sar_player_trace_record.GetInt() && !engine->IsGamePaused()) {
@@ -394,4 +412,15 @@ CON_COMMAND(sar_player_trace_clear, "sar_player_trace_clear <index> - Clear the 
 
 CON_COMMAND(sar_player_trace_clear_all, "sar_player_trace_clear_all - Clear all the traces\n") {
 	playerTrace->ClearAll();
+}
+
+CON_COMMAND(sar_player_trace_teleport_at, "sar_player_trace_teleport_at <tick> [trace index] - teleports the player at the given trace tick on the given trace ID (defaults to 1).") {
+	if (!sv_cheats.GetBool()) return;
+
+	if (args.ArgC() != 2 && args.ArgC() != 3)
+		return console->Print(sar_player_trace_teleport_at.ThisPtr()->m_pszHelpString);
+	
+	size_t trace_idx = (args.ArgC()==3) ? std::stoi(args[2]) : 1;
+	int tick = std::stoi(args[1]);
+	playerTrace->TeleportAt(trace_idx, tick);
 }

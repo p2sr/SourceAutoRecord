@@ -12,6 +12,7 @@
 #include "Features/Hud/InputHud.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OffsetFinder.hpp"
+#include "Features/PlayerTrace.hpp"
 #include "Features/ReloadedFix.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Routing/SeamshotFind.hpp"
@@ -215,7 +216,16 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	inputHud.SetInputInfo(slot, move->m_nButtons, Vector(move->m_flSideMove, move->m_flForwardMove, move->m_flUpMove));
 	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true });
 
-	return Server::ProcessMovement(thisptr, player, move);
+	auto res = Server::ProcessMovement(thisptr, player, move);
+
+	// We edit pos after process movement to get accurate teleportation
+	// This is for sar_player_trace_teleport_at
+	if (g_playerTraceNeedsTeleport) {
+		move->m_vecAbsOrigin = g_playerTraceTeleportLocation;
+		g_playerTraceNeedsTeleport = false;
+	}
+
+	return res;
 }
 
 ON_INIT {

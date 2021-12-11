@@ -36,6 +36,11 @@ public:
 	void DrawSpeedDeltas(HudContext *ctx) const;
 	// Display a bbox at the given tick
 	void DrawBboxAt(int tick) const;
+	// Teleport to given tick on given trace
+	void TeleportAt(size_t trace, int tick);
 };
 
 extern PlayerTrace *playerTrace;
+
+extern Vector g_playerTraceTeleportLocation;
+extern bool g_playerTraceNeedsTeleport;

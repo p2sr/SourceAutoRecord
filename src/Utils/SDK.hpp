@@ -351,6 +351,7 @@ struct CUserCmd {
 struct CMoveData {
 	bool m_bFirstRunOfFunctions : 1;  // 0
 	bool m_bGameCodeMovedPlayer : 1;  // 2
+	bool m_bNoAirControl : 1;         // 0
 	void *m_nPlayerHandle;            // 4
 	int m_nImpulseCommand;            // 8
 	QAngle m_vecViewAngles;           // 12, 16, 20
@@ -372,7 +373,8 @@ struct CMoveData {
 	float m_flConstraintRadius;       // 140
 	float m_flConstraintWidth;        // 144
 	float m_flConstraintSpeedFactor;  // 148
-	Vector m_vecAbsOrigin;            // 152
+	bool m_bConstraintPastRadius;     // 154
+	Vector m_vecAbsOrigin;            // 156
 };
 
 class CHLMoveData : public CMoveData {
