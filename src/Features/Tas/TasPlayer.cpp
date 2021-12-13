@@ -383,6 +383,16 @@ void TasPlayer::FetchInputs(int slot, TasController *controller) {
 	for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
 		controller->SetButtonState((TasControllerInput)i, fb.buttonStates[i]);
 	}
+
+	if (tick == 1) {
+		// on tick 1, we'll run the commands from the bulk at tick 0 because
+		// of the annoying off-by-one thing explained above
+		TasFramebulk fb0 = GetRawFramebulkAt(slot, 0);
+		for (std::string cmd : fb0.commands) {
+			controller->AddCommandToQueue(cmd);
+		}
+	}
+
 	// add commands only for tick when framebulk is placed. Don't preserve it to other ticks.
 	if (tick == fbTick) {
 		for (std::string cmd : fb.commands) {
