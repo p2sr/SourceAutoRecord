@@ -189,7 +189,12 @@ struct ConCommandBase {
 		, m_nFlags(flags) {
 	}
 
-	virtual ~ConCommandBase() {};
+	// if we actually put a virtual destructor here, EVERYTHING BREAKS
+	// so put dummy methods instead
+	virtual void _dtor() {};
+#ifndef _WIN32
+	virtual void _dtor1() {};
+#endif
 	virtual bool IsCommand() const { return false; }; // will get overwritten anyway lol
 	// Note: vtable incomplete, but sufficient
 
