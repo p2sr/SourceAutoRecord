@@ -268,6 +268,7 @@ namespace Offsets {
 	extern int SetKeyValueVector;
 
 	// CVEngineServer
+	extern int ChangeLevel;
 	extern int ClientCommand;
 	extern int IsServerPaused;
 	extern int ServerPause;

@@ -146,7 +146,7 @@ void SpeedrunTimer::TestLoadRules() {
 }
 
 ON_EVENT(SESSION_END) {
-	GeneralTestRules<MapEndRule>({});
+	if (event.transition) GeneralTestRules<MapEndRule>({});
 }
 
 ON_EVENT(CM_FLAGS) {

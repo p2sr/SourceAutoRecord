@@ -55,6 +55,7 @@ Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::SetSignonState);
+REDECL(Engine::ChangeLevel);
 REDECL(Engine::Frame);
 REDECL(Engine::PurgeUnusedModels);
 REDECL(Engine::OnGameOverlayActivated);
@@ -288,6 +289,12 @@ DETOUR(Engine::SetSignonState, int state, int count, void *unk) {
 	auto ret = Engine::SetSignonState(thisptr, state, count, unk);
 	session->Changed(state);
 	return ret;
+}
+
+// CVEngineServer::ChangeLevel
+DETOUR(Engine::ChangeLevel, const char *s1, const char *s2) {
+	if (s1) engine->isLevelTransition = true;
+	return Engine::ChangeLevel(thisptr, s1, s2);
 }
 
 void Engine::GetTicks(int &host, int &server, int &client) {
@@ -557,7 +564,8 @@ bool Engine::Init() {
 		Engine::OnGameOverlayActivatedBase = *OnGameOverlayActivated;
 		*OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated>(Engine::OnGameOverlayActivated_Hook);
 
-		if (this->g_VEngineServer = Interface::Create(this->Name(), "VEngineServer022", false)) {
+		if (this->g_VEngineServer = Interface::Create(this->Name(), "VEngineServer022")) {
+			this->g_VEngineServer->Hook(Engine::ChangeLevel_Hook, Engine::ChangeLevel, Offsets::ChangeLevel);
 			this->ClientCommand = this->g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
 			this->IsServerPaused = this->g_VEngineServer->Original<_IsServerPaused>(Offsets::IsServerPaused);
 			this->ServerPause = this->g_VEngineServer->Original<_ServerPause>(Offsets::ServerPause);

@@ -116,6 +116,7 @@ public:
 	bool startedTransitionFadeout = false;
 	bool forcedPrimaryFullscreen = false;
 	bool shouldPauseForSync = false;
+	bool isLevelTransition = false;
 
 public:
 	void ExecuteCommand(const char *cmd, bool immediately = false);
@@ -147,6 +148,9 @@ public:
 
 	// CClientState::SetSignonState
 	DECL_DETOUR(SetSignonState, int state, int count, void *unk);
+
+	// CVEngineServer::ChangeLevel
+	DECL_DETOUR(ChangeLevel, const char *s1, const char *s2);
 
 	// CEngine::Frame
 	DECL_DETOUR(Frame);

@@ -235,6 +235,7 @@ void Portal2::LoadOffsets() {
 	SetKeyValueVector = 14;              // CServerTools::SetKeyValue (const Vector &vecValue )
 	CreateEntityByName = 15;             // CServerTools::CreateEntityByName
 	DispatchSpawn = 16;                  //CServerTool::DispatchSpawn
+	ChangeLevel = 0;                     // CVEngineServer
 	ClientCommand = 39;                  // CVEngineServer
 	IsServerPaused = 81;                 // CVEngineServer
 	ServerPause = 121;                   // CVEngineServer

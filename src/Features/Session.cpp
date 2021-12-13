@@ -105,7 +105,8 @@ void Session::Ended() {
 
 	auto tick = this->GetTick();
 
-	Event::Trigger<Event::SESSION_END>({});
+	Event::Trigger<Event::SESSION_END>({ engine->IsOrange() || engine->isLevelTransition });
+	engine->isLevelTransition = false;
 
 	if (tick != 0) {
 		console->Print("Session: %i (%.3f)\n", tick, engine->ToTime(tick));
