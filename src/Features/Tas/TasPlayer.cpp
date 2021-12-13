@@ -23,6 +23,9 @@ Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", 0, 1, "Enables tool
 Variable sar_tas_tools_force("sar_tas_tools_force", "0", 0, 1, "Force tool playback for TAS scripts; primarily for debugging.\n");
 Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "0", 0, 1, "Enables automatic saving of raw, processed TAS scripts.\n");
 Variable sar_tas_pauseat("sar_tas_pauseat", "0", 0, "Pauses the TAS playback on specified tick.\n");
+Variable sar_tas_skipto("sar_tas_skipto", "0", 0, "Fast-forwards the TAS playback until given playback tick.\n");
+Variable sar_tas_playback_rate("sar_tas_playback_rate", "1.0", 0.02, "The rate at which to play back TAS scripts.\n");
+Variable sar_tas_restore_fps("sar_tas_restore_fps", "1", 0, "Restore fps_max and host_framerate after TAS playback.\n");
 
 TasPlayer *tasPlayer;
 
@@ -40,6 +43,48 @@ std::string TasFramebulk::ToString() {
 		output += " {" + std::string(toolCmd.tool->GetName()) + "}";
 	}
 	return output;
+}
+
+void SetPlaybackVars(bool active) {
+	static bool was_active;
+	static bool saved_fps;
+	static int old_forceuser;
+	static int old_fpsmax;
+	static int old_hostframerate;
+
+	if (active && !was_active) {
+		old_forceuser = in_forceuser.GetInt();
+		old_hostframerate = host_framerate.GetInt();
+		in_forceuser.SetValue(100);
+		host_framerate.SetValue(60);
+	} else if (!active && was_active) {
+		in_forceuser.SetValue(old_forceuser);
+		if (sar_tas_restore_fps.GetBool()) {
+			host_framerate.SetValue(old_hostframerate);
+			if (saved_fps) {
+				fps_max.SetValue(old_fpsmax);
+				session->oldFpsMax = old_fpsmax; // In case we're restoring during an uncapped load
+			}
+		}
+		saved_fps = false;
+	}
+
+	// Don't save fps_max in loads, or uncap might get in the way
+	// Wait for the session to start instead
+	if (session->isRunning && active && !saved_fps) {
+		old_fpsmax = fps_max.GetInt();
+		saved_fps = true;
+	}
+
+	if (saved_fps && active) {
+		if (tasPlayer->GetTick() < sar_tas_skipto.GetInt()) {
+			fps_max.SetValue(0);
+		} else if (tasPlayer->GetTick() >= sar_tas_skipto.GetInt()) {
+			fps_max.SetValue((int)(sar_tas_playback_rate.GetFloat() * 60.0f));
+		}
+	}
+
+	was_active = active;
 }
 
 TasPlayer::TasPlayer()
@@ -162,6 +207,8 @@ void TasPlayer::Start() {
 	ready = true;
 	currentTick = 0;
 	startTick = -1;
+
+	SetPlaybackVars(true);
 }
 
 void TasPlayer::PostStart() {
@@ -194,6 +241,8 @@ void TasPlayer::Stop(bool interrupted) {
 	currentTick = 0;
 	tasControllers[0]->Disable();
 	tasControllers[1]->Disable();
+
+	SetPlaybackVars(false);
 }
 
 void TasPlayer::Pause() {
@@ -416,6 +465,7 @@ void TasPlayer::Update() {
 			}
 		}
 		if (ready && session->isRunning) {
+			SetPlaybackVars(true);
 			if (!IsRunning()) {
 				PostStart();  // script has started its playback. Adjust the tick counter and offset
 			} else {
