@@ -309,8 +309,16 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick) {
 		return;
 	}
 
-	if (tick >= traces[trace_idx].positions[slot].size())
-		tick = traces[trace_idx].positions[slot].size()-1;
+	switch (sar_player_trace_draw_time.GetInt()) {
+	case 2:
+		tick -= traces[trace_idx].startSessionTick;
+		break;
+	case 3:
+		if (traces[trace_idx].startTasTick > 0) tick -= traces[trace_idx].startTasTick;
+		break;
+	default:
+		break;
+	}
 	
 	if (tick < 0) tick = 0;
 
