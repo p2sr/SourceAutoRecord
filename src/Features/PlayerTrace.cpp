@@ -266,7 +266,10 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 		
 	for (int slot = 0; slot < 2; slot++) {
 		for (const auto [trace_idx, trace] : traces) {
+			if (trace.positions[slot].size() == 0) continue;
+
 			int localtick = tick;
+
 			// Clamp tick to the number of positions in the trace
 			if (trace.positions[slot].size() <= localtick)
 				localtick = trace.positions[slot].size()-1;
@@ -310,6 +313,11 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick) {
 		tick = traces[trace_idx].positions[slot].size()-1;
 	
 	if (tick < 0) tick = 0;
+
+	if (tick >= traces[trace_idx].positions[slot].size())
+		tick = traces[trace_idx].positions[slot].size()-1;
+
+	if (tick < 0) return;
 
 	g_playerTraceTeleportLocation = traces[trace_idx].positions[slot][tick];
 	g_playerTraceNeedsTeleport = true;
