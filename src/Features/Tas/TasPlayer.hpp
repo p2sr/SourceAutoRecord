@@ -12,6 +12,9 @@
 
 class TasToolCommand;
 
+extern Variable sar_tas_tools_enabled;
+extern Variable sar_tas_tools_force;
+
 struct TasFramebulk {
 	int tick = 0;
 	Vector moveAnalog = {0, 0};
@@ -77,6 +80,10 @@ public:
 	inline int GetStartTick() const { return startTick; };
 	inline bool IsActive() const { return active; };
 	inline bool IsRunning() const { return active && startTick != -1; }
+	inline bool IsUsingTools(int slot) const {
+		return sar_tas_tools_enabled.GetBool()
+			&& (sar_tas_tools_force.GetBool() || this->tasFileName[slot].find("_raw") == std::string::npos);
+	}
 
 	void Activate();
 	void Start();
@@ -89,14 +96,14 @@ public:
 	bool IsPaused();
 
 	TasFramebulk GetRawFramebulkAt(int slot, int tick);
-	TasPlayerInfo GetPlayerInfo(void *player, CMoveData *pMove);
+	TasPlayerInfo GetPlayerInfo(void *player, CUserCmd *cmd);
 	void SetFrameBulkQueue(int slot, std::vector<TasFramebulk> fbQueue);
 	void SetStartInfo(TasStartType type, std::string);
 	inline void SetLoadedFileName(int slot, std::string name) { tasFileName[slot] = name; };
 	void SaveProcessedFramebulks();
 
 	void FetchInputs(int slot, TasController *controller);
-	void PostProcess(int slot, void *player, CMoveData *pMove);
+	void PostProcess(int slot, void *player, CUserCmd *cmd);
 
 	bool isCoop;
 
@@ -105,7 +112,6 @@ public:
 };
 
 extern Variable sar_tas_debug;
-extern Variable sar_tas_tools_enabled;
 extern Variable sar_tas_autosave_raw;
 
 extern Variable sar_tas_skipto;

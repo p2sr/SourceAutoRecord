@@ -169,6 +169,7 @@ namespace Offsets {
 	extern int C_m_bInDuckJump;
 	extern int C_m_nDuckTimeMsecs;
 	extern int C_m_nDuckJumpTimeMsecs;
+	extern int S_m_nJumpTimeMsecs;
 
 	// CPortal_Player
 	extern int C_m_PortalLocal;
@@ -180,6 +181,7 @@ namespace Offsets {
 	extern int C_m_StatsThisLevel;
 	extern int m_lifeState;
 	extern int m_hPortalEnvironment;
+	extern int PlayerRunCommand;
 
 	// CWeaponPortalgun
 	extern int m_bCanFirePortal1;

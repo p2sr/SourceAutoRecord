@@ -218,7 +218,7 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 	}
 
 	//block analog inputs if paused (probably to block changing the view angle while paused)
-	if (vgui->IsUIVisible())
+	if (engine->IsGamePaused())
 		return;
 
 	//movement analog
@@ -234,9 +234,9 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 
 	// don't do this part if tools are enabled.
 	// tools processing will do it instead
-	if (!sar_tas_tools_enabled.GetBool()) {
+	if (!tasPlayer->IsUsingTools(nSlot)) {
 		QAngle viewangles;
-		viewangles = engine->GetAngles(GET_SLOT());
+		viewangles = engine->GetAngles(nSlot);
 
 		viewangles.y -= viewAnalog.x;  // positive values should rotate right.
 		viewangles.x -= viewAnalog.y;  // positive values should rotate up.
@@ -245,6 +245,6 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 		cmd->mousedx = (int)(-viewAnalog.x);
 		cmd->mousedy = (int)(-viewAnalog.y);
 
-		engine->SetAngles(GET_SLOT(), viewangles);
+		engine->SetAngles(nSlot, viewangles);
 	}
 }

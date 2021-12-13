@@ -20,6 +20,7 @@
 
 Variable sar_tas_debug("sar_tas_debug", "0", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.\n");
 Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", 0, 1, "Enables tool processing for TAS script making.\n");
+Variable sar_tas_tools_force("sar_tas_tools_force", "0", 0, 1, "Force tool playback for TAS scripts; primarily for debugging.\n");
 Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "0", 0, 1, "Enables automatic saving of raw, processed TAS scripts.\n");
 Variable sar_tas_pauseat("sar_tas_pauseat", "0", 0, "Pauses the TAS playback on specified tick.\n");
 
@@ -222,8 +223,10 @@ TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick) {
 	return closest;
 }
 
-TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CMoveData *pMove) {
+TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CUserCmd *cmd) {
 	TasPlayerInfo pi;
+
+	int m_nOldButtons = *(int *)((uintptr_t)player + Offsets::S_m_nJumpTimeMsecs + 12); // This field isn't networked and I can't be bothered to add another explicit offset for it
 
 	pi.tick = *reinterpret_cast<int *>((uintptr_t)player + Offsets::m_nTickBase);
 	pi.slot = server->GetSplitScreenPlayerSlot(player);
@@ -251,7 +254,7 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CMoveData *pMove) {
 	pi.grounded = groundEntity != 0xFFFFFFFF;
 
 	// predict the grounded state after jump.
-	if (pi.grounded && (pMove->m_nButtons & IN_JUMP) && !(pMove->m_nOldButtons & IN_JUMP)) {
+	if (pi.grounded && (cmd->buttons & IN_JUMP) && !(m_nOldButtons & IN_JUMP)) {
 		pi.grounded = false;
 	}
 
@@ -259,7 +262,7 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CMoveData *pMove) {
 	pi.angles = engine->GetAngles(pi.slot);
 	pi.velocity = *reinterpret_cast<Vector *>((uintptr_t)player + Offsets::S_m_vecAbsVelocity);
 
-	pi.oldButtons = pMove->m_nOldButtons;
+	pi.oldButtons = m_nOldButtons;
 
 	pi.ticktime = 1.0f / 60.0f;  // TODO: find actual tickrate variable and put it there
 
@@ -301,11 +304,21 @@ void TasPlayer::SaveProcessedFramebulks() {
     non-existing and just let it parse inputs corresponding to given tick.
 */
 void TasPlayer::FetchInputs(int slot, TasController *controller) {
-	TasFramebulk fb = GetRawFramebulkAt(slot, currentTick);
+	// Slight hack! Input fetching (including SteamControllerMove) is
+	// called through _Host_RunFrame_Input, which is called *before*
+	// GameFrame (that being called via _Host_RunFrame_Server). Therefore,
+	// our tick count here is 1 lower than it should be. It'd be better to
+	// actually call Update at the start of the tick, but this is easier
+	// said than done since the input fetching code is only run when the
+	// client is connected, so to match the behaviour we'd probably need
+	// to actually hook at _Host_RunFrame_Input or CL_Move.
+	int tick = currentTick + 1;
+
+	TasFramebulk fb = GetRawFramebulkAt(slot, tick);
 
 	int fbTick = fb.tick;
 
-	if (sar_tas_debug.GetInt() > 0 && fbTick == currentTick) {
+	if (sar_tas_debug.GetInt() > 0 && fbTick == tick) {
 		console->Print("%s\n", fb.ToString().c_str());
 	}
 
@@ -315,7 +328,7 @@ void TasPlayer::FetchInputs(int slot, TasController *controller) {
 		controller->SetButtonState((TasControllerInput)i, fb.buttonStates[i]);
 	}
 	// add commands only for tick when framebulk is placed. Don't preserve it to other ticks.
-	if (currentTick == fbTick) {
+	if (tick == fbTick) {
 		for (std::string cmd : fb.commands) {
 			controller->AddCommandToQueue(cmd);
 		}
@@ -325,14 +338,15 @@ void TasPlayer::FetchInputs(int slot, TasController *controller) {
 // special tools have to be parsed in input processing part.
 // because of alternateticks, a pair of inputs are created and then executed at the same time,
 // meaning that second tick in pair reads outdated info.
-void TasPlayer::PostProcess(int slot, void *player, CMoveData *pMove) {
+void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	if (paused || engine->IsGamePaused()) return;
 
-	pMove->m_flForwardMove = 0;
-	pMove->m_flSideMove = 0;
-	pMove->m_nButtons = 0;
+	cmd->forwardmove = 0;
+	cmd->sidemove = 0;
+	cmd->upmove = 0;
+	cmd->buttons = 0;
 
-	auto playerInfo = GetPlayerInfo(player, pMove);
+	auto playerInfo = GetPlayerInfo(player, cmd);
 	// player tickbase seems to be an accurate way of getting current time in ProcessMovement
 	// every other way of getting time is incorrect due to alternateticks
 	int tasTick = playerInfo.tick - startTick;
@@ -358,52 +372,31 @@ void TasPlayer::PostProcess(int slot, void *player, CMoveData *pMove) {
 		tool->Apply(fb, playerInfo);
 	}
 
-
-	// all behaviour that is prevented before ProcessMovement (We have to manually recreate them)
-	
-	int m_lifeState = *(int *)((uintptr_t)player + Offsets::m_lifeState);
-	if (m_lifeState == 2) { // LIFE_DEAD
-		fb.buttonStates[Use] = false;
-	}
-
-	// ducking midair
-	if (prevent_crouch_jump.GetBool()) {
-		int m_InAirState = *reinterpret_cast<int *>((uintptr_t)player + Offsets::m_InAirState);
-
-		if (m_InAirState == 1) {  //in air jumped
-			fb.buttonStates[Crouch] = false;
-		}
-	}
-
-	// TODO: implement all other pre-ProcessMovement stuff (i believe coop taunt is one of them? but we don't have coop support yet)
-
-
-	// add processed framebulk to the pMove
+	// add processed framebulk to the cmd
 	// using angles from playerInfo, as these seem to be the most accurate
-	// pMove ones are created before tool parsing and GetAngles is wacky.
+	// cmd ones are created before tool parsing and GetAngles is wacky.
 	// idk, as long as it produces the correct script file we should be fine lmfao
-	pMove->m_vecAngles.y = playerInfo.angles.y - fb.viewAnalog.x;  // positive values should rotate right.
-	pMove->m_vecAngles.x = playerInfo.angles.x - fb.viewAnalog.y;  // positive values should rotate up.
-	pMove->m_vecAngles.x = std::min(std::max(pMove->m_vecAngles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
+	cmd->viewangles.y = playerInfo.angles.y - fb.viewAnalog.x;  // positive values should rotate right.
+	cmd->viewangles.x = playerInfo.angles.x - fb.viewAnalog.y;  // positive values should rotate up.
+	cmd->viewangles.x = std::min(std::max(cmd->viewangles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
 
-	pMove->m_vecViewAngles = pMove->m_vecAbsViewAngles = pMove->m_vecAngles;
-	engine->SetAngles(playerInfo.slot, pMove->m_vecAngles);
+	engine->SetAngles(playerInfo.slot, cmd->viewangles);
 
 	if (fb.moveAnalog.y > 0.0) {
-		pMove->m_flForwardMove = cl_forwardspeed.GetFloat() * fb.moveAnalog.y;
+		cmd->forwardmove = cl_forwardspeed.GetFloat() * fb.moveAnalog.y;
 	} else {
-		pMove->m_flForwardMove = cl_backspeed.GetFloat() * fb.moveAnalog.y;
+		cmd->forwardmove = cl_backspeed.GetFloat() * fb.moveAnalog.y;
 	}
-	pMove->m_flSideMove = cl_sidespeed.GetFloat() * fb.moveAnalog.x;
+	cmd->sidemove = cl_sidespeed.GetFloat() * fb.moveAnalog.x;
 
 	// making sure none of the move values are NaN
-	if (std::isnan(pMove->m_flForwardMove)) pMove->m_flForwardMove = 0;
-	if (std::isnan(pMove->m_flSideMove)) pMove->m_flSideMove = 0;
+	if (std::isnan(cmd->forwardmove)) cmd->forwardmove = 0;
+	if (std::isnan(cmd->sidemove)) cmd->sidemove = 0;
 
-	pMove->m_nButtons = 0;
+	cmd->buttons = 0;
 	for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
 		if (g_TasControllerInGameButtons[i] && fb.buttonStates[i]) {
-			pMove->m_nButtons |= g_TasControllerInGameButtons[i];
+			cmd->buttons |= g_TasControllerInGameButtons[i];
 		}
 	}
 
@@ -446,7 +439,9 @@ void TasPlayer::Update() {
 		}
 
 		// make sure all ticks are processed by tools before stopping
-		if ((!sar_tas_tools_enabled.GetBool() && currentTick > lastTick) || processedFramebulks[0].size() > lastTick || (!session->isRunning && startTick != -1)) {
+		bool s0done = (!IsUsingTools(0) && currentTick > lastTick) || processedFramebulks[0].size() > lastTick;
+		bool s1done = !this->isCoop || (!IsUsingTools(1) && currentTick > lastTick) || processedFramebulks[1].size() > lastTick;
+		if ((s0done && s1done) || (!session->isRunning && startTick != -1)) {
 			Stop();
 		}
 		// also do not allow inputs after TAS has ended

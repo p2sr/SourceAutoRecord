@@ -62,6 +62,7 @@ REDECL(Server::FinishGravity);
 REDECL(Server::AirMove);
 REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
+REDECL(Server::PlayerRunCommand);
 REDECL(Server::ProcessMovement);
 REDECL(Server::StartTouchChallengeNode);
 #ifdef _WIN32
@@ -193,23 +194,35 @@ DETOUR(Server::PlayerMove) {
 	return Server::PlayerMove(thisptr);
 }
 
-// CGameMovement::ProcessMovement
-DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
+extern Hook g_playerRunCommandHook;
+// CPortal_Player::PlayerRunCommand
+DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 	if (!engine->IsGamePaused()) {
-		auto playerInfo = tasPlayer->GetPlayerInfo(player, move);
+		auto playerInfo = tasPlayer->GetPlayerInfo(thisptr, cmd);
 		if (sar_tas_real_controller_debug.GetInt() == 3) {
-			console->Print("Jump input state at tick %d: %s\n", playerInfo.tick, (move->m_nButtons & IN_JUMP) ? "true" : "false");
+			console->Print("Jump input state at tick %d: %s\n", playerInfo.tick, (cmd->buttons & IN_JUMP) ? "true" : "false");
 		}
 	}
 
+	int slot = server->GetSplitScreenPlayerSlot(thisptr);
 
-	if (tasPlayer->IsActive() && sar_tas_tools_enabled.GetBool()) {
-		tasPlayer->PostProcess(server->GetSplitScreenPlayerSlot(player), player, move);
+	if (tasPlayer->IsActive() && tasPlayer->IsUsingTools(slot)) {
+		tasPlayer->PostProcess(slot, thisptr, cmd);
 	}
 
+	g_playerRunCommandHook.Disable();
+	auto ret = Server::PlayerRunCommand(thisptr, cmd, moveHelper);
+	g_playerRunCommandHook.Enable();
+
+	return ret;
+}
+Hook g_playerRunCommandHook(&Server::PlayerRunCommand_Hook);
+
+// CGameMovement::ProcessMovement
+DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
+	int slot = server->GetSplitScreenPlayerSlot(player);
 	unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
 	bool grounded = groundHandle != 0xFFFFFFFF;
-	int slot = server->GetSplitScreenPlayerSlot(player);
 	groundFramesCounter->HandleMovementFrame(slot, grounded);
 	strafeQuality.OnMovement(slot, grounded);
 	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
@@ -488,19 +501,29 @@ static void InitCMFlagHook() {
 	}
 }
 
+static bool g_IsPlayerRunCommandHookInitialized = false;
+static void InitPlayerRunCommandHook() {
+	void *player = server->GetPlayer(1);
+	if (!player) return;
+	Server::PlayerRunCommand = Memory::VMT<Server::_PlayerRunCommand>(player, Offsets::PlayerRunCommand);
+	g_playerRunCommandHook.SetFunc(Server::PlayerRunCommand);
+	g_IsPlayerRunCommandHookInitialized = true;
+}
+
 // CServerGameDLL::GameFrame
 DETOUR(Server::GameFrame, bool simulating)
 {
 	if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
 	if (!g_IsCMFlagHookInitialized) InitCMFlagHook();
-
-	tasPlayer->Update();
+	if (!g_IsPlayerRunCommandHookInitialized) InitPlayerRunCommandHook();
 
 	if (sar_tick_debug.GetInt() >= 3 || (sar_tick_debug.GetInt() >= 2 && simulating)) {
 		int host, server, client;
 		engine->GetTicks(host, server, client);
 		console->Print("CServerGameDLL::GameFrame %s (host=%d server=%d client=%d)\n", simulating ? "simulating" : "non-simulating", host, server, client);
 	}
+
+	tasPlayer->Update();
 
 	int tick = session->GetTick();
 
@@ -696,6 +719,7 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::S_m_bDucked);
 	offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
 	offsetFinder->ServerSide("CBasePlayer", "m_nTickBase", &Offsets::m_nTickBase);
+	offsetFinder->ServerSide("CBasePlayer", "m_nJumpTimeMsecs", &Offsets::S_m_nJumpTimeMsecs);
 	offsetFinder->ServerSide("CPortal_Player", "m_lifeState", &Offsets::m_lifeState);
 	offsetFinder->ServerSide("CPortal_Player", "m_InAirState", &Offsets::m_InAirState);
 	offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);

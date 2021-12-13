@@ -78,6 +78,9 @@ public:
 	float GetCMTimer();
 
 public:
+	// CPortal_Player::PlayerRunCommand
+	DECL_DETOUR(PlayerRunCommand, CUserCmd *cmd, void *moveHelper);
+
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR(ProcessMovement, void *pPlayer, CMoveData *pMove);
 

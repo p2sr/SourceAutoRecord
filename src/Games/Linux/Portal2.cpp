@@ -249,6 +249,7 @@ void Portal2::LoadOffsets() {
 	m_surfaceFriction = 4120;            // CBasePlayer
 	GetPaintPower = 513;                 // CPortal_Player
 	UseSpeedPower = 519;                 // CPortal_Player
+	PlayerRunCommand = 454;              // CPortal_Player
 	StartTouch = 103;
 
 	// client.so
