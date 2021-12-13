@@ -124,6 +124,15 @@ static std::string getSaveDir() {
 }
 #endif
 
+static bool mapExists(std::string name) {
+	name = "/maps/" + name + ".bsp";
+	if (std::ifstream(engine->GetGameDirectory() + name).good()) return true;
+	if (std::ifstream("portal2_dlc1" + name).good()) return true;
+	if (std::ifstream("sdk_content" + name).good()) return true;
+	if (std::ifstream("portal2_dlc2" + name).good()) return true;
+	return false;
+}
+
 void TasPlayer::Activate() {
 	//reset the controller before using it
 	Stop(true);
@@ -155,21 +164,19 @@ void TasPlayer::Activate() {
 	ready = false;
 	if (startInfo.type == ChangeLevel || startInfo.type == ChangeLevelCM) {
 		//check if map exists
-		std::string mapPath = std::string(engine->GetGameDirectory()) + "/maps/" + startInfo.param + ".bsp";
-		std::ifstream mapf(mapPath);
-		if (mapf.good()) {
-			std::string cmd = this->isCoop ? "ss_map " : "map ";
-			if (session->isRunning && engine->GetCurrentMapName().size() > 0) {
-				cmd = "changelevel ";
+		if (mapExists(startInfo.param)) {
+			if (session->isRunning && engine->GetCurrentMapName() == startInfo.param) {
+				engine->ExecuteCommand("restart_level");
+			} else {
+				if (session->isRunning) engine->ExecuteCommand("disconnect");
+				std::string cmd = (this->isCoop ? "ss_map " : "map ") + startInfo.param;
+				engine->ExecuteCommand(cmd.c_str());
 			}
-			cmd += startInfo.param;
-			engine->ExecuteCommand(cmd.c_str());
 		} else {
 			console->ColorMsg(Color(255, 100, 100), "Cannot activate TAS file - unknown map '%s.'\n", startInfo.param.c_str());
 			Stop();
 			return;
 		}
-		mapf.close();
 	} else if (startInfo.type == LoadQuicksave) {
 		//check if save file exists
 		std::string savePath = std::string(engine->GetGameDirectory()) + "/" + getSaveDir() + startInfo.param + ".sav";
