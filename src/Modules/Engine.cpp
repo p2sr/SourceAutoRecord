@@ -527,6 +527,9 @@ bool ProcessTick_Detour(void *thisptr, void *pack)
 	return ret;
 }
 
+static _CommandCompletionCallback playdemo_orig_completion;
+DECL_COMMAND_FILE_COMPLETION(playdemo, ".dem", engine->GetGameDirectory(), 1)
+
 bool Engine::Init() {
 	this->engineClient = Interface::Create(this->Name(), "VEngineClient015", false);
 	this->s_ServerPlugin = Interface::Create(this->Name(), "ISERVERPLUGINHELPERS001", false);
@@ -746,6 +749,7 @@ bool Engine::Init() {
 	Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
 	Command::Hook("load", Engine::load_callback_hook, Engine::load_callback);
 	Command::Hook("give", Engine::give_callback_hook, Engine::give_callback);
+	Command::HookCompletion("playdemo", AUTOCOMPLETION_FUNCTION(playdemo), playdemo_orig_completion);
 
 	Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
 	Command::Hook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback_hook, Engine::playvideo_end_level_transition_callback);
@@ -810,6 +814,7 @@ void Engine::Shutdown() {
 	Command::Unhook("help", Engine::help_callback);
 	Command::Unhook("load", Engine::load_callback);
 	Command::Unhook("give", Engine::give_callback);
+	Command::UnhookCompletion("playdemo", playdemo_orig_completion);
 	Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
 	Command::Unhook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback);
 	Command::Unhook("stop_transition_videos_fadeout", Engine::stop_transition_videos_fadeout_callback);

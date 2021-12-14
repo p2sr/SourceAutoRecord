@@ -39,6 +39,8 @@ public:
 
 	static bool Hook(const char *name, _CommandCallback detour, _CommandCallback &original);
 	static bool Unhook(const char *name, _CommandCallback original);
+	static bool HookCompletion(const char *name, _CommandCompletionCallback callback, _CommandCompletionCallback &original);
+	static bool UnhookCompletion(const char *name, _CommandCompletionCallback original);
 	static bool ActivateAutoCompleteFile(const char *name, _CommandCompletionCallback callback);
 	static bool DectivateAutoCompleteFile(const char *name);
 };

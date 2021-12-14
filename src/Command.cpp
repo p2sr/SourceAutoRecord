@@ -100,6 +100,25 @@ bool Command::Unhook(const char *name, _CommandCallback original) {
 	}
 	return false;
 }
+bool Command::HookCompletion(const char *name, _CommandCompletionCallback detour, _CommandCompletionCallback &original) {
+	auto cc = Command(name);
+	if (!!cc) {
+		original = cc.ThisPtr()->m_bHasCompletionCallback ? cc.ThisPtr()->m_fnCompletionCallback : nullptr;
+		cc.ThisPtr()->m_bHasCompletionCallback = true;
+		cc.ThisPtr()->m_fnCompletionCallback = detour;
+		return true;
+	}
+	return false;
+}
+bool Command::UnhookCompletion(const char *name, _CommandCompletionCallback original) {
+	auto cc = Command(name);
+	if (!!cc) {
+		cc.ThisPtr()->m_bHasCompletionCallback = !!original;
+		cc.ThisPtr()->m_fnCompletionCallback = original;
+		return true;
+	}
+	return false;
+}
 bool Command::ActivateAutoCompleteFile(const char *name, _CommandCompletionCallback callback) {
 	auto cc = Command(name);
 	if (!!cc) {
