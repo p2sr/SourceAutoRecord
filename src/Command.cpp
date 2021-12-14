@@ -5,6 +5,7 @@
 #include "SAR.hpp"
 
 #include <cstring>
+#include <set>
 
 std::vector<Command *> &Command::GetList() {
 	static std::vector<Command *> list;
@@ -116,4 +117,106 @@ bool Command::DectivateAutoCompleteFile(const char *name) {
 		return true;
 	}
 	return false;
+}
+int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args, const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) {
+	std::vector<std::string> args;
+
+	while (isspace(*partial)) {
+		++partial;
+	}
+
+	bool trailing;
+	while (*partial) {
+		trailing = false;
+
+		std::string arg;
+
+		if (*partial == '"') {
+			++partial;
+			while (*partial && *partial != '"') {
+				arg += *partial;
+				++partial;
+			}
+			if (*partial == '"') {
+				++partial;
+				trailing = true;
+			}
+		} else {
+			while (*partial && !isspace(*partial)) {
+				arg += *partial;
+				++partial;
+			}
+		}
+
+		args.push_back(arg);
+
+		while (isspace(*partial)) {
+			++partial;
+			trailing = true;
+		}
+	}
+
+	if (trailing) args.push_back("");
+
+	int completed_args = args.size() - 1;
+	if (completed_args > exp_args + 1) completed_args = exp_args + 1;
+	
+	std::string part;
+	for (size_t i = 0; i < completed_args; ++i) {
+		if (args[i].find(" ") != std::string::npos) {
+			part += "\"" + args[i] + "\" ";
+		} else {
+			part += args[i] + " ";
+		}
+	}
+
+	if (args.size() == 1 || completed_args == exp_args + 1) {
+		part = part.substr(0, part.size() - 1); // strip trailing space
+		std::strncpy(commands[0], part.c_str(), COMMAND_COMPLETION_ITEM_LENGTH - 1);
+		commands[0][COMMAND_COMPLETION_ITEM_LENGTH - 1] = 0;
+		return 1;
+	}
+
+	std::string cur = args[args.size() - 1];
+	
+	size_t last_slash = cur.rfind('/');
+	std::string dirpart = last_slash == std::string::npos ? "" : cur.substr(0, last_slash) + "/";
+
+	std::vector<std::string> items;
+
+	try {
+		std::set<std::string> sorted;
+
+		for (auto &file : std::filesystem::directory_iterator(rootdir + std::string("/") + dirpart)) {
+			if (file.is_directory() || Utils::EndsWith(file.path().extension().string(), extension)) {
+				std::string path = dirpart + file.path().stem().string();
+				std::replace(path.begin(), path.end(), '\\', '/');
+				if (file.is_directory()) path += "/";
+				sorted.insert(path);
+			}
+		}
+
+		for (auto &path : sorted) {
+			std::string qpath =
+				path.find(" ") == std::string::npos
+				? path
+				: Utils::ssprintf("\"%s\"", path.c_str());
+
+			if (path == cur) {
+				items.insert(items.begin(), part + qpath);
+			} else if (path.find(cur) != std::string::npos) {
+				items.push_back(part + qpath);
+			}
+
+			if (items.size() >= COMMAND_COMPLETION_MAXITEMS) break;
+		}
+	} catch (std::filesystem::filesystem_error &e) {
+	}
+
+	for (size_t i = 0; i < items.size(); ++i) {
+		std::strncpy(commands[i], items[i].c_str(), COMMAND_COMPLETION_ITEM_LENGTH - 1);
+		commands[i][COMMAND_COMPLETION_ITEM_LENGTH - 1] = 0;
+	}
+
+	return items.size();
 }

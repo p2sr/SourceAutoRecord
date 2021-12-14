@@ -4,6 +4,8 @@
 
 #include <cstring>
 #include <vector>
+#include <filesystem>
+#include <algorithm>
 
 class Command {
 private:
@@ -129,3 +131,10 @@ public:
 #define CON_COMMAND_COMPLETION(name, description, completion) \
 	DECL_AUTO_COMMAND_COMPLETION(name, completion)               \
 	CON_COMMAND_F_COMPLETION(name, description, 0, name##_CompletionFunc)
+
+int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args, const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+
+#define DECL_COMMAND_FILE_COMPLETION(command, extension, rootdir, exp_args) \
+	DECL_DECLARE_AUTOCOMPLETION_FUNCTION(command) { \
+		return _FileCompletionFunc(extension, rootdir, exp_args, partial, commands); \
+	}
