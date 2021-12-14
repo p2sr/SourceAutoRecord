@@ -532,38 +532,79 @@ void TasPlayer::Update() {
 	}
 }
 
+
+
 DECL_COMMAND_COMPLETION(sar_tas_play) {
 	// cursed code to get the current "complete" arg
+	std::vector<std::string> args;
 
-	std::string part;
-	if (match[strlen(match) - 1] == ' ') {
-		part = match;
-		match += strlen(match);
+	while (isspace(*match)) {
+		++match;
 	}
 
-	try {
-		for (
-			auto i = std::filesystem::recursive_directory_iterator(TAS_SCRIPTS_DIR);
-			i != std::filesystem::recursive_directory_iterator();
-			++i
-		) {
-			if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
-				break;
+	bool trailing;
+	while (*match) {
+		trailing = false;
+
+		std::string arg;
+
+		if (*match == '"') {
+			++match;
+			while (*match && *match != '"') {
+				arg += *match;
+				++match;
 			}
+			if (*match == '"') {
+				++match;
+				trailing = true;
+			}
+		} else {
+			while (*match && !isspace(*match)) {
+				arg += *match;
+				++match;
+			}
+		}
 
-			auto file = *i;
+		args.push_back(arg);
 
-			auto scriptExt = file.path().extension().string();
-			if (Utils::EndsWith(scriptExt, TAS_SCRIPT_EXT)) {
-				auto scriptPath = file.path();
-				auto scriptName = scriptPath.stem().string();
-				for (int d = 0; d < i.depth(); d++) {
-					scriptPath = scriptPath.parent_path();
-					scriptName = scriptPath.stem().string() + "/" + scriptName;
-				}
+		while (isspace(*match)) {
+			++match;
+			trailing = true;
+		}
+	}
 
-				if (std::strstr(scriptName.c_str(), match)) {
-					items.push_back(part + scriptName);
+	if (trailing) args.push_back("");
+
+	std::string part;
+	for (size_t i = 0; i < args.size() - 1; ++i) {
+		if (args[i].find(" ") != std::string::npos) {
+			part += "\"" + args[i] + "\" ";
+		} else {
+			part += args[i] + " ";
+		}
+	}
+
+	std::string cur = args[args.size() - 1];
+
+	size_t last_slash = cur.rfind('/');
+	std::string dirpart = last_slash == std::string::npos ? "" : cur.substr(0, last_slash) + "/";
+
+	try {
+		for (auto &file : std::filesystem::directory_iterator(TAS_SCRIPTS_DIR + std::string("/") + dirpart)) {
+			std::string path = dirpart + file.path().stem().string();
+			std::replace(path.begin(), path.end(), '\\', '/');
+			if (file.is_directory()) path += "/";
+
+			std::string qpath =
+				path.find(" ") == std::string::npos
+				? path
+				: Utils::ssprintf("\"%s\"", path.c_str());
+
+			if (file.is_directory() || Utils::EndsWith(file.path().extension().string(), TAS_SCRIPT_EXT)) {
+				if (path == cur) {
+					items.insert(items.begin(), part + qpath);
+				} else if (path.find(cur) != std::string::npos) {
+					items.push_back(part + qpath);
 				}
 			}
 		}

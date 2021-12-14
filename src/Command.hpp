@@ -116,12 +116,15 @@ public:
 	}
 // clang-format off
 #define FINISH_COMMAND_COMPLETION()                                        \
-    }                                                                      \
-    auto count = 0;                                                        \
-    for (auto& item : items) {                                             \
-        std::strcpy(commands[count++], (std::string(cmd) + item).c_str()); \
-    }                                                                      \
-    return count;
+	}                                                                      \
+	auto count = 0;                                                        \
+	for (auto& item : items) {                                             \
+		if (count > COMMAND_COMPLETION_MAXITEMS - 1) break; \
+		std::string s = std::string(cmd) + item; \
+		if (s.size() > COMMAND_COMPLETION_ITEM_LENGTH - 1) s = s.substr(0, COMMAND_COMPLETION_ITEM_LENGTH - 1); \
+		std::strcpy(commands[count++], s.c_str()); \
+	}                                                                      \
+	return count;
 // clang-format on
 #define CON_COMMAND_COMPLETION(name, description, completion) \
 	DECL_AUTO_COMMAND_COMPLETION(name, completion)               \
