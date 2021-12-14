@@ -49,7 +49,7 @@ ON_EVENT(PRE_TICK) {
 		return;
 	}
 
-	if (!server->IsRestoring() && engine->GetMaxClients() == 1) {
+	if (!server->IsRestoring()) {
 		if (!event.simulating && !pauseTimer->IsActive()) {
 			pauseTimer->Start();
 		} else if (event.simulating && pauseTimer->IsActive()) {

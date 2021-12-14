@@ -101,6 +101,7 @@ static struct
 	bool isRunning;
 	bool isPaused;
 	bool isReset;
+	bool inCoopPause;
 
 	bool hasSplitLoad;
 
@@ -260,7 +261,7 @@ int SpeedrunTimer::GetSegmentTicks() {
 
 	int ticks = 0;
 	ticks += g_speedrun.saved;
-	if (!g_speedrun.isPaused) {
+	if (!g_speedrun.isPaused && !g_speedrun.inCoopPause) {
 		ticks += getCurrentTick() - g_speedrun.base;
 	}
 
@@ -314,6 +315,18 @@ void SpeedrunTimer::Update() {
 	}
 
 	std::string map = getEffectiveMapName();
+
+	if (engine->IsCoop() && !engine->IsOrange() && SpeedrunTimer::IsRunning() && !sar_speedrun_time_pauses.GetBool()) {
+		if (pauseTimer->IsActive() && !g_speedrun.inCoopPause) {
+			g_speedrun.saved = SpeedrunTimer::GetTotalTicks();
+			g_speedrun.inCoopPause = true;
+		} else if (!pauseTimer->IsActive() && g_speedrun.inCoopPause) {
+			g_speedrun.base = getCurrentTick();
+			g_speedrun.inCoopPause = false;
+		}
+	} else {
+		g_speedrun.inCoopPause = false;
+	}
 
 	if (map != g_speedrun.lastMap && SpeedrunTimer::IsRunning() && !engine->IsOrange()) {
 		bool visited = false;
