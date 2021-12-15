@@ -100,6 +100,8 @@ DECL_DECLARE_AUTOCOMPLETION_FUNCTION(svar_set) {
 
 	// completed_args == 1
 	for (auto svar : g_svars) {
+		if (Utils::StartsWith(svar.first.c_str(), "__")) continue;
+
 		std::string qname =
 			svar.first.find(" ") == std::string::npos
 			? svar.first
