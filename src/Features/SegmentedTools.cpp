@@ -1,6 +1,7 @@
 #include "SegmentedTools.hpp"
 
 #include "Event.hpp"
+#include "Scheduler.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -83,4 +84,46 @@ ON_EVENT(PRE_TICK) {
 			g_entries.erase(g_entries.begin() + i--);
 		}
 	}
+}
+
+CON_COMMAND_F(hwait, "hwait <tick> <command> [args...] - run a command after the given number of host ticks\n", FCVAR_DONTRECORD) {
+	if (args.ArgC() < 3) {
+		return console->Print(waitCmd.ThisPtr()->m_pszHelpString);
+	}
+
+	int ticks = std::atoi(args[1]);
+
+	const char *cmd;
+
+	if (args.ArgC() == 3) {
+		cmd = args[2];
+	} else {
+		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
+
+		while (isspace(*cmd)) ++cmd;
+
+		if (*cmd == '"') {
+			cmd += strlen(args[1]) + 2;
+		} else {
+			cmd += strlen(args[1]);
+		}
+
+		while (isspace(*cmd)) ++cmd;
+	}
+
+	std::string cmdstr = cmd;
+
+	if (engine->demorecorder->isRecordingDemo) {
+		size_t size = cmdstr.size() + 6;
+		char *data = new char[size];
+		data[0] = 0x0D;
+		*(int *)(data + 1) = ticks;
+		strcpy(data + 5, cmd);
+		engine->demorecorder->RecordData(data, size);
+		delete[] data;
+	}
+
+	Scheduler::InHostTicks(ticks, [=]() {
+		engine->ExecuteCommand(cmdstr.c_str(), true);
+	});
 }
