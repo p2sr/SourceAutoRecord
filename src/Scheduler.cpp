@@ -3,9 +3,12 @@
 #include "Modules/Engine.hpp"
 #include "Features/Session.hpp"
 #include <vector>
+#include <mutex>
 
 static std::vector<std::pair<int, std::function<void()>>> g_serverScheds;
 static std::vector<std::pair<int, std::function<void()>>> g_hostScheds;
+static std::vector<std::function<void()>> g_mainThreadScheds;
+static std::mutex g_mainThreadMutex;
 
 void Scheduler::InServerTicks(int ticks, std::function<void()> fn) {
 	if (!session->isRunning) return;
@@ -16,6 +19,12 @@ void Scheduler::InHostTicks(int ticks, std::function<void()> fn) {
 	int host, server, client;
 	engine->GetTicks(host, server, client);
 	g_hostScheds.push_back({ host + ticks, fn });
+}
+
+void Scheduler::OnMainThread(std::function<void()> fn) {
+	g_mainThreadMutex.lock();
+	g_mainThreadScheds.push_back(fn);
+	g_mainThreadMutex.unlock();
 }
 
 ON_EVENT(SESSION_START) {
@@ -33,6 +42,13 @@ ON_EVENT(FRAME) {
 			--i;
 		}
 	}
+
+	g_mainThreadMutex.lock();
+	for (auto &f : g_mainThreadScheds) {
+		f();
+	}
+	g_mainThreadScheds.clear();
+	g_mainThreadMutex.unlock();
 }
 
 ON_EVENT(PRE_TICK) {

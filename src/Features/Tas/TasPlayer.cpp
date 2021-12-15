@@ -3,6 +3,7 @@
 #include "Features/Session.hpp"
 #include "Features/Tas/TasParser.hpp"
 #include "Features/Tas/TasTool.hpp"
+#include "Features/Tas/TasClient.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
@@ -530,6 +531,26 @@ void TasPlayer::Update() {
 			//engine->ExecuteCommand("unpause", true);
 		}
 	}
+
+	UpdateClient();
+}
+
+void TasPlayer::UpdateClient() {
+	TasStatus status;
+
+	status.active = active;
+	status.tas_path[0] = this->tasFileName[0];
+	status.tas_path[1] = this->isCoop ? this->tasFileName[1] : "";
+	status.playback_state =
+		this->paused
+		? PlaybackState::PAUSED
+		: this->GetTick() < sar_tas_skipto.GetInt()
+		? PlaybackState::SKIPPING
+		: PlaybackState::PLAYING;
+	status.playback_rate = sar_tas_playback_rate.GetFloat();
+	status.playback_tick = this->GetTick();
+
+	TasClient::SetStatus(status);
 }
 
 DECL_COMMAND_FILE_COMPLETION(sar_tas_play, TAS_SCRIPT_EXT, TAS_SCRIPTS_DIR, 2)

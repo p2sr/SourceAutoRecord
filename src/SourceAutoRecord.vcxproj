@@ -197,6 +197,7 @@
     <ClCompile Include="Features\Tas\TasParser.cpp" />
     <ClCompile Include="Features\Tas\TasController.cpp" />
     <ClCompile Include="Features\Tas\TasPlayer.cpp" />
+    <ClCompile Include="Features\Tas\TasClient.cpp" />
     <ClCompile Include="Features\Tas\TasTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\AbsoluteMoveTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\AutoJumpTool.cpp" />
@@ -374,6 +375,7 @@
     <ClInclude Include="Features\Tas\TasParser.hpp" />
     <ClInclude Include="Features\Tas\TasController.hpp" />
     <ClInclude Include="Features\Tas\TasPlayer.hpp" />
+    <ClInclude Include="Features\Tas\TasClient.hpp" />
     <ClInclude Include="Features\Tas\TasTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\AbsoluteMoveTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\AutoJumpTool.hpp" />

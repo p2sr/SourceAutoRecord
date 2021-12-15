@@ -74,6 +74,7 @@ private:
 
 public:
 	void Update();
+	void UpdateClient();
 
 	inline int GetTick() const { return currentTick; };
 	inline int GetAbsoluteTick() const { return startTick + currentTick; };
@@ -116,5 +117,6 @@ extern Variable sar_tas_autosave_raw;
 
 extern Variable sar_tas_skipto;
 extern Variable sar_tas_pauseat;
+extern Variable sar_tas_playback_rate;
 
 extern TasPlayer *tasPlayer;
