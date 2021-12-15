@@ -137,7 +137,8 @@ bool Command::DectivateAutoCompleteFile(const char *name) {
 	}
 	return false;
 }
-int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args, const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) {
+
+std::vector<std::string> ParsePartialArgs(const char *partial) {
 	std::vector<std::string> args;
 
 	while (isspace(*partial)) {
@@ -176,6 +177,12 @@ int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args
 	}
 
 	if (trailing) args.push_back("");
+
+	return args;
+}
+
+int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args, const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) {
+	auto args = ParsePartialArgs(partial);
 
 	int completed_args = args.size() - 1;
 	if (completed_args > exp_args + 1) completed_args = exp_args + 1;

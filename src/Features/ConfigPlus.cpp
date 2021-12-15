@@ -63,7 +63,66 @@ static std::string GetSvar(std::string name) {
 	return it->second;
 }
 
-CON_COMMAND_F(svar_set, "svar_set <variable> <value> - set a svar (SAR variable) to a given value\n", FCVAR_DONTRECORD) {
+DECL_DECLARE_AUTOCOMPLETION_FUNCTION(svar_set) {
+	auto args = ParsePartialArgs(partial);
+
+	int completed_args = args.size() - 1;
+	if (completed_args > 3) completed_args = 3;
+
+	std::string part;
+	for (size_t i = 0; i < completed_args; ++i) {
+		if (args[i].find(" ") != std::string::npos) {
+			part += "\"" + args[i] + "\" ";
+		} else {
+			part += args[i] + " ";
+		}
+	}
+
+	if (completed_args == 0 || completed_args == 3) {
+		part = part.substr(0, part.size() - 1); // strip trailing space
+		std::strncpy(commands[0], part.c_str(), COMMAND_COMPLETION_ITEM_LENGTH - 1);
+		commands[0][COMMAND_COMPLETION_ITEM_LENGTH - 1] = 0;
+		return 1;
+	}
+
+	if (completed_args == 2) {
+		auto val = GetSvar(args[1]);
+		if (val == "" || val.find(" ") != std::string::npos) val = "\"" + val + "\"";
+		part += val;
+		std::strncpy(commands[0], part.c_str(), COMMAND_COMPLETION_ITEM_LENGTH - 1);
+		commands[0][COMMAND_COMPLETION_ITEM_LENGTH - 1] = 0;
+		return 1;
+	}
+
+	std::string cur = args[args.size() - 1];
+
+	std::vector<std::string> items;
+
+	// completed_args == 1
+	for (auto svar : g_svars) {
+		std::string qname =
+			svar.first.find(" ") == std::string::npos
+			? svar.first
+			: Utils::ssprintf("\"%s\"", svar.first.c_str());
+
+		if (svar.first == cur) {
+			items.insert(items.begin(), part + qname);
+		} else if (svar.first.find(cur) != std::string::npos) {
+			items.push_back(part + qname);
+		}
+
+		if (items.size() >= COMMAND_COMPLETION_MAXITEMS) break;
+	}
+
+	for (size_t i = 0; i < items.size(); ++i) {
+		std::strncpy(commands[i], items[i].c_str(), COMMAND_COMPLETION_ITEM_LENGTH - 1);
+		commands[i][COMMAND_COMPLETION_ITEM_LENGTH - 1] = 0;
+	}
+
+	return items.size();
+}
+
+CON_COMMAND_F_COMPLETION(svar_set, "svar_set <variable> <value> - set a svar (SAR variable) to a given value\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_set)) {
 	if (args.ArgC() != 3) {
 		return console->Print(svar_set.ThisPtr()->m_pszHelpString);
 	}
