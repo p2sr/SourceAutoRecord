@@ -287,9 +287,12 @@ void EngineDemoPlayer::Shutdown() {
 
 // Commands
 
-CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "sar_startdemos <demoname> - improved version of startdemos. Use 'stopdemo' to stop playing demos\n", 0, 0, dem) {
+DECL_COMMAND_FILE_COMPLETION(sar_startdemos, ".dem", engine->GetGameDirectory(), 1)
+DECL_COMMAND_FILE_COMPLETION(sar_startdemosfolder, "/", engine->GetGameDirectory(), 1)
+
+CON_COMMAND_F_COMPLETION(sar_startdemos, "sar_startdemos <demoname> - improved version of startdemos. Use 'stopdemo' to stop playing demos\n", 0, AUTOCOMPLETION_FUNCTION(sar_startdemos)) {
 	// Always print a useful message for the user if not used correctly
-	if (args.ArgC() <= 1) {
+	if (args.ArgC() != 2) {
 		return console->Print(sar_startdemos.ThisPtr()->m_pszHelpString);
 	}
 
@@ -303,17 +306,32 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "sar_startdemos <demoname> - improv
 	}
 
 	auto dir = engine->GetGameDirectory() + std::string("/");
-	int counter = 2;
 
 	Demo demo;
 	DemoParser parser;
 	bool ok = parser.Parse(dir + name, &demo);
 
 	if (!ok) {
-		return console->Print("Could not parse \"%s\"!\n", engine->GetGameDirectory() + std::string("/") + args[1]);
+		return console->Print("Could not parse \"%s\"!\n", (engine->GetGameDirectory() + std::string("/") + args[1]).c_str());
 	}
 
 	engine->demoplayer->demoQueue.push_back(name);
+
+	int counter = 2;
+
+	{
+		size_t idx = name.rfind('_');
+		if (idx != std::string::npos) {
+			auto part = name.substr(idx + 1, name.size() - idx - 1);
+			char *endptr;
+			long num = strtol(part.c_str(), &endptr, 10);
+			if (!*endptr) {
+				// The thing is a number!
+				name = name.substr(0, idx);
+				counter = num + 1;
+			}
+		}
+	}
 
 	while (ok) {
 		auto tmp_dir = dir + name + "_" + std::to_string(counter);
@@ -331,7 +349,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_startdemos, "sar_startdemos <demoname> - improv
 
 	//Demos are played in Engine::Frame
 }
-CON_COMMAND(sar_startdemosfolder, "sar_startdemosfolder <folder name> - plays all the demos in the specified folder by alphabetic order\n") {
+CON_COMMAND_F_COMPLETION(sar_startdemosfolder, "sar_startdemosfolder <folder name> - plays all the demos in the specified folder by alphabetic order\n", 0, AUTOCOMPLETION_FUNCTION(sar_startdemosfolder)) {
 	if (args.ArgC() < 2) {
 		return console->Print(sar_startdemosfolder.ThisPtr()->m_pszHelpString);
 	}
@@ -347,7 +365,9 @@ CON_COMMAND(sar_startdemosfolder, "sar_startdemosfolder <folder name> - plays al
 		if (file.path().extension() != ".dem")
 			continue;
 
-		filepath = args[1] + std::string("/") + file.path().filename().string();
+		filepath = args[1];
+		if (filepath[filepath.size() - 1] != '/') filepath += "/";
+		filepath += file.path().filename().string();
 		console->Print("%s\n", filepath.c_str());
 		if (parser.Parse(dir + filepath, &demo)) {
 			engine->demoplayer->demoQueue.push_back(filepath);
