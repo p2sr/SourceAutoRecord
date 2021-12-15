@@ -6,9 +6,6 @@
 #include "Features/Hud/Hud.hpp"
 #include "Features/Listener.hpp"
 #include "Features/NetMessage.hpp"
-#include "Features/ReplaySystem/ReplayPlayer.hpp"
-#include "Features/ReplaySystem/ReplayProvider.hpp"
-#include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
@@ -136,11 +133,6 @@ void Session::Ended() {
 	engine->demorecorder->currentDemo = "";
 	this->lastFrame = this->currentFrame;
 	this->currentFrame = 0;
-
-	replayRecorder1->StopRecording();
-	replayRecorder2->StopRecording();
-	replayPlayer1->StopPlaying();
-	replayPlayer2->StopPlaying();
 
 	NetMessage::SessionEnded();
 

@@ -11,12 +11,8 @@
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Hud/ScrollSpeed.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
-#include "Features/Imitator.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OffsetFinder.hpp"
-#include "Features/ReplaySystem/ReplayPlayer.hpp"
-#include "Features/ReplaySystem/ReplayProvider.hpp"
-#include "Features/ReplaySystem/ReplayRecorder.hpp"
 #include "Features/Session.hpp"
 #include "Features/Stats/Sync.hpp"
 #include "Features/Stitcher.hpp"
@@ -172,18 +168,6 @@ DETOUR(Client::LevelInitPreEntity, const char *levelName) {
 
 // ClientModeShared::CreateMove
 DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd *cmd) {
-	if (cmd->command_number) {
-		if (replayPlayer1->IsPlaying()) {
-			replayPlayer1->Play(replayProvider->GetCurrentReplay(), cmd);
-		} else if (replayRecorder1->IsRecording()) {
-			replayRecorder1->Record(replayProvider->GetCurrentReplay(), cmd);
-		}
-	}
-
-	if (sar_mimic.isRegistered && sar_mimic.GetBool()) {
-		imitator->Save(cmd);
-	}
-
 	if (!in_forceuser.isReference || (in_forceuser.isReference && !in_forceuser.GetBool())) {
 		if (engine->IsCoop() && engine->IsOrange())
 			inputHud.SetInputInfo(1, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
@@ -218,18 +202,6 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd *cmd) {
 	return Client::CreateMove(thisptr, flInputSampleTime, cmd);
 }
 DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd *cmd) {
-	if (cmd->command_number) {
-		if (replayPlayer2->IsPlaying()) {
-			replayPlayer2->Play(replayProvider->GetCurrentReplay(), cmd);
-		} else if (replayRecorder2->IsRecording()) {
-			replayRecorder2->Record(replayProvider->GetCurrentReplay(), cmd);
-		}
-	}
-
-	if (sar_mimic.GetBool() && (!sv_bonus_challenge.GetBool() || sv_cheats.GetBool())) {
-		imitator->Modify(cmd);
-	}
-
 	if (in_forceuser.GetBool()) {
 		inputHud.SetInputInfo(1, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
 	}

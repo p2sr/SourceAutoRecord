@@ -166,7 +166,6 @@
     <ClCompile Include="Features\Hud\Minimap.cpp" />
     <ClCompile Include="Features\Hud\AimPointHud.cpp" />
     <ClCompile Include="Features\Hud\Watermark.cpp" />
-    <ClCompile Include="Features\Imitator.cpp" />
     <ClCompile Include="Features\Listener.cpp" />
     <ClCompile Include="Features\OffsetFinder.cpp" />
     <ClCompile Include="Features\PlayerTrace.cpp" />
@@ -195,11 +194,6 @@
     <ClCompile Include="Features\Tas\TasTools\SetAngleTool.cpp" />
     <ClCompile Include="Features\Updater.cpp" />
     <ClCompile Include="Features\AutoSubmit.cpp" />
-    <ClCompile Include="Features\ReplaySystem\Replay.cpp" />
-    <ClCompile Include="Features\ReplaySystem\ReplayPlayer.cpp" />
-    <ClCompile Include="Features\ReplaySystem\ReplayProvider.cpp" />
-    <ClCompile Include="Features\ReplaySystem\ReplayRecorder.cpp" />
-    <ClCompile Include="Features\ReplaySystem\ReplayView.cpp" />
     <ClCompile Include="Features\Tas\TasParser.cpp" />
     <ClCompile Include="Features\Tas\TasController.cpp" />
     <ClCompile Include="Features\Tas\TasPlayer.cpp" />
@@ -349,7 +343,6 @@
     <ClInclude Include="Features\Hud\LPHud.hpp" />
     <ClInclude Include="Features\Hud\Toasts.hpp" />
     <ClInclude Include="Features\Hud\AimPointHud.hpp" />
-    <ClInclude Include="Features\Imitator.hpp" />
     <ClInclude Include="Features\Listener.hpp" />
     <ClInclude Include="Features\OffsetFinder.hpp" />
     <ClInclude Include="Features\PlayerTrace.hpp" />
@@ -378,12 +371,6 @@
     <ClInclude Include="Features\Tas\TasTools\SetAngleTool.hpp" />
     <ClInclude Include="Features\Updater.hpp" />
     <ClInclude Include="Features\AutoSubmit.hpp" />
-    <ClInclude Include="Features\ReplaySystem\Replay.hpp" />
-    <ClInclude Include="Features\ReplaySystem\ReplayFrame.hpp" />
-    <ClInclude Include="Features\ReplaySystem\ReplayPlayer.hpp" />
-    <ClInclude Include="Features\ReplaySystem\ReplayProvider.hpp" />
-    <ClInclude Include="Features\ReplaySystem\ReplayRecorder.hpp" />
-    <ClInclude Include="Features\ReplaySystem\ReplayView.hpp" />
     <ClInclude Include="Features\Tas\TasParser.hpp" />
     <ClInclude Include="Features\Tas\TasController.hpp" />
     <ClInclude Include="Features\Tas\TasPlayer.hpp" />

@@ -184,11 +184,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->features->AddFeature<Stats>(&stats);
 			this->features->AddFeature<Sync>(&synchro);
 			this->features->AddFeature<ReloadedFix>(&reloadedFix);
-			this->features->AddFeature<ReplayRecorder>(&replayRecorder1);
-			this->features->AddFeature<ReplayRecorder>(&replayRecorder2);
-			this->features->AddFeature<ReplayPlayer>(&replayPlayer1);
-			this->features->AddFeature<ReplayPlayer>(&replayPlayer2);
-			this->features->AddFeature<ReplayProvider>(&replayProvider);
 			this->features->AddFeature<Timer>(&timer);
 			this->features->AddFeature<EntityInspector>(&inspector);
 			this->features->AddFeature<SeamshotFind>(&seamshotFind);
@@ -226,7 +221,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 				this->cheats->Init();
 
 				this->features->AddFeature<Listener>(&listener);
-				this->features->AddFeature<Imitator>(&imitator);
 
 				if (this->game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
 					this->features->AddFeature<WorkshopList>(&workshop);
