@@ -721,7 +721,7 @@ CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only 
 		while (isspace(*cmd)) ++cmd;
 	}
 
-	engine->ExecuteCommand(cmd);
+	engine->ExecuteCommand(cmd, true);
 }
 
 CON_COMMAND_F(seq, "seq <commands>... - runs a sequence of commands one tick after one another\n", FCVAR_DONTRECORD) {
