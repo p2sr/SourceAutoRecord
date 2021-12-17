@@ -2,15 +2,18 @@
 
 #include <map>
 
-std::vector<SarInitHandler *> SarInitHandler::handlers;
-
 SarInitHandler::SarInitHandler(std::function<void()> cb)
 	: cb(cb) {
-	handlers.push_back(this);
+		SarInitHandler::GetHandlers().push_back(this);
 }
 
 void SarInitHandler::RunAll() {
-	for (auto h : SarInitHandler::handlers) {
+	for (auto h : SarInitHandler::GetHandlers()) {
 		h->cb();
 	}
+}
+
+std::vector<SarInitHandler *> &SarInitHandler::GetHandlers() {
+	static std::vector<SarInitHandler *> handlers;
+	return handlers;
 }

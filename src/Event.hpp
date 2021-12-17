@@ -22,7 +22,7 @@ public:
 	SarInitHandler(std::function<void()> cb);
 	std::function<void()> cb;
 
-	static std::vector<SarInitHandler *> handlers;
+	static std::vector<SarInitHandler *> &GetHandlers();
 	static void RunAll();
 };
 
