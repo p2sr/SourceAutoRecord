@@ -20,13 +20,13 @@
 #endif
 
 Variable sar_tas_debug("sar_tas_debug", "0", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.\n");
-Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", 0, 1, "Enables tool processing for TAS script making.\n");
-Variable sar_tas_tools_force("sar_tas_tools_force", "0", 0, 1, "Force tool playback for TAS scripts; primarily for debugging.\n");
-Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "0", 0, 1, "Enables automatic saving of raw, processed TAS scripts.\n");
+Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", "Enables tool processing for TAS script making.\n");
+Variable sar_tas_tools_force("sar_tas_tools_force", "0", "Force tool playback for TAS scripts; primarily for debugging.\n");
+Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "0", "Enables automatic saving of raw, processed TAS scripts.\n");
 Variable sar_tas_pauseat("sar_tas_pauseat", "0", 0, "Pauses the TAS playback on specified tick.\n");
 Variable sar_tas_skipto("sar_tas_skipto", "0", 0, "Fast-forwards the TAS playback until given playback tick.\n");
 Variable sar_tas_playback_rate("sar_tas_playback_rate", "1.0", 0.02, "The rate at which to play back TAS scripts.\n");
-Variable sar_tas_restore_fps("sar_tas_restore_fps", "1", 0, "Restore fps_max and host_framerate after TAS playback.\n");
+Variable sar_tas_restore_fps("sar_tas_restore_fps", "1", "Restore fps_max and host_framerate after TAS playback.\n");
 
 TasPlayer *tasPlayer;
 
