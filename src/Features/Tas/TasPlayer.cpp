@@ -169,8 +169,19 @@ void TasPlayer::Activate() {
 			if (session->isRunning && engine->GetCurrentMapName() == startInfo.param) {
 				engine->ExecuteCommand("restart_level");
 			} else {
-				if (session->isRunning) engine->ExecuteCommand("disconnect");
-				std::string cmd = (this->isCoop ? "ss_map " : "map ") + startInfo.param;
+				const char *start;
+				if (this->isCoop) {
+					if (session->isRunning && engine->IsCoop() && !engine->IsOrange() && engine->GetCurrentMapName() != "") {
+						start = "changelevel";
+					} else {
+						if (session->isRunning) engine->ExecuteCommand("disconnect");
+						start = "ss_map";
+					}
+				} else {
+					if (session->isRunning) engine->ExecuteCommand("disconnect");
+					start = "map";
+				}
+				std::string cmd = Utils::ssprintf("%s %s", start, startInfo.param.c_str());
 				engine->ExecuteCommand(cmd.c_str());
 			}
 		} else {
