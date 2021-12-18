@@ -142,6 +142,9 @@ public:
 	bool TraceFromCamera(float distMax, CGameTrace &tr);
 	bool ConsoleVisible();
 	void GetTicks(int &host, int &server, int &client);
+	void SetAdvancing(bool advancing);
+	bool IsAdvancing();
+	void AdvanceTick();
 
 	// CClientState::Disconnect
 	DECL_DETOUR(Disconnect, bool bShowMainMenu);

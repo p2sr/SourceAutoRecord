@@ -251,19 +251,20 @@ void TasPlayer::Stop(bool interrupted) {
 	tasControllers[1]->Disable();
 
 	SetPlaybackVars(false);
+
+	engine->SetAdvancing(false);
 }
 
 void TasPlayer::Pause() {
-	paused = true;
+	if (active && ready) engine->SetAdvancing(true);
 }
 
 void TasPlayer::Resume() {
-	paused = false;
+	if (active && ready) engine->SetAdvancing(false);
 }
 
 void TasPlayer::AdvanceFrame() {
-	Resume();
-	pauseTick = currentTick + 2;
+	if (active && ready) engine->AdvanceTick();
 }
 
 // returns raw framebulk that should be used for given tick
@@ -542,7 +543,7 @@ void TasPlayer::UpdateClient() {
 	status.tas_path[0] = this->tasFileName[0];
 	status.tas_path[1] = this->isCoop ? this->tasFileName[1] : "";
 	status.playback_state =
-		this->paused
+		engine->IsAdvancing()
 		? PlaybackState::PAUSED
 		: this->GetTick() < sar_tas_skipto.GetInt()
 		? PlaybackState::SKIPPING

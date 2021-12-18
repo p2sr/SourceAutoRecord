@@ -528,6 +528,47 @@ bool ProcessTick_Detour(void *thisptr, void *pack)
 	return ret;
 }
 
+static unsigned g_advance = 0;
+static bool g_advancing = false;
+
+void Engine::SetAdvancing(bool advancing) {
+	g_advancing = advancing;
+	if (!advancing) g_advance = 0;
+}
+
+bool Engine::IsAdvancing() {
+	return g_advancing;
+}
+
+void Engine::AdvanceTick() {
+	if (g_advancing) {
+		if (!engine->IsCoop() && sv_alternateticks.GetBool()) {
+			g_advance += 2;
+		} else {
+			g_advance += 1;
+		}
+	}
+}
+
+static float *host_frametime;
+void Host_AccumulateTime_Detour(float dt);
+void (*Host_AccumulateTime)(float dt);
+static Hook Host_AccumulateTime_Hook(&Host_AccumulateTime_Detour);
+void Host_AccumulateTime_Detour(float dt) {
+	if (!g_advancing || !session->isRunning) {
+		Host_AccumulateTime_Hook.Disable();
+		Host_AccumulateTime(dt);
+		Host_AccumulateTime_Hook.Enable();
+	} else if (g_advance > 0) {
+		Host_AccumulateTime_Hook.Disable();
+		Host_AccumulateTime(1.0f/60);
+		Host_AccumulateTime_Hook.Enable();
+		--g_advance;
+	} else {
+		*host_frametime = 0;
+	}
+}
+
 static _CommandCompletionCallback playdemo_orig_completion;
 DECL_COMMAND_FILE_COMPLETION(playdemo, ".dem", engine->GetGameDirectory(), 1)
 
@@ -708,6 +749,16 @@ bool Engine::Init() {
 		this->demoSmootherPatch->Execute(parseSmoothingInfoAddr + 5, nop3);  // Nop rest
 	}
 #endif
+
+#ifdef _WIN32
+	Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), "55 8B EC 51 F3 0F 10 05 ? ? ? ? F3 0F 58 45 08 8B 0D ? ? ? ? F3 0F 11 05 ? ? ? ? 8B 01 8B 50 20 53 B3 01 FF D2", 0);
+	host_frametime = *(float **)((uintptr_t)Host_AccumulateTime + 92);
+#else
+	Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), "56 53 E8 ? ? ? ? 81 C3 E9 50 5C 00 83 EC 14 8D B3 ? ? ? ? 8D 8B ? ? ? ? F3 0F 10 83 ? ? ? ? F3 0F 58 44 24 20", 0);
+	host_frametime = (float *)((uintptr_t)Host_AccumulateTime + 7 + 0x5C50E9 + *(uint32_t *)((uintptr_t)Host_AccumulateTime + 96));
+#endif
+
+	Host_AccumulateTime_Hook.SetFunc(Host_AccumulateTime);
 
 	// This is the address of the one interesting call to ReadCustomData - the E8 byte indicates the start of the call instruction
 #ifdef _WIN32
