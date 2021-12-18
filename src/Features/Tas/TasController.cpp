@@ -72,10 +72,10 @@ void TasController::ResetDigitalInputs() {
 	for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
 		TasControllerButton *button = &buttons[i];
 		if (button->command[0] == '+') {
-			char cmdbuf[128];
-			snprintf(cmdbuf, sizeof(cmdbuf), "%s", button->command);
-			cmdbuf[0] = '-';
-			engine->ExecuteCommand(cmdbuf, true);
+			std::string cmd = button->command;
+			cmd[0] = '-';
+			cmd = (this == tasControllers[0] ? "cmd1 " : "cmd2 ") + cmd;
+			engine->ExecuteCommand(cmd.c_str(), true);
 		}
 	}
 }
