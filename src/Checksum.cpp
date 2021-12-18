@@ -95,7 +95,43 @@ static const uint32_t crcTable[256] = {
 static uint32_t crc32(const char *buf, size_t len) {
 	uint32_t sum = 0xFFFFFFFF;
 
-	for (size_t i = 0; i < len; ++i) {
+	// Unrolled loop
+
+	size_t i;
+
+	for (i = 0; i < len - 10; i += 10) {
+		uint8_t lookupIdx0 = (sum ^ buf[i+0]) & 0xFF;
+		sum = (sum >> 8) ^ crcTable[lookupIdx0];
+
+		uint8_t lookupIdx1 = (sum ^ buf[i+1]) & 0xFF;
+		sum = (sum >> 8) ^ crcTable[lookupIdx1];
+
+		uint8_t lookupIdx2 = (sum ^ buf[i+2]) & 0xFF;
+		sum = (sum >> 8) ^ crcTable[lookupIdx2];
+
+		uint8_t lookupIdx3 = (sum ^ buf[i+3]) & 0xFF;
+		sum = (sum >> 8) ^ crcTable[lookupIdx3];
+
+		uint8_t lookupIdx4 = (sum ^ buf[i+4]) & 0xFF;
+		sum = (sum >> 8) ^ crcTable[lookupIdx4];
+
+		uint8_t lookupIdx5 = (sum ^ buf[i+5]) & 0xFF;
+		sum = (sum >> 8) ^ crcTable[lookupIdx5];
+
+		uint8_t lookupIdx6 = (sum ^ buf[i+6]) & 0xFF;
+		sum = (sum >> 8) ^ crcTable[lookupIdx6];
+
+		uint8_t lookupIdx7 = (sum ^ buf[i+7]) & 0xFF;
+		sum = (sum >> 8) ^ crcTable[lookupIdx7];
+
+		uint8_t lookupIdx8 = (sum ^ buf[i+8]) & 0xFF;
+		sum = (sum >> 8) ^ crcTable[lookupIdx8];
+
+		uint8_t lookupIdx9 = (sum ^ buf[i+9]) & 0xFF;
+		sum = (sum >> 8) ^ crcTable[lookupIdx9];
+	}
+
+	for (; i < len; ++i) {
 		uint8_t lookupIdx = (sum ^ buf[i]) & 0xFF;
 		sum = (sum >> 8) ^ crcTable[lookupIdx];
 	}
@@ -207,7 +243,7 @@ std::pair<VerifyResult, uint32_t> VerifyDemoChecksum(const char *filename) {
 	return std::pair(res, storedSarChecksum);
 }
 
-#define NUM_FILE_SUM_THREADS 4
+#define NUM_FILE_SUM_THREADS 1
 
 static std::thread g_sumthreads[NUM_FILE_SUM_THREADS];
 static std::map<std::string, uint32_t> g_filesums[NUM_FILE_SUM_THREADS];
@@ -254,15 +290,13 @@ static void initFileSums() {
 			auto path = ent.path().string();
 			std::replace(path.begin(), path.end(), '\\', '/');
 			if (Utils::EndsWith(path, ".nut")
-				|| Utils::EndsWith(path, ".so")
-				|| Utils::EndsWith(path, ".dll")
-				|| (Utils::EndsWith(path, ".vpk") && path.find("portal2_dlc") != std::string::npos)
+				|| (Utils::EndsWith(path, ".vpk") && path.find("portal2_dlc3") != std::string::npos)
 				|| path.find("scripts/talker") != std::string::npos)
 			{
 				paths.push_back(path);
 			}
 
-			if (Utils::EndsWith(path, ".bsp")) {
+			if (Utils::EndsWith(path, ".bsp") && path.find("/workshop/") == std::string::npos) {
 				g_mapfiles.push_back(path);
 			}
 		}
