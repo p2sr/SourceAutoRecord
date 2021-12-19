@@ -36,6 +36,8 @@ private:
 		Color textHighlight;
 	};
 
+	InputHudElement *GetElementByName(std::string name);
+
 public:
 	InputHud();
 	void SetInputInfo(int slot, int buttonBits, Vector movement);
@@ -47,6 +49,7 @@ public:
 	void ApplyPreset(const char *preset, bool start);
 	bool HasElement(const char *elementName);
 	bool IsValidParameter(const char *parameter);
+	std::string GetParameterValue(std::string name, std::string parameter);
 
 	int GetButtonBits(int slot) { return inputInfo[slot].buttonBits; }
 

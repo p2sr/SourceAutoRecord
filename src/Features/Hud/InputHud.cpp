@@ -9,6 +9,7 @@
 #include "Variable.hpp"
 
 #include <cstring>
+#include <sstream>
 
 Variable sar_ihud("sar_ihud", "0", 0, 1, "Enabled or disables movement inputs HUD of client.\n");
 Variable sar_ihud_x("sar_ihud_x", "2", "X position of input HUD.\n", 0);
@@ -192,6 +193,16 @@ bool InputHud::GetCurrentSize(int &xSize, int &ySize) {
 	return true;
 }
 
+InputHud::InputHudElement *InputHud::GetElementByName(std::string name) {
+	for (int i = 0; i < elements.size(); i++) {
+		if (elements[i].name.compare(name) == 0) {
+			return &elements[i];
+		}
+	}
+
+	return nullptr;
+}
+
 void InputHud::ModifyElementParam(std::string name, std::string parameter, std::string value) {
 	// recursively handling the "all" name to apply changes to all of the elements
 	if (name.compare("all") == 0) {
@@ -200,53 +211,45 @@ void InputHud::ModifyElementParam(std::string name, std::string parameter, std::
 		}
 	}
 
-	// finding element by name
-	int elementIndex = -1;
-	for (int i = 0; i < elements.size();i++) {
-		if (elements[i].name.compare(name) == 0) {
-			elementIndex = i;
-			break;
-		}
-	}
-
-	if (elementIndex < 0) return;
+	auto *element = GetElementByName(name);
+	if (!element) return;
 
 	int valueInt = std::atoi(value.c_str());
 	auto valueColor = Utils::GetColor(value.c_str(), false);
 
 	// changing given parameter
 	if (parameter.compare("enabled") == 0) {
-		elements[elementIndex].enabled = valueInt > 0;
+		element->enabled = valueInt > 0;
 	} else if (parameter.compare("background") == 0) {
-		elements[elementIndex].background = valueColor.value_or(elements[elementIndex].background);
+		element->background = valueColor.value_or(element->background);
 	} else if (parameter.compare("highlight") == 0) {
-		elements[elementIndex].highlight = valueColor.value_or(elements[elementIndex].highlight);
+		element->highlight = valueColor.value_or(element->highlight);
 	} else if (parameter.compare("font") == 0) {
-		elements[elementIndex].textFont = valueInt;
+		element->textFont = valueInt;
 	} else if (parameter.compare("textcolor") == 0) {
-		elements[elementIndex].textColor = valueColor.value_or(elements[elementIndex].textColor);
+		element->textColor = valueColor.value_or(element->textColor);
 	} else if (parameter.compare("texthighlight") == 0) {
-		elements[elementIndex].textHighlight = valueColor.value_or(elements[elementIndex].textHighlight);
+		element->textHighlight = valueColor.value_or(element->textHighlight);
 	} else if (parameter.compare("text") == 0) {
-		elements[elementIndex].text = value;
+		element->text = value;
 	} else if (parameter.compare("x") == 0) {
-		elements[elementIndex].x = valueInt;
+		element->x = valueInt;
 	} else if (parameter.compare("y") == 0) {
-		elements[elementIndex].y = valueInt;
+		element->y = valueInt;
 	} else if (parameter.compare("width") == 0) {
-		elements[elementIndex].width = valueInt;
+		element->width = valueInt;
 	} else if (parameter.compare("height") == 0) {
-		elements[elementIndex].height = valueInt;
+		element->height = valueInt;
 	} else if (parameter.compare("pos") == 0) {
 		int x, y, width, height;
 		if (sscanf(value.c_str(), "%u %u %u %u", &x, &y, &width, &height) == 4) {
-			elements[elementIndex].x = x;
-			elements[elementIndex].y = y;
-			elements[elementIndex].width = width;
-			elements[elementIndex].height = height;
+			element->x = x;
+			element->y = y;
+			element->width = width;
+			element->height = height;
 		} else if (sscanf(value.c_str(), "%u %u", &x, &y) == 2) {
-			elements[elementIndex].x = x;
-			elements[elementIndex].y = y;
+			element->x = x;
+			element->y = y;
 		}
 	}
 }
@@ -368,6 +371,49 @@ bool InputHud::IsValidParameter(const char* param) {
 	return false;
 }
 
+std::string InputHud::GetParameterValue(std::string name, std::string parameter) {
+	auto *element = GetElementByName(name);
+	if (!element) return "";
+
+	auto colorToString = [](Color color) -> std::string {
+		std::stringstream stream;
+		stream << "#" 
+			<< std::hex << color.r() 
+			<< std::hex << color.g() 
+			<< std::hex << color.b()
+			<< std::hex << color.a();
+		return stream.str();
+	};
+
+	if (parameter.compare("enabled") == 0) {
+		return element->enabled ? "1" : "0";
+	} else if (parameter.compare("background") == 0) {
+		return colorToString(element->background);
+	} else if (parameter.compare("highlight") == 0) {
+		return colorToString(element->highlight);
+	} else if (parameter.compare("font") == 0) {
+		return std::to_string(element->textFont);
+	} else if (parameter.compare("textcolor") == 0) {
+		return colorToString(element->textColor);
+	} else if (parameter.compare("texthighlight") == 0) {
+		return colorToString(element->textHighlight);
+	} else if (parameter.compare("text") == 0) {
+		return element->text;
+	} else if (parameter.compare("x") == 0) {
+		return std::to_string(element->x);
+	} else if (parameter.compare("y") == 0) {
+		return std::to_string(element->y);
+	} else if (parameter.compare("width") == 0) {
+		return std::to_string(element->width);
+	} else if (parameter.compare("height") == 0) {
+		return std::to_string(element->height);
+	} else if (parameter.compare("pos") == 0) {
+		return Utils::ssprintf("x: %u y: %u width: %u height: %u", element->x, element->y, element->width, element->height);
+	} else {
+		return "";
+	}
+}
+
 void InputHud::AddElement(std::string name, int type) {
 	char first = name.at(0);
 	if (first >= 97)
@@ -437,11 +483,39 @@ CON_COMMAND_F_COMPLETION(sar_ihud_modify,
 		return;
 	}
 
+	std::vector<std::string> parameterOutput;
+
+	auto addToParameterOutput = [&](std::string elementName, std::string parameter) {
+		for (std::string &string : parameterOutput) {
+			if (!Utils::StartsWith(string.c_str(), (elementName + ":").c_str())) continue;
+			string += " " + parameter;
+			return;
+		}
+
+		parameterOutput.push_back(std::string(elementName) + ": " + parameter);
+	};
+
 	// looping through every parameter
 	for (int i = 2; i < args.ArgC(); i++) {
 		std::string fullArg = args[i];
 		auto separator = fullArg.find('=');
-		if (separator == std::string::npos) continue;
+		if (separator == std::string::npos) {
+			if (!inputHud.IsValidParameter(fullArg.c_str())) continue;
+
+			// recursively handling the "all" name to print out the parameter for all elements
+			if (std::string(elementName).compare("all") == 0) {
+				for (auto &element : inputHud.elements) {
+					addToParameterOutput(element.name, fullArg + "=" + inputHud.GetParameterValue(element.name, fullArg.c_str()));
+				}
+				continue;
+			}
+
+			// Print the value of the parameter
+			auto parameterValue = inputHud.GetParameterValue(std::string(elementName), fullArg.c_str());
+			if (parameterValue.empty()) continue;
+			addToParameterOutput(elementName, fullArg + "=" + parameterValue);
+			continue;
+		}
 
 		std::string param = fullArg.substr(0, separator);
 		std::string value = fullArg.substr(separator + 1);
@@ -453,6 +527,11 @@ CON_COMMAND_F_COMPLETION(sar_ihud_modify,
 		}
 	}
 
+	if (!parameterOutput.empty()) {
+		for (std::string &string : parameterOutput) {
+			console->Print("%s\n", string.c_str());
+		}
+	}
 }
 
 CON_COMMAND(sar_ihud_add_key, "sar_ihud_add_key <key>") {
