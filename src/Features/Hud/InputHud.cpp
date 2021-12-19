@@ -4,6 +4,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
+#include "Modules/InputSystem.hpp"
 #include "Utils/SDK.hpp"
 #include "Variable.hpp"
 
@@ -31,7 +32,7 @@ InputHud::InputHud()
 		{"attack", false, IN_ATTACK},
 		{"attack2", false, IN_ATTACK2},
 		{"movement", true, 0},
-		{"angles", true, 1},
+		{"angles", true, 1}
 	};
 
 	ApplyPreset("normal", true);
@@ -150,9 +151,13 @@ void InputHud::Paint(int slot) {
 				surface->DrawTxt(font, jX + r, jY + joystickSize + 2, textColor, "y:%.3f", v.y);
 				surface->DrawTxt(font, jX, jY - fontHeight, textColor, element.text.c_str(), v.x);
 			}
-		} else { 
+		} else {
 			// drawing normal buttons
-			bool pressed = inputInfo.buttonBits & element.type;
+			bool pressed = false;
+			if (element.isNormalKey)
+				pressed = inputSystem->IsKeyDown((ButtonCode_t)element.type);
+			else
+				pressed = inputInfo.buttonBits & element.type;
 
 			surface->DrawRectAndCenterTxt(
 				pressed ? element.highlight : element.background,
@@ -363,6 +368,23 @@ bool InputHud::IsValidParameter(const char* param) {
 	return false;
 }
 
+void InputHud::AddElement(std::string name, int type) {
+	char first = name.at(0);
+	if (first >= 97)
+		first -= 32;  // Convert to uppercase
+
+	elements.push_back({
+		name, false, type, true,				// name, isVector, type, isNormalKey
+		true,									// enabled
+		0, 0, 1, 1,								// x, y, width, height
+		Color(0, 0, 0, 200),                    // background
+		Color(255, 255, 255, 255),              // highlight
+		std::string(1, first) + name.substr(1), // text
+		1,                                      // font
+		Color(255, 255, 255, 255),              // text color
+		Color(255, 255, 255, 255),              // text highlight
+	});
+}
 
 
 CON_COMMAND_COMPLETION(sar_ihud_preset, "sar_ihud_preset <preset> - modifies input hud based on given preset\n", ({"normal", "normal_mouse", "tas"})) {
@@ -375,10 +397,32 @@ CON_COMMAND_COMPLETION(sar_ihud_preset, "sar_ihud_preset <preset> - modifies inp
 	inputHud.ApplyPreset(preset, false);
 }
 
-CON_COMMAND(sar_ihud_modify, 
+DECL_COMMAND_COMPLETION(sar_ihud_modify) {
+	while (isspace(*match)) ++match;
+
+	if (std::string(match).find(" ") != std::string::npos) {
+		// we've probably started another arg; don't offer any completions
+		return 0;
+	}
+
+	if (std::strstr("all", match)) items.push_back("all");
+
+	for (auto &element : inputHud.elements) {
+		if (items.size() == COMMAND_COMPLETION_MAXITEMS)
+			break;
+
+		if (std::strstr(element.name.c_str(), match)) {
+			items.push_back(element.name);
+		}
+	}
+
+	FINISH_COMMAND_COMPLETION();
+}
+
+CON_COMMAND_F_COMPLETION(sar_ihud_modify,
 	"sar_ihud_modify <element|all> [param=value]... - modifies parameters in given element.\n"
-    "Elements: forward, back, moveleft, moveright, jump, duck, use, attack, attack2, movement, angles.\n"
-    "Params: enabled, text, font, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight.\n"
+    "Params: enabled, text, font, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight.\n",
+	0, sar_ihud_modify_CompletionFunc
 ) {
 	if (args.ArgC() < 3) {
 		console->Print(sar_ihud_modify.ThisPtr()->m_pszHelpString);
@@ -409,6 +453,26 @@ CON_COMMAND(sar_ihud_modify,
 		}
 	}
 
+}
+
+CON_COMMAND(sar_ihud_add_key, "sar_ihud_add_key <key>") {
+	if (args.ArgC() < 2) {
+		console->Print(sar_ihud_add_key.ThisPtr()->m_pszHelpString);
+		return;
+	}
+
+	if (inputHud.HasElement(args[1])) {
+		console->Print("Input HUD already has this key.\n");
+		return;
+	}
+
+	int keyCode = inputSystem->GetButton(args[1]);
+	if (keyCode == -1) {
+		console->Print("Key %s does not exist.\n", args[1]);
+		return;
+	}
+
+	inputHud.AddElement(args[1], keyCode);
 }
 
 CON_COMMAND_HUD_SETPOS(sar_ihud, "input HUD")

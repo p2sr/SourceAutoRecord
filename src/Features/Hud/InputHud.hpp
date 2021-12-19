@@ -20,6 +20,7 @@ private:
 		std::string name;
 		bool isVector;
 		int type;
+		bool isNormalKey = false;
 
 		//visual
 		bool enabled;
@@ -34,7 +35,6 @@ private:
 		Color textColor;
 		Color textHighlight;
 	};
-	std::vector<InputHudElement> elements;
 
 public:
 	InputHud();
@@ -49,6 +49,10 @@ public:
 	bool IsValidParameter(const char *parameter);
 
 	int GetButtonBits(int slot) { return inputInfo[slot].buttonBits; }
+
+	void AddElement(std::string name, int type);
+
+	std::vector<InputHudElement> elements;
 };
 
 extern InputHud inputHud;
