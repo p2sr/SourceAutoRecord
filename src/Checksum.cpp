@@ -99,7 +99,7 @@ static uint32_t crc32(const char *buf, size_t len) {
 
 	size_t i;
 
-	for (i = 0; i < len - 10; i += 10) {
+	for (i = 0; i + 10 < len; i += 10) {
 		uint8_t lookupIdx0 = (sum ^ buf[i+0]) & 0xFF;
 		sum = (sum >> 8) ^ crcTable[lookupIdx0];
 
