@@ -6,6 +6,8 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Utils/json11.hpp"
+#include <cctype>
+#include <fstream>
 #include <map>
 #include <optional>
 #include <string>
@@ -15,6 +17,7 @@
 #define API_BASE "https://board.portal2.sr/api-v2"
 #define AUTOSUBMIT_TOAST_TAG "autosubmit"
 #define COOP_NAME_MESSAGE_TYPE "coop-name"
+#define API_KEY_FILE "autosubmit_key.txt"
 
 static std::string g_partner_name;
 
@@ -351,12 +354,18 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 	}
 }
 
-CON_COMMAND_F(sar_challenge_autosubmit_set_api_key, "sar_challenge_autosubmit_set_api_key <val> - set the API key for autosubmission to board.portal2.sr.\n", FCVAR_DONTRECORD) {
-	if (args.ArgC() != 2) {
-		return console->Print(sar_challenge_autosubmit_set_api_key.ThisPtr()->m_pszHelpString);
+static void loadApiKey() {
+	if (!std::filesystem::exists(API_KEY_FILE)) return;
+
+	std::string key;
+	{
+		std::ifstream f(API_KEY_FILE);
+		std::stringstream buf;
+		buf << f.rdbuf();
+		key = buf.str();
 	}
 
-	std::string key(args[1]);
+	key.erase(std::remove_if(key.begin(), key.end(), isspace), key.end());
 
 	bool valid = key.size() > 0;
 	for (auto c : key) {
@@ -377,6 +386,18 @@ CON_COMMAND_F(sar_challenge_autosubmit_set_api_key, "sar_challenge_autosubmit_se
 
 	if (g_worker.joinable()) g_worker.join();
 	g_worker = std::thread(testApiKey);
+}
+
+ON_INIT {
+	loadApiKey();
+}
+
+CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit_reload_api_key - reload the board.portal2.sr API key from its file.\n", FCVAR_DONTRECORD) {
+	if (args.ArgC() != 1) {
+		return console->Print(sar_challenge_autosubmit_reload_api_key.ThisPtr()->m_pszHelpString);
+	}
+
+	loadApiKey();
 }
 
 void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
