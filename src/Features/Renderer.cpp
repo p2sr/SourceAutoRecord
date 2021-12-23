@@ -5,6 +5,7 @@
 #include "Hook.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
+#include "Features/Session.hpp"
 #include "Utils/SDK.hpp"
 
 #include <atomic>
@@ -64,6 +65,7 @@ static Variable sar_render_autostart_extension("sar_render_autostart_extension",
 static Variable sar_render_autostop("sar_render_autostop", "1", "Whether to automatically stop when __END__ is seen in demo playback\n");
 static Variable sar_render_shutter_angle("sar_render_shutter_angle", "180", 30, 360, "The shutter angle to use for rendering in degrees.\n");
 static Variable sar_render_merge("sar_render_merge", "0", "When set, merge all the renders until sar_render_finish is entered\n");
+static Variable sar_render_skip_coop_videos("sar_render_skip_coop_videos", "1", "When set, don't include coop loading time in renders\n");
 
 // g_videomode VMT wrappers {{{
 
@@ -996,6 +998,10 @@ static void SND_RecordBuffer_Hook() {
 void Renderer::Frame() {
 	if (Renderer::isDemoLoading && sar_render_autostart.GetBool()) {
 		bool start = engine->demoplayer->IsPlaybackFixReady();
+		start &= session->isRunning;
+		if (engine->GetMaxClients() >= 2 && sar_render_skip_coop_videos.GetBool()) {
+			start &= engine->startedTransitionFadeout;
+		}
 		g_render.isPaused.store(!start);
 		if (!start) return;
 
@@ -1011,6 +1017,12 @@ void Renderer::Frame() {
 
 	if (!g_render.isRendering.load()) return;
 
+	if (engine->GetMaxClients() >= 2 && sar_render_skip_coop_videos.GetBool() && engine->isLevelTransition) {
+		// The transition video has begun, pause the render
+		g_render.isPaused.store(true);
+		return;
+	}
+
 	// autostop: if it's the __END__ tick, or the demo is over, stop
 	// rendering
 
@@ -1022,6 +1034,9 @@ void Renderer::Frame() {
 			g_render.isPaused.store(true);
 		return;
 	}
+
+	if (g_render.isPaused.load())
+		return;
 
 	// Don't render if the console is visible
 	if (engine->ConsoleVisible()) return;
