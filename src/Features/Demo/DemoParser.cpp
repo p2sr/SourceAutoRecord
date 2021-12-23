@@ -351,6 +351,6 @@ HUD_ELEMENT_MODE2(demo, "0", 0, 2, "Draws name, tick and time of current demo.\n
 
 		++name;
 
-		ctx->DrawElement("demo: %s %i", name, tick);
+		ctx->DrawElement("demo: %s %.3f", name, time);
 	}
 }
