@@ -87,6 +87,7 @@ public:
 	}
 
 	void PlayFile(std::string slot0, std::string slot1);
+	void PlaySingleCoop(std::string file, int slot);
 
 	void Activate();
 	void Start();
@@ -109,6 +110,7 @@ public:
 	void PostProcess(int slot, void *player, CUserCmd *cmd);
 
 	bool isCoop;
+	int coopControlSlot;
 
 	TasPlayer();
 	~TasPlayer();

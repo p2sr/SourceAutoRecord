@@ -127,6 +127,7 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 
 	// affect inputs only if the virtual controller is enabled
 	if (!enabled) return;
+	if (tasPlayer->coopControlSlot == nSlot) return;
 
 	//console->Print("TasController::ControllerMove (%d, ", cmd->tick_count);
 
