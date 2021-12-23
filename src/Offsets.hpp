@@ -182,6 +182,8 @@ namespace Offsets {
 	extern int m_lifeState;
 	extern int m_hPortalEnvironment;
 	extern int PlayerRunCommand;
+	extern int S_m_nPlayerCond;
+	extern int C_m_nPlayerCond;
 
 	// CWeaponPortalgun
 	extern int m_bCanFirePortal1;

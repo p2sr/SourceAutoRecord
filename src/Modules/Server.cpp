@@ -729,6 +729,7 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CPortal_Player", "m_InAirState", &Offsets::m_InAirState);
 	offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);
 	offsetFinder->ServerSide("CPortal_Player", "m_PortalLocal", &Offsets::S_m_PortalLocal);
+	offsetFinder->ServerSide("CPortal_Player", "m_nPlayerCond", &Offsets::S_m_nPlayerCond);
 
 	offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
 	offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);

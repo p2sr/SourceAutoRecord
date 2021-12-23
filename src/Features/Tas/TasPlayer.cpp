@@ -414,6 +414,15 @@ void TasPlayer::FetchInputs(int slot, TasController *controller) {
 	}
 }
 
+static bool IsTaunting(void *player, bool client = false) {
+	int cond = *(int *)((uintptr_t)player + (client ? Offsets::C_m_nPlayerCond : Offsets::S_m_nPlayerCond));
+	if (cond & (1 << PORTAL_COND_TAUNTING)) return true;
+	if (cond & (1 << PORTAL_COND_DROWNING)) return true;
+	if (cond & (1 << PORTAL_COND_DEATH_CRUSH)) return true;
+	if (cond & (1 << PORTAL_COND_DEATH_GIB)) return true;
+	return false;
+}
+
 // special tools have to be parsed in input processing part.
 // because of alternateticks, a pair of inputs are created and then executed at the same time,
 // meaning that second tick in pair reads outdated info.
@@ -425,6 +434,8 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	cmd->sidemove = 0;
 	cmd->upmove = 0;
 	cmd->buttons = 0;
+
+	auto orig_angles = cmd->viewangles;
 
 	auto playerInfo = GetPlayerInfo(player, cmd);
 	// player tickbase seems to be an accurate way of getting current time in ProcessMovement
@@ -486,6 +497,17 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 		fb.commands = empty;
 	}
 	processedFramebulks[slot].push_back(fb);
+
+	void *clPlayer = client->GetPlayer(slot + 1);
+
+	if (IsTaunting(clPlayer, true)) {
+		cmd->forwardmove = 0;
+		cmd->sidemove = 0;
+		cmd->upmove = 0;
+		cmd->buttons = 0;
+		cmd->weaponselect = 0;
+		cmd->viewangles = orig_angles;
+	}
 }
 
 void TasPlayer::Update() {
