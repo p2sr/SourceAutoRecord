@@ -10,7 +10,7 @@
 #	include <unistd.h>
 #endif
 
-#include "TasClient.hpp"
+#include "TasServer.hpp"
 #include "TasPlayer.hpp"
 #include "Event.hpp"
 #include "Scheduler.hpp"
@@ -34,7 +34,7 @@
 
 #define TAS_CLIENT_SOCKET 6555
 
-Variable sar_tas_client("sar_tas_client", "0", "Enable the remote TAS client.\n");
+Variable sar_tas_server("sar_tas_server", "0", "Enable the remote TAS server.\n");
 
 struct ClientData {
 	SOCKET sock;
@@ -401,7 +401,7 @@ static std::thread g_net_thread;
 static bool g_running;
 
 ON_EVENT(FRAME) {
-	bool should_run = sar_tas_client.GetBool();
+	bool should_run = sar_tas_server.GetBool();
 	if (g_running && !should_run) {
 		g_should_stop.store(true);
 		if (g_net_thread.joinable()) g_net_thread.join();
@@ -414,12 +414,12 @@ ON_EVENT(FRAME) {
 }
 
 ON_EVENT_P(SAR_UNLOAD, -100) {
-	sar_tas_client.SetValue(false);
+	sar_tas_server.SetValue(false);
 	g_should_stop.store(true);
 	if (g_net_thread.joinable()) g_net_thread.join();
 }
 
-void TasClient::SetStatus(TasStatus s) {
+void TasServer::SetStatus(TasStatus s) {
 	g_status_mutex.lock();
 	g_current_status = s;
 	g_status_mutex.unlock();

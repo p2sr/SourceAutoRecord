@@ -16,6 +16,6 @@ struct TasStatus {
 	int playback_tick;
 };
 
-namespace TasClient {
+namespace TasServer {
 	void SetStatus(TasStatus s);
 };

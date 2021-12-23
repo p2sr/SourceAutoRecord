@@ -74,7 +74,7 @@ private:
 
 public:
 	void Update();
-	void UpdateClient();
+	void UpdateServer();
 
 	inline int GetTick() const { return currentTick; };
 	inline int GetAbsoluteTick() const { return startTick + currentTick; };

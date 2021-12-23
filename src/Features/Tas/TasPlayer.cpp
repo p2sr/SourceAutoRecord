@@ -3,7 +3,7 @@
 #include "Features/Session.hpp"
 #include "Features/Tas/TasParser.hpp"
 #include "Features/Tas/TasTool.hpp"
-#include "Features/Tas/TasClient.hpp"
+#include "Features/Tas/TasServer.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
@@ -544,10 +544,10 @@ void TasPlayer::Update() {
 		}
 	}
 
-	UpdateClient();
+	UpdateServer();
 }
 
-void TasPlayer::UpdateClient() {
+void TasPlayer::UpdateServer() {
 	TasStatus status;
 
 	status.active = active;
@@ -562,7 +562,7 @@ void TasPlayer::UpdateClient() {
 	status.playback_rate = sar_tas_playback_rate.GetFloat();
 	status.playback_tick = this->GetTick();
 
-	TasClient::SetStatus(status);
+	TasServer::SetStatus(status);
 }
 
 DECL_COMMAND_FILE_COMPLETION(sar_tas_play, TAS_SCRIPT_EXT, TAS_SCRIPTS_DIR, 2)
