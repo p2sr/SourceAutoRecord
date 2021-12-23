@@ -8,6 +8,7 @@
 #include "Utils/json11.hpp"
 #include <cctype>
 #include <fstream>
+#include <sstream>
 #include <map>
 #include <optional>
 #include <string>
