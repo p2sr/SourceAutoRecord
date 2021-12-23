@@ -570,6 +570,34 @@ DECL_COMMAND_FILE_COMPLETION(sar_tas_play, TAS_SCRIPT_EXT, TAS_SCRIPTS_DIR, 2)
 static std::string g_replayTas[2];
 static bool g_replayTasCoop;
 
+void TasPlayer::PlayFile(std::string slot0, std::string slot1) {
+	bool coop = slot1.size() > 0;
+
+	g_replayTas[0] = slot0;
+	if (coop) g_replayTas[1] = slot1;
+	g_replayTasCoop = coop;
+		
+	try {
+		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + slot0 + "." + TAS_SCRIPT_EXT);
+		std::vector<TasFramebulk> fb = TasParser::ParseFile(0, filePath);
+		std::vector<TasFramebulk> fb2;
+
+		if (coop) {
+			std::string filePath2(std::string(TAS_SCRIPTS_DIR) + "/" + slot1 + "." + TAS_SCRIPT_EXT);
+			fb2 = TasParser::ParseFile(1, filePath2);
+		}
+
+		if (fb.size() > 0 || fb2.size() > 0) {
+			tasPlayer->isCoop = coop;
+			tasPlayer->SetFrameBulkQueue(0, fb);
+			tasPlayer->SetFrameBulkQueue(1, fb2);
+			tasPlayer->Activate();
+		}
+	} catch (TasParserException &e) {
+		return console->ColorMsg(Color(255, 100, 100), "Error while opening TAS file: %s\n", e.what());
+	}
+}
+
 CON_COMMAND_F_COMPLETION(
 	sar_tas_play,
 	"sar_tas_play <filename> [filename2] - plays a TAS script with given name. If two script names are given, play coop\n",
@@ -581,34 +609,7 @@ CON_COMMAND_F_COMPLETION(
 		return console->Print(sar_tas_play.ThisPtr()->m_pszHelpString);
 	}
 
-	bool coop = args.ArgC() == 3;
-
-	g_replayTas[0] = args[1];
-	if (coop) g_replayTas[1] = args[2];
-	g_replayTasCoop = coop;
-		
-	try {
-		std::string fileName(args[1]);
-		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + fileName + "." + TAS_SCRIPT_EXT);
-		std::vector<TasFramebulk> fb = TasParser::ParseFile(0, filePath);
-		std::vector<TasFramebulk> fb2;
-
-		if (coop) {
-			std::string fileName2(args[2]);
-			std::string filePath2(std::string(TAS_SCRIPTS_DIR) + "/" + fileName2 + "." + TAS_SCRIPT_EXT);
-			fb2 = TasParser::ParseFile(1, filePath2);
-		}
-
-
-		if (fb.size() > 0 || fb2.size() > 0) {
-			tasPlayer->isCoop = coop;
-			tasPlayer->SetFrameBulkQueue(0, fb);
-			tasPlayer->SetFrameBulkQueue(1, fb2);
-			tasPlayer->Activate();
-		}
-	} catch (TasParserException &e) {
-		return console->ColorMsg(Color(255, 100, 100), "Error while opening TAS file: %s\n", e.what());
-	}
+	tasPlayer->PlayFile(args[1], args.ArgC() == 3 ? args[2] : "");
 }
 
 CON_COMMAND(sar_tas_replay, "sar_tas_replay - replays the last played TAS\n") {

@@ -198,7 +198,7 @@ static bool processCommands(ClientData &cl) {
 
 				std::string filename1;
 				for (size_t i = 0; i < len1; ++i) {
-					if (copy[0] != '"') filename1 += copy[0];
+					filename1 += copy[0];
 					copy.pop_front();
 				}
 
@@ -207,18 +207,14 @@ static bool processCommands(ClientData &cl) {
 
 				std::string filename2;
 				for (size_t i = 0; i < len2; ++i) {
-					if (copy[0] != '"') filename2 += copy[0];
+					filename2 += copy[0];
 					copy.pop_front();
 				}
 
 				cl.cmdbuf = copy; // We actually had everything we needed, so switch to the modified buffer
 
 				Scheduler::OnMainThread([=](){
-					if (!len2) {
-						engine->ExecuteCommand(Utils::ssprintf("sar_tas_play \"%s\"", filename1.c_str()).c_str());
-					} else {
-						engine->ExecuteCommand(Utils::ssprintf("sar_tas_play \"%s\" \"%s\"", filename1.c_str(), filename2.c_str()).c_str());
-					}
+					tasPlayer->PlayFile(filename2, filename2);
 				});
 			}
 			break;

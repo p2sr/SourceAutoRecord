@@ -86,6 +86,8 @@ public:
 			&& (sar_tas_tools_force.GetBool() || this->tasFileName[slot].find("_raw") == std::string::npos);
 	}
 
+	void PlayFile(std::string slot0, std::string slot1);
+
 	void Activate();
 	void Start();
 	void PostStart();
