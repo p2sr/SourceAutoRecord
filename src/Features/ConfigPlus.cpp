@@ -677,6 +677,7 @@ MK_SAR_ON(flags, "when CM flags are hit", false)
 MK_SAR_ON(coop_reset_done, "when coop reset is completed", false)
 MK_SAR_ON(coop_reset_remote, "when coop reset run remotely", false)
 MK_SAR_ON(coop_spawn, "on coop spawn", true)
+MK_SAR_ON(config_exec, "on config.cfg exec", true)
 
 struct Seq {
 	std::queue<std::string> commands;
@@ -881,6 +882,9 @@ ON_EVENT(COOP_RESET_REMOTE) {
 }
 ON_EVENT(ORANGE_READY) {
 	RUN_EXECS(coop_spawn);
+}
+ON_EVENT(CONFIG_EXEC) {
+	RUN_EXECS(config_exec);
 }
 
 CON_COMMAND_F(nop, "nop [args]... - nop ignores all its arguments and does nothing\n", FCVAR_DONTRECORD) {}

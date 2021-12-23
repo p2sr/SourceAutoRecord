@@ -176,6 +176,7 @@ public:
 	DECL_DETOUR_COMMAND(unpause);
 	DECL_DETOUR_COMMAND(load);
 	DECL_DETOUR_COMMAND(give);
+	DECL_DETOUR_COMMAND(exec);
 
 	DECL_DETOUR(ReadCustomData, int *callbackIndex, char **data);
 	DECL_DETOUR_T(const char *, ReadConsoleCommand);

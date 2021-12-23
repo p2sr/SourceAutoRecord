@@ -73,6 +73,7 @@ REDECL(Engine::playvideo_end_level_transition_callback);
 REDECL(Engine::stop_transition_videos_fadeout_callback);
 REDECL(Engine::load_callback);
 REDECL(Engine::give_callback);
+REDECL(Engine::exec_callback);
 #ifdef _WIN32
 REDECL(Engine::ParseSmoothingInfo_Skip);
 REDECL(Engine::ParseSmoothingInfo_Default);
@@ -496,6 +497,17 @@ DETOUR_COMMAND(Engine::give) {
 	}
 	Engine::give_callback(args);
 }
+DETOUR_COMMAND(Engine::exec) {
+	bool is_config_exec = (args.ArgC() == 3 && !strcmp(args[1], "config.cfg")) || (args.ArgC() == 2 && !strcmp(args[1], "config_default.cfg"));
+
+	Engine::exec_callback(args);
+
+	static bool has_execd_config = false;
+	if (is_config_exec && !has_execd_config) {
+		has_execd_config = true;
+		Event::Trigger<Event::CONFIG_EXEC>({});
+	}
+}
 
 DECL_CVAR_CALLBACK(ss_force_primary_fullscreen) {
 	if (engine->GetMaxClients() >= 2 && client->GetChallengeStatus() != CMStatus::CHALLENGE && ss_force_primary_fullscreen.GetInt() == 0) {
@@ -810,6 +822,7 @@ bool Engine::Init() {
 	Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
 	Command::Hook("load", Engine::load_callback_hook, Engine::load_callback);
 	Command::Hook("give", Engine::give_callback_hook, Engine::give_callback);
+	Command::Hook("exec", Engine::exec_callback_hook, Engine::exec_callback);
 	Command::HookCompletion("playdemo", AUTOCOMPLETION_FUNCTION(playdemo), playdemo_orig_completion);
 	Command::HookCompletion("exec", AUTOCOMPLETION_FUNCTION(exec), exec_orig_completion);
 
@@ -876,6 +889,7 @@ void Engine::Shutdown() {
 	Command::Unhook("help", Engine::help_callback);
 	Command::Unhook("load", Engine::load_callback);
 	Command::Unhook("give", Engine::give_callback);
+	Command::Unhook("exec", Engine::exec_callback);
 	Command::UnhookCompletion("playdemo", playdemo_orig_completion);
 	Command::UnhookCompletion("exec", exec_orig_completion);
 	Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
