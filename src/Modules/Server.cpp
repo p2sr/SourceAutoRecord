@@ -693,7 +693,12 @@ bool Server::Init() {
 #ifdef _WIN32
 		uintptr_t code = Memory::Scan(this->Name(), "FF ? ? ? ? ? D9 5D F8 8B 56 04 8B 42 1C 8B ? ? ? ? ? 3B C3 75 04 33 C9 EB 08 8B C8 2B 4A 58 C1 F9 04 F3 0F 10 84 CE 70", 0);
 #else
-		uintptr_t code = Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 46 04 66 0F EF C0 DD 5C 24 08 F2 0F 5A 44 24 08 8B 40 24 85 C0", 0);
+		uintptr_t code;
+		if (sar.game->Is(SourceGame_EIPRelPIC)) {
+			code = Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 46 04 66 0F EF C0 DD 5C 24 08 F2 0F 5A 44 24 08 8B 40 24 85 C0", 0);
+		} else {
+			code = Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 43 04 DD 9D ? ? ? ? F2 0F 10 B5 ? ? ? ? 8B 50 24 66 0F 14 F6 66 0F 5A CE 85 D2", 0);
+		}
 #endif
 		Memory::UnProtect((void *)code, sizeof g_orig_check_stuck_code);
 		memcpy(g_orig_check_stuck_code, (void *)code, sizeof g_orig_check_stuck_code);
