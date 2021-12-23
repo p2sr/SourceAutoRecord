@@ -285,7 +285,15 @@ static std::optional<int> getCurrentPbScore(const char *map_id) {
 static void submitTime(int score, std::string demopath, bool coop, const char *map_id, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
 	auto score_str = std::to_string(score);
 
-	if (!g_key_valid) return;
+	if (!g_key_valid) {
+		if (rename_if_pb) {
+			std::filesystem::rename(demopath, *rename_if_pb);
+		}
+		if (replay_append_if_pb) {
+			engine->demoplayer->replayName += *replay_append_if_pb;
+		}
+		return;
+	}
 
 	auto cur_pb = getCurrentPbScore(map_id);
 	if (cur_pb) {
@@ -410,6 +418,12 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 	auto it = g_map_ids.find(engine->GetCurrentMapName());
 	if (it == g_map_ids.end()) {
 		console->Print("Unknown map; not autosubmitting\n");
+		if (rename_if_pb) {
+			std::filesystem::rename(demopath, *rename_if_pb);
+		}
+		if (replay_append_if_pb) {
+			engine->demoplayer->replayName += *replay_append_if_pb;
+		}
 		return;
 	}
 
