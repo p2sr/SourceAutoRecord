@@ -113,6 +113,9 @@ void ZoneTriggerRule::OverlayInfo(HudContext *ctx, SpeedrunRule *rule) {
 	if (rule->slot) {
 		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "player: %d", *rule->slot);
 	}
+	if (rule->cycle) {
+		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "cycle: %d,%d", rule->cycle->first, rule->cycle->second);
+	}
 	if (rule->onlyAfter) {
 		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "after: %s", rule->onlyAfter->c_str());
 	}
@@ -197,6 +200,9 @@ void PortalPlacementRule::OverlayInfo(HudContext *ctx, SpeedrunRule *rule) {
 	}
 	if (this->portal) {
 		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "portal: %s", *this->portal == PortalColor::BLUE ? "blue (primary)" : "orange (secondary)");
+	}
+	if (rule->cycle) {
+		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "cycle: %d,%d", rule->cycle->first, rule->cycle->second);
 	}
 	if (rule->onlyAfter) {
 		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "after: %s", rule->onlyAfter->c_str());
@@ -318,6 +324,9 @@ static const char *printRuleAction(RuleAction action) {
 std::string SpeedrunRule::Describe() {
 	std::string s = std::string("action=") + printRuleAction(this->action);
 	s += " map=" + this->map;
+	if (this->cycle) {
+		s += Utils::ssprintf(" cycle=%d,%d", this->cycle->first, this->cycle->second);
+	}
 	if (this->onlyAfter) {
 		s += " after=" + *this->onlyAfter;
 	}

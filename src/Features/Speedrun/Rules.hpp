@@ -104,6 +104,7 @@ struct SpeedrunRule {
 	std::string map;
 	std::optional<std::string> onlyAfter;
 	std::optional<int> slot;
+	std::optional<std::pair<int, int>> cycle;
 	_RuleTypes rule;
 
 	bool fired;

@@ -73,6 +73,14 @@ void SpeedrunTimer::InitCategories() {
 
 // Testing rules {{{
 
+struct ScheduledRule {
+	SpeedrunRule *rule;
+	std::string name;
+	int tick;
+};
+
+static std::vector<ScheduledRule> g_scheduledRules;
+
 static void dispatchRule(std::string name, SpeedrunRule *rule) {
 	switch (rule->action) {
 	case RuleAction::START:
@@ -101,6 +109,41 @@ static void dispatchRule(std::string name, SpeedrunRule *rule) {
 		SpeedrunTimer::Resume();
 		break;
 	}
+
+	rule->fired = true;
+}
+
+ON_EVENT(PRE_TICK) {
+	int tick = SpeedrunTimer::GetTotalTicks();
+	for (size_t i = 0; i < g_scheduledRules.size(); ++i) {
+		if (tick >= g_scheduledRules[i].tick) {
+			dispatchRule(g_scheduledRules[i].name, g_scheduledRules[i].rule);
+			g_scheduledRules.erase(g_scheduledRules.begin() + i);
+			--i;
+		}
+	}
+}
+
+static int getNextCycleTick(std::pair<int, int> cycle) {
+	int cur = SpeedrunTimer::GetTotalTicks();
+	int cur1 = cur - cycle.first;
+	if (cur1 % cycle.second == cycle.second - 1) return cur;
+	return cur + cycle.second - (cur1 % cycle.second) - 1;
+}
+
+static void dispatchRuleCycled(std::string name, SpeedrunRule *rule) {
+	if (!rule->cycle) {
+		dispatchRule(name, rule);
+		return;
+	}
+
+	int tick = getNextCycleTick(*rule->cycle);
+	if (tick == SpeedrunTimer::GetTotalTicks()) {
+		dispatchRule(name, rule);
+		return;
+	}
+
+	g_scheduledRules.push_back({rule, name, tick});
 }
 
 template <typename RuleType, typename... Ts>
@@ -114,7 +157,7 @@ static void GeneralTestRules(std::optional<int> slot, Ts... args) {
 		if (!rule->TestGeneral(slot)) continue;
 		if (!std::get<RuleType>(rule->rule).Test(args...)) continue;
 
-		dispatchRule(ruleName, rule);
+		dispatchRuleCycled(ruleName, rule);
 
 		rule->fired = true;
 		return;  // We don't want to dispatch any more rules in this tick lest shit get fucked
@@ -176,6 +219,7 @@ void SpeedrunTimer::ResetCategory() {
 		if (!rule) continue;
 		rule->fired = false;
 	}
+	g_scheduledRules.clear();
 }
 
 ON_EVENT(PRE_TICK) {
@@ -286,6 +330,7 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_category, "sar_speedrun_category [category
 			if (!same) {
 				g_currentCategory = args[1];
 				SpeedrunTimer::CategoryChanged();
+				g_scheduledRules.clear();
 			}
 			console->Print("Using category '%s'\n", g_currentCategory.c_str());
 			return;
@@ -486,7 +531,7 @@ bool SpeedrunTimer::CreateRule(std::string name, std::string type, std::map<std:
 		: type == "fly"                                                     ? CrouchFlyRule::Create(params)
 		: type == "load"                                                    ? MapLoadRule::Create(params)
 		: type == "end"                                                     ? MapEndRule::Create(params)
-																																																																						: std::optional<SpeedrunRule>{};
+		: std::optional<SpeedrunRule>{};
 
 	if (!rule) {
 		console->Print("Failed to create rule\n");
@@ -501,6 +546,17 @@ bool SpeedrunTimer::CreateRule(std::string name, std::string type, std::map<std:
 		rule->onlyAfter = {};
 	} else {
 		rule->onlyAfter = *after;
+	}
+
+	auto cycle = lookupMap(params, "cycle");
+	rule->cycle = {};
+	if (cycle) {
+		char *end;
+		int start = strtol(cycle->c_str(), &end, 10);
+		if (*end == ',') {
+			int freq = atoi(end+1);
+			rule->cycle = {start, freq};
+		}
 	}
 
 	auto slotStr = lookupMap(params, "player");
@@ -577,4 +633,5 @@ CON_COMMAND(sar_speedrun_reset_categories, "sar_speedrun_reset_categories - dele
 
 	SpeedrunTimer::InitCategories();
 	SpeedrunTimer::CategoryChanged();
+	g_scheduledRules.clear();
 }
