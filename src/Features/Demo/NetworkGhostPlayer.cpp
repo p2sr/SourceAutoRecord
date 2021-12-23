@@ -2,6 +2,7 @@
 
 #include "DemoGhostPlayer.hpp"
 #include "Event.hpp"
+#include "Scheduler.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -135,8 +136,6 @@ ON_EVENT(PRE_TICK) {
 		syncUi.countdownEnd = {};
 	}
 }
-
-static std::queue<std::function<void()>> g_scheduledEvents;
 
 //DataGhost
 
@@ -277,7 +276,7 @@ void NetworkManager::Disconnect() {
 		this->tcpSocket.disconnect();
 		this->udpSocket.unbind();
 
-		g_scheduledEvents.push([=]() {
+		Scheduler::OnMainThread([=]() {
 			toastHud.AddToast(GHOST_TOAST_TAG, "You have been disconnected");
 		});
 	}
@@ -439,7 +438,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		break;
 	case HEADER::PING: {
 		auto ping = this->pingClock.getElapsedTime();
-		g_scheduledEvents.push([=]() {
+		Scheduler::OnMainThread([=]() {
 			client->Chat(TextColor::GREEN, "Ping: %d ms", ping.asMilliseconds());
 		});
 		break;
@@ -457,7 +456,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		this->ghostPool.push_back(ghost);
 		this->ghostPoolLock.unlock();
 
-		g_scheduledEvents.push([=]() {
+		Scheduler::OnMainThread([=]() {
 			if (!strcmp("", current_map.c_str())) {
 				toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has connected in the menu!", name.c_str()));
 			} else {
@@ -478,7 +477,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		for (int i = 0; i < this->ghostPool.size(); ++i) {
 			if (this->ghostPool[i]->ID == ID) {
 				auto ghost = this->ghostPool[i];
-				g_scheduledEvents.push([=]() {
+				Scheduler::OnMainThread([=]() {
 					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has disconnected!", ghost->name.c_str()));
 					ghost->DeleteGhost();
 				});
@@ -491,7 +490,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 			this->ghostPool.erase(this->ghostPool.begin() + toErase);
 		this->ghostPoolLock.unlock();
 
-		g_scheduledEvents.push([=]() {
+		Scheduler::OnMainThread([=]() {
 			if (ghost_sync.GetBool()) {
 				if (this->AreAllGhostsAheadOrSameMap()) {
 					syncUi.StartCountdown();
@@ -511,7 +510,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 			packet >> map >> ticksIL >> ticksTotal;
 			ghost->currentMap = map;
 
-			g_scheduledEvents.push([=]() {
+			Scheduler::OnMainThread([=]() {
 				if (ghost->isDestroyed)
 					return;  // FIXME: this probably works in practice, but it isn't entirely thread-safe
 
@@ -561,7 +560,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		if (ghost) {
 			std::string message;
 			packet >> message;
-			g_scheduledEvents.push([=]() {
+			Scheduler::OnMainThread([=]() {
 				client->Chat(TextColor::LIGHT_GREEN, "%s: %s", ghost->name.c_str(), message.c_str());
 			});
 		}
@@ -592,7 +591,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		auto ghost = this->GetGhostByID(ID);
 		if (ghost) {
 			if (ghost_show_advancement.GetBool()) {
-				g_scheduledEvents.push([=]() {
+				Scheduler::OnMainThread([=]() {
 					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished in %s", ghost->name.c_str(), timer.c_str()));
 				});
 			}
@@ -605,7 +604,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		auto ghost = this->GetGhostByID(ID);
 		if (ghost) {
 			ghost->modelName = modelName;
-			g_scheduledEvents.push([=]() {
+			Scheduler::OnMainThread([=]() {
 				if (ghost->isDestroyed)
 					return;  // FIXME: this probably works in practice, but it isn't entirely thread-safe
 				if (ghost->sameMap && engine->isRunning()) {
@@ -714,7 +713,7 @@ void NetworkManager::DeleteAllGhosts() {
 void NetworkManager::SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration) {
 	std::string pre = "\"" + preCommands + "\"";
 	std::string post = "\"" + postCommands + "\"";
-	g_scheduledEvents.push([=]() {
+	Scheduler::OnMainThread([=]() {
 		engine->ExecuteCommand(pre.c_str());
 	});
 	this->postCountdownCommands = postCommands;
@@ -759,13 +758,6 @@ void NetworkManager::DrawNames(HudContext *ctx) {
 			}
 		}
 		this->ghostPoolLock.unlock();
-	}
-}
-
-ON_EVENT(PRE_TICK) {
-	while (!g_scheduledEvents.empty()) {
-		g_scheduledEvents.front()();  // Dispatch event
-		g_scheduledEvents.pop();
 	}
 }
 
