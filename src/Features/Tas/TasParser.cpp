@@ -672,6 +672,8 @@ void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, s
 
 	std::string prevInput = "";
 
+	int last_tick = -1;
+
 	for (TasFramebulk &fb : framebulks) {
 		std::string line = ">";
 
@@ -698,9 +700,16 @@ void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, s
 		}
 
 		if (line != ">|||") {
+			last_tick = fb.tick;
 			file << fb.tick << line << "\n";
 		}
+	}
 
+	TasFramebulk &last = framebulks[framebulks.size() - 1];
+	if (last.tick > last_tick) {
+		// Make sure there's an empty bulk at the end so the TAS is the
+		// right length
+		file << last.tick << ">\n";
 	}
 
 	file.close();
