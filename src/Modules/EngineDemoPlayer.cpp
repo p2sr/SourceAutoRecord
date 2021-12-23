@@ -100,6 +100,7 @@ void EngineDemoPlayer::HandlePlaybackFix() {
 				engine->SendToCommandBuffer("sv_alternateticks 1", 1);
 			}
 			console->Print("Successful start\n");
+			Event::Trigger<Event::DEMO_START>({});
 			state = 0;
 			g_demoFixing = false;
 		}
@@ -224,7 +225,7 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char *filename, bool bAsTimeDemo) 
 			engine->demoplayer->levelName = demo.mapName;
 			g_demoStart = demo.firstPositivePacketTick;
 			Renderer::segmentEndTick = demo.segmentTicks;
-			Event::Trigger<Event::DEMO_START>({});
+			if (!sar_demo_remove_broken.GetBool()) Event::Trigger<Event::DEMO_START>({});
 			g_demoFixing = sar_demo_remove_broken.GetBool();
 		} else {
 			console->Print("Could not parse \"%s\"!\n", engine->demoplayer->DemoName);
@@ -246,7 +247,7 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char *filename, bool bAsTimeDemo) 
 
 // CDemoPlayer::StopPlayback
 DETOUR(EngineDemoPlayer::StopPlayback) {
-	if (engine->demoplayer->IsPlaying()) {
+	if (engine->demoplayer->IsPlaying() && !g_demoFixing) {
 		Event::Trigger<Event::DEMO_STOP>({});
 	}
 	return EngineDemoPlayer::StopPlayback(thisptr);
