@@ -81,7 +81,9 @@ void Session::Start() {
 	this->Rebase(tick);
 	timer->Rebase(tick);
 
-	Event::Trigger<Event::SESSION_START>({});
+	Event::Trigger<Event::SESSION_START>({ engine->isLevelTransition, engine->tickLoadStarted == -2 });
+	engine->isLevelTransition = false;
+	if (engine->tickLoadStarted == -2) engine->tickLoadStarted = -1;
 
 	engine->hasRecorded = false;
 	engine->hasPaused = false;
@@ -102,8 +104,9 @@ void Session::Ended() {
 
 	auto tick = this->GetTick();
 
-	Event::Trigger<Event::SESSION_END>({ engine->IsOrange() || engine->isLevelTransition });
-	engine->isLevelTransition = false;
+	engine->isLevelTransition |= engine->IsOrange();
+	if (engine->tickLoadStarted != -1) engine->tickLoadStarted = -2;
+	Event::Trigger<Event::SESSION_END>({ engine->isLevelTransition, engine->tickLoadStarted == -2 });
 
 	if (tick != 0) {
 		console->Print("Session: %i (%.3f)\n", tick, engine->ToTime(tick));

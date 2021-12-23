@@ -7,6 +7,7 @@
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
 #include "Variable.hpp"
+#include "Event.hpp"
 
 #include <algorithm>
 
@@ -16,78 +17,120 @@ Variable sar_lphud("sar_lphud", "0", "Enables or disables the portals display on
 Variable sar_lphud_x("sar_lphud_x", "-10", "x pos of lp counter.\n", 0);
 Variable sar_lphud_y("sar_lphud_y", "-10", "y pos of lp counter.\n", 0);
 Variable sar_lphud_font("sar_lphud_font", "92", 0, "Change font of portal counter.\n");
+Variable sar_lphud_reset_on_changelevel("sar_lphud_reset_on_changelevel", "0", "Reset the lp counter on any changelevel or restart_level. Useful for ILs.\n");
+
+struct LPHudCountHistoryInfo {
+	std::string map;
+	int tick;
+	int count;
+	bool changelevel; // Was this count update triggered by a changelevel?
+};
+
+static std::vector<LPHudCountHistoryInfo> g_count_history;
+static int g_cur_history_idx = -1; // Cannot be size_t; may be -1
+static int g_stats_count = 0; // The last portal count as reported by m_StatsThisLevel
+
+// Get the portal count as reported by the current count history
+static int getCurrentCount() {
+	if (g_cur_history_idx == -1) return 0;
+	return g_count_history[g_cur_history_idx].count;
+}
+
+// Get the current total portal count as reported by the the players'
+// m_StatsThisLevel values
+static int getStatsCount() {
+	int total = 0;
+
+	for (int slot = 0; slot < 2; ++slot) {
+		void *player = client->GetPlayer(slot + 1);
+		if (!player) continue;
+		total += *(int *)((uintptr_t)player + Offsets::C_m_StatsThisLevel + 4);
+	}
+
+	return total;
+}
+
+// Calculate an up-to-date total portal count using the player stats and
+// the current count history
+static int calcTotalPortals() {
+	int delta = getStatsCount() - g_stats_count;
+	if (delta > 0) {
+		// We have new portals!
+		return getCurrentCount() + delta;
+	}
+	return getCurrentCount();
+}
+
+// Add the latest portal count to the history
+static void addNewCount(int count, bool changelevel = false) {
+	if (g_cur_history_idx != g_count_history.size() - 1) {
+		// Destroy all future history
+		g_count_history.resize(g_cur_history_idx + 1);
+	}
+
+	g_count_history.push_back({
+		engine->GetCurrentMapName(),
+		engine->GetTick(),
+		count,
+		changelevel,
+	});
+
+	g_stats_count = getStatsCount();
+
+	++g_cur_history_idx;
+}
 
 LPHud::LPHud()
 	: Hud(HudType_InGame, true) {
 }
 bool LPHud::ShouldDraw() {
-	Update();
-
-	bool shouldDraw = sar_lphud.GetBool() && Hud::ShouldDraw();
-	return shouldDraw;
+	return sar_lphud.GetBool() && Hud::ShouldDraw();
 }
 
-void LPHud::Update() {
-	if (!session->isRunning || engine->GetCurrentMapName().size() == 0)
-		return;
+ON_EVENT(SESSION_START) {
+	g_stats_count = getStatsCount(); // Should always be 0 I think
 
-	if (sar_lphud.GetBool() && !enabled) {
-		oldInGamePortalCounter = -1;
-		portalsCountFull = 0;
-		countHistory.clear();
-		enabled = true;
-	} else if (!sar_lphud.GetBool() && enabled) {
-		enabled = false;
-	}
-
-	if (!enabled)
-		return;
-
-	void *player = client->GetPlayer(1);
-	void *player2 = client->GetPlayer(2);
-
-	if (player && (!engine->IsCoop() || player2)) {
-		int portals1 = *(int *)((uintptr_t)player + Offsets::C_m_StatsThisLevel + 4);
-		int portals2 = player2 ? *(int *)((uintptr_t)player2 + Offsets::C_m_StatsThisLevel + 4) : 0;
-		int iNumPortalsPlaced = portals1 + portals2;
-
-		if (oldInGamePortalCounter != iNumPortalsPlaced) {
-			if (oldInGamePortalCounter < iNumPortalsPlaced) {
-				if (oldInGamePortalCounter != -1) {
-					portalsCountFull += iNumPortalsPlaced - oldInGamePortalCounter;
-					countHistory.push_back({engine->GetTick(), portalsCountFull});
+	if (event.transition) {
+		// Awesome, it was a level transition! Push the new count, but don't
+		// recalculate (we can't yet, we don't have a valid stats count in
+		// the history)
+		addNewCount(getCurrentCount());
+	} else if (event.load) {
+		// Oh god. Try to restore by going back to the last count on an
+		// engine tick less than or equal to this one
+		int tick = engine->GetTick();
+		while (g_cur_history_idx >= 0 && (g_count_history[g_cur_history_idx].tick > tick || g_count_history[g_cur_history_idx].changelevel)) {
+			--g_cur_history_idx;
+		}
+	} else {
+		// It was a restart_level or something like that
+		if (sar_lphud_reset_on_changelevel.GetBool()) {
+			lpHud.Set(0);
+		} else {
+			// Restore the portal count from the first entry for this map, or
+			// otherwise just go to the latest one
+			auto map = engine->GetCurrentMapName();
+			g_cur_history_idx = g_count_history.size() - 1;
+			for (int i = 0; i < g_count_history.size(); ++i) {
+				if (g_count_history[i].map == map) {
+					g_cur_history_idx = i;
+					break;
 				}
 			}
-			oldInGamePortalCounter = iNumPortalsPlaced;
-		}
-	}
 
-	if (session->signonState >= SIGNONSTATE_NEW) {
-		int currentTime = engine->GetTick();
-		if (oldUpdateTick > currentTime && session->signonState != SIGNONSTATE_FULL) {
-			//detect save loading or map reset/change
-			if (oldLevelName.size() == 0 || oldLevelName != engine->GetCurrentMapName()) {
-				//clear history of portal count on new map
-				oldLevelName = engine->GetCurrentMapName();
-				countHistory.clear();
-				countHistory.push_back({engine->GetTick(), portalsCountFull});
-			} else {
-				//revert to correct history record and clear records above given time
-				int closestTime = INT_MAX;
-				portalsCountFull = 0;
-				for (auto info : countHistory) {
-					int dif = currentTime - info.tick;
-					if (dif >= 0 && dif < closestTime) {
-						closestTime = dif;
-						portalsCountFull = info.count;
-					}
-				}
-				countHistory.erase(
-					std::remove_if(countHistory.begin(), countHistory.end(), [currentTime](auto &x) { return x.tick > currentTime; }),
-					countHistory.end());
+			if (g_cur_history_idx == -1 || g_count_history[g_cur_history_idx].map != map) {
+				// Push a history for this map, like for a transition
+				addNewCount(getCurrentCount(), true);
 			}
 		}
-		oldUpdateTick = currentTime;
+	}
+}
+
+ON_EVENT(POST_TICK) {
+	if (!session->isRunning) return;
+	int total = calcTotalPortals();
+	if (getCurrentCount() != total) {
+		addNewCount(total);
 	}
 }
 
@@ -109,8 +152,10 @@ void LPHud::Paint(int slot) {
 
 	surface->DrawTxt(font, cX + paddingSide, cY + paddingTop, Color(255,255,255,255), "Portals:");
 
-	int digitCount = fmax(ceil(log10(portalsCountFull + 1)), 1);
-	surface->DrawTxt(font, cX + bgWidth - digitWidth * digitCount - paddingSide, cY + paddingTop, Color(255, 255, 255, 255), "%d", portalsCountFull);
+	int portals = getCurrentCount();
+
+	int digitCount = fmax(ceil(log10(portals + 1)), 1);
+	surface->DrawTxt(font, cX + bgWidth - digitWidth * digitCount - paddingSide, cY + paddingTop, Color(255, 255, 255, 255), "%d", portals);
 }
 
 bool LPHud::GetCurrentSize(int &xSize, int &ySize) {
@@ -125,8 +170,10 @@ bool LPHud::GetCurrentSize(int &xSize, int &ySize) {
 }
 
 void LPHud::Set(int count) {
-	portalsCountFull = count;
-	countHistory.push_back({engine->GetTick(), count});
+	// Just clear the history and add this
+	g_count_history.clear();
+	g_cur_history_idx = -1;
+	addNewCount(count);
 }
 
 CON_COMMAND(sar_lphud_set, "sar_lphud_set <number> - sets lp counter to given number\n") {
@@ -136,7 +183,17 @@ CON_COMMAND(sar_lphud_set, "sar_lphud_set <number> - sets lp counter to given nu
 		return console->Print(sar_lphud_set.ThisPtr()->m_pszHelpString);
 	}
 
-	lpHud.Set(static_cast<int>(std::atoi(args[1])));
+	lpHud.Set(std::atoi(args[1]));
+}
+
+CON_COMMAND(sar_lphud_reset, "sar_lphud_reset - resets lp counter\n") {
+	IGNORE_DEMO_PLAYER();
+
+	if (args.ArgC() != 1) {
+		return console->Print(sar_lphud_reset.ThisPtr()->m_pszHelpString);
+	}
+
+	lpHud.Set(0);
 }
 
 CON_COMMAND_HUD_SETPOS(sar_lphud, "least portals HUD")

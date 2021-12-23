@@ -46,8 +46,14 @@ namespace Event {
 	template <EventType E>
 	struct EventData {};
 	template <>
+	struct EventData<SESSION_START> {
+		bool transition;
+		bool load;
+	};
+	template <>
 	struct EventData<SESSION_END> {
 		bool transition;
+		bool load;
 	};
 	template <>
 	struct EventData<PRE_TICK> {

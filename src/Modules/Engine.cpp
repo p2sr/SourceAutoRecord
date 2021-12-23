@@ -293,7 +293,7 @@ DETOUR(Engine::SetSignonState, int state, int count, void *unk) {
 
 // CVEngineServer::ChangeLevel
 DETOUR(Engine::ChangeLevel, const char *s1, const char *s2) {
-	if (s1) engine->isLevelTransition = true;
+	if (s1 && engine->GetCurrentMapName() != s1) engine->isLevelTransition = true;
 	return Engine::ChangeLevel(thisptr, s1, s2);
 }
 
@@ -481,7 +481,13 @@ DETOUR_COMMAND(Engine::load) {
 	if (sar_cm_rightwarp.GetBool() && sv_bonus_challenge.GetBool()) {
 		sv_bonus_challenge.SetValue(false);
 	}
+	engine->tickLoadStarted = engine->GetTick();
 	Engine::load_callback(args);
+}
+ON_EVENT(PRE_TICK) {
+	if (engine->tickLoadStarted >= 0 && (engine->GetTick() < engine->tickLoadStarted || engine->GetTick() > engine->tickLoadStarted + 15)) {
+		engine->tickLoadStarted = -1;
+	}
 }
 DETOUR_COMMAND(Engine::give) {
 	if (!sv_cheats.GetBool() && !strcasecmp(args[1], "challenge_mode_end_node")) {

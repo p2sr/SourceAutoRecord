@@ -117,6 +117,7 @@ public:
 	bool forcedPrimaryFullscreen = false;
 	bool shouldPauseForSync = false;
 	bool isLevelTransition = false;
+	int tickLoadStarted = -1;
 
 public:
 	void ExecuteCommand(const char *cmd, bool immediately = false);
