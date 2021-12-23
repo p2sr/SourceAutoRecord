@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <set>
+#include <algorithm>
 
 std::vector<Command *> &Command::GetList() {
 	static std::vector<Command *> list;
@@ -204,6 +205,8 @@ int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args
 	}
 
 	std::string cur = args[args.size() - 1];
+	std::string cur_lower = cur;
+	std::transform(cur_lower.begin(), cur_lower.end(), cur_lower.begin(), tolower);
 	
 	size_t last_slash = cur.rfind('/');
 	std::string dirpart = last_slash == std::string::npos ? "" : cur.substr(0, last_slash) + "/";
@@ -228,9 +231,12 @@ int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args
 				? path
 				: Utils::ssprintf("\"%s\"", path.c_str());
 
+			std::string path_lower = path;
+			std::transform(path_lower.begin(), path_lower.end(), path_lower.begin(), tolower);
+
 			if (path == cur) {
 				items.insert(items.begin(), part + qpath);
-			} else if (path.find(cur) != std::string::npos) {
+			} else if (path_lower.find(cur_lower) != std::string::npos) {
 				items.push_back(part + qpath);
 			}
 
