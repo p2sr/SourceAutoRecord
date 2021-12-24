@@ -21,6 +21,8 @@
 #	include <sys/stat.h>
 #endif
 
+static thread_local bool g_isMainThread = false;
+
 #ifdef _WIN32
 static LONG WINAPI handler(EXCEPTION_POINTERS *ExceptionInfo)
 #else
@@ -31,6 +33,12 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
 #	define finish return EXCEPTION_EXECUTE_HANDLER
 #else
 #	define finish exit(1)
+#endif
+
+#ifdef _WIN32
+	if (!g_isMainThread) return EXCEPTION_EXECUTE_HANDLER;
+#else
+	if (!g_isMainThread) return;
 #endif
 
 	const char *signame;
@@ -166,11 +174,23 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
 #ifdef _WIN32
 
 void CrashHandler::Init() {
+	g_isMainThread = true;
 	AddVectoredExceptionHandler(1, &handler);
+
+	HANDLE process = GetCurrentProcess();
+	SymInitialize(process, 0, true);
+	IMAGEHLP_MODULE info;
+	SymGetModuleInfo(GetCurrentProcess(), (DWORD)&Utils::GetSARPath, &info);
+	SymLoadModule(process, NULL, NULL, NULL, info.BaseOfImage, info.ImageSize);
 }
 
 void CrashHandler::Cleanup() {
+	IMAGEHLP_MODULE info;
+	HANDLE process = GetCurrentProcess();
+	SymGetModuleInfo(process, (DWORD)&Utils::GetSARPath, &info);
+	SymUnloadModule(process, info.BaseOfImage);
 	RemoveVectoredExceptionHandler(&handler);
+	SymCleanup(GetCurrentProcess());
 }
 
 #else
@@ -178,6 +198,8 @@ void CrashHandler::Cleanup() {
 static struct sigaction g_old_segv, g_old_ill, g_old_fpe;
 
 void CrashHandler::Init() {
+	g_isMainThread = true;
+
 	struct sigaction action = {0};
 
 	action.sa_sigaction = &handler;
