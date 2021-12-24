@@ -36,6 +36,7 @@ jobs:
           cd $Env:GITHUB_WORKSPACE
           mkdir -p artifact/
           cp bin/sar.dll artifact/sar.dll
+          cp bin/sar.pdb artifact/sar.pdb
       - name: Create Artifact
         uses: actions/upload-artifact@v1
         with:
