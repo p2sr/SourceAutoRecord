@@ -41,7 +41,8 @@ static int getCurrentCount() {
 static int getStatsCount() {
 	int total = 0;
 
-	for (int slot = 0; slot < 2; ++slot) {
+	int slots = engine->GetMaxClients() >= 2 ? 2 : 1;
+	for (int slot = 0; slot < slots; ++slot) {
 		void *player = client->GetPlayer(slot + 1);
 		if (!player) continue;
 		total += *(int *)((uintptr_t)player + Offsets::C_m_StatsThisLevel + 4);
