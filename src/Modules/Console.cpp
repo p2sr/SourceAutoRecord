@@ -38,6 +38,7 @@ void ConsoleListener::Log(const LoggingContext *ctx, const char *msg) {
 }
 
 ConsoleListener::~ConsoleListener() {
+	console->LoggingSystem_SetChannelSpewLevelByTag("DeveloperVerbose", LSEV_WARNING);
 	console->LoggingSystem_PopLoggingState(false);
 }
 
