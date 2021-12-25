@@ -434,3 +434,7 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 	if (g_worker.joinable()) g_worker.join();
 	g_worker = std::thread(submitTime, score, std::string(demopath), Utils::StartsWith(engine->GetCurrentMapName().c_str(), "mp_"), map_id, rename_if_pb, replay_append_if_pb);
 }
+
+ON_EVENT(SAR_UNLOAD) {
+	if (g_worker.joinable()) g_worker.detach();
+}

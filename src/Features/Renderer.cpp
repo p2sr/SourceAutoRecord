@@ -141,6 +141,10 @@ static struct
 	std::atomic<bool> workerFailedToStart;
 } g_render;
 
+ON_EVENT(SAR_UNLOAD) {
+	if (g_render.worker.joinable()) g_render.worker.detach();
+}
+
 static inline void msgStopRender(bool error) {
 	std::lock_guard<std::mutex> lock(g_render.workerUpdateLock);
 	g_render.workerMsg.store(error ? WorkerMsg::STOP_RENDERING_ERROR : WorkerMsg::STOP_RENDERING_REQUESTED);

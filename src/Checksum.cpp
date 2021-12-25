@@ -1,6 +1,7 @@
 #include "Checksum.hpp"
 
 #include "Utils.hpp"
+#include "Event.hpp"
 #include "Modules/Engine.hpp"
 
 #include <cstdint>
@@ -252,6 +253,13 @@ static std::thread g_mapsumthread;
 static std::vector<std::string> g_mapfiles;
 static std::map<std::string, uint32_t> g_mapsums;
 static std::mutex g_mapsums_mutex;
+
+ON_EVENT(SAR_UNLOAD) {
+	for (size_t i = 0; i < NUM_FILE_SUM_THREADS; ++i) {
+		if (g_sumthreads[i].joinable()) g_sumthreads[i].detach();
+	}
+	if (g_mapsumthread.joinable()) g_mapsumthread.detach();
+}
 
 static void calcFileSums(std::map<std::string, uint32_t> *out, std::vector<std::string> paths) {
 	for (auto &path : paths) {

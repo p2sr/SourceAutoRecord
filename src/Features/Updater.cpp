@@ -3,6 +3,7 @@ extern "C" {
 };
 
 #include "Command.hpp"
+#include "Event.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Updater.hpp"
@@ -301,4 +302,8 @@ CON_COMMAND(sar_update, "sar_update [release|pre] [exit] [force] - update SAR to
 
 	if (g_worker.joinable()) g_worker.join();
 	g_worker = std::thread(doUpdate, allowPre, exitOnSuccess, force);
+}
+
+ON_EVENT(SAR_UNLOAD) {
+	if (g_worker.joinable()) g_worker.detach();
 }
