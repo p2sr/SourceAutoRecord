@@ -872,7 +872,7 @@ ON_EVENT(DEMO_STOP) {
 	RUN_EXECS(demo_stop);
 }
 ON_EVENT(CM_FLAGS) {
-	RUN_EXECS(flags);
+	if (event.end) RUN_EXECS(flags);
 }
 ON_EVENT(COOP_RESET_DONE) {
 	RUN_EXECS(coop_reset_done);
