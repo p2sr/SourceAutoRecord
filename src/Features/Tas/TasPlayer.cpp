@@ -491,15 +491,7 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 		}
 	}
 
-	// put processed framebulk in the list
-	if (fbTick != tasTick) {
-		std::vector<std::string> empty;
-		fb.commands = empty;
-	}
-	processedFramebulks[slot].push_back(fb);
-
 	void *clPlayer = client->GetPlayer(slot + 1);
-
 	if (IsTaunting(clPlayer, true)) {
 		cmd->forwardmove = 0;
 		cmd->sidemove = 0;
@@ -508,6 +500,24 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 		cmd->weaponselect = 0;
 		cmd->viewangles = orig_angles;
 	}
+
+	if (tasTick == 0) {
+		// Don't actually do stuff on tick 0! We do this for consistency with
+		// non-tools playback; see TasPlayer::FetchInputs for an explanation
+		cmd->forwardmove = 0;
+		cmd->sidemove = 0;
+		cmd->upmove = 0;
+		cmd->buttons = 0;
+		cmd->weaponselect = 0;
+		cmd->viewangles = orig_angles;
+	}
+
+	// put processed framebulk in the list
+	if (fbTick != tasTick) {
+		std::vector<std::string> empty;
+		fb.commands = empty;
+	}
+	processedFramebulks[slot].push_back(fb);
 }
 
 void TasPlayer::Update() {
