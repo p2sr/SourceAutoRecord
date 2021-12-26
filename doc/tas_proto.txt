@@ -1,0 +1,60 @@
+TAS server protocol
+===================
+
+Connect to a TCP socket on localhost:6555.
+
+Every packet consists of a one-byte (u8) ID, followed by some extra data. the extra data is specified here under the packet name; if there's nothing specified, there's no extra data.
+
+The server should always send a packet with ID 255 first; it'll never send this again.
+
+server (SAR) -> client (VSC extension):
+	[0] set active
+		len1: u32
+		filename1: [len1]u8  // relative to "Portal 2/tas/", so the same as the arg you'd give to sar_tas_play
+		len2: u32            // 0 if SP TAS
+		filename2: [len2]u8  // relative to "Portal 2/tas/", so the same as the arg you'd give to sar_tas_play
+
+	[1] set inactive
+
+	[2] update playback rate
+		rate: f32
+	
+	[3] state = playing
+
+	[4] state = paused
+
+	[5] state = fast-forwarding
+		tick: u32
+
+	[6] update current tick
+		tick: u32
+
+	[255] set game location
+		len: u32
+		location: [len]u8  // a string like "/home/mlugg/.steam/steam/steamapps/common/Portal 2", used so that the plugin knows whether it has the right script folder open
+
+
+client (VSC extension) -> server (SAR):
+	[0] request playback
+		len1: u32
+		filename1: [len1]u8  // relative to "Portal 2/tas/", so the same as the arg you'd give to sar_tas_play
+		len2: u32            // 0 if SP TAS
+		filename2: [len2]u8  // relative to "Portal 2/tas/", so the same as the arg you'd give to sar_tas_play
+	
+	[1] stop playback
+	
+	[2] request playback rate change
+		rate: f32
+	
+	[3] request state = playing
+
+	[4] request state = paused
+
+	[5] request state = fast-forwarding
+		tick: u32
+		pause_after: u8  // if 0, play after; otherwise, pause after
+	
+	[6] set next pause tick
+		tick: u32  // if 0, disable next pause
+	
+	[7] advance tick (only valid when paused)

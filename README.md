@@ -24,6 +24,4 @@ Game|Windows|Linux
 ## Docs
 
 - [Contributing](doc/contributing.md)
-- [Issues & Troubleshooting](doc/issue.md)
-- [Mapping](doc/mapping.md)
 - [Console Commands & Variables](doc/cvars.md)

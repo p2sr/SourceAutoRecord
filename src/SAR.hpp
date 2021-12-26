@@ -12,7 +12,6 @@
 #include <thread>
 
 #define SAR_BUILT __TIME__ " " __DATE__
-#define SAR_WEB "https://nekzor.github.io/SourceAutoRecord or https://wiki.portal2.sr/SAR"
 
 #define SAFE_UNLOAD_TICK_DELAY 33
 

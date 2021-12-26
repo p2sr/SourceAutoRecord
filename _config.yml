@@ -1,6 +1,0 @@
-include:
-  - doc/contributing.md
-exclude:
-  - src
-  - lib
-  - .github

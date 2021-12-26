@@ -40,7 +40,7 @@
 
 - Visual Studio 2019
 - MSVC Toolset v142
-- Configure SDK version in `src/SourceAutoRecord.vcxproj` or `src/SourceAutoRecord16.vcxproj`
+- Configure SDK version in `src/SourceAutoRecord.vcxproj`
 - Configure paths in `copy.bat`
 
 ### Linux
@@ -62,7 +62,7 @@
 
 - Fork this repository on GitHub
 - git clone https://github.com/<your_account>/SourceAutoRecord
-- git remote add upstream https://github.com/NeKzor/SourceAutoRecord
+- git remote add upstream https://github.com/p2sr/SourceAutoRecord
 - git fetch remotes/upstream/master
 - git checkout -b feature/something remotes/upstream/master
 - *Change stuff and stage files*

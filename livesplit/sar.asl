@@ -1,8 +1,8 @@
 /*
-    SourceAutoRecord 1.8+
+    SourceAutoRecord 1.12+
 
     Report issues at:
-        https://github.com/NeKzor/SourceAutoRecord/issues
+        https://github.com/p2sr/SourceAutoRecord/issues
 */
 
 state("portal2") { /* Portal 2 (7054) */ }

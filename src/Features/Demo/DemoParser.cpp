@@ -233,7 +233,7 @@ bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std:
 	} catch (const std::exception &ex) {
 		console->Warning(
 			"SAR: Error occurred when trying to parse the demo file.\n"
-			"If you think this is an issue, report it at: https://github.com/NeKzor/SourceAutoRecord/issues\n"
+			"If you think this is an issue, report it at: https://github.com/p2sr/SourceAutoRecord/issues\n"
 			"%s\n",
 			std::string(ex.what()));
 		return false;
