@@ -1459,3 +1459,11 @@ enum
 	PORTAL_COND_DEATH_GIB,
 	PORTAL_COND_LAST
 };
+
+class IConsoleDisplayFunc {
+public:
+	virtual void ColorPrint(const Color &clr, const char *msg) = 0;
+	virtual void Print(const char *msg) = 0;
+	virtual void DPrint(const char *msg) = 0;
+	virtual void GetConsoleText(char *text, size_t bufSize) const = 0;
+};

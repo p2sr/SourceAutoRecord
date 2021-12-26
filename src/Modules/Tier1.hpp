@@ -20,6 +20,8 @@ public:
 	_RemoveGlobalChangeCallback RemoveGlobalChangeCallback = nullptr;
 
 	ConCommandBase *m_pConCommandList = nullptr;
+	CUtlVector<IConsoleDisplayFunc *> *m_DisplayFuncs = nullptr;
+	IConsoleDisplayFunc *orig_display_func = nullptr;
 
 	void *ConCommand_VTable = nullptr;
 	void *ConVar_VTable = nullptr;

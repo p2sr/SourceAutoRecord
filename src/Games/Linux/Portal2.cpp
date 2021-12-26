@@ -190,6 +190,7 @@ void Portal2::LoadOffsets() {
 	InstallGlobalChangeCallback = 19;  // CCvar
 	RemoveGlobalChangeCallback = 20;   // CCvar
 	m_pConCommandList = 48;            // CCvar
+	m_DisplayFuncs = 24;               // CCvar
 	IsCommand = 2;                     // ConCommandBase
 
 	// vgui2.so

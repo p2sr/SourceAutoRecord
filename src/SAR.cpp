@@ -258,6 +258,11 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 		sar.modules->ShutdownAll();
 	}
 
+	// This isn't in sar.modules
+	if (tier1) {
+		tier1->Shutdown();
+	}
+
 	Variable::ClearAllCallbacks();
 	SAFE_DELETE(sar.features)
 	SAFE_DELETE(sar.cheats)
@@ -380,6 +385,11 @@ CON_COMMAND(sar_exit, "sar_exit - removes all function hooks, registered command
 
 	if (sar.modules) {
 		sar.modules->ShutdownAll();
+	}
+
+	// This isn't in sar.modules
+	if (tier1) {
+		tier1->Shutdown();
 	}
 
 	SAFE_DELETE(sar.features)

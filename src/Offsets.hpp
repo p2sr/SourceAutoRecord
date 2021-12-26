@@ -9,6 +9,7 @@ namespace Offsets {
 	extern int InstallGlobalChangeCallback;
 	extern int RemoveGlobalChangeCallback;
 	extern int m_pConCommandList;
+	extern int m_DisplayFuncs;
 
 	// ConCommandBase
 	extern int IsCommand;
