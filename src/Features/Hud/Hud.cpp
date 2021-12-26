@@ -10,6 +10,7 @@
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
 #include "Modules/VGui.hpp"
+#include "Event.hpp"
 #include "Variable.hpp"
 #include "InputHud.hpp"
 
@@ -26,6 +27,32 @@ Variable sar_hud_font_color("sar_hud_font_color", "255 255 255 255", "RGBA font 
 
 Variable sar_hud_precision("sar_hud_precision", "3", 0, "Precision of HUD numbers.\n");
 Variable sar_hud_velocity_precision("sar_hud_velocity_precision", "2", 0, "Precision of velocity HUD numbers.\n");
+
+static bool g_rainbow = false;
+ON_INIT {
+	time_t t = time(NULL);
+	struct tm *ltime = localtime(&t);
+
+	int month = ltime->tm_mon + 1;
+
+	if (month == 6) { // June
+		if (Math::RandomNumber(1, 50) == 1) {
+			g_rainbow = true;
+		}
+	}
+}
+
+static Color g_rainbow_color;
+
+ON_EVENT(FRAME) {
+	if (g_rainbow) {
+		int host, server, client;
+		engine->GetTicks(host, server, client);
+
+		int hue = (host * 3) % 360; // 2 secs for full cycle
+		g_rainbow_color = Utils::HSVToRGB(hue, 50, 100);
+	}
+}
 
 static inline int getPrecision(bool velocity = false) {
 	int p = velocity ? sar_hud_velocity_precision.GetInt() : sar_hud_precision.GetInt();
@@ -169,7 +196,11 @@ void HudContext::Reset(int slot) {
 
 	int r, g, b, a;
 	sscanf(sar_hud_font_color.GetString(), "%i%i%i%i", &r, &g, &b, &a);
-	this->textColor = Color(r, g, b, a);
+	if (r == 255 && g == 255 && b == 255 && a == 255 && g_rainbow) {
+		this->textColor = g_rainbow_color;
+	} else {
+		this->textColor = Color(r, g, b, a);
+	}
 }
 
 std::vector<HudElement *> &HudElement::GetList() {

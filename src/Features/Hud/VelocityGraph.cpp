@@ -66,34 +66,6 @@ ON_EVENT(PRE_TICK) {
 	velocityGraph.GatherData(1);
 }
 
-Color VelocityGraph::HSVtoRGB(float H, float S, float V) {
-	float s = S / 100;
-	float v = V / 100;
-	float C = s * v;
-	float X = C * (1 - abs(fmod(H / 60.0, 2) - 1));
-	float m = v - C;
-	float r, g, b;
-
-	if (H >= 0 && H < 60)
-		r = C, g = X, b = 0;
-	else if (H >= 60 && H < 120)
-		r = X, g = C, b = 0;
-	else if (H >= 120 && H < 180)
-		r = 0, g = C, b = X;
-	else if (H >= 180 && H < 240)
-		r = 0, g = X, b = C;
-	else if (H >= 240 && H < 300)
-		r = X, g = 0, b = C;
-	else
-		r = C, g = 0, b = X;
-
-	int R = (r + m) * 255;
-	int G = (g + m) * 255;
-	int B = (b + m) * 255;
-
-	return Color(R, G, B);
-}
-
 static int last_vel[2] = {0, 0};
 static int tick_prev[2] = {0, 0};
 
@@ -177,7 +149,7 @@ void VelocityGraph::Paint(int slot) {
 
 	bool should_draw_takeoff = !on_ground || take_off_display_timeout[slot] > engine->GetClientTime();
 
-	Color c = sar_velocitygraph_rainbow.GetBool() ? HSVtoRGB(speed, 100, 100) : speed == last_vel[slot] ? Color(255, 199, 89) : speed < last_vel[slot] ? Color(255, 119, 119) : Color(30, 255, 109);
+	Color c = sar_velocitygraph_rainbow.GetBool() ? Utils::HSVToRGB(speed, 100, 100) : speed == last_vel[slot] ? Color(255, 199, 89) : speed < last_vel[slot] ? Color(255, 119, 119) : Color(30, 255, 109);
 
 
 	auto font = scheme->GetDefaultFont() + sar_velocitygraph_font_index.GetInt();

@@ -28,6 +28,7 @@ namespace Utils {
 	int ConvertFromSrgb(int s);
 	std::string GetSARPath();
 	std::optional<Color> GetColor(const char *str, bool to_linear);
+	Color HSVToRGB(float H, float S, float V);
 }  // namespace Utils
 
 #define REDECL(name) \
