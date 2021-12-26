@@ -395,7 +395,7 @@ void EngineDemoRecorder::RecordData(const void *data, unsigned long length) {
 
 ON_EVENT(PRE_TICK) {
 	if (event.simulating && !engine->demorecorder->hasNotified && engine->demorecorder->m_bRecording) {
-		const char *cmd = "echo SAR " SAR_VERSION " (Built " SAR_BUILT ")";
+		const char *cmd = "echo \"SAR " SAR_VERSION " (Built " SAR_BUILT ")\"";
 		engine->SendToCommandBuffer(cmd, 300);
 		engine->demorecorder->hasNotified = true;
 	}
