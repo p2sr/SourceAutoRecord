@@ -139,6 +139,44 @@ CON_COMMAND(sar_clear_lines, "sar_clear_lines - clears all active drawline overl
 	}
 }
 
+CON_COMMAND(sar_getpos, "sar_getpos [slot] [server|client] - get the absolute origin and angles of a particular player from either the server or client. Defaults to slot 0 and server.\n") {
+	if (args.ArgC() > 3) {
+		return console->Print(sar_getpos.ThisPtr()->m_pszHelpString);
+	}
+
+	bool use_serv = true;
+
+	if (args.ArgC() == 3) {
+		if (!strcmp(args[2], "client")) {
+			use_serv = false;
+		} else if (strcmp(args[2], "server")) {
+			return console->Print(sar_getpos.ThisPtr()->m_pszHelpString);
+		}
+	}
+
+	int slot = args.ArgC() >= 2 ? atoi(args[1]) : 0;
+
+	if (slot >= engine->GetMaxClients()) return console->Print("Could not get player at slot %d\n", slot);
+
+	Vector origin;
+	QAngle angles;
+
+	if (use_serv) {
+		void *player = server->GetPlayer(slot + 1);
+		if (!player) return console->Print("Could not get player at slot %d\n", slot);
+		origin = server->GetAbsOrigin(player);
+		angles = server->GetAbsAngles(player);
+	} else {
+		void *player = client->GetPlayer(slot + 1);
+		if (!player) return console->Print("Could not get player at slot %d\n", slot);
+		origin = client->GetAbsOrigin(player);
+		angles = client->GetAbsAngles(player);
+	}
+
+	console->Print("origin: %.6f %.6f %.6f\n", origin.x, origin.y, origin.z);
+	console->Print("angles: %.6f %.6f %.6f\n", angles.x, angles.y, angles.z);
+}
+
 void Cheats::Init() {
 	sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
 	ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
