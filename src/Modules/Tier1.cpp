@@ -182,7 +182,7 @@ private:
 		const char *start = msg;
 		for (const char *cur = msg; *cur; ++cur) {
 			if (*cur == '\n') {
-				vec.push_back({start, cur + 1 - start});
+				vec.push_back({start, (unsigned)(cur + 1 - start)});
 				start = cur + 1;
 			}
 		}
