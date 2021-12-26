@@ -491,6 +491,8 @@ static std::vector<TasFramebulk> parseFramebulks(int slot, const char *filepath,
 
 	for (int tick = last_tick + 1;; ++tick) {
 		TasFramebulk mid_bulk = last;
+		mid_bulk.commands.clear();
+		mid_bulk.toolCmds.clear();
 		mid_bulk.tick = tick;
 		bool dirty = false;
 		bool done = true;
