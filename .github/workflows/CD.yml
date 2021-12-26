@@ -42,6 +42,11 @@ jobs:
       with:
         name: sar-windows
         path: bin/sar.dll
+    - name: Create PDB Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: sar-windows-pdb
+        path: bin/sar.pdb
   release:
     name: Release
     runs-on: ubuntu-latest
@@ -63,6 +68,10 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: sar-windows
+    - name: Download Windows PDB
+      uses: actions/download-artifact@v2
+      with:
+        name: sar-windows-pdb
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
@@ -84,4 +93,5 @@ jobs:
         files: |
           sar.so
           sar.dll
+          sar.pdb
         prerelease: ${{ contains(github.ref, '-pre') }}
