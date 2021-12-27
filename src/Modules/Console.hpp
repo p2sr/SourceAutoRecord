@@ -1,6 +1,7 @@
 #pragma once
 #include "Module.hpp"
 #include "Utils.hpp"
+#include "Scheduler.hpp"
 
 #include <functional>
 
@@ -21,6 +22,11 @@
 
 #define SAR_PRINT_COLOR Color(247, 214, 68)
 #define SAR_PRINT_ACTIVE_COLOR Color(110, 247, 76)
+
+#define THREAD_PRINT(...) \
+	Scheduler::OnMainThread([=]() { \
+		console->Print(__VA_ARGS__); \
+	})
 
 class Console : public Module {
 public:

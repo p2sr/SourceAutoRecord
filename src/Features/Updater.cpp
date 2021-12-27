@@ -69,7 +69,7 @@ static bool isNewerVersion(const char *verStr) {
 	auto version = getVersionComponents(verStr);
 
 	if (!current) {
-		console->Print("Cannot compare version numbers on non-release version\n");
+		THREAD_PRINT("Cannot compare version numbers on non-release version\n");
 		return false;
 	}
 
@@ -205,34 +205,34 @@ static std::string createTempPath(const char *filename) {
 void checkUpdate(bool allowPre) {
 	std::string name, dlUrl;
 
-	console->Print("Querying for latest version...\n");
+	THREAD_PRINT("Querying for latest version...\n");
 
 	if (!getLatestVersion(&name, &dlUrl, allowPre)) {
-		console->Print("An error occurred\n");
+		THREAD_PRINT("An error occurred\n");
 		return;
 	}
 
-	console->Print("Latest version is %s\n", name.c_str());
+	THREAD_PRINT("Latest version is %s\n", name.c_str());
 
 	if (!isNewerVersion(name.c_str())) {
-		console->Print("You're all up-to-date!\n");
+		THREAD_PRINT("You're all up-to-date!\n");
 	} else {
-		console->Print("Update with sar_update, or at %s\n", dlUrl.c_str());
+		THREAD_PRINT("Update with sar_update, or at %s\n", dlUrl.c_str());
 	}
 }
 
 void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 	std::string name, dlUrl;
 
-	console->Print("Querying for latest version...\n");
+	THREAD_PRINT("Querying for latest version...\n");
 
 	if (!getLatestVersion(&name, &dlUrl, allowPre)) {
-		console->Print("An error occurred\n");
+		THREAD_PRINT("An error occurred\n");
 		return;
 	}
 
 	if (!force && !isNewerVersion(name.c_str())) {
-		console->Print("You're already up-to-date!\n");
+		THREAD_PRINT("You're already up-to-date!\n");
 		return;
 	}
 
@@ -240,16 +240,16 @@ void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 	std::string tmp = createTempPath(ASSET_NAME);
 
 	// Step 1: download SAR to the given temporary file
-	console->Print("Downloading SAR %s...\n", name.c_str());
+	THREAD_PRINT("Downloading SAR %s...\n", name.c_str());
 	if (!downloadFile(dlUrl.c_str(), tmp.c_str())) {
-		console->Print("An error occurred\n");
+		THREAD_PRINT("An error occurred\n");
 		return;
 	}
 
 	// Step 2: delete the current SAR image. For some reason, on Linux
 	// we have to delete it, while on Windows we have to move it. Don't
 	// ask because I don't know
-	console->Print("Deleting old version...\n");
+	THREAD_PRINT("Deleting old version...\n");
 #ifdef _WIN32
 	std::filesystem::rename(sar, "sar.dll.old-auto");
 #else
@@ -259,11 +259,11 @@ void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 	// Step 3: copy the new SAR image to the location of the old one,
 	// and then delete the temporary file. We can't just move it
 	// for........reasons
-	console->Print("Installing...\n", name.c_str());
+	THREAD_PRINT("Installing...\n", name.c_str());
 	std::filesystem::copy(tmp, sar);
 	std::filesystem::remove(tmp);
 
-	console->Print("Success! You should now restart your game.\n");
+	THREAD_PRINT("Success! You should now restart your game.\n");
 
 	if (exitOnSuccess) {
 		engine->ExecuteCommand("quit");
@@ -272,7 +272,7 @@ void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 
 CON_COMMAND(sar_check_update, "sar_check_update [release|pre] - check whether the latest version of SAR is being used\n") {
 	if (args.ArgC() > 2) {
-		return console->Print(sar_check_update.ThisPtr()->m_pszHelpString);
+		return THREAD_PRINT(sar_check_update.ThisPtr()->m_pszHelpString);
 	}
 
 	bool allowPre = args.ArgC() == 2 && !strcmp(args[1], "pre");

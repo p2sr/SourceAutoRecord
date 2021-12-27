@@ -212,7 +212,7 @@ static std::optional<std::string> request(const char *url) {
 	curl_easy_getinfo(g_curl, CURLINFO_RESPONSE_CODE, &code);
 
 	if (res != CURLE_OK) {
-		console->Print("ERROR IN AUTOSUBMIT REQUEST TO %s: %s\n", url, curl_easy_strerror(res));
+		THREAD_PRINT("ERROR IN AUTOSUBMIT REQUEST TO %s: %s\n", url, curl_easy_strerror(res));
 	}
 
 	return res == CURLE_OK && code == 200 ? response : std::optional<std::string>{};
@@ -220,7 +220,7 @@ static std::optional<std::string> request(const char *url) {
 
 static void testApiKey() {
 	if (!ensureCurlReady()) {
-		console->Print("Failed to test API key!\n");
+		THREAD_PRINT("Failed to test API key!\n");
 		return;
 	}
 
@@ -238,10 +238,10 @@ static void testApiKey() {
 	curl_mime_free(form);
 
 	if (!response) {
-		console->Print("API key invalid!\n");
+		THREAD_PRINT("API key invalid!\n");
 	} else {
 		g_key_valid = true;
-		console->Print("API key valid!\n");
+		THREAD_PRINT("API key valid!\n");
 	}
 }
 
@@ -298,7 +298,7 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 	auto cur_pb = getCurrentPbScore(map_id);
 	if (cur_pb) {
 		if (*cur_pb > -1 && score >= *cur_pb) {
-			console->Print("Not PB; not submitting.\n");
+			THREAD_PRINT("Not PB; not submitting.\n");
 			return;
 		}
 	}

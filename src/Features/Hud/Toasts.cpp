@@ -4,6 +4,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
+#include "Event.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -282,7 +283,17 @@ static std::vector<std::string> splitIntoLines(Surface::HFont font, std::string 
 	return lines;
 }
 
+static thread_local bool g_main_thread = false;
+ON_INIT { g_main_thread = true; }
+
 void ToastHud::AddToast(std::string tag, std::string text, bool doConsole) {
+	if (!g_main_thread) {
+		Scheduler::OnMainThread([=]() {
+			toastHud.AddToast(tag, text, doConsole);
+		});
+		return;
+	}
+
 	auto now = NOW_STEADY();
 
 	g_toasts.push_back({
