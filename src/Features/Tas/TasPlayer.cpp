@@ -9,6 +9,7 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
+#include "Event.hpp"
 #include "Variable.hpp"
 
 #include <climits>
@@ -576,8 +577,10 @@ void TasPlayer::Update() {
 			//engine->ExecuteCommand("unpause", true);
 		}
 	}
+}
 
-	UpdateServer();
+ON_EVENT(FRAME) {
+	if (tasPlayer) tasPlayer->UpdateServer();
 }
 
 void TasPlayer::UpdateServer() {
