@@ -214,7 +214,7 @@ static bool processCommands(ClientData &cl) {
 				cl.cmdbuf = copy; // We actually had everything we needed, so switch to the modified buffer
 
 				Scheduler::OnMainThread([=](){
-					tasPlayer->PlayFile(filename2, filename2);
+					tasPlayer->PlayFile(filename1, filename2);
 				});
 			}
 			break;
