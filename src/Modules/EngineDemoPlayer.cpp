@@ -363,15 +363,18 @@ CON_COMMAND_F_COMPLETION(sar_startdemosfolder, "sar_startdemosfolder <folder nam
 	DemoParser parser;
 
 	for (const auto &file : std::filesystem::directory_iterator(dir + args[1])) {
-		if (file.path().extension() != ".dem")
-			continue;
+		try {
+			if (file.path().extension() != ".dem")
+				continue;
 
-		filepath = args[1];
-		if (filepath[filepath.size() - 1] != '/') filepath += "/";
-		filepath += file.path().filename().string();
-		console->Print("%s\n", filepath.c_str());
-		if (parser.Parse(dir + filepath, &demo)) {
-			engine->demoplayer->demoQueue.push_back(filepath);
+			filepath = args[1];
+			if (filepath[filepath.size() - 1] != '/') filepath += "/";
+			filepath += file.path().filename().string();
+			console->Print("%s\n", filepath.c_str());
+			if (parser.Parse(dir + filepath, &demo)) {
+				engine->demoplayer->demoQueue.push_back(filepath);
+			}
+		} catch (std::system_error &e) {
 		}
 	}
 

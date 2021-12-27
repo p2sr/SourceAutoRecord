@@ -292,21 +292,23 @@ static void calcMapSums() {
 
 static void initFileSums() {
 	std::vector<std::string> paths;
-	std::vector<std::string> maps;
 	for (auto &ent : std::filesystem::recursive_directory_iterator(".")) {
-		if (ent.status().type() == std::filesystem::file_type::regular || ent.status().type() == std::filesystem::file_type::symlink) {
-			auto path = ent.path().string();
-			std::replace(path.begin(), path.end(), '\\', '/');
-			if (Utils::EndsWith(path, ".nut")
-				|| (Utils::EndsWith(path, ".vpk") && path.find("portal2_dlc3") != std::string::npos)
-				|| path.find("scripts/talker") != std::string::npos)
-			{
-				paths.push_back(path);
-			}
+		try {
+			if (ent.status().type() == std::filesystem::file_type::regular || ent.status().type() == std::filesystem::file_type::symlink) {
+				auto path = ent.path().string();
+				std::replace(path.begin(), path.end(), '\\', '/');
+				if (Utils::EndsWith(path, ".nut")
+					|| (Utils::EndsWith(path, ".vpk") && path.find("portal2_dlc3") != std::string::npos)
+					|| path.find("scripts/talker") != std::string::npos)
+				{
+					paths.push_back(path);
+				}
 
-			if (Utils::EndsWith(path, ".bsp") && path.find("/workshop/") == std::string::npos) {
-				g_mapfiles.push_back(path);
+				if (Utils::EndsWith(path, ".bsp") && path.find("/workshop/") == std::string::npos) {
+					g_mapfiles.push_back(path);
+				}
 			}
+		} catch (std::system_error &e) {
 		}
 	}
 

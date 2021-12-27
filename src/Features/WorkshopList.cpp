@@ -24,17 +24,20 @@ int WorkshopList::Update() {
 
 	// Scan through all directories and find the map file
 	for (auto &dir : std::filesystem::recursive_directory_iterator(path)) {
-		if (dir.status().type() == std::filesystem::file_type::directory) {
-			auto curdir = dir.path().string();
-			for (auto &dirdir : std::filesystem::directory_iterator(curdir)) {
-				auto file = dirdir.path().string();
-				if (Utils::EndsWith(file, std::string(".bsp"))) {
-					auto map = file.substr(index);
-					map = map.substr(0, map.length() - 4);
-					this->maps.push_back(map);
-					break;
+		try {
+			if (dir.status().type() == std::filesystem::file_type::directory) {
+				auto curdir = dir.path().string();
+				for (auto &dirdir : std::filesystem::directory_iterator(curdir)) {
+					auto file = dirdir.path().string();
+					if (Utils::EndsWith(file, std::string(".bsp"))) {
+						auto map = file.substr(index);
+						map = map.substr(0, map.length() - 4);
+						this->maps.push_back(map);
+						break;
+					}
 				}
 			}
+		} catch (std::system_error &e) {
 		}
 	}
 

@@ -217,11 +217,14 @@ int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args
 		std::set<std::string> sorted;
 
 		for (auto &file : std::filesystem::directory_iterator(rootdir + std::string("/") + dirpart)) {
-			if (file.is_directory() || Utils::EndsWith(file.path().extension().string(), extension)) {
-				std::string path = dirpart + file.path().stem().string();
-				std::replace(path.begin(), path.end(), '\\', '/');
-				if (file.is_directory()) path += "/";
-				sorted.insert(path);
+			try {
+				if (file.is_directory() || Utils::EndsWith(file.path().extension().string(), extension)) {
+					std::string path = dirpart + file.path().stem().string();
+					std::replace(path.begin(), path.end(), '\\', '/');
+					if (file.is_directory()) path += "/";
+					sorted.insert(path);
+				}
+			} catch (std::system_error &e) {
 			}
 		}
 

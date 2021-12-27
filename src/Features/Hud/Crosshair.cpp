@@ -334,9 +334,21 @@ void Crosshair::UpdateImages() {
 
 	// Scan through all directories and find the image file
 	for (auto &dir : std::filesystem::recursive_directory_iterator(path)) {
-		if (dir.status().type() == std::filesystem::file_type::directory) {
-			auto curdir = dir.path().string();
-			for (auto &dirdir : std::filesystem::directory_iterator(curdir)) {
+		try {
+			if (dir.status().type() == std::filesystem::file_type::directory) {
+				auto curdir = dir.path().string();
+				for (auto &dirdir : std::filesystem::directory_iterator(curdir)) {
+					auto file = dir.path().string();
+					if (Utils::EndsWith(file, std::string(".png"))) {
+						auto img = file.substr(index);
+						if (std::isdigit(img[img.length() - 5])) {  //Take only images with a digit as last character
+							img = img.substr(0, img.length() - 5);
+							this->images.push_back(img);
+						}
+						break;
+					}
+				}
+			} else {
 				auto file = dir.path().string();
 				if (Utils::EndsWith(file, std::string(".png"))) {
 					auto img = file.substr(index);
@@ -347,16 +359,7 @@ void Crosshair::UpdateImages() {
 					break;
 				}
 			}
-		} else {
-			auto file = dir.path().string();
-			if (Utils::EndsWith(file, std::string(".png"))) {
-				auto img = file.substr(index);
-				if (std::isdigit(img[img.length() - 5])) {  //Take only images with a digit as last character
-					img = img.substr(0, img.length() - 5);
-					this->images.push_back(img);
-				}
-				break;
-			}
+		} catch (std::system_error &e) {
 		}
 	}
 }
