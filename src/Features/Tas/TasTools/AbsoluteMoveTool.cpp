@@ -15,21 +15,38 @@ void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 	if (!ttParams->enabled)
 		return;
 
-	auto nSlot = GET_SLOT();
+	auto angles = pInfo.angles;
+	angles.y -= fb.viewAnalog.x;
+	angles.x -= fb.viewAnalog.y;
 
-	float angle = pInfo.angles.y - fb.viewAnalog.x - 90.0;
+	float forward_coef;
+	if (fabsf(angles.x) >= 30.0f && !pInfo.grounded) {
+		forward_coef = cos(DEG2RAD(angles.x));
+	} else {
+		forward_coef = 1.0f;
+	}
+
 	float desired = ttParams->direction;
+	float rad = DEG2RAD(desired - angles.y);
 
-	float delta = desired - angle;
-	auto R = DEG2RAD(delta);
-	auto X = cosf(R) * ttParams->strength;
-	auto Y = sinf(R) * ttParams->strength;
+	float x = -sinf(rad);
+	float y = cosf(rad) / forward_coef;
 
-	fb.moveAnalog.x = X;
-	fb.moveAnalog.y = Y;
+	x *= ttParams->strength;
+	y *= ttParams->strength;
+
+	if (y > 1.0f) {
+		// We can't actually move this fast. Scale the movement down so 'y'
+		// is within the allowed range
+		x /= y;
+		y = 1.0f;
+	}
+
+	fb.moveAnalog.x = x;
+	fb.moveAnalog.y = y;
 
 	if (sar_tas_debug.GetBool()) {
-		console->Print("absmov %.3f %.3f\n", X, Y);
+		console->Print("absmov %.3f %.3f\n", x, y);
 	}
 }
 
