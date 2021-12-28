@@ -78,6 +78,7 @@ static void fullUpdate(ClientData &cl, bool first_packet = false) {
 	if (first_packet) {
 		// game location (255)
 		std::string dir = std::filesystem::current_path().string();
+		std::replace(dir.begin(), dir.end(), '\\', '/');
 		buf.push_back(255);
 		encodeRaw32(buf, (uint32_t)dir.size());
 		for (char c : dir) {
