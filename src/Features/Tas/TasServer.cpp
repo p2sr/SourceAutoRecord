@@ -346,6 +346,8 @@ static void processConnections() {
 }
 
 static void mainThread() {
+	console->Print("Starting TAS server\n");
+
 #ifdef _WIN32
 	WSADATA wsa_data;
 	int err = WSAStartup(MAKEWORD(2,2), &wsa_data);
@@ -355,12 +357,16 @@ static void mainThread() {
 	}
 #endif
 
-	g_listen_sock = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
+	g_listen_sock = socket(AF_INET6, SOCK_STREAM, 0);
 	if (g_listen_sock == INVALID_SOCKET) {
 		console->Print("Could not initialize TAS client: socket creation failed\n");
 		WSACleanup();
 		return;
 	}
+
+	// why tf is this enabled by default on Windows
+	int v6only = 0;
+	setsockopt(g_listen_sock, IPPROTO_IPV6, IPV6_V6ONLY, (const char *)&v6only, sizeof v6only);
 
 	struct sockaddr_in6 saddr{
 		AF_INET6,
@@ -388,6 +394,8 @@ static void mainThread() {
 		processConnections();
 		update();
 	}
+
+	console->Print("Stopping TAS server\n");
 
 	for (auto &cl : g_clients) {
 		closesocket(cl.sock);
