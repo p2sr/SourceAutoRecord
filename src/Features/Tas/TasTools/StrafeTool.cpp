@@ -28,7 +28,7 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 	// in a range between -30 and 30 degrees (both exclusive). making sure
 	// it's in the right range, unless specifically asked to not do it.
 	bool compensatePitchMult = false;
-	if (!pInfo.grounded && abs(pInfo.angles.x - fb.viewAnalog.y) >= 30.0f) {
+	if (!pInfo.grounded && fabsf(pInfo.angles.x - fb.viewAnalog.y) >= 30.0f) {
 		if (!asParams->noPitchLock) {
 			float diff = pInfo.angles.x - (29.9999f * (pInfo.angles.x / abs(pInfo.angles.x)));
 			fb.viewAnalog.y = diff;
