@@ -1,12 +1,35 @@
 #include "Teleporter.hpp"
 
 #include "Command.hpp"
+#include "Event.hpp"
+#include "Features/NetMessage.hpp"
+#include "Features/Session.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
+
+#define TELEPORT_MESSAGE_TYPE "teleport"
+
+ON_INIT {
+	NetMessage::RegisterHandler(TELEPORT_MESSAGE_TYPE, +[](void *data, size_t size) {
+		if (size != 2) return;
+
+		bool save = ((char *)data)[0];
+		int slot = ((char *)data)[1];
+
+		if (slot >= engine->GetMaxClients()) return;
+		if (engine->IsOrange() || !session->isRunning) return;
+
+		if (save) {
+			teleporter->Save(slot);
+		} else {
+			teleporter->Teleport(slot);
+		}
+	});
+}
 
 Teleporter *teleporter;
 
@@ -28,6 +51,14 @@ TeleportLocation *Teleporter::GetLocation(int nSlot) {
 	return this->locations[nSlot];
 }
 void Teleporter::Save(int nSlot) {
+	if (engine->IsOrange()) {
+		char buf[2];
+		buf[0] = 1;
+		buf[1] = (char)nSlot;
+		NetMessage::SendMsg(TELEPORT_MESSAGE_TYPE, buf, sizeof buf);
+		return;
+	}
+
 	auto player = server->GetPlayer(nSlot + 1);
 	if (player) {
 		auto location = this->GetLocation(nSlot);
@@ -39,6 +70,14 @@ void Teleporter::Save(int nSlot) {
 	}
 }
 void Teleporter::Teleport(int nSlot) {
+	if (engine->IsOrange()) {
+		char buf[2];
+		buf[0] = 0;
+		buf[1] = (char)nSlot;
+		NetMessage::SendMsg(TELEPORT_MESSAGE_TYPE, buf, sizeof buf);
+		return;
+	}
+
 	auto location = this->GetLocation(nSlot);
 
 	char setpos[64];
