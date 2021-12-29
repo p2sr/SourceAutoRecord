@@ -97,8 +97,12 @@ void EngineDemoPlayer::HandlePlaybackFix() {
 			if (tick % 2 == g_demoStart % 2) {
 				console->Print("Correcting start tick\n");
 				engine->SendToCommandBuffer("sv_alternateticks 0", 0);
-				engine->SendToCommandBuffer("sv_alternateticks 1", 1);
 			}
+			state = 3;
+		}
+	} else if (state == 3) {
+		if (tick % 2 != g_demoStart % 2) {
+			engine->SendToCommandBuffer("sv_alternateticks 1", 0);
 			console->Print("Successful start\n");
 			Event::Trigger<Event::DEMO_START>({});
 			state = 0;
