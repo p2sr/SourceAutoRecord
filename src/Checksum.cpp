@@ -249,16 +249,10 @@ std::pair<VerifyResult, uint32_t> VerifyDemoChecksum(const char *filename) {
 static std::thread g_sumthreads[NUM_FILE_SUM_THREADS];
 static std::map<std::string, uint32_t> g_filesums[NUM_FILE_SUM_THREADS];
 
-static std::thread g_mapsumthread;
-static std::vector<std::string> g_mapfiles;
-static std::map<std::string, uint32_t> g_mapsums;
-static std::mutex g_mapsums_mutex;
-
 ON_EVENT(SAR_UNLOAD) {
 	for (size_t i = 0; i < NUM_FILE_SUM_THREADS; ++i) {
 		if (g_sumthreads[i].joinable()) g_sumthreads[i].detach();
 	}
-	if (g_mapsumthread.joinable()) g_mapsumthread.detach();
 }
 
 static void calcFileSums(std::map<std::string, uint32_t> *out, std::vector<std::string> paths) {
@@ -275,21 +269,6 @@ static void calcFileSums(std::map<std::string, uint32_t> *out, std::vector<std::
 	}
 }
 
-static void calcMapSums() {
-	for (auto &path : g_mapfiles) {
-		uint32_t sum = 0; // if error, just use 0
-
-		FILE *fp = fopen(path.c_str(), "rb");  // Open for binary reading
-		if (fp) {
-			fileChecksum(fp, 0, &sum);
-			fclose(fp);
-		}
-
-		std::lock_guard<std::mutex> guard(g_mapsums_mutex);
-		g_mapsums[path] = sum;
-	}
-}
-
 static void initFileSums() {
 	std::vector<std::string> paths;
 	for (auto &ent : std::filesystem::recursive_directory_iterator(".")) {
@@ -303,10 +282,6 @@ static void initFileSums() {
 				{
 					paths.push_back(path);
 				}
-
-				if (Utils::EndsWith(path, ".bsp") && path.find("/workshop/") == std::string::npos) {
-					g_mapfiles.push_back(path);
-				}
 			}
 		} catch (std::system_error &e) {
 		}
@@ -318,8 +293,6 @@ static void initFileSums() {
 		g_sumthreads[i] = std::thread(calcFileSums, &g_filesums[i], std::vector<std::string>(paths.begin() + idx, paths.begin() + end));
 		idx = end;
 	}
-
-	g_mapsumthread = std::thread(calcMapSums);
 }
 
 static void addFileChecksum(const char *path, uint32_t sum) {
@@ -334,29 +307,6 @@ static void addFileChecksum(const char *path, uint32_t sum) {
 	delete[] buf;
 }
 
-static void addDemoMapSum(std::string path) {
-	std::lock_guard<std::mutex> guard(g_mapsums_mutex);
-
-	// is it calculated yet?
-	auto it = g_mapsums.find(path);
-	uint32_t sum;
-
-	if (it == g_mapsums.end()) {
-		// not calculated - add it now
-		sum = 0; // if error, use 0
-		FILE *fp = fopen(path.c_str(), "rb");  // Open for binary reading
-		if (fp) {
-			fileChecksum(fp, 0, &sum);
-			fclose(fp);
-		}
-		g_mapsums[path] = sum;
-	} else {
-		sum = it->second;
-	}
-
-	addFileChecksum(path.c_str(), sum);
-}
-
 void AddDemoFileChecksums() {
 	// make sure all file sums are fully calculated first
 	for (auto &thrd : g_sumthreads) {
@@ -366,17 +316,6 @@ void AddDemoFileChecksums() {
 	for (auto &sums : g_filesums) {
 		for (auto [path, sum] : sums) {
 			addFileChecksum(path.c_str(), sum);
-		}
-	}
-
-	// find the matching map file(s)
-
-	std::string map = engine->GetCurrentMapName();
-	map = "/" + map + ".bsp";
-
-	for (auto &s : g_mapfiles) {
-		if (Utils::EndsWith(s, map)) {
-			addDemoMapSum(s);
 		}
 	}
 }
