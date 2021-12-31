@@ -16,6 +16,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Offsets.hpp"
+#include "Event.hpp"
 
 #include <cstring>
 
@@ -136,6 +137,59 @@ CON_COMMAND(sar_clear_lines, "sar_clear_lines - clears all active drawline overl
 	// overwriting old ones), so let's just draw 20 zero-length lines!
 	for (int i = 0; i < 20; ++i) {
 		engine->ExecuteCommand("drawline 0 0 0 0 0 0", true);
+	}
+}
+
+struct DrawLineInfo {
+	Vector start, end;
+	Color col;
+};
+static std::vector<DrawLineInfo> g_drawlines;
+
+CON_COMMAND(sar_drawline, "sar_drawline <x> <y> <z> <x> <y> <z> [r] [g] [b] - overlay a line in the world") {
+	if (args.ArgC() != 7 && args.ArgC() != 10) {
+		return console->Print(sar_drawline.ThisPtr()->m_pszHelpString);
+	}
+
+	float x0 = atof(args[1]);
+	float y0 = atof(args[2]);
+	float z0 = atof(args[3]);
+	float x1 = atof(args[4]);
+	float y1 = atof(args[5]);
+	float z1 = atof(args[6]);
+
+	int r = 255;
+	int g = 255;
+	int b = 255;
+
+	if (args.ArgC() == 10) {
+		r = atoi(args[7]);
+		g = atoi(args[8]);
+		b = atoi(args[9]);
+	}
+
+	g_drawlines.push_back({
+		{x0, y0, z0},
+		{x1, y1, z1},
+		{r, g, b},
+	});
+}
+
+
+CON_COMMAND(sar_drawline_clear, "sar_drawline_clear - clear all active sar_drawlines") {
+	g_drawlines.clear();
+}
+
+ON_EVENT(PRE_TICK) {
+	if (!sv_cheats.GetBool()) return;
+	for (auto l : g_drawlines) {
+		engine->AddLineOverlay(
+			nullptr,
+			l.start, l.end,
+			l.col.r(), l.col.g(), l.col.b(),
+			true,
+			0.05
+		);
 	}
 }
 
