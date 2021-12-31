@@ -648,13 +648,14 @@ HUD_ELEMENT_MODE2(angles, "0", 0, 2,
 		ctx->DrawElement("ang: %.*f %.*f %.*f", p, ang.x, p, ang.y, p, ang.z);
 	}
 }
-HUD_ELEMENT_MODE2(velocity, "0", 0, 4,
+HUD_ELEMENT_MODE2(velocity, "0", 0, 5,
                   "Draws velocity of the client.\n"
                   "0 = Default,\n"
                   "1 = X, Y, Z\n"
                   "2 = X:Y\n"
                   "3 = X:Y, Z\n"
-                  "4 = X:Y:Z\n",
+                  "4 = X:Y:Z\n"
+                  "5 = X, Y, X:Y, Z\n",
                   HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
 	auto player = client->GetPlayer(ctx->slot + 1);
 	if (player) {
@@ -672,6 +673,9 @@ HUD_ELEMENT_MODE2(velocity, "0", 0, 4,
 			break;
 		case 4:
 			ctx->DrawElement("vel: %.*f", p, vel.Length());
+			break;
+		case 5:
+			ctx->DrawElement("vel: %.*f %.*f (%.*f) %.*f", p, vel.x, p, vel.y, p, vel.Length2D(), p, vel.z);
 			break;
 		}
 	} else {
