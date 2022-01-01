@@ -6,6 +6,7 @@
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
 #include "Features/Session.hpp"
+#include "Features/Camera.hpp"
 
 #include <list>
 
@@ -55,9 +56,16 @@ static void updateTrace(int slot) {
 		return;
 	}
 
-	Vector cam_pos = server->GetAbsOrigin(player) + server->GetViewOffset(player);
+	bool cam_control = sar_cam_control.GetInt() == 1 && sv_cheats.GetBool();
 
-	QAngle ang = engine->GetAngles(slot);
+	Vector cam_pos;
+	if (cam_control) {
+		cam_pos = camera->currentState.origin;
+	} else {
+		cam_pos = server->GetAbsOrigin(player) + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
+	}
+
+	QAngle ang = cam_control ? camera->currentState.angles : engine->GetAngles(slot);
 	Vector view_vec = Vector{
 		cosf(DEG2RAD(ang.y)) * cosf(DEG2RAD(ang.x)),
 		sinf(DEG2RAD(ang.y)) * cosf(DEG2RAD(ang.x)),

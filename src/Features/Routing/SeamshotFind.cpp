@@ -3,6 +3,7 @@
 #include "Command.hpp"
 #include "Event.hpp"
 #include "Features/Session.hpp"
+#include "Features/Camera.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -49,9 +50,16 @@ ON_EVENT(PRE_TICK) {
 		if (player == nullptr || (int)player == -1)
 			return;
 
-		Vector camPos = server->GetAbsOrigin(player) + server->GetViewOffset(player);
+		bool cam_control = sar_cam_control.GetInt() == 1 && sv_cheats.GetBool();
 
-		QAngle angle = engine->GetAngles(GET_SLOT());
+		Vector camPos;
+		if (cam_control) {
+			camPos = camera->currentState.origin;
+		} else {
+			camPos = server->GetAbsOrigin(player) + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
+		}
+
+		QAngle angle = cam_control ? camera->currentState.angles : engine->GetAngles(GET_SLOT());
 
 		float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);
 		auto cosX = std::cos(X), cosY = std::cos(Y);
