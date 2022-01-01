@@ -464,6 +464,9 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 		tool->Apply(fb, playerInfo);
 	}
 
+	if (fb.moveAnalog.Length2D() > 1)
+		fb.moveAnalog = fb.moveAnalog.Normalize();
+
 	// add processed framebulk to the cmd
 	// using angles from playerInfo, as these seem to be the most accurate
 	// cmd ones are created before tool parsing and GetAngles is wacky.
