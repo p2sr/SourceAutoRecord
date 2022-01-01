@@ -50,6 +50,12 @@ bool EngineDemoPlayer::ShouldBlacklistCommand(const char *cmd) {
 		return true;
 	}
 
+	// SPECIAL CASE: these commands override sar_demo_blacklist_all, since
+	// without them coop timing doesn't work
+	if (startsWith("playvideo_end_level_transition", cmd)) return false;
+	if (startsWith("stop_transition_videos_fadeout", cmd)) return false;
+	if (startsWith("ss_force_primary_fullscreen", cmd)) return false;
+
 	if (sar_demo_blacklist_all.GetBool()) return true;
 
 	if (sar_demo_blacklist.GetBool()) {
