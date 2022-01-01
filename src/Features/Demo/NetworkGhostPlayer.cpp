@@ -761,6 +761,10 @@ void NetworkManager::DrawNames(HudContext *ctx) {
 	}
 }
 
+bool NetworkManager::IsSyncing() {
+	return this->isConnected.load() && syncUi.active;
+}
+
 ON_EVENT(PRE_TICK) {
 	if (networkManager.isConnected && engine->isRunning()) {
 		networkManager.UpdateGhostsPosition();

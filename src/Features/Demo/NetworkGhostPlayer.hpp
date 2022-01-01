@@ -99,6 +99,7 @@ public:
 	void UpdateCountdown();
 
 	void DrawNames(HudContext *ctx);
+	bool IsSyncing();
 };
 
 extern NetworkManager networkManager;

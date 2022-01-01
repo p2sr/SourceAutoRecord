@@ -386,6 +386,10 @@ ON_EVENT(PRE_TICK) {
 		return;
 	}
 
+	if (networkManager.IsSyncing()) {
+		return;
+	}
+
 	++g_speedrun.saved;
 }
 
