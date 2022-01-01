@@ -3,6 +3,7 @@
 #include "Command.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/Timer/PauseTimer.hpp"
+#include "Features/Tas/TasPlayer.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -221,6 +222,10 @@ CameraState Camera::InterpolateStates(float time) {
 
 //Overrides view.
 void Camera::OverrideView(CViewSetup *m_View) {
+	static std::chrono::time_point<std::chrono::steady_clock> last_frame;
+	auto now = NOW_STEADY();
+	float real_frame_time = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame).count();
+	last_frame = now;
 
 	if (sar_cam_force_eye_pos.GetBool() && sv_cheats.GetBool()) {
 		auto player = client->GetPlayer(GET_SLOT() + 1);
@@ -348,7 +353,7 @@ void Camera::OverrideView(CViewSetup *m_View) {
 				}
 				if (manualActive) {
 					//even junkier hack. lock mouse movement using fake in_forceuser 2 LMAO
-					if (engine->hoststate->m_activeGame)
+					if (engine->hoststate->m_activeGame && !tasPlayer->IsActive())
 						in_forceuser.ThisPtr()->m_nValue = 2;
 
 					//getting mouse movement and resetting the cursor position
@@ -393,7 +398,7 @@ void Camera::OverrideView(CViewSetup *m_View) {
 					bool shiftdown = inputSystem->IsKeyDown(KEY_LSHIFT) || inputSystem->IsKeyDown(KEY_RSHIFT);
 					bool controldown = inputSystem->IsKeyDown(KEY_LCONTROL) || inputSystem->IsKeyDown(KEY_RCONTROL);
 					float speed = shiftdown ? 525.0f : (controldown ? 60.0f : 175.0f);
-					speed *= engine->GetHostFrameTime();
+					speed *= engine->IsAdvancing() ? real_frame_time : engine->GetHostFrameTime();
 
 					if (inputSystem->IsKeyDown(ButtonCode_t::KEY_W)) {
 						currentState.origin = currentState.origin + (forward * speed);
@@ -457,7 +462,7 @@ void Camera::RequestCameraRefresh() {
 
 void Camera::OverrideMovement(CUserCmd *cmd) {
 	//blocking keyboard inputs on manual mode
-	if (IsDriving()) {
+	if (IsDriving() && !tasPlayer->IsActive()) {
 		cmd->buttons = 0;
 		cmd->forwardmove = 0;
 		cmd->sidemove = 0;
