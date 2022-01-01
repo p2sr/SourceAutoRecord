@@ -15,7 +15,7 @@
 
 ON_INIT {
 	NetMessage::RegisterHandler(TELEPORT_MESSAGE_TYPE, +[](void *data, size_t size) {
-		if (size != 2) return;
+		if (size != 2 && size != 14) return;
 
 		bool save = ((char *)data)[0];
 		int slot = ((char *)data)[1];
@@ -23,8 +23,14 @@ ON_INIT {
 		if (slot >= engine->GetMaxClients()) return;
 		if (engine->IsOrange() || !session->isRunning) return;
 
+
 		if (save) {
-			teleporter->Save(slot);
+			if (size == 14) {
+				float pitch = *(float *)((uintptr_t)data + 2);
+				float yaw = *(float *)((uintptr_t)data + 6);
+				float roll = *(float *)((uintptr_t)data + 10);
+				teleporter->Save(slot, {{pitch, yaw, roll}});
+			}
 		} else {
 			teleporter->Teleport(slot);
 		}
@@ -50,12 +56,19 @@ Teleporter::~Teleporter() {
 TeleportLocation *Teleporter::GetLocation(int nSlot) {
 	return this->locations[nSlot];
 }
-void Teleporter::Save(int nSlot) {
+void Teleporter::Save(int nSlot, std::optional<QAngle> angles) {
 	if (engine->IsOrange()) {
-		char buf[2];
+		auto angles = engine->GetAngles(0);
+
+		char buf[14];
 		buf[0] = 1;
 		buf[1] = (char)nSlot;
+		*(float *)(buf + 2) = angles.x;
+		*(float *)(buf + 6) = angles.y;
+		*(float *)(buf + 10) = angles.z;
+
 		NetMessage::SendMsg(TELEPORT_MESSAGE_TYPE, buf, sizeof buf);
+
 		return;
 	}
 
@@ -63,7 +76,7 @@ void Teleporter::Save(int nSlot) {
 	if (player) {
 		auto location = this->GetLocation(nSlot);
 		location->origin = server->GetAbsOrigin(player);
-		location->angles = engine->GetAngles(nSlot);
+		location->angles = angles ? *angles : engine->GetAngles(nSlot);
 		location->isSet = true;
 
 		console->Print("Saved location: %.3f %.3f %.3f\n", location->origin.x, location->origin.y, location->origin.z);
@@ -80,8 +93,10 @@ void Teleporter::Teleport(int nSlot) {
 
 	auto location = this->GetLocation(nSlot);
 
+	if (!location->isSet) return;
+
 	char setpos[64];
-	std::snprintf(setpos, sizeof(setpos), "setpos %f %f %f", location->origin.x, location->origin.y, location->origin.z);
+	std::snprintf(setpos, sizeof(setpos), "setpos_player %d %f %f %f", nSlot + 1, location->origin.x, location->origin.y, location->origin.z);
 
 	engine->SetAngles(nSlot, location->angles);
 	engine->ExecuteCommand(setpos);
@@ -97,7 +112,7 @@ CON_COMMAND(sar_teleport, "sar_teleport - teleports the player to the last saved
 	}
 
 	auto slot = GET_SLOT();
-	if (!teleporter->GetLocation(slot)->isSet) {
+	if (!engine->IsOrange() && !teleporter->GetLocation(slot)->isSet) {
 		return console->Print("Location not set! Use sar_teleport_setpos.\n");
 	}
 

@@ -3,6 +3,7 @@
 #include "Utils/SDK.hpp"
 
 #include <vector>
+#include <optional>
 
 struct TeleportLocation {
 	bool isSet = false;
@@ -19,7 +20,7 @@ public:
 	~Teleporter();
 
 	TeleportLocation *GetLocation(int nSlot);
-	void Save(int nSlot);
+	void Save(int nSlot, std::optional<QAngle> angles = {});
 	void Teleport(int nSlot);
 };
 
