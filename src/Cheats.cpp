@@ -231,6 +231,27 @@ CON_COMMAND(sar_getpos, "sar_getpos [slot] [server|client] - get the absolute or
 	console->Print("angles: %.6f %.6f %.6f\n", angles.x, angles.y, angles.z);
 }
 
+CON_COMMAND(sar_geteyepos, "sar_geteyepos [slot] - get the view position (portal shooting origin) and view angles of a certain player.\n") {
+	if (args.ArgC() > 2) {
+		return console->Print(sar_geteyepos.ThisPtr()->m_pszHelpString);
+	}
+
+	int slot = args.ArgC() >= 2 ? atoi(args[1]) : 0;
+
+	if (slot >= engine->GetMaxClients()) return console->Print("Could not get player at slot %d\n", slot);
+
+	Vector eye;
+	QAngle angles;
+
+	void *player = server->GetPlayer(slot + 1);
+	if (!player) return console->Print("Could not get player at slot %d\n", slot);
+	eye = server->GetAbsOrigin(player) + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
+	angles = engine->GetAngles(slot);
+
+	console->Print("eye: %.6f %.6f %.6f\n", eye.x, eye.y, eye.z);
+	console->Print("angles: %.6f %.6f %.6f\n", angles.x, angles.y, angles.z);
+}
+
 void Cheats::Init() {
 	sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
 	ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
