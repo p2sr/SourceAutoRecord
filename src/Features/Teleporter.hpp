@@ -20,7 +20,7 @@ public:
 	~Teleporter();
 
 	TeleportLocation *GetLocation(int nSlot);
-	void Save(int nSlot, std::optional<QAngle> angles = {});
+	void Save(int nSlot);
 	void Teleport(int nSlot);
 };
 

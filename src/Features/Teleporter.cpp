@@ -15,7 +15,7 @@
 
 ON_INIT {
 	NetMessage::RegisterHandler(TELEPORT_MESSAGE_TYPE, +[](void *data, size_t size) {
-		if (size != 2 && size != 14) return;
+		if (size != 2) return;
 
 		bool save = ((char *)data)[0];
 		int slot = ((char *)data)[1];
@@ -23,14 +23,8 @@ ON_INIT {
 		if (slot >= engine->GetMaxClients()) return;
 		if (engine->IsOrange() || !session->isRunning) return;
 
-
 		if (save) {
-			if (size == 14) {
-				float pitch = *(float *)((uintptr_t)data + 2);
-				float yaw = *(float *)((uintptr_t)data + 6);
-				float roll = *(float *)((uintptr_t)data + 10);
-				teleporter->Save(slot, {{pitch, yaw, roll}});
-			}
+			teleporter->Save(slot);
 		} else {
 			teleporter->Teleport(slot);
 		}
@@ -56,18 +50,16 @@ Teleporter::~Teleporter() {
 TeleportLocation *Teleporter::GetLocation(int nSlot) {
 	return this->locations[nSlot];
 }
-void Teleporter::Save(int nSlot, std::optional<QAngle> angles) {
+void Teleporter::Save(int nSlot) {
 	if (engine->IsOrange()) {
-		auto angles = engine->GetAngles(0);
-
-		char buf[14];
+		char buf[2];
 		buf[0] = 1;
 		buf[1] = (char)nSlot;
-		*(float *)(buf + 2) = angles.x;
-		*(float *)(buf + 6) = angles.y;
-		*(float *)(buf + 10) = angles.z;
-
 		NetMessage::SendMsg(TELEPORT_MESSAGE_TYPE, buf, sizeof buf);
+
+		auto location = this->GetLocation(nSlot);
+		location->isSet = true;
+		location->angles = engine->GetAngles(0);
 
 		return;
 	}
@@ -76,7 +68,7 @@ void Teleporter::Save(int nSlot, std::optional<QAngle> angles) {
 	if (player) {
 		auto location = this->GetLocation(nSlot);
 		location->origin = server->GetAbsOrigin(player);
-		location->angles = angles ? *angles : engine->GetAngles(nSlot);
+		location->angles = engine->GetAngles(nSlot);
 		location->isSet = true;
 
 		console->Print("Saved location: %.3f %.3f %.3f\n", location->origin.x, location->origin.y, location->origin.z);
@@ -88,11 +80,16 @@ void Teleporter::Teleport(int nSlot) {
 		buf[0] = 0;
 		buf[1] = (char)nSlot;
 		NetMessage::SendMsg(TELEPORT_MESSAGE_TYPE, buf, sizeof buf);
+
+		auto location = this->GetLocation(nSlot);
+		if (!location->isSet) return;
+
+		engine->SetAngles(0, location->angles);
+
 		return;
 	}
 
 	auto location = this->GetLocation(nSlot);
-
 	if (!location->isSet) return;
 
 	char setpos[64];
