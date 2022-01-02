@@ -261,7 +261,7 @@ int SpeedrunTimer::GetSegmentTicks() {
 
 	int ticks = 0;
 	ticks += g_speedrun.saved;
-	if (!g_speedrun.isPaused && !g_speedrun.inCoopPause) {
+	if (!g_speedrun.isPaused && !g_speedrun.inCoopPause && (!engine->demoplayer->IsPlaying() || engine->demoplayer->IsPlaybackFixReady())) {
 		ticks += getCurrentTick() - g_speedrun.base;
 	}
 

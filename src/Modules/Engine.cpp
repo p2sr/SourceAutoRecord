@@ -182,13 +182,13 @@ std::string Engine::GetCurrentMapName() {
 }
 
 bool Engine::IsCoop() {
-	return sv_portal_players.GetInt() == 2;
+	return sv_portal_players.GetInt() == 2 || (engine->demoplayer->IsPlaying() && engine->GetMaxClients() >= 2);
 }
 
 bool Engine::IsOrange() {
 	static bool isOrange;
 	if (session->signonState == SIGNONSTATE_FULL) {
-		isOrange = this->IsCoop() && !engine->hoststate->m_activeGame;
+		isOrange = this->IsCoop() && !engine->hoststate->m_activeGame && !engine->demoplayer->IsPlaying();
 	}
 	return isOrange;
 }

@@ -50,6 +50,11 @@ bool EngineDemoPlayer::ShouldBlacklistCommand(const char *cmd) {
 		return true;
 	}
 
+	if (!engine->demoplayer->IsPlaybackFixReady()) {
+		// Blacklist all commands while in playback fix
+		return true;
+	}
+
 	// SPECIAL CASE: these commands override sar_demo_blacklist_all, since
 	// without them coop timing doesn't work
 	if (startsWith("playvideo_end_level_transition", cmd)) return false;
