@@ -711,10 +711,8 @@ void NetworkManager::DeleteAllGhosts() {
 }
 
 void NetworkManager::SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration) {
-	std::string pre = "\"" + preCommands + "\"";
-	std::string post = "\"" + postCommands + "\"";
 	Scheduler::OnMainThread([=]() {
-		engine->ExecuteCommand(pre.c_str());
+		engine->ExecuteCommand(preCommands.c_str());
 	});
 	this->postCountdownCommands = postCommands;
 	this->countdownStep = duration;
