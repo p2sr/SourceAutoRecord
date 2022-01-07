@@ -502,8 +502,6 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	cmd->viewangles.x = playerInfo.angles.x - fb.viewAnalog.y;  // positive values should rotate up.
 	cmd->viewangles.x = std::min(std::max(cmd->viewangles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
 
-	engine->SetAngles(playerInfo.slot, cmd->viewangles);
-
 	if (fb.moveAnalog.y > 0.0) {
 		cmd->forwardmove = cl_forwardspeed.GetFloat() * fb.moveAnalog.y;
 	} else {
@@ -523,25 +521,27 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	}
 
 	void *clPlayer = client->GetPlayer(slot + 1);
-	if (IsTaunting(clPlayer, true)) {
+	if (IsTaunting(clPlayer, true) || tasTick == 0) {
+		// Don't actually do stuff on tick 0! We do this for consistency with
+		// non-tools playback; see TasPlayer::FetchInputs for an
+		// explanation. Also don't do stuff if we're taunting
 		cmd->forwardmove = 0;
 		cmd->sidemove = 0;
 		cmd->upmove = 0;
 		cmd->buttons = 0;
 		cmd->weaponselect = 0;
 		cmd->viewangles = orig_angles;
+		// Zero out the framebulk too in this case; not strictly necessary,
+		// but stops the generated raw having "fake" inputs (ones that never
+		// actually happen)
+		fb.moveAnalog = {0, 0};
+		fb.viewAnalog = {0, 0};
+		for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; ++i) {
+			fb.buttonStates[i] = 0;
+		}
 	}
 
-	if (tasTick == 0) {
-		// Don't actually do stuff on tick 0! We do this for consistency with
-		// non-tools playback; see TasPlayer::FetchInputs for an explanation
-		cmd->forwardmove = 0;
-		cmd->sidemove = 0;
-		cmd->upmove = 0;
-		cmd->buttons = 0;
-		cmd->weaponselect = 0;
-		cmd->viewangles = orig_angles;
-	}
+	engine->SetAngles(playerInfo.slot, cmd->viewangles);
 
 	// put processed framebulk in the list
 	if (fbTick != tasTick) {
