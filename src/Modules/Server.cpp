@@ -206,6 +206,11 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 
 	int slot = server->GetSplitScreenPlayerSlot(thisptr);
 
+	if (tasPlayer->IsActive()) {
+		int tasTick = tasPlayer->GetPlayerInfo(thisptr, cmd).tick - tasPlayer->GetStartTick();
+		tasPlayer->DumpUsercmd(slot, cmd, tasTick, "server");
+	}
+
 	if (tasPlayer->IsActive() && tasPlayer->IsUsingTools(slot)) {
 		tasPlayer->PostProcess(slot, thisptr, cmd);
 	}

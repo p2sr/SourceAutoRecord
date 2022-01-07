@@ -207,4 +207,13 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 
 		engine->SetAngles(nSlot, viewangles);
 	}
+
+	{
+		// Just to be safe, we don't change the viewangles in the original
+		// CUserCmd, as the normal controller movement code doesn't. But we
+		// want to set it for dumping the usercmd, hence this temporary
+		CUserCmd tmp = *cmd;
+		tmp.viewangles = engine->GetAngles(nSlot);
+		tasPlayer->DumpUsercmd(nSlot, &tmp, tasPlayer->GetTick() + 1, "client"); // off-by-one bullshit on tick count
+	}
 }
