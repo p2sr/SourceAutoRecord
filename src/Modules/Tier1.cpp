@@ -127,7 +127,7 @@ private:
 	}
 
 	bool MatchesFilters(const char *msg) {
-		if (!sar_con_filter.GetBool()) return true;
+		if (!sar_con_filter.isRegistered || !sar_con_filter.GetBool()) return true;
 
 		size_t msg_len = strlen(msg);
 
