@@ -494,6 +494,12 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	if (fb.moveAnalog.Length2D() > 1)
 		fb.moveAnalog = fb.moveAnalog.Normalize();
 
+	// make sure none of the framebulk is NaN
+	if (std::isnan(fb.moveAnalog.x)) fb.moveAnalog.x = 0;
+	if (std::isnan(fb.moveAnalog.y)) fb.moveAnalog.y = 0;
+	if (std::isnan(fb.viewAnalog.x)) fb.viewAnalog.x = 0;
+	if (std::isnan(fb.viewAnalog.y)) fb.viewAnalog.y = 0;
+
 	// add processed framebulk to the cmd
 	// using angles from playerInfo, as these seem to be the most accurate
 	// cmd ones are created before tool parsing and GetAngles is wacky.
@@ -508,10 +514,6 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 		cmd->forwardmove = cl_backspeed.GetFloat() * fb.moveAnalog.y;
 	}
 	cmd->sidemove = cl_sidespeed.GetFloat() * fb.moveAnalog.x;
-
-	// making sure none of the move values are NaN
-	if (std::isnan(cmd->forwardmove)) cmd->forwardmove = 0;
-	if (std::isnan(cmd->sidemove)) cmd->sidemove = 0;
 
 	cmd->buttons = 0;
 	for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
