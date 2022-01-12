@@ -557,7 +557,7 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 
 void TasPlayer::DumpUsercmd(int slot, const CUserCmd *cmd, int tick, const char *source) {
 	if (!sar_tas_dump_usercmd.GetBool()) return;
-	std::string str = Utils::ssprintf("%s,%d,%.6f,%.6f,%8X,%.6f,%.6f,%.6f", source, tick, cmd->forwardmove, cmd->sidemove, cmd->buttons, cmd->viewangles.x, cmd->viewangles.y, cmd->viewangles.z);
+	std::string str = Utils::ssprintf("%s,%d,%.6f,%.6f,%08X,%.6f,%.6f,%.6f", source, tick, cmd->forwardmove, cmd->sidemove, cmd->buttons, cmd->viewangles.x, cmd->viewangles.y, cmd->viewangles.z);
 	usercmdDebugs[slot].push_back(str);
 }
 
