@@ -28,6 +28,11 @@
 		console->Print(__VA_ARGS__); \
 	})
 
+#define THREAD_PRINTCOLOR(...) \
+	Scheduler::OnMainThread([=]() { \
+		console->ColorMsg(__VA_ARGS__); \
+	})
+
 class Console : public Module {
 public:
 	using _Msg = void(__cdecl *)(const char *pMsgFormat, ...);

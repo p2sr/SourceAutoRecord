@@ -27,8 +27,8 @@ SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
 
 static void doPride() {
-#define FILL(n,c) for (size_t i = 0; i < n; ++i) console->ColorMsg(c, "#");
-#define NL console->Print("\n     ");
+#define FILL(n,c) for (size_t i = 0; i < n; ++i) THREAD_PRINTCOLOR(c, "#");
+#define NL THREAD_PRINT("\n     ");
 #define RED Color{255,0,0}
 #define ORANGE Color{255,155,0}
 #define YELLOW Color{230,255,0}
@@ -98,14 +98,14 @@ static void doPride() {
 	FILL(40, PURPLE)
 	NL
 
-	console->Print("\nHappy pride month to all members of the ");
-	console->ColorMsg(RED, "L");
-	console->ColorMsg(ORANGE, "G");
-	console->ColorMsg(YELLOW, "B");
-	console->ColorMsg(GREEN, "T");
-	console->ColorMsg(BLUE, "Q");
-	console->ColorMsg(PURPLE, "+");
-	console->Print(" community!\n\n");
+	THREAD_PRINT("\nHappy pride month to all members of the ");
+	THREAD_PRINTCOLOR(RED, "L");
+	THREAD_PRINTCOLOR(ORANGE, "G");
+	THREAD_PRINTCOLOR(YELLOW, "B");
+	THREAD_PRINTCOLOR(GREEN, "T");
+	THREAD_PRINTCOLOR(BLUE, "Q");
+	THREAD_PRINTCOLOR(PURPLE, "+");
+	THREAD_PRINT(" community!\n\n");
 
 #undef FILL
 #undef NL
