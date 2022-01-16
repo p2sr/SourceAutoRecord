@@ -29,6 +29,7 @@ Variable sar_tas_pauseat("sar_tas_pauseat", "0", 0, "Pauses the TAS playback on 
 Variable sar_tas_skipto("sar_tas_skipto", "0", 0, "Fast-forwards the TAS playback until given playback tick.\n");
 Variable sar_tas_playback_rate("sar_tas_playback_rate", "1.0", 0.02, "The rate at which to play back TAS scripts.\n");
 Variable sar_tas_restore_fps("sar_tas_restore_fps", "1", "Restore fps_max and host_framerate after TAS playback.\n");
+Variable sar_tas_interpolate("sar_tas_interpolate", "0", "Preserve client interpolation in TAS playback.\n");
 
 TasPlayer *tasPlayer;
 
@@ -54,12 +55,23 @@ void SetPlaybackVars(bool active) {
 	static int old_forceuser;
 	static int old_fpsmax;
 	static int old_hostframerate;
+	static bool old_interpolate;
+	static bool old_motionblur;
+
+	static Variable cl_interpolate("cl_interpolate");
+	static Variable mat_motion_blur_enabled("mat_motion_blur_enabled");
 
 	if (active && !was_active) {
 		old_forceuser = in_forceuser.GetInt();
 		old_hostframerate = host_framerate.GetInt();
+		old_interpolate = cl_interpolate.GetBool();
+		old_motionblur = mat_motion_blur_enabled.GetBool();
 		in_forceuser.SetValue(tasPlayer->coopControlSlot >= 0 ? tasPlayer->coopControlSlot : 100);
 		host_framerate.SetValue(60);
+		if (!sar_tas_interpolate.GetBool()) {
+			cl_interpolate.SetValue(false);
+			mat_motion_blur_enabled.SetValue(false);
+		}
 	} else if (!active && was_active) {
 		in_forceuser.SetValue(old_forceuser);
 		if (sar_tas_restore_fps.GetBool()) {
@@ -69,6 +81,8 @@ void SetPlaybackVars(bool active) {
 				session->oldFpsMax = old_fpsmax; // In case we're restoring during an uncapped load
 			}
 		}
+		cl_interpolate.SetValue(old_interpolate);
+		mat_motion_blur_enabled.SetValue(old_motionblur);
 		saved_fps = false;
 	}
 
