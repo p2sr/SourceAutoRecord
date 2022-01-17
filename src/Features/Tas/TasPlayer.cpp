@@ -420,6 +420,22 @@ void TasPlayer::SaveUsercmdDebugs(int slot) {
 }
 
 void TasPlayer::SaveProcessedFramebulks() {
+	if (tasPlayer->inControllerCommands) {
+		// Okay so this is an annoying situation. We've just started playing
+		// a new TAS with a 'sar_tas_play' command *within* a framebulk of
+		// another TAS, which has executed the command and called 'Stop'
+		// which has called this. We actually want to save the framebulk
+		// currently being run, since its commands are important! But
+		// there's not any processed framebulk to hand; so we just add the
+		// raw framebulks to the processed lists.
+		if (tasFileName[0].size() > 0) {
+			processedFramebulks[0].push_back(GetRawFramebulkAt(0, currentTick + 1));
+		}
+		if (tasFileName[1].size() > 0) {
+			processedFramebulks[1].push_back(GetRawFramebulkAt(1, currentTick + 1));
+		}
+	}
+
 	if (processedFramebulks[0].size() > 0 && tasFileName[0].size() > 0) {
 		if (tasFileName[0].find("_raw") == std::string::npos) {
 			TasParser::SaveFramebulksToFile(tasFileName[0], startInfo, processedFramebulks[0]);
@@ -700,6 +716,8 @@ void TasPlayer::PlayFile(std::string slot0, std::string slot1) {
 	g_replayTasCoop = coop;
 	g_replayTasSingleCoop = false;
 
+	tasPlayer->Stop(true);
+
 	try {
 		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + slot0 + "." + TAS_SCRIPT_EXT);
 		std::vector<TasFramebulk> fb = TasParser::ParseFile(0, filePath);
@@ -731,6 +749,8 @@ void TasPlayer::PlaySingleCoop(std::string file, int slot) {
 	g_replayTas[1-slot] = "";
 	g_replayTasCoop = true;
 	g_replayTasSingleCoop = true;
+
+	tasPlayer->Stop(true);
 
 	try {
 		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + file + "." + TAS_SCRIPT_EXT);

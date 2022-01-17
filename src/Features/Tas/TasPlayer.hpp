@@ -114,6 +114,7 @@ public:
 
 	bool isCoop;
 	int coopControlSlot;
+	bool inControllerCommands = false;
 
 	TasPlayer();
 	~TasPlayer();

@@ -169,12 +169,14 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 
 	// handle all additional commands from the command queue (not in the original, but um why not?)
 	if (commandQueue.size() > 0) {
+		tasPlayer->inControllerCommands = true;
 		for (std::string cmd : commandQueue) {
 			char cmdbuf[128];
 			snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
 			engine->ExecuteCommand(cmdbuf, true);
 		}
 		commandQueue.clear();
+		tasPlayer->inControllerCommands = false;
 	}
 
 	//block analog inputs if paused (probably to block changing the view angle while paused)
