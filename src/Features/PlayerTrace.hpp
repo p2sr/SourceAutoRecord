@@ -43,4 +43,5 @@ public:
 extern PlayerTrace *playerTrace;
 
 extern Vector g_playerTraceTeleportLocation;
+extern int g_playerTraceTeleportSlot;
 extern bool g_playerTraceNeedsTeleport;

@@ -31,6 +31,7 @@ Variable sar_player_trace_bbox_at("sar_player_trace_bbox_at", "-1", -1, "Display
 Variable sar_player_trace_bbox_use_hover("sar_player_trace_bbox_use_hover", "0", 0, "Move trace bbox to hovered trace point tick on given trace.");
 
 Vector g_playerTraceTeleportLocation;
+int g_playerTraceTeleportSlot;
 bool g_playerTraceNeedsTeleport = false;
 
 struct TraceHoverInfo {
@@ -328,6 +329,7 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick) {
 	if (tick < 0) return;
 
 	g_playerTraceTeleportLocation = traces[trace_idx].positions[slot][tick];
+	g_playerTraceTeleportSlot = slot;
 	g_playerTraceNeedsTeleport = true;
 }
 
