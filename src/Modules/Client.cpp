@@ -160,6 +160,10 @@ int Client::GetSplitScreenPlayerSlot(void *entity) {
 	return 0;
 }
 
+void Client::ClFrameStageNotify(int stage) {
+	this->FrameStageNotify(this->g_ClientDLL->ThisPtr(), stage);
+}
+
 // CHLClient::LevelInitPreEntity
 DETOUR(Client::LevelInitPreEntity, const char *levelName) {
 	client->lastLevelName = std::string(levelName);
@@ -394,6 +398,7 @@ bool Client::Init() {
 
 	if (this->g_ClientDLL) {
 		this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses, readJmp);
+		this->FrameStageNotify = this->g_ClientDLL->Original<_FrameStageNotify>(Offsets::GetAllClasses + 27);
 
 		this->g_ClientDLL->Hook(Client::LevelInitPreEntity_Hook, Client::LevelInitPreEntity, Offsets::LevelInitPreEntity);
 

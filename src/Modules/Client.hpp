@@ -32,6 +32,7 @@ public:
 	using _KeyDown = int(__cdecl *)(void *b, const char *c);
 	using _KeyUp = int(__cdecl *)(void *b, const char *c);
 	using _GetAllClasses = ClientClass *(*)();
+	using _FrameStageNotify = void (*)(void *thisptr, int stage);
 	using _ShouldDraw = bool(__rescall *)(void *thisptr);
 	using _ChatPrintf = void (*)(void *thisptr, int iPlayerIndex, int iFilter, const char *fmt, ...);
 	using _IN_ActivateMouse = void (*)(void *thisptr);
@@ -41,6 +42,7 @@ public:
 	_KeyDown KeyDown = nullptr;
 	_KeyUp KeyUp = nullptr;
 	_GetAllClasses GetAllClasses = nullptr;
+	_FrameStageNotify FrameStageNotify = nullptr;
 	_ShouldDraw ShouldDraw = nullptr;
 	_ChatPrintf ChatPrintf = nullptr;
 	_IN_ActivateMouse IN_ActivateMouse = nullptr;
@@ -64,6 +66,7 @@ public:
 	void SetMouseActivated(bool state);
 	CMStatus GetChallengeStatus();
 	int GetSplitScreenPlayerSlot(void *entity);
+	void ClFrameStageNotify(int stage);
 
 public:
 	// CGameMovement::ProcessMovement

@@ -75,6 +75,7 @@ void SetPlaybackVars(bool active) {
 	} else if (!active && was_active) {
 		in_forceuser.SetValue(old_forceuser);
 		if (sar_tas_restore_fps.GetBool()) {
+			engine->SetSkipping(false);
 			host_framerate.SetValue(old_hostframerate);
 			if (saved_fps) {
 				fps_max.SetValue(old_fpsmax);
@@ -95,8 +96,10 @@ void SetPlaybackVars(bool active) {
 
 	if (saved_fps && active) {
 		if (tasPlayer->GetTick() < sar_tas_skipto.GetInt()) {
+			engine->SetSkipping(true);
 			fps_max.SetValue(0);
 		} else if (tasPlayer->GetTick() >= sar_tas_skipto.GetInt()) {
+			engine->SetSkipping(false);
 			fps_max.SetValue((int)(sar_tas_playback_rate.GetFloat() * 60.0f));
 		}
 	}

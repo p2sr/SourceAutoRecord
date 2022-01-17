@@ -551,6 +551,7 @@ bool ProcessTick_Detour(void *thisptr, void *pack)
 
 static unsigned g_advance = 0;
 static bool g_advancing = false;
+static bool g_skipping = false;
 
 void Engine::SetAdvancing(bool advancing) {
 	g_advancing = advancing;
@@ -571,6 +572,10 @@ void Engine::AdvanceTick() {
 	}
 }
 
+void Engine::SetSkipping(bool skipping) {
+	g_skipping = skipping;
+}
+
 static float *host_frametime;
 void Host_AccumulateTime_Detour(float dt);
 void (*Host_AccumulateTime)(float dt);
@@ -587,6 +592,25 @@ void Host_AccumulateTime_Detour(float dt) {
 		--g_advance;
 	} else {
 		*host_frametime = 0;
+	}
+}
+
+void _Host_RunFrame_Render_Detour();
+void (*_Host_RunFrame_Render)();
+static Hook _Host_RunFrame_Render_Hook(&_Host_RunFrame_Render_Detour);
+void _Host_RunFrame_Render_Detour() {
+	if (g_skipping && !g_advancing && !engine->IsGamePaused()) {
+		// We need to do this or else the client doesn't update viewangles
+		// in response to portal teleportations (and it probably breaks some
+		// other stuff too). This would normally be done within
+		// SCR_UpdateScreen, wrapping the main rendering calls
+		client->ClFrameStageNotify(5); // FRAME_RENDER_START
+		client->ClFrameStageNotify(6); // FRAME_RENDER_END
+	} else {
+		// Just do a normal render
+		_Host_RunFrame_Render_Hook.Disable();
+		_Host_RunFrame_Render();
+		_Host_RunFrame_Render_Hook.Enable();
 	}
 }
 
@@ -785,6 +809,18 @@ bool Engine::Init() {
 #endif
 
 	Host_AccumulateTime_Hook.SetFunc(Host_AccumulateTime);
+
+#ifdef _WIN32
+	_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "A1 ? ? ? ? 85 C0 75 1B 8B 0D ? ? ? ? 8B 01 8B 50 40 68 ? ? ? ? FF D2 A3 ? ? ? ? 85 C0 74 0D 6A 02 6A F6 50 E8 ? ? ? ? 83 C4 0C", 0);
+#else
+	if (sar.game->Is(SourceGame_EIPRelPIC)) {
+		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 57 56 E8 ? ? ? ? 81 C6 D6 34 5C 00 53 83 EC 2C 8B BE 88 FD FF FF 8B 87 0C 10 00 00 89 45 E4 85 C0", 0);
+	} else {
+		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 35 ? ? ? ? 85 F6 0F 95 C0 89 C6 0F 85 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? 80 3D ? ? ? ? 00 8B 78 30", 0);
+	}
+#endif
+
+	_Host_RunFrame_Render_Hook.SetFunc(_Host_RunFrame_Render);
 
 	// This is the address of the one interesting call to ReadCustomData - the E8 byte indicates the start of the call instruction
 #ifdef _WIN32
