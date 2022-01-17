@@ -104,6 +104,33 @@ void SetPlaybackVars(bool active) {
 	was_active = active;
 }
 
+ON_EVENT(FRAME) {
+	if (tasPlayer->IsRunning() && !sar_tas_interpolate.GetBool()) {
+		for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+			// check for prop_portal on the server cuz i can't figure out how
+			// to do it client-side lol
+			void *ent = server->m_EntPtrArray[i].m_pEntity;
+			if (!ent) continue;
+			const char *classname = server->GetEntityClassName(ent);
+			if (!classname || strcmp(classname, "prop_portal")) continue;
+
+			// it's a portal, so get the corresponding client entity and
+			// insta-open it
+			void *cl_ent = client->GetPlayer(i);
+			// yes these are hardcoded offsets no i dont care anymore
+#ifdef _WIN32
+			*(float *)((char *)cl_ent + 13584) = 0.0f; // m_fStaticAmount
+			*(float *)((char *)cl_ent + 13588) = 0.0f; // m_fSecondaryStaticAmount
+			*(float *)((char *)cl_ent + 13592) = 1.0f; // m_fOpenAmount
+#else
+			*(float *)((char *)cl_ent + 13552) = 0.0f; // m_fStaticAmount
+			*(float *)((char *)cl_ent + 13556) = 0.0f; // m_fSecondaryStaticAmount
+			*(float *)((char *)cl_ent + 13560) = 1.0f; // m_fOpenAmount
+#endif
+		}
+	}
+}
+
 TasPlayer::TasPlayer()
 	: startInfo({TasStartType::StartImmediately, ""}) {
 }
