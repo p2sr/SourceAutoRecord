@@ -431,7 +431,7 @@ CON_COMMAND(sar_player_trace_clear, "sar_player_trace_clear <index> - Clear the 
 	if (args.ArgC() != 2)
 		return console->Print(sar_player_trace_clear.ThisPtr()->m_pszHelpString);
 
-	int trace_idx = std::stoi(args[1]);
+	int trace_idx = std::atoi(args[1]);
 	if (trace_idx < 0)
 		return console->Print("Trace index must be 0 or positive.\n");
 
@@ -448,9 +448,9 @@ CON_COMMAND(sar_player_trace_teleport_at, "sar_player_trace_teleport_at <tick> [
 	if (args.ArgC() < 2 || args.ArgC() > 4)
 		return console->Print(sar_player_trace_teleport_at.ThisPtr()->m_pszHelpString);
 	
-	size_t trace_idx = (args.ArgC()==4) ? std::stoi(args[3]) : 1;
-	int slot = (args.ArgC()>=3 && engine->IsCoop()) ?std::stoi(args[2]) : 0;
-	int tick = std::stoi(args[1]);
+	size_t trace_idx = (args.ArgC()==4) ? std::atoi(args[3]) : 1;
+	int slot = (args.ArgC()>=3 && engine->IsCoop()) ? std::atoi(args[2]) : 0;
+	int tick = std::atoi(args[1]);
 
 	if (slot > 1) slot = 1;
 	if (slot < 0) slot = 0;
