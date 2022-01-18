@@ -95,6 +95,8 @@ void PlayerTrace::ClearAll() {
 	traces.clear();
 }
 void PlayerTrace::DrawInWorld(float time) const {
+	if (engine->IsSkipping()) return;
+
 	int r, g, b;
 	bool draw_through_walls = sar_player_trace_draw_through_walls.GetBool();
 
@@ -262,6 +264,8 @@ void PlayerTrace::DrawSpeedDeltas(HudContext *ctx) const {
 	}
 }
 void PlayerTrace::DrawBboxAt(int tick) const {
+	if (engine->IsSkipping()) return;
+
 	static const Vector player_standing_size = {32, 32, 72};
 	static const Vector player_ducked_size = {32, 32, 36};
 		

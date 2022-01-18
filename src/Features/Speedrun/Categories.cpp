@@ -228,6 +228,7 @@ ON_EVENT(PRE_TICK) {
 
 	if (!sar_speedrun_draw_triggers.GetBool()) return;
 	if (!sv_cheats.GetBool()) return;
+	if (engine->IsSkipping()) return;
 
 	int tick = engine->GetTick();
 	if (tick > lastDrawTick && tick < lastDrawTick + drawDelta) return;

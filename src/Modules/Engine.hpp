@@ -147,6 +147,7 @@ public:
 	bool IsAdvancing();
 	void AdvanceTick();
 	void SetSkipping(bool skipping);
+	bool IsSkipping();
 
 	// CClientState::Disconnect
 	DECL_DETOUR(Disconnect, bool bShowMainMenu);

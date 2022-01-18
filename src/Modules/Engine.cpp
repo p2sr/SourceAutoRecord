@@ -576,6 +576,10 @@ void Engine::SetSkipping(bool skipping) {
 	g_skipping = skipping;
 }
 
+bool Engine::IsSkipping() {
+	return g_skipping;
+}
+
 static float *host_frametime;
 void Host_AccumulateTime_Detour(float dt);
 void (*Host_AccumulateTime)(float dt);
@@ -592,6 +596,15 @@ void Host_AccumulateTime_Detour(float dt) {
 		--g_advance;
 	} else {
 		*host_frametime = 0;
+	}
+}
+
+ON_EVENT_P(FRAME, 1000) {
+	if (g_advancing && session->isRunning) {
+		// This is a dirty hack, and it'll stop a lot of base game overlays
+		// from working, but it's practically necessary to stop the game
+		// completely fucking dying while frame advancing
+		engine->ClearAllOverlays(nullptr);
 	}
 }
 
