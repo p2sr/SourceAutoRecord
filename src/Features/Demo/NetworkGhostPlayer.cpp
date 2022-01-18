@@ -178,6 +178,34 @@ sf::Packet &operator<<(sf::Packet &packet, const HEADER &header) {
 
 Variable ghost_TCP_only("ghost_TCP_only", "0", "Lathil's special command :).\n");
 Variable ghost_update_rate("ghost_update_rate", "50", 1, "Adjust the update rate. For people with lathil's internet.\n");
+Variable ghost_net_dump("ghost_net_dump", "0", "Dump all ghost network activity to a file for debugging.\n");
+
+static FILE *g_dumpFile;
+static float g_dumpBaseTime;
+
+static void startNetDump() {
+	g_dumpFile = fopen("ghost_net_dump.csv", "w");
+	if (g_dumpFile) {
+		fputs("Time,Type,Info\n", g_dumpFile);
+		g_dumpBaseTime = engine->engineTool->Original<float (__rescall *)(void *thisptr)>(Offsets::HostTick - 1)(engine->engineTool->ThisPtr());
+	}
+}
+
+static void endNetDump() {
+	if (!g_dumpFile) return;
+	fclose(g_dumpFile);
+	g_dumpFile = nullptr;
+}
+
+static void addToNetDump(const char *type, const char *info) {
+	if (!g_dumpFile) return;
+	float time = engine->engineTool->Original<float (__rescall *)(void *thisptr)>(Offsets::HostTick - 1)(engine->engineTool->ThisPtr()) - g_dumpBaseTime;
+	fprintf(g_dumpFile, "%.2f,%s,%s\n", time, type, info ? info : "");
+}
+
+CON_COMMAND(ghost_net_dump_mark, "Mark a point of interest in the ghost network activity dump.\n") {
+	addToNetDump("mark", nullptr);
+}
 
 std::mutex mutex;
 
@@ -258,10 +286,18 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port) {
 	this->waitForRunning.notify_one();
 	this->networkThread = std::thread(&NetworkManager::RunNetwork, this);
 	this->networkThread.detach();
+
+	if (ghost_net_dump.GetBool()) {
+		startNetDump();
+		addToNetDump("connect", Utils::ssprintf("%s:%d", ip.toString().c_str(), port).c_str());
+	}
 }
 
 void NetworkManager::Disconnect() {
 	if (this->isConnected) {
+		addToNetDump("disconnect", nullptr);
+		endNetDump();
+
 		this->isConnected = false;
 		this->waitForRunning.notify_one();
 		this->ghostPoolLock.lock();
@@ -375,6 +411,8 @@ void NetworkManager::NotifyMapChange() {
 		toastHud.AddToast(GHOST_TOAST_TAG, msg);
 	}
 
+	addToNetDump("send-map-change", engine->GetCurrentMapName().c_str());
+
 	packet << HEADER::MAP_CHANGE << this->ID << engine->GetCurrentMapName().c_str() << this->splitTicks << this->splitTicksTotal;
 	this->tcpSocket.send(packet);
 }
@@ -396,12 +434,15 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM) {
 
 	toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished in %s", this->name.c_str(), time.c_str()));
 
+	addToNetDump("send-speedrun-finish", time.c_str());
+
 	packet << time.c_str();
 
 	this->tcpSocket.send(packet);
 }
 
 void NetworkManager::SendMessageToAll(std::string msg) {
+	addToNetDump("send-message", msg.c_str());
 	sf::Packet packet;
 	packet << HEADER::MESSAGE << this->ID << msg.c_str();
 	this->tcpSocket.send(packet);
@@ -409,6 +450,7 @@ void NetworkManager::SendMessageToAll(std::string msg) {
 }
 
 void NetworkManager::SendPing() {
+	addToNetDump("send-ping", nullptr);
 	sf::Packet packet;
 	packet << HEADER::PING << this->ID;
 	this->tcpSocket.send(packet);
@@ -438,6 +480,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		break;
 	case HEADER::PING: {
 		auto ping = this->pingClock.getElapsedTime();
+		addToNetDump("recv-ping", Utils::ssprintf("%d;%d", ID, ping.asMilliseconds()).c_str());
 		Scheduler::OnMainThread([=]() {
 			client->Chat(TextColor::GREEN, "Ping: %d ms", ping.asMilliseconds());
 		});
@@ -451,6 +494,8 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		packet >> name >> data >> model_name >> current_map;
 		auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map);
 		ghost->modelName = model_name;
+
+		addToNetDump("recv-connect", Utils::ssprintf("%d;%s;%s", ID, name.c_str(), current_map.c_str()).c_str());
 
 		this->ghostPoolLock.lock();
 		this->ghostPool.push_back(ghost);
@@ -472,6 +517,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		break;
 	}
 	case HEADER::DISCONNECT: {
+		addToNetDump("recv-disconnect", Utils::ssprintf("%d", ID).c_str());
 		this->ghostPoolLock.lock();
 		int toErase = -1;
 		for (int i = 0; i < this->ghostPool.size(); ++i) {
@@ -500,6 +546,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		break;
 	}
 	case HEADER::STOP_SERVER:
+		addToNetDump("recv-stop-server", Utils::ssprintf("%d", ID).c_str());
 		this->StopServer();
 		break;
 	case HEADER::MAP_CHANGE: {
@@ -509,6 +556,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 			sf::Uint32 ticksIL, ticksTotal;
 			packet >> map >> ticksIL >> ticksTotal;
 			ghost->currentMap = map;
+			addToNetDump("recv-map-change", Utils::ssprintf("%d;%s", ID, map.c_str()).c_str());
 
 			Scheduler::OnMainThread([=]() {
 				if (ghost->isDestroyed)
@@ -546,11 +594,14 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 	case HEADER::HEART_BEAT: {
 		sf::Uint32 token;
 		packet >> token;
+		addToNetDump("recv-heartbeat", Utils::ssprintf("%d;%s;%X", ID, udp ? "UDP" : "TCP", token).c_str());
 		sf::Packet response;
 		response << HEADER::HEART_BEAT << this->ID << token;
 		if (udp) {
+			addToNetDump("send-heartbeat", Utils::ssprintf("UDP;%X", token).c_str());
 			this->udpSocket.send(response, this->serverIP, this->serverPort);
 		} else {
+			addToNetDump("send-heartbeat", Utils::ssprintf("TCP;%X", token).c_str());
 			this->tcpSocket.send(response);
 		}
 		break;
@@ -560,6 +611,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		if (ghost) {
 			std::string message;
 			packet >> message;
+			addToNetDump("recv-message", Utils::ssprintf("%d;%s", ID, message.c_str()).c_str());
 			Scheduler::OnMainThread([=]() {
 				client->Chat(TextColor::LIGHT_GREEN, "%s: %s", ghost->name.c_str(), message.c_str());
 			});
@@ -569,6 +621,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 	case HEADER::COUNTDOWN: {
 		sf::Uint8 step;
 		packet >> step;
+		addToNetDump("recv-countdown", Utils::ssprintf("%d;%d", ID, (int)step).c_str());
 		if (step == 0) {  //Countdown setup
 			std::string preCommands;
 			std::string postCommands;
@@ -579,6 +632,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 
 			sf::Packet confirm_packet;
 			confirm_packet << HEADER::COUNTDOWN << this->ID << sf::Uint8(1);
+			addToNetDump("send-countdown", "1");
 			this->tcpSocket.send(confirm_packet);
 		} else if (step == 1) {  //Exec
 			this->StartCountdown();
@@ -589,6 +643,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		std::string timer;
 		packet >> timer;
 		auto ghost = this->GetGhostByID(ID);
+		addToNetDump("recv-speedrun-finish", Utils::ssprintf("%d;%s", ID, timer.c_str()).c_str());
 		if (ghost) {
 			if (ghost_show_advancement.GetBool()) {
 				Scheduler::OnMainThread([=]() {
@@ -602,6 +657,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		std::string modelName;
 		packet >> modelName;
 		auto ghost = this->GetGhostByID(ID);
+		addToNetDump("recv-model-change", Utils::ssprintf("%d;%s", ID, modelName.c_str()).c_str());
 		if (ghost) {
 			ghost->modelName = modelName;
 			Scheduler::OnMainThread([=]() {
@@ -669,6 +725,7 @@ void NetworkManager::UpdateModel(const std::string modelName) {
 	this->modelName = modelName;
 	if (this->isConnected) {
 		sf::Packet packet;
+		addToNetDump("send-model-change", modelName.c_str());
 		packet << HEADER::MODEL_CHANGE << this->ID << this->modelName.c_str();
 		this->tcpSocket.send(packet);
 	}
