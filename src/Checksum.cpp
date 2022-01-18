@@ -283,7 +283,7 @@ static void initFileSums() {
 					paths.push_back(path);
 				}
 			}
-		} catch (std::system_error &e) {
+		} catch (...) {
 		}
 	}
 
