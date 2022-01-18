@@ -3,6 +3,7 @@
 #include "Client.hpp"
 #include "Engine.hpp"
 #include "Event.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
 #include "Features/GroundFramesCounter.hpp"
@@ -65,6 +66,7 @@ REDECL(Server::GameFrame);
 REDECL(Server::PlayerRunCommand);
 REDECL(Server::ProcessMovement);
 REDECL(Server::StartTouchChallengeNode);
+REDECL(Server::say_callback);
 #ifdef _WIN32
 REDECL(Server::AirMove_Skip);
 REDECL(Server::AirMove_Continue);
@@ -678,8 +680,8 @@ bool Server::Init() {
 	}
 #endif
 
-	// Remove the limit on how quickly you can use 'say'
-	void *say_callback = Command("say").ThisPtr()->m_pCommandCallback;
+	// Remove the limit on how quickly you can use 'say', and also hook it
+	Command::Hook("say", Server::say_callback_hook, Server::say_callback);
 #ifdef _WIN32
 	uintptr_t insn_addr = (uintptr_t)say_callback + 52;
 #else
@@ -788,7 +790,13 @@ CON_COMMAND(sar_give_betsrighter, "sar_give_betsrighter [n] - gives the player i
 		console->Print("Gave betsrighter to player %d\n", slot);
 	}
 }
+DETOUR_COMMAND(Server::say) {
+	if (args.ArgC() != 2 || Utils::StartsWith(args[1], "!SAR:") || !networkManager.HandleGhostSay(args[1])) {
+		Server::say_callback(args);
+	}
+}
 void Server::Shutdown() {
+	Command::Unhook("say", Server::say_callback);
 #ifdef _WIN32
 	MH_UNHOOK(this->AirMove_Mid);
 #else

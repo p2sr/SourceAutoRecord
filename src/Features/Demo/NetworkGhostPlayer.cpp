@@ -843,6 +843,42 @@ CON_COMMAND(ghost_ping, "Pong!\n") {
 	networkManager.SendPing();
 }
 
+static bool g_isGhostChat = false;
+static bool g_wasGhostChat = false;
+
+bool NetworkManager::HandleGhostSay(const char *msg) {
+	if (!g_wasGhostChat) return false;
+
+	if (networkManager.isConnected) {
+		networkManager.SendMessageToAll(msg);
+	}
+
+	return true;
+}
+
+ON_EVENT(FRAME) {
+	if (g_isGhostChat) g_wasGhostChat = true;
+
+	if (!networkManager.isConnected) {
+		g_isGhostChat = false;
+		g_wasGhostChat = false;
+	}
+
+	if (!Variable("cl_chat_active").GetBool() && g_isGhostChat) {
+		g_isGhostChat = false;
+		Scheduler::InHostTicks(10, []() {
+			g_wasGhostChat = false;
+		});
+	}
+}
+
+CON_COMMAND(ghost_chat, "ghost_chat - open the chat HUD for messaging other players\n") {
+	if (networkManager.isConnected) {
+		g_isGhostChat = true;
+		client->OpenChat();
+	}
+}
+
 /*
 CON_COMMAND(ghost_debug, "ghost_debug - output a fuckton of debug info about network ghosts\n") {
 	if (!networkManager.isConnected) {

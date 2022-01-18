@@ -5,6 +5,7 @@
 #include "Utils.hpp"
 #include "Utils/SDK.hpp"
 #include "Variable.hpp"
+#include "Command.hpp"
 
 #ifdef _WIN32
 #	define AirMove_Mid_Offset 679
@@ -111,6 +112,8 @@ public:
 
 	// CServerGameDLL::GameFrame
 	DECL_DETOUR(GameFrame, bool simulating);
+
+	DECL_DETOUR_COMMAND(say);
 
 	bool Init() override;
 	void Shutdown() override;

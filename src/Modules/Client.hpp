@@ -35,6 +35,7 @@ public:
 	using _FrameStageNotify = void (__rescall *)(void *thisptr, int stage);
 	using _ShouldDraw = bool(__rescall *)(void *thisptr);
 	using _ChatPrintf = void (*)(void *thisptr, int iPlayerIndex, int iFilter, const char *fmt, ...);
+	using _StartMessageMode = void (__rescall *)(void *thisptr, int type);
 	using _IN_ActivateMouse = void (*)(void *thisptr);
 	using _IN_DeactivateMouse = void (*)(void *thisptr);
 
@@ -45,6 +46,7 @@ public:
 	_FrameStageNotify FrameStageNotify = nullptr;
 	_ShouldDraw ShouldDraw = nullptr;
 	_ChatPrintf ChatPrintf = nullptr;
+	_StartMessageMode StartMessageMode = nullptr;
 	_IN_ActivateMouse IN_ActivateMouse = nullptr;
 	_IN_DeactivateMouse IN_DeactivateMouse = nullptr;
 
@@ -67,6 +69,7 @@ public:
 	CMStatus GetChallengeStatus();
 	int GetSplitScreenPlayerSlot(void *entity);
 	void ClFrameStageNotify(int stage);
+	void OpenChat();
 
 public:
 	// CGameMovement::ProcessMovement

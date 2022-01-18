@@ -100,6 +100,7 @@ public:
 
 	void DrawNames(HudContext *ctx);
 	bool IsSyncing();
+	bool HandleGhostSay(const char *str);
 };
 
 extern NetworkManager networkManager;

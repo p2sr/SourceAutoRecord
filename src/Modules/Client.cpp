@@ -164,6 +164,10 @@ void Client::ClFrameStageNotify(int stage) {
 	this->FrameStageNotify(this->g_ClientDLL->ThisPtr(), stage);
 }
 
+void Client::OpenChat() {
+	this->StartMessageMode(this->g_HudChat->ThisPtr(), 1); // MM_SAY
+}
+
 // CHLClient::LevelInitPreEntity
 DETOUR(Client::LevelInitPreEntity, const char *levelName) {
 	client->lastLevelName = std::string(levelName);
@@ -425,6 +429,7 @@ bool Client::Init() {
 			auto CHudChat = FindElement(GetHud(-1), "CHudChat");
 			if (this->g_HudChat = Interface::Create(CHudChat)) {
 				this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
+				this->StartMessageMode = g_HudChat->Original<_StartMessageMode>(Offsets::ChatPrintf + 1);
 				this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayText2);
 			}
 
