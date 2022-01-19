@@ -672,11 +672,29 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		break;
 	}
 	case HEADER::UPDATE: {
-		DataGhost data;
-		packet >> data;
-		auto ghost = this->GetGhostByID(ID);
-		if (ghost) {
-			ghost->SetData(data.position, data.view_angle, true);
+		if (ID == 0) {
+			// This packet contains updates for multiple ghosts
+			uint32_t nupdates;
+			packet >> nupdates;
+			for (size_t i = 0; i < nupdates; ++i) {
+				uint32_t ghost_id;
+				DataGhost data;
+				packet >> ghost_id >> data;
+
+				if (ghost_id == this->ID) continue;
+				auto ghost = this->GetGhostByID(ghost_id);
+				if (!ghost) continue;
+
+				ghost->SetData(data.position, data.view_angle, true);
+			}
+		} else {
+			// Legacy update protocol
+			DataGhost data;
+			packet >> data;
+			auto ghost = this->GetGhostByID(ID);
+			if (ghost) {
+				ghost->SetData(data.position, data.view_angle, true);
+			}
 		}
 		break;
 	}
