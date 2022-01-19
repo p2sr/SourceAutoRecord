@@ -353,8 +353,8 @@ void SpeedrunTimer::Update() {
 		if (newSplit && networkManager.isConnected) {
 			int total = SpeedrunTimer::GetTotalTicks();
 			int prevTotal = networkManager.splitTicksTotal == -1 ? 0 : networkManager.splitTicksTotal;
-			networkManager.splitTicks = total - prevTotal;
 			networkManager.splitTicksTotal = total;
+			networkManager.splitTicks = total - prevTotal;
 		}
 
 		g_speedrun.hasSplitLoad = true;
@@ -625,7 +625,7 @@ void SpeedrunTimer::Reset(bool requested) {
 	g_speedrun.visitedMaps.clear();
 
 	if (networkManager.isConnected) {
-		networkManager.splitTicksTotal = -1;
+		networkManager.splitTicks = -1;
 	}
 
 	if (requested) {
