@@ -434,7 +434,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM) {
 
 	std::string time = SpeedrunTimer::Format(totalSecs);
 
-	if (ghost_show_advancement.GetInt() >= 1) toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished in %s", this->name.c_str(), time.c_str()));
+	if (ghost_show_advancement.GetInt() >= 1) toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished on %s in %s", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str()));
 
 	addToNetDump("send-speedrun-finish", time.c_str());
 
@@ -649,7 +649,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		if (ghost) {
 			if (ghost_show_advancement.GetInt() >= 2 || (ghost->sameMap && ghost_show_advancement.GetInt() >= 1)) {
 				Scheduler::OnMainThread([=]() {
-					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished in %s", ghost->name.c_str(), timer.c_str()));
+					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished on %s in %s", ghost->name.c_str(), ghost->currentMap.c_str(), timer.c_str()));
 				});
 			}
 		}
