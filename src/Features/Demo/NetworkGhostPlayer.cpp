@@ -954,7 +954,6 @@ CON_COMMAND(ghost_chat, "ghost_chat - open the chat HUD for messaging other play
 	}
 }
 
-/*
 CON_COMMAND(ghost_debug, "ghost_debug - output a fuckton of debug info about network ghosts\n") {
 	if (!networkManager.isConnected) {
 		return console->Print("Not connected to a server\n");
@@ -976,4 +975,16 @@ CON_COMMAND(ghost_debug, "ghost_debug - output a fuckton of debug info about net
 	}
 	networkManager.ghostPoolLock.unlock();
 }
-*/
+
+CON_COMMAND(ghost_list, "ghost_list - list all players in the current ghost server\n") {
+	if (!networkManager.isConnected) {
+		return console->Print("Not connected to a server\n");
+	}
+
+	networkManager.ghostPoolLock.lock();
+	for (int i = 0; i < networkManager.ghostPool.size(); ++i) {
+		auto ghost = networkManager.ghostPool[i];
+		if (!ghost->isDestroyed) console->Print("%s (%s)\n", ghost->name.c_str(), ghost->currentMap.size() == 0 ? "" : ghost->currentMap.c_str());
+	}
+	networkManager.ghostPoolLock.unlock();
+}
