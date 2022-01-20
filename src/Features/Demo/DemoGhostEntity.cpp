@@ -43,17 +43,17 @@ void DemoGhostEntity::NextDemo() {
 	if (++this->currentDemo != this->datasByLevel.size()) {
 		this->ChangeDemo();
 		this->LevelReset();
-		if (ghost_show_advancement.GetBool()) {
+		if (ghost_show_advancement.GetInt() >= 3) {
 			std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), this->currentMap.c_str());
 			toastHud.AddToast(GHOST_TOAST_TAG, msg);
 		}
 	} else {
 		this->hasFinished = true;
-		this->sameMap = false;  //Make the ghost to disappear
-		if (ghost_show_advancement.GetBool()) {
+		if (ghost_show_advancement.GetInt() >= 2 || (this->sameMap && ghost_show_advancement.GetInt() >= 1)) {
 			std::string msg = Utils::ssprintf("%s has finished", this->name.c_str());
 			toastHud.AddToast(GHOST_TOAST_TAG, msg);
 		}
+		this->sameMap = false;  //Make the ghost to disappear
 	}
 }
 

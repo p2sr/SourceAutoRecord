@@ -400,15 +400,17 @@ void NetworkManager::SendPlayerData() {
 void NetworkManager::NotifyMapChange() {
 	sf::Packet packet;
 
-	if (this->splitTicks != -1) {
-		auto ipt = *engine->interval_per_tick;
-		std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
-		std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
-		std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str(), totalTime.c_str());
-		toastHud.AddToast(GHOST_TOAST_TAG, msg);
-	} else {
-		std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), engine->GetCurrentMapName().c_str());
-		toastHud.AddToast(GHOST_TOAST_TAG, msg);
+	if (ghost_show_advancement.GetInt() >= 3) {
+		if (this->splitTicks != -1) {
+			auto ipt = *engine->interval_per_tick;
+			std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
+			std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
+			std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str(), totalTime.c_str());
+			toastHud.AddToast(GHOST_TOAST_TAG, msg);
+		} else {
+			std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), engine->GetCurrentMapName().c_str());
+			toastHud.AddToast(GHOST_TOAST_TAG, msg);
+		}
 	}
 
 	addToNetDump("send-map-change", engine->GetCurrentMapName().c_str());
@@ -432,7 +434,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM) {
 
 	std::string time = SpeedrunTimer::Format(totalSecs);
 
-	toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished in %s", this->name.c_str(), time.c_str()));
+	if (ghost_show_advancement.GetInt() >= 1) toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished in %s", this->name.c_str(), time.c_str()));
 
 	addToNetDump("send-speedrun-finish", time.c_str());
 
@@ -563,7 +565,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 					return;  // FIXME: this probably works in practice, but it isn't entirely thread-safe
 
 				this->UpdateGhostsSameMap();
-				if (ghost_show_advancement.GetBool()) {
+				if (ghost_show_advancement.GetInt() >= 3) {
 					if (ticksIL == -1) {
 						std::string msg = Utils::ssprintf("%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
 						toastHud.AddToast(GHOST_TOAST_TAG, msg);
@@ -645,7 +647,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		auto ghost = this->GetGhostByID(ID);
 		addToNetDump("recv-speedrun-finish", Utils::ssprintf("%d;%s", ID, timer.c_str()).c_str());
 		if (ghost) {
-			if (ghost_show_advancement.GetBool()) {
+			if (ghost_show_advancement.GetInt() >= 2 || (ghost->sameMap && ghost_show_advancement.GetInt() >= 1)) {
 				Scheduler::OnMainThread([=]() {
 					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished in %s", ghost->name.c_str(), timer.c_str()));
 				});
