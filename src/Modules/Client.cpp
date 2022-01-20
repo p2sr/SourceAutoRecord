@@ -389,6 +389,10 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 	return Client::ProcessMovement(thisptr, player, move);
 }
 
+CON_COMMAND(sar_chat, "sar_chat - open the chat HUD\n") {
+	if (engine->IsCoop()) client->OpenChat();
+}
+
 bool Client::Init() {
 	bool readJmp = false;
 
