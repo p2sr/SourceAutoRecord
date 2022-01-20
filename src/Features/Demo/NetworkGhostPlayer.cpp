@@ -984,9 +984,10 @@ CON_COMMAND(ghost_list, "ghost_list - list all players in the current ghost serv
 	}
 
 	networkManager.ghostPoolLock.lock();
+	console->Print("%d ghosts connected:\n", networkManager.ghostPool.size());
 	for (int i = 0; i < networkManager.ghostPool.size(); ++i) {
 		auto ghost = networkManager.ghostPool[i];
-		if (!ghost->isDestroyed) console->Print("%s (%s)\n", ghost->name.c_str(), ghost->currentMap.size() == 0 ? "" : ghost->currentMap.c_str());
+		if (!ghost->isDestroyed) console->Print("  %s (%s)\n", ghost->name.c_str(), ghost->currentMap.size() == 0 ? "menu" : ghost->currentMap.c_str());
 	}
 	networkManager.ghostPoolLock.unlock();
 }
