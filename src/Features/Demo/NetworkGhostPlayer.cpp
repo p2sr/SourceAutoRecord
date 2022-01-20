@@ -12,10 +12,12 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
+#include "Modules/Scheme.hpp"
 
 #include <chrono>
 #include <functional>
 #include <queue>
+#include <set>
 
 Variable ghost_sync_countdown("ghost_sync_countdown", "3", 0, "The number of seconds of countdown to show at the start of every synced map. 0 to disable.\n");
 
@@ -123,6 +125,85 @@ public:
 };
 
 SyncUi syncUi;
+
+Variable ghost_list_x("ghost_list_x", "2", "X position of ghost list HUD.\n", 0);
+Variable ghost_list_y("ghost_list_y", "-2", "Y position of ghost list HUD.\n", 0);
+Variable ghost_list_mode("ghost_list_mode", "0", 0, 1, "Mode for ghost list HUD. 0 = all players, 1 = current map\n");
+Variable ghost_list_show_map("ghost_list_show_map", "0", "Show the map name in the ghost list HUD.\n");
+Variable ghost_list_font("ghost_list_font", "0", 0, "Font index for ghost list HUD.\n");
+
+class PlayerListUi : public Hud {
+public:
+	bool active = false;
+
+	PlayerListUi()
+		: Hud(HudType_InGame | HudType_Menu | HudType_Paused | HudType_LoadingScreen, false)
+	{
+	}
+
+	virtual bool ShouldDraw() override {
+		return this->active && Hud::ShouldDraw();
+	}
+
+	virtual bool GetCurrentSize(int &w, int &h) override {
+		return false;
+	}
+
+	virtual void Paint(int slot) override {
+		if (slot != 0) return;
+		if (!networkManager.isConnected) return;
+
+		std::set<std::string> players;
+		networkManager.ghostPoolLock.lock();
+		if (ghost_list_show_map.GetBool()) {
+			players.insert(Utils::ssprintf("%s (%s)", networkManager.name.c_str(), engine->GetCurrentMapName().c_str()));
+		} else {
+			players.insert(networkManager.name);
+		}
+		for (auto &g : networkManager.ghostPool) {
+			if (g->isDestroyed) continue;
+			if (ghost_list_mode.GetInt() == 1 && !g->sameMap) continue;
+			if (ghost_list_show_map.GetBool()) {
+				players.insert(Utils::ssprintf("%s (%s)", g->name.c_str(), g->currentMap.c_str()));
+			} else {
+				players.insert(g->name);
+			}
+		}
+		networkManager.ghostPoolLock.unlock();
+
+		long font = scheme->GetDefaultFont() + ghost_list_font.GetInt();
+
+		int width = 0;
+		for (auto &p : players) {
+			int w = surface->GetFontLength(font, "%s", p.c_str());
+			if (w > width) width = w;
+		}
+		width += 6; // Padding
+
+		int height = players.size() * (3 + surface->GetFontHeight(font)) + 3;
+
+		int sw, sh;
+		engine->GetScreenSize(nullptr, sw, sh);
+
+		int x = ghost_list_x.GetInt() < 0 ? sw - width + ghost_list_x.GetInt() : ghost_list_x.GetInt();
+		int y = ghost_list_y.GetInt() < 0 ? sh - height + ghost_list_y.GetInt() : ghost_list_y.GetInt();
+
+		surface->DrawRect({ 0, 0, 0, 192 }, x, y, x + width, y + height);
+
+		x += 3;
+		y += 3;
+
+		for (auto &p : players) {
+			surface->DrawTxt(font, x, y, { 255, 255, 255, 255 }, "%s", p.c_str());
+			y += surface->GetFontHeight(font) + 3;
+		}
+	}
+};
+
+PlayerListUi playerListUi;
+
+Command ghost_list_on("+ghost_list", +[](const CCommand &args){ playerListUi.active = true; }, "+ghost_list - enable the ghost list HUD\n");
+Command ghost_list_off("-ghost_list", +[](const CCommand &args){ playerListUi.active = false; }, "-ghost_list - disable the ghost list HUD\n");
 
 static bool syncPauseDone = true;
 
