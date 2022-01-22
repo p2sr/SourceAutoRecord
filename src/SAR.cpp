@@ -360,6 +360,9 @@ CON_COMMAND(sar_rename, "sar_rename <name> - changes your name\n") {
 	}
 }
 CON_COMMAND(sar_exit, "sar_exit - removes all function hooks, registered commands and unloads the module\n") {
+	
+	Event::Trigger<Event::SAR_UNLOAD>({});
+	curl_global_cleanup();
 	auto statCounter = stats->Get(GET_SLOT())->statsCounter;
 	statCounter->RecordDatas(session->GetTick());
 	statCounter->ExportToFile(sar_statcounter_filePath.GetString());
