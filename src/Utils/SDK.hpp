@@ -951,7 +951,6 @@ struct CViewSetup {
 	bool m_bCullFrontFaces : 1;
 	bool m_bCacheFullSceneState : 1;
 };
-class IHandleEntity;
 
 class CBaseHandle {
 	friend class EntityList;
@@ -966,6 +965,13 @@ public:
 	}
 
 	unsigned long m_Index;
+};
+
+class IHandleEntity {
+public:
+	virtual ~IHandleEntity() {}
+	virtual void SetRefEHandle(const CBaseHandle &handle) = 0;
+	virtual const CBaseHandle &GetRefEHandle() const = 0;
 };
 
 struct variant_t {
