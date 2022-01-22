@@ -154,6 +154,7 @@
     <ClCompile Include="Features\Hud\Hud.cpp" />
     <ClCompile Include="Features\Hud\InputHud.cpp" />
     <ClCompile Include="Features\Hud\InspectionHud.cpp" />
+    <ClCompile Include="Features\Hud\PortalPlacement.cpp" />
     <ClCompile Include="Features\Hud\SpeedrunHud.cpp" />
     <ClCompile Include="Features\Hud\StrafeSyncHud.cpp" />
     <ClCompile Include="Features\Hud\StrafeQuality.cpp" />
@@ -334,6 +335,7 @@
     <ClInclude Include="Features\Hud\Hud.hpp" />
     <ClInclude Include="Features\Hud\InputHud.hpp" />
     <ClInclude Include="Features\Hud\InspectionHud.hpp" />
+    <ClInclude Include="Features\Hud\PortalPlacement.hpp" />
     <ClInclude Include="Features\Hud\SpeedrunHud.hpp" />
     <ClInclude Include="Features\Hud\StrafeSyncHud.hpp" />
     <ClInclude Include="Features\Hud\StrafeQuality.hpp" />

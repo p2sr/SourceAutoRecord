@@ -133,6 +133,9 @@
     <ClCompile Include="Features\Hud\InspectionHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Hud\PortalPlacement.cpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Hud\InputHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
@@ -487,6 +490,9 @@
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Features\Hud\InspectionHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\PortalPlacement.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
     <ClInclude Include="Features\Hud\InputHud.hpp">

@@ -120,6 +120,7 @@ ON_EVENT(FRAME) {
 			// it's a portal, so get the corresponding client entity and
 			// insta-open it
 			void *cl_ent = client->GetPlayer(i);
+			if (!cl_ent) continue;
 			// yes these are hardcoded offsets no i dont care anymore
 #ifdef _WIN32
 			*(float *)((char *)cl_ent + 13584) = 0.0f; // m_fStaticAmount

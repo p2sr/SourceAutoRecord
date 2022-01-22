@@ -239,6 +239,7 @@ void Portal2::LoadOffsets() {
 	ClientCommand = 39;                  // CVEngineServer
 	IsServerPaused = 81;                 // CVEngineServer
 	ServerPause = 121;                   // CVEngineServer
+	m_iPortalLinkageGroupID = 385;       // CWeaponPortalgun
 	TraceRay = 5;                        // IEngineTrace
 	IsPlayer = 85;                       // CBasePlayer
 	AcceptInput = 40;                    // CBasePlayer
