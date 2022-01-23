@@ -51,28 +51,8 @@ bool AimPointHud::GetCurrentSize(int &xSize, int &ySize) {
 static void updateTrace(int slot) {
 	g_last_trace_valid = false;
 
-	void *player = server->GetPlayer(slot + 1);
-	if (!player) {
-		return;
-	}
-
-	bool cam_control = sar_cam_control.GetInt() == 1 && sv_cheats.GetBool();
-
-	Vector cam_pos;
-	if (cam_control) {
-		cam_pos = camera->currentState.origin;
-	} else {
-		cam_pos = server->GetAbsOrigin(player) + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
-	}
-
-	QAngle ang = cam_control ? camera->currentState.angles : engine->GetAngles(slot);
-	Vector view_vec = Vector{
-		cosf(DEG2RAD(ang.y)) * cosf(DEG2RAD(ang.x)),
-		sinf(DEG2RAD(ang.y)) * cosf(DEG2RAD(ang.x)),
-		-sinf(DEG2RAD(ang.x)),
-	}.Normalize();
-
-	Vector dir = view_vec * TRACE_LENGTH;
+	Vector cam_pos = camera->GetPosition(slot);
+	Vector dir = camera->GetForwardVector(slot) * TRACE_LENGTH;
 
 	CGameTrace tr;
 

@@ -50,22 +50,8 @@ ON_EVENT(PRE_TICK) {
 		if (player == nullptr || (int)player == -1)
 			return;
 
-		bool cam_control = sar_cam_control.GetInt() == 1 && sv_cheats.GetBool();
-
-		Vector camPos;
-		if (cam_control) {
-			camPos = camera->currentState.origin;
-		} else {
-			camPos = server->GetAbsOrigin(player) + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
-		}
-
-		QAngle angle = cam_control ? camera->currentState.angles : engine->GetAngles(GET_SLOT());
-
-		float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);
-		auto cosX = std::cos(X), cosY = std::cos(Y);
-		auto sinX = std::sin(X), sinY = std::sin(Y);
-
-		Vector dir(cosY * cosX, sinY * cosX, -sinX);
+		Vector camPos = camera->GetPosition(GET_SLOT());
+		Vector dir = camera->GetForwardVector(GET_SLOT());
 
 		CGameTrace tr = TracePortalShot(camPos, dir, 65536.0);
 
