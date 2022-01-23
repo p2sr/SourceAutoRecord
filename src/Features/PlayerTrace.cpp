@@ -13,13 +13,13 @@
 
 PlayerTrace *playerTrace;
 
-Variable sar_player_trace_autoclear("sar_player_trace_autoclear", "1", "Automatically clear the trace on session start\n");
-Variable sar_player_trace_record("sar_player_trace_record", "0", 0, "Record the trace to a slot. Set to 0 for not recording\n");
+Variable sar_trace_autoclear("sar_trace_autoclear", "1", "Automatically clear the trace on session start\n");
+Variable sar_trace_record("sar_trace_record", "0", 0, "Record the trace to a slot. Set to 0 for not recording\n");
 
-Variable sar_player_trace_draw("sar_player_trace_draw", "0", "Display the recorded player trace. Requires cheats\n");
-Variable sar_player_trace_draw_through_walls("sar_player_trace_draw_through_walls", "1", "Display the player trace through walls. Requires sar_player_trace_draw\n");
-Variable sar_player_trace_draw_speed_deltas("sar_player_trace_draw_speed_deltas", "1", "Display the speed deltas. Requires sar_player_trace_draw\n");
-Variable sar_player_trace_draw_time("sar_player_trace_draw_time", "3", 0, 3, 
+Variable sar_trace_draw("sar_trace_draw", "0", "Display the recorded player trace. Requires cheats\n");
+Variable sar_trace_draw_through_walls("sar_trace_draw_through_walls", "1", "Display the player trace through walls. Requires sar_trace_draw\n");
+Variable sar_trace_draw_speed_deltas("sar_trace_draw_speed_deltas", "1", "Display the speed deltas. Requires sar_trace_draw\n");
+Variable sar_trace_draw_time("sar_trace_draw_time", "3", 0, 3, 
 	"Display tick above trace hover info\n"
 	"0 = hide tick info\n"
 	"1 = ticks since trace recording started\n"
@@ -27,8 +27,8 @@ Variable sar_player_trace_draw_time("sar_player_trace_draw_time", "3", 0, 3,
 	"3 = TAS timer (if no TAS was played, uses 1 instead)\n"
 );
 
-Variable sar_player_trace_bbox_at("sar_player_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.");
-Variable sar_player_trace_bbox_use_hover("sar_player_trace_bbox_use_hover", "0", 0, "Move trace bbox to hovered trace point tick on given trace.");
+Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.");
+Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, "Move trace bbox to hovered trace point tick on given trace.");
 
 Vector g_playerTraceTeleportLocation;
 int g_playerTraceTeleportSlot;
@@ -98,7 +98,7 @@ void PlayerTrace::DrawInWorld(float time) const {
 	if (engine->IsSkipping()) return;
 
 	int r, g, b;
-	bool draw_through_walls = sar_player_trace_draw_through_walls.GetBool();
+	bool draw_through_walls = sar_trace_draw_through_walls.GetBool();
 
 	hovers.clear();
 
@@ -291,7 +291,7 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 				player_size/2,
 				{0, 0, 0},
 				255, 255, 0,
-				sar_player_trace_draw_through_walls.GetBool(),
+				sar_trace_draw_through_walls.GetBool(),
 				0.05
 			);
 			engine->AddBoxOverlay(
@@ -301,7 +301,7 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 				{1,1,1},
 				{0, 0, 0},
 				0, 255, 0,
-				sar_player_trace_draw_through_walls.GetBool(),
+				sar_trace_draw_through_walls.GetBool(),
 				0.05
 			);
 		}
@@ -314,7 +314,7 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick) {
 		return;
 	}
 
-	switch (sar_player_trace_draw_time.GetInt()) {
+	switch (sar_trace_draw_time.GetInt()) {
 	case 2:
 		tick -= traces[trace_idx].startSessionTick;
 		break;
@@ -340,9 +340,9 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick) {
 ON_EVENT(PROCESS_MOVEMENT) {
 
 	// Record trace
-	if (sar_player_trace_record.GetInt() && !engine->IsGamePaused()) {
+	if (sar_trace_record.GetInt() && !engine->IsGamePaused()) {
 		if (engine->IsOrange()) {
-			sar_player_trace_record.SetValue(0);
+			sar_trace_record.SetValue(0);
 			console->Print("The trace only works for the host! Turning off trace recording.\n");
 		}
 		
@@ -360,12 +360,12 @@ ON_EVENT(PROCESS_MOVEMENT) {
 		}
 
 		if (player) {
-			playerTrace->AddPoint(sar_player_trace_record.GetInt(), player, event.slot, use_client_offset);
+			playerTrace->AddPoint(sar_trace_record.GetInt(), player, event.slot, use_client_offset);
 		}
 	}
 
 	// Draw trace
-	if (!sar_player_trace_draw.GetBool()) return;
+	if (!sar_trace_draw.GetBool()) return;
 	if (!sv_cheats.GetBool()) return;
 
 	// Kind of an arbitrary number, prevents flickers
@@ -373,24 +373,24 @@ ON_EVENT(PROCESS_MOVEMENT) {
 }
 
 ON_EVENT(SESSION_START) {
-	if (sar_player_trace_autoclear.GetBool())
+	if (sar_trace_autoclear.GetBool())
 		playerTrace->ClearAll();
 }
 
-HUD_ELEMENT2_NO_DISABLE(player_trace_draw_speed, HudType_InGame) {
-	if (!sar_player_trace_draw.GetBool()) return;
-	if (!sar_player_trace_draw_speed_deltas.GetBool()) return;
+HUD_ELEMENT2_NO_DISABLE(trace_draw_speed, HudType_InGame) {
+	if (!sar_trace_draw.GetBool()) return;
+	if (!sar_trace_draw_speed_deltas.GetBool()) return;
 	if (!sv_cheats.GetBool()) return;
 
 	playerTrace->DrawSpeedDeltas(ctx);
 }
 
-HUD_ELEMENT2_NO_DISABLE(player_trace_bbox, HudType_InGame) {
-	if (!sar_player_trace_draw.GetBool()) return;
+HUD_ELEMENT2_NO_DISABLE(trace_bbox, HudType_InGame) {
+	if (!sar_trace_draw.GetBool()) return;
 	if (!sv_cheats.GetBool()) return;
 
-	// overriding the value of sar_player_trace_bbox_at if hovered position is used
-	size_t trace_idx = sar_player_trace_bbox_use_hover.GetInt();
+	// overriding the value of sar_trace_bbox_at if hovered position is used
+	size_t trace_idx = sar_trace_bbox_use_hover.GetInt();
 	if (trace_idx>0) {
 		int tick = -1;
 		for (auto &h : hovers) {
@@ -399,17 +399,17 @@ HUD_ELEMENT2_NO_DISABLE(player_trace_bbox, HudType_InGame) {
 				break;
 			}
 		}
-		sar_player_trace_bbox_at.SetValue(tick);
+		sar_trace_bbox_at.SetValue(tick);
 	}
 
-	int tick = sar_player_trace_bbox_at.GetInt();
+	int tick = sar_trace_bbox_at.GetInt();
 	if (tick == -1) return;
 
 	playerTrace->DrawBboxAt(tick);
 }
 
-HUD_ELEMENT2_NO_DISABLE(player_trace_draw_hover, HudType_InGame) {
-	if (!sar_player_trace_draw.GetBool()) return;
+HUD_ELEMENT2_NO_DISABLE(trace_draw_hover, HudType_InGame) {
+	if (!sar_trace_draw.GetBool()) return;
 	if (!sv_cheats.GetBool()) return;
 
 	const Vector hud_offset = {0.0, 0.0, 10.0};
@@ -418,7 +418,7 @@ HUD_ELEMENT2_NO_DISABLE(player_trace_draw_hover, HudType_InGame) {
 
 	for (auto &h : hovers) {
 		engine->PointToScreen(h.pos + hud_offset, screen_pos);
-		int timeType = sar_player_trace_draw_time.GetInt();
+		int timeType = sar_trace_draw_time.GetInt();
 		if (timeType > 0) {
 			int tick = h.tick;
 			auto trace = playerTrace->GetTrace(h.trace_idx);
@@ -433,9 +433,9 @@ HUD_ELEMENT2_NO_DISABLE(player_trace_draw_hover, HudType_InGame) {
 	}
 }
 
-CON_COMMAND(sar_player_trace_clear, "sar_player_trace_clear <index> - Clear the index player trace\n") {
+CON_COMMAND(sar_trace_clear, "sar_trace_clear <index> - Clear the index player trace\n") {
 	if (args.ArgC() != 2)
-		return console->Print(sar_player_trace_clear.ThisPtr()->m_pszHelpString);
+		return console->Print(sar_trace_clear.ThisPtr()->m_pszHelpString);
 
 	int trace_idx = std::atoi(args[1]);
 	if (trace_idx < 0)
@@ -444,15 +444,15 @@ CON_COMMAND(sar_player_trace_clear, "sar_player_trace_clear <index> - Clear the 
 	playerTrace->Clear(trace_idx);
 }
 
-CON_COMMAND(sar_player_trace_clear_all, "sar_player_trace_clear_all - Clear all the traces\n") {
+CON_COMMAND(sar_trace_clear_all, "sar_trace_clear_all - Clear all the traces\n") {
 	playerTrace->ClearAll();
 }
 
-CON_COMMAND(sar_player_trace_teleport_at, "sar_player_trace_teleport_at <tick> [player slot] [trace index] - teleports the player at the given trace tick on the given trace ID (defaults to 1) in the given slot (defaults to 0).\n") {
+CON_COMMAND(sar_trace_teleport_at, "sar_trace_teleport_at <tick> [player slot] [trace index] - teleports the player at the given trace tick on the given trace ID (defaults to 1) in the given slot (defaults to 0).\n") {
 	if (!sv_cheats.GetBool()) return;
 
 	if (args.ArgC() < 2 || args.ArgC() > 4)
-		return console->Print(sar_player_trace_teleport_at.ThisPtr()->m_pszHelpString);
+		return console->Print(sar_trace_teleport_at.ThisPtr()->m_pszHelpString);
 	
 	size_t trace_idx = (args.ArgC()==4) ? std::atoi(args[3]) : 1;
 	int slot = (args.ArgC()>=3 && engine->IsCoop()) ? std::atoi(args[2]) : 0;

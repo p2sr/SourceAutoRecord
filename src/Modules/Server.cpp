@@ -239,7 +239,7 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	auto res = Server::ProcessMovement(thisptr, player, move);
 
 	// We edit pos after process movement to get accurate teleportation
-	// This is for sar_player_trace_teleport_at
+	// This is for sar_trace_teleport_at
 	if (g_playerTraceNeedsTeleport && slot == g_playerTraceTeleportSlot) {
 		move->m_vecAbsOrigin = g_playerTraceTeleportLocation;
 		g_playerTraceNeedsTeleport = false;
