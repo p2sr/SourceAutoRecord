@@ -76,9 +76,6 @@
     <ClCompile Include="Features\Routing\EntityInspector.cpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Routing\Tracer.cpp">
-      <Filter>SourceAutoRecord\Features\Routing</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\SDK.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
@@ -424,6 +421,9 @@
     <ClCompile Include="Features\Tas\TasTools\DecelTool.cpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Routing\Ruler.cpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -577,9 +577,6 @@
       <Filter>SourceAutoRecord\Features\Stats</Filter>
     </ClInclude>
     <ClInclude Include="Features\Routing\EntityInspector.hpp">
-      <Filter>SourceAutoRecord\Features\Routing</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\Routing\Tracer.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
     <ClInclude Include="Features\Timer\Timer.hpp">
@@ -1079,6 +1076,9 @@
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTools\DecelTool.hpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Routing\Ruler.hpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

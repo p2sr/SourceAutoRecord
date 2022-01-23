@@ -69,6 +69,9 @@ public:
 	void RequestTimeOffsetRefresh();
 	void RequestCameraRefresh();
 	void OverrideMovement(CUserCmd *cmd);
+
+	Vector GetPosition(int slot);
+	Vector GetForwardVector(int slot);
 };
 
 extern Camera *camera;

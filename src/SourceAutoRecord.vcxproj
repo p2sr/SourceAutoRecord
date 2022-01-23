@@ -134,6 +134,7 @@
     <ClCompile Include="Checksum.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="Event.cpp" />
+    <ClCompile Include="Features\Routing\Ruler.cpp" />
     <ClCompile Include="Scheduler.cpp" />
     <ClCompile Include="Features\ClassDumper.cpp" />
     <ClCompile Include="Features\Cvars.cpp" />
@@ -173,7 +174,6 @@
     <ClCompile Include="Features\ReloadedFix.cpp" />
     <ClCompile Include="Features\Routing\EntityInspector.cpp" />
     <ClCompile Include="Features\Routing\SeamshotFind.cpp" />
-    <ClCompile Include="Features\Routing\Tracer.cpp" />
     <ClCompile Include="Features\SegmentedTools.cpp" />
     <ClCompile Include="Features\Session.cpp" />
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp" />
@@ -315,6 +315,7 @@
     <ClInclude Include="Checksum.hpp" />
     <ClInclude Include="Command.hpp" />
     <ClInclude Include="Event.hpp" />
+    <ClInclude Include="Features\Routing\Ruler.hpp" />
     <ClInclude Include="Scheduler.hpp" />
     <ClInclude Include="Features.hpp" />
     <ClInclude Include="Features\ClassDumper.hpp" />
@@ -352,7 +353,6 @@
     <ClInclude Include="Features\ReloadedFix.hpp" />
     <ClInclude Include="Features\Routing\EntityInspector.hpp" />
     <ClInclude Include="Features\Routing\SeamshotFind.hpp" />
-    <ClInclude Include="Features\Routing\Tracer.hpp" />
     <ClInclude Include="Features\SegmentedTools.hpp" />
     <ClInclude Include="Features\Session.hpp" />
     <ClInclude Include="Features\Speedrun\SpeedrunTimer.hpp" />

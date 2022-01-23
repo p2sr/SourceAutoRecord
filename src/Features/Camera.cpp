@@ -470,6 +470,39 @@ void Camera::OverrideMovement(CUserCmd *cmd) {
 	}
 }
 
+
+Vector Camera::GetPosition(int slot) {
+	void *player = server->GetPlayer(slot + 1);
+	if (!player) return {0, 0, 0};
+
+	bool cam_control = sar_cam_control.GetInt() == 1 && sv_cheats.GetBool();
+
+	Vector cam_pos;
+	if (cam_control) {
+		cam_pos = camera->currentState.origin;
+	} else {
+		cam_pos = server->GetAbsOrigin(player) + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
+	}
+
+	return cam_pos;
+}
+
+Vector Camera::GetForwardVector(int slot) {
+	bool cam_control = sar_cam_control.GetInt() == 1 && sv_cheats.GetBool();
+
+	QAngle ang = cam_control ? camera->currentState.angles : engine->GetAngles(slot);
+	Vector view_vec = Vector{
+		cosf(DEG2RAD(ang.y)) * cosf(DEG2RAD(ang.x)),
+		sinf(DEG2RAD(ang.y)) * cosf(DEG2RAD(ang.x)),
+		-sinf(DEG2RAD(ang.x)),
+	}.Normalize();
+
+	return view_vec;
+}
+
+
+
+
 //COMMANDS
 
 DECL_COMMAND_COMPLETION(sar_cam_path_setkf) {

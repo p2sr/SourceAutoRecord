@@ -260,7 +260,6 @@ std::vector<std::string> elementOrder = {
 	"jump",
 	"jump_peak",
 	"velocity_peak",
-	"trace",
 	"frame",
 	"last_frame",
 	"inspection",

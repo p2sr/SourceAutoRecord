@@ -13,7 +13,6 @@
 #include "Features/ReloadedFix.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Routing/SeamshotFind.hpp"
-#include "Features/Routing/Tracer.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"

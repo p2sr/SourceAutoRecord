@@ -179,7 +179,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->features->AddFeature<StepCounter>(&stepCounter);
 			this->features->AddFeature<Summary>(&summary);
 			this->features->AddFeature<Teleporter>(&teleporter);
-			this->features->AddFeature<Tracer>(&tracer);
 			SpeedrunTimer::Init();
 			this->features->AddFeature<Stats>(&stats);
 			this->features->AddFeature<Sync>(&synchro);
