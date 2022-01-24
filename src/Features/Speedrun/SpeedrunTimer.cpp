@@ -108,6 +108,8 @@ static struct
 	int saved;
 	int base;
 
+	int recovery;
+
 	std::vector<Segment> currentSplit;
 	std::vector<SplitInfo> splits;
 
@@ -252,6 +254,7 @@ static void sendCoopPacket(PacketType t, std::string *splitName = NULL, int newS
 
 int SpeedrunTimer::GetSegmentTicks() {
 	if (g_speedrun.isReset) {
+		if (g_speedrun.recovery != -1) return g_speedrun.recovery;
 		return sar_speedrun_offset.GetInt();
 	}
 
@@ -408,17 +411,20 @@ void SpeedrunTimer::FinishLoad() {
 
 void SpeedrunTimer::Start() {
 	bool wasRunning = g_speedrun.isRunning;
+	bool recover = g_speedrun.recovery != -1;
+	int recover_tick = g_speedrun.recovery;
 
 	SpeedrunTimer::Reset(false);
 
-	setTimerAction(wasRunning ? TimerAction::RESTART : TimerAction::START);
+	setTimerAction(wasRunning ? TimerAction::RESTART : recover ? TimerAction::NONE : TimerAction::START);
 
 	std::string map = getEffectiveMapName();
 
 	g_speedrun.isRunning = true;
 	g_speedrun.isReset = false;
 	g_speedrun.base = getCurrentTick();
-	g_speedrun.saved = sar_speedrun_offset.GetInt();
+	g_speedrun.saved = recover ? recover_tick : sar_speedrun_offset.GetInt();
+	g_speedrun.recovery = -1;
 	g_speedrun.lastMap = map;
 	g_speedrun.visitedMaps.push_back(map);
 
@@ -620,6 +626,7 @@ void SpeedrunTimer::Reset(bool requested) {
 
 	g_speedrun.saved = 0;
 	g_speedrun.base = 0;
+	g_speedrun.recovery = -1;
 	g_speedrun.currentSplit.clear();
 	g_speedrun.splits.clear();
 	g_speedrun.visitedMaps.clear();
@@ -644,6 +651,11 @@ bool SpeedrunTimer::IsRunning() {
 void SpeedrunTimer::OnLoad() {
 	SpeedrunTimer::TestLoadRules();
 
+	if (g_speedrun.recovery != -1) {
+		SpeedrunTimer::Start();
+		return;
+	}
+
 	if (!sar_speedrun_start_on_load.isRegistered) {
 		return;
 	}
@@ -657,10 +669,7 @@ void SpeedrunTimer::OnLoad() {
 
 ON_EVENT(SESSION_START) {
 	if (!engine->IsCoop() || (client->GetChallengeStatus() == CMStatus::CHALLENGE && !engine->IsOrange())) {
-		if (!engine->IsOrange()) {
-			SpeedrunTimer::Resume();
-		}
-
+		SpeedrunTimer::Resume();
 		SpeedrunTimer::OnLoad();
 	}
 }
@@ -711,12 +720,16 @@ std::string SpeedrunTimer::SimpleFormat(float raw) {
 	return std::string(format);
 }
 
-float SpeedrunTimer::UnFormat(std::string &formated_time) {
-	int h, m, s;
-	float ms, total = 0;
+float SpeedrunTimer::UnFormat(const std::string &formated_time) {
+	int h, m;
+	float s, total = 0;
 
-	if (sscanf(formated_time.c_str(), "%d:%d:%d.%f", &h, &m, &s, &ms) >= 2) {
-		total = h * 3600 + m * 60 + s + 0.001 * ms;
+	if (sscanf(formated_time.c_str(), "%d:%d:%f", &h, &m, &s) >= 3) {
+		total = h * 3600.0f + m * 60.0f + s;
+	} else if (sscanf(formated_time.c_str(), "%d:%f", &m, &s) >= 2) {
+		total = m * 60.0f + s;
+	} else if (sscanf(formated_time.c_str(), "%f", &s) >= 1) {
+		total = s;
 	}
 
 	return total;
@@ -845,6 +858,22 @@ CON_COMMAND(sar_speedrun_export, "sar_speedrun_export <filename> - export the sp
 	fclose(f);
 
 	console->Print("Speedrun successfully exported to '%s'!\n", filename.c_str());
+}
+
+CON_COMMAND(sar_speedrun_recover, "sar_speedrun_recover <ticks|time> - recover a crashed run by resuming the timer at the given time on next load\n") {
+	if (args.ArgC() != 2) {
+		return console->Print(sar_speedrun_recover.ThisPtr()->m_pszHelpString);
+	}
+
+	char *end;
+	long ticks = strtol(args[1], &end, 10);
+	if (*end) {
+		// Try to parse as a time instead
+		ticks = std::round(SpeedrunTimer::UnFormat(args[1]) * 60.0f);
+	}
+
+	g_speedrun.recovery = ticks;
+	console->Print("Timer will start on next load at %s\n", SpeedrunTimer::Format(ticks / 60.0f).c_str());
 }
 
 CON_COMMAND(sar_speedrun_export_all, "sar_speedrun_export_all <filename> - export the results of many speedruns to the specified CSV file\n") {
