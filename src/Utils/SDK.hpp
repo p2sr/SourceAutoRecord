@@ -1003,6 +1003,7 @@ struct variant_t {
 };
 
 struct PaintPowerInfo_t {
+	void *vtable;
 	Vector m_SurfaceNormal;
 	Vector m_ContactPoint;
 	int m_PaintPowerType;

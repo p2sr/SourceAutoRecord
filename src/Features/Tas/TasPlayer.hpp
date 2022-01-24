@@ -49,6 +49,7 @@ struct TasPlayerInfo {
 	float maxSpeed;
 	bool ducked;
 	bool grounded;
+	bool onSpeedPaint;
 	int oldButtons;
 	float ticktime;
 };

@@ -357,21 +357,25 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CUserCmd *cmd) {
 	pi.ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);
 
 	float *m_flMaxspeed = reinterpret_cast<float *>((uintptr_t)player + Offsets::m_flMaxspeed);
-	float oldMaxSpeed = *m_flMaxspeed;
-	// TODO: maxSpeed will be inaccurate without proper prediction. figure out these DAMN offsets to make it work.
-
-	// maxSpeed is modified within ProcessMovement function. This cheesy hack allows us to "predict" its next value
-	/*using _GetPaintPower = const PaintPowerInfo_t&(__rescall*)(void* thisptr, unsigned paintId);
-    _GetPaintPower GetPaintPower = Memory::VMT<_GetPaintPower>(player, Offsets::GetPaintPower);
-    const PaintPowerInfo_t& paintInfo = GetPaintPower(player, 2);*/
-
-	/*using _UseSpeedPower = void(__rescall*)(void* thisptr, PaintPowerInfo_t& info);
-    _UseSpeedPower UseSpeedPower = Memory::VMT<_UseSpeedPower>(player, Offsets::UseSpeedPower);
-    UseSpeedPower(player, paintInfo);
-    */
-
 	pi.maxSpeed = *m_flMaxspeed;
-	*m_flMaxspeed = oldMaxSpeed;
+
+	using _GetPaintPower = const PaintPowerInfo_t&(__rescall*)(void* thisptr, unsigned paintId);
+	_GetPaintPower GetPaintPower = Memory::VMT<_GetPaintPower>(player, Offsets::GetPaintPower);
+	PaintPowerInfo_t speedPaintInfo = GetPaintPower(player, 2);
+	pi.onSpeedPaint = speedPaintInfo.m_State == 1; // ACTIVE_PAINT_POWER
+
+	if (pi.onSpeedPaint) {
+		// maxSpeed is modified within ProcessMovement. This hack allows us to "predict" its next value
+		// Cache off old max speed to restore later
+		float oldMaxSpeed = *m_flMaxspeed;
+		// Use the speed paint to modify the max speed
+		using _UseSpeedPower = void(__rescall*)(void* thisptr, PaintPowerInfo_t& info);
+		_UseSpeedPower UseSpeedPower = Memory::VMT<_UseSpeedPower>(player, Offsets::UseSpeedPower);
+		UseSpeedPower(player, speedPaintInfo);
+		// Get the new ("predicted") max speed and restore the old one on the player
+		pi.maxSpeed = *m_flMaxspeed;
+		*m_flMaxspeed = oldMaxSpeed;
+	}
 
 	unsigned int groundEntity = *reinterpret_cast<unsigned int *>((uintptr_t)player + Offsets::S_m_hGroundEntity);
 	pi.grounded = groundEntity != 0xFFFFFFFF;
