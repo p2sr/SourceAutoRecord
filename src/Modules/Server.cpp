@@ -200,8 +200,8 @@ extern Hook g_playerRunCommandHook;
 // CPortal_Player::PlayerRunCommand
 DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 	if (!engine->IsGamePaused()) {
-		auto playerInfo = tasPlayer->GetPlayerInfo(thisptr, cmd);
 		if (sar_tas_real_controller_debug.GetInt() == 3) {
+			auto playerInfo = tasPlayer->GetPlayerInfo(thisptr, cmd);
 			console->Print("Jump input state at tick %d: %s\n", playerInfo.tick, (cmd->buttons & IN_JUMP) ? "true" : "false");
 		}
 	}
