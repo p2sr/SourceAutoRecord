@@ -13,12 +13,10 @@
 
 GhostType GhostEntity::ghost_type = GhostType::CIRCLE;
 std::string GhostEntity::defaultModelName = "models/props/food_can/food_can_open.mdl";
+Color GhostEntity::set_color{ 255, 255, 255 };
 
 Variable ghost_height("ghost_height", "16", -256, "Height of the ghosts. (For prop models, only affects their position).\n");
 Variable ghost_opacity("ghost_opacity", "255", 0, 255, "Opacity of the ghosts.\n");
-Variable ghost_color_r("ghost_color_r", "255", 0, 255, "Red component of ghost color (linear RGB).\n");
-Variable ghost_color_g("ghost_color_g", "255", 0, 255, "Green component of ghost color (linear RGB).\n");
-Variable ghost_color_b("ghost_color_b", "255", 0, 255, "Blue component of ghost color (linear RGB).\n");
 Variable ghost_text_offset("ghost_text_offset", "7", -1024, "Offset of the name over the ghosts.\n");
 Variable ghost_show_advancement("ghost_show_advancement", "3", 0, 3, "Show the advancement of the ghosts. 1 = show finished runs on the current map, 2 = show all finished runs, 3 = show all finished runs and map changes\n");
 Variable ghost_proximity_fade("ghost_proximity_fade", "100", 0, 2000, "Distance from ghosts at which their models fade out.\n");
@@ -128,15 +126,13 @@ void GhostEntity::SetupGhost(unsigned int &ID, std::string &name, DataGhost &dat
 }
 
 void GhostEntity::Display() {
-	int col_r = ghost_color_r.GetInt();
-	int col_g = ghost_color_g.GetInt();
-	int col_b = ghost_color_b.GetInt();
-	float opacity = this->GetOpacity();
-
 	if (engine->IsGamePaused()) return;
 	if (engine->IsSkipping()) return;
 
-#define TRIANGLE(a, b, c) OverlayRender::addTriangle(a, b, c, { col_r, col_g, col_b, (int)opacity }, true)
+	float opacity = this->GetOpacity();
+	Color col = this->color ? *this->color : GhostEntity::set_color;
+
+#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(p1, p2, p3, { col.r(), col.g(), col.b(), (int)opacity }, true)
 	switch (GhostEntity::ghost_type) {
 	case GhostType::CIRCLE: {
 		double rad = ghost_height.GetFloat() / 2;
@@ -330,9 +326,11 @@ CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color 
 		return console->Print("Invalid color code!\n");
 	}
 
-	ghost_color_r.SetValue(Utils::ConvertFromSrgb(r));
-	ghost_color_g.SetValue(Utils::ConvertFromSrgb(g));
-	ghost_color_b.SetValue(Utils::ConvertFromSrgb(b));
+	GhostEntity::set_color = Color{
+		Utils::ConvertFromSrgb(r),
+		Utils::ConvertFromSrgb(g),
+		Utils::ConvertFromSrgb(b),
+	};
 }
 
 void GhostEntity::KillAllGhosts() {

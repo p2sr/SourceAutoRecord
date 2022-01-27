@@ -6,6 +6,7 @@
 #include "Variable.hpp"
 
 #include <chrono>
+#include <optional>
 
 #define GHOST_TOAST_TAG "ghost"
 
@@ -30,6 +31,7 @@ public:
 	bool sameMap;
 	bool isAhead;
 	float lastOpacity;
+	std::optional<Color> color;
 
 	std::string modelName;
 	void *prop_entity;
@@ -41,6 +43,7 @@ public:
 
 	static GhostType ghost_type;
 	static std::string defaultModelName;
+	static Color set_color;
 
 	bool isDestroyed;  // used by NetworkGhostPlayer for sync reasons
 
