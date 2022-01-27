@@ -80,16 +80,12 @@ void DemoGhostPlayer::DeleteGhostsByID(const unsigned int ID) {
 }
 
 void DemoGhostPlayer::UpdateGhostsPosition() {
-	if (this->currentTick != session->GetTick()) {
-		this->currentTick = session->GetTick();
-
-		for (auto &ghost : this->ghostPool) {
-			if (!ghost.hasFinished) {
-				if (ghost_sync.GetBool() && !ghost.sameMap) {
-					return;
-				}
-				ghost.UpdateDemoGhost();
+	for (auto &ghost : this->ghostPool) {
+		if (!ghost.hasFinished) {
+			if (ghost_sync.GetBool() && !ghost.sameMap) {
+				return;
 			}
+			ghost.UpdateDemoGhost();
 		}
 	}
 }
