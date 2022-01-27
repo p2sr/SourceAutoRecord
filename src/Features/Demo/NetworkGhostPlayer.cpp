@@ -798,7 +798,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 				auto ghost = this->GetGhostByID(ghost_id);
 				if (!ghost) continue;
 
-				ghost->SetData(data.position, data.view_angle, true);
+				ghost->SetData(data, true);
 			}
 		}
 		break;

@@ -97,9 +97,9 @@ void GhostEntity::DeleteGhost() {
 	}
 }
 
-void GhostEntity::SetData(Vector pos, QAngle ang, bool network) {
+void GhostEntity::SetData(DataGhost data, bool network) {
 	this->oldPos = this->newPos;
-	this->newPos = {pos, ang};
+	this->newPos = data;
 
 	auto now = NOW_STEADY();
 	long long newLoopTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->lastUpdate).count();
