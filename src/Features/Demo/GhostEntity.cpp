@@ -20,6 +20,7 @@ Variable ghost_opacity("ghost_opacity", "255", 0, 255, "Opacity of the ghosts.\n
 Variable ghost_text_offset("ghost_text_offset", "7", -1024, "Offset of the name over the ghosts.\n");
 Variable ghost_show_advancement("ghost_show_advancement", "3", 0, 3, "Show the advancement of the ghosts. 1 = show finished runs on the current map, 2 = show all finished runs, 3 = show all finished runs and map changes\n");
 Variable ghost_proximity_fade("ghost_proximity_fade", "100", 0, 2000, "Distance from ghosts at which their models fade out.\n");
+Variable ghost_shading("ghost_shading", "0", "Enable simple light level based shading for overlaid ghosts.\n");
 
 GhostEntity::GhostEntity(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map)
 	: ID(ID)
@@ -137,11 +138,10 @@ void GhostEntity::SetupGhost(unsigned int &ID, std::string &name, DataGhost &dat
 }
 
 void GhostEntity::Display() {
-	if (engine->IsGamePaused()) return;
-	if (engine->IsSkipping()) return;
-
 	Color col = GetColor();
 	float opacity = col.a();
+
+	if (ghost_shading.GetBool()) OverlayRender::startShading(this->data.position + Vector{0, 0, 5}); // Use a point slightly above the floor
 
 #define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(p1, p2, p3, col, true)
 	switch (GhostEntity::ghost_type) {
@@ -216,18 +216,19 @@ void GhostEntity::Display() {
 		break;
 	}
 	case GhostType::BENDY: {
-
 		// idk, some weird shit was happening when I was setting it in a constructor
 		// so I'm just leaving that here
 		renderer.SetGhost(this);
-
 		renderer.Draw();
+		break;
 	}
 
 	default:
 		break;
 	}
 #undef TRIANGLE
+
+	if (ghost_shading.GetBool()) OverlayRender::endShading();
 
 	if (this->prop_entity) {
 		if (GhostEntity::ghost_type == GhostType::MODEL) {

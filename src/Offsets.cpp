@@ -31,6 +31,7 @@ namespace Offsets {
 	int DebugDrawPhysCollide;
 	int Con_IsVisible;
 	int GetLevelNameShort;
+	int GetLightForPoint;
 
 	// CHLClient
 	int GetAllClasses;

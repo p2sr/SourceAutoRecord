@@ -54,7 +54,7 @@ public:
 	using _ScreenPosition = int(__rescall *)(void *thisptr, const Vector &point, Vector &screen);
 	using _ConPrintEvent = int(__rescall *)(void *thisptr, IGameEvent *ev);
 	using _PrecacheModel = int(__rescall *)(void *thisptr, const char *, bool);
-	using _ClearAllOverlays = void(__rescall *)(void *thisptr);
+	using _GetLightForPoint = Vector (__rescall *)(void *thisptr, const Vector &pos, bool clamp);
 
 	_GetScreenSize GetScreenSize = nullptr;
 	_ClientCmd ClientCmd = nullptr;
@@ -79,6 +79,7 @@ public:
 	_HostFrameTime HostFrameTime = nullptr;
 	_ClientTime ClientTime = nullptr;
 	_PrecacheModel PrecacheModel = nullptr;
+	_GetLightForPoint GetLightForPoint = nullptr;
 	_DebugDrawPhysCollide DebugDrawPhysCollide = nullptr;
 	_IsPaused IsPaused = nullptr;
 	_TraceRay TraceRay = nullptr;

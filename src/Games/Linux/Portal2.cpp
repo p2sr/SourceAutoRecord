@@ -81,6 +81,7 @@ void Portal2::LoadOffsets() {
 	InternalSetIntValue = 21;              // ConVar
 	Create = 25;                           // ConVar
 	GetScreenSize = 5;                     // CEngineClient
+	GetLightForPoint = 1;                  // CEngineClient
 	ClientCmd = 7;                         // CEngineClient
 	GetClientStateFunction = 16;           // CEngineClient::ClientCmd
 	Cbuf_AddText = 45;                     // CEngineClient::ClientCmd

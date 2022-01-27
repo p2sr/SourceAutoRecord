@@ -11,6 +11,9 @@ namespace OverlayRender {
 	bool destroyMeshInternal(Vector *verts, size_t nverts);
 	void drawMeshes();
 
+	void startShading(Vector point);
+	void endShading();
+
 	void addTriangle(Vector a, Vector b, Vector c, Color col, bool cullBack = false);
 	void addQuad(Vector a, Vector b, Vector c, Vector d, Color col, bool cullBack = false);
 	void addLine(Vector a, Vector b, Color col, bool throughWalls = false);

@@ -55,8 +55,15 @@ struct OverlayGroup {
 static std::vector<OverlayGroup> g_groups;
 static size_t g_group_idx;
 
+static std::optional<Vector> g_shade_color;
+
 static size_t g_last_group = SIZE_MAX;
 static std::vector<Vector> &getGroupVertVector(Color col, bool wireframe, bool line, bool noz = false) {
+	if (g_shade_color) {
+		col._color[0] *= g_shade_color->x;
+		col._color[1] *= g_shade_color->y;
+		col._color[2] *= g_shade_color->z;
+	}
 	static Color last_col;
 	static bool last_wireframe;
 	static bool last_line;
@@ -125,6 +132,36 @@ ON_EVENT(FRAME) {
 		}
 	}
 	g_last_group = SIZE_MAX;
+}
+
+void OverlayRender::startShading(Vector point) {
+	Vector light = engine->GetLightForPoint(engine->engineClient->ThisPtr(), point, true);
+
+	// Scale these numbers in a way that seems reasonable
+	light *= 15.0f;
+	if (light.x > 1.0f) light.x = 1.0f;
+	if (light.y > 1.0f) light.y = 1.0f;
+	if (light.z > 1.0f) light.z = 1.0f;
+	light.x = sqrt(light.x);
+	light.y = sqrt(light.y);
+	light.z = sqrt(light.z);
+	float max = fmaxf(light.x, fmaxf(light.y, light.z));
+
+	// Bring all components close to that max to make the shading subtle
+	light.x += (max - light.x) * 0.3f;
+	light.y += (max - light.y) * 0.3f;
+	light.z += (max - light.z) * 0.3f;
+
+	// Make sure it's at least slightly lit
+	if (light.x < 0.2f) light.x = 0.2f;
+	if (light.y < 0.2f) light.y = 0.2f;
+	if (light.z < 0.2f) light.z = 0.2f;
+
+	g_shade_color = light;
+}
+
+void OverlayRender::endShading() {
+	g_shade_color = {};
 }
 
 void OverlayRender::addTriangle(Vector a, Vector b, Vector c, Color col, bool cullBack) {
