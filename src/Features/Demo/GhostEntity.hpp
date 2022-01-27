@@ -4,9 +4,11 @@
 #include "SFML/Network.hpp"
 #include "Utils/SDK.hpp"
 #include "Variable.hpp"
+#include <Features/Demo/GhostRenderer.hpp>
 
 #include <chrono>
 #include <optional>
+
 
 #define GHOST_TOAST_TAG "ghost"
 
@@ -22,6 +24,7 @@ enum class GhostType {
 	PYRAMID = 1,
 	PYRAMID_PGUN = 2,
 	MODEL = 3,
+	BENDY = 4
 };
 
 class GhostEntity {
@@ -38,10 +41,13 @@ public:
 	std::string modelName;
 	void *prop_entity;
 
+	GhostRenderer renderer;
+
 	DataGhost oldPos;
 	DataGhost newPos;
 	std::chrono::time_point<std::chrono::steady_clock> lastUpdate;
 	long long loopTime;
+	Vector velocity;
 
 	static GhostType ghost_type;
 	static std::string defaultModelName;
@@ -62,6 +68,7 @@ public:
 	void Display();
 	void Lerp(float time);
 	float GetOpacity();
+	Color GetColor();
 	void DrawName(HudContext *ctx, int id);
 };
 

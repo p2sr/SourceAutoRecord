@@ -102,7 +102,11 @@ void DemoGhostPlayer::UpdateGhostsSameMap() {
 }
 
 void DemoGhostPlayer::UpdateGhostsModel(const std::string model) {
-	if (GhostEntity::ghost_type != GhostType::CIRCLE && GhostEntity::ghost_type != GhostType::PYRAMID) {
+	if (
+		GhostEntity::ghost_type != GhostType::CIRCLE && 
+		GhostEntity::ghost_type != GhostType::PYRAMID &&
+		GhostEntity::ghost_type != GhostType::BENDY
+	) {
 		for (auto &ghost : this->ghostPool) {
 			ghost.modelName = model;
 			ghost.DeleteGhost();

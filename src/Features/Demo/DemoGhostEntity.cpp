@@ -125,7 +125,11 @@ void DemoGhostEntity::LevelReset() {
 		this->demoTick = 0;
 	}
 
-	if (GhostEntity::ghost_type != GhostType::CIRCLE && GhostEntity::ghost_type != GhostType::PYRAMID) {
+	if (
+		GhostEntity::ghost_type != GhostType::CIRCLE && 
+		GhostEntity::ghost_type != GhostType::PYRAMID &&
+		GhostEntity::ghost_type != GhostType::BENDY
+	) {
 		this->DeleteGhost();
 	}
 }

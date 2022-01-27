@@ -11,7 +11,7 @@
 
 #include <cstdlib>
 
-GhostType GhostEntity::ghost_type = GhostType::CIRCLE;
+GhostType GhostEntity::ghost_type = GhostType::BENDY;
 std::string GhostEntity::defaultModelName = "models/props/food_can/food_can_open.mdl";
 Color GhostEntity::set_color{ 255, 255, 255 };
 
@@ -61,8 +61,17 @@ float GhostEntity::GetOpacity() {
 	return opacity;
 }
 
+Color GhostEntity::GetColor() {
+	Color c = this->color ? *this->color : GhostEntity::set_color;
+	return {c.r(), c.g(), c.b(), (int)GetOpacity()};
+}
+
 void GhostEntity::Spawn() {
-	if (GhostEntity::ghost_type == GhostType::CIRCLE || GhostEntity::ghost_type == GhostType::PYRAMID) {
+	if (
+		GhostEntity::ghost_type == GhostType::CIRCLE ||
+		GhostEntity::ghost_type == GhostType::PYRAMID ||
+		GhostEntity::ghost_type == GhostType::BENDY
+	) {
 		this->prop_entity = nullptr;
 		return;
 	}
@@ -116,6 +125,8 @@ void GhostEntity::SetData(DataGhost data, bool network) {
 		this->loopTime = newLoopTime;
 	}
 	this->lastUpdate = now;
+
+	this->velocity = (this->newPos.position - this->oldPos.position) / this->loopTime * 1000.0f;
 }
 
 void GhostEntity::SetupGhost(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map) {
@@ -129,10 +140,10 @@ void GhostEntity::Display() {
 	if (engine->IsGamePaused()) return;
 	if (engine->IsSkipping()) return;
 
-	float opacity = this->GetOpacity();
-	Color col = this->color ? *this->color : GhostEntity::set_color;
+	Color col = GetColor();
+	float opacity = col.a();
 
-#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(p1, p2, p3, { col.r(), col.g(), col.b(), (int)opacity }, true)
+#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(p1, p2, p3, col, true)
 	switch (GhostEntity::ghost_type) {
 	case GhostType::CIRCLE: {
 		double rad = ghost_height.GetFloat() / 2;
@@ -203,6 +214,14 @@ void GhostEntity::Display() {
 		TRIANGLE(c, a, d);
 
 		break;
+	}
+	case GhostType::BENDY: {
+
+		// idk, some weird shit was happening when I was setting it in a constructor
+		// so I'm just leaving that here
+		renderer.SetGhost(this);
+
+		renderer.Draw();
 	}
 
 	default:
@@ -278,14 +297,15 @@ CON_COMMAND(ghost_type,
             "0: Colored circle\n"
             "1: Colored pyramid\n"
             "2: Colored pyramid with portal gun (RECORDED IN DEMOS)\n"
-            "3: Prop model (RECORDED IN DEMOS)\n") {
+            "3: Prop model (RECORDED IN DEMOS)\n"
+            "4: Bendy\n") {
 	if (args.ArgC() != 2) {
 		return console->Print(ghost_type.ThisPtr()->m_pszHelpString);
 	}
 
 	int type = std::atoi(args[1]);
 
-	if (type < 0 || type > 3) {
+	if (type < 0 || type > 4) {
 		return console->Print(ghost_type.ThisPtr()->m_pszHelpString);
 	}
 
@@ -294,6 +314,7 @@ CON_COMMAND(ghost_type,
 		switch (GhostEntity::ghost_type) {
 		case GhostType::CIRCLE:
 		case GhostType::PYRAMID:
+		case GhostType::BENDY:
 			demoGhostPlayer.DeleteAllGhostModels();
 			if (networkManager.isConnected) {
 				networkManager.DeleteAllGhosts();
@@ -356,7 +377,12 @@ void GhostEntity::KillAllGhosts() {
 
 void GhostEntity::DrawName(HudContext *ctx, int id) {
 	Vector nameCoords = this->data.position;
-	nameCoords.z += ghost_text_offset.GetFloat() + ghost_height.GetFloat();
+	if (GhostEntity::ghost_type == GhostType::BENDY) {
+		nameCoords.z += ghost_text_offset.GetFloat() + renderer.GetHeight();
+	} else {
+		nameCoords.z += ghost_text_offset.GetFloat() + ghost_height.GetFloat();
+	}
+	
 	Vector screenPos;
 	engine->PointToScreen(nameCoords, screenPos);
 	ctx->DrawElementOnScreen(id, screenPos.x, screenPos.y, this->name.c_str());
