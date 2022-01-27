@@ -132,7 +132,7 @@ bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std:
 
 								if (tick > 0 && waitForNext && lastTick != tick) {
 									lastTick = tick;
-									(*datas)[tick] = DataGhost{{vo_x, vo_y, vo_z}, {va_x, va_y, va_z}};
+									(*datas)[tick] = DataGhost{{vo_x, vo_y, vo_z}, {va_x, va_y, va_z}, 64, true}; // TODO: is there a way to get this data that's not just a guess?
 								}
 							} else {
 								console->Msg(

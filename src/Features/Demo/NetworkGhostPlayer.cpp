@@ -236,12 +236,18 @@ sf::Packet &operator<<(sf::Packet &packet, const Vector &vec) {
 	return packet << vec.x << vec.y << vec.z;
 }
 
+// The view offset is packed into 7 bits; this is fine as it should
+// never exceed 64
 sf::Packet &operator>>(sf::Packet &packet, DataGhost &dataGhost) {
-	return packet >> dataGhost.position >> dataGhost.view_angle;
+	uint8_t data;
+	auto &ret = packet >> dataGhost.position >> dataGhost.view_angle >> data;
+	dataGhost.view_offset = (float)(data & 0x7F);
+	dataGhost.grounded = (data & 0x80) != 0;
+	return ret;
 }
-
 sf::Packet &operator<<(sf::Packet &packet, const DataGhost &dataGhost) {
-	return packet << dataGhost.position << dataGhost.view_angle;
+	uint8_t data = ((int)dataGhost.view_offset & 0x7F) | (dataGhost.grounded ? 0x80 : 0x00);
+	return packet << dataGhost.position << dataGhost.view_angle << data;
 }
 
 //HEADER
@@ -318,7 +324,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port) {
 	this->serverPort = port;
 
 	sf::Packet connection_packet;
-	connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{{0, 0, 0}, {0, 0, 0}} << this->modelName.c_str() << engine->GetCurrentMapName().c_str() << ghost_TCP_only.GetBool();
+	connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{{0, 0, 0}, {0, 0, 0}, 0, false} << this->modelName.c_str() << engine->GetCurrentMapName().c_str() << ghost_TCP_only.GetBool();
 	this->tcpSocket.send(connection_packet);
 
 	{
@@ -466,9 +472,10 @@ void NetworkManager::SendPlayerData() {
 	packet << HEADER::UPDATE << this->ID;
 	auto player = client->GetPlayer(GET_SLOT() + 1);
 	if (player) {
-		packet << DataGhost{client->GetAbsOrigin(player), engine->GetAngles(GET_SLOT())};
+		bool grounded = *(unsigned int *)((uintptr_t)player + Offsets::C_m_hGroundEntity) != 0xFFFFFFFF;
+		packet << DataGhost{client->GetAbsOrigin(player), engine->GetAngles(GET_SLOT()), client->GetViewOffset(player).z, grounded};
 	} else {
-		packet << DataGhost{{0, 0, 0}, {0, 0, 0}};
+		packet << DataGhost{{0, 0, 0}, {0, 0, 0}, 0, false};
 	}
 
 	if (!ghost_TCP_only.GetBool()) {
@@ -768,14 +775,6 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 				auto ghost = this->GetGhostByID(ghost_id);
 				if (!ghost) continue;
 
-				ghost->SetData(data.position, data.view_angle, true);
-			}
-		} else {
-			// Legacy update protocol
-			DataGhost data;
-			packet >> data;
-			auto ghost = this->GetGhostByID(ID);
-			if (ghost) {
 				ghost->SetData(data.position, data.view_angle, true);
 			}
 		}

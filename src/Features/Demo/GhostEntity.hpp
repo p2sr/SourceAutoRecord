@@ -13,6 +13,8 @@
 struct DataGhost {
 	Vector position;
 	QAngle view_angle;
+	float view_offset;
+	bool grounded;
 };
 
 enum class GhostType {

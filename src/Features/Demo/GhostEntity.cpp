@@ -245,6 +245,9 @@ void GhostEntity::Lerp(float time) {
 		this->data.view_angle.x = (1 - time) * this->oldPos.view_angle.x + time * this->newPos.view_angle.x;
 		this->data.view_angle.y = (1 - time) * this->oldPos.view_angle.y + time * this->newPos.view_angle.y;
 		this->data.view_angle.z = (1 - time) * this->oldPos.view_angle.z + time * this->newPos.view_angle.z;
+
+		this->data.view_offset = (1 - time) * this->oldPos.view_offset + time * this->newPos.view_offset;
+		this->data.grounded = time < 0.5 ? this->oldPos.grounded : this->newPos.grounded;
 	}
 
 	this->Display();

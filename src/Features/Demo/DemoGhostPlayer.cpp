@@ -142,7 +142,7 @@ bool DemoGhostPlayer::SetupGhostFromDemo(const std::string &demo_path, const uns
 
 		DemoGhostEntity *ghost = demoGhostPlayer.GetGhostByID(ghost_ID);
 		if (ghost == nullptr) {  //New fullgame or CM ghost
-			DemoGhostEntity new_ghost = {ghost_ID, demo.clientName, DataGhost{{0, 0, 0}, {0, 0, 0}}, demo.mapName};
+			DemoGhostEntity new_ghost = {ghost_ID, demo.clientName, DataGhost{{0, 0, 0}, {0, 0, 0}, 0, false}, demo.mapName};
 			new_ghost.SetFirstLevelDatas(demoDatas);
 			new_ghost.firstLevel = demo.mapName;
 			new_ghost.lastLevel = demo.mapName;
