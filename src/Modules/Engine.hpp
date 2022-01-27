@@ -54,7 +54,12 @@ public:
 	using _ScreenPosition = int(__rescall *)(void *thisptr, const Vector &point, Vector &screen);
 	using _ConPrintEvent = int(__rescall *)(void *thisptr, IGameEvent *ev);
 	using _PrecacheModel = int(__rescall *)(void *thisptr, const char *, bool);
+#ifdef _WIN32
+	// See comment in OverlayRender::startShading
+	using _GetLightForPoint = void (__rescall *)(void *thisptr, Vector &out, const Vector &pos, bool clamp);
+#else
 	using _GetLightForPoint = Vector (__rescall *)(void *thisptr, const Vector &pos, bool clamp);
+#endif
 
 	_GetScreenSize GetScreenSize = nullptr;
 	_ClientCmd ClientCmd = nullptr;

@@ -135,7 +135,16 @@ ON_EVENT(FRAME) {
 }
 
 void OverlayRender::startShading(Vector point) {
+#ifdef _WIN32
+	// MSVC bug workaround - COM interfaces apparently don't quite follow
+	// the behaviour implemented by '__thiscall' in some cases, and
+	// returning structs is one of them! The game flips around the first
+	// two args otherwise, with predictably disastrous results.
+	Vector light;
+	engine->GetLightForPoint(engine->engineClient->ThisPtr(), light, point, true);
+#else
 	Vector light = engine->GetLightForPoint(engine->engineClient->ThisPtr(), point, true);
+#endif
 
 	// Scale these numbers in a way that seems reasonable
 	light *= 15.0f;
