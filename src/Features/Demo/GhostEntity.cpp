@@ -334,6 +334,10 @@ CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color 
 		Utils::ConvertFromSrgb(g),
 		Utils::ConvertFromSrgb(b),
 	};
+
+	if (networkManager.isConnected) {
+		networkManager.UpdateColor();
+	}
 }
 
 void GhostEntity::KillAllGhosts() {

@@ -263,6 +263,17 @@ sf::Packet &operator<<(sf::Packet &packet, const HEADER &header) {
 	return packet << static_cast<sf::Uint8>(header);
 }
 
+// Color (RGB only, no alpha!)
+
+sf::Packet &operator>>(sf::Packet &packet, Color &col) {
+	col._color[3] = 255; // alpha
+	return packet >> col._color[0] >> col._color[1] >> col._color[2];
+}
+
+sf::Packet &operator<<(sf::Packet &packet, const Color &col) {
+	return packet << col._color[0] << col._color[1] << col._color[2];
+}
+
 Variable ghost_TCP_only("ghost_TCP_only", "0", "Lathil's special command :).\n");
 Variable ghost_update_rate("ghost_update_rate", "50", 1, "Adjust the update rate. For people with lathil's internet.\n");
 Variable ghost_net_dump("ghost_net_dump", "0", "Dump all ghost network activity to a file for debugging.\n");
@@ -324,7 +335,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port) {
 	this->serverPort = port;
 
 	sf::Packet connection_packet;
-	connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{{0, 0, 0}, {0, 0, 0}, 0, false} << this->modelName.c_str() << engine->GetCurrentMapName().c_str() << ghost_TCP_only.GetBool();
+	connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{{0, 0, 0}, {0, 0, 0}, 0, false} << this->modelName.c_str() << engine->GetCurrentMapName().c_str() << ghost_TCP_only.GetBool() << GhostEntity::set_color;
 	this->tcpSocket.send(connection_packet);
 
 	{
@@ -353,10 +364,12 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port) {
 			DataGhost data;
 			std::string model_name;
 			std::string current_map;
-			confirm_connection >> ID >> name >> data >> model_name >> current_map;
+			Color color;
+			confirm_connection >> ID >> name >> data >> model_name >> current_map >> color;
 
 			auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map);
 			ghost->modelName = model_name;
+			ghost->color = color;
 			this->ghostPoolLock.lock();
 			this->ghostPool.push_back(ghost);
 			this->ghostPoolLock.unlock();
@@ -581,9 +594,11 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		DataGhost data;
 		std::string model_name;
 		std::string current_map;
-		packet >> name >> data >> model_name >> current_map;
+		Color col;
+		packet >> name >> data >> model_name >> current_map >> col;
 		auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map);
 		ghost->modelName = model_name;
+		ghost->color = col;
 
 		addToNetDump("recv-connect", Utils::ssprintf("%d;%s;%s", ID, name.c_str(), current_map.c_str()).c_str());
 
@@ -761,6 +776,14 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		}
 		break;
 	}
+	case HEADER::COLOR_CHANGE: {
+		Color col;
+		packet >> col;
+		auto ghost = this->GetGhostByID(ID);
+		addToNetDump("recv-color-change", Utils::ssprintf("%d;%02X%02X%02X", ID, col.r(), col.g(), col.b()).c_str());
+		if (ghost) ghost->color = col;
+		break;
+	}
 	case HEADER::UPDATE: {
 		if (ID == 0) {
 			// This packet contains updates for multiple ghosts
@@ -829,6 +852,15 @@ void NetworkManager::UpdateModel(const std::string modelName) {
 		packet << HEADER::MODEL_CHANGE << this->ID << this->modelName.c_str();
 		this->tcpSocket.send(packet);
 	}
+}
+
+void NetworkManager::UpdateColor() {
+	if (!this->isConnected) return;
+	Color col = GhostEntity::set_color;
+	addToNetDump("send-color-change", Utils::ssprintf("%02X%02X%02X", col.r(), col.g(), col.b()).c_str());
+	sf::Packet packet;
+	packet << HEADER::COLOR_CHANGE << this->ID << col;
+	this->tcpSocket.send(packet);
 }
 
 bool NetworkManager::AreAllGhostsAheadOrSameMap() {

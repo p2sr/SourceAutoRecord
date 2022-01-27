@@ -26,7 +26,8 @@ enum class HEADER {
 	COUNTDOWN,
 	UPDATE,
 	SPEEDRUN_FINISH,
-	MODEL_CHANGE
+	MODEL_CHANGE,
+	COLOR_CHANGE,
 };
 
 class NetworkManager {
@@ -91,6 +92,7 @@ public:
 	bool AreAllGhostsAheadOrSameMap();
 	void SpawnAllGhosts();
 	void DeleteAllGhosts();
+	void UpdateColor();
 
 	void SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration);
 	//Need this function to measure the ping in order to start the countdown at the same time
