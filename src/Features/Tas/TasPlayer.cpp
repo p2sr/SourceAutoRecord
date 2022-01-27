@@ -87,6 +87,12 @@ void SetPlaybackVars(bool active) {
 		saved_fps = false;
 	}
 
+	if (active) {
+		// This likes to re-enable itself just after map load. Make sure it
+		// always stays off
+		mat_motion_blur_enabled.SetValue(false);
+	}
+
 	// Don't save fps_max in loads, or uncap might get in the way
 	// Wait for the session to start instead
 	if (session->isRunning && active && !saved_fps) {
