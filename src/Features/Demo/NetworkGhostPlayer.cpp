@@ -466,7 +466,7 @@ void NetworkManager::SendPlayerData() {
 	packet << HEADER::UPDATE << this->ID;
 	auto player = client->GetPlayer(GET_SLOT() + 1);
 	if (player) {
-		packet << DataGhost{client->GetAbsOrigin(player), client->GetAbsAngles(player)};
+		packet << DataGhost{client->GetAbsOrigin(player), engine->GetAngles(GET_SLOT())};
 	} else {
 		packet << DataGhost{{0, 0, 0}, {0, 0, 0}};
 	}
