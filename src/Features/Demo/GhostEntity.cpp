@@ -13,7 +13,7 @@
 
 GhostType GhostEntity::ghost_type = GhostType::BENDY;
 std::string GhostEntity::defaultModelName = "models/props/food_can/food_can_open.mdl";
-Color GhostEntity::set_color{ 255, 255, 255 };
+Color GhostEntity::set_color{ 0, 0, 0, 255 };
 
 Variable ghost_height("ghost_height", "16", -256, "Height of the ghosts. (For prop models, only affects their position).\n");
 Variable ghost_opacity("ghost_opacity", "255", 0, 255, "Opacity of the ghosts.\n");
