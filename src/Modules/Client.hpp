@@ -75,6 +75,9 @@ public:
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR(ProcessMovement, void *player, CMoveData *move);
 
+	// CRendering3dView::DrawTranslucentRenderables
+	DECL_DETOUR(DrawTranslucentRenderables, bool inSkybox, bool shadowDepth);
+
 	// CHLClient::LevelInitPreEntity
 	DECL_DETOUR(LevelInitPreEntity, const char *levelName);
 

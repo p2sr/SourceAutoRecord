@@ -2,12 +2,15 @@
 
 #include "Command.hpp"
 #include "Event.hpp"
+#include "Features/OverlayRender.hpp"
 #include "Features/Session.hpp"
 #include "Features/Tas/TasPlayer.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Scheme.hpp"
 #include "Modules/Server.hpp"
+#include "Modules/Surface.hpp"
 
 #include <vector>
 
@@ -26,6 +29,7 @@ Variable sar_trace_draw_time("sar_trace_draw_time", "3", 0, 3,
 	"2 = session timer\n"
 	"3 = TAS timer (if no TAS was played, uses 1 instead)\n"
 );
+Variable sar_trace_font("sar_trace_font", "0", 0, "Font index to display player trace info in\n");
 
 Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.");
 Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, "Move trace bbox to hovered trace point tick on given trace.");
@@ -94,7 +98,7 @@ void PlayerTrace::Clear(const size_t trace_idx) {
 void PlayerTrace::ClearAll() {
 	traces.clear();
 }
-void PlayerTrace::DrawInWorld(float time) const {
+void PlayerTrace::DrawInWorld() const {
 	if (engine->IsSkipping()) return;
 
 	int r, g, b;
@@ -210,28 +214,22 @@ void PlayerTrace::DrawInWorld(float time) const {
 						b = 255;
 					}
 
-					engine->AddLineOverlay(
-						nullptr,
-						pos, new_pos,
-						r, g, b,
-						draw_through_walls,
-						time
-					);
+					OverlayRender::addLine(pos, new_pos, {r,g,b}, draw_through_walls);
 				}
 				if (pos_delta > 0.001) pos = new_pos;
 			}
 
 			if (closest_dist < 1.0f) {
-				engine->AddBoxOverlay(nullptr, closest_pos, {-1,-1,-1}, {1,1,1}, {0,0,0}, 255, 0, 255, draw_through_walls, time);
+				OverlayRender::addBox(closest_pos, {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, {255, 0, 255, 20});
 				hovers.push_back({closest_id, trace_idx, closest_pos, closest_vel});
 			}
 		}
 	}
 }
-void PlayerTrace::DrawSpeedDeltas(HudContext *ctx) const {
+void PlayerTrace::DrawSpeedDeltas() const {
 	const Vector hud_offset = {0.0, 0.0, 10.0};
-	Vector screen_pos;
-	int hud_id = 10;
+
+	auto font = scheme->GetDefaultFont() + sar_trace_font.GetInt();
 
 	for (const auto [trace_idx, trace] : traces) {
 		for (int slot = 0; slot < 2; slot++) {
@@ -254,8 +252,7 @@ void PlayerTrace::DrawSpeedDeltas(HudContext *ctx) const {
 					Vector update_pos = trace.positions[slot][(last_delta_end + i) / 2];
 					Vector draw_pos = update_pos + hud_offset;
 
-					engine->PointToScreen(draw_pos, screen_pos);
-					ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "%10.2f", speed_delta);
+					OverlayRender::addText(draw_pos, 0, 0, Utils::ssprintf("%10.2f", speed_delta), font);
 
 					last_delta_end = i;
 				}
@@ -284,26 +281,8 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 			
 			Vector center = trace.positions[slot][localtick] + offset;
 			// We trace a big player bbox and a small box to indicate exactly which tick is displayed
-			engine->AddBoxOverlay(
-				nullptr,
-				center,
-				-player_size/2,
-				player_size/2,
-				{0, 0, 0},
-				255, 255, 0,
-				sar_trace_draw_through_walls.GetBool(),
-				0.05
-			);
-			engine->AddBoxOverlay(
-				nullptr,
-				trace.positions[slot][localtick],
-				{-1,-1,-1},
-				{1,1,1},
-				{0, 0, 0},
-				0, 255, 0,
-				sar_trace_draw_through_walls.GetBool(),
-				0.05
-			);
+			OverlayRender::addBox(center, -player_size/2, player_size/2, {0, 0, 0}, {255, 255, 0, 20});
+			OverlayRender::addBox(trace.positions[slot][localtick], {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, {0, 255, 0, 20});
 		}
 	}
 }
@@ -338,7 +317,6 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick) {
 }
 
 ON_EVENT(PROCESS_MOVEMENT) {
-
 	// Record trace
 	if (sar_trace_record.GetInt() && !engine->IsGamePaused()) {
 		if (engine->IsOrange()) {
@@ -363,13 +341,6 @@ ON_EVENT(PROCESS_MOVEMENT) {
 			playerTrace->AddPoint(sar_trace_record.GetInt(), player, event.slot, use_client_offset);
 		}
 	}
-
-	// Draw trace
-	if (!sar_trace_draw.GetBool()) return;
-	if (!sv_cheats.GetBool()) return;
-
-	// Kind of an arbitrary number, prevents flickers
-	playerTrace->DrawInWorld(.05);
 }
 
 ON_EVENT(SESSION_START) {
@@ -382,10 +353,9 @@ HUD_ELEMENT2_NO_DISABLE(trace_draw_speed, HudType_InGame) {
 	if (!sar_trace_draw_speed_deltas.GetBool()) return;
 	if (!sv_cheats.GetBool()) return;
 
-	playerTrace->DrawSpeedDeltas(ctx);
 }
 
-HUD_ELEMENT2_NO_DISABLE(trace_bbox, HudType_InGame) {
+ON_EVENT(RENDER) {
 	if (!sar_trace_draw.GetBool()) return;
 	if (!sv_cheats.GetBool()) return;
 
@@ -402,22 +372,19 @@ HUD_ELEMENT2_NO_DISABLE(trace_bbox, HudType_InGame) {
 		sar_trace_bbox_at.SetValue(tick);
 	}
 
+	playerTrace->DrawInWorld();
+
 	int tick = sar_trace_bbox_at.GetInt();
-	if (tick == -1) return;
-
-	playerTrace->DrawBboxAt(tick);
-}
-
-HUD_ELEMENT2_NO_DISABLE(trace_draw_hover, HudType_InGame) {
-	if (!sar_trace_draw.GetBool()) return;
-	if (!sv_cheats.GetBool()) return;
+	if (tick != -1) {
+		playerTrace->DrawBboxAt(tick);
+	}
 
 	const Vector hud_offset = {0.0, 0.0, 10.0};
-	int hud_id = 70;
-	Vector screen_pos;
+
+	auto font = scheme->GetDefaultFont() + sar_trace_font.GetInt();
+	auto font_height = surface->GetFontHeight(font);
 
 	for (auto &h : hovers) {
-		engine->PointToScreen(h.pos + hud_offset, screen_pos);
 		int timeType = sar_trace_draw_time.GetInt();
 		if (timeType > 0) {
 			int tick = h.tick;
@@ -426,10 +393,14 @@ HUD_ELEMENT2_NO_DISABLE(trace_draw_hover, HudType_InGame) {
 				if (timeType == 2) tick += trace->startSessionTick;
 				if (timeType == 3 && trace->startTasTick > 0) tick += trace->startTasTick;
 			}
-			ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y - 30, "tick: %d", tick);
+			OverlayRender::addText(h.pos + hud_offset, 0, -2*font_height, Utils::ssprintf("tick: %d", tick), font);
 		}
-		ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y - 15, "pos: %.1f %.1f %.1f", h.pos.x, h.pos.y, h.pos.z);
-		ctx->DrawElementOnScreen(hud_id++, screen_pos.x, screen_pos.y, "horiz. speed: %.2f", h.speed);
+		OverlayRender::addText(h.pos + hud_offset, 0, -font_height, Utils::ssprintf("pos: %1.f %.1f %.1f", h.pos.x, h.pos.y, h.pos.z), font);
+		OverlayRender::addText(h.pos + hud_offset, 0, 0, Utils::ssprintf("horiz. speed: %.2f", h.speed), font);
+	}
+
+	if (sar_trace_draw_speed_deltas.GetBool()) {
+		playerTrace->DrawSpeedDeltas();
 	}
 }
 

@@ -23,6 +23,8 @@ public:
 	Interface *engineTrace = nullptr;
 	Interface *g_VEngineServer = nullptr;
 
+	Interface *g_physCollision = nullptr; // This is actually on the vphysics module but I don't care
+
 	using _ClientCmd = int(__rescall *)(void *thisptr, const char *szCmdString);
 	using _ExecuteClientCmd = int(__rescall *)(void *thisptr, const char *szCmdString);
 	using _GetLocalPlayer = int(__rescall *)(void *thisptr);
@@ -41,6 +43,7 @@ public:
 	using _GetLocalClient = int (*)(int index);
 	using _HostFrameTime = float (*)(void *thisptr);
 	using _ClientTime = float (*)(void *thisptr);
+	using _DebugDrawPhysCollide = bool (__rescall *)(void *thisptr, const void *collide, IMaterial *material, const matrix3x4_t &transform, const Color &color);
 	using _IsPaused = bool (*)(void *thisptr);
 	using _TraceRay = void(__rescall *)(void *thisptr, const Ray_t &ray, unsigned int fMask, ITraceFilter *pTraceFilter, CGameTrace *pTrace);
 	using _GetCount = int(__rescall *)(void *thisptr);
@@ -51,11 +54,6 @@ public:
 	using _ScreenPosition = int(__rescall *)(void *thisptr, const Vector &point, Vector &screen);
 	using _ConPrintEvent = int(__rescall *)(void *thisptr, IGameEvent *ev);
 	using _PrecacheModel = int(__rescall *)(void *thisptr, const char *, bool);
-	using _AddBoxOverlay = int(__rescall *)(void *thisptr, const Vector &origin, const Vector &mins, const Vector &MAX, QAngle const &orientation, int r, int g, int b, int a, float duration);
-	using _AddSphereOverlay = int(__rescall *)(void *thisptr, const Vector &vOrigin, float flRadius, int nTheta, int nPhi, int r, int g, int b, int a, float flDuration);
-	using _AddTriangleOverlay = int(__rescall *)(void *thisptr, const Vector &p1, const Vector &p2, const Vector &p3, int r, int g, int b, int a, bool noDepthTest, float duration);
-	using _AddLineOverlay = int(__rescall *)(void *thisptr, const Vector &origin, const Vector &dest, int r, int g, int b, bool noDepthText, float duration);
-	using _AddScreenTextOverlay = void(__rescall *)(void *thisptr, float flXPos, float flYPos, float flDuration, int r, int g, int b, int a, const char *text);
 	using _ClearAllOverlays = void(__rescall *)(void *thisptr);
 
 	_GetScreenSize GetScreenSize = nullptr;
@@ -81,12 +79,7 @@ public:
 	_HostFrameTime HostFrameTime = nullptr;
 	_ClientTime ClientTime = nullptr;
 	_PrecacheModel PrecacheModel = nullptr;
-	_AddBoxOverlay AddBoxOverlay = nullptr;
-	_AddSphereOverlay AddSphereOverlay = nullptr;
-	_AddTriangleOverlay AddTriangleOverlay = nullptr;
-	_AddLineOverlay AddLineOverlay = nullptr;
-	_AddScreenTextOverlay AddScreenTextOverlay = nullptr;
-	_ClearAllOverlays ClearAllOverlays = nullptr;
+	_DebugDrawPhysCollide DebugDrawPhysCollide = nullptr;
 	_IsPaused IsPaused = nullptr;
 	_TraceRay TraceRay = nullptr;
 	_GetCount GetCount = nullptr;
@@ -166,6 +159,12 @@ public:
 
 	// CSteam3Client::OnGameOverlayActivated
 	DECL_DETOUR_B(OnGameOverlayActivated, GameOverlayActivated_t *pGameOverlayActivated);
+
+	// IPhysicsCollision::CreateDebugMesh
+	DECL_DETOUR(CreateDebugMesh, const void *collisionModel, Vector **outVerts);
+
+	// IPhysicsCollision::DestroyDebugMesh
+	DECL_DETOUR(DestroyDebugMesh, int vertCount, Vector *verts);
 
 	DECL_DETOUR_COMMAND(plugin_load);
 	DECL_DETOUR_COMMAND(plugin_unload);

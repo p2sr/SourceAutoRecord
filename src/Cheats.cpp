@@ -5,6 +5,7 @@
 #include "Features/Hud/InspectionHud.hpp"
 #include "Features/Hud/SpeedrunHud.hpp"
 #include "Features/Listener.hpp"
+#include "Features/OverlayRender.hpp"
 #include "Features/ReloadedFix.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -180,16 +181,10 @@ CON_COMMAND(sar_drawline_clear, "sar_drawline_clear - clear all active sar_drawl
 	g_drawlines.clear();
 }
 
-ON_EVENT(PRE_TICK) {
+ON_EVENT(RENDER) {
 	if (!sv_cheats.GetBool()) return;
 	for (auto l : g_drawlines) {
-		engine->AddLineOverlay(
-			nullptr,
-			l.start, l.end,
-			l.col.r(), l.col.g(), l.col.b(),
-			true,
-			0.05
-		);
+		OverlayRender::addLine(l.start, l.end, l.col, true);
 	}
 }
 

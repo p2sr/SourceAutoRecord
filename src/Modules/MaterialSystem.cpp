@@ -59,5 +59,9 @@ bool MaterialSystem::Init() {
 void MaterialSystem::Shutdown() {
 	Interface::Delete(this->materials);
 }
+IMaterial *MaterialSystem::FindMaterial(const char *materialName, const char *textureGroupName) {
+		auto func = (IMaterial *(__rescall *)(void *, const char *, const char *, bool, const char *))this->materials->Current(Offsets::FindMaterial);
+		return func(this->materials->ThisPtr(), materialName, textureGroupName, true, nullptr);
+}
 
 MaterialSystem *materialSystem;

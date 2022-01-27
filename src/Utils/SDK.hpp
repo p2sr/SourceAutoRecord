@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <cstring>
 
 #ifdef _WIN32
 #	define __rescalll __thiscall
@@ -41,6 +42,12 @@ struct Vector {
 		res.y = y * fl;
 		res.z = z * fl;
 		return res;
+	}
+	inline Vector &operator*=(float fl) {
+		x = x * fl;
+		y = y * fl;
+		z = z * fl;
+		return *this;
 	}
 	inline Vector operator/(float fl) const {
 		return *this * (1 / fl);
@@ -134,6 +141,12 @@ struct Color {
 	inline int b() const { return _color[2]; }
 	inline int a() const { return _color[3]; }
 	unsigned char _color[4] = {0, 0, 0, 0};
+	inline bool operator==(const Color col) const {
+		return !memcmp(this->_color, col._color, sizeof _color);
+	}
+	inline bool operator!=(const Color col) const {
+		return memcmp(this->_color, col._color, sizeof _color);
+	}
 };
 
 enum class TextColor {
@@ -1362,7 +1375,6 @@ public:
 	virtual void Log(const LoggingContext *ctx, const char *msg) = 0;
 };
 
-
 #pragma region PlayerLocalData
 
 struct CachedPaintPowerChoiceResult {
@@ -1500,3 +1512,5 @@ struct TracePortalPlacementInfo_t
 	void* placementHelper; // Placement helper if one was hit
 	CGameTrace tr;
 };
+
+class IMaterial;

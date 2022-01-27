@@ -4,6 +4,7 @@
 #include "Event.hpp"
 #include "Features/Session.hpp"
 #include "Features/Camera.hpp"
+#include "Features/OverlayRender.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -43,7 +44,7 @@ CGameTrace TracePortalShot(const Vector &start, const Vector &dir, float length)
 	return tr;
 }
 
-ON_EVENT(PRE_TICK) {
+ON_EVENT(RENDER) {
 	if (sv_cheats.GetBool() && sar_seamshot_finder.GetBool() && !engine->IsSkipping()) {
 		void *player = server->GetPlayer(GET_SLOT() + 1);
 
@@ -120,24 +121,24 @@ ON_EVENT(PRE_TICK) {
 				Vector side1Vec = tr.plane.normal.Cross(edge).Normalize();
 				Vector side2Vec = edge.Cross(edgeTr.plane.normal).Normalize();
 
-				engine->AddLineOverlay(nullptr, edgePoint - edge * uiScale, edgePoint + edge * uiScale, seamshot ? 0 : 255, seamshot ? 255 : 0, 0, true, 0.06);
+				OverlayRender::addLine(edgePoint - edge * uiScale, edgePoint + edge * uiScale, { seamshot ? 0 : 255, seamshot ? 255 : 0, 0 }, true);
 
-				engine->AddLineOverlay(nullptr, edgePoint, edgePoint + side1Vec * uiScale, seamshotInSide1 ? 0 : 255, seamshotInSide1 ? 255 : 0, 0, true, 0.06);
-				engine->AddLineOverlay(nullptr, edgePoint, edgePoint + side2Vec * uiScale, seamshotInSide2 ? 0 : 255, seamshotInSide2 ? 255 : 0, 0, true, 0.06);
+				OverlayRender::addLine(edgePoint, edgePoint + side1Vec * uiScale, { seamshotInSide1 ? 0 : 255, seamshotInSide1 ? 255 : 0, 0 }, true);
+				OverlayRender::addLine(edgePoint, edgePoint + side2Vec * uiScale, { seamshotInSide2 ? 0 : 255, seamshotInSide2 ? 255 : 0, 0 }, true);
 
 				if (seamshot) {
 					Vector midPoint = edgePoint + edgeTr.plane.normal * (uiScale / 2.0) + tr.plane.normal * (uiScale / 2.0);
-					engine->AddLineOverlay(nullptr, midPoint, edgePoint + side1Vec * uiScale, seamshotInSide1 ? 0 : 255, seamshotInSide1 ? 255 : 0, 0, true, 0.06);
-					engine->AddLineOverlay(nullptr, midPoint, edgePoint + side2Vec * uiScale, seamshotInSide2 ? 0 : 255, seamshotInSide2 ? 255 : 0, 0, true, 0.06);
+					OverlayRender::addLine(midPoint, edgePoint + side1Vec * uiScale, { seamshotInSide1 ? 0 : 255, seamshotInSide1 ? 255 : 0, 0 }, true);
+					OverlayRender::addLine(midPoint, edgePoint + side2Vec * uiScale, { seamshotInSide2 ? 0 : 255, seamshotInSide2 ? 255 : 0, 0 }, true);
 				}
 
 				//engine->AddLineOverlay(nullptr, edgeTr.endpos + test1v + test1o, edgeTr.endpos + test1v * -2 + test1o, 0, 0, 255, true, 0.06);
 				//engine->AddLineOverlay(nullptr, edgeTr.endpos + test2v + test2o, edgeTr.endpos + test2v * -2 + test2o, 0, 0, 255, true, 0.06);
 			} else {
 				int uiScale = 5;
-				engine->AddLineOverlay(nullptr, tr.endpos, tr.endpos + tr.plane.normal * uiScale, 0, 0, 255, true, 0.06);
-				engine->AddLineOverlay(nullptr, tr.endpos - checkDirs[0] * uiScale, tr.endpos + checkDirs[0] * uiScale, 0, 0, 255, true, 0.06);
-				engine->AddLineOverlay(nullptr, tr.endpos - checkDirs[1] * uiScale, tr.endpos + checkDirs[1] * uiScale, 0, 0, 255, true, 0.06);
+				OverlayRender::addLine(tr.endpos, tr.endpos + tr.plane.normal * uiScale, { 0, 0, 255 }, true);
+				OverlayRender::addLine(tr.endpos - checkDirs[0] * uiScale, tr.endpos + checkDirs[0] * uiScale, { 0, 0, 255 }, true);
+				OverlayRender::addLine(tr.endpos - checkDirs[1] * uiScale, tr.endpos + checkDirs[1] * uiScale, { 0, 0, 255 }, true);
 			}
 		}
 	}

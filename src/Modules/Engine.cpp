@@ -10,6 +10,7 @@
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/NetMessage.hpp"
+#include "Features/OverlayRender.hpp"
 #include "Features/Renderer.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
@@ -62,6 +63,8 @@ REDECL(Engine::OnGameOverlayActivated);
 REDECL(Engine::OnGameOverlayActivatedBase);
 REDECL(Engine::ReadCustomData);
 REDECL(Engine::ReadConsoleCommand);
+REDECL(Engine::CreateDebugMesh);
+REDECL(Engine::DestroyDebugMesh);
 REDECL(Engine::plugin_load_callback);
 REDECL(Engine::plugin_unload_callback);
 REDECL(Engine::exit_callback);
@@ -347,6 +350,7 @@ DETOUR(Engine::Frame) {
 	Renderer::Frame();
 	engine->demoplayer->HandlePlaybackFix();
 	Event::Trigger<Event::FRAME>({});
+	if (!engine->IsSkipping() && session->isRunning) Event::Trigger<Event::RENDER>({});
 
 	NetMessage::Update();
 
@@ -598,15 +602,6 @@ void Host_AccumulateTime_Detour(float dt) {
 	}
 }
 
-ON_EVENT_P(FRAME, 1000) {
-	if (g_advancing && session->isRunning) {
-		// This is a dirty hack, and it'll stop a lot of base game overlays
-		// from working, but it's practically necessary to stop the game
-		// completely fucking dying while frame advancing
-		engine->ClearAllOverlays(nullptr);
-	}
-}
-
 void _Host_RunFrame_Render_Detour();
 void (*_Host_RunFrame_Render)();
 static Hook _Host_RunFrame_Render_Hook(&_Host_RunFrame_Render_Detour);
@@ -632,6 +627,24 @@ DECL_COMMAND_FILE_COMPLETION(playdemo, ".dem", engine->GetGameDirectory(), 1)
 static _CommandCompletionCallback exec_orig_completion;
 DECL_COMMAND_FILE_COMPLETION(exec, ".cfg", Utils::ssprintf("%s/cfg", engine->GetGameDirectory()), 1)
 
+// IPhysicsCollision::CreateDebugMesh
+DETOUR(Engine::CreateDebugMesh, const void *collisionModel, Vector **outVerts) {
+	size_t nverts;
+	if (OverlayRender::createMeshInternal((void *)collisionModel, outVerts, &nverts)) {
+		return nverts;
+	}
+
+	return Engine::CreateDebugMesh(thisptr, collisionModel, outVerts);
+}
+
+// IPhysicsCollision::DestroyDebugMesh
+DETOUR(Engine::DestroyDebugMesh, int vertCount, Vector *verts) {
+	if (!OverlayRender::destroyMeshInternal(verts, vertCount)) {
+		return Engine::DestroyDebugMesh(thisptr, vertCount, verts);
+	}
+	return 0;
+}
+
 bool Engine::Init() {
 	this->engineClient = Interface::Create(this->Name(), "VEngineClient015", false);
 	this->s_ServerPlugin = Interface::Create(this->Name(), "ISERVERPLUGINHELPERS001", false);
@@ -646,6 +659,7 @@ bool Engine::Init() {
 		this->GetMaxClients = this->engineClient->Original<_GetMaxClients>(Offsets::GetMaxClients);
 		this->GetGameDirectory = this->engineClient->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
 		this->GetSaveDirName = this->engineClient->Original<_GetSaveDirName>(Offsets::GetSaveDirName);
+		this->DebugDrawPhysCollide = this->engineClient->Original<_DebugDrawPhysCollide>(Offsets::DebugDrawPhysCollide);
 		this->IsPaused = this->engineClient->Original<_IsPaused>(Offsets::IsPaused);
 		this->Con_IsVisible = this->engineClient->Original<_Con_IsVisible>(Offsets::Con_IsVisible);
 		this->GetLevelNameShort = this->engineClient->Original<_GetLevelNameShort>(Offsets::GetLevelNameShort);
@@ -862,12 +876,6 @@ bool Engine::Init() {
 
 	if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay004", false)) {
 		ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
-		AddBoxOverlay = debugoverlay->Original<_AddBoxOverlay>(Offsets::AddBoxOverlay);
-		AddSphereOverlay = debugoverlay->Original<_AddSphereOverlay>(Offsets::AddSphereOverlay);
-		AddTriangleOverlay = debugoverlay->Original<_AddTriangleOverlay>(Offsets::AddTriangleOverlay);
-		AddLineOverlay = debugoverlay->Original<_AddLineOverlay>(Offsets::AddLineOverlay);
-		AddScreenTextOverlay = debugoverlay->Original<_AddScreenTextOverlay>(Offsets::AddScreenTextOverlay);
-		ClearAllOverlays = debugoverlay->Original<_ClearAllOverlays>(Offsets::ClearAllOverlays);
 		Interface::Delete(debugoverlay);
 	}
 
@@ -901,6 +909,11 @@ bool Engine::Init() {
 		strcpy(s, "%-80s - %s");
 	}
 
+	if (this->g_physCollision = Interface::Create(MODULE("vphysics"), "VPhysicsCollision007")) {
+		this->g_physCollision->Hook(Engine::CreateDebugMesh_Hook, Engine::CreateDebugMesh, Offsets::CreateDebugMesh);
+		this->g_physCollision->Hook(Engine::DestroyDebugMesh_Hook, Engine::DestroyDebugMesh, Offsets::DestroyDebugMesh);
+	}
+
 	return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace;
 }
 void Engine::Shutdown() {
@@ -920,6 +933,7 @@ void Engine::Shutdown() {
 	Interface::Delete(this->engineTool);
 	Interface::Delete(this->engineTrace);
 	Interface::Delete(this->g_VEngineServer);
+	Interface::Delete(this->g_physCollision);
 
 	// Reset to the offsets that were originally in the code
 #ifdef _WIN32

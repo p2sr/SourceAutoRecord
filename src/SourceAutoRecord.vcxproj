@@ -170,6 +170,7 @@
     <ClCompile Include="Features\Hud\Watermark.cpp" />
     <ClCompile Include="Features\Listener.cpp" />
     <ClCompile Include="Features\OffsetFinder.cpp" />
+    <ClCompile Include="Features\OverlayRender.cpp" />
     <ClCompile Include="Features\PlayerTrace.cpp" />
     <ClCompile Include="Features\ReloadedFix.cpp" />
     <ClCompile Include="Features\Routing\EntityInspector.cpp" />
@@ -349,6 +350,7 @@
     <ClInclude Include="Features\Hud\AimPointHud.hpp" />
     <ClInclude Include="Features\Listener.hpp" />
     <ClInclude Include="Features\OffsetFinder.hpp" />
+    <ClInclude Include="Features\OverlayRender.hpp" />
     <ClInclude Include="Features\PlayerTrace.hpp" />
     <ClInclude Include="Features\ReloadedFix.hpp" />
     <ClInclude Include="Features\Routing\EntityInspector.hpp" />

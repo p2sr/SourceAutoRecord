@@ -241,6 +241,9 @@
     <ClCompile Include="Features\OffsetFinder.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\OverlayRender.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Renderer.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
@@ -673,6 +676,9 @@
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\OffsetFinder.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\OverlayRender.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\Renderer.hpp">

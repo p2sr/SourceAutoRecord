@@ -3,6 +3,7 @@
 #include "Event.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
+#include "Features/OverlayRender.hpp"
 
 #include <map>
 #include <string>
@@ -257,7 +258,7 @@ CON_COMMAND(sar_speedrun_cc_finish, "sar_speedrun_cc_finish - finish the categor
 	g_placementOptions = {};
 }
 
-ON_EVENT(PRE_TICK) {
+ON_EVENT(RENDER) {
 	if (!sv_cheats.GetBool()) {
 		return;
 	}
@@ -266,16 +267,12 @@ ON_EVENT(PRE_TICK) {
 		CGameTrace tr;
 		engine->TraceFromCamera(MAX_TRACE, tr);
 
-		engine->AddBoxOverlay(
-			nullptr,
-			Vector{0, 0, 0},
+		OverlayRender::addBox(
+			{0, 0, 0},
 			g_placementStart,
 			tr.endpos,
 			{0, 0, 0},
-			255,
-			0,
-			0,
-			0,
-			2 * *engine->interval_per_tick);
+			{255, 0, 0, 0}
+		);
 	}
 }

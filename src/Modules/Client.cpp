@@ -13,12 +13,14 @@
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OffsetFinder.hpp"
+#include "Features/OverlayRender.hpp"
 #include "Features/Session.hpp"
 #include "Features/Stats/Sync.hpp"
 #include "Features/Stitcher.hpp"
 #include "Features/Tas/TasController.hpp"
 #include "Features/Tas/TasPlayer.hpp"
 #include "Game.hpp"
+#include "Hook.hpp"
 #include "Interface.hpp"
 #include "Offsets.hpp"
 #include "Server.hpp"
@@ -55,6 +57,7 @@ REDECL(Client::SteamControllerMove);
 REDECL(Client::playvideo_end_level_transition_callback);
 REDECL(Client::OverrideView);
 REDECL(Client::ProcessMovement);
+REDECL(Client::DrawTranslucentRenderables);
 
 MDECL(Client::GetAbsOrigin, Vector, C_m_vecAbsOrigin);
 MDECL(Client::GetAbsAngles, QAngle, C_m_angAbsRotation);
@@ -393,6 +396,16 @@ CON_COMMAND(sar_chat, "sar_chat - open the chat HUD\n") {
 	if (engine->IsCoop()) client->OpenChat();
 }
 
+extern Hook g_DrawTranslucentRenderablesHook;
+DETOUR(Client::DrawTranslucentRenderables, bool inSkybox, bool shadowDepth) {
+	g_DrawTranslucentRenderablesHook.Disable();
+	auto ret = Client::DrawTranslucentRenderables(thisptr, inSkybox, shadowDepth);
+	g_DrawTranslucentRenderablesHook.Enable();
+	OverlayRender::drawMeshes();
+	return ret;
+}
+Hook g_DrawTranslucentRenderablesHook(&Client::DrawTranslucentRenderables_Hook);
+
 bool Client::Init() {
 	bool readJmp = false;
 
@@ -504,6 +517,18 @@ bool Client::Init() {
 	if (this->s_EntityList) {
 		this->GetClientEntity = this->s_EntityList->Original<_GetClientEntity>(Offsets::GetClientEntity, readJmp);
 	}
+
+#ifdef _WIN32
+	Client::DrawTranslucentRenderables = (decltype (Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 8B EC 81 EC 80 00 00 00 53 56 8B F1 8B 0D ? ? ? ? 8B 01 8B 90 C4 01 00 00 57 89 75 F0 FF D2 8B F8");
+#else
+	if (sar.game->Is(SourceGame_EIPRelPIC)) {
+		Client::DrawTranslucentRenderables = (decltype (Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 E8 ? ? ? ? 81 C7 07 C1 B4 00 56 53 81 EC 18 01 00 00 8B 45 08 8B 5D 0C");
+	} else {
+		Client::DrawTranslucentRenderables = (decltype (Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC DC 00 00 00 8B 45 08 8B 5D 0C 89 C7 89 45 84 8B 45 10 89 85 4C FF FF FF");
+	}
+#endif
+
+	g_DrawTranslucentRenderablesHook.SetFunc(Client::DrawTranslucentRenderables);
 
 	offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
 	offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);

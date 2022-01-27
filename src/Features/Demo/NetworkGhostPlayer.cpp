@@ -921,10 +921,14 @@ bool NetworkManager::IsSyncing() {
 	return this->isConnected.load() && syncUi.active;
 }
 
-ON_EVENT(PRE_TICK) {
+ON_EVENT(RENDER) {
 	if (networkManager.isConnected && engine->isRunning()) {
 		networkManager.UpdateGhostsPosition();
+	}
+}
 
+ON_EVENT(PRE_TICK) {
+	if (networkManager.isConnected && engine->isRunning()) {
 		if (networkManager.isCountdownReady) {
 			networkManager.UpdateCountdown();
 		}

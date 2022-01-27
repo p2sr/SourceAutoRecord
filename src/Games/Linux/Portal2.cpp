@@ -85,6 +85,7 @@ void Portal2::LoadOffsets() {
 	GetClientStateFunction = 16;           // CEngineClient::ClientCmd
 	Cbuf_AddText = 45;                     // CEngineClient::ClientCmd
 	IsPaused = 86;                         // CEngineClient
+	DebugDrawPhysCollide = 75;             // CEngineClient
 	Con_IsVisible = 11;                    // CEngineClient
 	GetLevelNameShort = 53;                // CEngineClient
 	s_CommandBuffer = 69;                  // Cbuf_AddText
@@ -155,12 +156,6 @@ void Portal2::LoadOffsets() {
 	Frame = 6;                             // CEngine
 	m_bLoadGame = 440;                     // CGameClient::ActivatePlaye/CBaseServer::m_szLevelName
 	ScreenPosition = 11;                   // CIVDebugOverlay
-	AddBoxOverlay = 1;                     // CIVDebugOverlay
-	AddSphereOverlay = 2;                  // CIVDebugOverlay
-	AddTriangleOverlay = 3;                // CIVDebugOverlay
-	AddLineOverlay = 4;                    // CIVDebugOverlay
-	AddScreenTextOverlay = 7;              // CIVDebugOverlay
-	ClearAllOverlays = 16;                 // CIVDebugOverlay
 	MAX_SPLITSCREEN_PLAYERS = 2;           // maxplayers
 	OnGameOverlayActivated = 152;          // CSteam3Client
 	IsAsleep = 3;                          // IPhysicsObject
@@ -314,6 +309,15 @@ void Portal2::LoadOffsets() {
 	DrawTexturedRect = 39;    // CMatSystemSurface
 	IsTextureIDValid = 40;    // CMatSystemSurface
 	CreateNewTextureID = 41;  // CMatSystemSurface
+
+	// materialsystem.so
+
+	FindMaterial = 82; // CMaterialSystem
+
+	// vphysics.so
+	
+	CreateDebugMesh = 42;
+	DestroyDebugMesh = 43;
 }
 const char *Portal2::Version() {
 	return "Portal 2 (7293)";

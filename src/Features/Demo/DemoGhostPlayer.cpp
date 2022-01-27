@@ -302,7 +302,7 @@ CON_COMMAND(ghost_offset, "ghost_offset <offset> <ID> - delay the ghost start by
 	}
 }
 
-ON_EVENT(PRE_TICK) {
+ON_EVENT(RENDER) {
 	if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
 		demoGhostPlayer.UpdateGhostsPosition();
 	}

@@ -2,15 +2,16 @@
 
 #include "Categories.hpp"
 #include "Features/EntityList.hpp"
+#include "Features/OverlayRender.hpp"
 #include "Features/Session.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Scheme.hpp"
 #include "Modules/Server.hpp"
+#include "Modules/Surface.hpp"
 
 #define TAU 6.28318530718
-
-static int g_overlayId = 100;
 
 template <typename V>
 static inline V *lookupMap(std::map<std::string, V> &m, std::string k) {
@@ -89,35 +90,34 @@ bool ZoneTriggerRule::Test(Vector pos) {
 	return pointInBox(pos, this->center, this->size, this->rotation);
 }
 
-void ZoneTriggerRule::DrawInWorld(float time) {
-	engine->AddBoxOverlay(
-		nullptr,
+void ZoneTriggerRule::DrawInWorld() {
+	OverlayRender::addBox(
 		this->center,
 		-this->size / 2,
 		this->size / 2,
 		{0, (float)(this->rotation * 360.0f / TAU), 0},
-		140,
-		6,
-		195,
-		100,
-		time);
+		{ 140, 6, 195, 100 }
+	);
 }
 
-void ZoneTriggerRule::OverlayInfo(HudContext *ctx, SpeedrunRule *rule) {
-	Vector screenPos;
-	engine->PointToScreen(this->center, screenPos);
-	ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "type: zone");
-	ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "center: %.2f, %.2f, %.2f", this->center.x, this->center.y, this->center.z);
-	ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "size: %.2f, %.2f, %.2f", this->size.x, this->size.y, this->size.z);
-	ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "angle: %.2f", this->rotation * 360.0f / TAU);
+void ZoneTriggerRule::OverlayInfo(SpeedrunRule *rule) {
+	auto font = scheme->GetDefaultFont();
+	auto height = surface->GetFontHeight(font);
+
+	int n = 0;
+
+	OverlayRender::addText(this->center, 0, n++*height, "type: zone", font);
+	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("center: %.2f, %.2f, %.2f", this->center.x, this->center.y, this->center.z), font);
+	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("size: %.2f, %.2f, %.2f", this->size.x, this->size.y, this->size.z), font);
+	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("angle: %.2f", this->rotation * 360.0f / TAU));
 	if (rule->slot) {
-		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "player: %d", *rule->slot);
+		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("player: %d", *rule->slot), font);
 	}
 	if (rule->cycle) {
-		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "cycle: %d,%d", rule->cycle->first, rule->cycle->second);
+		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("cycle: %d,%d", rule->cycle->first, rule->cycle->second), font);
 	}
 	if (rule->onlyAfter) {
-		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "after: %s", rule->onlyAfter->c_str());
+		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("after: %s", rule->onlyAfter->c_str()), font);
 	}
 }
 
@@ -142,12 +142,7 @@ std::optional<SpeedrunRule> ZoneTriggerRule::Create(std::map<std::string, std::s
 		pos,
 		size,
 		angle / 360.0f * TAU,
-		g_overlayId++,
 	};
-
-	if (g_overlayId > 255) {
-		g_overlayId = 100;
-	}
 
 	return SpeedrunRule(RuleAction::START, "", rule);
 }
@@ -157,7 +152,7 @@ bool PortalPlacementRule::Test(Vector pos, PortalColor portal) {
 	return pointInBox(pos, this->center, this->size, this->rotation);
 }
 
-void PortalPlacementRule::DrawInWorld(float time) {
+void PortalPlacementRule::DrawInWorld() {
 	int r = 255, g = 0, b = 0;
 
 	if (this->portal) {
@@ -175,37 +170,36 @@ void PortalPlacementRule::DrawInWorld(float time) {
 		}
 	}
 
-	engine->AddBoxOverlay(
-		nullptr,
+	OverlayRender::addBox(
 		this->center,
 		-this->size / 2,
 		this->size / 2,
 		{0, (float)(this->rotation * 360.0f / TAU), 0},
-		r,
-		g,
-		b,
-		100,
-		time);
+		{ r, g, b, 100 }
+	);
 }
 
-void PortalPlacementRule::OverlayInfo(HudContext *ctx, SpeedrunRule *rule) {
-	Vector screenPos;
-	engine->PointToScreen(this->center, screenPos);
-	ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "type: portal");
-	ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "center: %.2f, %.2f, %.2f", this->center.x, this->center.y, this->center.z);
-	ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "size: %.2f, %.2f, %.2f", this->size.x, this->size.y, this->size.z);
-	ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "angle: %.2f", this->rotation * 360.0f / TAU);
+void PortalPlacementRule::OverlayInfo(SpeedrunRule *rule) {
+	auto font = scheme->GetDefaultFont();
+	auto height = surface->GetFontHeight(font);
+
+	int n = 0;
+
+	OverlayRender::addText(this->center, 0, n++*height, "type: portal", font);
+	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("center: %.2f, %.2f, %.2f", this->center.x, this->center.y, this->center.z), font);
+	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("size: %.2f, %.2f, %.2f", this->size.x, this->size.y, this->size.z), font);
+	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("angle: %.2f", this->rotation * 360.0f / TAU), font);
 	if (rule->slot) {
-		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "player: %d", *rule->slot);
+		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("player: %d", *rule->slot), font);
 	}
 	if (this->portal) {
-		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "portal: %s", *this->portal == PortalColor::BLUE ? "blue (primary)" : "orange (secondary)");
+		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("portal: %s", *this->portal == PortalColor::BLUE ? "blue (primary)" : "orange (secondary)"), font);
 	}
 	if (rule->cycle) {
-		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "cycle: %d,%d", rule->cycle->first, rule->cycle->second);
+		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("cycle: %d,%d", rule->cycle->first, rule->cycle->second), font);
 	}
 	if (rule->onlyAfter) {
-		ctx->DrawElementOnScreen(this->overlayId, screenPos.x, screenPos.y, "after: %s", rule->onlyAfter->c_str());
+		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("after: %s", rule->onlyAfter->c_str()), font);
 	}
 }
 
@@ -245,13 +239,7 @@ std::optional<SpeedrunRule> PortalPlacementRule::Create(std::map<std::string, st
 		size,
 		angle / 360.0f * TAU,
 		portal,
-		g_overlayId++,
 	};
-
-	if (g_overlayId > 255) {
-		g_overlayId = 100;
-	}
-
 
 	return SpeedrunRule(RuleAction::START, "", rule);
 }

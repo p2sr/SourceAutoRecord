@@ -7,6 +7,7 @@
 #include "Modules/Surface.hpp"
 #include "Features/Session.hpp"
 #include "Features/Camera.hpp"
+#include "Features/OverlayRender.hpp"
 
 #include <list>
 
@@ -80,7 +81,6 @@ static void renderTrace(const CGameTrace &tr) {
 	Vector norm = tr.plane.normal;
 	
 	auto font = scheme->GetDefaultFont() + 1;
-	int font_height = surface->GetFontHeight(font);
 
 	for (auto dir : std::list<Vector>{
 		{0,0,1},
@@ -95,25 +95,21 @@ static void renderTrace(const CGameTrace &tr) {
 			continue;
 		}
 
-		engine->AddLineOverlay(nullptr, p, p + dir * 7, 255, 255, 255, false, 0.06);
+		OverlayRender::addLine(p, p + dir * 7, { 255, 255, 255, 255 });
 	}
 
-	engine->AddLineOverlay(nullptr, p, p + norm * 7, 255, 0, 0, false, 0.06);
-
-	Vector screen_pos;
-	engine->PointToScreen(p + Vector{0,0,7}, screen_pos);
-
-	auto str = Utils::ssprintf("%.3f %.3f %.3f", p.x, p.y, p.z);
-	int len = surface->GetFontLength(font, "%s", str.c_str());
-
-	surface->DrawTxt(font, screen_pos.x - len/2, screen_pos.y - font_height - 2, {255, 255, 255, 255}, "%s", str.c_str());
+	OverlayRender::addLine(p, p + norm * 7, { 255, 0, 0, 255 });
+	OverlayRender::addText(p + Vector{0,0,10}, 0, 0, Utils::ssprintf("%.3f %.3f %.3f", p.x, p.y, p.z), font);
 }
 
 void AimPointHud::Paint(int slot) {
 	if (slot != 0) return;
 
 	updateTrace(slot);
+}
 
+ON_EVENT(RENDER) {
+	if (!aimPointHud.ShouldDraw()) return;
 	for (auto &tr : g_frozen) renderTrace(tr);
 	if (g_last_trace_valid) renderTrace(g_last_trace);
 }

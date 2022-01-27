@@ -3,6 +3,7 @@
 #include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
+#include "Features/OverlayRender.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -135,7 +136,7 @@ void GhostEntity::Display() {
 	if (engine->IsGamePaused()) return;
 	if (engine->IsSkipping()) return;
 
-#define TRIANGLE(a, b, c) engine->AddTriangleOverlay(nullptr, a, b, c, col_r, col_g, col_b, opacity, false, 0)
+#define TRIANGLE(a, b, c) OverlayRender::addTriangle(a, b, c, { col_r, col_g, col_b, (int)opacity }, true)
 	switch (GhostEntity::ghost_type) {
 	case GhostType::CIRCLE: {
 		double rad = ghost_height.GetFloat() / 2;

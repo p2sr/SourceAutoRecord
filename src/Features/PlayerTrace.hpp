@@ -31,9 +31,9 @@ public:
 	// Clear all the traces
 	void ClearAll();
 	// Display the trace in the world
-	void DrawInWorld(float time) const;
+	void DrawInWorld() const;
 	// Display XY-speed delta overlay
-	void DrawSpeedDeltas(HudContext *ctx) const;
+	void DrawSpeedDeltas() const;
 	// Display a bbox at the given tick
 	void DrawBboxAt(int tick) const;
 	// Teleport to given tick on given trace

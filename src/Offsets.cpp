@@ -28,6 +28,7 @@ namespace Offsets {
 	int GetActiveSplitScreenPlayerSlot;
 	int GetSteamAPIContext;
 	int IsPaused;
+	int DebugDrawPhysCollide;
 	int Con_IsVisible;
 	int GetLevelNameShort;
 
@@ -247,12 +248,6 @@ namespace Offsets {
 
 	// CIVDebugOverlay
 	int ScreenPosition;
-	int AddBoxOverlay;
-	int AddSphereOverlay;
-	int AddTriangleOverlay;
-	int AddLineOverlay;
-	int AddScreenTextOverlay;
-	int ClearAllOverlays;
 
 	// CCommandBuffer
 	int m_bWaitEnabled;
@@ -351,4 +346,7 @@ namespace Offsets {
 	int snd_p;
 	int snd_vol;
 	int StartTouch;
+	int FindMaterial;
+	int CreateDebugMesh;
+	int DestroyDebugMesh;
 }  // namespace Offsets

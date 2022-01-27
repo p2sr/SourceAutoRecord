@@ -16,6 +16,8 @@ public:
 	bool Init() override;
 	void Shutdown() override;
 	const char *Name() override { return MODULE("materialsystem"); }
+
+	IMaterial *FindMaterial(const char *materialName, const char *textureGroupName);
 };
 
 extern MaterialSystem *materialSystem;

@@ -3,6 +3,7 @@
 #include "Command.hpp"
 #include "Variable.hpp"
 #include "Event.hpp"
+#include "Features/OverlayRender.hpp"
 #include "Features/Session.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
@@ -139,9 +140,13 @@ ON_EVENT(PRE_TICK) {
 		g_canPlaceBlue = server->TraceFirePortal(portalgun, camPos, dir, false, 2, g_bluePlacementInfo);
 		// Check Orange
 		g_canPlaceOrange = server->TraceFirePortal(portalgun, camPos, dir, true, 2, g_orangePlacementInfo);
+	}
+}
 
+ON_EVENT(RENDER) {
+	if (sv_cheats.GetBool() && sar_pp_hud.GetBool()) {
 		// Draw the shits in world
-		#define TRIANGLE(p1, p2, p3, r, g, b, a) engine->AddTriangleOverlay(nullptr, p1, p2, p3, r, g, b, a, false, 0)
+		#define TRIANGLE(p1, p2, p3, r, g, b, a) OverlayRender::addTriangle( p1, p2, p3, { r, g, b, a })
 
 		auto blue =   Color(111, 184, 255, 255);
 		auto orange = Color(255, 184,  86, 255);

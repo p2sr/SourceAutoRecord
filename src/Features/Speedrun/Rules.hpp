@@ -45,11 +45,9 @@ struct ZoneTriggerRule {
 	Vector size;
 	double rotation;
 
-	int overlayId;
-
 	bool Test(Vector pos);
-	void DrawInWorld(float time);
-	void OverlayInfo(HudContext *ctx, SpeedrunRule *rule);
+	void DrawInWorld();
+	void OverlayInfo(SpeedrunRule *rule);
 
 	static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
 };
@@ -60,11 +58,9 @@ struct PortalPlacementRule {
 	double rotation;
 	std::optional<PortalColor> portal;
 
-	int overlayId;
-
 	bool Test(Vector pos, PortalColor portal);
-	void DrawInWorld(float time);
-	void OverlayInfo(HudContext *ctx, SpeedrunRule *rule);
+	void DrawInWorld();
+	void OverlayInfo(SpeedrunRule *rule);
 
 	static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
 };

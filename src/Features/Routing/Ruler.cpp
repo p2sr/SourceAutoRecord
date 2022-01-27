@@ -3,6 +3,7 @@
 #include "Command.hpp"
 #include "Event.hpp"
 #include "Features/Camera.hpp"
+#include "Features/OverlayRender.hpp"
 #include "Features/Session.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
@@ -63,9 +64,8 @@ ON_EVENT(PRE_TICK) {
 	rulerManager.UpdateCreator();
 }
 
-HUD_ELEMENT2_NO_DISABLE(ruler_draw, HudType_InGame) {
+ON_EVENT(RENDER) {
 	if (!sv_cheats.GetBool()) return;
-	if (engine->IsSkipping()) return;
 	rulerManager.DrawRulers();
 }
 
@@ -126,18 +126,13 @@ void RulerManager::UpdateCreator() {
 void drawLabel(Vector pos, int yOffset, std::string text) {
 	auto font = scheme->GetDefaultFont() + 1;
 	int font_height = surface->GetFontHeight(font);
-
-	Vector screen_pos;
-	engine->PointToScreen(pos, screen_pos);
-	screen_pos.y -= yOffset * font_height;
-
-	int len = surface->GetFontLength(font, "%s", text.c_str());
-	surface->DrawTxt(font, screen_pos.x - len / 2, screen_pos.y - font_height - 2, {255, 255, 255, 255}, "%s", text.c_str());
+	OverlayRender::addText(pos, 0, -font_height - yOffset * font_height - 2, text, font);
 }
 
 //drawing point (small box) at defined coordinates
 void drawPoint(Vector pos, bool label, Color c) {
-	engine->AddBoxOverlay(nullptr, pos, {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, c.r(), c.g(), c.b(), true, 0.05);
+	c._color[3] = 1;
+	OverlayRender::addBox(pos, {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, c);
 	if (label) {
 		auto text = Utils::ssprintf("%.3f %.3f %.3f", pos.x, pos.y, pos.z);
 		drawLabel(pos, 0, text);
@@ -149,7 +144,7 @@ void Ruler::draw() {
 	int drawMode = sar_ruler_draw.GetInt();
 	if (drawMode==0) return;
 	// drawing line
-	engine->AddLineOverlay(nullptr,start,end,0,100,200,true,0.05);
+	OverlayRender::addLine(start, end, { 0, 100, 200, 255 }, true);
 
 	// drawing points
 	bool pointLabels = (drawMode == 4);

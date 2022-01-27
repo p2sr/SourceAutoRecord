@@ -222,42 +222,21 @@ void SpeedrunTimer::ResetCategory() {
 	g_scheduledRules.clear();
 }
 
-ON_EVENT(PRE_TICK) {
-	const int drawDelta = 30;
-	static int lastDrawTick = -1000;
-
+ON_EVENT(RENDER) {
 	if (!sar_speedrun_draw_triggers.GetBool()) return;
 	if (!sv_cheats.GetBool()) return;
 	if (engine->IsSkipping()) return;
-
-	int tick = engine->GetTick();
-	if (tick > lastDrawTick && tick < lastDrawTick + drawDelta) return;
-
-	lastDrawTick = tick;
 
 	for (std::string ruleName : g_categories[g_currentCategory].rules) {
 		auto rule = SpeedrunTimer::GetRule(ruleName);
 		if (!rule) continue;
 		if (rule->map != engine->GetCurrentMapName()) continue;
 		if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
-			std::get<ZoneTriggerRule>(rule->rule).DrawInWorld((drawDelta + 1) * *engine->interval_per_tick);
+			std::get<ZoneTriggerRule>(rule->rule).DrawInWorld();
+			std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(rule);
 		} else if (std::holds_alternative<PortalPlacementRule>(rule->rule)) {
-			std::get<PortalPlacementRule>(rule->rule).DrawInWorld((drawDelta + 1) * *engine->interval_per_tick);
-		}
-	}
-}
-
-HUD_ELEMENT2_NO_DISABLE(speedrun_triggers, HudType_InGame) {
-	if (sar_speedrun_draw_triggers.GetBool() && sv_cheats.GetBool()) {
-		for (std::string ruleName : g_categories[g_currentCategory].rules) {
-			auto rule = SpeedrunTimer::GetRule(ruleName);
-			if (!rule) continue;
-			if (rule->map != engine->GetCurrentMapName()) continue;
-			if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
-				std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(ctx, rule);
-			} else if (std::holds_alternative<PortalPlacementRule>(rule->rule)) {
-				std::get<PortalPlacementRule>(rule->rule).OverlayInfo(ctx, rule);
-			}
+			std::get<PortalPlacementRule>(rule->rule).DrawInWorld();
+			std::get<PortalPlacementRule>(rule->rule).OverlayInfo(rule);
 		}
 	}
 }
