@@ -235,13 +235,21 @@ void GhostEntity::Lerp(float time) {
 	if (time > 1) time = 1;
 	if (time < 0) time = 0;
 
-	this->data.position.x = (1 - time) * this->oldPos.position.x + time * this->newPos.position.x;
-	this->data.position.y = (1 - time) * this->oldPos.position.y + time * this->newPos.position.y;
-	this->data.position.z = (1 - time) * this->oldPos.position.z + time * this->newPos.position.z;
+	// Try to detect teleportations; if we've moved a massive distance,
+	// just teleport to the destination
+	bool should_tp = (this->oldPos.position - this->newPos.position).SquaredLength() > 300 * 300;
 
-	this->data.view_angle.x = (1 - time) * this->oldPos.view_angle.x + time * this->newPos.view_angle.x;
-	this->data.view_angle.y = (1 - time) * this->oldPos.view_angle.y + time * this->newPos.view_angle.y;
-	this->data.view_angle.z = 0;
+	if (should_tp) {
+		this->data = time < 0.5 ? this->oldPos : this->newPos;
+	} else {
+		this->data.position.x = (1 - time) * this->oldPos.position.x + time * this->newPos.position.x;
+		this->data.position.y = (1 - time) * this->oldPos.position.y + time * this->newPos.position.y;
+		this->data.position.z = (1 - time) * this->oldPos.position.z + time * this->newPos.position.z;
+
+		this->data.view_angle.x = (1 - time) * this->oldPos.view_angle.x + time * this->newPos.view_angle.x;
+		this->data.view_angle.y = (1 - time) * this->oldPos.view_angle.y + time * this->newPos.view_angle.y;
+		this->data.view_angle.z = (1 - time) * this->oldPos.view_angle.z + time * this->newPos.view_angle.z;
+	}
 
 	this->Display();
 }
