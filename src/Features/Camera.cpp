@@ -28,12 +28,19 @@ Variable sar_cam_drive("sar_cam_drive", "1", 0, 1,
                        "Enables or disables camera drive mode in-game "
                        "(turning it on is not required for demo player)\n");
 
-Variable sar_cam_ortho("sar_cam_ortho", "0", 0, 1, "Enables or disables camera orthographic projection");
-Variable sar_cam_ortho_scale("sar_cam_ortho_scale", "1", 0.001, "Changes the scale of orthographic projection (how many units per pixel)");
-Variable sar_cam_ortho_nearz("sar_cam_ortho_nearz", "1", -10000, 10000, "Changes the near Z plane of orthographic projection.");
+Variable sar_cam_ortho("sar_cam_ortho", "0", 0, 1, "Enables or disables camera orthographic projection.\n");
+Variable sar_cam_ortho_scale("sar_cam_ortho_scale", "1", 0.001, "Changes the scale of orthographic projection (how many units per pixel).\n");
+Variable sar_cam_ortho_nearz("sar_cam_ortho_nearz", "1", -10000, 10000, "Changes the near Z plane of orthographic projection.\n");
 
 Variable sar_cam_force_eye_pos("sar_cam_force_eye_pos", "0", 0, 1,
                        "Forces camera to be placed exactly on the player's eye position\n");
+
+Variable sar_cam_path_interp("sar_cam_path_interp", "2", 0, 2, 
+                       "Sets interpolation type between keyframes for cinematic camera.\n"
+                       "0 = Linear interpolation\n"
+                       "1 = Cubic spline\n"
+                       "2 = Piecewise Cubic Hermite Interpolating Polynomial (PCHIP)\n"
+);
 
 Variable cl_skip_player_render_in_main_view;
 Variable r_drawviewmodel;
@@ -97,18 +104,58 @@ float InterpolateCurve(std::vector<Vector> points, float x, bool dealingWithAngl
 
 	float t = (x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
 
-	//linear interp. in case you dont want anything cool
-	//return points[PREV].y + (points[NEXT].y - points[PREV].y) * t;
+	switch (sar_cam_path_interp.GetInt()) {
+	case 1: {
+		// cubic spline... i think? No idea what the fuck 2019 me has put here
+		// and it's not like i got any more intelligent over time
+		// ~Krzyhau
+		float t2 = t * t, t3 = t * t * t;
+		float x0 = (points[FIRST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
+		float x1 = 0, x2 = 1;
+		float x3 = (points[LAST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
+		float m1 = ((points[NEXT].y - points[PREV].y) / (x2 - x1) + (points[PREV].y - points[FIRST].y) / (x1 - x0)) / 2;
+		float m2 = ((points[LAST].y - points[NEXT].y) / (x3 - x2) + (points[NEXT].y - points[PREV].y) / (x2 - x1)) / 2;
 
-	//cubic hermite spline... kind of? maybe? no fucking clue, just leave me alone
-	float t2 = t * t, t3 = t * t * t;
-	float x0 = (points[FIRST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
-	float x1 = 0, x2 = 1;
-	float x3 = (points[LAST].x - points[PREV].x) / (points[NEXT].x - points[PREV].x);
-	float m1 = ((points[NEXT].y - points[PREV].y) / (x2 - x1) + (points[PREV].y - points[FIRST].y) / (x1 - x0)) / 2;
-	float m2 = ((points[LAST].y - points[NEXT].y) / (x3 - x2) + (points[NEXT].y - points[PREV].y) / (x2 - x1)) / 2;
+		return (2 * t3 - 3 * t2 + 1) * points[PREV].y + (t3 - 2 * t2 + t) * m1 + (-2 * t3 + 3 * t2) * points[NEXT].y + (t3 - t2) * m2;
+	}
+	case 2: {
+		//very sloppy implementation of pchip. no idea what I'm doing here
+		float ds[4];
+		float hl = 0, dl = 0;
+		for (int i = 0; i < 3; i++) {
+			float hr = points[i + 1].x - points[i].x;
+			float dr = (points[i + 1].y - points[i].y) / hr;
 
-	return (2 * t3 - 3 * t2 + 1) * points[PREV].y + (t3 - 2 * t2 + t) * m1 + (-2 * t3 + 3 * t2) * points[NEXT].y + (t3 - t2) * m2;
+			if (i == 0 || dl*dr < 0.0f || dl == 0.0f || dr == 0.0f) {
+				ds[i] = 0;
+			} else {
+				float wl = 2 * hl + hr;
+				float wr = hl + 2 * hr;
+				ds[i] = (wl + wr) / (wl / dl + wr / dr);
+			}
+				
+			hl = hr;
+			dl = dr;
+		}
+		// normally you'd calculate edge derivatives but i dont need them here
+		// so only 1st and 2nd is set
+
+		float h = points[NEXT].x - points[PREV].x;
+
+		float t1 = (points[NEXT].x - x) / h;
+		float t2 = (x - points[PREV].x) / h;
+
+		float f1 = points[PREV].y * (3.0f * t1 * t1 - 2.0f * t1 * t1 * t1);
+		float f2 = points[NEXT].y * (3.0f * t2 * t2 - 2.0f * t2 * t2 * t2);
+		float f3 = ds[PREV] * h * (t1 * t1 * t1 - t1 * t1);
+		float f4 = ds[NEXT] * h * (t2 * t2 * t2 - t2 * t2);
+
+		return f1 + f2 - f3 + f4;
+	}
+	default:
+		//linear interp. in case you dont want anything cool
+		return points[PREV].y + (points[NEXT].y - points[PREV].y) * t;
+	}
 }
 
 //creates vector array for specified parameter. it can probably be done in much more elegant way
