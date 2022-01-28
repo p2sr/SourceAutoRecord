@@ -120,6 +120,10 @@ void DemoGhostPlayer::Sync() {
 	}
 }
 
+std::vector<DemoGhostEntity>& DemoGhostPlayer::GetAllGhosts() {
+	return this->ghostPool;
+}
+
 DemoGhostEntity *DemoGhostPlayer::GetGhostByID(int ID) {
 	for (auto &ghost : this->ghostPool) {
 		if (ghost.ID == ID) {
@@ -134,8 +138,9 @@ bool DemoGhostPlayer::SetupGhostFromDemo(const std::string &demo_path, const uns
 	DemoParser parser;
 	Demo demo;
 	std::map<int, DataGhost> datas;
+	CustomDatas customDatas;
 
-	if (parser.Parse(demo_path, &demo, true, &datas)) {
+	if (parser.Parse(demo_path, &demo, true, &datas, customDatas)) {
 		parser.Adjust(&demo);
 
 		DemoDatas demoDatas{datas, demo};
@@ -147,6 +152,7 @@ bool DemoGhostPlayer::SetupGhostFromDemo(const std::string &demo_path, const uns
 			new_ghost.firstLevel = demo.mapName;
 			new_ghost.lastLevel = demo.mapName;
 			new_ghost.totalTicks = demo.playbackTicks;
+			new_ghost.customDatas = customDatas;
 			demoGhostPlayer.AddGhost(new_ghost);
 		} else {  //Only fullGame
 			ghost->AddLevelDatas(demoDatas);
@@ -191,6 +197,18 @@ void DemoGhostPlayer::DrawNames(HudContext *ctx) {
 			}
 		}
 	}
+}
+
+std::string DemoGhostPlayer::CustomDataToString(const char *entName, const char *className, const char *inputName, const char *parameter, std::optional<int> activatorSlot) {
+	return Utils::ssprintf("%s %s %s %s", entName, className, inputName, parameter);
+}
+
+std::string DemoGhostPlayer::CustomDataToString(Vector pos, std::optional<int> slot, PortalColor portal) {
+	return Utils::ssprintf("%f %f %f %d %d", pos.x, pos.y, pos.z, slot, portal);
+}
+
+std::string DemoGhostPlayer::CustomDataToString(std::optional<int> slot) {
+	return Utils::ssprintf("%d", slot);
 }
 
 CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demo, "ghost_set_demo <demo> [ID] - ghost will use this demo. If ID is specified, will create or modify the ID-th ghost\n", 0, 0, dem) {

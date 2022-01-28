@@ -24,12 +24,59 @@ DemoParser::DemoParser()
 	, hasAlignmentByte(true)
 	, maxSplitScreenClients(2) {
 }
+std::string DemoParser::DecodeCustomData(char *data) {
+	if (data[0] == 0x03 || data[0] == 0x04) {  // Entity input data
+		std::optional<int> slot;
+		if (data[0] == 0x04) {
+			slot = data[1];
+			++data;
+		}
+
+		char *targetname = data + 1;
+		size_t targetnameLen = strlen(targetname);
+		char *classname = data + 2 + targetnameLen;
+		size_t classnameLen = strlen(classname);
+		char *inputname = data + 3 + targetnameLen + classnameLen;
+		size_t inputnameLen = strlen(inputname);
+		char *parameter = data + 4 + targetnameLen + classnameLen + inputnameLen;
+
+		//console->Print("%s %s %s %s\n", targetname, classname, inputname, parameter);
+
+		return Utils::ssprintf("%s %s %s %s", targetname, classname, inputname, parameter);
+	}
+
+	if (data[0] == 0x05) {  // Portal placement
+		int slot = data[1];
+		PortalColor portal = data[2] ? PortalColor::ORANGE : PortalColor::BLUE;
+		Vector pos;
+		pos.x = *(float *)(data + 3);
+		pos.y = *(float *)(data + 7);
+		pos.z = *(float *)(data + 11);
+
+		return Utils::ssprintf("%f %f %f %d %d", pos.x, pos.y, pos.z, slot, portal);
+	}
+
+	if (data[0] == 0x06) {  // CM flags
+		int slot = data[1];
+
+		return Utils::ssprintf("%d", slot);
+	}
+
+	if (data[0] == 0x07) {  // Crouch fly
+		int slot = data[1];
+
+		return Utils::ssprintf("%d", slot);
+	}
+
+	return std::string();
+}
+
 void DemoParser::Adjust(Demo *demo) {
 	auto ipt = demo->IntervalPerTick();
 	demo->playbackTicks = demo->LastTick();
 	demo->playbackTime = ipt * demo->playbackTicks;
 }
-bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std::map<int, DataGhost> *datas) {
+bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std::map<int, DataGhost> *datas, CustomDatas &customDatas) {
 	bool gotFirstPositivePacket = false;
 	bool gotSync = false;
 	try {
@@ -207,7 +254,17 @@ bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std:
 						int32_t length;
 						file.read((char *)&unk, sizeof(unk));
 						file.read((char *)&length, sizeof(length));
-						file.ignore(length);
+
+						if (ghostRequest) {
+							char *data = new char[length];
+							file.read(data, length);
+							
+							std::string str = this->DecodeCustomData(data + 8);
+							if(!str.empty())
+								customDatas[str] = std::make_tuple(tick, false);
+						} else {
+							file.ignore(length);
+						}
 					} else {
 						int32_t length;
 						file.read((char *)&length, sizeof(length));

@@ -2,6 +2,7 @@
 
 #include "CategoriesPreset.hpp"
 #include "Event.hpp"
+#include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -147,8 +148,8 @@ static void dispatchRuleCycled(std::string name, SpeedrunRule *rule) {
 }
 
 template <typename RuleType, typename... Ts>
-static void GeneralTestRules(std::optional<int> slot, Ts... args) {
-	if (engine->IsOrange()) return;
+static bool GeneralTestRules(std::optional<int> slot, Ts... args) {
+	if (engine->IsOrange()) return false;
 	for (std::string ruleName : g_categories[g_currentCategory].rules) {
 		auto rule = SpeedrunTimer::GetRule(ruleName);
 		if (!rule) continue;
@@ -160,32 +161,49 @@ static void GeneralTestRules(std::optional<int> slot, Ts... args) {
 		dispatchRuleCycled(ruleName, rule);
 
 		rule->fired = true;
-		return;  // We don't want to dispatch any more rules in this tick lest shit get fucked
+		return true;  // We don't want to dispatch any more rules in this tick lest shit get fucked
 	}
+	return false;
 }
 
-void SpeedrunTimer::TestInputRules(std::string targetname, std::string classname, std::string inputname, std::string parameter, std::optional<int> triggerSlot) {
-	GeneralTestRules<EntityInputRule>(triggerSlot, targetname, classname, inputname, parameter);
+bool SpeedrunTimer::TestInputRules(std::string targetname, std::string classname, std::string inputname, std::string parameter, std::optional<int> triggerSlot) {
+	bool result = GeneralTestRules<EntityInputRule>(triggerSlot, targetname, classname, inputname, parameter);
+	if (result)
+		demoGhostPlayer.TestInputRule(targetname.c_str(), classname.c_str(), inputname.c_str(), parameter.c_str(), triggerSlot);
+
+	return result;
 }
 
-void SpeedrunTimer::TestZoneRules(Vector pos, int slot) {
-	GeneralTestRules<ZoneTriggerRule>(slot, pos);
+bool SpeedrunTimer::TestZoneRules(Vector pos, int slot) {
+	return GeneralTestRules<ZoneTriggerRule>(slot, pos);
 }
 
-void SpeedrunTimer::TestPortalRules(Vector pos, int slot, PortalColor portal) {
-	GeneralTestRules<PortalPlacementRule>(slot, pos, portal);
+bool SpeedrunTimer::TestPortalRules(Vector pos, int slot, PortalColor portal) {
+	bool result = GeneralTestRules<PortalPlacementRule>(slot, pos, portal);
+		if(result)
+			demoGhostPlayer.TestInputRule( pos, slot, portal);
+
+	return result;
 }
 
-void SpeedrunTimer::TestFlagRules(int slot) {
-	GeneralTestRules<ChallengeFlagsRule>(slot);
+bool SpeedrunTimer::TestFlagRules(int slot) {
+	bool result = GeneralTestRules<ChallengeFlagsRule>(slot);
+	if (result)
+		demoGhostPlayer.TestInputRule(slot);
+
+	return result;
 }
 
-void SpeedrunTimer::TestFlyRules(int slot) {
-	GeneralTestRules<CrouchFlyRule>(slot);
+bool SpeedrunTimer::TestFlyRules(int slot) {
+	bool result = GeneralTestRules<CrouchFlyRule>(slot);
+	if (result)
+		demoGhostPlayer.TestInputRule(slot);
+
+	return result;
 }
 
-void SpeedrunTimer::TestLoadRules() {
-	GeneralTestRules<MapLoadRule>({});
+bool SpeedrunTimer::TestLoadRules() {
+	return GeneralTestRules<MapLoadRule>({});
 }
 
 ON_EVENT(SESSION_END) {

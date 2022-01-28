@@ -17,8 +17,9 @@ public:
 
 public:
 	DemoParser();
+	static std::string DecodeCustomData(char *data);
 	void Adjust(Demo *demo);
-	bool Parse(std::string filePath, Demo *demo, bool ghostRequest = false, std::map<int, DataGhost> *datas = nullptr);
+	bool Parse(std::string filePath, Demo *demo, bool ghostRequest = false, std::map<int, DataGhost> *datas = nullptr, CustomDatas &customDatas = CustomDatas());
 };
 
 extern Variable sar_time_demo_dev;

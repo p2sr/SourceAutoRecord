@@ -2,10 +2,14 @@
 #include "Demo.hpp"
 #include "GhostEntity.hpp"
 
+#include <unordered_map>
+
 struct DemoDatas {
 	std::map<int, DataGhost> levelDatas;
 	Demo demo;
 };
+
+typedef std::unordered_map<std::string, std::tuple<int, bool>> CustomDatas;
 
 class DemoGhostEntity : public GhostEntity {
 private:
@@ -25,6 +29,8 @@ public:
 	int offset;
 	bool isAhead;
 
+	CustomDatas customDatas;
+
 public:
 	DemoGhostEntity(unsigned int ID, std::string name, DataGhost data, std::string currentMap);
 	void ChangeDemo();  //Change demo for FullGame ghosts
@@ -42,3 +48,6 @@ public:
 	float GetTotalTime();
 	std::string GetCurrentMap();
 };
+
+
+

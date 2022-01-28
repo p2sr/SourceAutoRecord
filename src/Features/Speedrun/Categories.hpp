@@ -12,12 +12,12 @@ struct SpeedrunCategory {
 };
 
 namespace SpeedrunTimer {
-	void TestInputRules(std::string targetname, std::string classname, std::string inputname, std::string parameter, std::optional<int> triggerSlot);
-	void TestZoneRules(Vector pos, int slot);
-	void TestPortalRules(Vector pos, int slot, PortalColor portal);
-	void TestFlagRules(int slot);
-	void TestFlyRules(int slot);
-	void TestLoadRules();
+	bool TestInputRules(std::string targetname, std::string classname, std::string inputname, std::string parameter, std::optional<int> triggerSlot);
+	bool TestZoneRules(Vector pos, int slot);
+	bool TestPortalRules(Vector pos, int slot, PortalColor portal);
+	bool TestFlagRules(int slot);
+	bool TestFlyRules(int slot);
+	bool TestLoadRules();
 	void ResetCategory();
 	void InitCategories();
 	SpeedrunRule *GetRule(std::string name);
