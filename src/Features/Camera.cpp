@@ -688,11 +688,37 @@ CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs - exports commands for rec
 	}
 }
 
+
+
+DECL_COMMAND_COMPLETION(sar_cam_path_remkf) {
+	for (auto const &state : camera->states) {
+		if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+			break;
+		}
+
+		char camString[64] = {};
+		//CameraState cam = state.second;
+		sprintf(camString, "%d", state.first);
+
+		std::string camStringString = camString;
+
+		if (std::strlen(match) != std::strlen(cmd)) {
+			if (std::strstr(camStringString.c_str(), match)) {
+				items.push_back(camStringString);
+			}
+		} else {
+			items.push_back(camString);
+		}
+	}
+
+	FINISH_COMMAND_COMPLETION();
+}
+
 CON_COMMAND_F_COMPLETION(
 	sar_cam_path_remkf,
 	"sar_cam_path_remkf <frame> - removes camera path keyframe at specified frame\n",
 	0,
-	AUTOCOMPLETION_FUNCTION(sar_cam_path_showkf)) {
+	AUTOCOMPLETION_FUNCTION(sar_cam_path_remkf)) {
 	if (!engine->demoplayer->IsPlaying())
 		return console->Print("Cinematic mode cannot be used outside of demo player.\n");
 
