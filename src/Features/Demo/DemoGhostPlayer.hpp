@@ -77,6 +77,7 @@ void DemoGhostPlayer::TestInputRule(Ts... args) {
 	if (!text.empty())
 		toastHud.AddToast(SPEEDRUN_TOAST_TAG, text);
 }
+
 extern DemoGhostPlayer demoGhostPlayer;
 
 extern Variable ghost_sync;

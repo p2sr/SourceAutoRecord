@@ -174,14 +174,14 @@ bool SpeedrunTimer::TestInputRules(std::string targetname, std::string classname
 	return result;
 }
 
-bool SpeedrunTimer::TestZoneRules(Vector pos, int slot) {
-	return GeneralTestRules<ZoneTriggerRule>(slot, pos);
+void SpeedrunTimer::TestZoneRules(Vector pos, int slot) {
+	GeneralTestRules<ZoneTriggerRule>(slot, pos);
 }
 
 bool SpeedrunTimer::TestPortalRules(Vector pos, int slot, PortalColor portal) {
 	bool result = GeneralTestRules<PortalPlacementRule>(slot, pos, portal);
-		if(result)
-			demoGhostPlayer.TestInputRule( pos, slot, portal);
+	if(result)
+		demoGhostPlayer.TestInputRule( pos, slot, portal);
 
 	return result;
 }
@@ -202,8 +202,8 @@ bool SpeedrunTimer::TestFlyRules(int slot) {
 	return result;
 }
 
-bool SpeedrunTimer::TestLoadRules() {
-	return GeneralTestRules<MapLoadRule>({});
+void SpeedrunTimer::TestLoadRules() {
+	GeneralTestRules<MapLoadRule>({});
 }
 
 ON_EVENT(SESSION_END) {
