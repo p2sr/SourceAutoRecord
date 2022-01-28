@@ -434,3 +434,78 @@ CON_COMMAND(sar_trace_teleport_at, "sar_trace_teleport_at <tick> [player slot] [
 
 	playerTrace->TeleportAt(trace_idx, slot, tick);
 }
+
+CON_COMMAND(sar_trace_export, "sar_trace_export <filename> [trace index] - Export trace data into a csv file.\n") {
+	if (args.ArgC() < 2 || args.ArgC() > 3)
+		return console->Print(sar_trace_export.ThisPtr()->m_pszHelpString);
+
+	size_t trace_idx = (args.ArgC()==3) ? std::atoi(args[2]) : 1;
+
+	auto trace = playerTrace->GetTrace(trace_idx);
+
+	if (trace == nullptr) {
+		console->Print("Invalid trace ID!\n");
+		return;
+	}
+
+	bool is_coop_trace = trace->positions[0].size() == trace->positions[1].size();
+	size_t size = trace->positions[0].size();
+
+	std::string filename = args[1];
+	if (filename.length() < 4 || filename.substr(filename.length() - 4, 4) != ".csv") {
+		filename += ".csv";
+	}
+
+	FILE *f = fopen(filename.c_str(), "w");
+	if (!f) {
+		console->Print("Could not open file '%s'\n", filename.c_str());
+		return;
+	}
+
+#ifdef _WIN32
+	fputs(MICROSOFT_PLEASE_FIX_YOUR_SOFTWARE_SMHMYHEAD "\n", f);
+#endif
+	if (!is_coop_trace) {
+		fputs("x,y,z,vx,vy,vz,grounded,crouched\n", f);
+	} else {
+		fputs("blue, x,y,z,vx,vy,vz,grounded,crouched, orange, x,y,z,vx,vy,vz,grounded,crouched\n", f);
+	}
+
+	for (int i = 0; i < size; i++) {
+		if (is_coop_trace) {
+			fputs(",", f);
+		}
+
+		auto pos = trace->positions[0][i];
+		auto vel = trace->velocities[0][i];
+		auto grounded = trace->grounded[0][i];
+		auto crouched = trace->crouched[0][i];
+
+		fprintf(
+			f, "%f,%f,%f, %f,%f,%f, %s,%s",
+			pos.x, pos.y, pos.z,
+			vel.x, vel.y, vel.z,
+			grounded?"true":"false", crouched?"true":"false"
+		);
+
+		if (is_coop_trace) {
+			pos = trace->positions[1][i];
+			vel = trace->velocities[1][i];
+			grounded = trace->grounded[1][i];
+			crouched = trace->crouched[1][i];
+
+			fprintf(
+				f, ",%f,%f,%f, %f,%f,%f, %s,%s",
+				pos.x, pos.y, pos.z,
+				vel.x, vel.y, vel.z,
+				grounded?"true":"false", crouched?"true":"false"
+			);
+		}
+
+		fputs("\n", f);
+	}
+
+	fclose(f);
+
+	console->Print("Trace successfully exported to '%s'!\n", filename.c_str());
+}
