@@ -56,6 +56,8 @@ public:
 	std::string CustomDataToString(std::optional<int> slot);
 };
 
+extern DemoGhostPlayer demoGhostPlayer;
+
 template <typename... Ts>
 void DemoGhostPlayer::TestInputRule(Ts... args) {
 	if (!demoGhostPlayer.IsPlaying()) return;
@@ -77,8 +79,6 @@ void DemoGhostPlayer::TestInputRule(Ts... args) {
 	if (!text.empty())
 		toastHud.AddToast(SPEEDRUN_TOAST_TAG, text);
 }
-
-extern DemoGhostPlayer demoGhostPlayer;
 
 extern Variable ghost_sync;
 extern Command ghost_set_demo;

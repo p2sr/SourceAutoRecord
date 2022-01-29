@@ -76,7 +76,7 @@ void DemoParser::Adjust(Demo *demo) {
 	demo->playbackTicks = demo->LastTick();
 	demo->playbackTime = ipt * demo->playbackTicks;
 }
-bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std::map<int, DataGhost> *datas, CustomDatas &customDatas) {
+bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std::map<int, DataGhost> *datas, CustomDatas *customDatas) {
 	bool gotFirstPositivePacket = false;
 	bool gotSync = false;
 	try {
@@ -259,9 +259,12 @@ bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std:
 							char *data = new char[length];
 							file.read(data, length);
 							
-							std::string str = this->DecodeCustomData(data + 8);
-							if(!str.empty())
-								customDatas[str] = std::make_tuple(tick, false);
+							if (customDatas) {
+								std::string str = this->DecodeCustomData(data + 8);
+								if (!str.empty()) {
+									(*customDatas)[str] = std::make_tuple(tick, false);
+								}
+							}
 						} else {
 							file.ignore(length);
 						}

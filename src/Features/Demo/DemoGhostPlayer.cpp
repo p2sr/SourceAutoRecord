@@ -140,7 +140,7 @@ bool DemoGhostPlayer::SetupGhostFromDemo(const std::string &demo_path, const uns
 	std::map<int, DataGhost> datas;
 	CustomDatas customDatas;
 
-	if (parser.Parse(demo_path, &demo, true, &datas, customDatas)) {
+	if (parser.Parse(demo_path, &demo, true, &datas, &customDatas)) {
 		parser.Adjust(&demo);
 
 		DemoDatas demoDatas{datas, demo};
