@@ -365,9 +365,15 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CUserCmd *cmd) {
 	float *m_flMaxspeed = reinterpret_cast<float *>((uintptr_t)player + Offsets::m_flMaxspeed);
 	pi.maxSpeed = *m_flMaxspeed;
 
+#ifdef _WIN32
+	// windows being weird. ask mlugg for explanation because idfk.
+	void *paintPowerUser = (void*)((uint32_t)player + 0x1250);
+#else
+	void *paintPowerUser = player;
+#endif
 	using _GetPaintPower = const PaintPowerInfo_t&(__rescall*)(void* thisptr, unsigned paintId);
-	_GetPaintPower GetPaintPower = Memory::VMT<_GetPaintPower>(player, Offsets::GetPaintPower);
-	PaintPowerInfo_t speedPaintInfo = GetPaintPower(player, 2);
+	_GetPaintPower GetPaintPower = Memory::VMT<_GetPaintPower>(paintPowerUser, Offsets::GetPaintPower);
+	PaintPowerInfo_t speedPaintInfo = GetPaintPower(paintPowerUser, 2);
 	pi.onSpeedPaint = speedPaintInfo.m_State == 1; // ACTIVE_PAINT_POWER
 
 	if (pi.onSpeedPaint) {
