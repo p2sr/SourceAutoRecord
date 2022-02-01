@@ -74,7 +74,7 @@ void GhostRenderer::UpdateAnimatedVerts() {
 	int lod = GetLODLevel();
 	for (int v = 0; v < animatedVerts.size(); v++) {
 		// do not waste time on vertices that won't be used for drawing
-		if (BENDY_LOD_LEVELS[v] < lod) continue;
+		if (BENDY_LOD_LEVELS[v] <= lod) continue;
 
 		int vertGroup = BENDY_GROUPS[v];
 
@@ -180,6 +180,9 @@ int GhostRenderer::GetLODLevel() {
 
 	int forceLod = ghost_bendy_force_lod.GetInt();
 	if (forceLod > 0) return forceLod;
+
+	// HACK: render all ghosts at full LOD if spectating
+	if (GhostEntity::GetFollowTarget()) return 0;
 
 	Vector camPos = camera->GetPosition(GET_SLOT());
 	float dist = (camPos - ghost->data.position).Length();

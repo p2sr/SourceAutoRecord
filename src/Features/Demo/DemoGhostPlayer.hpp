@@ -21,6 +21,7 @@ private:
 public:
 	bool isFullGame;
 	int nbDemos;
+	int followID;
 
 public:
 	DemoGhostPlayer();

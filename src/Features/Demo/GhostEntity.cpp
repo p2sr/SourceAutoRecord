@@ -4,17 +4,21 @@
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Features/OverlayRender.hpp"
+#include "Features/Session.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Scheme.hpp"
 #include "Utils.hpp"
+#include "Event.hpp"
 
 #include <cstdlib>
 
 GhostType GhostEntity::ghost_type = GhostType::BENDY;
 std::string GhostEntity::defaultModelName = "models/props/food_can/food_can_open.mdl";
 Color GhostEntity::set_color{ 0, 0, 0, 255 };
+bool GhostEntity::followNetwork;
+int GhostEntity::followId = -1;
 
 Variable ghost_height("ghost_height", "16", -256, "Height of the ghosts. (For prop models, only affects their position).\n");
 Variable ghost_opacity("ghost_opacity", "255", 0, 255, "Opacity of the ghosts.\n");
@@ -24,25 +28,32 @@ Variable ghost_proximity_fade("ghost_proximity_fade", "100", 0, 2000, "Distance 
 Variable ghost_shading("ghost_shading", "1", "Enable simple light level based shading for overlaid ghosts.\n");
 Variable ghost_name_font("ghost_name_font", "0", 0, "Font index to use for ghost names.\n");
 Variable ghost_show_names("ghost_show_names", "1", "Whether to show names above ghosts.\n");
+Variable ghost_spec_thirdperson("ghost_spec_thirdperson", "0", "Whether to spectate ghost from a third-person perspective.\n");
+Variable ghost_spec_thirdperson_dist("ghost_spec_thirdperson_dist", "300", 50, "The maximum distance from which to spectate in third-person.\n");
 
-GhostEntity::GhostEntity(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map)
+GhostEntity::GhostEntity(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map, bool network)
 	: ID(ID)
 	, name(name)
 	, data(data)
 	, currentMap(current_map)
 	, modelName(GhostEntity::defaultModelName)
 	, prop_entity(nullptr)
-	, isDestroyed(false) {
+	, isDestroyed(false)
+	, spectator(false)
+	, network(network) {
 }
 
 GhostEntity::~GhostEntity() {
 	this->DeleteGhost();
+	if (this->IsBeingFollowed()) {
+		GhostEntity::StopFollowing();
+	}
 }
 
 float GhostEntity::GetOpacity() {
 	float opacity = ghost_opacity.GetFloat();
 
-	if (ghost_proximity_fade.GetInt() != 0) {
+	if (ghost_proximity_fade.GetInt() != 0 && !GhostEntity::GetFollowTarget()) {
 		auto player = client->GetPlayer(GET_SLOT() + 1);
 		if (player) {
 			float start_fade_at = ghost_proximity_fade.GetFloat();
@@ -141,6 +152,8 @@ void GhostEntity::SetupGhost(unsigned int &ID, std::string &name, DataGhost &dat
 }
 
 void GhostEntity::Display() {
+	if (this->IsBeingFollowed() && !ghost_spec_thirdperson.GetBool()) return;
+
 	Color col = GetColor();
 	float opacity = col.a();
 
@@ -290,7 +303,7 @@ void GhostEntity::Lerp(float time) {
 	valid |= !!this->data.view_angle.x;
 	valid |= !!this->data.view_angle.y;
 	valid |= !!this->data.view_angle.z;
-	if (valid) this->Display();
+	if (valid && (!this->spectator || networkManager.spectator)) this->Display();
 }
 
 CON_COMMAND_COMPLETION(ghost_prop_model, "ghost_prop_model <filepath> - set the prop model. Example: models/props/metal_box.mdl\n", ({"models/props/metal_box.mdl", "models/player/chell/player.mdl", "models/player/eggbot/eggbot.mdl", "models/player/ballbot/ballbot.mdl", "models/props/radio_reference.mdl", "models/props/food_can/food_can_open.mdl", "models/npcs/turret/turret.mdl", "models/npcs/bird/bird.mdl"})) {
@@ -393,4 +406,203 @@ void GhostEntity::DrawName() {
 	}
 
 	OverlayRender::addText(nameCoords, 0, 0, this->name, scheme->GetFontByID(ghost_name_font.GetInt()));
+}
+
+ON_EVENT(PRE_TICK) {
+	if (!sv_cheats.GetBool()) GhostEntity::StopFollowing();
+}
+
+GhostEntity *GhostEntity::GetFollowTarget() {
+	if (GhostEntity::followId == -1) return nullptr;
+
+	GhostEntity *ghost = GhostEntity::followNetwork ? networkManager.GetGhostByID(GhostEntity::followId).get() : demoGhostPlayer.GetGhostByID(GhostEntity::followId);
+	if (!ghost || !ghost->sameMap) return nullptr;
+
+	return ghost;
+}
+
+void GhostEntity::FollowPov(CViewSetup *view) {
+	GhostEntity *ghost = GhostEntity::GetFollowTarget();
+	if (!ghost) return;
+
+	auto pos = ghost->data.position + Vector{0, 0, ghost->data.view_offset};
+	auto angles = ghost->data.view_angle;
+
+	if (!ghost_spec_thirdperson.GetBool()) {
+		view->origin = pos;
+		view->angles = angles;
+	} else {
+		// Cast a ray out from the ghost in the opposite of the direction we
+		// want to view from; that way, we can avoid the camera clipping
+		// into a wall
+
+		void *player = server->GetPlayer(1);
+		if (!player) return; // Probably shouldn't ever happen
+
+		angles = engine->GetAngles(0);
+
+		CTraceFilterSimple filter;
+		filter.SetPassEntity(player);
+
+		Vector forward;
+		Math::AngleVectors(angles, &forward);
+
+		const float cam_wall_dist = 32.0f;
+		const float max_dist = ghost_spec_thirdperson_dist.GetFloat() + cam_wall_dist;
+
+		Vector delta = forward * -max_dist;
+
+		Ray_t ray;
+		ray.m_IsRay = true;
+		ray.m_IsSwept = true;
+		ray.m_Start = VectorAligned(pos.x, pos.y, pos.z);
+		ray.m_Delta = VectorAligned(delta.x, delta.y, delta.z);
+		ray.m_StartOffset = {};
+		ray.m_Extents = {};
+
+		CGameTrace tr;
+
+		engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_SOLID_BRUSHONLY, &filter, &tr);
+
+		Vector campos = tr.endpos + forward * cam_wall_dist;
+
+		view->origin = campos;
+		view->angles = angles;
+	}
+}
+
+static int r_portalsopenall_value;
+static int r_drawviewmodel_value;
+static int crosshair_value;
+
+void GhostEntity::StopFollowing() {
+	if (GhostEntity::followId == -1) return;
+	GhostEntity::followId = -1;
+	r_portalsopenall.SetValue(r_portalsopenall_value);
+	r_drawviewmodel.SetValue(r_drawviewmodel_value);
+	crosshairVariable.SetValue(crosshair_value);
+}
+
+void GhostEntity::StartFollowing(GhostEntity *ghost) {
+	GhostEntity::followId = ghost->ID;
+	GhostEntity::followNetwork = ghost->network;
+
+	r_portalsopenall_value = r_portalsopenall.GetInt();
+	r_drawviewmodel_value = r_drawviewmodel.GetInt();
+	crosshair_value = crosshairVariable.GetInt();
+	r_portalsopenall.SetValue(1);
+	r_drawviewmodel.SetValue(0);
+	crosshairVariable.SetValue(0);
+
+	if (!ghost->sameMap) {
+		auto cmd = Utils::ssprintf("changelevel %s", ghost->currentMap.c_str());
+		engine->ExecuteCommand(cmd.c_str());
+	}
+}
+
+bool GhostEntity::IsBeingFollowed() {
+	return GhostEntity::followId == this->ID && GhostEntity::followNetwork == this->network;
+}
+
+DECL_COMMAND_COMPLETION(ghost_spec_pov) {
+	if (std::strlen(match) == std::strlen(cmd)) {
+		items.push_back("none");
+	} else if (std::strstr("none", match)) {
+		items.push_back("none");
+	}
+
+	if (networkManager.isConnected && networkManager.spectator) {
+		networkManager.ghostPoolLock.lock();
+		for (auto ghost : networkManager.ghostPool) {
+			if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+				break;
+			}
+
+			if (std::strlen(match) != std::strlen(cmd)) {
+				if (std::strstr(ghost->name.c_str(), match)) {
+					items.push_back(ghost->name);
+				}
+			} else {
+				items.push_back(ghost->name);
+			}
+		}
+		networkManager.ghostPoolLock.unlock();
+	} else {
+		for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
+			if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+				break;
+			}
+
+			if (std::strlen(match) != std::strlen(cmd)) {
+				if (std::strstr(ghost.name.c_str(), match)) {
+					items.push_back(ghost.name);
+				}
+			} else {
+				items.push_back(ghost.name);
+			}
+		}
+	}
+
+	FINISH_COMMAND_COMPLETION();
+}
+
+CON_COMMAND_F_COMPLETION(ghost_spec_pov, "ghost_spec_pov <name|none> - spectate the specified ghost\n", 0, ghost_spec_pov_CompletionFunc) {
+	if (args.ArgC() != 2) {
+		return console->Print(ghost_spec_pov.ThisPtr()->m_pszHelpString);
+	}
+
+	if (!demoGhostPlayer.IsPlaying() && !networkManager.isConnected) {
+		return console->Print("Not playing or connected to a server!\n");
+	}
+
+	if (!sv_cheats.GetBool()) {
+		return console->Print("ghost_spec_pov requires sv_cheats 1!\n");
+	}
+
+	if (!strcmp(args[1], "") || !strcmp(args[1], "none")) {
+		GhostEntity::StopFollowing();
+		return;
+	}
+
+	bool found = false;
+
+	if (networkManager.isConnected && networkManager.spectator) {
+		networkManager.ghostPoolLock.lock();
+		for (auto ghost : networkManager.ghostPool) {
+			if (ghost->name == args[1]) {
+				GhostEntity::StartFollowing(ghost.get());
+				found = true;
+				break;
+			}
+		}
+		networkManager.ghostPoolLock.unlock();
+	} else {
+		for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
+			if (ghost.name == args[1]) {
+				GhostEntity::StartFollowing(&ghost);
+				found = true;
+				break;
+			}
+		}
+	}
+
+	if (found) {
+		auto ang = GhostEntity::GetFollowTarget()->data.view_angle;
+		engine->SetAngles(1, ang);
+	} else {
+		console->Print("No such ghost!\n");
+	}
+}
+
+// Makes sure some visibility shit is correct
+ON_EVENT(PRE_TICK) {
+	if (!session->isRunning) return;
+
+	GhostEntity *ghost = GhostEntity::GetFollowTarget();
+	if (!ghost) return;
+
+	// We use ent_setpos to prevent 'setpos into world' errors being
+	// spewed in console
+	auto cmd = Utils::ssprintf("ent_setpos 1 %.6f %.6f %.6f", ghost->data.position.x, ghost->data.position.y, ghost->data.position.z);
+	engine->ExecuteCommand(cmd.c_str());
 }

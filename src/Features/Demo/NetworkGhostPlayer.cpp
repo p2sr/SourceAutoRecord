@@ -20,6 +20,7 @@
 #include <set>
 
 Variable ghost_sync_countdown("ghost_sync_countdown", "3", 0, "The number of seconds of countdown to show at the start of every synced map. 0 to disable.\n");
+Variable ghost_spec_see_spectators("ghost_spec_see_spectators", "1", 0, "Whether to see other spectators while spectating.\n");
 
 #define DrawTxtRightAlign(font, x, y, clr, ...)               \
 	do {                                                         \
@@ -314,10 +315,11 @@ NetworkManager::NetworkManager()
 	, serverPort(53000)
 	, name("")
 	, isCountdownReady(false)
-	, modelName("models/props/food_can/food_can_open.mdl") {
+	, modelName("models/props/food_can/food_can_open.mdl")
+	, spectator(false) {
 }
 
-void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port) {
+void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port, bool spectator) {
 	if (this->tcpSocket.connect(ip, port, sf::seconds(5))) {
 		toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Connection timed out! Cannot connect to the server at %s:%d", ip.toString().c_str(), port));
 		return;
@@ -334,8 +336,10 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port) {
 	this->serverIP = ip;
 	this->serverPort = port;
 
+	this->spectator = spectator;
+
 	sf::Packet connection_packet;
-	connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{{0, 0, 0}, {0, 0, 0}, 0, false} << this->modelName.c_str() << engine->GetCurrentMapName().c_str() << ghost_TCP_only.GetBool() << GhostEntity::set_color;
+	connection_packet << HEADER::CONNECT << this->udpSocket.getLocalPort() << this->name.c_str() << DataGhost{{0, 0, 0}, {0, 0, 0}, 0, false} << this->modelName.c_str() << engine->GetCurrentMapName().c_str() << ghost_TCP_only.GetBool() << GhostEntity::set_color << spectator;
 	this->tcpSocket.send(connection_packet);
 
 	{
@@ -357,29 +361,41 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port) {
 		confirm_connection >> this->ID;
 
 		//Add every player connected to the ghostPool
-		sf::Uint32 nb_players;
-		confirm_connection >> nb_players;
-		for (sf::Uint32 i = 0; i < nb_players; ++i) {
+		int nb_players = 0;
+		int nb_spectators = 0;
+		sf::Uint32 nb_ghosts;
+		confirm_connection >> nb_ghosts;
+		for (sf::Uint32 i = 0; i < nb_ghosts; ++i) {
 			sf::Uint32 ID;
 			std::string name;
 			DataGhost data;
 			std::string model_name;
 			std::string current_map;
 			Color color;
-			confirm_connection >> ID >> name >> data >> model_name >> current_map >> color;
+			bool spectator;
+			confirm_connection >> ID >> name >> data >> model_name >> current_map >> color >> spectator;
 
-			auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map);
+			auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map, true);
 			ghost->modelName = model_name;
 			ghost->color = color;
+			ghost->spectator = spectator;
 			this->ghostPoolLock.lock();
 			this->ghostPool.push_back(ghost);
 			this->ghostPoolLock.unlock();
+			if (spectator) ++nb_spectators;
+			else ++nb_players;
 		}
+
 		this->UpdateGhostsSameMap();
 		if (engine->isRunning()) {
 			this->SpawnAllGhosts();
 		}
-		toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Successfully connected to the server!\n%d other players connected\n", nb_players));
+
+		if (this->spectator) {
+			toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Successfully connected to the server as a spectator!\n%d players and %d other spectators connected\n", nb_players, nb_spectators));
+		} else {
+			toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Successfully connected to the server!\n%d other players connected\n", nb_players));
+		}
 	}  //End of the scope. Will kill the Selector
 
 	this->isConnected = true;
@@ -550,7 +566,7 @@ void NetworkManager::SendMessageToAll(std::string msg) {
 	sf::Packet packet;
 	packet << HEADER::MESSAGE << this->ID << msg.c_str();
 	this->tcpSocket.send(packet);
-	client->NameChat(GhostEntity::set_color, this->name.c_str(), {255,255,255}, msg.c_str());
+	client->NameChat(GhostEntity::set_color, Utils::ssprintf("%s%s", this->name.c_str(), this->spectator ? " (spectator)" : "").c_str(), {255,255,255}, msg.c_str());
 }
 
 void NetworkManager::SendPing() {
@@ -596,10 +612,12 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		std::string model_name;
 		std::string current_map;
 		Color col;
-		packet >> name >> data >> model_name >> current_map >> col;
-		auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map);
+		bool spectator;
+		packet >> name >> data >> model_name >> current_map >> col >> spectator;
+		auto ghost = std::make_shared<GhostEntity>(ID, name, data, current_map, true);
 		ghost->modelName = model_name;
 		ghost->color = col;
+		ghost->spectator = spectator;
 
 		addToNetDump("recv-connect", Utils::ssprintf("%d;%s;%s", ID, name.c_str(), current_map.c_str()).c_str());
 
@@ -608,15 +626,19 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		this->ghostPoolLock.unlock();
 
 		Scheduler::OnMainThread([=]() {
-			if (!strcmp("", current_map.c_str())) {
-				toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has connected in the menu!", name.c_str()));
-			} else {
-				toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has connected in %s!", name.c_str(), current_map.c_str()));
+			if (this->AcknowledgeGhost(ghost)) {
+				if (!strcmp("", current_map.c_str())) {
+					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s%s has connected in the menu!", name.c_str(), ghost->spectator ? " (spectator)" : ""));
+				} else {
+					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s%s has connected in %s!", name.c_str(), ghost->spectator ? " (spectator)" : "", current_map.c_str()));
+				}
 			}
 
 			this->UpdateGhostsSameMap();
-			if (ghost->sameMap && engine->isRunning()) {
-				ghost->Spawn();
+			if (this->AcknowledgeGhost(ghost)) {
+				if (ghost->sameMap && engine->isRunning()) {
+					ghost->Spawn();
+				}
 			}
 		});
 
@@ -630,7 +652,9 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 			if (this->ghostPool[i]->ID == ID) {
 				auto ghost = this->ghostPool[i];
 				Scheduler::OnMainThread([=]() {
-					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has disconnected!", ghost->name.c_str()));
+					if (this->AcknowledgeGhost(ghost)) {
+						toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s%s has disconnected!", ghost->name.c_str(), ghost->spectator ? " (spectator)" : ""));
+					}
 					ghost->DeleteGhost();
 				});
 				this->ghostPool[i]->isDestroyed = true;
@@ -682,10 +706,15 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 					}
 				}
 
-				if (ghost->sameMap) {
+				if (ghost->sameMap && this->AcknowledgeGhost(ghost)) {
 					ghost->Spawn();
 				} else {
 					ghost->DeleteGhost();
+				}
+
+				if (ghost->IsBeingFollowed()) {
+					auto cmd = Utils::ssprintf("changelevel %s", ghost->currentMap.c_str());
+					engine->ExecuteCommand(cmd.c_str());
 				}
 
 				if (ghost_sync.GetBool()) {
@@ -713,22 +742,29 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		break;
 	}
 	case HEADER::MESSAGE: {
-		auto ghost = this->GetGhostByID(ID);
-		if (ghost) {
-			std::string message;
-			packet >> message;
-			addToNetDump("recv-message", Utils::ssprintf("%d;%s", ID, message.c_str()).c_str());
-			Scheduler::OnMainThread([=]() {
-				Color col = ghost->GetColor();
-				col._color[3] = 255; // alpha
+		std::string message;
+		packet >> message;
+		addToNetDump("recv-message", Utils::ssprintf("%d;%s", ID, message.c_str()).c_str());
+		if (ID == 0) {
+			// Message from server!
+			client->NameChat({255,50,40}, "SERVER", {255,100,100}, message.c_str());
+		} else {
+			auto ghost = this->GetGhostByID(ID);
+			if (ghost) {
+				Scheduler::OnMainThread([=]() {
+					Color col = ghost->GetColor();
+					col._color[3] = 255; // alpha
 
-				if (col.r() == 0 && col.g() == 0 && col.b() == 0) {
-					// Black is the default ghost color. Override it with a slight grey, since black looks really bad in chat
-					col = {204,204,204};
-				}
+					if (col.r() == 0 && col.g() == 0 && col.b() == 0) {
+						// Black is the default ghost color. Override it with a slight grey, since black looks really bad in chat
+						col = {192,192,192};
+					}
 
-				client->NameChat(col, ghost->name.c_str(), {255,255,255}, message.c_str());
-			});
+					if (this->AcknowledgeGhost(ghost)) {
+						client->NameChat(col, Utils::ssprintf("%s%s", ghost->name.c_str(), ghost->spectator ? " (spectator)" : "").c_str(), {255,255,255}, message.c_str());
+					}
+				});
+			}
 		}
 		break;
 	}
@@ -779,7 +815,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 					return;  // FIXME: this probably works in practice, but it isn't entirely thread-safe
 				if (ghost->sameMap && engine->isRunning()) {
 					ghost->DeleteGhost();
-					ghost->Spawn();
+					if (this->AcknowledgeGhost(ghost)) ghost->Spawn();
 				}
 			});
 		}
@@ -818,14 +854,18 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 }
 
 void NetworkManager::UpdateGhostsPosition() {
+	// Copy the pool since rendering via Lerp tries to lock the pool
+	// further down in processing
 	this->ghostPoolLock.lock();
-	for (auto ghost : this->ghostPool) {
-		if (ghost->sameMap) {
+	auto pool_copy(this->ghostPool);
+	this->ghostPoolLock.unlock();
+
+	for (auto ghost : pool_copy) {
+		if (ghost->sameMap && this->AcknowledgeGhost(ghost)) {
 			auto time = std::chrono::duration_cast<std::chrono::milliseconds>(NOW_STEADY() - ghost->lastUpdate).count();
 			ghost->Lerp(((float)time / (ghost->loopTime)));
 		}
 	}
-	this->ghostPoolLock.unlock();
 }
 
 std::shared_ptr<GhostEntity> NetworkManager::GetGhostByID(sf::Uint32 ID) {
@@ -878,6 +918,7 @@ bool NetworkManager::AreAllGhostsAheadOrSameMap() {
 	syncUi.waiting.clear();
 	bool allReady = true;
 	for (auto ghost : this->ghostPool) {
+		if (ghost->spectator) continue;
 		if (!ghost->isAhead && !ghost->sameMap) {
 			syncUi.waiting.push_back(ghost->ID);
 			allReady = false;
@@ -894,7 +935,9 @@ void NetworkManager::SpawnAllGhosts() {
 	this->ghostPoolLock.lock();
 	for (auto ghost : this->ghostPool) {
 		if (ghost->sameMap) {
-			ghost->Spawn();
+			if (this->AcknowledgeGhost(ghost)) {
+				ghost->Spawn();
+			}
 		}
 	}
 	this->ghostPoolLock.unlock();
@@ -948,6 +991,12 @@ bool NetworkManager::IsSyncing() {
 	return this->isConnected.load() && syncUi.active;
 }
 
+bool NetworkManager::AcknowledgeGhost(std::shared_ptr<GhostEntity> ghost) {
+	if (ghost->isDestroyed) return false;
+	if (!ghost->spectator) return true;
+	return this->spectator && ghost_spec_see_spectators.GetBool();
+}
+
 ON_EVENT(RENDER) {
 	if (networkManager.isConnected && engine->isRunning()) {
 		networkManager.UpdateGhostsPosition();
@@ -986,9 +1035,9 @@ ON_EVENT(SESSION_START) {
 // Commands
 
 CON_COMMAND(ghost_connect,
-            "ghost_connect <ip address> <port> - connect to the server\n"
-            "ex: 'localhost 53000' - '127.0.0.1 53000' - 89.10.20.20 53000'.\n") {
-	if (args.ArgC() != 2 && args.ArgC() != 3) {
+            "ghost_connect <ip address> <port> [spectator] - connect to the server\n"
+            "ex: 'localhost 53000 1' - '127.0.0.1 53000' - 89.10.20.20 53000'.\n") {
+	if (args.ArgC() < 2 || args.ArgC() > 4) {
 		return console->Print(ghost_connect.ThisPtr()->m_pszHelpString);
 	}
 
@@ -1000,7 +1049,7 @@ CON_COMMAND(ghost_connect,
 		return console->Print("You must disconnect from your current ghost server before connecting to another.\n");
 	}
 
-	networkManager.Connect(args[1], args.ArgC() == 3 ? std::atoi(args[2]) : 53000);
+	networkManager.Connect(args[1], args.ArgC() >= 3 ? std::atoi(args[2]) : 53000, args.ArgC() >= 4 ? std::atoi(args[3]) : false);
 }
 
 CON_COMMAND(ghost_disconnect, "ghost_disconnect - disconnect\n") {

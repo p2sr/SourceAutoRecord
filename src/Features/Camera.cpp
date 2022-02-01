@@ -43,7 +43,6 @@ Variable sar_cam_path_interp("sar_cam_path_interp", "2", 0, 2,
 );
 
 Variable cl_skip_player_render_in_main_view;
-Variable r_drawviewmodel;
 Variable ss_force_primary_fullscreen;
 
 void ResetCameraRelatedCvars() {
@@ -58,7 +57,6 @@ Camera::Camera() {
 
 	//a bunch of console variables later used in a janky hack
 	cl_skip_player_render_in_main_view = Variable("cl_skip_player_render_in_main_view");
-	r_drawviewmodel = Variable("r_drawviewmodel");
 	ss_force_primary_fullscreen = Variable("ss_force_primary_fullscreen");
 }
 

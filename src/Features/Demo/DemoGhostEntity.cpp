@@ -9,7 +9,7 @@
 #include <algorithm>
 
 DemoGhostEntity::DemoGhostEntity(unsigned int ID, std::string name, DataGhost data, std::string currentMap)
-	: GhostEntity(ID, name, data, currentMap)
+	: GhostEntity(ID, name, data, currentMap, false)
 	, currentDemo(0)
 	, demoTick(0)
 	, nbDemoTicks(0)
@@ -46,6 +46,10 @@ void DemoGhostEntity::NextDemo() {
 		if (ghost_show_advancement.GetInt() >= 3) {
 			std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), this->currentMap.c_str());
 			toastHud.AddToast(GHOST_TOAST_TAG, msg);
+		}
+		if (this->IsBeingFollowed()) {
+			auto cmd = Utils::ssprintf("changelevel %s", this->currentMap.c_str());
+			engine->ExecuteCommand(cmd.c_str());
 		}
 	} else {
 		this->hasFinished = true;

@@ -9,7 +9,6 @@
 #include <chrono>
 #include <optional>
 
-
 #define GHOST_TOAST_TAG "ghost"
 
 struct DataGhost {
@@ -30,6 +29,7 @@ enum class GhostType {
 class GhostEntity {
 public:
 	unsigned int ID;
+	bool network;
 	std::string name;
 	DataGhost data;
 	std::string currentMap;
@@ -52,13 +52,13 @@ public:
 	static GhostType ghost_type;
 	static std::string defaultModelName;
 	static Color set_color;
-
+	bool spectator;
 	bool isDestroyed;  // used by NetworkGhostPlayer for sync reasons
 
 	static void KillAllGhosts();
 
 public:
-	GhostEntity(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map);
+	GhostEntity(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map, bool network);
 	~GhostEntity();
 
 	void Spawn();
@@ -70,6 +70,14 @@ public:
 	float GetOpacity();
 	Color GetColor();
 	void DrawName();
+
+	static bool followNetwork;
+	static int followId;
+	static GhostEntity *GetFollowTarget();
+	static void FollowPov(CViewSetup *view);
+	static void StopFollowing();
+	static void StartFollowing(GhostEntity *ghost);
+	bool IsBeingFollowed();
 };
 
 extern Variable ghost_height;

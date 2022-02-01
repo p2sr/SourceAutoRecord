@@ -132,6 +132,7 @@ ON_EVENT(FRAME) {
 		}
 	}
 	g_last_group = SIZE_MAX;
+	g_text.clear();
 }
 
 void OverlayRender::startShading(Vector point) {

@@ -6,6 +6,7 @@
 #include "Features/Session.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/Server.hpp"
 #include "NetworkGhostPlayer.hpp"
 #include "Utils.hpp"
 

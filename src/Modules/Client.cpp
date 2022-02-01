@@ -6,6 +6,7 @@
 #include "Event.hpp"
 #include "Features/Camera.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
+#include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/FovChanger.hpp"
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/Hud/InputHud.hpp"
@@ -40,6 +41,8 @@ Variable crosshairVariable;
 Variable cl_fov;
 Variable prevent_crouch_jump;
 Variable r_portaltestents;
+Variable r_portalsopenall;
+Variable r_drawviewmodel;
 
 Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
 Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disables the saving/saved HUD which appears when you make a save.\n");
@@ -178,6 +181,13 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd *cmd) {
 
 	if (sv_cheats.GetBool() && engine->hoststate->m_activeGame) {
 		camera->OverrideMovement(cmd);
+	}
+
+	if (GhostEntity::GetFollowTarget()) {
+		cmd->buttons = 0;
+		cmd->forwardmove = 0;
+		cmd->sidemove = 0;
+		cmd->upmove = 0;
 	}
 
 	if (engine->hoststate->m_activeGame) {
@@ -399,6 +409,8 @@ DETOUR_COMMAND(Client::playvideo_end_level_transition) {
 DETOUR(Client::OverrideView, CViewSetup *m_View) {
 	camera->OverrideView(m_View);
 	Stitcher::OverrideView(m_View);
+	GhostEntity::FollowPov(m_View);
+	
 	return Client::OverrideView(thisptr, m_View);
 }
 
@@ -590,6 +602,8 @@ bool Client::Init() {
 	prevent_crouch_jump = Variable("prevent_crouch_jump");
 	crosshairVariable = Variable("crosshair");
 	r_portaltestents = Variable("r_portaltestents");
+	r_portalsopenall = Variable("r_portalsopenall");
+	r_drawviewmodel = Variable("r_drawviewmodel");
 
 	// Useful for fixing rendering bugs
 	r_portaltestents.RemoveFlag(FCVAR_CHEAT);
