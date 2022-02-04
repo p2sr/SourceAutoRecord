@@ -276,6 +276,26 @@ DETOUR(Client::MsgFunc_SayText2, bf_read &msg) {
 		str += c;
 	}
 
+	if (str != "\x01Portal2_Coloured_Chat_Format") {
+		console->Print("Your partner is on an old version of Portal 2! Tell them to update.\n");
+		msg = pre;
+		return Client::MsgFunc_SayText2(thisptr, msg);
+	}
+
+	// Skip player name
+	while (true) {
+		char c = (char)(uint8_t)msg.ReadUnsigned(8);
+		if (!c) break;
+	}
+
+	// Read actual message
+	str = "";
+	while (true) {
+		char c = (char)(uint8_t)msg.ReadUnsigned(8);
+		if (!c) break;
+		str += c;
+	}
+
 	if (NetMessage::ChatData(str)) {
 		// skip the other crap, just in case it matters
 		msg.ReadUnsigned(8);

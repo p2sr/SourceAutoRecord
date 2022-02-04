@@ -100,13 +100,10 @@ void NetMessage::Update() {
 }
 
 bool NetMessage::ChatData(std::string str) {
-	if (str[str.size() - 1] != '\n') return false;
+	if (!Utils::StartsWith(str.c_str(), "!SAR:")) return false;
 
-	size_t pos = str.find(": !SAR:");
-	if (pos == std::string::npos) return false;
-
-	// Strips header and trailing newline
-	str = str.substr(pos + 7, str.size() - pos - 8);
+	// Strips header
+	str = str.substr(5);
 
 	if (str[0] != 'o' && str[0] != 'b') return false;
 	if (str[1] != ':') return false;
@@ -117,7 +114,7 @@ bool NetMessage::ChatData(std::string str) {
 	// Strip o: or b:
 	str = str.substr(2, str.size() - 2);
 
-	pos = str.find(":");
+	size_t pos = str.find(":");
 	if (pos == std::string::npos) return false;
 
 	std::string type = str.substr(0, pos);
