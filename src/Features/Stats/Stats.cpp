@@ -8,6 +8,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Offsets.hpp"
+#include "StatsCounter.hpp"
 #include "StatsResultType.hpp"
 #include "StepStats.hpp"
 #include "Utils.hpp"
@@ -138,7 +139,7 @@ CON_COMMAND(sar_export_stats, "sar_export_stats <filepath> -  export the stats t
 	std::string path = args.ArgC() == 1 ? sar_statcounter_filePath.GetString() : args[1];
 
 	if (args.ArgC() >= 1) {
-		result = stat->statsCounter->ExportToFile(path);
+		result = statsCounter->ExportToFile(path);
 	} else {
 		return console->Print(sar_export_stats.ThisPtr()->m_pszHelpString);
 	}
@@ -158,7 +159,7 @@ CON_COMMAND(sar_import_stats, "sar_import_stats <filePath> - import the stats fr
 	std::string path = args.ArgC() == 1 ? sar_statcounter_filePath.GetString() : args[1];
 
 	if (args.ArgC() >= 1) {
-		result = stat->statsCounter->LoadFromFile(path);
+		result = statsCounter->LoadFromFile(path);
 	} else {
 		return console->Print(sar_import_stats.ThisPtr()->m_pszHelpString);
 	}
@@ -171,7 +172,5 @@ CON_COMMAND(sar_import_stats, "sar_import_stats <filePath> - import the stats fr
 }
 
 CON_COMMAND(sar_print_stats, "sar_print_stats - prints your statistics if those are loaded\n") {
-	auto current = 1;
-	auto nSlot = GET_SLOT();
-	stats->Get(nSlot)->statsCounter->Print();
+	statsCounter->Print();
 }

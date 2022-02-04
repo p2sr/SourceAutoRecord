@@ -2,7 +2,6 @@
 #include "Features/Feature.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "JumpStats.hpp"
-#include "StatsCounter.hpp"
 #include "StepStats.hpp"
 #include "Variable.hpp"
 #include "VelocityStats.hpp"
@@ -13,13 +12,11 @@ struct PlayerStats {
 	JumpStats *jumps;
 	StepStats *steps;
 	VelocityStats *velocity;
-	StatsCounter *statsCounter;
 
 	PlayerStats()
 		: jumps(new JumpStats())
 		, steps(new StepStats())
-		, velocity(new VelocityStats())
-		, statsCounter(new StatsCounter()) {
+		, velocity(new VelocityStats()) {
 	}
 	void Reset() {
 		this->jumps->Reset();
@@ -30,7 +27,6 @@ struct PlayerStats {
 		SAFE_DELETE(this->jumps);
 		SAFE_DELETE(this->steps);
 		SAFE_DELETE(this->velocity);
-		SAFE_DELETE(this->statsCounter);
 	}
 };
 

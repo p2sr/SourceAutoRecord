@@ -16,7 +16,7 @@
 #include "CrashHandler.hpp"
 #include "Event.hpp"
 #include "Features.hpp"
-#include "Features/Stats/Stats.hpp"
+#include "Features/Stats/StatsCounter.hpp"
 #include "Game.hpp"
 #include "Hook.hpp"
 #include "Interface.hpp"
@@ -184,6 +184,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->features->AddFeature<Teleporter>(&teleporter);
 			SpeedrunTimer::Init();
 			this->features->AddFeature<Stats>(&stats);
+			this->features->AddFeature<StatsCounter>(&statsCounter);
 			this->features->AddFeature<Sync>(&synchro);
 			this->features->AddFeature<ReloadedFix>(&reloadedFix);
 			this->features->AddFeature<Timer>(&timer);
@@ -231,6 +232,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 				if (listener) {
 					listener->Init();
 				}
+
+				statsCounter->Init();
 
 				this->SearchPlugin();
 
@@ -365,9 +368,8 @@ CON_COMMAND(sar_exit, "sar_exit - removes all function hooks, registered command
 	
 	Event::Trigger<Event::SAR_UNLOAD>({});
 	curl_global_cleanup();
-	auto statCounter = stats->Get(GET_SLOT())->statsCounter;
-	statCounter->RecordDatas(session->GetTick());
-	statCounter->ExportToFile(sar_statcounter_filePath.GetString());
+	statsCounter->RecordDatas(session->GetTick());
+	statsCounter->ExportToFile(sar_statcounter_filePath.GetString());
 
 	networkManager.Disconnect();
 

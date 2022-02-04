@@ -1,5 +1,6 @@
 #pragma once
 #include "Command.hpp"
+#include "Features.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
 
@@ -7,30 +8,27 @@
 #include <map>
 #include <string>
 
-#define SAR_CM_COUNTER_EXPORT_HEADER "Map Name,CM Retries,CM Time Spent,FullGame Reloads,FullGame Time Spent"
-#define SAR_FULLGAME_COUNTER_EXPORT_HEADER "Completed Runs,Avg Reset Time,Nb Reset,Total Time SP,Portal Count"
+#define SAR_MAP_COUNTER_EXPORT_HEADER "Map Name,CM Retries,CM Total Time,FG Reloads,FG Total Time"
+#define SAR_CM_COUNTER_EXPORT_HEADER "Nb CM Reset,Total Time CM"
+#define SAR_FULLGAME_COUNTER_EXPORT_HEADER "Completed Runs,Avg Reset Time,Nb Reset,Total Time SP,Total Time Coop,Portal Count"
 #define SAR_TOTAL_COUNTER_EXPORT_HEADER "Total Time In-Game"
 
-struct CMStats {
-	int retries;
-	float secondSpent;
+struct MapStats {
+	bool coop;
+	int CMretries;
+	float CMTotalTime;
+	int FullGameRetries;
+	float FullGameTotalTime;
+	float secondsSpent;
 };
 
-struct FullGameStats {
-	int retries;
-	float secondSpent;
-};
-
-class StatsCounter {
+class StatsCounter : public Feature {
 private:
-	std::map<std::string, CMStats> CMMapsStats;
-	std::map<std::string, FullGameStats> fullGameMapsStats;
+	std::map<std::string, MapStats> mapStats;
 
 	int completedRuns;
 	float avgResetTime;
 	int nbReset;
-	float totalTimeSP;
-	//int totalTimeCoop; //When SAR will support Coop
 	int portalCount;
 
 	float totalTimeInGame;
@@ -47,5 +45,7 @@ public:
 	void Print();
 	void RecordDatas(const int tick);
 };
+
+extern StatsCounter *statsCounter;
 
 extern Variable sar_statcounter_filePath;

@@ -9,6 +9,7 @@
 #include "Features/SegmentedTools.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
+#include "Features/Stats/StatsCounter.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
 #include "Features/Timer/Timer.hpp"
@@ -151,8 +152,7 @@ void Session::Ended() {
 		listener->Reset();
 	}
 
-	auto nSlot = GET_SLOT();
-	stats->Get(nSlot)->statsCounter->RecordDatas(tick);
+	statsCounter->RecordDatas(tick);
 
 	demoGhostPlayer.DeleteAllGhostModels();
 	networkManager.DeleteAllGhosts();
