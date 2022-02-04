@@ -159,6 +159,9 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 		if (std::filesystem::exists("sar.dll.old-auto")) {
 			std::filesystem::remove("sar.dll.old-auto");
 		}
+		if (std::filesystem::exists("sar.pdb.old-auto")) {
+			std::filesystem::remove("sar.pdb.old-auto");
+		}
 	} catch (...) {
 	}
 #endif

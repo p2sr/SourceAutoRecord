@@ -19,6 +19,8 @@ extern "C" {
 
 #ifdef _WIN32
 #	define ASSET_NAME "sar.dll"
+#	define PDB_ASSET_NAME "sar.pdb"
+#	define PDB_PATH "sar.pdb"
 #else
 #	define ASSET_NAME "sar.so"
 #endif
@@ -149,7 +151,7 @@ static std::string request(const char *url) {
 	return res == CURLE_OK ? response : "";
 }
 
-static bool getLatestVersion(std::string *name, std::string *dlUrl, bool allowPre) {
+static bool getLatestVersion(std::string *name, std::string *dlUrl, std::string *pdbUrl, bool allowPre) {
 	json11::Json res;
 	if (allowPre) {
 		std::string err;
@@ -175,13 +177,23 @@ static bool getLatestVersion(std::string *name, std::string *dlUrl, bool allowPr
 	for (auto asset : res["assets"].array_items()) {
 		if (asset["name"].string_value() == ASSET_NAME) {
 			*dlUrl = asset["browser_download_url"].string_value();
-			break;
 		}
+#ifdef _WIN32
+		if (asset["name"].string_value() == PDB_ASSET_NAME) {
+			*pdbUrl = asset["browser_download_url"].string_value();
+		}
+#endif
 	}
 
 	if (*dlUrl == "") {
 		return false;
 	}
+
+#ifdef _WIN32
+	if (*pdbUrl == "") {
+		return false;
+	}
+#endif
 
 	return true;
 }
@@ -203,11 +215,11 @@ static std::string createTempPath(const char *filename) {
 }
 
 void checkUpdate(bool allowPre) {
-	std::string name, dlUrl;
+	std::string name, dlUrl, pdbUrl;
 
 	THREAD_PRINT("Querying for latest version...\n");
 
-	if (!getLatestVersion(&name, &dlUrl, allowPre)) {
+	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, allowPre)) {
 		THREAD_PRINT("An error occurred\n");
 		return;
 	}
@@ -222,11 +234,11 @@ void checkUpdate(bool allowPre) {
 }
 
 void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
-	std::string name, dlUrl;
+	std::string name, dlUrl, pdbUrl;
 
 	THREAD_PRINT("Querying for latest version...\n");
 
-	if (!getLatestVersion(&name, &dlUrl, allowPre)) {
+	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, allowPre)) {
 		THREAD_PRINT("An error occurred\n");
 		return;
 	}
@@ -238,6 +250,9 @@ void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 
 	std::string sar = Utils::GetSARPath();
 	std::string tmp = createTempPath(ASSET_NAME);
+#ifdef _WIN32
+	std::string tmpPdb = createTempPath(PDB_ASSET_NAME);
+#endif
 
 	// Step 1: download SAR to the given temporary file
 	THREAD_PRINT("Downloading SAR %s...\n", name.c_str());
@@ -246,12 +261,22 @@ void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 		return;
 	}
 
+#ifdef _WIN32
+	if (!downloadFile(pdbUrl.c_str(), tmpPdb.c_str())) {
+		THREAD_PRINT("An error occurred\n");
+		return;
+	}
+#endif
+
 	// Step 2: delete the current SAR image. For some reason, on Linux
 	// we have to delete it, while on Windows we have to move it. Don't
 	// ask because I don't know
 	THREAD_PRINT("Deleting old version...\n");
 #ifdef _WIN32
 	std::filesystem::rename(sar, "sar.dll.old-auto");
+	if (std::filesystem::exists(PDB_PATH)) {
+		std::filesystem::rename(PDB_PATH, "sar.pdb.old-auto");
+	}
 #else
 	std::filesystem::remove(sar);
 #endif
@@ -262,6 +287,10 @@ void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 	THREAD_PRINT("Installing...\n", name.c_str());
 	std::filesystem::copy(tmp, sar);
 	std::filesystem::remove(tmp);
+#ifdef _WIN32
+	std::filesystem::copy(tmpPdb, PDB_PATH);
+	std::filesystem::remove(tmpPdb);
+#endif
 
 	THREAD_PRINT("Success! You should now restart your game.\n");
 
