@@ -467,7 +467,9 @@ bool Client::Init() {
 			if (this->g_HudChat = Interface::Create(CHudChat)) {
 				this->ChatPrintf = g_HudChat->Original<_ChatPrintf>(Offsets::ChatPrintf);
 				this->StartMessageMode = g_HudChat->Original<_StartMessageMode>(Offsets::ChatPrintf + 1);
-				this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayText2);
+				if (sar.game->Is(SourceGame_Portal2)) {
+					this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayText2);
+				}
 			}
 
 			auto CHudMultiplayerBasicInfo = FindElement(GetHud(-1), "CHudMultiplayerBasicInfo");
