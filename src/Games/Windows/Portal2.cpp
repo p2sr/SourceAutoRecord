@@ -158,7 +158,7 @@ void Portal2::LoadOffsets() {
 	m_bLoadGame = 448;                     // CGameClient::ActivatePlayer/CBaseServer::m_szLevelName
 	ScreenPosition = 12;                   // CIVDebugOverlay
 	MAX_SPLITSCREEN_PLAYERS = 2;           // maxplayers
-	OnGameOverlayActivated = 144;          // CSteam3Client
+	OnGameOverlayActivated = 148;          // CSteam3Client
 	IsAsleep = 2;                          // IPhysicsObject
 	IsCollisionEnabled = 6;                // IPhysicsObject
 	IsGravityEnabled = 7;                  // IPhysicsObject
