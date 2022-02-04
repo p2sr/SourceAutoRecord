@@ -627,7 +627,7 @@ bool Server::Init() {
 #else
 		{
 			uintptr_t airMove = (uintptr_t)AirMove;
-			this->aircontrol_fling_speed_addr = (float *)(airMove + 9 + *(uint32_t *)(airMove + 11) + *(uint32_t *)(airMove + 568));
+			this->aircontrol_fling_speed_addr = (float *)(airMove + 8 + *(uint32_t *)(airMove + 10) + *(uint32_t *)(airMove + 677));
 			Memory::UnProtect(this->aircontrol_fling_speed_addr, 4);
 		}
 #endif
