@@ -1108,7 +1108,7 @@ void Renderer::Init(void **videomode) {
 	g_movieInfo = *(MovieInfo_t **)((uintptr_t)SND_RecordBuffer + 5);
 #else
 	if (sar.game->Is(SourceGame_Portal2)) {
-		SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), "55 89 E5 57 56 53 E8 ? ? ? ? 81 C3 65 EE 76 00 83 EC 3C 89 5D D0");
+		SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), "55 89 E5 57 56 53 E8 ? ? ? ? 81 C3 D5 1D 76 00 83 EC 3C 89 5D D0");
 	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
 		SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 3C 65 A1 ? ? ? ? 89 45 E4 31 C0 E8 ? ? ? ? 84 C0 75 1B");
 	} else {  // Pre-update engine

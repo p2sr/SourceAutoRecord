@@ -827,8 +827,8 @@ bool Engine::Init() {
 	host_frametime = *(float **)((uintptr_t)Host_AccumulateTime + 92);
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), "56 53 E8 ? ? ? ? 81 C3 E9 50 5C 00 83 EC 14 8D B3 ? ? ? ? 8D 8B ? ? ? ? F3 0F 10 83 ? ? ? ? F3 0F 58 44 24 20", 0);
-		host_frametime = (float *)((uintptr_t)Host_AccumulateTime + 7 + 0x5C50E9 + *(uint32_t *)((uintptr_t)Host_AccumulateTime + 96));
+		Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), "56 53 E8 ? ? ? ? 81 C3 19 77 5B 00 83 EC 14 8D B3 ? ? ? ? 8D 8B ? ? ? ? F3 0F 10 83 ? ? ? ? F3 0F 58 44 24 20", 0);
+		host_frametime = (float *)((uintptr_t)Host_AccumulateTime + 7 + 0x5B7719 + *(uint32_t *)((uintptr_t)Host_AccumulateTime + 96));
 	} else {
 		Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), "55 89 E5 83 EC 28 F3 0F 10 05 ? ? ? ? A1 ? ? ? ? F3 0F 58 45 08 F3 0F 11 05 ? ? ? ? 8B 10 89 04 24 FF 52 24", 0);
 		host_frametime = *(float **)((uintptr_t)Host_AccumulateTime + 70);
@@ -841,7 +841,7 @@ bool Engine::Init() {
 	_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "A1 ? ? ? ? 85 C0 75 1B 8B 0D ? ? ? ? 8B 01 8B 50 40 68 ? ? ? ? FF D2 A3 ? ? ? ? 85 C0 74 0D 6A 02 6A F6 50 E8 ? ? ? ? 83 C4 0C", 0);
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 57 56 E8 ? ? ? ? 81 C6 D6 34 5C 00 53 83 EC 2C 8B BE 88 FD FF FF 8B 87 0C 10 00 00 89 45 E4 85 C0", 0);
+		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 57 56 E8 ? ? ? ? 81 C6 ? ? ? ? 53 83 EC 2C 8B BE ? ? ? ? 8B 87 0C 10 00 00 89 45 E4 85 C0 0F 85 ? ? ? ? E8 ? ? ? ? 8D 8E ? ? ? ? 8B 41 1C 89 4D D4 8B 40 30 89 45 E0", 0);
 	} else {
 		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 35 ? ? ? ? 85 F6 0F 95 C0 89 C6 0F 85 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? 80 3D ? ? ? ? 00 8B 78 30", 0);
 	}
