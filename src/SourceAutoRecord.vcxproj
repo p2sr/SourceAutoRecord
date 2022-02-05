@@ -349,7 +349,6 @@
     <ClInclude Include="Features\Hud\PortalgunHud.hpp" />
     <ClInclude Include="Features\Hud\LPHud.hpp" />
     <ClInclude Include="Features\Hud\Toasts.hpp" />
-    <ClInclude Include="Features\Hud\AimPointHud.hpp" />
     <ClInclude Include="Features\Listener.hpp" />
     <ClInclude Include="Features\OffsetFinder.hpp" />
     <ClInclude Include="Features\OverlayRender.hpp" />

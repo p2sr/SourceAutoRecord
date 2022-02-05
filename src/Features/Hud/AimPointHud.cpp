@@ -1,5 +1,3 @@
-#include "AimPointHud.hpp"
-
 #include "Event.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
@@ -10,6 +8,7 @@
 #include "Features/OverlayRender.hpp"
 
 #include <list>
+#include <vector>
 
 #define TRACE_LENGTH 2500
 
@@ -39,17 +38,18 @@ ON_EVENT(SESSION_START) {
 	g_frozen.clear();
 }
 
-bool AimPointHud::ShouldDraw() {
+static bool shouldDraw() {
 	if (!sv_cheats.GetBool()) return false;
 	if (!sar_aim_point_hud.GetBool()) return false;
 	return true;
 }
 
-bool AimPointHud::GetCurrentSize(int &xSize, int &ySize) {
-	return false;
-}
+static bool updateTrace(int slot) {
+	if (!session->isRunning) return false;
 
-static void updateTrace(int slot) {
+	void *player = server->GetPlayer(slot + 1);
+	if (!player) return false;
+
 	g_last_trace_valid = false;
 
 	Vector cam_pos = camera->GetPosition(slot);
@@ -66,12 +66,14 @@ static void updateTrace(int slot) {
 	ray.m_Extents = VectorAligned();
 
 	CTraceFilterSimple filter;
-	filter.SetPassEntity(server->GetPlayer(1));
+	filter.SetPassEntity(player);
 
 	engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_VISIBLE, &filter, &tr);
 
 	g_last_trace = tr;
 	g_last_trace_valid = tr.plane.normal.Length() > 0.9;
+
+	return true;
 }
 
 static void renderTrace(const CGameTrace &tr) {
@@ -102,16 +104,9 @@ static void renderTrace(const CGameTrace &tr) {
 	OverlayRender::addText(p + Vector{0,0,10}, 0, 0, Utils::ssprintf("%.3f %.3f %.3f", p.x, p.y, p.z), font);
 }
 
-void AimPointHud::Paint(int slot) {
-	if (slot != 0) return;
-
-	updateTrace(slot);
-}
-
 ON_EVENT(RENDER) {
-	if (!aimPointHud.ShouldDraw()) return;
+	if (!shouldDraw()) return;
+	if (!updateTrace(0)) return;
 	for (auto &tr : g_frozen) renderTrace(tr);
 	if (g_last_trace_valid) renderTrace(g_last_trace);
 }
-
-AimPointHud aimPointHud;

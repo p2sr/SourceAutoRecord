@@ -879,9 +879,6 @@
     <ClInclude Include="Features\Hud\Toasts.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Hud\AimPointHud.hpp">
-      <Filter>SourceAutoRecord\Features\Hud</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Routing\SeamshotFind.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
