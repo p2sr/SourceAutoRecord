@@ -271,8 +271,8 @@ static void calcFileSums(std::map<std::string, uint32_t> *out, std::vector<std::
 
 static void initFileSums() {
 	std::vector<std::string> paths;
-	for (auto &ent : std::filesystem::recursive_directory_iterator(".")) {
-		try {
+	try {
+		for (auto &ent : std::filesystem::recursive_directory_iterator(".")) {
 			if (ent.status().type() == std::filesystem::file_type::regular || ent.status().type() == std::filesystem::file_type::symlink) {
 				auto path = ent.path().string();
 				std::replace(path.begin(), path.end(), '\\', '/');
@@ -283,8 +283,8 @@ static void initFileSums() {
 					paths.push_back(path);
 				}
 			}
-		} catch (...) {
 		}
+	} catch (...) {
 	}
 
 	size_t idx = 0;
