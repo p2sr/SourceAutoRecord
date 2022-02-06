@@ -270,7 +270,18 @@ void GhostEntity::Lerp(float time) {
 		this->data.grounded = time < 0.5 ? this->oldPos.grounded : this->newPos.grounded;
 	}
 
-	this->Display();
+	// HACK: when using network ghosts, 0,0,0 is used as a sort of
+	// "unknown position" identifier, implying that the player hasn't sent
+	// any good location data. If we're meant to be there, then just don't
+	// display.
+	bool valid = false;
+	valid |= !!this->data.position.x;
+	valid |= !!this->data.position.y;
+	valid |= !!this->data.position.z;
+	valid |= !!this->data.view_angle.x;
+	valid |= !!this->data.view_angle.y;
+	valid |= !!this->data.view_angle.z;
+	if (valid) this->Display();
 }
 
 HUD_ELEMENT2(ghost_show_name, "1", "Display the name of the ghost over it.\n", HudType_InGame) {
