@@ -141,6 +141,10 @@ void GhostEntity::Display() {
 	Color col = GetColor();
 	float opacity = col.a();
 
+	col._color[0] = Utils::ConvertFromSrgb(col._color[0]);
+	col._color[1] = Utils::ConvertFromSrgb(col._color[1]);
+	col._color[2] = Utils::ConvertFromSrgb(col._color[2]);
+
 	if (ghost_shading.GetBool()) OverlayRender::startShading(this->data.position + Vector{0, 0, 5}); // Use a point slightly above the floor
 
 #define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(p1, p2, p3, col, true)
@@ -362,11 +366,7 @@ CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color 
 		return console->Print("Invalid color code!\n");
 	}
 
-	GhostEntity::set_color = Color{
-		Utils::ConvertFromSrgb(r),
-		Utils::ConvertFromSrgb(g),
-		Utils::ConvertFromSrgb(b),
-	};
+	GhostEntity::set_color = Color{r,g,b};
 
 	if (networkManager.isConnected) {
 		networkManager.UpdateColor();
