@@ -40,7 +40,7 @@ bool PortalPlacementHud::ShouldDraw() {
 	return shouldDraw;
 }
 void PortalPlacementHud::Paint(int slot) {
-	auto font = scheme->GetDefaultFont() + sar_pp_hud_font.GetInt();
+	auto font = scheme->GetFontByID(sar_pp_hud_font.GetInt());
 
 	int cX = PositionFromString(sar_pp_hud_x.GetString(), true);
 	int cY = PositionFromString(sar_pp_hud_y.GetString(), false);

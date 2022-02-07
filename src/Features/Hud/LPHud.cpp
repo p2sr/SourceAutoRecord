@@ -136,7 +136,7 @@ ON_EVENT(POST_TICK) {
 }
 
 void LPHud::Paint(int slot) {
-	auto font = scheme->GetDefaultFont() + sar_lphud_font.GetInt();
+	auto font = scheme->GetFontByID(sar_lphud_font.GetInt());
 
 	int cX = PositionFromString(sar_lphud_x.GetString(), true);
 	int cY = PositionFromString(sar_lphud_y.GetString(), false);
@@ -160,7 +160,7 @@ void LPHud::Paint(int slot) {
 }
 
 bool LPHud::GetCurrentSize(int &xSize, int &ySize) {
-	auto font = scheme->GetDefaultFont() + sar_lphud_font.GetInt();
+	auto font = scheme->GetFontByID(sar_lphud_font.GetInt());
 
 	int digitWidth = surface->GetFontLength(font, "3");
 	int charHeight = surface->GetFontHeight(font);

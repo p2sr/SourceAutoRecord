@@ -4,6 +4,13 @@
 #include "Interface.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
+#include "Surface.hpp"
+
+unsigned long Scheme::GetFontByID(int id) {
+	unsigned long defaultFont = GetDefaultFont();
+	unsigned long font = defaultFont + id;
+	return surface->IsFontValid(font) ? font : defaultFont;
+}
 
 unsigned long Scheme::GetDefaultFont() {
 	return this->GetFont(this->g_pScheme->ThisPtr(), "DefaultFixedOutline", 0);

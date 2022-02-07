@@ -82,7 +82,7 @@ static void renderTrace(const CGameTrace &tr) {
 	auto p = tr.endpos;
 	Vector norm = tr.plane.normal;
 	
-	auto font = scheme->GetDefaultFont() + 1;
+	auto font = scheme->GetFontByID(1);
 
 	for (auto dir : std::list<Vector>{
 		{0,0,1},

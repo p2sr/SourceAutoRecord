@@ -60,7 +60,10 @@ public:
 	_IsTextureIDValid IsTextureIDValid = nullptr;
 	_CreateNewTextureID CreateNewTextureID = nullptr;
 
+	CUtlVector<CFontAmalgam> *m_FontAmalgams;
+
 public:
+	bool IsFontValid(HFont font);
 	int GetFontHeight(HFont font);
 	int GetFontLength(HFont font, const char *fmt, ...);
 	void DrawTxt(HFont font, int x, int y, Color clr, const char *fmt, ...);

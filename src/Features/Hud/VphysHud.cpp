@@ -22,7 +22,7 @@ bool VphysHud::ShouldDraw() {
 	return sar_vphys_hud.GetBool() && Hud::ShouldDraw() && sv_cheats.GetBool();
 }
 void VphysHud::Paint(int slot) {
-	auto font = scheme->GetDefaultFont() + 1;
+	auto font = scheme->GetFontByID(1);
 
 	void *player = server->GetPlayer(1);
 	if (!player) return;

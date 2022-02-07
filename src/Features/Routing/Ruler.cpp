@@ -124,7 +124,7 @@ void RulerManager::UpdateCreator() {
 
 // drawing text at defined coordinates
 void drawLabel(Vector pos, int yOffset, std::string text) {
-	auto font = scheme->GetDefaultFont() + 1;
+	auto font = scheme->GetFontByID(1);
 	int font_height = surface->GetFontHeight(font);
 	OverlayRender::addText(pos, 0, -font_height - yOffset * font_height - 2, text, font);
 }

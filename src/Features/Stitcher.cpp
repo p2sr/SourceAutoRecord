@@ -755,7 +755,7 @@ static void paintStitchView() {
 	}
 
 	{
-		long font = scheme->GetDefaultFont() + 1;
+		long font = scheme->GetFontByID(1);
 		int len = surface->GetFontLength(font, "Viewing stitch with %d regions", g_stitch.regions.size());
 		surface->DrawTxt(font, (width - len) / 2, 50, { 255, 255, 255, 255 }, "Viewing stitch with %d regions", g_stitch.regions.size());
 	}

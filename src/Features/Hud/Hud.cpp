@@ -191,7 +191,7 @@ void HudContext::Reset(int slot) {
 	this->spacing = sar_hud_spacing.GetInt();
 	this->maxWidth = 0;
 
-	this->font = scheme->GetDefaultFont() + sar_hud_font_index.GetInt();
+	this->font = scheme->GetFontByID(sar_hud_font_index.GetInt());
 	this->fontSize = surface->GetFontHeight(font);
 
 	int r, g, b, a;

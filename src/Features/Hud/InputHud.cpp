@@ -90,7 +90,7 @@ void InputHud::Paint(int slot) {
 			//drawing movement and angles vector displays
 			surface->DrawRect(element.background, eX, eY, eX + eWidth, eY + eHeight);
 
-			int font = scheme->GetDefaultFont() + element.textFont;
+			int font = scheme->GetFontByID(element.textFont);
 
 			int fontHeight = font >= 0 ? surface->GetFontHeight(font) : 0;
 
@@ -163,7 +163,7 @@ void InputHud::Paint(int slot) {
 			surface->DrawRectAndCenterTxt(
 				pressed ? element.highlight : element.background,
 				eX, eY, eX + eWidth, eY + eHeight,
-				scheme->GetDefaultFont() + element.textFont,
+				scheme->GetFontByID(element.textFont),
 				pressed ? element.textHighlight : element.textColor,
 				element.text.c_str()
 			);

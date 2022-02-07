@@ -12,6 +12,7 @@ public:
 	_GetFont GetFont = nullptr;
 
 public:
+	unsigned long GetFontByID(int id);
 	unsigned long GetDefaultFont();
 
 	bool Init() override;

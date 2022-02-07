@@ -27,7 +27,7 @@ void StrafeSyncHud::Paint(int slot) {
 	auto xOffset = width / 2 + sar_hud_strafesync_offset_x.GetInt();
 	auto yOffset = sar_hud_strafesync_offset_y.GetInt();
 
-	auto font = scheme->GetDefaultFont() + sar_hud_strafesync_font_index.GetInt();
+	auto font = scheme->GetFontByID(sar_hud_strafesync_font_index.GetInt());
 	auto fontColor = Utils::GetColor(sar_hud_strafesync_color.GetString(),false).value_or(Color(255,255,255,255));
 
 	surface->DrawTxt(font, xOffset, yOffset, fontColor, "%.2f", synchro->GetStrafeSync(slot));

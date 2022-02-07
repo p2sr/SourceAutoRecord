@@ -229,7 +229,7 @@ void PlayerTrace::DrawInWorld() const {
 void PlayerTrace::DrawSpeedDeltas() const {
 	const Vector hud_offset = {0.0, 0.0, 10.0};
 
-	auto font = scheme->GetDefaultFont() + sar_trace_font.GetInt();
+	auto font = scheme->GetFontByID(sar_trace_font.GetInt());
 
 	for (const auto [trace_idx, trace] : traces) {
 		for (int slot = 0; slot < 2; slot++) {
@@ -381,7 +381,7 @@ ON_EVENT(RENDER) {
 
 	const Vector hud_offset = {0.0, 0.0, 10.0};
 
-	auto font = scheme->GetDefaultFont() + sar_trace_font.GetInt();
+	auto font = scheme->GetFontByID(sar_trace_font.GetInt());
 	auto font_height = surface->GetFontHeight(font);
 
 	for (auto &h : hovers) {

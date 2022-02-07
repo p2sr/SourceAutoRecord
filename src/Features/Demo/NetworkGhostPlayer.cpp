@@ -171,7 +171,7 @@ public:
 		}
 		networkManager.ghostPoolLock.unlock();
 
-		long font = scheme->GetDefaultFont() + ghost_list_font.GetInt();
+		long font = scheme->GetFontByID(ghost_list_font.GetInt());
 
 		int width = 0;
 		for (auto &p : players) {

@@ -303,7 +303,7 @@ void ToastHud::AddToast(std::string tag, std::string text, bool doConsole) {
 		255,
 	});
 
-	Surface::HFont font = scheme->GetDefaultFont() + sar_toast_font.GetInt();
+	Surface::HFont font = scheme->GetFontByID(sar_toast_font.GetInt());
 
 	bool compact = sar_toast_compact.GetBool();
 	int linePadding = compact ? 0 : LINE_PAD;
@@ -373,7 +373,7 @@ void ToastHud::Paint(int slot) {
 
 	Update();
 
-	Surface::HFont font = scheme->GetDefaultFont() + sar_toast_font.GetInt();
+	Surface::HFont font = scheme->GetFontByID(sar_toast_font.GetInt());
 
 	int maxWidth = sar_toast_width.GetInt();
 

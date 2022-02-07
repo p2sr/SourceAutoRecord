@@ -66,6 +66,7 @@ namespace Offsets {
 	int DrawTextLen;
 	int GetKernedCharWidth;
 	int GetFontName;
+	int FontManager;
 
 	int DrawSetTextureFile;
 	int DrawSetTextureRGBA;

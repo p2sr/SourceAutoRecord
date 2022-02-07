@@ -112,7 +112,7 @@ void VelocityGraph::Paint(int slot) {
 			if (sar_velocitygraph_show_speed_on_graph.GetBool()) {
 				auto height = 15;
 
-				surface->DrawTxt(scheme->GetDefaultFont() + 2, graph_pos[0] - i, graph_pos[1] - next_speed - height, Color(255, 255, 255), std::to_string(next.speed).c_str());
+				surface->DrawTxt(scheme->GetFontByID(2), graph_pos[0] - i, graph_pos[1] - next_speed - height, Color(255, 255, 255), std::to_string(next.speed).c_str());
 			}
 		}
 
@@ -152,7 +152,7 @@ void VelocityGraph::Paint(int slot) {
 	Color c = sar_velocitygraph_rainbow.GetBool() ? Utils::HSVToRGB(speed, 100, 100) : speed == last_vel[slot] ? Color(255, 199, 89) : speed < last_vel[slot] ? Color(255, 119, 119) : Color(30, 255, 109);
 
 
-	auto font = scheme->GetDefaultFont() + sar_velocitygraph_font_index.GetInt();
+	auto font = scheme->GetFontByID(sar_velocitygraph_font_index.GetInt());
 	auto length = surface->GetFontLength(font, should_draw_takeoff ? "%i (%i)\n" : "%i", speed, take_off[slot]);
 
 	surface->DrawTxt(font, x / 2 - length / 2, y - 150, c, should_draw_takeoff ? "%i (%i)\n" : "%i", speed, take_off[slot]);

@@ -25,7 +25,7 @@ bool InspectionHud::ShouldDraw() {
 void InspectionHud::Paint(int slot) {
 	auto mode = sar_ei_hud.GetInt();
 
-	auto font = scheme->GetDefaultFont() + sar_ei_hud_font_index.GetInt();
+	auto font = scheme->GetFontByID(sar_ei_hud_font_index.GetInt());
 
 	auto fontColorStr = !inspector->IsRunning()
 		? sar_ei_hud_font_color.GetString()

@@ -35,7 +35,7 @@ void PortalgunHud::Paint(int slot) {
 	int x = sar_portalgun_hud_x.GetInt();
 	int y = sar_portalgun_hud_y.GetInt();
 
-	auto font = scheme->GetDefaultFont() + 1;
+	auto font = scheme->GetFontByID(1);
 
 	int lineHeight = surface->GetFontHeight(font) + 5;
 

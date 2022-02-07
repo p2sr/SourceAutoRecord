@@ -392,5 +392,5 @@ void GhostEntity::DrawName() {
 		nameCoords.z += ghost_text_offset.GetFloat() + ghost_height.GetFloat();
 	}
 
-	OverlayRender::addText(nameCoords, 0, 0, this->name, scheme->GetDefaultFont() + ghost_name_font.GetInt());
+	OverlayRender::addText(nameCoords, 0, 0, this->name, scheme->GetFontByID(ghost_name_font.GetInt()));
 }
