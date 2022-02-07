@@ -47,7 +47,6 @@ public:
 	bool IsFullGame();
 
 	void PrintRecap();
-	void DrawNames(HudContext *ctx);
 
 	template <typename... Ts>
 	void TestInputRule(Ts... args);

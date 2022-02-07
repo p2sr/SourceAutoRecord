@@ -69,7 +69,7 @@ public:
 	void Lerp(float time);
 	float GetOpacity();
 	Color GetColor();
-	void DrawName(HudContext *ctx, int id);
+	void DrawName();
 };
 
 extern Variable ghost_height;

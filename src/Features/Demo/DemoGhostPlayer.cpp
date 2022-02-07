@@ -187,18 +187,6 @@ void DemoGhostPlayer::PrintRecap() {
 	}
 }
 
-void DemoGhostPlayer::DrawNames(HudContext *ctx) {
-	auto player = client->GetPlayer(GET_SLOT() + 1);
-	if (player) {
-		//auto pos = client->GetAbsOrigin(player);
-		for (int i = 0; i < this->ghostPool.size(); ++i) {
-			if (this->ghostPool[i].sameMap && !this->ghostPool[i].hasFinished && this->ghostPool[i].demoTick <= this->ghostPool[i].nbDemoTicks) {
-				this->ghostPool[i].DrawName(ctx, i);
-			}
-		}
-	}
-}
-
 std::string DemoGhostPlayer::CustomDataToString(const char *entName, const char *className, const char *inputName, const char *parameter, std::optional<int> activatorSlot) {
 	return Utils::ssprintf("%s %s %s %s", entName, className, inputName, parameter);
 }

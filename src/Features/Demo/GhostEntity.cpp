@@ -7,6 +7,7 @@
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
+#include "Modules/Scheme.hpp"
 #include "Utils.hpp"
 
 #include <cstdlib>
@@ -21,6 +22,8 @@ Variable ghost_text_offset("ghost_text_offset", "7", -1024, "Offset of the name 
 Variable ghost_show_advancement("ghost_show_advancement", "3", 0, 3, "Show the advancement of the ghosts. 1 = show finished runs on the current map, 2 = show all finished runs, 3 = show all finished runs and map changes\n");
 Variable ghost_proximity_fade("ghost_proximity_fade", "100", 0, 2000, "Distance from ghosts at which their models fade out.\n");
 Variable ghost_shading("ghost_shading", "1", "Enable simple light level based shading for overlaid ghosts.\n");
+Variable ghost_name_font("ghost_name_font", "0", 0, "Font index to use for ghost names.\n");
+Variable ghost_show_names("ghost_show_names", "1", "Whether to show names above ghosts.\n");
 
 GhostEntity::GhostEntity(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map)
 	: ID(ID)
@@ -248,6 +251,8 @@ void GhostEntity::Display() {
 		}
 	}
 
+	if (ghost_show_names.GetBool()) this->DrawName();
+
 	this->lastOpacity = opacity;
 }
 
@@ -286,14 +291,6 @@ void GhostEntity::Lerp(float time) {
 	valid |= !!this->data.view_angle.y;
 	valid |= !!this->data.view_angle.z;
 	if (valid) this->Display();
-}
-
-HUD_ELEMENT2(ghost_show_name, "1", "Display the name of the ghost over it.\n", HudType_InGame) {
-	if (networkManager.isConnected)
-		networkManager.DrawNames(ctx);
-
-	if (demoGhostPlayer.IsPlaying())
-		demoGhostPlayer.DrawNames(ctx);
 }
 
 CON_COMMAND_COMPLETION(ghost_prop_model, "ghost_prop_model <filepath> - set the prop model. Example: models/props/metal_box.mdl\n", ({"models/props/metal_box.mdl", "models/player/chell/player.mdl", "models/player/eggbot/eggbot.mdl", "models/player/ballbot/ballbot.mdl", "models/props/radio_reference.mdl", "models/props/food_can/food_can_open.mdl", "models/npcs/turret/turret.mdl", "models/npcs/bird/bird.mdl"})) {
@@ -387,15 +384,13 @@ void GhostEntity::KillAllGhosts() {
 	}
 }
 
-void GhostEntity::DrawName(HudContext *ctx, int id) {
+void GhostEntity::DrawName() {
 	Vector nameCoords = this->data.position;
 	if (GhostEntity::ghost_type == GhostType::BENDY) {
 		nameCoords.z += ghost_text_offset.GetFloat() + renderer.GetHeight();
 	} else {
 		nameCoords.z += ghost_text_offset.GetFloat() + ghost_height.GetFloat();
 	}
-	
-	Vector screenPos;
-	engine->PointToScreen(nameCoords, screenPos);
-	ctx->DrawElementOnScreen(id, screenPos.x, screenPos.y, this->name.c_str());
+
+	OverlayRender::addText(nameCoords, 0, 0, this->name, scheme->GetDefaultFont() + ghost_name_font.GetInt());
 }

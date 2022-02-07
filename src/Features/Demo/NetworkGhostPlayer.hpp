@@ -100,7 +100,6 @@ public:
 	//Print the state of the countdown
 	void UpdateCountdown();
 
-	void DrawNames(HudContext *ctx);
 	bool IsSyncing();
 	bool HandleGhostSay(const char *str);
 };

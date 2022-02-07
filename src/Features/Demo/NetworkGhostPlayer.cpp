@@ -944,19 +944,6 @@ void NetworkManager::UpdateCountdown() {
 	}
 }
 
-void NetworkManager::DrawNames(HudContext *ctx) {
-	auto player = client->GetPlayer(GET_SLOT() + 1);
-	if (player) {
-		this->ghostPoolLock.lock();
-		for (int i = 0; i < this->ghostPool.size(); ++i) {
-			if (this->ghostPool[i]->sameMap) {
-				this->ghostPool[i]->DrawName(ctx, i);
-			}
-		}
-		this->ghostPoolLock.unlock();
-	}
-}
-
 bool NetworkManager::IsSyncing() {
 	return this->isConnected.load() && syncUi.active;
 }
