@@ -319,12 +319,12 @@ NetworkManager::NetworkManager()
 
 void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port) {
 	if (this->tcpSocket.connect(ip, port, sf::seconds(5))) {
-		client->Chat(TextColor::GREEN, "Timeout reached! Cannot connect to the server at %s:%d.\n", ip.toString().c_str(), port);
+		toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Connection timed out! Cannot connect to the server at %s:%d", ip.toString().c_str(), port));
 		return;
 	}
 
 	if (this->udpSocket.bind(sf::Socket::AnyPort) != sf::Socket::Done) {
-		client->Chat(TextColor::GREEN, "Cannot connect to the server at %s:%d.\n", ip.toString().c_str(), port);
+		toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Connection timed out! Cannot connect to the server at %s:%d", ip.toString().c_str(), port));
 		return;
 	}
 
@@ -343,12 +343,13 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port) {
 		tcpSelector.add(this->tcpSocket);
 
 		sf::Packet confirm_connection;
-		if (tcpSelector.wait(sf::seconds(30))) {
-			if (this->tcpSocket.receive(confirm_connection) != sf::Socket::Done) {
-				client->Chat(TextColor::GREEN, "Error\n");
-			}
-		} else {
-			client->Chat(TextColor::GREEN, "Timeout reached! Can't connect to the server %s:%d.\n", ip.toString().c_str(), port);
+		if (!tcpSelector.wait(sf::seconds(30))) {
+			toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Handshake timed out! Cannot connect to the server at %s:%d", ip.toString().c_str(), port));
+			return;
+		}
+
+		if (this->tcpSocket.receive(confirm_connection) != sf::Socket::Done) {
+			toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Transfer timed out! Cannot connect to the server at %s:%d", ip.toString().c_str(), port));
 			return;
 		}
 
@@ -378,7 +379,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port) {
 		if (engine->isRunning()) {
 			this->SpawnAllGhosts();
 		}
-		client->Chat(TextColor::GREEN, "Successfully connected to the server!\n%d other players connected\n", nb_players);
+		toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Successfully connected to the server!\n%d other players connected\n", nb_players));
 	}  //End of the scope. Will kill the Selector
 
 	this->isConnected = true;
@@ -549,7 +550,7 @@ void NetworkManager::SendMessageToAll(std::string msg) {
 	sf::Packet packet;
 	packet << HEADER::MESSAGE << this->ID << msg.c_str();
 	this->tcpSocket.send(packet);
-	client->Chat(TextColor::LIGHT_GREEN, "%s: %s", this->name.c_str(), msg.c_str());
+	client->NameChat(GhostEntity::set_color, this->name.c_str(), {255,255,255}, msg.c_str());
 }
 
 void NetworkManager::SendPing() {
@@ -585,7 +586,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		auto ping = this->pingClock.getElapsedTime();
 		addToNetDump("recv-ping", Utils::ssprintf("%d;%d", ID, ping.asMilliseconds()).c_str());
 		Scheduler::OnMainThread([=]() {
-			client->Chat(TextColor::GREEN, "Ping: %d ms", ping.asMilliseconds());
+			console->Print("Ping: %d ms\n", ping.asMilliseconds());
 		});
 		break;
 	}
@@ -718,7 +719,15 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 			packet >> message;
 			addToNetDump("recv-message", Utils::ssprintf("%d;%s", ID, message.c_str()).c_str());
 			Scheduler::OnMainThread([=]() {
-				client->Chat(TextColor::LIGHT_GREEN, "%s: %s", ghost->name.c_str(), message.c_str());
+				Color col = ghost->GetColor();
+				col._color[3] = 255; // alpha
+
+				if (col.r() == 0 && col.g() == 0 && col.b() == 0) {
+					// Black is the default ghost color. Override it with a slight grey, since black looks really bad in chat
+					col = {204,204,204};
+				}
+
+				client->NameChat(col, ghost->name.c_str(), {255,255,255}, message.c_str());
 			});
 		}
 		break;
@@ -921,14 +930,14 @@ void NetworkManager::UpdateCountdown() {
 	if (std::chrono::duration_cast<std::chrono::milliseconds>(now - this->timeLeft).count() >= 1000) {
 		if (this->countdownStep == 0) {
 			if (this->countdownShow) {
-				client->Chat(TextColor::GREEN, "0! GO!");
+				client->Chat({255,80,70}, "0! GO!");
 			}
 			if (!this->postCountdownCommands.empty()) {
 				engine->ExecuteCommand(this->postCountdownCommands.c_str());
 			}
 			this->isCountdownReady = false;
 		} else {
-			client->Chat(TextColor::LIGHT_GREEN, "%d...", this->countdownStep);
+			client->Chat({255,80,70}, Utils::ssprintf("%d...", this->countdownStep).c_str());
 		}
 		this->countdownStep--;
 		this->timeLeft = now;

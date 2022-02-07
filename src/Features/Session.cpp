@@ -190,7 +190,6 @@ void Session::Changed(int state) {
 	// Demo recorder starts syncing from this tick
 	if (state == SIGNONSTATE_FULL) {
 		timescaleDetect->Spawn();
-		client->FlushChatQueue();
 		this->Started();
 		this->loadEnd = NOW();
 

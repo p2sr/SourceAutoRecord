@@ -276,10 +276,8 @@ namespace Offsets {
 
 	//CBaseHudChat
 	extern int ChatPrintf;
-
-	//CBaseHudChat
-	extern int ChatPrintf;
 	extern int MsgFunc_SayText2;
+	extern int GetTextColorForClient;
 
 	// CSteam3Client
 	extern int OnGameOverlayActivated;

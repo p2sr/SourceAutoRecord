@@ -150,9 +150,10 @@ struct Color {
 };
 
 enum class TextColor {
+	PLAYERNAME = 3,
 	GREEN = 4,
-	LIGHT_GREEN,
-	ORANGE
+	LIGHT_GREEN = 5,
+	ORANGE = 6,
 };
 
 #define FCVAR_DEVELOPMENTONLY (1 << 1)

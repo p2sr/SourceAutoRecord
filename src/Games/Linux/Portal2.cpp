@@ -267,6 +267,7 @@ void Portal2::LoadOffsets() {
 	FindElement = 161;            // cc_leaderboard_enable
 	ChatPrintf = 25;              // CBaseHudChat
 	MsgFunc_SayText2 = 35;        // CBaseHudChat
+	GetTextColorForClient = 41;   // CBaseHudChat
 	DecodeUserCmdFromBuffer = 7;  // CInput
 	PerUserInput_tSize = 352;     // CInput::DecodeUserCmdFromBuffer
 	m_pCommands = 244;            // CInput::DecodeUserCmdFromBuffer

@@ -29,6 +29,7 @@
 #include <cstdarg>
 #include <cstdint>
 #include <cstring>
+#include <deque>
 
 Variable cl_showpos;
 Variable cl_sidespeed;
@@ -50,6 +51,7 @@ REDECL(Client::GetName);
 REDECL(Client::ShouldDraw_BasicInfo);
 REDECL(Client::ShouldDraw_SaveStatus);
 REDECL(Client::MsgFunc_SayText2);
+REDECL(Client::GetTextColorForClient);
 REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
@@ -100,29 +102,17 @@ bool Client::ShouldDrawCrosshair() {
 	return this->ShouldDraw(this->g_HUDQuickInfo->ThisPtr());
 }
 
-void Client::Chat(TextColor color, const char *fmt, ...) {
-	va_list argptr;
-	va_start(argptr, fmt);
-	char data[1024];
-	vsnprintf(data, sizeof(data), fmt, argptr);
-	va_end(argptr);
-	client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, "%c%s", color, data);
+static std::deque<Color> g_nameColorOverrides;
+
+void Client::Chat(Color col, const char *str) {
+	g_nameColorOverrides.push_back(col);
+	client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, "%c%s", TextColor::PLAYERNAME, str);
 }
 
-void Client::QueueChat(TextColor color, const char *fmt, ...) {
-	va_list argptr;
-	va_start(argptr, fmt);
-	char data[1024];
-	vsnprintf(data, sizeof data, fmt, argptr);
-	va_end(argptr);
-	this->chatQueue.push_back(std::pair(color, std::string(data)));
-}
-
-void Client::FlushChatQueue() {
-	for (auto &s : this->chatQueue) {
-		this->Chat(s.first, "%s", s.second.c_str());
-	}
-	this->chatQueue.clear();
+void Client::NameChat(Color name_col, const char *name, Color col, const char *str) {
+	g_nameColorOverrides.push_back(name_col);
+	g_nameColorOverrides.push_back(col);
+	client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, "%c%s: %c%s", TextColor::PLAYERNAME, name, TextColor::PLAYERNAME, str);
 }
 
 void Client::SetMouseActivated(bool state) {
@@ -307,6 +297,31 @@ DETOUR(Client::MsgFunc_SayText2, bf_read &msg) {
 	return Client::MsgFunc_SayText2(thisptr, msg);
 }
 
+// MSVC bug workaround - see OverlayRender::startShading for explanation
+#ifdef _WIN32
+DETOUR_T(void *, Client::GetTextColorForClient, Color *col_out, TextColor color, int client_idx) {
+#else
+DETOUR_T(Color, Client::GetTextColorForClient, TextColor color, int client_idx) {
+#endif
+	Color ret;
+	if (!g_nameColorOverrides.empty() && color == TextColor::PLAYERNAME) {
+		ret = g_nameColorOverrides.front();
+		g_nameColorOverrides.pop_front();
+	} else {
+#ifdef _WIN32
+		Client::GetTextColorForClient(thisptr, col_out, color, client_idx);
+#else
+		ret = Client::GetTextColorForClient(thisptr, color, client_idx);
+#endif
+	}
+#ifdef _WIN32
+	*col_out = ret;
+	return col_out;
+#else
+	return ret;
+#endif
+}
+
 // CInput::DecodeUserCmdFromBuffer
 DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number) {
 	auto result = Client::DecodeUserCmdFromBuffer(thisptr, nSlot, buf, sequence_number);
@@ -469,6 +484,7 @@ bool Client::Init() {
 				this->StartMessageMode = g_HudChat->Original<_StartMessageMode>(Offsets::ChatPrintf + 1);
 				if (sar.game->Is(SourceGame_Portal2)) {
 					this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayText2);
+					this->g_HudChat->Hook(Client::GetTextColorForClient_Hook, Client::GetTextColorForClient, Offsets::GetTextColorForClient);
 				}
 			}
 

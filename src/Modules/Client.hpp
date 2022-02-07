@@ -62,9 +62,8 @@ public:
 	void *GetPlayer(int index);
 	void CalcButtonBits(int nSlot, int &bits, int in_button, int in_ignore, kbutton_t *button, bool reset);
 	bool ShouldDrawCrosshair();
-	void Chat(TextColor color, const char *fmt, ...);
-	void QueueChat(TextColor color, const char *fmt, ...);
-	void FlushChatQueue();
+	void Chat(Color col, const char *str);
+	void NameChat(Color name_col, const char *name, Color col, const char *str);
 	void SetMouseActivated(bool state);
 	CMStatus GetChallengeStatus();
 	int GetSplitScreenPlayerSlot(void *entity);
@@ -97,6 +96,13 @@ public:
 	// CHudChat::MsgFunc_SayText2
 	DECL_DETOUR(MsgFunc_SayText2, bf_read &msg);
 
+	// CHudChat::GetTextColorForClient
+#ifdef _WIN32
+	DECL_DETOUR_T(void *, GetTextColorForClient, Color *col_out, TextColor color, int client_idx);
+#else
+	DECL_DETOUR_T(Color, GetTextColorForClient, TextColor color, int client_idx);
+#endif
+
 	// CInput::_DecodeUserCmdFromBuffer
 	DECL_DETOUR(DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_number);
 
@@ -117,9 +123,6 @@ public:
 	bool Init() override;
 	void Shutdown() override;
 	const char *Name() override { return MODULE("client"); }
-
-private:
-	std::vector<std::pair<TextColor, std::string>> chatQueue;
 };
 
 extern Client *client;
