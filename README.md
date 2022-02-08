@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![](doc/img/sar_logo.webp)
+![](docs/img/sar_logo.webp)
 
 </div>
 
@@ -80,5 +80,5 @@ In order to update the plugin, you can simply use the in-game SAR command `sar_u
 | [Portal Reloaded](https://store.steampowered.com/app/1255980)           | ✔       | ✔     |
 
 # Documentation
-- [Contributing](doc/contributing.md)
-- [Console Commands & Variables](doc/cvars.md)
+- [Contributing](docs/contributing.md)
+- [Console Commands & Variables](docs/cvars.md)

@@ -3,7 +3,7 @@
 *.o
 obj/
 src/Features/Experimental/
-doc/images/drawings/
+docs/images/drawings/
 sar.cvars
 
 ## Ignore Visual Studio temporary files, build results, and
