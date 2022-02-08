@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![](docs/img/sar_logo.webp)
+[![](docs/img/sar_logo.webp)](https://sar.portal2.sr/)
 
 </div>
 
@@ -18,7 +18,7 @@
 
 <div align="center">
 
-### [Overview](#overview) | [Features](#features) | [Installation](#installation) | [Support](#support) | [Documentation](#documentation)
+### [Overview](#overview) | [Support](#support) | [Documentation](#documentation)
 
 </div>
 
@@ -27,47 +27,9 @@
 **SourceAutoRecord** (**SAR**) is a plugin for Portal 2 and mods based on it, bringing lots of features and modifications 
 into the game for speedrunners and people alike.
 
-# Features
+For features and installation instructions, please visit [the website].
 
-### General:
-- Advanced automatic demo recording.
-- Reduced loading times.
-- Configurable in-game input display.
-- Lots of useful text HUDs (position, view angles, velocity, ground frames etc.), as well as custom ones.
-- Config+, an extension of the in-game console which introduces variables, functions and more.
-
-### Speedrunning:
-- Accurate session timing and LiveSplit integration.
-- Built-in timer and autosplitter with complex custom rule system.
-- Autosubmission of Challenge Mode runs to the community leaderboards.
-- Ghosts of other players from demos or in a [ghost server](https://github.com/Blenderiste09/GhostServer).
-- Tools for easier segmented run creation.
-
-### TASing:
-- Custom `.p2tas` scripting language
-- Legitimate TAS script playback, controllable with tick advancing, skipping and pausing.
-- Automation tools (autostrafer, autojump, autoaim etc.)
-- Integration with [Visual Studio Code](https://code.visualstudio.com/) 
-through the [p2tas-lang](https://github.com/RainbowwPhoenixx/p2tas-lang) plugin.
-- Player trace, for recording and showing the path of the player's movement.
-
-### Miscellaneous:
-- Freecam and cinematic camera.
-- Configurable renderer with video encoding and frame-blending.
-- In-game overhead image stitcher, which can be used to create top-down minimaps of the level.
-- Movement modifications like [ABH](https://wiki.sourceruns.org/wiki/Accelerated_Back_Hopping), air control and others.
-- Other fun cheats.
-
-# Installation
-
-
-Download the latest released binary for your operating system (`.dll` for Windows, `.so` for Linux). Place it into the 
-game folder, eg. `steamapps/common/Portal 2` (where your game's executable is located).  Once the game is launched, 
-open developer console and enter `plugin_load sar`.
-
-If you're planning on speedrunning, it is recommended to install [srconfigs](https://github.com/p2sr/srconfigs/) as well.
-
-In order to update the plugin, you can simply use the in-game SAR command `sar_update`.
+[the website]: https://sar.portal2.sr/
 
 # Support
 
@@ -82,3 +44,4 @@ In order to update the plugin, you can simply use the in-game SAR command `sar_u
 # Documentation
 - [Contributing](docs/contributing.md)
 - [Console Commands & Variables](docs/cvars.md)
+- [Setup & Usage](https://wiki.portal2.sr/SAR)

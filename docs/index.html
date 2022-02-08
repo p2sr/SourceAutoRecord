@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SourceAutoRecord</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+        <nav>
+            <h1>SourceAutoRecord</h1>
+            <a href="#overview"><h3>Overview/Features</h3></a>
+            <a href="#installation"><h3>Installation</h3></a>
+            <a href="#support"><h3>Game support</h3></a>
+            <a href="#documentation"><h3>Documentation</h3></a>
+        </nav>
+        <hr>
+        <main>
+            <a id="overview"></a>
+            <img src="img/sar_logo.webp" alt="SAR Banner" id="sar-banner">
+
+            <div id="badges">
+                <a href="https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACI+branch%3Amaster"><img src="https://github.com/p2sr/SourceAutoRecord/workflows/CI/badge.svg" alt="CI"></a>
+                <a href="https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACD+branch%3Amaster"><img src="https://github.com/p2sr/SourceAutoRecord/workflows/CD/badge.svg" alt="CD"></a>
+                <a href="https://github.com/p2sr/SourceAutoRecord/releases/latest"><img src="https://img.shields.io/github/v/release/p2sr/SourceAutoRecord?label=latest%20release" alt="Latest release"></a>
+                <a href="https://github.com/p2sr/SourceAutoRecord/releases"><img src="https://img.shields.io/github/v/release/p2sr/SourceAutoRecord?label=latest%20pre-release&include_prereleases" alt="Latest pre-release"></a>
+                <a href="https://github.com/p2sr/SourceAutoRecord/blob/master/LICENSE"><img src="https://img.shields.io/github/license/p2sr/SourceAutoRecord" alt="License"></a>
+            </div>
+
+            <h1>Overview</h1>
+            <p><i>SourceAutoRecord</i>, or <i>SAR</i>, is a plugin for Portal 2 and mods based on it, bringing lots of features
+                and modifications into the game for speedrunners and people alike. To install it, head down to the
+                <a href="#installation">installation instructions</a>.</p>
+
+            <h1 id="features">Features</h1>
+            <h3>General:</h3>
+            <ul>
+                <li>Advanced automatic demo recording.</li>
+                <li>Reduced loading times.</li>
+                <li>Configurable in-game input display.</li>
+                <li>Lots of useful text HUDs (position, view angles, velocity, ground frames etc.), as well as custom ones.</li>
+                <li>Config+, an extension of the in-game console which introduces variables, functions and more.</li>
+            </ul>
+
+            <h3>Speedrunning:</h3>
+            <ul>
+                <li>Accurate session timing and LiveSplit integration.</li>
+                <li>Built-in timer and autosplitter with complex custom rule system.</li>
+                <li>Auto-submission of Challenge Mode runs to the community leaderboards.</li>
+                <li>Ghosts of other players from demos or in a <a href="https://github.com/p2sr/GhostServer" target="_blank">ghost server</a>.</li>
+                <li>Tools for easier segmented run creation.</li>
+            </ul>
+
+            <h3>TASing:</h3>
+            <ul>
+                <li>Custom <code>.p2tas</code> scripting language</li>
+                <li>Legitimate TAS script playback, controllable with tick advancing, skipping and pausing.</li>
+                <li>Automation tools (autostrafer, autojump, autoaim etc.)</li>
+                <li>Integration with <a href="https://code.visualstudio.com/" target="_blank">Visual Studio Code</a> through the
+                    <a href="https://github.com/RainbowwPhoenixx/p2tas-lang" target="_blank">p2tas-lang</a> plugin.</li>
+                <li>Player trace, for recording and showing the path of the player's movement.</li>
+            </ul>
+
+            <h3>Miscellaneous:</h3>
+            <ul>
+                <li>Freecam and cinematic camera.</li>
+                <li>Configurable renderer with video encoding and frame-blending.</li>
+                <li>In-game overhead image stitcher, which can be used to create top-down minimaps of the level.</li>
+                <li>Movement modifications like <a href="https://wiki.sourceruns.org/wiki/Accelerated_Back_Hopping" target="_blank">ABH</a>, air control and others.</li>
+                <li>Other fun cheats.</li>
+            </ul>
+
+            <hr class="horizontal">
+            <h1 id="installation">Installation</h1>
+            <p>To install SAR, download either the latest release or pre-release for your operating system, and move it to your
+                game folder. If you don't know where to find your game folder, you can open it through Steam by navigating to your
+                library and selecting Portal 2. Then, right-click the game and select <i>Properties</i>. Press <i>Local files</i>,
+                and <i>Browse</i>. The folder that opens is your game directory. Put the SAR file you just downloaded in here.
+                SAR does not currently support macOS.</p>
+
+            <br><br>
+            <p>NOTE: Your antivirus may flag SAR as a false positive. If this is the case, open the software
+                and exclude SAR (mark it as safe). This process depends on which antivirus software you use.</p>
+
+            <br><br>
+            <p>After you have installed SAR, launch the game and open the developer console. Enter <code>plugin_load sar</code>
+                to load SAR into the game.</p>
+
+            <br><br>
+            <p>NOTE: You will have to manually load SAR every time you launch your game. It is recommended to download
+                <a href="https://github.com/p2sr/srconfigs/" target="_blank">srconfigs</a>; a set of configuration
+                files that will automate SAR loading, as well as several other things related to speedrunning. If you are
+                unable to, or don't want to download srconfigs, it is recommended to have an <a href="https://wiki.portal2.sr/Autoexec" target="_blank">autoexec</a>
+                that loads SAR upon game launch.</p>
+
+            <br><br>
+            <p>In order to update SAR, you can simply use the in-game SAR console command <code>sar_update</code>.</p>
+
+            <br>
+            <div id="download"></div>
+
+            <br><br>
+            <p>You can also check the <a href="https://github.com/p2sr/SourceAutoRecord/releases" target="_blank">release page</a>
+                for other versions.</p>
+
+            <br><br>
+            <p>NOTE: Submitting a run on an older version of SAR is against the rules, and will get your run removed from
+                the leaderboards. It is recommended to be on the latest version of SAR unless stated otherwise in the community
+                <a href="https://discord.gg/p2sr">Discord server</a>.</p>
+
+            <hr class="horizontal">
+            <h1 id="support">Game support</h1>
+            <table>
+                <tr>
+                    <th>Game</th>
+                    <th>Windows</th>
+                    <th>Linux</th>
+                </tr>
+                <tr>
+                    <td><a href="https://store.steampowered.com/app/620" target="_blank">Portal 2</a></td>
+                    <td>✔</td>
+                    <td>✔</td>
+                </tr>
+                <tr>
+                    <td><a href="https://store.steampowered.com/app/280740" target="_blank">Aperture Tag</a></td>
+                    <td>✔</td>
+                    <td>✔</td>
+                </tr>
+                <tr>
+                    <td><a href="https://store.steampowered.com/app/317400" target="_blank">Portal Stories: Mel</a></td>
+                    <td>✔</td>
+                    <td>✔</td>
+                </tr>
+                <tr>
+                    <td><a href="https://store.steampowered.com/app/286080" target="_blank">Thinking with Time Machine</a></td>
+                    <td>✔</td>
+                    <td>✔</td>
+                </tr>
+                <tr>
+                    <td><a href="https://store.steampowered.com/app/1255980" target="_blank">Portal Reloaded</a></td>
+                    <td>✔</td>
+                    <td>✔</td>
+                </tr>
+            </table>
+
+            <hr class="horizontal">
+            <h1 id="documentation">Documentation</h1>
+            <ul>
+                <li><a href="https://github.com/p2sr/SourceAutoRecord/blob/master/docs/contributing.md">Contributing</a></li>
+                <li><a href="https://github.com/p2sr/SourceAutoRecord/blob/master/docs/cvars.md">Console Commands & Variables</a></li>
+                <li><a href="https://wiki.portal2.sr/SAR">Setup & Usage</a></li>
+            </ul>
+        </main>
+
+        <!-- Scripts -->
+        <script>
+            (async function ()
+            {
+                // Fetch release data from the GitHub API
+                const pre = (await (await fetch("https://api.github.com/repos/p2sr/SourceAutoRecord/releases")).json())[0];
+                const stable = (await (await fetch("https://api.github.com/repos/p2sr/SourceAutoRecord/releases/latest")).json());
+
+                // Add download buttons to page depending on OS
+                // FIXME: This is deprecated and MUST be updated soon. However, at the time of making this, there is not yet browser support for the new approach.
+                // See: https://developer.mozilla.org/en-US/docs/web/api/navigator/platform
+                if (window.navigator.platform.toLowerCase().includes("win"))
+                {
+                    document.querySelector("#download").innerHTML = `
+                        <h3>Downloads for Windows:</h3>
+                        <a href="${stable.assets[0].browser_download_url}" class="stable">Latest release (${stable.name})</a>
+                        <a href="${pre.assets[0].browser_download_url}">Latest pre-release (${pre.name})</a>
+                        <br><br><br>
+
+                        <h4>Not on Windows?</h4>
+                        <a href="${stable.assets[2].browser_download_url}" class="off-os">Latest release (Linux) - ${stable.name}</a>
+                        <a href="${pre.assets[2].browser_download_url}" class="off-os">Latest pre-release (Linux) - ${pre.name}</a>
+                    `;
+                }
+                else
+                {
+                    document.querySelector("#download").innerHTML = `
+                        <h3>Downloads for Linux:</h3>
+                        <a href="${stable.assets[2].browser_download_url}" class="stable">Latest release (${stable.name})</a>
+                        <a href="${pre.assets[2].browser_download_url}">Latest pre-release (${pre.name})</a>
+                        <br><br><br>
+
+                        <h4>Not on Linux?</h4>
+                        <a href="${stable.assets[0].browser_download_url}" class="off-os">Latest release (Windows) - ${stable.name}</a>
+                        <a href="${pre.assets[0].browser_download_url}" class="off-os">Latest pre-release (Windows) - ${pre.name}</a>
+                    `;
+                }
+            })();
+        </script>
+    </body>
+</html>

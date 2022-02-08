@@ -1,0 +1,216 @@
+/* STYLESHEET TABLE OF CONTENTS
+    1 Initialisation
+        1.1 Reset margins
+        1.2 Declare fonts
+        1.3 Declare colors
+    2 Basic styling
+        2.1 Main layout styling
+    3 Content styling
+        3.1 Navigation styling
+        3.2 Main content styling
+    4 Specific elements
+        4.1 Links
+        4.2 Titles
+        4.3 Text
+        4.4 Tables
+        4.5 Code blocks
+    5 Miscellaneous
+        5.1 Webkit scrollbar
+        5.2 Responsiveness
+ */
+
+/* 1.1 Reset margins */
+* { margin: 0; }
+
+/* 1.2 Declare fonts */
+@font-face
+{
+    font-family: "D-DIN";
+    src: url(D-DIN.otf);
+}
+
+/* 1.3 Declare colors */
+:root
+{
+    --background: #222;
+    --alternate-background: #333;
+    --foreground: white;
+    --medium: #555;
+    --accent: #379;
+}
+
+/* 2.1 Main layout styling */
+body
+{
+    background: var(--background);
+    color: var(--foreground);
+    display: flex;
+    font-family: "D-DIN", sans-serif;
+    height: 100vh;
+    width: min-content;
+    margin: 0 auto;
+}
+
+hr
+{
+    margin: 2rem;
+    border: none;
+    border-left: 1px solid var(--medium);
+}
+
+hr.horizontal
+{
+    margin-left: 0;
+    margin-bottom: 0;
+    border-top: 1px solid var(--medium);
+}
+
+/* 3.1 Navigation styling */
+nav
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2rem;
+    text-align: right;
+}
+
+nav *
+{
+    padding: 0 !important;
+}
+
+/* 3.2 Main content styling */
+main
+{
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+    padding-right: 2rem;
+    overflow-y: scroll;
+    scroll-behavior: smooth;
+    scrollbar-color: var(--medium) transparent;
+}
+
+#overview
+{
+    display: block;
+}
+
+#sar-banner
+{
+    width: 65vw;
+    max-width: 70rem;
+}
+
+#badges
+{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: .5rem;
+    padding: 1rem;
+}
+
+#download a
+{
+    background: var(--foreground);
+    border-radius: 6px;
+    padding: .5rem 1rem;
+}
+
+.stable
+{
+    background: var(--accent) !important;
+    color: var(--foreground);
+}
+
+.off-os
+{
+    background: transparent !important;
+    display: block;
+}
+
+/* 4.1 Links */
+a
+{
+    text-decoration: none;
+    color: var(--accent);
+}
+
+a:hover
+{
+    text-decoration: underline;
+    filter: brightness(.8);
+}
+
+a:active
+{
+    filter: brightness(.6);
+}
+
+/* 4.2 Titles */
+h1
+{
+    padding: 2rem 0;
+}
+
+h3
+{
+    padding: 1rem 0;
+}
+
+/* 4.3 Text */
+p, li
+{
+    line-height: 1.5rem;
+}
+
+/* 4.4 Tables */
+table
+{
+    border-spacing: 0;
+}
+
+th, td
+{
+    padding: .5rem;
+}
+
+/* 4.5 Code blocks */
+code
+{
+    background: var(--alternate-background);
+    padding: .2rem;
+    border-radius: 3px;
+}
+
+tr:nth-child(even)
+{
+    background: var(--alternate-background);
+}
+
+/* 5.1 Webkit scrollbar */
+::-webkit-scrollbar
+{
+    width: 8px;
+}
+
+::-webkit-scrollbar-track
+{
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb
+{
+    background: var(--medium);
+    border-radius: 3px;
+}
+
+/* 5.2 Responsiveness */
+@media screen and (max-width: 900px)
+{
+    nav, hr:not(.horizontal)
+    {
+        display: none;
+    }
+}
