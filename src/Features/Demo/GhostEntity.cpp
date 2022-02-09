@@ -598,7 +598,12 @@ CON_COMMAND_F_COMPLETION(ghost_spec_pov, "ghost_spec_pov <name|none> - spectate 
 }
 
 CON_COMMAND(ghost_spec_prev, "ghost_spec_prev - spectate the previous ghost\n") {
-	if (!sv_cheats.GetBool()) return;
+	if (!sv_cheats.GetBool()) {
+		return console->Print("ghost_spec_prev needs sv_cheats 1\n");
+	}
+
+	bool same_map = false;
+	if (args.ArgC() == 2 && !strcmp(args[1], "samemap")) same_map = true;
 
 	int cur_spec_id = GhostEntity::followId;
 	GhostEntity *candidate = nullptr;
@@ -608,6 +613,7 @@ CON_COMMAND(ghost_spec_prev, "ghost_spec_prev - spectate the previous ghost\n") 
 		networkManager.ghostPoolLock.lock();
 		for (auto ghost : networkManager.ghostPool) {
 			if (ghost->spectator) continue;
+			if (same_map && !ghost->sameMap) continue;
 			if ((cur_spec_id == -1 || ghost->ID < cur_spec_id) && (!candidate || ghost->ID > candidate->ID)) {
 				candidate = ghost.get();
 			}
@@ -620,6 +626,7 @@ CON_COMMAND(ghost_spec_prev, "ghost_spec_prev - spectate the previous ghost\n") 
 		networkManager.ghostPoolLock.unlock();
 	} else {
 		for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
+			if (same_map && !ghost.sameMap) continue;
 			if ((cur_spec_id == -1 || ghost.ID < cur_spec_id) && (!candidate || ghost.ID > candidate->ID)) {
 				candidate = &ghost;
 			}
@@ -636,8 +643,13 @@ CON_COMMAND(ghost_spec_prev, "ghost_spec_prev - spectate the previous ghost\n") 
 	}
 }
 
-CON_COMMAND(ghost_spec_next, "ghost_spec_next - spectate the next ghost\n") {
-	if (!sv_cheats.GetBool()) return;
+CON_COMMAND(ghost_spec_next, "ghost_spec_next [samemap] - spectate the next ghost\n") {
+	if (!sv_cheats.GetBool()) {
+		return console->Print("ghost_spec_next needs sv_cheats 1\n");
+	}
+
+	bool same_map = false;
+	if (args.ArgC() == 2 && !strcmp(args[1], "samemap")) same_map = true;
 
 	int cur_spec_id = GhostEntity::followId;
 	GhostEntity *candidate = nullptr;
@@ -647,6 +659,7 @@ CON_COMMAND(ghost_spec_next, "ghost_spec_next - spectate the next ghost\n") {
 		networkManager.ghostPoolLock.lock();
 		for (auto ghost : networkManager.ghostPool) {
 			if (ghost->spectator) continue;
+			if (same_map && !ghost->sameMap) continue;
 			if (ghost->ID > cur_spec_id && (!candidate || ghost->ID < candidate->ID)) {
 				candidate = ghost.get();
 			}
@@ -659,6 +672,7 @@ CON_COMMAND(ghost_spec_next, "ghost_spec_next - spectate the next ghost\n") {
 		networkManager.ghostPoolLock.unlock();
 	} else {
 		for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
+			if (same_map && !ghost.sameMap) continue;
 			if (ghost.ID > cur_spec_id && (!candidate || ghost.ID < candidate->ID)) {
 				candidate = &ghost;
 			}
