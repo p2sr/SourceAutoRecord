@@ -421,7 +421,7 @@ _def:
 
 // CSteam3Client::OnGameOverlayActivated
 DETOUR_B(Engine::OnGameOverlayActivated, GameOverlayActivated_t *pGameOverlayActivated) {
-	engine->overlayActivated = pGameOverlayActivated->m_bActive;
+	engine->shouldSuppressPause = sar_disable_steam_pause.GetBool() && pGameOverlayActivated->m_bActive;
 	return Engine::OnGameOverlayActivatedBase(thisptr, pGameOverlayActivated);
 }
 
@@ -458,7 +458,8 @@ DETOUR_COMMAND(Engine::help) {
 	cvars->PrintHelp(args);
 }
 DETOUR_COMMAND(Engine::gameui_activate) {
-	if (sar_disable_steam_pause.GetBool() && engine->overlayActivated) {
+	if (engine->shouldSuppressPause) {
+		engine->shouldSuppressPause = false;
 		return;
 	}
 

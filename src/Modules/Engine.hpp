@@ -106,7 +106,7 @@ public:
 	bool *m_bWaitEnabled2 = nullptr;
 	int lastTick = 0;
 
-	bool overlayActivated = false;
+	bool shouldSuppressPause = false;
 	bool hasRecorded = false;
 	bool hasPaused = false;
 	bool isPausing = false;
