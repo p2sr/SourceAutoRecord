@@ -481,6 +481,10 @@ void GhostEntity::StopFollowing() {
 	r_portalsopenall.SetValue(r_portalsopenall_value);
 	r_drawviewmodel.SetValue(r_drawviewmodel_value);
 	crosshairVariable.SetValue(crosshair_value);
+	void *player = server->GetPlayer(1);
+	if (player) {
+		*(int *)((uintptr_t)player + Offsets::m_fFlags) &= ~FL_GODMODE;
+	}
 }
 
 void GhostEntity::StartFollowing(GhostEntity *ghost) {
@@ -701,8 +705,14 @@ ON_EVENT(PRE_TICK) {
 	GhostEntity *ghost = GhostEntity::GetFollowTarget();
 	if (!ghost) return;
 
+	void *player = server->GetPlayer(1);
+	if (!player) return;
+
 	// We use ent_setpos to prevent 'setpos into world' errors being
 	// spewed in console
 	auto cmd = Utils::ssprintf("ent_setpos 1 %.6f %.6f %.6f", ghost->data.position.x, ghost->data.position.y, ghost->data.position.z);
 	engine->ExecuteCommand(cmd.c_str());
+
+	// Make sure we have godmode so we can't die while spectating someone
+	*(int *)((uintptr_t)player + Offsets::m_fFlags) |= FL_GODMODE;
 }
