@@ -607,6 +607,7 @@ CON_COMMAND(ghost_spec_prev, "ghost_spec_prev - spectate the previous ghost\n") 
 	if (networkManager.isConnected && networkManager.spectator) {
 		networkManager.ghostPoolLock.lock();
 		for (auto ghost : networkManager.ghostPool) {
+			if (ghost->spectator) continue;
 			if ((cur_spec_id == -1 || ghost->ID < cur_spec_id) && (!candidate || ghost->ID > candidate->ID)) {
 				candidate = ghost.get();
 			}
@@ -645,6 +646,7 @@ CON_COMMAND(ghost_spec_next, "ghost_spec_next - spectate the next ghost\n") {
 	if (networkManager.isConnected && networkManager.spectator) {
 		networkManager.ghostPoolLock.lock();
 		for (auto ghost : networkManager.ghostPool) {
+			if (ghost->spectator) continue;
 			if (ghost->ID > cur_spec_id && (!candidate || ghost->ID < candidate->ID)) {
 				candidate = ghost.get();
 			}
