@@ -495,9 +495,13 @@ void GhostEntity::StartFollowing(GhostEntity *ghost) {
 	crosshairVariable.SetValue(0);
 
 	if (!ghost->sameMap) {
-		auto cmd = Utils::ssprintf("changelevel %s", ghost->currentMap.c_str());
+		engine->ExecuteCommand("disconnect");
+		auto cmd = Utils::ssprintf("map %s", ghost->currentMap.c_str());
 		engine->ExecuteCommand(cmd.c_str());
 	}
+
+	auto ang = ghost->data.view_angle;
+	engine->SetAngles(0, ang);
 }
 
 bool GhostEntity::IsBeingFollowed() {
@@ -586,10 +590,7 @@ CON_COMMAND_F_COMPLETION(ghost_spec_pov, "ghost_spec_pov <name|none> - spectate 
 		}
 	}
 
-	if (found) {
-		auto ang = GhostEntity::GetFollowTarget()->data.view_angle;
-		engine->SetAngles(1, ang);
-	} else {
+	if (!found) {
 		console->Print("No such ghost!\n");
 	}
 }
