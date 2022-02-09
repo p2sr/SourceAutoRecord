@@ -202,7 +202,7 @@ CON_COMMAND(sar_toast_setpos, "sar_toast_setpos <bottom|top> <left|center|right>
 	}
 }
 
-static void toastMessage(void *data, size_t size) {
+static void toastMessage(const void *data, size_t size) {
 	if (sar_toast_net_disable.GetBool()) return;
 	const char *tag = (char *)data;
 	size_t tagLen = strnlen(tag, size);

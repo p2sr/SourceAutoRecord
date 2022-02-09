@@ -120,7 +120,7 @@ static struct
 static std::map<std::string, int> g_activeRun;
 static std::vector<std::map<std::string, int>> g_runs;
 
-static void handleCoopPacket(void *data, size_t size);
+static void handleCoopPacket(const void *data, size_t size);
 
 void SpeedrunTimer::Init() {
 	g_timerInterface = new TimerInterface();
@@ -151,7 +151,7 @@ static int g_coopLastSyncTick;
 // Orange only - the tick we synced, as reported by the engine
 static int g_coopLastSyncEngineTick;
 
-static void handleCoopPacket(void *data, size_t size) {
+static void handleCoopPacket(const void *data, size_t size) {
 	if (!engine->IsOrange()) return;
 
 	char *data_ = (char *)data;

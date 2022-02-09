@@ -250,7 +250,7 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 
 ON_INIT {
 	NetMessage::RegisterHandler(
-		CM_FLAGS_MESSAGE_TYPE, +[](void *data, size_t size) {
+		CM_FLAGS_MESSAGE_TYPE, +[](const void *data, size_t size) {
 			if (size == 6 && engine->IsOrange()) {
 				char slot = *(char *)data;
 				float time = *(float *)((uintptr_t)data + 1);
@@ -571,7 +571,7 @@ ON_EVENT(POST_TICK) {
 	}
 }
 
-static void netResetCoopProgress(void *data, size_t size) {
+static void netResetCoopProgress(const void *data, size_t size) {
 	if (size == 4 && !memcmp(data, "done", 4)) {
 		Event::Trigger<Event::COOP_RESET_DONE>({});
 	} else {

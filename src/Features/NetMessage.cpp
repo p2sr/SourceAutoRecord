@@ -14,9 +14,9 @@
 // if orange: whether we've sent the ready packet
 static bool g_orangeReady = false;
 
-static std::map<std::string, void (*)(void *, size_t)> g_handlers;
+static std::map<std::string, void (*)(const void *, size_t)> g_handlers;
 
-void NetMessage::RegisterHandler(const char *type, void (*handler)(void *, size_t)) {
+void NetMessage::RegisterHandler(const char *type, void (*handler)(const void *, size_t)) {
 	g_handlers[std::string(type)] = handler;
 }
 

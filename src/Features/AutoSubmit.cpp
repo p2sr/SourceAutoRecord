@@ -31,7 +31,7 @@ ON_EVENT(SESSION_START) {
 }
 
 ON_INIT {
-	NetMessage::RegisterHandler(COOP_NAME_MESSAGE_TYPE, +[](void *data, size_t size) {
+	NetMessage::RegisterHandler(COOP_NAME_MESSAGE_TYPE, +[](const void *data, size_t size) {
 		g_partner_name = std::string((char *)data, size);
 	});
 }

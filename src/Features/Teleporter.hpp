@@ -7,22 +7,31 @@
 
 struct TeleportLocation {
 	bool isSet = false;
-	Vector origin = Vector();
-	QAngle angles = QAngle();
+	Vector origin;
+	QAngle angles;
 	Vector velocity;
+	struct {
+		bool isSet = false;
+		unsigned char linkage;
+		Vector pos;
+		QAngle ang;
+	} portals[2];
 };
 
 class Teleporter : public Feature {
 private:
-	std::vector<TeleportLocation *> locations;
+	std::vector<TeleportLocation> locations;
 
 public:
 	Teleporter();
-	~Teleporter();
 
-	TeleportLocation *GetLocation(int nSlot);
-	void Save(int nSlot);
-	void Teleport(int nSlot);
+	TeleportLocation &GetLocation(int slot);
+
+	void SaveLocal(int slot, QAngle ang);
+	void TeleportLocal(int slot, bool portals);
+
+	void Save(int slot);
+	void Teleport(int slot, bool portals);
 };
 
 extern Teleporter *teleporter;
