@@ -69,6 +69,7 @@ void Teleporter::Save(int nSlot) {
 		auto location = this->GetLocation(nSlot);
 		location->origin = server->GetAbsOrigin(player);
 		location->angles = engine->GetAngles(nSlot);
+		location->velocity = server->GetLocalVelocity(player);
 		location->isSet = true;
 
 		console->Print("Saved location: %.3f %.3f %.3f\n", location->origin.x, location->origin.y, location->origin.z);
@@ -94,6 +95,12 @@ void Teleporter::Teleport(int nSlot) {
 
 	char setpos[64];
 	std::snprintf(setpos, sizeof(setpos), "setpos_player %d %f %f %f", nSlot + 1, location->origin.x, location->origin.y, location->origin.z);
+
+	uintptr_t player = (uintptr_t)server->GetPlayer(nSlot + 1);
+	if (!player) return;
+
+	*(Vector *)(player + Offsets::S_m_vecVelocity) = location->velocity;
+	*(int *)(player + Offsets::m_iEFlags) |= (1<<12); // EFL_DIRTY_ABSVELOCITY
 
 	engine->SetAngles(nSlot, location->angles);
 	engine->ExecuteCommand(setpos);

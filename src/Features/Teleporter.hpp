@@ -9,6 +9,7 @@ struct TeleportLocation {
 	bool isSet = false;
 	Vector origin = Vector();
 	QAngle angles = QAngle();
+	Vector velocity;
 };
 
 class Teleporter : public Feature {
