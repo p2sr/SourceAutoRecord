@@ -272,3 +272,4 @@ __pycache__/
 config.mk
 
 src/Version.hpp
+copy.bat
