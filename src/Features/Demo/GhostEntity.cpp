@@ -594,6 +594,82 @@ CON_COMMAND_F_COMPLETION(ghost_spec_pov, "ghost_spec_pov <name|none> - spectate 
 	}
 }
 
+CON_COMMAND(ghost_spec_prev, "ghost_spec_prev - spectate the previous ghost\n") {
+	if (!sv_cheats.GetBool()) return;
+
+	int cur_spec_id = GhostEntity::followId;
+	GhostEntity *candidate = nullptr;
+	GhostEntity *last = nullptr;
+
+	if (networkManager.isConnected && networkManager.spectator) {
+		networkManager.ghostPoolLock.lock();
+		for (auto ghost : networkManager.ghostPool) {
+			if ((cur_spec_id == -1 || ghost->ID < cur_spec_id) && (!candidate || ghost->ID > candidate->ID)) {
+				candidate = ghost.get();
+			}
+			if (!last || ghost->ID > last->ID) {
+				last = ghost.get();
+			}
+		}
+		if (!candidate) candidate = last;
+		if (candidate) GhostEntity::StartFollowing(candidate);
+		networkManager.ghostPoolLock.unlock();
+	} else {
+		for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
+			if ((cur_spec_id == -1 || ghost.ID < cur_spec_id) && (!candidate || ghost.ID > candidate->ID)) {
+				candidate = &ghost;
+			}
+			if (!last || ghost.ID > last->ID) {
+				last = &ghost;
+			}
+		}
+		if (!candidate) candidate = last;
+		if (candidate) GhostEntity::StartFollowing(candidate);
+	}
+
+	if (!candidate) {
+		console->Print("No ghosts to spectate!\n");
+	}
+}
+
+CON_COMMAND(ghost_spec_next, "ghost_spec_next - spectate the next ghost\n") {
+	if (!sv_cheats.GetBool()) return;
+
+	int cur_spec_id = GhostEntity::followId;
+	GhostEntity *candidate = nullptr;
+	GhostEntity *first = nullptr;
+
+	if (networkManager.isConnected && networkManager.spectator) {
+		networkManager.ghostPoolLock.lock();
+		for (auto ghost : networkManager.ghostPool) {
+			if (ghost->ID > cur_spec_id && (!candidate || ghost->ID < candidate->ID)) {
+				candidate = ghost.get();
+			}
+			if (!first || ghost->ID < first->ID) {
+				first = ghost.get();
+			}
+		}
+		if (!candidate) candidate = first;
+		if (candidate) GhostEntity::StartFollowing(candidate);
+		networkManager.ghostPoolLock.unlock();
+	} else {
+		for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
+			if (ghost.ID > cur_spec_id && (!candidate || ghost.ID < candidate->ID)) {
+				candidate = &ghost;
+			}
+			if (!first || ghost.ID < first->ID) {
+				first = &ghost;
+			}
+		}
+		if (!candidate) candidate = first;
+		if (candidate) GhostEntity::StartFollowing(candidate);
+	}
+
+	if (!candidate) {
+		console->Print("No ghosts to spectate!\n");
+	}
+}
+
 // Makes sure some visibility shit is correct
 ON_EVENT(PRE_TICK) {
 	if (!session->isRunning) return;
