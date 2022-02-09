@@ -92,7 +92,7 @@ void InputHud::Paint(int slot) {
 
 			int font = scheme->GetFontByID(element.textFont);
 
-			int fontHeight = font >= 0 ? surface->GetFontHeight(font) : 0;
+			int fontHeight = element.textFont >= 0 ? surface->GetFontHeight(font) : 0;
 
 			// trying some kind of responsiveness here and getting the smallest side
 			const int joystickSize = std::min((int)(eHeight - fontHeight * 2.2), eWidth);
