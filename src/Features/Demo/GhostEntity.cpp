@@ -675,6 +675,11 @@ CON_COMMAND(ghost_spec_next, "ghost_spec_next - spectate the next ghost\n") {
 	}
 }
 
+HUD_ELEMENT_MODE2(ghost_spec, "0", 0, 1, "Show the name of the ghost you're currently spectating.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	auto ghost = GhostEntity::GetFollowTarget();
+	ctx->DrawElement("ghost: %s", ghost ? ghost->name.c_str() : "-");
+}
+
 // Makes sure some visibility shit is correct
 ON_EVENT(PRE_TICK) {
 	if (!session->isRunning) return;
