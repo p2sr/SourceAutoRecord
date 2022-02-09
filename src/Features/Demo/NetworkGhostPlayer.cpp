@@ -164,6 +164,7 @@ public:
 		}
 		for (auto &g : networkManager.ghostPool) {
 			if (g->isDestroyed) continue;
+			if (!networkManager.AcknowledgeGhost(g)) return;
 			if (ghost_list_mode.GetInt() == 1 && !g->sameMap) continue;
 			if (ghost_list_show_map.GetBool()) {
 				players.insert(Utils::ssprintf("%s (%s)", g->name.c_str(), g->currentMap.c_str()));
