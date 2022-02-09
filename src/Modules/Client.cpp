@@ -309,7 +309,7 @@ DETOUR_T(Color, Client::GetTextColorForClient, TextColor color, int client_idx) 
 		g_nameColorOverrides.pop_front();
 	} else {
 #ifdef _WIN32
-		Client::GetTextColorForClient(thisptr, col_out, color, client_idx);
+		Client::GetTextColorForClient(thisptr, &ret, color, client_idx);
 #else
 		ret = Client::GetTextColorForClient(thisptr, color, client_idx);
 #endif
