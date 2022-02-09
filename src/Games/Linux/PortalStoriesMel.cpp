@@ -53,6 +53,8 @@ void PortalStoriesMel::LoadOffsets() {
 	KeyUp = 341;                         // CInput::JoyStickApplyMovement
 	StartDrawing = 692;                  // CMatSystemSurface::PaintTraverseEx
 	FinishDrawing = 627;                 // CMatSystemSurface::PaintTraverseEx
+	OnGameOverlayActivated = 152;        // CSteam3Client
+	FontManager = 11;                    // GetFontName
 }
 const char *PortalStoriesMel::Version() {
 	return "Portal Stories: Mel (5723)";

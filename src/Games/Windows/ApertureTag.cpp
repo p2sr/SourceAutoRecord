@@ -40,6 +40,10 @@ void ApertureTag::LoadOffsets() {
 
 	using namespace Offsets;
 
+	// engine.dll
+
+	OnGameOverlayActivated = 144;  // CSteam3Client
+
 	// client.dll
 
 	m_pCommands = 228;  // CInput::DecodeUserCmdFromBuffer

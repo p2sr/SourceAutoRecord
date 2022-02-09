@@ -34,6 +34,8 @@ void ThinkingWithTimeMachine::LoadOffsets() {
 	KeyUp = 341;                         // CInput::JoyStickApplyMovement
 	StartDrawing = 692;                  // CMatSystemSurface::PaintTraverseEx
 	FinishDrawing = 627;                 // CMatSystemSurface::PaintTraverseEx
+	OnGameOverlayActivated = 152;        // CSteam3Client
+	FontManager = 11;                    // GetFontName
 }
 const char *ThinkingWithTimeMachine::Version() {
 	return "Thinking with Time Machine (5723)";

@@ -31,6 +31,12 @@ PortalStoriesMel::PortalStoriesMel() {
 }
 void PortalStoriesMel::LoadOffsets() {
 	Portal2::LoadOffsets();
+
+	using namespace Offsets;
+
+	// engine.dll
+
+	OnGameOverlayActivated = 144;  // CSteam3Client
 }
 const char *PortalStoriesMel::Version() {
 	return "Portal Stories: Mel (7054)";

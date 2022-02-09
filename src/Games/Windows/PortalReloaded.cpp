@@ -22,6 +22,12 @@ PortalReloaded::PortalReloaded() {
 }
 void PortalReloaded::LoadOffsets() {
 	Portal2::LoadOffsets();
+
+	using namespace Offsets;
+
+	// engine.dll
+
+	OnGameOverlayActivated = 144;  // CSteam3Client
 }
 const char *PortalReloaded::Version() {
 	return "Portal Reloaded";
