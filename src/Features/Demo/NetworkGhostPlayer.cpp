@@ -21,6 +21,7 @@
 
 Variable ghost_sync_countdown("ghost_sync_countdown", "3", 0, "The number of seconds of countdown to show at the start of every synced map. 0 to disable.\n");
 Variable ghost_spec_see_spectators("ghost_spec_see_spectators", "1", 0, "Whether to see other spectators while spectating.\n");
+Variable ghost_show_spec_chat("ghost_show_spec_chat", "1", "Show chat messages from spectators when not spectating.\n");
 
 #define DrawTxtRightAlign(font, x, y, clr, ...)               \
 	do {                                                         \
@@ -760,7 +761,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 						col = {192,192,192};
 					}
 
-					if (this->AcknowledgeGhost(ghost)) {
+					if (ghost_show_spec_chat.GetBool() || this->AcknowledgeGhost(ghost)) {
 						client->NameChat(col, Utils::ssprintf("%s%s", ghost->name.c_str(), ghost->spectator ? " (spectator)" : "").c_str(), {255,255,255}, message.c_str());
 					}
 				});
