@@ -484,15 +484,17 @@ void GhostEntity::StopFollowing() {
 }
 
 void GhostEntity::StartFollowing(GhostEntity *ghost) {
+	if (GhostEntity::followId == -1) {
+		r_portalsopenall_value = r_portalsopenall.GetInt();
+		r_drawviewmodel_value = r_drawviewmodel.GetInt();
+		crosshair_value = crosshairVariable.GetInt();
+		r_portalsopenall.SetValue(1);
+		r_drawviewmodel.SetValue(0);
+		crosshairVariable.SetValue(0);
+	}
+
 	GhostEntity::followId = ghost->ID;
 	GhostEntity::followNetwork = ghost->network;
-
-	r_portalsopenall_value = r_portalsopenall.GetInt();
-	r_drawviewmodel_value = r_drawviewmodel.GetInt();
-	crosshair_value = crosshairVariable.GetInt();
-	r_portalsopenall.SetValue(1);
-	r_drawviewmodel.SetValue(0);
-	crosshairVariable.SetValue(0);
 
 	if (!ghost->sameMap) {
 		engine->ExecuteCommand("disconnect");
