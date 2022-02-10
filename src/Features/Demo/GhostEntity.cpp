@@ -13,6 +13,7 @@
 #include "Event.hpp"
 
 #include <cstdlib>
+#include <cfloat>
 
 GhostType GhostEntity::ghost_type = GhostType::BENDY;
 std::string GhostEntity::defaultModelName = "models/props/food_can/food_can_open.mdl";
@@ -484,6 +485,7 @@ void GhostEntity::StopFollowing() {
 	void *player = server->GetPlayer(1);
 	if (player) {
 		*(int *)((uintptr_t)player + Offsets::m_fFlags) &= ~FL_GODMODE;
+		*(float *)((uintptr_t)player + Offsets::m_flGravity) = 1.0f;
 	}
 }
 
@@ -715,4 +717,5 @@ ON_EVENT(PRE_TICK) {
 
 	// Make sure we have godmode so we can't die while spectating someone
 	*(int *)((uintptr_t)player + Offsets::m_fFlags) |= FL_GODMODE;
+	*(float *)((uintptr_t)player + Offsets::m_flGravity) = FLT_MIN;
 }
