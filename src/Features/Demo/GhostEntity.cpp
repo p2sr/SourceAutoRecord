@@ -319,7 +319,7 @@ CON_COMMAND_COMPLETION(ghost_prop_model, "ghost_prop_model <filepath> - set the 
 }
 
 CON_COMMAND(ghost_type,
-            "ghost_type <0/1/2/3>:\n"
+            "ghost_type <0/1/2/3/4>:\n"
             "0: Colored circle\n"
             "1: Colored pyramid\n"
             "2: Colored pyramid with portal gun (RECORDED IN DEMOS)\n"
