@@ -521,11 +521,7 @@ void SpeedrunTimer::Stop(std::string segName) {
 		if (!engine->demorecorder->isRecordingDemo) return; // manual stop before autostop
 		switch (sar_speedrun_autostop.GetInt()) {
 			case 1:
-#ifdef _WIN32
-				engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr(), 0);
-#else
-				engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr());
-#endif
+				engine->demorecorder->Stop();
 				break;
 			case 2:
 				{
@@ -533,11 +529,7 @@ void SpeedrunTimer::Stop(std::string segName) {
 					int min_demo_num = engine->demorecorder->autorecordStartNum;
 					int max_demo_num = *engine->demorecorder->m_nDemoNumber;
 
-#ifdef _WIN32
-					engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr(), 0);
-#else
-					engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr());
-#endif
+					engine->demorecorder->Stop();
 
 					auto time_str = SpeedrunTimer::Format(total * *engine->interval_per_tick);
 					std::replace(time_str.begin(), time_str.end(), ':', '-');

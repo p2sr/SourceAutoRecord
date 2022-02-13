@@ -82,11 +82,7 @@ static void RecordTimestamp() {
 
 ON_EVENT(SESSION_END) {
 	if (*engine->demorecorder->m_bRecording && sar_autorecord.GetInt() == -1) {
-#ifdef _WIN32
-		engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr(), 0);
-#else
-		engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr());
-#endif
+		engine->demorecorder->Stop();
 	}
 }
 
@@ -423,11 +419,7 @@ ON_EVENT(CM_FLAGS) {
 			if (sar_challenge_autostop.GetInt() > 0) {
 				std::string demoFile = engine->demorecorder->GetDemoFilename();
 
-#ifdef _WIN32
-				engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr(), 0);
-#else
-				engine->demorecorder->StopRecording_Hook(engine->demorecorder->s_ClientDemoRecorder->ThisPtr());
-#endif
+				engine->demorecorder->Stop();
 
 				std::optional<std::string> rename_if_pb = {};
 				std::optional<std::string> replay_append_if_pb = {};
@@ -468,4 +460,14 @@ ON_EVENT(CM_FLAGS) {
 			}
 		});
 	}
+}
+
+void EngineDemoRecorder::Stop() {
+	this->requestedStop = true;
+#ifdef _WIN32
+	this->StopRecording_Hook(this->s_ClientDemoRecorder->ThisPtr(), 0);
+#else
+	this->StopRecording_Hook(this->s_ClientDemoRecorder->ThisPtr());
+#endif
+	this->requestedStop = false;
 }
