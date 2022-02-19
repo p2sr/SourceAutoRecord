@@ -20,7 +20,7 @@ enum TasControllerInput {
 static const char *g_TasControllerDigitalActions[] = {
 	"+jump", "+duck", "+use", "+zoom", "+attack", "+attack2"};
 static const int g_TasControllerInGameButtons[] = {
-	IN_JUMP, IN_DUCK, IN_USE, 0, IN_ATTACK, IN_ATTACK2};
+	IN_JUMP, IN_DUCK, IN_USE, IN_ZOOM, IN_ATTACK, IN_ATTACK2};
 
 struct TasControllerButton {
 	bool active = false;

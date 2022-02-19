@@ -407,6 +407,7 @@ public:
 #define IN_ATTACK2 (1 << 11)
 #define IN_RELOAD (1 << 13)
 #define IN_SPEED (1 << 17)
+#define IN_ZOOM (1 << 19)
 
 #define FL_ONGROUND (1 << 0)
 #define FL_DUCKING (1 << 1)
