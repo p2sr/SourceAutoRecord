@@ -67,12 +67,6 @@ REDECL(Server::PlayerRunCommand);
 REDECL(Server::ProcessMovement);
 REDECL(Server::StartTouchChallengeNode);
 REDECL(Server::say_callback);
-#ifdef _WIN32
-REDECL(Server::AirMove_Skip);
-REDECL(Server::AirMove_Continue);
-REDECL(Server::AirMove_Mid);
-REDECL(Server::AirMove_Mid_Trampoline);
-#endif
 
 MDECL(Server::GetPortals, int, iNumPortalsPlaced);
 MDECL(Server::GetAbsOrigin, Vector, S_m_vecAbsOrigin);
@@ -360,31 +354,7 @@ DETOUR_B(Server::AirMove) {
 
 	return Server::AirMove(thisptr);
 }
-#ifdef _WIN32
-DETOUR_MID_MH(Server::AirMove_Mid) {
-	__asm {
-        pushad
-        pushfd
-	}
-
-	if (sar_aircontrol.GetBool() && server->AllowsMovementChanges()) {
-		__asm {
-            popfd
-            popad
-            jmp Server::AirMove_Skip
-		}
-	}
-
-	__asm {
-        popfd
-        popad
-        movss xmm2, dword ptr[eax + 0x40]
-        jmp Server::AirMove_Continue
-	}
-}
-#else
 static void setAircontrol(int val) {
-	if (!sar.game->Is(SourceGame_Portal2)) return; // TODO: other engine branches
 	switch (val) {
 	case 0:
 		*server->aircontrol_fling_speed_addr = 300.0f * 300.0f;
@@ -398,7 +368,6 @@ static void setAircontrol(int val) {
 ON_EVENT(PRE_TICK) {
 	setAircontrol(server->AllowsMovementChanges() ? sar_aircontrol.GetInt() : 0);
 }
-#endif
 
 extern Hook g_AcceptInputHook;
 
@@ -614,23 +583,21 @@ bool Server::Init() {
 
 		Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t *), &Server::CheckJumpButtonBase);
 
+		uintptr_t airMove = (uintptr_t)AirMove;
 #ifdef _WIN32
-		auto airMoveMid = this->g_GameMovement->Original(Offsets::AirMove) + AirMove_Mid_Offset;
-		if (Memory::FindAddress(airMoveMid, airMoveMid + 5, AirMove_Signature) == airMoveMid) {
-			MH_HOOK_MID(this->AirMove_Mid, airMoveMid);
-			this->AirMove_Continue = airMoveMid + AirMove_Continue_Offset;
-			this->AirMove_Skip = airMoveMid + AirMove_Skip_Offset;
-			console->DevMsg("SAR: Verified sar_aircontrol 1!\n");
+		if (sar.game->Is(SourceGame_Portal2)) {
+			this->aircontrol_fling_speed_addr = *(float **)(airMove + 791);
 		} else {
-			console->Warning("SAR: Failed to enable sar_aircontrol 1 style!\n");
+			this->aircontrol_fling_speed_addr = *(float **)(airMove + 662);
 		}
 #else
-		{
-			uintptr_t airMove = (uintptr_t)AirMove;
+		if (sar.game->Is(SourceGame_EIPRelPIC)) {
 			this->aircontrol_fling_speed_addr = (float *)(airMove + 8 + *(uint32_t *)(airMove + 10) + *(uint32_t *)(airMove + 677));
-			Memory::UnProtect(this->aircontrol_fling_speed_addr, 4);
+		} else {
+			this->aircontrol_fling_speed_addr = *(float **)(airMove + 524);
 		}
 #endif
+		Memory::UnProtect(this->aircontrol_fling_speed_addr, 4);
 	}
 
 	if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS001")) {
@@ -805,11 +772,7 @@ DETOUR_COMMAND(Server::say) {
 }
 void Server::Shutdown() {
 	Command::Unhook("say", Server::say_callback);
-#ifdef _WIN32
-	MH_UNHOOK(this->AirMove_Mid);
-#else
 	setAircontrol(0);
-#endif
 	if (g_check_stuck_code) memcpy(g_check_stuck_code, g_orig_check_stuck_code, sizeof g_orig_check_stuck_code);
 	Interface::Delete(this->g_GameMovement);
 	Interface::Delete(this->g_ServerGameDLL);
