@@ -42,6 +42,8 @@ Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
 Variable ui_loadingscreen_fadein_time;
 Variable ui_loadingscreen_mintransition_time;
+Variable ui_transition_effect;
+Variable ui_transition_time;
 Variable hide_gun_when_holding;
 
 // P2 only
@@ -252,6 +254,8 @@ void Cheats::Init() {
 	ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
 	ui_loadingscreen_fadein_time = Variable("ui_loadingscreen_fadein_time");
 	ui_loadingscreen_mintransition_time = Variable("ui_loadingscreen_mintransition_time");
+	ui_transition_effect = Variable("ui_transition_effect");
+	ui_transition_time = Variable("ui_transition_time");
 	hide_gun_when_holding = Variable("hide_gun_when_holding");
 
 	sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);

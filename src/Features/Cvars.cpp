@@ -167,6 +167,8 @@ void Cvars::Lock() {
 		ui_loadingscreen_transition_time.Lock();
 		ui_loadingscreen_fadein_time.Lock();
 		ui_loadingscreen_mintransition_time.Lock();
+		ui_transition_effect.Lock();
+		ui_transition_time.Lock();
 		hide_gun_when_holding.Lock();
 
 		this->locked = true;
@@ -189,6 +191,8 @@ void Cvars::Unlock() {
 		ui_loadingscreen_transition_time.Unlock(false);
 		ui_loadingscreen_fadein_time.Unlock(false);
 		ui_loadingscreen_mintransition_time.Unlock(false);
+		ui_transition_effect.Unlock(false);
+		ui_transition_time.Unlock(false);
 		hide_gun_when_holding.Unlock(false);
 
 		this->locked = false;
