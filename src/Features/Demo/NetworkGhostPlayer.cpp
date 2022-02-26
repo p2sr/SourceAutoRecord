@@ -994,7 +994,6 @@ bool NetworkManager::IsSyncing() {
 }
 
 bool NetworkManager::AcknowledgeGhost(std::shared_ptr<GhostEntity> ghost) {
-	if (ghost->isDestroyed) return false;
 	if (!ghost->spectator) return true;
 	return this->spectator && ghost_spec_see_spectators.GetBool();
 }
