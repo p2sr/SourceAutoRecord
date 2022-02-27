@@ -38,7 +38,7 @@ GhostRenderer::GhostRenderer() {
 void GhostRenderer::UpdateAnimatedVerts() {
 	
 	// time
-	float time = engine->GetClientTime();
+	float time = engine->GetHostTime();
 	float dt = fminf(fmaxf(time - lastUpdateCall, 0.0f), 0.1f);
 	lastUpdateCall = time;
 
@@ -48,12 +48,10 @@ void GhostRenderer::UpdateAnimatedVerts() {
 	// update walking cycle
 	float vel = ghost->velocity.Length2D();
 	if (vel >= 1.0f) {
-		if (vel < 1.0) {
-			walkingCycle = 0;
-		} else {
-			walkingCycle += dt * fminf(vel * 0.05f, 9.0f);
-		}
+		walkingCycle += dt * fminf(vel * 0.05f, 9.0f);
 		if (walkingCycle > M_PI) walkingCycle = fmodf(walkingCycle, M_PI);
+	} else {
+		walkingCycle = 0;
 	}
 
 	// update squishing

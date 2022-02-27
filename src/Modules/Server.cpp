@@ -551,8 +551,7 @@ static void netResetCoopProgress(const void *data, size_t size) {
 }
 
 float hostTimeWrap() {
-	auto &et = engine->engineTool;
-	return et->Original<float (__rescall *)(void *thisptr)>(Offsets::HostTick - 1)(et->ThisPtr());
+	return engine->GetHostTime();
 }
 
 static char g_orig_check_stuck_code[6];

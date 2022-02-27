@@ -45,8 +45,8 @@ public:
 
 	DataGhost oldPos;
 	DataGhost newPos;
-	std::chrono::time_point<std::chrono::steady_clock> lastUpdate;
-	long long loopTime;
+	float lastUpdate;
+	float loopTime = 0.0f;
 	Vector velocity;
 
 	static GhostType ghost_type;
@@ -66,7 +66,7 @@ public:
 	void SetData(DataGhost data, bool network = false);
 	void SetupGhost(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map);
 	void Display();
-	void Lerp(float time);
+	void Lerp();
 	float GetOpacity();
 	Color GetColor();
 	void DrawName();

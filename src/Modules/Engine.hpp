@@ -131,6 +131,7 @@ public:
 	void SafeUnload(const char *postCommand = nullptr);
 	float GetHostFrameTime();
 	float GetClientTime();
+	float GetHostTime();
 	bool isRunning();
 	bool IsGamePaused();
 	int GetMapIndex(const std::string map);

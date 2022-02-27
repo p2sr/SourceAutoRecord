@@ -83,10 +83,9 @@ void DemoGhostPlayer::DeleteGhostsByID(const unsigned int ID) {
 void DemoGhostPlayer::UpdateGhostsPosition() {
 	for (auto &ghost : this->ghostPool) {
 		if (!ghost.hasFinished) {
-			if (ghost_sync.GetBool() && !ghost.sameMap) {
-				return;
+			if (!ghost_sync.GetBool() || ghost.sameMap) {
+				ghost.UpdateDemoGhost();
 			}
-			ghost.UpdateDemoGhost();
 		}
 	}
 }
@@ -309,9 +308,24 @@ CON_COMMAND(ghost_offset, "ghost_offset <offset> <ID> - delay the ghost start by
 	}
 }
 
-ON_EVENT(RENDER) {
+ON_EVENT(PRE_TICK) {
 	if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
 		demoGhostPlayer.UpdateGhostsPosition();
+	}
+}
+
+ON_EVENT(RENDER) {
+	if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
+		for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
+			if (!ghost.hasFinished) {
+				if (ghost.sameMap && ghost.demoTick >= 0 && ghost.demoTick < ghost.nbDemoTicks) {
+					if (!ghost.prop_entity) {
+						ghost.Spawn();
+					}
+					ghost.Lerp();
+				}
+			}
+		}
 	}
 }
 

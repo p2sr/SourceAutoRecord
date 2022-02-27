@@ -77,25 +77,9 @@ void DemoGhostEntity::UpdateDemoGhost() {
 		this->DeleteGhost();
 	} else if (this->demoTick < this->nbDemoTicks && this->demoTick >= 0) {
 		auto data = this->currentDatas.find(this->demoTick);
-		if (data != this->currentDatas.end()) {
-			this->data = data->second;
-		} else {
-			// No data for this tick! Chances are it's an alternateticks
-			// demo. Try to interpolate the position to smooth movement
-			// a bit
-			data = this->currentDatas.find(this->demoTick + 1);
-			if (data != this->currentDatas.end()) {
-				this->oldPos = this->data;
-				this->data = data->second;
-				Math::Lerp(this->oldPos.position, this->data.position, 0.5, this->data.position);
-			}
-		}
 
-		if (this->sameMap) {
-			if (this->prop_entity == nullptr) {
-				this->Spawn();
-			}
-			this->Display();
+		if (data != this->currentDatas.end()) {
+			this->SetData(data->second, false);
 		}
 	}
 

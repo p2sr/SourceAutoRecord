@@ -276,6 +276,10 @@ float Engine::GetClientTime() {
 	return this->ClientTime(this->engineTool->ThisPtr());
 }
 
+float Engine::GetHostTime() {
+	return this->engineTool->Original<float (__rescall *)(void *thisptr)>(Offsets::HostTick - 1)(this->engineTool->ThisPtr());
+}
+
 // CClientState::Disconnect
 DETOUR(Engine::Disconnect, bool bShowMainMenu) {
 	session->Ended();

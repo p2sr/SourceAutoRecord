@@ -864,8 +864,7 @@ void NetworkManager::UpdateGhostsPosition() {
 
 	for (auto ghost : pool_copy) {
 		if (ghost->sameMap && this->AcknowledgeGhost(ghost)) {
-			auto time = std::chrono::duration_cast<std::chrono::milliseconds>(NOW_STEADY() - ghost->lastUpdate).count();
-			ghost->Lerp(((float)time / (ghost->loopTime)));
+			ghost->Lerp();
 		}
 	}
 }
@@ -1150,8 +1149,7 @@ CON_COMMAND(ghost_debug, "ghost_debug - output a fuckton of debug info about net
 	networkManager.ghostPoolLock.lock();
 	for (int i = 0; i < networkManager.ghostPool.size(); ++i) {
 		auto ghost = networkManager.ghostPool[i];
-		uint32_t update_delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - ghost->lastUpdate).count();
-		console->Print("  [0x%02X] 0x%02X: \"%s\" on \"%s\" (%s), last updated %dms ago", i, ghost->ID, ghost->name.c_str(), ghost->currentMap.c_str(), ghost->sameMap ? "same map" : ghost->isAhead ? "ahead" : "behind", update_delta);
+		console->Print("  [0x%02X] 0x%02X: \"%s\" on \"%s\" (%s)", i, ghost->ID, ghost->name.c_str(), ghost->currentMap.c_str(), ghost->sameMap ? "same map" : ghost->isAhead ? "ahead" : "behind");
 		if (ghost->isDestroyed) console->Print(" [DESTROYED]\n");
 		else console->Print("\n");
 	}

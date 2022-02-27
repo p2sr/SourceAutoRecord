@@ -126,23 +126,23 @@ void GhostEntity::SetData(DataGhost data, bool network) {
 	this->oldPos = this->newPos;
 	this->newPos = data;
 
-	auto now = NOW_STEADY();
-	long long newLoopTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->lastUpdate).count();
+	auto now = engine->GetHostTime();
+	float newLoop = now - this->lastUpdate;
 	if (network) {
 		// Loop time could do strange things due to network latency etc.
 		// Try to smooth it using a biased average of the new time with
 		// the old one
-		if (this->loopTime == 0) {
-			this->loopTime = newLoopTime;
+		if (this->loopTime == 0.0f) {
+			this->loopTime = newLoop;
 		} else {
-			this->loopTime = (2 * this->loopTime + 1 * newLoopTime) / 3;
+			this->loopTime = (2.0f * this->loopTime + 1.0f * newLoop) / 3.0f;
 		}
 	} else {
-		this->loopTime = newLoopTime;
+		this->loopTime = newLoop;
 	}
 	this->lastUpdate = now;
 
-	this->velocity = (this->newPos.position - this->oldPos.position) / this->loopTime * 1000.0f;
+	this->velocity = (this->newPos.position - this->oldPos.position) / this->loopTime;
 }
 
 void GhostEntity::SetupGhost(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map) {
@@ -270,7 +270,9 @@ void GhostEntity::Display() {
 	this->lastOpacity = opacity;
 }
 
-void GhostEntity::Lerp(float time) {
+void GhostEntity::Lerp() {
+	float time = (engine->GetHostTime() - this->lastUpdate) / this->loopTime;
+
 	if (time > 1) time = 1;
 	if (time < 0) time = 0;
 
