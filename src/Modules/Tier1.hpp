@@ -34,9 +34,11 @@ public:
 	using _Dtor = int(__rescall *)(ConVar *thisptr);
 #endif
 	using _Create = int(__rescall *)(ConVar *thisptr, const char *pName, const char *pDefaultValue, int flags, const char *pHelpString, bool bMin, float fMin, bool bMax, float fMax, FnChangeCallback_t callback);
+	using _KeyValuesSystem = IKeyValuesSystem *(__cdecl *)();
 
 	_Dtor Dtor = nullptr;
 	_Create Create = nullptr;
+	_KeyValuesSystem KeyValuesSystem = nullptr;
 
 public:
 	bool Init() override;

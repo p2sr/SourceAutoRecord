@@ -174,15 +174,15 @@ void OverlayRender::endShading() {
 	g_shade_color = {};
 }
 
-void OverlayRender::addTriangle(Vector a, Vector b, Vector c, Color col, bool cullBack) {
-	auto &vs = getGroupVertVector(col, false, false);
+void OverlayRender::addTriangle(Vector a, Vector b, Vector c, Color col, bool throughWalls, bool cullBack) {
+	auto &vs = getGroupVertVector(col, false, false, throughWalls);
 	vs.insert(vs.end(), { a, b, c });
 	if (!cullBack) vs.insert(vs.end(), { a, c, b });
 }
 
-void OverlayRender::addQuad(Vector a, Vector b, Vector c, Vector d, Color col, bool cullBack) {
-	OverlayRender::addTriangle(a, b, c, col, cullBack);
-	OverlayRender::addTriangle(a, c, d, col, cullBack);
+void OverlayRender::addQuad(Vector a, Vector b, Vector c, Vector d, Color col, bool throughWalls, bool cullBack) {
+	OverlayRender::addTriangle(a, b, c, col, throughWalls, cullBack);
+	OverlayRender::addTriangle(a, c, d, col, throughWalls, cullBack);
 }
 
 void OverlayRender::addLine(Vector a, Vector b, Color col, bool throughWalls) {
@@ -190,7 +190,7 @@ void OverlayRender::addLine(Vector a, Vector b, Color col, bool throughWalls) {
 	vs.insert(vs.end(), { a, b });
 }
 
-void OverlayRender::addBox(Vector origin, Vector mins, Vector maxs, QAngle ang, Color col, bool wireframe, bool wireframeThroughWalls) {
+void OverlayRender::addBox(Vector origin, Vector mins, Vector maxs, QAngle ang, Color col, bool wireframe, bool throughWalls) {
 	float spitch, cpitch;
 	Math::SinCos(DEG2RAD(ang.x), &spitch, &cpitch);
 	float syaw, cyaw;
@@ -226,7 +226,7 @@ void OverlayRender::addBox(Vector origin, Vector mins, Vector maxs, QAngle ang, 
 		std::array<int, 4>{ 1, 3, 2, 0 },
 		std::array<int, 4>{ 6, 7, 5, 4 },
 	}) {
-		OverlayRender::addQuad(verts[i[0]], verts[i[1]], verts[i[2]], verts[i[3]], col, true);
+		OverlayRender::addQuad(verts[i[0]], verts[i[1]], verts[i[2]], verts[i[3]], col, throughWalls, true);
 	}
 
 	if (wireframe) {
@@ -246,7 +246,7 @@ void OverlayRender::addBox(Vector origin, Vector mins, Vector maxs, QAngle ang, 
 			std::array<int, 2>{ 5, 7 },
 			std::array<int, 2>{ 6, 7 },
 		}) {
-			OverlayRender::addLine(verts[i[0]], verts[i[1]], wf_col, wireframeThroughWalls);
+			OverlayRender::addLine(verts[i[0]], verts[i[1]], wf_col, throughWalls);
 		}
 	}
 }
@@ -289,11 +289,57 @@ static void setPrimitiveType(uint8_t type) {
 #endif
 }
 
-void OverlayRender::drawMeshes() {
-	IMaterial *mat_solid = materialSystem->FindMaterial("debug/debugtranslucentvertexcolor", "Other textures");
-	IMaterial *mat_wireframe = materialSystem->FindMaterial("debug/debugwireframevertexcolor", "Other textures");
-	IMaterial *mat_wireframe_noz = materialSystem->FindMaterial("debug/debugwireframevertexcolorignorez", "Other textures");
+static IMaterial *g_vertMat = nullptr;
 
+static IMaterial *createMaterial(KeyValues *kv, const char *name) {
+	IMaterial *mat = (IMaterial *)materialSystem->CreateMaterial(materialSystem->materials->ThisPtr(), name, kv);
+	auto IncrementReferenceCount = Memory::VMT<void (__rescall *)(IMaterial *thisptr)>(mat, 12);
+	IncrementReferenceCount(mat);
+	return mat;
+}
+
+static void destroyMaterial(IMaterial *mat) {
+	if (!mat) return;
+	auto DecrementReferenceCount = Memory::VMT<void (__rescall *)(IMaterial *thisptr)>(mat, 13);
+	DecrementReferenceCount(mat);
+}
+
+static IMaterial *g_mat_solid, *g_mat_solid_noz, *g_mat_wireframe, *g_mat_wireframe_noz;
+
+void OverlayRender::initMaterials() {
+	KeyValues *kv;
+
+	kv = new KeyValues("unlitgeneric");
+	kv->SetInt("$vertexcolor", 1);
+	kv->SetInt("$vertexalpha", 1);
+	g_mat_solid = createMaterial(kv, "__utilVertexColor");
+
+	kv = new KeyValues("unlitgeneric");
+	kv->SetInt("$vertexcolor", 1);
+	kv->SetInt("$vertexalpha", 1);
+	kv->SetInt("$ignorez", 1);
+	g_mat_solid_noz = createMaterial(kv, "__utilVertexColorIgnoreZ");
+
+	kv = new KeyValues("wireframe");
+	kv->SetInt("$vertexcolor", 1);
+	kv->SetInt("$vertexalpha", 1);
+	g_mat_wireframe = createMaterial(kv, "__utilWireframe");
+
+	kv = new KeyValues("wireframe");
+	kv->SetInt("$vertexcolor", 1);
+	kv->SetInt("$vertexalpha", 1);
+	kv->SetInt("$ignorez", 1);
+	g_mat_wireframe_noz = createMaterial(kv, "__utilWireframeIgnoreZ");
+}
+
+ON_EVENT(SAR_UNLOAD) {
+	destroyMaterial(g_mat_solid);
+	destroyMaterial(g_mat_solid_noz);
+	destroyMaterial(g_mat_wireframe);
+	destroyMaterial(g_mat_wireframe_noz);
+}
+
+void OverlayRender::drawMeshes() {
 	matrix3x4_t transform{0};
 	transform.m_flMatVal[0][0] = 1;
 	transform.m_flMatVal[1][1] = 1;
@@ -314,7 +360,7 @@ void OverlayRender::drawMeshes() {
 			setPrimitiveType(2);
 		}
 
-		IMaterial *mat = g.wireframe ? (g.noz ? mat_wireframe_noz : mat_wireframe) : mat_solid;
+		IMaterial *mat = g.wireframe ? (g.noz ? g_mat_wireframe_noz : g_mat_wireframe) : (g.noz ? g_mat_solid_noz : g_mat_solid);
 		engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, g.col);
 	}
 

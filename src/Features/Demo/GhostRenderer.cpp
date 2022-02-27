@@ -156,7 +156,7 @@ void GhostRenderer::Draw() {
 	const short *model = BENDY_MODELS[GetLODLevel()];
 
 	Color col = ghost->GetColor();
-#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(p1, p2, p3, col, false)
+#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(p1, p2, p3, col)
 	// draw each triangle
 	for (int t = 0; model[t] >= 0; t+=3) {
 		Vector p1 = animatedVerts[model[t]]; 

@@ -8,6 +8,7 @@
 #include "Offsets.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
+#include "Features/OverlayRender.hpp"
 
 REDECL(MaterialSystem::UncacheUnusedMaterials);
 REDECL(MaterialSystem::CreateMaterial);
@@ -52,6 +53,7 @@ bool MaterialSystem::Init() {
 	if (this->materials) {
 		this->materials->Hook(MaterialSystem::UncacheUnusedMaterials_Hook, MaterialSystem::UncacheUnusedMaterials, 77);
 		this->materials->Hook(MaterialSystem::CreateMaterial_Hook, MaterialSystem::CreateMaterial, 81);
+		OverlayRender::initMaterials();
 	}
 
 	return this->hasLoaded = this->materials;

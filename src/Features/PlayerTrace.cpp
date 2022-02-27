@@ -220,7 +220,7 @@ void PlayerTrace::DrawInWorld() const {
 			}
 
 			if (closest_dist < 1.0f) {
-				OverlayRender::addBox(closest_pos, {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, {255, 0, 255, 20});
+				OverlayRender::addBox(closest_pos, {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, {255, 0, 255, 20}, true, draw_through_walls);
 				hovers.push_back({closest_id, trace_idx, closest_pos, closest_vel});
 			}
 		}

@@ -248,6 +248,11 @@ bool Tier1::Init() {
 
 		this->InstallGlobalChangeCallback = this->g_pCVar->Original<_InstallGlobalChangeCallback>(Offsets::InstallGlobalChangeCallback);
 		this->RemoveGlobalChangeCallback = this->g_pCVar->Original<_RemoveGlobalChangeCallback>(Offsets::RemoveGlobalChangeCallback);
+
+		auto tier1 = Memory::GetModuleHandleByName(this->Name());
+		if (tier1) {
+			this->KeyValuesSystem = Memory::GetSymbolAddress<_KeyValuesSystem>(tier1, "KeyValuesSystem");
+		}
 	}
 
 	return this->hasLoaded = this->g_pCVar && this->ConCommand_VTable && this->ConVar_VTable && this->ConVar_VTable2 && this->AutoCompletionFunc;
