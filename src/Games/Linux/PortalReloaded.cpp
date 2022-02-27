@@ -48,7 +48,7 @@ void PortalReloaded::LoadOffsets() {
 	FontManager = 11;                    // GetFontName
 }
 const char *PortalReloaded::Version() {
-	return "Portal Reloaded";
+	return "Portal Reloaded (8151)";
 }
 const char *PortalReloaded::ModDir() {
 	return "portalreloaded";

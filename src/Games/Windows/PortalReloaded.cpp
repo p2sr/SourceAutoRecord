@@ -30,7 +30,7 @@ void PortalReloaded::LoadOffsets() {
 	OnGameOverlayActivated = 144;  // CSteam3Client
 }
 const char *PortalReloaded::Version() {
-	return "Portal Reloaded";
+	return "Portal Reloaded (8151)";
 }
 const char *PortalReloaded::ModDir() {
 	return "portalreloaded";

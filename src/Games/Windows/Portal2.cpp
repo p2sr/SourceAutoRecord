@@ -322,7 +322,7 @@ void Portal2::LoadOffsets() {
 	DestroyDebugMesh = 42;
 }
 const char *Portal2::Version() {
-	return "Portal 2 (7293)";
+	return "Portal 2 (8491)";
 }
 const float Portal2::Tickrate() {
 	return 60;

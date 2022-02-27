@@ -57,7 +57,7 @@ void PortalStoriesMel::LoadOffsets() {
 	FontManager = 11;                    // GetFontName
 }
 const char *PortalStoriesMel::Version() {
-	return "Portal Stories: Mel (5723)";
+	return "Portal Stories: Mel (8151)";
 }
 const char *PortalStoriesMel::ModDir() {
 	return "portal_stories";

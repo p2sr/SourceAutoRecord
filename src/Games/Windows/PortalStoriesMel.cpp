@@ -39,7 +39,7 @@ void PortalStoriesMel::LoadOffsets() {
 	OnGameOverlayActivated = 144;  // CSteam3Client
 }
 const char *PortalStoriesMel::Version() {
-	return "Portal Stories: Mel (7054)";
+	return "Portal Stories: Mel (8151)";
 }
 const char *PortalStoriesMel::ModDir() {
 	return "portal_stories";
