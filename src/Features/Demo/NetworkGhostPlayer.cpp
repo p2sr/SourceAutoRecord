@@ -20,7 +20,7 @@
 #include <set>
 
 Variable ghost_sync_countdown("ghost_sync_countdown", "3", 0, "The number of seconds of countdown to show at the start of every synced map. 0 to disable.\n");
-Variable ghost_spec_see_spectators("ghost_spec_see_spectators", "1", 0, "Whether to see other spectators while spectating.\n");
+Variable ghost_spec_see_spectators("ghost_spec_see_spectators", "0", "Whether to see other spectators while spectating.\n");
 Variable ghost_show_spec_chat("ghost_show_spec_chat", "1", "Show chat messages from spectators when not spectating.\n");
 
 #define DrawTxtRightAlign(font, x, y, clr, ...)               \
