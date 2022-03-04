@@ -695,7 +695,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 					return;  // FIXME: this probably works in practice, but it isn't entirely thread-safe
 
 				this->UpdateGhostsSameMap();
-				if (ghost_show_advancement.GetInt() >= 3) {
+				if (ghost_show_advancement.GetInt() >= 3 && this->AcknowledgeGhost(ghost)) {
 					if (ticksIL == -1) {
 						std::string msg = Utils::ssprintf("%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
 						toastHud.AddToast(GHOST_TOAST_TAG, msg);
