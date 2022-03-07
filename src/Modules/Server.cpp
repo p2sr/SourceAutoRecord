@@ -262,6 +262,10 @@ static inline bool hasSlotCompleted(void *thisptr, int slot) {
 #endif
 }
 
+static inline bool isFakeFlag(void *thisptr) {
+	return hasSlotCompleted(thisptr, 2);
+}
+
 static void TriggerCMFlag(int slot, float time, bool end) {
 	Event::Trigger<Event::CM_FLAGS>({slot, time, end});
 	if (engine->IsCoop()) {
@@ -275,7 +279,7 @@ static void TriggerCMFlag(int slot, float time, bool end) {
 
 extern Hook g_flagStartTouchHook;
 DETOUR(Server::StartTouchChallengeNode, void *entity) {
-	if (server->IsPlayer(entity) && client->GetChallengeStatus() == CMStatus::CHALLENGE) {
+	if (server->IsPlayer(entity) && !isFakeFlag(thisptr) && client->GetChallengeStatus() == CMStatus::CHALLENGE) {
 		int slot = server->GetSplitScreenPlayerSlot(entity);
 		if (!hasSlotCompleted(thisptr, slot)) {
 			float time = server->GetCMTimer();
