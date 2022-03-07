@@ -152,6 +152,7 @@
     <ClCompile Include="Features\Feature.cpp" />
     <ClCompile Include="Features\FovChanger.cpp" />
     <ClCompile Include="Features\GroundFramesCounter.cpp" />
+    <ClCompile Include="Features\PlacementScanner.cpp" />
     <ClCompile Include="Features\Hud\Crosshair.cpp" />
     <ClCompile Include="Features\Hud\Hud.cpp" />
     <ClCompile Include="Features\Hud\InputHud.cpp" />
@@ -335,6 +336,7 @@
     <ClInclude Include="Features\Feature.hpp" />
     <ClInclude Include="Features\FovChanger.hpp" />
     <ClInclude Include="Features\GroundFramesCounter.hpp" />
+    <ClCompile Include="Features\PlacementScanner.hpp" />
     <ClInclude Include="Features\Hud\Crosshair.hpp" />
     <ClInclude Include="Features\Hud\Hud.hpp" />
     <ClInclude Include="Features\Hud\InputHud.hpp" />
