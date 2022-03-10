@@ -6,6 +6,7 @@
 #include "Modules/Surface.hpp"
 #include "Modules/InputSystem.hpp"
 #include "Utils/SDK.hpp"
+#include "Utils/lodepng.hpp"
 #include "Variable.hpp"
 
 #include <cstring>
@@ -16,6 +17,8 @@ Variable sar_ihud_x("sar_ihud_x", "2", "X position of input HUD.\n", 0);
 Variable sar_ihud_y("sar_ihud_y", "2", "Y position of input HUD.\n", 0);
 Variable sar_ihud_grid_padding("sar_ihud_grid_padding", "2", 0, "Padding between grid squares of input HUD.\n");
 Variable sar_ihud_grid_size("sar_ihud_grid_size", "60", 0, "Grid square size of input HUD.\n");
+Variable sar_ihud_analog_image_scale("sar_ihud_analog_image_scale", "0.6", 0, 1, "Scale of analog input images against max extent.\n");
+Variable sar_ihud_analog_view_deshake("sar_ihud_analog_view_deshale", "0", "Try to eliminate small fluctuations in the movement analog.\n");
 
 InputHud inputHud;
 
@@ -29,6 +32,7 @@ InputHud::InputHud()
 		{"moveright", false, IN_MOVERIGHT},
 		{"jump", false, IN_JUMP},
 		{"duck", false, IN_DUCK},
+		{"zoom", false, IN_ZOOM},
 		{"use", false, IN_USE},
 		{"attack", false, IN_ATTACK},
 		{"attack2", false, IN_ATTACK2},
@@ -70,12 +74,30 @@ void InputHud::Paint(int slot) {
 		inputInfo.awaitingFrameDraw = false;
 	}
 
+	int tick;
+	{
+		int tmp1, tmp2;
+		engine->GetTicks(tick, tmp1, tmp2);
+	}
+
 	// do the actual drawing
 	auto hudX = PositionFromString(sar_ihud_x.GetString(), true);
 	auto hudY = PositionFromString(sar_ihud_y.GetString(), false);
 
-	auto btnSize = sar_ihud_grid_size.GetInt();
-	auto btnPadding = sar_ihud_grid_padding.GetInt();
+	auto btnSize = sar_ihud_grid_size.GetFloat();
+	auto btnPadding = sar_ihud_grid_padding.GetFloat();
+
+	if (this->bgTextureId != -1) {
+		surface->DrawSetColor(surface->matsurface->ThisPtr(), 255, 255, 255, 255);
+		surface->DrawSetTexture(surface->matsurface->ThisPtr(), this->bgTextureId);
+		int x = hudX + this->bgGridX * (btnSize + btnPadding) - btnPadding;
+		int y = hudY + this->bgGridY * (btnSize + btnPadding) - btnPadding;
+		int w = this->bgGridW * (btnSize + btnPadding) - btnPadding;
+		int h = this->bgGridH * (btnSize + btnPadding) - btnPadding;
+		if (w < 0) w = 0;
+		if (h < 0) h = 0;
+		surface->DrawTexturedRect(surface->matsurface->ThisPtr(), x, y, x + w, y + h);
+	}
 
 	for (auto &element : elements) {
 		if (!element.enabled) continue;
@@ -86,9 +108,8 @@ void InputHud::Paint(int slot) {
 		int eWidth = element.width * btnSize + std::max(0, element.width - 1) * btnPadding;
 		int eHeight = element.height * btnSize + std::max(0, element.height -1) * btnPadding;
 
-		if (element.isVector) { 
+		if (element.isVector) {
 			//drawing movement and angles vector displays
-			surface->DrawRect(element.background, eX, eY, eX + eWidth, eY + eHeight);
 
 			int font = scheme->GetFontByID(element.textFont);
 
@@ -101,20 +122,24 @@ void InputHud::Paint(int slot) {
 			int jX = eX + eWidth/2 - r;
 			int jY = eY + eHeight/2 - r;
 
-			Color linesColor1 = element.textHighlight;
-			Color linesColor2 = linesColor1;
-			linesColor2._color[3] /= 2;
+			if (element.imageTextureId == -1) {
+				surface->DrawRect(element.background, eX, eY, eX + eWidth, eY + eHeight);
 
-			surface->DrawColoredLine(jX, jY, jX + joystickSize, jY, linesColor1);
-			surface->DrawColoredLine(jX, jY, jX, jY + joystickSize, linesColor1);
-			surface->DrawColoredLine(jX + joystickSize, jY, jX + joystickSize, jY + joystickSize, linesColor1);
-			surface->DrawColoredLine(jX, jY + joystickSize, jX + joystickSize, jY + joystickSize, linesColor1);
+				Color linesColor1 = element.textHighlight;
+				Color linesColor2 = linesColor1;
+				linesColor2._color[3] /= 2;
 
-			//surface->DrawFilledCircle(jX + r, jY + r, r, Color(0,0,0,40));
-			surface->DrawCircle(jX + r, jY + r, r, linesColor1);
+				surface->DrawColoredLine(jX, jY, jX + joystickSize, jY, linesColor1);
+				surface->DrawColoredLine(jX, jY, jX, jY + joystickSize, linesColor1);
+				surface->DrawColoredLine(jX + joystickSize, jY, jX + joystickSize, jY + joystickSize, linesColor1);
+				surface->DrawColoredLine(jX, jY + joystickSize, jX + joystickSize, jY + joystickSize, linesColor1);
 
-			surface->DrawColoredLine(jX, jY + r, jX + joystickSize, jY + r, linesColor2);
-			surface->DrawColoredLine(jX + r, jY, jX + r, jY + joystickSize, linesColor2);
+				//surface->DrawFilledCircle(jX + r, jY + r, r, Color(0,0,0,40));
+				surface->DrawCircle(jX + r, jY + r, r, linesColor1);
+
+				surface->DrawColoredLine(jX, jY + r, jX + joystickSize, jY + r, linesColor2);
+				surface->DrawColoredLine(jX + r, jY, jX + r, jY + joystickSize, linesColor2);
+			}
 
 			Vector v, visV;
 			if (element.type == 0) {
@@ -134,6 +159,21 @@ void InputHud::Paint(int slot) {
 				while (v.x < -180.0f) v.x += 360.0f;
 				if (v.x > 180.0f) v.x -= 360.0f;
 
+				if (sar_ihud_analog_view_deshake.GetBool()) {
+					// Viewangle can fluctuate a tiny bit in normal situations
+					// sometimes, which looks super weird. To deal with this, don't
+					// record tiny changes on the HUD. As an exception to this, if
+					// we're meant to be at 0, always move it back, as a small
+					// discrepancy when the camera isn't moving at all is very
+					// noticable.
+					float dx = fabsf(v.x - inputInfo.prevUsedAngles.x);
+					float dy = fabsf(v.y - inputInfo.prevUsedAngles.y);
+					if (dx < 0.02 && v.x != 0.0) v.x = inputInfo.prevUsedAngles.x;
+					if (dy < 0.02 && v.y != 0.0) v.y = inputInfo.prevUsedAngles.y;
+				}
+
+				inputInfo.prevUsedAngles = VectorToQAngle(v);
+
 				// make lower range of inputs easier to notice
 				if (v.Length() > 0) {
 					visV = v.Normalize() * pow(v.Length() / 180.0f, 0.2);
@@ -141,16 +181,27 @@ void InputHud::Paint(int slot) {
 				}
 			}
 
-			Color pointerColor = element.highlight;
-			Vector pointerPoint = {jX + r + r * visV.x, jY + r + r * visV.y};
-			surface->DrawColoredLine(jX + r, jY + r, pointerPoint.x, pointerPoint.y, pointerColor);
-			surface->DrawFilledCircle(pointerPoint.x, pointerPoint.y, 5, pointerColor);
+			if (element.imageTextureId == -1) {
+				Color pointerColor = element.highlight;
+				Vector pointerPoint = {jX + r + r * visV.x, jY + r + r * visV.y};
+				surface->DrawColoredLine(jX + r, jY + r, pointerPoint.x, pointerPoint.y, pointerColor);
+				surface->DrawFilledCircle(pointerPoint.x, pointerPoint.y, 5, pointerColor);
 
-			Color textColor = element.textColor;
-			if (fontHeight > 0) {
-				surface->DrawTxt(font, jX, jY + joystickSize + 2, textColor, "x:%.3f", v.x);
-				surface->DrawTxt(font, jX + r, jY + joystickSize + 2, textColor, "y:%.3f", v.y);
-				surface->DrawTxt(font, jX, jY - fontHeight, textColor, element.text.c_str(), v.x);
+				Color textColor = element.textColor;
+				if (fontHeight > 0) {
+					surface->DrawTxt(font, jX, jY + joystickSize + 2, textColor, "x:%.3f", v.x);
+					surface->DrawTxt(font, jX + r, jY + joystickSize + 2, textColor, "y:%.3f", v.y);
+					surface->DrawTxt(font, jX, jY - fontHeight, textColor, element.text.c_str(), v.x);
+				}
+			} else {
+				// vector drawing with an image
+				int size = (float)eWidth * sar_ihud_analog_image_scale.GetFloat();
+				int padding = (eWidth-size)/2;
+				int x = eX + padding + padding*visV.x;
+				int y = eY + padding + padding*visV.y;
+				surface->DrawSetColor(surface->matsurface->ThisPtr(), 255, 255, 255, 255);
+				surface->DrawSetTexture(surface->matsurface->ThisPtr(), element.imageTextureId);
+				surface->DrawTexturedRect(surface->matsurface->ThisPtr(), x, y, x + size, y + size);
 			}
 		} else {
 			// drawing normal buttons
@@ -160,13 +211,32 @@ void InputHud::Paint(int slot) {
 			else
 				pressed = inputInfo.buttonBits & element.type;
 
-			surface->DrawRectAndCenterTxt(
-				pressed ? element.highlight : element.background,
-				eX, eY, eX + eWidth, eY + eHeight,
-				scheme->GetFontByID(element.textFont),
-				pressed ? element.textHighlight : element.textColor,
-				element.text.c_str()
-			);
+			if (pressed && element.pressedTick == -1) {
+				element.pressedTick = tick;
+			}
+
+			if (!pressed && tick - element.pressedTick < element.minHold) {
+				pressed = true;
+			}
+
+			if (!pressed && element.pressedTick != -1) {
+				element.pressedTick = -1;
+			}
+
+			if (element.imageTextureId == -1) {
+				surface->DrawRectAndCenterTxt(
+					pressed ? element.highlight : element.background,
+					eX, eY, eX + eWidth, eY + eHeight,
+					scheme->GetFontByID(element.textFont),
+					pressed ? element.textHighlight : element.textColor,
+					element.text.c_str()
+				);
+			} else {
+				int tex = pressed && element.highlightImageTextureId > -1 ? element.highlightImageTextureId : element.imageTextureId;
+				surface->DrawSetColor(surface->matsurface->ThisPtr(), 255, 255, 255, 255);
+				surface->DrawSetTexture(surface->matsurface->ThisPtr(), tex);
+				surface->DrawTexturedRect(surface->matsurface->ThisPtr(), eX, eY, eX + eWidth, eY + eHeight);
+			}
 		}
 	}
 
@@ -183,9 +253,16 @@ bool InputHud::GetCurrentSize(int &xSize, int &ySize) {
 		gridHeight = std::max(gridHeight, element.y + element.height);
 	}
 
+	if (this->bgTextureId != -1) {
+		int bgWidth = this->bgGridX + this->bgGridW;
+		int bgHeight = this->bgGridY + this->bgGridH;
+		if (bgWidth > gridWidth) gridWidth = bgWidth;
+		if (bgHeight > gridHeight) gridHeight = bgHeight;
+	}
+
 	//transforming them into actual hud width and height
-	auto btnSize = sar_ihud_grid_size.GetInt();
-	auto btnPadding = sar_ihud_grid_padding.GetInt();
+	auto btnSize = sar_ihud_grid_size.GetFloat();
+	auto btnPadding = sar_ihud_grid_padding.GetFloat();
 
 	xSize = gridWidth * btnSize + std::max(0, gridWidth - 1) * btnPadding;
 	ySize = gridHeight * btnSize + std::max(0, gridHeight - 1) * btnPadding;
@@ -251,6 +328,44 @@ void InputHud::ModifyElementParam(std::string name, std::string parameter, std::
 			element->x = x;
 			element->y = y;
 		}
+	} else if (parameter.compare("image") == 0) {
+		element->imageTexture = value;
+		if (value == "") {
+			element->imageTextureId = -1;
+		} else {
+			std::vector<uint8_t> buf;
+			unsigned w, h;
+			unsigned err = lodepng::decode(buf, w, h, value + ".png");
+			if (err) {
+				console->Warning("%s\n", lodepng_error_text(err));
+				element->imageTextureId = -1;
+				return;
+			}
+			if (element->imageTextureId == -1) {
+				element->imageTextureId = surface->CreateNewTextureID(surface->matsurface->ThisPtr(), true);
+			}
+			surface->DrawSetTextureRGBA(surface->matsurface->ThisPtr(), element->imageTextureId, buf.data(), w, h);
+		}
+	} else if (parameter.compare("highlightimage") == 0) {
+		element->highlightImageTexture = value;
+		if (value == "") {
+			element->highlightImageTextureId = -1;
+		} else {
+			std::vector<uint8_t> buf;
+			unsigned w, h;
+			unsigned err = lodepng::decode(buf, w, h, value + ".png");
+			if (err) {
+				console->Warning("%s\n", lodepng_error_text(err));
+				element->highlightImageTextureId = -1;
+				return;
+			}
+			if (element->highlightImageTextureId == -1) {
+				element->highlightImageTextureId = surface->CreateNewTextureID(surface->matsurface->ThisPtr(), true);
+			}
+			surface->DrawSetTextureRGBA(surface->matsurface->ThisPtr(), element->highlightImageTextureId, buf.data(), w, h);
+		}
+	} else if (parameter.compare("minhold") == 0) {
+		element->minHold = valueInt;
 	}
 }
 
@@ -264,6 +379,9 @@ void InputHud::ApplyPreset(const char* preset, bool start) {
 		PARAM("all", "texthighlight", "255 255 255 255");
 		PARAM("all", "font", "1");
 		PARAM("all", "enabled", "1");
+		PARAM("all", "image", "");
+		PARAM("all", "highlightimage", "");
+		PARAM("all", "minhold", "0");
 
 		PARAM("forward", "text", "W");
 		PARAM("back", "text", "S");
@@ -287,6 +405,9 @@ void InputHud::ApplyPreset(const char* preset, bool start) {
 
 		PARAM("movement", "enabled", "0");
 		PARAM("angles", "enabled", "0");
+		PARAM("zoom", "enabled", "0");
+
+		this->bgTextureId = -1;
 
 		if (!start) sar_ihud_grid_size.SetValue(60);
 
@@ -312,11 +433,15 @@ void InputHud::ApplyPreset(const char* preset, bool start) {
 		PARAM("all", "texthighlight", "255 255 255 255");
 		PARAM("all", "font", "1");
 		PARAM("all", "enabled", "1");
+		PARAM("all", "image", "");
+		PARAM("all", "highlightimage", "");
+		PARAM("all", "minhold", "0");
 
 		PARAM("forward", "enabled", "0");
 		PARAM("back", "enabled", "0");
 		PARAM("moveleft", "enabled", "0");
 		PARAM("moveright", "enabled", "0");
+		PARAM("zoom", "enabled", "0");
 
 		PARAM("jump", "text", "Jump");
 		PARAM("use", "text", "Use");
@@ -341,6 +466,8 @@ void InputHud::ApplyPreset(const char* preset, bool start) {
 		PARAM("movement", "text", "move analog");
 		PARAM("angles", "text", "view analog");
 
+		this->bgTextureId = -1;
+
 		if (!start) sar_ihud_grid_size.SetValue(40);
 	} else {
 		console->Print("Unknown input hud preset %s!\n", preset);
@@ -361,7 +488,7 @@ bool InputHud::HasElement(const char* elementName) {
 }
 
 bool InputHud::IsValidParameter(const char* param) {
-	const char *validParams[] = {"enabled", "text", "font", "pos", "x", "y", "width", "height", "font", "background", "highlight", "textcolor", "texthighlight"};
+	const char *validParams[] = {"enabled", "text", "font", "pos", "x", "y", "width", "height", "font", "background", "highlight", "textcolor", "texthighlight", "image", "highlightimage", "minhold"};
 	
 	for (const char *validParam : validParams) {
 		if (!strcmp(validParam, param)) {
@@ -409,6 +536,12 @@ std::string InputHud::GetParameterValue(std::string name, std::string parameter)
 		return std::to_string(element->height);
 	} else if (parameter.compare("pos") == 0) {
 		return Utils::ssprintf("x: %u y: %u width: %u height: %u", element->x, element->y, element->width, element->height);
+	} else if (parameter.compare("image") == 0) {
+		return element->imageTexture;
+	} else if (parameter.compare("highlightimage") == 0) {
+		return element->highlightImageTexture;
+	} else if (parameter.compare("minhold") == 0) {
+		return std::to_string(element->minHold);
 	} else {
 		return "";
 	}
@@ -467,7 +600,7 @@ DECL_COMMAND_COMPLETION(sar_ihud_modify) {
 
 CON_COMMAND_F_COMPLETION(sar_ihud_modify,
 	"sar_ihud_modify <element|all> [param=value]... - modifies parameters in given element.\n"
-    "Params: enabled, text, font, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight.\n",
+    "Params: enabled, text, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight, image, highlightimage, minhold.\n",
 	0, sar_ihud_modify_CompletionFunc
 ) {
 	if (args.ArgC() < 3) {
@@ -555,3 +688,31 @@ CON_COMMAND(sar_ihud_add_key, "sar_ihud_add_key <key>") {
 }
 
 CON_COMMAND_HUD_SETPOS(sar_ihud, "input HUD")
+
+CON_COMMAND(sar_ihud_set_background, "sar_ihud_set_background <path> <grid x> <grid y> <grid w> <grid h>") {
+	if (args.ArgC() != 6) {
+		console->Print(sar_ihud_set_background.ThisPtr()->m_pszHelpString);
+		return;
+	}
+
+	std::vector<uint8_t> buf;
+	unsigned w, h;
+	unsigned err = lodepng::decode(buf, w, h, std::string(args[1]) + ".png");
+	if (err) {
+		console->Warning("%s\n", lodepng_error_text(err));
+		inputHud.bgTextureId = -1;
+		return;
+	}
+
+	inputHud.bgTextureId = surface->CreateNewTextureID(surface->matsurface->ThisPtr(), true);
+	surface->DrawSetTextureRGBA(surface->matsurface->ThisPtr(), inputHud.bgTextureId, buf.data(), w, h);
+
+	inputHud.bgGridX = atoi(args[2]);
+	inputHud.bgGridY = atoi(args[3]);
+	inputHud.bgGridW = atoi(args[4]);
+	inputHud.bgGridH = atoi(args[5]);
+}
+
+CON_COMMAND(sar_ihud_clear_background, "sar_ihud_clear_background") {
+	inputHud.bgTextureId = -1;
+}

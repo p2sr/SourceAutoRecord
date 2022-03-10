@@ -11,6 +11,7 @@ private:
 		int buttonBits = 0;
 		Vector movement{0, 0};
 		QAngle angles[2]{0, 0};  //storing two angles to calculate delta
+		QAngle prevUsedAngles{0, 0};
 		bool awaitingFrameDraw = true;
 	} inputInfo[2];
 
@@ -34,6 +35,14 @@ private:
 		int textFont;
 		Color textColor;
 		Color textHighlight;
+		std::string imageTexture;
+		int imageTextureId;
+		std::string highlightImageTexture;
+		int highlightImageTextureId;
+		int minHold;
+
+		// state
+		int pressedTick = -1;
 	};
 
 	InputHudElement *GetElementByName(std::string name);
@@ -56,6 +65,11 @@ public:
 	void AddElement(std::string name, int type);
 
 	std::vector<InputHudElement> elements;
+	int bgTextureId = -1;
+	int bgGridX;
+	int bgGridY;
+	int bgGridW;
+	int bgGridH;
 };
 
 extern InputHud inputHud;
