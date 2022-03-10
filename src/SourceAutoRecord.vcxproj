@@ -336,7 +336,6 @@
     <ClInclude Include="Features\Feature.hpp" />
     <ClInclude Include="Features\FovChanger.hpp" />
     <ClInclude Include="Features\GroundFramesCounter.hpp" />
-    <ClCompile Include="Features\PlacementScanner.hpp" />
     <ClInclude Include="Features\Hud\Crosshair.hpp" />
     <ClInclude Include="Features\Hud\Hud.hpp" />
     <ClInclude Include="Features\Hud\InputHud.hpp" />

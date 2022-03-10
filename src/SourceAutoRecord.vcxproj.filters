@@ -891,9 +891,6 @@
     <ClInclude Include="Features\GroundFramesCounter.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
-    <ClInclude Include="Features\PlacementScanner.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Tas\TasController.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
