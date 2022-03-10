@@ -18,7 +18,7 @@ Variable sar_ihud_y("sar_ihud_y", "2", "Y position of input HUD.\n", 0);
 Variable sar_ihud_grid_padding("sar_ihud_grid_padding", "2", 0, "Padding between grid squares of input HUD.\n");
 Variable sar_ihud_grid_size("sar_ihud_grid_size", "60", 0, "Grid square size of input HUD.\n");
 Variable sar_ihud_analog_image_scale("sar_ihud_analog_image_scale", "0.6", 0, 1, "Scale of analog input images against max extent.\n");
-Variable sar_ihud_analog_view_deshake("sar_ihud_analog_view_deshale", "0", "Try to eliminate small fluctuations in the movement analog.\n");
+Variable sar_ihud_analog_view_deshake("sar_ihud_analog_view_deshake", "0", "Try to eliminate small fluctuations in the movement analog.\n");
 
 InputHud inputHud;
 
