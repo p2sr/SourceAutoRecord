@@ -22,6 +22,7 @@
 
 Variable sar_tas_debug("sar_tas_debug", "0", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.\n");
 Variable sar_tas_dump_usercmd("sar_tas_dump_usercmd", "0", "Dump TAS-generated usercmds to a file.\n");
+Variable sar_tas_dump_player_info("sar_tas_dump_player_info", "0", "Dump player info for each tick of TAS playback to a file.\n");
 Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", "Enables tool processing for TAS script making.\n");
 Variable sar_tas_tools_force("sar_tas_tools_force", "0", "Force tool playback for TAS scripts; primarily for debugging.\n");
 Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "0", "Enables automatic saving of raw, processed TAS scripts.\n");
@@ -201,6 +202,8 @@ void TasPlayer::Activate() {
 	processedFramebulks[1].clear();
 	usercmdDebugs[0].clear();
 	usercmdDebugs[1].clear();
+	playerInfoDebugs[0].clear();
+	playerInfoDebugs[1].clear();
 
 	active = true;
 	startTick = -1;
@@ -273,6 +276,8 @@ void TasPlayer::Start() {
 	processedFramebulks[1].clear();
 	usercmdDebugs[0].clear();
 	usercmdDebugs[1].clear();
+	playerInfoDebugs[0].clear();
+	playerInfoDebugs[1].clear();
 
 	if (startInfo.type == ChangeLevelCM) {
 		sv_bonus_challenge.SetValue(1);
@@ -309,6 +314,9 @@ void TasPlayer::Stop(bool interrupted) {
 
 		SaveUsercmdDebugs(0);
 		SaveUsercmdDebugs(1);
+
+		SavePlayerInfoDebugs(0);
+		SavePlayerInfoDebugs(1);
 	} else {
 		console->Print("TAS player is no longer active.\n");
 	}
@@ -430,6 +438,25 @@ void TasPlayer::SaveUsercmdDebugs(int slot) {
 
 	std::ofstream file(fixedName + "_usercmd.csv");
 	file << "source,tick,forwardmove,sidemove,buttons,pitch,yaw,roll\n";
+	for (auto &l : lines) file << l << "\n";
+	file.close();
+}
+
+void TasPlayer::SavePlayerInfoDebugs(int slot) {
+	std::string filename = tasFileName[slot];
+	std::vector<std::string> &lines = playerInfoDebugs[slot];
+
+	if (filename.size() == 0) return;
+	if (lines.empty()) return;
+
+	std::string fixedName = filename;
+	size_t lastdot = filename.find_last_of(".");
+	if (lastdot != std::string::npos) {
+		fixedName = filename.substr(0, lastdot);
+	}
+
+	std::ofstream file(fixedName + "_player_info.csv");
+	file << "tick,x,y,z,eye x,eye y,eye z,pitch,yaw,roll\n";
 	for (auto &l : lines) file << l << "\n";
 	file.close();
 }
@@ -650,6 +677,12 @@ void TasPlayer::DumpUsercmd(int slot, const CUserCmd *cmd, int tick, const char 
 	if (!sar_tas_dump_usercmd.GetBool()) return;
 	std::string str = Utils::ssprintf("%s,%d,%.6f,%.6f,%08X,%.6f,%.6f,%.6f", source, tick, cmd->forwardmove, cmd->sidemove, cmd->buttons, cmd->viewangles.x, cmd->viewangles.y, cmd->viewangles.z);
 	usercmdDebugs[slot].push_back(str);
+}
+
+void TasPlayer::DumpPlayerInfo(int slot, int tick, Vector pos, Vector eye_pos, QAngle ang) {
+	if (!sar_tas_dump_player_info.GetBool()) return;
+	std::string str = Utils::ssprintf("%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f", tick, pos.x, pos.y, pos.z, eye_pos.x, eye_pos.y, eye_pos.z, ang.x, ang.y, ang.z);
+	playerInfoDebugs[slot].push_back(str);
 }
 
 void TasPlayer::Update() {

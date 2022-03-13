@@ -71,6 +71,7 @@ private:
 	std::vector<TasFramebulk> framebulkQueue[2];
 	std::vector<TasFramebulk> processedFramebulks[2];
 	std::vector<std::string> usercmdDebugs[2];
+	std::vector<std::string> playerInfoDebugs[2];
 
 public:
 	void Update();
@@ -106,10 +107,12 @@ public:
 	inline void SetLoadedFileName(int slot, std::string name) { tasFileName[slot] = name; };
 	void SaveProcessedFramebulks();
 	void SaveUsercmdDebugs(int slot);
+	void SavePlayerInfoDebugs(int slot);
 
 	void FetchInputs(int slot, TasController *controller);
 	void PostProcess(int slot, void *player, CUserCmd *cmd);
 	void DumpUsercmd(int slot, const CUserCmd *cmd, int tick, const char *source);
+	void DumpPlayerInfo(int slot, int tick, Vector pos, Vector eye_pos, QAngle ang);
 
 	bool isCoop;
 	int coopControlSlot;

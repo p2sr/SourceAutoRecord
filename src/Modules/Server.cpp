@@ -207,6 +207,10 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 	if (tasPlayer->IsActive()) {
 		int tasTick = tasPlayer->GetPlayerInfo(thisptr, cmd).tick - tasPlayer->GetStartTick();
 		tasPlayer->DumpUsercmd(slot, cmd, tasTick, "server");
+
+		Vector pos = server->GetAbsOrigin(thisptr);
+		Vector eye_pos = pos + server->GetViewOffset(thisptr) + server->GetPortalLocal(thisptr).m_vEyeOffset;
+		tasPlayer->DumpPlayerInfo(slot, tasTick, pos, eye_pos, cmd->viewangles);
 	}
 
 	if (tasPlayer->IsActive() && tasPlayer->IsUsingTools(slot)) {
