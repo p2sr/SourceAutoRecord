@@ -164,7 +164,7 @@ void GhostEntity::Display() {
 
 	if (ghost_shading.GetBool()) OverlayRender::startShading(this->data.position + Vector{0, 0, 5}); // Use a point slightly above the floor
 
-#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(p1, p2, p3, col, false, true)
+#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(p1, p2, p3, col, false, false, true)
 	switch (GhostEntity::ghost_type) {
 	case GhostType::CIRCLE: {
 		double rad = ghost_height.GetFloat() / 2;

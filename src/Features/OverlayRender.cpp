@@ -174,15 +174,23 @@ void OverlayRender::endShading() {
 	g_shade_color = {};
 }
 
-void OverlayRender::addTriangle(Vector a, Vector b, Vector c, Color col, bool throughWalls, bool cullBack) {
+void OverlayRender::addTriangle(Vector a, Vector b, Vector c, Color col, bool wireframe, bool throughWalls, bool cullBack) {
 	auto &vs = getGroupVertVector(col, false, false, throughWalls);
 	vs.insert(vs.end(), { a, b, c });
 	if (!cullBack) vs.insert(vs.end(), { a, c, b });
+
+	if (wireframe) {
+		Color wf_col = col;
+		wf_col._color[3] = 255;
+		OverlayRender::addLine(a, b, wf_col, throughWalls);
+		OverlayRender::addLine(b, c, wf_col, throughWalls);
+		OverlayRender::addLine(c, a, wf_col, throughWalls);
+	}
 }
 
 void OverlayRender::addQuad(Vector a, Vector b, Vector c, Vector d, Color col, bool throughWalls, bool cullBack) {
-	OverlayRender::addTriangle(a, b, c, col, throughWalls, cullBack);
-	OverlayRender::addTriangle(a, c, d, col, throughWalls, cullBack);
+	OverlayRender::addTriangle(a, b, c, col, false, throughWalls, cullBack);
+	OverlayRender::addTriangle(a, c, d, col, false, throughWalls, cullBack);
 }
 
 void OverlayRender::addLine(Vector a, Vector b, Color col, bool throughWalls) {

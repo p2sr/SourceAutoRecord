@@ -1151,6 +1151,15 @@ struct VectorAligned : public Vector {
 
 struct matrix3x4_t {
 	float m_flMatVal[3][4];
+
+	inline Vector VectorTransform(Vector v) const {
+		const float (*m)[4] = m_flMatVal;
+		return Vector{
+			m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3],
+			m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3],
+			m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3],
+		};
+	}
 };
 
 struct VMatrix {
@@ -1589,4 +1598,45 @@ public:
 	KeyValues *chain = nullptr;
 
 	GetSymbolProc_t expression_get_symbol_proc = nullptr;
+};
+
+enum SolidType_t {
+	SOLID_NONE      = 0,
+	SOLID_BSP       = 1,
+	SOLID_BBOX      = 2,
+	SOLID_OBB       = 3,
+	SOLID_OBB_YAW   = 4,
+	SOLID_CUSTOM    = 5,
+	SOLID_VPHYSICS  = 6,
+	SOLID_LAST,
+};
+
+#define FSOLID_NOT_SOLID 0x04
+
+class model_t;
+class IClientUnknown;
+class IPhysicsObject;
+class CPhysCollide;
+
+class ICollideable {
+public:
+	virtual IHandleEntity *GetEntityHandle() = 0;
+	virtual const Vector &OBBMins() const = 0;
+	virtual const Vector &OBBMaxs() const = 0;
+	virtual void WorldSpaceTriggerBounds(Vector *worldMins, Vector *worldMaxs) const = 0;
+	virtual bool TestCollision(const Ray_t &ray, unsigned int contentsMask, CGameTrace &tr) = 0;
+	virtual bool TestHitboxes(const Ray_t &ray, unsigned int contentsMask, CGameTrace &tr) = 0;
+	virtual int GetCollisionModelIndex() = 0;
+	virtual const model_t *GetCollisionModel() = 0;
+	virtual const Vector &GetCollisionOrigin() const = 0;
+	virtual const QAngle &GetCollisionAngles() const = 0;
+	virtual const matrix3x4_t &CollisionToWorldTransform() const = 0;
+	virtual SolidType_t GetSolid() const = 0;
+	virtual int GetSolidFlags() const = 0;
+	virtual IClientUnknown *GetIClientUnknown() = 0;
+	virtual int GetCollisionGroup() const = 0;
+	virtual void WorldSpaceSurroundingBounds(Vector *mins, Vector *maxs) = 0;
+	virtual unsigned GetRequiredTriggerFlags() const = 0;
+	virtual const matrix3x4_t *GetRootParentToWorldTransform() const = 0;
+	virtual IPhysicsObject *GetVPhysicsObject() const = 0;
 };

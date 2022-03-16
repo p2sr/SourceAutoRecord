@@ -6,6 +6,22 @@
 
 #include <map>
 
+struct HitboxList {
+	struct VphysBox {
+		std::vector<Vector> verts;
+	};
+
+	struct ObbBox {
+		Vector mins, maxs;
+		Vector pos;
+		QAngle ang;
+	};
+
+	std::vector<VphysBox> vphys;
+	std::vector<ObbBox> obb;
+	// TODO: BSP collision (brush entities)
+};
+
 struct Trace {
 	int startSessionTick;
 	int startTasTick;
@@ -13,6 +29,7 @@ struct Trace {
 	std::vector<Vector> velocities[2];
 	std::vector<bool> grounded[2];
 	std::vector<bool> crouched[2];
+	std::vector<HitboxList> hitboxes[2];
 };
 
 class PlayerTrace : public Feature {
@@ -38,6 +55,8 @@ public:
 	void DrawBboxAt(int tick) const;
 	// Teleport to given tick on given trace
 	void TeleportAt(size_t trace, int slot, int tick);
+	// Construct a list of the hitboxes of all entities near a point
+	HitboxList ConstructHitboxList(Vector center) const;
 };
 
 extern PlayerTrace *playerTrace;

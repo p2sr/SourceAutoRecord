@@ -35,6 +35,8 @@
 #include "Utils.hpp"
 #include "Variable.hpp"
 
+#include "Features/OverlayRender.hpp"
+
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -711,6 +713,7 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
 	offsetFinder->ServerSide("CBasePlayer", "m_nTickBase", &Offsets::m_nTickBase);
 	offsetFinder->ServerSide("CBasePlayer", "m_nJumpTimeMsecs", &Offsets::S_m_nJumpTimeMsecs);
+	offsetFinder->ServerSide("CBasePlayer", "m_Collision", &Offsets::S_m_Collision);
 	offsetFinder->ServerSide("CPortal_Player", "m_lifeState", &Offsets::m_lifeState);
 	offsetFinder->ServerSide("CPortal_Player", "m_InAirState", &Offsets::m_InAirState);
 	offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);

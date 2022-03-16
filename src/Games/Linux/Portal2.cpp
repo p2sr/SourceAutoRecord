@@ -169,6 +169,7 @@ void Portal2::LoadOffsets() {
 	SetPosition = 47;                      // IPhysicsObject
 	SetVelocity = 51;                      // IPhysicsObject
 	EnableGravity = 14;                    // IPhysicsObject
+	GetCollide = 75;                       // IPhysicsObject
 	VideoMode_Create = 120;                // CEngineAPI::Init
 	videomode = 183;                       // VideoMode_Create
 	GetModeWidth = 15;                     // IVideoMode

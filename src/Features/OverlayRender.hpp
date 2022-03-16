@@ -15,7 +15,7 @@ namespace OverlayRender {
 	void startShading(Vector point);
 	void endShading();
 
-	void addTriangle(Vector a, Vector b, Vector c, Color col, bool throughWalls = false, bool cullBack = false);
+	void addTriangle(Vector a, Vector b, Vector c, Color col, bool wireframe = false, bool throughWalls = false, bool cullBack = false);
 	void addQuad(Vector a, Vector b, Vector c, Vector d, Color col, bool throughWalls = false, bool cullBack = false);
 	void addLine(Vector a, Vector b, Color col, bool throughWalls = false);
 	void addBox(Vector origin, Vector mins, Vector maxs, QAngle ang, Color col, bool wireframe = true, bool throughWalls = false);

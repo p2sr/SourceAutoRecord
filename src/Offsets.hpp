@@ -152,6 +152,7 @@ namespace Offsets {
 	extern int S_m_vecViewOffset;
 	extern int IsPlayer;
 	extern int AcceptInput;
+	extern int S_m_Collision;
 
 	// CBasePlayer
 	extern int m_fFlags;
@@ -297,6 +298,7 @@ namespace Offsets {
 	extern int SetPosition;
 	extern int SetVelocity;
 	extern int EnableGravity;
+	extern int GetCollide;
 
 	// IVideoMode
 	extern int GetModeWidth;

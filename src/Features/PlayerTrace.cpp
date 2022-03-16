@@ -32,7 +32,10 @@ Variable sar_trace_draw_time("sar_trace_draw_time", "3", 0, 3,
 Variable sar_trace_font("sar_trace_font", "0", 0, "Font index to display player trace info in\n");
 
 Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.");
-Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, "Move trace bbox to hovered trace point tick on given trace.");
+Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", "Move trace bbox to hovered trace point tick on given trace.");
+Variable sar_trace_bbox_ent_record("sar_trace_bbox_ent_record", "1", "Record hitboxes of nearby entities in the trace. You may want to disable this if memory consumption gets too high.\n");
+Variable sar_trace_bbox_ent_draw("sar_trace_bbox_ent_draw", "1", "Draw hitboxes of nearby entities in the trace.\n");
+Variable sar_trace_bbox_ent_dist("sar_trace_bbox_ent_dist", "200", 50, "Distance from which to capture entity hitboxes.");
 
 Vector g_playerTraceTeleportLocation;
 int g_playerTraceTeleportSlot;
@@ -82,10 +85,13 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player, int slot, bool use_cl
 	bool grounded = ground_handle != 0xFFFFFFFF;
 	auto ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);
 
+	HitboxList hitboxes = ConstructHitboxList(pos);
+
 	trace.positions[slot].push_back(pos);
 	trace.velocities[slot].push_back(vel);
 	trace.grounded[slot].push_back(grounded);
 	trace.crouched[slot].push_back(ducked);
+	trace.hitboxes[slot].push_back(hitboxes);
 }
 Trace* PlayerTrace::GetTrace(const size_t trace_idx) {
 	auto trace = traces.find(trace_idx);
@@ -124,7 +130,7 @@ void PlayerTrace::DrawInWorld() const {
 		}.Normalize();
 	}
 
-	for (const auto [trace_idx, trace] : traces) {
+	for (const auto &[trace_idx, trace] : traces) {
 		for (int slot = 0; slot < 2; slot++) {
 			if (trace.positions[slot].size() < 2) continue;
 
@@ -231,7 +237,7 @@ void PlayerTrace::DrawSpeedDeltas() const {
 
 	auto font = scheme->GetFontByID(sar_trace_font.GetInt());
 
-	for (const auto [trace_idx, trace] : traces) {
+	for (const auto &[trace_idx, trace] : traces) {
 		for (int slot = 0; slot < 2; slot++) {
 			if (trace.velocities[slot].size() < 2) continue;
 
@@ -267,7 +273,7 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 	static const Vector player_ducked_size = {32, 32, 36};
 		
 	for (int slot = 0; slot < 2; slot++) {
-		for (const auto [trace_idx, trace] : traces) {
+		for (const auto &[trace_idx, trace] : traces) {
 			if (trace.positions[slot].size() == 0) continue;
 
 			int localtick = tick;
@@ -283,6 +289,23 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 			// We trace a big player bbox and a small box to indicate exactly which tick is displayed
 			OverlayRender::addBox(center, -player_size/2, player_size/2, {0, 0, 0}, {255, 255, 0, 20});
 			OverlayRender::addBox(trace.positions[slot][localtick], {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, {0, 255, 0, 20});
+
+			if (sar_trace_bbox_ent_draw.GetBool()) {
+				auto &boxes = trace.hitboxes[slot][localtick];
+
+				for (auto &vphys : boxes.vphys) {
+					for (size_t i = 0; i < vphys.verts.size(); i += 3) {
+						Vector a = vphys.verts[i+0];
+						Vector b = vphys.verts[i+1];
+						Vector c = vphys.verts[i+2];
+						OverlayRender::addTriangle(a, b, c, { 255, 255, 0, 20 }, true, false, true);
+					}
+				}
+
+				for (auto &obb : boxes.obb) {
+					OverlayRender::addBox(obb.pos, obb.mins, obb.maxs, obb.ang, { 255, 0, 0, 20 });
+				}
+			}
 		}
 	}
 }
@@ -314,6 +337,80 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick) {
 	g_playerTraceTeleportLocation = traces[trace_idx].positions[slot][tick];
 	g_playerTraceTeleportSlot = slot;
 	g_playerTraceNeedsTeleport = true;
+}
+
+HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
+	if (!sar_trace_bbox_ent_record.GetBool()) return HitboxList{};
+
+	const float d = sar_trace_bbox_ent_dist.GetFloat();
+
+	Vector incl_mins = center - Vector{d, d, d};
+	Vector incl_maxs = center + Vector{d, d, d};
+
+	HitboxList list;
+
+	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+		void *ent = server->m_EntPtrArray[i].m_pEntity;
+		if (!ent) continue;
+		if (server->IsPlayer(ent)) continue;
+
+		ICollideable *coll = (ICollideable *)((uintptr_t)ent + Offsets::S_m_Collision);
+
+		if (coll->GetSolidFlags() & FSOLID_NOT_SOLID) continue;
+
+		Vector mins, maxs;
+		coll->WorldSpaceSurroundingBounds(&mins, &maxs);
+		if (maxs.x < incl_mins.x || mins.x > incl_maxs.x) continue;
+		if (maxs.y < incl_mins.y || mins.y > incl_maxs.y) continue;
+		if (maxs.z < incl_mins.z || mins.z > incl_maxs.z) continue;
+
+		switch (coll->GetSolid()) {
+		case SOLID_BSP:
+			// TODO
+			break;
+		case SOLID_BBOX:
+			list.obb.push_back(HitboxList::ObbBox{mins, maxs, {0,0,0}, {0,0,0}});
+			break;
+		case SOLID_OBB:
+		case SOLID_OBB_YAW:
+			list.obb.push_back(HitboxList::ObbBox{
+				coll->OBBMins(),
+				coll->OBBMaxs(),
+				coll->GetCollisionOrigin(),
+				coll->GetCollisionAngles(),
+			});
+			break;
+		case SOLID_VPHYSICS:
+			{
+				IPhysicsObject *phys = coll->GetVPhysicsObject();
+				if (!phys) break;
+
+				using _GetCollide = CPhysCollide *(__rescall *)(const void *thisptr);
+				auto GetCollide = Memory::VMT<_GetCollide>(phys, Offsets::GetCollide);
+				const CPhysCollide *phys_coll = GetCollide(phys);
+
+				Vector *verts;
+				int vert_count = Engine::CreateDebugMesh(engine->g_physCollision, phys_coll, &verts);
+
+				matrix3x4_t trans = coll->CollisionToWorldTransform();
+
+				std::vector<Vector> verts_copy(vert_count);
+				for (size_t i = 0; i < vert_count; ++i) {
+					verts_copy[i] = trans.VectorTransform(verts[i]);
+				}
+				list.vphys.push_back(HitboxList::VphysBox{verts_copy});
+
+				Engine::DestroyDebugMesh(engine->g_physCollision, vert_count, verts);
+			}
+			break;
+		case SOLID_NONE:
+		case SOLID_CUSTOM:
+		default:
+			break;
+		}
+	}
+
+	return list;
 }
 
 ON_EVENT(PROCESS_MOVEMENT) {
