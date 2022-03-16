@@ -622,6 +622,22 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 
 	engine->SetAngles(playerInfo.slot, cmd->viewangles);
 
+	// CBasePlayer::PhysicsSimulate sets m_LastCmd a bit before calling
+	// PlayerRunCommand (where we hook for post-processing), meaning it's
+	// been set prior to tools processing. Luckily, this field is mostly
+	// unused, but funnel movement relies on it to see if you're moving
+	// "hard" enough to resist the funnel, so we'll set it here to allow
+	// funnel movement. XXX: THERE IS AN ISSUE WITH THIS SOLUTION! In
+	// PhysicsSimulate, m_LastCmd is set in a command context loop
+	// *before* the main movement processing. This means that under
+	// altticks (or any other context simulating multiple movement ticks
+	// in one server tick), if you try and move in the funnel on an even
+	// tick, the *following* usercmd (i.e. the last one in the context) is
+	// used to check whether we can move. There's literally no way to
+	// accurately recreate this with tools, since it'd require predicting
+	// future tools output, so we'll have to hope this works for now.
+	*(CUserCmd *)((uintptr_t)player + Offsets::S_m_LastCmd) = *cmd;
+
 	// put processed framebulk in the list
 	if (fbTick != tasTick) {
 		std::vector<std::string> empty;
