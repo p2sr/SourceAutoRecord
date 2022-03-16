@@ -32,7 +32,7 @@ Variable sar_trace_draw_time("sar_trace_draw_time", "3", 0, 3,
 Variable sar_trace_font("sar_trace_font", "0", 0, "Font index to display player trace info in\n");
 
 Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.");
-Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", "Move trace bbox to hovered trace point tick on given trace.");
+Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, "Move trace bbox to hovered trace point tick on given trace.");
 Variable sar_trace_bbox_ent_record("sar_trace_bbox_ent_record", "1", "Record hitboxes of nearby entities in the trace. You may want to disable this if memory consumption gets too high.\n");
 Variable sar_trace_bbox_ent_draw("sar_trace_bbox_ent_draw", "1", "Draw hitboxes of nearby entities in the trace.\n");
 Variable sar_trace_bbox_ent_dist("sar_trace_bbox_ent_dist", "200", 50, "Distance from which to capture entity hitboxes.");
