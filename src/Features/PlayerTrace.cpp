@@ -492,7 +492,7 @@ ON_EVENT(RENDER) {
 			}
 			OverlayRender::addText(h.pos + hud_offset, 0, -2*font_height, Utils::ssprintf("tick: %d", tick), font);
 		}
-		OverlayRender::addText(h.pos + hud_offset, 0, -font_height, Utils::ssprintf("pos: %1.f %.1f %.1f", h.pos.x, h.pos.y, h.pos.z), font);
+		OverlayRender::addText(h.pos + hud_offset, 0, -font_height, Utils::ssprintf("pos: %.1f %.1f %.1f", h.pos.x, h.pos.y, h.pos.z), font);
 		OverlayRender::addText(h.pos + hud_offset, 0, 0, Utils::ssprintf("horiz. speed: %.2f", h.speed), font);
 	}
 
