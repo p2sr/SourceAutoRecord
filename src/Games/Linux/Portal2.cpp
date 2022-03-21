@@ -252,6 +252,9 @@ void Portal2::LoadOffsets() {
 	UseSpeedPower = 519;                 // CPortal_Player
 	PlayerRunCommand = 454;              // CPortal_Player
 	StartTouch = 103;
+	m_iPowerState = 1280;                // CLaserCatcher
+	m_bIsOpen = 1336;                    // CPropTestChamberDoor
+	m_flGoalTime = 1332;                 // CPropButton
 
 	// client.so
 

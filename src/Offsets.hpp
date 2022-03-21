@@ -308,6 +308,27 @@ namespace Offsets {
 	extern int GetModeHeight;
 	extern int ReadScreenPixels;
 
+	// CLaserCatcher
+	extern int m_iPowerState;
+
+	// CPropFloorButton
+	extern int m_bButtonState;
+
+	// CPortalLaser
+	extern int m_bLaserOn;
+
+	// CBaseProjector
+	extern int m_bEnabled;
+
+	// CTriggerPortalCleanser
+	extern int m_bDisabled;
+
+	// CPropTestChamberDoor
+	extern int m_bIsOpen;
+
+	// CPropButton
+	extern int m_flGoalTime;
+
 	// Others
 	extern int tickcount;
 	extern int interval_per_tick;

@@ -719,7 +719,6 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);
 	offsetFinder->ServerSide("CPortal_Player", "m_PortalLocal", &Offsets::S_m_PortalLocal);
 	offsetFinder->ServerSide("CPortal_Player", "m_nPlayerCond", &Offsets::S_m_nPlayerCond);
-
 	offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
 	offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);
 	offsetFinder->ServerSide("CProp_Portal", "m_bActivated", &Offsets::m_bActivated);
@@ -728,6 +727,9 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal2", &Offsets::m_bCanFirePortal2);
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_hPrimaryPortal", &Offsets::m_hPrimaryPortal);
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
+	offsetFinder->ServerSide("CPropFloorButton", "m_bButtonState", &Offsets::m_bButtonState);
+	offsetFinder->ServerSide("CPropTractorBeamProjector", "m_bEnabled", &Offsets::m_bEnabled);
+	offsetFinder->ServerSide("CTriggerPortalCleanser", "m_bDisabled", &Offsets::m_bDisabled);
 
 	int m_hViewModel;
 	offsetFinder->ServerSide("CBasePlayer", "m_hViewModel", &m_hViewModel);
