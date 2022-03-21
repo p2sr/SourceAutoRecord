@@ -160,6 +160,8 @@ void Portal2::LoadOffsets() {
 	MAX_SPLITSCREEN_PLAYERS = 2;           // maxplayers
 	OnGameOverlayActivated = 148;          // CSteam3Client
 	IsAsleep = 2;                          // IPhysicsObject
+	Wake = 24;                             // IPhysicsObject
+	Sleep = 25;                            // IPhysicsObject
 	IsCollisionEnabled = 6;                // IPhysicsObject
 	IsGravityEnabled = 7;                  // IPhysicsObject
 	IsDragEnabled = 8;                     // IPhysicsObject

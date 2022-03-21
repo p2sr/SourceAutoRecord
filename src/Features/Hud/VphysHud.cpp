@@ -182,3 +182,31 @@ CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> - sets rotat
 	v.x = angle;
 	SetVelocity(selected, NULL, &v);
 }
+
+CON_COMMAND(sar_vphys_setasleep, "sar_vphys_setasleep <hitbox> <asleep> - sets whether your standing (0) or crouching (1) havok collision shadow is asleep\n") {
+	if (engine->demoplayer->IsPlaying()) {
+		return;
+	}
+	if (!sv_cheats.GetBool()) {
+		return console->Print("Cannot use sar_vphys_setasleep without sv_cheats set to 1.\n");
+	}
+
+	if (args.ArgC() != 3) {
+		return console->Print(sar_vphys_setasleep.ThisPtr()->m_pszHelpString);
+	}
+
+	void *player = server->GetPlayer(1);
+	if (!player) return;
+
+	void *m_pShadowStand = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowStand);
+	void *m_pShadowCrouch = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowCrouch);
+
+	int hitbox = std::atoi(args[1]);
+	int asleep = std::atoi(args[2]);
+
+	void *selected = hitbox ? m_pShadowCrouch : m_pShadowStand;
+
+	using _SleepWake = void(__rescall *)(void *thisptr);
+	_SleepWake SleepWake = Memory::VMT<_SleepWake>(selected, asleep ? Offsets::Sleep : Offsets::Wake);
+	SleepWake(selected);
+}

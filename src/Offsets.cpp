@@ -293,6 +293,8 @@ namespace Offsets {
 	int SetVelocity;
 	int EnableGravity;
 	int GetCollide;
+	int Wake;
+	int Sleep;
 
 	// IVideoMode
 	int GetModeWidth;
