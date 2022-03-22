@@ -18,8 +18,8 @@ struct HitboxList {
 	};
 
 	std::vector<VphysBox> vphys;
+	std::vector<VphysBox> bsps; // this is really lazy but it works
 	std::vector<ObbBox> obb;
-	// TODO: BSP collision (brush entities)
 };
 
 struct Trace {

@@ -298,12 +298,21 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 						Vector a = vphys.verts[i+0];
 						Vector b = vphys.verts[i+1];
 						Vector c = vphys.verts[i+2];
-						OverlayRender::addTriangle(a, b, c, { 255, 255, 0, 20 }, true, false, true);
+						OverlayRender::addTriangle(a, b, c, { 255, 0, 0, 20 }, true, false, true);
+					}
+				}
+
+				for (auto &bsp : boxes.bsps) {
+					for (size_t i = 0; i < bsp.verts.size(); i += 3) {
+						Vector a = bsp.verts[i+0];
+						Vector b = bsp.verts[i+1];
+						Vector c = bsp.verts[i+2];
+						OverlayRender::addTriangle(a, b, c, { 0, 0, 255, 20 }, true, false, true);
 					}
 				}
 
 				for (auto &obb : boxes.obb) {
-					OverlayRender::addBox(obb.pos, obb.mins, obb.maxs, obb.ang, { 255, 0, 0, 20 });
+					OverlayRender::addBox(obb.pos, obb.mins, obb.maxs, obb.ang, { 0, 255, 0, 20 });
 				}
 			}
 		}
@@ -365,9 +374,6 @@ HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
 		if (maxs.z < incl_mins.z || mins.z > incl_maxs.z) continue;
 
 		switch (coll->GetSolid()) {
-		case SOLID_BSP:
-			// TODO
-			break;
 		case SOLID_BBOX:
 			list.obb.push_back(HitboxList::ObbBox{mins, maxs, {0,0,0}, {0,0,0}});
 			break;
@@ -380,6 +386,7 @@ HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
 				coll->GetCollisionAngles(),
 			});
 			break;
+		case SOLID_BSP:
 		case SOLID_VPHYSICS:
 			{
 				IPhysicsObject *phys = coll->GetVPhysicsObject();
@@ -398,7 +405,12 @@ HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
 				for (size_t i = 0; i < vert_count; ++i) {
 					verts_copy[i] = trans.VectorTransform(verts[i]);
 				}
-				list.vphys.push_back(HitboxList::VphysBox{verts_copy});
+
+				if (coll->GetSolid() == SOLID_VPHYSICS) {
+					list.vphys.push_back(HitboxList::VphysBox{verts_copy});
+				} else {
+					list.bsps.push_back(HitboxList::VphysBox{verts_copy});
+				}
 
 				Engine::DestroyDebugMesh(engine->g_physCollision, vert_count, verts);
 			}
