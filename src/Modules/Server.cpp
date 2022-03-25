@@ -730,6 +730,12 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CPropFloorButton", "m_bButtonState", &Offsets::m_bButtonState);
 	offsetFinder->ServerSide("CPropTractorBeamProjector", "m_bEnabled", &Offsets::m_bEnabled);
 	offsetFinder->ServerSide("CTriggerPortalCleanser", "m_bDisabled", &Offsets::m_bDisabled);
+	offsetFinder->ServerSide("CTriggerCatapult", "m_bUseThresholdCheck", &Offsets::m_bUseThresholdCheck);
+	offsetFinder->ServerSide("CTriggerCatapult", "m_flLowerThreshold", &Offsets::m_flLowerThreshold);
+	offsetFinder->ServerSide("CTriggerCatapult", "m_flUpperThreshold", &Offsets::m_flUpperThreshold);
+	offsetFinder->ServerSide("CTriggerCatapult", "m_vecLaunchAngles", &Offsets::m_vecLaunchAngles);
+	offsetFinder->ServerSide("CTriggerCatapult", "m_flRefireDelay", &Offsets::m_flRefireDelay);
+	offsetFinder->ServerSide("CNPC_Portal_FloorTurret", "m_bIsFiring", &Offsets::m_bIsFiring);
 
 	int m_hViewModel;
 	offsetFinder->ServerSide("CBasePlayer", "m_hViewModel", &m_hViewModel);

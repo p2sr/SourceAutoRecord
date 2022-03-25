@@ -18,6 +18,9 @@ enum class EntityType {
 	LIGHT_BRIDGE,
 	FIZZLER,
 	DOOR,
+	FAITH_PLATE,
+	CUBE,
+	TURRET,
 };
 
 struct ModelEntity {
@@ -25,6 +28,8 @@ struct ModelEntity {
 	Vector pos;
 	Vector facing;
 	bool activated;
+	Vector mins;
+	Vector maxs;
 
 	CBaseHandle handle;
 };
@@ -66,6 +71,19 @@ void UpdateEntity(ModelEntity &model_ent) {
 	}
 
 	uintptr_t ent = (uintptr_t)handle_ent;
+
+	if (model_ent.type == EntityType::CUBE || model_ent.type == EntityType::TURRET) {
+		// recalculate position and extents
+		model_ent.pos = server->GetAbsOrigin((void *)ent);
+		ICollideable *coll = (ICollideable *)(ent + Offsets::S_m_Collision);
+		if (coll) {
+			Vector mins, maxs;
+			coll->WorldSpaceSurroundingBounds(&mins, &maxs);
+			model_ent.mins = mins - model_ent.pos;
+			model_ent.maxs = maxs - model_ent.pos;
+		}
+		Math::AngleVectors(server->GetAbsAngles((void *)ent), &model_ent.facing);
+	}
 
 	switch (model_ent.type) {
 	case EntityType::LASER_CATCHER:
@@ -113,6 +131,30 @@ void UpdateEntity(ModelEntity &model_ent) {
 			checkEntityClass(ent, "prop_testchamber_door") &&
 			*(bool *)(ent + Offsets::m_bIsOpen);
 		break;
+	case EntityType::FAITH_PLATE:
+		if (checkEntityClass(ent, "trigger_catapult")) {
+			float *delay = (float *)(ent + Offsets::m_flRefireDelay);
+			float curtime = server->gpGlobals->curtime;
+			// 0 = entities, 1/2 = player slots
+			model_ent.activated = (delay[0] > curtime || delay[1] > curtime || delay[2] > curtime);
+		} else {
+			model_ent.activated = false;
+		}
+		break;
+	case EntityType::CUBE:
+		if (checkEntityClass(ent, "prop_weighted_cube")) {
+			void *reflected = entityList->LookupEntity(*(CBaseHandle *)(ent + Offsets::m_hLaser));
+			bool reflect = reflected && *(bool *)((uintptr_t)reflected + Offsets::m_bLaserOn);
+			model_ent.activated = reflect || *(bool *)(ent + Offsets::Cube_m_bActivated);
+		} else {
+			model_ent.activated = false;
+		}
+		break;
+	case EntityType::TURRET:
+		model_ent.activated =
+			checkEntityClass(ent, "npc_portal_turret_floor") &&
+			*(bool *)(ent + Offsets::m_bIsFiring);
+		break;
 	}
 }
 
@@ -140,14 +182,35 @@ ON_EVENT(SESSION_START) {
 		MATCH("prop_wall_projector",     LIGHT_BRIDGE)
 		MATCH("trigger_portal_cleanser", FIZZLER)
 		MATCH("prop_testchamber_door",   DOOR)
+		MATCH("trigger_catapult",        FAITH_PLATE)
+		MATCH("prop_weighted_cube",      CUBE)
+		MATCH("npc_portal_turret_floor", TURRET)
 #undef MATCH
 
 		if (!type) continue;
 
-		// FIXME: this isn't necessarily correct for fizzlers! They're brush
-		// entities so might have their origin anywhere really. Luckily they
-		// mostly seem to have their origin set where you'd expect
+		if (*type == EntityType::FAITH_PLATE) {
+			// Ignore scripted momentum
+			bool scripted = *(bool *)((uintptr_t)ent + Offsets::m_bUseThresholdCheck);
+			if (scripted) {
+				// Allow ones that trigger for just walking I guess?
+				float min = *(float *)((uintptr_t)ent + Offsets::m_flLowerThreshold);
+				float max = *(float *)((uintptr_t)ent + Offsets::m_flLowerThreshold);
+				if (min > 1.0f || max < 200.0f) continue;
+			}
+		}
+
+		ICollideable *coll = (ICollideable *)((uintptr_t)ent + Offsets::S_m_Collision);
+		if (!coll) continue;
+
+		Vector mins, maxs;
+		coll->WorldSpaceSurroundingBounds(&mins, &maxs);
+
 		Vector pos = server->GetAbsOrigin(ent);
+		if (*type == EntityType::FAITH_PLATE || *type == EntityType::FIZZLER) {
+			// Brush entities! Use the center of their absbox
+			pos = (mins + maxs) / 2;
+		}
 
 		Vector forward, right, up;
 		Math::AngleVectors(server->GetAbsAngles(ent), &forward, &right, &up);
@@ -159,6 +222,8 @@ ON_EVENT(SESSION_START) {
 		case EntityType::FUNNEL:
 		case EntityType::LIGHT_BRIDGE:
 		case EntityType::DOOR:
+		case EntityType::CUBE:
+		case EntityType::TURRET:
 			// facing forward
 			facing = forward;
 			break;
@@ -172,8 +237,22 @@ ON_EVENT(SESSION_START) {
 
 		case EntityType::FIZZLER:
 			// facing the largest wall of the thing i guess?
-			// TODO
-			facing = {0, 0, 1};
+			{
+				Vector size = maxs - mins;
+				if (size.x < size.y && size.x < size.z) {
+					facing = {1, 0, 0};
+				} else if (size.y < size.x && size.y < size.z) {
+					facing = {0, 1, 0};
+				} else {
+					facing = {0, 0, 1};
+				}
+			}
+			break;
+
+		case EntityType::FAITH_PLATE:
+			Math::AngleVectors(*(QAngle *)((uintptr_t)ent + Offsets::m_vecLaunchAngles), &facing);
+			// TODO: handle entities with a target!
+			if (facing.SquaredLength() < 0.1f) facing = Vector{0, 0, 1};
 			break;
 		}
 
@@ -182,6 +261,8 @@ ON_EVENT(SESSION_START) {
 			pos,
 			facing,
 			false,
+			mins - pos,
+			maxs - pos,
 			((IHandleEntity *)ent)->GetRefEHandle(),
 		});
 
@@ -197,7 +278,7 @@ ON_EVENT(POST_TICK) {
 
 ON_EVENT(RENDER) {
 	for (auto &ent : g_ents) {
-		OverlayRender::addBox(ent.pos, {-20,-20,-20}, {20,20,20}, {0,0,0}, ent.activated ? Color{0,255,0,100} : Color{255,0,0,100});
-		OverlayRender::addLine(ent.pos, ent.pos + ent.facing*50.0, {0,0,255,255});
+		OverlayRender::addBox(ent.pos, ent.mins, ent.maxs, {0,0,0}, ent.activated ? Color{0,255,0,100} : Color{255,0,0,100});
+		OverlayRender::addLine(ent.pos, ent.pos + ent.facing*100.0, {100,100,255,255});
 	}
 }

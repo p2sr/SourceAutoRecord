@@ -255,6 +255,8 @@ void Portal2::LoadOffsets() {
 	m_iPowerState = 1280;                // CLaserCatcher
 	m_bIsOpen = 1336;                    // CPropTestChamberDoor
 	m_flGoalTime = 1332;                 // CPropButton
+	Cube_m_bActivated = 2257;            // CPropWeightedCube
+	m_hLaser = 2240;                     // CPropWeightedCube
 
 	// client.so
 

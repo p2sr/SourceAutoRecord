@@ -329,6 +329,20 @@ namespace Offsets {
 	// CPropButton
 	extern int m_flGoalTime;
 
+	// CTriggerCatapult
+	extern int m_bUseThresholdCheck;
+	extern int m_flLowerThreshold;
+	extern int m_flUpperThreshold;
+	extern int m_vecLaunchAngles;
+	extern int m_flRefireDelay;
+
+	// CPropWeightedCube
+	extern int Cube_m_bActivated;
+	extern int m_hLaser;
+
+	// CNPC_Portal_FloorTurret
+	extern int m_bIsFiring;
+
 	// Others
 	extern int tickcount;
 	extern int interval_per_tick;
