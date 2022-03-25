@@ -63,8 +63,6 @@ private:
 	int currentTick = 0;  // tick position of script player, relative to its starting point.
 	int lastTick = 0;     // last tick of script, relative to its starting point
 
-	int pauseTick = 0;  // the tick TasPlayer should pause the game at, used for frame advancing.
-
 	int wasEnginePaused; // Used to check if we need to revert incrementing a tick
 
 	TasStartInfo startInfo;

@@ -206,8 +206,6 @@ void TasPlayer::Activate() {
 	startTick = -1;
 	currentTick = 0;
 
-	pauseTick = sar_tas_pauseat.GetInt();
-
 	lastTick = 0;
 	for (int slot = 0; slot < (this->isCoop ? 2 : 1); ++slot) {
 		for (TasFramebulk fb : framebulkQueue[slot]) {
@@ -676,10 +674,7 @@ void TasPlayer::Update() {
 				}
 			}
 
-			if (sar_tas_pauseat.GetInt() > pauseTick) {
-				pauseTick = sar_tas_pauseat.GetInt();
-			}
-
+			int pauseTick = sar_tas_pauseat.GetInt();
 			if (currentTick == pauseTick && pauseTick > 0) {
 				Pause();
 			}
