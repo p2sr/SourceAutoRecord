@@ -1,6 +1,7 @@
 #include "Console.hpp"
 
 #include "Command.hpp"
+#include "Utils.hpp"
 
 bool Console::Init() {
 	auto tier0 = Memory::GetModuleHandleByName(this->Name());
@@ -43,3 +44,63 @@ ConsoleListener::~ConsoleListener() {
 }
 
 Console *console;
+
+CON_COMMAND(sar_echo, "sar_echo <color> <string...> - echo a string to console with a given color\n") {
+	if (args.ArgC() < 2) {
+		return console->Print(sar_echo.ThisPtr()->m_pszHelpString);
+	}
+
+	std::optional<Color> col = Utils::GetColor(args[1], false);
+	if (!col) {
+		return console->Print(sar_echo.ThisPtr()->m_pszHelpString);
+	}
+
+	const char *str;
+	if (args.ArgC() == 3) {
+		str = args[2];
+	} else {
+		str = args.m_pArgSBuffer + args.m_nArgv0Size;
+
+		while (isspace(*str)) ++str;
+
+		if (*str == '"') {
+			str += strlen(args[1]) + 2;
+		} else {
+			str += strlen(args[1]);
+		}
+
+		while (isspace(*str)) ++str;
+	}
+
+	console->ColorMsg(*col, "%s\n", str);
+}
+
+CON_COMMAND(sar_echo_nolf, "sar_echo_nolf <color> <string...> - echo a string to console with a given color and no trailing line feed\n") {
+	if (args.ArgC() < 2) {
+		return console->Print(sar_echo_nolf.ThisPtr()->m_pszHelpString);
+	}
+
+	std::optional<Color> col = Utils::GetColor(args[1], false);
+	if (!col) {
+		return console->Print(sar_echo_nolf.ThisPtr()->m_pszHelpString);
+	}
+
+	const char *str;
+	if (args.ArgC() == 3) {
+		str = args[2];
+	} else {
+		str = args.m_pArgSBuffer + args.m_nArgv0Size;
+
+		while (isspace(*str)) ++str;
+
+		if (*str == '"') {
+			str += strlen(args[1]) + 2;
+		} else {
+			str += strlen(args[1]);
+		}
+
+		while (isspace(*str)) ++str;
+	}
+
+	console->ColorMsg(*col, "%s", str);
+}
