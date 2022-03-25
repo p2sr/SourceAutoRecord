@@ -34,7 +34,8 @@ struct ModelEntity {
 	CBaseHandle handle;
 };
 
-static std::vector<ModelEntity> g_ents;
+static std::vector<ModelEntity> g_static_ents;
+static std::vector<ModelEntity> g_dynamic_ents;
 static std::map<int, int> g_pedestal_button_disable_ticks;
 
 static bool checkEntityClass(uintptr_t ent, const char *expect) {
@@ -62,7 +63,7 @@ static bool checkPedestalButton(uintptr_t ent, int ent_idx) {
 	return false;
 }
 
-void UpdateEntity(ModelEntity &model_ent) {
+static void UpdateActivation(ModelEntity &model_ent) {
 	IHandleEntity *handle_ent = entityList->LookupEntity(model_ent.handle);
 	if (!handle_ent) {
 		// entity was removed?
@@ -158,12 +159,70 @@ void UpdateEntity(ModelEntity &model_ent) {
 	}
 }
 
-ON_EVENT(SESSION_END) {
-	g_ents.clear();
-	g_pedestal_button_disable_ticks.clear();
+static void UpdatePosition(ModelEntity &model_ent) {
+	void *ent = entityList->LookupEntity(model_ent.handle);
+	ICollideable *coll = (ICollideable *)((uintptr_t)ent + Offsets::S_m_Collision);
+
+	Vector mins, maxs;
+	coll->WorldSpaceSurroundingBounds(&mins, &maxs);
+
+	Vector pos = server->GetAbsOrigin(ent);
+	if (model_ent.type == EntityType::FAITH_PLATE || model_ent.type == EntityType::FIZZLER) {
+		// Brush entities! Use the center of their absbox
+		pos = (mins + maxs) / 2;
+	}
+
+	Vector forward, right, up;
+	Math::AngleVectors(server->GetAbsAngles(ent), &forward, &right, &up);
+
+	Vector facing;
+	switch (model_ent.type) {
+	case EntityType::LASER_CATCHER:
+	case EntityType::LASER_EMITTER:
+	case EntityType::FUNNEL:
+	case EntityType::LIGHT_BRIDGE:
+	case EntityType::DOOR:
+	case EntityType::CUBE:
+	case EntityType::TURRET:
+		// facing forward
+		facing = forward;
+		break;
+
+	case EntityType::FLOOR_BUTTON:
+	case EntityType::PEDESTAL_BUTTON:
+	case EntityType::LASER_RELAY:
+		// facing up
+		facing = up;
+		break;
+
+	case EntityType::FIZZLER:
+		// facing the largest wall of the thing i guess?
+		{
+			Vector size = maxs - mins;
+			if (size.x < size.y && size.x < size.z) {
+				facing = {1, 0, 0};
+			} else if (size.y < size.x && size.y < size.z) {
+				facing = {0, 1, 0};
+			} else {
+				facing = {0, 0, 1};
+			}
+		}
+		break;
+
+	case EntityType::FAITH_PLATE:
+		Math::AngleVectors(*(QAngle *)((uintptr_t)ent + Offsets::m_vecLaunchAngles), &facing);
+		// TODO: handle entities with a target!
+		if (facing.SquaredLength() < 0.1f) facing = Vector{0, 0, 1};
+		break;
+	}
+
+	model_ent.pos = pos;
+	model_ent.facing = facing;
+	model_ent.mins = mins - pos;
+	model_ent.maxs = maxs - pos;
 }
 
-ON_EVENT(SESSION_START) {
+static void FindEnts(bool dynamic) {
 	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
 		void *ent = server->m_EntPtrArray[i].m_pEntity;
 		if (!ent) continue;
@@ -173,18 +232,21 @@ ON_EVENT(SESSION_START) {
 		std::optional<EntityType> type = {};
 
 #define MATCH(name, enttype) if (!strcmp(classname, name)) type = EntityType::enttype;
-		MATCH("prop_laser_catcher",      LASER_CATCHER)
-		MATCH("prop_laser_relay",        LASER_RELAY)
-		MATCH("prop_floor_button",       FLOOR_BUTTON)
-		MATCH("prop_button",             PEDESTAL_BUTTON)
-		MATCH("env_portal_laser",        LASER_EMITTER)
-		MATCH("prop_tractor_beam",       FUNNEL)
-		MATCH("prop_wall_projector",     LIGHT_BRIDGE)
-		MATCH("trigger_portal_cleanser", FIZZLER)
-		MATCH("prop_testchamber_door",   DOOR)
-		MATCH("trigger_catapult",        FAITH_PLATE)
-		MATCH("prop_weighted_cube",      CUBE)
-		MATCH("npc_portal_turret_floor", TURRET)
+		if (dynamic) {
+			MATCH("prop_weighted_cube",      CUBE)
+			MATCH("npc_portal_turret_floor", TURRET)
+		} else {
+			MATCH("prop_laser_catcher",      LASER_CATCHER)
+			MATCH("prop_laser_relay",        LASER_RELAY)
+			MATCH("prop_floor_button",       FLOOR_BUTTON)
+			MATCH("prop_button",             PEDESTAL_BUTTON)
+			MATCH("env_portal_laser",        LASER_EMITTER)
+			MATCH("prop_tractor_beam",       FUNNEL)
+			MATCH("prop_wall_projector",     LIGHT_BRIDGE)
+			MATCH("trigger_portal_cleanser", FIZZLER)
+			MATCH("prop_testchamber_door",   DOOR)
+			MATCH("trigger_catapult",        FAITH_PLATE)
+		}
 #undef MATCH
 
 		if (!type) continue;
@@ -200,84 +262,51 @@ ON_EVENT(SESSION_START) {
 			}
 		}
 
-		ICollideable *coll = (ICollideable *)((uintptr_t)ent + Offsets::S_m_Collision);
-		if (!coll) continue;
-
-		Vector mins, maxs;
-		coll->WorldSpaceSurroundingBounds(&mins, &maxs);
-
-		Vector pos = server->GetAbsOrigin(ent);
-		if (*type == EntityType::FAITH_PLATE || *type == EntityType::FIZZLER) {
-			// Brush entities! Use the center of their absbox
-			pos = (mins + maxs) / 2;
-		}
-
-		Vector forward, right, up;
-		Math::AngleVectors(server->GetAbsAngles(ent), &forward, &right, &up);
-
-		Vector facing;
-		switch (*type) {
-		case EntityType::LASER_CATCHER:
-		case EntityType::LASER_EMITTER:
-		case EntityType::FUNNEL:
-		case EntityType::LIGHT_BRIDGE:
-		case EntityType::DOOR:
-		case EntityType::CUBE:
-		case EntityType::TURRET:
-			// facing forward
-			facing = forward;
-			break;
-
-		case EntityType::FLOOR_BUTTON:
-		case EntityType::PEDESTAL_BUTTON:
-		case EntityType::LASER_RELAY:
-			// facing up
-			facing = up;
-			break;
-
-		case EntityType::FIZZLER:
-			// facing the largest wall of the thing i guess?
-			{
-				Vector size = maxs - mins;
-				if (size.x < size.y && size.x < size.z) {
-					facing = {1, 0, 0};
-				} else if (size.y < size.x && size.y < size.z) {
-					facing = {0, 1, 0};
-				} else {
-					facing = {0, 0, 1};
-				}
-			}
-			break;
-
-		case EntityType::FAITH_PLATE:
-			Math::AngleVectors(*(QAngle *)((uintptr_t)ent + Offsets::m_vecLaunchAngles), &facing);
-			// TODO: handle entities with a target!
-			if (facing.SquaredLength() < 0.1f) facing = Vector{0, 0, 1};
-			break;
-		}
-
-		g_ents.push_back({
-			*type,
-			pos,
-			facing,
-			false,
-			mins - pos,
-			maxs - pos,
+		ModelEntity e{
+			*type, {0,0,0}, {0,0,0},
+			false, {0,0,0}, {0,0,0}, 
 			((IHandleEntity *)ent)->GetRefEHandle(),
-		});
+		};
 
-		UpdateEntity(g_ents[g_ents.size() - 1]);
+		if (dynamic) {
+			g_dynamic_ents.push_back(e);
+			UpdatePosition(g_dynamic_ents[g_dynamic_ents.size() - 1]);
+			UpdateActivation(g_dynamic_ents[g_dynamic_ents.size() - 1]);
+		} else {
+			g_static_ents.push_back(e);
+			UpdatePosition(g_static_ents[g_static_ents.size() - 1]);
+			UpdateActivation(g_static_ents[g_static_ents.size() - 1]);
+		}
 	}
+}
+
+ON_EVENT(SESSION_END) {
+	g_static_ents.clear();
+	g_dynamic_ents.clear();
+	g_pedestal_button_disable_ticks.clear();
+}
+
+ON_EVENT(SESSION_START) {
+	g_static_ents.clear();
+	FindEnts(false);
 }
 
 ON_EVENT(POST_TICK) {
-	for (auto &ent : g_ents) {
-		UpdateEntity(ent);
+	for (auto &ent : g_static_ents) {
+		UpdateActivation(ent);
 	}
+
+	g_dynamic_ents.clear();
+	FindEnts(true);
 }
 
 ON_EVENT(RENDER) {
-	for (auto &ent : g_ents) {
+	for (auto &ent : g_static_ents) {
+		OverlayRender::addBox(ent.pos, ent.mins, ent.maxs, {0,0,0}, ent.activated ? Color{0,255,0,100} : Color{255,0,0,100});
+		OverlayRender::addLine(ent.pos, ent.pos + ent.facing*100.0, {100,100,255,255});
+	}
+
+	for (auto &ent : g_dynamic_ents) {
 		OverlayRender::addBox(ent.pos, ent.mins, ent.maxs, {0,0,0}, ent.activated ? Color{0,255,0,100} : Color{255,0,0,100});
 		OverlayRender::addLine(ent.pos, ent.pos + ent.facing*100.0, {100,100,255,255});
 	}
