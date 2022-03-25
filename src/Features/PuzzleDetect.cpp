@@ -21,6 +21,7 @@ enum class EntityType {
 	FAITH_PLATE,
 	CUBE,
 	TURRET,
+	PORTAL,
 };
 
 struct ModelEntity {
@@ -72,19 +73,6 @@ static void UpdateActivation(ModelEntity &model_ent) {
 	}
 
 	uintptr_t ent = (uintptr_t)handle_ent;
-
-	if (model_ent.type == EntityType::CUBE || model_ent.type == EntityType::TURRET) {
-		// recalculate position and extents
-		model_ent.pos = server->GetAbsOrigin((void *)ent);
-		ICollideable *coll = (ICollideable *)(ent + Offsets::S_m_Collision);
-		if (coll) {
-			Vector mins, maxs;
-			coll->WorldSpaceSurroundingBounds(&mins, &maxs);
-			model_ent.mins = mins - model_ent.pos;
-			model_ent.maxs = maxs - model_ent.pos;
-		}
-		Math::AngleVectors(server->GetAbsAngles((void *)ent), &model_ent.facing);
-	}
 
 	switch (model_ent.type) {
 	case EntityType::LASER_CATCHER:
@@ -156,6 +144,14 @@ static void UpdateActivation(ModelEntity &model_ent) {
 			checkEntityClass(ent, "npc_portal_turret_floor") &&
 			*(bool *)(ent + Offsets::m_bIsFiring);
 		break;
+	case EntityType::PORTAL:
+		if (checkEntityClass(ent, "prop_portal")) {
+			void *linked = entityList->LookupEntity(*(CBaseHandle *)(ent + Offsets::m_hLinkedPortal));
+			model_ent.activated = linked && *(bool *)(linked + Offsets::m_bActivated);
+		} else {
+			model_ent.activated = false;
+		}
+		break;
 	}
 }
 
@@ -184,6 +180,7 @@ static void UpdatePosition(ModelEntity &model_ent) {
 	case EntityType::DOOR:
 	case EntityType::CUBE:
 	case EntityType::TURRET:
+	case EntityType::PORTAL:
 		// facing forward
 		facing = forward;
 		break;
@@ -235,6 +232,7 @@ static void FindEnts(bool dynamic) {
 		if (dynamic) {
 			MATCH("prop_weighted_cube",      CUBE)
 			MATCH("npc_portal_turret_floor", TURRET)
+			MATCH("prop_portal",             PORTAL)
 		} else {
 			MATCH("prop_laser_catcher",      LASER_CATCHER)
 			MATCH("prop_laser_relay",        LASER_RELAY)
@@ -260,6 +258,11 @@ static void FindEnts(bool dynamic) {
 				float max = *(float *)((uintptr_t)ent + Offsets::m_flLowerThreshold);
 				if (min > 1.0f || max < 200.0f) continue;
 			}
+		}
+
+		if (*type == EntityType::PORTAL) {
+			// Ignore non-activated portals
+			if (!*(bool *)((uintptr_t)ent + Offsets::m_bActivated)) continue;
 		}
 
 		ModelEntity e{

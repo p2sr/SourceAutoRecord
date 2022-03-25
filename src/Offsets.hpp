@@ -205,6 +205,7 @@ namespace Offsets {
 	extern int m_ptOrigin;
 	extern int m_vPortalForward;
 	extern int m_matrixThisToLinked;
+	extern int m_hLinkedPortal;
 
 	// IEngineVGuiInternal
 	extern int IsGameUIVisible;
