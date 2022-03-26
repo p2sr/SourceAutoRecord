@@ -194,29 +194,45 @@ static void parseHeader(const Line &l) {
 	}
 
 #define CHECK_TOKS(n) \
-	if (l.tokens.size() != (n)) { \
+	if (l.tokens.size() - idx != (n)) { \
 		throw TasParserException( \
 			Utils::ssprintf("invalid start line; expected %d tokens, got %d\n", (int)(n), (int)l.tokens.size()) \
 		); \
 	}
 
-	if (l.tokens[1].tok == "map") {
-		CHECK_TOKS(3)
-		tasPlayer->SetStartInfo(TasStartType::ChangeLevel, l.tokens[2].tok);
-	} else if (l.tokens[1].tok == "save") {
-		CHECK_TOKS(3)
-		tasPlayer->SetStartInfo(TasStartType::LoadQuicksave, l.tokens[2].tok);
-	} else if (l.tokens[1].tok == "cm") {
-		CHECK_TOKS(3)
-		tasPlayer->SetStartInfo(TasStartType::ChangeLevelCM, l.tokens[2].tok);
-	} else if (l.tokens[1].tok == "now") {
+	int idx = 1;
+
+	tasPlayer->numSessionsBeforeStart = 0;
+
+	if (l.tokens[idx].tok == "next") {
+		// next is followed by another start type to be triggered on the
+		// session following another start
+		tasPlayer->numSessionsBeforeStart += 1;
+		if (l.tokens.size() == 2) {
+			// 'start next' is an alias for 'start next now'
+			tasPlayer->SetStartInfo(TasStartType::StartImmediately, "");
+			return;
+		}
+		idx += 1;
+	}
+
+	if (l.tokens[idx].tok == "map") {
 		CHECK_TOKS(2)
+		tasPlayer->SetStartInfo(TasStartType::ChangeLevel, l.tokens[idx + 1].tok);
+		tasPlayer->numSessionsBeforeStart += 1;
+	} else if (l.tokens[idx].tok == "save") {
+		CHECK_TOKS(2)
+		tasPlayer->SetStartInfo(TasStartType::LoadQuicksave, l.tokens[idx + 1].tok);
+		tasPlayer->numSessionsBeforeStart += 1;
+	} else if (l.tokens[idx].tok == "cm") {
+		CHECK_TOKS(2)
+		tasPlayer->SetStartInfo(TasStartType::ChangeLevelCM, l.tokens[idx + 1].tok);
+		tasPlayer->numSessionsBeforeStart += 1;
+	} else if (l.tokens[idx].tok == "now") {
+		CHECK_TOKS(1)
 		tasPlayer->SetStartInfo(TasStartType::StartImmediately, "");
-	} else if (l.tokens[1].tok == "next") {
-		CHECK_TOKS(2)
-		tasPlayer->SetStartInfo(TasStartType::WaitForNewSession, "");
 	} else {
-		throw TasParserException(Utils::ssprintf("invalid start type '%s'", l.tokens[1].tok.c_str()));
+		throw TasParserException(Utils::ssprintf("invalid start type '%s'", l.tokens[idx].tok.c_str()));
 	}
 
 #undef CHECK_TOKS

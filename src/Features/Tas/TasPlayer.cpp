@@ -685,10 +685,17 @@ void TasPlayer::DumpPlayerInfo(int slot, int tick, Vector pos, Vector eye_pos, Q
 	playerInfoDebugs[slot].push_back(str);
 }
 
+ON_EVENT(SESSION_START) {
+	if (tasPlayer->IsActive() && !tasPlayer->IsReady() && tasPlayer->numSessionsBeforeStart > 0) {
+		--tasPlayer->numSessionsBeforeStart;
+	}
+}
+
 void TasPlayer::Update() {
 	if (active && !paused) {
 		if (!ready) {
-			if (startInfo.type == StartImmediately || !session->isRunning) {
+			SetPlaybackVars(true); // Set host_framerate and friends asap!
+			if (numSessionsBeforeStart == 0) {
 				Start();
 			}
 		}

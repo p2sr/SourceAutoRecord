@@ -31,7 +31,6 @@ enum TasStartType {
 	ChangeLevelCM,
 	LoadQuicksave,
 	StartImmediately,
-	WaitForNewSession,
 };
 
 struct TasStartInfo {
@@ -81,6 +80,7 @@ public:
 	inline int GetAbsoluteTick() const { return startTick + currentTick; };
 	inline int GetStartTick() const { return startTick; };
 	inline bool IsActive() const { return active; };
+	inline bool IsReady() const { return ready; };
 	inline bool IsRunning() const { return active && startTick != -1; }
 	inline bool IsUsingTools(int slot) const {
 		return sar_tas_tools_enabled.GetBool()
@@ -117,6 +117,7 @@ public:
 	bool isCoop;
 	int coopControlSlot;
 	bool inControllerCommands = false;
+	int numSessionsBeforeStart = 0;
 
 	TasPlayer();
 	~TasPlayer();
