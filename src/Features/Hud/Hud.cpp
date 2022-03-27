@@ -514,7 +514,7 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
 				int end = -1;
 				if (sscanf(txt, "%2x%2x%2x%n", &r, &g, &b, &end) == 3 && end == 6) {
 					txt += 6;
-					if (!curColor || curColor->r() != r || curColor->g() != g || curColor->b() != b) {
+					if (!curColor || curColor->r != r || curColor->g != g || curColor->b != b) {
 						components.push_back({curColor, component});
 						curColor = Color{r, g, b, 255};
 						component = "";

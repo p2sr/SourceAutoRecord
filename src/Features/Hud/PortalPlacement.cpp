@@ -192,8 +192,8 @@ ON_EVENT(RENDER) {
 				Vector l = origin + rot * dl;
 				Vector r = origin + rot * dr;
 
-				TRIANGLE(r, l, origin, portalColor.r(), portalColor.g(), portalColor.b(), sar_pp_hud_opacity.GetInt());
-				TRIANGLE(l, r, origin, portalColor.r(), portalColor.g(), portalColor.b(), sar_pp_hud_opacity.GetInt());
+				TRIANGLE(r, l, origin, portalColor.r, portalColor.g, portalColor.b, sar_pp_hud_opacity.GetInt());
+				TRIANGLE(l, r, origin, portalColor.r, portalColor.g, portalColor.b, sar_pp_hud_opacity.GetInt());
 			}
 		};
 

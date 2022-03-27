@@ -67,9 +67,9 @@ void VphysHud::Paint(int slot) {
 		Color disableColor = Color(255, 128, 128, 255);
 
 		if (!collisionEnabled) {
-			posColor._color[3] = 100;
-			enableColor._color[3] = 100;
-			disableColor._color[3] = 100;
+			posColor.a = 100;
+			enableColor.a = 100;
+			disableColor.a = 100;
 		}
 
 		surface->DrawTxt(font, cX + 5, cY + y, posColor, "%s (%#08X): ", name, shadow);

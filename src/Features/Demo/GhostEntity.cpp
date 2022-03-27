@@ -79,7 +79,7 @@ float GhostEntity::GetOpacity() {
 
 Color GhostEntity::GetColor() {
 	Color c = this->color ? *this->color : GhostEntity::set_color;
-	return {c.r(), c.g(), c.b(), (int)GetOpacity()};
+	return {c.r, c.g, c.b, (int)GetOpacity()};
 }
 
 void GhostEntity::Spawn() {
@@ -156,11 +156,11 @@ void GhostEntity::Display() {
 	if (this->IsBeingFollowed() && !ghost_spec_thirdperson.GetBool()) return;
 
 	Color col = GetColor();
-	float opacity = col.a();
+	float opacity = col.a;
 
-	col._color[0] = Utils::ConvertFromSrgb(col._color[0]);
-	col._color[1] = Utils::ConvertFromSrgb(col._color[1]);
-	col._color[2] = Utils::ConvertFromSrgb(col._color[2]);
+	col.r = Utils::ConvertFromSrgb(col.r);
+	col.g = Utils::ConvertFromSrgb(col.g);
+	col.b = Utils::ConvertFromSrgb(col.b);
 
 	if (ghost_shading.GetBool()) OverlayRender::startShading(this->data.position + Vector{0, 0, 5}); // Use a point slightly above the floor
 

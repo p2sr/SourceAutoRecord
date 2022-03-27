@@ -60,9 +60,9 @@ static std::optional<Vector> g_shade_color;
 static size_t g_last_group = SIZE_MAX;
 static std::vector<Vector> &getGroupVertVector(Color col, bool wireframe, bool line, bool noz = false) {
 	if (g_shade_color) {
-		col._color[0] *= g_shade_color->x;
-		col._color[1] *= g_shade_color->y;
-		col._color[2] *= g_shade_color->z;
+		col.r *= g_shade_color->x;
+		col.g *= g_shade_color->y;
+		col.b *= g_shade_color->z;
 	}
 	static Color last_col;
 	static bool last_wireframe;
@@ -181,7 +181,7 @@ void OverlayRender::addTriangle(Vector a, Vector b, Vector c, Color col, bool wi
 
 	if (wireframe) {
 		Color wf_col = col;
-		wf_col._color[3] = 255;
+		wf_col.a = 255;
 		OverlayRender::addLine(a, b, wf_col, throughWalls);
 		OverlayRender::addLine(b, c, wf_col, throughWalls);
 		OverlayRender::addLine(c, a, wf_col, throughWalls);
@@ -239,7 +239,7 @@ void OverlayRender::addBox(Vector origin, Vector mins, Vector maxs, QAngle ang, 
 
 	if (wireframe) {
 		Color wf_col = col;
-		wf_col._color[3] = 255;
+		wf_col.a = 255;
 		for (auto i : std::array<std::array<int, 2>, 12>{
 			std::array<int, 2>{ 0, 1 },
 			std::array<int, 2>{ 0, 2 },

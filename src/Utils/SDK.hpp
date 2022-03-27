@@ -121,31 +121,19 @@ inline Vector QAngleToVector(const QAngle &a) {
 }
 
 struct Color {
-	Color() {
-		*((int *)this) = 255;
+	Color() : Color(0, 0, 0) {}
+	Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {
+		this->r = r;
+		this->g = g;
+		this->b = b;
+		this->a = a;
 	}
-	Color(int _r, int _g, int _b) {
-		SetColor(_r, _g, _b, 255);
-	}
-	Color(int _r, int _g, int _b, int _a) {
-		SetColor(_r, _g, _b, _a);
-	}
-	void SetColor(int _r, int _g, int _b, int _a = 255) {
-		_color[0] = (unsigned char)_r;
-		_color[1] = (unsigned char)_g;
-		_color[2] = (unsigned char)_b;
-		_color[3] = (unsigned char)_a;
-	}
-	inline int r() const { return _color[0]; }
-	inline int g() const { return _color[1]; }
-	inline int b() const { return _color[2]; }
-	inline int a() const { return _color[3]; }
-	unsigned char _color[4] = {0, 0, 0, 0};
+	uint8_t r, g, b, a;
 	inline bool operator==(const Color col) const {
-		return !memcmp(this->_color, col._color, sizeof _color);
+		return !memcmp(this, &col, sizeof col);
 	}
 	inline bool operator!=(const Color col) const {
-		return memcmp(this->_color, col._color, sizeof _color);
+		return memcmp(this, &col, sizeof col);
 	}
 };
 

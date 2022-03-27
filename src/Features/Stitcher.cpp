@@ -127,7 +127,7 @@ static Color pickColor() {
 		bool found = false;
 		for (auto &r : g_stitch.regions) {
 			Color m = r.mask_color;
-			if (m.r() == c.r() && m.g() == c.g() && m.b() == c.b()) {
+			if (m.r == c.r && m.g == c.g && m.b == c.b) {
 				found = true;
 				break;
 			}
@@ -358,10 +358,10 @@ static void exportRegions() {
 				image[i*4 + 2] = region.data[ri*4 + 0]; // R
 				image[i*4 + 3] = region.data[ri*4 + 3]; // A
 
-				mask[i*4 + 0] = region.mask_color.b();
-				mask[i*4 + 1] = region.mask_color.g();
-				mask[i*4 + 2] = region.mask_color.r();
-				mask[i*4 + 3] = region.mask_color.a();
+				mask[i*4 + 0] = region.mask_color.b;
+				mask[i*4 + 1] = region.mask_color.g;
+				mask[i*4 + 2] = region.mask_color.r;
+				mask[i*4 + 3] = region.mask_color.a;
 			}
 		}
 	}
@@ -390,7 +390,7 @@ static void exportRegions() {
 			long h = region.ymax - region.ymin;
 			bool last = i == g_stitch.regions.size() - 1;
 			Color col = region.mask_color;
-			std::string mask = Utils::ssprintf("%02X%02X%02X", col.r(), col.g(), col.b());
+			std::string mask = Utils::ssprintf("%02X%02X%02X", col.r, col.g, col.b);
 			fprintf(f, "\t\t{ \"mask\": \"%s\", \"x0\": %ld, \"y0\": %ld, \"x1\": %ld, \"y1\": %ld, \"cam_z\": %ld }%s\n", mask.c_str(), region.xmin, region.ymin, region.xmax, region.ymax, z, last ? "" : ",");
 		}
 		fputs("\t]\n", f);
@@ -710,7 +710,7 @@ static void paintStitchView() {
 
 		if (g_stitcher.stitch_view_mask) {
 			Color mask = region.mask_color;
-			mask._color[3] = selected ? 30 : 10;
+			mask.a = selected ? 30 : 10;
 			surface->DrawRect(mask, x0, y0, x1, y1);
 		}
 		

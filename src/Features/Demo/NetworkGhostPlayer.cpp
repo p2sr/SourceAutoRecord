@@ -269,12 +269,12 @@ sf::Packet &operator<<(sf::Packet &packet, const HEADER &header) {
 // Color (RGB only, no alpha!)
 
 sf::Packet &operator>>(sf::Packet &packet, Color &col) {
-	col._color[3] = 255; // alpha
-	return packet >> col._color[0] >> col._color[1] >> col._color[2];
+	col.a = 255;
+	return packet >> col.r >> col.g >> col.b;
 }
 
 sf::Packet &operator<<(sf::Packet &packet, const Color &col) {
-	return packet << col._color[0] << col._color[1] << col._color[2];
+	return packet << col.r << col.g << col.b;
 }
 
 Variable ghost_TCP_only("ghost_TCP_only", "0", "Lathil's special command :).\n");
@@ -755,9 +755,9 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 			if (ghost) {
 				Scheduler::OnMainThread([=]() {
 					Color col = ghost->GetColor();
-					col._color[3] = 255; // alpha
+					col.a = 255;
 
-					if (col.r() == 0 && col.g() == 0 && col.b() == 0) {
+					if (col.r == 0 && col.g == 0 && col.b == 0) {
 						// Black is the default ghost color. Override it with a slight grey, since black looks really bad in chat
 						col = {192,192,192};
 					}
@@ -827,7 +827,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		Color col;
 		packet >> col;
 		auto ghost = this->GetGhostByID(ID);
-		addToNetDump("recv-color-change", Utils::ssprintf("%d;%02X%02X%02X", ID, col.r(), col.g(), col.b()).c_str());
+		addToNetDump("recv-color-change", Utils::ssprintf("%d;%02X%02X%02X", ID, col.r, col.g, col.b).c_str());
 		if (ghost) ghost->color = col;
 		break;
 	}
@@ -907,7 +907,7 @@ void NetworkManager::UpdateModel(const std::string modelName) {
 void NetworkManager::UpdateColor() {
 	if (!this->isConnected) return;
 	Color col = GhostEntity::set_color;
-	addToNetDump("send-color-change", Utils::ssprintf("%02X%02X%02X", col.r(), col.g(), col.b()).c_str());
+	addToNetDump("send-color-change", Utils::ssprintf("%02X%02X%02X", col.r, col.g, col.b).c_str());
 	sf::Packet packet;
 	packet << HEADER::COLOR_CHANGE << this->ID << col;
 	this->tcpSocket.send(packet);

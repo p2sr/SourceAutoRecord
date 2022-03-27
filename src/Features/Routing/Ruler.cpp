@@ -131,7 +131,7 @@ void drawLabel(Vector pos, int yOffset, std::string text) {
 
 //drawing point (small box) at defined coordinates
 void drawPoint(Vector pos, bool label, Color c) {
-	c._color[3] = 1;
+	c.a = 1;
 	OverlayRender::addBox(pos, {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, c);
 	if (label) {
 		auto text = Utils::ssprintf("%.3f %.3f %.3f", pos.x, pos.y, pos.z);

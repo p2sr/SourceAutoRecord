@@ -127,7 +127,7 @@ void InputHud::Paint(int slot) {
 
 				Color linesColor1 = element.textHighlight;
 				Color linesColor2 = linesColor1;
-				linesColor2._color[3] /= 2;
+				linesColor2.a /= 2;
 
 				surface->DrawColoredLine(jX, jY, jX + joystickSize, jY, linesColor1);
 				surface->DrawColoredLine(jX, jY, jX, jY + joystickSize, linesColor1);
@@ -505,10 +505,10 @@ std::string InputHud::GetParameterValue(std::string name, std::string parameter)
 	auto colorToString = [](Color color) -> std::string {
 		std::stringstream stream;
 		stream << "#" 
-			<< std::hex << color.r() 
-			<< std::hex << color.g() 
-			<< std::hex << color.b()
-			<< std::hex << color.a();
+			<< std::hex << color.r
+			<< std::hex << color.g
+			<< std::hex << color.b
+			<< std::hex << color.a;
 		return stream.str();
 	};
 
