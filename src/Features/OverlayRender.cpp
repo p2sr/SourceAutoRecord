@@ -297,8 +297,6 @@ static void setPrimitiveType(uint8_t type) {
 #endif
 }
 
-static IMaterial *g_vertMat = nullptr;
-
 static IMaterial *createMaterial(KeyValues *kv, const char *name) {
 	IMaterial *mat = (IMaterial *)materialSystem->CreateMaterial(materialSystem->materials->ThisPtr(), name, kv);
 	auto IncrementReferenceCount = Memory::VMT<void (__rescall *)(IMaterial *thisptr)>(mat, 12);

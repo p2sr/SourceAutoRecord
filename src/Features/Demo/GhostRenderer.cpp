@@ -70,7 +70,7 @@ void GhostRenderer::UpdateAnimatedVerts() {
 
 	// update model
 	int lod = GetLODLevel();
-	for (int v = 0; v < animatedVerts.size(); v++) {
+	for (size_t v = 0; v < animatedVerts.size(); v++) {
 		// do not waste time on vertices that won't be used for drawing
 		if (BENDY_LOD_LEVELS[v] <= lod) continue;
 
@@ -147,9 +147,6 @@ void GhostRenderer::Draw() {
 
 	//update verts before drawing
 	UpdateAnimatedVerts();
-
-	Vector camPos = camera->GetPosition(GET_SLOT());
-	Vector camForward = camera->GetForwardVector(GET_SLOT());
 	
 	// get model depending on assigned LOD level
 	// each LOD is sharing the same vertices table

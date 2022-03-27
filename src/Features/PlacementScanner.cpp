@@ -188,12 +188,12 @@ static uintptr_t initScan() {
 	auto bluePortal = (uintptr_t)entityList->LookupEntity(m_hPrimaryPortal);
 	auto orangePortal = (uintptr_t)entityList->LookupEntity(m_hSecondaryPortal);
 
-	if (bluePortal == NULL) {
+	if (!bluePortal) {
 		bluePortal = server->FindPortal(linkage, false, true);
 		*(CBaseHandle *)(portalgun + Offsets::m_hPrimaryPortal) = ((IHandleEntity *)bluePortal)->GetRefEHandle();
 	}
 
-	if (orangePortal == NULL) {
+	if (!orangePortal) {
 		orangePortal = server->FindPortal(linkage, true, true);
 		*(CBaseHandle *)(portalgun + Offsets::m_hSecondaryPortal) = ((IHandleEntity *)orangePortal)->GetRefEHandle();
 	}
@@ -211,8 +211,8 @@ static void writeTga(const char *path, const uint8_t *data, uint16_t w, uint16_t
 		0, 0, 0, 0, 0, // Color map info (n/a)
 		0, 0, // X origin
 		0, 0, // Y origin
-		w & 0xFF, w >> 8, // Width
-		h & 0xFF, h >> 8, // Height
+		uint8_t(w & 0xFF), uint8_t(w >> 8), // Width
+		uint8_t(h & 0xFF), uint8_t(h >> 8), // Height
 		32, // Bits per pixel
 		0, // Image descriptor
 	};

@@ -171,7 +171,6 @@ std::vector<uintptr_t> Memory::MultiScan(const char *moduleName, const char *pat
 	if (Memory::TryGetModule(moduleName, &info)) {
 		auto start = uintptr_t(info.base);
 		auto end = start + info.size;
-		auto addr = uintptr_t();
 		while (true) {
 			auto addr = Memory::FindAddress(start, end, pattern);
 			if (addr) {

@@ -335,7 +335,7 @@ namespace Offsets {
 	int m_bLoadGame;
 	int NUM_ENT_ENTRIES;
 	int ENT_ENTRY_MASK;
-	int INVALID_EHANDLE_INDEX;
+	unsigned INVALID_EHANDLE_INDEX;
 	int NUM_SERIAL_NUM_SHIFT_BITS;
 	int m_iClassName;
 	int m_iName;

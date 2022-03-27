@@ -521,7 +521,7 @@ void NetworkManager::NotifyMapChange() {
 	sf::Packet packet;
 
 	if (ghost_show_advancement.GetInt() >= 3) {
-		if (this->splitTicks != -1) {
+		if (this->splitTicks != (sf::Uint32)-1) {
 			auto ipt = *engine->interval_per_tick;
 			std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
 			std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
@@ -650,7 +650,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		addToNetDump("recv-disconnect", Utils::ssprintf("%d", ID).c_str());
 		this->ghostPoolLock.lock();
 		int toErase = -1;
-		for (int i = 0; i < this->ghostPool.size(); ++i) {
+		for (size_t i = 0; i < this->ghostPool.size(); ++i) {
 			if (this->ghostPool[i]->ID == ID) {
 				auto ghost = this->ghostPool[i];
 				Scheduler::OnMainThread([=]() {
@@ -696,7 +696,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 
 				this->UpdateGhostsSameMap();
 				if (ghost_show_advancement.GetInt() >= 3 && this->AcknowledgeGhost(ghost)) {
-					if (ticksIL == -1) {
+					if (ticksIL == (sf::Uint32)-1) {
 						std::string msg = Utils::ssprintf("%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
 						toastHud.AddToast(GHOST_TOAST_TAG, msg);
 					} else {
@@ -1144,10 +1144,8 @@ CON_COMMAND(ghost_debug, "ghost_debug - output a fuckton of debug info about net
 
 	console->Print("Current ghost pool:\n");
 
-	auto now = NOW_STEADY();
-
 	networkManager.ghostPoolLock.lock();
-	for (int i = 0; i < networkManager.ghostPool.size(); ++i) {
+	for (size_t i = 0; i < networkManager.ghostPool.size(); ++i) {
 		auto ghost = networkManager.ghostPool[i];
 		console->Print("  [0x%02X] 0x%02X: \"%s\" on \"%s\" (%s)", i, ghost->ID, ghost->name.c_str(), ghost->currentMap.c_str(), ghost->sameMap ? "same map" : ghost->isAhead ? "ahead" : "behind");
 		if (ghost->isDestroyed) console->Print(" [DESTROYED]\n");
@@ -1163,7 +1161,7 @@ CON_COMMAND(ghost_list, "ghost_list - list all players in the current ghost serv
 
 	networkManager.ghostPoolLock.lock();
 	console->Print("%d ghosts connected:\n", networkManager.ghostPool.size());
-	for (int i = 0; i < networkManager.ghostPool.size(); ++i) {
+	for (size_t i = 0; i < networkManager.ghostPool.size(); ++i) {
 		auto ghost = networkManager.ghostPool[i];
 		if (!ghost->isDestroyed) {
 			console->Print("  %s (%s)%s\n", ghost->name.c_str(), ghost->currentMap.size() == 0 ? "menu" : ghost->currentMap.c_str(), ghost->spectator ? " (spectator)" : "");

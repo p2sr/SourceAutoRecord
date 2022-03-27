@@ -271,7 +271,7 @@ bool InputHud::GetCurrentSize(int &xSize, int &ySize) {
 }
 
 InputHud::InputHudElement *InputHud::GetElementByName(std::string name) {
-	for (int i = 0; i < elements.size(); i++) {
+	for (size_t i = 0; i < elements.size(); i++) {
 		if (elements[i].name.compare(name) == 0) {
 			return &elements[i];
 		}

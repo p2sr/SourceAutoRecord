@@ -132,9 +132,6 @@ HUD_ELEMENT2(velocity_peak, "0", "Draws last saved velocity peak.\n", HudType_In
 }
 
 CON_COMMAND(sar_export_stats, "sar_export_stats <filepath> -  export the stats to the specifed path in a .csv file\n") {
-	auto nSlot = GET_SLOT();
-	auto stat = stats->Get(nSlot);
-
 	bool result = false;
 	std::string path = args.ArgC() == 1 ? sar_statcounter_filePath.GetString() : args[1];
 
@@ -152,9 +149,6 @@ CON_COMMAND(sar_export_stats, "sar_export_stats <filepath> -  export the stats t
 }
 
 CON_COMMAND(sar_import_stats, "sar_import_stats <filePath> - import the stats from the specified .csv file\n") {
-	auto nSlot = GET_SLOT();
-	auto stat = stats->Get(nSlot);
-
 	bool result = false;
 	std::string path = args.ArgC() == 1 ? sar_statcounter_filePath.GetString() : args[1];
 

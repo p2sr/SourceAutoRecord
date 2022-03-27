@@ -40,7 +40,7 @@ public:
 	void Sync();
 	std::vector<DemoGhostEntity>& GetAllGhosts();
 
-	DemoGhostEntity *GetGhostByID(int ID);
+	DemoGhostEntity *GetGhostByID(unsigned ID);
 
 	bool SetupGhostFromDemo(const std::string &demo_path, const unsigned int ghost_ID, bool fullGame);
 	void AddGhost(DemoGhostEntity &ghost);

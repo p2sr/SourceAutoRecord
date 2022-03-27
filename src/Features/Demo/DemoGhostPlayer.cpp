@@ -65,13 +65,13 @@ void DemoGhostPlayer::DeleteAllGhosts() {
 }
 
 void DemoGhostPlayer::DeleteAllGhostModels() {
-	for (int i = 0; i < this->ghostPool.size(); ++i) {
+	for (size_t i = 0; i < this->ghostPool.size(); ++i) {
 		this->ghostPool[i].DeleteGhost();
 	}
 }
 
 void DemoGhostPlayer::DeleteGhostsByID(const unsigned int ID) {
-	for (int i = 0; i < this->ghostPool.size(); ++i) {
+	for (size_t i = 0; i < this->ghostPool.size(); ++i) {
 		if (this->ghostPool[i].ID == ID) {
 			this->ghostPool[i].DeleteGhost();
 			this->ghostPool.erase(this->ghostPool.begin() + i);
@@ -124,7 +124,7 @@ std::vector<DemoGhostEntity>& DemoGhostPlayer::GetAllGhosts() {
 	return this->ghostPool;
 }
 
-DemoGhostEntity *DemoGhostPlayer::GetGhostByID(int ID) {
+DemoGhostEntity *DemoGhostPlayer::GetGhostByID(unsigned ID) {
 	for (auto &ghost : this->ghostPool) {
 		if (ghost.ID == ID) {
 			return &ghost;
@@ -318,7 +318,7 @@ ON_EVENT(RENDER) {
 	if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
 		for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
 			if (!ghost.hasFinished) {
-				if (ghost.sameMap && ghost.demoTick >= 0 && ghost.demoTick < ghost.nbDemoTicks) {
+				if (ghost.sameMap && ghost.demoTick >= 0 && ghost.demoTick < (int)ghost.nbDemoTicks) {
 					if (!ghost.prop_entity) {
 						ghost.Spawn();
 					}

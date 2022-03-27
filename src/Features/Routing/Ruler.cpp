@@ -78,8 +78,6 @@ void RulerManager::UpdateCreator() {
 
 	//updating trace point
 
-	bool cam_control = sar_cam_control.GetInt() == 1 && sv_cheats.GetBool();
-
 	Vector cam_pos = camera->GetPosition(GET_SLOT());
 	Vector dir = camera->GetForwardVector(GET_SLOT()) * sar_ruler_max_trace_dist.GetFloat();
 
@@ -204,7 +202,7 @@ void RulerManager::AddRuler(Vector start, Vector end) {
 }
 
 void RulerManager::RemoveRuler(int id) {
-	if (id < 0 || id >= rulers.size()) return;
+	if (id < 0 || id >= (int)rulers.size()) return;
 	rulers.erase(rulers.begin() + id);
 }
 

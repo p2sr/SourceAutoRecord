@@ -107,7 +107,7 @@ void PlayerTrace::ClearAll() {
 void PlayerTrace::DrawInWorld() const {
 	if (engine->IsSkipping()) return;
 
-	int r, g, b;
+	uint8_t r, g, b;
 	bool draw_through_walls = sar_trace_draw_through_walls.GetBool();
 
 	hovers.clear();
@@ -143,7 +143,6 @@ void PlayerTrace::DrawInWorld() const {
 			float speed = trace.velocities[slot][0].Length2D();
 			unsigned groundframes = trace.grounded[slot][0];
 
-			size_t update_idx = 1;
 			for (size_t i = 1; i < trace.positions[slot].size(); i++) {
 				Vector new_pos = trace.positions[slot][i];
 				speed = trace.velocities[slot][i].Length2D();
@@ -243,7 +242,7 @@ void PlayerTrace::DrawSpeedDeltas() const {
 
 			size_t last_delta_end = 0;
 			unsigned groundframes = trace.grounded[slot][0];
-			for (int i = 1; i < trace.velocities[slot].size(); i++) {
+			for (unsigned i = 1; i < trace.velocities[slot].size(); i++) {
 				unsigned last_groundframes = groundframes;
 				
 				if (trace.grounded[slot][i]) {
@@ -276,7 +275,7 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 		for (const auto &[trace_idx, trace] : traces) {
 			if (trace.positions[slot].size() == 0) continue;
 
-			int localtick = tick;
+			unsigned localtick = tick;
 
 			// Clamp tick to the number of positions in the trace
 			if (trace.positions[slot].size() <= localtick)
@@ -338,7 +337,7 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick) {
 	
 	if (tick < 0) tick = 0;
 
-	if (tick >= traces[trace_idx].positions[slot].size())
+	if ((unsigned)tick >= traces[trace_idx].positions[slot].size())
 		tick = traces[trace_idx].positions[slot].size()-1;
 
 	if (tick < 0) return;
@@ -402,7 +401,7 @@ HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
 				matrix3x4_t trans = coll->CollisionToWorldTransform();
 
 				std::vector<Vector> verts_copy(vert_count);
-				for (size_t i = 0; i < vert_count; ++i) {
+				for (int i = 0; i < vert_count; ++i) {
 					verts_copy[i] = trans.VectorTransform(verts[i]);
 				}
 
@@ -580,7 +579,7 @@ CON_COMMAND(sar_trace_export, "sar_trace_export <filename> [trace index] - Expor
 		fputs("blue, x,y,z,vx,vy,vz,grounded,crouched, orange, x,y,z,vx,vy,vz,grounded,crouched\n", f);
 	}
 
-	for (int i = 0; i < size; i++) {
+	for (size_t i = 0; i < size; i++) {
 		if (is_coop_trace) {
 			fputs(",", f);
 		}

@@ -61,7 +61,6 @@ void PortalPlacementHud::Paint(int slot) {
 	}
 
 	auto drawPlacementInfo = [&](Color portalColor, TracePortalPlacementInfo_t info, const char *name) {
-		int x = cX + 15; // indented x
 		std::string result;
 		switch (info.ePlacementResult) {
 		// Success
@@ -114,7 +113,7 @@ ON_EVENT(PRE_TICK) {
 		// Get all the stuffs
 		auto m_hActiveWeapon = *(CBaseHandle *)((uintptr_t)player + Offsets::m_hActiveWeapon);
 		uintptr_t portalgun = (uintptr_t)entityList->LookupEntity(m_hActiveWeapon);
-		g_hasPortalGun = portalgun != NULL;
+		g_hasPortalGun = !!portalgun;
 		if (!g_hasPortalGun)
 			return;
 
@@ -125,12 +124,12 @@ ON_EVENT(PRE_TICK) {
 		auto bluePortal = (uintptr_t)entityList->LookupEntity(m_hPrimaryPortal);
 		auto orangePortal = (uintptr_t)entityList->LookupEntity(m_hSecondaryPortal);
 
-		if (bluePortal == NULL) {
+		if (!bluePortal) {
 			// spawn the portal
 			bluePortal = server->FindPortal(linkage, false, true);
 			*(CBaseHandle *)(portalgun + Offsets::m_hPrimaryPortal) = ((IHandleEntity *)bluePortal)->GetRefEHandle();
 		}
-		if (orangePortal == NULL) {
+		if (!orangePortal) {
 			// spawn the portal
 			orangePortal = server->FindPortal(linkage, true, true);
 			*(CBaseHandle *)(portalgun + Offsets::m_hSecondaryPortal) = ((IHandleEntity *)orangePortal)->GetRefEHandle();
@@ -192,8 +191,8 @@ ON_EVENT(RENDER) {
 				Vector l = origin + rot * dl;
 				Vector r = origin + rot * dr;
 
-				TRIANGLE(r, l, origin, portalColor.r, portalColor.g, portalColor.b, sar_pp_hud_opacity.GetInt());
-				TRIANGLE(l, r, origin, portalColor.r, portalColor.g, portalColor.b, sar_pp_hud_opacity.GetInt());
+				TRIANGLE(r, l, origin, portalColor.r, portalColor.g, portalColor.b, (uint8_t)sar_pp_hud_opacity.GetInt());
+				TRIANGLE(l, r, origin, portalColor.r, portalColor.g, portalColor.b, (uint8_t)sar_pp_hud_opacity.GetInt());
 			}
 		};
 

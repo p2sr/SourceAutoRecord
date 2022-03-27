@@ -153,7 +153,7 @@ bool PortalPlacementRule::Test(Vector pos, PortalColor portal) {
 }
 
 void PortalPlacementRule::DrawInWorld() {
-	int r = 255, g = 0, b = 0;
+	uint8_t r = 255, g = 0, b = 0;
 
 	if (this->portal) {
 		switch (*this->portal) {

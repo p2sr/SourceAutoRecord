@@ -161,14 +161,14 @@ CON_COMMAND(sar_drawline, "sar_drawline <x> <y> <z> <x> <y> <z> [r] [g] [b] - ov
 	float y1 = atof(args[5]);
 	float z1 = atof(args[6]);
 
-	int r = 255;
-	int g = 255;
-	int b = 255;
+	uint8_t r = 255;
+	uint8_t g = 255;
+	uint8_t b = 255;
 
 	if (args.ArgC() == 10) {
-		r = atoi(args[7]);
-		g = atoi(args[8]);
-		b = atoi(args[9]);
+		r = (uint8_t)atoi(args[7]);
+		g = (uint8_t)atoi(args[8]);
+		b = (uint8_t)atoi(args[9]);
 	}
 
 	g_drawlines.push_back({

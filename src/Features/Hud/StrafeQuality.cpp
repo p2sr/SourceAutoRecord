@@ -60,7 +60,7 @@ static inline void getSyncForTick(const TickInfo &tick, int *totalStrafe, int *s
 }
 
 static inline void purgeOldTicks(int slot) {
-	while (g_ticks[slot].size() >= sar_strafe_quality_width.GetInt() + sar_strafe_quality_ticks.GetInt()) {
+	while (g_ticks[slot].size() >= unsigned(sar_strafe_quality_width.GetInt() + sar_strafe_quality_ticks.GetInt())) {
 		g_ticks[slot].erase(g_ticks[slot].begin());
 	}
 }
@@ -89,7 +89,7 @@ void StrafeQualityHud::Paint(int slot) {
 	int totalMouse = 0;
 	int syncedMouse = 0;
 
-	for (int i = 0; i < ticks.size(); ++i) {
+	for (size_t i = 0; i < ticks.size(); ++i) {
 		auto &tick = ticks[i];
 
 		int tickTotal, tickSynced;
@@ -104,7 +104,7 @@ void StrafeQualityHud::Paint(int slot) {
 			syncedMouse -= oldSynced;
 		}
 
-		if (i >= ticksAvg - 1) {
+		if ((int)i >= ticksAvg - 1) {
 			Color bg =
 				tick.jumped ? Color{0, 80, 120, 255} : tick.grounded && !tick.landed ? Color{120, 40, 40, 255}
 																																																																									: Color{50, 120, 50, 255};

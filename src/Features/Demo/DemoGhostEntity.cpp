@@ -71,11 +71,11 @@ void DemoGhostEntity::UpdateDemoGhost() {
 		--this->demoTick;
 	}
 
-	if (this->demoTick > this->nbDemoTicks && demoGhostPlayer.IsFullGame()) {  // if played the whole demo
+	if (this->demoTick > (int)this->nbDemoTicks && demoGhostPlayer.IsFullGame()) {  // if played the whole demo
 		this->NextDemo();
-	} else if (this->demoTick > this->nbDemoTicks) {  // If played the whole CM demo
+	} else if (this->demoTick > (int)this->nbDemoTicks) {  // If played the whole CM demo
 		this->DeleteGhost();
-	} else if (this->demoTick < this->nbDemoTicks && this->demoTick >= 0) {
+	} else if (this->demoTick < (int)this->nbDemoTicks && this->demoTick >= 0) {
 		auto data = this->currentDatas.find(this->demoTick);
 
 		if (data != this->currentDatas.end()) {

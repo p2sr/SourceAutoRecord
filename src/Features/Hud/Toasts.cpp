@@ -19,7 +19,7 @@
 #define COMPACT_SIDE_PAD 3
 
 #define TOAST_BACKGROUND(a) \
-	Color { 0, 0, 0, 192 * (a) / 255 }
+	Color { 0, 0, 0, uint8_t(192 * (a) / 255) }
 
 #define SLIDE_RATE 200  // thousandths of screen / s
 #define FADE_TIME 300   // ms
@@ -229,9 +229,8 @@ bool ToastHud::GetCurrentSize(int &xSize, int &ySize) {
 }
 
 static std::vector<std::string> splitIntoLines(Surface::HFont font, std::string text, int maxWidth) {
-	int length = text.length();
+	size_t length = text.length();
 	const char *str = text.c_str();
-	const char *end = str + length;
 
 	std::vector<std::string> lines;
 
@@ -436,7 +435,8 @@ void ToastHud::Paint(int slot) {
 
 		for (std::string line : lines) {
 			int length = surface->GetFontLength(font, "%s", line.c_str());
-			surface->DrawTxt(font, xLeft + sidePadding, yOffset, textCol, "%s", line.c_str());
+			int pad = (longestLine - length) / 2;
+			surface->DrawTxt(font, xLeft + sidePadding + pad, yOffset, textCol, "%s", line.c_str());
 			yOffset += lineHeight;
 		}
 

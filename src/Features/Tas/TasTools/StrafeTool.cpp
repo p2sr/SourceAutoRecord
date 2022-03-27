@@ -230,7 +230,7 @@ float AutoStrafeTool::GetTargetStrafeAngle(const TasPlayerInfo &player, float ta
 	if (vel.Length2D() == 0) return 0;
 
 	Vector wishDir(0, 1);
-	float maxSpeed = GetMaxSpeed(player, wishDir);
+	//float maxSpeed = GetMaxSpeed(player, wishDir);
 	float maxAccel = GetMaxAccel(player, wishDir);
 
 	// Assuming that it is possible to achieve a velocity of a given length,
@@ -284,7 +284,7 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 
 	// check if the velocity is about to reach its target.
 	if (speedDiff != 0) {
-		float angRad = DEG2RAD(ang);
+		//float angRad = DEG2RAD(ang);
 		Vector predictedVel = GetVelocityAfterMove(player, cos(ang), sin(ang));
 		if ((speedDiff > 0 && predictedVel.Length2D() > params.strafeSpeed.speed) || (speedDiff < 0 && predictedVel.Length2D() < params.strafeSpeed.speed)) {
 			passedTargetSpeed = true;

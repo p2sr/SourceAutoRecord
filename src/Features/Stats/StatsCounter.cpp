@@ -162,9 +162,13 @@ bool StatsCounter::ExportToFile(const std::string &path) {
 	file << CMRetries << CSV_SEPARATOR << SpeedrunTimer::SimpleFormat(CMTime) << std::endl;
 
 	auto totalTimeSP = std::accumulate(std::begin(this->mapStats), std::end(this->mapStats), 0.f, [](float time, auto &map) {
-		if(!map.second.coop) return time + map.second.FullGameTotalTime + map.second.CMTotalTime; });
+		if (!map.second.coop) return time + map.second.FullGameTotalTime + map.second.CMTotalTime;
+		else return time;
+	});
 	auto totalTimeCoop = std::accumulate(std::begin(this->mapStats), std::end(this->mapStats), 0.f, [](float time, auto &map) {
-		if(map.second.coop) return time + map.second.FullGameTotalTime + map.second.CMTotalTime; });
+		if (map.second.coop) return time + map.second.FullGameTotalTime + map.second.CMTotalTime;
+		else return time;
+	});
 
 	file << SAR_FULLGAME_COUNTER_EXPORT_HEADER << std::endl;
 
@@ -200,9 +204,13 @@ void StatsCounter::Print() {
 	}
 
 	auto totalTimeSP = std::accumulate(std::begin(this->mapStats), std::end(this->mapStats), 0.f, [](float time, auto &map) {
-		if(!map.second.coop) return time + map.second.FullGameTotalTime + map.second.CMTotalTime; });
+		if (!map.second.coop) return time + map.second.FullGameTotalTime + map.second.CMTotalTime;
+		else return time;
+	});
 	auto totalTimeCoop = std::accumulate(std::begin(this->mapStats), std::end(this->mapStats), 0.f, [](float time, auto &map) {
-		if(map.second.coop) return time + map.second.FullGameTotalTime + map.second.CMTotalTime; });
+		if (map.second.coop) return time + map.second.FullGameTotalTime + map.second.CMTotalTime;
+		else return time;
+	});
 
 	console->Print("\nOther Full Game stats:\n");
 	console->Msg("    -> Completed runs: %d\n", this->completedRuns);
@@ -212,6 +220,8 @@ void StatsCounter::Print() {
 	console->Msg("    -> Total Time Coop: %s\n", SpeedrunTimer::Format(totalTimeCoop).c_str());
 	console->Msg("    -> Total Portal count: %d\n", this->portalCount);
 	console->Msg("    -> Total Time In-Game: %s\n", SpeedrunTimer::Format(this->totalTimeInGame).c_str());
+	console->Msg("    -> Total CM retries: %d\n", CMRetries);
+	console->Msg("    -> Total CM time spent: %s\n", SpeedrunTimer::Format(CMTime).c_str());
 }
 
 void StatsCounter::RecordDatas(const int tick) {

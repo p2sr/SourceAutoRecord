@@ -338,7 +338,7 @@ void Crosshair::UpdateImages() {
 			if (dir.status().type() == std::filesystem::file_type::directory) {
 				auto curdir = dir.path().string();
 				for (auto &dirdir : std::filesystem::directory_iterator(curdir)) {
-					auto file = dir.path().string();
+					auto file = dirdir.path().string();
 					if (Utils::EndsWith(file, std::string(".png"))) {
 						auto img = file.substr(index);
 						if (std::isdigit(img[img.length() - 5])) {  //Take only images with a digit as last character

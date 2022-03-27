@@ -355,7 +355,7 @@ void SpeedrunTimer::Update() {
 		SpeedrunTimer::Split(newSplit, g_speedrun.lastMap);
 		if (newSplit && networkManager.isConnected) {
 			int total = SpeedrunTimer::GetTotalTicks();
-			int prevTotal = networkManager.splitTicksTotal == -1 ? 0 : networkManager.splitTicksTotal;
+			int prevTotal = networkManager.splitTicksTotal == sf::Uint32(-1) ? 0 : networkManager.splitTicksTotal;
 			networkManager.splitTicksTotal = total;
 			networkManager.splitTicks = total - prevTotal;
 		}

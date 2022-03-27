@@ -129,8 +129,6 @@ private:
 	bool MatchesFilters(const char *msg) {
 		if (!sar_con_filter.isRegistered || !sar_con_filter.GetBool()) return true;
 
-		size_t msg_len = strlen(msg);
-
 		if (this->do_until_end) {
 			bool match = *this->do_until_end;
 			if (MatchesPattern(msg, this->end_pat.c_str())) {

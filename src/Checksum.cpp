@@ -143,7 +143,7 @@ static uint32_t crc32(const char *buf, size_t len) {
 static bool fileChecksum(FILE *fp, size_t ignoreEnd, uint32_t *crcOut) {
 	if (fseek(fp, -(long)ignoreEnd, SEEK_END)) return false;
 
-	size_t size = ftell(fp);
+	long size = ftell(fp);
 	if (size == -1) return false;
 
 	if (fseek(fp, 0, SEEK_SET)) return false;

@@ -885,10 +885,6 @@ public:
 	virtual int GetEventDebugID() = 0;
 };
 
-static const char *EVENTS[] = {
-	"player_spawn_blue",
-	"player_spawn_orange"};
-
 struct cmdalias_t {
 	cmdalias_t *next;
 	char name[32];

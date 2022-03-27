@@ -70,7 +70,7 @@ DECL_DECLARE_AUTOCOMPLETION_FUNCTION(svar_set) {
 	if (completed_args > 3) completed_args = 3;
 
 	std::string part;
-	for (size_t i = 0; i < completed_args; ++i) {
+	for (int i = 0; i < completed_args; ++i) {
 		if (args[i].find(" ") != std::string::npos) {
 			part += "\"" + args[i] + "\" ";
 		} else {
@@ -341,7 +341,7 @@ static bool isSpeedrunMod() {
 		auto count = *(int *)(serverPlugin + 16); // CServerPlugin::m_Size
 		if (count > 0) {
 			auto plugins = *(uintptr_t *)(serverPlugin + 4); // CServerPlugin::m_Plugins
-			for (size_t i = 0; i < count; ++i) {
+			for (int i = 0; i < count; ++i) {
 				auto ptr = *(CPlugin **)(plugins + i * sizeof (uintptr_t));
 				if (!strcmp(ptr->m_szName, "Speedrun Mod was a mistake.")) {
 					srm = true;
@@ -966,7 +966,7 @@ static void expand(size_t nargs, const char *const *args, std::string body) {
 				++i;
 				continue;
 			} else if (body[i + 1] >= '1' && body[i + 1] <= '9') {
-				int arg = body[i + 1] - '0';
+				unsigned arg = body[i + 1] - '0';
 				cmd += arg - 1 < nargs ? args[arg - 1] : "";
 				++i;
 				continue;

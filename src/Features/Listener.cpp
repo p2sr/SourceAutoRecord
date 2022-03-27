@@ -12,6 +12,11 @@
 
 Variable sar_debug_listener("sar_debug_listener", "0", "Prints event data of registered listener.\n");
 
+static const char *EVENTS[] = {
+	"player_spawn_blue",
+	"player_spawn_orange",
+};
+
 Listener *listener;
 
 Listener::Listener()

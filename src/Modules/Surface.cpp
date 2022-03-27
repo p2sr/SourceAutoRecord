@@ -47,7 +47,7 @@ CON_COMMAND(sar_font_list, "sar_font_list - lists all available fonts\n") {
 // using font amalgams array to determine whether font is valid.
 bool Surface::IsFontValid(HFont font) {
 	if (m_FontAmalgams == nullptr) return false;
-	if (m_FontAmalgams->m_Size <= font) return false;
+	if ((unsigned)m_FontAmalgams->m_Size <= font) return false;
 	return m_FontAmalgams->m_pElements[font].m_Fonts.m_Size > 0;
 }
 

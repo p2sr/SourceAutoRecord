@@ -88,7 +88,6 @@ void EngineDemoPlayer::HandlePlaybackFix() {
 	// 1 = queued skip
 	// 2 = in skip
 	static int state = 0;
-	static int nfails = 0;
 
 	int tick = GetTick();
 

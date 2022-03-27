@@ -11,6 +11,13 @@
 Variable cl_pitchdown;
 Variable cl_pitchup;
 
+const char *g_TasControllerDigitalActions[] = {
+	"+jump", "+duck", "+use", "+zoom", "+attack", "+attack2",
+};
+const int g_TasControllerInGameButtons[] = {
+	IN_JUMP, IN_DUCK, IN_USE, IN_ZOOM, IN_ATTACK, IN_ATTACK2,
+};
+
 Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 4, "Debugs controller.\n");
 
 TasController *tasControllers[2];

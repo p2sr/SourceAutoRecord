@@ -17,10 +17,8 @@ enum TasControllerInput {
 	FireOrange
 };
 
-static const char *g_TasControllerDigitalActions[] = {
-	"+jump", "+duck", "+use", "+zoom", "+attack", "+attack2"};
-static const int g_TasControllerInGameButtons[] = {
-	IN_JUMP, IN_DUCK, IN_USE, IN_ZOOM, IN_ATTACK, IN_ATTACK2};
+extern const char *g_TasControllerDigitalActions[6];
+extern const int g_TasControllerInGameButtons[6];
 
 struct TasControllerButton {
 	bool active = false;

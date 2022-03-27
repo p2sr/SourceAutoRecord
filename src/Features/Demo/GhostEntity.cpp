@@ -34,14 +34,14 @@ Variable ghost_spec_thirdperson_dist("ghost_spec_thirdperson_dist", "300", 50, "
 
 GhostEntity::GhostEntity(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map, bool network)
 	: ID(ID)
+	, network(network)
 	, name(name)
 	, data(data)
 	, currentMap(current_map)
 	, modelName(GhostEntity::defaultModelName)
 	, prop_entity(nullptr)
-	, isDestroyed(false)
 	, spectator(false)
-	, network(network) {
+	, isDestroyed(false) {
 }
 
 GhostEntity::~GhostEntity() {
@@ -79,7 +79,7 @@ float GhostEntity::GetOpacity() {
 
 Color GhostEntity::GetColor() {
 	Color c = this->color ? *this->color : GhostEntity::set_color;
-	return {c.r, c.g, c.b, (int)GetOpacity()};
+	return {c.r, c.g, c.b, (uint8_t)GetOpacity()};
 }
 
 void GhostEntity::Spawn() {
@@ -379,7 +379,7 @@ CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color 
 		return console->Print("Invalid color code!\n");
 	}
 
-	GhostEntity::set_color = Color{r,g,b};
+	GhostEntity::set_color = Color{(uint8_t)r,(uint8_t)g,(uint8_t)b};
 
 	if (networkManager.isConnected) {
 		networkManager.UpdateColor();
@@ -387,7 +387,7 @@ CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color 
 }
 
 void GhostEntity::KillAllGhosts() {
-	for (size_t i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
 		auto info = server->m_EntPtrArray[i];
 		if (!info.m_pEntity) {
 			continue;
@@ -515,7 +515,7 @@ void GhostEntity::StartFollowing(GhostEntity *ghost) {
 }
 
 bool GhostEntity::IsBeingFollowed() {
-	return GhostEntity::followId == this->ID && GhostEntity::followNetwork == this->network;
+	return GhostEntity::followId == (int)this->ID && GhostEntity::followNetwork == this->network;
 }
 
 DECL_COMMAND_COMPLETION(ghost_spec_pov) {
@@ -622,7 +622,7 @@ CON_COMMAND(ghost_spec_prev, "ghost_spec_prev - spectate the previous ghost\n") 
 		for (auto ghost : networkManager.ghostPool) {
 			if (ghost->spectator) continue;
 			if (same_map && !ghost->sameMap) continue;
-			if ((cur_spec_id == -1 || ghost->ID < cur_spec_id) && (!candidate || ghost->ID > candidate->ID)) {
+			if ((cur_spec_id == -1 || (int)ghost->ID < cur_spec_id) && (!candidate || ghost->ID > candidate->ID)) {
 				candidate = ghost.get();
 			}
 			if (!last || ghost->ID > last->ID) {
@@ -635,7 +635,7 @@ CON_COMMAND(ghost_spec_prev, "ghost_spec_prev - spectate the previous ghost\n") 
 	} else {
 		for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
 			if (same_map && !ghost.sameMap) continue;
-			if ((cur_spec_id == -1 || ghost.ID < cur_spec_id) && (!candidate || ghost.ID > candidate->ID)) {
+			if ((cur_spec_id == -1 || (int)ghost.ID < cur_spec_id) && (!candidate || ghost.ID > candidate->ID)) {
 				candidate = &ghost;
 			}
 			if (!last || ghost.ID > last->ID) {
@@ -668,7 +668,7 @@ CON_COMMAND(ghost_spec_next, "ghost_spec_next [samemap] - spectate the next ghos
 		for (auto ghost : networkManager.ghostPool) {
 			if (ghost->spectator) continue;
 			if (same_map && !ghost->sameMap) continue;
-			if (ghost->ID > cur_spec_id && (!candidate || ghost->ID < candidate->ID)) {
+			if ((int)ghost->ID > cur_spec_id && (!candidate || ghost->ID < candidate->ID)) {
 				candidate = ghost.get();
 			}
 			if (!first || ghost->ID < first->ID) {
@@ -681,7 +681,7 @@ CON_COMMAND(ghost_spec_next, "ghost_spec_next [samemap] - spectate the next ghos
 	} else {
 		for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
 			if (same_map && !ghost.sameMap) continue;
-			if (ghost.ID > cur_spec_id && (!candidate || ghost.ID < candidate->ID)) {
+			if ((int)ghost.ID > cur_spec_id && (!candidate || ghost.ID < candidate->ID)) {
 				candidate = &ghost;
 			}
 			if (!first || ghost.ID < first->ID) {

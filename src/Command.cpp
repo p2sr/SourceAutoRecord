@@ -29,9 +29,9 @@ Command::Command(const char *name) {
 	this->isReference = true;
 }
 Command::Command(const char *pName, _CommandCallback callback, const char *pHelpString, int flags, _CommandCompletionCallback completionFunc)
-	: isReference(false)
+	: version(SourceGame_Unknown)
 	, isRegistered(false)
-	, version(SourceGame_Unknown) {
+	, isReference(false) {
 	this->ptr = new ConCommand(pName, callback, pHelpString, flags, completionFunc);
 
 	Command::GetList().push_back(this);
@@ -189,7 +189,7 @@ int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args
 	if (completed_args > exp_args + 1) completed_args = exp_args + 1;
 	
 	std::string part;
-	for (size_t i = 0; i < completed_args; ++i) {
+	for (int i = 0; i < completed_args; ++i) {
 		if (args[i].find(" ") != std::string::npos) {
 			part += "\"" + args[i] + "\" ";
 		} else {

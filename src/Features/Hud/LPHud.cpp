@@ -64,9 +64,9 @@ static int calcTotalPortals() {
 
 // Add the latest portal count to the history
 static void addNewCount(int count, bool changelevel = false) {
-	if (g_cur_history_idx != g_count_history.size() - 1) {
+	if (g_cur_history_idx != (int)g_count_history.size() - 1) {
 		// Destroy all future history
-		g_count_history.resize(g_cur_history_idx + 1);
+		g_count_history.resize((unsigned)g_cur_history_idx + 1);
 	}
 
 	g_count_history.push_back({
@@ -112,7 +112,7 @@ ON_EVENT(SESSION_START) {
 			// otherwise just go to the latest one
 			auto map = engine->GetCurrentMapName();
 			g_cur_history_idx = g_count_history.size() - 1;
-			for (int i = 0; i < g_count_history.size(); ++i) {
+			for (size_t i = 0; i < g_count_history.size(); ++i) {
 				if (g_count_history[i].map == map) {
 					g_cur_history_idx = i;
 					break;
@@ -162,7 +162,6 @@ void LPHud::Paint(int slot) {
 bool LPHud::GetCurrentSize(int &xSize, int &ySize) {
 	auto font = scheme->GetFontByID(sar_lphud_font.GetInt());
 
-	int digitWidth = surface->GetFontLength(font, "3");
 	int charHeight = surface->GetFontHeight(font);
 	xSize = surface->GetFontLength(font, "Portals:") * 2;
 	ySize = (int)(charHeight * 1.5);

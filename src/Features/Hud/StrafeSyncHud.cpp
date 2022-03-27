@@ -32,7 +32,7 @@ void StrafeSyncHud::Paint(int slot) {
 
 	surface->DrawTxt(font, xOffset, yOffset, fontColor, "%.2f", synchro->GetStrafeSync(slot));
 
-	for (int i = 0; i < synchro->splits.size(); ++i) {
+	for (size_t i = 0; i < synchro->splits.size(); ++i) {
 		char txt[16];
 		std::sprintf(txt, "%d: %.2f  ", i, synchro->splits[i]);
 

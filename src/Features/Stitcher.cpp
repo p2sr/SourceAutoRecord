@@ -136,9 +136,9 @@ static Color pickColor() {
 	}
 
 	return {
-		rand() % 255,
-		rand() % 255,
-		rand() % 255,
+		uint8_t(rand() % 255),
+		uint8_t(rand() % 255),
+		uint8_t(rand() % 255),
 	};
 }
 
@@ -322,8 +322,8 @@ static void writeTga(const char *path, const uint8_t *data, uint16_t w, uint16_t
 		0, 0, 0, 0, 0, // Color map info (n/a)
 		0, 0, // X origin
 		0, 0, // Y origin
-		w & 0xFF, w >> 8, // Width
-		h & 0xFF, h >> 8, // Height
+		uint8_t(w & 0xFF), uint8_t(w >> 8), // Width
+		uint8_t(h & 0xFF), uint8_t(h >> 8), // Height
 		32, // Bits per pixel
 		0, // Image descriptor
 	};
@@ -383,11 +383,7 @@ static void exportRegions() {
 		fputs("\t\"regions\": [\n", f);
 		for (size_t i = 0; i < g_stitch.regions.size(); ++i) {
 			auto &region = g_stitch.regions[i];
-			float x = (float)(region.xmin + region.xmax) / 2;
-			float y = (float)(region.ymin + region.ymax) / 2;
 			long z = region.z;
-			long w = region.xmax - region.xmin;
-			long h = region.ymax - region.ymin;
 			bool last = i == g_stitch.regions.size() - 1;
 			Color col = region.mask_color;
 			std::string mask = Utils::ssprintf("%02X%02X%02X", col.r, col.g, col.b);

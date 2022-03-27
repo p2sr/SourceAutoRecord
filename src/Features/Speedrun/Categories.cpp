@@ -576,7 +576,7 @@ CON_COMMAND(sar_speedrun_rule_create, "sar_speedrun_rule_create <name> <type> [o
 
 	std::map<std::string, std::string> params;
 
-	for (size_t i = 3; i < args.ArgC(); ++i) {
+	for (int i = 3; i < args.ArgC(); ++i) {
 		const char *pair = args[i];
 		const char *mid = pair;
 		while (*mid && *mid != '=') ++mid;

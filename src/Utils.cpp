@@ -39,10 +39,10 @@ std::string Utils::ssprintf(const char *fmt, ...) {
 	free(buf);
 	return str;
 }
-int Utils::ConvertFromSrgb(int s) {
+uint8_t Utils::ConvertFromSrgb(uint8_t s) {
 	double s_ = (double)s / 255;
 	double l = s <= 0.04045 ? s_ / 12.92 : pow((s_ + 0.055) / 1.055, 2.4);
-	return (int)(l * 255);
+	return (uint8_t)(l * 255);
 }
 std::string Utils::GetSARPath() {
 #ifdef _WIN32
@@ -60,7 +60,9 @@ std::string Utils::GetSARPath() {
 }
 std::optional<Color> Utils::GetColor(const char *str, bool to_linear) {
 #define RET(r, g, b, a) \
-	return to_linear ? Color{ConvertFromSrgb(r), ConvertFromSrgb(g), ConvertFromSrgb(b), a} : Color { r, g, b, a }
+	return to_linear ? \
+		Color{ConvertFromSrgb((uint8_t)r), ConvertFromSrgb((uint8_t)g), ConvertFromSrgb((uint8_t)b), (uint8_t)a} : \
+		Color { (uint8_t)r, (uint8_t)g, (uint8_t)b, (uint8_t)a }
 
 	while (isspace(*str)) ++str;
 	size_t len = strlen(str);
@@ -85,11 +87,11 @@ std::optional<Color> Utils::GetColor(const char *str, bool to_linear) {
 
 	if (had_hash) return {};
 
-	if (sscanf(str, "%u %u %u %u%n", &r, &g, &b, &a, &end) == 4 && end >= len) {
+	if (sscanf(str, "%u %u %u %u%n", &r, &g, &b, &a, &end) == 4 && (size_t)end >= len) {
 		RET(r, g, b, a);
 	}
 
-	if (sscanf(str, "%u %u %u%n", &r, &g, &b, &end) == 3 && end >= len) {
+	if (sscanf(str, "%u %u %u%n", &r, &g, &b, &end) == 3 && (size_t)end >= len) {
 		RET(r, g, b, 255);
 	}
 

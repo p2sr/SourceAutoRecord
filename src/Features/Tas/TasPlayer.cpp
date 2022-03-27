@@ -721,8 +721,8 @@ void TasPlayer::Update() {
 		}
 
 		// make sure all ticks are processed by tools before stopping
-		bool s0done = (!IsUsingTools(0) && currentTick > lastTick) || processedFramebulks[0].size() > lastTick;
-		bool s1done = !this->isCoop || (!IsUsingTools(1) && currentTick > lastTick) || processedFramebulks[1].size() > lastTick;
+		bool s0done = (!IsUsingTools(0) && currentTick > lastTick) || (int)processedFramebulks[0].size() > lastTick;
+		bool s1done = !this->isCoop || (!IsUsingTools(1) && currentTick > lastTick) || (int)processedFramebulks[1].size() > lastTick;
 		if ((s0done && s1done) || (!session->isRunning && startTick != -1)) {
 			Stop();
 		}

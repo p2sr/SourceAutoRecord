@@ -46,8 +46,8 @@ void VphysHud::Paint(int slot) {
 	_IsAsleep IsAsleep = Memory::VMT<_IsAsleep>(m_pShadowStand, Offsets::IsAsleep);
 	_IsEnabled IsCollisionEnabled = Memory::VMT<_IsEnabled>(m_pShadowStand, Offsets::IsCollisionEnabled);
 	_IsEnabled IsGravityEnabled = Memory::VMT<_IsEnabled>(m_pShadowStand, Offsets::IsGravityEnabled);
-	_IsEnabled IsDragEnabled = Memory::VMT<_IsEnabled>(m_pShadowStand, Offsets::IsDragEnabled);
-	_IsEnabled IsMotionEnabled = Memory::VMT<_IsEnabled>(m_pShadowStand, Offsets::IsMotionEnabled);
+	//_IsEnabled IsDragEnabled = Memory::VMT<_IsEnabled>(m_pShadowStand, Offsets::IsDragEnabled);
+	//_IsEnabled IsMotionEnabled = Memory::VMT<_IsEnabled>(m_pShadowStand, Offsets::IsMotionEnabled);
 	_GetPosition GetPosition = Memory::VMT<_GetPosition>(m_pShadowStand, Offsets::GetPosition);
 	_GetVelocity GetVelocity = Memory::VMT<_GetVelocity>(m_pShadowStand, Offsets::GetVelocity);
 
@@ -59,8 +59,8 @@ void VphysHud::Paint(int slot) {
 		bool collisionEnabled = IsCollisionEnabled(shadow);
 		bool gravityEnabled = IsGravityEnabled(shadow);
 		bool asleep = IsAsleep(shadow);
-		bool drag = IsDragEnabled(shadow);
-		bool motion = IsMotionEnabled(shadow);
+		//bool drag = IsDragEnabled(shadow);
+		//bool motion = IsMotionEnabled(shadow);
 
 		Color posColor = Color(255,255,255,255);
 		Color enableColor = Color(128, 255, 128, 255);

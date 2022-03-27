@@ -516,7 +516,7 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
 					txt += 6;
 					if (!curColor || curColor->r != r || curColor->g != g || curColor->b != b) {
 						components.push_back({curColor, component});
-						curColor = Color{r, g, b, 255};
+						curColor = Color{(uint8_t)r, (uint8_t)g, (uint8_t)b, 255};
 						component = "";
 					}
 					continue;
@@ -537,7 +537,7 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
 }
 
 CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color> - sets the color of the nth text value in the HUD\n") {
-	if (args.ArgC() != 3 && args.ArgC() != 5) {
+	if (args.ArgC() != 3) {
 		console->Print(sar_hud_set_text_color.ThisPtr()->m_pszHelpString);
 		return;
 	}
@@ -548,38 +548,9 @@ CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color> - sets 
 		return;
 	}
 
-	int r, g, b;
-
-	if (args.ArgC() == 3) {
-		const char *col = args[2];
-		if (col[0] == '#') {
-			++col;
-		}
-
-		int end = -1;
-		if (sscanf(col, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
-			return console->Print("Invalid color code '%s'\n", args[2]);
-		}
-	} else {
-		char *end;
-
-		r = strtol(args[2], &end, 10);
-		if (*end || end == args[2]) {
-			return console->Print("Invalid color component '%s'\n", args[2]);
-		}
-
-		g = strtol(args[3], &end, 10);
-		if (*end || end == args[3]) {
-			return console->Print("Invalid color component '%s'\n", args[3]);
-		}
-
-		b = strtol(args[4], &end, 10);
-		if (*end || end == args[4]) {
-			return console->Print("Invalid color component '%s'\n", args[4]);
-		}
-	}
-
-	sar_hud_text_vals[idx].defaultColor = Color{r, g, b, 255};
+	auto col = Utils::GetColor(args[2]);
+	if (!col) return console->Print("Invalid color string '%s'\n", args[2]);
+	sar_hud_text_vals[idx].defaultColor = *col;
 }
 
 CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id> - hides the nth text value in the HUD\n") {

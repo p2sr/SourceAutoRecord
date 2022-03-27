@@ -121,15 +121,15 @@ ON_EVENT(RENDER) {
 				Vector side1Vec = tr.plane.normal.Cross(edge).Normalize();
 				Vector side2Vec = edge.Cross(edgeTr.plane.normal).Normalize();
 
-				OverlayRender::addLine(edgePoint - edge * uiScale, edgePoint + edge * uiScale, { seamshot ? 0 : 255, seamshot ? 255 : 0, 0 }, true);
+				OverlayRender::addLine(edgePoint - edge * uiScale, edgePoint + edge * uiScale, { uint8_t(seamshot ? 0 : 255), uint8_t(seamshot ? 255 : 0), 0 }, true);
 
-				OverlayRender::addLine(edgePoint, edgePoint + side1Vec * uiScale, { seamshotInSide1 ? 0 : 255, seamshotInSide1 ? 255 : 0, 0 }, true);
-				OverlayRender::addLine(edgePoint, edgePoint + side2Vec * uiScale, { seamshotInSide2 ? 0 : 255, seamshotInSide2 ? 255 : 0, 0 }, true);
+				OverlayRender::addLine(edgePoint, edgePoint + side1Vec * uiScale, { uint8_t(seamshotInSide1 ? 0 : 255), uint8_t(seamshotInSide1 ? 255 : 0), 0 }, true);
+				OverlayRender::addLine(edgePoint, edgePoint + side2Vec * uiScale, { uint8_t(seamshotInSide2 ? 0 : 255), uint8_t(seamshotInSide2 ? 255 : 0), 0 }, true);
 
 				if (seamshot) {
 					Vector midPoint = edgePoint + edgeTr.plane.normal * (uiScale / 2.0) + tr.plane.normal * (uiScale / 2.0);
-					OverlayRender::addLine(midPoint, edgePoint + side1Vec * uiScale, { seamshotInSide1 ? 0 : 255, seamshotInSide1 ? 255 : 0, 0 }, true);
-					OverlayRender::addLine(midPoint, edgePoint + side2Vec * uiScale, { seamshotInSide2 ? 0 : 255, seamshotInSide2 ? 255 : 0, 0 }, true);
+					OverlayRender::addLine(midPoint, edgePoint + side1Vec * uiScale, { uint8_t(seamshotInSide1 ? 0 : 255), uint8_t(seamshotInSide1 ? 255 : 0), 0 }, true);
+					OverlayRender::addLine(midPoint, edgePoint + side2Vec * uiScale, { uint8_t(seamshotInSide2 ? 0 : 255), uint8_t(seamshotInSide2 ? 255 : 0), 0 }, true);
 				}
 
 				//engine->AddLineOverlay(nullptr, edgeTr.endpos + test1v + test1o, edgeTr.endpos + test1v * -2 + test1o, 0, 0, 255, true, 0.06);

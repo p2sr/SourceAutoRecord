@@ -184,7 +184,7 @@ static bool processCommands(ClientData &cl) {
 	while (true) {
 		if (cl.cmdbuf.size() == 0) return true;
 
-		int extra = cl.cmdbuf.size() - 1;
+		size_t extra = cl.cmdbuf.size() - 1;
 
 		switch (cl.cmdbuf[0]) {
 		case 0: // request playback
