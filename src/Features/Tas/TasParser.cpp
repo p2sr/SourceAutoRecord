@@ -203,11 +203,13 @@ static void parseHeader(const Line &l) {
 	int idx = 1;
 
 	tasPlayer->numSessionsBeforeStart = 0;
+	tasPlayer->wasStartNext = false;
 
 	if (l.tokens[idx].tok == "next") {
 		// next is followed by another start type to be triggered on the
 		// session following another start
 		tasPlayer->numSessionsBeforeStart += 1;
+		tasPlayer->wasStartNext = true;
 		if (l.tokens.size() == 2) {
 			// 'start next' is an alias for 'start next now'
 			tasPlayer->SetStartInfo(TasStartType::StartImmediately, "");
@@ -657,7 +659,7 @@ float TasParser::toFloat(std::string str) {
 }
 
 
-void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, std::vector<TasFramebulk> framebulks) {
+void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, bool wasStartNext, std::vector<TasFramebulk> framebulks) {
 	std::string fixedName = name;
 	size_t lastdot = name.find_last_of(".");
 	if (lastdot != std::string::npos) {
@@ -670,21 +672,21 @@ void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, s
 		return a.tick < b.tick;
 	});
 
+	if (wasStartNext) file << "start next ";
+	else file << "start ";
+
 	switch (startInfo.type) {
 	case TasStartType::ChangeLevel:
-		file << "start map " << startInfo.param << "\n";
+		file << "map " << startInfo.param << "\n";
 		break;
 	case TasStartType::LoadQuicksave:
-		file << "start save " << startInfo.param << "\n";
+		file << "save " << startInfo.param << "\n";
 		break;
 	case TasStartType::StartImmediately:
-		file << "start now\n";
+		file << "now\n";
 		break;
 	case TasStartType::ChangeLevelCM:
-		file << "start cm " << startInfo.param << "\n";
-		break;
-	default:
-		file << "start next\n";
+		file << "cm " << startInfo.param << "\n";
 		break;
 	}
 

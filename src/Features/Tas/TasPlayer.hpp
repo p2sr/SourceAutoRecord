@@ -118,6 +118,7 @@ public:
 	int coopControlSlot;
 	bool inControllerCommands = false;
 	int numSessionsBeforeStart = 0;
+	bool wasStartNext;
 
 	TasPlayer();
 	~TasPlayer();
