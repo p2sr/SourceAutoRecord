@@ -558,6 +558,7 @@ static bool IsTaunting(void *player, bool client = false) {
 // meaning that second tick in pair reads outdated info.
 void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	if (paused || engine->IsGamePaused()) return;
+	if (!ready) return;
 	if (slot == this->coopControlSlot) return;
 
 	cmd->forwardmove = 0;
