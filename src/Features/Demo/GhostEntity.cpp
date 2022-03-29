@@ -129,10 +129,12 @@ void GhostEntity::Display() {
 	if (this->IsBeingFollowed() && !ghost_spec_thirdperson.GetBool()) return;
 
 	Color col = GetColor();
+	float opacity = ghost_opacity.GetFloat();
 
 	col.r = Utils::ConvertFromSrgb(col.r);
 	col.g = Utils::ConvertFromSrgb(col.g);
 	col.b = Utils::ConvertFromSrgb(col.b);
+	col.a = opacity;
 
 	float prox = ghost_proximity_fade.GetFloat();
 	Color fade_col{col.r, col.g, col.b, 0};
@@ -231,8 +233,6 @@ void GhostEntity::Display() {
 #undef TRIANGLE
 
 	if (this->prop_entity) {
-		float opacity = ghost_opacity.GetFloat();
-
 		if (GhostEntity::ghost_type == GhostType::MODEL) {
 			server->SetKeyValueVector(nullptr, this->prop_entity, "origin", this->data.position + Vector{0, 0, ghost_height.GetFloat()});
 			server->SetKeyValueVector(nullptr, this->prop_entity, "angles", Vector{this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z});
