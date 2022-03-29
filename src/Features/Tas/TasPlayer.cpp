@@ -101,7 +101,7 @@ void SetPlaybackVars(bool active) {
 		saved_fps = true;
 	}
 
-	if (saved_fps && active) {
+	if (saved_fps && active && tasPlayer->IsReady()) {
 		if (tasPlayer->GetTick() < sar_tas_skipto.GetInt()) {
 			engine->SetSkipping(true);
 			fps_max.SetValue(0);
