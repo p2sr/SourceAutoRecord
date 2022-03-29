@@ -8,7 +8,7 @@
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 
-#include <map>
+#include <set>
 
 ///////////////////////////////////
 
@@ -127,6 +127,8 @@ HUD_ELEMENT2_NO_DISABLE(overlay_text, HudType_InGame | HudType_Menu | HudType_Pa
 struct OverlayMesh {
 	RenderCallback solid;
 	RenderCallback wireframe;
+	Vector pos;
+	int num_points_in_pos;
 	std::vector<Vector> tri_verts;
 	std::vector<Vector> line_verts;
 };
@@ -158,6 +160,8 @@ ON_EVENT(FRAME) {
 		auto &m = g_meshes[i];
 		m.tri_verts.clear();
 		m.line_verts.clear();
+		m.pos = {0,0,0};
+		m.num_points_in_pos = 0;
 	}
 
 	g_num_meshes = 0;
@@ -178,11 +182,15 @@ void OverlayRender::addTriangle(MeshId mesh, Vector a, Vector b, Vector c, bool 
 	auto &vs = g_meshes[mesh].tri_verts;
 	vs.insert(vs.end(), { a, b, c });
 	if (!cull_back) vs.insert(vs.end(), { a, c, b });
+	g_meshes[mesh].pos += (a + b + c) / 3.0;
+	g_meshes[mesh].num_points_in_pos += 1;
 }
 
 void OverlayRender::addLine(MeshId mesh, Vector a, Vector b) {
 	auto &vs = g_meshes[mesh].line_verts;
 	vs.insert(vs.end(), { a, b });
+	g_meshes[mesh].pos += (a + b) / 2.0;
+	g_meshes[mesh].num_points_in_pos += 1;
 }
 
 void OverlayRender::addQuad(MeshId mesh, Vector a, Vector b, Vector c, Vector d, bool cull_back) {
@@ -343,8 +351,24 @@ void OverlayRender::drawMeshes(void *viewrender) {
 
 	CViewSetup setup = *(CViewSetup *)((uintptr_t)viewrender + 8); // CRendering3dView inherits CViewSetup! this is handy
 
+	// Order meshes!
+	struct MeshCompare {
+		bool operator()(const OverlayMesh *a, const OverlayMesh *b) const {
+			if (a->num_points_in_pos == 0) return false;
+			if (b->num_points_in_pos == 0) return false;
+			Vector dist_a = a->pos / a->num_points_in_pos - this->origin;
+			Vector dist_b = b->pos / b->num_points_in_pos - this->origin;
+			return dist_a.SquaredLength() > dist_b.SquaredLength();
+		}
+		Vector origin;
+	};
+	std::set<OverlayMesh *, MeshCompare> meshes(MeshCompare{setup.origin});
 	for (size_t i = 0; i < g_num_meshes; ++i) {
-		auto &m = g_meshes[i];
+		meshes.insert(&g_meshes[i]);
+	}
+
+	for (auto mp : meshes) {
+		OverlayMesh &m = *mp;
 
 		Color solid_color, wf_color;
 		bool solid_nodepth, wf_nodepth;

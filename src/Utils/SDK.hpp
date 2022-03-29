@@ -52,7 +52,7 @@ struct Vector {
 	inline Vector operator/(float fl) const {
 		return *this * (1 / fl);
 	}
-	inline Vector &operator+=(Vector &vec) {
+	inline Vector &operator+=(const Vector &vec) {
 		x = x + vec.x;
 		y = y + vec.y;
 		z = z + vec.z;
@@ -65,7 +65,7 @@ struct Vector {
 		res.z = z + vec.z;
 		return res;
 	}
-	inline Vector &operator-=(Vector &vec) {
+	inline Vector &operator-=(const Vector &vec) {
 		x -= vec.x;
 		y -= vec.y;
 		z -= vec.z;
