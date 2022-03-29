@@ -142,7 +142,7 @@ void GhostRenderer::UpdateAnimatedVerts() {
 }
 
 
-void GhostRenderer::Draw() {
+void GhostRenderer::Draw(MeshId mesh) {
 	if (ghost == nullptr) return;
 
 	//update verts before drawing
@@ -152,8 +152,6 @@ void GhostRenderer::Draw() {
 	// each LOD is sharing the same vertices table
 	const short *model = BENDY_MODELS[GetLODLevel()];
 
-	Color col = ghost->GetColor();
-#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(p1, p2, p3, col)
 	// draw each triangle
 	for (int t = 0; model[t] >= 0; t+=3) {
 		Vector p1 = animatedVerts[model[t]]; 
@@ -161,9 +159,8 @@ void GhostRenderer::Draw() {
 		Vector p3 = animatedVerts[model[t+2]]; 
 
 		// triangles are drawn only from one side. draw both sides.
-		TRIANGLE(p1, p2, p3);
+		OverlayRender::addTriangle(mesh, p1, p2, p3);
 	}
-#undef TRIANGLE
 }
 
 void GhostRenderer::SetGhost(GhostEntity* ghost) {

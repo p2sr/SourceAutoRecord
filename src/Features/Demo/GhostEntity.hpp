@@ -67,7 +67,6 @@ public:
 	void SetupGhost(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map);
 	void Display();
 	void Lerp();
-	float GetOpacity();
 	Color GetColor();
 	void DrawName();
 

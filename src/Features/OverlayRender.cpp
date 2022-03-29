@@ -10,9 +10,90 @@
 
 #include <map>
 
+///////////////////////////////////
+
+
+RenderCallback RenderCallback::none = {
+	[](CViewSetup vs, Color &col_out, bool &nodepth_out) {
+		col_out = Color{0,0,0,0};
+		nodepth_out = false;
+	},
+};
+
+RenderCallback RenderCallback::constant(Color col, bool nodepth) {
+	return {
+		[=](CViewSetup vs, Color &col_out, bool &nodepth_out) {
+			col_out = col;
+		 	nodepth_out = nodepth;
+		},
+	};
+}
+
+RenderCallback RenderCallback::prox_fade(float min, float max, Color target, Vector point, RenderCallback base) {
+	return {
+		[=](CViewSetup vs, Color &col_out, bool &nodepth_out) {
+			base.cbk(vs, col_out, nodepth_out);
+			float dist = (vs.origin - point).Length();
+			if (dist < min) {
+				col_out = target;
+			} else if (dist < max) {
+				float ratio = (dist - min) / (max - min);
+				float r = (float)col_out.r * ratio + (float)target.r * (1-ratio);
+				float g = (float)col_out.g * ratio + (float)target.g * (1-ratio);
+				float b = (float)col_out.b * ratio + (float)target.b * (1-ratio);
+				float a = (float)col_out.a * ratio + (float)target.a * (1-ratio);
+				col_out = { (uint8_t)r, (uint8_t)g, (uint8_t)b, (uint8_t)a };
+			}
+		},
+	};
+}
+
+RenderCallback RenderCallback::shade(Vector point, RenderCallback base) {
+	return {
+		[=](CViewSetup vs, Color &col_out, bool &nodepth_out) {
+			base.cbk(vs, col_out, nodepth_out);
+
+			Color light = engine->GetLightAtPoint(point);
+			float r = (float)light.r / 255.0;
+			float g = (float)light.g / 255.0;
+			float b = (float)light.b / 255.0;
+
+			// Scale the numbers in a way that seems reasonable
+			r *= 15.0f;
+			g *= 15.0f;
+			b *= 15.0f;
+			if (r > 1.0f) r = 1.0f;
+			if (g > 1.0f) g = 1.0f;
+			if (b > 1.0f) b = 1.0f;
+			r = sqrt(r);
+			g = sqrt(g);
+			b = sqrt(b);
+
+			// Bring all components close to the max to make the shading subtle
+			float max = fmaxf(r, fmaxf(g, b));
+			r += (max - r) * 0.3f;
+			g += (max - g) * 0.3f;
+			b += (max - b) * 0.3f;
+
+			// Make sure it's at least slightly lit
+			if (r < 0.2f) r = 0.2f;
+			if (g < 0.2f) g = 0.2f;
+			if (b < 0.2f) b = 0.2f;
+
+			// Tint!
+			col_out.r *= r;
+			col_out.g *= g;
+			col_out.b *= b;
+		},
+	};
+}
+
+
+///////////////////////////////////
+
 // The address of this variable is used as a placeholder to be detected
-// by createMeshInternal and friends. We use g_group_idx to keep track
-// of which mesh (overlay group) we're actually rendering.
+// by createMeshInternal and friends. We use g_render_verts to keep
+// track of which vertex array we're actually rendering.
 static int g_placeholder;
 
 struct OverlayText {
@@ -43,162 +124,73 @@ HUD_ELEMENT2_NO_DISABLE(overlay_text, HudType_InGame | HudType_Menu | HudType_Pa
 	g_text.clear();
 }
 
-struct OverlayGroup {
-	Color col;
-	bool wireframe;
-	bool noz;
-	bool line;
-	std::vector<Vector> verts;
-	bool was_used;
+struct OverlayMesh {
+	RenderCallback solid;
+	RenderCallback wireframe;
+	std::vector<Vector> tri_verts;
+	std::vector<Vector> line_verts;
 };
 
-static std::vector<OverlayGroup> g_groups;
-static size_t g_group_idx;
+static std::vector<OverlayMesh> g_meshes;
+static size_t g_num_meshes;
 
-static std::optional<Vector> g_shade_color;
+static std::vector<Vector> *g_render_verts;
 
-static size_t g_last_group = SIZE_MAX;
-static std::vector<Vector> &getGroupVertVector(Color col, bool wireframe, bool line, bool noz = false) {
-	if (g_shade_color) {
-		col.r *= g_shade_color->x;
-		col.g *= g_shade_color->y;
-		col.b *= g_shade_color->z;
-	}
-	static Color last_col;
-	static bool last_wireframe;
-	static bool last_line;
-	static bool last_noz;
-
-	if (g_last_group == SIZE_MAX || last_col != col || last_wireframe != wireframe || last_line != line || last_noz != noz) {
-		last_col = col;
-		last_wireframe = wireframe;
-		last_line = line;
-		last_noz = noz;
-
-		g_last_group = SIZE_MAX;
-
-		for (size_t i = 0; i < g_groups.size(); ++i) {
-			auto &g = g_groups[i];
-			if (g.col != col) continue;
-			if (g.wireframe != wireframe) continue;
-			if (g.noz != noz) continue;
-			if (g.line != line) continue;
-			if (g.verts.size() > 1000) continue; // Stupid big meshes is probably a bad idea
-
-			g.was_used = true;
-			g_last_group = i;
-			break;
-		}
-
-		if (g_last_group == SIZE_MAX) {
-			g_groups.push_back({
-				col,
-				wireframe,
-				noz,
-				line,
-				{},
-				true,
-			});
-			g_last_group = g_groups.size() - 1;
-		}
-	}
-
-	return g_groups[g_last_group].verts;
-}
-
-bool OverlayRender::createMeshInternal(void *collision, Vector **vertsOut, size_t *nvertsOut) {
+bool OverlayRender::createMeshInternal(const void *collision, Vector **vertsOut, size_t *nvertsOut) {
 	if (collision != &g_placeholder) return false;
-	*vertsOut = g_groups[g_group_idx].verts.data();
-	*nvertsOut = g_groups[g_group_idx].verts.size();
+	*vertsOut = g_render_verts->data();
+	*nvertsOut = g_render_verts->size();
 	return true;
 }
 
 bool OverlayRender::destroyMeshInternal(Vector *verts, size_t nverts) {
-	if (g_group_idx >= g_groups.size()) return false;
-	return g_groups[g_group_idx].verts.data() == verts;
+	if (!g_render_verts) return false;
+	return g_render_verts->data() == verts;
 }
 
 // Dispatched just before RENDER
 ON_EVENT(FRAME) {
-	for (size_t i = 0; i < g_groups.size(); ++i) {
-		auto &g = g_groups[i];
-		if (g.was_used) {
-			g.verts.clear();
-			g.was_used = false;
-		} else {
-			if (i + 1 < g_groups.size()) std::iter_swap(g_groups.begin() + i, g_groups.end() - 1);
-			g_groups.pop_back();
-			--i;
-		}
+	// Garbage collection - remove any unused slots
+	g_meshes.resize(g_num_meshes);
+
+	// Clear the vertex arrays for each mesh that we'll keep around
+	for (size_t i = 0; i < g_num_meshes; ++i) {
+		auto &m = g_meshes[i];
+		m.tri_verts.clear();
+		m.line_verts.clear();
 	}
-	g_last_group = SIZE_MAX;
+
+	g_num_meshes = 0;
+
 	g_text.clear();
 }
 
-void OverlayRender::startShading(Vector point) {
-#ifdef _WIN32
-	// MSVC bug workaround - COM interfaces apparently don't quite follow
-	// the behaviour implemented by '__thiscall' in some cases, and
-	// returning structs is one of them! The game flips around the first
-	// two args otherwise, with predictably disastrous results.
-	Vector light;
-	engine->GetLightForPoint(engine->engineClient->ThisPtr(), light, point, true);
-#else
-	Vector light = engine->GetLightForPoint(engine->engineClient->ThisPtr(), point, true);
-#endif
-
-	// Scale these numbers in a way that seems reasonable
-	light *= 15.0f;
-	if (light.x > 1.0f) light.x = 1.0f;
-	if (light.y > 1.0f) light.y = 1.0f;
-	if (light.z > 1.0f) light.z = 1.0f;
-	light.x = sqrt(light.x);
-	light.y = sqrt(light.y);
-	light.z = sqrt(light.z);
-	float max = fmaxf(light.x, fmaxf(light.y, light.z));
-
-	// Bring all components close to that max to make the shading subtle
-	light.x += (max - light.x) * 0.3f;
-	light.y += (max - light.y) * 0.3f;
-	light.z += (max - light.z) * 0.3f;
-
-	// Make sure it's at least slightly lit
-	if (light.x < 0.2f) light.x = 0.2f;
-	if (light.y < 0.2f) light.y = 0.2f;
-	if (light.z < 0.2f) light.z = 0.2f;
-
-	g_shade_color = light;
+MeshId OverlayRender::createMesh(RenderCallback solid, RenderCallback wireframe) {
+	MeshId id = g_num_meshes;
+	if (g_num_meshes == g_meshes.size()) g_meshes.push_back({});
+	g_num_meshes += 1;
+	g_meshes[id].solid = solid;
+	g_meshes[id].wireframe = wireframe;
+	return id;
 }
 
-void OverlayRender::endShading() {
-	g_shade_color = {};
-}
-
-void OverlayRender::addTriangle(Vector a, Vector b, Vector c, Color col, bool wireframe, bool throughWalls, bool cullBack) {
-	auto &vs = getGroupVertVector(col, false, false, throughWalls);
+void OverlayRender::addTriangle(MeshId mesh, Vector a, Vector b, Vector c, bool cull_back) {
+	auto &vs = g_meshes[mesh].tri_verts;
 	vs.insert(vs.end(), { a, b, c });
-	if (!cullBack) vs.insert(vs.end(), { a, c, b });
-
-	if (wireframe) {
-		Color wf_col = col;
-		wf_col.a = 255;
-		OverlayRender::addLine(a, b, wf_col, throughWalls);
-		OverlayRender::addLine(b, c, wf_col, throughWalls);
-		OverlayRender::addLine(c, a, wf_col, throughWalls);
-	}
+	if (!cull_back) vs.insert(vs.end(), { a, c, b });
 }
 
-void OverlayRender::addQuad(Vector a, Vector b, Vector c, Vector d, Color col, bool throughWalls, bool cullBack) {
-	OverlayRender::addTriangle(a, b, c, col, false, throughWalls, cullBack);
-	OverlayRender::addTriangle(a, c, d, col, false, throughWalls, cullBack);
-}
-
-void OverlayRender::addLine(Vector a, Vector b, Color col, bool throughWalls) {
-	auto &vs = getGroupVertVector(col, true, true, throughWalls);
+void OverlayRender::addLine(MeshId mesh, Vector a, Vector b) {
+	auto &vs = g_meshes[mesh].line_verts;
 	vs.insert(vs.end(), { a, b });
 }
 
-void OverlayRender::addBox(Vector origin, Vector mins, Vector maxs, QAngle ang, Color col, bool wireframe, bool throughWalls) {
+void OverlayRender::addQuad(MeshId mesh, Vector a, Vector b, Vector c, Vector d, bool cull_back) {
+	OverlayRender::addTriangle(mesh, a, b, c, cull_back);
+	OverlayRender::addTriangle(mesh, a, c, d, cull_back);
+}
+
+void OverlayRender::addBoxMesh(Vector origin, Vector mins, Vector maxs, QAngle ang, RenderCallback solid, RenderCallback wireframe) {
 	float spitch, cpitch;
 	Math::SinCos(DEG2RAD(ang.x), &spitch, &cpitch);
 	float syaw, cyaw;
@@ -226,6 +218,7 @@ void OverlayRender::addBox(Vector origin, Vector mins, Vector maxs, QAngle ang, 
 		verts[i] = origin + rot * v;
 	}
 
+	MeshId solid_mesh = OverlayRender::createMesh(solid, RenderCallback::none);
 	for (auto i : std::array<std::array<int, 4>, 6>{
 		std::array<int, 4>{ 2, 6, 4, 0 },
 		std::array<int, 4>{ 7, 3, 1, 5 },
@@ -234,34 +227,31 @@ void OverlayRender::addBox(Vector origin, Vector mins, Vector maxs, QAngle ang, 
 		std::array<int, 4>{ 1, 3, 2, 0 },
 		std::array<int, 4>{ 6, 7, 5, 4 },
 	}) {
-		OverlayRender::addQuad(verts[i[0]], verts[i[1]], verts[i[2]], verts[i[3]], col, throughWalls, true);
+		OverlayRender::addQuad(solid_mesh, verts[i[0]], verts[i[1]], verts[i[2]], verts[i[3]], true);
 	}
 
-	if (wireframe) {
-		Color wf_col = col;
-		wf_col.a = 255;
-		for (auto i : std::array<std::array<int, 2>, 12>{
-			std::array<int, 2>{ 0, 1 },
-			std::array<int, 2>{ 0, 2 },
-			std::array<int, 2>{ 0, 4 },
-			std::array<int, 2>{ 1, 3 },
-			std::array<int, 2>{ 1, 5 },
-			std::array<int, 2>{ 2, 6 },
-			std::array<int, 2>{ 2, 3 },
-			std::array<int, 2>{ 3, 7 },
-			std::array<int, 2>{ 4, 5 },
-			std::array<int, 2>{ 4, 6 },
-			std::array<int, 2>{ 5, 7 },
-			std::array<int, 2>{ 6, 7 },
-		}) {
-			OverlayRender::addLine(verts[i[0]], verts[i[1]], wf_col, throughWalls);
-		}
+	MeshId wf_mesh = OverlayRender::createMesh(RenderCallback::none, wireframe);
+	for (auto i : std::array<std::array<int, 2>, 12>{
+		std::array<int, 2>{ 0, 1 },
+		std::array<int, 2>{ 0, 2 },
+		std::array<int, 2>{ 0, 4 },
+		std::array<int, 2>{ 1, 3 },
+		std::array<int, 2>{ 1, 5 },
+		std::array<int, 2>{ 2, 6 },
+		std::array<int, 2>{ 2, 3 },
+		std::array<int, 2>{ 3, 7 },
+		std::array<int, 2>{ 4, 5 },
+		std::array<int, 2>{ 4, 6 },
+		std::array<int, 2>{ 5, 7 },
+		std::array<int, 2>{ 6, 7 },
+	}) {
+		OverlayRender::addLine(wf_mesh, verts[i[0]], verts[i[1]]);
 	}
 }
 
-void OverlayRender::addText(Vector pos, int xOff, int yOff, const std::string &text, unsigned long font, Color col, bool center) {
+void OverlayRender::addText(Vector pos, int x_off, int y_off, std::string text, unsigned long font, Color col, bool center) {
 	if (font == FONT_DEFAULT) font = scheme->GetDefaultFont();
-	g_text.push_back({pos, center, xOff, yOff, text, col, font});
+	g_text.push_back({pos, center, x_off, y_off, std::move(text), col, font});
 }
 
 static void setPrimitiveType(uint8_t type) {
@@ -345,31 +335,46 @@ ON_EVENT(SAR_UNLOAD) {
 	destroyMaterial(g_mat_wireframe_noz);
 }
 
-void OverlayRender::drawMeshes() {
+void OverlayRender::drawMeshes(void *viewrender) {
 	matrix3x4_t transform{0};
 	transform.m_flMatVal[0][0] = 1;
 	transform.m_flMatVal[1][1] = 1;
 	transform.m_flMatVal[2][2] = 1;
 
-	for (size_t i = 0; i < g_groups.size(); ++i) {
-		g_group_idx = i;
-		auto &g = g_groups[i];
+	CViewSetup setup = *(CViewSetup *)((uintptr_t)viewrender + 8); // CRendering3dView inherits CViewSetup! this is handy
 
-		if (g.line) {
-			setPrimitiveType(1);
-			// There need to be some multiple of 3 verts for this to work
-			// properly. Push some garbage lines until we're matching
-			while (g.verts.size() % 6) { // lcm(2,3)
-				g.verts.push_back({0,0,0});
-			}
-		} else {
-			setPrimitiveType(2);
+	for (size_t i = 0; i < g_num_meshes; ++i) {
+		auto &m = g_meshes[i];
+
+		Color solid_color, wf_color;
+		bool solid_nodepth, wf_nodepth;
+		m.solid.cbk(setup, solid_color, solid_nodepth);
+		m.wireframe.cbk(setup, wf_color, wf_nodepth);
+
+		if (solid_color.a != 0) {
+			IMaterial *mat = solid_nodepth ? g_mat_solid_noz : g_mat_solid;
+			// Tris
+			g_render_verts = &m.tri_verts;
+			engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, solid_color);
 		}
 
-		IMaterial *mat = g.wireframe ? (g.noz ? g_mat_wireframe_noz : g_mat_wireframe) : (g.noz ? g_mat_solid_noz : g_mat_solid);
-		engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, g.col);
-	}
+		if (wf_color.a != 0) {
+			IMaterial *mat = wf_nodepth ? g_mat_wireframe_noz : g_mat_wireframe;
 
-	// Make sure we're back to normal
-	setPrimitiveType(2);
+			// Lines
+			// There need to be some multiple of 3 verts for line drawing to work
+			// properly. Push some garbage lines until we're matching
+			while (m.line_verts.size() % 6) { // lcm(2,3)
+				m.line_verts.push_back({0,0,0});
+			}
+			setPrimitiveType(1);
+			g_render_verts = &m.line_verts;
+			engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, wf_color);
+
+			// Tris
+			setPrimitiveType(2);
+			g_render_verts = &m.tri_verts;
+			engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, wf_color);
+		}
+	}
 }

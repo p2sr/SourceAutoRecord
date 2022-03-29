@@ -148,6 +148,7 @@ public:
 	void AdvanceTick();
 	void SetSkipping(bool skipping);
 	bool IsSkipping();
+	Color GetLightAtPoint(Vector point);
 
 	// CClientState::Disconnect
 	DECL_DETOUR(Disconnect, bool bShowMainMenu);

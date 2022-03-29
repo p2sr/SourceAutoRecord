@@ -307,7 +307,7 @@ DETOUR(Client::MsgFunc_SayText2, bf_read &msg) {
 	return Client::MsgFunc_SayText2(thisptr, msg);
 }
 
-// MSVC bug workaround - see OverlayRender::startShading for explanation
+// MSVC bug workaround - see Engine::GetColorAtPoint for explanation
 #ifdef _WIN32
 DETOUR_T(void *, Client::GetTextColorForClient, Color *col_out, TextColor color, int client_idx) {
 #else
@@ -448,7 +448,7 @@ DETOUR(Client::DrawTranslucentRenderables, bool inSkybox, bool shadowDepth) {
 	g_DrawTranslucentRenderablesHook.Disable();
 	auto ret = Client::DrawTranslucentRenderables(thisptr, inSkybox, shadowDepth);
 	g_DrawTranslucentRenderablesHook.Enable();
-	OverlayRender::drawMeshes();
+	OverlayRender::drawMeshes(thisptr);
 	return ret;
 }
 Hook g_DrawTranslucentRenderablesHook(&Client::DrawTranslucentRenderables_Hook);

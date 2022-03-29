@@ -129,8 +129,9 @@ void drawLabel(Vector pos, int yOffset, std::string text) {
 
 //drawing point (small box) at defined coordinates
 void drawPoint(Vector pos, bool label, Color c) {
-	c.a = 1;
-	OverlayRender::addBox(pos, {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, c);
+	RenderCallback solid = RenderCallback::constant({ c.r, c.g, c.b, 1   });
+	RenderCallback wf    = RenderCallback::constant({ c.r, c.g, c.b, 255 });
+	OverlayRender::addBoxMesh(pos, {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, solid, wf);
 	if (label) {
 		auto text = Utils::ssprintf("%.3f %.3f %.3f", pos.x, pos.y, pos.z);
 		drawLabel(pos, 0, text);
@@ -142,7 +143,8 @@ void Ruler::draw() {
 	int drawMode = sar_ruler_draw.GetInt();
 	if (drawMode==0) return;
 	// drawing line
-	OverlayRender::addLine(start, end, { 0, 100, 200, 255 }, true);
+	MeshId mesh = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 0, 100, 200, 255 }, true));
+	OverlayRender::addLine(mesh, start, end);
 
 	// drawing points
 	bool pointLabels = (drawMode == 4);

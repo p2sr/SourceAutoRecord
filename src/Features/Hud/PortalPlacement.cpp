@@ -145,7 +145,6 @@ ON_EVENT(PRE_TICK) {
 ON_EVENT(RENDER) {
 	if (sv_cheats.GetBool() && sar_pp_hud.GetBool()) {
 		// Draw the shits in world
-		#define TRIANGLE(p1, p2, p3, r, g, b, a) OverlayRender::addTriangle( p1, p2, p3, { r, g, b, a })
 
 		auto blue =   Color(111, 184, 255, 255);
 		auto orange = Color(255, 184,  86, 255);
@@ -179,6 +178,9 @@ ON_EVENT(RENDER) {
 			rot(2, 2) = cpitch;
 
 			if (!(info.ePlacementResult<=2)) portalColor = red;
+			portalColor.a = (uint8_t)sar_pp_hud_opacity.GetInt();
+
+			MeshId mesh = OverlayRender::createMesh(RenderCallback::constant(portalColor), RenderCallback::none);
 
 			int tris = 20;
 			for (int i = 0; i < tris; ++i) {
@@ -191,8 +193,8 @@ ON_EVENT(RENDER) {
 				Vector l = origin + rot * dl;
 				Vector r = origin + rot * dr;
 
-				TRIANGLE(r, l, origin, portalColor.r, portalColor.g, portalColor.b, (uint8_t)sar_pp_hud_opacity.GetInt());
-				TRIANGLE(l, r, origin, portalColor.r, portalColor.g, portalColor.b, (uint8_t)sar_pp_hud_opacity.GetInt());
+				OverlayRender::addTriangle(mesh, r, l, origin);
+				OverlayRender::addTriangle(mesh, l, r, origin);
 			}
 		};
 

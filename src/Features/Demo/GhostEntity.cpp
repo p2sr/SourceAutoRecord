@@ -51,35 +51,8 @@ GhostEntity::~GhostEntity() {
 	}
 }
 
-float GhostEntity::GetOpacity() {
-	float opacity = ghost_opacity.GetFloat();
-
-	if (ghost_proximity_fade.GetInt() != 0 && !GhostEntity::GetFollowTarget()) {
-		auto player = client->GetPlayer(GET_SLOT() + 1);
-		if (player) {
-			float start_fade_at = ghost_proximity_fade.GetFloat();
-			float end_fade_at = ghost_proximity_fade.GetFloat() / 2;
-
-			Vector d = client->GetAbsOrigin(player) - this->data.position;
-			float dist = sqrt(d.x * d.x + d.y * d.y + d.z * d.z);  // We can't use squared distance or the fade becomes nonlinear
-
-			if (dist > start_fade_at) {
-				// Current value correct
-			} else if (dist < end_fade_at) {
-				opacity = 0;
-			} else {
-				float ratio = (dist - end_fade_at) / (start_fade_at - end_fade_at);
-				opacity *= ratio;
-			}
-		}
-	}
-
-	return opacity;
-}
-
 Color GhostEntity::GetColor() {
-	Color c = this->color ? *this->color : GhostEntity::set_color;
-	return {c.r, c.g, c.b, (uint8_t)GetOpacity()};
+	return this->color ? *this->color : GhostEntity::set_color;
 }
 
 void GhostEntity::Spawn() {
@@ -156,15 +129,23 @@ void GhostEntity::Display() {
 	if (this->IsBeingFollowed() && !ghost_spec_thirdperson.GetBool()) return;
 
 	Color col = GetColor();
-	float opacity = col.a;
 
 	col.r = Utils::ConvertFromSrgb(col.r);
 	col.g = Utils::ConvertFromSrgb(col.g);
 	col.b = Utils::ConvertFromSrgb(col.b);
 
-	if (ghost_shading.GetBool()) OverlayRender::startShading(this->data.position + Vector{0, 0, 5}); // Use a point slightly above the floor
+	float prox = ghost_proximity_fade.GetFloat();
+	Color fade_col{col.r, col.g, col.b, 0};
 
-#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(p1, p2, p3, col, false, false, true)
+	RenderCallback solid = RenderCallback::constant(col);
+	solid = RenderCallback::prox_fade(prox / 2.0, prox, fade_col, this->data.position, solid);// TODO: correct proximity
+	if (ghost_shading.GetBool()) {
+		solid = RenderCallback::shade(this->data.position + Vector{0,0,10}, solid);
+	}
+
+	MeshId mesh = OverlayRender::createMesh(solid, RenderCallback::none);
+
+#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(mesh, p1, p2, p3, true)
 	switch (GhostEntity::ghost_type) {
 	case GhostType::CIRCLE: {
 		double rad = ghost_height.GetFloat() / 2;
@@ -240,7 +221,7 @@ void GhostEntity::Display() {
 		// idk, some weird shit was happening when I was setting it in a constructor
 		// so I'm just leaving that here
 		renderer.SetGhost(this);
-		renderer.Draw();
+		renderer.Draw(mesh);
 		break;
 	}
 
@@ -249,9 +230,9 @@ void GhostEntity::Display() {
 	}
 #undef TRIANGLE
 
-	if (ghost_shading.GetBool()) OverlayRender::endShading();
-
 	if (this->prop_entity) {
+		float opacity = ghost_opacity.GetFloat();
+
 		if (GhostEntity::ghost_type == GhostType::MODEL) {
 			server->SetKeyValueVector(nullptr, this->prop_entity, "origin", this->data.position + Vector{0, 0, ghost_height.GetFloat()});
 			server->SetKeyValueVector(nullptr, this->prop_entity, "angles", Vector{this->data.view_angle.x, this->data.view_angle.y, this->data.view_angle.z});
@@ -263,11 +244,11 @@ void GhostEntity::Display() {
 		if (opacity != this->lastOpacity) {
 			server->SetKeyValueFloat(nullptr, this->prop_entity, "renderamt", opacity);
 		}
+
+		this->lastOpacity = opacity;
 	}
 
 	if (ghost_show_names.GetBool()) this->DrawName();
-
-	this->lastOpacity = opacity;
 }
 
 void GhostEntity::Lerp() {

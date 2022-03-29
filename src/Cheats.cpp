@@ -185,8 +185,15 @@ CON_COMMAND(sar_drawline_clear, "sar_drawline_clear - clear all active sar_drawl
 
 ON_EVENT(RENDER) {
 	if (!sv_cheats.GetBool()) return;
+
+	std::map<int, MeshId> meshes;
+
 	for (auto l : g_drawlines) {
-		OverlayRender::addLine(l.start, l.end, l.col, true);
+		int col_int = *(int *)&l.col;
+		if (meshes.count(col_int) == 0) {
+			meshes[col_int] = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant(l.col, true));
+		}
+		OverlayRender::addLine(meshes[col_int], l.start, l.end);
 	}
 }
 

@@ -121,24 +121,29 @@ ON_EVENT(RENDER) {
 				Vector side1Vec = tr.plane.normal.Cross(edge).Normalize();
 				Vector side2Vec = edge.Cross(edgeTr.plane.normal).Normalize();
 
-				OverlayRender::addLine(edgePoint - edge * uiScale, edgePoint + edge * uiScale, { uint8_t(seamshot ? 0 : 255), uint8_t(seamshot ? 255 : 0), 0 }, true);
+				MeshId mesh_shot  = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ uint8_t(seamshot ? 0 : 255), uint8_t(seamshot ? 255 : 0), 0 }, true));
+				MeshId mesh_side1 = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ uint8_t(seamshotInSide1 ? 0 : 255), uint8_t(seamshotInSide1 ? 255 : 0), 0 }, true));
+				MeshId mesh_side2 = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ uint8_t(seamshotInSide2 ? 0 : 255), uint8_t(seamshotInSide2 ? 255 : 0), 0 }, true));
 
-				OverlayRender::addLine(edgePoint, edgePoint + side1Vec * uiScale, { uint8_t(seamshotInSide1 ? 0 : 255), uint8_t(seamshotInSide1 ? 255 : 0), 0 }, true);
-				OverlayRender::addLine(edgePoint, edgePoint + side2Vec * uiScale, { uint8_t(seamshotInSide2 ? 0 : 255), uint8_t(seamshotInSide2 ? 255 : 0), 0 }, true);
+				OverlayRender::addLine(mesh_shot, edgePoint - edge * uiScale, edgePoint + edge * uiScale);
+
+				OverlayRender::addLine(mesh_side1, edgePoint, edgePoint + side1Vec * uiScale);
+				OverlayRender::addLine(mesh_side2, edgePoint, edgePoint + side2Vec * uiScale);
 
 				if (seamshot) {
 					Vector midPoint = edgePoint + edgeTr.plane.normal * (uiScale / 2.0) + tr.plane.normal * (uiScale / 2.0);
-					OverlayRender::addLine(midPoint, edgePoint + side1Vec * uiScale, { uint8_t(seamshotInSide1 ? 0 : 255), uint8_t(seamshotInSide1 ? 255 : 0), 0 }, true);
-					OverlayRender::addLine(midPoint, edgePoint + side2Vec * uiScale, { uint8_t(seamshotInSide2 ? 0 : 255), uint8_t(seamshotInSide2 ? 255 : 0), 0 }, true);
+					OverlayRender::addLine(mesh_side1, midPoint, edgePoint + side1Vec * uiScale);
+					OverlayRender::addLine(mesh_side2, midPoint, edgePoint + side2Vec * uiScale);
 				}
 
 				//engine->AddLineOverlay(nullptr, edgeTr.endpos + test1v + test1o, edgeTr.endpos + test1v * -2 + test1o, 0, 0, 255, true, 0.06);
 				//engine->AddLineOverlay(nullptr, edgeTr.endpos + test2v + test2o, edgeTr.endpos + test2v * -2 + test2o, 0, 0, 255, true, 0.06);
 			} else {
 				int uiScale = 5;
-				OverlayRender::addLine(tr.endpos, tr.endpos + tr.plane.normal * uiScale, { 0, 0, 255 }, true);
-				OverlayRender::addLine(tr.endpos - checkDirs[0] * uiScale, tr.endpos + checkDirs[0] * uiScale, { 0, 0, 255 }, true);
-				OverlayRender::addLine(tr.endpos - checkDirs[1] * uiScale, tr.endpos + checkDirs[1] * uiScale, { 0, 0, 255 }, true);
+				MeshId mesh = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 0, 0, 255 }, true));
+				OverlayRender::addLine(mesh, tr.endpos, tr.endpos + tr.plane.normal * uiScale);
+				OverlayRender::addLine(mesh, tr.endpos - checkDirs[0] * uiScale, tr.endpos + checkDirs[0] * uiScale);
+				OverlayRender::addLine(mesh, tr.endpos - checkDirs[1] * uiScale, tr.endpos + checkDirs[1] * uiScale);
 			}
 		}
 	}

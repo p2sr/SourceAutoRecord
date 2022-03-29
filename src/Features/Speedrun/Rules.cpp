@@ -91,12 +91,13 @@ bool ZoneTriggerRule::Test(Vector pos) {
 }
 
 void ZoneTriggerRule::DrawInWorld() {
-	OverlayRender::addBox(
+	OverlayRender::addBoxMesh(
 		this->center,
 		-this->size / 2,
 		this->size / 2,
 		{0, (float)(this->rotation * 360.0f / TAU), 0},
-		{ 140, 6, 195, 100 }
+		RenderCallback::constant({ 140, 6, 195, 100 }),
+		RenderCallback::constant({ 140, 6, 195, 255 })
 	);
 }
 
@@ -170,12 +171,13 @@ void PortalPlacementRule::DrawInWorld() {
 		}
 	}
 
-	OverlayRender::addBox(
+	OverlayRender::addBoxMesh(
 		this->center,
 		-this->size / 2,
 		this->size / 2,
 		{0, (float)(this->rotation * 360.0f / TAU), 0},
-		{ r, g, b, 100 }
+		RenderCallback::constant({ r, g, b, 100 }),
+		RenderCallback::constant({ r, g, b, 255 })
 	);
 }
 

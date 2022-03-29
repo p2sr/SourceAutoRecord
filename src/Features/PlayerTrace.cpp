@@ -107,7 +107,6 @@ void PlayerTrace::ClearAll() {
 void PlayerTrace::DrawInWorld() const {
 	if (engine->IsSkipping()) return;
 
-	uint8_t r, g, b;
 	bool draw_through_walls = sar_trace_draw_through_walls.GetBool();
 
 	hovers.clear();
@@ -138,6 +137,12 @@ void PlayerTrace::DrawInWorld() const {
 			float closest_dist = 1.0f; // Something stupid high
 			Vector closest_pos;
 			float closest_vel;
+
+			MeshId mesh_airlocked = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 150, 75,  0   }, draw_through_walls));
+			MeshId mesh_max_turn  = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 220, 0   }, draw_through_walls));
+			MeshId mesh_under300  = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 255, 255 }, draw_through_walls));
+			MeshId mesh_over300   = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 0,   255, 0   }, draw_through_walls));
+			MeshId mesh_grounded  = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 0,   0   }, draw_through_walls));
 
 			Vector pos = trace.positions[slot][0];
 			float speed = trace.velocities[slot][0].Length2D();
@@ -194,38 +199,28 @@ void PlayerTrace::DrawInWorld() const {
 					// brown: speedlocked
 					// yellow: can't turn further
 					// green: speed>300
-					if (groundframes > 1) {
-						r = 255;
-						g = 0;
-						b = 0;
-					} else if (speed > 300) {
-						Vector vel = trace.velocities[slot][i];
-						if (fabsf(vel.x) >= 150 && fabsf(vel.y) >= 150) { // Speedlocked
-							r = 150;
-							g = 75;
-							b = 0;
-						} else if (fabsf(vel.x) >= 60 && fabsf(vel.y) >= 60) { // Max turn
-							r = 255;
-							g = 220;
-							b = 0;
-						} else {
-							r = 0;
-							g = 255;
-							b = 0;
-						}
-					} else {
-						r = 255;
-						g = 255;
-						b = 255;
-					}
+					Vector vel = trace.velocities[slot][i];
+					MeshId mesh =
+						groundframes > 1 ? mesh_grounded :
+						speed < 300      ? mesh_under300 :
+						fabsf(vel.x) >= 150 && fabsf(vel.y) >= 150 ? mesh_airlocked :
+						fabsf(vel.x) >= 60  && fabsf(vel.y) >= 60  ? mesh_max_turn :
+						mesh_over300;
 
-					OverlayRender::addLine(pos, new_pos, {r,g,b}, draw_through_walls);
+					OverlayRender::addLine(mesh, pos, new_pos);
 				}
 				if (pos_delta > 0.001) pos = new_pos;
 			}
 
 			if (closest_dist < 1.0f) {
-				OverlayRender::addBox(closest_pos, {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, {255, 0, 255, 20}, true, draw_through_walls);
+				OverlayRender::addBoxMesh(
+					closest_pos,
+					{-1, -1, -1},
+					{1, 1, 1},
+					{0, 0, 0},
+					RenderCallback::constant({255, 0, 255, 20},  draw_through_walls),
+					RenderCallback::constant({255, 0, 255, 255}, draw_through_walls)
+				);
 				hovers.push_back({closest_id, trace_idx, closest_pos, closest_vel});
 			}
 		}
@@ -286,32 +281,58 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 			
 			Vector center = trace.positions[slot][localtick] + offset;
 			// We trace a big player bbox and a small box to indicate exactly which tick is displayed
-			OverlayRender::addBox(center, -player_size/2, player_size/2, {0, 0, 0}, {255, 255, 0, 20});
-			OverlayRender::addBox(trace.positions[slot][localtick], {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, {0, 255, 0, 20});
+			OverlayRender::addBoxMesh(
+				center,
+				-player_size/2,
+				player_size/2,
+				{0, 0, 0},
+				RenderCallback::constant({255, 255, 0, 20}),
+				RenderCallback::constant({255, 255, 0, 255})
+			);
+			OverlayRender::addBoxMesh(
+				trace.positions[slot][localtick],
+				{-1, -1, -1},
+				{1, 1, 1},
+				{0, 0, 0},
+				RenderCallback::constant({0, 255, 0, 20}),
+				RenderCallback::constant({0, 255, 0, 255})
+			);
 
 			if (sar_trace_bbox_ent_draw.GetBool()) {
 				auto &boxes = trace.hitboxes[slot][localtick];
 
 				for (auto &vphys : boxes.vphys) {
+					MeshId mesh = OverlayRender::createMesh(
+						RenderCallback::constant({ 255, 0, 0, 20  }),
+						RenderCallback::constant({ 255, 0, 0, 255 })
+					);
 					for (size_t i = 0; i < vphys.verts.size(); i += 3) {
 						Vector a = vphys.verts[i+0];
 						Vector b = vphys.verts[i+1];
 						Vector c = vphys.verts[i+2];
-						OverlayRender::addTriangle(a, b, c, { 255, 0, 0, 20 }, true, false, true);
+						OverlayRender::addTriangle(mesh, a, b, c, true);
 					}
 				}
 
 				for (auto &bsp : boxes.bsps) {
+					MeshId mesh = OverlayRender::createMesh(
+						RenderCallback::constant({ 0, 0, 255, 20  }),
+						RenderCallback::constant({ 0, 0, 255, 255 })
+					);
 					for (size_t i = 0; i < bsp.verts.size(); i += 3) {
 						Vector a = bsp.verts[i+0];
 						Vector b = bsp.verts[i+1];
 						Vector c = bsp.verts[i+2];
-						OverlayRender::addTriangle(a, b, c, { 0, 0, 255, 20 }, true, false, true);
+						OverlayRender::addTriangle(mesh, a, b, c, true);
 					}
 				}
 
 				for (auto &obb : boxes.obb) {
-					OverlayRender::addBox(obb.pos, obb.mins, obb.maxs, obb.ang, { 0, 255, 0, 20 });
+					OverlayRender::addBoxMesh(
+						obb.pos, obb.mins, obb.maxs, obb.ang,
+						RenderCallback::constant({ 0, 255, 0, 20 }),
+						RenderCallback::constant({ 0, 255, 0, 255 })
+					);
 				}
 			}
 		}

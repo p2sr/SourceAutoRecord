@@ -80,7 +80,8 @@ static void drawRectOnPlane(cplane_t plane, Vector a, Vector c, Color col, float
 
 	Vector zf = plane.normal*draw_dist; // z-fighting
 
-	OverlayRender::addQuad(a+zf, b+zf, c+zf, d+zf, col);
+	MeshId m = OverlayRender::createMesh(RenderCallback::constant(col), RenderCallback::none);
+	OverlayRender::addQuad(m, a+zf, b+zf, c+zf, d+zf);
 }
 
 static void drawPointOnPlane(cplane_t plane, Vector p, Color col, float draw_dist) {
@@ -94,7 +95,8 @@ static void drawPointOnPlane(cplane_t plane, Vector p, Color col, float draw_dis
 
 	Vector zf = plane.normal*draw_dist; // z-fighting
 
-	OverlayRender::addQuad(a+zf, b+zf, c+zf, d+zf, col);
+	MeshId m = OverlayRender::createMesh(RenderCallback::constant(col), RenderCallback::none);
+	OverlayRender::addQuad(m, a+zf, b+zf, c+zf, d+zf);
 }
 
 enum class SetupState {
@@ -326,7 +328,8 @@ ON_EVENT(RENDER) {
 			Vector c = center - ax1*100 - ax2*100;
 			Vector d = center - ax1*100 + ax2*100;
 
-			OverlayRender::addQuad(a, b, c, d, {255, 0, 0, 100});
+			MeshId m = OverlayRender::createMesh(RenderCallback::constant({255,0,0,100}), RenderCallback::none);
+			OverlayRender::addQuad(m, a, b, c, d);
 		}
 		return;
 	case SetupState::SET_SCAN_POINT_A:

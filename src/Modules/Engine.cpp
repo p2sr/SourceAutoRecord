@@ -626,6 +626,21 @@ void _Host_RunFrame_Render_Detour() {
 	}
 }
 
+Color Engine::GetLightAtPoint(Vector point) {
+#ifdef _WIN32
+	// MSVC bug workaround - COM interfaces apparently don't quite follow
+	// the behaviour implemented by '__thiscall' in some cases, and
+	// returning structs is one of them! The compiler flips around the
+	// first two args otherwise, with predictably disastrous results.
+	Vector light;
+	engine->GetLightForPoint(engine->engineClient->ThisPtr(), light, point, true);
+#else
+	Vector light = engine->GetLightForPoint(engine->engineClient->ThisPtr(), point, true);
+#endif
+
+	return Color{(uint8_t)(light.x * 255), (uint8_t)(light.y * 255), (uint8_t)(light.z * 255), 255};
+}
+
 static _CommandCompletionCallback playdemo_orig_completion;
 DECL_COMMAND_FILE_COMPLETION(playdemo, ".dem", engine->GetGameDirectory(), 1)
 
@@ -635,7 +650,7 @@ DECL_COMMAND_FILE_COMPLETION(exec, ".cfg", Utils::ssprintf("%s/cfg", engine->Get
 // IPhysicsCollision::CreateDebugMesh
 DETOUR(Engine::CreateDebugMesh, const void *collisionModel, Vector **outVerts) {
 	size_t nverts;
-	if (OverlayRender::createMeshInternal((void *)collisionModel, outVerts, &nverts)) {
+	if (OverlayRender::createMeshInternal(collisionModel, outVerts, &nverts)) {
 		return nverts;
 	}
 

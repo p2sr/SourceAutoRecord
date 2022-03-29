@@ -84,6 +84,9 @@ static void renderTrace(const CGameTrace &tr) {
 	
 	auto font = scheme->GetFontByID(1);
 
+	MeshId cross_mesh = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 255, 255 }));
+	MeshId norm_mesh = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 0, 0 }));
+
 	for (auto dir : std::list<Vector>{
 		{0,0,1},
 		{0,0,-1},
@@ -97,10 +100,10 @@ static void renderTrace(const CGameTrace &tr) {
 			continue;
 		}
 
-		OverlayRender::addLine(p, p + dir * 7, { 255, 255, 255, 255 });
+		OverlayRender::addLine(cross_mesh, p, p + dir * 7);
 	}
 
-	OverlayRender::addLine(p, p + norm * 7, { 255, 0, 0, 255 });
+	OverlayRender::addLine(norm_mesh, p, p + norm * 7);
 	OverlayRender::addText(p + Vector{0,0,10}, 0, 0, Utils::ssprintf("%.3f %.3f %.3f", p.x, p.y, p.z), font);
 }
 

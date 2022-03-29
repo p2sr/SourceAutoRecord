@@ -267,12 +267,13 @@ ON_EVENT(RENDER) {
 		CGameTrace tr;
 		engine->TraceFromCamera(MAX_TRACE, tr);
 
-		OverlayRender::addBox(
+		OverlayRender::addBoxMesh(
 			{0, 0, 0},
 			g_placementStart,
 			tr.endpos,
 			{0, 0, 0},
-			{255, 0, 0, 0}
+			RenderCallback::constant({255, 0, 0, 100}),
+			RenderCallback::constant({255, 0, 0, 255})
 		);
 	}
 }

@@ -1,5 +1,6 @@
 #pragma once
-#include <Utils/SDK.hpp>
+#include "Utils/SDK.hpp"
+#include "Features/OverlayRender.hpp"
 
 #include <vector>
 
@@ -20,7 +21,7 @@ private:
 public:
 	GhostRenderer();
 	void SetGhost(GhostEntity *ghost);
-	void Draw();
+	void Draw(MeshId mesh);
 	int GetLODLevel();
 	void StartGesture(int id);
 	float GetHeight();
