@@ -209,7 +209,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demo, "ghost_set_demo <demo> [ID] - ghost
 	if (demoGhostPlayer.SetupGhostFromDemo(engine->GetGameDirectory() + std::string("/") + args[1], ID, false)) {
 		console->Print("Ghost successfully created! Final time of the ghost: %s\n", SpeedrunTimer::Format(demoGhostPlayer.GetGhostByID(ID)->GetTotalTime()).c_str());
 	} else {
-		console->Print("Could not parse \"%s\"!\n", engine->GetGameDirectory() + std::string("/") + args[1]);
+		console->Print("Could not parse \"%s\"!\n", (engine->GetGameDirectory() + std::string("/") + args[1]).c_str());
 	}
 
 	demoGhostPlayer.UpdateGhostsSameMap();
@@ -240,7 +240,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demos,
 	if (firstDemoId < 2) {
 		ok = std::filesystem::exists(dir + ".dem");
 		if (!ok || !demoGhostPlayer.SetupGhostFromDemo(dir, ID, true)) {
-			return console->Print("Could not parse \"%s\"!\n", engine->GetGameDirectory() + std::string("/") + args[1]);
+			return console->Print("Could not parse \"%s\"!\n", (engine->GetGameDirectory() + std::string("/") + args[1]).c_str());
 		}
 	}
 
