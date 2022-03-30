@@ -354,11 +354,12 @@ void OverlayRender::drawMeshes(void *viewrender) {
 	// Order meshes!
 	struct MeshCompare {
 		bool operator()(const OverlayMesh *a, const OverlayMesh *b) const {
-			if (a->num_points_in_pos == 0) return false;
-			if (b->num_points_in_pos == 0) return false;
-			Vector dist_a = a->pos / a->num_points_in_pos - this->origin;
-			Vector dist_b = b->pos / b->num_points_in_pos - this->origin;
-			return dist_a.SquaredLength() > dist_b.SquaredLength();
+			int npa = a->num_points_in_pos == 0 ? 1 : a->num_points_in_pos;
+			int npb = b->num_points_in_pos == 0 ? 1 : b->num_points_in_pos;
+			float dist_a = (a->pos / npa - this->origin).SquaredLength();
+			float dist_b = (b->pos / npb - this->origin).SquaredLength();
+			if (dist_a == dist_b) return a < b; // Define *some* kind of ordering for meshes in the same place
+			return dist_a > dist_b;
 		}
 		Vector origin;
 	};
