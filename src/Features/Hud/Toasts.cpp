@@ -239,7 +239,7 @@ static std::vector<std::string> splitIntoLines(Surface::HFont font, std::string 
 	size_t i = 1;
 	while (i < length) {
 		if (str[i] == '\n') {
-			lines.push_back({str, i + 1});
+			lines.push_back({str, i});
 			str += i + 1;
 			length -= i + 1;
 			i = 1;
