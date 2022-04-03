@@ -418,6 +418,9 @@
     <ClCompile Include="Features\Tas\TasTools\SetAngleTool.cpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\CheckTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
     <ClCompile Include="Features\ReloadedFix.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
@@ -1075,6 +1078,9 @@
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTools\SetAngleTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\CheckTool.hpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClInclude>
     <ClInclude Include="Features\ReloadedFix.hpp">

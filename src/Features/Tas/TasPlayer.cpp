@@ -4,6 +4,7 @@
 #include "Features/Tas/TasParser.hpp"
 #include "Features/Tas/TasTool.hpp"
 #include "Features/Tas/TasServer.hpp"
+#include "Features/Tas/TasTools/CheckTool.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
@@ -204,6 +205,8 @@ void TasPlayer::Activate() {
 	usercmdDebugs[1].clear();
 	playerInfoDebugs[0].clear();
 	playerInfoDebugs[1].clear();
+
+	g_tas_check_replays = 0;
 
 	active = true;
 	startTick = -1;
@@ -837,6 +840,19 @@ void TasPlayer::PlaySingleCoop(std::string file, int slot) {
 	}
 }
 
+void TasPlayer::Replay() {
+	if (g_replayTas[0].size() == 0 && g_replayTas[1].size() == 0) return;
+
+	if (g_replayTasSingleCoop) {
+		int slot = g_replayTas[0].size() == 0 ? 1 : 0;
+		tasPlayer->PlaySingleCoop(g_replayTas[slot], slot);
+	} else if (g_replayTasCoop) {
+		tasPlayer->PlayFile(g_replayTas[0], g_replayTas[1]);
+	} else {
+		tasPlayer->PlayFile(g_replayTas[0], "");
+	}
+}
+
 CON_COMMAND_F_COMPLETION(
 	sar_tas_play,
 	"sar_tas_play <filename> [filename2] - plays a TAS script with given name. If two script names are given, play coop\n",
@@ -871,14 +887,7 @@ CON_COMMAND(sar_tas_replay, "sar_tas_replay - replays the last played TAS\n") {
 	}
 
 	console->Print("Replaying TAS\n");
-	if (g_replayTasSingleCoop) {
-		int slot = g_replayTas[0].size() == 0 ? 1 : 0;
-		engine->ExecuteCommand(Utils::ssprintf("sar_tas_play_single \"%s\" %d", g_replayTas[slot].c_str(), slot).c_str());
-	} else if (g_replayTasCoop) {
-		engine->ExecuteCommand(Utils::ssprintf("sar_tas_play \"%s\" \"%s\"", g_replayTas[0].c_str(), g_replayTas[1].c_str()).c_str());
-	} else {
-		engine->ExecuteCommand(Utils::ssprintf("sar_tas_play \"%s\"", g_replayTas[0].c_str()).c_str());
-	}
+	tasPlayer->Replay();
 }
 
 CON_COMMAND(sar_tas_pause, "sar_tas_pause - pauses TAS playback\n") {

@@ -94,6 +94,7 @@ public:
 	void Start();
 	void PostStart();
 	void Stop(bool interrupted=false);
+	void Replay();
 
 	void Pause();
 	void Resume();
