@@ -26,7 +26,7 @@ Variable sar_tas_dump_usercmd("sar_tas_dump_usercmd", "0", "Dump TAS-generated u
 Variable sar_tas_dump_player_info("sar_tas_dump_player_info", "0", "Dump player info for each tick of TAS playback to a file.\n");
 Variable sar_tas_tools_enabled("sar_tas_tools_enabled", "1", "Enables tool processing for TAS script making.\n");
 Variable sar_tas_tools_force("sar_tas_tools_force", "0", "Force tool playback for TAS scripts; primarily for debugging.\n");
-Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "0", "Enables automatic saving of raw, processed TAS scripts.\n");
+Variable sar_tas_autosave_raw("sar_tas_autosave_raw", "1", "Enables automatic saving of raw, processed TAS scripts.\n");
 Variable sar_tas_pauseat("sar_tas_pauseat", "0", 0, "Pauses the TAS playback on specified tick.\n");
 Variable sar_tas_skipto("sar_tas_skipto", "0", 0, "Fast-forwards the TAS playback until given playback tick.\n");
 Variable sar_tas_playback_rate("sar_tas_playback_rate", "1.0", 0.02, "The rate at which to play back TAS scripts.\n");
