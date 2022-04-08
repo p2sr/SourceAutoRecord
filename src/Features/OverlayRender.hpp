@@ -33,9 +33,8 @@ namespace OverlayRender {
 	// INTERNAL FUNCTIONS - DO NOT USE
 	bool createMeshInternal(const void *collision, Vector **vertsOut, size_t *nverts);
 	bool destroyMeshInternal(Vector *verts, size_t nverts);
-	//void drawTranslucents();
-	//void drawOpaques();
-	void drawMeshes(void *viewrender);
+	void drawOpaques(void *viewrender);
+	void drawTranslucents(void *viewrender);
 	void initMaterials();
 
 	// Every primitive has to be within a mesh

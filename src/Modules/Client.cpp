@@ -63,6 +63,7 @@ REDECL(Client::playvideo_end_level_transition_callback);
 REDECL(Client::OverrideView);
 REDECL(Client::ProcessMovement);
 REDECL(Client::DrawTranslucentRenderables);
+REDECL(Client::DrawOpaqueRenderables);
 
 MDECL(Client::GetAbsOrigin, Vector, C_m_vecAbsOrigin);
 MDECL(Client::GetAbsAngles, QAngle, C_m_angAbsRotation);
@@ -448,10 +449,20 @@ DETOUR(Client::DrawTranslucentRenderables, bool inSkybox, bool shadowDepth) {
 	g_DrawTranslucentRenderablesHook.Disable();
 	auto ret = Client::DrawTranslucentRenderables(thisptr, inSkybox, shadowDepth);
 	g_DrawTranslucentRenderablesHook.Enable();
-	OverlayRender::drawMeshes(thisptr);
+	OverlayRender::drawTranslucents(thisptr);
 	return ret;
 }
 Hook g_DrawTranslucentRenderablesHook(&Client::DrawTranslucentRenderables_Hook);
+
+extern Hook g_DrawOpaqueRenderablesHook;
+DETOUR(Client::DrawOpaqueRenderables, void *renderCtx, int renderPath, void *deferClippedOpaqueRenderablesOut) {
+	g_DrawOpaqueRenderablesHook.Disable();
+	auto ret = Client::DrawOpaqueRenderables(thisptr, renderCtx, renderPath, deferClippedOpaqueRenderablesOut);
+	g_DrawOpaqueRenderablesHook.Enable();
+	OverlayRender::drawOpaques(thisptr);
+	return ret;
+}
+Hook g_DrawOpaqueRenderablesHook(&Client::DrawOpaqueRenderables_Hook);
 
 bool Client::Init() {
 	bool readJmp = false;
@@ -570,15 +581,19 @@ bool Client::Init() {
 
 #ifdef _WIN32
 	Client::DrawTranslucentRenderables = (decltype (Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 8B EC 81 EC 80 00 00 00 53 56 8B F1 8B 0D ? ? ? ? 8B 01 8B 90 C4 01 00 00 57 89 75 F0 FF D2 8B F8");
+	Client::DrawOpaqueRenderables = (decltype (Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 8B EC 83 EC 54 83 7D 0C 00 A1 ? ? ? ? 53 56 0F 9F 45 EC 83 78 30 00 57 8B F1 0F 84 BA 03 00 00");
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
 		Client::DrawTranslucentRenderables = (decltype (Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 E8 ? ? ? ? 81 C7 ? ? ? ? 56 53 81 EC 18 01 00 00 8B 45 08 8B 5D 0C 89 45 98 8B 45 10");
+		Client::DrawOpaqueRenderables = (decltype (Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "E8 ? ? ? ? 05 ? ? ? ? 55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 7D 0C 8B 75 08 89 45 A0 8B 80 00 FB FF FF");
 	} else {
 		Client::DrawTranslucentRenderables = (decltype (Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC DC 00 00 00 8B 45 08 8B 5D 0C 89 C7 89 45 84 8B 45 10 89 85 4C FF FF FF");
+		Client::DrawOpaqueRenderables = (decltype (Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 45 0C 8B 5D 08 89 45 8C 8B 45 14 89 45 90 65 A1 14 00 00 00");
 	}
 #endif
 
 	g_DrawTranslucentRenderablesHook.SetFunc(Client::DrawTranslucentRenderables);
+	g_DrawOpaqueRenderablesHook.SetFunc(Client::DrawOpaqueRenderables);
 
 	offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
 	offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);

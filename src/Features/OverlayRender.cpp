@@ -308,47 +308,116 @@ static void destroyMaterial(IMaterial *mat) {
 	DecrementReferenceCount(mat);
 }
 
-static IMaterial *g_mat_solid, *g_mat_solid_noz, *g_mat_wireframe, *g_mat_wireframe_noz;
+static IMaterial *g_mat_solid_opaque,     *g_mat_solid_opaque_noz,     *g_mat_solid_alpha,     *g_mat_solid_alpha_noz;
+static IMaterial *g_mat_wireframe_opaque, *g_mat_wireframe_opaque_noz, *g_mat_wireframe_alpha, *g_mat_wireframe_alpha_noz;
 
 void OverlayRender::initMaterials() {
 	KeyValues *kv;
 
 	kv = new KeyValues("unlitgeneric");
 	kv->SetInt("$vertexcolor", 1);
+	g_mat_solid_opaque = createMaterial(kv, "_SAR_UnlitSolidOpaque");
+
+	kv = new KeyValues("unlitgeneric");
+	kv->SetInt("$vertexcolor", 1);
+	kv->SetInt("$ignorez", 1);
+	g_mat_solid_opaque_noz = createMaterial(kv, "_SAR_UnlitSolidOpaqueNoDepth");
+
+	kv = new KeyValues("unlitgeneric");
+	kv->SetInt("$vertexcolor", 1);
 	kv->SetInt("$vertexalpha", 1);
-	g_mat_solid = createMaterial(kv, "__utilVertexColor");
+	g_mat_solid_alpha = createMaterial(kv, "_SAR_UnlitSolidAlpha");
 
 	kv = new KeyValues("unlitgeneric");
 	kv->SetInt("$vertexcolor", 1);
 	kv->SetInt("$vertexalpha", 1);
 	kv->SetInt("$ignorez", 1);
-	g_mat_solid_noz = createMaterial(kv, "__utilVertexColorIgnoreZ");
+	g_mat_solid_alpha_noz = createMaterial(kv, "_SAR_UnlitSolidAlphaNoDepth");
+
+	kv = new KeyValues("wireframe");
+	kv->SetInt("$vertexcolor", 1);
+	g_mat_wireframe_opaque = createMaterial(kv, "_SAR_UnlitWireframeOpaque");
+
+	kv = new KeyValues("wireframe");
+	kv->SetInt("$vertexcolor", 1);
+	kv->SetInt("$ignorez", 1);
+	g_mat_wireframe_opaque_noz = createMaterial(kv, "_SAR_UnlitWireframeOpaqueNoDepth");
 
 	kv = new KeyValues("wireframe");
 	kv->SetInt("$vertexcolor", 1);
 	kv->SetInt("$vertexalpha", 1);
-	g_mat_wireframe = createMaterial(kv, "__utilWireframe");
+	g_mat_wireframe_alpha = createMaterial(kv, "_SAR_UnlitWireframeAlpha");
 
 	kv = new KeyValues("wireframe");
 	kv->SetInt("$vertexcolor", 1);
 	kv->SetInt("$vertexalpha", 1);
 	kv->SetInt("$ignorez", 1);
-	g_mat_wireframe_noz = createMaterial(kv, "__utilWireframeIgnoreZ");
+	g_mat_wireframe_alpha_noz = createMaterial(kv, "_SAR_UnlitWireframeAlphaNoDepth");
 }
 
 ON_EVENT(SAR_UNLOAD) {
-	destroyMaterial(g_mat_solid);
-	destroyMaterial(g_mat_solid_noz);
-	destroyMaterial(g_mat_wireframe);
-	destroyMaterial(g_mat_wireframe_noz);
+	destroyMaterial(g_mat_solid_opaque);
+	destroyMaterial(g_mat_solid_opaque_noz);
+	destroyMaterial(g_mat_solid_alpha);
+	destroyMaterial(g_mat_solid_alpha_noz);
+	destroyMaterial(g_mat_wireframe_alpha);
+	destroyMaterial(g_mat_wireframe_alpha_noz);
+	destroyMaterial(g_mat_wireframe_opaque);
+	destroyMaterial(g_mat_wireframe_opaque_noz);
 }
 
-void OverlayRender::drawMeshes(void *viewrender) {
+static void drawMesh(const CViewSetup &setup, OverlayMesh &m, bool translucent) {
 	matrix3x4_t transform{0};
 	transform.m_flMatVal[0][0] = 1;
 	transform.m_flMatVal[1][1] = 1;
 	transform.m_flMatVal[2][2] = 1;
 
+	Color solid_color, wf_color;
+	bool solid_nodepth, wf_nodepth;
+	m.solid.cbk(setup, solid_color, solid_nodepth);
+	m.wireframe.cbk(setup, wf_color, wf_nodepth);
+
+	if (solid_color.a != 0 && (translucent ^ (solid_color.a == 255))) {
+		IMaterial *mat = solid_nodepth ?
+			(translucent ? g_mat_solid_alpha_noz : g_mat_solid_opaque_noz) :
+			(translucent ? g_mat_solid_alpha     : g_mat_solid_opaque);
+
+		// Tris
+		g_render_verts = &m.tri_verts;
+		engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, solid_color);
+	}
+
+	if (wf_color.a != 0 && (translucent ^ (wf_color.a == 255))) {
+		IMaterial *mat = wf_nodepth ?
+			(translucent ? g_mat_wireframe_alpha_noz : g_mat_wireframe_opaque_noz) :
+			(translucent ? g_mat_wireframe_alpha     : g_mat_wireframe_opaque);
+
+		// Lines
+		// There need to be some multiple of 3 verts for line drawing to work
+		// properly. Push some garbage lines until we're matching
+		while (m.line_verts.size() % 6) { // lcm(2,3)
+			m.line_verts.push_back({0,0,0});
+		}
+		setPrimitiveType(1);
+		g_render_verts = &m.line_verts;
+		engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, wf_color);
+
+		// Tris
+		setPrimitiveType(2);
+		g_render_verts = &m.tri_verts;
+		engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, wf_color);
+	}
+}
+
+void OverlayRender::drawOpaques(void *viewrender) {
+	CViewSetup setup = *(CViewSetup *)((uintptr_t)viewrender + 8); // CRendering3dView inherits CViewSetup! this is handy
+
+	for (size_t i = 0; i < g_num_meshes; ++i) {
+		drawMesh(setup, g_meshes[i], false);
+	}
+}
+
+void OverlayRender::drawTranslucents(void *viewrender) {
 	CViewSetup setup = *(CViewSetup *)((uintptr_t)viewrender + 8); // CRendering3dView inherits CViewSetup! this is handy
 
 	// Order meshes!
@@ -369,37 +438,6 @@ void OverlayRender::drawMeshes(void *viewrender) {
 	}
 
 	for (auto mp : meshes) {
-		OverlayMesh &m = *mp;
-
-		Color solid_color, wf_color;
-		bool solid_nodepth, wf_nodepth;
-		m.solid.cbk(setup, solid_color, solid_nodepth);
-		m.wireframe.cbk(setup, wf_color, wf_nodepth);
-
-		if (solid_color.a != 0) {
-			IMaterial *mat = solid_nodepth ? g_mat_solid_noz : g_mat_solid;
-			// Tris
-			g_render_verts = &m.tri_verts;
-			engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, solid_color);
-		}
-
-		if (wf_color.a != 0) {
-			IMaterial *mat = wf_nodepth ? g_mat_wireframe_noz : g_mat_wireframe;
-
-			// Lines
-			// There need to be some multiple of 3 verts for line drawing to work
-			// properly. Push some garbage lines until we're matching
-			while (m.line_verts.size() % 6) { // lcm(2,3)
-				m.line_verts.push_back({0,0,0});
-			}
-			setPrimitiveType(1);
-			g_render_verts = &m.line_verts;
-			engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, wf_color);
-
-			// Tris
-			setPrimitiveType(2);
-			g_render_verts = &m.tri_verts;
-			engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, wf_color);
-		}
+		drawMesh(setup, *mp, true);
 	}
 }
