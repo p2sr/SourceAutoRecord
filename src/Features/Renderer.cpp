@@ -7,6 +7,7 @@
 #include "Modules/Server.hpp"
 #include "Features/Session.hpp"
 #include "Utils/SDK.hpp"
+#include "Utils/Math.hpp"
 
 #include <atomic>
 #include <cinttypes>
@@ -60,6 +61,7 @@ static Variable sar_render_quality("sar_render_quality", "35", 0, 50, "Render ou
 static Variable sar_render_fps("sar_render_fps", "60", 1, "Render output FPS\n");
 static Variable sar_render_sample_rate("sar_render_sample_rate", "44100", 1000, "Audio output sample rate\n");
 static Variable sar_render_blend("sar_render_blend", "0", 0, "How many frames to blend for each output frame; 1 = do not blend, 0 = automatically determine based on host_framerate\n");
+static Variable sar_render_blend_mode("sar_render_blend_mode", "1", 0, 1, "What type of frameblending to use. 0 = linear, 1 = Gaussian\n");
 static Variable sar_render_autostart("sar_render_autostart", "0", "Whether to automatically start when demo playback begins\n");
 static Variable sar_render_autostart_extension("sar_render_autostart_extension", "mp4", "The file extension (and hence container format) to use for automatically started renders.\n", 0);
 static Variable sar_render_autostop("sar_render_autostop", "1", "Whether to automatically stop when __END__ is seen in demo playback\n");
@@ -129,7 +131,8 @@ static struct
 	int toBlendStart;       // Inclusive
 	int toBlendEnd;         // Exclusive
 	int nextBlendIdx;       // How many frames in this blend have we seen so far?
-	uint16_t *blendSumBuf;  // Blending buffer - contains the sum of the pixel values during blending (we only divide at the end of the blend to prevent rounding errors). Not allocated if toBlend == 1.
+	uint32_t *blendSumBuf;  // Blending buffer - contains the sum of the pixel values during blending (we only divide at the end of the blend to prevent rounding errors). Not allocated if toBlend == 1.
+	uint32_t totalBlendWeight;
 
 	// Synchronisation
 	std::thread worker;
@@ -169,6 +172,30 @@ static AVCodecID audioCodecFromName(const char *name) {
 	if (!strcmp(name, "opus")) return AV_CODEC_ID_OPUS;
 	if (!strcmp(name, "flac")) return AV_CODEC_ID_FLAC;
 	return AV_CODEC_ID_NONE;
+}
+
+static uint16_t calcFrameWeight(double position) {
+	int mode = sar_render_blend_mode.GetInt();
+	if (mode == 0) {
+		// Linear
+		return 1;
+	} else if (mode == 1) {
+		// Gaussian
+
+		const double mean = 0.0;
+		const double stdDev = 1.0;
+
+		const double variance = stdDev*stdDev;
+
+		// I'm pretty sure srcdemo2's formula here is wrong. This is a
+		// *correct* Gaussian weighting!
+
+		double x = position * 2.0 - 1.0; // rescale to [-1,1]
+		double w = 1.0/(stdDev * sqrt(M_PI)) * exp(-(((x - mean) * (x - mean)) / (2 * variance)));
+		return (uint16_t)(w * 16000.0); // theoretically 16384 but this protects against dodgy precision stuff
+	}
+
+	return 1;
 }
 
 // }}}
@@ -593,8 +620,9 @@ static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_
 	}
 
 	g_render.nextBlendIdx = 0;
+	g_render.totalBlendWeight = 0;
 	if (g_render.toBlend > 1) {
-		g_render.blendSumBuf = (uint16_t *)calloc(3 * g_render.width * g_render.height, sizeof g_render.blendSumBuf[0]);
+		g_render.blendSumBuf = (uint32_t *)calloc(3 * g_render.width * g_render.height, sizeof g_render.blendSumBuf[0]);
 	}
 
 	g_movieInfo->moviename[0] = 'a';  // Just something nonzero to make the game think there's a movie in progress
@@ -682,9 +710,12 @@ static bool workerHandleVideoFrame() {
 		g_render.imageBufLock.unlock();
 	} else {
 		if (g_render.nextBlendIdx >= g_render.toBlendStart && g_render.nextBlendIdx < g_render.toBlendEnd) {
+			double framePos = (g_render.nextBlendIdx - g_render.toBlendStart) / (g_render.toBlendEnd - g_render.toBlendStart - 1);
+			uint32_t weight = calcFrameWeight(framePos);
 			for (size_t i = 0; i < size; ++i) {
-				g_render.blendSumBuf[i] += g_render.imageBuf[i];
+				g_render.blendSumBuf[i] += weight * (uint32_t)g_render.imageBuf[i];
 			}
+			g_render.totalBlendWeight += weight;
 		}
 		g_render.imageBufLock.unlock();
 
@@ -693,14 +724,13 @@ static bool workerHandleVideoFrame() {
 			return true;
 		}
 
-		int shift = g_render.toBlendEnd - g_render.toBlendStart;
-
 		for (size_t i = 0; i < size; ++i) {
-			g_render.videoStream.tmpFrame->data[0][i] = g_render.blendSumBuf[i] / shift;
+			g_render.videoStream.tmpFrame->data[0][i] = (uint8_t)(g_render.blendSumBuf[i] / g_render.totalBlendWeight);
 			g_render.blendSumBuf[i] = 0;
 		}
 
 		g_render.nextBlendIdx = 0;
+		g_render.totalBlendWeight = 0;
 	}
 
 	// tmpFrame is now our final frame; convert to the output format and
