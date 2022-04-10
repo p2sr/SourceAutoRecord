@@ -120,6 +120,7 @@ public:
 	bool inControllerCommands = false;
 	int numSessionsBeforeStart = 0;
 	bool wasStartNext;
+	int scriptVersion = 0;
 
 	TasPlayer();
 	~TasPlayer();

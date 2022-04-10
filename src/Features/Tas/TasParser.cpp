@@ -184,6 +184,30 @@ static std::vector<Line> tokenize(std::ifstream &file) {
 	return lines;
 }
 
+#define MAX_SCRIPT_VERSION 2
+#define _STR1(x) #x
+#define _STR(x) _STR1(x)
+
+static void parseVersion(const Line &l) {
+	if (l.tokens[0].tok != "version") {
+		throw TasParserException("expected version line");
+	}
+
+	if (l.tokens.size() != 2) {
+		throw TasParserException("invalid version line; expected 2 tokens");
+	}
+
+	if (l.tokens[1].type != TasToken::INTEGER) {
+		throw TasParserException("invalid version line; expected integer version");
+	}
+
+	if (l.tokens[1].i < 1 || l.tokens[1].i > MAX_SCRIPT_VERSION) {
+		throw TasParserException("expected version number between 1 and " _STR(MAX_SCRIPT_VERSION));
+	}
+
+	tasPlayer->scriptVersion = l.tokens[1].i;
+}
+
 static void parseHeader(const Line &l) {
 	if (l.tokens[0].tok != "start") {
 		throw TasParserException("expected start line");
@@ -615,17 +639,23 @@ std::vector<TasFramebulk> TasParser::ParseFile(int slot, std::string filePath) {
 
 	lines = preProcess(filePath.c_str(), lines.data(), lines.size());
 
-	if (lines.size() < 1) {
+	if (lines.size() < 2) {
 		throw TasParserException(Utils::ssprintf("[%s] no lines in TAS script", filePath.c_str()));
 	}
 	
 	try {
-		parseHeader(lines[0]);
+		parseVersion(lines[0]);
 	} catch (TasParserException &e) {
 		throw TasParserException(Utils::ssprintf("[%s:%u] %s", filePath.c_str(), lines[0].num, e.msg.c_str()));
 	}
 
-	std::vector<TasFramebulk> fb = parseFramebulks(slot, filePath.c_str(), lines.data() + 1, lines.size() - 1); // skip start line
+	try {
+		parseHeader(lines[1]);
+	} catch (TasParserException &e) {
+		throw TasParserException(Utils::ssprintf("[%s:%u] %s", filePath.c_str(), lines[1].num, e.msg.c_str()));
+	}
+
+	std::vector<TasFramebulk> fb = parseFramebulks(slot, filePath.c_str(), lines.data() + 2, lines.size() - 2); // skip version and start lines
 
 	if (fb.size() == 0) {
 		throw TasParserException(Utils::ssprintf("[%s] no framebulks in TAS script", filePath.c_str()));
@@ -659,7 +689,7 @@ float TasParser::toFloat(std::string str) {
 }
 
 
-void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, bool wasStartNext, std::vector<TasFramebulk> framebulks) {
+void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, bool wasStartNext, int version, std::vector<TasFramebulk> framebulks) {
 	std::string fixedName = name;
 	size_t lastdot = name.find_last_of(".");
 	if (lastdot != std::string::npos) {
@@ -671,6 +701,8 @@ void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, b
 	std::sort(framebulks.begin(), framebulks.end(), [](const TasFramebulk &a, const TasFramebulk &b) {
 		return a.tick < b.tick;
 	});
+
+	file << "version " << std::to_string(version) << "\n";
 
 	if (wasStartNext) file << "start next ";
 	else file << "start ";

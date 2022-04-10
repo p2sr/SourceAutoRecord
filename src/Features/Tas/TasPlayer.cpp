@@ -401,9 +401,12 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CUserCmd *cmd) {
 	unsigned int groundEntity = *reinterpret_cast<unsigned int *>((uintptr_t)player + Offsets::S_m_hGroundEntity);
 	pi.grounded = groundEntity != 0xFFFFFFFF;
 
-	// predict the grounded state after jump.
-	if (pi.grounded && (cmd->buttons & IN_JUMP) && !(m_nOldButtons & IN_JUMP)) {
-		pi.grounded = false;
+	// this check was originally broken, so bypass it in v1
+	if (tasPlayer->scriptVersion >= 2) {
+		// predict the grounded state after jump.
+		if (pi.grounded && (cmd->buttons & IN_JUMP) && !(m_nOldButtons & IN_JUMP)) {
+			pi.grounded = false;
+		}
 	}
 
 	pi.position = *reinterpret_cast<Vector *>((uintptr_t)player + Offsets::S_m_vecAbsOrigin);
@@ -483,13 +486,13 @@ void TasPlayer::SaveProcessedFramebulks() {
 
 	if (processedFramebulks[0].size() > 0 && tasFileName[0].size() > 0) {
 		if (tasFileName[0].find("_raw") == std::string::npos) {
-			TasParser::SaveFramebulksToFile(tasFileName[0], startInfo, wasStartNext, processedFramebulks[0]);
+			TasParser::SaveFramebulksToFile(tasFileName[0], startInfo, wasStartNext, scriptVersion, processedFramebulks[0]);
 		}
 	}
 
 	if (processedFramebulks[1].size() > 0 && tasFileName[1].size() > 0) {
 		if (tasFileName[1].find("_raw") == std::string::npos) {
-			TasParser::SaveFramebulksToFile(tasFileName[1], startInfo, wasStartNext, processedFramebulks[1]);
+			TasParser::SaveFramebulksToFile(tasFileName[1], startInfo, wasStartNext, scriptVersion, processedFramebulks[1]);
 		}
 	}
 }
@@ -564,17 +567,17 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	if (!ready) return;
 	if (slot == this->coopControlSlot) return;
 
+	auto playerInfo = GetPlayerInfo(player, cmd);
+	// player tickbase seems to be an accurate way of getting current time in ProcessMovement
+	// every other way of getting time is incorrect due to alternateticks
+	int tasTick = playerInfo.tick - startTick;
+
 	cmd->forwardmove = 0;
 	cmd->sidemove = 0;
 	cmd->upmove = 0;
 	cmd->buttons = 0;
 
 	auto orig_angles = cmd->viewangles;
-
-	auto playerInfo = GetPlayerInfo(player, cmd);
-	// player tickbase seems to be an accurate way of getting current time in ProcessMovement
-	// every other way of getting time is incorrect due to alternateticks
-	int tasTick = playerInfo.tick - startTick;
 
 	// do not allow inputs after TAS has ended
 	if (tasTick > lastTick) {
