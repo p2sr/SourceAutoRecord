@@ -217,6 +217,8 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 		tasPlayer->PostProcess(slot, thisptr, cmd);
 	}
 
+	inputHud.SetInputInfo(slot, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
+
 	g_playerRunCommandHook.Disable();
 	auto ret = Server::PlayerRunCommand(thisptr, cmd, moveHelper);
 	g_playerRunCommandHook.Enable();
@@ -233,7 +235,6 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	groundFramesCounter->HandleMovementFrame(slot, grounded);
 	strafeQuality.OnMovement(slot, grounded);
 	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
-	inputHud.SetInputInfo(slot, move->m_nButtons, Vector(move->m_flSideMove, move->m_flForwardMove, move->m_flUpMove));
 	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true });
 
 	auto res = Server::ProcessMovement(thisptr, player, move);
