@@ -179,7 +179,8 @@ namespace Offsets {
 	int S_m_StatsThisLevel;
 	int C_m_StatsThisLevel;
 	int m_lifeState;
-	int m_hPortalEnvironment;
+	int C_m_hPortalEnvironment;
+	int S_m_hPortalEnvironment;
 	int PlayerRunCommand;
 	int S_m_nPlayerCond;
 	int C_m_nPlayerCond;
@@ -195,9 +196,12 @@ namespace Offsets {
 	int m_bActivated;
 	int m_bIsPortal2;
 	int m_hActiveWeapon;
-	int m_ptOrigin;
-	int m_vPortalForward;
-	int m_matrixThisToLinked;
+	int C_m_ptOrigin;
+	int S_m_ptOrigin;
+	int C_m_vPortalForward;
+	int S_m_vForward;
+	int C_m_matrixThisToLinked;
+	int S_m_matrixThisToLinked;
 
 	// IEngineVGuiInternal
 	int IsGameUIVisible;

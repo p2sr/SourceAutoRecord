@@ -72,6 +72,8 @@ public:
 
 	Vector GetPosition(int slot);
 	Vector GetForwardVector(int slot);
+
+	bool GetEyePos(int slot, bool serverside, Vector &eyePos, QAngle &eyeAng);
 };
 
 extern Camera *camera;

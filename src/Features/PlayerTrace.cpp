@@ -2,6 +2,7 @@
 
 #include "Command.hpp"
 #include "Event.hpp"
+#include "Features/Camera.hpp"
 #include "Features/OverlayRender.hpp"
 #include "Features/Session.hpp"
 #include "Features/Tas/TasPlayer.hpp"
@@ -72,7 +73,7 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player, int slot, bool use_cl
 	Vector pos;
 	Vector vel;
 	Vector eyepos;
-	QAngle angles = engine->GetAngles(slot); // FIXME: fucked in remote coop
+	QAngle angles;
 
 	unsigned ground_handle;
 	if (use_client_offset) {
@@ -80,11 +81,13 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player, int slot, bool use_cl
 		pos = client->GetAbsOrigin(player);
 		vel = client->GetLocalVelocity(player);
 		eyepos = pos + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
+		camera->GetEyePos(slot, false, eyepos, angles);
 	} else {
 		ground_handle = *(unsigned *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
 		pos = server->GetAbsOrigin(player);
 		vel = server->GetLocalVelocity(player);
 		eyepos = pos + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
+		camera->GetEyePos(slot, true, eyepos, angles);
 	}
 	bool grounded = ground_handle != 0xFFFFFFFF;
 	auto ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);

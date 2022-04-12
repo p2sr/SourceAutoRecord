@@ -273,36 +273,11 @@ void Camera::OverrideView(CViewSetup *m_View) {
 	last_frame = now;
 
 	if (sar_cam_force_eye_pos.GetBool() && sv_cheats.GetBool()) {
-		auto player = client->GetPlayer(GET_SLOT() + 1);
-		if (player) {
-			auto vEye = client->GetAbsOrigin(player) + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
-			auto angles = engine->GetAngles(engine->IsOrange() ? 0 : GET_SLOT());
-
-			CBaseHandle portalHandle = *reinterpret_cast<CBaseHandle *>((uintptr_t)player + Offsets::m_hPortalEnvironment);
-			//TODO: LookupEntity didn't work for me so I'm doing some good ol' hacks to get the entity out of handle. replace that.
-			unsigned int portalID = portalHandle.GetEntryIndex();
-			void *portalEntity = client->GetPlayer(portalID);
-			if (portalEntity != nullptr) {
-				Vector portalPos = *reinterpret_cast<Vector *>((uintptr_t)portalEntity + Offsets::m_ptOrigin);
-				Vector portalForward = *reinterpret_cast<Vector *>((uintptr_t)portalEntity + Offsets::m_vPortalForward);
-
-				Vector vEyeToPortalCenter = portalPos - vEye;
-
-				// eyes are behind a portal, should translate that
-				if (portalForward.Dot(vEyeToPortalCenter) > 0.0f) {
-					VMatrix portalMatrix = *reinterpret_cast<VMatrix *>((uintptr_t)portalEntity + Offsets::m_matrixThisToLinked);
-
-					vEye = portalMatrix.PointTransform(vEye);
-					Vector forward, up;
-					Math::AngleVectors(angles, &forward, nullptr, &up);
-					forward = portalMatrix.VectorTransform(forward);
-					up = portalMatrix.VectorTransform(up);
-					Math::VectorAngles(forward, up, &angles);
-				}
-			}
-
-			m_View->angles = angles;
-			m_View->origin = vEye;
+		Vector eyePos;
+		QAngle eyeAng;
+		if (GetEyePos(GET_SLOT(), false, eyePos, eyeAng)) {
+			m_View->angles = eyeAng;
+			m_View->origin = eyePos;
 		}
 	}
 
@@ -545,6 +520,48 @@ Vector Camera::GetForwardVector(int slot) {
 	return view_vec;
 }
 
+bool Camera::GetEyePos(int slot, bool serverside, Vector &eyePos, QAngle &eyeAng) {
+	auto player = serverside ?
+		server->GetPlayer(slot + 1) :
+		client->GetPlayer(slot + 1);
+
+	if (!player) return false;
+
+	auto eye = serverside ?
+		server->GetAbsOrigin(player) + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset :
+		client->GetAbsOrigin(player) + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
+
+	auto angles = engine->GetAngles(slot); // FIXME: borked
+
+	CBaseHandle portal_handle = *(CBaseHandle *)((uintptr_t)player + (serverside ? Offsets::S_m_hPortalEnvironment : Offsets::C_m_hPortalEnvironment));
+	void *portal_ent = serverside ?
+		entityList->LookupEntity(portal_handle) :
+		client->GetPlayer(portal_handle.GetEntryIndex());
+
+	if (portal_ent) {
+		Vector portal_pos = *(Vector *)((uintptr_t)portal_ent + (serverside ? Offsets::S_m_ptOrigin : Offsets::C_m_ptOrigin));
+		Vector portal_norm = *(Vector *)((uintptr_t)portal_ent + (serverside ? Offsets::S_m_vForward : Offsets::C_m_vPortalForward));
+
+		Vector eye_to_portal_center = portal_pos - eye;
+
+		if (portal_norm.Dot(eye_to_portal_center) > 0.0f) {
+			// eyes behind portal - translate position
+			VMatrix portal_matrix = *(VMatrix *)((uintptr_t)portal_ent + (serverside ? Offsets::S_m_matrixThisToLinked : Offsets::C_m_matrixThisToLinked));
+			eye = portal_matrix.PointTransform(eye);
+			// translate angles
+			Vector forward, up;
+			Math::AngleVectors(angles, &forward, nullptr, &up);
+			forward = portal_matrix.VectorTransform(forward);
+			up = portal_matrix.VectorTransform(up);
+			Math::VectorAngles(forward, up, &angles);
+		}
+	}
+
+	eyePos = eye;
+	eyeAng = angles;
+
+	return true;
+}
 
 
 

@@ -251,6 +251,7 @@ void Portal2::LoadOffsets() {
 	UseSpeedPower = 509;                 // CPortal_Player
 	PlayerRunCommand = 453;              // CPortal_Player
 	StartTouch = 102;
+	S_m_matrixThisToLinked = 1220;       // CPortal_Base2D
 
 	// client.dll
 
@@ -286,8 +287,8 @@ void Portal2::LoadOffsets() {
 	KeyDown = 398;                // CInput::JoyStickApplyMovement
 	KeyUp = 377;                  // CInput::JoyStickApplyMovement
 	OverrideView = 18;            // ClientModeShared
-	m_matrixThisToLinked = 3516;  // CPortal_Base2D
-	m_vPortalForward = 4128;      // CPortal_Base2D
+	C_m_matrixThisToLinked = 3516;  // CPortal_Base2D
+	C_m_vPortalForward = 4128;      // CPortal_Base2D
 
 	// vguimatsurface.dll
 

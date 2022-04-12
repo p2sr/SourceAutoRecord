@@ -607,8 +607,8 @@ bool Client::Init() {
 	offsetFinder->ClientSide("CPortal_Player", "m_StatsThisLevel", &Offsets::C_m_StatsThisLevel);
 	offsetFinder->ClientSide("CPortal_Player", "m_PortalLocal", &Offsets::C_m_PortalLocal);
 	offsetFinder->ClientSide("CPortal_Player", "m_nPlayerCond", &Offsets::C_m_nPlayerCond);
-	offsetFinder->ClientSide("CPortal_Player", "m_hPortalEnvironment", &Offsets::m_hPortalEnvironment);
-	offsetFinder->ClientSide("CPortal_Base2D", "m_ptOrigin", &Offsets::m_ptOrigin);
+	offsetFinder->ClientSide("CPortal_Player", "m_hPortalEnvironment", &Offsets::C_m_hPortalEnvironment);
+	offsetFinder->ClientSide("CPortal_Base2D", "m_ptOrigin", &Offsets::C_m_ptOrigin);
 
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");

@@ -733,6 +733,9 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal2", &Offsets::m_bCanFirePortal2);
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_hPrimaryPortal", &Offsets::m_hPrimaryPortal);
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
+	offsetFinder->ServerSide("CPortal_Player", "m_hPortalEnvironment", &Offsets::S_m_hPortalEnvironment);
+	offsetFinder->ServerSide("CPortal_Base2D", "m_ptOrigin", &Offsets::S_m_ptOrigin);
+	Offsets::S_m_vForward = Offsets::S_m_ptOrigin + 12;
 
 	int m_hViewModel;
 	offsetFinder->ServerSide("CBasePlayer", "m_hViewModel", &m_hViewModel);
