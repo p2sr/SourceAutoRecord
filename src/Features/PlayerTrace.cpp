@@ -71,16 +71,20 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player, int slot, bool use_cl
 
 	Vector pos;
 	Vector vel;
+	Vector eyepos;
+	QAngle angles = engine->GetAngles(slot); // FIXME: fucked in remote coop
 
 	unsigned ground_handle;
 	if (use_client_offset) {
 		ground_handle = *(unsigned *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
 		pos = client->GetAbsOrigin(player);
 		vel = client->GetLocalVelocity(player);
+		eyepos = pos + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
 	} else {
 		ground_handle = *(unsigned *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
 		pos = server->GetAbsOrigin(player);
 		vel = server->GetLocalVelocity(player);
+		eyepos = pos + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
 	}
 	bool grounded = ground_handle != 0xFFFFFFFF;
 	auto ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);
@@ -88,6 +92,8 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player, int slot, bool use_cl
 	HitboxList hitboxes = ConstructHitboxList(pos);
 
 	trace.positions[slot].push_back(pos);
+	trace.angles[slot].push_back(angles);
+	trace.eyepos[slot].push_back(eyepos);
 	trace.velocities[slot].push_back(vel);
 	trace.grounded[slot].push_back(grounded);
 	trace.crouched[slot].push_back(ducked);
@@ -275,6 +281,11 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 			// Clamp tick to the number of positions in the trace
 			if (trace.positions[slot].size() <= localtick)
 				localtick = trace.positions[slot].size()-1;
+
+			Vector eyepos = trace.eyepos[slot][localtick];
+			QAngle angles = trace.angles[slot][localtick];
+			Vector forward;
+			Math::AngleVectors(angles, &forward);
 			
 			Vector player_size = trace.crouched[slot][localtick] ? player_ducked_size : player_standing_size;
 			Vector offset = trace.crouched[slot][localtick] ? Vector{0, 0, 18} : Vector{0, 0, 36};
@@ -297,6 +308,9 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 				RenderCallback::constant({0, 255, 0, 20}),
 				RenderCallback::constant({0, 255, 0, 255})
 			);
+			MeshId eyeLine = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({0, 255, 255}));
+			OverlayRender::addLine(eyeLine, eyepos, eyepos + forward*50.0);
+			OverlayRender::addBoxMesh(eyepos, {-1,-1,-1}, {1,1,1}, angles, RenderCallback::constant({0, 255, 255}), RenderCallback::none);
 
 			if (sar_trace_bbox_ent_draw.GetBool()) {
 				auto &boxes = trace.hitboxes[slot][localtick];
@@ -339,7 +353,7 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 	}
 }
 
-void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick) {
+void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick, bool eye) {
 	if (traces.count(trace_idx) == 0) {
 		console->Print("No trace with ID %d!\n", trace_idx);
 		return;
@@ -363,7 +377,16 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick) {
 
 	if (tick < 0) return;
 
-	g_playerTraceTeleportLocation = traces[trace_idx].positions[slot][tick];
+	engine->SetAngles(slot, traces[trace_idx].angles[slot][tick]); // FIXME: borked in remote coop
+
+	if (eye) {
+		void *player = server->GetPlayer(slot + 1);
+		Vector view_off = player ? server->GetViewOffset(player) : Vector{0,0,72};
+		g_playerTraceTeleportLocation = traces[trace_idx].eyepos[slot][tick] - view_off;
+	} else {
+		g_playerTraceTeleportLocation = traces[trace_idx].positions[slot][tick];
+	}
+
 	g_playerTraceTeleportSlot = slot;
 	g_playerTraceNeedsTeleport = true;
 }
@@ -553,7 +576,7 @@ CON_COMMAND(sar_trace_teleport_at, "sar_trace_teleport_at <tick> [player slot] [
 
 	if (args.ArgC() < 2 || args.ArgC() > 4)
 		return console->Print(sar_trace_teleport_at.ThisPtr()->m_pszHelpString);
-	
+
 	size_t trace_idx = (args.ArgC()==4) ? std::atoi(args[3]) : 1;
 	int slot = (args.ArgC()>=3 && engine->IsCoop()) ? std::atoi(args[2]) : 0;
 	int tick = std::atoi(args[1]);
@@ -561,7 +584,23 @@ CON_COMMAND(sar_trace_teleport_at, "sar_trace_teleport_at <tick> [player slot] [
 	if (slot > 1) slot = 1;
 	if (slot < 0) slot = 0;
 
-	playerTrace->TeleportAt(trace_idx, slot, tick);
+	playerTrace->TeleportAt(trace_idx, slot, tick, false);
+}
+
+CON_COMMAND(sar_trace_teleport_eye, "sar_trace_teleport_eye <tick> [player slot] [trace index] - teleports the player to the eye position at the given trace tick on the given trace ID (defaults to 1) in the given slot (defaults to 0).\n") {
+	if (!sv_cheats.GetBool()) return;
+
+	if (args.ArgC() < 2 || args.ArgC() > 4)
+		return console->Print(sar_trace_teleport_eye.ThisPtr()->m_pszHelpString);
+
+	size_t trace_idx = (args.ArgC()==4) ? std::atoi(args[3]) : 1;
+	int slot = (args.ArgC()>=3 && engine->IsCoop()) ? std::atoi(args[2]) : 0;
+	int tick = std::atoi(args[1]);
+
+	if (slot > 1) slot = 1;
+	if (slot < 0) slot = 0;
+
+	playerTrace->TeleportAt(trace_idx, slot, tick, true);
 }
 
 CON_COMMAND(sar_trace_export, "sar_trace_export <filename> [trace index] - Export trace data into a csv file.\n") {

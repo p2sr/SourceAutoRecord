@@ -26,6 +26,8 @@ struct Trace {
 	int startSessionTick;
 	int startTasTick;
 	std::vector<Vector> positions[2];
+	std::vector<Vector> eyepos[2];
+	std::vector<QAngle> angles[2];
 	std::vector<Vector> velocities[2];
 	std::vector<bool> grounded[2];
 	std::vector<bool> crouched[2];
@@ -54,7 +56,7 @@ public:
 	// Display a bbox at the given tick
 	void DrawBboxAt(int tick) const;
 	// Teleport to given tick on given trace
-	void TeleportAt(size_t trace, int slot, int tick);
+	void TeleportAt(size_t trace, int slot, int tick, bool eye);
 	// Construct a list of the hitboxes of all entities near a point
 	HitboxList ConstructHitboxList(Vector center) const;
 };
