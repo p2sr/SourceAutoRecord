@@ -359,15 +359,19 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick, bool eye) {
 		return;
 	}
 
-	switch (sar_trace_draw_time.GetInt()) {
-	case 2:
-		tick -= traces[trace_idx].startSessionTick;
-		break;
-	case 3:
-		if (traces[trace_idx].startTasTick > 0) tick -= traces[trace_idx].startTasTick;
-		break;
-	default:
-		break;
+	if (tick == -1) {
+		tick = sar_trace_bbox_at.GetInt();
+	} else {
+		switch (sar_trace_draw_time.GetInt()) {
+		case 2:
+			tick -= traces[trace_idx].startSessionTick;
+			break;
+		case 3:
+			if (traces[trace_idx].startTasTick > 0) tick -= traces[trace_idx].startTasTick;
+			break;
+		default:
+			break;
+		}
 	}
 	
 	if (tick < 0) tick = 0;
