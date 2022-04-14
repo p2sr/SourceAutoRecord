@@ -520,7 +520,7 @@ void NetworkManager::SendPlayerData() {
 void NetworkManager::NotifyMapChange() {
 	sf::Packet packet;
 
-	if (ghost_show_advancement.GetInt() >= 3) {
+	if (ghost_show_advancement.GetInt() >= 3 && AcknowledgeGhost(nullptr)) {
 		if (this->splitTicks != (sf::Uint32)-1) {
 			auto ipt = *engine->interval_per_tick;
 			std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
@@ -554,7 +554,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM) {
 
 	std::string time = SpeedrunTimer::Format(totalSecs);
 
-	if (ghost_show_advancement.GetInt() >= 1) toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished on %s in %s", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str()));
+	if (ghost_show_advancement.GetInt() >= 1 && AcknowledgeGhost(nullptr)) toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished on %s in %s", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str()));
 
 	addToNetDump("send-speedrun-finish", time.c_str());
 
@@ -993,7 +993,8 @@ bool NetworkManager::IsSyncing() {
 }
 
 bool NetworkManager::AcknowledgeGhost(std::shared_ptr<GhostEntity> ghost) {
-	if (!ghost->spectator) return true;
+	bool spec = ghost ? ghost->spectator : this->spectator;
+	if (!spec) return true;
 	return this->spectator && ghost_spec_see_spectators.GetBool();
 }
 
