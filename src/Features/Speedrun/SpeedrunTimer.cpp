@@ -15,6 +15,7 @@
 #include "Event.hpp"
 #include "Scheduler.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
+#include "Features/Demo/GhostLeaderboard.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/Session.hpp"
@@ -430,6 +431,8 @@ void SpeedrunTimer::Start() {
 
 	sendCoopPacket(PacketType::START);
 	toastHud.AddToast(SPEEDRUN_TOAST_TAG, "Speedrun started!");
+
+	ghostLeaderboard.SpeedrunStart(g_speedrun.saved);
 }
 
 void SpeedrunTimer::Pause() {

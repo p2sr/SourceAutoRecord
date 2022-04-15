@@ -1,6 +1,7 @@
 #include "NetworkGhostPlayer.hpp"
 
 #include "DemoGhostPlayer.hpp"
+#include "GhostLeaderboard.hpp"
 #include "Event.hpp"
 #include "Scheduler.hpp"
 #include "Features/Hud/Toasts.hpp"
@@ -49,6 +50,7 @@ public:
 				engine->shouldPauseForSync = false;
 			} else {
 				engine->ExecuteCommand("unpause");
+				ghostLeaderboard.SyncReady();
 			}
 		} else {
 			this->countdownEnd = NOW_STEADY() + std::chrono::milliseconds((int)(ghost_sync_countdown.GetFloat() * 1000));
@@ -68,6 +70,7 @@ public:
 			this->countdownEnd = {};
 			this->active = false;
 			engine->ExecuteCommand("unpause");
+			ghostLeaderboard.SyncReady();
 		}
 
 		if (!this->active) return;
@@ -362,6 +365,8 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port, bool spe
 		//Get our ID
 		confirm_connection >> this->ID;
 
+		if (!this->spectator) ghostLeaderboard.AddNew(this->ID, this->name);
+
 		//Add every player connected to the ghostPool
 		int nb_players = 0;
 		int nb_spectators = 0;
@@ -384,6 +389,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port, bool spe
 			this->ghostPoolLock.lock();
 			this->ghostPool.push_back(ghost);
 			this->ghostPoolLock.unlock();
+			if (!spectator) ghostLeaderboard.AddNew(ghost->ID, ghost->name);
 			if (spectator) ++nb_spectators;
 			else ++nb_players;
 		}
@@ -534,6 +540,7 @@ void NetworkManager::NotifyMapChange() {
 	}
 
 	addToNetDump("send-map-change", engine->GetCurrentMapName().c_str());
+	ghostLeaderboard.GhostLoad(this->ID, this->splitTicksTotal, ghost_sync.GetBool());
 
 	packet << HEADER::MAP_CHANGE << this->ID << engine->GetCurrentMapName().c_str() << this->splitTicks << this->splitTicksTotal;
 	this->tcpSocket.send(packet);
@@ -555,6 +562,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM) {
 	std::string time = SpeedrunTimer::Format(totalSecs);
 
 	if (ghost_show_advancement.GetInt() >= 1 && AcknowledgeGhost(nullptr)) toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished on %s in %s", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str()));
+	ghostLeaderboard.GhostFinished(this->ID, (int)(totalSecs/ipt));
 
 	addToNetDump("send-speedrun-finish", time.c_str());
 
@@ -636,6 +644,8 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 				}
 			}
 
+			if (!spectator) ghostLeaderboard.AddNew(ghost->ID, ghost->name);
+
 			this->UpdateGhostsSameMap();
 			if (this->AcknowledgeGhost(ghost)) {
 				if (ghost->sameMap && engine->isRunning()) {
@@ -687,6 +697,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 			std::string map;
 			sf::Uint32 ticksIL, ticksTotal;
 			packet >> map >> ticksIL >> ticksTotal;
+			auto old_map = ghost->currentMap;
 			ghost->currentMap = map;
 			addToNetDump("recv-map-change", Utils::ssprintf("%d;%s", ID, map.c_str()).c_str());
 
@@ -707,6 +718,8 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 						toastHud.AddToast(GHOST_TOAST_TAG, msg);
 					}
 				}
+
+				if (old_map != map) ghostLeaderboard.GhostLoad(ID, ticksTotal, ghost_sync.GetBool());
 
 				if (ghost->sameMap && this->AcknowledgeGhost(ghost)) {
 					ghost->Spawn();
@@ -797,11 +810,15 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		auto ghost = this->GetGhostByID(ID);
 		addToNetDump("recv-speedrun-finish", Utils::ssprintf("%d;%s", ID, timer.c_str()).c_str());
 		if (ghost) {
-			if (ghost_show_advancement.GetInt() >= 2 || (ghost->sameMap && ghost_show_advancement.GetInt() >= 1)) {
-				Scheduler::OnMainThread([=]() {
+			Scheduler::OnMainThread([=]() {
+				if (ghost_show_advancement.GetInt() >= 2 || (ghost->sameMap && ghost_show_advancement.GetInt() >= 1)) {
 					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished on %s in %s", ghost->name.c_str(), ghost->currentMap.c_str(), timer.c_str()));
-				});
-			}
+				}
+				// whose fucking idea was it to send a string?!
+				float totalSecs = SpeedrunTimer::UnFormat(timer);
+				auto ipt = *engine->interval_per_tick;
+				ghostLeaderboard.GhostFinished(ID, (int)(totalSecs/ipt));
+			});
 		}
 		break;
 	}

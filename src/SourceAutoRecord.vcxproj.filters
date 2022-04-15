@@ -436,6 +436,9 @@
     <ClCompile Include="Features\Demo\GhostRenderer.cpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Demo\GhostLeaderboard.cpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1096,6 +1099,9 @@
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\GhostRenderer.hpp">
+      <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Demo\GhostLeaderboard.hpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClInclude>
   </ItemGroup>
