@@ -402,6 +402,7 @@ public:
 #define FL_FROZEN (1 << 5)
 #define FL_ATCONTROLS (1 << 6)
 #define FL_GODMODE (1 << 14)
+#define FL_NOTARGET (1 << 15)
 
 #define WL_Feet 1
 #define WL_Waist 2

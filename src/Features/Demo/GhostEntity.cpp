@@ -468,6 +468,7 @@ void GhostEntity::StopFollowing() {
 	void *player = server->GetPlayer(1);
 	if (player) {
 		*(int *)((uintptr_t)player + Offsets::m_fFlags) &= ~FL_GODMODE;
+		*(int *)((uintptr_t)player + Offsets::m_fFlags) &= ~FL_NOTARGET;
 		*(float *)((uintptr_t)player + Offsets::m_flGravity) = 1.0f;
 	}
 }
@@ -700,5 +701,6 @@ ON_EVENT(PRE_TICK) {
 
 	// Make sure we have godmode so we can't die while spectating someone
 	*(int *)((uintptr_t)player + Offsets::m_fFlags) |= FL_GODMODE;
+	*(int *)((uintptr_t)player + Offsets::m_fFlags) |= FL_NOTARGET;
 	*(float *)((uintptr_t)player + Offsets::m_flGravity) = FLT_MIN;
 }
