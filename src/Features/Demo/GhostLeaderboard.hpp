@@ -12,6 +12,7 @@ struct LeaderboardEntry {
 	int rank; // 1-indexed
 	int position; // 0-indexed
 	float display_position; // 0-indexed
+	float anim_speed;
 	bool finished; // only used in race (not cm)
 	bool waiting;
 };
@@ -31,7 +32,7 @@ public:
 	void UpdateDisplayPositions();
 	void UpdateLeaderboard();
 	void PurgeOld();
-	void AddNew(uint32_t id, std::string &name);
+	void AddNew(uint32_t id, const std::string &name);
 	LeaderboardEntry *GetEntryForGhost(uint32_t id);
 	void GhostLoad(uint32_t id, int ticks, bool sync);
 	void GhostFinished(uint32_t id, int ticks);

@@ -8,7 +8,8 @@
 
 #define LB_PADDING 10
 #define LB_COL_SPACING 10
-#define ANIM_SPEED 4.0  // positions per second
+#define ANIM_SPEED 4.0    // positions per second
+#define MAX_ANIM_TIME 1.0 // seconds
 
 Variable ghost_leaderboard_font("ghost_leaderboard_font", "68", 0, "The font to use for the ghost leaderboard.\n");
 Variable ghost_leaderboard_max_display("ghost_leaderboard_max_display", "10", 0, "The maximum number of names to display on the leaderboard.\n");
@@ -101,12 +102,13 @@ void GhostLeaderboardHud::UpdateDisplayPositions() {
 	long ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->lastDisplayUpdate).count();
 	this->lastDisplayUpdate = now;
 
-	float maxDelta = (float)ms / 1000.0 * ANIM_SPEED;
-	if (maxDelta < 0.001) maxDelta = 0.001; // 1k fps sorta moment
-
 	for (auto &ent : this->entries) {
 		float tgt = ent.position;
 		float cur = ent.display_position;
+
+		float maxDelta = (float)ms / 1000.0 * ent.anim_speed;
+		if (maxDelta < 0.001) maxDelta = 0.001; // 1k fps sorta moment
+
 		if (fabsf(tgt - cur) < maxDelta) {
 			ent.display_position = ent.position;
 		} else if (tgt < cur) {
@@ -140,8 +142,20 @@ void GhostLeaderboardHud::UpdateLeaderboard() {
 			set_rank = this_rank;
 			last_time = ent->ticks;
 		}
+		int old_target = ent->position;
 		ent->position = this_rank - 1;
 		ent->rank = set_rank;
+
+		if (old_target != ent->position) {
+			// target moved - recalculate lerp speed
+			float delta = fabsf((float)ent->position - ent->display_position);
+			if (delta / ANIM_SPEED > MAX_ANIM_TIME) {
+				// rescale speed to make it get to target in max time
+				ent->anim_speed = delta / MAX_ANIM_TIME;
+			} else {
+				ent->anim_speed = ANIM_SPEED;
+			}
+		}
 	}
 }
 
@@ -157,7 +171,7 @@ void GhostLeaderboardHud::PurgeOld() {
 	}
 }
 
-void GhostLeaderboardHud::AddNew(uint32_t id, std::string &name) {
+void GhostLeaderboardHud::AddNew(uint32_t id, const std::string &name) {
 	// check we don't already have one with this id
 	for (auto &ent : this->entries) {
 		if (ent.ghost_id == id) {
@@ -175,6 +189,7 @@ void GhostLeaderboardHud::AddNew(uint32_t id, std::string &name) {
 		0,
 		pos,
 		(float)pos,
+		ANIM_SPEED,
 		true,
 		false,
 	});
