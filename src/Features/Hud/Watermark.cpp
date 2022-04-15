@@ -28,7 +28,6 @@ public:
 
 		Surface::HFont font = 6;
 
-		int height = surface->GetFontHeight(font);
 		int width = surface->GetFontLength(font, "%s", WATERMARK_MSG);
 
 		surface->DrawTxt(font, (screenWidth - width) / 2, screenHeight - 150, Color{255, 255, 255, 100}, "%s", WATERMARK_MSG);
