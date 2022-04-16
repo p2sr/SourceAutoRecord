@@ -562,7 +562,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM) {
 	std::string time = SpeedrunTimer::Format(totalSecs);
 
 	if (ghost_show_advancement.GetInt() >= 1 && AcknowledgeGhost(nullptr)) toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished on %s in %s", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str()));
-	ghostLeaderboard.GhostFinished(this->ID, (int)(totalSecs/ipt));
+	ghostLeaderboard.GhostFinished(this->ID, (int)roundf(totalSecs/ipt));
 
 	addToNetDump("send-speedrun-finish", time.c_str());
 
@@ -817,7 +817,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 				// whose fucking idea was it to send a string?!
 				float totalSecs = SpeedrunTimer::UnFormat(timer);
 				auto ipt = *engine->interval_per_tick;
-				ghostLeaderboard.GhostFinished(ID, (int)(totalSecs/ipt));
+				ghostLeaderboard.GhostFinished(ID, (int)roundf(totalSecs/ipt));
 			});
 		}
 		break;
