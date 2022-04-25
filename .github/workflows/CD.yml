@@ -2,96 +2,96 @@ name: CD
 
 on:
   push:
-    tags:
-    - '*'
+    tags: '*'
 
 jobs:
   build-lin:
     name: Linux Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y g++-10-multilib
-    - name: Build
-      run: |
-        export RELEASE_BUILD=1
-        make
-    - name: Create Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: sar-linux
-        path: sar.so
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-10-multilib
+      - name: Build
+        env:
+          RELEASE_BUILD: 1
+        run: make -j$(nproc)
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sar-linux
+          path: sar.so
+          if-no-files-found: error
   build-win:
     name: Windows Build
     runs-on: windows-2019
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: 1
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Build
-      env:
-        RELEASE_BUILD: 1
-      run: |
-        cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
-        .\MSBuild.exe $Env:GITHUB_WORKSPACE\SourceAutoRecord.sln /t:SourceAutoRecord /p:Configuration=Release /p:Platform=x86
-    - name: Create Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: sar-windows
-        path: bin/sar.dll
-    - name: Create PDB Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: sar-windows-pdb
-        path: bin/sar.pdb
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+      - name: Build
+        env:
+          RELEASE_BUILD: 1
+        run: msbuild -m -t:SourceAutoRecord -p:"Configuration=Release;Platform=x86" SourceAutoRecord.sln
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sar-windows
+          path: bin\sar.dll
+          if-no-files-found: error
+      - name: Upload PDB Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sar-windows-pdb
+          path: bin\sar.pdb
+          if-no-files-found: error
   release:
     name: Release
-    runs-on: ubuntu-latest
     if: github.repository == 'p2sr/SourceAutoRecord'
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    needs:
-    - build-lin
-    - build-win
+    needs: [build-lin, build-win]
+    runs-on: ubuntu-latest
     steps:
-    - name: Get Release Version
-      id: get_release
-      run: echo ::set-output name=version::${GITHUB_REF:10}
-    - name: Download Linux Build
-      uses: actions/download-artifact@v2
-      with:
-        name: sar-linux
-    - name: Download Windows Build
-      uses: actions/download-artifact@v2
-      with:
-        name: sar-windows
-    - name: Download Windows PDB
-      uses: actions/download-artifact@v2
-      with:
-        name: sar-windows-pdb
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        body: |
-          ![CD](https://github.com/p2sr/SourceAutoRecord/workflows/CD/badge.svg)
+      - name: Get Release Version
+        id: get_release
+        run: echo ::set-output name=version::${GITHUB_REF:10}
+      - name: Download Linux Build
+        uses: actions/download-artifact@v3
+        with:
+          name: sar-linux
+      - name: Download Windows Build
+        uses: actions/download-artifact@v3
+        with:
+          name: sar-windows
+      - name: Download Windows PDB
+        uses: actions/download-artifact@v3
+        with:
+          name: sar-windows-pdb
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: |
+            ![CD](https://github.com/p2sr/SourceAutoRecord/workflows/CD/badge.svg)
 
-          **Installation**
-          - Download:
-            - [Windows](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.outputs.version }}/sar.dll)
-            - [Linux](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.outputs.version }}/sar.so)
-          - Place the binary into the game folder e.g. `Portal 2`
-          - Open developer console and enter `plugin_load sar`
+            **Installation**
+            - Download:
+              - [Windows](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.outputs.version }}/sar.dll)
+              - [Linux](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.outputs.version }}/sar.so)
+            - Place the binary into the game folder e.g. `Portal 2`
+            - Open developer console and enter `plugin_load sar`
 
-          ---
+            ---
 
-          **Changelog**
-          TODO
-        draft: false
-        files: |
-          sar.so
-          sar.dll
-          sar.pdb
-        prerelease: ${{ contains(github.ref, '-pre') }}
+            **Changelog**
+            TODO
+          files: |
+            sar.so
+            sar.dll
+            sar.pdb
+          prerelease: ${{ contains(github.ref, '-pre') }}
+          fail_on_unmatched_files: true
