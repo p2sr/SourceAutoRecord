@@ -2,7 +2,7 @@ ECHO !!! YOU FORGOT TO EDIT copy.bat !!!
 
 SET "binary=sar.dll"
 SET "src=..\bin\%binary%"
-SET "dest=C:\Program Files (x86)\Steam\SteamApps\common"
+SET "dest=%ProgramFiles(x86)%\Steam\SteamApps\common"
 SET "unpack=F:\SOURCE_UNPACK"
 
 REM copy /Y "%src%" "%dest%\Portal 2\%binary%"
