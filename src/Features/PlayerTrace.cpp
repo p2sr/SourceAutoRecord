@@ -42,6 +42,30 @@ Vector g_playerTraceTeleportLocation;
 int g_playerTraceTeleportSlot;
 bool g_playerTraceNeedsTeleport = false;
 
+static int tickInternalToUser(int tick, const Trace &trace) {
+	if (tick == -1) return -1;
+	switch (sar_trace_draw_time.GetInt()) {
+	case 2:
+		return tick + trace.startSessionTick;
+	case 3:
+		if (trace.startTasTick > 0) return tick + trace.startTasTick;
+	default: // FALLTHROUGH
+		return tick;
+	}
+}
+
+static int tickUserToInternal(int tick, const Trace &trace) {
+	if (tick == -1) return -1;
+	switch (sar_trace_draw_time.GetInt()) {
+	case 2:
+		return tick - trace.startSessionTick;
+	case 3:
+		if (trace.startTasTick > 0) return tick - trace.startTasTick;
+	default: // FALLTHROUGH
+		return tick;
+	}
+}
+
 struct TraceHoverInfo {
 	size_t tick;
 	unsigned trace_idx;
@@ -279,7 +303,7 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 		for (const auto &[trace_idx, trace] : traces) {
 			if (trace.positions[slot].size() == 0) continue;
 
-			unsigned localtick = tick;
+			unsigned localtick = tickUserToInternal(tick, trace);
 
 			// Clamp tick to the number of positions in the trace
 			if (trace.positions[slot].size() <= localtick)
@@ -364,19 +388,9 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick, bool eye) {
 
 	if (tick == -1) {
 		tick = sar_trace_bbox_at.GetInt();
-	} else {
-		switch (sar_trace_draw_time.GetInt()) {
-		case 2:
-			tick -= traces[trace_idx].startSessionTick;
-			break;
-		case 3:
-			if (traces[trace_idx].startTasTick > 0) tick -= traces[trace_idx].startTasTick;
-			break;
-		default:
-			break;
-		}
 	}
-	
+
+	tick = tickUserToInternal(tick, traces[trace_idx]);
 	if (tick < 0) tick = 0;
 
 	if ((unsigned)tick >= traces[trace_idx].positions[slot].size())
@@ -528,6 +542,8 @@ ON_EVENT(RENDER) {
 				break;
 			}
 		}
+		auto trace = playerTrace->GetTrace(trace_idx);
+		if (trace) tick = tickInternalToUser(tick, *trace);
 		sar_trace_bbox_at.SetValue(tick);
 	}
 
@@ -549,8 +565,7 @@ ON_EVENT(RENDER) {
 			int tick = h.tick;
 			auto trace = playerTrace->GetTrace(h.trace_idx);
 			if (trace) {
-				if (timeType == 2) tick += trace->startSessionTick;
-				if (timeType == 3 && trace->startTasTick > 0) tick += trace->startTasTick;
+				tick = tickInternalToUser(tick, *trace);
 			}
 			OverlayRender::addText(h.pos + hud_offset, 0, -2*font_height, Utils::ssprintf("tick: %d", tick), font);
 		}
