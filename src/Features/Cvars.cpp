@@ -170,6 +170,7 @@ void Cvars::Lock() {
 		ui_transition_effect.Lock();
 		ui_transition_time.Lock();
 		hide_gun_when_holding.Lock();
+		cl_viewmodelfov.Lock();
 
 		this->locked = true;
 	}
@@ -194,6 +195,7 @@ void Cvars::Unlock() {
 		ui_transition_effect.Unlock(false);
 		ui_transition_time.Unlock(false);
 		hide_gun_when_holding.Unlock(false);
+		cl_viewmodelfov.Unlock(false);
 
 		this->locked = false;
 	}

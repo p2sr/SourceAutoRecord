@@ -45,6 +45,7 @@ Variable ui_loadingscreen_mintransition_time;
 Variable ui_transition_effect;
 Variable ui_transition_time;
 Variable hide_gun_when_holding;
+Variable cl_viewmodelfov;
 
 // P2 only
 CON_COMMAND(sar_togglewait, "sar_togglewait - enables or disables \"wait\" for the command buffer\n") {
@@ -264,6 +265,7 @@ void Cheats::Init() {
 	ui_transition_effect = Variable("ui_transition_effect");
 	ui_transition_time = Variable("ui_transition_time");
 	hide_gun_when_holding = Variable("hide_gun_when_holding");
+	cl_viewmodelfov = Variable("cl_viewmodelfov");
 
 	sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
 
