@@ -363,8 +363,13 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 	}
 }
 
-static void loadApiKey() {
-	if (!std::filesystem::exists(API_KEY_FILE)) return;
+static void loadApiKey(bool output_nonexist) {
+	if (!std::filesystem::exists(API_KEY_FILE)) {
+		if (output_nonexist) {
+			console->Print("API key file " API_KEY_FILE " does not exist!\n");
+		}
+		return;
+	}
 
 	std::string key;
 	{
@@ -398,7 +403,7 @@ static void loadApiKey() {
 }
 
 ON_INIT {
-	loadApiKey();
+	loadApiKey(false);
 }
 
 CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit_reload_api_key - reload the board.portal2.sr API key from its file.\n", FCVAR_DONTRECORD) {
@@ -406,7 +411,7 @@ CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit
 		return console->Print(sar_challenge_autosubmit_reload_api_key.ThisPtr()->m_pszHelpString);
 	}
 
-	loadApiKey();
+	loadApiKey(true);
 }
 
 void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
