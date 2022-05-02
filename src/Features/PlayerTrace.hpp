@@ -59,6 +59,8 @@ public:
 	void TeleportAt(size_t trace, int slot, int tick, bool eye);
 	// Construct a list of the hitboxes of all entities near a point
 	HitboxList ConstructHitboxList(Vector center) const;
+	// Draw info about all traces to a HUD context
+	void DrawTraceHud(HudContext *ctx);
 };
 
 extern PlayerTrace *playerTrace;

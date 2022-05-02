@@ -66,6 +66,29 @@ static int tickUserToInternal(int tick, const Trace &trace) {
 	}
 }
 
+// takes internal tick
+static void drawTraceInfo(int tick, int slot, const Trace &trace, std::function<void (const std::string &)> drawCbk) {
+	if (trace.positions[slot].size() < (unsigned)tick) return;
+
+	int usertick = tickInternalToUser(tick, trace);
+	const int p = 6; // precision
+
+	Vector pos = trace.positions[slot][tick];
+	Vector eyepos = trace.eyepos[slot][tick];
+	QAngle ang = trace.angles[slot][tick];
+	Vector vel = trace.velocities[slot][tick];
+	bool grounded = trace.grounded[slot][tick];
+	float velang = RAD2DEG(atan2(vel.y, vel.x));
+
+	drawCbk(Utils::ssprintf("tick: %d", usertick));
+	drawCbk(Utils::ssprintf("pos: %.*f %.*f %.*f", p, pos.x, p, pos.y, p, pos.z));
+	drawCbk(Utils::ssprintf("eyepos: %.*f %.*f %.*f", p, eyepos.x, p, eyepos.y, p, eyepos.z));
+	drawCbk(Utils::ssprintf("ang: %.*f %.*f %.*f", p, ang.x, p, ang.y, p, ang.z));
+	drawCbk(Utils::ssprintf("vel: %.*f %.*f (%.*f) %.*f", p, vel.x, p, vel.y, p, vel.Length2D(), p, vel.z));
+	drawCbk(Utils::ssprintf("velang: %.*f", p, velang));
+	drawCbk(Utils::ssprintf("grounded: %s", grounded ? "yes" : "no"));
+}
+
 struct TraceHoverInfo {
 	size_t tick;
 	unsigned trace_idx;
@@ -521,11 +544,43 @@ ON_EVENT(SESSION_START) {
 		playerTrace->ClearAll();
 }
 
-HUD_ELEMENT2_NO_DISABLE(trace_draw_speed, HudType_InGame) {
-	if (!sar_trace_draw.GetBool()) return;
-	if (!sar_trace_draw_speed_deltas.GetBool()) return;
+void PlayerTrace::DrawTraceHud(HudContext *ctx) {
+	for (const auto &[trace_idx, trace] : playerTrace->traces) {
+		int tick = tickUserToInternal(sar_trace_bbox_at.GetInt(), trace);
+		for (int slot = 0; slot < 2; slot++) {
+			drawTraceInfo(tick, slot, trace, [=](const std::string &line) {
+				ctx->DrawElement("trace %d%s: %s", trace_idx, slot == 1 ? " (orange)" : "", line.c_str());
+			});
+		}
+	}
+}
+
+HUD_ELEMENT2(trace, "0", "Draws info about current trace bbox tick.\n", HudType_InGame | HudType_Paused) {
+	if (!sv_cheats.GetBool()) return;
+	playerTrace->DrawTraceHud(ctx);
+}
+
+CON_COMMAND(sar_trace_dump, "sar_trace_dump <tick> [player slot] [trace index] - dump the player state from the given trace tick on the given trace ID (defaults to 1) in the given slot (defaults to 0).\n") {
 	if (!sv_cheats.GetBool()) return;
 
+	if (args.ArgC() < 2 || args.ArgC() > 4)
+		return console->Print(sar_trace_dump.ThisPtr()->m_pszHelpString);
+
+	size_t trace_idx = (args.ArgC()==4) ? std::atoi(args[3]) : 1;
+	int slot = (args.ArgC()>=3 && engine->IsCoop()) ? std::atoi(args[2]) : 0;
+	int usertick = std::atoi(args[1]);
+	if (usertick == -1) usertick = sar_trace_bbox_at.GetInt();
+
+	if (slot > 1) slot = 1;
+	if (slot < 0) slot = 0;
+
+	auto trace = playerTrace->GetTrace(trace_idx);
+	if (trace) {
+		int tick = tickUserToInternal(usertick, *trace);
+		drawTraceInfo(tick, slot, *trace, [](const std::string &line) {
+			console->Print("%s\n", line.c_str());
+		});
+	}
 }
 
 ON_EVENT(RENDER) {
