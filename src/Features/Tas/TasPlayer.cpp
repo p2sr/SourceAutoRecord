@@ -63,6 +63,8 @@ void SetPlaybackVars(bool active) {
 	static Variable cl_interpolate("cl_interpolate");
 	static Variable mat_motion_blur_enabled("mat_motion_blur_enabled");
 
+	bool tools = tasPlayer->IsUsingTools(0) || tasPlayer->IsUsingTools(1);
+
 	if (active && !was_active) {
 		old_forceuser = in_forceuser.GetInt();
 		old_hostframerate = host_framerate.GetInt();
@@ -70,7 +72,7 @@ void SetPlaybackVars(bool active) {
 		old_motionblur = mat_motion_blur_enabled.GetBool();
 		in_forceuser.SetValue(tasPlayer->coopControlSlot >= 0 ? tasPlayer->coopControlSlot : 100);
 		host_framerate.SetValue(60);
-		if (!sar_tas_interpolate.GetBool()) {
+		if (!sar_tas_interpolate.GetBool() && tools) {
 			cl_interpolate.SetValue(false);
 			mat_motion_blur_enabled.SetValue(false);
 		}
@@ -116,7 +118,8 @@ void SetPlaybackVars(bool active) {
 }
 
 ON_EVENT(FRAME) {
-	if (tasPlayer->IsRunning() && !sar_tas_interpolate.GetBool()) {
+	bool tools = tasPlayer->IsUsingTools(0) || tasPlayer->IsUsingTools(1);
+	if (tasPlayer->IsRunning() && !sar_tas_interpolate.GetBool() && tools) {
 		for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
 			// check for prop_portal on the server cuz i can't figure out how
 			// to do it client-side lol
