@@ -411,6 +411,7 @@ DETOUR(Client::OverrideView, CViewSetup *m_View) {
 	camera->OverrideView(m_View);
 	Stitcher::OverrideView(m_View);
 	GhostEntity::FollowPov(m_View);
+	engine->demoplayer->OverrideView(m_View);
 	
 	return Client::OverrideView(thisptr, m_View);
 }
@@ -609,6 +610,7 @@ bool Client::Init() {
 	offsetFinder->ClientSide("CPortal_Player", "m_nPlayerCond", &Offsets::C_m_nPlayerCond);
 	offsetFinder->ClientSide("CPortal_Player", "m_hPortalEnvironment", &Offsets::C_m_hPortalEnvironment);
 	offsetFinder->ClientSide("CPortal_Base2D", "m_ptOrigin", &Offsets::C_m_ptOrigin);
+	offsetFinder->ClientSide("CPortal_Base2D", "m_hLinkedPortal", &Offsets::C_m_hLinkedPortal);
 
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");

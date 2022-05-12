@@ -9,6 +9,7 @@
 #include "Features/Demo/Demo.hpp"
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Renderer.hpp"
+#include "Hook.hpp"
 #include "Interface.hpp"
 #include "Offsets.hpp"
 #include "SAR.hpp"
@@ -267,6 +268,142 @@ DETOUR(EngineDemoPlayer::StopPlayback) {
 	return EngineDemoPlayer::StopPlayback(thisptr);
 }
 
+Variable sar_demo_portal_interp_fix("sar_demo_portal_interp_fix", "0", "Fix eye interpolation through portals in demo playback.\n");
+
+static inline void matrixAngleTransform(VMatrix mat, QAngle *ang) {
+	Vector forward, up;
+	Math::AngleVectors(*ang, &forward, nullptr, &up);
+	forward = mat.VectorTransform(forward);
+	up = mat.VectorTransform(up);
+	Math::VectorAngles(forward, up, ang);
+}
+
+static struct {
+	bool in_portal;
+	Vector pos;
+	Vector norm;
+	VMatrix mat;
+} g_portal_interp_state[2];
+
+void EngineDemoPlayer::OverrideView(CViewSetup *view) {
+	if (!this->IsPlaying()) return;
+	if (!sar_demo_portal_interp_fix.GetBool()) return;
+
+	int slot = GET_SLOT();
+
+	if (!g_portal_interp_state[slot].in_portal) return;
+
+	Vector portal_to_cam = view->origin - g_portal_interp_state[slot].pos;
+	if (g_portal_interp_state[slot].norm.Dot(portal_to_cam) < 0.0f) {
+		// behind portal - translate view
+		VMatrix mat = g_portal_interp_state[slot].mat;
+		view->origin = mat.PointTransform(view->origin);
+		matrixAngleTransform(mat, &view->angles);
+	}
+
+	// invalidate state (until recalculated by the hook below) to avoid
+	// this being accidentally set persistently somehow
+	g_portal_interp_state[slot].in_portal = false;
+}
+
+static void (__rescall *InterpolateDemoCommand)(void *thisptr, int slot, int target_tick, DemoCommandQueue &prev, DemoCommandQueue &next);
+
+#ifdef _WIN32
+void __fastcall InterpolateDemoCommand_Detour(void *thisptr, void *unused, int slot, int target_tick, DemoCommandQueue &prev, DemoCommandQueue &next);
+#else
+void InterpolateDemoCommand_Detour(void *thisptr, int slot, int target_tick, DemoCommandQueue &prev, DemoCommandQueue &next);
+#endif
+
+static Hook InterpolateDemoCommand_Hook(&InterpolateDemoCommand_Detour);
+
+#ifdef _WIN32
+void __fastcall InterpolateDemoCommand_Detour(void *thisptr, void *unused, int slot, int target_tick, DemoCommandQueue &prev, DemoCommandQueue &next)
+#else
+void InterpolateDemoCommand_Detour(void *thisptr, int slot, int target_tick, DemoCommandQueue &prev, DemoCommandQueue &next)
+#endif
+{
+	InterpolateDemoCommand_Hook.Disable();
+	InterpolateDemoCommand(thisptr, slot, target_tick, prev, next);
+	InterpolateDemoCommand_Hook.Enable();
+
+	if (sar_demo_portal_interp_fix.GetBool()) {
+		g_portal_interp_state[slot].in_portal = false; // we'll set this later
+
+		// are we currently in a portal bubble?
+		void *player = client->GetPlayer(slot + 1);
+		if (!player) return;
+		CBaseHandle portal_handle = *(CBaseHandle *)((uintptr_t)player + Offsets::C_m_hPortalEnvironment);
+		void *portal_ent = client->GetPlayer(portal_handle.GetEntryIndex());
+		if (!portal_ent) return;
+
+		// we'll also need the linked portal later
+		CBaseHandle linked_handle = *(CBaseHandle *)((uintptr_t)portal_ent + Offsets::C_m_hLinkedPortal);
+		void *linked = client->GetPlayer(linked_handle.GetEntryIndex());
+		if (!linked) return;
+
+		// we are! so, does the next command seem to move our view very far
+		// away? if it does, this probably indicates a portal passthrough.
+		Vector prev_cam = prev.info.u[slot].viewOrigin;
+		Vector next_cam = next.info.u[slot].viewOrigin;
+		float dist_sq = (next_cam - prev_cam).SquaredLength();
+		if (dist_sq < 10000) return;
+
+		// okay yeah, we're moving over 100 units this tick, that's pretty
+		// suspicious. let's try and figure out what's going on.
+
+		// allowing for a bit of desync between portal env and camera
+		// position, there are 2 possibilities: we might be in the source or
+		// the destination environment. find which portal we're closest to
+		// in 'prev', and treat that one as the entry portal.
+		{
+			Vector main_pos = *(Vector *)((uintptr_t)portal_ent + Offsets::C_m_ptOrigin);
+			Vector linked_pos = *(Vector *)((uintptr_t)linked + Offsets::C_m_ptOrigin);
+			float main_dist = (main_pos - prev_cam).SquaredLength();
+			float linked_dist = (linked_pos - prev_cam).SquaredLength();
+			if (linked_dist < main_dist) {
+				// we're closer to the linked portal - swap them
+				void *tmp = linked;
+				linked = portal_ent;
+				portal_ent = tmp;
+			}
+		}
+
+		void *entry = portal_ent;
+		void *exit = linked;
+
+		// get a bunch of info we need
+		Vector entry_pos = *(Vector *)((uintptr_t)entry + Offsets::C_m_ptOrigin);
+		Vector exit_pos = *(Vector *)((uintptr_t)exit + Offsets::C_m_ptOrigin);
+		Vector entry_norm = *(Vector *)((uintptr_t)entry + Offsets::C_m_vPortalForward);
+		Vector exit_norm = *(Vector *)((uintptr_t)exit + Offsets::C_m_vPortalForward);
+		VMatrix forward_matrix = *(VMatrix *)((uintptr_t)entry + Offsets::C_m_matrixThisToLinked);
+		VMatrix backward_matrix = *(VMatrix *)((uintptr_t)exit + Offsets::C_m_matrixThisToLinked);
+
+		// we're pretty sure we're transitioning from entry to exit. as a
+		// sanity check, ensure that we start in front of entry and finish
+		// in front of exit.
+		if (entry_norm.Dot(prev_cam - entry_pos) < 0.0f) return; // starting behind entry portal
+		if (exit_norm.Dot(next_cam - exit_pos) < 0.0f) return; // finishing behind exit portal
+
+		// okay yeah, we're good. now, adjust the next position and angles
+		// to act as if we didn't actually pass through the portal (so we
+		// finish behind the entry portal)
+		next.info.u[slot].viewOrigin = backward_matrix.PointTransform(next.info.u[slot].viewOrigin);
+		next.info.u[slot].viewOrigin2 = backward_matrix.PointTransform(next.info.u[slot].viewOrigin2);
+		matrixAngleTransform(backward_matrix, &next.info.u[slot].viewAngles);
+		matrixAngleTransform(backward_matrix, &next.info.u[slot].viewAngles2);
+		matrixAngleTransform(backward_matrix, &next.info.u[slot].localViewAngles);
+		matrixAngleTransform(backward_matrix, &next.info.u[slot].localViewAngles2);
+
+		// lastly, set our state so that we can correctly translate the
+		// camera through the portal plane.
+		g_portal_interp_state[slot].in_portal = true;
+		g_portal_interp_state[slot].pos = entry_pos;
+		g_portal_interp_state[slot].norm = entry_norm;
+		g_portal_interp_state[slot].mat = forward_matrix;
+	}
+}
+
 bool EngineDemoPlayer::Init() {
 	auto disconnect = engine->cl->Original(Offsets::Disconnect);
 	void *demoplayer;
@@ -287,6 +424,18 @@ bool EngineDemoPlayer::Init() {
 		this->SkipToTick = s_ClientDemoPlayer->Original<_SkipToTick>(Offsets::SkipToTick);
 		this->DemoName = reinterpret_cast<char *>((uintptr_t)demoplayer + Offsets::m_szFileName);
 	}
+
+#ifdef _WIN32
+	InterpolateDemoCommand = (decltype(InterpolateDemoCommand))Memory::Scan(this->Name(), "55 8B EC 83 EC 10 56 8B F1 8B 4D 10 57 8B BE B4 05 00 00 83 C1 04 89 75 F4 89 7D F0 E8 ? ? ? ? 8B 4D 14 83 C1 04");
+#else
+	if (sar.game->Is(SourceGame_EIPRelPIC)) {
+		InterpolateDemoCommand = (decltype(InterpolateDemoCommand))Memory::Scan(this->Name(), "55 57 56 53 83 EC 10 8B 44 24 24 8B 5C 24 2C 8B 88 B0 05 00 00 8B 44 24 30 8D 70 04 8D 90 9C 00 00 00 89 F0");
+	} else {
+		InterpolateDemoCommand = (decltype(InterpolateDemoCommand))Memory::Scan(this->Name(), "55 31 C9 89 E5 57 56 53 83 EC 3C 89 4D F0 8B 45 08 8B 4D 14 8B 80 B0 05 00 00 89 45 B8 8B 45 14 83 C0 04 89 45 D0");
+	}
+#endif
+
+	InterpolateDemoCommand_Hook.SetFunc(InterpolateDemoCommand);
 
 	Command::Hook("stopdemo", EngineDemoPlayer::stopdemo_callback_hook, EngineDemoPlayer::stopdemo_callback);
 

@@ -1625,3 +1625,25 @@ public:
 	virtual const matrix3x4_t *GetRootParentToWorldTransform() const = 0;
 	virtual IPhysicsObject *GetVPhysicsObject() const = 0;
 };
+
+struct democmdinfo_t {
+	struct Split_t {
+		int flags;
+
+		Vector viewOrigin;
+		QAngle viewAngles;
+		QAngle localViewAngles;
+
+		Vector viewOrigin2;
+		QAngle viewAngles2;
+		QAngle localViewAngles2;
+	};
+
+	Split_t u[2];
+};
+
+struct DemoCommandQueue {
+	int tick;
+	democmdinfo_t info;
+	int filepos;
+};
