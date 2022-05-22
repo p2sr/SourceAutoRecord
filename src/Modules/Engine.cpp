@@ -626,6 +626,104 @@ void _Host_RunFrame_Render_Detour() {
 	}
 }
 
+static std::map<void *, float> g_bink_last_frames;
+static bool g_bink_override_active = false;
+
+ON_EVENT(SESSION_END) {
+	// we have no better way of detecting this - just hope all videos die
+	// on session end, else i guess we'll be skipping a frame
+	g_bink_last_frames.clear();
+}
+
+ON_EVENT(FRAME) {
+	// only do the bink overrides if host_timescale, host_framerate, or
+	// frame advance is active - it's a very hacky patch, i don't trust it
+	bool host_ts = sv_cheats.GetBool() && Variable("host_timescale").GetFloat() > 0.0f && Variable("host_timescale").GetFloat() != 1.0f;
+	bool host_fr = (sv_cheats.GetBool() || engine->demoplayer->IsPlaying()) && Variable("host_framerate").GetFloat() != 0.0f;
+	if (engine->IsAdvancing() || host_ts || host_fr) {
+		g_bink_override_active = true;
+	} else {
+		g_bink_override_active = false;
+		g_bink_last_frames.clear();
+	}
+}
+
+static int framesToRun(void *bink) {
+	// BINK datastructure in bink.h from SE2007 leak
+	//uint32_t nframes = ((uint32_t *)bink)[2];
+	//uint32_t last_frame = ((uint32_t *)bink)[4];
+	double framerate = (double)((uint32_t *)bink)[5] / (double)((uint32_t *)bink)[6];
+
+	double now = engine->GetHostTime();
+	double last;
+
+	auto it = g_bink_last_frames.find(bink);
+	if (it == g_bink_last_frames.end()) {
+		g_bink_last_frames[bink] = now;
+		last = now;
+	} else {
+		last = it->second;
+	}
+
+	double to_run = (now - last) * framerate;
+	//int possible = nframes - last_frame - 1;
+
+	//if (to_run > possible) return possible;
+	return (int)to_run;
+}
+
+static void advFrame(void *bink) {
+	// BINK datastructure in bink.h from SE2007 leak
+	//uint32_t nframes = ((uint32_t *)bink)[2];
+	//uint32_t last_frame = ((uint32_t *)bink)[4];
+	double framerate = (double)((uint32_t *)bink)[5] / (double)((uint32_t *)bink)[6];
+
+	auto it = g_bink_last_frames.find(bink);
+	if (it == g_bink_last_frames.end()) {
+		g_bink_last_frames[bink] = engine->GetHostTime();
+	} else {
+		g_bink_last_frames[bink] += 1.0f / framerate;
+	}
+}
+
+void (*BinkNextFrame)(void *bink);
+void BinkNextFrame_Detour(void *bink);
+static Hook BinkNextFrame_Hook(&BinkNextFrame_Detour);
+void BinkNextFrame_Detour(void *bink) {
+	BinkNextFrame_Hook.Disable();
+	BinkNextFrame(bink);
+	BinkNextFrame_Hook.Enable();
+	if (g_bink_override_active) advFrame(bink);
+}
+
+bool (*BinkShouldSkip)(void *bink);
+bool BinkShouldSkip_Detour(void *bink);
+static Hook BinkShouldSkip_Hook(&BinkShouldSkip_Detour);
+bool BinkShouldSkip_Detour(void *bink) {
+	if (g_bink_override_active) {
+		return framesToRun(bink) > 1;
+	} else {
+		BinkShouldSkip_Hook.Disable();
+		bool ret = BinkShouldSkip(bink);
+		BinkShouldSkip_Hook.Enable();
+		return ret;
+	}
+}
+
+bool (*BinkWait)(void *bink);
+bool BinkWait_Detour(void *bink);
+static Hook BinkWait_Hook(&BinkWait_Detour);
+bool BinkWait_Detour(void *bink) {
+	if (g_bink_override_active) {
+		return framesToRun(bink) == 0;
+	} else {
+		BinkWait_Hook.Disable();
+		bool ret = BinkWait(bink);
+		BinkWait_Hook.Enable();
+		return ret;
+	}
+}
+
 Color Engine::GetLightAtPoint(Vector point) {
 #ifdef _WIN32
 	// MSVC bug workaround - COM interfaces apparently don't quite follow
@@ -933,6 +1031,17 @@ bool Engine::Init() {
 	if (this->g_physCollision = Interface::Create(MODULE("vphysics"), "VPhysicsCollision007")) {
 		this->g_physCollision->Hook(Engine::CreateDebugMesh_Hook, Engine::CreateDebugMesh, Offsets::CreateDebugMesh);
 		this->g_physCollision->Hook(Engine::DestroyDebugMesh_Hook, Engine::DestroyDebugMesh, Offsets::DestroyDebugMesh);
+	}
+
+	auto eng_mod = Memory::GetModuleHandleByName(MODULE("valve_avi"));
+	if (eng_mod) {
+		BinkNextFrame = Memory::GetSymbolAddress<void (*)(void *bink)>(eng_mod, "BinkNextFrame");
+		BinkNextFrame_Hook.SetFunc(BinkNextFrame);
+		BinkShouldSkip = Memory::GetSymbolAddress<bool (*)(void *bink)>(eng_mod, "BinkShouldSkip");
+		BinkShouldSkip_Hook.SetFunc(BinkShouldSkip);
+		BinkWait = Memory::GetSymbolAddress<bool (*)(void *bink)>(eng_mod, "BinkWait");
+		BinkWait_Hook.SetFunc(BinkWait);
+		Memory::CloseModuleHandle(eng_mod);
 	}
 
 	return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace;
