@@ -343,7 +343,7 @@ DETOUR(Engine::Frame) {
 	if (engine->demoplayer->demoQueueSize > 0 && !engine->demoplayer->IsPlaying() && engine->demoplayer->IsPlaybackFixReady()) {
 		DemoParser parser;
 		auto name = engine->demoplayer->demoQueue[engine->demoplayer->currentDemoID];
-		engine->ExecuteCommand(std::string("playdemo " + name).c_str(), true);
+		engine->ExecuteCommand(Utils::ssprintf("playdemo \"%s\"", name.c_str()).c_str(), true);
 		if (++engine->demoplayer->currentDemoID >= engine->demoplayer->demoQueueSize) {
 			engine->demoplayer->ClearDemoQueue();
 		}
