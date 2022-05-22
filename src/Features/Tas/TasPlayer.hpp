@@ -84,6 +84,7 @@ public:
 	inline bool IsRunning() const { return active && startTick != -1; }
 	inline bool IsUsingTools(int slot) const {
 		return sar_tas_tools_enabled.GetBool()
+			&& this->tasFileName[slot].size() > 0
 			&& (sar_tas_tools_force.GetBool() || this->tasFileName[slot].find("_raw") == std::string::npos);
 	}
 
