@@ -265,7 +265,6 @@ void Portal2::LoadOffsets() {
 	GetClientMode = 4;            // CHLClient::HudProcessInput
 	g_pClientMode = 19;           // GetClientMode
 	CreateMove = 24;              // ClientModeShared
-	GetName = 10;                 // CHud
 	ShouldDraw = 11;              // CHUDQuickInfo
 	GetHud = 125;                 // cc_leaderboard_enable
 	FindElement = 135;            // cc_leaderboard_enable

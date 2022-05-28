@@ -50,7 +50,6 @@ Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disabl
 REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
-REDECL(Client::GetName);
 REDECL(Client::ShouldDraw_BasicInfo);
 REDECL(Client::ShouldDraw_SaveStatus);
 REDECL(Client::MsgFunc_SayText2);
@@ -60,6 +59,7 @@ REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
 REDECL(Client::SteamControllerMove);
 REDECL(Client::playvideo_end_level_transition_callback);
+REDECL(Client::leaderboard_callback);
 REDECL(Client::OverrideView);
 REDECL(Client::ProcessMovement);
 REDECL(Client::DrawTranslucentRenderables);
@@ -233,15 +233,6 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd *cmd) {
 	}
 
 	return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
-}
-
-// CHud::GetName
-DETOUR_T(const char *, Client::GetName) {
-	// Never allow CHud::FindElement to find this HUD
-	if (sar_disable_challenge_stats_hud.GetBool())
-		return "";
-
-	return Client::GetName(thisptr);
 }
 
 // CHudMultiplayerBasicInfo::ShouldDraw
@@ -465,6 +456,19 @@ DETOUR(Client::DrawOpaqueRenderables, void *renderCtx, int renderPath, void *def
 }
 Hook g_DrawOpaqueRenderablesHook(&Client::DrawOpaqueRenderables_Hook);
 
+DETOUR_COMMAND(Client::leaderboard) {
+	if (sar_disable_challenge_stats_hud.GetBool()) {
+		// TODO: there's this dialogue problem that's mentioned in the issue tracker
+		// code below might have a chance to fix this but I couldn't really tell.
+		// Until it's checked, just ignore the command completely.
+		/*for (int i = 4; i <= 10; i++) {
+			engine->SendToCommandBuffer("-leaderboard", i);
+		}*/
+		return;
+	}
+	Client::leaderboard_callback(args);
+}
+
 bool Client::Init() {
 	bool readJmp = false;
 
@@ -490,11 +494,6 @@ bool Client::Init() {
 			auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
 			auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
 			auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
-			auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
-
-			if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
-				this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
-			}
 
 			auto CHUDQuickInfo = FindElement(GetHud(-1), "CHUDQuickInfo");
 
@@ -521,6 +520,8 @@ bool Client::Init() {
 			if (this->g_HudSaveStatus = Interface::Create(CHudSaveStatus)) {
 				this->g_HudSaveStatus->Hook(Client::ShouldDraw_SaveStatus_Hook, Client::ShouldDraw_SaveStatus, Offsets::ShouldDraw);
 			}
+
+			Command::Hook("+leaderboard", Client::leaderboard_callback_hook, Client::leaderboard_callback);
 		}
 
 		this->IN_ActivateMouse = this->g_ClientDLL->Original<_IN_ActivateMouse>(Offsets::IN_ActivateMouse, readJmp);
@@ -634,7 +635,6 @@ void Client::Shutdown() {
 	Interface::Delete(this->g_ClientDLL);
 	Interface::Delete(this->g_pClientMode);
 	Interface::Delete(this->g_pClientMode2);
-	Interface::Delete(this->g_HUDChallengeStats);
 	Interface::Delete(this->s_EntityList);
 	Interface::Delete(this->g_Input);
 	Interface::Delete(this->g_HUDQuickInfo);

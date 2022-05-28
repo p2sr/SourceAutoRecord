@@ -236,9 +236,6 @@ namespace Offsets {
 	int GetAllServerClasses;
 	int IsRestoring;
 
-	// CHud
-	int GetName;
-
 	//CHUDQuickInfo
 	int ShouldDraw;
 
