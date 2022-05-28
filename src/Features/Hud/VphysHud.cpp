@@ -12,6 +12,8 @@
 VphysHud vphysHud;
 
 Variable sar_vphys_hud("sar_vphys_hud", "0", 0, "Enables or disables the vphys HUD.\n");
+Variable sar_vphys_hud_font("sar_vphys_hud_font", "1", 0, "Sets font of the vphys HUD.\n");
+Variable sar_vphys_hud_precision("sar_vphys_hud_precision", "3", 1, 16, "Sets decimal precision of the vphys HUD.\n");
 Variable sar_vphys_hud_x("sar_vphys_hud_x", "0", 0, "The x position of the vphys HUD.\n");
 Variable sar_vphys_hud_y("sar_vphys_hud_y", "0", 0, "The y position of the vphys HUD.\n");
 
@@ -22,76 +24,85 @@ bool VphysHud::ShouldDraw() {
 	return sar_vphys_hud.GetBool() && Hud::ShouldDraw() && sv_cheats.GetBool();
 }
 void VphysHud::Paint(int slot) {
-	auto font = scheme->GetFontByID(1);
-
-	void *player = server->GetPlayer(1);
-	if (!player) return;
-
-	auto portalLocal = server->GetPortalLocal(player);
+	auto font = scheme->GetFontByID(sar_vphys_hud_font.GetInt());
 
 	int cX = sar_vphys_hud_x.GetInt();
 	int cY = sar_vphys_hud_y.GetInt();
+	 
+	float fh = surface->GetFontHeight(font);
 
-	surface->DrawTxt(font, cX + 5, cY + 10, Color(255, 255, 255, 255), "m_hTractorBeam: %#08X", portalLocal.m_hTractorBeam);
-	surface->DrawTxt(font, cX + 5, cY + 30, Color(255, 255, 255, 255), "m_nTractorBeamCount: %X", portalLocal.m_nTractorBeamCount);
+	auto drawPhysicsInfo = [=](int x, int y, bool crouched, const char *name) {
+		VphysShadowInfo shadowInfo = GetVphysInfo(slot, crouched);
 
-	void *m_pShadowStand = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowStand);
-	void *m_pShadowCrouch = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowCrouch);
+		Color posColor = Color(255,255,255,255);
+		Color enableColor = Color(128, 255, 128, 255);
+		Color disableColor = Color(255, 128, 128, 255);
+
+		if (!shadowInfo.collisionEnabled) {
+			posColor.a = 100;
+			enableColor.a = 100;
+			disableColor.a = 100;
+		}
+
+		int p = sar_vphys_hud_precision.GetInt();
+
+		surface->DrawTxt(font, x, y, posColor, "%s: ", name);
+		surface->DrawTxt(font, x + 10, (y += fh), posColor, "pos: %.*f, %.*f, %.*f", 
+			p, shadowInfo.position.x, p, shadowInfo.position.y, p, shadowInfo.position.z);
+		surface->DrawTxt(font, x + 10, (y += fh), posColor, "ang: %.*f, %.*f, %.*f", 
+			p, shadowInfo.rotation.x, p, shadowInfo.rotation.y, p, shadowInfo.rotation.z);
+		surface->DrawTxt(font, x + 10, (y += fh), posColor, "vel: %.*f, %.*f, %.*f", 
+			p, shadowInfo.velocity.x, p, shadowInfo.velocity.y, p, shadowInfo.velocity.z);
+		surface->DrawTxt(font, x + 10, (y += fh), posColor, "angvel: %.*f, %.*f, %.*f", 
+			p, shadowInfo.angularVelocity.x, p, shadowInfo.angularVelocity.y, p, shadowInfo.angularVelocity.z);
+
+		surface->DrawTxt(font, x + 10, (y += fh), shadowInfo.collisionEnabled ? enableColor : disableColor,
+			"collision: %s", shadowInfo.collisionEnabled ? "enabled" : "disabled");
+		surface->DrawTxt(font, x + 10, (y += fh), shadowInfo.gravityEnabled ? enableColor : disableColor,
+			"gravity: %s", shadowInfo.gravityEnabled ? "enabled" : "disabled");
+		surface->DrawTxt(font, x + 10, (y += fh), shadowInfo.asleep ? enableColor : disableColor,
+			"asleep: %s", shadowInfo.asleep ? "yes" : "no");
+	};
+
+	drawPhysicsInfo(cX + 5, cY + 5, false, "shadowStand");
+	drawPhysicsInfo(cX + 5, cY + 5 + fh * 9.5f, true, "shadowCrouch");
+}
+
+bool VphysHud::GetCurrentSize(int &xSize, int &ySize) {
+	return false;
+}
+
+
+VphysShadowInfo VphysHud::GetVphysInfo(int slot, bool crouched) {
+	VphysShadowInfo info;
+
+	info.player = server->GetPlayer(slot + 1);
+	if (!info.player) return info;
+
+	int hitboxOffset = crouched ? Offsets::m_pShadowCrouch : Offsets::m_pShadowStand;
+
+	info.shadow = *reinterpret_cast<void **>((uintptr_t)info.player + hitboxOffset);
 
 	using _IsAsleep = bool(__rescall *)(void *thisptr);
 	using _IsEnabled = bool(__rescall *)(void *thisptr);
 	using _GetPosition = void(__rescall *)(void *thisptr, Vector *worldPosition, QAngle *angles);
 	using _GetVelocity = void(__rescall *)(void *thisptr, Vector *velocity, Vector *angularVelocity);
 
-	_IsAsleep IsAsleep = Memory::VMT<_IsAsleep>(m_pShadowStand, Offsets::IsAsleep);
-	_IsEnabled IsCollisionEnabled = Memory::VMT<_IsEnabled>(m_pShadowStand, Offsets::IsCollisionEnabled);
-	_IsEnabled IsGravityEnabled = Memory::VMT<_IsEnabled>(m_pShadowStand, Offsets::IsGravityEnabled);
-	//_IsEnabled IsDragEnabled = Memory::VMT<_IsEnabled>(m_pShadowStand, Offsets::IsDragEnabled);
-	//_IsEnabled IsMotionEnabled = Memory::VMT<_IsEnabled>(m_pShadowStand, Offsets::IsMotionEnabled);
-	_GetPosition GetPosition = Memory::VMT<_GetPosition>(m_pShadowStand, Offsets::GetPosition);
-	_GetVelocity GetVelocity = Memory::VMT<_GetVelocity>(m_pShadowStand, Offsets::GetVelocity);
+	_IsAsleep IsAsleep = Memory::VMT<_IsAsleep>(info.shadow, Offsets::IsAsleep);
+	_IsEnabled IsCollisionEnabled = Memory::VMT<_IsEnabled>(info.shadow, Offsets::IsCollisionEnabled);
+	_IsEnabled IsGravityEnabled = Memory::VMT<_IsEnabled>(info.shadow, Offsets::IsGravityEnabled);
+	_GetPosition GetPosition = Memory::VMT<_GetPosition>(info.shadow, Offsets::GetPosition);
+	_GetVelocity GetVelocity = Memory::VMT<_GetVelocity>(info.shadow, Offsets::GetVelocity);
 
-	auto drawPhysicsInfo = [=](int y, void *shadow, const char *name) {
-		Vector p, v, a;
-		QAngle q;
-		GetPosition(shadow, &p, &q);
-		GetVelocity(shadow, &v, &a);
-		bool collisionEnabled = IsCollisionEnabled(shadow);
-		bool gravityEnabled = IsGravityEnabled(shadow);
-		bool asleep = IsAsleep(shadow);
-		//bool drag = IsDragEnabled(shadow);
-		//bool motion = IsMotionEnabled(shadow);
+	GetPosition(info.shadow, &info.position, &info.rotation);
+	GetVelocity(info.shadow, &info.velocity, &info.angularVelocity);
+	info.collisionEnabled = IsCollisionEnabled(info.shadow);
+	info.gravityEnabled = IsGravityEnabled(info.shadow);
+	info.asleep = IsAsleep(info.shadow);
 
-		Color posColor = Color(255,255,255,255);
-		Color enableColor = Color(128, 255, 128, 255);
-		Color disableColor = Color(255, 128, 128, 255);
-
-		if (!collisionEnabled) {
-			posColor.a = 100;
-			enableColor.a = 100;
-			disableColor.a = 100;
-		}
-
-		surface->DrawTxt(font, cX + 5, cY + y, posColor, "%s (%#08X): ", name, shadow);
-		surface->DrawTxt(font, cX + 15, cY + y + 20, posColor, "pos: (%.03f, %.03f, %.03f)", p.x, p.y, p.z);
-		surface->DrawTxt(font, cX + 15, cY + y + 40, posColor, "ang: (%.03f, %.03f, %.03f)", q.x, q.y, q.z);
-		surface->DrawTxt(font, cX + 15, cY + y + 60, posColor, "vel: (%.03f, %.03f, %.03f)", v.x, v.y, v.z);
-		surface->DrawTxt(font, cX + 15, cY + y + 80, posColor, "angVel: (%.03f, %.03f, %.03f)", a.x, a.y, a.z);
-
-		surface->DrawTxt(font, cX + 15, cY + y + 100, collisionEnabled ? enableColor : disableColor, "IsCollisionEnabled(): %s", collisionEnabled ? "true" : "false");
-		surface->DrawTxt(font, cX + 15, cY + y + 120, gravityEnabled ? enableColor : disableColor, "IsGravityEnabled(): %s", gravityEnabled ? "true" : "false");
-		surface->DrawTxt(font, cX + 15, cY + y + 140, asleep ? enableColor : disableColor, "IsAsleep(): %s", asleep ? "true" : "false");
-		// didnt change at all through all my testing, probably useless
-		//surface->DrawTxt(font, cX + 15, cY + y + 160, motion ? enableColor : disableColor, "IsMotionEnabled(): %s", motion ? "true" : "false");
-		//surface->DrawTxt(font, cX + 15, cY + y + 180, drag ? enableColor : disableColor, "IsDragEnabled(): %s", drag ? "true" : "false");
-	};
-
-	drawPhysicsInfo(70, m_pShadowStand, "m_pShadowStand");
-	drawPhysicsInfo(260, m_pShadowCrouch, "m_pShadowCrouch");
+	return info;
 }
-bool VphysHud::GetCurrentSize(int &xSize, int &ySize) {
-	return false;
-}
+
 
 CON_COMMAND(sar_vphys_setgravity, "sar_vphys_setgravity <hitbox> <enabled> - sets gravity flag state to either standing (0) or crouching (1) havok collision shadow\n") {
 	if (engine->demoplayer->IsPlaying()) {

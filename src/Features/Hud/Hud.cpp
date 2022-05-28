@@ -3,6 +3,7 @@
 #include "Features/Demo/GhostEntity.hpp"
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
+#include "Features/EntityList.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/EngineDemoPlayer.hpp"
@@ -13,6 +14,7 @@
 #include "Event.hpp"
 #include "Variable.hpp"
 #include "InputHud.hpp"
+#include "VphysHud.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -256,6 +258,8 @@ std::vector<std::string> elementOrder = {
 	"demo",
 	"jumps",
 	"portals",
+	"tbeam",
+	"tbeam_count"
 	"steps",
 	"jump",
 	"jump_peak",
@@ -783,3 +787,30 @@ HUD_ELEMENT_MODE2(duckstate, "0", 0, 2,
 	}
 }
 
+HUD_ELEMENT2(tbeam, "0", "Draw the name of the funnel player is currently in (requires sv_cheats).\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	auto player = server->GetPlayer(ctx->slot + 1);
+	if (!player || !sv_cheats.GetBool()) {
+		ctx->DrawElement("tbeam: -");
+		return;
+	}
+
+	auto portalLocal = server->GetPortalLocal(player);
+
+	void* tbeamHandle = reinterpret_cast<void*>(portalLocal.m_hTractorBeam);
+	if (!tbeamHandle || (uint32_t)tbeamHandle == Offsets::INVALID_EHANDLE_INDEX) {
+		ctx->DrawElement("tbeam: none");
+	} else {
+		ctx->DrawElement("tbeam: [0x%#08X]", tbeamHandle);
+	}
+}
+
+HUD_ELEMENT2(tbeam_count, "0", "Draw the player's funnel count (requires sv_cheats).\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	auto player = server->GetPlayer(ctx->slot + 1);
+	if (!player || !sv_cheats.GetBool()) {
+		ctx->DrawElement("tbeam count: -");
+		return;
+	}
+
+	auto portalLocal = server->GetPortalLocal(player);
+	ctx->DrawElement("tbeam count: %d", portalLocal.m_nTractorBeamCount);
+}
