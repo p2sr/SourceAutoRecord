@@ -304,6 +304,8 @@ void TasPlayer::PostStart() {
 	tasControllers[0]->Enable();
 	if (this->isCoop) tasControllers[1]->Enable();
 	engine->ExecuteCommand("phys_timescale 1", true);  // technically it was supposed to fix the consistency issue
+
+	Event::Trigger<Event::TAS_START>({});
 }
 
 void TasPlayer::Stop(bool interrupted) {
@@ -323,6 +325,8 @@ void TasPlayer::Stop(bool interrupted) {
 
 		SavePlayerInfoDebugs(0);
 		SavePlayerInfoDebugs(1);
+
+		Event::Trigger<Event::TAS_END>({});
 	} else {
 		console->Print("TAS player is no longer active.\n");
 	}

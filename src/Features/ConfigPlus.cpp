@@ -678,6 +678,8 @@ MK_SAR_ON(coop_reset_done, "when coop reset is completed", false)
 MK_SAR_ON(coop_reset_remote, "when coop reset run remotely", false)
 MK_SAR_ON(coop_spawn, "on coop spawn", true)
 MK_SAR_ON(config_exec, "on config.cfg exec", true)
+MK_SAR_ON(tas_start, "when TAS script playback starts", true)
+MK_SAR_ON(tas_end, "when TAS script playback ends", true)
 
 struct Seq {
 	std::queue<std::string> commands;
@@ -885,6 +887,12 @@ ON_EVENT(ORANGE_READY) {
 }
 ON_EVENT(CONFIG_EXEC) {
 	RUN_EXECS(config_exec);
+}
+ON_EVENT(TAS_START) {
+	RUN_EXECS(tas_start);
+}
+ON_EVENT(TAS_END) {
+	RUN_EXECS(tas_end);
 }
 
 CON_COMMAND_F(nop, "nop [args]... - nop ignores all its arguments and does nothing\n", FCVAR_DONTRECORD) {}

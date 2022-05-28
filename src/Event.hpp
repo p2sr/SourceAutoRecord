@@ -43,6 +43,8 @@ namespace Event {
 		ORANGE_READY,
 		CONFIG_EXEC,
 		RENDER,
+		TAS_START,
+		TAS_END,
 	};
 
 	template <EventType E>
