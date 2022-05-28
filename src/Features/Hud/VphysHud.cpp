@@ -1,7 +1,9 @@
 #include "VphysHud.hpp"
 
 #include "Command.hpp"
+#include "Event.hpp"
 #include "Features/EntityList.hpp"
+#include "Features/OverlayRender.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
@@ -16,6 +18,14 @@ Variable sar_vphys_hud_font("sar_vphys_hud_font", "1", 0, "Sets font of the vphy
 Variable sar_vphys_hud_precision("sar_vphys_hud_precision", "3", 1, 16, "Sets decimal precision of the vphys HUD.\n");
 Variable sar_vphys_hud_x("sar_vphys_hud_x", "0", 0, "The x position of the vphys HUD.\n");
 Variable sar_vphys_hud_y("sar_vphys_hud_y", "0", 0, "The y position of the vphys HUD.\n");
+
+Variable sar_vphys_hud_show_hitboxes("sar_vphys_hud_show_hitboxes", "2", 0, 3, 
+	"Sets visibility of hitboxes when vphys hud is active.\n"
+	"0 = hitboxes are not drawn"
+	"1 = only active vphys hitbox is drawn"
+	"2 = active vphys and player's bounding box are drawn"
+	"3 = both vphys hitboxes and player's bounding box are drawn"
+);
 
 VphysHud::VphysHud()
 	: Hud(HudType_InGame, true) {
@@ -101,6 +111,55 @@ VphysShadowInfo VphysHud::GetVphysInfo(int slot, bool crouched) {
 	info.asleep = IsAsleep(info.shadow);
 
 	return info;
+}
+
+
+// drawing player's hitboxes
+ON_EVENT(RENDER) {
+	if (!sv_cheats.GetBool() || !sar_vphys_hud.GetBool() || !sar_vphys_hud_show_hitboxes.GetBool()) 
+		return;
+
+	void *player = server->GetPlayer(GET_SLOT() + 1);
+	if (!player) return;
+
+	int renderState = sar_vphys_hud_show_hitboxes.GetInt();
+
+	auto standingShadow = vphysHud.GetVphysInfo(GET_SLOT(), false);
+	auto crouchedShadow = vphysHud.GetVphysInfo(GET_SLOT(), true);
+
+	const auto renderHitbox = [=](Color c, float solidScale, Vector pos, Vector size, QAngle rot) {
+		RenderCallback solid = RenderCallback::constant({c.r, c.g, c.b, (uint8_t)(c.a * solidScale)});
+		RenderCallback wf = RenderCallback::constant({c.r, c.g, c.b, 255});
+		OverlayRender::addBoxMesh(
+			pos, 
+			Vector(size.x * -0.5f, size.y * -0.5f, 0), 
+			Vector(size.x * 0.5f, size.y * 0.5f, size.z), 
+			rot, solid, wf
+		);
+	};
+
+	const auto renderVphys = [=](VphysShadowInfo info, Vector size) {
+		if (info.collisionEnabled || renderState == 3) {
+			Color vphysColor(255, 191, 0, info.collisionEnabled ? 255 : 64);
+			renderHitbox(vphysColor, 0.25, info.position, size, info.rotation);
+		}
+	};
+
+	// TODO: find actual values
+	Vector standingSize = Vector(32, 32, 72);
+	Vector crouchingSize = Vector(32, 32, 36);
+
+	// drawing vphys hitboxes
+	renderVphys(vphysHud.GetVphysInfo(GET_SLOT(), false), standingSize);
+	renderVphys(vphysHud.GetVphysInfo(GET_SLOT(), true), crouchingSize);
+
+	// drawing player bbox
+	if (renderState > 1) {
+		Vector pos = server->GetAbsOrigin(player);
+		bool ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);
+		renderHitbox(Color(253, 106, 2), 0.1, pos, ducked ? crouchingSize : standingSize, QAngle());
+	}
+
 }
 
 
