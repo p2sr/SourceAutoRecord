@@ -99,6 +99,7 @@ namespace Offsets {
 	int mv;
 	int player;
 	int ProcessMovement;
+	int GetPlayerViewOffset;
 
 	// CDemoRecorder
 	int GetRecordingTick;

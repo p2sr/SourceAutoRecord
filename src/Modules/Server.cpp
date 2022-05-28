@@ -69,6 +69,7 @@ REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
 REDECL(Server::PlayerRunCommand);
 REDECL(Server::ProcessMovement);
+REDECL(Server::GetPlayerViewOffset);
 REDECL(Server::StartTouchChallengeNode);
 REDECL(Server::say_callback);
 
@@ -278,6 +279,19 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 
 	return res;
 }
+
+// CGameMovement::GetPlayerViewOffset
+DETOUR_T(Vector*, Server::GetPlayerViewOffset, bool ducked) {
+
+	if (sar_force_qc.GetBool() && sv_cheats.GetBool()) {
+		bool holdingDuck = (inputHud.GetButtonBits(GET_SLOT()) & IN_DUCK);
+		if (holdingDuck) ducked = false;
+	}
+
+	return Server::GetPlayerViewOffset(thisptr,ducked);
+	
+}
+
 
 ON_INIT {
 	NetMessage::RegisterHandler(
@@ -607,6 +621,7 @@ bool Server::Init() {
 		this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
 		this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
+		this->g_GameMovement->Hook(Server::GetPlayerViewOffset_Hook, Server::GetPlayerViewOffset, Offsets::GetPlayerViewOffset);
 		this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
 		this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
 

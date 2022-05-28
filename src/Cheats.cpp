@@ -37,6 +37,7 @@ Variable sar_disable_progress_bar_update("sar_disable_progress_bar_update", "0",
 Variable sar_prevent_mat_snapshot_recompute("sar_prevent_mat_snapshot_recompute", "0", "Shortens loading times by preventing state snapshot recomputation.\n");
 Variable sar_challenge_autostop("sar_challenge_autostop", "0", 0, 3, "Automatically stops recording demos when the leaderboard opens after a CM run. If 2, automatically appends the run time to the demo name.\n");
 Variable sar_show_entinp("sar_show_entinp", "0", "Print all entity inputs to console.\n");
+Variable sar_force_qc("sar_force_qc", "0", 0, 1, "When ducking, forces view offset to always be at standing height. Requires sv_cheats to work.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;

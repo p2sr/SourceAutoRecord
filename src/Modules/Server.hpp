@@ -89,6 +89,9 @@ public:
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR(ProcessMovement, void *pPlayer, CMoveData *pMove);
 
+	// CGameMovement::ProcessMovement
+	DECL_DETOUR_T(Vector *, GetPlayerViewOffset, bool ducked);
+
 	DECL_DETOUR(StartTouchChallengeNode, void *entity);
 
 	// CGameMovement::CheckJumpButton
