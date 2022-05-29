@@ -13,6 +13,7 @@ struct TasToken {
 	enum {
 		PLUS,
 		RIGHT_ANGLE,
+		DOUBLE_RIGHT_ANGLE,
 		PIPE,
 		SEMICOLON,
 		INTEGER,
@@ -87,8 +88,16 @@ static std::vector<Line> tokenize(std::ifstream &file) {
 			}
 
 			if (fieldnum == 0 && line[idx] == '>') {
-				++fieldnum;
-				toks.push_back({ TasToken::RIGHT_ANGLE, ">" });
+				// special case - tools-only bulk
+				if (line.size() > idx + 1 && line[idx+1] == '>') {
+					fieldnum = 5;
+					idx++;
+					toks.push_back({TasToken::DOUBLE_RIGHT_ANGLE, ">>"});
+				} else {
+					// regular case - normal framebulk
+					++fieldnum;
+					toks.push_back({TasToken::RIGHT_ANGLE, ">"});
+				}
 				continue;
 			}
 
@@ -274,7 +283,7 @@ struct LoopInfo {
 	{ }
 };
 
-static int parseFramebulkTick(int last_tick, const Line &line, size_t *tokens_out) {
+static int parseFramebulkTick(int last_tick, const Line &line, size_t *tokens_out, bool *is_tool_bulk) {
 	if (line.tokens[0].type == TasToken::PLUS) {
 		if (line.tokens.size() < 3) {
 			throw TasParserException("expected at least 3 tokens");
@@ -284,8 +293,8 @@ static int parseFramebulkTick(int last_tick, const Line &line, size_t *tokens_ou
 			throw TasParserException("expected integer after +");
 		}
 
-		if (line.tokens[2].type != TasToken::RIGHT_ANGLE) {
-			throw TasParserException("expected > after tick");
+		if (line.tokens[2].type != TasToken::RIGHT_ANGLE && line.tokens[2].type != TasToken::DOUBLE_RIGHT_ANGLE) {
+			throw TasParserException("expected > or >> after tick");
 		}
 
 		if (line.tokens[1].i < 1) {
@@ -297,6 +306,7 @@ static int parseFramebulkTick(int last_tick, const Line &line, size_t *tokens_ou
 		}
 		
 		if (tokens_out) *tokens_out = 3;
+		if (is_tool_bulk) *is_tool_bulk = (line.tokens[2].type == TasToken::DOUBLE_RIGHT_ANGLE);
 
 		return last_tick + line.tokens[1].i;
 	} else if (line.tokens[0].type == TasToken::INTEGER) {
@@ -304,8 +314,8 @@ static int parseFramebulkTick(int last_tick, const Line &line, size_t *tokens_ou
 			throw TasParserException("expected at least 2 tokens");
 		}
 
-		if (line.tokens[1].type != TasToken::RIGHT_ANGLE) {
-			throw TasParserException("expected > after tick");
+		if (line.tokens[1].type != TasToken::RIGHT_ANGLE && line.tokens[1].type != TasToken::DOUBLE_RIGHT_ANGLE) {
+			throw TasParserException("expected > or >> after tick");
 		}
 
 		if (line.tokens[0].i < 0) {
@@ -317,6 +327,7 @@ static int parseFramebulkTick(int last_tick, const Line &line, size_t *tokens_ou
 		}
 
 		if (tokens_out) *tokens_out = 2;
+		if (is_tool_bulk) *is_tool_bulk = (line.tokens[1].type == TasToken::DOUBLE_RIGHT_ANGLE);
 
 		return line.tokens[0].i;
 	}
@@ -364,9 +375,10 @@ static Vector parseVector(const Line &line, size_t idx) {
 static TasFramebulk parseFramebulk(int slot, int last_tick, const TasFramebulk &base, const Line &line, int (*button_timeouts)[TAS_CONTROLLER_INPUT_COUNT]) {
 	TasFramebulk bulk = base;
 	size_t toks_off;
-	bulk.tick = parseFramebulkTick(last_tick, line, &toks_off);
+	bool is_tool_bulk;
+	bulk.tick = parseFramebulkTick(last_tick, line, &toks_off, &is_tool_bulk);
 
-	int component = 0;
+	int component = is_tool_bulk ? 4 : 0;
 
 	for (size_t i = toks_off; i < line.tokens.size(); ++i) {
 		if (line.tokens[i].type == TasToken::PIPE) {
@@ -484,7 +496,7 @@ static std::vector<TasFramebulk> parseFramebulks(int slot, const char *filepath,
 	for (size_t i = 0; i < nlines; ++i) {
 		const Line &line = lines[i];
 		try {
-			auto fb_tick = parseFramebulkTick(last_tick, line, nullptr);
+			auto fb_tick = parseFramebulkTick(last_tick, line, nullptr, nullptr);
 
 			// Disable any buttons whose timeouts have expired
 			for (int tick = last_tick + 1; tick < fb_tick; ++tick) {
