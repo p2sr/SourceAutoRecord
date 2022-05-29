@@ -533,8 +533,8 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				c->type = Condition::WORKSHOP;
 			} else if (t.len == 4 && !strncmp(t.str, "menu", t.len)) {
 				c->type = Condition::MENU;
-			} else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len) || t.len == 4 && !strncmp(t.str, "game", t.len) || t.len > 4 && !strncmp(t.str, "var:", 4)) {
-				bool is_var = !strncmp(t.str, "var:", 4);
+			} else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len) || t.len == 4 && !strncmp(t.str, "game", t.len) || t.len > 4 && !strncmp(t.str, "var:", 4) || t.len > 1 && t.str[0] == '?') {
+				bool is_var = !strncmp(t.str, "var:", 4) || t.str[0] == '?';
 
 				if (toks.front().type != TOK_EQUALS) {
 					console->Print("Expected = after '%*s'\n", t.len, t.str);
@@ -554,10 +554,11 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				}
 
 				if (is_var) {
+					int i = t.str[0] == 'v' ? 4 : 1;
 					c->type = Condition::SVAR;
-					c->svar.var = (char *)malloc(t.len - 4 + 1);
-					strncpy(c->svar.var, t.str + 4, t.len - 4);
-					c->svar.var[t.len - 4] = 0;  // Null terminator
+					c->svar.var = (char *)malloc(t.len - i + 1);
+					strncpy(c->svar.var, t.str + i, t.len - i);
+					c->svar.var[t.len - i] = 0;  // Null terminator
 					c->svar.val = (char *)malloc(map_tok.len + 1);
 					strncpy(c->svar.val, map_tok.str, map_tok.len);
 					c->svar.val[map_tok.len] = 0;  // Null terminator
