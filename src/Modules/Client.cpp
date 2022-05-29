@@ -15,6 +15,7 @@
 #include "Features/NetMessage.hpp"
 #include "Features/OffsetFinder.hpp"
 #include "Features/OverlayRender.hpp"
+#include "Features/PlayerTrace.hpp"
 #include "Features/Session.hpp"
 #include "Features/Stats/Sync.hpp"
 #include "Features/Stitcher.hpp"
@@ -70,6 +71,7 @@ MDECL(Client::GetAbsAngles, QAngle, C_m_angAbsRotation);
 MDECL(Client::GetLocalVelocity, Vector, C_m_vecVelocity);
 MDECL(Client::GetViewOffset, Vector, C_m_vecViewOffset);
 MDECL(Client::GetPortalLocal, CPortalPlayerLocalData, C_m_PortalLocal);
+MDECL(Client::GetPlayerState, CPlayerState, C_pl);
 
 DECL_CVAR_CALLBACK(cl_fov) {
 	if (engine->demoplayer->IsPlaying())
@@ -410,6 +412,9 @@ DETOUR(Client::OverrideView, CViewSetup *m_View) {
 DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 	// This should only be run if prediction is occurring, i.e. if we
 	// are orange, but check anyway
+
+	int slot = -1;
+
 	if (engine->IsOrange() && session->isRunning) {
 		// The client does prediction very often (twice per frame?) so
 		// we have to do some weird stuff
@@ -420,7 +425,7 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 		if (tick != lastTick) {
 			unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
 			bool grounded = groundHandle != 0xFFFFFFFF;
-			int slot = client->GetSplitScreenPlayerSlot(player);
+			slot = client->GetSplitScreenPlayerSlot(player);
 			groundFramesCounter->HandleMovementFrame(slot, grounded);
 			strafeQuality.OnMovement(slot, grounded);
 			if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
@@ -429,7 +434,11 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 		}
 	}
 
-	return Client::ProcessMovement(thisptr, player, move);
+	auto result = Client::ProcessMovement(thisptr, player, move);
+
+	playerTrace->TweakLatestEyeOffsetForPortalShot(move, slot, true);
+
+	return result;
 }
 
 CON_COMMAND(sar_chat, "sar_chat - open the chat HUD\n") {
@@ -606,6 +615,8 @@ bool Client::Init() {
 	offsetFinder->ClientSide("CBasePlayer", "m_bInDuckJump", &Offsets::C_m_bInDuckJump);
 	offsetFinder->ClientSide("CBasePlayer", "m_nDuckTimeMsecs", &Offsets::C_m_nDuckTimeMsecs);
 	offsetFinder->ClientSide("CBasePlayer", "m_nDuckJumpTimeMsecs", &Offsets::C_m_nDuckJumpTimeMsecs);
+	offsetFinder->ClientSide("CBasePlayer", "pl", &Offsets::C_pl);
+
 	offsetFinder->ClientSide("CPortal_Player", "m_StatsThisLevel", &Offsets::C_m_StatsThisLevel);
 	offsetFinder->ClientSide("CPortal_Player", "m_PortalLocal", &Offsets::C_m_PortalLocal);
 	offsetFinder->ClientSide("CPortal_Player", "m_nPlayerCond", &Offsets::C_m_nPlayerCond);

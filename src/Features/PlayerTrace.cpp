@@ -19,6 +19,7 @@ PlayerTrace *playerTrace;
 
 Variable sar_trace_autoclear("sar_trace_autoclear", "1", "Automatically clear the trace on session start\n");
 Variable sar_trace_record("sar_trace_record", "0", 0, "Record the trace to a slot. Set to 0 for not recording\n");
+Variable sar_trace_use_shot_eyeoffset("sar_trace_use_shot_eyeoffset", "1", 0, 1, "Uses eye offset and angles accurate for portal shooting.\n");
 
 Variable sar_trace_draw("sar_trace_draw", "0", "Display the recorded player trace. Requires cheats\n");
 Variable sar_trace_draw_through_walls("sar_trace_draw_through_walls", "1", "Display the player trace through walls. Requires sar_trace_draw\n");
@@ -127,13 +128,13 @@ void PlayerTrace::AddPoint(size_t trace_idx, void *player, int slot, bool use_cl
 		ground_handle = *(unsigned *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
 		pos = client->GetAbsOrigin(player);
 		vel = client->GetLocalVelocity(player);
-		eyepos = pos + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
+		//eyepos = pos + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
 		camera->GetEyePos(slot, false, eyepos, angles);
 	} else {
 		ground_handle = *(unsigned *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
 		pos = server->GetAbsOrigin(player);
 		vel = server->GetLocalVelocity(player);
-		eyepos = pos + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
+		//eyepos = pos + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
 		camera->GetEyePos(slot, true, eyepos, angles);
 	}
 	bool grounded = ground_handle != 0xFFFFFFFF;
@@ -421,11 +422,13 @@ void PlayerTrace::TeleportAt(size_t trace_idx, int slot, int tick, bool eye) {
 
 	if (tick < 0) return;
 
-	engine->SetAngles(slot, traces[trace_idx].angles[slot][tick]); // FIXME: borked in remote coop
+	QAngle angles = traces[trace_idx].angles[slot][tick];
+	engine->SetAngles(slot, angles);  // FIXME: borked in remote coop
+	//FIXME FIXME: for whatever reason it doesn't deal properly with precise angles. Figure out why!
 
 	if (eye) {
 		void *player = server->GetPlayer(slot + 1);
-		Vector view_off = player ? server->GetViewOffset(player) : Vector{0,0,72};
+		Vector view_off = player ? server->GetViewOffset(player) : Vector{0,0,64};
 		g_playerTraceTeleportLocation = traces[trace_idx].eyepos[slot][tick] - view_off;
 	} else {
 		g_playerTraceTeleportLocation = traces[trace_idx].positions[slot][tick];
@@ -537,6 +540,24 @@ ON_EVENT(PROCESS_MOVEMENT) {
 			playerTrace->AddPoint(sar_trace_record.GetInt(), player, event.slot, use_client_offset);
 		}
 	}
+}
+
+void PlayerTrace::TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slot, bool clientside) {
+
+	if (!sar_trace_use_shot_eyeoffset.GetBool()) return;
+	if (!sar_trace_record.GetInt() || engine->IsGamePaused()) return;
+
+	size_t trace_idx = sar_trace_record.GetInt();
+
+	// portal shooting position is funky. Basically, shooting happens after movement
+	// has happened, but before angles or eye offset are updated (portal gun uses different
+	// values for angles than movement, which makes it even weirder). The solution here is
+	// to record eye offset right after movement tick processing has happened
+	Vector eyepos;
+	QAngle angles;
+	camera->GetEyePosFromOrigin(slot, !clientside, moveData->m_vecAbsOrigin, eyepos, angles);
+	int lastTick = playerTrace->GetTrace(trace_idx)->positions[slot].size() - 1;
+	playerTrace->GetTrace(trace_idx)->eyepos[slot][lastTick] = eyepos;
 }
 
 ON_EVENT(SESSION_START) {

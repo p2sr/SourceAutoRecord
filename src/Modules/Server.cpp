@@ -85,6 +85,7 @@ MDECL(Server::GetViewOffset, Vector, S_m_vecViewOffset);
 MDECL(Server::GetPortalLocal, CPortalPlayerLocalData, S_m_PortalLocal);
 MDECL(Server::GetEntityName, char *, m_iName);
 MDECL(Server::GetEntityClassName, char *, m_iClassName);
+MDECL(Server::GetPlayerState, CPlayerState, S_pl);
 
 void *Server::GetPlayer(int index) {
 	return this->UTIL_PlayerByIndex(index);
@@ -269,6 +270,8 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true });
 
 	auto res = Server::ProcessMovement(thisptr, player, move);
+
+	playerTrace->TweakLatestEyeOffsetForPortalShot(move, slot, false);
 
 	// We edit pos after process movement to get accurate teleportation
 	// This is for sar_trace_teleport_at
@@ -780,6 +783,7 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CBasePlayer", "m_nTickBase", &Offsets::m_nTickBase);
 	offsetFinder->ServerSide("CBasePlayer", "m_nJumpTimeMsecs", &Offsets::S_m_nJumpTimeMsecs);
 	offsetFinder->ServerSide("CBasePlayer", "m_Collision", &Offsets::S_m_Collision);
+	offsetFinder->ServerSide("CBasePlayer", "pl", &Offsets::S_pl);
 	offsetFinder->ServerSide("CPortal_Player", "m_lifeState", &Offsets::m_lifeState);
 	offsetFinder->ServerSide("CPortal_Player", "m_InAirState", &Offsets::m_InAirState);
 	offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);

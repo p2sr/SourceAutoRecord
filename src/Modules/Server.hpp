@@ -74,6 +74,7 @@ public:
 	DECL_M(GetPortalLocal, CPortalPlayerLocalData);
 	DECL_M(GetEntityName, char *);
 	DECL_M(GetEntityClassName, char *);
+	DECL_M(GetPlayerState, CPlayerState);
 
 	void *GetPlayer(int index);
 	bool IsPlayer(void *entity);

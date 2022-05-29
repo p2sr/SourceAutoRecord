@@ -61,6 +61,8 @@ public:
 	HitboxList ConstructHitboxList(Vector center) const;
 	// Draw info about all traces to a HUD context
 	void DrawTraceHud(HudContext *ctx);
+	// Corrects latest eye offset according to given CMoveData, to make it correct for portal shooting preview
+	void TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slot, bool clientside);
 };
 
 extern PlayerTrace *playerTrace;

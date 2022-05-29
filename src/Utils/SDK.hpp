@@ -1660,3 +1660,10 @@ struct FcpsTraceAdapter {
 	ITraceFilter *traceFilter;
 	unsigned mask;
 };
+
+class CPlayerState {
+public:
+	void *vtable;
+	void *m_hTonemapController;
+	QAngle v_angle;
+};

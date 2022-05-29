@@ -177,6 +177,8 @@ namespace Offsets {
 	extern int C_m_nDuckJumpTimeMsecs;
 	extern int S_m_nJumpTimeMsecs;
 	extern int S_m_LastCmd;
+	extern int C_pl;
+	extern int S_pl;
 
 	// CPortal_Player
 	extern int C_m_PortalLocal;

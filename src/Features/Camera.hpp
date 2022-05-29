@@ -73,6 +73,8 @@ public:
 	Vector GetPosition(int slot);
 	Vector GetForwardVector(int slot);
 
+	void TransformThroughPortal(int slot, bool serverside, Vector &eyePos, QAngle &eyeAng);
+	bool GetEyePosFromOrigin(int slot, bool serverside, Vector origin, Vector &eyePos, QAngle &eyeAng);
 	bool GetEyePos(int slot, bool serverside, Vector &eyePos, QAngle &eyeAng);
 };
 
