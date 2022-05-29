@@ -947,8 +947,10 @@ CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a 
 	g_functions[std::string(args[1])] = {c, cmd, name};
 }
 
-static void expand(size_t nargs, const char *const *args, std::string body) {
+static void expand(const CCommand &args, std::string body) {
+
 	std::string cmd;
+	unsigned nargs = args.ArgC() - 2;
 
 	for (size_t i = 0; i < body.size(); ++i) {
 		if (body[i] == '$') {
@@ -965,9 +967,27 @@ static void expand(size_t nargs, const char *const *args, std::string body) {
 				// to svar subs
 				++i;
 				continue;
+			} else if (body[i + 1] == '+') {
+				++i;
+				if (body[i + 1] >= '1' && body[i + 1] <= '9') {
+					unsigned arg = body[i + 1] - '0';
+					if (arg <= nargs) {
+						const char *argcat = args.m_pArgSBuffer + args.m_nArgv0Size;
+						while (isspace(*argcat)) ++argcat;
+						for (unsigned j = 1; j < arg + 1; ++j) {
+							argcat += (*argcat == '"' ? 2 : 0) + strlen(args[j]);
+							while (isspace(*argcat)) ++argcat;
+						}
+						cmd += argcat;
+					}
+				} else {
+					cmd += "$+";
+				}
+				++i;
+				continue;
 			} else if (body[i + 1] >= '1' && body[i + 1] <= '9') {
 				unsigned arg = body[i + 1] - '0';
-				cmd += arg - 1 < nargs ? args[arg - 1] : "";
+				cmd += arg <= nargs ? args[arg + 1] : "";
 				++i;
 				continue;
 			} else {
@@ -1008,7 +1028,8 @@ CON_COMMAND_F(sar_expand, "sar_expand [cmd]... - run a command after expanding s
 	}
 
 	const char *cmd = args.ArgC() == 2 ? args[1] : args.m_pArgSBuffer + args.m_nArgv0Size;
-	expand(0, nullptr, std::string(cmd));
+	const CCommand noArgs = {2}; // nargs = 0
+	expand(noArgs, std::string(cmd));
 }
 
 CON_COMMAND_F(sar_function_run, "sar_function_run <name> [args]... - run a function with the given arguments\n", FCVAR_DONTRECORD) {
@@ -1021,5 +1042,5 @@ CON_COMMAND_F(sar_function_run, "sar_function_run <name> [args]... - run a funct
 		return console->Print("Function %s does not exist\n", args[1]);
 	}
 
-	expand(args.ArgC() - 2, args.m_ppArgv + 2, it->second.run);
+	expand(args, it->second.run);
 }
