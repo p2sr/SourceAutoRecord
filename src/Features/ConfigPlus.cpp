@@ -553,21 +553,36 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 					return NULL;
 				}
 
+				char * val;
+				if (map_tok.len > 4 && !strncmp(map_tok.str, "var:", 4) || map_tok.len > 1 && map_tok.str[0] == '?') {
+					int i = map_tok.str[0] == 'v' ? 4 : 1;
+					
+					std::string value = GetSvar(std::string(map_tok.str + i));
+					val = (char *)malloc(value.length() + 1);
+					strcpy(val, value.c_str());
+					val[value.length()] = 0;  //  Null terminator
+				} else {
+					val = (char *)malloc(map_tok.len + 1);
+					strncpy(val, map_tok.str, map_tok.len);
+					val[map_tok.len] = 0;  // Null terminator
+				}
+
 				if (is_var) {
 					int i = t.str[0] == 'v' ? 4 : 1;
 					c->type = Condition::SVAR;
 					c->svar.var = (char *)malloc(t.len - i + 1);
 					strncpy(c->svar.var, t.str + i, t.len - i);
 					c->svar.var[t.len - i] = 0;  // Null terminator
-					c->svar.val = (char *)malloc(map_tok.len + 1);
-					strncpy(c->svar.val, map_tok.str, map_tok.len);
-					c->svar.val[map_tok.len] = 0;  // Null terminator
+					c->svar.val = (char *)malloc(strlen(val) + 1);
+					strncpy(c->svar.val, val, strlen(val));
+					c->svar.val[strlen(val)] = 0;  // Null terminator
 				} else {
 					c->type = t.len == 8 ? Condition::PREV_MAP : t.len == 4 ? Condition::GAME : Condition::MAP;
-					c->map = (char *)malloc(map_tok.len + 1);
-					strncpy(c->map, map_tok.str, map_tok.len);
-					c->map[map_tok.len] = 0;  // Null terminator
+					c->map = (char *)malloc(strlen(val) + 1);
+					strncpy(c->map, val, strlen(val));
+					c->map[strlen(val)] = 0;  // Null terminator
 				}
+				free(val);
 			} else {
 				console->Print("Bad token '%.*s'\n", t.len, t.str);
 				CLEAR_OUT_STACK;
