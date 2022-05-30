@@ -660,6 +660,10 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 		const char *cmd = args.ArgC() == 2 ? args[1] : args.m_pArgSBuffer + args.m_nArgv0Size;                                             \
 		_g_execs_##name.push_back(std::string(cmd));                                                                                       \
 	}                                                                                                                                   \
+	CON_COMMAND_F(sar_on_##name##_clear, "sar_on_" #name "_clear - clears commands registered on event \"" #name "\"\n", FCVAR_DONTRECORD) { \
+		console->Print("Cleared %d commands from event \"" #name "\"\n", _g_execs_##name.size());                                  \
+		_g_execs_##name.clear();                                                                                       \
+	}                                                                                                                                   \
 	static void _runExecs_##name() {                                                                                                    \
 		for (auto cmd : _g_execs_##name) {                                                                                                 \
 			engine->ExecuteCommand(cmd.c_str(), immediately);                                                                                 \
