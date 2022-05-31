@@ -37,16 +37,24 @@ struct Trace {
 class PlayerTrace : public Feature {
 private:
 	// In order to arbitrarily number traces
-	std::map<size_t, Trace> traces;
+	std::map<std::string, Trace> traces;
 
 public:
 	PlayerTrace();
+	// Tells us whether trace should be recorded
+	bool ShouldRecord();
+	// Tells us if the trace name is valid
+	bool IsTraceNameValid(std::string trace_name);
 	// Add a point to the player trace
-	void AddPoint(size_t trace_idx, void *player, int slot, bool use_client_offset);
+	void AddPoint(std::string trace_name, void *player, int slot, bool use_client_offset);
 	// Returns trace with given id
-	Trace* GetTrace(const size_t trace_idx);
+	Trace *GetTrace(std::string trace_name);
+	// Returns default trace name
+	std::string GetDefaultTraceName();
+	// Returns number of recorded traces
+	int GetTraceCount();
 	// Clear all the points
-	void Clear(const size_t trace_idx);
+	void Clear(std::string trace_name);
 	// Clear all the traces
 	void ClearAll();
 	// Display the trace in the world
@@ -56,7 +64,7 @@ public:
 	// Display a bbox at the given tick
 	void DrawBboxAt(int tick) const;
 	// Teleport to given tick on given trace
-	void TeleportAt(size_t trace, int slot, int tick, bool eye);
+	void TeleportAt(std::string trace_name, int slot, int tick, bool eye);
 	// Construct a list of the hitboxes of all entities near a point
 	HitboxList ConstructHitboxList(Vector center) const;
 	// Draw info about all traces to a HUD context
