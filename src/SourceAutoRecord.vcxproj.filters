@@ -442,6 +442,9 @@
     <ClCompile Include="Features\Demo\GhostLeaderboard.cpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClCompile>
+    <ClCompile Include="Features\WindowResizer.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1109,6 +1112,9 @@
     </ClInclude>
     <ClInclude Include="Features\Demo\GhostLeaderboard.hpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\WindowResizer.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

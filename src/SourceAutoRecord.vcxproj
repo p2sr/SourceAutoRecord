@@ -137,6 +137,7 @@
     <ClCompile Include="Features\Demo\GhostRenderer.cpp" />
     <ClCompile Include="Features\Demo\GhostLeaderboard.cpp" />
     <ClCompile Include="Features\Routing\Ruler.cpp" />
+    <ClCompile Include="Features\WindowResizer.cpp" />
     <ClCompile Include="Scheduler.cpp" />
     <ClCompile Include="Features\ClassDumper.cpp" />
     <ClCompile Include="Features\Cvars.cpp" />
@@ -324,6 +325,7 @@
     <ClInclude Include="Features\Demo\GhostRenderer.hpp" />
     <ClInclude Include="Features\Demo\GhostLeaderboard.hpp" />
     <ClInclude Include="Features\Routing\Ruler.hpp" />
+    <ClInclude Include="Features\WindowResizer.hpp" />
     <ClInclude Include="Scheduler.hpp" />
     <ClInclude Include="Features.hpp" />
     <ClInclude Include="Features\ClassDumper.hpp" />
