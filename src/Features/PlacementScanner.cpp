@@ -256,7 +256,7 @@ static void startScan() {
 static void endScan(bool success) {
 	if (success) {
 		console->Print("Success! Wrote %d points to pp_scan.tga\n", g_scan.maxd1i * g_scan.maxd2i);
-		writeTga("pp_scan.tga", g_scan.image, g_scan.maxd2i, g_scan.maxd1i);
+		writeTga("pp_scan.tga", g_scan.image, g_scan.maxd1i, g_scan.maxd2i);
 	} else {
 		console->Print("Scanning failed\n");
 	}
@@ -281,10 +281,10 @@ static void runScan() {
 	int maxd2i = g_scan.maxd2i;
 
 	for (int d1i = g_scan.d1i; d1i < maxd1i; ++d1i) {
-		float d1 = d1i * TEST_RESOLUTION;
+		float d1 = (maxd1i - 1 - d1i) * TEST_RESOLUTION;
 		for (int d2i = 0; d2i < maxd2i; ++d2i) {
-			float d2 = d2i * TEST_RESOLUTION;
-			int i = d1i*maxd2i + d2i;
+			float d2 = (maxd2i - 1 - d2i) * TEST_RESOLUTION;
+			int i = d2i*maxd1i + d1i;
 			bool success = testPoint(portalgun, start + ax1*d1 + ax2*d2);
 			if (success) {
 				image[i*4 + 0] = 0;
@@ -370,11 +370,41 @@ ON_EVENT(SESSION_START) {
 }
 
 HUD_ELEMENT2_NO_DISABLE(pp_scan, HudType_InGame) {
+	if (g_setup.state == SetupState::NONE) return;
+
+	std::string status_text = "";
+	int sw, sh;
+	engine->GetScreenSize(nullptr, sw, sh);
+
+	switch (g_setup.state) {
+	case SetupState::SET_WALL:
+		status_text = "Select the wall plane to scan on.";
+		break;
+	case SetupState::SET_SCAN_POINT_A:
+		status_text = "Select first corner of the scanning point.";
+		break;
+	case SetupState::SET_SCAN_POINT_B:
+		status_text = "Select second corner of the scanning point.";
+		break;
+	case SetupState::SET_MATCH_POINT_A:
+		status_text = "Select first corner of portal success detection area.";
+		break;
+	case SetupState::SET_MATCH_POINT_B:
+		status_text = "Select second corner of portal success detection area.";
+		break;
+	case SetupState::READY:
+		status_text = "Placement scan is ready. Use sar_pp_scan_set to begin.";
+		break;
+	case SetupState::RUNNING:
+		status_text = "Scanning to pp_scan.tga... use sar_pp_scan_set to cancel.";
+		break;
+	}
+
+	surface->DrawRectAndCenterTxt(Color{0, 0, 0, 0}, 0, 0, sw, sh - 50, 6, Color{255, 255, 255}, status_text.c_str());
+
 	if (g_setup.state == SetupState::RUNNING) {
 		float percentage = 100.0f * (float)g_scan.d1i / (float)g_scan.maxd1i;
-		int sw, sh;
-		engine->GetScreenSize(nullptr, sw, sh);
-		surface->DrawRectAndCenterTxt(Color{0,0,0,192}, 0, 0, sw, sh, 6, Color{255,255,255}, "%.1f%%", percentage);
+		surface->DrawRectAndCenterTxt(Color{0, 0, 0, 200}, 0, 0, sw, sh + 50, 6, Color{255, 255, 255}, "%.1f%%", percentage);
 	}
 }
 
