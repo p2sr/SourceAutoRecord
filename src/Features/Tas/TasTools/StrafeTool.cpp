@@ -288,9 +288,21 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 
 	// check if the velocity is about to reach its target.
 	if (speedDiff != 0) {
-		//float angRad = DEG2RAD(ang);
-		Vector predictedVel = GetVelocityAfterMove(player, cos(ang), sin(ang));
-		if ((speedDiff > 0 && predictedVel.Length2D() > params.strafeSpeed.speed) || (speedDiff < 0 && predictedVel.Length2D() < params.strafeSpeed.speed)) {
+
+		float forwardmove = cos(ang);
+		float sidemove = sin(ang);
+
+		// forwardmove and sidemove were calculated incorrectly in v2 and older
+		// fix for newer, keep for older for backwards compability
+		if (tasPlayer->scriptVersion >= 3) {
+			float velAngle = TasUtils::GetVelocityAngles(&player).x;
+			float correctAng = (DEG2RAD(velAngle) + ang) - DEG2RAD(player.angles.y);
+			forwardmove = cosf(correctAng);
+			sidemove = -sinf(correctAng);
+		}
+
+		float predictedVel = GetVelocityAfterMove(player, forwardmove, sidemove).Length2D();
+		if ((speedDiff > 0 && predictedVel > params.strafeSpeed.speed) || (speedDiff < 0 && predictedVel < params.strafeSpeed.speed)) {
 			passedTargetSpeed = true;
 		}
 	}
