@@ -36,6 +36,7 @@ public:
 
 public:
 	static std::list<TasTool *> &GetList(int slot);
+	static std::vector<std::string> priorityList;
 };
 
 

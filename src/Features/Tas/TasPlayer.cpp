@@ -603,9 +603,21 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	}
 
 	// applying tools
-	for (TasTool *tool : TasTool::GetList(slot)) {
-		tool->Apply(fb, playerInfo);
+	if (scriptVersion >= 3) {
+		// use priority list for newer versions. technically all tools should be in the list
+		for (std::string toolName : TasTool::priorityList) {
+			for (TasTool *tool : TasTool::GetList(slot)) {
+				std::string tn(tool->GetName());
+				if(toolName == tn) tool->Apply(fb, playerInfo);
+			}
+		}
+	} else {
+		// use old "earliest first" ordering system (partially also present in TasTool::SetParams)
+		for (TasTool *tool : TasTool::GetList(slot)) {
+			tool->Apply(fb, playerInfo);
+		}
 	}
+	
 
 	if (fb.moveAnalog.Length2D() > 1)
 		fb.moveAnalog = fb.moveAnalog.Normalize();
