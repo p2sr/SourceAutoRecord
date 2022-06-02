@@ -17,6 +17,7 @@
 #include "Event.hpp"
 #include "Features.hpp"
 #include "Features/Stats/StatsCounter.hpp"
+#include "Features/SeasonalASCII.hpp"
 #include "Game.hpp"
 #include "Hook.hpp"
 #include "Interface.hpp"
@@ -26,118 +27,6 @@
 SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
 
-static void doPride() {
-#define FILL(n,c) for (size_t i = 0; i < n; ++i) THREAD_PRINTCOLOR(c, "#");
-#define NL THREAD_PRINT("\n     ");
-#define RED Color{255,0,0}
-#define ORANGE Color{255,155,0}
-#define YELLOW Color{230,255,0}
-#define GREEN Color{25,160,0}
-#define BLUE Color{0,10,170}
-#define PURPLE Color{160,0,150}
-#define WHITE Color{255,255,255}
-#define TRANS_PINK Color{255,160,220}
-#define TRANS_BLUE Color{120,220,255}
-#define BROWN Color{70,40,30}
-#define BLACK Color{0,0,0}
-
-	NL
-	NL
-	FILL(40, RED)
-	NL
-	FILL(3, BLACK)
-	FILL(37, RED)
-	NL
-	FILL(3, BROWN)
-	FILL(3, BLACK)
-	FILL(34, ORANGE)
-	NL
-	FILL(3, TRANS_BLUE)
-	FILL(3, BROWN)
-	FILL(3, BLACK)
-	FILL(31, ORANGE)
-	NL
-	FILL(3, TRANS_PINK)
-	FILL(3, TRANS_BLUE)
-	FILL(3, BROWN)
-	FILL(3, BLACK)
-	FILL(28, YELLOW)
-	NL
-	FILL(3, WHITE)
-	FILL(3, TRANS_PINK)
-	FILL(3, TRANS_BLUE)
-	FILL(3, BROWN)
-	FILL(3, BLACK)
-	FILL(25, YELLOW)
-	NL
-	FILL(3, WHITE)
-	FILL(3, TRANS_PINK)
-	FILL(3, TRANS_BLUE)
-	FILL(3, BROWN)
-	FILL(3, BLACK)
-	FILL(25, GREEN)
-	NL
-	FILL(3, TRANS_PINK)
-	FILL(3, TRANS_BLUE)
-	FILL(3, BROWN)
-	FILL(3, BLACK)
-	FILL(28, GREEN)
-	NL
-	FILL(3, TRANS_BLUE)
-	FILL(3, BROWN)
-	FILL(3, BLACK)
-	FILL(31, BLUE)
-	NL
-	FILL(3, BROWN)
-	FILL(3, BLACK)
-	FILL(34, BLUE)
-	NL
-	FILL(3, BLACK)
-	FILL(37, PURPLE)
-	NL
-	FILL(40, PURPLE)
-	NL
-
-	THREAD_PRINT("\nHappy pride month to all members of the ");
-	THREAD_PRINTCOLOR(RED, "L");
-	THREAD_PRINTCOLOR(ORANGE, "G");
-	THREAD_PRINTCOLOR(YELLOW, "B");
-	THREAD_PRINTCOLOR(GREEN, "T");
-	THREAD_PRINTCOLOR(BLUE, "Q");
-	THREAD_PRINTCOLOR(PURPLE, "+");
-	THREAD_PRINT(" community!\n\n");
-
-#undef FILL
-#undef NL
-#undef RED
-#undef ORANGE
-#undef YELLOW
-#undef GREEN
-#undef BLUE
-#undef PURPLE
-#undef WHITE
-#undef TRANS_PINK
-#undef TRANS_BLUE
-#undef BROWN
-#undef BLACK
-}
-
-static std::thread g_prideThread;
-
-static void initPride() {
-	time_t t = time(NULL);
-	struct tm *ltime = localtime(&t);
-
-	int month = ltime->tm_mon + 1;
-
-	if (month == 6) { // June
-		g_prideThread = std::thread([]() {
-				GO_THE_FUCK_TO_SLEEP(3000);
-				doPride();
-		});
-		g_prideThread.detach();
-	}
-}
 
 SAR::SAR()
 	: modules(new Modules())
@@ -238,7 +127,9 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 				this->SearchPlugin();
 
 				console->PrintActive("Loaded SourceAutoRecord, Version %s\n", SAR_VERSION);
-				initPride();
+				
+				SeasonalASCII::Init();
+
 				return true;
 			} else {
 				console->Warning("SAR: Failed to load engine module!\n");

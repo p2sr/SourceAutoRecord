@@ -442,6 +442,9 @@
     <ClCompile Include="Features\WindowResizer.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Features\SeasonalASCII.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1111,6 +1114,9 @@
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClInclude>
     <ClInclude Include="Features\WindowResizer.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\SeasonalASCII.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>
