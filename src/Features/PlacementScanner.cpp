@@ -26,8 +26,8 @@ static std::optional<CGameTrace> camTrace() {
 	CTraceFilterSimple filter;
 	filter.SetPassEntity(player);
 
-	Vector cam = camera->GetPosition(0);
-	Vector delta = camera->GetForwardVector(0) * TRACE_LENGTH;
+	Vector cam = camera->GetPosition(GET_SLOT());
+	Vector delta = camera->GetForwardVector(GET_SLOT()) * TRACE_LENGTH;
 
 	Ray_t ray;
 	ray.m_IsRay = true;
@@ -54,8 +54,8 @@ static inline void getAxesForPlane(cplane_t plane, Vector *ax1, Vector *ax2) {
 }
 
 static Vector intersectPlaneView(cplane_t plane) {
-	Vector start = camera->GetPosition(0);
-	Vector dir = camera->GetForwardVector(0);
+	Vector start = camera->GetPosition(GET_SLOT());
+	Vector dir = camera->GetForwardVector(GET_SLOT());
 
 	float w = dir.Dot(plane.normal);
 	if (w == 0) {

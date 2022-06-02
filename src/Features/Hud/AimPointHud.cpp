@@ -52,8 +52,8 @@ static bool updateTrace(int slot) {
 
 	g_last_trace_valid = false;
 
-	Vector cam_pos = camera->GetPosition(slot);
-	Vector dir = camera->GetForwardVector(slot) * TRACE_LENGTH;
+	Vector cam_pos = camera->GetPosition(GET_SLOT());
+	Vector dir = camera->GetForwardVector(GET_SLOT()) * TRACE_LENGTH;
 
 	CGameTrace tr;
 

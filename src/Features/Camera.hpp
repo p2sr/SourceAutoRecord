@@ -60,6 +60,7 @@ private:
 public:
 	CameraControlType controlType = Default;
 	CameraState currentState;
+	CameraState rawState;
 	std::map<int, CameraState> states;
 	Camera();
 	~Camera();
@@ -70,8 +71,8 @@ public:
 	void RequestCameraRefresh();
 	void OverrideMovement(CUserCmd *cmd);
 
-	Vector GetPosition(int slot);
-	Vector GetForwardVector(int slot);
+	Vector GetPosition(int slot, bool raw = true);
+	Vector GetForwardVector(int slot, bool raw = true);
 
 	void TransformThroughPortal(int slot, bool serverside, Vector &eyePos, QAngle &eyeAng);
 	bool GetEyePosFromOrigin(int slot, bool serverside, Vector origin, Vector &eyePos, QAngle &eyeAng);

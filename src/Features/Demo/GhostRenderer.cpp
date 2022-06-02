@@ -176,7 +176,7 @@ int GhostRenderer::GetLODLevel() {
 	// HACK: render all ghosts at full LOD if spectating
 	if (GhostEntity::GetFollowTarget()) return 0;
 
-	Vector camPos = camera->GetPosition(GET_SLOT());
+	Vector camPos = camera->GetPosition(GET_SLOT(), false);
 	float dist = (camPos - ghost->data.position).Length();
 
 	float lodDist = ghost_bendy_lod_proximity.GetFloat();

@@ -267,6 +267,10 @@ CameraState Camera::InterpolateStates(float time) {
 
 //Overrides view.
 void Camera::OverrideView(CViewSetup *m_View) {
+	rawState.origin = m_View->origin;
+	rawState.angles = m_View->angles;
+	rawState.fov = m_View->fov;
+
 	static std::chrono::time_point<std::chrono::steady_clock> last_frame;
 	auto now = NOW_STEADY();
 	float real_frame_time = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame).count();
@@ -491,26 +495,18 @@ void Camera::OverrideMovement(CUserCmd *cmd) {
 }
 
 
-Vector Camera::GetPosition(int slot) {
-	void *player = server->GetPlayer(slot + 1);
-	if (!player) return {0, 0, 0};
-
+Vector Camera::GetPosition(int slot, bool raw) {
 	bool cam_control = sar_cam_control.GetInt() == 1 && sv_cheats.GetBool();
 
-	Vector cam_pos;
-	if (cam_control) {
-		cam_pos = camera->currentState.origin;
-	} else {
-		cam_pos = server->GetAbsOrigin(player) + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
-	}
+	Vector cam_pos = (!raw && cam_control) ? camera->currentState.origin : rawState.origin;
 
 	return cam_pos;
 }
 
-Vector Camera::GetForwardVector(int slot) {
+Vector Camera::GetForwardVector(int slot, bool raw) {
 	bool cam_control = sar_cam_control.GetInt() == 1 && sv_cheats.GetBool();
 
-	QAngle ang = cam_control ? camera->currentState.angles : engine->GetAngles(slot);
+	QAngle ang = (!raw && cam_control) ? camera->currentState.angles : rawState.angles;
 	Vector view_vec = Vector{
 		cosf(DEG2RAD(ang.y)) * cosf(DEG2RAD(ang.x)),
 		sinf(DEG2RAD(ang.y)) * cosf(DEG2RAD(ang.x)),
