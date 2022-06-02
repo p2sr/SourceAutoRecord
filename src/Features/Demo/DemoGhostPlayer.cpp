@@ -308,6 +308,22 @@ CON_COMMAND(ghost_offset, "ghost_offset <offset> <ID> - delay the ghost start by
 	}
 }
 
+CON_COMMAND(ghost_demo_color, "ghost_demo_color <color> <ID>  - sets the color of ghost\n") {
+	if (args.ArgC() < 2) {
+		return console->Print(ghost_demo_color.ThisPtr()->m_pszHelpString);
+	}
+
+	unsigned int ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
+
+	auto ghost = demoGhostPlayer.GetGhostByID(ID);
+	if (ghost) {
+		auto color = Utils::GetColor(args[1]);
+		ghost->color = color.value_or(Color{0, 0, 0});
+	} else {
+		return console->Print("No ghost with that ID\n");
+	}
+}
+
 ON_EVENT(PRE_TICK) {
 	if (demoGhostPlayer.IsPlaying() && engine->isRunning()) {
 		demoGhostPlayer.UpdateGhostsPosition();
