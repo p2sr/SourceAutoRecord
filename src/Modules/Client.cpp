@@ -654,6 +654,7 @@ void Client::Shutdown() {
 	Interface::Delete(this->g_HudSaveStatus);
 	Interface::Delete(this->g_GameMovement);
 	Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
+	Command::Unhook("+leaderboard", Client::leaderboard_callback);
 }
 
 Client *client;
