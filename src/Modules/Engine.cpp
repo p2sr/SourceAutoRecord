@@ -145,7 +145,9 @@ int Engine::PointToScreen(const Vector &point, Vector &screen) {
 }
 void Engine::SafeUnload(const char *postCommand) {
 
-	sar.Unload();
+	// give events some time to execute before plugin is disabled
+	Event::Trigger<Event::SAR_UNLOAD>({});
+	this->ExecuteCommand("sar_exit");
 
 	if (postCommand) {
 		this->SendToCommandBuffer(postCommand, SAFE_UNLOAD_TICK_DELAY);

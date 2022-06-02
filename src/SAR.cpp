@@ -314,7 +314,6 @@ void SAR::Unload() {
 	if (unloading) return;
 	unloading = true;
 
-	Event::Trigger<Event::SAR_UNLOAD>({});
 	curl_global_cleanup();
 	statsCounter->RecordDatas(session->GetTick());
 	statsCounter->ExportToFile(sar_statcounter_filePath.GetString());

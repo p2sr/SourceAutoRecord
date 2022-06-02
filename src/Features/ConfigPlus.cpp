@@ -674,7 +674,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 MK_SAR_ON(load, "on session start", true)
 MK_SAR_ON(session_end, "on session end", true)
-MK_SAR_ON(exit, "on game exit", false)
+MK_SAR_ON(exit, "on game exit", true)
 MK_SAR_ON(demo_start, "when demo playback starts", false)
 MK_SAR_ON(demo_stop, "when demo playback stops", false)
 MK_SAR_ON(flags, "when CM flags are hit", false)
