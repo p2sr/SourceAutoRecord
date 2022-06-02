@@ -25,6 +25,7 @@ public:
 
 private:
 	std::thread findPluginThread;
+	bool unloading;
 
 public:
 	SAR();

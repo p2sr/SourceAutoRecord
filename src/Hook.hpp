@@ -12,7 +12,7 @@ public:
 		: func(nullptr)
 		, hook((void *)hook)
 		, enabled(false) {
-		Hook::hooks.push_back(this);
+		Hook::GetHooks().push_back(this);
 	}
 
 	~Hook() {}
@@ -24,6 +24,7 @@ public:
 	}
 
 	void Enable() {
+		if (this->locked) return;
 		if (this->enabled) return;
 		if (!this->func || !this->hook) return;
 		memcpy(this->origCode, this->func, sizeof this->origCode);
@@ -34,7 +35,8 @@ public:
 		this->enabled = true;
 	}
 
-	void Disable() {
+	void Disable(bool lock = false) {
+		if (lock) this->locked = true;
 		if (!this->enabled) return;
 		if (!this->func || !this->hook) return;
 		Memory::UnProtect(this->func, 5);
@@ -42,13 +44,21 @@ public:
 		this->enabled = false;
 	}
 
-	static void DisableAll();
+	static void DisableAll() {
+		for (Hook *h : Hook::GetHooks()) {
+			h->Disable(true);
+		}
+	}
+
+	static std::vector<Hook*> &GetHooks() {
+		static std::vector<Hook *> hooks;
+		return hooks;
+	}
 
 private:
 	void *func;
 	void *hook;
 	bool enabled;
+	bool locked;
 	uint8_t origCode[5];
-
-	static std::vector<Hook *> hooks;
 };

@@ -310,6 +310,56 @@ void SAR::SearchPlugin() {
 	this->findPluginThread.detach();
 }
 
+void SAR::Unload() {
+	if (unloading) return;
+	unloading = true;
+
+	Event::Trigger<Event::SAR_UNLOAD>({});
+	curl_global_cleanup();
+	statsCounter->RecordDatas(session->GetTick());
+	statsCounter->ExportToFile(sar_statcounter_filePath.GetString());
+
+	networkManager.Disconnect();
+
+	Variable::ClearAllCallbacks();
+
+	Hook::DisableAll();
+
+	if (sar.cheats) {
+		sar.cheats->Shutdown();
+	}
+	if (sar.features) {
+		sar.features->DeleteAll();
+	}
+
+	if (sar.GetPlugin()) {
+		// SAR has to unhook CEngine some ticks before unloading the module
+		auto unload = std::string("plugin_unload ") + std::to_string(sar.plugin->index);
+		engine->SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);
+	}
+
+	if (sar.modules) {
+		sar.modules->ShutdownAll();
+	}
+
+	// This isn't in sar.modules
+	if (tier1) {
+		tier1->Shutdown();
+	}
+
+	SAFE_DELETE(sar.features)
+	SAFE_DELETE(sar.cheats)
+	SAFE_DELETE(sar.modules)
+	SAFE_DELETE(sar.plugin)
+	SAFE_DELETE(sar.game)
+
+	console->Print("Cya :)\n");
+
+	SAFE_DELETE(tier1)
+	SAFE_DELETE(console)
+	CrashHandler::Cleanup();
+}
+
 CON_COMMAND(sar_session, "sar_session - prints the current tick of the server since it has loaded\n") {
 	auto tick = session->GetTick();
 	console->Print("Session Tick: %i (%.3f)\n", tick, engine->ToTime(tick));
@@ -365,56 +415,10 @@ CON_COMMAND(sar_rename, "sar_rename <name> - changes your name\n") {
 	}
 }
 CON_COMMAND(sar_exit, "sar_exit - removes all function hooks, registered commands and unloads the module\n") {
-	
-	Event::Trigger<Event::SAR_UNLOAD>({});
-	curl_global_cleanup();
-	statsCounter->RecordDatas(session->GetTick());
-	statsCounter->ExportToFile(sar_statcounter_filePath.GetString());
-
-	networkManager.Disconnect();
-
-	Variable::ClearAllCallbacks();
-
-	Hook::DisableAll();
-
-	if (sar.cheats) {
-		sar.cheats->Shutdown();
-	}
-	if (sar.features) {
-		sar.features->DeleteAll();
-	}
-
-	if (sar.GetPlugin()) {
-		// SAR has to unhook CEngine some ticks before unloading the module
-		auto unload = std::string("plugin_unload ") + std::to_string(sar.plugin->index);
-		engine->SendToCommandBuffer(unload.c_str(), SAFE_UNLOAD_TICK_DELAY);
-	}
-
-	if (sar.modules) {
-		sar.modules->ShutdownAll();
-	}
-
-	// This isn't in sar.modules
-	if (tier1) {
-		tier1->Shutdown();
-	}
-
-	SAFE_DELETE(sar.features)
-	SAFE_DELETE(sar.cheats)
-	SAFE_DELETE(sar.modules)
-	SAFE_DELETE(sar.plugin)
-	SAFE_DELETE(sar.game)
-
-	console->Print("Cya :)\n");
-
-	SAFE_DELETE(tier1)
-	SAFE_DELETE(console)
-	CrashHandler::Cleanup();
+	sar.Unload();
 }
 
 #pragma region Unused callbacks
-void SAR::Unload() {
-}
 void SAR::Pause() {
 }
 void SAR::UnPause() {

@@ -145,8 +145,7 @@ int Engine::PointToScreen(const Vector &point, Vector &screen) {
 }
 void Engine::SafeUnload(const char *postCommand) {
 
-	// The exit command will handle everything
-	this->ExecuteCommand("sar_exit");
+	sar.Unload();
 
 	if (postCommand) {
 		this->SendToCommandBuffer(postCommand, SAFE_UNLOAD_TICK_DELAY);
