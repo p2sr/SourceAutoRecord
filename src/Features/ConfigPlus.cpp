@@ -816,22 +816,20 @@ CON_COMMAND_F(sar_alias, "sar_alias <name> [command] [args]... - create an alias
 	}
 
 	auto existing = g_aliases.find({args[1]});
-	if (existing != g_aliases.end()) {
-		AliasInfo info = g_aliases[std::string(args[1])];
-		info.cmd->Unregister();
-		delete info.cmd;
-		free(info.name);
+	if (existing == g_aliases.end()) {
+		if (Command(args[1]).ThisPtr()) {
+			console->Print("Command %s already exists! Cannot shadow.\n", args[1]);
+			return;
+		} else {
+			char *name = strdup(args[1]);  // We do this so that the ConCommand has a persistent handle to the command name
+			Command *c = new Command(name, &_aliasCallback, "SAR alias command.\n", FCVAR_DONTRECORD);
+			c->Register();
+			g_aliases[std::string(args[1])] = {c, cmd, name};
+		}
+	} else {
+		// redirect command exists already. just update it
+		g_aliases[std::string(args[1])].run = cmd;
 	}
-
-	if (Command(args[1]).ThisPtr()) {
-		console->Print("Command %s already exists! Cannot shadow.\n", args[1]);
-		return;
-	}
-
-	char *name = strdup(args[1]);  // We do this so that the ConCommand has a persistent handle to the command name
-	Command *c = new Command(name, &_aliasCallback, "SAR alias command.\n", FCVAR_DONTRECORD);
-	c->Register();
-	g_aliases[std::string(args[1])] = {c, cmd, name};
 }
 
 CON_COMMAND_F(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, passing on any additional arguments\n", FCVAR_DONTRECORD) {
@@ -941,22 +939,21 @@ CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a 
 	}
 
 	auto existing = g_functions.find({args[1]});
-	if (existing != g_functions.end()) {
-		AliasInfo info = g_functions[std::string(args[1])];
-		info.cmd->Unregister();
-		delete info.cmd;
-		free(info.name);
+	if (existing == g_functions.end()) {
+		if (Command(args[1]).ThisPtr()) {
+			console->Print("Command %s already exists! Cannot shadow.\n", args[1]);
+			return;
+		} else {
+			char *name = strdup(args[1]);  // We do this so that the ConCommand has a persistent handle to the command name
+			Command *c = new Command(name, &_functionCallback, "SAR function command.\n", FCVAR_DONTRECORD);
+			c->Register();
+			g_functions[std::string(args[1])] = {c, cmd, name};
+		}
+	} else {
+		// redirect command exists already. just update it
+		g_functions[std::string(args[1])].run = cmd;
 	}
 
-	if (Command(args[1]).ThisPtr()) {
-		console->Print("Command %s already exists! Cannot shadow.\n", args[1]);
-		return;
-	}
-
-	char *name = strdup(args[1]);  // We do this so that the ConCommand has a persistent handle to the command name
-	Command *c = new Command(name, &_functionCallback, "SAR function command.\n", FCVAR_DONTRECORD);
-	c->Register();
-	g_functions[std::string(args[1])] = {c, cmd, name};
 }
 
 static void expand(size_t nargs, const char *const *args, std::string body) {
