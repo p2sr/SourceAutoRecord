@@ -45,6 +45,7 @@ namespace Event {
 		RENDER,
 		TAS_START,
 		TAS_END,
+		PB_SUBMIT
 	};
 
 	template <EventType E>
@@ -79,6 +80,11 @@ namespace Event {
 	struct EventData<PROCESS_MOVEMENT> {
 		int slot;
 		bool server;
+	};
+	template <>
+	struct EventData<PB_SUBMIT> {
+		int score;
+		bool coop;
 	};
 
 	template <EventType E>

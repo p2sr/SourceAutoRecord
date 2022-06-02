@@ -325,6 +325,8 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 		return;
 	}
 
+	Event::Trigger<Event::PB_SUBMIT>({score, coop});
+
 	curl_mime *form = curl_mime_init(g_curl);
 	curl_mimepart *field;
 

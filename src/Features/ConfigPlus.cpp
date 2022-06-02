@@ -684,6 +684,7 @@ MK_SAR_ON(coop_spawn, "on coop spawn", true)
 MK_SAR_ON(config_exec, "on config.cfg exec", true)
 MK_SAR_ON(tas_start, "when TAS script playback starts", true)
 MK_SAR_ON(tas_end, "when TAS script playback ends", true)
+MK_SAR_ON(pb, "when auto-submitter detects PB", true)
 
 struct Seq {
 	std::queue<std::string> commands;
@@ -895,6 +896,9 @@ ON_EVENT(TAS_START) {
 }
 ON_EVENT(TAS_END) {
 	RUN_EXECS(tas_end);
+}
+ON_EVENT(PB_SUBMIT) {
+	RUN_EXECS(pb);
 }
 
 CON_COMMAND_F(nop, "nop [args]... - nop ignores all its arguments and does nothing\n", FCVAR_DONTRECORD) {}
