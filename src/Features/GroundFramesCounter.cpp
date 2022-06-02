@@ -12,12 +12,21 @@ GroundFramesCounter::GroundFramesCounter() {
 	this->hasLoaded = true;
 }
 
+HUD_ELEMENT_MODE2(groundframes, "0", 0, 2, "Draws the number of ground frames since last landing. Setting it to 2 preserves the value.", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	ctx->DrawElement("groundframes: %d", groundFramesCounter->counter[ctx->slot]);
+}
+
 void GroundFramesCounter::HandleMovementFrame(int slot, bool grounded) {
 	if (pauseTimer->IsActive() && !engine->IsCoop() && !engine->demoplayer->IsPlaying()) return;
 
 	if (!this->grounded[slot] && grounded) {
 		this->AddToTotal(slot, this->counter[slot]);
-		this->counter[slot] = 0;
+	}
+
+	int hudMode = sar_hud_groundframes.GetInt();
+
+	if ((!this->grounded[slot] && grounded) || hudMode == 0) {
+		if (hudMode != 2) this->counter[slot] = 0;
 	} else if (grounded) {
 		this->counter[slot]++;
 	}
@@ -53,10 +62,6 @@ CON_COMMAND(sar_groundframes_reset, "sar_groundframes_reset - reset recorded gro
 		groundFramesCounter->totals[0][i] = 0;
 		groundFramesCounter->totals[1][i] = 0;
 	}
-}
-
-HUD_ELEMENT_MODE2(groundframes, "0", 0, 1, "Draws the number of ground frames since last landing.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
-	ctx->DrawElement("groundframes: %d", groundFramesCounter->counter[ctx->slot]);
 }
 
 HUD_ELEMENT_MODE2(grounded, "0", 0, 1, "Draws the state of player being on ground.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
