@@ -331,6 +331,15 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 	if (flAbs(diff + 360) < flAbs(diff)) diff += 360;
 
 	if (this->shouldFollowLine) {
+		// we've reached our line!
+		// for newer script versions, disable veccam - we don't need it anymore
+		if (tasPlayer->scriptVersion >= 3) {
+			auto asParams = std::static_pointer_cast<AutoStrafeParams>(params);
+			if (asParams->strafeType == VECTORIAL_CAM) {
+				asParams->strafeType = VECTORIAL;
+			}
+		}
+
 		// check if deviated too far from the line
 		// using the math from max angle change strafing to determine whether
 		// line following is too "wobbly"
