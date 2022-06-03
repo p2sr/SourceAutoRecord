@@ -1118,6 +1118,8 @@
     </ClInclude>
     <ClInclude Include="Features\SeasonalASCII.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    <ClInclude Include="OffsetsData.hpp">
+      <Filter>SourceAutoRecord</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

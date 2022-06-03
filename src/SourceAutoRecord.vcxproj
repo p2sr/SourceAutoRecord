@@ -327,6 +327,7 @@
     <ClInclude Include="Features\Routing\Ruler.hpp" />
     <ClInclude Include="Features\SeasonalASCII.hpp" />
     <ClInclude Include="Features\WindowResizer.hpp" />
+    <ClInclude Include="OffsetsData.hpp" />
     <ClInclude Include="Scheduler.hpp" />
     <ClInclude Include="Features.hpp" />
     <ClInclude Include="Features\ClassDumper.hpp" />
