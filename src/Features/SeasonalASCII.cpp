@@ -22,22 +22,22 @@
 static std::vector<SeasonalASCIIArt> g_seasonalAsciiArts = {
 
 // Pride month
-{{WHITE, RED, BLACK, BROWN, ORANGE, AQUA, PINK, YELLOW, GREEN, BLUE, PURPLE},
+{{SAR_PRINT_COLOR, RED, BLACK, BROWN, ORANGE, AQUA, PINK, YELLOW, GREEN, BLUE, PURPLE, WHITE},
 "      \n"
 "     $c{1}########################################\n"
 "     $c{2}###$c{1}#####################################\n"
 "     $c{3}###$c{2}###$c{4}##################################\n"
 "     $c{5}###$c{3}###$c{2}###$c{4}###############################\n"
 "     $c{6}###$c{5}###$c{3}###$c{2}###$c{7}############################\n"
-"     $c{0}###$c{6}###$c{5}###$c{3}###$c{2}###$c{7}#########################\n"
-"     $c{0}###$c{6}###$c{5}###$c{3}###$c{2}###$c{8}#########################\n"
+"     $c{11}###$c{6}###$c{5}###$c{3}###$c{2}###$c{7}#########################\n"
+"     $c{11}###$c{6}###$c{5}###$c{3}###$c{2}###$c{8}#########################\n"
 "     $c{6}###$c{5}###$c{3}###$c{2}###$c{8}############################\n"
 "     $c{5}###$c{3}###$c{2}###$c{9}###############################\n"
 "     $c{3}###$c{2}###$c{9}##################################\n"
 "     $c{2}###$c{10}#####################################\n"
 "     $c{10}########################################\n"
 "      \n" 
-"$c{7}Happy pride month to all members of the $c{1}L$c{4}G$c{7}B$c{8}T$c{9}Q$c{10}+ $c{7}community!\n"
+"$c{0}Happy pride month to all members of the $c{1}L$c{4}G$c{7}B$c{8}T$c{9}Q$c{10}+ $c{0}community!\n"
 , 0, 6, 0},
 
 // put more ascii arts here
@@ -102,6 +102,8 @@ void SeasonalASCIIArt::Display() {
 	Color currentColor{255, 255, 255};
 	int messageBegin = 0;
 
+	std::vector<std::pair<Color, std::string>> convertedMessages;
+
 	for (int i = 0; i < art.size(); i++) {
 		if (art[i] != '$' || i >= art.size() - 4 || art[i + 1] != 'c' || art[i + 2] != '{') continue;
 
@@ -110,10 +112,10 @@ void SeasonalASCIIArt::Display() {
 		while (numStart + numSize < art.size() && art[numStart + numSize] != '}') numSize++;
 		if (art[numStart + numSize] != '}' || numSize==0) continue;
 
-		// new color code! print previous message if needed
+		// new color code! store previous message if needed
 		if (i > messageBegin) {
 			std::string printMessage = art.substr(messageBegin, i - messageBegin);
-			console->ColorMsg(currentColor, printMessage.c_str());
+			convertedMessages.push_back({currentColor, printMessage});
 		}
 		i += numSize + 3;
 		messageBegin = i+1;
@@ -124,7 +126,12 @@ void SeasonalASCIIArt::Display() {
 		currentColor = colors[colorNum];
 	}
 
-	// print last message
+	// store last message
 	std::string lastMessage = art.substr(messageBegin, art.size() - messageBegin);
-	console->ColorMsg(currentColor, lastMessage.c_str());
+	convertedMessages.push_back({currentColor, lastMessage});
+
+	// print all messages
+	for (auto const &msg : convertedMessages) {
+		THREAD_PRINTCOLOR(msg.first, msg.second.c_str());
+	}
 }
