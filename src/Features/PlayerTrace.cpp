@@ -220,7 +220,9 @@ void PlayerTrace::DrawInWorld() const {
 		}.Normalize();
 	}
 
-	for (const auto &[trace_name, trace] : traces) {
+	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
+		std::string trace_name = it->first;
+		const Trace &trace = it->second;
 		for (int slot = 0; slot < 2; slot++) {
 			if (trace.positions[slot].size() < 2) continue;
 
@@ -602,11 +604,13 @@ ON_EVENT(SESSION_START) {
 }
 
 void PlayerTrace::DrawTraceHud(HudContext *ctx) {
-	for (const auto &t : playerTrace->traces) {
-		int tick = tickUserToInternal(sar_trace_bbox_at.GetInt(), t.second);
+	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
+		const char *name = it->first.c_str();
+		const Trace &t = it->second;
+		int tick = tickUserToInternal(sar_trace_bbox_at.GetInt(), t);
 		for (int slot = 0; slot < 2; slot++) {
-			drawTraceInfo(tick, slot, t.second, [=](const std::string &line) {
-				ctx->DrawElement("trace %s %s: %s", t.first.c_str(), slot == 1 ? " (orange)" : "", line.c_str());
+			drawTraceInfo(tick, slot, t, [=](const std::string &line) {
+				ctx->DrawElement("trace %s %s: %s", name, slot == 1 ? " (orange)" : "", line.c_str());
 			});
 		}
 	}
