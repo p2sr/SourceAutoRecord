@@ -9,6 +9,11 @@
 #include "TasUtils.hpp"
 #include "Utils/SDK.hpp"
 
+// windows is using abs definition for different types, while linux
+// uses integers, which leads to platform differences and non-optimal
+// strafing on linux. Patch that in newer versions.
+#define flAbs(x) ((tasPlayer->scriptVersion >= 3) ? fabsf(x) : abs(x))
+
 AutoStrafeTool autoStrafeTool[2] = {{0}, {1}};
 
 void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
@@ -34,7 +39,7 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 	bool compensatePitchMult = false;
 	if (!pInfo.grounded && fabsf(pInfo.angles.x - fb.viewAnalog.y) >= 30.0f) {
 		if (!asParams->noPitchLock) {
-			float diff = pInfo.angles.x - (29.9999f * (pInfo.angles.x / abs(pInfo.angles.x)));
+			float diff = pInfo.angles.x - (29.9999f * (pInfo.angles.x / flAbs(pInfo.angles.x)));
 			fb.viewAnalog.y = diff;
 		} else {
 			compensatePitchMult = true;
@@ -160,7 +165,7 @@ Vector AutoStrafeTool::CreateWishDir(const TasPlayerInfo &player, float forwardM
 	// forwardmove is affected by player pitch when in air
 	// but only with pitch outside of range from -30 to 30 deg (both exclusive)
 	if (!player.grounded) {
-		if (abs(player.angles.x) >= 30.0f) {
+		if (flAbs(player.angles.x) >= 30.0f) {
 			wishDir.y *= cos(DEG2RAD(player.angles.x));
 		}
 	}
@@ -172,10 +177,10 @@ Vector AutoStrafeTool::CreateWishDir(const TasPlayerInfo &player, float forwardM
 	// air control limit
 	float airConLimit = 300;
 	if (!player.grounded && player.velocity.Length2D() > airConLimit) {
-		if (abs(player.velocity.x) > airConLimit * 0.5 && player.velocity.x * wishDir.x < 0) {
+		if (flAbs(player.velocity.x) > airConLimit * 0.5 && player.velocity.x * wishDir.x < 0) {
 			wishDir.x = 0;
 		}
-		if (abs(player.velocity.y) > airConLimit * 0.5 && player.velocity.y * wishDir.y < 0) {
+		if (flAbs(player.velocity.y) > airConLimit * 0.5 && player.velocity.y * wishDir.y < 0) {
 			wishDir.y = 0;
 		}
 	}
@@ -273,7 +278,7 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 	float speed = player.velocity.Length2D();
 
 	float speedDiff = params.strafeSpeed.speed - speed;
-	if (abs(speedDiff) < 0.001) speedDiff = 0;
+	if (flAbs(speedDiff) < 0.001) speedDiff = 0;
 
 	int turningDir = GetTurningDirection(player, params.strafeDir.angle);
 
@@ -322,8 +327,8 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 
 	float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
 	float diff = desAngle - velAngle;
-	if (abs(diff - 360) < abs(diff)) diff -= 360;
-	if (abs(diff + 360) < abs(diff)) diff += 360;
+	if (flAbs(diff - 360) < flAbs(diff)) diff -= 360;
+	if (flAbs(diff + 360) < flAbs(diff)) diff += 360;
 
 	if (this->shouldFollowLine) {
 		// check if deviated too far from the line
@@ -332,7 +337,7 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 		Vector velocity = GetGroundFrictionVelocity(pInfo);
 		float maxAccel = GetMaxAccel(pInfo, Vector(0, 1));
 		float maxRotAng = RAD2DEG(asinf(maxAccel / velocity.Length2D()));
-		if (abs(diff) > maxRotAng) {
+		if (flAbs(diff) > maxRotAng) {
 			this->shouldFollowLine = false;
 			return GetTurningDirection(pInfo, desAngle);
 		}
