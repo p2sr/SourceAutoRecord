@@ -46,6 +46,7 @@ public:
 	using _DebugDrawPhysCollide = bool (__rescall *)(void *thisptr, const void *collide, IMaterial *material, const matrix3x4_t &transform, const Color &color);
 	using _IsPaused = bool (*)(void *thisptr);
 	using _TraceRay = void(__rescall *)(void *thisptr, const Ray_t &ray, unsigned int fMask, ITraceFilter *pTraceFilter, CGameTrace *pTrace);
+	using _PointOutsideWorld = bool (__rescall *)(void *thisptr, const Vector &test);
 	using _GetCount = int(__rescall *)(void *thisptr);
 	using _Con_IsVisible = bool(__rescall *)(void *thisptr);
 	using _GetLevelNameShort = const char *(__rescall *)(void *thisptr);
@@ -88,6 +89,7 @@ public:
 	_DebugDrawPhysCollide DebugDrawPhysCollide = nullptr;
 	_IsPaused IsPaused = nullptr;
 	_TraceRay TraceRay = nullptr;
+	_PointOutsideWorld PointOutsideWorld = nullptr;
 	_GetCount GetCount = nullptr;
 	_Con_IsVisible Con_IsVisible = nullptr;
 	_GetLevelNameShort GetLevelNameShort = nullptr;

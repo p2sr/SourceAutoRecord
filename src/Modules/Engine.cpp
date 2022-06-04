@@ -860,6 +860,7 @@ bool Engine::Init() {
 
 		if (this->engineTrace = Interface::Create(this->Name(), "EngineTraceServer004")) {
 			this->TraceRay = this->engineTrace->Original<_TraceRay>(Offsets::TraceRay);
+			this->PointOutsideWorld = this->engineTrace->Original<_PointOutsideWorld>(Offsets::TraceRay + 14);
 		}
 	}
 

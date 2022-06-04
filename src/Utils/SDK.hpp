@@ -1131,6 +1131,10 @@ struct VectorAligned : public Vector {
 		: Vector(x, y, z)
 		, w(0) {
 	}
+	VectorAligned(Vector v)
+		: Vector(v.x, v.y, v.z)
+		, w(0) {
+	}
 	float w;
 };
 
@@ -1646,4 +1650,11 @@ struct DemoCommandQueue {
 	int tick;
 	democmdinfo_t info;
 	int filepos;
+};
+
+struct FcpsTraceAdapter {
+	void (*traceFunc)(const Ray_t &ray, CGameTrace *result, FcpsTraceAdapter *adapter);
+	bool (*pointOutsideWorldFunc)(const Vector &test, FcpsTraceAdapter *adapter);
+	ITraceFilter *traceFilter;
+	unsigned mask;
 };

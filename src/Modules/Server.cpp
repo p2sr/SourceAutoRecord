@@ -3,9 +3,11 @@
 #include "Client.hpp"
 #include "Engine.hpp"
 #include "Event.hpp"
+#include "Features/Camera.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
+#include "Features/FCPS.hpp"
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/Hud/Crosshair.hpp"
 #include "Features/Hud/ScrollSpeed.hpp"
@@ -226,6 +228,34 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 	return ret;
 }
 Hook g_playerRunCommandHook(&Server::PlayerRunCommand_Hook);
+
+static bool (*UTIL_FindClosestPassableSpace)(const Vector &, const Vector &, const Vector &, unsigned, Vector &, int, FcpsTraceAdapter *);
+extern Hook UTIL_FindClosestPassableSpace_Hook;
+static bool UTIL_FindClosestPassableSpace_Detour(const Vector &center, const Vector &extents, const Vector &ind_push, unsigned iterations, Vector &center_out, int axis_restriction_flags, FcpsTraceAdapter *trace_adapter) {
+	if (sar_fcps_override.GetBool() && sv_cheats.GetBool()) {
+		return RecordFcps2(center, extents, ind_push, center_out, trace_adapter);
+	} else {
+		UTIL_FindClosestPassableSpace_Hook.Disable();
+		bool success = UTIL_FindClosestPassableSpace(center, extents, ind_push, iterations, center_out, axis_restriction_flags, trace_adapter);
+		UTIL_FindClosestPassableSpace_Hook.Enable();
+		return success;
+	}
+}
+Hook UTIL_FindClosestPassableSpace_Hook(&UTIL_FindClosestPassableSpace_Detour);
+
+static bool (*FindClosestPassableSpace)(void *, const Vector &, int);
+extern Hook FindClosestPassableSpace_Hook;
+static bool FindClosestPassableSpace_Detour(void *entity, const Vector &ind_push, int mask) {
+	if (sar_fcps_override.GetBool() && sv_cheats.GetBool()) {
+		return RecordFcps1(entity, ind_push, mask);
+	} else {
+		FindClosestPassableSpace_Hook.Disable();
+		bool success = FindClosestPassableSpace(entity, ind_push, mask);
+		FindClosestPassableSpace_Hook.Enable();
+		return success;
+	}
+}
+Hook FindClosestPassableSpace_Hook(&FindClosestPassableSpace_Detour);
 
 // CGameMovement::ProcessMovement
 DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
@@ -680,6 +710,22 @@ bool Server::Init() {
 	TraceFirePortal = (_TraceFirePortal)Memory::Scan(server->Name(), "55 89 E5 57 56 8D BD F4 F8 FF FF 53 E8 ? ? ? ? 81 C3 ? ? ? ? 81 EC 40 07 00 00 8B 45 14 6A 00 8B 75 0C", 0);
 	FindPortal = (_FindPortal)Memory::Scan(server->Name(), "55 57 56 E8 ? ? ? ? 81 C6 ? ? ? ? 53 83 EC 2C 8B 44 24 40 8B 54 24 44 8B 7C 24 48 89 44 24 18 0F B6 C0", 0);
 #endif
+
+	// fcps fuckery
+#ifdef _WIN32
+	UTIL_FindClosestPassableSpace = (decltype (UTIL_FindClosestPassableSpace))Memory::Scan(server->Name(), "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC 98 02 00 00 8B 43 0C 8B 48 08 F3 0F 10 48 04 F3 0F 10 00 F3 0F 10 3D ? ? ? ?");
+	FindClosestPassableSpace = (decltype (FindClosestPassableSpace))Memory::Scan(server->Name(), "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC A1 ? ? ? ? 81 EC 88 02 00 00 83 78 30 00 56 57 0F 84 ? ? ? ? 8B 73 08 8B 8E DC 00 00 00");
+#else
+	if (sar.game->Is(SourceGame_EIPRelPIC)) {
+		UTIL_FindClosestPassableSpace = (decltype (UTIL_FindClosestPassableSpace))Memory::Scan(server->Name(), "E8 ? ? ? ? 81 C1 ? ? ? ? 55 BD 00 01 00 00 66 0F EF DB 57 56 53 81 EC EC 02 00 00 8B 94 24 04 03 00 00 66 89 AC 24 74 01 00 00");
+		FindClosestPassableSpace = (decltype (FindClosestPassableSpace))Memory::Scan(server->Name(), "E8 ? ? ? ? 05 ? ? ? ? 57 56 53 8B 5C 24 10 8B 74 24 14 8B 4C 24 18 8B 90 ? ? ? ? 8B 52 30 85 D2 74 2B 8D 80 ? ? ? ? 8B 38");
+	} else {
+		UTIL_FindClosestPassableSpace = (decltype (UTIL_FindClosestPassableSpace))Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC BC 02 00 00 C6 85 7C FE FF FF 00 8B 45 0C C6 85 7D FE FF FF 01 8B 4D 08 C7 85 78 FE FF FF 00 00 00 00");
+		FindClosestPassableSpace = (decltype (FindClosestPassableSpace))Memory::Scan(server->Name(), "8B 15 ? ? ? ? B8 01 00 00 00 8B 52 30 85 D2 0F 84 ? ? ? ? 55 89 E5 57 56 53 81 EC 7C 02 00 00 8B 55 08 8B 0D ? ? ? ? 8B 92 E4 00 00 00");
+	}
+#endif
+	UTIL_FindClosestPassableSpace_Hook.SetFunc(UTIL_FindClosestPassableSpace);
+	FindClosestPassableSpace_Hook.SetFunc(FindClosestPassableSpace);
 
 	{
 		// a call to Plat_FloatTime in CGameMovement::CheckStuck
