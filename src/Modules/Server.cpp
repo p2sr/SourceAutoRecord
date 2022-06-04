@@ -842,3 +842,88 @@ void Server::Shutdown() {
 }
 
 Server *server;
+
+static void dumpEntInfo(void *entity) {
+	console->Print("=== ENTITY DUMP ===\n");
+
+	const char *targetname = server->GetEntityName(entity);
+	const char *classname = server->GetEntityClassName(entity);
+
+	if (!targetname) targetname = "<no name>";
+	if (!classname) classname = "<no class>";
+
+	console->Print("'%s' of class %s\n", targetname, classname);
+
+	ICollideable *coll = (ICollideable *)((uintptr_t)entity + Offsets::S_m_Collision);
+
+	Vector mins = coll->GetCollisionOrigin() + coll->OBBMins();
+	Vector maxs = coll->GetCollisionOrigin() + coll->OBBMaxs();
+	Vector center = (mins + maxs) / 2.0;
+	console->Print("center: %.2f %.2f %.2f\n", center.x, center.y, center.z);
+
+	console->Print("flags: %08X\n", coll->GetSolidFlags());
+
+	if (coll->GetSolidFlags() & FSOLID_NOT_SOLID) {
+		console->Print("  FSOLID_NOT_SOLID\n");
+	}
+
+	if (coll->GetSolidFlags() & FSOLID_NOT_STANDABLE) {
+		console->Print("  FSOLID_NOT_STANDABLE\n");
+	}
+
+	if (coll->GetSolidFlags() & FSOLID_VOLUME_CONTENTS) {
+		console->Print("  FSOLID_VOLUME_CONTENTS\n");
+	}
+
+	console->Print("solid type: %08X\n", (int)coll->GetSolid());
+
+	console->Print("solid flags: %08X\n", coll->GetSolidFlags());
+
+	int group = coll->GetCollisionGroup();
+	console->Print("collision group: 0x%08X\n", group);
+}
+
+CON_COMMAND(sar_ent_info, "sar_ent_info [name] - show info about the entity under the crosshair or with the given name\n") {
+	if (!session->isRunning) return;
+
+	if (args.ArgC() == 2) {
+		for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+			void *entity = server->m_EntPtrArray[i].m_pEntity;
+			if (!entity) continue;
+
+			const char *name = server->GetEntityName(entity);
+			if (!name || strcmp(name, args[1])) continue;
+
+			dumpEntInfo(entity);
+		}
+	} else {
+		void *player = server->GetPlayer(1);
+		if (!player) return;
+
+		Vector cam_pos = camera->GetPosition(0);
+		Vector dir = camera->GetForwardVector(0) * 8192; // length
+
+		CGameTrace tr;
+
+		Ray_t ray;
+		ray.m_IsRay = true;
+		ray.m_IsSwept = true;
+		ray.m_Start = VectorAligned(cam_pos.x, cam_pos.y, cam_pos.z);
+		ray.m_Delta = VectorAligned(dir.x, dir.y, dir.z);
+		ray.m_StartOffset = VectorAligned();
+		ray.m_Extents = VectorAligned();
+
+		CTraceFilterSimple filter;
+		filter.SetPassEntity(player);
+
+		engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_SOLID, &filter, &tr);
+
+		void *entity = tr.m_pEnt;
+		if (!entity) {
+			console->Print("No entity!\n");
+			return;
+		}
+
+		dumpEntInfo(entity);
+	}
+}

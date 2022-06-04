@@ -1601,6 +1601,8 @@ enum SolidType_t {
 };
 
 #define FSOLID_NOT_SOLID 0x04
+#define FSOLID_NOT_STANDABLE 0x10
+#define FSOLID_VOLUME_CONTENTS 0x20
 
 class model_t;
 class IClientUnknown;
