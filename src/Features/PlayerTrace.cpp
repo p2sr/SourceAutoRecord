@@ -68,7 +68,7 @@ static int tickUserToInternal(int tick, const Trace &trace) {
 
 // takes internal tick
 static void drawTraceInfo(int tick, int slot, const Trace &trace, std::function<void (const std::string &)> drawCbk) {
-	if (trace.positions[slot].size() < (unsigned)tick) return;
+	if (trace.positions[slot].size() <= (unsigned)tick) return;
 
 	int usertick = tickInternalToUser(tick, trace);
 	const int p = 6; // precision
