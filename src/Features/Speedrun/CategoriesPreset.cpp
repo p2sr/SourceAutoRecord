@@ -227,7 +227,7 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 		// Portal 2 {{{
 		*defaultCat = "Singleplayer";
 		*cats = {
-			{"Singleplayer", {{"Container Ride Start", "Vault Start", "Moon Shot"}}},
+			{"Singleplayer", {{"Container Ride Start", "Vault Start", "Vault Save Start", "Moon Shot"}}},
 			{"Coop", {{"Coop Start", "Coop Course 5 End"}}},
 			{"Coop AC", {{"Coop Start", "Coop Course 6 End"}}},
 		};
@@ -256,6 +256,19 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 						"",
 						"TeleportPlayerToProxy",
 						"",
+					}),
+			},
+			{
+				"Vault Save Start",
+				SpeedrunRule(
+					RuleAction::START,
+					"sp_a1_intro1",
+					EntityInputRule{
+						ENTRULE_TARGETNAME,
+						"@glados",
+						"",
+						"RunScriptCode",
+						"GladosRelaxationVaultPowerUp()",
 					}),
 			},
 			{
