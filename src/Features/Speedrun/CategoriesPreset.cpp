@@ -264,7 +264,7 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 					RuleAction::START,
 					"sp_a1_intro1",
 					EntityInputRule{
-						ENTRULE_TARGETNAME,
+						ENTRULE_TARGETNAME | ENTRULE_PARAMETER,
 						"@glados",
 						"",
 						"RunScriptCode",
