@@ -38,11 +38,13 @@ void StatsCounter::IncrementRunFinished(const float time) {
 }
 
 void StatsCounter::Init() {
-	if (!this->LoadFromFile(sar_statcounter_filePath.GetString())) {
-		console->Print("Couldn't open the file. Are you sure the file is here? : \"%s\".\n", sar_statcounter_filePath.GetString());
-		return;
+	if (this->LoadFromFile(sar_statcounter_filePath.GetString())) {
+		console->Print("Data has been successfully loaded.\n");
 	}
-	console->Print("Datas has been successfully loaded.\n");
+}
+
+ON_EVENT(CONFIG_EXEC) {
+	statsCounter->Init();
 }
 
 bool StatsCounter::LoadFromFile(const std::string &path) {
