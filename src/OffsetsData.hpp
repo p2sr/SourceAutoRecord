@@ -168,6 +168,9 @@ OFFSET_EMPTY(S_m_LastCmd)
 OFFSET_EMPTY(C_pl)
 OFFSET_EMPTY(S_pl)
 
+// CPaintSprayer
+OFFSET_EMPTY(S_m_nBlobRandomSeed)
+
 // CPortal_Player
 OFFSET_EMPTY(C_m_PortalLocal)
 OFFSET_EMPTY(S_m_PortalLocal)
@@ -235,7 +238,7 @@ OFFSET_DEFAULT(IsRestoring, 24, 24)
 OFFSET_DEFAULT(ShouldDraw, 11, 12)
 
 // CHud
-OFFSET_DEFAULT(GetName, 10, 11);
+OFFSET_DEFAULT(GetName, 10, 11)
 
 // CGameEventManager
 OFFSET_DEFAULT(AddListener, 3, 4)

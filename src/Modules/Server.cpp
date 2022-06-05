@@ -800,6 +800,7 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
 	offsetFinder->ServerSide("CPortal_Player", "m_hPortalEnvironment", &Offsets::S_m_hPortalEnvironment);
 	offsetFinder->ServerSide("CPortal_Base2D", "m_ptOrigin", &Offsets::S_m_ptOrigin);
+	offsetFinder->ServerSide("CPaintSprayer", "m_nBlobRandomSeed", &Offsets::S_m_nBlobRandomSeed);
 	Offsets::S_m_vForward = Offsets::S_m_ptOrigin + 12;
 
 	int m_hViewModel;
@@ -945,4 +946,39 @@ CON_COMMAND(sar_ent_info, "sar_ent_info [name] - show info about the entity unde
 
 		dumpEntInfo(entity);
 	}
+}
+
+CON_COMMAND(sar_paint_reseed, "sar_paint_reseed <seed> - re-seed all paint sprayers in the map to the given value (-9999 to 9999 inclusive)\n") {
+	if (args.ArgC() != 2) {
+		console->Print(sar_paint_reseed.ThisPtr()->m_pszHelpString);
+		return;
+	}
+
+	int seed = atoi(args[1]);
+	if (seed < -9999 || seed > 9999) {
+		// the game can only give seeds in this range so this is the only
+		// way this can be even remotely legitimate
+		console->Print("Seed must be in range -9999 to 9999\n");
+		return;
+	}
+
+	if (!sv_cheats.GetBool()) {
+		console->Print("sar_paint_reseed requires sv_cheats\n");
+		return;
+	}
+
+	unsigned count = 0;
+
+	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+		void *ent = server->m_EntPtrArray[i].m_pEntity;
+		if (!ent) continue;
+
+		auto classname = server->GetEntityClassName(ent);
+		if (!classname || strcmp(classname, "info_paint_sprayer")) continue;
+
+		*(int *)((uintptr_t)ent + Offsets::S_m_nBlobRandomSeed) = seed;
+		++count;
+	}
+
+	console->Print("Re-seeded %u paint sprayers\n", count);
 }
