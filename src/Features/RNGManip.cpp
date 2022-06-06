@@ -8,6 +8,7 @@
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <sstream>
 
 static std::optional<json11::Json> g_session_state;
 static std::optional<json11::Json> g_pending_load;
