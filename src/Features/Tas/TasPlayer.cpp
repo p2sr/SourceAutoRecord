@@ -580,6 +580,10 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	// every other way of getting time is incorrect due to alternateticks
 	int tasTick = playerInfo.tick - startTick;
 
+	float orig_forward = cmd->forwardmove;
+	float orig_side = cmd->sidemove;
+	float orig_up = cmd->upmove;
+
 	cmd->forwardmove = 0;
 	cmd->sidemove = 0;
 	cmd->upmove = 0;
@@ -688,7 +692,11 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	// used to check whether we can move. There's literally no way to
 	// accurately recreate this with tools, since it'd require predicting
 	// future tools output, so we'll have to hope this works for now.
-	*(CUserCmd *)((uintptr_t)player + Offsets::S_m_LastCmd) = *cmd;
+	// UPDATE: OKAY, actually, only do this if tools changed our movement
+	// analog, so we can at least try and counteract the bullshit described above
+	if (fabsf(cmd->forwardmove - orig_forward) + fabsf(cmd->sidemove - orig_side) + fabsf(cmd->upmove - orig_up) > 0.01) {
+		*(CUserCmd *)((uintptr_t)player + Offsets::S_m_LastCmd) = *cmd;
+	}
 
 	// put processed framebulk in the list
 	if (fbTick != tasTick) {
