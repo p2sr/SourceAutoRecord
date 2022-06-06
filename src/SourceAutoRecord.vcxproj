@@ -178,6 +178,7 @@
     <ClCompile Include="Features\OverlayRender.cpp" />
     <ClCompile Include="Features\PlayerTrace.cpp" />
     <ClCompile Include="Features\FCPS.cpp" />
+    <ClCompile Include="Features\RNGManip.cpp" />
     <ClCompile Include="Features\ReloadedFix.cpp" />
     <ClCompile Include="Features\Routing\EntityInspector.cpp" />
     <ClCompile Include="Features\Routing\SeamshotFind.cpp" />
@@ -363,6 +364,7 @@
     <ClInclude Include="Features\OverlayRender.hpp" />
     <ClInclude Include="Features\PlayerTrace.hpp" />
     <ClInclude Include="Features\FCPS.hpp" />
+    <ClInclude Include="Features\RNGManip.hpp" />
     <ClInclude Include="Features\ReloadedFix.hpp" />
     <ClInclude Include="Features\Routing\EntityInspector.hpp" />
     <ClInclude Include="Features\Routing\SeamshotFind.hpp" />

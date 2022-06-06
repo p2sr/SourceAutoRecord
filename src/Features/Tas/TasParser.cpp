@@ -217,6 +217,20 @@ static void parseVersion(const Line &l) {
 	tasPlayer->scriptVersion = l.tokens[1].i;
 }
 
+static bool parseRngManip(const Line &l) {
+	tasPlayer->rngManipFile = "";
+
+	if (l.tokens[0].tok != "rngmanip") return false;
+
+	if (l.tokens.size() != 2) {
+		throw TasParserException("invalid rngmanip line; expected 2 tokens");
+	}
+
+	tasPlayer->rngManipFile = l.tokens[1].tok;
+
+	return true;
+}
+
 static void parseHeader(const Line &l) {
 	if (l.tokens[0].tok != "start") {
 		throw TasParserException("expected start line");
@@ -667,7 +681,16 @@ std::vector<TasFramebulk> TasParser::ParseFile(int slot, std::string filePath) {
 		throw TasParserException(Utils::ssprintf("[%s:%u] %s", filePath.c_str(), lines[1].num, e.msg.c_str()));
 	}
 
-	std::vector<TasFramebulk> fb = parseFramebulks(slot, filePath.c_str(), lines.data() + 2, lines.size() - 2); // skip version and start lines
+	size_t script_start = 2;
+	try {
+		if (lines.size() > 2 && parseRngManip(lines[2])) {
+			script_start += 1;
+		}
+	} catch (TasParserException &e) {
+		throw TasParserException(Utils::ssprintf("[%s:%u] %s", filePath.c_str(), lines[2].num, e.msg.c_str()));
+	}
+
+	std::vector<TasFramebulk> fb = parseFramebulks(slot, filePath.c_str(), lines.data() + script_start, lines.size() - script_start); // skip version and start lines
 
 	if (fb.size() == 0) {
 		throw TasParserException(Utils::ssprintf("[%s] no framebulks in TAS script", filePath.c_str()));

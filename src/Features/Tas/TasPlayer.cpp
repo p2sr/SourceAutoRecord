@@ -6,6 +6,7 @@
 #include "Features/Tas/TasServer.hpp"
 #include "Features/Tas/TasTools/CheckTool.hpp"
 #include "Features/Hud/Hud.hpp"
+#include "Features/RNGManip.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -711,9 +712,12 @@ void TasPlayer::DumpPlayerInfo(int slot, int tick, Vector pos, Vector eye_pos, Q
 	playerInfoDebugs[slot].push_back(str);
 }
 
-ON_EVENT(SESSION_START) {
+ON_EVENT_P(SESSION_START, 999) { // before rng manip hook
 	if (tasPlayer->IsActive() && !tasPlayer->IsReady() && tasPlayer->numSessionsBeforeStart > 0) {
 		--tasPlayer->numSessionsBeforeStart;
+		if (tasPlayer->numSessionsBeforeStart == 0 && tasPlayer->rngManipFile != "") {
+			RngManip::loadData((tasPlayer->rngManipFile + ".p2rng").c_str());
+		}
 	}
 }
 

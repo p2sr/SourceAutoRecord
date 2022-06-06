@@ -122,6 +122,7 @@ public:
 	int numSessionsBeforeStart = 0;
 	bool wasStartNext;
 	int scriptVersion = 0;
+	std::string rngManipFile;
 
 	TasPlayer();
 	~TasPlayer();
