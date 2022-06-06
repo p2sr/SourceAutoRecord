@@ -52,8 +52,13 @@ static bool updateTrace(int slot) {
 
 	g_last_trace_valid = false;
 
-	Vector cam_pos = camera->GetPosition(GET_SLOT());
-	Vector dir = camera->GetForwardVector(GET_SLOT()) * TRACE_LENGTH;
+	Vector cam_pos;
+	QAngle cam_ang;
+	camera->GetEyePos(GET_SLOT(), false, cam_pos, cam_ang);
+
+	Vector dir;
+	Math::AngleVectors(cam_ang, &dir);
+	dir *= TRACE_LENGTH;
 
 	CGameTrace tr;
 

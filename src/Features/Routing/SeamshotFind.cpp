@@ -51,8 +51,12 @@ ON_EVENT(RENDER) {
 		if (player == nullptr || (int)player == -1)
 			return;
 
-		Vector camPos = camera->GetPosition(GET_SLOT());
-		Vector dir = camera->GetForwardVector(GET_SLOT());
+		Vector camPos;
+		QAngle camAng;
+		camera->GetEyePos(GET_SLOT(), false, camPos, camAng);
+
+		Vector dir;
+		Math::AngleVectors(camAng, &dir);
 
 		CGameTrace tr = TracePortalShot(camPos, dir, 65536.0);
 
