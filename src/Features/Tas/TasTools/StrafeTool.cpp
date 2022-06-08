@@ -9,6 +9,8 @@
 #include "TasUtils.hpp"
 #include "Utils/SDK.hpp"
 
+#include <cfloat>
+
 // windows is using abs definition for different types, while linux
 // uses integers, which leads to platform differences and non-optimal
 // strafing on linux. Patch that in newer versions.
@@ -150,7 +152,8 @@ float AutoStrafeTool::GetMaxSpeed(const TasPlayerInfo &player, Vector wishDir, b
 
 
 float AutoStrafeTool::GetMaxAccel(const TasPlayerInfo &player, Vector wishDir) {
-	float accel = (player.grounded) ? sv_accelerate.GetFloat() : sv_paintairacceleration.GetFloat();
+	bool aircon2 = sar_aircontrol.GetInt() == 2 && server->AllowsMovementChanges();
+	float accel = (player.grounded) ? sv_accelerate.GetFloat() : aircon2 ? sv_airaccelerate.GetFloat() : sv_paintairacceleration.GetFloat();
 	float realAccel = player.surfaceFriction * player.ticktime * GetMaxSpeed(player, wishDir, true) * accel;
 	return realAccel;
 }
@@ -162,11 +165,13 @@ Vector AutoStrafeTool::CreateWishDir(const TasPlayerInfo &player, float forwardM
 		wishDir = wishDir.Normalize();
 	}
 
-	// forwardmove is affected by player pitch when in air
-	// but only with pitch outside of range from -30 to 30 deg (both exclusive)
-	if (!player.grounded) {
-		if (flAbs(player.angles.x) >= 30.0f) {
-			wishDir.y *= cos(DEG2RAD(player.angles.x));
+	if (sar_aircontrol.GetInt() != 2 || !server->AllowsMovementChanges()) {
+		// forwardmove is affected by player pitch when in air
+		// but only with pitch outside of range from -30 to 30 deg (both exclusive)
+		if (!player.grounded) {
+			if (flAbs(player.angles.x) >= 30.0f) {
+				wishDir.y *= cos(DEG2RAD(player.angles.x));
+			}
 		}
 	}
 
@@ -175,7 +180,7 @@ Vector AutoStrafeTool::CreateWishDir(const TasPlayerInfo &player, float forwardM
 	wishDir = Vector(sin(yaw) * wishDir.x + cos(yaw) * wishDir.y, -cos(yaw) * wishDir.x + sin(yaw) * wishDir.y);
 
 	// air control limit
-	float airConLimit = 300;
+	float airConLimit = (sar_aircontrol.GetBool() && server->AllowsMovementChanges()) ? INFINITY : 300;
 	if (!player.grounded && player.velocity.Length2D() > airConLimit) {
 		if (flAbs(player.velocity.x) > airConLimit * 0.5 && player.velocity.x * wishDir.x < 0) {
 			wishDir.x = 0;
