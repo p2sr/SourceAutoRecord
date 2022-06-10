@@ -19,6 +19,7 @@
 #include "Features/ReloadedFix.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Routing/SeamshotFind.hpp"
+#include "Features/RNGManip.hpp"
 #include "Features/SegmentedTools.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -68,6 +69,7 @@ REDECL(Server::AirMove);
 REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
 REDECL(Server::PlayerRunCommand);
+REDECL(Server::ViewPunch);
 REDECL(Server::ProcessMovement);
 REDECL(Server::GetPlayerViewOffset);
 REDECL(Server::StartTouchChallengeNode);
@@ -260,6 +262,17 @@ static bool FindClosestPassableSpace_Detour(void *entity, const Vector &ind_push
 	}
 }
 Hook FindClosestPassableSpace_Hook(&FindClosestPassableSpace_Detour);
+
+extern Hook g_ViewPunch_Hook;
+DETOUR_T(void, Server::ViewPunch, const QAngle &offset) {
+	QAngle off1 = offset;
+	RngManip::viewPunch(&off1);
+
+	g_ViewPunch_Hook.Disable();
+	Server::ViewPunch(thisptr, off1);
+	g_ViewPunch_Hook.Enable();
+}
+Hook g_ViewPunch_Hook(&Server::ViewPunch_Hook);
 
 // CGameMovement::ProcessMovement
 DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
@@ -730,6 +743,17 @@ bool Server::Init() {
 	TraceFirePortal = (_TraceFirePortal)Memory::Scan(server->Name(), "55 89 E5 57 56 8D BD F4 F8 FF FF 53 E8 ? ? ? ? 81 C3 ? ? ? ? 81 EC 40 07 00 00 8B 45 14 6A 00 8B 75 0C", 0);
 	FindPortal = (_FindPortal)Memory::Scan(server->Name(), "55 57 56 E8 ? ? ? ? 81 C6 ? ? ? ? 53 83 EC 2C 8B 44 24 40 8B 54 24 44 8B 7C 24 48 89 44 24 18 0F B6 C0", 0);
 #endif
+
+#ifdef _WIN32
+	ViewPunch = (decltype (ViewPunch))Memory::Scan(server->Name(), "55 8B EC A1 ? ? ? ? 83 EC 0C 83 78 30 00 56 8B F1 0F 85 ? ? ? ? 8B 16 8B 82 00 05 00 00 FF D0 84 C0 0F 85 ? ? ? ? 8B 45 08 F3 0F 10 1D ? ? ? ? F3 0F 10 00");
+#else
+	if (sar.game->Is(SourceGame_EIPRelPIC)) {
+		ViewPunch = (decltype (ViewPunch))Memory::Scan(server->Name(), "55 57 56 53 E8 ? ? ? ? 81 C3 ? ? ? ? 83 EC 1C 8B 74 24 30 8B 7C 24 34 8B 83 ? ? ? ? 8B 68 30 85 ED 75 46 8B 06 8D 93 ? ? ? ? 8B 80 04 05 00 00");
+	} else {
+		ViewPunch = (decltype (ViewPunch))Memory::Scan(server->Name(), "55 89 E5 53 83 EC 24 A1 ? ? ? ? 8B 5D 08 8B 40 30 85 C0 74 0A 83 C4 24 5B 5D C3 8D 74 26 00 8B 03 89 1C 24 FF 90 04 05 00 00 84 C0 75 E7 8B 45 0C");
+	}
+#endif
+	g_ViewPunch_Hook.SetFunc(ViewPunch);
 
 	// fcps fuckery
 #ifdef _WIN32
