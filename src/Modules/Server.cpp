@@ -223,6 +223,8 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 
 	inputHud.SetInputInfo(slot, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
 
+	Cheats::PatchBhop(thisptr, cmd);
+
 	g_playerRunCommandHook.Disable();
 	auto ret = Server::PlayerRunCommand(thisptr, cmd, moveHelper);
 	g_playerRunCommandHook.Enable();

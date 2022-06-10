@@ -9,6 +9,7 @@
 #include "Features/ReloadedFix.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Tas/TasTools/StrafeTool.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/WorkshopList.hpp"
 #include "Game.hpp"
@@ -38,6 +39,8 @@ Variable sar_prevent_mat_snapshot_recompute("sar_prevent_mat_snapshot_recompute"
 Variable sar_challenge_autostop("sar_challenge_autostop", "0", 0, 3, "Automatically stops recording demos when the leaderboard opens after a CM run. If 2, automatically appends the run time to the demo name.\n");
 Variable sar_show_entinp("sar_show_entinp", "0", "Print all entity inputs to console.\n");
 Variable sar_force_qc("sar_force_qc", "0", 0, 1, "When ducking, forces view offset to always be at standing height. Requires sv_cheats to work.\n");
+Variable sar_patch_bhop("sar_patch_bhop", "0", 0, 1, "Patches bhop by limiting wish direction if your velocity is too high.\n");
+Variable sar_patch_cfg("sar_patch_cfg", "0", 0, 1, "Patches Crouch Flying Glitch.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -290,4 +293,49 @@ void Cheats::Shutdown() {
 
 	Variable::UnregisterAll();
 	Command::UnregisterAll();
+}
+
+
+// FUN PATCHES :))))))
+
+void Cheats::PatchBhop(void *player, CUserCmd *cmd) {
+	if (!server->AllowsMovementChanges() || !sar_patch_bhop.GetBool()) return;
+
+	TasPlayerInfo info = tasPlayer->GetPlayerInfo(player, cmd);
+
+	float currVel = info.velocity.Length2D();
+	float predictVel = autoStrafeTool[info.slot].GetVelocityAfterMove(info, cmd->forwardmove, cmd->sidemove).Length2D();
+
+	float maxSpeed = autoStrafeTool[info.slot].GetMaxSpeed(info, Vector(0, 1));
+	if (maxSpeed == 0) return;
+
+	// player surpassed max speed through its own movement - limit wishdir
+	if (predictVel > maxSpeed && predictVel > currVel) {
+		float mult = (maxSpeed - currVel) / (predictVel - currVel);
+		mult = fminf(fmaxf(mult, 0.0f), 1.0f);
+		cmd->forwardmove *= mult;
+		cmd->sidemove *= mult;
+	}
+}
+
+ON_EVENT(PROCESS_MOVEMENT) {
+	if (!server->AllowsMovementChanges() || !sar_patch_cfg.GetBool()) return;
+
+	auto player = server->GetPlayer(event.slot + 1);
+	if (player == nullptr) return;
+
+	auto portalLocal = server->GetPortalLocal(player);
+
+	void *tbeamHandle = reinterpret_cast<void *>(portalLocal.m_hTractorBeam);
+
+	if (!tbeamHandle || (uint32_t)tbeamHandle == Offsets::INVALID_EHANDLE_INDEX) return;
+
+	for (int i = 0; i < 2; i++) {
+		int hitboxOffset = i==0 ? Offsets::m_pShadowCrouch : Offsets::m_pShadowStand;
+		auto shadow = *reinterpret_cast<void **>((uintptr_t)player + hitboxOffset);
+
+		// WAKE UP YOU MORON YOU'RE RUINING MY FUNNELS ARGGHHH
+		Memory::VMT<void(__rescall *)(void *)>(shadow, Offsets::Wake)(shadow);
+	}
+
 }

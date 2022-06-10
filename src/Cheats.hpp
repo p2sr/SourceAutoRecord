@@ -6,6 +6,8 @@ class Cheats {
 public:
 	void Init();
 	void Shutdown();
+
+	static void PatchBhop(void *player, CUserCmd *cmd);
 };
 
 extern Variable sar_autorecord;
@@ -21,6 +23,8 @@ extern Variable sar_prevent_mat_snapshot_recompute;
 extern Variable sar_challenge_autostop;
 extern Variable sar_show_entinp;
 extern Variable sar_force_qc;
+extern Variable sar_patch_bhop;
+extern Variable sar_patch_cfg;
 
 extern Variable sv_laser_cube_autoaim;
 extern Variable ui_loadingscreen_transition_time;
