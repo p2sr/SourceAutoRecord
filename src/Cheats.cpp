@@ -154,7 +154,7 @@ struct DrawLineInfo {
 };
 static std::vector<DrawLineInfo> g_drawlines;
 
-CON_COMMAND(sar_drawline, "sar_drawline <x> <y> <z> <x> <y> <z> [r] [g] [b] - overlay a line in the world") {
+CON_COMMAND(sar_drawline, "sar_drawline <x> <y> <z> <x> <y> <z> [r] [g] [b] - overlay a line in the world\n") {
 	if (args.ArgC() != 7 && args.ArgC() != 10) {
 		return console->Print(sar_drawline.ThisPtr()->m_pszHelpString);
 	}
@@ -184,7 +184,7 @@ CON_COMMAND(sar_drawline, "sar_drawline <x> <y> <z> <x> <y> <z> [r] [g] [b] - ov
 }
 
 
-CON_COMMAND(sar_drawline_clear, "sar_drawline_clear - clear all active sar_drawlines") {
+CON_COMMAND(sar_drawline_clear, "sar_drawline_clear - clear all active sar_drawlines\n") {
 	g_drawlines.clear();
 }
 
