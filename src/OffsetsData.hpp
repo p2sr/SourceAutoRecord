@@ -304,7 +304,7 @@ OFFSET_DEFAULT(GetModeHeight, 15, 16)
 OFFSET_DEFAULT(ReadScreenPixels, 28, 29)
 
 // IFileSystem
-OFFSET_DEFAULT(GetSearchPath, 16, 17)
+OFFSET_DEFAULT(GetSearchPath, 16, 16)
 
 // Others
 OFFSET_DEFAULT(tickcount, 95, 74)
