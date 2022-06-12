@@ -987,6 +987,10 @@ static void expand(const CCommand &args, std::string body) {
 				++i;
 				if (body[i + 1] >= '1' && body[i + 1] <= '9') {
 					unsigned arg = body[i + 1] - '0';
+					if (body[i + 2] >= '0' && body[i + 2] <= '9') {
+						arg = arg * 10 + (body[i + 2] - '0');
+						++i;
+					}
 					if (arg <= nargs) {
 						const char *argcat = args.m_pArgSBuffer + args.m_nArgv0Size;
 						while (isspace(*argcat)) ++argcat;
@@ -1003,6 +1007,10 @@ static void expand(const CCommand &args, std::string body) {
 				continue;
 			} else if (body[i + 1] >= '1' && body[i + 1] <= '9') {
 				unsigned arg = body[i + 1] - '0';
+				if (body[i + 2] >= '0' && body[i + 2] <= '9') {
+					arg = arg * 10 + (body[i + 2] - '0');
+					++i;
+				}
 				cmd += arg <= nargs ? args[arg + 1] : "";
 				++i;
 				continue;
