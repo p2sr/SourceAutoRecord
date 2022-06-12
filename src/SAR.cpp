@@ -102,6 +102,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->modules->AddModule<Client>(&client);
 			this->modules->AddModule<Server>(&server);
 			this->modules->AddModule<MaterialSystem>(&materialSystem);
+			this->modules->AddModule<FileSystem>(&fileSystem);
 			this->modules->InitAll();
 
 			InitSARChecksum();

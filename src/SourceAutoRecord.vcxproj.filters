@@ -448,6 +448,9 @@
     <ClCompile Include="Features\SeasonalASCII.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Modules\FileSystem.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1127,6 +1130,9 @@
     </ClInclude>
     <ClInclude Include="OffsetsData.hpp">
       <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\FileSystem.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

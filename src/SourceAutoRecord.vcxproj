@@ -139,6 +139,7 @@
     <ClCompile Include="Features\Routing\Ruler.cpp" />
     <ClCompile Include="Features\SeasonalASCII.cpp" />
     <ClCompile Include="Features\WindowResizer.cpp" />
+    <ClCompile Include="Modules\FileSystem.cpp" />
     <ClCompile Include="Scheduler.cpp" />
     <ClCompile Include="Features\ClassDumper.cpp" />
     <ClCompile Include="Features\Cvars.cpp" />
@@ -328,6 +329,7 @@
     <ClInclude Include="Features\Routing\Ruler.hpp" />
     <ClInclude Include="Features\SeasonalASCII.hpp" />
     <ClInclude Include="Features\WindowResizer.hpp" />
+    <ClInclude Include="Modules\FileSystem.hpp" />
     <ClInclude Include="OffsetsData.hpp" />
     <ClInclude Include="Scheduler.hpp" />
     <ClInclude Include="Features.hpp" />

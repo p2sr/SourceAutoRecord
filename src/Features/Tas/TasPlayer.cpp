@@ -11,6 +11,7 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Event.hpp"
 #include "Variable.hpp"
 
@@ -186,11 +187,7 @@ static std::string getSaveDir() {
 
 static bool mapExists(std::string name) {
 	name = "/maps/" + name + ".bsp";
-	if (std::ifstream(engine->GetGameDirectory() + name).good()) return true;
-	if (std::ifstream("portal2_dlc1" + name).good()) return true;
-	if (std::ifstream("sdk_content" + name).good()) return true;
-	if (std::ifstream("portal2_dlc2" + name).good()) return true;
-	return false;
+	return fileSystem->FileExistsSomewhere(name);
 }
 
 void TasPlayer::Activate() {
