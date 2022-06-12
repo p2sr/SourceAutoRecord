@@ -38,6 +38,7 @@ Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, 1, "Move t
 Variable sar_trace_bbox_ent_record("sar_trace_bbox_ent_record", "1", "Record hitboxes of nearby entities in the trace. You may want to disable this if memory consumption gets too high.\n");
 Variable sar_trace_bbox_ent_draw("sar_trace_bbox_ent_draw", "1", "Draw hitboxes of nearby entities in the trace.\n");
 Variable sar_trace_bbox_ent_dist("sar_trace_bbox_ent_dist", "200", 50, "Distance from which to capture entity hitboxes.\n");
+Variable sar_trace_bbox_contacts_draw("sar_trace_bbox_contacts_draw", "1", "Draw player contact points.\n");
 
 Vector g_playerTraceTeleportLocation;
 int g_playerTraceTeleportSlot;
@@ -119,6 +120,12 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 	if (traces.count(trace_name) == 0) {
 		traces[trace_name] = Trace();
 		traces[trace_name].startSessionTick = session->GetTick();
+
+		// // For some reason that probably makes sense, we can
+		// // only get the contacts for the previous tick, so 
+		// // insert an empty contact list on the first tick
+		// // to offset everything by one
+		// traces[trace_name].contacts[slot].push_back(ContactList{});
 	}
 
 	Trace &trace = traces[trace_name];
@@ -141,18 +148,16 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 		ground_handle = *(unsigned *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
 		pos = client->GetAbsOrigin(player);
 		vel = client->GetLocalVelocity(player);
-		//eyepos = pos + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
-		camera->GetEyePos(slot, false, eyepos, angles);
 	} else {
 		ground_handle = *(unsigned *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
 		pos = server->GetAbsOrigin(player);
 		vel = server->GetLocalVelocity(player);
-		//eyepos = pos + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
-		camera->GetEyePos(slot, true, eyepos, angles);
 	}
+	camera->GetEyePos(slot, !use_client_offset, eyepos, angles);
 	bool grounded = ground_handle != 0xFFFFFFFF;
 	auto ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);
 
+	ContactList contacts = ConstructContactList(player);
 	HitboxList hitboxes = ConstructHitboxList(pos);
 
 	trace.positions[slot].push_back(pos);
@@ -161,6 +166,7 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 	trace.velocities[slot].push_back(vel);
 	trace.grounded[slot].push_back(grounded);
 	trace.crouched[slot].push_back(ducked);
+	trace.contacts[slot].push_back(contacts);
 	trace.hitboxes[slot].push_back(hitboxes);
 }
 Trace *PlayerTrace::GetTrace(std::string trace_name) {
@@ -399,6 +405,16 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 			OverlayRender::addLine(eyeLine, eyepos, eyepos + forward*50.0);
 			OverlayRender::addBoxMesh(eyepos, {-1,-1,-1}, {1,1,1}, angles, RenderCallback::constant({0, 255, 255}), RenderCallback::none);
 
+			if (sar_trace_bbox_contacts_draw.GetBool()) {
+				auto& contacts = trace.contacts[slot][localtick];
+
+				for (auto &contact : contacts.contacts) {
+					OverlayRender::addBoxMesh(contact.point, {-1,-1,-1}, {1,1,1}, {0, 0, 0}, RenderCallback::constant({0, 255, 0, 80}), RenderCallback::constant({0, 255, 0, 255}));
+					MeshId normalMesh = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({0, 255, 0}));
+					OverlayRender::addLine(normalMesh, contact.point, contact.point - contact.normal*10.0);
+				}
+			}
+
 			if (sar_trace_bbox_ent_draw.GetBool()) {
 				auto &boxes = trace.hitboxes[slot][localtick];
 
@@ -547,6 +563,63 @@ HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
 			break;
 		}
 	}
+
+	return list;
+}
+
+ContactList PlayerTrace::ConstructContactList(void* player) const {
+	ContactList list;
+
+	// Define function types that we need
+	using _GetGameData = IPhysicsFrictionSnapshot *(__rescall *)(void *thisptr);
+	using _CreateFrictionSnasphot = IPhysicsFrictionSnapshot *(__rescall *)(void *thisptr);
+	using _DestroyFrictionSnapshot = void(__rescall *)(void *thisptr, IPhysicsFrictionSnapshot *pSnapshot);
+	using _IsValid = bool(__rescall *)(void *thisptr);
+	using _GetObject = IPhysicsObject *(__rescall *)(void *thisptr, int idx); // 0 is self, 1 is other
+	using _GetContactPoint = void(__rescall *)(void *thisptr, Vector *out);
+	using _GetSurfaceNormal = void(__rescall *)(void *thisptr, Vector *out);
+	using _DeleteAllMarkedContacts = void(__rescall *)(void *thisptr, bool wakeObjects);
+	using _NextFrictionData = void(__rescall *)(void *thisptr);
+
+	// Get the IPhysicsObject of the player
+	// dunno if this is the best way to do it
+	ICollideable *coll = (ICollideable *)((uintptr_t)player + Offsets::S_m_Collision);
+	IPhysicsObject *pPhysics = coll->GetVPhysicsObject();
+
+	// Define the methods on IphysicsObject
+	_CreateFrictionSnasphot CreateFrictionSnasphot = Memory::VMT<_CreateFrictionSnasphot>(pPhysics, Offsets::CreateFrictionSnasphot);
+	_DestroyFrictionSnapshot DestroyFrictionSnapshot = Memory::VMT<_DestroyFrictionSnapshot>(pPhysics, Offsets::DestroyFrictionSnapshot);
+	
+	// Get the IPhysicsFrictionSnapshot of the player
+	IPhysicsFrictionSnapshot *pSnapshot = CreateFrictionSnasphot(pPhysics);
+
+	// Define the methods on IPhysicsFrictionSnapshot
+	_IsValid IsValid = Memory::VMT<_IsValid>(pSnapshot, Offsets::IsValid);
+	_GetObject GetObject = Memory::VMT<_GetObject>(pSnapshot, Offsets::GetObject);
+	_GetContactPoint GetContactPoint = Memory::VMT<_GetContactPoint>(pSnapshot, Offsets::GetContactPoint);
+	_GetSurfaceNormal GetSurfaceNormal = Memory::VMT<_GetSurfaceNormal>(pSnapshot, Offsets::GetSurfaceNormal);
+	_DeleteAllMarkedContacts DeleteAllMarkedContacts = Memory::VMT<_DeleteAllMarkedContacts>(pSnapshot, Offsets::DeleteAllMarkedContacts);
+	_NextFrictionData NextFrictionData = Memory::VMT<_NextFrictionData>(pSnapshot, Offsets::NextFrictionData);
+
+	// See `DebugDrawContactPoints` in pysics.cpp in the leak
+	while (IsValid(pSnapshot)) {
+
+		ContactList::Contact contact;
+		GetContactPoint(pSnapshot, &contact.point);
+		GetSurfaceNormal(pSnapshot, &contact.normal);
+
+		IPhysicsObject *pOther = GetObject(pSnapshot, 1);
+		_GetGameData GetGameData = Memory::VMT<_GetGameData>(pOther, Offsets::GetGameData);
+		void *otherEnt = GetGameData(pOther);
+		// contact.otherName = std::string(server->GetEntityClassName(otherEnt)) + std::string(" : ") + std::string(server->GetEntityName(otherEnt));
+
+		list.contacts.push_back(contact);
+
+		NextFrictionData(pSnapshot);
+	}
+
+	DeleteAllMarkedContacts(pSnapshot, true);
+	DestroyFrictionSnapshot(pPhysics, pSnapshot);
 
 	return list;
 }

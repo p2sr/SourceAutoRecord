@@ -1607,6 +1607,7 @@ enum SolidType_t {
 class model_t;
 class IClientUnknown;
 class IPhysicsObject;
+class IPhysicsFrictionSnapshot;
 class CPhysCollide;
 
 class ICollideable {

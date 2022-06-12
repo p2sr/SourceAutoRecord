@@ -6,6 +6,15 @@
 
 #include <map>
 
+struct ContactList {
+	struct Contact {
+		Vector point, normal;
+		std::string otherName;
+	};
+
+	std::vector<Contact> contacts;
+};
+
 struct HitboxList {
 	struct VphysBox {
 		std::vector<Vector> verts;
@@ -23,14 +32,21 @@ struct HitboxList {
 };
 
 struct Trace {
+	// Tick inits
 	int startSessionTick;
 	int startTasTick;
+
+	// Player data
 	std::vector<Vector> positions[2];
 	std::vector<Vector> eyepos[2];
 	std::vector<QAngle> angles[2];
 	std::vector<Vector> velocities[2];
 	std::vector<bool> grounded[2];
 	std::vector<bool> crouched[2];
+	// Contact points
+	std::vector<ContactList> contacts[2];
+
+	// Other data
 	std::vector<HitboxList> hitboxes[2];
 };
 
@@ -61,12 +77,14 @@ public:
 	void DrawInWorld() const;
 	// Display XY-speed delta overlay
 	void DrawSpeedDeltas() const;
-	// Display a bbox at the given tick
+	// Display a bbox and contact points at the given tick
 	void DrawBboxAt(int tick) const;
 	// Teleport to given tick on given trace
 	void TeleportAt(std::string trace_name, int slot, int tick, bool eye);
 	// Construct a list of the hitboxes of all entities near a point
 	HitboxList ConstructHitboxList(Vector center) const;
+	// Contstruct a list of the contact points of the given player
+	ContactList ConstructContactList(void* player) const;
 	// Draw info about all traces to a HUD context
 	void DrawTraceHud(HudContext *ctx);
 	// Corrects latest eye offset according to given CMoveData, to make it correct for portal shooting preview
