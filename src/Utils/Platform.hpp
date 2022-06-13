@@ -3,6 +3,12 @@
 #	include "minhook/MinHook.h"
 #endif
 
+#ifdef _WIN32
+#	define __rescalll __thiscall
+#else
+#	define __rescalll __attribute__((__cdecl__))
+#endif
+
 #define _GAME_PATH(x) #x
 
 #ifdef _WIN32

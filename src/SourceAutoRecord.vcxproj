@@ -271,7 +271,9 @@
     <ClCompile Include="Utils\lodepng.cpp" />
     <ClCompile Include="Utils\Math.cpp" />
     <ClCompile Include="Utils\Memory.cpp" />
-    <ClCompile Include="Utils\SDK.cpp" />
+    <ClCompile Include="Utils\SDK\EntityEdict.cpp" />
+    <ClCompile Include="Utils\SDK\KeyValues.cpp" />
+    <ClCompile Include="Utils\SDK\ServerPlugin.cpp" />
     <ClCompile Include="Variable.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -461,6 +463,32 @@
     <ClInclude Include="Utils\Memory.hpp" />
     <ClInclude Include="Utils\Platform.hpp" />
     <ClInclude Include="Utils\SDK.hpp" />
+    <ClInclude Include="Utils\SDK\BaseEntity.hpp" />
+    <ClInclude Include="Utils\SDK\BitBuf.hpp" />
+    <ClInclude Include="Utils\SDK\Class.hpp" />
+    <ClInclude Include="Utils\SDK\Color.hpp" />
+    <ClInclude Include="Utils\SDK\Convar.hpp" />
+    <ClInclude Include="Utils\SDK\CViewSetup.hpp" />
+    <ClInclude Include="Utils\SDK\Datamap.hpp" />
+    <ClInclude Include="Utils\SDK\EntityEdict.hpp" />
+    <ClInclude Include="Utils\SDK\GameEvents.hpp" />
+    <ClInclude Include="Utils\SDK\GlobalVars.hpp" />
+    <ClInclude Include="Utils\SDK\Handle.hpp" />
+    <ClInclude Include="Utils\SDK\EventQueue.hpp" />
+    <ClInclude Include="Utils\SDK\HostState.hpp" />
+    <ClInclude Include="Utils\SDK\ICollideable.hpp" />
+    <ClInclude Include="Utils\SDK\ILoggingListener.hpp" />
+    <ClInclude Include="Utils\SDK\ImageFormat.hpp" />
+    <ClInclude Include="Utils\SDK\KeyValues.hpp" />
+    <ClInclude Include="Utils\SDK\Math.hpp" />
+    <ClInclude Include="Utils\SDK\GameMovement.hpp" />
+    <ClInclude Include="Utils\SDK\Other.hpp" />
+    <ClInclude Include="Utils\SDK\PlayerLocalData.hpp" />
+    <ClInclude Include="Utils\SDK\PortalPlacement.hpp" />
+    <ClInclude Include="Utils\SDK\ServerPlugin.hpp" />
+    <ClInclude Include="Utils\SDK\UserCmd.hpp" />
+    <ClInclude Include="Utils\SDK\UtlMemory.hpp" />
+    <ClInclude Include="Utils\SDK\Trace.hpp" />
     <ClInclude Include="Variable.hpp" />
   </ItemGroup>
   <ItemGroup>

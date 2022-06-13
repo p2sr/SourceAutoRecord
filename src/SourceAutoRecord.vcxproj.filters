@@ -76,9 +76,6 @@
     <ClCompile Include="Features\Routing\EntityInspector.cpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\SDK.cpp">
-      <Filter>SourceAutoRecord\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="Modules\Client.cpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClCompile>
@@ -451,6 +448,15 @@
     <ClCompile Include="Modules\FileSystem.cpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\SDK\KeyValues.cpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\SDK\ServerPlugin.cpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\SDK\EntityEdict.cpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -478,9 +484,6 @@
       <Filter>lib\minhook</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Math.hpp">
-      <Filter>SourceAutoRecord\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\SDK.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Games\Windows\ApertureTag.hpp">
@@ -1134,6 +1137,87 @@
     <ClInclude Include="Modules\FileSystem.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\SDK\KeyValues.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\Math.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\Trace.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\Convar.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\UtlMemory.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\Color.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\GameMovement.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\UserCmd.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\ServerPlugin.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\HostState.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\EventQueue.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\CViewSetup.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\PlayerLocalData.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\Handle.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\GameEvents.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\EntityEdict.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\BaseEntity.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\Datamap.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\Class.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\GlobalVars.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\ILoggingListener.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\ImageFormat.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\BitBuf.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\ICollideable.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\PortalPlacement.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\Other.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">
@@ -1195,6 +1279,9 @@
     </Filter>
     <Filter Include="lib\SFML\System">
       <UniqueIdentifier>{5c7739c9-9ec9-4029-8c83-4d03dd3f4637}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Utils\SDK">
+      <UniqueIdentifier>{5ede5464-347b-47c4-adfe-8dd56c3d7923}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

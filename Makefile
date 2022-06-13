@@ -20,6 +20,7 @@ SRCS+=$(wildcard $(SDIR)/Features/Timer/*.cpp)
 SRCS+=$(wildcard $(SDIR)/Games/Linux/*.cpp)
 SRCS+=$(wildcard $(SDIR)/Modules/*.cpp)
 SRCS+=$(wildcard $(SDIR)/Utils/*.cpp)
+SRCS+=$(wildcard $(SDIR)/Utils/SDK/*.cpp)
 
 OBJS=$(patsubst $(SDIR)/%.cpp, $(ODIR)/%.o, $(SRCS))
 
