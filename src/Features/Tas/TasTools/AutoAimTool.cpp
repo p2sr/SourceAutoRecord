@@ -13,24 +13,50 @@ struct AutoAimParams : public TasToolParams {
 
 	AutoAimParams(Vector point, int ticks)
 		: TasToolParams(true)
+		, entity(false)
 		, point(point)
 		, ticks(ticks)
 		, elapsed(0) {}
 
+	AutoAimParams(std::string name, int ticks)
+		: TasToolParams(true)
+		, entity(true)
+		, ent_name(name)
+		, ticks(ticks)
+		, elapsed(0) {}
+
+	bool entity;
+	std::string ent_name;
 	Vector point;
 	int ticks;
 	int elapsed;
 };
 
 std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string> args) {
-	if (args.size() != 1 && args.size() != 3 && args.size() != 4)
+	if (args.size() != 1 && args.size() != 2 && args.size() != 3 && args.size() != 4)
 		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), args.size()));
 	
 	if (args.size() == 1)
-		if  (args[0] == "off")
+		if (args[0] == "off")
 			return std::make_shared<AutoAimParams>();
 		else 
 			throw TasParserException(Utils::ssprintf("Bad argument for tool %s: %s", this->GetName(), args[0].c_str()));
+
+	if ((args.size() == 2 || args.size() == 3) && args[0] == "ent") {
+		int ticks;
+
+		try {
+			ticks = args.size() == 3 ? std::stoi(args[2]) : 1;
+		} catch (...) {
+			throw TasParserException(Utils::ssprintf("Bad tick value for tool %s: %s", this->GetName(), args[2].c_str()));
+		}
+
+		return std::make_shared<AutoAimParams>(args[1], ticks);
+	}
+
+	if (args.size() == 2) {
+		throw TasParserException(Utils::ssprintf("Bad argument for tool %s: %s", this->GetName(), args[0].c_str()));
+	}
 
 	if (args.size() == 3 || args.size() == 4) {
 		float x;
@@ -92,7 +118,27 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	//Vector newVel = autoStrafeTool.GetVelocityAfterMove(playerInfo, bulk.moveAnalog.y, bulk.moveAnalog.x);
 	//cam += newVel * playerInfo.ticktime;
 
-	Vector target = params->point;
+	Vector target;
+	if (params->entity) {
+		void *entity = nullptr;
+
+		for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+			void *ent = server->m_EntPtrArray[i].m_pEntity;
+			if (!ent) continue;
+
+			const char *name = server->GetEntityName(ent);
+			if (!name) continue;
+			if (strcmp(name, params->ent_name.c_str())) continue;
+
+			entity = ent;
+			break;
+		}
+
+		if (entity) target = server->GetAbsOrigin(entity);
+		else target = Vector{0, 0, 0};
+	} else {
+		target = params->point;
+	}
 
 	Vector forward = target - cam;
 
