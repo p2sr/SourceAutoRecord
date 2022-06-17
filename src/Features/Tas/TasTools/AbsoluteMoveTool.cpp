@@ -21,7 +21,7 @@ void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 
 	float forward_coef;
 	if (fabsf(angles.x) >= 30.0f && !pInfo.grounded) {
-		forward_coef = cos(DEG2RAD(angles.x));
+		forward_coef = cosOld(DEG2RAD(angles.x));
 	} else {
 		forward_coef = 1.0f;
 	}

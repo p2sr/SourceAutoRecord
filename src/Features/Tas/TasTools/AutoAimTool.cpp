@@ -96,8 +96,8 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 
 	Vector forward = target - cam;
 
-	float pitch = -atan2(forward.z, forward.Length2D());
-	float yaw = atan2(forward.y, forward.x);
+	float pitch = -atan2Old(forward.z, forward.Length2D());
+	float yaw = atan2Old(forward.y, forward.x);
 
 	pitch *= 180.0f / M_PI;
 	yaw *= 180.0f / M_PI;
