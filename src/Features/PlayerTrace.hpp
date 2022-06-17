@@ -38,7 +38,7 @@ class PlayerTrace : public Feature {
 private:
 	// In order to arbitrarily number traces
 	std::map<std::string, Trace> traces;
-
+	std::string lastRecordedTrace;
 public:
 	PlayerTrace();
 	// Tells us whether trace should be recorded
@@ -71,6 +71,8 @@ public:
 	void DrawTraceHud(HudContext *ctx);
 	// Corrects latest eye offset according to given CMoveData, to make it correct for portal shooting preview
 	void TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slot, bool clientside);
+	// Checks if trace recording ID has been changed
+	void CheckTraceChanged();
 };
 
 extern PlayerTrace *playerTrace;

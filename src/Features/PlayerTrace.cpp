@@ -18,6 +18,7 @@
 PlayerTrace *playerTrace;
 
 Variable sar_trace_autoclear("sar_trace_autoclear", "1", 0, 1, "Automatically clear the trace on session start\n");
+Variable sar_trace_override("sar_trace_override", "1", 0, 1, "Clears old trace when you start recording to it instead of recording on top of it.\n");
 Variable sar_trace_record("sar_trace_record", "0", "Record the trace to a slot. Set to 0 for not recording\n", 0);
 Variable sar_trace_use_shot_eyeoffset("sar_trace_use_shot_eyeoffset", "1", 0, 1, "Uses eye offset and angles accurate for portal shooting.\n");
 
@@ -101,6 +102,7 @@ struct TraceHoverInfo {
 std::vector<TraceHoverInfo> hovers;
 
 PlayerTrace::PlayerTrace() {
+	this->lastRecordedTrace = "0";
 	this->hasLoaded = true;
 }
 
@@ -552,6 +554,9 @@ HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
 }
 
 ON_EVENT(PROCESS_MOVEMENT) {
+	// detect trace switch
+	playerTrace->CheckTraceChanged();
+
 	// Record trace
 	if (playerTrace->ShouldRecord()) {
 		if (engine->IsOrange()) {
@@ -596,6 +601,20 @@ void PlayerTrace::TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slo
 	camera->GetEyePosFromOrigin(slot, !clientside, moveData->m_vecAbsOrigin, eyepos, angles);
 	int lastTick = trace->positions[slot].size() - 1;
 	trace->eyepos[slot][lastTick] = eyepos;
+}
+
+void PlayerTrace::CheckTraceChanged() {
+	std::string currentTrace = sar_trace_record.GetString();
+	if (currentTrace == lastRecordedTrace) return;
+	
+	// trace changed!
+	lastRecordedTrace = currentTrace;
+
+	// clean old trace if needed
+	if (sar_trace_override.GetBool()) {
+		Clear(currentTrace);
+	}
+	
 }
 
 ON_EVENT(SESSION_START) {
