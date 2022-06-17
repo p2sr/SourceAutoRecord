@@ -38,16 +38,18 @@ struct AutoStrafeParams : public TasToolParams {
 	AutoStrafeDirection strafeDir = {CURRENT, true, 0.0f};
 	AutoStrafeSpeed strafeSpeed = {SPECIFIED, 10000.0f};
 	bool noPitchLock = false;
+	bool antiSpeedLock = true;
 
 	AutoStrafeParams()
 		: TasToolParams() {}
 
-	AutoStrafeParams(AutoStrafeType type, AutoStrafeDirection dir, AutoStrafeSpeed speed, bool noPitchLock)
+	AutoStrafeParams(AutoStrafeType type, AutoStrafeDirection dir, AutoStrafeSpeed speed, bool noPitchLock, bool antiSpeedLock)
 		: TasToolParams(true)
 		, strafeType(type)
 		, strafeDir(dir)
 		, strafeSpeed(speed)
-		, noPitchLock(noPitchLock){
+		, noPitchLock(noPitchLock)
+		, antiSpeedLock(antiSpeedLock) {
 	}
 };
 

@@ -324,6 +324,7 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 
 // returns 1 or -1 depending on what direction player should strafe (right and left accordingly)
 int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAngle) {
+	auto asParams = std::static_pointer_cast<AutoStrafeParams>(params);
 
 	float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
 	float diff = desAngle - velAngle;
@@ -334,7 +335,6 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 		// we've reached our line!
 		// for newer script versions, disable veccam - we don't need it anymore
 		if (tasPlayer->scriptVersion >= 3) {
-			auto asParams = std::static_pointer_cast<AutoStrafeParams>(params);
 			if (asParams->strafeType == VECTORIAL_CAM) {
 				asParams->strafeType = VECTORIAL;
 			}
@@ -374,8 +374,31 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 			if (diff < 0) turnDir = -1;
 		}
 
+		bool speedLockAvoided = false;
+
+		// prevent losing acceleration speed from speedlock on newer versions
+		if (asParams->antiSpeedLock && tasPlayer->scriptVersion >= 4) {
+			if (pInfo.velocity.Length2D() < asParams->strafeSpeed.speed && pInfo.velocity.Length2D() >= 300.0f) {
+
+				Vector wishDir(0, 1);
+				float maxSpeed = GetMaxSpeed(pInfo, wishDir);
+				float maxAccel = GetMaxAccel(pInfo, wishDir);
+
+				float speedCappedVel = (maxSpeed - maxAccel);
+
+				// we're on a speedcapped bumpy road, so we're making sure to detour into speedy highway
+				if (fabsf(pInfo.velocity.x) > speedCappedVel && fabsf(pInfo.velocity.y) > speedCappedVel) {
+					float velAngle = atan2f(pInfo.velocity.y, pInfo.velocity.x);
+					float cardinalDir = -sinf(velAngle * 4);
+					cardinalDir = (cardinalDir == 0) ? turnDir : (cardinalDir / fabsf(cardinalDir));
+					turnDir = cardinalDir;
+					speedLockAvoided = true;
+				}
+			}
+		}
+
 		// reached the angle. follow the line from this point.
-		if (this->lastTurnDir != 0 && this->lastTurnDir != turnDir) {
+		if (this->lastTurnDir != 0 && this->lastTurnDir != turnDir && !speedLockAvoided) {
 			FollowLine(pInfo);
 		}
 
@@ -396,6 +419,7 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 	AutoStrafeDirection dir{CURRENT, false, 0};
 	AutoStrafeSpeed speed = {SPECIFIED, 10000.0f};
 	bool noPitchLock = false;
+	bool antiSpeedLock = true;
 
 	if (vp.size() == 0) {
 		return std::make_shared<AutoStrafeParams>();
@@ -446,12 +470,16 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 			noPitchLock = true;
 		}
 
+		else if (param == "letspeedlock") {
+			antiSpeedLock = false;
+		}
+
 		//unknown parameter...
 		else 
 			throw TasParserException(Utils::ssprintf("Bad parameter for tool %s: %s", this->GetName(), param.c_str()));
 	}
 
-	return std::make_shared<AutoStrafeParams>(type, dir, speed, noPitchLock);
+	return std::make_shared<AutoStrafeParams>(type, dir, speed, noPitchLock, antiSpeedLock);
 }
 
 void AutoStrafeTool::Reset() {
