@@ -259,7 +259,7 @@ std::vector<std::string> elementOrder = {
 	"jumps",
 	"portals",
 	"tbeam",
-	"tbeam_count"
+	"tbeam_count",
 	"steps",
 	"jump",
 	"jump_peak",
