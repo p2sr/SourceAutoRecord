@@ -268,7 +268,7 @@ DETOUR(EngineDemoPlayer::StopPlayback) {
 	return EngineDemoPlayer::StopPlayback(thisptr);
 }
 
-Variable sar_demo_portal_interp_fix("sar_demo_portal_interp_fix", "0", "Fix eye interpolation through portals in demo playback.\n");
+Variable sar_demo_portal_interp_fix("sar_demo_portal_interp_fix", "1", "Fix eye interpolation through portals in demo playback.\n");
 
 static inline void matrixAngleTransform(VMatrix mat, QAngle *ang) {
 	Vector forward, up;
@@ -283,6 +283,9 @@ static struct {
 	Vector pos;
 	Vector norm;
 	VMatrix mat;
+	bool set_limits;
+	float saved_interplimit;
+	float saved_avellimit;
 } g_portal_interp_state[2];
 
 void EngineDemoPlayer::OverrideView(CViewSetup *view) {
@@ -291,19 +294,26 @@ void EngineDemoPlayer::OverrideView(CViewSetup *view) {
 
 	int slot = GET_SLOT();
 
-	if (!g_portal_interp_state[slot].in_portal) return;
+	if (g_portal_interp_state[slot].in_portal) {
+		Vector portal_to_cam = view->origin - g_portal_interp_state[slot].pos;
+		if (g_portal_interp_state[slot].norm.Dot(portal_to_cam) < 0.0f) {
+			// behind portal - translate view
+			VMatrix mat = g_portal_interp_state[slot].mat;
+			view->origin = mat.PointTransform(view->origin);
+			matrixAngleTransform(mat, &view->angles);
+		}
 
-	Vector portal_to_cam = view->origin - g_portal_interp_state[slot].pos;
-	if (g_portal_interp_state[slot].norm.Dot(portal_to_cam) < 0.0f) {
-		// behind portal - translate view
-		VMatrix mat = g_portal_interp_state[slot].mat;
-		view->origin = mat.PointTransform(view->origin);
-		matrixAngleTransform(mat, &view->angles);
+		// invalidate state (until recalculated by the hook below) to avoid
+		// this being accidentally set persistently somehow
+		g_portal_interp_state[slot].in_portal = false;
 	}
 
-	// invalidate state (until recalculated by the hook below) to avoid
-	// this being accidentally set persistently somehow
-	g_portal_interp_state[slot].in_portal = false;
+	if (g_portal_interp_state[slot].set_limits) {
+		// now we're here, restore interplimit and avellimit
+		Variable("demo_interplimit").SetValue(g_portal_interp_state[slot].saved_interplimit);
+		Variable("demo_avellimit").SetValue(g_portal_interp_state[slot].saved_avellimit);
+		g_portal_interp_state[slot].set_limits = false;
+	}
 }
 
 static void (__rescall *InterpolateDemoCommand)(void *thisptr, int slot, int target_tick, DemoCommandQueue &prev, DemoCommandQueue &next);
@@ -327,7 +337,19 @@ void InterpolateDemoCommand_Detour(void *thisptr, int slot, int target_tick, Dem
 	InterpolateDemoCommand_Hook.Enable();
 
 	if (sar_demo_portal_interp_fix.GetBool()) {
+		if (!g_portal_interp_state[slot].set_limits) {
+			g_portal_interp_state[slot].saved_interplimit = Variable("demo_interplimit").GetFloat();
+			g_portal_interp_state[slot].saved_avellimit = Variable("demo_avellimit").GetFloat();
+		} else {
+			// a frame was somehow missed by OverrideView??
+			// we want the limits to be normal for now, we'll make them high again
+			// later if we need to
+			Variable("demo_interplimit").SetValue(g_portal_interp_state[slot].saved_interplimit);
+			Variable("demo_avellimit").SetValue(g_portal_interp_state[slot].saved_avellimit);
+		}
+
 		g_portal_interp_state[slot].in_portal = false; // we'll set this later
+		g_portal_interp_state[slot].set_limits = false;
 
 		// are we currently in a portal bubble?
 		void *player = client->GetPlayer(slot + 1);
@@ -341,8 +363,24 @@ void InterpolateDemoCommand_Detour(void *thisptr, int slot, int target_tick, Dem
 		void *linked = client->GetPlayer(linked_handle.GetEntryIndex());
 		if (!linked) return;
 
-		// we are! so, does the next command seem to move our view very far
-		// away? if it does, this probably indicates a portal passthrough.
+		// this fix currently only works for wall portals, since we're just
+		// translating the player origin rather than their camera. for any portal
+		// that's not mostly on a wall, just give up
+		Vector portal_norm = *(Vector *)((uintptr_t)portal_ent + Offsets::C_m_vPortalForward);
+		Vector linked_norm = *(Vector *)((uintptr_t)linked + Offsets::C_m_vPortalForward);
+		if (fabsf(portal_norm.Dot(Vector{0,0,1})) > 0.15f) return;
+		if (fabsf(linked_norm.Dot(Vector{0,0,1})) > 0.15f) return;
+
+		// set stupid high interplimit and avellimit so it interps properly, since
+		// portal passthroughs are a thing that sorta might happen
+		// we'll correct these later
+		Variable("demo_interplimit").SetValue(1e10f);
+		Variable("demo_avellimit").SetValue(1e10f);
+		g_portal_interp_state[slot].set_limits = true;
+
+		// we are in a portal bubble for one we can lerp through! so, does the next
+		// command seem to move our view very far away? if it does, this probably
+		// indicates a portal passthrough.
 		Vector prev_cam = prev.info.u[slot].viewOrigin;
 		Vector next_cam = next.info.u[slot].viewOrigin;
 		float dist_sq = (next_cam - prev_cam).SquaredLength();
@@ -373,17 +411,21 @@ void InterpolateDemoCommand_Detour(void *thisptr, int slot, int target_tick, Dem
 
 		// get a bunch of info we need
 		Vector entry_pos = *(Vector *)((uintptr_t)entry + Offsets::C_m_ptOrigin);
-		Vector exit_pos = *(Vector *)((uintptr_t)exit + Offsets::C_m_ptOrigin);
+		//Vector exit_pos = *(Vector *)((uintptr_t)exit + Offsets::C_m_ptOrigin);
 		Vector entry_norm = *(Vector *)((uintptr_t)entry + Offsets::C_m_vPortalForward);
-		Vector exit_norm = *(Vector *)((uintptr_t)exit + Offsets::C_m_vPortalForward);
+		//Vector exit_norm = *(Vector *)((uintptr_t)exit + Offsets::C_m_vPortalForward);
 		VMatrix forward_matrix = *(VMatrix *)((uintptr_t)entry + Offsets::C_m_matrixThisToLinked);
 		VMatrix backward_matrix = *(VMatrix *)((uintptr_t)exit + Offsets::C_m_matrixThisToLinked);
 
 		// we're pretty sure we're transitioning from entry to exit. as a
 		// sanity check, ensure that we start in front of entry and finish
-		// in front of exit.
+		// in front of exit. XXX: okay let's not, this doesn't necessarily work for
+		// slightly-slanted portals since this is the player origin rather than the
+		// camera
+		/*
 		if (entry_norm.Dot(prev_cam - entry_pos) < 0.0f) return; // starting behind entry portal
 		if (exit_norm.Dot(next_cam - exit_pos) < 0.0f) return; // finishing behind exit portal
+		*/
 
 		// okay yeah, we're good. now, adjust the next position and angles
 		// to act as if we didn't actually pass through the portal (so we
