@@ -636,7 +636,15 @@ ON_EVENT(SESSION_END) {
 	g_bink_last_frames.clear();
 }
 
+Variable sar_bink_respect_host_time("sar_bink_respect_host_time", "1", "Make BINK video playback respect host time.\n");
+
 ON_EVENT(FRAME) {
+	if (!sar_bink_respect_host_time.GetBool()) {
+		g_bink_override_active = false;
+		g_bink_last_frames.clear();
+		return;
+	}
+
 	// only do the bink overrides if host_timescale, host_framerate, or
 	// frame advance is active - it's a very hacky patch, i don't trust it
 	bool host_ts = sv_cheats.GetBool() && Variable("host_timescale").GetFloat() > 0.0f && Variable("host_timescale").GetFloat() != 1.0f;
@@ -697,29 +705,29 @@ void __stdcall BinkNextFrame_Detour(void *bink) {
 	if (g_bink_override_active) advFrame(bink);
 }
 
-bool (__stdcall *BinkShouldSkip)(void *bink);
-bool __stdcall BinkShouldSkip_Detour(void *bink);
+int (__stdcall *BinkShouldSkip)(void *bink);
+int __stdcall BinkShouldSkip_Detour(void *bink);
 static Hook BinkShouldSkip_Hook(&BinkShouldSkip_Detour);
-bool __stdcall BinkShouldSkip_Detour(void *bink) {
+int __stdcall BinkShouldSkip_Detour(void *bink) {
 	if (g_bink_override_active) {
 		return framesToRun(bink) > 1;
 	} else {
 		BinkShouldSkip_Hook.Disable();
-		bool ret = BinkShouldSkip(bink);
+		int ret = BinkShouldSkip(bink);
 		BinkShouldSkip_Hook.Enable();
 		return ret;
 	}
 }
 
-bool (__stdcall *BinkWait)(void *bink);
-bool __stdcall BinkWait_Detour(void *bink);
+int (__stdcall *BinkWait)(void *bink);
+int __stdcall BinkWait_Detour(void *bink);
 static Hook BinkWait_Hook(&BinkWait_Detour);
-bool __stdcall BinkWait_Detour(void *bink) {
+int __stdcall BinkWait_Detour(void *bink) {
 	if (g_bink_override_active) {
 		return framesToRun(bink) == 0;
 	} else {
 		BinkWait_Hook.Disable();
-		bool ret = BinkWait(bink);
+		int ret = BinkWait(bink);
 		BinkWait_Hook.Enable();
 		return ret;
 	}
@@ -1043,9 +1051,9 @@ bool Engine::Init() {
 	if (bink_mod) {
 		BinkNextFrame = Memory::GetSymbolAddress<void (__stdcall *)(void *bink)>(bink_mod, STDCALL_NAME("BinkNextFrame", 4));
 		BinkNextFrame_Hook.SetFunc(BinkNextFrame);
-		BinkShouldSkip = Memory::GetSymbolAddress<bool (__stdcall *)(void *bink)>(bink_mod, STDCALL_NAME("BinkShouldSkip", 4));
+		BinkShouldSkip = Memory::GetSymbolAddress<int (__stdcall *)(void *bink)>(bink_mod, STDCALL_NAME("BinkShouldSkip", 4));
 		BinkShouldSkip_Hook.SetFunc(BinkShouldSkip);
-		BinkWait = Memory::GetSymbolAddress<bool (__stdcall *)(void *bink)>(bink_mod, STDCALL_NAME("BinkWait", 4));
+		BinkWait = Memory::GetSymbolAddress<int (__stdcall *)(void *bink)>(bink_mod, STDCALL_NAME("BinkWait", 4));
 		BinkWait_Hook.SetFunc(BinkWait);
 		Memory::CloseModuleHandle(bink_mod);
 	}
