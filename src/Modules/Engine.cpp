@@ -687,20 +687,20 @@ static void advFrame(void *bink) {
 	}
 }
 
-void (*BinkNextFrame)(void *bink);
-void BinkNextFrame_Detour(void *bink);
+void (__stdcall *BinkNextFrame)(void *bink);
+void __stdcall BinkNextFrame_Detour(void *bink);
 static Hook BinkNextFrame_Hook(&BinkNextFrame_Detour);
-void BinkNextFrame_Detour(void *bink) {
+void __stdcall BinkNextFrame_Detour(void *bink) {
 	BinkNextFrame_Hook.Disable();
 	BinkNextFrame(bink);
 	BinkNextFrame_Hook.Enable();
 	if (g_bink_override_active) advFrame(bink);
 }
 
-bool (*BinkShouldSkip)(void *bink);
-bool BinkShouldSkip_Detour(void *bink);
+bool (__stdcall *BinkShouldSkip)(void *bink);
+bool __stdcall BinkShouldSkip_Detour(void *bink);
 static Hook BinkShouldSkip_Hook(&BinkShouldSkip_Detour);
-bool BinkShouldSkip_Detour(void *bink) {
+bool __stdcall BinkShouldSkip_Detour(void *bink) {
 	if (g_bink_override_active) {
 		return framesToRun(bink) > 1;
 	} else {
@@ -711,10 +711,10 @@ bool BinkShouldSkip_Detour(void *bink) {
 	}
 }
 
-bool (*BinkWait)(void *bink);
-bool BinkWait_Detour(void *bink);
+bool (__stdcall *BinkWait)(void *bink);
+bool __stdcall BinkWait_Detour(void *bink);
 static Hook BinkWait_Hook(&BinkWait_Detour);
-bool BinkWait_Detour(void *bink) {
+bool __stdcall BinkWait_Detour(void *bink) {
 	if (g_bink_override_active) {
 		return framesToRun(bink) == 0;
 	} else {
@@ -1035,15 +1035,19 @@ bool Engine::Init() {
 		this->g_physCollision->Hook(Engine::DestroyDebugMesh_Hook, Engine::DestroyDebugMesh, Offsets::DestroyDebugMesh);
 	}
 
-	auto eng_mod = Memory::GetModuleHandleByName(MODULE("valve_avi"));
-	if (eng_mod) {
-		BinkNextFrame = Memory::GetSymbolAddress<void (*)(void *bink)>(eng_mod, "BinkNextFrame");
+#ifdef _WIN32
+	auto bink_mod = Memory::GetModuleHandleByName(MODULE("binkw32"));
+#else
+	auto bink_mod = Memory::GetModuleHandleByName(MODULE("valve_avi"));
+#endif
+	if (bink_mod) {
+		BinkNextFrame = Memory::GetSymbolAddress<void (__stdcall *)(void *bink)>(bink_mod, STDCALL_NAME("BinkNextFrame", 4));
 		BinkNextFrame_Hook.SetFunc(BinkNextFrame);
-		BinkShouldSkip = Memory::GetSymbolAddress<bool (*)(void *bink)>(eng_mod, "BinkShouldSkip");
+		BinkShouldSkip = Memory::GetSymbolAddress<bool (__stdcall *)(void *bink)>(bink_mod, STDCALL_NAME("BinkShouldSkip", 4));
 		BinkShouldSkip_Hook.SetFunc(BinkShouldSkip);
-		BinkWait = Memory::GetSymbolAddress<bool (*)(void *bink)>(eng_mod, "BinkWait");
+		BinkWait = Memory::GetSymbolAddress<bool (__stdcall *)(void *bink)>(bink_mod, STDCALL_NAME("BinkWait", 4));
 		BinkWait_Hook.SetFunc(BinkWait);
-		Memory::CloseModuleHandle(eng_mod);
+		Memory::CloseModuleHandle(bink_mod);
 	}
 
 	return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace;

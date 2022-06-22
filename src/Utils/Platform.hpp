@@ -7,6 +7,7 @@
 #	define __rescalll __thiscall
 #else
 #	define __rescalll __attribute__((__cdecl__))
+#	define __stdcall
 #endif
 
 #define _GAME_PATH(x) #x
@@ -19,6 +20,7 @@
 #	define __rescall __thiscall
 #	define DLL_EXPORT extern "C" __declspec(dllexport)
 #	define SEEK_DIR_CUR std::ios_base::_Seekdir::_Seekcur
+#	define STDCALL_NAME(base, param_bytes) "_" base "@" #param_bytes
 
 #	define DECL_DETOUR(name, ...)                                   \
 		using _##name = int(__rescall *)(void *thisptr, ##__VA_ARGS__); \
@@ -89,6 +91,7 @@ namespace {
 #	define __fastcall __attribute__((__fastcall__))
 #	define DLL_EXPORT extern "C" __attribute__((visibility("default")))
 #	define SEEK_DIR_CUR std::ios_base::seekdir::_S_cur
+#	define STDCALL_NAME(base, param_bytes) base
 
 #	define DECL_DETOUR(name, ...)                                   \
 		using _##name = int(__rescall *)(void *thisptr, ##__VA_ARGS__); \
