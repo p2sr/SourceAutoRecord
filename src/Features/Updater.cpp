@@ -4,6 +4,7 @@ extern "C" {
 
 #include "Command.hpp"
 #include "Event.hpp"
+#include "Features/Hud/Toasts.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Updater.hpp"
@@ -295,7 +296,12 @@ void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 	THREAD_PRINT("Success! You should now restart your game.\n");
 
 	if (exitOnSuccess) {
-		engine->ExecuteCommand("quit");
+		Scheduler::OnMainThread([]() {
+			toastHud.AddToast("update", "SAR has been updated. Your game will now exit.\n");
+			Scheduler::InHostTicks(120, []() {
+				engine->ExecuteCommand("quit");
+			});
+		});
 	}
 }
 
