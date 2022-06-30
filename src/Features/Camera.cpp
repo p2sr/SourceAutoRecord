@@ -14,6 +14,7 @@
 #include "Utils.hpp"
 
 #include <climits>
+#include <fstream>
 
 Camera *camera;
 
@@ -777,6 +778,98 @@ CON_COMMAND(sar_cam_path_remkfs, "sar_cam_path_remkfs - removes all camera path 
 		return console->Print(sar_cam_path_remkfs.ThisPtr()->m_pszHelpString);
 	}
 }
+
+CON_COMMAND(sar_cam_path_export, 
+	"sar_cam_path_export <filename> [format] [framerate] - exports current camera path to a given file in given format.\n"
+	"Available formats:\n"
+	"kf - default, exports commands that can be used to recreate camera path. Does not use rate parameter.\n"
+	"raw - exports a dump of raw camera position for each frame in given framerate (60 by default).\n"
+	"davinci - exports a script for DaVinci Resolve's Camera 3D Fusion component based on raw camera dump.\n"
+) {
+	if (args.ArgC() < 2 || args.ArgC() > 4) {
+		return console->Print(sar_cam_path_export.ThisPtr()->m_pszHelpString);
+	}
+
+	if (camera->states.size() == 0) {
+		return console->Print("No camera path has been defined.\n");
+	}
+
+	std::string filename = args[1];
+	std::string format = args.ArgC() >= 3 ? args[2] : "kf";
+
+	int rate = args.ArgC() == 4 ? std::atoi(args[3]) : 60;
+	if (rate <= 0) rate = 60; 
+
+	// check if file exists before writing
+	std::ifstream testFile(filename.c_str());
+	if (testFile.good()) {
+		testFile.close();
+		return console->Print("File \"%s\" exists and cannot be overwritten.\n", filename.c_str());
+	}
+	testFile.close();
+
+	std::ofstream file(filename.c_str());
+
+	if (format == "kf") {
+		// dump keyframes comamnds
+		file << "sar_cam_path_remkfs\n";
+		file << Utils::ssprintf("sar_cam_path_interp %d\n", sar_cam_path_interp.GetInt());
+		for (auto const &state : camera->states) {
+			CameraState cam = state.second;
+			file << Utils::ssprintf("sar_cam_path_setkf %d %f %f %f %f %f %f %f\n", state.first, cam.origin.x, cam.origin.y, cam.origin.z, cam.angles.x, cam.angles.y, cam.angles.z, cam.fov);
+		}
+	} else if (format == "raw" || format == "davinci") {
+		// dump raw interpolated camera positions 
+		// both davinci and raw work similar in this case
+
+		bool daVinci = (format == "davinci");
+
+		float frameTime = 1.0 / rate;
+		int maxTimeTicks = 0;
+		int minTimeTicks = INT_MAX;
+		for (auto const &state : camera->states) {
+			maxTimeTicks = std::fmaxf(maxTimeTicks, state.first);
+			minTimeTicks = std::fminf(minTimeTicks, state.first);
+		}
+
+		// changing in-game ticks to seconds.
+		float maxTime = maxTimeTicks / 60.0f;
+		float minTime = minTimeTicks / 60.0f;
+
+		if (daVinci) file << "C={\n";
+
+		// for each frame, calculate interpolated path
+		for (float t = minTime; t <= maxTime + frameTime; t += frameTime) {
+			auto cam = camera->InterpolateStates(t);
+			if (daVinci) {
+				file << Utils::ssprintf("[%f]={%f,%f,%f,%f,%f,%f,%f},\n", t, cam.origin.x, cam.origin.y, cam.origin.z, cam.angles.x, cam.angles.y, cam.angles.z, cam.fov);
+			} else {
+				file << Utils::ssprintf("%f %f %f %f %f %f %f %f\n", t, cam.origin.x, cam.origin.y, cam.origin.z, cam.angles.x, cam.angles.y, cam.angles.z, cam.fov);
+			}
+		}
+
+		// finish boilerplate code for davinci output (also changing some variables to map it properly in Resolve's space)
+		if (daVinci) {
+			file << Utils::ssprintf("}\nn=9999999;m=0;t=time/%f;", (float)rate);
+			file << "for i,v in pairs(C) do a=math.abs(i-t);if a<n then n=a;m=v; end end\n";
+			file << "self.Transform3DOp.Translate.X = -m[2]\n"
+					"self.Transform3DOp.Translate.Y = m[3]\n"
+					"self.Transform3DOp.Translate.Z = -m[1]\n"
+					"self.Transform3DOp.Rotate.X = -m[4]\n"
+					"self.Transform3DOp.Rotate.Y = m[5]\n"
+					"self.Transform3DOp.Rotate.Z = m[6]\n"
+					"self.AoV = math.deg(math.atan(160.0/m[7]))"; // that will work as long as resolution is 16x9
+		}
+		
+	} else {
+		return console->Print("Unknown camera path format \"%s\".\n", format.c_str());
+	}
+
+	file.close();
+	
+	console->Print("Saved camera path to \"%s\".\n", filename.c_str());
+}
+
 
 CON_COMMAND(sar_cam_setang, "sar_cam_setang <pitch> <yaw> [roll] - sets camera angle (requires camera Drive Mode)\n") {
 	if (camera->controlType != Drive) {
