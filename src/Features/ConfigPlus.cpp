@@ -536,8 +536,8 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 			} else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len) || t.len == 4 && !strncmp(t.str, "game", t.len) || t.len > 4 && !strncmp(t.str, "var:", 4) || t.len > 1 && t.str[0] == '?') {
 				bool is_var = !strncmp(t.str, "var:", 4) || t.str[0] == '?';
 
-				if (toks.front().type != TOK_EQUALS) {
-					console->Print("Expected = after '%*s'\n", t.len, t.str);
+				if (toks.front().type != TOK_EQUALS || toks.empty()) {
+					console->Print("Expected = after '%.*s'\n", t.len, t.str);
 					CLEAR_OUT_STACK;
 					return NULL;
 				}
@@ -545,18 +545,18 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				toks.pop();
 
 				Token map_tok = toks.front();
-				toks.pop();
 
-				if (map_tok.type != TOK_STR) {
-					console->Print("Expected string token after '%*s='\n", t.len, t.str);
+				if (map_tok.type != TOK_STR || toks.empty()) {
+					console->Print("Expected string token after '%.*s='\n", t.len, t.str);
 					CLEAR_OUT_STACK;
 					return NULL;
 				}
 
-				char * val;
+				toks.pop();
+
+				char *val;
 				if (map_tok.len > 4 && !strncmp(map_tok.str, "var:", 4) || map_tok.len > 1 && map_tok.str[0] == '?') {
 					int i = map_tok.str[0] == 'v' ? 4 : 1;
-					
 					std::string value = GetSvar(std::string(map_tok.str + i));
 					val = (char *)malloc(value.length() + 1);
 					strcpy(val, value.c_str());
@@ -711,7 +711,7 @@ CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only 
 	Condition *cond = ParseCondition(LexCondition(cond_str, strlen(cond_str)));
 
 	if (!cond) {
-		console->Print("Condition parsing failed\n");
+		console->Print("Condition parsing of \"%s\" failed\n", cond_str);
 		return;
 	}
 
@@ -964,7 +964,6 @@ CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a 
 }
 
 static void expand(const CCommand &args, std::string body) {
-
 	std::string cmd;
 	unsigned nargs = args.ArgC() - 2;
 
@@ -1008,7 +1007,7 @@ static void expand(const CCommand &args, std::string body) {
 			} else if (body[i + 1] == '#') {
 				cmd += std::to_string(nargs);
 				++i;
-				continue;	
+				continue;
 			} else if (body[i + 1] >= '1' && body[i + 1] <= '9') {
 				unsigned arg = body[i + 1] - '0';
 				if (body[i + 2] >= '0' && body[i + 2] <= '9') {
@@ -1056,7 +1055,7 @@ CON_COMMAND_F(sar_expand, "sar_expand [cmd]... - run a command after expanding s
 	}
 
 	const char *cmd = args.ArgC() == 2 ? args[1] : args.m_pArgSBuffer + args.m_nArgv0Size;
-	const CCommand noArgs = {2}; // nargs = 0
+	const CCommand noArgs = {2};  // nargs = 0
 	expand(noArgs, std::string(cmd));
 }
 
