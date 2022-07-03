@@ -1009,6 +1009,10 @@ static void expand(const CCommand &args, std::string body) {
 					cmd += "$+";
 				}
 				continue;
+			} else if (body[i + 1] == '#') {
+				cmd += std::to_string(nargs);
+				++i;
+				continue;
 			} else if (body[i + 1] >= '1' && body[i + 1] <= '9') {
 				unsigned arg = body[i + 1] - '0';
 				++i;
