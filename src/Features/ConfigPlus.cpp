@@ -989,6 +989,11 @@ static void expand(const CCommand &args, std::string body) {
 				++i;
 				if (body[i + 1] >= '1' && body[i + 1] <= '9') {
 					unsigned arg = body[i + 1] - '0';
+					++i;
+					while (body[i + 1] >= '0' && body[i + 1] <= '9') {
+						arg = arg * 10 + (body[i + 1] - '0');
+						++i;
+					}
 					if (arg - 1 < nargs) {
 						// Skip the first n + 1 arguments
 						// (including 'sar_function_run <function>')
@@ -1000,15 +1005,18 @@ static void expand(const CCommand &args, std::string body) {
 						}
 						cmd += greedy;
 					}
-					++i;
 				} else {
 					cmd += "$+";
 				}
 				continue;
 			} else if (body[i + 1] >= '1' && body[i + 1] <= '9') {
 				unsigned arg = body[i + 1] - '0';
-				cmd += arg - 1 < nargs ? args[arg + 1] : "";
 				++i;
+				while (body[i + 1] >= '0' && body[i + 1] <= '9') {
+					arg = arg * 10 + (body[i + 1] - '0');
+					++i;
+				}
+				cmd += arg - 1 < nargs ? args[arg + 1] : "";
 				continue;
 			} else {
 				size_t len = 0;
