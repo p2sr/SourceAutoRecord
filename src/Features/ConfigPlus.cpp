@@ -562,9 +562,18 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				} else {
 					c->type = t.len == 8 ? Condition::PREV_MAP : t.len == 4 ? Condition::GAME : Condition::MAP;
 				}
-				c->val = (char *)malloc(val_tok.len + 1);
-				strncpy(c->val, val_tok.str, val_tok.len);
-				c->val[val_tok.len] = 0;  // Null terminator
+
+				if (val_tok.len > 4 && !strncmp(val_tok.str, "var:", 4) || val_tok.len > 1 && val_tok.str[0] == '?') {
+					int i = val_tok.str[0] == 'v' ? 4 : 1;
+					const char *val = GetSvar({val_tok.str + i}).c_str();
+					c->val = (char *)malloc(strlen(val) + 1);
+					strcpy(c->val, val);
+					c->val[strlen(val)] = 0;  // Null terminator
+				} else {
+					c->val = (char *)malloc(val_tok.len + 1);
+					strncpy(c->val, val_tok.str, val_tok.len);
+					c->val[val_tok.len] = 0;  // Null terminator
+				}
 			} else {
 				console->Print("Bad token '%.*s'\n", t.len, t.str);
 				CLEAR_OUT_STACK;
