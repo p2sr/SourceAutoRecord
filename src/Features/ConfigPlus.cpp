@@ -535,8 +535,8 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 			} else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len) || t.len == 4 && !strncmp(t.str, "game", t.len) || t.len > 4 && !strncmp(t.str, "var:", 4) || t.len > 1 && t.str[0] == '?') {
 				bool is_var = !strncmp(t.str, "var:", 4) || t.str[0] == '?';
 
-				if (toks.front().type != TOK_EQUALS) {
-					console->Print("Expected = after '%*s'\n", t.len, t.str);
+				if (toks.empty() || toks.front().type != TOK_EQUALS) {
+					console->Print("Expected = after '%.*s'\n", t.len, t.str);
 					CLEAR_OUT_STACK;
 					return NULL;
 				}
@@ -544,13 +544,14 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				toks.pop();
 
 				Token val_tok = toks.front();
-				toks.pop();
 
-				if (val_tok.type != TOK_STR) {
-					console->Print("Expected string token after '%*s='\n", t.len, t.str);
+				if (toks.empty() || val_tok.type != TOK_STR) {
+					console->Print("Expected string token after '%.*s='\n", t.len, t.str);
 					CLEAR_OUT_STACK;
 					return NULL;
 				}
+
+				toks.pop();
 
 				if (is_var) {
 					int i = t.str[0] == 'v' ? 4 : 1;
@@ -699,7 +700,7 @@ CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only 
 	Condition *cond = ParseCondition(LexCondition(cond_str, strlen(cond_str)));
 
 	if (!cond) {
-		console->Print("Condition parsing failed\n");
+		console->Print("Condition parsing of \"%s\" failed\n", cond_str);
 		return;
 	}
 
