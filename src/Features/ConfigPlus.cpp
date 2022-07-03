@@ -295,14 +295,13 @@ struct Condition {
 	} type;
 
 	union {
-		char *map; // also actually used for game name now lol
+		struct {
+			char *var, *val;
+		};
 		Condition *unop_cond;
 		struct {
 			Condition *binop_l, *binop_r;
 		};
-		struct {
-			char *var, *val;
-		} svar;
 	};
 };
 
@@ -311,11 +310,11 @@ static void FreeCondition(Condition *c) {
 	case Condition::MAP:
 	case Condition::PREV_MAP:
 	case Condition::GAME:
-		free(c->map);
+		free(c->val);
 		break;
 	case Condition::SVAR:
-		free(c->svar.var);
-		free(c->svar.val);
+		free(c->var);
+		free(c->val);
 		break;
 	case Condition::NOT:
 		FreeCondition(c->unop_cond);
@@ -381,13 +380,13 @@ static bool EvalCondition(Condition *c) {
 	case Condition::SAME_MAP: return session->previousMap == engine->GetCurrentMapName();
 	case Condition::WORKSHOP: return !strncmp("workshop/", engine->GetCurrentMapName().c_str(), 9);
 	case Condition::MENU: return engine->GetCurrentMapName().size() == 0;
-	case Condition::MAP: return !strcmp(c->map, engine->GetCurrentMapName().c_str());
-	case Condition::PREV_MAP: return !strcmp(c->map, session->previousMap.c_str());
-	case Condition::GAME: return !strcmp(c->map, gameName());
+	case Condition::MAP: return !strcmp(c->val, engine->GetCurrentMapName().c_str());
+	case Condition::PREV_MAP: return !strcmp(c->val, session->previousMap.c_str());
+	case Condition::GAME: return !strcmp(c->val, gameName());
 	case Condition::NOT: return !EvalCondition(c->unop_cond);
 	case Condition::AND: return EvalCondition(c->binop_l) && EvalCondition(c->binop_r);
 	case Condition::OR: return EvalCondition(c->binop_l) || EvalCondition(c->binop_r);
-	case Condition::SVAR: return GetSvar({c->svar.var}) == c->svar.val;
+	case Condition::SVAR: return GetSvar({c->var}) == c->val;
 	}
 	return false;
 }
@@ -533,8 +532,8 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				c->type = Condition::WORKSHOP;
 			} else if (t.len == 4 && !strncmp(t.str, "menu", t.len)) {
 				c->type = Condition::MENU;
-			} else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len) || t.len == 4 && !strncmp(t.str, "game", t.len) || t.len > 4 && !strncmp(t.str, "var:", 4)) {
-				bool is_var = !strncmp(t.str, "var:", 4);
+			} else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len) || t.len == 4 && !strncmp(t.str, "game", t.len) || t.len > 4 && !strncmp(t.str, "var:", 4) || t.len > 1 && t.str[0] == '?') {
+				bool is_var = !strncmp(t.str, "var:", 4) || t.str[0] == '?';
 
 				if (toks.front().type != TOK_EQUALS) {
 					console->Print("Expected = after '%*s'\n", t.len, t.str);
@@ -544,29 +543,27 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 				toks.pop();
 
-				Token map_tok = toks.front();
+				Token val_tok = toks.front();
 				toks.pop();
 
-				if (map_tok.type != TOK_STR) {
+				if (val_tok.type != TOK_STR) {
 					console->Print("Expected string token after '%*s='\n", t.len, t.str);
 					CLEAR_OUT_STACK;
 					return NULL;
 				}
 
 				if (is_var) {
+					int i = t.str[0] == 'v' ? 4 : 1;
 					c->type = Condition::SVAR;
-					c->svar.var = (char *)malloc(t.len - 4 + 1);
-					strncpy(c->svar.var, t.str + 4, t.len - 4);
-					c->svar.var[t.len - 4] = 0;  // Null terminator
-					c->svar.val = (char *)malloc(map_tok.len + 1);
-					strncpy(c->svar.val, map_tok.str, map_tok.len);
-					c->svar.val[map_tok.len] = 0;  // Null terminator
+					c->var = (char *)malloc(t.len - i + 1);
+					strncpy(c->var, t.str + i, t.len - i);
+					c->var[t.len - i] = 0;  // Null terminator
 				} else {
 					c->type = t.len == 8 ? Condition::PREV_MAP : t.len == 4 ? Condition::GAME : Condition::MAP;
-					c->map = (char *)malloc(map_tok.len + 1);
-					strncpy(c->map, map_tok.str, map_tok.len);
-					c->map[map_tok.len] = 0;  // Null terminator
 				}
+				c->val = (char *)malloc(val_tok.len + 1);
+				strncpy(c->val, val_tok.str, val_tok.len);
+				c->val[val_tok.len] = 0;  // Null terminator
 			} else {
 				console->Print("Bad token '%.*s'\n", t.len, t.str);
 				CLEAR_OUT_STACK;
