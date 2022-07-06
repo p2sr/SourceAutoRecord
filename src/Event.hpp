@@ -45,7 +45,7 @@ namespace Event {
 		RENDER,
 		TAS_START,
 		TAS_END,
-		PB_SUBMIT
+		MAYBE_AUTOSUBMIT,
 	};
 
 	template <EventType E>
@@ -82,9 +82,10 @@ namespace Event {
 		bool server;
 	};
 	template <>
-	struct EventData<PB_SUBMIT> {
+	struct EventData<MAYBE_AUTOSUBMIT> {
 		int score;
 		bool coop;
+		bool pb;
 	};
 
 	template <EventType E>

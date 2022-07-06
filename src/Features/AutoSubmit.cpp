@@ -299,6 +299,9 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 	if (cur_pb) {
 		if (*cur_pb > -1 && score >= *cur_pb) {
 			THREAD_PRINT("Not PB; not submitting.\n");
+			Scheduler::OnMainThread([=](){
+				Event::Trigger<Event::MAYBE_AUTOSUBMIT>({score, coop, false});
+			});
 			return;
 		}
 	}
@@ -325,7 +328,9 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 		return;
 	}
 
-	Event::Trigger<Event::PB_SUBMIT>({score, coop});
+	Scheduler::OnMainThread([=](){
+		Event::Trigger<Event::MAYBE_AUTOSUBMIT>({score, coop, true});
+	});
 
 	curl_mime *form = curl_mime_init(g_curl);
 	curl_mimepart *field;
