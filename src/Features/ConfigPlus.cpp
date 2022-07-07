@@ -132,6 +132,29 @@ CON_COMMAND_F_COMPLETION(svar_set, "svar_set <variable> <value> - set a svar (SA
 	SetSvar({args[1]}, {args[2]});
 }
 
+CON_COMMAND_F(svar_substr, "svar_substr <variable> <from> [len] - sets a svar to its substring.\n", FCVAR_DONTRECORD) {
+	if (args.ArgC() < 3 || args.ArgC() > 4) {
+		return console->Print(svar_substr.ThisPtr()->m_pszHelpString);
+	}
+
+	std::string value = GetSvar({args[1]});
+	int from = atoi(args[2]);
+	int len = args.ArgC() == 4 ? atoi(args[3]) : value.length();
+
+	if (from < 0) from += value.length();
+
+	if (from < 0 || from > value.length()) {
+		return console->Print("Substring index out of bounds of variable\n");
+	}
+	if (len < 0) {
+		return console->Print("Negative length of substring\n");
+	}
+
+	value = value.substr(from, len);
+
+	SetSvar({args[1]}, value);
+}
+
 CON_COMMAND_F(svar_get, "svar_get <variable> - get the value of a svar\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() != 2) {
 		return console->Print(svar_get.ThisPtr()->m_pszHelpString);
