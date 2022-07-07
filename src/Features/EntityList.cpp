@@ -52,7 +52,7 @@ CEntInfo *EntityList::GetEntityInfoByClassName(const char *name) {
 	return nullptr;
 }
 IHandleEntity *EntityList::LookupEntity(const CBaseHandle &handle) {
-	if (handle.m_Index == Offsets::INVALID_EHANDLE_INDEX)
+	if ((unsigned)handle.m_Index == (unsigned)Offsets::INVALID_EHANDLE_INDEX)
 		return NULL;
 
 	auto pInfo = this->GetEntityInfoByIndex(handle.GetEntryIndex());

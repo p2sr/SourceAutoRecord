@@ -797,7 +797,7 @@ HUD_ELEMENT2(tbeam, "0", "Draw the name of the funnel player is currently in (re
 	auto portalLocal = server->GetPortalLocal(player);
 
 	void* tbeamHandle = reinterpret_cast<void*>(portalLocal.m_hTractorBeam);
-	if (!tbeamHandle || (uint32_t)tbeamHandle == Offsets::INVALID_EHANDLE_INDEX) {
+	if (!tbeamHandle || (uint32_t)tbeamHandle == (unsigned)Offsets::INVALID_EHANDLE_INDEX) {
 		ctx->DrawElement("tbeam: none");
 	} else {
 		ctx->DrawElement("tbeam: [0x%#08X]", tbeamHandle);

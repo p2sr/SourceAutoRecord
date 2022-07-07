@@ -328,7 +328,7 @@ ON_EVENT(PROCESS_MOVEMENT) {
 
 	void *tbeamHandle = reinterpret_cast<void *>(portalLocal.m_hTractorBeam);
 
-	if (!tbeamHandle || (uint32_t)tbeamHandle == Offsets::INVALID_EHANDLE_INDEX) return;
+	if (!tbeamHandle || (uint32_t)tbeamHandle == (unsigned)Offsets::INVALID_EHANDLE_INDEX) return;
 
 	for (int i = 0; i < 2; i++) {
 		int hitboxOffset = i==0 ? Offsets::m_pShadowCrouch : Offsets::m_pShadowStand;

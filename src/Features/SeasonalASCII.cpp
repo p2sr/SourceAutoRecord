@@ -100,15 +100,15 @@ void SeasonalASCIIArt::Display() {
 	std::string art(message);
 
 	Color currentColor{255, 255, 255};
-	int messageBegin = 0;
+	unsigned messageBegin = 0;
 
 	std::vector<std::pair<Color, std::string>> convertedMessages;
 
-	for (int i = 0; i < art.size(); i++) {
+	for (unsigned i = 0; i < art.size(); i++) {
 		if (art[i] != '$' || i >= art.size() - 4 || art[i + 1] != 'c' || art[i + 2] != '{') continue;
 
-		int numStart = i + 3;
-		int numSize = 0;
+		unsigned numStart = i + 3;
+		unsigned numSize = 0;
 		while (numStart + numSize < art.size() && art[numStart + numSize] != '}') numSize++;
 		if (art[numStart + numSize] != '}' || numSize==0) continue;
 
@@ -122,7 +122,7 @@ void SeasonalASCIIArt::Display() {
 
 		// save new color code
 		int colorNum = std::stoi(art.substr(numStart, numSize));
-		if (colorNum < 0 || colorNum >= colors.size()) colorNum = 0;
+		if (colorNum < 0 || (unsigned)colorNum >= colors.size()) colorNum = 0;
 		currentColor = colors[colorNum];
 	}
 

@@ -477,7 +477,7 @@ void SpeedrunTimer::TickRules() {
 		int m_nTractorBeamCount = portalLocal.m_nTractorBeamCount;
 		uint32_t m_hTractorBeam = portalLocal.m_hTractorBeam;
 
-		bool fly = m_nTractorBeamCount > 0 && m_hTractorBeam == Offsets::INVALID_EHANDLE_INDEX;
+		bool fly = m_nTractorBeamCount > 0 && m_hTractorBeam == (unsigned)Offsets::INVALID_EHANDLE_INDEX;
 
 		if (fly && !flyStates[slot]) {
 			if (engine->demorecorder->isRecordingDemo) {

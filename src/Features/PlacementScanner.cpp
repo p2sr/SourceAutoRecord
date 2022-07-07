@@ -398,6 +398,8 @@ HUD_ELEMENT2_NO_DISABLE(pp_scan, HudType_InGame) {
 	case SetupState::RUNNING:
 		status_text = "Scanning to pp_scan.tga... use sar_pp_scan_set to cancel.";
 		break;
+	default:
+		break;
 	}
 
 	surface->DrawRectAndCenterTxt(Color{0, 0, 0, 0}, 0, 0, sw, sh - 50, 6, Color{255, 255, 255}, status_text.c_str());

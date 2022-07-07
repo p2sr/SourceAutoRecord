@@ -124,9 +124,6 @@ ON_EVENT(RENDER) {
 
 	int renderState = sar_vphys_hud_show_hitboxes.GetInt();
 
-	auto standingShadow = vphysHud.GetVphysInfo(GET_SLOT(), false);
-	auto crouchedShadow = vphysHud.GetVphysInfo(GET_SLOT(), true);
-
 	const auto renderHitbox = [=](Color c, float solidScale, Vector pos, Vector size, QAngle rot) {
 		RenderCallback solid = RenderCallback::constant({c.r, c.g, c.b, (uint8_t)(c.a * solidScale)});
 		RenderCallback wf = RenderCallback::constant({c.r, c.g, c.b, 255});

@@ -108,12 +108,12 @@ void Teleporter::SaveLocal(int slot, QAngle ang) {
 	location.isSet = true;
 
 	std::string msg = Utils::ssprintf("Saved location: %.3f %.3f %.3f", location.origin.x, location.origin.y, location.origin.z);
-	char *buf = new char[msg.size() + 2];
+	char *buf = (char *)malloc(msg.size() + 2);
 	buf[0] = TP_OP_MSG;
 	buf[1] = slot;
 	memcpy(buf + 2, msg.c_str(), msg.size());
 	sendMessage(slot, buf, msg.size() + 2);
-	delete buf;
+	free(buf);
 }
 void Teleporter::TeleportLocal(int slot, bool portals) {
 	if (!sv_cheats.GetBool()) return;

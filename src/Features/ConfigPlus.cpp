@@ -143,7 +143,7 @@ CON_COMMAND_F(svar_substr, "svar_substr <variable> <from> [len] - sets a svar to
 
 	if (from < 0) from += value.length();
 
-	if (from < 0 || from > value.length()) {
+	if (from < 0 || (unsigned)from > value.length()) {
 		return console->Print("Substring index out of bounds of variable\n");
 	}
 	if (len < 0) {
