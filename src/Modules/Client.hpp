@@ -18,6 +18,7 @@ private:
 	Interface *g_ClientDLL = nullptr;
 	Interface *g_pClientMode = nullptr;
 	Interface *g_pClientMode2 = nullptr;
+	Interface *g_HUDChallengeStats = nullptr;
 	Interface *g_HUDQuickInfo = nullptr;
 	Interface *s_EntityList = nullptr;
 	Interface *g_Input = nullptr;
@@ -87,6 +88,9 @@ public:
 	DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd *cmd);
 	DECL_DETOUR(CreateMove2, float flInputSampleTime, CUserCmd *cmd);
 
+	// CHud::GetName
+	DECL_DETOUR_T(const char *, GetName);
+
 	// CHudMultiplayerBasicInfo::ShouldDraw
 	DECL_DETOUR_T(bool, ShouldDraw_BasicInfo);
 
@@ -119,7 +123,6 @@ public:
 	DECL_DETOUR(OverrideView, CViewSetup *m_View);
 
 	DECL_DETOUR_COMMAND(playvideo_end_level_transition);
-	DECL_DETOUR_COMMAND(leaderboard);
 
 	bool Init() override;
 	void Shutdown() override;
