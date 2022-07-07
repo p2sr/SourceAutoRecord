@@ -40,15 +40,8 @@ void wait_callback(const CCommand &args) {
 		cmd = args[2];
 	} else {
 		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-
 		while (isspace(*cmd)) ++cmd;
-
-		if (*cmd == '"') {
-			cmd += strlen(args[1]) + 2;
-		} else {
-			cmd += strlen(args[1]);
-		}
-
+		cmd += (*cmd == '"') * 2 + strlen(args[1]);
 		while (isspace(*cmd)) ++cmd;
 	}
 
@@ -99,15 +92,8 @@ CON_COMMAND_F(hwait, "hwait <tick> <command> [args...] - run a command after the
 		cmd = args[2];
 	} else {
 		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-
 		while (isspace(*cmd)) ++cmd;
-
-		if (*cmd == '"') {
-			cmd += strlen(args[1]) + 2;
-		} else {
-			cmd += strlen(args[1]);
-		}
-
+		cmd += (*cmd == '"') * 2 + strlen(args[1]);
 		while (isspace(*cmd)) ++cmd;
 	}
 

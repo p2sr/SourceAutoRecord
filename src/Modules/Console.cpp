@@ -60,15 +60,8 @@ CON_COMMAND(sar_echo, "sar_echo <color> <string...> - echo a string to console w
 		str = args[2];
 	} else {
 		str = args.m_pArgSBuffer + args.m_nArgv0Size;
-
 		while (isspace(*str)) ++str;
-
-		if (*str == '"') {
-			str += strlen(args[1]) + 2;
-		} else {
-			str += strlen(args[1]);
-		}
-
+		str += (*str == '"') * 2 + strlen(args[1]);
 		while (isspace(*str)) ++str;
 	}
 
@@ -90,15 +83,8 @@ CON_COMMAND(sar_echo_nolf, "sar_echo_nolf <color> <string...> - echo a string to
 		str = args[2];
 	} else {
 		str = args.m_pArgSBuffer + args.m_nArgv0Size;
-
 		while (isspace(*str)) ++str;
-
-		if (*str == '"') {
-			str += strlen(args[1]) + 2;
-		} else {
-			str += strlen(args[1]);
-		}
-
+		str += (*str == '"') * 2 + strlen(args[1]);
 		while (isspace(*str)) ++str;
 	}
 

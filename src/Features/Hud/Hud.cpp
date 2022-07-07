@@ -489,15 +489,8 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
 		txt = args[2];
 	} else {
 		txt = args.m_pArgSBuffer + args.m_nArgv0Size;
-
 		while (isspace(*txt)) ++txt;
-
-		if (*txt == '"') {
-			txt += strlen(args[1]) + 2;
-		} else {
-			txt += strlen(args[1]);
-		}
-
+		txt += (*txt == '"') * 2 + strlen(args[1]);
 		while (isspace(*txt)) ++txt;
 	}
 

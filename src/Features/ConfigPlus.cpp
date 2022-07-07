@@ -218,15 +218,8 @@ CON_COMMAND_F(svar_capture, "svar_capture <variable> <command> [args]... - captu
 		cmd = args[2];
 	} else {
 		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-
 		while (isspace(*cmd)) ++cmd;
-
-		if (*cmd == '"') {
-			cmd += strlen(args[1]) + 2;
-		} else {
-			cmd += strlen(args[1]);
-		}
-
+		cmd += (*cmd == '"') * 2 + strlen(args[1]);
 		while (isspace(*cmd)) ++cmd;
 	}
 
@@ -748,15 +741,8 @@ CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only 
 		cmd = args[2];
 	} else {
 		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-
 		while (isspace(*cmd)) ++cmd;
-
-		if (*cmd == '"') {
-			cmd += strlen(args[1]) + 2;
-		} else {
-			cmd += strlen(args[1]);
-		}
-
+		cmd += (*cmd == '"') * 2 + strlen(args[1]);
 		while (isspace(*cmd)) ++cmd;
 	}
 
@@ -835,15 +821,8 @@ CON_COMMAND_F(sar_alias, "sar_alias <name> [command] [args]... - create an alias
 		cmd = args[2];
 	} else {
 		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-
 		while (isspace(*cmd)) ++cmd;
-
-		if (*cmd == '"') {
-			cmd += strlen(args[1]) + 2;
-		} else {
-			cmd += strlen(args[1]);
-		}
-
+		cmd += (*cmd == '"') * 2 + strlen(args[1]);
 		while (isspace(*cmd)) ++cmd;
 	}
 
@@ -875,15 +854,8 @@ CON_COMMAND_F(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, 
 	}
 
 	const char *argstr = args.m_pArgSBuffer + args.m_nArgv0Size;
-
 	while (isspace(*argstr)) ++argstr;
-
-	if (*argstr == '"') {
-		argstr += strlen(args[1]) + 2;
-	} else {
-		argstr += strlen(args[1]);
-	}
-
+	argstr += (*argstr == '"') * 2 + strlen(args[1]);
 	while (isspace(*argstr)) ++argstr;
 
 	std::string cmd = it->second.run + " " + argstr;
@@ -962,15 +934,8 @@ CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a 
 		cmd = args[2];
 	} else {
 		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-
 		while (isspace(*cmd)) ++cmd;
-
-		if (*cmd == '"') {
-			cmd += strlen(args[1]) + 2;
-		} else {
-			cmd += strlen(args[1]);
-		}
-
+		cmd += (*cmd == '"') * 2 + strlen(args[1]);
 		while (isspace(*cmd)) ++cmd;
 	}
 
