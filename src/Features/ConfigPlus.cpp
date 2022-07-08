@@ -990,7 +990,7 @@ static void expand(const CCommand &args, std::string body) {
 						const char *greedy = args.m_pArgSBuffer + args.m_nArgv0Size;
 						while (isspace(*greedy)) ++greedy;
 						for (unsigned j = 1; j < arg + 1; ++j) {
-							greedy += (*greedy == '"' * 2) + strlen(args[j]);
+							greedy += (*greedy == '"') * 2 + strlen(args[j]);
 							while (isspace(*greedy)) ++greedy;
 						}
 						cmd += greedy;
