@@ -205,11 +205,14 @@ int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args
 	}
 
 	std::string cur = args[args.size() - 1];
-	std::string cur_lower = cur;
-	std::transform(cur_lower.begin(), cur_lower.end(), cur_lower.begin(), tolower);
-	
+
 	size_t last_slash = cur.rfind('/');
 	std::string dirpart = last_slash == std::string::npos ? "" : cur.substr(0, last_slash) + "/";
+	size_t dirpart_len = dirpart.size();
+
+	std::string cur_lower = cur.substr(dirpart_len);
+	std::transform(cur_lower.begin(), cur_lower.end(), cur_lower.begin(), tolower);
+	
 
 	std::vector<std::string> items;
 
@@ -239,7 +242,7 @@ int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args
 
 			if (path == cur) {
 				items.insert(items.begin(), part + qpath);
-			} else if (path_lower.find(cur_lower) != std::string::npos) {
+			} else if (path_lower.find(cur_lower, dirpart_len) != std::string::npos) {
 				items.push_back(part + qpath);
 			}
 
