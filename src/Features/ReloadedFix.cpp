@@ -3,6 +3,7 @@
 #include "Modules/Server.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Client.hpp"
+#include "Event.hpp"
 #include "Utils/SDK.hpp"
 #include "SAR.hpp"
 
@@ -39,6 +40,12 @@ void ReloadedFix::OverrideInput(const char *className, const char *inputName, va
 				std::string new_cmd = Utils::ssprintf("sv_cheats 1; %s; sv_cheats %s", paramStr.c_str(), sv_cheats.GetString());
 				engine->Cbuf_AddText(2, new_cmd.c_str(), 0); // cbuf 2 = CBUF_SERVER; this is what a point_servercommand normally does
 			}
+		} 
+		// the game is using "+attack" inputs for detecting and placing time portals. Let TAS player know we actually want to use them!
+		else if (paramStr.find("+attack") == 0) {
+			isPlacingTimePortal = true;
+		} else if (paramStr.find("-attack") == 0) {
+			isPlacingTimePortal = false;
 		}
 	}
 
@@ -47,6 +54,10 @@ void ReloadedFix::OverrideInput(const char *className, const char *inputName, va
 		parameter->iszVal = "";
 		CustomSetPortalID();
 	}
+}
+
+ON_EVENT(SESSION_START) {
+	reloadedFix->isPlacingTimePortal = false;
 }
 
 

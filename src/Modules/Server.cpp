@@ -227,6 +227,12 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 
 	Cheats::PatchBhop(thisptr, cmd);
 
+	// TAS playback overrides inputs, even if they're made by the map. 
+	// Allow Reloaded's +attack input for time portal.
+	if (tasPlayer->IsActive() && reloadedFix->isPlacingTimePortal) {
+		cmd->buttons |= IN_ATTACK;
+	}
+
 	g_playerRunCommandHook.Disable();
 	auto ret = Server::PlayerRunCommand(thisptr, cmd, moveHelper);
 	g_playerRunCommandHook.Enable();

@@ -7,6 +7,7 @@
 class ReloadedFix : public Feature {
 public:
 	bool inMapCheatsEnabled = false;
+	bool isPlacingTimePortal = false;
 public:
 	ReloadedFix();
 	void OverrideInput(const char *className, const char *inputName, variant_t* parameter);
