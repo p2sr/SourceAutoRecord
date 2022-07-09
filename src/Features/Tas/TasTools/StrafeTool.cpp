@@ -377,7 +377,8 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 		bool speedLockAvoided = false;
 
 		// prevent losing acceleration speed from speedlock on newer versions
-		if (asParams->antiSpeedLock && tasPlayer->scriptVersion >= 4) {
+		// also remember that speedlock exists only when midair in versions 5 or newer
+		if (asParams->antiSpeedLock && tasPlayer->scriptVersion >= 4 && (!pInfo.grounded || tasPlayer->scriptVersion < 5)) {
 			if (pInfo.velocity.Length2D() < asParams->strafeSpeed.speed && pInfo.velocity.Length2D() >= 300.0f) {
 
 				Vector wishDir(0, 1);
