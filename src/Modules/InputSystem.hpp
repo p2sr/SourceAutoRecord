@@ -235,8 +235,15 @@ public:
 	void GetCursorPos(int &x, int &y);
 	void SetCursorPos(int x, int y);
 
+	void DPIScaleDeltas(int &x, int &y);
+
 	// CInputSystem::SleepUntilInput
 	DECL_DETOUR(SleepUntilInput, int nMaxSleepTimeMS);
+
+#ifdef _WIN32
+	// CInputSystem::GetRawMouseAccumulators
+	DECL_DETOUR_T(void, GetRawMouseAccumulators, int &x, int &y);
+#endif
 
 	bool Init() override;
 	void Shutdown() override;

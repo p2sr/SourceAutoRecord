@@ -9,6 +9,9 @@
 #include "Utils.hpp"
 
 REDECL(InputSystem::SleepUntilInput);
+#ifdef _WIN32
+REDECL(InputSystem::GetRawMouseAccumulators);
+#endif
 
 int InputSystem::GetButton(const char *pString) {
 	return this->StringToButtonCode(this->g_InputSystem->ThisPtr(), pString);
@@ -26,6 +29,24 @@ void InputSystem::SetCursorPos(int x, int y) {
 	return this->SetCursorPosition(this->g_InputSystem->ThisPtr(), x, y);
 }
 
+Variable sar_dpi_scale("sar_dpi_scale", "1", 1, "Fraction to scale mouse DPI down by.\n");
+void InputSystem::DPIScaleDeltas(int &x, int &y) {
+	static int saved_x = 0;
+	static int saved_y = 0;
+
+	int scale = sar_dpi_scale.GetInt();
+	if (scale < 1) scale = 1;
+
+	saved_x += x;
+	saved_y += y;
+
+	x = saved_x / scale;
+	y = saved_y / scale;
+
+	saved_x %= scale;
+	saved_y %= scale;
+}
+
 // CInputSystem::SleepUntilInput
 DETOUR(InputSystem::SleepUntilInput, int nMaxSleepTimeMS) {
 	if (sar_disable_no_focus_sleep.GetBool()) {
@@ -35,12 +56,23 @@ DETOUR(InputSystem::SleepUntilInput, int nMaxSleepTimeMS) {
 	return InputSystem::SleepUntilInput(thisptr, nMaxSleepTimeMS);
 }
 
+#ifdef _WIN32
+// CInputSystem::GetRawMouseAccumulators
+DETOUR_T(void, InputSystem::GetRawMouseAccumulators, int &x, int &y) {
+	InputSystem::GetRawMouseAccumulators(thisptr, x, y);
+	inputSystem->DPIScaleDeltas(x, y);
+}
+#endif
+
 bool InputSystem::Init() {
 	this->g_InputSystem = Interface::Create(this->Name(), "InputSystemVersion001");
 	if (this->g_InputSystem) {
 		this->StringToButtonCode = this->g_InputSystem->Original<_StringToButtonCode>(Offsets::StringToButtonCode);
 
 		this->g_InputSystem->Hook(InputSystem::SleepUntilInput_Hook, InputSystem::SleepUntilInput, Offsets::SleepUntilInput);
+#ifdef _WIN32
+		this->g_InputSystem->Hook(InputSystem::GetRawMouseAccumulators_Hook, InputSystem::GetRawMouseAccumulators, Offsets::GetRawMouseAccumulators);
+#endif
 		this->IsButtonDown = this->g_InputSystem->Original<_IsButtonDown>(Offsets::IsButtonDown);
 		this->GetCursorPosition = this->g_InputSystem->Original<_GetCursorPosition>(Offsets::GetCursorPosition);
 		this->SetCursorPosition = this->g_InputSystem->Original<_SetCursorPosition>(Offsets::SetCursorPosition);

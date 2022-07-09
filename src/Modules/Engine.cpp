@@ -5,6 +5,7 @@
 #include "EngineDemoPlayer.hpp"
 #include "EngineDemoRecorder.hpp"
 #include "Event.hpp"
+#include "InputSystem.hpp"
 #include "Features/Camera.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/Demo/DemoParser.hpp"
@@ -57,6 +58,9 @@ Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
 REDECL(Engine::Disconnect);
 REDECL(Engine::SetSignonState);
 REDECL(Engine::ChangeLevel);
+#ifndef _WIN32
+REDECL(Engine::GetMouseDelta);
+#endif
 REDECL(Engine::Frame);
 REDECL(Engine::PurgeUnusedModels);
 REDECL(Engine::OnGameOverlayActivated);
@@ -304,6 +308,14 @@ DETOUR(Engine::ChangeLevel, const char *s1, const char *s2) {
 	if (s1 && engine->GetCurrentMapName() != s1) engine->isLevelTransition = true;
 	return Engine::ChangeLevel(thisptr, s1, s2);
 }
+
+#ifndef _WIN32
+// CVEngineClient::GetMouseDelta
+DETOUR_T(void, Engine::GetMouseDelta, int &x, int &y, bool ignore_next) {
+	Engine::GetMouseDelta(thisptr, x, y, ignore_next);
+	inputSystem->DPIScaleDeltas(x, y);
+}
+#endif
 
 void Engine::GetTicks(int &host, int &server, int &client) {
 	auto &et = this->engineTool;
@@ -773,7 +785,7 @@ DETOUR(Engine::DestroyDebugMesh, int vertCount, Vector *verts) {
 }
 
 bool Engine::Init() {
-	this->engineClient = Interface::Create(this->Name(), "VEngineClient015", false);
+	this->engineClient = Interface::Create(this->Name(), "VEngineClient015");
 	this->s_ServerPlugin = Interface::Create(this->Name(), "ISERVERPLUGINHELPERS001", false);
 
 	if (this->engineClient) {
@@ -791,6 +803,10 @@ bool Engine::Init() {
 		this->Con_IsVisible = this->engineClient->Original<_Con_IsVisible>(Offsets::Con_IsVisible);
 		this->GetLevelNameShort = this->engineClient->Original<_GetLevelNameShort>(Offsets::GetLevelNameShort);
 		this->GetLightForPoint = this->engineClient->Original<_GetLightForPoint>(Offsets::GetLightForPoint);
+
+#ifndef _WIN32
+		this->engineClient->Hook(Engine::GetMouseDelta_Hook, Engine::GetMouseDelta, Offsets::GetMouseDelta);
+#endif
 
 		Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
 #ifndef _WIN32
