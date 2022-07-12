@@ -193,7 +193,7 @@ OFFSET_EMPTY(m_bCanFirePortal1)
 OFFSET_EMPTY(m_bCanFirePortal2)
 OFFSET_EMPTY(m_hPrimaryPortal)
 OFFSET_EMPTY(m_hSecondaryPortal)
-OFFSET_DEFAULT(m_iPortalLinkageGroupID, 385, 391)
+OFFSET_DEFAULT(m_iPortalLinkageGroupID, 1540, 1564)
 
 // CProp_Portal
 OFFSET_EMPTY(m_bActivated)
