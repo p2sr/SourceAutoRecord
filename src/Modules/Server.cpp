@@ -443,9 +443,19 @@ static void setAircontrol(int val) {
 		break;
 	}
 }
+static void setPortalsThruPortals(bool val) {
+	uintptr_t tfp = (uintptr_t)server->TraceFirePortal;
+#ifdef _WIN32
+	*(uint8_t *)(tfp + 391) = val ? 0x00 : 0x0A;
+#else
+	*(uint8_t *)(tfp + 414) = val ? 0xEB : 0x74;
+#endif
+}
+Variable sar_portals_thru_portals("sar_portals_thru_portals", "0", "Allow firing portals through portals.\n");
 // cvar callbacks dont want to fucking work so we'll just do this bs
 ON_EVENT(PRE_TICK) {
 	setAircontrol(server->AllowsMovementChanges() ? sar_aircontrol.GetInt() : 0);
+	setPortalsThruPortals(sv_cheats.GetBool() && sar_portals_thru_portals.GetBool());
 }
 
 extern Hook g_AcceptInputHook;
@@ -745,9 +755,11 @@ bool Server::Init() {
 #ifdef _WIN32
 	TraceFirePortal = (_TraceFirePortal)Memory::Scan(server->Name(), "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC 38 07 00 00 56 57 8B F1", 0);
 	FindPortal = (_FindPortal)Memory::Scan(server->Name(), "55 8B EC 0F B6 45 08 8D 0C 80 03 C9 53 8B 9C 09 ? ? ? ? 03 C9 56 57 85 DB 74 3C 8B B9 ? ? ? ? 33 C0 33 F6 EB 08", 0);
+	Memory::UnProtect((void *)((uintptr_t)TraceFirePortal + 391), 1); // see setPortalsThruPortals
 #else
 	TraceFirePortal = (_TraceFirePortal)Memory::Scan(server->Name(), "55 89 E5 57 56 8D BD F4 F8 FF FF 53 E8 ? ? ? ? 81 C3 ? ? ? ? 81 EC 40 07 00 00 8B 45 14 6A 00 8B 75 0C", 0);
 	FindPortal = (_FindPortal)Memory::Scan(server->Name(), "55 57 56 E8 ? ? ? ? 81 C6 ? ? ? ? 53 83 EC 2C 8B 44 24 40 8B 54 24 44 8B 7C 24 48 89 44 24 18 0F B6 C0", 0);
+	Memory::UnProtect((void *)((uintptr_t)TraceFirePortal + 414), 1); // see setPortalsThruPortals
 #endif
 
 #ifdef _WIN32
@@ -888,6 +900,7 @@ DETOUR_COMMAND(Server::say) {
 void Server::Shutdown() {
 	Command::Unhook("say", Server::say_callback);
 	setAircontrol(0);
+	setPortalsThruPortals(false);
 	if (g_check_stuck_code) memcpy(g_check_stuck_code, g_orig_check_stuck_code, sizeof g_orig_check_stuck_code);
 	Interface::Delete(this->g_GameMovement);
 	Interface::Delete(this->g_ServerGameDLL);
