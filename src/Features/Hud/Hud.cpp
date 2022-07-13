@@ -367,7 +367,7 @@ struct TextComponent {
 
 struct TextLine {
 	bool draw = true;
-	Color defaultColor;
+	std::optional<Color> defaultColor;
 	std::vector<TextComponent> components;
 };
 
@@ -378,7 +378,7 @@ HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | H
 		int y = ctx->yPadding + ctx->elements * (ctx->fontSize + ctx->spacing);
 		if (t.second.draw) {
 			for (auto &c : t.second.components) {
-				Color color = c.color ? *c.color : t.second.defaultColor;
+				Color color = c.color ? *c.color : t.second.defaultColor ? *t.second.defaultColor : ctx->textColor;
 				int pixLen = surface->GetFontLength(ctx->font, "%s", c.text.c_str());
 				surface->DrawTxt(ctx->font, x, y, color, "%s", c.text.c_str());
 				x += pixLen;
@@ -488,10 +488,6 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
 		return;
 	}
 
-	if (sar_hud_text_vals.find(idx) == sar_hud_text_vals.end()) {
-		sar_hud_text_vals[idx].defaultColor = Color{255, 255, 255, 255};
-	}
-
 	const char *txt;
 
 	if (args.ArgC() == 3) {
@@ -527,6 +523,13 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
 					}
 					continue;
 				}
+				if (*txt == 'r') {
+					txt++;
+					components.push_back({curColor, component});
+					curColor.reset();
+					component = "";
+					continue;
+				}
 				component += '#';
 				continue;
 			}
@@ -542,8 +545,8 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
 	sar_hud_text_vals[idx].components = components;
 }
 
-CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color> - sets the color of the nth text value in the HUD\n") {
-	if (args.ArgC() != 3) {
+CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> [color] - sets the color of the nth text value in the HUD. Reset by not giving color.\n") {
+	if (args.ArgC() < 2 || args.ArgC() > 3) {
 		console->Print(sar_hud_set_text_color.ThisPtr()->m_pszHelpString);
 		return;
 	}
@@ -554,9 +557,13 @@ CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> <color> - sets 
 		return;
 	}
 
-	auto col = Utils::GetColor(args[2]);
-	if (!col) return console->Print("Invalid color string '%s'\n", args[2]);
-	sar_hud_text_vals[idx].defaultColor = *col;
+	if (args.ArgC() == 2) {
+		sar_hud_text_vals[idx].defaultColor.reset();
+	} else {
+		auto col = Utils::GetColor(args[2]);
+		if (!col) return console->Print("Invalid color string '%s'\n", args[2]);
+		sar_hud_text_vals[idx].defaultColor = *col;
+	}
 }
 
 CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id> - hides the nth text value in the HUD\n") {
