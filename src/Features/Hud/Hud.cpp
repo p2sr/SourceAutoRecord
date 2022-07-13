@@ -30,6 +30,7 @@ Variable sar_hud_font_color("sar_hud_font_color", "255 255 255 255", "RGBA font 
 Variable sar_hud_precision("sar_hud_precision", "3", 0, "Precision of HUD numbers.\n");
 Variable sar_hud_velocity_precision("sar_hud_velocity_precision", "2", 0, "Precision of velocity HUD numbers.\n");
 
+Variable sar_hud_rainbow("sar_hud_rainbow", "-1", -1, 1, "Enables the rainbow HUD mode. -1 = default, 0 = disable, 1 = enable.\n");
 static bool g_rainbow = false;
 ON_INIT {
 	time_t t = time(NULL);
@@ -47,6 +48,14 @@ ON_INIT {
 static Color g_rainbow_color;
 
 ON_EVENT(FRAME) {
+	switch (sar_hud_rainbow.GetInt()) {
+		case 0:
+			g_rainbow = false;
+			break;
+		case 1:
+			g_rainbow = true;
+			break;
+	}
 	if (g_rainbow) {
 		int host, server, client;
 		engine->GetTicks(host, server, client);
