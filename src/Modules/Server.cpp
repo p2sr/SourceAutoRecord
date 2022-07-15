@@ -837,6 +837,7 @@ bool Server::Init() {
 	offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
 	offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);
 	offsetFinder->ServerSide("CProp_Portal", "m_bActivated", &Offsets::m_bActivated);
+	offsetFinder->ServerSide("CProp_Portal", "m_hFiredByPlayer", &Offsets::m_hFiredByPlayer);
 	offsetFinder->ServerSide("CProp_Portal", "m_bIsPortal2", &Offsets::m_bIsPortal2);
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal1", &Offsets::m_bCanFirePortal1);
 	offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal2", &Offsets::m_bCanFirePortal2);

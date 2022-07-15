@@ -206,6 +206,7 @@ OFFSET_EMPTY(S_m_vForward)
 OFFSET_DEFAULT(C_m_matrixThisToLinked, 3516, 3492)
 OFFSET_DEFAULT(S_m_matrixThisToLinked, 1220, 1244)
 OFFSET_EMPTY(C_m_hLinkedPortal)
+OFFSET_EMPTY(m_hFiredByPlayer)
 
 // IEngineVGuiInternal
 OFFSET_DEFAULT(IsGameUIVisible, 2, 2)
