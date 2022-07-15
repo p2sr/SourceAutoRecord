@@ -73,6 +73,8 @@ public:
 	void TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slot, bool clientside);
 	// Checks if trace recording ID has been changed
 	void CheckTraceChanged();
+	// Get the current trace bbox tick for TAS stuff, or -1 if there isn't one
+	int GetTasTraceTick();
 };
 
 extern PlayerTrace *playerTrace;

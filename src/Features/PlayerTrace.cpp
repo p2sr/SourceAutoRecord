@@ -635,6 +635,31 @@ void PlayerTrace::DrawTraceHud(HudContext *ctx) {
 	}
 }
 
+int PlayerTrace::GetTasTraceTick() {
+	if (sar_trace_draw_time.GetInt() != 3) return -1;
+
+	int max_tas_tick = -1;
+
+	// we want the highest tastick number that some trace is having its bbox drawn
+	// at, i.e. the highest tastick <= sar_trace_bbox_at with some trace being at
+	// least that long
+
+	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
+		const Trace &trace = it->second;
+		int tick = tickUserToInternal(sar_trace_bbox_at.GetInt(), trace);
+		for (int slot = 0; slot < 2; slot++) {
+			if ((int)trace.positions[slot].size() <= tick) {
+				// we're missing data - correct the tick number to the highest possible
+				tick = trace.positions[slot].size() - 1;
+			}
+			int tas_tick = tickInternalToUser(tick, trace);
+			if (tas_tick > max_tas_tick) max_tas_tick = tas_tick;
+		}
+	}
+
+	return max_tas_tick;
+}
+
 HUD_ELEMENT2(trace, "0", "Draws info about current trace bbox tick.\n", HudType_InGame | HudType_Paused) {
 	if (!sv_cheats.GetBool()) return;
 	playerTrace->DrawTraceHud(ctx);

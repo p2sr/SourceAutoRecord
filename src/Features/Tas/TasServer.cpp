@@ -16,6 +16,7 @@
 #include "Scheduler.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Features/PlayerTrace.hpp"
 
 #include <vector>
 #include <deque>
@@ -47,6 +48,8 @@ static std::atomic<bool> g_should_stop;
 
 static TasStatus g_last_status;
 static TasStatus g_current_status;
+static int g_last_debug_tick;
+static int g_current_debug_tick;
 static std::mutex g_status_mutex;
 
 static uint32_t popRaw32(std::deque<uint8_t> &buf) {
@@ -124,17 +127,23 @@ static void fullUpdate(ClientData &cl, bool first_packet = false) {
 		buf.push_back(1);
 	}
 
+	// debug tick (7)
+	buf.push_back(7);
+	encodeRaw32(buf, (uint32_t)g_last_debug_tick);
+
 	send(cl.sock, (const char *)buf.data(), buf.size(), 0);
 }
 
 static void update() {
 	g_status_mutex.lock();
 	TasStatus status = g_current_status;
+	int debug_tick = g_current_debug_tick;
 	g_status_mutex.unlock();
 
 	if (status.active != g_last_status.active || status.tas_path[0] != g_last_status.tas_path[0] || status.tas_path[1] != g_last_status.tas_path[1]) {
 		// big change; we might as well just do a full update
 		g_last_status = status;
+		g_last_debug_tick = debug_tick;
 		for (auto &cl : g_clients) fullUpdate(cl);
 		return;
 	}
@@ -177,6 +186,16 @@ static void update() {
 		sendAll(buf);
 
 		g_last_status.playback_tick = status.playback_tick;
+	}
+
+	if (debug_tick != g_last_debug_tick) {
+		// debug tick (7)
+
+		std::vector<uint8_t> buf{7};
+		encodeRaw32(buf, (uint32_t)debug_tick);
+		sendAll(buf);
+
+		g_last_debug_tick = debug_tick;
 	}
 }
 
@@ -431,5 +450,15 @@ ON_EVENT_P(SAR_UNLOAD, -100) {
 void TasServer::SetStatus(TasStatus s) {
 	g_status_mutex.lock();
 	g_current_status = s;
+	g_status_mutex.unlock();
+}
+
+ON_EVENT(FRAME) {
+	g_status_mutex.lock();
+	if (g_current_status.active) {
+		g_current_debug_tick = g_current_status.playback_tick;
+	} else {
+		g_current_debug_tick = playerTrace->GetTasTraceTick();
+	}
 	g_status_mutex.unlock();
 }
