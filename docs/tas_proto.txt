@@ -29,6 +29,9 @@ server (SAR) -> client (VSC extension):
 	[6] update current tick
 		tick: u32
 
+	[7] update debug tick
+		tick: i32 // -1 if no debug tick
+
 	[255] set game location
 		len: u32
 		location: [len]u8  // a string like "/home/mlugg/.steam/steam/steamapps/common/Portal 2", used so that the plugin knows whether it has the right script folder open
