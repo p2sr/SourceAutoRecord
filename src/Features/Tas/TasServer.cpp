@@ -372,14 +372,14 @@ static void mainThread() {
 	WSADATA wsa_data;
 	int err = WSAStartup(MAKEWORD(2,2), &wsa_data);
 	if (err){
-		THREAD_PRINT("Could not initialize TAS client: WSAStartup failed (%d)\n", err);
+		THREAD_PRINT("Could not initialize TAS server: WSAStartup failed (%d)\n", err);
 		return;
 	}
 #endif
 
 	g_listen_sock = socket(AF_INET6, SOCK_STREAM, 0);
 	if (g_listen_sock == INVALID_SOCKET) {
-		THREAD_PRINT("Could not initialize TAS client: socket creation failed\n");
+		THREAD_PRINT("Could not initialize TAS server: socket creation failed\n");
 		WSACleanup();
 		return;
 	}
@@ -397,14 +397,14 @@ static void mainThread() {
 	};
 
 	if (bind(g_listen_sock, (struct sockaddr *)&saddr, sizeof saddr) == SOCKET_ERROR) {
-		THREAD_PRINT("Could not initialize TAS client: socket bind failed\n");
+		THREAD_PRINT("Could not initialize TAS server: socket bind failed\n");
 		closesocket(g_listen_sock);
 		WSACleanup();
 		return;
 	}
 
 	if (listen(g_listen_sock, 4) == SOCKET_ERROR) {
-		THREAD_PRINT("Could not initialize TAS client: socket listen failed\n");
+		THREAD_PRINT("Could not initialize TAS server: socket listen failed\n");
 		closesocket(g_listen_sock);
 		WSACleanup();
 		return;
