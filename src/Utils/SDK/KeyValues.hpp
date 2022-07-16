@@ -26,6 +26,7 @@ public:
 	~KeyValues();
 	KeyValues *FindKey(const char *name, bool create = true);
 	void SetInt(const char *key, int val);
+	const char *GetName();
 
 	enum class Type : char {
 		NONE = 0,

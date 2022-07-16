@@ -134,6 +134,7 @@
     <ClCompile Include="Checksum.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="Event.cpp" />
+    <ClCompile Include="Features\AchievementTracker.cpp" />
     <ClCompile Include="Features\Demo\GhostRenderer.cpp" />
     <ClCompile Include="Features\Demo\GhostLeaderboard.cpp" />
     <ClCompile Include="Features\Routing\Ruler.cpp" />
@@ -326,6 +327,7 @@
     <ClInclude Include="Checksum.hpp" />
     <ClInclude Include="Command.hpp" />
     <ClInclude Include="Event.hpp" />
+    <ClInclude Include="Features\AchievementTracker.hpp" />
     <ClInclude Include="Features\Demo\GhostRenderer.hpp" />
     <ClInclude Include="Features\Demo\GhostLeaderboard.hpp" />
     <ClInclude Include="Features\Routing\Ruler.hpp" />

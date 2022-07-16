@@ -76,3 +76,8 @@ void KeyValues::SetInt(const char *key, int val) {
 		kv->data_type = KeyValues::Type::INT;
 	}
 }
+
+const char *KeyValues::GetName() {
+	auto kvs = tier1->KeyValuesSystem();
+	return kvs->GetStringForSymbol(((((uint16_t)key_name_case_sensitive_2) << 8) | (uint8_t)(key_name_case_sensitive_1)));
+}

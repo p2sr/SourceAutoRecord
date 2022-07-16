@@ -457,6 +457,9 @@
     <ClCompile Include="Utils\SDK\EntityEdict.cpp">
       <Filter>SourceAutoRecord\Utils\SDK</Filter>
     </ClCompile>
+    <ClCompile Include="Features\AchievementTracker.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1217,6 +1220,9 @@
     </ClInclude>
     <ClInclude Include="Utils\SDK.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\AchievementTracker.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
