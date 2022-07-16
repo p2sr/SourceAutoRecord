@@ -66,7 +66,7 @@ IHandleEntity *EntityList::LookupEntity(const CBaseHandle &handle) {
 // Commands
 
 CON_COMMAND(sar_list_ents, "sar_list_ents - lists entities\n") {
-	console->Print("[index] address | m_iClassName | m_iName\n");
+	console->Print("[index] (SERIAL) address | m_iClassName | m_iName\n");
 
 	auto pages = Offsets::NUM_ENT_ENTRIES / 512;
 
@@ -88,6 +88,7 @@ CON_COMMAND(sar_list_ents, "sar_list_ents - lists entities\n") {
 		}
 
 		console->Print("[%i] ", index);
+		console->Msg("(%i) ", info->m_SerialNumber);
 		console->Msg("%p", info->m_pEntity);
 		console->Print(" | ");
 		console->Msg("%s", server->GetEntityClassName(info->m_pEntity));
@@ -114,6 +115,7 @@ CON_COMMAND(sar_find_ent, "sar_find_ent <m_iName> - finds entity in the entity l
 		}
 
 		console->Print("[%i] ", index);
+		console->Msg("(%i) ", info->m_SerialNumber);
 		console->Msg("%p", info->m_pEntity);
 		console->Print(" -> ");
 		console->Msg("%s\n", server->GetEntityClassName(info->m_pEntity));
@@ -138,6 +140,7 @@ CON_COMMAND(sar_find_ents, "sar_find_ents <m_iClassName> - finds entities in the
 		}
 
 		console->Print("[%i] ", index);
+		console->Msg("(%i) ", info->m_SerialNumber);
 		console->Msg("%p", info->m_pEntity);
 		console->Print(" -> ");
 		console->Msg("%s\n", server->GetEntityName(info->m_pEntity));
