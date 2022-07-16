@@ -214,6 +214,7 @@ OFFSET_DEFAULT(SetKeyValueVector, 11, 14)
 // CVEngineServer
 OFFSET_DEFAULT(ChangeLevel, 0, 0)
 OFFSET_DEFAULT(ClientCommand, 39, 39)
+OFFSET_DEFAULT(ClientCommandKeyValues, 135, 135)
 OFFSET_DEFAULT(IsServerPaused, 81, 81)
 OFFSET_DEFAULT(ServerPause, 121, 121)
 OFFSET_DEFAULT(ChatPrintf, 22, 25)

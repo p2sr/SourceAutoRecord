@@ -16,6 +16,13 @@ enum SourceGameVersion {
 #endif
 };
 
+struct AchievementData {
+	const char *keyName;
+	const char *displayName;
+	bool coop;
+	bool claimed = false;
+};
+
 class Game {
 protected:
 	SourceGameVersion version = SourceGame_Unknown;
@@ -32,6 +39,7 @@ public:
 
 	static std::string VersionToString(int version);
 	static std::vector<std::string> mapNames;
+	static std::vector<AchievementData> achievements;
 
 	static bool isSpeedrunMod();
 };

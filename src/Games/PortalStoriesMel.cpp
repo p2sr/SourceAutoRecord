@@ -27,7 +27,39 @@ PortalStoriesMel::PortalStoriesMel() {
 		"sp_a4_destroyed",
 		"sp_a4_factory",
 		"sp_a4_core_access",
-		"sp_a4_finale"};
+		"sp_a4_finale"
+	};
+
+	Game::achievements = {
+		{"ACH.A3_DOORS", "Welcome to Aperture"},
+		{"ACH.ADDICTED_TO_SPUDS", "Long-Term Relaxation"},
+		{"ACH.BLUE_GEL", "Voices from Above"},
+		{"ACH.SUMMER_SALE", "Firefighting 101"},
+		{"ACH.BREAK_MONITORS", "Back on Track"},
+		{"ACH.WHITE_GEL", "Persistent"},
+		{"ACH.WHEATLEY_TRIES_TO", "Testing the Waters"},
+		{"ACH.WAKE_UP", "Forever Alone"},
+		{"ACH.BREAK_OUT", "Deja-Vu"},
+		{"ACH.BRIDGE", "Organic Complications"},
+		{"ACH.YOU_MONSTER", "Back off track"},
+		{"ACH.CATCH_CRAZY_BOX", "Welcome to my Domain"},
+		{"ACH.CLEAN_UP", "System Shutdown"},
+		{"ACH.TRIVIAL_TEST", "Under the Stairs"},
+		{"ACH.TRACTOR_BEAM", "You Shouldn't be Here"},
+		{"ACH.SURVIVE_CONTAINER_RIDE", "Single rainbow"},
+		{"ACH.STALEMATE_ASSOCIATE", "Burned in Goo"},
+		{"ACH.SPEED_RUN_LEVEL", "Crushed"},
+		{"ACH.SHOOT_THE_MOON", "Shot"},
+		{"ACH.SAVE_REDEMPTION_TURRET", "Electrocution"},
+		{"ACH.ORANGE_GEL", "In the Vents"},
+		{"ACH.TEAM_BUILDING", "Beyond your Range of Hearing"},
+		{"ACH.NO_BOAT", "Into Darkness"},
+		{"ACH.PORTRAIT", "Ignorant"},
+		{"ACH.HI_FIVE_YOUR_PARTNER", "Curious"},
+		{"ACH.REENTER_TEST_CHAMBERS", "Determined"},
+		{"ACH.NOT_THE_DROID", "2056"},
+		{"ACH.HUG_NAME", "Story Shutdown"}
+	};
 }
 void PortalStoriesMel::LoadOffsets() {
 	Portal2::LoadOffsets();

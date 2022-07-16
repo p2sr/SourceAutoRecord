@@ -166,6 +166,9 @@ public:
 	// CVEngineServer::ChangeLevel
 	DECL_DETOUR(ChangeLevel, const char *s1, const char *s2);
 
+	// CVEngineServer::ClientCommandKeyValues
+	DECL_DETOUR(ClientCommandKeyValues, void* pEdict, KeyValues* pKeyValues);
+
 #ifndef _WIN32
 	// CVEngineClient::GetMouseDelta
 	DECL_DETOUR_T(void, GetMouseDelta, int &x, int &y, bool ignore_next);

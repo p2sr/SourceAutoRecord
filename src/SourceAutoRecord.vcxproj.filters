@@ -481,6 +481,9 @@
     <ClCompile Include="Utils\ed25519\seed.cpp">
       <Filter>SourceAutoRecord\Utils\ed25519</Filter>
     </ClCompile>
+    <ClCompile Include="Features\AchievementTracker.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1247,6 +1250,9 @@
     </ClInclude>
     <ClInclude Include="Utils\ed25519\sha512.h">
       <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\AchievementTracker.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

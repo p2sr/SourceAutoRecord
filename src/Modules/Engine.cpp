@@ -6,6 +6,7 @@
 #include "EngineDemoRecorder.hpp"
 #include "Event.hpp"
 #include "InputSystem.hpp"
+#include "Features/AchievementTracker.hpp"
 #include "Features/Camera.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/Demo/DemoParser.hpp"
@@ -58,6 +59,7 @@ Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
 REDECL(Engine::Disconnect);
 REDECL(Engine::SetSignonState);
 REDECL(Engine::ChangeLevel);
+REDECL(Engine::ClientCommandKeyValues);
 #ifndef _WIN32
 REDECL(Engine::GetMouseDelta);
 #endif
@@ -323,6 +325,12 @@ DETOUR(Engine::SetSignonState, int state, int count, void *unk) {
 DETOUR(Engine::ChangeLevel, const char *s1, const char *s2) {
 	if (s1 && engine->GetCurrentMapName() != s1) engine->isLevelTransition = true;
 	return Engine::ChangeLevel(thisptr, s1, s2);
+}
+
+// CVEngineServer::ClientCommandKeyValues
+DETOUR(Engine::ClientCommandKeyValues, void* pEdict, KeyValues* pKeyValues) {
+	AchievementTracker::CheckKeyValuesForAchievement(pKeyValues);
+	return Engine::ClientCommandKeyValues(thisptr, pEdict, pKeyValues);
 }
 
 #ifndef _WIN32
@@ -827,6 +835,7 @@ bool Engine::Init() {
 
 		if (this->g_VEngineServer = Interface::Create(this->Name(), "VEngineServer022")) {
 			this->g_VEngineServer->Hook(Engine::ChangeLevel_Hook, Engine::ChangeLevel, Offsets::ChangeLevel);
+			this->g_VEngineServer->Hook(Engine::ClientCommandKeyValues_Hook, Engine::ClientCommandKeyValues, Offsets::ClientCommandKeyValues);
 			this->ClientCommand = this->g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
 			this->IsServerPaused = this->g_VEngineServer->Original<_IsServerPaused>(Offsets::IsServerPaused);
 			this->ServerPause = this->g_VEngineServer->Original<_ServerPause>(Offsets::ServerPause);
