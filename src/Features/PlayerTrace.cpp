@@ -42,6 +42,7 @@ Variable sar_trace_bbox_ent_draw("sar_trace_bbox_ent_draw", "1", "Draw hitboxes 
 Variable sar_trace_bbox_ent_dist("sar_trace_bbox_ent_dist", "200", 50, "Distance from which to capture entity hitboxes.\n");
 
 Variable sar_trace_portal_record("sar_trace_portal_record", "1", "Record portal locations.\n");
+Variable sar_trace_portal_oval("sar_trace_portal_oval", "0", "Draw trace portals as ovals rather than rectangles.\n");
 Variable sar_trace_portal_opacity("sar_trace_portal_opacity", "100", 0, 255, "Opacity of trace portal previews.\n");
 
 Vector g_playerTraceTeleportLocation;
@@ -499,13 +500,29 @@ void PlayerTrace::DrawPortalsAt(int tick) const {
 
 			MeshId mesh = OverlayRender::createMesh(RenderCallback::constant(portalColor), RenderCallback::none);
 
-			OverlayRender::addQuad(
-				mesh,
-				origin + rot * Vector{0, -32, -56},
-				origin + rot * Vector{0, -32,  56},
-				origin + rot * Vector{0,  32,  56},
-				origin + rot * Vector{0,  32, -56}
-			);
+			if (sar_trace_portal_oval.GetBool()) {
+				int tris = 20;
+				for (int i = 0; i < tris; ++i) {
+					double lang = M_PI * 2 * i / tris;
+					double rang = M_PI * 2 * (i + 1) / tris;
+
+					Vector dl(0, 32 * cos(lang), 56 * sin(lang));
+					Vector dr(0, 32 * cos(rang), 56 * sin(rang));
+
+					Vector l = origin + rot * dl;
+					Vector r = origin + rot * dr;
+
+					OverlayRender::addTriangle(mesh, l, r, origin);
+				}
+			} else {
+				OverlayRender::addQuad(
+					mesh,
+					origin + rot * Vector{0, -32, -56},
+					origin + rot * Vector{0, -32,  56},
+					origin + rot * Vector{0,  32,  56},
+					origin + rot * Vector{0,  32, -56}
+				);
+			}
 
 			// Add a little tick on the top of the portal so we can compare
 			// orientations
