@@ -823,3 +823,17 @@ HUD_ELEMENT2(tbeam_count, "0", "Draw the player's funnel count (requires sv_chea
 	auto portalLocal = server->GetPortalLocal(player);
 	ctx->DrawElement("tbeam count: %d", portalLocal.m_nTractorBeamCount);
 }
+
+HUD_ELEMENT_MODE2(ent_slot_serial, "0", 0, 4096,
+                  "Draw the serial number of given entity slot.\n",
+                  HudType_InGame | HudType_Paused | HudType_LoadingScreen | HudType_Menu) {
+
+	if (!sv_cheats.GetBool()) {
+		ctx->DrawElement("ent slot - serial: -");
+		return;
+	}
+
+	int serial = entityList->GetEntityInfoByIndex(mode)->m_SerialNumber;
+
+	ctx->DrawElement("ent slot %d serial: %d", mode, serial);
+}
