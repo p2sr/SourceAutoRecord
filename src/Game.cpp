@@ -6,11 +6,11 @@
 #include <cstring>
 #include <string>
 
-#include GAME(Portal2)
-#include GAME(ApertureTag)
-#include GAME(PortalStoriesMel)
-#include GAME(PortalReloaded)
-#include GAME(ThinkingWithTimeMachine)
+#include "Games/Portal2.hpp"
+#include "Games/ApertureTag.hpp"
+#include "Games/PortalStoriesMel.hpp"
+#include "Games/PortalReloaded.hpp"
+#include "Games/ThinkingWithTimeMachine.hpp"
 
 #define HAS_GAME_FLAG(flag, name)  \
 	if (version & (flag)) {           \

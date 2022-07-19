@@ -3,7 +3,12 @@
 #include "Game.hpp"
 #include "Offsets.hpp"
 
+#ifdef _WIN32
 #define OFFSET_DEFAULT(name, win, linux) name = win;
+#else
+#define OFFSET_DEFAULT(name, win, linux) name = linux;
+#endif
+
 #define OFFSET_EMPTY(name)
 
 Portal2::Portal2() {

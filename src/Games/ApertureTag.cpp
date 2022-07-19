@@ -1,38 +1,54 @@
-#include "PortalStoriesMel.hpp"
+#include "ApertureTag.hpp"
 
 #include "Game.hpp"
 #include "Offsets.hpp"
 
-PortalStoriesMel::PortalStoriesMel() {
-	this->version = SourceGame_PortalStoriesMel;
+ApertureTag::ApertureTag() {
+	this->version = SourceGame_ApertureTag;
 	Game::mapNames = {
-		"sp_a1_tramride",
-		"sp_a1_mel_intro",
-		"sp_a1_lift",
-		"sp_a1_garden",
-		"sp_a2_garden_de",
-		"sp_a2_underbounce",
-		"sp_a2_once_upon",
-		"sp_a2_past_power",
-		"sp_a2_ramp",
-		"sp_a2_firestorm",
-		"sp_a3_junkyard",
-		"sp_a3_concepts",
-		"sp_a3_paint_fling",
-		"sp_a3_faith_plate",
-		"sp_a3_transition",
-		"sp_a4_overgrown",
-		"sp_a4_tb_over_goo",
-		"sp_a4_two_of_a_kind",
-		"sp_a4_destroyed",
-		"sp_a4_factory",
-		"sp_a4_core_access",
-		"sp_a4_finale"};
+		"gg_intro_wakeup",
+		"gg_blue_only",
+		"gg_blue_only_2",
+		"gg_blue_only_3",
+		"gg_blue_only_2_pt2",
+		"gg_a1_intro4",
+		"gg_blue_upplatform",
+		"gg_red_only",
+		"gg_red_surf",
+		"gg_all_intro",
+		"gg_all_rotating_wall",
+		"gg_all_fizzler",
+		"gg_all_intro_2",
+		"gg_a2_column_blocker",
+		"gg_all_puzzle2",
+		"gg_all2_puzzle1",
+		"gg_all_puzzle1",
+		"gg_all2_escape",
+		"gg_stage_reveal",
+		"gg_stage_bridgebounce_2",
+		"gg_stage_redfirst",
+		"gg_stage_laserrelay",
+		"gg_stage_beamscotty",
+		"gg_stage_bridgebounce",
+		"gg_stage_roofbounce",
+		"gg_stage_pickbounce",
+		"gg_stage_theend",
+	};
 }
-void PortalStoriesMel::LoadOffsets() {
+void ApertureTag::LoadOffsets() {
 	Portal2::LoadOffsets();
 
 	using namespace Offsets;
+
+#ifdef _WIN32
+	// engine.dll
+	OnGameOverlayActivated = 144;  // CSteam3Client
+
+	// client.dll
+	m_pCommands = 228;  // CInput::DecodeUserCmdFromBuffer
+#else
+	// client.so
+	m_pCommands = 228;  // CInput::DecodeUserCmdFromBuffer
 
 	// Transferred from old Portal2 - should be removed if and when game
 	// upgrades to new-style PIC engine
@@ -55,10 +71,11 @@ void PortalStoriesMel::LoadOffsets() {
 	FinishDrawing = 627;                 // CMatSystemSurface::PaintTraverseEx
 	OnGameOverlayActivated = 152;        // CSteam3Client
 	FontManager = 11;                    // GetFontName
+#endif
 }
-const char *PortalStoriesMel::Version() {
-	return "Portal Stories: Mel (8151)";
+const char *ApertureTag::Version() {
+	return "Aperture Tag (7054)";
 }
-const char *PortalStoriesMel::ModDir() {
-	return "portal_stories";
+const char *ApertureTag::GameDir() {
+	return "Aperture Tag";
 }

@@ -1,30 +1,43 @@
-#include "PortalReloaded.hpp"
+#include "PortalStoriesMel.hpp"
 
 #include "Game.hpp"
 #include "Offsets.hpp"
 
-PortalReloaded::PortalReloaded() {
-	this->version = SourceGame_PortalReloaded;
+PortalStoriesMel::PortalStoriesMel() {
+	this->version = SourceGame_PortalStoriesMel;
 	Game::mapNames = {
-		"sp_a1_pr_map_001",
-		"sp_a1_pr_map_002",
-		"sp_a1_pr_map_003",
-		"sp_a1_pr_map_004",
-		"sp_a1_pr_map_005",
-		"sp_a1_pr_map_006",
-		"sp_a1_pr_map_007",
-		"sp_a1_pr_map_008",
-		"sp_a1_pr_map_009",
-		"sp_a1_pr_map_010",
-		"sp_a1_pr_map_011",
-		"sp_a1_pr_map_012",
-	};
+		"sp_a1_tramride",
+		"sp_a1_mel_intro",
+		"sp_a1_lift",
+		"sp_a1_garden",
+		"sp_a2_garden_de",
+		"sp_a2_underbounce",
+		"sp_a2_once_upon",
+		"sp_a2_past_power",
+		"sp_a2_ramp",
+		"sp_a2_firestorm",
+		"sp_a3_junkyard",
+		"sp_a3_concepts",
+		"sp_a3_paint_fling",
+		"sp_a3_faith_plate",
+		"sp_a3_transition",
+		"sp_a4_overgrown",
+		"sp_a4_tb_over_goo",
+		"sp_a4_two_of_a_kind",
+		"sp_a4_destroyed",
+		"sp_a4_factory",
+		"sp_a4_core_access",
+		"sp_a4_finale"};
 }
-void PortalReloaded::LoadOffsets() {
+void PortalStoriesMel::LoadOffsets() {
 	Portal2::LoadOffsets();
 
 	using namespace Offsets;
 
+#ifdef _WIN32
+	// engine.dll
+	OnGameOverlayActivated = 144;  // CSteam3Client
+#else
 	// Transferred from old Portal2 - should be removed if and when game
 	// upgrades to new-style PIC engine
 	GetClientStateFunction = 11;         // CEngineClient::ClientCmd
@@ -46,10 +59,11 @@ void PortalReloaded::LoadOffsets() {
 	FinishDrawing = 627;                 // CMatSystemSurface::PaintTraverseEx
 	OnGameOverlayActivated = 152;        // CSteam3Client
 	FontManager = 11;                    // GetFontName
+#endif
 }
-const char *PortalReloaded::Version() {
-	return "Portal Reloaded (8151)";
+const char *PortalStoriesMel::Version() {
+	return "Portal Stories: Mel (8151)";
 }
-const char *PortalReloaded::ModDir() {
-	return "portalreloaded";
+const char *PortalStoriesMel::ModDir() {
+	return "portal_stories";
 }

@@ -12,7 +12,6 @@
 #include <string>
 
 #define MODULE(name) name MODULE_EXTENSION
-#define GAME(x) GAME_PATH(x)
 
 //CSV export
 #define CSV_EXTENSION ".csv"

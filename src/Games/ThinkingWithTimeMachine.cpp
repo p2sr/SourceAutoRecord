@@ -11,8 +11,11 @@ void ThinkingWithTimeMachine::LoadOffsets() {
 
 	using namespace Offsets;
 
+#ifdef _WIN32
 	// client.dll
-
+	m_pCommands = 228;  // CInput::DecodeUserCmdFromBuffer
+#else
+	// client.so
 	m_pCommands = 228;  // CInput::DecodeUserCmdFromBuffer
 
 	// Transferred from old Portal2 - should be removed if and when game
@@ -36,6 +39,7 @@ void ThinkingWithTimeMachine::LoadOffsets() {
 	FinishDrawing = 627;                 // CMatSystemSurface::PaintTraverseEx
 	OnGameOverlayActivated = 152;        // CSteam3Client
 	FontManager = 11;                    // GetFontName
+#endif
 }
 const char *ThinkingWithTimeMachine::Version() {
 	return "Thinking with Time Machine (5723)";

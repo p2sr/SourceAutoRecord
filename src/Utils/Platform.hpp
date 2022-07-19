@@ -10,13 +10,8 @@
 #	define __stdcall
 #endif
 
-#define _GAME_PATH(x) #x
-
 #ifdef _WIN32
 #	define MODULE_EXTENSION ".dll"
-// clang-format off
-#define GAME_PATH(x) _GAME_PATH(Games/Windows/##x.hpp)
-// clang-format on
 #	define __rescall __thiscall
 #	define DLL_EXPORT extern "C" __declspec(dllexport)
 #	define SEEK_DIR_CUR std::ios_base::_Seekdir::_Seekcur
@@ -83,9 +78,6 @@ namespace {
 		int __fastcall name##_Hook(void *thisptr, int edx, __VA_ARGS__)
 #else
 #	define MODULE_EXTENSION ".so"
-// clang-format off
-#define GAME_PATH(x) _GAME_PATH(Games/Linux/x.hpp)
-// clang-format on
 #	define __rescall __attribute__((__cdecl__))
 #	define __cdecl __attribute__((__cdecl__))
 #	define __fastcall __attribute__((__fastcall__))

@@ -139,6 +139,11 @@
     <ClCompile Include="Features\Routing\Ruler.cpp" />
     <ClCompile Include="Features\SeasonalASCII.cpp" />
     <ClCompile Include="Features\WindowResizer.cpp" />
+    <ClCompile Include="Games\ApertureTag.cpp" />
+    <ClCompile Include="Games\Portal2.cpp" />
+    <ClCompile Include="Games\PortalReloaded.cpp" />
+    <ClCompile Include="Games\PortalStoriesMel.cpp" />
+    <ClCompile Include="Games\ThinkingWithTimeMachine.cpp" />
     <ClCompile Include="Modules\FileSystem.cpp" />
     <ClCompile Include="Scheduler.cpp" />
     <ClCompile Include="Features\ClassDumper.cpp" />
@@ -224,31 +229,6 @@
     <ClCompile Include="Features\WorkshopList.cpp" />
     <ClCompile Include="Features\NetMessage.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="Games\Linux\ApertureTag.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\Portal2.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\PortalReloaded.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\PortalStoriesMel.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\ThinkingWithTimeMachine.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\ApertureTag.cpp" />
-    <ClCompile Include="Games\Windows\Portal2.cpp" />
-    <ClCompile Include="Games\Windows\PortalReloaded.cpp" />
-    <ClCompile Include="Games\Windows\PortalStoriesMel.cpp" />
-    <ClCompile Include="Games\Windows\ThinkingWithTimeMachine.cpp" />
     <ClCompile Include="Interface.cpp" />
     <ClCompile Include="Modules\Client.cpp" />
     <ClCompile Include="Modules\Console.cpp" />
@@ -331,6 +311,11 @@
     <ClInclude Include="Features\Routing\Ruler.hpp" />
     <ClInclude Include="Features\SeasonalASCII.hpp" />
     <ClInclude Include="Features\WindowResizer.hpp" />
+    <ClInclude Include="Games\ApertureTag.hpp" />
+    <ClInclude Include="Games\Portal2.hpp" />
+    <ClInclude Include="Games\PortalReloaded.hpp" />
+    <ClInclude Include="Games\PortalStoriesMel.hpp" />
+    <ClInclude Include="Games\ThinkingWithTimeMachine.hpp" />
     <ClInclude Include="Modules\FileSystem.hpp" />
     <ClInclude Include="OffsetsData.hpp" />
     <ClInclude Include="Scheduler.hpp" />
@@ -413,31 +398,6 @@
     <ClInclude Include="Features\WorkshopList.hpp" />
     <ClInclude Include="Features\NetMessage.hpp" />
     <ClInclude Include="Game.hpp" />
-    <ClInclude Include="Games\Linux\ApertureTag.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\Portal2.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\PortalReloaded.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\PortalStoriesMel.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\ThinkingWithTimeMachine.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\ApertureTag.hpp" />
-    <ClInclude Include="Games\Windows\Portal2.hpp" />
-    <ClInclude Include="Games\Windows\PortalReloaded.hpp" />
-    <ClInclude Include="Games\Windows\PortalStoriesMel.hpp" />
-    <ClInclude Include="Games\Windows\ThinkingWithTimeMachine.hpp" />
     <ClInclude Include="Interface.hpp" />
     <ClInclude Include="Modules.hpp" />
     <ClInclude Include="Modules\Client.hpp" />

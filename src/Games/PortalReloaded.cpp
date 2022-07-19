@@ -1,49 +1,34 @@
-#include "ApertureTag.hpp"
+#include "PortalReloaded.hpp"
 
 #include "Game.hpp"
 #include "Offsets.hpp"
 
-ApertureTag::ApertureTag() {
-	this->version = SourceGame_ApertureTag;
+PortalReloaded::PortalReloaded() {
+	this->version = SourceGame_PortalReloaded;
 	Game::mapNames = {
-		"gg_intro_wakeup",
-		"gg_blue_only",
-		"gg_blue_only_2",
-		"gg_blue_only_3",
-		"gg_blue_only_2_pt2",
-		"gg_a1_intro4",
-		"gg_blue_upplatform",
-		"gg_red_only",
-		"gg_red_surf",
-		"gg_all_intro",
-		"gg_all_rotating_wall",
-		"gg_all_fizzler",
-		"gg_all_intro_2",
-		"gg_a2_column_blocker",
-		"gg_all_puzzle2",
-		"gg_all2_puzzle1",
-		"gg_all_puzzle1",
-		"gg_all2_escape",
-		"gg_stage_reveal",
-		"gg_stage_bridgebounce_2",
-		"gg_stage_redfirst",
-		"gg_stage_laserrelay",
-		"gg_stage_beamscotty",
-		"gg_stage_bridgebounce",
-		"gg_stage_roofbounce",
-		"gg_stage_pickbounce",
-		"gg_stage_theend",
+		"sp_a1_pr_map_001",
+		"sp_a1_pr_map_002",
+		"sp_a1_pr_map_003",
+		"sp_a1_pr_map_004",
+		"sp_a1_pr_map_005",
+		"sp_a1_pr_map_006",
+		"sp_a1_pr_map_007",
+		"sp_a1_pr_map_008",
+		"sp_a1_pr_map_009",
+		"sp_a1_pr_map_010",
+		"sp_a1_pr_map_011",
+		"sp_a1_pr_map_012",
 	};
 }
-void ApertureTag::LoadOffsets() {
+void PortalReloaded::LoadOffsets() {
 	Portal2::LoadOffsets();
 
 	using namespace Offsets;
 
-	// client.dll
-
-	m_pCommands = 228;  // CInput::DecodeUserCmdFromBuffer
-
+#ifdef _WIN32
+	// engine.dll
+	OnGameOverlayActivated = 144;  // CSteam3Client
+#else
 	// Transferred from old Portal2 - should be removed if and when game
 	// upgrades to new-style PIC engine
 	GetClientStateFunction = 11;         // CEngineClient::ClientCmd
@@ -65,10 +50,11 @@ void ApertureTag::LoadOffsets() {
 	FinishDrawing = 627;                 // CMatSystemSurface::PaintTraverseEx
 	OnGameOverlayActivated = 152;        // CSteam3Client
 	FontManager = 11;                    // GetFontName
+#endif
 }
-const char *ApertureTag::Version() {
-	return "Aperture Tag (7054)";
+const char *PortalReloaded::Version() {
+	return "Portal Reloaded (8151)";
 }
-const char *ApertureTag::GameDir() {
-	return "Aperture Tag";
+const char *PortalReloaded::ModDir() {
+	return "portalreloaded";
 }

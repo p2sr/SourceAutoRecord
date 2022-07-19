@@ -22,36 +22,6 @@
     <ClCompile Include="Features\Hud\Hud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
-    <ClCompile Include="Games\Windows\ApertureTag.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\Portal2.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\PortalReloaded.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\PortalStoriesMel.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Windows\ThinkingWithTimeMachine.cpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\ApertureTag.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\Portal2.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\PortalReloaded.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\PortalStoriesMel.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="Games\Linux\ThinkingWithTimeMachine.cpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Speedrun\SpeedrunTimer.cpp">
       <Filter>SourceAutoRecord\Features\Speedrun</Filter>
     </ClCompile>
@@ -457,6 +427,21 @@
     <ClCompile Include="Utils\SDK\EntityEdict.cpp">
       <Filter>SourceAutoRecord\Utils\SDK</Filter>
     </ClCompile>
+    <ClCompile Include="Games\ApertureTag.cpp">
+      <Filter>SourceAutoRecord\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Portal2.cpp">
+      <Filter>SourceAutoRecord\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\PortalReloaded.cpp">
+      <Filter>SourceAutoRecord\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\PortalStoriesMel.cpp">
+      <Filter>SourceAutoRecord\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\ThinkingWithTimeMachine.cpp">
+      <Filter>SourceAutoRecord\Games</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -485,36 +470,6 @@
     </ClInclude>
     <ClInclude Include="Utils\Math.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\ApertureTag.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\Portal2.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\PortalReloaded.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\PortalStoriesMel.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\ThinkingWithTimeMachine.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\ApertureTag.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\Portal2.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\PortalReloaded.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\PortalStoriesMel.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\ThinkingWithTimeMachine.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Memory.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
@@ -1218,6 +1173,21 @@
     <ClInclude Include="Utils\SDK.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Games\ApertureTag.hpp">
+      <Filter>SourceAutoRecord\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\Portal2.hpp">
+      <Filter>SourceAutoRecord\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\PortalReloaded.hpp">
+      <Filter>SourceAutoRecord\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\PortalStoriesMel.hpp">
+      <Filter>SourceAutoRecord\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="Games\ThinkingWithTimeMachine.hpp">
+      <Filter>SourceAutoRecord\Games</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">
@@ -1240,12 +1210,6 @@
     </Filter>
     <Filter Include="lib\minhook">
       <UniqueIdentifier>{df38f6d3-7501-4e2a-ba0c-e8de7ad26787}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SourceAutoRecord\Games\Windows">
-      <UniqueIdentifier>{9e7c58b4-0f87-483c-92ab-77f4d6757512}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SourceAutoRecord\Games\Linux">
-      <UniqueIdentifier>{5e8e3eca-807e-4e32-bd8d-046f8be99381}</UniqueIdentifier>
     </Filter>
     <Filter Include="SourceAutoRecord\Features\Hud">
       <UniqueIdentifier>{79986844-aff5-4989-abfb-85cb7515858e}</UniqueIdentifier>
