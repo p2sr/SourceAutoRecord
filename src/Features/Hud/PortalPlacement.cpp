@@ -193,7 +193,6 @@ ON_EVENT(RENDER) {
 				Vector l = origin + rot * dl;
 				Vector r = origin + rot * dr;
 
-				OverlayRender::addTriangle(mesh, r, l, origin);
 				OverlayRender::addTriangle(mesh, l, r, origin);
 			}
 		};
