@@ -149,7 +149,6 @@ CON_COMMAND(sar_find_ents, "sar_find_ents <m_iClassName> - finds entities in the
 }
 
 CON_COMMAND(sar_ent_slot_serial, "sar_ent_slot_serial <id> [value] - prints entity slot serial number, or sets it if additional parameter is specified.\n") {
-	if (engine->GetCurrentMapName().length() != 0) return console->Print("Cannot use this command while server is loaded. Exit to main menu.\n");
 	if (!sv_cheats.GetBool()) return console->Print("This command requires sv_cheats.\n");
 
 	if (args.ArgC() < 2 || args.ArgC() > 3) return console->Print(sar_ent_slot_serial.ThisPtr()->m_pszHelpString);
@@ -159,6 +158,9 @@ CON_COMMAND(sar_ent_slot_serial, "sar_ent_slot_serial <id> [value] - prints enti
 		int serial = entityList->GetEntityInfoByIndex(id)->m_SerialNumber;
 		console->Print("entity slot %d -> serial number %d\n", id, serial);
 	} else {
+		if (engine->GetCurrentMapName().length() != 0) {
+			return console->Print("Cannot set entity slot serial number while server is loaded. Exit to main menu.\n");
+		}
 		int value = std::atoi(args[2]) & 0x7FFF;
 		entityList->GetEntityInfoByIndex(id)->m_SerialNumber = value;
 		console->Print("Serial number of slot %d has been set to %d.\n", id, value);
