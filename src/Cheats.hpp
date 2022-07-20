@@ -25,6 +25,7 @@ extern Variable sar_show_entinp;
 extern Variable sar_force_qc;
 extern Variable sar_patch_bhop;
 extern Variable sar_patch_cfg;
+extern Variable sar_prevent_ehm;
 
 extern Variable sv_laser_cube_autoaim;
 extern Variable ui_loadingscreen_transition_time;

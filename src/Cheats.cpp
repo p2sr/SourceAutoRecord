@@ -41,6 +41,7 @@ Variable sar_show_entinp("sar_show_entinp", "0", "Print all entity inputs to con
 Variable sar_force_qc("sar_force_qc", "0", 0, 1, "When ducking, forces view offset to always be at standing height. Requires sv_cheats to work.\n");
 Variable sar_patch_bhop("sar_patch_bhop", "0", 0, 1, "Patches bhop by limiting wish direction if your velocity is too high.\n");
 Variable sar_patch_cfg("sar_patch_cfg", "0", 0, 1, "Patches Crouch Flying Glitch.\n");
+Variable sar_prevent_ehm("sar_prevent_ehm", "0", 0, 1, "Prevents Entity Handle Misinterpretation (EHM) from happening.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;

@@ -117,6 +117,9 @@ public:
 	// CServerGameDLL::GameFrame
 	DECL_DETOUR(GameFrame, bool simulating);
 
+	// CServerGameDLL::LevelShutdown
+	DECL_DETOUR(LevelShutdown);
+
 	DECL_DETOUR_COMMAND(say);
 
 	bool Init() override;

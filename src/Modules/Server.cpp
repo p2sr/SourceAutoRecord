@@ -68,6 +68,7 @@ REDECL(Server::FinishGravity);
 REDECL(Server::AirMove);
 REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
+REDECL(Server::LevelShutdown);
 REDECL(Server::PlayerRunCommand);
 REDECL(Server::ViewPunch);
 REDECL(Server::ProcessMovement);
@@ -603,6 +604,28 @@ DETOUR(Server::GameFrame, bool simulating)
 	return result;
 }
 
+// CServerGameDLL::LevelShutdown
+DETOUR(Server::LevelShutdown) {
+	auto result = Server::LevelShutdown(thisptr);
+
+	if (sar_prevent_ehm.GetBool()){
+		for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+			auto info = entityList->GetEntityInfoByIndex(index);
+			// not safe to modify! shouldn't happen here, but just in case.
+			if (info->m_pEntity != nullptr) continue;
+
+			// reloading some maps (like PotatOS) can increment serial number multiple times.
+			// just for safety, do not allow a short range of values before 0x4000.
+			if (info->m_SerialNumber >= 0x3FFA && info->m_SerialNumber <= 0x4000) {
+				info->m_SerialNumber = 0x4001;
+				console->Print("Prevented EHM on slot %d!\n", index);
+			}
+		}
+	}
+
+	return result;
+}
+
 static int (*GlobalEntity_GetIndex)(const char *);
 static void (*GlobalEntity_SetFlags)(int, int);
 
@@ -721,6 +744,7 @@ bool Server::Init() {
 		this->IsRestoring = this->g_ServerGameDLL->Original<_IsRestoring>(Offsets::IsRestoring);
 
 		this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
+		this->g_ServerGameDLL->Hook(Server::LevelShutdown_Hook, Server::LevelShutdown, Offsets::LevelShutdown);
 	}
 
 #ifdef _WIN32
