@@ -143,22 +143,21 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 	Vector eyepos;
 	QAngle angles;
 
-	unsigned ground_handle;
+	bool grounded;
 	if (use_client_offset) {
-		ground_handle = *(unsigned *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
+		grounded = CE(player)->ground_entity();
 		pos = client->GetAbsOrigin(player);
 		vel = client->GetLocalVelocity(player);
 		//eyepos = pos + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
-		camera->GetEyePos(slot, false, eyepos, angles);
+		camera->GetEyePos<false>(slot, eyepos, angles);
 	} else {
-		ground_handle = *(unsigned *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
+		grounded = SE(player)->ground_entity();
 		pos = server->GetAbsOrigin(player);
 		vel = server->GetLocalVelocity(player);
 		//eyepos = pos + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
-		camera->GetEyePos(slot, true, eyepos, angles);
+		camera->GetEyePos<true>(slot, eyepos, angles);
 	}
-	bool grounded = ground_handle != 0xFFFFFFFF;
-	auto ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);
+	bool ducked = SE(player)->ducked();
 
 	HitboxList hitboxes = ConstructHitboxList(pos);
 
@@ -603,7 +602,7 @@ HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
 		if (!ent) continue;
 		if (server->IsPlayer(ent)) continue;
 
-		ICollideable *coll = (ICollideable *)((uintptr_t)ent + Offsets::S_m_Collision);
+		ICollideable *coll = &SE(ent)->collision();
 
 		if (coll->GetSolidFlags() & FSOLID_NOT_SOLID) continue;
 
@@ -675,17 +674,17 @@ PortalLocations PlayerTrace::ConstructPortalLocations() const {
 		if (!ent) continue;
 		if (server->IsPlayer(ent)) continue;
 		if (strcmp(server->GetEntityClassName(ent), "prop_portal")) continue;
-		if (!*(bool *)((uintptr_t)ent + Offsets::m_bActivated)) continue;
+		if (!SE(ent)->field<bool>("m_bActivated")) continue;
 
 		PortalLocations::PortalLocation portal;
 
 		portal.pos = server->GetAbsOrigin(ent);
 		portal.ang = server->GetAbsAngles(ent);
-		portal.is_primary = !*(bool *)((uintptr_t)ent + Offsets::m_bIsPortal2);
+		portal.is_primary = !SE(ent)->field<bool>("m_bIsPortal2");
 		portal.is_coop = engine->IsCoop();
 
 		if (portal.is_coop) {
-			CBaseHandle shooter_handle = *(CBaseHandle *)((uintptr_t)ent + Offsets::m_hFiredByPlayer);
+			CBaseHandle shooter_handle = SE(ent)->field<CBaseHandle>("m_hFiredByPlayer");
 			void *shooter = entityList->LookupEntity(shooter_handle);
 			portal.is_atlas = shooter == server->GetPlayer(1);
 		}
@@ -741,7 +740,11 @@ void PlayerTrace::TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slo
 	// to record eye offset right after movement tick processing has happened
 	Vector eyepos;
 	QAngle angles;
-	camera->GetEyePosFromOrigin(slot, !clientside, moveData->m_vecAbsOrigin, eyepos, angles);
+	if (clientside) {
+		camera->GetEyePosFromOrigin<false>(slot, moveData->m_vecAbsOrigin, eyepos, angles);
+	} else {
+		camera->GetEyePosFromOrigin<true>(slot, moveData->m_vecAbsOrigin, eyepos, angles);
+	}
 	int lastTick = trace->positions[slot].size() - 1;
 	trace->eyepos[slot][lastTick] = eyepos;
 }

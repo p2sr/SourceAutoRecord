@@ -369,14 +369,14 @@ TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick) {
 TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CUserCmd *cmd) {
 	TasPlayerInfo pi;
 
-	int m_nOldButtons = *(int *)((uintptr_t)player + Offsets::S_m_nJumpTimeMsecs + 12); // This field isn't networked and I can't be bothered to add another explicit offset for it
+	int m_nOldButtons = SE(player)->field<int>("m_nOldButtons");
 
-	pi.tick = *reinterpret_cast<int *>((uintptr_t)player + Offsets::m_nTickBase);
+	pi.tick = SE(player)->field<int>("m_nTickBase");
 	pi.slot = server->GetSplitScreenPlayerSlot(player);
 	pi.surfaceFriction = *reinterpret_cast<float *>((uintptr_t)player + Offsets::m_surfaceFriction);
-	pi.ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);
+	pi.ducked = SE(player)->ducked();
 
-	float *m_flMaxspeed = reinterpret_cast<float *>((uintptr_t)player + Offsets::m_flMaxspeed);
+	float *m_flMaxspeed = &SE(player)->field<float>("m_flMaxspeed");
 	pi.maxSpeed = *m_flMaxspeed;
 
 #ifdef _WIN32
@@ -403,8 +403,7 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CUserCmd *cmd) {
 		*m_flMaxspeed = oldMaxSpeed;
 	}
 
-	unsigned int groundEntity = *reinterpret_cast<unsigned int *>((uintptr_t)player + Offsets::S_m_hGroundEntity);
-	pi.grounded = groundEntity != 0xFFFFFFFF;
+	pi.grounded = SE(player)->ground_entity();
 
 	// this check was originally broken, so bypass it in v1
 	if (tasPlayer->scriptVersion >= 2) {
@@ -414,9 +413,9 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CUserCmd *cmd) {
 		}
 	}
 
-	pi.position = *reinterpret_cast<Vector *>((uintptr_t)player + Offsets::S_m_vecAbsOrigin);
+	pi.position = SE(player)->abs_origin();
 	pi.angles = engine->GetAngles(pi.slot);
-	pi.velocity = *reinterpret_cast<Vector *>((uintptr_t)player + Offsets::S_m_vecAbsVelocity);
+	pi.velocity = SE(player)->abs_velocity();
 
 	pi.oldButtons = m_nOldButtons;
 
@@ -555,8 +554,8 @@ void TasPlayer::FetchInputs(int slot, TasController *controller) {
 	}
 }
 
-static bool IsTaunting(void *player, bool client = false) {
-	int cond = *(int *)((uintptr_t)player + (client ? Offsets::C_m_nPlayerCond : Offsets::S_m_nPlayerCond));
+static bool IsTaunting(ClientEnt *player) {
+	int cond = player->field<int>("m_nPlayerCond");
 	if (cond & (1 << PORTAL_COND_TAUNTING)) return true;
 	if (cond & (1 << PORTAL_COND_DROWNING)) return true;
 	if (cond & (1 << PORTAL_COND_DEATH_CRUSH)) return true;
@@ -652,8 +651,8 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 		}
 	}
 
-	void *clPlayer = client->GetPlayer(slot + 1);
-	if (IsTaunting(clPlayer, true) || tasTick == 0) {
+	ClientEnt *clPlayer = client->GetPlayer(slot + 1);
+	if (IsTaunting(clPlayer) || tasTick == 0) {
 		// Don't actually do stuff on tick 0! We do this for consistency with
 		// non-tools playback; see TasPlayer::FetchInputs for an
 		// explanation. Also don't do stuff if we're taunting
@@ -692,7 +691,7 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	// UPDATE: OKAY, actually, only do this if tools changed our movement
 	// analog, so we can at least try and counteract the bullshit described above
 	if (fabsf(cmd->forwardmove - orig_forward) + fabsf(cmd->sidemove - orig_side) + fabsf(cmd->upmove - orig_up) > 0.01) {
-		*(CUserCmd *)((uintptr_t)player + Offsets::S_m_LastCmd) = *cmd;
+		SE(player)->fieldOff<CUserCmd>("m_hViewModel", 8) /* m_LastCmd */ = *cmd;
 	}
 
 	// put processed framebulk in the list

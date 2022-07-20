@@ -15,6 +15,14 @@ public:
 	}
 
 	unsigned long m_Index;
+
+	bool operator !() const {
+		return m_Index == 0xFFFFFFFF;
+	}
+
+	operator bool() const {
+		return !!*this;
+	}
 };
 
 class IHandleEntity {

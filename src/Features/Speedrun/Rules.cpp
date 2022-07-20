@@ -415,8 +415,7 @@ void SpeedrunTimer::TickRules() {
 			continue;
 		}
 
-		auto m_hActiveWeapon = *(CBaseHandle *)((uintptr_t)player + Offsets::m_hActiveWeapon);
-		auto portalGun = entityList->LookupEntity(m_hActiveWeapon);
+		auto portalGun = entityList->LookupEntity(SE(player)->active_weapon());
 
 		if (!portalGun) {
 			portalPositions[slot][0] = {};
@@ -424,8 +423,8 @@ void SpeedrunTimer::TickRules() {
 			continue;
 		}
 
-		auto m_hPrimaryPortal = *(CBaseHandle *)((uintptr_t)portalGun + Offsets::m_hPrimaryPortal);
-		auto m_hSecondaryPortal = *(CBaseHandle *)((uintptr_t)portalGun + Offsets::m_hSecondaryPortal);
+		auto m_hPrimaryPortal = SE(portalGun)->field<CBaseHandle>("m_hPrimaryPortal");
+		auto m_hSecondaryPortal = SE(portalGun)->field<CBaseHandle>("m_hSecondaryPortal");
 
 		auto bluePortal = entityList->LookupEntity(m_hPrimaryPortal);
 		auto orangePortal = entityList->LookupEntity(m_hSecondaryPortal);
@@ -437,8 +436,8 @@ void SpeedrunTimer::TickRules() {
 				continue;
 			}
 
-			bool m_bActivated = *(bool *)((uintptr_t)portal + Offsets::m_bActivated);
-			if (!m_bActivated) {
+			bool activated = SE(portal)->field<bool>("m_bActivated");
+			if (!activated) {
 				portalPositions[slot][i] = {};
 				continue;
 			}

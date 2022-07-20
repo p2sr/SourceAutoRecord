@@ -111,28 +111,27 @@ ON_EVENT(PRE_TICK) {
 		Vector dir(cosY * cosX, sinY * cosX, -sinX);
 
 		// Get all the stuffs
-		auto m_hActiveWeapon = *(CBaseHandle *)((uintptr_t)player + Offsets::m_hActiveWeapon);
-		uintptr_t portalgun = (uintptr_t)entityList->LookupEntity(m_hActiveWeapon);
+		uintptr_t portalgun = (uintptr_t)entityList->LookupEntity(SE(player)->active_weapon());
 		g_hasPortalGun = !!portalgun;
 		if (!g_hasPortalGun)
 			return;
 
-		uint8_t linkage = *(unsigned char *)(portalgun + Offsets::m_iPortalLinkageGroupID);
+		uint8_t linkage = SE(portalgun)->field<unsigned char>("m_iPortalLinkageGroupID");
 
-		auto m_hPrimaryPortal = *(CBaseHandle *)(portalgun + Offsets::m_hPrimaryPortal);
-		auto m_hSecondaryPortal = *(CBaseHandle *)(portalgun + Offsets::m_hSecondaryPortal);
+		auto m_hPrimaryPortal = SE(portalgun)->field<CBaseHandle>("m_hPrimaryPortal");
+		auto m_hSecondaryPortal = SE(portalgun)->field<CBaseHandle>("m_hSecondaryPortal");
 		auto bluePortal = (uintptr_t)entityList->LookupEntity(m_hPrimaryPortal);
 		auto orangePortal = (uintptr_t)entityList->LookupEntity(m_hSecondaryPortal);
 
 		if (!bluePortal) {
 			// spawn the portal
 			bluePortal = server->FindPortal(linkage, false, true);
-			*(CBaseHandle *)(portalgun + Offsets::m_hPrimaryPortal) = ((IHandleEntity *)bluePortal)->GetRefEHandle();
+			SE(portalgun)->field<CBaseHandle>("m_hPrimaryPortal") = ((IHandleEntity *)bluePortal)->GetRefEHandle();
 		}
 		if (!orangePortal) {
 			// spawn the portal
 			orangePortal = server->FindPortal(linkage, true, true);
-			*(CBaseHandle *)(portalgun + Offsets::m_hSecondaryPortal) = ((IHandleEntity *)orangePortal)->GetRefEHandle();
+			SE(portalgun)->field<CBaseHandle>("m_hSecondaryPortal") = ((IHandleEntity *)orangePortal)->GetRefEHandle();
 		}
 
 		// Check blue

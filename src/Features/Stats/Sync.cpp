@@ -34,9 +34,7 @@ void Sync::UpdateSync(int slot, const CUserCmd *cmd) {
 	auto player = client->GetPlayer(slot + 1);
 
 	if (sar_strafesync_noground.GetBool()) {
-		unsigned int groundEntity = *reinterpret_cast<unsigned int *>((uintptr_t)player + Offsets::C_m_hGroundEntity);
-		bool grounded = groundEntity != 0xFFFFFFFF;
-		if (grounded) {
+		if (player->ground_entity()) {
 			return;
 		}
 	}

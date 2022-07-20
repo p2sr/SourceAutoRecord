@@ -53,7 +53,7 @@ ON_EVENT(RENDER) {
 
 		Vector camPos;
 		QAngle camAng;
-		camera->GetEyePos(GET_SLOT(), false, camPos, camAng);
+		camera->GetEyePos<false>(GET_SLOT(), camPos, camAng);
 
 		Vector dir;
 		Math::AngleVectors(camAng, &dir);

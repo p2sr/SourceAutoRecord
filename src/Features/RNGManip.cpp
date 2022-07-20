@@ -51,7 +51,7 @@ static json11::Json savePaintSprayers() {
 		auto classname = server->GetEntityClassName(ent);
 		if (!classname || strcmp(classname, "info_paint_sprayer")) continue;
 
-		int seed = *(int *)((uintptr_t)ent + Offsets::S_m_nBlobRandomSeed);
+		int seed = SE(ent)->field<int>("m_nBlobRandomSeed");
 		vals.push_back({seed});
 	}
 
@@ -75,7 +75,7 @@ static bool restorePaintSprayers(const json11::Json &data) {
 			return false;
 		}
 
-		*(int *)((uintptr_t)ent + Offsets::S_m_nBlobRandomSeed) = data[idx].int_value();
+		SE(ent)->field<int>("m_nBlobRandomSeed") = data[idx].int_value();
 		
 		++idx;
 	}

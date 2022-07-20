@@ -1,11 +1,11 @@
 #pragma once
 #include <vector>
 
+#include "Entity.hpp"
+
 #define DECL_M(name, type) type name(void *entity)
-#define MDECL(name, type, offset)                                        \
-	type name(void *entity) {                                               \
-		return *reinterpret_cast<type *>((uintptr_t)entity + Offsets::offset); \
-	}
+#define SMDECL(name, type, field_name) type name(void *entity) { return SE(entity)->field<type>(#field_name); }
+#define CMDECL(name, type, field_name) type name(void *entity) { return CE(entity)->field<type>(#field_name); }
 
 class Module {
 public:

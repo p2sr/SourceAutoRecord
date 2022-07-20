@@ -80,7 +80,7 @@ void RulerManager::UpdateCreator() {
 
 	Vector cam_pos;
 	QAngle cam_ang;
-	camera->GetEyePos(GET_SLOT(), false, cam_pos, cam_ang);
+	camera->GetEyePos<false>(GET_SLOT(), cam_pos, cam_ang);
 
 	Vector dir;
 	Math::AngleVectors(cam_ang, &dir);

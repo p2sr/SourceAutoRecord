@@ -47,8 +47,7 @@ void VelocityGraph::GatherData(int slot) {
 	auto vel = client->GetLocalVelocity(player);
 	int speed = vel.Length2D();
 
-	unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
-	bool on_ground = groundHandle != 0xFFFFFFFF;
+	bool on_ground = player->ground_entity();
 
 	current_data.speed = speed;
 	current_data.on_ground = on_ground;
@@ -139,8 +138,7 @@ void VelocityGraph::Paint(int slot) {
 
 	static bool last_on_ground = false;
 
-	unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
-	bool on_ground = groundHandle != 0xFFFFFFFF;
+	bool on_ground = player->ground_entity();
 
 	if (last_on_ground && !on_ground) {
 		take_off[slot] = speed;

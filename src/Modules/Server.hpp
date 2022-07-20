@@ -19,11 +19,11 @@ public:
 	Interface *g_GameMovement = nullptr;
 	Interface *g_ServerGameDLL = nullptr;
 
-	using _UTIL_PlayerByIndex = void *(__cdecl *)(int index);
+	using _UTIL_PlayerByIndex = ServerEnt *(__cdecl *)(int index);
 	using _GetAllServerClasses = ServerClass *(*)();
 	using _IsRestoring = bool (*)();
 	using _TraceFirePortal = int(__rescall *)(uintptr_t pgunptr, Vector &vOrigin, Vector &Direction, bool portalToPlace, int ePlacedBy, TracePortalPlacementInfo_t &placementInfo);
-	using _FindPortal = int(*)(char linkage, bool secondaryPortal, bool createIfNotFound);
+	using _FindPortal = uintptr_t (*)(char linkage, bool secondaryPortal, bool createIfNotFound);
 
 	// For some reason the variant_t is passed as a pointer on Linux?
 #ifdef _WIN32
@@ -76,7 +76,7 @@ public:
 	DECL_M(GetEntityClassName, char *);
 	DECL_M(GetPlayerState, CPlayerState);
 
-	void *GetPlayer(int index);
+	ServerEnt *GetPlayer(int index);
 	bool IsPlayer(void *entity);
 	bool AllowsMovementChanges();
 	int GetSplitScreenPlayerSlot(void *entity);

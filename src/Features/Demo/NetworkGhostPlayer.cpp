@@ -510,7 +510,7 @@ void NetworkManager::SendPlayerData() {
 	packet << HEADER::UPDATE << this->ID;
 	auto player = client->GetPlayer(GET_SLOT() + 1);
 	if (player) {
-		bool grounded = *(unsigned int *)((uintptr_t)player + Offsets::C_m_hGroundEntity) != 0xFFFFFFFF;
+		bool grounded = player->ground_entity();
 		packet << DataGhost{client->GetAbsOrigin(player), engine->GetAngles(GET_SLOT()), client->GetViewOffset(player).z, grounded};
 	} else {
 		packet << DataGhost{{0, 0, 0}, {0, 0, 0}, 0, false};

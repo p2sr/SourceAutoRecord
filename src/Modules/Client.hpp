@@ -28,7 +28,14 @@ private:
 	Interface *g_GameMovement = nullptr;
 
 public:
-	using _GetClientEntity = void *(__rescall *)(void *thisptr, int entnum);
+	DECL_M(GetAbsOrigin, Vector);
+	DECL_M(GetAbsAngles, QAngle);
+	DECL_M(GetLocalVelocity, Vector);
+	DECL_M(GetViewOffset, Vector);
+	DECL_M(GetPortalLocal, CPortalPlayerLocalData);
+	DECL_M(GetPlayerState, CPlayerState);
+
+	using _GetClientEntity = ClientEnt *(__rescall *)(void *thisptr, int entnum);
 	using _KeyDown = int(__cdecl *)(void *b, const char *c);
 	using _KeyUp = int(__cdecl *)(void *b, const char *c);
 	using _GetAllClasses = ClientClass *(*)();
@@ -53,14 +60,7 @@ public:
 	std::string lastLevelName;
 
 public:
-	DECL_M(GetAbsOrigin, Vector);
-	DECL_M(GetAbsAngles, QAngle);
-	DECL_M(GetLocalVelocity, Vector);
-	DECL_M(GetViewOffset, Vector);
-	DECL_M(GetPortalLocal, CPortalPlayerLocalData);
-	DECL_M(GetPlayerState, CPlayerState);
-
-	void *GetPlayer(int index);
+	ClientEnt *GetPlayer(int index);
 	void CalcButtonBits(int nSlot, int &bits, int in_button, int in_ignore, kbutton_t *button, bool reset);
 	bool ShouldDrawCrosshair();
 	void Chat(Color col, const char *str);

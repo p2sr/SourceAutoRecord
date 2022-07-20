@@ -336,10 +336,10 @@ static inline float dotProdAbs(Vector vec, float *vals) {
 }
 
 bool RecordFcps1(void *entity, const Vector &ind_push, int mask) {
-	CBaseHandle move_parent_handle = *(CBaseHandle *)((uintptr_t)entity + Offsets::S_m_Collision - 12);
+	CBaseHandle move_parent_handle = SE(entity)->field<CBaseHandle>("m_hMoveParent");
 	if (entityList->LookupEntity(move_parent_handle)) return true;
 
-	ICollideable *coll = (ICollideable *)((uintptr_t)entity + Offsets::S_m_Collision);
+	ICollideable *coll = &SE(entity)->collision();
 
 	CTraceFilterSimple filter;
 	filter.SetPassEntity(entity);

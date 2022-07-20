@@ -708,8 +708,7 @@ HUD_ELEMENT2(groundspeed, "0", "Draw the speed of the player upon leaving the gr
 		return;
 	}
 
-	unsigned groundHandle = *(unsigned *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
-	if (groundHandle != 0xFFFFFFFF) {
+	if (player->ground_entity()) {
 		groundeds[ctx->slot] = true;
 		speeds[ctx->slot] = client->GetLocalVelocity(player).Length();
 	} else if (groundeds[ctx->slot]) {
@@ -752,16 +751,16 @@ HUD_ELEMENT_MODE2(duckstate, "0", 0, 2,
 		ctx->DrawElement("duckstate: -");
 		return;
 	}
-	bool ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::C_m_bDucked);
+	bool ducked = player->ducked();
 	
 	if (mode == 1 || !sv_cheats.GetBool()) {
 		ctx->DrawElement("duckstate: %s", ducked ? "ducked" : "standing");
 	} else {
 		bool holdingDuck = (inputHud.GetButtonBits(ctx->slot) & IN_DUCK);
-		bool ducking = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::C_m_bDucking);
-		bool inDuckJump = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::C_m_bInDuckJump);
-		int duckTimeMsecs = *reinterpret_cast<int *>((uintptr_t)player + Offsets::C_m_nDuckTimeMsecs);
-		int duckJumpTimeMsecs = *reinterpret_cast<int *>((uintptr_t)player + Offsets::C_m_nDuckJumpTimeMsecs);
+		bool ducking = player->field<bool>("m_bDucking");
+		bool inDuckJump = player->field<bool>("m_bInDuckJump");
+		int duckTimeMsecs = player->field<int>("m_nDuckTimeMsecs");
+		int duckJumpTimeMsecs = player->field<int>("m_nDuckJumpTimeMsecs");
 		bool duckedInAir = client->GetPortalLocal(player).m_bDuckedInAir;
 		Vector viewOffset = client->GetViewOffset(player);
 

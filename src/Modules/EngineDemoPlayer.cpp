@@ -352,22 +352,24 @@ void InterpolateDemoCommand_Detour(void *thisptr, int slot, int target_tick, Dem
 		g_portal_interp_state[slot].set_limits = false;
 
 		// are we currently in a portal bubble?
-		void *player = client->GetPlayer(slot + 1);
+		ClientEnt *player = client->GetPlayer(slot + 1);
 		if (!player) return;
-		CBaseHandle portal_handle = *(CBaseHandle *)((uintptr_t)player + Offsets::C_m_hPortalEnvironment);
-		void *portal_ent = client->GetPlayer(portal_handle.GetEntryIndex());
+		CBaseHandle portal_handle = player->field<CBaseHandle>("m_hPortalEnvironment");
+		ClientEnt *portal_ent = client->GetPlayer(portal_handle.GetEntryIndex());
 		if (!portal_ent) return;
 
 		// we'll also need the linked portal later
-		CBaseHandle linked_handle = *(CBaseHandle *)((uintptr_t)portal_ent + Offsets::C_m_hLinkedPortal);
-		void *linked = client->GetPlayer(linked_handle.GetEntryIndex());
+		CBaseHandle linked_handle = portal_ent->field<CBaseHandle>("m_hLinkedPortal");
+		ClientEnt *linked = client->GetPlayer(linked_handle.GetEntryIndex());
 		if (!linked) return;
+
 
 		// this fix currently only works for wall portals, since we're just
 		// translating the player origin rather than their camera. for any portal
 		// that's not mostly on a wall, just give up
-		Vector portal_norm = *(Vector *)((uintptr_t)portal_ent + Offsets::C_m_vPortalForward);
-		Vector linked_norm = *(Vector *)((uintptr_t)linked + Offsets::C_m_vPortalForward);
+		Vector portal_norm, linked_norm;
+		Math::AngleVectors(portal_ent->abs_angles(), &portal_norm);
+		Math::AngleVectors(linked->abs_angles(), &linked_norm);
 		if (fabsf(portal_norm.Dot(Vector{0,0,1})) > 0.15f) return;
 		if (fabsf(linked_norm.Dot(Vector{0,0,1})) > 0.15f) return;
 
@@ -394,28 +396,28 @@ void InterpolateDemoCommand_Detour(void *thisptr, int slot, int target_tick, Dem
 		// the destination environment. find which portal we're closest to
 		// in 'prev', and treat that one as the entry portal.
 		{
-			Vector main_pos = *(Vector *)((uintptr_t)portal_ent + Offsets::C_m_ptOrigin);
-			Vector linked_pos = *(Vector *)((uintptr_t)linked + Offsets::C_m_ptOrigin);
+			Vector main_pos = portal_ent->abs_origin();
+			Vector linked_pos = linked->abs_origin();
 			float main_dist = (main_pos - prev_cam).SquaredLength();
 			float linked_dist = (linked_pos - prev_cam).SquaredLength();
 			if (linked_dist < main_dist) {
 				// we're closer to the linked portal - swap them
-				void *tmp = linked;
+				ClientEnt *tmp = linked;
 				linked = portal_ent;
 				portal_ent = tmp;
 			}
 		}
 
-		void *entry = portal_ent;
-		void *exit = linked;
+		ClientEnt *entry = portal_ent;
+		ClientEnt *exit = linked;
 
 		// get a bunch of info we need
-		Vector entry_pos = *(Vector *)((uintptr_t)entry + Offsets::C_m_ptOrigin);
-		//Vector exit_pos = *(Vector *)((uintptr_t)exit + Offsets::C_m_ptOrigin);
-		Vector entry_norm = *(Vector *)((uintptr_t)entry + Offsets::C_m_vPortalForward);
-		//Vector exit_norm = *(Vector *)((uintptr_t)exit + Offsets::C_m_vPortalForward);
-		VMatrix forward_matrix = *(VMatrix *)((uintptr_t)entry + Offsets::C_m_matrixThisToLinked);
-		VMatrix backward_matrix = *(VMatrix *)((uintptr_t)exit + Offsets::C_m_matrixThisToLinked);
+		Vector entry_pos = entry->abs_origin();
+		//Vector exit_pos = exit->abs_origin();
+		Vector entry_norm = entry == portal_ent ? portal_norm : linked_norm;
+		//Vector exit_norm = exit == portal_ent ? portal_norm : linked_norm;
+		VMatrix forward_matrix = entry->field<VMatrix>("m_matrixThisToLinked");
+		VMatrix backward_matrix = exit->field<VMatrix>("m_matrixThisToLinked");
 
 		// we're pretty sure we're transitioning from entry to exit. as a
 		// sanity check, ensure that we start in front of entry and finish

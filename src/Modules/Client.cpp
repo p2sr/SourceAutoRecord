@@ -13,7 +13,6 @@
 #include "Features/Hud/ScrollSpeed.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/NetMessage.hpp"
-#include "Features/OffsetFinder.hpp"
 #include "Features/OverlayRender.hpp"
 #include "Features/PlayerTrace.hpp"
 #include "Features/Session.hpp"
@@ -66,19 +65,19 @@ REDECL(Client::ProcessMovement);
 REDECL(Client::DrawTranslucentRenderables);
 REDECL(Client::DrawOpaqueRenderables);
 
-MDECL(Client::GetAbsOrigin, Vector, C_m_vecAbsOrigin);
-MDECL(Client::GetAbsAngles, QAngle, C_m_angAbsRotation);
-MDECL(Client::GetLocalVelocity, Vector, C_m_vecVelocity);
-MDECL(Client::GetViewOffset, Vector, C_m_vecViewOffset);
-MDECL(Client::GetPortalLocal, CPortalPlayerLocalData, C_m_PortalLocal);
-MDECL(Client::GetPlayerState, CPlayerState, C_pl);
+CMDECL(Client::GetAbsOrigin, Vector, m_vecAbsOrigin);
+CMDECL(Client::GetAbsAngles, QAngle, m_angAbsRotation);
+CMDECL(Client::GetLocalVelocity, Vector, m_vecVelocity);
+CMDECL(Client::GetViewOffset, Vector, m_vecViewOffset);
+CMDECL(Client::GetPortalLocal, CPortalPlayerLocalData, m_PortalLocal);
+CMDECL(Client::GetPlayerState, CPlayerState, pl);
 
 DECL_CVAR_CALLBACK(cl_fov) {
 	if (engine->demoplayer->IsPlaying())
 		fovChanger->Force();
 }
 
-void *Client::GetPlayer(int index) {
+ClientEnt *Client::GetPlayer(int index) {
 	return this->GetClientEntity(this->s_EntityList->ThisPtr(), index);
 }
 void Client::CalcButtonBits(int nSlot, int &bits, int in_button, int in_ignore, kbutton_t *button, bool reset) {
@@ -139,7 +138,7 @@ CMStatus Client::GetChallengeStatus() {
 		return CMStatus::NONE;
 	}
 
-	int bonusChallenge = *(int *)((uintptr_t)player + Offsets::m_iBonusChallenge);
+	int bonusChallenge = player->field<int>("m_iBonusChallenge");
 
 	if (bonusChallenge) {
 		return CMStatus::CHALLENGE;
@@ -357,8 +356,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 	strafeQuality.OnUserCmd(nSlot, *cmd);
 	void *player = client->GetPlayer(nSlot + 1);
 	if (player) {
-		unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
-		bool grounded = groundHandle != 0xFFFFFFFF;
+		bool grounded = CE(player)->ground_entity();
 		groundFramesCounter->HandleMovementFrame(nSlot, grounded);
 		strafeQuality.OnMovement(nSlot, grounded);
 		Event::Trigger<Event::PROCESS_MOVEMENT>({ nSlot, false }); // There isn't really one, just pretend it's here lol
@@ -429,8 +427,7 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 		int tick = session->GetTick();
 
 		if (tick != lastTick) {
-			unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::C_m_hGroundEntity);
-			bool grounded = groundHandle != 0xFFFFFFFF;
+			bool grounded = CE(player)->ground_entity();
 			slot = client->GetSplitScreenPlayerSlot(player);
 			groundFramesCounter->HandleMovementFrame(slot, grounded);
 			strafeQuality.OnMovement(slot, grounded);
@@ -601,24 +598,6 @@ bool Client::Init() {
 
 	g_DrawTranslucentRenderablesHook.SetFunc(Client::DrawTranslucentRenderables);
 	g_DrawOpaqueRenderablesHook.SetFunc(Client::DrawOpaqueRenderables);
-
-	offsetFinder->ClientSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::C_m_vecVelocity);
-	offsetFinder->ClientSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::C_m_vecViewOffset);
-	offsetFinder->ClientSide("CBasePlayer", "m_hGroundEntity", &Offsets::C_m_hGroundEntity);
-	offsetFinder->ClientSide("CBasePlayer", "m_iBonusChallenge", &Offsets::m_iBonusChallenge);
-	offsetFinder->ClientSide("CBasePlayer", "m_bDucked", &Offsets::C_m_bDucked);
-	offsetFinder->ClientSide("CBasePlayer", "m_bDucking", &Offsets::C_m_bDucking);
-	offsetFinder->ClientSide("CBasePlayer", "m_bInDuckJump", &Offsets::C_m_bInDuckJump);
-	offsetFinder->ClientSide("CBasePlayer", "m_nDuckTimeMsecs", &Offsets::C_m_nDuckTimeMsecs);
-	offsetFinder->ClientSide("CBasePlayer", "m_nDuckJumpTimeMsecs", &Offsets::C_m_nDuckJumpTimeMsecs);
-	offsetFinder->ClientSide("CBasePlayer", "pl", &Offsets::C_pl);
-
-	offsetFinder->ClientSide("CPortal_Player", "m_StatsThisLevel", &Offsets::C_m_StatsThisLevel);
-	offsetFinder->ClientSide("CPortal_Player", "m_PortalLocal", &Offsets::C_m_PortalLocal);
-	offsetFinder->ClientSide("CPortal_Player", "m_nPlayerCond", &Offsets::C_m_nPlayerCond);
-	offsetFinder->ClientSide("CPortal_Player", "m_hPortalEnvironment", &Offsets::C_m_hPortalEnvironment);
-	offsetFinder->ClientSide("CPortal_Base2D", "m_ptOrigin", &Offsets::C_m_ptOrigin);
-	offsetFinder->ClientSide("CPortal_Base2D", "m_hLinkedPortal", &Offsets::C_m_hLinkedPortal);
 
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");

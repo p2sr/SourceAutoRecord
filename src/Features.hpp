@@ -8,7 +8,6 @@
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/Listener.hpp"
-#include "Features/OffsetFinder.hpp"
 #include "Features/PlayerTrace.hpp"
 #include "Features/ReloadedFix.hpp"
 #include "Features/Routing/EntityInspector.hpp"

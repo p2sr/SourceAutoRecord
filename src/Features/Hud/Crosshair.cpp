@@ -2,7 +2,6 @@
 
 #include "Features/EntityList.hpp"
 #include "Features/Hud/Hud.hpp"
-#include "Features/OffsetFinder.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -110,7 +109,7 @@ bool Crosshair::IsSurfacePortalable() {
 
 int Crosshair::GetPortalUpgradeState() {
 	if (server->portalGun != nullptr) {
-		return (*reinterpret_cast<bool *>((uintptr_t)server->portalGun + Offsets::m_bCanFirePortal1) + *reinterpret_cast<bool *>((uintptr_t)server->portalGun + Offsets::m_bCanFirePortal2));
+		return SE(server->portalGun)->field<bool>("m_bCanFirePortal1") + SE(server->portalGun)->field<bool>("m_bCanFirePortal2");
 	}
 
 	return 0;
@@ -120,8 +119,8 @@ std::vector<IHandleEntity *> Crosshair::GetPortalsShotByPlayer() {
 	std::vector<IHandleEntity *> v;
 
 	if (server->portalGun) {
-		auto bluePortal = entityList->LookupEntity(*reinterpret_cast<CBaseHandle *>((uintptr_t)server->portalGun + Offsets::m_hPrimaryPortal));
-		auto orangePortal = entityList->LookupEntity(*reinterpret_cast<CBaseHandle *>((uintptr_t)server->portalGun + Offsets::m_hSecondaryPortal));
+		auto bluePortal = entityList->LookupEntity(SE(server->portalGun)->field<CBaseHandle>("m_hPrimaryPortal"));
+		auto orangePortal = entityList->LookupEntity(SE(server->portalGun)->field<CBaseHandle>("m_hSecondaryPortal"));
 
 		if (bluePortal != NULL) {  //If player hasn't shot blue portal
 			v.push_back(bluePortal);
@@ -152,8 +151,8 @@ void Crosshair::GetPortalsStates(int &portalUpgradeState, bool &isBlueActive, bo
 		isBlueActive = false;
 		isOrangeActive = false;
 		for (auto &portal : GetPortalsShotByPlayer()) {
-			bool isP2 = *reinterpret_cast<bool *>((uintptr_t)portal + Offsets::m_bIsPortal2);   //IsOrange
-			bool isAct = *reinterpret_cast<bool *>((uintptr_t)portal + Offsets::m_bActivated);  //IsActive
+			bool isP2 = SE(portal)->field<bool>("m_bIsPortal2");
+			bool isAct = SE(portal)->field<bool>("m_bActivated");
 			if (!isP2) {
 				isBlueActive = isAct;
 			} else {

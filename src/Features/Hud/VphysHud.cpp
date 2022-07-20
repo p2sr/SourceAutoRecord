@@ -153,7 +153,7 @@ ON_EVENT(RENDER) {
 	// drawing player bbox
 	if (renderState > 1) {
 		Vector pos = server->GetAbsOrigin(player);
-		bool ducked = *reinterpret_cast<bool *>((uintptr_t)player + Offsets::S_m_bDucked);
+		bool ducked = SE(player)->ducked();
 		renderHitbox(Color(253, 106, 2), 0.1, pos, ducked ? crouchingSize : standingSize, QAngle());
 	}
 

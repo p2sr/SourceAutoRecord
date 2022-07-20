@@ -43,9 +43,9 @@ static int getStatsCount() {
 
 	int slots = engine->GetMaxClients() >= 2 ? 2 : 1;
 	for (int slot = 0; slot < slots; ++slot) {
-		void *player = client->GetPlayer(slot + 1);
+		ClientEnt *player = client->GetPlayer(slot + 1);
 		if (!player) continue;
-		total += *(int *)((uintptr_t)player + Offsets::C_m_StatsThisLevel + 4);
+		total += player->field<int>("iNumPortalsPlaced");
 	}
 
 	return total;

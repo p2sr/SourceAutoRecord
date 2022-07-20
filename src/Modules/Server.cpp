@@ -14,7 +14,6 @@
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/Hud/InputHud.hpp"
 #include "Features/NetMessage.hpp"
-#include "Features/OffsetFinder.hpp"
 #include "Features/PlayerTrace.hpp"
 #include "Features/ReloadedFix.hpp"
 #include "Features/Routing/EntityInspector.hpp"
@@ -76,21 +75,21 @@ REDECL(Server::GetPlayerViewOffset);
 REDECL(Server::StartTouchChallengeNode);
 REDECL(Server::say_callback);
 
-MDECL(Server::GetPortals, int, iNumPortalsPlaced);
-MDECL(Server::GetAbsOrigin, Vector, S_m_vecAbsOrigin);
-MDECL(Server::GetAbsAngles, QAngle, S_m_angAbsRotation);
-MDECL(Server::GetLocalVelocity, Vector, S_m_vecVelocity);
-MDECL(Server::GetFlags, int, m_fFlags);
-MDECL(Server::GetEFlags, int, m_iEFlags);
-MDECL(Server::GetMaxSpeed, float, m_flMaxspeed);
-MDECL(Server::GetGravity, float, m_flGravity);
-MDECL(Server::GetViewOffset, Vector, S_m_vecViewOffset);
-MDECL(Server::GetPortalLocal, CPortalPlayerLocalData, S_m_PortalLocal);
-MDECL(Server::GetEntityName, char *, m_iName);
-MDECL(Server::GetEntityClassName, char *, m_iClassName);
-MDECL(Server::GetPlayerState, CPlayerState, S_pl);
+SMDECL(Server::GetPortals, int, iNumPortalsPlaced);
+SMDECL(Server::GetAbsOrigin, Vector, m_vecAbsOrigin);
+SMDECL(Server::GetAbsAngles, QAngle, m_angAbsRotation);
+SMDECL(Server::GetLocalVelocity, Vector, m_vecVelocity);
+SMDECL(Server::GetFlags, int, m_fFlags);
+SMDECL(Server::GetEFlags, int, m_iEFlags);
+SMDECL(Server::GetMaxSpeed, float, m_flMaxspeed);
+SMDECL(Server::GetGravity, float, m_flGravity);
+SMDECL(Server::GetViewOffset, Vector, m_vecViewOffset);
+SMDECL(Server::GetPortalLocal, CPortalPlayerLocalData, m_PortalLocal);
+SMDECL(Server::GetEntityName, char *, m_iName);
+SMDECL(Server::GetEntityClassName, char *, m_iClassname);
+SMDECL(Server::GetPlayerState, CPlayerState, pl);
 
-void *Server::GetPlayer(int index) {
+ServerEnt *Server::GetPlayer(int index) {
 	return this->UTIL_PlayerByIndex(index);
 }
 bool Server::IsPlayer(void *entity) {
@@ -117,13 +116,13 @@ void Server::KillEntity(void *entity) {
 }
 
 float Server::GetCMTimer() {
-	void *player = this->GetPlayer(1);
-	if (!player) {
-		void *clPlayer = client->GetPlayer(1);
-		if (!clPlayer) return 0.0f;
-		return *(float *)((uintptr_t)clPlayer + Offsets::C_m_StatsThisLevel + 12);
+	ServerEnt *sv_player = this->GetPlayer(1);
+	if (!sv_player) {
+		ClientEnt *cl_player = client->GetPlayer(1);
+		if (!cl_player) return 0.0f;
+		return cl_player->field<float>("fNumSecondsTaken");
 	}
-	return *(float *)((uintptr_t)player + Offsets::S_m_StatsThisLevel + 12);
+	return sv_player->field<float>("fNumSecondsTaken");
 }
 
 // CGameMovement::CheckJumpButton
@@ -170,13 +169,12 @@ DETOUR(Server::PlayerMove) {
 	auto mv = *reinterpret_cast<const CHLMoveData **>((uintptr_t)thisptr + Offsets::mv);
 
 	if (sar_crosshair_mode.GetBool() || sar_quickhud_mode.GetBool() || sar_crosshair_P1.GetBool()) {
-		auto m_hActiveWeapon = *reinterpret_cast<CBaseHandle *>((uintptr_t)player + Offsets::m_hActiveWeapon);
-		server->portalGun = entityList->LookupEntity(m_hActiveWeapon);
+		server->portalGun = entityList->LookupEntity(SE(player)->active_weapon());
 	}
 
-	auto m_fFlags = *reinterpret_cast<int *>((uintptr_t)player + Offsets::m_fFlags);
-	auto m_MoveType = *reinterpret_cast<int *>((uintptr_t)player + Offsets::m_MoveType);
-	auto m_nWaterLevel = *reinterpret_cast<int *>((uintptr_t)player + Offsets::m_nWaterLevel);
+	auto m_fFlags = SE(player)->field<int>("m_fFlags");
+	auto m_MoveType = SE(player)->field<char>("m_MoveType");
+	auto m_nWaterLevel = SE(player)->field<char>("m_nWaterLevel");
 
 	auto stat = stats->Get(server->GetSplitScreenPlayerSlot(player));
 
@@ -284,8 +282,7 @@ Hook g_ViewPunch_Hook(&Server::ViewPunch_Hook);
 // CGameMovement::ProcessMovement
 DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	int slot = server->GetSplitScreenPlayerSlot(player);
-	unsigned int groundHandle = *(unsigned int *)((uintptr_t)player + Offsets::S_m_hGroundEntity);
-	bool grounded = groundHandle != 0xFFFFFFFF;
+	bool grounded = SE(player)->ground_entity();
 	groundFramesCounter->HandleMovementFrame(slot, grounded);
 	strafeQuality.OnMovement(slot, grounded);
 	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
@@ -380,8 +377,8 @@ DETOUR(Server::FinishGravity) {
 			auto mv = *reinterpret_cast<CHLMoveData **>((uintptr_t)thisptr + Offsets::mv);
 
 			auto m_pSurfaceData = *reinterpret_cast<uintptr_t *>(player + Offsets::m_pSurfaceData);
-			auto m_bDucked = *reinterpret_cast<bool *>(player + Offsets::S_m_bDucked);
-			auto m_fFlags = *reinterpret_cast<int *>(player + Offsets::m_fFlags);
+			auto m_bDucked = SE(player)->ducked();
+			auto m_fFlags = SE(player)->field<int>("m_fFlags");
 
 			auto flGroundFactor = (m_pSurfaceData) ? *reinterpret_cast<float *>(m_pSurfaceData + Offsets::jumpFactor) : 1.0f;
 			auto flMul = std::sqrt(2 * sv_gravity.GetFloat() * GAMEMOVEMENT_JUMP_HEIGHT);
@@ -397,7 +394,7 @@ DETOUR(Server::FinishGravity) {
 			auto player = *reinterpret_cast<uintptr_t *>((uintptr_t)thisptr + Offsets::player);
 			auto mv = *reinterpret_cast<CHLMoveData **>((uintptr_t)thisptr + Offsets::mv);
 
-			auto m_bDucked = *reinterpret_cast<bool *>(player + Offsets::S_m_bDucked);
+			auto m_bDucked = SE(player)->ducked();
 
 			Vector vecForward;
 			Math::AngleVectors(mv->m_vecViewAngles, &vecForward);
@@ -839,43 +836,6 @@ bool Server::Init() {
 
 	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);
 
-	offsetFinder->ServerSide("CBasePlayer", "m_nWaterLevel", &Offsets::m_nWaterLevel);
-	offsetFinder->ServerSide("CBasePlayer", "m_iName", &Offsets::m_iName);
-	offsetFinder->ServerSide("CBasePlayer", "m_vecVelocity[0]", &Offsets::S_m_vecVelocity);
-	offsetFinder->ServerSide("CBasePlayer", "m_fFlags", &Offsets::m_fFlags);
-	offsetFinder->ServerSide("CBasePlayer", "m_flMaxspeed", &Offsets::m_flMaxspeed);
-	offsetFinder->ServerSide("CBasePlayer", "m_vecViewOffset[0]", &Offsets::S_m_vecViewOffset);
-	offsetFinder->ServerSide("CBasePlayer", "m_hGroundEntity", &Offsets::S_m_hGroundEntity);
-	offsetFinder->ServerSide("CBasePlayer", "m_bDucked", &Offsets::S_m_bDucked);
-	offsetFinder->ServerSide("CBasePlayer", "m_flFriction", &Offsets::m_flFriction);
-	offsetFinder->ServerSide("CBasePlayer", "m_nTickBase", &Offsets::m_nTickBase);
-	offsetFinder->ServerSide("CBasePlayer", "m_nJumpTimeMsecs", &Offsets::S_m_nJumpTimeMsecs);
-	offsetFinder->ServerSide("CBasePlayer", "m_Collision", &Offsets::S_m_Collision);
-	offsetFinder->ServerSide("CBasePlayer", "pl", &Offsets::S_pl);
-	offsetFinder->ServerSide("CPortal_Player", "m_lifeState", &Offsets::m_lifeState);
-	offsetFinder->ServerSide("CPortal_Player", "m_InAirState", &Offsets::m_InAirState);
-	offsetFinder->ServerSide("CPortal_Player", "m_StatsThisLevel", &Offsets::S_m_StatsThisLevel);
-	offsetFinder->ServerSide("CPortal_Player", "m_PortalLocal", &Offsets::S_m_PortalLocal);
-	offsetFinder->ServerSide("CPortal_Player", "m_nPlayerCond", &Offsets::S_m_nPlayerCond);
-
-	offsetFinder->ServerSide("CPortal_Player", "iNumPortalsPlaced", &Offsets::iNumPortalsPlaced);
-	offsetFinder->ServerSide("CPortal_Player", "m_hActiveWeapon", &Offsets::m_hActiveWeapon);
-	offsetFinder->ServerSide("CProp_Portal", "m_bActivated", &Offsets::m_bActivated);
-	offsetFinder->ServerSide("CProp_Portal", "m_hFiredByPlayer", &Offsets::m_hFiredByPlayer);
-	offsetFinder->ServerSide("CProp_Portal", "m_bIsPortal2", &Offsets::m_bIsPortal2);
-	offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal1", &Offsets::m_bCanFirePortal1);
-	offsetFinder->ServerSide("CWeaponPortalgun", "m_bCanFirePortal2", &Offsets::m_bCanFirePortal2);
-	offsetFinder->ServerSide("CWeaponPortalgun", "m_hPrimaryPortal", &Offsets::m_hPrimaryPortal);
-	offsetFinder->ServerSide("CWeaponPortalgun", "m_hSecondaryPortal", &Offsets::m_hSecondaryPortal);
-	offsetFinder->ServerSide("CPortal_Player", "m_hPortalEnvironment", &Offsets::S_m_hPortalEnvironment);
-	offsetFinder->ServerSide("CPortal_Base2D", "m_ptOrigin", &Offsets::S_m_ptOrigin);
-	offsetFinder->ServerSide("CPaintSprayer", "m_nBlobRandomSeed", &Offsets::S_m_nBlobRandomSeed);
-	Offsets::S_m_vForward = Offsets::S_m_ptOrigin + 12;
-
-	int m_hViewModel;
-	offsetFinder->ServerSide("CBasePlayer", "m_hViewModel", &m_hViewModel);
-	Offsets::S_m_LastCmd = m_hViewModel + 8;
-
 	sv_cheats = Variable("sv_cheats");
 	sv_footsteps = Variable("sv_footsteps");
 	sv_alternateticks = Variable("sv_alternateticks");
@@ -903,7 +863,7 @@ CON_COMMAND(sar_give_fly, "sar_give_fly [n] - gives the player in slot n (0 by d
 	int slot = args.ArgC() == 2 ? atoi(args[1]) : 0;
 	void *player = server->GetPlayer(slot + 1);
 	if (player) {
-		*(float *)((uintptr_t)player + Offsets::m_flGravity) = FLT_MIN;
+		SE(player)->field<float>("m_flGravity") = FLT_MIN;
 		console->Print("Gave fly to player %d\n", slot);
 	}
 }
@@ -911,9 +871,9 @@ CON_COMMAND(sar_give_betsrighter, "sar_give_betsrighter [n] - gives the player i
 	if (args.ArgC() > 2) return console->Print(sar_give_fly.ThisPtr()->m_pszHelpString);
 	if (!sv_cheats.GetBool()) return console->Print("sar_give_betsrighter requires sv_cheats.\n");
 	int slot = args.ArgC() == 2 ? atoi(args[1]) : 0;
-	void *player = server->GetPlayer(slot + 1);
+	ServerEnt *player = server->GetPlayer(slot + 1);
 	if (player) {
-		*(char *)((uintptr_t)player + Offsets::m_takedamage) = 0;
+		player->field<char>("m_takedamage") = 0;
 		console->Print("Gave betsrighter to player %d\n", slot);
 	}
 }
@@ -944,7 +904,7 @@ static void dumpEntInfo(void *entity) {
 
 	console->Print("'%s' of class %s\n", targetname, classname);
 
-	ICollideable *coll = (ICollideable *)((uintptr_t)entity + Offsets::S_m_Collision);
+	ICollideable *coll = &SE(entity)->collision();
 
 	Vector mins = coll->GetCollisionOrigin() + coll->OBBMins();
 	Vector maxs = coll->GetCollisionOrigin() + coll->OBBMaxs();
@@ -1046,7 +1006,7 @@ CON_COMMAND(sar_paint_reseed, "sar_paint_reseed <seed> - re-seed all paint spray
 		auto classname = server->GetEntityClassName(ent);
 		if (!classname || strcmp(classname, "info_paint_sprayer")) continue;
 
-		*(int *)((uintptr_t)ent + Offsets::S_m_nBlobRandomSeed) = seed;
+		SE(ent)->field<int>("m_nBlobRandomSeed") = seed;
 		++count;
 	}
 

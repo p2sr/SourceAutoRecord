@@ -178,6 +178,9 @@
     <ClCompile Include="Command.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClCompile>
     <ClCompile Include="Event.cpp">
       <Filter>SourceAutoRecord</Filter>
     </ClCompile>
@@ -206,9 +209,6 @@
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
     <ClCompile Include="Features\EntityList.cpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClCompile>
-    <ClCompile Include="Features\OffsetFinder.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
     <ClCompile Include="Features\OverlayRender.cpp">
@@ -630,6 +630,9 @@
     <ClInclude Include="Event.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
+    <ClInclude Include="Entity.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
     <ClInclude Include="Scheduler.hpp">
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
@@ -655,9 +658,6 @@
       <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Features\EntityList.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\OffsetFinder.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\OverlayRender.hpp">

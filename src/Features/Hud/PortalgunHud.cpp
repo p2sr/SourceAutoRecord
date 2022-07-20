@@ -44,21 +44,20 @@ void PortalgunHud::Paint(int slot) {
 		return;
 	}
 
-	auto m_hActiveWeapon = *(CBaseHandle *)((uintptr_t)player + Offsets::m_hActiveWeapon);
-	uintptr_t portalgun = (uintptr_t)entityList->LookupEntity(m_hActiveWeapon);
+	uintptr_t portalgun = (uintptr_t)entityList->LookupEntity(SE(player)->active_weapon());
 
 	if (!portalgun) {
 		surface->DrawTxt(font, x, y, Color{255, 150, 150, 255}, "no held portalgun");
 		return;
 	}
 
-	uint8_t linkage = *(unsigned char *)(portalgun + Offsets::m_iPortalLinkageGroupID);
+	uint8_t linkage = SE(portalgun)->field<int>("m_iPortalLinkageGroupID");
 
 	surface->DrawTxt(font, x, y, Color{255, 255, 255, 255}, "linkage: %d", (int)linkage);
 	y += lineHeight + 10;
 
-	auto m_hPrimaryPortal = *(CBaseHandle *)(portalgun + Offsets::m_hPrimaryPortal);
-	auto m_hSecondaryPortal = *(CBaseHandle *)(portalgun + Offsets::m_hSecondaryPortal);
+	auto m_hPrimaryPortal = SE(portalgun)->field<CBaseHandle>("m_hPrimaryPortal");
+	auto m_hSecondaryPortal = SE(portalgun)->field<CBaseHandle>("m_hSecondaryPortal");
 
 	auto bluePortal = (uintptr_t)entityList->LookupEntity(m_hPrimaryPortal);
 	auto orangePortal = (uintptr_t)entityList->LookupEntity(m_hSecondaryPortal);
@@ -70,7 +69,7 @@ void PortalgunHud::Paint(int slot) {
 		Color col = Color{255, 150, 150, 255};
 
 		if (portal) {
-			bool active = *(bool *)(portal + Offsets::m_bActivated);
+			bool active = SE(portal)->field<bool>("m_bActivated");
 			col = active ? Color{150, 255, 150, 255} : Color{255, 200, 150, 255};
 		}
 

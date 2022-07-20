@@ -467,9 +467,9 @@ void GhostEntity::StopFollowing() {
 	crosshairVariable.SetValue(crosshair_value);
 	void *player = server->GetPlayer(1);
 	if (player) {
-		*(int *)((uintptr_t)player + Offsets::m_fFlags) &= ~FL_GODMODE;
-		*(int *)((uintptr_t)player + Offsets::m_fFlags) &= ~FL_NOTARGET;
-		*(float *)((uintptr_t)player + Offsets::m_flGravity) = 1.0f;
+		SE(player)->field<int>("m_fFlags") &= ~FL_GODMODE;
+		SE(player)->field<int>("m_fFlags") &= ~FL_NOTARGET;
+		SE(player)->field<float>("m_flGravity") = 1.0f;
 	}
 }
 
@@ -700,7 +700,7 @@ ON_EVENT(PRE_TICK) {
 	engine->ExecuteCommand(cmd.c_str());
 
 	// Make sure we have godmode so we can't die while spectating someone
-	*(int *)((uintptr_t)player + Offsets::m_fFlags) |= FL_GODMODE;
-	*(int *)((uintptr_t)player + Offsets::m_fFlags) |= FL_NOTARGET;
-	*(float *)((uintptr_t)player + Offsets::m_flGravity) = FLT_MIN;
+	SE(player)->field<int>("m_fFlags") |= FL_GODMODE;
+	SE(player)->field<int>("m_fFlags") |= FL_NOTARGET;
+	SE(player)->field<float>("m_flGravity") = FLT_MIN;
 }

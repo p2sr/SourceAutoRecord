@@ -1,6 +1,7 @@
 #include "Teleporter.hpp"
 
 #include "Command.hpp"
+#include "Entity.hpp"
 #include "Event.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/NetMessage.hpp"
@@ -86,16 +87,15 @@ void Teleporter::SaveLocal(int slot, QAngle ang) {
 		location.portals[i].isSet = false;
 	}
 
-	auto m_hActiveWeapon = *(CBaseHandle *)((uintptr_t)player + Offsets::m_hActiveWeapon);
-	auto portalGun = entityList->LookupEntity(m_hActiveWeapon);
+	auto portalGun = entityList->LookupEntity(player->active_weapon());
 	if (portalGun) {
-		unsigned char linkage = *(unsigned char *)((uintptr_t)portalGun + Offsets::m_iPortalLinkageGroupID);
+		unsigned char linkage = SE(portalGun)->field<unsigned char>("m_iPortalLinkageGroupID");
 		void *bluePortal = (void *)server->FindPortal(linkage, false, false);
 		void *orangePortal = (void *)server->FindPortal(linkage, true, false);
 		for (int i = 0; i < 2; ++i) {
 			auto portal = i == 0 ? bluePortal : orangePortal;
 			location.portals[i].linkage = linkage;
-			if (portal && *(bool *)((uintptr_t)portal + Offsets::m_bActivated)) {
+			if (portal && SE(portal)->field<bool>("m_bActivated")) {
 				location.portals[i].pos = server->GetAbsOrigin(portal);
 				location.portals[i].ang = server->GetAbsAngles(portal);
 				location.portals[i].isSet = true;
@@ -132,8 +132,8 @@ void Teleporter::TeleportLocal(int slot, bool portals) {
 	uintptr_t player = (uintptr_t)server->GetPlayer(slot + 1);
 	if (!player) return;
 
-	*(Vector *)(player + Offsets::S_m_vecVelocity) = location.velocity;
-	*(int *)(player + Offsets::m_iEFlags) |= (1<<12); // EFL_DIRTY_ABSVELOCITY
+	SE(player)->field<Vector>("m_vecVelocity") = location.velocity;
+	SE(player)->field<int>("m_iEFlags") |= (1<<12); // EFL_DIRTY_ABSVELOCITY
 
 	char setpos[64];
 	std::snprintf(setpos, sizeof(setpos), "setpos_player %d %f %f %f", slot + 1, location.origin.x, location.origin.y, location.origin.z);
@@ -156,7 +156,7 @@ void Teleporter::TeleportLocal(int slot, bool portals) {
 				engine->ExecuteCommand(cmd.c_str());
 			} else {
 				auto portal = server->FindPortal(location.portals[i].linkage, i == 1, false);
-				if (portal) *(bool *)((uintptr_t)portal + Offsets::m_bActivated) = false;
+				if (portal) SE(portal)->field<bool>("m_bActivated") = false;
 			}
 		}
 	}
