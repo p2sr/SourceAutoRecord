@@ -452,13 +452,17 @@ static TasFramebulk parseFramebulk(int slot, int last_tick, const TasFramebulk &
 					throw TasParserException("invalid button character");
 				}
 
-				if (i < line.tokens.size() - 1 && state) {
-					if (line.tokens[i + 1].type == TasToken::INTEGER) {
-						if (line.tokens[i + 1].i <= 0) {
+				if (i < line.tokens.size() - 1 && line.tokens[i + 1].type == TasToken::INTEGER) {
+					int n = line.tokens[i + 1].i;
+					if (state) {
+						if (n <= 0) {
 							throw TasParserException("button pressed for less than one tick");
 						}
-						(*button_timeouts)[btn] = bulk.tick + line.tokens[i + 1].i;
+						(*button_timeouts)[btn] = bulk.tick + n;
 						++i;
+					} else {
+						char c1 = c + 'A' - 'a';
+						throw TasParserException(Utils::ssprintf("cannot release input with duration - did you mean %c%d?", c1, n));
 					}
 				}
 
