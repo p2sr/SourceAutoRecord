@@ -32,4 +32,6 @@ public:
 
 	static std::string VersionToString(int version);
 	static std::vector<std::string> mapNames;
+
+	static bool isSpeedrunMod();
 };

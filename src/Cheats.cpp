@@ -102,33 +102,41 @@ CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset> - se
 
 #define CMD(x) engine->ExecuteCommand(x)
 	if (!strcmp(preset, "none")) {
-		CMD("ui_loadingscreen_transition_time 1.0");
-		CMD("ui_loadingscreen_fadein_time 1.0");
-		CMD("ui_loadingscreen_mintransition_time 0.5");
+		if (!Game::isSpeedrunMod()) {
+			CMD("ui_loadingscreen_transition_time 1.0");
+			CMD("ui_loadingscreen_fadein_time 1.0");
+			CMD("ui_loadingscreen_mintransition_time 0.5");
+		}
 		CMD("sar_disable_progress_bar_update 0");
 		CMD("sar_prevent_mat_snapshot_recompute 0");
 		CMD("sar_loads_uncap 0");
 		CMD("sar_loads_norender 0");
 	} else if (!strcmp(preset, "sla")) {
-		CMD("ui_loadingscreen_transition_time 0.0");
-		CMD("ui_loadingscreen_fadein_time 0.0");
-		CMD("ui_loadingscreen_mintransition_time 0.0");
+		if (!Game::isSpeedrunMod()) {
+			CMD("ui_loadingscreen_transition_time 0.0");
+			CMD("ui_loadingscreen_fadein_time 0.0");
+			CMD("ui_loadingscreen_mintransition_time 0.0");
+		}
 		CMD("sar_disable_progress_bar_update 1");
 		CMD("sar_prevent_mat_snapshot_recompute 1");
 		CMD("sar_loads_uncap 0");
 		CMD("sar_loads_norender 0");
 	} else if (!strcmp(preset, "normal")) {
-		CMD("ui_loadingscreen_transition_time 0.0");
-		CMD("ui_loadingscreen_fadein_time 0.0");
-		CMD("ui_loadingscreen_mintransition_time 0.0");
+		if (!Game::isSpeedrunMod()) {
+			CMD("ui_loadingscreen_transition_time 0.0");
+			CMD("ui_loadingscreen_fadein_time 0.0");
+			CMD("ui_loadingscreen_mintransition_time 0.0");
+		}
 		CMD("sar_disable_progress_bar_update 1");
 		CMD("sar_prevent_mat_snapshot_recompute 1");
 		CMD("sar_loads_uncap 1");
 		CMD("sar_loads_norender 0");
 	} else if (!strcmp(preset, "full")) {
-		CMD("ui_loadingscreen_transition_time 0.0");
-		CMD("ui_loadingscreen_fadein_time 0.0");
-		CMD("ui_loadingscreen_mintransition_time 0.0");
+		if (!Game::isSpeedrunMod()) {
+			CMD("ui_loadingscreen_transition_time 0.0");
+			CMD("ui_loadingscreen_fadein_time 0.0");
+			CMD("ui_loadingscreen_mintransition_time 0.0");
+		}
 		CMD("sar_disable_progress_bar_update 2");
 		CMD("sar_prevent_mat_snapshot_recompute 1");
 		CMD("sar_loads_uncap 1");

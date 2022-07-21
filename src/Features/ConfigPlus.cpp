@@ -347,30 +347,6 @@ static void FreeCondition(Condition *c) {
 	free(c);
 }
 
-static bool isSpeedrunMod() {
-	static bool checked = false;
-	static bool srm = false;
-
-	if (!checked) {
-		auto serverPlugin = (uintptr_t)(engine->s_ServerPlugin->ThisPtr());
-		auto count = *(int *)(serverPlugin + 16); // CServerPlugin::m_Size
-		if (count > 0) {
-			auto plugins = *(uintptr_t *)(serverPlugin + 4); // CServerPlugin::m_Plugins
-			for (int i = 0; i < count; ++i) {
-				auto ptr = *(CPlugin **)(plugins + i * sizeof (uintptr_t));
-				if (!strcmp(ptr->m_szName, "Speedrun Mod was a mistake.")) {
-					srm = true;
-					break;
-				}
-			}
-		}
-
-		checked = true;
-	}
-
-	return srm;
-}
-
 static const char *gameName() {
 	switch (sar.game->GetVersion()) {
 	case SourceGame_ApertureTag:
@@ -382,7 +358,7 @@ static const char *gameName() {
 	case SourceGame_PortalReloaded:
 		return "reloaded";
 	case SourceGame_Portal2:
-		return isSpeedrunMod() ? "srm" : "portal2";
+		return Game::isSpeedrunMod() ? "srm" : "portal2";
 	default:
 		return "other";
 	}

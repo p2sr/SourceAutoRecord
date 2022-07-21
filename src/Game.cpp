@@ -1,6 +1,7 @@
 #include "Game.hpp"
 
 #include "Command.hpp"
+#include "Modules/Engine.hpp"
 #include "Utils.hpp"
 
 #include <cstring>
@@ -94,3 +95,28 @@ std::string Game::VersionToString(int version) {
 	}
 	return games;
 }
+
+bool Game::isSpeedrunMod() {
+	static bool checked = false;
+	static bool srm = false;
+
+	if (!checked) {
+		auto serverPlugin = (uintptr_t)(engine->s_ServerPlugin->ThisPtr());
+		auto count = *(int *)(serverPlugin + 16); // CServerPlugin::m_Size
+		if (count > 0) {
+			auto plugins = *(uintptr_t *)(serverPlugin + 4); // CServerPlugin::m_Plugins
+			for (int i = 0; i < count; ++i) {
+				auto ptr = *(CPlugin **)(plugins + i * sizeof (uintptr_t));
+				if (!strcmp(ptr->m_szName, "Speedrun Mod was a mistake.")) {
+					srm = true;
+					break;
+				}
+			}
+		}
+
+		checked = true;
+	}
+
+	return srm;
+}
+
