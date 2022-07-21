@@ -37,10 +37,12 @@ struct Line {
 static std::vector<Line> tokenize(std::ifstream &file) {
 	std::vector<Line> lines;
 
-	unsigned line_num = 1;
+	unsigned line_num = 0;
 	bool commentOpen = false;
 	std::string line;
 	while (std::getline(file, line)) {
+		line_num += 1;
+
 		// FIXME: This doesn't work with nested comments e.g.: /* ... /* ... */ */
 		auto multilineCommentStart = line.find("/*");
 		auto multilineCommentEnd = line.find("*/");
@@ -186,8 +188,6 @@ static std::vector<Line> tokenize(std::ifstream &file) {
 		if (toks.size() > 0) {
 			lines.push_back(Line{ std::move(toks), line_num });
 		}
-
-		++line_num;
 	}
 
 	return lines;
