@@ -89,19 +89,19 @@ void Teleporter::SaveLocal(int slot, QAngle ang) {
 	auto m_hActiveWeapon = *(CBaseHandle *)((uintptr_t)player + Offsets::m_hActiveWeapon);
 	auto portalGun = entityList->LookupEntity(m_hActiveWeapon);
 	if (portalGun) {
-		unsigned char linkage = *(unsigned char *)(portalGun + Offsets::m_iPortalLinkageGroupID);
-		auto m_hPrimaryPortal = *(CBaseHandle *)((uintptr_t)portalGun + Offsets::m_hPrimaryPortal);
-		auto m_hSecondaryPortal = *(CBaseHandle *)((uintptr_t)portalGun + Offsets::m_hSecondaryPortal);
-		auto bluePortal = entityList->LookupEntity(m_hPrimaryPortal);
-		auto orangePortal = entityList->LookupEntity(m_hSecondaryPortal);
+		unsigned char linkage = *(unsigned char *)((uintptr_t)portalGun + Offsets::m_iPortalLinkageGroupID);
+		void *bluePortal = (void *)server->FindPortal(linkage, false, false);
+		void *orangePortal = (void *)server->FindPortal(linkage, true, false);
 		for (int i = 0; i < 2; ++i) {
 			auto portal = i == 0 ? bluePortal : orangePortal;
-			Vector pos = portal ? server->GetAbsOrigin(portal) : Vector{0,0,0};
-			QAngle ang = portal ? server->GetAbsAngles(portal) : QAngle{0,0,0};
 			location.portals[i].linkage = linkage;
-			location.portals[i].pos = pos;
-			location.portals[i].ang = ang;
-			location.portals[i].isSet = true;
+			if (portal && *(bool *)((uintptr_t)portal + Offsets::m_bActivated)) {
+				location.portals[i].pos = server->GetAbsOrigin(portal);
+				location.portals[i].ang = server->GetAbsAngles(portal);
+				location.portals[i].isSet = true;
+			} else {
+				location.portals[i].isSet = false;
+			}
 		}
 	}
 
@@ -154,6 +154,9 @@ void Teleporter::TeleportLocal(int slot, bool portals) {
 					location.portals[i].ang.z
 				);
 				engine->ExecuteCommand(cmd.c_str());
+			} else {
+				auto portal = server->FindPortal(location.portals[i].linkage, i == 1, false);
+				if (portal) *(bool *)((uintptr_t)portal + Offsets::m_bActivated) = false;
 			}
 		}
 	}
