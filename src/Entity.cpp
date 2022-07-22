@@ -127,7 +127,12 @@ const std::pair<size_t, EntField::Type> &EntField::getServerOffset(void *ent, co
 }
 
 const std::pair<size_t, EntField::Type> &EntField::getClientOffset(void *ent, const char *field) {
-	ClientClass *cc = Memory::VMT<ClientClass *(__rescall *)(void *)>(ent, Offsets::GetClientClass)(ent);
+	// multiple inheritance is cringe
+#ifdef _WIN32
+	ClientClass *cc = ((ClientClass *(__rescall *)(void *))((void ***)ent)[2][2])(ent);
+#else
+	ClientClass *cc = Memory::VMT<ClientClass *(__rescall *)(void *)>(ent, 19)(ent);
+#endif
 	datamap_t *pm = Memory::VMT<datamap_t *(__rescall *)(void *)>(ent, Offsets::GetPredDescMap)(ent); // datamap used for prediction stuff
 	datamap_t *dm = Memory::VMT<datamap_t *(__rescall *)(void *)>(ent, Offsets::C_GetDataDescMap)(ent);
 
