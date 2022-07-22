@@ -447,6 +447,8 @@
     </ClCompile>
     <ClCompile Include="Games\ThinkingWithTimeMachine.cpp">
       <Filter>SourceAutoRecord\Games</Filter>
+    <ClCompile Include="Signal.cpp">
+      <Filter>SourceAutoRecord</Filter>
     </ClCompile>
     <ClCompile Include="Utils\ed25519\verify.cpp">
       <Filter>SourceAutoRecord\Utils\ed25519</Filter>
@@ -1235,6 +1237,8 @@
     </ClInclude>
     <ClInclude Include="Games\ThinkingWithTimeMachine.hpp">
       <Filter>SourceAutoRecord\Games</Filter>
+    <ClInclude Include="Signal.hpp">
+      <Filter>SourceAutoRecord</Filter>
     </ClInclude>
     <ClInclude Include="Utils\ed25519\ed25519.h">
       <Filter>SourceAutoRecord\Utils\ed25519</Filter>

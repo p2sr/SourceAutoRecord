@@ -282,17 +282,30 @@ DETOUR_T(void, Server::ViewPunch, const QAngle &offset) {
 }
 Hook g_ViewPunch_Hook(&Server::ViewPunch_Hook);
 
-// CGameMovement::ProcessMovement
-DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
+
+// a bunch of movement huds
+SIGNAL_LISTENER(20, Server::ProcessMovement, void *player, CMoveData *move) {
 	int slot = server->GetSplitScreenPlayerSlot(player);
 	bool grounded = SE(player)->ground_entity();
 	groundFramesCounter->HandleMovementFrame(slot, grounded);
 	strafeQuality.OnMovement(slot, grounded);
 	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
-	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true });
 
-	auto res = Server::ProcessMovement(thisptr, player, move);
+	return signal->CallNext(thisptr, player, move);
+}
 
+// event
+SIGNAL_LISTENER(500, Server::ProcessMovement, void *player, CMoveData *move) {
+	Event::Trigger<Event::PROCESS_MOVEMENT>({server->GetSplitScreenPlayerSlot(player), true});
+
+	return signal->CallNext(thisptr, player, move);
+}
+
+// player trace supplementary informations
+SIGNAL_LISTENER(0, Server::ProcessMovement, void *player, CMoveData *move) {
+	signal->CallNext(thisptr, player, move);
+
+	int slot = server->GetSplitScreenPlayerSlot(player);
 	playerTrace->TweakLatestEyeOffsetForPortalShot(move, slot, false);
 
 	// We edit pos after process movement to get accurate teleportation
@@ -301,9 +314,9 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 		move->m_vecAbsOrigin = g_playerTraceTeleportLocation;
 		g_playerTraceNeedsTeleport = false;
 	}
-
-	return res;
 }
+
+
 
 // CGameMovement::GetPlayerViewOffset
 DETOUR_T(Vector*, Server::GetPlayerViewOffset, bool ducked) {
@@ -719,7 +732,9 @@ bool Server::Init() {
 		this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
 		this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
-		this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
+		ProcessMovement.Register(this->g_GameMovement, Offsets::ProcessMovement);
+		//this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
+
 		this->g_GameMovement->Hook(Server::GetPlayerViewOffset_Hook, Server::GetPlayerViewOffset, Offsets::GetPlayerViewOffset);
 		this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
 		this->g_GameMovement->Hook(Server::AirMove_Hook, Server::AirMove, Offsets::AirMove);
