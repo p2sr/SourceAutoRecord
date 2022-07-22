@@ -6,6 +6,7 @@
 #include "Utils/SDK.hpp"
 #include "Variable.hpp"
 #include "Command.hpp"
+#include "Signal.hpp"
 
 #ifdef _WIN32
 #	define AirMove_Mid_Offset 679
@@ -91,7 +92,8 @@ public:
 	DECL_DETOUR_T(void, ViewPunch, const QAngle &offset);
 
 	// CGameMovement::ProcessMovement
-	DECL_DETOUR(ProcessMovement, void *pPlayer, CMoveData *pMove);
+	//DECL_DETOUR(ProcessMovement, void *pPlayer, CMoveData *pMove);
+	DECL_SIGNAL(void, ProcessMovement, void*, CMoveData*);
 
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR_T(Vector *, GetPlayerViewOffset, bool ducked);

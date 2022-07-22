@@ -246,6 +246,7 @@
     <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
+    <ClCompile Include="Signal.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Utils\json11.cpp" />
     <ClCompile Include="Utils\lodepng.cpp" />
@@ -416,6 +417,7 @@
     <ClInclude Include="Offsets.hpp" />
     <ClInclude Include="Plugin.hpp" />
     <ClInclude Include="SAR.hpp" />
+    <ClInclude Include="Signal.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="Utils\json11.hpp" />
     <ClInclude Include="Utils\lodepng.hpp" />
