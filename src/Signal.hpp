@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Interface.hpp"
+#include "Utils/Platform.hpp"
 
 #include <functional>
 #include <vector>
@@ -12,12 +13,14 @@
 	static name##Signal_t name;
 #define REGISTER_SIGNAL(name, interf, offset) name##->Register(interf, offset);
 
-#define _SIGNAL_LISTENER(x, priority, signalname, ...) \
+#define __SIGNAL_LISTENER(x, priority, signalname, ...) \
 	static signalname##Return_t _sar_signal_listener_##x##_func(signalname##Signal_t *signal, void *thisptr, __VA_ARGS__); \
 	signalname##Listener_t _sar_signal_listener_##x##(&signalname, _sar_signal_listener_##x##_func, priority); \
 	static signalname##Return_t _sar_signal_listener_##x##_func(signalname##Signal_t *signal, void *thisptr, __VA_ARGS__)
 
-#define SIGNAL_LISTENER(priority, signal, ...) _SIGNAL_LISTENER(__COUNTER__, priority, signal, __VA_ARGS__)
+#define _SIGNAL_LISTENER(x, priority, signalname, ...) __SIGNAL_LISTENER(x, priority, signalname, __VA_ARGS__)
+
+#define SIGNAL_LISTENER(priority, signal, ...) _SIGNAL_LISTENER(##__COUNTER__##, priority, signal, __VA_ARGS__)
 
 
 template <typename Return, typename... Args>
@@ -26,12 +29,19 @@ class Signal;
 template <typename Return, typename... Args>
 class SignalListener {
 private:
+	using SignalListenerFunc = Return(Signal<Return, Args...> *, void *, Args...);
+
 	Signal<Return, Args...> *signal;
-	std::function<Return(Signal *, void *, Args...)> func;
+	std::function<SignalListenerFunc> func;
 	int priority;
 public:
-	SignalListener(Signal<Return, Args...> *signal, std::function<Return(Signal<Return, Args...> *, void *, Args...)> func, int priority);
-	Return operator()(void *thisptr, Args... args) { func(signal, thisptr, args); }
+	SignalListener(Signal<Return, Args...> *signal, std::function<SignalListenerFunc> func, int priority)
+		: func(func)
+		, signal(signal)
+		, priority(priority) {
+		signal->AddListener(this);
+	}
+	Return operator()(void *thisptr, Args... args) { func(signal, thisptr, args...); }
 };
 
 template <typename Return, typename... Args>
@@ -39,7 +49,7 @@ class Signal {
 private:
 	using SignalListenersDict = std::vector<SignalListener<Return, Args...>*>;
 	SignalListenersDict listeners;
-	SignalListenersDict::iterator currentListener;
+	typename SignalListenersDict::iterator currentListener;
 
 	using SignalFunc = Return(__rescall*)(void*, Args...);
 	SignalFunc originalFunc;
@@ -47,14 +57,51 @@ private:
 
 	Interface *registeredInterface;
 	int registeredIndex;
-public:
-	Signal();
-	Return CallNext(void *thisptr, Args... args);
-	Return Call(void *thisptr, Args... args);
-	Return Call(Args... args);
-	void Register(Interface *interf, int index);
-	void AddListener(SignalListener<Return, Args...> *listener);
 
-	Return Original(Args... args) { return originalFunc(args); }
-	Return operator(Args... args) { return Call(args); }
+public:
+	Signal() {
+		currentListener = listeners.begin();
+
+		hookFunc = [&](void *thisptr, Args... args) -> Return {
+			return this->Call(thisptr, args...);
+		};
+	}
+	Return CallNext(void *thisptr, Args... args) {
+		++currentListener;
+		return Call(thisptr, args...);
+	}
+
+	Return Call(void *thisptr, Args... args) {
+		Return result;
+
+		if (currentListener == listeners.end() || registeredInterface == nullptr) {
+			result = originalFunc(registeredInterface, args...);
+			currentListener = listeners.begin();
+		} else {
+			result = currentListener(this, registeredInterface, args...);
+		}
+
+		return result;
+	}
+	Return Call(Args... args) {
+		return Call(registeredInterface, args...);
+	}
+	void Register(Interface *interf, int index) {
+		interf->Hook(hookFunc, originalFunc, index);
+		currentListener = listeners.begin();
+
+		registeredInterface = interf;
+		registeredIndex = index;
+	}
+	void AddListener(SignalListener<Return, Args...> *listener) {
+		auto i = listeners.begin();
+		while (i != listeners.end()) {
+			if (i->priority <= listener->priority) break;
+			++i;
+		}
+		listeners.insert(i, listener);
+	}
+
+	Return Original(Args... args) { return originalFunc(args...); }
+	Return operator()(Args... args) { return Call(args...); }
 };

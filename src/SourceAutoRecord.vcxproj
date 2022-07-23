@@ -251,7 +251,6 @@
     <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
-    <ClCompile Include="Signal.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Utils\ed25519\add_scalar.cpp" />
     <ClCompile Include="Utils\ed25519\fe.cpp" />
