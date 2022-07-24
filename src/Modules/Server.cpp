@@ -464,7 +464,7 @@ extern Hook g_AcceptInputHook;
 #ifdef _WIN32
 static void __fastcall AcceptInput_Hook(void *thisptr, void *unused, const char *inputName, void *activator, void *caller, variant_t parameter, int outputID)
 #else
-static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void *activator, void *caller, variant_t &parameter, int outputID)
+static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void *activator, void *caller, variant_t parameter, int outputID)
 #endif
 {
 	const char *entName = server->GetEntityName(thisptr);
@@ -601,7 +601,7 @@ DETOUR(Server::GameFrame, bool simulating)
 	return result;
 }
 
-DETOUR_T(void, Server::OnRemoveEntity, IHandleEntity *ent, MAYBE_REF(CBaseHandle, handle)) {
+DETOUR_T(void, Server::OnRemoveEntity, IHandleEntity *ent, CBaseHandle handle) {
 	if (sar_prevent_ehm.GetBool()) {
 		// we're about to increment this entity's serial - if it's about to hit
 		// 0x4000, double-increment it so that can't happen

@@ -2,6 +2,7 @@
 
 #include "Color.hpp"
 #include "Datamap.hpp"
+#include "Handle.hpp"
 
 #include <stdio.h>
 
@@ -14,7 +15,7 @@ struct variant_t {
 		float vecVal[3];
 		Color rgbaVal;
 	};
-	unsigned long eVal;  // CHandle<CBaseEntity>
+	CBaseHandle eVal;
 
 	fieldtype_t fieldType;
 

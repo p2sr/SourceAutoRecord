@@ -26,11 +26,10 @@ public:
 	using _TraceFirePortal = int(__rescall *)(uintptr_t pgunptr, Vector &vOrigin, Vector &Direction, bool portalToPlace, int ePlacedBy, TracePortalPlacementInfo_t &placementInfo);
 	using _FindPortal = uintptr_t (*)(char linkage, bool secondaryPortal, bool createIfNotFound);
 
-	// For some reason the variant_t is passed as a pointer on Linux?
 #ifdef _WIN32
 	using _AcceptInput = bool(__rescall *)(void *thisptr, const char *inputName, void *activator, void *caller, variant_t value, int outputID);
 #else
-	using _AcceptInput = bool(__rescall *)(void *thisptr, const char *inputName, void *activator, void *caller, variant_t &value, int outputID);
+	using _AcceptInput = bool(__rescall *)(void *thisptr, const char *inputName, void *activator, void *caller, variant_t value, int outputID);
 #endif
 
 	using _CreateEntityByName = void *(__rescall *)(void *, const char *);
@@ -119,7 +118,7 @@ public:
 	DECL_DETOUR(GameFrame, bool simulating);
 
 	// CGlobalEntityList::OnRemoveEntity
-	DECL_DETOUR_T(void, OnRemoveEntity, IHandleEntity *ent, MAYBE_REF(CBaseHandle, handle));
+	DECL_DETOUR_T(void, OnRemoveEntity, IHandleEntity *ent, CBaseHandle handle);
 
 	DECL_DETOUR_COMMAND(say);
 

@@ -38,8 +38,6 @@
 #	define DETOUR_B(name, ...) \
 		int __fastcall name##_Hook(void *thisptr, int edx, ##__VA_ARGS__)
 
-#	define MAYBE_REF(ty, name) ty name
-
 namespace {
 	bool mhInitialized = false;
 }
@@ -107,6 +105,4 @@ namespace {
 		type __rescall name##_Hook(void *thisptr, ##__VA_ARGS__)
 #	define DETOUR_B(name, ...) \
 		int __rescall name##_Hook(void *thisptr, ##__VA_ARGS__)
-
-#	define MAYBE_REF(ty, name) const ty &name
 #endif

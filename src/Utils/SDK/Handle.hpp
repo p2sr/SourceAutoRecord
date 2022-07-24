@@ -23,6 +23,15 @@ public:
 	operator bool() const {
 		return !!*this;
 	}
+
+	// specify non-trivial copy constructor to get correct arg-passing behaviour
+	CBaseHandle(const CBaseHandle &other) {
+		this->m_Index = other.m_Index;
+	}
+
+	CBaseHandle() {
+		this->m_Index = 0xFFFFFFFF;
+	}
 };
 
 class IHandleEntity {
