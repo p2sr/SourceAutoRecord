@@ -34,8 +34,19 @@ void InputSystem::DPIScaleDeltas(int &x, int &y) {
 	static int saved_x = 0;
 	static int saved_y = 0;
 
+	static int last_dpi_scale = 1;
+
 	int scale = sar_dpi_scale.GetInt();
 	if (scale < 1) scale = 1;
+
+	if (scale != last_dpi_scale) {
+		saved_x = 0;
+		saved_y = 0;
+		last_dpi_scale = scale;
+		return;
+	}
+
+	last_dpi_scale = scale;
 
 	saved_x += x;
 	saved_y += y;
