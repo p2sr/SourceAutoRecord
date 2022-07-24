@@ -67,7 +67,7 @@ REDECL(Server::FinishGravity);
 REDECL(Server::AirMove);
 REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
-REDECL(Server::LevelShutdown);
+REDECL(Server::OnRemoveEntity);
 REDECL(Server::PlayerRunCommand);
 REDECL(Server::ViewPunch);
 REDECL(Server::ProcessMovement);
@@ -601,26 +601,18 @@ DETOUR(Server::GameFrame, bool simulating)
 	return result;
 }
 
-// CServerGameDLL::LevelShutdown
-DETOUR(Server::LevelShutdown) {
-	auto result = Server::LevelShutdown(thisptr);
-
-	if (sar_prevent_ehm.GetBool()){
-		for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
-			auto info = entityList->GetEntityInfoByIndex(index);
-			// not safe to modify! shouldn't happen here, but just in case.
-			if (info->m_pEntity != nullptr) continue;
-
-			// reloading some maps (like PotatOS) can increment serial number multiple times.
-			// just for safety, do not allow a short range of values before 0x4000.
-			if (info->m_SerialNumber >= 0x3FFA && info->m_SerialNumber <= 0x4000) {
-				info->m_SerialNumber = 0x4001;
-				console->Print("Prevented EHM on slot %d!\n", index);
-			}
+DETOUR_T(void, Server::OnRemoveEntity, IHandleEntity *ent, MAYBE_REF(CBaseHandle, handle)) {
+	if (sar_prevent_ehm.GetBool()) {
+		// we're about to increment this entity's serial - if it's about to hit
+		// 0x4000, double-increment it so that can't happen
+		auto info = entityList->GetEntityInfoByIndex(handle.GetEntryIndex());
+		if (info->m_SerialNumber == 0x3FFF) {
+			info->m_SerialNumber += 1;
+			console->Print("Prevented EHM on slot %d!\n", handle.GetEntryIndex());
 		}
 	}
 
-	return result;
+	return Server::OnRemoveEntity(thisptr, ent, handle);
 }
 
 static int (*GlobalEntity_GetIndex)(const char *);
@@ -718,6 +710,9 @@ bool Server::Init() {
 #endif
 			Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
 
+		this->gEntList = Interface::Create((void *)((uintptr_t)this->m_EntPtrArray - 4));
+		this->gEntList->Hook(Server::OnRemoveEntity_Hook, Server::OnRemoveEntity, Offsets::OnRemoveEntity);
+
 		this->CreateEntityByName = g_ServerTools->Original<_CreateEntityByName>(Offsets::CreateEntityByName);
 		this->DispatchSpawn = g_ServerTools->Original<_DispatchSpawn>(Offsets::DispatchSpawn);
 		this->SetKeyValueChar = g_ServerTools->Original<_SetKeyValueChar>(Offsets::SetKeyValueChar);
@@ -741,7 +736,6 @@ bool Server::Init() {
 		this->IsRestoring = this->g_ServerGameDLL->Original<_IsRestoring>(Offsets::IsRestoring);
 
 		this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
-		this->g_ServerGameDLL->Hook(Server::LevelShutdown_Hook, Server::LevelShutdown, Offsets::LevelShutdown);
 	}
 
 #ifdef _WIN32
@@ -887,6 +881,7 @@ void Server::Shutdown() {
 	setAircontrol(0);
 	setPortalsThruPortals(false);
 	if (g_check_stuck_code) memcpy(g_check_stuck_code, g_orig_check_stuck_code, sizeof g_orig_check_stuck_code);
+	Interface::Delete(this->gEntList);
 	Interface::Delete(this->g_GameMovement);
 	Interface::Delete(this->g_ServerGameDLL);
 }

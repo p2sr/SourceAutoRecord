@@ -18,6 +18,7 @@ class Server : public Module {
 public:
 	Interface *g_GameMovement = nullptr;
 	Interface *g_ServerGameDLL = nullptr;
+	Interface *gEntList = nullptr;
 
 	using _UTIL_PlayerByIndex = ServerEnt *(__cdecl *)(int index);
 	using _GetAllServerClasses = ServerClass *(*)();
@@ -117,8 +118,8 @@ public:
 	// CServerGameDLL::GameFrame
 	DECL_DETOUR(GameFrame, bool simulating);
 
-	// CServerGameDLL::LevelShutdown
-	DECL_DETOUR(LevelShutdown);
+	// CGlobalEntityList::OnRemoveEntity
+	DECL_DETOUR_T(void, OnRemoveEntity, IHandleEntity *ent, MAYBE_REF(CBaseHandle, handle));
 
 	DECL_DETOUR_COMMAND(say);
 

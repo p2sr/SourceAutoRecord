@@ -172,11 +172,13 @@ OFFSET_DEFAULT(GetClientEntity, 3, 3)
 
 // CServerGameDLL
 OFFSET_DEFAULT(GameFrame, 4, 4)
-OFFSET_DEFAULT(LevelShutdown, 6, 6)
 OFFSET_DEFAULT(Think, 31, 31)
 OFFSET_DEFAULT(GetAllServerClasses, 10, 10)
 OFFSET_DEFAULT(IsRestoring, 24, 24)
 OFFSET_DEFAULT(ShouldDraw, 11, 12)
+
+// CGlobalEntityList
+OFFSET_DEFAULT(OnRemoveEntity, 1, 1)
 
 // CHud
 OFFSET_DEFAULT(GetName, 10, 11)
