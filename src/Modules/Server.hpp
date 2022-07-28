@@ -90,6 +90,9 @@ public:
 	// CBasePlayer::ViewPunch
 	DECL_DETOUR_T(void, ViewPunch, const QAngle &offset);
 
+	// CServerNetworkProperty::IsInPVS
+	DECL_DETOUR_T(bool, IsInPVS, void *info);
+
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR(ProcessMovement, void *pPlayer, CMoveData *pMove);
 

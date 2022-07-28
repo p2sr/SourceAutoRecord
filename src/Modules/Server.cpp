@@ -70,6 +70,7 @@ REDECL(Server::GameFrame);
 REDECL(Server::OnRemoveEntity);
 REDECL(Server::PlayerRunCommand);
 REDECL(Server::ViewPunch);
+REDECL(Server::IsInPVS);
 REDECL(Server::ProcessMovement);
 REDECL(Server::GetPlayerViewOffset);
 REDECL(Server::StartTouchChallengeNode);
@@ -311,9 +312,30 @@ DETOUR_T(Vector*, Server::GetPlayerViewOffset, bool ducked) {
 	}
 
 	return Server::GetPlayerViewOffset(thisptr,ducked);
-	
 }
 
+Variable sar_always_transmit_heavy_ents("sar_always_transmit_heavy_ents", "0", "Always transmit large but seldom changing edicts to clients to prevent lag spikes.\n");
+
+extern Hook g_IsInPVS_Hook;
+DETOUR_T(bool, Server::IsInPVS, void *info) {
+	if (sar_always_transmit_heavy_ents.GetBool()) {
+		edict_t *m_pClientEnt = *(edict_t **)((uintptr_t)thisptr + 12);
+		if (m_pClientEnt->m_fStateFlags & FL_EDICT_FULL) {
+			ServerEnt *ent = (ServerEnt *)m_pClientEnt->m_pUnk;
+			const char *cn = ent->classname();
+			if (!strcmp(cn, "prop_dynamic") || !strcmp(cn, "phys_bone_follower") || Utils::StartsWith(cn, "trigger_")) {
+				return true;
+			}
+		}
+	}
+
+	g_IsInPVS_Hook.Disable();
+	auto res = Server::IsInPVS(thisptr, info);
+	g_IsInPVS_Hook.Enable();
+
+	return res;
+}
+Hook g_IsInPVS_Hook(&Server::IsInPVS_Hook);
 
 ON_INIT {
 	NetMessage::RegisterHandler(
@@ -827,6 +849,14 @@ bool Server::Init() {
 
 		g_check_stuck_code = (void *)code;
 	}
+
+#ifdef _WIN32
+	Server::IsInPVS = (Server::_IsInPVS)Memory::Scan(this->Name(), "55 8B EC 51 53 8B 5D 08 56 57 33 FF 89 4D FC 66 39 79 1A 75 57 3B BB 10 20 00 00 0F 8D C0 00 00 00 8D B3 14 20 00 00");
+#else
+	// this only really matters for coop so this pattern is just for the base game
+	Server::IsInPVS = (Server::_IsInPVS)Memory::Scan(this->Name(), "55 57 E8 ? ? ? ? 81 C7 ? ? ? ? 56 53 31 DB 83 EC 1C 8B 74 24 30 8B 44 24 34 89 7C 24 0C 66 83 7E 1A 00 8B 80 10 20 00 00");
+#endif
+	g_IsInPVS_Hook.SetFunc(IsInPVS);
 
 	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);
 

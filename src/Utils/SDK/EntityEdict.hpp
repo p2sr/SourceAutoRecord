@@ -11,6 +11,7 @@ struct CEntInfo {
 
 
 #define FL_EDICT_FREE (1 << 1)
+#define FL_EDICT_FULL (1 << 2)
 
 struct CBaseEdict {
 	int m_fStateFlags;          // 0
