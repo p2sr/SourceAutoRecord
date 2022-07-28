@@ -323,9 +323,9 @@ DETOUR_T(bool, Server::IsInPVS, void *info) {
 		if (m_pClientEnt->m_fStateFlags & FL_EDICT_FULL) {
 			ServerEnt *ent = (ServerEnt *)m_pClientEnt->m_pUnk;
 			const char *cn = ent->classname();
-			if (!strcmp(cn, "prop_dynamic") || !strcmp(cn, "phys_bone_follower") || Utils::StartsWith(cn, "trigger_")) {
-				return true;
-			}
+			if (!strcmp(cn, "prop_dynamic")) return true;
+			if (!strcmp(cn, "phys_bone_follower")) return true;
+			if (!strcmp(cn, "func_portal_bumper")) return true;
 		}
 	}
 
