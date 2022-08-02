@@ -81,7 +81,11 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 		if (pInfo.onSpeedPaint) fb.moveAnalog.x *= 2;
 	} else if (asParams->strafeType == AutoStrafeType::VECTORIAL_CAM) {
 		float lookAngle = this->shouldFollowLine ? asParams->strafeDir.angle : velAngle;
-		fb.viewAnalog.x = -(lookAngle - pInfo.angles.y);
+		if (tasPlayer->scriptVersion >= 6) {
+			fb.viewAnalog.x -= lookAngle - pInfo.angles.y;
+		} else {
+			fb.viewAnalog.x = -(lookAngle - pInfo.angles.y);
+		}
 		float moveAngle = DEG2RAD(angle - lookAngle);
 		fb.moveAnalog.x = -sinf(moveAngle);
 		fb.moveAnalog.y = cosf(moveAngle);
