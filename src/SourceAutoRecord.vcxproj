@@ -164,6 +164,7 @@
     <ClCompile Include="Features\GroundFramesCounter.cpp" />
     <ClCompile Include="Features\PlacementScanner.cpp" />
     <ClCompile Include="Features\Hud\Crosshair.cpp" />
+    <ClCompile Include="Features\Hud\CheatWarn.cpp" />
     <ClCompile Include="Features\Hud\Hud.cpp" />
     <ClCompile Include="Features\Hud\InputHud.cpp" />
     <ClCompile Include="Features\Hud\InspectionHud.cpp" />
