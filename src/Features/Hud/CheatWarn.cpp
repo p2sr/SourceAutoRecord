@@ -1,6 +1,7 @@
 #include "Features/Hud/Hud.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Engine.hpp"
 #include "Variable.hpp"
@@ -21,6 +22,8 @@ static Cheat g_cheats[] = {
 	}, "cheats are enabled", "run 'sv_cheats 0'" },
 
 	{ +[]() {
+		if (sar.game->Is(SourceGame_PortalReloaded)) return false;
+		if (client->GetChallengeStatus() != CMStatus::CHALLENGE) return false;
 		return Variable("sv_cheats_flagged").GetBool();
 	}, "cheats were flagged in this session", "reload the game from the menu" },
 
