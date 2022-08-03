@@ -130,6 +130,8 @@ public:
 		int width, height;
 		drawWarnings(false, 0, 0, &width, &height);
 
+		if (width == 0 || height == 0) return;
+
 		// 4px horizontal padding, 2px vertical padding
 		width += 8;
 		height += 4;
