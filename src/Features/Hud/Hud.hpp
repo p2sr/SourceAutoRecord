@@ -180,7 +180,7 @@ int HudSetPos_CompleteFunc(const char *partial, char commands[COMMAND_COMPLETION
         name##_setpos,                                                                              \
         "Automatically sets the position of " helpname ".\n"                                          \
         "Usage: " #name "_setpos <top|center|bottom|y|y\%> <left|center|right|x|x\%>\n",              \
-        0, HudSetPos_CompleteFunc                                                                     \
+        FCVAR_DONTRECORD, HudSetPos_CompleteFunc                                                                     \
     ) {                                                                                               \
         if (args.ArgC() != 3) return console->Print(name##_setpos.ThisPtr()->m_pszHelpString);      \
         name##_x.SetValue(args[2]);                                                                 \

@@ -601,7 +601,7 @@ DECL_COMMAND_COMPLETION(sar_ihud_modify) {
 CON_COMMAND_F_COMPLETION(sar_ihud_modify,
 	"sar_ihud_modify <element|all> [param=value]... - modifies parameters in given element.\n"
     "Params: enabled, text, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight, image, highlightimage, minhold.\n",
-	0, sar_ihud_modify_CompletionFunc
+	FCVAR_DONTRECORD, sar_ihud_modify_CompletionFunc
 ) {
 	if (args.ArgC() < 3) {
 		console->Print(sar_ihud_modify.ThisPtr()->m_pszHelpString);
@@ -667,7 +667,7 @@ CON_COMMAND_F_COMPLETION(sar_ihud_modify,
 	}
 }
 
-CON_COMMAND(sar_ihud_add_key, "sar_ihud_add_key <key>") {
+CON_COMMAND_F(sar_ihud_add_key, "sar_ihud_add_key <key>", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 2) {
 		console->Print(sar_ihud_add_key.ThisPtr()->m_pszHelpString);
 		return;
@@ -689,7 +689,7 @@ CON_COMMAND(sar_ihud_add_key, "sar_ihud_add_key <key>") {
 
 CON_COMMAND_HUD_SETPOS(sar_ihud, "input HUD")
 
-CON_COMMAND(sar_ihud_set_background, "sar_ihud_set_background <path> <grid x> <grid y> <grid w> <grid h>") {
+CON_COMMAND_F(sar_ihud_set_background, "sar_ihud_set_background <path> <grid x> <grid y> <grid w> <grid h>", FCVAR_DONTRECORD) {
 	if (args.ArgC() != 6) {
 		console->Print(sar_ihud_set_background.ThisPtr()->m_pszHelpString);
 		return;
@@ -713,6 +713,6 @@ CON_COMMAND(sar_ihud_set_background, "sar_ihud_set_background <path> <grid x> <g
 	inputHud.bgGridH = atoi(args[5]);
 }
 
-CON_COMMAND(sar_ihud_clear_background, "sar_ihud_clear_background") {
+CON_COMMAND_F(sar_ihud_clear_background, "sar_ihud_clear_background", FCVAR_DONTRECORD) {
 	inputHud.bgTextureId = -1;
 }

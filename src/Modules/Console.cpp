@@ -45,7 +45,7 @@ ConsoleListener::~ConsoleListener() {
 
 Console *console;
 
-CON_COMMAND(sar_echo, "sar_echo <color> <string...> - echo a string to console with a given color\n") {
+CON_COMMAND_F(sar_echo, "sar_echo <color> <string...> - echo a string to console with a given color\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 2) {
 		return console->Print(sar_echo.ThisPtr()->m_pszHelpString);
 	}
@@ -68,7 +68,7 @@ CON_COMMAND(sar_echo, "sar_echo <color> <string...> - echo a string to console w
 	console->ColorMsg(*col, "%s\n", str);
 }
 
-CON_COMMAND(sar_echo_nolf, "sar_echo_nolf <color> <string...> - echo a string to console with a given color and no trailing line feed\n") {
+CON_COMMAND_F(sar_echo_nolf, "sar_echo_nolf <color> <string...> - echo a string to console with a given color and no trailing line feed\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 2) {
 		return console->Print(sar_echo_nolf.ThisPtr()->m_pszHelpString);
 	}

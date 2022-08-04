@@ -351,7 +351,7 @@ CON_COMMAND_COMPLETION(sar_hud_order_bottom, "sar_hud_order_bottom <name> - orde
 
 	console->Print("Moved HUD element %s to bottom.\n", args[1]);
 }
-CON_COMMAND(sar_hud_order_reset, "sar_hud_order_reset - resets order of hud element\n") {
+CON_COMMAND_F(sar_hud_order_reset, "sar_hud_order_reset - resets order of hud element\n", FCVAR_DONTRECORD) {
 	std::sort(vgui->elements.begin(), vgui->elements.end(), [](const HudElement *a, const HudElement *b) {
 		return a->orderIndex < b->orderIndex;
 	});
@@ -476,7 +476,7 @@ long parseIdx(const char *idxStr) {
 	return idx;
 }
 
-CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows the nth text value in the HUD\n") {
+CON_COMMAND_F(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows the nth text value in the HUD\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 3) {
 		console->Print(sar_hud_set_text.ThisPtr()->m_pszHelpString);
 		return;
@@ -545,7 +545,7 @@ CON_COMMAND(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and shows 
 	sar_hud_text_vals[idx].components = components;
 }
 
-CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> [color] - sets the color of the nth text value in the HUD. Reset by not giving color.\n") {
+CON_COMMAND_F(sar_hud_set_text_color, "sar_hud_set_text_color <id> [color] - sets the color of the nth text value in the HUD. Reset by not giving color.\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 2 || args.ArgC() > 3) {
 		console->Print(sar_hud_set_text_color.ThisPtr()->m_pszHelpString);
 		return;
@@ -566,7 +566,7 @@ CON_COMMAND(sar_hud_set_text_color, "sar_hud_set_text_color <id> [color] - sets 
 	}
 }
 
-CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id> - hides the nth text value in the HUD\n") {
+CON_COMMAND_F(sar_hud_hide_text, "sar_hud_hide_text <id> - hides the nth text value in the HUD\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 2) {
 		console->Print(sar_hud_hide_text.ThisPtr()->m_pszHelpString);
 		return;
@@ -581,7 +581,7 @@ CON_COMMAND(sar_hud_hide_text, "sar_hud_hide_text <id> - hides the nth text valu
 	sar_hud_text_vals[idx].draw = false;
 }
 
-CON_COMMAND(sar_hud_show_text, "sar_hud_show_text <id> - shows the nth text value in the HUD\n") {
+CON_COMMAND_F(sar_hud_show_text, "sar_hud_show_text <id> - shows the nth text value in the HUD\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 2) {
 		console->Print(sar_hud_show_text.ThisPtr()->m_pszHelpString);
 		return;
