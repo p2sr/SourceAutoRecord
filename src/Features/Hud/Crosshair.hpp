@@ -21,9 +21,9 @@ public:
 	bool GetCurrentSize(int &xSize, int &ySize) override;
 
 	bool IsSurfacePortalable();
-	int GetPortalUpgradeState();
-	void GetPortalsStates(int &portalUpgradeState, bool &blue, bool &orange);
-	std::vector<IHandleEntity *> GetPortalsShotByPlayer();
+	int GetPortalUpgradeState(int slot);
+	void GetPortalsStates(int slot, int &portalUpgradeState, bool &blue, bool &orange);
+	std::vector<ClientEnt *> GetPortalsShotByPlayer(int slot);
 
 	int SetCrosshairTexture(const std::string filename);
 	bool SetQuickHudTexture(const std::string filename);

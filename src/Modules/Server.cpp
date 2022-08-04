@@ -169,13 +169,6 @@ DETOUR(Server::PlayerMove) {
 	auto player = *reinterpret_cast<void **>((uintptr_t)thisptr + Offsets::player);
 	auto mv = *reinterpret_cast<const CHLMoveData **>((uintptr_t)thisptr + Offsets::mv);
 
-	if (sar_crosshair_mode.GetBool() || sar_quickhud_mode.GetBool() || sar_crosshair_P1.GetBool()) {
-		int slot = server->GetSplitScreenPlayerSlot(player);
-		if (slot == 0 || engine->IsOrange()) {
-			server->portalGun = entityList->LookupEntity(SE(player)->active_weapon());
-		}
-	}
-
 	auto m_fFlags = SE(player)->field<int>("m_fFlags");
 	auto m_MoveType = SE(player)->field<char>("m_MoveType");
 	auto m_nWaterLevel = SE(player)->field<char>("m_nWaterLevel");

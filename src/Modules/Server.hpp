@@ -52,7 +52,6 @@ public:
 
 	CGlobalVars *gpGlobals = nullptr;
 	CEntInfo *m_EntPtrArray = nullptr;
-	IHandleEntity *portalGun = nullptr;
 
 	int tickCount = 0;
 

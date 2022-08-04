@@ -49,7 +49,7 @@ Variable cl_quickhud_alpha("cl_quickhud_alpha", "255", 0, 255, "Change the amoun
 Crosshair crosshair;
 
 Crosshair::Crosshair()
-	: Hud(HudType_InGame, false)
+	: Hud(HudType_InGame, true)
 	, crosshairTextureID(0)
 	, quickhudTextureID{-1, -1, -1, -1}
 	, isCustomCrosshairReady(false)
@@ -104,22 +104,37 @@ bool Crosshair::IsSurfacePortalable() {
 	return !(tr.surface.flags & SURF_NOPORTAL) && std::strcmp(tr.surface.name, "**studio**") != 0;
 }
 
-int Crosshair::GetPortalUpgradeState() {
-	if (server->portalGun != nullptr) {
-		bool prim = SE(server->portalGun)->field<bool>("m_bCanFirePortal1");
-		bool sec = SE(server->portalGun)->field<bool>("m_bCanFirePortal2");
+static ClientEnt *getPortalGun(int slot) {
+	ClientEnt *pl = client->GetPlayer(slot + 1);
+	if (!pl) return nullptr;
+	CBaseHandle hnd = pl->active_weapon();
+	if (!hnd) return nullptr;
+	return client->GetPlayer(hnd.GetEntryIndex());
+}
+
+int Crosshair::GetPortalUpgradeState(int slot) {
+	ClientEnt *gun = getPortalGun(slot);
+
+	if (gun) {
+		bool prim = gun->field<bool>("m_bCanFirePortal1");
+		bool sec = gun->field<bool>("m_bCanFirePortal2");
 		return prim | (sec << 1);
 	}
 
 	return 0;
 }
 
-std::vector<IHandleEntity *> Crosshair::GetPortalsShotByPlayer() {
-	std::vector<IHandleEntity *> v;
+std::vector<ClientEnt *> Crosshair::GetPortalsShotByPlayer(int slot) {
+	std::vector<ClientEnt *> v;
 
-	if (server->portalGun) {
-		auto bluePortal = entityList->LookupEntity(SE(server->portalGun)->field<CBaseHandle>("m_hPrimaryPortal"));
-		auto orangePortal = entityList->LookupEntity(SE(server->portalGun)->field<CBaseHandle>("m_hSecondaryPortal"));
+	ClientEnt *gun = getPortalGun(slot);
+
+	if (gun) {
+		auto blueHandle = gun->field<CBaseHandle>("m_hPrimaryPortal");
+		auto orangeHandle = gun->field<CBaseHandle>("m_hSecondaryPortal");
+
+		auto bluePortal = blueHandle ? client->GetPlayer(blueHandle.GetEntryIndex()) : nullptr;
+		auto orangePortal = orangeHandle ? client->GetPlayer(orangeHandle.GetEntryIndex()) : nullptr;
 
 		if (bluePortal != NULL) {  //If player hasn't shot blue portal
 			v.push_back(bluePortal);
@@ -133,8 +148,8 @@ std::vector<IHandleEntity *> Crosshair::GetPortalsShotByPlayer() {
 	return v;
 }
 
-void Crosshair::GetPortalsStates(int &portalUpgradeState, bool &isBlueActive, bool &isOrangeActive) {
-	portalUpgradeState = GetPortalUpgradeState();
+void Crosshair::GetPortalsStates(int slot, int &portalUpgradeState, bool &isBlueActive, bool &isOrangeActive) {
+	portalUpgradeState = GetPortalUpgradeState(slot);
 	if (portalUpgradeState) {
 		if (sar_crosshair_P1.GetBool() && sv_cheats.GetBool()) {
 			if (this->IsSurfacePortalable()) {
@@ -149,9 +164,9 @@ void Crosshair::GetPortalsStates(int &portalUpgradeState, bool &isBlueActive, bo
 
 		isBlueActive = false;
 		isOrangeActive = false;
-		for (auto &portal : GetPortalsShotByPlayer()) {
-			bool isP2 = SE(portal)->field<bool>("m_bIsPortal2");
-			bool isAct = SE(portal)->field<bool>("m_bActivated");
+		for (auto &portal : GetPortalsShotByPlayer(slot)) {
+			bool isP2 = portal->field<bool>("m_bIsPortal2");
+			bool isAct = portal->field<bool>("m_bActivated");
 			if (!isP2) {
 				isBlueActive = isAct;
 			} else {
@@ -215,7 +230,7 @@ void Crosshair::Paint(int slot) {
 
 	int portalGunUpgradeState;
 	bool bluePortalState, orangePortalState;
-	this->GetPortalsStates(portalGunUpgradeState, bluePortalState, orangePortalState);
+	this->GetPortalsStates(slot, portalGunUpgradeState, bluePortalState, orangePortalState);
 
 	if ((sar_quickhud_mode.GetInt() == 1 || sar_crosshair_P1.GetBool()) && portalGunUpgradeState) {  // Customizable quickhud
 		Color cl(cl_quickhudleftcolor_r.GetInt(), cl_quickhudleftcolor_g.GetInt(), cl_quickhudleftcolor_b.GetInt(), cl_quickhud_alpha.GetInt());
@@ -250,8 +265,8 @@ void Crosshair::Paint(int slot) {
 		Color pbody_prim { 255, 180,  32 };
 		Color pbody_sec  {  58,   3,   3 };
 
-		Color real_prim = engine->IsOrange() ? pbody_prim : engine->IsCoop() ? atlas_prim : blue;
-		Color real_sec  = engine->IsOrange() ? pbody_sec  : engine->IsCoop() ? atlas_sec  : orange;
+		Color real_prim = slot == 1 ? pbody_prim : engine->IsCoop() ? atlas_prim : blue;
+		Color real_sec  = slot == 1 ? pbody_sec  : engine->IsCoop() ? atlas_sec  : orange;
 
 		Color prim = (portalGunUpgradeState & 1) ? real_prim : real_sec;
 		Color sec  = (portalGunUpgradeState & 2) ? real_sec  : real_prim;

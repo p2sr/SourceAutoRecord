@@ -134,6 +134,7 @@ struct ClientEnt {
 	FIELD(player_state, CPlayerState, "pl")
 	FIELD(ground_entity, CBaseHandle, "m_hGroundEntity")
 	FIELD(ducked, bool, "m_bDucked")
+	FIELD(active_weapon, CBaseHandle, "m_hActiveWeapon")
 };
 
 #undef FIELD
