@@ -29,18 +29,15 @@ Variable cl_crosshair_t("cl_crosshair_t", "0",
                         "Removes the top line from the crosshair :"
                         "0: normal crosshair,"
                         "1: crosshair without top.\n");
-Variable cl_crosshairgap("cl_crosshairgap", "5", 0, "Changes the distance of the crosshair lines from the center of screen.\n");
-Variable cl_crosshaircolor_r("cl_crosshaircolor_r", "0", 0, 255, "Changes the color of the crosshair.\n");
+Variable cl_crosshairgap("cl_crosshairgap", "9", 0, "Changes the distance of the crosshair lines from the center of screen.\n");
+Variable cl_crosshaircolor_r("cl_crosshaircolor_r", "255", 0, 255, "Changes the color of the crosshair.\n");
 Variable cl_crosshaircolor_g("cl_crosshaircolor_g", "255", 0, 255, "Changes the color of the crosshair.\n");
-Variable cl_crosshaircolor_b("cl_crosshaircolor_b", "0", 0, 255, "Changes the color of the crosshair.\n");
-Variable cl_crosshairsize("cl_crosshairsize", "5", -100, "Changes the size of the crosshair.\n");
+Variable cl_crosshaircolor_b("cl_crosshaircolor_b", "255", 0, 255, "Changes the color of the crosshair.\n");
+Variable cl_crosshairsize("cl_crosshairsize", "1", -100, "Changes the size of the crosshair.\n");
 Variable cl_crosshairthickness("cl_crosshairthickness", "0", 0, "Changes the thinkness of the crosshair lines.\n");
 Variable cl_crosshairalpha("cl_crosshairalpha", "255", 0, 255, "Change the amount of transparency.\n");
 Variable cl_crosshairdot("cl_crosshairdot", "1", "Decides if there is a dot in the middle of the crosshair\n");
 
-Variable cl_quickhud_x("sar_quickhud_x", "45", -1000, "Horizontal distance of the custom quickhud.\n");
-Variable cl_quickhud_y("sar_quickhud_y", "0", -1000, "Vertical distance of the custom quickhud.\n");
-Variable cl_quickhud_size("sar_quickhud_size", "15", -100, "Size of the custom quickhud.\n");
 Variable cl_quickhudleftcolor_r("cl_quickhudleftcolor_r", "255", 0, 255, "Changes the color of the left quickhud.\n");
 Variable cl_quickhudleftcolor_g("cl_quickhudleftcolor_g", "184", 0, 255, "Changes the color of the left quickhud.\n");
 Variable cl_quickhudleftcolor_b("cl_quickhudleftcolor_b", "86", 0, 255, "Changes the color of the left quickhud.\n");
@@ -52,7 +49,7 @@ Variable cl_quickhud_alpha("cl_quickhud_alpha", "255", 0, 255, "Change the amoun
 Crosshair crosshair;
 
 Crosshair::Crosshair()
-	: Hud(HudType_InGame, true)
+	: Hud(HudType_InGame, false)
 	, crosshairTextureID(0)
 	, quickhudTextureID{-1, -1, -1, -1}
 	, isCustomCrosshairReady(false)
@@ -109,7 +106,9 @@ bool Crosshair::IsSurfacePortalable() {
 
 int Crosshair::GetPortalUpgradeState() {
 	if (server->portalGun != nullptr) {
-		return SE(server->portalGun)->field<bool>("m_bCanFirePortal1") + SE(server->portalGun)->field<bool>("m_bCanFirePortal2");
+		bool prim = SE(server->portalGun)->field<bool>("m_bCanFirePortal1");
+		bool sec = SE(server->portalGun)->field<bool>("m_bCanFirePortal2");
+		return prim | (sec << 1);
 	}
 
 	return 0;
@@ -167,8 +166,6 @@ void Crosshair::Paint(int slot) {
 		return;
 	}
 
-	surface->StartDrawing(surface->matsurface->ThisPtr());
-
 	int xScreen, yScreen, xCenter, yCenter;
 	engine->GetScreenSize(nullptr, xScreen, yScreen);
 
@@ -224,10 +221,10 @@ void Crosshair::Paint(int slot) {
 		Color cl(cl_quickhudleftcolor_r.GetInt(), cl_quickhudleftcolor_g.GetInt(), cl_quickhudleftcolor_b.GetInt(), cl_quickhud_alpha.GetInt());
 		Color cr(cl_quickhudrightcolor_r.GetInt(), cl_quickhudrightcolor_g.GetInt(), cl_quickhudrightcolor_b.GetInt(), cl_quickhud_alpha.GetInt());
 
-		int x1 = xCenter - cl_quickhud_x.GetInt();
-		int x2 = xCenter + cl_quickhud_x.GetInt();
-		int y1 = yCenter + cl_quickhud_y.GetInt();
-		int size = cl_quickhud_size.GetInt();
+		int x1 = xCenter - 0;//cl_quickhud_x.GetInt();
+		int x2 = xCenter + 0;//cl_quickhud_x.GetInt();
+		int y1 = yCenter + 0;//cl_quickhud_y.GetInt();
+		int size = 10;//cl_quickhud_size.GetInt();
 
 		if (bluePortalState) {
 			surface->DrawFilledCircle(x1, y1, size, cr);
@@ -235,7 +232,7 @@ void Crosshair::Paint(int slot) {
 			surface->DrawCircle(x1, y1, size, cr);
 		}
 
-		if (portalGunUpgradeState == 2) {
+		if (portalGunUpgradeState & 2) {
 			if (orangePortalState) {
 				surface->DrawFilledCircle(x2, y1, size, cl);
 			} else {
@@ -244,22 +241,34 @@ void Crosshair::Paint(int slot) {
 		}
 
 	} else if ((sar_quickhud_mode.GetInt() == 2 || sar_crosshair_P1.GetBool()) && this->isCustomQuickHudReady && portalGunUpgradeState) {  // Quickhud from .png
+		int width, height;
 
-		surface->DrawSetColor(surface->matsurface->ThisPtr(), 255, 255, 255, cl_quickhud_alpha.GetInt());
-		int halfSize = cl_quickhud_size.GetInt() / 2;
-		int xOffset = cl_quickhud_x.GetInt();
-		int yOffset = cl_quickhud_y.GetInt();
+		Color blue       { 111, 184, 255 };
+		Color orange     { 255, 184,  86 };
+		Color atlas_prim {  32, 128, 210 };
+		Color atlas_sec  {  16,   0, 210 };
+		Color pbody_prim { 255, 180,  32 };
+		Color pbody_sec  {  58,   3,   3 };
 
-		surface->DrawSetTexture(surface->matsurface->ThisPtr(), this->quickhudTextureID[bluePortalState]);  //Blue
-		surface->DrawTexturedRect(surface->matsurface->ThisPtr(), xCenter - halfSize * 2 - xOffset, yCenter - halfSize - yOffset, xCenter - xOffset, yCenter + halfSize - yOffset);
+		Color real_prim = engine->IsOrange() ? pbody_prim : engine->IsCoop() ? atlas_prim : blue;
+		Color real_sec  = engine->IsOrange() ? pbody_sec  : engine->IsCoop() ? atlas_sec  : orange;
 
-		if (portalGunUpgradeState) {
-			surface->DrawSetTexture(surface->matsurface->ThisPtr(), this->quickhudTextureID[orangePortalState + 2]);  //Orange
-			surface->DrawTexturedRect(surface->matsurface->ThisPtr(), xCenter + xOffset, yCenter - halfSize - yOffset, xCenter + halfSize * 2 + xOffset, yCenter + halfSize - yOffset);
-		}
+		Color prim = (portalGunUpgradeState & 1) ? real_prim : real_sec;
+		Color sec  = (portalGunUpgradeState & 2) ? real_sec  : real_prim;
+
+		bool prim_state = (portalGunUpgradeState & 1) ? bluePortalState   : orangePortalState;
+		bool sec_state  = (portalGunUpgradeState & 2) ? orangePortalState : bluePortalState;
+
+		surface->DrawGetTextureSize(surface->matsurface->ThisPtr(), this->quickhudTextureID[prim_state], width, height);
+		surface->DrawSetTexture(surface->matsurface->ThisPtr(), this->quickhudTextureID[prim_state]);
+		surface->DrawSetColor(surface->matsurface->ThisPtr(), prim.r, prim.g, prim.b, cl_quickhud_alpha.GetInt());
+		surface->DrawTexturedRect(surface->matsurface->ThisPtr(), xCenter - width/2, yCenter - height/2, xCenter + width/2, yCenter + height/2);
+
+		surface->DrawGetTextureSize(surface->matsurface->ThisPtr(), this->quickhudTextureID[sec_state + 2], width, height);
+		surface->DrawSetTexture(surface->matsurface->ThisPtr(), this->quickhudTextureID[sec_state + 2]);
+		surface->DrawSetColor(surface->matsurface->ThisPtr(), sec.r, sec.g, sec.b, cl_quickhud_alpha.GetInt());
+		surface->DrawTexturedRect(surface->matsurface->ThisPtr(), xCenter - width/2, yCenter - height/2, xCenter + width/2, yCenter + height/2);
 	}
-
-	surface->FinishDrawing();
 }
 
 int Crosshair::SetCrosshairTexture(const std::string filename) {
