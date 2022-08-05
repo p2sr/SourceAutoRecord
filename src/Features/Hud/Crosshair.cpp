@@ -277,12 +277,12 @@ void Crosshair::Paint(int slot) {
 		surface->DrawGetTextureSize(surface->matsurface->ThisPtr(), this->quickhudTextureID[prim_state], width, height);
 		surface->DrawSetTexture(surface->matsurface->ThisPtr(), this->quickhudTextureID[prim_state]);
 		surface->DrawSetColor(surface->matsurface->ThisPtr(), prim.r, prim.g, prim.b, cl_quickhud_alpha.GetInt());
-		surface->DrawTexturedRect(surface->matsurface->ThisPtr(), xCenter - width/2, yCenter - height/2, xCenter + width/2, yCenter + height/2);
+		surface->DrawTexturedRect(surface->matsurface->ThisPtr(), xCenter + width/2 - width, yCenter - height/2, xCenter + width/2, yCenter - height/2 + height);
 
 		surface->DrawGetTextureSize(surface->matsurface->ThisPtr(), this->quickhudTextureID[sec_state + 2], width, height);
 		surface->DrawSetTexture(surface->matsurface->ThisPtr(), this->quickhudTextureID[sec_state + 2]);
 		surface->DrawSetColor(surface->matsurface->ThisPtr(), sec.r, sec.g, sec.b, cl_quickhud_alpha.GetInt());
-		surface->DrawTexturedRect(surface->matsurface->ThisPtr(), xCenter - width/2, yCenter - height/2, xCenter + width/2, yCenter + height/2);
+		surface->DrawTexturedRect(surface->matsurface->ThisPtr(), xCenter - width/2, yCenter - height/2, xCenter - width/2 + width, yCenter - height/2 + height);
 	}
 }
 
