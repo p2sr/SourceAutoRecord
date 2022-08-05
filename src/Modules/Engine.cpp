@@ -189,6 +189,10 @@ std::string Engine::GetCurrentMapName() {
 }
 
 bool Engine::IsCoop() {
+	if (*client->gamerules) {
+		using _IsMultiplayer = bool (__rescall *)(void *thisptr);
+		return Memory::VMT<_IsMultiplayer>(*client->gamerules, Offsets::IsMultiplayer)(*client->gamerules);
+	}
 	return sv_portal_players.GetInt() == 2 || (engine->demoplayer->IsPlaying() && engine->GetMaxClients() >= 2);
 }
 

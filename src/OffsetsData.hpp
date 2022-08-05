@@ -249,6 +249,9 @@ OFFSET_DEFAULT(ReadScreenPixels, 28, 29)
 // IFileSystem
 OFFSET_DEFAULT(GetSearchPath, 16, 16)
 
+// CGameRules
+OFFSET_DEFAULT(IsMultiplayer, 33, 34)
+
 // Others
 OFFSET_DEFAULT(tickcount, 95, 74)
 OFFSET_DEFAULT(interval_per_tick, 65, 82)

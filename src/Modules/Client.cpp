@@ -599,6 +599,23 @@ bool Client::Init() {
 	g_DrawTranslucentRenderablesHook.SetFunc(Client::DrawTranslucentRenderables);
 	g_DrawOpaqueRenderablesHook.SetFunc(Client::DrawOpaqueRenderables);
 
+	// Get at gamerules
+	{
+		uintptr_t cbk = (uintptr_t)Command("+mouse_menu").ThisPtr()->m_pCommandCallback;
+#ifdef _WIN32
+		// OpenRadialMenuCommand is inlined
+		this->gamerules = *(void ***)(cbk + 2);
+#else
+		if (sar.game->Is(SourceGame_EIPRelPIC)) {
+			cbk = cbk + 10 + *(int8_t *)(cbk + 9); // openradialmenu -> OpenRadialMenuCommand
+			this->gamerules = (void **)(cbk + 5 + *(uint32_t *)(cbk + 6) + *(uint32_t *)(cbk + 20));
+		} else {
+			cbk = (uintptr_t)Memory::Read(cbk + 12); // openradialmenu -> OpenRadialMenuCommand
+			this->gamerules = *(void ***)(cbk + 9);
+		}
+#endif
+	}
+
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");
 	cl_forwardspeed = Variable("cl_forwardspeed");

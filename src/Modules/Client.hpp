@@ -58,6 +58,7 @@ public:
 	_IN_DeactivateMouse IN_DeactivateMouse = nullptr;
 
 	std::string lastLevelName;
+	void **gamerules;
 
 public:
 	ClientEnt *GetPlayer(int index);
