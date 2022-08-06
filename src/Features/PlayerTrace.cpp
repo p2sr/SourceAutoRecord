@@ -144,20 +144,22 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 	QAngle angles;
 
 	bool grounded;
+	bool ducked;
 	if (use_client_offset) {
 		grounded = CE(player)->ground_entity();
+		ducked = CE(player)->ducked();
 		pos = client->GetAbsOrigin(player);
 		vel = client->GetLocalVelocity(player);
 		//eyepos = pos + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
 		camera->GetEyePos<false>(slot, eyepos, angles);
 	} else {
 		grounded = SE(player)->ground_entity();
+		ducked = SE(player)->ducked();
 		pos = server->GetAbsOrigin(player);
 		vel = server->GetLocalVelocity(player);
 		//eyepos = pos + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
 		camera->GetEyePos<true>(slot, eyepos, angles);
 	}
-	bool ducked = SE(player)->ducked();
 
 	HitboxList hitboxes = ConstructHitboxList(pos);
 
