@@ -247,6 +247,33 @@
     <ClCompile Include="Features\Hud\CheatWarn.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\ed25519\add_scalar.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\fe.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\ge.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\key_exchange.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\keypair.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\sc.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\sha512.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\sign.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\verify.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
     <ClCompile Include="Utils\json11.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
@@ -716,6 +743,27 @@
     </ClInclude>
     <ClInclude Include="Features\Hud\Crosshair.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\ed25519.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\fe.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\fixedint.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\ge.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\precomp_data.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\sc.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\sha512.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
     </ClInclude>
     <ClInclude Include="Utils\json11.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>

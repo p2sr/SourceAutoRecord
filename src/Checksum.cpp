@@ -3,6 +3,8 @@
 #include "Utils.hpp"
 #include "Event.hpp"
 #include "Modules/Engine.hpp"
+#include "Utils/ed25519/ed25519.h"
+#include "Version.hpp"
 
 #include <cstdint>
 #include <cstdio>
@@ -148,7 +150,6 @@ static bool fileChecksum(FILE *fp, size_t ignoreEnd, uint32_t *crcOut) {
 
 	if (fseek(fp, 0, SEEK_SET)) return false;
 
-	// what the fuck c++ why do you not have vlas
 	char *buf = (char *)malloc(size);
 
 	fread(buf, 1, size, fp);
@@ -165,30 +166,59 @@ static bool fileChecksum(FILE *fp, size_t ignoreEnd, uint32_t *crcOut) {
 
 static uint32_t sarChecksum;
 
+static bool signDemo(FILE *fp, unsigned char *signature) {
+	if (fseek(fp, 0, SEEK_END)) return false;
+
+	long size = ftell(fp);
+	if (size == -1) return false;
+
+	if (fseek(fp, 0, SEEK_SET)) return false;
+
+	char *buf = (char *)malloc(size + 4); // extra bytes for SAR checksum
+	fread(buf, 1, size, fp);
+	if (ferror(fp)) {
+		free(buf);
+		return false;
+	}
+
+	// write sar checksum to end so that it's also signed
+	*(uint32_t *)(buf + size) = sarChecksum;
+
+	unsigned char pubkey[32] = SAR_DEMO_SIGN_PUBKEY;
+	unsigned char privkey[64] = SAR_DEMO_SIGN_PRIVKEY;
+
+	ed25519_sign(signature, (unsigned char *)buf, size + 4, pubkey, privkey);
+
+	free(buf);
+	return true;
+}
+
 bool AddDemoChecksum(const char *filename) {
 	FILE *fp = fopen(filename, "ab+");  // Open for binary appending and reading
 	if (!fp) return false;
 
-	uint32_t checksum;
-	if (!fileChecksum(fp, 0, &checksum)) {
+	unsigned char signature[64];
+	if (!signDemo(fp, signature)) {
 		fclose(fp);
 		return false;
 	}
 
-	uint8_t checkBuf[] = {
+	uint8_t checkBuf[91] = {
 		0x08,                    // Type: CustomData
 		WRITE_LE32(0xFFFFFFFF),  // Tick
 		0x00,                    // Slot (TODO: what is this?)
 
 		// CustomData packet data:
 		WRITE_LE32(0x00),         // ID - see RecordData for an explanation of why we use 0
-		WRITE_LE32(0x11),         // Size: 17 bytes
+		WRITE_LE32(0x4D),         // Size: 77 bytes
 		WRITE_LE32(0xFFFFFFFF),   // Cursor x
 		WRITE_LE32(0xFFFFFFFF),   // Cursor y
-		0xFF,                     // First byte of data: SAR message ID (0xFF = checksum)
-		WRITE_LE32(checksum),     // Demo checksum
+		0xFE,                     // First byte of data: SAR message ID (0xFE = v2 checksum)
 		WRITE_LE32(sarChecksum),  // SAR checksum
+		// 64 bytes remain to be filled with signature
 	};
+
+	memcpy(checkBuf + 27, signature, sizeof signature);
 
 	if (fwrite(checkBuf, 1, sizeof checkBuf, fp) != sizeof checkBuf) {
 		fclose(fp);
@@ -197,51 +227,6 @@ bool AddDemoChecksum(const char *filename) {
 
 	fclose(fp);
 	return true;
-}
-
-std::pair<VerifyResult, uint32_t> VerifyDemoChecksum(const char *filename) {
-	FILE *fp = fopen(filename, "rb");
-	if (!fp) return std::pair(VERIFY_BAD_DEMO, 0);
-
-	uint32_t realChecksum;
-	if (!fileChecksum(fp, 31, &realChecksum)) {
-		fclose(fp);
-		return std::pair(VERIFY_BAD_DEMO, 0);
-	}
-
-	// The start of the checksum should come 31 bytes before the end
-	if (fseek(fp, -31, SEEK_END)) {
-		fclose(fp);
-		return std::pair(VERIFY_BAD_DEMO, 0);
-	}
-
-	uint8_t buf[31];
-	fread(buf, 1, sizeof buf, fp);
-	if (ferror(fp)) {
-		fclose(fp);
-		return std::pair(VERIFY_BAD_DEMO, 0);
-	}
-
-	// We've got all the data we need from the file
-	fclose(fp);
-
-	if (buf[0] != 0x08 || READ_LE32(buf, 1) != 0xFFFFFFFF || buf[5] != 0x00) {
-		// Couldn't find checksum field!
-		return std::pair(VERIFY_NO_CHECKSUM, 0);
-	}
-
-	if (READ_LE32(buf, 6) != 0x00 || (READ_LE32(buf, 10) != 0x11 && READ_LE32(buf, 10) != 0x0D)  // workaround for bug in initial 1.12 release
-	    || READ_LE32(buf, 14) != 0xFFFFFFFF || READ_LE32(buf, 18) != 0xFFFFFFFF || buf[22] != 0xFF) {
-		// SAR message field not a valid checksum!
-		return std::pair(VERIFY_NO_CHECKSUM, 0);
-	}
-
-	uint32_t storedChecksum = READ_LE32(buf, 23);
-	uint32_t storedSarChecksum = READ_LE32(buf, 27);
-
-	VerifyResult res = realChecksum == storedChecksum ? VERIFY_VALID_CHECKSUM : VERIFY_INVALID_CHECKSUM;
-
-	return std::pair(res, storedSarChecksum);
 }
 
 #define NUM_FILE_SUM_THREADS 1

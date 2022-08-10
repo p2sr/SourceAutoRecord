@@ -21,6 +21,7 @@ SRCS+=$(wildcard $(SDIR)/Games/*.cpp)
 SRCS+=$(wildcard $(SDIR)/Modules/*.cpp)
 SRCS+=$(wildcard $(SDIR)/Utils/*.cpp)
 SRCS+=$(wildcard $(SDIR)/Utils/SDK/*.cpp)
+SRCS+=$(wildcard $(SDIR)/Utils/ed25519/*.cpp)
 
 OBJS=$(patsubst $(SDIR)/%.cpp, $(ODIR)/%.o, $(SRCS))
 
@@ -52,6 +53,8 @@ $(ODIR)/%.o: $(SDIR)/%.cpp
 src/Version.hpp: .FORCE
 	echo "#define SAR_VERSION \"$(VERSION)\"" >"$@"
 	if [ -z "$$RELEASE_BUILD" ]; then echo "#define SAR_DEV_BUILD 1" >>"$@"; fi
+	echo "#define SAR_DEMO_SIGN_PUBKEY { $$DEMO_SIGN_PUBKEY }" >>"$@"
+	echo "#define SAR_DEMO_SIGN_PRIVKEY { $$DEMO_SIGN_PRIVKEY }" >>"$@"
 
 cvars: doc/cvars.md
 doc/cvars.md:
