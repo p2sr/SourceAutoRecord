@@ -254,6 +254,7 @@
     <ClCompile Include="Utils\ed25519\key_exchange.cpp" />
     <ClCompile Include="Utils\ed25519\keypair.cpp" />
     <ClCompile Include="Utils\ed25519\sc.cpp" />
+    <ClCompile Include="Utils\ed25519\seed.cpp" />
     <ClCompile Include="Utils\ed25519\sha512.cpp" />
     <ClCompile Include="Utils\ed25519\sign.cpp" />
     <ClCompile Include="Utils\ed25519\verify.cpp" />

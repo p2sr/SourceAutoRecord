@@ -247,33 +247,6 @@
     <ClCompile Include="Features\Hud\CheatWarn.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\ed25519\add_scalar.cpp">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\ed25519\fe.cpp">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\ed25519\ge.cpp">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\ed25519\key_exchange.cpp">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\ed25519\keypair.cpp">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\ed25519\sc.cpp">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\ed25519\sha512.cpp">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\ed25519\sign.cpp">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\ed25519\verify.cpp">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\json11.cpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClCompile>
@@ -474,6 +447,36 @@
     </ClCompile>
     <ClCompile Include="Games\ThinkingWithTimeMachine.cpp">
       <Filter>SourceAutoRecord\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\verify.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\add_scalar.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\fe.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\ge.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\key_exchange.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\keypair.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\sc.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\sha512.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\sign.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ed25519\seed.cpp">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -699,18 +702,6 @@
     <ClInclude Include="Features\Renderer.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
-    <ClInclude Include="Games\Linux\ApertureTag.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Linux\PortalStoriesMel.hpp">
-      <Filter>SourceAutoRecord\Games\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\ApertureTag.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Games\Windows\PortalStoriesMel.hpp">
-      <Filter>SourceAutoRecord\Games\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Timer\PauseTimer.hpp">
       <Filter>SourceAutoRecord\Features\Timer</Filter>
     </ClInclude>
@@ -743,27 +734,6 @@
     </ClInclude>
     <ClInclude Include="Features\Hud\Crosshair.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\ed25519\ed25519.h">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\ed25519\fe.h">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\ed25519\fixedint.h">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\ed25519\ge.h">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\ed25519\precomp_data.h">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\ed25519\sc.h">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\ed25519\sha512.h">
-      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
     </ClInclude>
     <ClInclude Include="Utils\json11.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
@@ -1242,6 +1212,27 @@
     <ClInclude Include="Games\ThinkingWithTimeMachine.hpp">
       <Filter>SourceAutoRecord\Games</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\ed25519\ed25519.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\fe.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\fixedint.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\ge.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\precomp_data.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\sc.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ed25519\sha512.h">
+      <Filter>SourceAutoRecord\Utils\ed25519</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">
@@ -1300,6 +1291,9 @@
     </Filter>
     <Filter Include="SourceAutoRecord\Utils\SDK">
       <UniqueIdentifier>{5ede5464-347b-47c4-adfe-8dd56c3d7923}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Utils\ed25519">
+      <UniqueIdentifier>{9440c4f5-a37e-4618-ad82-f7a8573582e6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
