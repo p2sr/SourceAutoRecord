@@ -79,7 +79,7 @@ IMaterial *MaterialSystem::FindMaterial(const char *materialName, const char *te
 }
 ITexture *MaterialSystem::CreateTexture(const char *name, int w, int h, uint8_t *rgba) {
 	auto CreateProceduralTexture = (ITexture *(__rescall *)(void *, const char *, const char *, int, int, ImageFormat, int))this->materials->Current(Offsets::CreateProceduralTexture);
-	ITexture *tex = CreateProceduralTexture(this->materials->ThisPtr(), name, "SAR textures", w, h, IMAGE_FORMAT_RGBA8888, TEXTUREFLAGS_NOMIP);
+	ITexture *tex = CreateProceduralTexture(this->materials->ThisPtr(), name, "SAR textures", w, h, IMAGE_FORMAT_RGBA8888, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT | TEXTUREFLAGS_NOMIP | TEXTUREFLAGS_NOLOD | TEXTUREFLAGS_SINGLECOPY);
 	if (!tex) return nullptr;
 
 	MemTexRegen mtr(rgba, w, h);

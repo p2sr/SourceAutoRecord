@@ -2,7 +2,11 @@
 
 #include <cstdint>
 
+#define TEXTUREFLAGS_CLAMPS 0x4
+#define TEXTUREFLAGS_CLAMPT 0x8
 #define TEXTUREFLAGS_NOMIP 0x100
+#define TEXTUREFLAGS_NOLOD 0x200
+#define TEXTUREFLAGS_SINGLECOPY 0x40000
 
 class ITexture;
 class IVTFTexture;
