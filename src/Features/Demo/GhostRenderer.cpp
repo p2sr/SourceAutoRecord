@@ -16,19 +16,7 @@ const float BENDY_VERTS[] = {-13, 16, 13, 16, -13, 40, 13, 40, -12.55, 42.69, 12
 const short BENDY_GROUPS[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 enum BENDY_GROUP {BODY, HEAD, LEG_LEFT, LEG_RIGHT, ARM_LEFT, ARM_RIGHT};
 
-// Triangles of different LODs of the model
-const short BENDY_MODEL_1[] = {6, 4, 2, 3, 5, 7, 2, 12, 10, 7, 9, 3, 9, 11, 3, 11, 13, 3, 13, 14, 3, 14, 12, 2, 3, 14, 2, 10, 8, 2, 8, 6, 2, 27, 28, 29, 29, 24, 27, 24, 25, 27, 26, 27, 25, 30, 31, 29, 21, 22, 24, 22, 23, 24, 33, 34, 35, 38, 15, 37, 36, 37, 35, 37, 15, 35, 15, 16, 35, 18, 35, 16, 16, 17, 18, 31, 32, 33, 33, 35, 31, 29, 31, 35, 35, 18, 29, 18, 19, 29, 24, 29, 19, 21, 24, 19, 19, 20, 21, 40, 41, 42, 42, 39, 40, 44, 45, 46, 46, 43, 44, 48, 49, 50, 50, 47, 48, 52, 53, 54, 54, 51, 52, 1, 55, 0, 62, 55, 1, 55, 62, 56, 62, 63, 56, 56, 63, 57, 63, 64, 57, 57, 64, 58, 64, 65, 58, 58, 65, 59, 65, 66, 59, 59, 66, 60, 66, 67, 60, 60, 67, 61, 67, 68, 61, 61, 68, 2, 68, 3, 2, -1};
-const short BENDY_MODEL_2[] = {3, 14, 2, 3, 7, 11, 14, 3, 11, 14, 10, 2, 10, 6, 2, 25, 27, 29, 21, 23, 29, 25, 29, 23, 37, 15, 35, 19, 35, 15, 15, 17, 19, 33, 35, 31, 29, 31, 35, 35, 19, 29, 21, 29, 19, 40, 41, 42, 42, 39, 40, 44, 45, 46, 46, 43, 44, 48, 49, 50, 50, 47, 48, 52, 53, 54, 54, 51, 52, 1, 56, 0, 63, 56, 1, 56, 63, 58, 63, 65, 58, 58, 65, 60, 65, 67, 60, 60, 67, 2, 67, 3, 2, -1};
-const short BENDY_MODEL_3[] = {3, 14, 2, 3, 9, 14, 2, 14, 8, 24, 27, 30, 36, 15, 18, 33, 36, 30, 36, 18, 30, 24, 30, 18, 21, 24, 18, 40, 41, 42, 42, 39, 40, 44, 45, 46, 46, 43, 44, 48, 49, 50, 50, 47, 48, 52, 53, 54, 54, 51, 52, 1, 58, 0, 65, 58, 1, 58, 65, 2, 65, 3, 2, -1};
-const short* BENDY_MODELS[] = {BENDY_MODEL_1, BENDY_MODEL_2, BENDY_MODEL_3};
-// The lowest LOD in which the vertex is used
-const short BENDY_LOD_LEVELS[] = {3, 3, 3, 3, 1, 1, 2, 2, 3, 3, 2, 2, 1, 1, 3, 3, 1, 2, 3, 2, 1, 3, 1, 2, 3, 2, 1, 3, 1, 2, 3, 2, 1, 3, 1, 2, 3, 2, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 2, 1, 3, 1, 2, 1, 1, 2, 1, 3, 1, 2, 1};
-
-
-Variable ghost_bendy_lod_proximity("ghost_bendy_lod_proximity", "512", 0, 99999, "Distance from which Bendy ghosts should be drawn in lower level of detail.\n");
-Variable ghost_bendy_force_lod("ghost_bendy_force_lod", "0", 0, 2, "LOD level that should be enforced for Bendy ghosts drawing.");
-
-
+const short BENDY_MODEL[] = {6, 4, 2, 3, 5, 7, 2, 12, 10, 7, 9, 3, 9, 11, 3, 11, 13, 3, 13, 14, 3, 14, 12, 2, 3, 14, 2, 10, 8, 2, 8, 6, 2, 27, 28, 29, 29, 24, 27, 24, 25, 27, 26, 27, 25, 30, 31, 29, 21, 22, 24, 22, 23, 24, 33, 34, 35, 38, 15, 37, 36, 37, 35, 37, 15, 35, 15, 16, 35, 18, 35, 16, 16, 17, 18, 31, 32, 33, 33, 35, 31, 29, 31, 35, 35, 18, 29, 18, 19, 29, 24, 29, 19, 21, 24, 19, 19, 20, 21, 40, 41, 42, 42, 39, 40, 44, 45, 46, 46, 43, 44, 48, 49, 50, 50, 47, 48, 52, 53, 54, 54, 51, 52, 1, 55, 0, 62, 55, 1, 55, 62, 56, 62, 63, 56, 56, 63, 57, 63, 64, 57, 57, 64, 58, 64, 65, 58, 58, 65, 59, 65, 66, 59, 59, 66, 60, 66, 67, 60, 60, 67, 61, 67, 68, 61, 61, 68, 2, 68, 3, 2, -1};
 
 GhostRenderer::GhostRenderer() {
 	float vertCount = sizeof(BENDY_VERTS) / (sizeof(float) * 2);
@@ -69,11 +57,7 @@ void GhostRenderer::UpdateAnimatedVerts() {
 	}
 
 	// update model
-	int lod = GetLODLevel();
 	for (size_t v = 0; v < animatedVerts.size(); v++) {
-		// do not waste time on vertices that won't be used for drawing
-		if (BENDY_LOD_LEVELS[v] <= lod) continue;
-
 		int vertGroup = BENDY_GROUPS[v];
 
 		// skip hands if not gesturing
@@ -148,15 +132,11 @@ void GhostRenderer::Draw(MeshId mesh) {
 	//update verts before drawing
 	UpdateAnimatedVerts();
 	
-	// get model depending on assigned LOD level
-	// each LOD is sharing the same vertices table
-	const short *model = BENDY_MODELS[GetLODLevel()];
-
 	// draw each triangle
-	for (int t = 0; model[t] >= 0; t+=3) {
-		Vector p1 = animatedVerts[model[t]]; 
-		Vector p2 = animatedVerts[model[t+1]]; 
-		Vector p3 = animatedVerts[model[t+2]]; 
+	for (int t = 0; BENDY_MODEL[t] >= 0; t += 3) {
+		Vector p1 = animatedVerts[BENDY_MODEL[t]];
+		Vector p2 = animatedVerts[BENDY_MODEL[t+1]];
+		Vector p3 = animatedVerts[BENDY_MODEL[t+2]];
 
 		// triangles are drawn only from one side. draw both sides.
 		OverlayRender::addTriangle(mesh, p1, p2, p3);
@@ -165,28 +145,6 @@ void GhostRenderer::Draw(MeshId mesh) {
 
 void GhostRenderer::SetGhost(GhostEntity* ghost) {
 	this->ghost = ghost;
-}
-
-int GhostRenderer::GetLODLevel() {
-	if (ghost == nullptr) return 0;
-
-	int forceLod = ghost_bendy_force_lod.GetInt();
-	if (forceLod > 0) return forceLod;
-
-	// HACK: render all ghosts at full LOD if spectating
-	if (GhostEntity::GetFollowTarget()) return 0;
-
-	Vector camPos = camera->GetPosition(GET_SLOT(), false);
-	float dist = (camPos - ghost->data.position).Length();
-
-	float lodDist = ghost_bendy_lod_proximity.GetFloat();
-	if (dist < lodDist) {
-		return 0;
-	} else if (dist < lodDist * 2) {
-		return 1;
-	} else {
-		return 2;
-	}
 }
 
 void GhostRenderer::StartGesture(int id) {
