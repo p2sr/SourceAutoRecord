@@ -20,7 +20,7 @@ public:
 	const char *Name() override { return MODULE("materialsystem"); }
 
 	IMaterial *FindMaterial(const char *materialName, const char *textureGroupName);
-	ITexture *CreateTexture(const char *name, int w, int h, uint8_t *rgba);
+	ITexture *CreateTexture(const char *name, int w, int h, uint8_t *bgra);
 	IMatRenderContext *GetRenderContext();
 };
 
