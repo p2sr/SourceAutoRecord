@@ -194,5 +194,5 @@ void GhostRenderer::StartGesture(int id) {
 }
 
 float GhostRenderer::GetHeight() {
-	return 72.0f;
+	return this->ghost->data.view_offset * 36.0f / 64.0f + 36.0f;
 }
