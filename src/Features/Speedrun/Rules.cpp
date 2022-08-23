@@ -102,24 +102,23 @@ void ZoneTriggerRule::DrawInWorld() {
 }
 
 void ZoneTriggerRule::OverlayInfo(SpeedrunRule *rule) {
-	auto font = scheme->GetDefaultFont();
-	auto height = surface->GetFontHeight(font);
+	std::string text;
 
-	int n = 0;
-
-	OverlayRender::addText(this->center, 0, n++*height, "type: zone", font);
-	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("center: %.2f, %.2f, %.2f", this->center.x, this->center.y, this->center.z), font);
-	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("size: %.2f, %.2f, %.2f", this->size.x, this->size.y, this->size.z), font);
-	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("angle: %.2f", this->rotation * 360.0f / TAU));
+	text += "type: zone\n";
+	text += Utils::ssprintf("center: %.2f, %.2f, %.2f\n", this->center.x, this->center.y, this->center.z);
+	text += Utils::ssprintf("size: %.2f, %.2f, %.2f\n", this->size.x, this->size.y, this->size.z);
+	text += Utils::ssprintf("angle: %.2f\n", this->rotation * 360.0f / TAU);
 	if (rule->slot) {
-		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("player: %d", *rule->slot), font);
+		text += Utils::ssprintf("player: %d\n", *rule->slot);
 	}
 	if (rule->cycle) {
-		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("cycle: %d,%d", rule->cycle->first, rule->cycle->second), font);
+		text += Utils::ssprintf("cycle: %d,%d\n", rule->cycle->first, rule->cycle->second);
 	}
 	if (rule->onlyAfter) {
-		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("after: %s", rule->onlyAfter->c_str()), font);
+		text += Utils::ssprintf("after: %s\n", rule->onlyAfter->c_str());
 	}
+
+	OverlayRender::addText(this->center, text, 3.0, true, true, OverlayRender::TextAlign::CENTER);
 }
 
 std::optional<SpeedrunRule> ZoneTriggerRule::Create(std::map<std::string, std::string> params) {
@@ -182,27 +181,26 @@ void PortalPlacementRule::DrawInWorld() {
 }
 
 void PortalPlacementRule::OverlayInfo(SpeedrunRule *rule) {
-	auto font = scheme->GetDefaultFont();
-	auto height = surface->GetFontHeight(font);
+	std::string text;
 
-	int n = 0;
-
-	OverlayRender::addText(this->center, 0, n++*height, "type: portal", font);
-	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("center: %.2f, %.2f, %.2f", this->center.x, this->center.y, this->center.z), font);
-	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("size: %.2f, %.2f, %.2f", this->size.x, this->size.y, this->size.z), font);
-	OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("angle: %.2f", this->rotation * 360.0f / TAU), font);
+	text += "type: portal\n";
+	text += Utils::ssprintf("center: %.2f, %.2f, %.2f\n", this->center.x, this->center.y, this->center.z);
+	text += Utils::ssprintf("size: %.2f, %.2f, %.2f\n", this->size.x, this->size.y, this->size.z);
+	text += Utils::ssprintf("angle: %.2f\n", this->rotation * 360.0f / TAU);
 	if (rule->slot) {
-		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("player: %d", *rule->slot), font);
+		text += Utils::ssprintf("player: %d\n", *rule->slot);
 	}
 	if (this->portal) {
-		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("portal: %s", *this->portal == PortalColor::BLUE ? "blue (primary)" : "orange (secondary)"), font);
+		text += Utils::ssprintf("portal: %s\n", *this->portal == PortalColor::BLUE ? "blue (primary)" : "orange (secondary)");
 	}
 	if (rule->cycle) {
-		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("cycle: %d,%d", rule->cycle->first, rule->cycle->second), font);
+		text += Utils::ssprintf("cycle: %d,%d\n", rule->cycle->first, rule->cycle->second);
 	}
 	if (rule->onlyAfter) {
-		OverlayRender::addText(this->center, 0, n++*height, Utils::ssprintf("after: %s", rule->onlyAfter->c_str()), font);
+		text += Utils::ssprintf("after: %s\n", rule->onlyAfter->c_str());
 	}
+
+	OverlayRender::addText(this->center, text, 3.0, true, true, OverlayRender::TextAlign::CENTER);
 }
 
 std::optional<SpeedrunRule> PortalPlacementRule::Create(std::map<std::string, std::string> params) {

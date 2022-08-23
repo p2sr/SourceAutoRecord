@@ -4,14 +4,15 @@
 #include "Modules/Surface.hpp"
 #include "Modules/Scheme.hpp"
 #include "Event.hpp"
-#include "Features/Hud/Hud.hpp"
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
+#include "Utils/FontAtlas.hpp"
 
+#include <array>
 #include <set>
 
-///////////////////////////////////
-
+#define FONT_HPAD 48
+#define FONT_VPAD 24
 
 RenderCallback RenderCallback::none = {
 	[](CViewSetup vs, Color &col_out, bool &nodepth_out) {
@@ -88,41 +89,17 @@ RenderCallback RenderCallback::shade(Vector point, RenderCallback base) {
 	};
 }
 
-
-///////////////////////////////////
-
-// The address of this variable is used as a placeholder to be detected
-// by createMeshInternal and friends. We use g_render_verts to keep
-// track of which vertex array we're actually rendering.
-static int g_placeholder;
-
 struct OverlayText {
 	Vector pos;
-	bool center;
-	int xOff;
-	int yOff;
+	OverlayRender::TextAlign align;
 	std::string text;
 	Color col;
-	unsigned long font;
+	float x_height; // in units
+	bool visibility_scale; // should we scale the text size to make it more visible from afar?
+	bool no_depth;
 };
 
 static std::vector<OverlayText> g_text;
-
-HUD_ELEMENT2_NO_DISABLE(overlay_text, HudType_InGame | HudType_Menu | HudType_Paused | HudType_LoadingScreen) {
-	if (session->isRunning && !pauseTimer->IsActive()) {
-		for (auto &t : g_text) {
-			Vector scr_pos;
-			engine->PointToScreen(t.pos, scr_pos);
-			scr_pos.x += t.xOff;
-			scr_pos.y += t.yOff;
-			if (t.center) {
-				scr_pos.x -= surface->GetFontLength(t.font, "%s", t.text.c_str()) / 2;
-			}
-			surface->DrawTxt(t.font, scr_pos.x, scr_pos.y, t.col, "%s", t.text.c_str());
-		}
-	}
-	g_text.clear();
-}
 
 struct OverlayMesh {
 	RenderCallback solid;
@@ -135,20 +112,6 @@ struct OverlayMesh {
 
 static std::vector<OverlayMesh> g_meshes;
 static size_t g_num_meshes;
-
-static std::vector<Vector> *g_render_verts;
-
-bool OverlayRender::createMeshInternal(const void *collision, Vector **vertsOut, size_t *nvertsOut) {
-	if (collision != &g_placeholder) return false;
-	*vertsOut = g_render_verts->data();
-	*nvertsOut = g_render_verts->size();
-	return true;
-}
-
-bool OverlayRender::destroyMeshInternal(Vector *verts, size_t nverts) {
-	if (!g_render_verts) return false;
-	return g_render_verts->data() == verts;
-}
 
 // Dispatched just before RENDER
 ON_EVENT(FRAME) {
@@ -257,42 +220,8 @@ void OverlayRender::addBoxMesh(Vector origin, Vector mins, Vector maxs, QAngle a
 	}
 }
 
-void OverlayRender::addText(Vector pos, int x_off, int y_off, std::string text, unsigned long font, Color col, bool center) {
-	if (font == FONT_DEFAULT) font = scheme->GetDefaultFont();
-	g_text.push_back({pos, center, x_off, y_off, std::move(text), col, font});
-}
-
-static void setPrimitiveType(uint8_t type) {
-#ifdef _WIN32
-	// The method is a call (well, actually a jump) straight to a plain
-	// function. Get the actual function
-	uintptr_t fn = Memory::Read((uintptr_t)engine->DebugDrawPhysCollide + 22);
-
-	// We want to overwrite a couple bytes of this function
-	Memory::UnProtect((char *)fn + 196, 14);
-	*(uint32_t *)(fn + 196) = type;
-	*(uint8_t *)(fn + 209) = type;
-#else
-	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		// The method is a call (well, actually a jump) straight to a plain
-		// function. Get the actual function
-		uintptr_t fn = Memory::Read((uintptr_t)engine->DebugDrawPhysCollide + 43);
-
-		// We want to overwrite a couple bytes of this function
-		Memory::UnProtect((char *)fn + 371, 14);
-		*(uint32_t *)(fn + 371) = type;
-		*(uint8_t *)(fn + 384) = type;
-	} else {
-		// The method is a call (well, actually a jump) straight to a plain
-		// function. Get the actual function
-		uintptr_t fn = Memory::Read((uintptr_t)engine->DebugDrawPhysCollide + 38);
-
-		// We want to overwrite a couple bytes of this function
-		Memory::UnProtect((char *)fn + 355, 20);
-		*(uint32_t *)(fn + 355) = type;
-		*(uint32_t *)(fn + 371) = type;
-	}
-#endif
+void OverlayRender::addText(Vector pos, const std::string &text, float x_height, bool visibility_scale, bool no_depth, OverlayRender::TextAlign align, Color col) {
+	g_text.push_back({pos, align, text, col, x_height, visibility_scale, no_depth});
 }
 
 static IMaterial *createMaterial(KeyValues *kv, const char *name) {
@@ -310,6 +239,7 @@ static void destroyMaterial(IMaterial *mat) {
 
 static IMaterial *g_mat_solid_opaque,     *g_mat_solid_opaque_noz,     *g_mat_solid_alpha,     *g_mat_solid_alpha_noz;
 static IMaterial *g_mat_wireframe_opaque, *g_mat_wireframe_opaque_noz, *g_mat_wireframe_alpha, *g_mat_wireframe_alpha_noz;
+static IMaterial *g_mat_font, *g_mat_font_noz;
 
 void OverlayRender::initMaterials() {
 	KeyValues *kv;
@@ -353,6 +283,23 @@ void OverlayRender::initMaterials() {
 	kv->SetInt("$vertexalpha", 1);
 	kv->SetInt("$ignorez", 1);
 	g_mat_wireframe_alpha_noz = createMaterial(kv, "_SAR_UnlitWireframeAlphaNoDepth");
+
+	materialSystem->CreateTexture("_SAR_FontAtlasTex", FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT, FONT_ATLAS_DATA);
+
+	kv = new KeyValues("unlitgeneric");
+	kv->SetInt("$vertexcolor", 1);
+	kv->SetInt("$vertexalpha", 1);
+	kv->SetInt("$translucent", 1);
+	kv->SetString("$basetexture", "_SAR_FontAtlasTex");
+	g_mat_font = createMaterial(kv, "_SAR_FontAtlas");
+
+	kv = new KeyValues("unlitgeneric");
+	kv->SetInt("$vertexcolor", 1);
+	kv->SetInt("$vertexalpha", 1);
+	kv->SetInt("$translucent", 1);
+	kv->SetInt("$ignorez", 1);
+	kv->SetString("$basetexture", "_SAR_FontAtlasTex");
+	g_mat_font_noz = createMaterial(kv, "_SAR_FontAtlasNoDepth");
 }
 
 ON_EVENT(SAR_UNLOAD) {
@@ -364,14 +311,24 @@ ON_EVENT(SAR_UNLOAD) {
 	destroyMaterial(g_mat_wireframe_alpha_noz);
 	destroyMaterial(g_mat_wireframe_opaque);
 	destroyMaterial(g_mat_wireframe_opaque_noz);
+	destroyMaterial(g_mat_font);
+	destroyMaterial(g_mat_font_noz);
+}
+
+static void drawVerts(IMaterial *mat, bool lines, Vector *verts, int nverts, Color col) {
+	int prims = lines ? nverts / 2 : nverts / 3;
+	MeshBuilder mb(mat, lines ? PrimitiveType::LINES : PrimitiveType::TRIANGLES, prims);
+
+	for (int i = 0; i < nverts; ++i) {
+		mb.Position(verts[i]);
+		mb.Color(col);
+		mb.AdvanceVertex();
+	}
+
+	mb.Draw();
 }
 
 static void drawMesh(const CViewSetup &setup, OverlayMesh &m, bool translucent) {
-	matrix3x4_t transform{0};
-	transform.m_flMatVal[0][0] = 1;
-	transform.m_flMatVal[1][1] = 1;
-	transform.m_flMatVal[2][2] = 1;
-
 	Color solid_color, wf_color;
 	bool solid_nodepth, wf_nodepth;
 	m.solid.cbk(setup, solid_color, solid_nodepth);
@@ -383,8 +340,7 @@ static void drawMesh(const CViewSetup &setup, OverlayMesh &m, bool translucent) 
 			(translucent ? g_mat_solid_alpha     : g_mat_solid_opaque);
 
 		// Tris
-		g_render_verts = &m.tri_verts;
-		engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, solid_color);
+		drawVerts(mat, false, m.tri_verts.data(), m.tri_verts.size(), solid_color);
 	}
 
 	if (wf_color.a != 0 && (translucent ^ (wf_color.a == 255))) {
@@ -393,19 +349,168 @@ static void drawMesh(const CViewSetup &setup, OverlayMesh &m, bool translucent) 
 			(translucent ? g_mat_wireframe_alpha     : g_mat_wireframe_opaque);
 
 		// Lines
-		// There need to be some multiple of 3 verts for line drawing to work
-		// properly. Push some garbage lines until we're matching
-		while (m.line_verts.size() % 6) { // lcm(2,3)
-			m.line_verts.push_back({0,0,0});
-		}
-		setPrimitiveType(1);
-		g_render_verts = &m.line_verts;
-		engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, wf_color);
+		drawVerts(mat, true, m.line_verts.data(), m.line_verts.size(), wf_color);
 
 		// Tris
-		setPrimitiveType(2);
-		g_render_verts = &m.tri_verts;
-		engine->DebugDrawPhysCollide(engine->engineClient->ThisPtr(), &g_placeholder, mat, transform, wf_color);
+		drawVerts(mat, true, m.tri_verts.data(), m.tri_verts.size(), wf_color);
+	}
+}
+
+static Matrix createTextRotationMatrix(Vector text_pos, CViewSetup setup) {
+	(void)text_pos; // not used for now
+
+	QAngle ang = QAngle{ -setup.angles.x, fmodf(setup.angles.y + 180.0, 360.0), 0 };
+
+	// create yaw+pitch rotation matrix for angles (roll ignored)
+	double syaw = sin(ang.y * M_PI/180);
+	double cyaw = cos(ang.y * M_PI/180);
+	double spitch = sin(ang.x * M_PI/180);
+	double cpitch = cos(ang.x * M_PI/180);
+	Matrix rot{3, 3, 0};
+	rot(0, 0) = cyaw * cpitch;
+	rot(0, 1) = -syaw;
+	rot(0, 2) = cyaw * spitch;
+	rot(1, 0) = syaw * cpitch;
+	rot(1, 1) = cyaw;
+	rot(1, 2) = syaw * spitch;
+	rot(2, 0) = -spitch;
+	rot(2, 1) = 0;
+	rot(2, 2) = cpitch;
+
+	return rot;
+}
+
+static float drawTextLine(const char *str, Vector top_center, Color text_color, float scale, Matrix rot, bool no_depth) {
+	int width = 0;
+	int min_height = 0;
+	int max_height = 0;
+	for (const char *ptr = str; *ptr; ++ptr) {
+		auto info = FONT_ATLAS_INFO[*ptr];
+		width += info.advance;
+		if (info.origin_y > max_height) max_height = info.origin_y;
+		if (info.origin_y - info.height < min_height) min_height = info.origin_y - info.height;
+	}
+
+	Vector center_baseline = top_center + rot * Vector{ 0, 0, -(float)max_height } * scale;
+
+	{
+		Vector base = center_baseline + rot * Vector{ 0.0, -(float)width * scale * 0.5f, 0.0 };
+
+		MeshBuilder text(no_depth ? g_mat_font_noz : g_mat_font, PrimitiveType::QUADS, strlen(str));
+		for (const char *ptr = str; *ptr; ++ptr) {
+			auto info = FONT_ATLAS_INFO[*ptr];
+
+			Vector bl = base + rot * Vector{ 0.0, -(float)info.origin_x, (float)(info.origin_y - info.height) } * scale;
+			Vector tl = base + rot * Vector{ 0.0, -(float)info.origin_x, (float)info.origin_y } * scale;
+			Vector br = base + rot * Vector{ 0.0, (float)(-info.origin_x + info.width), (float)(info.origin_y - info.height) } * scale;
+			Vector tr = base + rot * Vector{ 0.0, (float)(-info.origin_x + info.width), (float)info.origin_y } * scale;
+
+			float tex[4] = {
+				(float)info.x / FONT_ATLAS_WIDTH,
+				(float)(info.y + info.height) / FONT_ATLAS_HEIGHT,
+				(float)(info.x + info.width) / FONT_ATLAS_WIDTH,
+				(float)info.y / FONT_ATLAS_HEIGHT,
+			};
+
+			text.Position(bl); text.Color(text_color); text.TexCoord(0, tex[0], tex[1]); text.AdvanceVertex();
+			text.Position(tl); text.Color(text_color); text.TexCoord(0, tex[0], tex[3]); text.AdvanceVertex();
+			text.Position(tr); text.Color(text_color); text.TexCoord(0, tex[2], tex[3]); text.AdvanceVertex();
+			text.Position(br); text.Color(text_color); text.TexCoord(0, tex[2], tex[1]); text.AdvanceVertex();
+
+			base += rot * Vector{ 0.0, (float)info.advance, 0.0 } * scale;
+		}
+		text.Draw();
+	}
+
+	return (max_height - min_height + FONT_VPAD) * scale;
+}
+
+static void drawText(CViewSetup setup, OverlayText &t) {
+	std::vector<std::string> lines;
+	int height = FONT_VPAD;
+	int last_base_delta = 0;
+	int max_width = 0;
+
+	{
+		std::string all = t.text;
+		while (!all.empty()) {
+			size_t pos = all.find("\n");
+			std::string line;
+			if (pos != std::string::npos) {
+				line = all.substr(0, pos);
+				all.erase(0, pos + 1);
+			} else {
+				line = all;
+				all.clear();
+			}
+
+			int width = 0;
+			int min_height = 0;
+			int max_height = 0;
+			for (char c : line) {
+				auto info = FONT_ATLAS_INFO[c];
+				width += info.advance;
+				if (info.origin_y > max_height) max_height = info.origin_y;
+				if (info.origin_y - info.height < min_height) min_height = info.origin_y - info.height;
+			}
+
+			lines.push_back(line);
+			if (width > max_width) max_width = width;
+			height += max_height - min_height + FONT_VPAD;
+			last_base_delta = -min_height + FONT_VPAD;
+		}
+	}
+
+	float scale = t.x_height / (float)FONT_ATLAS_INFO['x'].height;
+	if (t.visibility_scale) {
+		float dist = (setup.origin - t.pos).Length();
+		if (dist > 100) {
+			// this seems to work fairly well just from briefly messing around
+			scale *= sqrt((dist - 60) / 40);
+		}
+	}
+
+	Matrix rotation = createTextRotationMatrix(t.pos, setup);
+
+	// the top-center of the top line of text, including padding
+	Vector top_center = t.pos;
+
+	switch (t.align) {
+	case OverlayRender::TextAlign::BOTTOM:
+		top_center += rotation * Vector{ 0, 0, (float)height } * scale;
+		break;
+	case OverlayRender::TextAlign::CENTER:
+		top_center += rotation * Vector{ 0, 0, (float)height * 0.5f } * scale;
+		break;
+	case OverlayRender::TextAlign::TOP:
+		break;
+	case OverlayRender::TextAlign::BASELINE:
+		top_center += rotation * Vector{ 0, 0, (float)(height - last_base_delta)} * scale;
+		break;
+	}
+
+	// draw background
+	{
+		Color bg_color{ 0, 0, 0, 200 }; 
+
+		Vector bl = top_center + rotation * Vector{ 0.0, -(float)max_width * 0.5f - FONT_HPAD, -(float)height } * scale;
+		Vector tl = top_center + rotation * Vector{ 0.0, -(float)max_width * 0.5f - FONT_HPAD, 0 } * scale;
+		Vector br = top_center + rotation * Vector{ 0.0, (float)max_width * 0.5f + FONT_HPAD, -(float)height } * scale;
+		Vector tr = top_center + rotation * Vector{ 0.0, (float)max_width * 0.5f + FONT_HPAD, 0 } * scale;
+
+		MeshBuilder bg(t.no_depth ? g_mat_solid_alpha_noz : g_mat_solid_alpha, PrimitiveType::QUADS, 1);
+		bg.Position(bl); bg.Color(bg_color); bg.AdvanceVertex();
+		bg.Position(tl); bg.Color(bg_color); bg.AdvanceVertex();
+		bg.Position(tr); bg.Color(bg_color); bg.AdvanceVertex();
+		bg.Position(br); bg.Color(bg_color); bg.AdvanceVertex();
+		bg.Draw();
+	}
+
+	top_center -= rotation * Vector{ 0, 0, FONT_VPAD } * scale;
+
+	for (auto &line : lines) {
+		float draw_height = drawTextLine(line.c_str(), top_center, t.col, scale, rotation, t.no_depth);
+		top_center -= rotation * Vector{ 0, 0, draw_height };
 	}
 }
 
@@ -422,22 +527,45 @@ void OverlayRender::drawTranslucents(void *viewrender) {
 
 	// Order meshes!
 	struct MeshCompare {
-		bool operator()(const OverlayMesh *a, const OverlayMesh *b) const {
-			int npa = a->num_points_in_pos == 0 ? 1 : a->num_points_in_pos;
-			int npb = b->num_points_in_pos == 0 ? 1 : b->num_points_in_pos;
-			float dist_a = (a->pos / npa - this->origin).SquaredLength();
-			float dist_b = (b->pos / npb - this->origin).SquaredLength();
-			if (dist_a == dist_b) return a < b; // Define *some* kind of ordering for meshes in the same place
+		bool operator()(std::pair<bool, void *> a, std::pair<bool, void *> b) const {
+			float dist_a;
+			if (a.first) {
+				OverlayText *t = (OverlayText *)a.second;
+				dist_a = (t->pos - this->origin).SquaredLength();
+			} else {
+				OverlayMesh *m = (OverlayMesh *)a.second;
+				int npa = m->num_points_in_pos == 0 ? 1 : m->num_points_in_pos;
+				dist_a = (m->pos / npa - this->origin).SquaredLength();
+			}
+
+			float dist_b;
+			if (b.first) {
+				OverlayText *t = (OverlayText *)b.second;
+				dist_b = (t->pos - this->origin).SquaredLength();
+			} else {
+				OverlayMesh *m = (OverlayMesh *)b.second;
+				int npb = m->num_points_in_pos == 0 ? 1 : m->num_points_in_pos;
+				dist_b = (m->pos / npb - this->origin).SquaredLength();
+			}
+
+			if (dist_a == dist_b) return a.second < b.second; // Define *some* kind of ordering for meshes in the same place
 			return dist_a > dist_b;
 		}
 		Vector origin;
 	};
-	std::set<OverlayMesh *, MeshCompare> meshes(MeshCompare{setup.origin});
+	std::set<std::pair<bool, void *>, MeshCompare> meshes(MeshCompare{setup.origin});
 	for (size_t i = 0; i < g_num_meshes; ++i) {
-		meshes.insert(&g_meshes[i]);
+		meshes.insert({ false, &g_meshes[i] });
+	}
+	for (auto &text : g_text) {
+		meshes.insert({ true, &text });
 	}
 
-	for (auto mp : meshes) {
-		drawMesh(setup, *mp, true);
+	for (auto mesh : meshes) {
+		if (mesh.first) {
+			drawText(setup, *(OverlayText *)mesh.second);
+		} else {
+			drawMesh(setup, *(OverlayMesh *)mesh.second, true);
+		}
 	}
 }

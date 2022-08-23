@@ -2,6 +2,10 @@
 
 #include "Modules/Tier1.hpp"
 
+#ifdef _WIN32
+#	define strdup _strdup
+#endif
+
 KeyValues::KeyValues(const char *name) {
 	// bit fields can't have default initialization?!
 	this->key_name = 0;
@@ -74,5 +78,17 @@ void KeyValues::SetInt(const char *key, int val) {
 	if (kv) {
 		kv->val.i = val;
 		kv->data_type = KeyValues::Type::INT;
+	}
+}
+
+void KeyValues::SetString(const char *key, const char *val) {
+	auto kv = this->FindKey(key, true);
+	if (kv) {
+		if (kv->val_str) delete[] kv->val_str;
+		if (kv->val_wstr) delete[] kv->val_wstr;
+		kv->val_wstr = nullptr;
+
+		kv->val_str = strdup(val ? val : "");
+		kv->data_type = KeyValues::Type::STRING;
 	}
 }

@@ -5,8 +5,6 @@
 #include <climits>
 #include <functional>
 
-#define FONT_DEFAULT ULONG_MAX
-
 // A callback to determine the rendering parameters for a mesh based on
 // a given CViewSetup.
 struct RenderCallback {
@@ -31,8 +29,6 @@ typedef size_t MeshId;
 
 namespace OverlayRender {
 	// INTERNAL FUNCTIONS - DO NOT USE
-	bool createMeshInternal(const void *collision, Vector **vertsOut, size_t *nverts);
-	bool destroyMeshInternal(Vector *verts, size_t nverts);
 	void drawOpaques(void *viewrender);
 	void drawTranslucents(void *viewrender);
 	void initMaterials();
@@ -45,7 +41,14 @@ namespace OverlayRender {
 	void addLine(MeshId mesh, Vector a, Vector b);
 	void addQuad(MeshId mesh, Vector a, Vector b, Vector c, Vector d, bool cull_back = false);
 
+	enum class TextAlign {
+		BOTTOM,    // the bottom center of the text block
+		CENTER,    // the center point of the text block
+		TOP,       // the top center of the text block
+		BASELINE,  // the center of the bottom line's baseline
+	};
+
 	// Standalone overlay functions - don't use these within a mesh
 	void addBoxMesh(Vector origin, Vector mins, Vector maxs, QAngle ang, RenderCallback solid, RenderCallback wireframe);
-	void addText(Vector pos, int x_off, int y_off, std::string text, unsigned long font = FONT_DEFAULT, Color col = {255,255,255}, bool center = true);
+	void addText(Vector pos, const std::string &text, float x_height, bool visibility_scale, bool no_depth = false, TextAlign align = TextAlign::BASELINE, Color col = {255,255,255});
 }

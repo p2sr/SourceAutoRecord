@@ -33,7 +33,6 @@ Variable sar_trace_draw_time("sar_trace_draw_time", "3", 0, 3,
 	"2 = session timer\n"
 	"3 = TAS timer (if no TAS was played, uses 1 instead)\n"
 );
-Variable sar_trace_font("sar_trace_font", "0", 0, "Font index to display player trace info in\n");
 
 Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.\n");
 Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, 1, "Move trace bbox to hovered trace point tick on given trace.\n");
@@ -336,8 +335,6 @@ void PlayerTrace::DrawInWorld() const {
 void PlayerTrace::DrawSpeedDeltas() const {
 	const Vector hud_offset = {0.0, 0.0, 10.0};
 
-	auto font = scheme->GetFontByID(sar_trace_font.GetInt());
-
 	for (const auto &[trace_idx, trace] : traces) {
 		for (int slot = 0; slot < 2; slot++) {
 			if (trace.velocities[slot].size() < 2) continue;
@@ -357,9 +354,8 @@ void PlayerTrace::DrawSpeedDeltas() const {
 					
 					float speed_delta = trace.velocities[slot][i].Length2D() - trace.velocities[slot][last_delta_end].Length2D();
 					Vector update_pos = trace.positions[slot][(last_delta_end + i) / 2];
-					Vector draw_pos = update_pos + hud_offset;
 
-					OverlayRender::addText(draw_pos, 0, 0, Utils::ssprintf("%10.2f", speed_delta), font);
+					OverlayRender::addText(update_pos + hud_offset, Utils::ssprintf("%10.2f", speed_delta), 3.0, true, sar_trace_draw_through_walls.GetBool());
 
 					last_delta_end = i;
 				}
@@ -638,7 +634,7 @@ HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
 				const CPhysCollide *phys_coll = GetCollide(phys);
 
 				Vector *verts;
-				int vert_count = Engine::CreateDebugMesh(engine->g_physCollision, phys_coll, &verts);
+				int vert_count = engine->CreateDebugMesh(engine->g_physCollision, phys_coll, &verts);
 
 				matrix3x4_t trans = coll->CollisionToWorldTransform();
 
@@ -653,7 +649,7 @@ HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
 					list.bsps.push_back(HitboxList::VphysBox{verts_copy});
 				}
 
-				Engine::DestroyDebugMesh(engine->g_physCollision, vert_count, verts);
+				engine->DestroyDebugMesh(engine->g_physCollision, vert_count, verts);
 			}
 			break;
 		case SOLID_NONE:
@@ -868,28 +864,27 @@ ON_EVENT(RENDER) {
 		playerTrace->DrawPortalsAt(tick);
 	}
 
-	const Vector hud_offset = {0.0, 0.0, 10.0};
-
-	auto font = scheme->GetFontByID(sar_trace_font.GetInt());
-	auto font_height = surface->GetFontHeight(font);
+	const Vector hud_offset = {0.0, 0.0, 2.0};
 
 	for (auto &h : hovers) {
+		std::string hover_str;
+
 		int timeType = sar_trace_draw_time.GetInt();
-		int traceNameOffset = 2;
 		if (timeType > 0) {
 			int tick = h.tick;
 			auto trace = playerTrace->GetTrace(h.trace_name);
 			if (trace) {
 				tick = tickInternalToUser(tick, *trace);
 			}
-			OverlayRender::addText(h.pos + hud_offset, 0, -2*font_height, Utils::ssprintf("tick: %d", tick), font);
-			traceNameOffset = 3;
+			hover_str += Utils::ssprintf("tick: %d\n", tick);
 		}
 		if (playerTrace->GetTraceCount() > 1) {
-			OverlayRender::addText(h.pos + hud_offset, 0, -traceNameOffset * font_height, Utils::ssprintf("trace: %s", h.trace_name.c_str()), font);
+			hover_str += Utils::ssprintf("trace: %s\n", h.trace_name.c_str());
 		}
-		OverlayRender::addText(h.pos + hud_offset, 0, -font_height, Utils::ssprintf("pos: %.1f %.1f %.1f", h.pos.x, h.pos.y, h.pos.z), font);
-		OverlayRender::addText(h.pos + hud_offset, 0, 0, Utils::ssprintf("horiz. speed: %.2f", h.speed), font);
+		hover_str += Utils::ssprintf("pos: %.1f %.1f %.1f\n", h.pos.x, h.pos.y, h.pos.z);
+		hover_str += Utils::ssprintf("horiz. speed: %.2f\n", h.speed);
+
+		OverlayRender::addText(h.pos + hud_offset, hover_str, 3.0, true, true);
 	}
 
 	if (sar_trace_draw_speed_deltas.GetBool()) {

@@ -10,6 +10,18 @@
 #include "Utils.hpp"
 #include "Features/OverlayRender.hpp"
 
+class MemTexRegen : public ITextureRegenerator {
+	uint8_t *rgba;
+	int w, h;
+public:
+	MemTexRegen(uint8_t *rgba, int w, int h) : rgba(rgba), w(w), h(h) { }
+	virtual void RegenerateTextureBits(ITexture *tex, IVTFTexture *vtf_tex, Rect_t *rect) override {
+		auto ImageData = Memory::VMT<uint8_t *(__rescall *)(IVTFTexture *)>(vtf_tex, Offsets::ImageData);
+		memcpy(ImageData(vtf_tex), this->rgba, this->w * this->h * 4);
+	}
+	virtual void Release() override { }
+};
+
 REDECL(MaterialSystem::UncacheUnusedMaterials);
 REDECL(MaterialSystem::CreateMaterial);
 
@@ -62,8 +74,24 @@ void MaterialSystem::Shutdown() {
 	Interface::Delete(this->materials);
 }
 IMaterial *MaterialSystem::FindMaterial(const char *materialName, const char *textureGroupName) {
-		auto func = (IMaterial *(__rescall *)(void *, const char *, const char *, bool, const char *))this->materials->Current(Offsets::FindMaterial);
-		return func(this->materials->ThisPtr(), materialName, textureGroupName, true, nullptr);
+	auto func = (IMaterial *(__rescall *)(void *, const char *, const char *, bool, const char *))this->materials->Current(Offsets::FindMaterial);
+	return func(this->materials->ThisPtr(), materialName, textureGroupName, true, nullptr);
+}
+ITexture *MaterialSystem::CreateTexture(const char *name, int w, int h, uint8_t *rgba) {
+	auto CreateProceduralTexture = (ITexture *(__rescall *)(void *, const char *, const char *, int, int, ImageFormat, int))this->materials->Current(Offsets::CreateProceduralTexture);
+	ITexture *tex = CreateProceduralTexture(this->materials->ThisPtr(), name, "SAR textures", w, h, IMAGE_FORMAT_RGBA8888, TEXTUREFLAGS_NOMIP);
+	if (!tex) return nullptr;
+
+	MemTexRegen mtr(rgba, w, h);
+	tex->SetTextureRegenerator(&mtr);
+	tex->Download();
+	tex->SetTextureRegenerator(nullptr);
+
+	return tex;
+}
+IMatRenderContext *MaterialSystem::GetRenderContext() {
+	auto func = (IMatRenderContext *(__rescall *)(void *))this->materials->Current(Offsets::GetRenderContext);
+	return func(this->materials->ThisPtr());
 }
 
 MaterialSystem *materialSystem;

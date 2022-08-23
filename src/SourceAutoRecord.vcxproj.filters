@@ -433,6 +433,9 @@
     <ClCompile Include="Utils\SDK\EntityEdict.cpp">
       <Filter>SourceAutoRecord\Utils\SDK</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\SDK\MeshBuilder.cpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClCompile>
     <ClCompile Include="Games\ApertureTag.cpp">
       <Filter>SourceAutoRecord\Games</Filter>
     </ClCompile>
@@ -741,6 +744,9 @@
     <ClInclude Include="Utils\lodepng.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\FontAtlas.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
     <ClInclude Include="Features\Demo\GhostEntity.hpp">
       <Filter>SourceAutoRecord\Features\Demo</Filter>
     </ClInclude>
@@ -934,6 +940,9 @@
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClInclude>
     <ClInclude Include="Utils\lodepng.hpp">
+      <Filter>SourceAutoRecord\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\FontAtlas.hpp">
       <Filter>SourceAutoRecord\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Features\Demo\GhostEntity.hpp">
@@ -1192,6 +1201,12 @@
       <Filter>SourceAutoRecord\Utils\SDK</Filter>
     </ClInclude>
     <ClInclude Include="Utils\SDK\Other.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\MeshBuilder.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SDK\ITexture.hpp">
       <Filter>SourceAutoRecord\Utils\SDK</Filter>
     </ClInclude>
     <ClInclude Include="Utils\SDK.hpp">

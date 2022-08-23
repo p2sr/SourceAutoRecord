@@ -61,6 +61,8 @@ public:
 #else
 	using _GetLightForPoint = Vector (__rescall *)(void *thisptr, const Vector &pos, bool clamp);
 #endif
+	using _CreateDebugMesh = int (__rescall *)(void *thisptr, const void *collisionModel, Vector **outVerts);
+	using _DestroyDebugMesh = void (__rescall *)(void *thisptr, int vertCount, Vector *verts);
 
 	_GetScreenSize GetScreenSize = nullptr;
 	_ClientCmd ClientCmd = nullptr;
@@ -93,6 +95,8 @@ public:
 	_GetCount GetCount = nullptr;
 	_Con_IsVisible Con_IsVisible = nullptr;
 	_GetLevelNameShort GetLevelNameShort = nullptr;
+	_CreateDebugMesh CreateDebugMesh = nullptr;
+	_DestroyDebugMesh DestroyDebugMesh = nullptr;
 
 	EngineDemoPlayer *demoplayer = nullptr;
 	EngineDemoRecorder *demorecorder = nullptr;
@@ -174,12 +178,6 @@ public:
 
 	// CSteam3Client::OnGameOverlayActivated
 	DECL_DETOUR_B(OnGameOverlayActivated, GameOverlayActivated_t *pGameOverlayActivated);
-
-	// IPhysicsCollision::CreateDebugMesh
-	DECL_DETOUR(CreateDebugMesh, const void *collisionModel, Vector **outVerts);
-
-	// IPhysicsCollision::DestroyDebugMesh
-	DECL_DETOUR(DestroyDebugMesh, int vertCount, Vector *verts);
 
 	DECL_DETOUR_COMMAND(plugin_load);
 	DECL_DETOUR_COMMAND(plugin_unload);

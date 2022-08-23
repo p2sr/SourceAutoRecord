@@ -119,6 +119,7 @@ void Surface::DrawColoredLine(int x0, int y0, int x1, int y1, Color clr) {
 	this->DrawSetColor(this->matsurface->ThisPtr(), clr.r, clr.g, clr.b, clr.a);
 	this->DrawLine(this->matsurface->ThisPtr(), x0, y0, x1, y1);
 }
+
 bool Surface::Init() {
 	this->matsurface = Interface::Create(this->Name(), "VGUI_Surface031", false);
 	if (this->matsurface) {

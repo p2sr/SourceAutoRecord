@@ -67,8 +67,6 @@ REDECL(Engine::OnGameOverlayActivated);
 REDECL(Engine::OnGameOverlayActivatedBase);
 REDECL(Engine::ReadCustomData);
 REDECL(Engine::ReadConsoleCommand);
-REDECL(Engine::CreateDebugMesh);
-REDECL(Engine::DestroyDebugMesh);
 REDECL(Engine::plugin_load_callback);
 REDECL(Engine::plugin_unload_callback);
 REDECL(Engine::exit_callback);
@@ -770,24 +768,6 @@ DECL_COMMAND_FILE_COMPLETION(playdemo, ".dem", engine->GetGameDirectory(), 1)
 static _CommandCompletionCallback exec_orig_completion;
 DECL_COMMAND_FILE_COMPLETION(exec, ".cfg", Utils::ssprintf("%s/cfg", engine->GetGameDirectory()), 1)
 
-// IPhysicsCollision::CreateDebugMesh
-DETOUR(Engine::CreateDebugMesh, const void *collisionModel, Vector **outVerts) {
-	size_t nverts;
-	if (OverlayRender::createMeshInternal(collisionModel, outVerts, &nverts)) {
-		return nverts;
-	}
-
-	return Engine::CreateDebugMesh(thisptr, collisionModel, outVerts);
-}
-
-// IPhysicsCollision::DestroyDebugMesh
-DETOUR(Engine::DestroyDebugMesh, int vertCount, Vector *verts) {
-	if (!OverlayRender::destroyMeshInternal(verts, vertCount)) {
-		return Engine::DestroyDebugMesh(thisptr, vertCount, verts);
-	}
-	return 0;
-}
-
 bool Engine::Init() {
 	this->engineClient = Interface::Create(this->Name(), "VEngineClient015");
 	this->s_ServerPlugin = Interface::Create(this->Name(), "ISERVERPLUGINHELPERS001", false);
@@ -1059,8 +1039,8 @@ bool Engine::Init() {
 	}
 
 	if (this->g_physCollision = Interface::Create(MODULE("vphysics"), "VPhysicsCollision007")) {
-		this->g_physCollision->Hook(Engine::CreateDebugMesh_Hook, Engine::CreateDebugMesh, Offsets::CreateDebugMesh);
-		this->g_physCollision->Hook(Engine::DestroyDebugMesh_Hook, Engine::DestroyDebugMesh, Offsets::DestroyDebugMesh);
+		this->CreateDebugMesh = this->g_physCollision->Original<_CreateDebugMesh>(Offsets::CreateDebugMesh);
+		this->DestroyDebugMesh = this->g_physCollision->Original<_DestroyDebugMesh>(Offsets::DestroyDebugMesh);
 	}
 
 #ifdef _WIN32

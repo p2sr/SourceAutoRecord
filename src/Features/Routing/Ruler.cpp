@@ -125,21 +125,13 @@ void RulerManager::UpdateCreator() {
 
 // drawing stuff
 
-// drawing text at defined coordinates
-void drawLabel(Vector pos, int yOffset, std::string text) {
-	auto font = scheme->GetFontByID(1);
-	int font_height = surface->GetFontHeight(font);
-	OverlayRender::addText(pos, 0, -font_height - yOffset * font_height - 2, text, font);
-}
-
 //drawing point (small box) at defined coordinates
-void drawPoint(Vector pos, bool label, Color c) {
+void drawPoint(Vector pos, bool text, Color c) {
 	RenderCallback solid = RenderCallback::constant({ c.r, c.g, c.b, 1   });
 	RenderCallback wf    = RenderCallback::constant({ c.r, c.g, c.b, 255 });
 	OverlayRender::addBoxMesh(pos, {-1, -1, -1}, {1, 1, 1}, {0, 0, 0}, solid, wf);
-	if (label) {
-		auto text = Utils::ssprintf("%.3f %.3f %.3f", pos.x, pos.y, pos.z);
-		drawLabel(pos, 0, text);
+	if (text) {
+		OverlayRender::addText(pos, Utils::ssprintf("%.3f %.3f %.3f\n", pos.x, pos.y, pos.z), 3.0, true, true, OverlayRender::TextAlign::BOTTOM);
 	}
 }
 
@@ -151,32 +143,29 @@ void Ruler::draw() {
 	MeshId mesh = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 0, 100, 200, 255 }, true));
 	OverlayRender::addLine(mesh, start, end);
 
+	std::string text;
+
 	// drawing points
-	bool pointLabels = (drawMode == 4);
-	drawPoint(start, pointLabels, {20, 255, 20});
-	drawPoint(end, pointLabels, {255, 50, 0});
+	drawPoint(start, drawMode == 4, {20, 255, 20});
+	drawPoint(end, drawMode == 4, {255, 50, 0});
 
 	// drawing label
 	if (drawMode != 3) {
 		Vector drawPoint = (end + start) * 0.5;
-		int offset = 0;
 		if (drawMode != 2) {
 			auto angs = angles();
-			std::string angLabel = Utils::ssprintf("ang: %.3f %.3f", angs.x, angs.y);
-			drawLabel(drawPoint, offset++, angLabel);
+			text += Utils::ssprintf("ang: %.3f %.3f\n", angs.x, angs.y);
 		}
 
 		if (drawMode == 4) {
 			auto d = (end - start);
-			std::string d2 = Utils::ssprintf("dXY: %.3f, dXYZ: %.3f", d.Length2D(), length());
-			drawLabel(drawPoint, offset++, d2);
-			std::string d1 = Utils::ssprintf("d: %.3f %.3f %.3f ", fabsf(d.x), fabsf(d.y), fabsf(d.z));
-			drawLabel(drawPoint, offset++, d1);
+			text += Utils::ssprintf("dXY: %.3f, dXYZ: %.3f\n", d.Length2D(), length());
+			text += Utils::ssprintf("d: %.3f %.3f %.3f\n", fabsf(d.x), fabsf(d.y), fabsf(d.z));
 		} else {
-			std::string lenLabel = Utils::ssprintf("len: %.3f", length());
-			drawLabel(drawPoint, offset++, lenLabel);
+			text += Utils::ssprintf("len: %.3f\n", length());
 		}
 		
+		OverlayRender::addText(drawPoint, text, 3.0, true, true, OverlayRender::TextAlign::CENTER);
 	}
 }
 
@@ -199,10 +188,6 @@ void RulerManager::DrawRulers() {
 		drawPoint(creatorTracePoint, true, {0, 100, 200});
 	}
 }
-
-
-
-
 
 void RulerManager::AddRuler(Vector start, Vector end) {
 	rulers.push_back({start, end});

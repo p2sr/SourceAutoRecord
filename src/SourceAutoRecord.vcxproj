@@ -265,6 +265,7 @@
     <ClCompile Include="Utils\SDK\EntityEdict.cpp" />
     <ClCompile Include="Utils\SDK\KeyValues.cpp" />
     <ClCompile Include="Utils\SDK\ServerPlugin.cpp" />
+    <ClCompile Include="Utils\SDK\MeshBuilder.cpp" />
     <ClCompile Include="Variable.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -437,6 +438,7 @@
     <ClInclude Include="Utils\ed25519\sha512.h" />
     <ClInclude Include="Utils\json11.hpp" />
     <ClInclude Include="Utils\lodepng.hpp" />
+    <ClInclude Include="Utils\FontAtlas.hpp" />
     <ClInclude Include="Utils\Math.hpp" />
     <ClInclude Include="Utils\Memory.hpp" />
     <ClInclude Include="Utils\Platform.hpp" />
@@ -467,6 +469,8 @@
     <ClInclude Include="Utils\SDK\UserCmd.hpp" />
     <ClInclude Include="Utils\SDK\UtlMemory.hpp" />
     <ClInclude Include="Utils\SDK\Trace.hpp" />
+    <ClInclude Include="Utils\SDK\MeshBuilder.hpp" />
+    <ClInclude Include="Utils\SDK\ITexture.hpp" />
     <ClInclude Include="Variable.hpp" />
   </ItemGroup>
   <ItemGroup>

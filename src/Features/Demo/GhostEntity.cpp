@@ -27,10 +27,10 @@ Variable ghost_text_offset("ghost_text_offset", "7", -1024, "Offset of the name 
 Variable ghost_show_advancement("ghost_show_advancement", "3", 0, 3, "Show the advancement of the ghosts. 1 = show finished runs on the current map, 2 = show all finished runs, 3 = show all finished runs and map changes\n");
 Variable ghost_proximity_fade("ghost_proximity_fade", "100", 0, 2000, "Distance from ghosts at which their models fade out.\n");
 Variable ghost_shading("ghost_shading", "1", "Enable simple light level based shading for overlaid ghosts.\n");
-Variable ghost_name_font("ghost_name_font", "0", 0, "Font index to use for ghost names.\n");
 Variable ghost_show_names("ghost_show_names", "1", "Whether to show names above ghosts.\n");
 Variable ghost_spec_thirdperson("ghost_spec_thirdperson", "0", "Whether to spectate ghost from a third-person perspective.\n");
 Variable ghost_spec_thirdperson_dist("ghost_spec_thirdperson_dist", "300", 50, "The maximum distance from which to spectate in third-person.\n");
+Variable ghost_draw_through_walls("ghost_draw_through_walls", "0", 0, 2, "Whether to draw ghosts through walls. 0 = none, 1 = names, 2 = names and ghosts.\n");
 
 GhostEntity::GhostEntity(unsigned int &ID, std::string &name, DataGhost &data, std::string &current_map, bool network)
 	: ID(ID)
@@ -139,7 +139,7 @@ void GhostEntity::Display() {
 	float prox = ghost_proximity_fade.GetFloat();
 	Color fade_col{col.r, col.g, col.b, 0};
 
-	RenderCallback solid = RenderCallback::constant(col);
+	RenderCallback solid = RenderCallback::constant(col, ghost_draw_through_walls.GetInt() >= 2);
 	solid = RenderCallback::prox_fade(prox / 2.0, prox, fade_col, this->data.position, solid);// TODO: correct proximity
 	if (ghost_shading.GetBool()) {
 		solid = RenderCallback::shade(this->data.position + Vector{0,0,10}, solid);
@@ -389,7 +389,7 @@ void GhostEntity::DrawName() {
 		nameCoords.z += ghost_text_offset.GetFloat() + ghost_height.GetFloat();
 	}
 
-	OverlayRender::addText(nameCoords, 0, 0, this->name, scheme->GetFontByID(ghost_name_font.GetInt()));
+	OverlayRender::addText(nameCoords, this->name, 5.0, false, ghost_draw_through_walls.GetInt() >= 1);
 }
 
 ON_EVENT(PRE_TICK) {
