@@ -53,6 +53,7 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 	if (this->updated) {
 		this->shouldFollowLine = false;
 		this->lastTurnDir = 0;
+		this->switchedFromVeccam = false;
 
 		if (asParams->strafeDir.type == CURRENT) {
 			if (asParams->strafeDir.useVelAngle) {
@@ -338,9 +339,11 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 	if (this->shouldFollowLine) {
 		// we've reached our line!
 		// for newer script versions, disable veccam - we don't need it anymore
+		// BUT there is a better solution in a newer version lol
 		if (tasPlayer->scriptVersion >= 3) {
 			if (asParams->strafeType == VECTORIAL_CAM) {
 				asParams->strafeType = VECTORIAL;
+				this->switchedFromVeccam = true;
 			}
 		}
 
@@ -350,8 +353,17 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 		Vector velocity = GetGroundFrictionVelocity(pInfo);
 		float maxAccel = GetMaxAccel(pInfo, Vector(0, 1));
 		float maxRotAng = RAD2DEG(asinf(maxAccel / velocity.Length2D()));
+
+		// scale maxRotAng by surfaceFriction and make it slightly bigger, as the range
+		// is often surpassed by slowfly and some other shit I wasn't able to isolate
+		if (tasPlayer->scriptVersion >= 6) maxRotAng *= 2.0 / pInfo.surfaceFriction;
+
 		if (absOld(diff) > maxRotAng) {
 			this->shouldFollowLine = false;
+			if (tasPlayer->scriptVersion >= 6 && this->switchedFromVeccam) {
+				asParams->strafeType = VECTORIAL_CAM;
+			}
+			this->switchedFromVeccam = false;
 			return GetTurningDirection(pInfo, desAngle);
 		}
 
@@ -407,7 +419,8 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 			FollowLine(pInfo);
 		}
 
-		this->lastTurnDir = turnDir;
+		// last turn is used to detect reaching line. avoid false detection from avoiding speedlock
+		if (tasPlayer->scriptVersion < 6 || !speedLockAvoided) this->lastTurnDir = turnDir;
 		return turnDir;
 	}
 }

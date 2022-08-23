@@ -64,6 +64,7 @@ public:
 
 	Vector followLinePoint;
 	bool shouldFollowLine = false;
+	bool switchedFromVeccam = false;
 	int lastTurnDir = 0;
 
 	Vector GetGroundFrictionVelocity(const TasPlayerInfo &player);
