@@ -48,6 +48,13 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 	pInfo.angles.x -= fb.viewAnalog.y;
 
 	float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
+	if (pInfo.velocity.Length2D() == 0 && tasPlayer->scriptVersion >= 6) {
+		if (this->updated && asParams->strafeDir.useVelAngle) {
+			velAngle = pInfo.angles.y;
+		} else {
+			velAngle = asParams->strafeDir.angle;
+		}
+	}
 
 	// update parameters that has type CURRENT
 	if (this->updated) {
@@ -306,6 +313,7 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 		// fix for newer, keep for older for backwards compability
 		if (tasPlayer->scriptVersion >= 3) {
 			float velAngle = TasUtils::GetVelocityAngles(&player).x;
+			if (player.velocity.Length2D() == 0 && tasPlayer->scriptVersion >= 6) velAngle = params.strafeDir.angle;
 			float correctAng = (DEG2RAD(velAngle) + ang) - DEG2RAD(player.angles.y);
 			forwardmove = cosf(correctAng);
 			sidemove = -sinf(correctAng);
@@ -332,6 +340,7 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 	auto asParams = std::static_pointer_cast<AutoStrafeParams>(params);
 
 	float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
+	if (pInfo.velocity.Length2D() == 0 && tasPlayer->scriptVersion >= 6) velAngle = desAngle;
 	float diff = desAngle - velAngle;
 	if (absOld(diff - 360) < absOld(diff)) diff -= 360;
 	if (absOld(diff + 360) < absOld(diff)) diff += 360;
