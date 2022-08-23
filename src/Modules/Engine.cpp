@@ -205,7 +205,7 @@ bool Engine::IsSplitscreen() {
 	if (!engine->IsCoop()) return false;
 
 	for (int i = 0; i < 2; ++i) {
-		ClientEnt *player = client->GetPlayer(i);
+		ClientEnt *player = client->GetPlayer(i + 1);
 		if (!player) continue;
 
 		// m_hSplitScreenPlayers
