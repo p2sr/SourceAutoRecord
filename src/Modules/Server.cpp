@@ -464,7 +464,11 @@ static void setPortalsThruPortals(bool val) {
 #ifdef _WIN32
 	*(uint8_t *)(tfp + 391) = val ? 0x00 : 0x0A;
 #else
-	*(uint8_t *)(tfp + 414) = val ? 0xEB : 0x74;
+	if (sar.game->Is(SourceGame_EIPRelPIC)) {
+		*(uint8_t *)(tfp + 414) = val ? 0xEB : 0x74;
+	} else {
+		*(uint8_t *)(tfp + 462) = val ? 0xEB : 0x74;
+	}
 #endif
 }
 Variable sar_portals_thru_portals("sar_portals_thru_portals", "0", "Allow firing portals through portals.\n");
@@ -790,9 +794,15 @@ bool Server::Init() {
 	FindPortal = (_FindPortal)Memory::Scan(server->Name(), "55 8B EC 0F B6 45 08 8D 0C 80 03 C9 53 8B 9C 09 ? ? ? ? 03 C9 56 57 85 DB 74 3C 8B B9 ? ? ? ? 33 C0 33 F6 EB 08", 0);
 	Memory::UnProtect((void *)((uintptr_t)TraceFirePortal + 391), 1); // see setPortalsThruPortals
 #else
-	TraceFirePortal = (_TraceFirePortal)Memory::Scan(server->Name(), "55 89 E5 57 56 8D BD F4 F8 FF FF 53 E8 ? ? ? ? 81 C3 ? ? ? ? 81 EC 40 07 00 00 8B 45 14 6A 00 8B 75 0C", 0);
-	FindPortal = (_FindPortal)Memory::Scan(server->Name(), "55 57 56 E8 ? ? ? ? 81 C6 ? ? ? ? 53 83 EC 2C 8B 44 24 40 8B 54 24 44 8B 7C 24 48 89 44 24 18 0F B6 C0", 0);
-	Memory::UnProtect((void *)((uintptr_t)TraceFirePortal + 414), 1); // see setPortalsThruPortals
+	if (sar.game->Is(SourceGame_EIPRelPIC)) {
+		TraceFirePortal = (_TraceFirePortal)Memory::Scan(server->Name(), "55 89 E5 57 56 8D BD F4 F8 FF FF 53 E8 ? ? ? ? 81 C3 ? ? ? ? 81 EC 40 07 00 00 8B 45 14 6A 00 8B 75 0C", 0);
+		FindPortal = (_FindPortal)Memory::Scan(server->Name(), "55 57 56 E8 ? ? ? ? 81 C6 ? ? ? ? 53 83 EC 2C 8B 44 24 40 8B 54 24 44 8B 7C 24 48 89 44 24 18 0F B6 C0", 0);
+		Memory::UnProtect((void *)((uintptr_t)TraceFirePortal + 414), 1); // see setPortalsThruPortals
+	} else {
+		TraceFirePortal = (_TraceFirePortal)Memory::Scan(server->Name(), "55 89 E5 57 56 8D BD F4 F8 FF FF 53 81 EC 3C 07 00 00 8B 45 14 C7 44 24 08 00 00 00 00 89 3C 24 8B 5D 0C", 0);
+		FindPortal = (_FindPortal)Memory::Scan(server->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 45 08 8B 7D 0C 8B 4D 10 89 45 D8 0F B6 C0 8D 04 80 89 7D E0 C1 E0 02 89 4D DC", 0);
+		Memory::UnProtect((void *)((uintptr_t)TraceFirePortal + 462), 1); // see setPortalsThruPortals
+	}
 #endif
 
 #ifdef _WIN32
