@@ -33,6 +33,7 @@ Variable sar_trace_draw_time("sar_trace_draw_time", "3", 0, 3,
 	"2 = session timer\n"
 	"3 = TAS timer (if no TAS was played, uses 1 instead)\n"
 );
+Variable sar_trace_font_size("sar_trace_font_size", "3.0", 0.1, "The size of text overlaid on recorded traces.\n");
 
 Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.\n");
 Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, 1, "Move trace bbox to hovered trace point tick on given trace.\n");
@@ -355,7 +356,7 @@ void PlayerTrace::DrawSpeedDeltas() const {
 					float speed_delta = trace.velocities[slot][i].Length2D() - trace.velocities[slot][last_delta_end].Length2D();
 					Vector update_pos = trace.positions[slot][(last_delta_end + i) / 2];
 
-					OverlayRender::addText(update_pos + hud_offset, Utils::ssprintf("%10.2f", speed_delta), 3.0, true, sar_trace_draw_through_walls.GetBool());
+					OverlayRender::addText(update_pos + hud_offset, Utils::ssprintf("%10.2f", speed_delta), sar_trace_font_size.GetFloat(), true, sar_trace_draw_through_walls.GetBool());
 
 					last_delta_end = i;
 				}
@@ -884,7 +885,7 @@ ON_EVENT(RENDER) {
 		hover_str += Utils::ssprintf("pos: %.1f %.1f %.1f\n", h.pos.x, h.pos.y, h.pos.z);
 		hover_str += Utils::ssprintf("horiz. speed: %.2f\n", h.speed);
 
-		OverlayRender::addText(h.pos + hud_offset, hover_str, 3.0, true, true);
+		OverlayRender::addText(h.pos + hud_offset, hover_str, sar_trace_font_size.GetFloat(), true, true);
 	}
 
 	if (sar_trace_draw_speed_deltas.GetBool()) {
