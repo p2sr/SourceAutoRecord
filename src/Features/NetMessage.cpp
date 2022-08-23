@@ -50,7 +50,7 @@ void NetMessage::SessionEnded() {
 static std::queue<std::string> g_queued;
 
 void NetMessage::SendMsg(const char *type, const void *data, size_t size) {
-	if (!engine->IsCoop()) {
+	if (!engine->IsCoop() || engine->IsSplitscreen()) {
 		// It doesn't make sense to send messages in SP
 		return;
 	}

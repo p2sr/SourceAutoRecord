@@ -144,6 +144,7 @@ public:
 	std::string GetCurrentMapName();
 	bool IsCoop();
 	bool IsOrange();
+	bool IsSplitscreen();
 	void RecordDemoData(void *data, size_t len);
 	bool Trace(Vector &pos, QAngle &angle, float distMax, CTraceFilterSimple &filter, CGameTrace &tr);
 	bool TraceFromCamera(float distMax, CGameTrace &tr);

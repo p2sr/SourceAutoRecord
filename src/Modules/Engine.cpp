@@ -201,6 +201,20 @@ bool Engine::IsOrange() {
 	}
 	return isOrange;
 }
+bool Engine::IsSplitscreen() {
+	if (!engine->IsCoop()) return false;
+
+	for (int i = 0; i < 2; ++i) {
+		ClientEnt *player = client->GetPlayer(i);
+		if (!player) continue;
+
+		// m_hSplitScreenPlayers
+		auto &splitscreen_players = player->fieldOff<CUtlVector<CBaseHandle>>("m_szLastPlaceName", 40);
+		if (splitscreen_players.m_Size > 0) return true;
+	}
+
+	return false;
+}
 
 bool Engine::Trace(Vector &pos, QAngle &angle, float distMax, CTraceFilterSimple &filter, CGameTrace &tr) {
 	float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);

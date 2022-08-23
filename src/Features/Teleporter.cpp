@@ -52,9 +52,8 @@ static void handleMessage(const void *data, size_t size) {
 ON_INIT { NetMessage::RegisterHandler(TELEPORT_MESSAGE_TYPE, &handleMessage); }
 
 static void sendMessage(int slot, const void *data, size_t size) {
-	// TODO: splitscreen
 	int local = engine->IsOrange() ? 1 : 0;
-	if (slot == local) {
+	if (engine->IsSplitscreen() || slot == local) {
 		handleMessage(data, size);
 	} else {
 		NetMessage::SendMsg(TELEPORT_MESSAGE_TYPE, data, size);
