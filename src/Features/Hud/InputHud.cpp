@@ -503,13 +503,7 @@ std::string InputHud::GetParameterValue(std::string name, std::string parameter)
 	if (!element) return "";
 
 	auto colorToString = [](Color color) -> std::string {
-		std::stringstream stream;
-		stream << "#" 
-			<< std::hex << color.r
-			<< std::hex << color.g
-			<< std::hex << color.b
-			<< std::hex << color.a;
-		return stream.str();
+		return Utils::ssprintf("#%02X%02X%02X%02X", color.r, color.g, color.b, color.a);
 	};
 
 	if (parameter.compare("enabled") == 0) {
