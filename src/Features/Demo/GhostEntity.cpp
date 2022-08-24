@@ -42,7 +42,9 @@ GhostEntity::GhostEntity(unsigned int &ID, std::string &name, DataGhost &data, s
 	, modelName(GhostEntity::defaultModelName)
 	, prop_entity(nullptr)
 	, spectator(false)
-	, isDestroyed(false) {
+	, isDestroyed(false)
+{
+	this->lastUpdate = engine->GetHostTime();
 }
 
 GhostEntity::~GhostEntity() {
