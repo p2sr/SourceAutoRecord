@@ -28,6 +28,7 @@ Variable ghost_show_advancement("ghost_show_advancement", "3", 0, 3, "Show the a
 Variable ghost_proximity_fade("ghost_proximity_fade", "100", 0, 2000, "Distance from ghosts at which their models fade out.\n");
 Variable ghost_shading("ghost_shading", "1", "Enable simple light level based shading for overlaid ghosts.\n");
 Variable ghost_show_names("ghost_show_names", "1", "Whether to show names above ghosts.\n");
+Variable ghost_name_font_size("ghost_name_font_size", "5.0", 0.1, "The size to render ghost names at.\n");
 Variable ghost_spec_thirdperson("ghost_spec_thirdperson", "0", "Whether to spectate ghost from a third-person perspective.\n");
 Variable ghost_spec_thirdperson_dist("ghost_spec_thirdperson_dist", "300", 50, "The maximum distance from which to spectate in third-person.\n");
 Variable ghost_draw_through_walls("ghost_draw_through_walls", "0", 0, 2, "Whether to draw ghosts through walls. 0 = none, 1 = names, 2 = names and ghosts.\n");
@@ -389,7 +390,7 @@ void GhostEntity::DrawName() {
 		nameCoords.z += ghost_text_offset.GetFloat() + ghost_height.GetFloat();
 	}
 
-	OverlayRender::addText(nameCoords, this->name, 5.0, false, ghost_draw_through_walls.GetInt() >= 1);
+	OverlayRender::addText(nameCoords, this->name, ghost_name_font_size.GetFloat(), false, ghost_draw_through_walls.GetInt() >= 1);
 }
 
 ON_EVENT(PRE_TICK) {
