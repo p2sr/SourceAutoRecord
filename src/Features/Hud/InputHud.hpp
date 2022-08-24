@@ -36,10 +36,10 @@ private:
 		Color textColor;
 		Color textHighlight;
 		std::string imageTexture;
-		int imageTextureId;
+		int imageTextureId = -1;
 		std::string highlightImageTexture;
-		int highlightImageTextureId;
-		int minHold;
+		int highlightImageTextureId = -1;
+		int minHold = 0;
 
 		// state
 		int pressedTick = -1;

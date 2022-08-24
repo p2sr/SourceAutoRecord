@@ -217,7 +217,7 @@ class InputSystem : public Module {
 public:
 	Interface *g_InputSystem = nullptr;
 
-	using _StringToButtonCode = int(__rescall *)(void *thisptr, const char *pString);
+	using _StringToButtonCode = ButtonCode_t(__rescall *)(void *thisptr, const char *pString);
 	using _IsButtonDown = bool(__rescall *)(void *thisptr, ButtonCode_t key);
 	using _GetCursorPosition = void(__rescall *)(void *thisptr, int &x, int &y);
 	using _SetCursorPosition = void(__rescall *)(void *thisptr, int x, int y);
@@ -230,7 +230,7 @@ public:
 	_KeySetBinding KeySetBinding = nullptr;
 
 public:
-	int GetButton(const char *pString);
+	ButtonCode_t GetButton(const char *pString);
 	bool IsKeyDown(ButtonCode_t);
 	void GetCursorPos(int &x, int &y);
 	void SetCursorPos(int x, int y);

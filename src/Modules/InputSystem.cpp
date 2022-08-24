@@ -13,7 +13,7 @@ REDECL(InputSystem::SleepUntilInput);
 REDECL(InputSystem::GetRawMouseAccumulators);
 #endif
 
-int InputSystem::GetButton(const char *pString) {
+ButtonCode_t InputSystem::GetButton(const char *pString) {
 	return this->StringToButtonCode(this->g_InputSystem->ThisPtr(), pString);
 }
 

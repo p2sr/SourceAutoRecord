@@ -672,7 +672,7 @@ CON_COMMAND(sar_ihud_add_key, "sar_ihud_add_key <key>") {
 		return;
 	}
 
-	int keyCode = inputSystem->GetButton(args[1]);
+	ButtonCode_t keyCode = inputSystem->GetButton(args[1]);
 	if (keyCode == -1) {
 		console->Print("Key %s does not exist.\n", args[1]);
 		return;
