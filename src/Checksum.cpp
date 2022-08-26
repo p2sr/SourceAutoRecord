@@ -261,8 +261,13 @@ static void initFileSums() {
 			if (ent.status().type() == std::filesystem::file_type::regular || ent.status().type() == std::filesystem::file_type::symlink) {
 				auto path = ent.path().string();
 				std::replace(path.begin(), path.end(), '\\', '/');
+
+				bool dlc = path.find("portal2_dlc") != std::string::npos &&
+					path.find("portal2_dlc1") == std::string::npos &&
+					path.find("portal2_dlc2") == std::string::npos;
+
 				if (Utils::EndsWith(path, ".nut")
-					|| (Utils::EndsWith(path, ".vpk") && path.find("portal2_dlc3") != std::string::npos)
+					|| (Utils::EndsWith(path, ".vpk") && dlc)
 					|| path.find("scripts/talker") != std::string::npos)
 				{
 					paths.push_back(path);
