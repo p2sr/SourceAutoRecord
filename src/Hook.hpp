@@ -20,6 +20,7 @@ public:
 	template <typename T = void *>
 	void SetFunc(T func, bool enable = true) {
 		this->func = (void *)func;
+		Memory::UnProtect(this->func, 5);
 		if (enable) this->Enable();
 	}
 
@@ -28,7 +29,6 @@ public:
 		if (this->enabled) return;
 		if (!this->func || !this->hook) return;
 		memcpy(this->origCode, this->func, sizeof this->origCode);
-		Memory::UnProtect(this->func, 5);
 		uint8_t *ptr = (uint8_t *)this->func;
 		ptr[0] = 0xE9;  // JMP
 		*(uint32_t *)(ptr + 1) = (uintptr_t)this->hook - ((uintptr_t)ptr + 5);
@@ -39,7 +39,6 @@ public:
 		if (lock) this->locked = true;
 		if (!this->enabled) return;
 		if (!this->func || !this->hook) return;
-		Memory::UnProtect(this->func, 5);
 		memcpy(this->func, this->origCode, sizeof this->origCode);
 		this->enabled = false;
 	}
