@@ -667,6 +667,39 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 // }}}
 
+CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only if a given condition is met\n", FCVAR_DONTRECORD) {
+	if (args.ArgC() < 3) {
+		return console->Print(cond.ThisPtr()->m_pszHelpString);
+	}
+
+	const char *cond_str = args[1];
+
+	Condition *cond = ParseCondition(LexCondition(cond_str, strlen(cond_str)));
+
+	if (!cond) {
+		console->Print("Condition parsing of \"%s\" failed\n", cond_str);
+		return;
+	}
+
+	bool should_run = EvalCondition(cond);
+	FreeCondition(cond);
+
+	if (!should_run) return;
+
+	const char *cmd;
+
+	if (args.ArgC() == 3) {
+		cmd = args[2];
+	} else {
+		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
+		while (isspace(*cmd)) ++cmd;
+		cmd += (*cmd == '"') * 2 + strlen(args[1]);
+		while (isspace(*cmd)) ++cmd;
+	}
+
+	engine->ExecuteCommand(cmd, true);
+}
+
 #define MK_SAR_ON(name, when, immediately)                                                                                                \
 	static std::vector<std::string> _g_execs_##name;                                                                                         \
 	CON_COMMAND_F(sar_on_##name, "sar_on_" #name " <command> [args]... - registers a command to be run " when "\n", FCVAR_DONTRECORD) {      \
@@ -709,44 +742,53 @@ MK_SAR_ON(tas_end, "when TAS script playback ends", true)
 MK_SAR_ON(pb, "when auto-submitter detects PB", true)
 MK_SAR_ON(not_pb, "when auto-submitter detects not PB", true)
 
+ON_EVENT_P(SESSION_START, 1000000) {
+	RUN_EXECS(load);
+	if (engine->IsOrange()) RUN_EXECS(coop_spawn);
+}
+ON_EVENT(SESSION_END) {
+	RUN_EXECS(session_end);
+}
+ON_EVENT(SAR_UNLOAD) {
+	RUN_EXECS(exit);
+}
+ON_EVENT(DEMO_START) {
+	RUN_EXECS(demo_start);
+}
+ON_EVENT(DEMO_STOP) {
+	RUN_EXECS(demo_stop);
+}
+ON_EVENT(CM_FLAGS) {
+	if (event.end) RUN_EXECS(flags);
+}
+ON_EVENT(COOP_RESET_DONE) {
+	RUN_EXECS(coop_reset_done);
+}
+ON_EVENT(COOP_RESET_REMOTE) {
+	RUN_EXECS(coop_reset_remote);
+}
+ON_EVENT(ORANGE_READY) {
+	RUN_EXECS(coop_spawn);
+}
+ON_EVENT(CONFIG_EXEC) {
+	RUN_EXECS(config_exec);
+}
+ON_EVENT(TAS_START) {
+	RUN_EXECS(tas_start);
+}
+ON_EVENT(TAS_END) {
+	RUN_EXECS(tas_end);
+}
+ON_EVENT(MAYBE_AUTOSUBMIT) {
+	if (event.pb) RUN_EXECS(pb);
+	else RUN_EXECS(not_pb);
+}
+
 struct Seq {
 	std::queue<std::string> commands;
 };
 
 std::vector<Seq> seqs;
-
-CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only if a given condition is met\n", FCVAR_DONTRECORD) {
-	if (args.ArgC() < 3) {
-		return console->Print(cond.ThisPtr()->m_pszHelpString);
-	}
-
-	const char *cond_str = args[1];
-
-	Condition *cond = ParseCondition(LexCondition(cond_str, strlen(cond_str)));
-
-	if (!cond) {
-		console->Print("Condition parsing of \"%s\" failed\n", cond_str);
-		return;
-	}
-
-	bool should_run = EvalCondition(cond);
-	FreeCondition(cond);
-
-	if (!should_run) return;
-
-	const char *cmd;
-
-	if (args.ArgC() == 3) {
-		cmd = args[2];
-	} else {
-		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*cmd)) ++cmd;
-		cmd += (*cmd == '"') * 2 + strlen(args[1]);
-		while (isspace(*cmd)) ++cmd;
-	}
-
-	engine->ExecuteCommand(cmd, true);
-}
 
 CON_COMMAND_F(seq, "seq <commands>... - runs a sequence of commands one tick after one another\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 2) {
@@ -861,50 +903,6 @@ CON_COMMAND_F(sar_alias_run, "sar_alias_run <name> [args]... - run a SAR alias, 
 
 	engine->ExecuteCommand(cmd.c_str(), true);
 }
-
-ON_EVENT_P(SESSION_START, 1000000) {
-	RUN_EXECS(load);
-	if (engine->IsOrange()) RUN_EXECS(coop_spawn);
-}
-ON_EVENT(SESSION_END) {
-	RUN_EXECS(session_end);
-}
-ON_EVENT(SAR_UNLOAD) {
-	RUN_EXECS(exit);
-}
-ON_EVENT(DEMO_START) {
-	RUN_EXECS(demo_start);
-}
-ON_EVENT(DEMO_STOP) {
-	RUN_EXECS(demo_stop);
-}
-ON_EVENT(CM_FLAGS) {
-	if (event.end) RUN_EXECS(flags);
-}
-ON_EVENT(COOP_RESET_DONE) {
-	RUN_EXECS(coop_reset_done);
-}
-ON_EVENT(COOP_RESET_REMOTE) {
-	RUN_EXECS(coop_reset_remote);
-}
-ON_EVENT(ORANGE_READY) {
-	RUN_EXECS(coop_spawn);
-}
-ON_EVENT(CONFIG_EXEC) {
-	RUN_EXECS(config_exec);
-}
-ON_EVENT(TAS_START) {
-	RUN_EXECS(tas_start);
-}
-ON_EVENT(TAS_END) {
-	RUN_EXECS(tas_end);
-}
-ON_EVENT(MAYBE_AUTOSUBMIT) {
-	if (event.pb) RUN_EXECS(pb);
-	else RUN_EXECS(not_pb);
-}
-
-CON_COMMAND_F(nop, "nop [args]... - nop ignores all its arguments and does nothing\n", FCVAR_DONTRECORD) {}
 
 static std::map<std::string, AliasInfo> g_functions;
 
@@ -1065,3 +1063,5 @@ CON_COMMAND_F(sar_function_run, "sar_function_run <name> [args]... - run a funct
 
 	expand(args, it->second.run);
 }
+
+CON_COMMAND_F(nop, "nop [args]... - nop ignores all its arguments and does nothing\n", FCVAR_DONTRECORD) {}
