@@ -958,7 +958,7 @@ CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a 
 
 static void expand(const CCommand &args, std::string body) {
 	std::string cmd;
-	unsigned nargs = args.ArgC() - 2;
+	int nargs = args.ArgC() - 2;
 	for (size_t i = 0; i < body.size(); ++i) {
 		if (body[i] == '$') {
 			if (body[i + 1] == '$') {
@@ -976,8 +976,8 @@ static void expand(const CCommand &args, std::string body) {
 				continue;
 			} else if (body[i + 1] == '+') {
 				++i;
-				if (body[i + 1] >= '1' && body[i + 1] <= '9') {
-					unsigned arg = body[i + 1] - '0';
+				if (body[i + 1] >= '0' && body[i + 1] <= '9') {
+					int arg = body[i + 1] - '0';
 					++i;
 					while (body[i + 1] >= '0' && body[i + 1] <= '9') {
 						arg = arg * 10 + (body[i + 1] - '0');
@@ -985,10 +985,10 @@ static void expand(const CCommand &args, std::string body) {
 					}
 					if (arg - 1 < nargs) {
 						// Skip the first n + 1 arguments
-						// (including 'sar_function_run <function>')
+						// (sar_function_run)
 						const char *greedy = args.m_pArgSBuffer + args.m_nArgv0Size;
 						while (isspace(*greedy)) ++greedy;
-						for (unsigned j = 1; j < arg + 1; ++j) {
+						for (int j = 1; j < arg + 1; ++j) {
 							greedy += (*greedy == '"') * 2 + strlen(args[j]);
 							while (isspace(*greedy)) ++greedy;
 						}
@@ -1002,8 +1002,8 @@ static void expand(const CCommand &args, std::string body) {
 				cmd += std::to_string(nargs);
 				++i;
 				continue;
-			} else if (body[i + 1] >= '1' && body[i + 1] <= '9') {
-				unsigned arg = body[i + 1] - '0';
+			} else if (body[i + 1] >= '0' && body[i + 1] <= '9') {
+				int arg = body[i + 1] - '0';
 				++i;
 				while (body[i + 1] >= '0' && body[i + 1] <= '9') {
 					arg = arg * 10 + (body[i + 1] - '0');
@@ -1049,7 +1049,7 @@ CON_COMMAND_F(sar_expand, "sar_expand [cmd]... - run a command after expanding s
 	}
 
 	const char *cmd = args.ArgC() == 2 ? args[1] : args.m_pArgSBuffer + args.m_nArgv0Size;
-	const CCommand noArgs = {2};  // ArgC = 2 means nargs = 0
+	const CCommand noArgs = {1};  // ArgC = 1 means nargs = -1
 	expand(noArgs, std::string(cmd));
 }
 
