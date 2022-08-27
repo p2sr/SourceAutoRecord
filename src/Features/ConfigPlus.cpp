@@ -273,44 +273,67 @@ CON_COMMAND_F_COMPLETION(svar_from_cvar, "svar_from_cvar <variable> <cvar> - cap
 	}
 }
 
-#define SVAR_OP(name, op, disallowSecondZero)                                                                                            \
+#define SVAR_OP(name, op, disallowSecondZero)                      \
 	CON_COMMAND_F_COMPLETION(svar_##name, "svar_" #name " <variable> <variable|value> - perform the given operation on an svar\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_get)) { \
-		if (args.ArgC() != 3) {                                                                                                                \
-			return console->Print(svar_##name.ThisPtr()->m_pszHelpString);                                                                        \
-		}                                                                                                                                      \
-                                                                                                                                         \
-		int cur;                                                                                                                               \
-                                                                                                                                         \
-		{                                                                                                                                      \
-			auto it = g_svars.find({args[1]});                                                                                                    \
-			if (it == g_svars.end()) {                                                                                                            \
-				cur = 0;                                                                                                                             \
-			} else {                                                                                                                              \
-				cur = atoi(it->second.c_str());                                                                                                      \
-			}                                                                                                                                     \
-		}                                                                                                                                      \
-                                                                                                                                         \
-		char *end;                                                                                                                             \
-		int other = strtol(args[2], &end, 10);                                                                                                 \
-                                                                                                                                         \
-		if (end == args[2] || *end) {                                                                                                          \
-			auto it = g_svars.find({args[2]});                                                                                                    \
-			if (it == g_svars.end()) {                                                                                                            \
-				other = 0;                                                                                                                           \
-			} else {                                                                                                                              \
-				other = atoi(it->second.c_str());                                                                                                    \
-			}                                                                                                                                     \
-		}                                                                                                                                      \
-                                                                                                                                         \
-		int val = (disallowSecondZero && other == 0) ? 0 : cur op other;                                                                       \
-		SetSvar({args[1]}, Utils::ssprintf("%d", val));													                                                                           \
+		if (args.ArgC() != 3) {                                          \
+			return console->Print(svar_##name.ThisPtr()->m_pszHelpString);  \
+		}                                                                \
+		int cur;                                                         \
+		{                                                                \
+			auto it = g_svars.find({args[1]});                              \
+			cur = (it == g_svars.end()) ? 0 : atoi(it->second.c_str());     \
+		}                                                                \
+		char *end;                                                       \
+		int other = strtol(args[2], &end, 10);                           \
+		if (end == args[2] || *end) {                                    \
+			auto it = g_svars.find({args[2]});                              \
+			other = (it == g_svars.end()) ? 0 : atoi(it->second.c_str());   \
+		}                                                                \
+		int val = (disallowSecondZero && other == 0) ? 0 : op;           \
+		SetSvar({args[1]}, Utils::ssprintf("%d", val));                  \
+	}                                                                 \
+	                                                                  \
+	CON_COMMAND_F_COMPLETION(svar_f##name, "svar_f" #name " <variable> <variable|value> - perform the given operation on an svar\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_get)) { \
+		if (args.ArgC() != 3) {                                          \
+			return console->Print(svar_f##name.ThisPtr()->m_pszHelpString); \
+		}                                                                \
+		double cur;                                                      \
+		{                                                                \
+			auto it = g_svars.find({args[1]});                              \
+			cur = (it == g_svars.end()) ? 0 : atof(it->second.c_str());     \
+		}                                                                \
+		char *end;                                                       \
+		double other = strtod(args[2], &end);                            \
+		if (end == args[2] || *end) {                                    \
+			auto it = g_svars.find({args[2]});                              \
+			other = (it == g_svars.end()) ? 0 : atof(it->second.c_str());   \
+		}                                                                \
+		double val = (disallowSecondZero && other == 0) ? 0 : op;        \
+		SetSvar({args[1]}, Utils::ssprintf("%g", val));                  \
 	}
 
-SVAR_OP(add, +, false)
-SVAR_OP(sub, -, false)
-SVAR_OP(mul, *, false)
-SVAR_OP(div, /, true)
-SVAR_OP(mod, %, true)
+SVAR_OP(add, cur + other, false)
+SVAR_OP(sub, cur - other, false)
+SVAR_OP(mul, cur * other, false)
+SVAR_OP(div, cur / other, true)
+SVAR_OP(mod, fmod(cur, other), true) // fmod seems to work fine for integers
+
+#define SVAR_SINGLE_OP(name, op)\
+	CON_COMMAND_F_COMPLETION(svar_##name, "svar_" #name " <variable> - perform the given operation on an svar\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_get)) { \
+		if (args.ArgC() != 2) {                                            \
+			return console->Print(svar_##name.ThisPtr()->m_pszHelpString);    \
+		}                                                                  \
+                                                                     \
+		auto it = g_svars.find({args[1]});                                 \
+		double cur = (it == g_svars.end()) ? 0 : atof(it->second.c_str()); \
+                                                                     \
+		SetSvar({args[1]}, Utils::ssprintf("%g", op));                     \
+	}
+
+SVAR_SINGLE_OP(round, round(cur))
+SVAR_SINGLE_OP(floor, floor(cur))
+SVAR_SINGLE_OP(ceil, ceil(cur))
+SVAR_SINGLE_OP(abs, fabs(cur))
 
 struct Condition {
 	enum {
