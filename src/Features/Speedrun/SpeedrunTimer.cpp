@@ -253,10 +253,24 @@ static void sendCoopPacket(PacketType t, std::string *splitName = NULL, int newS
 	free(buf);
 }
 
+int SpeedrunTimer::GetOffsetTicks() {
+	const char *offset = sar_speedrun_offset.GetString();
+
+	char *end;
+	long ticks = strtol(offset, &end, 10);
+
+	if (*end) {
+		// Try to parse as a time instead
+		ticks = std::round(SpeedrunTimer::UnFormat(offset) * 60.0f);
+	}
+
+	return ticks;
+}
+
 int SpeedrunTimer::GetSegmentTicks() {
 	if (g_speedrun.isReset) {
 		if (g_speedrun.recovery != -1) return g_speedrun.recovery;
-		return sar_speedrun_offset.GetInt();
+		return SpeedrunTimer::GetOffsetTicks();
 	}
 
 	if (!g_speedrun.isRunning) {
@@ -424,7 +438,7 @@ void SpeedrunTimer::Start() {
 	g_speedrun.isRunning = true;
 	g_speedrun.isReset = false;
 	g_speedrun.base = getCurrentTick();
-	g_speedrun.saved = recover ? recover_tick : sar_speedrun_offset.GetInt();
+	g_speedrun.saved = recover ? recover_tick : SpeedrunTimer::GetOffsetTicks();
 	g_speedrun.recovery = -1;
 	g_speedrun.lastMap = map;
 	g_speedrun.visitedMaps.push_back(map);
@@ -744,7 +758,7 @@ Variable sar_speedrun_smartsplit("sar_speedrun_smartsplit", "1", "Only split the
 Variable sar_speedrun_time_pauses("sar_speedrun_time_pauses", "0", "Include time spent paused in the speedrun timer.\n");
 Variable sar_speedrun_stop_in_menu("sar_speedrun_stop_in_menu", "0", "Automatically stop the speedrun timer when the menu is loaded.\n");
 Variable sar_speedrun_start_on_load("sar_speedrun_start_on_load", "0", 0, 2, "Automatically start the speedrun timer when a map is loaded. 2 = restart if active.\n");
-Variable sar_speedrun_offset("sar_speedrun_offset", "0", 0, "Start speedruns with this many ticks on the timer.\n");
+Variable sar_speedrun_offset("sar_speedrun_offset", "0", 0, "Start speedruns with this time on the timer.\n", 0);
 Variable sar_speedrun_autostop("sar_speedrun_autostop", "0", 0, 2, "Automatically stop recording demos when a speedrun finishes. If 2, automatically append the run time to the demo name.\n");
 
 CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer\n") {
@@ -864,15 +878,17 @@ CON_COMMAND(sar_speedrun_export, "sar_speedrun_export <filename> - export the sp
 }
 
 CON_COMMAND(sar_speedrun_recover, "sar_speedrun_recover <ticks|time> - recover a crashed run by resuming the timer at the given time on next load\n") {
-	if (args.ArgC() != 2) {
+	if (args.ArgC() < 2) {
 		return console->Print(sar_speedrun_recover.ThisPtr()->m_pszHelpString);
 	}
 
+	const char *time = args.m_pArgSBuffer + args.m_nArgv0Size;
+
 	char *end;
-	long ticks = strtol(args[1], &end, 10);
+	long ticks = strtol(time, &end, 10);
 	if (*end) {
 		// Try to parse as a time instead
-		ticks = std::round(SpeedrunTimer::UnFormat(args[1]) * 60.0f);
+		ticks = std::round(SpeedrunTimer::UnFormat(time) * 60.0f);
 	}
 
 	g_speedrun.recovery = ticks;
