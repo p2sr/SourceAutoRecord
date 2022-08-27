@@ -133,11 +133,22 @@ DECL_DECLARE_AUTOCOMPLETION_FUNCTION(svar_get) {
 }
 
 CON_COMMAND_F_COMPLETION(svar_set, "svar_set <variable> <value> - set a svar (SAR variable) to a given value\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_set)) {
-	if (args.ArgC() != 3) {
+	if (args.ArgC() < 3) {
 		return console->Print(svar_set.ThisPtr()->m_pszHelpString);
 	}
 
-	SetSvar({args[1]}, {args[2]});
+	const char *cmd;
+
+	if (args.ArgC() == 3) {
+		cmd = args[2];
+	} else {
+		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
+		while (isspace(*cmd)) ++cmd;
+		cmd += (*cmd == '"') * 2 + strlen(args[1]);
+		while (isspace(*cmd)) ++cmd;
+	}
+
+	SetSvar({args[1]}, {cmd});
 }
 
 CON_COMMAND_F_COMPLETION(svar_substr, "svar_substr <variable> <from> [len] - sets a svar to its substring.\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_get)) {
