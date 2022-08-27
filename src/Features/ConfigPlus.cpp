@@ -63,11 +63,11 @@ static std::string GetSvar(std::string name) {
 	return it->second;
 }
 
-DECL_DECLARE_AUTOCOMPLETION_FUNCTION(svar_set) {
+static int CompleteSvars(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH], bool values) {
 	auto args = ParsePartialArgs(partial);
 
 	int completed_args = args.size() - 1;
-	if (completed_args > 3) completed_args = 3;
+	if (completed_args > (values ? 3 : 2)) completed_args = values ? 3 : 2;
 
 	std::string part;
 	for (int i = 0; i < completed_args; ++i) {
@@ -78,14 +78,14 @@ DECL_DECLARE_AUTOCOMPLETION_FUNCTION(svar_set) {
 		}
 	}
 
-	if (completed_args == 0 || completed_args == 3) {
+	if (completed_args == 0 || completed_args == (values ? 3 : 2)) {
 		part = part.substr(0, part.size() - 1); // strip trailing space
 		std::strncpy(commands[0], part.c_str(), COMMAND_COMPLETION_ITEM_LENGTH - 1);
 		commands[0][COMMAND_COMPLETION_ITEM_LENGTH - 1] = 0;
 		return 1;
 	}
 
-	if (completed_args == 2) {
+	if (values && completed_args == 2) {
 		auto val = GetSvar(args[1]);
 		if (val == "" || val.find(" ") != std::string::npos) val = "\"" + val + "\"";
 		part += val;
@@ -124,6 +124,14 @@ DECL_DECLARE_AUTOCOMPLETION_FUNCTION(svar_set) {
 	return items.size();
 }
 
+DECL_DECLARE_AUTOCOMPLETION_FUNCTION(svar_set) {
+	return CompleteSvars(partial, commands, true);
+}
+
+DECL_DECLARE_AUTOCOMPLETION_FUNCTION(svar_get) {
+	return CompleteSvars(partial, commands, false);
+}
+
 CON_COMMAND_F_COMPLETION(svar_set, "svar_set <variable> <value> - set a svar (SAR variable) to a given value\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_set)) {
 	if (args.ArgC() != 3) {
 		return console->Print(svar_set.ThisPtr()->m_pszHelpString);
@@ -132,7 +140,7 @@ CON_COMMAND_F_COMPLETION(svar_set, "svar_set <variable> <value> - set a svar (SA
 	SetSvar({args[1]}, {args[2]});
 }
 
-CON_COMMAND_F(svar_substr, "svar_substr <variable> <from> [len] - sets a svar to its substring.\n", FCVAR_DONTRECORD) {
+CON_COMMAND_F_COMPLETION(svar_substr, "svar_substr <variable> <from> [len] - sets a svar to its substring.\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_get)) {
 	if (args.ArgC() < 3 || args.ArgC() > 4) {
 		return console->Print(svar_substr.ThisPtr()->m_pszHelpString);
 	}
@@ -155,7 +163,7 @@ CON_COMMAND_F(svar_substr, "svar_substr <variable> <from> [len] - sets a svar to
 	SetSvar({args[1]}, value);
 }
 
-CON_COMMAND_F(svar_get, "svar_get <variable> - get the value of a svar\n", FCVAR_DONTRECORD) {
+CON_COMMAND_F_COMPLETION(svar_get, "svar_get <variable> - get the value of a svar\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_get)) {
 	if (args.ArgC() != 2) {
 		return console->Print(svar_get.ThisPtr()->m_pszHelpString);
 	}
@@ -173,7 +181,7 @@ CON_COMMAND_F(svar_count, "svar_count - prints a count of all the defined svars\
 	console->Print("%d svars defined\n", size);
 }
 
-CON_COMMAND_F(svar_persist, "svar_persist <variable> - mark an svar as persistent\n", FCVAR_DONTRECORD) {
+CON_COMMAND_F_COMPLETION(svar_persist, "svar_persist <variable> - mark an svar as persistent\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_get)) {
 	if (args.ArgC() != 2) {
 		return console->Print(svar_persist.ThisPtr()->m_pszHelpString);
 	}
@@ -182,7 +190,7 @@ CON_COMMAND_F(svar_persist, "svar_persist <variable> - mark an svar as persisten
 	SavePersistentSvars();
 }
 
-CON_COMMAND_F(svar_no_persist, "svar_no_persist <variable> - unmark an svar as persistent\n", FCVAR_DONTRECORD) {
+CON_COMMAND_F_COMPLETION(svar_no_persist, "svar_no_persist <variable> - unmark an svar as persistent\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_get)) {
 	if (args.ArgC() != 2) {
 		return console->Print(svar_no_persist.ThisPtr()->m_pszHelpString);
 	}
@@ -207,7 +215,7 @@ CON_COMMAND_F(_sar_svar_capture_stop, "Internal SAR command. Do not use\n", FCVA
 	SetSvar(g_svarListenerTarget, out);
 }
 
-CON_COMMAND_F(svar_capture, "svar_capture <variable> <command> [args]... - capture a command's output and place it into an svar, removing newlines\n", FCVAR_DONTRECORD) {
+CON_COMMAND_F_COMPLETION(svar_capture, "svar_capture <variable> <command> [args]... - capture a command's output and place it into an svar, removing newlines\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_get)) {
 	if (args.ArgC() < 3) {
 		return console->Print(svar_capture.ThisPtr()->m_pszHelpString);
 	}
@@ -240,7 +248,7 @@ CON_COMMAND_F(svar_capture, "svar_capture <variable> <command> [args]... - captu
 	engine->ExecuteCommand("_sar_svar_capture_stop", true);
 }
 
-CON_COMMAND_F(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvars's value and place it into an svar, removing newlines\n", FCVAR_DONTRECORD) {
+CON_COMMAND_F_COMPLETION(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvar's value and place it into an svar, removing newlines\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_get)) {
 	if (args.ArgC() != 3) {
 		return console->Print(svar_from_cvar.ThisPtr()->m_pszHelpString);
 	}
@@ -255,7 +263,7 @@ CON_COMMAND_F(svar_from_cvar, "svar_from_cvar <variable> <cvar> - capture a cvar
 }
 
 #define SVAR_OP(name, op, disallowSecondZero)                                                                                            \
-	CON_COMMAND_F(svar_##name, "svar_" #name " <variable> <variable|value> - perform the given operation on an svar\n", FCVAR_DONTRECORD) { \
+	CON_COMMAND_F_COMPLETION(svar_##name, "svar_" #name " <variable> <variable|value> - perform the given operation on an svar\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(svar_get)) { \
 		if (args.ArgC() != 3) {                                                                                                                \
 			return console->Print(svar_##name.ThisPtr()->m_pszHelpString);                                                                        \
 		}                                                                                                                                      \
@@ -383,7 +391,7 @@ static bool EvalCondition(Condition *c) {
 	return false;
 }
 
-// Parsing {{{
+// Condition Parsing {{{
 
 enum TokenType {
 	TOK_LPAREN,
@@ -887,7 +895,7 @@ static void _functionCallback(const CCommand &args) {
 	engine->ExecuteCommand(Utils::ssprintf("sar_function_run %s", args.m_pArgSBuffer).c_str(), true);
 }
 
-CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a function, replacing $1, $2 etc up to $9 in the command string with the respective argument. If no command is specified, prints the given function\n", FCVAR_DONTRECORD) {
+CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a function, replacing $1, $2 etc in the command string with the respective argument, and more. If no command is specified, prints the given function\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 2) {
 		return console->Print(sar_function.ThisPtr()->m_pszHelpString);
 	}
