@@ -419,7 +419,14 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CUserCmd *cmd) {
 
 	pi.oldButtons = m_nOldButtons;
 
-	pi.ticktime = 1.0f / 60.0f;  // TODO: find actual tickrate variable and put it there
+	if (fabsf(*engine->interval_per_tick - 1.0f/60.0f) < 0.00001f) {
+		// Back compat - this used to be hardcoded, and maybe the engine's interval
+		// could be slightly different to the value we used, leading to desyncs on
+		// old scripts.
+		pi.ticktime = 1.0f / 60.0f;
+	} else {
+		pi.ticktime = *engine->interval_per_tick;
+	}
 
 	return pi;
 }
