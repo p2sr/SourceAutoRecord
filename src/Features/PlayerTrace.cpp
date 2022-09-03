@@ -554,7 +554,7 @@ void PlayerTrace::DrawPortalsAt(int tick) const {
 
 void PlayerTrace::TeleportAt(std::string trace_name, int slot, int tick, bool eye) {
 	if (traces.count(trace_name) == 0) {
-		console->Print("No trace named %d!\n", trace_name.c_str());
+		console->Print("No trace named %s!\n", trace_name.c_str());
 		return;
 	}
 
