@@ -21,6 +21,10 @@
 #include <map>
 #include <optional>
 
+#ifdef _WIN32
+#	define strcasecmp _stricmp
+#endif
+
 Variable sar_hud_spacing("sar_hud_spacing", "1", 0, "Spacing between elements of HUD.\n");
 Variable sar_hud_x("sar_hud_x", "2", 0, "X padding of HUD.\n");
 Variable sar_hud_y("sar_hud_y", "2", 0, "Y padding of HUD.\n");
@@ -835,4 +839,37 @@ HUD_ELEMENT_MODE2(ent_slot_serial, "0", 0, 4096,
 	int serial = entityList->GetEntityInfoByIndex(mode)->m_SerialNumber;
 
 	ctx->DrawElement("ent slot %d serial: %d", mode, serial);
+}
+
+CON_COMMAND_F(sar_pip_align, "sar_pip_align <top|center|bottom> <left|center|right> - aligns the remote view.\n", FCVAR_DONTRECORD) {
+	if (args.ArgC() != 3) {
+		return console->Print(sar_pip_align.ThisPtr()->m_pszHelpString);
+	}
+	int sw, sh;
+	engine->GetScreenSize(nullptr, sw, sh);
+	float scale = Variable("ss_pipscale").GetFloat();
+	float w = sw * scale, h = sh * scale, x, y;
+	
+	if (!strcasecmp(args[1], "top")) {
+		y = sh - h - 25;
+	} else if (!strcasecmp(args[1], "center")) {
+		y = (sh - h) / 2;
+	} else if (!strcasecmp(args[1], "bottom")) {
+		y = 25;
+	} else {
+		return console->Print(sar_pip_align.ThisPtr()->m_pszHelpString);
+	}
+
+	if (!strcasecmp(args[2], "left")) {
+		x = sw - w - 25;
+	} else if (!strcasecmp(args[2], "center")) {
+		x = (sw - w) / 2;
+	} else if (!strcasecmp(args[2], "right")) {
+		x = 25;
+	} else {
+		return console->Print(sar_pip_align.ThisPtr()->m_pszHelpString);
+	}
+
+	Variable("ss_pip_right_offset").SetValue(x);
+	Variable("ss_pip_bottom_offset").SetValue(y);
 }
