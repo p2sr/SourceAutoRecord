@@ -54,16 +54,16 @@ static int g_slideOff;
 #define STR(s) #s
 #define EXP_STR(s) STR(s)
 
-Variable sar_toast_disable("sar_toast_disable", "0", "Disable all toasts from showing.\n");
-Variable sar_toast_font("sar_toast_font", "6", 0, "The font index to use for toasts.\n");
-Variable sar_toast_width("sar_toast_width", "250", 2 * SIDE_PAD + 10, "The maximum width for toasts.\n");
-Variable sar_toast_x("sar_toast_x", EXP_STR(TOAST_GAP), 0, "The horizontal position of the toasts HUD.\n");
-Variable sar_toast_y("sar_toast_y", EXP_STR(TOAST_GAP), 0, "The vertical position of the toasts HUD.\n");
-Variable sar_toast_align("sar_toast_align", "0", 0, 2, "The side to align toasts to horizontally. 0 = left, 1 = center, 2 = right.\n");
-Variable sar_toast_anchor("sar_toast_anchor", "1", 0, 1, "Where to put new toasts. 0 = bottom, 1 = top.\n");
-Variable sar_toast_compact("sar_toast_compact", "0", "Enables a compact form of the toasts HUD.\n");
-Variable sar_toast_background("sar_toast_background", "1", 0, 2, "Sets the background highlight for toasts. 0 = no background, 1 = text width only, 2 = full width.\n");
-Variable sar_toast_net_disable("sar_toast_net_disable", "0", "Disable network toasts.\n");
+Variable sar_toast_disable("sar_toast_disable", "0", "Disable all toasts from showing.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_toast_font("sar_toast_font", "6", 0, "The font index to use for toasts.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_toast_width("sar_toast_width", "250", 2 * SIDE_PAD + 10, "The maximum width for toasts.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_toast_x("sar_toast_x", EXP_STR(TOAST_GAP), 0, "The horizontal position of the toasts HUD.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_toast_y("sar_toast_y", EXP_STR(TOAST_GAP), 0, "The vertical position of the toasts HUD.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_toast_align("sar_toast_align", "0", 0, 2, "The side to align toasts to horizontally. 0 = left, 1 = center, 2 = right.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_toast_anchor("sar_toast_anchor", "1", 0, 1, "Where to put new toasts. 0 = bottom, 1 = top.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_toast_compact("sar_toast_compact", "0", "Enables a compact form of the toasts HUD.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_toast_background("sar_toast_background", "1", 0, 2, "Sets the background highlight for toasts. 0 = no background, 1 = text width only, 2 = full width.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_toast_net_disable("sar_toast_net_disable", "0", "Disable network toasts.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
 
 struct TagInfo {
 	uint8_t r, g, b;
@@ -87,7 +87,7 @@ static TagInfo getTagInfo(std::string tag) {
 	};
 }
 
-CON_COMMAND(sar_toast_tag_set_color, "sar_toast_tag_set_color <tag> <color> - set the color of the specified toast tag to an sRGB color\n") {
+CON_COMMAND_F(sar_toast_tag_set_color, "sar_toast_tag_set_color <tag> <color> - set the color of the specified toast tag to an sRGB color\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() != 3 && args.ArgC() != 5) {
 		return console->Print(sar_toast_tag_set_color.ThisPtr()->m_pszHelpString);
 	}
@@ -132,7 +132,7 @@ CON_COMMAND(sar_toast_tag_set_color, "sar_toast_tag_set_color <tag> <color> - se
 	g_tags[tag] = info;
 }
 
-CON_COMMAND(sar_toast_tag_set_duration, "sar_toast_tag_set_duration <tag> <duration> - set the duration of the specified toast tag in seconds. The duration may be given as 'forever'\n") {
+CON_COMMAND_F(sar_toast_tag_set_duration, "sar_toast_tag_set_duration <tag> <duration> - set the duration of the specified toast tag in seconds. The duration may be given as 'forever'\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() != 3) {
 		return console->Print(sar_toast_tag_set_duration.ThisPtr()->m_pszHelpString);
 	}
@@ -157,7 +157,7 @@ CON_COMMAND(sar_toast_tag_set_duration, "sar_toast_tag_set_duration <tag> <durat
 	g_tags[tag] = info;
 }
 
-CON_COMMAND(sar_toast_tag_dismiss_all, "sar_toast_tag_dismiss_all <tag> - dismiss all active toasts with the given tag\n") {
+CON_COMMAND_F(sar_toast_tag_dismiss_all, "sar_toast_tag_dismiss_all <tag> - dismiss all active toasts with the given tag\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() != 2) {
 		return console->Print(sar_toast_tag_dismiss_all.ThisPtr()->m_pszHelpString);
 	}
@@ -174,7 +174,7 @@ CON_COMMAND(sar_toast_tag_dismiss_all, "sar_toast_tag_dismiss_all <tag> - dismis
 		g_toasts.end());
 }
 
-CON_COMMAND(sar_toast_setpos, "sar_toast_setpos <bottom|top> <left|center|right> - set the position of the toasts HUD\n") {
+CON_COMMAND_F(sar_toast_setpos, "sar_toast_setpos <bottom|top> <left|center|right> - set the position of the toasts HUD\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() != 3) {
 		return console->Print(sar_toast_setpos.ThisPtr()->m_pszHelpString);
 	}
@@ -450,7 +450,7 @@ void ToastHud::Paint(int slot) {
 	}
 }
 
-CON_COMMAND(sar_toast_create, "sar_toast_create <tag> <text> - create a toast\n") {
+CON_COMMAND_F(sar_toast_create, "sar_toast_create <tag> <text> - create a toast\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() != 3) {
 		console->Print(sar_toast_create.ThisPtr()->m_pszHelpString);
 		return;
@@ -459,7 +459,7 @@ CON_COMMAND(sar_toast_create, "sar_toast_create <tag> <text> - create a toast\n"
 	toastHud.AddToast(args[1], args[2]);
 }
 
-CON_COMMAND(sar_toast_net_create, "sar_toast_net_create <tag> <text> - create a toast, also sending it to your coop partner\n") {
+CON_COMMAND_F(sar_toast_net_create, "sar_toast_net_create <tag> <text> - create a toast, also sending it to your coop partner\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() != 3) {
 		console->Print(sar_toast_net_create.ThisPtr()->m_pszHelpString);
 		return;
@@ -484,7 +484,7 @@ CON_COMMAND(sar_toast_net_create, "sar_toast_net_create <tag> <text> - create a 
 	}
 }
 
-CON_COMMAND(sar_toast_dismiss_all, "sar_toast_dismiss_all - dismiss all active toasts\n") {
+CON_COMMAND_F(sar_toast_dismiss_all, "sar_toast_dismiss_all - dismiss all active toasts\n", FCVAR_DONTRECORD) {
 	g_toasts.clear();
 }
 

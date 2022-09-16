@@ -35,7 +35,7 @@ Variable::Variable(const char *name)
 // Boolean or String
 Variable::Variable(const char *name, const char *value, const char *helpstr, int flags, FnChangeCallback_t callback)
 	: Variable() {
-	if (flags != 0)
+	if ((flags & ~FCVAR_DONTRECORD) != 0)
 		Create(name, value, flags, helpstr, true, 0, true, 1, callback);
 	else
 		Create(name, value, flags, helpstr, false, 0, false, 0, callback);

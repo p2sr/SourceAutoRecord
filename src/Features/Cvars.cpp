@@ -130,7 +130,7 @@ void Cvars::ListAll() {
 }
 void Cvars::PrintHelp(const CCommand &args) {
 	if (args.ArgC() != 2) {
-		return console->Print("Prints help string of cvar. Usage: help <cvar>\n");
+		return console->Print("help <cvar> - prints information about a cvar.\n");
 	}
 
 	auto cmd = reinterpret_cast<ConCommandBase *>(tier1->FindCommandBase(tier1->g_pCVar->ThisPtr(), args[1]));

@@ -12,13 +12,13 @@
 #include <cstring>
 #include <sstream>
 
-Variable sar_ihud("sar_ihud", "0", 0, 1, "Enables or disables movement inputs HUD of client.\n");
-Variable sar_ihud_x("sar_ihud_x", "2", "X position of input HUD.\n", 0);
-Variable sar_ihud_y("sar_ihud_y", "2", "Y position of input HUD.\n", 0);
-Variable sar_ihud_grid_padding("sar_ihud_grid_padding", "2", 0, "Padding between grid squares of input HUD.\n");
-Variable sar_ihud_grid_size("sar_ihud_grid_size", "60", 0, "Grid square size of input HUD.\n");
-Variable sar_ihud_analog_image_scale("sar_ihud_analog_image_scale", "0.6", 0, 1, "Scale of analog input images against max extent.\n");
-Variable sar_ihud_analog_view_deshake("sar_ihud_analog_view_deshake", "0", "Try to eliminate small fluctuations in the movement analog.\n");
+Variable sar_ihud("sar_ihud", "0", 0, 1, "Enables or disables movement inputs HUD of client.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_ihud_x("sar_ihud_x", "2", "X position of input HUD.\n", FCVAR_DONTRECORD);
+Variable sar_ihud_y("sar_ihud_y", "2", "Y position of input HUD.\n", FCVAR_DONTRECORD);
+Variable sar_ihud_grid_padding("sar_ihud_grid_padding", "2", 0, "Padding between grid squares of input HUD.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_ihud_grid_size("sar_ihud_grid_size", "60", 0, "Grid square size of input HUD.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_ihud_analog_image_scale("sar_ihud_analog_image_scale", "0.6", 0, 1, "Scale of analog input images against max extent.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_ihud_analog_view_deshake("sar_ihud_analog_view_deshake", "0", "Try to eliminate small fluctuations in the movement analog.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
 
 InputHud inputHud;
 
@@ -559,8 +559,8 @@ void InputHud::AddElement(std::string name, int type) {
 	});
 }
 
-
-CON_COMMAND_COMPLETION(sar_ihud_preset, "sar_ihud_preset <preset> - modifies input hud based on given preset\n", ({"normal", "normal_mouse", "tas"})) {
+DECL_AUTO_COMMAND_COMPLETION(sar_ihud_preset, ({"normal", "normal_mouse", "tas"}))
+CON_COMMAND_F_COMPLETION(sar_ihud_preset, "sar_ihud_preset <preset> - modifies input hud based on given preset\n", FCVAR_DONTRECORD, sar_ihud_preset_CompletionFunc) {
 	if (args.ArgC() != 2) {
 		console->Print(sar_ihud_preset.ThisPtr()->m_pszHelpString);
 		return;
@@ -595,7 +595,7 @@ DECL_COMMAND_COMPLETION(sar_ihud_modify) {
 CON_COMMAND_F_COMPLETION(sar_ihud_modify,
 	"sar_ihud_modify <element|all> [param=value]... - modifies parameters in given element.\n"
     "Params: enabled, text, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight, image, highlightimage, minhold.\n",
-	0, sar_ihud_modify_CompletionFunc
+	FCVAR_DONTRECORD, sar_ihud_modify_CompletionFunc
 ) {
 	if (args.ArgC() < 3) {
 		console->Print(sar_ihud_modify.ThisPtr()->m_pszHelpString);
@@ -661,7 +661,7 @@ CON_COMMAND_F_COMPLETION(sar_ihud_modify,
 	}
 }
 
-CON_COMMAND(sar_ihud_add_key, "sar_ihud_add_key <key>\n") {
+CON_COMMAND_F(sar_ihud_add_key, "sar_ihud_add_key <key>\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 2) {
 		console->Print(sar_ihud_add_key.ThisPtr()->m_pszHelpString);
 		return;
@@ -683,7 +683,7 @@ CON_COMMAND(sar_ihud_add_key, "sar_ihud_add_key <key>\n") {
 
 CON_COMMAND_HUD_SETPOS(sar_ihud, "input HUD")
 
-CON_COMMAND(sar_ihud_set_background, "sar_ihud_set_background <path> <grid x> <grid y> <grid w> <grid h>\n") {
+CON_COMMAND_F(sar_ihud_set_background, "sar_ihud_set_background <path> <grid x> <grid y> <grid w> <grid h>\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() != 6) {
 		console->Print(sar_ihud_set_background.ThisPtr()->m_pszHelpString);
 		return;
@@ -707,6 +707,6 @@ CON_COMMAND(sar_ihud_set_background, "sar_ihud_set_background <path> <grid x> <g
 	inputHud.bgGridH = atoi(args[5]);
 }
 
-CON_COMMAND(sar_ihud_clear_background, "sar_ihud_clear_background\n") {
+CON_COMMAND_F(sar_ihud_clear_background, "sar_ihud_clear_background\n", FCVAR_DONTRECORD) {
 	inputHud.bgTextureId = -1;
 }

@@ -111,17 +111,17 @@ public:
 	HudElement sar_hud_element_##name("sar_hud_" #name, sar_hud_element_##name##_callback, type); \
 	void sar_hud_element_##name##_callback(HudContext *ctx)
 #define HUD_ELEMENT(name, value, desc, type)                                                  \
-	Variable sar_hud_##name("sar_hud_" #name, value, desc);                                      \
+	Variable sar_hud_##name("sar_hud_" #name, value, desc, FCVAR_DONTRECORD);                    \
 	void sar_hud_element_##name##_callback(HudContext *ctx);                                     \
 	HudElement sar_hud_element_##name(&sar_hud_##name, sar_hud_element_##name##_callback, type); \
 	void sar_hud_element_##name##_callback(HudContext *ctx)
 #define HUD_ELEMENT_STRING(name, value, desc, type)                                                 \
-	Variable sar_hud_##name("sar_hud_" #name, value, desc, 0);                                         \
+	Variable sar_hud_##name("sar_hud_" #name, value, desc, FCVAR_DONTRECORD);                          \
 	void sar_hud_element_##name##_callback(HudContext *ctx, const char *text);                         \
 	HudStringElement sar_hud_element_##name(&sar_hud_##name, sar_hud_element_##name##_callback, type); \
 	void sar_hud_element_##name##_callback(HudContext *ctx, const char *text)
 #define HUD_ELEMENT_MODE(name, value, min, max, desc, type)                                       \
-	Variable sar_hud_##name("sar_hud_" #name, value, min, max, desc);                                \
+	Variable sar_hud_##name("sar_hud_" #name, value, min, max, desc, FCVAR_DONTRECORD);              \
 	void sar_hud_element_##name##_callback(HudContext *ctx, int mode);                               \
 	HudModeElement sar_hud_element_##name(&sar_hud_##name, sar_hud_element_##name##_callback, type); \
 	void sar_hud_element_##name##_callback(HudContext *ctx, int mode)
@@ -131,33 +131,33 @@ public:
 	HudElement sar_hud_element_##name("sar_hud_" #name, sar_hud_element_##name##_callback, type, true); \
 	void sar_hud_element_##name##_callback(HudContext *ctx)
 #define HUD_ELEMENT2(name, value, desc, type)                                                       \
-	Variable sar_hud_##name("sar_hud_" #name, value, desc);                                            \
+	Variable sar_hud_##name("sar_hud_" #name, value, desc, FCVAR_DONTRECORD);                          \
 	void sar_hud_element_##name##_callback(HudContext *ctx);                                           \
 	HudElement sar_hud_element_##name(&sar_hud_##name, sar_hud_element_##name##_callback, type, true); \
 	void sar_hud_element_##name##_callback(HudContext *ctx)
 #define HUD_ELEMENT_STRING2(name, value, desc, type)                                                      \
-	Variable sar_hud_##name("sar_hud_" #name, value, desc, 0);                                               \
+	Variable sar_hud_##name("sar_hud_" #name, value, desc, FCVAR_DONTRECORD);                                \
 	void sar_hud_element_##name##_callback(HudContext *ctx, const char *text);                               \
 	HudStringElement sar_hud_element_##name(&sar_hud_##name, sar_hud_element_##name##_callback, type, true); \
 	void sar_hud_element_##name##_callback(HudContext *ctx, const char *text)
 #define HUD_ELEMENT_MODE2(name, value, min, max, desc, type)                                            \
-	Variable sar_hud_##name("sar_hud_" #name, value, min, max, desc);                                      \
+	Variable sar_hud_##name("sar_hud_" #name, value, min, max, desc, FCVAR_DONTRECORD);                    \
 	void sar_hud_element_##name##_callback(HudContext *ctx, int mode);                                     \
 	HudModeElement sar_hud_element_##name(&sar_hud_##name, sar_hud_element_##name##_callback, type, true); \
 	void sar_hud_element_##name##_callback(HudContext *ctx, int mode)
 // Specify game version
 #define HUD_ELEMENT3(name, value, desc, type, showOnSecondScreen, version)                                                 \
-	Variable sar_hud_##name("sar_hud_" #name, value, desc);                                                                   \
+	Variable sar_hud_##name("sar_hud_" #name, value, desc, FCVAR_DONTRECORD);                                                 \
 	void sar_hud_element_##name##_callback(HudContext *ctx);                                                                  \
 	HudElement sar_hud_element_##name(&sar_hud_##name, sar_hud_element_##name##_callback, type, showOnSecondScreen, version); \
 	void sar_hud_element_##name##_callback(HudContext *ctx)
 #define HUD_ELEMENT_STRING3(name, value, desc, type, showOnSecondScreen, version)                                                \
-	Variable sar_hud_##name("sar_hud_" #name, value, desc, 0);                                                                      \
+	Variable sar_hud_##name("sar_hud_" #name, value, desc, FCVAR_DONTRECORD);                                                       \
 	void sar_hud_element_##name##_callback(HudContext *ctx, const char *text);                                                      \
 	HudStringElement sar_hud_element_##name(&sar_hud_##name, sar_hud_element_##name##_callback, type, showOnSecondScreen, version); \
 	void sar_hud_element_##name##_callback(HudContext *ctx, const char *text)
 #define HUD_ELEMENT_MODE3(name, value, min, max, desc, type, showOnSecondScreen, version)                                      \
-	Variable sar_hud_##name("sar_hud_" #name, value, min, max, desc);                                                             \
+	Variable sar_hud_##name("sar_hud_" #name, value, min, max, desc, FCVAR_DONTRECORD);                                           \
 	void sar_hud_element_##name##_callback(HudContext *ctx, int mode);                                                            \
 	HudModeElement sar_hud_element_##name(&sar_hud_##name, sar_hud_element_##name##_callback, type, showOnSecondScreen, version); \
 	void sar_hud_element_##name##_callback(HudContext *ctx, int mode)
@@ -177,12 +177,11 @@ int HudSetPos_CompleteFunc(const char *partial, char commands[COMMAND_COMPLETION
 
 #define CON_COMMAND_HUD_SETPOS(name, helpname) \
     CON_COMMAND_F_COMPLETION( \
-        name##_setpos,                                                                              \
-        "Automatically sets the position of " helpname ".\n"                                          \
-        "Usage: " #name "_setpos <top|center|bottom|y|y\%> <left|center|right|x|x\%>\n",              \
-        0, HudSetPos_CompleteFunc                                                                     \
-    ) {                                                                                               \
-        if (args.ArgC() != 3) return console->Print(name##_setpos.ThisPtr()->m_pszHelpString);      \
-        name##_x.SetValue(args[2]);                                                                 \
-        name##_y.SetValue(args[1]);                                                                 \
+        name##_setpos,                                                                                                            \
+        #name "_setpos <top|center|bottom|y|y\%> <left|center|right|x|x\%> - automatically sets the position of " helpname ".\n", \
+        FCVAR_DONTRECORD, HudSetPos_CompleteFunc                                                                                  \
+    ) {                                                                                                                           \
+        if (args.ArgC() != 3) return console->Print(name##_setpos.ThisPtr()->m_pszHelpString);                                    \
+        name##_x.SetValue(args[2]);                                                                                               \
+        name##_y.SetValue(args[1]);                                                                                               \
 	}
