@@ -1,5 +1,6 @@
 #include "Cheats.hpp"
 
+#include "Event.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Features/Hud/InspectionHud.hpp"
@@ -18,7 +19,6 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Offsets.hpp"
-#include "Event.hpp"
 
 #include <cstring>
 
@@ -51,6 +51,7 @@ Variable ui_transition_effect;
 Variable ui_transition_time;
 Variable hide_gun_when_holding;
 Variable cl_viewmodelfov;
+Variable r_flashlightbrightness;
 
 // P2 only
 CON_COMMAND(sar_togglewait, "sar_togglewait - enables or disables \"wait\" for the command buffer\n") {
@@ -279,6 +280,7 @@ void Cheats::Init() {
 	ui_transition_time = Variable("ui_transition_time");
 	hide_gun_when_holding = Variable("hide_gun_when_holding");
 	cl_viewmodelfov = Variable("cl_viewmodelfov");
+	r_flashlightbrightness = Variable("r_flashlightbrightness");
 
 	sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
 
@@ -340,11 +342,10 @@ ON_EVENT(PROCESS_MOVEMENT) {
 	if (!tbeamHandle || (uint32_t)tbeamHandle == (unsigned)Offsets::INVALID_EHANDLE_INDEX) return;
 
 	for (int i = 0; i < 2; i++) {
-		int hitboxOffset = i==0 ? Offsets::m_pShadowCrouch : Offsets::m_pShadowStand;
+		int hitboxOffset = i == 0 ? Offsets::m_pShadowCrouch : Offsets::m_pShadowStand;
 		auto shadow = *reinterpret_cast<void **>((uintptr_t)player + hitboxOffset);
 
 		// WAKE UP YOU MORON YOU'RE RUINING MY FUNNELS ARGGHHH
 		Memory::VMT<void(__rescall *)(void *)>(shadow, Offsets::Wake)(shadow);
 	}
-
 }

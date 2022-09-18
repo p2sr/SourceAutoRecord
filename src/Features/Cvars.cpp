@@ -171,6 +171,7 @@ void Cvars::Lock() {
 		ui_transition_time.Lock();
 		hide_gun_when_holding.Lock();
 		cl_viewmodelfov.Lock();
+		r_flashlightbrightness.Lock();
 
 		this->locked = true;
 	}
@@ -196,6 +197,8 @@ void Cvars::Unlock() {
 		ui_transition_time.Unlock(false);
 		hide_gun_when_holding.Unlock(false);
 		cl_viewmodelfov.Unlock(false);
+		r_flashlightbrightness.Unlock(false);
+		r_flashlightbrightness.RemoveFlag(FCVAR_CHEAT);
 
 		this->locked = false;
 	}
