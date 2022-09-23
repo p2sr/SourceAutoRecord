@@ -165,6 +165,7 @@ std::string EngineDemoPlayer::GetLevelName() {
 // 0x0B: timestamp (UTC)
 // 0x0C: file checksum
 // 0x0D: 'hwait' run
+// 0x0E: entity slot serial changed
 void EngineDemoPlayer::CustomDemoData(char *data, size_t length) {
 	if (data[0] == 0x03 || data[0] == 0x04) {  // Entity input data
 		std::optional<int> slot;

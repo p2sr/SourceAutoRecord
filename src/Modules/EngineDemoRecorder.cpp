@@ -7,6 +7,7 @@
 #include "Event.hpp"
 #include "Scheduler.hpp"
 #include "Features/AutoSubmit.hpp"
+#include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
@@ -390,10 +391,29 @@ void EngineDemoRecorder::RecordData(const void *data, unsigned long length) {
 }
 
 ON_EVENT(PRE_TICK) {
-	if (event.simulating && !engine->demorecorder->hasNotified && engine->demorecorder->m_bRecording) {
-		const char *cmd = "echo \"SAR " SAR_VERSION " (Built " SAR_BUILT ")\"";
-		engine->SendToCommandBuffer(cmd, 300);
-		engine->demorecorder->hasNotified = true;
+
+	if (engine->demorecorder->m_bRecording) {
+		if (event.simulating && !engine->demorecorder->hasNotified) {
+			const char *cmd = "echo \"SAR " SAR_VERSION " (Built " SAR_BUILT ")\"";
+			engine->SendToCommandBuffer(cmd, 300);
+			engine->demorecorder->hasNotified = true;
+		}
+
+		std::deque<EntitySlotSerial>::iterator val = g_ent_slot_serial.begin();
+		while (val != g_ent_slot_serial.end()) {
+			if (val->done) {
+				size_t size = 9;
+				char *data = new char[size];
+				data[0] = 0x0E;
+				*(int *)(data + 1) = val->slot;
+				*(int *)(data + 5) = val->serial;
+				engine->demorecorder->RecordData(data, size);
+				delete[] data;
+				val = g_ent_slot_serial.erase(val);
+			} else {
+				++val;
+			}
+		}
 	}
 }
 

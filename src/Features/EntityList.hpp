@@ -2,6 +2,7 @@
 #include "Command.hpp"
 #include "Feature.hpp"
 #include "Utils.hpp"
+#include <deque>
 
 class EntityList : public Feature {
 public:
@@ -12,8 +13,15 @@ public:
 	IHandleEntity *LookupEntity(const CBaseHandle &handle);
 };
 
+struct EntitySlotSerial {
+	bool done = false;
+	int slot = -1;
+	int serial = -1;
+};
+
 extern EntityList *entityList;
 
 extern Command sar_list_ents;
 extern Command sar_find_ent;
 extern Command sar_find_ents;
+extern std::deque<EntitySlotSerial> g_ent_slot_serial;

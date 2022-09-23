@@ -624,10 +624,20 @@ DETOUR(Server::GameFrame, bool simulating)
 }
 
 DETOUR_T(void, Server::OnRemoveEntity, IHandleEntity *ent, CBaseHandle handle) {
-	if (sar_prevent_ehm.GetBool()) {
+	auto info = entityList->GetEntityInfoByIndex(handle.GetEntryIndex());
+	bool hasSerialChanged = false;
+	
+	for (int i = g_ent_slot_serial.size() - 1; i >= 0; i--) {
+		if (handle.GetEntryIndex() == g_ent_slot_serial[i].slot && !g_ent_slot_serial[i].done) {
+			hasSerialChanged = true;
+			info->m_SerialNumber = g_ent_slot_serial[i].serial - 1;
+			console->Print("Serial number of slot %d has been set to %d.\n", g_ent_slot_serial[i].slot, g_ent_slot_serial[i].serial);
+			g_ent_slot_serial[i].done = true;
+		}
+	}
+	if (!hasSerialChanged && sar_prevent_ehm.GetBool()) {
 		// we're about to increment this entity's serial - if it's about to hit
 		// 0x4000, double-increment it so that can't happen
-		auto info = entityList->GetEntityInfoByIndex(handle.GetEntryIndex());
 		if (info->m_SerialNumber == 0x3FFF) {
 			info->m_SerialNumber += 1;
 			console->Print("Prevented EHM on slot %d!\n", handle.GetEntryIndex());

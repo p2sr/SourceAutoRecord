@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <deque>
 
 EntityList *entityList;
 
@@ -148,21 +149,32 @@ CON_COMMAND(sar_find_ents, "sar_find_ents <m_iClassName> - finds entities in the
 	}
 }
 
+std::deque<EntitySlotSerial> g_ent_slot_serial;
 CON_COMMAND(sar_ent_slot_serial, "sar_ent_slot_serial <id> [value] - prints entity slot serial number, or sets it if additional parameter is specified.\n") {
-	if (!sv_cheats.GetBool()) return console->Print("This command requires sv_cheats.\n");
 
 	if (args.ArgC() < 2 || args.ArgC() > 3) return console->Print(sar_ent_slot_serial.ThisPtr()->m_pszHelpString);
 
 	int id = std::atoi(args[1]);
+	if (id < 0 || id > Offsets::NUM_ENT_ENTRIES) {
+		return console->Print("Invalid entity slot %d!\n", id);
+	}
 	if (args.ArgC() == 2) {
 		int serial = entityList->GetEntityInfoByIndex(id)->m_SerialNumber;
 		console->Print("entity slot %d -> serial number %d\n", id, serial);
 	} else {
-		if (engine->GetCurrentMapName().length() != 0) {
-			return console->Print("Cannot set entity slot serial number while server is loaded. Exit to main menu.\n");
-		}
 		int value = std::atoi(args[2]) & 0x7FFF;
-		entityList->GetEntityInfoByIndex(id)->m_SerialNumber = value;
-		console->Print("Serial number of slot %d has been set to %d.\n", id, value);
+		EntitySlotSerial item = EntitySlotSerial();
+		item.slot = id;
+		item.serial = value;
+		if (engine->GetCurrentMapName().length() == 0) {
+			entityList->GetEntityInfoByIndex(id)->m_SerialNumber = value;
+			item.done = true;
+			g_ent_slot_serial.push_back(item);
+			console->Print("Serial number of slot %d has been set to %d.\n", id, value);
+		} else {
+			g_ent_slot_serial.push_back(item);
+			console->Print("Serial number of slot %d will be set to %d the next time that slot is removed.\n", id, value);
+		}
+
 	}	
 }
