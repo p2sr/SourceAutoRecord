@@ -20,19 +20,13 @@ Variable wait_persist_across_loads("wait_persist_across_loads", "0", 0, 1, "Whet
 
 Variable wait_mode("wait_mode", "0", "When the pending commands should be executed. 0 is absolute, 1 is relative to when you entered the wait command.\n");
 
-// mlugg 2021-01-11: DO NOT USE CON_COMMAND FOR THIS. That macro creates
-// a global named 'wait', which on Linux, conflicts with
-// 'pid_t wait(int *wstatus)' from stdlib. This results in very bad
-// things happening on initialization; C++ gets them mixed up somehow
-// and tries to send the function pointer as the Command constructor's
-// 'this', with predictably disastrous results.
-void wait_callback(const CCommand &args) {
+void wait_func(ConCommand* source, const CCommand &args, bool mode) {
 	if (args.ArgC() < 3) {
-		return console->Print(waitCmd.ThisPtr()->m_pszHelpString);
+		return console->Print(source->m_pszHelpString);
 	}
 
 	int tick = std::atoi(args[1]);
-	if (wait_mode.GetBool()) tick += session->GetTick();
+	if (mode) tick += session->GetTick();
 
 	const char *cmd;
 
@@ -57,7 +51,24 @@ void wait_callback(const CCommand &args) {
 
 	g_entries.push_back({wait_persist_across_loads.GetBool(), session->GetTick() >= tick, tick, cmd});
 }
+
+// mlugg 2021-01-11: DO NOT USE CON_COMMAND FOR THIS. That macro creates
+// a global named 'wait', which on Linux, conflicts with
+// 'pid_t wait(int *wstatus)' from stdlib. This results in very bad
+// things happening on initialization; C++ gets them mixed up somehow
+// and tries to send the function pointer as the Command constructor's
+// 'this', with predictably disastrous results.
+void wait_callback(const CCommand &args) {
+	wait_func(waitCmd.ThisPtr(), args, wait_mode.GetBool());
+}
 Command waitCmd("wait", wait_callback, "wait <tick> <commands> - wait for the amount of ticks specified\n", FCVAR_DONTRECORD);
+
+CON_COMMAND_F(wait_to, "wait_to <tick> <commands> - run this command on the specified session tick\n", FCVAR_DONTRECORD) {
+	wait_func(wait_to.ThisPtr(), args, false);
+}
+CON_COMMAND_F(wait_for, "wait_for <tick> <commands> - wait for the amount of ticks specified\n", FCVAR_DONTRECORD) {
+	wait_func(wait_for.ThisPtr(), args, true);
+}
 
 ON_EVENT(SESSION_END) {
 	for (size_t i = 0; i < g_entries.size(); ++i) {
