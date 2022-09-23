@@ -267,9 +267,11 @@ CON_COMMAND_F_COMPLETION(svar_from_cvar, "svar_from_cvar <variable> <cvar> - cap
 	Variable cvar(args[2]);
 
 	if (cvar.ThisPtr()) {
-		std::string val = cvar.GetFlags() & FCVAR_NEVER_AS_STRING ? std::to_string(cvar.GetInt()) : cvar.GetString();
-		val.erase(std::remove(val.begin(), val.end(), '\n'), val.end());
-		SetSvar({args[1]}, val);
+		if (!cvar.ThisPtr()->IsCommand()) {
+			std::string val = cvar.GetFlags() & FCVAR_NEVER_AS_STRING ? std::to_string(cvar.GetInt()) : cvar.GetString();
+			val.erase(std::remove(val.begin(), val.end(), '\n'), val.end());
+			SetSvar({args[1]}, val);
+		}
 	}
 }
 
