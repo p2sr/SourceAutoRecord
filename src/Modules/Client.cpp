@@ -5,8 +5,8 @@
 #include "Engine.hpp"
 #include "Event.hpp"
 #include "Features/Camera.hpp"
-#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Demo/DemoGhostPlayer.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/FovChanger.hpp"
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/Hud/InputHud.hpp"
@@ -64,6 +64,7 @@ REDECL(Client::OverrideView);
 REDECL(Client::ProcessMovement);
 REDECL(Client::DrawTranslucentRenderables);
 REDECL(Client::DrawOpaqueRenderables);
+REDECL(Client::CalcViewModelLag);
 
 CMDECL(Client::GetAbsOrigin, Vector, m_vecAbsOrigin);
 CMDECL(Client::GetAbsAngles, QAngle, m_angAbsRotation);
@@ -163,7 +164,7 @@ void Client::ClFrameStageNotify(int stage) {
 }
 
 void Client::OpenChat() {
-	this->StartMessageMode(this->g_HudChat->ThisPtr(), 1); // MM_SAY
+	this->StartMessageMode(this->g_HudChat->ThisPtr(), 1);  // MM_SAY
 }
 
 // CHLClient::LevelInitPreEntity
@@ -224,11 +225,11 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd *cmd) {
 	}
 
 	strafeQuality.OnUserCmd(1, *cmd);
-	
+
 	if (cmd->buttons & IN_ATTACK) {
 		g_bluePortalAngles[1] = engine->GetAngles(1);
 	}
-	
+
 	if (cmd->buttons & IN_ATTACK2) {
 		g_orangePortalAngles[1] = engine->GetAngles(1);
 	}
@@ -359,7 +360,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 		bool grounded = CE(player)->ground_entity();
 		groundFramesCounter->HandleMovementFrame(nSlot, grounded);
 		strafeQuality.OnMovement(nSlot, grounded);
-		Event::Trigger<Event::PROCESS_MOVEMENT>({ nSlot, false }); // There isn't really one, just pretend it's here lol
+		Event::Trigger<Event::PROCESS_MOVEMENT>({nSlot, false});  // There isn't really one, just pretend it's here lol
 	}
 
 	if (cmd->buttons & IN_ATTACK) {
@@ -399,7 +400,7 @@ DETOUR(Client::SteamControllerMove, int nSlot, float flFrametime, CUserCmd *cmd)
 
 DETOUR_COMMAND(Client::playvideo_end_level_transition) {
 	console->DevMsg("%s\n", args.m_pArgSBuffer);
-	//session->Ended();
+	//	session->Ended();
 
 	return Client::playvideo_end_level_transition_callback(args);
 }
@@ -409,9 +410,10 @@ DETOUR(Client::OverrideView, CViewSetup *m_View) {
 	Stitcher::OverrideView(m_View);
 	GhostEntity::FollowPov(m_View);
 	engine->demoplayer->OverrideView(m_View);
-	
+
 	return Client::OverrideView(thisptr, m_View);
 }
+
 
 DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 	// This should only be run if prediction is occurring, i.e. if we
@@ -432,7 +434,7 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 			groundFramesCounter->HandleMovementFrame(slot, grounded);
 			strafeQuality.OnMovement(slot, grounded);
 			if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
-			Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, false });
+			Event::Trigger<Event::PROCESS_MOVEMENT>({slot, false});
 			lastTick = tick;
 		}
 	}
@@ -467,6 +469,18 @@ DETOUR(Client::DrawOpaqueRenderables, void *renderCtx, int renderPath, void *def
 	return ret;
 }
 Hook g_DrawOpaqueRenderablesHook(&Client::DrawOpaqueRenderables_Hook);
+
+extern Hook g_CalcViewModelLagHook;
+DETOUR_T(void, Client::CalcViewModelLag, Vector &origin, QAngle &angles, QAngle &original_angles) {
+	if (sar_disable_weapon_sway.GetBool()) {
+		return;
+	}
+
+	g_CalcViewModelLagHook.Disable();
+	Client::CalcViewModelLag(thisptr, origin, angles, original_angles);
+	g_CalcViewModelLagHook.Enable();
+}
+Hook g_CalcViewModelLagHook(&Client::CalcViewModelLag_Hook);
 
 bool Client::Init() {
 	bool readJmp = false;
@@ -584,20 +598,30 @@ bool Client::Init() {
 	}
 
 #ifdef _WIN32
-	Client::DrawTranslucentRenderables = (decltype (Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 8B EC 81 EC 80 00 00 00 53 56 8B F1 8B 0D ? ? ? ? 8B 01 8B 90 C4 01 00 00 57 89 75 F0 FF D2 8B F8");
-	Client::DrawOpaqueRenderables = (decltype (Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 8B EC 83 EC 54 83 7D 0C 00 A1 ? ? ? ? 53 56 0F 9F 45 EC 83 78 30 00 57 8B F1 0F 84 BA 03 00 00");
+	Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 8B EC 81 EC 80 00 00 00 53 56 8B F1 8B 0D ? ? ? ? 8B 01 8B 90 C4 01 00 00 57 89 75 F0 FF D2 8B F8");
+	Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 8B EC 83 EC 54 83 7D 0C 00 A1 ? ? ? ? 53 56 0F 9F 45 EC 83 78 30 00 57 8B F1 0F 84 BA 03 00 00");
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		Client::DrawTranslucentRenderables = (decltype (Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 E8 ? ? ? ? 81 C7 ? ? ? ? 56 53 81 EC 18 01 00 00 8B 45 08 8B 5D 0C 89 45 98 8B 45 10");
-		Client::DrawOpaqueRenderables = (decltype (Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "E8 ? ? ? ? 05 ? ? ? ? 55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 7D 0C 8B 75 08 89 45 A0 8B 80 00 FB FF FF");
+		Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 E8 ? ? ? ? 81 C7 ? ? ? ? 56 53 81 EC 18 01 00 00 8B 45 08 8B 5D 0C 89 45 98 8B 45 10");
+		Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "E8 ? ? ? ? 05 ? ? ? ? 55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 7D 0C 8B 75 08 89 45 A0 8B 80 00 FB FF FF");
 	} else {
-		Client::DrawTranslucentRenderables = (decltype (Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC DC 00 00 00 8B 45 08 8B 5D 0C 89 C7 89 45 84 8B 45 10 89 85 4C FF FF FF");
-		Client::DrawOpaqueRenderables = (decltype (Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 45 0C 8B 5D 08 89 45 8C 8B 45 14 89 45 90 65 A1 14 00 00 00");
+		Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC DC 00 00 00 8B 45 08 8B 5D 0C 89 C7 89 45 84 8B 45 10 89 85 4C FF FF FF");
+		Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 45 0C 8B 5D 08 89 45 8C 8B 45 14 89 45 90 65 A1 14 00 00 00");
 	}
 #endif
 
 	g_DrawTranslucentRenderablesHook.SetFunc(Client::DrawTranslucentRenderables);
 	g_DrawOpaqueRenderablesHook.SetFunc(Client::DrawOpaqueRenderables);
+
+	if (sar.game->Is(SourceGame_Portal2)) {
+#ifdef _WIN32
+		Client::CalcViewModelLag = (decltype(Client::CalcViewModelLag))Memory::Scan(client->Name(), "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 83 EC 1C 56 6A 00 6A 00 8D 45 F4 8B F1 8B 4B 0C 50 51 E8 ? ? ? ?");
+#else
+		Client::CalcViewModelLag = (decltype(Client::CalcViewModelLag))Memory::Scan(client->Name(), "57 56 53 E8 ? ? ? ? 81 C3 ? ? ? ? 83 EC 20 8B 7C 24 30 8B 74 24 34");
+#endif
+	}
+
+	g_CalcViewModelLagHook.SetFunc(Client::CalcViewModelLag);
 
 	// Get at gamerules
 	{
@@ -607,10 +631,10 @@ bool Client::Init() {
 		this->gamerules = *(void ***)(cbk + 2);
 #else
 		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			cbk = cbk + 10 + *(int8_t *)(cbk + 9); // openradialmenu -> OpenRadialMenuCommand
+			cbk = cbk + 10 + *(int8_t *)(cbk + 9);  // openradialmenu -> OpenRadialMenuCommand
 			this->gamerules = (void **)(cbk + 5 + *(uint32_t *)(cbk + 6) + *(uint32_t *)(cbk + 20));
 		} else {
-			cbk = (uintptr_t)Memory::Read(cbk + 12); // openradialmenu -> OpenRadialMenuCommand
+			cbk = (uintptr_t)Memory::Read(cbk + 12);  // openradialmenu -> OpenRadialMenuCommand
 			this->gamerules = *(void ***)(cbk + 9);
 		}
 #endif

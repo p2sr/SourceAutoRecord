@@ -39,10 +39,10 @@ public:
 	using _KeyDown = int(__cdecl *)(void *b, const char *c);
 	using _KeyUp = int(__cdecl *)(void *b, const char *c);
 	using _GetAllClasses = ClientClass *(*)();
-	using _FrameStageNotify = void (__rescall *)(void *thisptr, int stage);
+	using _FrameStageNotify = void(__rescall *)(void *thisptr, int stage);
 	using _ShouldDraw = bool(__rescall *)(void *thisptr);
 	using _ChatPrintf = void (*)(void *thisptr, int iPlayerIndex, int iFilter, const char *fmt, ...);
-	using _StartMessageMode = void (__rescall *)(void *thisptr, int type);
+	using _StartMessageMode = void(__rescall *)(void *thisptr, int type);
 	using _IN_ActivateMouse = void (*)(void *thisptr);
 	using _IN_DeactivateMouse = void (*)(void *thisptr);
 
@@ -73,6 +73,9 @@ public:
 	void OpenChat();
 
 public:
+	// CBaseViewModel::CalcViewModelLag
+	DECL_DETOUR_T(void, CalcViewModelLag, Vector &origin, QAngle &angles, QAngle &original_angles);
+
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR(ProcessMovement, void *player, CMoveData *move);
 
@@ -118,7 +121,7 @@ public:
 	DECL_DETOUR(GetButtonBits, bool bResetState);
 
 	// CInput::SteamControllerMove
-	DECL_DETOUR(SteamControllerMove, int nSlot, float flFrametime, CUserCmd *cmd);  //is it slot though? :thinking:
+	DECL_DETOUR(SteamControllerMove, int nSlot, float flFrametime, CUserCmd *cmd);  //	is it slot though? :thinking:
 
 	// ClientModeShared::OverrideView
 	DECL_DETOUR(OverrideView, CViewSetup *m_View);
@@ -127,7 +130,9 @@ public:
 
 	bool Init() override;
 	void Shutdown() override;
-	const char *Name() override { return MODULE("client"); }
+	const char *Name() override {
+		return MODULE("client");
+	}
 };
 
 extern Client *client;
