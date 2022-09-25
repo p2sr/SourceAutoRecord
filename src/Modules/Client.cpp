@@ -447,7 +447,7 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 }
 
 CON_COMMAND(sar_chat, "sar_chat - open the chat HUD\n") {
-	if (engine->IsCoop()) client->OpenChat();
+	client->OpenChat();
 }
 
 extern Hook g_DrawTranslucentRenderablesHook;

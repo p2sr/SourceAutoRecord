@@ -231,6 +231,10 @@ std::vector<std::string> SpeedrunTimer::GetCategoryRules() {
 	return g_categories[g_currentCategory].rules;
 }
 
+std::string SpeedrunTimer::GetCategoryName() {
+	return g_currentCategory;
+}
+
 void SpeedrunTimer::ResetCategory() {
 	for (std::string ruleName : g_categories[g_currentCategory].rules) {
 		auto rule = SpeedrunTimer::GetRule(ruleName);

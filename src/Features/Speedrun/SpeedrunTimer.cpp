@@ -152,6 +152,9 @@ static int g_coopLastSyncTick;
 // Orange only - the tick we synced, as reported by the engine
 static int g_coopLastSyncEngineTick;
 
+static std::string g_chatTextFormat = "!seg -> !tt (!st)";
+static Color g_chatTextColor = Color{255, 176, 0};
+
 static void handleCoopPacket(const void *data, size_t size) {
 	if (!engine->IsOrange()) return;
 
@@ -445,7 +448,10 @@ void SpeedrunTimer::Start() {
 	g_speedrun.visitedMaps.push_back(map);
 
 	sendCoopPacket(PacketType::START);
-	toastHud.AddToast(SPEEDRUN_TOAST_TAG, "Speedrun started!");
+	if (!sar_mtrigger_legacy.GetBool())
+		toastHud.AddToast(SPEEDRUN_TOAST_TAG, "Speedrun started!");
+	else
+		client->Chat(g_chatTextColor, "Speedrun started!");
 
 	ghostLeaderboard.SpeedrunStart(g_speedrun.saved);
 }
@@ -582,6 +588,14 @@ void SpeedrunTimer::Stop(std::string segName) {
 	});
 }
 
+bool replace(std::string &str, const std::string &from, const std::string &to) {
+	size_t start_pos = str.find(from);
+	if (start_pos == std::string::npos)
+		return false;
+	str.replace(start_pos, from.length(), to);
+	return true;
+}
+
 void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested) {
 	if (!g_speedrun.isRunning) {
 		return;
@@ -621,8 +635,21 @@ void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested) {
 		setTimerAction(TimerAction::SPLIT);
 		float totalTime = SpeedrunTimer::GetTotalTicks() * *engine->interval_per_tick;
 		float splitTime = g_speedrun.splits.back().ticks * *engine->interval_per_tick;
-		std::string text = Utils::ssprintf("%s\n%s (%s)", segName.c_str(), SpeedrunTimer::Format(totalTime).c_str(), SpeedrunTimer::Format(splitTime).c_str());
-		toastHud.AddToast(SPEEDRUN_TOAST_TAG, text);
+		if (!sar_mtrigger_legacy.GetBool()) {
+			std::string text = Utils::ssprintf("%s\n%s (%s)", segName.c_str(), SpeedrunTimer::Format(totalTime).c_str(), SpeedrunTimer::Format(splitTime).c_str());
+			toastHud.AddToast(SPEEDRUN_TOAST_TAG, text);
+		} else {
+			std::string cleanSegName = segName;
+			replace(cleanSegName, GetCategoryName() + " - ", "");
+
+			std::string formattedString = g_chatTextFormat;
+			replace(formattedString, "!map", GetCategoryName());
+			replace(formattedString, "!seg", cleanSegName);
+			replace(formattedString, "!tt", SpeedrunTimer::Format(totalTime));
+			replace(formattedString, "!st", SpeedrunTimer::Format(splitTime));
+
+			client->Chat(g_chatTextColor, formattedString.c_str());
+		}
 	}
 }
 
@@ -761,6 +788,8 @@ Variable sar_speedrun_stop_in_menu("sar_speedrun_stop_in_menu", "0", "Automatica
 Variable sar_speedrun_start_on_load("sar_speedrun_start_on_load", "0", 0, 2, "Automatically start the speedrun timer when a map is loaded. 2 = restart if active.\n");
 Variable sar_speedrun_offset("sar_speedrun_offset", "0", 0, "Start speedruns with this time on the timer.\n", 0);
 Variable sar_speedrun_autostop("sar_speedrun_autostop", "0", 0, 2, "Automatically stop recording demos when a speedrun finishes. If 2, automatically append the run time to the demo name.\n");
+
+Variable sar_mtrigger_legacy("sar_mtrigger_legacy", "0", 0, 1, "\n");
 
 CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer\n") {
 	SpeedrunTimer::Start();
@@ -1034,4 +1063,33 @@ ON_EVENT(PRE_TICK) {
 		SpeedrunTimer::Reset(false);
 		engine->ExecuteCommand("restart_level");
 	}
+}
+
+CON_COMMAND(sar_mtrigger_legacy_format, "sar_mtrigger_legacy_format <string format> - formatting of the text that is displayed in the chat (!map - for map name, !seg - for segment name, !tt - for total time, !st - for split time). ( def. \"!seg -> !tt (!st)\" )\n") {
+	if (args.ArgC() != 2) {
+		console->Print(sar_mtrigger_legacy_format.ThisPtr()->m_pszHelpString);
+		return;
+	}
+
+	g_chatTextFormat = args[1];
+}
+
+CON_COMMAND(sar_mtrigger_legacy_textcolor, "sar_mtrigger_legacy_textcolor <hex code> - the color of the text that is displayed in the chat.\n") {
+	if (args.ArgC() != 2) {
+		console->Print(sar_mtrigger_legacy_textcolor.ThisPtr()->m_pszHelpString);
+		return;
+	}
+
+	const char *color = args[1];
+	if (color[0] == '#') {
+		++color;
+	}
+
+	int r, g, b;
+	int end;
+	if (sscanf(color, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
+		return console->Print("Invalid color code!\n");
+	}
+
+	g_chatTextColor = Color{(uint8_t)r, (uint8_t)g, (uint8_t)b};
 }

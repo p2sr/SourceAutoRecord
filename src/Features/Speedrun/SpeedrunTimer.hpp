@@ -45,6 +45,8 @@ extern Variable sar_speedrun_start_on_load;
 extern Variable sar_speedrun_offset;
 extern Variable sar_speedrun_autostop;
 
+extern Variable sar_mtrigger_legacy;
+
 extern Command sar_speedrun_start;
 extern Command sar_speedrun_stop;
 extern Command sar_speedrun_split;
@@ -53,3 +55,6 @@ extern Command sar_speedrun_resume;
 extern Command sar_speedrun_reset;
 extern Command sar_speedrun_result;
 extern Command sar_speedrun_export;
+
+extern Command sar_mtrigger_legacy_format;
+extern Command sar_mtrigger_legacy_textcolor;
