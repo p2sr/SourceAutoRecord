@@ -17,6 +17,7 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Features/PlayerTrace.hpp"
+#include "Features/EntityList.hpp"
 
 #include <vector>
 #include <deque>
@@ -67,6 +68,12 @@ static void encodeRaw32(std::vector<uint8_t> &buf, uint32_t val) {
 	buf.push_back((val >> 16) & 0xFF);
 	buf.push_back((val >> 8)  & 0xFF);
 	buf.push_back((val >> 0)  & 0xFF);
+}
+
+// I know this is ugly, but I think copy pasting the above code is
+// stupider so whatever
+static void encodeRawFloat(std::vector<uint8_t> &buf, float val) {
+	encodeRaw32(buf, *(uint32_t *) &val);
 }
 
 static void sendAll(const std::vector<uint8_t> &buf) {
@@ -301,6 +308,54 @@ static bool processCommands(ClientData &cl) {
 			Scheduler::OnMainThread([](){
 				tasPlayer->AdvanceFrame();
 			});
+			break;
+
+		case 100: // request entity info
+			if (extra < 8) return true;
+			{
+				std::deque<uint8_t> copy = cl.cmdbuf;
+				copy.pop_front();
+
+				uint32_t len = popRaw32(copy);
+				if (extra < 8 + len) return true;
+
+				std::string entSelector;
+				for (size_t i = 0; i < len; ++i) {
+					entSelector += copy[0];
+					copy.pop_front();
+				}
+
+				cl.cmdbuf = copy;
+
+				std::vector<uint8_t> buf;
+				buf.push_back(100); // 100 response - entity info
+
+				CEntInfo *entInfo = entityList->QuerySelector(entSelector.c_str());
+				if (entInfo != NULL) {
+					buf.push_back(1);
+					ServerEnt* ent = (ServerEnt*)entInfo->m_pEntity;
+
+					Vector position = ent->abs_origin();
+					encodeRawFloat(buf, position.x);
+					encodeRawFloat(buf, position.y);
+					encodeRawFloat(buf, position.z);
+
+					QAngle angles = ent->abs_angles();
+					encodeRawFloat(buf, angles.x);
+					encodeRawFloat(buf, angles.y);
+					encodeRawFloat(buf, angles.z);
+
+					Vector velocity = ent->abs_velocity();
+					encodeRawFloat(buf, velocity.x);
+					encodeRawFloat(buf, velocity.y);
+					encodeRawFloat(buf, velocity.z);
+					
+				} else {
+					buf.push_back(0);
+				}
+
+				send(cl.sock, (const char *)buf.data(), buf.size(), 0);
+			}
 			break;
 
 		default:

@@ -218,7 +218,7 @@ bool Engine::IsSplitscreen() {
 	return false;
 }
 
-bool Engine::Trace(Vector &pos, QAngle &angle, float distMax, CTraceFilterSimple &filter, CGameTrace &tr) {
+bool Engine::Trace(Vector &pos, QAngle &angle, float distMax, int mask, CTraceFilterSimple &filter, CGameTrace &tr) {
 	float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);
 	auto cosX = std::cos(X), cosY = std::cos(Y);
 	auto sinX = std::sin(X), sinY = std::sin(Y);
@@ -235,7 +235,7 @@ bool Engine::Trace(Vector &pos, QAngle &angle, float distMax, CTraceFilterSimple
 	ray.m_StartOffset = VectorAligned();
 	ray.m_Extents = VectorAligned();
 
-	engine->TraceRay(this->engineTrace->ThisPtr(), ray, MASK_SHOT_PORTAL, &filter, &tr);
+	engine->TraceRay(this->engineTrace->ThisPtr(), ray, mask, &filter, &tr);
 
 	if (tr.fraction >= 1) {
 		return false;
@@ -243,7 +243,7 @@ bool Engine::Trace(Vector &pos, QAngle &angle, float distMax, CTraceFilterSimple
 	return true;
 }
 
-bool Engine::TraceFromCamera(float distMax, CGameTrace &tr) {
+bool Engine::TraceFromCamera(float distMax, int mask, CGameTrace &tr) {
 	void *player = server->GetPlayer(GET_SLOT() + 1);
 
 	if (player == nullptr || (int)player == -1)
@@ -255,7 +255,7 @@ bool Engine::TraceFromCamera(float distMax, CGameTrace &tr) {
 	CTraceFilterSimple filter;
 	filter.SetPassEntity(server->GetPlayer(GET_SLOT() + 1));
 
-	return this->Trace(camPos, angle, distMax, filter, tr);
+	return this->Trace(camPos, angle, distMax, mask, filter, tr);
 }
 
 ON_EVENT(PRE_TICK) {

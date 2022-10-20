@@ -32,6 +32,12 @@ server (SAR) -> client (VSC extension):
 	[7] update debug tick
 		tick: i32 // -1 if no debug tick
 
+	[100] entity info response
+		state: u8 // if 0, the rest of the data is not sent
+		position: [3]f32 // x,y,z of entity's position
+		angles: [3]f32 // pitch, yaw and roll of entity's rotation
+		velocity: [3]f32 // x,y,z of entity's velocity
+
 	[255] set game location
 		len: u32
 		location: [len]u8  // a string like "/home/mlugg/.steam/steam/steamapps/common/Portal 2", used so that the plugin knows whether it has the right script folder open
@@ -61,3 +67,7 @@ client (VSC extension) -> server (SAR):
 		tick: u32  // if 0, disable next pause
 	
 	[7] advance tick (only valid when paused)
+	
+	[100] request entity info
+		len: u32
+		entity_selector: [len]u8

@@ -4,6 +4,8 @@
 #include "Modules/Console.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Engine.hpp"
+#include "Features/Session.hpp"
+#include "Features/Camera.hpp"
 #include "Offsets.hpp"
 #include "SAR.hpp"
 
@@ -53,6 +55,18 @@ CEntInfo *EntityList::GetEntityInfoByClassName(const char *name) {
 
 	return nullptr;
 }
+int EntityList::GetEntityInfoIndexByHandle(void *entity) {
+	if (entity == nullptr) return -1;
+	for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+		auto info = this->GetEntityInfoByIndex(index);
+		if (info->m_pEntity != entity) {
+			continue;
+		}
+		return index;
+	}
+	return -1;
+}
+
 IHandleEntity *EntityList::LookupEntity(const CBaseHandle &handle) {
 	if ((unsigned)handle.m_Index == (unsigned)Offsets::INVALID_EHANDLE_INDEX)
 		return NULL;
@@ -64,6 +78,54 @@ IHandleEntity *EntityList::LookupEntity(const CBaseHandle &handle) {
 	else
 		return NULL;
 }
+
+// returns an entity with given targetname/classname
+// supports array brackets
+CEntInfo *EntityList::QuerySelector(const char *selector) {
+	int slen = strlen(selector);
+	int entId = 0;
+	if (selector[slen - 1] == ']') {
+		int openBracket = slen - 2;
+		while (openBracket > 0 && selector[openBracket] != '[') {
+			openBracket--;
+		}
+		if (selector[openBracket] == '[') {
+			if (slen - openBracket - 2 > 0) {
+				std::string entIdStr(selector + openBracket + 1, slen - openBracket - 2);
+				entId = std::atoi(entIdStr.c_str());
+			}
+			slen = openBracket;
+		}
+	}
+	std::string selectorStr(selector, slen);
+
+	// TODO: maybe implement an * wildcard support here as well?
+
+	for (auto i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+
+		auto info = entityList->GetEntityInfoByIndex(i);
+		if (info->m_pEntity == nullptr) {
+			continue;
+		}
+
+		auto tname = server->GetEntityName(info->m_pEntity);
+		if (!tname || std::strcmp(tname, selectorStr.c_str()) != 0) {
+			auto cname = server->GetEntityClassName(info->m_pEntity);
+			if (!cname || std::strcmp(cname, selectorStr.c_str()) != 0) {
+				continue;
+			}
+		}
+
+		if (entId == 0) {
+			return info;
+		} else {
+			entId--;
+		}
+	}
+
+	return NULL;
+}
+
 
 // Commands
 
@@ -99,32 +161,86 @@ CON_COMMAND(sar_list_ents, "sar_list_ents - lists entities\n") {
 	}
 	console->Print("[page %i of %i]\n", page, pages);
 }
-CON_COMMAND(sar_find_ent, "sar_find_ent <m_iName> - finds entity in the entity list by name\n") {
-	if (args.ArgC() != 2) {
-		return console->Print(sar_find_ent.ThisPtr()->m_pszHelpString);
+
+static void dumpEntInfo(void *entity) {
+	if (entity == nullptr) return;
+	auto index = entityList->GetEntityInfoIndexByHandle(entity);
+	if (index == -1) return;
+	auto info = entityList->GetEntityInfoByIndex(index);
+
+	const char *targetname = server->GetEntityName(entity);
+	const char *classname = server->GetEntityClassName(entity);
+
+	if (!targetname) targetname = "<no name>";
+	if (!classname) classname = "<no class>";
+
+	console->Print("[%i] ", index);
+	console->Msg("(%i) ", info->m_SerialNumber);
+	console->Msg("%p", info->m_pEntity);
+	console->Print(" -> ");
+	console->Msg("%s (%s)\n", targetname, classname);
+
+	ICollideable *coll = &SE(entity)->collision();
+
+	ServerEnt *se = (ServerEnt *)entity;
+	Vector origin = se->abs_origin();
+	console->Print("origin: ");
+	console->Msg("%.2f %.2f %.2f\n", origin.x, origin.y, origin.z);
+
+	QAngle angles = se->abs_angles();
+	console->Print("angles: ");
+	console->Msg("%.2f %.2f %.2f\n", angles.x, angles.y, angles.z);
+
+	Vector velocity = se->abs_velocity();
+	console->Print("velocity: ");
+	console->Msg("%.2f %.2f %.2f\n", velocity.x, velocity.y, velocity.z);
+
+	console->Print("flags:  ");
+	console->Msg("%08X\n", coll->GetSolidFlags());
+
+	if (coll->GetSolidFlags() & FSOLID_NOT_SOLID) {
+		console->Msg(" - FSOLID_NOT_SOLID\n");
 	}
 
-	console->Msg("Results for %s\n", args[1]);
-	for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
-		auto info = entityList->GetEntityInfoByIndex(index);
-		if (info->m_pEntity == nullptr) {
-			continue;
-		}
-
-		auto name = server->GetEntityName(info->m_pEntity);
-		if (!name || std::strcmp(name, args[1]) != 0) {
-			continue;
-		}
-
-		console->Print("[%i] ", index);
-		console->Msg("(%i) ", info->m_SerialNumber);
-		console->Msg("%p", info->m_pEntity);
-		console->Print(" -> ");
-		console->Msg("%s\n", server->GetEntityClassName(info->m_pEntity));
-		break;
+	if (coll->GetSolidFlags() & FSOLID_NOT_STANDABLE) {
+		console->Msg(" - FSOLID_NOT_STANDABLE\n");
 	}
+
+	if (coll->GetSolidFlags() & FSOLID_VOLUME_CONTENTS) {
+		console->Msg(" - FSOLID_VOLUME_CONTENTS\n");
+	}
+
+	console->Print("solid type:  ");
+	console->Msg("%d\n", (int)coll->GetSolid());
+
+	console->Print("collision group:  ");
+	console->Msg("0x%08X\n", coll->GetCollisionGroup());
 }
-CON_COMMAND(sar_find_ents, "sar_find_ents <m_iClassName> - finds entities in the entity list by class name\n") {
+
+CON_COMMAND(sar_ent_info, "sar_ent_info [selector] - show info about the entity under the crosshair or with the given name\n") {
+	if (!session->isRunning) return;
+
+	if (args.ArgC() == 2) {
+		auto entity = entityList->QuerySelector(args[1]);
+		if (entity != NULL) {
+			dumpEntInfo(entity->m_pEntity);
+			return;
+		}
+	} else {
+		CGameTrace tr;
+
+		if (engine->TraceFromCamera(8192, MASK_ALL, tr)) {
+			void *entity = tr.m_pEnt;
+			if (entity) {
+				dumpEntInfo(entity);
+				return;
+			}
+		}
+	}
+	console->Print("No entity found!\n");
+}
+
+CON_COMMAND(sar_find_ents, "sar_find_ents <selector> - finds entities in the entity list by class name\n") {
 	if (args.ArgC() != 2) {
 		return console->Print(sar_find_ents.ThisPtr()->m_pszHelpString);
 	}
@@ -136,9 +252,12 @@ CON_COMMAND(sar_find_ents, "sar_find_ents <m_iClassName> - finds entities in the
 			continue;
 		}
 
-		auto cname = server->GetEntityClassName(info->m_pEntity);
-		if (!cname || std::strcmp(cname, args[1]) != 0) {
-			continue;
+		auto tname = server->GetEntityName(info->m_pEntity);
+		if (!tname || std::strcmp(tname, args[1]) != 0) {
+			auto cname = server->GetEntityClassName(info->m_pEntity);
+			if (!cname || std::strcmp(cname, args[1]) != 0) {
+				continue;
+			}
 		}
 
 		console->Print("[%i] ", index);

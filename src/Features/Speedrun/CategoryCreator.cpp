@@ -173,7 +173,7 @@ CON_COMMAND(sar_speedrun_cc_place, "sar_speedrun_cc_place - place a trigger-ey r
 	}
 	case 1: {
 		CGameTrace tr;
-		engine->TraceFromCamera(MAX_TRACE, tr);
+		engine->TraceFromCamera(MAX_TRACE, MASK_SHOT_PORTAL, tr);
 
 		g_placementStart = tr.endpos;
 
@@ -183,7 +183,7 @@ CON_COMMAND(sar_speedrun_cc_place, "sar_speedrun_cc_place - place a trigger-ey r
 	}
 	case 2: {
 		CGameTrace tr;
-		engine->TraceFromCamera(MAX_TRACE, tr);
+		engine->TraceFromCamera(MAX_TRACE, MASK_SHOT_PORTAL, tr);
 
 		Vector start = g_placementStart;
 		Vector end = tr.endpos;
@@ -265,7 +265,7 @@ ON_EVENT(RENDER) {
 
 	if (g_placementStage == 2) {
 		CGameTrace tr;
-		engine->TraceFromCamera(MAX_TRACE, tr);
+		engine->TraceFromCamera(MAX_TRACE, MASK_SHOT_PORTAL, tr);
 
 		OverlayRender::addBoxMesh(
 			{0, 0, 0},

@@ -10,7 +10,9 @@ public:
 	CEntInfo *GetEntityInfoByIndex(int index);
 	CEntInfo *GetEntityInfoByName(const char *name);
 	CEntInfo *GetEntityInfoByClassName(const char *name);
+	int GetEntityInfoIndexByHandle(void *entity);
 	IHandleEntity *LookupEntity(const CBaseHandle &handle);
+	CEntInfo *QuerySelector(const char *selector);
 };
 
 struct EntitySlotSerial {

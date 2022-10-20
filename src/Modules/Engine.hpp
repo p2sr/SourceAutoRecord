@@ -146,8 +146,8 @@ public:
 	bool IsOrange();
 	bool IsSplitscreen();
 	void RecordDemoData(void *data, size_t len);
-	bool Trace(Vector &pos, QAngle &angle, float distMax, CTraceFilterSimple &filter, CGameTrace &tr);
-	bool TraceFromCamera(float distMax, CGameTrace &tr);
+	bool Trace(Vector &pos, QAngle &angle, float distMax, int mask, CTraceFilterSimple &filter, CGameTrace &tr);
+	bool TraceFromCamera(float distMax, int mask, CGameTrace &tr);
 	bool ConsoleVisible();
 	void GetTicks(int &host, int &server, int &client);
 	void SetAdvancing(bool advancing);
