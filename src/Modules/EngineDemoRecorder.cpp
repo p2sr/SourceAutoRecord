@@ -471,3 +471,21 @@ void EngineDemoRecorder::Stop() {
 #endif
 	this->requestedStop = false;
 }
+
+CON_COMMAND(sar_stop, "sar_stop <name> - stop recording the current demo and rename it to 'name' (not considering sar_record_prefix)\n") {
+	if (args.ArgC() != 2) return console->Print(sar_stop.ThisPtr()->m_pszHelpString);
+
+	std::string name = args[1];
+	if (name.size() == 0) return console->Print("Demo name cannot be blank\n");
+	name += ".dem";
+
+	if (!engine->demorecorder->isRecordingDemo) return console->Print("Demo recording not active\n");
+
+	std::string cur_name = engine->demorecorder->GetDemoFilename();
+	engine->demorecorder->Stop();
+	try {
+		std::filesystem::rename(cur_name, name);
+	} catch (...) {
+		console->Print("An error occurred renaming the demo. Saved as %s\n", cur_name.c_str());
+	}
+}
