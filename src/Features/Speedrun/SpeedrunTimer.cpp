@@ -798,14 +798,14 @@ CON_COMMAND(sar_speedrun_result, "sar_speedrun_result - print the speedrun resul
 		total += split.ticks;
 		auto ticksStr = SpeedrunTimer::Format(split.ticks * *engine->interval_per_tick);
 		auto totalStr = SpeedrunTimer::Format(total * *engine->interval_per_tick);
-		console->Print("%s - %s (%d) - %s\n", split.name.c_str(), ticksStr.c_str(), split.ticks, totalStr.c_str());
+		console->Print("%s - %s (%d) - %s (%d)\n", split.name.c_str(), ticksStr.c_str(), split.ticks, totalStr.c_str(), total);
 		if (split.segments.size() > 1) {
 			total -= split.ticks;
 			for (Segment seg : split.segments) {
 				total += seg.ticks;
 				auto ticksStr = SpeedrunTimer::Format(seg.ticks * *engine->interval_per_tick);
 				auto totalStr = SpeedrunTimer::Format(total * *engine->interval_per_tick);
-				console->Print("    %s - %s (%d) - %s\n", seg.name.c_str(), ticksStr.c_str(), seg.ticks, totalStr.c_str());
+				console->Print("    %s - %s (%d) - %s (%d)\n", seg.name.c_str(), ticksStr.c_str(), seg.ticks, totalStr.c_str(), total);
 			}
 		}
 	}
@@ -816,13 +816,13 @@ CON_COMMAND(sar_speedrun_result, "sar_speedrun_result - print the speedrun resul
 			total += seg.ticks;
 			auto ticksStr = SpeedrunTimer::Format(seg.ticks * *engine->interval_per_tick);
 			auto totalStr = SpeedrunTimer::Format(total * *engine->interval_per_tick);
-			console->Print("    %s - %s (%d) - %s\n", seg.name.c_str(), ticksStr.c_str(), seg.ticks, totalStr.c_str());
+			console->Print("    %s - %s (%d) - %s (%d)\n", seg.name.c_str(), ticksStr.c_str(), seg.ticks, totalStr.c_str(), total);
 		}
 		int segTicks = SpeedrunTimer::GetSegmentTicks();
 		total += segTicks;
 		auto ticksStr = SpeedrunTimer::Format(segTicks * *engine->interval_per_tick);
 		auto totalStr = SpeedrunTimer::Format(total * *engine->interval_per_tick);
-		console->Print("    [current segment] - %s (%d) - %s\n", ticksStr.c_str(), segTicks, totalStr.c_str());
+		console->Print("    [current segment] - %s (%d) - %s (%d)\n", ticksStr.c_str(), segTicks, totalStr.c_str(), total);
 	}
 
 	total = SpeedrunTimer::GetTotalTicks();
@@ -985,4 +985,53 @@ void SpeedrunTimer::CategoryChanged() {
 
 CON_COMMAND(sar_speedrun_reset_export, "sar_speedrun_reset_export - reset the log of complete and incomplete runs to be exported\n") {
 	g_runs.clear();
+}
+
+static std::vector<int> g_autoreset_ticks;
+
+DECL_COMMAND_FILE_COMPLETION(sar_speedrun_autoreset_load, ".txt", ".", 1)
+
+CON_COMMAND_F_COMPLETION(sar_speedrun_autoreset_load, "sar_speedrun_autoreset_load <file> - load the given file of autoreset timestamps and use it while the speedrun timer is active\n", 0, AUTOCOMPLETION_FUNCTION(sar_speedrun_autoreset_load)) {
+	if (args.ArgC() != 2) return console->Print(sar_speedrun_autoreset_load.ThisPtr()->m_pszHelpString);
+
+	std::string name = args[1];
+	name += ".txt";
+
+	std::ifstream file(name);
+	if (!file) return console->Print("Failed to open %s\n", name.c_str());
+
+	g_autoreset_ticks.clear();
+	std::string line;
+	int last_tick = 30; // Block low tick numbers to prevent getting stuck in an infinite reset loop
+	while (std::getline(file, line)) {
+		int tick = atoi(line.c_str());
+		if (tick < last_tick) {
+			console->Print("Error: autoreset ticks must be increasing, but %d < %d\n. Giving up", tick, last_tick);
+			g_autoreset_ticks.clear();
+			return;
+		}
+		g_autoreset_ticks.push_back(tick);
+		last_tick = tick;
+	}
+
+	console->Print("Successfully loaded %d autoreset ticks\n", g_autoreset_ticks.size());
+}
+
+CON_COMMAND(sar_speedrun_autoreset_clear, "sar_speedrun_autoreset_clear - stop using the autoreset file\n") {
+	g_autoreset_ticks.clear();
+}
+
+ON_EVENT(PRE_TICK) {
+	if (!SpeedrunTimer::IsRunning()) return;
+	if (engine->IsOrange()) return;
+	if (engine->IsGamePaused()) return;
+
+	size_t next_split_idx = g_speedrun.splits.size();
+	if (next_split_idx >= g_autoreset_ticks.size()) return;
+
+	int ticks = SpeedrunTimer::GetTotalTicks();
+	if (ticks > g_autoreset_ticks[next_split_idx]) {
+		SpeedrunTimer::Reset(false);
+		engine->ExecuteCommand("restart_level");
+	}
 }
