@@ -28,7 +28,7 @@ CON_COMMAND(sar_aim_point_add, "sar_aim_point_add - add frozen aimpoint at curre
 	g_frozen.push_back(g_last_trace);
 }
 
-CON_COMMAND(sar_aim_point_clear, "sar_aim_point_cleat - clear all frozen aimpoints\n") {
+CON_COMMAND(sar_aim_point_clear, "sar_aim_point_clear - clear all frozen aimpoints\n") {
 	console->Print("Unfreezing all aimpoints\n");
 	g_frozen.clear();
 }
