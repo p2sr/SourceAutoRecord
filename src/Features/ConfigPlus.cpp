@@ -725,6 +725,37 @@ CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only 
 	engine->ExecuteCommand(cmd, true);
 }
 
+CON_COMMAND_F(conds, "conds [<condition> <command>]... [else] - runs the first command which has a satisfied condition\n", FCVAR_DONTRECORD) {
+	if (args.ArgC() < 2) {
+		return console->Print(conds.ThisPtr()->m_pszHelpString);
+	}
+
+	int i = 1;
+	while (i < args.ArgC()) {
+		if (i == (args.ArgC() - 1)) {
+			// else
+			engine->ExecuteCommand(args[i], true);
+			return;
+		}
+
+		const char *cond_str = args[i];
+		Condition *cond = ParseCondition(LexCondition(cond_str, strlen(cond_str)));
+		if (!cond) {
+			console->Print("Condition parsing of \"%s\" failed\n", cond_str);
+			return;
+		}
+
+		bool should_run = EvalCondition(cond);
+		FreeCondition(cond);
+
+		if (should_run) {
+			engine->ExecuteCommand(args[i + 1], true);
+			return;
+		}
+		i += 2;
+	}
+}
+
 #define MK_SAR_ON(name, when, immediately)                                                                                                \
 	static std::vector<std::string> _g_execs_##name;                                                                                         \
 	CON_COMMAND_F(sar_on_##name, "sar_on_" #name " <command> [args]... - registers a command to be run " when "\n", FCVAR_DONTRECORD) {      \
