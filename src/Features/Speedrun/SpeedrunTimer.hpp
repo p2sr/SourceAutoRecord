@@ -38,6 +38,7 @@ namespace SpeedrunTimer {
 	void CategoryChanged();
 };  // namespace SpeedrunTimer
 
+extern Variable sar_speedrun_skip_cutscenes;
 extern Variable sar_speedrun_smartsplit;
 extern Variable sar_speedrun_time_pauses;
 extern Variable sar_speedrun_stop_in_menu;
@@ -46,6 +47,8 @@ extern Variable sar_speedrun_offset;
 extern Variable sar_speedrun_autostop;
 
 extern Variable sar_mtrigger_legacy;
+extern Variable sar_mtrigger_legacy_format;
+extern Variable sar_mtrigger_legacy_textcolor;
 
 extern Command sar_speedrun_start;
 extern Command sar_speedrun_stop;
@@ -55,6 +58,3 @@ extern Command sar_speedrun_resume;
 extern Command sar_speedrun_reset;
 extern Command sar_speedrun_result;
 extern Command sar_speedrun_export;
-
-extern Command sar_mtrigger_legacy_format;
-extern Command sar_mtrigger_legacy_textcolor;

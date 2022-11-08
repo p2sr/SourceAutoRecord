@@ -152,9 +152,6 @@ static int g_coopLastSyncTick;
 // Orange only - the tick we synced, as reported by the engine
 static int g_coopLastSyncEngineTick;
 
-static std::string g_chatTextFormat = "!seg -> !tt (!st)";
-static Color g_chatTextColor = Color{255, 176, 0};
-
 static void handleCoopPacket(const void *data, size_t size) {
 	if (!engine->IsOrange()) return;
 
@@ -202,6 +199,15 @@ ON_EVENT_P(SESSION_START, 1000) {
 }
 ON_EVENT_P(SESSION_START, -1000) {
 	g_inDemoLoad = false;
+}
+ON_EVENT(SESSION_START) {
+	if (SpeedrunTimer::IsRunning() && sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::isSpeedrunMod()) {
+		if (g_speedrun.lastMap == "sp_a2_bts6") {
+			engine->ExecuteCommand("ent_fire @exit_teleport Teleport; ent_fire @transition_script RunScriptCode TransitionFromMap()", true);
+		} else if (g_speedrun.lastMap == "sp_a3_00") {
+			engine->ExecuteCommand("ent_fire bottomless_pit_teleport Teleport; ent_fire @transition_script RunScriptCode TransitionFromMap()", true);
+		}
+	}
 }
 
 static int getCurrentTick() {
@@ -283,6 +289,12 @@ int SpeedrunTimer::GetSegmentTicks() {
 	int ticks = 0;
 	ticks += g_speedrun.saved;
 	if (!g_speedrun.isPaused && !g_speedrun.inCoopPause && (!engine->demoplayer->IsPlaying() || engine->demoplayer->IsPlaybackFixReady())) {
+
+		if (sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::isSpeedrunMod()) {
+			if (g_speedrun.lastMap == "sp_a2_bts6") return 3112;
+			else if (g_speedrun.lastMap == "sp_a3_00") return 4666;
+		}
+
 		ticks += getCurrentTick() - g_speedrun.base;
 	}
 
@@ -448,10 +460,12 @@ void SpeedrunTimer::Start() {
 	g_speedrun.visitedMaps.push_back(map);
 
 	sendCoopPacket(PacketType::START);
-	if (!sar_mtrigger_legacy.GetBool())
+	if (!sar_mtrigger_legacy.GetBool()) {
 		toastHud.AddToast(SPEEDRUN_TOAST_TAG, "Speedrun started!");
-	else
-		client->Chat(g_chatTextColor, "Speedrun started!");
+	} else {
+		auto color = Utils::GetColor(sar_mtrigger_legacy_textcolor.GetString());
+		client->Chat(color.value_or(Color{255, 176, 0}), "Speedrun started!");
+	}
 
 	ghostLeaderboard.SpeedrunStart(g_speedrun.saved);
 }
@@ -642,13 +656,14 @@ void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested) {
 			std::string cleanSegName = segName;
 			replace(cleanSegName, GetCategoryName() + " - ", "");
 
-			std::string formattedString = g_chatTextFormat;
+			std::string formattedString = sar_mtrigger_legacy_format.GetString();
 			replace(formattedString, "!map", GetCategoryName());
 			replace(formattedString, "!seg", cleanSegName);
 			replace(formattedString, "!tt", SpeedrunTimer::Format(totalTime));
 			replace(formattedString, "!st", SpeedrunTimer::Format(splitTime));
 
-			client->Chat(g_chatTextColor, formattedString.c_str());
+			auto color = Utils::GetColor(sar_mtrigger_legacy_textcolor.GetString());
+			client->Chat(color.value_or(Color{255, 176, 0}), formattedString.c_str());
 		}
 	}
 }
@@ -782,6 +797,7 @@ float SpeedrunTimer::UnFormat(const std::string &formated_time) {
 
 // }}}
 
+Variable sar_speedrun_skip_cutscenes("sar_speedrun_skip_cutscenes", "0", "Skip Tube Ride and Long Fall in Portal 2.\n");
 Variable sar_speedrun_smartsplit("sar_speedrun_smartsplit", "1", "Only split the speedrun timer a maximum of once per map.\n");
 Variable sar_speedrun_time_pauses("sar_speedrun_time_pauses", "0", "Include time spent paused in the speedrun timer.\n");
 Variable sar_speedrun_stop_in_menu("sar_speedrun_stop_in_menu", "0", "Automatically stop the speedrun timer when the menu is loaded.\n");
@@ -790,6 +806,8 @@ Variable sar_speedrun_offset("sar_speedrun_offset", "0", 0, "Start speedruns wit
 Variable sar_speedrun_autostop("sar_speedrun_autostop", "0", 0, 2, "Automatically stop recording demos when a speedrun finishes. If 2, automatically append the run time to the demo name.\n");
 
 Variable sar_mtrigger_legacy("sar_mtrigger_legacy", "0", 0, 1, "\n");
+Variable sar_mtrigger_legacy_format("sar_mtrigger_legacy_format", "!seg -> !tt (!st)", "Formatting of the text that is displayed in the chat (!map - for map name, !seg - for segment name, !tt - for total time, !st - for split time).\n", 0);
+Variable sar_mtrigger_legacy_textcolor("sar_mtrigger_legacy_textcolor", "255 176 0", "The color of the text that is displayed in the chat.\n", 0);
 
 CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer\n") {
 	SpeedrunTimer::Start();
@@ -1063,33 +1081,4 @@ ON_EVENT(PRE_TICK) {
 		SpeedrunTimer::Reset(false);
 		engine->ExecuteCommand("restart_level");
 	}
-}
-
-CON_COMMAND(sar_mtrigger_legacy_format, "sar_mtrigger_legacy_format <string format> - formatting of the text that is displayed in the chat (!map - for map name, !seg - for segment name, !tt - for total time, !st - for split time). ( def. \"!seg -> !tt (!st)\" )\n") {
-	if (args.ArgC() != 2) {
-		console->Print(sar_mtrigger_legacy_format.ThisPtr()->m_pszHelpString);
-		return;
-	}
-
-	g_chatTextFormat = args[1];
-}
-
-CON_COMMAND(sar_mtrigger_legacy_textcolor, "sar_mtrigger_legacy_textcolor <hex code> - the color of the text that is displayed in the chat.\n") {
-	if (args.ArgC() != 2) {
-		console->Print(sar_mtrigger_legacy_textcolor.ThisPtr()->m_pszHelpString);
-		return;
-	}
-
-	const char *color = args[1];
-	if (color[0] == '#') {
-		++color;
-	}
-
-	int r, g, b;
-	int end;
-	if (sscanf(color, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
-		return console->Print("Invalid color code!\n");
-	}
-
-	g_chatTextColor = Color{(uint8_t)r, (uint8_t)g, (uint8_t)b};
 }
