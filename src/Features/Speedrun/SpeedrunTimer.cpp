@@ -795,7 +795,7 @@ CON_COMMAND(sar_speedrun_start, "sar_speedrun_start - start the speedrun timer\n
 	SpeedrunTimer::Start();
 }
 
-CON_COMMAND(sar_speedrun_stop, "sar_speedrun_start - stop the speedrun timer\n") {
+CON_COMMAND(sar_speedrun_stop, "sar_speedrun_stop - stop the speedrun timer\n") {
 	SpeedrunTimer::Stop(getEffectiveMapName());
 }
 

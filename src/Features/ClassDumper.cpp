@@ -188,7 +188,7 @@ CON_COMMAND(sar_find_server_class, "sar_find_server_class <class_name> - finds s
 		}
 	}
 }
-CON_COMMAND(sar_find_client_class, "sar_find_clientclass <class_name> - finds specific client class tables and props with their offset\n") {
+CON_COMMAND(sar_find_client_class, "sar_find_client_class <class_name> - finds specific client class tables and props with their offset\n") {
 	if (args.ArgC() != 2) {
 		return console->Print(sar_find_client_class.ThisPtr()->m_pszHelpString);
 	}

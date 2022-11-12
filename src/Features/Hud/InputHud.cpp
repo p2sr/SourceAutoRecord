@@ -12,7 +12,7 @@
 #include <cstring>
 #include <sstream>
 
-Variable sar_ihud("sar_ihud", "0", 0, 1, "Enabled or disables movement inputs HUD of client.\n");
+Variable sar_ihud("sar_ihud", "0", 0, 1, "Enables or disables movement inputs HUD of client.\n");
 Variable sar_ihud_x("sar_ihud_x", "2", "X position of input HUD.\n", 0);
 Variable sar_ihud_y("sar_ihud_y", "2", "Y position of input HUD.\n", 0);
 Variable sar_ihud_grid_padding("sar_ihud_grid_padding", "2", 0, "Padding between grid squares of input HUD.\n");
@@ -661,7 +661,7 @@ CON_COMMAND_F_COMPLETION(sar_ihud_modify,
 	}
 }
 
-CON_COMMAND(sar_ihud_add_key, "sar_ihud_add_key <key>") {
+CON_COMMAND(sar_ihud_add_key, "sar_ihud_add_key <key>\n") {
 	if (args.ArgC() < 2) {
 		console->Print(sar_ihud_add_key.ThisPtr()->m_pszHelpString);
 		return;
@@ -683,7 +683,7 @@ CON_COMMAND(sar_ihud_add_key, "sar_ihud_add_key <key>") {
 
 CON_COMMAND_HUD_SETPOS(sar_ihud, "input HUD")
 
-CON_COMMAND(sar_ihud_set_background, "sar_ihud_set_background <path> <grid x> <grid y> <grid w> <grid h>") {
+CON_COMMAND(sar_ihud_set_background, "sar_ihud_set_background <path> <grid x> <grid y> <grid w> <grid h>\n") {
 	if (args.ArgC() != 6) {
 		console->Print(sar_ihud_set_background.ThisPtr()->m_pszHelpString);
 		return;
@@ -707,6 +707,6 @@ CON_COMMAND(sar_ihud_set_background, "sar_ihud_set_background <path> <grid x> <g
 	inputHud.bgGridH = atoi(args[5]);
 }
 
-CON_COMMAND(sar_ihud_clear_background, "sar_ihud_clear_background") {
+CON_COMMAND(sar_ihud_clear_background, "sar_ihud_clear_background\n") {
 	inputHud.bgTextureId = -1;
 }

@@ -9,7 +9,7 @@
 #define CONSECUTIVE_END 5
 #define TOTAL_THRESHOLD 5
 
-Variable sar_scrollspeed("sar_scrollspeed", "0", "Show a HUD indicating your scroll speed.");
+Variable sar_scrollspeed("sar_scrollspeed", "0", "Show a HUD indicating your scroll speed.\n");
 
 int g_total[2];
 int g_scrolls[2];

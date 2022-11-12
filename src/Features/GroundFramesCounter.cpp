@@ -12,7 +12,7 @@ GroundFramesCounter::GroundFramesCounter() {
 	this->hasLoaded = true;
 }
 
-HUD_ELEMENT_MODE2(groundframes, "0", 0, 2, "Draws the number of ground frames since last landing. Setting it to 2 preserves the value.", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+HUD_ELEMENT_MODE2(groundframes, "0", 0, 2, "Draws the number of ground frames since last landing. Setting it to 2 preserves the value.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
 	ctx->DrawElement("groundframes: %d", groundFramesCounter->counter[ctx->slot]);
 }
 

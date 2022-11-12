@@ -96,6 +96,6 @@ CON_COMMAND(sar_achievement_tracker_status, "sar_achievement_tracker_status - sh
 	}
 }
 
-CON_COMMAND(sar_achievement_tracker_reset, "sar_achievement_tracker_reset - resets the status of achievement tracker.") {
+CON_COMMAND(sar_achievement_tracker_reset, "sar_achievement_tracker_reset - resets the status of achievement tracker.\n") {
 	AchievementTracker::ResetAchievements();
 }

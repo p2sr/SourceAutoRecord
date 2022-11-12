@@ -80,7 +80,7 @@ CON_COMMAND(sar_speedrun_cc_start, "sar_speedrun_cc_start <category name> [defau
 	g_placementOptions = {};
 }
 
-CON_COMMAND(sar_speedrun_cc_rule, "sar_speedrun_rule <rule name> <rule type> [options]... - add a rule to the category currently being created\n") {
+CON_COMMAND(sar_speedrun_cc_rule, "sar_speedrun_cc_rule <rule name> <rule type> [options]... - add a rule to the category currently being created\n") {
 	if (args.ArgC() < 3) {
 		console->Print(sar_speedrun_cc_rule.ThisPtr()->m_pszHelpString);
 		return;

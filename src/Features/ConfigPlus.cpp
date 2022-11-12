@@ -738,7 +738,7 @@ CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only 
 		console->Print("Cleared %d commands from event \"" #name "\"\n", _g_execs_##name.size());                                               \
 		_g_execs_##name.clear();                                                                                                                \
 	}                                                                                                                                        \
-	CON_COMMAND_F(sar_on_##name##_list, "sar_on" #name "_list - lists commands registered on event \"" #name "\"\n", FCVAR_DONTRECORD) {     \
+	CON_COMMAND_F(sar_on_##name##_list, "sar_on_" #name "_list - lists commands registered on event \"" #name "\"\n", FCVAR_DONTRECORD) {     \
 		console->Print("%d commands on event \"" #name "\"\n", _g_execs_##name.size());                                                         \
 		for (auto cmd : _g_execs_##name) {                                                                                                      \
 			console->Print("%s\n", cmd.c_str());                                                                                                   \

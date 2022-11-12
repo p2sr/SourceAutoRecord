@@ -398,7 +398,7 @@ HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | H
 	}
 }
 
-Variable sar_hud_text("sar_hud_text", "", "DEPRECATED: Use sar_hud_set_text.", 0);
+Variable sar_hud_text("sar_hud_text", "", "DEPRECATED: Use sar_hud_set_text.\n", 0);
 void sar_hud_text_callback(void *var, const char *pOldVal, float fOldVal) {
 	console->Print("WARNING: sar_hud_text is deprecated. Please use sar_hud_set_text instead.\n");
 	sar_hud_text_vals[0].draw = sar_hud_text.GetString()[0];

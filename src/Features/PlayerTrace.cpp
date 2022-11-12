@@ -810,7 +810,7 @@ HUD_ELEMENT2(trace, "0", "Draws info about current trace bbox tick.\n", HudType_
 	playerTrace->DrawTraceHud(ctx);
 }
 
-CON_COMMAND(sar_trace_dump, "sar_trace_dump <tick> [player slot] [trace index] - dump the player state from the given trace tick on the given trace ID (defaults to 1) in the given slot (defaults to 0).\n") {
+CON_COMMAND(sar_trace_dump, "sar_trace_dump <tick> [player slot] [trace name] - dump the player state from the given trace tick on the given trace ID (defaults to 1) in the given slot (defaults to 0).\n") {
 	if (!sv_cheats.GetBool()) return;
 
 	if (args.ArgC() < 2 || args.ArgC() > 4)
@@ -905,7 +905,7 @@ CON_COMMAND(sar_trace_clear_all, "sar_trace_clear_all - Clear all the traces\n")
 	playerTrace->ClearAll();
 }
 
-CON_COMMAND(sar_trace_teleport_at, "sar_trace_teleport_at <tick> [player slot] [trace index] - teleports the player at the given trace tick on the given trace ID (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).\n") {
+CON_COMMAND(sar_trace_teleport_at, "sar_trace_teleport_at <tick> [player slot] [trace name] - teleports the player at the given trace tick on the given trace ID (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).\n") {
 	if (!sv_cheats.GetBool()) return;
 
 	if (args.ArgC() < 2 || args.ArgC() > 4)

@@ -94,7 +94,7 @@ CON_COMMAND(sar_delete_alias_cmds, "sar_delete_alias_cmds - deletes all alias co
 	}
 }
 
-CON_COMMAND_COMPLETION(sar_fast_load_preset, "set_fast_load_preset <preset> - sets all loading fixes to preset values\n", ({"none", "sla", "normal", "full"})) {
+CON_COMMAND_COMPLETION(sar_fast_load_preset, "sar_fast_load_preset <preset> - sets all loading fixes to preset values\n", ({"none", "sla", "normal", "full"})) {
 	if (args.ArgC() != 2) {
 		console->Print(sar_fast_load_preset.ThisPtr()->m_pszHelpString);
 		return;
