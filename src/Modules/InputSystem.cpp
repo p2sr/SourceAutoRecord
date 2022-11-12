@@ -43,10 +43,7 @@ void InputSystem::DPIScaleDeltas(int &x, int &y) {
 		saved_x = 0;
 		saved_y = 0;
 		last_dpi_scale = scale;
-		return;
 	}
-
-	last_dpi_scale = scale;
 
 	saved_x += x;
 	saved_y += y;
