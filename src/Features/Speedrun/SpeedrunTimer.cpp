@@ -205,7 +205,7 @@ ON_EVENT(SESSION_START) {
 		if (g_speedrun.lastMap == "sp_a2_bts6") {
 			engine->ExecuteCommand("ent_fire @exit_teleport Teleport; ent_fire @transition_script RunScriptCode TransitionFromMap()", true);
 		} else if (g_speedrun.lastMap == "sp_a3_00") {
-			engine->ExecuteCommand("ent_fire bottomless_pit_teleport Teleport; ent_fire @transition_script RunScriptCode TransitionFromMap()", true);
+			engine->ExecuteCommand("ent_fire speedmod kill; ent_fire bottomless_pit_teleport Teleport; ent_fire @transition_script RunScriptCode TransitionFromMap()", true);
 		}
 	}
 }
