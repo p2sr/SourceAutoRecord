@@ -10,7 +10,7 @@ on:
       - '.mailmap'
       - '.gitattributes'
       - '.gitignore'
-      - 'doc/**'
+      - 'docs/**'
       - 'livesplit/**'
       - '**.md'
       - 'LICENSE'

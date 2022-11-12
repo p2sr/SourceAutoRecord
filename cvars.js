@@ -42,7 +42,7 @@ fs.readFile(process.argv[2] + '/sar.cvars', 'utf-8', (err, data) => {
         body += `|${cvar.value}|${cvar.description.replace(/</g, '\\<').replace(/\n/g, '<br>')}|`;
     }
 
-    fs.writeFileSync('doc/cvars.md',
+    fs.writeFileSync('docs/cvars.md',
 `# SAR: Cvars
 
 |Name|Default|Description|

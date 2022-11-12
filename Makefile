@@ -56,6 +56,6 @@ src/Version.hpp: .FORCE
 	echo "#define SAR_DEMO_SIGN_PUBKEY { $$DEMO_SIGN_PUBKEY }" >>"$@"
 	echo "#define SAR_DEMO_SIGN_PRIVKEY { $$DEMO_SIGN_PRIVKEY }" >>"$@"
 
-cvars: doc/cvars.md
-doc/cvars.md:
+cvars: docs/cvars.md
+docs/cvars.md:
 	node cvars.js "$(STEAM)Portal 2"
