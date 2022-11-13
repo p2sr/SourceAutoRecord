@@ -70,7 +70,7 @@ DECL_COMMAND_COMPLETION(sar_workshop) {
 
 // Commands
 
-CON_COMMAND_F_COMPLETION(sar_workshop, "sar_workshop <file> [ss/changelevel] - same as \"map\" command but lists workshop maps\n", 0, sar_workshop_CompletionFunc) {
+CON_COMMAND_F_COMPLETION(sar_workshop, "sar_workshop <file> [ss/changelevel] - same as \"map\" command but lists workshop maps\n", 0, AUTOCOMPLETION_FUNCTION(sar_workshop)) {
 	if (args.ArgC() < 2) {
 		return console->Print(sar_workshop.ThisPtr()->m_pszHelpString);
 	}

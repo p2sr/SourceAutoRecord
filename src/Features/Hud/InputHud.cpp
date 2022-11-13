@@ -560,7 +560,7 @@ void InputHud::AddElement(std::string name, int type) {
 }
 
 DECL_AUTO_COMMAND_COMPLETION(sar_ihud_preset, ({"normal", "normal_mouse", "tas"}))
-CON_COMMAND_F_COMPLETION(sar_ihud_preset, "sar_ihud_preset <preset> - modifies input hud based on given preset\n", FCVAR_DONTRECORD, sar_ihud_preset_CompletionFunc) {
+CON_COMMAND_F_COMPLETION(sar_ihud_preset, "sar_ihud_preset <preset> - modifies input hud based on given preset\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(sar_ihud_preset)) {
 	if (args.ArgC() != 2) {
 		console->Print(sar_ihud_preset.ThisPtr()->m_pszHelpString);
 		return;
@@ -595,7 +595,7 @@ DECL_COMMAND_COMPLETION(sar_ihud_modify) {
 CON_COMMAND_F_COMPLETION(sar_ihud_modify,
 	"sar_ihud_modify <element|all> [param=value]... - modifies parameters in given element.\n"
     "Params: enabled, text, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight, image, highlightimage, minhold.\n",
-	FCVAR_DONTRECORD, sar_ihud_modify_CompletionFunc
+	FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(sar_ihud_modify)
 ) {
 	if (args.ArgC() < 3) {
 		console->Print(sar_ihud_modify.ThisPtr()->m_pszHelpString);

@@ -545,7 +545,7 @@ DECL_COMMAND_COMPLETION(ghost_spec_pov) {
 	FINISH_COMMAND_COMPLETION();
 }
 
-CON_COMMAND_F_COMPLETION(ghost_spec_pov, "ghost_spec_pov <name|none> - spectate the specified ghost\n", 0, ghost_spec_pov_CompletionFunc) {
+CON_COMMAND_F_COMPLETION(ghost_spec_pov, "ghost_spec_pov <name|none> - spectate the specified ghost\n", 0, AUTOCOMPLETION_FUNCTION(ghost_spec_pov)) {
 	if (args.ArgC() != 2) {
 		return console->Print(ghost_spec_pov.ThisPtr()->m_pszHelpString);
 	}

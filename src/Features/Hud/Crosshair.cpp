@@ -430,7 +430,7 @@ CON_COMMAND_F_COMPLETION(sar_quickhud_set_texture,
                          "sar_quickhud_set_texture <filepath> - enter the base name, it will search for <filepath>1.png, <filepath>2.png, <filepath>3.png and <filepath>4.png\n"
                          "ex: sar_quickhud_set_texture \"E:\\Steam\\steamapps\\common\\Portal 2\\portal2\\krzyhau\"\n",
                          0,
-                         sar_quickhud_set_texture_CompletionFunc) {
+                         AUTOCOMPLETION_FUNCTION(sar_quickhud_set_texture)) {
 	if (args.ArgC() < 2) {
 		return console->Print(sar_quickhud_set_texture.ThisPtr()->m_pszHelpString);
 	}

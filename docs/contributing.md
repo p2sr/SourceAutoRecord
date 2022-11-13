@@ -357,7 +357,7 @@ DECL_COMMAND_COMPLETION(sar_workshop)
     FINISH_COMMAND_COMPLETION();
 }
 
-CON_COMMAND_F_COMPLETION(sar_workshop, "Description.\n", 0, sar_workshop_CompletionFunc)
+CON_COMMAND_F_COMPLETION(sar_workshop, "Description.\n", 0, AUTOCOMPLETION_FUNCTION(sar_workshop))
 {
 	// Command callback
 }

@@ -306,7 +306,7 @@ void HudElement::IndexAll() {
 DECL_AUTO_COMMAND_COMPLETION(sar_hud_order_top, (elementOrder))
 DECL_AUTO_COMMAND_COMPLETION(sar_hud_order_bottom, (elementOrder))
 
-CON_COMMAND_F_COMPLETION(sar_hud_order_top, "sar_hud_order_top <name> - orders hud element to top\n", FCVAR_DONTRECORD, sar_hud_order_top_CompletionFunc) {
+CON_COMMAND_F_COMPLETION(sar_hud_order_top, "sar_hud_order_top <name> - orders hud element to top\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(sar_hud_order_top)) {
 	if (args.ArgC() != 2) {
 		return console->Print("Orders hud element to top: sar_hud_order_top <name>\n");
 	}
@@ -332,7 +332,7 @@ CON_COMMAND_F_COMPLETION(sar_hud_order_top, "sar_hud_order_top <name> - orders h
 
 	console->Print("Moved HUD element %s to top.\n", args[1]);
 }
-CON_COMMAND_F_COMPLETION(sar_hud_order_bottom, "sar_hud_order_bottom <name> - orders hud element to bottom\n", FCVAR_DONTRECORD, sar_hud_order_bottom_CompletionFunc) {
+CON_COMMAND_F_COMPLETION(sar_hud_order_bottom, "sar_hud_order_bottom <name> - orders hud element to bottom\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(sar_hud_order_bottom)) {
 	if (args.ArgC() != 2) {
 		return console->Print("Set!\n");
 	}

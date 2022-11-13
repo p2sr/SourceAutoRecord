@@ -132,7 +132,7 @@ public:
 // clang-format on
 #define CON_COMMAND_COMPLETION(name, description, completion) \
 	DECL_AUTO_COMMAND_COMPLETION(name, completion)               \
-	CON_COMMAND_F_COMPLETION(name, description, 0, name##_CompletionFunc)
+	CON_COMMAND_F_COMPLETION(name, description, 0, AUTOCOMPLETION_FUNCTION(name))
 
 std::vector<std::string> ParsePartialArgs(const char *partial);
 int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args, const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
