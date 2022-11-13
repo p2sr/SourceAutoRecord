@@ -573,9 +573,16 @@ CON_COMMAND_F(sar_hud_set_text_color, "sar_hud_set_text_color <id> [color] - set
 	}
 }
 
-CON_COMMAND_F(sar_hud_hide_text, "sar_hud_hide_text <id> - hides the nth text value in the HUD\n", FCVAR_DONTRECORD) {
+CON_COMMAND_F(sar_hud_hide_text, "sar_hud_hide_text <id|all> - hides the nth text value in the HUD\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 2) {
 		console->Print(sar_hud_hide_text.ThisPtr()->m_pszHelpString);
+		return;
+	}
+
+	if (!strcmp(args[1], "all")) {
+		for (auto &t : sar_hud_text_vals) {
+			t.second.draw = false;
+		}
 		return;
 	}
 
@@ -588,9 +595,16 @@ CON_COMMAND_F(sar_hud_hide_text, "sar_hud_hide_text <id> - hides the nth text va
 	sar_hud_text_vals[idx].draw = false;
 }
 
-CON_COMMAND_F(sar_hud_show_text, "sar_hud_show_text <id> - shows the nth text value in the HUD\n", FCVAR_DONTRECORD) {
+CON_COMMAND_F(sar_hud_show_text, "sar_hud_show_text <id|all> - shows the nth text value in the HUD\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 2) {
 		console->Print(sar_hud_show_text.ThisPtr()->m_pszHelpString);
+		return;
+	}
+
+	if (!strcmp(args[1], "all")) {
+		for (auto &t : sar_hud_text_vals) {
+			t.second.draw = true;
+		}
 		return;
 	}
 
