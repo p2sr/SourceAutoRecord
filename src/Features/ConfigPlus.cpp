@@ -63,6 +63,12 @@ static std::string GetSvar(std::string name) {
 	return it->second;
 }
 
+static std::string GetCvar(std::string name) {
+	Variable cvar(name.c_str());
+	if (!cvar.ThisPtr() || cvar.ThisPtr()->IsCommand()) return "";
+	return cvar.GetFlags() & FCVAR_NEVER_AS_STRING ? std::to_string(cvar.GetFloat()) : cvar.GetString();
+}
+
 static int CompleteSvars(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH], bool values) {
 	auto args = ParsePartialArgs(partial);
 
@@ -268,7 +274,7 @@ CON_COMMAND_F_COMPLETION(svar_from_cvar, "svar_from_cvar <variable> <cvar> - cap
 
 	if (cvar.ThisPtr()) {
 		if (!cvar.ThisPtr()->IsCommand()) {
-			std::string val = cvar.GetFlags() & FCVAR_NEVER_AS_STRING ? std::to_string(cvar.GetInt()) : cvar.GetString();
+			std::string val = cvar.GetFlags() & FCVAR_NEVER_AS_STRING ? std::to_string(cvar.GetFloat()) : cvar.GetString();
 			val.erase(std::remove(val.begin(), val.end(), '\n'), val.end());
 			SetSvar({args[1]}, val);
 		}
@@ -352,6 +358,8 @@ struct Condition {
 		AND,
 		OR,
 		SVAR,
+		CVAR,
+		STRING
 	} type;
 
 	union {
@@ -373,6 +381,8 @@ static void FreeCondition(Condition *c) {
 		free(c->val);
 		break;
 	case Condition::SVAR:
+	case Condition::CVAR:
+	case Condition::STRING:
 		free(c->var);
 		free(c->val);
 		break;
@@ -393,18 +403,12 @@ static void FreeCondition(Condition *c) {
 
 static const char *gameName() {
 	switch (sar.game->GetVersion()) {
-	case SourceGame_ApertureTag:
-		return "aptag";
-	case SourceGame_PortalStoriesMel:
-		return "mel";
-	case SourceGame_ThinkingWithTimeMachine:
-		return "twtm";
-	case SourceGame_PortalReloaded:
-		return "reloaded";
-	case SourceGame_Portal2:
-		return Game::isSpeedrunMod() ? "srm" : "portal2";
-	default:
-		return "other";
+	case SourceGame_ApertureTag: return "aptag";
+	case SourceGame_PortalStoriesMel: return "mel";
+	case SourceGame_ThinkingWithTimeMachine: return "twtm";
+	case SourceGame_PortalReloaded: return "reloaded";
+	case SourceGame_Portal2: return Game::isSpeedrunMod() ? "srm" : "portal2";
+	default: return "other";
 	}
 }
 
@@ -423,6 +427,8 @@ static bool EvalCondition(Condition *c) {
 	case Condition::AND: return EvalCondition(c->binop_l) && EvalCondition(c->binop_r);
 	case Condition::OR: return EvalCondition(c->binop_l) || EvalCondition(c->binop_r);
 	case Condition::SVAR: return GetSvar({c->var}) == c->val;
+	case Condition::CVAR: return GetCvar({c->var}) == c->val;
+	case Condition::STRING: return !strcmp(c->var, c->val);
 	}
 	return false;
 }
@@ -568,8 +574,13 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				c->type = Condition::WORKSHOP;
 			} else if (t.len == 4 && !strncmp(t.str, "menu", t.len)) {
 				c->type = Condition::MENU;
-			} else if (t.len == 3 && !strncmp(t.str, "map", t.len) || t.len == 8 && !strncmp(t.str, "prev_map", t.len) || t.len == 4 && !strncmp(t.str, "game", t.len) || t.len > 4 && !strncmp(t.str, "var:", 4) || t.len > 1 && t.str[0] == '?') {
-				bool is_var = !strncmp(t.str, "var:", 4) || t.str[0] == '?';
+			} else if (
+				t.len == 3 && !strncmp(t.str, "map", t.len) ||
+				t.len == 8 && !strncmp(t.str, "prev_map", t.len) ||
+				t.len == 4 && !strncmp(t.str, "game", t.len) ||
+				t.len > 4 && !strncmp(t.str, "var:", 4) ||
+				t.len > 5 && !strncmp(t.str, "cvar:", 5) ||
+				t.len > 1 && (t.str[0] == '?' || t.str[0] == '#' || t.str[0] == '%')) {
 
 				if (toks.empty() || toks.front().type != TOK_EQUALS) {
 					console->Print("Expected = after '%.*s'\n", t.len, t.str);
@@ -589,12 +600,23 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 				toks.pop();
 
-				if (is_var) {
+				if (!strncmp(t.str, "var:", 4) || t.str[0] == '?') {
 					int i = t.str[0] == 'v' ? 4 : 1;
 					c->type = Condition::SVAR;
 					c->var = (char *)malloc(t.len - i + 1);
 					strncpy(c->var, t.str + i, t.len - i);
 					c->var[t.len - i] = 0;  // Null terminator
+				} else if (!strncmp(t.str, "cvar:", 5) || t.str[0] == '#') {
+					int i = t.str[0] == 'c' ? 5 : 1;
+					c->type = Condition::CVAR;
+					c->var = (char *)malloc(t.len - i + 1);
+					strncpy(c->var, t.str + i, t.len - i);
+					c->var[t.len - i] = 0;  // Null terminator
+				} else if (t.str[0] == '%') {
+					c->type = Condition::STRING;
+					c->var = (char *)malloc(t.len);
+					strncpy(c->var, t.str + 1, t.len - 1);
+					c->var[t.len - 1] = 0;  // Null terminator
 				} else {
 					c->type = t.len == 8 ? Condition::PREV_MAP : t.len == 4 ? Condition::GAME : Condition::MAP;
 				}
@@ -602,6 +624,10 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				if (val_tok.len > 4 && !strncmp(val_tok.str, "var:", 4) || val_tok.len > 1 && val_tok.str[0] == '?') {
 					int i = val_tok.str[0] == 'v' ? 4 : 1;
 					auto val = GetSvar({val_tok.str + i});
+					c->val = strdup(val.c_str());
+				} else if (val_tok.len > 5 && !strncmp(val_tok.str, "cvar:", 5) || val_tok.len > 1 && val_tok.str[0] == '#') {
+					int i = val_tok.str[0] == 'c' ? 5 : 1;
+					auto val = GetCvar({val_tok.str + i});
 					c->val = strdup(val.c_str());
 				} else {
 					c->val = (char *)malloc(val_tok.len + 1);
