@@ -97,7 +97,7 @@ std::string Game::VersionToString(int version) {
 	return games;
 }
 
-bool Game::isSpeedrunMod() {
+bool Game::IsSpeedrunMod() {
 	static bool checked = false;
 	static bool srm = false;
 

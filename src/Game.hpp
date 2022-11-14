@@ -41,5 +41,5 @@ public:
 	static std::vector<std::string> mapNames;
 	static std::vector<AchievementData> achievements;
 
-	static bool isSpeedrunMod();
+	static bool IsSpeedrunMod();
 };

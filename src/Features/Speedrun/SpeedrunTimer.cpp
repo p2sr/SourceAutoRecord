@@ -201,7 +201,7 @@ ON_EVENT_P(SESSION_START, -1000) {
 	g_inDemoLoad = false;
 }
 ON_EVENT(SESSION_START) {
-	if (SpeedrunTimer::IsRunning() && sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::isSpeedrunMod()) {
+	if (SpeedrunTimer::IsRunning() && sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::IsSpeedrunMod()) {
 		if (g_speedrun.lastMap == "sp_a2_bts6") {
 			engine->ExecuteCommand("ent_fire @exit_teleport Teleport; ent_fire @transition_script RunScriptCode TransitionFromMap()", true);
 		} else if (g_speedrun.lastMap == "sp_a3_00") {
@@ -290,7 +290,7 @@ int SpeedrunTimer::GetSegmentTicks() {
 	ticks += g_speedrun.saved;
 	if (!g_speedrun.isPaused && !g_speedrun.inCoopPause && (!engine->demoplayer->IsPlaying() || engine->demoplayer->IsPlaybackFixReady())) {
 
-		if (sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::isSpeedrunMod()) {
+		if (sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::IsSpeedrunMod()) {
 			if (g_speedrun.lastMap == "sp_a2_bts6") return 3112;
 			else if (g_speedrun.lastMap == "sp_a3_00") return 4666;
 		}

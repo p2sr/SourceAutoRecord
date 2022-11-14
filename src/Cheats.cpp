@@ -105,7 +105,7 @@ CON_COMMAND_F_COMPLETION(sar_fast_load_preset, "sar_fast_load_preset <preset> - 
 
 #define CMD(x) engine->ExecuteCommand(x)
 	if (!strcmp(preset, "none")) {
-		if (!Game::isSpeedrunMod()) {
+		if (!Game::IsSpeedrunMod()) {
 			CMD("ui_loadingscreen_transition_time 1.0");
 			CMD("ui_loadingscreen_fadein_time 1.0");
 			CMD("ui_loadingscreen_mintransition_time 0.5");
@@ -115,7 +115,7 @@ CON_COMMAND_F_COMPLETION(sar_fast_load_preset, "sar_fast_load_preset <preset> - 
 		CMD("sar_loads_uncap 0");
 		CMD("sar_loads_norender 0");
 	} else if (!strcmp(preset, "sla")) {
-		if (!Game::isSpeedrunMod()) {
+		if (!Game::IsSpeedrunMod()) {
 			CMD("ui_loadingscreen_transition_time 0.0");
 			CMD("ui_loadingscreen_fadein_time 0.0");
 			CMD("ui_loadingscreen_mintransition_time 0.0");
@@ -125,7 +125,7 @@ CON_COMMAND_F_COMPLETION(sar_fast_load_preset, "sar_fast_load_preset <preset> - 
 		CMD("sar_loads_uncap 0");
 		CMD("sar_loads_norender 0");
 	} else if (!strcmp(preset, "normal")) {
-		if (!Game::isSpeedrunMod()) {
+		if (!Game::IsSpeedrunMod()) {
 			CMD("ui_loadingscreen_transition_time 0.0");
 			CMD("ui_loadingscreen_fadein_time 0.0");
 			CMD("ui_loadingscreen_mintransition_time 0.0");
@@ -135,7 +135,7 @@ CON_COMMAND_F_COMPLETION(sar_fast_load_preset, "sar_fast_load_preset <preset> - 
 		CMD("sar_loads_uncap 1");
 		CMD("sar_loads_norender 0");
 	} else if (!strcmp(preset, "full")) {
-		if (!Game::isSpeedrunMod()) {
+		if (!Game::IsSpeedrunMod()) {
 			CMD("ui_loadingscreen_transition_time 0.0");
 			CMD("ui_loadingscreen_fadein_time 0.0");
 			CMD("ui_loadingscreen_mintransition_time 0.0");
