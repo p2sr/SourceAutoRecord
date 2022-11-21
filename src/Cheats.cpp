@@ -43,6 +43,7 @@ Variable sar_patch_bhop("sar_patch_bhop", "0", 0, 1, "Patches bhop by limiting w
 Variable sar_patch_cfg("sar_patch_cfg", "0", 0, 1, "Patches Crouch Flying Glitch.\n");
 Variable sar_prevent_ehm("sar_prevent_ehm", "0", 0, 1, "Prevents Entity Handle Misinterpretation (EHM) from happening.\n");
 Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables the viewmodel lagging behind.\n");
+Variable sar_lighting_fix("sar_lighting_fix", "1", 0, 1, "Fixes incorrect lighting brightness in CM.\n", 0);
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -273,6 +274,13 @@ CON_COMMAND(sar_geteyepos, "sar_geteyepos [slot] - get the view position (portal
 	console->Print("angles: %.6f %.6f %.6f\n", angles.x, angles.y, angles.z);
 }
 
+void sar_lighting_fix_callback(void *var, const char *pOldVal, float fOldVal) {
+	if (sar_lighting_fix.GetBool())
+		r_flashlightbrightness.RemoveFlag(FCVAR_CHEAT);
+	else
+		r_flashlightbrightness.AddFlag(FCVAR_CHEAT);
+}
+
 void Cheats::Init() {
 	sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
 	ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
@@ -293,6 +301,8 @@ void Cheats::Init() {
 	sar_workshop_list.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
 
 	sar_fix_reloaded_cheats.UniqueFor(SourceGame_PortalReloaded);
+	
+	r_flashlightbrightness.RemoveFlag(FCVAR_CHEAT);
 
 	cvars->Unlock();
 
@@ -302,6 +312,8 @@ void Cheats::Init() {
 	// putting this here is really dumb but i dont even care any
 	// more
 	sar_hud_text.AddCallBack(sar_hud_text_callback);
+	
+	sar_lighting_fix.AddCallBack(sar_lighting_fix_callback);
 }
 void Cheats::Shutdown() {
 	cvars->Lock();
