@@ -1,6 +1,7 @@
 #include "Camera.hpp"
 
 #include "Command.hpp"
+#include "Event.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Features/Tas/TasPlayer.hpp"
@@ -63,6 +64,10 @@ Camera::Camera() {
 
 Camera::~Camera() {
 	camera->states.clear();
+	ResetCameraRelatedCvars();
+}
+
+ON_EVENT(SAR_UNLOAD) {
 	ResetCameraRelatedCvars();
 }
 
