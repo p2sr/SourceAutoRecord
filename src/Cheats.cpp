@@ -277,8 +277,10 @@ CON_COMMAND(sar_geteyepos, "sar_geteyepos [slot] - get the view position (portal
 void sar_lighting_fix_callback(void *var, const char *pOldVal, float fOldVal) {
 	if (sar_lighting_fix.GetBool())
 		r_flashlightbrightness.RemoveFlag(FCVAR_CHEAT);
-	else
+	else {
+		r_flashlightbrightness.SetValue(0.25f);
 		r_flashlightbrightness.AddFlag(FCVAR_CHEAT);
+	}
 }
 
 void Cheats::Init() {
