@@ -36,8 +36,6 @@ public:
 	DECL_M(GetPlayerState, CPlayerState);
 
 	using _GetClientEntity = ClientEnt *(__rescall *)(void *thisptr, int entnum);
-	using _KeyDown = int(__cdecl *)(void *b, const char *c);
-	using _KeyUp = int(__cdecl *)(void *b, const char *c);
 	using _GetAllClasses = ClientClass *(*)();
 	using _FrameStageNotify = void(__rescall *)(void *thisptr, int stage);
 	using _ShouldDraw = bool(__rescall *)(void *thisptr);
@@ -47,8 +45,6 @@ public:
 	using _IN_DeactivateMouse = void (*)(void *thisptr);
 
 	_GetClientEntity GetClientEntity = nullptr;
-	_KeyDown KeyDown = nullptr;
-	_KeyUp KeyUp = nullptr;
 	_GetAllClasses GetAllClasses = nullptr;
 	_FrameStageNotify FrameStageNotify = nullptr;
 	_ShouldDraw ShouldDraw = nullptr;

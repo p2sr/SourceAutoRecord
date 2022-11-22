@@ -10,6 +10,7 @@
 #endif
 
 #define OFFSET_EMPTY(name)
+#define OFFSET_LINMOD(name, off)
 
 Portal2::Portal2() {
 	this->version = SourceGame_Portal2;
