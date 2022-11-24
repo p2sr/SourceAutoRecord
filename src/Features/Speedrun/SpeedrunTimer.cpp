@@ -201,12 +201,24 @@ ON_EVENT_P(SESSION_START, -1000) {
 	g_inDemoLoad = false;
 }
 ON_EVENT(SESSION_START) {
-	if (SpeedrunTimer::IsRunning() && sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::isSpeedrunMod()) {
+	if (!sar_speedrun_skip_cutscenes.GetBool()) return;
+	if (sar.game->GetVersion() != SourceGame_Portal2) return;
+	if (Game::isSpeedrunMod()) return;
+
+	if (SpeedrunTimer::IsRunning()) {
 		if (g_speedrun.lastMap == "sp_a2_bts6") {
-			engine->ExecuteCommand("ent_fire @exit_teleport Teleport; ent_fire @transition_script RunScriptCode TransitionFromMap()", true);
+			engine->ExecuteCommand("ent_fire @exit_teleport Teleport", true);
 		} else if (g_speedrun.lastMap == "sp_a3_00") {
-			engine->ExecuteCommand("ent_fire speedmod kill; ent_fire bottomless_pit_teleport Teleport; ent_fire @transition_script RunScriptCode TransitionFromMap()", true);
+			engine->ExecuteCommand("ent_fire speedmod kill; ent_fire bottomless_pit_teleport Teleport", true);
 		}
+	}
+	
+	if (engine->GetCurrentMapName() == "mp_coop_start" && !engine->IsOrange()) {
+		// This is ridiculous
+		sv_cheats.ThisPtr()->m_nValue = 1;
+		engine->ExecuteCommand("ent_fire teleport_start enable; ent_fire playmovie_connect_intro kill; ent_fire relay_start_glados_coop kill; ent_fire pclip_tube_block_3 kill; ent_fire pclip_tube_block_1 kill", true);
+		engine->ExecuteCommand("ent_fire @global_no_pinging_blue TurnOff; ent_fire @global_no_pinging_orange TurnOff; ent_fire pclip_tube_block_2 kill", true);
+		sv_cheats.SetValue(sv_cheats.GetString());
 	}
 }
 
@@ -245,7 +257,7 @@ static void sendCoopPacket(PacketType t, std::string *splitName = NULL, int newS
 	char *buf = (char *)malloc(size);
 
 	buf[0] = (char)t;
-	*(int *)(buf + 1) = getCurrentTick();
+	*(int *)(buf + 1) = SpeedrunTimer::GetSegmentTicks();
 
 	char *ptr = buf + 5;
 
@@ -293,9 +305,10 @@ int SpeedrunTimer::GetSegmentTicks() {
 		if (sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::isSpeedrunMod()) {
 			if (g_speedrun.lastMap == "sp_a2_bts6") return 3112;
 			else if (g_speedrun.lastMap == "sp_a3_00") return 4666;
+			else if (g_speedrun.lastMap == "mp_coop_start" && !engine->IsOrange()) ticks += 2705;
 		}
 
-		ticks += getCurrentTick() - g_speedrun.base;
+		ticks += getCurrentTick() - (!engine->IsOrange()) * g_speedrun.base;
 	}
 
 	if (ticks < 0) {

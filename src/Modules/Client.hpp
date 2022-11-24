@@ -124,6 +124,8 @@ public:
 
 	DECL_DETOUR_COMMAND(playvideo_end_level_transition);
 
+	DECL_DETOUR_COMMAND(playvideo_exitcommand_nointerrupt);
+
 	bool Init() override;
 	void Shutdown() override;
 	const char *Name() override {
