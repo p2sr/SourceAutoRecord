@@ -216,8 +216,17 @@ ON_EVENT(SESSION_START) {
 	if (engine->GetCurrentMapName() == "mp_coop_start" && !engine->IsOrange()) {
 		// This is ridiculous
 		sv_cheats.ThisPtr()->m_nValue = 1;
-		engine->ExecuteCommand("ent_fire teleport_start enable; ent_fire playmovie_connect_intro kill; ent_fire relay_start_glados_coop kill; ent_fire pclip_tube_block_3 kill; ent_fire pclip_tube_block_1 kill", true);
-		engine->ExecuteCommand("ent_fire @global_no_pinging_blue TurnOff; ent_fire @global_no_pinging_orange TurnOff; ent_fire pclip_tube_block_2 kill", true);
+		engine->ExecuteCommand("ent_fire teleport_start enable; ent_fire playmovie_connect_intro kill; ent_fire relay_start_glados_coop kill", true);
+		engine->ExecuteCommand("ent_fire pclip_tube_block_3 kill; ent_fire pclip_tube_block_1 kill; ent_fire pclip_tube_block_2 kill", true);
+		sv_cheats.SetValue(sv_cheats.GetString());
+	}
+}
+
+// Fix pings
+ON_EVENT(SESSION_START) {
+	if (engine->GetCurrentMapName() == "mp_coop_start" && !engine->IsOrange()) {
+		sv_cheats.ThisPtr()->m_nValue = 1;
+		engine->ExecuteCommand("ent_fire @global_no_pinging_blue TurnOff; ent_fire @global_no_pinging_orange TurnOff", true);
 		sv_cheats.SetValue(sv_cheats.GetString());
 	}
 }
