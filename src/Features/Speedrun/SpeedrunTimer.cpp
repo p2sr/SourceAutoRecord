@@ -802,15 +802,15 @@ std::string SpeedrunTimer::SimpleFormat(float raw) {
 	return std::string(format);
 }
 
-float SpeedrunTimer::UnFormat(const std::string &formated_time) {
+float SpeedrunTimer::UnFormat(const std::string &formatted_time) {
 	int h, m;
 	float s, total = 0;
 
-	if (sscanf(formated_time.c_str(), "%d:%d:%f", &h, &m, &s) >= 3) {
+	if (sscanf(formatted_time.c_str(), "%d:%d:%f", &h, &m, &s) >= 3) {
 		total = h * 3600.0f + m * 60.0f + s;
-	} else if (sscanf(formated_time.c_str(), "%d:%f", &m, &s) >= 2) {
+	} else if (sscanf(formatted_time.c_str(), "%d:%f", &m, &s) >= 2) {
 		total = m * 60.0f + s;
-	} else if (sscanf(formated_time.c_str(), "%f", &s) >= 1) {
+	} else if (sscanf(formatted_time.c_str(), "%f", &s) >= 1) {
 		total = s;
 	}
 

@@ -12,7 +12,7 @@
 namespace SpeedrunTimer {
 	std::string Format(float raw);
 	std::string SimpleFormat(float raw);
-	float UnFormat(const std::string &formated_time);
+	float UnFormat(const std::string &formatted_time);
 
 	void Init();
 	void SetIpt(float ipt);
