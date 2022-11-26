@@ -366,71 +366,6 @@ TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick) {
 	return closest;
 }
 
-TasPlayerInfo TasPlayer::GetPlayerInfo(void *player, CUserCmd *cmd) {
-	TasPlayerInfo pi;
-
-	int m_nOldButtons = SE(player)->field<int>("m_nOldButtons");
-
-	pi.tick = SE(player)->field<int>("m_nTickBase");
-	pi.slot = server->GetSplitScreenPlayerSlot(player);
-	pi.surfaceFriction = *reinterpret_cast<float *>((uintptr_t)player + Offsets::m_surfaceFriction);
-	pi.ducked = SE(player)->ducked();
-
-	float *m_flMaxspeed = &SE(player)->field<float>("m_flMaxspeed");
-	pi.maxSpeed = *m_flMaxspeed;
-
-#ifdef _WIN32
-	// windows being weird. ask mlugg for explanation because idfk.
-	void *paintPowerUser = (void*)((uint32_t)player + 0x1250);
-#else
-	void *paintPowerUser = player;
-#endif
-	using _GetPaintPower = const PaintPowerInfo_t&(__rescall*)(void* thisptr, unsigned paintId);
-	_GetPaintPower GetPaintPower = Memory::VMT<_GetPaintPower>(paintPowerUser, Offsets::GetPaintPower);
-	PaintPowerInfo_t speedPaintInfo = GetPaintPower(paintPowerUser, 2);
-	pi.onSpeedPaint = speedPaintInfo.m_State == 1; // ACTIVE_PAINT_POWER
-
-	if (pi.onSpeedPaint) {
-		// maxSpeed is modified within ProcessMovement. This hack allows us to "predict" its next value
-		// Cache off old max speed to restore later
-		float oldMaxSpeed = *m_flMaxspeed;
-		// Use the speed paint to modify the max speed
-		using _UseSpeedPower = void(__rescall*)(void* thisptr, PaintPowerInfo_t& info);
-		_UseSpeedPower UseSpeedPower = Memory::VMT<_UseSpeedPower>(player, Offsets::UseSpeedPower);
-		UseSpeedPower(player, speedPaintInfo);
-		// Get the new ("predicted") max speed and restore the old one on the player
-		pi.maxSpeed = *m_flMaxspeed;
-		*m_flMaxspeed = oldMaxSpeed;
-	}
-
-	pi.grounded = SE(player)->ground_entity();
-
-	// this check was originally broken, so bypass it in v1
-	if (tasPlayer->scriptVersion >= 2) {
-		// predict the grounded state after jump.
-		if (pi.grounded && (cmd->buttons & IN_JUMP) && !(m_nOldButtons & IN_JUMP)) {
-			pi.grounded = false;
-		}
-	}
-
-	pi.position = SE(player)->abs_origin();
-	pi.angles = engine->GetAngles(pi.slot);
-	pi.velocity = SE(player)->abs_velocity();
-
-	pi.oldButtons = m_nOldButtons;
-
-	if (fabsf(*engine->interval_per_tick - 1.0f/60.0f) < 0.00001f) {
-		// Back compat - this used to be hardcoded, and maybe the engine's interval
-		// could be slightly different to the value we used, leading to desyncs on
-		// old scripts.
-		pi.ticktime = 1.0f / 60.0f;
-	} else {
-		pi.ticktime = *engine->interval_per_tick;
-	}
-
-	return pi;
-}
-
 void TasPlayer::SetFrameBulkQueue(int slot, std::vector<TasFramebulk> fbQueue) {
 	this->framebulkQueue[slot] = fbQueue;
 }
@@ -578,7 +513,7 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	if (!ready) return;
 	if (slot == this->coopControlSlot) return;
 
-	auto playerInfo = GetPlayerInfo(player, cmd);
+	auto playerInfo = GetPlayerInfo<true>(player, cmd);
 	// player tickbase seems to be an accurate way of getting current time in ProcessMovement
 	// every other way of getting time is incorrect due to alternateticks
 	int tasTick = playerInfo.tick - startTick;

@@ -316,7 +316,7 @@ void Cheats::Shutdown() {
 void Cheats::PatchBhop(void *player, CUserCmd *cmd) {
 	if (!server->AllowsMovementChanges() || !sar_patch_bhop.GetBool()) return;
 
-	TasPlayerInfo info = tasPlayer->GetPlayerInfo(player, cmd);
+	TasPlayerInfo info = tasPlayer->GetPlayerInfo<true>(player, cmd);
 
 	float currVel = info.velocity.Length2D();
 	float predictVel = autoStrafeTool[info.slot].GetVelocityAfterMove(info, cmd->forwardmove, cmd->sidemove).Length2D();

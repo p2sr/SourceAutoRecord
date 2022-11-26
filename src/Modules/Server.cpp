@@ -11,6 +11,7 @@
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/Hud/Crosshair.hpp"
 #include "Features/Hud/ScrollSpeed.hpp"
+#include "Features/Hud/StrafeHud.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/Hud/InputHud.hpp"
 #include "Features/NetMessage.hpp"
@@ -199,7 +200,7 @@ extern Hook g_playerRunCommandHook;
 DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 	if (!engine->IsGamePaused()) {
 		if (sar_tas_real_controller_debug.GetInt() == 3) {
-			auto playerInfo = tasPlayer->GetPlayerInfo(thisptr, cmd);
+			auto playerInfo = tasPlayer->GetPlayerInfo<true>(thisptr, cmd);
 			console->Print("Jump input state at tick %d: %s\n", playerInfo.tick, (cmd->buttons & IN_JUMP) ? "true" : "false");
 		}
 	}
@@ -211,7 +212,7 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 	}
 
 	if (tasPlayer->IsActive()) {
-		int tasTick = tasPlayer->GetPlayerInfo(thisptr, cmd).tick - tasPlayer->GetStartTick();
+		int tasTick = tasPlayer->GetPlayerInfo<true>(thisptr, cmd).tick - tasPlayer->GetStartTick();
 		tasPlayer->DumpUsercmd(slot, cmd, tasTick, "server");
 
 		Vector pos = server->GetAbsOrigin(thisptr);
@@ -220,6 +221,8 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 	}
 
 	inputHud.SetInputInfo(slot, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
+
+	strafeHud.SetData(slot, thisptr, cmd, true);
 
 	Cheats::PatchBhop(thisptr, cmd);
 

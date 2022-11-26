@@ -11,6 +11,7 @@
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Hud/ScrollSpeed.hpp"
+#include "Features/Hud/StrafeHud.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OverlayRender.hpp"
@@ -370,6 +371,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 		bool grounded = CE(player)->ground_entity();
 		groundFramesCounter->HandleMovementFrame(nSlot, grounded);
 		strafeQuality.OnMovement(nSlot, grounded);
+		strafeHud.SetData(nSlot, player, cmd, false);
 		Event::Trigger<Event::PROCESS_MOVEMENT>({nSlot, false});  // There isn't really one, just pretend it's here lol
 	}
 

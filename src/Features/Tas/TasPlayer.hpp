@@ -6,6 +6,9 @@
 #include "Features/Tas/TasTool.hpp"
 #include "Utils/SDK.hpp"
 #include "Variable.hpp"
+#include "Modules/Engine.hpp"
+#include "Modules/Client.hpp"
+#include "Modules/Server.hpp"
 
 #define TAS_SCRIPTS_DIR "tas"
 #define TAS_SCRIPT_EXT "p2tas"
@@ -52,6 +55,9 @@ struct TasPlayerInfo {
 	int oldButtons;
 	float ticktime;
 };
+
+class TasPlayer;
+extern TasPlayer *tasPlayer;
 
 class TasPlayer : public Feature {
 private:
@@ -103,7 +109,79 @@ public:
 	bool IsPaused();
 
 	TasFramebulk GetRawFramebulkAt(int slot, int tick);
-	TasPlayerInfo GetPlayerInfo(void *player, CUserCmd *cmd);
+
+	template <bool serverside>
+	TasPlayerInfo GetPlayerInfo(void *player, CUserCmd *cmd) {
+		using Ent = std::conditional_t<serverside, ServerEnt, ClientEnt>;
+		Ent *pl = (Ent *)player;
+
+		TasPlayerInfo pi;
+
+		int m_nOldButtons = pl->template field<int>("m_nOldButtons");
+
+		pi.tick = pl->template field<int>("m_nTickBase");
+		pi.slot = server->GetSplitScreenPlayerSlot(player);
+		int m_surfaceFriction = serverside ? Offsets::S_m_surfaceFriction : Offsets::C_m_surfaceFriction;
+		pi.surfaceFriction = *reinterpret_cast<float *>((uintptr_t)player + m_surfaceFriction);
+		pi.ducked = pl->ducked();
+
+		float *m_flMaxspeed = &pl->template field<float>("m_flMaxspeed");
+		pi.maxSpeed = *m_flMaxspeed;
+
+		if (serverside) {
+		#ifdef _WIN32
+			// windows being weird. ask mlugg for explanation because idfk.
+			void *paintPowerUser = (void *)((uint32_t)player + 0x1250);
+		#else
+			void *paintPowerUser = player;
+		#endif
+			using _GetPaintPower = const PaintPowerInfo_t &(__rescall *)(void *thisptr, unsigned paintId);
+			_GetPaintPower GetPaintPower = Memory::VMT<_GetPaintPower>(paintPowerUser, Offsets::GetPaintPower);
+			PaintPowerInfo_t speedPaintInfo = GetPaintPower(paintPowerUser, 2);
+			pi.onSpeedPaint = speedPaintInfo.m_State == 1;  // ACTIVE_PAINT_POWER
+
+			if (pi.onSpeedPaint) {
+				// maxSpeed is modified within ProcessMovement. This hack allows us to "predict" its next value
+				// Cache off old max speed to restore later
+				float oldMaxSpeed = *m_flMaxspeed;
+				// Use the speed paint to modify the max speed
+				using _UseSpeedPower = void(__rescall *)(void *thisptr, PaintPowerInfo_t &info);
+				_UseSpeedPower UseSpeedPower = Memory::VMT<_UseSpeedPower>(player, Offsets::UseSpeedPower);
+				UseSpeedPower(player, speedPaintInfo);
+				// Get the new ("predicted") max speed and restore the old one on the player
+				pi.maxSpeed = *m_flMaxspeed;
+				*m_flMaxspeed = oldMaxSpeed;
+			}
+		}
+
+		pi.grounded = pl->ground_entity();
+
+		// this check was originally broken, so bypass it in v1
+		if (tasPlayer->scriptVersion >= 2) {
+			// predict the grounded state after jump.
+			if (pi.grounded && (cmd->buttons & IN_JUMP) && !(m_nOldButtons & IN_JUMP)) {
+				pi.grounded = false;
+			}
+		}
+
+		pi.position = pl->abs_origin();
+		pi.angles = engine->GetAngles(pi.slot);
+		pi.velocity = pl->abs_velocity();
+
+		pi.oldButtons = m_nOldButtons;
+
+		if (fabsf(*engine->interval_per_tick - 1.0f/60.0f) < 0.00001f) {
+			// Back compat - this used to be hardcoded, and maybe the engine's interval
+			// could be slightly different to the value we used, leading to desyncs on
+			// old scripts.
+			pi.ticktime = 1.0f / 60.0f;
+		} else {
+			pi.ticktime = *engine->interval_per_tick;
+		}
+
+		return pi;
+	}
+
 	void SetFrameBulkQueue(int slot, std::vector<TasFramebulk> fbQueue);
 	void SetStartInfo(TasStartType type, std::string);
 	inline void SetLoadedFileName(int slot, std::string name) { tasFileName[slot] = name; };
@@ -134,5 +212,3 @@ extern Variable sar_tas_autosave_raw;
 extern Variable sar_tas_skipto;
 extern Variable sar_tas_pauseat;
 extern Variable sar_tas_playback_rate;
-
-extern TasPlayer *tasPlayer;
