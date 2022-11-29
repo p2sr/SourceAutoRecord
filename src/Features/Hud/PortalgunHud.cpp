@@ -51,7 +51,7 @@ void PortalgunHud::Paint(int slot) {
 		return;
 	}
 
-	uint8_t linkage = SE(portalgun)->field<int>("m_iPortalLinkageGroupID");
+	uint8_t linkage = SE(portalgun)->field<unsigned char>("m_iPortalLinkageGroupID");
 
 	surface->DrawTxt(font, x, y, Color{255, 255, 255, 255}, "linkage: %d", (int)linkage);
 	y += lineHeight + 10;

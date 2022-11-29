@@ -182,7 +182,7 @@ static uintptr_t initScan() {
 	uintptr_t portalgun = (uintptr_t)entityList->LookupEntity(SE(player)->active_weapon());
 	if (!portalgun) return 0;
 
-	uint8_t linkage = SE(portalgun)->field<int>("m_iPortalLinkageGroupID");
+	uint8_t linkage = SE(portalgun)->field<unsigned char>("m_iPortalLinkageGroupID");
 
 	auto m_hPrimaryPortal = SE(portalgun)->field<CBaseHandle>("m_hPrimaryPortal");
 	auto m_hSecondaryPortal = SE(portalgun)->field<CBaseHandle>("m_hSecondaryPortal");
