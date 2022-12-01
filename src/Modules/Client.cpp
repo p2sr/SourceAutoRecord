@@ -544,22 +544,12 @@ bool Client::Init() {
 		this->IN_DeactivateMouse = this->g_ClientDLL->Original<_IN_DeactivateMouse>(Offsets::IN_DeactivateMouse, readJmp);
 
 		auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
-		void *g_InputAddr;
-#ifndef _WIN32
-		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			g_InputAddr = *(void **)(IN_ActivateMouse + 5 + *(uint32_t *)(IN_ActivateMouse + 6) + *(uint32_t *)(IN_ActivateMouse + 12));
-		} else
-#endif
-			g_InputAddr = Memory::DerefDeref<void *>(IN_ActivateMouse + Offsets::g_Input);
+		void *g_InputAddr = Memory::DerefDeref<void *>(IN_ActivateMouse + Offsets::g_Input);
 
 		if (g_Input = Interface::Create(g_InputAddr)) {
 			g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
 			g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
 			g_Input->Hook(Client::SteamControllerMove_Hook, Client::SteamControllerMove, Offsets::SteamControllerMove);
-
-			auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
-			Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
-			Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &this->KeyUp);
 
 			in_forceuser = Variable("in_forceuser");
 			if (!!in_forceuser && this->g_Input) {
@@ -571,13 +561,7 @@ bool Client::Init() {
 
 		auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
 		auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
-		uintptr_t g_pClientMode;
-#ifndef _WIN32
-		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			g_pClientMode = GetClientMode + 6 + *(uint32_t *)(GetClientMode + 8) + *(uint32_t *)(GetClientMode + 35);
-		} else
-#endif
-			g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
+		uintptr_t g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
 		void *clientMode = Memory::Deref<void *>(g_pClientMode);
 		void *clientMode2 = Memory::Deref<void *>(g_pClientMode + sizeof(void *));
 
@@ -602,8 +586,8 @@ bool Client::Init() {
 	Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 8B EC 83 EC 54 83 7D 0C 00 A1 ? ? ? ? 53 56 0F 9F 45 EC 83 78 30 00 57 8B F1 0F 84 BA 03 00 00");
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 E8 ? ? ? ? 81 C7 ? ? ? ? 56 53 81 EC 18 01 00 00 8B 45 08 8B 5D 0C 89 45 98 8B 45 10");
-		Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "E8 ? ? ? ? 05 ? ? ? ? 55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 7D 0C 8B 75 08 89 45 A0 8B 80 00 FB FF FF");
+		Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC B8 00 00 00 8B 45 10 8B 5D 0C 89 85 60 FF FF FF 88 45 A7 A1 ? ? ? ?");
+		Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 83 EC 7C A1 ? ? ? ? 8B 5D 08 89 45 90 85 C0 0F 85 34 04 00 00 A1 ? ? ? ? 8B 40 30 85 C0");
 	} else {
 		Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC DC 00 00 00 8B 45 08 8B 5D 0C 89 C7 89 45 84 8B 45 10 89 85 4C FF FF FF");
 		Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 45 0C 8B 5D 08 89 45 8C 8B 45 14 89 45 90 65 A1 14 00 00 00");
@@ -617,7 +601,7 @@ bool Client::Init() {
 #ifdef _WIN32
 		Client::CalcViewModelLag = (decltype(Client::CalcViewModelLag))Memory::Scan(client->Name(), "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 83 EC 1C 56 6A 00 6A 00 8D 45 F4 8B F1 8B 4B 0C 50 51 E8 ? ? ? ?");
 #else
-		Client::CalcViewModelLag = (decltype(Client::CalcViewModelLag))Memory::Scan(client->Name(), "57 56 53 E8 ? ? ? ? 81 C3 ? ? ? ? 83 EC 20 8B 7C 24 30 8B 74 24 34");
+		Client::CalcViewModelLag = (decltype(Client::CalcViewModelLag))Memory::Scan(client->Name(), "56 53 83 EC 24 8B 74 24 30 8B 5C 24 34 6A 00 6A 00 8D 44 24 1C 50 FF 74 24 44 E8 ? ? ? ? A1 ? ? ? ? 83 C4 10 66 0F EF C9");
 #endif
 	}
 
@@ -631,8 +615,8 @@ bool Client::Init() {
 		this->gamerules = *(void ***)(cbk + 2);
 #else
 		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			cbk = cbk + 10 + *(int8_t *)(cbk + 9);  // openradialmenu -> OpenRadialMenuCommand
-			this->gamerules = (void **)(cbk + 5 + *(uint32_t *)(cbk + 6) + *(uint32_t *)(cbk + 20));
+			cbk = (uintptr_t)Memory::Read(cbk + 9);  // openradialmenu -> OpenRadialMenuCommand
+			this->gamerules = *(void ***)(cbk + 1);
 		} else {
 			cbk = (uintptr_t)Memory::Read(cbk + 12);  // openradialmenu -> OpenRadialMenuCommand
 			this->gamerules = *(void ***)(cbk + 9);

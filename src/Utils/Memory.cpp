@@ -16,6 +16,7 @@
 #	include <link.h>
 #	include <sys/uio.h>
 #	include <unistd.h>
+#	include <signal.h>
 #endif
 
 #define INRANGE(x, a, b) (x >= a && x <= b)
@@ -59,18 +60,23 @@ bool Memory::TryGetModule(const char *moduleName, Memory::ModuleInfo *info) {
 
 #else
 		dl_iterate_phdr([](struct dl_phdr_info *info, size_t, void *) {
-			auto module = Memory::ModuleInfo();
-
 			auto temp = std::string(info->dlpi_name);
 			auto index = temp.find_last_of("\\/");
 			temp = temp.substr(index + 1, temp.length() - index);
-			std::snprintf(module.name, sizeof(module.name), "%s", temp.c_str());
 
-			module.base = info->dlpi_addr + info->dlpi_phdr[0].p_paddr;
-			module.size = info->dlpi_phdr[0].p_memsz;
-			std::strncpy(module.path, info->dlpi_name, sizeof(module.path));
+			for (int i = 0; i < info->dlpi_phnum; ++i) {
+				// FIXME: we really want data segments too! but +x is more important
+				if (info->dlpi_phdr[i].p_flags & 1) { // execute
+					Memory::ModuleInfo module;
+					module.base = info->dlpi_addr + info->dlpi_phdr[i].p_vaddr;
+					module.size = info->dlpi_phdr[i].p_memsz;
+					std::strncpy(module.name, temp.c_str(), sizeof(module.name));
+					std::strncpy(module.path, info->dlpi_name, sizeof(module.path));
+					Memory::moduleList.push_back(module);
+					break;
+				}
+			}
 
-			Memory::moduleList.push_back(module);
 			return 0;
 		},
 		                nullptr);
@@ -131,17 +137,14 @@ uintptr_t Memory::FindAddress(const uintptr_t start, const uintptr_t end, const 
 		if (!*pattern)
 			return result;
 
-		auto match = *reinterpret_cast<const uint8_t *>(pattern);
-		auto byte = *reinterpret_cast<const uint8_t *>(position);
-
-		if (match == '\?' || byte == getByte(pattern)) {
+		if (*pattern == '?' || *(uint8_t *)position == getByte(pattern)) {
 			if (!result)
 				result = position;
 
-			if (!pattern[2])
+			if (!pattern[1] || !pattern[2])
 				return result;
 
-			pattern += (match != '\?') ? 3 : 2;
+			pattern += (*pattern == '\?') ? 2 : 3;
 		} else {
 			pattern = target;
 			result = 0;
@@ -161,6 +164,14 @@ uintptr_t Memory::Scan(const char *moduleName, const char *pattern, int offset) 
 			result += offset;
 		}
 	}
+
+#ifndef _WIN32
+	// handy for debugging
+	if (result == 0) {
+		raise(SIGTRAP);
+	}
+#endif
+
 	return result;
 }
 std::vector<uintptr_t> Memory::MultiScan(const char *moduleName, const char *pattern, int offset) {

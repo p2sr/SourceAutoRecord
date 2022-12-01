@@ -815,12 +815,7 @@ bool Engine::Init() {
 #endif
 
 		Memory::Read<_Cbuf_AddText>((uintptr_t)this->ClientCmd + Offsets::Cbuf_AddText, &this->Cbuf_AddText);
-#ifndef _WIN32
-		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			this->s_CommandBuffer = (void *)((uintptr_t)this->Cbuf_AddText + 9 + *(uint32_t *)((uintptr_t)this->Cbuf_AddText + 11) + *(uint32_t *)((uintptr_t)this->Cbuf_AddText + 71));
-		} else
-#endif
-			Memory::Deref<void *>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
+		Memory::Deref<void *>((uintptr_t)this->Cbuf_AddText + Offsets::s_CommandBuffer, &this->s_CommandBuffer);
 
 		Memory::Read((uintptr_t)this->SetViewAngles + Offsets::GetLocalClient, &this->GetLocalClient);
 
@@ -865,29 +860,14 @@ bool Engine::Init() {
 			g_ProcessTick = (decltype(g_ProcessTick))ProcessTick;
 			ProcessTick_Hook.SetFunc(ProcessTick);
 
-#ifndef _WIN32
-			if (sar.game->Is(SourceGame_EIPRelPIC)) {
-				tickcount = (int *)(ProcessTick + 12 + *(uint32_t *)(ProcessTick + 14) + *(uint32_t *)(ProcessTick + 86) + 0x18);
-			} else
-#endif
-				tickcount = Memory::Deref<int *>(ProcessTick + Offsets::tickcount);
+			tickcount = Memory::Deref<int *>(ProcessTick + Offsets::tickcount);
 
-#ifndef _WIN32
-			if (sar.game->Is(SourceGame_EIPRelPIC)) {
-				interval_per_tick = (float *)(ProcessTick + 12 + *(uint32_t *)(ProcessTick + 14) + *(uint32_t *)(ProcessTick + 72) + 8);
-			} else
-#endif
-				interval_per_tick = Memory::Deref<float *>(ProcessTick + Offsets::interval_per_tick);
+			interval_per_tick = Memory::Deref<float *>(ProcessTick + Offsets::interval_per_tick);
 			SpeedrunTimer::SetIpt(*interval_per_tick);
 
 			auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
 			auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);
-#ifndef _WIN32
-			if (sar.game->Is(SourceGame_EIPRelPIC)) {
-				hoststate = (CHostState *)(HostState_OnClientConnected + 5 + *(uint32_t *)(HostState_OnClientConnected + 6) + *(uint32_t *)(HostState_OnClientConnected + 15));
-			} else
-#endif
-				Memory::Deref<CHostState *>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
+			Memory::Deref<CHostState *>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
 		}
 
 		if (this->engineTrace = Interface::Create(this->Name(), "EngineTraceServer004")) {
@@ -898,12 +878,7 @@ bool Engine::Init() {
 
 	if (this->engineTool = Interface::Create(this->Name(), "VENGINETOOL003", false)) {
 		auto GetCurrentMap = this->engineTool->Original(Offsets::GetCurrentMap);
-#ifndef _WIN32
-		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			this->m_szLevelName = (char *)(GetCurrentMap + 7 + *(uint32_t *)(GetCurrentMap + 9) + *(uint32_t *)(GetCurrentMap + 18) + 16);
-		} else
-#endif
-			this->m_szLevelName = Memory::Deref<char *>(GetCurrentMap + Offsets::m_szLevelName);
+		this->m_szLevelName = Memory::Deref<char *>(GetCurrentMap + Offsets::m_szLevelName);
 
 		this->m_bLoadgame = reinterpret_cast<bool *>((uintptr_t)this->m_szLevelName + Offsets::m_bLoadGame);
 
@@ -916,12 +891,7 @@ bool Engine::Init() {
 	if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION004", false)) {
 		auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
 		void *engAddr;
-#ifndef _WIN32
-		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			engAddr = *(void **)(IsRunningSimulation + 5 + *(uint32_t *)(IsRunningSimulation + 6) + *(uint32_t *)(IsRunningSimulation + 15));
-		} else
-#endif
-			engAddr = Memory::DerefDeref<void *>(IsRunningSimulation + Offsets::eng);
+		engAddr = Memory::DerefDeref<void *>(IsRunningSimulation + Offsets::eng);
 
 		if (this->eng = Interface::Create(engAddr)) {
 			if (this->tickcount && this->hoststate && this->m_szLevelName) {
@@ -931,13 +901,7 @@ bool Engine::Init() {
 
 		uintptr_t Init = s_EngineAPI->Original(Offsets::Init);
 		uintptr_t VideoMode_Create = Memory::Read(Init + Offsets::VideoMode_Create);
-		void **videomode;
-#ifndef _WIN32
-		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			videomode = (void **)(VideoMode_Create + 6 + *(uint32_t *)(VideoMode_Create + 8) + *(uint32_t *)(VideoMode_Create + 193));
-		} else
-#endif
-			videomode = *(void ***)(VideoMode_Create + Offsets::videomode);
+		void **videomode = *(void ***)(VideoMode_Create + Offsets::videomode);
 		Renderer::Init(videomode);
 		Stitcher::Init(videomode);
 
@@ -978,8 +942,8 @@ bool Engine::Init() {
 	host_frametime = *(float **)((uintptr_t)Host_AccumulateTime + 92);
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), "56 53 E8 ? ? ? ? 81 C3 ? ? ? ? 83 EC 14 8D B3 ? ? ? ? 8D 8B ? ? ? ? F3 0F 10 83 ? ? ? ? F3 0F 58 44 24 20", 0);
-		host_frametime = (float *)((uintptr_t)Host_AccumulateTime + 7 + *(uint32_t *)((uintptr_t)Host_AccumulateTime + 9) + *(uint32_t *)((uintptr_t)Host_AccumulateTime + 96));
+		Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), "83 EC 1C 8B 15 ? ? ? ? F3 0F 10 05 ? ? ? ? F3 0F 58 44 24 20 F3 0F 11 05 ? ? ? ? 8B 02 8B 40 24 3D ? ? ? ? 0F 85 41 03 00 00", 0);
+		host_frametime = *(float **)((uintptr_t)Host_AccumulateTime + 81);
 	} else {
 		Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), "55 89 E5 83 EC 28 F3 0F 10 05 ? ? ? ? A1 ? ? ? ? F3 0F 58 45 08 F3 0F 11 05 ? ? ? ? 8B 10 89 04 24 FF 52 24", 0);
 		host_frametime = *(float **)((uintptr_t)Host_AccumulateTime + 70);
@@ -992,7 +956,7 @@ bool Engine::Init() {
 	_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "A1 ? ? ? ? 85 C0 75 1B 8B 0D ? ? ? ? 8B 01 8B 50 40 68 ? ? ? ? FF D2 A3 ? ? ? ? 85 C0 74 0D 6A 02 6A F6 50 E8 ? ? ? ? 83 C4 0C", 0);
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 57 56 E8 ? ? ? ? 81 C6 ? ? ? ? 53 83 EC 2C 8B BE ? ? ? ? 8B 87 0C 10 00 00 89 45 E4 85 C0 0F 85 ? ? ? ? E8 ? ? ? ? 8D 8E ? ? ? ? 8B 41 1C 89 4D D4 8B 40 30 89 45 E0", 0);
+		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 1C 8B 1D ? ? ? ? 85 DB 0F 85 69 02 00 00 E8 64 FF FF FF A1 ? ? ? ? 80 3D C5 ? ? ? ? 8B 78 30 74 12 83 EC 08 6A 00", 0);
 	} else {
 		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 35 ? ? ? ? 85 F6 0F 95 C0 89 C6 0F 85 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? 80 3D ? ? ? ? 00 8B 78 30", 0);
 	}
@@ -1006,8 +970,8 @@ bool Engine::Init() {
 	this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "8B 45 F4 50 68 FE 04 00 00 68 ? ? ? ? 8D 4D 90 E8 ? ? ? ? 8D 4F 04 E8", 26);
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "8B 9D 94 FE FF FF 8D 85 C0 FE FF FF 83 EC 04 50 8D 85 B0 FE FF FF 50 FF B5 8C FE FF FF E8", 30);
-		this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "68 FE 04 00 00 FF B5 68 FE FF FF 50 89 85 90 FE FF FF E8 ? ? ? ? 58 FF B5 8C FE FF FF E8", 31);
+		this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "8D 85 C4 FE FF FF 83 EC 04 8D B5 E8 FE FF FF 56 50 FF B5 94 FE FF FF E8", 24);
+		this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "FF B5 AC FE FF FF 8D B5 E8 FE FF FF 68 FE 04 00 00 68 ? ? ? ? 56 E8 ? ? ? ? 58 FF B5 94 FE FF FF E8", 36);
 	} else {
 		this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
 		this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "89 44 24 0C 8D 85 C0 FE FF FF 89 04 24 E8 ? ? ? ? 8B 85 8C FE FF FF 89 04 24 E8", 28);
@@ -1055,11 +1019,12 @@ bool Engine::Init() {
 
 	// Dumb fix for valve cutting off convar descriptions at 80
 	// characters for some reason
+	/* TODO Memory::Scan data segments
 	char *s = (char *)Memory::Scan(this->Name(), "25 2d 38 30 73 20 2d 20 25 2e 38 30 73 0a 00");  // "%-80s - %.80s"
 	if (s) {
 		Memory::UnProtect(s, 11);
 		strcpy(s, "%-80s - %s");
-	}
+	}*/
 
 	if (this->g_physCollision = Interface::Create(MODULE("vphysics"), "VPhysicsCollision007")) {
 		this->CreateDebugMesh = this->g_physCollision->Original<_CreateDebugMesh>(Offsets::CreateDebugMesh);

@@ -29,27 +29,10 @@ void PortalReloaded::LoadOffsets() {
 	// engine.dll
 	OnGameOverlayActivated = 144;  // CSteam3Client
 #else
-	// Transferred from old Portal2 - should be removed if and when game
-	// upgrades to new-style PIC engine
-	GetClientStateFunction = 11;         // CEngineClient::ClientCmd
-	GetLocalClient = 92;                 // CEngineClient::SetViewAngles
-	HostState_OnClientConnected = 1523;  // CClientState::SetSignonState
-	FireEventIntern = 36;                // CGameEventManager::FireEventClientSide
-	ConPrintEvent = 254;                 // CGameEventManager::FireEventIntern
-	AutoCompletionFunc = 37;             // listdemo_CompletionFunc
-	Key_SetBinding = 60;                 // unbind
-	VideoMode_Create = 104;              // CEngineAPI::Init
-	AirMove_Offset1 = 14;                // CPortalGameMovement::~CPortalGameMovement
-	UTIL_PlayerByIndex = 61;             // CServerGameDLL::Think
-	GetClientMode = 11;                  // CHLClient::HudProcessInput
-	GetHud = 104;                        // cc_leaderboard_enable
-	FindElement = 120;                   // cc_leaderboard_enable
-	KeyDown = 295;                       // CInput::JoyStickApplyMovement
-	KeyUp = 341;                         // CInput::JoyStickApplyMovement
-	StartDrawing = 692;                  // CMatSystemSurface::PaintTraverseEx
-	FinishDrawing = 627;                 // CMatSystemSurface::PaintTraverseEx
-	OnGameOverlayActivated = 152;        // CSteam3Client
-	FontManager = 11;                    // GetFontName
+#define OFFSET_DEFAULT(name, win, linux)
+#define OFFSET_EMPTY(name)
+#define OFFSET_LINMOD(name, off) name = off;
+#include "OffsetsData.hpp"
 #endif
 }
 const char *PortalReloaded::Version() {

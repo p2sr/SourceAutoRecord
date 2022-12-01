@@ -452,12 +452,7 @@ void InterpolateDemoCommand_Detour(void *thisptr, int slot, int target_tick, Dem
 bool EngineDemoPlayer::Init() {
 	auto disconnect = engine->cl->Original(Offsets::Disconnect);
 	void *demoplayer;
-#ifndef _WIN32
-	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		demoplayer = *(void **)(disconnect + 10 + *(uint32_t *)(disconnect + 12) + *(uint32_t *)(disconnect + 100));
-	} else
-#endif
-		demoplayer = Memory::DerefDeref<void *>(disconnect + Offsets::demoplayer);
+	demoplayer = Memory::DerefDeref<void *>(disconnect + Offsets::demoplayer);
 	if (this->s_ClientDemoPlayer = Interface::Create(demoplayer)) {
 		this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StartPlayback_Hook, EngineDemoPlayer::StartPlayback, Offsets::StartPlayback);
 		this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StopPlayback_Hook, EngineDemoPlayer::StopPlayback, Offsets::StopPlayback);
@@ -474,7 +469,7 @@ bool EngineDemoPlayer::Init() {
 	InterpolateDemoCommand = (decltype(InterpolateDemoCommand))Memory::Scan(this->Name(), "55 8B EC 83 EC 10 56 8B F1 8B 4D 10 57 8B BE B4 05 00 00 83 C1 04 89 75 F4 89 7D F0 E8 ? ? ? ? 8B 4D 14 83 C1 04");
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		InterpolateDemoCommand = (decltype(InterpolateDemoCommand))Memory::Scan(this->Name(), "55 57 56 53 83 EC 10 8B 44 24 24 8B 5C 24 2C 8B 88 B0 05 00 00 8B 44 24 30 8D 70 04 8D 90 9C 00 00 00 89 F0");
+		InterpolateDemoCommand = (decltype(InterpolateDemoCommand))Memory::Scan(this->Name(), "55 57 56 53 83 EC 10 8B 44 24 24 8B 5C 24 2C 8B 88 B0 05 00 00 8B 44 24 30 8D 70 04 8D 90 9C 00 00 00 89 F0 F3 0F 10 40 04");
 	} else {
 		InterpolateDemoCommand = (decltype(InterpolateDemoCommand))Memory::Scan(this->Name(), "55 31 C9 89 E5 57 56 53 83 EC 3C 89 4D F0 8B 45 08 8B 4D 14 8B 80 B0 05 00 00 89 45 B8 8B 45 14 83 C0 04 89 45 D0");
 	}

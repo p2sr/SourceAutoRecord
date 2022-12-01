@@ -465,7 +465,7 @@ static void setPortalsThruPortals(bool val) {
 	*(uint8_t *)(tfp + 391) = val ? 0x00 : 0x0A;
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		*(uint8_t *)(tfp + 414) = val ? 0xEB : 0x74;
+		*(uint8_t *)(tfp + 388) = val ? 0x82 : 0x85;
 	} else {
 		*(uint8_t *)(tfp + 462) = val ? 0xEB : 0x74;
 	}
@@ -706,12 +706,7 @@ bool Server::Init() {
 		auto ctor = this->g_GameMovement->Original(0);
 		auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
 		uintptr_t baseOffset;
-#ifndef _WIN32
-		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			baseOffset = baseCtor + 5 + *(uint32_t *)(baseCtor + 6) + *(uint32_t *)(baseCtor + 19);
-		} else
-#endif
-			baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
+		baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
 		Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t *), &Server::AirMoveBase);
 
 		Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t *), &Server::CheckJumpButtonBase);
@@ -725,7 +720,7 @@ bool Server::Init() {
 		}
 #else
 		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			this->aircontrol_fling_speed_addr = (float *)(airMove + 8 + *(uint32_t *)(airMove + 10) + *(uint32_t *)(airMove + 677));
+			this->aircontrol_fling_speed_addr = *(float **)(airMove + 641);
 		} else {
 			this->aircontrol_fling_speed_addr = *(float **)(airMove + 524);
 		}
@@ -735,12 +730,12 @@ bool Server::Init() {
 
 	if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS001")) {
 		auto GetIServerEntity = g_ServerTools->Original(Offsets::GetIServerEntity);
+		Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
 #ifndef _WIN32
 		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			this->m_EntPtrArray = (CEntInfo *)(GetIServerEntity + 12 + *(uint32_t *)(GetIServerEntity + 14) + *(uint32_t *)(GetIServerEntity + 54) + 4);
-		} else
+			this->m_EntPtrArray = (CEntInfo *)((uintptr_t)this->m_EntPtrArray + 4);
+		}
 #endif
-			Memory::Deref(GetIServerEntity + Offsets::m_EntPtrArray, &this->m_EntPtrArray);
 
 		this->gEntList = Interface::Create((void *)((uintptr_t)this->m_EntPtrArray - 4));
 		this->gEntList->Hook(Server::OnRemoveEntity_Hook, Server::OnRemoveEntity, Offsets::OnRemoveEntity);
@@ -757,12 +752,7 @@ bool Server::Init() {
 	if (this->g_ServerGameDLL) {
 		auto Think = this->g_ServerGameDLL->Original(Offsets::Think);
 		Memory::Read<_UTIL_PlayerByIndex>(Think + Offsets::UTIL_PlayerByIndex, &this->UTIL_PlayerByIndex);
-#ifndef _WIN32
-		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			this->gpGlobals = *(CGlobalVars **)((uintptr_t)this->UTIL_PlayerByIndex + 5 + *(uint32_t *)((uintptr_t)UTIL_PlayerByIndex + 7) + *(uint32_t *)((uintptr_t)UTIL_PlayerByIndex + 21));
-		} else
-#endif
-			Memory::DerefDeref<CGlobalVars *>((uintptr_t)this->UTIL_PlayerByIndex + Offsets::gpGlobals, &this->gpGlobals);
+		Memory::DerefDeref<CGlobalVars *>((uintptr_t)this->UTIL_PlayerByIndex + Offsets::gpGlobals, &this->gpGlobals);
 
 		this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
 		this->IsRestoring = this->g_ServerGameDLL->Original<_IsRestoring>(Offsets::IsRestoring);
@@ -775,8 +765,8 @@ bool Server::Init() {
 	GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "55 8B EC 80 3D ? ? ? ? 00 75 1F 8B 45 08 85 C0 78 18 3B 05 ? ? ? ? 7D 10 8B 4D 0C 8B 15 ? ? ? ? 8D 04 40 89 4C 82 08", 0);
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "53 E8 ? ? ? ? 81 C3 ? ? ? ? 83 EC 18 8D 44 24 0E 83 EC 04 FF 74 24 24 8D 93 ? ? ? ? 52 50 E8 ? ? ? ? 0F B7 4C 24 1A", 0);
-		GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "E8 ? ? ? ? 05 ? ? ? ? 8B 54 24 04 80 B8 ? ? ? ? 01 74 21 85 D2 78 1D 3B 90 ? ? ? ? 7D 15 8B 88 ? ? ? ? 8D 14 52 8D 14 91", 0);
+		GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "53 83 EC 18 8D 44 24 0E 83 EC 04 FF 74 24 24 68 ? ? ? ? 50 E8 ? ? ? ? 0F B7 4C 24 1A 83 C4 0C 66 83 F9 FF 74 35 8B 15 ? ? ? ? 89 D0", 0);
+		GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "80 3D 84 ? ? ? ? 8B 44 24 04 74 1F 85 C0 78 1B 3B 05 ? ? ? ? 7D 13 8B 15 ? ? ? ? 8D 04 40", 0);
 	} else {
 		GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(server->Name(), "55 89 E5 53 8D 45 F6 83 EC 24 8B 55 08 C7 44 24 04 ? ? ? ? 89 04 24 89 54 24 08", 0);
 		GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(server->Name(), "80 3D ? ? ? ? 00 55 89 E5 8B 45 08 75 1E 85 C0 78 1A 3B 05 ? ? ? ? 7D 12 8B 15", 0);
@@ -788,7 +778,7 @@ bool Server::Init() {
 #ifdef _WIN32
 	uintptr_t insn_addr = (uintptr_t)say_callback + 52;
 #else
-	uintptr_t insn_addr = (uintptr_t)say_callback + (sar.game->Is(SourceGame_EIPRelPIC) ? 67 : 88);
+	uintptr_t insn_addr = (uintptr_t)say_callback + (sar.game->Is(SourceGame_EIPRelPIC) ? 55 : 88);
 #endif
 	// This is the location of an ADDSD instruction which adds 0.66
 	// to the current time. If we instead *subtract* 0.66, we'll
@@ -805,9 +795,9 @@ bool Server::Init() {
 	Memory::UnProtect((void *)((uintptr_t)TraceFirePortal + 391), 1); // see setPortalsThruPortals
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		TraceFirePortal = (_TraceFirePortal)Memory::Scan(server->Name(), "55 89 E5 57 56 8D BD F4 F8 FF FF 53 E8 ? ? ? ? 81 C3 ? ? ? ? 81 EC 40 07 00 00 8B 45 14 6A 00 8B 75 0C", 0);
-		FindPortal = (_FindPortal)Memory::Scan(server->Name(), "55 57 56 E8 ? ? ? ? 81 C6 ? ? ? ? 53 83 EC 2C 8B 44 24 40 8B 54 24 44 8B 7C 24 48 89 44 24 18 0F B6 C0", 0);
-		Memory::UnProtect((void *)((uintptr_t)TraceFirePortal + 414), 1); // see setPortalsThruPortals
+		TraceFirePortal = (_TraceFirePortal)Memory::Scan(server->Name(), "55 89 E5 57 56 8D B5 F4 F8 FF FF 53 81 EC 30 07 00 00 8B 45 14 6A 00 8B 5D 0C FF 75 08 56 89 85 D0 F8 FF FF", 0);
+		FindPortal = (_FindPortal)Memory::Scan(server->Name(), "55 57 56 53 83 EC 2C 8B 44 24 40 8B 74 24 48 8B 7C 24 44 89 44 24 14 0F B6 C0 8D 04 80 89 74 24 0C C1 E0 02", 0);
+		Memory::UnProtect((void *)((uintptr_t)TraceFirePortal + 388), 1); // see setPortalsThruPortals
 	} else {
 		TraceFirePortal = (_TraceFirePortal)Memory::Scan(server->Name(), "55 89 E5 57 56 8D BD F4 F8 FF FF 53 81 EC 3C 07 00 00 8B 45 14 C7 44 24 08 00 00 00 00 89 3C 24 8B 5D 0C", 0);
 		FindPortal = (_FindPortal)Memory::Scan(server->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 45 08 8B 7D 0C 8B 4D 10 89 45 D8 0F B6 C0 8D 04 80 89 7D E0 C1 E0 02 89 4D DC", 0);
@@ -819,7 +809,7 @@ bool Server::Init() {
 	ViewPunch = (decltype (ViewPunch))Memory::Scan(server->Name(), "55 8B EC A1 ? ? ? ? 83 EC 0C 83 78 30 00 56 8B F1 0F 85 ? ? ? ? 8B 16 8B 82 00 05 00 00 FF D0 84 C0 0F 85 ? ? ? ? 8B 45 08 F3 0F 10 1D ? ? ? ? F3 0F 10 00");
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		ViewPunch = (decltype (ViewPunch))Memory::Scan(server->Name(), "55 57 56 53 E8 ? ? ? ? 81 C3 ? ? ? ? 83 EC 1C 8B 74 24 30 8B 7C 24 34 8B 83 ? ? ? ? 8B 68 30 85 ED 75 46 8B 06 8D 93 ? ? ? ? 8B 80 04 05 00 00");
+		ViewPunch = (decltype (ViewPunch))Memory::Scan(server->Name(), "55 57 56 53 83 EC 1C A1 ? ? ? ? 8B 5C 24 30 8B 74 24 34 8B 40 30 85 C0 75 38 8B 03 8B 80 04 05 00 00 3D ? ? ? ? 75 36 8B 83 B8 0B 00 00 8B 0D ? ? ? ?");
 	} else {
 		ViewPunch = (decltype (ViewPunch))Memory::Scan(server->Name(), "55 89 E5 53 83 EC 24 A1 ? ? ? ? 8B 5D 08 8B 40 30 85 C0 74 0A 83 C4 24 5B 5D C3 8D 74 26 00 8B 03 89 1C 24 FF 90 04 05 00 00 84 C0 75 E7 8B 45 0C");
 	}
@@ -832,8 +822,8 @@ bool Server::Init() {
 	FindClosestPassableSpace = (decltype (FindClosestPassableSpace))Memory::Scan(server->Name(), "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC A1 ? ? ? ? 81 EC 88 02 00 00 83 78 30 00 56 57 0F 84 ? ? ? ? 8B 73 08 8B 8E DC 00 00 00");
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		UTIL_FindClosestPassableSpace = (decltype (UTIL_FindClosestPassableSpace))Memory::Scan(server->Name(), "E8 ? ? ? ? 81 C1 ? ? ? ? 55 BD 00 01 00 00 66 0F EF DB 57 56 53 81 EC EC 02 00 00 8B 94 24 04 03 00 00 66 89 AC 24 74 01 00 00");
-		FindClosestPassableSpace = (decltype (FindClosestPassableSpace))Memory::Scan(server->Name(), "E8 ? ? ? ? 05 ? ? ? ? 57 56 53 8B 5C 24 10 8B 74 24 14 8B 4C 24 18 8B 90 ? ? ? ? 8B 52 30 85 D2 74 2B 8D 80 ? ? ? ? 8B 38");
+		UTIL_FindClosestPassableSpace = (decltype (UTIL_FindClosestPassableSpace))Memory::Scan(server->Name(), "55 BA 00 01 00 00 66 0F EF ED 66 0F EF C0 57 56 53 81 EC CC 02 00 00 8B 0D ? ? ? ? 8B 84 24 E4 02 00 00 66 89 94 24 54 01 00 00 8B 3D ? ? ? ?");
+		FindClosestPassableSpace = (decltype (FindClosestPassableSpace))Memory::Scan(server->Name(), "A1 ? ? ? ? 57 56 53 8B 5C 24 10 8B 74 24 14 8B 50 30 8B 4C 24 18 85 D2 74 29 8B 83 E4 00 00 00 8B 3D ? ? ? ? 83 F8 FF 74 24 0F B7 D0 C1 E8 10");
 	} else {
 		UTIL_FindClosestPassableSpace = (decltype (UTIL_FindClosestPassableSpace))Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC BC 02 00 00 C6 85 7C FE FF FF 00 8B 45 0C C6 85 7D FE FF FF 01 8B 4D 08 C7 85 78 FE FF FF 00 00 00 00");
 		FindClosestPassableSpace = (decltype (FindClosestPassableSpace))Memory::Scan(server->Name(), "8B 15 ? ? ? ? B8 01 00 00 00 8B 52 30 85 D2 0F 84 ? ? ? ? 55 89 E5 57 56 53 81 EC 7C 02 00 00 8B 55 08 8B 0D ? ? ? ? 8B 92 E4 00 00 00");
@@ -849,7 +839,7 @@ bool Server::Init() {
 #else
 		uintptr_t code;
 		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			code = Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 46 04 66 0F EF C0 DD 5C 24 08 F2 0F 5A 44 24 08 8B 40 24 85 C0", 0);
+			code = Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 43 04 66 0F EF C0 DD 5C 24 08 F2 0F 5A 44 24 08 8B 40 24 85 C0 0F 84 CC 01 00 00 8B 15 ? ? ? ? 2B 42 58", 0);
 		} else {
 			code = Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 43 04 DD 9D ? ? ? ? F2 0F 10 B5 ? ? ? ? 8B 50 24 66 0F 14 F6 66 0F 5A CE 85 D2", 0);
 		}
@@ -866,13 +856,15 @@ bool Server::Init() {
 		g_check_stuck_code = (void *)code;
 	}
 
+	if (sar.game->Is(SourceGame_Portal2)) {
 #ifdef _WIN32
-	Server::IsInPVS = (Server::_IsInPVS)Memory::Scan(this->Name(), "55 8B EC 51 53 8B 5D 08 56 57 33 FF 89 4D FC 66 39 79 1A 75 57 3B BB 10 20 00 00 0F 8D C0 00 00 00 8D B3 14 20 00 00");
+		Server::IsInPVS = (Server::_IsInPVS)Memory::Scan(this->Name(), "55 8B EC 51 53 8B 5D 08 56 57 33 FF 89 4D FC 66 39 79 1A 75 57 3B BB 10 20 00 00 0F 8D C0 00 00 00 8D B3 14 20 00 00");
 #else
-	// this only really matters for coop so this pattern is just for the base game
-	Server::IsInPVS = (Server::_IsInPVS)Memory::Scan(this->Name(), "55 57 E8 ? ? ? ? 81 C7 ? ? ? ? 56 53 31 DB 83 EC 1C 8B 74 24 30 8B 44 24 34 89 7C 24 0C 66 83 7E 1A 00 8B 80 10 20 00 00");
+		// this only really matters for coop so this pattern is just for the base game
+		Server::IsInPVS = (Server::_IsInPVS)Memory::Scan(this->Name(), "55 57 56 53 31 DB 83 EC 0C 8B 74 24 20 8B 7C 24 24 66 83 7E 1A 00 8B 87 10 20 00 00 89 C2 0F 85 BC 00 00 00 85 C0 7F 75 8D B4 26");
 #endif
-	g_IsInPVS_Hook.SetFunc(IsInPVS);
+		g_IsInPVS_Hook.SetFunc(IsInPVS);
+	}
 
 	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);
 
