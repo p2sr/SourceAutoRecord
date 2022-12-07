@@ -2,6 +2,7 @@
 
 #include "Modules/Console.hpp"
 #include "Modules/Server.hpp"
+#include "Features/EntityList.hpp"
 #include "Features/Tas/TasParser.hpp"
 #include "StrafeTool.hpp"
 
@@ -18,15 +19,15 @@ struct AutoAimParams : public TasToolParams {
 		, ticks(ticks)
 		, elapsed(0) {}
 
-	AutoAimParams(std::string name, int ticks)
+	AutoAimParams(std::string selector, int ticks)
 		: TasToolParams(true)
 		, entity(true)
-		, ent_name(name)
+		, ent_selector(selector)
 		, ticks(ticks)
 		, elapsed(0) {}
 
 	bool entity;
-	std::string ent_name;
+	std::string ent_selector;
 	Vector point;
 	int ticks;
 	int elapsed;
@@ -120,21 +121,9 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 
 	Vector target;
 	if (params->entity) {
-		void *entity = nullptr;
-
-		for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
-			void *ent = server->m_EntPtrArray[i].m_pEntity;
-			if (!ent) continue;
-
-			const char *name = server->GetEntityName(ent);
-			if (!name) continue;
-			if (strcmp(name, params->ent_name.c_str())) continue;
-
-			entity = ent;
-			break;
-		}
-
-		if (entity) target = server->GetAbsOrigin(entity);
+		CEntInfo *entity = entityList->QuerySelector(params->ent_selector.c_str());
+		
+		if (entity != NULL) target = ((ServerEnt*)entity->m_pEntity)->abs_origin();
 		else target = Vector{0, 0, 0};
 	} else {
 		target = params->point;
