@@ -184,6 +184,21 @@ void Crosshair::Paint(int slot) {
 	int xScreen, yScreen, xCenter, yCenter;
 	engine->GetScreenSize(nullptr, xScreen, yScreen);
 
+	if (engine->IsSplitscreen()) {
+		if (Variable("ss_pipsplit").GetInt() == 2) {
+			if (slot == 1) {
+				xScreen *= Variable("ss_pipscale").GetFloat();
+				yScreen *= Variable("ss_pipscale").GetFloat();
+			}
+		} else {
+			if (Variable("ss_verticalsplit").GetBool()) {
+				xScreen /= 2;
+			} else {
+				yScreen /= 2;
+			}
+		}
+	}
+
 	xCenter = xScreen / 2;
 	yCenter = yScreen / 2;
 
@@ -260,10 +275,10 @@ void Crosshair::Paint(int slot) {
 
 		Color blue       { 111, 184, 255 };
 		Color orange     { 255, 184,  86 };
-		Color atlas_prim {  32, 128, 210 };
-		Color atlas_sec  {  16,   0, 210 };
-		Color pbody_prim { 255, 180,  32 };
-		Color pbody_sec  {  58,   3,   3 };
+		Color atlas_prim {  86, 161, 222 };
+		Color atlas_sec  {  77,   1, 222 };
+		Color pbody_prim { 255, 199,  86 };
+		Color pbody_sec  { 106,   1,   1 };
 
 		Color real_prim = slot == 1 ? pbody_prim : engine->IsCoop() ? atlas_prim : blue;
 		Color real_sec  = slot == 1 ? pbody_sec  : engine->IsCoop() ? atlas_sec  : orange;
