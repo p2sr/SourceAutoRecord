@@ -199,7 +199,8 @@ std::string DemoGhostPlayer::CustomDataToString(std::optional<int> slot) {
 	return Utils::ssprintf("%d", slot);
 }
 
-CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demo, "ghost_set_demo <demo> [ID] - ghost will use this demo. If ID is specified, will create or modify the ID-th ghost\n", 0, 0, dem) {
+DECL_COMMAND_FILE_COMPLETION(ghost_set_demo, ".dem", engine->GetGameDirectory(), 1);
+CON_COMMAND_F_COMPLETION(ghost_set_demo, "ghost_set_demo <demo> [ID] - ghost will use this demo. If ID is specified, will create or modify the ID-th ghost\n", 0, AUTOCOMPLETION_FUNCTION(ghost_set_demo)) {
 	if (args.ArgC() < 2) {
 		return console->Print(ghost_set_demo.ThisPtr()->m_pszHelpString);
 	}
@@ -216,13 +217,12 @@ CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demo, "ghost_set_demo <demo> [ID] - ghost
 	demoGhostPlayer.isFullGame = false;
 }
 
-CON_COMMAND_AUTOCOMPLETEFILE(ghost_set_demos,
+CON_COMMAND_F_COMPLETION(ghost_set_demos,
                              "ghost_set_demos <first_demo> [first_id] [ID] - ghost will setup a speedrun with first_demo, first_demo_2, etc.\n"
                              "If first_id is specified as e.g. 5, will instead start from first_demo_5, then first_demo_6, etc. Specifying first_id as 1 will use first_demo, first_demo_2 etc as normal.\n"
                              "If ID is specified, will create or modify the ID-th ghost.\n",
                              0,
-                             0,
-                             dem) {
+                             AUTOCOMPLETION_FUNCTION(ghost_set_demo)) {
 	if (args.ArgC() < 2) {
 		return console->Print(ghost_set_demos.ThisPtr()->m_pszHelpString);
 	}

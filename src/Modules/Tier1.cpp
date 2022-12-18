@@ -221,11 +221,6 @@ bool Tier1::Init() {
 		auto listdemo = reinterpret_cast<ConCommand *>(this->FindCommandBase(this->g_pCVar->ThisPtr(), "listdemo"));
 		if (listdemo) {
 			this->ConCommand_VTable = *(void **)listdemo;
-
-			if (listdemo->m_fnCompletionCallback) {
-				auto callback = (uintptr_t)listdemo->m_fnCompletionCallback + Offsets::AutoCompletionFunc;
-				this->AutoCompletionFunc = Memory::Read<_AutoCompletionFunc>(callback);
-			}
 		}
 
 		auto sv_lan = reinterpret_cast<ConVar *>(this->FindCommandBase(this->g_pCVar->ThisPtr(), "sv_lan"));
@@ -253,7 +248,7 @@ bool Tier1::Init() {
 		}
 	}
 
-	return this->hasLoaded = this->g_pCVar && this->ConCommand_VTable && this->ConVar_VTable && this->ConVar_VTable2 && this->AutoCompletionFunc;
+	return this->hasLoaded = this->g_pCVar && this->ConCommand_VTable && this->ConVar_VTable && this->ConVar_VTable2;
 }
 void Tier1::Shutdown() {
 	if (this->orig_display_func) {
@@ -263,12 +258,3 @@ void Tier1::Shutdown() {
 }
 
 Tier1 *tier1;
-
-CBaseAutoCompleteFileList::CBaseAutoCompleteFileList(const char *cmdname, const char *subdir, const char *extension) {
-	m_pszCommandName = cmdname;
-	m_pszSubDir = subdir;
-	m_pszExtension = extension;
-}
-int CBaseAutoCompleteFileList::AutoCompletionFunc(char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) {
-	return tier1->AutoCompletionFunc(this, partial, commands);
-}

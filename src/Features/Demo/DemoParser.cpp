@@ -303,7 +303,8 @@ bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std:
 
 // Commands
 
-CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "sar_time_demo <demo_name> - parses a demo and prints some information about it\n", 0, 0, dem) {
+DECL_COMMAND_FILE_COMPLETION(sar_time_demo, ".dem", engine->GetGameDirectory(), 1);
+CON_COMMAND_F_COMPLETION(sar_time_demo, "sar_time_demo <demo_name> - parses a demo and prints some information about it\n", 0, AUTOCOMPLETION_FUNCTION(sar_time_demo)) {
 	if (args.ArgC() != 2) {
 		return console->Print(sar_time_demo.ThisPtr()->m_pszHelpString);
 	}
@@ -336,7 +337,8 @@ CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demo, "sar_time_demo <demo_name> - parses 
 		console->Print("Could not parse \"%s\"!\n", name.c_str());
 	}
 }
-CON_COMMAND_AUTOCOMPLETEFILE(sar_time_demos, "sar_time_demos <demo_name> [demo_name2]... - parses multiple demos and prints the total sum of them\n", 0, 0, dem) {
+
+CON_COMMAND_F_COMPLETION(sar_time_demos, "sar_time_demos <demo_name> [demo_name2]... - parses multiple demos and prints the total sum of them\n", 0, AUTOCOMPLETION_FUNCTION(sar_time_demo)) {
 	if (args.ArgC() <= 1) {
 		return console->Print(sar_time_demos.ThisPtr()->m_pszHelpString);
 	}

@@ -62,18 +62,9 @@ public:
 
 #define DECL_DECLARE_AUTOCOMPLETION_FUNCTION(command) \
 	int command##_CompletionFunc(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
-#define DECLARE_AUTOCOMPLETION_FUNCTION(command, subdirectory, extension)                                                        \
-	CBaseAutoCompleteFileList command##Complete(#command, subdirectory, #extension);                                                \
-	int command##_CompletionFunc(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) { \
-		return command##Complete.AutoCompletionFunc(partial, commands);                                                                \
-	}
 
 #define AUTOCOMPLETION_FUNCTION(command) \
 	command##_CompletionFunc
-
-#define CON_COMMAND_AUTOCOMPLETEFILE(name, description, flags, subdirectory, extension) \
-	DECLARE_AUTOCOMPLETION_FUNCTION(name, subdirectory, extension)                         \
-	CON_COMMAND_F_COMPLETION(name, description, flags, AUTOCOMPLETION_FUNCTION(name))
 
 #define DECL_DETOUR_COMMAND(name)         \
 	static _CommandCallback name##_callback; \

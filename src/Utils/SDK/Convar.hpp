@@ -28,7 +28,6 @@ using _UnregisterConCommand = void(__rescalll *)(void *thisptr, ConCommandBase *
 using _FindCommandBase = void *(__rescalll *)(void *thisptr, const char *name);
 using _InstallGlobalChangeCallback = void(__rescalll *)(void *thisptr, FnChangeCallback_t callback);
 using _RemoveGlobalChangeCallback = void(__rescalll *)(void *thisptr, FnChangeCallback_t callback);
-using _AutoCompletionFunc = int(__rescalll *)(void *thisptr, char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
 class IConVar {
 public:

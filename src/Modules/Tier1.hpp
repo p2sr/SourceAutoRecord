@@ -26,7 +26,6 @@ public:
 	void *ConCommand_VTable = nullptr;
 	void *ConVar_VTable = nullptr;
 	void *ConVar_VTable2 = nullptr;
-	_AutoCompletionFunc AutoCompletionFunc = nullptr;
 
 #ifdef _WIN32
 	using _Dtor = int(__rescall *)(ConVar *thisptr, char a2);
@@ -47,12 +46,3 @@ public:
 };
 
 extern Tier1 *tier1;
-
-struct CBaseAutoCompleteFileList {
-	const char *m_pszCommandName;
-	const char *m_pszSubDir;
-	const char *m_pszExtension;
-
-	CBaseAutoCompleteFileList(const char *cmdname, const char *subdir, const char *extension);
-	int AutoCompletionFunc(char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
-};

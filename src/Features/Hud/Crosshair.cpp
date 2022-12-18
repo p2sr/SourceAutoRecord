@@ -404,7 +404,8 @@ void Crosshair::UpdateImages() {
 
 // Commands
 
-CON_COMMAND_AUTOCOMPLETEFILE(sar_crosshair_set_texture, "sar_crosshair_set_texture <filepath>\n", 0, 0, png) {
+DECL_COMMAND_FILE_COMPLETION(sar_crosshair_set_texture, ".png", engine->GetGameDirectory(), 1);
+CON_COMMAND_F_COMPLETION(sar_crosshair_set_texture, "sar_crosshair_set_texture <filepath>\n", 0, AUTOCOMPLETION_FUNCTION(sar_crosshair_set_texture)) {
 	if (args.ArgC() < 2) {
 		return console->Print(sar_crosshair_set_texture.ThisPtr()->m_pszHelpString);
 	}
