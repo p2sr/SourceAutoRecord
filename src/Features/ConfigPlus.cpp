@@ -317,7 +317,7 @@ CON_COMMAND_F_COMPLETION(svar_from_cvar, "svar_from_cvar <variable> <cvar> - cap
 			other = (it == g_svars.end()) ? 0 : atof(it->second.c_str());   \
 		}                                                                \
 		double val = (disallowSecondZero && other == 0) ? 0 : op;        \
-		SetSvar({args[1]}, Utils::ssprintf("%g", val));                  \
+		SetSvar({args[1]}, Utils::ssprintf("%.17g", val));                  \
 	}
 
 SVAR_OP(add, cur + other, false)
@@ -335,7 +335,7 @@ SVAR_OP(mod, fmod(cur, other), true) // fmod seems to work fine for integers
 		auto it = g_svars.find({args[1]});                                 \
 		double cur = (it == g_svars.end()) ? 0 : atof(it->second.c_str()); \
                                                                      \
-		SetSvar({args[1]}, Utils::ssprintf("%g", op));                     \
+		SetSvar({args[1]}, Utils::ssprintf("%.17g", op));                     \
 	}
 
 SVAR_SINGLE_OP(round, round(cur))
