@@ -217,6 +217,7 @@
 |sar_hud_font_color|255 255 255 255|RGBA font color of HUD.<br>|
 |sar_hud_font_index|0|Font index of HUD.<br>|
 |sar_hud_frame|0|Draws current frame count.<br>|
+|sar_hud_fps|0|Show fps (frames per second) on the SAR hud.<br>1 - Show fps<br>2 - Show fps with fps cap<br>|
 |sar_hud_ghost_spec|0|Show the name of the ghost you're currently spectating.<br>|
 |sar_hud_grounded|0|Draws the state of player being on ground.<br>|
 |sar_hud_groundframes|0|Draws the number of ground frames since last landing. Setting it to 2 preserves the value.<br>|

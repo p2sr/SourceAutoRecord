@@ -235,6 +235,8 @@ extern Variable sar_pause_for;
 
 extern Variable sar_tick_debug;
 
+extern float g_cur_fps;
+
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
 #define IGNORE_DEMO_PLAYER()          \

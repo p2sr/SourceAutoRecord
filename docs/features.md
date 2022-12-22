@@ -86,6 +86,9 @@ This file contains a detailed list of all features implemented by SourceAutoReco
 - **Velocity angles** (`velang`):
   - Calculates and displays angles towards which current velocity vector is pointing at.
 
+- **FPS** (`fps`):
+  - Displays the current FPS.
+
 ## User interface
 
 - **Input HUD** (`sar_ihud`):

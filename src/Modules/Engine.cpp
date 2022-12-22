@@ -28,6 +28,7 @@
 #include "Variable.hpp"
 
 #include <cstring>
+#include <cmath>
 
 #ifdef _WIN32
 // clang-format off
@@ -38,6 +39,8 @@
 #else
 #	include <sys/mman.h>
 #endif
+
+#define FPS_CHECK_WINDOW 0.5f
 
 Variable host_framerate;
 Variable net_showmsg;
@@ -55,6 +58,8 @@ Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.
 Variable sar_tick_debug("sar_tick_debug", "0", 0, 3, "Output debugging information to the console related to ticks and frames.\n");
 
 Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
+
+float g_cur_fps = 0.0f;
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::SetSignonState);
@@ -648,6 +653,16 @@ void _Host_RunFrame_Render_Detour();
 void (*_Host_RunFrame_Render)();
 static Hook _Host_RunFrame_Render_Hook(&_Host_RunFrame_Render_Detour);
 void _Host_RunFrame_Render_Detour() {
+	static uint64_t total_frames = 0;
+
+	uint64_t init_frames = total_frames;
+	total_frames += 1;
+
+	unsigned nticks = roundf(FPS_CHECK_WINDOW / *engine->interval_per_tick);
+	Scheduler::InHostTicks(nticks, [=]() {
+		uint64_t nframes = total_frames - init_frames;
+		g_cur_fps = (float)nframes / FPS_CHECK_WINDOW;
+	});
 	if (g_skipping && !g_advancing && !engine->IsGamePaused()) {
 		// We need to do this or else the client doesn't update viewangles
 		// in response to portal teleportations (and it probably breaks some

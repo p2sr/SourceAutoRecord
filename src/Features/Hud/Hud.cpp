@@ -251,6 +251,7 @@ HudStringElement::HudStringElement(Variable *variable, _PaintCallbackString call
 
 // Default order
 std::vector<std::string> elementOrder = {
+	"fps",
 	"tastick",
 	"groundframes",
 	"text",
@@ -856,6 +857,14 @@ HUD_ELEMENT_MODE2(ent_slot_serial, "0", 0, 4096,
 	int serial = entityList->GetEntityInfoByIndex(mode)->m_SerialNumber;
 
 	ctx->DrawElement("ent slot %d serial: %d", mode, serial);
+}
+
+HUD_ELEMENT_MODE2(fps, "0", 0, 2, "Show fps (frames per second) on the SAR hud.\n", HudType_InGame | HudType_Paused | HudType_Menu) {
+	if (mode == 1) {
+		ctx->DrawElement("fps: %.0f", g_cur_fps);
+	} else if (mode == 2) {
+		ctx->DrawElement("fps: %.0f/%i", g_cur_fps, fps_max.GetInt());
+	}
 }
 
 CON_COMMAND_F(sar_pip_align, "sar_pip_align <top|center|bottom> <left|center|right> - aligns the remote view.\n", FCVAR_DONTRECORD) {
