@@ -70,7 +70,7 @@ void StrafeQualityHud::Paint(int slot) {
 
 	auto &ticks = g_ticks[slot];
 
-	int ticksAvg = sar_strafe_quality_ticks.GetInt();
+	unsigned ticksAvg = sar_strafe_quality_ticks.GetInt();
 
 	int screenWidth, screenHeight;
 	engine->GetScreenSize(nullptr, screenWidth, screenHeight);
@@ -97,14 +97,14 @@ void StrafeQualityHud::Paint(int slot) {
 		totalMouse += tickTotal;
 		syncedMouse += tickSynced;
 
-		if (i - ticksAvg >= 0) {
+		if (i >= ticksAvg) {
 			int oldTotal, oldSynced;
 			getSyncForTick(ticks[i - ticksAvg], &oldTotal, &oldSynced);
 			totalMouse -= oldTotal;
 			syncedMouse -= oldSynced;
 		}
 
-		if ((int)i >= ticksAvg - 1) {
+		if (i >= ticksAvg - 1) {
 			Color bg =
 				tick.jumped ? Color{0, 80, 120, 255} : tick.grounded && !tick.landed ? Color{120, 40, 40, 255}
 																																																																									: Color{50, 120, 50, 255};
