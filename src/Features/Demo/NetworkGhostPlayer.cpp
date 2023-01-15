@@ -272,8 +272,8 @@ sf::Packet &operator<<(sf::Packet &packet, const Color &col) {
 	return packet << col.r << col.g << col.b;
 }
 
-Variable ghost_TCP_only("ghost_TCP_only", "0", "Lathil's special command :).\n");
-Variable ghost_update_rate("ghost_update_rate", "50", 1, "Adjust the update rate. For people with lathil's internet.\n");
+Variable ghost_TCP_only("ghost_TCP_only", "0", "Uses only TCP for ghost servers. For people with unreliable internet.\n");
+Variable ghost_update_rate("ghost_update_rate", "50", 1, "Milliseconds between ghost updates. For people with slow/metered internet.\n");
 Variable ghost_net_dump("ghost_net_dump", "0", "Dump all ghost network activity to a file for debugging.\n");
 
 static FILE *g_dumpFile;
