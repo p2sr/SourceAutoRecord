@@ -620,7 +620,7 @@ void NetworkManager::PrintMessage(const char *sender, Color sender_col, const st
 				if (i > comp_start) {
 					components.push_back({def_col, message.substr(comp_start, i - comp_start)});
 				}
-				auto col = AdjustGhostColorForChat(sender_col);
+				auto col = AdjustGhostColorForChat(GhostEntity::set_color);
 				components.push_back({col, message.substr(i, this->name.size())});
 				comp_start = i + this->name.size();
 				i = comp_start - 1;
