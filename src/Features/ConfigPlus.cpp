@@ -590,14 +590,13 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 				toks.pop();
 
-				Token val_tok = toks.front();
-
-				if (toks.empty() || val_tok.type != TOK_STR) {
+				if (toks.empty() || toks.front().type != TOK_STR) {
 					console->Print("Expected string token after '%.*s='\n", t.len, t.str);
 					CLEAR_OUT_STACK;
 					return NULL;
 				}
 
+				Token val_tok = toks.front();
 				toks.pop();
 
 				if (!strncmp(t.str, "var:", 4) || t.str[0] == '?') {
@@ -623,11 +622,11 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 				if (val_tok.len > 4 && !strncmp(val_tok.str, "var:", 4) || val_tok.len > 1 && val_tok.str[0] == '?') {
 					int i = val_tok.str[0] == 'v' ? 4 : 1;
-					auto val = GetSvar({val_tok.str + i});
+					auto val = GetSvar(std::string(val_tok.str + i, val_tok.len - i));
 					c->val = strdup(val.c_str());
 				} else if (val_tok.len > 5 && !strncmp(val_tok.str, "cvar:", 5) || val_tok.len > 1 && val_tok.str[0] == '#') {
 					int i = val_tok.str[0] == 'c' ? 5 : 1;
-					auto val = GetCvar({val_tok.str + i});
+					auto val = GetCvar(std::string(val_tok.str + i, val_tok.len - i));
 					c->val = strdup(val.c_str());
 				} else {
 					c->val = (char *)malloc(val_tok.len + 1);
