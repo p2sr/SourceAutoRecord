@@ -606,9 +606,9 @@ void NetworkManager::PrintMessage(const char *sender, Color sender_col, const st
 	size_t comp_start = 0;
 	for (size_t i = 0; i < message.size(); ++i) {
 		auto isAlnum = [](char c) { 
-			if (c >= 'a' and c <= 'z') return true;
-			if (c >= 'A' and c <= 'Z') return true;
-			if (c >= '0' and c <= '9') return true;
+			if (c >= 'a' && c <= 'z') return true;
+			if (c >= 'A' && c <= 'Z') return true;
+			if (c >= '0' && c <= '9') return true;
 			return false;
 		};
 
