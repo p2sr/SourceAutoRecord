@@ -22,6 +22,7 @@ Variable sar_strafehud_detail_scale("sar_strafehud_detail_scale", "4", "The deta
 
 Variable sar_strafehud_use_friction("sar_strafehud_use_friction", "0", "Use ground friction when calculating acceleration.\n");
 Variable sar_strafehud_avg_sample_count("sar_strafehud_avg_sample_count", "60", 1, 9999, "How many samples to use for average counter.\n");
+Variable sar_strafehud_match_accel_scale("sar_strafehud_match_accel_scale", "0", "Match the scales for minimum and maximum deceleration.\n");
 Variable sar_strafehud_lock_mode("sar_strafehud_lock_mode", "1", 0, 2,
 	"Lock mode used by strafe hud:\n"
 	"0 - view direction\n"
@@ -29,7 +30,6 @@ Variable sar_strafehud_lock_mode("sar_strafehud_lock_mode", "1", 0, 2,
 	"2 - absolute angles\n");
 
 StrafeHud strafeHud;
-
 
 void StrafeHud::SetData(int slot, void *player, CUserCmd *cmd, bool serverside) {
 	if (!sar_strafehud.GetBool() || !sv_cheats.GetBool()) return;
@@ -69,6 +69,13 @@ void StrafeHud::SetData(int slot, void *player, CUserCmd *cmd, bool serverside) 
 
 		if (accel > biggestAccel) biggestAccel = accel;
 		if (i == 0 || accel < smallestAccel) smallestAccel = accel;
+	}
+
+	if (sar_strafehud_match_accel_scale.GetBool()) {
+		float max = biggestAccel;
+		if (fabsf(smallestAccel) > max) max = fabsf(smallestAccel);
+		smallestAccel = -max;
+		biggestAccel = max;
 	}
 
 	for (size_t i = 0; i < data[slot].accelValues.size(); i++) {
