@@ -9,6 +9,7 @@
 #include "Utils/lodepng.hpp"
 
 #include <cctype>
+#include <cfloat>
 #include <filesystem>
 #include <string>
 
@@ -124,31 +125,10 @@ int Crosshair::GetPortalUpgradeState(int slot) {
 	return 0;
 }
 
-std::vector<ClientEnt *> Crosshair::GetPortalsShotByPlayer(int slot) {
-	std::vector<ClientEnt *> v;
-
-	ClientEnt *gun = getPortalGun(slot);
-
-	if (gun) {
-		auto blueHandle = gun->field<CBaseHandle>("m_hPrimaryPortal");
-		auto orangeHandle = gun->field<CBaseHandle>("m_hSecondaryPortal");
-
-		auto bluePortal = blueHandle ? client->GetPlayer(blueHandle.GetEntryIndex()) : nullptr;
-		auto orangePortal = orangeHandle ? client->GetPlayer(orangeHandle.GetEntryIndex()) : nullptr;
-
-		if (bluePortal != NULL) {  //If player hasn't shot blue portal
-			v.push_back(bluePortal);
-		}
-
-		if (orangePortal != NULL) {  //If player hasn't shot orange portal
-			v.push_back(orangePortal);
-		}
-	}
-
-	return v;
-}
-
 void Crosshair::GetPortalsStates(int slot, int &portalUpgradeState, bool &isBlueActive, bool &isOrangeActive) {
+	isBlueActive = false;
+	isOrangeActive = false;
+
 	portalUpgradeState = GetPortalUpgradeState(slot);
 	if (portalUpgradeState) {
 		if (sar_crosshair_P1.GetBool() && sv_cheats.GetBool()) {
@@ -162,16 +142,13 @@ void Crosshair::GetPortalsStates(int slot, int &portalUpgradeState, bool &isBlue
 			return;
 		}
 
-		isBlueActive = false;
-		isOrangeActive = false;
-		for (auto &portal : GetPortalsShotByPlayer(slot)) {
-			bool isP2 = portal->field<bool>("m_bIsPortal2");
-			bool isAct = portal->field<bool>("m_bActivated");
-			if (!isP2) {
-				isBlueActive = isAct;
-			} else {
-				isOrangeActive = isAct;
-			}
+		ClientEnt *gun = getPortalGun(slot);
+		if (gun) {
+			// this doesn't actually work "correctly" regarding portals closing, but it mirrors the base game behaviour
+			auto bluePos = gun->field<Vector>("m_vecBluePortalPos");
+			auto orangePos = gun->field<Vector>("m_vecOrangePortalPos");
+			if (bluePos != Vector{ FLT_MAX, FLT_MAX, FLT_MAX }) isBlueActive = true;
+			if (orangePos != Vector{ FLT_MAX, FLT_MAX, FLT_MAX }) isOrangeActive = true;
 		}
 	}
 }

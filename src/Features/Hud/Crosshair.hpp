@@ -23,7 +23,6 @@ public:
 	bool IsSurfacePortalable();
 	int GetPortalUpgradeState(int slot);
 	void GetPortalsStates(int slot, int &portalUpgradeState, bool &blue, bool &orange);
-	std::vector<ClientEnt *> GetPortalsShotByPlayer(int slot);
 
 	int SetCrosshairTexture(const std::string filename);
 	bool SetQuickHudTexture(const std::string filename);
