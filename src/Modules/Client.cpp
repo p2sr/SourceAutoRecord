@@ -115,10 +115,20 @@ void Client::Chat(Color col, const char *str) {
 	client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, "%c%s", TextColor::PLAYERNAME, str);
 }
 
-void Client::NameChat(Color name_col, const char *name, Color col, const char *str) {
-	g_nameColorOverrides.push_back(name_col);
-	g_nameColorOverrides.push_back(col);
-	client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, "%c%s: %c%s", TextColor::PLAYERNAME, name, TextColor::PLAYERNAME, str);
+void Client::MultiColorChat(const std::vector<std::pair<Color, std::string>> &components) {
+	// this sucks, but because c varargs are stupid, we have to construct a *format* string containing what we want (escaping any % signs)
+	std::string fmt = "";
+
+	for (auto &comp : components) {
+		g_nameColorOverrides.push_back(comp.first);
+		fmt += (char)TextColor::PLAYERNAME;
+		for (char c : comp.second) {
+			if (c == '%') fmt += '%';
+			fmt += c;
+		}
+	}
+
+	client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, fmt.c_str());
 }
 
 void Client::SetMouseActivated(bool state) {

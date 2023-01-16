@@ -61,7 +61,7 @@ public:
 	void CalcButtonBits(int nSlot, int &bits, int in_button, int in_ignore, kbutton_t *button, bool reset);
 	bool ShouldDrawCrosshair();
 	void Chat(Color col, const char *str);
-	void NameChat(Color name_col, const char *name, Color col, const char *str);
+	void MultiColorChat(const std::vector<std::pair<Color, std::string>> &components);
 	void SetMouseActivated(bool state);
 	CMStatus GetChallengeStatus();
 	int GetSplitScreenPlayerSlot(void *entity);

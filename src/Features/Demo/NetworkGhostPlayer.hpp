@@ -84,6 +84,8 @@ public:
 	void NotifyMapChange();
 	void NotifySpeedrunFinished(const bool CM = false);
 	void SendMessageToAll(std::string msg);
+	Color AdjustGhostColorForChat(Color c);
+	void PrintMessage(const char *sender, Color sender_col, const std::string &message);
 	void SendPing();
 	void ReceiveUDPUpdates(std::vector<sf::Packet> &buffer);
 	void Treat(sf::Packet &packet, bool udp);

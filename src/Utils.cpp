@@ -21,6 +21,17 @@ bool Utils::EndsWith(const std::string &str, const std::string &suffix) {
 bool Utils::StartsWith(const char *str, const char *subStr) {
 	return std::strlen(str) >= std::strlen(subStr) && std::strstr(str, subStr) == str;
 }
+bool Utils::StartsWithInsens(const char *str, const char *subStr) {
+	for (size_t i = 0; subStr[i]; ++i) {
+		if (!str[i]) return false;
+		char c1 = subStr[i];
+		if (c1 >= 'A' && c1 <= 'Z') c1 += 'a' - 'A';
+		char c2 = str[i];
+		if (c2 >= 'A' && c2 <= 'Z') c2 += 'a' - 'A';
+		if (c1 != c2) return false;
+	}
+	return true;
+}
 bool Utils::ICompare(const std::string &a, const std::string &b) {
 	return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](char a, char b) {
 		return std::tolower(a) == std::tolower(b);

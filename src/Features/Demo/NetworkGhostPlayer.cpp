@@ -576,7 +576,82 @@ void NetworkManager::SendMessageToAll(std::string msg) {
 	sf::Packet packet;
 	packet << HEADER::MESSAGE << this->ID << msg.c_str();
 	this->tcpSocket.send(packet);
-	client->NameChat(GhostEntity::set_color, Utils::ssprintf("%s%s", this->name.c_str(), this->spectator ? " (spectator)" : "").c_str(), {255,255,255}, msg.c_str());
+	std::string name = this->name;
+	if (this->spectator) name += " (spectator)";
+	this->PrintMessage(name.c_str(), GhostEntity::set_color, msg);
+}
+
+Color NetworkManager::AdjustGhostColorForChat(Color col) {
+	col.a = 255;
+	if (col.r == 0 && col.g == 0 && col.b == 0) {
+		// Black is the default ghost color. Override it with a slight grey, since black looks really bad in chat
+		col = {192,192,192};
+	}
+	return col;
+}
+
+void NetworkManager::PrintMessage(const char *sender, Color sender_col, const std::string &message) {
+	sender_col = AdjustGhostColorForChat(sender_col);
+
+	std::vector<std::pair<Color, std::string>> components;
+
+	std::string name_comp = Utils::ssprintf("%s: ", sender ? sender : "SERVER");
+	components.push_back({sender ? sender_col : Color{255,50,40}, name_comp});
+
+	Color def_col = sender ? Color{255,255,255} : Color{255,100,100};
+
+	// find ghost names in message
+	// this is slow as all shit
+	bool was_last_alnum = false;
+	size_t comp_start = 0;
+	for (size_t i = 0; i < message.size(); ++i) {
+		auto isAlnum = [](char c) { 
+			if (c >= 'a' and c <= 'z') return true;
+			if (c >= 'A' and c <= 'Z') return true;
+			if (c >= '0' and c <= '9') return true;
+			return false;
+		};
+
+		if (!was_last_alnum) {
+			// check for own name first
+			// also check trailing char isn't alnum
+			char post = i + this->name.size() == message.size() ? 0 : message[i + this->name.size()];
+			if (!isAlnum(post) && Utils::StartsWithInsens(message.c_str() + i, this->name.c_str())) {
+				if (i > comp_start) {
+					components.push_back({def_col, message.substr(comp_start, i - comp_start)});
+				}
+				auto col = AdjustGhostColorForChat(sender_col);
+				components.push_back({col, message.substr(i, this->name.size())});
+				comp_start = i + this->name.size();
+				i = comp_start - 1;
+			} else {
+				// check for other ghost names
+				this->ghostPoolLock.lock();
+				for (auto other : this->ghostPool) {
+					// also check trailing char isn't alnum
+					post = i + other->name.size() == message.size() ? 0 : message[i + other->name.size()];
+					if (!isAlnum(post) && Utils::StartsWithInsens(message.c_str() + i, other->name.c_str())) {
+						if (i > comp_start) {
+							components.push_back({def_col, message.substr(comp_start, i - comp_start)});
+						}
+						auto col = AdjustGhostColorForChat(other->GetColor());
+						components.push_back({col, message.substr(i, other->name.size())});
+						comp_start = i + other->name.size();
+						i = comp_start - 1;
+						break;
+					}
+				}
+				this->ghostPoolLock.unlock();
+			}
+		}
+
+		was_last_alnum = isAlnum(message[i]);
+	}
+	if (comp_start != message.size()) {
+		components.push_back({def_col, message.substr(comp_start)});
+	}
+
+	client->MultiColorChat(components);
 }
 
 void NetworkManager::SendPing() {
@@ -760,26 +835,16 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		std::string message;
 		packet >> message;
 		addToNetDump("recv-message", Utils::ssprintf("%d;%s", ID, message.c_str()).c_str());
-		if (ID == 0) {
-			// Message from server!
-			client->NameChat({255,50,40}, "SERVER", {255,100,100}, message.c_str());
-		} else {
-			auto ghost = this->GetGhostByID(ID);
-			if (ghost) {
-				Scheduler::OnMainThread([=]() {
-					Color col = ghost->GetColor();
-					col.a = 255;
-
-					if (col.r == 0 && col.g == 0 && col.b == 0) {
-						// Black is the default ghost color. Override it with a slight grey, since black looks really bad in chat
-						col = {192,192,192};
-					}
-
-					if (ghost_show_spec_chat.GetBool() || this->AcknowledgeGhost(ghost)) {
-						client->NameChat(col, Utils::ssprintf("%s%s", ghost->name.c_str(), ghost->spectator ? " (spectator)" : "").c_str(), {255,255,255}, message.c_str());
-					}
-				});
-			}
+		auto ghost = ID != 0 ? this->GetGhostByID(ID) : nullptr;
+		if (ghost || ID == 0) {
+			Scheduler::OnMainThread([=]() {
+				if (ID == 0 || ghost_show_spec_chat.GetBool() || this->AcknowledgeGhost(ghost)) {
+					Color col = ghost ? ghost->GetColor() : Color{0,0,0};
+					std::string name = ghost ? ghost->name : "";
+					if (ghost && ghost->spectator) name += " (spectator)";
+					this->PrintMessage(ID == 0 ? nullptr : name.c_str(), col, message);
+				}
+			});
 		}
 		break;
 	}
