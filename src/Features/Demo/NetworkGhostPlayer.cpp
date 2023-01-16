@@ -30,16 +30,14 @@ Variable ghost_show_spec_chat("ghost_show_spec_chat", "1", "Show chat messages f
 		surface->DrawTxt(font, x - _txtwidth, y, clr, __VA_ARGS__); \
 	} while (0)
 
-class SyncUi : public Hud {
+class SyncUi {
 public:
 	bool active = false;
 	std::optional<std::chrono::time_point<std::chrono::steady_clock>> countdownEnd;
 	std::vector<uint32_t> ready;
 	std::vector<uint32_t> waiting;
 
-	SyncUi()
-		: Hud(HudType_Paused, false) {
-	}
+	SyncUi() {}
 
 	void StartCountdown() {
 		if (!this->active) return;
@@ -57,13 +55,7 @@ public:
 		}
 	}
 
-	virtual bool GetCurrentSize(int &w, int &h) override {
-		return false;
-	}
-
-	virtual void Paint(int slot) override {
-		if (slot != 0) return;
-
+	void UpdateAndPaint() {
 		auto now = NOW_STEADY();
 
 		if (this->countdownEnd && now >= *this->countdownEnd) {
@@ -1078,6 +1070,10 @@ bool NetworkManager::AcknowledgeGhost(std::shared_ptr<GhostEntity> ghost) {
 	bool spec = ghost ? ghost->spectator : this->spectator;
 	if (!spec) return true;
 	return this->spectator && ghost_spec_see_spectators.GetBool();
+}
+
+void NetworkManager::UpdateSyncUi() {
+	syncUi.UpdateAndPaint();
 }
 
 ON_EVENT(RENDER) {

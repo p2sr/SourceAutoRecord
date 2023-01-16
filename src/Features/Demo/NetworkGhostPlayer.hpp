@@ -108,6 +108,8 @@ public:
 	bool IsSyncing();
 	bool HandleGhostSay(const char *str);
 	bool AcknowledgeGhost(std::shared_ptr<GhostEntity> ghost);
+
+	void UpdateSyncUi();
 };
 
 extern NetworkManager networkManager;

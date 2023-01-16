@@ -4,6 +4,7 @@
 #include "Features/Session.hpp"
 #include "Features/Stitcher.hpp"
 #include "Features/Timer/PauseTimer.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
@@ -56,6 +57,12 @@ static void DrawHudBackground(int slot, HudContext &ctx) {
 
 // CEngineVGui::Paint
 DETOUR(VGui::Paint, PaintMode_t mode) {
+	if ((mode & PAINT_UIPANELS) && GET_SLOT() == 0) {
+		surface->StartDrawing(surface->matsurface->ThisPtr());
+		networkManager.UpdateSyncUi();
+		surface->FinishDrawing();
+	}
+
 	static HudContext lastCtx[2];
 
 	auto result = VGui::Paint(thisptr, mode);
