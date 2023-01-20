@@ -203,9 +203,9 @@ ON_EVENT_P(SESSION_START, -1000) {
 ON_EVENT(SESSION_START) {
 	if (SpeedrunTimer::IsRunning() && sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::IsSpeedrunMod()) {
 		if (g_speedrun.lastMap == "sp_a2_bts6") {
-			engine->ExecuteCommand("ent_fire @exit_teleport Teleport; ent_fire @transition_script RunScriptCode TransitionFromMap()", true);
+			engine->ExecuteCommand("ent_fire @exit_teleport Teleport", true);
 		} else if (g_speedrun.lastMap == "sp_a3_00") {
-			engine->ExecuteCommand("ent_fire speedmod kill; ent_fire bottomless_pit_teleport Teleport; ent_fire @transition_script RunScriptCode TransitionFromMap()", true);
+			engine->ExecuteCommand("ent_fire speedmod kill; ent_fire bottomless_pit_teleport Teleport", true);
 		}
 	}
 }
