@@ -201,12 +201,21 @@ ON_EVENT_P(SESSION_START, -1000) {
 	g_inDemoLoad = false;
 }
 ON_EVENT(SESSION_START) {
-	if (SpeedrunTimer::IsRunning() && sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::IsSpeedrunMod()) {
+	if (!sar_speedrun_skip_cutscenes.GetBool()) return;
+	if (sar.game->GetVersion() != SourceGame_Portal2) return;
+	if (Game::IsSpeedrunMod()) return;
+
+	if (SpeedrunTimer::IsRunning()) {
+		// HACKHACK: Since Any% enters Tube Ride via wrongwarp, skip_cutscenes
+		// doesn't work as ent_fire is restricted in CM. Workaround by
+		// temporarily setting cheats
+		sv_cheats.ThisPtr()->m_nValue = 1;
 		if (g_speedrun.lastMap == "sp_a2_bts6") {
 			engine->ExecuteCommand("ent_fire @exit_teleport Teleport", true);
 		} else if (g_speedrun.lastMap == "sp_a3_00") {
 			engine->ExecuteCommand("ent_fire speedmod kill; ent_fire bottomless_pit_teleport Teleport", true);
 		}
+		sv_cheats.SetValue(sv_cheats.GetString());
 	}
 }
 
