@@ -607,7 +607,7 @@ void NetworkManager::PrintMessage(const char *sender, Color sender_col, const st
 		if (!was_last_alnum) {
 			// check for own name first
 			// also check trailing char isn't alnum
-			char post = i + this->name.size() == message.size() ? 0 : message[i + this->name.size()];
+			char post = i + this->name.size() >= message.size() ? 0 : message[i + this->name.size()];
 			if (!isAlnum(post) && Utils::StartsWithInsens(message.c_str() + i, this->name.c_str())) {
 				if (i > comp_start) {
 					components.push_back({def_col, message.substr(comp_start, i - comp_start)});
@@ -621,7 +621,7 @@ void NetworkManager::PrintMessage(const char *sender, Color sender_col, const st
 				this->ghostPoolLock.lock();
 				for (auto other : this->ghostPool) {
 					// also check trailing char isn't alnum
-					post = i + other->name.size() == message.size() ? 0 : message[i + other->name.size()];
+					post = i + other->name.size() >= message.size() ? 0 : message[i + other->name.size()];
 					if (!isAlnum(post) && Utils::StartsWithInsens(message.c_str() + i, other->name.c_str())) {
 						if (i > comp_start) {
 							components.push_back({def_col, message.substr(comp_start, i - comp_start)});
