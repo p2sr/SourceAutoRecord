@@ -10,6 +10,7 @@
 #include "Features/ReloadedFix.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Tas/TasTools/AutoJumpTool.hpp"
 #include "Features/Tas/TasTools/StrafeTool.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/WorkshopList.hpp"
@@ -24,6 +25,7 @@
 
 Variable sar_autorecord("sar_autorecord", "0", -1, 1, "Enables or disables automatic demo recording.\n");
 Variable sar_autojump("sar_autojump", "0", "Enables automatic jumping on the server.\n");
+Variable sar_autostrafe("sar_autostrafe", "0", "Automatically strafes in your current wishdir.\n");
 Variable sar_jumpboost("sar_jumpboost", "0", 0,
                        "Enables special game movement on the server.\n"
                        "0 = Default,\n"
@@ -352,4 +354,32 @@ ON_EVENT(PROCESS_MOVEMENT) {
 		// WAKE UP YOU MORON YOU'RE RUINING MY FUNNELS ARGGHHH
 		Memory::VMT<void(__rescall *)(void *)>(shadow, Offsets::Wake)(shadow);
 	}
+}
+
+void Cheats::AutoStrafe(void *player, CUserCmd *cmd) {
+	if (!server->AllowsMovementChanges() || !sar_autostrafe.GetBool()) return;
+
+	if (cmd->forwardmove == 0 && cmd->sidemove == 0) return;
+
+	auto m_MoveType = SE(player)->field<char>("m_MoveType");
+
+	if (m_MoveType == MOVETYPE_NOCLIP) return;
+
+	TasPlayerInfo info = tasPlayer->GetPlayerInfo<true>(player, cmd);
+
+	float angle = Math::AngleNormalize(RAD2DEG(DEG2RAD(info.angles.y) + atan2(-cmd->sidemove, cmd->forwardmove)));
+
+	TasFramebulk fb;
+	autoJumpTool[info.slot].SetParams(autoJumpTool[info.slot].ParseParams(std::vector<std::string>{sar_autojump.GetBool() && (cmd->buttons & IN_JUMP) ? "on" : "off"}));
+	autoStrafeTool[info.slot].SetParams(autoStrafeTool[info.slot].ParseParams(std::vector<std::string> {"vec", "max", std::to_string(angle) + "deg"}));
+	autoStrafeTool[info.slot].Apply(fb, info);
+
+	if (fb.moveAnalog.y > 0.0) {
+		cmd->forwardmove = cl_forwardspeed.GetFloat() * fb.moveAnalog.y;
+	} else {
+		cmd->forwardmove = cl_backspeed.GetFloat() * fb.moveAnalog.y;
+	}
+	cmd->sidemove = cl_sidespeed.GetFloat() * fb.moveAnalog.x;
+
+
 }

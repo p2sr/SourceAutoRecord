@@ -8,6 +8,7 @@ public:
 	void Shutdown();
 
 	static void PatchBhop(void *player, CUserCmd *cmd);
+	static void AutoStrafe(void *player, CUserCmd *cmd);
 };
 
 extern Variable sar_autorecord;

@@ -220,6 +220,8 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 		tasPlayer->DumpPlayerInfo(slot, tasTick, pos, eye_pos, cmd->viewangles);
 	}
 
+	Cheats::AutoStrafe(thisptr, cmd);
+
 	inputHud.SetInputInfo(slot, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
 
 	strafeHud.SetData(slot, thisptr, cmd, true);
