@@ -404,8 +404,10 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 
 		// prevent losing acceleration speed from speedlock on newer versions
 		// also remember that speedlock exists only when midair in versions 5 or newer
+		// also remember that aircontrol removes speedlock in versions 7 or newer
+		float airConLimit = (sar_aircontrol.GetBool() && server->AllowsMovementChanges()) ? INFINITY : 300.0f;
 		if (asParams->antiSpeedLock && tasPlayer->scriptVersion >= 4 && (!pInfo.grounded || tasPlayer->scriptVersion < 5)) {
-			if (pInfo.velocity.Length2D() < asParams->strafeSpeed.speed && pInfo.velocity.Length2D() >= 300.0f) {
+			if (pInfo.velocity.Length2D() < asParams->strafeSpeed.speed && pInfo.velocity.Length2D() >= (tasPlayer->scriptVersion >= 7 ? airConLimit : 300.0f)) {
 
 				Vector wishDir(0, 1);
 				float maxSpeed = GetMaxSpeed(pInfo, wishDir);

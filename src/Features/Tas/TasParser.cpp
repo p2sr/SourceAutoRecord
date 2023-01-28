@@ -193,7 +193,7 @@ static std::vector<Line> tokenize(std::ifstream &file) {
 	return lines;
 }
 
-#define MAX_SCRIPT_VERSION 6
+#define MAX_SCRIPT_VERSION 7
 #define _STR1(x) #x
 #define _STR(x) _STR1(x)
 
