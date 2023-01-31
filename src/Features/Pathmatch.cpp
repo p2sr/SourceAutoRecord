@@ -136,20 +136,6 @@ static double dc_get_time() {
 	return (tp.tv_sec * 1e3) + (tp.tv_nsec / 1e6);
 }
 
-template <size_t N>
-static void dc_fix_path(const char *path, char (&dest)[N]) {
-	strncpy(dest, path, N);
-	dest[N - 1] = 0;
-	char *c = dest;
-	while (*c) {
-		c++;
-	}
-	// Chop off any / at the end of the line
-	while (*c && *c == '/') {
-		*c = 0;
-	}
-}
-
 /**
  * Find or populate the dir in the db
  * Calls readdir outright if the dir doesn't exist in the db yet,
@@ -237,9 +223,7 @@ dirent *dircache_readdir(dircontext_t *dir) {
 
 // opendir(3)
 dircontext_t *dircache_opendir(const char *path) {
-	char fixed[PATH_MAX];  // Correct any bad slashes
-	dc_fix_path(path, fixed);
-	return dc_find_or_populate(fixed);
+	return dc_find_or_populate(path);
 }
 
 // rewinddir(3)
