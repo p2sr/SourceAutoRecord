@@ -98,6 +98,20 @@ struct AutoReadLock {
 	ReadWriteLock& lock_;
 };
 
+/**
+ * Auto lock for writes on a RW mutex
+ */
+struct AutoWriteLock {
+	AutoWriteLock(ReadWriteLock& lock) : lock_(lock) {
+		lock_.write_lock();
+	}
+	~AutoWriteLock() {
+		lock_.unlock();
+	}
+	
+	ReadWriteLock& lock_;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // Global db accessors
 ////////////////////////////////////////////////////////////////////////////////
@@ -142,12 +156,21 @@ static double dc_get_time() {
  * then stores off those results.
  */
 static dircontext_t *dc_find_or_populate(const char *path) {
+	auto &db = dir_db();
+
 	{
 		AutoReadLock lock(dir_db_lock());
-		auto &db = dir_db();
 		if (auto ent = db.find((char *)path); ent != db.end()) {
 			return dc_build_around_ent(path, ent->second);
 		}
+	}
+
+	AutoWriteLock lock(dir_db_lock());
+
+	// before we try and cache it, check if it was cached while we were acquiring our
+	// write lock (avoid TOCTOU condition)
+	if (auto ent = db.find((char *)path); ent != db.end()) {
+		return dc_build_around_ent(path, ent->second);
 	}
 
 	// read contents and store into the db.
@@ -172,9 +195,7 @@ static dircontext_t *dc_find_or_populate(const char *path) {
 	free(namelist);
 
 	// Insert into the db
-	dir_db_lock().write_lock();
-	dir_db().insert({path, dent});
-	dir_db_lock().unlock();
+	db.insert({path, dent});
 
 	// Finally build a returnable value
 	return dc_build_around_ent(path, dent);
@@ -189,6 +210,7 @@ static void dc_close(dircontext_t *context) {
 
 		auto old_refs = context->ent->nref.fetch_sub(1);  // Dec refcount
 		if (old_refs == 1) {
+			delete context->ent;
 			dir_db().erase(context->key);
 		}
 
@@ -326,7 +348,7 @@ static PathMod pathmatchDetour(const char *in, char **out, bool allow_basename_m
 		if (dir) {
 			struct dirent *ent;
 			while (ent = dircache_readdir(dir)) {
-				if (!strncasecmp(ent->d_name, start, len)) {
+				if (!strncasecmp(ent->d_name, start, len) && !ent->d_name[len]) {
 					// fill in the correct capitalization
 					memcpy(start, ent->d_name, len);
 					matched = true;
@@ -338,7 +360,9 @@ static PathMod pathmatchDetour(const char *in, char **out, bool allow_basename_m
 
 		if (!matched) break; // this component didn't match, so certainly no further ones will
 
-		start += len + 1; // next component
+		// next component
+		start += len;
+		if (*start) start += 1; // skip slash
 	}
 
 	*out = buf;
