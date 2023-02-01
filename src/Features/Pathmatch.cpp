@@ -13,9 +13,6 @@
 #include "Hook.hpp"
 #include "Utils/Memory.hpp"
 
-// Uncomment to enable drop-in functionality
-#define DIRCACHE_DROPIN
-
 // The amount of time before which added entries are flushed
 #define DIRCACHE_STALE_SECONDS 60
 
@@ -188,7 +185,16 @@ static dircontext_t *dc_find_or_populate(const char *path) {
 	dent->addedat = dc_get_time();
 	dent->nref.store(0);
 	for (int i = 0; i < r; ++i) {
-		dent->entries.push_back(*namelist[i]);
+		// RANT MODE ENGAGED
+		// The POSIX spec here is AWFUL. For these values, libc is allowed to allocate only as much
+		// memory as is needed to store the ACTUAL name. That means if we try and push the value
+		// directly into this vector, it copies data from undefined memory, which - in allocator edge
+		// cases - may not be mapped! The ONLY GOOD SOLUTION here is to manually copy the data into a
+		// buffer, making sure to only copy as much of the name as actually exists, and then push *that*
+		// into the buffer. POSIX, from the bottom of my heart, go fuck yourself.
+		dirent d;
+		memcpy(&d, namelist[i], namelist[i]->d_reclen);
+		dent->entries.push_back(d);
 		free(namelist[i]);
 	}
 
@@ -248,63 +254,9 @@ dircontext_t *dircache_opendir(const char *path) {
 	return dc_find_or_populate(path);
 }
 
-// rewinddir(3)
-void dircache_rewinddir(dircontext_t *dir) {
-	dir->pos = 0;
-}
-
-// telldir(3)
-long dircache_telldir(dircontext_t *dir) {
-	return dir->pos;
-}
-
-// seekdir(3)
-void dircache_seekdir(dircontext_t *dir, long loc) {
-	if ((unsigned long)loc >= dir->ent->entries.size())
-		return;
-	dir->pos = loc;
-}
-
 // closedir(3)
 void dircache_closedir(dircontext_t *dir) {
 	dc_close(dir);
-}
-
-// scandir(3)
-int dircache_scandir(const char *dirp, struct dirent ***namelist, int (*filter)(const struct dirent *), int (*compare)(const struct dirent **, const struct dirent **)) {
-	auto ctx = dc_find_or_populate(dirp);
-	if (!ctx)
-		return -1;
-
-	// Accumulate entries into a list -- This is not quite optimal. Should determine the number of ents first
-	*namelist = (dirent **)calloc(ctx->ent->entries.size(), sizeof(dirent *));
-	int n = 0;
-	for (auto &e : ctx->ent->entries) {
-		if (filter && filter(&e))
-			continue;
-#ifdef DIRCACHE_DROPIN
-		auto *p = malloc(sizeof(dirent));
-		memcpy(p, &e, sizeof(dirent));
-		(*namelist)[n++] = (dirent *)p;
-#else
-		(*namelist)[n++] = &e;
-#endif
-	}
-
-	// Resultant list sorted with qsort, as specified by POSIX standard
-	if (n && compare)
-		qsort(*namelist, n, sizeof(dirent *), (comparison_fn_t)compare);
-
-	dc_close(ctx);
-	return n;
-}
-
-void dircache_freelist(struct dirent **namelist, int n) {
-#ifdef DIRCACHE_DROPIN
-	for (int i = 0; i < n; ++i)
-		free(namelist[i]);
-#endif
-	free(namelist);
 }
 
 enum class PathMod {
