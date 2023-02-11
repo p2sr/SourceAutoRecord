@@ -269,7 +269,8 @@ CON_COMMAND(sar_find_ents, "sar_find_ents <selector> - finds entities in the ent
 }
 
 std::deque<EntitySlotSerial> g_ent_slot_serial;
-CON_COMMAND(sar_ent_slot_serial, "sar_ent_slot_serial <id> [value] - prints entity slot serial number, or sets it if additional parameter is specified.\n") {
+CON_COMMAND(sar_ent_slot_serial, "sar_ent_slot_serial <id> [value] - prints entity slot serial number, or sets it if additional parameter is specified.\nBanned in most categories, check with the rules before use!\n") {
+	if (client->GetChallengeStatus() == CMStatus::CHALLENGE && !sv_cheats.GetBool()) return console->Print("This is cheating! If you really want to do it, set sv_cheats 1\n");
 
 	if (args.ArgC() < 2 || args.ArgC() > 3) return console->Print(sar_ent_slot_serial.ThisPtr()->m_pszHelpString);
 
