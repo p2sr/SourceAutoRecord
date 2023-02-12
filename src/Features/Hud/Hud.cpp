@@ -618,6 +618,21 @@ CON_COMMAND_F(sar_hud_show_text, "sar_hud_show_text <id|all> - shows the nth tex
 	sar_hud_text_vals[idx].draw = true;
 }
 
+CON_COMMAND_F(sar_hud_toggle_text, "sar_hud_toggle_text <id> - toggles the nth text value in the HUD\n", FCVAR_DONTRECORD) {
+	if (args.ArgC() < 2) {
+		console->Print(sar_hud_toggle_text.ThisPtr()->m_pszHelpString);
+		return;
+	}
+	
+	long idx = parseIdx(args[1]);
+	if (idx == -1) {
+		console->Print(sar_hud_toggle_text.ThisPtr()->m_pszHelpString);
+		return;
+	}
+
+	sar_hud_text_vals[idx].draw = !sar_hud_text_vals[idx].draw;
+}
+
 HUD_ELEMENT_MODE2(position, "0", 0, 2,
                   "Draws absolute position of the client.\n"
                   "0 = Default,\n"
