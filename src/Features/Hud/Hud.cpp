@@ -611,7 +611,7 @@ CON_COMMAND_F(sar_hud_show_text, "sar_hud_show_text <id|all> - shows the nth tex
 
 	long idx = parseIdx(args[1]);
 	if (idx == -1) {
-		console->Print(sar_hud_hide_text.ThisPtr()->m_pszHelpString);
+		console->Print(sar_hud_show_text.ThisPtr()->m_pszHelpString);
 		return;
 	}
 
