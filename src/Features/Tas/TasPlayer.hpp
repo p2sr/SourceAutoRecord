@@ -67,6 +67,7 @@ private:
 	int startTick = 0;    // used to store the absolute tick in which player started playing the script
 	int currentTick = 0;  // tick position of script player, relative to its starting point.
 	int lastTick = 0;     // last tick of script, relative to its starting point
+	bool scriptLoadedFromFile = false;
 
 	int wasEnginePaused; // Used to check if we need to revert incrementing a tick
 
@@ -94,7 +95,8 @@ public:
 			&& (sar_tas_tools_force.GetBool() || this->tasFileName[slot].find("_raw") == std::string::npos);
 	}
 
-	void PlayFile(std::string slot0, std::string slot1);
+	void PlayFile(std::string slot0scriptPath, std::string slot1scriptPath);
+	void PlayScript(std::string slot0name, std::string slot0script, std::string slot1name, std::string slot1script);
 	void PlaySingleCoop(std::string file, int slot);
 
 	void Activate();
