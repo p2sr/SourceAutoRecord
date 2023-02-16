@@ -310,6 +310,33 @@ static bool processCommands(ClientData &cl) {
 			});
 			break;
 
+		case 10: // send script and request playback
+			if (extra < 16) return true;
+			{
+				std::deque<uint8_t> copy = cl.cmdbuf;
+
+				copy.pop_front();
+
+				std::string data[4];
+				uint32_t size_total = 0;
+				for (int i = 0; i < 4; ++i) {
+					uint32_t len = popRaw32(copy);
+					size_total += len;
+					if (extra < 16 + size_total) return true;
+
+					for (size_t j = 0; j < len; ++j) {
+						data[i] += copy[0];
+						copy.pop_front();
+					}
+				}
+
+				cl.cmdbuf = copy;  // We actually had everything we needed, so switch to the modified buffer
+
+				Scheduler::OnMainThread([=]() {
+					tasPlayer->PlayScript(data[0], data[1], data[2], data[3]);
+				});
+			}
+			break;
 		case 100: // request entity info
 			if (extra < 4) return true;
 			{
@@ -506,6 +533,24 @@ void TasServer::SetStatus(TasStatus s) {
 	g_status_mutex.lock();
 	g_current_status = s;
 	g_status_mutex.unlock();
+}
+
+void TasServer::SendProcessedScript(std::string slot0scriptString, std::string slot1scriptString) {
+	std::vector<uint8_t> buf;
+
+	// processed script reply (10)
+	buf.push_back(10);
+	encodeRaw32(buf, (uint32_t)slot0scriptString.size());
+	for (char c : slot0scriptString) {
+		buf.push_back(c);
+	}
+
+	encodeRaw32(buf, (uint32_t)slot1scriptString.size());
+	for (char c : slot1scriptString) {
+		buf.push_back(c);
+	}
+
+	sendAll(buf);
 }
 
 ON_EVENT(FRAME) {

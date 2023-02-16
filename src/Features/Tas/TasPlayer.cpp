@@ -334,6 +334,8 @@ void TasPlayer::Stop(bool interrupted) {
 	currentTick = 0;
 	tasControllers[0]->Disable();
 	tasControllers[1]->Disable();
+	tasFileName[0] = "";
+	tasFileName[1] = "";
 
 	SetPlaybackVars(false);
 
@@ -429,18 +431,28 @@ void TasPlayer::SaveProcessedFramebulks() {
 			processedFramebulks[1].push_back(GetRawFramebulkAt(1, currentTick + 1));
 		}
 	}
+	
+	bool slot0processed = processedFramebulks[0].size() > 0 && tasFileName[0].size() > 0;
+	bool slot1processed = processedFramebulks[1].size() > 0 && tasFileName[1].size() > 0;
 
-	if (processedFramebulks[0].size() > 0 && tasFileName[0].size() > 0) {
-		if (tasFileName[0].find("_raw") == std::string::npos) {
-			TasParser::SaveFramebulksToFile(tasFileName[0], startInfo, wasStartNext, scriptVersion, processedFramebulks[0]);
+	if (tasPlayer->scriptLoadedFromFile) {
+		if (slot0processed) {
+			if (tasFileName[0].find("_raw") == std::string::npos) {
+				TasParser::SaveFramebulksToFile(tasFileName[0], startInfo, wasStartNext, scriptVersion, processedFramebulks[0]);
+			}
 		}
-	}
 
-	if (processedFramebulks[1].size() > 0 && tasFileName[1].size() > 0) {
-		if (tasFileName[1].find("_raw") == std::string::npos) {
-			TasParser::SaveFramebulksToFile(tasFileName[1], startInfo, wasStartNext, scriptVersion, processedFramebulks[1]);
+		if (slot1processed) {
+			if (tasFileName[1].find("_raw") == std::string::npos) {
+				TasParser::SaveFramebulksToFile(tasFileName[1], startInfo, wasStartNext, scriptVersion, processedFramebulks[1]);
+			}
 		}
+	} else {
+		std::string slot0Script = slot0processed ? TasParser::SaveFramebulksToString(startInfo, wasStartNext, scriptVersion, processedFramebulks[0]) : "";
+		std::string slot1Script = slot1processed ? TasParser::SaveFramebulksToString(startInfo, wasStartNext, scriptVersion, processedFramebulks[1]) : "";
+		TasServer::SendProcessedScript(slot0Script, slot1Script);
 	}
+	
 }
 
 /*
@@ -748,31 +760,37 @@ void TasPlayer::UpdateServer() {
 DECL_COMMAND_FILE_COMPLETION(sar_tas_play, TAS_SCRIPT_EXT, TAS_SCRIPTS_DIR, 2)
 DECL_COMMAND_FILE_COMPLETION(sar_tas_play_single, TAS_SCRIPT_EXT, TAS_SCRIPTS_DIR, 1)
 
-static std::string g_replayTas[2];
+static std::string g_replayTasNames[2];
+static std::string g_replayTasScripts[2];
 static bool g_replayTasCoop;
 static bool g_replayTasSingleCoop;
+static bool g_replayTasIsFile;
 
-void TasPlayer::PlayFile(std::string slot0, std::string slot1) {
-	bool coop = slot1.size() > 0;
+void TasPlayer::PlayFile(std::string slot0scriptPath, std::string slot1scriptPath) {
+	bool coop = slot1scriptPath.size() > 0;
 
-	g_replayTas[0] = slot0;
-	if (coop) g_replayTas[1] = slot1;
+	g_replayTasNames[0] = slot0scriptPath;
+	g_replayTasNames[1] = coop ? slot1scriptPath : "";
+	g_replayTasScripts[0] = "";
+	g_replayTasScripts[1] = "";
 	g_replayTasCoop = coop;
 	g_replayTasSingleCoop = false;
+	g_replayTasIsFile = true;
 
 	tasPlayer->Stop(true);
 
 	try {
-		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + slot0 + "." + TAS_SCRIPT_EXT);
+		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + slot0scriptPath + "." + TAS_SCRIPT_EXT);
 		std::vector<TasFramebulk> fb = TasParser::ParseFile(0, filePath);
 		std::vector<TasFramebulk> fb2;
 
 		if (coop) {
-			std::string filePath2(std::string(TAS_SCRIPTS_DIR) + "/" + slot1 + "." + TAS_SCRIPT_EXT);
+			std::string filePath2(std::string(TAS_SCRIPTS_DIR) + "/" + slot1scriptPath + "." + TAS_SCRIPT_EXT);
 			fb2 = TasParser::ParseFile(1, filePath2);
 		}
 
 		if (fb.size() > 0 || fb2.size() > 0) {
+			tasPlayer->scriptLoadedFromFile = true;
 			tasPlayer->isCoop = coop;
 			tasPlayer->coopControlSlot = -1;
 			tasPlayer->SetFrameBulkQueue(0, fb);
@@ -784,15 +802,52 @@ void TasPlayer::PlayFile(std::string slot0, std::string slot1) {
 	}
 }
 
+void TasPlayer::PlayScript(std::string slot0name, std::string slot0script, std::string slot1name, std::string slot1script) {
+	bool coop = slot1script.size() > 0;
+
+	g_replayTasNames[0] = slot0name;
+	g_replayTasNames[1] = coop ? slot1name : "";
+	g_replayTasScripts[0] = slot0script;
+	g_replayTasScripts[1] = slot1script;
+	g_replayTasCoop = coop;
+	g_replayTasSingleCoop = false;
+	g_replayTasIsFile = false;
+
+	tasPlayer->Stop(true);
+
+	try {
+		std::vector<TasFramebulk> fb = TasParser::ParseScript(0, slot0name, slot0script);
+		std::vector<TasFramebulk> fb2;
+
+		if (coop) {
+			fb2 = TasParser::ParseScript(0, slot1name, slot1script);
+		}
+
+		if (fb.size() > 0 || fb2.size() > 0) {
+			tasPlayer->scriptLoadedFromFile = false;
+			tasPlayer->isCoop = coop;
+			tasPlayer->coopControlSlot = -1;
+			tasPlayer->SetFrameBulkQueue(0, fb);
+			tasPlayer->SetFrameBulkQueue(1, fb2);
+			tasPlayer->Activate();
+		}
+	} catch (TasParserException &e) {
+		return console->ColorMsg(Color(255, 100, 100), "Error while loading TAS script input: %s\n", e.what());
+	}
+}
+
 void TasPlayer::PlaySingleCoop(std::string file, int slot) {
 	if (slot < 0 || slot > 1) {
 		return console->Print("Invalid slot %d\n", slot);
 	}
 
-	g_replayTas[slot] = file;
-	g_replayTas[1-slot] = "";
+	g_replayTasNames[slot] = file;
+	g_replayTasNames[1 - slot] = "";
+	g_replayTasScripts[0] = "";
+	g_replayTasScripts[1] = "";
 	g_replayTasCoop = true;
 	g_replayTasSingleCoop = true;
+	g_replayTasIsFile = true;
 
 	tasPlayer->Stop(true);
 
@@ -801,6 +856,7 @@ void TasPlayer::PlaySingleCoop(std::string file, int slot) {
 		std::vector<TasFramebulk> fb = TasParser::ParseFile(0, filePath);
 
 		if (fb.size() > 0) {
+			tasPlayer->scriptLoadedFromFile = true;
 			tasPlayer->isCoop = true;
 			tasPlayer->coopControlSlot = 1-slot;
 			tasPlayer->SetFrameBulkQueue(slot, fb);
@@ -813,15 +869,25 @@ void TasPlayer::PlaySingleCoop(std::string file, int slot) {
 }
 
 void TasPlayer::Replay() {
-	if (g_replayTas[0].size() == 0 && g_replayTas[1].size() == 0) return;
+	if (g_replayTasIsFile) {
+		if (g_replayTasNames[0].size() == 0 && g_replayTasNames[1].size() == 0) return;
 
-	if (g_replayTasSingleCoop) {
-		int slot = g_replayTas[0].size() == 0 ? 1 : 0;
-		tasPlayer->PlaySingleCoop(g_replayTas[slot], slot);
-	} else if (g_replayTasCoop) {
-		tasPlayer->PlayFile(g_replayTas[0], g_replayTas[1]);
+		if (g_replayTasSingleCoop) {
+			int slot = g_replayTasNames[0].size() == 0 ? 1 : 0;
+			tasPlayer->PlaySingleCoop(g_replayTasNames[slot], slot);
+		} else if (g_replayTasCoop) {
+			tasPlayer->PlayFile(g_replayTasNames[0], g_replayTasNames[1]);
+		} else {
+			tasPlayer->PlayFile(g_replayTasNames[0], "");
+		}
 	} else {
-		tasPlayer->PlayFile(g_replayTas[0], "");
+		if (g_replayTasScripts[0].size() == 0 && g_replayTasScripts[1].size() == 0) return;
+
+		if (g_replayTasCoop) {
+			tasPlayer->PlayScript(g_replayTasNames[0], g_replayTasScripts[0], g_replayTasNames[1], g_replayTasScripts[1]);
+		} else {
+			tasPlayer->PlayScript(g_replayTasNames[0], g_replayTasScripts[0], "", "");
+		}
 	}
 }
 
@@ -854,11 +920,20 @@ CON_COMMAND_F_COMPLETION(
 }
 
 CON_COMMAND(sar_tas_replay, "sar_tas_replay - replays the last played TAS\n") {
-	if (g_replayTas[0].size() == 0 && g_replayTas[1].size() == 0) {
-		return console->Print("No TAS to replay\n");
+	if (g_replayTasIsFile) {
+		if (g_replayTasNames[0].size() == 0 && g_replayTasNames[1].size() == 0) {
+			return console->Print("No TAS to replay\n");
+		}
+
+		console->Print("Replaying TAS file\n");
+	} else {
+		if (g_replayTasScripts[0].size() == 0 && g_replayTasScripts[1].size() == 0) {
+			return console->Print("No TAS to replay\n");
+		}
+		
+		console->Print("Replaying previously sent TAS script");
 	}
 
-	console->Print("Replaying TAS\n");
 	tasPlayer->Replay();
 }
 

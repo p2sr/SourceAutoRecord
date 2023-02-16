@@ -18,4 +18,5 @@ struct TasStatus {
 
 namespace TasServer {
 	void SetStatus(TasStatus s);
+	void SendProcessedScript(std::string slot0scriptString, std::string slot1scriptString);
 };
