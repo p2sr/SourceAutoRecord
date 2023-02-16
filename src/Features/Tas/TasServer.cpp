@@ -311,13 +311,13 @@ static bool processCommands(ClientData &cl) {
 			break;
 
 		case 100: // request entity info
-			if (extra < 8) return true;
+			if (extra < 4) return true;
 			{
 				std::deque<uint8_t> copy = cl.cmdbuf;
 				copy.pop_front();
 
 				uint32_t len = popRaw32(copy);
-				if (extra < 8 + len) return true;
+				if (extra < 4 + len) return true;
 
 				std::string entSelector;
 				for (size_t i = 0; i < len; ++i) {
