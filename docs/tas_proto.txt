@@ -24,13 +24,17 @@ server (SAR) -> client (VSC extension):
 	[4] state = paused
 
 	[5] state = fast-forwarding
-		tick: u32
 
 	[6] update current tick
 		tick: u32
 
 	[7] update debug tick
 		tick: i32 // -1 if no debug tick
+
+	[10] processed script (sent when protocol script finished playing)
+		slot: u8
+		len: u32
+		script: [len]u8
 
 	[100] entity info response
 		state: u8 // if 0, the rest of the data is not sent
@@ -68,6 +72,16 @@ client (VSC extension) -> server (SAR):
 	
 	[7] advance tick (only valid when paused)
 	
+	[10] request playback (protocol script)
+		len1: u32
+		script1name: [len1]u8
+		len2: u32
+		script1: [len2]u8
+		len3: u32            // 0 if SP TAS
+		script2name: [len3]u8
+		len4: u32            // 0 if SP TAS
+		script2: [len4]u8
+
 	[100] request entity info
 		len: u32
 		entity_selector: [len]u8
