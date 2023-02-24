@@ -2,6 +2,7 @@
 #include "Features/Tas/TasPlayer.hpp"
 #include "Features/Tas/TasTool.hpp"
 
+
 class SetAngleTool : public TasTool {
 public:
 	SetAngleTool(int slot)

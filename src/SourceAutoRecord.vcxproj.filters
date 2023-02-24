@@ -487,6 +487,9 @@
     <ClCompile Include="Features\Hud\StrafeHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\AngleToolsUtils.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1259,6 +1262,9 @@
     </ClInclude>
     <ClInclude Include="Features\Hud\StrafeHud.hpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\AngleToolsUtils.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
