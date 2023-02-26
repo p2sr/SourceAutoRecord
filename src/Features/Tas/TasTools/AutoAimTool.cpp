@@ -20,23 +20,20 @@ struct AutoAimParams : public TasToolParams {
 		, entity(false)
 		, point(point)
 		, easingTicks(easingTicks)
-		, easingType(easingType)
-		, elapsedTicks(0) {}
+		, easingType(easingType) {}
 
 	AutoAimParams(std::string selector, int easingTicks, EasingType easingType)
 		: TasToolParams(true)
 		, entity(true)
 		, ent_selector(selector)
 		, easingTicks(easingTicks)
-		, easingType(easingType)
-		, elapsedTicks(0) {}
+		, easingType(easingType) {}
 
 	bool entity;
 	std::string ent_selector;
 	Vector point;
 	int easingTicks;
 	EasingType easingType;
-	int elapsedTicks;
 };
 
 std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string> args) {
@@ -111,6 +108,17 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	auto params = std::static_pointer_cast<AutoAimParams>(this->params);
 	if (!params->enabled) return;
 
+	if (this->updated) {
+		elapsedTicks = 0;
+		this->updated = false;
+	}
+
+	int remaining = 1; // If there are no lerp ticks left, pretend we're on the last tick, so that we jump all the way to the final angle
+	if (elapsedTicks < params->easingTicks) {
+		remaining = params->easingTicks - elapsedTicks;
+		++elapsedTicks;
+	}
+
 	void *player = server->GetPlayer(playerInfo.slot + 1);
 	if (!player) return;
 
@@ -143,7 +151,7 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 		QAngleToVector(playerInfo.angles), 
 		Vector{pitch, yaw}, 
 		params->easingTicks, 
-		params->elapsedTicks, 
+		elapsedTicks, 
 		params->easingType
 	);
 
@@ -151,8 +159,8 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 		console->Print("autoaim pitch:%.2f yaw:%.2f\n", pitch, yaw);
 	}
 
-	if (params->elapsedTicks < params->easingTicks) {
-		++params->elapsedTicks;
+	if (elapsedTicks < params->easingTicks) {
+		++elapsedTicks;
 	}
 
 	//do not let autoaim affect current movement direction. this will allow autoaim to be more precise with its prediction

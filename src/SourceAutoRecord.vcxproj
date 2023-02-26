@@ -142,6 +142,8 @@
     <ClCompile Include="Features\Routing\Ruler.cpp" />
     <ClCompile Include="Features\SeasonalASCII.cpp" />
     <ClCompile Include="Features\Tas\TasTools\AngleToolsUtils.cpp" />
+    <ClCompile Include="Features\Tas\TasPlayer.cpp" />
+    <ClCompile Include="Features\Tas\TasScript.cpp" />
     <ClCompile Include="Features\WindowResizer.cpp" />
     <ClCompile Include="Games\ApertureTag.cpp" />
     <ClCompile Include="Games\Portal2.cpp" />
@@ -216,7 +218,6 @@
     <ClCompile Include="Features\AutoSubmit.cpp" />
     <ClCompile Include="Features\Tas\TasParser.cpp" />
     <ClCompile Include="Features\Tas\TasController.cpp" />
-    <ClCompile Include="Features\Tas\TasPlayer.cpp" />
     <ClCompile Include="Features\Tas\TasServer.cpp" />
     <ClCompile Include="Features\Tas\TasTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\AbsoluteMoveTool.cpp" />
@@ -329,6 +330,8 @@
     <ClInclude Include="Features\Routing\Ruler.hpp" />
     <ClInclude Include="Features\SeasonalASCII.hpp" />
     <ClInclude Include="Features\Tas\TasTools\AngleToolsUtils.hpp" />
+    <ClInclude Include="Features\Tas\TasPlayer.hpp" />
+    <ClInclude Include="Features\Tas\TasScript.hpp" />
     <ClInclude Include="Features\WindowResizer.hpp" />
     <ClInclude Include="Games\ApertureTag.hpp" />
     <ClInclude Include="Games\Portal2.hpp" />
@@ -399,7 +402,6 @@
     <ClInclude Include="Features\AutoSubmit.hpp" />
     <ClInclude Include="Features\Tas\TasParser.hpp" />
     <ClInclude Include="Features\Tas\TasController.hpp" />
-    <ClInclude Include="Features\Tas\TasPlayer.hpp" />
     <ClInclude Include="Features\Tas\TasServer.hpp" />
     <ClInclude Include="Features\Tas\TasTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\AbsoluteMoveTool.hpp" />

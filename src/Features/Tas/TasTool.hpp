@@ -1,17 +1,19 @@
 #pragma once
 
-#include "TasPlayer.hpp"
 #include <list>
+#include <memory>
+#include <vector>
+#include <string>
 
 // A bunch of stuff accidentally used sin/cos directly, which led to
 // inconsistent scripts between Windows and Linux since Windows has
 // overloads for some functions. These helper macros dispatch to
 // sinf/cosf on newer script versions for platform consistency
-#define absOld(x) ((tasPlayer->scriptVersion >= 3) ? fabsf(x) : abs(x)) // we noticed this one sooner lol
-#define sinOld(x) ((tasPlayer->scriptVersion >= 4) ? sinf(x) : sin(x))
-#define cosOld(x) ((tasPlayer->scriptVersion >= 4) ? cosf(x) : cos(x))
-#define atan2Old(x, y) ((tasPlayer->scriptVersion >= 4) ? atan2f(x, y) : atan2(x, y))
-#define powOld(x, y) ((tasPlayer->scriptVersion >= 4) ? powf(x, y) : pow(x, y))
+#define absOld(x) ((tasPlayer->GetScriptVersion(slot) >= 3) ? fabsf(x) : abs(x))  // we noticed this one sooner lol
+#define sinOld(x) ((tasPlayer->GetScriptVersion(slot) >= 4) ? sinf(x) : sin(x))
+#define cosOld(x) ((tasPlayer->GetScriptVersion(slot) >= 4) ? cosf(x) : cos(x))
+#define atan2Old(x, y) ((tasPlayer->GetScriptVersion(slot) >= 4) ? atan2f(x, y) : atan2(x, y))
+#define powOld(x, y) ((tasPlayer->GetScriptVersion(slot) >= 4) ? powf(x, y) : pow(x, y))
 
 struct TasToolParams {
 	bool enabled = false;
@@ -46,6 +48,7 @@ public:
 
 public:
 	static std::list<TasTool *> &GetList(int slot);
+	static TasTool *GetInstanceByName(int slot, std::string name);
 	static std::vector<std::string> priorityList;
 };
 

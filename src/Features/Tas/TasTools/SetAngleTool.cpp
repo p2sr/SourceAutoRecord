@@ -16,15 +16,13 @@ struct SetAngleParams : public TasToolParams {
 		, pitch(pitch)
 		, yaw(yaw) 
 		, easingTicks(easingTicks) 
-		, easingType(easingType) 
-		, elapsedTicks(0) {}
+		, easingType(easingType) {}
 
 	float pitch;
 	float yaw;
 
 	int easingTicks;
 	EasingType easingType;
-	int elapsedTicks;
 };
 
 SetAngleTool setAngleTool[2] = {{0}, {1}};
@@ -36,7 +34,12 @@ void SetAngleTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 		return;
 	}
 
-	if (params->elapsedTicks >= params->easingTicks) {
+	if (this->updated) {
+		elapsedTicks = 0;
+		this->updated = false;
+	}
+
+	if (elapsedTicks >= params->easingTicks) {
 		params->enabled = false;
 		return;
 	}
@@ -45,7 +48,7 @@ void SetAngleTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 		QAngleToVector(playerInfo.angles),
 		Vector{params->pitch, params->yaw},
 		params->easingTicks,
-		params->elapsedTicks,
+		elapsedTicks,
 		params->easingType
 	);
 
@@ -53,7 +56,7 @@ void SetAngleTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 		console->Print("setang %.3f %.3f\n", bulk.viewAnalog.x, bulk.viewAnalog.y);
 	}
 
-	++params->elapsedTicks;
+	++elapsedTicks;
 }
 
 std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string> vp) {

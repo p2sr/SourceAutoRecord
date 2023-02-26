@@ -535,18 +535,18 @@ void TasServer::SetStatus(TasStatus s) {
 	g_status_mutex.unlock();
 }
 
-void TasServer::SendProcessedScript(std::string slot0scriptString, std::string slot1scriptString) {
+void TasServer::SendProcessedScript(uint8_t slot, std::string scriptString) {
 	std::vector<uint8_t> buf;
 
 	// processed script reply (10)
 	buf.push_back(10);
-	encodeRaw32(buf, (uint32_t)slot0scriptString.size());
-	for (char c : slot0scriptString) {
-		buf.push_back(c);
-	}
 
-	encodeRaw32(buf, (uint32_t)slot1scriptString.size());
-	for (char c : slot1scriptString) {
+	// slot
+	buf.push_back(slot);
+
+	// script
+	encodeRaw32(buf, (uint32_t)scriptString.size());
+	for (char c : scriptString) {
 		buf.push_back(c);
 	}
 
