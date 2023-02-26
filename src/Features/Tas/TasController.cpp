@@ -134,7 +134,7 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 
 	// affect inputs only if the virtual controller is enabled
 	if (!enabled) return;
-	if (tasPlayer->coopControlSlot == nSlot) return;
+	if (tasPlayer->playbackInfo.coopControlSlot == nSlot) return;
 
 	//console->Print("TasController::ControllerMove (%d, ", cmd->tick_count);
 
@@ -203,7 +203,7 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 
 	// don't do this part if tools are enabled.
 	// tools processing will do it instead
-	if (!tasPlayer->IsUsingTools(nSlot)) {
+	if (!tasPlayer->IsUsingTools()) {
 		QAngle viewangles;
 		viewangles = engine->GetAngles(nSlot);
 

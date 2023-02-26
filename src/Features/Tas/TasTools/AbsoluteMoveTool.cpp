@@ -9,18 +9,18 @@ AbsoluteMoveTool tasAbsoluteMoveTool[2] = {
 	{ "absmov", 1 },
 };
 
-void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
+void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) {
 	auto ttParams = std::static_pointer_cast<AbsoluteMoveToolParams>(params);
 
 	if (!ttParams->enabled)
 		return;
 
-	auto angles = pInfo.angles;
+	auto angles = playerInfo.angles;
 	angles.y -= fb.viewAnalog.x;
 	angles.x -= fb.viewAnalog.y;
 
 	float forward_coef;
-	if (fabsf(angles.x) >= 30.0f && !pInfo.grounded) {
+	if (fabsf(angles.x) >= 30.0f && !playerInfo.grounded) {
 		forward_coef = cosOld(DEG2RAD(angles.x));
 	} else {
 		forward_coef = 1.0f;

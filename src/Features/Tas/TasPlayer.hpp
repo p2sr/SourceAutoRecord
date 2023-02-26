@@ -1,5 +1,6 @@
 #pragma once
 
+#include "TasScript.hpp"
 #include "Command.hpp"
 #include "Features/Feature.hpp"
 #include "Features/Tas/TasController.hpp"
@@ -18,27 +19,22 @@ class TasToolCommand;
 extern Variable sar_tas_tools_enabled;
 extern Variable sar_tas_tools_force;
 
-struct TasFramebulk {
-	int tick = 0;
-	Vector moveAnalog = {0, 0};
-	Vector viewAnalog = {0, 0};
-	bool buttonStates[TAS_CONTROLLER_INPUT_COUNT] = {0};
-	std::vector<std::string> commands;
-	std::vector<TasToolCommand> toolCmds;
+struct TasPlaybackInfo {
+	TasScript slots[2];
+	int replayCount = 0;
+	int autoReplayCount = 0;
 
-	std::string ToString();
-};
+	int coopControlSlot = -1;
 
-enum TasStartType {
-	ChangeLevel,
-	ChangeLevelCM,
-	LoadQuicksave,
-	StartImmediately,
-};
-
-struct TasStartInfo {
-	TasStartType type;
-	std::string param;
+	inline bool IsCoop() const { return slots[1].IsActive() || coopControlSlot == 1; }
+	inline bool HasActiveSlot() const { return slots[0].IsActive() || slots[1].IsActive(); }
+	inline TasScript GetMainScript() const {
+		if (coopControlSlot >= 0 && slots[1 - coopControlSlot].IsActive()) {
+			return slots[1 - coopControlSlot];
+		}
+		return slots[0].IsActive() ? slots[0] : slots[1]; 
+	}
+	inline TasScriptHeader GetMainHeader() const { return GetMainScript().header; }
 };
 
 struct TasPlayerInfo {
@@ -67,17 +63,8 @@ private:
 	int startTick = 0;    // used to store the absolute tick in which player started playing the script
 	int currentTick = 0;  // tick position of script player, relative to its starting point.
 	int lastTick = 0;     // last tick of script, relative to its starting point
-	bool scriptLoadedFromFile = false;
 
-	int wasEnginePaused; // Used to check if we need to revert incrementing a tick
-
-	TasStartInfo startInfo;
-	std::string tasFileName[2];
-
-	std::vector<TasFramebulk> framebulkQueue[2];
-	std::vector<TasFramebulk> processedFramebulks[2];
-	std::vector<std::string> usercmdDebugs[2];
-	std::vector<std::string> playerInfoDebugs[2];
+	int wasEnginePaused = false; // Used to check if we need to revert incrementing a tick
 
 public:
 	void Update();
@@ -89,104 +76,31 @@ public:
 	inline bool IsActive() const { return active; };
 	inline bool IsReady() const { return ready; };
 	inline bool IsRunning() const { return active && startTick != -1; }
-	inline bool IsUsingTools(int slot) const {
-		return sar_tas_tools_enabled.GetBool()
-			&& this->tasFileName[slot].size() > 0
-			&& (sar_tas_tools_force.GetBool() || this->tasFileName[slot].find("_raw") == std::string::npos);
+	inline bool IsPaused() const { return paused; }
+	inline bool IsUsingTools() const { 
+		return (playbackInfo.slots[0].IsActive() && !playbackInfo.slots[0].IsRaw()) 
+			|| (playbackInfo.slots[1].IsActive() && !playbackInfo.slots[1].IsRaw());
 	}
+	inline int GetScriptVersion(int slot) const { return playbackInfo.slots[slot].header.version; }
 
 	void PlayFile(std::string slot0scriptPath, std::string slot1scriptPath);
 	void PlayScript(std::string slot0name, std::string slot0script, std::string slot1name, std::string slot1script);
 	void PlaySingleCoop(std::string file, int slot);
 
-	void Activate();
+	void Activate(TasPlaybackInfo info);
 	void Start();
 	void PostStart();
 	void Stop(bool interrupted=false);
-	void Replay();
+	void Replay(bool automatic=false);
 
 	void Pause();
 	void Resume();
 	void AdvanceFrame();
-	bool IsPaused();
 
 	TasFramebulk GetRawFramebulkAt(int slot, int tick);
 
-	template <bool serverside>
-	TasPlayerInfo GetPlayerInfo(void *player, CUserCmd *cmd) {
-		using Ent = std::conditional_t<serverside, ServerEnt, ClientEnt>;
-		Ent *pl = (Ent *)player;
+	TasPlayerInfo GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bool clientside = false);
 
-		TasPlayerInfo pi;
-
-		int m_nOldButtons = pl->template field<int>("m_nOldButtons");
-
-		pi.tick = pl->template field<int>("m_nTickBase");
-		pi.slot = server->GetSplitScreenPlayerSlot(player);
-		int m_surfaceFriction = serverside ? Offsets::S_m_surfaceFriction : Offsets::C_m_surfaceFriction;
-		pi.surfaceFriction = *reinterpret_cast<float *>((uintptr_t)player + m_surfaceFriction);
-		pi.ducked = pl->ducked();
-
-		float *m_flMaxspeed = &pl->template field<float>("m_flMaxspeed");
-		pi.maxSpeed = *m_flMaxspeed;
-
-		if (serverside) {
-		#ifdef _WIN32
-			// windows being weird. ask mlugg for explanation because idfk.
-			void *paintPowerUser = (void *)((uint32_t)player + 0x1250);
-		#else
-			void *paintPowerUser = player;
-		#endif
-			using _GetPaintPower = const PaintPowerInfo_t &(__rescall *)(void *thisptr, unsigned paintId);
-			_GetPaintPower GetPaintPower = Memory::VMT<_GetPaintPower>(paintPowerUser, Offsets::GetPaintPower);
-			PaintPowerInfo_t speedPaintInfo = GetPaintPower(paintPowerUser, 2);
-			pi.onSpeedPaint = speedPaintInfo.m_State == 1;  // ACTIVE_PAINT_POWER
-
-			if (pi.onSpeedPaint) {
-				// maxSpeed is modified within ProcessMovement. This hack allows us to "predict" its next value
-				// Cache off old max speed to restore later
-				float oldMaxSpeed = *m_flMaxspeed;
-				// Use the speed paint to modify the max speed
-				using _UseSpeedPower = void(__rescall *)(void *thisptr, PaintPowerInfo_t &info);
-				_UseSpeedPower UseSpeedPower = Memory::VMT<_UseSpeedPower>(player, Offsets::UseSpeedPower);
-				UseSpeedPower(player, speedPaintInfo);
-				// Get the new ("predicted") max speed and restore the old one on the player
-				pi.maxSpeed = *m_flMaxspeed;
-				*m_flMaxspeed = oldMaxSpeed;
-			}
-		}
-
-		pi.grounded = pl->ground_entity();
-
-		// this check was originally broken, so bypass it in v1
-		if (tasPlayer->scriptVersion >= 2) {
-			// predict the grounded state after jump.
-			if (pi.grounded && (cmd->buttons & IN_JUMP) && !(m_nOldButtons & IN_JUMP)) {
-				pi.grounded = false;
-			}
-		}
-
-		pi.position = pl->abs_origin();
-		pi.angles = engine->GetAngles(pi.slot);
-		pi.velocity = pl->abs_velocity();
-
-		pi.oldButtons = m_nOldButtons;
-
-		if (fabsf(*engine->interval_per_tick - 1.0f/60.0f) < 0.00001f) {
-			// Back compat - this used to be hardcoded, and maybe the engine's interval
-			// could be slightly different to the value we used, leading to desyncs on
-			// old scripts.
-			pi.ticktime = 1.0f / 60.0f;
-		} else {
-			pi.ticktime = *engine->interval_per_tick;
-		}
-
-		return pi;
-	}
-
-	void SetFrameBulkQueue(int slot, std::vector<TasFramebulk> fbQueue);
-	void SetStartInfo(TasStartType type, std::string);
-	inline void SetLoadedFileName(int slot, std::string name) { tasFileName[slot] = name; };
 	void SaveProcessedFramebulks();
 	void SaveUsercmdDebugs(int slot);
 	void SavePlayerInfoDebugs(int slot);
@@ -196,13 +110,11 @@ public:
 	void DumpUsercmd(int slot, const CUserCmd *cmd, int tick, const char *source);
 	void DumpPlayerInfo(int slot, int tick, Vector pos, Vector eye_pos, QAngle ang);
 
-	bool isCoop;
-	int coopControlSlot;
 	bool inControllerCommands = false;
 	int numSessionsBeforeStart = 0;
-	bool wasStartNext;
-	int scriptVersion = 0;
-	std::string rngManipFile;
+
+	TasPlaybackInfo previousPlaybackInfo;
+	TasPlaybackInfo playbackInfo;
 
 	TasPlayer();
 	~TasPlayer();

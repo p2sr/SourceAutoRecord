@@ -3,6 +3,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Features/Tas/TasParser.hpp"
+#include "Features/Tas/TasPlayer.hpp"
 
 AutoJumpTool autoJumpTool[2] = {{0}, {1}};
 

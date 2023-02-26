@@ -8,6 +8,13 @@ std::list<TasTool *> &TasTool::GetList(int slot) {
 	return list[slot];
 }
 
+TasTool *TasTool::GetInstanceByName(int slot, std::string name) {
+	for (TasTool *tool : TasTool::GetList(slot)) {
+		if (tool->GetName() == name) return tool;
+	}
+	return nullptr;
+}
+
 std::vector<std::string> TasTool::priorityList = {
 	"check",
 	"setang",
@@ -42,7 +49,7 @@ void TasTool::SetParams(std::shared_ptr<TasToolParams> params) {
 	this->updated = true;
 
 	// legacy behaviour for version 2 or older
-	if (tasPlayer->scriptVersion <= 2) {
+	if (tasPlayer->GetScriptVersion(slot) <= 2) {
 		// the tool has been updated. prioritize it by moving it to the end of the global list
 		// mlugg please don't kill me
 		GetList(slot).splice(GetList(slot).end(), GetList(slot), std::find(GetList(slot).begin(), GetList(slot).end(), this));

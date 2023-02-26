@@ -37,7 +37,7 @@ void StrafeHud::SetData(int slot, void *player, CUserCmd *cmd, bool serverside) 
 	data[slot].accelValues.clear();
 
 	// generate predicted accelerate values in a circle
-	auto playerInfo = serverside ? tasPlayer->GetPlayerInfo<true>(player, cmd) : tasPlayer->GetPlayerInfo<false>(player, cmd);
+	auto playerInfo = tasPlayer->GetPlayerInfo(slot, player, cmd, !serverside);
 	float oldVel = playerInfo.velocity.Length2D();
 
 	auto bestAng = autoStrafeTool->GetFastestStrafeAngle(playerInfo);

@@ -1,5 +1,6 @@
 #include "TasParser.hpp"
 #include "Modules/Console.hpp"
+#include "TasPlayer.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -197,7 +198,7 @@ static std::vector<Line> tokenize(std::istream &file) {
 #define _STR1(x) #x
 #define _STR(x) _STR1(x)
 
-static void parseVersion(const Line &l) {
+static int parseVersion(const Line &l) {
 	if (l.tokens[0].tok != "version") {
 		throw TasParserException("expected version line");
 	}
@@ -214,24 +215,24 @@ static void parseVersion(const Line &l) {
 		throw TasParserException("expected version number between 1 and " _STR(MAX_SCRIPT_VERSION));
 	}
 
-	tasPlayer->scriptVersion = l.tokens[1].i;
+	return l.tokens[1].i;
 }
 
-static bool parseRngManip(const Line &l) {
-	tasPlayer->rngManipFile = "";
-
+static bool parseRngManip(const Line &l, std::string &rngManip) {
 	if (l.tokens[0].tok != "rngmanip") return false;
 
 	if (l.tokens.size() != 2) {
 		throw TasParserException("invalid rngmanip line; expected 2 tokens");
 	}
 
-	tasPlayer->rngManipFile = l.tokens[1].tok;
+	rngManip = l.tokens[1].tok;
 
 	return true;
 }
 
-static void parseHeader(const Line &l) {
+static TasScriptStartInfo parseStartInfo(const Line &l) {
+	TasScriptStartInfo info;
+
 	if (l.tokens[0].tok != "start") {
 		throw TasParserException("expected start line");
 	}
@@ -249,42 +250,43 @@ static void parseHeader(const Line &l) {
 
 	int idx = 1;
 
-	tasPlayer->numSessionsBeforeStart = 0;
-	tasPlayer->wasStartNext = false;
+	info.isNext = false;
 
 	if (l.tokens[idx].tok == "next") {
 		// next is followed by another start type to be triggered on the
 		// session following another start
-		tasPlayer->numSessionsBeforeStart += 1;
-		tasPlayer->wasStartNext = true;
+		info.isNext = true;
 		if (l.tokens.size() == 2) {
 			// 'start next' is an alias for 'start next now'
-			tasPlayer->SetStartInfo(TasStartType::StartImmediately, "");
-			return;
+			info.type = TasScriptStartType::StartImmediately;
+			info.param = "";
+			return info;
 		}
 		idx += 1;
 	}
 
 	if (l.tokens[idx].tok == "map") {
 		CHECK_TOKS(2)
-		tasPlayer->SetStartInfo(TasStartType::ChangeLevel, l.tokens[idx + 1].tok);
-		tasPlayer->numSessionsBeforeStart += 1;
+		info.type = TasScriptStartType::ChangeLevel;
+		info.param = l.tokens[idx + 1].tok;
 	} else if (l.tokens[idx].tok == "save") {
 		CHECK_TOKS(2)
-		tasPlayer->SetStartInfo(TasStartType::LoadQuicksave, l.tokens[idx + 1].tok);
-		tasPlayer->numSessionsBeforeStart += 1;
+		info.type = TasScriptStartType::LoadQuicksave;
+		info.param = l.tokens[idx + 1].tok;
 	} else if (l.tokens[idx].tok == "cm") {
 		CHECK_TOKS(2)
-		tasPlayer->SetStartInfo(TasStartType::ChangeLevelCM, l.tokens[idx + 1].tok);
-		tasPlayer->numSessionsBeforeStart += 1;
+		info.type = TasScriptStartType::ChangeLevelCM;
+		info.param = l.tokens[idx + 1].tok;
 	} else if (l.tokens[idx].tok == "now") {
 		CHECK_TOKS(1)
-		tasPlayer->SetStartInfo(TasStartType::StartImmediately, "");
+		info.type = TasScriptStartType::StartImmediately;
+		info.param = "";
 	} else {
 		throw TasParserException(Utils::ssprintf("invalid start type '%s'", l.tokens[idx].tok.c_str()));
 	}
 
 #undef CHECK_TOKS
+	return info;
 }
 
 struct LoopInfo {
@@ -349,10 +351,10 @@ static int parseFramebulkTick(int last_tick, const Line &line, size_t *tokens_ou
 	throw TasParserException("expected tick at start of line");
 }
 
-static std::optional<TasToolCommand> parseToolCmd(int slot, const std::vector<std::string> &toks) {
+static std::optional<TasToolCommand> parseToolCmd(const std::vector<std::string> &toks) {
 	if (toks.size() == 0) return {};
 
-	for (auto &tool : TasTool::GetList(slot)) {
+	for (auto &tool : TasTool::GetList(0)) {
 		if (tool->GetName() == toks[0]) {
 			std::vector<std::string> args = std::vector(toks.begin() + 1, toks.end());
 
@@ -386,7 +388,7 @@ static Vector parseVector(const Line &line, size_t idx) {
 	return vec;
 }
 
-static TasFramebulk parseFramebulk(int slot, int last_tick, const TasFramebulk &base, const Line &line, int (*button_timeouts)[TAS_CONTROLLER_INPUT_COUNT]) {
+static TasFramebulk parseFramebulk(int last_tick, const TasFramebulk &base, const Line &line, int (*button_timeouts)[TAS_CONTROLLER_INPUT_COUNT]) {
 	TasFramebulk bulk = base;
 	size_t toks_off;
 	bool is_tool_bulk;
@@ -491,7 +493,7 @@ static TasFramebulk parseFramebulk(int slot, int last_tick, const TasFramebulk &
 					}
 				}
 
-				auto cmd = parseToolCmd(slot, args);
+				auto cmd = parseToolCmd(args);
 				if (cmd) bulk.toolCmds.push_back(*cmd);
 			}
 			break;
@@ -501,7 +503,7 @@ static TasFramebulk parseFramebulk(int slot, int last_tick, const TasFramebulk &
 	return bulk;
 }
 
-static std::vector<TasFramebulk> parseFramebulks(int slot, const char *filepath, const Line *lines, size_t nlines) {
+static std::vector<TasFramebulk> parseFramebulks(const char *filepath, const Line *lines, size_t nlines) {
 	int last_tick = -1;
 	TasFramebulk last;
 	std::vector<TasFramebulk> bulks;
@@ -551,7 +553,7 @@ static std::vector<TasFramebulk> parseFramebulks(int slot, const char *filepath,
 				}
 			}
 
-			TasFramebulk bulk = parseFramebulk(slot, last_tick, base, line, &button_timeouts);
+			TasFramebulk bulk = parseFramebulk(last_tick, base, line, &button_timeouts);
 
 			bulks.push_back(bulk);
 			last_tick = bulk.tick;
@@ -657,7 +659,9 @@ static std::vector<Line> preProcess(const char *filepath, const Line *lines, siz
 	return current;
 }
 
-static std::vector<TasFramebulk> parseStream(int slot, std::string name, std::istream &stream) {
+static TasScript parseStream(std::string name, std::istream &stream) {
+	TasScript script;
+	
 	auto lines = tokenize(stream);
 
 	lines = preProcess(name.c_str(), lines.data(), lines.size());
@@ -667,50 +671,52 @@ static std::vector<TasFramebulk> parseStream(int slot, std::string name, std::is
 	}
 
 	try {
-		parseVersion(lines[0]);
+		script.header.version = parseVersion(lines[0]);
 	} catch (TasParserException &e) {
 		throw TasParserException(Utils::ssprintf("[%s:%u] %s", name.c_str(), lines[0].num, e.msg.c_str()));
 	}
 
 	try {
-		parseHeader(lines[1]);
+		script.header.startInfo = parseStartInfo(lines[1]);
 	} catch (TasParserException &e) {
 		throw TasParserException(Utils::ssprintf("[%s:%u] %s", name.c_str(), lines[1].num, e.msg.c_str()));
 	}
 
 	size_t script_start = 2;
 	try {
-		if (lines.size() > 2 && parseRngManip(lines[2])) {
+		if (lines.size() > 2 && parseRngManip(lines[2], script.header.rngManipFile)) {
 			script_start += 1;
 		}
 	} catch (TasParserException &e) {
 		throw TasParserException(Utils::ssprintf("[%s:%u] %s", name.c_str(), lines[2].num, e.msg.c_str()));
 	}
 
-	std::vector<TasFramebulk> fb = parseFramebulks(slot, name.c_str(), lines.data() + script_start, lines.size() - script_start);  // skip version and start lines
+	script.framebulks = parseFramebulks(name.c_str(), lines.data() + script_start, lines.size() - script_start);  // skip version and start lines
 
-	if (fb.size() == 0) {
+	if (script.framebulks.size() == 0) {
 		throw TasParserException(Utils::ssprintf("[%s] no framebulks in TAS script", name.c_str()));
 	}
 
-	tasPlayer->SetLoadedFileName(slot, name);
-
-	return fb;
+	return script;
 }
 
-std::vector<TasFramebulk> TasParser::ParseFile(int slot, std::string filePath) {
+TasScript TasParser::ParseFile(std::string filePath) {
 	std::ifstream file(filePath, std::fstream::in);
 	if (!file) {
 		throw TasParserException(Utils::ssprintf("[%s] failed to open the file", filePath.c_str()));
 	}
 
-	return parseStream(slot, filePath, file);
+	auto result = parseStream(filePath, file);
+	result.loadedFromFile = true;
+	return result;
 }
 
-std::vector<TasFramebulk> TasParser::ParseScript(int slot, std::string scriptName, std::string scriptString) {
+TasScript TasParser::ParseScript(std::string scriptName, std::string scriptString) {
 	std::istringstream script(scriptString);
 
-	return parseStream(slot, scriptName, script);
+	auto result = parseStream(scriptName, script);
+	result.loadedFromFile = false;
+	return result;
 }
 
 int TasParser::toInt(std::string &str) {
@@ -735,45 +741,45 @@ float TasParser::toFloat(std::string str) {
 	return x;
 }
 
-void TasParser::SaveFramebulksToFile(std::string name, TasStartInfo startInfo, bool wasStartNext, int version, std::vector<TasFramebulk> framebulks) {
-	std::string fixedName = name;
-	size_t lastdot = name.find_last_of(".");
+void TasParser::SaveRawScriptToFile(TasScript script) {
+	std::string fixedName = script.name;
+	size_t lastdot = script.name.find_last_of(".");
 	if (lastdot != std::string::npos) {
-		fixedName = name.substr(0, lastdot);
+		fixedName = script.name.substr(0, lastdot);
 	}
 
 	std::ofstream file(fixedName + "_raw." + TAS_SCRIPT_EXT);
 
-	file << SaveFramebulksToString(startInfo, wasStartNext, version, framebulks);
+	file << SaveRawScriptToString(script);
 
 	file.close();
 }
 
-std::string TasParser::SaveFramebulksToString(TasStartInfo startInfo, bool wasStartNext, int version, std::vector<TasFramebulk> framebulks) {
+std::string TasParser::SaveRawScriptToString(TasScript script) {
 	
 	std::ostringstream tasString;
 
-	std::sort(framebulks.begin(), framebulks.end(), [](const TasFramebulk &a, const TasFramebulk &b) {
+	std::sort(script.processedFramebulks.begin(), script.processedFramebulks.end(), [](const TasFramebulk &a, const TasFramebulk &b) {
 		return a.tick < b.tick;
 	});
 
-	tasString << "version " << std::to_string(version) << "\n";
+	tasString << "version " << std::to_string(script.header.version) << "\n";
 
-	if (wasStartNext) tasString << "start next ";
+	if (script.header.startInfo.isNext) tasString << "start next ";
 	else tasString << "start ";
 
-	switch (startInfo.type) {
-	case TasStartType::ChangeLevel:
-		tasString << "map " << startInfo.param << "\n";
+	switch (script.header.startInfo.type) {
+	case TasScriptStartType::ChangeLevel:
+		tasString << "map " << script.header.startInfo.param << "\n";
 		break;
-	case TasStartType::LoadQuicksave:
-		tasString << "save " << startInfo.param << "\n";
+	case TasScriptStartType::LoadQuicksave:
+		tasString << "save " << script.header.startInfo.param << "\n";
 		break;
-	case TasStartType::StartImmediately:
+	case TasScriptStartType::StartImmediately:
 		tasString << "now\n";
 		break;
-	case TasStartType::ChangeLevelCM:
-		tasString << "cm " << startInfo.param << "\n";
+	case TasScriptStartType::ChangeLevelCM:
+		tasString << "cm " << script.header.startInfo.param << "\n";
 		break;
 	}
 
@@ -781,7 +787,7 @@ std::string TasParser::SaveFramebulksToString(TasStartInfo startInfo, bool wasSt
 
 	int last_tick = -1;
 
-	for (TasFramebulk &fb : framebulks) {
+	for (TasFramebulk &fb : script.processedFramebulks) {
 		std::string line = ">";
 
 		line += Utils::ssprintf("%.*g %.*g|%.*g %.*g|", FLT_DECIMAL_DIG, fb.moveAnalog.x, FLT_DECIMAL_DIG, fb.moveAnalog.y, FLT_DECIMAL_DIG, fb.viewAnalog.x, FLT_DECIMAL_DIG, fb.viewAnalog.y);
@@ -812,7 +818,7 @@ std::string TasParser::SaveFramebulksToString(TasStartInfo startInfo, bool wasSt
 		}
 	}
 
-	TasFramebulk &last = framebulks[framebulks.size() - 1];
+	TasFramebulk &last = script.processedFramebulks[script.processedFramebulks.size() - 1];
 	if (last.tick > last_tick) {
 		// Make sure there's an empty bulk at the end so the TAS is the
 		// right length

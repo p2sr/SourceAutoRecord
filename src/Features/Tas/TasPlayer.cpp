@@ -16,12 +16,7 @@
 #include "Variable.hpp"
 
 #include <climits>
-#include <filesystem>
 #include <fstream>
-
-#ifndef _WIN32
-#include <dirent.h>
-#endif
 
 Variable sar_tas_debug("sar_tas_debug", "0", 0, 2, "Debug TAS informations. 0 - none, 1 - basic, 2 - all.\n");
 Variable sar_tas_dump_usercmd("sar_tas_dump_usercmd", "0", "Dump TAS-generated usercmds to a file.\n");
@@ -37,21 +32,6 @@ Variable sar_tas_interpolate("sar_tas_interpolate", "0", "Preserve client interp
 
 TasPlayer *tasPlayer;
 
-std::string TasFramebulk::ToString() {
-	std::string output = "[" + std::to_string(tick) + "] mov: (" + std::to_string(moveAnalog.x) + " " + std::to_string(moveAnalog.y) + "), ang:" + std::to_string(viewAnalog.x) + " " + std::to_string(viewAnalog.y) + "), btns:";
-	for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
-		output += (buttonStates[i]) ? "1" : "0";
-	}
-	output += ", cmds: ";
-	for (std::string command : commands) {
-		output += command + ";";
-	}
-	output += ", tools:";
-	for (TasToolCommand toolCmd : toolCmds) {
-		output += " {" + std::string(toolCmd.tool->GetName()) + "}";
-	}
-	return output;
-}
 
 void SetPlaybackVars(bool active) {
 	static bool was_active;
@@ -65,16 +45,14 @@ void SetPlaybackVars(bool active) {
 	static Variable cl_interpolate("cl_interpolate");
 	static Variable mat_motion_blur_enabled("mat_motion_blur_enabled");
 
-	bool tools = tasPlayer->IsUsingTools(0) || tasPlayer->IsUsingTools(1);
-
 	if (active && !was_active) {
 		old_forceuser = in_forceuser.GetInt();
 		old_hostframerate = host_framerate.GetInt();
 		old_interpolate = cl_interpolate.GetBool();
 		old_motionblur = mat_motion_blur_enabled.GetBool();
-		in_forceuser.SetValue(tasPlayer->coopControlSlot >= 0 ? tasPlayer->coopControlSlot : 100);
+		in_forceuser.SetValue(tasPlayer->playbackInfo.coopControlSlot >= 0 ? tasPlayer->playbackInfo.coopControlSlot : 100);
 		host_framerate.SetValue(60);
-		if (!sar_tas_interpolate.GetBool() && tools) {
+		if (!sar_tas_interpolate.GetBool() && tasPlayer->IsUsingTools()) {
 			cl_interpolate.SetValue(false);
 			mat_motion_blur_enabled.SetValue(false);
 		}
@@ -120,7 +98,7 @@ void SetPlaybackVars(bool active) {
 }
 
 ON_EVENT(FRAME) {
-	bool tools = tasPlayer->IsUsingTools(0) || tasPlayer->IsUsingTools(1);
+	bool tools = tasPlayer->IsUsingTools();
 	if (tasPlayer->IsRunning() && !sar_tas_interpolate.GetBool() && tools) {
 		for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
 			// check for prop_portal on the server cuz i can't figure out how
@@ -149,88 +127,60 @@ ON_EVENT(FRAME) {
 }
 
 TasPlayer::TasPlayer()
-	: startInfo({TasStartType::StartImmediately, ""}) {
+{
 }
 
 TasPlayer::~TasPlayer() {
-	framebulkQueue[0].clear();
-	framebulkQueue[1].clear();
+	//framebulkQueue[0].clear();
+	//framebulkQueue[1].clear();
 }
 
-#ifdef _WIN32
-#define getSaveDir engine->GetSaveDirName
-#else
-static std::string findSubCapitalization(const char *base, const char *sub) {
-	DIR *d = opendir(base);
-	if (!d) return std::string(sub);
+void TasPlayer::Activate(TasPlaybackInfo info) {
 
-	struct dirent *ent;
-	while ((ent = readdir(d))) {
-		if (!strcasecmp(ent->d_name, sub)) {
-			closedir(d);
-			return std::string(ent->d_name);
-		}
-	}
+	if (!info.HasActiveSlot()) return;
 
-	closedir(d);
-	return std::string(sub);
-}
-// Apparently, GetSaveDirName has the wrong capitalization sometimes
-// kill me
-static std::string getSaveDir() {
-	std::string path = std::string(engine->GetGameDirectory()) + "/";
-	std::string dir = findSubCapitalization(path.c_str(), "save");
-	dir += (engine->GetSaveDirName() + 4);
-	return dir;
-}
-#endif
-
-static bool mapExists(std::string name) {
-	name = "/maps/" + name + ".bsp";
-	return fileSystem->FileExistsSomewhere(name);
-}
-
-void TasPlayer::Activate() {
 	//reset the controller before using it
 	Stop(true);
 
-	for (TasTool *tool : TasTool::GetList(0)) {
-		tool->Reset();
+	for (int slot = 0; slot < 2; ++slot) {
+		for (TasTool *tool : TasTool::GetList(slot)) {
+			tool->Reset();
+		}
 	}
-	for (TasTool *tool : TasTool::GetList(1)) {
-		tool->Reset();
-	}
-	processedFramebulks[0].clear();
-	processedFramebulks[1].clear();
-	usercmdDebugs[0].clear();
-	usercmdDebugs[1].clear();
-	playerInfoDebugs[0].clear();
-	playerInfoDebugs[1].clear();
+	
+	playbackInfo = info;
 
-	g_tas_check_replays = 0;
+	for (int slot = 0; slot < 2; ++slot) {
+		playbackInfo.slots[slot].ClearGeneratedContent();
+	}
 
 	active = true;
+	ready = false;
 	startTick = -1;
 	currentTick = 0;
 
 	lastTick = 0;
-	for (int slot = 0; slot < (this->isCoop ? 2 : 1); ++slot) {
-		for (TasFramebulk fb : framebulkQueue[slot]) {
+	for (int slot = 0; slot < (info.IsCoop() ? 2 : 1); ++slot) {
+		for (TasFramebulk fb : info.slots[slot].framebulks) {
 			if (fb.tick > lastTick) {
 				lastTick = fb.tick;
 			}
 		}
 	}
 
-	ready = false;
+	auto startInfo = info.GetMainHeader().startInfo;
+	numSessionsBeforeStart = 0;
+	if (startInfo.isNext) numSessionsBeforeStart += 1;
+	if (startInfo.type != TasScriptStartType::StartImmediately) numSessionsBeforeStart += 1;
+	
 	if (startInfo.type == ChangeLevel || startInfo.type == ChangeLevelCM) {
 		//check if map exists
-		if (mapExists(startInfo.param)) {
+		if (fileSystem->MapExists(startInfo.param)) {
 			if (session->isRunning && engine->GetCurrentMapName() == startInfo.param) {
 				engine->ExecuteCommand("restart_level");
 			} else {
 				const char *start;
-				if (this->isCoop) {
+				if (info.IsCoop()) {
 					if (session->isRunning && engine->IsCoop() && !engine->IsOrange() && engine->GetCurrentMapName() != "") {
 						start = "changelevel";
 					} else {
@@ -251,7 +201,7 @@ void TasPlayer::Activate() {
 		}
 	} else if (startInfo.type == LoadQuicksave) {
 		//check if save file exists
-		std::string savePath = std::string(engine->GetGameDirectory()) + "/" + getSaveDir() + startInfo.param + ".sav";
+		std::string savePath = std::string(engine->GetGameDirectory()) + "/" + fileSystem->GetSaveDirectory() + startInfo.param + ".sav";
 		std::ifstream savef(savePath);
 		if (savef.good()) {
 			std::string cmd = "load ";
@@ -276,14 +226,8 @@ void TasPlayer::Start() {
 	if (sar_tas_debug.GetInt() > 0) {
 		console->Print("Length: %d ticks\n", lastTick + 1);
 	}
-	processedFramebulks[0].clear();
-	processedFramebulks[1].clear();
-	usercmdDebugs[0].clear();
-	usercmdDebugs[1].clear();
-	playerInfoDebugs[0].clear();
-	playerInfoDebugs[1].clear();
 
-	if (startInfo.type == ChangeLevelCM) {
+	if (playbackInfo.GetMainHeader().startInfo.type == ChangeLevelCM) {
 		sv_bonus_challenge.SetValue(1);
 	}
 
@@ -300,7 +244,7 @@ void TasPlayer::PostStart() {
 		console->Print("Start tick: %d\n", startTick);
 	}
 	tasControllers[0]->Enable();
-	if (this->isCoop) tasControllers[1]->Enable();
+	if (playbackInfo.IsCoop()) tasControllers[1]->Enable();
 	engine->ExecuteCommand("phys_timescale 1", true);  // technically it was supposed to fix the consistency issue
 
 	Event::Trigger<Event::TAS_START>({});
@@ -325,8 +269,8 @@ void TasPlayer::Stop(bool interrupted) {
 		SavePlayerInfoDebugs(1);
 
 		Event::Trigger<Event::TAS_END>({});
-	} else {
-		console->Print("TAS player is no longer active.\n");
+	} else if (active && !ready) {
+		console->Print("TAS script has been prevented from playback.\n");
 	}
 
 	active = false;
@@ -334,12 +278,14 @@ void TasPlayer::Stop(bool interrupted) {
 	currentTick = 0;
 	tasControllers[0]->Disable();
 	tasControllers[1]->Disable();
-	tasFileName[0] = "";
-	tasFileName[1] = "";
 
 	SetPlaybackVars(false);
 
 	engine->SetAdvancing(false);
+
+	if (playbackInfo.HasActiveSlot()) {
+		previousPlaybackInfo = playbackInfo;
+	}
 }
 
 void TasPlayer::Pause() {
@@ -358,7 +304,7 @@ void TasPlayer::AdvanceFrame() {
 TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick) {
 	int closestTime = INT_MAX;
 	TasFramebulk closest;
-	for (TasFramebulk framebulk : framebulkQueue[slot]) {
+	for (TasFramebulk framebulk : playbackInfo.slots[slot].framebulks) {
 		int timeDist = tick - framebulk.tick;
 		if (timeDist >= 0 && timeDist < closestTime) {
 			closestTime = timeDist;
@@ -368,18 +314,96 @@ TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick) {
 	return closest;
 }
 
-void TasPlayer::SetFrameBulkQueue(int slot, std::vector<TasFramebulk> fbQueue) {
-	this->framebulkQueue[slot] = fbQueue;
-}
+TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bool clientside) {
+	TasPlayerInfo pi;
 
-void TasPlayer::SetStartInfo(TasStartType type, std::string param) {
-	// TODO: ensure start infos are the same in coop
-	this->startInfo = TasStartInfo{type, param};
+	int m_nOldButtons = 0;
+
+	if (!clientside) {
+		ServerEnt *pl = (ServerEnt *)player;
+
+		m_nOldButtons = pl->template field<int>("m_nOldButtons");
+
+		pi.tick = pl->template field<int>("m_nTickBase");
+		pi.slot = server->GetSplitScreenPlayerSlot(player);
+		pi.surfaceFriction = *reinterpret_cast<float *>((uintptr_t)player + Offsets::S_m_surfaceFriction);
+		pi.ducked = pl->ducked();
+
+		float *m_flMaxspeed = &pl->template field<float>("m_flMaxspeed");
+		pi.maxSpeed = *m_flMaxspeed;
+
+		pi.grounded = pl->ground_entity();
+		pi.position = pl->abs_origin();
+		pi.velocity = pl->abs_velocity();
+
+#ifdef _WIN32
+		// windows being weird. ask mlugg for explanation because idfk.
+		void *paintPowerUser = (void *)((uint32_t)player + 0x1250);
+#else
+		void *paintPowerUser = player;
+#endif
+		using _GetPaintPower = const PaintPowerInfo_t &(__rescall *)(void *thisptr, unsigned paintId);
+		_GetPaintPower GetPaintPower = Memory::VMT<_GetPaintPower>(paintPowerUser, Offsets::GetPaintPower);
+		PaintPowerInfo_t speedPaintInfo = GetPaintPower(paintPowerUser, 2);
+		pi.onSpeedPaint = speedPaintInfo.m_State == 1;  // ACTIVE_PAINT_POWER
+
+		if (pi.onSpeedPaint) {
+			// maxSpeed is modified within ProcessMovement. This hack allows us to "predict" its next value
+			// Cache off old max speed to restore later
+			float oldMaxSpeed = *m_flMaxspeed;
+			// Use the speed paint to modify the max speed
+			using _UseSpeedPower = void(__rescall *)(void *thisptr, PaintPowerInfo_t &info);
+			_UseSpeedPower UseSpeedPower = Memory::VMT<_UseSpeedPower>(player, Offsets::UseSpeedPower);
+			UseSpeedPower(player, speedPaintInfo);
+			// Get the new ("predicted") max speed and restore the old one on the player
+			pi.maxSpeed = *m_flMaxspeed;
+			*m_flMaxspeed = oldMaxSpeed;
+		}
+	} else {
+		ClientEnt *pl = (ClientEnt *)player;
+
+		m_nOldButtons = pl->template field<int>("m_nOldButtons");
+
+		pi.tick = pl->template field<int>("m_nTickBase");
+		pi.slot = server->GetSplitScreenPlayerSlot(player);
+		pi.surfaceFriction = *reinterpret_cast<float *>((uintptr_t)player + Offsets::C_m_surfaceFriction);
+		pi.ducked = pl->ducked();
+
+		float *m_flMaxspeed = &pl->template field<float>("m_flMaxspeed");
+		pi.maxSpeed = *m_flMaxspeed;
+
+		pi.grounded = pl->ground_entity();
+		pi.position = pl->abs_origin();
+		pi.velocity = pl->abs_velocity();
+	}
+
+	// this check was originally broken, so bypass it in v1
+	if (tasPlayer->GetScriptVersion(slot) >= 2) {
+		// predict the grounded state after jump.
+		if (pi.grounded && (cmd->buttons & IN_JUMP) && !(m_nOldButtons & IN_JUMP)) {
+			pi.grounded = false;
+		}
+	}
+
+	pi.angles = engine->GetAngles(pi.slot);
+	
+	pi.oldButtons = m_nOldButtons;
+
+	if (fabsf(*engine->interval_per_tick - 1.0f / 60.0f) < 0.00001f) {
+		// Back compat - this used to be hardcoded, and maybe the engine's interval
+		// could be slightly different to the value we used, leading to desyncs on
+		// old scripts.
+		pi.ticktime = 1.0f / 60.0f;
+	} else {
+		pi.ticktime = *engine->interval_per_tick;
+	}
+
+	return pi;
 }
 
 void TasPlayer::SaveUsercmdDebugs(int slot) {
-	std::string filename = tasFileName[slot];
-	std::vector<std::string> &lines = usercmdDebugs[slot];
+	std::string filename = playbackInfo.slots[slot].name;
+	std::vector<std::string> &lines = playbackInfo.slots[slot].userCmdDebugs;
 
 	if (filename.size() == 0) return;
 	if (lines.empty()) return;
@@ -397,8 +421,8 @@ void TasPlayer::SaveUsercmdDebugs(int slot) {
 }
 
 void TasPlayer::SavePlayerInfoDebugs(int slot) {
-	std::string filename = tasFileName[slot];
-	std::vector<std::string> &lines = playerInfoDebugs[slot];
+	std::string filename = playbackInfo.slots[slot].name;
+	std::vector<std::string> &lines = playbackInfo.slots[slot].userCmdDebugs;
 
 	if (filename.size() == 0) return;
 	if (lines.empty()) return;
@@ -416,43 +440,35 @@ void TasPlayer::SavePlayerInfoDebugs(int slot) {
 }
 
 void TasPlayer::SaveProcessedFramebulks() {
-	if (tasPlayer->inControllerCommands) {
-		// Okay so this is an annoying situation. We've just started playing
-		// a new TAS with a 'sar_tas_play' command *within* a framebulk of
-		// another TAS, which has executed the command and called 'Stop'
-		// which has called this. We actually want to save the framebulk
-		// currently being run, since its commands are important! But
-		// there's not any processed framebulk to hand; so we just add the
-		// raw framebulks to the processed lists.
-		if (tasFileName[0].size() > 0) {
-			processedFramebulks[0].push_back(GetRawFramebulkAt(0, currentTick + 1));
-		}
-		if (tasFileName[1].size() > 0) {
-			processedFramebulks[1].push_back(GetRawFramebulkAt(1, currentTick + 1));
-		}
-	}
-	
-	bool slot0processed = processedFramebulks[0].size() > 0 && tasFileName[0].size() > 0;
-	bool slot1processed = processedFramebulks[1].size() > 0 && tasFileName[1].size() > 0;
+	for (int slot = 0; slot < 2; ++slot) {
+		auto script = playbackInfo.slots[slot];
 
-	if (tasPlayer->scriptLoadedFromFile) {
-		if (slot0processed) {
-			if (tasFileName[0].find("_raw") == std::string::npos) {
-				TasParser::SaveFramebulksToFile(tasFileName[0], startInfo, wasStartNext, scriptVersion, processedFramebulks[0]);
+		if (!script.IsActive()) continue;
+
+		if (tasPlayer->inControllerCommands) {
+			// Okay so this is an annoying situation. We've just started playing
+			// a new TAS with a 'sar_tas_play' command *within* a framebulk of
+			// another TAS, which has executed the command and called 'Stop'
+			// which has called this. We actually want to save the framebulk
+			// currently being run, since its commands are important! But
+			// there's not any processed framebulk to hand; so we just add the
+			// raw framebulks to the processed lists.
+			if (script.name.size() > 0) {
+				script.processedFramebulks.push_back(GetRawFramebulkAt(slot, currentTick + 1));
 			}
 		}
-
-		if (slot1processed) {
-			if (tasFileName[1].find("_raw") == std::string::npos) {
-				TasParser::SaveFramebulksToFile(tasFileName[1], startInfo, wasStartNext, scriptVersion, processedFramebulks[1]);
-			}
-		}
-	} else {
-		std::string slot0Script = slot0processed ? TasParser::SaveFramebulksToString(startInfo, wasStartNext, scriptVersion, processedFramebulks[0]) : "";
-		std::string slot1Script = slot1processed ? TasParser::SaveFramebulksToString(startInfo, wasStartNext, scriptVersion, processedFramebulks[1]) : "";
-		TasServer::SendProcessedScript(slot0Script, slot1Script);
-	}
 	
+		bool slotProcessed = script.processedFramebulks.size() > 0 && script.name.size() > 0;
+
+		if (script.loadedFromFile) {
+			if (slotProcessed && script.IsRaw()) {
+				TasParser::SaveRawScriptToFile(script);
+			}
+		} else {
+			std::string slotScript = slotProcessed ? TasParser::SaveRawScriptToString(script) : "";
+			TasServer::SendProcessedScript((uint8_t)slot, slotScript);
+		}
+	}
 }
 
 /*
@@ -523,9 +539,9 @@ static bool IsTaunting(ClientEnt *player) {
 void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	if (paused || engine->IsGamePaused()) return;
 	if (!ready) return;
-	if (slot == this->coopControlSlot) return;
+	if (slot == playbackInfo.coopControlSlot) return;
 
-	auto playerInfo = GetPlayerInfo<true>(player, cmd);
+	auto playerInfo = GetPlayerInfo(slot, player, cmd);
 	// player tickbase seems to be an accurate way of getting current time in ProcessMovement
 	// every other way of getting time is incorrect due to alternateticks
 	int tasTick = playerInfo.tick - startTick;
@@ -553,18 +569,19 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	fb.tick = tasTick;
 	if (fbTick == tasTick) {
 		for (TasToolCommand cmd : fb.toolCmds) {
-			cmd.tool->SetParams(cmd.params);
+			auto tool = TasTool::GetInstanceByName(slot, cmd.tool->GetName());
+			if (tool == nullptr) continue;
+			tool->SetParams(cmd.params);
 		}
 	}
 
 	// applying tools
-	if (scriptVersion >= 3) {
+	if (playbackInfo.slots[slot].header.version >= 3) {
 		// use priority list for newer versions. technically all tools should be in the list
 		for (std::string toolName : TasTool::priorityList) {
-			for (TasTool *tool : TasTool::GetList(slot)) {
-				std::string tn(tool->GetName());
-				if(toolName == tn) tool->Apply(fb, playerInfo);
-			}
+			auto tool = TasTool::GetInstanceByName(slot, toolName);
+			if (tool == nullptr) continue;
+			tool->Apply(fb, playerInfo);
 		}
 	} else {
 		// use old "earliest first" ordering system (partially also present in TasTool::SetParams)
@@ -653,7 +670,7 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 		std::vector<std::string> empty;
 		fb.commands = empty;
 	}
-	processedFramebulks[slot].push_back(fb);
+	playbackInfo.slots[slot].processedFramebulks.push_back(fb);
 
 	tasPlayer->DumpUsercmd(slot, cmd, tasTick, "processed");
 }
@@ -661,20 +678,21 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 void TasPlayer::DumpUsercmd(int slot, const CUserCmd *cmd, int tick, const char *source) {
 	if (!sar_tas_dump_usercmd.GetBool()) return;
 	std::string str = Utils::ssprintf("%s,%d,%.6f,%.6f,%08X,%.6f,%.6f,%.6f", source, tick, cmd->forwardmove, cmd->sidemove, cmd->buttons, cmd->viewangles.x, cmd->viewangles.y, cmd->viewangles.z);
-	usercmdDebugs[slot].push_back(str);
+	playbackInfo.slots[slot].userCmdDebugs.push_back(str);
 }
 
 void TasPlayer::DumpPlayerInfo(int slot, int tick, Vector pos, Vector eye_pos, QAngle ang) {
 	if (!sar_tas_dump_player_info.GetBool()) return;
 	std::string str = Utils::ssprintf("%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f", tick, pos.x, pos.y, pos.z, eye_pos.x, eye_pos.y, eye_pos.z, ang.x, ang.y, ang.z);
-	playerInfoDebugs[slot].push_back(str);
+	playbackInfo.slots[slot].playerInfoDebugs.push_back(str);
 }
 
 ON_EVENT_P(SESSION_START, 999) { // before rng manip hook
 	if (tasPlayer->IsActive() && !tasPlayer->IsReady() && tasPlayer->numSessionsBeforeStart > 0) {
 		--tasPlayer->numSessionsBeforeStart;
-		if (tasPlayer->numSessionsBeforeStart == 0 && tasPlayer->rngManipFile != "") {
-			RngManip::loadData((tasPlayer->rngManipFile + ".p2rng").c_str());
+		auto rngManipFile = tasPlayer->playbackInfo.GetMainHeader().rngManipFile;
+		if (tasPlayer->numSessionsBeforeStart == 0 && rngManipFile != "") {
+			RngManip::loadData((rngManipFile + ".p2rng").c_str());
 		}
 	}
 }
@@ -709,8 +727,8 @@ void TasPlayer::Update() {
 		}
 
 		// make sure all ticks are processed by tools before stopping
-		bool s0done = (!IsUsingTools(0) && currentTick > lastTick) || (int)processedFramebulks[0].size() > lastTick;
-		bool s1done = !this->isCoop || (!IsUsingTools(1) && currentTick > lastTick) || (int)processedFramebulks[1].size() > lastTick;
+		bool s0done = (playbackInfo.slots[0].IsRaw() && currentTick > lastTick) || (int)playbackInfo.slots[0].processedFramebulks.size() > lastTick;
+		bool s1done = !playbackInfo.IsCoop() || (playbackInfo.slots[1].IsRaw() && currentTick > lastTick) || (int)playbackInfo.slots[1].processedFramebulks.size() > lastTick;
 		if ((s0done && s1done) || (!session->isRunning && startTick != -1)) {
 			Stop();
 		}
@@ -743,8 +761,8 @@ void TasPlayer::UpdateServer() {
 	TasStatus status;
 
 	status.active = active;
-	status.tas_path[0] = this->tasFileName[0];
-	status.tas_path[1] = this->isCoop ? this->tasFileName[1] : "";
+	status.tas_path[0] = playbackInfo.slots[0].name;
+	status.tas_path[1] = playbackInfo.IsCoop() ? playbackInfo.slots[1].name : "";
 	status.playback_state =
 		engine->IsAdvancing()
 		? PlaybackState::PAUSED
@@ -760,43 +778,26 @@ void TasPlayer::UpdateServer() {
 DECL_COMMAND_FILE_COMPLETION(sar_tas_play, TAS_SCRIPT_EXT, TAS_SCRIPTS_DIR, 2)
 DECL_COMMAND_FILE_COMPLETION(sar_tas_play_single, TAS_SCRIPT_EXT, TAS_SCRIPTS_DIR, 1)
 
-static std::string g_replayTasNames[2];
-static std::string g_replayTasScripts[2];
-static bool g_replayTasCoop;
-static bool g_replayTasSingleCoop;
-static bool g_replayTasIsFile;
 
 void TasPlayer::PlayFile(std::string slot0scriptPath, std::string slot1scriptPath) {
 	bool coop = slot1scriptPath.size() > 0;
-
-	g_replayTasNames[0] = slot0scriptPath;
-	g_replayTasNames[1] = coop ? slot1scriptPath : "";
-	g_replayTasScripts[0] = "";
-	g_replayTasScripts[1] = "";
-	g_replayTasCoop = coop;
-	g_replayTasSingleCoop = false;
-	g_replayTasIsFile = true;
-
-	tasPlayer->Stop(true);
+	
+	Stop(true);
 
 	try {
+		TasPlaybackInfo newInfo;
+
 		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + slot0scriptPath + "." + TAS_SCRIPT_EXT);
-		std::vector<TasFramebulk> fb = TasParser::ParseFile(0, filePath);
-		std::vector<TasFramebulk> fb2;
+		newInfo.slots[0] = TasParser::ParseFile(filePath);
+		newInfo.slots[0].name = slot0scriptPath;
 
 		if (coop) {
 			std::string filePath2(std::string(TAS_SCRIPTS_DIR) + "/" + slot1scriptPath + "." + TAS_SCRIPT_EXT);
-			fb2 = TasParser::ParseFile(1, filePath2);
+			newInfo.slots[1] = TasParser::ParseFile(filePath2);
+			newInfo.slots[1].name = slot1scriptPath;
 		}
-
-		if (fb.size() > 0 || fb2.size() > 0) {
-			tasPlayer->scriptLoadedFromFile = true;
-			tasPlayer->isCoop = coop;
-			tasPlayer->coopControlSlot = -1;
-			tasPlayer->SetFrameBulkQueue(0, fb);
-			tasPlayer->SetFrameBulkQueue(1, fb2);
-			tasPlayer->Activate();
-		}
+		Activate(newInfo);
+		
 	} catch (TasParserException &e) {
 		return console->ColorMsg(Color(255, 100, 100), "Error while opening TAS file: %s\n", e.what());
 	}
@@ -805,32 +806,21 @@ void TasPlayer::PlayFile(std::string slot0scriptPath, std::string slot1scriptPat
 void TasPlayer::PlayScript(std::string slot0name, std::string slot0script, std::string slot1name, std::string slot1script) {
 	bool coop = slot1script.size() > 0;
 
-	g_replayTasNames[0] = slot0name;
-	g_replayTasNames[1] = coop ? slot1name : "";
-	g_replayTasScripts[0] = slot0script;
-	g_replayTasScripts[1] = slot1script;
-	g_replayTasCoop = coop;
-	g_replayTasSingleCoop = false;
-	g_replayTasIsFile = false;
-
-	tasPlayer->Stop(true);
+	Stop(true);
 
 	try {
-		std::vector<TasFramebulk> fb = TasParser::ParseScript(0, slot0name, slot0script);
-		std::vector<TasFramebulk> fb2;
+		TasPlaybackInfo newInfo;
+
+		newInfo.slots[0] = TasParser::ParseScript(slot0name, slot0script);
+		newInfo.slots[0].name = slot0name;
 
 		if (coop) {
-			fb2 = TasParser::ParseScript(0, slot1name, slot1script);
+			newInfo.slots[1] = TasParser::ParseScript(slot1name, slot1script);
+			newInfo.slots[1].name = slot1name;
 		}
 
-		if (fb.size() > 0 || fb2.size() > 0) {
-			tasPlayer->scriptLoadedFromFile = false;
-			tasPlayer->isCoop = coop;
-			tasPlayer->coopControlSlot = -1;
-			tasPlayer->SetFrameBulkQueue(0, fb);
-			tasPlayer->SetFrameBulkQueue(1, fb2);
-			tasPlayer->Activate();
-		}
+		Activate(newInfo);
+		
 	} catch (TasParserException &e) {
 		return console->ColorMsg(Color(255, 100, 100), "Error while loading TAS script input: %s\n", e.what());
 	}
@@ -841,54 +831,43 @@ void TasPlayer::PlaySingleCoop(std::string file, int slot) {
 		return console->Print("Invalid slot %d\n", slot);
 	}
 
-	g_replayTasNames[slot] = file;
-	g_replayTasNames[1 - slot] = "";
-	g_replayTasScripts[0] = "";
-	g_replayTasScripts[1] = "";
-	g_replayTasCoop = true;
-	g_replayTasSingleCoop = true;
-	g_replayTasIsFile = true;
-
-	tasPlayer->Stop(true);
+	Stop(true);
 
 	try {
-		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + file + "." + TAS_SCRIPT_EXT);
-		std::vector<TasFramebulk> fb = TasParser::ParseFile(0, filePath);
+		TasPlaybackInfo newInfo;
+		newInfo.coopControlSlot = slot;
 
-		if (fb.size() > 0) {
-			tasPlayer->scriptLoadedFromFile = true;
-			tasPlayer->isCoop = true;
-			tasPlayer->coopControlSlot = 1-slot;
-			tasPlayer->SetFrameBulkQueue(slot, fb);
-			tasPlayer->SetFrameBulkQueue(1-slot, {});
-			tasPlayer->Activate();
-		}
+		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + file + "." + TAS_SCRIPT_EXT);
+		newInfo.slots[1-slot] = TasParser::ParseFile(filePath);
+
+		Activate(newInfo);
+		
 	} catch (TasParserException &e) {
 		return console->ColorMsg(Color(255, 100, 100), "Error while opening TAS file: %s\n", e.what());
 	}
 }
 
-void TasPlayer::Replay() {
-	if (g_replayTasIsFile) {
-		if (g_replayTasNames[0].size() == 0 && g_replayTasNames[1].size() == 0) return;
+void TasPlayer::Replay(bool automatic) {
 
-		if (g_replayTasSingleCoop) {
-			int slot = g_replayTasNames[0].size() == 0 ? 1 : 0;
-			tasPlayer->PlaySingleCoop(g_replayTasNames[slot], slot);
-		} else if (g_replayTasCoop) {
-			tasPlayer->PlayFile(g_replayTasNames[0], g_replayTasNames[1]);
+	Stop(true);
+
+	if (!previousPlaybackInfo.HasActiveSlot()) return;
+
+	int currentAutoReplays = previousPlaybackInfo.autoReplayCount + (automatic ? 1 : 0);
+	int currentReplays = previousPlaybackInfo.replayCount + 1;
+
+	if (previousPlaybackInfo.GetMainScript().loadedFromFile) {
+		if (previousPlaybackInfo.coopControlSlot >= 0) {
+			PlaySingleCoop(previousPlaybackInfo.slots[1 - previousPlaybackInfo.coopControlSlot].name, previousPlaybackInfo.coopControlSlot);
 		} else {
-			tasPlayer->PlayFile(g_replayTasNames[0], "");
+			PlayFile(previousPlaybackInfo.slots[0].name, previousPlaybackInfo.slots[1].name);
 		}
 	} else {
-		if (g_replayTasScripts[0].size() == 0 && g_replayTasScripts[1].size() == 0) return;
-
-		if (g_replayTasCoop) {
-			tasPlayer->PlayScript(g_replayTasNames[0], g_replayTasScripts[0], g_replayTasNames[1], g_replayTasScripts[1]);
-		} else {
-			tasPlayer->PlayScript(g_replayTasNames[0], g_replayTasScripts[0], "", "");
-		}
+		Activate(previousPlaybackInfo);
 	}
+
+	playbackInfo.autoReplayCount = currentAutoReplays;
+	playbackInfo.replayCount = currentReplays;
 }
 
 CON_COMMAND_F_COMPLETION(
@@ -920,20 +899,14 @@ CON_COMMAND_F_COMPLETION(
 }
 
 CON_COMMAND(sar_tas_replay, "sar_tas_replay - replays the last played TAS\n") {
-	if (g_replayTasIsFile) {
-		if (g_replayTasNames[0].size() == 0 && g_replayTasNames[1].size() == 0) {
-			return console->Print("No TAS to replay\n");
-		}
-
-		console->Print("Replaying TAS file\n");
-	} else {
-		if (g_replayTasScripts[0].size() == 0 && g_replayTasScripts[1].size() == 0) {
-			return console->Print("No TAS to replay\n");
-		}
-		
-		console->Print("Replaying previously sent TAS script");
+	if (!tasPlayer->previousPlaybackInfo.HasActiveSlot() && !tasPlayer->IsRunning()) {
+		return console->Print("No TAS to replay\n");
 	}
-
+	if (tasPlayer->IsRunning()) {
+		console->Print("Replaying currently playing TAS script\n");
+	} else {
+		console->Print("Replaying previously played TAS script\n");
+	}
 	tasPlayer->Replay();
 }
 
@@ -950,7 +923,11 @@ CON_COMMAND(sar_tas_advance, "sar_tas_advance - advances TAS playback by one tic
 }
 
 CON_COMMAND(sar_tas_stop, "sar_tas_stop - stop TAS playing\n") {
-	tasPlayer->Stop(true);
+	if (!tasPlayer->IsActive()) {
+		console->Print("TAS player is not active.\n");
+	} else {
+		tasPlayer->Stop(true);
+	}
 }
 
 CON_COMMAND(sar_tas_save_raw, "sar_tas_save_raw - saves a processed version of just processed script\n") {

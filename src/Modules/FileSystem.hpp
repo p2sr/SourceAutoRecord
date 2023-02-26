@@ -15,6 +15,8 @@ public:
 public:
 	std::vector<std::string> GetSearchPaths();
 	bool FileExistsSomewhere(std::string filename);
+	std::string GetSaveDirectory();
+	bool MapExists(std::string name);
 
 public:
 	bool Init() override;

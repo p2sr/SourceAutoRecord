@@ -11,34 +11,6 @@ using namespace AngleToolsUtils;
 
 AutoAimTool autoAimTool[2] = {{0}, {1}};
 
-struct AutoAimParams : public TasToolParams {
-	AutoAimParams()
-		: TasToolParams(false) {}
-
-	AutoAimParams(Vector point, int easingTicks, EasingType easingType)
-		: TasToolParams(true)
-		, entity(false)
-		, point(point)
-		, easingTicks(easingTicks)
-		, easingType(easingType)
-		, elapsedTicks(0) {}
-
-	AutoAimParams(std::string selector, int easingTicks, EasingType easingType)
-		: TasToolParams(true)
-		, entity(true)
-		, ent_selector(selector)
-		, easingTicks(easingTicks)
-		, easingType(easingType)
-		, elapsedTicks(0) {}
-
-	bool entity;
-	std::string ent_selector;
-	Vector point;
-	int easingTicks;
-	EasingType easingType;
-	int elapsedTicks;
-};
-
 std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string> args) {
 	bool usesEntitySelector = args.size() > 0 && args[0] == "ent";
 
@@ -103,13 +75,13 @@ std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string>
 	return nullptr;
 }
 
-void AutoAimTool::Reset() {
-	this->params = std::make_shared<AutoAimParams>();
-}
-
 void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
-	auto params = std::static_pointer_cast<AutoAimParams>(this->params);
-	if (!params->enabled) return;
+	if (!params.enabled) return;
+
+	if (this->updated) {
+		params.elapsedTicks = 0;
+		this->updated = false;
+	}
 
 	void *player = server->GetPlayer(playerInfo.slot + 1);
 	if (!player) return;
@@ -122,13 +94,13 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	//cam += newVel * playerInfo.ticktime;
 
 	Vector target;
-	if (params->entity) {
-		CEntInfo *entity = entityList->QuerySelector(params->ent_selector.c_str());
+	if (params.entity) {
+		CEntInfo *entity = entityList->QuerySelector(params.ent_selector.c_str());
 		
 		if (entity != NULL) target = ((ServerEnt*)entity->m_pEntity)->abs_origin();
 		else target = Vector{0, 0, 0};
 	} else {
-		target = params->point;
+		target = params.point;
 	}
 
 	Vector forward = target - cam;
@@ -142,17 +114,17 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	bulk.viewAnalog = GetInterpolatedViewAnalog(
 		QAngleToVector(playerInfo.angles), 
 		Vector{pitch, yaw}, 
-		params->easingTicks, 
-		params->elapsedTicks, 
-		params->easingType
+		params.easingTicks, 
+		params.elapsedTicks, 
+		params.easingType
 	);
 
 	if (sar_tas_debug.GetBool()) {
 		console->Print("autoaim pitch:%.2f yaw:%.2f\n", pitch, yaw);
 	}
 
-	if (params->elapsedTicks < params->easingTicks) {
-		++params->elapsedTicks;
+	if (params.elapsedTicks < params.easingTicks) {
+		++params.elapsedTicks;
 	}
 
 	//do not let autoaim affect current movement direction. this will allow autoaim to be more precise with its prediction

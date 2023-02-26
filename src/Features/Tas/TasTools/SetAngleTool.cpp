@@ -3,57 +3,36 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Features/Tas/TasParser.hpp"
-#include "Features/Tas/TasTools/AngleToolsUtils.hpp"
-
-using namespace AngleToolsUtils;
-
-struct SetAngleParams : public TasToolParams {
-	SetAngleParams()
-		: TasToolParams() {}
-
-	SetAngleParams(float pitch, float yaw, int easingTicks, EasingType easingType)
-		: TasToolParams(true)
-		, pitch(pitch)
-		, yaw(yaw) 
-		, easingTicks(easingTicks) 
-		, easingType(easingType) 
-		, elapsedTicks(0) {}
-
-	float pitch;
-	float yaw;
-
-	int easingTicks;
-	EasingType easingType;
-	int elapsedTicks;
-};
 
 SetAngleTool setAngleTool[2] = {{0}, {1}};
 
 void SetAngleTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
-	auto params = std::static_pointer_cast<SetAngleParams>(this->params);
-
-	if (!params->enabled) {
+	if (!params.enabled) {
 		return;
 	}
 
-	if (params->elapsedTicks >= params->easingTicks) {
-		params->enabled = false;
+	if (params.elapsedTicks >= params.easingTicks) {
+		params.enabled = false;
 		return;
+	}
+	if (this->updated) {
+		params.elapsedTicks = 0;
+		this->updated = false;
 	}
 
 	bulk.viewAnalog = bulk.viewAnalog + GetInterpolatedViewAnalog(
 		QAngleToVector(playerInfo.angles),
-		Vector{params->pitch, params->yaw},
-		params->easingTicks,
-		params->elapsedTicks,
-		params->easingType
+		Vector{params.pitch, params.yaw},
+		params.easingTicks,
+		params.elapsedTicks,
+		params.easingType
 	);
 
 	if (sar_tas_debug.GetBool()) {
 		console->Print("setang %.3f %.3f\n", bulk.viewAnalog.x, bulk.viewAnalog.y);
 	}
 
-	++params->elapsedTicks;
+	++params.elapsedTicks;
 }
 
 std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string> vp) {
@@ -94,8 +73,4 @@ std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string
 	}
 
 	return std::make_shared<SetAngleParams>(pitch, yaw, ticks, easingType);
-}
-
-void SetAngleTool::Reset() {
-	params = std::make_shared<SetAngleParams>();
 }
