@@ -12,20 +12,6 @@ Variable sar_tas_check_disable("sar_tas_check_disable", "0", "Globally disable t
 
 CheckTool tasCheckTool[2] = {{0}, {1}};
 
-int g_tas_check_replays = 0;
-
-static void maybeReplay() {
-	int replays = g_tas_check_replays;
-	if (replays < sar_tas_check_max_replays.GetInt()) {
-		console->Print("Replaying TAS (attempt %d)\n", replays);
-		tasPlayer->Replay();
-		// Replaying the TAS will have reset g_tas_check_replays
-		g_tas_check_replays = replays + 1;
-	} else {
-		console->Print("TAS failed after %d replays - giving up\n", replays);
-		tasPlayer->Stop(true);
-	}
-}
 
 void CheckTool::Apply(TasFramebulk &fb, const TasPlayerInfo &info) {
 	auto ttParams = std::static_pointer_cast<CheckToolParams>(params);
@@ -37,11 +23,13 @@ void CheckTool::Apply(TasFramebulk &fb, const TasPlayerInfo &info) {
 		return;
 	}
 
+	bool shouldReplay = false;
+
 	if (ttParams->pos) {
 		Vector delta = info.position - *ttParams->pos;
 		if (delta.SquaredLength() > ttParams->posepsilon*ttParams->posepsilon) {
 			console->Print("Position was %.2f units away from target!\n", delta.Length());
-			maybeReplay();
+			shouldReplay = true;
 		}
 	}
 
@@ -51,7 +39,18 @@ void CheckTool::Apply(TasFramebulk &fb, const TasPlayerInfo &info) {
 		float distSquared = pitchDelta*pitchDelta + yawDelta*yawDelta;
 		if (distSquared > ttParams->angepsilon*ttParams->angepsilon) {
 			console->Print("Angle was %.2f degrees away from target!\n", sqrtf(distSquared));
-			maybeReplay();
+			shouldReplay = true;
+		}
+	}
+
+	if (shouldReplay) {
+		int replays = tasPlayer->playbackInfo.autoReplayCount;
+		if (replays < sar_tas_check_max_replays.GetInt()) {
+			console->Print("Replaying TAS (attempt %d)\n", replays);
+			tasPlayer->Replay(true);
+		} else {
+			console->Print("TAS failed after %d replays - giving up\n", replays);
+			tasPlayer->Stop(true);
 		}
 	}
 

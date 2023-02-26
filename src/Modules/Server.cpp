@@ -198,21 +198,21 @@ DETOUR(Server::PlayerMove) {
 extern Hook g_playerRunCommandHook;
 // CPortal_Player::PlayerRunCommand
 DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
+	int slot = server->GetSplitScreenPlayerSlot(thisptr);
+
 	if (!engine->IsGamePaused()) {
 		if (sar_tas_real_controller_debug.GetInt() == 3) {
-			auto playerInfo = tasPlayer->GetPlayerInfo<true>(thisptr, cmd);
+			auto playerInfo = tasPlayer->GetPlayerInfo(slot, thisptr, cmd);
 			console->Print("Jump input state at tick %d: %s\n", playerInfo.tick, (cmd->buttons & IN_JUMP) ? "true" : "false");
 		}
 	}
 
-	int slot = server->GetSplitScreenPlayerSlot(thisptr);
-
-	if (tasPlayer->IsActive() && tasPlayer->IsUsingTools(slot)) {
+	if (tasPlayer->IsActive() && tasPlayer->IsUsingTools()) {
 		tasPlayer->PostProcess(slot, thisptr, cmd);
 	}
 
 	if (tasPlayer->IsActive()) {
-		int tasTick = tasPlayer->GetPlayerInfo<true>(thisptr, cmd).tick - tasPlayer->GetStartTick();
+		int tasTick = tasPlayer->GetPlayerInfo(slot, thisptr, cmd).tick - tasPlayer->GetStartTick();
 		tasPlayer->DumpUsercmd(slot, cmd, tasTick, "server");
 
 		Vector pos = server->GetAbsOrigin(thisptr);
@@ -220,13 +220,13 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 		tasPlayer->DumpPlayerInfo(slot, tasTick, pos, eye_pos, cmd->viewangles);
 	}
 
-	Cheats::AutoStrafe(thisptr, cmd);
+	Cheats::AutoStrafe(slot, thisptr, cmd);
 
 	inputHud.SetInputInfo(slot, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
 
 	strafeHud.SetData(slot, thisptr, cmd, true);
 
-	Cheats::PatchBhop(thisptr, cmd);
+	Cheats::PatchBhop(slot, thisptr, cmd);
 
 	// TAS playback overrides inputs, even if they're made by the map. 
 	// Allow Reloaded's +attack input for time portal.

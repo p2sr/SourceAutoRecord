@@ -315,10 +315,10 @@ void Cheats::Shutdown() {
 
 // FUN PATCHES :))))))
 
-void Cheats::PatchBhop(void *player, CUserCmd *cmd) {
+void Cheats::PatchBhop(int slot, void *player, CUserCmd *cmd) {
 	if (!server->AllowsMovementChanges() || !sar_patch_bhop.GetBool()) return;
 
-	TasPlayerInfo info = tasPlayer->GetPlayerInfo<true>(player, cmd);
+	TasPlayerInfo info = tasPlayer->GetPlayerInfo(slot, player, cmd);
 
 	float currVel = info.velocity.Length2D();
 	float predictVel = autoStrafeTool[info.slot].GetVelocityAfterMove(info, cmd->forwardmove, cmd->sidemove).Length2D();
@@ -356,7 +356,7 @@ ON_EVENT(PROCESS_MOVEMENT) {
 	}
 }
 
-void Cheats::AutoStrafe(void *player, CUserCmd *cmd) {
+void Cheats::AutoStrafe(int slot, void *player, CUserCmd *cmd) {
 	if (!server->AllowsMovementChanges() || !sar_autostrafe.GetBool()) return;
 
 	if (cmd->forwardmove == 0 && cmd->sidemove == 0) return;
@@ -365,7 +365,7 @@ void Cheats::AutoStrafe(void *player, CUserCmd *cmd) {
 
 	if (m_MoveType == MOVETYPE_NOCLIP) return;
 
-	TasPlayerInfo info = tasPlayer->GetPlayerInfo<true>(player, cmd);
+	TasPlayerInfo info = tasPlayer->GetPlayerInfo(slot, player, cmd);
 
 	float angle = Math::AngleNormalize(RAD2DEG(DEG2RAD(info.angles.y) + atan2(-cmd->sidemove, cmd->forwardmove)));
 

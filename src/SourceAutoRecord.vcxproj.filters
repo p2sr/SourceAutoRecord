@@ -316,9 +316,6 @@
     <ClCompile Include="Features\Tas\TasController.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\TasPlayer.cpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClCompile>
     <ClCompile Include="Features\Tas\TasServer.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
@@ -489,6 +486,12 @@
     </ClCompile>
     <ClCompile Include="Features\Tas\TasTools\AngleToolsUtils.cpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasPlayer.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasScript.cpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -915,9 +918,6 @@
     <ClInclude Include="Features\Tas\TasController.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Tas\TasPlayer.hpp">
-      <Filter>SourceAutoRecord\Features\Tas</Filter>
-    </ClInclude>
     <ClInclude Include="Features\Tas\TasServer.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
@@ -1265,6 +1265,12 @@
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTools\AngleToolsUtils.hpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasPlayer.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasScript.hpp">
+      <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
