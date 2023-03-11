@@ -2,9 +2,14 @@
 #include "Features/Tas/TasPlayer.hpp"
 #include "Features/Tas/TasTool.hpp"
 
+#define DEFAULT_POS_EPSILON 0.5
+#define DEFAULT_ANG_EPSILON 0.2
+
 struct CheckToolParams : public TasToolParams {
 	CheckToolParams()
 		: TasToolParams()
+		, posepsilon(DEFAULT_POS_EPSILON)
+		, angepsilon(DEFAULT_ANG_EPSILON)
 	{}
 
 	CheckToolParams(std::optional<Vector> pos, std::optional<QAngle> ang, float posepsilon, float angepsilon)
@@ -17,15 +22,14 @@ struct CheckToolParams : public TasToolParams {
 	float angepsilon;
 };
 
-class CheckTool : public TasTool {
+class CheckTool : public TasToolWithParams<CheckToolParams> {
 public:
 	CheckTool(int slot)
-		: TasTool("check", slot)
+		: TasToolWithParams("check", slot)
 	{}
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &info);
-	virtual void Reset();
 };
 
 extern CheckTool tasCheckTool[2];

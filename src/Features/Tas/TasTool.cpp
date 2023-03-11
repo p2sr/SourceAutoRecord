@@ -45,7 +45,7 @@ const char *TasTool::GetName() {
 }
 
 void TasTool::SetParams(std::shared_ptr<TasToolParams> params) {
-	this->params = params;
+	this->paramsPtr = params;
 	this->updated = true;
 
 	// legacy behaviour for version 2 or older
@@ -56,10 +56,7 @@ void TasTool::SetParams(std::shared_ptr<TasToolParams> params) {
 	}
 }
 
-void TasTool::Reset() {
-	params = std::make_shared<TasToolParams>();
-}
 
-std::shared_ptr<TasToolParams> TasTool::GetCurrentParams() {
-	return params;
+void TasTool::Reset() {
+	paramsPtr = std::make_shared<TasToolParams>();
 }

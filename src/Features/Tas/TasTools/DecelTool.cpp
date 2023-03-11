@@ -6,32 +6,20 @@
 #include "TasUtils.hpp"
 #include "StrafeTool.hpp"
 
-struct DecelParams : public TasToolParams {
-	DecelParams()
-		: TasToolParams() {}
-
-	DecelParams(float targetVel)
-		: TasToolParams(true)
-		, targetVel(targetVel) {}
-
-	float targetVel;
-};
 
 DecelTool decelTool[2] = {{0}, {1}};
 
 void DecelTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
-	auto params = std::static_pointer_cast<DecelParams>(this->params);
-
-	if (!params->enabled) {
+	if (!params.enabled) {
 		return;
 	}
 
-	float targetVel = params->targetVel;
+	float targetVel = params.targetVel;
 	float playerVel = autoStrafeTool[this->slot].GetGroundFrictionVelocity(playerInfo).Length2D(); 
 
 	// cant decelerate by accelerating lmfao
 	if (targetVel >= playerVel) {
-		params->enabled = false;
+		params.enabled = false;
 		return;
 	}
 
@@ -45,7 +33,7 @@ void DecelTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	if (playerVel - targetVel < maxAccel) {
 		bulk.moveAnalog = bulk.moveAnalog.Normalize() * ((playerVel - targetVel) / maxAccel);
 		// dont need to decelerate next tick
-		params->enabled = false;
+		params.enabled = false;
 	}
 
 
@@ -71,8 +59,4 @@ std::shared_ptr<TasToolParams> DecelTool::ParseParams(std::vector<std::string> a
 	}
 
 	return std::make_shared<DecelParams>(targetVel);
-}
-
-void DecelTool::Reset() {
-	params = std::make_shared<TasToolParams>();
 }

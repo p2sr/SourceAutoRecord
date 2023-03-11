@@ -4,9 +4,6 @@
 
 #include <cmath>
 
-#define DEFAULT_POS_EPSILON 0.5
-#define DEFAULT_ANG_EPSILON 0.2
-
 Variable sar_tas_check_max_replays("sar_tas_check_max_replays", "15", 0, "Maximum replays for the 'check' TAS tool until it gives up.\n");
 Variable sar_tas_check_disable("sar_tas_check_disable", "0", "Globally disable the 'check' TAS tool.\n");
 
@@ -14,30 +11,28 @@ CheckTool tasCheckTool[2] = {{0}, {1}};
 
 
 void CheckTool::Apply(TasFramebulk &fb, const TasPlayerInfo &info) {
-	auto ttParams = std::static_pointer_cast<CheckToolParams>(params);
-
-	if (!ttParams->enabled) return;
+	if (!params.enabled) return;
 
 	if (sar_tas_check_disable.GetBool()) {
-		params->enabled = false;
+		params.enabled = false;
 		return;
 	}
 
 	bool shouldReplay = false;
 
-	if (ttParams->pos) {
-		Vector delta = info.position - *ttParams->pos;
-		if (delta.SquaredLength() > ttParams->posepsilon*ttParams->posepsilon) {
+	if (params.pos) {
+		Vector delta = info.position - *params.pos;
+		if (delta.SquaredLength() > params.posepsilon * params.posepsilon) {
 			console->Print("Position was %.2f units away from target!\n", delta.Length());
 			shouldReplay = true;
 		}
 	}
 
-	if (ttParams->ang) {
-		float pitchDelta = info.angles.x - ttParams->ang->x;
-		float yawDelta = info.angles.y - ttParams->ang->y;
+	if (params.ang) {
+		float pitchDelta = info.angles.x - params.ang->x;
+		float yawDelta = info.angles.y - params.ang->y;
 		float distSquared = pitchDelta*pitchDelta + yawDelta*yawDelta;
-		if (distSquared > ttParams->angepsilon*ttParams->angepsilon) {
+		if (distSquared > params.angepsilon * params.angepsilon) {
 			console->Print("Angle was %.2f degrees away from target!\n", sqrtf(distSquared));
 			shouldReplay = true;
 		}
@@ -54,7 +49,7 @@ void CheckTool::Apply(TasFramebulk &fb, const TasPlayerInfo &info) {
 		}
 	}
 
-	params->enabled = false;
+	params.enabled = false;
 }
 
 static Vector parsePos(const std::vector<std::string> &args, size_t idx) {
@@ -135,8 +130,4 @@ std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> v
 	}
 
 	return std::make_shared<CheckToolParams>(pos, ang, posepsilon ? *posepsilon : DEFAULT_POS_EPSILON, angepsilon ? *angepsilon : DEFAULT_ANG_EPSILON);
-}
-
-void CheckTool::Reset() {
-	params = std::make_shared<CheckToolParams>();
 }

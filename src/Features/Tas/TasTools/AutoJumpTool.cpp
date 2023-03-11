@@ -8,8 +8,11 @@
 AutoJumpTool autoJumpTool[2] = {{0}, {1}};
 
 void AutoJumpTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
-	auto ttParams = std::static_pointer_cast<AutoJumpToolParams>(this->params);
-	if (ttParams->enabled) {
+	if (this->updated) {
+		hasJumpedLastTick = false;
+	}
+
+	if (params.enabled) {
 		if (pInfo.grounded && !pInfo.ducked && !hasJumpedLastTick) {
 			bulk.buttonStates[TasControllerInput::Jump] = true;
 			hasJumpedLastTick = true;
@@ -29,9 +32,4 @@ std::shared_ptr<TasToolParams> AutoJumpTool::ParseParams(std::vector<std::string
 	bool arg = vp[0] == "on";
 
 	return std::make_shared<AutoJumpToolParams>(arg);
-}
-
-void AutoJumpTool::Reset() {
-	this->params = std::make_shared<AutoJumpToolParams>();
-	hasJumpedLastTick = false;
 }

@@ -10,9 +10,7 @@ AbsoluteMoveTool tasAbsoluteMoveTool[2] = {
 };
 
 void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) {
-	auto ttParams = std::static_pointer_cast<AbsoluteMoveToolParams>(params);
-
-	if (!ttParams->enabled)
+	if (!params.enabled)
 		return;
 
 	auto angles = playerInfo.angles;
@@ -26,14 +24,14 @@ void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) 
 		forward_coef = 1.0f;
 	}
 
-	float desired = ttParams->direction;
+	float desired = params.direction;
 	float rad = DEG2RAD(desired - angles.y);
 
 	float x = -sinf(rad);
 	float y = cosf(rad) / forward_coef;
 
-	x *= ttParams->strength;
-	y *= ttParams->strength;
+	x *= params.strength;
+	y *= params.strength;
 
 	if (y > 1.0f) {
 		// We can't actually move this fast. Scale the movement down so 'y'
@@ -74,8 +72,4 @@ std::shared_ptr<TasToolParams> AbsoluteMoveTool::ParseParams(std::vector<std::st
 	}
 
 	return std::make_shared<AbsoluteMoveToolParams>(angle, strength);
-}
-
-void AbsoluteMoveTool::Reset() {
-	params = std::make_shared<AbsoluteMoveToolParams>();
 }
