@@ -194,7 +194,6 @@ static std::vector<Line> tokenize(std::istream &file) {
 	return lines;
 }
 
-#define MAX_SCRIPT_VERSION 7
 #define _STR1(x) #x
 #define _STR(x) _STR1(x)
 
