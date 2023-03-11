@@ -5,36 +5,8 @@
 #include "Features/EntityList.hpp"
 #include "Features/Tas/TasParser.hpp"
 #include "StrafeTool.hpp"
-#include "Features/Tas/TasTools/AngleToolsUtils.hpp"
-
-using namespace AngleToolsUtils;
 
 AutoAimTool autoAimTool[2] = {{0}, {1}};
-
-struct AutoAimParams : public TasToolParams {
-	AutoAimParams()
-		: TasToolParams(false) {}
-
-	AutoAimParams(Vector point, int easingTicks, EasingType easingType)
-		: TasToolParams(true)
-		, entity(false)
-		, point(point)
-		, easingTicks(easingTicks)
-		, easingType(easingType) {}
-
-	AutoAimParams(std::string selector, int easingTicks, EasingType easingType)
-		: TasToolParams(true)
-		, entity(true)
-		, ent_selector(selector)
-		, easingTicks(easingTicks)
-		, easingType(easingType) {}
-
-	bool entity;
-	std::string ent_selector;
-	Vector point;
-	int easingTicks;
-	EasingType easingType;
-};
 
 std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string> args) {
 	bool usesEntitySelector = args.size() > 0 && args[0] == "ent";
@@ -51,7 +23,7 @@ std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string>
 	}
 
 	int ticks;
-	EasingType easingType;
+	AngleToolsUtils::EasingType easingType;
 
 	// ticks
 	unsigned ticksPos = usesEntitySelector ? 2 : 3;
@@ -64,7 +36,7 @@ std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string>
 	// easing type
 	unsigned typePos = usesEntitySelector ? 3 : 4;
 	try {
-		easingType = ParseEasingType(args.size() >= typePos + 1 ? args[typePos] : "linear");
+		easingType = AngleToolsUtils::ParseEasingType(args.size() >= typePos + 1 ? args[typePos] : "linear");
 	} catch (...) {
 		throw TasParserException(Utils::ssprintf("Bad interpolation value for tool %s: %s", this->GetName(), args[typePos].c_str()));
 	}
@@ -100,13 +72,8 @@ std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string>
 	return nullptr;
 }
 
-void AutoAimTool::Reset() {
-	this->params = std::make_shared<AutoAimParams>();
-}
-
 void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
-	auto params = std::static_pointer_cast<AutoAimParams>(this->params);
-	if (!params->enabled) return;
+	if (!params.enabled) return;
 
 	if (this->updated) {
 		elapsedTicks = 0;
@@ -114,8 +81,8 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	}
 
 	int remaining = 1; // If there are no lerp ticks left, pretend we're on the last tick, so that we jump all the way to the final angle
-	if (elapsedTicks < params->easingTicks) {
-		remaining = params->easingTicks - elapsedTicks;
+	if (elapsedTicks < params.easingTicks) {
+		remaining = params.easingTicks - elapsedTicks;
 		++elapsedTicks;
 	}
 
@@ -130,13 +97,13 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	//cam += newVel * playerInfo.ticktime;
 
 	Vector target;
-	if (params->entity) {
-		CEntInfo *entity = entityList->QuerySelector(params->ent_selector.c_str());
+	if (params.entity) {
+		CEntInfo *entity = entityList->QuerySelector(params.ent_selector.c_str());
 		
 		if (entity != NULL) target = ((ServerEnt*)entity->m_pEntity)->abs_origin();
 		else target = Vector{0, 0, 0};
 	} else {
-		target = params->point;
+		target = params.point;
 	}
 
 	Vector forward = target - cam;
@@ -147,19 +114,19 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	pitch *= 180.0f / M_PI;
 	yaw *= 180.0f / M_PI;
 
-	bulk.viewAnalog = GetInterpolatedViewAnalog(
+	bulk.viewAnalog = AngleToolsUtils::GetInterpolatedViewAnalog(
 		QAngleToVector(playerInfo.angles), 
 		Vector{pitch, yaw}, 
-		params->easingTicks, 
+		params.easingTicks, 
 		elapsedTicks, 
-		params->easingType
+		params.easingType
 	);
 
 	if (sar_tas_debug.GetBool()) {
 		console->Print("autoaim pitch:%.2f yaw:%.2f\n", pitch, yaw);
 	}
 
-	if (elapsedTicks < params->easingTicks) {
+	if (elapsedTicks < params.easingTicks) {
 		++elapsedTicks;
 	}
 

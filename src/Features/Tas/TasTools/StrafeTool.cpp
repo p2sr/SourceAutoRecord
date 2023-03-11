@@ -14,9 +14,7 @@
 AutoStrafeTool autoStrafeTool[2] = {{0}, {1}};
 
 void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
-	auto asParams = std::static_pointer_cast<AutoStrafeParams>(params);
-
-	if (!asParams->enabled)
+	if (!params.enabled)
 		return;
 
 	//create fake player info for a sake of values being correct
@@ -25,7 +23,7 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 	// NOTE: this check is kinda dumb, but it prevents a tool order
 	// dependency where strafe has to know about autojump's inputs
 	// I feel like this could live somewhere else and be a bit less dumb
-	if (autoJumpTool[this->slot].GetCurrentParams()->enabled) {
+	if (autoJumpTool[this->slot].GetCurrentParams().enabled) {
 		// if autojump is enabled, we're never grounded.
 		pInfo.grounded = false;
 	}
@@ -35,7 +33,7 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 	// it's in the right range, unless specifically asked to not do it.
 	bool compensatePitchMult = false;
 	if (!pInfo.grounded && fabsf(pInfo.angles.x - fb.viewAnalog.y) >= 30.0f) {
-		if (!asParams->noPitchLock) {
+		if (!params.noPitchLock) {
 			float signAng = tasPlayer->GetScriptVersion(slot) >= 6 ? (pInfo.angles.x - fb.viewAnalog.y) : pInfo.angles.x;
 			float diff = pInfo.angles.x - (29.9999f * (signAng / absOld(signAng)));
 			fb.viewAnalog.y = diff;
@@ -50,10 +48,10 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 
 	float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
 	if (pInfo.velocity.Length2D() == 0 && tasPlayer->GetScriptVersion(slot) >= 6) {
-		if (this->updated && asParams->strafeDir.useVelAngle) {
+		if (this->updated && params.strafeDir.useVelAngle) {
 			velAngle = pInfo.angles.y;
 		} else {
-			velAngle = asParams->strafeDir.angle;
+			velAngle = params.strafeDir.angle;
 		}
 	}
 
@@ -63,33 +61,33 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 		this->lastTurnDir = 0;
 		this->switchedFromVeccam = false;
 
-		if (asParams->strafeDir.type == CURRENT) {
-			if (asParams->strafeDir.useVelAngle) {
-				asParams->strafeDir.angle = velAngle;
+		if (params.strafeDir.type == CURRENT) {
+			if (params.strafeDir.useVelAngle) {
+				params.strafeDir.angle = velAngle;
 				FollowLine(pInfo);
 			} else {
-				asParams->strafeDir.angle = rawPInfo.angles.y;  //using real angles instead of fake ones here.
+				params.strafeDir.angle = rawPInfo.angles.y;  //	using real angles instead of fake ones here.
 			}
 		}
 
-		if (asParams->strafeSpeed.type == CURRENT) {
-			asParams->strafeSpeed.speed = pInfo.velocity.Length2D();
+		if (params.strafeSpeed.type == CURRENT) {
+			params.strafeSpeed.speed = pInfo.velocity.Length2D();
 		}
 
 		this->updated = false;
 	}
 
 
-	float angle = velAngle + RAD2DEG(this->GetStrafeAngle(pInfo, *asParams));
+	float angle = velAngle + RAD2DEG(this->GetStrafeAngle(pInfo, params));
 
 	// applying the calculated angle depending on the type of strafing
-	if (asParams->strafeType == AutoStrafeType::VECTORIAL) {
+	if (params.strafeType == AutoStrafeType::VECTORIAL) {
 		float moveAngle = DEG2RAD(angle - pInfo.angles.y);
 		fb.moveAnalog.x = -sinf(moveAngle);
 		fb.moveAnalog.y = cosf(moveAngle);
 		if (pInfo.onSpeedPaint) fb.moveAnalog.x *= 2;
-	} else if (asParams->strafeType == AutoStrafeType::VECTORIAL_CAM) {
-		float lookAngle = this->shouldFollowLine ? asParams->strafeDir.angle : velAngle;
+	} else if (params.strafeType == AutoStrafeType::VECTORIAL_CAM) {
+		float lookAngle = this->shouldFollowLine ? params.strafeDir.angle : velAngle;
 		if (tasPlayer->GetScriptVersion(slot) >= 6) {
 			fb.viewAnalog.x -= lookAngle - pInfo.angles.y;
 		} else {
@@ -99,7 +97,7 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 		fb.moveAnalog.x = -sinf(moveAngle);
 		fb.moveAnalog.y = cosf(moveAngle);
 		if (pInfo.onSpeedPaint) fb.moveAnalog.x *= 2;
-	} else if (asParams->strafeType == AutoStrafeType::ANGULAR) {
+	} else if (params.strafeType == AutoStrafeType::ANGULAR) {
 		//making sure moveAnalog is always at maximum value.
 		if (fb.moveAnalog.Length2D() == 0) {
 			fb.moveAnalog.y = 1;
@@ -338,8 +336,6 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 
 // returns 1 or -1 depending on what direction player should strafe (right and left accordingly)
 int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAngle) {
-	auto asParams = std::static_pointer_cast<AutoStrafeParams>(params);
-
 	float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
 	if (pInfo.velocity.Length2D() == 0 && tasPlayer->GetScriptVersion(slot) >= 6) velAngle = desAngle;
 	float diff = desAngle - velAngle;
@@ -351,8 +347,8 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 		// for newer script versions, disable veccam - we don't need it anymore
 		// BUT there is a better solution in a newer version lol
 		if (tasPlayer->GetScriptVersion(slot) >= 3) {
-			if (asParams->strafeType == VECTORIAL_CAM) {
-				asParams->strafeType = VECTORIAL;
+			if (params.strafeType == VECTORIAL_CAM) {
+				params.strafeType = VECTORIAL;
 				this->switchedFromVeccam = true;
 			}
 		}
@@ -371,7 +367,7 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 		if (absOld(diff) > maxRotAng) {
 			this->shouldFollowLine = false;
 			if (tasPlayer->GetScriptVersion(slot) >= 6 && this->switchedFromVeccam) {
-				asParams->strafeType = VECTORIAL_CAM;
+				params.strafeType = VECTORIAL_CAM;
 			}
 			this->switchedFromVeccam = false;
 			return GetTurningDirection(pInfo, desAngle);
@@ -406,8 +402,8 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 		// also remember that speedlock exists only when midair in versions 5 or newer
 		// also remember that aircontrol removes speedlock in versions 7 or newer
 		float airConLimit = (sar_aircontrol.GetBool() && server->AllowsMovementChanges()) ? INFINITY : 300.0f;
-		if (asParams->antiSpeedLock && tasPlayer->GetScriptVersion(slot) >= 4 && (!pInfo.grounded || tasPlayer->GetScriptVersion(slot) < 5)) {
-			if (pInfo.velocity.Length2D() < asParams->strafeSpeed.speed && pInfo.velocity.Length2D() >= (tasPlayer->GetScriptVersion(slot) >= 7 ? airConLimit : 300.0f)) {
+		if (params.antiSpeedLock && tasPlayer->GetScriptVersion(slot) >= 4 && (!pInfo.grounded || tasPlayer->GetScriptVersion(slot) < 5)) {
+			if (pInfo.velocity.Length2D() < params.strafeSpeed.speed && pInfo.velocity.Length2D() >= (tasPlayer->GetScriptVersion(slot) >= 7 ? airConLimit : 300.0f)) {
 
 				Vector wishDir(0, 1);
 				float maxSpeed = GetMaxSpeed(pInfo, wishDir);
@@ -510,8 +506,4 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 	}
 
 	return std::make_shared<AutoStrafeParams>(type, dir, speed, noPitchLock, antiSpeedLock);
-}
-
-void AutoStrafeTool::Reset() {
-	params = std::make_shared<AutoStrafeParams>();
 }
