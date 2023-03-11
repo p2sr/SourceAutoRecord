@@ -10,6 +10,7 @@
 #include "Features/ReloadedFix.hpp"
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Features/Tas/TasParser.hpp"
 #include "Features/Tas/TasTools/AutoJumpTool.hpp"
 #include "Features/Tas/TasTools/StrafeTool.hpp"
 #include "Features/Timer/Timer.hpp"
@@ -370,6 +371,7 @@ void Cheats::AutoStrafe(int slot, void *player, CUserCmd *cmd) {
 	float angle = Math::AngleNormalize(RAD2DEG(DEG2RAD(info.angles.y) + atan2(-cmd->sidemove, cmd->forwardmove)));
 
 	TasFramebulk fb;
+	tasPlayer->playbackInfo.slots[slot].header.version = MAX_SCRIPT_VERSION;
 	autoJumpTool[info.slot].SetParams(autoJumpTool[info.slot].ParseParams(std::vector<std::string>{sar_autojump.GetBool() && (cmd->buttons & IN_JUMP) ? "on" : "off"}));
 	autoStrafeTool[info.slot].SetParams(autoStrafeTool[info.slot].ParseParams(std::vector<std::string> {"vec", "max", std::to_string(angle) + "deg"}));
 	autoStrafeTool[info.slot].Apply(fb, info);
