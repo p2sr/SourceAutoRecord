@@ -16,13 +16,14 @@ struct AbsoluteMoveToolParams : public TasToolParams {
 	}
 };
 
-class AbsoluteMoveTool : public TasTool {
+class AbsoluteMoveTool : public TasToolWithParams<AbsoluteMoveToolParams> {
+private:
+	AbsoluteMoveToolParams amParams;
 public:
 	AbsoluteMoveTool(const char *name, int slot)
-		: TasTool(name, slot){};
+		: TasToolWithParams(name, slot){};
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
-	virtual void Reset();
 };
 
 extern AbsoluteMoveTool tasAbsoluteMoveTool[2];

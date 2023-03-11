@@ -25,14 +25,12 @@ struct TasToolParams {
 struct TasFramebulk;
 struct TasPlayerInfo;
 
-
 class TasTool {
 protected:
 	const char *name;
-	std::shared_ptr<TasToolParams> params = nullptr;
+	std::shared_ptr<TasToolParams> paramsPtr = nullptr;
 	bool updated = false;
 	int slot;
-
 public:
 	TasTool(const char *name, int slot);
 	~TasTool();
@@ -41,15 +39,33 @@ public:
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>) = 0;
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) = 0;
-	virtual void Reset();
-
-	void SetParams(std::shared_ptr<TasToolParams> params);
-	std::shared_ptr<TasToolParams> GetCurrentParams();
-
+	virtual void Reset() = 0;
+	virtual void SetParams(std::shared_ptr<TasToolParams> params);
 public:
 	static std::list<TasTool *> &GetList(int slot);
 	static TasTool *GetInstanceByName(int slot, std::string name);
 	static std::vector<std::string> priorityList;
+};
+
+
+template <typename Params>
+class TasToolWithParams : public TasTool {
+protected:
+	Params params;
+public:
+	TasToolWithParams(const char *name, int slot)
+		: TasTool(name, slot){};
+
+	virtual void Reset() {
+		this->paramsPtr = std::make_shared<Params>();
+		this->params = *std::static_pointer_cast<Params>(this->paramsPtr);
+	}
+	virtual void SetParams(std::shared_ptr<TasToolParams> params) {
+		TasTool::SetParams(params);
+		this->params = *std::static_pointer_cast<Params>(params);
+	}
+
+	inline Params GetCurrentParams() const { return params; }
 };
 
 

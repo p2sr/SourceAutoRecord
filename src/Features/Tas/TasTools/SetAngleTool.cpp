@@ -3,34 +3,11 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Features/Tas/TasParser.hpp"
-#include "Features/Tas/TasTools/AngleToolsUtils.hpp"
-
-using namespace AngleToolsUtils;
-
-struct SetAngleParams : public TasToolParams {
-	SetAngleParams()
-		: TasToolParams() {}
-
-	SetAngleParams(float pitch, float yaw, int easingTicks, EasingType easingType)
-		: TasToolParams(true)
-		, pitch(pitch)
-		, yaw(yaw) 
-		, easingTicks(easingTicks) 
-		, easingType(easingType) {}
-
-	float pitch;
-	float yaw;
-
-	int easingTicks;
-	EasingType easingType;
-};
 
 SetAngleTool setAngleTool[2] = {{0}, {1}};
 
 void SetAngleTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
-	auto params = std::static_pointer_cast<SetAngleParams>(this->params);
-
-	if (!params->enabled) {
+	if (!params.enabled) {
 		return;
 	}
 
@@ -39,17 +16,17 @@ void SetAngleTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 		this->updated = false;
 	}
 
-	if (elapsedTicks >= params->easingTicks) {
-		params->enabled = false;
+	if (elapsedTicks >= params.easingTicks) {
+		params.enabled = false;
 		return;
 	}
 
-	bulk.viewAnalog = bulk.viewAnalog + GetInterpolatedViewAnalog(
+	bulk.viewAnalog = bulk.viewAnalog + AngleToolsUtils::GetInterpolatedViewAnalog(
 		QAngleToVector(playerInfo.angles),
-		Vector{params->pitch, params->yaw},
-		params->easingTicks,
+		Vector{params.pitch, params.yaw},
+		params.easingTicks,
 		elapsedTicks,
-		params->easingType
+		params.easingType
 	);
 
 	if (sar_tas_debug.GetBool()) {
@@ -66,7 +43,7 @@ std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string
 	float pitch;
 	float yaw = atof(vp[1].c_str());
 	int ticks = vp.size() == 3 ? atoi(vp[2].c_str()) : 1;
-	EasingType easingType;
+	AngleToolsUtils::EasingType easingType;
 
 	// pitch
 	try {
@@ -91,14 +68,10 @@ std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string
 
 	// easing type
 	try{
-		easingType = ParseEasingType(vp.size() >= 4 ? vp[3] : "linear");
+		easingType = AngleToolsUtils::ParseEasingType(vp.size() >= 4 ? vp[3] : "linear");
 	} catch (...) {
 		throw TasParserException(Utils::ssprintf("Bad interpolation value for tool %s: %s", this->GetName(), vp[3].c_str()));
 	}
 
 	return std::make_shared<SetAngleParams>(pitch, yaw, ticks, easingType);
-}
-
-void SetAngleTool::Reset() {
-	params = std::make_shared<SetAngleParams>();
 }

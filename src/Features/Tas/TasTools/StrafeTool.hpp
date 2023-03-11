@@ -54,13 +54,12 @@ struct AutoStrafeParams : public TasToolParams {
 };
 
 
-class AutoStrafeTool : public TasTool {
+class AutoStrafeTool : public TasToolWithParams<AutoStrafeParams> {
 public:
 	AutoStrafeTool(int slot)
-		: TasTool("strafe", slot){};
+		: TasToolWithParams("strafe", slot){};
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
-	virtual void Reset();
 
 	Vector followLinePoint;
 	bool shouldFollowLine = false;
