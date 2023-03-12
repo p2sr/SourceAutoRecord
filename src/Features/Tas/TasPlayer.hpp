@@ -73,6 +73,7 @@ public:
 	inline int GetTick() const { return currentTick; };
 	inline int GetAbsoluteTick() const { return startTick + currentTick; };
 	inline int GetStartTick() const { return startTick; };
+	inline std::string GetScriptName(int slot) const { return playbackInfo.slots[slot].name; };
 	inline bool IsActive() const { return active; };
 	inline bool IsReady() const { return ready; };
 	inline bool IsRunning() const { return active && startTick != -1; }

@@ -493,6 +493,9 @@
     <ClCompile Include="Features\Tas\TasScript.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
+    <ClCompile Include="Features\DiscordRichPresence.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Tas\TasTools\LookTool.cpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClCompile>
