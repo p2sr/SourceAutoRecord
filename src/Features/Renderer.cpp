@@ -1170,6 +1170,10 @@ void Renderer::Cleanup() {
 	Command::Unhook("endmovie", endmovie_origCbk);
 }
 
+bool Renderer::IsRunning() {
+	return g_render.isRendering.load();
+}
+
 // }}}
 
 // Commands {{{
