@@ -359,7 +359,8 @@ struct Condition {
 		OR,
 		SVAR,
 		CVAR,
-		STRING
+		STRING,
+		LINUX
 	} type;
 
 	union {
@@ -429,6 +430,12 @@ static bool EvalCondition(Condition *c) {
 	case Condition::SVAR: return GetSvar({c->var}) == c->val;
 	case Condition::CVAR: return GetCvar({c->var}) == c->val;
 	case Condition::STRING: return !strcmp(c->var, c->val);
+	case Condition::LINUX:
+		#ifdef _WIN32
+			return false;
+		#else
+			return true;
+		#endif
 	}
 	return false;
 }
@@ -574,6 +581,8 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				c->type = Condition::WORKSHOP;
 			} else if (t.len == 4 && !strncmp(t.str, "menu", t.len)) {
 				c->type = Condition::MENU;
+			} else if (t.len == 5 && !strncmp(t.str, "linux", t.len)) {
+				c->type = Condition::LINUX;
 			} else if (
 				t.len == 3 && !strncmp(t.str, "map", t.len) ||
 				t.len == 8 && !strncmp(t.str, "prev_map", t.len) ||
