@@ -172,6 +172,11 @@ void Cvars::Lock() {
 		hide_gun_when_holding.Lock();
 		cl_viewmodelfov.Lock();
 		r_flashlightbrightness.Lock();
+		r_flashlightbrightness.AddFlag(FCVAR_CHEAT);
+
+		cl_forwardspeed.AddFlag(FCVAR_CHEAT);
+		cl_sidespeed.AddFlag(FCVAR_CHEAT);
+		cl_backspeed.AddFlag(FCVAR_CHEAT);
 
 		this->locked = true;
 	}
@@ -199,6 +204,10 @@ void Cvars::Unlock() {
 		cl_viewmodelfov.Unlock(false);
 		r_flashlightbrightness.Unlock(false);
 		r_flashlightbrightness.RemoveFlag(FCVAR_CHEAT);
+
+		cl_forwardspeed.RemoveFlag(FCVAR_CHEAT);
+		cl_sidespeed.RemoveFlag(FCVAR_CHEAT);
+		cl_backspeed.RemoveFlag(FCVAR_CHEAT);
 
 		this->locked = false;
 	}
