@@ -227,10 +227,6 @@ void TasPlayer::Start() {
 		console->Print("Length: %d ticks\n", lastTick + 1);
 	}
 
-	if (playbackInfo.GetMainHeader().startInfo.type == ChangeLevelCM) {
-		sv_bonus_challenge.SetValue(1);
-	}
-
 	ready = true;
 	currentTick = 0;
 	startTick = -1;

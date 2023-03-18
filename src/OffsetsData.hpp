@@ -171,6 +171,7 @@ OFFSET_DEFAULT(GetClientEntity, 3, 3)
 
 // CServerGameDLL
 OFFSET_DEFAULT(GameFrame, 4, 4)
+OFFSET_DEFAULT(ApplyGameSettings, 38, 38)
 OFFSET_DEFAULT(Think, 31, 31)
 OFFSET_DEFAULT(GetAllServerClasses, 10, 10)
 OFFSET_DEFAULT(IsRestoring, 24, 24)
