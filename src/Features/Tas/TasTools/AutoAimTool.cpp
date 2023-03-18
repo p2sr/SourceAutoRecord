@@ -80,12 +80,6 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 		this->updated = false;
 	}
 
-	int remaining = 1; // If there are no lerp ticks left, pretend we're on the last tick, so that we jump all the way to the final angle
-	if (elapsedTicks < params.easingTicks) {
-		remaining = params.easingTicks - elapsedTicks;
-		++elapsedTicks;
-	}
-
 	void *player = server->GetPlayer(playerInfo.slot + 1);
 	if (!player) return;
 
