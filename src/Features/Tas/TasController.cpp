@@ -146,9 +146,8 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 	cmd->upmove = 0;
 	cmd->buttons = 0;
 
-	//in terms of functionality, this whole stuff below is mostly a literal copy of SteamControllerMove.
-
-	//handle digital inputs
+	// Handle digital inputs. 
+	// It's a mess because it was copied from original SteamControllerMove.
 	for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
 		TasControllerButton *button = &buttons[i];
 		if (button->active && button->command[0] == '+') {
@@ -174,13 +173,11 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 		}
 	}
 
-	// handle all additional commands from the command queue (not in the original, but um why not?)
+	// Handle all additional commands from the command queue
 	if (commandQueue.size() > 0) {
 		tasPlayer->inControllerCommands = true;
 		for (std::string cmd : commandQueue) {
-			char cmdbuf[128];
-			snprintf(cmdbuf, sizeof(cmdbuf), "%s", cmd.c_str());
-			engine->ExecuteCommand(cmdbuf, true);
+			engine->ExecuteCommand(cmd.c_str(), true);
 		}
 		commandQueue.clear();
 		tasPlayer->inControllerCommands = false;
