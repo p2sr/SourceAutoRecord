@@ -119,6 +119,9 @@ public:
 	// CServerGameDLL::GameFrame
 	DECL_DETOUR(GameFrame, bool simulating);
 
+	// CServerGameDLL::ApplyGameSettings
+	DECL_DETOUR(ApplyGameSettings, KeyValues *pKV);
+
 	// CGlobalEntityList::OnRemoveEntity
 	DECL_DETOUR_T(void, OnRemoveEntity, IHandleEntity *ent, CBaseHandle handle);
 

@@ -68,6 +68,7 @@ REDECL(Server::FinishGravity);
 REDECL(Server::AirMove);
 REDECL(Server::AirMoveBase);
 REDECL(Server::GameFrame);
+REDECL(Server::ApplyGameSettings);
 REDECL(Server::OnRemoveEntity);
 REDECL(Server::PlayerRunCommand);
 REDECL(Server::ViewPunch);
@@ -628,6 +629,21 @@ DETOUR(Server::GameFrame, bool simulating)
 	return result;
 }
 
+// CServerGameDLL::ApplyGameSettings
+DETOUR(Server::ApplyGameSettings, KeyValues *pKV) {
+	auto result = Server::ApplyGameSettings(thisptr, pKV);
+
+	// sv_bonus_challenge is reset by this function on server initialisation.
+	// We need it to be set for the TAS player when it plays CM script.
+	if (tasPlayer->IsActive()) {
+		if (tasPlayer->playbackInfo.GetMainHeader().startInfo.type == ChangeLevelCM) {
+			sv_bonus_challenge.SetValue(true);
+		}
+	}
+
+	return result;
+}
+
 DETOUR_T(void, Server::OnRemoveEntity, IHandleEntity *ent, CBaseHandle handle) {
 	auto info = entityList->GetEntityInfoByIndex(handle.GetEntryIndex());
 	bool hasSerialChanged = false;
@@ -763,6 +779,7 @@ bool Server::Init() {
 		this->IsRestoring = this->g_ServerGameDLL->Original<_IsRestoring>(Offsets::IsRestoring);
 
 		this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
+		this->g_ServerGameDLL->Hook(Server::ApplyGameSettings_Hook, Server::ApplyGameSettings, Offsets::ApplyGameSettings);
 	}
 
 #ifdef _WIN32
