@@ -126,6 +126,7 @@ public:
 			origin + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
 
 		eyeAng = serverside ? server->GetPlayerState(player).v_angle : client->GetPlayerState(player).v_angle;
+		eyeAng.y = Math::AngleNormalize(eyeAng.y);
 
 		TransformThroughPortal<serverside>(slot, eyePos, eyeAng);
 

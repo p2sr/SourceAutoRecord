@@ -30,7 +30,7 @@ void CheckTool::Apply(TasFramebulk &fb, const TasPlayerInfo &info) {
 
 	if (params.ang) {
 		float pitchDelta = info.angles.x - params.ang->x;
-		float yawDelta = info.angles.y - params.ang->y;
+		float yawDelta = Math::AngleNormalize(info.angles.y - params.ang->y);
 		float distSquared = pitchDelta*pitchDelta + yawDelta*yawDelta;
 		if (distSquared > params.angepsilon * params.angepsilon) {
 			console->Print("Angle was %.2f degrees away from target!\n", sqrtf(distSquared));
