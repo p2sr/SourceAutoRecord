@@ -26,7 +26,7 @@ namespace AngleToolsUtils {
 		} else if (typeStr == "exponential" || typeStr == "exp") {
 			return Exponential;
 		} else {
-			throw;
+			throw 0;
 		}
 	}
 
