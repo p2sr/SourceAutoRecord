@@ -84,6 +84,16 @@ IHandleEntity *EntityList::LookupEntity(const CBaseHandle &handle) {
 CEntInfo *EntityList::QuerySelector(const char *selector) {
 	int slen = strlen(selector);
 	int entId = 0;
+
+	// try to verify if it's a slot number
+	int scanEnd;
+	if (sscanf(selector, "%d%n", &entId, &scanEnd) == 1 && scanEnd == slen) {
+		return entityList->GetEntityInfoByIndex(entId);
+	}
+
+	// if not, parse as name instead
+
+	// read list access operator
 	if (selector[slen - 1] == ']') {
 		int openBracket = slen - 2;
 		while (openBracket > 0 && selector[openBracket] != '[') {
