@@ -34,9 +34,9 @@
 #	define WSACleanup() (void)0
 #endif
 
-#define TAS_CLIENT_SOCKET 6555
+#define DEFAULT_TAS_CLIENT_SOCKET 6555
 
-Variable sar_tas_server("sar_tas_server", "0", "Enable the remote TAS server.\n");
+Variable sar_tas_server("sar_tas_server", "0", 0, "Enable the remote TAS server. Setting this value to something higher than one will bind the server on that port.\n");
 
 struct ClientData {
 	SOCKET sock;
@@ -447,7 +447,7 @@ static void processConnections() {
 	}
 }
 
-static void mainThread() {
+static void mainThread(int tas_server_port) {
 	THREAD_PRINT("Starting TAS server\n");
 
 #ifdef _WIN32
@@ -472,7 +472,7 @@ static void mainThread() {
 
 	struct sockaddr_in6 saddr{
 		AF_INET6,
-		htons(TAS_CLIENT_SOCKET),
+		htons(tas_server_port),
 		0,
 		in6addr_any,
 		0,
@@ -511,14 +511,16 @@ static std::thread g_net_thread;
 static bool g_running;
 
 ON_EVENT(FRAME) {
+	int tas_server_port = sar_tas_server.GetInt() == 1 ? DEFAULT_TAS_CLIENT_SOCKET : sar_tas_server.GetInt();
 	bool should_run = sar_tas_server.GetBool();
+
 	if (g_running && !should_run) {
 		g_should_stop.store(true);
 		if (g_net_thread.joinable()) g_net_thread.join();
 		g_running = false;
 	} else if (!g_running && should_run) {
 		g_should_stop.store(false);
-		g_net_thread = std::thread(mainThread);
+		g_net_thread = std::thread(mainThread, tas_server_port);
 		g_running = true;
 	}
 }
