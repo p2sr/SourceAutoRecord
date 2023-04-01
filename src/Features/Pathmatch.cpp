@@ -11,6 +11,7 @@
 #include <vector>
 #include "Event.hpp"
 #include "Hook.hpp"
+#include "SAR.hpp"
 #include "Utils/Memory.hpp"
 
 // The amount of time before which added entries are flushed
@@ -324,6 +325,11 @@ static PathMod pathmatchDetour(const char *in, char **out, bool allow_basename_m
 static Hook _g_pm_hook(&pathmatchDetour);
 
 ON_INIT {
-	auto orig = Memory::Scan("filesystem_stdio.so", "55 57 56 53 83 EC 0C 8B 6C 24 28 8B 5C 24 2C 0F B6 05 ? ? ? ? 84 C0 0F 84 ? ? ? ?");
+	uintptr_t orig;
+	if (sar.game->Is(SourceGame_EIPRelPIC)) {
+		orig = Memory::Scan("filesystem_stdio.so", "55 57 56 53 83 EC 0C 8B 6C 24 28 8B 5C 24 2C 0F B6 05 ? ? ? ? 84 C0 0F 84 ? ? ? ?");
+	} else {
+		orig = Memory::Scan("filesystem_stdio.so", "55 89 E5 57 56 53 83 EC 2C 8B 45 10 80 3D A0 ? ? ? ? 89 45 E4 0F 84 ? ? ? ? 8B 45 0C 8B 15 ? ? ? ? C7 00 00 00 00 00");
+	}
 	_g_pm_hook.SetFunc(orig);
 }
