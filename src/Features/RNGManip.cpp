@@ -16,6 +16,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <set>
 
 static std::optional<json11::Json> g_session_state;
 static std::optional<json11::Json> g_pending_load;
@@ -300,7 +301,56 @@ void RandomSeed_Hook(int seed) {
 }
 Hook g_RandomSeed_Hook(RandomSeed_Hook);
 
+static float *g_PhysicsHook_impactSoundTime;
+static std::set<unsigned short> g_reset_sound_files;
+
+struct SoundFile {
+	unsigned short symbol;
+	uint8_t gender;
+	uint8_t available;
+};
+
+extern Hook g_EnsureAvailableSlotsForGender_Hook;
+DECL_DETOUR_T(void, EnsureAvailableSlotsForGender, SoundFile *pSounds, int count, int gender) {
+	for (int i = 0; i < count; ++i) {
+		if (g_reset_sound_files.insert(pSounds[i].symbol).second) {
+			playerTrace->EmitLog("Resetting sound file %d", pSounds[i].symbol);
+			pSounds[i].available = 1;
+		}
+	}
+
+	g_EnsureAvailableSlotsForGender_Hook.Disable();
+	EnsureAvailableSlotsForGender(thisptr, pSounds, count, gender);
+	g_EnsureAvailableSlotsForGender_Hook.Enable();
+}
+Hook g_EnsureAvailableSlotsForGender_Hook(EnsureAvailableSlotsForGender_Hook);
+
+
 ON_INIT {
 	RandomSeed = Memory::GetSymbolAddress<decltype(RandomSeed)>(Memory::GetModuleHandleByName(tier1->Name()), "RandomSeed");
 	g_RandomSeed_Hook.SetFunc(RandomSeed);
+#ifdef _WIN32
+	uintptr_t PhysFrame = Memory::Scan(server->Name(), "55 8B EC 8B 0D ? ? ? ? 83 EC 14 53 56 57 85 C9 0F 84 ? ? ? ? 80 3D ? ? ? ? 00 0F 85 ? ? ? ? F3 0F 10 4D 08 0F 2F 0D ? ? ? ? F3 0F 10 15 ? ? ? ? 0F 57 C0");
+	uintptr_t m_bPaused = *(uint32_t *)(PhysFrame + 25);
+	g_PhysicsHook_impactSoundTime = (float *)(m_bPaused - 4);
+
+	EnsureAvailableSlotsForGender = (decltype(EnsureAvailableSlotsForGender))Memory::Scan(MODULE("soundemittersystem"), "55 8B EC 8B 4D 0C 33 C0 83 EC 20 3B C8 0F 8E ? ? ? ? 53 56 33 DB 33 F6 89 5D E0 89 45 E4 89 45 E8 89 75 EC 89 45 F0");
+	g_EnsureAvailableSlotsForGender_Hook.SetFunc(EnsureAvailableSlotsForGender);
+#else
+	// TODO: mod support
+	uintptr_t PhysFrame = Memory::Scan(server->Name(), "A1 ? ? ? ? 85 C0 0F 84 ? ? ? ? 80 3D ? ? ? ? 00 0F 85 ? ? ? ? 55 89 E5 57 56 53 83 EC 3C 0F 2F 05 ? ? ? ?");
+	uintptr_t m_bPaused = *(uint32_t *)(PhysFrame + 15);
+	g_PhysicsHook_impactSoundTime = (float *)(m_bPaused - 4);
+
+	EnsureAvailableSlotsForGender = (decltype(EnsureAvailableSlotsForGender))Memory::Scan(MODULE("soundemittersystem"), "55 57 56 53 83 EC 2C 8B 74 24 48 8B 5C 24 44 8B 7C 24 4C 85 F6 0F 8E ? ? ? ? C7 44 24 0C 00 00 00 00 31 D2 31 C9 31 C0");
+	g_EnsureAvailableSlotsForGender_Hook.SetFunc(EnsureAvailableSlotsForGender);
+#endif
+}
+
+ON_EVENT(SESSION_END) {
+	engine->ExecuteCommand("phys_timescale 1", true);
+	//console->Print("physics rng state reset\n");
+	*g_PhysicsHook_impactSoundTime = 0.0f;
+	//console->Print("impact sound time reset\n");
+	g_reset_sound_files.clear();
 }
