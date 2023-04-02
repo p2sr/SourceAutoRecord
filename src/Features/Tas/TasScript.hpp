@@ -36,6 +36,7 @@ struct TasFramebulk {
 
 struct TasScript {
 	std::string name;
+	std::string path;
 	TasScriptHeader header;
 	std::vector<TasFramebulk> framebulks;
 	

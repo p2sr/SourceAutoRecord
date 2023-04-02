@@ -707,6 +707,7 @@ TasScript TasParser::ParseFile(std::string filePath) {
 
 	auto result = parseStream(filePath, file);
 	result.loadedFromFile = true;
+	result.path = filePath;
 	return result;
 }
 
@@ -741,15 +742,17 @@ float TasParser::toFloat(std::string str) {
 }
 
 void TasParser::SaveRawScriptToFile(TasScript script) {
-	std::string fixedName = script.name;
-	size_t lastdot = script.name.find_last_of(".");
+	std::string fixedName = script.path;
+	size_t lastdot = fixedName.find_last_of(".");
 	if (lastdot != std::string::npos) {
-		fixedName = script.name.substr(0, lastdot);
+		fixedName = fixedName.substr(0, lastdot);
 	}
 
-	std::ofstream file(fixedName + "_raw." + TAS_SCRIPT_EXT);
+	std::string fullRawPath = fixedName + "_raw." + TAS_SCRIPT_EXT;
+	std::ofstream file(fullRawPath);
 
 	file << SaveRawScriptToString(script);
+	console->Print("Saved raw TAS script \"%s\".\n", fullRawPath);
 
 	file.close();
 }

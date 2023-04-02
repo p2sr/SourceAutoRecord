@@ -457,7 +457,7 @@ void TasPlayer::SaveProcessedFramebulks() {
 		bool slotProcessed = script.processedFramebulks.size() > 0 && script.name.size() > 0;
 
 		if (script.loadedFromFile) {
-			if (slotProcessed && script.IsRaw()) {
+			if (slotProcessed && !script.IsRaw()) {
 				TasParser::SaveRawScriptToFile(script);
 			}
 		} else {
@@ -809,10 +809,12 @@ void TasPlayer::PlayScript(std::string slot0name, std::string slot0script, std::
 
 		newInfo.slots[0] = TasParser::ParseScript(slot0name, slot0script);
 		newInfo.slots[0].name = slot0name;
+		newInfo.slots[0].path = "protocol";
 
 		if (coop) {
 			newInfo.slots[1] = TasParser::ParseScript(slot1name, slot1script);
 			newInfo.slots[1].name = slot1name;
+			newInfo.slots[1].path = "protocol";
 		}
 
 		Activate(newInfo);
