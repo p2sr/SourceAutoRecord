@@ -120,7 +120,7 @@ public:
 	DECL_DETOUR(SteamControllerMove, int nSlot, float flFrametime, CUserCmd *cmd);  //	is it slot though? :thinking:
 
 	// ClientModeShared::OverrideView
-	DECL_DETOUR(OverrideView, CViewSetup *m_View);
+	DECL_DETOUR_T(void, OverrideView, CViewSetup *m_View);
 
 	DECL_DETOUR_COMMAND(playvideo_end_level_transition);
 
