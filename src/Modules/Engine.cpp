@@ -203,11 +203,14 @@ bool Engine::IsCoop() {
 
 bool Engine::IsOrange() {
 	static bool isOrange;
-	if (session->signonState == SIGNONSTATE_FULL) {
+	if (engine->demoplayer->IsPlaying()) {
+		isOrange = GET_SLOT() == 1;
+	} else if (session->signonState == SIGNONSTATE_FULL) {
 		isOrange = this->IsCoop() && !engine->hoststate->m_activeGame && !engine->demoplayer->IsPlaying();
 	}
 	return isOrange;
 }
+
 bool Engine::IsSplitscreen() {
 	if (!engine->IsCoop()) return false;
 
