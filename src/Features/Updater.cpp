@@ -29,6 +29,7 @@ extern "C" {
 static CURL *g_curl;
 static curl_slist *g_httpHdrs;
 static std::thread g_worker;
+static bool g_updating;
 
 #define MAX_VERSION_COMPONENTS 6
 
@@ -241,11 +242,13 @@ void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 
 	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, allowPre)) {
 		THREAD_PRINT("An error occurred\n");
+		g_updating = false;
 		return;
 	}
 
 	if (!force && !isNewerVersion(name.c_str())) {
 		THREAD_PRINT("You're already up-to-date!\n");
+		g_updating = false;
 		return;
 	}
 
@@ -259,12 +262,14 @@ void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 	THREAD_PRINT("Downloading SAR %s...\n", name.c_str());
 	if (!downloadFile(dlUrl.c_str(), tmp.c_str())) {
 		THREAD_PRINT("An error occurred\n");
+		g_updating = false;
 		return;
 	}
 
 #ifdef _WIN32
 	if (!downloadFile(pdbUrl.c_str(), tmpPdb.c_str())) {
 		THREAD_PRINT("An error occurred\n");
+		g_updating = false;
 		return;
 	}
 #endif
@@ -294,6 +299,7 @@ void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 #endif
 
 	THREAD_PRINT("Success! You should now restart your game.\n");
+	g_updating = false;
 
 	if (exitOnSuccess) {
 		Scheduler::OnMainThread([]() {
@@ -334,6 +340,12 @@ CON_COMMAND(sar_update, "sar_update [release|pre] [exit] [force] - update SAR to
 			return;
 		}
 	}
+
+	if (g_updating) {
+		console->Print("SAR is already updating\n");
+		return;
+	}
+	g_updating = true;
 
 	if (g_worker.joinable()) g_worker.join();
 	g_worker = std::thread(doUpdate, allowPre, exitOnSuccess, force);
