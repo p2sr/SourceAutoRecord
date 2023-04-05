@@ -8,8 +8,8 @@
 #include "Timer/PauseTimer.hpp"
 #include "Renderer.hpp"
 
-#include "discord-rcp/discord_register.h"
-#include "discord-rcp/discord_rpc.h"
+#include "discord-rpc/discord_register.h"
+#include "discord-rpc/discord_rpc.h"
 
 static std::map<std::string, const char *> g_map_names = {
 	{"sp_a1_intro1", "Container Ride"},
@@ -222,16 +222,16 @@ static void UpdateDiscordRichPresence() {
 			rp.details = "Playing Demo";
 			rp.state = engine->demoplayer->DemoName;
 		}
-		// speedrun timer
-		else if(SpeedrunTimer::IsRunning()) {
-			rp.details = "Speedrunning";
-			rp.state = categoryName.c_str();
-		}
 		// challenge mode
 		else if(sv_bonus_challenge.GetBool()) {
 			rp.details = "Challenge Mode";
 			rp.state = cmAttemptsString.c_str();
 		} 
+		// speedrun timer
+		else if(SpeedrunTimer::IsRunning()) {
+			rp.details = "Speedrunning";
+			rp.state = categoryName.c_str();
+		}
 		// regular playback
 		else {
 			rp.details = "Playing";
