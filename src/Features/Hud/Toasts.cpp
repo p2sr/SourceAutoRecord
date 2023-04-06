@@ -451,21 +451,41 @@ void ToastHud::Paint(int slot) {
 }
 
 CON_COMMAND_F(sar_toast_create, "sar_toast_create <tag> <text> - create a toast\n", FCVAR_DONTRECORD) {
-	if (args.ArgC() != 3) {
+	if (args.ArgC() < 3) {
 		console->Print(sar_toast_create.ThisPtr()->m_pszHelpString);
 		return;
 	}
+	
+	const char *txt;
 
-	toastHud.AddToast(args[1], args[2]);
+	if (args.ArgC() == 3) {
+		txt = args[2];
+	} else {
+		txt = args.m_pArgSBuffer + args.m_nArgv0Size;
+		while (isspace(*txt)) ++txt;
+		txt += (*txt == '"') * 2 + strlen(args[1]);
+		while (isspace(*txt)) ++txt;
+	}
+
+	toastHud.AddToast(args[1], txt);
 }
 
 CON_COMMAND_F(sar_toast_net_create, "sar_toast_net_create <tag> <text> - create a toast, also sending it to your coop partner\n", FCVAR_DONTRECORD) {
-	if (args.ArgC() != 3) {
+	if (args.ArgC() < 3) {
 		console->Print(sar_toast_net_create.ThisPtr()->m_pszHelpString);
 		return;
 	}
 
-	const char *tag = args[1], *toast = args[2];
+	const char *tag = args[1], *toast;
+
+	if (args.ArgC() == 3) {
+		toast = args[2];
+	} else {
+		toast = args.m_pArgSBuffer + args.m_nArgv0Size;
+		while (isspace(*toast)) ++toast;
+		toast += (*toast == '"') * 2 + strlen(args[1]);
+		while (isspace(*toast)) ++toast;
+	}
 
 	// FIXME: this currently abuses the fact that we receive our own
 	// NetMessages, which is definitely a bug
