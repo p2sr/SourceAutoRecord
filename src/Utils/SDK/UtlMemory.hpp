@@ -7,6 +7,12 @@ struct CUtlMemory {
 	int m_nGrowSize;
 };
 
+template <class T, size_t SIZE, class I = int>
+struct CUtlMemoryFixedGrowable : public CUtlMemory<T, I> {
+	int m_nMallocGrowSize;
+	T m_pFixedMemory[SIZE];
+};
+
 template <class T, class A = CUtlMemory<T>>
 struct CUtlVector {
 	A m_Memory;

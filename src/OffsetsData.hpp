@@ -222,6 +222,7 @@ OFFSET_DEFAULT(ChatPrintf, 22, 25)
 OFFSET_DEFAULT(MsgFunc_SayText2, 28, 35)
 OFFSET_DEFAULT(MsgFunc_SayTextReloaded, 26, 32)
 OFFSET_DEFAULT(GetTextColorForClient, 33, 41)
+OFFSET_DEFAULT(SendPaintmapDataToClient, 141, 141)
 
 // CSteam3Client
 OFFSET_DEFAULT(OnGameOverlayActivated, 148, 156)

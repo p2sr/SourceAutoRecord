@@ -40,6 +40,7 @@ public:
 	using _ClientCommand = int (*)(void *thisptr, void *pEdict, const char *szFmt, ...);
 	using _IsServerPaused = bool (*)(void *thisptr);
 	using _ServerPause = bool (*)(void *thisptr, bool bPause, bool bForce);
+	using _SendPaintmapDataToClient = bool (__rescall *)(void *thisptr, edict_t *player);
 	using _GetLocalClient = int (*)(int index);
 	using _HostFrameTime = float (*)(void *thisptr);
 	using _ClientTime = float (*)(void *thisptr);
@@ -84,6 +85,7 @@ public:
 	_ClientCommand ClientCommand = nullptr;
 	_IsServerPaused IsServerPaused = nullptr;
 	_ServerPause ServerPause = nullptr;
+	_SendPaintmapDataToClient SendPaintmapDataToClient = nullptr;
 	_GetLocalClient GetLocalClient = nullptr;
 	_HostFrameTime HostFrameTime = nullptr;
 	_ClientTime ClientTime = nullptr;
@@ -176,6 +178,9 @@ public:
 	// CVEngineClient::GetMouseDelta
 	DECL_DETOUR_T(void, GetMouseDelta, int &x, int &y, bool ignore_next);
 #endif
+
+	// CPaintmapDataManager::UpdatePaintmapTextures
+	DECL_DETOUR_T(void, UpdatePaintmapTextures);
 
 	// CEngine::Frame
 	DECL_DETOUR(Frame);

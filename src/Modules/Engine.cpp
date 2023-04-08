@@ -74,6 +74,7 @@ REDECL(Engine::ClientCommandKeyValues);
 #ifndef _WIN32
 REDECL(Engine::GetMouseDelta);
 #endif
+REDECL(Engine::UpdatePaintmapTextures);
 REDECL(Engine::Frame);
 REDECL(Engine::PurgeUnusedModels);
 REDECL(Engine::OnGameOverlayActivated);
@@ -785,6 +786,76 @@ void _Host_RunFrame_Render_Detour() {
 	}
 }
 
+struct PaintTexData {
+	enum class DirtyFlag {
+		CLEAN = 0,
+		DIRTY_SUBRECT,
+		DIRTY_FULLRECT,
+	};
+
+	int paint_width, paint_height;
+	int lightmap_page_id;
+	uint8_t *backbuffer;
+	DirtyFlag dirty_flag;
+	CUtlVector<Rect_t, CUtlMemoryFixedGrowable<Rect_t, 1024>> dirty_rects;
+};
+
+Variable sar_paintmap_sync_debounce("sar_paintmap_sync_debounce", "0.5", 0.1, "Debounce interval for syncing paintmap data to orange, in seconds.\n");
+Variable sar_paintmap_sync_debounce_max("sar_paintmap_sync_debounce_max", "1.5", 0.1, "Maximum delay from debouncing paintmap syncs to orange, in seconds.\n");
+
+static int g_paintmap_dirty_tick_first = -1;
+static int g_paintmap_dirty_tick_last = -1;
+
+static Hook g_UpdatePaintmapTextures_Hook(&Engine::UpdatePaintmapTextures_Hook);
+DETOUR_T(void, Engine::UpdatePaintmapTextures) {
+	bool should_register = *((bool *)thisptr + 12);
+	if (should_register) {
+		int num_paintmaps = *((int *)thisptr + 2);
+		PaintTexData *paint_tex_datas = *((PaintTexData **)thisptr + 1);
+		bool dirty = false;
+		for (int i = 0; i < num_paintmaps; ++i) {
+			if (paint_tex_datas[i].dirty_flag != PaintTexData::DirtyFlag::CLEAN) {
+				dirty = true;
+				break;
+			}
+		}
+		if (dirty) {
+			int host, server, client;
+			engine->GetTicks(host, server, client);
+			g_paintmap_dirty_tick_last = host;
+			if (g_paintmap_dirty_tick_first == -1) {
+				g_paintmap_dirty_tick_first = g_paintmap_dirty_tick_first;
+			}
+		}
+	}
+
+	g_UpdatePaintmapTextures_Hook.Disable();
+	Engine::UpdatePaintmapTextures(thisptr);
+	g_UpdatePaintmapTextures_Hook.Enable();
+}
+
+ON_EVENT(POST_TICK) {
+	if (g_paintmap_dirty_tick_first == -1) return;
+	if (!session->isRunning || !engine->IsCoop() || engine->IsOrange()) {
+		g_paintmap_dirty_tick_first = -1;
+		g_paintmap_dirty_tick_last = -1;
+		return;
+	}
+
+	int host, server, client;
+	engine->GetTicks(host, server, client);
+
+	int debounce = TIME_TO_TICKS(sar_paintmap_sync_debounce.GetFloat());
+	int debounce_max = TIME_TO_TICKS(sar_paintmap_sync_debounce_max.GetFloat());
+
+	if (host >= g_paintmap_dirty_tick_last + debounce || host >= g_paintmap_dirty_tick_first + debounce_max) {
+		g_paintmap_dirty_tick_first = -1;
+		g_paintmap_dirty_tick_last = -1;
+		edict_t *player = engine->PEntityOfEntIndex(2);
+		engine->SendPaintmapDataToClient(engine->g_VEngineServer->ThisPtr(), player);
+	}
+}
+
 static std::map<void *, float> g_bink_last_frames;
 static bool g_bink_override_active = false;
 
@@ -974,6 +1045,7 @@ bool Engine::Init() {
 			this->ClientCommand = this->g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
 			this->IsServerPaused = this->g_VEngineServer->Original<_IsServerPaused>(Offsets::IsServerPaused);
 			this->ServerPause = this->g_VEngineServer->Original<_ServerPause>(Offsets::ServerPause);
+			this->SendPaintmapDataToClient = this->g_VEngineServer->Original<_SendPaintmapDataToClient>(Offsets::SendPaintmapDataToClient);
 		}
 
 		typedef void *(*_GetClientState)();
@@ -1107,6 +1179,17 @@ bool Engine::Init() {
 		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 56 53 83 EC ? 8B 0D ? ? ? ? 85 C9 0F 95 C0", 0);
 	}
 #endif
+
+#ifdef _WIN32
+	UpdatePaintmapTextures = (void (__rescall *)(void *))Memory::Scan(this->Name(), ""); // TODO
+#else
+	if (sar.game->Is(SourceGame_EIPRelPIC)) {
+		UpdatePaintmapTextures = (void (__rescall *)(void *))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 28 A1 ? ? ? ? 8B 7D 08 8B 10 50 FF 92 ? ? ? ? 83 C4 10 89 45 E0 85 C0 74 0F 8B 55 E0");
+	} else {
+		UpdatePaintmapTextures = (void (__rescall *)(void *))Memory::Scan(this->Name(), ""); // TODO
+	}
+#endif
+	g_UpdatePaintmapTextures_Hook.SetFunc(UpdatePaintmapTextures);
 
 	_Host_RunFrame_Render_Hook.SetFunc(_Host_RunFrame_Render);
 
