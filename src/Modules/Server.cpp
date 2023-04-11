@@ -909,6 +909,7 @@ CON_COMMAND(sar_coop_reset_progress, "sar_coop_reset_progress - resets all coop 
 	if (engine->IsCoop()) {
 		NetMessage::SendMsg(RESET_COOP_PROGRESS_MESSAGE_TYPE, nullptr, 0);
 		resetCoopProgress();
+		if (engine->IsSplitscreen()) Event::Trigger<Event::COOP_RESET_DONE>({});
 	}
 }
 CON_COMMAND(sar_give_fly, "sar_give_fly [n] - gives the player in slot n (0 by default) preserved crouchfly.\n") {
