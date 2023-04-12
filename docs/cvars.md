@@ -66,7 +66,7 @@
 |ghost_show_spec_chat|1|Show chat messages from spectators when not spectating.<br>|
 |ghost_spec_connect|cmd|ghost_spec_connect \<ip address> \<port> - connect to the server as a spectator<br>ex: 'localhost 53000' - '127.0.0.1 53000' - '89.10.20.20 53000'.<br>|
 |ghost_spec_next|cmd|ghost_spec_next [samemap] - spectate the next ghost<br>|
-|ghost_spec_pov|cmd|ghost_spec_pov \<name|none> - spectate the specified ghost<br>|
+|ghost_spec_pov|cmd|ghost_spec_pov \<name\|none> - spectate the specified ghost<br>|
 |ghost_spec_prev|cmd|ghost_spec_prev - spectate the previous ghost<br>|
 |ghost_spec_see_spectators|0|Whether to see other spectators while spectating.<br>|
 |ghost_spec_thirdperson|0|Whether to spectate ghost from a third-person perspective.<br>|
@@ -95,6 +95,7 @@
 |sar_always_transmit_heavy_ents|0|Always transmit large but seldom changing edicts to clients to prevent lag spikes.<br>|
 |sar_autojump|0|Enables automatic jumping on the server.<br>|
 |sar_autorecord|0|Enables or disables automatic demo recording.<br>|
+|sar_autostrafe|0|Automatically strafes in your current wishdir.<br>|
 |sar_avg_result|cmd|sar_avg_result - prints result of average<br>|
 |sar_avg_start|cmd|sar_avg_start - starts calculating the average when using timer<br>|
 |sar_avg_stop|cmd|sar_avg_stop - stops average calculation<br>|
@@ -123,7 +124,7 @@
 |sar_cheat_hud|1|Display a warning in the HUD when cheats are active. 0 = disable, 1 = display if sv_cheats off, 2 = display always<br>|
 |sar_cheat_hud_x|-4|X position of the cheat warning HUD.<br>|
 |sar_cheat_hud_y|4|Y position of the cheat warning HUD.<br>|
-|sar_check_update|cmd|sar_check_update [release|pre] - check whether the latest version of SAR is being used<br>|
+|sar_check_update|cmd|sar_check_update [release\|pre] - check whether the latest version of SAR is being used<br>|
 |sar_clear_lines|cmd|sar_clear_lines - clears all active drawline overlays<br>|
 |sar_cm_rightwarp|0|Fix CM wrongwarp.<br>|
 |sar_con_filter|0|Enable the console filter<br>|
@@ -178,8 +179,8 @@
 |sar_ei_hud_x|0|X offset of entity inspection HUD.<br>|
 |sar_ei_hud_y|0|Y offset of entity inspection HUD.<br>|
 |sar_ei_hud_z|0|Z offset of entity inspection HUD.<br>|
-|sar_ent_info|cmd|sar_ent_info [name] - show info about the entity under the crosshair or with the given name<br>|
-|sar_ent_slot_serial|cmd|sar_ent_slot_serial \<id> [value] - prints entity slot serial number, or sets it if additional parameter is specified.<br>|
+|sar_ent_info|cmd|sar_ent_info [selector] - show info about the entity under the crosshair or with the given name<br>|
+|sar_ent_slot_serial|cmd|sar_ent_slot_serial \<id> [value] - prints entity slot serial number, or sets it if additional parameter is specified.<br>Banned in most categories, check with the rules before use!<br>|
 |sar_exit|cmd|sar_exit - removes all function hooks, registered commands and unloads the module<br>|
 |sar_expand|cmd|sar_expand [cmd]... - run a command after expanding svar substitutions<br>|
 |sar_export_stats|cmd|sar_export_stats \<filepath> -  export the stats to the specifed path in a .csv file<br>|
@@ -190,8 +191,7 @@
 |sar_fcps_clear|cmd|sar_fcps_clear - clear the FCPS event history.<br>|
 |sar_fcps_override|0|Override FCPS for tracing results.<br>|
 |sar_find_client_class|cmd|sar_find_client_class \<class_name> - finds specific client class tables and props with their offset<br>|
-|sar_find_ent|cmd|sar_find_ent \<m_iName> - finds entity in the entity list by name<br>|
-|sar_find_ents|cmd|sar_find_ents \<m_iClassName> - finds entities in the entity list by class name<br>|
+|sar_find_ents|cmd|sar_find_ents \<selector> - finds entities in the entity list by class name<br>|
 |sar_find_server_class|cmd|sar_find_server_class \<class_name> - finds specific server class tables and props with their offset<br>|
 |<i title="Portal Reloaded">sar_fix_reloaded_cheats</i>|1|Overrides map execution of specific console commands in Reloaded in order to separate map usage from player usage for these commands.<br>|
 |sar_font_get_name|cmd|sar_font_get_name \<id> - gets the name of a font from its index<br>|
@@ -201,7 +201,7 @@
 |sar_function|cmd|sar_function \<name> [command] [args]... - create a function, replacing $1, $2 etc in the command string with the respective argument, and more. If no command is specified, prints the given function<br>|
 |sar_function_run|cmd|sar_function_run \<name> [args]... - run a function with the given arguments<br>|
 |sar_geteyepos|cmd|sar_geteyepos [slot] - get the view position (portal shooting origin) and view angles of a certain player.<br>|
-|sar_getpos|cmd|sar_getpos [slot] [server|client] - get the absolute origin and angles of a particular player from either the server or client. Defaults to slot 0 and server.<br>|
+|sar_getpos|cmd|sar_getpos [slot] [server\|client] - get the absolute origin and angles of a particular player from either the server or client. Defaults to slot 0 and server.<br>|
 |sar_give_betsrighter|cmd|sar_give_betsrighter [n] - gives the player in slot n (0 by default) betsrighter.<br>|
 |sar_give_fly|cmd|sar_give_fly [n] - gives the player in slot n (0 by default) preserved crouchfly.<br>|
 |sar_groundframes_reset|cmd|sar_groundframes_reset - reset recorded groundframe statistics.<br>|
@@ -216,13 +216,13 @@
 |sar_hud_eyeoffset|0|Draws player's eye offset.<br>0 = Default,<br>1 = eye offset including precision error,<br>2 = raw eye offset.<br>|
 |sar_hud_font_color|255 255 255 255|RGBA font color of HUD.<br>|
 |sar_hud_font_index|0|Font index of HUD.<br>|
-|sar_hud_frame|0|Draws current frame count.<br>|
 |sar_hud_fps|0|Show fps (frames per second) on the SAR hud.<br>1 - Show fps<br>2 - Show fps with fps cap<br>|
+|sar_hud_frame|0|Draws current frame count.<br>|
 |sar_hud_ghost_spec|0|Show the name of the ghost you're currently spectating.<br>|
 |sar_hud_grounded|0|Draws the state of player being on ground.<br>|
 |sar_hud_groundframes|0|Draws the number of ground frames since last landing. Setting it to 2 preserves the value.<br>|
 |sar_hud_groundspeed|0|Draw the speed of the player upon leaving the ground.<br>|
-|sar_hud_hide_text|cmd|sar_hud_hide_text \<id> - hides the nth text value in the HUD<br>|
+|sar_hud_hide_text|cmd|sar_hud_hide_text \<id\|all> - hides the nth text value in the HUD<br>|
 |sar_hud_inspection|0|Draws entity inspection data.<br>|
 |sar_hud_jump|0|Draws current jump distance.<br>|
 |sar_hud_jump_peak|0|Draws longest jump distance.<br>|
@@ -243,7 +243,7 @@
 |sar_hud_session|0|Draws current session tick.<br>|
 |sar_hud_set_text|cmd|sar_hud_set_text \<id> \<text>... - sets and shows the nth text value in the HUD<br>|
 |sar_hud_set_text_color|cmd|sar_hud_set_text_color \<id> [color] - sets the color of the nth text value in the HUD. Reset by not giving color.<br>|
-|sar_hud_show_text|cmd|sar_hud_show_text \<id> - shows the nth text value in the HUD<br>|
+|sar_hud_show_text|cmd|sar_hud_show_text \<id\|all> - shows the nth text value in the HUD<br>|
 |sar_hud_spacing|1|Spacing between elements of HUD.<br>|
 |sar_hud_steps|0|Draws total step count.<br>|
 |sar_hud_strafesync_color|0 150 250 255|RGBA font color of strafesync HUD.<br>|
@@ -258,6 +258,7 @@
 |sar_hud_text||DEPRECATED: Use sar_hud_set_text.<br>|
 |sar_hud_text||DEPRECATED: Use sar_hud_set_text.<br>|
 |sar_hud_timer|0|Draws current value of timer.<br>|
+|sar_hud_toggle_text|cmd|sar_hud_toggle_text \<id> - toggles the nth text value in the HUD<br>|
 |sar_hud_trace|0|Draws info about current trace bbox tick.<br>|
 |sar_hud_velang|0|Draw the angle of the player's horizontal velocity vector.<br>|
 |sar_hud_velocity|0|Draws velocity of the client.<br>0 = Default,<br>1 = X, Y, Z<br>2 = X:Y<br>3 = X:Y, Z<br>4 = X:Y:Z<br>5 = X, Y, X:Y, Z<br>|
@@ -272,10 +273,10 @@
 |sar_ihud_clear_background|cmd|sar_ihud_clear_background<br>|
 |sar_ihud_grid_padding|2|Padding between grid squares of input HUD.<br>|
 |sar_ihud_grid_size|60|Grid square size of input HUD.<br>|
-|sar_ihud_modify|cmd|sar_ihud_modify \<element|all> [param=value]... - modifies parameters in given element.<br>Params: enabled, text, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight, image, highlightimage, minhold.<br>|
+|sar_ihud_modify|cmd|sar_ihud_modify \<element\|all> [param=value]... - modifies parameters in given element.<br>Params: enabled, text, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight, image, highlightimage, minhold.<br>|
 |sar_ihud_preset|cmd|sar_ihud_preset \<preset> - modifies input hud based on given preset<br>|
 |sar_ihud_set_background|cmd|sar_ihud_set_background \<path> \<grid x> \<grid y> \<grid w> \<grid h><br>|
-|sar_ihud_setpos|cmd|sar_ihud_setpos \<top|center|bottom|y|y%> \<left|center|right|x|x%> - automatically sets the position of input HUD.<br>|
+|sar_ihud_setpos|cmd|sar_ihud_setpos \<top\|center\|bottom\|y\|y%> \<left\|center\|right\|x\|x%> - automatically sets the position of input HUD.<br>|
 |sar_ihud_x|2|X position of input HUD.<br>|
 |sar_ihud_y|2|Y position of input HUD.<br>|
 |sar_import_stats|cmd|sar_import_stats \<filePath> - import the stats from the specified .csv file<br>|
@@ -297,7 +298,7 @@
 |sar_lphud_reset|cmd|sar_lphud_reset - resets lp counter<br>|
 |sar_lphud_reset_on_changelevel|0|Reset the lp counter on any changelevel or restart_level. Useful for ILs.<br>|
 |sar_lphud_set|cmd|sar_lphud_set \<number> - sets lp counter to given number<br>|
-|sar_lphud_setpos|cmd|sar_lphud_setpos \<top|center|bottom|y|y%> \<left|center|right|x|x%> - automatically sets the position of least portals HUD.<br>|
+|sar_lphud_setpos|cmd|sar_lphud_setpos \<top\|center\|bottom\|y\|y%> \<left\|center\|right\|x\|x%> - automatically sets the position of least portals HUD.<br>|
 |sar_lphud_x|-10|x pos of lp counter.<br>|
 |sar_lphud_y|-10|y pos of lp counter.<br>|
 |sar_minimap_load|cmd|sar_minimap_load \<filename> - load a minimap from a JSON file.<br>|
@@ -357,7 +358,7 @@
 |sar_patch_cfg|0|Patches Crouch Flying Glitch.<br>|
 |sar_pause_at|-1|Pause at the specified tick. -1 to deactivate it.<br>|
 |sar_pause_for|0|Pause for this amount of ticks.<br>|
-|sar_pip_align|cmd|sar_pip_align \<top|center|bottom> \<left|center|right> - aligns the remote view.<br>|
+|sar_pip_align|cmd|sar_pip_align \<top\|center\|bottom> \<left\|center\|right> - aligns the remote view.<br>|
 |sar_portalgun_hud|0|Enables the portalgun HUD.<br>|
 |sar_portalgun_hud_x|5|The x position of the portalgun HUD.<br>|
 |sar_portalgun_hud_y|5|The y position of the portalgun HUD.<br>|
@@ -431,7 +432,7 @@
 |sar_speedrun_export_all|cmd|sar_speedrun_export_all \<filename> - export the results of many speedruns to the specified CSV file<br>|
 |sar_speedrun_offset|0|Start speedruns with this time on the timer.<br>|
 |sar_speedrun_pause|cmd|sar_speedrun_pause - pause the speedrun timer<br>|
-|sar_speedrun_recover|cmd|sar_speedrun_recover \<ticks|time> - recover a crashed run by resuming the timer at the given time on next load<br>|
+|sar_speedrun_recover|cmd|sar_speedrun_recover \<ticks\|time> - recover a crashed run by resuming the timer at the given time on next load<br>|
 |sar_speedrun_reset|cmd|sar_speedrun_reset - reset the speedrun timer<br>|
 |sar_speedrun_reset_categories|cmd|sar_speedrun_reset_categories - delete all custom categories and rules, reverting to the builtin ones<br>|
 |sar_speedrun_reset_export|cmd|sar_speedrun_reset_export - reset the log of complete and incomplete runs to be exported<br>|
@@ -473,6 +474,16 @@
 |sar_strafe_quality_height|50|The height of the strafe quality HUD.<br>|
 |sar_strafe_quality_ticks|40|The number of ticks to average over for the strafe quality HUD.<br>|
 |sar_strafe_quality_width|300|The width of the strafe quality HUD.<br>|
+|sar_strafehud|0|Enables or disables strafe hud.<br>|
+|sar_strafehud_avg_sample_count|60|How many samples to use for average counter.<br>|
+|sar_strafehud_detail_scale|4|The detail scale for the lines of hud.<br>|
+|sar_strafehud_font|13|Font used by strafe hud.<br>|
+|sar_strafehud_lock_mode|1|Lock mode used by strafe hud:<br>0 - view direction<br>1 - velocity direction<br>2 - absolute angles<br>|
+|sar_strafehud_match_accel_scale|0|Match the scales for minimum and maximum deceleration.<br>|
+|sar_strafehud_size|256|The width and height of the strafe hud.<br>|
+|sar_strafehud_use_friction|0|Use ground friction when calculating acceleration.<br>|
+|sar_strafehud_x|-10|The X position of the strafe hud.<br>|
+|sar_strafehud_y|10|The Y position of the strafe hud.<br>|
 |sar_strafesync|0|Shows strafe sync stats.<br>|
 |sar_strafesync_noground|1|0: Always run.<br>1: Do not run when on ground.<br>|
 |sar_strafesync_pause|cmd|sar_strafesync_pause - pause strafe sync session<br>|
@@ -502,7 +513,7 @@
 |sar_tas_restore_fps|1|Restore fps_max and host_framerate after TAS playback.<br>|
 |sar_tas_resume|cmd|sar_tas_resume - resumes TAS playback<br>|
 |sar_tas_save_raw|cmd|sar_tas_save_raw - saves a processed version of just processed script<br>|
-|sar_tas_server|0|Enable the remote TAS server.<br>|
+|sar_tas_server|0|Enable the remote TAS server. Setting this value to something higher than one will bind the server on that port.<br>|
 |sar_tas_skipto|0|Fast-forwards the TAS playback until given playback tick.<br>|
 |sar_tas_stop|cmd|sar_tas_stop - stop TAS playing<br>|
 |sar_tas_tools_enabled|1|Enables tool processing for TAS script making.<br>|
@@ -528,7 +539,7 @@
 |sar_toast_font|6|The font index to use for toasts.<br>|
 |sar_toast_net_create|cmd|sar_toast_net_create \<tag> \<text> - create a toast, also sending it to your coop partner<br>|
 |sar_toast_net_disable|0|Disable network toasts.<br>|
-|sar_toast_setpos|cmd|sar_toast_setpos \<bottom|top> \<left|center|right> - set the position of the toasts HUD<br>|
+|sar_toast_setpos|cmd|sar_toast_setpos \<bottom\|top> \<left\|center\|right> - set the position of the toasts HUD<br>|
 |sar_toast_tag_dismiss_all|cmd|sar_toast_tag_dismiss_all \<tag> - dismiss all active toasts with the given tag<br>|
 |sar_toast_tag_set_color|cmd|sar_toast_tag_set_color \<tag> \<color> - set the color of the specified toast tag to an sRGB color<br>|
 |sar_toast_tag_set_duration|cmd|sar_toast_tag_set_duration \<tag> \<duration> - set the duration of the specified toast tag in seconds. The duration may be given as 'forever'<br>|
@@ -559,7 +570,7 @@
 |sar_trace_teleport_at|cmd|sar_trace_teleport_at \<tick> [player slot] [trace name] - teleports the player at the given trace tick on the given trace ID (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).<br>|
 |sar_trace_teleport_eye|cmd|sar_trace_teleport_eye \<tick> [player slot] [trace name] - teleports the player to the eye position at the given trace tick on the given trace (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).<br>|
 |sar_trace_use_shot_eyeoffset|1|Uses eye offset and angles accurate for portal shooting.<br>|
-|sar_update|cmd|sar_update [release|pre] [exit] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade<br>|
+|sar_update|cmd|sar_update [release\|pre] [exit] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade<br>|
 |sar_velocitygraph|0|Shows velocity graph.<br>|
 |sar_velocitygraph_background|0|Background of velocity graph.<br>|
 |sar_velocitygraph_font_index|21|Font index of velocity graph.<br>|
@@ -580,26 +591,26 @@
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop_update</i>|cmd|sar_workshop_update - updates the workshop map list<br>|
 |seq|cmd|seq \<commands>... - runs a sequence of commands one tick after one another<br>|
 |svar_abs|cmd|svar_abs \<variable> - perform the given operation on an svar<br>|
-|svar_add|cmd|svar_add \<variable> \<variable|value> - perform the given operation on an svar<br>|
+|svar_add|cmd|svar_add \<variable> \<variable\|value> - perform the given operation on an svar<br>|
 |svar_capture|cmd|svar_capture \<variable> \<command> [args]... - capture a command's output and place it into an svar, removing newlines<br>|
 |svar_ceil|cmd|svar_ceil \<variable> - perform the given operation on an svar<br>|
 |svar_count|cmd|svar_count - prints a count of all the defined svars<br>|
-|svar_div|cmd|svar_div \<variable> \<variable|value> - perform the given operation on an svar<br>|
-|svar_fadd|cmd|svar_fadd \<variable> \<variable|value> - perform the given operation on an svar<br>|
-|svar_fdiv|cmd|svar_fdiv \<variable> \<variable|value> - perform the given operation on an svar<br>|
+|svar_div|cmd|svar_div \<variable> \<variable\|value> - perform the given operation on an svar<br>|
+|svar_fadd|cmd|svar_fadd \<variable> \<variable\|value> - perform the given operation on an svar<br>|
+|svar_fdiv|cmd|svar_fdiv \<variable> \<variable\|value> - perform the given operation on an svar<br>|
 |svar_floor|cmd|svar_floor \<variable> - perform the given operation on an svar<br>|
-|svar_fmod|cmd|svar_fmod \<variable> \<variable|value> - perform the given operation on an svar<br>|
-|svar_fmul|cmd|svar_fmul \<variable> \<variable|value> - perform the given operation on an svar<br>|
+|svar_fmod|cmd|svar_fmod \<variable> \<variable\|value> - perform the given operation on an svar<br>|
+|svar_fmul|cmd|svar_fmul \<variable> \<variable\|value> - perform the given operation on an svar<br>|
 |svar_from_cvar|cmd|svar_from_cvar \<variable> \<cvar> - capture a cvar's value and place it into an svar, removing newlines<br>|
-|svar_fsub|cmd|svar_fsub \<variable> \<variable|value> - perform the given operation on an svar<br>|
+|svar_fsub|cmd|svar_fsub \<variable> \<variable\|value> - perform the given operation on an svar<br>|
 |svar_get|cmd|svar_get \<variable> - get the value of a svar<br>|
-|svar_mod|cmd|svar_mod \<variable> \<variable|value> - perform the given operation on an svar<br>|
-|svar_mul|cmd|svar_mul \<variable> \<variable|value> - perform the given operation on an svar<br>|
+|svar_mod|cmd|svar_mod \<variable> \<variable\|value> - perform the given operation on an svar<br>|
+|svar_mul|cmd|svar_mul \<variable> \<variable\|value> - perform the given operation on an svar<br>|
 |svar_no_persist|cmd|svar_no_persist \<variable> - unmark an svar as persistent<br>|
 |svar_persist|cmd|svar_persist \<variable> - mark an svar as persistent<br>|
 |svar_round|cmd|svar_round \<variable> - perform the given operation on an svar<br>|
 |svar_set|cmd|svar_set \<variable> \<value> - set a svar (SAR variable) to a given value<br>|
-|svar_sub|cmd|svar_sub \<variable> \<variable|value> - perform the given operation on an svar<br>|
+|svar_sub|cmd|svar_sub \<variable> \<variable\|value> - perform the given operation on an svar<br>|
 |svar_substr|cmd|svar_substr \<variable> \<from> [len] - sets a svar to its substring.<br>|
 |wait|cmd|wait \<tick> \<commands> - wait for the amount of ticks specified<br>|
 |wait_for|cmd|wait_for \<tick> \<commands> - wait for the amount of ticks specified<br>|

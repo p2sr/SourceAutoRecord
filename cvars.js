@@ -10,7 +10,9 @@ class Cvar {
     }
 };
 
-fs.readFile(process.argv[2] + '/sar.cvars', 'utf-8', (err, data) => {
+let path = process.argv[2] || process.cwd();
+
+fs.readFile(path + '/sar.cvars', 'utf-8', (err, data) => {
     if (err) {
         return console.error(err);
     }
@@ -24,6 +26,9 @@ fs.readFile(process.argv[2] + '/sar.cvars', 'utf-8', (err, data) => {
             cvars.push(new Cvar(data[0], data[1], data[2].split('\n'), data[3]));
         }
     }
+
+    // Hide internal and user-defined config+ cvars
+    cvars = cvars.filter(e => !(e.name.startsWith('_') || e.description == "SAR function command.\n" || e.description == "SAR alias command.\n"));
 
     const compareCvar = (a, b) => {
         if (a.startsWith('-') || a.startsWith('+')) {
@@ -39,12 +44,13 @@ fs.readFile(process.argv[2] + '/sar.cvars', 'utf-8', (err, data) => {
     for (let cvar of cvars.sort((a, b) => compareCvar(a.name, b.name))) {
         body += '\n|';
         body += (cvar.games.length > 0) ? `<i title="${cvar.games.join('&#10;')}">${cvar.name}</i>` : cvar.name;
-        body += `|${cvar.value}|${cvar.description.replace(/</g, '\\<').replace(/\n/g, '<br>')}|`;
+        body += `|${cvar.value}|${cvar.description.replace(/([<\|])/g, '\\$1').replace(/\n/g, '<br>')}|`;
     }
 
     fs.writeFileSync('docs/cvars.md',
 `# SAR: Cvars
 
 |Name|Default|Description|
-|---|---|---|${body}`);
+|---|---|---|${body}
+`);
 });

@@ -857,7 +857,7 @@ HUD_ELEMENT_MODE2(ent_slot_serial, "0", 0, 4096,
 	ctx->DrawElement("ent slot %d serial: %d", mode, serial);
 }
 
-HUD_ELEMENT_MODE2(fps, "0", 0, 2, "Show fps (frames per second) on the SAR hud.\n", HudType_InGame | HudType_Paused | HudType_Menu) {
+HUD_ELEMENT_MODE2(fps, "0", 0, 2, "Show fps (frames per second) on the SAR hud.\n1 - Show fps\n2 - Show fps with fps cap\n", HudType_InGame | HudType_Paused | HudType_Menu) {
 	if (mode == 1) {
 		ctx->DrawElement("fps: %.0f", g_cur_fps);
 	} else if (mode == 2) {
