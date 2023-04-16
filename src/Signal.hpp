@@ -34,6 +34,10 @@ private:
 	Signal<Return, Args...> *signal;
 	std::function<SignalListenerFunc> func;
 	int priority;
+
+private:
+	friend class Signal<Return, Args...>;
+
 public:
 	SignalListener(Signal<Return, Args...> *signal, std::function<SignalListenerFunc> func, int priority)
 		: func(func)
@@ -51,9 +55,8 @@ private:
 	SignalListenersDict listeners;
 	typename SignalListenersDict::iterator currentListener;
 
-	using SignalFunc = Return(__rescall*)(void*, Args...);
-	SignalFunc originalFunc;
-	SignalFunc hookFunc;
+	Return(__rescall *originalFunc)(void *, Args...);
+	std::function<Return(void *, Args...)> hookFunc;
 
 	Interface *registeredInterface;
 	int registeredIndex;
@@ -72,16 +75,14 @@ public:
 	}
 
 	Return Call(void *thisptr, Args... args) {
-		Return result;
-
-		if (currentListener == listeners.end() || registeredInterface == nullptr) {
-			result = originalFunc(registeredInterface, args...);
+		if (currentListener == listeners.end() || thisptr == nullptr) {
 			currentListener = listeners.begin();
+			return originalFunc(thisptr, args...);
 		} else {
-			result = currentListener(this, registeredInterface, args...);
+			SignalListener<Return, Args...> *listener = *currentListener;
+			// listener(thisptr, args...);  -- bro why my epic function operator overload no work
+			return listener->func(this, thisptr, args...);
 		}
-
-		return result;
 	}
 	Return Call(Args... args) {
 		return Call(registeredInterface, args...);
@@ -96,7 +97,7 @@ public:
 	void AddListener(SignalListener<Return, Args...> *listener) {
 		auto i = listeners.begin();
 		while (i != listeners.end()) {
-			if (i->priority <= listener->priority) break;
+			if ((*i)->priority <= listener->priority) break;
 			++i;
 		}
 		listeners.insert(i, listener);
