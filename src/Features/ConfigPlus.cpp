@@ -143,16 +143,7 @@ CON_COMMAND_F_COMPLETION(svar_set, "svar_set <variable> <value> - set a svar (SA
 		return console->Print(svar_set.ThisPtr()->m_pszHelpString);
 	}
 
-	const char *cmd;
-
-	if (args.ArgC() == 3) {
-		cmd = args[2];
-	} else {
-		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*cmd)) ++cmd;
-		cmd += (*cmd == '"') * 2 + strlen(args[1]);
-		while (isspace(*cmd)) ++cmd;
-	}
+	const char *cmd = Utils::ArgContinuation(args, 2);
 
 	SetSvar({args[1]}, {cmd});
 }
@@ -237,16 +228,7 @@ CON_COMMAND_F_COMPLETION(svar_capture, "svar_capture <variable> <command> [args]
 		return console->Print(svar_capture.ThisPtr()->m_pszHelpString);
 	}
 
-	const char *cmd;
-
-	if (args.ArgC() == 3) {
-		cmd = args[2];
-	} else {
-		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*cmd)) ++cmd;
-		cmd += (*cmd == '"') * 2 + strlen(args[1]);
-		while (isspace(*cmd)) ++cmd;
-	}
+	const char *cmd = Utils::ArgContinuation(args, 2);
 
 	g_svarListenerTarget = args[1];
 	g_svarListenerOutput = "";
@@ -745,16 +727,7 @@ CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only 
 
 	if (!should_run) return;
 
-	const char *cmd;
-
-	if (args.ArgC() == 3) {
-		cmd = args[2];
-	} else {
-		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*cmd)) ++cmd;
-		cmd += (*cmd == '"') * 2 + strlen(args[1]);
-		while (isspace(*cmd)) ++cmd;
-	}
+	const char *cmd = Utils::ArgContinuation(args, 2);
 
 	engine->ExecuteCommand(cmd, true);
 }
@@ -796,7 +769,7 @@ CON_COMMAND_F(conds, "conds [<condition> <command>]... [else] - runs the first c
 		if (args.ArgC() < 2) {                                                                                                                  \
 			return console->Print(sar_on_##name.ThisPtr()->m_pszHelpString);                                                                       \
 		}                                                                                                                                       \
-		const char *cmd = args.ArgC() == 2 ? args[1] : args.m_pArgSBuffer + args.m_nArgv0Size;                                                  \
+		const char *cmd = Utils::ArgContinuation(args, 1);                                                  \
 		_g_execs_##name.push_back(std::string(cmd));                                                                                            \
 	}                                                                                                                                        \
 	CON_COMMAND_F(sar_on_##name##_clear, "sar_on_" #name "_clear - clears commands registered on event \"" #name "\"\n", FCVAR_DONTRECORD) { \
@@ -946,16 +919,7 @@ CON_COMMAND_F(sar_alias, "sar_alias <name> [command] [args]... - create an alias
 		return;
 	}
 
-	const char *cmd;
-
-	if (args.ArgC() == 3) {
-		cmd = args[2];
-	} else {
-		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*cmd)) ++cmd;
-		cmd += (*cmd == '"') * 2 + strlen(args[1]);
-		while (isspace(*cmd)) ++cmd;
-	}
+	const char *cmd = Utils::ArgContinuation(args, 2);
 
 	auto existing = g_aliases.find({args[1]});
 	if (existing == g_aliases.end()) {
@@ -1015,16 +979,7 @@ CON_COMMAND_F(sar_function, "sar_function <name> [command] [args]... - create a 
 		return;
 	}
 
-	const char *cmd;
-
-	if (args.ArgC() == 3) {
-		cmd = args[2];
-	} else {
-		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*cmd)) ++cmd;
-		cmd += (*cmd == '"') * 2 + strlen(args[1]);
-		while (isspace(*cmd)) ++cmd;
-	}
+	const char *cmd = Utils::ArgContinuation(args, 2);
 
 	auto existing = g_functions.find({args[1]});
 	if (existing == g_functions.end()) {
@@ -1136,7 +1091,7 @@ CON_COMMAND_F(sar_expand, "sar_expand [cmd]... - run a command after expanding s
 		return console->Print(sar_expand.ThisPtr()->m_pszHelpString);
 	}
 
-	const char *cmd = args.ArgC() == 2 ? args[1] : args.m_pArgSBuffer + args.m_nArgv0Size;
+	const char *cmd = Utils::ArgContinuation(args, 1);
 	const CCommand noArgs = {1};  // ArgC = 1 means nargs = -1
 	expand(noArgs, std::string(cmd));
 }

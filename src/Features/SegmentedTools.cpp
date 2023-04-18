@@ -28,16 +28,7 @@ void wait_func(ConCommand* source, const CCommand &args, bool mode) {
 	int tick = std::atoi(args[1]);
 	if (mode) tick += session->GetTick();
 
-	const char *cmd;
-
-	if (args.ArgC() == 3) {
-		cmd = args[2];
-	} else {
-		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*cmd)) ++cmd;
-		cmd += (*cmd == '"') * 2 + strlen(args[1]);
-		while (isspace(*cmd)) ++cmd;
-	}
+	const char *cmd = Utils::ArgContinuation(args, 2);
 
 	if (engine->demorecorder->isRecordingDemo) {
 		size_t size = strlen(cmd) + 6;
@@ -97,16 +88,7 @@ CON_COMMAND_F(hwait, "hwait <tick> <command> [args...] - run a command after the
 
 	int ticks = std::atoi(args[1]);
 
-	const char *cmd;
-
-	if (args.ArgC() == 3) {
-		cmd = args[2];
-	} else {
-		cmd = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*cmd)) ++cmd;
-		cmd += (*cmd == '"') * 2 + strlen(args[1]);
-		while (isspace(*cmd)) ++cmd;
-	}
+	const char *cmd = Utils::ArgContinuation(args, 2);
 
 	std::string cmdstr = cmd;
 

@@ -496,16 +496,7 @@ CON_COMMAND_F(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and show
 		return;
 	}
 
-	const char *txt;
-
-	if (args.ArgC() == 3) {
-		txt = args[2];
-	} else {
-		txt = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*txt)) ++txt;
-		txt += (*txt == '"') * 2 + strlen(args[1]);
-		while (isspace(*txt)) ++txt;
-	}
+	const char *txt = Utils::ArgContinuation(args, 2);
 
 	std::optional<Color> curColor;
 	std::string component = "";

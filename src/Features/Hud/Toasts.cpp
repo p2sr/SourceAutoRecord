@@ -456,16 +456,7 @@ CON_COMMAND_F(sar_toast_create, "sar_toast_create <tag> <text> - create a toast\
 		return;
 	}
 	
-	const char *txt;
-
-	if (args.ArgC() == 3) {
-		txt = args[2];
-	} else {
-		txt = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*txt)) ++txt;
-		txt += (*txt == '"') * 2 + strlen(args[1]);
-		while (isspace(*txt)) ++txt;
-	}
+	const char *txt = Utils::ArgContinuation(args, 2);
 
 	toastHud.AddToast(args[1], txt);
 }
@@ -476,16 +467,7 @@ CON_COMMAND_F(sar_toast_net_create, "sar_toast_net_create <tag> <text> - create 
 		return;
 	}
 
-	const char *tag = args[1], *toast;
-
-	if (args.ArgC() == 3) {
-		toast = args[2];
-	} else {
-		toast = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*toast)) ++toast;
-		toast += (*toast == '"') * 2 + strlen(args[1]);
-		while (isspace(*toast)) ++toast;
-	}
+	const char *tag = args[1], *toast = Utils::ArgContinuation(args, 2);
 
 	// FIXME: this currently abuses the fact that we receive our own
 	// NetMessages, which is definitely a bug

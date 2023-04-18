@@ -939,7 +939,7 @@ CON_COMMAND(sar_speedrun_recover, "sar_speedrun_recover <ticks|time> - recover a
 		return console->Print(sar_speedrun_recover.ThisPtr()->m_pszHelpString);
 	}
 
-	const char *time = args.m_pArgSBuffer + args.m_nArgv0Size;
+	const char *time = Utils::ArgContinuation(args, 1);
 
 	char *end;
 	long ticks = strtol(time, &end, 10);

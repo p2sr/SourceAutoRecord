@@ -55,16 +55,7 @@ CON_COMMAND_F(sar_echo, "sar_echo <color> <string...> - echo a string to console
 		return console->Print(sar_echo.ThisPtr()->m_pszHelpString);
 	}
 
-	const char *str;
-	if (args.ArgC() == 3) {
-		str = args[2];
-	} else {
-		str = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*str)) ++str;
-		str += (*str == '"') * 2 + strlen(args[1]);
-		while (isspace(*str)) ++str;
-	}
-
+	const char *str = Utils::ArgContinuation(args, 2);
 	console->ColorMsg(*col, "%s\n", str);
 }
 
@@ -78,15 +69,7 @@ CON_COMMAND_F(sar_echo_nolf, "sar_echo_nolf <color> <string...> - echo a string 
 		return console->Print(sar_echo_nolf.ThisPtr()->m_pszHelpString);
 	}
 
-	const char *str;
-	if (args.ArgC() == 3) {
-		str = args[2];
-	} else {
-		str = args.m_pArgSBuffer + args.m_nArgv0Size;
-		while (isspace(*str)) ++str;
-		str += (*str == '"') * 2 + strlen(args[1]);
-		while (isspace(*str)) ++str;
-	}
+	const char *str = Utils::ArgContinuation(args, 2);
 
 	console->ColorMsg(*col, "%s", str);
 }

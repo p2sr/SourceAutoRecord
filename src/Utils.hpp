@@ -29,6 +29,7 @@ namespace Utils {
 	std::string GetSARPath();
 	std::optional<Color> GetColor(const char *str, bool to_linear = false);
 	Color HSVToRGB(float H, float S, float V);
+	const char *ArgContinuation(const CCommand &args, int from);
 }  // namespace Utils
 
 #define REDECL(name) \
