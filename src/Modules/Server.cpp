@@ -732,8 +732,7 @@ bool Server::Init() {
 		this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
 		this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
-
-		ProcessMovement.Register(this->g_GameMovement, Offsets::ProcessMovement);
+		ProcessMovement.Register(this->g_GameMovement, &_sar_signal_hook_ProcessMovement, Offsets::ProcessMovement);
 		//this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
 
 		this->g_GameMovement->Hook(Server::GetPlayerViewOffset_Hook, Server::GetPlayerViewOffset, Offsets::GetPlayerViewOffset);
