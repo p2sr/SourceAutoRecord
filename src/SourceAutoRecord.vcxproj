@@ -72,6 +72,7 @@
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows;$(SolutionDir)\lib\curl\lib\windows</AdditionalLibraryDirectories>
@@ -107,6 +108,7 @@
       <DisableSpecificWarnings>26495</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
