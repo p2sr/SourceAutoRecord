@@ -303,7 +303,7 @@ SIGNAL_LISTENER(500, Server::ProcessMovement, void *player, CMoveData *move) {
 
 // player trace supplementary informations
 SIGNAL_LISTENER(0, Server::ProcessMovement, void *player, CMoveData *move) {
-	signal->CallNext(thisptr, player, move);
+	auto result = signal->CallNext(thisptr, player, move);
 
 	int slot = server->GetSplitScreenPlayerSlot(player);
 	playerTrace->TweakLatestEyeOffsetForPortalShot(move, slot, false);
@@ -314,6 +314,8 @@ SIGNAL_LISTENER(0, Server::ProcessMovement, void *player, CMoveData *move) {
 		move->m_vecAbsOrigin = g_playerTraceTeleportLocation;
 		g_playerTraceNeedsTeleport = false;
 	}
+
+	return result;
 }
 
 
@@ -732,8 +734,7 @@ bool Server::Init() {
 		this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
 		this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
-		ProcessMovement.Register(this->g_GameMovement, &_sar_signal_hook_ProcessMovement, Offsets::ProcessMovement);
-		//this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
+		REGISTER_SIGNAL(ProcessMovement, this->g_GameMovement, Offsets::ProcessMovement)
 
 		this->g_GameMovement->Hook(Server::GetPlayerViewOffset_Hook, Server::GetPlayerViewOffset, Offsets::GetPlayerViewOffset);
 		this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);

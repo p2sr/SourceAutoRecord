@@ -95,7 +95,7 @@ public:
 
 	// CGameMovement::ProcessMovement
 	//DECL_DETOUR(ProcessMovement, void *pPlayer, CMoveData *pMove);
-	DECL_SIGNAL(void, ProcessMovement, void*, CMoveData*);
+	DECL_SIGNAL(int, ProcessMovement, void*, CMoveData*);
 
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR_T(Vector *, GetPlayerViewOffset, bool ducked);
