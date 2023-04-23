@@ -138,6 +138,7 @@
     <ClCompile Include="Features\AchievementTracker.cpp" />
     <ClCompile Include="Features\Demo\GhostRenderer.cpp" />
     <ClCompile Include="Features\Demo\GhostLeaderboard.cpp" />
+    <ClCompile Include="Features\Hud\PlacementHelperHud.cpp" />
     <ClCompile Include="Features\Hud\StrafeHud.cpp" />
     <ClCompile Include="Features\Routing\Ruler.cpp" />
     <ClCompile Include="Features\SeasonalASCII.cpp" />
