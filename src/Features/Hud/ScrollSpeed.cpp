@@ -1,9 +1,11 @@
 #include "ScrollSpeed.hpp"
 
+#include "Signal.hpp"
 #include "Event.hpp"
 #include "Features/Session.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Surface.hpp"
+#include "Modules/Server.hpp"
 #include "Variable.hpp"
 
 #define CONSECUTIVE_END 5
@@ -72,3 +74,11 @@ void ScrollSpeedHud::OnJump(int slot) {
 }
 
 ScrollSpeedHud scrollSpeedHud;
+
+// a bunch of movement huds
+SIGNAL_LISTENER(20, Server::ProcessMovement, void *player, CMoveData *move) {
+	int slot = server->GetSplitScreenPlayerSlot(player);
+	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
+
+	return signal->CallNext(thisptr, player, move);
+}

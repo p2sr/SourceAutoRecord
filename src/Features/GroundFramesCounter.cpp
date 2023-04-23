@@ -2,7 +2,9 @@
 
 #include "Features/Timer/PauseTimer.hpp"
 #include "Hud/Hud.hpp"
+#include "Signal.hpp"
 #include "Modules/Client.hpp"
+#include "Modules/Server.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
@@ -37,6 +39,15 @@ void GroundFramesCounter::HandleMovementFrame(int slot, bool grounded) {
 void GroundFramesCounter::AddToTotal(int slot, int count) {
 	if (count >= MAX_GROUNDFRAMES_TRACK) return;
 	this->totals[slot][count] += 1;
+}
+
+// a bunch of movement huds
+SIGNAL_LISTENER(20, Server::ProcessMovement, void *player, CMoveData *move) {
+	int slot = server->GetSplitScreenPlayerSlot(player);
+	bool grounded = SE(player)->ground_entity();
+	groundFramesCounter->HandleMovementFrame(slot, grounded);
+
+	return signal->CallNext(thisptr, player, move);
 }
 
 CON_COMMAND(sar_groundframes_total, "sar_groundframes_total [slot] - output a summary of groundframe counts for the given player slot.\n") {

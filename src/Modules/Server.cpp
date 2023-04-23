@@ -283,43 +283,6 @@ DETOUR_T(void, Server::ViewPunch, const QAngle &offset) {
 Hook g_ViewPunch_Hook(&Server::ViewPunch_Hook);
 
 
-// a bunch of movement huds
-SIGNAL_LISTENER(20, Server::ProcessMovement, void *player, CMoveData *move) {
-	int slot = server->GetSplitScreenPlayerSlot(player);
-	bool grounded = SE(player)->ground_entity();
-	groundFramesCounter->HandleMovementFrame(slot, grounded);
-	strafeQuality.OnMovement(slot, grounded);
-	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
-
-	return signal->CallNext(thisptr, player, move);
-}
-
-// event
-SIGNAL_LISTENER(500, Server::ProcessMovement, void *player, CMoveData *move) {
-	Event::Trigger<Event::PROCESS_MOVEMENT>({server->GetSplitScreenPlayerSlot(player), true});
-
-	return signal->CallNext(thisptr, player, move);
-}
-
-// player trace supplementary informations
-SIGNAL_LISTENER(0, Server::ProcessMovement, void *player, CMoveData *move) {
-	auto result = signal->CallNext(thisptr, player, move);
-
-	int slot = server->GetSplitScreenPlayerSlot(player);
-	playerTrace->TweakLatestEyeOffsetForPortalShot(move, slot, false);
-
-	// We edit pos after process movement to get accurate teleportation
-	// This is for sar_trace_teleport_at
-	if (g_playerTraceNeedsTeleport && slot == g_playerTraceTeleportSlot) {
-		move->m_vecAbsOrigin = g_playerTraceTeleportLocation;
-		g_playerTraceNeedsTeleport = false;
-	}
-
-	return result;
-}
-
-
-
 // CGameMovement::GetPlayerViewOffset
 DETOUR_T(Vector*, Server::GetPlayerViewOffset, bool ducked) {
 

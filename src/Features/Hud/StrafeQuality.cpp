@@ -1,9 +1,11 @@
 #include "StrafeQuality.hpp"
 
+#include "Signal.hpp"
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Surface.hpp"
+#include "Modules/Server.hpp"
 
 #include <cstring>
 #include <vector>
@@ -156,4 +158,13 @@ void StrafeQualityHud::OnMovement(int slot, bool grounded) {
 		strafe,
 		mouseDelta,
 	});
+}
+
+// a bunch of movement huds
+SIGNAL_LISTENER(20, Server::ProcessMovement, void *player, CMoveData *move) {
+	int slot = server->GetSplitScreenPlayerSlot(player);
+	bool grounded = SE(player)->ground_entity();
+	strafeQuality.OnMovement(slot, grounded);
+
+	return signal->CallNext(thisptr, player, move);
 }

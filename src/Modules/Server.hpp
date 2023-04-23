@@ -94,7 +94,6 @@ public:
 	DECL_DETOUR_T(bool, IsInPVS, void *info);
 
 	// CGameMovement::ProcessMovement
-	//DECL_DETOUR(ProcessMovement, void *pPlayer, CMoveData *pMove);
 	DECL_SIGNAL(int, ProcessMovement, void*, CMoveData*);
 
 	// CGameMovement::ProcessMovement

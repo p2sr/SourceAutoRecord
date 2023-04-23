@@ -63,7 +63,14 @@
 
 #define _SIGNAL_LISTENER(x, priority, signalname, ...) __SIGNAL_LISTENER(x, priority, signalname, ##__VA_ARGS__##)
 
-#define SIGNAL_LISTENER(priority, signal, ...) _SIGNAL_LISTENER(##__COUNTER__##, priority, signal, ##__VA_ARGS__##)
+// for whatever reason, __COUNTER__ doesn't actually increment, so I'm just appending __LINE__ to it.
+// this cursed sequence of macros is the only way that have worked for me and I'm not feeling like
+// trying to figure out why. We're getting unique function names, that's what matters.
+#define _SIGNAL_LISTENER_COUNTER() __COUNTER__
+#define _SIGNAL_LISTENER_LINE() __LINE__
+#define _SIGNAL_LISTENER_ID() _SIGNAL_LISTENER_COUNTER()##_SIGNAL_LISTENER_LINE()
+
+#define SIGNAL_LISTENER(priority, signal, ...) _SIGNAL_LISTENER(_SIGNAL_LISTENER_ID(), priority, signal, ##__VA_ARGS__##)
 
 
 template <typename Return, typename... Args>
@@ -108,10 +115,6 @@ private:
 public:
 	Signal() {
 		currentListener = listeners.begin();
-
-		/*hookFunc = [&](void *thisptr, Args... args) -> Return {
-			return this->Call(thisptr, args...);
-		};*/
 	}
 	Return CallNext(void *thisptr, Args... args) {
 		++currentListener;
@@ -123,9 +126,7 @@ public:
 			currentListener = listeners.begin();
 			return originalFunc(thisptr, args...);
 		} else {
-			SignalListener<Return, Args...> *listener = *currentListener;
-			// return listener(thisptr, args...);  -- bro why my epic function operator overload no work
-			return listener->func(this, thisptr, args...);
+			return (**currentListener)(thisptr, args...);
 		}
 	}
 	Return Call(Args... args) {

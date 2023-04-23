@@ -805,6 +805,23 @@ int PlayerTrace::GetTasTraceTick() {
 	return max_tas_tick;
 }
 
+// player trace supplementary informations
+SIGNAL_LISTENER(0, Server::ProcessMovement, void *player, CMoveData *move) {
+	auto result = signal->CallNext(thisptr, player, move);
+
+	int slot = server->GetSplitScreenPlayerSlot(player);
+	playerTrace->TweakLatestEyeOffsetForPortalShot(move, slot, false);
+
+	// We edit pos after process movement to get accurate teleportation
+	// This is for sar_trace_teleport_at
+	if (g_playerTraceNeedsTeleport && slot == g_playerTraceTeleportSlot) {
+		move->m_vecAbsOrigin = g_playerTraceTeleportLocation;
+		g_playerTraceNeedsTeleport = false;
+	}
+
+	return result;
+}
+
 HUD_ELEMENT2(trace, "0", "Draws info about current trace bbox tick.\n", HudType_InGame | HudType_Paused) {
 	if (!sv_cheats.GetBool()) return;
 	playerTrace->DrawTraceHud(ctx);
