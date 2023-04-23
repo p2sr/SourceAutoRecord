@@ -37,11 +37,13 @@
 		return name##.Call(thisptr, a, b, c, d, e); \
 	}
 
+#define __SIGNAL_EXPAND_THE_FUCK_OUT_OF_THIS_MSVC_BULLSHIT(x) x
+
 #define __SIGNAL_HOOK_FUNC_ARGS_N(returnType, name, typeA, typeB, typeC, typeD, typeE, N, ...) \
 	static returnType __fastcall _sar_signal_hook_##name __SIGNAL_HOOK_FUNC_ARGS_##N##(name, typeA, typeB, typeC, typeD, typeE)
 
 #define SIGNAL_HOOK_FUNC(returnType, name, ...) \
-	__SIGNAL_HOOK_FUNC_ARGS_N(returnType, name, ##__VA_ARGS__##, 5, 4, 3, 2, 1, 0)
+	__SIGNAL_EXPAND_THE_FUCK_OUT_OF_THIS_MSVC_BULLSHIT(__SIGNAL_HOOK_FUNC_ARGS_N(returnType, name, ##__VA_ARGS__##, 5, 4, 3, 2, 1, 0))
 
 #define DECL_SIGNAL(returnType, name, ...)                         \
 	using name##Signal_t = Signal<returnType, ##__VA_ARGS__##>;           \
