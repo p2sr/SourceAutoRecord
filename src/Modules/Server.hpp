@@ -85,7 +85,7 @@ public:
 
 public:
 	// CPortal_Player::PlayerRunCommand
-	DECL_DETOUR(PlayerRunCommand, CUserCmd *cmd, void *moveHelper);
+	DECL_SIGNAL(PlayerRunCommand, CUserCmd*, void*)
 
 	// CBasePlayer::ViewPunch
 	DECL_DETOUR_T(void, ViewPunch, const QAngle &offset);
@@ -94,7 +94,7 @@ public:
 	DECL_DETOUR_T(bool, IsInPVS, void *info);
 
 	// CGameMovement::ProcessMovement
-	DECL_SIGNAL(int, ProcessMovement, void*, CMoveData*);
+	DECL_SIGNAL(ProcessMovement, void*, CMoveData*);
 
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR_T(Vector *, GetPlayerViewOffset, bool ducked);

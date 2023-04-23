@@ -338,6 +338,7 @@
     <ClInclude Include="Games\PortalReloaded.hpp" />
     <ClInclude Include="Games\PortalStoriesMel.hpp" />
     <ClInclude Include="Games\ThinkingWithTimeMachine.hpp" />
+    <ClInclude Include="Hook.hpp" />
     <ClInclude Include="Modules\FileSystem.hpp" />
     <ClInclude Include="OffsetsData.hpp" />
     <ClInclude Include="Scheduler.hpp" />

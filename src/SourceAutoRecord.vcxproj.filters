@@ -1275,6 +1275,9 @@
     <ClInclude Include="Features\Tas\TasScript.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
+    <ClInclude Include="Hook.hpp">
+      <Filter>SourceAutoRecord</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

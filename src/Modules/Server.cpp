@@ -196,9 +196,9 @@ DETOUR(Server::PlayerMove) {
 	return Server::PlayerMove(thisptr);
 }
 
-extern Hook g_playerRunCommandHook;
+
 // CPortal_Player::PlayerRunCommand
-DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
+SIGNAL_LISTENER(100, Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 	int slot = server->GetSplitScreenPlayerSlot(thisptr);
 
 	if (!engine->IsGamePaused()) {
@@ -235,13 +235,9 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 		cmd->buttons |= IN_ATTACK;
 	}
 
-	g_playerRunCommandHook.Disable();
-	auto ret = Server::PlayerRunCommand(thisptr, cmd, moveHelper);
-	g_playerRunCommandHook.Enable();
-
-	return ret;
+	return signal->CallNext(thisptr, cmd, moveHelper);
 }
-Hook g_playerRunCommandHook(&Server::PlayerRunCommand_Hook);
+
 
 static bool (*UTIL_FindClosestPassableSpace)(const Vector &, const Vector &, const Vector &, unsigned, Vector &, int, FcpsTraceAdapter *);
 extern Hook UTIL_FindClosestPassableSpace_Hook;
@@ -570,21 +566,18 @@ static void InitCMFlagHook() {
 	}
 }
 
-static bool g_IsPlayerRunCommandHookInitialized = false;
-static void InitPlayerRunCommandHook() {
-	void *player = server->GetPlayer(1);
-	if (!player) return;
-	Server::PlayerRunCommand = Memory::VMT<Server::_PlayerRunCommand>(player, Offsets::PlayerRunCommand);
-	g_playerRunCommandHook.SetFunc(Server::PlayerRunCommand);
-	g_IsPlayerRunCommandHookInitialized = true;
-}
 
 // CServerGameDLL::GameFrame
 DETOUR(Server::GameFrame, bool simulating)
 {
 	if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
 	if (!g_IsCMFlagHookInitialized) InitCMFlagHook();
-	if (!g_IsPlayerRunCommandHookInitialized) InitPlayerRunCommandHook();
+	if (!Server::PlayerRunCommand.IsRegistered()) {
+		void *player = server->GetPlayer(1);
+		if (player) {
+			Server::PlayerRunCommand.Register(SIGNAL_HOOK(PlayerRunCommand), player, Offsets::PlayerRunCommand);
+		}
+	}
 
 	if (sar_tick_debug.GetInt() >= 3 || (sar_tick_debug.GetInt() >= 2 && simulating)) {
 		int host, server, client;
@@ -697,7 +690,7 @@ bool Server::Init() {
 		this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
 		this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
-		REGISTER_SIGNAL(ProcessMovement, this->g_GameMovement, Offsets::ProcessMovement)
+		ProcessMovement.Register(SIGNAL_HOOK(ProcessMovement), this->g_GameMovement->ThisPtr(), Offsets::ProcessMovement);
 
 		this->g_GameMovement->Hook(Server::GetPlayerViewOffset_Hook, Server::GetPlayerViewOffset, Offsets::GetPlayerViewOffset);
 		this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
