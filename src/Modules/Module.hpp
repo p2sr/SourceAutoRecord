@@ -10,7 +10,6 @@
 class Module {
 public:
 	bool hasLoaded = false;
-
 public:
 	virtual ~Module() = default;
 	virtual bool Init() = 0;

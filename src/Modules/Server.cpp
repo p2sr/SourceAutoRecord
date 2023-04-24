@@ -74,6 +74,7 @@ REDECL(Server::PlayerRunCommand);
 REDECL(Server::ViewPunch);
 REDECL(Server::IsInPVS);
 REDECL(Server::ProcessMovement);
+REDECL(Server::AcceptInput);
 REDECL(Server::GetPlayerViewOffset);
 REDECL(Server::StartTouchChallengeNode);
 REDECL(Server::say_callback);
@@ -348,8 +349,7 @@ static void TriggerCMFlag(int slot, float time, bool end) {
 	}
 }
 
-extern Hook g_flagStartTouchHook;
-DETOUR(Server::StartTouchChallengeNode, void *entity) {
+SIGNAL_LISTENER(0, Server::StartTouchChallengeNode, void *entity) {
 	if (server->IsPlayer(entity) && !isFakeFlag(thisptr) && client->GetChallengeStatus() == CMStatus::CHALLENGE) {
 		int slot = server->GetSplitScreenPlayerSlot(entity);
 		if (!hasSlotCompleted(thisptr, slot)) {
@@ -359,13 +359,8 @@ DETOUR(Server::StartTouchChallengeNode, void *entity) {
 		}
 	}
 
-	g_flagStartTouchHook.Disable();
-	auto ret = Server::StartTouchChallengeNode(thisptr, entity);
-	g_flagStartTouchHook.Enable();
-
-	return ret;
+	return signal->CallNext(thisptr, entity);
 }
-Hook g_flagStartTouchHook(&Server::StartTouchChallengeNode_Hook);
 
 // CGameMovement::FinishGravity
 DETOUR(Server::FinishGravity) {
@@ -458,16 +453,7 @@ ON_EVENT(PRE_TICK) {
 	setPortalsThruPortals(sv_cheats.GetBool() && sar_portals_thru_portals.GetBool());
 }
 
-extern Hook g_AcceptInputHook;
-
-// TODO: the windows signature is a bit dumb. fastcall is like thiscall
-// but for normal functions and takes an arg in edx, so we use it
-// because msvc won't let us use thiscall on a non-member function
-#ifdef _WIN32
-static void __fastcall AcceptInput_Hook(void *thisptr, void *unused, const char *inputName, void *activator, void *caller, variant_t parameter, int outputID)
-#else
-static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void *activator, void *caller, variant_t parameter, int outputID)
-#endif
+SIGNAL_LISTENER(0, Server::AcceptInput, const char *inputName, void *activator, void *caller, variant_t parameter, int outputID)
 {
 	const char *entName = server->GetEntityName(thisptr);
 	const char *className = server->GetEntityClassName(thisptr);
@@ -529,28 +515,25 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 	// allow reloaded fix to override some commands from point_servercommand
 	reloadedFix->OverrideInput(className, inputName, &parameter);
 
-	g_AcceptInputHook.Disable();
-	server->AcceptInput(thisptr, inputName, activator, caller, parameter, outputID);
-	g_AcceptInputHook.Enable();
+	return signal->CallNext(thisptr, inputName, activator, caller, parameter, outputID);
 }
 
 // This is kinda annoying - it's got to be in a separate function
 // because we need a reference to an entity vtable to find the address
 // of CBaseEntity::AcceptInput, but we generally can't do that until
 // we've loaded into a level.
-static bool IsAcceptInputTrampolineInitialized = false;
-Hook g_AcceptInputHook(&AcceptInput_Hook);
-static void InitAcceptInputTrampoline() {
+
+static void InitAcceptInputSignal() {
+	if (Server::AcceptInput.IsRegistered()) return;
 	void *ent = server->m_EntPtrArray[0].m_pEntity;
 	if (ent == nullptr) return;
-	IsAcceptInputTrampolineInitialized = true;
-	server->AcceptInput = Memory::VMT<Server::_AcceptInput>(ent, Offsets::AcceptInput);
-
-	g_AcceptInputHook.SetFunc(server->AcceptInput);
+	
+	REGISTER_SIGNAL(Server::AcceptInput, ent, Offsets::AcceptInput);
 }
 
-static bool g_IsCMFlagHookInitialized = false;
-static void InitCMFlagHook() {
+
+static void InitCMFlagSignal() {
+	if (Server::StartTouchChallengeNode.IsRegistered()) return;
 	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
 		void *ent = server->m_EntPtrArray[i].m_pEntity;
 		if (!ent) continue;
@@ -558,26 +541,26 @@ static void InitCMFlagHook() {
 		auto classname = server->GetEntityClassName(ent);
 		if (!classname || strcmp(classname, "challenge_mode_end_node")) continue;
 
-		Server::StartTouchChallengeNode = Memory::VMT<Server::_StartTouchChallengeNode>(ent, Offsets::StartTouch);
-		g_flagStartTouchHook.SetFunc(Server::StartTouchChallengeNode);
-		g_IsCMFlagHookInitialized = true;
+		REGISTER_SIGNAL(Server::StartTouchChallengeNode, ent, Offsets::StartTouch);
 
-		break;
+		return;
 	}
+}
+
+static void InitPlayerRunCommandSignal() {
+	if (Server::PlayerRunCommand.IsRegistered()) return;
+	void *player = server->GetPlayer(1);
+	if (!player) return;
+	REGISTER_SIGNAL(Server::PlayerRunCommand, player, Offsets::PlayerRunCommand);
 }
 
 
 // CServerGameDLL::GameFrame
-DETOUR(Server::GameFrame, bool simulating)
+SIGNAL_LISTENER(0, Server::GameFrame, bool simulating)
 {
-	if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
-	if (!g_IsCMFlagHookInitialized) InitCMFlagHook();
-	if (!Server::PlayerRunCommand.IsRegistered()) {
-		void *player = server->GetPlayer(1);
-		if (player) {
-			Server::PlayerRunCommand.Register(SIGNAL_HOOK(PlayerRunCommand), player, Offsets::PlayerRunCommand);
-		}
-	}
+	InitAcceptInputSignal();
+	InitCMFlagSignal();
+	InitPlayerRunCommandSignal();
 
 	if (sar_tick_debug.GetInt() >= 3 || (sar_tick_debug.GetInt() >= 2 && simulating)) {
 		int host, server, client;
@@ -591,7 +574,7 @@ DETOUR(Server::GameFrame, bool simulating)
 
 	Event::Trigger<Event::PRE_TICK>({simulating, tick});
 
-	auto result = Server::GameFrame(thisptr, simulating);
+	auto result = signal->CallNext(thisptr, simulating);
 
 	Event::Trigger<Event::POST_TICK>({simulating, tick});
 
@@ -690,7 +673,7 @@ bool Server::Init() {
 		this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
 		this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 
-		ProcessMovement.Register(SIGNAL_HOOK(ProcessMovement), this->g_GameMovement->ThisPtr(), Offsets::ProcessMovement);
+		REGISTER_SIGNAL(ProcessMovement, this->g_GameMovement->ThisPtr(), Offsets::ProcessMovement);
 
 		this->g_GameMovement->Hook(Server::GetPlayerViewOffset_Hook, Server::GetPlayerViewOffset, Offsets::GetPlayerViewOffset);
 		this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
@@ -750,7 +733,7 @@ bool Server::Init() {
 		this->GetAllServerClasses = this->g_ServerGameDLL->Original<_GetAllServerClasses>(Offsets::GetAllServerClasses);
 		this->IsRestoring = this->g_ServerGameDLL->Original<_IsRestoring>(Offsets::IsRestoring);
 
-		this->g_ServerGameDLL->Hook(Server::GameFrame_Hook, Server::GameFrame, Offsets::GameFrame);
+		REGISTER_SIGNAL(Server::GameFrame, this->g_ServerGameDLL->ThisPtr(), Offsets::GameFrame);
 		this->g_ServerGameDLL->Hook(Server::ApplyGameSettings_Hook, Server::ApplyGameSettings, Offsets::ApplyGameSettings);
 	}
 

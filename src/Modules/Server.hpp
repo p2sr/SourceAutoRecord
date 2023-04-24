@@ -27,12 +27,6 @@ public:
 	using _TraceFirePortal = int(__rescall *)(uintptr_t pgunptr, Vector &vOrigin, Vector &Direction, bool portalToPlace, int ePlacedBy, TracePortalPlacementInfo_t &placementInfo);
 	using _FindPortal = uintptr_t (*)(char linkage, bool secondaryPortal, bool createIfNotFound);
 
-#ifdef _WIN32
-	using _AcceptInput = bool(__rescall *)(void *thisptr, const char *inputName, void *activator, void *caller, variant_t value, int outputID);
-#else
-	using _AcceptInput = bool(__rescall *)(void *thisptr, const char *inputName, void *activator, void *caller, variant_t value, int outputID);
-#endif
-
 	using _CreateEntityByName = void *(__rescall *)(void *, const char *);
 	using _DispatchSpawn = void(__rescall *)(void *, void *);
 	using _SetKeyValueChar = bool(__rescall *)(void *, void *, const char *, const char *);
@@ -47,7 +41,6 @@ public:
 	_SetKeyValueChar SetKeyValueChar = nullptr;
 	_SetKeyValueFloat SetKeyValueFloat = nullptr;
 	_SetKeyValueVector SetKeyValueVector = nullptr;
-	_AcceptInput AcceptInput = nullptr;
 	_TraceFirePortal TraceFirePortal = nullptr;
 	_FindPortal FindPortal = nullptr;
 
@@ -99,7 +92,9 @@ public:
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR_T(Vector *, GetPlayerViewOffset, bool ducked);
 
-	DECL_DETOUR(StartTouchChallengeNode, void *entity);
+	DECL_SIGNAL(StartTouchChallengeNode, void *);
+
+	DECL_SIGNAL(AcceptInput, const char *, void *, void *, variant_t, int);
 
 	// CGameMovement::CheckJumpButton
 	DECL_DETOUR_T(bool, CheckJumpButton);
@@ -118,7 +113,7 @@ public:
 	float *aircontrol_fling_speed_addr;
 
 	// CServerGameDLL::GameFrame
-	DECL_DETOUR(GameFrame, bool simulating);
+	DECL_SIGNAL(GameFrame, bool);
 
 	// CServerGameDLL::ApplyGameSettings
 	DECL_DETOUR(ApplyGameSettings, KeyValues *pKV);

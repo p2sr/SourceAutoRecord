@@ -7,54 +7,62 @@
 #include <vector>
 
 
-#define __SIGNAL_HOOK_FUNC_ARGS_0(name, typeA, typeB, typeC, typeD, typeE) \
+#define __SIGNAL_HOOK_FUNC_ARGS_0(name, typeA, typeB, typeC, typeD, typeE, typeF) \
 	(void *thisptr, int edx) { \
 		return name##.Call(thisptr); \
 	}
 
-#define __SIGNAL_HOOK_FUNC_ARGS_1(name, typeA, typeB, typeC, typeD, typeE) \
+#define __SIGNAL_HOOK_FUNC_ARGS_1(name, typeA, typeB, typeC, typeD, typeE, typeF) \
 	(void *thisptr, int edx, typeA a) { \
 		return name##.Call(thisptr, a); \
 	}
 
-#define __SIGNAL_HOOK_FUNC_ARGS_2(name, typeA, typeB, typeC, typeD, typeE) \
+#define __SIGNAL_HOOK_FUNC_ARGS_2(name, typeA, typeB, typeC, typeD, typeE, typeF) \
 	(void *thisptr, int edx, typeA a, typeB b) { \
 		return name##.Call(thisptr, a, b); \
 	}
 
-#define __SIGNAL_HOOK_FUNC_ARGS_3(name, typeA, typeB, typeC, typeD, typeE) \
+#define __SIGNAL_HOOK_FUNC_ARGS_3(name, typeA, typeB, typeC, typeD, typeE, typeF) \
 	(void *thisptr, int edx, typeA a, typeB b, typeC c) { \
 		return name##.Call(thisptr, a, b, c); \
 	}
 
-#define __SIGNAL_HOOK_FUNC_ARGS_4(name, typeA, typeB, typeC, typeD, typeE) \
+#define __SIGNAL_HOOK_FUNC_ARGS_4(name, typeA, typeB, typeC, typeD, typeE, typeF) \
 	(void *thisptr, int edx, typeA a, typeB b, typeC c, typeD d) { \
 		return name##.Call(thisptr, a, b, c, d); \
 	}
 
-#define __SIGNAL_HOOK_FUNC_ARGS_5(typeA, typeB, typeC, typeD, typeE) \
+#define __SIGNAL_HOOK_FUNC_ARGS_5(name, typeA, typeB, typeC, typeD, typeE, typeF) \
 	(void *thisptr, int edx, typeA a, typeB b, typeC c, typeD d, typeE e) { \
 		return name##.Call(thisptr, a, b, c, d, e); \
 	}
 
+#define __SIGNAL_HOOK_FUNC_ARGS_6(name, typeA, typeB, typeC, typeD, typeE, typeF)     \
+	(void *thisptr, int edx, typeA a, typeB b, typeC c, typeD d, typeE e, typeF f) { \
+		return name##.Call(thisptr, a, b, c, d, e, f);                            \
+	}
+
 #define __SIGNAL_EXPAND_THE_FUCK_OUT_OF_THIS_MSVC_BULLSHIT(x) x
 
-#define SIGNAL_HOOK(name) _sar_signal_hook_##name
+#define _SIGNAL_HOOK(name) name##_sar_signal_hook
 
-#define __SIGNAL_HOOK_FUNC_ARGS_N(returnType, name, typeA, typeB, typeC, typeD, typeE, N, ...) \
-	static returnType __fastcall SIGNAL_HOOK(name) __SIGNAL_HOOK_FUNC_ARGS_##N##(name, typeA, typeB, typeC, typeD, typeE)
+#define __SIGNAL_HOOK_FUNC_ARGS_N(returnType, name, typeA, typeB, typeC, typeD, typeE, typeF, N, ...) \
+	static returnType __fastcall _SIGNAL_HOOK(name) __SIGNAL_HOOK_FUNC_ARGS_##N##(name, typeA, typeB, typeC, typeD, typeE, typeF)
 
 #define _SIGNAL_HOOK_FUNC(returnType, name, ...) \
-	__SIGNAL_EXPAND_THE_FUCK_OUT_OF_THIS_MSVC_BULLSHIT(__SIGNAL_HOOK_FUNC_ARGS_N(returnType, name, ##__VA_ARGS__##, 5, 4, 3, 2, 1, 0))
+	__SIGNAL_EXPAND_THE_FUCK_OUT_OF_THIS_MSVC_BULLSHIT(__SIGNAL_HOOK_FUNC_ARGS_N(returnType, name, ##__VA_ARGS__##, 6, 5, 4, 3, 2, 1, 0))
 
 #define DECL_SIGNAL_T(returnType, name, ...)                         \
 	using name##Signal_t = Signal<returnType, ##__VA_ARGS__##>;           \
 	using name##Listener_t = SignalListener<returnType, ##__VA_ARGS__##>; \
 	using name##Return_t = returnType;                                \
-	static name##Signal_t name; \
-	_SIGNAL_HOOK_FUNC(returnType, name, ##__VA_ARGS__##)
+	_SIGNAL_HOOK_FUNC(returnType, name, ##__VA_ARGS__##) \
+	static name##Signal_t name;
 
 #define DECL_SIGNAL(name, ...) DECL_SIGNAL_T(int, name, ##__VA_ARGS__##)
+
+#define REGISTER_SIGNAL(name, instance, offset) \
+	name##.Register(_SIGNAL_HOOK(name), instance, offset);
 
 #define __SIGNAL_LISTENER(x, priority, signalname, ...) \
 	static signalname##Return_t _sar_signal_listener_##x##_func(signalname##Signal_t *signal, void *thisptr, ##__VA_ARGS__##); \
@@ -170,7 +178,6 @@ public:
 
 	void Register(void *hookFunc, void *instancePtr, int index) {
 		this->hook = new Hook(hookFunc);
-
 		this->originalFunc = Memory::VMT<SignalFunc>(instancePtr, index);
 		hook->SetFunc(this->originalFunc);
 		hook->Enable();
