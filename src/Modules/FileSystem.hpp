@@ -17,6 +17,7 @@ public:
 	bool FileExistsSomewhere(std::string filename);
 	std::string GetSaveDirectory();
 	bool MapExists(std::string name);
+	std::optional<std::string> FindFileSomewhere(std::string filepath, std::string gamedir = "");
 
 public:
 	bool Init() override;
