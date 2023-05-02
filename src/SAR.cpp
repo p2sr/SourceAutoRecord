@@ -295,7 +295,7 @@ CON_COMMAND(sar_rename, "sar_rename <name> - changes your name\n") {
 		return console->Print(sar_rename.ThisPtr()->m_pszHelpString);
 	}
 
-	auto name = Variable("name");
+	Variable name("name");
 	if (!!name) {
 		name.DisableChange();
 		name.SetValue(args[1]);

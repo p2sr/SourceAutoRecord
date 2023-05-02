@@ -44,5 +44,5 @@ namespace Utils {
 #if _WIN32
 #	define GO_THE_FUCK_TO_SLEEP(ms) Sleep(ms)
 #else
-#	define GO_THE_FUCK_TO_SLEEP(ms) usleep(ms * 1000)
+#	define GO_THE_FUCK_TO_SLEEP(ms) usleep((ms) * 1000)
 #endif

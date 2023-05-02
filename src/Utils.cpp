@@ -85,7 +85,7 @@ std::optional<Color> Utils::GetColor(const char *str, bool to_linear) {
 	bool had_hash = str[0] == '#';
 	if (had_hash) ++str, --len;
 
-	int r, g, b, a;
+	unsigned r, g, b, a;
 	int end;
 
 	if (len == 8 && sscanf(str, "%2x%2x%2x%2x%n", &r, &g, &b, &a, &end) == 4 && end >= 8) {

@@ -357,7 +357,7 @@ CON_COMMAND(ghost_set_color, "ghost_set_color <hex code> - sets the ghost color 
 		++color;
 	}
 
-	int r, g, b;
+	unsigned r, g, b;
 	int end;
 	if (sscanf(color, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
 		return console->Print("Invalid color code!\n");

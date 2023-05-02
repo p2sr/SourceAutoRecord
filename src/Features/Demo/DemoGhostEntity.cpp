@@ -11,9 +11,11 @@
 DemoGhostEntity::DemoGhostEntity(unsigned int ID, std::string name, DataGhost data, std::string currentMap)
 	: GhostEntity(ID, name, data, currentMap, false)
 	, currentDemo(0)
+	, lastGameTick(0)
 	, demoTick(0)
 	, nbDemoTicks(0)
 	, currentMap("")  //currentMapID(engine->GetMapIndex(currentMap))
+	, totalTicks(0)
 	, hasFinished(false)
 	, offset(0)
 	, isAhead(false) {

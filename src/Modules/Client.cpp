@@ -511,7 +511,7 @@ bool Client::Init() {
 
 		this->g_ClientDLL->Hook(Client::LevelInitPreEntity_Hook, Client::LevelInitPreEntity, Offsets::LevelInitPreEntity);
 
-		auto leaderboard = Command("+leaderboard");
+		Command leaderboard("+leaderboard");
 		if (!!leaderboard) {
 			using _GetHud = void *(__cdecl *)(int unk);
 			using _FindElement = void *(__rescall *)(void *thisptr, const char *pName);

@@ -319,12 +319,12 @@ void InputHud::ModifyElementParam(std::string name, std::string parameter, std::
 		element->height = valueInt;
 	} else if (parameter.compare("pos") == 0) {
 		int x, y, width, height;
-		if (sscanf(value.c_str(), "%u %u %u %u", &x, &y, &width, &height) == 4) {
+		if (sscanf(value.c_str(), "%d %d %d %d", &x, &y, &width, &height) == 4) {
 			element->x = x;
 			element->y = y;
 			element->width = width;
 			element->height = height;
-		} else if (sscanf(value.c_str(), "%u %u", &x, &y) == 2) {
+		} else if (sscanf(value.c_str(), "%d %d", &x, &y) == 2) {
 			element->x = x;
 			element->y = y;
 		}

@@ -134,6 +134,7 @@ struct ConVar : ConCommandBase {
 		, m_pParent(nullptr)
 		, m_pszDefaultValue(value)
 		, m_pszString(nullptr)
+		, m_StringLength(0)
 		, m_fValue(0.0f)
 		, m_nValue(0)
 		, m_bHasMin(hasmin)

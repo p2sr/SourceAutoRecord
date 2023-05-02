@@ -47,17 +47,17 @@ public:
 
 #define CON_COMMAND(name, description)                        \
 	void name##_callback(const CCommand &args);                  \
-	Command name = Command(#name, name##_callback, description); \
+	Command name(#name, name##_callback, description); \
 	void name##_callback(const CCommand &args)
 
 #define CON_COMMAND_F(name, description, flags)                      \
 	void name##_callback(const CCommand &args);                         \
-	Command name = Command(#name, name##_callback, description, flags); \
+	Command name(#name, name##_callback, description, flags); \
 	void name##_callback(const CCommand &args)
 
 #define CON_COMMAND_F_COMPLETION(name, description, flags, completion)           \
 	void name##_callback(const CCommand &args);                                     \
-	Command name = Command(#name, name##_callback, description, flags, completion); \
+	Command name(#name, name##_callback, description, flags, completion); \
 	void name##_callback(const CCommand &args)
 
 #define DECL_DECLARE_AUTOCOMPLETION_FUNCTION(command) \

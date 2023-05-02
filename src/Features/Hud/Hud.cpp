@@ -503,7 +503,7 @@ CON_COMMAND_F(sar_hud_set_text, "sar_hud_set_text <id> <text>... - sets and show
 				++txt;
 				continue;
 			} else {
-				int r, g, b;
+				unsigned r, g, b;
 				int end = -1;
 				if (sscanf(txt, "%2x%2x%2x%n", &r, &g, &b, &end) == 3 && end == 6) {
 					txt += 6;

@@ -26,6 +26,8 @@ Command::~Command() {
 }
 Command::Command(const char *name) {
 	this->ptr = reinterpret_cast<ConCommand *>(tier1->FindCommandBase(tier1->g_pCVar->ThisPtr(), name));
+	this->version = SourceGame_Unknown;
+	this->isRegistered = false;
 	this->isReference = true;
 }
 Command::Command(const char *pName, _CommandCallback callback, const char *pHelpString, int flags, _CommandCompletionCallback completionFunc)
@@ -85,7 +87,7 @@ Command *Command::Find(const char *name) {
 }
 
 bool Command::Hook(const char *name, _CommandCallback detour, _CommandCallback &original) {
-	auto cc = Command(name);
+	Command cc(name);
 	if (!!cc) {
 		original = cc.ThisPtr()->m_fnCommandCallback;
 		cc.ThisPtr()->m_fnCommandCallback = detour;
@@ -94,7 +96,7 @@ bool Command::Hook(const char *name, _CommandCallback detour, _CommandCallback &
 	return false;
 }
 bool Command::Unhook(const char *name, _CommandCallback original) {
-	auto cc = Command(name);
+	Command cc(name);
 	if (!!cc && original) {
 		cc.ThisPtr()->m_fnCommandCallback = original;
 		return true;
@@ -102,7 +104,7 @@ bool Command::Unhook(const char *name, _CommandCallback original) {
 	return false;
 }
 bool Command::HookCompletion(const char *name, _CommandCompletionCallback detour, _CommandCompletionCallback &original) {
-	auto cc = Command(name);
+	Command cc(name);
 	if (!!cc) {
 		original = cc.ThisPtr()->m_bHasCompletionCallback ? cc.ThisPtr()->m_fnCompletionCallback : nullptr;
 		cc.ThisPtr()->m_bHasCompletionCallback = true;
@@ -112,7 +114,7 @@ bool Command::HookCompletion(const char *name, _CommandCompletionCallback detour
 	return false;
 }
 bool Command::UnhookCompletion(const char *name, _CommandCompletionCallback original) {
-	auto cc = Command(name);
+	Command cc(name);
 	if (!!cc) {
 		cc.ThisPtr()->m_bHasCompletionCallback = !!original;
 		cc.ThisPtr()->m_fnCompletionCallback = original;
@@ -121,7 +123,7 @@ bool Command::UnhookCompletion(const char *name, _CommandCompletionCallback orig
 	return false;
 }
 bool Command::ActivateAutoCompleteFile(const char *name, _CommandCompletionCallback callback) {
-	auto cc = Command(name);
+	Command cc(name);
 	if (!!cc) {
 		cc.ThisPtr()->m_bHasCompletionCallback = true;
 		cc.ThisPtr()->m_fnCompletionCallback = callback;
@@ -130,7 +132,7 @@ bool Command::ActivateAutoCompleteFile(const char *name, _CommandCompletionCallb
 	return false;
 }
 bool Command::DectivateAutoCompleteFile(const char *name) {
-	auto cc = Command(name);
+	Command cc(name);
 	if (!!cc) {
 		cc.ThisPtr()->m_bHasCompletionCallback = false;
 		cc.ThisPtr()->m_fnCompletionCallback = nullptr;

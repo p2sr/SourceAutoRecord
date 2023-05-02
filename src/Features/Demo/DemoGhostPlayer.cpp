@@ -21,7 +21,9 @@ DemoGhostPlayer demoGhostPlayer;
 DemoGhostPlayer::DemoGhostPlayer()
 	: isPlaying(false)
 	, currentTick(0)
-	, isFullGame(false) {
+	, isFullGame(false)
+	, nbDemos(0)
+	, followID(-1) {
 }
 
 void DemoGhostPlayer::SpawnAllGhosts() {
@@ -192,11 +194,11 @@ std::string DemoGhostPlayer::CustomDataToString(const char *entName, const char 
 }
 
 std::string DemoGhostPlayer::CustomDataToString(Vector pos, std::optional<int> slot, PortalColor portal) {
-	return Utils::ssprintf("%f %f %f %d %d", pos.x, pos.y, pos.z, slot, portal);
+	return Utils::ssprintf("%f %f %f %d %d", pos.x, pos.y, pos.z, slot.value(), static_cast<int>(portal));
 }
 
 std::string DemoGhostPlayer::CustomDataToString(std::optional<int> slot) {
-	return Utils::ssprintf("%d", slot);
+	return Utils::ssprintf("%d", slot.value());
 }
 
 DECL_COMMAND_FILE_COMPLETION(ghost_set_demo, ".dem", engine->GetGameDirectory(), 1);

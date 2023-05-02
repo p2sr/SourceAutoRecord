@@ -21,6 +21,7 @@ class GhostLeaderboardHud : public Hud {
 public:
 	GhostLeaderboardHud()
 		: Hud(HudType_InGame | HudType_Paused, false)
+		, lastLiveUpdate(-1)
 	{ }
 
 	virtual bool GetCurrentSize(int &w, int &h) override {

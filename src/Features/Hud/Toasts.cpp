@@ -102,7 +102,7 @@ CON_COMMAND_F(sar_toast_tag_set_color, "sar_toast_tag_set_color <tag> <color> - 
 			++col;
 		}
 
-		int r, g, b;
+		unsigned r, g, b;
 		int end = -1;
 		if (sscanf(col, "%2x%2x%2x%n", &r, &g, &b, &end) != 3 || end != 6) {
 			return console->Print("Invalid color code '%s'\n", args[2]);

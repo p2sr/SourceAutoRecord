@@ -44,7 +44,11 @@ namespace Memory {
 
 	public:
 		~Patch();
-		bool Execute(uintptr_t location, unsigned char *bytes);
+		bool Execute(uintptr_t location, unsigned char *bytes, size_t size);
+		template <size_t size>
+		bool Execute(uintptr_t location, unsigned char (&bytes)[size]) {
+			return Execute(location, bytes, size);
+		}
 		bool Restore();
 	};
 #endif

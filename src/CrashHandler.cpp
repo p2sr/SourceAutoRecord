@@ -122,7 +122,7 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
 		SymFunctionTableAccess,
 		SymGetModuleBase,
 		0)) {
-		void *addr = (void *)frame.AddrPC.Offset;
+		auto addr = frame.AddrPC.Offset;
 		DWORD64 displacement;
 
 		char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];

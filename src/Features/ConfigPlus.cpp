@@ -534,6 +534,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 			if (out_stack.empty()) {                                     \
 				console->Print("Malformed input\n");                        \
 				CLEAR_OUT_STACK;                                            \
+				free(c_new);                                                \
 				return NULL;                                                \
 			}                                                            \
 			c_new->binop_l = out_stack.top();                            \
@@ -576,6 +577,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				if (toks.empty() || toks.front().type != TOK_EQUALS) {
 					console->Print("Expected = after '%.*s'\n", t.len, t.str);
 					CLEAR_OUT_STACK;
+					free(c);
 					return NULL;
 				}
 
@@ -584,6 +586,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				if (toks.empty() || toks.front().type != TOK_STR) {
 					console->Print("Expected string token after '%.*s='\n", t.len, t.str);
 					CLEAR_OUT_STACK;
+					free(c);
 					return NULL;
 				}
 
@@ -627,6 +630,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 			} else {
 				console->Print("Bad token '%.*s'\n", t.len, t.str);
 				CLEAR_OUT_STACK;
+				free(c);
 				return NULL;
 			}
 

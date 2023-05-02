@@ -19,8 +19,8 @@
 #	include <signal.h>
 #endif
 
-#define INRANGE(x, a, b) (x >= a && x <= b)
-#define getBits(x) (INRANGE((x & (~0x20)), 'A', 'F') ? ((x & (~0x20)) - 'A' + 0xA) : (INRANGE(x, '0', '9') ? x - '0' : 0))
+#define INRANGE(x, a, b) ((x) >= (a) && (x) <= (b))
+#define getBits(x) (INRANGE(((x) & (~0x20)), 'A', 'F') ? (((x) & (~0x20)) - 'A' + 0xA) : (INRANGE(x, '0', '9') ? x - '0' : 0))
 #define getByte(x) (getBits(x[0]) << 4 | getBits(x[1]))
 
 std::vector<Memory::ModuleInfo> Memory::moduleList;
@@ -249,9 +249,9 @@ Memory::Patch::~Patch() {
 		this->original = nullptr;
 	}
 }
-bool Memory::Patch::Execute(uintptr_t location, unsigned char *bytes) {
+bool Memory::Patch::Execute(uintptr_t location, unsigned char *bytes, size_t size) {
 	this->location = location;
-	this->size = sizeof(bytes) / sizeof(bytes[0]) - 1;
+	this->size = size;
 	this->original = new unsigned char[this->size];
 
 	for (size_t i = 0; i < this->size; ++i) {

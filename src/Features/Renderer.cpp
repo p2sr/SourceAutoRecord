@@ -1103,7 +1103,10 @@ void Renderer::Frame() {
 
 	// Double check the buffer hasn't at some point between the start of
 	// the function and now been invalidated
-	if (!g_render.isRendering.load()) return;
+	if (!g_render.isRendering.load()) {
+		g_render.imageBufLock.unlock();
+		return;
+	}
 
 	ReadScreenPixels(0, 0, g_render.width, g_render.height, g_render.imageBuf, IMAGE_FORMAT_BGR888);
 
