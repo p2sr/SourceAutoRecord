@@ -52,7 +52,7 @@ std::string Utils::ssprintf(const char *fmt, ...) {
 }
 uint8_t Utils::ConvertFromSrgb(uint8_t s) {
 	double s_ = (double)s / 255;
-	double l = s <= 0.04045 ? s_ / 12.92 : pow((s_ + 0.055) / 1.055, 2.4);
+	double l = s_ <= 0.04045 ? s_ / 12.92 : pow((s_ + 0.055) / 1.055, 2.4);
 	return (uint8_t)(l * 255);
 }
 std::string Utils::GetSARPath() {
