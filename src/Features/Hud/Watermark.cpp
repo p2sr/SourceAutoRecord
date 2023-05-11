@@ -5,8 +5,10 @@
 #	include "Hud.hpp"
 #	include "Modules/Engine.hpp"
 #	include "Modules/Surface.hpp"
+#	include "Modules/Scheme.hpp"
 
-#	define WATERMARK_MSG "Development SAR build. Do not use."
+#	define WATERMARK_MSG_HEADER "Activate SAR"
+#	define WATERMARK_MSG_HELPTEXT "Development SAR build. Do not use."
 
 class WatermarkHud : public Hud {
 public:
@@ -26,11 +28,15 @@ public:
 		int screenWidth, screenHeight;
 		engine->GetScreenSize(nullptr, screenWidth, screenHeight);
 
-		Surface::HFont font = 6;
+		Surface::HFont headerFont = scheme->GetFontByID(33);
+		Surface::HFont subTextFont = scheme->GetFontByID(32);
 
-		int width = surface->GetFontLength(font, "%s", WATERMARK_MSG);
+		int fontSize = surface->GetFontHeight(headerFont);
 
-		surface->DrawTxt(font, (screenWidth - width) / 2, screenHeight - 150, Color{255, 255, 255, 100}, "%s", WATERMARK_MSG);
+		int xPos = screenWidth - surface->GetFontLength(subTextFont, "%s", WATERMARK_MSG_HELPTEXT) - fontSize * 2;
+
+		surface->DrawTxt(headerFont, xPos, screenHeight - fontSize * 3, Color{255, 255, 255, 100}, "%s", WATERMARK_MSG_HEADER);
+		surface->DrawTxt(subTextFont, xPos, screenHeight - fontSize * 2, Color{255, 255, 255, 100}, "%s", WATERMARK_MSG_HELPTEXT);
 	}
 };
 
