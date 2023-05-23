@@ -752,7 +752,7 @@ void TasParser::SaveRawScriptToFile(TasScript script) {
 	std::ofstream file(fullRawPath);
 
 	file << SaveRawScriptToString(script);
-	console->Print("Saved raw TAS script \"%s\".\n", fullRawPath);
+	console->Print("Saved raw TAS script \"%s\".\n", fullRawPath.c_str());
 
 	file.close();
 }
