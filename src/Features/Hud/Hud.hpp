@@ -168,10 +168,8 @@ extern Variable sar_hud_y;
 extern Variable sar_hud_font_index;
 extern Variable sar_hud_font_color;
 extern Variable sar_hud_precision;
-extern Variable sar_hud_text;
 extern QAngle g_bluePortalAngles[2];
 extern QAngle g_orangePortalAngles[2];
-void sar_hud_text_callback(void *, const char *, float);
 
 int HudSetPos_CompleteFunc(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 

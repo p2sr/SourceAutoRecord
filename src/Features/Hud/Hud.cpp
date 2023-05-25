@@ -402,14 +402,6 @@ HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | H
 	}
 }
 
-Variable sar_hud_text("sar_hud_text", "", "DEPRECATED: Use sar_hud_set_text.\n", FCVAR_DONTRECORD);
-void sar_hud_text_callback(void *var, const char *pOldVal, float fOldVal) {
-	console->Print("WARNING: sar_hud_text is deprecated. Please use sar_hud_set_text instead.\n");
-	sar_hud_text_vals[0].draw = sar_hud_text.GetString()[0];
-	sar_hud_text_vals[0].components = {{{{255, 255, 255, 255}}, {sar_hud_text.GetString()}}};
-}
-
-
 // autocomplete function used for "setpos" commands.
 int HudSetPos_CompleteFunc(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) {
 	//separate command from parameters
