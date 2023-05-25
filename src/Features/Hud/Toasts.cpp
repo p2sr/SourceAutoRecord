@@ -469,8 +469,6 @@ CON_COMMAND_F(sar_toast_net_create, "sar_toast_net_create <tag> <text> - create 
 
 	const char *tag = args[1], *toast = Utils::ArgContinuation(args, 2);
 
-	// FIXME: this currently abuses the fact that we receive our own
-	// NetMessages, which is definitely a bug
 	if (engine->IsCoop()) {
 		size_t tagLen = strlen(tag), toastLen = strlen(toast);
 		size_t len = tagLen + toastLen + 2;
@@ -481,9 +479,8 @@ CON_COMMAND_F(sar_toast_net_create, "sar_toast_net_create <tag> <text> - create 
 		data[tagLen + 1 + toastLen] = 0;
 		NetMessage::SendMsg(TOAST_PACKET_TYPE, data, len);
 		free(data);
-	} else {
-		toastHud.AddToast(tag, toast);
 	}
+	toastHud.AddToast(tag, toast);
 }
 
 CON_COMMAND_F(sar_toast_dismiss_all, "sar_toast_dismiss_all - dismiss all active toasts\n", FCVAR_DONTRECORD) {
