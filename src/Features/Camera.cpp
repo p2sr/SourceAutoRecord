@@ -745,21 +745,6 @@ CON_COMMAND_F_COMPLETION(
 	}
 }
 
-CON_COMMAND(sar_cam_path_showkfs, "sar_cam_path_showkfs - display information about all camera path keyframes\n") {
-	if (!engine->demoplayer->IsPlaying())
-		return console->Print("Cinematic mode cannot be used outside of demo player.\n");
-
-	if (args.ArgC() == 1) {
-		for (auto const &state : camera->states) {
-			console->Print("%d: ", state.first);
-			console->Print(std::string(state.second).c_str());
-			console->Print("\n");
-		}
-	} else {
-		return console->Print(sar_cam_path_showkfs.ThisPtr()->m_pszHelpString);
-	}
-}
-
 CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs - exports commands for recreating currently made camera path\n") {
 	if (!engine->demoplayer->IsPlaying())
 		return console->Print("Cinematic mode cannot be used outside of demo player.\n");
