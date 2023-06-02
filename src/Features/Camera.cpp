@@ -818,6 +818,38 @@ CON_COMMAND(sar_cam_path_remkfs, "sar_cam_path_remkfs - removes all camera path 
 	}
 }
 
+CON_COMMAND(sar_cam_path_goto, "sar_cam_path_goto <frame> [skipto] - sends the camera to a specified frame of the camera path. If skipto is 1, goto the tick in the demo.\n") {
+	if (args.ArgC() < 2) {
+		return console->Print(sar_cam_path_goto.ThisPtr()->m_pszHelpString);
+	}
+	
+	if (camera->controlType != Drive) {
+		console->Print("Camera not in drive mode! Switching.\n");
+		sar_cam_control.SetValue(CameraControlType::Drive);
+	}
+
+	int i = std::atoi(args[1]);
+	int maxTimeTicks = 0;
+	int minTimeTicks = INT_MAX;
+	for (auto const &state : camera->states) {
+		maxTimeTicks = std::fmaxf(maxTimeTicks, state.first);
+		minTimeTicks = std::fminf(minTimeTicks, state.first);
+	}
+	if (i < minTimeTicks || i > maxTimeTicks) {
+		return console->Print("This frame does not exist.\n");
+	}
+	
+	camera->currentState = camera->InterpolateStates(i * (1.0 / 60));
+
+	if (args.ArgC() == 3 && std::atoi(args[2]) == 1) {
+		if (engine->demoplayer->IsPlaying()) {
+			// TODO: Make this pause when rewinding (remove_broken ignores demo_pause)
+			engine->ExecuteCommand(Utils::ssprintf("demo_gototick %d; demo_pause", i).c_str(), true);
+		}
+	}
+
+}
+
 CON_COMMAND(sar_cam_path_export, 
 	"sar_cam_path_export <filename> [format] [framerate] - exports current camera path to a given file in given format.\n"
 	"Available formats:\n"
