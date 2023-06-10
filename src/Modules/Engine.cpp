@@ -1070,8 +1070,11 @@ bool Engine::Init() {
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
 		Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), "83 EC 1C 8B 15 ? ? ? ? F3 0F 10 05 ? ? ? ? F3 0F 58 44 24 20 F3 0F 11 05 ? ? ? ? 8B 02 8B 40 24 3D ? ? ? ? 0F 85 41 03 00 00", 0);
 		host_frametime = *(float **)((uintptr_t)Host_AccumulateTime + 81);
-	} else {
+	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
 		Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), "55 89 E5 83 EC 28 F3 0F 10 05 ? ? ? ? A1 ? ? ? ? F3 0F 58 45 08 F3 0F 11 05 ? ? ? ? 8B 10 89 04 24 FF 52 24", 0);
+		host_frametime = *(float **)((uintptr_t)Host_AccumulateTime + 70);
+	} else {
+		Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), "55 89 E5 83 EC ? F3 0F 10 45 ? A1", 0);
 		host_frametime = *(float **)((uintptr_t)Host_AccumulateTime + 70);
 	}
 #endif
@@ -1084,8 +1087,10 @@ bool Engine::Init() {
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
 		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 1C 8B 1D ? ? ? ? 85 DB 0F 85 69 02 00 00 E8 64 FF FF FF A1 ? ? ? ? 80 3D C5 ? ? ? ? 8B 78 30 74 12 83 EC 08 6A 00", 0);
-	} else {
+	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
 		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 35 ? ? ? ? 85 F6 0F 95 C0 89 C6 0F 85 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? 80 3D ? ? ? ? 00 8B 78 30", 0);
+	} else {
+		_Host_RunFrame_Render = (void (*)())Memory::Scan(this->Name(), "55 89 E5 56 53 83 EC ? 8B 0D ? ? ? ? 85 C9 0F 95 C0", 0);
 	}
 #endif
 
@@ -1099,9 +1104,12 @@ bool Engine::Init() {
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
 		this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "8D 85 C4 FE FF FF 83 EC 04 8D B5 E8 FE FF FF 56 50 FF B5 94 FE FF FF E8", 24);
 		this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "FF B5 AC FE FF FF 8D B5 E8 FE FF FF 68 FE 04 00 00 68 ? ? ? ? 56 E8 ? ? ? ? 58 FF B5 94 FE FF FF E8", 36);
-	} else {
+	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
 		this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "89 44 24 08 8D 85 B0 FE FF FF 89 44 24 04 8B 85 8C FE FF FF 89 04 24 E8", 24);
 		this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "89 44 24 0C 8D 85 C0 FE FF FF 89 04 24 E8 ? ? ? ? 8B 85 8C FE FF FF 89 04 24 E8", 28);
+	} else {
+		this->readCustomDataInjectAddr = Memory::Scan(this->Name(), "8B 95 94 FE FF FF 8D 4D D8 8D 45 D4 89 4C 24 08 89 44 24 04 89 14 24 E8", 24);
+		this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "8B 45 ? 8D 75 ? C7 44 24 ? ? ? ? ? C7 44 24 ? ? ? ? ? 89 34 24 89 44 24 ? E8 ? ? ? ? 8B 8D", 44);
 	}
 #endif
 
@@ -1109,8 +1117,16 @@ bool Engine::Init() {
 	g_Cmd_ExecuteCommand = (decltype(g_Cmd_ExecuteCommand))Memory::Scan(this->Name(), "55 8B EC 57 8B 7D ? 8B 07 85 C0");
 	g_InsertCommand = (decltype(g_InsertCommand))Memory::Scan(this->Name(), "55 8B EC 56 57 8B 7D ? 8B F1 81 FF FF 01 00 00");
 #else
-	g_Cmd_ExecuteCommand = (decltype(g_Cmd_ExecuteCommand))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 75 ? 8B 3E");
-	g_InsertCommand = (decltype(g_InsertCommand))Memory::Scan(this->Name(), "55 57 56 53 83 EC 1C 8B 6C 24 ? 8B 5C 24 ? 8B 74 24 ? 81 FD FE 01 00 00");
+	if (sar.game->Is(SourceGame_EIPRelPIC)) {
+		g_Cmd_ExecuteCommand = (decltype(g_Cmd_ExecuteCommand))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 75 ? 8B 3E");
+		g_InsertCommand = (decltype(g_InsertCommand))Memory::Scan(this->Name(), "55 57 56 53 83 EC 1C 8B 6C 24 ? 8B 5C 24 ? 8B 74 24 ? 81 FD FE 01 00 00");
+	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
+		g_Cmd_ExecuteCommand = (decltype(g_Cmd_ExecuteCommand))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 75 ? 83 3E 00");
+		g_InsertCommand = (decltype(g_InsertCommand))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 1C 8B 75 ? 8B 5D ? 81 FE FE 01 00 00");
+	} else {
+		g_Cmd_ExecuteCommand = (decltype(g_Cmd_ExecuteCommand))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 1C 8B 5D ? 83 3B 00");
+		g_InsertCommand = (decltype(g_InsertCommand))Memory::Scan(this->Name(), "55 89 E5 83 EC 38 89 75 ? 8B 75 ? 89 5D ? 8B 5D ? 89 7D ? 8B 7D ? 81 FE FE 01 00 00");
+	}
 #endif
 	Cmd_ExecuteCommand_Hook.SetFunc(g_Cmd_ExecuteCommand);
 	InsertCommand_Hook.SetFunc(g_InsertCommand);

@@ -23,6 +23,25 @@ void ThinkingWithTimeMachine::LoadOffsets() {
 #define OFFSET_LINMOD(name, off) name = off;
 #include "OffsetsData.hpp"
 #endif
+
+#ifndef _WIN32
+    tickcount = 73; // CClientState::ProcessTick
+    interval_per_tick = 81; // CClientState::ProcessTick
+    HostState_OnClientConnected = 735; // CClientState::SetSignonState
+    demoplayer = 93; // CClientState::Disconnect
+    demorecorder = 106; // CClientState::Disconnect
+	m_szLevelName = 72; // CEngineTool::GetCurrentMap
+	GetClientMode = 12; // CHLClient::HudProcessInput
+	StartDrawing = 193; // CMatSystemSurface::PaintTraverseEx
+    FinishDrawing = 590; // CMatSystemSurface::PaintTraverseEx
+    GetLocalClient = 85; // CEngineClient::SetViewAngles
+	net_time = 28; // CDemoRecorder::GetRecordingTick
+	PerUserInput_tSize = 344; // CInput::DecodeUserCmdFromBuffer
+	VideoMode_Create = 103; // CEngineAPI::Init
+	snd_linear_count = 33; // SND_RecordBuffer
+	snd_p = 72; // SND_RecordBuffer
+	snd_vol = 80; // SND_RecordBuffer
+#endif
 }
 const char *ThinkingWithTimeMachine::Version() {
 	return "Thinking with Time Machine (5723)";

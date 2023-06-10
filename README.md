@@ -36,10 +36,12 @@ For features and installation instructions, please visit [the website].
 | Game                                                                    | Windows | Linux |
 |-------------------------------------------------------------------------|---------|-------|
 | [Portal 2](https://store.steampowered.com/app/620)                      | ✔       | ✔     |
-| [Aperture Tag](https://store.steampowered.com/app/280740)               | ✔       | ✔     |
+| [Aperture Tag](https://store.steampowered.com/app/280740)               | ✔       | [✔*](https://wiki.portal2.sr/Aperture_Tag#Linux) |
 | [Portal Stories: Mel](https://store.steampowered.com/app/317400)        | ✔       | ✔     |
 | [Thinking with Time Machine](https://store.steampowered.com/app/286080) | ✔       | ✔     |
 | [Portal Reloaded](https://store.steampowered.com/app/1255980)           | ✔       | ✔     |
+
+\* *With Proton Compatibility*
 
 # Documentation
 - [Contributing](docs/contributing.md)

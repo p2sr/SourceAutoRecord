@@ -477,8 +477,10 @@ bool EngineDemoPlayer::Init() {
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
 		InterpolateDemoCommand = (decltype(InterpolateDemoCommand))Memory::Scan(this->Name(), "55 57 56 53 83 EC 10 8B 44 24 24 8B 5C 24 2C 8B 88 B0 05 00 00 8B 44 24 30 8D 70 04 8D 90 9C 00 00 00 89 F0 F3 0F 10 40 04");
-	} else {
+	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
 		InterpolateDemoCommand = (decltype(InterpolateDemoCommand))Memory::Scan(this->Name(), "55 31 C9 89 E5 57 56 53 83 EC 3C 89 4D F0 8B 45 08 8B 4D 14 8B 80 B0 05 00 00 89 45 B8 8B 45 14 83 C0 04 89 45 D0");
+	} else {
+		InterpolateDemoCommand = (decltype(InterpolateDemoCommand))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC ? 8B 45 ? 8B 55 ? 8B 7D ? 8B 98");
 	}
 #endif
 

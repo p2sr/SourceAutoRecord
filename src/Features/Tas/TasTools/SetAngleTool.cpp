@@ -79,14 +79,14 @@ std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string
 
 	// ticks
 	try {
-		ticks = vp.size() >= (i + 1) ? std::stoi(vp[i]) : 1;
+		ticks = vp.size() >= (size_t)(i + 1) ? std::stoi(vp[i]) : 1;
 	} catch (...) {
 		throw TasParserException(Utils::ssprintf("Bad tick value for tool %s: %s", this->GetName(), vp[i].c_str()));
 	}
 
 	// easing type
 	try {
-		easingType = AngleToolsUtils::ParseEasingType(vp.size() >= (i + 2) ? vp[i + 1] : "linear");
+		easingType = AngleToolsUtils::ParseEasingType(vp.size() >= (size_t)(i + 2) ? vp[i + 1] : "linear");
 	} catch (...) {
 		throw TasParserException(Utils::ssprintf("Bad interpolation value for tool %s: %s", this->GetName(), vp[i + 1].c_str()));
 	}

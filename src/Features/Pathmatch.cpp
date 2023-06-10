@@ -328,8 +328,10 @@ ON_INIT {
 	uintptr_t orig;
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
 		orig = Memory::Scan("filesystem_stdio.so", "55 57 56 53 83 EC 0C 8B 6C 24 28 8B 5C 24 2C 0F B6 05 ? ? ? ? 84 C0 0F 84 ? ? ? ?");
-	} else {
+	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
 		orig = Memory::Scan("filesystem_stdio.so", "55 89 E5 57 56 53 83 EC 2C 8B 45 10 80 3D A0 ? ? ? ? 89 45 E4 0F 84 ? ? ? ? 8B 45 0C 8B 15 ? ? ? ? C7 00 00 00 00 00");
+	} else {
+		orig = Memory::Scan("filesystem_stdio.so", "55 89 E5 57 56 53 83 EC ? 0F B6 45 ? 80 3D");
 	}
 	_g_pm_hook.SetFunc(orig);
 }

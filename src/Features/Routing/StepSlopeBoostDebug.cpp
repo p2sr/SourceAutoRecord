@@ -60,9 +60,6 @@ ON_EVENT(SESSION_START) {
 }
 
 void drawBox(Vector position, Vector velocity, bool ducked, Color color) {
-	static const Vector player_standing_size = {32, 32, 72};
-	static const Vector player_ducked_size = {32, 32, 36};
-
 	auto center = position + (ducked ? Vector{0, 0, 18} : Vector{0, 0, 36});
 	auto size = ducked ? Vector{32, 32, 36} : Vector{32, 32, 72};
 

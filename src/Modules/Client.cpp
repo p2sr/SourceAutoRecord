@@ -764,7 +764,11 @@ bool Client::Init() {
 				Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
 				MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "55 8B EC 51 F3 0F 10 45 ? 0F 5A C0 F2 0F 59 05 ? ? ? ? 66 0F 5A C0 F3 0F 11 45 ? E8 ? ? ? ? F3 0F 11 45 ? F3 0F 10 45 ? E8 ? ? ? ? 8B 45 ? F3 0F 10 08");
 			#else
-				MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "56 66 0F EF C0 53 83 EC 14 8B 5C 24 ? 8D 44 24");
+				if (sar.game->Is(SourceGame_EIPRelPIC)) {
+					MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "56 66 0F EF C0 53 83 EC 14 8B 5C 24 ? 8D 44 24");
+				} else {
+					MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "55 89 E5 56 53 8D 45 ? 8D 55 ? 83 EC 20");
+				}
 			#endif
 
 			MatrixBuildRotationAboutAxisHook.SetFunc(MatrixBuildRotationAboutAxis);
@@ -809,9 +813,12 @@ bool Client::Init() {
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
 		Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC B8 00 00 00 8B 45 10 8B 5D 0C 89 85 60 FF FF FF 88 45 A7 A1 ? ? ? ?");
 		Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 83 EC 7C A1 ? ? ? ? 8B 5D 08 89 45 90 85 C0 0F 85 34 04 00 00 A1 ? ? ? ? 8B 40 30 85 C0");
-	} else {
+	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
 		Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC DC 00 00 00 8B 45 08 8B 5D 0C 89 C7 89 45 84 8B 45 10 89 85 4C FF FF FF");
 		Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 45 0C 8B 5D 08 89 45 8C 8B 45 14 89 45 90 65 A1 14 00 00 00");
+	} else {
+		Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 8D 55 ? 53 81 EC ? ? ? ? 0F B6 45 ? 89 14 24");
+		Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? A1 ? ? ? ? 8B 5D ? 85 C0 0F 95 C0 84 C0 88 45 ? 74 ? 8B 35 ? ? ? ? E8 ? ? ? ? 39 C6 0F 84 ? ? ? ? A1 ? ? ? ? 8B 40");
 	}
 #endif
 
@@ -860,9 +867,12 @@ bool Client::Init() {
 		if (sar.game->Is(SourceGame_EIPRelPIC)) {
 			cbk = (uintptr_t)Memory::Read(cbk + 9);  // openradialmenu -> OpenRadialMenuCommand
 			this->gamerules = *(void ***)(cbk + 1);
-		} else {
+		} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
 			cbk = (uintptr_t)Memory::Read(cbk + 12);  // openradialmenu -> OpenRadialMenuCommand
 			this->gamerules = *(void ***)(cbk + 9);
+		} else {
+			cbk = (uintptr_t)Memory::Read(cbk + 12);  // openradialmenu -> OpenRadialMenuCommand
+			this->gamerules = *(void ***)(cbk + 7);
 		}
 #endif
 	}
