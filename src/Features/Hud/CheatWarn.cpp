@@ -60,7 +60,7 @@ static Cheat g_cheats[] = {
 	}, "mobile portals enabled", "set 'sv_allow_mobile_portals 0'" },
 
 	{ +[]() {
-		return fabsf(*engine->interval_per_tick - 1.0f / 60.0f) < 0.00001f;
+		return fabsf(*engine->interval_per_tick - 1.0f / 60.0f) > 0.00001f;
 	}, "tickrate is not 60", "remove '-tickrate' from the game launch options" },
 };
 
