@@ -151,12 +151,14 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 		// Portal Reloaded {{{
 		*defaultCat = "Chambers RTA";
 		*cats = {
-			{"Chambers RTA", {{"Tube Start", "Portal Save Start", "Tube Ending", "Escape Ending", "02", "03", "04", "06", "07", "09", "11", "13", "14", "16", "17", "19", "21", "23"}}},
-			{"RTA", {{"Tube Start", "Portal Save Start", "Tube Ending", "Escape Ending"}}},
+			{"Chambers RTA", {{"SP Tube Start", "SP Portal Save Start", "SP Tube Ending", "SP Escape Ending", "SP 02", "SP 03", "SP 04", "SP 06", "SP 07", "SP 09", "SP 11", "SP 13", "SP 14", "SP 16", "SP 17", "SP 19", "SP 21", "SP 23"}}},
+			{"RTA", {{"SP Tube Start", "SP Portal Save Start", "SP Tube Ending", "SP Escape Ending"}}},
+			{"Chambers Coop", {{"Coop Start", "Coop End", "Coop 01", "Coop 02", "Coop 04", "Coop 05", "Coop 07", "Coop 09", "Coop 11", "Coop 13", "Coop 15", "Coop 17", "Coop 19"}}},
+			{"Coop", {{"Coop Start", "Coop End"}}},
 		};
 		*rules = {
 			{
-				"Tube Start",
+				"SP Tube Start",
 				SpeedrunRule(
 					RuleAction::START,
 					"sp_a1_pr_map_002",
@@ -169,7 +171,7 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 					}),
 			},
 			{
-				"Portal Save Start",
+				"SP Portal Save Start",
 				SpeedrunRule(
 					RuleAction::START,
 					"sp_a1_pr_map_002",
@@ -182,7 +184,7 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 					}),
 			},
 			{
-				"Tube Ending",
+				"SP Tube Ending",
 				SpeedrunRule(
 					RuleAction::STOP,
 					"sp_a1_pr_map_012",
@@ -195,7 +197,7 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 					}),
 			},
 			{
-				"Escape Ending",
+				"SP Escape Ending",
 				SpeedrunRule(
 					RuleAction::STOP,
 					"sp_a1_pr_map_012",
@@ -207,20 +209,55 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 						"",
 					}),
 			},
-			{"02", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_003", ZoneTriggerRule{{336, 432, 100}, {150, 150, 200}, 0})},
-			{"03", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_003", ZoneTriggerRule{{-2400, -2080, 100}, {150, 150, 200}, 0})},
-			{"04", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_003", ZoneTriggerRule{{-2400, 416, 200}, {150, 150, 200}, 0})},
-			{"06", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_004", ZoneTriggerRule{{1952, 208, 100}, {150, 150, 200}, 0})},
-			{"07", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_004", ZoneTriggerRule{{4864, 6784, 100}, {150, 150, 200}, 0})},
-			{"09", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_005", ZoneTriggerRule{{160, -1472, 100}, {150, 150, 200}, 0})},
-			{"11", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_006", ZoneTriggerRule{{-2816, -288, 100}, {150, 150, 200}, 0})},
-			{"13", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_007", ZoneTriggerRule{{544, -320, 100}, {150, 150, 200}, 0})},
-			{"14", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_007", ZoneTriggerRule{{-1472, -1312, 100}, {150, 150, 200}, 0})},
-			{"16", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_008", ZoneTriggerRule{{-608, 1024, 676}, {150, 150, 200}, 0})},
-			{"17", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_008", ZoneTriggerRule{{4096, 6528, 676}, {150, 150, 200}, 0})},
-			{"19", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_009", ZoneTriggerRule{{-2048, -3488, 548}, {150, 150, 200}, 0})},
-			{"21", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_010", ZoneTriggerRule{{1344, 288, 260}, {150, 150, 200}, 0})},
-			{"23", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_011", ZoneTriggerRule{{-2336, -2944, 484}, {150, 150, 200}, 0})},
+			{"SP 02", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_003", ZoneTriggerRule{{336, 432, 100}, {150, 150, 200}, 0})},
+			{"SP 03", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_003", ZoneTriggerRule{{-2400, -2080, 100}, {150, 150, 200}, 0})},
+			{"SP 04", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_003", ZoneTriggerRule{{-2400, 416, 200}, {150, 150, 200}, 0})},
+			{"SP 06", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_004", ZoneTriggerRule{{1952, 208, 100}, {150, 150, 200}, 0})},
+			{"SP 07", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_004", ZoneTriggerRule{{4864, 6784, 100}, {150, 150, 200}, 0})},
+			{"SP 09", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_005", ZoneTriggerRule{{160, -1472, 100}, {150, 150, 200}, 0})},
+			{"SP 11", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_006", ZoneTriggerRule{{-2816, -288, 100}, {150, 150, 200}, 0})},
+			{"SP 13", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_007", ZoneTriggerRule{{544, -320, 100}, {150, 150, 200}, 0})},
+			{"SP 14", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_007", ZoneTriggerRule{{-1472, -1312, 100}, {150, 150, 200}, 0})},
+			{"SP 16", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_008", ZoneTriggerRule{{-608, 1024, 676}, {150, 150, 200}, 0})},
+			{"SP 17", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_008", ZoneTriggerRule{{4096, 6528, 676}, {150, 150, 200}, 0})},
+			{"SP 19", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_009", ZoneTriggerRule{{-2048, -3488, 548}, {150, 150, 200}, 0})},
+			{"SP 21", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_010", ZoneTriggerRule{{1344, 288, 260}, {150, 150, 200}, 0})},
+			{"SP 23", SpeedrunRule(RuleAction::SPLIT, "sp_a1_pr_map_011", ZoneTriggerRule{{-2336, -2944, 484}, {150, 150, 200}, 0})},
+			{
+				"Coop Start",
+				SpeedrunRule(
+					RuleAction::START,
+					"mp_coop_pr_cubes",
+					ZoneTriggerRule{
+						{-1472, -6112, 208},
+						{128, 128, 32},
+						0
+					}),
+			},
+			{
+				"Coop End",
+				SpeedrunRule(
+					RuleAction::STOP,
+					"mp_coop_pr_bts",
+					EntityInputRule{
+						ENTRULE_TARGETNAME,
+						"start_final_cutscene",
+						"",
+						"Trigger",
+						"",
+					}),
+			},
+			{"Coop 01", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_cubes",    EntityInputRule{ENTRULE_TARGETNAME, "instructor_hint_5", "", "EndHint", ""})},
+			{"Coop 02", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_cubes",    EntityInputRule{ENTRULE_TARGETNAME, "instructor_hint_6", "", "EndHint", ""})},
+			{"Coop 04", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_portals",  EntityInputRule{ENTRULE_TARGETNAME | ENTRULE_PARAMETER, "@tp", "", "RunScriptCode", "setSpawnDest(1)"})},
+			{"Coop 05", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_portals",  EntityInputRule{ENTRULE_TARGETNAME | ENTRULE_PARAMETER, "@tp", "", "RunScriptCode", "setSpawnDest(2)"})},
+			{"Coop 07", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_teamwork", EntityInputRule{ENTRULE_TARGETNAME | ENTRULE_PARAMETER, "@tp", "", "RunScriptCode", "setSpawnDest(1)"})},
+			{"Coop 09", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_fling",    EntityInputRule{ENTRULE_TARGETNAME | ENTRULE_PARAMETER, "@tp", "", "RunScriptCode", "setSpawnDest(1)"})},
+			{"Coop 11", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_loop",     EntityInputRule{ENTRULE_TARGETNAME | ENTRULE_PARAMETER, "@tp", "", "RunScriptCode", "setSpawnDest(1)"})},
+			{"Coop 13", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_catapult", EntityInputRule{ENTRULE_TARGETNAME | ENTRULE_PARAMETER, "@tp", "", "RunScriptCode", "setSpawnDest(1)"})},
+			{"Coop 15", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_laser",    EntityInputRule{ENTRULE_TARGETNAME | ENTRULE_PARAMETER, "@tp", "", "RunScriptCode", "setSpawnDest(1)"})},
+			{"Coop 17", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_bridge",   EntityInputRule{ENTRULE_TARGETNAME | ENTRULE_PARAMETER, "@tp", "", "RunScriptCode", "setSpawnDest(1)"})},
+			{"Coop 19", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_tbeam",    EntityInputRule{ENTRULE_TARGETNAME | ENTRULE_PARAMETER, "@tp", "", "RunScriptCode", "setSpawnDest(1)"})},
 		};
 		// }}}
 	} else {
