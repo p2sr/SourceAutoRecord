@@ -90,7 +90,7 @@ void Session::Start() {
 	engine->hasPaused = false;
 	engine->isPausing = false;
 	engine->startedTransitionFadeout = false;
-	engine->forcedPrimaryFullscreen = false;
+	engine->coopResumed = false;
 	server->tickCount = 0;
 
 	this->currentFrame = 0;

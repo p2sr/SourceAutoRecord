@@ -119,7 +119,7 @@ public:
 	int pauseTick;
 	bool hasWaited = false;
 	bool startedTransitionFadeout = false;
-	bool forcedPrimaryFullscreen = false;
+	bool coopResumed = false;
 	bool shouldPauseForSync = false;
 	bool isLevelTransition = false;
 	int tickLoadStarted = -1;

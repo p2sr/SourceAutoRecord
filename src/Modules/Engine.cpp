@@ -567,10 +567,13 @@ DETOUR_COMMAND(Engine::exec) {
 
 DECL_CVAR_CALLBACK(ss_force_primary_fullscreen) {
 	if (engine->GetMaxClients() >= 2 && client->GetChallengeStatus() != CMStatus::CHALLENGE && ss_force_primary_fullscreen.GetInt() == 0) {
-		if (engine->startedTransitionFadeout && !engine->forcedPrimaryFullscreen && !engine->IsOrange()) {
-			engine->forcedPrimaryFullscreen = true;
-			SpeedrunTimer::Resume();
-			SpeedrunTimer::OnLoad();
+		if (engine->startedTransitionFadeout && !engine->coopResumed && !engine->IsOrange()) {
+			// if the game is not Portal Reloaded (see src/Features/ReloadedFix.cpp)
+			if (sar.game->GetVersion() != SourceGame_PortalReloaded) {
+				engine->coopResumed = true;
+				SpeedrunTimer::Resume();
+				SpeedrunTimer::OnLoad();
+			}
 		}
 	}
 }
