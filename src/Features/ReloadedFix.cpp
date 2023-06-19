@@ -1,5 +1,6 @@
 #include "ReloadedFix.hpp"
 
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Client.hpp"
@@ -23,11 +24,28 @@ void ReloadedFix::OverrideInput(const char *className, const char *inputName, va
 	// only apply input override for Reloaded
 	if (!sar.game->Is(SourceGame_PortalReloaded)) return;
 
+	if (engine->IsCoop() && !strcmp(className, "trigger_teleport") && !strcmp(inputName, "Enable")) {
+		if (engine->startedTransitionFadeout && !engine->coopResumed && !engine->IsOrange()) {
+			engine->coopResumed = true;
+			SpeedrunTimer::Resume();
+			SpeedrunTimer::OnLoad();
+		}
+	}
+
 	if (!sar_fix_reloaded_cheats.GetBool()) return;
 
 	std::string paramStr = parameter->ToString();
 
 	// check commands
+	if (!strcmp(className, "point_clientcommand") && !strcmp(inputName, "Command")) {
+		if (paramStr.find("crosshair") == 0) {
+			parameter->iszVal = "";
+		} else if (paramStr.find("bind") == 0) {
+			parameter->iszVal = "";
+		} else if (paramStr.find("hud_saytext_time") == 0) {
+			parameter->iszVal = "";
+		}
+	}
 	if (!strcmp(className, "point_servercommand") && !strcmp(inputName, "Command")) {
 		if (paramStr.find("clear") == 0) {
 			parameter->iszVal = "";
