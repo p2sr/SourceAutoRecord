@@ -46,6 +46,7 @@ Variable sar_patch_bhop("sar_patch_bhop", "0", 0, 1, "Patches bhop by limiting w
 Variable sar_patch_cfg("sar_patch_cfg", "0", 0, 1, "Patches Crouch Flying Glitch.\n");
 Variable sar_prevent_ehm("sar_prevent_ehm", "0", 0, 1, "Prevents Entity Handle Misinterpretation (EHM) from happening.\n");
 Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables the viewmodel lagging behind.\n");
+Variable sar_disable_viewmodel_shadows("sar_disable_viewmodel_shadows", "0", 0, 1, "Disables the shadows on the viewmodel.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -290,6 +291,7 @@ void Cheats::Init() {
 	sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
 
 	sar_disable_weapon_sway.UniqueFor(SourceGame_Portal2);
+	sar_disable_viewmodel_shadows.UniqueFor(SourceGame_Portal2 | SourceGame_PortalStoriesMel | SourceGame_PortalReloaded);
 
 	sar_workshop.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
 	sar_workshop_update.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);

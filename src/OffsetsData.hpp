@@ -253,6 +253,9 @@ OFFSET_DEFAULT(GetSearchPath, 16, 16)
 // CGameRules
 OFFSET_DEFAULT(IsMultiplayer, 33, 34)
 
+// IClientRenderable
+OFFSET_DEFAULT(GetModel, 8, 8)
+
 // Others
 OFFSET_DEFAULT(tickcount, 95, 64)
 OFFSET_DEFAULT(interval_per_tick, 65, 58)
