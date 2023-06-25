@@ -66,6 +66,7 @@ REDECL(Client::ProcessMovement);
 REDECL(Client::DrawTranslucentRenderables);
 REDECL(Client::DrawOpaqueRenderables);
 REDECL(Client::CalcViewModelLag);
+REDECL(Client::AddShadowToReceiver);
 
 CMDECL(Client::GetAbsOrigin, Vector, m_vecAbsOrigin);
 CMDECL(Client::GetAbsAngles, QAngle, m_angAbsRotation);
@@ -494,6 +495,23 @@ DETOUR_T(void, Client::CalcViewModelLag, Vector &origin, QAngle &angles, QAngle 
 }
 Hook g_CalcViewModelLagHook(&Client::CalcViewModelLag_Hook);
 
+extern Hook g_AddShadowToReceiverHook;
+DETOUR_T(void, Client::AddShadowToReceiver, unsigned short handle, void *pRenderable, int type) {
+	if (sar_disable_viewmodel_shadows.GetBool()) {
+		// IClientRenderable::GetModel()
+		using _GetModel = model_t *(__rescall *)(void *);
+		model_t *model = Memory::VMT<_GetModel>(pRenderable, Offsets::GetModel)(pRenderable);
+
+		if (!strcmp(model->szPathName, "models/weapons/v_portalgun.mdl"))
+			return;
+	}
+
+	g_AddShadowToReceiverHook.Disable();
+	Client::AddShadowToReceiver(thisptr, handle, pRenderable, type);
+	g_AddShadowToReceiverHook.Enable();
+}
+Hook g_AddShadowToReceiverHook(&Client::AddShadowToReceiver_Hook);
+
 bool Client::Init() {
 	bool readJmp = false;
 
@@ -618,6 +636,16 @@ bool Client::Init() {
 	}
 
 	g_CalcViewModelLagHook.SetFunc(Client::CalcViewModelLag);
+
+	if (sar.game->Is(SourceGame_Portal2)) {
+#ifdef _WIN32
+		Client::AddShadowToReceiver = (decltype(Client::AddShadowToReceiver))Memory::Scan(client->Name(), "55 8B EC 51 53 56 57 0F B7 7D 08 69 FF ? ? ? ? 03 79 2C 51 89 4D FC 8B 0F 8B C4 89 08 8B 0D ? ? ? ? E8 ? ? ? ? 8B 75 0C 8B D8 3B DE 0F 84 ? ? ? ?");
+#else
+		Client::AddShadowToReceiver = (decltype(Client::AddShadowToReceiver))Memory::Scan(client->Name(), "55 89 E5 57 56 53 83 EC 44 8B 45 0C 8B 5D 08 8B 55 14 8B 75 10 89 45 C8 0F B7 C0 8B 7B 2C 89 45 D4 69 C0 ? ? ? ? 89 55 CC 89 45 C4 01 C7 8B 07 89 45 E4 8D 45 E4 50 FF 35 ? ? ? ? E8 ? ? ? ? 83 C4 10 89 45 D0 39 F0 74 12");
+#endif
+	}
+
+	g_AddShadowToReceiverHook.SetFunc(Client::AddShadowToReceiver);
 
 	// Get at gamerules
 	{

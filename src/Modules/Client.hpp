@@ -69,6 +69,9 @@ public:
 	void OpenChat();
 
 public:
+	// CClientShadowMgr::AddShadowToReceiver
+	DECL_DETOUR_T(void, AddShadowToReceiver, unsigned short handle, void *pRenderable, int type);
+
 	// CBaseViewModel::CalcViewModelLag
 	DECL_DETOUR_T(void, CalcViewModelLag, Vector &origin, QAngle &angles, QAngle &original_angles);
 

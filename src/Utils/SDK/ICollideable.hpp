@@ -19,7 +19,16 @@ enum SolidType_t {
 #define FSOLID_NOT_STANDABLE 0x10
 #define FSOLID_VOLUME_CONTENTS 0x20
 
-class model_t;
+struct model_t {
+	void *fnHandle;
+	char szPathName[260];
+	int nLoadFlags;
+	int nServerCount;
+	int type;
+	int flags;
+	Vector mins, maxs;
+	float radius;
+};
 class IClientUnknown;
 class IPhysicsObject;
 class CPhysCollide;
