@@ -255,7 +255,7 @@ void PlayerTrace::DrawInWorld() const {
 			float speed = trace.velocities[slot][0].Length2D();
 			unsigned groundframes = trace.grounded[slot][0];
 
-			for (size_t i = 1; i < trace.positions[slot].size(); i++) {
+			for (size_t i = 0; i < trace.positions[slot].size(); i++) {
 				Vector new_pos = trace.positions[slot][i];
 				speed = trace.velocities[slot][i].Length2D();
 				
