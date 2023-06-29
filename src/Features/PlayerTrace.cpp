@@ -133,7 +133,7 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 	// update this bad boy every tick because it doesn't like being tinkered with at the
 	// very beginning of the level. fussy guy, lemme tell ya
 	if (tasPlayer->IsRunning()) {
-		int ticksSinceStartup = (int)trace.positions[0].size() + 1; // include point we're about to add
+		int ticksSinceStartup = (int)trace.positions[0].size() + (int)(tasPlayer->GetTick() == 0); // include point we're about to add
 		traces[trace_name].startTasTick = tasPlayer->GetTick() - ticksSinceStartup;
 	}
 	
