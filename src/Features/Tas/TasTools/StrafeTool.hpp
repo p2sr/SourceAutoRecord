@@ -36,7 +36,7 @@ struct AutoStrafeSpeed {
 struct AutoStrafeParams : public TasToolParams {
 	AutoStrafeType strafeType = DISABLED;
 	AutoStrafeDirection strafeDir = {CURRENT, true, 0.0f};
-	AutoStrafeSpeed strafeSpeed = {SPECIFIED, 10000.0f};
+	AutoStrafeSpeed strafeSpeed = {CURRENT};
 	bool noPitchLock = false;
 	bool antiSpeedLock = true;
 

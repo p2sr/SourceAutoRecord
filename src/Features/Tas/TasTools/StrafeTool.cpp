@@ -442,8 +442,9 @@ void AutoStrafeTool::FollowLine(const TasPlayerInfo &pInfo) {
 
 std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::string> vp) {
 	AutoStrafeType type = VECTORIAL;
-	AutoStrafeDirection dir{CURRENT, false, 0};
-	AutoStrafeSpeed speed = {SPECIFIED, 10000.0f};
+	AutoStrafeDirection dir = {CURRENT, false, 0};
+	float maxSpeed = Variable("sv_maxvelocity").GetFloat() * 2.0f;
+	AutoStrafeSpeed speed = {SPECIFIED, maxSpeed};
 	bool noPitchLock = false;
 	bool antiSpeedLock = true;
 
@@ -466,7 +467,7 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 		//speed
 		else if (param == "max") {
 			speed.type = SPECIFIED;
-			speed.speed = 10000.0f;  // as long as it's higher than max speed times square root of 2, we should be fine?
+			speed.speed = maxSpeed;  // as long as it's higher than max speed times square root of 2, we should be fine?
 		} else if (param == "keep") {
 			speed.type = CURRENT;
 		} else if (param.size() > 3 && param.substr(param.size() - 3, 3) == "ups") {
