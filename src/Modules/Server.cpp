@@ -14,6 +14,7 @@
 #include "Features/Hud/StrafeHud.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/Hud/InputHud.hpp"
+#include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/PlayerTrace.hpp"
 #include "Features/ReloadedFix.hpp"
@@ -291,6 +292,8 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
 	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true });
 
+	auto startPosition = move->m_vecAbsOrigin;
+
 	auto res = Server::ProcessMovement(thisptr, player, move);
 
 	playerTrace->TweakLatestEyeOffsetForPortalShot(move, slot, false);
@@ -300,6 +303,13 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	if (g_playerTraceNeedsTeleport && slot == g_playerTraceTeleportSlot) {
 		move->m_vecAbsOrigin = g_playerTraceTeleportLocation;
 		g_playerTraceNeedsTeleport = false;
+	}
+
+	auto deltaPosition = (move->m_vecAbsOrigin - startPosition).Length();
+	bool groundedNew = SE(player)->ground_entity();
+
+	if (!grounded && groundedNew && deltaPosition > move->m_vecVelocity.Length() * 2.0f && deltaPosition > 64.0f) {
+		toastHud.AddToast("MPT", "MPT-viable teleportation detected.", true);
 	}
 
 	return res;
