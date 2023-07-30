@@ -617,6 +617,7 @@
 |sar_trace_bbox_use_hover|0|Move trace bbox to hovered trace point tick on given trace.|
 |sar_trace_clear|cmd|sar_trace_clear \<name> - Clear player trace with a given name|
 |sar_trace_clear_all|cmd|sar_trace_clear_all - Clear all the traces|
+|sar_trace_compare|cmd|sar_trace_compare \<trace 1> \<trace 2> - compares two given recorded traces and shows where differences occurred.|
 |sar_trace_draw|0|Display the recorded player trace. Requires cheats|
 |sar_trace_draw_hover|1|Display information about the trace at the hovered tick.|
 |sar_trace_draw_speed_deltas|0|Display the speed deltas. Requires sar_trace_draw|
