@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "Utils/SDK.hpp"
 
 #define RNG_MANIP_EXT "p2rng"
@@ -10,4 +11,7 @@ namespace RngManip {
 
 	void viewPunch(QAngle *offset);
 	void randomSeed(int *seed);
+
+	void EnterProcessMovement(void *gamemovement, CMoveData *move);
+	void ExitProcessMovement(CMoveData *move);
 }

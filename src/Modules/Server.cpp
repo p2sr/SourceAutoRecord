@@ -350,10 +350,29 @@ DETOUR_T(void, Server::ViewPunch, const QAngle &offset) {
 }
 Hook g_ViewPunch_Hook(&Server::ViewPunch_Hook);
 
+// For TAS consistency, rescale ucmd command numbers on session start to begin at 0
+// TODO: this is unsound. Instead, we should try to make the number of ticks during the load consistent, as
+// well as restart the session between replays (i.e. use `map` instead of `restart_level`).
+bool g_begin_cmd_num_rescale = false;
+int g_cmd_num_base = 0;
+ON_EVENT(SESSION_START) {
+	g_begin_cmd_num_rescale = true;
+}
 // CGameMovement::ProcessMovement
-DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
+DETOUR(Server::ProcessMovement, ServerEnt *player, CMoveData *move) {
+	CUserCmd *cur_ucmd = player->fieldOff<CUserCmd *>("m_flStepSoundTime", -4);
+	if (g_begin_cmd_num_rescale) {
+		g_begin_cmd_num_rescale = false;
+		g_cmd_num_base = cur_ucmd->command_number;
+	} else if (g_cmd_num_base > cur_ucmd->command_number) {
+		g_cmd_num_base = 0;
+	}
+	cur_ucmd->command_number -= g_cmd_num_base; // we'll revert this later so only ProcessMovement sees it
+
+	RngManip::EnterProcessMovement(thisptr, move);
+
 	int slot = server->GetSplitScreenPlayerSlot(player);
-	bool grounded = SE(player)->ground_entity();
+	bool grounded = player->ground_entity();
 	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true, player, move, nullptr, grounded });
 
 	auto res = Server::ProcessMovement(thisptr, player, move);
@@ -367,6 +386,8 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 		g_playerTraceNeedsTeleport = false;
 	}
 
+	RngManip::ExitProcessMovement(move);
+	cur_ucmd->command_number += g_cmd_num_base; // revert
 	return res;
 }
 
@@ -811,8 +832,10 @@ static void netResetCoopProgress(const void *data, size_t size) {
 }
 
 float hostTimeWrap() {
-	return engine->GetHostTime();
-} 
+	// We want this to be consistent across sessions to make the stuck check run at consistent times across sessions.
+	// See also corresponding logic in RNGManip's SESSION_START hook.
+	return (float)session->GetTick() * *engine->interval_per_tick;
+}
 
 static char g_orig_check_stuck_code[6];
 static void *g_check_stuck_code;

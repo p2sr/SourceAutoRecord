@@ -10,6 +10,7 @@
 #include "Offsets.hpp"
 #include "PlayerTrace.hpp"
 #include "Utils/json11.hpp"
+#include "Utils/SDK.hpp"
 
 #include <cstring>
 #include <deque>
@@ -325,6 +326,325 @@ DECL_DETOUR_T(void, EnsureAvailableSlotsForGender, SoundFile *pSounds, int count
 }
 Hook g_EnsureAvailableSlotsForGender_Hook(EnsureAvailableSlotsForGender_Hook);
 
+static void recordEntityOrgs() {
+	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+		ServerEnt *ent = (ServerEnt *)server->m_EntPtrArray[i].m_pEntity;
+		if (!ent) continue;
+		auto classname = server->GetEntityClassName(ent);
+		if (strcmp(classname, "prop_weighted_cube") && strcmp(classname, "player")) {
+			continue;
+		}
+
+		playerTrace->EnterLogScope(Utils::ssprintf("entity %d", i).c_str());
+		playerTrace->EmitLog(classname);
+		auto org = ent->abs_origin();
+		playerTrace->EmitLog("abs org:  (%.6f,%.6f,%.6f)", org.x, org.y, org.z);
+		org = ent->collision().GetCollisionOrigin();
+		playerTrace->EmitLog("coll org: (%.6f,%.6f,%.6f)", org.x, org.y, org.z);
+		playerTrace->ExitLogScope();
+	}
+}
+
+static void recordIvpEntityOrgs() {
+	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+		ServerEnt *ent = (ServerEnt *)server->m_EntPtrArray[i].m_pEntity;
+		if (!ent) continue;
+		auto classname = server->GetEntityClassName(ent);
+		if (strcmp(classname, "prop_weighted_cube") && strcmp(classname, "player")) {
+			continue;
+		}
+
+		IVP_Real_Object *ivp_obj = ((CPhysicsObject *)ent->collision().GetVPhysicsObject())->real_obj;
+		IVP_Core *core = ivp_obj->physical_core;
+		auto speed = core->speed;
+		auto pos = core->pos_world_f_core_last_psi;
+
+		playerTrace->EnterLogScope(Utils::ssprintf("entity %d", i).c_str());
+		playerTrace->EmitLog(classname);
+		playerTrace->EmitLog("speed: (%.6f,%.6f,%.6f)", speed.x, speed.y, speed.z);
+		playerTrace->EmitLog("pos:   (%.6f,%.6f,%.6f)", pos.x, pos.y, pos.z);
+		playerTrace->ExitLogScope();
+	}
+}
+
+static void recordIvpPlayerControllerShit(void *player_controller) {
+#define GET(T, x, off) T x = *(T *)((char *)player_controller + (off))
+	GET(IVP_U_Point, target_pos, 0x40);
+	GET(IVP_U_Float_Point, ground_pos, 0x50);
+	GET(IVP_U_Float_Point, max_speed, 0x60);
+	GET(IVP_U_Float_Point, cur_speed, 0x70);
+	GET(IVP_U_Float_Point, last_impulse, 0x80);
+	GET(uint8_t, flags, 0x90);
+#undef GET
+#define EMIT_VEC(vec, name) playerTrace->EmitLog(name ": (%.6f,%.6f,%.6f)", vec.x, vec.y, vec.z)
+#define EMIT_BOOL(val, name) playerTrace->EmitLog(name ": %s", (val) ? "true" : "false")
+	EMIT_VEC(target_pos, "m_targetPosition");
+	EMIT_VEC(ground_pos, "m_groundPosition");
+	EMIT_VEC(max_speed, "m_maxSpeed");
+	EMIT_VEC(cur_speed, "m_currentSpeed");
+	EMIT_VEC(last_impulse, "m_lastImpulse");
+	EMIT_BOOL(flags & 0x01, "m_enable");
+	EMIT_BOOL(flags & 0x02, "m_onground");
+	EMIT_BOOL(flags & 0x04, "m_forceTeleport");
+	EMIT_BOOL(flags & 0x08, "m_updatedSinceLast");
+#undef EMIT_VEC
+#undef EMIT_BOOL
+}
+
+extern Hook g_FrameUpdatePostEntityThink_Hook;
+DECL_DETOUR_T(void, FrameUpdatePostEntityThink) {
+	playerTrace->EnterLogScope("HOOK CPhysicsHook::FrameUpdatePostEntityThink");
+
+	recordEntityOrgs();
+
+	playerTrace->EnterLogScope("CPhysicsHook::FrameUpdatePostEntityThink");
+	g_FrameUpdatePostEntityThink_Hook.Disable();
+	FrameUpdatePostEntityThink(thisptr);
+	g_FrameUpdatePostEntityThink_Hook.Enable();
+	playerTrace->ExitLogScope();
+
+	recordEntityOrgs();
+
+	playerTrace->ExitLogScope();
+}
+Hook g_FrameUpdatePostEntityThink_Hook(FrameUpdatePostEntityThink_Hook);
+
+extern Hook g_simulate_psi_Hook;
+DECL_DETOUR_T(void, simulate_psi, IVP_Time time) {
+	playerTrace->EnterLogScope("IVP_Environment::simulate_psi");
+
+	g_simulate_psi_Hook.Disable();
+	simulate_psi(thisptr, time);
+	g_simulate_psi_Hook.Enable();
+
+	playerTrace->ExitLogScope();
+}
+Hook g_simulate_psi_Hook(simulate_psi_Hook);
+
+extern Hook g_UpdateVPhysPos_Hook;
+DECL_DETOUR_T(void, UpdateVPhysPos, const Vector &pos, const Vector &vel, float secs_to_arrival) {
+	if (fabsf(vel.x) + fabsf(vel.y) + fabsf(vel.z) < 0.001) {
+		playerTrace->EmitLog("CBasePlayer::UpdateVPhysicsPosition(vel=0)");
+	}
+	g_UpdateVPhysPos_Hook.Disable();
+	UpdateVPhysPos(thisptr, pos, vel, secs_to_arrival);
+	g_UpdateVPhysPos_Hook.Enable();
+}
+Hook g_UpdateVPhysPos_Hook(UpdateVPhysPos_Hook);
+
+extern Hook g_do_sim_cont_Hook;
+DECL_DETOUR_T(void, do_sim_cont, void *es, void *idc) {
+	playerTrace->EnterLogScope("HOOK CPlayerController::do_simulation_controller");
+
+	recordIvpEntityOrgs();
+	recordIvpPlayerControllerShit(thisptr);
+
+	playerTrace->EnterLogScope("CPlayerController::do_simulation_controller");
+
+	g_do_sim_cont_Hook.Disable();
+	do_sim_cont(thisptr, es, idc);
+	g_do_sim_cont_Hook.Enable();
+
+	playerTrace->ExitLogScope();
+
+	recordIvpEntityOrgs();
+	recordIvpPlayerControllerShit(thisptr);
+
+	playerTrace->ExitLogScope();
+}
+Hook g_do_sim_cont_Hook(do_sim_cont_Hook);
+
+extern Hook g_UpdatePusherPhysEOT_Hook;
+DECL_DETOUR_T(void, UpdatePusherPhysEOT) {
+	playerTrace->EnterLogScope("CPhysicsPushedEntities::UpdatePusherPhysicsEndOfTick");
+
+	g_UpdatePusherPhysEOT_Hook.Disable();
+	UpdatePusherPhysEOT(thisptr);
+	g_UpdatePusherPhysEOT_Hook.Enable();
+
+	playerTrace->ExitLogScope();
+}
+Hook g_UpdatePusherPhysEOT_Hook(UpdatePusherPhysEOT_Hook);
+
+extern Hook g_FinishPush_Hook;
+DECL_DETOUR_T(void, FinishPush, bool is_rot_push, void *rot_push_move) {
+	playerTrace->EnterLogScope("CPhysicsPushedEntities::FinishPush");
+
+	g_FinishPush_Hook.Disable();
+	FinishPush(thisptr, is_rot_push, rot_push_move);
+	g_FinishPush_Hook.Enable();
+
+	playerTrace->ExitLogScope();
+}
+Hook g_FinishPush_Hook(FinishPush_Hook);
+
+extern Hook g_PhysicsStep_Hook;
+DECL_DETOUR_T(void, PhysicsStep) {
+	playerTrace->EnterLogScope("CBaseEntity::PhysicsStep");
+
+	g_PhysicsStep_Hook.Disable();
+	PhysicsStep(thisptr);
+	g_PhysicsStep_Hook.Enable();
+
+	playerTrace->ExitLogScope();
+}
+Hook g_PhysicsStep_Hook(PhysicsStep_Hook);
+
+extern Hook g_PhysRelinkChildren_Hook;
+DECL_DETOUR_T(void, PhysRelinkChildren, float dt) {
+	playerTrace->EnterLogScope("CBaseEntity::PhysicsRelinkChildren");
+
+	g_PhysRelinkChildren_Hook.Disable();
+	PhysRelinkChildren(thisptr, dt);
+	g_PhysRelinkChildren_Hook.Enable();
+
+	playerTrace->ExitLogScope();
+}
+Hook g_PhysRelinkChildren_Hook(PhysRelinkChildren_Hook);
+
+extern Hook g_VPSU_Hook;
+DECL_DETOUR_T(void, VPSU, IPhysicsObject *physics) {
+	playerTrace->EnterLogScope("CBasePlayer::VPhysicsShadowUpdate");
+
+	g_VPSU_Hook.Disable();
+	VPSU(thisptr, physics);
+	g_VPSU_Hook.Enable();
+
+	playerTrace->ExitLogScope();
+}
+Hook g_VPSU_Hook(VPSU_Hook);
+
+extern Hook g_VPhysUpdate_Hook;
+DECL_DETOUR_T(void, VPhysUpdate, IPhysicsObject *physics) {
+	playerTrace->EnterLogScope("CBaseEntity::VPhysicsUpdate");
+
+	g_VPhysUpdate_Hook.Disable();
+	VPhysUpdate(thisptr, physics);
+	g_VPhysUpdate_Hook.Enable();
+
+	playerTrace->ExitLogScope();
+}
+Hook g_VPhysUpdate_Hook(VPhysUpdate_Hook);
+
+extern Hook g_SetParent_Hook;
+DECL_DETOUR_T(void, SetParent, const char *newParent, ServerEnt *activator, int attachment) {
+	playerTrace->EnterLogScope("CBaseEntity::SetParent");
+
+	g_SetParent_Hook.Disable();
+	SetParent(thisptr, newParent, activator, attachment);
+	g_SetParent_Hook.Enable();
+
+	playerTrace->ExitLogScope();
+}
+Hook g_SetParent_Hook(SetParent_Hook);
+
+extern Hook g_PhysicsSimulate_Hook;
+DECL_DETOUR_T(void, PhysicsSimulate) {
+	playerTrace->EnterLogScope("CBasePlayer::PhysicsSimulate");
+
+	g_PhysicsSimulate_Hook.Disable();
+	PhysicsSimulate(thisptr);
+	g_PhysicsSimulate_Hook.Enable();
+
+	playerTrace->ExitLogScope();
+}
+Hook g_PhysicsSimulate_Hook(PhysicsSimulate_Hook);
+
+extern Hook g_PostThinkVPhys_Hook;
+DECL_DETOUR_T(void, PostThinkVPhys) {
+	playerTrace->EnterLogScope("CBasePlayer::PostThinkVPhysics");
+
+	auto *vel = &SE(thisptr)->field<Vector>("m_vNewVPhysicsVelocity");
+
+	playerTrace->EmitLog("PRE  m_vNewVPhysicsVelocity=(%.6f,%.6f,%.6f)", vel->x, vel->y, vel->z);
+	playerTrace->EmitLog("PRE  m_touchedPhysObject=%s", SE(thisptr)->fieldOff<bool>("m_flNextDecalTime", -4) ? "true" : "false");
+
+	g_PostThinkVPhys_Hook.Disable();
+	PostThinkVPhys(thisptr);
+	g_PostThinkVPhys_Hook.Enable();
+
+	playerTrace->EmitLog("POST m_vNewVPhysicsVelocity=(%.6f,%.6f,%.6f)", vel->x, vel->y, vel->z);
+	playerTrace->EmitLog("POST m_touchedPhysObject=%s", SE(thisptr)->fieldOff<bool>("m_flNextDecalTime", -4) ? "true" : "false");
+
+	playerTrace->ExitLogScope();
+}
+Hook g_PostThinkVPhys_Hook(PostThinkVPhys_Hook);
+
+static void *g_gamemovement;
+void RngManip::EnterProcessMovement(void *gamemovement, CMoveData *move) {
+	g_gamemovement = gamemovement;
+	playerTrace->EnterLogScope("CPortalGameMovement::ProcessMovement");
+	auto v = move->m_outWishVel;
+	playerTrace->EmitLog("PRE  m_outWishVel=(%.6f,%.6f,%.6f)", v.x, v.y, v.z);
+}
+void RngManip::ExitProcessMovement(CMoveData *move) {
+	auto v = move->m_outWishVel;
+	playerTrace->EmitLog("POST m_outWishVel=(%.6f,%.6f,%.6f)", v.x, v.y, v.z);
+	playerTrace->ExitLogScope();
+}
+
+ON_EVENT(SESSION_START) {
+	// Reset this between sessions so the stuck check can't depend on previous sessions
+	if (!g_gamemovement) return;
+	float *m_flStuckCheckTime = (float *)(((char *)g_gamemovement) + 36 + 33*3*16 + 8);
+	memset(m_flStuckCheckTime, 0, 34 * 2 * sizeof (float));
+}
+
+extern Hook g_Friction_Hook;
+DECL_DETOUR_T(void, Friction) {
+	playerTrace->EnterLogScope("CPortalGameMovement::Friction");
+
+	CMoveData *mv = *(CMoveData **)((char *)thisptr + 8);
+	playerTrace->EmitLog("PRE  m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
+
+	g_Friction_Hook.Disable();
+	Friction(thisptr);
+	g_Friction_Hook.Enable();
+
+	playerTrace->EmitLog("PRE  m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
+
+	playerTrace->ExitLogScope();
+}
+Hook g_Friction_Hook(Friction_Hook);
+
+extern Hook g_WalkMove_Hook;
+DECL_DETOUR_T(void, WalkMove) {
+	playerTrace->EnterLogScope("CPortalGameMovement::WalkMove");
+
+	CMoveData *mv = *(CMoveData **)((char *)thisptr + 8);
+	playerTrace->EmitLog("PRE  m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
+
+	g_WalkMove_Hook.Disable();
+	WalkMove(thisptr);
+	g_WalkMove_Hook.Enable();
+
+	playerTrace->EmitLog("PRE  m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
+
+	playerTrace->ExitLogScope();
+}
+Hook g_WalkMove_Hook(WalkMove_Hook);
+
+extern Hook g_AirAccelerate_Hook;
+DECL_DETOUR_T(void, AirAccelerate, Vector *wishdir, float wishspeed, float accel) {
+	playerTrace->EnterLogScope("CPortalGameMovement::AirAccelerate");
+
+	playerTrace->EmitLog("wishdir=(%.6f,%.6f,%.6f)", wishdir->x, wishdir->y, wishdir->z);
+	playerTrace->EmitLog("wishspeed=%.6f", wishspeed);
+	playerTrace->EmitLog("accel=%.6f", accel);
+
+	CMoveData *mv = *(CMoveData **)((char *)thisptr + 8);
+	playerTrace->EmitLog("PRE  m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
+
+	g_AirAccelerate_Hook.Disable();
+	AirAccelerate(thisptr, wishdir, wishspeed, accel);
+	g_AirAccelerate_Hook.Enable();
+
+	playerTrace->EmitLog("PRE  m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
+
+	playerTrace->ExitLogScope();
+}
+Hook g_AirAccelerate_Hook(AirAccelerate_Hook);
+
 
 ON_INIT {
 	RandomSeed = Memory::GetSymbolAddress<decltype(RandomSeed)>(Memory::GetModuleHandleByName(tier1->Name()), "RandomSeed");
@@ -344,6 +664,54 @@ ON_INIT {
 
 	EnsureAvailableSlotsForGender = (decltype(EnsureAvailableSlotsForGender))Memory::Scan(MODULE("soundemittersystem"), "55 57 56 53 83 EC 2C 8B 74 24 48 8B 5C 24 44 8B 7C 24 4C 85 F6 0F 8E ? ? ? ? C7 44 24 0C 00 00 00 00 31 D2 31 C9 31 C0");
 	g_EnsureAvailableSlotsForGender_Hook.SetFunc(EnsureAvailableSlotsForGender);
+
+	FrameUpdatePostEntityThink = (decltype(FrameUpdatePostEntityThink))Memory::Scan(server->Name(), "55 89 E5 57 56 53 83 EC 0C 8B 1D ? ? ? ? 8B 75 08 85 DB 0F 85 ? ? ? ? A1 ? ? ? ? 66 0F EF C0 66 0F 7E C7 F3 0F 10 48 10 0F 2F C8");
+	g_FrameUpdatePostEntityThink_Hook.SetFunc(FrameUpdatePostEntityThink);
+
+	simulate_psi = (decltype(simulate_psi))Memory::Scan(MODULE("vphysics"), "55 89 E5 57 56 53 81 EC 24 04 00 00 8B 5D 08 8B 43 28 8B 10 6A 01 50 FF 52 04 83 C4 10 66 83 BB DA 00 00 00 00");
+	g_simulate_psi_Hook.SetFunc(simulate_psi);
+
+	do_sim_cont = (decltype(do_sim_cont))Memory::Scan(MODULE("vphysics"), "55 57 56 53 81 EC EC 00 00 00 8B B4 24 ? ? ? ?");
+	g_do_sim_cont_Hook.SetFunc(do_sim_cont);
+
+	UpdateVPhysPos = (decltype(UpdateVPhysPos))Memory::Scan(server->Name(), "8B 44 24 ? 8B 54 24 ? 8B 4C 24 ? F3 0F 10 44 24 ? 83 B8 ? ? ? ? 00");
+	g_UpdateVPhysPos_Hook.SetFunc(UpdateVPhysPos);
+
+	UpdatePusherPhysEOT = (decltype(UpdatePusherPhysEOT))Memory::Scan(server->Name(), "57 56 53 8B 5C 24 ? 8B 73 ? 85 F6 0F 8E ? ? ? ?");
+	g_UpdatePusherPhysEOT_Hook.SetFunc(UpdatePusherPhysEOT);
+
+	FinishPush = (decltype(FinishPush))Memory::Scan(server->Name(), "55 57 56 53 83 EC 1C 8B 6C 24 ? 0F B6 44 24 ?");
+	g_FinishPush_Hook.SetFunc(FinishPush);
+
+	PhysicsStep = (decltype(PhysicsStep))Memory::Scan(server->Name(), "55 57 56 53 81 EC 8C 00 00 00 8B 9C 24 ? ? ? ? 80 7B ? 00");
+	g_PhysicsStep_Hook.SetFunc(PhysicsStep);
+
+	PhysRelinkChildren = (decltype(PhysRelinkChildren))Memory::Scan(server->Name(), "55 57 56 53 83 EC 0C 8B 0D ? ? ? ? 8B 44 24 ? 8B 80 ? ? ? ? 83 F8 FF 0F 84 ? ? ? ? 0F B7 D0 C1 E8 10");
+	g_PhysRelinkChildren_Hook.SetFunc(PhysRelinkChildren);
+
+	VPSU = (decltype(VPSU))Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 9C 01 00 00 A1 ? ? ? ?");
+	g_VPSU_Hook.SetFunc(VPSU);
+
+	VPhysUpdate = (decltype(VPhysUpdate))Memory::Scan(server->Name(), "55 57 56 53 83 EC 4C 8B 6C 24 ? 8B 5C 24 ?");
+	g_VPhysUpdate_Hook.SetFunc(VPhysUpdate);
+
+	SetParent = (decltype(SetParent))Memory::Scan(server->Name(), "55 57 56 53 83 EC 1C 8B 44 24 ? 8B 6C 24 ? 8B 74 24 ? 8B 4C 24 ?");
+	g_SetParent_Hook.SetFunc(SetParent);
+
+	PhysicsSimulate = (decltype(PhysicsSimulate))Memory::Scan(server->Name(), "55 89 E5 57 56 53 83 EC 4C A1 ? ? ? ? 8B 7D ? 89 45 B0");
+	g_PhysicsSimulate_Hook.SetFunc(PhysicsSimulate);
+
+	PostThinkVPhys = (decltype(PostThinkVPhys))Memory::Scan(server->Name(), "55 57 56 53 81 EC 9C 00 00 00 8B 9C 24 ? ? ? ? 8B 83 ? ? ? ?");
+	g_PostThinkVPhys_Hook.SetFunc(PostThinkVPhys);
+
+	Friction = (decltype(Friction))Memory::Scan(server->Name(), "55 66 0F EF F6 57 56 53 81 EC FC 00 00 00");
+	g_Friction_Hook.SetFunc(Friction);
+
+	WalkMove = (decltype(WalkMove))Memory::Scan(server->Name(), "55 57 56 53 81 EC 2C 01 00 00 8D 44 24 ?");
+	g_WalkMove_Hook.SetFunc(WalkMove);
+
+	AirAccelerate = (decltype(AirAccelerate))Memory::Scan(server->Name(), "56 53 83 EC 14 8B 5C 24 ? 8B 74 24 ? 8B 43 ? 80 B8 ? ? ? ? 00");
+	g_AirAccelerate_Hook.SetFunc(AirAccelerate);
 #endif
 }
 

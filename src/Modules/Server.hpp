@@ -89,7 +89,7 @@ public:
 	DECL_DETOUR_T(bool, IsInPVS, void *info);
 
 	// CGameMovement::ProcessMovement
-	DECL_DETOUR(ProcessMovement, void *pPlayer, CMoveData *pMove);
+	DECL_DETOUR(ProcessMovement, ServerEnt *pPlayer, CMoveData *pMove);
 
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR_T(Vector *, GetPlayerViewOffset, bool ducked);
