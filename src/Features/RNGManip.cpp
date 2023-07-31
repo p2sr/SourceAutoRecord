@@ -526,17 +526,17 @@ DECL_DETOUR_T(void, VPhysUpdate, IPhysicsObject *physics) {
 }
 Hook g_VPhysUpdate_Hook(VPhysUpdate_Hook);
 
-extern Hook g_SetParent_Hook;
-DECL_DETOUR_T(void, SetParent, const char *newParent, ServerEnt *activator, int attachment) {
+extern Hook g_EntSetParent_Hook;
+DECL_DETOUR_T(void, EntSetParent, const char *newParent, ServerEnt *activator, int attachment) {
 	playerTrace->EnterLogScope("CBaseEntity::SetParent");
 
-	g_SetParent_Hook.Disable();
-	SetParent(thisptr, newParent, activator, attachment);
-	g_SetParent_Hook.Enable();
+	g_EntSetParent_Hook.Disable();
+	EntSetParent(thisptr, newParent, activator, attachment);
+	g_EntSetParent_Hook.Enable();
 
 	playerTrace->ExitLogScope();
 }
-Hook g_SetParent_Hook(SetParent_Hook);
+Hook g_EntSetParent_Hook(EntSetParent_Hook);
 
 extern Hook g_PhysicsSimulate_Hook;
 DECL_DETOUR_T(void, PhysicsSimulate) {
@@ -695,8 +695,8 @@ ON_INIT {
 	VPhysUpdate = (decltype(VPhysUpdate))Memory::Scan(server->Name(), "55 57 56 53 83 EC 4C 8B 6C 24 ? 8B 5C 24 ?");
 	g_VPhysUpdate_Hook.SetFunc(VPhysUpdate);
 
-	SetParent = (decltype(SetParent))Memory::Scan(server->Name(), "55 57 56 53 83 EC 1C 8B 44 24 ? 8B 6C 24 ? 8B 74 24 ? 8B 4C 24 ?");
-	g_SetParent_Hook.SetFunc(SetParent);
+	EntSetParent = (decltype(EntSetParent))Memory::Scan(server->Name(), "55 57 56 53 83 EC 1C 8B 44 24 ? 8B 6C 24 ? 8B 74 24 ? 8B 4C 24 ?");
+	g_EntSetParent_Hook.SetFunc(EntSetParent);
 
 	PhysicsSimulate = (decltype(PhysicsSimulate))Memory::Scan(server->Name(), "55 89 E5 57 56 53 83 EC 4C A1 ? ? ? ? 8B 7D ? 89 45 B0");
 	g_PhysicsSimulate_Hook.SetFunc(PhysicsSimulate);

@@ -6,7 +6,7 @@
 
 /// utility ///
 
-enum class IVP_BOOL { TRUE, FALSE };
+//enum class IVP_BOOL { TRUE, FALSE };
 
 struct IVP_Time {
 	float seconds;
