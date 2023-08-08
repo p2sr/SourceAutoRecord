@@ -1,10 +1,7 @@
 #include "KeyValues.hpp"
 
+#include "Modules/MaterialSystem.hpp"
 #include "Modules/Tier1.hpp"
-
-#ifdef _WIN32
-#	define strdup _strdup
-#endif
 
 KeyValues::KeyValues(const char *name) {
 	// bit fields can't have default initialization?!
@@ -19,27 +16,6 @@ KeyValues::KeyValues(const char *name) {
 	this->key_name = case_insens_key;
 	this->key_name_case_sensitive_1 = (uint8_t)case_sens_key;
 	this->key_name_case_sensitive_2 = (uint16_t)(case_sens_key >> 8);
-}
-
-KeyValues::~KeyValues() {
-	KeyValues *cur, *next;
-
-	for (cur = this->sub; cur; cur = next) {
-		next = cur->peer;
-		cur->peer = nullptr;
-		delete cur;
-	}
-
-	for (cur = this->peer; cur && cur != this; cur = next) {
-		next = cur->peer;
-		cur->peer = nullptr;
-		delete cur;
-	}
-
-	delete[] this->val_str;
-	delete[] this->val_wstr;
-	this->val_str = nullptr;
-	this->val_wstr = nullptr;
 }
 
 KeyValues *KeyValues::FindKey(const char *name, bool create) {
@@ -82,18 +58,24 @@ void KeyValues::SetInt(const char *key, int val) {
 }
 
 void KeyValues::SetString(const char *key, const char *val) {
-	auto kv = this->FindKey(key, true);
-	if (kv) {
-		if (kv->val_str) delete[] kv->val_str;
-		if (kv->val_wstr) delete[] kv->val_wstr;
-		kv->val_wstr = nullptr;
-
-		kv->val_str = strdup(val ? val : "");
-		kv->data_type = KeyValues::Type::STRING;
+	if (materialSystem->KeyValues_SetString) {
+		materialSystem->KeyValues_SetString(this, key, val);
 	}
 }
 
 const char *KeyValues::GetName() {
 	auto kvs = tier1->KeyValuesSystem();
 	return kvs->GetStringForSymbol((((uint16_t)key_name_case_sensitive_2) << 8) | (uint8_t)(key_name_case_sensitive_1));
+}
+
+void *KeyValues::operator new(std::size_t iAllocSize)
+{
+	auto kvs = tier1->KeyValuesSystem();
+	return kvs->AllocKeyValuesMemory(iAllocSize);
+}
+
+void KeyValues::operator delete(void *pMem)
+{
+	auto kvs = tier1->KeyValuesSystem();
+	return kvs->FreeKeyValuesMemory(pMem);
 }

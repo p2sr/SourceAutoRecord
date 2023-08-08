@@ -43,7 +43,6 @@ public:
 };
 
 REDECL(MaterialSystem::UncacheUnusedMaterials);
-REDECL(MaterialSystem::CreateMaterial);
 
 DETOUR(MaterialSystem::UncacheUnusedMaterials, bool bRecomputeStateSnapshots) {
 	auto start = std::chrono::high_resolution_clock::now();
@@ -54,37 +53,23 @@ DETOUR(MaterialSystem::UncacheUnusedMaterials, bool bRecomputeStateSnapshots) {
 	return result;
 }
 
-DETOUR(MaterialSystem::CreateMaterial, const char *pMaterialName, void *pVMTKeyValues) {
-	// rip krzyhau memory leak ultimate fix
-	// gone but not forgotten
-	/*
-    std::string sMaterialName(pMaterialName);
-    std::string sMapName(engine->m_szLevelName);
-
-    // Memory leak ultimate fix! -route credits to krzyhau
-    // apparently the game loads PeTI related materials into the memory every time you
-    // load the game. This simply prevents that from happening.
-    bool isPetiMaterial = sMaterialName.find("props_map_editor") != std::string::npos;
-    bool isWhiteMaterial = sMaterialName.find("vgui/white") != std::string::npos;
-#ifdef _WIN32
-    bool isPetiMap = sMapName.find("puzzlemaker\\") != std::string::npos;
-#else
-    bool isPetiMap = sMapName.find("puzzlemaker/") != std::string::npos;
-#endif
-
-    if ((isPetiMaterial || isWhiteMaterial) && !isPetiMap) {
-        return 0;
-    }
-    */
-
-	return MaterialSystem::CreateMaterial(thisptr, pMaterialName, pVMTKeyValues);
-}
-
 bool MaterialSystem::Init() {
 	this->materials = Interface::Create(this->Name(), "VMaterialSystem080");
 	if (this->materials) {
 		this->materials->Hook(MaterialSystem::UncacheUnusedMaterials_Hook, MaterialSystem::UncacheUnusedMaterials, 77);
-		this->materials->Hook(MaterialSystem::CreateMaterial_Hook, MaterialSystem::CreateMaterial, 81);
+
+		this->CreateMaterial = this->materials->Original<_CreateMaterial>(81);
+
+#if _WIN32
+		this->KeyValues_SetString = (_KeyValues_SetString)Memory::Scan(this->Name(), "55 8B EC 8B 45 08 6A 01 50 E8 ? ? ? ? 85 C0 74 0B");
+#else
+		if (sar.game->Is(SourceGame_Portal2)) {
+			this->KeyValues_SetString = (_KeyValues_SetString)Memory::Scan(this->Name(), "53 83 EC ? 8B 5C 24 ? 6A ? FF 74 24 ? FF 74 24 ? E8 ? ? ? ? 83 C4 ? 85 C0 74 ? 89 5C 24");
+		} else {
+			this->KeyValues_SetString = (_KeyValues_SetString)Memory::Scan(this->Name(), "55 89 E5 53 83 EC ? 8B 45 ? C7 44 24 ? ? ? ? ? 8B 5D ? 89 44 24 ? 8B 45 ? 89 04 24 E8 ? ? ? ? 85 C0 74 ? 89 5D");
+		}
+#endif
+
 		OverlayRender::initMaterials();
 	}
 
