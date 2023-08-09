@@ -1,15 +1,3 @@
-// This *has* to come first because <winsock2> doesn't like being
-// imported after <windows>. I fucking hate this platform
-#ifdef _WIN32
-#	include <winsock2.h>
-#	include <ws2tcpip.h>
-#else
-#	include <sys/socket.h>
-#	include <sys/select.h>
-#	include <netinet/in.h>
-#	include <unistd.h>
-#endif
-
 #include "TasProtocol.hpp"
 #include "TasPlayer.hpp"
 #include "Event.hpp"
@@ -25,14 +13,6 @@
 #include <atomic>
 #include <mutex>
 #include <filesystem>
-
-#ifndef _WIN32
-#	define SOCKET int
-#	define INVALID_SOCKET -1
-#	define SOCKET_ERROR -1
-#	define closesocket close
-#	define WSACleanup() (void)0
-#endif
 
 #define DEFAULT_TAS_CLIENT_SOCKET 6555
 
@@ -394,7 +374,7 @@ static void attemptConnectionToServer() {
 
 	g_client_data_mutex.unlock();
 
-	if (!g_attempt_client_connection) return;
+	if (!shouldConnect) return;
 
 	auto clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (clientSocket == -1) {
@@ -405,7 +385,7 @@ static void attemptConnectionToServer() {
 
 	sockaddr_in serverAddr;
 	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_port = htons(g_client_port);
+	serverAddr.sin_port = htons(port);
 
 	if (inet_pton(AF_INET, g_client_ip.c_str(), &serverAddr.sin_addr) <= 0) {
 		THREAD_PRINT("Could not connect to TAS protocol server: invalid address\n");
