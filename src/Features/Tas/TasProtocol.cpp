@@ -10,7 +10,7 @@
 #	include <unistd.h>
 #endif
 
-#include "TasServer.hpp"
+#include "TasProtocol.hpp"
 #include "TasPlayer.hpp"
 #include "Event.hpp"
 #include "Scheduler.hpp"
@@ -36,19 +36,18 @@
 
 #define DEFAULT_TAS_CLIENT_SOCKET 6555
 
-Variable sar_tas_server("sar_tas_server", "0", 0, "Enable the remote TAS server. Setting this value to something higher than one will bind the server on that port.\n");
+using namespace TasProtocol;
 
-struct ClientData {
-	SOCKET sock;
-	std::deque<uint8_t> cmdbuf;
-};
+Variable sar_tas_protocol("sar_tas_protocol", "0", 0, "Enable the remote TAS controller connection protocol. Value higher than 1 replaces port to listen for connections on (6555 by default).\n");
+
+
 
 static SOCKET g_listen_sock = INVALID_SOCKET;
-static std::vector<ClientData> g_clients;
+static std::vector<ConnectionData> g_connections;
 static std::atomic<bool> g_should_stop;
 
-static TasStatus g_last_status;
-static TasStatus g_current_status;
+static Status g_last_status;
+static Status g_current_status;
 static int g_last_debug_tick;
 static int g_current_debug_tick;
 static std::mutex g_status_mutex;
@@ -73,37 +72,36 @@ static void encodeRaw32(std::vector<uint8_t> &buf, uint32_t val) {
 // I know this is ugly, but I think copy pasting the above code is
 // stupider so whatever
 static void encodeRawFloat(std::vector<uint8_t> &buf, float val) {
-	encodeRaw32(buf, *(uint32_t *) &val);
+	encodeRaw32(buf, *(uint32_t *)&val);
 }
 
 static void sendAll(const std::vector<uint8_t> &buf) {
-	for (auto &cl : g_clients) {
+	for (auto &cl : g_connections) {
 		send(cl.sock, (const char *)buf.data(), buf.size(), 0);
 	}
 }
 
-static void fullUpdate(ClientData &cl, bool first_packet = false) {
+static void fullUpdate(TasProtocol::ConnectionData &cl, bool first_packet = false) {
 	std::vector<uint8_t> buf;
 
 	if (first_packet) {
-		// game location (255)
+		buf.push_back(SEND_GAME_LOCATION);
+
 		std::string dir = std::filesystem::current_path().string();
 		std::replace(dir.begin(), dir.end(), '\\', '/');
-		buf.push_back(255);
 		encodeRaw32(buf, (uint32_t)dir.size());
 		for (char c : dir) {
 			buf.push_back(c);
 		}
 	}
 
-	// playback rate (2)
+	buf.push_back(SEND_PLAYBACK_RATE);
+
 	union { float f; int i; } rate = { g_last_status.playback_rate };
-	buf.push_back(2);
 	encodeRaw32(buf, rate.i);
 
 	if (g_last_status.active) {
-		// active (0)
-		buf.push_back(0);
+		buf.push_back(SEND_ACTIVE);
 		encodeRaw32(buf, g_last_status.tas_path[0].size());
 		for (char c : g_last_status.tas_path[0]) {
 			buf.push_back(c);
@@ -113,29 +111,26 @@ static void fullUpdate(ClientData &cl, bool first_packet = false) {
 			buf.push_back(c);
 		}
 
-		// state (3/4/5)
+		// state
 		switch (g_last_status.playback_state) {
 		case PlaybackState::PLAYING:
-			buf.push_back(3);
+			buf.push_back(SEND_PLAYING);
 			break;
 		case PlaybackState::PAUSED:
-			buf.push_back(4);
+			buf.push_back(SEND_PAUSED);
 			break;
 		case PlaybackState::SKIPPING:
-			buf.push_back(5);
+			buf.push_back(SEND_SKIPPING);
 			break;
 		}
 
-		// current tick (6)
-		buf.push_back(6);
+		buf.push_back(SEND_CURRENT_TICK);
 		encodeRaw32(buf, g_last_status.playback_tick);
 	} else {
-		// inactive (1)
-		buf.push_back(1);
+		buf.push_back(SEND_INACTIVE);
 	}
 
-	// debug tick (7)
-	buf.push_back(7);
+	buf.push_back(SEND_DEBUG_TICK);
 	encodeRaw32(buf, (uint32_t)g_last_debug_tick);
 
 	send(cl.sock, (const char *)buf.data(), buf.size(), 0);
@@ -143,7 +138,7 @@ static void fullUpdate(ClientData &cl, bool first_packet = false) {
 
 static void update() {
 	g_status_mutex.lock();
-	TasStatus status = g_current_status;
+	Status status = g_current_status;
 	int debug_tick = g_current_debug_tick;
 	g_status_mutex.unlock();
 
@@ -151,16 +146,14 @@ static void update() {
 		// big change; we might as well just do a full update
 		g_last_status = status;
 		g_last_debug_tick = debug_tick;
-		for (auto &cl : g_clients) fullUpdate(cl);
+		for (auto &cl : g_connections) fullUpdate(cl);
 		return;
 	}
 
 	if (status.playback_rate != g_last_status.playback_rate) {
-		// playback rate (2)
-
 		union { float f; int i; } rate = { status.playback_rate };
 
-		std::vector<uint8_t> buf{2};
+		std::vector<uint8_t> buf{SEND_PLAYBACK_RATE};
 		encodeRaw32(buf, rate.i);
 		sendAll(buf);
 
@@ -168,17 +161,15 @@ static void update() {
 	}
 
 	if (status.active && status.playback_state != g_last_status.playback_state) {
-		// state (3/4/5)
-
 		switch (status.playback_state) {
 		case PlaybackState::PLAYING:
-			sendAll({3});
+			sendAll({ SEND_PLAYING });
 			break;
 		case PlaybackState::PAUSED:
-			sendAll({4});
+			sendAll({ SEND_PAUSED });
 			break;
 		case PlaybackState::SKIPPING:
-			sendAll({5});
+			sendAll({ SEND_SKIPPING });
 			break;
 		}
 
@@ -186,9 +177,7 @@ static void update() {
 	}
 
 	if (status.active && status.playback_tick != g_last_status.playback_tick) {
-		// tick (6)
-
-		std::vector<uint8_t> buf{6};
+		std::vector<uint8_t> buf{ SEND_CURRENT_TICK};
 		encodeRaw32(buf, status.playback_tick);
 		sendAll(buf);
 
@@ -196,9 +185,7 @@ static void update() {
 	}
 
 	if (debug_tick != g_last_debug_tick) {
-		// debug tick (7)
-
-		std::vector<uint8_t> buf{7};
+		std::vector<uint8_t> buf{ SEND_DEBUG_TICK};
 		encodeRaw32(buf, (uint32_t)debug_tick);
 		sendAll(buf);
 
@@ -206,14 +193,14 @@ static void update() {
 	}
 }
 
-static bool processCommands(ClientData &cl) {
+static bool processCommands(ConnectionData &cl) {
 	while (true) {
 		if (cl.cmdbuf.size() == 0) return true;
 
 		size_t extra = cl.cmdbuf.size() - 1;
 
 		switch (cl.cmdbuf[0]) {
-		case 0: // request playback
+		case RECV_PLAY_SCRIPT:
 			if (extra < 8) return true;
 			{
 				std::deque<uint8_t> copy = cl.cmdbuf;
@@ -238,7 +225,8 @@ static bool processCommands(ClientData &cl) {
 					copy.pop_front();
 				}
 
-				cl.cmdbuf = copy; // We actually had everything we needed, so switch to the modified buffer
+				// We actually had everything we needed, so switch to the modified buffer
+				cl.cmdbuf = copy; 
 
 				Scheduler::OnMainThread([=](){
 					tasPlayer->PlayFile(filename1, filename2);
@@ -246,14 +234,14 @@ static bool processCommands(ClientData &cl) {
 			}
 			break;
 
-		case 1: // stop playback
+		case RECV_STOP:
 			cl.cmdbuf.pop_front();
 			Scheduler::OnMainThread([=](){
 				tasPlayer->Stop(true);
 			});
 			break;
 
-		case 2: // request playback rate change
+		case RECV_PLAYBACK_RATE:
 			if (extra < 4) return true;
 			cl.cmdbuf.pop_front();
 			{
@@ -264,21 +252,21 @@ static bool processCommands(ClientData &cl) {
 			}
 			break;
 
-		case 3: // request state=playing
+		case RECV_RESUME:
 			cl.cmdbuf.pop_front();
 			Scheduler::OnMainThread([=](){
 				tasPlayer->Resume();
 			});
 			break;
 
-		case 4: // request state=paused
+		case RECV_PAUSE: 
 			cl.cmdbuf.pop_front();
 			Scheduler::OnMainThread([=](){
 				tasPlayer->Pause();
 			});
 			break;
 
-		case 5: // request state=fast-forward
+		case RECV_FAST_FORWARD:
 			if (extra < 5) return true;
 			cl.cmdbuf.pop_front();
 			{
@@ -292,7 +280,7 @@ static bool processCommands(ClientData &cl) {
 			}
 			break;
 
-		case 6: // set next pause tick
+		case RECV_SET_PAUSE_TICK:
 			if (extra < 4) return true;
 			cl.cmdbuf.pop_front();
 			{
@@ -303,14 +291,14 @@ static bool processCommands(ClientData &cl) {
 			}
 			break;
 
-		case 7: // advance tick
+		case RECV_ADVANCE_TICK:
 			cl.cmdbuf.pop_front();
 			Scheduler::OnMainThread([](){
 				tasPlayer->AdvanceFrame();
 			});
 			break;
 
-		case 10: // send script and request playback
+		case RECV_PLAY_SCRIPT_PROTOCOL:
 			if (extra < 16) return true;
 			{
 				std::deque<uint8_t> copy = cl.cmdbuf;
@@ -337,7 +325,7 @@ static bool processCommands(ClientData &cl) {
 				});
 			}
 			break;
-		case 100: // request entity info
+		case RECV_ENTITY_INFO:
 			if (extra < 4) return true;
 			{
 				std::deque<uint8_t> copy = cl.cmdbuf;
@@ -355,7 +343,7 @@ static bool processCommands(ClientData &cl) {
 				cl.cmdbuf = copy;
 
 				std::vector<uint8_t> buf;
-				buf.push_back(100); // 100 response - entity info
+				buf.push_back(SEND_ENTITY_INFO);
 
 				CEntInfo *entInfo = entityList->QuerySelector(entSelector.c_str());
 				if (entInfo != NULL) {
@@ -398,7 +386,7 @@ static void processConnections() {
 	SOCKET max = g_listen_sock;
 
 	FD_SET(g_listen_sock, &set);
-	for (auto client : g_clients) {
+	for (auto client : g_connections) {
 		FD_SET(client.sock, &set);
 		if (max < client.sock) max = client.sock;
 	}
@@ -416,13 +404,13 @@ static void processConnections() {
 	if (FD_ISSET(g_listen_sock, &set)) {
 		SOCKET cl = accept(g_listen_sock, nullptr, nullptr);
 		if (cl != INVALID_SOCKET) {
-			g_clients.push_back({ cl, {} });
-			fullUpdate(g_clients[g_clients.size() - 1], true);
+			g_connections.push_back({ cl, {} });
+			fullUpdate(g_connections[g_connections.size() - 1], true);
 		}
 	}
 
-	for (size_t i = 0; i < g_clients.size(); ++i) {
-		auto &cl = g_clients[i];
+	for (size_t i = 0; i < g_connections.size(); ++i) {
+		auto &cl = g_connections[i];
 
 		if (!FD_ISSET(cl.sock, &set)) continue;
 
@@ -430,7 +418,7 @@ static void processConnections() {
 		int len = recv(cl.sock, buf, sizeof buf, 0);
 
 		if (len == 0 || len == SOCKET_ERROR) { // Connection closed or errored
-			g_clients.erase(g_clients.begin() + i);
+			g_connections.erase(g_connections.begin() + i);
 			--i;
 			continue;
 		}
@@ -440,7 +428,7 @@ static void processConnections() {
 		if (!processCommands(cl)) {
 			// Client sent a bad command; terminate connection
 			closesocket(cl.sock);
-			g_clients.erase(g_clients.begin() + i);
+			g_connections.erase(g_connections.begin() + i);
 			--i;
 			continue;
 		}
@@ -499,7 +487,7 @@ static void mainThread(int tas_server_port) {
 
 	THREAD_PRINT("Stopping TAS server\n");
 
-	for (auto &cl : g_clients) {
+	for (auto &cl : g_connections) {
 		closesocket(cl.sock);
 	}
 
@@ -511,8 +499,8 @@ static std::thread g_net_thread;
 static bool g_running;
 
 ON_EVENT(FRAME) {
-	int tas_server_port = sar_tas_server.GetInt() == 1 ? DEFAULT_TAS_CLIENT_SOCKET : sar_tas_server.GetInt();
-	bool should_run = sar_tas_server.GetBool();
+	int tas_server_port = sar_tas_protocol.GetInt() == 1 ? DEFAULT_TAS_CLIENT_SOCKET : sar_tas_protocol.GetInt();
+	bool should_run = sar_tas_protocol.GetBool();
 
 	if (g_running && !should_run) {
 		g_should_stop.store(true);
@@ -526,22 +514,21 @@ ON_EVENT(FRAME) {
 }
 
 ON_EVENT_P(SAR_UNLOAD, -100) {
-	sar_tas_server.SetValue(false);
+	sar_tas_protocol.SetValue(false);
 	g_should_stop.store(true);
 	if (g_net_thread.joinable()) g_net_thread.join();
 }
 
-void TasServer::SetStatus(TasStatus s) {
+void TasProtocol::SetStatus(Status s) {
 	g_status_mutex.lock();
 	g_current_status = s;
 	g_status_mutex.unlock();
 }
 
-void TasServer::SendProcessedScript(uint8_t slot, std::string scriptString) {
+void TasProtocol::SendProcessedScript(uint8_t slot, std::string scriptString) {
 	std::vector<uint8_t> buf;
 
-	// processed script reply (10)
-	buf.push_back(10);
+	buf.push_back(SEND_PROCESSED_SCRIPT);
 
 	// slot
 	buf.push_back(slot);
