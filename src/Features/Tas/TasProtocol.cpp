@@ -15,6 +15,7 @@
 #include <filesystem>
 
 #define DEFAULT_TAS_CLIENT_SOCKET 6555
+#define DEFAULT_TAS_SERVER_SOCKET 6555
 
 using namespace TasProtocol;
 
@@ -401,7 +402,7 @@ static void attemptConnectionToServer() {
 
 	g_connections.push_back({clientSocket, {}});
 	fullUpdate(g_connections[g_connections.size() - 1], true);
-	THREAD_PRINT("Successfully connected to TAS server %s:%d.\n", ip.c_str());
+	THREAD_PRINT("Successfully connected to TAS server %s:%d.\n", ip.c_str(), port);
 }
 
 static bool receiveFromConnection(TasProtocol::ConnectionData &cl) {
@@ -585,7 +586,7 @@ ON_EVENT(FRAME) {
 
 CON_COMMAND(sar_tas_protocol_connect,
             "sar_tas_protocol_connect <ip address> <port> - connect to the TAS protocol server.\n"
-            "ex: 'localhost 6555' - '127.0.0.1 6555' - '89.10.20.20 6555'.\n") {
+            "ex: '127.0.0.1 5666' - '89.10.20.20 5666'.\n") {
 	if (args.ArgC() < 2 || args.ArgC() > 3) {
 		return console->Print(sar_tas_protocol_connect.ThisPtr()->m_pszHelpString);
 	}
@@ -595,7 +596,7 @@ CON_COMMAND(sar_tas_protocol_connect,
 	g_client_data_mutex.lock();
 
 	g_client_ip = args[1];
-	g_client_port = args.ArgC() >= 3 ? std::atoi(args[2]) : DEFAULT_TAS_CLIENT_SOCKET;
+	g_client_port = args.ArgC() >= 3 ? std::atoi(args[2]) : DEFAULT_TAS_SERVER_SOCKET;
 	g_attempt_client_connection = true;
 
 	g_client_data_mutex.unlock();
