@@ -3,7 +3,7 @@
 #include "Features/Session.hpp"
 #include "Features/Tas/TasParser.hpp"
 #include "Features/Tas/TasTool.hpp"
-#include "Features/Tas/TasServer.hpp"
+#include "Features/Tas/TasProtocol.hpp"
 #include "Features/Tas/TasTools/CheckTool.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Features/RNGManip.hpp"
@@ -467,7 +467,7 @@ void TasPlayer::SaveProcessedFramebulks() {
 			}
 		} else {
 			std::string slotScript = slotProcessed ? TasParser::SaveRawScriptToString(script) : "";
-			TasServer::SendProcessedScript((uint8_t)slot, slotScript);
+			TasProtocol::SendProcessedScript((uint8_t)slot, slotScript);
 		}
 	}
 }
@@ -759,21 +759,21 @@ ON_EVENT(FRAME) {
 }
 
 void TasPlayer::UpdateServer() {
-	TasStatus status;
+	TasProtocol::Status status;
 
 	status.active = active;
 	status.tas_path[0] = playbackInfo.slots[0].name;
 	status.tas_path[1] = playbackInfo.IsCoop() ? playbackInfo.slots[1].name : "";
 	status.playback_state =
 		engine->IsAdvancing()
-		? PlaybackState::PAUSED
+		? TasProtocol::PlaybackState::PAUSED
 		: this->GetTick() < sar_tas_skipto.GetInt()
-		? PlaybackState::SKIPPING
-		: PlaybackState::PLAYING;
+		? TasProtocol::PlaybackState::SKIPPING
+		: TasProtocol::PlaybackState::PLAYING;
 	status.playback_rate = sar_tas_playback_rate.GetFloat();
 	status.playback_tick = this->GetTick();
 
-	TasServer::SetStatus(status);
+	TasProtocol::SetStatus(status);
 }
 
 DECL_COMMAND_FILE_COMPLETION(sar_tas_play, TAS_SCRIPT_EXT, TAS_SCRIPTS_DIR, 2)
