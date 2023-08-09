@@ -46,6 +46,11 @@ static SOCKET g_listen_sock = INVALID_SOCKET;
 static std::vector<ConnectionData> g_connections;
 static std::atomic<bool> g_should_stop;
 
+static std::string g_client_ip;
+static int g_client_port;
+static bool g_attempt_client_connection;
+static std::mutex g_client_data_mutex;
+
 static Status g_last_status;
 static Status g_current_status;
 static int g_last_debug_tick;
@@ -379,6 +384,65 @@ static bool processCommands(ConnectionData &cl) {
 	}
 }
 
+static void attemptConnectionToServer() {
+	g_client_data_mutex.lock();
+
+	bool shouldConnect = g_attempt_client_connection;
+	g_attempt_client_connection = false;
+	std::string ip = g_client_ip;
+	int port = g_client_port;
+
+	g_client_data_mutex.unlock();
+
+	if (!g_attempt_client_connection) return;
+
+	auto clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (clientSocket == -1) {
+		THREAD_PRINT("Could not connect to TAS protocol server: socket creation failed\n");
+		closesocket(clientSocket);
+		return;
+	}
+
+	sockaddr_in serverAddr;
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_port = htons(g_client_port);
+
+	if (inet_pton(AF_INET, g_client_ip.c_str(), &serverAddr.sin_addr) <= 0) {
+		THREAD_PRINT("Could not connect to TAS protocol server: invalid address\n");
+		closesocket(clientSocket);
+		return;
+	}
+
+	if (connect(clientSocket, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(serverAddr)) == -1) {
+		THREAD_PRINT("Could not connect to TAS protocol server: connection failed.\n");
+		closesocket(clientSocket);
+		return;
+	}
+
+	g_connections.push_back({clientSocket, {}});
+	fullUpdate(g_connections[g_connections.size() - 1], true);
+	THREAD_PRINT("Successfully connected to TAS server %s:%d.\n", ip.c_str());
+}
+
+static bool receiveFromConnection(TasProtocol::ConnectionData &cl) {
+	char buf[1024];
+	int len = recv(cl.sock, buf, sizeof buf, 0);
+
+	if (len == 0 || len == SOCKET_ERROR) {  // Connection closed or errored
+		return false;
+	}
+
+	cl.cmdbuf.insert(cl.cmdbuf.end(), std::begin(buf), std::begin(buf) + len);
+
+	if (!processCommands(cl)) {
+		// Client sent a bad command; terminate connection
+		closesocket(cl.sock);
+		return false;
+	}
+
+	return true;
+}
+
 static void processConnections() {
 	fd_set set;
 	FD_ZERO(&set);
@@ -414,23 +478,9 @@ static void processConnections() {
 
 		if (!FD_ISSET(cl.sock, &set)) continue;
 
-		char buf[1024];
-		int len = recv(cl.sock, buf, sizeof buf, 0);
-
-		if (len == 0 || len == SOCKET_ERROR) { // Connection closed or errored
+		if (!receiveFromConnection(cl)) {
 			g_connections.erase(g_connections.begin() + i);
 			--i;
-			continue;
-		}
-
-		cl.cmdbuf.insert(cl.cmdbuf.end(), std::begin(buf), std::begin(buf) + len);
-
-		if (!processCommands(cl)) {
-			// Client sent a bad command; terminate connection
-			closesocket(cl.sock);
-			g_connections.erase(g_connections.begin() + i);
-			--i;
-			continue;
 		}
 	}
 }
@@ -481,6 +531,7 @@ static void mainThread(int tas_server_port) {
 	}
 
 	while (!g_should_stop.load()) {
+		attemptConnectionToServer();
 		processConnections();
 		update();
 	}
@@ -550,4 +601,22 @@ ON_EVENT(FRAME) {
 		g_current_debug_tick = playerTrace->GetTasTraceTick();
 	}
 	g_status_mutex.unlock();
+}
+
+CON_COMMAND(sar_tas_protocol_connect,
+            "sar_tas_protocol_connect <ip address> <port> - connect to the TAS protocol server.\n"
+            "ex: 'localhost 6555' - '127.0.0.1 6555' - '89.10.20.20 6555'.\n") {
+	if (args.ArgC() < 2 || args.ArgC() > 3) {
+		return console->Print(sar_tas_protocol_connect.ThisPtr()->m_pszHelpString);
+	}
+
+	sar_tas_protocol.SetValue(1);
+
+	g_client_data_mutex.lock();
+
+	g_client_ip = args[1];
+	g_client_port = args.ArgC() >= 3 ? std::atoi(args[2]) : DEFAULT_TAS_CLIENT_SOCKET;
+	g_attempt_client_connection = true;
+
+	g_client_data_mutex.unlock();
 }
