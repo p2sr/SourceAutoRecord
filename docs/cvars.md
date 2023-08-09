@@ -547,12 +547,16 @@
 |sar_tas_play|cmd|sar_tas_play \<filename> [filename2] - plays a TAS script with given name. If two script names are given, play coop|
 |sar_tas_play_single|cmd|sar_tas_play_single \<filename> [slot] - plays a single coop TAS script, giving the player control of the other slot.|
 |sar_tas_playback_rate|1.0|The rate at which to play back TAS scripts.|
+|sar_tas_protocol_connect|cmd|sar_tas_protocol_connect \<ip address> \<port> - connect to the TAS protocol server.<br>ex: '127.0.0.1 5666' - '89.10.20.20 5666'.|
+|sar_tas_protocol_reconnect_delay|0|A number of seconds after which reconnection to TAS protocol server should be made.<br>0 means no reconnect attempts will be made.|
+|sar_tas_protocol_send_msg|cmd|sar_tas_protocol_send_msg \<message> - sends a message over TAS protocol.|
+|sar_tas_protocol_server|cmd|sar_tas_protocol_server [port] - starts a TAS protocol server. Port is 6555 by default.|
+|sar_tas_protocol_stop|cmd|sar_tas_protocol_stop - stops every TAS protocol related connection.|
 |sar_tas_real_controller_debug|0|Debugs controller.|
 |sar_tas_replay|cmd|sar_tas_replay - replays the last played TAS|
 |sar_tas_restore_fps|1|Restore fps_max and host_framerate after TAS playback.|
 |sar_tas_resume|cmd|sar_tas_resume - resumes TAS playback|
 |sar_tas_save_raw|cmd|sar_tas_save_raw - saves a processed version of just processed script|
-|sar_tas_server|0|Enable the remote TAS server. Setting this value to something higher than one will bind the server on that port.|
 |sar_tas_skipto|0|Fast-forwards the TAS playback until given playback tick.|
 |sar_tas_stop|cmd|sar_tas_stop - stop TAS playing|
 |sar_tas_tools_enabled|1|Enables tool processing for TAS script making.|

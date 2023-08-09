@@ -1,13 +1,14 @@
-TAS server protocol
+TAS protocol
 ===================
 
-Connect to a TCP socket on localhost:6555.
+The following specification lists packets that can be sent between the player (SAR client capable of playing TAS scripts) and controller (external software capable of controlling the player through the protocol like VSC extension or bruteforcer server)
+SAR (the player) can act as both the client (connecting to a controller server) and server (listening for controller client connections).
 
 Every packet consists of a one-byte (u8) ID, followed by some extra data. the extra data is specified here under the packet name; if there's nothing specified, there's no extra data.
 
 The server should always send a packet with ID 255 first; it'll never send this again.
 
-server (SAR) -> client (VSC extension):
+player -> controller:
 	[0] set active
 		len1: u32
 		filename1: [len1]u8  // relative to "Portal 2/tas/", so the same as the arg you'd give to sar_tas_play
@@ -47,7 +48,7 @@ server (SAR) -> client (VSC extension):
 		location: [len]u8  // a string like "/home/mlugg/.steam/steam/steamapps/common/Portal 2", used so that the plugin knows whether it has the right script folder open
 
 
-client (VSC extension) -> server (SAR):
+controller -> player:
 	[0] request playback
 		len1: u32
 		filename1: [len1]u8  // relative to "Portal 2/tas/", so the same as the arg you'd give to sar_tas_play
@@ -85,3 +86,7 @@ client (VSC extension) -> server (SAR):
 	[100] request entity info
 		len: u32
 		entity_selector: [len]u8
+
+	[101] set continuous entity info
+		len: u32
+		entity_selector: [len]u8 // send empty string to disable continuous entity info

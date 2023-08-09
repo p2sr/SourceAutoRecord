@@ -316,7 +316,7 @@
     <ClCompile Include="Features\Tas\TasController.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
-    <ClCompile Include="Features\Tas\TasServer.cpp">
+    <ClCompile Include="Features\Tas\TasProtocol.cpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClCompile>
     <ClCompile Include="Features\Tas\TasTool.cpp">
@@ -969,7 +969,7 @@
     <ClInclude Include="Features\Tas\TasController.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
-    <ClInclude Include="Features\Tas\TasServer.hpp">
+    <ClInclude Include="Features\Tas\TasProtocol.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTool.hpp">
