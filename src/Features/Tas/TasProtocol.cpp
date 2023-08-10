@@ -1,3 +1,24 @@
+// This *has* to come first because <winsock2> doesn't like being
+// imported after <windows>. I fucking hate this platform
+#ifdef _WIN32
+#	include <winsock2.h>
+#	include <ws2tcpip.h>
+#else
+#	include <sys/socket.h>
+#	include <sys/select.h>
+#	include <arpa/inet.h>
+#	include <netinet/in.h>
+#	include <unistd.h>
+#endif
+
+#ifndef _WIN32
+#	define SOCKET int
+#	define INVALID_SOCKET -1
+#	define SOCKET_ERROR -1
+#	define closesocket close
+#	define WSACleanup() (void)0
+#endif
+
 #include "TasProtocol.hpp"
 #include "TasPlayer.hpp"
 #include "Event.hpp"
@@ -21,6 +42,13 @@ using namespace TasProtocol;
 
 Variable sar_tas_protocol("sar_tas_protocol", "0", 0, "Enable the remote TAS controller connection protocol. Value higher than 1 replaces port to listen for connections on (6555 by default).\n");
 
+namespace TasProtocol {
+	// Has to be defined here because something something MVSC suck my dick
+	struct ConnectionData {
+		SOCKET sock;
+		std::deque<uint8_t> cmdbuf;
+	};
+}
 
 
 static SOCKET g_listen_sock = INVALID_SOCKET;
