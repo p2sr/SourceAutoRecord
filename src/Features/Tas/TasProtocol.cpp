@@ -430,6 +430,8 @@ static bool attemptToInitializeServer() {
 		return false;
 	}
 
+	THREAD_PRINT("TAS server initialized on port %d.\n", server_port);
+
 	return true;
 }
 
@@ -518,6 +520,7 @@ static void processConnections(bool is_server) {
 		SOCKET cl = accept(g_listen_sock, nullptr, nullptr);
 		if (cl != INVALID_SOCKET) {
 			g_connections.push_back({ cl, {} });
+			THREAD_PRINT("A controller connected to TAS server. Number of controllers: %d\n", g_connections.size());
 			fullUpdate(g_connections[g_connections.size() - 1], true);
 		}
 	}
@@ -530,12 +533,16 @@ static void processConnections(bool is_server) {
 		if (!receiveFromConnection(cl)) {
 			g_connections.erase(g_connections.begin() + i);
 			--i;
+
+			if (is_server) {
+				THREAD_PRINT("A controller disconnected from TAS server. Number of controllers: %d\n", g_connections.size());
+			}
 		}
 	}
 }
 
 static void mainThread() {
-	THREAD_PRINT("Starting TAS protocol\n");
+	THREAD_PRINT("Starting TAS protocol connection\n");
 
 #ifdef _WIN32
 	WSADATA wsa_data;
@@ -648,7 +655,7 @@ CON_COMMAND(sar_tas_protocol_connect,
 	g_conn_data_mutex.lock();
 
 	g_client_ip = args[1];
-	g_client_port = args.ArgC() >= 3 ? std::atoi(args[2]) : DEFAULT_TAS_SERVER_SOCKET;
+	g_client_port = args.ArgC() >= 3 ? std::atoi(args[2]) : DEFAULT_TAS_CLIENT_SOCKET;
 
 	g_conn_data_mutex.unlock();
 
@@ -663,7 +670,7 @@ CON_COMMAND(sar_tas_protocol_server,
 		return console->Print(sar_tas_protocol_server.ThisPtr()->m_pszHelpString);
 	}
 	g_conn_data_mutex.lock();
-	g_server_port = args.ArgC() >= 1 ? std::atoi(args[2]) : DEFAULT_TAS_SERVER_SOCKET;
+	g_server_port = args.ArgC() >= 2 ? std::atoi(args[1]) : DEFAULT_TAS_SERVER_SOCKET;
 	g_conn_data_mutex.unlock();
 
 	g_is_server.store(true);
