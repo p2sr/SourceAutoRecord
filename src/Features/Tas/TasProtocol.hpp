@@ -21,7 +21,8 @@ namespace TasProtocol {
 		RECV_SET_PAUSE_TICK = 6,
 		RECV_ADVANCE_TICK = 7,
 		RECV_PLAY_SCRIPT_PROTOCOL = 10,
-		RECV_ENTITY_INFO = 100
+		RECV_ENTITY_INFO = 100,
+		RECV_SET_CONT_ENTITY_INFO = 101
 	};
 
 	enum SendMsg : uint8_t {
@@ -46,7 +47,14 @@ namespace TasProtocol {
 		int playback_tick;
 	};
 
+	struct ConnectionData {
+		uintptr_t sock;
+		std::deque<uint8_t> cmdbuf;
+		std::string contInfoEntSelector;
+	};
+
 	void SetStatus(Status s);
 	void SendProcessedScript(uint8_t slot, std::string scriptString);
+	void SendEntityInfo(ConnectionData& conn, std::string entSelector);
 
 } // namespace TasProtocol

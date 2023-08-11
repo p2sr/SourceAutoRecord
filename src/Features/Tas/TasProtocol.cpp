@@ -40,15 +40,6 @@
 
 using namespace TasProtocol;
 
-namespace TasProtocol {
-	// Has to be defined here because something something MVSC suck my dick
-	struct ConnectionData {
-		SOCKET sock;
-		std::deque<uint8_t> cmdbuf;
-	};
-}
-
-
 static SOCKET g_listen_sock = INVALID_SOCKET;
 static std::vector<ConnectionData> g_connections;
 static std::atomic<bool> g_should_stop;
@@ -212,8 +203,9 @@ static bool processCommands(ConnectionData &cl) {
 		if (cl.cmdbuf.size() == 0) return true;
 
 		size_t extra = cl.cmdbuf.size() - 1;
+		uint8_t packetId = cl.cmdbuf[0];
 
-		switch (cl.cmdbuf[0]) {
+		switch (packetId) {
 		case RECV_PLAY_SCRIPT:
 			if (extra < 8) return true;
 			{
@@ -340,6 +332,7 @@ static bool processCommands(ConnectionData &cl) {
 			}
 			break;
 		case RECV_ENTITY_INFO:
+		case RECV_SET_CONT_ENTITY_INFO:
 			if (extra < 4) return true;
 			{
 				std::deque<uint8_t> copy = cl.cmdbuf;
@@ -356,34 +349,11 @@ static bool processCommands(ConnectionData &cl) {
 
 				cl.cmdbuf = copy;
 
-				std::vector<uint8_t> buf;
-				buf.push_back(SEND_ENTITY_INFO);
-
-				CEntInfo *entInfo = entityList->QuerySelector(entSelector.c_str());
-				if (entInfo != NULL) {
-					buf.push_back(1);
-					ServerEnt* ent = (ServerEnt*)entInfo->m_pEntity;
-
-					Vector position = ent->abs_origin();
-					encodeRawFloat(buf, position.x);
-					encodeRawFloat(buf, position.y);
-					encodeRawFloat(buf, position.z);
-
-					QAngle angles = ent->abs_angles();
-					encodeRawFloat(buf, angles.x);
-					encodeRawFloat(buf, angles.y);
-					encodeRawFloat(buf, angles.z);
-
-					Vector velocity = ent->abs_velocity();
-					encodeRawFloat(buf, velocity.x);
-					encodeRawFloat(buf, velocity.y);
-					encodeRawFloat(buf, velocity.z);
-					
+				if (packetId == RECV_SET_CONT_ENTITY_INFO) {
+					cl.contInfoEntSelector = entSelector;
 				} else {
-					buf.push_back(0);
+					SendEntityInfo(cl, entSelector);
 				}
-
-				send(cl.sock, (const char *)buf.data(), buf.size(), 0);
 			}
 			break;
 
@@ -616,6 +586,18 @@ void TasProtocol::SetStatus(Status s) {
 	g_status_mutex.lock();
 	g_current_status = s;
 	g_status_mutex.unlock();
+
+	if (s.active) {
+		for (auto &cl : g_connections) {
+			if (cl.contInfoEntSelector.length() == 0) continue;
+
+			std::vector<uint8_t> buf{SEND_CURRENT_TICK};
+			encodeRaw32(buf, s.playback_tick);
+			send(cl.sock, (const char *)buf.data(), buf.size(), 0);
+
+			SendEntityInfo(cl, cl.contInfoEntSelector);
+		}
+	}
 }
 
 void TasProtocol::SendProcessedScript(uint8_t slot, std::string scriptString) {
@@ -633,6 +615,37 @@ void TasProtocol::SendProcessedScript(uint8_t slot, std::string scriptString) {
 	}
 
 	sendAll(buf);
+}
+
+void TasProtocol::SendEntityInfo(TasProtocol::ConnectionData &conn, std::string entSelector) {
+	std::vector<uint8_t> buf;
+	buf.push_back(SEND_ENTITY_INFO);
+
+	CEntInfo *entInfo = entityList->QuerySelector(entSelector.c_str());
+	if (entInfo != NULL) {
+		buf.push_back(1);
+		ServerEnt *ent = (ServerEnt *)entInfo->m_pEntity;
+
+		Vector position = ent->abs_origin();
+		encodeRawFloat(buf, position.x);
+		encodeRawFloat(buf, position.y);
+		encodeRawFloat(buf, position.z);
+
+		QAngle angles = ent->abs_angles();
+		encodeRawFloat(buf, angles.x);
+		encodeRawFloat(buf, angles.y);
+		encodeRawFloat(buf, angles.z);
+
+		Vector velocity = ent->abs_velocity();
+		encodeRawFloat(buf, velocity.x);
+		encodeRawFloat(buf, velocity.y);
+		encodeRawFloat(buf, velocity.z);
+
+	} else {
+		buf.push_back(0);
+	}
+
+	send(conn.sock, (const char *)buf.data(), buf.size(), 0);
 }
 
 ON_EVENT(FRAME) {
