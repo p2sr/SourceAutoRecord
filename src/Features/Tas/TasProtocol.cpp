@@ -38,13 +38,19 @@
 #define DEFAULT_TAS_CLIENT_SOCKET 6555
 #define DEFAULT_TAS_SERVER_SOCKET 6555
 
+Variable sar_tas_protocol_reconnect_delay("sar_tas_protocol_reconnect_delay", "0", 0, 
+	"A number of seconds after which reconnection to TAS protocol server should be made.\n"
+	"0 means no reconnect attempts will be made.\n");
+
 using namespace TasProtocol;
 
 static SOCKET g_listen_sock = INVALID_SOCKET;
 static std::vector<ConnectionData> g_connections;
 static std::atomic<bool> g_should_stop;
-static bool should_run = false;
+static bool g_should_run = false;
+static bool g_stopped_manually = true;
 static std::atomic<bool> g_is_server;
+static std::chrono::high_resolution_clock::time_point g_last_connection_attemt_timestamp;
 
 static std::string g_client_ip;
 static int g_client_port;
@@ -519,6 +525,7 @@ static void mainThread() {
 	int err = WSAStartup(MAKEWORD(2,2), &wsa_data);
 	if (err){
 		THREAD_PRINT("Could not initialize TAS protocol: WSAStartup failed (%d)\n", err);
+		g_should_stop.store(true);
 		return;
 	}
 #endif
@@ -527,10 +534,12 @@ static void mainThread() {
 
 	if (is_server && !attemptToInitializeServer()) {
 		WSACleanup();
+		g_should_stop.store(true);
 		return;
 	}
 	if (!is_server && !attemptConnectionToServer()) {
 		WSACleanup();
+		g_should_stop.store(true);
 		return;
 	}
 
@@ -555,6 +564,7 @@ static void mainThread() {
 
 	closesocket(g_listen_sock);
 	WSACleanup();
+	g_should_stop.store(true);
 }
 
 static std::thread g_net_thread;
@@ -562,18 +572,32 @@ static bool g_running;
 
 static void restart() {
 	g_should_stop.store(true);
-	should_run = true;
+	g_should_run = true;
+	g_stopped_manually = true;
 }
 
 ON_EVENT(FRAME) {
+	auto now = std::chrono::high_resolution_clock::now();
+
+	if (!g_running && !g_stopped_manually && sar_tas_protocol_reconnect_delay.GetBool() && !g_is_server.load()) {
+		auto duration = ((std::chrono::duration<float>)(now - g_last_connection_attemt_timestamp)).count();
+		if (duration > sar_tas_protocol_reconnect_delay.GetFloat()) {
+			g_should_run = true;
+			console->Print("Attempting to reconnect to the TAS protocol server\n");
+		}
+	}
+
 	if (g_running && g_should_stop.load()) {
 		if (g_net_thread.joinable()) g_net_thread.join();
 		g_running = false;
-	} else if (!g_running && should_run) {
+	} else if (!g_running && g_should_run) {
 		g_should_stop.store(false);
 		g_net_thread = std::thread(mainThread);
 		g_running = true;
-		should_run = false;
+		g_should_run = false;
+		g_stopped_manually = false;
+
+		g_last_connection_attemt_timestamp = now;
 	}
 }
 
@@ -594,7 +618,6 @@ void TasProtocol::SetStatus(Status s) {
 			std::vector<uint8_t> buf{SEND_CURRENT_TICK};
 			encodeRaw32(buf, s.playback_tick);
 			send(cl.sock, (const char *)buf.data(), buf.size(), 0);
-
 			SendEntityInfo(cl, cl.contInfoEntSelector);
 		}
 	}
@@ -694,4 +717,5 @@ CON_COMMAND(sar_tas_protocol_server,
 CON_COMMAND(sar_tas_protocol_stop,
             "sar_tas_protocol_stop - stops every TAS protocol related connection.\n") {
 	g_should_stop.store(true);
+	g_stopped_manually = true;
 }
