@@ -63,14 +63,28 @@ static int g_last_debug_tick;
 static int g_current_debug_tick;
 static std::mutex g_status_mutex;
 
-static uint32_t popRaw32(std::deque<uint8_t> &buf) {
-	uint32_t val = 0;
+static bool popByte(std::deque<uint8_t> &buf, uint8_t &val) {
+	if (buf.size() < 1) return false;
+	val = buf[0];
+	return true;
+}
+
+static void encodeByte(std::deque<uint8_t>& buf, uint8_t val) {
+	buf.push_back(val);
+}
+
+static bool popRaw32(std::deque<uint8_t> &buf, uint32_t& val) {
+
+	if (buf.size() < 4) return false;
+
+	val = 0;
 	for (int i = 0; i < 4; ++i) {
 		val <<= 8;
 		val |= buf[0];
 		buf.pop_front();
 	}
-	return val;
+
+	return true;
 }
 
 static void encodeRaw32(std::vector<uint8_t> &buf, uint32_t val) {
@@ -80,10 +94,31 @@ static void encodeRaw32(std::vector<uint8_t> &buf, uint32_t val) {
 	buf.push_back((val >> 0)  & 0xFF);
 }
 
-// I know this is ugly, but I think copy pasting the above code is
-// stupider so whatever
+static bool popRawFloat(std::deque<uint8_t>& buf, float& val) {
+	return popRaw32(buf, (uint32_t&)val);
+}
+
 static void encodeRawFloat(std::vector<uint8_t> &buf, float val) {
 	encodeRaw32(buf, *(uint32_t *)&val);
+}
+
+static bool popString(std::deque<uint8_t> &buf, std::string &val) {
+	uint32_t len;
+	if(!popRaw32(buf, len)) return false;
+	if (buf.size() < len) return false;
+
+	for (size_t i = 0; i < len; ++i) {
+		val += buf[0];
+		buf.pop_front();
+	}
+	return true;
+}
+
+static void encodeString(std::vector<uint8_t>& buf, std::string val) {
+	encodeRaw32(buf, (uint32_t)val.size());
+	for (char c : val) {
+		buf.push_back(c);
+	}
 }
 
 static void sendAll(const std::vector<uint8_t> &buf) {
@@ -204,192 +239,161 @@ static void update() {
 	}
 }
 
-static bool processCommands(ConnectionData &cl) {
-	while (true) {
-		if (cl.cmdbuf.size() == 0) return true;
+// reads a single tas protocol command
+// returns 0 if command has been handled properly
+// returns 1 if there's no data to fully process a command
+// returns 2 if bad command is received
+static int processCommand(ConnectionData &cl) {
+	std::deque<uint8_t> copy = cl.cmdbuf;
 
-		size_t extra = cl.cmdbuf.size() - 1;
-		uint8_t packetId = cl.cmdbuf[0];
+	uint8_t packetId;
+	if (popByte(cl.cmdbuf, packetId)) switch (packetId) {
 
-		switch (packetId) {
-		case RECV_PLAY_SCRIPT:
-			if (extra < 8) return true;
-			{
-				std::deque<uint8_t> copy = cl.cmdbuf;
+	case RECV_PLAY_SCRIPT: {
+		std::string filename1;
+		std::string filename2;
 
-				copy.pop_front();
+		if (!popString(cl.cmdbuf, filename1)) break;
+		if (!popString(cl.cmdbuf, filename2)) break;
 
-				uint32_t len1 = popRaw32(copy);
-				if (extra < 8 + len1) return true;
-
-				std::string filename1;
-				for (size_t i = 0; i < len1; ++i) {
-					filename1 += copy[0];
-					copy.pop_front();
-				}
-
-				uint32_t len2 = popRaw32(copy);
-				if (extra < 8 + len1 + len2) return true;
-
-				std::string filename2;
-				for (size_t i = 0; i < len2; ++i) {
-					filename2 += copy[0];
-					copy.pop_front();
-				}
-
-				// We actually had everything we needed, so switch to the modified buffer
-				cl.cmdbuf = copy; 
-
-				Scheduler::OnMainThread([=](){
-					tasPlayer->PlayFile(filename1, filename2);
-				});
-			}
-			break;
-
-		case RECV_STOP:
-			cl.cmdbuf.pop_front();
-			Scheduler::OnMainThread([=](){
-				tasPlayer->Stop(true);
-			});
-			break;
-
-		case RECV_PLAYBACK_RATE:
-			if (extra < 4) return true;
-			cl.cmdbuf.pop_front();
-			{
-				union { uint32_t i; float f; } rate = { popRaw32(cl.cmdbuf) };
-				Scheduler::OnMainThread([=](){
-					sar_tas_playback_rate.SetValue(rate.f);
-				});
-			}
-			break;
-
-		case RECV_RESUME:
-			cl.cmdbuf.pop_front();
-			Scheduler::OnMainThread([=](){
-				tasPlayer->Resume();
-			});
-			break;
-
-		case RECV_PAUSE: 
-			cl.cmdbuf.pop_front();
-			Scheduler::OnMainThread([=](){
-				tasPlayer->Pause();
-			});
-			break;
-
-		case RECV_FAST_FORWARD:
-			if (extra < 5) return true;
-			cl.cmdbuf.pop_front();
-			{
-				int tick = popRaw32(cl.cmdbuf);
-				bool pause_after = cl.cmdbuf[0];
-				cl.cmdbuf.pop_front();
-				Scheduler::OnMainThread([=](){
-					sar_tas_skipto.SetValue(tick);
-					if (pause_after) sar_tas_pauseat.SetValue(tick);
-				});
-			}
-			break;
-
-		case RECV_SET_PAUSE_TICK:
-			if (extra < 4) return true;
-			cl.cmdbuf.pop_front();
-			{
-				int tick = popRaw32(cl.cmdbuf);
-				Scheduler::OnMainThread([=](){
-					sar_tas_pauseat.SetValue(tick);
-				});
-			}
-			break;
-
-		case RECV_ADVANCE_TICK:
-			cl.cmdbuf.pop_front();
-			Scheduler::OnMainThread([](){
-				tasPlayer->AdvanceFrame();
-			});
-			break;
-
-		case RECV_MESSAGE:
-			if (extra < 4) return true;
-			{
-				std::deque<uint8_t> copy = cl.cmdbuf;
-
-				copy.pop_front();
-
-				uint32_t len1 = popRaw32(copy);
-				if (extra < 4 + len1) return true;
-
-				std::string message;
-				for (size_t i = 0; i < len1; ++i) {
-					message += copy[0];
-					copy.pop_front();
-				}
-
-				// We actually had everything we needed, so switch to the modified buffer
-				cl.cmdbuf = copy;
-
-				THREAD_PRINT("[TAS Protocol] %s\n", message);
-			}
-			break;
-
-		case RECV_PLAY_SCRIPT_PROTOCOL:
-			if (extra < 16) return true;
-			{
-				std::deque<uint8_t> copy = cl.cmdbuf;
-
-				copy.pop_front();
-
-				std::string data[4];
-				uint32_t size_total = 0;
-				for (int i = 0; i < 4; ++i) {
-					uint32_t len = popRaw32(copy);
-					size_total += len;
-					if (extra < 16 + size_total) return true;
-
-					for (size_t j = 0; j < len; ++j) {
-						data[i] += copy[0];
-						copy.pop_front();
-					}
-				}
-
-				cl.cmdbuf = copy;  // We actually had everything we needed, so switch to the modified buffer
-
-				Scheduler::OnMainThread([=]() {
-					tasPlayer->PlayScript(data[0], data[1], data[2], data[3]);
-				});
-			}
-			break;
-		case RECV_ENTITY_INFO:
-		case RECV_SET_CONT_ENTITY_INFO:
-			if (extra < 4) return true;
-			{
-				std::deque<uint8_t> copy = cl.cmdbuf;
-				copy.pop_front();
-
-				uint32_t len = popRaw32(copy);
-				if (extra < 4 + len) return true;
-
-				std::string entSelector;
-				for (size_t i = 0; i < len; ++i) {
-					entSelector += copy[0];
-					copy.pop_front();
-				}
-
-				cl.cmdbuf = copy;
-
-				if (packetId == RECV_SET_CONT_ENTITY_INFO) {
-					cl.contInfoEntSelector = entSelector;
-				} else {
-					SendEntityInfo(cl, entSelector);
-				}
-			}
-			break;
-
-		default:
-			return false; // Bad command - disconnect
-		}
+		Scheduler::OnMainThread([=](){
+			tasPlayer->PlayFile(filename1, filename2);
+		});
+		
+		return 0;
 	}
+	case RECV_STOP: {
+		Scheduler::OnMainThread([=](){
+			tasPlayer->Stop(true);
+		});
+
+		return 0;
+	}
+	case RECV_PLAYBACK_RATE: {
+		float rate;
+
+		popRawFloat(cl.cmdbuf, rate);
+
+		Scheduler::OnMainThread([=](){
+			sar_tas_playback_rate.SetValue(rate);
+		});
+		
+		return 0;
+	}
+	case RECV_RESUME: {
+		Scheduler::OnMainThread([=]() {
+			tasPlayer->Resume();
+		});
+
+		return 0;
+	}
+	case RECV_PAUSE: {
+		Scheduler::OnMainThread([=]() {
+			tasPlayer->Pause();
+		});
+
+		return 0;
+	}
+	case RECV_FAST_FORWARD: {
+		int tick;
+		bool pause_after;
+
+		if (!popRaw32(cl.cmdbuf, (uint32_t &)tick)) break;
+		if (!popByte(cl.cmdbuf, (uint8_t &)pause_after)) break;
+		
+		Scheduler::OnMainThread([=]() {
+			sar_tas_skipto.SetValue(tick);
+			if (pause_after) sar_tas_pauseat.SetValue(tick);
+		});
+		return 0;
+	}
+	case RECV_SET_PAUSE_TICK: {
+		int tick;
+
+		if (!popRaw32(cl.cmdbuf, (uint32_t &)tick)) break;
+
+		Scheduler::OnMainThread([=]() {
+			sar_tas_pauseat.SetValue(tick);
+		});
+		return 0;
+	}
+	case RECV_ADVANCE_TICK: {
+		Scheduler::OnMainThread([]() {
+			tasPlayer->AdvanceFrame();
+		});
+		return 0;
+	}
+	case RECV_MESSAGE: {
+		std::string message;
+
+		if (!popString(cl.cmdbuf, message)) break;
+
+		THREAD_PRINT("[TAS Protocol] %s\n", message);
+
+		return 0;
+	}
+	case RECV_PLAY_SCRIPT_PROTOCOL: {
+
+		std::string slot0Name;
+		std::string slot0Script;
+		std::string slot1Name;
+		std::string slot1Script;
+
+		if (!popString(cl.cmdbuf, slot0Name)) break;
+		if (!popString(cl.cmdbuf, slot0Script)) break;
+		if (!popString(cl.cmdbuf, slot1Name)) break;
+		if (!popString(cl.cmdbuf, slot1Script)) break;
+
+		Scheduler::OnMainThread([=]() {
+			tasPlayer->PlayScript(slot0Name, slot0Script, slot1Name, slot1Script);
+		});
+
+		return 0;
+	}
+	case RECV_ENTITY_INFO:
+	case RECV_SET_CONT_ENTITY_INFO: {
+		std::string entSelector;
+
+		if (!popString(cl.cmdbuf, entSelector)) break;
+
+		if (packetId == RECV_SET_CONT_ENTITY_INFO) {
+			cl.contInfoEntSelector = entSelector;
+		} else {
+			SendEntityInfo(cl, entSelector);
+		}
+		return 0;
+	}
+	default:
+		// Bad command - disconnect
+		return 2; 
+	}
+
+	// command hasn't been fully read - recover to the copy
+	cl.cmdbuf = copy;
+	return 1;
+}
+
+static bool receiveFromConnection(TasProtocol::ConnectionData &cl) {
+	char buf[1024];
+	int len = recv(cl.sock, buf, sizeof buf, 0);
+
+	if (len == 0 || len == SOCKET_ERROR) {  // Connection closed or errored
+	return false;
+	}
+
+	cl.cmdbuf.insert(cl.cmdbuf.end(), std::begin(buf), std::begin(buf) + len);
+
+	while (true) {
+		int result = processCommand(cl);
+
+		if (result == 2) {
+			closesocket(cl.sock);
+			return false;
+		}
+		if (result == 1) break;
+	}
+
+	return true;
 }
 
 static bool attemptToInitializeServer() {
@@ -468,25 +472,6 @@ static bool attemptConnectionToServer() {
 	g_connections.push_back({clientSocket, {}});
 	fullUpdate(g_connections[g_connections.size() - 1], true);
 	THREAD_PRINT("Successfully connected to TAS server %s:%d.\n", ip.c_str(), port);
-
-	return true;
-}
-
-static bool receiveFromConnection(TasProtocol::ConnectionData &cl) {
-	char buf[1024];
-	int len = recv(cl.sock, buf, sizeof buf, 0);
-
-	if (len == 0 || len == SOCKET_ERROR) {  // Connection closed or errored
-		return false;
-	}
-
-	cl.cmdbuf.insert(cl.cmdbuf.end(), std::begin(buf), std::begin(buf) + len);
-
-	if (!processCommands(cl)) {
-		// Client sent a bad command; terminate connection
-		closesocket(cl.sock);
-		return false;
-	}
 
 	return true;
 }
