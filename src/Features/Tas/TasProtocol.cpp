@@ -310,6 +310,29 @@ static bool processCommands(ConnectionData &cl) {
 			});
 			break;
 
+		case RECV_MESSAGE:
+			if (extra < 4) return true;
+			{
+				std::deque<uint8_t> copy = cl.cmdbuf;
+
+				copy.pop_front();
+
+				uint32_t len1 = popRaw32(copy);
+				if (extra < 4 + len1) return true;
+
+				std::string message;
+				for (size_t i = 0; i < len1; ++i) {
+					message += copy[0];
+					copy.pop_front();
+				}
+
+				// We actually had everything we needed, so switch to the modified buffer
+				cl.cmdbuf = copy;
+
+				THREAD_PRINT("[TAS Protocol] %s\n", message);
+			}
+			break;
+
 		case RECV_PLAY_SCRIPT_PROTOCOL:
 			if (extra < 16) return true;
 			{
@@ -671,6 +694,20 @@ void TasProtocol::SendEntityInfo(TasProtocol::ConnectionData &conn, std::string 
 	send(conn.sock, (const char *)buf.data(), buf.size(), 0);
 }
 
+void TasProtocol::SendTextMessage(std::string message) {
+	std::vector<uint8_t> buf;
+
+	buf.push_back(SEND_MESSAGE);
+
+	// script
+	encodeRaw32(buf, (uint32_t)message.size());
+	for (char c : message) {
+		buf.push_back(c);
+	}
+
+	sendAll(buf);
+}
+
 ON_EVENT(FRAME) {
 	g_status_mutex.lock();
 	if (g_current_status.active) {
@@ -718,4 +755,12 @@ CON_COMMAND(sar_tas_protocol_stop,
             "sar_tas_protocol_stop - stops every TAS protocol related connection.\n") {
 	g_should_stop.store(true);
 	g_stopped_manually = true;
+}
+
+CON_COMMAND(sar_tas_protocol_send_msg, "sar_tas_protocol_send_msg <message> - sends a message over TAS protocol.\n") {
+	if (args.ArgC() != 2) {
+		return console->Print(sar_tas_protocol_send_msg.ThisPtr()->m_pszHelpString);
+	}
+	
+	TasProtocol::SendTextMessage(args[1]);
 }

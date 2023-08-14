@@ -20,6 +20,7 @@ namespace TasProtocol {
 		RECV_FAST_FORWARD = 5,
 		RECV_SET_PAUSE_TICK = 6,
 		RECV_ADVANCE_TICK = 7,
+		RECV_MESSAGE = 8,
 		RECV_PLAY_SCRIPT_PROTOCOL = 10,
 		RECV_ENTITY_INFO = 100,
 		RECV_SET_CONT_ENTITY_INFO = 101
@@ -34,6 +35,7 @@ namespace TasProtocol {
 		SEND_SKIPPING = 5,
 		SEND_CURRENT_TICK = 6,
 		SEND_DEBUG_TICK = 7,
+		SEND_MESSAGE = 8,
 		SEND_PROCESSED_SCRIPT = 10,
 		SEND_ENTITY_INFO = 100,
 		SEND_GAME_LOCATION = 255
@@ -56,5 +58,6 @@ namespace TasProtocol {
 	void SetStatus(Status s);
 	void SendProcessedScript(uint8_t slot, std::string scriptString);
 	void SendEntityInfo(ConnectionData& conn, std::string entSelector);
+	void SendTextMessage(std::string message);
 
 } // namespace TasProtocol
