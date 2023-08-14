@@ -135,10 +135,7 @@ static void fullUpdate(TasProtocol::ConnectionData &cl, bool first_packet = fals
 
 		std::string dir = std::filesystem::current_path().string();
 		std::replace(dir.begin(), dir.end(), '\\', '/');
-		encodeRaw32(buf, (uint32_t)dir.size());
-		for (char c : dir) {
-			buf.push_back(c);
-		}
+		encodeString(buf, dir);
 	}
 
 	buf.push_back(SEND_PLAYBACK_RATE);
@@ -148,14 +145,8 @@ static void fullUpdate(TasProtocol::ConnectionData &cl, bool first_packet = fals
 
 	if (g_last_status.active) {
 		buf.push_back(SEND_ACTIVE);
-		encodeRaw32(buf, g_last_status.tas_path[0].size());
-		for (char c : g_last_status.tas_path[0]) {
-			buf.push_back(c);
-		}
-		encodeRaw32(buf, g_last_status.tas_path[1].size());
-		for (char c : g_last_status.tas_path[1]) {
-			buf.push_back(c);
-		}
+		encodeString(buf, g_last_status.tas_path[0]);
+		encodeString(buf, g_last_status.tas_path[1]);
 
 		// state
 		switch (g_last_status.playback_state) {
@@ -386,11 +377,11 @@ static bool receiveFromConnection(TasProtocol::ConnectionData &cl) {
 	while (true) {
 		int result = processCommand(cl);
 
-		if (result == 2) {
+		if (result == 2) { // invalid command - disconnect
 			closesocket(cl.sock);
 			return false;
 		}
-		if (result == 1) break;
+		if (result == 1) break; // not enough data - wait for more
 	}
 
 	return true;
@@ -640,10 +631,7 @@ void TasProtocol::SendProcessedScript(uint8_t slot, std::string scriptString) {
 	buf.push_back(slot);
 
 	// script
-	encodeRaw32(buf, (uint32_t)scriptString.size());
-	for (char c : scriptString) {
-		buf.push_back(c);
-	}
+	encodeString(buf, scriptString);
 
 	sendAll(buf);
 }
@@ -681,15 +669,8 @@ void TasProtocol::SendEntityInfo(TasProtocol::ConnectionData &conn, std::string 
 
 void TasProtocol::SendTextMessage(std::string message) {
 	std::vector<uint8_t> buf;
-
 	buf.push_back(SEND_MESSAGE);
-
-	// script
-	encodeRaw32(buf, (uint32_t)message.size());
-	for (char c : message) {
-		buf.push_back(c);
-	}
-
+	encodeString(buf, message);
 	sendAll(buf);
 }
 
