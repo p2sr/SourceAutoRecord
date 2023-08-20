@@ -4,6 +4,15 @@
 #include <cstdint>
 #include <deque>
 
+// defining socket here manually because
+// for unknown reasons winsock cannot be included here
+#ifdef _WIN32
+#	define SOCKET unsigned int
+#else
+#	define SOCKET int
+#endif
+
+
 namespace TasProtocol {
 	enum class PlaybackState {
 		PLAYING,
@@ -50,7 +59,7 @@ namespace TasProtocol {
 	};
 
 	struct ConnectionData {
-		unsigned int sock;
+		SOCKET sock;
 		std::deque<uint8_t> cmdbuf;
 		std::string contInfoEntSelector;
 	};
