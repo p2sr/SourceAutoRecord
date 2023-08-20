@@ -320,7 +320,7 @@ static int processCommand(ConnectionData &cl) {
 
 		if (!popString(cl.cmdbuf, message)) break;
 
-		THREAD_PRINT("[TAS Protocol] %s\n", message);
+		THREAD_PRINT("[TAS Protocol] %s\n", message.c_str());
 
 		return 0;
 	}
