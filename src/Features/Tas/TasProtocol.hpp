@@ -50,7 +50,7 @@ namespace TasProtocol {
 	};
 
 	struct ConnectionData {
-		uintptr_t sock;
+		unsigned int sock;
 		std::deque<uint8_t> cmdbuf;
 		std::string contInfoEntSelector;
 	};
