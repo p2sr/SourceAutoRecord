@@ -66,6 +66,7 @@ static std::mutex g_status_mutex;
 static bool popByte(std::deque<uint8_t> &buf, uint8_t &val) {
 	if (buf.size() < 1) return false;
 	val = buf[0];
+	buf.pop_front();
 	return true;
 }
 
