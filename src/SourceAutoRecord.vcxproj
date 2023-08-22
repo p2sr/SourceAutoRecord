@@ -251,6 +251,7 @@
     <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="SAR.cpp" />
+    <ClCompile Include="Features\Spotify.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Utils\ed25519\add_scalar.cpp" />
     <ClCompile Include="Utils\ed25519\fe.cpp" />
@@ -436,6 +437,7 @@
     <ClInclude Include="Offsets.hpp" />
     <ClInclude Include="Plugin.hpp" />
     <ClInclude Include="SAR.hpp" />
+    <ClInclude Include="Features\Spotify.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="Utils\ed25519\ed25519.h" />
     <ClInclude Include="Utils\ed25519\fe.h" />
