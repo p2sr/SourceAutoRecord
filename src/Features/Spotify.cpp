@@ -7,7 +7,9 @@
 #include "Variable.hpp"
 #include "Command.hpp"
 
-#include <TlHelp32.h>
+#ifdef _WIN32
+#	include <TlHelp32.h>
+#endif
 
 Variable sar_spotify_hud("sar_spotify_hud", "0", 0, "Draw the current playing song on spotify.\n");
 Variable sar_spotify_hud_x("sar_spotify_hud_x", "2", 0, "X offset of the HUD.\n");
@@ -23,6 +25,7 @@ bool Spotify::ShouldDraw() {
 	return sar_spotify_hud.GetBool() && Hud::ShouldDraw();
 }
 
+#ifdef _WIN32
 void getHandleFromProcessPath(const char *szExeName, DWORD &dwPID) {
 	PROCESSENTRY32 entry;
 	entry.dwSize = sizeof(PROCESSENTRY32);
@@ -72,16 +75,21 @@ HWND findMainWindow(unsigned long process_id) {
 	EnumWindows(enumWindowsCallback, (LPARAM)&data);
 	return data.window_handle;
 }
+#endif
 
 void Spotify::Init() {
+#ifdef _WIN32
 	DWORD pid;
 	getHandleFromProcessPath("Spotify.exe", pid);
 
 	g_hWnd = findMainWindow(pid);
+#endif
 }
 
 void Spotify::SendCommand(SpotifyAction command) {
+#ifdef _WIN32
 	SendMessageA(g_hWnd, WM_APPCOMMAND, NULL, (LPARAM)command);
+#endif
 }
 
 void Spotify::Paint(int slot) {

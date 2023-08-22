@@ -10,7 +10,9 @@ enum class SpotifyAction {
 
 class Spotify : public Hud {
 private:
+#ifdef _WIN32
 	HWND g_hWnd;
+#endif
 
 public:
 	Spotify();
