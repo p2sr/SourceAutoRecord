@@ -97,7 +97,7 @@ void Spotify::Paint(int slot) {
 	console->Print("sar_spotify_hud is currently working for Windows only.\n");
 	sar_spotify_hud.SetValue(0);
 	return;
-#endif
+#else
 	if (!g_hWnd || !IsWindow(g_hWnd)) {
 		Init();
 		if (!g_hWnd) {
@@ -115,6 +115,7 @@ void Spotify::Paint(int slot) {
 
 	auto font = scheme->GetFontByID(sar_spotify_hud_font_index.GetInt());
 	surface->DrawTxt(font, sar_spotify_hud_x.GetInt(), sar_spotify_hud_y.GetInt(), {255, 255, 255}, "%s", title);
+#endif
 }
 
 bool Spotify::GetCurrentSize(int &xSize, int &ySize) {
