@@ -50,6 +50,13 @@ enum {
 
 
 class IMaterial;
+class IMaterialInternal;
+
+class CMaterial_QueueFriendly {
+public:
+	void* vtable;
+	IMaterialInternal* m_pRealTimeVersion;
+};
 
 struct CFontAmalgam {
 	struct TFontRange {

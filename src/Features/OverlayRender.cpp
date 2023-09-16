@@ -225,21 +225,25 @@ void OverlayRender::addText(Vector pos, const std::string &text, float x_height,
 }
 
 static IMaterial *createMaterial(KeyValues *kv, const char *name) {
-	IMaterial *mat = (IMaterial *)materialSystem->CreateMaterial(materialSystem->materials->ThisPtr(), name, kv);
-	auto IncrementReferenceCount = Memory::VMT<void (__rescall *)(IMaterial *thisptr)>(mat, 12);
-	IncrementReferenceCount(mat);
-	return mat;
+	return materialSystem->CreateMaterial(materialSystem->materials->ThisPtr(), name, kv);
 }
 
 static void destroyMaterial(IMaterial *mat) {
 	if (!mat) return;
-	auto DecrementReferenceCount = Memory::VMT<void (__rescall *)(IMaterial *thisptr)>(mat, 13);
-	DecrementReferenceCount(mat);
+
+	auto material = reinterpret_cast<CMaterial_QueueFriendly*>(mat)->m_pRealTimeVersion;
+
+	auto DecrementReferenceCount = Memory::VMT<void (__rescall *)(IMaterialInternal *thisptr)>(material, Offsets::DecrementReferenceCount);
+	DecrementReferenceCount(material);
+
+	materialSystem->RemoveMaterial(materialSystem->materials->ThisPtr(), material);
+	mat = nullptr;
 }
 
 static IMaterial *g_mat_solid_opaque,     *g_mat_solid_opaque_noz,     *g_mat_solid_alpha,     *g_mat_solid_alpha_noz;
 static IMaterial *g_mat_wireframe_opaque, *g_mat_wireframe_opaque_noz, *g_mat_wireframe_alpha, *g_mat_wireframe_alpha_noz;
 static IMaterial *g_mat_font, *g_mat_font_noz;
+static ITexture *g_tex_font_atlas;
 
 void OverlayRender::initMaterials() {
 	KeyValues *kv;
@@ -284,7 +288,7 @@ void OverlayRender::initMaterials() {
 	kv->SetInt("$ignorez", 1);
 	g_mat_wireframe_alpha_noz = createMaterial(kv, "_SAR_UnlitWireframeAlphaNoDepth");
 
-	materialSystem->CreateTexture("_SAR_FontAtlasTex", FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT, FONT_ATLAS_DATA);
+	g_tex_font_atlas = materialSystem->CreateTexture("_SAR_FontAtlasTex", FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT, FONT_ATLAS_DATA);
 
 	kv = new KeyValues("unlitgeneric");
 	kv->SetInt("$vertexcolor", 1);
@@ -313,6 +317,7 @@ ON_EVENT(SAR_UNLOAD) {
 	destroyMaterial(g_mat_wireframe_opaque_noz);
 	destroyMaterial(g_mat_font);
 	destroyMaterial(g_mat_font_noz);
+	materialSystem->DestroyTexture(g_tex_font_atlas);
 }
 
 static void drawVerts(IMaterial *mat, bool lines, Vector *verts, int nverts, Color col) {

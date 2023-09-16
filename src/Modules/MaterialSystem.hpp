@@ -13,6 +13,9 @@ public:
 
 	using _CreateMaterial = IMaterial*(__rescall*)(void* thisptr, const char *pMaterialName, void *pVMTKeyValues);
 	_CreateMaterial CreateMaterial = nullptr;
+	
+	using _RemoveMaterial = void(__rescall*)(void* thisptr, IMaterialInternal* pMaterial);
+	_RemoveMaterial RemoveMaterial = nullptr;
 
 	using _KeyValues_SetString = void(__rescall*)(void* thistpr, const char *key, const char *val);
 	_KeyValues_SetString KeyValues_SetString = nullptr;
@@ -26,6 +29,7 @@ public:
 
 	IMaterial *FindMaterial(const char *materialName, const char *textureGroupName);
 	ITexture *CreateTexture(const char *name, int w, int h, uint8_t *bgra);
+	void DestroyTexture(ITexture *tex);
 	IMatRenderContext *GetRenderContext();
 };
 

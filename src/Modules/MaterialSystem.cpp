@@ -56,9 +56,10 @@ DETOUR(MaterialSystem::UncacheUnusedMaterials, bool bRecomputeStateSnapshots) {
 bool MaterialSystem::Init() {
 	this->materials = Interface::Create(this->Name(), "VMaterialSystem080");
 	if (this->materials) {
-		this->materials->Hook(MaterialSystem::UncacheUnusedMaterials_Hook, MaterialSystem::UncacheUnusedMaterials, 77);
+		this->materials->Hook(MaterialSystem::UncacheUnusedMaterials_Hook, MaterialSystem::UncacheUnusedMaterials, Offsets::UncacheUnusedMaterials);
 
-		this->CreateMaterial = this->materials->Original<_CreateMaterial>(81);
+		this->CreateMaterial = this->materials->Original<_CreateMaterial>(Offsets::CreateMaterial);
+		this->RemoveMaterial = this->materials->Original<_RemoveMaterial>(Offsets::RemoveMaterial);
 
 #if _WIN32
 		this->KeyValues_SetString = (_KeyValues_SetString)Memory::Scan(this->Name(), "55 8B EC 8B 45 08 6A 01 50 E8 ? ? ? ? 85 C0 74 0B");
@@ -95,8 +96,15 @@ ITexture *MaterialSystem::CreateTexture(const char *name, int w, int h, uint8_t 
 	tex->Download();
 
 	return tex;
-
-	// TODO: destroy textures
+}
+void MaterialSystem::DestroyTexture(ITexture *tex) {
+	if (tex) {
+		auto CreateProceduralTexture = this->materials->Current(Offsets::CreateProceduralTexture);
+		auto g_pTextureManager = Memory::DerefDeref(CreateProceduralTexture + Offsets::g_pTextureManager);
+		auto RemoveTexture = Memory::VMT<void(__rescall*)(void*, ITexture*)>(g_pTextureManager, Offsets::RemoveTexture);
+		RemoveTexture(g_pTextureManager, tex);
+		tex = nullptr;
+	}
 }
 IMatRenderContext *MaterialSystem::GetRenderContext() {
 	auto func = (IMatRenderContext *(__rescall *)(void *))this->materials->Current(Offsets::GetRenderContext);

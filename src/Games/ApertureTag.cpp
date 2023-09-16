@@ -46,6 +46,9 @@ void ApertureTag::LoadOffsets() {
 
 	// client.dll
 	m_pCommands = 228;  // CInput::DecodeUserCmdFromBuffer
+
+	// materialsystem.dll
+	RemoveMaterial = 155;
 #else
 	// client.so
 	m_pCommands = 228;  // CInput::DecodeUserCmdFromBuffer
@@ -54,6 +57,10 @@ void ApertureTag::LoadOffsets() {
 #define OFFSET_EMPTY(name)
 #define OFFSET_LINMOD(name, off) name = off;
 #include "OffsetsData.hpp"
+	
+	// materialsystem.so
+	RemoveMaterial = 156;
+	g_pTextureManager = 10;
 #endif
 }
 const char *ApertureTag::Version() {
