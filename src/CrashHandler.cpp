@@ -172,10 +172,11 @@ static void handler(int signal, siginfo_t *info, void *ucontext)
 }
 
 #ifdef _WIN32
+static PVOID g_handle = nullptr;
 
 void CrashHandler::Init() {
 	g_isMainThread = true;
-	AddVectoredExceptionHandler(1, &handler);
+	g_handle = AddVectoredExceptionHandler(1, &handler);
 
 	HANDLE process = GetCurrentProcess();
 	SymInitialize(process, 0, true);
@@ -189,7 +190,7 @@ void CrashHandler::Cleanup() {
 	HANDLE process = GetCurrentProcess();
 	SymGetModuleInfo(process, (DWORD)&Utils::GetSARPath, &info);
 	SymUnloadModule(process, info.BaseOfImage);
-	RemoveVectoredExceptionHandler(&handler);
+	RemoveVectoredExceptionHandler(g_handle);
 	SymCleanup(GetCurrentProcess());
 }
 
