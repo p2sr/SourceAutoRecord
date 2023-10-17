@@ -145,6 +145,7 @@
     <ClCompile Include="Features\Tas\TasTools\AngleToolsUtils.cpp" />
     <ClCompile Include="Features\Tas\TasPlayer.cpp" />
     <ClCompile Include="Features\Tas\TasScript.cpp" />
+    <ClCompile Include="Features\Tas\TasTools\UseTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\LookTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\MoveTool.cpp" />
     <ClCompile Include="Features\WindowResizer.cpp" />
@@ -335,6 +336,7 @@
     <ClInclude Include="Features\Tas\TasTools\AngleToolsUtils.hpp" />
     <ClInclude Include="Features\Tas\TasPlayer.hpp" />
     <ClInclude Include="Features\Tas\TasScript.hpp" />
+    <ClInclude Include="Features\Tas\TasTools\UseTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\LookTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\MoveTool.hpp" />
     <ClInclude Include="Features\WindowResizer.hpp" />

@@ -17,6 +17,7 @@ TasTool *TasTool::GetInstanceByName(int slot, std::string name) {
 
 std::vector<std::string> TasTool::priorityList = {
 	"check",
+	"use",
 	"setang",
 	"autoaim",
 	"look",
