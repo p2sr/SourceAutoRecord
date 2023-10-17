@@ -3,6 +3,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Features/Tas/TasParser.hpp"
+#include "MoveTool.hpp"
 
 AbsoluteMoveTool tasAbsoluteMoveTool[2] = {
 	{ "absmov", 0 },
@@ -12,6 +13,10 @@ AbsoluteMoveTool tasAbsoluteMoveTool[2] = {
 void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) {
 	if (!params.enabled)
 		return;
+
+	if (tasMoveTool[slot].GetCurrentParams().enabled) {
+		tasMoveTool[slot].Reset();
+	}
 
 	auto angles = playerInfo.angles;
 	angles.y -= fb.viewAnalog.x;

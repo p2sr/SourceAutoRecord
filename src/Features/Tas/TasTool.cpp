@@ -19,8 +19,10 @@ std::vector<std::string> TasTool::priorityList = {
 	"check",
 	"setang",
 	"autoaim",
+	"look",
 	"autojump",
 	"absmov",
+	"move",
 	"strafe",
 	"decel",
 };
