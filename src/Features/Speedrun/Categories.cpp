@@ -465,7 +465,7 @@ static int _sar_speedrun_category_remove_rule_completion(const char *partial, ch
 
 CON_COMMAND_F_COMPLETION(sar_speedrun_category_remove_rule, "sar_speedrun_category_remove_rule <category> <rule> - remove a rule from a speedrun category\n", 0, &_sar_speedrun_category_remove_rule_completion) {
 	if (args.ArgC() != 3) {
-		return console->Print(sar_speedrun_category_add_rule.ThisPtr()->m_pszHelpString);
+		return console->Print(sar_speedrun_category_remove_rule.ThisPtr()->m_pszHelpString);
 	}
 
 	auto cat = lookupMap(g_categories, args[1]);

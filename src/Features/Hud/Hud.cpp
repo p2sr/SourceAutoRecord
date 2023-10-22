@@ -309,7 +309,7 @@ DECL_AUTO_COMMAND_COMPLETION(sar_hud_order_bottom, (elementOrder))
 
 CON_COMMAND_F_COMPLETION(sar_hud_order_top, "sar_hud_order_top <name> - orders hud element to top\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(sar_hud_order_top)) {
 	if (args.ArgC() != 2) {
-		return console->Print("Orders hud element to top: sar_hud_order_top <name>\n");
+		return console->Print(sar_hud_order_top.ThisPtr()->m_pszHelpString);
 	}
 
 	auto elements = &vgui->elements;
@@ -335,7 +335,7 @@ CON_COMMAND_F_COMPLETION(sar_hud_order_top, "sar_hud_order_top <name> - orders h
 }
 CON_COMMAND_F_COMPLETION(sar_hud_order_bottom, "sar_hud_order_bottom <name> - orders hud element to bottom\n", FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(sar_hud_order_bottom)) {
 	if (args.ArgC() != 2) {
-		return console->Print("Set!\n");
+		return console->Print(sar_hud_order_bottom.ThisPtr()->m_pszHelpString);
 	}
 
 	auto elements = &vgui->elements;

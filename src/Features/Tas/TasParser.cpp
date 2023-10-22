@@ -384,6 +384,19 @@ static Vector parseVector(const Line &line, size_t idx) {
 	else if (t1.type == TasToken::FLOAT) vec.y = t1.f;
 	else throw TasParserException(Utils::ssprintf("expected vector B %d '%s'", (int)t1.type, t1.tok.c_str()));
 
+	if (idx + 2 < line.tokens.size()) {
+		auto &t3 = line.tokens[idx + 2];
+		switch (t3.type) {
+		case TasToken::PIPE:
+			break;
+		case TasToken::INTEGER:
+		case TasToken::FLOAT:
+			throw TasParserException("invalid vector param count");
+		default:
+			throw TasParserException(Utils::ssprintf("expected end of vector, found '%s'", t3.tok.c_str()));
+		}
+	}
+
 	return vec;
 }
 
