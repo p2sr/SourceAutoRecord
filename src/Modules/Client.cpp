@@ -637,7 +637,7 @@ bool Client::Init() {
 
 	g_CalcViewModelLagHook.SetFunc(Client::CalcViewModelLag);
 
-	if (sar.game->Is(SourceGame_Portal2)) {
+	if (sar.game->Is(SourceGame_Portal2 | SourceGame_PortalStoriesMel | SourceGame_PortalReloaded)) {
 #ifdef _WIN32
 		Client::AddShadowToReceiver = (decltype(Client::AddShadowToReceiver))Memory::Scan(client->Name(), "55 8B EC 51 53 56 57 0F B7 7D 08");
 #else

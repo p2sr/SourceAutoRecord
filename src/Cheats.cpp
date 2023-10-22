@@ -291,7 +291,7 @@ void Cheats::Init() {
 	sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
 
 	sar_disable_weapon_sway.UniqueFor(SourceGame_Portal2);
-	sar_disable_viewmodel_shadows.UniqueFor(SourceGame_Portal2);
+	sar_disable_viewmodel_shadows.UniqueFor(SourceGame_Portal2 | SourceGame_PortalStoriesMel | SourceGame_PortalReloaded);
 
 	sar_workshop.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
 	sar_workshop_update.UniqueFor(SourceGame_Portal2 | SourceGame_ApertureTag);
