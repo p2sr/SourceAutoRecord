@@ -116,6 +116,9 @@ void GhostRenderer::UpdateAnimatedVerts() {
 			localPos.x * yawSin + localPos.y * yawCos,
 			localPos.z
 		};
+		if (ghost->name == "Dinnerbone") {
+			localPos.z = 72 - localPos.z;
+		}
 
 		// transform it to global coordinates
 		Vector globalPos = ghost->data.position + localPos;

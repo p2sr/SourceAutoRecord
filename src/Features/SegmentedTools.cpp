@@ -83,7 +83,7 @@ ON_EVENT(PRE_TICK) {
 
 CON_COMMAND_F(hwait, "hwait <tick> <command> [args...] - run a command after the given number of host ticks\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 3) {
-		return console->Print(waitCmd.ThisPtr()->m_pszHelpString);
+		return console->Print(hwait.ThisPtr()->m_pszHelpString);
 	}
 
 	int ticks = std::atoi(args[1]);

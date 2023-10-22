@@ -923,7 +923,7 @@ CON_COMMAND(sar_give_fly, "sar_give_fly [n] - gives the player in slot n (0 by d
 	}
 }
 CON_COMMAND(sar_give_betsrighter, "sar_give_betsrighter [n] - gives the player in slot n (0 by default) betsrighter.\n") {
-	if (args.ArgC() > 2) return console->Print(sar_give_fly.ThisPtr()->m_pszHelpString);
+	if (args.ArgC() > 2) return console->Print(sar_give_betsrighter.ThisPtr()->m_pszHelpString);
 	if (!sv_cheats.GetBool()) return console->Print("sar_give_betsrighter requires sv_cheats.\n");
 	int slot = args.ArgC() == 2 ? atoi(args[1]) : 0;
 	ServerEnt *player = server->GetPlayer(slot + 1);

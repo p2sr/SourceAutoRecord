@@ -3,6 +3,7 @@
 #include "Command.hpp"
 #include "Variable.hpp"
 #include "Event.hpp"
+#include "Features/Camera.hpp"
 #include "Features/OverlayRender.hpp"
 #include "Features/Session.hpp"
 #include "Modules/Client.hpp"
@@ -101,8 +102,9 @@ ON_EVENT(PRE_TICK) {
 		if (player == nullptr || (int)player == -1)
 			return;
 
-		Vector camPos = server->GetAbsOrigin(player) + server->GetViewOffset(player);
-		QAngle angle = engine->GetAngles(GET_SLOT());
+		Vector camPos;
+		QAngle angle;
+		camera->GetEyePos<true>(GET_SLOT(), camPos, angle);
 
 		float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);
 		auto cosX = std::cos(X), cosY = std::cos(Y);

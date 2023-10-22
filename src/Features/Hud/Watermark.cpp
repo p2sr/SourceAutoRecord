@@ -33,7 +33,7 @@ public:
 
 		int fontSize = surface->GetFontHeight(headerFont);
 
-		int xPos = screenWidth - surface->GetFontLength(subTextFont, "%s", WATERMARK_MSG_HELPTEXT) - fontSize * 2;
+		int xPos = screenWidth - std::max(surface->GetFontLength(headerFont, "%s", WATERMARK_MSG_HEADER), surface->GetFontLength(subTextFont, "%s", WATERMARK_MSG_HELPTEXT)) - fontSize * 2;
 
 		surface->DrawTxt(headerFont, xPos, screenHeight - fontSize * 3, Color{255, 255, 255, 100}, "%s", WATERMARK_MSG_HEADER);
 		surface->DrawTxt(subTextFont, xPos, screenHeight - fontSize * 2, Color{255, 255, 255, 100}, "%s", WATERMARK_MSG_HELPTEXT);
