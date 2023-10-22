@@ -254,7 +254,7 @@ OFFSET_DEFAULT(GetSearchPath, 16, 16)
 OFFSET_DEFAULT(IsMultiplayer, 33, 34)
 
 // IClientRenderable
-OFFSET_DEFAULT(GetModel, 8, 9)
+OFFSET_DEFAULT(GetModel, 8, 8)
 
 // Others
 OFFSET_DEFAULT(tickcount, 95, 64)
