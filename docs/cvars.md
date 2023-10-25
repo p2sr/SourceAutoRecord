@@ -74,10 +74,10 @@
 |ghost_start|cmd|ghost_start - start ghosts<br>|
 |ghost_sync|0|When loading a new level, pauses the game until other players load it.<br>|
 |ghost_sync_countdown|3|The number of seconds of countdown to show at the start of every synced map. 0 to disable.<br>|
-|ghost_TCP_only|0|Lathil's special command :).<br>|
+|ghost_TCP_only|0|Uses only TCP for ghost servers. For people with unreliable internet.<br>|
 |ghost_text_offset|7|Offset of the name over the ghosts.<br>|
 |ghost_type|cmd|ghost_type \<0/1/2/3/4>:<br>0: Colored circle<br>1: Colored pyramid<br>2: Colored pyramid with portal gun (RECORDED IN DEMOS)<br>3: Prop model (RECORDED IN DEMOS)<br>4: Bendy<br>|
-|ghost_update_rate|50|Adjust the update rate. For people with lathil's internet.<br>|
+|ghost_update_rate|50|Milliseconds between ghost updates. For people with slow/metered internet.<br>|
 |hwait|cmd|hwait \<tick> \<command> [args...] - run a command after the given number of host ticks<br>|
 |nop|cmd|nop [args]... - nop ignores all its arguments and does nothing<br>|
 |sar_about|cmd|sar_about - prints info about SAR plugin<br>|
@@ -106,14 +106,15 @@
 |sar_cam_ortho|0|Enables or disables camera orthographic projection.<br>|
 |sar_cam_ortho_nearz|1|Changes the near Z plane of orthographic projection.<br>|
 |sar_cam_ortho_scale|1|Changes the scale of orthographic projection (how many units per pixel).<br>|
+|sar_cam_path_draw|0|Draws a representation of the camera path in the world. Disabled in cinematic mode.<br>|
 |sar_cam_path_export|cmd|sar_cam_path_export \<filename> [format] [framerate] - exports current camera path to a given file in given format.<br>Available formats:<br>kf - default, exports commands that can be used to recreate camera path. Does not use rate parameter.<br>raw - exports a dump of raw camera position for each frame in given framerate (60 by default).<br>davinci - exports a script for DaVinci Resolve's Camera 3D Fusion component based on raw camera dump.<br>|
 |sar_cam_path_getkfs|cmd|sar_cam_path_getkfs - exports commands for recreating currently made camera path<br>|
+|sar_cam_path_goto|cmd|sar_cam_path_goto \<frame> [skipto] - sends the camera to a specified frame of the camera path. If skipto is 1, goto the tick in the demo.<br>|
 |sar_cam_path_interp|2|Sets interpolation type between keyframes for cinematic camera.<br>0 = Linear interpolation<br>1 = Cubic spline<br>2 = Piecewise Cubic Hermite Interpolating Polynomial (PCHIP)<br>|
 |sar_cam_path_remkf|cmd|sar_cam_path_remkf \<frame> - removes camera path keyframe at specified frame<br>|
 |sar_cam_path_remkfs|cmd|sar_cam_path_remkfs - removes all camera path keyframes<br>|
 |sar_cam_path_setkf|cmd|sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov] - sets the camera path keyframe<br>|
 |sar_cam_path_showkf|cmd|sar_cam_path_showkf \<frame> - display information about camera path keyframe at specified frame<br>|
-|sar_cam_path_showkfs|cmd|sar_cam_path_showkfs - display information about all camera path keyframes<br>|
 |sar_cam_reset|cmd|sar_cam_reset - resets camera to its default position<br>|
 |sar_cam_setang|cmd|sar_cam_setang \<pitch> \<yaw> [roll] - sets camera angle (requires camera Drive Mode)<br>|
 |sar_cam_setfov|cmd|sar_cam_setfov \<fov> - sets camera field of view (requires camera Drive Mode)<br>|
@@ -160,6 +161,7 @@
 |sar_disable_progress_bar_update|0|Disables excessive usage of progress bar.<br>|
 |sar_disable_save_status_hud|0|Disables the saving/saved HUD which appears when you make a save.<br>|
 |sar_disable_steam_pause|0|Prevents pauses from steam overlay.<br>|
+|<i title="Portal 2&#10;Portal Stories: Mel&#10;Portal Reloaded">sar_disable_viewmodel_shadows</i>|0|Disables the shadows on the viewmodel.<br>|
 |<i title="Portal 2">sar_disable_weapon_sway</i>|0|Disables the viewmodel lagging behind.<br>|
 |sar_dpi_scale|1|Fraction to scale mouse DPI down by.<br>|
 |sar_drawline|cmd|sar_drawline \<x> \<y> \<z> \<x> \<y> \<z> [r] [g] [b] - overlay a line in the world<br>|
@@ -255,8 +257,6 @@
 |sar_hud_tastick|0|Draws current TAS playback tick.<br>|
 |sar_hud_tbeam|0|Draw the name of the funnel player is currently in (requires sv_cheats).<br>|
 |sar_hud_tbeam_count|0|Draw the player's funnel count (requires sv_cheats).<br>|
-|sar_hud_text||DEPRECATED: Use sar_hud_set_text.<br>|
-|sar_hud_text||DEPRECATED: Use sar_hud_set_text.<br>|
 |sar_hud_timer|0|Draws current value of timer.<br>|
 |sar_hud_toggle_text|cmd|sar_hud_toggle_text \<id> - toggles the nth text value in the HUD<br>|
 |sar_hud_trace|0|Draws info about current trace bbox tick.<br>|
