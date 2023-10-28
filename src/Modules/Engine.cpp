@@ -94,7 +94,11 @@ REDECL(Engine::ParseSmoothingInfo_Mid);
 REDECL(Engine::ParseSmoothingInfo_Mid_Trampoline);
 #endif
 
-void Engine::ExecuteCommand(const char *cmd, bool immediately) {
+// queue of command sources
+static std::deque<std::string> commandSources;
+
+void Engine::ExecuteCommand(const char *cmd, bool immediately /* = false */, std::string source /* = "sar" */) {
+	commandSources.push_back(source);
 	if (immediately) {
 		this->ExecuteClientCmd(this->engineClient->ThisPtr(), cmd);
 	} else {
@@ -655,6 +659,42 @@ void Host_AccumulateTime_Detour(float dt) {
 	}
 }
 
+const ConCommandBase *(*g_Cmd_ExecuteCommand)(int eTarget, const CCommand &command, int nClientSlot /* = -1 */);
+const ConCommandBase *Cmd_ExecuteCommand_Detour(int eTarget, const CCommand &command, int nClientSlot /* = -1 */);
+static Hook Cmd_ExecuteCommand_Hook(&Cmd_ExecuteCommand_Detour);
+
+const ConCommandBase *Cmd_ExecuteCommand_Detour(int eTarget, const CCommand &command, int nClientSlot /* = -1 */) {
+	console->Print("Cmd_ExecuteCommand -> \"%s\" %d %d\n", command.m_pArgSBuffer, eTarget, nClientSlot);
+	Cmd_ExecuteCommand_Hook.Disable();
+	auto ret = g_Cmd_ExecuteCommand(eTarget, command, nClientSlot);
+	Cmd_ExecuteCommand_Hook.Enable();
+	return ret;
+}
+
+static bool(__rescall *g_InsertCommand)(void *thisptr, char *pArgS, int nCommandSize, int nTick, int cmdSource);
+bool __fastcall InsertCommand_Detour(void *thisptr, void *unused,char *pArgS,int nCommandSize,int nTick,int cmdSource);
+static Hook InsertCommand_Hook(&InsertCommand_Detour);
+
+#ifdef _WIN32
+bool __fastcall InsertCommand_Detour(void *thisptr, void *unused,char *pArgS,int nCommandSize,int nTick,int cmdSource) {
+	console->Print("InsertCommand -> \"%s\" %d %d %d\n", pArgS, nCommandSize, nTick, cmdSource);
+	std::string source = "unknown";
+	if (commandSources.size() != 0) {
+		source = commandSources.back();
+		commandSources.pop_back();
+	}
+	console->Print("\tsource: %s\n", source.c_str());
+	if (source == "unknown") {
+		console->Print("blocking unknown source\n");
+		return false;
+	}
+	InsertCommand_Hook.Disable();
+	bool ret = g_InsertCommand(thisptr, pArgS, nCommandSize, nTick, cmdSource);
+	InsertCommand_Hook.Enable();
+	return ret;
+}
+#endif
+
 void _Host_RunFrame_Render_Detour();
 void (*_Host_RunFrame_Render)();
 static Hook _Host_RunFrame_Render_Hook(&_Host_RunFrame_Render_Detour);
@@ -880,6 +920,14 @@ bool Engine::Init() {
 
 			g_ProcessTick = (decltype(g_ProcessTick))ProcessTick;
 			ProcessTick_Hook.SetFunc(ProcessTick);
+
+			auto Cmd_ExecuteCommand = Memory::Scan(this->Name(), "55 8B EC 57 8B 7D ? 8B 07 85 C0", 0);
+			g_Cmd_ExecuteCommand = (decltype(g_Cmd_ExecuteCommand))Cmd_ExecuteCommand;
+			Cmd_ExecuteCommand_Hook.SetFunc(Cmd_ExecuteCommand);
+
+			auto InsertCommand = Memory::Scan(this->Name(), "55 8B EC 56 57 8B 7D ? 8B F1 81 FF FF 01 00 00", 0);
+			g_InsertCommand = (decltype(g_InsertCommand))InsertCommand;
+			InsertCommand_Hook.SetFunc(InsertCommand);
 
 			tickcount = Memory::Deref<int *>(ProcessTick + Offsets::tickcount);
 

@@ -125,7 +125,7 @@ public:
 	int tickLoadStarted = -1;
 
 public:
-	void ExecuteCommand(const char *cmd, bool immediately = false);
+	void ExecuteCommand(const char *cmd, bool immediately = false, std::string source = "sar");
 	int GetTick();
 	float ToTime(int tick);
 	int GetLocalPlayerIndex();
