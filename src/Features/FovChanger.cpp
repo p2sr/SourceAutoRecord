@@ -11,16 +11,24 @@
 FovChanger *fovChanger;
 
 FovChanger::FovChanger()
-	: defaultFov(0) {
+	: defaultFov(0),
+	viewmodelFov(0) {
 	this->hasLoaded = true;
 }
 void FovChanger::SetFov(const int fov) {
 	this->defaultFov = fov;
 	this->Force();
 }
+void FovChanger::SetViewmodelFov(const int fov) {
+	this->viewmodelFov = fov;
+	this->Force();
+}
 void FovChanger::Force() {
 	if (this->defaultFov != 0) {
 		cl_fov.SetValue(this->defaultFov);
+	}
+	if (this->viewmodelFov != 0) {
+		cl_viewmodelfov.SetValue(this->viewmodelFov);
 	}
 }
 
@@ -54,4 +62,19 @@ CON_COMMAND_COMPLETION(sar_force_fov, "sar_force_fov <fov> - forces player FOV\n
 
 	fovChanger->SetFov(fov);
 	console->Print("Enabled forcing FOV: %i\n", fov);
+}
+
+CON_COMMAND(sar_force_viewmodel_fov, "sar_force_viewmodel_fov <fov> - forces viewmodel FOV\n") {
+	if (args.ArgC() != 2) {
+		return console->Print(sar_force_fov.ThisPtr()->m_pszHelpString);
+	}
+
+	auto fov = std::atoi(args[1]);
+	if (fov == 0) {
+		fovChanger->SetViewmodelFov(fov);
+		return console->Print("Disabled forcing viewmodel FOV!\n");
+	}
+
+	fovChanger->SetViewmodelFov(fov);
+	console->Print("Enabled forcing viewmodel FOV: %i\n", fov);
 }
