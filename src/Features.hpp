@@ -1,4 +1,8 @@
+#include "Features/AutoSubmit.hpp"
+#include "Features/AutoSubmitMod.hpp"
 #include "Features/Camera.hpp"
+#include "Features/ChallengeMode.hpp"
+#include "Features/ChapterMenu.hpp"
 #include "Features/ClassDumper.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/DataMapDumper.hpp"

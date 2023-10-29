@@ -5,8 +5,10 @@
 #include "Console.hpp"
 #include "Engine.hpp"
 #include "Event.hpp"
+#include "Game.hpp"
 #include "Scheduler.hpp"
 #include "Features/AutoSubmit.hpp"
+#include "Features/AutoSubmitMod.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
 #include "Features/Session.hpp"
@@ -466,7 +468,11 @@ ON_EVENT(CM_FLAGS) {
 					}
 				}
 
-				AutoSubmit::FinishRun(event.time, demoFile.c_str(), rename_if_pb, replay_append_if_pb);
+				if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+					AutoSubmitMod::FinishRun(event.time, demoFile.c_str(), rename_if_pb, replay_append_if_pb);
+				} else {
+					AutoSubmit::FinishRun(event.time, demoFile.c_str(), rename_if_pb, replay_append_if_pb);
+				}
 			}
 		});
 	}

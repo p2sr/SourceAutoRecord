@@ -313,6 +313,7 @@ OFFSET_DEFAULT(CreateDebugMesh, 41, 42)
 OFFSET_DEFAULT(DestroyDebugMesh, 42, 43)
 OFFSET_DEFAULT(ImageData, 39, 38)
 OFFSET_DEFAULT(ImageFormat, 20, 21)
+OFFSET_DEFAULT(CBaseEntity_Create, 130, 145)
 
 // Linux mods run on an older build of the game (generally around 8151) which
 // has very different codegen - we define their offset overrides here
@@ -351,3 +352,4 @@ OFFSET_LINMOD(FontManager, 11)
 OFFSET_LINMOD(snd_linear_count, 57)
 OFFSET_LINMOD(snd_p, 65)
 OFFSET_LINMOD(snd_vol, 71)
+OFFSET_LINMOD(CBaseEntity_Create, 163)

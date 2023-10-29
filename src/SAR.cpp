@@ -118,6 +118,18 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 					this->features->AddFeature<WorkshopList>(&workshop);
 				}
 
+				if (this->game->Is(SourceGame_PortalStoriesMel)) {
+					this->features->AddFeature<ChapterMenu>(&chapterMenu);
+					this->features->AddFeature<ChallengeMode>(&cm);
+
+					cm->LoadNodes(this->game->GetVersion());
+					chapterMenu->LoadMaps(this->game->GetVersion());
+
+					AutoSubmitMod::LoadApiKey(false);
+				} else {
+					AutoSubmit::LoadApiKey(false);
+				}
+
 				if (listener) {
 					listener->Init();
 				}

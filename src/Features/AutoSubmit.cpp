@@ -20,30 +20,29 @@
 #define COOP_NAME_MESSAGE_TYPE "coop-name"
 #define API_KEY_FILE "autosubmit_key.txt"
 
-static std::string g_partner_name;
+bool AutoSubmit::g_cheated = false;
+std::string AutoSubmit::g_partner_name = "";
 
 ON_EVENT(SESSION_START) {
 	if (engine->IsCoop()) {
 		const char *name = Variable("name").GetString();
 		NetMessage::SendMsg(COOP_NAME_MESSAGE_TYPE, name, strlen(name));
 	}
-	g_partner_name = "(unknown partner)";
+	AutoSubmit::g_partner_name = "(unknown partner)";
 }
 
 ON_INIT {
 	NetMessage::RegisterHandler(COOP_NAME_MESSAGE_TYPE, +[](const void *data, size_t size) {
-		g_partner_name = std::string((char *)data, size);
+		AutoSubmit::g_partner_name = std::string((char *)data, size);
 	});
 }
 
-static bool g_cheated = false;
-
 ON_EVENT(SESSION_START) {
-	g_cheated = sv_cheats.GetBool();
+	AutoSubmit::g_cheated = sv_cheats.GetBool();
 }
 
 ON_EVENT(PRE_TICK) {
-	if (sv_cheats.GetBool()) g_cheated = true;
+	if (sv_cheats.GetBool()) AutoSubmit::g_cheated = true;
 }
 
 static std::string g_api_key;
@@ -354,7 +353,7 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 	if (coop) {
 		field = curl_mime_addpart(form);
 		curl_mime_name(field, "comment");
-		curl_mime_data(field, g_partner_name.c_str(), CURL_ZERO_TERMINATED);
+		curl_mime_data(field, AutoSubmit::g_partner_name.c_str(), CURL_ZERO_TERMINATED);
 	}
 
 	curl_easy_setopt(g_curl, CURLOPT_MIMEPOST, form);
@@ -370,7 +369,7 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 	}
 }
 
-static void loadApiKey(bool output_nonexist) {
+void AutoSubmit::LoadApiKey(bool output_nonexist) {
 	if (!std::filesystem::exists(API_KEY_FILE)) {
 		if (output_nonexist) {
 			console->Print("API key file " API_KEY_FILE " does not exist!\n");
@@ -409,20 +408,8 @@ static void loadApiKey(bool output_nonexist) {
 	g_worker = std::thread(testApiKey);
 }
 
-ON_INIT {
-	loadApiKey(false);
-}
-
-CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit_reload_api_key - reload the board.portal2.sr API key from its file.\n", FCVAR_DONTRECORD) {
-	if (args.ArgC() != 1) {
-		return console->Print(sar_challenge_autosubmit_reload_api_key.ThisPtr()->m_pszHelpString);
-	}
-
-	loadApiKey(true);
-}
-
 void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
-	if (g_cheated) {
+	if (AutoSubmit::g_cheated) {
 		console->Print("Cheated; not autosubmitting\n");
 		return;
 	}
