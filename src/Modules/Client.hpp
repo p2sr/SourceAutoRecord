@@ -53,6 +53,12 @@ public:
 	_IN_ActivateMouse IN_ActivateMouse = nullptr;
 	_IN_DeactivateMouse IN_DeactivateMouse = nullptr;
 
+	ChapterContextData_t *g_ChapterContextNames;
+	ChapterContextData_t *g_ChapterMPContextNames;
+
+	int *nNumSPChapters;
+	int *nNumMPChapters;
+
 	std::string lastLevelName;
 	void **gamerules;
 
@@ -69,6 +75,9 @@ public:
 	void OpenChat();
 
 public:
+	// CPortalLeaderboard::StartSearching
+	DECL_DETOUR(StartSearching);
+
 	// CClientShadowMgr::AddShadowToReceiver
 	DECL_DETOUR_T(void, AddShadowToReceiver, unsigned short handle, void *pRenderable, int type);
 

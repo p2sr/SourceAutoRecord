@@ -4,6 +4,7 @@
 #include "Engine.hpp"
 #include "Event.hpp"
 #include "Features/Camera.hpp"
+#include "Features/ChallengeMode.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
@@ -99,6 +100,7 @@ SMDECL(Server::GetPortalLocal, CPortalPlayerLocalData, m_PortalLocal);
 SMDECL(Server::GetEntityName, char *, m_iName);
 SMDECL(Server::GetEntityClassName, char *, m_iClassname);
 SMDECL(Server::GetPlayerState, CPlayerState, pl);
+SMDECL(Server::GetStats, PortalPlayerStatistics_t, m_StatsThisLevel);
 
 ServerEnt *Server::GetPlayer(int index) {
 	return this->UTIL_PlayerByIndex(index);
@@ -990,6 +992,14 @@ bool Server::Init() {
 	}
 
 	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);
+
+	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+		auto fire_rocket_projectile = Command("fire_rocket_projectile");
+		if (!!fire_rocket_projectile) {
+			auto callback = uintptr_t(fire_rocket_projectile.ThisPtr()->m_fnCommandCallback);
+			this->Create = Memory::Read<_Create>(callback + Offsets::CBaseEntity_Create);
+		}
+	}
 
 	sv_cheats = Variable("sv_cheats");
 	sv_footsteps = Variable("sv_footsteps");

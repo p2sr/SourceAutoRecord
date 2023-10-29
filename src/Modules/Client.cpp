@@ -90,6 +90,7 @@ REDECL(Client::DrawTranslucentRenderables);
 REDECL(Client::DrawOpaqueRenderables);
 REDECL(Client::CalcViewModelLag);
 REDECL(Client::AddShadowToReceiver);
+REDECL(Client::StartSearching);
 #ifdef _WIN32
 REDECL(Client::ApplyMouse_Mid);
 REDECL(Client::ApplyMouse_Mid_Continue);
@@ -289,7 +290,7 @@ DETOUR_COMMAND(Client::openleaderboard) {
 
 	if (args.ArgC() == 2 && !strcmp(args[1], "4")) {
 		g_leaderboardOpen = true;
-		if (sar_disable_challenge_stats_hud.GetInt() > 0 && (!engine->IsCoop() || engine->IsOrange())) {
+		if (sar.game->Is(SourceGame_Portal2) && sar_disable_challenge_stats_hud.GetInt() > 0 && (!engine->IsCoop() || engine->IsOrange())) {
 			auto ticks = 6;
 			if (sar_disable_challenge_stats_hud.GetInt() > 1) ticks = sar_disable_challenge_stats_hud.GetInt();
 			Scheduler::InHostTicks(ticks, []() {
@@ -712,6 +713,12 @@ CON_COMMAND(sar_workshop_skip, "sar_workshop_skip - Skips to the next level in w
 	MsgPreSkipToNextLevel();
 }
 
+extern Hook g_StartSearchingHook;
+DETOUR(Client::StartSearching) {
+	return 0;
+}
+Hook g_StartSearchingHook(&Client::StartSearching_Hook);
+
 bool Client::Init() {
 	bool readJmp = false;
 
@@ -882,6 +889,16 @@ bool Client::Init() {
 
 	g_AddShadowToReceiverHook.SetFunc(Client::AddShadowToReceiver);
 
+	if (!sar.game->Is(SourceGame_Portal2)) {
+#ifdef _WIN32
+		Client::StartSearching = (decltype(Client::StartSearching))Memory::Scan(client->Name(), "55 8B EC 83 EC 14 53 56 57 8B F9 33 DB C6 87");
+#else
+		Client::StartSearching = (decltype(Client::StartSearching))Memory::Scan(client->Name(), "55 89 E5 57 56 8D 75 DC 53 83 EC 2C 8B 5D 08 8D 83");
+#endif
+
+		g_StartSearchingHook.SetFunc(Client::StartSearching);
+	}
+
 	// Get at gamerules
 	{
 		uintptr_t cbk = (uintptr_t)Command("+mouse_menu").ThisPtr()->m_pCommandCallback;
@@ -898,6 +915,26 @@ bool Client::Init() {
 		} else {
 			cbk = (uintptr_t)Memory::Read(cbk + 12);  // openradialmenu -> OpenRadialMenuCommand
 			this->gamerules = *(void ***)(cbk + 7);
+		}
+#endif
+	}
+
+	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+#ifdef _WIN32
+		auto GetNumChapters = Memory::Scan(this->Name(), "55 8B EC 80 7D 08 00 57 74 0C");
+		if (GetNumChapters) {
+			this->nNumSPChapters = Memory::Deref<int *>(GetNumChapters + 11);
+			this->g_ChapterContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + 16);
+			this->nNumMPChapters = Memory::Deref<int *>(GetNumChapters + 23);
+			this->g_ChapterMPContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + 28);
+		}
+#else
+		auto GetNumChapters = Memory::Scan(this->Name(), "55 89 E5 56 80 7D");
+		if (GetNumChapters) {
+			this->nNumSPChapters = Memory::Deref<int *>(GetNumChapters + 12);
+			this->g_ChapterContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + 22);
+			this->nNumMPChapters = Memory::Deref<int *>(GetNumChapters + 81);
+			this->g_ChapterMPContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + 91);
 		}
 #endif
 	}

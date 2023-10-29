@@ -1,9 +1,8 @@
 #pragma once
 #pragma warning(suppress : 26495)
-#include "Offsets.hpp"
-
 #include "Color.hpp"
 #include "Handle.hpp"
+#include "Offsets.hpp"
 #include "Trace.hpp"
 #include "UtlMemory.hpp"
 
@@ -108,3 +107,23 @@ typedef struct player_info_s
 	// this counter increases each time the server downloaded a new file
 	unsigned char filesDownloaded;
 } player_info_t;
+
+struct ChallengeNodeData_t {
+	const char *m_szMapName;
+	Vector m_vecNodeOrigin;
+	QAngle m_vecNodeAngles;
+};
+
+struct ChapterContextData_t {
+	const char *m_szMapName;
+	int m_nChapter;
+	int m_nSubChapter;
+};
+
+struct PortalPlayerStatistics_t {
+	void *unk;
+	int iNumPortalsPlaced;
+	int iNumStepsTaken;
+	float fNumSecondsTaken;
+	float fDistanceTaken;
+};

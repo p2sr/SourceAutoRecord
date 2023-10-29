@@ -131,7 +131,7 @@ void GhostEntity::SetupGhost(unsigned int &ID, std::string &name, DataGhost &dat
 
 void GhostEntity::Display() {
 	if (this->IsBeingFollowed() && !ghost_spec_thirdperson.GetBool()) return;
-	if (this->name == g_partner_name) {
+	if (this->name == AutoSubmit::g_partner_name) {
 		// don't draw partner
 		return;
 	}
