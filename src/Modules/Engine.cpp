@@ -672,11 +672,18 @@ const ConCommandBase *Cmd_ExecuteCommand_Detour(int eTarget, const CCommand &com
 }
 
 static bool(__rescall *g_InsertCommand)(void *thisptr, char *pArgS, int nCommandSize, int nTick, int cmdSource);
+#ifdef _WIN32
 bool __fastcall InsertCommand_Detour(void *thisptr, void *unused,char *pArgS,int nCommandSize,int nTick,int cmdSource);
+#else
+bool InsertCommand_Detour(void *thisptr, char *pArgS, int nCommandSize, int nTick, int cmdSource);
+#endif
 static Hook InsertCommand_Hook(&InsertCommand_Detour);
 
 #ifdef _WIN32
 bool __fastcall InsertCommand_Detour(void *thisptr, void *unused,char *pArgS,int nCommandSize,int nTick,int cmdSource) {
+	// todo: tokenize the command (hook CCommand::Tokenize)
+	// for some reason exec'd commands get hooked here but not by executecommand
+	// also hook all the fricking sources lmao
 	console->Print("InsertCommand -> \"%s\" %d %d %d\n", pArgS, nCommandSize, nTick, cmdSource);
 	std::string source = "unknown";
 	if (commandSources.size() != 0) {
@@ -921,6 +928,9 @@ bool Engine::Init() {
 			g_ProcessTick = (decltype(g_ProcessTick))ProcessTick;
 			ProcessTick_Hook.SetFunc(ProcessTick);
 
+			// todo: investigate linux scan
+			// and hook later so loading sar on launch doesn't crash
+			#ifdef _WIN32
 			auto Cmd_ExecuteCommand = Memory::Scan(this->Name(), "55 8B EC 57 8B 7D ? 8B 07 85 C0", 0);
 			g_Cmd_ExecuteCommand = (decltype(g_Cmd_ExecuteCommand))Cmd_ExecuteCommand;
 			Cmd_ExecuteCommand_Hook.SetFunc(Cmd_ExecuteCommand);
@@ -928,6 +938,7 @@ bool Engine::Init() {
 			auto InsertCommand = Memory::Scan(this->Name(), "55 8B EC 56 57 8B 7D ? 8B F1 81 FF FF 01 00 00", 0);
 			g_InsertCommand = (decltype(g_InsertCommand))InsertCommand;
 			InsertCommand_Hook.SetFunc(InsertCommand);
+			#endif
 
 			tickcount = Memory::Deref<int *>(ProcessTick + Offsets::tickcount);
 
