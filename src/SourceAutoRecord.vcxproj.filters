@@ -496,6 +496,15 @@
     <ClCompile Include="Features\Hud\PlacementHelperHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
+    <ClCompile Include="Features\ChallengeMode.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\ChapterMenu.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\AutoSubmitMod.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1274,6 +1283,15 @@
     </ClInclude>
     <ClInclude Include="Features\Tas\TasScript.hpp">
       <Filter>SourceAutoRecord\Features\Tas</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ChapterMenu.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\ChallengeMode.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\AutoSubmitMod.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

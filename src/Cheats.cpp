@@ -1,6 +1,8 @@
 #include "Cheats.hpp"
 
 #include "Event.hpp"
+#include "Features/AutoSubmit.hpp"
+#include "Features/AutoSubmitMod.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Features/Hud/InspectionHud.hpp"
@@ -277,6 +279,18 @@ CON_COMMAND(sar_geteyepos, "sar_geteyepos [slot] - get the view position (portal
 	console->Print("angles: %.6f %.6f %.6f\n", angles.x, angles.y, angles.z);
 }
 
+CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit_reload_api_key - reload the board.portal2.sr API key from its file.\n", FCVAR_DONTRECORD) {
+	if (args.ArgC() != 1) {
+		return console->Print(sar_challenge_autosubmit_reload_api_key.ThisPtr()->m_pszHelpString);
+	}
+
+	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+		AutoSubmitMod::LoadApiKey(true);
+	} else {
+		AutoSubmit::LoadApiKey(true);
+	}
+}
+
 void Cheats::Init() {
 	sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
 	ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
@@ -301,11 +315,23 @@ void Cheats::Init() {
 
 	cvars->Unlock();
 
+	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+		Variable("give_portalgun").RemoveFlag(FCVAR_CHEAT);
+		Variable("setmodel").RemoveFlag(FCVAR_CHEAT);
+		Variable("upgrade_portalgun").RemoveFlag(FCVAR_CHEAT);
+	}
+
 	Variable::RegisterAll();
 	Command::RegisterAll();
 }
 void Cheats::Shutdown() {
 	cvars->Lock();
+
+	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
+		Variable("give_portalgun").AddFlag(FCVAR_CHEAT);
+		Variable("setmodel").AddFlag(FCVAR_CHEAT);
+		Variable("upgrade_portalgun").AddFlag(FCVAR_CHEAT);
+	}
 
 	Variable::UnregisterAll();
 	Command::UnregisterAll();
