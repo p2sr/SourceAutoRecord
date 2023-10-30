@@ -67,6 +67,7 @@ REDECL(Client::DrawTranslucentRenderables);
 REDECL(Client::DrawOpaqueRenderables);
 REDECL(Client::CalcViewModelLag);
 REDECL(Client::AddShadowToReceiver);
+REDECL(Client::StartSearching);
 
 CMDECL(Client::GetAbsOrigin, Vector, m_vecAbsOrigin);
 CMDECL(Client::GetAbsAngles, QAngle, m_angAbsRotation);
@@ -512,6 +513,18 @@ DETOUR_T(void, Client::AddShadowToReceiver, unsigned short handle, void *pRender
 }
 Hook g_AddShadowToReceiverHook(&Client::AddShadowToReceiver_Hook);
 
+extern Hook g_StartSearchingHook;
+DETOUR(Client::StartSearching) {
+	// dont send requests to Steam if we are not in a game that actually has challenge mode
+	if (!sar.game->Is(SourceGame_Portal2))
+		return 0;
+
+	g_CalcViewModelLagHook.Disable();
+	Client::StartSearching(thisptr);
+	g_CalcViewModelLagHook.Enable();
+}
+Hook g_StartSearchingHook(&Client::StartSearching_Hook);
+
 bool Client::Init() {
 	bool readJmp = false;
 
@@ -650,6 +663,16 @@ bool Client::Init() {
 	}
 
 	g_AddShadowToReceiverHook.SetFunc(Client::AddShadowToReceiver);
+
+	if (!sar.game->Is(SourceGame_Portal2)) {
+#ifdef _WIN32
+		Client::StartSearching = (decltype(Client::StartSearching))Memory::Scan(client->Name(), "55 8B EC 83 EC 14 53 56 57 8B F9 33 DB C6 87");
+#else
+		Client::StartSearching = (decltype(Client::StartSearching))Memory::Scan(client->Name(), "55 89 E5 57 56 8D 75 DC 53 83 EC 2C 8B 5D 08 8D 83");
+#endif
+	}
+
+	g_StartSearchingHook.SetFunc(Client::StartSearching);
 
 	// Get at gamerules
 	{
