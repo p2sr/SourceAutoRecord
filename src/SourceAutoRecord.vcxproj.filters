@@ -499,9 +499,7 @@
     <ClCompile Include="Features\ChapterMenu.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
-    <ClCompile Include="Features\AutoSubmitMod.cpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClCompile>
+    <ClCompile Include="Features\AutoSubmitMod.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1287,9 +1285,7 @@
     <ClInclude Include="Features\ChallengeMode.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
-    <ClInclude Include="Features\AutoSubmitMod.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
+    <ClInclude Include="Features\AutoSubmitMod.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">
