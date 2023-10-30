@@ -505,6 +505,9 @@
     <ClCompile Include="Features\Tas\TasTools\UseTool.cpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Routing\StepSlopeBoostDebug.cpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Hud\PlacementHelperHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
@@ -1298,6 +1301,9 @@
     </ClInclude>
     <ClInclude Include="Features\Tas\TasTools\UseTool.hpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Routing\StepSlopeBoostDebug.hpp">
+      <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

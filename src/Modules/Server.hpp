@@ -108,6 +108,12 @@ public:
 	// CGameMovement::PlayerMove
 	DECL_DETOUR(PlayerMove);
 
+	// CGameMovement::TryPlayerMove
+	DECL_DETOUR_T(int, TryPlayerMove, Vector *pFirstDest, CGameTrace *pFirstTrace);
+
+	// CGameMovement::StepMove
+	DECL_DETOUR(StepMove, Vector &pFirstDest, CGameTrace &pFirstTrace);
+
 	// CGameMovement::FinishGravity
 	DECL_DETOUR(FinishGravity);
 

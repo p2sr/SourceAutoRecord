@@ -14,6 +14,7 @@
 #include "Features/Hud/StrafeHud.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/Hud/InputHud.hpp"
+#include "Features/Routing/StepSlopeBoostDebug.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/PlayerTrace.hpp"
@@ -68,6 +69,8 @@ Variable sv_gravity;
 
 REDECL(Server::CheckJumpButton);
 REDECL(Server::CheckJumpButtonBase);
+REDECL(Server::StepMove);
+REDECL(Server::TryPlayerMove);
 REDECL(Server::PlayerMove);
 REDECL(Server::FinishGravity);
 REDECL(Server::AirMove);
@@ -169,6 +172,33 @@ DETOUR_T(bool, Server::CheckJumpButton) {
 	}
 
 	return jumped;
+}
+
+// CGameMovement::CheckJumpButton
+DETOUR(Server::StepMove, Vector &pFirstDest, CGameTrace &pFirstTrace) {
+
+	if (engine->IsGamePaused()) {
+		return Server::StepMove(thisptr, pFirstDest, pFirstTrace);
+	}
+
+	auto mv = *reinterpret_cast<CHLMoveData **>((uintptr_t)thisptr + Offsets::mv);
+	StepSlopeBoostDebug::OnStartStepMove(mv);
+	auto result = Server::StepMove(thisptr, pFirstDest, pFirstTrace);
+	StepSlopeBoostDebug::OnFinishStepMove(mv);
+
+	return result;
+}
+
+// CGameMovement::CheckJumpButton
+DETOUR_T(int, Server::TryPlayerMove, Vector *pFirstDest, CGameTrace *pFirstTrace) {
+	auto result = Server::TryPlayerMove(thisptr, pFirstDest, pFirstTrace);
+	
+	if (!engine->IsGamePaused()) {
+		auto mv = *reinterpret_cast<CHLMoveData **>((uintptr_t)thisptr + Offsets::mv);
+		StepSlopeBoostDebug::OnTryPlayerMoveEnd(mv);
+	}
+
+	return result;
 }
 
 // CGameMovement::PlayerMove
@@ -741,7 +771,7 @@ static void netResetCoopProgress(const void *data, size_t size) {
 
 float hostTimeWrap() {
 	return engine->GetHostTime();
-}
+} 
 
 static char g_orig_check_stuck_code[6];
 static void *g_check_stuck_code;
@@ -753,7 +783,8 @@ bool Server::Init() {
 	if (this->g_GameMovement) {
 		this->g_GameMovement->Hook(Server::CheckJumpButton_Hook, Server::CheckJumpButton, Offsets::CheckJumpButton);
 		this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
-
+		this->g_GameMovement->Hook(Server::StepMove_Hook, Server::StepMove, Offsets::StepMove);
+		this->g_GameMovement->Hook(Server::TryPlayerMove_Hook, Server::TryPlayerMove, Offsets::TryPlayerMove);
 		this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
 		this->g_GameMovement->Hook(Server::GetPlayerViewOffset_Hook, Server::GetPlayerViewOffset, Offsets::GetPlayerViewOffset);
 		this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
