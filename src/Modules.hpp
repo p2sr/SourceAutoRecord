@@ -9,3 +9,4 @@
 #include "Modules/Tier1.hpp"
 #include "Modules/VGui.hpp"
 #include "Modules/FileSystem.hpp"
+#include "Modules/Matchmaking.hpp"
