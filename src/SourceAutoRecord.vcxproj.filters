@@ -535,6 +535,9 @@
     <ClCompile Include="Features\AutoSubmitMod.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Modules\Matchmaking.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1349,6 +1352,9 @@
     </ClInclude>
     <ClInclude Include="Features\AutoSubmitMod.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Matchmaking.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
