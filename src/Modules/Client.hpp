@@ -75,6 +75,9 @@ public:
 	void OpenChat();
 
 public:
+	// CPortalLeaderboard::StartSearching
+	DECL_DETOUR(StartSearching);
+
 	// CClientShadowMgr::AddShadowToReceiver
 	DECL_DETOUR_T(void, AddShadowToReceiver, unsigned short handle, void *pRenderable, int type);
 
