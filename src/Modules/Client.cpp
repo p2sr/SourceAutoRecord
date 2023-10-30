@@ -515,13 +515,7 @@ Hook g_AddShadowToReceiverHook(&Client::AddShadowToReceiver_Hook);
 
 extern Hook g_StartSearchingHook;
 DETOUR(Client::StartSearching) {
-	// dont send requests to Steam if we are not in a game that actually has challenge mode
-	if (!sar.game->Is(SourceGame_Portal2))
-		return 0;
-
-	g_CalcViewModelLagHook.Disable();
-	Client::StartSearching(thisptr);
-	g_CalcViewModelLagHook.Enable();
+	return 0;
 }
 Hook g_StartSearchingHook(&Client::StartSearching_Hook);
 
@@ -670,9 +664,9 @@ bool Client::Init() {
 #else
 		Client::StartSearching = (decltype(Client::StartSearching))Memory::Scan(client->Name(), "55 89 E5 57 56 8D 75 DC 53 83 EC 2C 8B 5D 08 8D 83");
 #endif
-	}
 
-	g_StartSearchingHook.SetFunc(Client::StartSearching);
+		g_StartSearchingHook.SetFunc(Client::StartSearching);
+	}
 
 	// Get at gamerules
 	{
