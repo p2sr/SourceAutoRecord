@@ -11,13 +11,11 @@
 #include "Modules/Engine.hpp"
 #include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
-#include "Utils/json11.hpp"
 
 #include <cctype>
 #include <curl/curl.h>
 #include <filesystem>
 #include <fstream>
-#include <map>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -30,7 +28,7 @@ static std::string g_api_key;
 static bool g_key_valid;
 static CURL *g_curl;
 static std::thread g_worker;
-static std::map<std::string, std::string> g_map_ids = {};
+static std::map<std::string, std::string> g_map_ids;
 
 static bool ensureCurlReady() {
 	if (!g_curl) {
@@ -124,7 +122,16 @@ static void testApiKey() {
 	THREAD_PRINT("Downloaded %i maps!\n", g_map_ids.size());
 }
 
-static std::optional<int> getCurrentPbScore(std::string &map_id) {
+std::optional<std::string> AutoSubmitMod::GetMapId(std::string &map_name) {
+	auto it = g_map_ids.find(map_name);
+	if (it == g_map_ids.end()) {
+		return {};
+	}
+
+	return it->second;
+}
+
+std::optional<int> AutoSubmitMod::GetCurrentPbScore(std::string &map_id) {
 	if (!ensureCurlReady()) return {};
 
 	curl_mime *form = curl_mime_init(g_curl);
@@ -161,6 +168,23 @@ static std::optional<int> getCurrentPbScore(std::string &map_id) {
 	return atoi(str.c_str());
 }
 
+json11::Json::object AutoSubmitMod::GetMapJson(std::string &map_id) {
+	if (!ensureCurlReady()) return {};
+
+	auto response = request(g_api_base.substr(0, g_api_base.length() - 6) + "chamber/" + map_id + "/json");
+
+	if (!response) return {};
+
+	std::string err;
+	auto json = json11::Json::parse(*response, err);
+
+	if (err != "") {
+		return {};
+	}
+
+	return json.object_items();
+}
+
 static void submitTime(int score, std::string demopath, bool coop, std::string map_id, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
 	auto score_str = std::to_string(score);
 
@@ -174,7 +198,7 @@ static void submitTime(int score, std::string demopath, bool coop, std::string m
 		return;
 	}
 
-	auto cur_pb = getCurrentPbScore(map_id);
+	auto cur_pb = AutoSubmitMod::GetCurrentPbScore(map_id);
 	if (cur_pb) {
 		if (*cur_pb > -1 && score >= *cur_pb) {
 			THREAD_PRINT("Not PB; not submitting.\n");

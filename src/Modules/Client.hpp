@@ -43,6 +43,7 @@ public:
 	using _StartMessageMode = void(__rescall *)(void *thisptr, int type);
 	using _IN_ActivateMouse = void (*)(void *thisptr);
 	using _IN_DeactivateMouse = void (*)(void *thisptr);
+	using _AddAvatarPanelItem = void(__cdecl *)(void *pLeaderboard, void *pStatLists, const PortalLeaderboardItem_t *pData, int nScore, int nType, int nPlayerType, int nAvatarIndex, int nHeight, int nSlot, bool bHUDElement);
 
 	_GetClientEntity GetClientEntity = nullptr;
 	_GetAllClasses GetAllClasses = nullptr;
@@ -52,6 +53,7 @@ public:
 	_StartMessageMode StartMessageMode = nullptr;
 	_IN_ActivateMouse IN_ActivateMouse = nullptr;
 	_IN_DeactivateMouse IN_DeactivateMouse = nullptr;
+	_AddAvatarPanelItem AddAvatarPanelItem = nullptr;
 
 	ChapterContextData_t *g_ChapterContextNames;
 	ChapterContextData_t *g_ChapterMPContextNames;
@@ -75,6 +77,9 @@ public:
 	void OpenChat();
 
 public:
+	// BaseModUI::CPortalLeaderboardPanel::SetPanelStats
+	DECL_DETOUR(SetPanelStats);
+
 	// CPortalLeaderboard::StartSearching
 	DECL_DETOUR(StartSearching);
 
