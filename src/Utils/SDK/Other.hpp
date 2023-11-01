@@ -96,3 +96,11 @@ struct PortalPlayerStatistics_t {
 	float fNumSecondsTaken;
 	float fDistanceTaken;
 };
+
+class PortalLeaderboardItem_t {
+public:
+	uint64_t m_xuid;     //0x0000
+	char m_szName[32];   //0x0008
+	char pad_0028[16];   //0x0028
+	int32_t m_iScore;    //0x0038
+};

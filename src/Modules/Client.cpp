@@ -21,6 +21,7 @@
 #include "Features/Stitcher.hpp"
 #include "Features/Tas/TasController.hpp"
 #include "Features/Tas/TasPlayer.hpp"
+#include "Features/AutoSubmitMod.hpp"
 #include "Game.hpp"
 #include "Hook.hpp"
 #include "Interface.hpp"
@@ -68,6 +69,7 @@ REDECL(Client::DrawOpaqueRenderables);
 REDECL(Client::CalcViewModelLag);
 REDECL(Client::AddShadowToReceiver);
 REDECL(Client::StartSearching);
+REDECL(Client::SetPanelStats);
 
 CMDECL(Client::GetAbsOrigin, Vector, m_vecAbsOrigin);
 CMDECL(Client::GetAbsAngles, QAngle, m_angAbsRotation);
@@ -519,6 +521,39 @@ DETOUR(Client::StartSearching) {
 }
 Hook g_StartSearchingHook(&Client::StartSearching_Hook);
 
+extern Hook g_SetPanelStatsHook;
+DETOUR(Client::SetPanelStats) {
+	struct CPortalLeaderboard {
+		char m_szMapName[128];
+	};
+
+	CPortalLeaderboard *m_pLeaderboard = *(CPortalLeaderboard **)((uintptr_t)thisptr + Offsets::m_pLeaderboard);
+	void *m_pStatList = *(void **)((uintptr_t)thisptr + Offsets::m_pStatList);
+	
+	auto map_id = AutoSubmitMod::GetMapId(std::string(m_pLeaderboard->m_szMapName));
+	auto json = AutoSubmitMod::GetMapJson(*map_id);
+
+	std::map<int, std::pair<std::string, json11::Json>> times;
+	for (auto score : json) {
+		auto scoreData = score.second["scoreData"];
+		int time = atoi(scoreData["score"].string_value().c_str());
+
+		times.insert({time, score});
+	}
+
+	for (const auto &time : times) {
+		PortalLeaderboardItem_t data;
+		data.m_xuid = atoll(time.second.first.c_str());
+		data.m_iScore = time.first;
+		strncpy(data.m_szName, time.second.second["userData"]["boardname"].string_value().c_str(), sizeof(data.m_szName));
+
+		client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &data, data.m_iScore, 1, -1, 0, 81, -1, 0);
+	}
+
+	return 0;
+}
+Hook g_SetPanelStatsHook(&Client::SetPanelStats_Hook);
+
 bool Client::Init() {
 	bool readJmp = false;
 
@@ -666,6 +701,20 @@ bool Client::Init() {
 #endif
 
 		g_StartSearchingHook.SetFunc(Client::StartSearching);
+
+#ifdef _WIN32
+		Client::AddAvatarPanelItem = (decltype(Client::AddAvatarPanelItem))Memory::Scan(client->Name(), "55 8B EC 83 EC 08 56 57 68 ? ? ? ? E8");
+#else
+		Client::AddAvatarPanelItem = (decltype(Client::AddAvatarPanelItem))Memory::Scan(client->Name(), "55 89 E5 57 56 53 83 EC 4C 8B 45 14 C7 04 24");
+#endif
+
+#ifdef _WIN32
+		Client::SetPanelStats = (decltype(Client::SetPanelStats))Memory::Scan(client->Name(), "55 8B EC 83 EC 68 53 8B D9 8B 83");
+#else
+		Client::SetPanelStats = (decltype(Client::SetPanelStats))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? 65 A1 ? ? ? ? 89 45 E4 31 C0 8B 5D 08 8B 83 ? ? ? ? 85 C0 0F 85");
+#endif
+
+		g_SetPanelStatsHook.SetFunc(Client::SetPanelStats);
 	}
 
 	// Get at gamerules
