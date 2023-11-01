@@ -733,21 +733,24 @@ DETOUR(Client::SetPanelStats) {
 	auto map_id = AutoSubmitMod::GetMapId(std::string(m_pLeaderboard->m_szMapName));
 	auto json = AutoSubmitMod::GetMapJson(*map_id);
 
-	std::map<int, std::pair<std::string, json11::Json>> times;
+	std::vector<std::pair<std::string, json11::Json>> times;
 	for (auto score : json) {
-		auto scoreData = score.second["scoreData"];
-		int time = atoi(scoreData["score"].string_value().c_str());
+		times.push_back(score);
 
-		times.insert({time, score});
+		std::sort(times.begin(), times.end(), [](std::pair<std::string, json11::Json> a, std::pair<std::string, json11::Json> b) {
+			return atoi(a.second["scoreData"]["score"].string_value().c_str()) < atoi(b.second["scoreData"]["score"].string_value().c_str());
+		});
 	}
 
-	for (const auto &time : times) {
-		PortalLeaderboardItem_t data;
-		data.m_xuid = atoll(time.second.first.c_str());
-		data.m_iScore = time.first;
-		strncpy(data.m_szName, time.second.second["userData"]["boardname"].string_value().c_str(), sizeof(data.m_szName));
+	for (int i = 0; i < std::min((int)times.size(), 3); ++i) {
+		const auto &time = times[i];
 
-		client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &data, data.m_iScore, 1, -1, 0, 81, -1, 0);
+		PortalLeaderboardItem_t data;
+		data.m_xuid = atoll(time.first.c_str());
+		data.m_iScore = atoi(time.second["scoreData"]["score"].string_value().c_str());
+		strncpy(data.m_szName, time.second["userData"]["boardname"].string_value().c_str(), sizeof(data.m_szName));
+
+		client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &data, data.m_iScore, 1, -1, i, 81, -1, 0);
 	}
 
 	return 0;
@@ -924,30 +927,6 @@ bool Client::Init() {
 
 	g_AddShadowToReceiverHook.SetFunc(Client::AddShadowToReceiver);
 
-	if (!sar.game->Is(SourceGame_Portal2)) {
-#ifdef _WIN32
-		Client::StartSearching = (decltype(Client::StartSearching))Memory::Scan(client->Name(), "55 8B EC 83 EC 14 53 56 57 8B F9 33 DB C6 87");
-#else
-		Client::StartSearching = (decltype(Client::StartSearching))Memory::Scan(client->Name(), "55 89 E5 57 56 8D 75 DC 53 83 EC 2C 8B 5D 08 8D 83");
-#endif
-
-		g_StartSearchingHook.SetFunc(Client::StartSearching);
-
-#ifdef _WIN32
-		Client::AddAvatarPanelItem = (decltype(Client::AddAvatarPanelItem))Memory::Scan(client->Name(), "55 8B EC 83 EC 08 56 57 68 ? ? ? ? E8");
-#else
-		Client::AddAvatarPanelItem = (decltype(Client::AddAvatarPanelItem))Memory::Scan(client->Name(), "55 89 E5 57 56 53 83 EC 4C 8B 45 14 C7 04 24");
-#endif
-
-#ifdef _WIN32
-		Client::SetPanelStats = (decltype(Client::SetPanelStats))Memory::Scan(client->Name(), "55 8B EC 83 EC 68 53 8B D9 8B 83");
-#else
-		Client::SetPanelStats = (decltype(Client::SetPanelStats))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? 65 A1 ? ? ? ? 89 45 E4 31 C0 8B 5D 08 8B 83 ? ? ? ? 85 C0 0F 85");
-#endif
-
-		g_SetPanelStatsHook.SetFunc(Client::SetPanelStats);
-	}
-
 	// Get at gamerules
 	{
 		uintptr_t cbk = (uintptr_t)Command("+mouse_menu").ThisPtr()->m_pCommandCallback;
@@ -986,6 +965,24 @@ bool Client::Init() {
 			this->g_ChapterMPContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + 91);
 		}
 #endif
+
+#ifdef _WIN32
+		Client::StartSearching = (decltype(Client::StartSearching))Memory::Scan(client->Name(), "55 8B EC 83 EC 14 53 56 57 8B F9 33 DB C6 87");
+#else
+		Client::StartSearching = (decltype(Client::StartSearching))Memory::Scan(client->Name(), "55 89 E5 57 56 8D 75 DC 53 83 EC 2C 8B 5D 08 8D 83");
+#endif
+
+		g_StartSearchingHook.SetFunc(Client::StartSearching);
+
+#ifdef _WIN32
+		Client::SetPanelStats = (decltype(Client::SetPanelStats))Memory::Scan(client->Name(), "55 8B EC 83 EC 68 53 8B D9 8B 83");
+		Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + 1102);
+#else
+		Client::SetPanelStats = (decltype(Client::SetPanelStats))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? 65 A1 ? ? ? ? 89 45 E4 31 C0 8B 5D 08 8B 83 ? ? ? ? 85 C0 0F 85");
+		Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + 1107);
+#endif
+
+		g_SetPanelStatsHook.SetFunc(Client::SetPanelStats);
 	}
 
 	cl_showpos = Variable("cl_showpos");

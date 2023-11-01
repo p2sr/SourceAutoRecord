@@ -122,7 +122,7 @@ static void testApiKey() {
 	THREAD_PRINT("Downloaded %i maps!\n", g_map_ids.size());
 }
 
-std::optional<std::string> AutoSubmitMod::GetMapId(std::string &map_name) {
+std::optional<std::string> AutoSubmitMod::GetMapId(std::string map_name) {
 	auto it = g_map_ids.find(map_name);
 	if (it == g_map_ids.end()) {
 		return {};
