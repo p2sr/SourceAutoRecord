@@ -741,15 +741,11 @@ bool Client::Init() {
 		g_StartSearchingHook.SetFunc(Client::StartSearching);
 
 #ifdef _WIN32
-		Client::AddAvatarPanelItem = (decltype(Client::AddAvatarPanelItem))Memory::Scan(client->Name(), "55 8B EC 83 EC 08 56 57 68 ? ? ? ? E8");
-#else
-		Client::AddAvatarPanelItem = (decltype(Client::AddAvatarPanelItem))Memory::Scan(client->Name(), "55 89 E5 57 56 53 83 EC 4C 8B 45 14 C7 04 24");
-#endif
-
-#ifdef _WIN32
 		Client::SetPanelStats = (decltype(Client::SetPanelStats))Memory::Scan(client->Name(), "55 8B EC 83 EC 68 53 8B D9 8B 83");
+		Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + 1102);
 #else
 		Client::SetPanelStats = (decltype(Client::SetPanelStats))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? 65 A1 ? ? ? ? 89 45 E4 31 C0 8B 5D 08 8B 83 ? ? ? ? 85 C0 0F 85");
+		Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + 1107);
 #endif
 
 		g_SetPanelStatsHook.SetFunc(Client::SetPanelStats);
