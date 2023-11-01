@@ -742,7 +742,19 @@ DETOUR(Client::SetPanelStats) {
 		});
 	}
 
-	for (int i = 0; i < std::min((int)times.size(), 3); ++i) {
+	auto pb = AutoSubmitMod::GetCurrentPbScore(*map_id);
+	int pb_idx = 0;
+	for (int i = 0; i < times.size(); ++i) {
+		if (atoi(times[i].second["scoreData"]["score"].string_value().c_str()) == *pb)
+			pb_idx = i;
+	}
+
+	auto min = std::max(pb_idx - 3, 0);
+	auto max = std::min(pb_idx + 3, (int)times.size());
+	if (max - min < 6 && pb_idx - 3 < 0) max = std::min(min + 6, (int)times.size());
+	if (max - min < 6 && pb_idx + 3 > times.size()) min = std::max(max - 6, 0);
+
+	for (int i = min; i < max; ++i) {
 		const auto &time = times[i];
 
 		PortalLeaderboardItem_t data;

@@ -128,8 +128,7 @@ struct PortalPlayerStatistics_t {
 	float fDistanceTaken;
 };
 
-class PortalLeaderboardItem_t {
-public:
+struct PortalLeaderboardItem_t {
 	uint64_t m_xuid;     //0x0000
 	char m_szName[32];   //0x0008
 	char pad_0028[16];   //0x0028
