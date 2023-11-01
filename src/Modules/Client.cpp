@@ -736,17 +736,19 @@ DETOUR(Client::SetPanelStats) {
 	std::vector<std::pair<std::string, json11::Json>> times;
 	for (auto score : json) {
 		times.push_back(score);
-
-		std::sort(times.begin(), times.end(), [](std::pair<std::string, json11::Json> a, std::pair<std::string, json11::Json> b) {
-			return atoi(a.second["scoreData"]["score"].string_value().c_str()) < atoi(b.second["scoreData"]["score"].string_value().c_str());
-		});
 	}
+
+	std::sort(times.begin(), times.end(), [](std::pair<std::string, json11::Json> a, std::pair<std::string, json11::Json> b) {
+		return atoi(a.second["scoreData"]["score"].string_value().c_str()) < atoi(b.second["scoreData"]["score"].string_value().c_str());
+	});
 
 	auto pb = AutoSubmitMod::GetCurrentPbScore(*map_id);
 	int pb_idx = 0;
 	for (int i = 0; i < times.size(); ++i) {
-		if (atoi(times[i].second["scoreData"]["score"].string_value().c_str()) == *pb)
+		if (atoi(times[i].second["scoreData"]["score"].string_value().c_str()) == *pb) {
 			pb_idx = i;
+			break;
+		}
 	}
 
 	auto min = std::max(pb_idx - 3, 0);
