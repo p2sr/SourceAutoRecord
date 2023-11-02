@@ -729,6 +729,7 @@ DETOUR(Client::SetPanelStats) {
 
 	CPortalLeaderboard *m_pLeaderboard = *(CPortalLeaderboard **)((uintptr_t)thisptr + Offsets::m_pLeaderboard);
 	void *m_pStatList = *(void **)((uintptr_t)thisptr + Offsets::m_pStatList);
+	int m_nStatHeight = *(int *)((uintptr_t)thisptr + Offsets::m_nStatHeight);
 	
 	auto map_id = AutoSubmitMod::GetMapId(std::string(m_pLeaderboard->m_szMapName));
 	auto json = AutoSubmitMod::GetMapJson(*map_id);
@@ -764,7 +765,7 @@ DETOUR(Client::SetPanelStats) {
 		data.m_iScore = atoi(time.second["scoreData"]["score"].string_value().c_str());
 		strncpy(data.m_szName, time.second["userData"]["boardname"].string_value().c_str(), sizeof(data.m_szName));
 
-		client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &data, data.m_iScore, 1, -1, i, 81, -1, 0);
+		client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &data, data.m_iScore, 1, -1, i, m_nStatHeight, -1, 0);
 	}
 
 	return 0;
