@@ -129,7 +129,7 @@ std::optional<std::string> AutoSubmitMod::GetMapId(std::string map_name) {
 	return it->second;
 }
 
-std::optional<int> AutoSubmitMod::GetCurrentPbScore(std::string &map_id) {
+std::optional<int> getCurrentPbScore(std::string &map_id) {
 	if (!ensureCurlReady()) return {};
 
 	curl_mime *form = curl_mime_init(g_curl);
@@ -166,10 +166,33 @@ std::optional<int> AutoSubmitMod::GetCurrentPbScore(std::string &map_id) {
 	return atoi(str.c_str());
 }
 
-json11::Json::object AutoSubmitMod::GetMapJson(std::string &map_id) {
+json11::Json::array AutoSubmitMod::GetTopScores(std::string &map_id) {
 	if (!ensureCurlReady()) return {};
 
-	auto response = request(g_api_base.substr(0, g_api_base.length() - 6) + "chamber/" + map_id + "/json");
+	curl_mime *form = curl_mime_init(g_curl);
+	curl_mimepart *field;
+
+	field = curl_mime_addpart(form);
+	curl_mime_name(field, "auth_hash");
+	curl_mime_data(field, g_api_key.c_str(), CURL_ZERO_TERMINATED);
+
+	field = curl_mime_addpart(form);
+	curl_mime_name(field, "mapId");
+	curl_mime_data(field, map_id.c_str(), CURL_ZERO_TERMINATED);
+
+	field = curl_mime_addpart(form);
+	curl_mime_name(field, "before");
+	curl_mime_data(field, "3", CURL_ZERO_TERMINATED);
+
+	field = curl_mime_addpart(form);
+	curl_mime_name(field, "after");
+	curl_mime_data(field, "2", CURL_ZERO_TERMINATED);
+
+	curl_easy_setopt(g_curl, CURLOPT_MIMEPOST, form);
+
+	auto response = request(g_api_base + "/top-scores");
+
+	curl_mime_free(form);
 
 	if (!response) return {};
 
@@ -180,7 +203,7 @@ json11::Json::object AutoSubmitMod::GetMapJson(std::string &map_id) {
 		return {};
 	}
 
-	return json.object_items();
+	return json.array_items();
 }
 
 static void submitTime(int score, std::string demopath, bool coop, std::string map_id, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
@@ -196,7 +219,7 @@ static void submitTime(int score, std::string demopath, bool coop, std::string m
 		return;
 	}
 
-	auto cur_pb = AutoSubmitMod::GetCurrentPbScore(map_id);
+	auto cur_pb = getCurrentPbScore(map_id);
 	if (cur_pb) {
 		if (*cur_pb > -1 && score >= *cur_pb) {
 			THREAD_PRINT("Not PB; not submitting.\n");
