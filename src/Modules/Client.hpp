@@ -84,7 +84,7 @@ public:
 	DECL_DETOUR(IsQuerying);
 
 	// CUtlStringMap<CPortalLeaderboard *>::PurgeAndDeleteElements
-	DECL_DETOUR(PurgeAndDeleteElements, KeyValues *a2);
+	DECL_DETOUR(PurgeAndDeleteElements);
 
 	// CPortalLeaderboardManager::GetLeaderboard
 	DECL_DETOUR_T(void *, GetLeaderboard, const char *a2);

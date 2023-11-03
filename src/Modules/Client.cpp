@@ -588,11 +588,11 @@ DETOUR_T(void *, Client::GetLeaderboard, const char *a2) {
 Hook g_GetLeaderboardHook(&Client::GetLeaderboard_Hook);
 
 extern Hook g_PurgeAndDeleteElementsHook;
-DETOUR(Client::PurgeAndDeleteElements, KeyValues *a2) {
+DETOUR(Client::PurgeAndDeleteElements) {
 	g_registeredLbs.clear();
 
 	g_PurgeAndDeleteElementsHook.Disable();
-	auto ret = Client::PurgeAndDeleteElements(thisptr, a2);
+	auto ret = Client::PurgeAndDeleteElements(thisptr);
 	g_PurgeAndDeleteElementsHook.Enable();
 	return ret;
 }
