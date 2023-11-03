@@ -96,6 +96,7 @@ REDECL(Client::GetLeaderboard);
 REDECL(Client::PurgeAndDeleteElements);
 REDECL(Client::IsQuerying);
 REDECL(Client::SetPanelStats);
+REDECL(Client::OnCommand);
 #ifdef _WIN32
 REDECL(Client::ApplyMouse_Mid);
 REDECL(Client::ApplyMouse_Mid_Continue);
@@ -720,35 +721,17 @@ CON_COMMAND(sar_workshop_skip, "sar_workshop_skip - Skips to the next level in w
 
 static std::thread g_worker;
 static bool g_is_querying;
-static std::vector<std::pair<std::string, json11::Json>> g_times;
-static std::pair<int, int> g_ranges;
+static std::vector<json11::Json> g_times;
 
 static void startSearching(const char *mapName) {
 	auto map_id = AutoSubmitMod::GetMapId(std::string(mapName));
-	auto json = AutoSubmitMod::GetMapJson(*map_id);
+
+	auto json = AutoSubmitMod::GetTopScores(*map_id);
 
 	g_times.clear();
 	for (auto score : json) {
 		g_times.push_back(score);
 	}
-
-	std::sort(g_times.begin(), g_times.end(), [](std::pair<std::string, json11::Json> a, std::pair<std::string, json11::Json> b) {
-		return atoi(a.second["scoreData"]["score"].string_value().c_str()) < atoi(b.second["scoreData"]["score"].string_value().c_str());
-	});
-
-	auto pb = AutoSubmitMod::GetCurrentPbScore(*map_id);
-	int pb_idx = 0;
-	for (int i = 0; i < g_times.size(); ++i) {
-		if (atoi(g_times[i].second["scoreData"]["score"].string_value().c_str()) == *pb) {
-			pb_idx = i;
-			break;
-		}
-	}
-
-	g_ranges.first = std::max(pb_idx - 3, 0);
-	g_ranges.second = std::min(pb_idx + 3, (int)g_times.size());
-	if (g_ranges.second - g_ranges.first < 6 && pb_idx - 3 < 0) g_ranges.second = std::min(g_ranges.first + 6, (int)g_times.size());
-	if (g_ranges.second - g_ranges.first < 6 && pb_idx + 3 > g_times.size()) g_ranges.first = std::max(g_ranges.second - 6, 0);
 
 	g_is_querying = false;
 }
@@ -768,7 +751,7 @@ DETOUR(Client::StartSearching) {
 }
 Hook g_StartSearchingHook(&Client::StartSearching_Hook);
 
-static std::vector<const char *> g_registeredLbs;
+static std::vector<std::string> g_registeredLbs;
 
 extern Hook g_GetLeaderboardHook;
 DETOUR_T(void *, Client::GetLeaderboard, const char *a2) {
@@ -810,13 +793,13 @@ DETOUR(Client::SetPanelStats) {
 	void *m_pStatList = *(void **)((uintptr_t)thisptr + Offsets::m_pStatList);
 	int m_nStatHeight = *(int *)((uintptr_t)thisptr + Offsets::m_nStatHeight);
 
-	for (int i = g_ranges.first; i < g_ranges.second; ++i) {
+	for (int i = 0; i < g_times.size(); ++i) {
 		const auto &time = g_times[i];
 
 		PortalLeaderboardItem_t data;
-		data.m_xuid = atoll(time.first.c_str());
-		data.m_iScore = atoi(time.second["scoreData"]["score"].string_value().c_str());
-		strncpy(data.m_szName, time.second["userData"]["boardname"].string_value().c_str(), sizeof(data.m_szName));
+		data.m_xuid = atoll(time["userData"]["profileNumber"].string_value().c_str());
+		data.m_iScore = atoi(time["scoreData"]["score"].string_value().c_str());
+		strncpy(data.m_szName, time["userData"]["boardname"].string_value().c_str(), sizeof(data.m_szName));
 
 		client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &data, data.m_iScore, 1, -1, i, m_nStatHeight, -1, 0);
 	}
@@ -824,6 +807,19 @@ DETOUR(Client::SetPanelStats) {
 	return 0;
 }
 Hook g_SetPanelStatsHook(&Client::SetPanelStats_Hook);
+
+extern Hook g_OnCommandHook;
+DETOUR(Client::OnCommand, const char *a2) {
+	if (!strcmp(a2, "Leaderboard_Time")) {
+		return 0;
+	}
+
+	g_OnCommandHook.Disable();
+	auto ret = Client::OnCommand(thisptr, a2);
+	g_OnCommandHook.Enable();
+	return ret;
+}
+Hook g_OnCommandHook(&Client::OnCommand_Hook);
 
 ON_EVENT(SAR_UNLOAD) {
 	if (g_worker.joinable()) g_worker.detach();
@@ -1048,6 +1044,8 @@ bool Client::Init() {
 
 		auto OnEvent = Memory::Scan(this->Name(), "55 8B EC 57 8B F9 8B 4D 08 E8");
 		Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(OnEvent + 37);
+
+		Client::OnCommand = (decltype(Client::OnCommand))Memory::Scan(this->Name(), "55 8B EC 56 57 8B 7D 08 57 68 ? ? ? ? 8B F1 E8 ? ? ? ? 83 C4 08 85 C0 0F 84");
 #else
 		auto CPortalLeaderboardPanel_OnThink = Memory::Scan(this->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? 65 A1 ? ? ? ? 89 45 E4 31 C0 A1 ? ? ? ? 8B 5D 08 8B 70 30");
 		Client::GetLeaderboard = Memory::Read<decltype(Client::GetLeaderboard)>(CPortalLeaderboardPanel_OnThink + 973);
@@ -1058,13 +1056,16 @@ bool Client::Init() {
 
 		auto OnEvent = Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 1C 8B 45 0C 8B 7D 08 89 04 24 E8 ? ? ? ? C7 04 24");
 		Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(OnEvent + 120);
+
+		Client::OnCommand = (decltype(Client::OnCommand))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 75 0C C7 04 24 ? ? ? ? 8B 5D 08 89 74 24 04 E8 ? ? ? ? 85 C0 75 3D");
 #endif
 
-		g_PurgeAndDeleteElementsHook.SetFunc(Client::PurgeAndDeleteElements);
 		g_GetLeaderboardHook.SetFunc(Client::GetLeaderboard);
 		g_IsQueryingHook.SetFunc(Client::IsQuerying);
 		g_SetPanelStatsHook.SetFunc(Client::SetPanelStats);
 		g_StartSearchingHook.SetFunc(Client::StartSearching);
+		g_PurgeAndDeleteElementsHook.SetFunc(Client::PurgeAndDeleteElements);
+		g_OnCommandHook.SetFunc(Client::OnCommand);
 	}
 	
 	cl_showpos = Variable("cl_showpos");
