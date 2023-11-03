@@ -92,6 +92,9 @@ REDECL(Client::DrawOpaqueRenderables);
 REDECL(Client::CalcViewModelLag);
 REDECL(Client::AddShadowToReceiver);
 REDECL(Client::StartSearching);
+REDECL(Client::GetLeaderboard);
+REDECL(Client::PurgeAndDeleteElements);
+REDECL(Client::IsQuerying);
 REDECL(Client::SetPanelStats);
 #ifdef _WIN32
 REDECL(Client::ApplyMouse_Mid);
@@ -715,50 +718,100 @@ CON_COMMAND(sar_workshop_skip, "sar_workshop_skip - Skips to the next level in w
 	MsgPreSkipToNextLevel();
 }
 
-extern Hook g_StartSearchingHook;
-DETOUR(Client::StartSearching) {
-	return 0;
-}
-Hook g_StartSearchingHook(&Client::StartSearching_Hook);
+static std::thread g_worker;
+static bool g_is_querying;
+static std::vector<std::pair<std::string, json11::Json>> g_times;
+static std::pair<int, int> g_ranges;
 
-extern Hook g_SetPanelStatsHook;
-DETOUR(Client::SetPanelStats) {
-	struct CPortalLeaderboard {
-		char m_szMapName[128];
-	};
-
-	CPortalLeaderboard *m_pLeaderboard = *(CPortalLeaderboard **)((uintptr_t)thisptr + Offsets::m_pLeaderboard);
-	void *m_pStatList = *(void **)((uintptr_t)thisptr + Offsets::m_pStatList);
-	int m_nStatHeight = *(int *)((uintptr_t)thisptr + Offsets::m_nStatHeight);
-	
-	auto map_id = AutoSubmitMod::GetMapId(std::string(m_pLeaderboard->m_szMapName));
+static void startSearching(const char *mapName) {
+	auto map_id = AutoSubmitMod::GetMapId(std::string(mapName));
 	auto json = AutoSubmitMod::GetMapJson(*map_id);
 
-	std::vector<std::pair<std::string, json11::Json>> times;
+	g_times.clear();
 	for (auto score : json) {
-		times.push_back(score);
+		g_times.push_back(score);
 	}
 
-	std::sort(times.begin(), times.end(), [](std::pair<std::string, json11::Json> a, std::pair<std::string, json11::Json> b) {
+	std::sort(g_times.begin(), g_times.end(), [](std::pair<std::string, json11::Json> a, std::pair<std::string, json11::Json> b) {
 		return atoi(a.second["scoreData"]["score"].string_value().c_str()) < atoi(b.second["scoreData"]["score"].string_value().c_str());
 	});
 
 	auto pb = AutoSubmitMod::GetCurrentPbScore(*map_id);
 	int pb_idx = 0;
-	for (int i = 0; i < times.size(); ++i) {
-		if (atoi(times[i].second["scoreData"]["score"].string_value().c_str()) == *pb) {
+	for (int i = 0; i < g_times.size(); ++i) {
+		if (atoi(g_times[i].second["scoreData"]["score"].string_value().c_str()) == *pb) {
 			pb_idx = i;
 			break;
 		}
 	}
 
-	auto min = std::max(pb_idx - 3, 0);
-	auto max = std::min(pb_idx + 3, (int)times.size());
-	if (max - min < 6 && pb_idx - 3 < 0) max = std::min(min + 6, (int)times.size());
-	if (max - min < 6 && pb_idx + 3 > times.size()) min = std::max(max - 6, 0);
+	g_ranges.first = std::max(pb_idx - 3, 0);
+	g_ranges.second = std::min(pb_idx + 3, (int)g_times.size());
+	if (g_ranges.second - g_ranges.first < 6 && pb_idx - 3 < 0) g_ranges.second = std::min(g_ranges.first + 6, (int)g_times.size());
+	if (g_ranges.second - g_ranges.first < 6 && pb_idx + 3 > g_times.size()) g_ranges.first = std::max(g_ranges.second - 6, 0);
 
-	for (int i = min; i < max; ++i) {
-		const auto &time = times[i];
+	g_is_querying = false;
+}
+
+extern Hook g_StartSearchingHook;
+DETOUR(Client::StartSearching) {
+	struct CPortalLeaderboard {
+		char m_szMapName[128];
+	};
+
+	g_is_querying = true;
+
+	if (g_worker.joinable()) g_worker.join();
+	g_worker = std::thread(startSearching, ((CPortalLeaderboard *)thisptr)->m_szMapName);
+
+	return 0;
+}
+Hook g_StartSearchingHook(&Client::StartSearching_Hook);
+
+static std::vector<const char *> g_registeredLbs;
+
+extern Hook g_GetLeaderboardHook;
+DETOUR_T(void *, Client::GetLeaderboard, const char *a2) {
+	// the game only updates the boards once when it is initialized, we want to update them each time it gets clicked, but we still want the boards to get constructed
+	g_GetLeaderboardHook.Disable();
+	auto ret = Client::GetLeaderboard(thisptr, a2);
+	g_GetLeaderboardHook.Enable();
+
+	if (!std::count(g_registeredLbs.begin(), g_registeredLbs.end(), a2)) {
+		g_registeredLbs.push_back(a2);
+	} else if (ret) {
+		Client::StartSearching(ret);
+	}
+
+	return ret;
+}
+Hook g_GetLeaderboardHook(&Client::GetLeaderboard_Hook);
+
+extern Hook g_PurgeAndDeleteElementsHook;
+DETOUR(Client::PurgeAndDeleteElements) {
+	g_registeredLbs.clear();
+
+	g_PurgeAndDeleteElementsHook.Disable();
+	auto ret = Client::PurgeAndDeleteElements(thisptr);
+	g_PurgeAndDeleteElementsHook.Enable();
+	return ret;
+}
+Hook g_PurgeAndDeleteElementsHook(&Client::PurgeAndDeleteElements_Hook);
+
+extern Hook g_IsQueryingHook;
+DETOUR(Client::IsQuerying) {
+	return g_is_querying;
+}
+Hook g_IsQueryingHook(&Client::IsQuerying_Hook);
+
+extern Hook g_SetPanelStatsHook;
+DETOUR(Client::SetPanelStats) {
+	void *m_pLeaderboard = *(void **)((uintptr_t)thisptr + Offsets::m_pLeaderboard);
+	void *m_pStatList = *(void **)((uintptr_t)thisptr + Offsets::m_pStatList);
+	int m_nStatHeight = *(int *)((uintptr_t)thisptr + Offsets::m_nStatHeight);
+
+	for (int i = g_ranges.first; i < g_ranges.second; ++i) {
+		const auto &time = g_times[i];
 
 		PortalLeaderboardItem_t data;
 		data.m_xuid = atoll(time.first.c_str());
@@ -771,6 +824,10 @@ DETOUR(Client::SetPanelStats) {
 	return 0;
 }
 Hook g_SetPanelStatsHook(&Client::SetPanelStats_Hook);
+
+ON_EVENT(SAR_UNLOAD) {
+	if (g_worker.joinable()) g_worker.detach();
+}
 
 bool Client::Init() {
 	bool readJmp = false;
@@ -982,24 +1039,34 @@ bool Client::Init() {
 #endif
 
 #ifdef _WIN32
-		Client::StartSearching = (decltype(Client::StartSearching))Memory::Scan(client->Name(), "55 8B EC 83 EC 14 53 56 57 8B F9 33 DB C6 87");
-#else
-		Client::StartSearching = (decltype(Client::StartSearching))Memory::Scan(client->Name(), "55 89 E5 57 56 8D 75 DC 53 83 EC 2C 8B 5D 08 8D 83");
-#endif
-
-		g_StartSearchingHook.SetFunc(Client::StartSearching);
-
-#ifdef _WIN32
-		Client::SetPanelStats = (decltype(Client::SetPanelStats))Memory::Scan(client->Name(), "55 8B EC 83 EC 68 53 8B D9 8B 83");
+		auto CPortalLeaderboardPanel_OnThink = Memory::Scan(this->Name(), "55 8B EC A1 ? ? ? ? 81 EC ? ? ? ? 53 56 32 DB");
+		Client::GetLeaderboard = Memory::Read<decltype(Client::GetLeaderboard)>(CPortalLeaderboardPanel_OnThink + 290);
+		Client::IsQuerying = Memory::Read<decltype(Client::IsQuerying)>(CPortalLeaderboardPanel_OnThink + 366);
+		Client::SetPanelStats = Memory::Read<decltype(Client::SetPanelStats)>(CPortalLeaderboardPanel_OnThink + 413);
+		Client::StartSearching = Memory::Read<decltype(Client::StartSearching)>((uintptr_t)GetLeaderboard + 172);
 		Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + 1102);
+
+		auto OnEvent = Memory::Scan(this->Name(), "55 8B EC 57 8B F9 8B 4D 08 E8");
+		Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(OnEvent + 37);
 #else
-		Client::SetPanelStats = (decltype(Client::SetPanelStats))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? 65 A1 ? ? ? ? 89 45 E4 31 C0 8B 5D 08 8B 83 ? ? ? ? 85 C0 0F 85");
+		auto CPortalLeaderboardPanel_OnThink = Memory::Scan(this->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? 65 A1 ? ? ? ? 89 45 E4 31 C0 A1 ? ? ? ? 8B 5D 08 8B 70 30");
+		Client::GetLeaderboard = Memory::Read<decltype(Client::GetLeaderboard)>(CPortalLeaderboardPanel_OnThink + 973);
+		Client::IsQuerying = Memory::Read<decltype(Client::IsQuerying)>(CPortalLeaderboardPanel_OnThink + 666);
+		Client::SetPanelStats = Memory::Read<decltype(Client::SetPanelStats)>(CPortalLeaderboardPanel_OnThink + 1056);
+		Client::StartSearching = Memory::Read<decltype(Client::StartSearching)>((uintptr_t)GetLeaderboard + 262);
 		Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + 1107);
+
+		auto OnEvent = Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 1C 8B 45 0C 8B 7D 08 89 04 24 E8 ? ? ? ? C7 04 24");
+		Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(OnEvent + 120);
 #endif
 
+		g_PurgeAndDeleteElementsHook.SetFunc(Client::PurgeAndDeleteElements);
+		g_GetLeaderboardHook.SetFunc(Client::GetLeaderboard);
+		g_IsQueryingHook.SetFunc(Client::IsQuerying);
 		g_SetPanelStatsHook.SetFunc(Client::SetPanelStats);
+		g_StartSearchingHook.SetFunc(Client::StartSearching);
 	}
-
+	
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");
 	cl_forwardspeed = Variable("cl_forwardspeed");
