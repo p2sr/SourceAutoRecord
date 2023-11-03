@@ -77,6 +77,9 @@ public:
 	void OpenChat();
 
 public:
+	// BaseModUI::CPortalLeaderboardPanel::OnCommand
+	DECL_DETOUR(OnCommand, const char *a2);
+
 	// BaseModUI::CPortalLeaderboardPanel::SetPanelStats
 	DECL_DETOUR(SetPanelStats);
 
