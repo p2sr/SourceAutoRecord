@@ -80,6 +80,15 @@ public:
 	// BaseModUI::CPortalLeaderboardPanel::SetPanelStats
 	DECL_DETOUR(SetPanelStats);
 
+	// CPortalLeaderboard::IsQuerying
+	DECL_DETOUR(IsQuerying);
+
+	// CUtlStringMap<CPortalLeaderboard *>::PurgeAndDeleteElements
+	DECL_DETOUR(PurgeAndDeleteElements, KeyValues *a2);
+
+	// CPortalLeaderboardManager::GetLeaderboard
+	DECL_DETOUR_T(void *, GetLeaderboard, const char *a2);
+
 	// CPortalLeaderboard::StartSearching
 	DECL_DETOUR(StartSearching);
 
