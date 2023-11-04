@@ -314,9 +314,9 @@ OFFSET_DEFAULT(DestroyDebugMesh, 42, 43)
 OFFSET_DEFAULT(ImageData, 39, 38)
 OFFSET_DEFAULT(ImageFormat, 20, 21)
 OFFSET_DEFAULT(CBaseEntity_Create, 130, 145)
-OFFSET_DEFAULT(m_pLeaderboard, 2308, 832)
-OFFSET_DEFAULT(m_pStatList, 2252, 818)
-OFFSET_DEFAULT(m_nStatHeight, 2100, 780)
+OFFSET_DEFAULT(m_pLeaderboard, 2308, 3328)
+OFFSET_DEFAULT(m_pStatList, 2252, 3272)
+OFFSET_DEFAULT(m_nStatHeight, 2100, 3120)
 
 // Linux mods run on an older build of the game (generally around 8151) which
 // has very different codegen - we define their offset overrides here
