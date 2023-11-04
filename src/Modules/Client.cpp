@@ -519,33 +519,13 @@ DETOUR_T(void, Client::AddShadowToReceiver, unsigned short handle, void *pRender
 }
 Hook g_AddShadowToReceiverHook(&Client::AddShadowToReceiver_Hook);
 
-static std::thread g_worker;
-static bool g_is_querying;
-static std::vector<json11::Json> g_times;
-
-static void startSearching(const char *mapName) {
-	auto map_id = AutoSubmitMod::GetMapId(std::string(mapName));
-
-	auto json = AutoSubmitMod::GetTopScores(*map_id);
-
-	g_times.clear();
-	for (auto score : json) {
-		g_times.push_back(score);
-	}
-
-	g_is_querying = false;
-}
-
 extern Hook g_StartSearchingHook;
 DETOUR(Client::StartSearching) {
 	struct CPortalLeaderboard {
 		char m_szMapName[128];
 	};
 
-	g_is_querying = true;
-
-	if (g_worker.joinable()) g_worker.join();
-	g_worker = std::thread(startSearching, ((CPortalLeaderboard *)thisptr)->m_szMapName);
+	AutoSubmitMod::Search(((CPortalLeaderboard *)thisptr)->m_szMapName);
 
 	return 0;
 }
@@ -583,7 +563,7 @@ Hook g_PurgeAndDeleteElementsHook(&Client::PurgeAndDeleteElements_Hook);
 
 extern Hook g_IsQueryingHook;
 DETOUR(Client::IsQuerying) {
-	return g_is_querying;
+	return AutoSubmitMod::IsQuerying();
 }
 Hook g_IsQueryingHook(&Client::IsQuerying_Hook);
 
@@ -593,8 +573,10 @@ DETOUR(Client::SetPanelStats) {
 	void *m_pStatList = *(void **)((uintptr_t)thisptr + Offsets::m_pStatList);
 	int m_nStatHeight = *(int *)((uintptr_t)thisptr + Offsets::m_nStatHeight);
 
-	for (int i = 0; i < g_times.size(); ++i) {
-		const auto &time = g_times[i];
+	const auto &times = AutoSubmitMod::GetTimes();
+
+	for (size_t i = 0; i < times.size(); ++i) {
+		const auto &time = times[i];
 
 		PortalLeaderboardItem_t data;
 		data.m_xuid = atoll(time["userData"]["profileNumber"].string_value().c_str());
@@ -620,10 +602,6 @@ DETOUR(Client::OnCommand, const char *a2) {
 	return ret;
 }
 Hook g_OnCommandHook(&Client::OnCommand_Hook);
-
-ON_EVENT(SAR_UNLOAD) {
-	if (g_worker.joinable()) g_worker.detach();
-}
 
 bool Client::Init() {
 	bool readJmp = false;
