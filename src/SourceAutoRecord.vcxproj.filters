@@ -508,6 +508,18 @@
     <ClCompile Include="Features\Routing\StepSlopeBoostDebug.cpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\StopTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\CommandTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\DuckTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Tas\TasTools\ZoomTool.cpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClCompile>
     <ClCompile Include="Features\Hud\PlacementHelperHud.cpp">
       <Filter>SourceAutoRecord\Features\Hud</Filter>
     </ClCompile>
@@ -1304,6 +1316,18 @@
     </ClInclude>
     <ClInclude Include="Features\Routing\StepSlopeBoostDebug.hpp">
       <Filter>SourceAutoRecord\Features\Routing</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\StopTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\CommandTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\DuckTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Tas\TasTools\ZoomTool.hpp">
+      <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
