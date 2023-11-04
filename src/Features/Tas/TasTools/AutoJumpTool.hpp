@@ -5,9 +5,12 @@ struct AutoJumpToolParams : public TasToolParams {
 	AutoJumpToolParams()
 		: TasToolParams() {
 	}
-	AutoJumpToolParams(bool enabled)
-		: TasToolParams(enabled) {
+	AutoJumpToolParams(bool enabled, bool ducked)
+		: TasToolParams(enabled)
+		, ducked(ducked) {
 	}
+
+	bool ducked = false;
 };
 
 class AutoJumpTool : public TasToolWithParams<AutoJumpToolParams> {
