@@ -23,12 +23,13 @@ OFFSET_DEFAULT(GetSaveDirName, 124, 124)
 OFFSET_DEFAULT(ExecuteClientCmd, 104, 104)
 OFFSET_DEFAULT(GetActiveSplitScreenPlayerSlot, 127, 127)
 OFFSET_DEFAULT(GetSteamAPIContext, 177, 178)
-OFFSET_DEFAULT(GetMouseDelta, -1, 161) // This method only exists on Linux
+OFFSET_DEFAULT(GetMouseDelta, -1, 161)  // This method only exists on Linux
 OFFSET_DEFAULT(IsPaused, 86, 86)
 OFFSET_DEFAULT(DebugDrawPhysCollide, 75, 75)
 OFFSET_DEFAULT(Con_IsVisible, 11, 11)
 OFFSET_DEFAULT(GetLevelNameShort, 53, 53)
 OFFSET_DEFAULT(GetLightForPoint, 1, 1)
+OFFSET_DEFAULT(GetPlayerInfo, 8, 8);
 
 // CHLClient
 OFFSET_DEFAULT(GetAllClasses, 8, 8)

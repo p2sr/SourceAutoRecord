@@ -342,7 +342,8 @@ struct Condition {
 		SVAR,
 		CVAR,
 		STRING,
-		LINUX
+		LINUX,
+		STEAMID
 	} type;
 
 	union {
@@ -377,6 +378,7 @@ static void FreeCondition(Condition *c) {
 		FreeCondition(c->binop_l);
 		FreeCondition(c->binop_r);
 		break;
+	case Condition::STEAMID:
 	default:
 		break;
 	}
@@ -418,6 +420,7 @@ static bool EvalCondition(Condition *c) {
 		#else
 			return true;
 		#endif
+	case Condition::STEAMID: return engine->IsCoop() ? !strcmp(c->val, engine->GetPartnerSteamID32().c_str()) : false;
 	}
 	return false;
 }
@@ -568,6 +571,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 				c->type = Condition::LINUX;
 			} else if (
 				t.len == 3 && !strncmp(t.str, "map", t.len) ||
+				t.len == 7 && !strncmp(t.str, "steamid", t.len) || 
 				t.len == 8 && !strncmp(t.str, "prev_map", t.len) ||
 				t.len == 4 && !strncmp(t.str, "game", t.len) ||
 				t.len > 4 && !strncmp(t.str, "var:", 4) ||
@@ -611,7 +615,7 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 					strncpy(c->var, t.str + 1, t.len - 1);
 					c->var[t.len - 1] = 0;  // Null terminator
 				} else {
-					c->type = t.len == 8 ? Condition::PREV_MAP : t.len == 4 ? Condition::GAME : Condition::MAP;
+					c->type = t.len == 8 ? Condition::PREV_MAP : t.len == 4 ? Condition::GAME : t.len == 7 ? Condition::STEAMID : Condition::MAP;
 				}
 
 				if (val_tok.len > 4 && !strncmp(val_tok.str, "var:", 4) || val_tok.len > 1 && val_tok.str[0] == '?') {
