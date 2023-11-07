@@ -716,6 +716,13 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 
 // }}}
 
+CON_COMMAND_F(sar_get_partner_id, "sar_get_partner_id - Prints your coop partner's steam id\n", FCVAR_DONTRECORD) {
+	if (!engine->IsCoop() || engine->IsSplitscreen()) {
+		return;
+	}
+	console->Print("%s\n", engine->GetPartnerSteamID32().c_str());
+}
+
 CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only if a given condition is met\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 3) {
 		return console->Print(cond.ThisPtr()->m_pszHelpString);
