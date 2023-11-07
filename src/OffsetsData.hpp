@@ -29,6 +29,7 @@ OFFSET_DEFAULT(DebugDrawPhysCollide, 75, 75)
 OFFSET_DEFAULT(Con_IsVisible, 11, 11)
 OFFSET_DEFAULT(GetLevelNameShort, 53, 53)
 OFFSET_DEFAULT(GetLightForPoint, 1, 1)
+OFFSET_DEFAULT(GetPlayerInfo, 8, 8);
 
 // CHLClient
 OFFSET_DEFAULT(GetAllClasses, 8, 8)

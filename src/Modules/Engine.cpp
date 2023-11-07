@@ -805,6 +805,22 @@ Color Engine::GetLightAtPoint(Vector point) {
 	return Color{(uint8_t)(light.x * 255), (uint8_t)(light.y * 255), (uint8_t)(light.z * 255), 255};
 }
 
+bool Engine::GetPlayerInfo(int ent_num, player_info_t* pInfo)
+{
+	return this->GetInfo(this->engineClient->ThisPtr(), ent_num, pInfo);
+}
+
+std::string Engine::GetPartnerSteamID32() {
+	player_info_t pInfo;
+
+	if (IsOrange()) {
+		GetPlayerInfo(1, &pInfo);
+	} else {
+		GetPlayerInfo(2, &pInfo);
+	}
+	return std::to_string(pInfo.friendsID);
+}
+
 static _CommandCompletionCallback playdemo_orig_completion;
 DECL_COMMAND_FILE_COMPLETION(playdemo, ".dem", engine->GetGameDirectory(), 1)
 
@@ -830,6 +846,7 @@ bool Engine::Init() {
 		this->Con_IsVisible = this->engineClient->Original<_Con_IsVisible>(Offsets::Con_IsVisible);
 		this->GetLevelNameShort = this->engineClient->Original<_GetLevelNameShort>(Offsets::GetLevelNameShort);
 		this->GetLightForPoint = this->engineClient->Original<_GetLightForPoint>(Offsets::GetLightForPoint);
+		this->GetInfo = this->engineClient->Original<_GetPlayerInfo>(Offsets::GetPlayerInfo);
 
 #ifndef _WIN32
 		this->engineClient->Hook(Engine::GetMouseDelta_Hook, Engine::GetMouseDelta, Offsets::GetMouseDelta);
