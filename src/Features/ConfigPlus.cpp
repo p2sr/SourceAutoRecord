@@ -379,6 +379,8 @@ static void FreeCondition(Condition *c) {
 		FreeCondition(c->binop_r);
 		break;
 	case Condition::STEAMID:
+		free(c->val);
+		break;
 	default:
 		break;
 	}
