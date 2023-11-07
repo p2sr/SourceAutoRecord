@@ -361,6 +361,7 @@ static void FreeCondition(Condition *c) {
 	switch (c->type) {
 	case Condition::MAP:
 	case Condition::PREV_MAP:
+	case Condition::STEAMID:
 	case Condition::GAME:
 		free(c->val);
 		break;
@@ -377,9 +378,6 @@ static void FreeCondition(Condition *c) {
 	case Condition::OR:
 		FreeCondition(c->binop_l);
 		FreeCondition(c->binop_r);
-		break;
-	case Condition::STEAMID:
-		free(c->val);
 		break;
 	default:
 		break;
@@ -409,6 +407,7 @@ static bool EvalCondition(Condition *c) {
 	case Condition::MENU: return engine->GetCurrentMapName().size() == 0;
 	case Condition::MAP: return !strcmp(c->val, engine->GetCurrentMapName().c_str());
 	case Condition::PREV_MAP: return !strcmp(c->val, session->previousMap.c_str());
+	case Condition::STEAMID: return (engine->IsCoop() && !engine->IsSplitscreen()) ? !strcmp(c->val, engine->GetPartnerSteamID32().c_str()) : false;
 	case Condition::GAME: return !strcmp(c->val, gameName());
 	case Condition::NOT: return !EvalCondition(c->unop_cond);
 	case Condition::AND: return EvalCondition(c->binop_l) && EvalCondition(c->binop_r);
@@ -422,7 +421,6 @@ static bool EvalCondition(Condition *c) {
 		#else
 			return true;
 		#endif
-	case Condition::STEAMID: return (engine->IsCoop() && !engine->IsSplitscreen()) ? !strcmp(c->val, engine->GetPartnerSteamID32().c_str()) : false;
 	}
 	return false;
 }
