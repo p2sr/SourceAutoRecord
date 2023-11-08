@@ -717,7 +717,8 @@ static Condition *ParseCondition(std::queue<Token> toks) {
 // }}}
 
 CON_COMMAND_F(sar_get_partner_id, "sar_get_partner_id - Prints your coop partner's steam id\n", FCVAR_DONTRECORD) {
-	if (!engine->IsCoop() || engine->IsSplitscreen()) {
+	if (!engine->IsCoop() || engine->IsSplitscreen() || !strcmp("0", engine->GetPartnerSteamID32().c_str())) {
+		console->Print("This command only works in online co-op.\n");
 		return;
 	}
 	console->Print("%s\n", engine->GetPartnerSteamID32().c_str());
