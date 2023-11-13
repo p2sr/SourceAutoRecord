@@ -116,8 +116,17 @@ void GhostRenderer::UpdateAnimatedVerts() {
 			localPos.x * yawSin + localPos.y * yawCos,
 			localPos.z
 		};
-		if (ghost->name == "Dinnerbone") {
+
+		if (ghost->name == "Dinnerbone" || ghost->name == "Grumm") {
 			localPos.z = 72 - localPos.z;
+		}
+
+		if (ghost->name == "jeb_") {
+			int host, server, client;
+			engine->GetTicks(host, server, client);
+
+			int hue = (server) % 360;
+			ghost->color = Utils::HSVToRGB(hue, 100, 100);
 		}
 
 		// transform it to global coordinates
