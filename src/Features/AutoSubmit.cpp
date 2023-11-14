@@ -20,7 +20,7 @@
 #define COOP_NAME_MESSAGE_TYPE "coop-name"
 #define API_KEY_FILE "autosubmit_key.txt"
 
-static std::string g_partner_name;
+std::string g_partner_name;
 
 ON_EVENT(SESSION_START) {
 	if (engine->IsCoop()) {
