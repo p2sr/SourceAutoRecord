@@ -1113,6 +1113,7 @@ ON_EVENT(PRE_TICK) {
 	if (!SpeedrunTimer::IsRunning()) return;
 	if (engine->IsOrange()) return;
 	if (engine->IsGamePaused()) return;
+	if (!g_orangeReady) return;
 
 	size_t next_split_idx = g_speedrun.splits.size();
 	if (next_split_idx >= g_autoreset_ticks.size()) return;
