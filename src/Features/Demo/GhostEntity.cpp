@@ -1,5 +1,6 @@
 #include "Features/Demo/GhostEntity.hpp"
 
+#include "Features/AutoSubmit.hpp"
 #include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
@@ -130,6 +131,11 @@ void GhostEntity::SetupGhost(unsigned int &ID, std::string &name, DataGhost &dat
 
 void GhostEntity::Display() {
 	if (this->IsBeingFollowed() && !ghost_spec_thirdperson.GetBool()) return;
+	if (this->name == g_partner_name) {
+		// don't draw partner
+		return;
+	}
+
 
 	Color col = GetColor();
 	float opacity = ghost_opacity.GetFloat();
