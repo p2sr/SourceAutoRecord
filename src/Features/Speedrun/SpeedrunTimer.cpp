@@ -393,7 +393,7 @@ void SpeedrunTimer::Update() {
 	if (engine->IsCoop() && !engine->IsOrange() && SpeedrunTimer::IsRunning() && !sar_speedrun_time_pauses.GetBool()) {
 		if (pauseTimer->IsActive() && !g_speedrun.inCoopPause) {
 			// I don't understand how any of this works but I think we're off-by-one here
-			g_speedrun.saved = SpeedrunTimer::GetTotalTicks() + 1;
+			g_speedrun.saved = SpeedrunTimer::GetSplitTicks() + 1;
 			g_speedrun.inCoopPause = true;
 		} else if (!pauseTimer->IsActive() && g_speedrun.inCoopPause) {
 			g_speedrun.base = getCurrentTick();
