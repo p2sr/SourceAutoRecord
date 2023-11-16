@@ -6,6 +6,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Utils/json11.hpp"
+#include "../Games/Portal2.hpp"
 #include <cctype>
 #include <fstream>
 #include <sstream>
@@ -504,7 +505,7 @@ CON_COMMAND_COMPLETION(sar_get_mtriggers, "sar_get_mtriggers <rank=wr> - prints 
 	g_worker = std::thread(retrieveMtriggers, std::atoi(args[1]), engine->GetCurrentMapName());
 }
 
-CON_COMMAND_COMPLETION(sar_get_mtriggers_map, "sar_get_mtriggers <map=current> <rank=wr> - prints mtriggers of specific run on specific map.\n", ({}), ({ "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" })) {
+CON_COMMAND_COMPLETION(sar_get_mtriggers_map, "sar_get_mtriggers <map=current> <rank=wr> - prints mtriggers of specific run on specific map.\n", (Portal2::mapNames)) {
 	if (args.ArgC() != 3) {
 		if (args.ArgC() == 2)
 		{
