@@ -127,6 +127,9 @@ public:
 
 	DECL_DETOUR_COMMAND(say);
 
+	// UTIL_EntityByIndex
+	DECL_DETOUR_T(int, EntityByIndex, int entityIndex);
+
 	bool Init() override;
 	void Shutdown() override;
 	const char *Name() override { return MODULE("server"); }

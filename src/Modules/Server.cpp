@@ -77,6 +77,7 @@ REDECL(Server::ProcessMovement);
 REDECL(Server::GetPlayerViewOffset);
 REDECL(Server::StartTouchChallengeNode);
 REDECL(Server::say_callback);
+REDECL(Server::EntityByIndex);
 
 SMDECL(Server::GetPortals, int, iNumPortalsPlaced);
 SMDECL(Server::GetAbsOrigin, Vector, m_vecAbsOrigin);
@@ -708,6 +709,17 @@ float hostTimeWrap() {
 	return engine->GetHostTime();
 }
 
+// UTIL_EntityByIndex
+extern Hook g_EntityByIndexHook;
+DETOUR_T(int, Server::EntityByIndex, int entityIndex) {
+	if (entityIndex > Offsets::NUM_ENT_ENTRIES) return NULL;
+	g_EntityByIndexHook.Disable();
+	auto ret = Server::EntityByIndex(thisptr, entityIndex);
+	g_EntityByIndexHook.Enable();
+	return ret;
+}
+Hook g_EntityByIndexHook(&Server::EntityByIndex_Hook);
+
 static char g_orig_check_stuck_code[6];
 static void *g_check_stuck_code;
 
@@ -809,6 +821,35 @@ bool Server::Init() {
 	// opcode start with F2 0F 5C.
 	Memory::UnProtect((void *)(insn_addr + 2), 1);
 	*(char *)(insn_addr + 2) = 0x5C;
+
+#ifdef _WIN32
+	Server::EntityByIndex = (decltype(Server::EntityByIndex))Memory::Scan(server->Name(), "55 8B EC 8B 4D ? 33 C0 85 C9 7E ? 8B 15 ? ? ? ? 39 42");
+	
+	g_EntityByIndexHook.SetFunc(Server::EntityByIndex);
+#else
+	// TODO: Linux
+#endif
+
+	uintptr_t PlayerClientCommand;
+#ifdef _WIN32
+	if (sar.game->Is(SourceGame_Portal2)) {
+		PlayerClientCommand = Memory::Scan(server->Name(), "55 8B EC 83 EC 78 53 56 57 8B 7D ? 83 3F 00");
+	} else {
+		PlayerClientCommand = Memory::Scan(server->Name(), "55 8B EC 83 EC 50 53 56 57 8B 7D ? 83 3F 00");
+	}
+#else 
+	// TODO: Linux
+#endif
+	uintptr_t code_a = (uintptr_t)(PlayerClientCommand) + 458;
+	if (*(uint8_t *)code_a == 0x7F) {
+		Memory::UnProtect((void *)code_a, 1);
+		*(uint8_t *)code_a = 0x74;
+	}
+	uintptr_t code_b = code_a + 32;
+	if (*(uint8_t *)code_b == 0x7F) {
+		Memory::UnProtect((void *)code_b, 1);
+		*(uint8_t *)code_b = 0x74;
+	}
 
 	// find the TraceFirePortal function
 #ifdef _WIN32
