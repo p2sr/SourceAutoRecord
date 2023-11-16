@@ -454,25 +454,34 @@ void retrieveMtriggers(int rank, std::string map_name)
 		std::string buffer;
 		curl = curl_easy_init();
 		if (curl) {
-			std::string apiCall = "/v1/mtriggers/search?game_dir=portal2&map_name=" + map_name + "&board_rank=" + std::to_string(rank);
-			curl_easy_setopt(curl, CURLOPT_URL, API_BASE_AUTORENDER + apiCall);
+			std::string apiCall = std::string(API_BASE_AUTORENDER) + "/v1/mtriggers/search?game_dir=portal2&map_name=" + map_name + "&board_rank=" + std::to_string(rank);
+			curl_easy_setopt(curl, CURLOPT_URL, apiCall.c_str());
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
 			res = curl_easy_perform(curl);
 
 			if (res != CURLE_OK)
-				return THREAD_PRINT("Failed to retrieve.\n");
+			{
+				THREAD_PRINT("Failed to retrieve.\n");
+				return curl_easy_cleanup(curl);
+			}
 			else {
 				std::string err;
 				auto json = json11::Json::parse(buffer.c_str(), err);
 
 				if (!err.empty())
-					return THREAD_PRINT("Failed to retrieve.\n");
+				{
+					THREAD_PRINT("Failed to retrieve.\n");
+					return curl_easy_cleanup(curl);
+				}
 				else {
 					if (json["data"].is_array()) {
 						const json11::Json::array &jsonArr = json["data"].array_items();
 						if (jsonArr.empty())
-							return THREAD_PRINT("Failed to retrieve.\n");
+						{
+							THREAD_PRINT("Failed to retrieve.\n");
+							return curl_easy_cleanup(curl);
+						}
 						auto &splits = json["data"][0]["demo_metadata"]["segments"];
 						float time = 0.0f;
 						for (const auto &split : splits.array_items()) {
@@ -505,7 +514,7 @@ CON_COMMAND_COMPLETION(sar_get_mtriggers, "sar_get_mtriggers <rank=wr> - prints 
 	g_worker = std::thread(retrieveMtriggers, std::atoi(args[1]), engine->GetCurrentMapName());
 }
 
-CON_COMMAND_COMPLETION(sar_get_mtriggers_map, "sar_get_mtriggers <map=current> <rank=wr> - prints mtriggers of specific run on specific map.\n", (Portal2::mapNames)) {
+CON_COMMAND_COMPLETION(sar_get_mtriggers_map, "sar_get_mtriggers_map <map=current> <rank=wr> - prints mtriggers of specific run on specific map.\n", (Portal2::mapNames)) {
 	if (args.ArgC() != 3) {
 		if (args.ArgC() == 2)
 		{
