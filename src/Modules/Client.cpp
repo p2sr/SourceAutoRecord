@@ -528,6 +528,21 @@ DETOUR_T(void, Client::AddShadowToReceiver, unsigned short handle, void *pRender
 }
 Hook g_AddShadowToReceiverHook(&Client::AddShadowToReceiver_Hook);
 
+static void (*MsgPreSkipToNextLevel)();
+
+CON_COMMAND(sar_workshop_skip, "sar_workshop_skip - Skips to the next level in workshop\n") {
+	if (!sv_cheats.GetBool()) {
+		return console->Print("This command requires sv_cheats\n");
+	}
+	if (strncmp("workshop/", engine->GetCurrentMapName().c_str(), 9)) {
+		return console->Print("This command only works in workshop maps.\n");
+	}
+	// open the console so that it works on binds lmao (the menu has to be visible probably)
+	// debug with -vguimessages launch option
+	engine->ExecuteCommand("showconsole");
+	MsgPreSkipToNextLevel();
+}
+
 bool Client::Init() {
 	bool readJmp = false;
 
@@ -644,6 +659,12 @@ bool Client::Init() {
 
 	g_DrawTranslucentRenderablesHook.SetFunc(Client::DrawTranslucentRenderables);
 	g_DrawOpaqueRenderablesHook.SetFunc(Client::DrawOpaqueRenderables);
+
+#ifdef _WIN32
+	MsgPreSkipToNextLevel = (decltype(MsgPreSkipToNextLevel))Memory::Scan(client->Name(), "57 8B F9 E8 ? ? ? ? 8B C8 E8 ? ? ? ? 0B C2");
+#else
+	MsgPreSkipToNextLevel = (decltype(MsgPreSkipToNextLevel))Memory::Scan(client->Name(), "53 83 EC 08 E8 ? ? ? ? 83 EC 0C 50 E8 ? ? ? ? 83 C4 10 09 C2");
+#endif
 
 	if (sar.game->Is(SourceGame_Portal2)) {
 #ifdef _WIN32
