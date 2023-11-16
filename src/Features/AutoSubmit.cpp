@@ -476,10 +476,16 @@ void retrieveMtriggers(int rank, std::string map_name)
 				}
 				else {
 					if (json["data"].is_array()) {
-						const json11::Json::array &jsonArr = json["data"].array_items();
-						if (jsonArr.empty())
+						const json11::Json::array &dataArr = json["data"].array_items();
+						if (dataArr.empty())
 						{
-							THREAD_PRINT("Failed to retrieve.\n");
+							THREAD_PRINT("No data.\n");
+							return curl_easy_cleanup(curl);
+						}
+						const json11::Json::array &segmentArr = json["data"][0]["demo_metadata"]["segments"].array_items();
+						if (segmentArr.empty())
+						{
+							THREAD_PRINT("No segment data.\n");
 							return curl_easy_cleanup(curl);
 						}
 						auto &splits = json["data"][0]["demo_metadata"]["segments"];
@@ -502,7 +508,7 @@ void retrieveMtriggers(int rank, std::string map_name)
 	return;
 }
 
-CON_COMMAND_COMPLETION(sar_get_mtriggers, "sar_get_mtriggers <rank=wr> - prints mtriggers of specific run.\n", ({"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"})) {
+CON_COMMAND_COMPLETION(sar_speedrun_get_mtriggers, "sar_speedrun_get_mtriggers <rank=wr> - prints mtriggers of specific run.\n", ({"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"})) {
 	if (args.ArgC() != 2)
 	{
 		if (g_worker.joinable()) g_worker.join();
@@ -514,7 +520,7 @@ CON_COMMAND_COMPLETION(sar_get_mtriggers, "sar_get_mtriggers <rank=wr> - prints 
 	g_worker = std::thread(retrieveMtriggers, std::atoi(args[1]), engine->GetCurrentMapName());
 }
 
-CON_COMMAND_COMPLETION(sar_get_mtriggers_map, "sar_get_mtriggers_map <map=current> <rank=wr> - prints mtriggers of specific run on specific map.\n", (Portal2::mapNames)) {
+CON_COMMAND_COMPLETION(sar_speedrun_get_mtriggers_map, "sar_speedrun_get_mtriggers_map <map=current> <rank=wr> - prints mtriggers of specific run on specific map.\n", (Portal2::mapNames)) {
 	if (args.ArgC() != 3) {
 		if (args.ArgC() == 2)
 		{
