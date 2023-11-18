@@ -824,11 +824,10 @@ bool Server::Init() {
 
 #ifdef _WIN32
 	Server::EntityByIndex = (decltype(Server::EntityByIndex))Memory::Scan(server->Name(), "55 8B EC 8B 4D ? 33 C0 85 C9 7E ? 8B 15 ? ? ? ? 39 42");
-	
-	g_EntityByIndexHook.SetFunc(Server::EntityByIndex);
 #else
-	// TODO: Linux
+	Server::EntityByIndex = (decltype(Server::EntityByIndex))Memory::Scan(server->Name(), "8B 54 24 ? 85 D2 7E ? A1 ? ? ? ? 8B 40 ? 85 C0 74 ? C1 E2 04");
 #endif
+	g_EntityByIndexHook.SetFunc(Server::EntityByIndex);
 
 	uintptr_t PlayerClientCommand;
 #ifdef _WIN32
@@ -838,7 +837,11 @@ bool Server::Init() {
 		PlayerClientCommand = Memory::Scan(server->Name(), "55 8B EC 83 EC 50 53 56 57 8B 7D ? 83 3F 00");
 	}
 #else 
-	// TODO: Linux
+	if (sar.game->Is(SourceGame_Portal2)) {
+		PlayerClientCommand = Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 9C 00 00 00 8B 7D ? 8B 5D ? 8B 07");
+	} else {
+		PlayerClientCommand = Memory::Scan(server->Name(), "55 89 E5 57 56 53 83 EC 7C 8B 5D ? 8B 03 85 C0");
+	}
 #endif
 	uintptr_t code_a = (uintptr_t)(PlayerClientCommand) + 458;
 	if (*(uint8_t *)code_a == 0x7F) {
