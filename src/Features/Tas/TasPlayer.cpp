@@ -152,6 +152,9 @@ void TasPlayer::Activate(TasPlaybackInfo info) {
 
 	for (int slot = 0; slot < 2; ++slot) {
 		playbackInfo.slots[slot].ClearGeneratedContent();
+
+		currentInputFramebulkIndex[slot] = 0;
+		currentToolsFramebulkIndex[slot] = 0;
 	}
 
 	active = true;
@@ -323,6 +326,25 @@ TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick) {
 	}
 
 	return playbackInfo.slots[slot].framebulks[before];
+}
+
+// returns raw framebulk using more efficient method with cached incremented index of last used tick
+TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick, int& cachedIndex) {
+	if (cachedIndex < 0) {
+		cachedIndex = 0;
+	}
+
+	auto maxIndex = playbackInfo.slots[slot].framebulks.size() - 1;
+
+	if (cachedIndex >= maxIndex) {
+		return playbackInfo.slots[slot].framebulks[maxIndex];
+	}
+
+	while (cachedIndex < maxIndex && playbackInfo.slots[slot].framebulks[cachedIndex + 1].tick <= tick) {
+		cachedIndex++;
+	}
+
+	return playbackInfo.slots[slot].framebulks[cachedIndex];
 }
 
 TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bool clientside) {
@@ -504,7 +526,7 @@ void TasPlayer::FetchInputs(int slot, TasController *controller) {
 	// to actually hook at _Host_RunFrame_Input or CL_Move.
 	int tick = currentTick + 1;
 
-	TasFramebulk fb = GetRawFramebulkAt(slot, tick);
+	TasFramebulk fb = GetRawFramebulkAt(slot, tick, currentInputFramebulkIndex[slot]);
 
 	int fbTick = fb.tick;
 
@@ -573,7 +595,7 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 		return;
 	}
 
-	TasFramebulk fb = GetRawFramebulkAt(slot, tasTick);
+	TasFramebulk fb = GetRawFramebulkAt(slot, tasTick, currentToolsFramebulkIndex[slot]);
 
 	// update all tools that needs to be updated
 	auto fbTick = fb.tick;
