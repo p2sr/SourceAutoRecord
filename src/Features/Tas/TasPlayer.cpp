@@ -298,16 +298,31 @@ void TasPlayer::AdvanceFrame() {
 
 // returns raw framebulk that should be used for given tick
 TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick) {
-	int closestTime = INT_MAX;
-	TasFramebulk closest;
-	for (TasFramebulk framebulk : playbackInfo.slots[slot].framebulks) {
-		int timeDist = tick - framebulk.tick;
-		if (timeDist >= 0 && timeDist < closestTime) {
-			closestTime = timeDist;
-			closest = framebulk;
+	// Do binary search for bulks immediately before and after our target tick
+	uint32_t before = 0;
+	uint32_t after = playbackInfo.slots[slot].framebulks.size() - 1;
+
+	if (playbackInfo.slots[slot].framebulks[before].tick  == tick) {
+		return playbackInfo.slots[slot].framebulks[before];
+	}
+	if (playbackInfo.slots[slot].framebulks[after].tick  == tick) {
+		return playbackInfo.slots[slot].framebulks[after];
+	}
+
+	while (before + 1 != after) {
+		uint32_t middle = (before + after) / 2;
+		TasFramebulk middle_bulk = playbackInfo.slots[slot].framebulks[middle];
+
+		if (middle_bulk.tick < tick) {
+			before = middle;
+		} else if (middle_bulk.tick > tick) {
+			after = middle;
+		} else {
+			return middle_bulk;
 		}
 	}
-	return closest;
+
+	return playbackInfo.slots[slot].framebulks[before];
 }
 
 TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bool clientside) {
