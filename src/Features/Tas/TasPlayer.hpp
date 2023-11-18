@@ -66,6 +66,9 @@ private:
 
 	int wasEnginePaused = false; // Used to check if we need to revert incrementing a tick
 
+	// used to cache last used framebulk to quickly access it for playback
+	int currentInputFramebulkIndex[2];
+	int currentToolsFramebulkIndex[2];
 public:
 	void Update();
 	void UpdateServer();
@@ -99,6 +102,7 @@ public:
 	void AdvanceFrame();
 
 	TasFramebulk GetRawFramebulkAt(int slot, int tick);
+	TasFramebulk GetRawFramebulkAt(int slot, int tick, int &cachedIndex);
 
 	TasPlayerInfo GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bool clientside = false);
 
