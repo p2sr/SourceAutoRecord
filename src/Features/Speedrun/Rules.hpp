@@ -97,7 +97,7 @@ struct SpeedrunRule {
 
 	RuleAction action;
 
-	std::string map;
+	std::vector<std::string> maps;
 	std::optional<std::string> onlyAfter;
 	std::optional<int> slot;
 	std::optional<std::pair<int, int>> cycle;
@@ -109,7 +109,16 @@ struct SpeedrunRule {
 
 	SpeedrunRule(RuleAction action, std::string map, _RuleTypes rule)
 		: action(action)
-		, map(map)
+		, maps({map})
+		, onlyAfter()
+		, slot()
+		, rule(rule)
+		, fired(false) {
+	}
+
+	SpeedrunRule(RuleAction action, std::vector<std::string> maps, _RuleTypes rule)
+		: action(action)
+		, maps(maps)
 		, onlyAfter()
 		, slot()
 		, rule(rule)

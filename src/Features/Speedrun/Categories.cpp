@@ -253,7 +253,7 @@ ON_EVENT(RENDER) {
 	for (std::string ruleName : g_categories[g_currentCategory].rules) {
 		auto rule = SpeedrunTimer::GetRule(ruleName);
 		if (!rule) continue;
-		if (rule->map != engine->GetCurrentMapName()) continue;
+		if (std::find(rule->maps.begin(), rule->maps.end(), engine->GetCurrentMapName()) == rule->maps.end()) continue;
 		if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
 			std::get<ZoneTriggerRule>(rule->rule).DrawInWorld();
 			std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(rule);
@@ -542,7 +542,17 @@ bool SpeedrunTimer::CreateRule(std::string name, std::string type, std::map<std:
 	}
 
 	rule->action = action;
-	rule->map = params["map"];
+
+	std::string mapToken, delimiter = "|";
+	if (params["map"].find(delimiter) != std::string::npos) {
+		size_t pos = 0;
+		while ((pos = params["map"].find(delimiter)) != std::string::npos) {
+			mapToken = params["map"].substr(0, pos);
+			rule->maps.push_back(mapToken);
+			params["map"].erase(0, pos + delimiter.length());
+		}
+	}
+	if (params["map"].length() > 0) rule->maps.push_back(params["map"]);
 
 	auto after = lookupMap(params, "after");
 	if (!after) {
