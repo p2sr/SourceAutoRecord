@@ -282,7 +282,7 @@ bool SpeedrunRule::TestGeneral(std::optional<int> slot) {
 		auto prereq = SpeedrunTimer::GetRule(*this->onlyAfter);
 		if (!prereq || !prereq->fired) return false;
 	}
-	if (engine->GetCurrentMapName() != this->map) return false;
+	if (std::find(this->maps.begin(), this->maps.end(), engine->GetCurrentMapName()) == this->maps.end()) return false;
 	if (this->slot) {
 		if (this->slot != slot) return false;
 	}
@@ -311,7 +311,14 @@ static const char *printRuleAction(RuleAction action) {
 
 std::string SpeedrunRule::Describe() {
 	std::string s = std::string("action=") + printRuleAction(this->action);
-	s += " map=" + this->map;
+	s += " maps=";
+    for (auto it = this->maps.begin(); it != this->maps.end(); ++it) {
+        if (it == this->maps.begin()) continue;
+        s += *it;
+        if (it + 1 != this->maps.end()) {
+            s += ",";
+        }
+    }
 	if (this->cycle) {
 		s += Utils::ssprintf(" cycle=%d,%d", this->cycle->first, this->cycle->second);
 	}
