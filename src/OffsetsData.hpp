@@ -37,6 +37,7 @@ OFFSET_DEFAULT(GetAllClasses, 8, 8)
 OFFSET_DEFAULT(HudProcessInput, 10, 10)
 OFFSET_DEFAULT(IN_ActivateMouse, 15, 15)
 OFFSET_DEFAULT(IN_DeactivateMouse, 16, 16)
+OFFSET_DEFAULT(ApplyMouse, 56, 56)
 OFFSET_DEFAULT(SteamControllerMove, 58, 58)
 OFFSET_DEFAULT(LevelInitPreEntity, 5, 5)
 

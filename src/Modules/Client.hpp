@@ -119,6 +119,9 @@ public:
 	// CInput::GetButtonBits
 	DECL_DETOUR(GetButtonBits, bool bResetState);
 
+	// C_Paint_Input::ApplyMouse
+	DECL_DETOUR(ApplyMouse, int nSlot, QAngle &viewangles, CUserCmd *cmd, float mouse_x, float mouse_y);
+
 	// CInput::SteamControllerMove
 	DECL_DETOUR(SteamControllerMove, int nSlot, float flFrametime, CUserCmd *cmd);  //	is it slot though? :thinking:
 

@@ -47,6 +47,7 @@ Variable r_drawviewmodel;
 
 Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
 Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disables the saving/saved HUD which appears when you make a save.\n");
+Variable sar_disable_angle_decay("sar_disable_angle_decay", "0", 0, 2, "Removes angle decay.\n1 - remove small decay only.\n2 - remove angle decay entirely.\n");
 
 REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
@@ -59,6 +60,7 @@ REDECL(Client::GetTextColorForClient);
 REDECL(Client::DecodeUserCmdFromBuffer);
 REDECL(Client::CInput_CreateMove);
 REDECL(Client::GetButtonBits);
+REDECL(Client::ApplyMouse);
 REDECL(Client::SteamControllerMove);
 REDECL(Client::playvideo_end_level_transition_callback);
 REDECL(Client::OverrideView);
@@ -416,6 +418,19 @@ DETOUR(Client::GetButtonBits, bool bResetState) {
 	return bits;
 }
 
+// C_Paint_Input::ApplyMouse
+DETOUR(Client::ApplyMouse, int nSlot, QAngle &viewangles, CUserCmd *cmd, float mouse_x, float mouse_y) {
+	auto lastViewAngles = viewangles;
+	auto result = Client::ApplyMouse(thisptr, nSlot, viewangles, cmd, mouse_x, mouse_y);
+	if (sar_disable_angle_decay.GetBool()) {
+		if (!mouse_x && !mouse_y && !viewangles.z && (sar_disable_angle_decay.GetInt() > 1 || fabsf(viewangles.x) < 45.0f)) {
+			viewangles = lastViewAngles;
+		}
+	}
+
+	return result;
+}
+
 // CInput::SteamControllerMove
 DETOUR(Client::SteamControllerMove, int nSlot, float flFrametime, CUserCmd *cmd) {
 	auto result = Client::SteamControllerMove(thisptr, nSlot, flFrametime, cmd);
@@ -615,6 +630,7 @@ bool Client::Init() {
 			g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
 			g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
 			g_Input->Hook(Client::SteamControllerMove_Hook, Client::SteamControllerMove, Offsets::SteamControllerMove);
+			g_Input->Hook(Client::ApplyMouse_Hook, Client::ApplyMouse, Offsets::ApplyMouse);
 
 			in_forceuser = Variable("in_forceuser");
 			if (!!in_forceuser && this->g_Input) {
