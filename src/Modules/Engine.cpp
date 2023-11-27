@@ -649,6 +649,7 @@ bool Engine::IsSkipping() {
 }
 
 static float *host_frametime;
+static float *host_frametime_unbounded;
 void Host_AccumulateTime_Detour(float dt);
 void (*Host_AccumulateTime)(float dt);
 static Hook Host_AccumulateTime_Hook(&Host_AccumulateTime_Detour);
@@ -657,10 +658,12 @@ void Host_AccumulateTime_Detour(float dt) {
 		Host_AccumulateTime_Hook.Disable();
 		Host_AccumulateTime(dt);
 		Host_AccumulateTime_Hook.Enable();
+		*host_frametime = *host_frametime_unbounded;
 	} else if (g_advance > 0) {
 		Host_AccumulateTime_Hook.Disable();
 		Host_AccumulateTime(1.0f/60);
 		Host_AccumulateTime_Hook.Enable();
+		*host_frametime = *host_frametime_unbounded;
 		--g_advance;
 	} else {
 		*host_frametime = 0;
@@ -998,6 +1001,7 @@ bool Engine::Init() {
 		host_frametime = *(float **)((uintptr_t)Host_AccumulateTime + 70);
 	}
 #endif
+	host_frametime_unbounded = host_frametime + Offsets::host_frametime_unbounded;
 
 	Host_AccumulateTime_Hook.SetFunc(Host_AccumulateTime);
 

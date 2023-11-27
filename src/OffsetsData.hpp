@@ -30,6 +30,7 @@ OFFSET_DEFAULT(Con_IsVisible, 11, 11)
 OFFSET_DEFAULT(GetLevelNameShort, 53, 53)
 OFFSET_DEFAULT(GetLightForPoint, 1, 1)
 OFFSET_DEFAULT(GetPlayerInfo, 8, 8);
+OFFSET_DEFAULT(host_frametime_unbounded, 1, -1);
 
 // CHLClient
 OFFSET_DEFAULT(GetAllClasses, 8, 8)
