@@ -144,7 +144,7 @@ static std::map<std::string, const char *> g_map_names = {
 };
 
 static Variable sar_discord_rpc_enabled("sar_discord_rpc_enabled", "0", 0, 1, "Enables Discord Rich Presence integration.\n");
-static Variable sar_discord_rpc_app_id("sar_discord_rpc_app_id", "1084419823737524294", "Defines Discord Rich Presence's application ID.\n");
+static Variable sar_discord_rpc_app_id("sar_discord_rpc_app_id", "1084419823737524294", "Defines Discord Rich Presence's application ID.\n", 0);
 
 static bool g_discordRpcInitialized;
 static std::string g_activeTasScriptThisSession;
@@ -186,6 +186,7 @@ static void UpdateDiscordRichPresence() {
 	
 	auto categoryName = SpeedrunTimer::GetCategoryName();
 	auto cmAttemptsString = Utils::ssprintf("Attempts: %d", g_challengeModeAttempts);
+	auto mapName = std::string("");
 
 	if (!session->isRunning) {
 		rp.details = "Loading";
@@ -238,7 +239,7 @@ static void UpdateDiscordRichPresence() {
 		}
 
 		// figure out current map for thumbnail
-		auto mapName = engine->GetCurrentMapName();
+		mapName = engine->GetCurrentMapName();
 		if (g_map_names.find(mapName) != g_map_names.end()) {
 			rp.largeImageKey = mapName.c_str();
 			rp.largeImageText = rp.state;
