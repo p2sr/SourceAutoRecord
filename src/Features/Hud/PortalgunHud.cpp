@@ -46,7 +46,7 @@ void PortalgunHud::Paint(int slot) {
 
 	uintptr_t portalgun = (uintptr_t)entityList->LookupEntity(SE(player)->active_weapon());
 
-	if (!portalgun) {
+	if (!portalgun || !entityList->IsPortalGun(SE(player)->active_weapon())) {
 		surface->DrawTxt(font, x, y, Color{255, 150, 150, 255}, "no held portalgun");
 		return;
 	}

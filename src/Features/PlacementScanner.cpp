@@ -180,7 +180,7 @@ static uintptr_t initScan() {
 	if (!player) return 0;
 
 	uintptr_t portalgun = (uintptr_t)entityList->LookupEntity(SE(player)->active_weapon());
-	if (!portalgun) return 0;
+	if (!portalgun || !entityList->IsPortalGun(SE(player)->active_weapon())) return 0;
 
 	uint8_t linkage = SE(portalgun)->field<unsigned char>("m_iPortalLinkageGroupID");
 

@@ -67,6 +67,20 @@ int EntityList::GetEntityInfoIndexByHandle(void *entity) {
 	return -1;
 }
 
+bool EntityList::IsPortalGun(const CBaseHandle &handle) {
+	auto info = this->GetEntityInfoByIndex(handle.GetEntryIndex());
+	if (info->m_pEntity == nullptr) {
+		return false;
+	}
+
+	auto classname = server->GetEntityClassName(info->m_pEntity);
+	if (!classname) {
+		return false;
+	}
+
+	return !std::strcmp(classname, "weapon_portalgun");
+}
+
 IHandleEntity *EntityList::LookupEntity(const CBaseHandle &handle) {
 	if ((unsigned)handle.m_Index == (unsigned)Offsets::INVALID_EHANDLE_INDEX)
 		return NULL;

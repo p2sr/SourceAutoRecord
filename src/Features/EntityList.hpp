@@ -11,6 +11,7 @@ public:
 	CEntInfo *GetEntityInfoByName(const char *name);
 	CEntInfo *GetEntityInfoByClassName(const char *name);
 	int GetEntityInfoIndexByHandle(void *entity);
+	bool IsPortalGun(const CBaseHandle &handle);
 	IHandleEntity *LookupEntity(const CBaseHandle &handle);
 	CEntInfo *QuerySelector(const char *selector);
 };

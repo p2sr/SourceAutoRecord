@@ -109,7 +109,7 @@ static ClientEnt *getPortalGun(int slot) {
 	ClientEnt *pl = client->GetPlayer(slot + 1);
 	if (!pl) return nullptr;
 	CBaseHandle hnd = pl->active_weapon();
-	if (!hnd) return nullptr;
+	if (!hnd || !entityList->IsPortalGun(hnd)) return nullptr;
 	return client->GetPlayer(hnd.GetEntryIndex());
 }
 

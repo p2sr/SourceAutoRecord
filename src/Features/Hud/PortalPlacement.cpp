@@ -114,7 +114,7 @@ ON_EVENT(PRE_TICK) {
 
 		// Get all the stuffs
 		uintptr_t portalgun = (uintptr_t)entityList->LookupEntity(SE(player)->active_weapon());
-		g_hasPortalGun = !!portalgun;
+		g_hasPortalGun = !!portalgun && entityList->IsPortalGun(SE(player)->active_weapon());
 		if (!g_hasPortalGun)
 			return;
 

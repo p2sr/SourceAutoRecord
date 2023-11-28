@@ -415,7 +415,7 @@ void SpeedrunTimer::TickRules() {
 
 		auto portalGun = entityList->LookupEntity(SE(player)->active_weapon());
 
-		if (!portalGun) {
+		if (!portalGun || !entityList->IsPortalGun(SE(player)->active_weapon())) {
 			portalPositions[slot][0] = {};
 			portalPositions[slot][1] = {};
 			continue;
