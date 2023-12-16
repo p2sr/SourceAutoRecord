@@ -130,6 +130,12 @@ public:
 
 	DECL_DETOUR_COMMAND(playvideo_end_level_transition);
 
+	#ifdef _WIN32
+		// C_Paint_Input::ApplyMouse
+		static uintptr_t ApplyMouse_Mid_Continue;
+		DECL_DETOUR_MID_MH(ApplyMouse_Mid);
+	#endif
+
 	bool Init() override;
 	void Shutdown() override;
 	const char *Name() override {

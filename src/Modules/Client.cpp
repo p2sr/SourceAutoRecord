@@ -49,6 +49,10 @@ Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables
 Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disables the saving/saved HUD which appears when you make a save.\n");
 Variable sar_disable_angle_decay("sar_disable_angle_decay", "0", 0, 2, "Removes angle decay.\n1 - remove small decay only.\n2 - remove angle decay entirely.\n");
 
+#ifdef _WIN32
+Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", 0, 1, "Patches minor pitch angle decay present on Windows version of the game.\n");
+#endif
+
 REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
@@ -69,6 +73,11 @@ REDECL(Client::DrawTranslucentRenderables);
 REDECL(Client::DrawOpaqueRenderables);
 REDECL(Client::CalcViewModelLag);
 REDECL(Client::AddShadowToReceiver);
+#ifdef _WIN32
+REDECL(Client::ApplyMouse_Mid);
+REDECL(Client::ApplyMouse_Mid_Continue);
+#endif
+
 
 CMDECL(Client::GetAbsOrigin, Vector, m_vecAbsOrigin);
 CMDECL(Client::GetAbsAngles, QAngle, m_angAbsRotation);
@@ -418,10 +427,37 @@ DETOUR(Client::GetButtonBits, bool bResetState) {
 	return bits;
 }
 
+#ifdef _WIN32
+extern Hook g_ApplyMouseMidHook;
+DETOUR_MID_MH(Client::ApplyMouse_Mid) {
+	static float input;
+	static float result;
+	_asm {
+		fstp dword ptr[input]
+	}
+
+	result = acosf(input);
+
+	_asm {
+		fld dword ptr[result]
+		jmp Client::ApplyMouse_Mid_Continue
+	}
+}
+Hook g_ApplyMouseMidHook(&Client::ApplyMouse_Mid_Hook);
+#endif
+
 // C_Paint_Input::ApplyMouse
 DETOUR(Client::ApplyMouse, int nSlot, QAngle &viewangles, CUserCmd *cmd, float mouse_x, float mouse_y) {
 	auto lastViewAngles = viewangles;
+
+#ifdef _WIN32
+	if (sar_patch_minor_angle_decay.GetBool()) g_ApplyMouseMidHook.Enable();
+#endif
 	auto result = Client::ApplyMouse(thisptr, nSlot, viewangles, cmd, mouse_x, mouse_y);
+#ifdef _WIN32
+	if (sar_patch_minor_angle_decay.GetBool()) g_ApplyMouseMidHook.Disable();
+#endif
+
 	if (sar_disable_angle_decay.GetBool()) {
 		if (!mouse_x && !mouse_y && !viewangles.z && (sar_disable_angle_decay.GetInt() > 1 || fabsf(viewangles.x) < 45.0f)) {
 			viewangles = lastViewAngles;
@@ -631,6 +667,13 @@ bool Client::Init() {
 			g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
 			g_Input->Hook(Client::SteamControllerMove_Hook, Client::SteamControllerMove, Offsets::SteamControllerMove);
 			g_Input->Hook(Client::ApplyMouse_Hook, Client::ApplyMouse, Offsets::ApplyMouse);
+
+			#ifdef _WIN32
+				auto ApplyMouse_Mid_addr = (uintptr_t)(Client::ApplyMouse) + 0x3E1;
+				g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr);
+				g_ApplyMouseMidHook.Disable();
+				Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
+			#endif
 
 			in_forceuser = Variable("in_forceuser");
 			if (!!in_forceuser && this->g_Input) {
