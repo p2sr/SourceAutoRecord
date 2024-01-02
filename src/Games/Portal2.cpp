@@ -71,7 +71,7 @@ Portal2::Portal2() {
 		"sp_a4_stop_the_box",
 		"sp_a4_laser_catapult",
 		"sp_a4_laser_platform",
-		"sp_a4_speed_catch",
+		"sp_a4_speed_tb_catch",
 		"sp_a4_jump_polarity",
 		"sp_a4_finale1",
 		"sp_a4_finale2",
