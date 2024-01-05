@@ -711,7 +711,7 @@ float hostTimeWrap() {
 
 // UTIL_EntityByIndex
 extern Hook g_EntityByIndexHook;
-DETOUR_T(int, Server::EntityByIndex, int entityIndex) {
+DETOUR_T(int *, Server::EntityByIndex, int entityIndex) {
 	if (entityIndex > Offsets::NUM_ENT_ENTRIES) return NULL;
 	g_EntityByIndexHook.Disable();
 	auto ret = Server::EntityByIndex(thisptr, entityIndex);
@@ -843,16 +843,17 @@ bool Server::Init() {
 		PlayerClientCommand = Memory::Scan(server->Name(), "55 89 E5 57 56 53 83 EC 7C 8B 5D ? 8B 03 85 C0");
 	}
 #endif
-	uintptr_t code_a = (uintptr_t)(PlayerClientCommand) + 458;
-	if (*(uint8_t *)code_a == 0x7F) {
-		Memory::UnProtect((void *)code_a, 1);
-		*(uint8_t *)code_a = 0x74;
-	}
-	uintptr_t code_b = code_a + 32;
-	if (*(uint8_t *)code_b == 0x7F) {
-		Memory::UnProtect((void *)code_b, 1);
-		*(uint8_t *)code_b = 0x74;
-	}
+	uintptr_t code_a = (uintptr_t)(PlayerClientCommand) + Offsets::signifyA;
+	uintptr_t code_b = code_a + Offsets::signifyB;
+	Memory::UnProtect((void *)code_a, 1);
+	Memory::UnProtect((void *)code_b, 1);
+#ifdef _WIN32
+	if (*(uint8_t *)code_a == 0x7F) *(uint8_t *)code_a = 0x74;
+	if (*(uint8_t *)code_b == 0x7F) *(uint8_t *)code_b = 0x74;
+#else
+	if (*(uint8_t *)code_a == 0x8F) *(uint8_t *)code_a = 0x84;
+	if (*(uint8_t *)code_b == 0x8F) *(uint8_t *)code_b = 0x84;
+#endif
 
 	// find the TraceFirePortal function
 #ifdef _WIN32

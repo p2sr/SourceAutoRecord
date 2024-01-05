@@ -144,6 +144,8 @@ OFFSET_DEFAULT(C_m_surfaceFriction, 5548, 5520)
 OFFSET_DEFAULT(GetPaintPower, 2, 513)
 OFFSET_DEFAULT(UseSpeedPower, 509, 519)
 OFFSET_DEFAULT(PlayerRunCommand, 453, 454)
+OFFSET_DEFAULT(signifyA, 458, 831)
+OFFSET_DEFAULT(signifyB, 32, 43)
 
 // IEngineVGuiInternal
 OFFSET_DEFAULT(IsGameUIVisible, 2, 2)
