@@ -15,8 +15,8 @@
 REDECL(VGui::Paint);
 REDECL(VGui::UpdateProgressBar);
 
-Variable sar_hud_bg("sar_hud_bg", "0", "Enable the SAR HUD background.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
-Variable sar_hud_orange_only("sar_hud_orange_only", "0", "Only display the SAR HUD for orange, for solo coop (fullscreen PIP).\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_hud_bg("sar_hud_bg", "0", "Enable the SAR HUD background.\n", FCVAR_DONTRECORD);
+Variable sar_hud_orange_only("sar_hud_orange_only", "0", "Only display the SAR HUD for orange, for solo coop (fullscreen PIP).\n", FCVAR_DONTRECORD);
 
 void VGui::Draw(Hud *const &hud) {
 	if (hud->ShouldDraw()) {

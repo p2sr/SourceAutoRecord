@@ -33,9 +33,9 @@ public:
 	Variable();
 	~Variable();
 	Variable(const char *name);
-	Variable(const char *name, const char *value, const char *helpstr, int flags = FCVAR_NEVER_AS_STRING, FnChangeCallback_t callback = nullptr);
-	Variable(const char *name, const char *value, float min, const char *helpstr, int flags = FCVAR_NEVER_AS_STRING, FnChangeCallback_t callback = nullptr);
-	Variable(const char *name, const char *value, float min, float max, const char *helpstr, int flags = FCVAR_NEVER_AS_STRING, FnChangeCallback_t callback = nullptr);
+	Variable(const char *name, const char *value, const char *helpstr, int flags = FCVAR_NONE, FnChangeCallback_t callback = nullptr);
+	Variable(const char *name, const char *value, float min, const char *helpstr, int flags = FCVAR_NONE, FnChangeCallback_t callback = nullptr);
+	Variable(const char *name, const char *value, float min, float max, const char *helpstr, int flags = FCVAR_NONE, FnChangeCallback_t callback = nullptr);
 
 	void Create(const char *name, const char *value, int flags = 0, const char *helpstr = "", bool hasmin = false, float min = 0, bool hasmax = false, float max = 0, FnChangeCallback_t callback = nullptr);
 	void Realloc();
