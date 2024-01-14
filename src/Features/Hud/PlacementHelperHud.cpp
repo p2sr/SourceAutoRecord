@@ -12,8 +12,8 @@ Variable sar_placement_helper_hud("sar_placement_helper_hud", "0", "Visually dis
 
 static const int g_sphereMeshRings = 8;
 static const int g_sphereMeshSegments = 16;
-static const int g_sphereMeshVericesCount = g_sphereMeshRings * g_sphereMeshSegments * 3 * 2;
-static Vector g_sphereMeshVertices[g_sphereMeshVericesCount];
+static const int g_sphereMeshVerticesCount = g_sphereMeshRings * g_sphereMeshSegments * 3 * 2;
+static Vector g_sphereMeshVertices[g_sphereMeshVerticesCount];
 static bool g_sphereMeshGenerated = false;
 
 
@@ -49,7 +49,7 @@ static void drawSphere(Vector position, float size, Color color) {
 	generateSphereMesh();
 	MeshId mesh = OverlayRender::createMesh(RenderCallback::constant(color), RenderCallback::none);
 
-	for (int v = 0; v < g_sphereMeshVericesCount; v += 3) {
+	for (int v = 0; v < g_sphereMeshVerticesCount; v += 3) {
 		Vector v1 = position + g_sphereMeshVertices[v + 0] * size;
 		Vector v2 = position + g_sphereMeshVertices[v + 1] * size;
 		Vector v3 = position + g_sphereMeshVertices[v + 2] * size;
