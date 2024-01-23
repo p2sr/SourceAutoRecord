@@ -75,7 +75,12 @@ ON_EVENT(RENDER) {
 		auto placementHelper = SE(info->m_pEntity);
 
 		auto position = placementHelper->abs_origin();
-		auto size = placementHelper->fieldOff<float>("m_flRadius", 648); // no idea honestly. it's just there.
+#ifdef _WIN32
+		// no idea honestly. it's just there.
+		auto size = placementHelper->fieldOff<float>("m_flRadius", 648);
+#else
+		auto size = placementHelper->fieldOff<float>("m_flRadius", 664);
+#endif
 		auto forcePlacement = placementHelper->field<bool>("m_bForcePlacement");
 		auto snapToHelperAngles = placementHelper->field<bool>("m_bSnapToHelperAngles");
 		auto disabled = placementHelper->field<bool>("m_bDisabled");
