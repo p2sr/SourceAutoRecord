@@ -167,9 +167,6 @@ public:
 	// CClientState::SetSignonState
 	DECL_DETOUR(SetSignonState, int state, int count, void *unk);
 
-	// CVEngineServer::ChangeLevel
-	DECL_DETOUR(ChangeLevel, const char *s1, const char *s2);
-
 	// CVEngineServer::ClientCommandKeyValues
 	DECL_DETOUR(ClientCommandKeyValues, void* pEdict, KeyValues* pKeyValues);
 
@@ -199,6 +196,8 @@ public:
 	DECL_DETOUR_COMMAND(load);
 	DECL_DETOUR_COMMAND(give);
 	DECL_DETOUR_COMMAND(exec);
+	DECL_DETOUR_COMMAND(changelevel_command);
+	DECL_DETOUR_COMMAND(changelevel2_command);
 
 	DECL_DETOUR(ReadCustomData, int *callbackIndex, char **data);
 	DECL_DETOUR_T(const char *, ReadConsoleCommand);

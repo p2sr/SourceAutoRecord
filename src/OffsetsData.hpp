@@ -213,7 +213,6 @@ OFFSET_DEFAULT(SetKeyValueFloat, 12, 13)
 OFFSET_DEFAULT(SetKeyValueVector, 11, 14)
 
 // CVEngineServer
-OFFSET_DEFAULT(ChangeLevel, 0, 0)
 OFFSET_DEFAULT(ClientCommand, 39, 39)
 OFFSET_DEFAULT(ClientCommandKeyValues, 135, 135)
 OFFSET_DEFAULT(IsServerPaused, 81, 81)

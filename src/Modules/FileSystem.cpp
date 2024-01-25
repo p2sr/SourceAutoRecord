@@ -75,7 +75,8 @@ std::string FileSystem::GetSaveDirectory() {
 #endif
 
 bool FileSystem::MapExists(std::string name) {
-	name = "/maps/" + name + ".bsp";
+	name = "maps/" + name;
+	if (!Utils::EndsWith(name, ".bsp")) name += ".bsp";
 	return FileExistsSomewhere(name);
 }
 

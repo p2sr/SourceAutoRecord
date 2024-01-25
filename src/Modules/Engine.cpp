@@ -5,6 +5,7 @@
 #include "EngineDemoPlayer.hpp"
 #include "EngineDemoRecorder.hpp"
 #include "Event.hpp"
+#include "FileSystem.hpp"
 #include "InputSystem.hpp"
 #include "Features/AchievementTracker.hpp"
 #include "Features/Camera.hpp"
@@ -63,7 +64,6 @@ float g_cur_fps = 0.0f;
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::SetSignonState);
-REDECL(Engine::ChangeLevel);
 REDECL(Engine::ClientCommandKeyValues);
 #ifndef _WIN32
 REDECL(Engine::GetMouseDelta);
@@ -86,6 +86,8 @@ REDECL(Engine::stop_transition_videos_fadeout_callback);
 REDECL(Engine::load_callback);
 REDECL(Engine::give_callback);
 REDECL(Engine::exec_callback);
+REDECL(Engine::changelevel_command_callback);
+REDECL(Engine::changelevel2_command_callback);
 #ifdef _WIN32
 REDECL(Engine::ParseSmoothingInfo_Skip);
 REDECL(Engine::ParseSmoothingInfo_Default);
@@ -329,10 +331,19 @@ DETOUR(Engine::SetSignonState, int state, int count, void *unk) {
 	return ret;
 }
 
-// CVEngineServer::ChangeLevel
-DETOUR(Engine::ChangeLevel, const char *s1, const char *s2) {
-	if (s1 && engine->GetCurrentMapName() != s1) engine->isLevelTransition = true;
-	return Engine::ChangeLevel(thisptr, s1, s2);
+DETOUR_COMMAND(Engine::changelevel_command) {
+	if (args.ArgC() >= 2) {
+		std::string map = args[1];
+		if (fileSystem->MapExists(map) && engine->GetCurrentMapName() != map) engine->isLevelTransition = true;
+	}
+	return Engine::changelevel_command_callback(args);
+}
+DETOUR_COMMAND(Engine::changelevel2_command) {
+	if (args.ArgC() >= 2) {
+		std::string map = args[1];
+		if (fileSystem->MapExists(map) && engine->GetCurrentMapName() != map) engine->isLevelTransition = true;
+	}
+	return Engine::changelevel2_command_callback(args);
 }
 
 // CVEngineServer::ClientCommandKeyValues
@@ -867,7 +878,6 @@ bool Engine::Init() {
 		*OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated>(Engine::OnGameOverlayActivated_Hook);
 
 		if (this->g_VEngineServer = Interface::Create(this->Name(), "VEngineServer022")) {
-			this->g_VEngineServer->Hook(Engine::ChangeLevel_Hook, Engine::ChangeLevel, Offsets::ChangeLevel);
 			this->g_VEngineServer->Hook(Engine::ClientCommandKeyValues_Hook, Engine::ClientCommandKeyValues, Offsets::ClientCommandKeyValues);
 			this->ClientCommand = this->g_VEngineServer->Original<_ClientCommand>(Offsets::ClientCommand);
 			this->IsServerPaused = this->g_VEngineServer->Original<_IsServerPaused>(Offsets::IsServerPaused);
@@ -1047,6 +1057,8 @@ bool Engine::Init() {
 	Command::Hook("gameui_activate", Engine::gameui_activate_callback_hook, Engine::gameui_activate_callback);
 	Command::Hook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback_hook, Engine::playvideo_end_level_transition_callback);
 	Command::Hook("stop_transition_videos_fadeout", Engine::stop_transition_videos_fadeout_callback_hook, Engine::stop_transition_videos_fadeout_callback);
+	Command::Hook("changelevel", Engine::changelevel_command_callback_hook, Engine::changelevel_command_callback);
+	Command::Hook("changelevel2", Engine::changelevel2_command_callback_hook, Engine::changelevel2_command_callback);
 	CVAR_HOOK_AND_CALLBACK(ss_force_primary_fullscreen);
 
 	host_framerate = Variable("host_framerate");
@@ -1135,6 +1147,8 @@ void Engine::Shutdown() {
 	Command::Unhook("gameui_activate", Engine::gameui_activate_callback);
 	Command::Unhook("playvideo_end_level_transition", Engine::playvideo_end_level_transition_callback);
 	Command::Unhook("stop_transition_videos_fadeout", Engine::stop_transition_videos_fadeout_callback);
+	Command::Unhook("changelevel", Engine::changelevel_command_callback);
+	Command::Unhook("changelevel2", Engine::changelevel2_command_callback);
 
 	if (this->demoplayer) {
 		this->demoplayer->Shutdown();
