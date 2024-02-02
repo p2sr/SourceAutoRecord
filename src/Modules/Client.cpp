@@ -282,22 +282,34 @@ DETOUR(Client::MsgFunc_SayText2, bf_read &msg) {
 	msg.ReadUnsigned(8);
 
 	std::string str = "";
-	while (true) {
-		char c = (char)(uint8_t)msg.ReadUnsigned(8);
-		if (!c) break;
-		str += c;
-	}
+	if (sar.game->Is(SourceGame_Portal2)) {
+		while (true) {
+			char c = (char)(uint8_t)msg.ReadUnsigned(8);
+			if (!c) break;
+			str += c;
+		}
 
-	if (str != "\x01Portal2_Coloured_Chat_Format") {
-		console->Print("Your partner is on an old version of Portal 2! Tell them to update.\n");
-		msg = pre;
-		return Client::MsgFunc_SayText2(thisptr, msg);
-	}
+		if (str != "\x01Portal2_Coloured_Chat_Format") {
+			console->Print("Your partner is on an old version of Portal 2! Tell them to update.\n");
+			msg = pre;
+			return Client::MsgFunc_SayText2(thisptr, msg);
+		}
 
-	// Skip player name
-	while (true) {
-		char c = (char)(uint8_t)msg.ReadUnsigned(8);
-		if (!c) break;
+		// Skip player name
+		while (true) {
+			char c = (char)(uint8_t)msg.ReadUnsigned(8);
+			if (!c) break;
+		}
+	} else if (sar.game->Is(SourceGame_PortalReloaded)) {
+		// Reloaded uses the legacy format where it's just one string
+		while (true) {
+			char c = (char)(uint8_t)msg.ReadUnsigned(8);
+			if (!c) break;
+			str += c;
+			// People can put colons in names and chats, stupid.
+			// Too bad!
+			if (Utils::EndsWith(str, ": ")) break;
+		}
 	}
 
 	// Read actual message
@@ -556,6 +568,8 @@ bool Client::Init() {
 				if (sar.game->Is(SourceGame_Portal2)) {
 					this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayText2);
 					this->g_HudChat->Hook(Client::GetTextColorForClient_Hook, Client::GetTextColorForClient, Offsets::GetTextColorForClient);
+				} else if (sar.game->Is(SourceGame_PortalReloaded)) {
+					this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayTextReloaded);
 				}
 			}
 

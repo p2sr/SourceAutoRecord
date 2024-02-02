@@ -286,7 +286,7 @@ static void sendCoopPacket(PacketType t, std::string *splitName = NULL, int newS
 	char *buf = (char *)malloc(size);
 
 	buf[0] = (char)t;
-	*(int *)(buf + 1) = SpeedrunTimer::GetSegmentTicks();
+	*(int *)(buf + 1) = getCurrentTick();
 
 	char *ptr = buf + 5;
 

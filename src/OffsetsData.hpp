@@ -219,6 +219,7 @@ OFFSET_DEFAULT(IsServerPaused, 81, 81)
 OFFSET_DEFAULT(ServerPause, 121, 121)
 OFFSET_DEFAULT(ChatPrintf, 22, 25)
 OFFSET_DEFAULT(MsgFunc_SayText2, 28, 35)
+OFFSET_DEFAULT(MsgFunc_SayTextReloaded, 26, 32)
 OFFSET_DEFAULT(GetTextColorForClient, 33, 41)
 
 // CSteam3Client

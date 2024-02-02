@@ -22,7 +22,7 @@ void NetMessage::RegisterHandler(const char *type, void (*handler)(const void *,
 
 static inline void handleMessage(const char *type, void *data, size_t size) {
 	if (!strcmp(type, "__sync")) {
-		if (size == 6 && !strcmp((char *)data, "ready")) {
+		if (size >= 5 && !strcmp((char *)data, "ready")) {
 			g_orangeReady = true;
 			Event::Trigger<Event::ORANGE_READY>({});
 		}
