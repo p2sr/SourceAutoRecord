@@ -303,6 +303,12 @@ void Cheats::Init() {
 
 	Variable::RegisterAll();
 	Command::RegisterAll();
+
+	// fix cvar flags
+	auto cmd = tier1->m_pConCommandList;
+	do {
+		cmd->m_nFlags |= FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE;
+	} while (cmd = cmd->m_pNext);
 }
 void Cheats::Shutdown() {
 	cvars->Lock();
@@ -371,7 +377,7 @@ void Cheats::AutoStrafe(int slot, void *player, CUserCmd *cmd) {
 	TasFramebulk fb;
 	tasPlayer->playbackInfo.slots[slot].header.version = MAX_SCRIPT_VERSION;
 	autoJumpTool[info.slot].SetParams(autoJumpTool[info.slot].ParseParams(std::vector<std::string>{sar_autojump.GetBool() && (cmd->buttons & IN_JUMP) ? "on" : "off"}));
-	autoStrafeTool[info.slot].SetParams(autoStrafeTool[info.slot].ParseParams(std::vector<std::string> {"vec", "max", std::to_string(angle) + "deg"}));
+	autoStrafeTool[info.slot].SetParams(autoStrafeTool[info.slot].ParseParams(std::vector<std::string>{"vec", "max", std::to_string(angle) + "deg"}));
 	autoStrafeTool[info.slot].Apply(fb, info);
 
 	if (fb.moveAnalog.y > 0.0) {
@@ -380,6 +386,4 @@ void Cheats::AutoStrafe(int slot, void *player, CUserCmd *cmd) {
 		cmd->forwardmove = cl_backspeed.GetFloat() * fb.moveAnalog.y;
 	}
 	cmd->sidemove = cl_sidespeed.GetFloat() * fb.moveAnalog.x;
-
-
 }
