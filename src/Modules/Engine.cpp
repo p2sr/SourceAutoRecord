@@ -97,10 +97,10 @@ REDECL(Engine::ParseSmoothingInfo_Mid_Trampoline);
 #endif
 
 void Engine::ExecuteCommand(const char *cmd, bool immediately) {
+	this->Cbuf_AddText(0, cmd, 0); // kCommandSrcCode (source 0) has no restrictions
 	if (immediately) {
-		this->ExecuteClientCmd(this->engineClient->ThisPtr(), cmd);
-	} else {
-		this->ClientCmd(this->engineClient->ThisPtr(), cmd);
+		// HACKHACK: This effectively just does Cbuf_Execute, could we get at that by itself?
+		this->ExecuteClientCmd(this->engineClient->ThisPtr(), "");
 	}
 }
 int Engine::GetTick() {
