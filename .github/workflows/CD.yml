@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - name: Install Dependencies
         run: |
@@ -23,7 +23,7 @@ jobs:
           DEMO_SIGN_PRIVKEY: ${{ secrets.SAR_DEMO_SIGN_PRIVKEY }}
         run: make -j$(nproc)
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sar-linux
           path: sar.so
@@ -35,7 +35,7 @@ jobs:
       POWERSHELL_TELEMETRY_OPTOUT: 1
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
@@ -46,13 +46,13 @@ jobs:
           DEMO_SIGN_PRIVKEY: ${{ secrets.SAR_DEMO_SIGN_PRIVKEY }}
         run: msbuild -m -t:SourceAutoRecord -p:"Configuration=Release;Platform=x86" SourceAutoRecord.sln
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sar-windows
           path: bin\sar.dll
           if-no-files-found: error
       - name: Upload PDB Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sar-windows-pdb
           path: bin\sar.pdb
@@ -67,15 +67,15 @@ jobs:
         id: get_release
         run: echo ::set-output name=version::${GITHUB_REF:10}
       - name: Download Linux Build
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: sar-linux
       - name: Download Windows Build
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: sar-windows
       - name: Download Windows PDB
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: sar-windows-pdb
       - name: Create Release

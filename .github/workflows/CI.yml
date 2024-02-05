@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - name: Install Dependencies
         run: |
@@ -35,7 +35,7 @@ jobs:
           DEMO_SIGN_PRIVKEY: ${{ secrets.SAR_DEMO_SIGN_PRIVKEY }}
         run: make -j$(nproc)
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sar-linux
           path: sar.so
@@ -47,7 +47,7 @@ jobs:
       POWERSHELL_TELEMETRY_OPTOUT: 1
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
@@ -57,7 +57,7 @@ jobs:
           DEMO_SIGN_PRIVKEY: ${{ secrets.SAR_DEMO_SIGN_PRIVKEY }}
         run: msbuild -m -t:SourceAutoRecord -p:"Configuration=Release;Platform=x86" SourceAutoRecord.sln
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sar-windows
           path: |
