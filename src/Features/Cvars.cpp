@@ -228,6 +228,13 @@ void Cvars::Lock() {
 		cl_sidespeed.AddFlag(FCVAR_CHEAT);
 		cl_backspeed.AddFlag(FCVAR_CHEAT);
 
+		Variable("soundfade").RemoveFlag(FCVAR_CLIENTCMD_CAN_EXECUTE);
+		Variable("leaderboard_open").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_activate").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_allowescape").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_preventescape").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("setpause").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
+
 		this->locked = true;
 	}
 }
@@ -258,6 +265,13 @@ void Cvars::Unlock() {
 		cl_forwardspeed.RemoveFlag(FCVAR_CHEAT);
 		cl_sidespeed.RemoveFlag(FCVAR_CHEAT);
 		cl_backspeed.RemoveFlag(FCVAR_CHEAT);
+
+		Variable("soundfade").AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE);
+		Variable("leaderboard_open").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_activate").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_allowescape").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_preventescape").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("setpause").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
 
 		this->locked = false;
 	}
