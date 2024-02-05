@@ -14,6 +14,7 @@ public:
 	int Dump(std::ofstream &file);
 	int DumpDoc(std::ofstream &file);
 	void PrintHelp(const CCommand &args);
+	std::string GetFlags(const ConCommandBase &cmd);
 	void Lock();
 	void Unlock();
 };
