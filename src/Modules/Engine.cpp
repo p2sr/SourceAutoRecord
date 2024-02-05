@@ -62,6 +62,8 @@ Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
 
 float g_cur_fps = 0.0f;
 
+int g_cap_frametime = 0;
+
 REDECL(Engine::Disconnect);
 REDECL(Engine::SetSignonState);
 REDECL(Engine::ClientCommandKeyValues);
@@ -658,16 +660,17 @@ void Host_AccumulateTime_Detour(float dt) {
 		Host_AccumulateTime_Hook.Disable();
 		Host_AccumulateTime(dt);
 		Host_AccumulateTime_Hook.Enable();
-		*host_frametime = *host_frametime_unbounded;
+		if (g_cap_frametime == 0) *host_frametime = *host_frametime_unbounded;
 	} else if (g_advance > 0) {
 		Host_AccumulateTime_Hook.Disable();
 		Host_AccumulateTime(1.0f/60);
 		Host_AccumulateTime_Hook.Enable();
-		*host_frametime = *host_frametime_unbounded;
+		if (g_cap_frametime == 0) *host_frametime = *host_frametime_unbounded;
 		--g_advance;
 	} else {
 		*host_frametime = 0;
 	}
+	if (g_cap_frametime == 2) g_cap_frametime = 0;
 }
 
 void _Host_RunFrame_Render_Detour();

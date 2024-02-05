@@ -160,6 +160,7 @@ void Session::Ended() {
 	if (networkManager.isConnected) networkManager.splitTicks = -1;
 
 	this->loadStart = NOW();
+	g_cap_frametime = 1;
 	if (!engine->demoplayer->IsPlaying() && !engine->IsOrange()) {
 		this->DoFastLoads();
 	}
@@ -193,6 +194,7 @@ void Session::Changed(int state) {
 		this->Started();
 		this->loadEnd = NOW();
 
+		g_cap_frametime = 2;
 		auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
 		console->DevMsg("Load took: %dms\n", time);
 
