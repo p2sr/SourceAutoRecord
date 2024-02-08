@@ -665,7 +665,7 @@ DECL_COMMAND_COMPLETION(sar_cam_path_setkf) {
 
 CON_COMMAND_F_COMPLETION(
 	sar_cam_path_setkf,
-	"sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov] - sets the camera path keyframe\n",
+	"sar_cam_path_setkf [frame] [x] [y] [z] [pitch] [yaw] [roll] [fov] - sets the camera path keyframe\n",
 	0,
 	AUTOCOMPLETION_FUNCTION(sar_cam_path_setkf)) {
 	if (!engine->demoplayer->IsPlaying())
