@@ -12,12 +12,15 @@ struct CheckToolParams : public TasToolParams {
 		, angepsilon(DEFAULT_ANG_EPSILON)
 	{}
 
-	CheckToolParams(std::optional<Vector> pos, std::optional<QAngle> ang, std::optional<std::string> holding, float posepsilon, float angepsilon)
-		: TasToolParams(true), pos(pos), ang(ang), holding(holding), posepsilon(posepsilon), angepsilon(angepsilon)
+	CheckToolParams(std::optional<Vector> pos, std::optional<QAngle> ang, std::optional<float> vel, std::optional<char> veldir, std::optional<char> velcomp, std::optional<std::string> holding, float posepsilon, float angepsilon)
+		: TasToolParams(true), pos(pos), ang(ang), vel(vel), veldir(veldir), velcomp(velcomp), holding(holding), posepsilon(posepsilon), angepsilon(angepsilon)
 	{}
 
 	std::optional<Vector> pos;
 	std::optional<QAngle> ang; // roll ignored
+	std::optional<float> vel;
+	std::optional<char> veldir;
+	std::optional<char> velcomp;
 	std::optional<std::string> holding;
 	float posepsilon;
 	float angepsilon;

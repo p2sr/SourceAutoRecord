@@ -39,6 +39,13 @@ void CheckTool::Apply(TasFramebulk &fb, const TasPlayerInfo &info) {
 		}
 	}
 
+	if (params.vel) {
+		float currVel = params.veldir.value() == 'x' ? info.velocity.x : params.veldir.value() == 'y' ? info.velocity.y : params.veldir.value() == 'z' ? info.velocity.z : 0;
+		if ((params.velcomp.value() == '<' && currVel > params.vel) || (params.velcomp.value() == '>' && currVel < params.vel)) {
+			shouldReplay = true;
+		}
+	}
+
 	if (params.holding) {
 		auto player = server->GetPlayer(info.slot + 1);
 		if (player) {
@@ -108,6 +115,23 @@ static QAngle parseAng(const std::vector<std::string> &args, size_t idx) {
 	}
 }
 
+static void parseVel(const std::vector<std::string> &args, size_t idx, std::optional<float> &vel, std::optional<char> &veldir, std::optional<char> &velcomp) {
+	if (args.size() - idx < 3) {
+		throw TasParserException("Too few args for velocity check tool.");
+	}
+	try {
+		vel = std::stof(args[idx + 2]);
+		veldir = args[idx][0];
+		velcomp = args[idx + 1][0];
+	} catch (...) {
+		throw TasParserException("Bad vel for check tool");
+	}
+
+	if (!((veldir.value() == 'x' || veldir.value() == 'y' || veldir.value() == 'z') && (velcomp.value() == '>' || velcomp.value() == '<'))) {
+		throw TasParserException("Bad args for check tool");
+	}
+}
+
 std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() < 1) {
 		throw TasParserException("Expected at least 1 argument for check tool");
@@ -115,6 +139,9 @@ std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> v
 
 	std::optional<Vector> pos = {};
 	std::optional<QAngle> ang = {};
+	std::optional<float> vel;
+	std::optional<char> veldir;
+	std::optional<char> velcomp;
 	std::optional<std::string> holding = {};
 	std::optional<float> posepsilon = {};
 	std::optional<float> angepsilon = {};
@@ -134,6 +161,12 @@ std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> v
 			}
 			ang = parseAng(vp, i+1);
 			i += 3;
+		} else if (vp[i] == "vel") {
+			if (vel) {
+				throw TasParserException("Duplicate velocity given to check tool");
+			}
+			parseVel(vp, i+1, vel, veldir, velcomp);
+			i += 4;
 		} else if (vp[i] == "holding") {
 			if (holding) {
 				throw TasParserException("Duplicate holding given to check tool");
@@ -170,5 +203,5 @@ std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> v
 		}
 	}
 
-	return std::make_shared<CheckToolParams>(pos, ang, holding, posepsilon ? *posepsilon : DEFAULT_POS_EPSILON, angepsilon ? *angepsilon : DEFAULT_ANG_EPSILON);
+	return std::make_shared<CheckToolParams>(pos, ang, vel, veldir, velcomp, holding, posepsilon ? *posepsilon : DEFAULT_POS_EPSILON, angepsilon ? *angepsilon : DEFAULT_ANG_EPSILON);
 }
