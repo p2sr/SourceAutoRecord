@@ -68,6 +68,7 @@ int EntityList::GetEntityInfoIndexByHandle(void *entity) {
 }
 
 bool EntityList::IsPortalGun(const CBaseHandle &handle) {
+	if (engine->demoplayer->IsPlaying()) return true;
 	if (engine->IsCoop() && engine->IsOrange()) return true; // FIXME: can't get server stuffs
 	auto info = this->GetEntityInfoByIndex(handle.GetEntryIndex());
 	if (info->m_pEntity == nullptr) {
