@@ -48,7 +48,7 @@ std::shared_ptr<TasToolParams> LookTool::ParseParams(std::vector<std::string> vp
 	int directionsCount = 0;
 
 	for (std::string param : vp) {
-		if (param == "off" || param == "stop" || param == "ahead") {
+		if (param == "off" || param == "stop") {
 			return std::make_shared<LookToolParams>();
 		}
 

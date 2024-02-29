@@ -312,7 +312,7 @@ A tool-based alternative to movement part of a tickbulk. It will move the player
 ### `look` tool
 
 ```cs
-look {off/stop/ahead/up/down/left/right/<value>deg} [time]
+look {off/stop/up/down/left/right/<value>deg} [time]
 ```
 
 A tool-based alternative for look direction part of a tickbulk. It will change the view angle based on given parameters. It accepts different combinations of parameters:
