@@ -11,6 +11,8 @@ class Cvar {
 };
 
 let path = process.argv[2] || process.cwd();
+if (path.endsWith('sar.cvars')) path = path.substring(0, path.length - 9);
+if (path == "") path = process.cwd();
 
 fs.readFile(path + '/sar.cvars', 'utf-8', (err, data) => {
     if (err) {

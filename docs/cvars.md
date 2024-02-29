@@ -113,7 +113,7 @@
 |sar_cam_path_interp|2|Sets interpolation type between keyframes for cinematic camera.<br>0 = Linear interpolation<br>1 = Cubic spline<br>2 = Piecewise Cubic Hermite Interpolating Polynomial (PCHIP)<br>|
 |sar_cam_path_remkf|cmd|sar_cam_path_remkf \<frame> - removes camera path keyframe at specified frame<br>|
 |sar_cam_path_remkfs|cmd|sar_cam_path_remkfs - removes all camera path keyframes<br>|
-|sar_cam_path_setkf|cmd|sar_cam_path_setkf [frame] [x] [y] [z] [yaw] [pitch] [roll] [fov] - sets the camera path keyframe<br>|
+|sar_cam_path_setkf|cmd|sar_cam_path_setkf [frame] [x] [y] [z] [pitch] [yaw] [roll] [fov] - sets the camera path keyframe<br>|
 |sar_cam_path_showkf|cmd|sar_cam_path_showkf \<frame> - display information about camera path keyframe at specified frame<br>|
 |sar_cam_reset|cmd|sar_cam_reset - resets camera to its default position<br>|
 |sar_cam_setang|cmd|sar_cam_setang \<pitch> \<yaw> [roll] - sets camera angle (requires camera Drive Mode)<br>|
@@ -131,6 +131,7 @@
 |sar_con_filter|0|Enable the console filter<br>|
 |sar_con_filter_allow|cmd|sar_con_filter_allow \<string> [end] - add an allow rule to the console filter, allowing until 'end' is matched<br>|
 |sar_con_filter_block|cmd|sar_con_filter_block \<string> [end] - add a disallow rule to the console filter, blocking until 'end' is matched<br>|
+|sar_con_filter_debug|cmd|sar_con_filter_debug - print the console filter rule list<br>|
 |sar_con_filter_default|0|Whether to allow text through the console filter by default<br>|
 |sar_con_filter_reset|cmd|sar_con_filter_reset - clear the console filter rule list<br>|
 |sar_con_filter_suppress_blank_lines|0|Whether to suppress blank lines in console<br>|
@@ -200,8 +201,12 @@
 |sar_font_list|cmd|sar_font_list - lists all available fonts<br>|
 |sar_force_fov|cmd|sar_force_fov \<fov> - forces player FOV<br>|
 |sar_force_qc|0|When ducking, forces view offset to always be at standing height. Requires sv_cheats to work.<br>|
+|sar_force_viewmodel_fov|cmd|sar_force_viewmodel_fov \<fov> - forces viewmodel FOV<br>|
+|sar_frametime_debug|0|Output debugging information to the console related to frametime.<br>|
+|sar_frametime_uncap|0|EXPERIMENTAL - USE AT OWN RISK. Removes the 10-1000 FPS cap on frametime. More info https://wiki.portal2.sr/Frametime<br>|
 |sar_function|cmd|sar_function \<name> [command] [args]... - create a function, replacing $1, $2 etc in the command string with the respective argument, and more. If no command is specified, prints the given function<br>|
 |sar_function_run|cmd|sar_function_run \<name> [args]... - run a function with the given arguments<br>|
+|sar_get_partner_id|cmd|sar_get_partner_id - Prints your coop partner's steam id<br>|
 |sar_geteyepos|cmd|sar_geteyepos [slot] - get the view position (portal shooting origin) and view angles of a certain player.<br>|
 |sar_getpos|cmd|sar_getpos [slot] [server\|client] - get the absolute origin and angles of a particular player from either the server or client. Defaults to slot 0 and server.<br>|
 |sar_give_betsrighter|cmd|sar_give_betsrighter [n] - gives the player in slot n (0 by default) betsrighter.<br>|
@@ -359,6 +364,7 @@
 |sar_pause_at|-1|Pause at the specified tick. -1 to deactivate it.<br>|
 |sar_pause_for|0|Pause for this amount of ticks.<br>|
 |sar_pip_align|cmd|sar_pip_align \<top\|center\|bottom> \<left\|center\|right> - aligns the remote view.<br>|
+|sar_placement_helper_hud|0|Visually displays all portal placement helpers (requires sv_cheats).<br>|
 |sar_portalgun_hud|0|Enables the portalgun HUD.<br>|
 |sar_portalgun_hud_x|5|The x position of the portalgun HUD.<br>|
 |sar_portalgun_hud_y|5|The y position of the portalgun HUD.<br>|
