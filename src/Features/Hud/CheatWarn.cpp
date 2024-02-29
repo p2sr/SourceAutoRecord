@@ -23,7 +23,7 @@ static Cheat g_cheats[] = {
 
 	{ +[]() {
 		if (sar.game->Is(SourceGame_PortalReloaded)) return false;
-		if (client->GetChallengeStatus() != CMStatus::CHALLENGE) return false;
+		if (client->GetChallengeStatus() != CMStatus::CHALLENGE && !(engine->IsCoop() && !engine->IsSplitscreen())) return false;
 		return Variable("sv_cheats_flagged").GetBool();
 	}, "cheats were flagged in this session", "reload the game from the menu" },
 
