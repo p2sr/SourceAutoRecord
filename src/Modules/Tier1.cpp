@@ -115,8 +115,7 @@ public:
 
 	void ResetFilters() {
 		g_con_filter_rules.clear();
-		this->end_pat = "";
-		this->do_until_end = {};
+		this->do_until_rule = {};
 	}
 
 	void DebugFilters() {
@@ -126,8 +125,9 @@ public:
 		for (auto &rule : g_con_filter_rules) {
 			console->Print("(%s) \"%s\" \"%s\"\n", rule.allow ? "allow" : "block", rule.str.c_str(), rule.end.c_str());
 		}
-		if (this->do_until_end) {
-			console->Print("currently %sing until we hear \"%s\"\n", *this->do_until_end ? "allow" : "block", this->end_pat.c_str());
+		if (this->do_until_rule.has_value()) {
+			auto rule = this->do_until_rule.value();
+			console->Print("current rule: (%s) \"%s\" \"%s\"\n", rule.allow ? "allow" : "block", rule.str.c_str(), rule.end.c_str());
 		}
 		sar_con_filter.SetValue(filter ? "1" : "0");
 	}
@@ -141,11 +141,10 @@ private:
 	bool MatchesFilters(const char *msg) {
 		if (!sar_con_filter.isRegistered || !sar_con_filter.GetBool()) return true;
 
-		if (this->do_until_end) {
-			bool match = *this->do_until_end;
-			if (MatchesPattern(msg, this->end_pat.c_str())) {
-				this->end_pat = "";
-				this->do_until_end = {};
+		if (this->do_until_rule.has_value()) {
+			bool match = this->do_until_rule->allow;
+			if (MatchesPattern(msg, this->do_until_rule->end.c_str())) {
+				this->do_until_rule = {};
 			}
 			return match;
 		}
@@ -153,8 +152,7 @@ private:
 		for (auto &rule : g_con_filter_rules) {
 			if (MatchesPattern(msg, rule.str.c_str())) {
 				if (!MatchesPattern(msg, rule.end.c_str())) {
-					this->do_until_end = rule.allow;
-					this->end_pat = rule.end;
+					this->do_until_rule = rule;
 				}
 				return rule.allow;
 			}
@@ -201,8 +199,7 @@ private:
 	}
 
 	std::vector<BufferedPart> buf;
-	std::string end_pat;
-	std::optional<bool> do_until_end;
+	std::optional<ConFilterRule> do_until_rule;
 	bool last_was_newline;
 };
 
