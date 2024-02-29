@@ -8,13 +8,15 @@ struct SetAngleParams : public TasToolParams {
 	SetAngleParams()
 		: TasToolParams() {}
 
-	SetAngleParams(float pitch, float yaw, int easingTicks, AngleToolsUtils::EasingType easingType)
+	SetAngleParams(std::string target, float pitch, float yaw, int easingTicks, AngleToolsUtils::EasingType easingType)
 		: TasToolParams(true)
+		, target(target)
 		, pitch(pitch)
 		, yaw(yaw) 
 		, easingTicks(easingTicks) 
 		, easingType(easingType) {}
 
+	std::string target;
 	float pitch;
 	float yaw;
 

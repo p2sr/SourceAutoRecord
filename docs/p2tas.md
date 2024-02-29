@@ -181,7 +181,7 @@ Strafe tool accepts any number of parameters. Here's a list of valid parameters:
 
 Parameters marked as default define the default behavior of the tool (as in, the behavior which occurs when no other parameters in given category are given).
 
-Example of usage:
+Examples of usage:
 
 - `strafe max right` - vectorial-strafes with the greatest possible acceleration clockwise.
 - `strafe ang forwardvel` - angular-strafes with the greatest possible acceleration towards the current velocity direction.
@@ -216,17 +216,25 @@ The tool can be disabled by passing `off` as a parameter.
 ### `setang` tool
 
 ```cs
-setang <pitch> <yaw> [time] [easing_type]
+setang {<pitch> <yaw>/ahead} [time] [easing_type]
 ```
 
-Similarly to a `setang` console command, this tool can set view angles to a desired pitch and yaw values. In addition, this tool allows a smooth interpolation from current view angles to desired ones.
+Similarly to a `setang` console command, this tool can set view angles to a desired pitch and yaw values. You can also use `ahead` as a parameter to set the view angles to look the direction you're currently moving. In addition, this tool allows a smooth interpolation from current view angles to desired ones.
 
-The tool takes at least two parameters, which describe desired pitch and yaw angle, in this order. Optional third parameter describes a time in ticks for how long the view angle should be interpolated to desired angles before reaching them. Optional fourth parameter describes an easing function of interpolation:
+The tool takes at least one parameter when looking `ahead`, or two which describe the desired pitch and yaw angle, in this order. Optional next parameter describes a time in ticks for how long the view angle should be interpolated to desired angles before reaching them. Optional final parameter describes an easing function of interpolation:
 
 - `linear` - interpolates linearly. Default if no interpolation method is given.
 - `sine` or `sin` - interpolates using a sine easing.
 - `cubic` - interpolates using a cubic easing.
 - `exp` or `exponential` - interpolates using an exponential easing.
+
+Examples of usage:
+
+- `setang ahead` - looks the current direction of movement instantly.
+- `setang ahead 10 sine` - smoothly interpolates to looking the current direction of movement over 10 ticks.
+- `setang -30 90` - looks at the pitch -30 and yaw 90 instantly.
+- `setang -30 90 20` - linearly interpolates to looking at the pitch -30 and yaw 90 over 20 ticks.
+- `setang -30 90 30 exp` - exponentially interpolates to looking at the pitch -30 and yaw 90 over 30 ticks.
 
 ### `autoaim` tool
 
