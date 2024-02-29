@@ -44,7 +44,7 @@ static Cheat g_cheats[] = {
 	}, "mat_filtertextures is at a non-default value", "run 'mat_filtertextures 1'" },
 
 	{ +[]() {
-		return Variable("fps_max").GetFloat() <= 29.0f || Variable("fps_max").GetFloat() >= 1000.0f;
+		return g_cap_frametime == 0 && (Variable("fps_max").GetFloat() <= 29.0f || Variable("fps_max").GetFloat() >= 1000.0f);
 	}, "fps_max is at a banned value", "set 'fps_max' between 30 and 999" },
 
 	{ +[]() {
