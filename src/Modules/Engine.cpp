@@ -57,6 +57,8 @@ Variable sar_pause_at("sar_pause_at", "-1", -1, "Pause at the specified tick. -1
 Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.\n");
 
 Variable sar_tick_debug("sar_tick_debug", "0", 0, 3, "Output debugging information to the console related to ticks and frames.\n");
+Variable sar_frametime_debug("sar_frametime_debug", "0", "Output debugging information to the console related to frametime.\n"); // see also host_print_frame_times
+Variable sar_frametime_uncap("sar_frametime_uncap", "0", "EXPERIMENTAL - USE AT OWN RISK. Removes the 10-1000 FPS cap on frametime. More info https://wiki.portal2.sr/Frametime\n");
 
 Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
 
@@ -660,16 +662,27 @@ void Host_AccumulateTime_Detour(float dt) {
 		Host_AccumulateTime_Hook.Disable();
 		Host_AccumulateTime(dt);
 		Host_AccumulateTime_Hook.Enable();
-		if (g_cap_frametime == 0) *host_frametime = *host_frametime_unbounded;
 	} else if (g_advance > 0) {
 		Host_AccumulateTime_Hook.Disable();
 		Host_AccumulateTime(1.0f/60);
 		Host_AccumulateTime_Hook.Enable();
-		if (g_cap_frametime == 0) *host_frametime = *host_frametime_unbounded;
 		--g_advance;
 	} else {
 		*host_frametime = 0;
+		*host_frametime_unbounded = 0;
 	}
+
+	if (*host_frametime != *host_frametime_unbounded) {
+		if (sar_frametime_uncap.GetBool() && g_cap_frametime == 0) {
+			if (sar_frametime_debug.GetBool()) console->Print("Host_AccumulateTime: %f (uncapped from %f)\n", *host_frametime_unbounded, *host_frametime);
+			*host_frametime = *host_frametime_unbounded;
+		} else {
+			if (sar_frametime_debug.GetBool()) console->Print("Host_AccumulateTime: %f (capped to %f)\n", *host_frametime_unbounded, *host_frametime);
+		}
+	} else {
+		if (sar_frametime_debug.GetBool()) console->Print("Host_AccumulateTime: %f\n", *host_frametime);
+	}
+
 	if (g_cap_frametime == 2) g_cap_frametime = 0;
 }
 
