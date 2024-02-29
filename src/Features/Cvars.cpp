@@ -234,6 +234,7 @@ void Cvars::Lock() {
 		Variable("gameui_allowescape").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
 		Variable("gameui_preventescape").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
 		Variable("setpause").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("snd_ducktovolume").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
 
 		this->locked = true;
 	}
@@ -272,6 +273,7 @@ void Cvars::Unlock() {
 		Variable("gameui_allowescape").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
 		Variable("gameui_preventescape").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
 		Variable("setpause").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("snd_ducktovolume").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
 
 		this->locked = false;
 	}
