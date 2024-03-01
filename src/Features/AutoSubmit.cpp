@@ -6,6 +6,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Utils/json11.hpp"
+#include "../Games/Portal2.hpp"
 #include <cctype>
 #include <fstream>
 #include <sstream>
@@ -16,6 +17,7 @@
 #include <curl/curl.h>
 
 #define API_BASE "https://board.portal2.sr/api-v2"
+#define API_BASE_AUTORENDER "https://autorender.portal2.sr/api"
 #define AUTOSUBMIT_TOAST_TAG "autosubmit"
 #define COOP_NAME_MESSAGE_TYPE "coop-name"
 #define API_KEY_FILE "autosubmit_key.txt"
@@ -420,6 +422,123 @@ CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit
 
 	loadApiKey(true);
 }
+
+size_t writeCallback(void* contents, size_t size, size_t nmemb, std::string* buffer)
+{
+	size_t realsize = size * nmemb;
+	buffer->append((char *)contents, realsize);
+	return realsize;
+}
+
+void retrieveMtriggers(int rank, std::string map_name)
+{
+	bool keyFound = false;
+	if (map_name.empty())
+		return THREAD_PRINT("Not playing a map.\n");
+
+	for (const auto& pair : g_map_ids)
+	{
+		if (pair.first == map_name)
+		{
+			keyFound = true;
+			break;
+		}
+	}
+
+	if (rank < 1)
+		return THREAD_PRINT("Invalid rank.\n");
+
+	if (keyFound) {
+		CURL *curl;
+		CURLcode res;
+		std::string buffer;
+		curl = curl_easy_init();
+		if (curl) {
+			std::string apiCall = std::string(API_BASE_AUTORENDER) + "/v1/mtriggers/search?game_dir=portal2&map_name=" + map_name + "&board_rank=" + std::to_string(rank);
+			curl_easy_setopt(curl, CURLOPT_URL, apiCall.c_str());
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+			res = curl_easy_perform(curl);
+
+			if (res != CURLE_OK)
+			{
+				THREAD_PRINT("Failed to retrieve.\n");
+				return curl_easy_cleanup(curl);
+			}
+			else {
+				std::string err;
+				auto json = json11::Json::parse(buffer.c_str(), err);
+
+				if (!err.empty())
+				{
+					THREAD_PRINT("Failed to retrieve.\n");
+					return curl_easy_cleanup(curl);
+				}
+				else {
+					if (json["data"].is_array()) {
+						const json11::Json::array &dataArr = json["data"].array_items();
+						if (dataArr.empty())
+						{
+							THREAD_PRINT("No data.\n");
+							return curl_easy_cleanup(curl);
+						}
+						const json11::Json::array &segmentArr = json["data"][0]["demo_metadata"]["segments"].array_items();
+						if (segmentArr.empty())
+						{
+							THREAD_PRINT("No segment data.\n");
+							return curl_easy_cleanup(curl);
+						}
+						auto &splits = json["data"][0]["demo_metadata"]["segments"];
+						float time = 0.0f;
+						for (const auto &split : splits.array_items()) {
+							auto ticks = split["ticks"].int_value();
+							auto segmentTime = ticks * *engine->interval_per_tick;
+							time += ticks * *engine->interval_per_tick;
+							THREAD_PRINT("[%s] - %.3f (%.3f) (%i)\n", split["name"].string_value().c_str(), time, segmentTime, ticks);
+						}
+						time = 0.0f;
+					}
+				}
+			}
+			curl_easy_cleanup(curl);
+		}
+	} else
+		THREAD_PRINT("Invalid map name.\n");
+
+	return;
+}
+
+CON_COMMAND_COMPLETION(sar_speedrun_get_mtriggers, "sar_speedrun_get_mtriggers <rank=wr> - prints mtriggers of specific run.\n", ({"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"})) {
+	if (args.ArgC() != 2)
+	{
+		if (g_worker.joinable()) g_worker.join();
+		g_worker = std::thread(retrieveMtriggers, 1, engine->GetCurrentMapName());
+		return;
+	}
+
+	if (g_worker.joinable()) g_worker.join();
+	g_worker = std::thread(retrieveMtriggers, std::atoi(args[1]), engine->GetCurrentMapName());
+}
+
+CON_COMMAND_COMPLETION(sar_speedrun_get_mtriggers_map, "sar_speedrun_get_mtriggers_map <map=current> <rank=wr> - prints mtriggers of specific run on specific map.\n", (Portal2::mapNames)) {
+	if (args.ArgC() != 3) {
+		if (args.ArgC() == 2)
+		{
+			if (g_worker.joinable()) g_worker.join();
+			g_worker = std::thread(retrieveMtriggers, 1, args[1]);
+			return;
+		}
+		
+		if (g_worker.joinable()) g_worker.join();
+		g_worker = std::thread(retrieveMtriggers, 1, engine->GetCurrentMapName());
+		return;
+	}
+
+	if (g_worker.joinable()) g_worker.join();
+	auto rank = std::atoi(args[2]);
+	g_worker = std::thread(retrieveMtriggers, rank, args[1]);
+}
+
 
 void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
 	if (g_cheated) {
