@@ -57,7 +57,7 @@ static void DrawHudBackground(int slot, HudContext &ctx) {
 
 // CEngineVGui::Paint
 DETOUR(VGui::Paint, PaintMode_t mode) {
-	if ((mode & PAINT_UIPANELS) && GET_SLOT() == 0) {
+	if (mode & PAINT_UIPANELS) {
 		surface->StartDrawing(surface->matsurface->ThisPtr());
 		networkManager.UpdateSyncUi();
 		surface->FinishDrawing();

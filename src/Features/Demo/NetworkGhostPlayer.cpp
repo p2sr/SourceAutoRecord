@@ -47,7 +47,10 @@ public:
 			if (engine->shouldPauseForSync) {
 				engine->shouldPauseForSync = false;
 			} else {
-				engine->ExecuteCommand("unpause");
+				if (!engine->IsCoop() || !engine->IsOrange()) {
+					engine->ExecuteCommand("unpause");
+					if (engine->IsCoop()) Variable("sv_pausable").SetValue(g_coop_pausable ? "1" : "0");
+				}
 				ghostLeaderboard.SyncReady();
 			}
 		} else {
@@ -61,7 +64,10 @@ public:
 		if (this->countdownEnd && now >= *this->countdownEnd) {
 			this->countdownEnd = {};
 			this->active = false;
-			engine->ExecuteCommand("unpause");
+			if (!engine->IsCoop() || !engine->IsOrange()) {
+				engine->ExecuteCommand("unpause");
+				if (engine->IsCoop()) Variable("sv_pausable").SetValue(g_coop_pausable ? "1" : "0");
+			}
 			ghostLeaderboard.SyncReady();
 		}
 

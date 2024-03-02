@@ -65,6 +65,7 @@ Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
 float g_cur_fps = 0.0f;
 
 int g_cap_frametime = 0;
+bool g_coop_pausable = false;
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::SetSignonState);
@@ -297,8 +298,15 @@ ON_EVENT(PRE_TICK) {
 
 ON_EVENT(PRE_TICK) {
 	if (engine->shouldPauseForSync && event.tick >= 0) {
-		engine->ExecuteCommand("pause", true);
-		engine->shouldPauseForSync = false;
+		if (!engine->IsCoop() || (!engine->IsOrange() && g_orangeReady)) {
+			if (engine->IsCoop()) {
+				g_coop_pausable = Variable("sv_pausable").GetBool();
+				engine->ExecuteCommand("stopvideos"); // loading animation goes over sync screen
+				Variable("sv_pausable").SetValue("1");
+			}
+			engine->ExecuteCommand("pause", true);
+			engine->shouldPauseForSync = false;
+		}
 	}
 }
 
