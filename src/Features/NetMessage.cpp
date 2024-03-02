@@ -75,7 +75,7 @@ void NetMessage::SendMsg(const char *type, const void *data, size_t size) {
 	}
 
 	if (readyToSend()) {
-		engine->ExecuteCommand(cmd.c_str());
+		engine->ExecuteCommand(cmd.c_str(), true);
 	} else {
 		g_queued.push(cmd);
 	}

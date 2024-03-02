@@ -5,6 +5,7 @@
 #include "Event.hpp"
 #include "Scheduler.hpp"
 #include "Features/Hud/Toasts.hpp"
+#include "Features/NetMessage.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "GhostEntity.hpp"
@@ -19,6 +20,9 @@
 #include <functional>
 #include <queue>
 #include <set>
+
+#define ORANGE_MESSAGE_TYPE "orange-msg"
+#define BLUE_MESSAGE_TYPE "blue-msg"
 
 Variable ghost_sync_countdown("ghost_sync_countdown", "3", 0, "The number of seconds of countdown to show at the start of every synced map. 0 to disable.\n");
 Variable ghost_spec_see_spectators("ghost_spec_see_spectators", "0", "Whether to see other spectators while spectating.\n");
@@ -1185,38 +1189,69 @@ CON_COMMAND(ghost_ping, "Pong!\n") {
 	networkManager.SendPing();
 }
 
-static bool g_isGhostChat = false;
-static bool g_wasGhostChat = false;
+int g_chatType = 0;
+int g_wasChatType = 0;
 
 bool NetworkManager::HandleGhostSay(const char *msg) {
-	if (!g_wasGhostChat) return false;
+	if (Utils::StartsWith(msg, "\x07")) return false; // orange saying IT'S REAL
+	if (g_chatType != 0 || g_wasChatType != 2) {
+		if (g_wasChatType != 1) {
+			NetMessage::SendMsg(ORANGE_MESSAGE_TYPE, msg, strlen(msg));
+			return true;
+		}
+		g_wasChatType = 0;
+		return false;
+	}
 
 	if (networkManager.isConnected) {
 		networkManager.SendMessageToAll(msg);
 	}
 
+	g_wasChatType = 0;
 	return true;
 }
 
+ON_INIT {
+	NetMessage::RegisterHandler(ORANGE_MESSAGE_TYPE, +[](const void *data, size_t size) {
+		auto msg = std::string((char *)data, size);
+		if (engine->IsOrange()) {
+			switch (g_wasChatType) {
+			case 0:
+				NetMessage::SendMsg(BLUE_MESSAGE_TYPE, msg.c_str(), strlen(msg.c_str()));
+				break;
+			case 1:
+				engine->ExecuteCommand(Utils::ssprintf("say \"\x07%s\"", msg.c_str()).c_str(), true);
+				break;
+			case 2:
+				if (networkManager.isConnected) networkManager.SendMessageToAll(msg.c_str());
+				break;
+			}
+			g_wasChatType = 0;
+		}
+	});
+	NetMessage::RegisterHandler(BLUE_MESSAGE_TYPE, +[](const void *data, size_t size) {
+		auto msg = std::string((char *)data, size);
+		if (!engine->IsOrange()) {
+			g_wasChatType = 1;
+			engine->ExecuteCommand(Utils::ssprintf("say \"%s\"", msg.c_str()).c_str(), true);
+		}
+	});
+}
+
 ON_EVENT(FRAME) {
-	if (g_isGhostChat) g_wasGhostChat = true;
-
-	if (!networkManager.isConnected) {
-		g_isGhostChat = false;
-		g_wasGhostChat = false;
+	if (g_chatType == 2 && !networkManager.isConnected) g_chatType = 1;
+	if (g_chatType != 0) {
+		g_wasChatType = g_chatType;
 	}
-
-	if (!Variable("cl_chat_active").GetBool() && g_isGhostChat) {
-		g_isGhostChat = false;
-		Scheduler::InHostTicks(10, []() {
-			g_wasGhostChat = false;
-		});
+	if (!Variable("cl_chat_active").GetBool()) {
+		g_chatType = 0;
 	}
 }
 
 CON_COMMAND(ghost_chat, "ghost_chat - open the chat HUD for messaging other players\n") {
-	if (networkManager.isConnected) {
-		g_isGhostChat = true;
+	if (g_chatType == 0 && networkManager.isConnected) {
+		g_wasChatType = 0;
+		g_chatType = 2;
 		client->OpenChat();
 	}
 }

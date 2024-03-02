@@ -966,7 +966,9 @@ CON_COMMAND(sar_give_betsrighter, "sar_give_betsrighter [n] - gives the player i
 	}
 }
 DETOUR_COMMAND(Server::say) {
+	if (args.ArgC() == 1) g_chatType = 1;
 	if (args.ArgC() != 2 || Utils::StartsWith(args[1], "!SAR:") || !networkManager.HandleGhostSay(args[1])) {
+		g_wasChatType = 0;
 		Server::say_callback(args);
 	}
 }

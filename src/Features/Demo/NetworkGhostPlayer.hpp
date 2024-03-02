@@ -121,3 +121,6 @@ extern Command ghost_disconnect;
 extern Command ghost_message;
 extern Command ghost_ping;
 extern Command ghost_name;
+
+extern int g_chatType;
+extern int g_wasChatType;

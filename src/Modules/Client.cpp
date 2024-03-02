@@ -472,7 +472,11 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 }
 
 CON_COMMAND(sar_chat, "sar_chat - open the chat HUD\n") {
-	client->OpenChat();
+	if (g_chatType == 0) {
+		g_wasChatType = 0;
+		g_chatType = 1;
+		client->OpenChat();
+	}
 }
 
 extern Hook g_DrawTranslucentRenderablesHook;
