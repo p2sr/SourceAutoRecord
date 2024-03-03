@@ -14,6 +14,7 @@
 #include "Features/Hud/StrafeHud.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/Hud/InputHud.hpp"
+#include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/PlayerTrace.hpp"
 #include "Features/ReloadedFix.hpp"
@@ -44,6 +45,10 @@
 #include <cstdint>
 #include <cstring>
 #include <cfloat>
+
+#ifdef _WIN32
+#	define strcasecmp _stricmp
+#endif
 
 #define RESET_COOP_PROGRESS_MESSAGE_TYPE "coop-reset"
 #define CM_FLAGS_MESSAGE_TYPE "cm-flags"
@@ -484,6 +489,9 @@ ON_EVENT(PRE_TICK) {
 	setPortalsThruPortals(sv_cheats.GetBool() && sar_portals_thru_portals.GetBool());
 }
 
+Variable sar_transition_timer("sar_transition_timer", "0", "Output how slow your dialogue fade was.");
+static int transition_time;
+
 extern Hook g_AcceptInputHook;
 
 // TODO: the windows signature is a bit dumb. fastcall is like thiscall
@@ -549,6 +557,31 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 			TriggerCMFlag(1, time, true);
 		} else {
 			TriggerCMFlag(0, time, true);
+		}
+	}
+
+	if (sar_transition_timer.GetBool()) {
+		bool start = false, end = false;
+		if (engine->IsCoop()) {
+			if (strstr(entName, "relay_exit_succeed") && !strcasecmp(inputName, "Enable"))
+				start = true;
+			if (strstr(entName, "timer_try_exit") && !strcasecmp(inputName, "Kill"))
+				end = true;
+		} else {
+			if (!strcmp(entName, "@transition_script") && !strcmp(parameter.ToString(), "TransitionReady()"))
+				start = true;
+			if (!strcmp(entName, "@transition_from_map") && !strcmp(inputName, "Trigger"))
+				end = true;
+		}
+		if (start) {
+			transition_time = session->GetTick();
+		}
+		if (end) {
+			if (transition_time != 0) {
+				auto time = (session->GetTick() - transition_time)  / 60.0f;
+				toastHud.AddToast("transition", Utils::ssprintf("Transition lost %.3f sec", time));
+				transition_time = 0;
+			}
 		}
 	}
 
