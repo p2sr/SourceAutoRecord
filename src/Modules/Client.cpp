@@ -47,10 +47,11 @@ Variable r_drawviewmodel;
 
 Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
 Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disables the saving/saved HUD which appears when you make a save.\n");
-Variable sar_disable_angle_decay("sar_disable_angle_decay", "0", 0, 2, "Removes angle decay.\n1 - remove small decay only.\n2 - remove angle decay entirely.\n");
 
+Variable sar_patch_small_angle_decay("sar_patch_small_angle_decay", "0", "Patches small angle decay (not minor decay).\n");
+Variable sar_patch_major_angle_decay("sar_patch_major_angle_decay", "0", "Patches major pitch angle decay. Requires cheats.\n");
 #ifdef _WIN32
-Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", 0, 1, "Patches minor pitch angle decay present on Windows version of the game.\n");
+Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", "Patches minor pitch angle decay present on Windows version of the game.\n");
 #endif
 
 REDECL(Client::LevelInitPreEntity);
@@ -446,6 +447,52 @@ DETOUR_MID_MH(Client::ApplyMouse_Mid) {
 Hook g_ApplyMouseMidHook(&Client::ApplyMouse_Mid_Hook);
 #endif
 
+static void (*MatrixBuildRotationAboutAxis)(Vector &, float, matrix3x4_t &);
+extern Hook MatrixBuildRotationAboutAxisHook;
+static void MatrixBuildRotationAboutAxis_Detour(Vector *vAxisOfRot, float angleDegrees, matrix3x4_t *dst) {
+	float radians;
+	float xSquared;
+	float ySquared;
+	float zSquared;
+	float fSin;
+	float fCos;
+
+	// this is the actual patch
+	// some decay will happen initially when you get major decay
+	if (fabsf(vAxisOfRot->z - 1.0f) < 0.000001f) {
+		vAxisOfRot->z = 1.0f;
+	}
+
+	radians = angleDegrees * (M_PI / 180.0);
+	#ifdef _WIN32
+		fSin = sin(radians);
+		fCos = cos(radians);
+	#else
+		sincosf(radians, &fSin, &fCos);
+	#endif
+
+	xSquared = vAxisOfRot->x * vAxisOfRot->x;
+	ySquared = vAxisOfRot->y * vAxisOfRot->y;
+	zSquared = vAxisOfRot->z * vAxisOfRot->z;
+
+	dst->m_flMatVal[0][0] = xSquared + (1 - xSquared) * fCos;
+	dst->m_flMatVal[1][0] = vAxisOfRot->x * vAxisOfRot->y * (1 - fCos) + vAxisOfRot->z * fSin;
+	dst->m_flMatVal[2][0] = vAxisOfRot->z * vAxisOfRot->x * (1 - fCos) - vAxisOfRot->y * fSin;
+
+	dst->m_flMatVal[0][1] = vAxisOfRot->x * vAxisOfRot->y * (1 - fCos) - vAxisOfRot->z * fSin;
+	dst->m_flMatVal[1][1] = ySquared + (1 - ySquared) * fCos;
+	dst->m_flMatVal[2][1] = vAxisOfRot->y * vAxisOfRot->z * (1 - fCos) + vAxisOfRot->x * fSin;
+
+	dst->m_flMatVal[0][2] = vAxisOfRot->z * vAxisOfRot->x * (1 - fCos) + vAxisOfRot->y * fSin;
+	dst->m_flMatVal[1][2] = vAxisOfRot->y * vAxisOfRot->z * (1 - fCos) - vAxisOfRot->x * fSin;
+	dst->m_flMatVal[2][2] = zSquared + (1 - zSquared) * fCos;
+
+	dst->m_flMatVal[0][3] = 0;
+	dst->m_flMatVal[1][3] = 0;
+	dst->m_flMatVal[2][3] = 0;
+}
+Hook MatrixBuildRotationAboutAxisHook(&MatrixBuildRotationAboutAxis_Detour);
+
 // C_Paint_Input::ApplyMouse
 DETOUR(Client::ApplyMouse, int nSlot, QAngle &viewangles, CUserCmd *cmd, float mouse_x, float mouse_y) {
 	auto lastViewAngles = viewangles;
@@ -453,15 +500,30 @@ DETOUR(Client::ApplyMouse, int nSlot, QAngle &viewangles, CUserCmd *cmd, float m
 #ifdef _WIN32
 	if (sar_patch_minor_angle_decay.GetBool()) g_ApplyMouseMidHook.Enable();
 #endif
+	if (sar_patch_major_angle_decay.GetBool() && sv_cheats.GetBool()) MatrixBuildRotationAboutAxisHook.Enable();
 	auto result = Client::ApplyMouse(thisptr, nSlot, viewangles, cmd, mouse_x, mouse_y);
+	if (sar_patch_major_angle_decay.GetBool() && sv_cheats.GetBool()) MatrixBuildRotationAboutAxisHook.Disable();
 #ifdef _WIN32
 	if (sar_patch_minor_angle_decay.GetBool()) g_ApplyMouseMidHook.Disable();
 #endif
 
-	if (sar_disable_angle_decay.GetBool()) {
-		if (!mouse_x && !mouse_y && !viewangles.z && (sar_disable_angle_decay.GetInt() > 1 || fabsf(viewangles.x) < 45.0f)) {
-			viewangles = lastViewAngles;
-		}
+	Vector delta = {
+		viewangles.x - lastViewAngles.x,
+		viewangles.y - lastViewAngles.y,
+		viewangles.z - lastViewAngles.z,
+	};
+
+	auto upDelta = fabsf(client->GetPortalLocal(client->GetPlayer(nSlot + 1)).m_up.z - 1);
+
+	if (sar_patch_small_angle_decay.GetBool()) {
+		// yaw decay
+		if (mouse_x == 0.0f && delta.y != 0.0f) viewangles.y = lastViewAngles.y;
+		if ((upDelta == 0.0f || (fabsf(viewangles.x) < 45.0f))
+#ifdef _WIN32
+			&& fabsf(viewangles.x) > 15.0f
+#endif
+			&& (mouse_y == 0.0f && delta.x != 0.0f))
+			viewangles.x = lastViewAngles.x;
 	}
 
 	return result;
@@ -673,7 +735,13 @@ bool Client::Init() {
 				g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr);
 				g_ApplyMouseMidHook.Disable();
 				Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
+				MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "55 8B EC 51 F3 0F 10 45 ? 0F 5A C0 F2 0F 59 05 ? ? ? ? 66 0F 5A C0 F3 0F 11 45 ? E8 ? ? ? ? F3 0F 11 45 ? F3 0F 10 45 ? E8 ? ? ? ? 8B 45 ? F3 0F 10 08");
+			#else
+				MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "56 66 0F EF C0 53 83 EC 14 8B 5C 24 ? 8D 44 24");
 			#endif
+
+			MatrixBuildRotationAboutAxisHook.SetFunc(MatrixBuildRotationAboutAxis);
+			MatrixBuildRotationAboutAxisHook.Disable(); // only during ApplyMouse
 
 			in_forceuser = Variable("in_forceuser");
 			if (!!in_forceuser && this->g_Input) {
