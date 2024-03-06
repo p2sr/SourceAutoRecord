@@ -276,6 +276,8 @@ static bool FindClosestPassableSpace_Detour(void *entity, const Vector &ind_push
 }
 Hook FindClosestPassableSpace_Hook(&FindClosestPassableSpace_Detour);
 
+static int (*UTIL_GetCommandClientIndex)();
+
 extern Hook g_ViewPunch_Hook;
 DETOUR_T(void, Server::ViewPunch, const QAngle &offset) {
 	QAngle off1 = offset;
@@ -887,6 +889,12 @@ bool Server::Init() {
 	UTIL_FindClosestPassableSpace_Hook.SetFunc(UTIL_FindClosestPassableSpace);
 	FindClosestPassableSpace_Hook.SetFunc(FindClosestPassableSpace);
 
+#ifdef _WIN32
+	UTIL_GetCommandClientIndex = (decltype (UTIL_GetCommandClientIndex))Memory::Scan(server->Name(), "A1 ? ? ? ? 40 C3");
+#else
+	UTIL_GetCommandClientIndex = (decltype (UTIL_GetCommandClientIndex))Memory::Scan(server->Name(), "A1 ? ? ? ? 83 C0 01 C3");
+#endif
+
 	{
 		// a call to Plat_FloatTime in CGameMovement::CheckStuck
 #ifdef _WIN32
@@ -966,8 +974,8 @@ CON_COMMAND(sar_give_betsrighter, "sar_give_betsrighter [n] - gives the player i
 	}
 }
 DETOUR_COMMAND(Server::say) {
-	if (args.ArgC() == 1) g_chatType = 1;
-	if (args.ArgC() != 2 || Utils::StartsWith(args[1], "!SAR:") || !networkManager.HandleGhostSay(args[1])) {
+	auto clientidx = UTIL_GetCommandClientIndex();
+	if (args.ArgC() != 2 || Utils::StartsWith(args[1], "!SAR:") || !networkManager.HandleGhostSay(args[1], clientidx)) {
 		g_wasChatType = 0;
 		Server::say_callback(args);
 	}

@@ -106,7 +106,7 @@ public:
 	void UpdateCountdown();
 
 	bool IsSyncing();
-	bool HandleGhostSay(const char *str);
+	bool HandleGhostSay(const char *str, int clientidx);
 	bool AcknowledgeGhost(std::shared_ptr<GhostEntity> ghost);
 
 	void UpdateSyncUi();

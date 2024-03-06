@@ -22,7 +22,6 @@
 #include <set>
 
 #define ORANGE_MESSAGE_TYPE "orange-msg"
-#define BLUE_MESSAGE_TYPE "blue-msg"
 
 Variable ghost_sync_countdown("ghost_sync_countdown", "3", 0, "The number of seconds of countdown to show at the start of every synced map. 0 to disable.\n");
 Variable ghost_spec_see_spectators("ghost_spec_see_spectators", "0", "Whether to see other spectators while spectating.\n");
@@ -1192,14 +1191,14 @@ CON_COMMAND(ghost_ping, "Pong!\n") {
 int g_chatType = 0;
 int g_wasChatType = 0;
 
-bool NetworkManager::HandleGhostSay(const char *msg) {
+bool NetworkManager::HandleGhostSay(const char *msg, int clientidx) {
 	if (Utils::StartsWith(msg, "\x07")) return false; // orange saying IT'S REAL
+	if (clientidx != 1) {
+		NetMessage::SendMsg(ORANGE_MESSAGE_TYPE, msg, strlen(msg));
+		return true;
+	}
+
 	if (g_chatType != 0 || g_wasChatType != 2) {
-		if (g_wasChatType != 1) {
-			NetMessage::SendMsg(ORANGE_MESSAGE_TYPE, msg, strlen(msg));
-			return true;
-		}
-		g_wasChatType = 0;
 		return false;
 	}
 
@@ -1215,25 +1214,12 @@ ON_INIT {
 	NetMessage::RegisterHandler(ORANGE_MESSAGE_TYPE, +[](const void *data, size_t size) {
 		auto msg = std::string((char *)data, size);
 		if (engine->IsOrange()) {
-			switch (g_wasChatType) {
-			case 0:
-				NetMessage::SendMsg(BLUE_MESSAGE_TYPE, msg.c_str(), strlen(msg.c_str()));
-				break;
-			case 1:
-				engine->ExecuteCommand(Utils::ssprintf("say \"\x07%s\"", msg.c_str()).c_str(), true);
-				break;
-			case 2:
+			if (g_wasChatType == 2) {
 				if (networkManager.isConnected) networkManager.SendMessageToAll(msg.c_str());
-				break;
+			} else {
+				engine->ExecuteCommand(Utils::ssprintf("say \"\x07%s\"", msg.c_str()).c_str(), true);
 			}
 			g_wasChatType = 0;
-		}
-	});
-	NetMessage::RegisterHandler(BLUE_MESSAGE_TYPE, +[](const void *data, size_t size) {
-		auto msg = std::string((char *)data, size);
-		if (!engine->IsOrange()) {
-			g_wasChatType = 1;
-			engine->ExecuteCommand(Utils::ssprintf("say \"%s\"", msg.c_str()).c_str(), true);
 		}
 	});
 }
