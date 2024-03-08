@@ -382,7 +382,7 @@
 |sar_prevent_mat_snapshot_recompute|0|Shortens loading times by preventing state snapshot recomputation.<br>|
 |sar_print_stats|cmd|sar_print_stats - prints your statistics if those are loaded<br>|
 |sar_quickhud_mode|0|Set the quickhud mode :<br>0: Default quickhud<br>1: Customizable quickhud<br>2: quickhud from .png<br>|
-|sar_quickhud_set_texture|cmd|sar_quickhud_set_texture \<filepath> - enter the base name, it will search for \<filepath>1.png, \<filepath>2.png, \<filepath>3.png and \<filepath>4.png<br>ex: sar_quickhud_set_texture "E:\Steam\steamapps\common\Portal 2\portal2\krzyhau"<br>|
+|sar_quickhud_set_texture|cmd|sar_quickhud_set_texture \<filepath> - enter the base name, it will search for \<filepath>1.png, \<filepath>2.png, \<filepath>3.png and \<filepath>4.png<br>ex: sar_quickhud_set_texture "E:\\Steam\\steamapps\\common\\Portal 2\\portal2\\krzyhau"<br>|
 |sar_record_at|-1|Start recording a demo at the tick specified. Will use sar_record_at_demo_name.<br>|
 |sar_record_at_demo_name|chamber|Name of the demo automatically recorded.<br>|
 |sar_record_at_increment|0|Increment automatically the demo name.<br>|
@@ -576,6 +576,7 @@
 |sar_trace_teleport_at|cmd|sar_trace_teleport_at \<tick> [player slot] [trace name] - teleports the player at the given trace tick on the given trace ID (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).<br>|
 |sar_trace_teleport_eye|cmd|sar_trace_teleport_eye \<tick> [player slot] [trace name] - teleports the player to the eye position at the given trace tick on the given trace (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).<br>|
 |sar_trace_use_shot_eyeoffset|1|Uses eye offset and angles accurate for portal shooting.<br>|
+|sar_transition_timer|0|Output how slow your dialogue fade was.|
 |sar_update|cmd|sar_update [release\|pre] [exit] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade<br>|
 |sar_velocitygraph|0|Shows velocity graph.<br>|
 |sar_velocitygraph_background|0|Background of velocity graph.<br>|
@@ -594,6 +595,7 @@
 |sar_vphys_setspin|cmd|sar_vphys_setspin \<hitbox> \<angvel> - sets rotation speed to either standing (0) or crouching (1) havok collision shadow<br>|
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop</i>|cmd|sar_workshop \<file> [ss/changelevel] - same as "map" command but lists workshop maps<br>|
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop_list</i>|cmd|sar_workshop_list - prints all workshop maps<br>|
+|sar_workshop_skip|cmd|sar_workshop_skip - Skips to the next level in workshop<br>|
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop_update</i>|cmd|sar_workshop_update - updates the workshop map list<br>|
 |seq|cmd|seq \<commands>... - runs a sequence of commands one tick after one another<br>|
 |svar_abs|cmd|svar_abs \<variable> - perform the given operation on an svar<br>|
