@@ -319,6 +319,8 @@ DETOUR(Client::MsgFunc_SayText2, bf_read &msg) {
 		if (!c) break;
 		str += c;
 	}
+	// remove any newlines (reloaded / old chat format has one trailing)
+	str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
 
 	if (NetMessage::ChatData(str)) {
 		// skip the other crap, just in case it matters
