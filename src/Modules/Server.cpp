@@ -491,7 +491,7 @@ ON_EVENT(PRE_TICK) {
 	setPortalsThruPortals(sv_cheats.GetBool() && sar_portals_thru_portals.GetBool());
 }
 
-Variable sar_transition_timer("sar_transition_timer", "0", "Output how slow your dialogue fade was.");
+Variable sar_transition_timer("sar_transition_timer", "0", "Output how slow your dialogue fade was.\n");
 static int transition_time;
 
 extern Hook g_AcceptInputHook;
