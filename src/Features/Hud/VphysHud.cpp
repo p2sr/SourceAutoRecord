@@ -185,7 +185,7 @@ CON_COMMAND(sar_vphys_setgravity, "sar_vphys_setgravity <hitbox> <enabled> - set
 	EnableGravity(hitbox ? m_pShadowCrouch : m_pShadowStand, enabled);
 }
 
-CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> - sets rotation angle to either standing (0) or crouching (1) havok collision shadow\n") {
+CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> [component = z] - sets rotation angle to either standing (0) or crouching (1) havok collision shadow\n") {
 	if (engine->demoplayer->IsPlaying()) {
 		return;
 	}
@@ -193,7 +193,7 @@ CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> - sets rota
 		return console->Print("Cannot use sar_vphys_setangle without sv_cheats set to 1.\n");
 	}
 
-	if (args.ArgC() != 3) {
+	if (args.ArgC() < 3 || args.ArgC() > 4) {
 		return console->Print(sar_vphys_setangle.ThisPtr()->m_pszHelpString);
 	}
 
@@ -206,19 +206,28 @@ CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> - sets rota
 	_SetPosition SetPosition = Memory::VMT<_SetPosition>(m_pShadowStand, Offsets::SetPosition);
 	_GetPosition GetPosition = Memory::VMT<_GetPosition>(m_pShadowStand, Offsets::GetPosition);
 
-	int hitbox = std::atoi(args[1]);
-	float angle = std::atof(args[2]);
+	auto hitbox = std::atoi(args[1]);
+	auto angle = float(std::atof(args[2]));
+	auto component = args.ArgC() == 4 ? args[3] : "z";
 
 	void *selected = hitbox ? m_pShadowCrouch : m_pShadowStand;
 
 	Vector v;
 	QAngle q;
 	GetPosition(selected, &v, &q);
-	q.z = angle;
+
+	if (!strcmp(component, "x")) {
+		q.x = angle;
+	} else if (!strcmp(component, "y")) {
+		q.y = angle;
+	} else {
+		q.z = angle;
+	}
+
 	SetPosition(selected, v, q, false);
 }
 
-CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> - sets rotation speed to either standing (0) or crouching (1) havok collision shadow\n") {
+CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> [component = x] - sets rotation speed to either standing (0) or crouching (1) havok collision shadow\n") {
 	if (engine->demoplayer->IsPlaying()) {
 		return;
 	}
@@ -226,7 +235,7 @@ CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> - sets rotat
 		return console->Print("Cannot use sar_vphys_setspin without sv_cheats set to 1.\n");
 	}
 
-	if (args.ArgC() != 3) {
+	if (args.ArgC() < 3 || args.ArgC() > 4) {
 		return console->Print(sar_vphys_setspin.ThisPtr()->m_pszHelpString);
 	}
 
@@ -239,14 +248,23 @@ CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> - sets rotat
 	using _SetVelocity = void(__rescall *)(void *thisptr, const Vector *velocity, const Vector *angularVelocity);
 	_SetVelocity SetVelocity = Memory::VMT<_SetVelocity>(m_pShadowStand, Offsets::SetVelocity);
 
-	int hitbox = std::atoi(args[1]);
-	float angle = std::atof(args[2]);
+	auto hitbox = std::atoi(args[1]);
+	auto angvel = float(std::atof(args[2]));
+	auto component = args.ArgC() == 4 ? args[3] : "x";
 
 	void *selected = hitbox ? m_pShadowCrouch : m_pShadowStand;
 
 	Vector v;
 	GetVelocity(selected, NULL, &v);
-	v.x = angle;
+	
+	if (!strcmp(component, "y")) {
+		v.y = angvel;
+	} else if (!strcmp(component, "z")) {
+		v.z = angvel;
+	} else {
+		v.x = angvel;
+	}
+
 	SetVelocity(selected, NULL, &v);
 }
 
