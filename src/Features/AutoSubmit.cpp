@@ -6,6 +6,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Utils/json11.hpp"
+#include "Version.hpp"
 #include <cctype>
 #include <fstream>
 #include <sstream>
@@ -426,6 +427,11 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 		console->Print("Cheated; not autosubmitting\n");
 		return;
 	}
+
+#if defined(SAR_DEV_BUILD)
+	console->Print("Dev SAR build; not autosubmitting\n");
+	return;
+#endif
 
 	auto it = g_map_ids.find(engine->GetCurrentMapName());
 	if (it == g_map_ids.end()) {
