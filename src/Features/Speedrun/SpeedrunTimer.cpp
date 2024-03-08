@@ -223,12 +223,6 @@ ON_EVENT(SESSION_START) {
 				sv_cheats.SetValue(sv_cheats.GetString());
 			}
 			break;
-		case SourceGame_PortalReloaded:
-			if (engine->GetCurrentMapName() == "mp_coop_pr_cubes") {
-				if (!sv_cheats.GetBool()) sv_cheats.SetValue(2); // mod is bad so we shouldn't reset cheats after
-				engine->ExecuteCommand("ent_fire start_movie kill; ent_fire vc_blue disable; ent_fire vc_orange disable; ent_fire @tp_blue enable; ent_fire @tp_orange enable; ent_fire rt_stop_sounds kill", true);
-			}
-			break;
 		default:
 			break;
 	}
@@ -240,6 +234,10 @@ ON_EVENT(PRE_TICK) {
 	if (engine->IsOrange()) return;
 
 	if (engine->GetCurrentMapName() == "mp_coop_pr_cubes") {
+		if (g_orangeReady && entityList->GetEntityInfoByName("start_movie") != NULL) {
+			if (!sv_cheats.GetBool()) sv_cheats.SetValue(2); // mod is bad so we shouldn't reset cheats after
+			engine->ExecuteCommand("ent_fire start_movie kill; ent_fire vc_blue disable; ent_fire vc_orange disable; ent_fire @tp_blue enable; ent_fire @tp_orange enable; ent_fire rt_stop_sounds kill", true);
+		}
 		auto player = server->GetPlayer(1);
 		if (player) {
 			auto originZ = server->GetAbsOrigin(player).z;
