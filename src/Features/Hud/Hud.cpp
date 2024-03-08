@@ -828,7 +828,7 @@ HUD_ELEMENT2(tbeam, "0", "Draw the name of the funnel player is currently in (re
 	if (!tbeamHandle || (uint32_t)tbeamHandle == (unsigned)Offsets::INVALID_EHANDLE_INDEX) {
 		ctx->DrawElement("tbeam: none");
 	} else {
-		ctx->DrawElement("tbeam: [0x%#08X]", tbeamHandle);
+		ctx->DrawElement("tbeam: [0x%08X]", (uint32_t)tbeamHandle);
 	}
 }
 
