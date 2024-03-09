@@ -40,6 +40,10 @@ void StrafeHud::SetData(int slot, void *player, CUserCmd *cmd, bool serverside) 
 	auto playerInfo = tasPlayer->GetPlayerInfo(slot, player, cmd, !serverside);
 	float oldVel = playerInfo.velocity.Length2D();
 
+	if (!sar_strafehud_use_friction.GetBool()) {
+		oldVel = autoStrafeTool->GetGroundFrictionVelocity(playerInfo).Length2D();
+	}
+
 	auto bestAng = autoStrafeTool->GetFastestStrafeAngle(playerInfo);
 	float biggestAccel = autoStrafeTool->GetVelocityAfterMove(playerInfo, cosf(bestAng), sinf(bestAng)).Length2D() - oldVel;
 	float smallestAccel = 0.0f;
@@ -57,9 +61,6 @@ void StrafeHud::SetData(int slot, void *player, CUserCmd *cmd, bool serverside) 
 
 	float detail = sar_strafehud_size.GetInt() * sar_strafehud_detail_scale.GetFloat();
 	float step = 1.0f / detail;
-	if (!sar_strafehud_use_friction.GetBool()) {
-		oldVel = autoStrafeTool->GetGroundFrictionVelocity(playerInfo).Length2D();
-	}
 
 	for (float i = 0.0f; i < 1.0f; i += step) {
 		float ang = i * 2.0f * M_PI + relAng;
@@ -87,15 +88,18 @@ void StrafeHud::SetData(int slot, void *player, CUserCmd *cmd, bool serverside) 
 		}
 	}
 
-	// assign calculated values
-	data[slot].maxAccel = biggestAccel;
-	data[slot].minAccel = smallestAccel;
-	
 	while (data[slot].precisionLog.size() > fmaxf(sar_strafehud_avg_sample_count.GetInt(), 0)) {
 		data[slot].precisionLog.pop_front();
 	}
+
 	float nextVel = autoStrafeTool->GetVelocityAfterMove(playerInfo, cmd->forwardmove, cmd->sidemove).Length2D();
 	float nextAccel = nextVel - oldVel;
+	if (nextAccel > biggestAccel) biggestAccel = nextAccel;
+
+	// assign calculated values
+	data[slot].maxAccel = biggestAccel;
+	data[slot].minAccel = smallestAccel;
+
 	float precision = (data[slot].maxAccel == 0) ? 1.0f : nextAccel / data[slot].maxAccel;
 	data[slot].precisionLog.push_back(precision);
 	data[slot].avgPrecision = 0;
