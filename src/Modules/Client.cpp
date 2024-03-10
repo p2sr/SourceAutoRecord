@@ -513,10 +513,10 @@ DETOUR(Client::ApplyMouse, int nSlot, QAngle &viewangles, CUserCmd *cmd, float m
 		viewangles.z - lastViewAngles.z,
 	};
 
-	// HACKHACK: Orange can't get client offsets?
 	auto upDelta = 1.0f;
-	if (!engine->IsCoop() || !engine->IsOrange()) {
-		upDelta = fabsf(client->GetPortalLocal(client->GetPlayer(nSlot + 1)).m_up.z - 1);
+	auto player = client->GetPlayer(nSlot + 1);
+	if (player) {
+		upDelta = fabsf(client->GetPortalLocal(player).m_up.z - 1);
 	}
 
 	if (sar_patch_small_angle_decay.GetBool()) {
