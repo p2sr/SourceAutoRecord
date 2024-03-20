@@ -686,6 +686,13 @@ void Host_AccumulateTime_Detour(float dt) {
 			*host_frametime = *host_frametime_unbounded;
 		} else {
 			if (sar_frametime_debug.GetBool()) console->Print("Host_AccumulateTime: %f (capped to %f)\n", *host_frametime_unbounded, *host_frametime);
+			if (engine->demorecorder->isRecordingDemo && g_cap_frametime == 0) {
+				char *data = new char[5];
+				data[0] = 0x0F;
+				*(float *)(data + 1) = *host_frametime_unbounded;
+				engine->demorecorder->RecordData(data, 5);
+				delete[] data;
+			}
 		}
 	} else {
 		if (sar_frametime_debug.GetBool()) console->Print("Host_AccumulateTime: %f\n", *host_frametime);
