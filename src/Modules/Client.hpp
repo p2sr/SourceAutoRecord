@@ -155,3 +155,5 @@ extern Variable prevent_crouch_jump;
 extern Variable r_portalsopenall;
 extern Variable r_drawviewmodel;
 extern Variable crosshairVariable;
+
+extern Command sar_workshop_skip;

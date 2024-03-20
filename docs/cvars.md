@@ -361,6 +361,9 @@
 |sar_paint_reseed|cmd|sar_paint_reseed \<seed> - re-seed all paint sprayers in the map to the given value (-9999 to 9999 inclusive)<br>|
 |sar_patch_bhop|0|Patches bhop by limiting wish direction if your velocity is too high.<br>|
 |sar_patch_cfg|0|Patches Crouch Flying Glitch.<br>|
+|sar_patch_major_angle_decay|0|Patches major pitch angle decay. Requires cheats.<br>|
+|sar_patch_minor_angle_decay|0|Patches minor pitch angle decay present on Windows version of the game.<br>|
+|sar_patch_small_angle_decay|0|Patches small angle decay (not minor decay).<br>|
 |sar_pause_at|-1|Pause at the specified tick. -1 to deactivate it.<br>|
 |sar_pause_for|0|Pause for this amount of ticks.<br>|
 |sar_pip_align|cmd|sar_pip_align \<top\|center\|bottom> \<left\|center\|right> - aligns the remote view.<br>|
@@ -576,7 +579,7 @@
 |sar_trace_teleport_at|cmd|sar_trace_teleport_at \<tick> [player slot] [trace name] - teleports the player at the given trace tick on the given trace ID (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).<br>|
 |sar_trace_teleport_eye|cmd|sar_trace_teleport_eye \<tick> [player slot] [trace name] - teleports the player to the eye position at the given trace tick on the given trace (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).<br>|
 |sar_trace_use_shot_eyeoffset|1|Uses eye offset and angles accurate for portal shooting.<br>|
-|sar_transition_timer|0|Output how slow your dialogue fade was.|
+|sar_transition_timer|0|Output how slow your dialogue fade was.<br>|
 |sar_update|cmd|sar_update [release\|pre] [exit] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade<br>|
 |sar_velocitygraph|0|Shows velocity graph.<br>|
 |sar_velocitygraph_background|0|Background of velocity graph.<br>|
@@ -589,13 +592,13 @@
 |sar_vphys_hud_show_hitboxes|2|Sets visibility of hitboxes when vphys hud is active.<br>0 = hitboxes are not drawn<br>1 = only active vphys hitbox is drawn<br>2 = active vphys and player's bounding box are drawn<br>3 = both vphys hitboxes and player's bounding box are drawn<br>|
 |sar_vphys_hud_x|0|The x position of the vphys HUD.<br>|
 |sar_vphys_hud_y|0|The y position of the vphys HUD.<br>|
-|sar_vphys_setangle|cmd|sar_vphys_setangle \<hitbox> \<angle> - sets rotation angle to either standing (0) or crouching (1) havok collision shadow<br>|
+|sar_vphys_setangle|cmd|sar_vphys_setangle \<hitbox> \<angle> [component = z] - sets rotation angle to either standing (0) or crouching (1) havok collision shadow<br>|
 |sar_vphys_setasleep|cmd|sar_vphys_setasleep \<hitbox> \<asleep> - sets whether your standing (0) or crouching (1) havok collision shadow is asleep<br>|
 |sar_vphys_setgravity|cmd|sar_vphys_setgravity \<hitbox> \<enabled> - sets gravity flag state to either standing (0) or crouching (1) havok collision shadow<br>|
-|sar_vphys_setspin|cmd|sar_vphys_setspin \<hitbox> \<angvel> - sets rotation speed to either standing (0) or crouching (1) havok collision shadow<br>|
+|sar_vphys_setspin|cmd|sar_vphys_setspin \<hitbox> \<angvel> [component = x] - sets rotation speed to either standing (0) or crouching (1) havok collision shadow<br>|
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop</i>|cmd|sar_workshop \<file> [ss/changelevel] - same as "map" command but lists workshop maps<br>|
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop_list</i>|cmd|sar_workshop_list - prints all workshop maps<br>|
-|sar_workshop_skip|cmd|sar_workshop_skip - Skips to the next level in workshop<br>|
+|<i title="Portal 2&#10;Aperture Tag">sar_workshop_skip</i>|cmd|sar_workshop_skip - Skips to the next level in workshop<br>|
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop_update</i>|cmd|sar_workshop_update - updates the workshop map list<br>|
 |seq|cmd|seq \<commands>... - runs a sequence of commands one tick after one another<br>|
 |svar_abs|cmd|svar_abs \<variable> - perform the given operation on an svar<br>|

@@ -793,11 +793,13 @@ bool Client::Init() {
 	g_DrawTranslucentRenderablesHook.SetFunc(Client::DrawTranslucentRenderables);
 	g_DrawOpaqueRenderablesHook.SetFunc(Client::DrawOpaqueRenderables);
 
+	if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
 #ifdef _WIN32
-	MsgPreSkipToNextLevel = (decltype(MsgPreSkipToNextLevel))Memory::Scan(client->Name(), "57 8B F9 E8 ? ? ? ? 8B C8 E8 ? ? ? ? 0B C2");
+		MsgPreSkipToNextLevel = (decltype(MsgPreSkipToNextLevel))Memory::Scan(client->Name(), "57 8B F9 E8 ? ? ? ? 8B C8 E8 ? ? ? ? 0B C2");
 #else
-	MsgPreSkipToNextLevel = (decltype(MsgPreSkipToNextLevel))Memory::Scan(client->Name(), "53 83 EC 08 E8 ? ? ? ? 83 EC 0C 50 E8 ? ? ? ? 83 C4 10 09 C2");
+		MsgPreSkipToNextLevel = (decltype(MsgPreSkipToNextLevel))Memory::Scan(client->Name(), "53 83 EC 08 E8 ? ? ? ? 83 EC 0C 50 E8 ? ? ? ? 83 C4 10 09 C2");
 #endif
+	}
 
 	if (sar.game->Is(SourceGame_Portal2)) {
 #ifdef _WIN32
