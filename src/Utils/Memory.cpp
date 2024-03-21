@@ -94,10 +94,6 @@ bool Memory::TryGetModule(const char *moduleName, Memory::ModuleInfo *info) {
 
 	return false;
 }
-const char *Memory::GetModulePath(const char *moduleName) {
-	auto info = Memory::ModuleInfo();
-	return (Memory::TryGetModule(moduleName, &info)) ? std::string(info.path).c_str() : nullptr;
-}
 void *Memory::GetModuleHandleByName(const char *moduleName) {
 	auto info = Memory::ModuleInfo();
 #ifdef _WIN32
@@ -110,23 +106,6 @@ void Memory::CloseModuleHandle(void *moduleHandle) {
 #ifndef _WIN32
 	dlclose(moduleHandle);
 #endif
-}
-std::string Memory::GetProcessName() {
-#ifdef _WIN32
-	char temp[MAX_PATH];
-	GetModuleFileName(NULL, temp, sizeof(temp));
-#else
-	char link[32];
-	char temp[MAX_PATH] = {0};
-	std::sprintf(link, "/proc/%d/exe", getpid());
-	readlink(link, temp, sizeof(temp));
-#endif
-
-	auto proc = std::string(temp);
-	auto index = proc.find_last_of("\\/");
-	proc = proc.substr(index + 1, proc.length() - index);
-
-	return proc;
 }
 
 uintptr_t Memory::FindAddress(const uintptr_t start, const uintptr_t end, const char *target) {

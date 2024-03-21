@@ -26,10 +26,8 @@ namespace Memory {
 	extern std::vector<ModuleInfo> moduleList;
 
 	bool TryGetModule(const char *moduleName, ModuleInfo *info);
-	const char *GetModulePath(const char *moduleName);
 	void *GetModuleHandleByName(const char *moduleName);
 	void CloseModuleHandle(void *moduleHandle);
-	std::string GetProcessName();
 
 	uintptr_t FindAddress(const uintptr_t start, const uintptr_t end, const char *target);
 	uintptr_t Scan(const char *moduleName, const char *pattern, int offset = 0);
