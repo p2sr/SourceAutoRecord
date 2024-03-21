@@ -230,9 +230,9 @@ void Cvars::Lock() {
 
 		Variable("soundfade").RemoveFlag(FCVAR_CLIENTCMD_CAN_EXECUTE);
 		Variable("leaderboard_open").RemoveFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
-		Variable("gameui_activate").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
-		Variable("gameui_allowescape").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
-		Variable("gameui_preventescape").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_activate").RemoveFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_allowescape").RemoveFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_preventescape").RemoveFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 		Variable("setpause").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
 		Variable("snd_ducktovolume").RemoveFlag(FCVAR_SERVER_CAN_EXECUTE);
 
