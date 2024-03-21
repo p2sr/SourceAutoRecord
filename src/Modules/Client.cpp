@@ -261,12 +261,13 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd *cmd) {
 	return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
 }
 
+// FIXME: Orange doesn't work
 DETOUR_COMMAND(Client::openleaderboard) {
 	Client::openleaderboard_callback(args);
 
 	if (args.ArgC() == 2 && !strcmp(args[1], "4")) {
 		if (sar_disable_challenge_stats_hud.GetBool()) {
-			auto ticks = 3;
+			auto ticks = 6;
 			if (sar_disable_challenge_stats_hud.GetInt() > 1) ticks = sar_disable_challenge_stats_hud.GetInt();
 			Scheduler::InHostTicks(ticks, []() {
 				engine->ExecuteCommand("-leaderboard");
