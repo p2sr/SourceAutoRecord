@@ -183,9 +183,6 @@ OFFSET_DEFAULT(ShouldDraw, 11, 12)
 // CGlobalEntityList
 OFFSET_DEFAULT(OnRemoveEntity, 1, 1)
 
-// CHud
-OFFSET_DEFAULT(GetName, 10, 11)
-
 // CGameEventManager
 OFFSET_DEFAULT(AddListener, 3, 4)
 OFFSET_DEFAULT(RemoveListener, 5, 6)

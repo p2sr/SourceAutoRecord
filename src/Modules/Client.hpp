@@ -91,9 +91,6 @@ public:
 	DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd *cmd);
 	DECL_DETOUR(CreateMove2, float flInputSampleTime, CUserCmd *cmd);
 
-	// CHud::GetName
-	DECL_DETOUR_T(const char *, GetName);
-
 	// CHudMultiplayerBasicInfo::ShouldDraw
 	DECL_DETOUR_T(bool, ShouldDraw_BasicInfo);
 
@@ -129,6 +126,7 @@ public:
 	DECL_DETOUR_T(void, OverrideView, CViewSetup *m_View);
 
 	DECL_DETOUR_COMMAND(playvideo_end_level_transition);
+	DECL_DETOUR_COMMAND(openleaderboard);
 
 	#ifdef _WIN32
 		// C_Paint_Input::ApplyMouse

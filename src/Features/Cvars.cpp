@@ -269,9 +269,9 @@ void Cvars::Unlock() {
 
 		Variable("soundfade").AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE);
 		Variable("leaderboard_open").AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
-		Variable("gameui_activate").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
-		Variable("gameui_allowescape").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
-		Variable("gameui_preventescape").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_activate").AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_allowescape").AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
+		Variable("gameui_preventescape").AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 		Variable("setpause").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
 		Variable("snd_ducktovolume").AddFlag(FCVAR_SERVER_CAN_EXECUTE);
 

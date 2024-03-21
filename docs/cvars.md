@@ -156,7 +156,7 @@
 |sar_demo_portal_interp_fix|1|Fix eye interpolation through portals in demo playback.<br>|
 |sar_demo_remove_broken|1|Whether to remove broken frames from demo playback<br>|
 |sar_demo_replay|cmd|sar_demo_replay - play the last recorded or played demo<br>|
-|<i title="Portal 2">sar_disable_challenge_stats_hud</i>|0|Disables opening the challenge mode stats HUD.<br>|
+|<i title="Portal 2">sar_disable_challenge_stats_hud</i>|0|Disables opening the challenge mode stats HUD. Greater than 1 specifies a custom amount of ticks to leave leaderboard open.<br>|
 |sar_disable_coop_score_hud|0|Disables the coop score HUD which appears in demo playback.<br>|
 |sar_disable_no_focus_sleep|0|Does not yield the CPU when game is not focused.<br>|
 |sar_disable_progress_bar_update|0|Disables excessive usage of progress bar.<br>|

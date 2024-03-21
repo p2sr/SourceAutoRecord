@@ -57,7 +57,6 @@ Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", "Patche
 REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
-REDECL(Client::GetName);
 REDECL(Client::ShouldDraw_BasicInfo);
 REDECL(Client::ShouldDraw_SaveStatus);
 REDECL(Client::MsgFunc_SayText2);
@@ -68,6 +67,7 @@ REDECL(Client::GetButtonBits);
 REDECL(Client::ApplyMouse);
 REDECL(Client::SteamControllerMove);
 REDECL(Client::playvideo_end_level_transition_callback);
+REDECL(Client::openleaderboard_callback);
 REDECL(Client::OverrideView);
 REDECL(Client::ProcessMovement);
 REDECL(Client::DrawTranslucentRenderables);
@@ -261,10 +261,18 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd *cmd) {
 	return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
 }
 
-// CHud::GetName
-DETOUR_T(const char *, Client::GetName) {
-	if (sar_disable_challenge_stats_hud.GetBool()) return "";
-	return Client::GetName(thisptr);
+DETOUR_COMMAND(Client::openleaderboard) {
+	Client::openleaderboard_callback(args);
+
+	if (args.ArgC() == 2 && !strcmp(args[1], "4")) {
+		if (sar_disable_challenge_stats_hud.GetBool()) {
+			auto ticks = 3;
+			if (sar_disable_challenge_stats_hud.GetInt() > 1) ticks = sar_disable_challenge_stats_hud.GetInt();
+			Scheduler::InHostTicks(ticks, []() {
+				engine->ExecuteCommand("-leaderboard");
+			});
+		}
+	}
 }
 
 // CHudMultiplayerBasicInfo::ShouldDraw
@@ -687,11 +695,6 @@ bool Client::Init() {
 			auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
 			auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
 			auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
-			auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
-
-			if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
-				this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
-			}
 
 			auto CHUDQuickInfo = FindElement(GetHud(-1), "CHUDQuickInfo");
 
@@ -753,6 +756,7 @@ bool Client::Init() {
 			}
 
 			Command::Hook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback_hook, Client::playvideo_end_level_transition_callback);
+			Command::Hook("+leaderboard", Client::openleaderboard_callback_hook, Client::openleaderboard_callback);
 		}
 
 		auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
@@ -873,6 +877,7 @@ void Client::Shutdown() {
 	Interface::Delete(this->g_HudSaveStatus);
 	Interface::Delete(this->g_GameMovement);
 	Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
+	Command::Unhook("+leaderboard", Client::openleaderboard_callback);
 }
 
 Client *client;
