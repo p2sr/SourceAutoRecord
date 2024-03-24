@@ -33,6 +33,8 @@
 #include <cstring>
 #include <deque>
 
+#define LEADERBOARD_MESSAGE_TYPE "cmboard"
+
 Variable cl_showpos;
 Variable cl_sidespeed;
 Variable cl_backspeed;
@@ -68,6 +70,7 @@ REDECL(Client::ApplyMouse);
 REDECL(Client::SteamControllerMove);
 REDECL(Client::playvideo_end_level_transition_callback);
 REDECL(Client::openleaderboard_callback);
+REDECL(Client::closeleaderboard_callback);
 REDECL(Client::OverrideView);
 REDECL(Client::ProcessMovement);
 REDECL(Client::DrawTranslucentRenderables);
@@ -261,18 +264,34 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd *cmd) {
 	return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
 }
 
-// FIXME: Orange doesn't work
+static bool g_leaderboardOpen = false;
 DETOUR_COMMAND(Client::openleaderboard) {
 	Client::openleaderboard_callback(args);
 
-	if (args.ArgC() == 2 && !strcmp(args[1], "4")) {
-		if (sar_disable_challenge_stats_hud.GetBool()) {
-			auto ticks = 6;
-			if (sar_disable_challenge_stats_hud.GetInt() > 1) ticks = sar_disable_challenge_stats_hud.GetInt();
-			Scheduler::InHostTicks(ticks, []() {
-				engine->ExecuteCommand("-leaderboard");
-			});
-		}
+	if (args.ArgC() == 2 && !strcmp(args[1], "4") &&
+		sar_disable_challenge_stats_hud.GetBool() &&
+		(!engine->IsCoop() || engine->IsOrange())) {
+		g_leaderboardOpen = true;
+		auto ticks = 6;
+		if (sar_disable_challenge_stats_hud.GetInt() > 1) ticks = sar_disable_challenge_stats_hud.GetInt();
+		Scheduler::InHostTicks(ticks, []() {
+			engine->ExecuteCommand("-leaderboard");
+		});
+	}
+}
+
+ON_INIT {
+	NetMessage::RegisterHandler(LEADERBOARD_MESSAGE_TYPE, +[](const void *data, size_t size) {
+		engine->ExecuteCommand("-leaderboard");
+	});
+}
+
+DETOUR_COMMAND(Client::closeleaderboard) {
+	Client::closeleaderboard_callback(args);
+
+	if (g_leaderboardOpen) {
+		g_leaderboardOpen = false;
+		NetMessage::SendMsg(LEADERBOARD_MESSAGE_TYPE, 0, 0);
 	}
 }
 
@@ -758,6 +777,7 @@ bool Client::Init() {
 
 			Command::Hook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback_hook, Client::playvideo_end_level_transition_callback);
 			Command::Hook("+leaderboard", Client::openleaderboard_callback_hook, Client::openleaderboard_callback);
+			Command::Hook("unpause", Client::closeleaderboard_callback_hook, Client::closeleaderboard_callback);
 		}
 
 		auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
@@ -879,6 +899,7 @@ void Client::Shutdown() {
 	Interface::Delete(this->g_GameMovement);
 	Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 	Command::Unhook("+leaderboard", Client::openleaderboard_callback);
+	Command::Unhook("unpause", Client::closeleaderboard_callback);
 }
 
 Client *client;

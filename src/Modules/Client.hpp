@@ -127,6 +127,7 @@ public:
 
 	DECL_DETOUR_COMMAND(playvideo_end_level_transition);
 	DECL_DETOUR_COMMAND(openleaderboard);
+	DECL_DETOUR_COMMAND(closeleaderboard);
 
 	#ifdef _WIN32
 		// C_Paint_Input::ApplyMouse
