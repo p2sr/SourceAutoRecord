@@ -128,6 +128,7 @@
 |sar_check_update|cmd|sar_check_update [release\|pre] - check whether the latest version of SAR is being used<br>|
 |sar_clear_lines|cmd|sar_clear_lines - clears all active drawline overlays<br>|
 |sar_cm_rightwarp|0|Fix CM wrongwarp.<br>|
+|sar_command_debug|0|Output debugging information to the console related to commands. **Breaks svar_capture**<br>|
 |sar_con_filter|0|Enable the console filter<br>|
 |sar_con_filter_allow|cmd|sar_con_filter_allow \<string> [end] - add an allow rule to the console filter, allowing until 'end' is matched<br>|
 |sar_con_filter_block|cmd|sar_con_filter_block \<string> [end] - add a disallow rule to the console filter, blocking until 'end' is matched<br>|

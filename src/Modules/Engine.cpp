@@ -59,6 +59,7 @@ Variable sar_pause_for("sar_pause_for", "0", 0, "Pause for this amount of ticks.
 Variable sar_tick_debug("sar_tick_debug", "0", 0, 3, "Output debugging information to the console related to ticks and frames.\n");
 Variable sar_frametime_debug("sar_frametime_debug", "0", "Output debugging information to the console related to frametime.\n"); // see also host_print_frame_times
 Variable sar_frametime_uncap("sar_frametime_uncap", "0", "EXPERIMENTAL - USE AT OWN RISK. Removes the 10-1000 FPS cap on frametime. More info https://wiki.portal2.sr/Frametime\n");
+Variable sar_command_debug("sar_command_debug", "0", 0, 2, "Output debugging information to the console related to commands. **Breaks svar_capture**\n");
 
 Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
 
@@ -701,6 +702,46 @@ void Host_AccumulateTime_Detour(float dt) {
 	if (g_cap_frametime == 2) g_cap_frametime = 0;
 }
 
+const ConCommandBase *(*g_Cmd_ExecuteCommand)(int eTarget, const CCommand &command, int nClientSlot /* = -1 */);
+const ConCommandBase *Cmd_ExecuteCommand_Detour(int eTarget, const CCommand &command, int nClientSlot /* = -1 */);
+static Hook Cmd_ExecuteCommand_Hook(&Cmd_ExecuteCommand_Detour);
+const ConCommandBase *Cmd_ExecuteCommand_Detour(int eTarget, const CCommand &command, int nClientSlot /* = -1 */) {
+	if (sar_command_debug.GetInt() >= 1) {
+		auto cmd = std::string(command.m_pArgSBuffer);
+		cmd.erase(std::remove(cmd.begin(), cmd.end(), '\n'), cmd.end());
+		cmd.erase(0, cmd.find_first_not_of(" \t"));
+		console->Print("Cmd_ExecuteCommand (%s) target: %d slot: %d\n", cmd.c_str(), eTarget, nClientSlot);
+	}
+	Cmd_ExecuteCommand_Hook.Disable();
+	auto ret = g_Cmd_ExecuteCommand(eTarget, command, nClientSlot);
+	Cmd_ExecuteCommand_Hook.Enable();
+	return ret;
+}
+
+static bool(__rescall *g_InsertCommand)(void *thisptr, char *pArgS, int nCommandSize, int nTick);
+#ifdef _WIN32
+bool __fastcall InsertCommand_Detour(void *thisptr, void *unused, char *pArgS, int nCommandSize, int nTick);
+#else
+bool InsertCommand_Detour(void *thisptr, char *pArgS, int nCommandSize, int nTick);
+#endif
+static Hook InsertCommand_Hook(&InsertCommand_Detour);
+#ifdef _WIN32
+bool __fastcall InsertCommand_Detour(void *thisptr, void *unused, char *pArgS, int nCommandSize, int nTick) {
+#else
+bool InsertCommand_Detour(void *thisptr, char *pArgS, int nCommandSize, int nTick) {
+#endif
+	if (sar_command_debug.GetInt() >= 2) {
+		auto cmd = std::string(pArgS);
+		cmd.erase(std::remove(cmd.begin(), cmd.end(), '\n'), cmd.end());
+		cmd.erase(0, cmd.find_first_not_of(" \t"));
+		console->Print("InsertCommand      (%s) tick: %d\n", cmd.c_str(), nTick);
+	}
+	InsertCommand_Hook.Disable();
+	bool ret = g_InsertCommand(thisptr, pArgS, nCommandSize, nTick);
+	InsertCommand_Hook.Enable();
+	return ret;
+}
+
 void _Host_RunFrame_Render_Detour();
 void (*_Host_RunFrame_Render)();
 static Hook _Host_RunFrame_Render_Hook(&_Host_RunFrame_Render_Detour);
@@ -1061,6 +1102,16 @@ bool Engine::Init() {
 		this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), "89 44 24 0C 8D 85 C0 FE FF FF 89 04 24 E8 ? ? ? ? 8B 85 8C FE FF FF 89 04 24 E8", 28);
 	}
 #endif
+
+#ifdef _WIN32
+	g_Cmd_ExecuteCommand = (decltype(g_Cmd_ExecuteCommand))Memory::Scan(this->Name(), "55 8B EC 57 8B 7D ? 8B 07 85 C0");
+	g_InsertCommand = (decltype(g_InsertCommand))Memory::Scan(this->Name(), "55 8B EC 56 57 8B 7D ? 8B F1 81 FF FF 01 00 00");
+#else
+	g_Cmd_ExecuteCommand = (decltype(g_Cmd_ExecuteCommand))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 75 ? 8B 3E");
+	g_InsertCommand = (decltype(g_InsertCommand))Memory::Scan(this->Name(), "55 57 56 53 83 EC 1C 8B 6C 24 ? 8B 5C 24 ? 8B 74 24 ? 81 FD FE 01 00 00");
+#endif
+	Cmd_ExecuteCommand_Hook.SetFunc(g_Cmd_ExecuteCommand);
+	InsertCommand_Hook.SetFunc(g_InsertCommand);
 
 	// Pesky memory protection doesn't want us overwriting code - we
 	// get around it with a call to mprotect or VirtualProtect
