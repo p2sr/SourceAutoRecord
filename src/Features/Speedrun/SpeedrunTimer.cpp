@@ -152,6 +152,12 @@ static int g_coopLastSyncTick;
 // Orange only - the tick we synced, as reported by the engine
 static int g_coopLastSyncEngineTick;
 
+// For coop autoreset -- this is really fucky because the CM timer takes
+// some time to reset after orange is ready. If the timer goes backwards
+// it probably reset to 0 and is now real
+static bool g_coopActuallyReady = false;
+static int g_coopLastReadyTick = 0;
+
 static void handleCoopPacket(const void *data, size_t size) {
 	if (!engine->IsOrange()) return;
 
@@ -483,6 +489,9 @@ void SpeedrunTimer::Start() {
 	bool wasRunning = g_speedrun.isRunning;
 	bool recover = g_speedrun.recovery != -1;
 	int recover_tick = g_speedrun.recovery;
+
+	g_coopActuallyReady = false;
+	g_coopLastReadyTick = 0;
 
 	SpeedrunTimer::Reset(false);
 
@@ -1111,12 +1120,20 @@ ON_EVENT(PRE_TICK) {
 	if (!SpeedrunTimer::IsRunning()) return;
 	if (engine->IsOrange()) return;
 	if (engine->IsGamePaused()) return;
-	if (engine->IsCoop() && !g_orangeReady) return;
+
+	int ticks = SpeedrunTimer::GetTotalTicks();
+	if (engine->IsCoop()) {
+		if (!g_orangeReady) return;
+		if (client->GetChallengeStatus() == CMStatus::CHALLENGE) {
+			if (!g_coopActuallyReady && g_coopLastReadyTick > ticks) g_coopActuallyReady = true;
+			g_coopLastReadyTick = ticks;
+			if (!g_coopActuallyReady) return;
+		}
+	}
 
 	size_t next_split_idx = g_speedrun.splits.size();
 	if (next_split_idx >= g_autoreset_ticks.size()) return;
 
-	int ticks = SpeedrunTimer::GetTotalTicks();
 	if (ticks > g_autoreset_ticks[next_split_idx]) {
 		SpeedrunTimer::Reset(false);
 		engine->ExecuteCommand("restart_level");
