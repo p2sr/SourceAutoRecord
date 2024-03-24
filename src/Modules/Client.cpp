@@ -268,15 +268,15 @@ static bool g_leaderboardOpen = false;
 DETOUR_COMMAND(Client::openleaderboard) {
 	Client::openleaderboard_callback(args);
 
-	if (args.ArgC() == 2 && !strcmp(args[1], "4") &&
-		sar_disable_challenge_stats_hud.GetBool() &&
-		(!engine->IsCoop() || engine->IsOrange())) {
+	if (args.ArgC() == 2 && !strcmp(args[1], "4")) {
 		g_leaderboardOpen = true;
-		auto ticks = 6;
-		if (sar_disable_challenge_stats_hud.GetInt() > 1) ticks = sar_disable_challenge_stats_hud.GetInt();
-		Scheduler::InHostTicks(ticks, []() {
-			engine->ExecuteCommand("-leaderboard");
-		});
+		if (sar_disable_challenge_stats_hud.GetBool() && (!engine->IsCoop() || engine->IsOrange())) {
+			auto ticks = 6;
+			if (sar_disable_challenge_stats_hud.GetInt() > 1) ticks = sar_disable_challenge_stats_hud.GetInt();
+			Scheduler::InHostTicks(ticks, []() {
+				engine->ExecuteCommand("-leaderboard");
+			});
+		}
 	}
 }
 
