@@ -213,6 +213,7 @@ ON_EVENT(SESSION_END) {
 ON_EVENT(CM_FLAGS) {
 	if (!engine->IsOrange()) {
 		SpeedrunTimer::TestFlagRules(event.slot);
+		if (event.end) GeneralTestRules<MapEndRule>({});
 	}
 }
 
