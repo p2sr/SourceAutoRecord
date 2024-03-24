@@ -46,7 +46,7 @@ fs.readFile(path + '/sar.cvars', 'utf-8', (err, data) => {
     for (let cvar of cvars.sort((a, b) => compareCvar(a.name, b.name))) {
         body += '\n|';
         body += (cvar.games.length > 0) ? `<i title="${cvar.games.join('&#10;')}">${cvar.name}</i>` : cvar.name;
-        body += `|${cvar.value}|${cvar.description.replace(/([<\|\\])/g, '\\$1').replace(/\n/g, '<br>')}|`;
+        body += `|${cvar.value}|${cvar.description.trim().replace(/([<\|\\])/g, '\\$1').replace(/\n/g, '<br>')}|`;
     }
 
     fs.writeFileSync('docs/cvars.md',
