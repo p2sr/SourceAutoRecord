@@ -10,6 +10,7 @@
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
@@ -954,11 +955,10 @@ CON_COMMAND(sar_trace_export, "sar_trace_export <filename> [trace name] - Export
 	size_t size = trace->positions[0].size();
 
 	std::string filename = args[1];
-	if (filename.length() < 4 || filename.substr(filename.length() - 4, 4) != ".csv") {
-		filename += ".csv";
-	}
+	if (!Utils::EndsWith(filename, ".csv")) filename += ".csv";
 
-	FILE *f = fopen(filename.c_str(), "w");
+	auto filepath = fileSystem->FindFileSomewhere(filename).value_or(filename);
+	FILE *f = fopen(filepath.c_str(), "w");
 	if (!f) {
 		console->Print("Could not open file '%s'\n", filename.c_str());
 		return;

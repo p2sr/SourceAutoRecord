@@ -398,7 +398,7 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bo
 }
 
 void TasPlayer::SaveUsercmdDebugs(int slot) {
-	std::string filename = playbackInfo.slots[slot].name;
+	std::string filename = playbackInfo.slots[slot].path;
 	std::vector<std::string> &lines = playbackInfo.slots[slot].userCmdDebugs;
 
 	if (filename.size() == 0) return;
@@ -409,15 +409,16 @@ void TasPlayer::SaveUsercmdDebugs(int slot) {
 	if (lastdot != std::string::npos) {
 		fixedName = filename.substr(0, lastdot);
 	}
-
-	std::ofstream file(fixedName + "_usercmd.csv");
+	fixedName += "_usercmd.csv";
+	auto filepath = fileSystem->FindFileSomewhere(fixedName).value_or(fixedName);
+	std::ofstream file(fixedName);
 	file << "source,tick,forwardmove,sidemove,buttons,pitch,yaw,roll\n";
 	for (auto &l : lines) file << l << "\n";
 	file.close();
 }
 
 void TasPlayer::SavePlayerInfoDebugs(int slot) {
-	std::string filename = playbackInfo.slots[slot].name;
+	std::string filename = playbackInfo.slots[slot].path;
 	std::vector<std::string> &lines = playbackInfo.slots[slot].userCmdDebugs;
 
 	if (filename.size() == 0) return;
@@ -428,8 +429,8 @@ void TasPlayer::SavePlayerInfoDebugs(int slot) {
 	if (lastdot != std::string::npos) {
 		fixedName = filename.substr(0, lastdot);
 	}
-
-	std::ofstream file(fixedName + "_player_info.csv");
+	fixedName += "_player_info.csv";
+	std::ofstream file(fixedName);
 	file << "tick,x,y,z,eye x,eye y,eye z,pitch,yaw,roll\n";
 	for (auto &l : lines) file << l << "\n";
 	file.close();
@@ -807,14 +808,19 @@ void TasPlayer::PlayScript(std::string slot0name, std::string slot0script, std::
 	try {
 		TasPlaybackInfo newInfo;
 
+		auto path0 = std::string(TAS_SCRIPTS_DIR) + "/" + (coop ? "protocol_blue" : "protocol") + "." + TAS_SCRIPT_EXT;
+		auto path1 = std::string(TAS_SCRIPTS_DIR) + "/" + (coop ? "protocol_orange" : "protocol") + "." + TAS_SCRIPT_EXT;
+		path0 = fileSystem->FindFileSomewhere(path0).value_or(path0);
+		path1 = fileSystem->FindFileSomewhere(path1).value_or(path1);
+
 		newInfo.slots[0] = TasParser::ParseScript(slot0name, slot0script);
 		newInfo.slots[0].name = slot0name;
-		newInfo.slots[0].path = "protocol";
+		newInfo.slots[0].path = path0;
 
 		if (coop) {
 			newInfo.slots[1] = TasParser::ParseScript(slot1name, slot1script);
 			newInfo.slots[1].name = slot1name;
-			newInfo.slots[1].path = "protocol";
+			newInfo.slots[1].path = path1;
 		}
 
 		Activate(newInfo);

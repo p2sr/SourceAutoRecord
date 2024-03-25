@@ -6,6 +6,7 @@
 #include "Features/Session.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
 #include "Variable.hpp"
 
@@ -79,7 +80,8 @@ bool EntityInspector::ExportData(std::string filePath) {
 		return false;
 	}
 
-	std::ofstream file(filePath, std::ios::out | std::ios::trunc);
+	auto filepath = fileSystem->FindFileSomewhere(filePath).value_or(filePath);
+	std::ofstream file(filepath, std::ios::out | std::ios::trunc);
 	if (!file.good()) {
 		file.close();
 		return false;
@@ -125,9 +127,8 @@ CON_COMMAND(sar_inspection_export, "sar_inspection_export <file_name> - saves re
 		return console->Print(sar_inspection_export.ThisPtr()->m_pszHelpString);
 	}
 
-	auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
-	if (filePath.substr(filePath.length() - 4, 4) != ".csv")
-		filePath += ".csv";
+	auto filePath = std::string(args[1]);
+	if (!Utils::EndsWith(filePath, ".csv")) filePath += ".csv";
 
 	if (inspector->ExportData(filePath)) {
 		console->Print("Exported data!\n");

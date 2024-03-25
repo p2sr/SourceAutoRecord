@@ -4,6 +4,7 @@
 #include "Event.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
 
 #include <fstream>
@@ -48,9 +49,9 @@ ON_EVENT(CONFIG_EXEC) {
 }
 
 bool StatsCounter::LoadFromFile(const std::string &path) {
-	std::string filePath = std::string(engine->GetGameDirectory()) + std::string("/") + path;
-	if (filePath.substr(filePath.length() - 4, 4) != ".csv")
-		filePath += ".csv";
+	auto filePath = std::string(path);
+	if (!Utils::EndsWith(filePath, ".csv")) filePath = filePath + ".csv";
+	filePath = fileSystem->FindFileSomewhere(filePath).value_or(filePath);
 
 	std::ifstream file(filePath, std::ios::in);
 	if (!file.good()) {
@@ -134,11 +135,11 @@ bool StatsCounter::LoadFromFile(const std::string &path) {
 }
 
 bool StatsCounter::ExportToFile(const std::string &path) {
-	std::string filePath = std::string(engine->GetGameDirectory()) + std::string("/") + path;
-	if (filePath.substr(filePath.length() - 4, 4) != ".csv")
-		filePath += ".csv";
+	std::string filePath = path;
+	if (!Utils::EndsWith(filePath, ".csv")) filePath = filePath + ".csv";
 
-	std::ofstream file(filePath, std::ios::out | std::ios::trunc);
+	auto filepath = fileSystem->FindFileSomewhere(filePath).value_or(filePath);
+	std::ofstream file(filepath, std::ios::out | std::ios::trunc);
 	if (!file.good()) {
 		file.close();
 		return false;

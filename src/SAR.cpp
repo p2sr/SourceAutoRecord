@@ -268,14 +268,16 @@ CON_COMMAND(sar_about, "sar_about - prints info about SAR plugin\n") {
 	console->Print("Built: " SAR_BUILT "\n");
 }
 CON_COMMAND(sar_cvars_dump, "sar_cvars_dump - dumps all cvars to a file\n") {
-	std::ofstream file("game.cvars", std::ios::out | std::ios::trunc | std::ios::binary);
+	auto filepath = fileSystem->FindFileSomewhere("game.cvars").value_or("game.cvars");
+	std::ofstream file(filepath, std::ios::out | std::ios::trunc | std::ios::binary);
 	auto result = cvars->Dump(file);
 	file.close();
 
 	console->Print("Dumped %i cvars to game.cvars!\n", result);
 }
 CON_COMMAND(sar_cvars_dump_doc, "sar_cvars_dump_doc - dumps all SAR cvars to a file\n") {
-	std::ofstream file("sar.cvars", std::ios::out | std::ios::trunc | std::ios::binary);
+	auto filepath = fileSystem->FindFileSomewhere("sar.cvars").value_or("sar.cvars");
+	std::ofstream file(filepath, std::ios::out | std::ios::trunc | std::ios::binary);
 	auto result = cvars->DumpDoc(file);
 	file.close();
 

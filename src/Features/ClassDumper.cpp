@@ -3,6 +3,7 @@
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
 #include "SAR.hpp"
 #include "Utils/SDK.hpp"
@@ -24,7 +25,8 @@ ClassDumper::ClassDumper()
 void ClassDumper::Dump(bool dumpServer) {
 	auto source = (dumpServer) ? &this->serverClassesFile : &this->clientClassesFile;
 
-	std::ofstream file(*source, std::ios::out | std::ios::trunc);
+	auto filepath = fileSystem->FindFileSomewhere(*source).value_or(*source);
+	std::ofstream file(filepath, std::ios::out | std::ios::trunc);
 	if (!file.good()) {
 		console->Warning("Failed to create file!\n");
 		return file.close();

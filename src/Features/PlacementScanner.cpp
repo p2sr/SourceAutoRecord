@@ -2,6 +2,7 @@
 
 #include "Event.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
 #include "Features/Camera.hpp"
@@ -203,7 +204,8 @@ static uintptr_t initScan() {
 }
 
 static void writeTga(const char *path, const uint8_t *data, uint16_t w, uint16_t h) {
-	FILE *f = fopen(path, "wb");
+	auto filepath = fileSystem->FindFileSomewhere(path).value_or(path);
+	FILE *f = fopen(filepath.c_str(), "wb");
 	if (!f) return;
 	uint8_t header[] = {
 		0, // ID length

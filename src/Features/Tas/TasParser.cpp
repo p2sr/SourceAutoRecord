@@ -1,5 +1,6 @@
 #include "TasParser.hpp"
 #include "Modules/Console.hpp"
+#include "Modules/FileSystem.hpp"
 #include "TasPlayer.hpp"
 
 #include <algorithm>
@@ -713,14 +714,15 @@ static TasScript parseStream(std::string name, std::istream &stream) {
 }
 
 TasScript TasParser::ParseFile(std::string filePath) {
-	std::ifstream file(filePath, std::fstream::in);
+	auto path = fileSystem->FindFileSomewhere(filePath).value_or(filePath);
+	std::ifstream file(path, std::fstream::in);
 	if (!file) {
 		throw TasParserException(Utils::ssprintf("[%s] failed to open the file", filePath.c_str()));
 	}
 
-	auto result = parseStream(filePath, file);
+	auto result = parseStream(path, file);
 	result.loadedFromFile = true;
-	result.path = filePath;
+	result.path = path;
 	return result;
 }
 
@@ -764,8 +766,16 @@ void TasParser::SaveRawScriptToFile(TasScript script) {
 	std::string fullRawPath = fixedName + "_raw." + TAS_SCRIPT_EXT;
 	std::ofstream file(fullRawPath);
 
+	// for printing, take only from /tas/ onward
+	std::replace(fullRawPath.begin(), fullRawPath.end(), '\\', '/');
+	size_t taspos = fullRawPath.find("/tas/");
+	auto printPath = fixedName;
+	if (taspos != std::string::npos) {
+		printPath = fullRawPath.substr(taspos);
+	}
+
 	file << SaveRawScriptToString(script);
-	console->Print("Saved raw TAS script \"%s\".\n", fullRawPath.c_str());
+	console->Print("Saved raw TAS script \"%s\".\n", printPath.c_str());
 
 	file.close();
 }
