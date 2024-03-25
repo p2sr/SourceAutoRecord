@@ -26,8 +26,6 @@ public:
 
 	int SetCrosshairTexture(const std::string filename);
 	bool SetQuickHudTexture(const std::string filename);
-
-	void UpdateImages();
 };
 
 extern Crosshair crosshair;

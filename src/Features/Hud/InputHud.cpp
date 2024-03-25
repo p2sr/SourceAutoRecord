@@ -2,6 +2,7 @@
 
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
 #include "Modules/InputSystem.hpp"
@@ -335,7 +336,9 @@ void InputHud::ModifyElementParam(std::string name, std::string parameter, std::
 		} else {
 			std::vector<uint8_t> buf;
 			unsigned w, h;
-			unsigned err = lodepng::decode(buf, w, h, value + ".png");
+			if (!Utils::EndsWith(value, ".png")) value += ".png";
+			auto filepath = fileSystem->FindFileSomewhere(value).value_or(value);
+			unsigned err = lodepng::decode(buf, w, h, filepath);
 			if (err) {
 				console->Warning("%s\n", lodepng_error_text(err));
 				element->imageTextureId = -1;
@@ -353,7 +356,9 @@ void InputHud::ModifyElementParam(std::string name, std::string parameter, std::
 		} else {
 			std::vector<uint8_t> buf;
 			unsigned w, h;
-			unsigned err = lodepng::decode(buf, w, h, value + ".png");
+			if (!Utils::EndsWith(value, ".png")) value += ".png";
+			auto filepath = fileSystem->FindFileSomewhere(value).value_or(value);
+			unsigned err = lodepng::decode(buf, w, h, filepath);
 			if (err) {
 				console->Warning("%s\n", lodepng_error_text(err));
 				element->highlightImageTextureId = -1;
@@ -691,7 +696,10 @@ CON_COMMAND_F(sar_ihud_set_background, "sar_ihud_set_background <path> <grid x> 
 
 	std::vector<uint8_t> buf;
 	unsigned w, h;
-	unsigned err = lodepng::decode(buf, w, h, std::string(args[1]) + ".png");
+	auto path = std::string(args[1]);
+	if (!Utils::EndsWith(path, ".png")) path += ".png";
+	auto filepath = fileSystem->FindFileSomewhere(path).value_or(path);
+	unsigned err = lodepng::decode(buf, w, h, filepath);
 	if (err) {
 		console->Warning("%s\n", lodepng_error_text(err));
 		inputHud.bgTextureId = -1;

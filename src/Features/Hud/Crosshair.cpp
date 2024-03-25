@@ -4,6 +4,7 @@
 #include "Features/Hud/Hud.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
 #include "Utils/lodepng.hpp"
@@ -286,7 +287,10 @@ int Crosshair::SetCrosshairTexture(const std::string filename) {
 	std::vector<unsigned char> tex;
 	unsigned width, height;
 
-	lodepng::load_file(png, filename + ".png");
+	auto path = filename;
+	if (!Utils::EndsWith(path, ".png")) path += ".png";
+	auto filepath = fileSystem->FindFileSomewhere(path).value_or(path);
+	lodepng::load_file(png, filepath);
 	if (png.empty()) {
 		console->Warning(
 			"Failed to load \"%s\"\n"
@@ -319,7 +323,8 @@ bool Crosshair::SetQuickHudTexture(const std::string basefile) {
 		std::string filename(basefile);
 		filename += std::to_string(i) + ".png";
 
-		lodepng::load_file(png, filename);
+		auto filepath = fileSystem->FindFileSomewhere(filename).value_or(filename);
+		lodepng::load_file(png, filepath);
 		if (png.empty()) {
 			console->Warning(
 				"Failed to load \"%s\"\n"
@@ -345,52 +350,15 @@ bool Crosshair::SetQuickHudTexture(const std::string basefile) {
 	return true;
 }
 
-void Crosshair::UpdateImages() {
-	this->images.clear();
-	auto path = std::string(engine->GetGameDirectory());
-	auto index = path.length() + 1;
-
-	// Scan through all directories and find the image file
-	for (auto &dir : std::filesystem::recursive_directory_iterator(path)) {
-		try {
-			if (dir.status().type() == std::filesystem::file_type::directory) {
-				auto curdir = dir.path().string();
-				for (auto &dirdir : std::filesystem::directory_iterator(curdir)) {
-					auto file = dirdir.path().string();
-					if (Utils::EndsWith(file, std::string(".png"))) {
-						auto img = file.substr(index);
-						if (std::isdigit(img[img.length() - 5])) {  //Take only images with a digit as last character
-							img = img.substr(0, img.length() - 5);
-							this->images.push_back(img);
-						}
-						break;
-					}
-				}
-			} else {
-				auto file = dir.path().string();
-				if (Utils::EndsWith(file, std::string(".png"))) {
-					auto img = file.substr(index);
-					if (std::isdigit(img[img.length() - 5])) {  //Take only images with a digit as last character
-						img = img.substr(0, img.length() - 5);
-						this->images.push_back(img);
-					}
-					break;
-				}
-			}
-		} catch (std::system_error &e) {
-		}
-	}
-}
-
 // Commands
 
-DECL_COMMAND_FILE_COMPLETION(sar_crosshair_set_texture, ".png", engine->GetGameDirectory(), 1);
+DECL_COMMAND_FILE_COMPLETION(sar_crosshair_set_texture, ".png", "", 1);
 CON_COMMAND_F_COMPLETION(sar_crosshair_set_texture, "sar_crosshair_set_texture <filepath>\n", 0, AUTOCOMPLETION_FUNCTION(sar_crosshair_set_texture)) {
 	if (args.ArgC() < 2) {
 		return console->Print(sar_crosshair_set_texture.ThisPtr()->m_pszHelpString);
 	}
 
-	auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
+	auto filePath = std::string(args[1]);
 	if (filePath.substr(filePath.length() - 4, 4) == ".png")
 		filePath.erase(filePath.end() - 4, filePath.end());
 
@@ -402,38 +370,25 @@ CON_COMMAND_F_COMPLETION(sar_crosshair_set_texture, "sar_crosshair_set_texture <
 	crosshair.isCustomCrosshairReady = true;
 }
 
-DECL_COMMAND_COMPLETION(sar_quickhud_set_texture) {
-	crosshair.UpdateImages();
-
-	for (auto &image : crosshair.images) {
-		if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
-			break;
-		}
-
-		if (std::strlen(match) != std::strlen(cmd)) {
-			if (std::strstr(image.c_str(), match)) {
-				items.push_back(image);
-			}
-		} else {
-			items.push_back(image);
-		}
-	}
-
-	FINISH_COMMAND_COMPLETION();
-}
-
+DECL_COMMAND_FILE_COMPLETION(sar_quickhud_set_texture, ".png", "", 1)
 CON_COMMAND_F_COMPLETION(sar_quickhud_set_texture,
                          "sar_quickhud_set_texture <filepath> - enter the base name, it will search for <filepath>1.png, <filepath>2.png, <filepath>3.png and <filepath>4.png\n"
-                         "ex: sar_quickhud_set_texture \"E:\\Steam\\steamapps\\common\\Portal 2\\portal2\\krzyhau\"\n",
+                         "ex: sar_quickhud_set_texture \"crosshair/basic\" looks for \"crosshair/basic1.png\", etc\n",
                          0,
                          AUTOCOMPLETION_FUNCTION(sar_quickhud_set_texture)) {
 	if (args.ArgC() < 2) {
 		return console->Print(sar_quickhud_set_texture.ThisPtr()->m_pszHelpString);
 	}
 
-	auto filePath = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(args[1]);
-	if (filePath.substr(filePath.length() - 4, 4) == ".png")
+	auto filePath = std::string(args[1]);
+	if (Utils::EndsWith(filePath, ".png"))
 		filePath.erase(filePath.end() - 4, filePath.end());
+
+	// A bit of smartness to help out (make autocomplete work better)
+	if (!std::filesystem::exists(filePath + "1.png")
+		&& std::isdigit(filePath[filePath.length() - 1])) {
+		filePath.erase(filePath.end() - 1, filePath.end());
+	}
 
 	if (!crosshair.SetQuickHudTexture(filePath)) {
 		crosshair.isCustomQuickHudReady = false;

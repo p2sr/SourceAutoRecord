@@ -2,6 +2,7 @@
 
 #include "Command.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Utils.hpp"
 
 #include <cstring>
@@ -11,33 +12,35 @@
 WorkshopList *workshop;
 
 WorkshopList::WorkshopList()
-	: maps()
-	, path(std::string(engine->GetGameDirectory()) + std::string("/maps/workshop")) {
+	: maps() {
 	this->hasLoaded = true;
 }
 int WorkshopList::Update() {
 	auto before = this->maps.size();
 	this->maps.clear();
 
-	auto path = this->path;
-	auto index = path.length() + 1;
-
 	// Scan through all directories and find the map file
-	for (auto &dir : std::filesystem::recursive_directory_iterator(path)) {
-		try {
-			if (dir.status().type() == std::filesystem::file_type::directory) {
-				auto curdir = dir.path().string();
-				for (auto &dirdir : std::filesystem::directory_iterator(curdir)) {
-					auto file = dirdir.path().string();
-					if (Utils::EndsWith(file, std::string(".bsp"))) {
-						auto map = file.substr(index);
-						map = map.substr(0, map.length() - 4);
-						this->maps.push_back(map);
-						break;
+	for (auto gamedir : fileSystem->GetSearchPaths()) {
+		auto path = gamedir + std::string("/maps/workshop");
+		auto index = path.length() + 1;
+		if (std::filesystem::is_directory(path)) {
+			for (auto &dir : std::filesystem::recursive_directory_iterator(path)) {
+				try {
+					if (dir.status().type() == std::filesystem::file_type::directory) {
+						auto curdir = dir.path().string();
+						for (auto &dirdir : std::filesystem::directory_iterator(curdir)) {
+							auto file = dirdir.path().string();
+							if (Utils::EndsWith(file, std::string(".bsp"))) {
+								auto map = file.substr(index);
+								map = map.substr(0, map.length() - 4);
+								this->maps.push_back(map);
+								break;
+							}
+						}
 					}
+				} catch (std::system_error &e) {
 				}
 			}
-		} catch (std::system_error &e) {
 		}
 	}
 

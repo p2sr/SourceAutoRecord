@@ -4,6 +4,7 @@
 #include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
 #include "Utils/json11.hpp"
 #include "Version.hpp"
@@ -372,7 +373,8 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 }
 
 static void loadApiKey(bool output_nonexist) {
-	if (!std::filesystem::exists(API_KEY_FILE)) {
+	auto filepath = fileSystem->FindFileSomewhere(API_KEY_FILE);
+	if (!filepath.has_value()) {
 		if (output_nonexist) {
 			console->Print("API key file " API_KEY_FILE " does not exist!\n");
 		}
@@ -381,7 +383,7 @@ static void loadApiKey(bool output_nonexist) {
 
 	std::string key;
 	{
-		std::ifstream f(API_KEY_FILE);
+		std::ifstream f(filepath.value());
 		std::stringstream buf;
 		buf << f.rdbuf();
 		key = buf.str();

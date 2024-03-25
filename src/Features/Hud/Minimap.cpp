@@ -3,6 +3,7 @@
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Surface.hpp"
 #include "Utils/lodepng.hpp"
 #include "Utils/json11.hpp"
@@ -40,7 +41,9 @@ static bool getTextureId(std::string path, Minimap &out) {
 
 	std::vector<unsigned char> buf;
 	unsigned w, h;
-	unsigned err = lodepng::decode(buf, w, h, path);
+
+	auto filepath = fileSystem->FindFileSomewhere(path).value_or(path);
+	unsigned err = lodepng::decode(buf, w, h, filepath);
 	if (err) {
 		console->Warning("%s\n", lodepng_error_text(err));
 		return false;
@@ -59,7 +62,8 @@ static bool getTextureId(std::string path, Minimap &out) {
 }
 
 static bool loadMinimapData(std::string path, Minimap &out, std::string &img_path_out) {
-	std::ifstream ifs(path);
+	auto filepath = fileSystem->FindFileSomewhere(path).value_or(path);
+	std::ifstream ifs(filepath);
 	if (ifs.fail()) {
 		console->Print("Failed to open %s\n", path.c_str());
 		return false;
@@ -106,15 +110,10 @@ static bool loadMinimapData(std::string path, Minimap &out, std::string &img_pat
 static std::optional<Minimap> loadMinimap(std::string name) {
 	Minimap m;
 	std::string img_path;
-
-	std::string path = std::string(engine->GetGameDirectory()) + "/" + name;
-
-	if (!loadMinimapData(path, m, img_path)) {
+	if (!loadMinimapData(name, m, img_path)) {
 		console->Print("Failed to load minimap metadata\n");
 		return {};
 	}
-
-	img_path = std::string(engine->GetGameDirectory()) + "/" + img_path;
 
 	if (!getTextureId(img_path, m)) {
 		console->Print("Failed to load minimap image\n");

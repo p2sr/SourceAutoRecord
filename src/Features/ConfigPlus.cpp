@@ -2,6 +2,7 @@
 #include "Features/Session.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 
 #include <cstdlib>
 #include <cstring>
@@ -21,9 +22,11 @@
 
 static std::map<std::string, std::string> g_svars;
 static std::unordered_set<std::string> g_persistentSvars;
+static std::string g_persistentSvarsFile;
 
 ON_INIT {
-	std::ifstream file(PERSISTENT_SVAR_FILENAME);
+	g_persistentSvarsFile = fileSystem->FindFileSomewhere(PERSISTENT_SVAR_FILENAME).value_or(PERSISTENT_SVAR_FILENAME);
+	std::ifstream file(g_persistentSvarsFile.c_str());
 
 	std::string line;
 	std::getline(file, line);
@@ -42,7 +45,7 @@ ON_INIT {
 }
 
 static void SavePersistentSvars() {
-	FILE *fp = fopen(PERSISTENT_SVAR_FILENAME, "w");
+	FILE *fp = fopen(g_persistentSvarsFile.c_str(), "w");
 	if (fp) {
 		for (auto &name : g_persistentSvars) {
 			auto val = g_svars[name];

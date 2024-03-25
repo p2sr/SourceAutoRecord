@@ -6,6 +6,7 @@
 #include "Features/Session.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
 #include "NetworkGhostPlayer.hpp"
 #include "Utils.hpp"
@@ -201,7 +202,7 @@ std::string DemoGhostPlayer::CustomDataToString(std::optional<int> slot) {
 	return Utils::ssprintf("%d", slot.value());
 }
 
-DECL_COMMAND_FILE_COMPLETION(ghost_set_demo, ".dem", engine->GetGameDirectory(), 1);
+DECL_COMMAND_FILE_COMPLETION(ghost_set_demo, ".dem", "", 1);
 CON_COMMAND_F_COMPLETION(ghost_set_demo, "ghost_set_demo <demo> [ID] - ghost will use this demo. If ID is specified, will create or modify the ID-th ghost\n", 0, AUTOCOMPLETION_FUNCTION(ghost_set_demo)) {
 	if (args.ArgC() < 2) {
 		return console->Print(ghost_set_demo.ThisPtr()->m_pszHelpString);
@@ -209,10 +210,14 @@ CON_COMMAND_F_COMPLETION(ghost_set_demo, "ghost_set_demo <demo> [ID] - ghost wil
 
 	sf::Uint32 ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
 	demoGhostPlayer.DeleteGhostsByID(ID);
-	if (demoGhostPlayer.SetupGhostFromDemo(engine->GetGameDirectory() + std::string("/") + args[1], ID, false)) {
+	auto path = std::string(args[1]);
+	if (!Utils::EndsWith(path, ".dem")) path += ".dem";
+	auto filepath = fileSystem->FindFileSomewhere(path).value_or(path);
+	filepath = filepath.substr(0, filepath.find_last_of('.'));
+	if (demoGhostPlayer.SetupGhostFromDemo(filepath, ID, false)) {
 		console->Print("Ghost successfully created! Final time of the ghost: %s\n", SpeedrunTimer::Format(demoGhostPlayer.GetGhostByID(ID)->GetTotalTime()).c_str());
 	} else {
-		console->Print("Could not parse \"%s\"!\n", (engine->GetGameDirectory() + std::string("/") + args[1]).c_str());
+		console->Print("Could not parse \"%s\"!\n", args[1]);
 	}
 
 	demoGhostPlayer.UpdateGhostsSameMap();
@@ -234,20 +239,23 @@ CON_COMMAND_F_COMPLETION(ghost_set_demos,
 	sf::Uint32 ID = args.ArgC() > 3 ? std::atoi(args[3]) : 0;
 	demoGhostPlayer.DeleteGhostsByID(ID);
 
-	auto dir = engine->GetGameDirectory() + std::string("/") + args[1];
+	auto dir = std::string(args[1]);
+	if (!Utils::EndsWith(dir, ".dem")) dir += ".dem";
+	auto filepath = fileSystem->FindFileSomewhere(dir).value_or(dir);
+	filepath = filepath.substr(0, filepath.find_last_of('.'));
 	int counter = firstDemoId > 1 ? firstDemoId : 2;
 
 	bool ok = true;
 
 	if (firstDemoId < 2) {
-		ok = std::filesystem::exists(dir + ".dem");
-		if (!ok || !demoGhostPlayer.SetupGhostFromDemo(dir, ID, true)) {
-			return console->Print("Could not parse \"%s\"!\n", (engine->GetGameDirectory() + std::string("/") + args[1]).c_str());
+		ok = std::filesystem::exists(filepath + ".dem");
+		if (!ok || !demoGhostPlayer.SetupGhostFromDemo(filepath, ID, true)) {
+			return console->Print("Could not parse \"%s\"!\n", filepath.c_str());
 		}
 	}
 
 	while (ok) {
-		auto tmp_dir = dir + "_" + std::to_string(counter) + ".dem";
+		auto tmp_dir = filepath + "_" + std::to_string(counter) + ".dem";
 		ok = std::filesystem::exists(tmp_dir);
 		if (ok && !demoGhostPlayer.SetupGhostFromDemo(tmp_dir, ID, true)) {
 			return console->Print("Could not parse \"%s\"!\n", tmp_dir.c_str());

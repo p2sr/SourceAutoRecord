@@ -4,6 +4,7 @@
 #include "Offsets.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
 #include <cstring>
 #include <fstream>
@@ -142,7 +143,8 @@ void RngManip::saveData(const char *filename) {
 	auto root = g_session_state->object_items();
 	root["view_punch"] = saveViewPunches();
 
-	FILE *f = fopen(filename, "w");
+	auto filepath = fileSystem->FindFileSomewhere(filename).value_or(filename);
+	FILE *f = fopen(filepath.c_str(), "w");
 	if (!f) {
 		console->Print("Failed to open file %s\n", filename);
 		return;
@@ -155,7 +157,8 @@ void RngManip::saveData(const char *filename) {
 }
 
 void RngManip::loadData(const char *filename) {
-	std::ifstream st(filename);
+	auto filepath = fileSystem->FindFileSomewhere(filename).value_or(filename);
+	std::ifstream st(filepath);
 	if (!st.good()) {
 		console->Print("Failed to open file %s\n", filename);
 		return;

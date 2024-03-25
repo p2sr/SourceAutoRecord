@@ -1,6 +1,7 @@
 #include "Command.hpp"
 
 #include "Game.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Tier1.hpp"
 #include "SAR.hpp"
 
@@ -221,15 +222,33 @@ int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args
 	try {
 		std::set<std::string> sorted;
 
-		for (auto &file : std::filesystem::directory_iterator(rootdir + std::string("/") + dirpart)) {
-			try {
-				if (file.is_directory() || Utils::EndsWith(file.path().extension().string(), extension)) {
-					std::string path = dirpart + file.path().stem().string();
-					std::replace(path.begin(), path.end(), '\\', '/');
-					if (file.is_directory()) path += "/";
-					sorted.insert(path);
+		auto gamedirs = fileSystem->GetSearchPaths();
+		for (auto gamedir : gamedirs) {
+			if (std::filesystem::is_directory(gamedir + rootdir + "/" + dirpart)) {
+				for (auto &file : std::filesystem::directory_iterator(gamedir + rootdir + "/" + dirpart)) {
+					try {
+						if (file.is_directory() || Utils::EndsWith(file.path().extension().string(), extension)) {
+							std::string path = dirpart + file.path().stem().string();
+							std::replace(path.begin(), path.end(), '\\', '/');
+							if (file.is_directory()) {
+								path += "/";
+								// This is a bit of a hack, but it works
+								// avoids confusion such as "do_stuff portal2/..." == "do_stuff ..."
+								bool skip = false;
+								for (auto otherdir : gamedirs) {
+									if (otherdir == "") break;
+									if (std::filesystem::equivalent(otherdir, gamedir + rootdir + "/" + path)) {
+										skip = true;
+										break;
+									}
+								}
+								if (skip) continue;
+							}
+							sorted.insert(path);
+						}
+					} catch (std::system_error &e) {
+					}
 				}
-			} catch (std::system_error &e) {
 			}
 		}
 

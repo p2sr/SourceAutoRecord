@@ -909,10 +909,12 @@ std::string Engine::GetPartnerSteamID32() {
 }
 
 static _CommandCompletionCallback playdemo_orig_completion;
-DECL_COMMAND_FILE_COMPLETION(playdemo, ".dem", engine->GetGameDirectory(), 1)
+DECL_COMMAND_FILE_COMPLETION(playdemo, ".dem", "", 1)
 
+// FIXME: Includes "Portal 2/cfg". Bit of a conundrum because "Portal 2" is used
+// for other commands
 static _CommandCompletionCallback exec_orig_completion;
-DECL_COMMAND_FILE_COMPLETION(exec, ".cfg", Utils::ssprintf("%s/cfg", engine->GetGameDirectory()), 1)
+DECL_COMMAND_FILE_COMPLETION(exec, ".cfg", "cfg", 1)
 
 bool Engine::Init() {
 	this->engineClient = Interface::Create(this->Name(), "VEngineClient015");

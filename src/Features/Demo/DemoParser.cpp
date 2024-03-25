@@ -6,6 +6,7 @@
 #include "Features/Hud/Hud.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Variable.hpp"
 
 #include <fstream>
@@ -80,12 +81,13 @@ bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std:
 	bool gotFirstPositivePacket = false;
 	bool gotSync = false;
 	try {
-		if (filePath.substr(filePath.length() - 4, 4) != ".dem")
-			filePath += ".dem";
+		if (!Utils::EndsWith(filePath, ".dem")) filePath += ".dem";
+		auto path = fileSystem->FindFileSomewhere(filePath).value_or(filePath);
+		if (std::filesystem::exists(filePath)) path = filePath;
 
 		console->DevMsg("Trying to parse \"%s\"...\n", filePath.c_str());
 
-		std::ifstream file(filePath, std::ios::in | std::ios::binary);
+		std::ifstream file(path.c_str(), std::ios::in | std::ios::binary);
 		if (!file.good())
 			return false;
 
@@ -303,7 +305,7 @@ bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std:
 
 // Commands
 
-DECL_COMMAND_FILE_COMPLETION(sar_time_demo, ".dem", engine->GetGameDirectory(), 1);
+DECL_COMMAND_FILE_COMPLETION(sar_time_demo, ".dem", "", 1);
 CON_COMMAND_F_COMPLETION(sar_time_demo, "sar_time_demo <demo_name> - parses a demo and prints some information about it\n", 0, AUTOCOMPLETION_FUNCTION(sar_time_demo)) {
 	if (args.ArgC() != 2) {
 		return console->Print(sar_time_demo.ThisPtr()->m_pszHelpString);
@@ -324,7 +326,8 @@ CON_COMMAND_F_COMPLETION(sar_time_demo, "sar_time_demo <demo_name> - parses a de
 	parser.outputMode = sar_time_demo_dev.GetInt();
 
 	Demo demo;
-	auto dir = std::string(engine->GetGameDirectory()) + std::string("/") + name;
+	if (!Utils::EndsWith(name, ".dem")) name += ".dem";
+	auto dir = fileSystem->FindFileSomewhere(name).value_or(name);
 	if (parser.Parse(dir, &demo)) {
 		parser.Adjust(&demo);
 		console->Print("Demo:     %s\n", name.c_str());
@@ -350,13 +353,13 @@ CON_COMMAND_F_COMPLETION(sar_time_demos, "sar_time_demos <demo_name> [demo_name2
 	DemoParser parser;
 	parser.outputMode = sar_time_demo_dev.GetInt();
 
-	auto name = std::string();
-	auto dir = std::string(engine->GetGameDirectory()) + std::string("/");
 	for (auto i = 1; i < args.ArgC(); ++i) {
-		name = std::string(args[i]);
+		auto name = std::string(args[i]);
 
 		Demo demo;
-		if (parser.Parse(dir + name, &demo)) {
+		if (!Utils::EndsWith(name, ".dem")) name += ".dem";
+		auto filepath = fileSystem->FindFileSomewhere(name).value_or(name);
+		if (parser.Parse(filepath, &demo)) {
 			parser.Adjust(&demo);
 			console->Print("Demo:     %s\n", name.c_str());
 			console->Print("Client:   %s\n", demo.clientName);

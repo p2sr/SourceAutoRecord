@@ -11,6 +11,7 @@
 #include "Features/Renderer.hpp"
 #include "Hook.hpp"
 #include "Interface.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Offsets.hpp"
 #include "SAR.hpp"
 #include "Server.hpp"
@@ -226,13 +227,18 @@ DETOUR_COMMAND(EngineDemoPlayer::stopdemo) {
 
 // CDemoPlayer::StartPlayback
 DETOUR(EngineDemoPlayer::StartPlayback, const char *filename, bool bAsTimeDemo) {
-	auto result = EngineDemoPlayer::StartPlayback(thisptr, filename, bAsTimeDemo);
+	auto path = std::string(filename);
+	path = fileSystem->FindFileSomewhere(path).value_or(path);
+	auto newFilename = path.c_str();
+	auto result = EngineDemoPlayer::StartPlayback(thisptr, newFilename, bAsTimeDemo);
 
 	if (result) {
 		DemoParser parser;
 		Demo demo;
-		auto dir = std::string(engine->GetGameDirectory()) + std::string("/") + std::string(engine->demoplayer->DemoName);
-		if (parser.Parse(dir, &demo)) {
+		auto dir = std::string(engine->demoplayer->DemoName);
+		if (dir.length() == 0) {
+			console->Print("Could not open \"%s\"!\n", newFilename);
+		} else if (parser.Parse(dir, &demo)) {
 			parser.Adjust(&demo);
 			console->Print("Client:   %s\n", demo.clientName);
 			console->Print("Map:      %s\n", demo.mapName);
@@ -253,9 +259,9 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char *filename, bool bAsTimeDemo) 
 
 	Renderer::isDemoLoading = true;
 
-	engine->demoplayer->replayName = filename;
-	size_t namelen = strlen(filename);
-	if (namelen >= 4 && !strcmp(filename + namelen - 4, ".dem")) {
+	engine->demoplayer->replayName = newFilename;
+	size_t namelen = strlen(newFilename);
+	if (Utils::EndsWith(newFilename, ".dem")) {
 		engine->demoplayer->replayName = engine->demoplayer->replayName.substr(0, namelen - 4);
 	}
 
@@ -492,8 +498,8 @@ void EngineDemoPlayer::Shutdown() {
 
 // Commands
 
-DECL_COMMAND_FILE_COMPLETION(sar_startdemos, ".dem", engine->GetGameDirectory(), 1)
-DECL_COMMAND_FILE_COMPLETION(sar_startdemosfolder, "/", engine->GetGameDirectory(), 1)
+DECL_COMMAND_FILE_COMPLETION(sar_startdemos, ".dem", "", 1)
+DECL_COMMAND_FILE_COMPLETION(sar_startdemosfolder, "/", "", 1)
 
 CON_COMMAND_F_COMPLETION(sar_startdemos, "sar_startdemos <demoname> - improved version of startdemos. Use 'stopdemo' to stop playing demos\n", 0, AUTOCOMPLETION_FUNCTION(sar_startdemos)) {
 	// Always print a useful message for the user if not used correctly
@@ -510,14 +516,12 @@ CON_COMMAND_F_COMPLETION(sar_startdemos, "sar_startdemos <demoname> - improved v
 			name.resize(name.length() - 4);
 	}
 
-	auto dir = engine->GetGameDirectory() + std::string("/");
-
 	Demo demo;
 	DemoParser parser;
-	bool ok = parser.Parse(dir + name, &demo);
+	bool ok = parser.Parse(name, &demo);
 
 	if (!ok) {
-		return console->Print("Could not parse \"%s\"!\n", (engine->GetGameDirectory() + std::string("/") + args[1]).c_str());
+		return console->Print("Could not parse \"%s\"!\n", args[1]);
 	}
 
 	engine->demoplayer->demoQueue.push_back(name);
@@ -539,7 +543,7 @@ CON_COMMAND_F_COMPLETION(sar_startdemos, "sar_startdemos <demoname> - improved v
 	}
 
 	while (ok) {
-		auto tmp_dir = dir + name + "_" + std::to_string(counter);
+		auto tmp_dir = name + "_" + std::to_string(counter);
 		ok = parser.Parse(tmp_dir, &demo);
 		if (ok) {
 			engine->demoplayer->demoQueue.push_back(name + "_" + std::to_string(counter));
@@ -561,12 +565,15 @@ CON_COMMAND_F_COMPLETION(sar_startdemosfolder, "sar_startdemosfolder <folder nam
 
 	engine->demoplayer->demoQueue.clear();
 
-	auto dir = engine->GetGameDirectory() + std::string("/");
+	auto dir = fileSystem->FindFileSomewhere(args[1]).value_or(args[1]);
+	if (!std::filesystem::is_directory(dir)) {
+		return console->Print("Invalid folder \"%s\"\n", args[1]);
+	}
 	std::string filepath;
 	Demo demo;
 	DemoParser parser;
 
-	for (const auto &file : std::filesystem::directory_iterator(dir + args[1])) {
+	for (const auto &file : std::filesystem::directory_iterator(dir)) {
 		try {
 			if (file.path().extension() != ".dem")
 				continue;
@@ -575,7 +582,7 @@ CON_COMMAND_F_COMPLETION(sar_startdemosfolder, "sar_startdemosfolder <folder nam
 			if (filepath[filepath.size() - 1] != '/') filepath += "/";
 			filepath += file.path().filename().string();
 			console->Print("%s\n", filepath.c_str());
-			if (parser.Parse(dir + filepath, &demo)) {
+			if (parser.Parse(filepath, &demo)) {
 				engine->demoplayer->demoQueue.push_back(filepath);
 			}
 		} catch (std::system_error &e) {

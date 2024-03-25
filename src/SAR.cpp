@@ -60,8 +60,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
 		CrashHandler::Init();
 
-		SarInitHandler::RunAll();
-
 		curl_global_init(CURL_GLOBAL_ALL);
 
 		tier1 = new Tier1();
@@ -105,6 +103,8 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->modules->InitAll();
 
 			InitSARChecksum();
+
+			SarInitHandler::RunAll();
 
 			if (engine && engine->hasLoaded) {
 				engine->demoplayer->Init();

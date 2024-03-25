@@ -23,6 +23,7 @@
 #include "Features/Timer/PauseTimer.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
 #include "Utils.hpp"
 
@@ -1084,15 +1085,15 @@ CON_COMMAND(sar_speedrun_reset_export, "sar_speedrun_reset_export - reset the lo
 
 static std::vector<int> g_autoreset_ticks;
 
-DECL_COMMAND_FILE_COMPLETION(sar_speedrun_autoreset_load, ".txt", ".", 1)
-
+DECL_COMMAND_FILE_COMPLETION(sar_speedrun_autoreset_load, ".txt", "", 1)
 CON_COMMAND_F_COMPLETION(sar_speedrun_autoreset_load, "sar_speedrun_autoreset_load <file> - load the given file of autoreset timestamps and use it while the speedrun timer is active\n", 0, AUTOCOMPLETION_FUNCTION(sar_speedrun_autoreset_load)) {
 	if (args.ArgC() != 2) return console->Print(sar_speedrun_autoreset_load.ThisPtr()->m_pszHelpString);
 
 	std::string name = args[1];
-	name += ".txt";
+	if (!Utils::EndsWith(name, ".txt")) name = name + ".txt";
 
-	std::ifstream file(name);
+	auto filepath = fileSystem->FindFileSomewhere(name).value_or(name);
+	std::ifstream file(filepath);
 	if (!file) return console->Print("Failed to open %s\n", name.c_str());
 
 	g_autoreset_ticks.clear();

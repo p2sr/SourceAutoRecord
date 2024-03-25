@@ -4,6 +4,7 @@
 #include "Event.hpp"
 #include "Hook.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
 #include "Features/Session.hpp"
 #include "Utils/SDK.hpp"
@@ -1042,7 +1043,11 @@ void Renderer::Frame() {
 		Renderer::isDemoLoading = false;
 
 		if (!g_render.isRendering.load()) {
-			g_render.filename = std::string(engine->GetGameDirectory()) + "/" + std::string(engine->demoplayer->DemoName) + "." + sar_render_autostart_extension.GetString();
+			auto demo = std::string(engine->demoplayer->DemoName);
+			if (!Utils::EndsWith(demo, ".dem")) demo += ".dem";
+			auto path = fileSystem->FindFileSomewhere(demo).value_or(demo);
+			path = path.substr(0, path.size() - 4);
+			g_render.filename = path + "." + sar_render_autostart_extension.GetString();
 			startRender();
 		}
 	} else {

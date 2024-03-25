@@ -3,6 +3,7 @@
 #include "Utils.hpp"
 #include "Event.hpp"
 #include "Modules/Engine.hpp"
+#include "Modules/FileSystem.hpp"
 #include "Utils/ed25519/ed25519.h"
 #include "Version.hpp"
 
@@ -257,20 +258,33 @@ static void calcFileSums(std::map<std::string, uint32_t> *out, std::vector<std::
 static void initFileSums() {
 	std::vector<std::string> paths;
 	try {
-		for (auto &ent : std::filesystem::recursive_directory_iterator(".")) {
-			if (ent.status().type() == std::filesystem::file_type::regular || ent.status().type() == std::filesystem::file_type::symlink) {
-				auto path = ent.path().string();
-				std::replace(path.begin(), path.end(), '\\', '/');
+		auto searchpaths = fileSystem->GetSearchPaths();
+		for (auto searchpath : searchpaths) {
+			auto iterator = std::filesystem::recursive_directory_iterator(searchpath, std::filesystem::directory_options::follow_directory_symlink);
+			for (auto &ent : iterator) {
+				if (ent.status().type() == std::filesystem::file_type::directory) {
+					// skip directories that are other search paths
+					for (auto otherpath : searchpaths) {
+						if (std::filesystem::equivalent(ent.path(), otherpath)) {
+							iterator.disable_recursion_pending();
+							break;
+						}
+					}
+				}
+				if (ent.status().type() == std::filesystem::file_type::regular || ent.status().type() == std::filesystem::file_type::symlink) {
+					auto path = ent.path().string();
+					std::replace(path.begin(), path.end(), '\\', '/');
 
-				bool dlc = path.find("portal2_dlc") != std::string::npos &&
-					path.find("portal2_dlc1") == std::string::npos &&
-					path.find("portal2_dlc2") == std::string::npos;
+					bool dlc = path.find("portal2_dlc") != std::string::npos &&
+						path.find("portal2_dlc1") == std::string::npos &&
+						path.find("portal2_dlc2") == std::string::npos;
 
-				if (Utils::EndsWith(path, ".nut")
-					|| (Utils::EndsWith(path, ".vpk") && dlc)
-					|| path.find("scripts/talker") != std::string::npos)
-				{
-					paths.push_back(path);
+					if (Utils::EndsWith(path, ".nut")
+						|| (Utils::EndsWith(path, ".vpk") && dlc)
+						|| path.find("scripts/talker") != std::string::npos)
+					{
+						paths.push_back(path);
+					}
 				}
 			}
 		}
