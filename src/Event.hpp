@@ -46,6 +46,7 @@ namespace Event {
 		TAS_START,
 		TAS_END,
 		MAYBE_AUTOSUBMIT,
+		CFG_MESSAGE,
 	};
 
 	template <EventType E>
@@ -86,6 +87,11 @@ namespace Event {
 		int score;
 		bool coop;
 		bool pb;
+	};
+
+	template <>
+	struct EventData<CFG_MESSAGE> {
+		std::string message;
 	};
 
 	template <EventType E>
