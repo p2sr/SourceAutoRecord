@@ -1,5 +1,6 @@
 #include "Event.hpp"
 #include "Features/Session.hpp"
+#include "Features/Updater.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/FileSystem.hpp"
@@ -12,6 +13,8 @@
 #include <vector>
 #include <unordered_set>
 #include <fstream>
+#include <curl/curl.h>
+#include <regex>
 
 // Fuck you Windows
 #ifdef _WIN32
@@ -53,6 +56,64 @@ static void SavePersistentSvars() {
 		}
 		fclose(fp);
 	}
+}
+
+CON_COMMAND_F(sar_download_file, "sar_download_file <url> <filepath> [directory] - Downloads a file from a URL and saves it to a path relative to game directory (e.g. portal2)\nIf directory isn't specified or invalid, looks for and overwrites existing file or uses base game directory\n", FCVAR_DONTRECORD) {
+	if (args.ArgC() < 3 || args.ArgC() > 4 || !args[1][0] || !args[2][0]) {
+		return console->Print(sar_download_file.ThisPtr()->m_pszHelpString);
+	}
+
+	if (!Utils::StartsWith(args[1], "https://s.portal2.sr/") && !Utils::StartsWith(args[1], "https://raw.githubusercontent.com/p2sr/")) {
+		return console->Print("URL domain is not portal2.sr.\n");
+	}
+
+	std::string filepath = args[2];
+	std::string gamedir = args.ArgC() > 3 ? args[3] : "";
+	
+	auto result = fileSystem->FindFileSomewhere(filepath, gamedir);
+	if (result.has_value()) {
+		filepath = result.value();
+	} else {
+		filepath = std::string(engine->GetGameDirectory()) + "/" + filepath;
+		if (gamedir != "") for (auto path : fileSystem->GetSearchPaths()) {
+			if (path.find(gamedir) != std::string::npos) {
+				filepath = path + filepath;
+				break;
+			}
+		}
+	}
+
+	CURL *curl = curl_easy_init();
+	FILE *fp;
+	CURLcode res;
+	auto temp = createTempPath("sar_download_file.tmp");
+	if (curl) {
+		fp = fopen(temp.c_str(), "wb");
+		curl_easy_setopt(curl, CURLOPT_URL, args[1]);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &fwrite);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+		res = curl_easy_perform(curl);
+		curl_easy_cleanup(curl);
+		fclose(fp);
+	}
+
+	if (res == CURLE_OK) {
+		
+		// Create any intermediate directories
+		std::string dirpath = filepath;
+		std::replace(dirpath.begin(), dirpath.end(), '\\', '/');
+		dirpath = dirpath.substr(0, dirpath.rfind('/'));
+		std::filesystem::create_directories(dirpath);
+
+		std::filesystem::remove(filepath);
+		std::filesystem::copy(temp, filepath); // for some reason moving the file doesn't work
+
+	} else {
+		console->Print("An error occurred\n");
+	}
+
+	std::filesystem::remove(temp);
+
 }
 
 static void SetSvar(std::string name, std::string val) {
