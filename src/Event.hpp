@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 
 #define _ON_INIT1(x)                                    \
 	static void _sar_init_fn_##x();                        \
