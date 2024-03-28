@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 
 #define _ON_INIT1(x)                                    \
 	static void _sar_init_fn_##x();                        \
@@ -46,6 +47,7 @@ namespace Event {
 		TAS_START,
 		TAS_END,
 		MAYBE_AUTOSUBMIT,
+		CFG_MESSAGE,
 	};
 
 	template <EventType E>
@@ -86,6 +88,11 @@ namespace Event {
 		int score;
 		bool coop;
 		bool pb;
+	};
+
+	template <>
+	struct EventData<CFG_MESSAGE> {
+		std::string message;
 	};
 
 	template <EventType E>

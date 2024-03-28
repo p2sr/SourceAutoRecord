@@ -1,4 +1,5 @@
 #include "Event.hpp"
+#include "Features/NetMessage.hpp"
 #include "Features/Session.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
@@ -19,6 +20,7 @@
 #endif
 
 #define PERSISTENT_SVAR_FILENAME "svars_persist"
+#define CFG_MESSAGE_TYPE "cfgmessage"
 
 static std::map<std::string, std::string> g_svars;
 static std::unordered_set<std::string> g_persistentSvars;
@@ -727,6 +729,30 @@ CON_COMMAND_F(sar_get_partner_id, "sar_get_partner_id - Prints your coop partner
 	console->Print("%s\n", engine->GetPartnerSteamID32().c_str());
 }
 
+CON_COMMAND_F(sar_cfg_message, "sar_cfg_message <message> - sends a config message to the other player in coop\n", FCVAR_DONTRECORD) {
+	if (!engine->IsCoop() || engine->IsSplitscreen()) {
+		console->Print("This command only works in online co-op.\n");
+		return;
+	}
+
+	if (args.ArgC() < 2) {
+		return console->Print(sar_cfg_message.ThisPtr()->m_pszHelpString);
+	}
+
+	auto str = Utils::ArgContinuation(args, 1);
+	NetMessage::SendMsg(CFG_MESSAGE_TYPE, str, strlen(str));
+}
+
+ON_INIT {
+	NetMessage::RegisterHandler(CFG_MESSAGE_TYPE, +[](const void *data, size_t size) {
+		auto msg = std::string((char *)data, size);
+		// be kinda safe
+		msg.erase(std::remove(msg.begin(), msg.end(), '"'), msg.end());
+		msg.erase(std::remove(msg.begin(), msg.end(), ';'), msg.end());
+		Event::Trigger<Event::CFG_MESSAGE>({msg});
+	});
+}
+
 CON_COMMAND_F(cond, "cond <condition> <command> [args]... - runs a command only if a given condition is met\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() < 3) {
 		return console->Print(cond.ThisPtr()->m_pszHelpString);
@@ -823,6 +849,7 @@ MK_SAR_ON(tas_start, "when TAS script playback starts", true)
 MK_SAR_ON(tas_end, "when TAS script playback ends", true)
 MK_SAR_ON(pb, "when auto-submitter detects PB", true)
 MK_SAR_ON(not_pb, "when auto-submitter detects not PB", true)
+MK_SAR_ON(cfg_message, "when partner sends a custom message (_sar_cfg_message svar)", true)
 
 ON_EVENT_P(SESSION_START, 1000000) {
 	RUN_EXECS(load);
@@ -864,6 +891,10 @@ ON_EVENT(TAS_END) {
 ON_EVENT(MAYBE_AUTOSUBMIT) {
 	if (event.pb) RUN_EXECS(pb);
 	else RUN_EXECS(not_pb);
+}
+ON_EVENT(CFG_MESSAGE) {
+	SetSvar("_sar_cfg_message", event.message);
+	RUN_EXECS(cfg_message);
 }
 
 struct Seq {

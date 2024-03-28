@@ -119,6 +119,7 @@
 |sar_cam_setang|cmd|sar_cam_setang \<pitch> \<yaw> [roll] - sets camera angle (requires camera Drive Mode)|
 |sar_cam_setfov|cmd|sar_cam_setfov \<fov> - sets camera field of view (requires camera Drive Mode)|
 |sar_cam_setpos|cmd|sar_cam_setpos \<x> \<y> \<z> - sets camera position (requires camera Drive Mode)|
+|sar_cfg_message|cmd|sar_cfg_message \<message> - sends a config message to the other player in coop|
 |sar_challenge_autostop|0|Automatically stops recording demos when the leaderboard opens after a CM run. If 2, automatically appends the run time to the demo name.|
 |sar_challenge_autosubmit_reload_api_key|cmd|sar_challenge_autosubmit_reload_api_key - reload the board.portal2.sr API key from its file.|
 |sar_chat|cmd|sar_chat - open the chat HUD|
@@ -320,6 +321,9 @@
 |sar_mtrigger_legacy_format|!seg -> !tt (!st)|Formatting of the text that is displayed in the chat (!map - for map name, !seg - for segment name, !tt - for total time, !st - for split time).|
 |sar_mtrigger_legacy_textcolor|255 176 0|The color of the text that is displayed in the chat.|
 |sar_nextdemo|cmd|sar_nextdemo - plays the next demo in demo queue|
+|sar_on_cfg_message|cmd|sar_on_cfg_message \<command> [args]... - registers a command to be run when partner sends a custom message (_sar_cfg_message svar)|
+|sar_on_cfg_message_clear|cmd|sar_on_cfg_message_clear - clears commands registered on event "cfg_message"|
+|sar_on_cfg_message_list|cmd|sar_on_cfg_message_list - lists commands registered on event "cfg_message"|
 |sar_on_config_exec|cmd|sar_on_config_exec \<command> [args]... - registers a command to be run on config.cfg exec|
 |sar_on_config_exec_clear|cmd|sar_on_config_exec_clear - clears commands registered on event "config_exec"|
 |sar_on_config_exec_list|cmd|sar_on_config_exec_list - lists commands registered on event "config_exec"|
