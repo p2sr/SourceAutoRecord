@@ -119,6 +119,7 @@
 |sar_cam_setang|cmd|sar_cam_setang \<pitch> \<yaw> [roll] - sets camera angle (requires camera Drive Mode)|
 |sar_cam_setfov|cmd|sar_cam_setfov \<fov> - sets camera field of view (requires camera Drive Mode)|
 |sar_cam_setpos|cmd|sar_cam_setpos \<x> \<y> \<z> - sets camera position (requires camera Drive Mode)|
+|sar_cfg_message|cmd|sar_cfg_message \<message> - sends a config message to the other player in coop|
 |sar_challenge_autostop|0|Automatically stops recording demos when the leaderboard opens after a CM run. If 2, automatically appends the run time to the demo name.|
 |sar_challenge_autosubmit_reload_api_key|cmd|sar_challenge_autosubmit_reload_api_key - reload the board.portal2.sr API key from its file.|
 |sar_chat|cmd|sar_chat - open the chat HUD|
@@ -317,6 +318,9 @@
 |sar_mtrigger_legacy_format|!seg -> !tt (!st)|Formatting of the text that is displayed in the chat (!map - for map name, !seg - for segment name, !tt - for total time, !st - for split time).|
 |sar_mtrigger_legacy_textcolor|255 176 0|The color of the text that is displayed in the chat.|
 |sar_nextdemo|cmd|sar_nextdemo - plays the next demo in demo queue|
+|sar_on_cfg_message|cmd|sar_on_cfg_message \<command> [args]... - registers a command to be run when partner sends a custom message (_sar_cfg_message svar)|
+|sar_on_cfg_message_clear|cmd|sar_on_cfg_message_clear - clears commands registered on event "cfg_message"|
+|sar_on_cfg_message_list|cmd|sar_on_cfg_message_list - lists commands registered on event "cfg_message"|
 |sar_on_config_exec|cmd|sar_on_config_exec \<command> [args]... - registers a command to be run on config.cfg exec|
 |sar_on_config_exec_clear|cmd|sar_on_config_exec_clear - clears commands registered on event "config_exec"|
 |sar_on_config_exec_list|cmd|sar_on_config_exec_list - lists commands registered on event "config_exec"|
@@ -386,7 +390,7 @@
 |sar_prevent_mat_snapshot_recompute|0|Shortens loading times by preventing state snapshot recomputation.|
 |sar_print_stats|cmd|sar_print_stats - prints your statistics if those are loaded|
 |sar_quickhud_mode|0|Set the quickhud mode :<br>0: Default quickhud<br>1: Customizable quickhud<br>2: quickhud from .png|
-|sar_quickhud_set_texture|cmd|sar_quickhud_set_texture \<filepath> - enter the base name, it will search for \<filepath>1.png, \<filepath>2.png, \<filepath>3.png and \<filepath>4.png<br>ex: sar_quickhud_set_texture "E:\\Steam\\steamapps\\common\\Portal 2\\portal2\\krzyhau"|
+|sar_quickhud_set_texture|cmd|sar_quickhud_set_texture \<filepath> - enter the base name, it will search for \<filepath>1.png, \<filepath>2.png, \<filepath>3.png and \<filepath>4.png<br>ex: sar_quickhud_set_texture "crosshair/basic" looks for "crosshair/basic1.png", etc|
 |sar_record_at|-1|Start recording a demo at the tick specified. Will use sar_record_at_demo_name.|
 |sar_record_at_demo_name|chamber|Name of the demo automatically recorded.|
 |sar_record_at_increment|0|Increment automatically the demo name.|
