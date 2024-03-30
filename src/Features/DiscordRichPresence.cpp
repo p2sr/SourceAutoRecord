@@ -176,23 +176,20 @@ static void HandleDiscordJoinRequest(const DiscordUser *request) {
 	// Not implemented
 }
 
+static DiscordRichPresence rp;
+std::string categoryName;
+std::string cmAttemptsString;
+std::string mapName;
 static void UpdateDiscordRichPresence() {
 	if (!g_discordRpcInitialized) return;
 
-	DiscordRichPresence rp;
-	memset(&rp, 0, sizeof(rp));
 
 	rp.startTimestamp = g_gameStartTimestamp;
 	
-	auto categoryName = SpeedrunTimer::GetCategoryName();
-	auto cmAttemptsString = Utils::ssprintf("Attempts: %d", g_challengeModeAttempts);
-	auto mapName = std::string("");
+	categoryName = SpeedrunTimer::GetCategoryName();
+	cmAttemptsString = Utils::ssprintf("Attempts: %d", g_challengeModeAttempts);
 
 	if (!session->isRunning) {
-		rp.details = "Loading";
-		rp.state = "";
-		rp.largeImageKey = "menu";
-		rp.largeImageText = "Loading";
 	}
 	else if (!engine->hoststate->m_activeGame) {
 		// not in session, presumably in main menu
