@@ -149,6 +149,7 @@
 |sar_cvars_lock|cmd|sar_cvars_lock - restores default flags of unlocked cvars|
 |sar_cvars_unlock|cmd|sar_cvars_unlock - unlocks all special cvars|
 |sar_debug_listener|0|Prints event data of registered listener.|
+|sar_debug_step_slope_boost|0|Debugs step slope boosts|
 |sar_delete_alias_cmds|cmd|sar_delete_alias_cmds - deletes all alias commands|
 |sar_demo_blacklist|0|Stop a set of commands from being run by demo playback.|
 |sar_demo_blacklist_addcmd|cmd|sar_demo_blacklist_addcmd \<command> - add a command to the demo blacklist|
@@ -165,6 +166,8 @@
 |sar_disable_steam_pause|0|Prevents pauses from steam overlay.|
 |<i title="Portal 2&#10;Portal Stories: Mel&#10;Portal Reloaded">sar_disable_viewmodel_shadows</i>|0|Disables the shadows on the viewmodel.|
 |<i title="Portal 2">sar_disable_weapon_sway</i>|0|Disables the viewmodel lagging behind.|
+|sar_discord_rpc_app_id|1084419823737524294|Defines Discord Rich Presence's application ID.|
+|sar_discord_rpc_enabled|0|Enables Discord Rich Presence integration.|
 |sar_dpi_scale|1|Fraction to scale mouse DPI down by.|
 |sar_drawline|cmd|sar_drawline \<x> \<y> \<z> \<x> \<y> \<z> [r] [g] [b] - overlay a line in the world|
 |sar_drawline_clear|cmd|sar_drawline_clear - clear all active sar_drawlines|
@@ -386,7 +389,7 @@
 |sar_prevent_mat_snapshot_recompute|0|Shortens loading times by preventing state snapshot recomputation.|
 |sar_print_stats|cmd|sar_print_stats - prints your statistics if those are loaded|
 |sar_quickhud_mode|0|Set the quickhud mode :<br>0: Default quickhud<br>1: Customizable quickhud<br>2: quickhud from .png|
-|sar_quickhud_set_texture|cmd|sar_quickhud_set_texture \<filepath> - enter the base name, it will search for \<filepath>1.png, \<filepath>2.png, \<filepath>3.png and \<filepath>4.png<br>ex: sar_quickhud_set_texture "E:\\Steam\\steamapps\\common\\Portal 2\\portal2\\krzyhau"|
+|sar_quickhud_set_texture|cmd|sar_quickhud_set_texture \<filepath> - enter the base name, it will search for \<filepath>1.png, \<filepath>2.png, \<filepath>3.png and \<filepath>4.png<br>ex: sar_quickhud_set_texture "crosshair/basic" looks for "crosshair/basic1.png", etc|
 |sar_record_at|-1|Start recording a demo at the tick specified. Will use sar_record_at_demo_name.|
 |sar_record_at_demo_name|chamber|Name of the demo automatically recorded.|
 |sar_record_at_increment|0|Increment automatically the demo name.|

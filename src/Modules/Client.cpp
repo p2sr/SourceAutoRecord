@@ -52,9 +52,13 @@ Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disabl
 
 Variable sar_patch_small_angle_decay("sar_patch_small_angle_decay", "0", "Patches small angle decay (not minor decay).\n");
 Variable sar_patch_major_angle_decay("sar_patch_major_angle_decay", "0", "Patches major pitch angle decay. Requires cheats.\n");
-#ifdef _WIN32
-Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", "Patches minor pitch angle decay present on Windows version of the game.\n");
+
+// need to do this to include in docs lol
+Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", "Patches minor pitch angle decay present on Windows version of the game.\n"
+#ifndef _WIN32
+	, FCVAR_HIDDEN | FCVAR_DEVELOPMENTONLY
 #endif
+);
 
 REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
