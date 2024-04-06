@@ -447,6 +447,8 @@
 |sar_speedrun_draw_triggers|0|Draw the triggers associated with speedrun rules in the world.|
 |sar_speedrun_export|cmd|sar_speedrun_export \<filename> - export the speedrun result to the specified CSV file|
 |sar_speedrun_export_all|cmd|sar_speedrun_export_all \<filename> - export the results of many speedruns to the specified CSV file|
+|sar_speedrun_get_mtriggers|cmd|sar_speedrun_get_mtriggers \<rank=wr> - prints mtriggers of specific run.|
+|sar_speedrun_get_mtriggers_map|cmd|sar_speedrun_get_mtriggers_map \<map=current> \<rank=wr> - prints mtriggers of specific run on specific map.|
 |sar_speedrun_offset|0|Start speedruns with this time on the timer.|
 |sar_speedrun_pause|cmd|sar_speedrun_pause - pause the speedrun timer|
 |sar_speedrun_recover|cmd|sar_speedrun_recover \<ticks\|time> - recover a crashed run by resuming the timer at the given time on next load|
