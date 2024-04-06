@@ -23,6 +23,13 @@ struct AchievementData {
 	bool claimed = false;
 };
 
+struct MapData {
+	const char *fileName;
+	const char *displayName;
+	const char *chamberId = ""; // For boards
+
+};
+
 class Game {
 protected:
 	SourceGameVersion version = SourceGame_Unknown;
@@ -39,6 +46,7 @@ public:
 
 	static std::string VersionToString(int version);
 	static std::vector<std::string> mapNames;
+	static std::vector<MapData> maps;
 	static std::vector<AchievementData> achievements;
 
 	static bool IsSpeedrunMod();

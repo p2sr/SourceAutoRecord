@@ -162,7 +162,7 @@ public:
 		std::set<std::string> players;
 		networkManager.ghostPoolLock.lock();
 		if (ghost_list_show_map.GetBool()) {
-			players.insert(Utils::ssprintf("%s (%s)", networkManager.name.c_str(), engine->GetCurrentMapName().c_str()));
+			players.insert(Utils::ssprintf("%s (%s)", networkManager.name.c_str(), engine->GetCurrentMapTitle().c_str()));
 		} else {
 			players.insert(networkManager.name);
 		}
@@ -171,7 +171,7 @@ public:
 			if (!networkManager.AcknowledgeGhost(g)) continue;
 			if (ghost_list_mode.GetInt() == 1 && !g->sameMap) continue;
 			if (ghost_list_show_map.GetBool()) {
-				players.insert(Utils::ssprintf("%s (%s)", g->name.c_str(), g->currentMap.c_str()));
+				players.insert(Utils::ssprintf("%s (%s)", g->name.c_str(), engine->GetMapTitle(g->currentMap).c_str()));
 			} else {
 				players.insert(g->name);
 			}
@@ -535,10 +535,10 @@ void NetworkManager::NotifyMapChange() {
 			auto ipt = *engine->interval_per_tick;
 			std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
 			std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
-			std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str(), totalTime.c_str());
+			std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", this->name.c_str(), engine->GetCurrentMapTitle().c_str(), time.c_str(), totalTime.c_str());
 			toastHud.AddToast(GHOST_TOAST_TAG, msg);
 		} else {
-			std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), engine->GetCurrentMapName().c_str());
+			std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), engine->GetCurrentMapTitle().c_str());
 			toastHud.AddToast(GHOST_TOAST_TAG, msg);
 		}
 	}
@@ -565,7 +565,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM) {
 
 	std::string time = SpeedrunTimer::Format(totalSecs);
 
-	if (ghost_show_advancement.GetInt() >= 1 && AcknowledgeGhost(nullptr)) toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished on %s in %s", this->name.c_str(), engine->GetCurrentMapName().c_str(), time.c_str()));
+	if (ghost_show_advancement.GetInt() >= 1 && AcknowledgeGhost(nullptr)) toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished on %s in %s", this->name.c_str(), engine->GetCurrentMapTitle().c_str(), time.c_str()));
 	ghostLeaderboard.GhostFinished(this->ID, (int)roundf(totalSecs/ipt));
 
 	addToNetDump("send-speedrun-finish", time.c_str());
@@ -787,13 +787,13 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 				this->UpdateGhostsSameMap();
 				if (ghost_show_advancement.GetInt() >= 3 && this->AcknowledgeGhost(ghost)) {
 					if (ticksIL == (sf::Uint32)-1) {
-						std::string msg = Utils::ssprintf("%s is now on %s", ghost->name.c_str(), ghost->currentMap.c_str());
+						std::string msg = Utils::ssprintf("%s is now on %s", ghost->name.c_str(), engine->GetMapTitle(ghost->currentMap).c_str());
 						toastHud.AddToast(GHOST_TOAST_TAG, msg);
 					} else {
 						auto ipt = *engine->interval_per_tick;
 						std::string time = SpeedrunTimer::Format(ticksIL * ipt);
 						std::string timeTotal = SpeedrunTimer::Format(ticksTotal * ipt);
-						std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", ghost->name.c_str(), ghost->currentMap.c_str(), time.c_str(), timeTotal.c_str());
+						std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", ghost->name.c_str(), engine->GetMapTitle(ghost->currentMap).c_str(), time.c_str(), timeTotal.c_str());
 						toastHud.AddToast(GHOST_TOAST_TAG, msg);
 					}
 				}
@@ -1276,7 +1276,7 @@ CON_COMMAND(ghost_list, "ghost_list - list all players in the current ghost serv
 	for (size_t i = 0; i < networkManager.ghostPool.size(); ++i) {
 		auto ghost = networkManager.ghostPool[i];
 		if (!ghost->isDestroyed) {
-			console->Print("  %s (%s)%s\n", ghost->name.c_str(), ghost->currentMap.size() == 0 ? "menu" : ghost->currentMap.c_str(), ghost->spectator ? " (spectator)" : "");
+			console->Print("  %s (%s)%s\n", ghost->name.c_str(), ghost->currentMap.size() == 0 ? "menu" : engine->GetMapTitle(ghost->currentMap).c_str(), ghost->spectator ? " (spectator)" : "");
 		}
 	}
 	networkManager.ghostPoolLock.unlock();

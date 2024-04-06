@@ -144,6 +144,8 @@ public:
 	bool IsGamePaused();
 	int GetMapIndex(const std::string map);
 	std::string GetCurrentMapName();
+	std::string GetMapTitle(std::string map);
+	std::string GetCurrentMapTitle();
 	bool IsCoop();
 	bool IsOrange();
 	bool IsSplitscreen();

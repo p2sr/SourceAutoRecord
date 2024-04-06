@@ -201,6 +201,20 @@ std::string Engine::GetCurrentMapName() {
 	return last_map;
 }
 
+std::string Engine::GetMapTitle(std::string map) {
+	auto it = std::find_if(Game::maps.begin(), Game::maps.end(), [&map](const MapData &data) {
+		return data.fileName == map;
+	});
+	if (it != Game::maps.end()) {
+		return it->displayName;
+	}
+	return map;
+}
+
+std::string Engine::GetCurrentMapTitle() {
+	return this->GetMapTitle(this->GetCurrentMapName());
+}
+
 bool Engine::IsCoop() {
 	if (GetCurrentMapName().size() == 0) return false;
 	if (*client->gamerules) {

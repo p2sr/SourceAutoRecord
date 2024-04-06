@@ -58,131 +58,6 @@ static bool g_key_valid;
 static CURL *g_curl;
 static std::thread g_worker;
 
-static std::map<std::string, const char *> g_map_ids = {
-	{ "sp_a1_intro1",  "62761" },
-	{ "sp_a1_intro2",  "62758" },
-	{ "sp_a1_intro3",  "47458" },
-	{ "sp_a1_intro4",  "47455" },
-	{ "sp_a1_intro5",  "47452" },
-	{ "sp_a1_intro6",  "47106" },
-	{ "sp_a1_intro7",  "62763" },
-	{ "sp_a1_wakeup",  "62759" },
-	{ "sp_a2_intro",   "47735" },
-
-	{ "sp_a2_laser_intro",     "62765" },
-	{ "sp_a2_laser_stairs",    "47736" },
-	{ "sp_a2_dual_lasers",     "47738" },
-	{ "sp_a2_laser_over_goo",  "47742" },
-	{ "sp_a2_catapult_intro",  "62767" },
-	{ "sp_a2_trust_fling",     "47744" },
-	{ "sp_a2_pit_flings",      "47465" },
-	{ "sp_a2_fizzler_intro",   "47746" },
-
-	{ "sp_a2_sphere_peek",      "47748" },
-	{ "sp_a2_ricochet",         "47751" },
-	{ "sp_a2_bridge_intro",     "47752" },
-	{ "sp_a2_bridge_the_gap",   "47755" },
-	{ "sp_a2_turret_intro",     "47756" },
-	{ "sp_a2_laser_relays",     "47759" },
-	{ "sp_a2_turret_blocker",   "47760" },
-	{ "sp_a2_laser_vs_turret",  "47763" },
-	{ "sp_a2_pull_the_rug",     "47764" },
-
-	{ "sp_a2_column_blocker",  "47766" },
-	{ "sp_a2_laser_chaining",  "47768" },
-	{ "sp_a2_triple_laser",    "47770" },
-	{ "sp_a2_bts1",            "47773" },
-	{ "sp_a2_bts2",            "47774" },
-
-	{ "sp_a2_bts3",  "47776" },
-	{ "sp_a2_bts4",  "47779" },
-	{ "sp_a2_bts5",  "47780" },
-	{ "sp_a2_core",  "62771" },
-
-	{ "sp_a3_01",            "47783" },
-	{ "sp_a3_03",            "47784" },
-	{ "sp_a3_jump_intro",    "47787" },
-	{ "sp_a3_bomb_flings",   "47468" },
-	{ "sp_a3_crazy_box",     "47469" },
-	{ "sp_a3_transition01",  "47472" },
-
-	{ "sp_a3_speed_ramp",    "47791" },
-	{ "sp_a3_speed_flings",  "47793" },
-	{ "sp_a3_portal_intro",  "47795" },
-	{ "sp_a3_end",           "47798" },
-
-	{ "sp_a4_intro",           "88350" },
-	{ "sp_a4_tb_intro",        "47800" },
-	{ "sp_a4_tb_trust_drop",   "47802" },
-	{ "sp_a4_tb_wall_button",  "47804" },
-	{ "sp_a4_tb_polarity",     "47806" },
-	{ "sp_a4_tb_catch",        "47808" },
-	{ "sp_a4_stop_the_box",    "47811" },
-	{ "sp_a4_laser_catapult",  "47813" },
-	{ "sp_a4_laser_platform",  "47815" },
-	{ "sp_a4_speed_tb_catch",  "47817" },
-	{ "sp_a4_jump_polarity",   "47819" },
-
-	{ "sp_a4_finale1",  "62776" },
-	{ "sp_a4_finale2",  "47821" },
-	{ "sp_a4_finale3",  "47824" },
-	{ "sp_a4_finale4",  "47456" },
-
-	{ "mp_coop_doors",          "47741" },
-	{ "mp_coop_race_2",         "47825" },
-	{ "mp_coop_laser_2",        "47828" },
-	{ "mp_coop_rat_maze",       "47829" },
-	{ "mp_coop_laser_crusher",  "45467" },
-	{ "mp_coop_teambts",        "46362" },
-
-	{ "mp_coop_fling_3",            "47831" },
-	{ "mp_coop_infinifling_train",  "47833" },
-	{ "mp_coop_come_along",         "47835" },
-	{ "mp_coop_fling_1",            "47837" },
-	{ "mp_coop_catapult_1",         "47840" },
-	{ "mp_coop_multifling_1",       "47841" },
-	{ "mp_coop_fling_crushers",     "47844" },
-	{ "mp_coop_fan",                "47845" },
-
-	{ "mp_coop_wall_intro",           "47848" },
-	{ "mp_coop_wall_2",               "47849" },
-	{ "mp_coop_catapult_wall_intro",  "47854" },
-	{ "mp_coop_wall_block",           "47856" },
-	{ "mp_coop_catapult_2",           "47858" },
-	{ "mp_coop_turret_walls",         "47861" },
-	{ "mp_coop_turret_ball",          "52642" },
-	{ "mp_coop_wall_5",               "52660" },
-
-	{ "mp_coop_tbeam_redirect",       "52662" },
-	{ "mp_coop_tbeam_drill",          "52663" },
-	{ "mp_coop_tbeam_catch_grind_1",  "52665" },
-	{ "mp_coop_tbeam_laser_1",        "52667" },
-	{ "mp_coop_tbeam_polarity",       "52671" },
-	{ "mp_coop_tbeam_polarity2",      "52687" },
-	{ "mp_coop_tbeam_polarity3",      "52689" },
-	{ "mp_coop_tbeam_maze",           "52691" },
-	{ "mp_coop_tbeam_end",            "52777" },
-
-	{ "mp_coop_paint_come_along",      "52694" },
-	{ "mp_coop_paint_redirect",        "52711" },
-	{ "mp_coop_paint_bridge",          "52714" },
-	{ "mp_coop_paint_walljumps",       "52715" },
-	{ "mp_coop_paint_speed_fling",     "52717" },
-	{ "mp_coop_paint_red_racer",       "52735" },
-	{ "mp_coop_paint_speed_catch",     "52738" },
-	{ "mp_coop_paint_longjump_intro",  "52740" },
-
-	{ "mp_coop_separation_1",      "49341" },
-	{ "mp_coop_tripleaxis",        "49343" },
-	{ "mp_coop_catapult_catch",    "49345" },
-	{ "mp_coop_2paints_1bridge",   "49347" },
-	{ "mp_coop_paint_conversion",  "49349" },
-	{ "mp_coop_bridge_catch",      "49351" },
-	{ "mp_coop_laser_tbeam",       "52757" },
-	{ "mp_coop_paint_rat_maze",    "52759" },
-	{ "mp_coop_paint_crazy_box",   "48287" },
-};
-
 static bool ensureCurlReady() {
 	if (!g_curl) {
 		g_curl = curl_easy_init();
@@ -439,8 +314,8 @@ void retrieveMtriggers(int rank, std::string map_name) {
 	if (map_name.empty())
 		return THREAD_PRINT("Not playing a map.\n");
 
-	for (const auto &pair : g_map_ids) {
-		if (pair.first == map_name) {
+	for (const auto &map : Game::maps) {
+		if (map.fileName == map_name) {
 			keyFound = true;
 			break;
 		}
@@ -544,8 +419,10 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 	return;
 #endif
 
-	auto it = g_map_ids.find(engine->GetCurrentMapName());
-	if (it == g_map_ids.end()) {
+	auto it = std::find_if(Game::maps.begin(), Game::maps.end(), [](const MapData &data) {
+		return data.fileName == engine->GetCurrentMapName();
+	});
+	if (it == Game::maps.end()) {
 		console->Print("Unknown map; not autosubmitting\n");
 		if (rename_if_pb) {
 			std::filesystem::rename(demopath, *rename_if_pb);
@@ -556,7 +433,17 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 		return;
 	}
 
-	const char *map_id = it->second;
+	const char *map_id = it->chamberId;
+	if (std::string(map_id) == "") {
+		console->Print("Map not on boards; not autosubmitting\n");
+		if (rename_if_pb) {
+			std::filesystem::rename(demopath, *rename_if_pb);
+		}
+		if (replay_append_if_pb) {
+			engine->demoplayer->replayName += *replay_append_if_pb;
+		}
+		return;
+	}
 
 	int score = floor(final_time * 100);
 

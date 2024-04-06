@@ -46,7 +46,7 @@ void DemoGhostEntity::NextDemo() {
 		this->ChangeDemo();
 		this->LevelReset();
 		if (ghost_show_advancement.GetInt() >= 3) {
-			std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), this->currentMap.c_str());
+			std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), engine->GetMapTitle(this->currentMap).c_str());
 			toastHud.AddToast(GHOST_TOAST_TAG, msg);
 		}
 		if (this->IsBeingFollowed()) {

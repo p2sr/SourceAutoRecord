@@ -28,6 +28,7 @@
 #define TARGET_MOD2 MODULE("engine")
 
 std::vector<std::string> Game::mapNames;
+std::vector<MapData> Game::maps;
 std::vector<AchievementData> Game::achievements;
 
 const char *Game::Version() {
@@ -120,4 +121,3 @@ bool Game::IsSpeedrunMod() {
 
 	return srm;
 }
-

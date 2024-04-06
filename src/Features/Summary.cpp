@@ -70,7 +70,7 @@ CON_COMMAND(sar_sum_result, "sar_sum_result - prints result of summary\n") {
 	if (summary->isRunning) {
 		auto tick = session->GetTick();
 		auto time = engine->ToTime(tick);
-		console->PrintActive("%s -> ", engine->GetCurrentMapName().c_str());
+		console->PrintActive("%s -> ", engine->GetCurrentMapTitle().c_str());
 		console->PrintActive("%i ticks ", tick);
 		console->PrintActive("(%.3f)\n", time);
 		console->Print("---------------\n");
