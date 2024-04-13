@@ -45,6 +45,7 @@ void CheckTool::Apply(TasFramebulk &fb, const TasPlayerInfo &info) {
 			tasPlayer->Replay(true);
 		} else {
 			console->Print("TAS failed after %d replays - giving up\n", replays);
+			tasPlayer->playbackInfo.autoReplayCount = 0;
 			tasPlayer->Stop(true);
 		}
 	}
