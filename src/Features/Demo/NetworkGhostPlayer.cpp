@@ -1197,8 +1197,11 @@ int g_wasChatType = 0;
 bool NetworkManager::HandleGhostSay(const char *msg, int clientidx) {
 	if (Utils::StartsWith(msg, "\x07")) return false; // orange saying IT'S REAL
 	if (clientidx != 1) {
-		NetMessage::SendMsg(ORANGE_MESSAGE_TYPE, msg, strlen(msg));
-		return true;
+		if (g_partnerHasSAR) {
+			NetMessage::SendMsg(ORANGE_MESSAGE_TYPE, msg, strlen(msg));
+			return true;
+		}
+		return false;
 	}
 
 	if (g_chatType != 0 || g_wasChatType != 2) {

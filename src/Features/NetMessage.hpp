@@ -4,6 +4,7 @@
 #include <string>
 
 extern bool g_orangeReady;
+extern bool g_partnerHasSAR;
 
 namespace NetMessage {
 	void RegisterHandler(const char *type, void (*handler)(const void *data, size_t size));

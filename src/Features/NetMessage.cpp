@@ -21,6 +21,7 @@
 // if blue: whether orange is ready
 // if orange: whether we've sent the ready packet
 bool g_orangeReady = false;
+bool g_partnerHasSAR = false;
 
 static size_t g_expected_len = 0;
 static std::string g_partial;
@@ -32,6 +33,7 @@ void NetMessage::RegisterHandler(const char *type, void (*handler)(const void *,
 }
 
 static inline void handleMessage(const char *type, const void *data, size_t size) {
+	g_partnerHasSAR = true;
 	if (!strcmp(type, "__sync")) {
 		if (size == 6 && !strcmp((const char *)data, "ready")) {
 			g_orangeReady = true;
@@ -58,6 +60,7 @@ static bool readyToSend() {
 
 void NetMessage::SessionEnded() {
 	g_orangeReady = false;
+	g_partnerHasSAR = false;
 }
 
 struct QueuedMsg {
@@ -159,7 +162,8 @@ void NetMessage::SendMsg(const char *type, const void *data, size_t size) {
 		return;
 	}
 
-	if (!readyToSend()) {
+	// If the partner doesn't have SAR, only send sync messages
+	if (!readyToSend() || (!g_partnerHasSAR && !!strcmp(type, "__sync"))) {
 		g_queued.push({
 			std::string(type),
 			std::vector<uint8_t>((const uint8_t *)data, (const uint8_t *)data + size),
@@ -214,7 +218,7 @@ void NetMessage::Update() {
 	}
 
 	if (readyToSend()) {
-		while (!g_queued.empty()) {
+		for (size_t i = 0; i < g_queued.size(); ++i) {
 			auto &msg = g_queued.front();
 			NetMessage::SendMsg(msg.type.c_str(), msg.data.data(), msg.data.size());
 			g_queued.pop();
