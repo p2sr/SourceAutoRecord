@@ -1,4 +1,5 @@
 #include "CheckTool.hpp"
+#include "Features/EntityList.hpp"
 #include "Features/Tas/TasParser.hpp"
 #include "Modules/Console.hpp"
 
@@ -35,6 +36,30 @@ void CheckTool::Apply(TasFramebulk &fb, const TasPlayerInfo &info) {
 		if (distSquared > params.angepsilon * params.angepsilon) {
 			console->Print("Angle was %.2f degrees away from target!\n", sqrtf(distSquared));
 			shouldReplay = true;
+		}
+	}
+
+	if (params.holding) {
+		auto player = server->GetPlayer(info.slot + 1);
+		if (player) {
+			auto held = player->field<CBaseHandle>("m_hAttachedObject");
+			if (held) {
+				if (params.holding.value().size() != 0) {
+					CEntInfo *entity = entityList->QuerySelector(params.holding.value().c_str());
+					if (entity != NULL) {
+						// Check if they are the same entity
+						int entSerial = held.GetSerialNumber(), entSerial2 = entity->m_SerialNumber;
+						if (entSerial != entSerial2) {
+							console->Print("Player was holding the wrong object!\n");
+							shouldReplay = true;
+						}
+					}
+
+				}
+			} else {
+				console->Print("Player was not holding an object!\n");
+				shouldReplay = true;
+			}
 		}
 	}
 
@@ -87,6 +112,7 @@ std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> v
 
 	std::optional<Vector> pos = {};
 	std::optional<QAngle> ang = {};
+	std::optional<std::string> holding = {};
 	std::optional<float> posepsilon = {};
 	std::optional<float> angepsilon = {};
 
@@ -105,6 +131,17 @@ std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> v
 			}
 			ang = parseAng(vp, i+1);
 			i += 3;
+		} else if (vp[i] == "holding") {
+			if (holding) {
+				throw TasParserException("Duplicate holding given to check tool");
+			}
+			if (vp.size() - i < 2) {
+				holding = "";
+				i += 1;
+			} else {
+				holding = vp[i+1];
+				i += 2;
+			}
 		} else if (vp[i] == "posepsilon") {
 			if (posepsilon) {
 				throw TasParserException("Duplicate position epsilon given to check tool");
@@ -130,5 +167,5 @@ std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> v
 		}
 	}
 
-	return std::make_shared<CheckToolParams>(pos, ang, posepsilon ? *posepsilon : DEFAULT_POS_EPSILON, angepsilon ? *angepsilon : DEFAULT_ANG_EPSILON);
+	return std::make_shared<CheckToolParams>(pos, ang, holding, posepsilon ? *posepsilon : DEFAULT_POS_EPSILON, angepsilon ? *angepsilon : DEFAULT_ANG_EPSILON);
 }

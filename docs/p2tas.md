@@ -264,10 +264,10 @@ This tool decelerates the player as fast as possible towards the speed, in units
 ### `check` tool
 
 ```cs
-check {pos <x> <y> <z>} {posepsilon <number>} {ang <pitch> <yaw>} {angepsilon <number>}
+check {pos <x> <y> <z>} {posepsilon <number>} {ang <pitch> <yaw>} {angepsilon <number>} {holding [entity_selector]}
 ```
 
-This tool can be used to perform a check on player's position and view angles. If position and view angles differ by more than given epsilon, the TAS script is restarted. The tool will restart until the number of automatic restarts surpasses the one defined by a `sar_tas_check_max_replays` console variable.
+This tool can be used to perform a check on player's position or view angles. If position or view angles differ by more than given epsilon, the TAS script is restarted. It can also be used to check if the player is holding an item, with an optional entity selector. The tool will restart until the number of automatic restarts surpasses the number defined by the `sar_tas_check_max_replays` console variable.
 
 ### `duck` tool
 
