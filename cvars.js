@@ -44,6 +44,7 @@ fs.readFile(path + '/sar.cvars', 'utf-8', (err, data) => {
 
     let body = '';
     for (let cvar of cvars.sort((a, b) => compareCvar(a.name, b.name))) {
+        if (!cvar.description.endsWith('\n')) console.warn(`Cvar ${cvar.name} does not end with a newline character.`);
         body += '\n|';
         body += (cvar.games.length > 0) ? `<i title="${cvar.games.join('&#10;')}">${cvar.name}</i>` : cvar.name;
         body += `|${cvar.value}|${cvar.description.trim().replace(/([<\|\\])/g, '\\$1').replace(/\n/g, '<br>')}|`;
