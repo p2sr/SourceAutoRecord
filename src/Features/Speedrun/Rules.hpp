@@ -22,7 +22,7 @@ enum PortalColor {
 	ORANGE,
 };
 
-class SpeedrunRule;
+struct SpeedrunRule;
 
 #define ENTRULE_TARGETNAME (1 << 0)
 #define ENTRULE_CLASSNAME (1 << 1)

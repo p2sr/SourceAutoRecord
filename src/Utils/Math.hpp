@@ -22,8 +22,8 @@ namespace Math {
 	void VectorCopy(const Vector &src, Vector &dst);
 	float RandomNumber(const float &min, const float &max);
 	int RandomNumber(const int &min, const int &max);
-	float Distance(const Vector &a, const Vector &b);
-	float Distance(const QAngle &a, const QAngle &b);
+	double Distance(const Vector &a, const Vector &b);
+	double Distance(const QAngle &a, const QAngle &b);
 	void Lerp(const Vector &oldPos, const Vector &newPos, float time, Vector &outPut);
 }  // namespace Math
 
@@ -64,10 +64,10 @@ inline void Math::VectorCopy(const Vector &src, Vector &dst) {
 	dst.y = src.y;
 	dst.z = src.z;
 }
-inline float Math::Distance(const Vector &a, const Vector &b) {
+inline double Math::Distance(const Vector &a, const Vector &b) {
 	return std::sqrt(std::pow(b.x - a.x, 2) + std::pow(b.y - a.y, 2) + std::pow(b.z - a.z, 2));
 }
-inline float Math::Distance(const QAngle &a, const QAngle &b) {
+inline double Math::Distance(const QAngle &a, const QAngle &b) {
 	return std::sqrt(std::pow(b.x - a.x, 2) + std::pow(b.y - a.y, 2) + std::pow(b.z - a.z, 2));
 }
 

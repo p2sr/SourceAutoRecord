@@ -84,6 +84,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <NoEntryPoint>false</NoEntryPoint>
       <AdditionalDependencies>libcurl_a.lib;wldap32.lib;crypt32.lib;normaliz.lib;imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;discord-rpc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PreBuildEvent>
       <Command>call ..\genversion.bat</Command>
@@ -114,6 +115,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows;$(SolutionDir)\lib\curl\lib\windows;$(SolutionDir)\lib\discord-rpc\lib\windows</AdditionalLibraryDirectories>
       <NoEntryPoint>false</NoEntryPoint>
       <AdditionalDependencies>libcurl_a.lib;wldap32.lib;crypt32.lib;normaliz.lib;imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;discord-rpc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>

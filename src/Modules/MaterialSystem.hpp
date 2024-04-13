@@ -5,7 +5,7 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 
-class IMatRenderContext; // resolve dependency loop
+struct IMatRenderContext; // resolve dependency loop
 
 class MaterialSystem : public Module {
 public:
