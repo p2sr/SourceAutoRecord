@@ -36,6 +36,7 @@ extern Variable ui_loadingscreen_fadein_time;
 extern Variable ui_loadingscreen_mintransition_time;
 extern Variable ui_transition_effect;
 extern Variable ui_transition_time;
+extern Variable ui_pvplobby_show_offline;
 extern Variable hide_gun_when_holding;
 extern Variable cl_viewmodelfov;
 extern Variable r_flashlightbrightness;

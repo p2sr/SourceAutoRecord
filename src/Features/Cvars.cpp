@@ -223,6 +223,7 @@ void Cvars::Lock() {
 		ui_loadingscreen_mintransition_time.Lock();
 		ui_transition_effect.Lock();
 		ui_transition_time.Lock();
+		ui_pvplobby_show_offline.Lock();
 		hide_gun_when_holding.Lock();
 		cl_viewmodelfov.Lock();
 		r_flashlightbrightness.Lock();
@@ -262,6 +263,8 @@ void Cvars::Unlock() {
 		ui_loadingscreen_mintransition_time.Unlock(false);
 		ui_transition_effect.Unlock(false);
 		ui_transition_time.Unlock(false);
+		ui_pvplobby_show_offline.Unlock(false);
+		ui_pvplobby_show_offline.SetValue(1);
 		hide_gun_when_holding.Unlock(false);
 		cl_viewmodelfov.Unlock(false);
 		r_flashlightbrightness.Unlock(false);
