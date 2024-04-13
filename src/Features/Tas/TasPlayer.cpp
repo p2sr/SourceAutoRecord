@@ -410,7 +410,6 @@ void TasPlayer::SaveUsercmdDebugs(int slot) {
 		fixedName = filename.substr(0, lastdot);
 	}
 	fixedName += "_usercmd.csv";
-	auto filepath = fileSystem->FindFileSomewhere(fixedName).value_or(fixedName);
 	std::ofstream file(fixedName);
 	file << "source,tick,forwardmove,sidemove,buttons,pitch,yaw,roll\n";
 	for (auto &l : lines) file << l << "\n";
@@ -419,7 +418,7 @@ void TasPlayer::SaveUsercmdDebugs(int slot) {
 
 void TasPlayer::SavePlayerInfoDebugs(int slot) {
 	std::string filename = playbackInfo.slots[slot].path;
-	std::vector<std::string> &lines = playbackInfo.slots[slot].userCmdDebugs;
+	std::vector<std::string> &lines = playbackInfo.slots[slot].playerInfoDebugs;
 
 	if (filename.size() == 0) return;
 	if (lines.empty()) return;
