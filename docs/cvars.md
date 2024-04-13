@@ -367,6 +367,8 @@
 |sar_on_tas_start_clear|cmd|sar_on_tas_start_clear - clears commands registered on event "tas_start"|
 |sar_on_tas_start_list|cmd|sar_on_tas_start_list - lists commands registered on event "tas_start"|
 |sar_paint_reseed|cmd|sar_paint_reseed \<seed> - re-seed all paint sprayers in the map to the given value (-9999 to 9999 inclusive)|
+|sar_paintmap_sync_debounce|0.5|Debounce interval for syncing paintmap data to orange, in seconds.|
+|sar_paintmap_sync_debounce_max|1.5|Maximum delay from debouncing paintmap syncs to orange, in seconds.|
 |sar_patch_bhop|0|Patches bhop by limiting wish direction if your velocity is too high.|
 |sar_patch_cfg|0|Patches Crouch Flying Glitch.|
 |sar_patch_major_angle_decay|0|Patches major pitch angle decay. Requires cheats.|

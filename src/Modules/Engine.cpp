@@ -1181,12 +1181,12 @@ bool Engine::Init() {
 #endif
 
 #ifdef _WIN32
-	UpdatePaintmapTextures = (void (__rescall *)(void *))Memory::Scan(this->Name(), ""); // TODO
+	UpdatePaintmapTextures = (void (__rescall *)(void *))Memory::Scan(this->Name(), "55 8B EC 83 EC 1C 53 8B D9 8B 0D");
 #else
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
 		UpdatePaintmapTextures = (void (__rescall *)(void *))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 28 A1 ? ? ? ? 8B 7D 08 8B 10 50 FF 92 ? ? ? ? 83 C4 10 89 45 E0 85 C0 74 0F 8B 55 E0");
 	} else {
-		UpdatePaintmapTextures = (void (__rescall *)(void *))Memory::Scan(this->Name(), ""); // TODO
+		UpdatePaintmapTextures = (void (__rescall *)(void *))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C A1 ? ? ? ? 8B 7D ? 8B 10 89 04 24 FF 92");
 	}
 #endif
 	g_UpdatePaintmapTextures_Hook.SetFunc(UpdatePaintmapTextures);
