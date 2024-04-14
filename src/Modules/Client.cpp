@@ -71,6 +71,7 @@ Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", "Patche
 REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
 REDECL(Client::CreateMove2);
+REDECL(Client::GetName);
 REDECL(Client::ShouldDraw_BasicInfo);
 REDECL(Client::ShouldDraw_SaveStatus);
 REDECL(Client::MsgFunc_SayText2);
@@ -276,13 +277,19 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd *cmd) {
 	return Client::CreateMove2(thisptr, flInputSampleTime, cmd);
 }
 
+// CHud::GetName
+DETOUR_T(const char *, Client::GetName) {
+	if (sar_disable_challenge_stats_hud.GetInt() == -1) return "";
+	return Client::GetName(thisptr);
+}
+
 static bool g_leaderboardOpen = false;
 DETOUR_COMMAND(Client::openleaderboard) {
 	Client::openleaderboard_callback(args);
 
 	if (args.ArgC() == 2 && !strcmp(args[1], "4")) {
 		g_leaderboardOpen = true;
-		if (sar_disable_challenge_stats_hud.GetBool() && (!engine->IsCoop() || engine->IsOrange())) {
+		if (sar_disable_challenge_stats_hud.GetInt() > 0 && (!engine->IsCoop() || engine->IsOrange())) {
 			auto ticks = 6;
 			if (sar_disable_challenge_stats_hud.GetInt() > 1) ticks = sar_disable_challenge_stats_hud.GetInt();
 			Scheduler::InHostTicks(ticks, []() {
@@ -727,6 +734,11 @@ bool Client::Init() {
 			auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
 			auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
 			auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
+			auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
+
+			if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
+				this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
+			}
 
 			auto CHUDQuickInfo = FindElement(GetHud(-1), "CHUDQuickInfo");
 

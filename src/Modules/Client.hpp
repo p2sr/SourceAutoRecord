@@ -91,6 +91,9 @@ public:
 	DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd *cmd);
 	DECL_DETOUR(CreateMove2, float flInputSampleTime, CUserCmd *cmd);
 
+	// CHud::GetName
+	DECL_DETOUR_T(const char *, GetName);
+
 	// CHudMultiplayerBasicInfo::ShouldDraw
 	DECL_DETOUR_T(bool, ShouldDraw_BasicInfo);
 
