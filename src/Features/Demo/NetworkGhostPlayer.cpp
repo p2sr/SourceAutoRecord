@@ -719,7 +719,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 				if (!strcmp("", current_map.c_str())) {
 					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s%s has connected in the menu!", name.c_str(), ghost->spectator ? " (spectator)" : ""));
 				} else {
-					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s%s has connected in %s!", name.c_str(), ghost->spectator ? " (spectator)" : "", current_map.c_str()));
+					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s%s has connected in %s!", name.c_str(), ghost->spectator ? " (spectator)" : "", engine->GetMapTitle(current_map).c_str()));
 				}
 			}
 
@@ -881,7 +881,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		if (ghost) {
 			Scheduler::OnMainThread([=]() {
 				if (ghost_show_advancement.GetInt() >= 2 || (ghost->sameMap && ghost_show_advancement.GetInt() >= 1)) {
-					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished on %s in %s", ghost->name.c_str(), ghost->currentMap.c_str(), timer.c_str()));
+					toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("%s has finished on %s in %s", ghost->name.c_str(), engine->GetMapTitle(ghost->currentMap).c_str(), timer.c_str()));
 				}
 				// whose fucking idea was it to send a string?!
 				float totalSecs = SpeedrunTimer::UnFormat(timer);
