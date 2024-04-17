@@ -185,7 +185,7 @@ void NetMessage::SendMsg(const char *type, const void *data, size_t size) {
 
 	// TODO: first do compression on the raw data? probably only if it's long
 
-	// We can only send messages up to 255 characters, which means sometimes a single NetMessage has
+	// We can only send messages up to 127 characters, which means sometimes a single NetMessage has
 	// to correspond to multiple chat messages. We'll handle this by prefixing the length, and sending
 	// a sequence of messages.
 	uint32_t encoded_len = encoded.size();
@@ -197,7 +197,7 @@ void NetMessage::SendMsg(const char *type, const void *data, size_t size) {
 
 	while (i < full_encoded.size()) {
 		std::string chat = i == 0 ? init_prefix : cont_prefix;
-		size_t n = 255 - chat.size();
+		size_t n = 127 - chat.size();
 		n = i + n > full_encoded.size() ? full_encoded.size() - i : n;
 		chat.append(full_encoded, i, n);
 		i += n;
