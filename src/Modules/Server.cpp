@@ -880,16 +880,16 @@ bool Server::Init() {
 	uintptr_t insn_addr2 = 0;
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
 		insn_addr = (uintptr_t)say_callback + 55;
-		Host_Say = Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 4C 02 00 00 8B 5D ? 8B 45")
+		Host_Say = Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 4C 02 00 00 8B 5D ? 8B 45");
 		insn_addr2 = Host_Say + 0x36C;
 	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
 		insn_addr = (uintptr_t)say_callback + 88;
-		Host_Say = Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 8C 02 00 00 8B 45 ? 8B 5D")
+		Host_Say = Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 8C 02 00 00 8B 45 ? 8B 5D");
 		insn_addr2 = Host_Say + 0x37A;
 	} else {
 		insn_addr = (uintptr_t)say_callback + 57;
 		// I'm not confident with this offset and TWTM/aptag don't have coop anyway
-		// Host_Say = Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 7C 02 00 00 8B 5D")
+		// Host_Say = Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 7C 02 00 00 8B 5D");
 		// insn_addr2 = Host_Say + 0x346;
 	}
 #endif
