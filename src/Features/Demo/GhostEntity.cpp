@@ -273,13 +273,8 @@ void GhostEntity::Lerp() {
 	if (should_tp) {
 		this->data = time < 0.5 ? this->oldPos : this->newPos;
 	} else {
-		this->data.position.x = (1 - time) * this->oldPos.position.x + time * this->newPos.position.x;
-		this->data.position.y = (1 - time) * this->oldPos.position.y + time * this->newPos.position.y;
-		this->data.position.z = (1 - time) * this->oldPos.position.z + time * this->newPos.position.z;
-
-		this->data.view_angle.x = (1 - time) * this->oldPos.view_angle.x + time * this->newPos.view_angle.x;
-		this->data.view_angle.y = (1 - time) * this->oldPos.view_angle.y + time * this->newPos.view_angle.y;
-		this->data.view_angle.z = (1 - time) * this->oldPos.view_angle.z + time * this->newPos.view_angle.z;
+		Math::Lerp(this->oldPos.position, this->newPos.position, time, this->data.position);
+		Math::LerpAngles(this->oldPos.view_angle, this->newPos.view_angle, time, this->data.view_angle);
 
 		this->data.view_offset = (1 - time) * this->oldPos.view_offset + time * this->newPos.view_offset;
 		this->data.grounded = time < 0.5 ? this->oldPos.grounded : this->newPos.grounded;

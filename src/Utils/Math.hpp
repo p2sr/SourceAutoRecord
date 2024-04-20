@@ -25,6 +25,8 @@ namespace Math {
 	double Distance(const Vector &a, const Vector &b);
 	double Distance(const QAngle &a, const QAngle &b);
 	void Lerp(const Vector &oldPos, const Vector &newPos, float time, Vector &outPut);
+	float LerpAngle(const float oldValue, const float newValue, float time);
+	void LerpAngles(const QAngle &oldAng, const QAngle &newAng, float time, QAngle &outPut);
 }  // namespace Math
 
 inline void Math::SinCos(float radians, float *sine, float *cosine) {
@@ -80,6 +82,29 @@ inline void Math::Lerp(const Vector &oldPos, const Vector &newPos, float time, V
 	outPut.x = (1 - time) * oldPos.x + time * newPos.x;
 	outPut.y = (1 - time) * oldPos.y + time * newPos.y;
 	outPut.z = (1 - time) * oldPos.z + time * newPos.z;
+}
+
+inline float Math::LerpAngle(const float oldAngle, const float newAngle, float time) {
+	if (time > 1)
+		time = 1;
+	if (time < 0)
+		time = 0;
+
+	auto delta = (newAngle - oldAngle);
+	if (delta < -180.0f) delta += 360.0f;
+	if (delta > 180.0f) delta -= 360.0f;
+
+	auto result = oldAngle + delta * time;
+	if (result < -180.0f) result += 360.0f;
+	if (result > 180.0f) result -= 360.0f;
+
+	return result;
+}
+
+inline void Math::LerpAngles(const QAngle &oldAngles, const QAngle &newAngles, float time, QAngle &outPut) {
+	outPut.x = Math::LerpAngle(oldAngles.x, newAngles.x, time);
+	outPut.y = Math::LerpAngle(oldAngles.y, newAngles.y, time);
+	outPut.z = Math::LerpAngle(oldAngles.z, newAngles.z, time);
 }
 
 
