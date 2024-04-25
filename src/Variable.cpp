@@ -127,7 +127,9 @@ void Variable::Unlock(bool asCheat) {
 void Variable::Lock() {
 	if (this->ptr) {
 		this->SetFlags(this->originalFlags);
-		this->SetValue(this->ptr->m_pszDefaultValue);
+		if (!this->ptr->IsCommand()) { // lazy fix lmao - AMJ 2024-04-26
+			this->SetValue(this->ptr->m_pszDefaultValue);
+		}
 		this->isUnlocked = false;
 	}
 }
