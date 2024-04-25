@@ -54,16 +54,16 @@ static int g_slideOff;
 #define STR(s) #s
 #define EXP_STR(s) STR(s)
 
-Variable sar_toast_disable("sar_toast_disable", "0", "Disable all toasts from showing.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
-Variable sar_toast_font("sar_toast_font", "6", 0, "The font index to use for toasts.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
-Variable sar_toast_width("sar_toast_width", "250", 2 * SIDE_PAD + 10, "The maximum width for toasts.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
-Variable sar_toast_x("sar_toast_x", EXP_STR(TOAST_GAP), 0, "The horizontal position of the toasts HUD.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
-Variable sar_toast_y("sar_toast_y", EXP_STR(TOAST_GAP), 0, "The vertical position of the toasts HUD.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
-Variable sar_toast_align("sar_toast_align", "0", 0, 2, "The side to align toasts to horizontally. 0 = left, 1 = center, 2 = right.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
-Variable sar_toast_anchor("sar_toast_anchor", "1", 0, 1, "Where to put new toasts. 0 = bottom, 1 = top.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
-Variable sar_toast_compact("sar_toast_compact", "0", "Enables a compact form of the toasts HUD.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
-Variable sar_toast_background("sar_toast_background", "1", 0, 2, "Sets the background highlight for toasts. 0 = no background, 1 = text width only, 2 = full width.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
-Variable sar_toast_net_disable("sar_toast_net_disable", "0", "Disable network toasts.\n", FCVAR_NEVER_AS_STRING | FCVAR_DONTRECORD);
+Variable sar_toast_disable("sar_toast_disable", "0", "Disable all toasts from showing.\n", FCVAR_DONTRECORD);
+Variable sar_toast_font("sar_toast_font", "6", 0, "The font index to use for toasts.\n", FCVAR_DONTRECORD);
+Variable sar_toast_width("sar_toast_width", "250", 2 * SIDE_PAD + 10, "The maximum width for toasts.\n", FCVAR_DONTRECORD);
+Variable sar_toast_x("sar_toast_x", EXP_STR(TOAST_GAP), 0, "The horizontal position of the toasts HUD.\n", FCVAR_DONTRECORD);
+Variable sar_toast_y("sar_toast_y", EXP_STR(TOAST_GAP), 0, "The vertical position of the toasts HUD.\n", FCVAR_DONTRECORD);
+Variable sar_toast_align("sar_toast_align", "0", 0, 2, "The side to align toasts to horizontally. 0 = left, 1 = center, 2 = right.\n", FCVAR_DONTRECORD);
+Variable sar_toast_anchor("sar_toast_anchor", "1", 0, 1, "Where to put new toasts. 0 = bottom, 1 = top.\n", FCVAR_DONTRECORD);
+Variable sar_toast_compact("sar_toast_compact", "0", "Enables a compact form of the toasts HUD.\n", FCVAR_DONTRECORD);
+Variable sar_toast_background("sar_toast_background", "1", 0, 2, "Sets the background highlight for toasts. 0 = no background, 1 = text width only, 2 = full width.\n", FCVAR_DONTRECORD);
+Variable sar_toast_net_disable("sar_toast_net_disable", "0", "Disable network toasts.\n", FCVAR_DONTRECORD);
 
 struct TagInfo {
 	uint8_t r, g, b;
