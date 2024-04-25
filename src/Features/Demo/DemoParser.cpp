@@ -389,6 +389,8 @@ HUD_ELEMENT_MODE2(demo, "0", 0, 2, "Draws name, tick and time of current demo.\n
 	float time;
 	const char *demoName;
 
+	static std::string currentDemoPath;
+	static std::string currentDemoName;
 	if (!*engine->m_bLoadgame && *engine->demorecorder->m_bRecording && !engine->demorecorder->currentDemo.empty()) {
 		tick = engine->demorecorder->GetTick();
 		time = engine->ToTime(tick);
@@ -398,24 +400,29 @@ HUD_ELEMENT_MODE2(demo, "0", 0, 2, "Draws name, tick and time of current demo.\n
 		time = engine->ToTime(tick);
 		demoName = engine->demoplayer->DemoName;
 	} else {
+		currentDemoPath = "";
 		ctx->DrawElement("demo: -");
 		return;
 	}
 
-	if (mode == 1) {
-		ctx->DrawElement("demo: %s %i (%.3f)", demoName, tick, time);
-	} else { // mode == 2
-		const char *name = demoName;
-
-		while (*name) ++name; // Find end of path
-
-		// Go back until slash
-		while (name >= demoName && *name != '/' && *name != '\\') {
-			--name;
+	if (currentDemoPath != demoName) {
+		currentDemoPath = demoName;
+		currentDemoName = demoName;
+		for (auto gamedir : fileSystem->GetSearchPaths()) {
+			if (strstr(demoName, gamedir.c_str())) {
+				if (strlen(demoName) - gamedir.size() < currentDemoName.size()) {
+					currentDemoName = demoName + gamedir.size();
+				}
+			}
 		}
+		std::replace(currentDemoName.begin(), currentDemoName.end(), '\\', '/');
+	}
 
-		++name;
-
-		ctx->DrawElement("demo: %s %.3f", name, time);
+	if (mode == 1) {
+		ctx->DrawElement("demo: %s %i (%.3f)", currentDemoName.c_str(), tick, time);
+	} else { // mode == 2
+		auto name = currentDemoName;
+		if (name.find_last_of('/')) name = name.substr(name.find_last_of('/') + 1);
+		ctx->DrawElement("demo: %s %.3f", name.c_str(), time);
 	}
 }
