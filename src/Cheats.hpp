@@ -17,6 +17,7 @@ extern Variable sar_jumpboost;
 extern Variable sar_aircontrol;
 extern Variable sar_duckjump;
 extern Variable sar_disable_challenge_stats_hud;
+extern Variable sar_disable_challenge_stats_hud_partner;
 extern Variable sar_disable_steam_pause;
 extern Variable sar_disable_no_focus_sleep;
 extern Variable sar_disable_progress_bar_update;

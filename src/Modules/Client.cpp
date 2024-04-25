@@ -301,7 +301,10 @@ DETOUR_COMMAND(Client::openleaderboard) {
 
 ON_INIT {
 	NetMessage::RegisterHandler(LEADERBOARD_MESSAGE_TYPE, +[](const void *data, size_t size) {
-		engine->ExecuteCommand("-leaderboard");
+		// TODO: Investigate why this sometimes doesn't work - AMJ 2024-04-25
+		if (sar_disable_challenge_stats_hud_partner.GetBool()) {
+			engine->ExecuteCommand("-leaderboard");
+		}
 	});
 }
 

@@ -35,6 +35,7 @@ Variable sar_jumpboost("sar_jumpboost", "0", 0,
 Variable sar_aircontrol("sar_aircontrol", "0", 0, 2, "Enables more air-control on the server.\n");
 Variable sar_duckjump("sar_duckjump", "0", "Allows duck-jumping even when fully crouched, similar to prevent_crouch_jump.\n");
 Variable sar_disable_challenge_stats_hud("sar_disable_challenge_stats_hud", "0", -1, "Disables opening the challenge mode stats HUD. Greater than 1 specifies a custom amount of ticks to leave leaderboard open. -1 closes instantly.\n");
+Variable sar_disable_challenge_stats_hud_partner("sar_disable_challenge_stats_hud_partner", "1", "Closes the challenge mode stats HUD after your coop partner does.\n");
 Variable sar_disable_steam_pause("sar_disable_steam_pause", "0", "Prevents pauses from steam overlay.\n");
 Variable sar_disable_no_focus_sleep("sar_disable_no_focus_sleep", "0", "Does not yield the CPU when game is not focused.\n");
 Variable sar_disable_progress_bar_update("sar_disable_progress_bar_update", "0", 0, 2, "Disables excessive usage of progress bar.\n");
@@ -291,6 +292,7 @@ void Cheats::Init() {
 	r_flashlightbrightness = Variable("r_flashlightbrightness");
 
 	sar_disable_challenge_stats_hud.UniqueFor(SourceGame_Portal2);
+	sar_disable_challenge_stats_hud_partner.UniqueFor(SourceGame_Portal2);
 
 	sar_disable_weapon_sway.UniqueFor(SourceGame_Portal2);
 	sar_disable_viewmodel_shadows.UniqueFor(SourceGame_Portal2 | SourceGame_PortalStoriesMel | SourceGame_PortalReloaded);

@@ -160,6 +160,7 @@
 |sar_demo_remove_broken|1|Whether to remove broken frames from demo playback|
 |sar_demo_replay|cmd|sar_demo_replay - play the last recorded or played demo|
 |<i title="Portal 2">sar_disable_challenge_stats_hud</i>|0|Disables opening the challenge mode stats HUD. Greater than 1 specifies a custom amount of ticks to leave leaderboard open. -1 closes instantly.|
+|<i title="Portal 2">sar_disable_challenge_stats_hud_partner</i>|1|Closes the challenge mode stats HUD after your coop partner does.|
 |sar_disable_coop_score_hud|0|Disables the coop score HUD which appears in demo playback.|
 |sar_disable_no_focus_sleep|0|Does not yield the CPU when game is not focused.|
 |sar_disable_progress_bar_update|0|Disables excessive usage of progress bar.|
