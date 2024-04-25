@@ -153,6 +153,8 @@ static std::string request(const char *url) {
 }
 
 static bool getLatestVersion(std::string *name, std::string *dlUrl, std::string *pdbUrl, bool allowPre) {
+	// FIXME: This will fail if the API rate limit is saturated (bruteforcing? many instances?)
+	//        maybe cache the response for a couple minutes - AMJ 2024-04-25
 	json11::Json res;
 	if (allowPre) {
 		std::string err;
@@ -160,7 +162,12 @@ static bool getLatestVersion(std::string *name, std::string *dlUrl, std::string 
 		if (err != "") {
 			return false;
 		}
-		res = res.array_items()[0];
+		try {
+			res = res.array_items()[0];
+		} catch (...) {
+			return false;
+		}
+		
 	} else {
 		std::string err;
 		res = json11::Json::parse(request("https://api.github.com/repos/p2sr/SourceAutoRecord/releases/latest"), err);
@@ -169,7 +176,11 @@ static bool getLatestVersion(std::string *name, std::string *dlUrl, std::string 
 		}
 	}
 
-	*name = res["tag_name"].string_value();
+	try {
+		*name = res["tag_name"].string_value();
+	} catch (...) {
+		return false;
+	}
 
 	if (*name == "") {
 		return false;
