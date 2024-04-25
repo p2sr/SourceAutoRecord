@@ -253,7 +253,8 @@ ON_EVENT(RENDER) {
 	for (std::string ruleName : g_categories[g_currentCategory].rules) {
 		auto rule = SpeedrunTimer::GetRule(ruleName);
 		if (!rule) continue;
-		if (std::find(rule->maps.begin(), rule->maps.end(), engine->GetCurrentMapName()) == rule->maps.end()) continue;
+		if (std::find(rule->maps.begin(), rule->maps.end(), "*") == rule->maps.end() &&
+			std::find(rule->maps.begin(), rule->maps.end(), engine->GetCurrentMapName()) == rule->maps.end()) continue;
 		if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
 			std::get<ZoneTriggerRule>(rule->rule).DrawInWorld();
 			std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(rule);

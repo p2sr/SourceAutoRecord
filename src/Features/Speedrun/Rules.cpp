@@ -282,7 +282,8 @@ bool SpeedrunRule::TestGeneral(std::optional<int> slot) {
 		auto prereq = SpeedrunTimer::GetRule(*this->onlyAfter);
 		if (!prereq || !prereq->fired) return false;
 	}
-	if (std::find(this->maps.begin(), this->maps.end(), engine->GetCurrentMapName()) == this->maps.end()) return false;
+	if (std::find(this->maps.begin(), this->maps.end(), "*") == this->maps.end() &&
+		std::find(this->maps.begin(), this->maps.end(), engine->GetCurrentMapName()) == this->maps.end()) return false;
 	if (this->slot) {
 		if (this->slot != slot) return false;
 	}
