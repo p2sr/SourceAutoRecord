@@ -77,6 +77,12 @@ void Session::Start() {
 		return;
 	}
 
+	if (engine->IsCoop() && !engine->IsOrange() && engine->GetCurrentMapName() == "mp_coop_start") {
+		sv_cheats.ThisPtr()->m_nValue = 1;
+		engine->ExecuteCommand("ent_fire @global_no_pinging_blue TurnOff; ent_fire @global_no_pinging_orange TurnOff");
+		sv_cheats.SetValue(sv_cheats.GetString());
+	}
+
 	auto tick = engine->GetTick();
 
 	this->Rebase(tick);
