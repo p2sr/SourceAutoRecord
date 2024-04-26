@@ -28,6 +28,8 @@ Variable sar_loads_norender("sar_loads_norender", "0", 0, 1, "Temporarily set ma
 
 Variable sar_load_delay("sar_load_delay", "0", 0, "Delay for this number of milliseconds at the end of a load.\n");
 
+Variable sar_patch_viewcontrol("sar_patch_viewcontrol", "1", "Disable camera controllers before changing levels to prevent visual glitches.\n");
+
 Session *session;
 
 Session::Session()
@@ -108,13 +110,15 @@ void Session::Ended() {
 	}
 
 	// Disable any view controllers (cutscene cameras) that might be active
-	if (!engine->IsOrange()) {
-		for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
-			auto info = entityList->GetEntityInfoByIndex(index);
-			if (info->m_pEntity == nullptr) continue;
-			auto entityClass = server->GetEntityClassName(info->m_pEntity);
-			if (!entityClass || std::strcmp(entityClass, "point_viewcontrol") != 0) continue;
-			server->AcceptInput(info->m_pEntity, "Disable", 0, 0, {0}, 0);
+	if (!engine->IsOrange() && sar_patch_viewcontrol.GetBool()) {
+		if (engine->GetCurrentMapName() != "sp_a1_wakeup") { // Betsrighter exists
+			for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+				auto info = entityList->GetEntityInfoByIndex(index);
+				if (info->m_pEntity == nullptr) continue;
+				auto entityClass = server->GetEntityClassName(info->m_pEntity);
+				if (!entityClass || std::strcmp(entityClass, "point_viewcontrol") != 0) continue;
+				server->AcceptInput(info->m_pEntity, "Disable", 0, 0, {0}, 0);
+			}
 		}
 	}
 
