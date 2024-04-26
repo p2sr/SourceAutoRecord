@@ -101,6 +101,17 @@ void Session::Ended() {
 		return;
 	}
 
+	// Disable any view controllers (cutscene cameras) that might be active
+	if (!engine->IsOrange()) {
+		for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
+			auto info = entityList->GetEntityInfoByIndex(index);
+			if (info->m_pEntity == nullptr) continue;
+			auto entityClass = server->GetEntityClassName(info->m_pEntity);
+			if (!entityClass || std::strcmp(entityClass, "point_viewcontrol") != 0) continue;
+			server->AcceptInput(info->m_pEntity, "Disable", 0, 0, {0}, 0);
+		}
+	}
+
 	this->previousMap = engine->GetCurrentMapName();
 
 	auto tick = this->GetTick();
