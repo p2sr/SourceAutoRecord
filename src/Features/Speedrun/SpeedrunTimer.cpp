@@ -600,6 +600,8 @@ void SpeedrunTimer::Stop(std::string segName) {
 		networkManager.NotifySpeedrunFinished(false);
 	}
 
+	Event::Trigger<Event::SPEEDRUN_FINISH>({});
+
 	if (engine->demorecorder->isRecordingDemo) {
 		recordDemoResult();
 	}

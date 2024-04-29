@@ -850,6 +850,7 @@ MK_SAR_ON(tas_end, "when TAS script playback ends", true)
 MK_SAR_ON(pb, "when auto-submitter detects PB", true)
 MK_SAR_ON(not_pb, "when auto-submitter detects not PB", true)
 MK_SAR_ON(cfg_message, "when partner sends a custom message (_sar_cfg_message svar)", true)
+MK_SAR_ON(speedrun_finish, "when a speedrun finishes", true)
 
 ON_EVENT_P(SESSION_START, 1000000) {
 	RUN_EXECS(load);
@@ -895,6 +896,9 @@ ON_EVENT(MAYBE_AUTOSUBMIT) {
 ON_EVENT(CFG_MESSAGE) {
 	SetSvar("_sar_cfg_message", event.message);
 	RUN_EXECS(cfg_message);
+}
+ON_EVENT(SPEEDRUN_FINISH) {
+	RUN_EXECS(speedrun_finish);
 }
 
 struct Seq {

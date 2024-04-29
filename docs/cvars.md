@@ -361,6 +361,9 @@
 |sar_on_session_end|cmd|sar_on_session_end \<command> [args]... - registers a command to be run on session end|
 |sar_on_session_end_clear|cmd|sar_on_session_end_clear - clears commands registered on event "session_end"|
 |sar_on_session_end_list|cmd|sar_on_session_end_list - lists commands registered on event "session_end"|
+|sar_on_speedrun_finish|cmd|sar_on_speedrun_finish \<command> [args]... - registers a command to be run when a speedrun finishes|
+|sar_on_speedrun_finish_clear|cmd|sar_on_speedrun_finish_clear - clears commands registered on event "speedrun_finish"|
+|sar_on_speedrun_finish_list|cmd|sar_on_speedrun_finish_list - lists commands registered on event "speedrun_finish"|
 |sar_on_tas_end|cmd|sar_on_tas_end \<command> [args]... - registers a command to be run when TAS script playback ends|
 |sar_on_tas_end_clear|cmd|sar_on_tas_end_clear - clears commands registered on event "tas_end"|
 |sar_on_tas_end_list|cmd|sar_on_tas_end_list - lists commands registered on event "tas_end"|
@@ -373,6 +376,7 @@
 |sar_patch_major_angle_decay|0|Patches major pitch angle decay. Requires cheats.|
 |sar_patch_minor_angle_decay|0|Patches minor pitch angle decay present on Windows version of the game.|
 |sar_patch_small_angle_decay|0|Patches small angle decay (not minor decay).|
+|sar_patch_viewcontrol|1|Disable camera controllers before changing levels to prevent visual glitches.|
 |sar_pause_at|-1|Pause at the specified tick. -1 to deactivate it.|
 |sar_pause_for|0|Pause for this amount of ticks.|
 |sar_pip_align|cmd|sar_pip_align \<top\|center\|bottom> \<left\|center\|right> - aligns the remote view.|

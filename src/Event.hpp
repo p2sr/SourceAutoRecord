@@ -48,6 +48,7 @@ namespace Event {
 		TAS_END,
 		MAYBE_AUTOSUBMIT,
 		CFG_MESSAGE,
+		SPEEDRUN_FINISH,
 	};
 
 	template <EventType E>
