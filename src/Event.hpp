@@ -49,6 +49,8 @@ namespace Event {
 		MAYBE_AUTOSUBMIT,
 		CFG_MESSAGE,
 		SPEEDRUN_FINISH,
+		RENDERER_START,
+		RENDERER_FINISH,
 	};
 
 	template <EventType E>

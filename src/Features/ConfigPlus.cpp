@@ -851,6 +851,8 @@ MK_SAR_ON(pb, "when auto-submitter detects PB", true)
 MK_SAR_ON(not_pb, "when auto-submitter detects not PB", true)
 MK_SAR_ON(cfg_message, "when partner sends a custom message (_sar_cfg_message svar)", true)
 MK_SAR_ON(speedrun_finish, "when a speedrun finishes", true)
+MK_SAR_ON(renderer_start, "when renderer starts", true)
+MK_SAR_ON(renderer_finish, "when renderer finishes", true)
 
 ON_EVENT_P(SESSION_START, 1000000) {
 	RUN_EXECS(load);
@@ -899,6 +901,12 @@ ON_EVENT(CFG_MESSAGE) {
 }
 ON_EVENT(SPEEDRUN_FINISH) {
 	RUN_EXECS(speedrun_finish);
+}
+ON_EVENT(RENDERER_START) {
+	RUN_EXECS(renderer_start);
+}
+ON_EVENT(RENDERER_FINISH) {
+	RUN_EXECS(renderer_finish);
 }
 
 struct Seq {
