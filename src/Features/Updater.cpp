@@ -35,10 +35,19 @@ static std::thread g_worker;
 struct SarVersion {
 	unsigned components[MAX_VERSION_COMPONENTS];
 	unsigned pre;
+	bool canary;
+};
+
+#define DL_SAR_HOST "https://dl.sar.portal2.sr"
+
+enum class Channel {
+	Release,
+	PreRelease,
+	Canary,
 };
 
 static std::optional<SarVersion> getVersionComponents(const char *str) {
-	SarVersion v = {0};
+	SarVersion v = {0, 0, false};
 	v.pre = UINT_MAX;
 
 	size_t i = 0;
@@ -59,7 +68,15 @@ static std::optional<SarVersion> getVersionComponents(const char *str) {
 	}
 
 	if (!*str) return v;
-	if (memcmp(str, "-pre", 4)) return {};
+
+	if (Utils::EndsWith(std::string(str), "-canary")) {
+		v.canary = true;
+		return v;
+	}
+
+	if (memcmp(str, "-pre", 4)) {
+		return {};
+	}
 	str += 4;
 	char *end;
 	v.pre = strtol(str, &end, 10);
@@ -67,9 +84,13 @@ static std::optional<SarVersion> getVersionComponents(const char *str) {
 	return v;
 }
 
-static bool isNewerVersion(const char *verStr) {
+static bool isNewerVersion(std::string& verStr) {
+	auto version = getVersionComponents(verStr.c_str());
 	auto current = getVersionComponents(SAR_VERSION);
-	auto version = getVersionComponents(verStr);
+
+	if ((version && version->canary) || (current && current->canary)) {
+		return strcmp(SAR_VERSION, verStr.c_str()) != 0;
+	}
 
 	if (!current) {
 		THREAD_PRINT("Cannot compare version numbers on non-release version\n");
@@ -130,7 +151,10 @@ static bool downloadFile(const char *url, const char *path) {
 
 	fclose(f);
 
-	return res == CURLE_OK;
+	long code;
+	curl_easy_getinfo(g_curl, CURLINFO_RESPONSE_CODE, &code);
+
+	return res == CURLE_OK && code == 200;
 }
 
 static std::string request(const char *url) {
@@ -149,14 +173,17 @@ static std::string request(const char *url) {
 
 	CURLcode res = curl_easy_perform(g_curl);
 
-	return res == CURLE_OK ? response : "";
+	long code;
+	curl_easy_getinfo(g_curl, CURLINFO_RESPONSE_CODE, &code);
+
+	return res == CURLE_OK && code == 200 ? response : "";
 }
 
-static bool getLatestVersion(std::string *name, std::string *dlUrl, std::string *pdbUrl, bool allowPre) {
+static bool getLatestVersion(std::string *name, std::string *dlUrl, std::string *pdbUrl, Channel channel) {
 	// FIXME: This will fail if the API rate limit is saturated (bruteforcing? many instances?)
 	//        maybe cache the response for a couple minutes - AMJ 2024-04-25
 	json11::Json res;
-	if (allowPre) {
+	if (channel == Channel::PreRelease) {
 		std::string err;
 		res = json11::Json::parse(request("https://api.github.com/repos/p2sr/SourceAutoRecord/releases"), err);
 		if (err != "") {
@@ -167,7 +194,27 @@ static bool getLatestVersion(std::string *name, std::string *dlUrl, std::string 
 		} catch (...) {
 			return false;
 		}
-		
+	} else if (channel == Channel::Canary) {
+		std::string err;
+		res = json11::Json::parse(request(DL_SAR_HOST "/api/v1/latest/canary"), err);
+		if (err != "") {
+			return false;
+		}
+		try {
+			*name = res["sar_version"].string_value();
+
+			auto url = std::string(DL_SAR_HOST "/") + res["version"].string_value();
+#if _WIN32
+			auto systemPath = "/windows/";
+			*pdbUrl = url + systemPath + PDB_ASSET_NAME;
+#else
+			auto systemPath = "/linux/";
+#endif
+			*dlUrl = url + systemPath + ASSET_NAME;
+			return true;
+		} catch (...) {
+			return false;
+		}
 	} else {
 		std::string err;
 		res = json11::Json::parse(request("https://api.github.com/repos/p2sr/SourceAutoRecord/releases/latest"), err);
@@ -226,36 +273,36 @@ static std::string createTempPath(const char *filename) {
 	return p.string();
 }
 
-void checkUpdate(bool allowPre) {
+void checkUpdate(Channel channel) {
 	std::string name, dlUrl, pdbUrl;
 
 	THREAD_PRINT("Querying for latest version...\n");
 
-	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, allowPre)) {
+	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, channel)) {
 		THREAD_PRINT("An error occurred\n");
 		return;
 	}
 
 	THREAD_PRINT("Latest version is %s\n", name.c_str());
 
-	if (!isNewerVersion(name.c_str())) {
+	if (!isNewerVersion(name)) {
 		THREAD_PRINT("You're all up-to-date!\n");
 	} else {
 		THREAD_PRINT("Update with sar_update, or at %s\n", dlUrl.c_str());
 	}
 }
 
-void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
+void doUpdate(Channel channel, bool exitOnSuccess, bool force) {
 	std::string name, dlUrl, pdbUrl;
 
 	THREAD_PRINT("Querying for latest version...\n");
 
-	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, allowPre)) {
+	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, channel)) {
 		THREAD_PRINT("An error occurred\n");
 		return;
 	}
 
-	if (!force && !isNewerVersion(name.c_str())) {
+	if (!force && !isNewerVersion(name)) {
 		THREAD_PRINT("You're already up-to-date!\n");
 		return;
 	}
@@ -316,25 +363,35 @@ void doUpdate(bool allowPre, bool exitOnSuccess, bool force) {
 	}
 }
 
-CON_COMMAND(sar_check_update, "sar_check_update [release|pre] - check whether the latest version of SAR is being used\n") {
+CON_COMMAND(sar_check_update, "sar_check_update [release|pre|canary] - check whether the latest version of SAR is being used\n") {
 	if (args.ArgC() > 2) {
 		return THREAD_PRINT(sar_check_update.ThisPtr()->m_pszHelpString);
 	}
 
-	bool allowPre = args.ArgC() == 2 && !strcmp(args[1], "pre");
+	auto channel = Channel::Release;
+
+	if (!strcmp(args[1], "pre")) {
+		channel = Channel::PreRelease;
+	} else if (!strcmp(args[1], "pre")) {
+		channel = Channel::Canary;
+	}
 
 	if (g_worker.joinable()) g_worker.join();
-	g_worker = std::thread(checkUpdate, allowPre);
+	g_worker = std::thread(checkUpdate, channel);
 }
 
-CON_COMMAND(sar_update, "sar_update [release|pre] [exit] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade\n") {
-	bool allowPre = false, exitOnSuccess = false, force = false;
+CON_COMMAND(sar_update, "sar_update [release|pre|canary] [exit] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade\n") {
+	auto channel = Channel::Release;
+	auto exitOnSuccess = false;
+	auto force = false;
 
 	for (int i = 1; i < args.ArgC(); ++i) {
 		if (!strcmp(args[i], "pre")) {
-			allowPre = true;
+			channel = Channel::PreRelease;
+		} else if (!strcmp(args[i], "canary")) {
+			channel = Channel::Canary;
 		} else if (!strcmp(args[i], "release")) {
-			allowPre = false;
+			channel = Channel::Release;
 		} else if (!strcmp(args[i], "exit")) {
 			exitOnSuccess = true;
 		} else if (!strcmp(args[i], "force")) {
@@ -347,9 +404,9 @@ CON_COMMAND(sar_update, "sar_update [release|pre] [exit] [force] - update SAR to
 	}
 
 	if (g_worker.joinable()) g_worker.join();
-	g_worker = std::thread(doUpdate, allowPre, exitOnSuccess, force);
+	g_worker = std::thread(doUpdate, channel, exitOnSuccess, force);
 }
 
 ON_EVENT(SAR_UNLOAD) {
-	if (g_worker.joinable()) g_worker.detach();
+	if (g_worker.joinable()) g_worker.join();
 }

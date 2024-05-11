@@ -28,6 +28,24 @@ jobs:
           name: sar-linux
           path: sar.so
           if-no-files-found: error
+      - name: Upload to dl.sar.portal2.sr
+        if: github.ref == 'refs/heads/master' && github.repository_owner == 'p2sr'
+        env:
+          DL_SAR_API_TOKEN: ${{ secrets.DL_SAR_API_TOKEN }}
+        run: |
+          SAR_VERSION=$(git describe --tags)
+          curl -X "POST" \
+            -H "Authorization: Bearer $DL_SAR_API_TOKEN" \
+            -H "Content-Type: multipart/form-data" \
+            -F "version=$(echo $SAR_VERSION | awk -F- '{print $1}')" \
+            -F "sar_version=$SAR_VERSION" \
+            -F "system=linux" \
+            -F "commit=$GITHUB_SHA" \
+            -F "branch=$GITHUB_REF_NAME" \
+            -F "count=1" \
+            -F "hashes[0]=$(sha256sum sar.so | cut -d ' ' -f 1)" \
+            -F "files[0]=@sar.so" \
+            "https://dl.sar.portal2.sr/api/v1/upload"
   build-win:
     name: Windows Build
     runs-on: windows-2019
@@ -57,6 +75,27 @@ jobs:
           name: sar-windows-pdb
           path: bin\sar.pdb
           if-no-files-found: error
+      - name: Upload to dl.sar.portal2.sr
+        if: github.ref == 'refs/heads/master' && github.repository_owner == 'p2sr'
+        shell: bash
+        env:
+          DL_SAR_API_TOKEN: ${{ secrets.DL_SAR_API_TOKEN }}
+        run: |
+          SAR_VERSION=$(git describe --tags)
+          curl -X "POST" \
+            -H "Authorization: Bearer $DL_SAR_API_TOKEN" \
+            -H "Content-Type: multipart/form-data" \
+            -F "version=$(echo $SAR_VERSION | awk -F- '{print $1}')" \
+            -F "sar_version=$SAR_VERSION" \
+            -F "system=windows" \
+            -F "commit=$GITHUB_SHA" \
+            -F "branch=$GITHUB_REF_NAME" \
+            -F "count=2" \
+            -F "hashes[0]=$(sha256sum bin/sar.dll | cut -d ' ' -f 1)" \
+            -F "hashes[1]=$(sha256sum bin/sar.pdb | cut -d ' ' -f 1)" \
+            -F "files[0]=@bin/sar.dll" \
+            -F "files[1]=@bin/sar.pdb" \
+            "https://dl.sar.portal2.sr/api/v1/upload"
   release:
     name: Release
     if: github.repository == 'p2sr/SourceAutoRecord'
