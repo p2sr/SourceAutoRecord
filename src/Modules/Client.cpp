@@ -719,23 +719,6 @@ CON_COMMAND(sar_workshop_skip, "sar_workshop_skip - Skips to the next level in w
 	MsgPreSkipToNextLevel();
 }
 
-static std::thread g_worker;
-static bool g_is_querying;
-static std::vector<json11::Json> g_times;
-
-static void startSearching(const char *mapName) {
-	auto map_id = AutoSubmitMod::GetMapId(std::string(mapName));
-
-	auto json = AutoSubmitMod::GetTopScores(*map_id);
-
-	g_times.clear();
-	for (auto score : json) {
-		g_times.push_back(score);
-	}
-
-	g_is_querying = false;
-}
-
 extern Hook g_StartSearchingHook;
 DETOUR(Client::StartSearching) {
 	struct CPortalLeaderboard {
