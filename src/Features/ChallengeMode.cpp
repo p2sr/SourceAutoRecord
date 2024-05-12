@@ -16,7 +16,7 @@
 ChallengeMode *cm;
 
 void ChallengeMode::CreateNode() {
-	if (!sv_bonus_challenge.GetBool()) {
+	if (!sv_bonus_challenge.GetBool() || engine->demoplayer->IsPlaying()) {
 		return;
 	}
 
