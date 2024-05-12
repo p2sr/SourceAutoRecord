@@ -67,7 +67,7 @@ void ChallengeMode::LoadNodes(SourceGameVersion version) {
 			{"sp_a3_junkyard", {0, 770, 60}, {0, 180, 0}},
 			{"sp_a3_concepts", {1632, 190, 65}, {0, 90, 0}},
 			{"sp_a3_paint_fling", {-512, 2145, 510}, {0, 270, 0}},
-			{"st_a3_faith_plate", {3216, 4960, 574}, {0, 180, 0}},
+			{"sp_a3_faith_plate", {3216, 4960, 574}, {0, 180, 0}},
 			{"sp_a3_transition", {2032, 2285, 345}, {0, 270, 0}},
 			{"sp_a4_overgrown", {2336, 1373, 350}, {0, 270, 0}},
 			{"sp_a4_tb_over_goo", {320, -4990, 590}, {0, 90, 0}},
