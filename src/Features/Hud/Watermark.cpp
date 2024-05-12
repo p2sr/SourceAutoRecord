@@ -1,4 +1,5 @@
 #include "Version.hpp"
+#include "Modules/Engine.hpp"
 
 #if defined(SAR_DEV_BUILD) && !defined(NO_DEV_WATERMARK)
 
@@ -17,7 +18,7 @@ public:
 	}
 
 	bool ShouldDraw() override {
-		return true;
+		return !engine->demoplayer->IsPlaying();
 	}
 
 	bool GetCurrentSize(int &w, int &h) override {
