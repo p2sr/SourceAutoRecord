@@ -317,11 +317,7 @@ ON_EVENT(SAR_UNLOAD) {
 	destroyMaterial(g_mat_wireframe_opaque_noz);
 	destroyMaterial(g_mat_font);
 	destroyMaterial(g_mat_font_noz);
-#ifndef _WIN32
-	if (!sar.game->Is(SourceGame_PortalStoriesMel)) {
-		materialSystem->DestroyTexture(g_tex_font_atlas);
-	}
-#endif
+	materialSystem->DestroyTexture(g_tex_font_atlas);
 }
 
 static void drawVerts(IMaterial *mat, bool lines, Vector *verts, int nverts, Color col) {
