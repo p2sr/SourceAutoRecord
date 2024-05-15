@@ -77,6 +77,9 @@ public:
 	void OpenChat();
 
 public:
+	// CBaseModPanel::GetChapterProgress
+	DECL_DETOUR(GetChapterProgress);
+
 	// BaseModUI::CPortalLeaderboardPanel::OnCommand
 	DECL_DETOUR(OnCommand, const char *a2);
 
@@ -158,11 +161,11 @@ public:
 	DECL_DETOUR_COMMAND(openleaderboard);
 	DECL_DETOUR_COMMAND(closeleaderboard);
 
-	#ifdef _WIN32
-		// C_Paint_Input::ApplyMouse
-		static uintptr_t ApplyMouse_Mid_Continue;
-		DECL_DETOUR_MID_MH(ApplyMouse_Mid);
-	#endif
+#ifdef _WIN32
+	// C_Paint_Input::ApplyMouse
+	static uintptr_t ApplyMouse_Mid_Continue;
+	DECL_DETOUR_MID_MH(ApplyMouse_Mid);
+#endif
 
 	bool Init() override;
 	void Shutdown() override;

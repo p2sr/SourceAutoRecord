@@ -4,6 +4,7 @@
 #include "Console.hpp"
 #include "Engine.hpp"
 #include "Event.hpp"
+#include "Features/AutoSubmitMod.hpp"
 #include "Features/Camera.hpp"
 #include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
@@ -21,7 +22,6 @@
 #include "Features/Stitcher.hpp"
 #include "Features/Tas/TasController.hpp"
 #include "Features/Tas/TasPlayer.hpp"
-#include "Features/AutoSubmitMod.hpp"
 #include "Game.hpp"
 #include "Hook.hpp"
 #include "Interface.hpp"
@@ -65,9 +65,12 @@ Variable sar_patch_major_angle_decay("sar_patch_major_angle_decay", "0", "Patche
 // need to do this to include in docs lol
 Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", "Patches minor pitch angle decay present on Windows version of the game.\n"
 #ifndef _WIN32
-	, FCVAR_HIDDEN | FCVAR_DEVELOPMENTONLY
+                                     ,
+                                     FCVAR_HIDDEN | FCVAR_DEVELOPMENTONLY
 #endif
 );
+
+Variable sar_unlocked_chapters("sar_unlocked_chapters", "-1", "Max unlocked chapter.\n");
 
 REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
@@ -101,6 +104,7 @@ REDECL(Client::OnCommand);
 REDECL(Client::ApplyMouse_Mid);
 REDECL(Client::ApplyMouse_Mid_Continue);
 #endif
+REDECL(Client::GetChapterProgress);
 
 
 CMDECL(Client::GetAbsOrigin, Vector, m_vecAbsOrigin);
@@ -311,8 +315,7 @@ ON_INIT {
 		// TODO: Investigate why this sometimes doesn't work - AMJ 2024-04-25
 		if (sar_disable_challenge_stats_hud_partner.GetBool()) {
 			engine->ExecuteCommand("-leaderboard");
-		}
-	});
+		} });
 }
 
 DETOUR_COMMAND(Client::closeleaderboard) {
@@ -521,12 +524,12 @@ static void MatrixBuildRotationAboutAxis_Detour(Vector *vAxisOfRot, float angleD
 	}
 
 	radians = angleDegrees * (M_PI / 180.0);
-	#ifdef _WIN32
-		fSin = sin(radians);
-		fCos = cos(radians);
-	#else
-		sincosf(radians, &fSin, &fCos);
-	#endif
+#ifdef _WIN32
+	fSin = sin(radians);
+	fCos = cos(radians);
+#else
+	sincosf(radians, &fSin, &fCos);
+#endif
 
 	xSquared = vAxisOfRot->x * vAxisOfRot->x;
 	ySquared = vAxisOfRot->y * vAxisOfRot->y;
@@ -581,9 +584,9 @@ DETOUR(Client::ApplyMouse, int nSlot, QAngle &viewangles, CUserCmd *cmd, float m
 		if (mouse_x == 0.0f && delta.y != 0.0f) viewangles.y = lastViewAngles.y;
 		if ((upDelta == 0.0f || (fabsf(viewangles.x) < 45.0f))
 #ifdef _WIN32
-			&& fabsf(viewangles.x) > 15.0f
+		    && fabsf(viewangles.x) > 15.0f
 #endif
-			&& (mouse_y == 0.0f && delta.x != 0.0f))
+		    && (mouse_y == 0.0f && delta.x != 0.0f))
 			viewangles.x = lastViewAngles.x;
 	}
 
@@ -803,6 +806,18 @@ DETOUR(Client::OnCommand, const char *a2) {
 }
 Hook g_OnCommandHook(&Client::OnCommand_Hook);
 
+extern Hook g_GetChapterProgressHook;
+DETOUR(Client::GetChapterProgress) {
+	if (sar_unlocked_chapters.GetInt() > -1)
+		return sar_unlocked_chapters.GetInt() + 1;
+
+	g_GetChapterProgressHook.Disable();
+	auto ret = Client::GetChapterProgress(thisptr);
+	g_GetChapterProgressHook.Enable();
+	return ret;
+}
+Hook g_GetChapterProgressHook(&Client::GetChapterProgress_Hook);
+
 bool Client::Init() {
 	bool readJmp = false;
 
@@ -875,22 +890,22 @@ bool Client::Init() {
 			g_Input->Hook(Client::SteamControllerMove_Hook, Client::SteamControllerMove, Offsets::SteamControllerMove);
 			g_Input->Hook(Client::ApplyMouse_Hook, Client::ApplyMouse, Offsets::ApplyMouse);
 
-			#ifdef _WIN32
-				auto ApplyMouse_Mid_addr = (uintptr_t)(Client::ApplyMouse) + 0x3E1;
-				g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr);
-				g_ApplyMouseMidHook.Disable();
-				Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
-				MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "55 8B EC 51 F3 0F 10 45 ? 0F 5A C0 F2 0F 59 05 ? ? ? ? 66 0F 5A C0 F3 0F 11 45 ? E8 ? ? ? ? F3 0F 11 45 ? F3 0F 10 45 ? E8 ? ? ? ? 8B 45 ? F3 0F 10 08");
-			#else
-				if (sar.game->Is(SourceGame_EIPRelPIC)) {
-					MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "56 66 0F EF C0 53 83 EC 14 8B 5C 24 ? 8D 44 24");
-				} else {
-					MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "55 89 E5 56 53 8D 45 ? 8D 55 ? 83 EC 20");
-				}
-			#endif
+#ifdef _WIN32
+			auto ApplyMouse_Mid_addr = (uintptr_t)(Client::ApplyMouse) + 0x3E1;
+			g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr);
+			g_ApplyMouseMidHook.Disable();
+			Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
+			MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "55 8B EC 51 F3 0F 10 45 ? 0F 5A C0 F2 0F 59 05 ? ? ? ? 66 0F 5A C0 F3 0F 11 45 ? E8 ? ? ? ? F3 0F 11 45 ? F3 0F 10 45 ? E8 ? ? ? ? 8B 45 ? F3 0F 10 08");
+#else
+			if (sar.game->Is(SourceGame_EIPRelPIC)) {
+				MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "56 66 0F EF C0 53 83 EC 14 8B 5C 24 ? 8D 44 24");
+			} else {
+				MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "55 89 E5 56 53 8D 45 ? 8D 55 ? 83 EC 20");
+			}
+#endif
 
 			MatrixBuildRotationAboutAxisHook.SetFunc(MatrixBuildRotationAboutAxis);
-			MatrixBuildRotationAboutAxisHook.Disable(); // only during ApplyMouse
+			MatrixBuildRotationAboutAxisHook.Disable();  // only during ApplyMouse
 
 			in_forceuser = Variable("in_forceuser");
 			if (!!in_forceuser && this->g_Input) {
@@ -1045,7 +1060,14 @@ bool Client::Init() {
 		g_PurgeAndDeleteElementsHook.SetFunc(Client::PurgeAndDeleteElements);
 		g_OnCommandHook.SetFunc(Client::OnCommand);
 	}
-	
+
+#ifdef _WIN32
+	Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8");
+#else
+	Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 0C E8 ? ? ? ? 83 EC 08 8B 10");
+#endif
+	g_GetChapterProgressHook.SetFunc(Client::GetChapterProgress);
+
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");
 	cl_forwardspeed = Variable("cl_forwardspeed");
