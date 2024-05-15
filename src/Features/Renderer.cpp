@@ -695,6 +695,10 @@ static void workerFinishRender(bool error) {
 	g_movieInfo->movieframe = 0;
 	g_movieInfo->type = MovieInfo_t::FMOVIE_TGA | MovieInfo_t::FMOVIE_WAV;
 	g_movieInfo->jpeg_quality = 50;
+
+	Scheduler::OnMainThread([]() {
+		Event::Trigger<Event::RENDERER_FINISH>({});
+	});
 }
 
 // }}}
@@ -948,6 +952,8 @@ static void startRender() {
 	// any frames
 	while (!g_render.isRendering.load() && !g_render.workerFailedToStart.load())
 		;
+
+	Event::Trigger<Event::RENDERER_START>({});
 }
 
 // }}}
