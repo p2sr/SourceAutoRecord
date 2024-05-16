@@ -1064,7 +1064,13 @@ bool Client::Init() {
 #ifdef _WIN32
 	Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8");
 #else
-	Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 0C E8 ? ? ? ? 83 EC 08 8B 10");
+	if (sar.game->Is(SourceGame_PortalStoriesMel | SourceGame_PortalReloaded)) {
+		Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 5D 08 E8 ? ? ? ? 8B 10");
+	} else if (sar.game->Is(SourceGame_ThinkingWithTimeMachine)) {
+		Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 7D 08 E8 ? ? ? ? 8B 10 C7");
+	} else {
+		Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 0C E8 ? ? ? ? 83 EC 08 8B 10");
+	}
 #endif
 	g_GetChapterProgressHook.SetFunc(Client::GetChapterProgress);
 
