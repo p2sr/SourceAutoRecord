@@ -29,7 +29,7 @@ jobs:
           path: sar.so
           if-no-files-found: error
       - name: Upload to dl.sar.portal2.sr
-        if: github.ref == 'refs/heads/master' && github.repository_owner == 'p2sr'
+        if: github.repository_owner == 'p2sr'
         env:
           DL_SAR_API_TOKEN: ${{ secrets.DL_SAR_API_TOKEN }}
         run: |
@@ -76,7 +76,7 @@ jobs:
           path: bin\sar.pdb
           if-no-files-found: error
       - name: Upload to dl.sar.portal2.sr
-        if: github.ref == 'refs/heads/master' && github.repository_owner == 'p2sr'
+        if: github.repository_owner == 'p2sr'
         shell: bash
         env:
           DL_SAR_API_TOKEN: ${{ secrets.DL_SAR_API_TOKEN }}
