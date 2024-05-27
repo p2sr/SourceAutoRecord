@@ -80,9 +80,11 @@ void Session::Start() {
 	}
 
 	if (engine->IsCoop() && !engine->IsOrange() && engine->GetCurrentMapName() == "mp_coop_start") {
-		sv_cheats.ThisPtr()->m_nValue = 1;
-		engine->ExecuteCommand("ent_fire @global_no_pinging_blue TurnOff; ent_fire @global_no_pinging_orange TurnOff");
-		sv_cheats.SetValue(sv_cheats.GetString());
+		// For some reason, turning on cheats and doing ent_fire doesn't work here
+		engine->ExecuteCommand("script EntFireByHandle(Entities.FindByName(null, \"@global_no_pinging_blue\"), \"TurnOff\", \"\", 0, null, null)");
+		engine->ExecuteCommand("script EntFireByHandle(Entities.FindByName(null, \"@global_no_pinging_orange\"), \"TurnOff\", \"\", 0, null, null)");
+		engine->ExecuteCommand("script EntFireByHandle(Entities.FindByName(null, \"@global_no_taunting_blue\"), \"TurnOff\", \"\", 0, null, null)");
+		engine->ExecuteCommand("script EntFireByHandle(Entities.FindByName(null, \"@global_no_taunting_orange\"), \"TurnOff\", \"\", 0, null, null)");
 	}
 
 	auto tick = engine->GetTick();
