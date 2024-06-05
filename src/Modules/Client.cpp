@@ -48,6 +48,7 @@ Variable r_PortalTestEnts;
 Variable r_portalsopenall;
 Variable r_drawviewmodel;
 
+// some of these are actually commands but that's fine, dw about it :)
 Variable soundfade;
 Variable leaderboard_open;
 Variable gameui_activate;
@@ -55,6 +56,7 @@ Variable gameui_allowescape;
 Variable gameui_preventescape;
 Variable setpause;
 Variable snd_ducktovolume;
+Variable say;
 
 Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
 Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disables the saving/saved HUD which appears when you make a save.\n");
@@ -1091,6 +1093,7 @@ bool Client::Init() {
 	gameui_preventescape = Variable("gameui_preventescape");
 	setpause = Variable("setpause");
 	snd_ducktovolume = Variable("snd_ducktovolume");
+	say = Variable("say");
 
 	CVAR_HOOK_AND_CALLBACK(cl_fov);
 

@@ -126,7 +126,7 @@
 |sar_cheat_hud|1|Display a warning in the HUD when cheats are active. 0 = disable, 1 = display if sv_cheats off, 2 = display always|
 |sar_cheat_hud_x|-4|X position of the cheat warning HUD.|
 |sar_cheat_hud_y|4|Y position of the cheat warning HUD.|
-|sar_check_update|cmd|sar_check_update [release\|pre] - check whether the latest version of SAR is being used|
+|sar_check_update|cmd|sar_check_update [release\|pre\|canary] - check whether the latest version of SAR is being used|
 |sar_clear_lines|cmd|sar_clear_lines - clears all active drawline overlays|
 |sar_cm_rightwarp|0|Fix CM wrongwarp.|
 |sar_command_debug|0|Output debugging information to the console related to commands. **Breaks svar_capture**|
@@ -358,6 +358,12 @@
 |sar_on_pb|cmd|sar_on_pb \<command> [args]... - registers a command to be run when auto-submitter detects PB|
 |sar_on_pb_clear|cmd|sar_on_pb_clear - clears commands registered on event "pb"|
 |sar_on_pb_list|cmd|sar_on_pb_list - lists commands registered on event "pb"|
+|sar_on_renderer_finish|cmd|sar_on_renderer_finish \<command> [args]... - registers a command to be run when renderer finishes|
+|sar_on_renderer_finish_clear|cmd|sar_on_renderer_finish_clear - clears commands registered on event "renderer_finish"|
+|sar_on_renderer_finish_list|cmd|sar_on_renderer_finish_list - lists commands registered on event "renderer_finish"|
+|sar_on_renderer_start|cmd|sar_on_renderer_start \<command> [args]... - registers a command to be run when renderer starts|
+|sar_on_renderer_start_clear|cmd|sar_on_renderer_start_clear - clears commands registered on event "renderer_start"|
+|sar_on_renderer_start_list|cmd|sar_on_renderer_start_list - lists commands registered on event "renderer_start"|
 |sar_on_session_end|cmd|sar_on_session_end \<command> [args]... - registers a command to be run on session end|
 |sar_on_session_end_clear|cmd|sar_on_session_end_clear - clears commands registered on event "session_end"|
 |sar_on_session_end_list|cmd|sar_on_session_end_list - lists commands registered on event "session_end"|
@@ -595,7 +601,8 @@
 |sar_trace_teleport_eye|cmd|sar_trace_teleport_eye \<tick> [player slot] [trace name] - teleports the player to the eye position at the given trace tick on the given trace (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).|
 |sar_trace_use_shot_eyeoffset|1|Uses eye offset and angles accurate for portal shooting.|
 |sar_transition_timer|0|Output how slow your dialogue fade was.|
-|sar_update|cmd|sar_update [release\|pre] [exit] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade|
+|sar_unlocked_chapters|-1|Max unlocked chapter.|
+|sar_update|cmd|sar_update [release\|pre\|canary] [exit] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade|
 |sar_velocitygraph|0|Shows velocity graph.|
 |sar_velocitygraph_background|0|Background of velocity graph.|
 |sar_velocitygraph_font_index|21|Font index of velocity graph.|

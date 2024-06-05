@@ -240,6 +240,7 @@ void Cvars::Lock() {
 		gameui_preventescape.Lock();
 		setpause.Lock();
 		snd_ducktovolume.Lock();
+		say.Lock();
 
 		this->locked = true;
 	}
@@ -286,6 +287,7 @@ void Cvars::Unlock() {
 		gameui_preventescape.Unlock(false);
 		setpause.Unlock(false);
 		snd_ducktovolume.Unlock(false);
+		say.Unlock(false);
 		soundfade.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE);
 		leaderboard_open.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 		gameui_activate.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
@@ -293,6 +295,7 @@ void Cvars::Unlock() {
 		gameui_preventescape.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 		setpause.AddFlag(FCVAR_SERVER_CAN_EXECUTE);
 		snd_ducktovolume.AddFlag(FCVAR_SERVER_CAN_EXECUTE);
+		say.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 
 		this->locked = false;
 	}

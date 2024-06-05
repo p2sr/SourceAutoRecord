@@ -195,5 +195,6 @@ extern Variable gameui_allowescape;
 extern Variable gameui_preventescape;
 extern Variable setpause;
 extern Variable snd_ducktovolume;
+extern Variable say;
 
 extern Command sar_workshop_skip;
