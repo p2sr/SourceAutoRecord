@@ -58,6 +58,7 @@ Variable ui_loadingscreen_mintransition_time;
 Variable ui_transition_effect;
 Variable ui_transition_time;
 Variable ui_pvplobby_show_offline;
+Variable mm_session_sys_delay_create_host;
 Variable hide_gun_when_holding;
 Variable cl_viewmodelfov;
 Variable r_flashlightbrightness;
@@ -301,6 +302,7 @@ void Cheats::Init() {
 	ui_transition_effect = Variable("ui_transition_effect");
 	ui_transition_time = Variable("ui_transition_time");
 	ui_pvplobby_show_offline = Variable("ui_pvplobby_show_offline");
+	mm_session_sys_delay_create_host= Variable("mm_session_sys_delay_create_host");
 	hide_gun_when_holding = Variable("hide_gun_when_holding");
 	cl_viewmodelfov = Variable("cl_viewmodelfov");
 	r_flashlightbrightness = Variable("r_flashlightbrightness");
