@@ -52,7 +52,6 @@ public:
 			} else {
 				if (!engine->IsCoop() || !engine->IsOrange()) {
 					engine->ExecuteCommand("unpause");
-					if (engine->IsCoop()) Variable("sv_pausable").SetValue(g_coop_pausable ? "1" : "0");
 				}
 				ghostLeaderboard.SyncReady();
 			}
@@ -69,7 +68,6 @@ public:
 			this->active = false;
 			if (!engine->IsCoop() || !engine->IsOrange()) {
 				engine->ExecuteCommand("unpause");
-				if (engine->IsCoop()) Variable("sv_pausable").SetValue(g_coop_pausable ? "1" : "0");
 			}
 			ghostLeaderboard.SyncReady();
 		}

@@ -321,6 +321,12 @@ ON_INIT {
 }
 
 DETOUR_COMMAND(Client::closeleaderboard) {
+	// this is actually "unpause"
+	if (g_coop_pausable != -1) {
+		Variable("sv_pausable").SetValue(g_coop_pausable ? "1" : "0");
+		g_coop_pausable = -1;
+	}
+
 	Client::closeleaderboard_callback(args);
 
 	if (g_leaderboardOpen) {

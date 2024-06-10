@@ -66,7 +66,7 @@ Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
 float g_cur_fps = 0.0f;
 
 int g_cap_frametime = 0;
-bool g_coop_pausable = false;
+int g_coop_pausable = -1;
 
 REDECL(Engine::Disconnect);
 REDECL(Engine::SetSignonState);

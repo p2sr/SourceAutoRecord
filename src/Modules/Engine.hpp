@@ -242,7 +242,7 @@ extern Variable sar_tick_debug;
 
 extern float g_cur_fps;
 extern int g_cap_frametime;
-extern bool g_coop_pausable;
+extern int g_coop_pausable;
 
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
