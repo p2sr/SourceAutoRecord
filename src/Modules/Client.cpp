@@ -300,7 +300,7 @@ static bool g_leaderboardOpen = false;
 DETOUR_COMMAND(Client::openleaderboard) {
 	Client::openleaderboard_callback(args);
 
-	if (args.ArgC() == 2 && !strcmp(args[1], "4")) {
+	if (args.ArgC() == 2 && !strcmp(args[1], "4") && client->GetChallengeStatus() == CMStatus::CHALLENGE) {
 		g_leaderboardOpen = true;
 		if (sar.game->Is(SourceGame_Portal2) && sar_disable_challenge_stats_hud.GetInt() > 0 && (!engine->IsCoop() || engine->IsOrange())) {
 			auto ticks = 6;
