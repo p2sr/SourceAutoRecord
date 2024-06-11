@@ -73,6 +73,9 @@ void CheckTool::Apply(TasFramebulk &fb, const TasPlayerInfo &info) {
 			tasPlayer->playbackInfo.autoReplayCount = 0;
 			tasPlayer->Stop(true);
 		}
+	} else {
+		// Reset replay count if we succeeded
+		tasPlayer->playbackInfo.autoReplayCount = 0;
 	}
 
 	params.enabled = false;

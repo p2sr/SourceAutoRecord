@@ -231,6 +231,11 @@ void TasPlayer::Start() {
 	currentTick = 0;
 	startTick = -1;
 
+	// Sometimes processed framebulks survive from a previous playback to here
+	// Kill them. Muahaha.
+	for (int slot = 0; slot < 2; ++slot) {
+		playbackInfo.slots[slot].ClearGeneratedContent();
+	}
 	SetPlaybackVars(true);
 }
 
