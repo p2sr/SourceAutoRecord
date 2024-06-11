@@ -106,7 +106,7 @@ CON_COMMAND(sar_fcps_anim_start, "sar_fcps_anim_start <id> - start animating the
 		idx += g_events.size();
 	}
 
-	if (idx < 0 || idx > (int)g_events.size()) {
+	if (idx < 0 || idx >= (int)g_events.size()) {
 		console->Print("No such FCPS event!\n");
 		return;
 	}
