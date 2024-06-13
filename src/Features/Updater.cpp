@@ -267,7 +267,7 @@ static std::string createTempPath(const char *filename) {
 	std::filesystem::path p;
 
 	do {
-		p = base.concat(Utils::ssprintf("_%d", n++));
+		p = base.string() + (Utils::ssprintf("_%d", n++));
 	} while (std::filesystem::exists(p));
 
 	return p.string();
