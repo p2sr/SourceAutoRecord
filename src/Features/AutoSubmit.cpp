@@ -5,6 +5,7 @@
 #include "Event.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
+#include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
@@ -350,7 +351,9 @@ void retrieveMtriggers(int rank, std::string map_name) {
 							auto ticks = split["ticks"].int_value();
 							auto segmentTime = ticks * *engine->interval_per_tick;
 							time += ticks * *engine->interval_per_tick;
-							THREAD_PRINT("[%s] - %.3f (%.3f) (%i)\n", split["name"].string_value().c_str(), time, segmentTime, ticks);
+							auto timeS        = SpeedrunTimer::Format(time);
+							auto segmentTimeS = SpeedrunTimer::Format(segmentTime);
+							THREAD_PRINT("[%s] - %s (%s) (%i)\n", split["name"].string_value().c_str(), timeS.c_str(), segmentTimeS.c_str(), ticks);
 						}
 						time = 0.0f;
 					}
