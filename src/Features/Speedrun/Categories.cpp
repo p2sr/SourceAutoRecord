@@ -178,6 +178,10 @@ void SpeedrunTimer::TestZoneRules(Vector pos, int slot) {
 	GeneralTestRules<ZoneTriggerRule>(slot, pos);
 }
 
+void SpeedrunTimer::TestJumpRules(Vector pos, int slot) {
+	GeneralTestRules<JumpTriggerRule>(slot, pos);
+}
+
 bool SpeedrunTimer::TestPortalRules(Vector pos, int slot, PortalColor portal) {
 	bool result = GeneralTestRules<PortalPlacementRule>(slot, pos, portal);
 	if(result)
@@ -258,6 +262,9 @@ ON_EVENT(RENDER) {
 		if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
 			std::get<ZoneTriggerRule>(rule->rule).DrawInWorld();
 			std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(rule);
+		} else if (std::holds_alternative<JumpTriggerRule>(rule->rule)) {
+			std::get<JumpTriggerRule>(rule->rule).DrawInWorld();
+			std::get<JumpTriggerRule>(rule->rule).OverlayInfo(rule);
 		} else if (std::holds_alternative<PortalPlacementRule>(rule->rule)) {
 			std::get<PortalPlacementRule>(rule->rule).DrawInWorld();
 			std::get<PortalPlacementRule>(rule->rule).OverlayInfo(rule);
@@ -529,12 +536,14 @@ bool SpeedrunTimer::CreateRule(std::string name, std::string type, std::map<std:
 	}
 
 	std::optional<SpeedrunRule> rule =
-		type == "entity" ? EntityInputRule::Create(params) : type == "zone" ? ZoneTriggerRule::Create(params)
-		: type == "portal"                                                  ? PortalPlacementRule::Create(params)
-		: type == "flags"                                                   ? ChallengeFlagsRule::Create(params)
-		: type == "fly"                                                     ? CrouchFlyRule::Create(params)
-		: type == "load"                                                    ? MapLoadRule::Create(params)
-		: type == "end"                                                     ? MapEndRule::Create(params)
+		type == "entity"   ? EntityInputRule::Create(params)
+		: type == "zone"   ? ZoneTriggerRule::Create(params)
+		: type == "portal" ? PortalPlacementRule::Create(params)
+		: type == "flags"  ? ChallengeFlagsRule::Create(params)
+		: type == "fly"    ? CrouchFlyRule::Create(params)
+		: type == "load"   ? MapLoadRule::Create(params)
+		: type == "end"    ? MapEndRule::Create(params)
+		: type == "jump"   ? JumpTriggerRule::Create(params)
 		: std::optional<SpeedrunRule>{};
 
 	if (!rule) {

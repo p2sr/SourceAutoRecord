@@ -147,6 +147,67 @@ std::optional<SpeedrunRule> ZoneTriggerRule::Create(std::map<std::string, std::s
 	return SpeedrunRule(RuleAction::START, "", rule);
 }
 
+bool JumpTriggerRule::Test(Vector pos) {
+	return pointInBox(pos, this->center, this->size, this->rotation);
+}
+
+void JumpTriggerRule::DrawInWorld() {
+	OverlayRender::addBoxMesh(
+		this->center,
+		-this->size / 2,
+		this->size / 2,
+		{0, (float)(this->rotation * 360.0f / TAU), 0},
+		RenderCallback::constant({ 140, 6, 195, 100 }),
+		RenderCallback::constant({ 140, 6, 195, 255 })
+	);
+}
+
+void JumpTriggerRule::OverlayInfo(SpeedrunRule *rule) {
+	std::string text;
+
+	text += "type: jump\n";
+	text += Utils::ssprintf("center: %.2f, %.2f, %.2f\n", this->center.x, this->center.y, this->center.z);
+	text += Utils::ssprintf("size: %.2f, %.2f, %.2f\n", this->size.x, this->size.y, this->size.z);
+	text += Utils::ssprintf("angle: %.2f\n", this->rotation * 360.0f / TAU);
+	if (rule->slot) {
+		text += Utils::ssprintf("player: %d\n", *rule->slot);
+	}
+	if (rule->cycle) {
+		text += Utils::ssprintf("cycle: %d,%d\n", rule->cycle->first, rule->cycle->second);
+	}
+	if (rule->onlyAfter) {
+		text += Utils::ssprintf("after: %s\n", rule->onlyAfter->c_str());
+	}
+
+	OverlayRender::addText(this->center, text, 3.0, true, true, OverlayRender::TextAlign::CENTER);
+}
+
+std::optional<SpeedrunRule> JumpTriggerRule::Create(std::map<std::string, std::string> params) {
+	std::string *posStr = lookupMap(params, "center");
+	std::string *sizeStr = lookupMap(params, "size");
+	std::string *angleStr = lookupMap(params, "angle");
+
+	if (!posStr || !sizeStr || !angleStr) {
+		console->Print("center, size, and angle must all be specified\n");
+		return {};
+	}
+
+	Vector pos;
+	Vector size;
+	double angle;
+	sscanf(posStr->c_str(), "%f,%f,%f", &pos.x, &pos.y, &pos.z);
+	sscanf(sizeStr->c_str(), "%f,%f,%f", &size.x, &size.y, &size.z);
+	sscanf(angleStr->c_str(), "%lf", &angle);
+
+	JumpTriggerRule rule{
+		pos,
+		size,
+		angle / 360.0f * TAU,
+	};
+
+	return SpeedrunRule(RuleAction::START, "", rule);
+}
+
 bool PortalPlacementRule::Test(Vector pos, PortalColor portal) {
 	if (this->portal && portal != this->portal) return false;
 	return pointInBox(pos, this->center, this->size, this->rotation);
@@ -390,6 +451,18 @@ std::string SpeedrunRule::Describe() {
 
 	case 6: {  // CrouchFlyRule
 		s = std::string("[fly] ") + s;
+		break;
+	}
+
+	case 7: {  // JumpTriggerRule
+		s = std::string("[jump] ") + s;
+		JumpTriggerRule zoneRule = std::get<JumpTriggerRule>(this->rule);
+		char buf[128];
+		snprintf(buf, sizeof buf, " center=%f,%f,%f", zoneRule.center.x, zoneRule.center.y, zoneRule.center.z);
+		s += buf;
+		snprintf(buf, sizeof buf, " size=%f,%f,%f", zoneRule.size.x, zoneRule.size.y, zoneRule.size.z);
+		s += buf;
+		s += std::string(" angle=") + std::to_string(zoneRule.rotation);
 		break;
 	}
 	}

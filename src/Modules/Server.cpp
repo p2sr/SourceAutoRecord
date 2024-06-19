@@ -167,7 +167,9 @@ DETOUR_T(bool, Server::CheckJumpButton) {
 
 	if (jumped) {
 		auto player = *reinterpret_cast<void **>((uintptr_t)thisptr + Offsets::player);
-		auto stat = stats->Get(server->GetSplitScreenPlayerSlot(player));
+		auto slot = server->GetSplitScreenPlayerSlot(player);
+		auto stat = stats->Get(slot);
+		SpeedrunTimer::TestJumpRules(server->GetAbsOrigin(player), slot);
 		++stat->jumps->total;
 		++stat->steps->total;
 		stat->jumps->StartTrace(server->GetAbsOrigin(player));

@@ -85,6 +85,18 @@ struct CrouchFlyRule {
 	bool Test();
 };
 
+struct JumpTriggerRule {
+	Vector center;
+	Vector size;
+	double rotation;
+
+	bool Test(Vector pos);
+	void DrawInWorld();
+	void OverlayInfo(SpeedrunRule *rule);
+
+	static std::optional<SpeedrunRule> Create(std::map<std::string, std::string> params);
+};
+
 struct SpeedrunRule {
 	using _RuleTypes = std::variant<
 		EntityInputRule,
@@ -93,7 +105,8 @@ struct SpeedrunRule {
 		ChallengeFlagsRule,
 		MapLoadRule,
 		MapEndRule,
-		CrouchFlyRule>;
+		CrouchFlyRule,
+		JumpTriggerRule>;
 
 	RuleAction action;
 
