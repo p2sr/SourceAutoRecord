@@ -254,18 +254,22 @@ void Crosshair::Paint(int slot) {
 	} else if ((sar_quickhud_mode.GetInt() == 2 || sar_crosshair_P1.GetBool()) && this->isCustomQuickHudReady && portalGunUpgradeState) {  // Quickhud from .png
 		int width, height;
 
-		Color blue       { 111, 184, 255 };
-		Color orange     { 255, 184,  86 };
-		Color atlas_prim {  86, 161, 222 };
-		Color atlas_sec  {  77,   1, 222 };
-		Color pbody_prim { 255, 199,  86 };
-		Color pbody_sec  { 106,   1,   1 };
+		auto team = slot == 1 ? 2 : engine->IsCoop() ? 3 : 0;
+		Color prim = SARUTIL_Portal_Color(1, team);
+		Color sec  = SARUTIL_Portal_Color(2, team);
 
-		Color real_prim = slot == 1 ? pbody_prim : engine->IsCoop() ? atlas_prim : blue;
-		Color real_sec  = slot == 1 ? pbody_sec  : engine->IsCoop() ? atlas_sec  : orange;
+		// HACKHACK: Stupid color adjustment to match vanilla crosshair
+		// https://www.desmos.com/calculator/7gd17bkmos
+#define COLORADJUST(col) \
+		if (col.r > 4) col.r = col.r * 0.75f + 64; \
+		if (col.g > 4) col.g = col.g * 0.75f + 64; \
+		if (col.b > 4) col.b = col.b * 0.75f + 64;
+		COLORADJUST(prim);
+		COLORADJUST(sec);
+#undef COLORADJUST
 
-		Color prim = (portalGunUpgradeState & 1) ? real_prim : real_sec;
-		Color sec  = (portalGunUpgradeState & 2) ? real_sec  : real_prim;
+		prim = (portalGunUpgradeState & 1) ? prim : sec;
+		sec  = (portalGunUpgradeState & 2) ? sec  : prim;
 
 		bool prim_state = (portalGunUpgradeState & 1) ? bluePortalState   : orangePortalState;
 		bool sec_state  = (portalGunUpgradeState & 2) ? orangePortalState : bluePortalState;

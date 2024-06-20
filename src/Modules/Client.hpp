@@ -198,3 +198,5 @@ extern Variable snd_ducktovolume;
 extern Variable say;
 
 extern Command sar_workshop_skip;
+
+extern Color SARUTIL_Portal_Color(int iPortal, int iTeamNumber);

@@ -464,12 +464,12 @@ void PlayerTrace::DrawPortalsAt(int tick) const {
 			localtick = trace.portals.size()-1;
 
 		// Draw portals
-		Color blue         { 111, 184, 255, 255 };
-		Color orange       { 255, 184,  86, 255 };
-		Color atlas_prim   {  32, 128, 210, 255 };
-		Color atlas_second {  16,   0, 210, 255 };
-		Color pbody_prim   { 255, 180,  32, 255 };
-		Color pbody_second {  58,   3,   3, 255 };
+		Color blue       = SARUTIL_Portal_Color(1, 0);
+		Color orange     = SARUTIL_Portal_Color(2, 0);
+		Color atlas_prim = SARUTIL_Portal_Color(1, 3);
+		Color atlas_sec  = SARUTIL_Portal_Color(2, 3);
+		Color pbody_prim = SARUTIL_Portal_Color(1, 2);
+		Color pbody_sec  = SARUTIL_Portal_Color(2, 2);
 
 		auto drawPortal = [&](Color portalColor, Vector origin, QAngle angles) {
 			portalColor.a = (uint8_t)sar_trace_portal_opacity.GetInt();
@@ -537,9 +537,9 @@ void PlayerTrace::DrawPortalsAt(int tick) const {
 			Color color;
 			if (portal.is_coop) {
 				if (portal.is_atlas)
-					color = portal.is_primary? atlas_prim: atlas_second;
+					color = portal.is_primary? atlas_prim: atlas_sec;
 				else
-					color = portal.is_primary? pbody_prim: pbody_second;
+					color = portal.is_primary? pbody_prim: pbody_sec;
 			} else {
 				color = portal.is_primary? blue: orange;
 			}

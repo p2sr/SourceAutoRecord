@@ -88,21 +88,23 @@ std::optional<Color> Utils::GetColor(const char *str, bool to_linear) {
 	unsigned r, g, b, a;
 	int end;
 
+	// This is before the hex checks because "19 0 210" is
+	// 8 characters long and apparently passes the hex scan
+	if (!had_hash) {
+		if (sscanf(str, "%u %u %u %u%n", &r, &g, &b, &a, &end) == 4 && (size_t)end >= len) {
+			RET(r, g, b, a);
+		}
+
+		if (sscanf(str, "%u %u %u%n", &r, &g, &b, &end) == 3 && (size_t)end >= len) {
+			RET(r, g, b, 255);
+		}
+	}
+
 	if (len == 8 && sscanf(str, "%2x%2x%2x%2x%n", &r, &g, &b, &a, &end) == 4 && end >= 8) {
 		RET(r, g, b, a);
 	}
 
 	if (len == 6 && sscanf(str, "%2x%2x%2x%n", &r, &g, &b, &end) == 3 && end >= 6) {
-		RET(r, g, b, 255);
-	}
-
-	if (had_hash) return {};
-
-	if (sscanf(str, "%u %u %u %u%n", &r, &g, &b, &a, &end) == 4 && (size_t)end >= len) {
-		RET(r, g, b, a);
-	}
-
-	if (sscanf(str, "%u %u %u%n", &r, &g, &b, &end) == 3 && (size_t)end >= len) {
 		RET(r, g, b, 255);
 	}
 
