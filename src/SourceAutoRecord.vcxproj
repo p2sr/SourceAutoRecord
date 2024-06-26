@@ -68,13 +68,13 @@
       <PreprocessorDefinitions>SFML_STATIC;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include;$(SolutionDir)\lib\curl\include;$(SolutionDir)\lib\discord-rpc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include;$(SolutionDir)\lib\curl\include;$(SolutionDir)\lib\discord-rpc\include;$(SolutionDir)\lib\steam\include</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows;$(SolutionDir)\lib\curl\lib\windows;$(SolutionDir)\lib\discord-rpc\lib\windows</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows;$(SolutionDir)\lib\curl\lib\windows;$(SolutionDir)\lib\discord-rpc\lib\windows;$(SolutionDir)\lib\steam\lib\windows</AdditionalLibraryDirectories>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
@@ -83,7 +83,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <NoEntryPoint>false</NoEntryPoint>
-      <AdditionalDependencies>libcurl_a.lib;wldap32.lib;crypt32.lib;normaliz.lib;imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;discord-rpc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl_a.lib;wldap32.lib;crypt32.lib;normaliz.lib;imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;discord-rpc.lib;steam_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PreBuildEvent>
@@ -102,7 +102,7 @@
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include;$(SolutionDir)\lib\curl\include;$(SolutionDir)\lib\discord-rpc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include;$(SolutionDir)\lib\curl\include;$(SolutionDir)\lib\discord-rpc\include;$(SolutionDir)\lib\steam\include</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>SFML_STATIC;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>26495</DisableSpecificWarnings>
@@ -112,9 +112,9 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows;$(SolutionDir)\lib\curl\lib\windows;$(SolutionDir)\lib\discord-rpc\lib\windows</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(ProjectDir);$(SolutionDir)\lib\SFML\lib\Windows;$(SolutionDir)\lib\ffmpeg\lib\windows;$(SolutionDir)\lib\curl\lib\windows;$(SolutionDir)\lib\discord-rpc\lib\windows;$(SolutionDir)\lib\steam\lib\windows</AdditionalLibraryDirectories>
       <NoEntryPoint>false</NoEntryPoint>
-      <AdditionalDependencies>libcurl_a.lib;wldap32.lib;crypt32.lib;normaliz.lib;imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;discord-rpc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl_a.lib;wldap32.lib;crypt32.lib;normaliz.lib;imagehlp.lib;winmm.lib;ws2_32.lib;sfml-system-s.lib;sfml-network-s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;avcodec.lib;avformat.lib;avutil.lib;ogg.lib;vorbis.lib;vorbisfile.lib;x264.lib;opus.lib;swresample.lib;swscale.lib;x265.lib;mfplat.lib;strmiids.lib;mfuuid.lib;bcrypt.lib;secur32.lib;discord-rpc.lib;steam_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
@@ -149,6 +149,7 @@
     <ClCompile Include="Features\Routing\Ruler.cpp" />
     <ClCompile Include="Features\Routing\StepSlopeBoostDebug.cpp" />
     <ClCompile Include="Features\SeasonalASCII.cpp" />
+    <ClCompile Include="Features\SteamTimeline.cpp" />
     <ClCompile Include="Features\Tas\TasTools\AngleToolsUtils.cpp" />
     <ClCompile Include="Features\Tas\TasPlayer.cpp" />
     <ClCompile Include="Features\Tas\TasScript.cpp" />
@@ -350,6 +351,7 @@
     <ClInclude Include="Features\Routing\Ruler.hpp" />
     <ClInclude Include="Features\Routing\StepSlopeBoostDebug.hpp" />
     <ClInclude Include="Features\SeasonalASCII.hpp" />
+    <ClInclude Include="Features\SteamTimeline.hpp" />
     <ClInclude Include="Features\Tas\TasTools\AngleToolsUtils.hpp" />
     <ClInclude Include="Features\Tas\TasPlayer.hpp" />
     <ClInclude Include="Features\Tas\TasScript.hpp" />

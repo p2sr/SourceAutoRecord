@@ -89,6 +89,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->features->AddFeature<GroundFramesCounter>(&groundFramesCounter);
 			this->features->AddFeature<TimescaleDetect>(&timescaleDetect);
 			this->features->AddFeature<PlayerTrace>(&playerTrace);
+			this->features->AddFeature<Timeline>(&timeline);
 			toastHud.InitMessageHandler();
 
 			this->modules->AddModule<InputSystem>(&inputSystem);
