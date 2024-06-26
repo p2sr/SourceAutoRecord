@@ -20,6 +20,7 @@
 #include "Features/NetMessage.hpp"
 #include "Features/Session.hpp"
 #include "Features/Stats/StatsCounter.hpp"
+#include "Features/SteamTimeline.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
@@ -517,6 +518,8 @@ void SpeedrunTimer::Start() {
 	}
 
 	ghostLeaderboard.SpeedrunStart(g_speedrun.saved);
+
+	timeline->StartSpeedrun();
 }
 
 void SpeedrunTimer::Pause() {
@@ -700,22 +703,24 @@ void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested) {
 		setTimerAction(TimerAction::SPLIT);
 		float totalTime = SpeedrunTimer::GetTotalTicks() * *engine->interval_per_tick;
 		float splitTime = g_speedrun.splits.back().ticks * *engine->interval_per_tick;
+
+		std::string cleanSegName = segName;
+		replace(cleanSegName, GetCategoryName() + " - ", "");
+
 		if (!sar_mtrigger_legacy.GetBool()) {
 			std::string text = Utils::ssprintf("%s\n%s (%s)", segName.c_str(), SpeedrunTimer::Format(totalTime).c_str(), SpeedrunTimer::Format(splitTime).c_str());
 			toastHud.AddToast(SPEEDRUN_TOAST_TAG, text);
 		} else {
-			std::string cleanSegName = segName;
-			replace(cleanSegName, GetCategoryName() + " - ", "");
-
 			std::string formattedString = sar_mtrigger_legacy_format.GetString();
 			replace(formattedString, "!map", GetCategoryName());
 			replace(formattedString, "!seg", cleanSegName);
 			replace(formattedString, "!tt", SpeedrunTimer::Format(totalTime));
 			replace(formattedString, "!st", SpeedrunTimer::Format(splitTime));
-
 			auto color = Utils::GetColor(sar_mtrigger_legacy_textcolor.GetString());
 			client->Chat(color.value_or(Color{255, 176, 0}), formattedString.c_str());
 		}
+
+		timeline->Split(cleanSegName, Utils::ssprintf("%s (%s)", SpeedrunTimer::Format(totalTime).c_str(), SpeedrunTimer::Format(splitTime).c_str()));
 	}
 }
 

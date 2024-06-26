@@ -1,5 +1,6 @@
 .vscode/
 *.so
+!lib/steam/lib/linux/libsteam_api.so
 *.o
 obj/
 src/Features/Experimental/

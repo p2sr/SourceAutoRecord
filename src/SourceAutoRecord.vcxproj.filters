@@ -538,6 +538,9 @@
     <ClCompile Include="Modules\Matchmaking.cpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClCompile>
+    <ClCompile Include="Features\SteamTimeline.cpp">
+      <Filter>SourceAutoRecord\Features</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1355,6 +1358,9 @@
     </ClInclude>
     <ClInclude Include="Modules\Matchmaking.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\SteamTimeline.hpp">
+      <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

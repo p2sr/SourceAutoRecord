@@ -17,10 +17,6 @@ struct cmdalias_t {
 	char *value;
 };
 
-struct GameOverlayActivated_t {
-	uint8_t m_bActive;
-};
-
 enum PaintMode_t {
 	PAINT_UIPANELS = (1 << 0),
 	PAINT_INGAMEPANELS = (1 << 1),

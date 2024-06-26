@@ -21,6 +21,7 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Stats/Stats.hpp"
 #include "Features/Stats/Sync.hpp"
+#include "Features/SteamTimeline.hpp"
 #include "Features/StepCounter.hpp"
 #include "Features/Summary.hpp"
 #include "Features/Tas/TasController.hpp"
