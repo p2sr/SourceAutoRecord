@@ -876,14 +876,25 @@ bool Server::Init() {
 	Command::Hook("say", Server::say_callback_hook, Server::say_callback);
 #ifdef _WIN32
 	uintptr_t insn_addr = (uintptr_t)say_callback + 52;
+	uintptr_t Host_Say = Memory::Scan(server->Name(), "55 8B EC 81 EC 30 02 00 00 56");
+	uintptr_t insn_addr2 = Host_Say + 0x335;
 #else
 	uintptr_t insn_addr;
+	uintptr_t Host_Say;
+	uintptr_t insn_addr2 = 0;
 	if (sar.game->Is(SourceGame_EIPRelPIC)) {
 		insn_addr = (uintptr_t)say_callback + 55;
+		Host_Say = Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 4C 02 00 00 8B 5D ? 8B 45");
+		insn_addr2 = Host_Say + 0x36C;
 	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
 		insn_addr = (uintptr_t)say_callback + 88;
+		Host_Say = Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 8C 02 00 00 8B 45 ? 8B 5D");
+		insn_addr2 = Host_Say + 0x37A;
 	} else {
 		insn_addr = (uintptr_t)say_callback + 57;
+		// I'm not confident with this offset and TWTM/aptag don't have coop anyway
+		// Host_Say = Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 7C 02 00 00 8B 5D");
+		// insn_addr2 = Host_Say + 0x346;
 	}
 #endif
 	// This is the location of an ADDSD instruction which adds 0.66
@@ -892,7 +903,20 @@ bool Server::Init() {
 	// the third byte from 0x58 to 0x5C, hence making the full
 	// opcode start with F2 0F 5C.
 	Memory::UnProtect((void *)(insn_addr + 2), 1);
-	*(char *)(insn_addr + 2) = 0x5C;
+	if (*(char *)(insn_addr + 2) == 0x58) {
+		*(char *)(insn_addr + 2) = 0x5C;
+	}
+	// FIXME: This also disables the "ignoremsg" client command
+	// functionality.
+	// This is the location of a JZ instruction which jumps if the
+	// chat sender is dead but recipient is alive, blocking
+	// messages. We just change it to a JO, which will never jump.
+	if (insn_addr2) {
+		Memory::UnProtect((void *)insn_addr2, 1);
+		if (*(char *)insn_addr2 == 0x74) {
+			*(char *)insn_addr2 = 0x70;
+		}
+	}
 
 	// find the TraceFirePortal function
 #ifdef _WIN32
