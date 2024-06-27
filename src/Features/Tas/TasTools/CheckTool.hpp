@@ -4,26 +4,28 @@
 
 #define DEFAULT_POS_EPSILON 0.5
 #define DEFAULT_ANG_EPSILON 0.2
+#define DEFAULT_VEL_EPSILON 1.0
 
 struct CheckToolParams : public TasToolParams {
 	CheckToolParams()
 		: TasToolParams()
 		, posepsilon(DEFAULT_POS_EPSILON)
 		, angepsilon(DEFAULT_ANG_EPSILON)
+		, velepsilon(DEFAULT_VEL_EPSILON)
 	{}
 
-	CheckToolParams(std::optional<Vector> pos, std::optional<QAngle> ang, std::optional<float> vel, std::optional<char> veldir, std::optional<char> velcomp, std::optional<std::string> holding, float posepsilon, float angepsilon)
-		: TasToolParams(true), pos(pos), ang(ang), vel(vel), veldir(veldir), velcomp(velcomp), holding(holding), posepsilon(posepsilon), angepsilon(angepsilon)
+	CheckToolParams(std::optional<Vector> pos, std::optional<QAngle> ang, std::optional<float> vel, std::optional<std::string> veldir, std::optional<std::string> holding, float posepsilon, float angepsilon, float velepsilon)
+		: TasToolParams(true), pos(pos), ang(ang), vel(vel), veldir(veldir), holding(holding), posepsilon(posepsilon), angepsilon(angepsilon), velepsilon(velepsilon)
 	{}
 
 	std::optional<Vector> pos;
 	std::optional<QAngle> ang; // roll ignored
 	std::optional<float> vel;
-	std::optional<char> veldir;
-	std::optional<char> velcomp;
+	std::optional<std::string> veldir;
 	std::optional<std::string> holding;
 	float posepsilon;
 	float angepsilon;
+	float velepsilon;
 };
 
 class CheckTool : public TasToolWithParams<CheckToolParams> {

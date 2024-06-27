@@ -40,8 +40,14 @@ void CheckTool::Apply(TasFramebulk &fb, const TasPlayerInfo &info) {
 	}
 
 	if (params.vel) {
-		float currVel = params.veldir.value() == 'x' ? info.velocity.x : params.veldir.value() == 'y' ? info.velocity.y : params.veldir.value() == 'z' ? info.velocity.z : 0;
-		if ((params.velcomp.value() == '<' && currVel > params.vel) || (params.velcomp.value() == '>' && currVel < params.vel)) {
+		float velSquared = 0;
+		if (std::strstr(params.veldir.value().c_str(), "x")) velSquared += info.velocity.x * info.velocity.x;
+		if (std::strstr(params.veldir.value().c_str(), "y")) velSquared += info.velocity.y * info.velocity.y;
+		if (std::strstr(params.veldir.value().c_str(), "z")) velSquared += info.velocity.z * info.velocity.z;
+		float velDelta = sqrtf(velSquared) - params.vel.value();
+		float deltaSquared = velDelta * velDelta;
+		if (deltaSquared > params.velepsilon * params.velepsilon) {
+			console->Print("Velocity was %.2f units/s away from target!\n", sqrtf(deltaSquared));
 			shouldReplay = true;
 		}
 	}
@@ -115,20 +121,24 @@ static QAngle parseAng(const std::vector<std::string> &args, size_t idx) {
 	}
 }
 
-static void parseVel(const std::vector<std::string> &args, size_t idx, std::optional<float> &vel, std::optional<char> &veldir, std::optional<char> &velcomp) {
-	if (args.size() - idx < 3) {
+static void parseVel(const std::vector<std::string> &args, size_t idx, std::optional<float> &vel, std::optional<std::string> &veldir) {
+	if (args.size() - idx < 2) {
 		throw TasParserException("Too few args for velocity check tool.");
 	}
 	try {
-		vel = std::stof(args[idx + 2]);
-		veldir = args[idx][0];
-		velcomp = args[idx + 1][0];
+		veldir = args[idx + 0];
+		vel = std::stof(args[idx + 1]);
 	} catch (...) {
 		throw TasParserException("Bad vel for check tool");
 	}
 
-	if (!((veldir.value() == 'x' || veldir.value() == 'y' || veldir.value() == 'z') && (velcomp.value() == '>' || velcomp.value() == '<'))) {
+	if (veldir.value().size() < 1 || veldir.value().size() > 3) {
 		throw TasParserException("Bad args for check tool");
+	}
+	for (char c : veldir.value()) {
+		if (c != 'x' && c != 'y' && c != 'z') {
+			throw TasParserException("Invalid velocity direction for check tool");
+		}
 	}
 }
 
@@ -140,11 +150,11 @@ std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> v
 	std::optional<Vector> pos = {};
 	std::optional<QAngle> ang = {};
 	std::optional<float> vel;
-	std::optional<char> veldir;
-	std::optional<char> velcomp;
+	std::optional<std::string> veldir;
 	std::optional<std::string> holding = {};
 	std::optional<float> posepsilon = {};
 	std::optional<float> angepsilon = {};
+	std::optional<float> velepsilon = {};
 
 	size_t i = 0;
 
@@ -165,8 +175,8 @@ std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> v
 			if (vel) {
 				throw TasParserException("Duplicate velocity given to check tool");
 			}
-			parseVel(vp, i+1, vel, veldir, velcomp);
-			i += 4;
+			parseVel(vp, i+1, vel, veldir);
+			i += 3;
 		} else if (vp[i] == "holding") {
 			if (holding) {
 				throw TasParserException("Duplicate holding given to check tool");
@@ -198,10 +208,20 @@ std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> v
 				throw TasParserException("Bad angle epsilon for check tool");
 			}
 			i += 2;
+		}else if (vp[i] == "velepsilon") {
+			if (velepsilon) {
+				throw TasParserException("Duplicate velocity epsilon given to check tool");
+			}
+			try {
+				velepsilon = std::stof(vp[i+1]);
+			} catch (...) {
+				throw TasParserException("Bad velocity epsilon for check tool");
+			}
+			i += 2;
 		} else {
 			throw TasParserException(Utils::ssprintf("Bad argument for check tool: \"%s\"", vp[i].c_str()));
 		}
 	}
 
-	return std::make_shared<CheckToolParams>(pos, ang, vel, veldir, velcomp, holding, posepsilon ? *posepsilon : DEFAULT_POS_EPSILON, angepsilon ? *angepsilon : DEFAULT_ANG_EPSILON);
+	return std::make_shared<CheckToolParams>(pos, ang, vel, veldir, holding, posepsilon ? *posepsilon : DEFAULT_POS_EPSILON, angepsilon ? *angepsilon : DEFAULT_ANG_EPSILON, velepsilon ? *velepsilon : DEFAULT_VEL_EPSILON);
 }
