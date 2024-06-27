@@ -81,6 +81,7 @@ Variable sar_portalcolor_mp1_1("sar_portalcolor_mp1_1", "31 127 210", "Portal co
 Variable sar_portalcolor_mp1_2("sar_portalcolor_mp1_2", "19 0 210",   "Portal color for Atlas (blue)'s right portal.\n");
 Variable sar_portalcolor_mp2_1("sar_portalcolor_mp2_1", "255 179 31", "Portal color for P-Body (orange)'s left portal.\n");
 Variable sar_portalcolor_mp2_2("sar_portalcolor_mp2_2", "57 2 2",     "Portal color for P-Body (orange)'s right portal.\n");
+Variable sar_portalcolor_rainbow("sar_portalcolor_rainbow", "0", "Rainbow portals!\n");
 
 REDECL(Client::LevelInitPreEntity);
 REDECL(Client::CreateMove);
@@ -334,7 +335,11 @@ static SourceColor UTIL_Portal_Color_Detour(int iPortal, int iTeamNumber) {
 		std::optional<Color> modify;
 		// Yes, blue and orange are swapped. Mhm.
 		// Also 1 is unused.
-		if (iTeamNumber == 0) {
+		if (sar_portalcolor_rainbow.GetBool()) {
+			int host, server, client;
+			engine->GetTicks(host, server, client);
+			modify = {Utils::HSVToRGB((host + (iTeamNumber == 2 ? 180 : 0) + (iPortal == 1 ? 0 : 30)) % 360, 100, iPortal == 1 ? 100 : 50)};
+		} else if (iTeamNumber == 0) {
 			modify = Utils::GetColor(iPortal == 1 ? sar_portalcolor_sp_1.GetString() : sar_portalcolor_sp_2.GetString());
 		} else if (iTeamNumber == 2) {
 			modify = Utils::GetColor(iPortal == 1 ? sar_portalcolor_mp2_1.GetString() : sar_portalcolor_mp2_2.GetString());
