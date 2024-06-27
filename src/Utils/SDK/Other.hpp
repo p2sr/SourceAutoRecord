@@ -49,8 +49,8 @@ class IMaterialInternal;
 
 class CMaterial_QueueFriendly {
 public:
-	void* vtable;
-	IMaterialInternal* m_pRealTimeVersion;
+	void *vtable;
+	IMaterialInternal *m_pRealTimeVersion;
 };
 
 struct CFontAmalgam {
@@ -80,8 +80,7 @@ public:
 	QAngle v_angle;
 };
 
-typedef struct player_info_s
-{
+typedef struct player_info_s {
 	// network xuid
 	uint64_t xuid;
 	// scoreboard information
@@ -125,8 +124,8 @@ struct PortalPlayerStatistics_t {
 };
 
 struct PortalLeaderboardItem_t {
-	uint64_t m_xuid;     //0x0000
-	char m_szName[32];   //0x0008
-	char pad_0028[16];   //0x0028
-	int32_t m_iScore;    //0x0038
+	uint64_t m_xuid;    //	0x0000
+	char m_szName[32];  //	0x0008
+	char pad_0028[16];  //	0x0028
+	int32_t m_iScore;   //	0x0038
 };

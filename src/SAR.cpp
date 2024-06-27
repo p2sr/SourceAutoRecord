@@ -139,7 +139,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 				this->SearchPlugin();
 
 				console->PrintActive("Loaded SourceAutoRecord, Version %s\n", SAR_VERSION);
-				
+
 				SeasonalASCII::Init();
 
 				return true;

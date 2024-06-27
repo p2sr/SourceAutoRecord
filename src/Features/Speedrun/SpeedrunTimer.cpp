@@ -13,9 +13,8 @@
 #endif
 
 #include "Event.hpp"
-#include "Scheduler.hpp"
-#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Demo/GhostLeaderboard.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/Session.hpp"
@@ -26,6 +25,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
+#include "Scheduler.hpp"
 #include "Utils.hpp"
 
 #define SPEEDRUN_PACKET_TYPE "srtimer"
@@ -336,7 +336,6 @@ int SpeedrunTimer::GetSegmentTicks() {
 	int ticks = 0;
 	ticks += g_speedrun.saved;
 	if (!g_speedrun.isPaused && !g_speedrun.inCoopPause && (!engine->demoplayer->IsPlaying() || engine->demoplayer->IsPlaybackFixReady())) {
-
 		if (sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::IsSpeedrunMod()) {
 			if (g_speedrun.lastMap == "sp_a2_bts6") return 3112;
 			else if (g_speedrun.lastMap == "sp_a3_00") return 4666;

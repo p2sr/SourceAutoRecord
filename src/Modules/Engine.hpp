@@ -25,7 +25,7 @@ public:
 	Interface *engineTrace = nullptr;
 	Interface *g_VEngineServer = nullptr;
 
-	Interface *g_physCollision = nullptr; // This is actually on the vphysics module but I don't care
+	Interface *g_physCollision = nullptr;  // This is actually on the vphysics module but I don't care
 
 	using _ClientCmd = int(__rescall *)(void *thisptr, const char *szCmdString);
 	using _ExecuteClientCmd = int(__rescall *)(void *thisptr, const char *szCmdString);
@@ -45,27 +45,27 @@ public:
 	using _GetLocalClient = int (*)(int index);
 	using _HostFrameTime = float (*)(void *thisptr);
 	using _ClientTime = float (*)(void *thisptr);
-	using _DebugDrawPhysCollide = bool (__rescall *)(void *thisptr, const void *collide, IMaterial *material, const matrix3x4_t &transform, const Color &color);
+	using _DebugDrawPhysCollide = bool(__rescall *)(void *thisptr, const void *collide, IMaterial *material, const matrix3x4_t &transform, const Color &color);
 	using _IsPaused = bool (*)(void *thisptr);
 	using _TraceRay = void(__rescall *)(void *thisptr, const Ray_t &ray, unsigned int fMask, ITraceFilter *pTraceFilter, CGameTrace *pTrace);
-	using _PointOutsideWorld = bool (__rescall *)(void *thisptr, const Vector &test);
+	using _PointOutsideWorld = bool(__rescall *)(void *thisptr, const Vector &test);
 	using _GetCount = int(__rescall *)(void *thisptr);
 	using _Con_IsVisible = bool(__rescall *)(void *thisptr);
 	using _GetLevelNameShort = const char *(__rescall *)(void *thisptr);
 	using _GetScreenSize = int(__rescall *)(void *thisptr, int &width, int &height);
-	using _GetActiveSplitScreenPlayerSlot = int (__rescall *)(void *thisptr);
+	using _GetActiveSplitScreenPlayerSlot = int(__rescall *)(void *thisptr);
 	using _ScreenPosition = int(__rescall *)(void *thisptr, const Vector &point, Vector &screen);
 	using _ConPrintEvent = int(__rescall *)(void *thisptr, IGameEvent *ev);
 	using _PrecacheModel = int(__rescall *)(void *thisptr, const char *, bool);
-	using _GetPlayerInfo = bool(__rescall *)(void* thisptr, int, player_info_t*);
+	using _GetPlayerInfo = bool(__rescall *)(void *thisptr, int, player_info_t *);
 #ifdef _WIN32
 	// See comment in OverlayRender::startShading
-	using _GetLightForPoint = void (__rescall *)(void *thisptr, Vector &out, const Vector &pos, bool clamp);
+	using _GetLightForPoint = void(__rescall *)(void *thisptr, Vector &out, const Vector &pos, bool clamp);
 #else
-	using _GetLightForPoint = Vector (__rescall *)(void *thisptr, const Vector &pos, bool clamp);
+	using _GetLightForPoint = Vector(__rescall *)(void *thisptr, const Vector &pos, bool clamp);
 #endif
-	using _CreateDebugMesh = int (__rescall *)(void *thisptr, const void *collisionModel, Vector **outVerts);
-	using _DestroyDebugMesh = void (__rescall *)(void *thisptr, int vertCount, Vector *verts);
+	using _CreateDebugMesh = int(__rescall *)(void *thisptr, const void *collisionModel, Vector **outVerts);
+	using _DestroyDebugMesh = void(__rescall *)(void *thisptr, int vertCount, Vector *verts);
 
 	_GetScreenSize GetScreenSize = nullptr;
 	_ClientCmd ClientCmd = nullptr;
@@ -172,7 +172,7 @@ public:
 	DECL_DETOUR(SetSignonState, int state, int count, void *unk);
 
 	// CVEngineServer::ClientCommandKeyValues
-	DECL_DETOUR(ClientCommandKeyValues, void* pEdict, KeyValues* pKeyValues);
+	DECL_DETOUR(ClientCommandKeyValues, void *pEdict, KeyValues *pKeyValues);
 
 #ifndef _WIN32
 	// CVEngineClient::GetMouseDelta
