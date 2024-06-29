@@ -17,6 +17,10 @@ struct cmdalias_t {
 	char *value;
 };
 
+struct GameOverlayActivated_t {
+	uint8_t m_bActive;
+};
+
 enum PaintMode_t {
 	PAINT_UIPANELS = (1 << 0),
 	PAINT_INGAMEPANELS = (1 << 1),
@@ -128,4 +132,28 @@ struct PortalLeaderboardItem_t {
 	char m_szName[32];  //	0x0008
 	char pad_0028[16];  //	0x0028
 	int32_t m_iScore;   //	0x0038
+};
+
+enum ETimelineGameMode {
+	k_ETimelineGameMode_Invalid = 0,
+	k_ETimelineGameMode_Playing = 1,
+	k_ETimelineGameMode_Staging = 2,
+	k_ETimelineGameMode_Menus = 3,
+	k_ETimelineGameMode_LoadingScreen = 4,
+	k_ETimelineGameMode_Max,
+};
+
+enum ETimelineEventClipPriority {
+	k_ETimelineEventClipPriority_Invalid = 0,
+	k_ETimelineEventClipPriority_None = 1,
+	k_ETimelineEventClipPriority_Standard = 2,
+	k_ETimelineEventClipPriority_Featured = 3,
+};
+
+class ISteamTimeline {
+public:
+	virtual void SetTimelineStateDescription(const char *pchDescription, float flTimeDelta) = 0;
+	virtual void ClearTimelineStateDescription(float flTimeDelta) = 0;
+	virtual void AddTimelineEvent(const char *pchIcon, const char *pchTitle, const char *pchDescription, uint32_t unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip) = 0;
+	virtual void SetTimelineGameMode(ETimelineGameMode eMode) = 0;
 };
