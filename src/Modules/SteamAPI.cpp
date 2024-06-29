@@ -18,9 +18,20 @@ bool SteamAPI::Init() {
 		if (!GetHSteamPipe)
 			return false;
 
-		void *interfaceMgr = **reinterpret_cast<void ***>(Memory::Scan(this->Name(), "89 0D ? ? ? ? 85 C9 0F", 2));
+#ifdef _WIN32
+		void ***scanResult = reinterpret_cast<void ***>(Memory::Scan(this->Name(), "89 0D ? ? ? ? 85 C9 0F", 2));
+		if (!scanResult || !*scanResult || !**scanResult) {
+			scanResult = reinterpret_cast<void ***>(Memory::Scan(this->Name(), "A3 ? ? ? ? 3B C3 0F 84", 1));
+			if (!scanResult || !*scanResult || !**scanResult)
+				return false;
+		}
+		void *interfaceMgr = **scanResult;
 		const auto fn = *(ISteamTimeline * (__rescall **)(void *, void *, void *, const char *))(*(uintptr_t *)interfaceMgr + 48);
 		g_timeline = fn(interfaceMgr, GetHSteamUser(), GetHSteamPipe(), "STEAMTIMELINE_INTERFACE_V001");
+#else
+		// TODO: Linux mods support
+		return false;
+#endif
 	}
 	if (!g_timeline)
 		return false;
