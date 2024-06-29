@@ -7,8 +7,6 @@
 #include "Utils.hpp"
 #include "Variable.hpp"
 
-#include <isteamfriends.h>
-
 #if _WIN32
 #	define IServerMessageHandler_VMT_Offset 8
 #endif

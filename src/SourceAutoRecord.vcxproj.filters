@@ -541,6 +541,9 @@
     <ClCompile Include="Features\SteamTimeline.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
+    <ClCompile Include="Modules\SteamAPI.cpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1361,6 +1364,9 @@
     </ClInclude>
     <ClInclude Include="Features\SteamTimeline.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\SteamAPI.hpp">
+      <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
