@@ -10,7 +10,13 @@ public:
 public:
 	bool Init() override;
 	void Shutdown() override;
-	const char *Name() override { return MODULE("steam_api"); }
+	const char *Name() override {	
+#ifdef _WIN32
+		return MODULE("steam_api");
+#else
+		return MODULE("libsteam_api");
+#endif
+	}
 };
 
 extern SteamAPI *steam;
