@@ -1065,10 +1065,16 @@ bool Client::Init() {
 	UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), "55 8B EC 56 8B 75 ? 85 F6 0F 84 ? ? ? ? 0F 8E");
 	UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), "55 8B EC 51 8B 0D ? ? ? ? 8B 01 8B 90 ? ? ? ? FF D2 84 C0");
 #else
-	try {
+	if (sar.game->Is(SourceGame_Portal2)) {
 		UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), "56 53 83 EC 04 8B 44 24 ? 8B 74 24 ? 85 C0 74 ? 8D 58");
 		UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), "53 83 EC 14 A1 ? ? ? ? 8B 5C 24 ? 8B 10 50 FF 92 ? ? ? ? 83 C4 10 84 C0 75");
-	} catch (...) {} // Too lazy to check mods
+	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
+		UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), "55 89 E5 56 53 83 EC 10 8B 75 ? 8B 5D ? 85 F6 0F 84");
+		UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), "55 89 E5 53 83 EC 14 A1 ? ? ? ? 8B 5D ? 8B 10 89 04 24 FF 92 ? ? ? ? 84 C0 75 ? 83 7D ? 01");
+	} else {
+		UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), "55 89 E5 83 EC 28 89 75 ? 8B 75 ? 89 5D ? 8B 5D ? 89 7D ? 8B 7D ? 83 FE 00");
+		UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), "55 89 E5 56 53 83 EC 10 A1 ? ? ? ? 8B 5D ? 8B 75 ? 8B 10 89 04 24 FF 92 ? ? ? ? 84 C0");
+	}
 #endif
 	UTIL_Portal_Color_Hook.SetFunc(UTIL_Portal_Color);
 	UTIL_Portal_Color_Particles_Hook.SetFunc(UTIL_Portal_Color_Particles);
