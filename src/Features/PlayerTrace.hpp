@@ -49,6 +49,7 @@ struct Trace {
 	// Only have one of those, store all the portals in the map
 	// indiscriminately of player (also ones placed by pedestals etc)
 	std::vector<PortalLocations> portals;
+	bool draw = true;
 };
 
 class PlayerTrace : public Feature {

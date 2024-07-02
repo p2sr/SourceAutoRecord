@@ -76,6 +76,7 @@ static int tickUserToInternal(int tick, const Trace &trace) {
 
 // takes internal tick
 static void drawTraceInfo(int tick, int slot, const Trace &trace, std::function<void (const std::string &)> drawCbk) {
+	if (!trace.draw) return;
 	if (trace.positions[slot].size() <= (unsigned)tick) return;
 
 	int usertick = tickInternalToUser(tick, trace);
@@ -238,6 +239,7 @@ void PlayerTrace::DrawInWorld() const {
 	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
 		std::string trace_name = it->first;
 		const Trace &trace = it->second;
+		if (!trace.draw) continue;
 		for (int slot = 0; slot < 2; slot++) {
 			if (trace.positions[slot].size() < 2) continue;
 
@@ -373,6 +375,7 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 		
 	for (int slot = 0; slot < 2; slot++) {
 		for (const auto &[trace_idx, trace] : traces) {
+			if (!trace.draw) continue;
 			if (trace.positions[slot].size() == 0) continue;
 
 			unsigned localtick = tickUserToInternal(tick, trace);
@@ -809,6 +812,28 @@ int PlayerTrace::GetTasTraceTick() {
 HUD_ELEMENT2(trace, "0", "Draws info about current trace bbox tick.\n", HudType_InGame | HudType_Paused) {
 	if (!sv_cheats.GetBool()) return;
 	playerTrace->DrawTraceHud(ctx);
+}
+
+CON_COMMAND(sar_trace_hide, "sar_trace_hide [trace name] - hide the trace with the given name\n") {
+	if (args.ArgC() < 2)
+		return console->Print(sar_trace_hide.ThisPtr()->m_pszHelpString);
+
+	std::string trace_name = args[1];
+	auto trace = playerTrace->GetTrace(trace_name);
+	if (trace) {
+		trace->draw = false;
+	}
+}
+
+CON_COMMAND(sar_trace_show, "sar_trace_show [trace name] - show the trace with the given name\n") {
+	if (args.ArgC() < 2)
+		return console->Print(sar_trace_show.ThisPtr()->m_pszHelpString);
+
+	std::string trace_name = args[1];
+	auto trace = playerTrace->GetTrace(trace_name);
+	if (trace) {
+		trace->draw = true;
+	}
 }
 
 CON_COMMAND(sar_trace_dump, "sar_trace_dump <tick> [player slot] [trace name] - dump the player state from the given trace tick on the given trace ID (defaults to 1) in the given slot (defaults to 0).\n") {
