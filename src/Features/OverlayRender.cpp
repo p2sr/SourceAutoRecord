@@ -97,6 +97,7 @@ struct OverlayText {
 	float x_height; // in units
 	bool visibility_scale; // should we scale the text size to make it more visible from afar?
 	bool no_depth;
+	Color bg_col;
 };
 
 static std::vector<OverlayText> g_text;
@@ -220,8 +221,8 @@ void OverlayRender::addBoxMesh(Vector origin, Vector mins, Vector maxs, QAngle a
 	}
 }
 
-void OverlayRender::addText(Vector pos, const std::string &text, float x_height, bool visibility_scale, bool no_depth, OverlayRender::TextAlign align, Color col) {
-	g_text.push_back({pos, align, text, col, x_height, visibility_scale, no_depth});
+void OverlayRender::addText(Vector pos, const std::string &text, float x_height, bool visibility_scale, bool no_depth, OverlayRender::TextAlign align, Color col, Color bg_col) {
+	g_text.push_back({pos, align, text, col, x_height, visibility_scale, no_depth, bg_col});
 }
 
 static IMaterial *createMaterial(KeyValues *kv, const char *name) {
@@ -496,7 +497,6 @@ static void drawText(CViewSetup setup, OverlayText &t) {
 
 	// draw background
 	{
-		Color bg_color{ 0, 0, 0, 200 }; 
 
 		Vector bl = top_center + rotation * Vector{ 0.0, -(float)max_width * 0.5f - FONT_HPAD, -(float)height } * scale;
 		Vector tl = top_center + rotation * Vector{ 0.0, -(float)max_width * 0.5f - FONT_HPAD, 0 } * scale;
@@ -504,10 +504,10 @@ static void drawText(CViewSetup setup, OverlayText &t) {
 		Vector tr = top_center + rotation * Vector{ 0.0, (float)max_width * 0.5f + FONT_HPAD, 0 } * scale;
 
 		MeshBuilder bg(t.no_depth ? g_mat_solid_alpha_noz : g_mat_solid_alpha, PrimitiveType::QUADS, 1);
-		bg.Position(bl); bg.Color(bg_color); bg.AdvanceVertex();
-		bg.Position(tl); bg.Color(bg_color); bg.AdvanceVertex();
-		bg.Position(tr); bg.Color(bg_color); bg.AdvanceVertex();
-		bg.Position(br); bg.Color(bg_color); bg.AdvanceVertex();
+		bg.Position(bl); bg.Color(t.bg_col); bg.AdvanceVertex();
+		bg.Position(tl); bg.Color(t.bg_col); bg.AdvanceVertex();
+		bg.Position(tr); bg.Color(t.bg_col); bg.AdvanceVertex();
+		bg.Position(br); bg.Color(t.bg_col); bg.AdvanceVertex();
 		bg.Draw();
 	}
 

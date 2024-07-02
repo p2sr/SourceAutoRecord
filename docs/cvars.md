@@ -48,6 +48,7 @@
 |ghost_message|cmd|ghost_message - send message to other players|
 |ghost_name|cmd|ghost_name - change your online name|
 |ghost_name_font_size|5.0|The size to render ghost names at.|
+|ghost_name_proximity_fade|200|Distance from ghosts at which their names fade out.|
 |ghost_net_dump|0|Dump all ghost network activity to a file for debugging.|
 |ghost_net_dump_mark|cmd|Mark a point of interest in the ghost network activity dump.|
 |ghost_offset|cmd|ghost_offset \<offset> \<ID> - delay the ghost start by \<offset> frames|

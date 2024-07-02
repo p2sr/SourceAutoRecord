@@ -27,6 +27,7 @@ Variable ghost_opacity("ghost_opacity", "255", 0, 255, "Opacity of the ghosts.\n
 Variable ghost_text_offset("ghost_text_offset", "7", -1024, "Offset of the name over the ghosts.\n");
 Variable ghost_show_advancement("ghost_show_advancement", "3", 0, 3, "Show the advancement of the ghosts. 1 = show finished runs on the current map, 2 = show all finished runs, 3 = show all finished runs and map changes\n");
 Variable ghost_proximity_fade("ghost_proximity_fade", "100", 0, 2000, "Distance from ghosts at which their models fade out.\n");
+Variable ghost_name_proximity_fade("ghost_name_proximity_fade", "200", 0, 2000, "Distance from ghosts at which their names fade out.\n");
 Variable ghost_shading("ghost_shading", "1", "Enable simple light level based shading for overlaid ghosts.\n");
 Variable ghost_show_names("ghost_show_names", "1", "Whether to show names above ghosts.\n");
 Variable ghost_name_font_size("ghost_name_font_size", "5.0", 0.1, "The size to render ghost names at.\n");
@@ -393,7 +394,16 @@ void GhostEntity::DrawName() {
 		nameCoords.z += ghost_text_offset.GetFloat() + ghost_height.GetFloat();
 	}
 
-	OverlayRender::addText(nameCoords, this->name, ghost_name_font_size.GetFloat(), false, ghost_draw_through_walls.GetInt() >= 1);
+	uint8_t fade = 255;
+	auto player = client->GetPlayer(GET_SLOT() + 1);
+	if (player) {
+		float prox = ghost_name_proximity_fade.GetFloat();
+		float dist = (client->GetAbsOrigin(player) - nameCoords).Length();
+		fade = dist < prox / 2 ? 0 : dist > prox ? 255 : 255 * (dist - prox / 2) / (prox / 2);
+	}
+	uint8_t fade_bg = fade * 200.0f / 255.0f;
+
+	OverlayRender::addText(nameCoords, this->name, ghost_name_font_size.GetFloat(), false, ghost_draw_through_walls.GetInt() >= 1, OverlayRender::TextAlign::BASELINE, {255, 255, 255, fade}, {0, 0, 0, fade_bg});
 }
 
 ON_EVENT(PRE_TICK) {

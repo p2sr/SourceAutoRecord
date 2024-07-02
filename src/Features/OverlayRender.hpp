@@ -50,5 +50,5 @@ namespace OverlayRender {
 
 	// Standalone overlay functions - don't use these within a mesh
 	void addBoxMesh(Vector origin, Vector mins, Vector maxs, QAngle ang, RenderCallback solid, RenderCallback wireframe);
-	void addText(Vector pos, const std::string &text, float x_height, bool visibility_scale, bool no_depth = false, TextAlign align = TextAlign::BASELINE, Color col = {255,255,255});
+	void addText(Vector pos, const std::string &text, float x_height, bool visibility_scale, bool no_depth = false, TextAlign align = TextAlign::BASELINE, Color col = {255,255,255}, Color bg_col = {0,0,0,200});
 }
