@@ -595,6 +595,7 @@
 |sar_trace_clear|cmd|sar_trace_clear \<name> - Clear player trace with a given name|
 |sar_trace_clear_all|cmd|sar_trace_clear_all - Clear all the traces|
 |sar_trace_draw|0|Display the recorded player trace. Requires cheats|
+|sar_trace_draw_hover|1|Display information about the trace at the hovered tick.|
 |sar_trace_draw_speed_deltas|0|Display the speed deltas. Requires sar_trace_draw|
 |sar_trace_draw_through_walls|1|Display the player trace through walls. Requires sar_trace_draw|
 |sar_trace_draw_time|3|Display tick above trace hover info<br>0 = hide tick info<br>1 = ticks since trace recording started<br>2 = session timer<br>3 = TAS timer (if no TAS was played, uses 1 instead)|

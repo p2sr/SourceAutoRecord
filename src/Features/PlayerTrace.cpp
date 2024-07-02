@@ -25,6 +25,7 @@ Variable sar_trace_record("sar_trace_record", "0", "Record the trace to a slot. 
 Variable sar_trace_use_shot_eyeoffset("sar_trace_use_shot_eyeoffset", "1", 0, 1, "Uses eye offset and angles accurate for portal shooting.\n");
 
 Variable sar_trace_draw("sar_trace_draw", "0", 0, 1, "Display the recorded player trace. Requires cheats\n");
+Variable sar_trace_draw_hover("sar_trace_draw_hover", "1", "Display information about the trace at the hovered tick.\n");
 Variable sar_trace_draw_through_walls("sar_trace_draw_through_walls", "1", "Display the player trace through walls. Requires sar_trace_draw\n");
 Variable sar_trace_draw_speed_deltas("sar_trace_draw_speed_deltas", "0", "Display the speed deltas. Requires sar_trace_draw\n");
 Variable sar_trace_draw_time("sar_trace_draw_time", "3", 0, 3, 
@@ -322,7 +323,7 @@ void PlayerTrace::DrawInWorld() const {
 				if (pos_delta > 0.001) pos = new_pos;
 			}
 
-			if (closest_dist < 1.0f) {
+			if (sar_trace_draw_hover.GetBool() && closest_dist < 1.0f) {
 				OverlayRender::addBoxMesh(
 					closest_pos,
 					{-1, -1, -1},
