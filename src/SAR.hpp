@@ -28,8 +28,6 @@ private:
 	bool unloading;
 
 public:
-	SAR();
-
 	virtual bool Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory);
 	virtual void Unload();
 	virtual void Pause();
