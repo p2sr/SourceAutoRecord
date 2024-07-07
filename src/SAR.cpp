@@ -28,15 +28,13 @@ SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
 
 
-SAR::SAR()
-	: modules(new Modules())
-	, features(new Features())
-	, cheats(new Cheats())
-	, plugin(new Plugin())
-	, game(Game::CreateNew()) {
-}
-
 bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory) {
+	modules = new Modules();
+	features = new Features();
+	cheats = new Cheats();
+	plugin = new Plugin();
+	game = Game::CreateNew();
+
 	console = new Console();
 	if (!console->Init())
 		return false;
