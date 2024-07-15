@@ -4,6 +4,9 @@
 #include "Modules/SteamAPI.hpp"
 #include "Speedrun/SpeedrunTimer.hpp"
 
+/* Timeline can get cluttered up (especially at long recording lengths), nice to have an option to disable adding splits. */
+Variable sar_timeline_splits("sar_timeline_splits", "1", "Add split markers to the Steam Timeline.\n");
+
 Timeline *timeline;
 
 Timeline::Timeline() {
@@ -21,6 +24,7 @@ void Timeline::StartSpeedrun() {
 
 void Timeline::Split(std::string name, std::string time) {
 	if (!steam->hasLoaded) return;
+	if (!sar_timeline_splits.GetBool()) return;
 	steam->g_timeline->AddTimelineEvent("steam_bolt", name.c_str(), time.c_str(), 0, 0.0f, 0.0f, k_ETimelineEventClipPriority_None);
 }
 
