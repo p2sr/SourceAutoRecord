@@ -695,6 +695,12 @@ void Host_AccumulateTime_Detour(float dt) {
 		*host_frametime_unbounded = 0;
 	}
 
+	// HACK: Force frametime to equal 2 ticks when loading
+	// Limits host_timescale effect on load times, faster loads
+	if (g_cap_frametime == 1 && sar_loads_uncap.GetBool()) {
+		*host_frametime = *host_frametime_unbounded = 2.0f/60;
+	}
+
 	if (*host_frametime != *host_frametime_unbounded) {
 		if (sar_frametime_uncap.GetBool() && g_cap_frametime == 0) {
 			if (sar_frametime_debug.GetBool()) console->Print("Host_AccumulateTime: %f (uncapped from %f)\n", *host_frametime_unbounded, *host_frametime);
