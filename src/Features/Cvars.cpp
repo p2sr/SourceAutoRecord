@@ -125,6 +125,9 @@ int Cvars::DumpDoc(std::ofstream &file) {
 		file << "|";
 
 		std::string desc = cmd->m_pszHelpString;
+		if (desc[desc.size() - 1] != '\n') {
+			console->Print("Cvar description does not end with a newline: %s\n", cmd->m_pszName);
+		}
 		desc.erase(0, desc.find_first_not_of(" \t\n"));
 		desc.erase(desc.find_last_not_of(" \t\n") + 1);
 		std::string escaped = "";
