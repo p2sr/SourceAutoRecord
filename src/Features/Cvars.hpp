@@ -11,7 +11,7 @@ private:
 public:
 	Cvars();
 	void ListAll();
-	int Dump(std::ofstream &file);
+	int Dump(std::ofstream &file, int filter, bool values);
 	int DumpDoc(std::ofstream &file);
 	void PrintHelp(const CCommand &args);
 	std::string GetFlags(const ConCommandBase &cmd);

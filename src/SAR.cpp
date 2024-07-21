@@ -280,13 +280,29 @@ CON_COMMAND(sar_about, "sar_about - prints info about SAR plugin\n") {
 	console->Print("Version: " SAR_VERSION "\n");
 	console->Print("Built: " SAR_BUILT "\n");
 }
-CON_COMMAND(sar_cvars_dump, "sar_cvars_dump - dumps all cvars to a file\n") {
-	auto filepath = fileSystem->FindFileSomewhere("game.cvars").value_or("game.cvars");
-	std::ofstream file(filepath, std::ios::out | std::ios::trunc | std::ios::binary);
-	auto result = cvars->Dump(file);
+CON_COMMAND(sar_cvars_dump, "sar_cvars_dump [all|game|sar] - dumps all cvars to a file\n") {
+	auto filter = 1;
+	if (args.ArgC() == 2) {
+		if (!strcmp(args[1], "all")) filter = 0;
+		else if (!strcmp(args[1], "game")) filter = 1;
+		else if (!strcmp(args[1], "sar")) filter = 2;
+		else console->Print("Invalid argument!\n");
+	}
+	std::string path = "cvars_";
+	if (filter == 0) path += "all";
+	if (filter == 1) path += "game";
+	if (filter == 2) path += "sar";
+	path += ".json";
+	auto filepath = fileSystem->FindFileSomewhere(path).value_or(path);
+	std::ofstream file(filepath);
+	if (!file.is_open()) {
+		console->Print("Failed to open file!\n");
+		return;
+	}
+	auto result = cvars->Dump(file, filter, false);
 	file.close();
 
-	console->Print("Dumped %i cvars to game.cvars!\n", result);
+	console->Print("Dumped %i cvars to %s\n", result, path.c_str());
 }
 CON_COMMAND(sar_cvars_dump_doc, "sar_cvars_dump_doc - dumps all SAR cvars to a file\n") {
 	auto filepath = fileSystem->FindFileSomewhere("sar.cvars").value_or("sar.cvars");

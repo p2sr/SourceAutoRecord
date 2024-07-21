@@ -9,6 +9,7 @@
 #include "Modules/Tier1.hpp"
 #include "Offsets.hpp"
 #include "SAR.hpp"
+#include "Utils/json11.hpp"
 #include "Utils/Memory.hpp"
 #include "Variable.hpp"
 
@@ -20,32 +21,69 @@ Cvars::Cvars()
 	: locked(true) {
 	this->hasLoaded = true;
 }
-int Cvars::Dump(std::ofstream &file) {
+int Cvars::Dump(std::ofstream &file, int filter, bool values) {
 	this->Lock();
 
+	auto InternalDump = [&](ConCommandBase *cmd, std::string games, bool isCommand) {		
+		auto json = json11::Json::object{
+			{"isCommand", isCommand},
+			{"name", cmd->m_pszName},
+			{"helpStr", cmd->m_pszHelpString},
+			{"flags", cmd->m_nFlags}
+		};
+		if (games != "") {
+			json["games"] = games;
+		}
+		if (!isCommand) {
+			auto cvar = reinterpret_cast<ConVar *>(cmd);
+			if (values && std::strcmp(cvar->m_pszDefaultValue, cvar->m_pszString) != 0 && !(cvar->m_nFlags & FCVAR_ARCHIVE)) {
+				json["value"] = cvar->m_pszString;
+			}
+			json["default"] = cvar->m_pszDefaultValue;
+			if (cvar->m_bHasMin) {
+				json["min"] = cvar->m_fMinVal;
+			}
+			if (cvar->m_bHasMax) {
+				json["max"] = cvar->m_fMaxVal;
+			}
+		}
+		std::string str;
+		json11::Json(json).dump(str);
+		file << str;
+	};
+
+	file << "[";
 	auto cmd = tier1->m_pConCommandList;
 	auto count = 0;
 	do {
-		file << cmd->m_pszName;
-		file << "[cvar_data]";
+		auto isSAR = false;
+		std::string gameStr = "";
 
-		auto IsCommand = reinterpret_cast<bool (*)(void *)>(Memory::VMT(cmd, Offsets::IsCommand));
-		if (!IsCommand(cmd)) {
-			auto cvar = reinterpret_cast<ConVar *>(cmd);
-			file << cvar->m_pszDefaultValue;
-		} else {
-			file << "cmd";
+		for (const auto &var : Variable::GetList()) {
+			if (var && var->ThisPtr() == cmd && !var->isReference) {
+				isSAR = true;
+				gameStr = Game::VersionToString(var->version);
+				break;
+			}
 		}
-		file << "[cvar_data]";
+		if (!isSAR) for (const auto &com : Command::GetList()) {
+			if (com && com->ThisPtr() == cmd && !com->isReference) {
+				isSAR = true;
+				gameStr = Game::VersionToString(com->version);
+				break;
+			}
+		}
 
-		file << cmd->m_nFlags;
-		file << "[cvar_data]";
-
-		file << cmd->m_pszHelpString;
-		file << "[end_of_cvar]";
-		++count;
-
+		if (filter == 0 || (filter == 1 && !isSAR) || (filter == 2 && isSAR)) {
+			if (!!strcmp(cmd->m_pszHelpString, "SAR alias command.\n") &&
+				!!strcmp(cmd->m_pszHelpString, "SAR function command.\n")) {
+				if (count > 0) file << ",\n";
+				InternalDump(cmd, gameStr, cmd->IsCommand());
+				++count;
+			}
+		}
 	} while (cmd = cmd->m_pNext);
+	file << "]\n";
 
 	this->Unlock();
 
