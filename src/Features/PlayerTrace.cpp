@@ -459,6 +459,7 @@ void PlayerTrace::DrawPortalsAt(int tick) const {
 	if (engine->IsSkipping()) return;
 
 	for (const auto &[trace_idx, trace] : traces) {
+		if (!trace.draw) continue;
 		if (trace.portals.size() == 0) continue;
 
 		unsigned localtick = tickUserToInternal(tick, trace);
