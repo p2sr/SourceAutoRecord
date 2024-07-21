@@ -147,8 +147,8 @@ ON_EVENT(RENDER) {
 	if (sv_cheats.GetBool() && sar_pp_hud.GetBool()) {
 		// Draw the shits in world
 
-		auto blue =   Color(111, 184, 255, 255);
-		auto orange = Color(255, 184,  86, 255);
+		auto blue =   SARUTIL_Portal_Color(1, 0);
+		auto orange = SARUTIL_Portal_Color(2, 0);
 		auto red =    Color(255,   0,   0, 255);
 
 		auto drawPortal = [&](Color portalColor, TracePortalPlacementInfo_t info) {
