@@ -278,9 +278,8 @@ auto funcAddress = Memory::Absolute(MODULE("engine"), 0xdeadbeef);
 ### Console Commands
 
 Periodically, the `docs/cvars.md` file should be updated to match the list of
-cvars. This can be done by doing the `sar_cvars_dump_doc` command ingame,
-then doing `node "<path to SAR>/cvars.js" "<path to Portal 2>"` (assuming you
-have NodeJS).
+cvars. This can be done by doing the `sar_cvars_dump_doc` command ingame, then
+moving the output file to the correct folder. (a symlink also works)
 
 #### Variables
 

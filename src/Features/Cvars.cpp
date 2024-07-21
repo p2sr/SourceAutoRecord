@@ -90,9 +90,31 @@ int Cvars::Dump(std::ofstream &file, int filter, bool values) {
 	return count;
 }
 int Cvars::DumpDoc(std::ofstream &file) {
+	file << "# SAR: Cvars\n\n";
+	file << "|Name|Default|Description|\n";
+	file << "|---|---|---|\n";
+
 	auto InternalDump = [&file](ConCommandBase *cmd, std::string games, bool isCommand) {
+		file << "|";
+		if (games != "") {
+			file << "<i title=\"";
+			for (int i = 0; i < games.size(); ++i){
+				auto c = games[i];
+				if (c == '\n') {
+					if (i != games.size() - 1) {
+						file << "&#10;";
+					}
+				} else {
+					file << c;
+				}
+			}
+			file << "\">";
+		}
 		file << cmd->m_pszName;
-		file << "[cvar_data]";
+		if (games != "") {
+			file << "</i>";
+		}
+		file << "|";
 
 		if (!isCommand) {
 			auto cvar = reinterpret_cast<ConVar *>(cmd);
@@ -100,25 +122,70 @@ int Cvars::DumpDoc(std::ofstream &file) {
 		} else {
 			file << "cmd";
 		}
-		file << "[cvar_data]";
+		file << "|";
 
-		file << games.c_str();
-		file << "[cvar_data]";
-
-		file << cmd->m_pszHelpString;
-		file << "[end_of_cvar]";
+		std::string desc = cmd->m_pszHelpString;
+		desc.erase(0, desc.find_first_not_of(" \t\n"));
+		desc.erase(desc.find_last_not_of(" \t\n") + 1);
+		std::string escaped = "";
+		for (auto c : desc) {
+			if (c == '<') {
+				escaped += "\\<";
+			} else if (c == '|') {
+				escaped += "\\|";
+			} else if (c == '\\') {
+				escaped += "\\\\";
+			} else if (c == '\n') {
+				escaped += "<br>";
+			} else {
+				escaped += c;
+			}
+		}
+		file << escaped;
+		file << "|\n";
 	};
 
+	struct cvar_t {
+		ConCommandBase *cmd;
+		std::string games;
+		bool isCommand;
+	};
+
+	std::vector<cvar_t> cvarList;
 	auto count = 0;
 	for (const auto &var : Variable::GetList()) {
 		if (var && !var->isReference) {
-			InternalDump(var->ThisPtr(), Game::VersionToString(var->version), false);
-			++count;
+			cvarList.push_back({var->ThisPtr(), Game::VersionToString(var->version), false});
 		}
 	}
 	for (const auto &com : Command::GetList()) {
 		if (com && !com->isReference) {
-			InternalDump(com->ThisPtr(), Game::VersionToString(com->version), true);
+			cvarList.push_back({com->ThisPtr(), Game::VersionToString(com->version), true});
+		}
+	}
+	std::sort(cvarList.begin(), cvarList.end(), [](cvar_t a, cvar_t b) {
+		auto compareCvar = [](std::string a, std::string b) {
+			bool aPlus  = a[0] == '+', bPlus  = b[0] == '+';
+			bool aMinus = a[0] == '-', bMinus = b[0] == '-';
+			bool aPrefix = aPlus || aMinus, bPrefix = bPlus || bMinus;
+			if (aPrefix) a = a.substr(1);
+			if (bPrefix) b = b.substr(1);
+			for (auto &c : a) c = std::tolower(c);
+			for (auto &c : b) c = std::tolower(c);
+			if (a == b) {
+				if (aPlus && bMinus) return -1;
+				if (aMinus && bPlus) return 1;
+				if (aPrefix != bPrefix) return aPrefix ? -1 : 1;
+			}
+			return a.compare(b);
+		};
+		return compareCvar(a.cmd->m_pszName, b.cmd->m_pszName) < 0;
+	});
+	for (auto cvar : cvarList) {
+		if (!!strcmp(cvar.cmd->m_pszHelpString, "SAR alias command.\n") &&
+			!!strcmp(cvar.cmd->m_pszHelpString, "SAR function command.\n") &&
+			cvar.cmd->m_pszName[0] != '_') {
+			InternalDump(cvar.cmd, cvar.games, cvar.isCommand);
 			++count;
 		}
 	}

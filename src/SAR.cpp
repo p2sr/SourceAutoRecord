@@ -305,12 +305,16 @@ CON_COMMAND(sar_cvars_dump, "sar_cvars_dump [all|game|sar] - dumps all cvars to 
 	console->Print("Dumped %i cvars to %s\n", result, path.c_str());
 }
 CON_COMMAND(sar_cvars_dump_doc, "sar_cvars_dump_doc - dumps all SAR cvars to a file\n") {
-	auto filepath = fileSystem->FindFileSomewhere("sar.cvars").value_or("sar.cvars");
+	auto filepath = fileSystem->FindFileSomewhere("cvars.md").value_or("cvars.md");
 	std::ofstream file(filepath, std::ios::out | std::ios::trunc | std::ios::binary);
+	if (!file.is_open()) {
+		console->Print("Failed to open file!\n");
+		return;
+	}
 	auto result = cvars->DumpDoc(file);
 	file.close();
 
-	console->Print("Dumped %i cvars to sar.cvars!\n", result);
+	console->Print("Dumped %i cvars to cvars.md!\n", result);
 }
 CON_COMMAND(sar_cvars_lock, "sar_cvars_lock - restores default flags of unlocked cvars\n") {
 	cvars->Lock();

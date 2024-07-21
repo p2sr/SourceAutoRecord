@@ -146,7 +146,7 @@
 |sar_crosshair_P1|0|Use the P1 crosshair style.|
 |sar_crosshair_set_texture|cmd|sar_crosshair_set_texture \<filepath>|
 |sar_cvarlist|cmd|sar_cvarlist - lists all SAR cvars and unlocked engine cvars|
-|sar_cvars_dump|cmd|sar_cvars_dump - dumps all cvars to a file|
+|sar_cvars_dump|cmd|sar_cvars_dump [all\|game\|sar] - dumps all cvars to a file|
 |sar_cvars_dump_doc|cmd|sar_cvars_dump_doc - dumps all SAR cvars to a file|
 |sar_cvars_lock|cmd|sar_cvars_lock - restores default flags of unlocked cvars|
 |sar_cvars_unlock|cmd|sar_cvars_unlock - unlocks all special cvars|

@@ -56,7 +56,3 @@ src/Version.hpp: .FORCE
 	if [ -z "$$RELEASE_BUILD" ]; then echo "#define SAR_DEV_BUILD 1" >>"$@"; fi
 	echo "#define SAR_DEMO_SIGN_PUBKEY { $$DEMO_SIGN_PUBKEY }" >>"$@"
 	echo "#define SAR_DEMO_SIGN_PRIVKEY { $$DEMO_SIGN_PRIVKEY }" >>"$@"
-
-cvars: docs/cvars.md
-docs/cvars.md:
-	node cvars.js "$(STEAM)Portal 2"
