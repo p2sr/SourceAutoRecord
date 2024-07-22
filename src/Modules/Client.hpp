@@ -1,5 +1,6 @@
 #pragma once
 #include "Command.hpp"
+#include "Features/AutoSubmit.hpp"
 #include "Interface.hpp"
 #include "Module.hpp"
 #include "Utils.hpp"
@@ -77,11 +78,14 @@ public:
 	void OpenChat();
 
 public:
+	// CAvatarPanelItem::ActivateSelectedItem
+	DECL_DETOUR_T(bool, ActivateSelectedItem);
+
+	// CAvatarPanelItem::SetPlayerData
+	DECL_DETOUR(SetPlayerData, PortalLeaderboardItem_t *pData, int nType);
+
 	// CBaseModPanel::GetChapterProgress
 	DECL_DETOUR(GetChapterProgress);
-
-	// BaseModUI::CPortalLeaderboardPanel::OnCommand
-	DECL_DETOUR(OnCommand, const char *a2);
 
 	// BaseModUI::CPortalLeaderboardPanel::SetPanelStats
 	DECL_DETOUR(SetPanelStats);

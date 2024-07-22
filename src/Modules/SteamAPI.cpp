@@ -7,6 +7,10 @@ bool SteamAPI::Init() {
 	if (!steam_api)
 		return false;
 
+	// TODO: Mods support, this needs to be remade too :/
+	this->SteamFriends = Memory::GetSymbolAddress<_SteamFriends>(steam_api, "SteamAPI_SteamFriends_v017");
+	this->ActivateGameOverlayToWebPage = Memory::GetSymbolAddress<_ActivateGameOverlayToWebPage>(steam_api, "SteamAPI_ISteamFriends_ActivateGameOverlayToWebPage");
+
 	const auto GetHSteamUser = Memory::GetSymbolAddress<void *(*)()>(steam_api, "SteamAPI_GetHSteamUser");
 	if (!GetHSteamUser)
 		return false;
