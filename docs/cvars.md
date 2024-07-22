@@ -631,7 +631,7 @@
 |sar_vphys_hud_show_hitboxes|2|Sets visibility of hitboxes when vphys hud is active.<br>0 = hitboxes are not drawn<br>1 = only active vphys hitbox is drawn<br>2 = active vphys and player's bounding box are drawn<br>3 = both vphys hitboxes and player's bounding box are drawn|
 |sar_vphys_hud_x|0|The x position of the vphys HUD.|
 |sar_vphys_hud_y|0|The y position of the vphys HUD.|
-|sar_vphys_setangle|cmd|sar_vphys_setangle \<hitbox> \<angle> [component = z] - sets rotation angle to either standing (0) or crouching (1) havok collision shadow|
+|sar_vphys_setangle|cmd|sar_vphys_setangle \<hitbox> \<angle> [component = z] - sets rotation angle for specified havok collision shadow. Hitboxes:<br>0 - Standing Chell/Atlas<br>1 - Crouching Chell/Atlas<br>2 - Standing Pbody<br>3 - Crouching Pbody|
 |sar_vphys_setasleep|cmd|sar_vphys_setasleep \<hitbox> \<asleep> - sets whether your standing (0) or crouching (1) havok collision shadow is asleep|
 |sar_vphys_setgravity|cmd|sar_vphys_setgravity \<hitbox> \<enabled> - sets gravity flag state to either standing (0) or crouching (1) havok collision shadow|
 |sar_vphys_setspin|cmd|sar_vphys_setspin \<hitbox> \<angvel> [component = x] - sets rotation speed to either standing (0) or crouching (1) havok collision shadow|

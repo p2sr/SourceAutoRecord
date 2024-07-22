@@ -185,7 +185,11 @@ CON_COMMAND(sar_vphys_setgravity, "sar_vphys_setgravity <hitbox> <enabled> - set
 	EnableGravity(hitbox ? m_pShadowCrouch : m_pShadowStand, enabled);
 }
 
-CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> [component = z] - sets rotation angle to either standing (0) or crouching (1) havok collision shadow\n") {
+CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> [component = z] - sets rotation angle for specified havok collision shadow. Hitboxes:\n"
+	"0 - Standing Chell/Atlas\n"
+	"1 - Crouching Chell/Atlas\n"
+	"2 - Standing Pbody\n"
+	"3 - Crouching Pbody\n") {
 	if (engine->demoplayer->IsPlaying()) {
 		return;
 	}
@@ -197,7 +201,11 @@ CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> [component 
 		return console->Print(sar_vphys_setangle.ThisPtr()->m_pszHelpString);
 	}
 
-	void *player = server->GetPlayer(1);
+	auto hitbox = std::atoi(args[1]);
+	void *player = server->GetPlayer(hitbox > 1 ? 2 : 1);
+	if (!player) {
+		return console->Print("Player not found.\n");
+	}
 	void *m_pShadowStand = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowStand);
 	void *m_pShadowCrouch = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowCrouch);
 
@@ -206,11 +214,10 @@ CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> [component 
 	_SetPosition SetPosition = Memory::VMT<_SetPosition>(m_pShadowStand, Offsets::SetPosition);
 	_GetPosition GetPosition = Memory::VMT<_GetPosition>(m_pShadowStand, Offsets::GetPosition);
 
-	auto hitbox = std::atoi(args[1]);
 	auto angle = float(std::atof(args[2]));
 	auto component = args.ArgC() == 4 ? args[3] : "z";
 
-	void *selected = hitbox ? m_pShadowCrouch : m_pShadowStand;
+	void *selected = (hitbox % 2) ? m_pShadowCrouch : m_pShadowStand;
 
 	Vector v;
 	QAngle q;
