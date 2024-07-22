@@ -338,7 +338,6 @@ OFFSET_DEFAULT(Label_SetText, 184, 212)
 OFFSET_DEFAULT(CGameUiAvatarImage_Size, 96, 104)
 OFFSET_DEFAULT(ImagePanel_Base, 131, 129)
 OFFSET_DEFAULT(m_flAlpha, 73, 72)
-OFFSET_DEFAULT(ExecuteOverlayCommand, 88, 83);
 
 // Linux mods run on an older build of the game (generally around 8151) which
 // has very different codegen - we define their offset overrides here
