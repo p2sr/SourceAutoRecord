@@ -30,6 +30,23 @@ Variable sar_load_delay("sar_load_delay", "0", 0, "Delay for this number of mill
 
 Variable sar_patch_viewcontrol("sar_patch_viewcontrol", "1", "Disable camera controllers before changing levels to prevent visual glitches.\n");
 
+static int g_autovoidclip = 0;
+CON_COMMAND(sar_auto_voidclip_pause, "sar_auto_voidclip_pause <command> - runs the specified command, and automatically voidclip-pauses on the next load\n") {
+	if (!sv_cheats.GetBool()) {
+		console->Print("sar_auto_voidclip_pause requires sv_cheats 1.\n");
+		return;
+	}
+
+	if (args.ArgC() < 2) {
+		console->Print(sar_auto_voidclip_pause.ThisPtr()->m_pszHelpString);
+		return;
+	}
+
+	g_autovoidclip = 1;
+	engine->ExecuteCommand("sar_fast_load_preset sla");
+	engine->ExecuteCommand(args.m_pArgSBuffer + args.m_nArgv0Size);
+}
+
 Session *session;
 
 Session::Session()
@@ -202,6 +219,15 @@ void Session::Changed() {
 void Session::Changed(int state) {
 	console->DevMsg("state = %i\n", state);
 	this->signonState = state;
+
+	if (sv_cheats.GetBool() && g_autovoidclip == 1) {
+		if (state == SIGNONSTATE_NEW) {
+			engine->ExecuteCommand("showconsole");
+		} else if (state == SIGNONSTATE_SPAWN) {
+			engine->ExecuteCommand("showconsole; seq nop toggleconsole toggleconsole");
+			g_autovoidclip = 0;
+		}
+	}
 
 	// Ghosts are in saves, and just sorta stay there unless we kill
 	// them. We have to do this in prespawn - if we do it at session
