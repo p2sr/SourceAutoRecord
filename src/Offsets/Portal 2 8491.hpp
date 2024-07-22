@@ -358,7 +358,6 @@ OFFSET_DEFAULT(Label_SetText, 184, 212)
 OFFSET_DEFAULT(CGameUiAvatarImage_Size, 96, 104)
 OFFSET_DEFAULT(ImagePanel_Base, 131, 129)
 OFFSET_DEFAULT(m_flAlpha, 73, 72)
-OFFSET_DEFAULT(ExecuteOverlayCommand, 88, 83);
 
 OFFSET_DEFAULT(g_movieInfo, 5, 2)
 OFFSET_DEFAULT(SND_IsRecording, 0, 21)
