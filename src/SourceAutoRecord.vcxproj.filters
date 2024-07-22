@@ -532,9 +532,6 @@
     <ClCompile Include="Features\ChapterMenu.cpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClCompile>
-    <ClCompile Include="Features\AutoSubmitMod.cpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClCompile>
     <ClCompile Include="Modules\Matchmaking.cpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClCompile>
@@ -1354,9 +1351,6 @@
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Features\ChallengeMode.hpp">
-      <Filter>SourceAutoRecord\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="Features\AutoSubmitMod.hpp">
       <Filter>SourceAutoRecord\Features</Filter>
     </ClInclude>
     <ClInclude Include="Modules\Matchmaking.hpp">
