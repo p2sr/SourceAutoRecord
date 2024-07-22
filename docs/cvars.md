@@ -633,9 +633,9 @@
 |sar_vphys_hud_x|0|The x position of the vphys HUD.|
 |sar_vphys_hud_y|0|The y position of the vphys HUD.|
 |sar_vphys_setangle|cmd|sar_vphys_setangle \<hitbox> \<angle> [component = z] - sets rotation angle for specified havok collision shadow. Hitboxes:<br>0 - Standing Chell/Atlas<br>1 - Crouching Chell/Atlas<br>2 - Standing Pbody<br>3 - Crouching Pbody|
-|sar_vphys_setasleep|cmd|sar_vphys_setasleep \<hitbox> \<asleep> - sets whether your standing (0) or crouching (1) havok collision shadow is asleep|
-|sar_vphys_setgravity|cmd|sar_vphys_setgravity \<hitbox> \<enabled> - sets gravity flag state to either standing (0) or crouching (1) havok collision shadow|
-|sar_vphys_setspin|cmd|sar_vphys_setspin \<hitbox> \<angvel> [component = x] - sets rotation speed to either standing (0) or crouching (1) havok collision shadow|
+|sar_vphys_setasleep|cmd|sar_vphys_setasleep \<hitbox> \<asleep> - sets whether the specified havok collision shadow is asleep. Hitboxes:<br>0 - Standing Chell/Atlas<br>1 - Crouching Chell/Atlas<br>2 - Standing Pbody<br>3 - Crouching Pbody|
+|sar_vphys_setgravity|cmd|sar_vphys_setgravity \<hitbox> \<enabled> - sets gravity flag state for specified havok collision shadow. Hitboxes:<br>0 - Standing Chell/Atlas<br>1 - Crouching Chell/Atlas<br>2 - Standing Pbody<br>3 - Crouching Pbody|
+|sar_vphys_setspin|cmd|sar_vphys_setspin \<hitbox> \<angvel> [component = x] - sets rotation speed for specified havok collision shadow. Hitboxes:<br>0 - Standing Chell/Atlas<br>1 - Crouching Chell/Atlas<br>2 - Standing Pbody<br>3 - Crouching Pbody|
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop</i>|cmd|sar_workshop \<file> [ss/changelevel] - same as "map" command but lists workshop maps|
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop_list</i>|cmd|sar_workshop_list - prints all workshop maps|
 |<i title="Portal 2&#10;Aperture Tag">sar_workshop_skip</i>|cmd|sar_workshop_skip - Skips to the next level in workshop|

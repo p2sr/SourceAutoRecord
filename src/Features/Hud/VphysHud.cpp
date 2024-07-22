@@ -160,7 +160,11 @@ ON_EVENT(RENDER) {
 }
 
 
-CON_COMMAND(sar_vphys_setgravity, "sar_vphys_setgravity <hitbox> <enabled> - sets gravity flag state to either standing (0) or crouching (1) havok collision shadow\n") {
+CON_COMMAND(sar_vphys_setgravity, "sar_vphys_setgravity <hitbox> <enabled> - sets gravity flag state for specified havok collision shadow. Hitboxes:\n"
+	"0 - Standing Chell/Atlas\n"
+	"1 - Crouching Chell/Atlas\n"
+	"2 - Standing Pbody\n"
+	"3 - Crouching Pbody\n") {
 	if (engine->demoplayer->IsPlaying()) {
 		return;
 	}
@@ -172,17 +176,21 @@ CON_COMMAND(sar_vphys_setgravity, "sar_vphys_setgravity <hitbox> <enabled> - set
 		return console->Print(sar_vphys_setgravity.ThisPtr()->m_pszHelpString);
 	}
 
-	void *player = server->GetPlayer(1);
+	int hitbox = std::atoi(args[1]);
+	void *player = server->GetPlayer(hitbox > 1 ? 2 : 1);
+	if (!player) {
+		return console->Print("Player not found.\n");
+	}
+
 	void *m_pShadowStand = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowStand);
 	void *m_pShadowCrouch = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowCrouch);
 
 	using _EnableGravity = bool(__rescall *)(void *thisptr, bool enabled);
 	_EnableGravity EnableGravity = Memory::VMT<_EnableGravity>(m_pShadowStand, Offsets::EnableGravity);
 
-	int hitbox = std::atoi(args[1]);
 	int enabled = std::atoi(args[2]);
 
-	EnableGravity(hitbox ? m_pShadowCrouch : m_pShadowStand, enabled);
+	EnableGravity((hitbox % 2) ? m_pShadowCrouch : m_pShadowStand, enabled);
 }
 
 CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> [component = z] - sets rotation angle for specified havok collision shadow. Hitboxes:\n"
@@ -206,6 +214,7 @@ CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> [component 
 	if (!player) {
 		return console->Print("Player not found.\n");
 	}
+
 	void *m_pShadowStand = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowStand);
 	void *m_pShadowCrouch = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowCrouch);
 
@@ -234,7 +243,11 @@ CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> [component 
 	SetPosition(selected, v, q, false);
 }
 
-CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> [component = x] - sets rotation speed to either standing (0) or crouching (1) havok collision shadow\n") {
+CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> [component = x] - sets rotation speed for specified havok collision shadow. Hitboxes:\n"
+	"0 - Standing Chell/Atlas\n"
+	"1 - Crouching Chell/Atlas\n"
+	"2 - Standing Pbody\n"
+	"3 - Crouching Pbody\n") {
 	if (engine->demoplayer->IsPlaying()) {
 		return;
 	}
@@ -246,7 +259,12 @@ CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> [component =
 		return console->Print(sar_vphys_setspin.ThisPtr()->m_pszHelpString);
 	}
 
-	void *player = server->GetPlayer(1);
+	auto hitbox = std::atoi(args[1]);
+	void *player = server->GetPlayer(hitbox > 1 ? 2 : 1);
+	if (!player) {
+		return console->Print("Player not found.\n");
+	}
+
 	void *m_pShadowStand = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowStand);
 	void *m_pShadowCrouch = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowCrouch);
 
@@ -255,11 +273,10 @@ CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> [component =
 	using _SetVelocity = void(__rescall *)(void *thisptr, const Vector *velocity, const Vector *angularVelocity);
 	_SetVelocity SetVelocity = Memory::VMT<_SetVelocity>(m_pShadowStand, Offsets::SetVelocity);
 
-	auto hitbox = std::atoi(args[1]);
 	auto angvel = float(std::atof(args[2]));
 	auto component = args.ArgC() == 4 ? args[3] : "x";
 
-	void *selected = hitbox ? m_pShadowCrouch : m_pShadowStand;
+	void *selected = (hitbox % 2) ? m_pShadowCrouch : m_pShadowStand;
 
 	Vector v;
 	GetVelocity(selected, NULL, &v);
@@ -275,7 +292,11 @@ CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> [component =
 	SetVelocity(selected, NULL, &v);
 }
 
-CON_COMMAND(sar_vphys_setasleep, "sar_vphys_setasleep <hitbox> <asleep> - sets whether your standing (0) or crouching (1) havok collision shadow is asleep\n") {
+CON_COMMAND(sar_vphys_setasleep, "sar_vphys_setasleep <hitbox> <asleep> - sets whether the specified havok collision shadow is asleep. Hitboxes:\n"
+	"0 - Standing Chell/Atlas\n"
+	"1 - Crouching Chell/Atlas\n"
+	"2 - Standing Pbody\n"
+	"3 - Crouching Pbody\n") {
 	if (engine->demoplayer->IsPlaying()) {
 		return;
 	}
@@ -287,16 +308,18 @@ CON_COMMAND(sar_vphys_setasleep, "sar_vphys_setasleep <hitbox> <asleep> - sets w
 		return console->Print(sar_vphys_setasleep.ThisPtr()->m_pszHelpString);
 	}
 
-	void *player = server->GetPlayer(1);
-	if (!player) return;
+	int hitbox = std::atoi(args[1]);
+	void *player = server->GetPlayer(hitbox > 1 ? 2 : 1);
+	if (!player) {
+		return console->Print("Player not found.\n");
+	}
 
 	void *m_pShadowStand = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowStand);
 	void *m_pShadowCrouch = *reinterpret_cast<void **>((uintptr_t)player + Offsets::m_pShadowCrouch);
 
-	int hitbox = std::atoi(args[1]);
 	int asleep = std::atoi(args[2]);
 
-	void *selected = hitbox ? m_pShadowCrouch : m_pShadowStand;
+	void *selected = (hitbox % 2) ? m_pShadowCrouch : m_pShadowStand;
 
 	using _SleepWake = void(__rescall *)(void *thisptr);
 	_SleepWake SleepWake = Memory::VMT<_SleepWake>(selected, asleep ? Offsets::Sleep : Offsets::Wake);
