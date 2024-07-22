@@ -2,7 +2,6 @@
 
 #include "Event.hpp"
 #include "Features/AutoSubmit.hpp"
-#include "Features/AutoSubmitMod.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Features/Hud/InspectionHud.hpp"
@@ -295,16 +294,12 @@ CON_COMMAND(sar_geteyepos, "sar_geteyepos [slot] - get the view position (portal
 	console->Print("angles: %.6f %.6f %.6f\n", angles.x, angles.y, angles.z);
 }
 
-CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit_reload_api_key - reload the board.portal2.sr API key from its file.\n", FCVAR_DONTRECORD) {
+CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit_reload_api_key - reload the boards API key from its file.\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() != 1) {
 		return console->Print(sar_challenge_autosubmit_reload_api_key.ThisPtr()->m_pszHelpString);
 	}
 
-	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
-		AutoSubmitMod::LoadApiKey(true);
-	} else {
-		AutoSubmit::LoadApiKey(true);
-	}
+	AutoSubmit::LoadApiKey(true);
 }
 
 void Cheats::Init() {

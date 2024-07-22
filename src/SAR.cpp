@@ -121,11 +121,9 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 
 					cm->LoadNodes(this->game->GetVersion());
 					chapterMenu->LoadMaps(this->game->GetVersion());
-
-					AutoSubmitMod::LoadApiKey(false);
-				} else {
-					AutoSubmit::LoadApiKey(false);
 				}
+				
+				AutoSubmit::LoadApiKey(false);
 
 				if (listener) {
 					listener->Init();

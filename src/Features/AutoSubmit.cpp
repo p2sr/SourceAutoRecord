@@ -1,6 +1,7 @@
 #include "AutoSubmit.hpp"
 
 #include "../Games/Portal2.hpp"
+#include "Cheats.hpp"
 #include "Command.hpp"
 #include "Event.hpp"
 #include "Features/Hud/Toasts.hpp"
@@ -21,11 +22,10 @@
 #include <sstream>
 #include <string>
 
-#define API_BASE "https://board.portal2.sr/api-v2"
 #define API_BASE_AUTORENDER "https://autorender.portal2.sr/api"
 #define AUTOSUBMIT_TOAST_TAG "autosubmit"
 #define COOP_NAME_MESSAGE_TYPE "coop-name"
-#define API_KEY_FILE "autosubmit_key.txt"
+#define API_KEY_FILE "autosubmit.key"
 
 bool AutoSubmit::g_cheated = false;
 std::string AutoSubmit::g_partner_name = "";
@@ -52,16 +52,22 @@ ON_EVENT(PRE_TICK) {
 	if (sv_cheats.GetBool()) AutoSubmit::g_cheated = true;
 }
 
+static std::string g_api_base;
 static std::string g_api_key;
 static bool g_key_valid;
 static CURL *g_curl;
+static CURL *g_curl_search;
 static std::thread g_worker;
+static std::thread g_worker_search;
+static std::map<std::string, std::string> g_map_ids;
+static bool g_is_querying;
+static std::vector<json11::Json> g_times;
 
-static bool ensureCurlReady() {
-	if (!g_curl) {
-		g_curl = curl_easy_init();
+static bool ensureCurlReady(CURL **curl) {
+	if (!*curl) {
+		*curl = curl_easy_init();
 
-		if (!g_curl) {
+		if (!*curl) {
 			return false;
 		}
 	}
@@ -69,14 +75,18 @@ static bool ensureCurlReady() {
 	return true;
 }
 
-static std::optional<std::string> request(const char *url) {
-	curl_easy_setopt(g_curl, CURLOPT_URL, url);
-	curl_easy_setopt(g_curl, CURLOPT_NOPROGRESS, 1);
-	curl_easy_setopt(g_curl, CURLOPT_FOLLOWLOCATION, 1);
-	curl_easy_setopt(g_curl, CURLOPT_TIMEOUT, 30);
+static std::optional<std::string> request(CURL *curl, std::string url) {
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30);
+
+#ifdef UNSAFELY_IGNORE_CERTIFICATE_ERROR
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+#endif
 
 	curl_easy_setopt(
-		g_curl,
+		curl,
 		CURLOPT_WRITEFUNCTION,
 		+[](void *ptr, size_t sz, size_t nmemb, std::string *data) -> size_t {
 			data->append((char *)ptr, sz * nmemb);
@@ -84,22 +94,22 @@ static std::optional<std::string> request(const char *url) {
 		});
 
 	std::string response;
-	curl_easy_setopt(g_curl, CURLOPT_WRITEDATA, &response);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
-	CURLcode res = curl_easy_perform(g_curl);
+	CURLcode res = curl_easy_perform(curl);
 
 	long code;
-	curl_easy_getinfo(g_curl, CURLINFO_RESPONSE_CODE, &code);
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
 
 	if (res != CURLE_OK) {
-		THREAD_PRINT("ERROR IN AUTOSUBMIT REQUEST TO %s: %s\n", url, curl_easy_strerror(res));
+		THREAD_PRINT("ERROR IN AUTOSUBMIT REQUEST TO %s: %s\n", url.c_str(), curl_easy_strerror(res));
 	}
 
 	return res == CURLE_OK && code == 200 ? response : std::optional<std::string>{};
 }
 
 static void testApiKey() {
-	if (!ensureCurlReady()) {
+	if (!ensureCurlReady(&g_curl)) {
 		THREAD_PRINT("Failed to test API key!\n");
 		return;
 	}
@@ -113,20 +123,60 @@ static void testApiKey() {
 
 	curl_easy_setopt(g_curl, CURLOPT_MIMEPOST, form);
 
-	auto response = request(API_BASE "/validate-user");
+	auto response = request(g_curl, g_api_base + "/validate-user");
 
 	curl_mime_free(form);
 
 	if (!response) {
 		THREAD_PRINT("API key invalid!\n");
-	} else {
-		g_key_valid = true;
-		THREAD_PRINT("API key valid!\n");
+		return;
 	}
+
+	g_key_valid = true;
+	THREAD_PRINT("API key valid!\n");
+
+	// FIXME: add API maps endpoint on board.portal2.sr
+	if (sar.game->Is(SourceGame_Portal2)) {
+		for (const auto &map : Game::maps) {
+			if (map.chamberId != "") {
+				g_map_ids.insert({map.fileName, map.chamberId});
+			}
+		}
+		return;
+	}
+
+	response = request(g_curl, g_api_base + "/download-maps");
+	if (!response) {
+		THREAD_PRINT("Failed to download maps!\n");
+		return;
+	}
+
+	std::string err;
+	auto json = json11::Json::parse(*response, err);
+
+	if (err != "") {
+		THREAD_PRINT("Failed to parse maps JSON: %s\n", err.c_str());
+		return;
+	}
+
+	for (auto &map : json["maps"].array_items()) {
+		g_map_ids.insert({map["level_name"].string_value(), map["id"].string_value()});
+	}
+
+	THREAD_PRINT("Downloaded %i maps!\n", g_map_ids.size());
 }
 
-static std::optional<int> getCurrentPbScore(const char *map_id) {
-	if (!ensureCurlReady()) return {};
+std::optional<std::string> AutoSubmit::GetMapId(std::string map_name) {
+	auto it = g_map_ids.find(map_name);
+	if (it == g_map_ids.end()) {
+		return {};
+	}
+
+	return it->second;
+}
+
+static std::optional<int> getCurrentPbScore(std::string map_id) {
+	if (!ensureCurlReady(&g_curl)) return {};
 
 	curl_mime *form = curl_mime_init(g_curl);
 	curl_mimepart *field;
@@ -137,11 +187,11 @@ static std::optional<int> getCurrentPbScore(const char *map_id) {
 
 	field = curl_mime_addpart(form);
 	curl_mime_name(field, "mapId");
-	curl_mime_data(field, map_id, CURL_ZERO_TERMINATED);
+	curl_mime_data(field, map_id.c_str(), CURL_ZERO_TERMINATED);
 
 	curl_easy_setopt(g_curl, CURLOPT_MIMEPOST, form);
 
-	auto response = request(API_BASE "/current-pb");
+	auto response = request(g_curl, g_api_base + "/current-pb");
 
 	curl_mime_free(form);
 
@@ -162,7 +212,79 @@ static std::optional<int> getCurrentPbScore(const char *map_id) {
 	return atoi(str.c_str());
 }
 
-static void submitTime(int score, std::string demopath, bool coop, const char *map_id, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
+static void startSearching(std::string mapName) {
+	auto map_id = AutoSubmit::GetMapId(mapName);
+	if (!map_id.has_value()) {
+		g_is_querying = false;
+		return;
+	}
+
+	auto json = AutoSubmit::GetTopScores(*map_id);
+
+	g_times.clear();
+	for (auto score : json) {
+		g_times.push_back(score);
+	}
+
+	g_is_querying = false;
+}
+
+void AutoSubmit::Search(std::string map) {
+	g_is_querying = true;
+
+	if (g_worker_search.joinable()) g_worker_search.join();
+	g_worker_search = std::thread(startSearching, map);
+}
+
+json11::Json::array AutoSubmit::GetTopScores(std::string &map_id) {
+	if (!ensureCurlReady(&g_curl_search)) return {};
+
+	curl_mime *form = curl_mime_init(g_curl_search);
+	curl_mimepart *field;
+
+	field = curl_mime_addpart(form);
+	curl_mime_name(field, "auth_hash");
+	curl_mime_data(field, g_api_key.c_str(), CURL_ZERO_TERMINATED);
+
+	field = curl_mime_addpart(form);
+	curl_mime_name(field, "mapId");
+	curl_mime_data(field, map_id.c_str(), CURL_ZERO_TERMINATED);
+
+	field = curl_mime_addpart(form);
+	curl_mime_name(field, "before");
+	curl_mime_data(field, "3", CURL_ZERO_TERMINATED);
+
+	field = curl_mime_addpart(form);
+	curl_mime_name(field, "after");
+	curl_mime_data(field, "2", CURL_ZERO_TERMINATED);
+
+	curl_easy_setopt(g_curl_search, CURLOPT_MIMEPOST, form);
+
+	auto response = request(g_curl_search, g_api_base + "/top-scores");
+
+	curl_mime_free(form);
+
+	if (!response) return {};
+
+	std::string err;
+	auto json = json11::Json::parse(*response, err);
+
+	if (err != "") {
+		return {};
+	}
+
+	return json.array_items();
+}
+
+bool AutoSubmit::IsQuerying() {
+	return g_is_querying;
+}
+
+const std::vector<json11::Json>& AutoSubmit::GetTimes() {
+	return g_times;
+}
+
+static void submitTime(int score, std::string demopath, bool coop, std::string map_id, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
 	auto score_str = std::to_string(score);
 
 	if (!g_key_valid) {
@@ -203,7 +325,7 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 		return;
 	}
 
-	if (!ensureCurlReady()) {
+	if (!ensureCurlReady(&g_curl)) {
 		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "An error occurred submitting this time - couldn't ready CURL");
 		return;
 	}
@@ -221,7 +343,7 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 
 	field = curl_mime_addpart(form);
 	curl_mime_name(field, "mapId");
-	curl_mime_data(field, map_id, CURL_ZERO_TERMINATED);
+	curl_mime_data(field, map_id.c_str(), CURL_ZERO_TERMINATED);
 
 	field = curl_mime_addpart(form);
 	curl_mime_name(field, "score");
@@ -239,7 +361,7 @@ static void submitTime(int score, std::string demopath, bool coop, const char *m
 
 	curl_easy_setopt(g_curl, CURLOPT_MIMEPOST, form);
 
-	auto resp = request(API_BASE "/auto-submit");
+	auto resp = request(g_curl, g_api_base +  "/auto-submit");
 
 	curl_mime_free(form);
 
@@ -259,12 +381,20 @@ void AutoSubmit::LoadApiKey(bool output_nonexist) {
 		return;
 	}
 
+	std::string base;
 	std::string key;
+
 	{
 		std::ifstream f(filepath.value());
-		std::stringstream buf;
-		buf << f.rdbuf();
-		key = buf.str();
+		/* if they use p2 common, the file is going to be a list of endpoints */
+		while (!f.eof()) {
+			std::getline(f, base) && std::getline(f, key);
+			if (sar.game->Is(SourceGame_Portal2) && base == "board.portal2.sr") break;
+			if (sar.game->Is(SourceGame_PortalStoriesMel) && base == "mel.board.portal2.sr") break;
+			/* if we got here, no valid key */
+			base.clear();
+			key.clear();
+		}
 	}
 
 	key.erase(std::remove_if(key.begin(), key.end(), isspace), key.end());
@@ -282,6 +412,7 @@ void AutoSubmit::LoadApiKey(bool output_nonexist) {
 		return;
 	}
 
+	g_api_base = "https://"	+ base + "/api-v2";
 	g_api_key = key;
 	g_key_valid = false;
 	console->Print("Set API key! Testing...\n");
@@ -409,10 +540,8 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 	return;
 #endif
 
-	auto it = std::find_if(Game::maps.begin(), Game::maps.end(), [](const MapData &data) {
-		return data.fileName == engine->GetCurrentMapName();
-	});
-	if (it == Game::maps.end()) {
+	auto it = g_map_ids.find(engine->GetCurrentMapName());
+	if (it == g_map_ids.end()) {
 		console->Print("Unknown map; not autosubmitting\n");
 		if (rename_if_pb) {
 			std::filesystem::rename(demopath, *rename_if_pb);
@@ -423,17 +552,7 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 		return;
 	}
 
-	const char *map_id = it->chamberId;
-	if (std::string(map_id) == "") {
-		console->Print("Map not on boards; not autosubmitting\n");
-		if (rename_if_pb) {
-			std::filesystem::rename(demopath, *rename_if_pb);
-		}
-		if (replay_append_if_pb) {
-			engine->demoplayer->replayName += *replay_append_if_pb;
-		}
-		return;
-	}
+	auto map_id = it->second;
 
 	int score = (int)floor(final_time * 100);
 
@@ -443,4 +562,5 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 
 ON_EVENT(SAR_UNLOAD) {
 	if (g_worker.joinable()) g_worker.detach();
+	if (g_worker_search.joinable()) g_worker_search.join();
 }

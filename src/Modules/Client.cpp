@@ -4,7 +4,7 @@
 #include "Console.hpp"
 #include "Engine.hpp"
 #include "Event.hpp"
-#include "Features/AutoSubmitMod.hpp"
+#include "Features/AutoSubmit.hpp"
 #include "Features/Camera.hpp"
 #include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
@@ -819,7 +819,7 @@ DETOUR(Client::StartSearching) {
 		char m_szMapName[128];
 	};
 
-	AutoSubmitMod::Search(((CPortalLeaderboard *)thisptr)->m_szMapName);
+	AutoSubmit::Search(((CPortalLeaderboard *)thisptr)->m_szMapName);
 
 	return 0;
 }
@@ -857,7 +857,7 @@ Hook g_PurgeAndDeleteElementsHook(&Client::PurgeAndDeleteElements_Hook);
 
 extern Hook g_IsQueryingHook;
 DETOUR(Client::IsQuerying) {
-	return AutoSubmitMod::IsQuerying();
+	return AutoSubmit::IsQuerying();
 }
 Hook g_IsQueryingHook(&Client::IsQuerying_Hook);
 
@@ -867,7 +867,7 @@ DETOUR(Client::SetPanelStats) {
 	void *m_pStatList = *(void **)((uintptr_t)thisptr + Offsets::m_pStatList);
 	int m_nStatHeight = *(int *)((uintptr_t)thisptr + Offsets::m_nStatHeight);
 
-	const auto &times = AutoSubmitMod::GetTimes();
+	const auto &times = AutoSubmit::GetTimes();
 
 	for (size_t i = 0; i < times.size(); ++i) {
 		const auto &time = times[i];

@@ -124,7 +124,7 @@
 |sar_cam_setpos|cmd|sar_cam_setpos \<x> \<y> \<z> - sets camera position (requires camera Drive Mode)|
 |sar_cfg_message|cmd|sar_cfg_message \<message> - sends a config message to the other player in coop|
 |sar_challenge_autostop|0|Automatically stops recording demos when the leaderboard opens after a CM run. If 2, automatically appends the run time to the demo name.|
-|sar_challenge_autosubmit_reload_api_key|cmd|sar_challenge_autosubmit_reload_api_key - reload the board.portal2.sr API key from its file.|
+|sar_challenge_autosubmit_reload_api_key|cmd|sar_challenge_autosubmit_reload_api_key - reload the boards API key from its file.|
 |sar_chat|cmd|sar_chat - open the chat HUD|
 |sar_cheat_hud|1|Display a warning in the HUD when cheats are active. 0 = disable, 1 = display if sv_cheats off, 2 = display always|
 |sar_cheat_hud_x|-4|X position of the cheat warning HUD.|
