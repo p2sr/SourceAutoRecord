@@ -224,7 +224,7 @@ void Session::Changed(int state) {
 		if (state == SIGNONSTATE_NEW) {
 			engine->ExecuteCommand("showconsole");
 		} else if (state == SIGNONSTATE_SPAWN) {
-			engine->ExecuteCommand("showconsole; seq nop toggleconsole toggleconsole");
+			engine->ExecuteCommand("showconsole; hwait 6 seq toggleconsole toggleconsole");
 			g_autovoidclip = 0;
 		}
 	}
