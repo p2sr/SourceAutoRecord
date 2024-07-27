@@ -365,15 +365,15 @@ void doUpdate(Channel channel, int successAction, bool force) {
 
 	if (successAction == 1) {
 		Scheduler::OnMainThread([]() {
-			toastHud.AddToast("update", "SAR has been updated. Your game will now exit.\n");
-			Scheduler::InHostTicks(120, []() {
+			toastHud.Announce("SAR has been updated.\nYour game will now exit.", 5000);
+			Scheduler::InHostTicks(180, []() {
 				engine->ExecuteCommand("quit");
 			});
 		});
 	} else if (successAction == 2) {
 		Scheduler::OnMainThread([]() {
-			toastHud.AddToast("update", "SAR has been updated. Your game will now restart.\n");
-			Scheduler::InHostTicks(120, []() {
+			toastHud.Announce("SAR has been updated.\nYour game will now restart.", 5000);
+			Scheduler::InHostTicks(180, []() {
 				engine->ExecuteCommand("_restart");
 			});
 		});

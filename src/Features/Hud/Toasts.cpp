@@ -72,6 +72,10 @@ struct TagInfo {
 
 static std::map<std::string, TagInfo> g_tags;
 
+static std::string g_announcement;
+static std::chrono::time_point<std::chrono::steady_clock> g_announcement_started;
+static int g_announcement_duration;
+
 static TagInfo getTagInfo(std::string tag) {
 	auto res = g_tags.find(tag);
 
@@ -448,6 +452,65 @@ void ToastHud::Paint(int slot) {
 			yOffset -= height + gap;
 		}
 	}
+
+	if (g_announcement.size() != 0) {
+		int screenWidth, screenHeight;
+		engine->GetScreenSize(nullptr, screenWidth, screenHeight);
+
+		Surface::HFont updateFont = scheme->GetFontByID(33);
+
+		int fontSize = surface->GetFontHeight(updateFont);
+
+		auto lines = splitIntoLines(updateFont, g_announcement, screenWidth / 3);
+
+		int len = 0;
+		for (auto line : lines) {
+			int lineLen = surface->GetFontLength(updateFont, "%s", line.c_str());
+			if (lineLen > len) {
+				len = lineLen;
+			}
+		}
+
+		int xPos = screenWidth / 2 - len / 2;
+		int yPos = fontSize * 3;
+
+		auto now = NOW_STEADY();
+		if (now >= g_announcement_started + std::chrono::milliseconds(g_announcement_duration)) {
+			g_announcement.clear();
+		}
+		auto opacity = 255;
+		auto age = std::chrono::duration_cast<std::chrono::milliseconds>(now - g_announcement_started).count();
+		if (age < FADE_TIME) {
+			opacity = 255 * age / FADE_TIME;
+		} else if (g_announcement_duration - age < FADE_TIME) {
+			opacity = 255 * (g_announcement_duration - age) / FADE_TIME;
+		}
+
+		if (bg != Background::NONE) {
+			surface->DrawRect(
+				TOAST_BACKGROUND(opacity),
+				xPos - sidePadding,
+				yPos,
+				xPos + len + sidePadding,
+				yPos + (fontSize + linePadding) * lines.size());
+		}
+		for (auto line : lines) {
+			auto lineLen = surface->GetFontLength(updateFont, "%s", line.c_str());
+			surface->DrawTxt(updateFont, screenWidth / 2 - lineLen / 2, yPos, Color{255, 255, 255, (uint8_t)opacity}, "%s", line.c_str());
+			yPos += fontSize + linePadding;
+		}
+	}
+}
+
+void ToastHud::Announce(std::string text, int durationMs) {
+	auto now = NOW_STEADY();
+	if (g_announcement.size() != 0) {
+		g_announcement_duration = durationMs + std::chrono::duration_cast<std::chrono::milliseconds>(now - g_announcement_started).count();
+	} else {
+		g_announcement_started = now;
+		g_announcement_duration = durationMs;
+	}
+	g_announcement = text;
 }
 
 CON_COMMAND_F(sar_toast_create, "sar_toast_create <tag> <text> - create a toast\n", FCVAR_DONTRECORD) {

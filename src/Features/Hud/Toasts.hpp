@@ -13,6 +13,7 @@ public:
 	void AddToast(std::string tag, std::string text, bool doConsole = true);
 	void Update();
 	void Paint(int slot) override;
+	void Announce(std::string text, int durationMs = 5000);
 };
 
 extern ToastHud toastHud;

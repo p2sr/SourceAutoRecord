@@ -620,7 +620,7 @@
 |sar_trace_use_shot_eyeoffset|1|Uses eye offset and angles accurate for portal shooting.|
 |sar_transition_timer|0|Output how slow your dialogue fade was.|
 |sar_unlocked_chapters|-1|Max unlocked chapter.|
-|sar_update|cmd|sar_update [release\|pre\|canary] [exit] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade|
+|sar_update|cmd|sar_update [release\|pre\|canary] [exit\|restart] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade|
 |sar_velocitygraph|0|Shows velocity graph.|
 |sar_velocitygraph_background|0|Background of velocity graph.|
 |sar_velocitygraph_font_index|21|Font index of velocity graph.|
