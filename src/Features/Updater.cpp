@@ -292,7 +292,7 @@ void checkUpdate(Channel channel) {
 	}
 }
 
-void doUpdate(Channel channel, bool exitOnSuccess, bool force) {
+void doUpdate(Channel channel, int successAction, bool force) {
 	std::string name, dlUrl, pdbUrl;
 
 	THREAD_PRINT("Querying for latest version...\n");
@@ -316,13 +316,13 @@ void doUpdate(Channel channel, bool exitOnSuccess, bool force) {
 	// Step 1: download SAR to the given temporary file
 	THREAD_PRINT("Downloading SAR %s...\n", name.c_str());
 	if (!downloadFile(dlUrl.c_str(), tmp.c_str())) {
-		THREAD_PRINT("An error occurred\n");
+		THREAD_PRINT("An error occurred downloading SAR\n");
 		return;
 	}
 
 #ifdef _WIN32
 	if (!downloadFile(pdbUrl.c_str(), tmpPdb.c_str())) {
-		THREAD_PRINT("An error occurred\n");
+		THREAD_PRINT("An error occurred downloading PDB\n");
 		return;
 	}
 #endif
@@ -332,9 +332,14 @@ void doUpdate(Channel channel, bool exitOnSuccess, bool force) {
 	// ask because I don't know
 	THREAD_PRINT("Deleting old version...\n");
 #ifdef _WIN32
-	std::filesystem::rename(sar, "sar.dll.old-auto");
-	if (std::filesystem::exists(PDB_PATH)) {
-		std::filesystem::rename(PDB_PATH, "sar.pdb.old-auto");
+	try {
+		std::filesystem::rename(sar, "sar.dll.old-auto");
+		if (std::filesystem::exists(PDB_PATH)) {
+			std::filesystem::rename(PDB_PATH, "sar.pdb.old-auto");
+		}
+	} catch (std::filesystem::filesystem_error &e) {
+		THREAD_PRINT("Failed to move old version: %s\n", e.what());
+		return;
 	}
 #else
 	std::filesystem::remove(sar);
@@ -344,20 +349,32 @@ void doUpdate(Channel channel, bool exitOnSuccess, bool force) {
 	// and then delete the temporary file. We can't just move it
 	// for........reasons
 	THREAD_PRINT("Installing...\n", name.c_str());
-	std::filesystem::copy(tmp, sar);
-	std::filesystem::remove(tmp);
+	try {
+		std::filesystem::copy(tmp, sar);
+		std::filesystem::remove(tmp);
 #ifdef _WIN32
-	std::filesystem::copy(tmpPdb, PDB_PATH);
-	std::filesystem::remove(tmpPdb);
+		std::filesystem::copy(tmpPdb, PDB_PATH);
+		std::filesystem::remove(tmpPdb);
 #endif
+	} catch (std::filesystem::filesystem_error &e) {
+		THREAD_PRINT("Failed to install new version: %s\n", e.what());
+		return;
+	}
 
 	THREAD_PRINT("Success! You should now restart your game.\n");
 
-	if (exitOnSuccess) {
+	if (successAction == 1) {
 		Scheduler::OnMainThread([]() {
 			toastHud.AddToast("update", "SAR has been updated. Your game will now exit.\n");
 			Scheduler::InHostTicks(120, []() {
 				engine->ExecuteCommand("quit");
+			});
+		});
+	} else if (successAction == 2) {
+		Scheduler::OnMainThread([]() {
+			toastHud.AddToast("update", "SAR has been updated. Your game will now restart.\n");
+			Scheduler::InHostTicks(120, []() {
+				engine->ExecuteCommand("_restart");
 			});
 		});
 	}
@@ -380,9 +397,9 @@ CON_COMMAND(sar_check_update, "sar_check_update [release|pre|canary] - check whe
 	g_worker = std::thread(checkUpdate, channel);
 }
 
-CON_COMMAND(sar_update, "sar_update [release|pre|canary] [exit] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade\n") {
+CON_COMMAND(sar_update, "sar_update [release|pre|canary] [exit|restart] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade\n") {
 	auto channel = Channel::Release;
-	auto exitOnSuccess = false;
+	auto successAction = 0;
 	auto force = false;
 
 	for (int i = 1; i < args.ArgC(); ++i) {
@@ -393,7 +410,9 @@ CON_COMMAND(sar_update, "sar_update [release|pre|canary] [exit] [force] - update
 		} else if (!strcmp(args[i], "release")) {
 			channel = Channel::Release;
 		} else if (!strcmp(args[i], "exit")) {
-			exitOnSuccess = true;
+			successAction = 1;
+		} else if (!strcmp(args[i], "restart")) {
+			successAction = 2;
 		} else if (!strcmp(args[i], "force")) {
 			force = true;
 		} else {
@@ -404,7 +423,7 @@ CON_COMMAND(sar_update, "sar_update [release|pre|canary] [exit] [force] - update
 	}
 
 	if (g_worker.joinable()) g_worker.join();
-	g_worker = std::thread(doUpdate, channel, exitOnSuccess, force);
+	g_worker = std::thread(doUpdate, channel, successAction, force);
 }
 
 ON_EVENT(SAR_UNLOAD) {
