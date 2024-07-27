@@ -84,6 +84,7 @@ REDECL(Engine::plugin_load_callback);
 REDECL(Engine::plugin_unload_callback);
 REDECL(Engine::exit_callback);
 REDECL(Engine::quit_callback);
+REDECL(Engine::restart_callback);
 REDECL(Engine::help_callback);
 REDECL(Engine::gameui_activate_callback);
 REDECL(Engine::unpause_callback);
@@ -541,6 +542,9 @@ DETOUR_COMMAND(Engine::exit) {
 }
 DETOUR_COMMAND(Engine::quit) {
 	engine->SafeUnload("quit");
+}
+DETOUR_COMMAND(Engine::restart) {
+	engine->SafeUnload("_restart");
 }
 DETOUR_COMMAND(Engine::help) {
 	cvars->PrintHelp(args);
@@ -1172,6 +1176,7 @@ bool Engine::Init() {
 	Command::Hook("plugin_unload", Engine::plugin_unload_callback_hook, Engine::plugin_unload_callback);
 	Command::Hook("exit", Engine::exit_callback_hook, Engine::exit_callback);
 	Command::Hook("quit", Engine::quit_callback_hook, Engine::quit_callback);
+	Command::Hook("_restart", Engine::restart_callback_hook, Engine::restart_callback);
 	Command::Hook("help", Engine::help_callback_hook, Engine::help_callback);
 	Command::Hook("load", Engine::load_callback_hook, Engine::load_callback);
 	Command::Hook("give", Engine::give_callback_hook, Engine::give_callback);
@@ -1263,6 +1268,7 @@ void Engine::Shutdown() {
 	Command::Unhook("plugin_unload", Engine::plugin_unload_callback);
 	Command::Unhook("exit", Engine::exit_callback);
 	Command::Unhook("quit", Engine::quit_callback);
+	Command::Unhook("_restart", Engine::restart_callback);
 	Command::Unhook("help", Engine::help_callback);
 	Command::Unhook("load", Engine::load_callback);
 	Command::Unhook("give", Engine::give_callback);
