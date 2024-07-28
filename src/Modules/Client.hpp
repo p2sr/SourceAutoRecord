@@ -76,6 +76,7 @@ public:
 	int GetSplitScreenPlayerSlot(void *entity);
 	void ClFrameStageNotify(int stage);
 	void OpenChat();
+	void EnableCustomLeaderboards();
 
 public:
 	// CAvatarPanelItem::ActivateSelectedItem

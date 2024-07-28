@@ -9,6 +9,7 @@
 #include "Features/NetMessage.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
@@ -162,6 +163,8 @@ static void testApiKey() {
 
 		THREAD_PRINT("Downloaded %i maps!\n", g_map_ids.size());
 	}
+
+	client->EnableCustomLeaderboards();
 }
 
 std::optional<std::string> AutoSubmit::GetMapId(std::string map_name) {
@@ -421,7 +424,16 @@ void AutoSubmit::LoadApiKey(bool output_nonexist) {
 
 	{
 		std::ifstream f(filepath.value());
-		std::getline(f, base) && std::getline(f, key);
+		/* if they use p2 common, the file is going to be a list of endpoints */
+		while (!f.eof()) {
+			std::getline(f, base);
+			std::getline(f, key);
+			if (sar.game->Is(SourceGame_Portal2) && base == "board.portal2.sr") break;
+			if (sar.game->Is(SourceGame_PortalStoriesMel) && base == "mel.board.portal2.sr") break;
+			/* if we got here, no valid key */
+			base.clear();
+			key.clear();
+		}
 	}
 
 	key.erase(std::remove_if(key.begin(), key.end(), isspace), key.end());
