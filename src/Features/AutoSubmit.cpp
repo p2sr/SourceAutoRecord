@@ -26,6 +26,7 @@
 #define AUTOSUBMIT_TOAST_TAG "autosubmit"
 #define COOP_NAME_MESSAGE_TYPE "coop-name"
 #define API_KEY_FILE "autosubmit.key"
+#define OLD_API_KEY_FILE "autosubmit_key.txt"
 
 bool AutoSubmit::g_cheated = false;
 std::string AutoSubmit::g_partner_name = "";
@@ -372,7 +373,50 @@ static void submitTime(int score, std::string demopath, bool coop, std::string m
 	}
 }
 
+static void convertOldApiKeys() {
+	auto old_filepath = fileSystem->FindFileSomewhere(OLD_API_KEY_FILE);
+	if (!old_filepath.has_value())
+		return;
+
+	/* read key from old file */
+	std::string key;
+	{
+		std::ifstream f(old_filepath.value());
+		std::stringstream buf;
+		buf << f.rdbuf();
+		key = buf.str();
+	}
+
+	key.erase(std::remove_if(key.begin(), key.end(), isspace), key.end());
+
+	std::ofstream f;
+
+	/* check if user has a key with new format already, if yes, append to end, if not, create new file */
+	auto new_filepath = fileSystem->FindFileSomewhere(API_KEY_FILE);
+	if (!new_filepath.has_value()) {
+		/* create new file path */
+		auto path = old_filepath.value();
+		path = path.substr(0, path.length() - strlen(OLD_API_KEY_FILE));
+
+		f.open(path + API_KEY_FILE);
+	} else
+		f.open(new_filepath.value(), std::ios::app);  // open in append mode
+
+	/* file should have newline at end! */
+	f << "board.portal2.sr" << std::endl;
+	f << key << std::endl;
+
+	f.close();
+
+	/* remove old api key file */
+	std::filesystem::remove(old_filepath.value());
+
+	console->Print("Successfully converted API key file!\n");
+}
+
 void AutoSubmit::LoadApiKey(bool output_nonexist) {
+	convertOldApiKeys();
+
 	auto filepath = fileSystem->FindFileSomewhere(API_KEY_FILE);
 	if (!filepath.has_value()) {
 		if (output_nonexist) {
