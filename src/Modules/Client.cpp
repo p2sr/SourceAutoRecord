@@ -1015,6 +1015,16 @@ DETOUR(Client::GetChapterProgress) {
 }
 Hook g_GetChapterProgressHook(&Client::GetChapterProgress_Hook);
 
+void Client::EnableCustomLeaderboards() {
+	g_GetLeaderboardHook.SetFunc(Client::GetLeaderboard);
+	g_IsQueryingHook.SetFunc(Client::IsQuerying);
+	g_SetPanelStatsHook.SetFunc(Client::SetPanelStats);
+	g_StartSearchingHook.SetFunc(Client::StartSearching);
+	g_PurgeAndDeleteElementsHook.SetFunc(Client::PurgeAndDeleteElements);
+	g_SetPlayerDataHook.SetFunc(Client::SetPlayerData);
+	g_ActivateSelectedItemHook.SetFunc(Client::ActivateSelectedItem);
+}
+
 bool Client::Init() {
 	this->g_ClientDLL = Interface::Create(this->Name(), "VClient016");
 	this->s_EntityList = Interface::Create(this->Name(), "VClientEntityList003", false);
@@ -1262,14 +1272,6 @@ bool Client::Init() {
 		Client::SetPanelStats = Memory::Read<decltype(Client::SetPanelStats)>(CPortalLeaderboardPanel_OnThink + Offsets::SetPanelStats);
 		Client::StartSearching = Memory::Read<decltype(Client::StartSearching)>((uintptr_t)GetLeaderboard + Offsets::StartSearching);
 		Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + Offsets::AddAvatarPanelItem);
-
-		g_GetLeaderboardHook.SetFunc(Client::GetLeaderboard);
-		g_IsQueryingHook.SetFunc(Client::IsQuerying);
-		g_SetPanelStatsHook.SetFunc(Client::SetPanelStats);
-		g_StartSearchingHook.SetFunc(Client::StartSearching);
-		g_PurgeAndDeleteElementsHook.SetFunc(Client::PurgeAndDeleteElements);
-		g_SetPlayerDataHook.SetFunc(Client::SetPlayerData);
-		g_ActivateSelectedItemHook.SetFunc(Client::ActivateSelectedItem);
 	}
 
 	if (!sar.game->Is(SourceGame_INFRA)) {

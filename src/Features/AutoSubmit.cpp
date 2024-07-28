@@ -8,6 +8,7 @@
 #include "Features/NetMessage.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
@@ -166,6 +167,8 @@ static void testApiKey() {
 	}
 
 	THREAD_PRINT("Downloaded %i maps!\n", g_map_ids.size());
+
+	client->EnableCustomLeaderboards();
 }
 
 std::optional<std::string> AutoSubmit::GetMapId(std::string map_name) {
