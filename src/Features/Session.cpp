@@ -242,6 +242,7 @@ void Session::Changed(int state) {
 		timescaleDetect->Spawn();
 		this->Started();
 		this->loadEnd = NOW();
+		engine->demorecorder->queuedCommands.clear();
 
 		g_cap_frametime = 2;
 		auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();

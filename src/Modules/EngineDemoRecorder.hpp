@@ -24,9 +24,10 @@ public:
 	bool isRecordingDemo = false;
 	bool requestedStop = false;
 	int lastDemoNumber = 1;
-	bool hasNotified = false;
 	bool customDataReady = false;
 	int autorecordStartNum = 1;
+
+	std::vector<std::string> queuedCommands = {};
 
 	char coopRadialMenuLastPos[8];
 

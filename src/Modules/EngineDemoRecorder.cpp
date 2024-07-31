@@ -83,6 +83,17 @@ static void RecordTimestamp() {
 	engine->demorecorder->RecordData(buf, sizeof buf);
 }
 
+static void RecordQueuedCommands() {
+	for (auto queuedCommand : engine->demorecorder->queuedCommands) {
+		size_t size = queuedCommand.size() + 2;
+		char *data = new char[size];
+		data[0] = 0x10;
+		strcpy(data + 1, queuedCommand.c_str());
+		engine->demorecorder->RecordData(data, size);
+		delete[] data;
+	}
+}
+
 ON_EVENT(SESSION_END) {
 	if (*engine->demorecorder->m_bRecording && sar_autorecord.GetInt() == -1) {
 		engine->demorecorder->Stop();
@@ -150,6 +161,8 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 	if (state == SIGNONSTATE_FULL && needToRecordInitialVals) {
 		needToRecordInitialVals = false;
 		RecordTimestamp();
+		RecordQueuedCommands();
+		engine->ExecuteCommand("echo \"SAR " SAR_VERSION " (Built " SAR_BUILT ")\"", true);
 		AddDemoFileChecksums();
 		/*
 		RecordInitialVal("host_timescale");
@@ -249,8 +262,6 @@ DETOUR(EngineDemoRecorder::StopRecording) {
 		}
 		engine->demoplayer->replayName = name;
 	}
-
-	engine->demorecorder->hasNotified = false;
 
 	return result;
 }
@@ -385,12 +396,6 @@ void EngineDemoRecorder::RecordData(const void *data, unsigned long length) {
 ON_EVENT(PRE_TICK) {
 
 	if (engine->demorecorder->m_bRecording) {
-		if (event.simulating && !engine->demorecorder->hasNotified) {
-			const char *cmd = "echo \"SAR " SAR_VERSION " (Built " SAR_BUILT ")\"";
-			engine->SendToCommandBuffer(cmd, 300);
-			engine->demorecorder->hasNotified = true;
-		}
-
 		std::deque<EntitySlotSerial>::iterator val = g_ent_slot_serial.begin();
 		while (val != g_ent_slot_serial.end()) {
 			if (val->done) {

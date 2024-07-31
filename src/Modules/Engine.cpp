@@ -730,6 +730,12 @@ const ConCommandBase *(*g_Cmd_ExecuteCommand)(int eTarget, const CCommand &comma
 const ConCommandBase *Cmd_ExecuteCommand_Detour(int eTarget, const CCommand &command, int nClientSlot /* = -1 */);
 static Hook Cmd_ExecuteCommand_Hook(&Cmd_ExecuteCommand_Detour);
 const ConCommandBase *Cmd_ExecuteCommand_Detour(int eTarget, const CCommand &command, int nClientSlot /* = -1 */) {
+	if (!engine->demorecorder->isRecordingDemo) {
+		auto cmd = reinterpret_cast<ConVar *>(tier1->FindCommandBase(tier1->g_pCVar->ThisPtr(), command.Arg(0)));
+		if (cmd && !(cmd->m_nFlags & FCVAR_DONTRECORD)) {
+			engine->demorecorder->queuedCommands.push_back(command.m_pArgSBuffer);
+		}
+	}
 	if (sar_command_debug.GetInt() >= 1) {
 		auto cmd = std::string(command.m_pArgSBuffer);
 		cmd.erase(std::remove(cmd.begin(), cmd.end(), '\n'), cmd.end());
