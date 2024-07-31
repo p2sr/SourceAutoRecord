@@ -1,6 +1,6 @@
 #pragma once
 #ifdef _WIN32
-#	include "minhook/MinHook.h"
+#	include "../lib/minhook/MinHook.h"
 #endif
 
 #ifdef _WIN32
