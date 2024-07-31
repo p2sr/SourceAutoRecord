@@ -227,7 +227,7 @@ void StatsCounter::Print() {
 	console->Msg("    -> Total CM time spent: %s\n", SpeedrunTimer::Format(CMTime).c_str());
 }
 
-void StatsCounter::RecordDatas(const int tick) {
+void StatsCounter::RecordData(const int tick) {
 	
 	auto currentMap = engine->GetCurrentMapName();
 	if (currentMap.empty()) return;

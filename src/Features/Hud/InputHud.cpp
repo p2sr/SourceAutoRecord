@@ -166,7 +166,7 @@ void InputHud::Paint(int slot) {
 					// record tiny changes on the HUD. As an exception to this, if
 					// we're meant to be at 0, always move it back, as a small
 					// discrepancy when the camera isn't moving at all is very
-					// noticable.
+					// noticeable.
 					float dx = fabsf(v.x - inputInfo.prevUsedAngles.x);
 					float dy = fabsf(v.y - inputInfo.prevUsedAngles.y);
 					if (dx < 0.02 && v.x != 0.0) v.x = inputInfo.prevUsedAngles.x;

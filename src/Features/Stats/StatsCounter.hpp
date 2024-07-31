@@ -43,7 +43,7 @@ public:
 	bool LoadFromFile(const std::string &path);
 	bool ExportToFile(const std::string &path);
 	void Print();
-	void RecordDatas(const int tick);
+	void RecordData(const int tick);
 };
 
 extern StatsCounter *statsCounter;

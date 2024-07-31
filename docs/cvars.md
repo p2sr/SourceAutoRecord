@@ -10,7 +10,7 @@
 |cl_crosshairdot|1|Decides if there is a dot in the middle of the crosshair|
 |cl_crosshairgap|9|Changes the distance of the crosshair lines from the center of screen.|
 |cl_crosshairsize|1|Changes the size of the crosshair.|
-|cl_crosshairthickness|0|Changes the thinkness of the crosshair lines.|
+|cl_crosshairthickness|0|Changes the thickness of the crosshair lines.|
 |cl_quickhud_alpha|255|Change the amount of transparency.|
 |cl_quickhudleftcolor_b|86|Changes the color of the left quickhud.|
 |cl_quickhudleftcolor_g|184|Changes the color of the left quickhud.|
@@ -177,7 +177,7 @@
 |sar_drawline_clear|cmd|sar_drawline_clear - clear all active sar_drawlines|
 |sar_duckjump|0|Allows duck-jumping even when fully crouched, similar to prevent_crouch_jump.|
 |sar_dump_client_classes|cmd|sar_dump_client_classes - dumps all client classes to a file|
-|sar_dump_client_datamap|cmd|sar_dump_client_datamap - dumps client datmap to a file|
+|sar_dump_client_datamap|cmd|sar_dump_client_datamap - dumps client datamap to a file|
 |sar_dump_events|cmd|sar_dump_events - dumps all registered game events of the game event manager|
 |sar_dump_server_classes|cmd|sar_dump_server_classes - dumps all server classes to a file|
 |sar_dump_server_datamap|cmd|sar_dump_server_datamap - dumps server datamap to a file|
@@ -194,7 +194,7 @@
 |sar_ent_slot_serial|cmd|sar_ent_slot_serial \<id> [value] - prints entity slot serial number, or sets it if additional parameter is specified.<br>Banned in most categories, check with the rules before use!|
 |sar_exit|cmd|sar_exit - removes all function hooks, registered commands and unloads the module|
 |sar_expand|cmd|sar_expand [cmd]... - run a command after expanding svar substitutions|
-|sar_export_stats|cmd|sar_export_stats \<filepath> -  export the stats to the specifed path in a .csv file|
+|sar_export_stats|cmd|sar_export_stats \<filepath> -  export the stats to the specified path in a .csv file|
 |sar_fast_load_preset|cmd|sar_fast_load_preset \<preset> - sets all loading fixes to preset values|
 |sar_fcps_anim_start|cmd|sar_fcps_anim_start \<id> - start animating the ID'th FCPS call.|
 |sar_fcps_anim_step|cmd|sar_fcps_anim_step - step the FCPS animation forward.|
@@ -425,7 +425,7 @@
 |sar_render_acodec|aac|Audio codec used in renders (aac, ac3, vorbis, opus, flac)|
 |sar_render_autostart|0|Whether to automatically start when demo playback begins|
 |sar_render_autostart_extension|mp4|The file extension (and hence container format) to use for automatically started renders.|
-|sar_render_autostop|1|Whether to automatically stop when __END__ is seen in demo playback|
+|sar_render_autostop|1|Whether to automatically stop when `__END__` is seen in demo playback|
 |sar_render_blend|0|How many frames to blend for each output frame; 1 = do not blend, 0 = automatically determine based on host_framerate|
 |sar_render_blend_mode|1|What type of frameblending to use. 0 = linear, 1 = Gaussian|
 |sar_render_finish|cmd|sar_render_finish - stop rendering frames|
@@ -539,7 +539,7 @@
 |sar_tas_autosave_raw|1|Enables automatic saving of raw, processed TAS scripts.|
 |sar_tas_check_disable|0|Globally disable the 'check' TAS tool.|
 |sar_tas_check_max_replays|15|Maximum replays for the 'check' TAS tool until it gives up.|
-|sar_tas_debug|0|Debug TAS informations. 0 - none, 1 - basic, 2 - all.|
+|sar_tas_debug|0|Debug TAS information. 0 - none, 1 - basic, 2 - all.|
 |sar_tas_dump_player_info|0|Dump player info for each tick of TAS playback to a file.|
 |sar_tas_dump_usercmd|0|Dump TAS-generated usercmds to a file.|
 |sar_tas_interpolate|0|Preserve client interpolation in TAS playback.|

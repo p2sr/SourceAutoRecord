@@ -882,7 +882,7 @@ CON_COMMAND(sar_cam_path_export,
 	std::ofstream file(filename.c_str());
 
 	if (format == "kf") {
-		// dump keyframes comamnds
+		// dump keyframes commands
 		file << "sar_cam_path_remkfs\n";
 		file << Utils::ssprintf("sar_cam_path_interp %d\n", sar_cam_path_interp.GetInt());
 		for (auto const &state : camera->states) {

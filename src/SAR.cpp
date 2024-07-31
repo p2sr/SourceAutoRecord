@@ -217,7 +217,7 @@ void SAR::Unload() {
 	unloading = true;
 
 	curl_global_cleanup();
-	statsCounter->RecordDatas(session->GetTick());
+	statsCounter->RecordData(session->GetTick());
 	statsCounter->ExportToFile(sar_statcounter_filePath.GetString());
 
 	networkManager.Disconnect();

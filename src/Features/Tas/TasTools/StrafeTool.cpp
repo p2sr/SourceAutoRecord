@@ -309,7 +309,7 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 		float sidemove = sinOld(ang);
 
 		// forwardmove and sidemove were calculated incorrectly in v2 and older
-		// fix for newer, keep for older for backwards compability
+		// fix for newer, keep for older for backwards compatibility
 		if (tasPlayer->GetScriptVersion(slot) >= 3) {
 			float velAngle = TasUtils::GetVelocityAngles(&player).x;
 			if (player.velocity.Length2D() == 0 && tasPlayer->GetScriptVersion(slot) >= 6) velAngle = params.strafeDir.angle;

@@ -131,7 +131,7 @@ HUD_ELEMENT2(velocity_peak, "0", "Draws last saved velocity peak.\n", HudType_In
 	ctx->DrawElement("vel peak: %.3f", stat->velocity->peak);
 }
 
-CON_COMMAND(sar_export_stats, "sar_export_stats <filepath> -  export the stats to the specifed path in a .csv file\n") {
+CON_COMMAND(sar_export_stats, "sar_export_stats <filepath> -  export the stats to the specified path in a .csv file\n") {
 	bool result = false;
 	std::string path = args.ArgC() == 1 ? sar_statcounter_filePath.GetString() : args[1];
 
@@ -145,7 +145,7 @@ CON_COMMAND(sar_export_stats, "sar_export_stats <filepath> -  export the stats t
 		return console->Print("Couldn't write to this path. Please verify you actually can write here or the folder exits: \"%s\".\n", path.c_str());
 	}
 
-	console->Print("Datas has been successfully exported.\n");
+	console->Print("Data has been successfully exported.\n");
 }
 
 CON_COMMAND(sar_import_stats, "sar_import_stats <filePath> - import the stats from the specified .csv file\n") {
@@ -162,7 +162,7 @@ CON_COMMAND(sar_import_stats, "sar_import_stats <filePath> - import the stats fr
 		return console->Print("Couldn't open the file. Are you sure the file is here? : \"%s\".\n", path.c_str());
 	}
 
-	console->Print("Datas has been successfully loaded.\n");
+	console->Print("Data has been successfully loaded.\n");
 }
 
 CON_COMMAND(sar_print_stats, "sar_print_stats - prints your statistics if those are loaded\n") {

@@ -93,7 +93,7 @@ ON_EVENT(SESSION_END) {
 DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 	bool wasRecording = engine->demorecorder->isRecordingDemo;
 
-	//SIGNONSTATE_FULL is set twice during first CM load. Using SINGONSTATE_SPAWN for demo number increase instead
+	//SIGNONSTATE_FULL is set twice during first CM load. Using SIGNONSTATE_SPAWN for demo number increase instead
 	if (state == SIGNONSTATE_SPAWN) {
 		if (engine->demorecorder->isRecordingDemo || *engine->demorecorder->m_bRecording || sar_record_at_increment.GetBool()) {
 			engine->demorecorder->lastDemoNumber++;

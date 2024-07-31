@@ -4,23 +4,23 @@
 
 #include <unordered_map>
 
-struct DemoDatas {
-	std::map<int, DataGhost> levelDatas;
+struct DemoData {
+	std::map<int, DataGhost> levelData;
 	Demo demo;
 };
 
-typedef std::unordered_map<std::string, std::tuple<int, bool>> CustomDatas;
+typedef std::unordered_map<std::string, std::tuple<int, bool>> CustomData;
 
 class DemoGhostEntity : public GhostEntity {
 private:
-	std::map<int, DataGhost> currentDatas;  //Pos and ang of ghost
+	std::map<int, DataGhost> currentData;  //Pos and ang of ghost
 	unsigned int currentDemo;
 
 public:
 	int lastGameTick;
 	int demoTick;
 	size_t nbDemoTicks;
-	std::vector<DemoDatas> datasByLevel;
+	std::vector<DemoData> dataByLevel;
 	std::string currentMap;
 	int totalTicks;
 	std::string firstLevel;
@@ -29,14 +29,14 @@ public:
 	int offset;
 	bool isAhead;
 
-	CustomDatas customDatas;
+	CustomData customData;
 
 public:
 	DemoGhostEntity(unsigned int ID, std::string name, DataGhost data, std::string currentMap);
 	void ChangeDemo();  //Change demo for FullGame ghosts
 	//Add demo for full game ghost
-	void AddLevelDatas(DemoDatas &datas);
-	void SetFirstLevelDatas(DemoDatas &datas);
+	void AddLevelData(DemoData &data);
+	void SetFirstLevelData(DemoData &data);
 	//Setup the ghost in order to play next demo
 	void NextDemo();
 	//Update position of the ghost
@@ -48,6 +48,3 @@ public:
 	float GetTotalTime();
 	std::string GetCurrentMap();
 };
-
-
-

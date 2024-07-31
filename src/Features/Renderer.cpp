@@ -65,7 +65,7 @@ static Variable sar_render_blend("sar_render_blend", "0", 0, "How many frames to
 static Variable sar_render_blend_mode("sar_render_blend_mode", "1", 0, 1, "What type of frameblending to use. 0 = linear, 1 = Gaussian\n");
 static Variable sar_render_autostart("sar_render_autostart", "0", "Whether to automatically start when demo playback begins\n");
 static Variable sar_render_autostart_extension("sar_render_autostart_extension", "mp4", "The file extension (and hence container format) to use for automatically started renders.\n", 0);
-static Variable sar_render_autostop("sar_render_autostop", "1", "Whether to automatically stop when __END__ is seen in demo playback\n");
+static Variable sar_render_autostop("sar_render_autostop", "1", "Whether to automatically stop when `__END__` is seen in demo playback\n");
 static Variable sar_render_shutter_angle("sar_render_shutter_angle", "360", 30, 360, "The shutter angle to use for rendering in degrees.\n");
 static Variable sar_render_merge("sar_render_merge", "0", "When set, merge all the renders until sar_render_finish is entered\n");
 static Variable sar_render_skip_coop_videos("sar_render_skip_coop_videos", "1", "When set, don't include coop loading time in renders\n");

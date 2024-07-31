@@ -22,27 +22,27 @@ DemoGhostEntity::DemoGhostEntity(unsigned int ID, std::string name, DataGhost da
 }
 
 void DemoGhostEntity::ChangeDemo() {
-	this->currentDatas = this->datasByLevel[this->currentDemo].levelDatas;
-	this->nbDemoTicks = this->datasByLevel[this->currentDemo].demo.playbackTicks;
-	this->currentMap = this->datasByLevel[this->currentDemo].demo.mapName;
+	this->currentData = this->dataByLevel[this->currentDemo].levelData;
+	this->nbDemoTicks = this->dataByLevel[this->currentDemo].demo.playbackTicks;
+	this->currentMap = this->dataByLevel[this->currentDemo].demo.mapName;
 	this->sameMap = engine->GetCurrentMapName() == this->currentMap;
 	this->isAhead = engine->GetMapIndex(this->currentMap) > engine->GetMapIndex(engine->GetCurrentMapName());
 }
 
-void DemoGhostEntity::AddLevelDatas(DemoDatas &datas) {
-	this->datasByLevel.push_back(datas);
+void DemoGhostEntity::AddLevelData(DemoData &data) {
+	this->dataByLevel.push_back(data);
 }
 
-void DemoGhostEntity::SetFirstLevelDatas(DemoDatas &datas) {
-	if (this->datasByLevel.size() > 0) {
-		this->datasByLevel[0] = datas;
+void DemoGhostEntity::SetFirstLevelData(DemoData &data) {
+	if (this->dataByLevel.size() > 0) {
+		this->dataByLevel[0] = data;
 	} else {
-		this->datasByLevel.push_back(datas);
+		this->dataByLevel.push_back(data);
 	}
 }
 
 void DemoGhostEntity::NextDemo() {
-	if (++this->currentDemo != this->datasByLevel.size()) {
+	if (++this->currentDemo != this->dataByLevel.size()) {
 		this->ChangeDemo();
 		this->LevelReset();
 		if (ghost_show_advancement.GetInt() >= 3) {
@@ -78,9 +78,9 @@ void DemoGhostEntity::UpdateDemoGhost() {
 	} else if (this->demoTick > (int)this->nbDemoTicks) {  // If played the whole CM demo
 		this->DeleteGhost();
 	} else if (this->demoTick < (int)this->nbDemoTicks && this->demoTick >= 0) {
-		auto data = this->currentDatas.find(this->demoTick);
+		auto data = this->currentData.find(this->demoTick);
 
-		if (data != this->currentDatas.end()) {
+		if (data != this->currentData.end()) {
 			this->SetData(data->second, false);
 		}
 	}

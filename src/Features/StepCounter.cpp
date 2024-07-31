@@ -23,7 +23,7 @@ void StepCounter::Increment(int m_fFlags, int m_MoveType, Vector m_vecVelocity, 
 	// CBasePlayer::GetStepSoundVelocities
 	auto velrun = (m_fFlags & FL_DUCKING || m_MoveType & MOVETYPE_LADDER) ? 80 : 220;
 
-	// CBasePlayer::SetstepSoundTime
+	// CBasePlayer::SetStepSoundTime
 	auto bWalking = m_vecVelocity.Length() < velrun;
 	if (m_MoveType & MOVETYPE_LADDER) {
 		this->stepSoundTime = 350;

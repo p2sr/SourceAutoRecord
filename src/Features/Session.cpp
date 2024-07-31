@@ -192,7 +192,7 @@ void Session::Ended() {
 		listener->Reset();
 	}
 
-	statsCounter->RecordDatas(tick);
+	statsCounter->RecordData(tick);
 
 	demoGhostPlayer.DeleteAllGhostModels();
 	networkManager.DeleteAllGhosts();

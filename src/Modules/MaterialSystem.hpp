@@ -17,7 +17,7 @@ public:
 	using _RemoveMaterial = void(__rescall*)(void* thisptr, IMaterialInternal* pMaterial);
 	_RemoveMaterial RemoveMaterial = nullptr;
 
-	using _KeyValues_SetString = void(__rescall*)(void* thistpr, const char *key, const char *val);
+	using _KeyValues_SetString = void(__rescall*)(void* thisptr, const char *key, const char *val);
 	_KeyValues_SetString KeyValues_SetString = nullptr;
 
 public:

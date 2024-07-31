@@ -77,7 +77,7 @@ void DemoParser::Adjust(Demo *demo) {
 	demo->playbackTicks = demo->LastTick();
 	demo->playbackTime = ipt * demo->playbackTicks;
 }
-bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std::map<int, DataGhost> *datas, CustomDatas *customDatas) {
+bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std::map<int, DataGhost> *data, CustomData *customData) {
 	bool gotFirstPositivePacket = false;
 	bool gotSync = false;
 	try {
@@ -181,7 +181,7 @@ bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std:
 
 								if (tick > 0 && waitForNext && lastTick != tick) {
 									lastTick = tick;
-									(*datas)[tick] = DataGhost{{vo_x, vo_y, vo_z}, {va_x, va_y, va_z}, 64, true}; // TODO: is there a way to get this data that's not just a guess?
+									(*data)[tick] = DataGhost{{vo_x, vo_y, vo_z}, {va_x, va_y, va_z}, 64, true}; // TODO: is there a way to get this data that's not just a guess?
 								}
 							} else {
 								console->Msg(
@@ -261,10 +261,10 @@ bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std:
 							char *data = new char[length];
 							file.read(data, length);
 							
-							if (customDatas) {
+							if (customData) {
 								std::string str = this->DecodeCustomData(data + 8);
 								if (!str.empty()) {
-									(*customDatas)[str] = std::make_tuple(tick, false);
+									(*customData)[str] = std::make_tuple(tick, false);
 								}
 							}
 						} else {

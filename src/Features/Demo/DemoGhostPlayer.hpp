@@ -65,7 +65,7 @@ void DemoGhostPlayer::TestInputRule(Ts... args) {
 	std::string text;
 	for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
 		std::string str = this->CustomDataToString(args...);
-		if (auto it{ghost.customDatas.find(str)}; it != ghost.customDatas.end()) {
+		if (auto it{ghost.customData.find(str)}; it != ghost.customData.end()) {
 			std::get<1>(it->second) = true;
 			int tick = std::get<0>(it->second);
 

@@ -50,7 +50,7 @@ static std::atomic<bool> g_should_stop;
 static bool g_should_run = false;
 static bool g_stopped_manually = true;
 static std::atomic<bool> g_is_server;
-static std::chrono::high_resolution_clock::time_point g_last_connection_attemt_timestamp;
+static std::chrono::high_resolution_clock::time_point g_last_connection_attempt_timestamp;
 
 static std::string g_client_ip;
 static int g_client_port;
@@ -580,7 +580,7 @@ ON_EVENT(FRAME) {
 	auto now = std::chrono::high_resolution_clock::now();
 
 	if (!g_running && !g_stopped_manually && sar_tas_protocol_reconnect_delay.GetBool() && !g_is_server.load()) {
-		auto duration = ((std::chrono::duration<float>)(now - g_last_connection_attemt_timestamp)).count();
+		auto duration = ((std::chrono::duration<float>)(now - g_last_connection_attempt_timestamp)).count();
 		if (duration > sar_tas_protocol_reconnect_delay.GetFloat()) {
 			g_should_run = true;
 			console->Print("Attempting to reconnect to the TAS protocol server\n");
@@ -597,7 +597,7 @@ ON_EVENT(FRAME) {
 		g_should_run = false;
 		g_stopped_manually = false;
 
-		g_last_connection_attemt_timestamp = now;
+		g_last_connection_attempt_timestamp = now;
 	}
 }
 

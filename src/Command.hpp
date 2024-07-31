@@ -42,7 +42,7 @@ public:
 	static bool HookCompletion(const char *name, _CommandCompletionCallback callback, _CommandCompletionCallback &original);
 	static bool UnhookCompletion(const char *name, _CommandCompletionCallback original);
 	static bool ActivateAutoCompleteFile(const char *name, _CommandCompletionCallback callback);
-	static bool DectivateAutoCompleteFile(const char *name);
+	static bool DeactivateAutoCompleteFile(const char *name);
 };
 
 #define CON_COMMAND(name, description)                        \

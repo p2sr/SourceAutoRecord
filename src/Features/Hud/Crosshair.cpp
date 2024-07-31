@@ -36,7 +36,7 @@ Variable cl_crosshaircolor_r("cl_crosshaircolor_r", "255", 0, 255, "Changes the 
 Variable cl_crosshaircolor_g("cl_crosshaircolor_g", "255", 0, 255, "Changes the color of the crosshair.\n");
 Variable cl_crosshaircolor_b("cl_crosshaircolor_b", "255", 0, 255, "Changes the color of the crosshair.\n");
 Variable cl_crosshairsize("cl_crosshairsize", "1", -100, "Changes the size of the crosshair.\n");
-Variable cl_crosshairthickness("cl_crosshairthickness", "0", 0, "Changes the thinkness of the crosshair lines.\n");
+Variable cl_crosshairthickness("cl_crosshairthickness", "0", 0, "Changes the thickness of the crosshair lines.\n");
 Variable cl_crosshairalpha("cl_crosshairalpha", "255", 0, 255, "Change the amount of transparency.\n");
 Variable cl_crosshairdot("cl_crosshairdot", "1", "Decides if there is a dot in the middle of the crosshair\n");
 

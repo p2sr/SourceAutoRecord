@@ -132,7 +132,7 @@ bool Command::ActivateAutoCompleteFile(const char *name, _CommandCompletionCallb
 	}
 	return false;
 }
-bool Command::DectivateAutoCompleteFile(const char *name) {
+bool Command::DeactivateAutoCompleteFile(const char *name) {
 	Command cc(name);
 	if (!!cc) {
 		cc.ThisPtr()->m_bHasCompletionCallback = false;

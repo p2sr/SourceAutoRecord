@@ -140,25 +140,25 @@ DemoGhostEntity *DemoGhostPlayer::GetGhostByID(unsigned ID) {
 bool DemoGhostPlayer::SetupGhostFromDemo(const std::string &demo_path, const unsigned int ghost_ID, bool fullGame) {
 	DemoParser parser;
 	Demo demo;
-	std::map<int, DataGhost> datas;
-	CustomDatas customDatas;
+	std::map<int, DataGhost> data;
+	CustomData customData;
 
-	if (parser.Parse(demo_path, &demo, true, &datas, &customDatas)) {
+	if (parser.Parse(demo_path, &demo, true, &data, &customData)) {
 		parser.Adjust(&demo);
 
-		DemoDatas demoDatas{datas, demo};
+		DemoData demoData{data, demo};
 
 		DemoGhostEntity *ghost = demoGhostPlayer.GetGhostByID(ghost_ID);
 		if (ghost == nullptr) {  //New fullgame or CM ghost
 			DemoGhostEntity new_ghost = {ghost_ID, demo.clientName, DataGhost{{0, 0, 0}, {0, 0, 0}, 0, false}, demo.mapName};
-			new_ghost.SetFirstLevelDatas(demoDatas);
+			new_ghost.SetFirstLevelData(demoData);
 			new_ghost.firstLevel = demo.mapName;
 			new_ghost.lastLevel = demo.mapName;
 			new_ghost.totalTicks = demo.playbackTicks;
-			new_ghost.customDatas = customDatas;
+			new_ghost.customData = customData;
 			demoGhostPlayer.AddGhost(new_ghost);
 		} else {  //Only fullGame
-			ghost->AddLevelDatas(demoDatas);
+			ghost->AddLevelData(demoData);
 			ghost->lastLevel = demo.mapName;
 			ghost->totalTicks += demo.playbackTicks;
 		}
