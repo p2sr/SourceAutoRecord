@@ -92,6 +92,7 @@ static void RecordQueuedCommands() {
 		engine->demorecorder->RecordData(data, size);
 		delete[] data;
 	}
+	queuedCommands.clear();
 }
 
 ON_EVENT(SESSION_END) {
