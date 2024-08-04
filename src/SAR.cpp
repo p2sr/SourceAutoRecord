@@ -185,6 +185,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 // SAR has to disable itself in the plugin list or the game might crash because of missing callbacks
 // This is a race condition though
 bool SAR::GetPlugin() {
+	if (!engine) return false;
 	auto s_ServerPlugin = reinterpret_cast<uintptr_t>(engine->s_ServerPlugin->ThisPtr());
 	auto m_Size = *reinterpret_cast<int *>(s_ServerPlugin + CServerPlugin_m_Size);
 	if (m_Size > 0) {
@@ -217,8 +218,10 @@ void SAR::Unload() {
 	unloading = true;
 
 	curl_global_cleanup();
-	statsCounter->RecordData(session->GetTick());
-	statsCounter->ExportToFile(sar_statcounter_filePath.GetString());
+	if (statsCounter) {
+		statsCounter->RecordData(session->GetTick());
+		statsCounter->ExportToFile(sar_statcounter_filePath.GetString());
+	}
 
 	networkManager.Disconnect();
 
@@ -254,7 +257,9 @@ void SAR::Unload() {
 	SAFE_DELETE(sar.plugin)
 	SAFE_DELETE(sar.game)
 
-	console->Print("Cya :)\n");
+	if (console) {
+		console->Print("Cya :)\n");
+	}
 
 	SAFE_DELETE(tier1)
 	SAFE_DELETE(console)

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![](docs/img/sar_logo.webp)](https://sar.portal2.sr/)
+[![SourceAutoRecord Homepage](docs/img/sar_logo.webp)](https://sar.portal2.sr/)
 
 </div>
 
@@ -22,16 +22,16 @@
 
 </div>
 
-# Overview
+## Overview
 
-**SourceAutoRecord** (**SAR**) is a plugin for Portal 2 and mods based on it, bringing lots of features and modifications 
+**SourceAutoRecord** (**SAR**) is a plugin for Portal 2 and mods based on it, bringing lots of features and modifications
 into the game for speedrunners and people alike.
 
 For features and installation instructions, please visit [the website].
 
 [the website]: https://sar.portal2.sr/
 
-# Support
+## Support
 
 | Game                                                                    | Windows | Linux |
 |-------------------------------------------------------------------------|---------|-------|
@@ -43,7 +43,8 @@ For features and installation instructions, please visit [the website].
 
 \* *With Proton Compatibility*
 
-# Documentation
+## Documentation
+
 - [Contributing](docs/contributing.md)
 - [Console Commands & Variables](docs/cvars.md)
 - [Setup & Usage](https://wiki.portal2.sr/SAR)

@@ -460,7 +460,7 @@ MyHud myHud;
 MyHud::MyHud()
     : Hud(HudType_InGame,     // Only when session is running (no-pauses)
         false,                // Do not draw for splitscreen (default)
-        SourceGame_Portal2) { // Support specific game verison (default is for every game)
+        SourceGame_Portal2) { // Support specific game version (default is for every game)
 }
 
 // Implement a more complex drawing logic if needed

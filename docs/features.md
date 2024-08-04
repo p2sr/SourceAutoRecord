@@ -33,7 +33,7 @@ This file contains a detailed list of all features implemented by SourceAutoReco
 
 - **Speedrun timer system**:
   - Accurate in-game timing, correctly timing pauses and menus if needed.
-  - Co-op integtration.
+  - Co-op integration.
   - Category management with an ability to create custom categories and rules, which can be triggered by various level or entity-based events or special trigger zones (mtriggers).
   - Presets for most popular categories.
   - Integration with LiveSplit.
@@ -127,7 +127,7 @@ This file contains a detailed list of all features implemented by SourceAutoReco
   - Optionally overlays a portal shape which shows where the portal would be placed when shot. (`sar_pp_hud_show_blue/orange`).
 
 - **Portal Gun HUD** (`sar_portalgun_hud`):
-  - Displays linkage ID of currently possesed portal gun and portals connected to it.
+  - Displays linkage ID of currently held portal gun and portals connected to it.
 
 - **Scroll Speed HUD** (`sar_scrollspeed`):
   - Shows a scroll speed indicator.
@@ -138,7 +138,7 @@ This file contains a detailed list of all features implemented by SourceAutoReco
 ## Tool-Assisted Speedrunning (TAS) tools
 
 - **Virtual TAS Controller**:
-  - Accepts inputs programatically for TAS script playback.
+  - Accepts inputs programmatically for TAS script playback.
   - Acts as the only way of injecting inputs into the game, keeping the legitimacy at the highest level.
 
 - **Custom `.p2tas` scripting language** support.
@@ -151,7 +151,7 @@ This file contains a detailed list of all features implemented by SourceAutoReco
   - A special set of tools that allows the script to autonomously react to in-game events where performed action can be automated:
     - **Auto Strafer** - finds the most optimal way to strafe on current tick, given user-defined parameters;
     - **Auto Aim** - automatically aims towards given point in 3D space, instantly or over time.
-    - **Auto Jump** - automatically jumps on inpact with ground.
+    - **Auto Jump** - automatically jumps on impact with ground.
     - **Absolute Move Tool** - moves towards specified absolute direction.
     - **Set Angle Tool** - automatically aims towards specified view angle, instantly or over time.
     - **Decel Tool** - moves the opposite direction to your current velocity.
@@ -169,7 +169,7 @@ This file contains a detailed list of all features implemented by SourceAutoReco
   - Cinematic camera (demos only):
     - Commands for defining path points and interpolation mode.
     - Possibility of exporting and importing paths using game's config system.
-  - Optional ortographic projection.
+  - Optional orthographic projection.
 
 - **Ruler** (`sar_ruler_*`):
   - A tool for measuring distances and angles between two points.

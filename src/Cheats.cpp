@@ -334,7 +334,7 @@ void Cheats::Init() {
 	Command::RegisterAll();
 }
 void Cheats::Shutdown() {
-	cvars->Lock();
+	if (cvars) cvars->Lock();
 
 	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
 		Variable("give_portalgun").AddFlag(FCVAR_CHEAT);
