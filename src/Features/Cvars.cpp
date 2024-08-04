@@ -24,7 +24,7 @@ Cvars::Cvars()
 int Cvars::Dump(std::ofstream &file, int filter, bool values) {
 	this->Lock();
 
-	auto InternalDump = [&](ConCommandBase *cmd, std::string games, bool isCommand) {		
+	auto InternalDump = [&](ConCommandBase *cmd, std::string games, bool isCommand, bool isSAR) {		
 		auto json = json11::Json::object{
 			{"isCommand", isCommand},
 			{"name", cmd->m_pszName},
@@ -46,6 +46,9 @@ int Cvars::Dump(std::ofstream &file, int filter, bool values) {
 			if (cvar->m_bHasMax) {
 				json["max"] = cvar->m_fMaxVal;
 			}
+		}
+		if (filter == 0) {
+			json["isSAR"] = isSAR;
 		}
 		std::string str;
 		json11::Json(json).dump(str);
@@ -78,7 +81,7 @@ int Cvars::Dump(std::ofstream &file, int filter, bool values) {
 			if (!!strcmp(cmd->m_pszHelpString, "SAR alias command.\n") &&
 				!!strcmp(cmd->m_pszHelpString, "SAR function command.\n")) {
 				if (count > 0) file << ",\n";
-				InternalDump(cmd, gameStr, cmd->IsCommand());
+				InternalDump(cmd, gameStr, cmd->IsCommand(), isSAR);
 				++count;
 			}
 		}
