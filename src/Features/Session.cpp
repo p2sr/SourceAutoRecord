@@ -71,6 +71,8 @@ void Session::Started(bool menu) {
 		return;
 	}
 
+	NetMessage::SessionStarted();
+
 	if (menu) {
 		console->Print("Session started! (menu)\n");
 		this->Rebase(engine->GetTick());

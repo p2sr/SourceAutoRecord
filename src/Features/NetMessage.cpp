@@ -22,6 +22,7 @@
 // if orange: whether we've sent the ready packet
 bool g_orangeReady = false;
 bool g_partnerHasSAR = false;
+bool g_session_init = false;
 
 static size_t g_expected_len = 0;
 static std::string g_partial;
@@ -58,9 +59,20 @@ static bool readyToSend() {
 	}
 }
 
+void NetMessage::SessionStarted() {
+	if (engine->IsCoop() && !engine->IsSplitscreen()) {
+		if (!g_session_init && engine->IsOrange()) {
+			g_session_init = true;
+			engine->ExecuteCommand("say \"" SAR_MSG_HELLO "\"");
+		}
+	} else {
+		g_session_init = false;
+		g_partnerHasSAR = false;
+	}
+}
+
 void NetMessage::SessionEnded() {
 	g_orangeReady = false;
-	g_partnerHasSAR = false;
 }
 
 struct QueuedMsg {
@@ -162,8 +174,8 @@ void NetMessage::SendMsg(const char *type, const void *data, size_t size) {
 		return;
 	}
 
-	// If the partner doesn't have SAR, only send sync messages
-	if (!readyToSend() || (!g_partnerHasSAR && !!strcmp(type, "__sync"))) {
+	// If the partner doesn't have SAR, don't send messages
+	if (!readyToSend() || !g_partnerHasSAR) {
 		g_queued.push({
 			std::string(type),
 			std::vector<uint8_t>((const uint8_t *)data, (const uint8_t *)data + size),
@@ -228,6 +240,19 @@ void NetMessage::Update() {
 
 bool NetMessage::ChatData(std::string str) {
 	if (str.size() < 4) return false;
+
+	if (str == SAR_MSG_HELLO) {
+		if (!engine->IsOrange()) {
+			g_partnerHasSAR = true;
+			engine->ExecuteCommand("say \"" SAR_MSG_HELLO_ACK "\"");
+		}
+		return true;
+	} else if (str == SAR_MSG_HELLO_ACK) {
+		if (engine->IsOrange()) {
+			g_partnerHasSAR = true;
+		}
+		return true;
+	}
 
 	std::string prefix = str.substr(0, 4);
 	bool has_prefix = true;
