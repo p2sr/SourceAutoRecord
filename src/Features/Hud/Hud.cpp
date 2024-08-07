@@ -31,8 +31,8 @@ Variable sar_hud_y("sar_hud_y", "2", 0, "Y padding of HUD.\n", FCVAR_DONTRECORD)
 Variable sar_hud_font_index("sar_hud_font_index", "0", 0, "Font index of HUD.\n", FCVAR_DONTRECORD);
 Variable sar_hud_font_color("sar_hud_font_color", "255 255 255 255", "RGBA font color of HUD.\n", FCVAR_DONTRECORD);
 
-Variable sar_hud_precision("sar_hud_precision", "3", 0, "Precision of HUD numbers.\n", FCVAR_DONTRECORD);
-Variable sar_hud_velocity_precision("sar_hud_velocity_precision", "2", 0, "Precision of velocity HUD numbers.\n", FCVAR_DONTRECORD);
+Variable sar_hud_precision("sar_hud_precision", "2", 0, "Precision of HUD numbers.\n");
+Variable sar_hud_velocity_precision("sar_hud_velocity_precision", "2", 0, "Precision of velocity HUD numbers.\n");
 
 Variable sar_hud_rainbow("sar_hud_rainbow", "-1", -1, 1, "Enables the rainbow HUD mode. -1 = default, 0 = disable, 1 = enable.\n", FCVAR_DONTRECORD);
 static bool g_rainbow = false;

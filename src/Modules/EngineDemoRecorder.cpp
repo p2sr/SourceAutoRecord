@@ -180,7 +180,7 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 		for (ConCommandBase *cmd = tier1->m_pConCommandList; cmd; cmd = cmd->m_pNext) {
 			if (!cmd->m_bRegistered) continue;
 			if (cmd->IsCommand()) continue;
-			if (Utils::StartsWith(cmd->m_pszName, "sar_")) continue;
+			if (cmd->m_nFlags & FCVAR_DONTRECORD) continue;
 			ConVar *var = (ConVar *)cmd;
 			if (!strcmp(var->m_pszString, var->m_pszDefaultValue)) continue;
 			RecordInitialVal(var->m_pszName, var->m_pszString);
