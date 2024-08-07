@@ -1073,7 +1073,7 @@ DETOUR_COMMAND(Server::say) {
 	auto clientidx = UTIL_GetCommandClientIndex();
 	if (args.ArgC() != 2 ||
 		Utils::StartsWith(args[1], "&^") ||
-		!strcmp(args[1], "\"" SAR_MSG_HELLO "\"") ||
+		!strcmp(args[1], SAR_MSG_HELLO) ||
 		!networkManager.HandleGhostSay(args[1], clientidx)) {
 		g_wasChatType = 0;
 		Server::say_callback(args);
