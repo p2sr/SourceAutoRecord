@@ -1,10 +1,14 @@
 #pragma once
 
+#include "Variable.hpp"
+
 #include <cstddef>
 #include <string>
 
 extern bool g_orangeReady;
 extern bool g_partnerHasSAR;
+
+extern Variable sar_netmessage_debug;
 
 #define SAR_MSG_HELLO "Hello! I have \x07SourceAutoRecord\x07, a plugin mainly used for speedrunning."
 #define SAR_MSG_HELLO_ACK "&^@$Yes hello I also have \x07SourceAutoRecord\x07 thank you for checking before spamming chat."

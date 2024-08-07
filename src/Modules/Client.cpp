@@ -472,7 +472,7 @@ DETOUR(Client::MsgFunc_SayText2, bf_read &msg) {
 	if (NetMessage::ChatData(str)) {
 		// skip the other crap, just in case it matters
 		msg.ReadUnsigned(8);
-		return 0;
+		if (!sar_netmessage_debug.GetBool()) return 0;
 	}
 
 	msg = pre;

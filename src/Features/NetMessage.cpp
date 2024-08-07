@@ -24,6 +24,8 @@ bool g_orangeReady = false;
 bool g_partnerHasSAR = false;
 bool g_session_init = false;
 
+Variable sar_netmessage_debug("sar_netmessage_debug", "0", "Debug NetMessages.\n");
+
 static size_t g_expected_len = 0;
 static std::string g_partial;
 
@@ -52,6 +54,8 @@ static inline void handleMessage(const char *type, const void *data, size_t size
 static bool readyToSend() {
 	if (!engine->IsCoop()) {
 		return false;
+	} else if (!g_partnerHasSAR) {
+		return false;
 	} else if (engine->IsOrange()) {
 		return session->isRunning;
 	} else {
@@ -62,6 +66,7 @@ static bool readyToSend() {
 void NetMessage::SessionStarted() {
 	if (engine->IsCoop() && !engine->IsSplitscreen()) {
 		if (!g_session_init && engine->IsOrange()) {
+			if (sar_netmessage_debug.GetBool()) console->Print("New coop session started as orange, saying hello!\n");
 			g_session_init = true;
 			engine->ExecuteCommand("say \"" SAR_MSG_HELLO "\"");
 		}
@@ -175,12 +180,18 @@ void NetMessage::SendMsg(const char *type, const void *data, size_t size) {
 	}
 
 	// If the partner doesn't have SAR, don't send messages
-	if (!readyToSend() || !g_partnerHasSAR) {
+	if (!readyToSend()) {
+		if (sar_netmessage_debug.GetBool()) {
+			console->Print("NetMessage::SendMsg: not ready to send %s, queueing\n", type);
+		}
 		g_queued.push({
 			std::string(type),
 			std::vector<uint8_t>((const uint8_t *)data, (const uint8_t *)data + size),
 		});
 		return;
+	}
+	if (sar_netmessage_debug.GetBool()) {
+		console->Print("NetMessage::SendMsg: sending %s\n", type);
 	}
 
 	const char *init_prefix = engine->IsOrange() ? SAR_MSG_INIT_O : SAR_MSG_INIT_B;
@@ -230,25 +241,37 @@ void NetMessage::Update() {
 	}
 
 	if (readyToSend()) {
+		if (g_queued.size() > 0 && sar_netmessage_debug.GetBool()) {
+			console->Print("NetMessage::Update: sending queued messages\n");
+		}
 		for (size_t i = 0; i < g_queued.size(); ++i) {
 			auto &msg = g_queued.front();
 			NetMessage::SendMsg(msg.type.c_str(), msg.data.data(), msg.data.size());
 			g_queued.pop();
 		}
 	}
+
+	static float last_print = 0;
+	if (sar_netmessage_debug.GetBool() && g_queued.size() > 0 && engine->GetHostTime() - last_print > 1) {
+		console->Print("NetMessage::Update: %d messages in queue\n", g_queued.size());
+		last_print = engine->GetHostTime();
+	}
 }
 
 bool NetMessage::ChatData(std::string str) {
 	if (str.size() < 4) return false;
+	if (sar_netmessage_debug.GetBool()) console->Print("NetMessage::ChatData: %s\n", str.c_str());
 
 	if (str == SAR_MSG_HELLO) {
 		if (!engine->IsOrange()) {
+			if (sar_netmessage_debug.GetBool()) console->Print("NetMessage::ChatData: Received hello message! Replying\n");
 			g_partnerHasSAR = true;
 			engine->ExecuteCommand("say \"" SAR_MSG_HELLO_ACK "\"");
 		}
 		return true;
 	} else if (str == SAR_MSG_HELLO_ACK) {
 		if (engine->IsOrange()) {
+			if (sar_netmessage_debug.GetBool()) console->Print("NetMessage::ChatData: Received hello ack message!\n");
 			g_partnerHasSAR = true;
 		}
 		return true;
@@ -290,6 +313,7 @@ bool NetMessage::ChatData(std::string str) {
 		const char *type = (const char *)decoded.data(); // starts with null-terminated type
 		size_t type_len = strlen(type);
 		const uint8_t *data = decoded.data() + type_len + 1;
+		if (sar_netmessage_debug.GetBool()) console->Print("NetMessage::ChatData: received %s\n", type);
 		handleMessage(type, data, decoded.size() - type_len - 1);
 	}
 
