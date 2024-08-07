@@ -2,7 +2,6 @@
 
 #include "Event.hpp"
 #include "Features/AutoSubmit.hpp"
-#include "Features/AutoSubmitMod.hpp"
 #include "Features/Cvars.hpp"
 #include "Features/Hud/Hud.hpp"
 #include "Features/Hud/InspectionHud.hpp"
@@ -287,11 +286,7 @@ CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit
 		return console->Print(sar_challenge_autosubmit_reload_api_key.ThisPtr()->m_pszHelpString);
 	}
 
-	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
-		AutoSubmitMod::LoadApiKey(true);
-	} else {
-		AutoSubmit::LoadApiKey(true);
-	}
+	AutoSubmit::LoadApiKey(true);
 }
 
 void Cheats::Init() {
