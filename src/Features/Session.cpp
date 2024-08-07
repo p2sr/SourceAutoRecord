@@ -74,6 +74,7 @@ void Session::Started(bool menu) {
 	NetMessage::SessionStarted();
 
 	if (menu) {
+		g_cap_frametime = 2;
 		console->Print("Session started! (menu)\n");
 		this->Rebase(engine->GetTick());
 
