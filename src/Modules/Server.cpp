@@ -753,9 +753,14 @@ static void resetCoopProgress() {
 }
 
 static int g_sendResetDoneAt = -1;
+static void(__rescall *CreateViewModel)(void *, int);
 
 ON_EVENT(SESSION_START) {
 	g_sendResetDoneAt = -1;
+
+	/* spawn viewmodel if it doesnt exist */
+	if (!entityList->GetEntityInfoByClassName("viewmodel") && !engine->demoplayer->IsPlaying())
+		CreateViewModel(server->GetPlayer(1), 0);
 }
 
 ON_EVENT(POST_TICK) {
@@ -1026,6 +1031,13 @@ bool Server::Init() {
 			this->Create = Memory::Read<_Create>(callback + Offsets::CBaseEntity_Create);
 		}
 	}
+
+	// there are some weird differences between the linux and windows binaries
+#ifdef _WIN32
+	CreateViewModel = Memory::Read<void(__rescall *)(void *, int)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 5F 5D C2 04 00 53", 1));
+#else
+	CreateViewModel = Memory::Read<void(__rescall *)(void *, int)>(Memory::Scan(this->Name(), "E8 ? ? ? ? E9 ? ? ? ? 8D B4 26 00 00 00 00 8D 76 00 8B 3D", 1));
+#endif
 
 	sv_cheats = Variable("sv_cheats");
 	sv_footsteps = Variable("sv_footsteps");
