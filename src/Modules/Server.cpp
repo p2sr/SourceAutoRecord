@@ -755,12 +755,15 @@ static void resetCoopProgress() {
 static int g_sendResetDoneAt = -1;
 static void(__rescall *CreateViewModel)(void *, int);
 
+Variable sar_fix_viewmodel_bug("sar_fix_viewmodel_bug", "0", "Fixes the viewmodel seemingly randomly disappearing.\n");
+
 ON_EVENT(SESSION_START) {
 	g_sendResetDoneAt = -1;
 
 	/* spawn viewmodel if it doesnt exist */
-	if (!entityList->GetEntityInfoByClassName("viewmodel") && !engine->demoplayer->IsPlaying())
-		CreateViewModel(server->GetPlayer(1), 0);
+	if (sar_fix_viewmodel_bug.GetBool())
+		if (CreateViewModel && !engine->IsCoop() && !entityList->GetEntityInfoByClassName("viewmodel") && !engine->demoplayer->IsPlaying())
+			CreateViewModel(server->GetPlayer(1), 0);
 }
 
 ON_EVENT(POST_TICK) {
@@ -1032,12 +1035,13 @@ bool Server::Init() {
 		}
 	}
 
-	// there are some weird differences between the linux and windows binaries
+	if (sar.game->Is(SourceGame_Portal2)) {
 #ifdef _WIN32
-	CreateViewModel = Memory::Read<void(__rescall *)(void *, int)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 5F 5D C2 04 00 53", 1));
+		CreateViewModel = Memory::Read<void(__rescall *)(void *, int)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 5F 5D C2 04 00 53", 1));
 #else
-	CreateViewModel = Memory::Read<void(__rescall *)(void *, int)>(Memory::Scan(this->Name(), "E8 ? ? ? ? E9 ? ? ? ? 8D B4 26 00 00 00 00 8D 76 00 8B 3D", 1));
+		CreateViewModel = Memory::Read<void(__rescall *)(void *, int)>(Memory::Scan(this->Name(), "E8 ? ? ? ? E9 ? ? ? ? 8D B4 26 00 00 00 00 8D 76 00 8B 3D", 1));
 #endif
+	}
 
 	sv_cheats = Variable("sv_cheats");
 	sv_footsteps = Variable("sv_footsteps");
