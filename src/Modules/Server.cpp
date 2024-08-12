@@ -583,7 +583,7 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 	}
 
 	if (sar_show_entinp.GetBool() && sv_cheats.GetBool()) {
-		console->Print("%.4d %s.%s(%s)\n", session->GetTick(), server->GetEntityName(thisptr), inputName, parameter.ToString());
+		console->Print("%.4d %s.%s(%s)\n", session->GetTick(), entName, inputName, parameter.ToString());
 	}
 
 	// HACKHACK
