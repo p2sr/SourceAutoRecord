@@ -70,6 +70,29 @@ CON_COMMAND(sar_togglewait, "sar_togglewait - enables or disables \"wait\" for t
 	console->Print("%s wait!\n", (state) ? "Enabled" : "Disabled");
 }
 
+CON_COMMAND(sar_autoaim_point, "sar_autoaim_point <x> <y> <z> - automatically aims at a point in space. Requires cheats\n") {
+	if (args.ArgC() != 4) {
+		return console->Print(sar_autoaim_point.ThisPtr()->m_pszHelpString);
+	}
+	if (!sv_cheats.GetBool()) {
+		return console->Print("sar_autoaim_point requires sv_cheats 1.\n");
+	}
+
+	auto player = client->GetPlayer(GET_SLOT() + 1);
+	if (!player) return;
+	
+	Vector cam = client->GetAbsOrigin(player) + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
+	Vector target = Vector(atof(args[1]), atof(args[2]), atof(args[3]));
+	Vector forward = target - cam;
+
+	float pitch = -atan2f(forward.z, forward.Length2D());
+	float yaw = atan2f(forward.y, forward.x);
+	pitch *= 180.0f / M_PI;
+	yaw *= 180.0f / M_PI;
+
+	engine->ExecuteCommand(Utils::ssprintf("setang %f %f\n", pitch, yaw).c_str());
+}
+
 // P2, INFRA and HL2 only
 #ifdef _WIN32
 #	define TRACE_SHUTDOWN_PATTERN "6A 00 68 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? "
