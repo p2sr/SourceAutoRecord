@@ -10,33 +10,29 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.clang-format = .clang-format
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
-		.travis.yml = .travis.yml
-		_config.yml = _config.yml
-		copy.bat = copy.bat
-		makefile = makefile
+		.mailmap = .mailmap
+		genversion.bat = genversion.bat
+		LICENSE = LICENSE
+		Makefile = Makefile
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{2234E52A-D21C-4984-B830-0D1EBC6842C5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{2234E52A-D21C-4984-B830-0D1EBC6842C5}"
 	ProjectSection(SolutionItems) = preProject
-		doc\contributing.md = doc\contributing.md
-		doc\cvars.md = doc\cvars.md
-		doc\issue.md = doc\issue.md
-		doc\mapping.md = doc\mapping.md
-		doc\maps.md = doc\maps.md
-		doc\standard.md = doc\standard.md
+		docs\CNAME = docs\CNAME
+		docs\contributing.md = docs\contributing.md
+		docs\cvars.md = docs\cvars.md
+		docs\D-DIN.otf = docs\D-DIN.otf
+		docs\features.md = docs\features.md
+		docs\index.html = docs\index.html
+		docs\p2tas.md = docs\p2tas.md
+		docs\style.css = docs\style.css
+		docs\tas_proto.txt = docs\tas_proto.txt
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{B82DAA33-1051-496B-A05A-58BB70E8BC02}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{B82DAA33-1051-496B-A05A-58BB70E8BC02}"
 	ProjectSection(SolutionItems) = preProject
-		doc\images\cp1.png = doc\images\cp1.png
-		doc\images\cpstart.png = doc\images\cpstart.png
-		doc\images\failed_to_load.png = doc\images\failed_to_load.png
-		doc\images\feature_request.png = doc\images\feature_request.png
-		doc\images\game_crashed.png = doc\images\game_crashed.png
-		doc\images\screenie.png = doc\images\screenie.png
-		doc\images\start.png = doc\images\start.png
-		doc\images\unable_to_load_plugin.png = doc\images\unable_to_load_plugin.png
+		docs\img\sar_logo.webp = docs\img\sar_logo.webp
 	EndProjectSection
 EndProject
 Global
