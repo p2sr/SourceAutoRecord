@@ -14,6 +14,7 @@
 #include "Features/Hud/ScrollSpeed.hpp"
 #include "Features/Hud/StrafeHud.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
+#include "Features/Hud/RhythmGame.hpp"
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Routing/StepSlopeBoostDebug.hpp"
 #include "Features/Hud/Toasts.hpp"
@@ -328,8 +329,10 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	int slot = server->GetSplitScreenPlayerSlot(player);
 	bool grounded = SE(player)->ground_entity();
 	groundFramesCounter->HandleMovementFrame(slot, grounded);
+	rhythmGameHud.HandleGroundframeLogic(slot, grounded);
 	strafeQuality.OnMovement(slot, grounded);
 	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
+	if (move->m_nButtons & IN_JUMP && grounded) rhythmGameHud.OnJump(slot);
 	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true });
 
 	auto res = Server::ProcessMovement(thisptr, player, move);

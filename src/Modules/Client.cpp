@@ -13,6 +13,7 @@
 #include "Features/Hud/InputHud.hpp"
 #include "Features/Hud/ScrollSpeed.hpp"
 #include "Features/Hud/StrafeHud.hpp"
+#include "Features/Hud/RhythmGame.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OverlayRender.hpp"
@@ -711,8 +712,12 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 			bool grounded = CE(player)->ground_entity();
 			slot = client->GetSplitScreenPlayerSlot(player);
 			groundFramesCounter->HandleMovementFrame(slot, grounded);
+			rhythmGameHud.HandleGroundframeLogic(slot, grounded);
 			strafeQuality.OnMovement(slot, grounded);
 			if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
+			if (move->m_nButtons & IN_JUMP && grounded) rhythmGameHud.OnJump(slot);
+				
+				
 			Event::Trigger<Event::PROCESS_MOVEMENT>({slot, false});
 			lastTick = tick;
 		}
