@@ -95,7 +95,7 @@ Note: You'll sometimes see a mix with Valve's coding style.
 
 ## Coding
 
-SAR was designed to be able to load multiple Source Engine games on Windows and Linux.
+SAR was designed to be able to load for multiple Source Engine games on Windows and Linux.
 
 ### Interfaces
 
