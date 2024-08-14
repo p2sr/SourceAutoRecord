@@ -329,7 +329,7 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	bool grounded = SE(player)->ground_entity();
 	groundFramesCounter->HandleMovementFrame(slot, grounded);
 	strafeQuality.OnMovement(slot, grounded);
-	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
+	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot, grounded);
 	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true });
 
 	auto res = Server::ProcessMovement(thisptr, player, move);

@@ -712,7 +712,7 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 			slot = client->GetSplitScreenPlayerSlot(player);
 			groundFramesCounter->HandleMovementFrame(slot, grounded);
 			strafeQuality.OnMovement(slot, grounded);
-			if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
+			if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot, grounded);
 			Event::Trigger<Event::PROCESS_MOVEMENT>({slot, false});
 			lastTick = tick;
 		}
