@@ -184,7 +184,9 @@ void EngineDemoPlayer::CustomDemoData(char *data, size_t length) {
 		size_t inputnameLen = strlen(inputname);
 		char *parameter = data + 4 + targetnameLen + classnameLen + inputnameLen;
 
-		//console->Print("[%4d] %s.%s(%s)\n", this->GetTick(), targetname, inputname, parameter);
+		if (sar_show_entinp.GetBool() && sv_cheats.GetBool()) {
+			console->Print("%.4d %s.%s(%s)\n", this->GetTick(), targetname, inputname, parameter);
+		}
 
 		SpeedrunTimer::TestInputRules(targetname, classname, inputname, parameter, slot);
 
