@@ -37,7 +37,7 @@
 
 ### Windows
 
-- Visual Studio 2019
+- Visual Studio 2019 or later
 - MSVC Toolset v142
 - Configure SDK version in `src/SourceAutoRecord.vcxproj`
 - Configure paths in `copy.bat`
@@ -55,7 +55,7 @@
 - Follow the [coding style](#coding-style)
 - Follow the requested changes
 - DO NOT stage files that you had to configure
-- Use latest `master` branch
+- Use the latest `master` branch
 
 ### Quick Tutorial with git
 
@@ -165,11 +165,11 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd* cmd) {
 this->g_ClientDLL->Hook(Client::CreateMove_Hook, Client::CreateMove, Offsets::CreateMove);
 ```
 
-Calling conventions will automatically be resolved using the `__rescall` macro. On Linux it will be `__cdecl` and on Windows `__thiscall`. Hooks on Windows will be declared as `__fastcall` with unused `edx` register. Use `DETOUR_T` for custom return types and `DETOUR_STD` for `__stdcall`.
+Calling conventions will automatically be resolved using the `__rescall` macro. On Linux it will be `__cdecl` and on Windows `__thiscall`. Hooks on Windows will be declared as `__fastcall` with an unused `edx` register. Use `DETOUR_T` for custom return types and `DETOUR_STD` for `__stdcall`.
 
 ### Features
 
-Simple example for adding a new SAR feature in OOP style.
+A simple example for adding a new SAR feature in OOP style.
 
 ```cpp
 // src/Features/MyFeature.hpp
@@ -399,7 +399,7 @@ HUD_ELEMENT3(game_version, "0", "Game specific example.\n",
 }
 ```
 
-Last step is to add the element name to the ordered list. It is used for autocompletion and allows users to manually script their HUD order.
+The last step is to add the element name to the ordered list. It is used for autocompletion and allows users to manually script their HUD order.
 
 ```cpp
 // Features/Hud/Hud.cpp

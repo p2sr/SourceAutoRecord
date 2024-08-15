@@ -95,6 +95,7 @@
 |sar_allow_resizing_window|0|EXPERIMENTAL! Forces resizing on game's window.|
 |sar_always_transmit_heavy_ents|0|Always transmit large but seldom changing edicts to clients to prevent lag spikes.|
 |sar_auto_voidclip_pause|cmd|sar_auto_voidclip_pause \<command> - runs the specified command, and automatically voidclip-pauses on the next load|
+|sar_autoaim_point|cmd|sar_autoaim_point \<x> \<y> \<z> - automatically aims at a point in space. Requires cheats|
 |sar_autojump|0|Enables automatic jumping on the server.|
 |sar_autorecord|0|Enables or disables automatic demo recording.|
 |sar_autostrafe|0|Automatically strafes in your current wishdir.|

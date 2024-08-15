@@ -5,24 +5,7 @@ CXX=g++-10
 SDIR=src
 ODIR=obj
 
-SRCS=$(wildcard $(SDIR)/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Features/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Features/Demo/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Features/Hud/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Features/Routing/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Features/Speedrun/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Features/Speedrun/Rules/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Features/Stats/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Features/ReplaySystem/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Features/Tas/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Features/Tas/TasTools/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Features/Timer/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Games/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Modules/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Utils/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Utils/SDK/*.cpp)
-SRCS+=$(wildcard $(SDIR)/Utils/ed25519/*.cpp)
-
+SRCS=$(shell find $(SDIR) -name '*.cpp')
 OBJS=$(patsubst $(SDIR)/%.cpp, $(ODIR)/%.o, $(SRCS))
 
 VERSION=$(shell git describe --tags)

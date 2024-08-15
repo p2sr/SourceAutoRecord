@@ -583,7 +583,7 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 	}
 
 	if (sar_show_entinp.GetBool() && sv_cheats.GetBool()) {
-		console->Print("%.4d %s.%s(%s)\n", session->GetTick(), server->GetEntityName(thisptr), inputName, parameter.ToString());
+		console->Print("%.4d %s.%s(%s)\n", session->GetTick(), entName, inputName, parameter.ToString());
 	}
 
 	// HACKHACK
@@ -754,9 +754,17 @@ static void resetCoopProgress() {
 }
 
 static int g_sendResetDoneAt = -1;
+static void(__rescall *CreateViewModel)(void *, int);
+
+Variable sar_fix_viewmodel_bug("sar_fix_viewmodel_bug", "0", "Fixes the viewmodel seemingly randomly disappearing.\n");
 
 ON_EVENT(SESSION_START) {
 	g_sendResetDoneAt = -1;
+
+	/* spawn viewmodel if it doesnt exist */
+	if (sar_fix_viewmodel_bug.GetBool())
+		if (CreateViewModel && !engine->IsCoop() && !entityList->GetEntityInfoByClassName("viewmodel") && !engine->demoplayer->IsPlaying())
+			CreateViewModel(server->GetPlayer(1), 0);
 }
 
 ON_EVENT(POST_TICK) {
@@ -1026,6 +1034,14 @@ bool Server::Init() {
 			auto callback = uintptr_t(fire_rocket_projectile.ThisPtr()->m_fnCommandCallback);
 			this->Create = Memory::Read<_Create>(callback + Offsets::CBaseEntity_Create);
 		}
+	}
+
+	if (sar.game->Is(SourceGame_Portal2)) {
+#ifdef _WIN32
+		CreateViewModel = Memory::Read<void(__rescall *)(void *, int)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 5F 5D C2 04 00 53", 1));
+#else
+		CreateViewModel = Memory::Read<void(__rescall *)(void *, int)>(Memory::Scan(this->Name(), "E8 ? ? ? ? E9 ? ? ? ? 8D B4 26 00 00 00 00 8D 76 00 8B 3D", 1));
+#endif
 	}
 
 	sv_cheats = Variable("sv_cheats");
