@@ -17,3 +17,9 @@ public:
 };
 
 extern ScrollSpeedHud scrollSpeedHud;
+
+extern Variable sar_scrollspeed;
+extern Variable sar_scrollspeed_x;
+extern Variable sar_scrollspeed_y;
+extern Variable sar_scrollspeed_bar_x;
+extern Variable sar_scrollspeed_bar_y;
