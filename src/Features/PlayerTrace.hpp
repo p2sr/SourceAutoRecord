@@ -5,38 +5,10 @@
 #include "Utils.hpp"
 
 #include <map>
+#include "Trace/TraceHitbox.hpp"
+#include "Trace/TracePortal.hpp"
 
-struct HitboxList {
-	struct VphysBox {
-		std::vector<Vector> verts;
-	};
-
-	struct ObbBox {
-		Vector mins, maxs;
-		Vector pos;
-		QAngle ang;
-	};
-
-	std::vector<VphysBox> vphys;
-	std::vector<VphysBox> bsps; // this is really lazy but it works
-	std::vector<ObbBox> obb;
-};
-
-struct PortalLocations {
-	struct PortalLocation {
-		Vector pos;
-		QAngle ang;
-		bool is_primary;
-		bool is_coop;
-		bool is_atlas;
-	};
-
-	// This should contain all portals, including
-	// partner ones.
-	std::vector<PortalLocation> locations;
-};
-
-struct Trace {
+struct TraceData {
 	int startSessionTick;
 	int startTasTick;
 	std::vector<Vector> positions[2];
@@ -45,17 +17,17 @@ struct Trace {
 	std::vector<Vector> velocities[2];
 	std::vector<bool> grounded[2];
 	std::vector<bool> crouched[2];
-	std::vector<HitboxList> hitboxes[2];
+	std::vector<Trace::HitboxList> hitboxes[2];
 	// Only have one of those, store all the portals in the map
 	// indiscriminately of player (also ones placed by pedestals etc)
-	std::vector<PortalLocations> portals;
+	std::vector<Trace::PortalsList> portals;
 	bool draw = true;
 };
 
 class PlayerTrace : public Feature {
 private:
 	// In order to arbitrarily number traces
-	std::map<std::string, Trace> traces;
+	std::map<std::string, TraceData> traces;
 	std::string lastRecordedTrace;
 public:
 	PlayerTrace();
@@ -66,7 +38,7 @@ public:
 	// Add a point to the player trace
 	void AddPoint(std::string trace_name, void *player, int slot, bool use_client_offset);
 	// Returns trace with given id
-	Trace *GetTrace(std::string trace_name);
+	TraceData *GetTrace(std::string trace_name);
 	// Returns default trace name
 	std::string GetDefaultTraceName();
 	// Returns number of recorded traces
@@ -85,10 +57,6 @@ public:
 	void DrawPortalsAt(int tick) const;
 	// Teleport to given tick on given trace
 	void TeleportAt(std::string trace_name, int slot, int tick, bool eye);
-	// Construct a list of the hitboxes of all entities near a point
-	HitboxList ConstructHitboxList(Vector center) const;
-	// Construct a list of all portals in the map
-	PortalLocations ConstructPortalLocations() const;
 	// Draw info about all traces to a HUD context
 	void DrawTraceHud(HudContext *ctx);
 	// Corrects latest eye offset according to given CMoveData, to make it correct for portal shooting preview

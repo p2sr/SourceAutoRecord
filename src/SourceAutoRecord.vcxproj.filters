@@ -544,6 +544,12 @@
     <ClCompile Include="Modules\SteamAPI.cpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClCompile>
+    <ClCompile Include="Features\Trace\TracePortal.cpp">
+      <Filter>SourceAutoRecord\Features\Trace</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Trace\TraceHitbox.cpp">
+      <Filter>SourceAutoRecord\Features\Trace</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1368,6 +1374,12 @@
     <ClInclude Include="Modules\SteamAPI.hpp">
       <Filter>SourceAutoRecord\Modules</Filter>
     </ClInclude>
+    <ClInclude Include="Features\Trace\TracePortal.hpp">
+      <Filter>SourceAutoRecord\Features\Trace</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Trace\TraceHitbox.hpp">
+      <Filter>SourceAutoRecord\Features\Trace</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">
@@ -1429,6 +1441,9 @@
     </Filter>
     <Filter Include="SourceAutoRecord\Utils\ed25519">
       <UniqueIdentifier>{9440c4f5-a37e-4618-ad82-f7a8573582e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceAutoRecord\Features\Trace">
+      <UniqueIdentifier>{5a5e7714-1b30-45fe-85df-32a05157d165}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

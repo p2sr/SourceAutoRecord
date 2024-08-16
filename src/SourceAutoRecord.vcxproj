@@ -161,6 +161,8 @@
     <ClCompile Include="Features\Tas\TasTools\LookTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\MoveTool.cpp" />
     <ClCompile Include="Features\Tas\TasTools\ZoomTool.cpp" />
+    <ClCompile Include="Features\Trace\TraceHitbox.cpp" />
+    <ClCompile Include="Features\Trace\TracePortal.cpp" />
     <ClCompile Include="Features\WindowResizer.cpp" />
     <ClCompile Include="Games\ApertureTag.cpp" />
     <ClCompile Include="Games\Portal2.cpp" />
@@ -364,6 +366,8 @@
     <ClInclude Include="Features\Tas\TasTools\LookTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\MoveTool.hpp" />
     <ClInclude Include="Features\Tas\TasTools\ZoomTool.hpp" />
+    <ClInclude Include="Features\Trace\TraceHitbox.hpp" />
+    <ClInclude Include="Features\Trace\TracePortal.hpp" />
     <ClInclude Include="Features\WindowResizer.hpp" />
     <ClInclude Include="Games\ApertureTag.hpp" />
     <ClInclude Include="Games\Portal2.hpp" />

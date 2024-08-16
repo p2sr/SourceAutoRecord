@@ -39,19 +39,12 @@ Variable sar_trace_font_size("sar_trace_font_size", "3.0", 0.1, "The size of tex
 
 Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.\n");
 Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, 1, "Move trace bbox to hovered trace point tick on given trace.\n");
-Variable sar_trace_bbox_ent_record("sar_trace_bbox_ent_record", "1", "Record hitboxes of nearby entities in the trace. You may want to disable this if memory consumption gets too high.\n");
-Variable sar_trace_bbox_ent_draw("sar_trace_bbox_ent_draw", "1", "Draw hitboxes of nearby entities in the trace.\n");
-Variable sar_trace_bbox_ent_dist("sar_trace_bbox_ent_dist", "200", 50, "Distance from which to capture entity hitboxes.\n");
-
-Variable sar_trace_portal_record("sar_trace_portal_record", "1", "Record portal locations.\n");
-Variable sar_trace_portal_oval("sar_trace_portal_oval", "0", "Draw trace portals as ovals rather than rectangles.\n");
-Variable sar_trace_portal_opacity("sar_trace_portal_opacity", "100", 0, 255, "Opacity of trace portal previews.\n");
 
 Vector g_playerTraceTeleportLocation;
 int g_playerTraceTeleportSlot;
 bool g_playerTraceNeedsTeleport = false;
 
-static int tickInternalToUser(int tick, const Trace &trace) {
+static int tickInternalToUser(int tick, const TraceData &trace) {
 	if (tick == -1) return -1;
 	switch (sar_trace_draw_time.GetInt()) {
 	case 2:
@@ -63,7 +56,7 @@ static int tickInternalToUser(int tick, const Trace &trace) {
 	}
 }
 
-static int tickUserToInternal(int tick, const Trace &trace) {
+static int tickUserToInternal(int tick, const TraceData &trace) {
 	if (tick == -1) return -1;
 	switch (sar_trace_draw_time.GetInt()) {
 	case 2:
@@ -76,7 +69,7 @@ static int tickUserToInternal(int tick, const Trace &trace) {
 }
 
 // takes internal tick
-static void drawTraceInfo(int tick, int slot, const Trace &trace, std::function<void (const std::string &)> drawCbk) {
+static void drawTraceInfo(int tick, int slot, const TraceData &trace, std::function<void(const std::string &)> drawCbk) {
 	if (!trace.draw) return;
 	if (trace.positions[slot].size() <= (unsigned)tick) return;
 
@@ -102,7 +95,7 @@ static void drawTraceInfo(int tick, int slot, const Trace &trace, std::function<
 struct TraceHoverInfo {
 	size_t tick;
 	std::string trace_name;
-	Vector pos;
+	Vector position;
 	float speed;
 	float dist;
 };
@@ -127,11 +120,11 @@ bool PlayerTrace::IsTraceNameValid(std::string trace_name) {
 
 void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool use_client_offset) {
 	if (traces.count(trace_name) == 0) {
-		traces[trace_name] = Trace();
+		traces[trace_name] = TraceData();
 		traces[trace_name].startSessionTick = session->GetTick();
 	}
 
-	Trace &trace = traces[trace_name];
+	TraceData &trace = traces[trace_name];
 
 	// update this bad boy every tick because it doesn't like being tinkered with at the
 	// very beginning of the level. fussy guy, lemme tell ya
@@ -164,7 +157,7 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 		camera->GetEyePos<true>(slot, eyepos, angles);
 	}
 
-	HitboxList hitboxes = ConstructHitboxList(pos);
+	Trace::HitboxList hitboxes = Trace::FetchHitboxesAroundPosition(pos);
 
 	trace.positions[slot].push_back(pos);
 	trace.angles[slot].push_back(angles);
@@ -176,11 +169,11 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 
 	// Only do it for one of the slots since we record all the portals in the map at once
 	if (slot == 0) {
-		PortalLocations portals = ConstructPortalLocations();
-		trace.portals.push_back(portals);
+		auto portals = Trace::FetchCurrentPortalLocations();
+		trace.portals.push_back({ portals });
 	}
 }
-Trace *PlayerTrace::GetTrace(std::string trace_name) {
+TraceData *PlayerTrace::GetTrace(std::string trace_name) {
 	auto trace = traces.find(trace_name);
 	if (trace == traces.end()) return nullptr;
 	return &traces.find(trace_name)->second;
@@ -239,7 +232,7 @@ void PlayerTrace::DrawInWorld() const {
 
 	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
 		std::string trace_name = it->first;
-		const Trace &trace = it->second;
+		const TraceData &trace = it->second;
 		if (!trace.draw) continue;
 		for (int slot = 0; slot < 2; slot++) {
 			if (trace.positions[slot].size() < 2) continue;
@@ -415,43 +408,7 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 			OverlayRender::addLine(eyeLine, eyepos, eyepos + forward*50.0);
 			OverlayRender::addBoxMesh(eyepos, {-1,-1,-1}, {1,1,1}, angles, RenderCallback::constant({0, 255, 255}), RenderCallback::none);
 
-			if (sar_trace_bbox_ent_draw.GetBool()) {
-				auto &boxes = trace.hitboxes[slot][localtick];
-
-				for (auto &vphys : boxes.vphys) {
-					MeshId mesh = OverlayRender::createMesh(
-						RenderCallback::constant({ 255, 0, 0, 20  }),
-						RenderCallback::constant({ 255, 0, 0, 255 })
-					);
-					for (size_t i = 0; i < vphys.verts.size(); i += 3) {
-						Vector a = vphys.verts[i+0];
-						Vector b = vphys.verts[i+1];
-						Vector c = vphys.verts[i+2];
-						OverlayRender::addTriangle(mesh, a, b, c, true);
-					}
-				}
-
-				for (auto &bsp : boxes.bsps) {
-					MeshId mesh = OverlayRender::createMesh(
-						RenderCallback::constant({ 0, 0, 255, 20  }),
-						RenderCallback::constant({ 0, 0, 255, 255 })
-					);
-					for (size_t i = 0; i < bsp.verts.size(); i += 3) {
-						Vector a = bsp.verts[i+0];
-						Vector b = bsp.verts[i+1];
-						Vector c = bsp.verts[i+2];
-						OverlayRender::addTriangle(mesh, a, b, c, true);
-					}
-				}
-
-				for (auto &obb : boxes.obb) {
-					OverlayRender::addBoxMesh(
-						obb.pos, obb.mins, obb.maxs, obb.ang,
-						RenderCallback::constant({ 0, 255, 0, 20 }),
-						RenderCallback::constant({ 0, 255, 0, 255 })
-					);
-				}
-			}
+			Trace::DrawHitboxes(trace.hitboxes[slot][localtick]);
 		}
 	}
 }
@@ -468,93 +425,7 @@ void PlayerTrace::DrawPortalsAt(int tick) const {
 		if (trace.portals.size() <= localtick)
 			localtick = trace.portals.size()-1;
 
-		// Draw portals
-		Color blue       = SARUTIL_Portal_Color(1, 0);
-		Color orange     = SARUTIL_Portal_Color(2, 0);
-		Color atlas_prim = SARUTIL_Portal_Color(1, 3);
-		Color atlas_sec  = SARUTIL_Portal_Color(2, 3);
-		Color pbody_prim = SARUTIL_Portal_Color(1, 2);
-		Color pbody_sec  = SARUTIL_Portal_Color(2, 2);
-
-		auto drawPortal = [&](Color portalColor, Vector origin, QAngle angles) {
-			portalColor.a = (uint8_t)sar_trace_portal_opacity.GetInt();
-
-			// Bump portal by slightly more than DIST_EPSILON
-			Vector tmp;
-			Math::AngleVectors(angles, &tmp);
-			origin = origin + tmp*0.04;
-
-			// Convert to radians!
-			double syaw = sin(angles.y * M_PI/180);
-			double cyaw = cos(angles.y * M_PI/180);
-			double spitch = sin(angles.x * M_PI/180);
-			double cpitch = cos(angles.x * M_PI/180);
-
-			// yaw+pitch rotation matrix
-			Matrix rot{3, 3, 0};
-			rot(0, 0) = cyaw * cpitch;
-			rot(0, 1) = -syaw;
-			rot(0, 2) = cyaw * spitch;
-			rot(1, 0) = syaw * cpitch;
-			rot(1, 1) = cyaw;
-			rot(1, 2) = syaw * spitch;
-			rot(2, 0) = -spitch;
-			rot(2, 1) = 0;
-			rot(2, 2) = cpitch;
-
-			MeshId mesh = OverlayRender::createMesh(RenderCallback::constant(portalColor), RenderCallback::none);
-
-			if (sar_trace_portal_oval.GetBool()) {
-				int tris = 20;
-				for (int i = 0; i < tris; ++i) {
-					double lang = M_PI * 2 * i / tris;
-					double rang = M_PI * 2 * (i + 1) / tris;
-
-					Vector dl(0, 32 * cos(lang), 56 * sin(lang));
-					Vector dr(0, 32 * cos(rang), 56 * sin(rang));
-
-					Vector l = origin + rot * dl;
-					Vector r = origin + rot * dr;
-
-					OverlayRender::addTriangle(mesh, l, r, origin);
-				}
-			} else {
-				OverlayRender::addQuad(
-					mesh,
-					origin + rot * Vector{0, -32, -56},
-					origin + rot * Vector{0, -32,  56},
-					origin + rot * Vector{0,  32,  56},
-					origin + rot * Vector{0,  32, -56}
-				);
-			}
-
-			// Add a little tick on the top of the portal so we can compare
-			// orientations
-			OverlayRender::addTriangle(
-				mesh,
-				origin + rot * Vector{0, -5, 56},
-				origin + rot * Vector{0, 0, 64},
-				origin + rot * Vector{0, 5, 56}
-			);
-		};
-
-		for (auto portal : trace.portals[localtick].locations) {
-			Color color;
-			if (portal.is_coop) {
-				if (portal.is_atlas)
-					color = portal.is_primary? atlas_prim: atlas_sec;
-				else
-					color = portal.is_primary? pbody_prim: pbody_sec;
-			} else {
-				color = portal.is_primary? blue: orange;
-			}
-
-			drawPortal(
-				color,
-				portal.pos,
-				portal.ang
-			);
-		}
+		Trace::DrawPortals(trace.portals[localtick]);
 	}
 }
 
@@ -590,114 +461,6 @@ void PlayerTrace::TeleportAt(std::string trace_name, int slot, int tick, bool ey
 
 	g_playerTraceTeleportSlot = slot;
 	g_playerTraceNeedsTeleport = true;
-}
-
-HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
-	if (!sar_trace_bbox_ent_record.GetBool()) return HitboxList{};
-
-	const float d = sar_trace_bbox_ent_dist.GetFloat();
-
-	Vector incl_mins = center - Vector{d, d, d};
-	Vector incl_maxs = center + Vector{d, d, d};
-
-	HitboxList list;
-
-	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
-		void *ent = server->m_EntPtrArray[i].m_pEntity;
-		if (!ent) continue;
-		if (server->IsPlayer(ent)) continue;
-
-		ICollideable *coll = &SE(ent)->collision();
-
-		if (coll->GetSolidFlags() & FSOLID_NOT_SOLID) continue;
-
-		Vector mins, maxs;
-		coll->WorldSpaceSurroundingBounds(&mins, &maxs);
-		if (maxs.x < incl_mins.x || mins.x > incl_maxs.x) continue;
-		if (maxs.y < incl_mins.y || mins.y > incl_maxs.y) continue;
-		if (maxs.z < incl_mins.z || mins.z > incl_maxs.z) continue;
-
-		switch (coll->GetSolid()) {
-		case SOLID_BBOX:
-			list.obb.push_back(HitboxList::ObbBox{mins, maxs, {0,0,0}, {0,0,0}});
-			break;
-		case SOLID_OBB:
-		case SOLID_OBB_YAW:
-			list.obb.push_back(HitboxList::ObbBox{
-				coll->OBBMins(),
-				coll->OBBMaxs(),
-				coll->GetCollisionOrigin(),
-				coll->GetCollisionAngles(),
-			});
-			break;
-		case SOLID_BSP:
-		case SOLID_VPHYSICS:
-			{
-				IPhysicsObject *phys = coll->GetVPhysicsObject();
-				if (!phys) break;
-
-				using _GetCollide = CPhysCollide *(__rescall *)(const void *thisptr);
-				auto GetCollide = Memory::VMT<_GetCollide>(phys, Offsets::GetCollide);
-				const CPhysCollide *phys_coll = GetCollide(phys);
-
-				Vector *verts;
-				int vert_count = engine->CreateDebugMesh(engine->g_physCollision, phys_coll, &verts);
-
-				matrix3x4_t trans = coll->CollisionToWorldTransform();
-
-				std::vector<Vector> verts_copy(vert_count);
-				for (int i = 0; i < vert_count; ++i) {
-					verts_copy[i] = trans.VectorTransform(verts[i]);
-				}
-
-				if (coll->GetSolid() == SOLID_VPHYSICS) {
-					list.vphys.push_back(HitboxList::VphysBox{verts_copy});
-				} else {
-					list.bsps.push_back(HitboxList::VphysBox{verts_copy});
-				}
-
-				engine->DestroyDebugMesh(engine->g_physCollision, vert_count, verts);
-			}
-			break;
-		case SOLID_NONE:
-		case SOLID_CUSTOM:
-		default:
-			break;
-		}
-	}
-
-	return list;
-}
-
-PortalLocations PlayerTrace::ConstructPortalLocations() const {
-	if (!sar_trace_portal_record.GetBool()) return PortalLocations{};
-
-	PortalLocations portals;
-
-	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
-		void *ent = server->m_EntPtrArray[i].m_pEntity;
-		if (!ent) continue;
-		if (server->IsPlayer(ent)) continue;
-		if (strcmp(server->GetEntityClassName(ent), "prop_portal")) continue;
-		if (!SE(ent)->field<bool>("m_bActivated")) continue;
-
-		PortalLocations::PortalLocation portal;
-
-		portal.pos = server->GetAbsOrigin(ent);
-		portal.ang = server->GetAbsAngles(ent);
-		portal.is_primary = !SE(ent)->field<bool>("m_bIsPortal2");
-		portal.is_coop = engine->IsCoop();
-
-		if (portal.is_coop) {
-			CBaseHandle shooter_handle = SE(ent)->field<CBaseHandle>("m_hFiredByPlayer");
-			void *shooter = entityList->LookupEntity(shooter_handle);
-			portal.is_atlas = shooter == server->GetPlayer(1);
-		}
-
-		portals.locations.push_back(portal);
-	}
-
-	return portals;
 }
 
 ON_EVENT(PROCESS_MOVEMENT) {
@@ -736,7 +499,7 @@ void PlayerTrace::TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slo
 	if (!sar_trace_use_shot_eyeoffset.GetBool()) return;
 	if (!ShouldRecord()) return;
 
-	Trace *trace = playerTrace->GetTrace(sar_trace_record.GetString());
+	TraceData *trace = playerTrace->GetTrace(sar_trace_record.GetString());
 	if (trace == nullptr) return;
 
 	// portal shooting position is funky. Basically, shooting happens after movement
@@ -776,7 +539,7 @@ ON_EVENT(SESSION_START) {
 void PlayerTrace::DrawTraceHud(HudContext *ctx) {
 	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
 		const char *name = it->first.c_str();
-		const Trace &t = it->second;
+		const TraceData &t = it->second;
 		int tick = tickUserToInternal(sar_trace_bbox_at.GetInt(), t);
 		for (int slot = 0; slot < 2; slot++) {
 			drawTraceInfo(tick, slot, t, [=](const std::string &line) {
@@ -796,7 +559,7 @@ int PlayerTrace::GetTasTraceTick() {
 	// least that long
 
 	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
-		const Trace &trace = it->second;
+		const TraceData &trace = it->second;
 		int tick = tickUserToInternal(sar_trace_bbox_at.GetInt(), trace);
 		for (int slot = 0; slot < 2; slot++) {
 			if ((int)trace.positions[slot].size() <= tick) {
@@ -910,10 +673,10 @@ ON_EVENT(RENDER) {
 		if (playerTrace->GetTraceCount() > 1) {
 			hover_str += Utils::ssprintf("trace: %s\n", h.trace_name.c_str());
 		}
-		hover_str += Utils::ssprintf("pos: %.1f %.1f %.1f\n", h.pos.x, h.pos.y, h.pos.z);
+		hover_str += Utils::ssprintf("pos: %.1f %.1f %.1f\n", h.position.x, h.position.y, h.position.z);
 		hover_str += Utils::ssprintf("horiz. speed: %.2f\n", h.speed);
 
-		OverlayRender::addText(h.pos + hud_offset, hover_str, sar_trace_font_size.GetFloat(), true, true);
+		OverlayRender::addText(h.position + hud_offset, hover_str, sar_trace_font_size.GetFloat(), true, true);
 	}
 
 	if (sar_trace_draw_speed_deltas.GetBool()) {
