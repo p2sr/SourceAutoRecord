@@ -108,7 +108,7 @@ struct Vector2 {
 		: x(x)
 		, y(y) {
 	}
-	inline T Length() const {
+	inline float Length() const {
 		return sqrt(x * x + y * y);
 	}
 
@@ -161,6 +161,9 @@ struct Vector2 {
 	}
 	inline T Cross(const Vector2 &other) const {
 		return x * other.y - y * other.x;
+	}
+	inline Vector2 Normalize() {
+		return *this / this->Length();
 	}
 };
 
