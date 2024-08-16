@@ -672,14 +672,14 @@ static void InitPlayerRunCommandHook() {
 	g_IsPlayerRunCommandHookInitialized = true;
 }
 
-// CServerGameDLL::GameFrame
 ON_EVENT(SESSION_START) {
 	if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
-	if ((!g_IsCMFlagHookInitialized) && (sv_bonus_challenge.GetBool())) InitCMFlagHook();
+	if (!g_IsCMFlagHookInitialized && sv_bonus_challenge.GetBool()) InitCMFlagHook();
 	if (!g_IsPlayerRunCommandHookInitialized) InitPlayerRunCommandHook();
 }
-DETOUR(Server::GameFrame, bool simulating)
-{
+
+// CServerGameDLL::GameFrame
+DETOUR(Server::GameFrame, bool simulating) {
 	if (sar_tick_debug.GetInt() >= 3 || (sar_tick_debug.GetInt() >= 2 && simulating)) {
 		int host, server, client;
 		engine->GetTicks(host, server, client);
