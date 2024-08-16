@@ -17,8 +17,6 @@
 
 #include <vector>
 
-PlayerTrace *playerTrace;
-
 Variable sar_trace_autoclear("sar_trace_autoclear", "1", 0, 1, "Automatically clear the trace on session start\n");
 Variable sar_trace_override("sar_trace_override", "1", 0, 1, "Clears old trace when you start recording to it instead of recording on top of it.\n");
 Variable sar_trace_record("sar_trace_record", "0", "Record the trace to a slot. Set to 0 for not recording\n", 0);
@@ -43,6 +41,8 @@ Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, 1, "Move t
 Vector g_playerTraceTeleportLocation;
 int g_playerTraceTeleportSlot;
 bool g_playerTraceNeedsTeleport = false;
+std::map<std::string, TraceData> traces;
+std::string lastRecordedTrace = "0";
 
 static int tickInternalToUser(int tick, const TraceData &trace) {
 	if (tick == -1) return -1;
@@ -102,23 +102,18 @@ struct TraceHoverInfo {
 
 std::vector<TraceHoverInfo> hovers;
 
-PlayerTrace::PlayerTrace() {
-	this->lastRecordedTrace = "0";
-	this->hasLoaded = true;
-}
-
-bool PlayerTrace::ShouldRecord() {
+bool Trace::ShouldRecord() {
 	return IsTraceNameValid(sar_trace_record.GetString()) && !engine->IsGamePaused();
 }
 
-bool PlayerTrace::IsTraceNameValid(std::string trace_name) {
+bool Trace::IsTraceNameValid(std::string trace_name) {
 	// for legacy reasons, 0 is treated as no recording
 	if (trace_name == "0") return false;
 
 	return trace_name.length() > 0;
 }
 
-void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool use_client_offset) {
+void Trace::AddPoint(std::string trace_name, void *player, int slot, bool use_client_offset) {
 	if (traces.count(trace_name) == 0) {
 		traces[trace_name] = TraceData();
 		traces[trace_name].startSessionTick = session->GetTick();
@@ -173,12 +168,12 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 		trace.portals.push_back({ portals });
 	}
 }
-TraceData *PlayerTrace::GetTrace(std::string trace_name) {
+TraceData *Trace::GetTrace(std::string trace_name) {
 	auto trace = traces.find(trace_name);
 	if (trace == traces.end()) return nullptr;
 	return &traces.find(trace_name)->second;
 }
-std::string PlayerTrace::GetDefaultTraceName() {
+std::string Trace::GetDefaultTraceName() {
 	// first, try to look for currently hovered traces, find the smallest one
 	std::string trace_name = "";
 
@@ -196,16 +191,16 @@ std::string PlayerTrace::GetDefaultTraceName() {
 
 	return trace_name;
 }
-int PlayerTrace::GetTraceCount() {
+int Trace::GetTraceCount() {
 	return traces.size();
 }
-void PlayerTrace::Clear(std::string trace_name) {
+void Trace::Clear(std::string trace_name) {
 	traces.erase(trace_name);
 }
-void PlayerTrace::ClearAll() {
+void Trace::ClearAll() {
 	traces.clear();
 }
-void PlayerTrace::DrawInWorld() const {
+void Trace::DrawInWorld() {
 	if (engine->IsSkipping()) return;
 
 	bool draw_through_walls = sar_trace_draw_through_walls.GetBool();
@@ -230,7 +225,7 @@ void PlayerTrace::DrawInWorld() const {
 		}.Normalize();
 	}
 
-	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
+	for (auto it = traces.begin(); it != traces.end(); ++it) {
 		std::string trace_name = it->first;
 		const TraceData &trace = it->second;
 		if (!trace.draw) continue;
@@ -330,7 +325,7 @@ void PlayerTrace::DrawInWorld() const {
 		}
 	}
 }
-void PlayerTrace::DrawSpeedDeltas() const {
+void Trace::DrawSpeedDeltas() {
 	const Vector hud_offset = {0.0, 0.0, 10.0};
 
 	for (const auto &[trace_idx, trace] : traces) {
@@ -361,7 +356,7 @@ void PlayerTrace::DrawSpeedDeltas() const {
 		}
 	}
 }
-void PlayerTrace::DrawBboxAt(int tick) const {
+void Trace::DrawBboxAt(int tick) {
 	if (engine->IsSkipping()) return;
 
 	static const Vector player_standing_size = {32, 32, 72};
@@ -412,7 +407,7 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 		}
 	}
 }
-void PlayerTrace::DrawPortalsAt(int tick) const {
+void Trace::DrawPortalsAt(int tick) {
 	if (engine->IsSkipping()) return;
 
 	for (const auto &[trace_idx, trace] : traces) {
@@ -429,7 +424,7 @@ void PlayerTrace::DrawPortalsAt(int tick) const {
 	}
 }
 
-void PlayerTrace::TeleportAt(std::string trace_name, int slot, int tick, bool eye) {
+void Trace::TeleportAt(std::string trace_name, int slot, int tick, bool eye) {
 	if (traces.count(trace_name) == 0) {
 		console->Print("No trace named %s!\n", trace_name.c_str());
 		return;
@@ -465,10 +460,10 @@ void PlayerTrace::TeleportAt(std::string trace_name, int slot, int tick, bool ey
 
 ON_EVENT(PROCESS_MOVEMENT) {
 	// detect trace switch
-	playerTrace->CheckTraceChanged();
+	CheckTraceChanged();
 
 	// Record trace
-	if (playerTrace->ShouldRecord()) {
+	if (Trace::ShouldRecord()) {
 		if (engine->IsOrange()) {
 			sar_trace_record.SetValue(0);
 			console->Print("The trace only works for the host! Turning off trace recording.\n");
@@ -489,17 +484,28 @@ ON_EVENT(PROCESS_MOVEMENT) {
 		}
 
 		if (player) {
-			playerTrace->AddPoint(sar_trace_record.GetString(), player, event.slot, use_client_offset);
+			Trace::AddPoint(sar_trace_record.GetString(), player, event.slot, use_client_offset);
 		}
 	}
 }
 
-void PlayerTrace::TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slot, bool clientside) {
+void CheckTraceChanged() {
+	std::string currentTrace = sar_trace_record.GetString();
+	if (currentTrace != lastRecordedTrace) {
+		lastRecordedTrace = currentTrace;
+
+		if (sar_trace_override.GetBool()) {
+			Trace::Clear(currentTrace);
+		}
+	}
+}
+
+void Trace::TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slot, bool clientside) {
 
 	if (!sar_trace_use_shot_eyeoffset.GetBool()) return;
-	if (!ShouldRecord()) return;
+	if (!Trace::ShouldRecord()) return;
 
-	TraceData *trace = playerTrace->GetTrace(sar_trace_record.GetString());
+	TraceData *trace = GetTrace(sar_trace_record.GetString());
 	if (trace == nullptr) return;
 
 	// portal shooting position is funky. Basically, shooting happens after movement
@@ -517,27 +523,13 @@ void PlayerTrace::TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slo
 	trace->eyepos[slot][lastTick] = eyepos;
 }
 
-void PlayerTrace::CheckTraceChanged() {
-	std::string currentTrace = sar_trace_record.GetString();
-	if (currentTrace == lastRecordedTrace) return;
-	
-	// trace changed!
-	lastRecordedTrace = currentTrace;
-
-	// clean old trace if needed
-	if (sar_trace_override.GetBool()) {
-		Clear(currentTrace);
-	}
-	
-}
-
 ON_EVENT(SESSION_START) {
 	if (sar_trace_autoclear.GetBool())
-		playerTrace->ClearAll();
+		Trace::ClearAll();
 }
 
-void PlayerTrace::DrawTraceHud(HudContext *ctx) {
-	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
+void Trace::DrawTraceHud(HudContext *ctx) {
+	for (auto it = traces.begin(); it != traces.end(); ++it) {
 		const char *name = it->first.c_str();
 		const TraceData &t = it->second;
 		int tick = tickUserToInternal(sar_trace_bbox_at.GetInt(), t);
@@ -549,7 +541,7 @@ void PlayerTrace::DrawTraceHud(HudContext *ctx) {
 	}
 }
 
-int PlayerTrace::GetTasTraceTick() {
+int Trace::GetTasTraceTick() {
 	if (sar_trace_draw_time.GetInt() != 3) return -1;
 
 	int max_tas_tick = -1;
@@ -558,7 +550,7 @@ int PlayerTrace::GetTasTraceTick() {
 	// at, i.e. the highest tastick <= sar_trace_bbox_at with some trace being at
 	// least that long
 
-	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
+	for (auto it = traces.begin(); it != traces.end(); ++it) {
 		const TraceData &trace = it->second;
 		int tick = tickUserToInternal(sar_trace_bbox_at.GetInt(), trace);
 		for (int slot = 0; slot < 2; slot++) {
@@ -576,7 +568,7 @@ int PlayerTrace::GetTasTraceTick() {
 
 HUD_ELEMENT2(trace, "0", "Draws info about current trace bbox tick.\n", HudType_InGame | HudType_Paused) {
 	if (!sv_cheats.GetBool()) return;
-	playerTrace->DrawTraceHud(ctx);
+	Trace::DrawTraceHud(ctx);
 }
 
 CON_COMMAND(sar_trace_hide, "sar_trace_hide [trace name] - hide the trace with the given name\n") {
@@ -584,7 +576,7 @@ CON_COMMAND(sar_trace_hide, "sar_trace_hide [trace name] - hide the trace with t
 		return console->Print(sar_trace_hide.ThisPtr()->m_pszHelpString);
 
 	std::string trace_name = args[1];
-	auto trace = playerTrace->GetTrace(trace_name);
+	auto trace = Trace::GetTrace(trace_name);
 	if (trace) {
 		trace->draw = false;
 	}
@@ -595,7 +587,7 @@ CON_COMMAND(sar_trace_show, "sar_trace_show [trace name] - show the trace with t
 		return console->Print(sar_trace_show.ThisPtr()->m_pszHelpString);
 
 	std::string trace_name = args[1];
-	auto trace = playerTrace->GetTrace(trace_name);
+	auto trace = Trace::GetTrace(trace_name);
 	if (trace) {
 		trace->draw = true;
 	}
@@ -607,7 +599,7 @@ CON_COMMAND(sar_trace_dump, "sar_trace_dump <tick> [player slot] [trace name] - 
 	if (args.ArgC() < 2 || args.ArgC() > 4)
 		return console->Print(sar_trace_dump.ThisPtr()->m_pszHelpString);
 
-	std::string trace_name = (args.ArgC() == 4) ? args[3] : playerTrace->GetDefaultTraceName();
+	std::string trace_name = (args.ArgC() == 4) ? args[3] : Trace::GetDefaultTraceName();
 	int slot = (args.ArgC()>=3 && engine->IsCoop()) ? std::atoi(args[2]) : 0;
 	int usertick = std::atoi(args[1]);
 	if (usertick == -1) usertick = sar_trace_bbox_at.GetInt();
@@ -615,7 +607,7 @@ CON_COMMAND(sar_trace_dump, "sar_trace_dump <tick> [player slot] [trace name] - 
 	if (slot > 1) slot = 1;
 	if (slot < 0) slot = 0;
 
-	auto trace = playerTrace->GetTrace(trace_name);
+	auto trace = Trace::GetTrace(trace_name);
 	if (trace) {
 		int tick = tickUserToInternal(usertick, *trace);
 		drawTraceInfo(tick, slot, *trace, [](const std::string &line) {
@@ -643,17 +635,17 @@ ON_EVENT(RENDER) {
 			}
 		}
 
-		auto trace = playerTrace->GetTrace(trace_name);
+		auto trace = Trace::GetTrace(trace_name);
 		if (trace) tick = tickInternalToUser(tick, *trace);
 		sar_trace_bbox_at.SetValue(tick);
 	}
 
-	playerTrace->DrawInWorld();
+	Trace::DrawInWorld();
 
 	int tick = sar_trace_bbox_at.GetInt();
 	if (tick != -1) {
-		playerTrace->DrawBboxAt(tick);
-		playerTrace->DrawPortalsAt(tick);
+		Trace::DrawBboxAt(tick);
+		Trace::DrawPortalsAt(tick);
 	}
 
 	const Vector hud_offset = {0.0, 0.0, 2.0};
@@ -664,13 +656,13 @@ ON_EVENT(RENDER) {
 		int timeType = sar_trace_draw_time.GetInt();
 		if (timeType > 0) {
 			int tick = h.tick;
-			auto trace = playerTrace->GetTrace(h.trace_name);
+			auto trace = Trace::GetTrace(h.trace_name);
 			if (trace) {
 				tick = tickInternalToUser(tick, *trace);
 			}
 			hover_str += Utils::ssprintf("tick: %d\n", tick);
 		}
-		if (playerTrace->GetTraceCount() > 1) {
+		if (Trace::GetTraceCount() > 1) {
 			hover_str += Utils::ssprintf("trace: %s\n", h.trace_name.c_str());
 		}
 		hover_str += Utils::ssprintf("pos: %.1f %.1f %.1f\n", h.position.x, h.position.y, h.position.z);
@@ -680,7 +672,7 @@ ON_EVENT(RENDER) {
 	}
 
 	if (sar_trace_draw_speed_deltas.GetBool()) {
-		playerTrace->DrawSpeedDeltas();
+		Trace::DrawSpeedDeltas();
 	}
 }
 
@@ -689,11 +681,11 @@ CON_COMMAND(sar_trace_clear, "sar_trace_clear <name> - Clear player trace with a
 		return console->Print(sar_trace_clear.ThisPtr()->m_pszHelpString);
 
 	const char *trace_name = args[1];
-	playerTrace->Clear(trace_name);
+	Trace::Clear(trace_name);
 }
 
 CON_COMMAND(sar_trace_clear_all, "sar_trace_clear_all - Clear all the traces\n") {
-	playerTrace->ClearAll();
+	Trace::ClearAll();
 }
 
 CON_COMMAND(sar_trace_teleport_at, "sar_trace_teleport_at <tick> [player slot] [trace name] - teleports the player at the given trace tick on the given trace ID (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).\n") {
@@ -702,14 +694,14 @@ CON_COMMAND(sar_trace_teleport_at, "sar_trace_teleport_at <tick> [player slot] [
 	if (args.ArgC() < 2 || args.ArgC() > 4)
 		return console->Print(sar_trace_teleport_at.ThisPtr()->m_pszHelpString);
 
-	std::string trace_name = (args.ArgC() == 4) ? args[3] : playerTrace->GetDefaultTraceName();
+	std::string trace_name = (args.ArgC() == 4) ? args[3] : Trace::GetDefaultTraceName();
 	int slot = (args.ArgC()>=3 && engine->IsCoop()) ? std::atoi(args[2]) : 0;
 	int tick = std::atoi(args[1]);
 
 	if (slot > 1) slot = 1;
 	if (slot < 0) slot = 0;
 
-	playerTrace->TeleportAt(trace_name, slot, tick, false);
+	Trace::TeleportAt(trace_name, slot, tick, false);
 }
 
 CON_COMMAND(sar_trace_teleport_eye, "sar_trace_teleport_eye <tick> [player slot] [trace name] - teleports the player to the eye position at the given trace tick on the given trace (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).\n") {
@@ -718,23 +710,23 @@ CON_COMMAND(sar_trace_teleport_eye, "sar_trace_teleport_eye <tick> [player slot]
 	if (args.ArgC() < 2 || args.ArgC() > 4)
 		return console->Print(sar_trace_teleport_eye.ThisPtr()->m_pszHelpString);
 
-	std::string trace_name = (args.ArgC() == 4) ? args[3] : playerTrace->GetDefaultTraceName();
+	std::string trace_name = (args.ArgC() == 4) ? args[3] : Trace::GetDefaultTraceName();
 	int slot = (args.ArgC()>=3 && engine->IsCoop()) ? std::atoi(args[2]) : 0;
 	int tick = std::atoi(args[1]);
 
 	if (slot > 1) slot = 1;
 	if (slot < 0) slot = 0;
 
-	playerTrace->TeleportAt(trace_name, slot, tick, true);
+	Trace::TeleportAt(trace_name, slot, tick, true);
 }
 
 CON_COMMAND(sar_trace_export, "sar_trace_export <filename> [trace name] - Export trace data into a csv file.\n") {
 	if (args.ArgC() < 2 || args.ArgC() > 3)
 		return console->Print(sar_trace_export.ThisPtr()->m_pszHelpString);
 
-	std::string trace_name = (args.ArgC() == 3) ? args[2] : playerTrace->GetDefaultTraceName();
+	std::string trace_name = (args.ArgC() == 3) ? args[2] : Trace::GetDefaultTraceName();
 
-	auto trace = playerTrace->GetTrace(trace_name);
+	auto trace = Trace::GetTrace(trace_name);
 
 	if (trace == nullptr) {
 		console->Print("Invalid trace name!\n");

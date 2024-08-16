@@ -24,13 +24,7 @@ struct TraceData {
 	bool draw = true;
 };
 
-class PlayerTrace : public Feature {
-private:
-	// In order to arbitrarily number traces
-	std::map<std::string, TraceData> traces;
-	std::string lastRecordedTrace;
-public:
-	PlayerTrace();
+namespace Trace {
 	// Tells us whether trace should be recorded
 	bool ShouldRecord();
 	// Tells us if the trace name is valid
@@ -48,26 +42,22 @@ public:
 	// Clear all the traces
 	void ClearAll();
 	// Display the trace in the world
-	void DrawInWorld() const;
+	void DrawInWorld();
 	// Display XY-speed delta overlay
-	void DrawSpeedDeltas() const;
+	void DrawSpeedDeltas();
 	// Display a bbox at the given tick
-	void DrawBboxAt(int tick) const;
+	void DrawBboxAt(int tick);
 	// Display the portals at the given tick
-	void DrawPortalsAt(int tick) const;
+	void DrawPortalsAt(int tick);
 	// Teleport to given tick on given trace
 	void TeleportAt(std::string trace_name, int slot, int tick, bool eye);
 	// Draw info about all traces to a HUD context
 	void DrawTraceHud(HudContext *ctx);
 	// Corrects latest eye offset according to given CMoveData, to make it correct for portal shooting preview
 	void TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slot, bool clientside);
-	// Checks if trace recording ID has been changed
-	void CheckTraceChanged();
 	// Get the current trace bbox tick for TAS stuff, or -1 if there isn't one
 	int GetTasTraceTick();
 };
-
-extern PlayerTrace *playerTrace;
 
 extern Vector g_playerTraceTeleportLocation;
 extern int g_playerTraceTeleportSlot;

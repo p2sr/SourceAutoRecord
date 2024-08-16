@@ -334,7 +334,7 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 
 	auto res = Server::ProcessMovement(thisptr, player, move);
 
-	playerTrace->TweakLatestEyeOffsetForPortalShot(move, slot, false);
+	Trace::TweakLatestEyeOffsetForPortalShot(move, slot, false);
 
 	// We edit pos after process movement to get accurate teleportation
 	// This is for sar_trace_teleport_at
