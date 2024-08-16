@@ -67,11 +67,27 @@ public:
 	int GetFontHeight(HFont font);
 	int GetFontLength(HFont font, const char *fmt, ...);
 	void DrawTxt(HFont font, int x, int y, Color clr, const char *fmt, ...);
+	void DrawTxt(HFont font, const Vector2<int> &center, Color clr, const std::string &fmt);
+
 	void DrawRect(Color clr, int x0, int y0, int x1, int y1);
+	void DrawRect(Color clr, const Vector2<int> &v0, const Vector2<int> &v1);
+	void DrawRect(Color clr, const Bounds<int> &bounds);
+
 	void DrawRectAndCenterTxt(Color clr, int x0, int y0, int x1, int y1, HFont font, Color fontClr, const char *fmt, ...);
+	void DrawRectAndCenterTxt(Color clr, const Vector2<int> &v0, const Vector2<int> &v1, HFont font, Color fontClr, const std::string &text);
+	void DrawRectAndCenterTxt(Color clr, const Bounds<int> &bounds, HFont font, Color fontClr, const std::string &text);
+	//<...> is unknown woods for me, I am leaving it to someone who actually can code
+	//ADGOD.
+
 	void DrawCircle(int x, int y, float radius, Color clr);
+	void DrawCircle(const Vector2<int> &center, float radius, Color clr);
+
 	void DrawFilledCircle(int x, int y, float radius, Color clr);
+	void DrawFilledCircle(const Vector2<int> &center, float radius, Color clr);
+
 	void DrawColoredLine(int x0, int y0, int x1, int y1, Color clr);
+	void DrawColoredLine(const Vector2<int> &v0, const Vector2<int> &v1, Color clr);
+
 
 	bool Init() override;
 	void Shutdown() override;
