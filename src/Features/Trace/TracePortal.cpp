@@ -2,26 +2,11 @@
 #include <Variable.hpp>
 #include <Modules/Server.cpp>
 
+using namespace Trace;
+
 Variable sar_trace_portal_record("sar_trace_portal_record", "1", "Record portal locations.\n");
 Variable sar_trace_portal_oval("sar_trace_portal_oval", "0", "Draw trace portals as ovals rather than rectangles.\n");
 Variable sar_trace_portal_opacity("sar_trace_portal_opacity", "100", 0, 255, "Opacity of trace portal previews.\n");
-
-Trace::PortalsList Trace::FetchCurrentPortalLocations() {
-	Trace::PortalsList portals;
-
-	if (!sar_trace_portal_record.GetBool()) return portals;
-
-	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
-		void *ent = server->m_EntPtrArray[i].m_pEntity;
-		
-		if (IsEntityActivePortal(ent)) {
-			auto portal = GetPortalLocationFromEntity(ent);
-			portals.locations.push_back(portal);
-		}
-	}
-
-	return portals;
-}
 
 bool IsEntityActivePortal(void *entity) {
 	if (!entity || server->IsPlayer(entity)) return false;
@@ -31,7 +16,7 @@ bool IsEntityActivePortal(void *entity) {
 	return true;
 }
 
-Trace::PortalLocation GetPortalLocationFromEntity( void *ent ) {
+Trace::PortalLocation GetPortalLocationFromEntity(void *ent) {
 	Trace::PortalLocation portal;
 
 	portal.position = server->GetAbsOrigin(ent);
@@ -48,18 +33,34 @@ Trace::PortalLocation GetPortalLocationFromEntity( void *ent ) {
 	return portal;
 }
 
-void Trace::DrawPortals(PortalsList list) {
-	for (auto portal : list.locations) {
-		Trace::DrawPortal(portal);
+PortalsList PortalsList::FetchCurrentLocations() {
+	Trace::PortalsList portals;
+
+	if (!sar_trace_portal_record.GetBool()) return portals;
+
+	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+		void *ent = server->m_EntPtrArray[i].m_pEntity;
+		
+		if (IsEntityActivePortal(ent)) {
+			auto portal = GetPortalLocationFromEntity(ent);
+			portals.locations.push_back(portal);
+		}
+	}
+
+	return portals;
+}
+
+void PortalsList::Draw() const {
+	for (auto portal : this->locations) {
+		portal.Draw();
 	}
 }
 
-void Trace::DrawPortal(Trace::PortalLocation portal) {
-	Color portalColor = GetPortalDrawColor(portal);
-    Vector origin = GetPortalDrawOrigin(portal);
-	Matrix rotation = GetPortalDrawRotationMatrix(portal);
+void PortalLocation::Draw() const {
+    Vector origin = this->GetDrawOrigin();
+	Matrix rotation = this->GetDrawRotationMatrix();
 
-	MeshId mesh = OverlayRender::createMesh(RenderCallback::constant(portalColor), RenderCallback::none);
+	MeshId mesh = OverlayRender::createMesh(RenderCallback::constant(this->GetColor()), RenderCallback::none);
 
 	const int HALF_WIDTH = 32;
 	const int HALF_HEIGHT = 56;
@@ -97,27 +98,27 @@ void Trace::DrawPortal(Trace::PortalLocation portal) {
 	);
 }
 
-Color GetPortalDrawColor(Trace::PortalLocation portal) {
-	int portalIndex = portal.is_primary ? 1 : 2;
-	int playerIndex = portal.is_coop ? (portal.is_atlas ? 3 : 2) : 0;
+Color PortalLocation::GetColor() const {
+	int portalIndex = is_primary ? 1 : 2;
+	int playerIndex = is_coop ? (is_atlas ? 3 : 2) : 0;
 
 	Color portalColor = SARUTIL_Portal_Color(portalIndex, playerIndex);
 	portalColor.a = (uint8_t)sar_trace_portal_opacity.GetInt();
 }
 
-Vector GetPortalDrawOrigin(Trace::PortalLocation portal) {
-	const int DIST_EPSILON_BIGGER = 0.04;
+Vector PortalLocation::GetDrawOrigin() const {
+	const int BIGGER_THAN_DIST_EPSILON = 0.04;
 
-    Vector forwardVector;
-    Math::AngleVectors(portal.angles, &forwardVector);
-    return portal.position + forwardVector * 32;
+	Vector forwardVector;
+	Math::AngleVectors(this->angles, &forwardVector);
+	return this->position + forwardVector * BIGGER_THAN_DIST_EPSILON;
 }
 
-Matrix GetPortalDrawRotationMatrix(Trace::PortalLocation portal) {
-	double syaw = sin(DEG2RAD(portal.angles.y));
-	double cyaw = cos(DEG2RAD(portal.angles.y));
-	double spitch = sin(DEG2RAD(portal.angles.x));
-	double cpitch = cos(DEG2RAD(portal.angles.x));
+Matrix PortalLocation::GetDrawRotationMatrix() const {
+	double syaw = sin(DEG2RAD(this->angles.y));
+	double cyaw = cos(DEG2RAD(this->angles.y));
+	double spitch = sin(DEG2RAD(this->angles.x));
+	double cpitch = cos(DEG2RAD(this->angles.x));
 
 	// yaw+pitch rotation matrix
 	Matrix rot{3, 3, 0};

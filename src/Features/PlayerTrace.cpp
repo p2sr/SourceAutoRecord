@@ -152,7 +152,7 @@ void Trace::AddPoint(std::string trace_name, void *player, int slot, bool use_cl
 		camera->GetEyePos<true>(slot, eyepos, angles);
 	}
 
-	Trace::HitboxList hitboxes = Trace::FetchHitboxesAroundPosition(pos);
+	Trace::HitboxList hitboxes = Trace::HitboxList::FetchAllNearPosition(pos);
 
 	trace.positions[slot].push_back(pos);
 	trace.angles[slot].push_back(angles);
@@ -164,8 +164,8 @@ void Trace::AddPoint(std::string trace_name, void *player, int slot, bool use_cl
 
 	// Only do it for one of the slots since we record all the portals in the map at once
 	if (slot == 0) {
-		auto portals = Trace::FetchCurrentPortalLocations();
-		trace.portals.push_back({ portals });
+		auto portals = Trace::PortalsList::FetchCurrentLocations();
+		trace.portals.push_back(portals);
 	}
 }
 TraceData *Trace::GetTrace(std::string trace_name) {
@@ -403,7 +403,7 @@ void Trace::DrawBboxAt(int tick) {
 			OverlayRender::addLine(eyeLine, eyepos, eyepos + forward*50.0);
 			OverlayRender::addBoxMesh(eyepos, {-1,-1,-1}, {1,1,1}, angles, RenderCallback::constant({0, 255, 255}), RenderCallback::none);
 
-			Trace::DrawHitboxes(trace.hitboxes[slot][localtick]);
+			trace.hitboxes[slot][localtick].Draw();
 		}
 	}
 }
@@ -415,12 +415,9 @@ void Trace::DrawPortalsAt(int tick) {
 		if (trace.portals.size() == 0) continue;
 
 		unsigned localtick = tickUserToInternal(tick, trace);
+		unsigned portals_index = std::min(localtick, trace.portals.size() - 1);
 
-		// Clamp tick to the number of positions in the trace
-		if (trace.portals.size() <= localtick)
-			localtick = trace.portals.size()-1;
-
-		Trace::DrawPortals(trace.portals[localtick]);
+		trace.portals[portals_index].Draw();
 	}
 }
 

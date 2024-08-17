@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Utils/SDK/Math.hpp>
+#include <Utils/SDK/Color.hpp>
 
 #include <vector>
 
@@ -11,16 +12,17 @@ namespace Trace {
 		bool is_primary;
 		bool is_coop;
 		bool is_atlas;
+
+		void Draw() const;
+		Color GetColor() const;
+		Vector GetDrawOrigin() const;
+		Matrix GetDrawRotationMatrix() const;
 	};
 
 	struct PortalsList {
 		std::vector<Trace::PortalLocation> locations;
-	};
 
-	// Construct a list of all portals in the map
-	PortalsList FetchCurrentPortalLocations();
-	// Draw entire portals list
-	void DrawPortals(PortalsList list);
-	// Draws given portal data in world
-	void DrawPortal(PortalLocation portal);
+		void Draw() const;
+		static PortalsList FetchCurrentLocations();
+	};
 }

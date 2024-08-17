@@ -2,39 +2,13 @@
 #include <Variable.hpp>
 #include <Modules/Server.cpp>
 
+using namespace Trace;
+
 Variable sar_trace_bbox_ent_record("sar_trace_bbox_ent_record", "1", "Record hitboxes of nearby entities in the trace. You may want to disable this if memory consumption gets too high.\n");
 Variable sar_trace_bbox_ent_draw("sar_trace_bbox_ent_draw", "1", "Draw hitboxes of nearby entities in the trace.\n");
 Variable sar_trace_bbox_ent_dist("sar_trace_bbox_ent_dist", "200", 50, "Distance from which to capture entity hitboxes.\n");
 
-Trace::HitboxList Trace::FetchHitboxesAroundPosition(Vector center) {
-	HitboxList list;
-	if (!sar_trace_bbox_ent_record.GetBool()) return list;
-
-	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
-		void *entity = server->m_EntPtrArray[i].m_pEntity;
-		ICollideable *collideable;
-
-		if (!TryGetSolidColliderFromEntity(entity, collideable)) continue;
-		if (!IsCollidableInDetectionRange(collideable, center)) continue;
-
-		auto solid_type = collideable->GetSolid();
-		bool has_vphys = collideable->GetVPhysicsObject() != nullptr;
-
-		if (solid_type == SOLID_BBOX) {
-			list.bounding_boxes.push_back(GetHitboxFromWorldSpaceBounds(collideable));
-		} else if (solid_type == SOLID_OBB || solid_type == SOLID_OBB_YAW) {
-			list.bounding_boxes.push_back(GetHitboxFromWorldSpaceBounds(collideable));
-		} else if (solid_type == SOLID_VPHYSICS && has_vphys) {
-			list.vphys_hitboxes.push_back(GetHitboxFromVphys(collideable));
-		} else if (solid_type == SOLID_BSP && has_vphys) {
-			list.bsp_hitboxes.push_back(GetHitboxFromVphys(collideable));
-        }
-    }
-
-	return list;
-}
-
-bool TryGetSolidColliderFromEntity(void* entity, ICollideable*& collideable) {
+bool TryGetSolidColliderFromEntity(void *entity, ICollideable *&collideable) {
 	if (!entity || server->IsPlayer(entity)) return false;
 
 	collideable = &SE(entity)->collision();
@@ -58,14 +32,42 @@ bool IsCollidableInDetectionRange(ICollideable *collideable, Vector center) {
 	return true;
 }
 
-Trace::BoundingHitbox GetHitboxFromWorldSpaceBounds(ICollideable *collideable) {
-	Vector mins, maxs;
-	collideable->WorldSpaceSurroundingBounds(&mins, &maxs);
-	return Trace::BoundingHitbox{mins, maxs, {0, 0, 0}, {0, 0, 0}};
+HitboxList HitboxList::FetchAllNearPosition(Vector center) {
+	HitboxList list;
+	if (!sar_trace_bbox_ent_record.GetBool()) return list;
+
+	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
+		void *entity = server->m_EntPtrArray[i].m_pEntity;
+		ICollideable *collideable;
+
+		if (!TryGetSolidColliderFromEntity(entity, collideable)) continue;
+		if (!IsCollidableInDetectionRange(collideable, center)) continue;
+
+		auto solid_type = collideable->GetSolid();
+		bool has_vphys = collideable->GetVPhysicsObject() != nullptr;
+
+		if (solid_type == SOLID_BBOX) {
+			list.bounding_boxes.push_back(BoundingHitbox::FromCollideableWorldBounds(collideable));
+		} else if (solid_type == SOLID_OBB || solid_type == SOLID_OBB_YAW) {
+			list.bounding_boxes.push_back(BoundingHitbox::FromCollideableObjectBounds(collideable));
+		} else if (solid_type == SOLID_VPHYSICS && has_vphys) {
+			list.vphys_hitboxes.push_back(VphysHitbox::FromCollideable(collideable));
+		} else if (solid_type == SOLID_BSP && has_vphys) {
+			list.bsp_hitboxes.push_back(VphysHitbox::FromCollideable(collideable));
+        }
+    }
+
+	return list;
 }
 
-Trace::BoundingHitbox GetHitboxFromObjectSpaceBounds(ICollideable *collideable) {
-	Trace::BoundingHitbox{
+BoundingHitbox BoundingHitbox::FromCollideableWorldBounds(ICollideable *collideable) {
+	Vector mins, maxs;
+	collideable->WorldSpaceSurroundingBounds(&mins, &maxs);
+	return BoundingHitbox{mins, maxs, {0, 0, 0}, {0, 0, 0}};
+}
+
+BoundingHitbox BoundingHitbox::FromCollideableObjectBounds(ICollideable *collideable) {
+	return BoundingHitbox{
 		collideable->OBBMins(),
 		collideable->OBBMaxs(),
 		collideable->GetCollisionOrigin(),
@@ -73,7 +75,7 @@ Trace::BoundingHitbox GetHitboxFromObjectSpaceBounds(ICollideable *collideable) 
 	};
 }
 
-Trace::VphysHitbox GetHitboxFromVphys(ICollideable *collideable) {
+VphysHitbox VphysHitbox::FromCollideable(ICollideable *collideable) {
 	IPhysicsObject *phys = collideable->GetVPhysicsObject();
 	if (!phys) return {};
 
@@ -93,38 +95,39 @@ Trace::VphysHitbox GetHitboxFromVphys(ICollideable *collideable) {
 
 	engine->DestroyDebugMesh(engine->g_physCollision, vert_count, verts);
 
-	return Trace::VphysHitbox{verts_copy};
+	return VphysHitbox{verts_copy};
 }
 
-void Trace::DrawHitboxes(Trace::HitboxList list) {
+
+void HitboxList::Draw() const {
 	if (!sar_trace_bbox_ent_draw.GetBool()) return;
 
-    for (auto bounding_box : list.bounding_boxes) {
-        Trace::DrawBoundingHitbox(bounding_box);
-    }
-    for (auto vphys_hitbox : list.vphys_hitboxes) {
-        Trace::DrawVphysHitbox(vphys_hitbox);
-    }
-    for (auto bsp_hitbox : list.bsp_hitboxes) {
-        Trace::DrawVphysHitbox(bsp_hitbox);
-    }
+	for (auto bounding_box : this->bounding_boxes) {
+		bounding_box.Draw();
+	}
+	for (auto vphys_hitbox : this->vphys_hitboxes) {
+		vphys_hitbox.Draw();
+	}
+	for (auto bsp_hitbox : this->bsp_hitboxes) {
+		bsp_hitbox.Draw();
+	}
 }
 
-void Trace::DrawVphysHitbox(Trace::VphysHitbox hitbox) {
+void VphysHitbox::Draw() const{
 	MeshId mesh = OverlayRender::createMesh(
 		RenderCallback::constant({255, 0, 0, 20}),
 		RenderCallback::constant({255, 0, 0, 255}));
-	for (size_t i = 0; i < hitbox.verts.size(); i += 3) {
-		Vector a = hitbox.verts[i + 0];
-		Vector b = hitbox.verts[i + 1];
-		Vector c = hitbox.verts[i + 2];
+	for (size_t i = 0; i < this->verts.size(); i += 3) {
+		Vector a = this->verts[i + 0];
+		Vector b = this->verts[i + 1];
+		Vector c = this->verts[i + 2];
 		OverlayRender::addTriangle(mesh, a, b, c, true);
 	}
 }
 
-void Trace::DrawBoundingHitbox(Trace::BoundingHitbox hitbox) {
+void BoundingHitbox::Draw() const {
 	OverlayRender::addBoxMesh(
-		hitbox.position, hitbox.mins, hitbox.maxs, hitbox.angles,
+		this->position, this->mins, this->maxs, this->angles,
 		RenderCallback::constant({ 0, 255, 0, 20 }),
 		RenderCallback::constant({ 0, 255, 0, 255 })
 	);
