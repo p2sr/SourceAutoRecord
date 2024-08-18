@@ -24,6 +24,7 @@ struct TickInfo {
 	int mouseDelta;
 };
 
+
 static std::vector<TickInfo> g_ticks[2];
 static CUserCmd g_lastUserCmd[2];
 static int g_lastMouseDeltas[2];
@@ -37,6 +38,12 @@ static Variable sar_strafe_quality_height("sar_strafe_quality_height", "50", 10,
 
 StrafeQualityHud::StrafeQualityHud()
 	: Hud(HudType_InGame | HudType_Paused, true) {
+}
+
+static inline void ClearData(int slot) {
+	g_lastMouseDeltas[slot] = 0;
+	g_lastUserCmd[slot] = CUserCmd();
+	g_ticks[slot].clear();
 }
 
 bool StrafeQualityHud::ShouldDraw() {
@@ -128,7 +135,10 @@ void StrafeQualityHud::OnUserCmd(int slot, const CUserCmd &cmd) {
 }
 void StrafeQualityHud::OnMovement(int slot, bool grounded) {
 	if (pauseTimer->IsActive() && !engine->IsCoop() && !engine->demoplayer->IsPlaying()) return;
-
+	if (!this->ShouldDraw()) {
+		if (!g_ticks[slot].empty()) ClearData(slot);
+		return;
+	}
 	CUserCmd &cmd = g_lastUserCmd[slot];
 
 	StrafeDir strafe =
