@@ -331,7 +331,7 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	groundFramesCounter->HandleMovementFrame(slot, grounded);
 	rhythmGameHud.HandleGroundframeLogic(slot, grounded);
 	strafeQuality.OnMovement(slot, grounded);
-	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
+	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot, grounded);
 	if (move->m_nButtons & IN_JUMP && grounded) rhythmGameHud.OnJump(slot);
 	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true });
 
