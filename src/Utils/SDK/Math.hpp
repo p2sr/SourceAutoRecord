@@ -97,6 +97,124 @@ struct Vector {
 		return *this / this->Length();
 	}
 };
+template <typename T>
+struct Vector2 {
+	T x, y;
+	inline Vector2()
+		: x(0)
+		, y(0) {
+	}
+	inline Vector2(const T &x, const T &y)
+		: x(x)
+		, y(y) {
+	}
+	inline float Length() const {
+		return sqrt(x * x + y * y);
+	}
+
+	inline Vector2 operator+(const Vector2 &other) const {
+		Vector2 res;
+		res.x = x + other.x;
+		res.y = y + other.y;
+		return res;
+	}
+	inline Vector2 operator+=(const Vector2 &other) {
+		x += other.x;
+		y += other.y;
+		return *this;
+	}
+	inline Vector2 operator-(const Vector2 &other) const {
+		Vector2 res;
+		res.x = x - other.x;
+		res.y = y - other.y;
+		return res;
+	}
+	inline Vector2 operator-=(const Vector2 &other) {
+		x -= other.x;
+		y -= other.y;
+		return *this;
+	}
+	inline Vector2 operator*(float val) const {
+		Vector2 res;
+		res.x = x * val;
+		res.y = y * val;
+		return res;
+	}
+	inline Vector2 operator*=(float val) {
+		x *= val;
+		y *= val;
+		return *this;
+	}
+	inline Vector2 operator/(float val) const {
+		Vector2 res;
+		res.x = x / val;
+		res.y = y / val;
+		return res;
+	}
+	inline Vector2 operator/=(float val) {
+		x /= val;
+		y /= val;
+		return *this;
+	}
+	inline T Dot(const Vector2 &other) const {
+		return x * other.x + y * other.y;
+	}
+	inline T Cross(const Vector2 &other) const {
+		return x * other.y - y * other.x;
+	}
+	inline Vector2 Normalize() {
+		return *this / this->Length();
+	}
+};
+
+template <typename T>
+struct Bounds {
+	Vector2<T> vBegin, vEnd;
+	inline Bounds()
+		: vBegin(Vector2<T>((T)0, (T)0))
+		, vEnd(Vector2<T>((T)0, (T)0)) {
+	}
+	inline Bounds(const T &x0, const T &y0, const T &x1, const T &y1)
+		: vBegin(Vector2<T>(x0, y0))
+		, vEnd(Vector2<T>(x1, y1)) {
+	}
+	inline Bounds(const Vector2<T> &v0, const Vector2<T> &v1)
+		: vBegin(v0)
+		, vEnd(v1) {
+	}
+	inline Bounds Scale(const Vector2<T> &stretchPoint, float amp) {
+		vBegin = stretchPoint - (stretchPoint - vBegin) * amp;
+		vEnd = stretchPoint + (vEnd - stretchPoint) * amp;
+		return *this;
+	}
+	inline Bounds Scale(float amp) {
+		this.Scale(vBegin, amp);
+		return *this;
+	}
+	inline Bounds operator+(const Bounds &other) const {
+		Bounds<T> res;
+		res.vBegin = vBegin + other.vBegin;
+		res.vEnd = vEnd + other.vEnd;
+		return res;
+	}
+	inline Bounds operator+=(const Bounds &other) {
+		vBegin += other.vBegin;
+		vEnd += other.vEnd;
+		return *this;
+	}
+	inline Bounds operator-(const Bounds &other) const {
+		Bounds<T> res;
+		res.vBegin = vBegin - other.vBegin;
+		res.vEnd = vEnd - other.vEnd;
+		return res;
+	}
+	inline Bounds operator-=(const Bounds &other) {
+		vBegin -= other.vBegin;
+		vEnd -= other.vEnd;
+		return *this;
+	}
+};
+
 
 struct QAngle {
 	float x, y, z;

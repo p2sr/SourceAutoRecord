@@ -80,10 +80,24 @@ void Surface::DrawTxt(HFont font, int x, int y, Color clr, const char *fmt, ...)
 	va_end(argptr);
 	this->DrawColoredText(this->matsurface->ThisPtr(), font, x, y, clr.r, clr.g, clr.b, clr.a, "%s", data);
 }
+
+void Surface::DrawTxt(HFont font, const Vector2<int> &center, Color clr, const std::string& text) {
+	this->DrawTxt(font, center.x, center.y, clr, text.c_str());
+}
+
 void Surface::DrawRect(Color clr, int x0, int y0, int x1, int y1) {
 	this->DrawSetColor(this->matsurface->ThisPtr(), clr.r, clr.g, clr.b, clr.a);
 	this->DrawFilledRect(this->matsurface->ThisPtr(), x0, y0, x1, y1);
 }
+
+void Surface::DrawRect(Color clr, const Vector2<int> &v0, const Vector2<int> &v1) {
+	this->DrawRect(clr, v0.x, v0.y, v1.x, v1.y);
+}
+
+void Surface::DrawRect(Color clr, const Bounds<int> &bounds) {
+	this->DrawRect(clr, bounds.vBegin.x, bounds.vBegin.y, bounds.vEnd.x, bounds.vEnd.y);
+}
+
 void Surface::DrawRectAndCenterTxt(Color clr, int x0, int y0, int x1, int y1, HFont font, Color fontClr, const char *fmt, ...) {
 	this->DrawRect(clr, x0, y0, x1, y1);
 
@@ -102,9 +116,21 @@ void Surface::DrawRectAndCenterTxt(Color clr, int x0, int y0, int x1, int y1, HF
 
 	this->DrawTxt(font, xc - (tw / 2), yc - (th / 2), fontClr, "%s", data);
 }
+void Surface::DrawRectAndCenterTxt(Color clr, const Vector2<int> &v0, const Vector2<int> &v1, HFont font, Color fontClr, const std::string &text) {
+	this->DrawRectAndCenterTxt(clr, v0.x, v0.y, v1.x, v1.y, font, fontClr, text.c_str());
+}
+
+void Surface::DrawRectAndCenterTxt(Color clr, const Bounds<int> &bounds, HFont font, Color fontClr, const std::string &text) {
+	this->DrawRectAndCenterTxt(clr, bounds.vBegin.x, bounds.vBegin.y, bounds.vEnd.x, bounds.vEnd.y, font, fontClr, text.c_str());
+}
+
 void Surface::DrawCircle(int x, int y, float radius, Color clr) {
 	this->DrawColoredCircle(this->matsurface->ThisPtr(), x, y, radius, clr.r, clr.g, clr.b, clr.a);
 }
+void Surface::DrawCircle(const Vector2<int> &center, float radius, Color clr) {
+	this->DrawCircle(center.x, center.y, radius, clr);
+}
+
 void Surface::DrawFilledCircle(int x, int y, float radius, Color clr) {
 	const int r2 = radius * radius;
 
@@ -115,9 +141,15 @@ void Surface::DrawFilledCircle(int x, int y, float radius, Color clr) {
 		surface->DrawColoredLine(x - cx, cyy, x + cx, cyy, clr);
 	}
 }
+void Surface::DrawFilledCircle(const Vector2<int> &center, float radius, Color clr) {
+	this->DrawFilledCircle(center.x, center.y, radius, clr);
+}
 void Surface::DrawColoredLine(int x0, int y0, int x1, int y1, Color clr) {
 	this->DrawSetColor(this->matsurface->ThisPtr(), clr.r, clr.g, clr.b, clr.a);
 	this->DrawLine(this->matsurface->ThisPtr(), x0, y0, x1, y1);
+}
+void Surface::DrawColoredLine(const Vector2<int> &v0, const Vector2<int> &v1, Color clr) {
+	this->DrawColoredLine(v0.x, v0.y, v1.x, v1.y, clr);
 }
 
 bool Surface::Init() {
