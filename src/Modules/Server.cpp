@@ -635,12 +635,12 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 // because we need a reference to an entity vtable to find the address
 // of CBaseEntity::AcceptInput, but we generally can't do that until
 // we've loaded into a level.
-static bool IsAcceptInputTrampolineInitialized = false;
+static bool g_IsAcceptInputTrampolineInitialized = false;
 Hook g_AcceptInputHook(&AcceptInput_Hook);
 static void InitAcceptInputTrampoline() {
 	void *ent = server->m_EntPtrArray[0].m_pEntity;
 	if (ent == nullptr) return;
-	IsAcceptInputTrampolineInitialized = true;
+	g_IsAcceptInputTrampolineInitialized = true;
 	server->AcceptInput = Memory::VMT<Server::_AcceptInput>(ent, Offsets::AcceptInput);
 
 	g_AcceptInputHook.SetFunc(server->AcceptInput);
@@ -673,7 +673,7 @@ static void InitPlayerRunCommandHook() {
 }
 
 ON_EVENT(SESSION_START) {
-	if (!IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
+	if (!g_IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
 	if (!g_IsCMFlagHookInitialized && sv_bonus_challenge.GetBool()) InitCMFlagHook();
 	if (!g_IsPlayerRunCommandHookInitialized) InitPlayerRunCommandHook();
 }
