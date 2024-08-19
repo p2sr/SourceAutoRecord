@@ -18,13 +18,13 @@
 #define INPUT_SQUARE_SPACING Vector2(2, 2)
 #define INPUT_SQUARE_FULL_LENGTH (INPUT_SQUARE_LENGTH + INPUT_SQUARE_SPACING)
 
-#define PERFECT_INPUT_COLOR Color { 0, 112, 255, 255 }
-#define MISS_INPUT_COLOR Color { 165, 28, 28, 255 }
-#define OK_INPUT_COLOR Color { 208, 208, 0, 255 }
-#define BAD_INPUT_COLOR Color { 255, 144, 0, 255 }
-#define BACKGROUND_COLOR Color(70, 100, 150, 70)
-#define AVERAGE_LINE_COLOR Color(200, 200, 200, 255)
-#define JUMP_HIGHLIGHT_COLOR Color(100, 200, 255, 255)
+#define PERFECT_INPUT_COLOR     Color(0, 112, 255, 255)
+#define MISS_INPUT_COLOR        Color(165, 28, 28, 255)
+#define OK_INPUT_COLOR          Color(208, 208, 0, 255)
+#define BAD_INPUT_COLOR         Color(255, 144, 0, 255)
+#define BACKGROUND_COLOR        Color(70, 100, 150, 70)
+#define AVERAGE_LINE_COLOR      Color(200, 200, 200, 255)
+#define JUMP_HIGHLIGHT_COLOR    Color(100, 200, 255, 255)
 #define GROUNDFRAMES_TEXT_COLOR Color(0, 0, 0, 255)
 
 #define TILE_TEXT_FONT_ID 8
@@ -32,11 +32,11 @@
 #define BAR_CPS_BEGIN 10
 #define BAR_CPS_END 45
 
-Variable sar_scrollspeed("sar_scrollspeed", "0", "Show a HUD indicating your scroll speed for coop. value 2 for bar only, value 3 for tiles only\n");
-Variable sar_scrollspeed_x("sar_scrollspeed_x", "0", "Scroll speed HUD x offset\n");
-Variable sar_scrollspeed_y("sar_scrollspeed_y", "210", "Scroll speed HUD y offset\n");
-Variable sar_scrollspeed_bar_x("sar_scrollspeed_bar_x", "30", "Scroll speed bar x offset\n");
-Variable sar_scrollspeed_bar_y("sar_scrollspeed_bar_y", "210", "Scroll speed bar y offset\n");
+Variable sar_scrollspeed("sar_scrollspeed", "0", "Show a HUD indicating your scroll speed for coop.\n1 = bar and tiles,\n2 = bar only,\n3 = tiles only.\n");
+Variable sar_scrollspeed_x("sar_scrollspeed_x", "0", "Scroll speed HUD x offset.\n");
+Variable sar_scrollspeed_y("sar_scrollspeed_y", "210", "Scroll speed HUD y offset.\n");
+Variable sar_scrollspeed_bar_x("sar_scrollspeed_bar_x", "30", "Scroll speed bar x offset.\n");
+Variable sar_scrollspeed_bar_y("sar_scrollspeed_bar_y", "210", "Scroll speed bar y offset.\n");
 
 
 int g_jumpTicks[2][MAX_INPUT_LINES][MAX_CONSECUTIVE_SCROLL_INPUTS];
@@ -149,7 +149,7 @@ void DrawJumpRectangle(int jumpIter, int tickDifference, int currentLine, bool i
 		displayedGroundFrames = std::to_string(minGroundFrames) + "-" + std::to_string(maxGroundFrames);
 	}
 	if (tickDifference < 2) {
-		displayedGroundFrames = "+1 ";
+		displayedGroundFrames = "+1";
 	}
 
 	if (isJumped) {
@@ -193,7 +193,7 @@ void DrawAverageBar(int slot, Vector2<int> hudOffset) {
 
 	float tickrate = 1.0f / *engine->interval_per_tick;
 	float barHeight = INPUT_SQUARE_FULL_LENGTH.y * MAX_INPUT_LINES;
-	float barScale = tickrate / (BAR_CPS_END - BAR_CPS_BEGIN);  //scaling from 0-60 to BAR_CPS_BEGIND-BAR_CPS_END
+	float barScale = tickrate / (BAR_CPS_END - BAR_CPS_BEGIN);  //scaling from 0-60 to BAR_CPS_BEGIN-BAR_CPS_END
 
 	float barY1 = hudBeginY + barHeight * (BAR_CPS_END - 30) / tickrate * barScale;
 	float barY2 = hudBeginY + barHeight * (BAR_CPS_END - 25) / tickrate * barScale;

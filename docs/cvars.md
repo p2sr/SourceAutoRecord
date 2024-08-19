@@ -451,7 +451,11 @@
 |sar_ruler_draw|1|Sets the drawing mode of the ruler<br>0 = rulers are not drawn<br>1 = lines, length and angles are drawn (default)<br>2 = only lines and length are drawn<br>3 = only lines are drawn<br>4 = lines, deltas, angles and point origins are drawn|
 |sar_ruler_grid_align|1|Aligns ruler creation point to the grid of specified size.|
 |sar_ruler_max_trace_dist|16384|Sets maximum trace distance for placing ruler points.|
-|sar_scrollspeed|0|Show a HUD indicating your scroll speed.|
+|sar_scrollspeed|0|Show a HUD indicating your scroll speed for coop.<br>1 = bar and tiles,<br>2 = bar only,<br>3 = tiles only.|
+|sar_scrollspeed_bar_x|30|Scroll speed bar x offset.|
+|sar_scrollspeed_bar_y|210|Scroll speed bar y offset.|
+|sar_scrollspeed_x|0|Scroll speed HUD x offset.|
+|sar_scrollspeed_y|210|Scroll speed HUD y offset.|
 |sar_seamshot_finder|0|Enables or disables seamshot finder overlay.|
 |sar_session|cmd|sar_session - prints the current tick of the server since it has loaded|
 |sar_show_entinp|0|Print all entity inputs to console.|
