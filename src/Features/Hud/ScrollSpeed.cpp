@@ -149,7 +149,7 @@ void DrawJumpRectangle(int jumpIter, int tickDifference, int currentLine, bool i
 		displayedGroundFrames = std::to_string(minGroundFrames) + "-" + std::to_string(maxGroundFrames);
 	}
 	if (tickDifference < 2) {
-		displayedGroundFrames = "+1";
+		displayedGroundFrames = "+1 ";
 	}
 
 	if (isJumped) {
