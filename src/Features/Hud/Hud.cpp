@@ -403,7 +403,7 @@ HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | H
 }
 
 // autocomplete function used for "setpos" commands.
-int HudSetPos_CompleteFunc(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]) {
+DECL_DECLARE_AUTOCOMPLETION_FUNCTION(HudSetPos) {
 	//separate command from parameters
 	std::string partialStr = partial;
 	std::string cmdStr, matchStr;

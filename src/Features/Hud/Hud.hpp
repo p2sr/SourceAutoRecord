@@ -1,4 +1,5 @@
 #pragma once
+#include "Command.hpp"
 #include "Game.hpp"
 #include "Utils/SDK.hpp"
 #include "Variable.hpp"
@@ -171,13 +172,13 @@ extern Variable sar_hud_precision;
 extern QAngle g_bluePortalAngles[2];
 extern QAngle g_orangePortalAngles[2];
 
-int HudSetPos_CompleteFunc(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+DECL_DECLARE_AUTOCOMPLETION_FUNCTION(HudSetPos);
 
 #define CON_COMMAND_HUD_SETPOS(name, helpname) \
     CON_COMMAND_F_COMPLETION( \
         name##_setpos,                                                                                                            \
         #name "_setpos <top|center|bottom|y|y\%> <left|center|right|x|x\%> - automatically sets the position of " helpname ".\n", \
-        FCVAR_DONTRECORD, HudSetPos_CompleteFunc                                                                                  \
+        FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(HudSetPos)                                                                      \
     ) {                                                                                                                           \
         if (args.ArgC() != 3) return console->Print(name##_setpos.ThisPtr()->m_pszHelpString);                                    \
         name##_x.SetValue(args[2]);                                                                                               \
