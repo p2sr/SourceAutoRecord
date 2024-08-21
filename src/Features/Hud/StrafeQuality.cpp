@@ -1,5 +1,6 @@
 #include "StrafeQuality.hpp"
 
+#include "Event.hpp"
 #include "Features/Session.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Modules/Engine.hpp"
@@ -134,11 +135,6 @@ void StrafeQualityHud::OnUserCmd(int slot, const CUserCmd &cmd) {
 	g_lastMouseDeltas[slot] += cmd.mousedx;
 }
 void StrafeQualityHud::OnMovement(int slot, bool grounded) {
-	if (pauseTimer->IsActive() && !engine->IsCoop() && !engine->demoplayer->IsPlaying()) return;
-	if (!this->ShouldDraw()) {
-		if (!g_ticks[slot].empty()) ClearData(slot);
-		return;
-	}
 	CUserCmd &cmd = g_lastUserCmd[slot];
 
 	StrafeDir strafe =
@@ -166,4 +162,13 @@ void StrafeQualityHud::OnMovement(int slot, bool grounded) {
 		strafe,
 		mouseDelta,
 	});
+}
+
+ON_EVENT(PROCESS_MOVEMENT) {
+	if (pauseTimer->IsActive() && !engine->IsCoop() && !engine->demoplayer->IsPlaying()) return;
+	if (!sar_strafe_quality.GetBool()) {  //can't use ShouldDraw because static
+		if (!g_ticks[event.slot].empty()) ClearData(event.slot);
+		return;
+	}
+	StrafeQualityHud::OnMovement(event.slot, event.grounded);
 }

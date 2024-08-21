@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include "Utils.hpp" //technically only Utils/dsk/GameMovement.hpp needed
 
 #define _ON_INIT1(x)                                    \
 	static void _sar_init_fn_##x();                        \
@@ -85,6 +86,9 @@ namespace Event {
 	struct EventData<PROCESS_MOVEMENT> {
 		int slot;
 		bool server;
+		void *player;
+		CMoveData *move;
+		bool grounded;
 	};
 	template <>
 	struct EventData<MAYBE_AUTOSUBMIT> {

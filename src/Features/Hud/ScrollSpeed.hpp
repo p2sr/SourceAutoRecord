@@ -13,7 +13,7 @@ public:
 		return false;
 	}
 
-	void OnJump(int slot, bool grounded);
+	static void OnJump(int slot, bool grounded);
 };
 
 extern ScrollSpeedHud scrollSpeedHud;

@@ -83,12 +83,6 @@ void ClearLine(int slot, int line) {
 	}
 }
 
-ON_EVENT(SESSION_START) {
-	if (sar_scrollspeed.GetBool()){
-		if (g_jumpCounter[0]) clear(0);
-		if (g_jumpCounter[1]) clear(1);	
-	}
-}
 
 static inline int GetTickDifference(int slot, int lineIter, int jumpIter) {
 	return g_jumpTicks[slot][lineIter][jumpIter] - g_jumpTicks[slot][lineIter][jumpIter - 1];
@@ -227,10 +221,7 @@ void ScrollSpeedHud::Paint(int slot) {
 }
 
 void ScrollSpeedHud::OnJump(int slot, bool grounded) {
-	if (!this->ShouldDraw()) {
-		if (g_jumpCounter[slot]) clear(slot);
-		return;
-	}
+
 	int tick = session->GetTick();
 	int lastJumpIndex = BoundIndex(g_jumpCounter[slot] - 1, -1, MAX_CONSECUTIVE_SCROLL_INPUTS);
 	// Reset if it's been long enough
@@ -253,4 +244,18 @@ void ScrollSpeedHud::OnJump(int slot, bool grounded) {
 	}
 }
 
+ON_EVENT(SESSION_START) {
+	if (sar_scrollspeed.GetBool()) {
+		if (g_jumpCounter[0]) clear(0);
+		if (g_jumpCounter[1]) clear(1);
+	}
+}
+
+ON_EVENT(PROCESS_MOVEMENT) {
+	if (!sar_scrollspeed.GetBool()) {
+		if (g_jumpCounter[event.slot]) clear(event.slot);
+		return;
+	}
+	if (event.move->m_nButtons & IN_JUMP) ScrollSpeedHud::OnJump(event.slot, event.grounded);
+}
 ScrollSpeedHud scrollSpeedHud;

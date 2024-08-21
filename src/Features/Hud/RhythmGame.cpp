@@ -17,7 +17,7 @@ bool RhythmGameHud::ShouldDraw() {
 }
 
 int RhythmGameHud::GetGroundframes() {
-	return groundframes;
+	return RhythmGameHud::groundframes;
 }
 
 bool prevGrounded = false;
@@ -130,4 +130,9 @@ void RhythmGameHud::OnJump(int slot) {
 	popups.push_back(popup);
 }
 
+ON_EVENT(PROCESS_MOVEMENT) {
+	if (!sar_rhythmgame.GetBool()) return; //can't use ShouldDraw because static
+	RhythmGameHud::HandleGroundframeLogic(event.slot, event.grounded);
+	if (event.move->m_nButtons & IN_JUMP && event.grounded) RhythmGameHud::OnJump(event.slot);
+}
 RhythmGameHud rhythmGameHud;

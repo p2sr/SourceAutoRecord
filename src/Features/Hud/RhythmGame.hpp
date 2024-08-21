@@ -15,11 +15,11 @@ public:
 		return false;
 	}
 
-	void OnJump(int slot);
+	static void OnJump(int slot);
 
-	void HandleGroundframeLogic(int slot, bool grounded);
+	static void HandleGroundframeLogic(int slot, bool grounded);
 
-	int groundframes = 0;
+	static inline int groundframes = 0;
 
 	struct RhythmGamePopup {
 		int x;
@@ -30,16 +30,16 @@ public:
 		int streak;
 	};
 
-	int perfectsInARow = 0;
+	static inline int perfectsInARow = 0;
 
-	std::vector<RhythmGamePopup> popups;
+	static inline std::vector<RhythmGamePopup> popups = std::vector<RhythmGamePopup>();
 	Color perfectColor = Color{0, 171, 255, 0};  // 0 groundframes
 	Color goodColor = Color{0, 236, 82, 0};     // 1 groundframe
 	Color okColor = Color{127, 127, 127, 0};       // 2 groundframes
 	Color badColor = Color{216, 0, 0, 0};      // 3-6 groundframes
 
 private:
-	int GetGroundframes();
+	static int GetGroundframes();
 };
 
 extern RhythmGameHud rhythmGameHud;

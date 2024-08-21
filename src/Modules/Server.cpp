@@ -328,12 +328,7 @@ Hook g_ViewPunch_Hook(&Server::ViewPunch_Hook);
 DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	int slot = server->GetSplitScreenPlayerSlot(player);
 	bool grounded = SE(player)->ground_entity();
-	groundFramesCounter->HandleMovementFrame(slot, grounded);
-	rhythmGameHud.HandleGroundframeLogic(slot, grounded);
-	strafeQuality.OnMovement(slot, grounded);
-	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot, grounded);
-	if (move->m_nButtons & IN_JUMP && grounded) rhythmGameHud.OnJump(slot);
-	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true });
+	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true, player, move, grounded });
 
 	auto res = Server::ProcessMovement(thisptr, player, move);
 

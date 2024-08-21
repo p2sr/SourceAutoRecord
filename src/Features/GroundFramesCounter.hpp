@@ -6,16 +6,16 @@
 
 class GroundFramesCounter : public Feature {
 public:
-	int counter[2] = {0};
-	bool grounded[2] = {false};
-	int totals[2][MAX_GROUNDFRAMES_TRACK] = {0};
+	static inline int counter[2] = {0};
+	static inline bool grounded[2] = {false};
+	static inline int totals[2][MAX_GROUNDFRAMES_TRACK] = {0};
 
 public:
 	GroundFramesCounter();
-	void HandleMovementFrame(int slot, bool grounded);
+	static void HandleMovementFrame(int slot, bool grounded);
 
 private:
-	void AddToTotal(int slot, int count);
+	static void AddToTotal(int slot, int count);
 };
 
 extern GroundFramesCounter *groundFramesCounter;

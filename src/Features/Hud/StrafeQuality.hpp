@@ -9,7 +9,7 @@ public:
 	bool GetCurrentSize(int &width, int &height) override;
 	void Paint(int slot) override;
 	void OnUserCmd(int slot, const CUserCmd &cmd);
-	void OnMovement(int slot, bool grounded);
+	static void OnMovement(int slot, bool grounded);
 };
 
 extern StrafeQualityHud strafeQuality;

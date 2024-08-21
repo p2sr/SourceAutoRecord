@@ -1,5 +1,6 @@
 #include "GroundFramesCounter.hpp"
 
+#include "Event.hpp"
 #include "Features/Timer/PauseTimer.hpp"
 #include "Hud/Hud.hpp"
 #include "Modules/Client.hpp"
@@ -7,6 +8,7 @@
 #include "Modules/Engine.hpp"
 
 GroundFramesCounter *groundFramesCounter;
+
 
 GroundFramesCounter::GroundFramesCounter() {
 	this->hasLoaded = true;
@@ -16,27 +18,33 @@ HUD_ELEMENT_MODE2(groundframes, "0", 0, 2, "Draws the number of ground frames si
 	ctx->DrawElement("groundframes: %d", groundFramesCounter->counter[ctx->slot]);
 }
 
+
+
 void GroundFramesCounter::HandleMovementFrame(int slot, bool grounded) {
 	if (pauseTimer->IsActive() && !engine->IsCoop() && !engine->demoplayer->IsPlaying()) return;
 
-	if (!this->grounded[slot] && grounded) {
-		this->AddToTotal(slot, this->counter[slot]);
+	if (!GroundFramesCounter::grounded[slot] && grounded) {
+		GroundFramesCounter::AddToTotal(slot, GroundFramesCounter::counter[slot]);
 	}
 
 	int hudMode = sar_hud_groundframes.GetInt();
 
-	if ((!this->grounded[slot] && grounded) || hudMode == 0) {
-		if (hudMode != 2) this->counter[slot] = 0;
+	if ((!GroundFramesCounter::grounded[slot] && grounded) || hudMode == 0) {
+		if (hudMode != 2) GroundFramesCounter::counter[slot] = 0;
 	} else if (grounded) {
-		this->counter[slot]++;
+		GroundFramesCounter::counter[slot]++;
 	}
 
-	this->grounded[slot] = grounded;
+	GroundFramesCounter::grounded[slot] = grounded;
 }
 
 void GroundFramesCounter::AddToTotal(int slot, int count) {
 	if (count >= MAX_GROUNDFRAMES_TRACK) return;
-	this->totals[slot][count] += 1;
+	GroundFramesCounter::totals[slot][count] += 1;
+}
+
+ON_EVENT(PROCESS_MOVEMENT) {
+	GroundFramesCounter::HandleMovementFrame(event.slot, event.grounded);
 }
 
 CON_COMMAND(sar_groundframes_total, "sar_groundframes_total [slot] - output a summary of groundframe counts for the given player slot.\n") {
