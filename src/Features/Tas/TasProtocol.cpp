@@ -680,7 +680,7 @@ ON_EVENT(FRAME) {
 	if (g_current_status.active) {
 		g_current_debug_tick = g_current_status.playback_tick;
 	} else {
-		g_current_debug_tick = playerTrace->GetTasTraceTick();
+		g_current_debug_tick = Trace::GetNearestValidTick();
 	}
 	g_status_mutex.unlock();
 }

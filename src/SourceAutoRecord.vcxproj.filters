@@ -550,6 +550,9 @@
     <ClCompile Include="Features\Trace\TraceHitbox.cpp">
       <Filter>SourceAutoRecord\Features\Trace</Filter>
     </ClCompile>
+    <ClCompile Include="Trace.cpp">
+      <Filter>SourceAutoRecord\Features\Trace</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\minhook\buffer.h">
@@ -1378,6 +1381,9 @@
       <Filter>SourceAutoRecord\Features\Trace</Filter>
     </ClInclude>
     <ClInclude Include="Features\Trace\TraceHitbox.hpp">
+      <Filter>SourceAutoRecord\Features\Trace</Filter>
+    </ClInclude>
+    <ClInclude Include="Trace.hpp">
       <Filter>SourceAutoRecord\Features\Trace</Filter>
     </ClInclude>
   </ItemGroup>

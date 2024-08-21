@@ -17,10 +17,6 @@
 
 #include <vector>
 
-Variable sar_trace_autoclear("sar_trace_autoclear", "1", 0, 1, "Automatically clear the trace on session start\n");
-Variable sar_trace_override("sar_trace_override", "1", 0, 1, "Clears old trace when you start recording to it instead of recording on top of it.\n");
-Variable sar_trace_record("sar_trace_record", "0", "Record the trace to a slot. Set to 0 for not recording\n", 0);
-Variable sar_trace_use_shot_eyeoffset("sar_trace_use_shot_eyeoffset", "1", 0, 1, "Uses eye offset and angles accurate for portal shooting.\n");
 
 Variable sar_trace_draw("sar_trace_draw", "0", 0, 1, "Display the recorded player trace. Requires cheats\n");
 Variable sar_trace_draw_hover("sar_trace_draw_hover", "1", "Display information about the trace at the hovered tick.\n");
@@ -38,49 +34,44 @@ Variable sar_trace_font_size("sar_trace_font_size", "3.0", 0.1, "The size of tex
 Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.\n");
 Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, 1, "Move trace bbox to hovered trace point tick on given trace.\n");
 
-Vector g_playerTraceTeleportLocation;
-int g_playerTraceTeleportSlot;
-bool g_playerTraceNeedsTeleport = false;
-std::map<std::string, TraceData> traces;
-std::string lastRecordedTrace = "0";
 
-static int tickInternalToUser(int tick, const TraceData &trace) {
-	if (tick == -1) return -1;
+int TraceData::InternalToUserTick(int internalTick) const{
+	if (internalTick == -1) return -1;
 	switch (sar_trace_draw_time.GetInt()) {
 	case 2:
-		return tick + trace.startSessionTick;
+		return internalTick + startSessionTick;
 	case 3:
-		if (trace.startTasTick > 0) return tick + trace.startTasTick;
-	default: // FALLTHROUGH
-		return tick;
+		if (startTasTick > 0) return internalTick + startTasTick;
+	default:
+		return internalTick;
 	}
 }
 
-static int tickUserToInternal(int tick, const TraceData &trace) {
-	if (tick == -1) return -1;
+int TraceData::UserToInternalTick(int userTick) const {
+	if (userTick == -1) return -1;
 	switch (sar_trace_draw_time.GetInt()) {
 	case 2:
-		return tick - trace.startSessionTick;
+		return userTick - startSessionTick;
 	case 3:
-		if (trace.startTasTick > 0) return tick - trace.startTasTick;
-	default: // FALLTHROUGH
-		return tick;
+		if (startTasTick > 0) return userTick - startTasTick;
+	default:
+		return userTick;
 	}
 }
 
 // takes internal tick
 static void drawTraceInfo(int tick, int slot, const TraceData &trace, std::function<void(const std::string &)> drawCbk) {
 	if (!trace.draw) return;
-	if (trace.positions[slot].size() <= (unsigned)tick) return;
+	if (trace.players[slot].size() <= (unsigned)tick) return;
 
-	int usertick = tickInternalToUser(tick, trace);
+	int usertick = trace.InternalToUserTick(tick);
 	const int p = 6; // precision
 
-	Vector pos = trace.positions[slot][tick];
-	Vector eyepos = trace.eyepos[slot][tick];
-	QAngle ang = trace.angles[slot][tick];
-	Vector vel = trace.velocities[slot][tick];
-	bool grounded = trace.grounded[slot][tick];
+	Vector pos = trace.players[slot][tick].position;
+	Vector eyepos = trace.players[slot][tick].eye_position;
+	QAngle ang = trace.players[slot][tick].angles;
+	Vector vel = trace.players[slot][tick].velocity;
+	bool grounded = trace.players[slot][tick].grounded;
 	float velang = RAD2DEG(atan2(vel.y, vel.x));
 
 	drawCbk(Utils::ssprintf("tick: %d", usertick));
@@ -102,77 +93,6 @@ struct TraceHoverInfo {
 
 std::vector<TraceHoverInfo> hovers;
 
-bool Trace::ShouldRecord() {
-	return IsTraceNameValid(sar_trace_record.GetString()) && !engine->IsGamePaused();
-}
-
-bool Trace::IsTraceNameValid(std::string trace_name) {
-	// for legacy reasons, 0 is treated as no recording
-	if (trace_name == "0") return false;
-
-	return trace_name.length() > 0;
-}
-
-void Trace::AddPoint(std::string trace_name, void *player, int slot, bool use_client_offset) {
-	if (traces.count(trace_name) == 0) {
-		traces[trace_name] = TraceData();
-		traces[trace_name].startSessionTick = session->GetTick();
-	}
-
-	TraceData &trace = traces[trace_name];
-
-	// update this bad boy every tick because it doesn't like being tinkered with at the
-	// very beginning of the level. fussy guy, lemme tell ya
-	if (tasPlayer->IsRunning()) {
-		int ticksSinceStartup = (int)trace.positions[0].size() + (int)(tasPlayer->GetTick() == 0); // include point we're about to add
-		traces[trace_name].startTasTick = tasPlayer->GetTick() - ticksSinceStartup;
-	}
-	
-
-	Vector pos;
-	Vector vel;
-	Vector eyepos;
-	QAngle angles;
-
-	bool grounded;
-	bool ducked;
-	if (use_client_offset) {
-		grounded = CE(player)->ground_entity();
-		ducked = CE(player)->ducked();
-		pos = client->GetAbsOrigin(player);
-		vel = client->GetLocalVelocity(player);
-		//eyepos = pos + client->GetViewOffset(player) + client->GetPortalLocal(player).m_vEyeOffset;
-		camera->GetEyePos<false>(slot, eyepos, angles);
-	} else {
-		grounded = SE(player)->ground_entity();
-		ducked = SE(player)->ducked();
-		pos = server->GetAbsOrigin(player);
-		vel = server->GetLocalVelocity(player);
-		//eyepos = pos + server->GetViewOffset(player) + server->GetPortalLocal(player).m_vEyeOffset;
-		camera->GetEyePos<true>(slot, eyepos, angles);
-	}
-
-	Trace::HitboxList hitboxes = Trace::HitboxList::FetchAllNearPosition(pos);
-
-	trace.positions[slot].push_back(pos);
-	trace.angles[slot].push_back(angles);
-	trace.eyepos[slot].push_back(eyepos);
-	trace.velocities[slot].push_back(vel);
-	trace.grounded[slot].push_back(grounded);
-	trace.crouched[slot].push_back(ducked);
-	trace.hitboxes[slot].push_back(hitboxes);
-
-	// Only do it for one of the slots since we record all the portals in the map at once
-	if (slot == 0) {
-		auto portals = Trace::PortalsList::FetchCurrentLocations();
-		trace.portals.push_back(portals);
-	}
-}
-TraceData *Trace::GetTrace(std::string trace_name) {
-	auto trace = traces.find(trace_name);
-	if (trace == traces.end()) return nullptr;
-	return &traces.find(trace_name)->second;
-}
 std::string Trace::GetDefaultTraceName() {
 	// first, try to look for currently hovered traces, find the smallest one
 	std::string trace_name = "";
@@ -191,15 +111,7 @@ std::string Trace::GetDefaultTraceName() {
 
 	return trace_name;
 }
-int Trace::GetTraceCount() {
-	return traces.size();
-}
-void Trace::Clear(std::string trace_name) {
-	traces.erase(trace_name);
-}
-void Trace::ClearAll() {
-	traces.clear();
-}
+
 void Trace::DrawInWorld() {
 	if (engine->IsSkipping()) return;
 
@@ -230,7 +142,7 @@ void Trace::DrawInWorld() {
 		const TraceData &trace = it->second;
 		if (!trace.draw) continue;
 		for (int slot = 0; slot < 2; slot++) {
-			if (trace.positions[slot].size() < 2) continue;
+			if (trace.players[slot].size() < 2) continue;
 
 			size_t closest_id = 0;
 			float closest_dist = 1.0f; // Something stupid high
@@ -243,15 +155,15 @@ void Trace::DrawInWorld() {
 			MeshId mesh_over300   = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 0,   255, 0   }, draw_through_walls));
 			MeshId mesh_grounded  = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 0,   0   }, draw_through_walls));
 
-			Vector pos = trace.positions[slot][0];
-			float speed = trace.velocities[slot][0].Length2D();
-			unsigned groundframes = trace.grounded[slot][0];
+			Vector pos = trace.players[slot][0].position;
+			float speed = trace.players[slot][0].velocity.Length2D();
+			unsigned groundframes = trace.players[slot][0].grounded;
 
-			for (size_t i = 0; i < trace.positions[slot].size(); i++) {
-				Vector new_pos = trace.positions[slot][i];
-				speed = trace.velocities[slot][i].Length2D();
+			for (size_t i = 0; i < trace.players[slot].size(); i++) {
+				Vector new_pos = trace.players[slot][i].position;
+				speed = trace.players[slot][i].velocity.Length2D();
 				
-				if (trace.grounded[slot][i]) {
+				if (trace.players[slot][i].grounded) {
 					groundframes++;
 				} else {
 					groundframes = 0;
@@ -298,7 +210,7 @@ void Trace::DrawInWorld() {
 					// brown: speedlocked
 					// yellow: can't turn further
 					// green: speed>300
-					Vector vel = trace.velocities[slot][i];
+					Vector vel = trace.players[slot][i].velocity;
 					MeshId mesh =
 						groundframes > 1 ? mesh_grounded :
 						speed < 300      ? mesh_under300 :
@@ -330,14 +242,14 @@ void Trace::DrawSpeedDeltas() {
 
 	for (const auto &[trace_idx, trace] : traces) {
 		for (int slot = 0; slot < 2; slot++) {
-			if (trace.velocities[slot].size() < 2) continue;
+			if (trace.players[slot].size() < 2) continue;
 
 			size_t last_delta_end = 0;
-			unsigned groundframes = trace.grounded[slot][0];
-			for (unsigned i = 1; i < trace.velocities[slot].size(); i++) {
+			unsigned groundframes = trace.players[slot][0].grounded;
+			for (unsigned i = 1; i < trace.players[slot].size(); i++) {
 				unsigned last_groundframes = groundframes;
 				
-				if (trace.grounded[slot][i]) {
+				if (trace.players[slot][i].grounded) {
 					groundframes++;
 				} else {
 					groundframes = 0;
@@ -345,8 +257,8 @@ void Trace::DrawSpeedDeltas() {
 
 				if ((groundframes == 2) || (!groundframes && last_groundframes>0)) {
 					
-					float speed_delta = trace.velocities[slot][i].Length2D() - trace.velocities[slot][last_delta_end].Length2D();
-					Vector update_pos = trace.positions[slot][(last_delta_end + i) / 2];
+					float speed_delta = trace.players[slot][i].velocity.Length2D() - trace.players[slot][last_delta_end].velocity.Length2D();
+					Vector update_pos = trace.players[slot][(last_delta_end + i) / 2].position;
 
 					OverlayRender::addText(update_pos + hud_offset, Utils::ssprintf("%10.2f", speed_delta), sar_trace_font_size.GetFloat(), true, sar_trace_draw_through_walls.GetBool());
 
@@ -365,23 +277,23 @@ void Trace::DrawBboxAt(int tick) {
 	for (int slot = 0; slot < 2; slot++) {
 		for (const auto &[trace_idx, trace] : traces) {
 			if (!trace.draw) continue;
-			if (trace.positions[slot].size() == 0) continue;
+			if (trace.players[slot].size() == 0) continue;
 
-			unsigned localtick = tickUserToInternal(tick, trace);
+			unsigned localtick = trace.UserToInternalTick(tick);
 
 			// Clamp tick to the number of positions in the trace
-			if (trace.positions[slot].size() <= localtick)
-				localtick = trace.positions[slot].size()-1;
+			if (trace.players[slot].size() <= localtick)
+				localtick = trace.players[slot].size() - 1;
 
-			Vector eyepos = trace.eyepos[slot][localtick];
-			QAngle angles = trace.angles[slot][localtick];
+			Vector eyepos = trace.players[slot][localtick].eye_position;
+			QAngle angles = trace.players[slot][localtick].angles;
 			Vector forward;
 			Math::AngleVectors(angles, &forward);
 			
-			Vector player_size = trace.crouched[slot][localtick] ? player_ducked_size : player_standing_size;
-			Vector offset = trace.crouched[slot][localtick] ? Vector{0, 0, 18} : Vector{0, 0, 36};
+			Vector player_size = trace.players[slot][localtick].crouched ? player_ducked_size : player_standing_size;
+			Vector offset = trace.players[slot][localtick].crouched ? Vector{0, 0, 18} : Vector{0, 0, 36};
 			
-			Vector center = trace.positions[slot][localtick] + offset;
+			Vector center = trace.players[slot][localtick].position + offset;
 			// We trace a big player bbox and a small box to indicate exactly which tick is displayed
 			OverlayRender::addBoxMesh(
 				center,
@@ -392,7 +304,7 @@ void Trace::DrawBboxAt(int tick) {
 				RenderCallback::constant({255, 255, 0, 255})
 			);
 			OverlayRender::addBoxMesh(
-				trace.positions[slot][localtick],
+				trace.players[slot][localtick].position,
 				{-1, -1, -1},
 				{1, 1, 1},
 				{0, 0, 0},
@@ -403,7 +315,9 @@ void Trace::DrawBboxAt(int tick) {
 			OverlayRender::addLine(eyeLine, eyepos, eyepos + forward*50.0);
 			OverlayRender::addBoxMesh(eyepos, {-1,-1,-1}, {1,1,1}, angles, RenderCallback::constant({0, 255, 255}), RenderCallback::none);
 
-			trace.hitboxes[slot][localtick].Draw();
+			if (slot == 0) {
+				trace.hitboxes[localtick].Draw();
+			}
 		}
 	}
 }
@@ -414,7 +328,7 @@ void Trace::DrawPortalsAt(int tick) {
 		if (!trace.draw) continue;
 		if (trace.portals.size() == 0) continue;
 
-		unsigned localtick = tickUserToInternal(tick, trace);
+		unsigned localtick = trace.UserToInternalTick(tick);
 		unsigned portals_index = std::min(localtick, trace.portals.size() - 1);
 
 		trace.portals[portals_index].Draw();
@@ -434,96 +348,27 @@ void Trace::TeleportAt(std::string trace_name, int slot, int tick, bool eye) {
 	tick = tickUserToInternal(tick, traces[trace_name]);
 	if (tick < 0) tick = 0;
 
-	if ((unsigned)tick >= traces[trace_name].positions[slot].size())
-		tick = traces[trace_name].positions[slot].size() - 1;
+	if ((unsigned)tick >= traces[trace_name].players[slot].size())
+		tick = traces[trace_name].players[slot].size() - 1;
 
 	if (tick < 0) return;
 
-	QAngle angles = traces[trace_name].angles[slot][tick];
+	QAngle angles = traces[trace_name].players[slot][tick].angles;
 	engine->SetAngles(slot, angles);  // FIXME: borked in remote coop
 	//FIXME FIXME: for whatever reason it doesn't deal properly with precise angles. Figure out why!
 
 	if (eye) {
 		void *player = server->GetPlayer(slot + 1);
 		Vector view_off = player ? server->GetViewOffset(player) : Vector{0,0,64};
-		g_playerTraceTeleportLocation = traces[trace_name].eyepos[slot][tick] - view_off;
+		g_playerTraceTeleportLocation = traces[trace_name].players[slot][tick].eye_position - view_off;
 	} else {
-		g_playerTraceTeleportLocation = traces[trace_name].positions[slot][tick];
+		g_playerTraceTeleportLocation = traces[trace_name].players[slot][tick].position;
 	}
 
 	g_playerTraceTeleportSlot = slot;
 	g_playerTraceNeedsTeleport = true;
 }
 
-ON_EVENT(PROCESS_MOVEMENT) {
-	// detect trace switch
-	CheckTraceChanged();
-
-	// Record trace
-	if (Trace::ShouldRecord()) {
-		if (engine->IsOrange()) {
-			sar_trace_record.SetValue(0);
-			console->Print("The trace only works for the host! Turning off trace recording.\n");
-			return;
-		}
-		
-		void* player = NULL;
-		bool use_client_offset;
-
-		// Get info from the server in game (for accuracy)
-		// In demos get info from the client
-		if (event.server) {
-			player = server->GetPlayer(event.slot + 1);
-			use_client_offset = false;
-		} else {
-			player = client->GetPlayer(event.slot + 1);
-			use_client_offset = true;
-		}
-
-		if (player) {
-			Trace::AddPoint(sar_trace_record.GetString(), player, event.slot, use_client_offset);
-		}
-	}
-}
-
-void CheckTraceChanged() {
-	std::string currentTrace = sar_trace_record.GetString();
-	if (currentTrace != lastRecordedTrace) {
-		lastRecordedTrace = currentTrace;
-
-		if (sar_trace_override.GetBool()) {
-			Trace::Clear(currentTrace);
-		}
-	}
-}
-
-void Trace::TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slot, bool clientside) {
-
-	if (!sar_trace_use_shot_eyeoffset.GetBool()) return;
-	if (!Trace::ShouldRecord()) return;
-
-	TraceData *trace = GetTrace(sar_trace_record.GetString());
-	if (trace == nullptr) return;
-
-	// portal shooting position is funky. Basically, shooting happens after movement
-	// has happened, but before angles or eye offset are updated (portal gun uses different
-	// values for angles than movement, which makes it even weirder). The solution here is
-	// to record eye offset right after movement tick processing has happened
-	Vector eyepos;
-	QAngle angles;
-	if (clientside) {
-		camera->GetEyePosFromOrigin<false>(slot, moveData->m_vecAbsOrigin, eyepos, angles);
-	} else {
-		camera->GetEyePosFromOrigin<true>(slot, moveData->m_vecAbsOrigin, eyepos, angles);
-	}
-	int lastTick = trace->positions[slot].size() - 1;
-	trace->eyepos[slot][lastTick] = eyepos;
-}
-
-ON_EVENT(SESSION_START) {
-	if (sar_trace_autoclear.GetBool())
-		Trace::ClearAll();
-}
 
 void Trace::DrawTraceHud(HudContext *ctx) {
 	for (auto it = traces.begin(); it != traces.end(); ++it) {
@@ -538,9 +383,7 @@ void Trace::DrawTraceHud(HudContext *ctx) {
 	}
 }
 
-int Trace::GetTasTraceTick() {
-	if (sar_trace_draw_time.GetInt() != 3) return -1;
-
+int TraceData::GetNearestValidTick() {
 	int max_tas_tick = -1;
 
 	// we want the highest tastick number that some trace is having its bbox drawn
@@ -551,9 +394,9 @@ int Trace::GetTasTraceTick() {
 		const TraceData &trace = it->second;
 		int tick = tickUserToInternal(sar_trace_bbox_at.GetInt(), trace);
 		for (int slot = 0; slot < 2; slot++) {
-			if ((int)trace.positions[slot].size() <= tick) {
+			if ((int)this->players[slot].size() <= tick) {
 				// we're missing data - correct the tick number to the highest possible
-				tick = trace.positions[slot].size() - 1;
+				tick = this->players[slot].size() - 1;
 			}
 			int tas_tick = tickInternalToUser(tick, trace);
 			if (tas_tick > max_tas_tick) max_tas_tick = tas_tick;
@@ -673,18 +516,6 @@ ON_EVENT(RENDER) {
 	}
 }
 
-CON_COMMAND(sar_trace_clear, "sar_trace_clear <name> - Clear player trace with a given name\n") {
-	if (args.ArgC() != 2)
-		return console->Print(sar_trace_clear.ThisPtr()->m_pszHelpString);
-
-	const char *trace_name = args[1];
-	Trace::Clear(trace_name);
-}
-
-CON_COMMAND(sar_trace_clear_all, "sar_trace_clear_all - Clear all the traces\n") {
-	Trace::ClearAll();
-}
-
 CON_COMMAND(sar_trace_teleport_at, "sar_trace_teleport_at <tick> [player slot] [trace name] - teleports the player at the given trace tick on the given trace ID (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).\n") {
 	if (!sv_cheats.GetBool()) return;
 
@@ -730,8 +561,8 @@ CON_COMMAND(sar_trace_export, "sar_trace_export <filename> [trace name] - Export
 		return;
 	}
 
-	bool is_coop_trace = trace->positions[0].size() == trace->positions[1].size();
-	size_t size = trace->positions[0].size();
+	bool is_coop_trace = trace->players[0].size() == trace->players[1].size();
+	size_t size = trace->players[0].size();
 
 	std::string filename = args[1];
 	if (!Utils::EndsWith(filename, ".csv")) filename += ".csv";
@@ -757,10 +588,10 @@ CON_COMMAND(sar_trace_export, "sar_trace_export <filename> [trace name] - Export
 			fputs(",", f);
 		}
 
-		auto pos = trace->positions[0][i];
-		auto vel = trace->velocities[0][i];
-		auto grounded = trace->grounded[0][i];
-		auto crouched = trace->crouched[0][i];
+		auto pos = trace->players[0][i].position;
+		auto vel = trace->players[0][i].velocity;
+		auto grounded = trace->players[0][i].grounded;
+		auto crouched = trace->players[0][i].crouched;
 
 		fprintf(
 			f, "%f,%f,%f, %f,%f,%f, %s,%s",
@@ -770,10 +601,10 @@ CON_COMMAND(sar_trace_export, "sar_trace_export <filename> [trace name] - Export
 		);
 
 		if (is_coop_trace) {
-			pos = trace->positions[1][i];
-			vel = trace->velocities[1][i];
-			grounded = trace->grounded[1][i];
-			crouched = trace->crouched[1][i];
+			pos = trace->players[1][i].position;
+			vel = trace->players[1][i].velocity;
+			grounded = trace->players[1][i].grounded;
+			crouched = trace->players[1][i].crouched;
 
 			fprintf(
 				f, ",%f,%f,%f, %f,%f,%f, %s,%s",

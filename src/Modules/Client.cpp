@@ -534,7 +534,10 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 		groundFramesCounter->HandleMovementFrame(nSlot, grounded);
 		strafeQuality.OnMovement(nSlot, grounded);
 		strafeHud.SetData(nSlot, player, cmd, false);
-		Event::Trigger<Event::PROCESS_MOVEMENT>({nSlot, false});  // There isn't really one, just pretend it's here lol
+
+		// There isn't really one, just pretend it's here lol
+		Event::Trigger<Event::PROCESS_MOVEMENT>({nSlot, false, nullptr});
+		Event::Trigger<Event::POST_PROCESS_MOVEMENT>({nSlot, false, nullptr});
 	}
 
 	if (cmd->buttons & IN_ATTACK) {
@@ -713,14 +716,16 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 			groundFramesCounter->HandleMovementFrame(slot, grounded);
 			strafeQuality.OnMovement(slot, grounded);
 			if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
-			Event::Trigger<Event::PROCESS_MOVEMENT>({slot, false});
+			Event::Trigger<Event::PROCESS_MOVEMENT>({slot, false, move});
 			lastTick = tick;
 		}
 	}
 
 	auto result = Client::ProcessMovement(thisptr, player, move);
 
-	playerTrace->TweakLatestEyeOffsetForPortalShot(move, slot, true);
+    if (slot != -1) {
+		Event::Trigger<Event::POST_PROCESS_MOVEMENT>({slot, false, move});
+    }
 
 	return result;
 }

@@ -8,39 +8,12 @@
 #include "Trace/TraceHitbox.hpp"
 #include "Trace/TracePortal.hpp"
 
-struct TraceData {
-	int startSessionTick;
-	int startTasTick;
-	std::vector<Vector> positions[2];
-	std::vector<Vector> eyepos[2];
-	std::vector<QAngle> angles[2];
-	std::vector<Vector> velocities[2];
-	std::vector<bool> grounded[2];
-	std::vector<bool> crouched[2];
-	std::vector<Trace::HitboxList> hitboxes[2];
-	// Only have one of those, store all the portals in the map
-	// indiscriminately of player (also ones placed by pedestals etc)
-	std::vector<Trace::PortalsList> portals;
-	bool draw = true;
-};
 
 namespace Trace {
-	// Tells us whether trace should be recorded
-	bool ShouldRecord();
-	// Tells us if the trace name is valid
-	bool IsTraceNameValid(std::string trace_name);
 	// Add a point to the player trace
 	void AddPoint(std::string trace_name, void *player, int slot, bool use_client_offset);
-	// Returns trace with given id
-	TraceData *GetTrace(std::string trace_name);
 	// Returns default trace name
 	std::string GetDefaultTraceName();
-	// Returns number of recorded traces
-	int GetTraceCount();
-	// Clear all the points
-	void Clear(std::string trace_name);
-	// Clear all the traces
-	void ClearAll();
 	// Display the trace in the world
 	void DrawInWorld();
 	// Display XY-speed delta overlay
@@ -55,8 +28,6 @@ namespace Trace {
 	void DrawTraceHud(HudContext *ctx);
 	// Corrects latest eye offset according to given CMoveData, to make it correct for portal shooting preview
 	void TweakLatestEyeOffsetForPortalShot(CMoveData *moveData, int slot, bool clientside);
-	// Get the current trace bbox tick for TAS stuff, or -1 if there isn't one
-	int GetTasTraceTick();
 };
 
 extern Vector g_playerTraceTeleportLocation;

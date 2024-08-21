@@ -330,18 +330,11 @@ DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	groundFramesCounter->HandleMovementFrame(slot, grounded);
 	strafeQuality.OnMovement(slot, grounded);
 	if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot);
-	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true });
+	Event::Trigger<Event::PROCESS_MOVEMENT>({slot, true, move});
 
 	auto res = Server::ProcessMovement(thisptr, player, move);
 
-	Trace::TweakLatestEyeOffsetForPortalShot(move, slot, false);
-
-	// We edit pos after process movement to get accurate teleportation
-	// This is for sar_trace_teleport_at
-	if (g_playerTraceNeedsTeleport && slot == g_playerTraceTeleportSlot) {
-		move->m_vecAbsOrigin = g_playerTraceTeleportLocation;
-		g_playerTraceNeedsTeleport = false;
-	}
+	Event::Trigger<Event::POST_PROCESS_MOVEMENT>({slot, true, move});
 
 	return res;
 }

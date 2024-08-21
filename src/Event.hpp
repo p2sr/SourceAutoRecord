@@ -38,6 +38,7 @@ namespace Event {
 		POST_TICK,
 		CM_FLAGS,
 		PROCESS_MOVEMENT,
+		POST_PROCESS_MOVEMENT,
 		COOP_RESET_DONE,
 		COOP_RESET_REMOTE,
 		FRAME,
@@ -85,6 +86,13 @@ namespace Event {
 	struct EventData<PROCESS_MOVEMENT> {
 		int slot;
 		bool server;
+		CMoveData *moveData;
+	};
+	template <>
+	struct EventData<POST_PROCESS_MOVEMENT> {
+		int slot;
+		bool server;
+		CMoveData *moveData;
 	};
 	template <>
 	struct EventData<MAYBE_AUTOSUBMIT> {
