@@ -390,6 +390,11 @@
 |sar_patch_viewcontrol|1|Disable camera controllers before changing levels to prevent visual glitches.|
 |sar_pause_at|-1|Pause at the specified tick. -1 to deactivate it.|
 |sar_pause_for|0|Pause for this amount of ticks.|
+|sar_performance_hud|0|Enables the performance HUD.<br>1 = normal,<br>2 = stats only.|
+|sar_performance_hud_duration|60|How long (in frames) to measure performance for.|
+|sar_performance_hud_font_index|6|Font index of the performance HUD.|
+|sar_performance_hud_x|20|X position of the performance HUD.|
+|sar_performance_hud_y|300|Y position of the performance HUD.|
 |sar_pip_align|cmd|sar_pip_align \<top\|center\|bottom> \<left\|center\|right> - aligns the remote view.|
 |sar_placement_helper_hud|0|Visually displays all portal placement helpers (requires sv_cheats).|
 |sar_portalcolor_enable|0|Enable custom portal colors.|

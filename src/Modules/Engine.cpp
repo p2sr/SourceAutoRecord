@@ -12,6 +12,7 @@
 #include "Features/Cvars.hpp"
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
+#include "Features/Hud/PerformanceHud.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OverlayRender.hpp"
 #include "Features/Renderer.hpp"
@@ -685,6 +686,7 @@ void Host_AccumulateTime_Detour(float dt);
 void (*Host_AccumulateTime)(float dt);
 static Hook Host_AccumulateTime_Hook(&Host_AccumulateTime_Detour);
 void Host_AccumulateTime_Detour(float dt) {
+	performanceHud.OnFrame(dt);
 	if (!g_advancing || !session->isRunning) {
 		Host_AccumulateTime_Hook.Disable();
 		Host_AccumulateTime(dt);
