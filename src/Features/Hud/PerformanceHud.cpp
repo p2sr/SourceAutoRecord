@@ -133,4 +133,9 @@ ON_EVENT(PRE_TICK) {
 	performanceHud.accum_ticks++;
 }
 
+CON_COMMAND(sar_performance_hud_clear, "Clears the performance HUD data.\n") {
+	performanceHud.frametimes_offTick.clear();
+	performanceHud.frametimes_onTick.clear();
+}
+
 PerformanceHud performanceHud;
