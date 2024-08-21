@@ -5,6 +5,8 @@
 #include "Modules/Surface.hpp"
 #include "Variable.hpp"
 
+#include <cfloat>
+
 #define PERFORMANCE_HUD_BUCKETS 20
 
 Variable sar_performance_hud("sar_performance_hud", "0", "Enables the performance HUD.\n1 = normal,\n2 = stats only.\n");
