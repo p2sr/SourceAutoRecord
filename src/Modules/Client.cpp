@@ -127,8 +127,11 @@ CMDECL(Client::GetPortalLocal, CPortalPlayerLocalData, m_PortalLocal);
 CMDECL(Client::GetPlayerState, CPlayerState, pl);
 
 DECL_CVAR_CALLBACK(cl_fov) {
-	if (engine->demoplayer->IsPlaying())
-		fovChanger->Force();
+	fovChanger->Force();
+}
+
+DECL_CVAR_CALLBACK(cl_viewmodelfov) {
+	fovChanger->Force();
 }
 
 ClientEnt *Client::GetPlayer(int index) {
@@ -1192,6 +1195,7 @@ bool Client::Init() {
 	say = Variable("say");
 
 	CVAR_HOOK_AND_CALLBACK(cl_fov);
+	CVAR_HOOK_AND_CALLBACK(cl_viewmodelfov);
 
 	return this->hasLoaded = this->g_ClientDLL && this->s_EntityList;
 }

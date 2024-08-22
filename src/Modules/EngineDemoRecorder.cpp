@@ -211,8 +211,6 @@ static void preventOverwrite(const char *filename, int idx) {
 
 // CDemoRecorder::StartRecording
 DETOUR(EngineDemoRecorder::StartRecording, const char *filename, bool continuously) {
-	fovChanger->needToUpdate = true;
-
 	timescaleDetect->Spawn();
 
 	if (sar_demo_overwrite_bak.GetBool()) {
