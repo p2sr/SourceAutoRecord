@@ -258,4 +258,4 @@ ON_EVENT(PROCESS_MOVEMENT) {
 	if (event.move->m_nButtons & IN_JUMP) scrollSpeedHud->OnJump(event.slot, event.grounded);
 }
 
-ScrollSpeedHud *scrollSpeedHud;
+ScrollSpeedHud *scrollSpeedHud = new ScrollSpeedHud();

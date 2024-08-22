@@ -129,4 +129,4 @@ ON_EVENT(PROCESS_MOVEMENT) {
 	if (event.move->m_nButtons & IN_JUMP && event.grounded) rhythmGameHud->OnJump(event.slot);
 }
 
-RhythmGameHud *rhythmGameHud;
+RhythmGameHud *rhythmGameHud = new RhythmGameHud();

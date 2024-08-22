@@ -171,4 +171,4 @@ ON_EVENT(PROCESS_MOVEMENT) {
 	strafeQualityHud->OnMovement(event.slot, event.grounded);
 }
 
-StrafeQualityHud *strafeQualityHud;
+StrafeQualityHud *strafeQualityHud = new StrafeQualityHud();

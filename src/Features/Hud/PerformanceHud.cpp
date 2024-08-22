@@ -140,4 +140,4 @@ CON_COMMAND(sar_performance_hud_clear, "Clears the performance HUD data.\n") {
 	performanceHud->frametimes_onTick.clear();
 }
 
-PerformanceHud *performanceHud;
+PerformanceHud *performanceHud = new PerformanceHud();
