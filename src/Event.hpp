@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Utils.hpp"  // technically only Utils/SDK/GameMovement.hpp needed
+
 #include <functional>
 #include <string>
-#include "Utils.hpp" //technically only Utils/dsk/GameMovement.hpp needed
 
 #define _ON_INIT1(x)                                    \
 	static void _sar_init_fn_##x();                        \
