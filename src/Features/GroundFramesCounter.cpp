@@ -7,9 +7,6 @@
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 
-GroundFramesCounter *groundFramesCounter;
-
-
 GroundFramesCounter::GroundFramesCounter() {
 	this->hasLoaded = true;
 }
@@ -18,33 +15,31 @@ HUD_ELEMENT_MODE2(groundframes, "0", 0, 2, "Draws the number of ground frames si
 	ctx->DrawElement("groundframes: %d", groundFramesCounter->counter[ctx->slot]);
 }
 
-
-
 void GroundFramesCounter::HandleMovementFrame(int slot, bool grounded) {
 	if (pauseTimer->IsActive() && !engine->IsCoop() && !engine->demoplayer->IsPlaying()) return;
 
-	if (!GroundFramesCounter::grounded[slot] && grounded) {
-		GroundFramesCounter::AddToTotal(slot, GroundFramesCounter::counter[slot]);
+	if (!this->grounded[slot] && grounded) {
+		this->AddToTotal(slot, this->counter[slot]);
 	}
 
 	int hudMode = sar_hud_groundframes.GetInt();
 
-	if ((!GroundFramesCounter::grounded[slot] && grounded) || hudMode == 0) {
-		if (hudMode != 2) GroundFramesCounter::counter[slot] = 0;
+	if ((!this->grounded[slot] && grounded) || hudMode == 0) {
+		if (hudMode != 2) this->counter[slot] = 0;
 	} else if (grounded) {
-		GroundFramesCounter::counter[slot]++;
+		this->counter[slot]++;
 	}
 
-	GroundFramesCounter::grounded[slot] = grounded;
+	this->grounded[slot] = grounded;
 }
 
 void GroundFramesCounter::AddToTotal(int slot, int count) {
 	if (count >= MAX_GROUNDFRAMES_TRACK) return;
-	GroundFramesCounter::totals[slot][count] += 1;
+	this->totals[slot][count] += 1;
 }
 
 ON_EVENT(PROCESS_MOVEMENT) {
-	GroundFramesCounter::HandleMovementFrame(event.slot, event.grounded);
+	groundFramesCounter->HandleMovementFrame(event.slot, event.grounded);
 }
 
 CON_COMMAND(sar_groundframes_total, "sar_groundframes_total [slot] - output a summary of groundframe counts for the given player slot.\n") {
@@ -75,3 +70,5 @@ CON_COMMAND(sar_groundframes_reset, "sar_groundframes_reset - reset recorded gro
 HUD_ELEMENT_MODE2(grounded, "0", 0, 1, "Draws the state of player being on ground.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
 	ctx->DrawElement("grounded: %s", groundFramesCounter->grounded[ctx->slot] ? "yes" : "no");
 }
+
+GroundFramesCounter *groundFramesCounter;

@@ -267,7 +267,7 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd *cmd) {
 		synchro->UpdateSync(engine->IsOrange() ? 1 : 0, cmd);
 	}
 
-	strafeQuality.OnUserCmd(engine->IsOrange() ? 1 : 0, *cmd);
+	strafeQualityHud->OnUserCmd(engine->IsOrange() ? 1 : 0, *cmd);
 
 	if (cmd->buttons & IN_ATTACK) {
 		int slot = engine->IsOrange() ? 1 : 0;
@@ -290,7 +290,7 @@ DETOUR(Client::CreateMove2, float flInputSampleTime, CUserCmd *cmd) {
 		synchro->UpdateSync(1, cmd);
 	}
 
-	strafeQuality.OnUserCmd(1, *cmd);
+	strafeQualityHud->OnUserCmd(1, *cmd);
 
 	if (cmd->buttons & IN_ATTACK) {
 		g_bluePortalAngles[1] = engine->GetAngles(1);
@@ -531,12 +531,12 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 		synchro->UpdateSync(nSlot, cmd);
 	}
 
-	strafeQuality.OnUserCmd(nSlot, *cmd);
+	strafeQualityHud->OnUserCmd(nSlot, *cmd);
 	void *player = client->GetPlayer(nSlot + 1);
 	if (player) {
 		bool grounded = CE(player)->ground_entity();
 		groundFramesCounter->HandleMovementFrame(nSlot, grounded);
-		strafeQuality.OnMovement(nSlot, grounded);
+		strafeQualityHud->OnMovement(nSlot, grounded);
 		strafeHud.SetData(nSlot, player, cmd, false);
 		Event::Trigger<Event::PROCESS_MOVEMENT>({nSlot, false});  // There isn't really one, just pretend it's here lol
 	}
@@ -715,10 +715,10 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 			bool grounded = CE(player)->ground_entity();
 			slot = client->GetSplitScreenPlayerSlot(player);
 			groundFramesCounter->HandleMovementFrame(slot, grounded);
-			rhythmGameHud.HandleGroundframeLogic(slot, grounded);
-			strafeQuality.OnMovement(slot, grounded);
-			if (move->m_nButtons & IN_JUMP) scrollSpeedHud.OnJump(slot, grounded);
-			if (move->m_nButtons & IN_JUMP && grounded) rhythmGameHud.OnJump(slot);
+			rhythmGameHud->HandleGroundframeLogic(slot, grounded);
+			strafeQualityHud->OnMovement(slot, grounded);
+			if (move->m_nButtons & IN_JUMP) scrollSpeedHud->OnJump(slot, grounded);
+			if (move->m_nButtons & IN_JUMP && grounded) rhythmGameHud->OnJump(slot);
 				
 				
 			Event::Trigger<Event::PROCESS_MOVEMENT>({slot, false});

@@ -686,7 +686,7 @@ void Host_AccumulateTime_Detour(float dt);
 void (*Host_AccumulateTime)(float dt);
 static Hook Host_AccumulateTime_Hook(&Host_AccumulateTime_Detour);
 void Host_AccumulateTime_Detour(float dt) {
-	performanceHud.OnFrame(dt);
+	performanceHud->OnFrame(dt);
 	if (!g_advancing || !session->isRunning) {
 		Host_AccumulateTime_Hook.Disable();
 		Host_AccumulateTime(dt);

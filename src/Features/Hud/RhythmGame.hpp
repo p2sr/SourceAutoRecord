@@ -5,7 +5,7 @@
 class RhythmGameHud : public Hud {
 public:
 	RhythmGameHud()
-		: Hud(HudType_InGame, true){};
+		: Hud(HudType_InGame, true) {};
 
 	bool ShouldDraw() override;
 
@@ -15,11 +15,12 @@ public:
 		return false;
 	}
 
-	static void OnJump(int slot);
+	void OnJump(int slot);
 
-	static void HandleGroundframeLogic(int slot, bool grounded);
+	void HandleGroundframeLogic(int slot, bool grounded);
 
-	static inline int groundframes = 0;
+	int groundframes = 0;
+	bool was_grounded = false;
 
 	struct RhythmGamePopup {
 		int x;
@@ -30,16 +31,13 @@ public:
 		int streak;
 	};
 
-	static inline int perfectsInARow = 0;
+	int perfectsInARow = 0;
 
-	static inline std::vector<RhythmGamePopup> popups = std::vector<RhythmGamePopup>();
+	std::vector<RhythmGamePopup> popups;
 	Color perfectColor = Color{0, 171, 255, 0};  // 0 groundframes
-	Color goodColor = Color{0, 236, 82, 0};     // 1 groundframe
-	Color okColor = Color{127, 127, 127, 0};       // 2 groundframes
-	Color badColor = Color{216, 0, 0, 0};      // 3-6 groundframes
-
-private:
-	static int GetGroundframes();
+	Color goodColor = Color{0, 236, 82, 0};      // 1 groundframe
+	Color okColor = Color{127, 127, 127, 0};     // 2 groundframes
+	Color badColor = Color{216, 0, 0, 0};        // 3-6 groundframes
 };
 
-extern RhythmGameHud rhythmGameHud;
+extern RhythmGameHud *rhythmGameHud;

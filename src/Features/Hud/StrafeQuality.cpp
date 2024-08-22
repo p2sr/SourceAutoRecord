@@ -30,8 +30,6 @@ static std::vector<TickInfo> g_ticks[2];
 static CUserCmd g_lastUserCmd[2];
 static int g_lastMouseDeltas[2];
 
-StrafeQualityHud strafeQuality;
-
 static Variable sar_strafe_quality("sar_strafe_quality", "0", "Enables or disables the strafe quality HUD.\n");
 static Variable sar_strafe_quality_ticks("sar_strafe_quality_ticks", "40", 10, "The number of ticks to average over for the strafe quality HUD.\n");
 static Variable sar_strafe_quality_width("sar_strafe_quality_width", "300", 10, "The width of the strafe quality HUD.\n");
@@ -166,9 +164,11 @@ void StrafeQualityHud::OnMovement(int slot, bool grounded) {
 
 ON_EVENT(PROCESS_MOVEMENT) {
 	if (pauseTimer->IsActive() && !engine->IsCoop() && !engine->demoplayer->IsPlaying()) return;
-	if (!sar_strafe_quality.GetBool()) {  //can't use ShouldDraw because static
+	if (!strafeQualityHud->ShouldDraw()) {
 		if (!g_ticks[event.slot].empty()) ClearData(event.slot);
 		return;
 	}
-	StrafeQualityHud::OnMovement(event.slot, event.grounded);
+	strafeQualityHud->OnMovement(event.slot, event.grounded);
 }
+
+StrafeQualityHud *strafeQualityHud;

@@ -221,12 +221,11 @@ void ScrollSpeedHud::Paint(int slot) {
 }
 
 void ScrollSpeedHud::OnJump(int slot, bool grounded) {
-
 	int tick = session->GetTick();
 	int lastJumpIndex = BoundIndex(g_jumpCounter[slot] - 1, -1, MAX_CONSECUTIVE_SCROLL_INPUTS);
 	// Reset if it's been long enough
 	if (tick > g_jumpTicks[slot][g_currentLine[slot]][lastJumpIndex] + CONSECUTIVE_END && g_jumpTicks[slot][g_currentLine[slot]][lastJumpIndex] > 0) {
-		g_jumpCounter[slot] = 1; 
+		g_jumpCounter[slot] = 1;
 		g_currentLine[slot] += 1;
 		if (g_currentLine[slot] >= MAX_INPUT_LINES) {
 			g_currentLine[slot] -= MAX_INPUT_LINES;
@@ -256,6 +255,7 @@ ON_EVENT(PROCESS_MOVEMENT) {
 		if (g_jumpCounter[event.slot]) clear(event.slot);
 		return;
 	}
-	if (event.move->m_nButtons & IN_JUMP) ScrollSpeedHud::OnJump(event.slot, event.grounded);
+	if (event.move->m_nButtons & IN_JUMP) scrollSpeedHud->OnJump(event.slot, event.grounded);
 }
-ScrollSpeedHud scrollSpeedHud;
+
+ScrollSpeedHud *scrollSpeedHud;

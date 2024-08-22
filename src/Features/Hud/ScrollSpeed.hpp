@@ -13,10 +13,10 @@ public:
 		return false;
 	}
 
-	static void OnJump(int slot, bool grounded);
+	void OnJump(int slot, bool grounded);
 };
 
-extern ScrollSpeedHud scrollSpeedHud;
+extern ScrollSpeedHud *scrollSpeedHud;
 
 extern Variable sar_scrollspeed;
 extern Variable sar_scrollspeed_x;

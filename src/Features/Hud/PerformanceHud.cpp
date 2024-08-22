@@ -129,15 +129,15 @@ void PerformanceHud::OnFrame(float frametime) {
 
 ON_EVENT(PRE_TICK) {
 	if (!sar_performance_hud.GetBool()) {
-		performanceHud.accum_ticks = 0;
+		performanceHud->accum_ticks = 0;
 		return;
 	}
-	performanceHud.accum_ticks++;
+	performanceHud->accum_ticks++;
 }
 
 CON_COMMAND(sar_performance_hud_clear, "Clears the performance HUD data.\n") {
-	performanceHud.frametimes_offTick.clear();
-	performanceHud.frametimes_onTick.clear();
+	performanceHud->frametimes_offTick.clear();
+	performanceHud->frametimes_onTick.clear();
 }
 
-PerformanceHud performanceHud;
+PerformanceHud *performanceHud;

@@ -1,14 +1,14 @@
 #include "RhythmGame.hpp"
 
 #include "Event.hpp"
-#include "Variable.hpp"
-#include "Modules/Engine.hpp"
-#include "Modules/Client.hpp"
-#include "Modules/Surface.hpp"
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/Session.hpp"
-#include "Modules/Scheme.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
+#include "Modules/Engine.hpp"
+#include "Modules/Scheme.hpp"
+#include "Modules/Surface.hpp"
+#include "Variable.hpp"
 
 Variable sar_rhythmgame("sar_rhythmgame", "0", "Show a HUD indicating your groundframes as rhythm game like popups.\n");
 
@@ -16,24 +16,17 @@ bool RhythmGameHud::ShouldDraw() {
 	return sar_rhythmgame.GetBool();
 }
 
-int RhythmGameHud::GetGroundframes() {
-	return RhythmGameHud::groundframes;
-}
-
-bool prevGrounded = false;
 void RhythmGameHud::HandleGroundframeLogic(int slot, bool grounded) {
-	if (!prevGrounded && grounded) {
-		rhythmGameHud.groundframes = 0;
+	if (!this->was_grounded && grounded) {
+		this->groundframes = 0;
 	} else if (grounded) {
-		rhythmGameHud.groundframes++;
+		this->groundframes++;
 	}
 
-	prevGrounded = grounded;
+	this->was_grounded = grounded;
 }
 
 void RhythmGameHud::Paint(int slot) {
-	int screenWidth, screenHeight;
-	engine->GetScreenSize(nullptr, screenWidth, screenHeight);
 	auto font = scheme->GetFontByID(49);
 	float fh = surface->GetFontHeight(font);
 
@@ -88,7 +81,7 @@ void RhythmGameHud::Paint(int slot) {
 
 void RhythmGameHud::OnJump(int slot) {
 	int tick = session->GetTick();
-	int groundframes = GetGroundframes();
+	int groundframes = this->groundframes;
 
 	int screenWidth, screenHeight;
 	engine->GetScreenSize(nullptr, screenWidth, screenHeight);
@@ -131,8 +124,9 @@ void RhythmGameHud::OnJump(int slot) {
 }
 
 ON_EVENT(PROCESS_MOVEMENT) {
-	if (!sar_rhythmgame.GetBool()) return; //can't use ShouldDraw because static
-	RhythmGameHud::HandleGroundframeLogic(event.slot, event.grounded);
-	if (event.move->m_nButtons & IN_JUMP && event.grounded) RhythmGameHud::OnJump(event.slot);
+	if (!rhythmGameHud->ShouldDraw()) return;
+	rhythmGameHud->HandleGroundframeLogic(event.slot, event.grounded);
+	if (event.move->m_nButtons & IN_JUMP && event.grounded) rhythmGameHud->OnJump(event.slot);
 }
-RhythmGameHud rhythmGameHud;
+
+RhythmGameHud *rhythmGameHud;

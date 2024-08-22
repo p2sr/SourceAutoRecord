@@ -5,7 +5,7 @@
 class PerformanceHud : public Hud {
 public:
 	PerformanceHud()
-		: Hud(HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen, true){};
+		: Hud(HudType_InGame | HudType_Paused | HudType_Menu | HudType_LoadingScreen, true) {};
 
 	bool ShouldDraw() override;
 
@@ -16,11 +16,10 @@ public:
 	}
 
 	void OnFrame(float frametime);
-    
-    unsigned accum_ticks = 0;
-    std::vector<float> frametimes_offTick;
-    std::vector<float> frametimes_onTick;
 
+	unsigned accum_ticks = 0;
+	std::vector<float> frametimes_offTick;
+	std::vector<float> frametimes_onTick;
 };
 
-extern PerformanceHud performanceHud;
+extern PerformanceHud *performanceHud;
