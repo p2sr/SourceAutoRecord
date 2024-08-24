@@ -89,6 +89,7 @@ namespace Event {
 		bool server;
 		void *player;
 		CMoveData *move;
+		CUserCmd *cmd;
 		bool grounded;
 	};
 	template <>

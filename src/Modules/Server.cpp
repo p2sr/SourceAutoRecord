@@ -328,7 +328,7 @@ Hook g_ViewPunch_Hook(&Server::ViewPunch_Hook);
 DETOUR(Server::ProcessMovement, void *player, CMoveData *move) {
 	int slot = server->GetSplitScreenPlayerSlot(player);
 	bool grounded = SE(player)->ground_entity();
-	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true, player, move, grounded });
+	Event::Trigger<Event::PROCESS_MOVEMENT>({ slot, true, player, move, nullptr, grounded });
 
 	auto res = Server::ProcessMovement(thisptr, player, move);
 
@@ -759,7 +759,7 @@ Variable sar_fix_viewmodel_bug("sar_fix_viewmodel_bug", "0", "Fixes the viewmode
 ON_EVENT(SESSION_START) {
 	g_sendResetDoneAt = -1;
 
-	/* spawn viewmodel if it doesnt exist */
+	/* spawn viewmodel if it doesn't exist */
 	if (sar_fix_viewmodel_bug.GetBool())
 		if (CreateViewModel && !engine->IsCoop() && !entityList->GetEntityInfoByClassName("viewmodel") && !engine->demoplayer->IsPlaying())
 			CreateViewModel(server->GetPlayer(1), 0);

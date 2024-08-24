@@ -535,10 +535,8 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 	void *player = client->GetPlayer(nSlot + 1);
 	if (player) {
 		bool grounded = CE(player)->ground_entity();
-		groundFramesCounter->HandleMovementFrame(nSlot, grounded);
-		strafeQualityHud->OnMovement(nSlot, grounded);
 		strafeHud.SetData(nSlot, player, cmd, false);
-		Event::Trigger<Event::PROCESS_MOVEMENT>({nSlot, false});  // There isn't really one, just pretend it's here lol
+		Event::Trigger<Event::PROCESS_MOVEMENT>({nSlot, false, player, nullptr, cmd, grounded});  // There isn't really one, just pretend it's here lol
 	}
 
 	if (cmd->buttons & IN_ATTACK) {
@@ -714,14 +712,8 @@ DETOUR(Client::ProcessMovement, void *player, CMoveData *move) {
 		if (tick != lastTick) {
 			bool grounded = CE(player)->ground_entity();
 			slot = client->GetSplitScreenPlayerSlot(player);
-			groundFramesCounter->HandleMovementFrame(slot, grounded);
-			rhythmGameHud->HandleGroundframeLogic(slot, grounded);
-			strafeQualityHud->OnMovement(slot, grounded);
-			if (move->m_nButtons & IN_JUMP) scrollSpeedHud->OnJump(slot, grounded);
-			if (move->m_nButtons & IN_JUMP && grounded) rhythmGameHud->OnJump(slot);
-				
-				
-			Event::Trigger<Event::PROCESS_MOVEMENT>({slot, false});
+
+			Event::Trigger<Event::PROCESS_MOVEMENT>({slot, false, player, move, nullptr, grounded});
 			lastTick = tick;
 		}
 	}
