@@ -17,9 +17,9 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 					"st_a1_tramride",
 					EntityInputRule{
 						ENTRULE_TARGETNAME,
-						"Intro_Viewcontroller",
+						"tramstart_relay",
 						"",
-						"Disable",
+						"EnableRefire",
 						"",
 					}),
 			},
@@ -30,9 +30,9 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 					"sp_a1_tramride",
 					EntityInputRule{
 						ENTRULE_TARGETNAME,
-						"Intro_Viewcontroller",
+						"tramstart_relay",
 						"",
-						"Disable",
+						"EnableRefire",
 						"",
 					}),
 			},
