@@ -160,23 +160,7 @@ ON_EVENT(RENDER) {
 			Math::AngleVectors(angles, &tmp);
 			origin = origin + tmp*0.04;
 
-			// Convert to radians!
-			double syaw = sin(angles.y * M_PI/180);
-			double cyaw = cos(angles.y * M_PI/180);
-			double spitch = sin(angles.x * M_PI/180);
-			double cpitch = cos(angles.x * M_PI/180);
-
-			// yaw+pitch rotation matrix
-			Matrix rot{3, 3, 0};
-			rot(0, 0) = cyaw * cpitch;
-			rot(0, 1) = -syaw;
-			rot(0, 2) = cyaw * spitch;
-			rot(1, 0) = syaw * cpitch;
-			rot(1, 1) = cyaw;
-			rot(1, 2) = syaw * spitch;
-			rot(2, 0) = -spitch;
-			rot(2, 1) = 0;
-			rot(2, 2) = cpitch;
+			auto rot = Math::AngleMatrix({angles.x, angles.y, 0});
 
 			if (!(info.ePlacementResult<=2)) portalColor = red;
 			portalColor.a = (uint8_t)sar_pp_hud_opacity.GetInt();

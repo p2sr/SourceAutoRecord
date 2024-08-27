@@ -163,23 +163,7 @@ void OverlayRender::addQuad(MeshId mesh, Vector a, Vector b, Vector c, Vector d,
 }
 
 void OverlayRender::addBoxMesh(Vector origin, Vector mins, Vector maxs, QAngle ang, RenderCallback solid, RenderCallback wireframe) {
-	float spitch, cpitch;
-	Math::SinCos(DEG2RAD(ang.x), &spitch, &cpitch);
-	float syaw, cyaw;
-	Math::SinCos(DEG2RAD(ang.y), &syaw, &cyaw);
-	float sroll, croll;
-	Math::SinCos(DEG2RAD(ang.z), &sroll, &croll);
-
-	Matrix rot{3, 3, 0};
-	rot(0, 0) = cyaw * cpitch;
-	rot(0, 1) = cyaw * spitch * sroll - syaw * croll;
-	rot(0, 2) = cyaw * spitch * croll + syaw * sroll;
-	rot(1, 0) = syaw * cpitch;
-	rot(1, 1) = syaw * spitch * sroll + cyaw * croll;
-	rot(1, 2) = syaw * spitch * croll - cyaw * sroll;
-	rot(2, 0) = -spitch;
-	rot(2, 1) = cpitch * sroll;
-	rot(2, 2) = cpitch * croll;
+	auto rot = Math::AngleMatrix(ang);
 
 	Vector verts[8];
 	for (int i = 0; i < 8; ++i) {
@@ -365,23 +349,7 @@ static void drawMesh(const CViewSetup &setup, OverlayMesh &m, bool translucent) 
 static Matrix createTextRotationMatrix(Vector text_pos, CViewSetup setup) {
 	(void)text_pos; // not used for now
 
-	QAngle ang = QAngle{ -setup.angles.x, fmodf(setup.angles.y + 180.0, 360.0), 0 };
-
-	// create yaw+pitch rotation matrix for angles (roll ignored)
-	double syaw = sin(ang.y * M_PI/180);
-	double cyaw = cos(ang.y * M_PI/180);
-	double spitch = sin(ang.x * M_PI/180);
-	double cpitch = cos(ang.x * M_PI/180);
-	Matrix rot{3, 3, 0};
-	rot(0, 0) = cyaw * cpitch;
-	rot(0, 1) = -syaw;
-	rot(0, 2) = cyaw * spitch;
-	rot(1, 0) = syaw * cpitch;
-	rot(1, 1) = cyaw;
-	rot(1, 2) = syaw * spitch;
-	rot(2, 0) = -spitch;
-	rot(2, 1) = 0;
-	rot(2, 2) = cpitch;
+	auto rot = Math::AngleMatrix({-setup.angles.x, fmodf(setup.angles.y + 180.0, 360.0), 0});
 
 	return rot;
 }

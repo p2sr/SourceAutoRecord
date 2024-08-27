@@ -62,6 +62,35 @@ void Math::AngleVectors(const QAngle &angles, Vector *forward, Vector *right, Ve
 		up->z = cr * cp;
 	}
 }
+Matrix Math::AngleMatrix(const QAngle &angles) {
+	float fspitch, fcpitch;
+	float fsyaw, fcyaw;
+	float fsroll, fcroll;
+
+	Math::SinCos(DEG2RAD(angles.x), &fspitch, &fcpitch);
+	Math::SinCos(DEG2RAD(angles.y), &fsyaw, &fcyaw);
+	Math::SinCos(DEG2RAD(angles.z), &fsroll, &fcroll);
+
+	double spitch = fspitch;
+	double cpitch = fcpitch;
+	double syaw = fsyaw;
+	double cyaw = fcyaw;
+	double sroll = fsroll;
+	double croll = fcroll;
+
+	Matrix rot{3, 3, 0};
+	rot(0, 0) = cyaw * cpitch;
+	rot(0, 1) = cyaw * spitch * sroll - syaw * croll;
+	rot(0, 2) = cyaw * spitch * croll + syaw * sroll;
+	rot(1, 0) = syaw * cpitch;
+	rot(1, 1) = syaw * spitch * sroll + cyaw * croll;
+	rot(1, 2) = syaw * spitch * croll - cyaw * sroll;
+	rot(2, 0) = -spitch;
+	rot(2, 1) = cpitch * sroll;
+	rot(2, 2) = cpitch * croll;
+
+	return rot;
+}
 void Math::VectorAngles(Vector& forward, Vector& pseudoup, QAngle* angles) {
 	if (!angles) return;
 	Vector left = pseudoup.Cross(forward).Normalize();

@@ -9,6 +9,7 @@
 #define RAD2DEG(x) ((float)(x) * (float)(180.f / M_PI_F))
 #define DEG2RAD(x) ((float)(x) * (float)(M_PI_F / 180.f))
 
+class Matrix;
 namespace Math {
 
 	void SinCos(float radians, float *sine, float *cosine);
@@ -17,6 +18,7 @@ namespace Math {
 	void VectorAdd(const Vector &a, const Vector &b, Vector &c);
 	void AngleVectors(const QAngle &angles, Vector *forward);
 	void AngleVectors(const QAngle &angles, Vector *forward, Vector *right, Vector *up);
+	Matrix AngleMatrix(const QAngle &angles);
 	void VectorAngles(Vector &forward, Vector &pseudoup, QAngle *angles);
 	void VectorScale(Vector const &src, float b, Vector &dst);
 	void VectorCopy(const Vector &src, Vector &dst);

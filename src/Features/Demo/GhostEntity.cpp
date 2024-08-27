@@ -178,22 +178,7 @@ void GhostEntity::Display() {
 		double pitch =
 			hdist == 0 && origin.z == pos.z ? M_PI / 2 : atan2(origin.z - pos.z, hdist);
 
-		double syaw = sin(yaw);
-		double cyaw = cos(yaw);
-		double spitch = sin(pitch);
-		double cpitch = cos(pitch);
-
-		// yaw+pitch rotation matrix
-		Matrix rot{3, 3, 0};
-		rot(0, 0) = cyaw * cpitch;
-		rot(0, 1) = -syaw;
-		rot(0, 2) = cyaw * spitch;
-		rot(1, 0) = syaw * cpitch;
-		rot(1, 1) = cyaw;
-		rot(1, 2) = syaw * spitch;
-		rot(2, 0) = -spitch;
-		rot(2, 1) = 0;
-		rot(2, 2) = cpitch;
+		auto rot = Math::AngleMatrix({(float)pitch, (float)yaw, 0});
 
 		for (int i = 0; i < tris; ++i) {
 			double lang = M_PI * 2 * i / tris;
