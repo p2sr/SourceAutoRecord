@@ -101,7 +101,7 @@ int Cvars::DumpDoc(std::ofstream &file) {
 		file << "|";
 		if (games != "") {
 			file << "<i title=\"";
-			for (int i = 0; i < games.size(); ++i){
+			for (unsigned i = 0; i < games.size(); ++i){
 				auto c = games[i];
 				if (c == '\n') {
 					if (i != games.size() - 1) {

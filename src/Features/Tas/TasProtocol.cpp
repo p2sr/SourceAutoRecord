@@ -70,9 +70,9 @@ static bool popByte(std::deque<uint8_t> &buf, uint8_t &val) {
 	return true;
 }
 
-static void encodeByte(std::deque<uint8_t>& buf, uint8_t val) {
-	buf.push_back(val);
-}
+// static void encodeByte(std::deque<uint8_t>& buf, uint8_t val) {
+// 	buf.push_back(val);
+// }
 
 static bool popRaw32(std::deque<uint8_t> &buf, uint32_t& val) {
 

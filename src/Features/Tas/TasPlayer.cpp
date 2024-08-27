@@ -334,10 +334,7 @@ TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick) {
 }
 
 // returns raw framebulk using more efficient method with cached incremented index of last used tick
-TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick, int& cachedIndex) {
-	if (cachedIndex < 0) {
-		cachedIndex = 0;
-	}
+TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick, unsigned& cachedIndex) {
 
 	auto maxIndex = playbackInfo.slots[slot].framebulks.size() - 1;
 

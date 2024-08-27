@@ -30,7 +30,7 @@ void RhythmGameHud::Paint(int slot) {
 	auto font = scheme->GetFontByID(49);
 	float fh = surface->GetFontHeight(font);
 
-	for (int i = 0; i < popups.size(); i++) {
+	for (unsigned i = 0; i < popups.size(); i++) {
 		RhythmGamePopup popup = popups[i];
 
 		int x = popup.x;
@@ -80,7 +80,6 @@ void RhythmGameHud::Paint(int slot) {
 }
 
 void RhythmGameHud::OnJump(int slot) {
-	int tick = session->GetTick();
 	int groundframes = this->groundframes;
 
 	int screenWidth, screenHeight;
