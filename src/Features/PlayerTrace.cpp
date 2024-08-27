@@ -213,8 +213,6 @@ void PlayerTrace::ClearAll() {
 	traces.clear();
 }
 void PlayerTrace::DrawInWorld() const {
-	if (engine->IsSkipping()) return;
-
 	bool draw_through_walls = sar_trace_draw_through_walls.GetBool();
 
 	hovers.clear();
@@ -369,8 +367,6 @@ void PlayerTrace::DrawSpeedDeltas() const {
 	}
 }
 void PlayerTrace::DrawBboxAt(int tick) const {
-	if (engine->IsSkipping()) return;
-
 	static const Vector player_standing_size = {32, 32, 72};
 	static const Vector player_ducked_size = {32, 32, 36};
 		
@@ -456,8 +452,6 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 	}
 }
 void PlayerTrace::DrawPortalsAt(int tick) const {
-	if (engine->IsSkipping()) return;
-
 	for (const auto &[trace_idx, trace] : traces) {
 		if (!trace.draw) continue;
 		if (trace.portals.size() == 0) continue;

@@ -159,6 +159,7 @@ public:
 	void AdvanceTick();
 	void SetSkipping(bool skipping);
 	bool IsSkipping();
+	bool IsForcingNoRendering();
 	Color GetLightAtPoint(Vector point);
 	bool GetPlayerInfo(int ent_num, player_info_t *pInfo);
 	std::string GetPartnerSteamID32();

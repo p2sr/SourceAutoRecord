@@ -45,7 +45,7 @@ CGameTrace TracePortalShot(const Vector &start, const Vector &dir, float length)
 }
 
 ON_EVENT(RENDER) {
-	if (sv_cheats.GetBool() && sar_seamshot_finder.GetBool() && !engine->IsSkipping()) {
+	if (sv_cheats.GetBool() && sar_seamshot_finder.GetBool()) {
 		void *player = server->GetPlayer(GET_SLOT() + 1);
 
 		if (player == nullptr || (int)player == -1)

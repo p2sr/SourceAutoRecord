@@ -443,7 +443,10 @@ DETOUR(Engine::Frame) {
 	Renderer::Frame();
 	engine->demoplayer->HandlePlaybackFix();
 	Event::Trigger<Event::FRAME>({});
-	if (!engine->IsSkipping() && session->isRunning) Event::Trigger<Event::RENDER>({});
+
+	if (!engine->IsForcingNoRendering() && session->isRunning) {
+		Event::Trigger<Event::RENDER>({});
+	}
 
 	NetMessage::Update();
 
@@ -683,6 +686,10 @@ bool Engine::IsSkipping() {
 	return g_skipping;
 }
 
+bool Engine::IsForcingNoRendering() {
+	return g_skipping && !g_advancing && !engine->IsGamePaused();
+}
+
 static float *host_frametime;
 static float *host_frametime_unbounded;
 void Host_AccumulateTime_Detour(float dt);
@@ -791,7 +798,7 @@ void _Host_RunFrame_Render_Detour() {
 		uint64_t nframes = total_frames - init_frames;
 		g_cur_fps = (float)nframes / FPS_CHECK_WINDOW;
 	});
-	if (g_skipping && !g_advancing && !engine->IsGamePaused()) {
+	if (engine->IsForcingNoRendering()) {
 		// We need to do this or else the client doesn't update viewangles
 		// in response to portal teleportations (and it probably breaks some
 		// other stuff too). This would normally be done within

@@ -252,7 +252,6 @@ void SpeedrunTimer::ResetCategory() {
 ON_EVENT(RENDER) {
 	if (!sar_speedrun_draw_triggers.GetBool()) return;
 	if (!sv_cheats.GetBool()) return;
-	if (engine->IsSkipping()) return;
 
 	for (std::string ruleName : g_categories[g_currentCategory].rules) {
 		auto rule = SpeedrunTimer::GetRule(ruleName);

@@ -82,7 +82,7 @@ static bool updateTrace(int slot) {
 }
 
 static void renderTrace(const CGameTrace &tr) {
-	if (engine->IsGamePaused() || engine->IsSkipping()) return;
+	if (engine->IsGamePaused()) return;
 
 	auto p = tr.endpos;
 	Vector norm = tr.plane.normal;

@@ -85,6 +85,10 @@ BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
 	, version(version) {
 }
 bool BaseHud::ShouldDraw() {
+	if (engine->IsForcingNoRendering()) {
+		return false;
+	}
+
 	if (engine->demoplayer->IsPlaying() || engine->IsOrange()) {
 		return this->type & HudType_InGame;
 	}
