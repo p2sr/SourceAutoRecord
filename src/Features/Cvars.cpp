@@ -29,7 +29,8 @@ int Cvars::Dump(std::ofstream &file, int filter, bool values) {
 			{"isCommand", isCommand},
 			{"name", cmd->m_pszName},
 			{"helpStr", cmd->m_pszHelpString},
-			{"flags", cmd->m_nFlags}
+			{"flags", cmd->m_nFlags},
+			{"flagsStr", this->GetFlags(*cmd)}
 		};
 		if (games != "") {
 			json["games"] = games;
@@ -311,7 +312,8 @@ std::string Cvars::GetFlags(const ConCommandBase &cmd) {
 	auto result = std::string();
 	for (auto i = -1; i < 32; ++i) {
 		if ((i == -1 && cmd.m_nFlags == 0) || cmd.m_nFlags & (1 << i)) {
-			result += flags[i + 1] + " ";
+			if (result != "") result += " ";
+			result += flags[i + 1];
 		}
 	}
 	return result;
