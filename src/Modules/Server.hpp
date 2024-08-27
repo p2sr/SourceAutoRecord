@@ -156,3 +156,6 @@ extern Variable sv_maxspeed;
 extern Variable sv_stopspeed;
 extern Variable sv_maxvelocity;
 extern Variable sv_gravity;
+extern Variable sv_cheats_flagged;
+extern Variable sv_portal_placement_debug;
+extern Variable sv_allow_mobile_portals;

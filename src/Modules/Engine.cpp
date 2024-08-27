@@ -44,11 +44,14 @@
 
 #define FPS_CHECK_WINDOW 0.5f
 
+Variable host_timescale;
 Variable host_framerate;
 Variable net_showmsg;
 Variable sv_portal_players;
 Variable fps_max;
 Variable mat_norendering;
+Variable mat_filtertextures;
+Variable phys_timescale;
 
 Variable sar_record_at("sar_record_at", "-1", -1, "Start recording a demo at the tick specified. Will use sar_record_at_demo_name.\n", 0);
 Variable sar_record_at_demo_name("sar_record_at_demo_name", "chamber", "Name of the demo automatically recorded.\n", 0);
@@ -823,8 +826,8 @@ ON_EVENT(FRAME) {
 
 	// only do the bink overrides if host_timescale, host_framerate, or
 	// frame advance is active - it's a very hacky patch, i don't trust it
-	bool host_ts = sv_cheats.GetBool() && Variable("host_timescale").GetFloat() > 0.0f && Variable("host_timescale").GetFloat() != 1.0f;
-	bool host_fr = (sv_cheats.GetBool() || engine->demoplayer->IsPlaying()) && Variable("host_framerate").GetFloat() != 0.0f;
+	bool host_ts = sv_cheats.GetBool() && host_timescale.GetFloat() > 0.0f && host_timescale.GetFloat() != 1.0f;
+	bool host_fr = (sv_cheats.GetBool() || engine->demoplayer->IsPlaying()) && host_framerate.GetFloat() != 0.0f;
 	if (engine->IsAdvancing() || host_ts || host_fr) {
 		g_bink_override_active = true;
 	} else {
@@ -1199,11 +1202,14 @@ bool Engine::Init() {
 	Command::Hook("changelevel2", Engine::changelevel2_command_callback_hook, Engine::changelevel2_command_callback);
 	CVAR_HOOK_AND_CALLBACK(ss_force_primary_fullscreen);
 
+	host_timescale = Variable("host_timescale");
 	host_framerate = Variable("host_framerate");
 	net_showmsg = Variable("net_showmsg");
 	sv_portal_players = Variable("sv_portal_players");
 	fps_max = Variable("fps_max");
 	mat_norendering = Variable("mat_norendering");
+	mat_filtertextures = Variable("mat_filtertextures");
+	phys_timescale = Variable("phys_timescale"); 
 
 	// Dumb fix for valve cutting off convar descriptions at 80
 	// characters for some reason

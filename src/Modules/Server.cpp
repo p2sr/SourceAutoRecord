@@ -68,6 +68,9 @@ Variable sv_maxspeed;
 Variable sv_stopspeed;
 Variable sv_maxvelocity;
 Variable sv_gravity;
+Variable sv_cheats_flagged;
+Variable sv_portal_placement_debug;
+Variable sv_allow_mobile_portals;
 
 REDECL(Server::CheckJumpButton);
 REDECL(Server::CheckJumpButtonBase);
@@ -1054,6 +1057,9 @@ bool Server::Init() {
 	sv_stopspeed = Variable("sv_stopspeed");
 	sv_maxvelocity = Variable("sv_maxvelocity");
 	sv_gravity = Variable("sv_gravity");
+	sv_cheats_flagged = Variable("sv_cheats_flagged");
+	sv_portal_placement_debug = Variable("sv_portal_placement_debug");
+	sv_allow_mobile_portals = Variable("sv_allow_mobile_portals");
 
 	return this->hasLoaded = this->g_GameMovement && this->g_ServerGameDLL;
 }

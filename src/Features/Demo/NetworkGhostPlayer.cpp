@@ -1230,12 +1230,12 @@ ON_INIT {
 
 ON_EVENT(FRAME) {
 	if ((g_chatType == 2 && !networkManager.isConnected) || 
-		(g_chatType == 0 && Variable("cl_chat_active").GetBool())) g_chatType = 1;
+		(g_chatType == 0 && cl_chat_active.GetBool())) g_chatType = 1;
 
 	if (g_chatType != 0) {
 		g_wasChatType = g_chatType;
 	}
-	if (!Variable("cl_chat_active").GetBool()) {
+	if (!cl_chat_active.GetBool()) {
 		g_chatType = 0;
 	}
 }

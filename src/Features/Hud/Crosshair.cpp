@@ -166,13 +166,13 @@ void Crosshair::Paint(int slot) {
 	engine->GetScreenSize(nullptr, xScreen, yScreen);
 
 	if (engine->IsSplitscreen()) {
-		if (Variable("ss_pipsplit").GetInt() == 2) {
+		if (ss_pipsplit.GetInt() == 2) {
 			if (slot == 1) {
-				xScreen *= Variable("ss_pipscale").GetFloat();
-				yScreen *= Variable("ss_pipscale").GetFloat();
+				xScreen *= ss_pipscale.GetFloat();
+				yScreen *= ss_pipscale.GetFloat();
 			}
 		} else {
-			if (Variable("ss_verticalsplit").GetBool()) {
+			if (ss_verticalsplit.GetBool()) {
 				xScreen /= 2;
 			} else {
 				yScreen /= 2;

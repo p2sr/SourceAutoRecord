@@ -59,6 +59,13 @@ Variable setpause;
 Variable snd_ducktovolume;
 Variable say;
 
+Variable cl_cmdrate;
+Variable cl_updaterate;
+Variable cl_chat_active;
+Variable ss_pipsplit;
+Variable ss_pipscale;
+Variable ss_verticalsplit;
+
 Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
 Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disables the saving/saved HUD which appears when you make a save.\n");
 
@@ -1185,6 +1192,12 @@ bool Client::Init() {
 	setpause = Variable("setpause");
 	snd_ducktovolume = Variable("snd_ducktovolume");
 	say = Variable("say");
+	cl_cmdrate = Variable("cl_cmdrate");
+	cl_updaterate = Variable("cl_updaterate");
+	cl_chat_active = Variable("cl_chat_active");
+	ss_pipsplit = Variable("ss_pipsplit");
+	ss_pipscale = Variable("ss_pipscale");
+	ss_verticalsplit = Variable("ss_verticalsplit");
 
 	CVAR_HOOK_AND_CALLBACK(cl_fov);
 	CVAR_HOOK_AND_CALLBACK(cl_viewmodelfov);

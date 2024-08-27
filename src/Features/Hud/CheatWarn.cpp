@@ -24,31 +24,31 @@ static Cheat g_cheats[] = {
 	{ +[]() {
 		if (sar.game->Is(SourceGame_PortalReloaded)) return false;
 		if (client->GetChallengeStatus() != CMStatus::CHALLENGE && !(engine->IsCoop() && !engine->IsSplitscreen())) return false;
-		return Variable("sv_cheats_flagged").GetBool();
+		return sv_cheats_flagged.GetBool();
 	}, "cheats were flagged in this session", "reload the game from the menu" },
 
 	{ +[]() {
-		return Variable("cl_cmdrate").GetFloat() != 30.0f;
+		return cl_cmdrate.GetFloat() != 30.0f;
 	}, "cl_cmdrate is at a non-default value", "run 'cl_cmdrate 30'" },
 
 	{ +[]() {
-		return Variable("cl_updaterate").GetFloat() != 20.0f;
+		return cl_updaterate.GetFloat() != 20.0f;
 	}, "cl_updaterate is at a non-default value", "run 'cl_updaterate 20'" },
 
 	{ +[]() {
-		return Variable("phys_timescale").GetFloat() != 1.0f;
+		return phys_timescale.GetFloat() != 1.0f;
 	}, "phys_timescale is at a non-default value", "run 'phys_timescale 1'" },
 
 	{ +[]() {
-		return Variable("mat_filtertextures").GetInt() != 1;
+		return mat_filtertextures.GetInt() != 1;
 	}, "mat_filtertextures is at a non-default value", "run 'mat_filtertextures 1'" },
 
 	{ +[]() {
-		return g_cap_frametime == 0 && (Variable("fps_max").GetFloat() <= 29.0f || Variable("fps_max").GetFloat() >= 1000.0f);
+		return g_cap_frametime == 0 && (fps_max.GetFloat() <= 29.0f || fps_max.GetFloat() >= 1000.0f);
 	}, "fps_max is at a banned value", "set 'fps_max' between 30 and 999" },
 
 	{ +[]() {
-		return Variable("sv_portal_placement_debug").GetBool();
+		return sv_portal_placement_debug.GetBool();
 	}, "portal placement debug is enabled", "run 'sv_portal_placement_debug 0'" },
 
 	{ +[]() {
@@ -56,7 +56,7 @@ static Cheat g_cheats[] = {
 		if (!sar.game->Is(SourceGame_Portal2)) return false;
 		if (map == "sp_a2_bts5") return false;
 		if (engine->GetMapIndex(map) == -1) return false;
-		return Variable("sv_allow_mobile_portals").GetBool();
+		return sv_allow_mobile_portals.GetBool();
 	}, "mobile portals enabled", "set 'sv_allow_mobile_portals 0'" },
 
 	{ +[]() {

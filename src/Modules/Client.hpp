@@ -197,6 +197,13 @@ extern Variable setpause;
 extern Variable snd_ducktovolume;
 extern Variable say;
 
+extern Variable cl_cmdrate;
+extern Variable cl_updaterate;
+extern Variable cl_chat_active;
+extern Variable ss_pipsplit;
+extern Variable ss_pipscale;
+extern Variable ss_verticalsplit;
+
 extern Command sar_workshop_skip;
 
 extern Color SARUTIL_Portal_Color(int iPortal, int iTeamNumber);

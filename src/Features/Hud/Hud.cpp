@@ -871,7 +871,7 @@ CON_COMMAND_F(sar_pip_align, "sar_pip_align <top|center|bottom> <left|center|rig
 	}
 	int sw, sh;
 	engine->GetScreenSize(nullptr, sw, sh);
-	float scale = Variable("ss_pipscale").GetFloat();
+	float scale = ss_pipscale.GetFloat();
 	float w = sw * scale, h = sh * scale, x, y;
 	
 	if (!strcasecmp(args[1], "top")) {

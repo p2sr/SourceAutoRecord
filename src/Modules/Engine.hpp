@@ -226,11 +226,14 @@ private:
 
 extern Engine *engine;
 
+extern Variable host_timescale;
 extern Variable host_framerate;
 extern Variable net_showmsg;
 extern Variable sv_portal_players;
 extern Variable fps_max;
 extern Variable mat_norendering;
+extern Variable mat_filtertextures;
+extern Variable phys_timescale;
 
 extern Variable sar_record_at;
 extern Variable sar_record_at_demo_name;
