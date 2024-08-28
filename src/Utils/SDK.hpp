@@ -27,5 +27,6 @@
 #include "SDK/UserCmd.hpp"
 #include "SDK/UtlMemory.hpp"
 #include "SDK/Trace.hpp"
+#include "SDK/FixedQueue.hpp"
 
 #include "SDK/Other.hpp"
