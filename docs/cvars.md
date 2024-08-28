@@ -640,6 +640,8 @@
 |sar_velocitygraph_font_index|21|Font index of velocity graph.|
 |sar_velocitygraph_rainbow|0|Rainbow mode of velocity graph text.|
 |sar_velocitygraph_show_speed_on_graph|1|Show speed between jumps.|
+|sar_velocitygraph_x|-250|Velocity graph x axis offset.|
+|sar_velocitygraph_y|-175|Velocity graph y axis offset.|
 |sar_vphys_hud|0|Enables or disables the vphys HUD.|
 |sar_vphys_hud_font|1|Sets font of the vphys HUD.|
 |sar_vphys_hud_precision|3|Sets decimal precision of the vphys HUD.|

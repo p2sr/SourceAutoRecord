@@ -1,16 +1,16 @@
 #include "VelocityGraph.hpp"
 
 #include "Event.hpp"
+#include "Features/Session.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
-#include "Features/Session.hpp"
+#include "Utils/SDK/FixedQueue.hpp"
 #include "Variable.hpp"
 
-#include "Utils/SDK/FixedQueue.hpp"
-#include <vector>
 #include <cmath>
+#include <vector>
 
 Variable sar_velocitygraph("sar_velocitygraph", "0", "Shows velocity graph.\n");
 Variable sar_velocitygraph_font_index("sar_velocitygraph_font_index", "21", 0, "Font index of velocity graph.\n"); // 21 looks pretty good
@@ -33,7 +33,7 @@ struct VelocityData {
 	}
 };
 
-std::vector<FixedQueue<VelocityData>> velocityStamps(2, FixedQueue(500, VelocityData())); 
+std::vector<FixedQueue<VelocityData>> velocityStamps(2, FixedQueue(500, VelocityData()));
 
 static int last_vel[2] = {0, 0};
 static int tick_prev[2] = {0, 0};
@@ -57,7 +57,7 @@ void ClearData(int slot) {
 }
 
 void VelocityGraph::GatherData(int slot, bool on_ground) {
-	auto player = client->GetPlayer(slot + 1); //not sure how to get it properly with event
+	auto player = client->GetPlayer(slot + 1);
 	if (!player) return;
 
 	auto vel = client->GetLocalVelocity(player);
@@ -75,10 +75,10 @@ void VelocityGraph::GatherData(int slot, bool on_ground) {
 void VelocityGraph::Paint(int slot) {
 	int speed = velocityStamps[slot].Last().speed;
 
-	int screenSizeX, y;
-	engine->GetScreenSize(nullptr, screenSizeX, y);
+	int x, y;
+	engine->GetScreenSize(nullptr, x, y);
 
-	const Vector2<int> graphPos = Vector2<int>(screenSizeX / 2, y) + 
+	const Vector2<int> graphPos = Vector2<int>(x / 2, y) + 
 		Vector2<int>(sar_velocitygraph_x.GetInt(), sar_velocitygraph_y.GetInt());
 
 	if (sar_velocitygraph_background.GetBool())
