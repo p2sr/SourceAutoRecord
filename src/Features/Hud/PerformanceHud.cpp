@@ -29,32 +29,55 @@ void PerformanceHud::Paint(int slot) {
 	float min_offTick = FLT_MAX;
 	float max_offTick = FLT_MIN;
 	float mean_offTick = 0;
-	if (this->frametimes_offTick.size() > 0) {
-		for (auto &frametime : this->frametimes_offTick) {
+	if (this->times_totalframe_offTick.size() > 0) {
+		for (auto &frametime : this->times_totalframe_offTick) {
 			mean_offTick += frametime;
 			if (frametime < min_offTick) min_offTick = frametime;
 			if (frametime > max_offTick) max_offTick = frametime;
 		}
-		mean_offTick /= this->frametimes_offTick.size();
+		mean_offTick /= this->times_totalframe_offTick.size();
 		surface->DrawTxt(font, x, y, {255, 255, 255}, "frametime (off tick): min %.3fms, mean %.3fms, max %.3fms", min_offTick * 1000, mean_offTick * 1000, max_offTick * 1000);
+		y += lineHeight;
 	}
 
 	float min_onTick = FLT_MAX;
 	float max_onTick = FLT_MIN;
 	float mean_onTick = 0;
-	if (this->frametimes_onTick.size() > 0) {
-		for (auto &frametime : this->frametimes_onTick) {
+	if (this->times_totalframe_onTick.size() > 0) {
+		for (auto &frametime : this->times_totalframe_onTick) {
 			mean_onTick += frametime;
 			if (frametime < min_onTick) min_onTick = frametime;
 			if (frametime > max_onTick) max_onTick = frametime;
 		}
-		mean_onTick /= this->frametimes_onTick.size();
-		surface->DrawTxt(font, x, y + lineHeight, {255, 255, 255}, "frametime (on tick):  min %.3fms, mean %.3fms, max %.3fms", min_onTick * 1000, mean_onTick * 1000, max_onTick * 1000);
+		mean_onTick /= this->times_totalframe_onTick.size();
+		surface->DrawTxt(font, x, y, {255, 255, 255}, "frametime (on tick):  min %.3fms, mean %.3fms, max %.3fms", min_onTick * 1000, mean_onTick * 1000, max_onTick * 1000);
+		y += lineHeight;
 	} else {
 		min_onTick = min_offTick;
 		max_onTick = max_offTick;
 		mean_onTick = mean_offTick;
 	}
+
+	auto drawTimeType = [&](auto type, const char *name) {
+		if (type.size() > 0) {
+			float min = FLT_MAX;
+			float max = FLT_MIN;
+			float mean = 0;
+			for (auto &frametime : type) {
+				mean += frametime;
+				if (frametime < min) min = frametime;
+				if (frametime > max) max = frametime;
+			}
+			mean /= type.size();
+			surface->DrawTxt(font, x, y, {255, 255, 255}, "%s: min %.3fms, mean %.3fms, max %.3fms", name, min * 1000, mean * 1000, max * 1000);
+			y += lineHeight;
+		}
+	};
+
+	drawTimeType(this->times_render,   "render   ");
+	drawTimeType(this->times_vgui,     "vgui     ");
+	drawTimeType(this->times_preTick,  "pre tick ");
+	drawTimeType(this->times_postTick, "post tick");
 
 	if (sar_performance_hud.GetInt() > 1) return;
 
@@ -71,13 +94,13 @@ void PerformanceHud::Paint(int slot) {
 
 	std::vector<int> buckets_offTick(buckets);
 	std::vector<int> buckets_onTick(buckets);
-	for (auto &frametime : this->frametimes_offTick) {
+	for (auto &frametime : this->times_totalframe_offTick) {
 		int bucket = (int)((frametime - min_onTick) * buckets / (max_onTick - min_onTick));
 		if (bucket < 0) bucket = 0;
 		if (bucket >= buckets) bucket = buckets - 1;
 		buckets_offTick[bucket]++;
 	}
-	for (auto &frametime : this->frametimes_onTick) {
+	for (auto &frametime : this->times_totalframe_onTick) {
 		int bucket = (int)((frametime - min_onTick) * buckets / (max_onTick - min_onTick));
 		if (bucket < 0) bucket = 0;
 		if (bucket >= buckets) bucket = buckets - 1;
@@ -89,24 +112,21 @@ void PerformanceHud::Paint(int slot) {
 	for (int i = 0; i < buckets; i++) {
 		int left = x + i * width / buckets;
 		int right = x + (i + 1) * width / buckets;
-		if (this->frametimes_onTick.size() != 0) {
-			int height_onTick = buckets_onTick[i] * 100 / this->frametimes_onTick.size();
-			surface->DrawRect({0, 255, 0, 255}, left, y + 2 * lineHeight, right, y + 2 * lineHeight + 2 + height_onTick);
+		if (this->times_totalframe_onTick.size() != 0) {
+			int height_onTick = buckets_onTick[i] * 100 / this->times_totalframe_onTick.size();
+			surface->DrawRect({0, 255, 0, 255}, left, y, right, y + 2 + height_onTick);
 		}
-		if (this->frametimes_offTick.size() != 0) {
-			int height_offTick = buckets_offTick[i] * 100 / this->frametimes_offTick.size();
-			surface->DrawRect({255, 0, 0, 255}, left, y + 2 * lineHeight, right, y + 2 * lineHeight + 2 + height_offTick);
+		if (this->times_totalframe_offTick.size() != 0) {
+			int height_offTick = buckets_offTick[i] * 100 / this->times_totalframe_offTick.size();
+			surface->DrawRect({255, 0, 0, 255}, left, y, right, y + 2 + height_offTick);
 		}
 	}
 }
 
 void PerformanceHud::OnFrame(float frametime) {
 	if (!sar_performance_hud.GetBool()) {
-		if (this->frametimes_offTick.size() > 0) {
-			this->frametimes_offTick.clear();
-		}
-		if (this->frametimes_onTick.size() > 0) {
-			this->frametimes_onTick.clear();
+		if (this->times_totalframe_offTick.size() > 0) {
+			this->times_totalframe_offTick.clear();
 		}
 		return;
 	}
@@ -114,30 +134,67 @@ void PerformanceHud::OnFrame(float frametime) {
 	if (this->accum_ticks > 0) {
 		// TODO: in sp this will be render + 2x tick (accum_ticks = 2)
 		// in mp it's render + tick. maybe account for that?
-		this->frametimes_onTick.push_back(frametime);
-		while (this->frametimes_onTick.size() > (unsigned)sar_performance_hud_duration.GetInt()) {
-			this->frametimes_onTick.erase(this->frametimes_onTick.begin());
+		this->times_totalframe_onTick.push_back(frametime);
+		while (this->times_totalframe_onTick.size() > (unsigned)sar_performance_hud_duration.GetInt()) {
+			this->times_totalframe_onTick.erase(this->times_totalframe_onTick.begin());
 		}
 		this->accum_ticks = 0;
 	} else {
-		this->frametimes_offTick.push_back(frametime);
-		while (this->frametimes_offTick.size() > (unsigned)sar_performance_hud_duration.GetInt()) {
-			this->frametimes_offTick.erase(this->frametimes_offTick.begin());
+		this->times_totalframe_offTick.push_back(frametime);
+		while (this->times_totalframe_offTick.size() > (unsigned)sar_performance_hud_duration.GetInt()) {
+			this->times_totalframe_offTick.erase(this->times_totalframe_offTick.begin());
 		}
 	}
 }
 
-ON_EVENT(PRE_TICK) {
+void PerformanceHud::AddMetric(std::vector<float> &type, float time) {
+	if (!sar_performance_hud.GetBool()) {
+		if (type.size() > 0) {
+			type.clear();
+		}
+		return;
+	}
+	type.push_back(time);
+	while (type.size() > (unsigned)sar_performance_hud_duration.GetInt()) {
+		type.erase(type.begin());
+	}
+}
+
+static std::chrono::high_resolution_clock::time_point preTick;
+static std::chrono::high_resolution_clock::time_point postTick;
+
+ON_EVENT_P(PRE_TICK, 2147483647) {
 	if (!sar_performance_hud.GetBool()) {
 		performanceHud->accum_ticks = 0;
 		return;
 	}
 	performanceHud->accum_ticks++;
+	preTick = NOW();
 }
 
+ON_EVENT_P(PRE_TICK, -2147483647) {
+	float frametime = std::chrono::duration_cast<std::chrono::microseconds>(NOW() - preTick).count() / 1000000.0f;
+	performanceHud->AddMetric(performanceHud->times_preTick, frametime);
+}
+
+
+ON_EVENT_P(POST_TICK, 2147483647) {
+	postTick = NOW();
+}
+
+ON_EVENT_P(POST_TICK, -2147483647) {
+	float frametime = std::chrono::duration_cast<std::chrono::microseconds>(NOW() - postTick).count() / 1000000.0f;
+	performanceHud->AddMetric(performanceHud->times_postTick, frametime);
+}
+
+
 CON_COMMAND(sar_performance_hud_clear, "Clears the performance HUD data.\n") {
-	performanceHud->frametimes_offTick.clear();
-	performanceHud->frametimes_onTick.clear();
+	performanceHud->times_totalframe_offTick.clear();
+	performanceHud->times_totalframe_onTick.clear();
+	performanceHud->times_render.clear();
+	performanceHud->times_vgui.clear();
+	performanceHud->times_preTick.clear();
+	performanceHud->times_postTick.clear();
 }
 
 PerformanceHud *performanceHud = new PerformanceHud();

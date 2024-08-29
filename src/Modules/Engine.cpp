@@ -371,6 +371,7 @@ void Engine::GetTicks(int &host, int &server, int &client) {
 
 // CEngine::Frame
 DETOUR(Engine::Frame) {
+	auto startTime = NOW();
 	if (sar_tick_debug.GetInt() >= 2) {
 		static int lastServer, lastClient;
 		int host, server, client;
@@ -422,6 +423,8 @@ DETOUR(Engine::Frame) {
 	if (!engine->hoststate->m_activeGame && tasPlayer->IsRunning()) {
 		tasPlayer->Stop(true);
 	}
+
+	performanceHud->AddMetric(performanceHud->times_render, std::chrono::duration_cast<std::chrono::microseconds>(NOW() - startTime).count() / 1000000.0f);
 
 	return Engine::Frame(thisptr);
 }

@@ -15,11 +15,16 @@ public:
 		return false;
 	}
 
+	void AddMetric(std::vector<float> &type, float frametime);
 	void OnFrame(float frametime);
 
 	unsigned accum_ticks = 0;
-	std::vector<float> frametimes_offTick;
-	std::vector<float> frametimes_onTick;
+	std::vector<float> times_totalframe_offTick;
+	std::vector<float> times_totalframe_onTick;
+	std::vector<float> times_render;
+	std::vector<float> times_vgui;
+	std::vector<float> times_preTick;
+	std::vector<float> times_postTick;
 };
 
 extern PerformanceHud *performanceHud;
