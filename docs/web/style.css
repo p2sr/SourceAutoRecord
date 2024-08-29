@@ -116,6 +116,8 @@ main
     background: var(--foreground);
     border-radius: 6px;
     padding: .5rem 1rem;
+    line-height: 2.5rem;
+    white-space: nowrap;
 }
 
 .stable
@@ -128,6 +130,7 @@ main
 {
     background: transparent !important;
     display: block;
+    line-height: inherit !important;
 }
 
 /* 4.1 Links */

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![SourceAutoRecord Homepage](docs/img/sar_logo.webp)](https://sar.portal2.sr/)
+[![SourceAutoRecord Homepage](docs/web/img/sar_logo.webp)](https://sar.portal2.sr/)
 
 </div>
 

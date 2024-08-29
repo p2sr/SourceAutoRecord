@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>SourceAutoRecord</title>
         <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="icon" type="image/png" href="https://avatars.githubusercontent.com/u/83299896">
     </head>
     <body>
         <nav>
@@ -21,11 +22,11 @@
             <img src="img/sar_logo.webp" alt="SAR Banner" id="sar-banner">
 
             <div id="badges">
-                <a href="https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACI+branch%3Amaster"><img src="https://github.com/p2sr/SourceAutoRecord/workflows/CI/badge.svg" alt="CI"></a>
-                <a href="https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACD+branch%3Amaster"><img src="https://github.com/p2sr/SourceAutoRecord/workflows/CD/badge.svg" alt="CD"></a>
-                <a href="https://github.com/p2sr/SourceAutoRecord/releases/latest"><img src="https://img.shields.io/github/v/release/p2sr/SourceAutoRecord?label=latest%20release" alt="Latest release"></a>
-                <a href="https://github.com/p2sr/SourceAutoRecord/releases"><img src="https://img.shields.io/github/v/release/p2sr/SourceAutoRecord?label=latest%20pre-release&include_prereleases" alt="Latest pre-release"></a>
-                <a href="https://github.com/p2sr/SourceAutoRecord/blob/master/LICENSE"><img src="https://img.shields.io/github/license/p2sr/SourceAutoRecord" alt="License"></a>
+                <a href="https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACI+branch%3Amaster" target="_blank"><img src="https://github.com/p2sr/SourceAutoRecord/workflows/CI/badge.svg" alt="CI"></a>
+                <a href="https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACD+branch%3Amaster" target="_blank"><img src="https://github.com/p2sr/SourceAutoRecord/workflows/CD/badge.svg" alt="CD"></a>
+                <a href="https://github.com/p2sr/SourceAutoRecord/releases/latest" target="_blank"><img src="https://img.shields.io/github/v/release/p2sr/SourceAutoRecord?label=latest%20release" alt="Latest release"></a>
+                <a href="https://github.com/p2sr/SourceAutoRecord/releases" target="_blank"><img src="https://img.shields.io/github/v/release/p2sr/SourceAutoRecord?label=latest%20pre-release&include_prereleases" alt="Latest pre-release"></a>
+                <a href="https://github.com/p2sr/SourceAutoRecord/blob/master/LICENSE" target="_blank"><img src="https://img.shields.io/github/license/p2sr/SourceAutoRecord" alt="License"></a>
             </div>
 
             <h1>Overview</h1>
@@ -107,7 +108,7 @@
             <br><br>
             <p>NOTE: Submitting a run on an older version of SAR is against the rules, and will get your run removed from
                 the leaderboards. It is recommended to be on the latest version of SAR unless stated otherwise in the community
-                <a href="https://discord.gg/p2sr">Discord server</a>.</p>
+                <a href="https://discord.gg/hRwE4Zr" target="_blank">Discord server</a>.</p>
 
             <hr class="horizontal">
             <h1 id="support">Game support</h1>
@@ -147,9 +148,9 @@
             <hr class="horizontal">
             <h1 id="documentation">Documentation</h1>
             <ul>
-                <li><a href="https://github.com/p2sr/SourceAutoRecord/blob/master/docs/contributing.md">Contributing</a></li>
-                <li><a href="https://github.com/p2sr/SourceAutoRecord/blob/master/docs/cvars.md">Console Commands & Variables</a></li>
-                <li><a href="https://wiki.portal2.sr/SAR">Setup & Usage</a></li>
+                <li><a href="https://github.com/p2sr/SourceAutoRecord/blob/master/docs/contributing.md" target="_blank">Contributing</a></li>
+                <li><a href="https://github.com/p2sr/SourceAutoRecord/blob/master/docs/cvars.md" target="_blank">Console Commands & Variables</a></li>
+                <li><a href="https://wiki.portal2.sr/SAR" target="_blank">Setup & Usage</a></li>
             </ul>
         </main>
 
@@ -166,6 +167,7 @@
                 // See: https://developer.mozilla.org/en-US/docs/web/api/navigator/platform
                 if (window.navigator.platform.toLowerCase().includes("win"))
                 {
+                    // TODO: Windows PDB download (assets[1])
                     document.querySelector("#download").innerHTML = `
                         <h3>Downloads for Windows:</h3>
                         <a href="${stable.assets[0].browser_download_url}" class="stable">Latest release (${stable.name})</a>
