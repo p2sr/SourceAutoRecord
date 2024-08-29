@@ -1,6 +1,7 @@
 #include "VGui.hpp"
 
 #include "Features/Hud/Hud.hpp"
+#include "Features/Hud/PerformanceHud.hpp"
 #include "Features/Session.hpp"
 #include "Features/Stitcher.hpp"
 #include "Features/Timer/PauseTimer.hpp"
@@ -67,6 +68,8 @@ DETOUR(VGui::Paint, PaintMode_t mode) {
 
 	auto result = VGui::Paint(thisptr, mode);
 
+	auto startTime = NOW();
+
 	surface->StartDrawing(surface->matsurface->ThisPtr());
 
 	auto ctx = &vgui->context;
@@ -106,6 +109,8 @@ DETOUR(VGui::Paint, PaintMode_t mode) {
 	}
 
 	surface->FinishDrawing();
+
+	if (mode & PAINT_UIPANELS) performanceHud->AddMetric(performanceHud->times_vgui, std::chrono::duration_cast<std::chrono::microseconds>(NOW() - startTime).count() / 1000000.0f);
 
 	return result;
 }
