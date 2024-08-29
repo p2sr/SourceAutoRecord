@@ -121,9 +121,9 @@ Hud::Hud(int type, bool drawSecondSplitScreen, int version)
 /*
 	Converting one component of the position into a number.
 	Possible inputs:
-	 - aliases: names which have certain percentage value assigned, fuck you bets.
-	 - percentage: position taking size of the screen into consideration
-	 - normal: pixel offset from top right corner. negative value changes the corner.
+	 - aliases: names which have certain percentage value assigned,
+	 - percentage: position taking size of the screen into consideration,
+	 - normal: pixel offset from top left corner. negative value changes the corner.
 */
 float Hud::PositionFromString(const char *str, bool isX) {
 	float value = 0;
