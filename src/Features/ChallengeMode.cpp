@@ -102,7 +102,7 @@ void ChallengeMode::LoadNodes(SourceGameVersion version) {
 
 std::vector<ChallengeNodeData_t> ChallengeMode::customNodes;
 
-ON_EVENT(SESSION_START) {
+ON_EVENT_P(SESSION_START, 1) {
 	if (cm) {
 		cm->CreateNode();
 	}

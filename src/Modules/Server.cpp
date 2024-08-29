@@ -675,7 +675,7 @@ static void InitPlayerRunCommandHook() {
 
 ON_EVENT(SESSION_START) {
 	if (!g_IsAcceptInputTrampolineInitialized) InitAcceptInputTrampoline();
-	if (!g_IsCMFlagHookInitialized && sv_bonus_challenge.GetBool()) InitCMFlagHook();
+	if (!g_IsCMFlagHookInitialized && client->GetChallengeStatus() == CMStatus::CHALLENGE) InitCMFlagHook();
 	if (!g_IsPlayerRunCommandHookInitialized) InitPlayerRunCommandHook();
 }
 
