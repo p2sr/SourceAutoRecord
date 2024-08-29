@@ -125,7 +125,7 @@ void RhythmGameHud::OnJump(int slot) {
 ON_EVENT(PROCESS_MOVEMENT) {
 	if (!rhythmGameHud->ShouldDraw()) return;
 	rhythmGameHud->HandleGroundframeLogic(event.slot, event.grounded);
-	if (event.move->m_nButtons & IN_JUMP && event.grounded) rhythmGameHud->OnJump(event.slot);
+	if (event.move && event.move->m_nButtons & IN_JUMP && event.grounded) rhythmGameHud->OnJump(event.slot);
 }
 
 RhythmGameHud *rhythmGameHud = new RhythmGameHud();
