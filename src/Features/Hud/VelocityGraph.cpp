@@ -10,7 +10,8 @@
 
 #include <deque>
 
-Variable sar_velocitygraph("sar_velocitygraph", "0", "Shows velocity graph.\n");
+Variable sar_velocitygraph("sar_velocitygraph", "0", "Shows velocity graph and speedometer.\n");
+Variable sar_velocitygraph_line("sar_velocitygraph_line", "1", "Shows velocity graph line.\n");
 Variable sar_velocitygraph_font_index("sar_velocitygraph_font_index", "21", 0, "Font index of velocity graph.\n"); // 21 looks pretty good
 Variable sar_velocitygraph_background("sar_velocitygraph_background", "0", "Background of velocity graph.\n"); // imo this should be off by default
 Variable sar_velocitygraph_show_speed_on_graph("sar_velocitygraph_show_speed_on_graph", "1", "Show speed between jumps.\n");
@@ -94,7 +95,7 @@ void VelocityGraph::Paint(int slot) {
 		y - 175
 	};
 
-	if (sar_velocitygraph_background.GetBool())
+	if (sar_velocitygraph_background.GetBool() && sar_velocitygraph_line.GetBool())
 		surface->DrawRect({ 0, 0, 0, 192 }, graph_pos[0] - 500 - 5, graph_pos[1] - 150 - 5, graph_pos[0] + 5, graph_pos[1] + 5);
 
 	for (auto i = 0ul; i < data[slot].size() - 1; i++) {
@@ -108,14 +109,14 @@ void VelocityGraph::Paint(int slot) {
 		int next_speed = (clamped_next_speed * 75 / 320);
 
 		if (current.on_ground != next.on_ground && !current.on_ground) {
-			if (sar_velocitygraph_show_speed_on_graph.GetBool()) {
+			if (sar_velocitygraph_show_speed_on_graph.GetBool() && sar_velocitygraph_line.GetBool()) {
 				auto height = 15;
 
 				surface->DrawTxt(scheme->GetFontByID(2), graph_pos[0] - i, graph_pos[1] - next_speed - height, Color(255, 255, 255), std::to_string(next.speed).c_str());
 			}
 		}
 
-		if (data[slot].size() < 500)
+		if (data[slot].size() < 500 && sar_velocitygraph_line.GetBool())
 			surface->DrawColoredLine(
 				graph_pos[0] - 500,
 				graph_pos[1],
@@ -125,7 +126,7 @@ void VelocityGraph::Paint(int slot) {
 
 				Color(255, 255, 255));
 
-		if (i > 0)
+		if (i > 0 && sar_velocitygraph_line.GetBool())
 			surface->DrawColoredLine(
 				graph_pos[0] - (i - 1),
 				graph_pos[1] - current_speed,
