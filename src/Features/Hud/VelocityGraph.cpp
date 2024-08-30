@@ -14,6 +14,7 @@
 
 Variable sar_velocitygraph("sar_velocitygraph", "0", "Shows velocity graph.\n");
 Variable sar_velocitygraph_font_index("sar_velocitygraph_font_index", "21", 0, "Font index of velocity graph.\n"); // 21 looks pretty good
+Variable sar_velocitygraph_show_line("sar_velocitygraph_show_line", "1", "Shows line for velocity graph.\n");
 Variable sar_velocitygraph_x("sar_velocitygraph_x", "-250", "Velocity graph x axis offset.\n");
 Variable sar_velocitygraph_y("sar_velocitygraph_y", "-175", "Velocity graph y axis offset.\n");
 Variable sar_velocitygraph_background("sar_velocitygraph_background", "0", "Background of velocity graph.\n"); // imo this should be off by default
@@ -81,9 +82,6 @@ void VelocityGraph::Paint(int slot) {
 	const Vector2<int> graphPos = Vector2<int>(x / 2, y) + 
 		Vector2<int>(sar_velocitygraph_x.GetInt(), sar_velocitygraph_y.GetInt());
 
-	if (sar_velocitygraph_background.GetBool())
-		surface->DrawRect({0, 0, 0, 192}, graphPos - Vector2<int>(5, 150 + 5), graphPos + Vector2<int>(5 + 500, 5));
-
 	for (int i = 1; i < velocityStamps[slot].size - 1; i++) {
 		const auto current = velocityStamps[slot][i];
 		const auto next = velocityStamps[slot][i + 1];
@@ -103,6 +101,7 @@ void VelocityGraph::Paint(int slot) {
 			}
 		}
 
+		if (!sar_velocitygraph_show_line.GetBool()) break;
 		surface->DrawColoredLine(
 			graphPos + Vector2<int>(i - 1, -current_speed),
 			graphPos + Vector2<int>(i, -next_speed),
@@ -124,6 +123,9 @@ void VelocityGraph::Paint(int slot) {
 	auto length = surface->GetFontLength(font, should_draw_takeoff ? "%i (%i)\n" : "%i", speed, take_off[slot]);
 
 	surface->DrawTxt(font, graphPos.x + 250 - length / 2, graphPos.y + 25, c, should_draw_takeoff ? "%i (%i)\n" : "%i", speed, take_off[slot]);
+
+	if (sar_velocitygraph_background.GetBool() && sar_velocitygraph_show_line.GetBool())
+		surface->DrawRect({0, 0, 0, 192}, graphPos - Vector2<int>(5, 150 + 5), graphPos + Vector2<int>(5 + 500, 5));
 }
 bool VelocityGraph::GetCurrentSize(int &xSize, int &ySize) {
 	return false;

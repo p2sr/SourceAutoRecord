@@ -16,6 +16,7 @@ extern VelocityGraph *velocityGraph;
 
 extern Variable sar_velocitygraph;
 extern Variable sar_velocitygraph_font_index;
+extern Variable sar_velocitygraph_show_line;
 extern Variable sar_velocitygraph_x;
 extern Variable sar_velocitygraph_y;
 extern Variable sar_velocitygraph_background;
