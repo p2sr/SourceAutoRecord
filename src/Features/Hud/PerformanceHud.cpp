@@ -12,6 +12,7 @@
 Variable sar_performance_hud("sar_performance_hud", "0", "Enables the performance HUD.\n1 = normal,\n2 = stats only.\n");
 Variable sar_performance_hud_duration("sar_performance_hud_duration", "60", 1, "How long (in frames) to measure performance for.\n");
 Variable sar_performance_hud_duration_vgui("sar_performance_hud_duration_vgui", "60", 1, "How long (in frames) to measure performance for each individual VGui element.\n");
+Variable sar_performance_hud_sort_vgui("sar_performance_hud_sort_vgui", "1", "Whether to sort the VGui elements from slowest to fastest.\n");
 
 Variable sar_performance_hud_x("sar_performance_hud_x", "20", "X position of the performance HUD.\n");
 Variable sar_performance_hud_y("sar_performance_hud_y", "300", "Y position of the performance HUD.\n");
@@ -124,9 +125,10 @@ void PerformanceHud::Paint(int slot) {
 		y += 100;
 	}
 
+	std::unordered_map<std::string, float> times_vgui_elements;
 	if (this->times_vgui_elements.size() > 0) {
-			surface->DrawTxt(font, x, y, {255, 255, 255}, "vgui elements:");
-			y += lineHeight;
+		surface->DrawTxt(font, x, y, {255, 255, 255}, "vgui elements:");
+		y += lineHeight;
 		for (auto &elem : this->times_vgui_elements) {
 			// mean
 			float mean = 0;
@@ -134,7 +136,15 @@ void PerformanceHud::Paint(int slot) {
 				mean += frametime;
 			}
 			mean /= elem.second.size();
-			surface->DrawTxt(font, x, y, {255, 255, 255}, "\t%s: %.3fms", elem.first.c_str(), mean * 1000);
+			times_vgui_elements[elem.first] = mean;
+		}
+
+		std::vector<std::pair<std::string, float>> sorted_times_vgui_elements(times_vgui_elements.begin(), times_vgui_elements.end());
+		if (sar_performance_hud_sort_vgui.GetBool())
+			std::sort(sorted_times_vgui_elements.begin(), sorted_times_vgui_elements.end(), [](auto &a, auto &b) { return a.second > b.second; });
+
+		for (auto &elem : sorted_times_vgui_elements) {
+			surface->DrawTxt(font, x, y, {255, 255, 255}, "%s: %.3fms", elem.first.c_str(), elem.second * 1000);
 			y += lineHeight;
 		}
 	}
