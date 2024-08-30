@@ -82,6 +82,24 @@ void VelocityGraph::Paint(int slot) {
 	const Vector2<int> graphPos = Vector2<int>(x / 2, y) + 
 		Vector2<int>(sar_velocitygraph_x.GetInt(), sar_velocitygraph_y.GetInt());
 
+	bool should_draw_takeoff = !last_on_ground[slot] || take_off_display_timeout[slot] > engine->GetClientTime();
+	int recentSpeed = velocityStamps[slot][velocityStamps[slot].size - 10].speed;
+	Color c = Color(30, 255, 109);
+	if (sar_velocitygraph_rainbow.GetBool()) {
+		c = Utils::HSVToRGB(speed, 100, 100);
+	} else if (std::abs(speed - recentSpeed) < 5) {
+		c = Color(255, 199, 89);
+	} else if (speed < recentSpeed + 5) {
+		c = Color(255, 119, 119);
+	}
+
+	auto font = scheme->GetFontByID(sar_velocitygraph_font_index.GetInt());
+	auto length = surface->GetFontLength(font, should_draw_takeoff ? "%i (%i)\n" : "%i", speed, take_off[slot]);
+
+	surface->DrawTxt(font, graphPos.x + 250 - length / 2, graphPos.y + 25, c, should_draw_takeoff ? "%i (%i)\n" : "%i", speed, take_off[slot]);
+
+	if (!sar_velocitygraph_show_line.GetBool()) return;
+
 	for (int i = 1; i < velocityStamps[slot].size - 1; i++) {
 		const auto current = velocityStamps[slot][i];
 		const auto next = velocityStamps[slot][i + 1];
@@ -100,31 +118,13 @@ void VelocityGraph::Paint(int slot) {
 					Color(255, 255, 255), std::to_string(next.speed).c_str());
 			}
 		}
-
-		if (!sar_velocitygraph_show_line.GetBool()) break;
 		surface->DrawColoredLine(
 			graphPos + Vector2<int>(i - 1, -current_speed),
 			graphPos + Vector2<int>(i, -next_speed),
 			Color(255, 255, 255));
 	}
 
-	bool should_draw_takeoff = !last_on_ground[slot] || take_off_display_timeout[slot] > engine->GetClientTime();
-	int recentSpeed = velocityStamps[slot][velocityStamps[slot].size - 10].speed;
-	Color c = Color(30, 255, 109);
-	if (sar_velocitygraph_rainbow.GetBool()) {
-		c = Utils::HSVToRGB(speed, 100, 100);
-	} else if (std::abs(speed - recentSpeed) < 5) {
-		c = Color(255, 199, 89);
-	} else if (speed < recentSpeed + 5) {
-		c = Color(255, 119, 119);
-	}
-
-	auto font = scheme->GetFontByID(sar_velocitygraph_font_index.GetInt());
-	auto length = surface->GetFontLength(font, should_draw_takeoff ? "%i (%i)\n" : "%i", speed, take_off[slot]);
-
-	surface->DrawTxt(font, graphPos.x + 250 - length / 2, graphPos.y + 25, c, should_draw_takeoff ? "%i (%i)\n" : "%i", speed, take_off[slot]);
-
-	if (sar_velocitygraph_background.GetBool() && sar_velocitygraph_show_line.GetBool())
+	if (sar_velocitygraph_background.GetBool())
 		surface->DrawRect({0, 0, 0, 192}, graphPos - Vector2<int>(5, 150 + 5), graphPos + Vector2<int>(5 + 500, 5));
 }
 bool VelocityGraph::GetCurrentSize(int &xSize, int &ySize) {
