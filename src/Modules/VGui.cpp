@@ -21,12 +21,16 @@ Variable sar_hud_orange_only("sar_hud_orange_only", "0", "Only display the SAR H
 
 void VGui::Draw(Hud *const &hud) {
 	if (hud->ShouldDraw()) {
+		auto start = NOW();
 		hud->Paint(this->context.slot);
+		performanceHud->AddVGuiMetric(std::string("hud ") + typeid(*hud).name(), std::chrono::duration_cast<std::chrono::microseconds>(NOW() - start).count() / 1000000.0f);
 	}
 }
 void VGui::Draw(HudElement *const &element) {
 	if (element->ShouldDraw()) {
+		auto start = NOW();
 		element->Paint(&this->context);
+		performanceHud->AddVGuiMetric(std::string("element ") + element->ElementName(), std::chrono::duration_cast<std::chrono::microseconds>(NOW() - start).count() / 1000000.0f);
 	}
 }
 
