@@ -431,6 +431,7 @@
 |sar_performance_hud_duration|60|How long (in frames) to measure performance for.|
 |sar_performance_hud_duration_vgui|60|How long (in frames) to measure performance for each individual VGui element.|
 |sar_performance_hud_font_index|6|Font index of the performance HUD.|
+|sar_performance_hud_sort_vgui|1|Whether to sort the VGui elements from slowest to fastest.|
 |sar_performance_hud_x|20|X position of the performance HUD.|
 |sar_performance_hud_y|300|Y position of the performance HUD.|
 |sar_pip_align|cmd|sar_pip_align \<top\|center\|bottom> \<left\|center\|right> - aligns the remote view.|
