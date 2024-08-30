@@ -429,6 +429,7 @@
 |sar_performance_hud|0|Enables the performance HUD.<br>1 = normal,<br>2 = stats only.|
 |sar_performance_hud_clear|cmd|Clears the performance HUD data.|
 |sar_performance_hud_duration|60|How long (in frames) to measure performance for.|
+|sar_performance_hud_duration_vgui|60|How long (in frames) to measure performance for each individual VGui element.|
 |sar_performance_hud_font_index|6|Font index of the performance HUD.|
 |sar_performance_hud_x|20|X position of the performance HUD.|
 |sar_performance_hud_y|300|Y position of the performance HUD.|
