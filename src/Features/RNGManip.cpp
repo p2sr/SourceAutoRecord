@@ -494,6 +494,8 @@ extern Hook g_PhysRelinkChildren_Hook;
 DECL_DETOUR_T(void, PhysRelinkChildren, float dt) {
 	playerTrace->EnterLogScope("CBaseEntity::PhysicsRelinkChildren");
 
+	playerTrace->EmitLog(Utils::ssprintf("dt=%.6f", dt).c_str());
+
 	g_PhysRelinkChildren_Hook.Disable();
 	PhysRelinkChildren(thisptr, dt);
 	g_PhysRelinkChildren_Hook.Enable();
@@ -601,7 +603,7 @@ DECL_DETOUR_T(void, Friction) {
 	Friction(thisptr);
 	g_Friction_Hook.Enable();
 
-	playerTrace->EmitLog("PRE  m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
+	playerTrace->EmitLog("POST m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
 
 	playerTrace->ExitLogScope();
 }
@@ -618,7 +620,7 @@ DECL_DETOUR_T(void, WalkMove) {
 	WalkMove(thisptr);
 	g_WalkMove_Hook.Enable();
 
-	playerTrace->EmitLog("PRE  m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
+	playerTrace->EmitLog("POST m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
 
 	playerTrace->ExitLogScope();
 }
@@ -639,7 +641,7 @@ DECL_DETOUR_T(void, AirAccelerate, Vector *wishdir, float wishspeed, float accel
 	AirAccelerate(thisptr, wishdir, wishspeed, accel);
 	g_AirAccelerate_Hook.Enable();
 
-	playerTrace->EmitLog("PRE  m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
+	playerTrace->EmitLog("POST m_outWishVel=(%.6f,%.6f,%.6f)", mv->m_outWishVel.x, mv->m_outWishVel.y, mv->m_outWishVel.z);
 
 	playerTrace->ExitLogScope();
 }
