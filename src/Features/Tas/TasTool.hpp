@@ -9,11 +9,11 @@
 // inconsistent scripts between Windows and Linux since Windows has
 // overloads for some functions. These helper macros dispatch to
 // sinf/cosf on newer script versions for platform consistency
-#define absOld(x) ((tasPlayer->GetScriptVersion(slot) >= 3) ? fabsf(x) : abs(x))  // we noticed this one sooner lol
-#define sinOld(x) ((tasPlayer->GetScriptVersion(slot) >= 4) ? sinf(x) : sin(x))
-#define cosOld(x) ((tasPlayer->GetScriptVersion(slot) >= 4) ? cosf(x) : cos(x))
-#define atan2Old(x, y) ((tasPlayer->GetScriptVersion(slot) >= 4) ? atan2f(x, y) : atan2(x, y))
-#define powOld(x, y) ((tasPlayer->GetScriptVersion(slot) >= 4) ? powf(x, y) : pow(x, y))
+#define absOld(x) (TAS_SCRIPT_VERSION_AT_LEAST(3) ? fabsf(x) : abs(x))  // we noticed this one sooner lol
+#define sinOld(x) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? sinf(x) : sin(x))
+#define cosOld(x) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? cosf(x) : cos(x))
+#define atan2Old(x, y) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? atan2f(x, y) : atan2(x, y))
+#define powOld(x, y) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? powf(x, y) : pow(x, y))
 
 struct TasToolParams {
 	bool enabled = false;

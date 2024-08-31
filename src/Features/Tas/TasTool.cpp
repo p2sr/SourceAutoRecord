@@ -57,7 +57,7 @@ void TasTool::SetParams(std::shared_ptr<TasToolParams> params) {
 	this->updated = true;
 
 	// legacy behaviour for version 2 or older
-	if (tasPlayer->GetScriptVersion(slot) <= 2) {
+	FOR_TAS_SCRIPT_VERSIONS_UNTIL(2) {
 		// the tool has been updated. prioritize it by moving it to the end of the global list
 		// mlugg please don't kill me
 		GetList(slot).splice(GetList(slot).end(), GetList(slot), std::find(GetList(slot).begin(), GetList(slot).end(), this));

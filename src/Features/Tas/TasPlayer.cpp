@@ -419,7 +419,7 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bo
 	}
 
 	// this check was originally broken, so bypass it in v1
-	if (tasPlayer->GetScriptVersion(slot) >= 2) {
+	FOR_TAS_SCRIPT_VERSIONS_SINCE(2) {
 		// predict the grounded state after jump.
 		if (pi.grounded && (cmd->buttons & IN_JUMP) && !(m_nOldButtons & IN_JUMP)) {
 			pi.grounded = false;

@@ -14,6 +14,12 @@
 #define TAS_SCRIPTS_DIR "tas"
 #define TAS_SCRIPT_EXT "p2tas"
 
+#define TAS_SCRIPT_VERSION_AT_LEAST(version) (tasPlayer->GetScriptVersion(slot) >= version)
+#define TAS_SCRIPT_VERSION_AT_MOST(version) (tasPlayer->GetScriptVersion(slot) <= version)
+#define FOR_TAS_SCRIPT_VERSIONS_SINCE(version) if (TAS_SCRIPT_VERSION_AT_LEAST(version))
+#define FOR_TAS_SCRIPT_VERSIONS_UNTIL(version) if (TAS_SCRIPT_VERSION_AT_MOST(version))
+
+
 class TasToolCommand;
 
 extern Variable sar_tas_tools_enabled;
