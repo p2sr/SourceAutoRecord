@@ -661,64 +661,63 @@ ON_INIT {
 	g_PhysicsHook_impactSoundTime = (float *)(m_bPaused - 4);
 
 	EnsureAvailableSlotsForGender = (decltype(EnsureAvailableSlotsForGender))Memory::Scan(MODULE("soundemittersystem"), "55 8B EC 8B 4D 0C 33 C0 83 EC 20 3B C8 0F 8E ? ? ? ? 53 56 33 DB 33 F6 89 5D E0 89 45 E4 89 45 E8 89 75 EC 89 45 F0");
-	g_EnsureAvailableSlotsForGender_Hook.SetFunc(EnsureAvailableSlotsForGender);
+	FrameUpdatePostEntityThink = (decltype(FrameUpdatePostEntityThink))Memory::Scan(server->Name(), "55 8B EC 51 53 56 8B F1 8B 0D ? ? ? ? FF 15 ? ? ? ? 8A D8 84 DB");
+	// simulate_psi
+	// do_simulation_controller
+	// UpdateVPhysicsPosition
+	// UpdatePusherPhysicsEndOfTick
+	// FinishPush
+	// PhysicsStep
+	// PhysRelinkChildren
+	VPSU = (decltype(VPSU))Memory::Scan(server->Name(), "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ? 89 6C 24 ? 8B EC A1 ? ? ? ? 81 EC B8 01 00 00"); // VPhysicsShadowUpdate
+	// VPhysUpdate
+	// EntSetParent
+	// PhysicsSimulate
+	// PostThinkVPhys
+	// Friction
+	// WalkMove
+	// AirAccelerate
 #else
 	// TODO: mod support
 	uintptr_t PhysFrame = Memory::Scan(server->Name(), "A1 ? ? ? ? 85 C0 0F 84 ? ? ? ? 80 3D ? ? ? ? 00 0F 85 ? ? ? ? 55 89 E5 57 56 53 83 EC 3C 0F 2F 05 ? ? ? ?");
 	uintptr_t m_bPaused = *(uint32_t *)(PhysFrame + 15);
 	g_PhysicsHook_impactSoundTime = (float *)(m_bPaused - 4);
 
-	EnsureAvailableSlotsForGender = (decltype(EnsureAvailableSlotsForGender))Memory::Scan(MODULE("soundemittersystem"), "55 57 56 53 83 EC 2C 8B 74 24 48 8B 5C 24 44 8B 7C 24 4C 85 F6 0F 8E ? ? ? ? C7 44 24 0C 00 00 00 00 31 D2 31 C9 31 C0");
-	g_EnsureAvailableSlotsForGender_Hook.SetFunc(EnsureAvailableSlotsForGender);
-
-	FrameUpdatePostEntityThink = (decltype(FrameUpdatePostEntityThink))Memory::Scan(server->Name(), "55 89 E5 57 56 53 83 EC 0C 8B 1D ? ? ? ? 8B 75 08 85 DB 0F 85 ? ? ? ? A1 ? ? ? ? 66 0F EF C0 66 0F 7E C7 F3 0F 10 48 10 0F 2F C8");
-	g_FrameUpdatePostEntityThink_Hook.SetFunc(FrameUpdatePostEntityThink);
-
-	simulate_psi = (decltype(simulate_psi))Memory::Scan(MODULE("vphysics"), "55 89 E5 57 56 53 81 EC 24 04 00 00 8B 5D 08 8B 43 28 8B 10 6A 01 50 FF 52 04 83 C4 10 66 83 BB DA 00 00 00 00");
-	g_simulate_psi_Hook.SetFunc(simulate_psi);
-
-	do_sim_cont = (decltype(do_sim_cont))Memory::Scan(MODULE("vphysics"), "55 57 56 53 81 EC EC 00 00 00 8B B4 24 ? ? ? ?");
-	g_do_sim_cont_Hook.SetFunc(do_sim_cont);
-
-	UpdateVPhysPos = (decltype(UpdateVPhysPos))Memory::Scan(server->Name(), "8B 44 24 ? 8B 54 24 ? 8B 4C 24 ? F3 0F 10 44 24 ? 83 B8 ? ? ? ? 00");
-	g_UpdateVPhysPos_Hook.SetFunc(UpdateVPhysPos);
-
-	UpdatePusherPhysEOT = (decltype(UpdatePusherPhysEOT))Memory::Scan(server->Name(), "57 56 53 8B 5C 24 ? 8B 73 ? 85 F6 0F 8E ? ? ? ?");
-	g_UpdatePusherPhysEOT_Hook.SetFunc(UpdatePusherPhysEOT);
-
-	FinishPush = (decltype(FinishPush))Memory::Scan(server->Name(), "55 57 56 53 83 EC 1C 8B 6C 24 ? 0F B6 44 24 ?");
-	g_FinishPush_Hook.SetFunc(FinishPush);
-
-	PhysicsStep = (decltype(PhysicsStep))Memory::Scan(server->Name(), "55 57 56 53 81 EC 8C 00 00 00 8B 9C 24 ? ? ? ? 80 7B ? 00");
-	g_PhysicsStep_Hook.SetFunc(PhysicsStep);
-
-	PhysRelinkChildren = (decltype(PhysRelinkChildren))Memory::Scan(server->Name(), "55 57 56 53 83 EC 0C 8B 0D ? ? ? ? 8B 44 24 ? 8B 80 ? ? ? ? 83 F8 FF 0F 84 ? ? ? ? 0F B7 D0 C1 E8 10");
-	g_PhysRelinkChildren_Hook.SetFunc(PhysRelinkChildren);
-
-	VPSU = (decltype(VPSU))Memory::Scan(server->Name(), "55 89 E5 57 56 53 81 EC 9C 01 00 00 A1 ? ? ? ?");
-	g_VPSU_Hook.SetFunc(VPSU);
-
-	VPhysUpdate = (decltype(VPhysUpdate))Memory::Scan(server->Name(), "55 57 56 53 83 EC 4C 8B 6C 24 ? 8B 5C 24 ?");
-	g_VPhysUpdate_Hook.SetFunc(VPhysUpdate);
-
-	EntSetParent = (decltype(EntSetParent))Memory::Scan(server->Name(), "55 57 56 53 83 EC 1C 8B 44 24 ? 8B 6C 24 ? 8B 74 24 ? 8B 4C 24 ?");
-	g_EntSetParent_Hook.SetFunc(EntSetParent);
-
-	PhysicsSimulate = (decltype(PhysicsSimulate))Memory::Scan(server->Name(), "55 89 E5 57 56 53 83 EC 4C A1 ? ? ? ? 8B 7D ? 89 45 B0");
-	g_PhysicsSimulate_Hook.SetFunc(PhysicsSimulate);
-
-	PostThinkVPhys = (decltype(PostThinkVPhys))Memory::Scan(server->Name(), "55 57 56 53 81 EC 9C 00 00 00 8B 9C 24 ? ? ? ? 8B 83 ? ? ? ?");
-	g_PostThinkVPhys_Hook.SetFunc(PostThinkVPhys);
-
-	Friction = (decltype(Friction))Memory::Scan(server->Name(), "55 66 0F EF F6 57 56 53 81 EC FC 00 00 00");
-	g_Friction_Hook.SetFunc(Friction);
-
-	WalkMove = (decltype(WalkMove))Memory::Scan(server->Name(), "55 57 56 53 81 EC 2C 01 00 00 8D 44 24 ?");
-	g_WalkMove_Hook.SetFunc(WalkMove);
-
-	AirAccelerate = (decltype(AirAccelerate))Memory::Scan(server->Name(), "56 53 83 EC 14 8B 5C 24 ? 8B 74 24 ? 8B 43 ? 80 B8 ? ? ? ? 00");
-	g_AirAccelerate_Hook.SetFunc(AirAccelerate);
+	EnsureAvailableSlotsForGender = (decltype(EnsureAvailableSlotsForGender)) Memory::Scan(MODULE("soundemittersystem"), "55 57 56 53 83 EC 2C 8B 74 24 48 8B 5C 24 44 8B 7C 24 4C 85 F6 0F 8E ? ? ? ? C7 44 24 0C 00 00 00 00 31 D2 31 C9 31 C0");
+	FrameUpdatePostEntityThink    = (decltype(FrameUpdatePostEntityThink))    Memory::Scan(server->Name(),               "55 89 E5 57 56 53 83 EC 0C 8B 1D ? ? ? ? 8B 75 08 85 DB 0F 85 ? ? ? ? A1 ? ? ? ? 66 0F EF C0 66 0F 7E C7 F3 0F 10 48 10 0F 2F C8");
+	simulate_psi                  = (decltype(simulate_psi))                  Memory::Scan(MODULE("vphysics"),           "55 89 E5 57 56 53 81 EC 24 04 00 00 8B 5D 08 8B 43 28 8B 10 6A 01 50 FF 52 04 83 C4 10 66 83 BB DA 00 00 00 00");
+	do_sim_cont                   = (decltype(do_sim_cont))                   Memory::Scan(MODULE("vphysics"),           "55 57 56 53 81 EC EC 00 00 00 8B B4 24 ? ? ? ?");
+	UpdateVPhysPos                = (decltype(UpdateVPhysPos))                Memory::Scan(server->Name(),               "8B 44 24 ? 8B 54 24 ? 8B 4C 24 ? F3 0F 10 44 24 ? 83 B8 ? ? ? ? 00");
+	UpdatePusherPhysEOT           = (decltype(UpdatePusherPhysEOT))           Memory::Scan(server->Name(),               "57 56 53 8B 5C 24 ? 8B 73 ? 85 F6 0F 8E ? ? ? ?");
+	FinishPush                    = (decltype(FinishPush))                    Memory::Scan(server->Name(),               "55 57 56 53 83 EC 1C 8B 6C 24 ? 0F B6 44 24 ?");
+	PhysicsStep                   = (decltype(PhysicsStep))                   Memory::Scan(server->Name(),               "55 57 56 53 81 EC 8C 00 00 00 8B 9C 24 ? ? ? ? 80 7B ? 00");
+	PhysRelinkChildren            = (decltype(PhysRelinkChildren))            Memory::Scan(server->Name(),               "55 57 56 53 83 EC 0C 8B 0D ? ? ? ? 8B 44 24 ? 8B 80 ? ? ? ? 83 F8 FF 0F 84 ? ? ? ? 0F B7 D0 C1 E8 10");
+	VPSU                          = (decltype(VPSU))                          Memory::Scan(server->Name(),               "55 89 E5 57 56 53 81 EC 9C 01 00 00 A1 ? ? ? ?");
+	VPhysUpdate                   = (decltype(VPhysUpdate))                   Memory::Scan(server->Name(),               "55 57 56 53 83 EC 4C 8B 6C 24 ? 8B 5C 24 ?");
+	EntSetParent                  = (decltype(EntSetParent))                  Memory::Scan(server->Name(),               "55 57 56 53 83 EC 1C 8B 44 24 ? 8B 6C 24 ? 8B 74 24 ? 8B 4C 24 ?");
+	PhysicsSimulate               = (decltype(PhysicsSimulate))               Memory::Scan(server->Name(),               "55 89 E5 57 56 53 83 EC 4C A1 ? ? ? ? 8B 7D ? 89 45 B0");
+	PostThinkVPhys                = (decltype(PostThinkVPhys))                Memory::Scan(server->Name(),               "55 57 56 53 81 EC 9C 00 00 00 8B 9C 24 ? ? ? ? 8B 83 ? ? ? ?");
+	Friction                      = (decltype(Friction))                      Memory::Scan(server->Name(),               "55 66 0F EF F6 57 56 53 81 EC FC 00 00 00");
+	WalkMove                      = (decltype(WalkMove))                      Memory::Scan(server->Name(),               "55 57 56 53 81 EC 2C 01 00 00 8D 44 24 ?");
+	AirAccelerate                 = (decltype(AirAccelerate))                 Memory::Scan(server->Name(),               "56 53 83 EC 14 8B 5C 24 ? 8B 74 24 ? 8B 43 ? 80 B8 ? ? ? ? 00");
 #endif
+	g_EnsureAvailableSlotsForGender_Hook.SetFunc(EnsureAvailableSlotsForGender);
+	g_FrameUpdatePostEntityThink_Hook.SetFunc(FrameUpdatePostEntityThink);
+	g_simulate_psi_Hook.SetFunc(simulate_psi);
+	g_do_sim_cont_Hook.SetFunc(do_sim_cont);
+	g_UpdateVPhysPos_Hook.SetFunc(UpdateVPhysPos);
+	g_UpdatePusherPhysEOT_Hook.SetFunc(UpdatePusherPhysEOT);
+	g_FinishPush_Hook.SetFunc(FinishPush);
+	g_PhysicsStep_Hook.SetFunc(PhysicsStep);
+	g_PhysRelinkChildren_Hook.SetFunc(PhysRelinkChildren);
+	g_VPSU_Hook.SetFunc(VPSU);
+	g_VPhysUpdate_Hook.SetFunc(VPhysUpdate);
+	g_EntSetParent_Hook.SetFunc(EntSetParent);
+	g_PhysicsSimulate_Hook.SetFunc(PhysicsSimulate);
+	g_PostThinkVPhys_Hook.SetFunc(PostThinkVPhys);
+	g_Friction_Hook.SetFunc(Friction);
+	g_WalkMove_Hook.SetFunc(WalkMove);
+	g_AirAccelerate_Hook.SetFunc(AirAccelerate);
 }
 
 ON_EVENT(SESSION_END) {
