@@ -38,7 +38,7 @@ std::shared_ptr<TasToolParams> AutoJumpTool::ParseParams(std::vector<std::string
 	bool ducked = false;
 	bool enabled = false;
 
-	if (vp[0] == "on") {
+	if (vp[0] == "on" || vp[0] == "unducked" || vp[0] == "unduck") {
 		enabled = true;
 	} else if (vp[0] == "ducked" || vp[0] == "duck") {
 		enabled = true;
