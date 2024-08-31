@@ -423,12 +423,16 @@ Hook g_simulate_psi_Hook(simulate_psi_Hook);
 
 extern Hook g_UpdateVPhysPos_Hook;
 DECL_DETOUR_T(void, UpdateVPhysPos, const Vector &pos, const Vector &vel, float secs_to_arrival) {
+	playerTrace->EnterLogScope("CBasePlayer::UpdateVPhysicsPosition");
+
 	if (fabsf(vel.x) + fabsf(vel.y) + fabsf(vel.z) < 0.001) {
 		playerTrace->EmitLog("CBasePlayer::UpdateVPhysicsPosition(vel=0)");
 	}
 	g_UpdateVPhysPos_Hook.Disable();
 	UpdateVPhysPos(thisptr, pos, vel, secs_to_arrival);
 	g_UpdateVPhysPos_Hook.Enable();
+
+	playerTrace->ExitLogScope();
 }
 Hook g_UpdateVPhysPos_Hook(UpdateVPhysPos_Hook);
 
