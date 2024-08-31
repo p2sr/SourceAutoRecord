@@ -54,6 +54,7 @@ struct TasPlayerInfo {
 	int waterLevel;
 	bool ducked;
 	bool grounded;
+	bool willBeGrounded;
 	bool onSpeedPaint;
 	int oldButtons;
 	float ticktime;

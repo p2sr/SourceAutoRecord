@@ -21,6 +21,7 @@ public:
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
+	bool ShouldJump(const TasPlayerInfo &pInfo);
 
 private:
 	bool hasJumpedLastTick = false;

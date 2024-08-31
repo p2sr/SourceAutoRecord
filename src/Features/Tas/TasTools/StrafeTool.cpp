@@ -20,19 +20,19 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 	//create fake player info for a sake of values being correct
 	TasPlayerInfo pInfo = rawPInfo;
 
-	// NOTE: this check is kinda dumb, but it prevents a tool order
-	// dependency where strafe has to know about autojump's inputs
-	// I feel like this could live somewhere else and be a bit less dumb
-	if (autoJumpTool[this->slot].GetCurrentParams().enabled) {
-		// if autojump is enabled, we're never grounded.
-		pInfo.grounded = false;
+	FOR_TAS_SCRIPT_VERSIONS_UNTIL(7) {
+		// handled by TasPlayer in newer versions
+		if (autoJumpTool[this->slot].GetCurrentParams().enabled) {
+			// if autojump is enabled, we're never grounded.
+			pInfo.willBeGrounded = false;
+		}
 	}
 
 	// when not grounded, air acceleration is not optimal if pitch is not
 	// in a range between -30 and 30 degrees (both exclusive). making sure
 	// it's in the right range, unless specifically asked to not do it.
 	bool compensatePitchMult = false;
-	if (!pInfo.grounded && fabsf(pInfo.angles.x - fb.viewAnalog.y) >= 30.0f) {
+	if (!pInfo.willBeGrounded && fabsf(pInfo.angles.x - fb.viewAnalog.y) >= 30.0f) {
 		if (!params.noPitchLock) {
 			float signAng = pInfo.angles.x - fb.viewAnalog.y;
 			FOR_TAS_SCRIPT_VERSIONS_UNTIL(5) {
@@ -132,7 +132,7 @@ Vector AutoStrafeTool::GetGroundFrictionVelocity(const TasPlayerInfo &player) {
 
 	Vector vel = player.velocity;
 
-	if (player.grounded) {
+	if (player.willBeGrounded) {
 		if (vel.Length2D() >= sv_stopspeed.GetFloat()) {
 			vel = vel * (1.0f - player.ticktime * friction);
 		} else if (vel.Length2D() >= fmaxf(0.1f, player.ticktime * sv_stopspeed.GetFloat() * friction)) {
@@ -153,7 +153,7 @@ Vector AutoStrafeTool::GetGroundFrictionVelocity(const TasPlayerInfo &player) {
 // returns max speed value which is used by autostrafer math
 float AutoStrafeTool::GetMaxSpeed(const TasPlayerInfo &player, Vector wishDir, bool notAired) {
 	// calculate max speed based on player inputs, grounded and ducking states.
-	float duckMultiplier = (player.grounded && player.ducked) ? (1.0f / 3.0f) : 1.0f;
+	float duckMultiplier = (player.willBeGrounded && player.ducked) ? (1.0f / 3.0f) : 1.0f;
 	if (sar.game->Is(SourceGame_INFRA)) {
 		duckMultiplier = 1.0f; // idk man. 1/2 seems correct but this produces better results.
 	}
@@ -161,7 +161,7 @@ float AutoStrafeTool::GetMaxSpeed(const TasPlayerInfo &player, Vector wishDir, b
 	wishDir.y *= player.maxSpeed;
 	wishDir.x *= player.maxSpeed;
 	float maxSpeed = fminf(player.maxSpeed, wishDir.Length2D()) * duckMultiplier * waterMultiplier;
-	float maxAiredSpeed = (player.grounded || notAired) ? maxSpeed : fminf(60, maxSpeed);
+	float maxAiredSpeed = (player.willBeGrounded || notAired) ? maxSpeed : fminf(60, maxSpeed);
 
 	return maxAiredSpeed;
 }
@@ -169,7 +169,9 @@ float AutoStrafeTool::GetMaxSpeed(const TasPlayerInfo &player, Vector wishDir, b
 
 float AutoStrafeTool::GetMaxAccel(const TasPlayerInfo &player, Vector wishDir) {
 	bool aircon2 = sar_aircontrol.GetInt() == 2 && server->AllowsMovementChanges();
-	float accel = (player.grounded) ? sv_accelerate.GetFloat() : aircon2 ? sv_airaccelerate.GetFloat() : sv_paintairacceleration.GetFloat();
+	float accel = player.willBeGrounded ? sv_accelerate.GetFloat() 
+				: aircon2 ? sv_airaccelerate.GetFloat() 
+				: sv_paintairacceleration.GetFloat();
 	float realAccel = player.surfaceFriction * player.ticktime * GetMaxSpeed(player, wishDir, true) * accel;
 	return realAccel;
 }
@@ -184,7 +186,7 @@ Vector AutoStrafeTool::CreateWishDir(const TasPlayerInfo &player, float forwardM
 	if (sar_aircontrol.GetInt() != 2 || !server->AllowsMovementChanges()) {
 		// forwardmove is affected by player pitch when in air
 		// but only with pitch outside of range from -30 to 30 deg (both exclusive)
-		if (!player.grounded) {
+		if (!player.willBeGrounded) {
 			if (absOld(player.angles.x) >= 30.0f) {
 				wishDir.y *= cosOld(DEG2RAD(player.angles.x));
 			}
@@ -197,7 +199,7 @@ Vector AutoStrafeTool::CreateWishDir(const TasPlayerInfo &player, float forwardM
 
 	// air control limit
 	float airConLimit = (sar_aircontrol.GetBool() && server->AllowsMovementChanges()) ? INFINITY : 300;
-	if (!player.grounded && player.velocity.Length2D() > airConLimit) {
+	if (!player.willBeGrounded && player.velocity.Length2D() > airConLimit) {
 		if (absOld(player.velocity.x) > airConLimit * 0.5 && player.velocity.x * wishDir.x < 0) {
 			wishDir.x = 0;
 		}
@@ -435,7 +437,7 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 				&& pInfo.velocity.Length2D() >= airConLimit;
 
 			FOR_TAS_SCRIPT_VERSIONS_SINCE(5) {
-				shouldPreventSpeedLock = shouldPreventSpeedLock && !pInfo.grounded;
+				shouldPreventSpeedLock = shouldPreventSpeedLock && !pInfo.willBeGrounded;
 			}
 
 			if (shouldPreventSpeedLock) {

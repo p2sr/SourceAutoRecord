@@ -13,7 +13,7 @@ void AutoJumpTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 	}
 
 	if (params.enabled) {
-		if (pInfo.grounded && !pInfo.ducked && !hasJumpedLastTick) {
+		if (ShouldJump(pInfo)) {
 			bulk.buttonStates[TasControllerInput::Jump] = true;
 			if (params.ducked) {
 				bulk.buttonStates[TasControllerInput::Crouch] = true;
@@ -29,6 +29,10 @@ void AutoJumpTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 	} else {
 		hasJumpedLastTick = false;
 	}
+}
+
+bool AutoJumpTool::ShouldJump(const TasPlayerInfo &pInfo) {
+	return pInfo.grounded && !pInfo.ducked && !hasJumpedLastTick;
 }
 
 std::shared_ptr<TasToolParams> AutoJumpTool::ParseParams(std::vector<std::string> vp) {

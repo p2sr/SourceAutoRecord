@@ -17,6 +17,7 @@
 
 #include <climits>
 #include <fstream>
+#include "TasTools/AutoJumpTool.hpp"
 
 Variable sar_tas_debug("sar_tas_debug", "0", 0, 2, "Debug TAS information. 0 - none, 1 - basic, 2 - all.\n");
 Variable sar_tas_dump_usercmd("sar_tas_dump_usercmd", "0", "Dump TAS-generated usercmds to a file.\n");
@@ -418,11 +419,18 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bo
 		pi.velocity = pl->abs_velocity();
 	}
 
-	// this check was originally broken, so bypass it in v1
+	pi.willBeGrounded = pi.grounded;
+	// predict the grounded state after jump.
 	FOR_TAS_SCRIPT_VERSIONS_SINCE(2) {
-		// predict the grounded state after jump.
 		if (pi.grounded && (cmd->buttons & IN_JUMP) && !(m_nOldButtons & IN_JUMP)) {
-			pi.grounded = false;
+			pi.willBeGrounded = false;
+		}
+	}
+
+	// predict the result of autojump tool so other tools can react appropriately.
+	FOR_TAS_SCRIPT_VERSIONS_SINCE(8) {
+		if (autoJumpTool[slot].ShouldJump(pi)) {
+			pi.willBeGrounded = false;
 		}
 	}
 

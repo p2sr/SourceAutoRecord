@@ -1,7 +1,7 @@
 #pragma once
 #include "TasScript.hpp"
 
-#define MAX_SCRIPT_VERSION 7
+#define MAX_SCRIPT_VERSION 8
 
 #include <iostream>
 #include <string>
