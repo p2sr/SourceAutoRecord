@@ -43,7 +43,7 @@ ON_EVENT(FRAME) {
 
 		bool fetchedpos = WindowResizer::GetWindowPos(pos_x, pos_y);
 		if(fetchedpos)queued_pos_change = true;
-		engine->ExecuteCommand(Utils::ssprintf("mat_setvideomode %d %d 1", x, y).c_str(), true);
+		engine->ExecuteCommand(Utils::ssprintf("mat_setvideomode %d %d 1 0", x, y).c_str(), true);
 	}
 }
 
