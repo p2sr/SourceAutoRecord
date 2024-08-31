@@ -15,9 +15,9 @@
 #include <cstring>
 #include <deque>
 #include <fstream>
+#include <set>
 #include <sstream>
 #include <string>
-#include <set>
 
 static std::optional<json11::Json> g_session_state;
 static std::optional<json11::Json> g_pending_load;
@@ -589,13 +589,6 @@ void RngManip::ExitProcessMovement(CMoveData *move) {
 	playerTrace->ExitLogScope();
 }
 
-ON_EVENT(SESSION_START) {
-	// Reset this between sessions so the stuck check can't depend on previous sessions
-	if (!g_gamemovement) return;
-	float *m_flStuckCheckTime = (float *)(((char *)g_gamemovement) + 36 + 33*3*16 + 8);
-	memset(m_flStuckCheckTime, 0, 34 * 2 * sizeof (float));
-}
-
 extern Hook g_Friction_Hook;
 DECL_DETOUR_T(void, Friction) {
 	playerTrace->EnterLogScope("CPortalGameMovement::Friction");
@@ -718,6 +711,13 @@ ON_INIT {
 	g_Friction_Hook.SetFunc(Friction);
 	g_WalkMove_Hook.SetFunc(WalkMove);
 	g_AirAccelerate_Hook.SetFunc(AirAccelerate);
+}
+
+ON_EVENT(SESSION_START) {
+	// Reset this between sessions so the stuck check can't depend on previous sessions
+	if (!g_gamemovement) return;
+	float *m_flStuckCheckTime = (float *)(((char *)g_gamemovement) + 36 + 33*3*16 + 8);
+	memset(m_flStuckCheckTime, 0, 34 * 2 * sizeof (float));
 }
 
 ON_EVENT(SESSION_END) {
