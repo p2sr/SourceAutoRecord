@@ -13,54 +13,28 @@
 
 AutoStrafeTool autoStrafeTool[2] = {{0}, {1}};
 
-void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
-	if (!params.enabled)
+void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
+	if (!params.enabled) {
 		return;
+	}
 
 	//create fake player info for a sake of values being correct
-	TasPlayerInfo pInfo = rawPInfo;
+	TasPlayerInfo fakePlayerInfo = pInfo;
 
 	FOR_TAS_SCRIPT_VERSIONS_UNTIL(7) {
 		// handled by TasPlayer in newer versions
 		if (autoJumpTool[this->slot].GetCurrentParams().enabled) {
 			// if autojump is enabled, we're never grounded.
-			pInfo.willBeGrounded = false;
+			fakePlayerInfo.willBeGrounded = false;
 		}
 	}
 
-	// when not grounded, air acceleration is not optimal if pitch is not
-	// in a range between -30 and 30 degrees (both exclusive). making sure
-	// it's in the right range, unless specifically asked to not do it.
-	bool compensatePitchMult = false;
-	if (!pInfo.willBeGrounded && fabsf(pInfo.angles.x - fb.viewAnalog.y) >= 30.0f) {
-		if (!params.noPitchLock) {
-			float signAng = pInfo.angles.x - fb.viewAnalog.y;
-			FOR_TAS_SCRIPT_VERSIONS_UNTIL(5) {
-				signAng = pInfo.angles.x;
-			}
-			float diff = pInfo.angles.x - (29.9999f * (signAng / absOld(signAng)));
-			fb.viewAnalog.y = diff;
-		} else {
-			compensatePitchMult = true;
-		}
-	}
+	bool couldntPitchLock = !TryPitchLock(fb, fakePlayerInfo);
 
 	// adjusting fake pinfo to have proper angles (after rotation)
-	pInfo.angles.y -= fb.viewAnalog.x;
-	pInfo.angles.x -= fb.viewAnalog.y;
+	fakePlayerInfo.angles.y -= fb.viewAnalog.x;
+	fakePlayerInfo.angles.x -= fb.viewAnalog.y;
 
-	float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
-
-	FOR_TAS_SCRIPT_VERSIONS_SINCE(6) {
-		if (pInfo.velocity.Length2D() == 0) {
-			if (this->updated && params.strafeDir.useVelAngle) {
-				velAngle = pInfo.angles.y;
-			} else {
-				velAngle = params.strafeDir.angle;
-			}
-		}
-	}
-	
 
 	// update parameters that has type CURRENT
 	if (this->updated) {
@@ -68,22 +42,139 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 		this->lastTurnDir = 0;
 		this->switchedFromVeccam = false;
 
-		if (params.strafeDir.type == CURRENT) {
-			if (params.strafeDir.useVelAngle) {
-				params.strafeDir.angle = velAngle;
-				FollowLine(pInfo);
-			} else {
-				params.strafeDir.angle = rawPInfo.angles.y;  //	using real angles instead of fake ones here.
-			}
-		}
-
-		if (params.strafeSpeed.type == CURRENT) {
-			params.strafeSpeed.speed = pInfo.velocity.Length2D();
-		}
+		UpdateTargetValuesMarkedCurrent(fb, pInfo); // using real angles instead of fake ones here.
 
 		this->updated = false;
 	}
 
+	bool shouldStrafe = true;
+	FOR_TAS_SCRIPT_VERSIONS_SINCE(8) {
+		shouldStrafe = !TryReachTargetValues(fb, fakePlayerInfo);
+	}
+	if (shouldStrafe) {
+		ApplyStrafe(fb, fakePlayerInfo);
+	}
+
+	//pitch lock isn't used. try to compensate the pitch movement multiplication by dividing it now
+	if (couldntPitchLock) {
+		fb.moveAnalog.y /= cosOld(DEG2RAD(fakePlayerInfo.angles.x));
+	}
+
+}
+
+void AutoStrafeTool::UpdateTargetValuesMarkedCurrent(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
+	if (params.strafeDir.type == CURRENT) {
+		if (params.strafeDir.useVelAngle) {
+			float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
+			FOR_TAS_SCRIPT_VERSIONS_SINCE(6) {
+				if (pInfo.velocity.Length2D() == 0) {
+					velAngle = pInfo.angles.y;
+				}
+			}
+
+			params.strafeDir.angle = velAngle;
+			FollowLine(pInfo);
+		} else {
+			params.strafeDir.angle = pInfo.angles.y;
+		}
+	}
+
+	if (params.strafeSpeed.type == CURRENT) {
+		params.strafeSpeed.speed = pInfo.velocity.Length2D();
+	}
+}
+
+bool AutoStrafeTool::TryPitchLock(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
+	// when not grounded, air acceleration is not optimal if pitch is not
+	// in a range between -30 and 30 degrees (both exclusive). making sure
+	// it's in the right range, unless specifically asked to not do it.
+
+	if (!pInfo.willBeGrounded && fabsf(pInfo.angles.x - bulk.viewAnalog.y) >= 30.0f) {
+		if (!params.noPitchLock) {
+			float signAng = pInfo.angles.x - bulk.viewAnalog.y;
+			FOR_TAS_SCRIPT_VERSIONS_UNTIL(5) {
+				signAng = pInfo.angles.x;
+			}
+			float diff = pInfo.angles.x - (29.9999f * (signAng / absOld(signAng)));
+			bulk.viewAnalog.y = diff;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	// when we don't have to do anything, we're technically "pitch-locked" already
+	return true;
+}
+
+bool AutoStrafeTool::TryReachTargetValues(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
+	// Attempting to check if target velocity and angle can be reached within a single tick,
+	// in which case, we'll try to be precise about the force of our movement input.
+	Vector velocity = GetGroundFrictionVelocity(pInfo);
+	velocity.z = 0;
+
+	float targetAngleRad = DEG2RAD(params.strafeDir.angle);
+	Vector targetVel = Vector{cosf(targetAngleRad), sinf(targetAngleRad), 0} * params.strafeSpeed.speed;
+	Vector targetVelDelta = targetVel - velocity;
+
+	if (targetVelDelta == Vector(0, 0, 0)) {
+		bulk.moveAnalog.x = bulk.moveAnalog.y = 0;
+        return true;
+    }
+
+	// clamp velocity delta to air control limit, as we're unable to decelerate
+	float airConLimit = (sar_aircontrol.GetBool() && server->AllowsMovementChanges()) ? INFINITY : 300;
+	if (!pInfo.willBeGrounded && velocity.Length2D() > airConLimit) {
+		if (absOld(velocity.x) > airConLimit * 0.5 && velocity.x * targetVelDelta.x < 0) {
+			targetVelDelta.x = 0;
+		}
+		if (absOld(velocity.y) > airConLimit * 0.5 && velocity.y * targetVelDelta.y < 0) {
+			targetVelDelta.y = 0;
+		}
+	}
+
+	Vector absoluteWishDir = targetVelDelta.Normalize();
+	float absoluteWishDirAngleRad = atan2f(absoluteWishDir.y, absoluteWishDir.x);
+
+	float playerYawRad = DEG2RAD(pInfo.angles.y);
+	float wishDirAngleRad = absoluteWishDirAngleRad - playerYawRad;
+	float forwardMove = cosf(wishDirAngleRad);
+    float sideMove = -sinf(wishDirAngleRad);
+
+	Vector velocityAfterMove = GetVelocityAfterMove(pInfo, forwardMove, sideMove);
+	Vector afterMoveDelta = velocityAfterMove - velocity;
+
+	float afterMoveDeltaLength = afterMoveDelta.Length2D();
+	float targetVelDeltaLength = targetVelDelta.Length2D();
+
+	if (afterMoveDeltaLength >= targetVelDeltaLength) {
+		if (params.strafeType == AutoStrafeType::VECTORIAL_CAM) {
+			float angleDelta = params.strafeDir.angle - pInfo.angles.y;
+			bulk.viewAnalog.x -= angleDelta;
+
+			wishDirAngleRad -= DEG2RAD(angleDelta);
+
+			forwardMove = cosf(wishDirAngleRad);
+			sideMove = -sinf(wishDirAngleRad);
+		}
+
+		float inputScale = targetVelDeltaLength / afterMoveDeltaLength;
+		bulk.moveAnalog.x = sideMove * inputScale;
+		bulk.moveAnalog.y = forwardMove * inputScale;
+
+        return true;
+    }
+
+	return false;
+}
+
+void AutoStrafeTool::ApplyStrafe(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
+	float velAngle = TasUtils::GetVelocityAngles(&pInfo).x;
+
+	FOR_TAS_SCRIPT_VERSIONS_SINCE(6) {
+		if (pInfo.velocity.Length2D() == 0) {
+			velAngle = params.strafeDir.angle;
+		}
+	}
 
 	float angle = velAngle + RAD2DEG(this->GetStrafeAngle(pInfo, params));
 
@@ -104,7 +195,7 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 		fb.moveAnalog.y = cosf(moveAngle);
 		if (pInfo.onSpeedPaint) fb.moveAnalog.x *= 2;
 	} else if (params.strafeType == AutoStrafeType::ANGULAR) {
-		//making sure moveAnalog is always at maximum value.
+		//	making sure moveAnalog is always at maximum value.
 		if (fb.moveAnalog.Length2D() == 0) {
 			fb.moveAnalog.y = 1;
 		} else {
@@ -116,12 +207,6 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &rawPInfo) {
 		QAngle newAngle = {0, angle + lookAngle, 0};
 		fb.viewAnalog.x -= newAngle.y - pInfo.angles.y;
 	}
-
-	//pitch lock isn't used. try to compensate the pitch movement multiplication by dividing it now
-	if (compensatePitchMult) {
-		fb.moveAnalog.y /= cosOld(DEG2RAD(pInfo.angles.x));
-	}
-
 }
 
 // returns player's velocity after its been affected by ground friction

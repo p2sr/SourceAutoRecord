@@ -66,6 +66,11 @@ public:
 	bool switchedFromVeccam = false;
 	int lastTurnDir = 0;
 
+	void UpdateTargetValuesMarkedCurrent(TasFramebulk &fb, const TasPlayerInfo &pInfo);
+	bool TryPitchLock(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
+	bool TryReachTargetValues(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
+	void ApplyStrafe(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
+
 	Vector GetGroundFrictionVelocity(const TasPlayerInfo &player);
 	float GetMaxSpeed(const TasPlayerInfo &player, Vector wishDir, bool notAired = false);
 	float GetMaxAccel(const TasPlayerInfo &player, Vector wishDir);
