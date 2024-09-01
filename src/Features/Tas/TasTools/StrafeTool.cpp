@@ -122,15 +122,13 @@ bool AutoStrafeTool::TryReachTargetValues(TasFramebulk &bulk, const TasPlayerInf
     }
 
 	// clamp velocity delta to air control limit, as we're unable to decelerate
-	float airConLimit = (sar_aircontrol.GetBool() && server->AllowsMovementChanges()) ? INFINITY : 300;
-	if (!pInfo.willBeGrounded && velocity.Length2D() > airConLimit) {
-		if (absOld(velocity.x) > airConLimit * 0.5 && velocity.x * targetVelDelta.x < 0) {
-			targetVelDelta.x = 0;
-		}
-		if (absOld(velocity.y) > airConLimit * 0.5 && velocity.y * targetVelDelta.y < 0) {
-			targetVelDelta.y = 0;
-		}
-	}
+	Vector airLockFactorVector = GetAirLockFactorVector(pInfo);
+    if (airLockFactorVector.x * targetVelDelta.x < 0) {
+        targetVelDelta.x = 0;
+    }
+    if (airLockFactorVector.y * targetVelDelta.y < 0) {
+        targetVelDelta.y = 0;
+    }
 
 	Vector absoluteWishDir = targetVelDelta.Normalize();
 	float absoluteWishDirAngleRad = atan2f(absoluteWishDir.y, absoluteWishDir.x);
@@ -177,6 +175,28 @@ void AutoStrafeTool::ApplyStrafe(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 	}
 
 	float angle = velAngle + RAD2DEG(this->GetStrafeAngle(pInfo, params));
+	
+	FOR_TAS_SCRIPT_VERSIONS_SINCE(8) {
+		// Deal with airlock: we're strafing, so always try to maximize how much
+		// we can turn while also "trying" to meet speed criteria.
+		Vector absoluteMoveDirection{cosf(DEG2RAD(angle)), sinf(DEG2RAD(angle)), 0};
+
+		Vector airLockFactor = GetAirLockFactorVector(pInfo);
+		bool isDecelerating = pInfo.velocity.Length2D() > params.strafeSpeed.speed;
+
+		if (airLockFactor.x != 0) {
+			if (airLockFactor.x * absoluteMoveDirection.x < 0 || isDecelerating) {
+				absoluteMoveDirection.x = 0;
+			}
+		}
+		if (airLockFactor.y != 0) {
+			if (airLockFactor.y * absoluteMoveDirection.y < 0 || isDecelerating) {
+				absoluteMoveDirection.y = 0;
+			}
+		}
+
+		angle = RAD2DEG(atan2f(absoluteMoveDirection.y, absoluteMoveDirection.x));
+	}
 
 	// applying the calculated angle depending on the type of strafing
 	if (params.strafeType == AutoStrafeType::VECTORIAL) {
@@ -283,17 +303,34 @@ Vector AutoStrafeTool::CreateWishDir(const TasPlayerInfo &player, float forwardM
 	wishDir = Vector(sinOld(yaw) * wishDir.x + cosOld(yaw) * wishDir.y, -cosOld(yaw) * wishDir.x + sinOld(yaw) * wishDir.y);
 
 	// air control limit
-	float airConLimit = (sar_aircontrol.GetBool() && server->AllowsMovementChanges()) ? INFINITY : 300;
-	if (!player.willBeGrounded && player.velocity.Length2D() > airConLimit) {
-		if (absOld(player.velocity.x) > airConLimit * 0.5 && player.velocity.x * wishDir.x < 0) {
-			wishDir.x = 0;
-		}
-		if (absOld(player.velocity.y) > airConLimit * 0.5 && player.velocity.y * wishDir.y < 0) {
-			wishDir.y = 0;
-		}
+	Vector airLockFactorVector = GetAirLockFactorVector(player);
+	if (airLockFactorVector.x * wishDir.x < 0) {
+		wishDir.x = 0;
+	}
+	if (airLockFactorVector.y * wishDir.y < 0) {
+		wishDir.y = 0;
 	}
 
 	return wishDir;
+}
+
+Vector AutoStrafeTool::GetAirLockFactorVector(const TasPlayerInfo &player) {
+	Vector airLockFactorVector{0, 0, 0};
+
+	float airConLimit = (sar_aircontrol.GetBool() && server->AllowsMovementChanges()) ? INFINITY : 300;
+
+	if (!player.willBeGrounded && player.velocity.Length2D() > airConLimit) {
+		float absVelX = absOld(player.velocity.x);
+		if (absVelX > airConLimit * 0.5) {
+			airLockFactorVector.x = player.velocity.x / absVelX;
+		}
+		float absVelY = absOld(player.velocity.y);
+		if (absVelY > airConLimit * 0.5) {
+			airLockFactorVector.y = player.velocity.y / absVelY;
+		}
+	}
+
+	return airLockFactorVector;
 }
 
 
@@ -383,9 +420,11 @@ float AutoStrafeTool::GetTurningStrafeAngle(const TasPlayerInfo &player) {
 // get horizontal angle of wishdir that does correct thing based on given parameters
 // angle is relative to your current velocity direction.
 float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafeParams &params) {
-	float speed = player.velocity.Length2D();
-
-	float speedDiff = params.strafeSpeed.speed - speed;
+	Vector velocity = GetGroundFrictionVelocity(player);
+	FOR_TAS_SCRIPT_VERSIONS_UNTIL(7) {
+		velocity = player.velocity;
+	}
+	float speedDiff = params.strafeSpeed.speed - velocity.Length2D();
 	if (absOld(speedDiff) < 0.001) speedDiff = 0;
 
 	int turningDir = GetTurningDirection(player, params.strafeDir.angle);
@@ -404,7 +443,7 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 		float velAngle = TasUtils::GetVelocityAngles(&player).x;
 
 		FOR_TAS_SCRIPT_VERSIONS_SINCE(6) {
-			if (player.velocity.Length2D() == 0) {
+			if (velocity.Length2D() == 0) {
 				velAngle = params.strafeDir.angle;
 			}
 		}
@@ -427,9 +466,6 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 	if (passedTargetSpeed || speedDiff == 0) {
 		ang = GetTargetStrafeAngle(player, params.strafeSpeed.speed) * turningDir;
 	}
-
-	// TODO: handle air control limit correctly
-
 
 	return ang;
 }
