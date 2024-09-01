@@ -113,6 +113,7 @@ public:
 	TasFramebulk GetRawFramebulkAt(int slot, int tick, unsigned &cachedIndex);
 
 	TasPlayerInfo GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bool clientside = false);
+	int FetchCurrentPlayerTickBase(void *player, bool clientside = false);
 
 	void SaveProcessedFramebulks();
 	void SaveUsercmdDebugs(int slot);
