@@ -79,7 +79,7 @@ public:
 
 private:
 	void UpdateTargetValuesMarkedCurrent(TasFramebulk &fb, const TasPlayerInfo &pInfo);
-	bool TryPitchLock(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
+	bool IsMovementAffectedByPitch(const TasPlayerInfo &pInfo);
 	bool TryReachTargetValues(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
 	void ApplyStrafe(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
 

@@ -29,12 +29,22 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 		}
 	}
 
-	bool couldntPitchLock = !TryPitchLock(fb, fakePlayerInfo);
-
 	// adjusting fake pinfo to have proper angles (after rotation)
 	fakePlayerInfo.angles.y -= fb.viewAnalog.x;
 	fakePlayerInfo.angles.x -= fb.viewAnalog.y;
 
+	// when not grounded, air acceleration is not optimal if pitch is not
+	// in a range between -30 and 30 degrees (both exclusive). making sure
+	// it's in the right range, unless specifically asked to not do it.
+	if (IsMovementAffectedByPitch(fakePlayerInfo) && !params.noPitchLock) {
+		float signAng = fakePlayerInfo.angles.x;
+		FOR_TAS_SCRIPT_VERSIONS_UNTIL(5) {
+			signAng = pInfo.angles.x;
+		}
+		float desiredAngle = (29.9999f * (signAng / absOld(signAng)));
+		fb.viewAnalog.y = pInfo.angles.x - desiredAngle;
+		fakePlayerInfo.angles.x = desiredAngle;
+	}
 
 	// update parameters that has type CURRENT
 	if (this->updated) {
@@ -56,7 +66,7 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 	}
 
 	//pitch lock isn't used. try to compensate the pitch movement multiplication by dividing it now
-	if (couldntPitchLock) {
+	if (IsMovementAffectedByPitch(fakePlayerInfo) && params.noPitchLock) {
 		fb.moveAnalog.y /= cosOld(DEG2RAD(fakePlayerInfo.angles.x));
 	}
 
@@ -84,26 +94,8 @@ void AutoStrafeTool::UpdateTargetValuesMarkedCurrent(TasFramebulk &fb, const Tas
 	}
 }
 
-bool AutoStrafeTool::TryPitchLock(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
-	// when not grounded, air acceleration is not optimal if pitch is not
-	// in a range between -30 and 30 degrees (both exclusive). making sure
-	// it's in the right range, unless specifically asked to not do it.
-
-	if (!pInfo.willBeGrounded && fabsf(pInfo.angles.x - bulk.viewAnalog.y) >= 30.0f) {
-		if (!params.noPitchLock) {
-			float signAng = pInfo.angles.x - bulk.viewAnalog.y;
-			FOR_TAS_SCRIPT_VERSIONS_UNTIL(5) {
-				signAng = pInfo.angles.x;
-			}
-			float diff = pInfo.angles.x - (29.9999f * (signAng / absOld(signAng)));
-			bulk.viewAnalog.y = diff;
-			return true;
-		} else {
-			return false;
-		}
-	}
-	// when we don't have to do anything, we're technically "pitch-locked" already
-	return true;
+bool AutoStrafeTool::IsMovementAffectedByPitch(const TasPlayerInfo &pInfo) {
+	return !pInfo.willBeGrounded && fabsf(pInfo.angles.x) >= 30.0f;
 }
 
 bool AutoStrafeTool::TryReachTargetValues(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
