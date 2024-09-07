@@ -101,6 +101,12 @@ bool AutoStrafeTool::IsMovementAffectedByPitch(const TasPlayerInfo &pInfo) {
 bool AutoStrafeTool::TryReachTargetValues(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 	// Attempting to check if target velocity and angle can be reached within a single tick,
 	// in which case, we'll try to be precise about the force of our movement input.
+
+	// our target angle is too big to be ever reached
+	if (fabsf(params.strafeDir.angle) > 360.0f) {
+        return false;
+    }
+
 	Vector velocity = GetGroundFrictionVelocity(pInfo);
 	velocity.z = 0;
 
