@@ -529,16 +529,20 @@ void NetworkManager::NotifyMapChange() {
 	sf::Packet packet;
 
 	if (ghost_show_advancement.GetInt() >= 3 && AcknowledgeGhost(nullptr)) {
+		std::string msg;
 		if (this->splitTicks != (sf::Uint32)-1) {
 			auto ipt = *engine->interval_per_tick;
 			std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
 			std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
-			std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", this->name.c_str(), engine->GetCurrentMapTitle().c_str(), time.c_str(), totalTime.c_str());
-			toastHud.AddToast(GHOST_TOAST_TAG, msg);
+			if (this->splitTicks < this->splitTicksTotal) {
+				msg = Utils::ssprintf("%s is now on %s (%s -> %s)", this->name.c_str(), engine->GetCurrentMapTitle().c_str(), time.c_str(), totalTime.c_str());
+			} else {
+				msg = Utils::ssprintf("%s is now on %s (%s)", this->name.c_str(), engine->GetCurrentMapTitle().c_str(), totalTime.c_str());
+			}
 		} else {
-			std::string msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), engine->GetCurrentMapTitle().c_str());
-			toastHud.AddToast(GHOST_TOAST_TAG, msg);
+			msg = Utils::ssprintf("%s is now on %s", this->name.c_str(), engine->GetCurrentMapTitle().c_str());
 		}
+		toastHud.AddToast(GHOST_TOAST_TAG, msg);
 	}
 
 	addToNetDump("send-map-change", engine->GetCurrentMapName().c_str());
