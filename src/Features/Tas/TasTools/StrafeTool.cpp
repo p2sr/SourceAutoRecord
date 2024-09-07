@@ -376,21 +376,43 @@ float AutoStrafeTool::GetFastestStrafeAngle(const TasPlayerInfo &player) {
 
 // get horizontal angle of wishdir that would achieve given velocity
 // angle is relative to your current velocity direction.
-float AutoStrafeTool::GetTargetStrafeAngle(const TasPlayerInfo &player, float targetSpeed) {
+float AutoStrafeTool::GetTargetStrafeAngle(const TasPlayerInfo &player, float targetSpeed, float turningDir) {
 	Vector vel = GetGroundFrictionVelocity(player);
 
-	if (vel.Length2D() == 0) return 0;
+	float currentSpeed = vel.Length2D();
+	if (currentSpeed == 0) return 0;
 
-	Vector wishDir(0, 1);
-	//float maxSpeed = GetMaxSpeed(player, wishDir);
-	float maxAccel = GetMaxAccel(player, wishDir);
+	float maxAccel = GetMaxAccel(player, {0, 1});
 
 	// Assuming that it is possible to achieve a velocity of a given length,
 	// I'm using a law of cosines to get the right angle for acceleration.
-	float cosAng = (powOld(vel.Length2D(), 2) + powOld(maxAccel, 2) - powOld(targetSpeed, 2)) / (2.0f * vel.Length2D() * maxAccel);
+	float targetAngle = acosf(-(powOld(currentSpeed, 2) + powOld(maxAccel, 2) - powOld(targetSpeed, 2)) / (2.0f * currentSpeed * maxAccel)) * turningDir;
 
-	// Also, questionable trig to get the right angle lol.
-	return acosf(-cosAng);
+	FOR_TAS_SCRIPT_VERSIONS_SINCE(8) {
+		// When we're affected by pitch, we should recalculate the angle a couple of times to ensure we can reach it.
+		if (params.noPitchLock && IsMovementAffectedByPitch(player)) {
+			float velAngle = TasUtils::GetVelocityAngles(&player).x;
+			float velToLocalAngleDeltaRad = DEG2RAD(player.angles.y) - DEG2RAD(velAngle);
+			float cosPitch = cosf(DEG2RAD(player.angles.x));
+
+			const int maxIterations = 50;
+			for (int i = 0; i < maxIterations; i++) {
+				float correctAng = targetAngle - velToLocalAngleDeltaRad;
+				float forwardmove = cosf(correctAng) / cosPitch;
+				float sidemove = -sinf(correctAng);
+
+				float scaledAccel = maxAccel / sqrtf(forwardmove * forwardmove + sidemove * sidemove);
+				float previousTargetAngle = targetAngle;
+				targetAngle = acosf(-(powf(currentSpeed, 2) + powf(scaledAccel, 2) - powf(targetSpeed, 2)) / (2.0f * currentSpeed * scaledAccel)) * turningDir;
+
+				if (fabsf(previousTargetAngle - targetAngle) < 0.00001f) {
+					break;
+				}
+			}
+		}
+	}
+
+	return targetAngle;
 }
 
 // get horizontal angle of wishdir that would give the biggest turning angle in given tick
@@ -462,7 +484,7 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 	}
 
 	if (passedTargetSpeed || speedDiff == 0) {
-		ang = GetTargetStrafeAngle(player, params.strafeSpeed.speed) * turningDir;
+		ang = GetTargetStrafeAngle(player, params.strafeSpeed.speed, turningDir);
 	}
 
 	return ang;

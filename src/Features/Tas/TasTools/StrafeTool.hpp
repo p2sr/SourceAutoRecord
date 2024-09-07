@@ -18,7 +18,7 @@ enum AutoStrafeType {
 
 enum AutoStrafeParamType {
 	SPECIFIED,
-	CURRENT
+	CURRENT,
 };
 
 struct AutoStrafeDirection {
@@ -74,7 +74,7 @@ public:
 
 	Vector GetVelocityAfterMove(const TasPlayerInfo &player, float forwardMove, float sideMove);
 	float GetFastestStrafeAngle(const TasPlayerInfo &player);
-	float GetTargetStrafeAngle(const TasPlayerInfo &player, float targetSpeed);
+	float GetTargetStrafeAngle(const TasPlayerInfo &player, float targetSpeed, float turningDir);
 	float GetTurningStrafeAngle(const TasPlayerInfo &player);
 
 private:
