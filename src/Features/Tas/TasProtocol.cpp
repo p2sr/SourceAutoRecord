@@ -370,7 +370,8 @@ static bool receiveFromConnection(TasProtocol::ConnectionData &cl) {
 	int len = recv(cl.sock, buf, sizeof buf, 0);
 
 	if (len == 0 || len == SOCKET_ERROR) {  // Connection closed or errored
-	return false;
+		closesocket(cl.sock);
+		return false;
 	}
 
 	cl.cmdbuf.insert(cl.cmdbuf.end(), std::begin(buf), std::begin(buf) + len);
@@ -561,6 +562,7 @@ static void mainThread() {
 	for (auto &cl : g_connections) {
 		closesocket(cl.sock);
 	}
+	g_connections.clear();
 
 	closesocket(g_listen_sock);
 	WSACleanup();
@@ -710,12 +712,22 @@ CON_COMMAND(sar_tas_protocol_server,
 		return console->Print(sar_tas_protocol_server.ThisPtr()->m_pszHelpString);
 	}
 	g_conn_data_mutex.lock();
-	g_server_port = args.ArgC() >= 2 ? std::atoi(args[1]) : DEFAULT_TAS_SERVER_SOCKET;
+
+	int server_port = args.ArgC() >= 2 ? std::atoi(args[1]) : DEFAULT_TAS_SERVER_SOCKET;
+	bool should_start_server = !g_running || g_server_port != server_port;
+
+	if (should_start_server) {
+		g_server_port = server_port;
+		g_is_server.store(true);
+	}
+	
 	g_conn_data_mutex.unlock();
 
-	g_is_server.store(true);
-
-	restart();
+	if (should_start_server) {
+		restart();
+	} else {
+		console->Print("TAS server is already running on port %d.\n", server_port);
+	}
 }
 
 CON_COMMAND(sar_tas_protocol_stop,
