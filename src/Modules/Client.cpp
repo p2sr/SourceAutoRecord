@@ -44,6 +44,7 @@ Variable cl_forwardspeed;
 Variable in_forceuser;
 Variable crosshairVariable;
 Variable cl_fov;
+Variable cl_viewmodelfov;
 Variable prevent_crouch_jump;
 Variable r_PortalTestEnts;
 Variable r_portalsopenall;
@@ -1198,6 +1199,7 @@ bool Client::Init() {
 	ss_pipsplit = Variable("ss_pipsplit");
 	ss_pipscale = Variable("ss_pipscale");
 	ss_verticalsplit = Variable("ss_verticalsplit");
+	cl_viewmodelfov = Variable("cl_viewmodelfov");
 
 	CVAR_HOOK_AND_CALLBACK(cl_fov);
 	CVAR_HOOK_AND_CALLBACK(cl_viewmodelfov);

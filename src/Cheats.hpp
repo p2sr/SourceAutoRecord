@@ -40,7 +40,6 @@ extern Variable ui_transition_time;
 extern Variable ui_pvplobby_show_offline;
 extern Variable mm_session_sys_delay_create_host;
 extern Variable hide_gun_when_holding;
-extern Variable cl_viewmodelfov;
 extern Variable r_flashlightbrightness;
 
 extern Command sar_togglewait;
