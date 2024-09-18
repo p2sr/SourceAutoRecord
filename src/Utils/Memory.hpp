@@ -90,8 +90,7 @@ namespace Memory {
 	}
 	template <typename T = uintptr_t>
 	void Read(uintptr_t source, T *destination) {
-		auto rel = *reinterpret_cast<int *>(source);
-		*destination = (T)(source + rel + sizeof(rel));
+		*destination = Memory::Read<T>(source);
 	}
 	template <typename T = void *>
 	inline T Deref(uintptr_t source) {
@@ -99,15 +98,15 @@ namespace Memory {
 	}
 	template <typename T = void *>
 	void Deref(uintptr_t source, T *destination) {
-		*destination = *reinterpret_cast<T *>(source);
+		*destination = Memory::Deref<T>(source);
 	}
 	template <typename T = void *>
 	inline T DerefDeref(uintptr_t source) {
-		return **reinterpret_cast<T **>(source);
+		return Memory::Deref<T>(Memory::Deref<uintptr_t>(source));
 	}
 	template <typename T = void *>
 	void DerefDeref(uintptr_t source, T *destination) {
-		*destination = **reinterpret_cast<T **>(source);
+		*destination = Memory::DerefDeref<T>(source);
 	}
 	template <typename T = uintptr_t>
 	T Scan(const char *moduleName, const char *pattern, int offset = 0) {
