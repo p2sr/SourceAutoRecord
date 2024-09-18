@@ -349,8 +349,8 @@ void retrieveMtriggers(int rank, std::string map_name) {
 						float time = 0.0f;
 						for (const auto &split : splits.array_items()) {
 							auto ticks = split["ticks"].int_value();
-							auto segmentTime = ticks * *engine->interval_per_tick;
-							time += ticks * *engine->interval_per_tick;
+							auto segmentTime = ticks * engine->GetIPT();
+							time += ticks * engine->GetIPT();
 							auto timeS        = SpeedrunTimer::Format(time);
 							auto segmentTimeS = SpeedrunTimer::Format(segmentTime);
 							THREAD_PRINT("[%s] - %s (%s) (%i)\n", split["name"].string_value().c_str(), timeS.c_str(), segmentTimeS.c_str(), ticks);

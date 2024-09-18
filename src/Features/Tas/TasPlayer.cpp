@@ -424,13 +424,13 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bo
 	
 	pi.oldButtons = m_nOldButtons;
 
-	if (fabsf(*engine->interval_per_tick - 1.0f / 60.0f) < 0.00001f) {
+	if (fabsf(engine->GetIPT() - 1.0f / sar.game->Tickrate()) < 0.00001f) {
 		// Back compat - this used to be hardcoded, and maybe the engine's interval
 		// could be slightly different to the value we used, leading to desyncs on
 		// old scripts.
-		pi.ticktime = 1.0f / 60.0f;
+		pi.ticktime = 1.0f / sar.game->Tickrate();
 	} else {
-		pi.ticktime = *engine->interval_per_tick;
+		pi.ticktime = engine->GetIPT();
 	}
 
 	return pi;

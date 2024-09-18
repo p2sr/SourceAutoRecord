@@ -531,7 +531,7 @@ void NetworkManager::NotifyMapChange() {
 	if (ghost_show_advancement.GetInt() >= 3 && AcknowledgeGhost(nullptr)) {
 		std::string msg;
 		if (this->splitTicks != (sf::Uint32)-1) {
-			auto ipt = *engine->interval_per_tick;
+			auto ipt = engine->GetIPT();
 			std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
 			std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
 			if (this->splitTicks < this->splitTicksTotal) {
@@ -557,7 +557,7 @@ void NetworkManager::NotifySpeedrunFinished(const bool CM) {
 	packet << HEADER::SPEEDRUN_FINISH << this->ID;
 
 	float totalSecs = 0;
-	auto ipt = *engine->interval_per_tick;
+	auto ipt = engine->GetIPT();
 
 	if (CM) {
 		totalSecs = server->GetCMTimer();
@@ -792,7 +792,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 						std::string msg = Utils::ssprintf("%s is now on %s", ghost->name.c_str(), engine->GetMapTitle(ghost->currentMap).c_str());
 						toastHud.AddToast(GHOST_TOAST_TAG, msg);
 					} else {
-						auto ipt = *engine->interval_per_tick;
+						auto ipt = engine->GetIPT();
 						std::string time = SpeedrunTimer::Format(ticksIL * ipt);
 						std::string timeTotal = SpeedrunTimer::Format(ticksTotal * ipt);
 						std::string msg = Utils::ssprintf("%s is now on %s (%s -> %s)", ghost->name.c_str(), engine->GetMapTitle(ghost->currentMap).c_str(), time.c_str(), timeTotal.c_str());
@@ -887,7 +887,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 				}
 				// whose fucking idea was it to send a string?!
 				float totalSecs = SpeedrunTimer::UnFormat(timer);
-				auto ipt = *engine->interval_per_tick;
+				auto ipt = engine->GetIPT();
 				ghostLeaderboard.GhostFinished(ID, (int)roundf(totalSecs/ipt));
 			});
 		}

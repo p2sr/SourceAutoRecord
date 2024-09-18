@@ -128,6 +128,7 @@ public:
 
 public:
 	void ExecuteCommand(const char *cmd, bool immediately = false);
+	float GetIPT();
 	int GetTick();
 	float ToTime(int tick);
 	int GetLocalPlayerIndex();
@@ -249,7 +250,7 @@ extern float g_cur_fps;
 extern int g_cap_frametime;
 extern int g_coop_pausable;
 
-#define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / *engine->interval_per_tick))
+#define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / engine->GetIPT()))
 #define GET_SLOT() engine->GetLocalPlayerIndex() - 1
 #define IGNORE_DEMO_PLAYER()          \
 	if (engine->demoplayer->IsPlaying()) \

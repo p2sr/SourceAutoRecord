@@ -270,7 +270,7 @@ static int getCurrentTick() {
 
 	if (client->GetChallengeStatus() == CMStatus::CHALLENGE) {
 		if (g_inDemoLoad) return 0;  // HACKHACK
-		return roundf(server->GetCMTimer() / *engine->interval_per_tick);
+		return roundf(server->GetCMTimer() / engine->GetIPT());
 	}
 
 	return engine->GetTick();
@@ -622,7 +622,7 @@ void SpeedrunTimer::Stop(std::string segName) {
 
 					engine->demorecorder->Stop();
 
-					auto time_str = SpeedrunTimer::Format(total * *engine->interval_per_tick);
+					auto time_str = SpeedrunTimer::Format(total * engine->GetIPT());
 					std::replace(time_str.begin(), time_str.end(), ':', '-');
 					std::replace(time_str.begin(), time_str.end(), '.', '-');
 
@@ -700,8 +700,8 @@ void SpeedrunTimer::Split(bool newSplit, std::string segName, bool requested) {
 
 	if (newSplit) {
 		setTimerAction(TimerAction::SPLIT);
-		float totalTime = SpeedrunTimer::GetTotalTicks() * *engine->interval_per_tick;
-		float splitTime = g_speedrun.splits.back().ticks * *engine->interval_per_tick;
+		float totalTime = SpeedrunTimer::GetTotalTicks() * engine->GetIPT();
+		float splitTime = g_speedrun.splits.back().ticks * engine->GetIPT();
 
 		std::string cleanSegName = segName;
 		replace(cleanSegName, GetCategoryName() + " - ", "");
@@ -898,15 +898,15 @@ CON_COMMAND(sar_speedrun_result, "sar_speedrun_result - print the speedrun resul
 
 	for (SplitInfo split : g_speedrun.splits) {
 		total += split.ticks;
-		auto ticksStr = SpeedrunTimer::Format(split.ticks * *engine->interval_per_tick);
-		auto totalStr = SpeedrunTimer::Format(total * *engine->interval_per_tick);
+		auto ticksStr = SpeedrunTimer::Format(split.ticks * engine->GetIPT());
+		auto totalStr = SpeedrunTimer::Format(total * engine->GetIPT());
 		console->Print("%s - %s (%d) - %s (%d)\n", split.name.c_str(), ticksStr.c_str(), split.ticks, totalStr.c_str(), total);
 		if (split.segments.size() > 1) {
 			total -= split.ticks;
 			for (Segment seg : split.segments) {
 				total += seg.ticks;
-				auto ticksStr = SpeedrunTimer::Format(seg.ticks * *engine->interval_per_tick);
-				auto totalStr = SpeedrunTimer::Format(total * *engine->interval_per_tick);
+				auto ticksStr = SpeedrunTimer::Format(seg.ticks * engine->GetIPT());
+				auto totalStr = SpeedrunTimer::Format(total * engine->GetIPT());
 				console->Print("    %s - %s (%d) - %s (%d)\n", seg.name.c_str(), ticksStr.c_str(), seg.ticks, totalStr.c_str(), total);
 			}
 		}
@@ -916,19 +916,19 @@ CON_COMMAND(sar_speedrun_result, "sar_speedrun_result - print the speedrun resul
 		console->Print("[current split]\n");
 		for (Segment seg : g_speedrun.currentSplit) {
 			total += seg.ticks;
-			auto ticksStr = SpeedrunTimer::Format(seg.ticks * *engine->interval_per_tick);
-			auto totalStr = SpeedrunTimer::Format(total * *engine->interval_per_tick);
+			auto ticksStr = SpeedrunTimer::Format(seg.ticks * engine->GetIPT());
+			auto totalStr = SpeedrunTimer::Format(total * engine->GetIPT());
 			console->Print("    %s - %s (%d) - %s (%d)\n", seg.name.c_str(), ticksStr.c_str(), seg.ticks, totalStr.c_str(), total);
 		}
 		int segTicks = SpeedrunTimer::GetSegmentTicks();
 		total += segTicks;
-		auto ticksStr = SpeedrunTimer::Format(segTicks * *engine->interval_per_tick);
-		auto totalStr = SpeedrunTimer::Format(total * *engine->interval_per_tick);
+		auto ticksStr = SpeedrunTimer::Format(segTicks * engine->GetIPT());
+		auto totalStr = SpeedrunTimer::Format(total * engine->GetIPT());
 		console->Print("    [current segment] - %s (%d) - %s (%d)\n", ticksStr.c_str(), segTicks, totalStr.c_str(), total);
 	}
 
 	total = SpeedrunTimer::GetTotalTicks();
-	console->Print("Total: %d (%s)\n", total, SpeedrunTimer::Format(total * *engine->interval_per_tick).c_str());
+	console->Print("Total: %d (%s)\n", total, SpeedrunTimer::Format(total * engine->GetIPT()).c_str());
 }
 
 CON_COMMAND(sar_speedrun_export, "sar_speedrun_export <filename> - export the speedrun result to the specified CSV file\n") {
@@ -970,8 +970,8 @@ CON_COMMAND(sar_speedrun_export, "sar_speedrun_export <filename> - export the sp
 
 	for (SplitInfo split : g_speedrun.splits) {
 		total += split.ticks;
-		auto fmtdTicks = SpeedrunTimer::Format(split.ticks * *engine->interval_per_tick);
-		auto fmtdTotal = SpeedrunTimer::Format(total * *engine->interval_per_tick);
+		auto fmtdTicks = SpeedrunTimer::Format(split.ticks * engine->GetIPT());
+		auto fmtdTotal = SpeedrunTimer::Format(total * engine->GetIPT());
 		fprintf(f, "%s,%d,%s,%d,%s\n", split.name.c_str(), split.ticks, fmtdTicks.c_str(), total, fmtdTotal.c_str());
 	}
 
@@ -1066,8 +1066,8 @@ CON_COMMAND(sar_speedrun_export_all, "sar_speedrun_export_all <filename> - expor
 			if (it != run.end()) {
 				int ticks = it->second;
 				total += ticks;
-				auto fmtdTicks = SpeedrunTimer::Format(ticks * *engine->interval_per_tick);
-				auto fmtdTotal = SpeedrunTimer::Format(total * *engine->interval_per_tick);
+				auto fmtdTicks = SpeedrunTimer::Format(ticks * engine->GetIPT());
+				auto fmtdTotal = SpeedrunTimer::Format(total * engine->GetIPT());
 				fprintf(f, "%s (%s)", fmtdTotal.c_str(), fmtdTicks.c_str());
 			}
 		}

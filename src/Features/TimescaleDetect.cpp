@@ -51,7 +51,7 @@ ON_EVENT(PRE_TICK) {
 
 		std::chrono::duration<float> deltaDur = now - timescaleDetect->startTickTime;
 		float delta = deltaDur.count();
-		float expected = *engine->interval_per_tick * tickDelta;
+		float expected = engine->GetIPT() * tickDelta;
 
 		float timescale = expected / delta;
 

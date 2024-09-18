@@ -114,6 +114,12 @@ void Engine::ExecuteCommand(const char *cmd, bool immediately) {
 		this->ExecuteClientCmd(this->engineClient->ThisPtr(), "");
 	}
 }
+float Engine::GetIPT() { // IntervalPerTick
+	if (this->interval_per_tick) {
+		return *this->interval_per_tick;
+	}
+	return 1.0f / sar.game->Tickrate();
+}
 int Engine::GetTick() {
 	return (this->GetMaxClients() < 2 || engine->demoplayer->IsPlaying()) ? *this->tickcount : TIME_TO_TICKS(*this->net_time);
 }
@@ -793,7 +799,7 @@ void _Host_RunFrame_Render_Detour() {
 	uint64_t init_frames = total_frames;
 	total_frames += 1;
 
-	unsigned nticks = roundf(FPS_CHECK_WINDOW / *engine->interval_per_tick);
+	unsigned nticks = roundf(FPS_CHECK_WINDOW / engine->GetIPT());
 	Scheduler::InHostTicks(nticks, [=]() {
 		uint64_t nframes = total_frames - init_frames;
 		g_cur_fps = (float)nframes / FPS_CHECK_WINDOW;
@@ -1031,7 +1037,7 @@ bool Engine::Init() {
 			tickcount = Memory::Deref<int *>(ProcessTick + Offsets::tickcount);
 
 			interval_per_tick = Memory::Deref<float *>(ProcessTick + Offsets::interval_per_tick);
-			SpeedrunTimer::SetIpt(*interval_per_tick);
+			SpeedrunTimer::SetIpt(this->GetIPT());
 
 			auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
 			auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);

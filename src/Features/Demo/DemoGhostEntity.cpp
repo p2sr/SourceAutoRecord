@@ -125,7 +125,7 @@ void DemoGhostEntity::LevelReset() {
 }
 
 float DemoGhostEntity::GetTotalTime() {
-	return (this->totalTicks + -this->offset) * *engine->interval_per_tick;
+	return (this->totalTicks + -this->offset) * engine->GetIPT();
 }
 
 std::string DemoGhostEntity::GetCurrentMap() {

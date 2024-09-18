@@ -185,7 +185,7 @@ void DrawAverageBar(int slot, Vector2<int> hudOffset) {
 	int hudBeginY = hudOffset.y + -INPUT_SQUARE_FULL_LENGTH.y;
 	int hudEndY = hudOffset.y + (MAX_INPUT_LINES - 1) * INPUT_SQUARE_FULL_LENGTH.y;
 
-	float tickrate = 1.0f / *engine->interval_per_tick;
+	float tickrate = 1.0f / engine->GetIPT();
 	float barHeight = INPUT_SQUARE_FULL_LENGTH.y * MAX_INPUT_LINES;
 	float barScale = tickrate / (BAR_CPS_END - BAR_CPS_BEGIN);  //scaling from 0-60 to BAR_CPS_BEGIN-BAR_CPS_END
 

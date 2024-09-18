@@ -70,9 +70,9 @@ void DemoGhostPlayer::TestInputRule(Ts... args) {
 			int tick = std::get<0>(it->second);
 
 			if (tick > SpeedrunTimer::GetTotalTicks())
-				text += Utils::ssprintf("%s -> -%ss ", ghost.name.c_str(), SpeedrunTimer::Format((tick - SpeedrunTimer::GetTotalTicks()) * *engine->interval_per_tick).c_str());
+				text += Utils::ssprintf("%s -> -%ss ", ghost.name.c_str(), SpeedrunTimer::Format((tick - SpeedrunTimer::GetTotalTicks()) * engine->GetIPT()).c_str());
 			else
-				text += Utils::ssprintf("%s -> +%ss ", ghost.name.c_str(), SpeedrunTimer::Format((SpeedrunTimer::GetTotalTicks() - tick) * *engine->interval_per_tick).c_str());
+				text += Utils::ssprintf("%s -> +%ss ", ghost.name.c_str(), SpeedrunTimer::Format((SpeedrunTimer::GetTotalTicks() - tick) * engine->GetIPT()).c_str());
 		}
 	}
 
