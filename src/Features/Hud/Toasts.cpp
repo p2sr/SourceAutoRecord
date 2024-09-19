@@ -220,7 +220,7 @@ ToastHud::ToastHud()
 	: Hud(HudType_InGame | HudType_Paused | HudType_Menu, true) {
 }
 
-void ToastHud::InitMessageHandler() {
+ON_INIT {
 	NetMessage::RegisterHandler(TOAST_PACKET_TYPE, &toastMessage);
 }
 

@@ -67,7 +67,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->features->AddFeature<StepCounter>(&stepCounter);
 			this->features->AddFeature<Summary>(&summary);
 			this->features->AddFeature<Teleporter>(&teleporter);
-			SpeedrunTimer::Init();
 			this->features->AddFeature<Stats>(&stats);
 			this->features->AddFeature<StatsCounter>(&statsCounter);
 			this->features->AddFeature<Sync>(&synchro);
@@ -88,7 +87,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->features->AddFeature<TimescaleDetect>(&timescaleDetect);
 			this->features->AddFeature<PlayerTrace>(&playerTrace);
 			this->features->AddFeature<Timeline>(&timeline);
-			toastHud.InitMessageHandler();
 
 			this->modules->AddModule<InputSystem>(&inputSystem);
 			this->modules->AddModule<Scheme>(&scheme);
@@ -102,8 +100,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->modules->AddModule<Matchmaking>(&matchmaking);
 			this->modules->AddModule<SteamAPI>(&steam);
 			this->modules->InitAll();
-
-			InitSARChecksum();
 
 			SarInitHandler::RunAll();
 

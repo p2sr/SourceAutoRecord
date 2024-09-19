@@ -324,7 +324,7 @@ void AddDemoFileChecksums() {
 	}
 }
 
-void InitSARChecksum() {
+ON_INIT {
 	initFileSums();
 
 	std::string path = Utils::GetSARPath();

@@ -1037,7 +1037,6 @@ bool Engine::Init() {
 			tickcount = Memory::Deref<int *>(ProcessTick + Offsets::tickcount);
 
 			interval_per_tick = Memory::Deref<float *>(ProcessTick + Offsets::interval_per_tick);
-			SpeedrunTimer::SetIpt(this->GetIPT());
 
 			auto SetSignonState = this->cl->Original(Offsets::Disconnect - 1);
 			auto HostState_OnClientConnected = Memory::Read(SetSignonState + Offsets::HostState_OnClientConnected);

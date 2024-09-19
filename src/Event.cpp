@@ -11,6 +11,7 @@ void SarInitHandler::RunAll() {
 	for (auto h : SarInitHandler::GetHandlers()) {
 		h->cb();
 	}
+	SarInitHandler::GetHandlers().clear();
 }
 
 std::vector<SarInitHandler *> &SarInitHandler::GetHandlers() {

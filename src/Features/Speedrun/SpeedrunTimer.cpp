@@ -125,15 +125,12 @@ static std::vector<std::map<std::string, int>> g_runs;
 
 static void handleCoopPacket(const void *data, size_t size);
 
-void SpeedrunTimer::Init() {
+ON_INIT {
 	g_timerInterface = new TimerInterface();
 	SpeedrunTimer::Reset(false);
 	NetMessage::RegisterHandler(SPEEDRUN_PACKET_TYPE, &handleCoopPacket);
 	SpeedrunTimer::InitCategories();
-}
-
-void SpeedrunTimer::SetIpt(float ipt) {
-	g_timerInterface->ipt = ipt;
+	g_timerInterface->ipt = engine->GetIPT();
 }
 
 // Interface action fuckery {{{

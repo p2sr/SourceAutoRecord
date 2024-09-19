@@ -15,7 +15,6 @@ namespace SpeedrunTimer {
 	float UnFormat(const std::string &formatted_time);
 
 	void Init();
-	void SetIpt(float ipt);
 	void Update();
 	void AddPauseTick();
 	void FinishLoad();
