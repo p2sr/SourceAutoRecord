@@ -55,7 +55,7 @@ public:
 		begin = 0;
 		end = 0;
 		size = queue.size();
-		for (auto i = 0; i < size; i++) {
+		for (size_t i = 0; i < size; i++) {
 			queue[i] = value;
 		}
 	}
