@@ -8,7 +8,7 @@ private:
 	std::vector<T> queue;
 	int begin, end;
 	inline int BoundIndex(int trueIndex, int side = 0) const { //1 right, -1 left, 0 both
-		if (side >= 0 && trueIndex >= queue.size()) {
+		if (side >= 0 && (size_t)trueIndex >= queue.size()) {
 			trueIndex -= queue.size();
 		}
 		if (side <= 0 && trueIndex < 0) {

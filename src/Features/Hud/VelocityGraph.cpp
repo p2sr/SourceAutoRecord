@@ -97,7 +97,7 @@ void VelocityGraph::Paint(int slot) {
 
 	if (!sar_velocitygraph_show_line.GetBool()) return;
 
-	for (int i = 1; i < velocityStamps[slot].size - 1; i++) {
+	for (size_t i = 1; i < velocityStamps[slot].size - 1; i++) {
 		const auto current = velocityStamps[slot][i];
 		const auto next = velocityStamps[slot][i + 1];
 
