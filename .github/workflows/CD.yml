@@ -104,7 +104,7 @@ jobs:
     steps:
       - name: Get Release Version
         id: get_release
-        run: echo ::set-output name=version::${GITHUB_REF:10}
+        run: echo "{version}={${GITHUB_REF:10}}" >> $GITHUB_OUTPUT
       - name: Download Linux Build
         uses: actions/download-artifact@v4
         with:
@@ -118,7 +118,7 @@ jobs:
         with:
           name: sar-windows-pdb
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           body: |
             ![CD](https://github.com/p2sr/SourceAutoRecord/workflows/CD/badge.svg)
