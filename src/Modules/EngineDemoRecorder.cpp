@@ -316,6 +316,7 @@ DETOUR_COMMAND(EngineDemoRecorder::record) {
 				std::filesystem::create_directories(dir);
 			}
 		} catch (std::filesystem::filesystem_error &e) {
+			(void)e;
 		}
 	}
 
@@ -331,6 +332,7 @@ DETOUR_COMMAND(EngineDemoRecorder::record) {
 				suppress = true;
 			}
 		} catch (std::filesystem::filesystem_error &e) {
+			(void)e;
 		}
 	}
 
@@ -441,7 +443,7 @@ ON_EVENT(CM_FLAGS) {
 				std::optional<std::string> replay_append_if_pb = {};
 
 				if (sar_challenge_autostop.GetInt() == 2 || sar_challenge_autostop.GetInt() == 3) {
-					unsigned total = floor(event.time * 100);
+					unsigned total = (int)floor(event.time * 100);
 					unsigned cs = total % 100;
 					total /= 100;
 					unsigned secs = total % 60;

@@ -591,6 +591,7 @@ CON_COMMAND_F_COMPLETION(sar_startdemosfolder, "sar_startdemosfolder <folder nam
 				engine->demoplayer->demoQueue.push_back(filepath);
 			}
 		} catch (std::system_error &e) {
+			(void)e;
 		}
 	}
 

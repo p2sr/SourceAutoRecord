@@ -30,7 +30,7 @@ Variable ghost_proximity_fade("ghost_proximity_fade", "100", 0, 2000, "Distance 
 Variable ghost_name_proximity_fade("ghost_name_proximity_fade", "200", 0, 2000, "Distance from ghosts at which their names fade out.\n");
 Variable ghost_shading("ghost_shading", "1", "Enable simple light level based shading for overlaid ghosts.\n");
 Variable ghost_show_names("ghost_show_names", "1", "Whether to show names above ghosts.\n");
-Variable ghost_name_font_size("ghost_name_font_size", "5.0", 0.1, "The size to render ghost names at.\n");
+Variable ghost_name_font_size("ghost_name_font_size", "5.0", 0.1f, "The size to render ghost names at.\n");
 Variable ghost_spec_thirdperson("ghost_spec_thirdperson", "0", "Whether to spectate ghost from a third-person perspective.\n");
 Variable ghost_spec_thirdperson_dist("ghost_spec_thirdperson_dist", "300", 50, "The maximum distance from which to spectate in third-person.\n");
 Variable ghost_draw_through_walls("ghost_draw_through_walls", "0", 0, 2, "Whether to draw ghosts through walls. 0 = none, 1 = names, 2 = names and ghosts.\n");
@@ -139,7 +139,7 @@ void GhostEntity::Display() {
 
 
 	Color col = GetColor();
-	float opacity = ghost_opacity.GetFloat();
+	int opacity = ghost_opacity.GetInt();
 
 	col.r = Utils::ConvertFromSrgb(col.r);
 	col.g = Utils::ConvertFromSrgb(col.g);
@@ -150,7 +150,7 @@ void GhostEntity::Display() {
 	Color fade_col{col.r, col.g, col.b, 0};
 
 	RenderCallback solid = RenderCallback::constant(col, ghost_draw_through_walls.GetInt() >= 2);
-	solid = RenderCallback::prox_fade(prox / 2.0, prox, fade_col, this->data.position, solid);// TODO: correct proximity
+	solid = RenderCallback::prox_fade(prox / 2.0f, prox, fade_col, this->data.position, solid);// TODO: correct proximity
 	if (ghost_shading.GetBool()) {
 		solid = RenderCallback::shade(this->data.position + Vector{0,0,10}, solid);
 	}
@@ -160,7 +160,7 @@ void GhostEntity::Display() {
 #define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(mesh, p1, p2, p3, true)
 	switch (GhostEntity::ghost_type) {
 	case GhostType::CIRCLE: {
-		double rad = ghost_height.GetFloat() / 2;
+		float rad = ghost_height.GetFloat() / 2;
 		Vector origin = this->data.position + Vector(0, 0, rad);
 
 		const int tris = 30;
@@ -184,8 +184,8 @@ void GhostEntity::Display() {
 			double lang = M_PI * 2 * i / tris;
 			double rang = M_PI * 2 * (i + 1) / tris;
 
-			Vector dl(0, cos(lang) * rad, sin(lang) * rad);
-			Vector dr(0, cos(rang) * rad, sin(rang) * rad);
+			Vector dl(0, (float)(cos(lang) * rad), (float)(sin(lang) * rad));
+			Vector dr(0, (float)(cos(rang) * rad), (float)(sin(rang) * rad));
 
 			Vector l = origin + rot * dl;
 			Vector r = origin + rot * dr;

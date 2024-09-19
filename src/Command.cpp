@@ -247,6 +247,7 @@ int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args
 							sorted.insert(path);
 						}
 					} catch (std::system_error &e) {
+						(void)e;
 					}
 				}
 			}
@@ -270,6 +271,7 @@ int _FileCompletionFunc(std::string extension, std::string rootdir, int exp_args
 			if (items.size() >= COMMAND_COMPLETION_MAXITEMS) break;
 		}
 	} catch (std::filesystem::filesystem_error &e) {
+		(void)e;
 	}
 
 	for (size_t i = 0; i < items.size(); ++i) {

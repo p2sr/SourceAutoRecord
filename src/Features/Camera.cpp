@@ -32,7 +32,7 @@ Variable sar_cam_drive("sar_cam_drive", "1", 0, 1,
                        "(turning it on is not required for demo player)\n");
 
 Variable sar_cam_ortho("sar_cam_ortho", "0", 0, 1, "Enables or disables camera orthographic projection.\n");
-Variable sar_cam_ortho_scale("sar_cam_ortho_scale", "1", 0.001, "Changes the scale of orthographic projection (how many units per pixel).\n");
+Variable sar_cam_ortho_scale("sar_cam_ortho_scale", "1", 0.001f, "Changes the scale of orthographic projection (how many units per pixel).\n");
 Variable sar_cam_ortho_nearz("sar_cam_ortho_nearz", "1", -10000, 10000, "Changes the near Z plane of orthographic projection.\n");
 
 Variable sar_cam_force_eye_pos("sar_cam_force_eye_pos", "0", 0, 1,
@@ -285,12 +285,12 @@ void Camera::DrawInWorld() const {
 	MeshId mesh_cams = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 0, 0 }, true));
 	MeshId mesh_currentCam = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 255, 0 }, true));
 
-	float frameTime = 1.0 / 60;
+	float frameTime = 1.0f / 60;
 	int maxTimeTicks = 0;
 	int minTimeTicks = INT_MAX;
 	for (auto const &state : camera->states) {
-		maxTimeTicks = std::fmaxf(maxTimeTicks, state.first);
-		minTimeTicks = std::fminf(minTimeTicks, state.first);
+		maxTimeTicks = (std::max)(maxTimeTicks, state.first);
+		minTimeTicks = (std::max)(minTimeTicks, state.first);
 	}
 
 	// changing in-game ticks to seconds.
@@ -832,14 +832,14 @@ CON_COMMAND(sar_cam_path_goto, "sar_cam_path_goto <frame> [skipto] - sends the c
 	int maxTimeTicks = 0;
 	int minTimeTicks = INT_MAX;
 	for (auto const &state : camera->states) {
-		maxTimeTicks = std::fmaxf(maxTimeTicks, state.first);
-		minTimeTicks = std::fminf(minTimeTicks, state.first);
+		maxTimeTicks = (std::max)(maxTimeTicks, state.first);
+		minTimeTicks = (std::min)(minTimeTicks, state.first);
 	}
 	if (i < minTimeTicks || i > maxTimeTicks) {
 		return console->Print("This frame does not exist.\n");
 	}
 	
-	camera->currentState = camera->InterpolateStates(i * (1.0 / 60));
+	camera->currentState = camera->InterpolateStates(i * (1.0f / 60));
 
 	if (args.ArgC() == 3 && std::atoi(args[2]) == 1) {
 		if (engine->demoplayer->IsPlaying()) {
@@ -895,12 +895,12 @@ CON_COMMAND(sar_cam_path_export,
 
 		bool daVinci = (format == "davinci");
 
-		float frameTime = 1.0 / rate;
+		float frameTime = 1.0f / rate;
 		int maxTimeTicks = 0;
 		int minTimeTicks = INT_MAX;
 		for (auto const &state : camera->states) {
-			maxTimeTicks = std::fmaxf(maxTimeTicks, state.first);
-			minTimeTicks = std::fminf(minTimeTicks, state.first);
+			maxTimeTicks = (std::max)(maxTimeTicks, state.first);
+			minTimeTicks = (std::min)(minTimeTicks, state.first);
 		}
 
 		// changing in-game ticks to seconds.
