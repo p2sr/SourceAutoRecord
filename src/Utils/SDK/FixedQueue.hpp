@@ -18,14 +18,14 @@ private:
 	}
 
 public:
-	int size;
-	FixedQueue(int maxSize)
+	size_t size;
+	FixedQueue(size_t maxSize)
 		: queue(maxSize)
 		, begin(0)
 		, end(0)
 		, size(0) {
 	}
-	FixedQueue(int maxSize, T defaultValue)
+	FixedQueue(size_t maxSize, T defaultValue)
 		: queue(maxSize, defaultValue)
 		, begin(0)
 		, end(0)

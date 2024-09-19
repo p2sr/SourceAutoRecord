@@ -36,9 +36,6 @@ struct VelocityData {
 
 std::vector<FixedQueue<VelocityData>> velocityStamps(2, FixedQueue(500, VelocityData()));
 
-static int last_vel[2] = {0, 0};
-static int tick_prev[2] = {0, 0};
-
 static int take_off[2] = {0, 0};
 static int take_off_display_timeout[2] = {0, 0};
 
