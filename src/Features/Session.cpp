@@ -74,7 +74,7 @@ void Session::Started(bool menu) {
 	NetMessage::SessionStarted();
 
 	if (menu) {
-		g_cap_frametime = 2;
+		g_loadstate = LOAD_END;
 		console->Print("Session started! (menu)\n");
 		this->Rebase(engine->GetTick());
 
@@ -203,7 +203,7 @@ void Session::Ended() {
 	if (networkManager.isConnected) networkManager.splitTicks = -1;
 
 	this->loadStart = NOW();
-	g_cap_frametime = 1;
+	g_loadstate = LOADING;
 	if (!engine->demoplayer->IsPlaying() && !engine->IsOrange()) {
 		this->DoFastLoads();
 	}
@@ -247,7 +247,7 @@ void Session::Changed(int state) {
 		this->loadEnd = NOW();
 		engine->demorecorder->queuedCommands.clear();
 
-		g_cap_frametime = 2;
+		g_loadstate = LOAD_END;
 		auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
 		console->DevMsg("Load took: %dms\n", time);
 

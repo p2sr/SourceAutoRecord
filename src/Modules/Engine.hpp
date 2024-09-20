@@ -247,7 +247,13 @@ extern Variable sar_pause_for;
 extern Variable sar_tick_debug;
 
 extern float g_cur_fps;
-extern int g_cap_frametime;
+
+enum LoadState {
+	LOADING,
+	LOAD_END,
+	LOADED
+};
+extern LoadState g_loadstate;
 extern int g_coop_pausable;
 
 #define TIME_TO_TICKS(dt) ((int)(0.5f + (float)(dt) / engine->GetIPT()))

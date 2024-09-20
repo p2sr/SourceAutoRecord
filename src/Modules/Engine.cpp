@@ -69,7 +69,7 @@ Variable sar_cm_rightwarp("sar_cm_rightwarp", "0", "Fix CM wrongwarp.\n");
 
 float g_cur_fps = 0.0f;
 
-int g_cap_frametime = 0;
+LoadState g_loadstate = LOADED;
 int g_coop_pausable = -1;
 
 REDECL(Engine::Disconnect);
@@ -719,17 +719,17 @@ void Host_AccumulateTime_Detour(float dt) {
 
 	// HACK: Force frametime to equal 2 ticks when loading
 	// Limits host_timescale effect on load times, faster loads
-	if (g_cap_frametime == 1 && sar_loads_uncap.GetBool()) {
+	if (g_loadstate == LOADING && sar_loads_uncap.GetBool()) {
 		*host_frametime = *host_frametime_unbounded = 2.0f/60;
 	}
 
 	if (*host_frametime != *host_frametime_unbounded) {
-		if (sar_frametime_uncap.GetBool() && g_cap_frametime == 0) {
+		if (sar_frametime_uncap.GetBool() && g_loadstate == LOADED) {
 			if (sar_frametime_debug.GetBool()) console->Print("Host_AccumulateTime: %f (uncapped from %f)\n", *host_frametime_unbounded, *host_frametime);
 			*host_frametime = *host_frametime_unbounded;
 		} else {
 			if (sar_frametime_debug.GetBool()) console->Print("Host_AccumulateTime: %f (capped to %f)\n", *host_frametime_unbounded, *host_frametime);
-			if (engine->demorecorder->isRecordingDemo && g_cap_frametime == 0) {
+			if (engine->demorecorder->isRecordingDemo && g_loadstate == LOADED) {
 				char *data = new char[5];
 				data[0] = 0x0F;
 				*(float *)(data + 1) = *host_frametime_unbounded;
@@ -741,7 +741,7 @@ void Host_AccumulateTime_Detour(float dt) {
 		if (sar_frametime_debug.GetBool()) console->Print("Host_AccumulateTime: %f\n", *host_frametime);
 	}
 
-	if (g_cap_frametime == 2) g_cap_frametime = 0;
+	if (g_loadstate == LOAD_END) g_loadstate = LOADED;
 }
 
 const ConCommandBase *(*g_Cmd_ExecuteCommand)(int eTarget, const CCommand &command, int nClientSlot /* = -1 */);
