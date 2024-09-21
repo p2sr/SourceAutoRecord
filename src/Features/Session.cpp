@@ -99,6 +99,8 @@ void Session::Start() {
 		return;
 	}
 
+	if (g_loadstate == LOADING) g_loadstate = LOAD_END;
+
 	if (engine->IsCoop() && !engine->IsOrange() && engine->GetCurrentMapName() == "mp_coop_start") {
 		// For some reason, turning on cheats and doing ent_fire doesn't work here
 		engine->ExecuteCommand("script EntFireByHandle(Entities.FindByName(null, \"@global_no_pinging_blue\"), \"TurnOff\", \"\", 0, null, null)");
