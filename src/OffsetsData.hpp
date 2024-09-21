@@ -1,3 +1,7 @@
+// Interface
+OFFSET_DEFAULT(CreateInterfaceInternal, 5, 5)
+OFFSET_DEFAULT(s_pInterfaceRegs, 6, 11)
+
 // CCvar
 OFFSET_DEFAULT(RegisterConCommand, 9, 9)
 OFFSET_DEFAULT(UnregisterConCommand, 10, 10)

@@ -92,8 +92,25 @@ void *Interface::GetPtr(const char *filename, const char *interfaceSymbol) {
 	void *fn = CreateInterface(interfaceSymbol, &ret);
 
 	if (ret) {
-		console->DevWarning("SAR: Failed to find interface with symbol %s in %s!\n", interfaceSymbol, filename);
-		return nullptr;
+		auto CreateInterfaceInternal = Memory::Read((uintptr_t)CreateInterface + Offsets::CreateInterfaceInternal);
+		auto s_pInterfaceRegs = Memory::DerefDeref<InterfaceReg *>(CreateInterfaceInternal + Offsets::s_pInterfaceRegs);
+
+		if (!CreateInterfaceInternal || !s_pInterfaceRegs) {
+			console->DevWarning("SAR: Failed to find interface with symbol %s in %s! (old method failed)\n", interfaceSymbol, filename);
+			return nullptr;
+		}
+
+		for (auto &current = s_pInterfaceRegs; current; current = current->m_pNext) {
+			if (!std::strncmp(current->m_pName, interfaceSymbol, std::strlen(interfaceSymbol)) == 0) {
+				fn = current->m_CreateFn();
+				break;
+			}
+		}
+
+		if (!fn) {
+			console->DevWarning("SAR: Failed to find interface with symbol %s in %s!\n", interfaceSymbol, filename);
+			return nullptr;
+		}
 	}
 	return fn;
 }
