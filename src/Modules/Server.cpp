@@ -107,6 +107,7 @@ SMDECL(Server::GetPlayerState, CPlayerState, pl);
 SMDECL(Server::GetStats, PortalPlayerStatistics_t, m_StatsThisLevel);
 
 ServerEnt *Server::GetPlayer(int index) {
+	if (!this->UTIL_PlayerByIndex) return nullptr;
 	return this->UTIL_PlayerByIndex(index);
 }
 bool Server::IsPlayer(void *entity) {
@@ -118,7 +119,7 @@ bool Server::AllowsMovementChanges() {
 int Server::GetSplitScreenPlayerSlot(void *entity) {
 	// Simplified version of CBasePlayer::GetSplitScreenPlayerSlot
 	for (auto i = 0; i < Offsets::MAX_SPLITSCREEN_PLAYERS; ++i) {
-		if (server->UTIL_PlayerByIndex(i + 1) == entity) {
+		if (server->GetPlayer(i + 1) == entity) {
 			return i;
 		}
 	}
