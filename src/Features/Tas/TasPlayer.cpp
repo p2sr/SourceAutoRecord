@@ -112,16 +112,9 @@ ON_EVENT(FRAME) {
 			// insta-open it
 			void *cl_ent = client->GetPlayer(i);
 			if (!cl_ent) continue;
-			// yes these are hardcoded offsets no i dont care anymore
-#ifdef _WIN32
-			*(float *)((char *)cl_ent + 13584) = 0.0f; // m_fStaticAmount
-			*(float *)((char *)cl_ent + 13588) = 0.0f; // m_fSecondaryStaticAmount
-			*(float *)((char *)cl_ent + 13592) = 1.0f; // m_fOpenAmount
-#else
-			*(float *)((char *)cl_ent + 13552) = 0.0f; // m_fStaticAmount
-			*(float *)((char *)cl_ent + 13556) = 0.0f; // m_fSecondaryStaticAmount
-			*(float *)((char *)cl_ent + 13560) = 1.0f; // m_fOpenAmount
-#endif
+			*(float *)((char *)cl_ent + Offsets::m_fStaticAmount) = 0.0f;
+			*(float *)((char *)cl_ent + Offsets::m_fSecondaryStaticAmount) = 0.0f;
+			*(float *)((char *)cl_ent + Offsets::m_fOpenAmount) = 1.0f;
 		}
 	}
 }
