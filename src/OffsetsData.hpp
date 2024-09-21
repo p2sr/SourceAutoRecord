@@ -156,7 +156,7 @@ OFFSET_DEFAULT(PlayerRunCommand, 453, 454)
 // CProp_Portal
 OFFSET_DEFAULT(m_fStaticAmount, 13584, 13552)
 OFFSET_DEFAULT(m_fSecondaryStaticAmount, 13588, 13556)
-OFFSET_DEFAULT(m_fOpenAmount, 135892, 13560)
+OFFSET_DEFAULT(m_fOpenAmount, 13592, 13560)
 
 // IEngineVGuiInternal
 OFFSET_DEFAULT(IsGameUIVisible, 2, 2)
