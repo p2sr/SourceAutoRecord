@@ -142,7 +142,7 @@ CON_COMMAND(sar_export_stats, "sar_export_stats <filepath> -  export the stats t
 	}
 
 	if (!result) {
-		return console->Print("Couldn't write to this path. Please verify you actually can write here or the folder exits: \"%s\".\n", path.c_str());
+		return console->Print("Couldn't write to this path. Please verify you actually can write here or the folder exists: \"%s\".\n", path.c_str());
 	}
 
 	console->Print("Data has been successfully exported.\n");
