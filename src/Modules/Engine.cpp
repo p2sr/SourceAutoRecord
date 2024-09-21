@@ -124,7 +124,7 @@ int Engine::GetTick() {
 	return (this->GetMaxClients() < 2 || engine->demoplayer->IsPlaying()) ? *this->tickcount : TIME_TO_TICKS(*this->net_time);
 }
 float Engine::ToTime(int tick) {
-	return tick * *this->interval_per_tick;
+	return tick * this->GetIPT();
 }
 int Engine::GetLocalPlayerIndex() {
 	return this->GetLocalPlayer(this->engineClient->ThisPtr());
