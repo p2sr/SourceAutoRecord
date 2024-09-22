@@ -150,8 +150,10 @@ uintptr_t Memory::Scan(const char *moduleName, const char *pattern, int offset) 
 	if (result == 0) {
 		if (console) console->DevMsg("Failed to find pattern \"%s\" in module \"%s\"\n", pattern, moduleName);
 #ifdef SAR_DEV_BUILD
-#ifndef _WIN32
 		// handy for debugging
+#ifdef _WIN32
+		RaiseException(STATUS_ASSERTION_FAILURE, EXCEPTION_CONTINUE_EXECUTION, 0, nullptr);
+#else
 		raise(SIGTRAP);
 #endif
 #endif
