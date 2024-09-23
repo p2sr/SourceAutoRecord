@@ -1,5 +1,8 @@
 #include "Memory.hpp"
 
+#include "Modules/Console.hpp"
+#include "Version.hpp"
+
 #include <cstring>
 #include <memory>
 #include <vector>
@@ -144,12 +147,15 @@ uintptr_t Memory::Scan(const char *moduleName, const char *pattern, int offset) 
 		}
 	}
 
-#ifndef _WIN32
-	// handy for debugging
 	if (result == 0) {
+		if (console) console->DevMsg("Failed to find pattern \"%s\" in module \"%s\"\n", pattern, moduleName);
+#ifdef SAR_DEV_BUILD
+#ifndef _WIN32
+		// handy for debugging
 		raise(SIGTRAP);
-	}
 #endif
+#endif
+	}
 
 	return result;
 }
