@@ -318,6 +318,7 @@ void retrieveMtriggers(int rank, std::string map_name) {
 		curl = curl_easy_init();
 		if (curl) {
 			std::string apiCall = std::string(API_BASE_AUTORENDER) + "/v1/mtriggers/search?game_dir=portal2&map_name=" + map_name + "&board_rank=" + std::to_string(rank);
+			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
 			curl_easy_setopt(curl, CURLOPT_URL, apiCall.c_str());
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
