@@ -1,5 +1,7 @@
 #include "SteamAPI.hpp"
 
+#include "SAR.hpp"
+
 bool SteamAPI::Init() {
 	const auto steam_api = Memory::GetModuleHandleByName(this->Name());
 	if (!steam_api)
@@ -19,15 +21,18 @@ bool SteamAPI::Init() {
 			return false;
 
 #ifdef _WIN32
-		void ***scanResult = reinterpret_cast<void ***>(Memory::Scan(this->Name(), "89 0D ? ? ? ? 85 C9 0F", 2));
-		if (!scanResult || !*scanResult || !**scanResult) {
+		void ***scanResult;
+		if (sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
+			scanResult = reinterpret_cast<void ***>(Memory::Scan(this->Name(), "89 0D ? ? ? ? 85 C9 0F", 2));
+		} else {
 			scanResult = reinterpret_cast<void ***>(Memory::Scan(this->Name(), "A3 ? ? ? ? 3B C3 0F 84", 1));
-			if (!scanResult || !*scanResult || !**scanResult)
-				return false;
 		}
-		void *interfaceMgr = **scanResult;
-		const auto fn = *(ISteamTimeline * (__rescall **)(void *, void *, void *, const char *))(*(uintptr_t *)interfaceMgr + 48);
-		g_timeline = fn(interfaceMgr, GetHSteamUser(), GetHSteamPipe(), "STEAMTIMELINE_INTERFACE_V001");
+		
+		if (scanResult && *scanResult && **scanResult) {
+			void *interfaceMgr = **scanResult;
+			const auto fn = *(ISteamTimeline * (__rescall **)(void *, void *, void *, const char *))(*(uintptr_t *)interfaceMgr + 48);
+			g_timeline = fn(interfaceMgr, GetHSteamUser(), GetHSteamPipe(), "STEAMTIMELINE_INTERFACE_V001");
+		}
 #else
 		// TODO: Linux mods support
 		return false;
