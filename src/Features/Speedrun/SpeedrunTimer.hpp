@@ -57,3 +57,5 @@ extern Command sar_speedrun_resume;
 extern Command sar_speedrun_reset;
 extern Command sar_speedrun_result;
 extern Command sar_speedrun_export;
+
+extern bool g_timePauses;

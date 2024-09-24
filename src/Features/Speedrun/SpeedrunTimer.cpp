@@ -123,6 +123,8 @@ static struct
 static std::map<std::string, int> g_activeRun;
 static std::vector<std::map<std::string, int>> g_runs;
 
+bool g_timePauses = false;
+
 static void handleCoopPacket(const void *data, size_t size);
 
 ON_INIT {
@@ -392,7 +394,7 @@ void SpeedrunTimer::Update() {
 
 	std::string map = getEffectiveMapName();
 
-	if (engine->IsCoop() && !engine->IsOrange() && SpeedrunTimer::IsRunning() && !sar_speedrun_time_pauses.GetBool()) {
+	if (engine->IsCoop() && !engine->IsOrange() && SpeedrunTimer::IsRunning() && !g_timePauses) {
 		if (pauseTimer->IsActive() && !g_speedrun.inCoopPause) {
 			// I don't understand how any of this works but I think we're off-by-one here
 			g_speedrun.saved = SpeedrunTimer::GetSplitTicks() + 1;
@@ -455,7 +457,7 @@ ON_EVENT(PRE_TICK) {
 		return;
 	}
 
-	if (!g_speedrun.isRunning || g_speedrun.isPaused || !sar_speedrun_time_pauses.GetBool()) {
+	if (!g_speedrun.isRunning || g_speedrun.isPaused || !g_timePauses) {
 		return;
 	}
 
