@@ -152,7 +152,7 @@ uintptr_t Memory::Scan(const char *moduleName, const char *pattern, int offset) 
 #ifdef SAR_DEV_BUILD
 		// handy for debugging
 #ifdef _WIN32
-		RaiseException(STATUS_ASSERTION_FAILURE, EXCEPTION_CONTINUE_EXECUTION, 0, nullptr);
+		DebugBreak();
 #else
 		raise(SIGTRAP);
 #endif
