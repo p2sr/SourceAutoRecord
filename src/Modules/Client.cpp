@@ -978,15 +978,8 @@ bool Client::Init() {
 			g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr);
 			g_ApplyMouseMidHook.Disable();
 			Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
-			MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "55 8B EC 51 F3 0F 10 45 ? 0F 5A C0 F2 0F 59 05 ? ? ? ? 66 0F 5A C0 F3 0F 11 45 ? E8 ? ? ? ? F3 0F 11 45 ? F3 0F 10 45 ? E8 ? ? ? ? 8B 45 ? F3 0F 10 08");
-#else
-			if (sar.game->Is(SourceGame_EIPRelPIC)) {
-				MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "56 66 0F EF C0 53 83 EC 14 8B 5C 24 ? 8D 44 24");
-			} else {
-				MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), "55 89 E5 56 53 8D 45 ? 8D 55 ? 83 EC 20");
-			}
 #endif
-
+			MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), Offsets::MatrixBuildRotationAboutAxis);
 			MatrixBuildRotationAboutAxisHook.SetFunc(MatrixBuildRotationAboutAxis);
 			MatrixBuildRotationAboutAxisHook.Disable();  // only during ApplyMouse
 
@@ -1020,70 +1013,27 @@ bool Client::Init() {
 		this->GetClientEntity = this->s_EntityList->Original<_GetClientEntity>(Offsets::GetClientEntity, readJmp);
 	}
 
-#ifdef _WIN32
-	Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 8B EC 81 EC 80 00 00 00 53 56 8B F1 8B 0D ? ? ? ? 8B 01 8B 90 C4 01 00 00 57 89 75 F0 FF D2 8B F8");
-	Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 8B EC 83 EC 54 83 7D 0C 00 A1 ? ? ? ? 53 56 0F 9F 45 EC 83 78 30 00 57 8B F1 0F 84 BA 03 00 00");
-#else
-	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC B8 00 00 00 8B 45 10 8B 5D 0C 89 85 60 FF FF FF 88 45 A7 A1 ? ? ? ?");
-		Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 83 EC 7C A1 ? ? ? ? 8B 5D 08 89 45 90 85 C0 0F 85 34 04 00 00 A1 ? ? ? ? 8B 40 30 85 C0");
-	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
-		Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC DC 00 00 00 8B 45 08 8B 5D 0C 89 C7 89 45 84 8B 45 10 89 85 4C FF FF FF");
-		Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 45 0C 8B 5D 08 89 45 8C 8B 45 14 89 45 90 65 A1 14 00 00 00");
-	} else {
-		Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 8D 55 ? 53 81 EC ? ? ? ? 0F B6 45 ? 89 14 24");
-		Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? A1 ? ? ? ? 8B 5D ? 85 C0 0F 95 C0 84 C0 88 45 ? 74 ? 8B 35 ? ? ? ? E8 ? ? ? ? 39 C6 0F 84 ? ? ? ? A1 ? ? ? ? 8B 40");
-	}
-#endif
-
+	Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), Offsets::DrawTranslucentRenderables);
+	Client::DrawOpaqueRenderables = (decltype(Client::DrawOpaqueRenderables))Memory::Scan(client->Name(), Offsets::DrawOpaqueRenderables);
 	g_DrawTranslucentRenderablesHook.SetFunc(Client::DrawTranslucentRenderables);
 	g_DrawOpaqueRenderablesHook.SetFunc(Client::DrawOpaqueRenderables);
 
 	if (sar.game->Is(SourceGame_Portal2 | SourceGame_ApertureTag)) {
-#ifdef _WIN32
-		MsgPreSkipToNextLevel = (decltype(MsgPreSkipToNextLevel))Memory::Scan(client->Name(), "57 8B F9 E8 ? ? ? ? 8B C8 E8 ? ? ? ? 0B C2");
-#else
-		MsgPreSkipToNextLevel = (decltype(MsgPreSkipToNextLevel))Memory::Scan(client->Name(), "53 83 EC 08 E8 ? ? ? ? 83 EC 0C 50 E8 ? ? ? ? 83 C4 10 09 C2");
-#endif
+		MsgPreSkipToNextLevel = (decltype(MsgPreSkipToNextLevel))Memory::Scan(client->Name(), Offsets::MsgPreSkipToNextLevel);
 	}
 
 	if (sar.game->Is(SourceGame_Portal2)) {
-#ifdef _WIN32
-		Client::CalcViewModelLag = (decltype(Client::CalcViewModelLag))Memory::Scan(client->Name(), "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 83 EC 1C 56 6A 00 6A 00 8D 45 F4 8B F1 8B 4B 0C 50 51 E8 ? ? ? ?");
-#else
-		Client::CalcViewModelLag = (decltype(Client::CalcViewModelLag))Memory::Scan(client->Name(), "56 53 83 EC 24 8B 74 24 30 8B 5C 24 34 6A 00 6A 00 8D 44 24 1C 50 FF 74 24 44 E8 ? ? ? ? A1 ? ? ? ? 83 C4 10 66 0F EF C9");
-#endif
+		Client::CalcViewModelLag = (decltype(Client::CalcViewModelLag))Memory::Scan(client->Name(), Offsets::CalcViewModelLag);
 	}
 
 	g_CalcViewModelLagHook.SetFunc(Client::CalcViewModelLag);
 
 	if (sar.game->Is(SourceGame_Portal2 | SourceGame_PortalStoriesMel | SourceGame_PortalReloaded)) {
-#ifdef _WIN32
-		Client::AddShadowToReceiver = (decltype(Client::AddShadowToReceiver))Memory::Scan(client->Name(), "55 8B EC 51 53 56 57 0F B7 7D 08");
-#else
-		if (sar.game->Is(SourceGame_Portal2)) {
-			Client::AddShadowToReceiver = (decltype(Client::AddShadowToReceiver))Memory::Scan(client->Name(), "55 89 E5 57 56 53 83 EC 44 8B 45 0C 8B 5D 08 8B 55 14 8B 75 10");
-		} else {
-			Client::AddShadowToReceiver = (decltype(Client::AddShadowToReceiver))Memory::Scan(client->Name(), "55 89 E5 57 56 53 83 EC ? 8B 45 ? 8B 4D ? 8B 7D ? 89 45 ? 0F B7 C0");
-		}
-#endif
+		Client::AddShadowToReceiver = (decltype(Client::AddShadowToReceiver))Memory::Scan(client->Name(), Offsets::AddShadowToReceiver);
 	}
 
-#ifdef _WIN32
-	UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), "55 8B EC 56 8B 75 ? 85 F6 0F 84 ? ? ? ? 0F 8E");
-	UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), "55 8B EC 51 8B 0D ? ? ? ? 8B 01 8B 90 ? ? ? ? FF D2 84 C0");
-#else
-	if (sar.game->Is(SourceGame_Portal2)) {
-		UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), "56 53 83 EC 04 8B 44 24 ? 8B 74 24 ? 85 C0 74 ? 8D 58");
-		UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), "53 83 EC 14 A1 ? ? ? ? 8B 5C 24 ? 8B 10 50 FF 92 ? ? ? ? 83 C4 10 84 C0 75");
-	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
-		UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), "55 89 E5 56 53 83 EC 10 8B 75 ? 8B 5D ? 85 F6 0F 84");
-		UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), "55 89 E5 53 83 EC 14 A1 ? ? ? ? 8B 5D ? 8B 10 89 04 24 FF 92 ? ? ? ? 84 C0 75 ? 83 7D ? 01");
-	} else {
-		UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), "55 89 E5 83 EC 28 89 75 ? 8B 75 ? 89 5D ? 8B 5D ? 89 7D ? 8B 7D ? 83 FE 00");
-		UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), "55 89 E5 56 53 83 EC 10 A1 ? ? ? ? 8B 5D ? 8B 75 ? 8B 10 89 04 24 FF 92 ? ? ? ? 84 C0");
-	}
-#endif
+	UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color);
+	UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color_Particles);
 	UTIL_Portal_Color_Hook.SetFunc(UTIL_Portal_Color);
 	UTIL_Portal_Color_Particles_Hook.SetFunc(UTIL_Portal_Color_Particles);
 
@@ -1092,67 +1042,34 @@ bool Client::Init() {
 	// Get at gamerules
 	{
 		uintptr_t cbk = (uintptr_t)Command("+mouse_menu").ThisPtr()->m_pCommandCallback;
-#ifdef _WIN32
-		// OpenRadialMenuCommand is inlined
-		this->gamerules = *(void ***)(cbk + 2);
-#else
-		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			cbk = (uintptr_t)Memory::Read(cbk + 9);  // openradialmenu -> OpenRadialMenuCommand
-			this->gamerules = *(void ***)(cbk + 1);
-		} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
-			cbk = (uintptr_t)Memory::Read(cbk + 12);  // openradialmenu -> OpenRadialMenuCommand
-			this->gamerules = *(void ***)(cbk + 9);
-		} else {
-			cbk = (uintptr_t)Memory::Read(cbk + 12);  // openradialmenu -> OpenRadialMenuCommand
-			this->gamerules = *(void ***)(cbk + 7);
-		}
+		// OpenRadialMenuCommand is inlined on Windows
+#ifndef _WIN32
+		cbk = Memory::Read(cbk + Offsets::OpenRadialMenuCommand);
 #endif
+		this->gamerules = Memory::Deref<void **>(cbk + Offsets::gamerules);
 	}
 
 	if (sar.game->Is(SourceGame_PortalStoriesMel)) {
-#ifdef _WIN32
-		auto GetNumChapters = Memory::Scan(this->Name(), "55 8B EC 80 7D 08 00 57 74 0C");
+		auto GetNumChapters = Memory::Scan(this->Name(), Offsets::GetNumChapters);
 		if (GetNumChapters) {
-			this->nNumSPChapters = Memory::Deref<int *>(GetNumChapters + 11);
-			this->g_ChapterContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + 16);
-			this->nNumMPChapters = Memory::Deref<int *>(GetNumChapters + 23);
-			this->g_ChapterMPContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + 28);
+			this->nNumSPChapters = Memory::Deref<int *>(GetNumChapters + Offsets::nNumSPChapters);
+			this->g_ChapterContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + Offsets::g_ChapterContextNames);
+			this->nNumMPChapters = Memory::Deref<int *>(GetNumChapters + Offsets::nNumMPChapters);
+			this->g_ChapterMPContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + Offsets::g_ChapterMPContextNames);
 		}
-#else
-		auto GetNumChapters = Memory::Scan(this->Name(), "55 89 E5 56 80 7D");
-		if (GetNumChapters) {
-			this->nNumSPChapters = Memory::Deref<int *>(GetNumChapters + 12);
-			this->g_ChapterContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + 22);
-			this->nNumMPChapters = Memory::Deref<int *>(GetNumChapters + 81);
-			this->g_ChapterMPContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + 91);
+
+		auto CPortalLeaderboardPanel_OnThink = Memory::Scan(this->Name(), Offsets::CPortalLeaderboardPanel_OnThink);
+		if (CPortalLeaderboardPanel_OnThink) {
+			Client::GetLeaderboard = Memory::Read<decltype(Client::GetLeaderboard)>(CPortalLeaderboardPanel_OnThink + Offsets::GetLeaderboard);
+			Client::IsQuerying = Memory::Read<decltype(Client::IsQuerying)>(CPortalLeaderboardPanel_OnThink + Offsets::IsQuerying);
+			Client::SetPanelStats = Memory::Read<decltype(Client::SetPanelStats)>(CPortalLeaderboardPanel_OnThink + Offsets::SetPanelStats);
+			Client::StartSearching = Memory::Read<decltype(Client::StartSearching)>((uintptr_t)GetLeaderboard + Offsets::StartSearching);
+			Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + Offsets::AddAvatarPanelItem);
+
+			auto OnEvent = Memory::Scan(this->Name(), Offsets::OnEvent);
+			Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(OnEvent + Offsets::PurgeAndDeleteElements);
+			Client::OnCommand = (decltype(Client::OnCommand))Memory::Scan(this->Name(), Offsets::OnCommand);
 		}
-#endif
-
-#ifdef _WIN32
-		auto CPortalLeaderboardPanel_OnThink = Memory::Scan(this->Name(), "55 8B EC A1 ? ? ? ? 81 EC ? ? ? ? 53 56 32 DB");
-		Client::GetLeaderboard = Memory::Read<decltype(Client::GetLeaderboard)>(CPortalLeaderboardPanel_OnThink + 290);
-		Client::IsQuerying = Memory::Read<decltype(Client::IsQuerying)>(CPortalLeaderboardPanel_OnThink + 366);
-		Client::SetPanelStats = Memory::Read<decltype(Client::SetPanelStats)>(CPortalLeaderboardPanel_OnThink + 413);
-		Client::StartSearching = Memory::Read<decltype(Client::StartSearching)>((uintptr_t)GetLeaderboard + 172);
-		Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + 1102);
-
-		auto OnEvent = Memory::Scan(this->Name(), "55 8B EC 57 8B F9 8B 4D 08 E8");
-		Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(OnEvent + 37);
-
-		Client::OnCommand = (decltype(Client::OnCommand))Memory::Scan(this->Name(), "55 8B EC 56 57 8B 7D 08 57 68 ? ? ? ? 8B F1 E8 ? ? ? ? 83 C4 08 85 C0 0F 84");
-#else
-		auto CPortalLeaderboardPanel_OnThink = Memory::Scan(this->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? 65 A1 ? ? ? ? 89 45 E4 31 C0 A1 ? ? ? ? 8B 5D 08 8B 70 30");
-		Client::GetLeaderboard = Memory::Read<decltype(Client::GetLeaderboard)>(CPortalLeaderboardPanel_OnThink + 973);
-		Client::IsQuerying = Memory::Read<decltype(Client::IsQuerying)>(CPortalLeaderboardPanel_OnThink + 666);
-		Client::SetPanelStats = Memory::Read<decltype(Client::SetPanelStats)>(CPortalLeaderboardPanel_OnThink + 1056);
-		Client::StartSearching = Memory::Read<decltype(Client::StartSearching)>((uintptr_t)GetLeaderboard + 262);
-		Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + 1107);
-
-		auto OnEvent = Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 1C 8B 45 0C 8B 7D 08 89 04 24 E8 ? ? ? ? C7 04 24");
-		Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(OnEvent + 120);
-
-		Client::OnCommand = (decltype(Client::OnCommand))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 75 0C C7 04 24 ? ? ? ? 8B 5D 08 89 74 24 04 E8 ? ? ? ? 85 C0 75 3D");
-#endif
 
 		g_GetLeaderboardHook.SetFunc(Client::GetLeaderboard);
 		g_IsQueryingHook.SetFunc(Client::IsQuerying);
@@ -1162,17 +1079,7 @@ bool Client::Init() {
 		g_OnCommandHook.SetFunc(Client::OnCommand);
 	}
 
-#ifdef _WIN32
-	Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8");
-#else
-	if (sar.game->Is(SourceGame_PortalStoriesMel | SourceGame_PortalReloaded)) {
-		Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 5D 08 E8 ? ? ? ? 8B 10");
-	} else if (sar.game->Is(SourceGame_ThinkingWithTimeMachine)) {
-		Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 2C 8B 7D 08 E8 ? ? ? ? 8B 10 C7");
-	} else {
-		Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), "55 89 E5 57 56 53 83 EC 0C E8 ? ? ? ? 83 EC 08 8B 10");
-	}
-#endif
+	Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), Offsets::GetChapterProgress);
 	g_GetChapterProgressHook.SetFunc(Client::GetChapterProgress);
 
 	cl_showpos = Variable("cl_showpos");

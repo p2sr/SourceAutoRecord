@@ -61,15 +61,7 @@ bool MaterialSystem::Init() {
 		this->CreateMaterial = this->materials->Original<_CreateMaterial>(Offsets::CreateMaterial);
 		this->RemoveMaterial = this->materials->Original<_RemoveMaterial>(Offsets::RemoveMaterial);
 
-#if _WIN32
-		this->KeyValues_SetString = (_KeyValues_SetString)Memory::Scan(this->Name(), "55 8B EC 8B 45 08 6A 01 50 E8 ? ? ? ? 85 C0 74 0B");
-#else
-		if (sar.game->Is(SourceGame_Portal2)) {
-			this->KeyValues_SetString = (_KeyValues_SetString)Memory::Scan(this->Name(), "53 83 EC ? 8B 5C 24 ? 6A ? FF 74 24 ? FF 74 24 ? E8 ? ? ? ? 83 C4 ? 85 C0 74 ? 89 5C 24");
-		} else {
-			this->KeyValues_SetString = (_KeyValues_SetString)Memory::Scan(this->Name(), "55 89 E5 53 83 EC ? 8B 45 ? C7 44 24 ? ? ? ? ? 8B 5D ? 89 44 24 ? 8B 45 ? 89 04 24 E8 ? ? ? ? 85 C0 74 ? 89 5D");
-		}
-#endif
+		this->KeyValues_SetString = (_KeyValues_SetString)Memory::Scan(this->Name(), Offsets::KeyValues_SetString);
 
 		OverlayRender::initMaterials();
 	}

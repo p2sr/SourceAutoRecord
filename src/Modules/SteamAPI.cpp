@@ -21,12 +21,7 @@ bool SteamAPI::Init() {
 			return false;
 
 #ifdef _WIN32
-		void ***scanResult;
-		if (sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
-			scanResult = reinterpret_cast<void ***>(Memory::Scan(this->Name(), "89 0D ? ? ? ? 85 C9 0F", 2));
-		} else {
-			scanResult = reinterpret_cast<void ***>(Memory::Scan(this->Name(), "A3 ? ? ? ? 3B C3 0F 84", 1));
-		}
+		auto scanResult = reinterpret_cast<void ***>(Memory::Scan(this->Name(), Offsets::interfaceMgrSig, Offsets::interfaceMgrOff));
 		
 		if (scanResult && *scanResult && **scanResult) {
 			void *interfaceMgr = **scanResult;

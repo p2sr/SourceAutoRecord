@@ -1147,22 +1147,13 @@ void Renderer::Init(void **videomode) {
 
 	snd_surround_speakers = Variable("snd_surround_speakers");
 
+	SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), Offsets::SND_RecordBuffer);
 #ifdef _WIN32
-	SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 ? ? ? ? 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05");
-	g_movieInfo = *(MovieInfo_t **)((uintptr_t)SND_RecordBuffer + 5);
+	g_movieInfo = Memory::Deref<MovieInfo_t *>((uintptr_t)SND_RecordBuffer + Offsets::g_movieInfo);
 #else
-	if (sar.game->Is(SourceGame_Portal2)) {
-		SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), "80 3D ? ? ? ? 00 75 07 C3 ? ? ? ? ? ? 55 89 E5 57 56 53 83 EC 1C E8 ? ? ? ? 84 C0 0F 85 ? ? ? ?");
-		g_movieInfo = *(MovieInfo_t **)((uintptr_t)SND_RecordBuffer + 2);
-	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
-		SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 3C 65 A1 ? ? ? ? 89 45 E4 31 C0 E8 ? ? ? ? 84 C0 75 1B");
-		uintptr_t SND_IsRecording = Memory::Read((uintptr_t)SND_RecordBuffer + 21);
-		g_movieInfo = *(MovieInfo_t **)(SND_IsRecording + 2);
-	} else {  // Pre-update engine
-		SND_RecordBuffer = (void (*)())Memory::Scan(engine->Name(), "55 89 E5 57 56 53 83 EC 2C E8 ? ? ? ? 84 C0 75 0E 8D 65 F4 5B 5E 5F 5D C3");
-		uintptr_t SND_IsRecording = Memory::Read((uintptr_t)SND_RecordBuffer + 10);
-		g_movieInfo = *(MovieInfo_t **)(SND_IsRecording + 11);
-	}
+	uintptr_t base = Memory::Read((uintptr_t)SND_RecordBuffer + Offsets::SND_IsRecording);
+	if (sar.game->Is(SourceGame_Portal2)) base = (uintptr_t)SND_RecordBuffer;
+	g_movieInfo = Memory::Deref<MovieInfo_t *>(base + Offsets::g_movieInfo);
 #endif
 
 	g_RecordBufferHook.SetFunc(SND_RecordBuffer);
