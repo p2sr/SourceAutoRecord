@@ -5,6 +5,11 @@
 #define OFFSET_WINDOWS(name, off)
 #define OFFSET_LINUX(name, off)
 
+#define SIGSCAN_DEFAULT(name, win, linux) extern const char *name;
+#define SIGSCAN_EMPTY(name) extern const char *name;
+#define SIGSCAN_WINDOWS(name, sig)
+#define SIGSCAN_LINUX(name, sig)
+
 namespace Offsets {
     // All offset types should be defined here
     #include "Offsets/Default.hpp"
@@ -14,12 +19,24 @@ namespace Offsets {
 #undef OFFSET_WINDOWS
 #undef OFFSET_LINUX
 
+#undef SIGSCAN_DEFAULT
+#undef SIGSCAN_WINDOWS
+#undef SIGSCAN_LINUX
+
 #ifdef _WIN32
 #define OFFSET_DEFAULT(name, win, linux) name = win;
 #define OFFSET_WINDOWS(name, off) name = off;
 #define OFFSET_LINUX(name, off);
+
+#define SIGSCAN_DEFAULT(name, win, linux) name = win;
+#define SIGSCAN_WINDOWS(name, sig) name = sig;
+#define SIGSCAN_LINUX(name, sig)
 #else
 #define OFFSET_DEFAULT(name, win, linux) name = linux;
 #define OFFSET_WINDOWS(name, off);
 #define OFFSET_LINUX(name, off) name = off;
+
+#define SIGSCAN_DEFAULT(name, win, linux) name = linux;
+#define SIGSCAN_WINDOWS(name, sig);
+#define SIGSCAN_LINUX(name, sig) name = sig;
 #endif
