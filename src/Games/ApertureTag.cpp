@@ -61,7 +61,7 @@ void ApertureTag::LoadOffsets() {
 #define OFFSET_DEFAULT(name, win, linux)
 #define OFFSET_EMPTY(name)
 #define OFFSET_LINMOD(name, off) name = off;
-#include "OffsetsData.hpp"
+#include "Offsets/Default.hpp"
 	
 	// materialsystem.so
 	RemoveMaterial = 156;

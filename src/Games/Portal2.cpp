@@ -192,7 +192,7 @@ Portal2::Portal2() {
 void Portal2::LoadOffsets() {
 	using namespace Offsets;
 
-	#include "OffsetsData.hpp"
+	#include "Offsets/Default.hpp"
 }
 const char *Portal2::Version() {
 	return "Portal 2 (8491)";
