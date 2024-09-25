@@ -817,21 +817,7 @@ bool Server::Init() {
 		Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t *), &Server::CheckJumpButtonBase);
 
 		uintptr_t airMove = (uintptr_t)AirMove;
-#ifdef _WIN32
-		if (sar.game->Is(SourceGame_Portal2)) {
-			this->aircontrol_fling_speed_addr = *(float **)(airMove + 791);
-		} else {
-			this->aircontrol_fling_speed_addr = *(float **)(airMove + 662);
-		}
-#else
-		if (sar.game->Is(SourceGame_EIPRelPIC)) {
-			this->aircontrol_fling_speed_addr = *(float **)(airMove + 641);
-		} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
-			this->aircontrol_fling_speed_addr = *(float **)(airMove + 524);
-		} else {
-			this->aircontrol_fling_speed_addr = *(float **)(airMove + 530);
-		}
-#endif
+		this->aircontrol_fling_speed_addr = Memory::Deref<float *>(airMove + Offsets::aircontrol_fling_speed);
 		Memory::UnProtect(this->aircontrol_fling_speed_addr, 4);
 	}
 

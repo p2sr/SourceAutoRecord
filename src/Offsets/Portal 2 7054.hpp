@@ -4,6 +4,7 @@
 
 OFFSET_DEFAULT(m_pCommands, 228, 228)
 OFFSET_DEFAULT(RemoveMaterial, 155, 156)
+OFFSET_LINUX(aircontrol_fling_speed, 530)
 OFFSET_LINUX(g_movieInfo, 11)
 OFFSET_LINUX(SND_IsRecording, 10)
 OFFSET_LINUX(gamerules, 7)

@@ -1,3 +1,6 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 
 // Interface
 OFFSET_DEFAULT(CreateInterfaceInternal, 5, 5)
@@ -106,6 +109,7 @@ OFFSET_DEFAULT(mv, 8, 8)
 OFFSET_DEFAULT(player, 4, 4)
 OFFSET_DEFAULT(ProcessMovement, 1, 2)
 OFFSET_DEFAULT(GetPlayerViewOffset, 8, 9)
+OFFSET_DEFAULT(aircontrol_fling_speed, 791, 641)
 
 // CDemoRecorder
 OFFSET_DEFAULT(GetRecordingTick, 1, 1)
@@ -466,3 +470,5 @@ SIGSCAN_DEFAULT(interfaceMgrSig, "89 0D ? ? ? ? 85 C9 0F", "")
 OFFSET_DEFAULT(interfaceMgrOff, 2, -1)
 
 // clang-format on
+
+#pragma GCC diagnostic pop
