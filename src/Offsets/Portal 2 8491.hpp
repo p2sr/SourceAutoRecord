@@ -1,5 +1,7 @@
+#ifndef _WIN32
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
 
 
 // Interface
@@ -471,4 +473,6 @@ OFFSET_DEFAULT(interfaceMgrOff, 2, -1)
 
 // clang-format on
 
+#ifndef _WIN32
 #pragma GCC diagnostic pop
+#endif
