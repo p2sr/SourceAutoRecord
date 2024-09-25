@@ -41,32 +41,9 @@ ApertureTag::ApertureTag() {
 	}
 }
 void ApertureTag::LoadOffsets() {
-	Portal2::LoadOffsets();
-
 	using namespace Offsets;
 
-#ifdef _WIN32
-	// engine.dll
-	OnGameOverlayActivated = 144;  // CSteam3Client
-
-	// client.dll
-	m_pCommands = 228;  // CInput::DecodeUserCmdFromBuffer
-
-	// materialsystem.dll
-	RemoveMaterial = 155;
-#else
-	// client.so
-	m_pCommands = 228;  // CInput::DecodeUserCmdFromBuffer
-
-#define OFFSET_DEFAULT(name, win, linux)
-#define OFFSET_EMPTY(name)
-#define OFFSET_LINMOD(name, off) name = off;
-#include "Offsets/Default.hpp"
-	
-	// materialsystem.so
-	RemoveMaterial = 156;
-	g_pTextureManager = 10;
-#endif
+	#include "Offsets/Portal 2 7054.hpp"
 }
 const char *ApertureTag::Version() {
 	return "Aperture Tag (7054)";

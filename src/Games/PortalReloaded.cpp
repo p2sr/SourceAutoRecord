@@ -37,19 +37,9 @@ PortalReloaded::PortalReloaded() {
 	}
 }
 void PortalReloaded::LoadOffsets() {
-	Portal2::LoadOffsets();
-
 	using namespace Offsets;
 
-#ifdef _WIN32
-	// engine.dll
-	OnGameOverlayActivated = 144;  // CSteam3Client
-#else
-#define OFFSET_DEFAULT(name, win, linux)
-#define OFFSET_EMPTY(name)
-#define OFFSET_LINMOD(name, off) name = off;
-#include "Offsets/Default.hpp"
-#endif
+	#include "Offsets/Portal 2 8151.hpp"
 }
 const char *PortalReloaded::Version() {
 	return "Portal Reloaded (8151)";

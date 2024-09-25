@@ -3,15 +3,6 @@
 #include "Game.hpp"
 #include "Offsets.hpp"
 
-#ifdef _WIN32
-#define OFFSET_DEFAULT(name, win, linux) name = win;
-#else
-#define OFFSET_DEFAULT(name, win, linux) name = linux;
-#endif
-
-#define OFFSET_EMPTY(name)
-#define OFFSET_LINMOD(name, off)
-
 Portal2::Portal2() {
 	this->version = SourceGame_Portal2;
 	Game::maps = {
@@ -192,7 +183,7 @@ Portal2::Portal2() {
 void Portal2::LoadOffsets() {
 	using namespace Offsets;
 
-	#include "Offsets/Default.hpp"
+	#include "Offsets/Portal 2 8491.hpp"
 }
 const char *Portal2::Version() {
 	return "Portal 2 (8491)";

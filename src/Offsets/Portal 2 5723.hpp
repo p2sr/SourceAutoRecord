@@ -1,0 +1,20 @@
+#include "Offsets/Portal 2 7054.hpp"
+
+OFFSET_DEFAULT(RemoveMaterial, 156, 157)
+
+OFFSET_LINMOD(tickcount, 73)
+OFFSET_LINMOD(interval_per_tick, 81)
+OFFSET_LINMOD(HostState_OnClientConnected, 735)
+OFFSET_LINMOD(demoplayer, 93)
+OFFSET_LINMOD(demorecorder, 106)
+OFFSET_LINMOD(m_szLevelName, 72)
+OFFSET_LINMOD(GetClientMode, 12)
+OFFSET_LINMOD(StartDrawing, 193)
+OFFSET_LINMOD(FinishDrawing, 590)
+OFFSET_LINMOD(GetLocalClient, 85)
+OFFSET_LINMOD(net_time, 28)
+OFFSET_LINMOD(PerUserInput_tSize, 344)
+OFFSET_LINMOD(VideoMode_Create, 103)
+OFFSET_LINMOD(snd_linear_count, 33)
+OFFSET_LINMOD(snd_p, 72)
+OFFSET_LINMOD(snd_vol, 80)
