@@ -59,8 +59,9 @@
 
 ### Quick Tutorial with git
 
-- Fork this repository on GitHub
+- [Fork this repository on GitHub](https://github.com/p2sr/SourceAutoRecord/fork)
 - `git clone https://github.com/<your_account>/SourceAutoRecord`
+- `cd SourceAutoRecord`
 - `git remote add upstream https://github.com/p2sr/SourceAutoRecord`
 - `git fetch remotes/upstream/master`
 - `git checkout -b feature/something remotes/upstream/master`
@@ -72,11 +73,11 @@
 
 PRs will be squashed in the end anyway.
 
-- git checkout -b feature/something remotes/upstream/master
-- git merge --squash some-branch
+- `git checkout -b feature/something remotes/upstream/master`
+- `git merge --squash some-branch`
 - *Resolve merge conflicts*
-- git commit -m "New something"
-- git push origin feature/something
+- `git commit -m "New something"`
+- `git push origin feature/something`
 
 ## Coding Style
 
@@ -84,7 +85,7 @@ Mostly follows [Webkit Style Guide](https://webkit.org/code-style-guidelines) wi
 
 - PascalCaseForClassesNamespacesStructsAndFunctions
 - camelCaseForPropertiesAndVariables
-- _LeadingUnderscoreForTypeAliases
+- \_LeadingUnderscoreForTypeAliases
 
 A `.clang-format` file is included. I'd highly recommend using an extension:
 
