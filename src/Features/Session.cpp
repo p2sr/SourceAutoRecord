@@ -141,7 +141,7 @@ void Session::Ended() {
 				if (info->m_pEntity == nullptr) continue;
 				auto entityClass = server->GetEntityClassName(info->m_pEntity);
 				if (!entityClass || std::strcmp(entityClass, "point_viewcontrol") != 0) continue;
-				server->AcceptInput(info->m_pEntity, "Disable", 0, 0, {0}, 0);
+				if (server->AcceptInput) server->AcceptInput(info->m_pEntity, "Disable", 0, 0, {0}, 0);
 			}
 		}
 	}
@@ -175,7 +175,7 @@ void Session::Ended() {
 	}
 
 	auto reset = sar_stats_auto_reset.GetInt();
-	if ((reset == 1 && !*engine->m_bLoadgame) || reset >= 2) {
+	if ((reset == 1 && (engine->m_bLoadgame && !*engine->m_bLoadgame)) || reset >= 2) {
 		stats->ResetAll();
 	}
 

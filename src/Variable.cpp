@@ -81,28 +81,32 @@ bool Variable::GetBool() {
 	return !!GetInt();
 }
 int Variable::GetInt() {
+	if (!this->ptr) return 0;
 	return this->ptr->m_nValue;
 }
 float Variable::GetFloat() {
+	if (!this->ptr) return 0;
 	return this->ptr->m_fValue;
 }
 const char *Variable::GetString() {
+	if (!this->ptr) return "";
 	return this->ptr->m_pszString;
 }
 const int Variable::GetFlags() {
+	if (!this->ptr) return FCVAR_NONE;
 	return this->ptr->m_nFlags;
 }
 void Variable::SetValue(const char *value) {
-	Memory::VMT<_InternalSetValue>(this->ptr, Offsets::InternalSetValue)(this->ptr, value);
+	if (this->ptr) Memory::VMT<_InternalSetValue>(this->ptr, Offsets::InternalSetValue)(this->ptr, value);
 }
 void Variable::SetValue(float value) {
-	Memory::VMT<_InternalSetFloatValue>(this->ptr, Offsets::InternalSetFloatValue)(this->ptr, value);
+	if (this->ptr) Memory::VMT<_InternalSetFloatValue>(this->ptr, Offsets::InternalSetFloatValue)(this->ptr, value);
 }
 void Variable::SetValue(int value) {
-	Memory::VMT<_InternalSetIntValue>(this->ptr, Offsets::InternalSetIntValue)(this->ptr, value);
+	if (this->ptr) Memory::VMT<_InternalSetIntValue>(this->ptr, Offsets::InternalSetIntValue)(this->ptr, value);
 }
 void Variable::SetFlags(int value) {
-	this->ptr->m_nFlags = value;
+	if (this->ptr) this->ptr->m_nFlags = value;
 }
 void Variable::AddFlag(int value) {
 	this->SetFlags(this->GetFlags() | value);

@@ -1032,16 +1032,17 @@ bool Client::Init() {
 		Client::AddShadowToReceiver = (decltype(Client::AddShadowToReceiver))Memory::Scan(client->Name(), Offsets::AddShadowToReceiver);
 	}
 
+	g_AddShadowToReceiverHook.SetFunc(Client::AddShadowToReceiver);
+
 	UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color);
 	UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color_Particles);
 	UTIL_Portal_Color_Hook.SetFunc(UTIL_Portal_Color);
 	UTIL_Portal_Color_Particles_Hook.SetFunc(UTIL_Portal_Color_Particles);
 
-	g_AddShadowToReceiverHook.SetFunc(Client::AddShadowToReceiver);
-
 	// Get at gamerules
-	{
-		uintptr_t cbk = (uintptr_t)Command("+mouse_menu").ThisPtr()->m_pCommandCallback;
+	auto mouse_menu = Command("+mouse_menu");
+	if (mouse_menu.ThisPtr()) {
+		uintptr_t cbk = (uintptr_t)mouse_menu.ThisPtr()->m_pCommandCallback;
 		// OpenRadialMenuCommand is inlined on Windows
 #ifndef _WIN32
 		cbk = Memory::Read(cbk + Offsets::OpenRadialMenuCommand);

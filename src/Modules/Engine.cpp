@@ -228,7 +228,7 @@ std::string Engine::GetCurrentMapTitle() {
 
 bool Engine::IsCoop() {
 	if (GetCurrentMapName().size() == 0) return false;
-	if (*client->gamerules) {
+	if (client->gamerules && *client->gamerules) {
 		using _IsMultiplayer = bool (__rescall *)(void *thisptr);
 		return Memory::VMT<_IsMultiplayer>(*client->gamerules, Offsets::IsMultiplayer)(*client->gamerules);
 	}
@@ -1121,8 +1121,6 @@ bool Engine::Init() {
 
 	_Host_RunFrame_Render_Hook.SetFunc(_Host_RunFrame_Render);
 
-	this->readCustomDataInjectAddr = Memory::Scan(this->Name(), Offsets::readCustomDataInjectSig, Offsets::readCustomDataInjectOff);
-	this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), Offsets::readConsoleCommandInjectSig, Offsets::readConsoleCommandInjectOff);
 
 	g_Cmd_ExecuteCommand = (decltype(g_Cmd_ExecuteCommand))Memory::Scan(this->Name(), Offsets::Cmd_ExecuteCommand);
 	g_InsertCommand = (decltype(g_InsertCommand))Memory::Scan(this->Name(), Offsets::InsertCommand);
@@ -1130,17 +1128,21 @@ bool Engine::Init() {
 	Cmd_ExecuteCommand_Hook.SetFunc(g_Cmd_ExecuteCommand);
 	InsertCommand_Hook.SetFunc(g_InsertCommand);
 
-	// Pesky memory protection doesn't want us overwriting code - we
-	// get around it with a call to mprotect or VirtualProtect
-	Memory::UnProtect((void *)this->readCustomDataInjectAddr, 4);
-	Memory::UnProtect((void *)this->readConsoleCommandInjectAddr, 4);
+	this->readCustomDataInjectAddr = Memory::Scan(this->Name(), Offsets::readCustomDataInjectSig, Offsets::readCustomDataInjectOff);
+	this->readConsoleCommandInjectAddr = Memory::Scan(this->Name(), Offsets::readConsoleCommandInjectSig, Offsets::readConsoleCommandInjectOff);
+	if (this->readCustomDataInjectAddr && this->readConsoleCommandInjectAddr) {
+		// Pesky memory protection doesn't want us overwriting code - we
+		// get around it with a call to mprotect or VirtualProtect
+		Memory::UnProtect((void *)this->readCustomDataInjectAddr, 4);
+		Memory::UnProtect((void *)this->readConsoleCommandInjectAddr, 4);
 
-	// It's a relative call, so we have to do some weird fuckery lol
-	Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t *)this->readCustomDataInjectAddr + (this->readCustomDataInjectAddr + 4));
-	*(uint32_t *)this->readCustomDataInjectAddr = (uint32_t)&ReadCustomData_Hook - (this->readCustomDataInjectAddr + 4);  // Add 4 to get address of next instruction
+		// It's a relative call, so we have to do some weird fuckery lol
+		Engine::ReadCustomData = reinterpret_cast<_ReadCustomData>(*(uint32_t *)this->readCustomDataInjectAddr + (this->readCustomDataInjectAddr + 4));
+		*(uint32_t *)this->readCustomDataInjectAddr = (uint32_t)&ReadCustomData_Hook - (this->readCustomDataInjectAddr + 4);  // Add 4 to get address of next instruction
 
-	Engine::ReadConsoleCommand = (_ReadConsoleCommand)Memory::Read(this->readConsoleCommandInjectAddr);
-	*(uint32_t *)this->readConsoleCommandInjectAddr = (uint32_t)&ReadConsoleCommand_Hook - (this->readConsoleCommandInjectAddr + 4);
+		Engine::ReadConsoleCommand = (_ReadConsoleCommand)Memory::Read(this->readConsoleCommandInjectAddr);
+		*(uint32_t *)this->readConsoleCommandInjectAddr = (uint32_t)&ReadConsoleCommand_Hook - (this->readConsoleCommandInjectAddr + 4);
+	}
 
 	if (auto debugoverlay = Interface::Create(this->Name(), "VDebugOverlay004", false)) {
 		ScreenPosition = debugoverlay->Original<_ScreenPosition>(Offsets::ScreenPosition);
