@@ -1110,8 +1110,10 @@ bool Engine::Init() {
 #endif
 
 	Host_AccumulateTime = (void (*)(float))Memory::Scan(this->Name(), Offsets::Host_AccumulateTime);
-	host_frametime = *(float **)((uintptr_t)Host_AccumulateTime + Offsets::host_frametime);
-	host_frametime_unbounded = host_frametime + Offsets::host_frametime_unbounded;
+	if (Host_AccumulateTime) {
+		host_frametime = Memory::Deref<float *>((uintptr_t)Host_AccumulateTime + Offsets::host_frametime);
+		host_frametime_unbounded = host_frametime + Offsets::host_frametime_unbounded;
+	}
 
 	Host_AccumulateTime_Hook.SetFunc(Host_AccumulateTime);
 
