@@ -1,4 +1,6 @@
 #pragma once
+
+#include "Modules/Console.hpp"
 #include "Utils/Memory.hpp"
 
 class Interface {
@@ -43,6 +45,9 @@ public:
 			this->copy[index + 1] = reinterpret_cast<uintptr_t>(detour);
 			original = this->Original<U>(index);
 			return true;
+		}
+		if (console) {
+			console->DevMsg("Failed to hook index %i on %s!\n", index, typeid(U).name());
 		}
 		return false;
 	}
