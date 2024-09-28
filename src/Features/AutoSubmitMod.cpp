@@ -281,12 +281,12 @@ static void submitTime(int score, std::string demopath, bool coop, std::string m
 	}
 
 	if (!cur_pb) {
-		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "An error occurred submitting this time");
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "An error occurred submitting this time - couldn't fetch PB");
 		return;
 	}
 
 	if (!ensureCurlReady(&g_curl)) {
-		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "An error occurred submitting this time");
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "An error occurred submitting this time - couldn't ready CURL");
 		return;
 	}
 
@@ -326,7 +326,7 @@ static void submitTime(int score, std::string demopath, bool coop, std::string m
 	curl_mime_free(form);
 
 	if (!resp) {
-		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "An error occurred submitting this time");
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "An error occurred submitting this time - didn't get a response");
 	} else {
 		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "Successfully submitted time to boards!");
 	}

@@ -279,7 +279,7 @@ void checkUpdate(Channel channel) {
 	THREAD_PRINT("Querying for latest version...\n");
 
 	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, channel)) {
-		THREAD_PRINT("An error occurred\n");
+		THREAD_PRINT("An error occurred retrieving latest version\n");
 		return;
 	}
 
@@ -298,7 +298,7 @@ void doUpdate(Channel channel, int successAction, bool force) {
 	THREAD_PRINT("Querying for latest version...\n");
 
 	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, channel)) {
-		THREAD_PRINT("An error occurred\n");
+		THREAD_PRINT("An error occurred retrieving latest version\n");
 		return;
 	}
 
