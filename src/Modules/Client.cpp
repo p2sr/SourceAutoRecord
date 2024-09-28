@@ -162,6 +162,7 @@ void Client::CalcButtonBits(int nSlot, int &bits, int in_button, int in_ignore, 
 }
 
 bool Client::ShouldDrawCrosshair() {
+	if (!this->ShouldDraw) return false;
 	if (!crosshairVariable.GetBool()) {
 		crosshairVariable.SetValue(1);
 		auto value = this->ShouldDraw(this->g_HUDQuickInfo->ThisPtr());

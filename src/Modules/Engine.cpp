@@ -1211,8 +1211,10 @@ bool Engine::Init() {
 void Engine::Shutdown() {
 	if (this->engineClient) {
 		auto GetSteamAPIContext = this->engineClient->Original<uintptr_t (*)()>(Offsets::GetSteamAPIContext);
-		auto OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated *>(GetSteamAPIContext() + Offsets::OnGameOverlayActivated);
-		*OnGameOverlayActivated = Engine::OnGameOverlayActivatedBase;
+		if (Engine::OnGameOverlayActivatedBase) {
+			auto OnGameOverlayActivated = reinterpret_cast<_OnGameOverlayActivated *>(GetSteamAPIContext() + Offsets::OnGameOverlayActivated);
+			*OnGameOverlayActivated = Engine::OnGameOverlayActivatedBase;
+		}
 	}
 
 	Renderer::Cleanup();

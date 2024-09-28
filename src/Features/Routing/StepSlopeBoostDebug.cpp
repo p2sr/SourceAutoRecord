@@ -18,7 +18,9 @@ bool g_stepMoved;
 bool g_slopeBoosted;
 
 void StepSlopeBoostDebug::OnStartStepMove(CMoveData *moveData) {
-	g_currentStepMoveData.wasDucking = server->GetPlayer(1)->ducked();
+	auto player = server->GetPlayer(1);
+	if (!player) return;
+	g_currentStepMoveData.wasDucking = player->ducked();
 
 	g_stepMoving = true;
 	g_stepMoved = false;
