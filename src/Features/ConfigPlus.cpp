@@ -17,6 +17,7 @@
 // Fuck you Windows
 #ifdef _WIN32
 #	define strdup _strdup
+#	define strcasecmp _stricmp
 #endif
 
 #define PERSISTENT_SVAR_FILENAME "svars_persist"
@@ -410,8 +411,8 @@ static bool EvalCondition(Condition *c) {
 	case Condition::SAME_MAP: return session->previousMap == engine->GetCurrentMapName();
 	case Condition::WORKSHOP: return !strncmp("workshop/", engine->GetCurrentMapName().c_str(), 9);
 	case Condition::MENU: return engine->GetCurrentMapName().size() == 0;
-	case Condition::MAP: return !strcmp(c->val, engine->GetCurrentMapName().c_str());
-	case Condition::PREV_MAP: return !strcmp(c->val, session->previousMap.c_str());
+	case Condition::MAP: return !strcasecmp(c->val, engine->GetCurrentMapName().c_str());
+	case Condition::PREV_MAP: return !strcasecmp(c->val, session->previousMap.c_str());
 	case Condition::STEAMID: return (engine->IsCoop() && !engine->IsSplitscreen()) ? !strcmp(c->val, engine->GetPartnerSteamID32().c_str()) : false;
 	case Condition::GAME: return !strcmp(c->val, gameName());
 	case Condition::NOT: return !EvalCondition(c->unop_cond);
