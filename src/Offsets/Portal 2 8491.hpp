@@ -49,6 +49,7 @@ OFFSET_EMPTY(HudUpdate)
 OFFSET_DEFAULT(IN_ActivateMouse, 15, 15)
 OFFSET_DEFAULT(IN_DeactivateMouse, 16, 16)
 OFFSET_DEFAULT(ApplyMouse, 56, 56)
+OFFSET_DEFAULT(ApplyMouse_Mid, 0x3E1, -1)
 OFFSET_DEFAULT(SteamControllerMove, 58, 58)
 OFFSET_EMPTY(JoyStickApplyMovement)
 OFFSET_DEFAULT(LevelInitPreEntity, 5, 5)
@@ -117,7 +118,7 @@ OFFSET_DEFAULT(mv, 8, 8)
 OFFSET_DEFAULT(player, 4, 4)
 OFFSET_DEFAULT(ProcessMovement, 1, 2)
 OFFSET_DEFAULT(GetPlayerViewOffset, 8, 9)
-OFFSET_DEFAULT(aircontrol_fling_speed, 791, 641)
+OFFSET_DEFAULT(aircontrol_fling_speed, 791, 641) // "%s: Make in time? %s velocity %f wish %f\n" -> CPortalGameMovement::AirPortalFunnel -> xref CPortalGameMovement::PortalFunnel -> xref[0] CPortalGameMovement::AirMove, find MIN_FLING_SPEED
 
 // CDemoRecorder
 OFFSET_DEFAULT(GetRecordingTick, 1, 1)
@@ -383,7 +384,7 @@ SIGSCAN_DEFAULT(PathMatch, "", "55 57 56 53 83 EC 0C 8B 6C 24 28 8B 5C 24 2C 0F 
 
 // Renderer
 SIGSCAN_DEFAULT(SND_RecordBuffer, "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 ? ? ? ? 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05",
-                                  "80 3D ? ? ? ? 00 75 07 C3 ? ? ? ? ? ? 55 89 E5 57 56 53 83 EC 1C E8 ? ? ? ? 84 C0 0F 85 ? ? ? ?")
+                                  "80 3D ? ? ? ? 00 75 07 C3 ? ? ? ? ? ? 55 89 E5 57 56 53 83 EC 1C E8 ? ? ? ? 84 C0 0F 85 ? ? ? ?") // "DS_STEREO" -> CAudioDirectSound::TransferSamples -> S_TransferStereo16 -> SND_RecordBuffer
 
 
 // Client

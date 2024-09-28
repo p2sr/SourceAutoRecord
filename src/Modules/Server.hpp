@@ -7,13 +7,6 @@
 #include "Utils/SDK.hpp"
 #include "Variable.hpp"
 
-#ifdef _WIN32
-#	define AirMove_Mid_Offset 679
-#	define AirMove_Signature "F3 0F 10 50 40"
-#	define AirMove_Continue_Offset 5
-#	define AirMove_Skip_Offset 142
-#endif
-
 class Server : public Module {
 public:
 	Interface *g_GameMovement = nullptr;

@@ -975,7 +975,7 @@ bool Client::Init() {
 			g_Input->Hook(Client::ApplyMouse_Hook, Client::ApplyMouse, Offsets::ApplyMouse);
 
 #ifdef _WIN32
-			auto ApplyMouse_Mid_addr = (uintptr_t)(Client::ApplyMouse) + 0x3E1;
+			auto ApplyMouse_Mid_addr = (uintptr_t)(Client::ApplyMouse) + Offsets::ApplyMouse_Mid;
 			g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr);
 			g_ApplyMouseMidHook.Disable();
 			Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
