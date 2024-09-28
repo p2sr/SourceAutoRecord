@@ -903,8 +903,6 @@ DETOUR(Client::GetChapterProgress) {
 Hook g_GetChapterProgressHook(&Client::GetChapterProgress_Hook);
 
 bool Client::Init() {
-	bool readJmp = false;
-
 	this->g_ClientDLL = Interface::Create(this->Name(), "VClient016");
 	this->s_EntityList = Interface::Create(this->Name(), "VClientEntityList003", false);
 	this->g_GameMovement = Interface::Create(this->Name(), "GameMovement001");
@@ -914,7 +912,7 @@ bool Client::Init() {
 	}
 
 	if (this->g_ClientDLL) {
-		this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses, readJmp);
+		this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses);
 		this->FrameStageNotify = this->g_ClientDLL->Original<_FrameStageNotify>(Offsets::GetAllClasses + 27);
 
 		this->g_ClientDLL->Hook(Client::LevelInitPreEntity_Hook, Client::LevelInitPreEntity, Offsets::LevelInitPreEntity);
@@ -927,16 +925,19 @@ bool Client::Init() {
 			auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
 			auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
 			auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
-			auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
 
+			auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
 			if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
 				this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
+			} else {
+				console->DevWarning("Failed to hook CHUDChallengeStats\n");
 			}
 
 			auto CHUDQuickInfo = FindElement(GetHud(-1), "CHUDQuickInfo");
-
 			if (this->g_HUDQuickInfo = Interface::Create(CHUDQuickInfo)) {
-				this->ShouldDraw = this->g_HUDQuickInfo->Original<_ShouldDraw>(Offsets::ShouldDraw, readJmp);
+				this->ShouldDraw = this->g_HUDQuickInfo->Original<_ShouldDraw>(Offsets::ShouldDraw);
+			} else {
+				console->DevWarning("Failed to hook CHUDQuickInfo\n");
 			}
 
 			auto CHudChat = FindElement(GetHud(-1), "CHudChat");
@@ -949,23 +950,31 @@ bool Client::Init() {
 				} else if (sar.game->Is(SourceGame_PortalReloaded)) {
 					this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayTextReloaded);
 				}
+			} else {
+				console->DevWarning("Failed to hook CHudChat\n");
 			}
 
 			auto CHudMultiplayerBasicInfo = FindElement(GetHud(-1), "CHudMultiplayerBasicInfo");
 			if (this->g_HudMultiplayerBasicInfo = Interface::Create(CHudMultiplayerBasicInfo)) {
 				this->g_HudMultiplayerBasicInfo->Hook(Client::ShouldDraw_BasicInfo_Hook, Client::ShouldDraw_BasicInfo, Offsets::ShouldDraw);
+			} else {
+				console->DevWarning("Failed to hook CHudMultiplayerBasicInfo\n");
 			}
 
 			auto CHudSaveStatus = FindElement(GetHud(-1), "CHudSaveStatus");
 			if (this->g_HudSaveStatus = Interface::Create(CHudSaveStatus)) {
 				this->g_HudSaveStatus->Hook(Client::ShouldDraw_SaveStatus_Hook, Client::ShouldDraw_SaveStatus, Offsets::ShouldDraw);
+			} else {
+				console->DevWarning("Failed to hook CHudSaveStatus\n");
 			}
+		} else {
+			console->DevWarning("Failed to hook +leaderboard\n");
 		}
 
-		this->IN_ActivateMouse = this->g_ClientDLL->Original<_IN_ActivateMouse>(Offsets::IN_ActivateMouse, readJmp);
-		this->IN_DeactivateMouse = this->g_ClientDLL->Original<_IN_DeactivateMouse>(Offsets::IN_DeactivateMouse, readJmp);
+		this->IN_ActivateMouse = this->g_ClientDLL->Original<_IN_ActivateMouse>(Offsets::IN_ActivateMouse);
+		this->IN_DeactivateMouse = this->g_ClientDLL->Original<_IN_DeactivateMouse>(Offsets::IN_DeactivateMouse);
 
-		auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse, readJmp);
+		auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse);
 		void *g_InputAddr = Memory::DerefDeref<void *>(IN_ActivateMouse + Offsets::g_Input);
 
 		if (g_Input = Interface::Create(g_InputAddr)) {
@@ -992,9 +1001,11 @@ bool Client::Init() {
 			Command::Hook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback_hook, Client::playvideo_end_level_transition_callback);
 			Command::Hook("+leaderboard", Client::openleaderboard_callback_hook, Client::openleaderboard_callback);
 			Command::Hook("unpause", Client::closeleaderboard_callback_hook, Client::closeleaderboard_callback);
+		} else {
+			console->DevWarning("Failed to hook input\n");
 		}
 
-		auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
+		auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput);
 		auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
 		uintptr_t g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
 		void *clientMode = Memory::Deref<void *>(g_pClientMode);
@@ -1003,15 +1014,19 @@ bool Client::Init() {
 		if (this->g_pClientMode = Interface::Create(clientMode)) {
 			this->g_pClientMode->Hook(Client::CreateMove_Hook, Client::CreateMove, Offsets::CreateMove);
 			this->g_pClientMode->Hook(Client::OverrideView_Hook, Client::OverrideView, Offsets::OverrideView);
+		} else {
+			console->DevWarning("Failed to hook client mode\n");
 		}
 
 		if (this->g_pClientMode2 = Interface::Create(clientMode2)) {
 			this->g_pClientMode2->Hook(Client::CreateMove2_Hook, Client::CreateMove2, Offsets::CreateMove);
+		} else {
+			console->DevWarning("Failed to hook client mode 2\n");
 		}
 	}
 
 	if (this->s_EntityList) {
-		this->GetClientEntity = this->s_EntityList->Original<_GetClientEntity>(Offsets::GetClientEntity, readJmp);
+		this->GetClientEntity = this->s_EntityList->Original<_GetClientEntity>(Offsets::GetClientEntity);
 	}
 
 	Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), Offsets::DrawTranslucentRenderables);
