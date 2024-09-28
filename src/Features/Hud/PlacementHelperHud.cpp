@@ -127,5 +127,3 @@ ON_EVENT(RENDER) {
 		//m_bDeferringToPortal
 	}
 }
-
-

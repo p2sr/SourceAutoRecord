@@ -252,11 +252,10 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 		}
 	}
 
-	if (tasPlayer->IsActive() && tasPlayer->IsUsingTools()) {
-		tasPlayer->PostProcess(slot, thisptr, cmd);
-	}
-
 	if (tasPlayer->IsActive()) {
+		if (tasPlayer->IsUsingTools()) {
+			tasPlayer->PostProcess(slot, thisptr, cmd);
+		}
 		int tasTick = tasPlayer->GetPlayerInfo(slot, thisptr, cmd).tick - tasPlayer->GetStartTick();
 		tasPlayer->DumpUsercmd(slot, cmd, tasTick, "server");
 
@@ -810,14 +809,12 @@ bool Server::Init() {
 
 		auto ctor = this->g_GameMovement->Original(0);
 		auto baseCtor = Memory::Read(ctor + Offsets::AirMove_Offset1);
-		uintptr_t baseOffset;
-		baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
+		auto baseOffset = Memory::Deref<uintptr_t>(baseCtor + Offsets::AirMove_Offset2);
 		Memory::Deref<_AirMove>(baseOffset + Offsets::AirMove * sizeof(uintptr_t *), &Server::AirMoveBase);
 
 		Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t *), &Server::CheckJumpButtonBase);
 
-		uintptr_t airMove = (uintptr_t)AirMove;
-		this->aircontrol_fling_speed_addr = Memory::Deref<float *>(airMove + Offsets::aircontrol_fling_speed);
+		this->aircontrol_fling_speed_addr = Memory::Deref<float *>((uintptr_t)AirMove + Offsets::aircontrol_fling_speed);
 		Memory::UnProtect(this->aircontrol_fling_speed_addr, 4);
 	}
 
@@ -830,8 +827,9 @@ bool Server::Init() {
 		}
 #endif
 
-		this->gEntList = Interface::Create((void *)((uintptr_t)this->m_EntPtrArray - 4));
-		this->gEntList->Hook(Server::OnRemoveEntity_Hook, Server::OnRemoveEntity, Offsets::OnRemoveEntity);
+		if (this->gEntList = Interface::Create((void *)((uintptr_t)this->m_EntPtrArray - 4))) {
+			this->gEntList->Hook(Server::OnRemoveEntity_Hook, Server::OnRemoveEntity, Offsets::OnRemoveEntity);
+		}
 
 		this->CreateEntityByName = g_ServerTools->Original<_CreateEntityByName>(Offsets::CreateEntityByName);
 		this->DispatchSpawn = g_ServerTools->Original<_DispatchSpawn>(Offsets::DispatchSpawn);

@@ -461,8 +461,7 @@ void InterpolateDemoCommand_Detour(void *thisptr, int slot, int target_tick, Dem
 
 bool EngineDemoPlayer::Init() {
 	auto disconnect = engine->cl->Original(Offsets::Disconnect);
-	void *demoplayer;
-	demoplayer = Memory::DerefDeref<void *>(disconnect + Offsets::demoplayer);
+	auto demoplayer = Memory::DerefDeref<void *>(disconnect + Offsets::demoplayer);
 	if (this->s_ClientDemoPlayer = Interface::Create(demoplayer)) {
 		this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StartPlayback_Hook, EngineDemoPlayer::StartPlayback, Offsets::StartPlayback);
 		this->s_ClientDemoPlayer->Hook(EngineDemoPlayer::StopPlayback_Hook, EngineDemoPlayer::StopPlayback, Offsets::StopPlayback);

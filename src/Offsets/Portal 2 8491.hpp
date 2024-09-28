@@ -45,11 +45,17 @@ OFFSET_DEFAULT(host_frametime_unbounded, 1, -1)
 // CHLClient
 OFFSET_DEFAULT(GetAllClasses, 8, 8)
 OFFSET_DEFAULT(HudProcessInput, 10, 10)
+OFFSET_EMPTY(HudUpdate)
 OFFSET_DEFAULT(IN_ActivateMouse, 15, 15)
 OFFSET_DEFAULT(IN_DeactivateMouse, 16, 16)
 OFFSET_DEFAULT(ApplyMouse, 56, 56)
 OFFSET_DEFAULT(SteamControllerMove, 58, 58)
+OFFSET_EMPTY(JoyStickApplyMovement)
 OFFSET_DEFAULT(LevelInitPreEntity, 5, 5)
+
+// CInputSystem
+OFFSET_EMPTY(KeyDown)
+OFFSET_EMPTY(KeyUp)
 
 // ClientModeShared
 OFFSET_DEFAULT(CreateMove, 24, 25)
@@ -374,9 +380,11 @@ OFFSET_DEFAULT(portalsThruPortals, 391, 388)
 // Pathmatch
 SIGSCAN_DEFAULT(PathMatch, "", "55 57 56 53 83 EC 0C 8B 6C 24 28 8B 5C 24 2C 0F B6 05 ? ? ? ? 84 C0 0F 84 ? ? ? ?")
 
+
 // Renderer
 SIGSCAN_DEFAULT(SND_RecordBuffer, "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 ? ? ? ? 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05",
                                   "80 3D ? ? ? ? 00 75 07 C3 ? ? ? ? ? ? 55 89 E5 57 56 53 83 EC 1C E8 ? ? ? ? 84 C0 0F 85 ? ? ? ?")
+
 
 // Client
 SIGSCAN_DEFAULT(MatrixBuildRotationAboutAxis, "55 8B EC 51 F3 0F 10 45 ? 0F 5A C0 F2 0F 59 05 ? ? ? ? 66 0F 5A C0 F3 0F 11 45 ? E8 ? ? ? ? F3 0F 11 45 ? F3 0F 10 45 ? E8 ? ? ? ? 8B 45 ? F3 0F 10 08",
@@ -389,10 +397,8 @@ SIGSCAN_DEFAULT(MsgPreSkipToNextLevel, "57 8B F9 E8 ? ? ? ? 8B C8 E8 ? ? ? ? 0B 
                                        "53 83 EC 08 E8 ? ? ? ? 83 EC 0C 50 E8 ? ? ? ? 83 C4 10 09 C2")
 SIGSCAN_DEFAULT(CalcViewModelLag, "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 83 EC 1C 56 6A 00 6A 00 8D 45 F4 8B F1 8B 4B 0C 50 51 E8 ? ? ? ?",
                                   "56 53 83 EC 24 8B 74 24 30 8B 5C 24 34 6A 00 6A 00 8D 44 24 1C 50 FF 74 24 44 E8 ? ? ? ? A1 ? ? ? ? 83 C4 10 66 0F EF C9")
-
 SIGSCAN_DEFAULT(AddShadowToReceiver, "55 8B EC 51 53 56 57 0F B7 7D 08",
                                      "55 89 E5 57 56 53 83 EC 44 8B 45 0C 8B 5D 08 8B 55 14 8B 75 10")
-
 SIGSCAN_DEFAULT(UTIL_Portal_Color, "55 8B EC 56 8B 75 ? 85 F6 0F 84 ? ? ? ? 0F 8E",
                                     "56 53 83 EC 04 8B 44 24 ? 8B 74 24 ? 85 C0 74 ? 8D 58")
 SIGSCAN_DEFAULT(UTIL_Portal_Color_Particles, "55 8B EC 51 8B 0D ? ? ? ? 8B 01 8B 90 ? ? ? ? FF D2 84 C0",
@@ -409,6 +415,7 @@ SIGSCAN_DEFAULT(OnCommand, "55 8B EC 56 57 8B 7D 08 57 68 ? ? ? ? 8B F1 E8 ? ? ?
 SIGSCAN_DEFAULT(GetChapterProgress, "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8",
                                     "55 89 E5 57 56 53 83 EC 0C E8 ? ? ? ? 83 EC 08 8B 10")
 
+
 // Engine
 SIGSCAN_DEFAULT(ParseSmoothingInfoSig, "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", "");
 OFFSET_DEFAULT(ParseSmoothingInfoOff, 178, -1)
@@ -423,23 +430,27 @@ SIGSCAN_DEFAULT(readConsoleCommandInjectSig, "8B 45 F4 50 68 FE 04 00 00 68 ? ? 
                                              "FF B5 AC FE FF FF 8D B5 E8 FE FF FF 68 FE 04 00 00 68 ? ? ? ? 56 E8 ? ? ? ? 58 FF B5 94 FE FF FF E8")
 OFFSET_DEFAULT(readConsoleCommandInjectOff, 26, 36)
 SIGSCAN_DEFAULT(Cmd_ExecuteCommand, "55 8B EC 57 8B 7D ? 8B 07 85 C0",
-                                    "55 89 E5 57 56 53 83 EC 2C 8B 75 ? 8B 3E")
+                                    "55 89 E5 57 56 53 83 EC 2C 8B 75 ? 8B 3E") // "WARNING: INVALID EXECUTION MARKER.\n"
 SIGSCAN_DEFAULT(InsertCommand, "55 8B EC 56 57 8B 7D ? 8B F1 81 FF FF 01 00 00",
-                               "55 57 56 53 83 EC 1C 8B 6C 24 ? 8B 5C 24 ? 8B 74 24 ? 81 FD FE 01 00 00")
+                               "55 57 56 53 83 EC 1C 8B 6C 24 ? 8B 5C 24 ? 8B 74 24 ? 81 FD FE 01 00 00") // "WARNING: Command too long... ignoring!\n%s\n"
 SIGSCAN_DEFAULT(Convar_PrintDescription, "25 2D 38 30 73 20 2D 20 25 2E 38 30 73 0A 00",
-                                         "25 2D 38 30 73 20 2D 20 25 2E 38 30 73 0A 00") // "%-80s - %.80s"
+                                         "25 2D 38 30 73 20 2D 20 25 2E 38 30 73 0A 00") // "%-80s - %.80s\n"
+
 
 // EngineDemoPlayer
 SIGSCAN_DEFAULT(InterpolateDemoCommand, "55 8B EC 83 EC 10 56 8B F1 8B 4D 10 57 8B BE B4 05 00 00 83 C1 04 89 75 F4 89 7D F0 E8 ? ? ? ? 8B 4D 14 83 C1 04",
                                         "55 57 56 53 83 EC 10 8B 44 24 24 8B 5C 24 2C 8B 88 B0 05 00 00 8B 44 24 30 8D 70 04 8D 90 9C 00 00 00 89 F0 F3 0F 10 40 04")
 
+
 // Matchmaking
 SIGSCAN_DEFAULT(UpdateLeaderboardData, "55 8B EC 83 EC 08 53 8B D9 8B 03 8B 50 08",
                                        "55 89 E5 57 56 53 83 EC 2C 8B 45 08 8B 5D 0C")
 
+
 // MaterialSystem
 SIGSCAN_DEFAULT(KeyValues_SetString, "55 8B EC 8B 45 08 6A 01 50 E8 ? ? ? ? 85 C0 74 0B",
                                      "53 83 EC ? 8B 5C 24 ? 6A ? FF 74 24 ? FF 74 24 ? E8 ? ? ? ? 83 C4 ? 85 C0 74 ? 89 5C 24")
+
 
 // Server
 SIGSCAN_DEFAULT(GlobalEntity_GetIndex, "55 8B EC 51 8B 45 08 50 8D 4D FC 51 B9 ? ? ? ? E8 ? ? ? ? 66 8B 55 FC B8 FF FF 00 00",
@@ -461,11 +472,12 @@ SIGSCAN_DEFAULT(FindClosestPassableSpace, "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 5
 SIGSCAN_DEFAULT(UTIL_GetCommandClientIndex, "A1 ? ? ? ? 40 C3",
                                             "A1 ? ? ? ? 83 C0 01 C3")
 SIGSCAN_DEFAULT(CheckStuck_FloatTime, "FF ? ? ? ? ? D9 5D F8 8B 56 04 8B 42 1C 8B ? ? ? ? ? 3B C3 75 04 33 C9 EB 08 8B C8 2B 4A 58 C1 F9 04 F3 0F 10 84 CE 70",
-"E8 ? ? ? ? 8B 43 04 66 0F EF C0 DD 5C 24 08 F2 0F 5A 44 24 08 8B 40 24 85 C0 0F 84 CC 01 00 00 8B 15 ? ? ? ? 2B 42 58")
+                                      "E8 ? ? ? ? 8B 43 04 66 0F EF C0 DD 5C 24 08 F2 0F 5A 44 24 08 8B 40 24 85 C0 0F 84 CC 01 00 00 8B 15 ? ? ? ? 2B 42 58")
 SIGSCAN_DEFAULT(IsInPVS, "55 8B EC 51 53 8B 5D 08 56 57 33 FF 89 4D FC 66 39 79 1A 75 57 3B BB 10 20 00 00 0F 8D C0 00 00 00 8D B3 14 20 00 00",
                          "55 57 56 53 31 DB 83 EC 0C 8B 74 24 20 8B 7C 24 24 66 83 7E 1A 00 8B 87 10 20 00 00 89 C2 0F 85 BC 00 00 00 85 C0 7F 75 8D B4 26")
 SIGSCAN_DEFAULT(CreateViewModel, "E8 ? ? ? ? 5F 5D C2 04 00 53",
                                  "E8 ? ? ? ? E9 ? ? ? ? 8D B4 26 00 00 00 00 8D 76 00 8B 3D")
+
 
 // Steam API
 SIGSCAN_DEFAULT(interfaceMgrSig, "89 0D ? ? ? ? 85 C9 0F", "")
