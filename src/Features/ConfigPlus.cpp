@@ -399,6 +399,7 @@ static const char *gameName() {
 	case SourceGame_ThinkingWithTimeMachine: return "twtm";
 	case SourceGame_PortalReloaded: return "reloaded";
 	case SourceGame_Portal2: return Game::IsSpeedrunMod() ? "srm" : "portal2";
+	case SourceGame_INFRA: return "infra";
 	default: return "other";
 	}
 }

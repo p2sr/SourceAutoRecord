@@ -260,6 +260,61 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 			{"Coop 19", SpeedrunRule(RuleAction::SPLIT, "mp_coop_pr_tbeam",    EntityInputRule{ENTRULE_TARGETNAME | ENTRULE_PARAMETER, "@tp", "", "RunScriptCode", "setSpawnDest(1)"})},
 		};
 		// }}}
+	} else if (sar.game->Is(SourceGame_INFRA)) {
+		// INFRA {{{
+		*defaultCat = "Any%";
+		*cats = {
+			{"Any%", {{"Start", "Ending 1", "Ending 2", "Ending 3"}}},
+		};
+		*rules = {
+			{
+				"Start",
+				SpeedrunRule(
+					RuleAction::START,
+					"infra_c1_m1_office",
+					MapLoadRule{}),
+			},
+			{
+				"Ending 1",
+				SpeedrunRule(
+					RuleAction::STOP,
+					"infra_c11_ending_1",
+					EntityInputRule{
+						ENTRULE_TARGETNAME,
+						"achievement",
+						"",
+						"FireEvent",
+						"",
+					}),
+			},
+			{
+				"Ending 2",
+				SpeedrunRule(
+					RuleAction::STOP,
+					"infra_c11_ending_2",
+					EntityInputRule{
+						ENTRULE_TARGETNAME,
+						"achievement",
+						"",
+						"FireEvent",
+						"",
+					}),
+			},
+			{
+				"Ending 3",
+				SpeedrunRule(
+					RuleAction::STOP,
+					"infra_c11_ending_3",
+					EntityInputRule{
+						ENTRULE_TARGETNAME,
+						"achievement",
+						"",
+						"FireEvent",
+						"",
+					}),
+			}
+		};
+		// }}}
 	} else {
 		// Portal 2 {{{
 		*defaultCat = "Singleplayer";

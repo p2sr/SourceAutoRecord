@@ -1,0 +1,112 @@
+#include "Offsets/Portal 2 7054.hpp"
+
+// CCvar
+OFFSET_WINDOWS(m_DisplayFuncs, 26)
+
+// CEngineClient
+OFFSET_WINDOWS(GetActiveSplitScreenPlayerSlot, 129)
+OFFSET_WINDOWS(GetSteamAPIContext, 179)
+OFFSET_WINDOWS(host_frametime, 87);
+
+// CHLClient
+OFFSET_WINDOWS(GetAllClasses, 9)
+OFFSET_WINDOWS(HudProcessInput, 11)
+OFFSET_WINDOWS(HudUpdate, 12)
+OFFSET_WINDOWS(IN_ActivateMouse, 16)
+OFFSET_WINDOWS(IN_DeactivateMouse, 17)
+OFFSET_WINDOWS(ApplyMouse, 54)
+OFFSET_WINDOWS(ApplyMouse_Mid, 0x451)
+OFFSET_WINDOWS(JoyStickApplyMovement, 61)
+
+// CInputSystem
+OFFSET_WINDOWS(KeyDown, 401)
+OFFSET_WINDOWS(KeyUp, 380)
+
+// CInput
+OFFSET_WINDOWS(DecodeUserCmdFromBuffer, 6)
+
+// ConVar
+OFFSET_WINDOWS(InternalSetValue, 14)
+OFFSET_WINDOWS(InternalSetFloatValue, 15)
+OFFSET_WINDOWS(InternalSetIntValue, 16)
+OFFSET_WINDOWS(Create, 29)
+
+// CMatSystemSurface
+OFFSET_WINDOWS(PaintTraverseEx, 118)
+OFFSET_WINDOWS(GetKernedCharWidth, 148)
+OFFSET_WINDOWS(GetFontName, 133)
+
+// CGameMovement
+OFFSET_WINDOWS(AirMove, 24)
+OFFSET_WINDOWS(FinishGravity, 33)
+OFFSET_WINDOWS(CheckJumpButton, 35)
+OFFSET_WINDOWS(TryPlayerMove, 38)
+
+// CClientState
+OFFSET_WINDOWS(viewangles, 35424)
+
+// CPortal_Player
+OFFSET_WINDOWS(PlayerRunCommand, 452)
+
+// CServerGameDLL
+OFFSET_WINDOWS(Think, 32)
+OFFSET_WINDOWS(IsRestoring, 25)
+OFFSET_WINDOWS(ShouldDraw, 12)
+
+// CGameEventManager
+OFFSET_WINDOWS(ConPrintEvent, 351)
+
+// CVEngineServer
+OFFSET_WINDOWS(ClientCommand, 40)
+OFFSET_WINDOWS(ClientCommandKeyValues, 137)
+
+// CMaterialSystem
+OFFSET_WINDOWS(UncacheUnusedMaterials, 76)
+OFFSET_WINDOWS(CreateMaterial, 80)
+OFFSET_WINDOWS(FindMaterial, 81)
+OFFSET_WINDOWS(CreateProceduralTexture, 90)
+OFFSET_WINDOWS(GetRenderContext, 112)
+
+// Others
+OFFSET_WINDOWS(tickcount, 104)
+OFFSET_WINDOWS(interval_per_tick, 74)
+OFFSET_WINDOWS(HostState_OnClientConnected, 724)
+OFFSET_WINDOWS(NUM_ENT_ENTRIES, 16384)
+OFFSET_WINDOWS(m_pCommands, 380)
+OFFSET_WINDOWS(CUserCmdSize, 116)
+OFFSET_WINDOWS(PerUserInput_tSize, 388)
+OFFSET_WINDOWS(GetLocalClient, 138)
+OFFSET_WINDOWS(net_time, 21)
+
+// clang-format off
+
+// Renderer
+SIGSCAN_WINDOWS(SND_RecordBuffer, "55 8B EC 80 3D ? ? ? ? 00 56")
+
+
+// Client
+SIGSCAN_WINDOWS(DrawTranslucentRenderables, "55 8B EC 81 EC 80 00 00 00 53 56 8B F1")
+SIGSCAN_WINDOWS(DrawOpaqueRenderables, "55 8B EC 83 EC 54 A1 ? ? ? ? 83 7D ? 00")
+
+
+// Engine
+SIGSCAN_WINDOWS(Host_AccumulateTime, "55 8B EC F3 0F 10 05 ? ? ? ? F3 0F 58 45")
+SIGSCAN_WINDOWS(readCustomDataInjectSig, "55 8B EC F6 05 ? ? ? ? 01 53")
+OFFSET_WINDOWS(readCustomDataInjectOff, 0)
+SIGSCAN_WINDOWS(readConsoleCommandInjectSig, "68 00 04 00 00 68 ? ? ? ? E8 ? ? ? ? B8")
+OFFSET_WINDOWS(readConsoleCommandInjectOff, 0)
+SIGSCAN_WINDOWS(Cmd_ExecuteCommand, "55 8B EC 57 8B 7D ? 8B 07 85 C0")
+SIGSCAN_WINDOWS(InsertCommand, "55 8B EC 56 57 8B 7D ? 8B F1 81 FF FF 01 00 00")
+
+
+// Server
+SIGSCAN_WINDOWS(ViewPunch, "55 8B EC A1 ? ? ? ? 8B 50 ? 83 EC 0C 56 8B F1")
+SIGSCAN_WINDOWS(FindClosestPassableSpace, "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ? 89 6C 24 ? 8B EC A1 ? ? ? ? 8B 50 ? 81 EC 88 02 00 00")
+SIGSCAN_WINDOWS(CheckStuck_FloatTime, "FF 15 ? ? ? ? D9 5D ? 8B 4E")
+
+
+// Steam API
+SIGSCAN_WINDOWS(interfaceMgrSig, "83 3D ? ? ? ? 00 74 ? B0 01")
+OFFSET_WINDOWS(interfaceMgrOff, 2)
+
+// clang-format on
