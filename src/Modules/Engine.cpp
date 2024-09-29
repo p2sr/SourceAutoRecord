@@ -182,7 +182,9 @@ void Engine::SafeUnload(const char *postCommand) {
 	}
 }
 bool Engine::isRunning() {
-	return engine->hoststate->m_activeGame && engine->hoststate->m_currentState == HOSTSTATES::HS_RUN;
+	auto hoststate_run = HS_RUN;
+	if (sar.game->Is(SourceGame_INFRA)) hoststate_run = INFRA_HS_RUN;
+	return engine->hoststate->m_activeGame && engine->hoststate->m_currentState == hoststate_run;
 }
 bool Engine::IsGamePaused() {
 	return this->IsPaused(this->engineClient->ThisPtr());

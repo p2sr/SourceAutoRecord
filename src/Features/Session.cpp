@@ -73,8 +73,9 @@ void Session::Started(bool menu) {
 
 	NetMessage::SessionStarted();
 
+	g_loadstate = LOAD_END;
+	this->ResetLoads();
 	if (menu) {
-		g_loadstate = LOAD_END;
 		console->Print("Session started! (menu)\n");
 		this->Rebase(engine->GetTick());
 
@@ -215,10 +216,26 @@ void Session::Ended() {
 void Session::Changed() {
 	console->DevMsg("m_currentState = %i\n", engine->hoststate->m_currentState);
 
-	if (engine->hoststate->m_currentState == HS_CHANGE_LEVEL_SP || engine->hoststate->m_currentState == HS_CHANGE_LEVEL_MP || engine->hoststate->m_currentState == HS_GAME_SHUTDOWN) {
-		this->Ended();
-	} else if (engine->hoststate->m_currentState == HS_RUN && !engine->hoststate->m_activeGame && engine->GetMaxClients() <= 1) {
-		this->Started(true);
+	if (sar.game->Is(SourceGame_INFRA)) {
+		if (engine->hoststate->m_currentState == INFRA_HS_LOAD_GAME_WITHOUT_RESTART
+			|| engine->hoststate->m_currentState == INFRA_HS_CHANGE_LEVEL_SP
+			|| engine->hoststate->m_currentState == INFRA_HS_CHANGE_LEVEL_MP
+			|| engine->hoststate->m_currentState == INFRA_HS_GAME_SHUTDOWN) {
+			this->Ended();
+		} else if (this->prevState == INFRA_HS_LOAD_GAME_WITHOUT_RESTART
+			&& engine->hoststate->m_currentState == INFRA_HS_RUN) {
+			this->Started();
+		} else if (engine->hoststate->m_currentState == INFRA_HS_RUN
+			&& !engine->hoststate->m_activeGame
+			&& engine->GetMaxClients() <= 1) {
+			this->Started(true);
+		}
+	} else {
+		if (engine->hoststate->m_currentState == HS_CHANGE_LEVEL_SP || engine->hoststate->m_currentState == HS_CHANGE_LEVEL_MP || engine->hoststate->m_currentState == HS_GAME_SHUTDOWN) {
+			this->Ended();
+		} else if (engine->hoststate->m_currentState == HS_RUN && !engine->hoststate->m_activeGame && engine->GetMaxClients() <= 1) {
+			this->Started(true);
+		}
 	}
 }
 void Session::Changed(int state) {

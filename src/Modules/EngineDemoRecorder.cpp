@@ -303,7 +303,9 @@ DETOUR_COMMAND(EngineDemoRecorder::record) {
 		}
 	}
 
-	bool menu = engine->GetCurrentMapName() == "" && engine->hoststate->m_currentState == HS_RUN;
+	auto hoststate_run = HS_RUN;
+	if (sar.game->Is(SourceGame_INFRA)) hoststate_run = INFRA_HS_RUN;
+	bool menu = engine->GetCurrentMapName() == "" && engine->hoststate->m_currentState == hoststate_run;
 
 	if (newArgs.ArgC() >= 2 && sar_record_mkdir.GetBool() && !menu && !engine->demorecorder->isRecordingDemo) {
 		try {

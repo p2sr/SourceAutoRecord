@@ -101,7 +101,9 @@ void EngineDemoPlayer::HandlePlaybackFix() {
 			state = 1;
 		}
 	} else if (state == 1) {
-		if (engine->hoststate->m_currentState == HS_RUN && !g_waitingForSession) {
+		auto hoststate_run = HS_RUN;
+		if (sar.game->Is(SourceGame_INFRA)) hoststate_run = INFRA_HS_RUN;
+		if (engine->hoststate->m_currentState == hoststate_run && !g_waitingForSession) {
 			state = 2;
 		}
 	} else if (state == 2) {
