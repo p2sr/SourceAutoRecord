@@ -19,7 +19,7 @@ Variable ghost_leaderboard_y("ghost_leaderboard_y", "10", 0, "The x position of 
 
 static std::string formatTicks(int ticks) {
 	if (ticks == INT_MAX) return "-";
-	return SpeedrunTimer::Format((float)ticks / 60.0);
+	return SpeedrunTimer::Format((float)ticks / sar.game->Tickrate());
 }
 
 void GhostLeaderboardHud::Paint(int slot) {
@@ -239,7 +239,7 @@ void GhostLeaderboardHud::SpeedrunStart(int ticks) {
 		return;
 	} else { // mode == 1
 		// race
-		this->lastLiveUpdate = (int)(engine->GetHostTime() * 60.0f);
+		this->lastLiveUpdate = (int)(engine->GetHostTime() * sar.game->Tickrate());
 		for (auto &ent : ghostLeaderboard.entries) {
 			ent.ticks = ticks;
 			ent.waiting = false;
@@ -251,7 +251,7 @@ void GhostLeaderboardHud::SpeedrunStart(int ticks) {
 void GhostLeaderboardHud::UpdateLive() {
 	if (ghost_leaderboard_mode.GetInt() != 1) return;
 
-	int newTime = (int)(engine->GetHostTime() * 60.0f);
+	int newTime = (int)(engine->GetHostTime() * sar.game->Tickrate());
 	int delta = newTime - this->lastLiveUpdate;
 	this->lastLiveUpdate = newTime;
 

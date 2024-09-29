@@ -629,7 +629,7 @@ void Stitcher::OverrideView(CViewSetup *view) {
 		if (delta < 0) {
 			delta = 0;
 			last_cl_time = cl_time;
-		} else if (delta >= 1.0f / 60.0f) {
+		} else if (delta >= engine->GetIPT()) {
 			doMovement(delta);
 			last_cl_time = cl_time;
 		}

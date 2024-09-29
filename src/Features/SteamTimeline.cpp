@@ -1,6 +1,7 @@
 #include "SteamTimeline.hpp"
 
 #include "Event.hpp"
+#include "Modules/Engine.hpp"
 #include "Modules/SteamAPI.hpp"
 #include "Speedrun/SpeedrunTimer.hpp"
 
@@ -42,7 +43,7 @@ ON_EVENT(SPEEDRUN_FINISH) {
 	if (!steam->hasLoaded) return;
 	std::chrono::duration<float> offset = std::chrono::system_clock::now() - g_speedrunStart;
 
-	auto fl_time = SpeedrunTimer::GetTotalTicks() / 60.0f;
+	auto fl_time = SpeedrunTimer::GetTotalTicks() * engine->GetIPT();
 	auto time = SpeedrunTimer::Format(fl_time);
 
 	steam->g_timeline->SetTimelineStateDescription(("Speedrun " + time).c_str(), -offset.count());

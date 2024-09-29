@@ -709,7 +709,7 @@ void Host_AccumulateTime_Detour(float dt) {
 		Host_AccumulateTime_Hook.Enable();
 	} else if (g_advance > 0) {
 		Host_AccumulateTime_Hook.Disable();
-		Host_AccumulateTime(1.0f/60);
+		Host_AccumulateTime(engine->GetIPT());
 		Host_AccumulateTime_Hook.Enable();
 		--g_advance;
 	} else {
@@ -720,7 +720,7 @@ void Host_AccumulateTime_Detour(float dt) {
 	// HACK: Force frametime to equal 2 ticks when loading
 	// Limits host_timescale effect on load times, faster loads
 	if (g_loadstate == LOADING && sar_loads_uncap.GetBool()) {
-		*host_frametime = *host_frametime_unbounded = 2.0f/60;
+		*host_frametime = *host_frametime_unbounded = 2.0f * engine->GetIPT();
 	}
 
 	if (*host_frametime != *host_frametime_unbounded) {

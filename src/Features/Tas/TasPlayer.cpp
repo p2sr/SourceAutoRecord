@@ -51,7 +51,14 @@ void SetPlaybackVars(bool active) {
 		old_interpolate = cl_interpolate.GetBool();
 		old_motionblur = mat_motion_blur_enabled.GetBool();
 		in_forceuser.SetValue(tasPlayer->playbackInfo.coopControlSlot >= 0 ? tasPlayer->playbackInfo.coopControlSlot : 100);
-		host_framerate.SetValue(60);
+		auto tickrate = 1.0f / engine->GetIPT();
+		if (fabsf(tickrate - roundf(tickrate)) < 0.0001f) {
+			// if it's close to a whole number, set it as an int
+			// (preempting floating point errors)
+			host_framerate.SetValue((int)roundf(tickrate));
+		} else {
+			host_framerate.SetValue(tickrate);
+		}
 		if (!sar_tas_interpolate.GetBool() && tasPlayer->IsUsingTools()) {
 			cl_interpolate.SetValue(false);
 			mat_motion_blur_enabled.SetValue(false);
@@ -90,7 +97,7 @@ void SetPlaybackVars(bool active) {
 			fps_max.SetValue(0);
 		} else if (tasPlayer->GetTick() >= sar_tas_skipto.GetInt()) {
 			engine->SetSkipping(false);
-			fps_max.SetValue((int)(sar_tas_playback_rate.GetFloat() * 60.0f));
+			fps_max.SetValue((int)(sar_tas_playback_rate.GetFloat() * sar.game->Tickrate()));
 		}
 	}
 

@@ -29,7 +29,7 @@
 #include "Utils.hpp"
 
 #define SPEEDRUN_PACKET_TYPE "srtimer"
-#define SYNC_INTERVAL 60  // Sync every second, just in case
+#define SYNC_INTERVAL 1.0f  // Sync every second, just in case
 
 enum PacketType {
 	SYNC,
@@ -316,7 +316,7 @@ int SpeedrunTimer::GetOffsetTicks() {
 
 	if (*end) {
 		// Try to parse as a time instead
-		ticks = std::round(SpeedrunTimer::UnFormat(offset) * 60.0f);
+		ticks = std::round(SpeedrunTimer::UnFormat(offset) * sar.game->Tickrate());
 	}
 
 	return ticks;
@@ -443,7 +443,7 @@ void SpeedrunTimer::Update() {
 
 	if (engine->IsCoop() && !engine->IsOrange()) {
 		int tick = getCurrentTick();
-		if (tick < g_coopLastSyncTick || tick >= g_coopLastSyncTick + SYNC_INTERVAL) {
+		if (tick < g_coopLastSyncTick || tick >= g_coopLastSyncTick + roundf(SYNC_INTERVAL / engine->GetIPT())) {
 			sendCoopPacket(PacketType::SYNC);
 			g_coopLastSyncTick = tick;
 		}
@@ -990,11 +990,11 @@ CON_COMMAND(sar_speedrun_recover, "sar_speedrun_recover <ticks|time> - recover a
 	long ticks = strtol(time, &end, 10);
 	if (*end) {
 		// Try to parse as a time instead
-		ticks = std::round(SpeedrunTimer::UnFormat(time) * 60.0f);
+		ticks = std::round(SpeedrunTimer::UnFormat(time) * sar.game->Tickrate());
 	}
 
 	g_speedrun.recovery = ticks;
-	console->Print("Timer will start on next load at %s\n", SpeedrunTimer::Format(ticks / 60.0f).c_str());
+	console->Print("Timer will start on next load at %s\n", SpeedrunTimer::Format(ticks * engine->GetIPT()).c_str());
 }
 
 CON_COMMAND(sar_speedrun_export_all, "sar_speedrun_export_all <filename> - export the results of many speedruns to the specified CSV file\n") {

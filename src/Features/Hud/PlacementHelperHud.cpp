@@ -88,7 +88,7 @@ ON_EVENT(RENDER) {
 		auto deferringToPortal = placementHelper->field<bool>("m_bDeferringToPortal");
 
 		auto currentTime = server->gpGlobals->curtime;
-		auto remainingBlockedTimeTicks = (int)(fmaxf(disableTime - currentTime, 0.0f) * 60.0f);
+		auto remainingBlockedTimeTicks = (int)(fmaxf(disableTime - currentTime, 0.0f) * sar.game->Tickrate());
 		auto placementBlocked = deferringToPortal || (remainingBlockedTimeTicks > 0);
 
 		auto sphereColor = Color(0, 200, 0, 64);

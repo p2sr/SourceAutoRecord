@@ -209,7 +209,7 @@ CameraState Camera::InterpolateStates(float time) {
 		      LAST };
 
 	//reading 4 frames closest to time
-	float frameTime = time * 60.0f;
+	float frameTime = time * sar.game->Tickrate();
 	int frames[4] = {INT_MIN, INT_MIN, INT_MAX, INT_MAX};
 	for (auto const &state : camera->states) {
 		int stateTime = state.first;
@@ -285,7 +285,7 @@ void Camera::DrawInWorld() const {
 	MeshId mesh_cams = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 0, 0 }, true));
 	MeshId mesh_currentCam = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 255, 0 }, true));
 
-	float frameTime = 1.0f / 60;
+	float frameTime = 1.0f / 30; // don't draw a line for every frame, that's just too much
 	int maxTimeTicks = 0;
 	int minTimeTicks = INT_MAX;
 	for (auto const &state : camera->states) {
@@ -294,8 +294,8 @@ void Camera::DrawInWorld() const {
 	}
 
 	// changing in-game ticks to seconds.
-	float maxTime = maxTimeTicks * frameTime;
-	float minTime = minTimeTicks * frameTime;
+	float maxTime = maxTimeTicks * engine->GetIPT();
+	float minTime = minTimeTicks * engine->GetIPT();
 
 	// for each frame, calculate interpolated path
 	Vector pos = camera->InterpolateStates(minTime).origin;
@@ -348,24 +348,7 @@ void Camera::DrawInWorld() const {
 		);
 		
 		Vector forward, right, up;
-		float cp, sp, cy, sy, cr, sr;
-		cp = cosf(DEG2RAD(state.angles.x));
-		sp = sinf(DEG2RAD(state.angles.x));
-		cy = cosf(DEG2RAD(state.angles.y));
-		sy = sinf(DEG2RAD(state.angles.y));
-		cr = cosf(DEG2RAD(state.angles.z));
-		sr = sinf(DEG2RAD(state.angles.z));
-
-		forward.x = cp * cy;
-		forward.y = cp * sy;
-		forward.z = -sp;
-
-		right.x = (-1 * sr * sp * cy + -1 * cr * -sy);
-		right.y = (-1 * sr * sp * sy + -1 * cr * cy);
-		right.z = -1 * sr * cp;
-
-		up = right.Cross(forward);
-
+		Math::AngleVectors(state.angles, &forward, &right, &up);
 
 		float fovScalar = tanf(DEG2RAD(state.fov / 2));
 
@@ -405,7 +388,7 @@ void Camera::OverrideView(CViewSetup *m_View) {
 	}
 
 	if (timeOffsetRefreshRequested) {
-		timeOffset = engine->GetClientTime() - engine->demoplayer->GetTick() / 60.0f;
+		timeOffset = engine->GetClientTime() - engine->demoplayer->GetTick() * engine->GetIPT();
 		timeOffsetRefreshRequested = false;
 	}
 
@@ -839,7 +822,7 @@ CON_COMMAND(sar_cam_path_goto, "sar_cam_path_goto <frame> [skipto] - sends the c
 		return console->Print("This frame does not exist.\n");
 	}
 	
-	camera->currentState = camera->InterpolateStates(i * (1.0f / 60));
+	camera->currentState = camera->InterpolateStates(i * engine->GetIPT());
 
 	if (args.ArgC() == 3 && std::atoi(args[2]) == 1) {
 		if (engine->demoplayer->IsPlaying()) {
@@ -904,8 +887,8 @@ CON_COMMAND(sar_cam_path_export,
 		}
 
 		// changing in-game ticks to seconds.
-		float maxTime = maxTimeTicks / 60.0f;
-		float minTime = minTimeTicks / 60.0f;
+		float maxTime = maxTimeTicks * engine->GetIPT();
+		float minTime = minTimeTicks * engine->GetIPT();
 
 		if (daVinci) file << "C={\n";
 

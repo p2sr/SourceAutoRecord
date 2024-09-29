@@ -153,7 +153,7 @@ ON_EVENT(FRAME) {
 	int host, server, client;
 	engine->GetTicks(host, server, client);
 
-	if (host > lastExecutedPresence + 60) {
+	if (host > lastExecutedPresence + sar.game->Tickrate()) {
 		lastExecutedPresence = host;
 		UpdateDiscordRichPresence();
 	}

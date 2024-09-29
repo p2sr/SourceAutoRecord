@@ -228,7 +228,7 @@ bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std:
 					}
 
 					if (cmd.find("__END__") != std::string::npos) {
-						console->ColorMsg(Color(0, 255, 0, 255), "Segment length -> %d ticks: %.3fs\n", tick, tick / 60.f);
+						console->ColorMsg(Color(0, 255, 0, 255), "Segment length -> %d ticks: %.3fs\n", tick, tick * engine->GetIPT());
 						demo->segmentTicks = tick;
 					}
 					break;

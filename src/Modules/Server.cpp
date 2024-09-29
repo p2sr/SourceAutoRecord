@@ -619,7 +619,7 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 		}
 		if (end) {
 			if (transition_time != 0) {
-				auto time = (session->GetTick() - transition_time)  / 60.0f;
+				auto time = (session->GetTick() - transition_time) * engine->GetIPT();
 				toastHud.AddToast("transition", Utils::ssprintf("Transition lost %.3f sec", time));
 				transition_time = 0;
 			}
