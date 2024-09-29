@@ -498,6 +498,7 @@ DETOUR_B(Server::AirMove) {
 	return Server::AirMove(thisptr);
 }
 static void setAircontrol(int val) {
+	if (!server->aircontrol_fling_speed_addr) return;
 	switch (val) {
 	case 0:
 		*server->aircontrol_fling_speed_addr = 300.0f * 300.0f;
@@ -814,8 +815,11 @@ bool Server::Init() {
 
 		Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t *), &Server::CheckJumpButtonBase);
 
-		this->aircontrol_fling_speed_addr = Memory::Deref<float *>((uintptr_t)AirMove + Offsets::aircontrol_fling_speed);
-		Memory::UnProtect(this->aircontrol_fling_speed_addr, 4);
+		auto aircontrol_fling_speed_addr = Memory::Scan(this->Name(), Offsets::aircontrol_fling_speedSig, Offsets::aircontrol_fling_speedOff);
+		if (aircontrol_fling_speed_addr) {
+			this->aircontrol_fling_speed_addr = Memory::Deref<float *>(aircontrol_fling_speed_addr);
+			Memory::UnProtect(this->aircontrol_fling_speed_addr, 4);
+		}
 	}
 
 	if (auto g_ServerTools = Interface::Create(this->Name(), "VSERVERTOOLS001")) {

@@ -24,7 +24,6 @@ OFFSET_LINUX(Key_SetBinding, 60)
 OFFSET_LINUX(VideoMode_Create, 104)
 OFFSET_LINUX(AirMove_Offset1, 14)
 OFFSET_LINUX(AirMove_Offset2, 12)
-OFFSET_DEFAULT(aircontrol_fling_speed, 662, 524)
 OFFSET_LINUX(UTIL_PlayerByIndex, 61)
 OFFSET_LINUX(GetClientMode, 11)
 OFFSET_LINUX(GetHud, 104)
@@ -89,3 +88,5 @@ SIGSCAN_LINUX(UTIL_FindClosestPassableSpace, "55 89 E5 57 56 53 81 EC BC 02 00 0
 SIGSCAN_LINUX(FindClosestPassableSpace, "8B 15 ? ? ? ? B8 01 00 00 00 8B 52 30 85 D2 0F 84 ? ? ? ? 55 89 E5 57 56 53 81 EC 7C 02 00 00 8B 55 08 8B 0D ? ? ? ? 8B 92 E4 00 00 00")
 SIGSCAN_LINUX(UTIL_GetCommandClientIndex, "A1 ? ? ? ? 55 89 E5 5D 83 C0 01 C3")
 SIGSCAN_LINUX(CheckStuck_FloatTime, "E8 ? ? ? ? 8B 43 04 DD 9D ? ? ? ? F2 0F 10 B5 ? ? ? ? 8B 50 24 66 0F 14 F6 66 0F 5A CE 85 D2")
+SIGSCAN_DEFAULT(aircontrol_fling_speedSig, "0F 2F 25 ? ? ? ? 0F 28 F0",
+                                           "0F 2E 05 ? ? ? ? 0F 86 ? ? ? ? 0F 2E 25")

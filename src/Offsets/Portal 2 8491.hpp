@@ -118,7 +118,6 @@ OFFSET_DEFAULT(mv, 8, 8)
 OFFSET_DEFAULT(player, 4, 4)
 OFFSET_DEFAULT(ProcessMovement, 1, 2)
 OFFSET_DEFAULT(GetPlayerViewOffset, 8, 9)
-OFFSET_DEFAULT(aircontrol_fling_speed, 791, 641) // "%s: Make in time? %s velocity %f wish %f\n" -> CPortalGameMovement::AirPortalFunnel -> xref CPortalGameMovement::PortalFunnel -> xref[0] CPortalGameMovement::AirMove, find MIN_FLING_SPEED
 
 // CDemoRecorder
 OFFSET_DEFAULT(GetRecordingTick, 1, 1)
@@ -478,6 +477,9 @@ SIGSCAN_DEFAULT(IsInPVS, "55 8B EC 51 53 8B 5D 08 56 57 33 FF 89 4D FC 66 39 79 
                          "55 57 56 53 31 DB 83 EC 0C 8B 74 24 20 8B 7C 24 24 66 83 7E 1A 00 8B 87 10 20 00 00 89 C2 0F 85 BC 00 00 00 85 C0 7F 75 8D B4 26")
 SIGSCAN_DEFAULT(CreateViewModel, "E8 ? ? ? ? 5F 5D C2 04 00 53",
                                  "E8 ? ? ? ? E9 ? ? ? ? 8D B4 26 00 00 00 00 8D 76 00 8B 3D")
+SIGSCAN_DEFAULT(aircontrol_fling_speedSig, "0F 2F 25 ? ? ? ? F3 0F 11 45",
+                                           "0F 2F 05 ? ? ? ? 0F 86 ? ? ? ? 0F 2F D1") // "%s: Make in time? %s velocity %f wish %f\n" -> CPortalGameMovement::AirPortalFunnel -> xref CPortalGameMovement::PortalFunnel -> xref(has 90000) CPortalGameMovement::AirMove, [U]COMISS XMM dword ptr
+OFFSET_DEFAULT(aircontrol_fling_speedOff, 3, 3)
 
 
 // Steam API

@@ -4,7 +4,6 @@
 
 OFFSET_DEFAULT(m_pCommands, 228, 228)
 OFFSET_DEFAULT(RemoveMaterial, 155, 156)
-OFFSET_LINUX(aircontrol_fling_speed, 530)
 OFFSET_LINUX(g_movieInfo, 11)
 OFFSET_LINUX(SND_IsRecording, 10)
 OFFSET_LINUX(gamerules, 7)
@@ -48,6 +47,7 @@ SIGSCAN_LINUX(ViewPunch, "55 89 E5 83 EC ? A1 ? ? ? ? 89 5D ? 89 75 ? 8B 5D ? 8B
 SIGSCAN_LINUX(UTIL_FindClosestPassableSpace, "55 89 E5 57 56 53 81 EC ? ? ? ? C6 85 ? ? ? ? ? 8B 45 ? C6 85")
 SIGSCAN_LINUX(FindClosestPassableSpace, "55 B8 ? ? ? ? 89 E5 57 56 53 81 EC ? ? ? ? 8B 15")
 SIGSCAN_LINUX(CheckStuck_FloatTime, "E8 ? ? ? ? 8B 43 ? DD 9D")
+SIGSCAN_LINUX(aircontrol_fling_speedSig, "0F 2E 05 ? ? ? ? 0F 86 ? ? ? ? 0F 2E 15")
 
 // Steam API
 SIGSCAN_WINDOWS(interfaceMgrSig, "A3 ? ? ? ? 3B C3 0F 84")
