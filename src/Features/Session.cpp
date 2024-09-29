@@ -134,7 +134,7 @@ void Session::Ended() {
 	}
 
 	// Disable any view controllers (cutscene cameras) that might be active
-	if (!engine->IsOrange() && sar_patch_viewcontrol.GetBool()) {
+	if (!sar.game->Is(SourceGame_INFRA) && !engine->IsOrange() && sar_patch_viewcontrol.GetBool()) {
 		if (engine->GetCurrentMapName() != "sp_a1_wakeup") { // Betsrighter exists
 			for (auto index = 0; index < Offsets::NUM_ENT_ENTRIES; ++index) {
 				auto info = entityList->GetEntityInfoByIndex(index);

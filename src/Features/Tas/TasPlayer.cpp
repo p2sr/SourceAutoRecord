@@ -371,28 +371,30 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bo
 		pi.position = pl->abs_origin();
 		pi.velocity = pl->abs_velocity();
 
+		if (!sar.game->Is(SourceGame_INFRA)) {
 #ifdef _WIN32
-		// windows being weird. ask mlugg for explanation because idfk.
-		void *paintPowerUser = (void *)((uint32_t)player + 0x1250);
+			// windows being weird. ask mlugg for explanation because idfk.
+			void *paintPowerUser = (void *)((uint32_t)player + 0x1250);
 #else
-		void *paintPowerUser = player;
+			void *paintPowerUser = player;
 #endif
-		using _GetPaintPower = const PaintPowerInfo_t &(__rescall *)(void *thisptr, unsigned paintId);
-		_GetPaintPower GetPaintPower = Memory::VMT<_GetPaintPower>(paintPowerUser, Offsets::GetPaintPower);
-		PaintPowerInfo_t speedPaintInfo = GetPaintPower(paintPowerUser, 2);
-		pi.onSpeedPaint = speedPaintInfo.m_State == 1;  // ACTIVE_PAINT_POWER
+			using _GetPaintPower = const PaintPowerInfo_t &(__rescall *)(void *thisptr, unsigned paintId);
+			_GetPaintPower GetPaintPower = Memory::VMT<_GetPaintPower>(paintPowerUser, Offsets::GetPaintPower);
+			PaintPowerInfo_t speedPaintInfo = GetPaintPower(paintPowerUser, 2);
+			pi.onSpeedPaint = speedPaintInfo.m_State == 1;  // ACTIVE_PAINT_POWER
 
-		if (pi.onSpeedPaint) {
-			// maxSpeed is modified within ProcessMovement. This hack allows us to "predict" its next value
-			// Cache off old max speed to restore later
-			float oldMaxSpeed = *m_flMaxspeed;
-			// Use the speed paint to modify the max speed
-			using _UseSpeedPower = void(__rescall *)(void *thisptr, PaintPowerInfo_t &info);
-			_UseSpeedPower UseSpeedPower = Memory::VMT<_UseSpeedPower>(player, Offsets::UseSpeedPower);
-			UseSpeedPower(player, speedPaintInfo);
-			// Get the new ("predicted") max speed and restore the old one on the player
-			pi.maxSpeed = *m_flMaxspeed;
-			*m_flMaxspeed = oldMaxSpeed;
+			if (pi.onSpeedPaint) {
+				// maxSpeed is modified within ProcessMovement. This hack allows us to "predict" its next value
+				// Cache off old max speed to restore later
+				float oldMaxSpeed = *m_flMaxspeed;
+				// Use the speed paint to modify the max speed
+				using _UseSpeedPower = void(__rescall *)(void *thisptr, PaintPowerInfo_t &info);
+				_UseSpeedPower UseSpeedPower = Memory::VMT<_UseSpeedPower>(player, Offsets::UseSpeedPower);
+				UseSpeedPower(player, speedPaintInfo);
+				// Get the new ("predicted") max speed and restore the old one on the player
+				pi.maxSpeed = *m_flMaxspeed;
+				*m_flMaxspeed = oldMaxSpeed;
+			}
 		}
 	} else {
 		ClientEnt *pl = (ClientEnt *)player;

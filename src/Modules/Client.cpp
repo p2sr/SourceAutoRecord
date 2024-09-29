@@ -1096,8 +1096,10 @@ bool Client::Init() {
 		g_OnCommandHook.SetFunc(Client::OnCommand);
 	}
 
-	Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), Offsets::GetChapterProgress);
-	g_GetChapterProgressHook.SetFunc(Client::GetChapterProgress);
+	if (!sar.game->Is(SourceGame_INFRA)) {
+		Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), Offsets::GetChapterProgress);
+		g_GetChapterProgressHook.SetFunc(Client::GetChapterProgress);
+	}
 
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");
