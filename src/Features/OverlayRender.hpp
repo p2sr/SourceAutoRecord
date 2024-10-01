@@ -6,9 +6,9 @@
 #include <functional>
 
 // A callback to determine the rendering parameters for a mesh based on
-// a given CViewSetup.
+// a given ViewSetup.
 struct RenderCallback {
-	std::function<void (CViewSetup, Color &, bool &)> cbk;
+	std::function<void (ViewSetup *, Color &, bool &)> cbk;
 
 	// A trivial "never render" callback
 	static RenderCallback none;

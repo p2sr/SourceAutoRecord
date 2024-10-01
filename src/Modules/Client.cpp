@@ -698,10 +698,14 @@ DETOUR_COMMAND(Client::playvideo_end_level_transition) {
 DETOUR_T(void, Client::OverrideView, CViewSetup *m_View) {
 	Client::OverrideView(thisptr, m_View);
 
-	camera->OverrideView(m_View);
-	Stitcher::OverrideView(m_View);
-	GhostEntity::FollowPov(m_View);
-	engine->demoplayer->OverrideView(m_View);
+	auto view = ViewSetupCreate(m_View);
+
+	camera->OverrideView(view);
+	Stitcher::OverrideView(view);
+	GhostEntity::FollowPov(view);
+	engine->demoplayer->OverrideView(view);
+
+	ViewSetupCopy(view, m_View);
 }
 
 

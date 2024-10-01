@@ -368,7 +368,7 @@ ON_EVENT(RENDER) {
 }
 
 //Overrides view.
-void Camera::OverrideView(CViewSetup *m_View) {
+void Camera::OverrideView(ViewSetup *m_View) {
 	rawState.origin = m_View->origin;
 	rawState.angles = m_View->angles;
 	rawState.fov = m_View->fov;

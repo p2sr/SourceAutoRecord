@@ -301,7 +301,7 @@ static struct {
 	float saved_avellimit;
 } g_portal_interp_state[2];
 
-void EngineDemoPlayer::OverrideView(CViewSetup *view) {
+void EngineDemoPlayer::OverrideView(ViewSetup *view) {
 	if (!this->IsPlaying()) return;
 	if (!sar_demo_portal_interp_fix.GetBool()) return;
 

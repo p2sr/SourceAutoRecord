@@ -404,7 +404,7 @@ GhostEntity *GhostEntity::GetFollowTarget() {
 	return ghost;
 }
 
-void GhostEntity::FollowPov(CViewSetup *view) {
+void GhostEntity::FollowPov(ViewSetup *view) {
 	GhostEntity *ghost = GhostEntity::GetFollowTarget();
 	if (!ghost) return;
 

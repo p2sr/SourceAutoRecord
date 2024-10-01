@@ -73,7 +73,7 @@ public:
 	static bool followNetwork;
 	static int followId;
 	static GhostEntity *GetFollowTarget();
-	static void FollowPov(CViewSetup *view);
+	static void FollowPov(ViewSetup *view);
 	static void StopFollowing();
 	static void StartFollowing(GhostEntity *ghost);
 	bool IsBeingFollowed();

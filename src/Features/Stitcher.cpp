@@ -618,7 +618,7 @@ static void updateUi() {
 	}
 }
 
-void Stitcher::OverrideView(CViewSetup *view) {
+void Stitcher::OverrideView(ViewSetup *view) {
 	initStitch(isStitching());
 	if (!isStitching()) return;
 

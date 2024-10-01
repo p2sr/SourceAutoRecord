@@ -1,4 +1,5 @@
 #include "OverlayRender.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/MaterialSystem.hpp"
 #include "Modules/Surface.hpp"
@@ -15,7 +16,7 @@
 #define FONT_VPAD 24
 
 RenderCallback RenderCallback::none = {
-	[](CViewSetup vs, Color &col_out, bool &nodepth_out) {
+	[](ViewSetup *vs, Color &col_out, bool &nodepth_out) {
 		col_out = Color{0,0,0,0};
 		nodepth_out = false;
 	},
@@ -23,7 +24,7 @@ RenderCallback RenderCallback::none = {
 
 RenderCallback RenderCallback::constant(Color col, bool nodepth) {
 	return {
-		[=](CViewSetup vs, Color &col_out, bool &nodepth_out) {
+		[=](ViewSetup *vs, Color &col_out, bool &nodepth_out) {
 			col_out = col;
 		 	nodepth_out = nodepth;
 		},
@@ -32,9 +33,9 @@ RenderCallback RenderCallback::constant(Color col, bool nodepth) {
 
 RenderCallback RenderCallback::prox_fade(float min, float max, Color target, Vector point, RenderCallback base) {
 	return {
-		[=](CViewSetup vs, Color &col_out, bool &nodepth_out) {
+		[=](ViewSetup *vs, Color &col_out, bool &nodepth_out) {
 			base.cbk(vs, col_out, nodepth_out);
-			float dist = (vs.origin - point).Length();
+			float dist = (vs->origin - point).Length();
 			if (dist < min) {
 				col_out = target;
 			} else if (dist < max) {
@@ -51,7 +52,7 @@ RenderCallback RenderCallback::prox_fade(float min, float max, Color target, Vec
 
 RenderCallback RenderCallback::shade(Vector point, RenderCallback base) {
 	return {
-		[=](CViewSetup vs, Color &col_out, bool &nodepth_out) {
+		[=](ViewSetup *vs, Color &col_out, bool &nodepth_out) {
 			base.cbk(vs, col_out, nodepth_out);
 
 			Color light = engine->GetLightAtPoint(point);
@@ -318,7 +319,7 @@ static void drawVerts(IMaterial *mat, bool lines, Vector *verts, int nverts, Col
 	mb.Draw();
 }
 
-static void drawMesh(const CViewSetup &setup, OverlayMesh &m, bool translucent) {
+static void drawMesh(ViewSetup *setup, OverlayMesh &m, bool translucent) {
 	Color solid_color, wf_color;
 	bool solid_nodepth, wf_nodepth;
 	m.solid.cbk(setup, solid_color, solid_nodepth);
@@ -346,10 +347,10 @@ static void drawMesh(const CViewSetup &setup, OverlayMesh &m, bool translucent) 
 	}
 }
 
-static Matrix createTextRotationMatrix(Vector text_pos, CViewSetup setup) {
+static Matrix createTextRotationMatrix(Vector text_pos, ViewSetup *setup) {
 	(void)text_pos; // not used for now
 
-	auto rot = Math::AngleMatrix({-setup.angles.x, fmodf(setup.angles.y + 180.0, 360.0), 0});
+	auto rot = Math::AngleMatrix({-setup->angles.x, fmodf(setup->angles.y + 180.0, 360.0), 0});
 
 	return rot;
 }
@@ -399,7 +400,7 @@ static float drawTextLine(const char *str, Vector top_center, Color text_color, 
 	return (max_height - min_height + FONT_VPAD) * scale;
 }
 
-static void drawText(CViewSetup setup, OverlayText &t) {
+static void drawText(ViewSetup *setup, OverlayText &t) {
 	std::vector<std::string> lines;
 	int height = FONT_VPAD;
 	int last_base_delta = 0;
@@ -437,7 +438,7 @@ static void drawText(CViewSetup setup, OverlayText &t) {
 
 	float scale = t.x_height / (float)FONT_ATLAS_INFO['x'].height;
 	if (t.visibility_scale) {
-		float dist = (setup.origin - t.pos).Length();
+		float dist = (setup->origin - t.pos).Length();
 		if (dist > 100) {
 			// this seems to work fairly well just from briefly messing around
 			scale *= sqrt((dist - 60) / 40);
@@ -488,7 +489,8 @@ static void drawText(CViewSetup setup, OverlayText &t) {
 }
 
 void OverlayRender::drawOpaques(void *viewrender) {
-	CViewSetup setup = *(CViewSetup *)((uintptr_t)viewrender + 8); // CRendering3dView inherits CViewSetup! this is handy
+	// CRendering3dView inherits CViewSetup! this is handy
+	auto setup = ViewSetupCreate((CViewSetup *)((uintptr_t)viewrender + 8));
 
 	for (size_t i = 0; i < g_num_meshes; ++i) {
 		drawMesh(setup, g_meshes[i], false);
@@ -496,7 +498,8 @@ void OverlayRender::drawOpaques(void *viewrender) {
 }
 
 void OverlayRender::drawTranslucents(void *viewrender) {
-	CViewSetup setup = *(CViewSetup *)((uintptr_t)viewrender + 8); // CRendering3dView inherits CViewSetup! this is handy
+	// CRendering3dView inherits CViewSetup! this is handy
+	auto setup = ViewSetupCreate((CViewSetup *)((uintptr_t)viewrender + 8));
 
 	// Order meshes!
 	struct MeshCompare {
@@ -526,7 +529,7 @@ void OverlayRender::drawTranslucents(void *viewrender) {
 		}
 		Vector origin;
 	};
-	std::set<std::pair<bool, void *>, MeshCompare> meshes(MeshCompare{setup.origin});
+	std::set<std::pair<bool, void *>, MeshCompare> meshes(MeshCompare{setup->origin});
 	for (size_t i = 0; i < g_num_meshes; ++i) {
 		meshes.insert({ false, &g_meshes[i] });
 	}

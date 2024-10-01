@@ -54,7 +54,7 @@ public:
 	const char *Name() override { return MODULE("engine"); }
 
 	bool ShouldBlacklistCommand(const char *cmd);
-	void OverrideView(CViewSetup *view);
+	void OverrideView(ViewSetup *view);
 };
 
 extern Command sar_startdemos;
