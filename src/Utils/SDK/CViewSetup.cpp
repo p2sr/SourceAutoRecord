@@ -1,6 +1,9 @@
 #include "CViewSetup.hpp"
 
-void ViewSetupFromCViewSetup(CViewSetup *cview, ViewSetup *view) {
+#include "SAR.hpp"
+
+template <typename T>
+void ViewSetupRead(T *cview, ViewSetup *view) {
 	view->origin = cview->origin;
 	view->angles = cview->angles;
 	view->fov = cview->fov;
@@ -13,20 +16,8 @@ void ViewSetupFromCViewSetup(CViewSetup *cview, ViewSetup *view) {
 	view->zNear = cview->zNear;
 }
 
-void ViewSetupFromCViewSetupV1(CViewSetupV1 *cview, ViewSetup *view) {
-    view->origin = cview->origin;
-	view->angles = cview->angles;
-	view->fov = cview->fov;
-	view->m_nMotionBlurMode = 0;
-	view->m_bOrtho = cview->m_bOrtho;
-	view->m_OrthoRight = cview->m_OrthoRight;
-	view->m_OrthoLeft = cview->m_OrthoLeft;
-	view->m_OrthoBottom = cview->m_OrthoBottom;
-	view->m_OrthoTop = cview->m_OrthoTop;
-	view->zNear = cview->zNear;
-}
-
-void ViewSetupToCViewSetup(ViewSetup *view, CViewSetup *cview) {
+template <typename T>
+void ViewSetupWrite(ViewSetup *view, T *cview) {
 	cview->origin = view->origin;
 	cview->angles = view->angles;
 	cview->fov = view->fov;
@@ -39,32 +30,20 @@ void ViewSetupToCViewSetup(ViewSetup *view, CViewSetup *cview) {
 	cview->zNear = view->zNear;
 }
 
-void ViewSetupToCViewSetupV1(ViewSetup *view, CViewSetupV1 *cview) {
-	cview->origin = view->origin;
-	cview->angles = view->angles;
-	cview->fov = view->fov;
-	cview->m_bOrtho = view->m_bOrtho;
-	cview->m_OrthoRight = view->m_OrthoRight;
-	cview->m_OrthoLeft = view->m_OrthoLeft;
-	cview->m_OrthoBottom = view->m_OrthoBottom;
-	cview->m_OrthoTop = view->m_OrthoTop;
-	cview->zNear = view->zNear;
-}
-
 static ViewSetup *viewCtx = new ViewSetup;
 ViewSetup *ViewSetupCreate(CViewSetup *cview) {
-    if (cview->y == 0) {
-        ViewSetupFromCViewSetup(cview, viewCtx);
+    if (sar.game->Is(SourceGame_INFRA)) {
+        ViewSetupRead(reinterpret_cast<CViewSetupINFRA *>(cview), viewCtx);
     } else {
-        ViewSetupFromCViewSetupV1(reinterpret_cast<CViewSetupV1 *>(cview), viewCtx);
+        ViewSetupRead(cview, viewCtx);
     }
     return viewCtx;
 }
 
 void ViewSetupCopy(ViewSetup *view, CViewSetup *cview) {
-    if (cview->y == 0) {
-        ViewSetupToCViewSetup(view, cview);
+    if (sar.game->Is(SourceGame_INFRA)) {
+        ViewSetupWrite(view, reinterpret_cast<CViewSetupINFRA *>(cview));
     } else {
-        ViewSetupToCViewSetupV1(view, reinterpret_cast<CViewSetupV1 *>(cview));
+        ViewSetupWrite(view, cview);
     }
 }
