@@ -3,6 +3,17 @@
 #include "Game.hpp"
 #include "Offsets.hpp"
 
+/*
+	EXPERIMENTAL STATE
+
+	Currently broken/missing:
+	- vphys commands
+	- demo playback causes crash
+	- `sar_disable_progress_bar_update 2` causes crash, I've set it to use 1 instead
+	- autostrafer is slow, and sar_strafehud doesn't seem fully accurate
+	If you notice any other issues, please make issues or tell me @amj on Discord.
+*/
+
 INFRA::INFRA() {
 	this->version = SourceGame_INFRA;
 	Game::maps = {
