@@ -1,8 +1,5 @@
 #include "Offsets/Portal 2 7054.hpp"
 
-// CCvar
-OFFSET_WINDOWS(m_DisplayFuncs, 26)
-
 // CEngineClient
 OFFSET_WINDOWS(GetActiveSplitScreenPlayerSlot, 129)
 OFFSET_WINDOWS(GetSteamAPIContext, 179)
