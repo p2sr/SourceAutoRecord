@@ -156,8 +156,8 @@ OFFSET_DEFAULT(GetPredDescMap, 17, 20)
 
 // CBasePlayer
 OFFSET_DEFAULT(m_pSurfaceData, 3868, 4116)
-OFFSET_DEFAULT(m_pShadowStand, 3160, 3184)
-OFFSET_DEFAULT(m_pShadowCrouch, 3164, 3188)
+OFFSET_DEFAULT(m_pShadowStand, 3160, 3184) // "player_stand" -> CBasePlayer::InitVCollision -> CBasePlayer::SetupVPhysicsShadow -> usage of pStandHullName -> vtable offset write
+OFFSET_DEFAULT(m_pShadowCrouch, 3164, 3188) // ^ "player_crouch" pCrouchHullName
 OFFSET_DEFAULT(S_m_surfaceFriction, 4096, 4120)
 OFFSET_DEFAULT(C_m_surfaceFriction, 5548, 5520)
 

@@ -88,7 +88,6 @@ VphysShadowInfo VphysHud::GetVphysInfo(int slot, bool crouched) {
 
 	info.player = server->GetPlayer(slot + 1);
 	if (!info.player) return info;
-	if (sar.game->Is(SourceGame_INFRA)) return info;
 
 	int hitboxOffset = crouched ? Offsets::m_pShadowCrouch : Offsets::m_pShadowStand;
 
@@ -172,9 +171,6 @@ CON_COMMAND(sar_vphys_setgravity, "sar_vphys_setgravity <hitbox> <enabled> - set
 	if (!sv_cheats.GetBool()) {
 		return console->Print("Cannot use sar_vphys_setgravity without sv_cheats set to 1.\n");
 	}
-	if (sar.game->Is(SourceGame_INFRA)) {
-		return console->Print("This command is not yet supported in INFRA.\n");
-	}
 
 	if (args.ArgC() != 3) {
 		return console->Print(sar_vphys_setgravity.ThisPtr()->m_pszHelpString);
@@ -207,9 +203,6 @@ CON_COMMAND(sar_vphys_setangle, "sar_vphys_setangle <hitbox> <angle> [component 
 	}
 	if (!sv_cheats.GetBool()) {
 		return console->Print("Cannot use sar_vphys_setangle without sv_cheats set to 1.\n");
-	}
-	if (sar.game->Is(SourceGame_INFRA)) {
-		return console->Print("This command is not yet supported in INFRA.\n");
 	}
 
 	if (args.ArgC() < 3 || args.ArgC() > 4) {
@@ -261,9 +254,6 @@ CON_COMMAND(sar_vphys_setspin, "sar_vphys_setspin <hitbox> <angvel> [component =
 	if (!sv_cheats.GetBool()) {
 		return console->Print("Cannot use sar_vphys_setspin without sv_cheats set to 1.\n");
 	}
-	if (sar.game->Is(SourceGame_INFRA)) {
-		return console->Print("This command is not yet supported in INFRA.\n");
-	}
 
 	if (args.ArgC() < 3 || args.ArgC() > 4) {
 		return console->Print(sar_vphys_setspin.ThisPtr()->m_pszHelpString);
@@ -312,9 +302,6 @@ CON_COMMAND(sar_vphys_setasleep, "sar_vphys_setasleep <hitbox> <asleep> - sets w
 	}
 	if (!sv_cheats.GetBool()) {
 		return console->Print("Cannot use sar_vphys_setasleep without sv_cheats set to 1.\n");
-	}
-	if (sar.game->Is(SourceGame_INFRA)) {
-		return console->Print("This command is not yet supported in INFRA.\n");
 	}
 
 	if (args.ArgC() != 3) {

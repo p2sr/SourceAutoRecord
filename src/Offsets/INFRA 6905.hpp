@@ -43,6 +43,8 @@ OFFSET_WINDOWS(TryPlayerMove, 38)
 OFFSET_WINDOWS(viewangles, 35424)
 
 // CBasePlayer
+OFFSET_WINDOWS(m_pShadowStand, 3200)
+OFFSET_WINDOWS(m_pShadowCrouch, 3204)
 OFFSET_WINDOWS(S_m_surfaceFriction, 4156)
 OFFSET_WINDOWS(C_m_surfaceFriction, 5652)
 
