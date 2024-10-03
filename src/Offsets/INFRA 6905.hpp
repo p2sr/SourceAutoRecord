@@ -74,6 +74,9 @@ OFFSET_WINDOWS(CUserCmdSize, 116)
 OFFSET_WINDOWS(PerUserInput_tSize, 388)
 OFFSET_WINDOWS(GetLocalClient, 138)
 OFFSET_WINDOWS(net_time, 21)
+OFFSET_WINDOWS(snd_linear_count, 69)
+OFFSET_WINDOWS(snd_p, 97)
+OFFSET_WINDOWS(snd_vol, 107)
 
 // clang-format off
 
@@ -88,10 +91,10 @@ SIGSCAN_WINDOWS(DrawOpaqueRenderables, "55 8B EC 83 EC 54 A1 ? ? ? ? 83 7D ? 00"
 
 // Engine
 SIGSCAN_WINDOWS(Host_AccumulateTime, "55 8B EC F3 0F 10 05 ? ? ? ? F3 0F 58 45")
-SIGSCAN_WINDOWS(readCustomDataInjectSig, "55 8B EC F6 05 ? ? ? ? 01 53")
-OFFSET_WINDOWS(readCustomDataInjectOff, 0)
-SIGSCAN_WINDOWS(readConsoleCommandInjectSig, "68 00 04 00 00 68 ? ? ? ? E8 ? ? ? ? B8")
-OFFSET_WINDOWS(readConsoleCommandInjectOff, 0)
+SIGSCAN_WINDOWS(readCustomDataInjectSig, "8D 4D E8 51 8D 55 BC 52 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF")
+OFFSET_WINDOWS(readCustomDataInjectOff, 12)
+SIGSCAN_WINDOWS(readConsoleCommandInjectSig, "8B 55 F4 52 68 13 05 00 00 68 ? ? ? ? 8D 4D 90 E8 ? ? ? ? 8D 4F 04 E8")
+OFFSET_WINDOWS(readConsoleCommandInjectOff, 26)
 SIGSCAN_WINDOWS(Cmd_ExecuteCommand, "55 8B EC 57 8B 7D ? 8B 07 85 C0")
 SIGSCAN_WINDOWS(InsertCommand, "55 8B EC 56 57 8B 7D ? 8B F1 81 FF FF 01 00 00")
 

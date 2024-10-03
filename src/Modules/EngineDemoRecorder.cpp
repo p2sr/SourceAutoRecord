@@ -355,7 +355,9 @@ bool EngineDemoRecorder::Init() {
 		this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::SetSignonState_Hook, EngineDemoRecorder::SetSignonState, Offsets::SetSignonState);
 		this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::StartRecording_Hook, EngineDemoRecorder::StartRecording, Offsets::StartRecording);
 		this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::StopRecording_Hook, EngineDemoRecorder::StopRecording, Offsets::StopRecording);
-		this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::RecordCustomData_Hook, EngineDemoRecorder::RecordCustomData, Offsets::RecordCustomData);
+		if (!sar.game->Is(SourceGame_INFRA)) {
+			this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::RecordCustomData_Hook, EngineDemoRecorder::RecordCustomData, Offsets::RecordCustomData);
+		}
 
 		this->GetRecordingTick = s_ClientDemoRecorder->Original<_GetRecordingTick>(Offsets::GetRecordingTick);
 		this->m_szDemoBaseName = reinterpret_cast<char *>((uintptr_t)demorecorder + Offsets::m_szDemoBaseName);
@@ -387,6 +389,7 @@ void EngineDemoRecorder::RecordData(const void *data, unsigned long length) {
 	// with menus.
 
 	if (!this->customDataReady) return;
+	if (!EngineDemoRecorder::RecordCustomData) return;
 
 	// once again, what the fuck c++, i just want a vla
 	char *buf = (char *)malloc(length + 8);

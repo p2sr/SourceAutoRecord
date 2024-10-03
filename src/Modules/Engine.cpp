@@ -735,7 +735,7 @@ void Host_AccumulateTime_Detour(float dt) {
 				char *data = new char[5];
 				data[0] = 0x0F;
 				*(float *)(data + 1) = *host_frametime_unbounded;
-				engine->demorecorder->RecordData(data, 5);
+				engine->demorecorder->RecordData(data, sizeof data);
 				delete[] data;
 			}
 		}
@@ -1065,8 +1065,7 @@ bool Engine::Init() {
 
 	if (auto s_EngineAPI = Interface::Create(this->Name(), "VENGINE_LAUNCHER_API_VERSION004", false)) {
 		auto IsRunningSimulation = s_EngineAPI->Original(Offsets::IsRunningSimulation);
-		void *engAddr;
-		engAddr = Memory::DerefDeref<void *>(IsRunningSimulation + Offsets::eng);
+		auto engAddr = Memory::DerefDeref<void *>(IsRunningSimulation + Offsets::eng);
 
 		if (this->eng = Interface::Create(engAddr)) {
 			if (this->tickcount && this->hoststate && this->m_szLevelName) {

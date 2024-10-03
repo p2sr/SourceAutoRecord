@@ -423,11 +423,11 @@ SIGSCAN_DEFAULT(Host_AccumulateTime, "55 8B EC 51 F3 0F 10 05 ? ? ? ? F3 0F 58 4
                                      "83 EC 1C 8B 15 ? ? ? ? F3 0F 10 05 ? ? ? ? F3 0F 58 44 24 20 F3 0F 11 05 ? ? ? ? 8B 02 8B 40 24 3D ? ? ? ? 0F 85 41 03 00 00")
 SIGSCAN_DEFAULT(_Host_RunFrame_Render, "A1 ? ? ? ? 85 C0 75 1B 8B 0D ? ? ? ? 8B 01 8B 50 40 68 ? ? ? ? FF D2 A3 ? ? ? ? 85 C0 74 0D 6A 02 6A F6 50 E8 ? ? ? ? 83 C4 0C",
                                        "55 89 E5 57 56 53 83 EC 1C 8B 1D ? ? ? ? 85 DB 0F 85 69 02 00 00 E8 64 FF FF FF A1 ? ? ? ? 80 3D C5 ? ? ? ? 8B 78 30 74 12 83 EC 08 6A 00")
-SIGSCAN_DEFAULT(readCustomDataInjectSig, "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", // This is the address of the one interesting call to ReadCustomData - the E8 byte indicates the start of the call instruction
+SIGSCAN_DEFAULT(readCustomDataInjectSig, "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", // "Unable to decode custom demo data, callback \"%s\" not found.\n" -> memory reference -> first function call
                                          "8D 85 C4 FE FF FF 83 EC 04 8D B5 E8 FE FF FF 56 50 FF B5 94 FE FF FF E8")
 OFFSET_DEFAULT(readCustomDataInjectOff, 12, 24)
 SIGSCAN_DEFAULT(readConsoleCommandInjectSig, "8B 45 F4 50 68 FE 04 00 00 68 ? ? ? ? 8D 4D 90 E8 ? ? ? ? 8D 4F 04 E8",
-                                             "FF B5 AC FE FF FF 8D B5 E8 FE FF FF 68 FE 04 00 00 68 ? ? ? ? 56 E8 ? ? ? ? 58 FF B5 94 FE FF FF E8")
+                                             "FF B5 AC FE FF FF 8D B5 E8 FE FF FF 68 FE 04 00 00 68 ? ? ? ? 56 E8 ? ? ? ? 58 FF B5 94 FE FF FF E8") // "%d dem_consolecmd [%s]\n" -> memory reference -> second function call
 OFFSET_DEFAULT(readConsoleCommandInjectOff, 26, 36)
 SIGSCAN_DEFAULT(Cmd_ExecuteCommand, "55 8B EC 57 8B 7D ? 8B 07 85 C0",
                                     "55 89 E5 57 56 53 83 EC 2C 8B 75 ? 8B 3E") // "WARNING: INVALID EXECUTION MARKER.\n"
