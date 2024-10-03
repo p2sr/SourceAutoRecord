@@ -42,6 +42,10 @@ OFFSET_WINDOWS(TryPlayerMove, 38)
 // CClientState
 OFFSET_WINDOWS(viewangles, 35424)
 
+// CBasePlayer
+OFFSET_WINDOWS(S_m_surfaceFriction, 4156)
+OFFSET_WINDOWS(C_m_surfaceFriction, 5652)
+
 // CPortal_Player
 OFFSET_WINDOWS(PlayerRunCommand, 452)
 
