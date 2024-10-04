@@ -1,22 +1,27 @@
 #include "RNGManip.hpp"
-#include "Utils/json11.hpp"
+
 #include "Event.hpp"
-#include "Offsets.hpp"
+#include "Hook.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
+#include "Offsets.hpp"
+#include "Utils/json11.hpp"
+
 #include <cstring>
-#include <fstream>
-#include <string>
-#include <sstream>
 #include <deque>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 static std::optional<json11::Json> g_session_state;
 static std::optional<json11::Json> g_pending_load;
 
 static std::deque<QAngle> g_queued_view_punches;
 static std::vector<QAngle> g_recorded_view_punches;
+static std::deque<int> g_queued_randomseeds;
+static std::vector<int> g_recorded_randomseeds;
 
 static json11::Json saveViewPunches() {
 	std::vector<json11::Json> punches;
@@ -77,17 +82,37 @@ static bool restorePaintSprayers(const json11::Json &data) {
 		}
 
 		SE(ent)->field<int>("m_nBlobRandomSeed") = data[idx].int_value();
-		
 		++idx;
 	}
-	
 	return idx == data.array_items().size();
+}
+
+static json11::Json saveRandomSeeds() {
+	std::vector<json11::Json> seeds;
+
+	for (int seed : g_recorded_randomseeds) {
+		seeds.push_back(json11::Json(seed));
+	}
+
+	return json11::Json(seeds);
+}
+
+static bool restoreRandomSeeds(const json11::Json &data) {
+	if (!data.is_array()) return false;
+
+	for (auto &val : data.array_items()) {
+		g_queued_randomseeds.push_back(val.int_value());
+	}
+
+	return true;
 }
 
 // clear old rng data
 ON_EVENT_P(SESSION_START, 999) {
 	g_queued_view_punches.clear();
 	g_recorded_view_punches.clear();
+	g_queued_randomseeds.clear();
+	g_recorded_randomseeds.clear();
 }
 
 // load pending rng data
@@ -118,6 +143,10 @@ ON_EVENT(SESSION_START) {
 		console->Print("Failed to restore p2rng view punch data!\n");
 	}
 
+	if (!restoreRandomSeeds(data["seeds"])) {
+		console->Print("Failed to restore p2rng random seed data!\n");
+	}
+
 	console->Print("p2rng restore complete\n");
 }
 
@@ -142,6 +171,7 @@ void RngManip::saveData(const char *filename) {
 
 	auto root = g_session_state->object_items();
 	root["view_punch"] = saveViewPunches();
+	root["seeds"] = saveRandomSeeds();
 
 	auto filepath = fileSystem->FindFileSomewhere(filename).value_or(filename);
 	FILE *f = fopen(filepath.c_str(), "w");
@@ -188,6 +218,15 @@ void RngManip::viewPunch(QAngle *offset) {
 	g_recorded_view_punches.push_back(*offset);
 }
 
+void RngManip::randomSeed(int *seed) {
+	if (g_queued_randomseeds.size() > 0) {
+		*seed = g_queued_randomseeds.front();
+		g_queued_randomseeds.pop_front();
+	}
+
+	g_recorded_randomseeds.push_back(*seed);
+}
+
 CON_COMMAND(sar_rng_save, "sar_rng_save <filename> - save RNG seed data to the specified file\n") {
 	if (args.ArgC() != 2) {
 		console->Print(sar_rng_save.ThisPtr()->m_pszHelpString);
@@ -206,4 +245,19 @@ CON_COMMAND(sar_rng_load, "sar_rng_load <filename> - load RNG seed data on next 
 
 	std::string filename = std::string(args[1]) + ".p2rng";
 	RngManip::loadData(filename.c_str());
+}
+
+extern Hook g_RandomSeed_Hook;
+void (*RandomSeed)(int);
+void RandomSeed_Hook(int seed) {
+	RngManip::randomSeed(&seed);
+	g_RandomSeed_Hook.Disable();
+	RandomSeed(seed);
+	g_RandomSeed_Hook.Enable();
+}
+Hook g_RandomSeed_Hook(RandomSeed_Hook);
+
+ON_INIT {
+	RandomSeed = Memory::GetSymbolAddress<decltype(RandomSeed)>(Memory::GetModuleHandleByName(tier1->Name()), "RandomSeed");
+	g_RandomSeed_Hook.SetFunc(RandomSeed);
 }
