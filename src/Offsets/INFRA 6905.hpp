@@ -52,6 +52,7 @@ OFFSET_WINDOWS(C_m_surfaceFriction, 5652)
 OFFSET_WINDOWS(PlayerRunCommand, 452)
 
 // CServerGameDLL
+OFFSET_WINDOWS(ApplyGameSettings, 39)
 OFFSET_WINDOWS(Think, 32)
 OFFSET_WINDOWS(IsRestoring, 25)
 OFFSET_WINDOWS(ShouldDraw, 12)
