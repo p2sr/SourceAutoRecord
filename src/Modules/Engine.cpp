@@ -719,10 +719,10 @@ void Host_AccumulateTime_Detour(float dt) {
 		*host_frametime_unbounded = 0;
 	}
 
-	// HACK: Force frametime to equal 2 ticks when loading
+	// HACK: Force frametime to equal a tick while loading
 	// Limits host_timescale effect on load times, faster loads
 	if (g_loadstate == LOADING && sar_loads_uncap.GetBool()) {
-		*host_frametime = *host_frametime_unbounded = 2.0f * engine->GetIPT();
+		*host_frametime = *host_frametime_unbounded = engine->GetIPT();
 	}
 
 	if (*host_frametime != *host_frametime_unbounded) {
