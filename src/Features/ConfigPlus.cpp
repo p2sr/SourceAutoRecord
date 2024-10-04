@@ -4,6 +4,7 @@
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/FileSystem.hpp"
+#include "Modules/Server.hpp"
 
 #include <cstdlib>
 #include <cstring>
@@ -855,6 +856,7 @@ MK_SAR_ON(cfg_message, "when partner sends a custom message (_sar_cfg_message sv
 MK_SAR_ON(speedrun_finish, "when a speedrun finishes", true)
 MK_SAR_ON(renderer_start, "when renderer starts", true)
 MK_SAR_ON(renderer_finish, "when renderer finishes", true)
+MK_SAR_ON(stuck, "when the player gets stuck (singleplayer) (requires cheats)", true)
 
 ON_EVENT_P(SESSION_START, 1000000) {
 	RUN_EXECS(load);
@@ -909,6 +911,11 @@ ON_EVENT(RENDERER_START) {
 }
 ON_EVENT(RENDERER_FINISH) {
 	RUN_EXECS(renderer_finish);
+}
+ON_EVENT(STUCK) {
+	if (sv_cheats.GetBool()) {
+		RUN_EXECS(stuck);
+	}
 }
 
 struct Seq {

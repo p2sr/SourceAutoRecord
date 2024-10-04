@@ -211,23 +211,14 @@ DETOUR_T(int, Server::TryPlayerMove, Vector *pFirstDest, CGameTrace *pFirstTrace
 	return result;
 }
 
-std::string onStuckCommands;
-CON_COMMAND(sar_on_stuck, "sar_on_stuck <command> - registers a command to be run when the player gets stuck.\n") {
-	if (args.ArgC() < 2) return console->Print(sar_on_stuck.ThisPtr()->m_pszHelpString);
-	if (!sv_cheats.GetBool()) return console->Print("sar_on_stuck requires sv_cheats.\n");
-
-	const char *cmd = Utils::ArgContinuation(args, 1);
-	onStuckCommands = std::string(cmd);
-}
-
 // CGameMovement::CheckStuck
+static bool wasStuck = false;
 DETOUR_T(int, Server::CheckStuck) {
 	int result = Server::CheckStuck(thisptr);
-
-	if (sv_cheats.GetBool() && result == 1 && !onStuckCommands.empty()) {
-		engine->ExecuteCommand(onStuckCommands.c_str());
-		onStuckCommands.clear();
+	if (result == 1 && !wasStuck) { // rising edge
+		Event::Trigger<Event::STUCK>({});
 	}
+	wasStuck = result == 1;
 
 	return result;
 }

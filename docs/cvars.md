@@ -375,6 +375,9 @@
 |sar_on_speedrun_finish|cmd|sar_on_speedrun_finish \<command> [args]... - registers a command to be run when a speedrun finishes|
 |sar_on_speedrun_finish_clear|cmd|sar_on_speedrun_finish_clear - clears commands registered on event "speedrun_finish"|
 |sar_on_speedrun_finish_list|cmd|sar_on_speedrun_finish_list - lists commands registered on event "speedrun_finish"|
+|sar_on_stuck|cmd|sar_on_stuck \<command> [args]... - registers a command to be run when the player gets stuck (singleplayer) (requires cheats)|
+|sar_on_stuck_clear|cmd|sar_on_stuck_clear - clears commands registered on event "stuck"|
+|sar_on_stuck_list|cmd|sar_on_stuck_list - lists commands registered on event "stuck"|
 |sar_on_tas_end|cmd|sar_on_tas_end \<command> [args]... - registers a command to be run when TAS script playback ends|
 |sar_on_tas_end_clear|cmd|sar_on_tas_end_clear - clears commands registered on event "tas_end"|
 |sar_on_tas_end_list|cmd|sar_on_tas_end_list - lists commands registered on event "tas_end"|

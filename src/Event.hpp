@@ -53,6 +53,7 @@ namespace Event {
 		SPEEDRUN_FINISH,
 		RENDERER_START,
 		RENDERER_FINISH,
+		STUCK,
 	};
 
 	template <EventType E>
