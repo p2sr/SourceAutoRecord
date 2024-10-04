@@ -76,6 +76,7 @@ REDECL(Server::CheckJumpButton);
 REDECL(Server::CheckJumpButtonBase);
 REDECL(Server::StepMove);
 REDECL(Server::TryPlayerMove);
+REDECL(Server::CheckStuck);
 REDECL(Server::PlayerMove);
 REDECL(Server::FinishGravity);
 REDECL(Server::AirMove);
@@ -205,6 +206,27 @@ DETOUR_T(int, Server::TryPlayerMove, Vector *pFirstDest, CGameTrace *pFirstTrace
 	if (!engine->IsGamePaused()) {
 		auto mv = *reinterpret_cast<CHLMoveData **>((uintptr_t)thisptr + Offsets::mv);
 		StepSlopeBoostDebug::OnTryPlayerMoveEnd(mv);
+	}
+
+	return result;
+}
+
+std::string onStuckCommands;
+CON_COMMAND(sar_on_stuck, "sar_on_stuck <command> - registers a command to be run when the player gets stuck.\n") {
+	if (args.ArgC() < 2) return console->Print(sar_on_stuck.ThisPtr()->m_pszHelpString);
+	if (!sv_cheats.GetBool()) return console->Print("sar_on_stuck requires sv_cheats.\n");
+
+	const char *cmd = Utils::ArgContinuation(args, 1);
+	onStuckCommands = std::string(cmd);
+}
+
+// CGameMovement::CheckStuck
+DETOUR_T(int, Server::CheckStuck) {
+	int result = Server::CheckStuck(thisptr);
+
+	if (sv_cheats.GetBool() && result == 1 && !onStuckCommands.empty()) {
+		engine->ExecuteCommand(onStuckCommands.c_str());
+		onStuckCommands.clear();
 	}
 
 	return result;
@@ -803,6 +825,7 @@ bool Server::Init() {
 		this->g_GameMovement->Hook(Server::PlayerMove_Hook, Server::PlayerMove, Offsets::PlayerMove);
 		this->g_GameMovement->Hook(Server::StepMove_Hook, Server::StepMove, Offsets::StepMove);
 		this->g_GameMovement->Hook(Server::TryPlayerMove_Hook, Server::TryPlayerMove, Offsets::TryPlayerMove);
+		this->g_GameMovement->Hook(Server::CheckStuck_Hook, Server::CheckStuck, Offsets::CheckStuck);
 		this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
 		this->g_GameMovement->Hook(Server::GetPlayerViewOffset_Hook, Server::GetPlayerViewOffset, Offsets::GetPlayerViewOffset);
 		this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);
