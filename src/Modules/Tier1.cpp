@@ -13,9 +13,9 @@ struct ConFilterRule {
 	std::string end;
 };
 
-static Variable sar_con_filter("sar_con_filter", "0", "Enable the console filter\n");
-static Variable sar_con_filter_default("sar_con_filter_default", "0", "Whether to allow text through the console filter by default\n");
-static Variable sar_con_filter_suppress_blank_lines("sar_con_filter_suppress_blank_lines", "0", "Whether to suppress blank lines in console\n");
+static Variable sar_con_filter("sar_con_filter", "0", "Enable the console filter\n", FCVAR_DONTRECORD);
+static Variable sar_con_filter_default("sar_con_filter_default", "0", "Whether to allow text through the console filter by default\n", FCVAR_DONTRECORD);
+static Variable sar_con_filter_suppress_blank_lines("sar_con_filter_suppress_blank_lines", "0", "Whether to suppress blank lines in console\n", FCVAR_DONTRECORD);
 static std::vector<ConFilterRule> g_con_filter_rules;
 
 CON_COMMAND(sar_con_filter_allow, "sar_con_filter_allow <string> [end] - add an allow rule to the console filter, allowing until 'end' is matched\n") {
