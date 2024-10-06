@@ -21,6 +21,7 @@ OFFSET_WINDOWS(KeyUp, 380)
 
 // CInput
 OFFSET_WINDOWS(DecodeUserCmdFromBuffer, 6)
+OFFSET_WINDOWS(SteamControllerMove, 52)
 
 // ConVar
 OFFSET_WINDOWS(InternalSetValue, 14)
