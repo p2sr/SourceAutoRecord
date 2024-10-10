@@ -463,6 +463,15 @@ static TasFramebulk parseFramebulk(int last_tick, const TasFramebulk &base, cons
 				case 'o':
 					btn = TasControllerInput::FireOrange;
 					break;
+				case 's':
+					btn = TasControllerInput::Sprint;
+					break;
+				case 'r':
+					btn = TasControllerInput::Reload;
+					break;
+				case 'f':
+					btn = TasControllerInput::Flashlight;
+					break;
 				default:
 					throw TasParserException("invalid button character");
 				}
@@ -823,6 +832,9 @@ std::string TasParser::SaveRawScriptToString(TasScript script) {
 		line += fb.buttonStates[TasControllerInput::Zoom] ? "Z" : "z";
 		line += fb.buttonStates[TasControllerInput::FireBlue] ? "B" : "b";
 		line += fb.buttonStates[TasControllerInput::FireOrange] ? "O" : "o";
+		line += fb.buttonStates[TasControllerInput::Sprint] ? "S" : "s";
+		line += fb.buttonStates[TasControllerInput::Reload] ? "R" : "r";
+		line += fb.buttonStates[TasControllerInput::Flashlight] ? "F" : "f";
 
 		if (line == prevInput) {
 			line = ">||";

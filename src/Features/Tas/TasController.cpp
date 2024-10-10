@@ -12,10 +12,10 @@ Variable cl_pitchdown;
 Variable cl_pitchup;
 
 const char *g_TasControllerDigitalActions[] = {
-	"+jump", "+duck", "+use", "+zoom", "+attack", "+attack2",
+	"+jump", "+duck", "+use", "+zoom", "+attack", "+attack2", "+speed", "+reload", "+flashlight"
 };
 const int g_TasControllerInGameButtons[] = {
-	IN_JUMP, IN_DUCK, IN_USE, IN_ZOOM, IN_ATTACK, IN_ATTACK2,
+	IN_JUMP, IN_DUCK, IN_USE, IN_ZOOM, IN_ATTACK, IN_ATTACK2, IN_SPEED, IN_RELOAD, IN_FLASHLIGHT
 };
 
 Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 4, "Debugs controller.\n");
@@ -24,7 +24,10 @@ TasController *tasControllers[2];
 
 TasController::TasController() {
 	for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
-		buttons[i].command = g_TasControllerDigitalActions[i];
+		buttons[i].command = "nop";
+		if (Variable(g_TasControllerDigitalActions[i]).ThisPtr()) {
+			buttons[i].command = g_TasControllerDigitalActions[i];
+		}
 	}
 	this->hasLoaded = true;
 

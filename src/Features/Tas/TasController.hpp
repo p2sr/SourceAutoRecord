@@ -6,7 +6,7 @@
 #include "Variable.hpp"
 
 
-#define TAS_CONTROLLER_INPUT_COUNT 6
+#define TAS_CONTROLLER_INPUT_COUNT 9
 
 enum TasControllerInput {
 	Jump,
@@ -14,11 +14,14 @@ enum TasControllerInput {
 	Use,
 	Zoom,
 	FireBlue,
-	FireOrange
+	FireOrange,
+	Sprint,
+	Reload,
+	Flashlight
 };
 
-extern const char *g_TasControllerDigitalActions[6];
-extern const int g_TasControllerInGameButtons[6];
+extern const char *g_TasControllerDigitalActions[TAS_CONTROLLER_INPUT_COUNT];
+extern const int g_TasControllerInGameButtons[TAS_CONTROLLER_INPUT_COUNT];
 
 struct TasControllerButton {
 	bool active = false;

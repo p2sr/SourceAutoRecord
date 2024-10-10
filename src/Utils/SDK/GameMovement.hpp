@@ -50,6 +50,7 @@ public:
 #define IN_RELOAD (1 << 13)
 #define IN_SPEED (1 << 17)
 #define IN_ZOOM (1 << 19)
+#define IN_FLASHLIGHT (1 << 30)
 
 #define FL_ONGROUND (1 << 0)
 #define FL_DUCKING (1 << 1)
