@@ -542,7 +542,7 @@ DETOUR(Client::DecodeUserCmdFromBuffer, int nSlot, int buf, signed int sequence_
 
 	strafeQualityHud->OnUserCmd(nSlot, *cmd);
 	void *player = client->GetPlayer(nSlot + 1);
-	if (player) {
+	if (player && !sar.game->Is(SourceGame_INFRA)) {
 		bool grounded = CE(player)->ground_entity();
 		strafeHud.SetData(nSlot, player, cmd, false);
 		Event::Trigger<Event::PROCESS_MOVEMENT>({nSlot, false, player, nullptr, cmd, grounded});  // There isn't really one, just pretend it's here lol
