@@ -626,10 +626,7 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 			tool->Apply(fb, playerInfo);
 		}
 	}
-	
 
-	if (fb.moveAnalog.Length2D() > 1)
-		fb.moveAnalog = fb.moveAnalog.Normalize();
 
 	// make sure none of the framebulk is NaN
 	if (std::isnan(fb.moveAnalog.x)) fb.moveAnalog.x = 0;
@@ -645,12 +642,6 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	cmd->viewangles.x = playerInfo.angles.x - fb.viewAnalog.y;  // positive values should rotate up.
 	cmd->viewangles.x = std::min(std::max(cmd->viewangles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
 
-	if (fb.moveAnalog.y > 0.0) {
-		cmd->forwardmove = cl_forwardspeed.GetFloat() * fb.moveAnalog.y;
-	} else {
-		cmd->forwardmove = cl_backspeed.GetFloat() * fb.moveAnalog.y;
-	}
-	cmd->sidemove = cl_sidespeed.GetFloat() * fb.moveAnalog.x;
 
 	cmd->buttons = 0;
 	for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
@@ -658,6 +649,8 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 			cmd->buttons |= g_TasControllerInGameButtons[i];
 		}
 	}
+
+	ApplyMoveAnalog(fb.moveAnalog, cmd);
 
 	ClientEnt *clPlayer = client->GetPlayer(slot + 1);
 	if (IsTaunting(clPlayer) || tasTick == 0) {
@@ -710,6 +703,35 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	playbackInfo.slots[slot].processedFramebulks.push_back(fb);
 
 	tasPlayer->DumpUsercmd(slot, cmd, tasTick, "processed");
+}
+
+void TasPlayer::ApplyMoveAnalog(Vector moveAnalog, CUserCmd *cmd) {
+	if (std::isnan(moveAnalog.x)) moveAnalog.x = 0;
+	if (std::isnan(moveAnalog.y)) moveAnalog.y = 0;
+
+	if (moveAnalog.Length2D() > 1)
+		moveAnalog = moveAnalog.Normalize();
+
+	if (moveAnalog.y > 0.0) {
+		cmd->forwardmove = cl_forwardspeed.GetFloat() * moveAnalog.y;
+	} else {
+		cmd->forwardmove = cl_backspeed.GetFloat() * moveAnalog.y;
+	}
+	cmd->sidemove = cl_sidespeed.GetFloat() * moveAnalog.x;
+
+	// We set the buttons as well as the analog
+	// so that +speed can be applied
+	cmd->buttons &= ~(IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT);
+	if (moveAnalog.y > 0.0) {
+		cmd->buttons |= IN_FORWARD;
+	} else if (moveAnalog.y < -0.0) {
+		cmd->buttons |= IN_BACK;
+	}
+	if (moveAnalog.x > 0.0) {
+		cmd->buttons |= IN_MOVERIGHT;
+	} else if (moveAnalog.x < -0.0) {
+		cmd->buttons |= IN_MOVELEFT;
+	}
 }
 
 void TasPlayer::DumpUsercmd(int slot, const CUserCmd *cmd, int tick, const char *source) {

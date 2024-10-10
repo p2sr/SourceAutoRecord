@@ -191,13 +191,7 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 		return;
 
 	//movement analog
-	if (moveAnalog.y > 0.0) {
-		cmd->forwardmove += cl_forwardspeed.GetFloat() * moveAnalog.y;
-	} else {
-		cmd->forwardmove += cl_backspeed.GetFloat() * moveAnalog.y;
-	}
-
-	cmd->sidemove += cl_sidespeed.GetFloat() * moveAnalog.x;
+	tasPlayer->ApplyMoveAnalog(moveAnalog, cmd);
 
 	//viewangle analog
 

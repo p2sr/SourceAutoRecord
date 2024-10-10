@@ -112,6 +112,7 @@ public:
 
 	void FetchInputs(int slot, TasController *controller);
 	void PostProcess(int slot, void *player, CUserCmd *cmd);
+	void ApplyMoveAnalog(Vector moveAnalog, CUserCmd *cmd);
 	void DumpUsercmd(int slot, const CUserCmd *cmd, int tick, const char *source);
 	void DumpPlayerInfo(int slot, int tick, Vector pos, Vector eye_pos, QAngle ang);
 

@@ -429,13 +429,8 @@ void Cheats::AutoStrafe(int slot, void *player, CUserCmd *cmd) {
 	autoJumpTool[info.slot].SetParams(autoJumpTool[info.slot].ParseParams(std::vector<std::string>{sar_autojump.GetBool() && (cmd->buttons & IN_JUMP) ? "on" : "off"}));
 	autoStrafeTool[info.slot].SetParams(autoStrafeTool[info.slot].ParseParams(std::vector<std::string> {"vec", "max", std::to_string(angle) + "deg"}));
 	autoStrafeTool[info.slot].Apply(fb, info);
-
-	if (fb.moveAnalog.y > 0.0) {
-		cmd->forwardmove = cl_forwardspeed.GetFloat() * fb.moveAnalog.y;
-	} else {
-		cmd->forwardmove = cl_backspeed.GetFloat() * fb.moveAnalog.y;
+	if (sar.game->Is(SourceGame_INFRA)) {
+		fb.moveAnalog.y *= 2;
 	}
-	cmd->sidemove = cl_sidespeed.GetFloat() * fb.moveAnalog.x;
-
-
+	tasPlayer->ApplyMoveAnalog(fb.moveAnalog, cmd);
 }
