@@ -272,7 +272,13 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 				SpeedrunRule(
 					RuleAction::START,
 					"infra_c1_m1_office",
-					MapLoadRule{}),
+					EntityInputRule{
+						ENTRULE_TARGETNAME,
+						"intro_vehicle",
+						"",
+						"ExitVehicle",
+						"",
+					}),
 			},
 			{
 				"Ending 1",
