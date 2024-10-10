@@ -821,20 +821,24 @@ std::string TasParser::SaveRawScriptToString(TasScript script) {
 
 	int last_tick = -1;
 
+	TasFramebulk last;
 	for (TasFramebulk &fb : script.processedFramebulks) {
 		std::string line = ">";
 
 		line += Utils::ssprintf("%.*g %.*g|%.*g %.*g|", FLT_DECIMAL_DIG, fb.moveAnalog.x, FLT_DECIMAL_DIG, fb.moveAnalog.y, FLT_DECIMAL_DIG, fb.viewAnalog.x, FLT_DECIMAL_DIG, fb.viewAnalog.y);
 
-		line += fb.buttonStates[TasControllerInput::Jump] ? "J" : "j";
-		line += fb.buttonStates[TasControllerInput::Crouch] ? "D" : "d";
-		line += fb.buttonStates[TasControllerInput::Use] ? "U" : "u";
-		line += fb.buttonStates[TasControllerInput::Zoom] ? "Z" : "z";
-		line += fb.buttonStates[TasControllerInput::FireBlue] ? "B" : "b";
-		line += fb.buttonStates[TasControllerInput::FireOrange] ? "O" : "o";
-		line += fb.buttonStates[TasControllerInput::Sprint] ? "S" : "s";
-		line += fb.buttonStates[TasControllerInput::Reload] ? "R" : "r";
-		line += fb.buttonStates[TasControllerInput::Flashlight] ? "F" : "f";
+		#define ADD_BUTTON(btn, on, off) if (fb.buttonStates[TasControllerInput::btn] != last.buttonStates[TasControllerInput::btn]) \
+			line += fb.buttonStates[TasControllerInput::btn] ? on : off;
+		ADD_BUTTON(Jump,       "J", "j")
+		ADD_BUTTON(Crouch,     "D", "d")
+		ADD_BUTTON(Use,        "U", "u")
+		ADD_BUTTON(Zoom,       "Z", "z")
+		ADD_BUTTON(FireBlue,   "B", "b")
+		ADD_BUTTON(FireOrange, "O", "o")
+		ADD_BUTTON(Sprint,     "S", "s")
+		ADD_BUTTON(Reload,     "R", "r")
+		ADD_BUTTON(Flashlight, "F", "f")
+		#undef ADD_BUTTON
 
 		if (line == prevInput) {
 			line = ">||";
@@ -853,9 +857,10 @@ std::string TasParser::SaveRawScriptToString(TasScript script) {
 			last_tick = fb.tick;
 			tasString << fb.tick << line << "\n";
 		}
+
+		last = fb;
 	}
 
-	TasFramebulk &last = script.processedFramebulks[script.processedFramebulks.size() - 1];
 	if (last.tick > last_tick) {
 		// Make sure there's an empty bulk at the end so the TAS is the
 		// right length
