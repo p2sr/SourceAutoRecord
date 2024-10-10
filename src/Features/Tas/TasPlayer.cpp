@@ -367,6 +367,8 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bo
 		float *m_flMaxspeed = &pl->template field<float>("m_flMaxspeed");
 		pi.maxSpeed = *m_flMaxspeed;
 
+		pi.waterLevel = pl->template field<char>("m_nWaterLevel");
+
 		pi.grounded = pl->ground_entity();
 		pi.position = pl->abs_origin();
 		pi.velocity = pl->abs_velocity();
@@ -408,6 +410,8 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bo
 
 		float *m_flMaxspeed = &pl->template field<float>("m_flMaxspeed");
 		pi.maxSpeed = *m_flMaxspeed;
+
+		pi.waterLevel = pl->template field<char>("m_nWaterLevel");
 
 		pi.grounded = pl->ground_entity();
 		pi.position = pl->abs_origin();

@@ -148,9 +148,13 @@ Vector AutoStrafeTool::GetGroundFrictionVelocity(const TasPlayerInfo &player) {
 float AutoStrafeTool::GetMaxSpeed(const TasPlayerInfo &player, Vector wishDir, bool notAired) {
 	// calculate max speed based on player inputs, grounded and ducking states.
 	float duckMultiplier = (player.grounded && player.ducked) ? (1.0f / 3.0f) : 1.0f;
+	if (sar.game->Is(SourceGame_INFRA)) {
+		duckMultiplier = 1.0f; // idk man. 1/2 seems correct but this produces better results.
+	}
+	float waterMultiplier = (player.waterLevel == 1) ? 0.75f : 1.0f;
 	wishDir.y *= player.maxSpeed;
 	wishDir.x *= player.maxSpeed;
-	float maxSpeed = fminf(player.maxSpeed, wishDir.Length2D()) * duckMultiplier;
+	float maxSpeed = fminf(player.maxSpeed, wishDir.Length2D()) * duckMultiplier * waterMultiplier;
 	float maxAiredSpeed = (player.grounded || notAired) ? maxSpeed : fminf(60, maxSpeed);
 
 	return maxAiredSpeed;

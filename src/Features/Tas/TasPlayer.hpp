@@ -45,6 +45,7 @@ struct TasPlayerInfo {
 	Vector velocity;
 	float surfaceFriction;
 	float maxSpeed;
+	int waterLevel;
 	bool ducked;
 	bool grounded;
 	bool onSpeedPaint;
