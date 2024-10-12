@@ -219,7 +219,7 @@ void RngManip::viewPunch(QAngle *offset) {
 	}
 
 	g_recorded_view_punches.push_back(*offset);
-	playerTrace->EmitLog(Utils::ssprintf("ViewPunch(%.6f, %.6f, %.6f) -> (%.6f, %.6f, %.6f)", orig.x, orig.y, orig.z, offset->x, offset->y, offset->z).c_str());
+	playerTrace->EmitLog("ViewPunch(%.6f, %.6f, %.6f) -> (%.6f, %.6f, %.6f)", orig.x, orig.y, orig.z, offset->x, offset->y, offset->z);
 }
 
 void RngManip::randomSeed(int *seed) {
@@ -230,7 +230,7 @@ void RngManip::randomSeed(int *seed) {
 	}
 
 	g_recorded_randomseeds.push_back(*seed);
-	playerTrace->EmitLog(Utils::ssprintf("RandomSeed(%d) -> %d", orig, *seed).c_str());
+	playerTrace->EmitLog("RandomSeed(%d) -> %d", orig, *seed);
 }
 
 CON_COMMAND(sar_rng_save, "sar_rng_save [filename] - save RNG seed data to the specified file. If filename isn't given, use last TAS script path\n") {

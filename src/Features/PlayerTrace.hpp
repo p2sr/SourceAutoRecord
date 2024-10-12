@@ -116,7 +116,8 @@ public:
 	// Returns an identifier for the scope which should be passed to ExitLogScope
 	void EnterLogScope(const char *name);
 	void ExitLogScope();
-	void EmitLog(const char *msg);
+	void EmitLog(std::string msg);
+	void EmitLog(const char *fmt, ...);
 };
 
 extern PlayerTrace *playerTrace;

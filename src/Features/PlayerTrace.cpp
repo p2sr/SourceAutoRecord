@@ -164,8 +164,8 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 		camera->GetEyePos<true>(slot, eyepos, angles);
 	}
 
-	this->EmitLog(Utils::ssprintf("ProcessMovement(%d)", session->GetTick()).c_str());
-	this->EmitLog(Utils::ssprintf("player @ (%.6f,%.6f,%.6f)", pos.x, pos.y, pos.z).c_str());
+	this->EmitLog("ProcessMovement(%d) slot: %d", session->GetTick(), slot);
+	this->EmitLog("player %d @ (%.6f,%.6f,%.6f)", slot, pos.x, pos.y, pos.z);
 
 	HitboxList hitboxes = ConstructHitboxList(pos);
 
@@ -1215,7 +1215,7 @@ void PlayerTrace::ExitLogScope() {
 	trace->log_scope_stack.pop_back();
 }
 
-void PlayerTrace::EmitLog(const char *msg) {
+void PlayerTrace::EmitLog(std::string msg) {
 	if (!playerTrace->ShouldRecord()) return;
 	auto trace = this->GetTrace(sar_trace_record.GetString());
 	if (!trace) return;
@@ -1226,4 +1226,18 @@ void PlayerTrace::EmitLog(const char *msg) {
 	line += Utils::ssprintf("(%.4d) ", trace->positions[0].size() - 1);
 	line += msg;
 	trace->log_lines.push_back(line);
+}
+
+void PlayerTrace::EmitLog(const char *fmt, ...) {
+	va_list ap1, ap2;
+	va_start(ap1, fmt);
+	va_copy(ap2, ap1);
+	size_t sz = vsnprintf(NULL, 0, fmt, ap1) + 1;
+	va_end(ap1);
+	char *buf = (char *)malloc(sz);
+	vsnprintf(buf, sz, fmt, ap2);
+	va_end(ap2);
+	std::string str(buf);
+	free(buf);
+	PlayerTrace::EmitLog(str);
 }
