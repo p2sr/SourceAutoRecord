@@ -19,8 +19,8 @@ struct TasParserException : public std::exception {
 };
 
 namespace TasParser {
-	TasScript ParseFile(std::string filePath);
-	TasScript ParseScript(std::string scriptName, std::string scriptString);
+	TasScript ParseFile(TasScript &script, std::string filePath);
+	TasScript ParseScript(TasScript &script, std::string scriptName, std::string scriptString);
 	void SaveRawScriptToFile(TasScript script);
 	std::string SaveRawScriptToString(TasScript script);
 	int toInt(std::string &str);

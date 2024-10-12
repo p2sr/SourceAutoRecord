@@ -218,14 +218,26 @@ static int parseVersion(const Line &l) {
 	return l.tokens[1].i;
 }
 
-static bool parseRngManip(const Line &l, std::string &rngManip) {
+static bool parseRngManip(const Line &l, TasScript &script) {
 	if (l.tokens[0].tok != "rngmanip") return false;
 
-	if (l.tokens.size() != 2) {
-		throw TasParserException("invalid rngmanip line; expected 2 tokens");
+	if (l.tokens.size() > 2) {
+		throw TasParserException("invalid rngmanip line; expected 1 or 2 tokens");
 	}
 
-	rngManip = l.tokens[1].tok;
+	std::string rngManip;
+	if (l.tokens.size() == 1) {
+		rngManip = script.path;
+	} else {
+		rngManip = l.tokens[1].tok;
+	}
+
+	size_t last_dot = rngManip.find_last_of(".");
+	if (last_dot != std::string::npos) {
+		rngManip = rngManip.substr(0, last_dot);
+	}
+
+	script.header.rngManipFile = rngManip;
 
 	return true;
 }
@@ -681,8 +693,7 @@ static std::vector<Line> preProcess(const char *filepath, const Line *lines, siz
 	return current;
 }
 
-static TasScript parseStream(std::string name, std::istream &stream) {
-	TasScript script;
+static void parseStream(TasScript &script, std::string name, std::istream &stream) {
 	
 	auto lines = tokenize(stream);
 
@@ -706,7 +717,7 @@ static TasScript parseStream(std::string name, std::istream &stream) {
 
 	size_t script_start = 2;
 	try {
-		if (lines.size() > 2 && parseRngManip(lines[2], script.header.rngManipFile)) {
+		if (lines.size() > 2 && parseRngManip(lines[2], script)) {
 			script_start += 1;
 		}
 	} catch (TasParserException &e) {
@@ -719,28 +730,28 @@ static TasScript parseStream(std::string name, std::istream &stream) {
 		throw TasParserException(Utils::ssprintf("[%s] no framebulks in TAS script", name.c_str()));
 	}
 
-	return script;
+	return;
 }
 
-TasScript TasParser::ParseFile(std::string filePath) {
+TasScript TasParser::ParseFile(TasScript &script, std::string filePath) {
 	auto path = fileSystem->FindFileSomewhere(filePath).value_or(filePath);
 	std::ifstream file(path, std::fstream::in);
 	if (!file) {
 		throw TasParserException(Utils::ssprintf("[%s] failed to open the file", filePath.c_str()));
 	}
 
-	auto result = parseStream(path, file);
-	result.loadedFromFile = true;
-	result.path = path;
-	return result;
+	script.loadedFromFile = true;
+	script.path = path;
+	parseStream(script, path, file);
+	return script;
 }
 
-TasScript TasParser::ParseScript(std::string scriptName, std::string scriptString) {
-	std::istringstream script(scriptString);
+TasScript TasParser::ParseScript(TasScript &script, std::string scriptName, std::string scriptString) {
+	std::istringstream scriptStream(scriptString);
 
-	auto result = parseStream(scriptName, script);
-	result.loadedFromFile = false;
-	return result;
+	script.loadedFromFile = false;
+	parseStream(script, scriptName, scriptStream);
+	return script;
 }
 
 int TasParser::toInt(std::string &str) {

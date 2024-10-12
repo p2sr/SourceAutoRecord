@@ -1,6 +1,7 @@
 #include "RNGManip.hpp"
 
 #include "Event.hpp"
+#include "Features/Tas/TasPlayer.hpp"
 #include "Hook.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -227,23 +228,60 @@ void RngManip::randomSeed(int *seed) {
 	g_recorded_randomseeds.push_back(*seed);
 }
 
-CON_COMMAND(sar_rng_save, "sar_rng_save <filename> - save RNG seed data to the specified file\n") {
-	if (args.ArgC() != 2) {
+CON_COMMAND(sar_rng_save, "sar_rng_save [filename] - save RNG seed data to the specified file. If filename isn't given, use last TAS script path\n") {
+	if (args.ArgC() < 1 || args.ArgC() > 2) {
 		console->Print(sar_rng_save.ThisPtr()->m_pszHelpString);
 		return;
 	}
 
-	std::string filename = std::string(args[1]) + ".p2rng";
+	std::string filename = "";
+	if (args.ArgC() == 1) {
+		if (tasPlayer->IsRunning()) {
+			filename = tasPlayer->playbackInfo.GetMainScript().header.rngManipFile;
+		} else if (tasPlayer->previousPlaybackInfo.HasActiveSlot()) {
+			filename = tasPlayer->previousPlaybackInfo.GetMainScript().header.rngManipFile;
+		} else {
+			console->Print(sar_rng_save.ThisPtr()->m_pszHelpString);
+			console->Print("No filename specified and no previous TAS script played\n");
+			return;
+		}
+	} else {
+		filename = std::string(args[1]);
+	}
+
+	size_t lastdot = filename.find_last_of(".");
+	if (lastdot != std::string::npos) {
+		filename = filename.substr(0, lastdot);
+	}
+	filename += ".p2rng";
 	RngManip::saveData(filename.c_str());
 }
 
-CON_COMMAND(sar_rng_load, "sar_rng_load <filename> - load RNG seed data on next session start\n") {
-	if (args.ArgC() != 2) {
+CON_COMMAND(sar_rng_load, "sar_rng_load [filename] - load RNG seed data on next session start. If filename isn't given, use last TAS script path\n") {
+	if (args.ArgC() < 1 || args.ArgC() > 2) {
 		console->Print(sar_rng_load.ThisPtr()->m_pszHelpString);
 		return;
 	}
 
-	std::string filename = std::string(args[1]) + ".p2rng";
+	std::string filename = "";
+	if (args.ArgC() == 1) {
+		if (tasPlayer->IsRunning()) {
+			filename = tasPlayer->playbackInfo.GetMainScript().header.rngManipFile;
+		} else if (tasPlayer->previousPlaybackInfo.HasActiveSlot()) {
+			filename = tasPlayer->previousPlaybackInfo.GetMainScript().header.rngManipFile;
+		} else {
+			console->Print(sar_rng_load.ThisPtr()->m_pszHelpString);
+			console->Print("No filename specified and no previous TAS script played\n");
+			return;
+		}
+	} else {
+		filename = std::string(args[1]);
+	}
+	size_t lastdot = filename.find_last_of(".");
+	if (lastdot != std::string::npos) {
+		filename = filename.substr(0, lastdot);
+	}
+	filename += ".p2rng";
 	RngManip::loadData(filename.c_str());
 }
 

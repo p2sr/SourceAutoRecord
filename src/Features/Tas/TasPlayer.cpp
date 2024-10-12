@@ -867,15 +867,17 @@ void TasPlayer::PlayFile(std::string slot0scriptPath, std::string slot1scriptPat
 
 	try {
 		TasPlaybackInfo newInfo;
+		TasScript script0;
+		TasScript script1;
 
 		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + slot0scriptPath + "." + TAS_SCRIPT_EXT);
-		newInfo.slots[0] = TasParser::ParseFile(filePath);
-		newInfo.slots[0].name = slot0scriptPath;
+		script0.name = slot0scriptPath;
+		newInfo.slots[0] = TasParser::ParseFile(script0, filePath);
 
 		if (coop) {
 			std::string filePath2(std::string(TAS_SCRIPTS_DIR) + "/" + slot1scriptPath + "." + TAS_SCRIPT_EXT);
-			newInfo.slots[1] = TasParser::ParseFile(filePath2);
-			newInfo.slots[1].name = slot1scriptPath;
+			script1.name = slot1scriptPath;
+			newInfo.slots[1] = TasParser::ParseFile(script1, filePath2);
 		}
 		Activate(newInfo);
 		
@@ -891,20 +893,22 @@ void TasPlayer::PlayScript(std::string slot0name, std::string slot0script, std::
 
 	try {
 		TasPlaybackInfo newInfo;
+		TasScript script0;
+		TasScript script1;
 
 		auto path0 = std::string(TAS_SCRIPTS_DIR) + "/" + (coop ? "protocol_blue" : "protocol") + "." + TAS_SCRIPT_EXT;
 		auto path1 = std::string(TAS_SCRIPTS_DIR) + "/" + (coop ? "protocol_orange" : "protocol") + "." + TAS_SCRIPT_EXT;
 		path0 = fileSystem->FindFileSomewhere(path0).value_or(path0);
 		path1 = fileSystem->FindFileSomewhere(path1).value_or(path1);
 
-		newInfo.slots[0] = TasParser::ParseScript(slot0name, slot0script);
-		newInfo.slots[0].name = slot0name;
-		newInfo.slots[0].path = path0;
+		script0.name = slot0name;
+		script0.path = path0;
+		newInfo.slots[0] = TasParser::ParseScript(script0, slot0name, slot0script);
 
 		if (coop) {
-			newInfo.slots[1] = TasParser::ParseScript(slot1name, slot1script);
-			newInfo.slots[1].name = slot1name;
-			newInfo.slots[1].path = path1;
+			script1.name = slot1name;
+			script1.path = path1;
+			newInfo.slots[1] = TasParser::ParseScript(script1, slot1name, slot1script);
 		}
 
 		Activate(newInfo);
@@ -923,10 +927,11 @@ void TasPlayer::PlaySingleCoop(std::string file, int slot) {
 
 	try {
 		TasPlaybackInfo newInfo;
+		TasScript script;
 		newInfo.coopControlSlot = slot;
 
 		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + file + "." + TAS_SCRIPT_EXT);
-		newInfo.slots[1-slot] = TasParser::ParseFile(filePath);
+		newInfo.slots[1 - slot] = TasParser::ParseFile(script, filePath);
 
 		Activate(newInfo);
 		

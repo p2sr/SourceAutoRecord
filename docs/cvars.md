@@ -451,8 +451,8 @@
 |sar_render_vbitrate|40000|Video bitrate used in renders (kbit/s)|
 |sar_render_vcodec|h264|Video codec used in renders (h264, hevc, vp8, vp9, dnxhd)|
 |sar_rhythmgame|0|Show a HUD indicating your groundframes as rhythm game like popups.|
-|sar_rng_load|cmd|sar_rng_load \<filename> - load RNG seed data on next session start|
-|sar_rng_save|cmd|sar_rng_save \<filename> - save RNG seed data to the specified file|
+|sar_rng_load|cmd|sar_rng_load [filename] - load RNG seed data on next session start. If filename isn't given, use last TAS script path|
+|sar_rng_save|cmd|sar_rng_save [filename] - save RNG seed data to the specified file. If filename isn't given, use last TAS script path|
 |sar_ruler_add|cmd|sar_ruler_add \<x> \<y> \<z> \<x> \<y> \<z> - adds a ruler to a set of currently drawn rulers.|
 |sar_ruler_clear|cmd|sar_ruler_clear - clear all created rulers|
 |sar_ruler_creator|0|Enables or disables ruler creator<br>0 = Ruler creator disabled<br>1 = Point-to-point ruler creator<br>2 = Player-to-point ruler creator|
