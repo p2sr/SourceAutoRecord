@@ -773,7 +773,7 @@ ON_EVENT_P(SESSION_START, 999) { // before rng manip hook
 		--tasPlayer->numSessionsBeforeStart;
 		auto rngManipFile = tasPlayer->playbackInfo.GetMainHeader().rngManipFile;
 		if (tasPlayer->numSessionsBeforeStart == 0 && rngManipFile != "") {
-			RngManip::loadData((rngManipFile + ".p2rng").c_str());
+			RngManip::loadData((rngManipFile + "." + RNG_MANIP_EXT).c_str());
 		}
 	}
 }

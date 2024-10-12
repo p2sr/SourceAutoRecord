@@ -127,28 +127,28 @@ ON_EVENT(SESSION_START) {
 	if (!sv_cheats.GetBool()) return;
 
 	if (!data.is_object()) {
-		console->Print("Invalid p2rng data!\n");
+		console->Print("Invalid RNG data!\n");
 		return;
 	}
 
 	if (data["map"].string_value() != engine->GetCurrentMapName()) {
-		console->Print("Invalid map for p2rng data!\n");
+		console->Print("Invalid map for RNG data!\n");
 		return;
 	}
 
 	if (!restorePaintSprayers(data["paint"])) {
-		console->Print("Failed to restore p2rng paint sprayer data!\n");
+		console->Print("Failed to restore RNG paint sprayer data!\n");
 	}
 
 	if (!restoreViewPunches(data["view_punch"])) {
-		console->Print("Failed to restore p2rng view punch data!\n");
+		console->Print("Failed to restore RNG view punch data!\n");
 	}
 
 	if (!restoreRandomSeeds(data["seeds"])) {
-		console->Print("Failed to restore p2rng random seed data!\n");
+		console->Print("Failed to restore RNG random seed data!\n");
 	}
 
-	console->Print("p2rng restore complete\n");
+	console->Print("RNG restore complete\n");
 }
 
 // save rng data (after loading)
@@ -201,7 +201,7 @@ void RngManip::loadData(const char *filename) {
 	std::string err;
 	auto json = json11::Json::parse(buf.str(), err);
 	if (err != "") {
-		console->Print("Failed to parse p2rng file: %s\n", err.c_str());
+		console->Print("Failed to parse RNG file: %s\n", err.c_str());
 		return;
 	}
 
@@ -253,7 +253,7 @@ CON_COMMAND(sar_rng_save, "sar_rng_save [filename] - save RNG seed data to the s
 	if (lastdot != std::string::npos) {
 		filename = filename.substr(0, lastdot);
 	}
-	filename += ".p2rng";
+	filename += "." RNG_MANIP_EXT;
 	RngManip::saveData(filename.c_str());
 }
 
@@ -281,7 +281,7 @@ CON_COMMAND(sar_rng_load, "sar_rng_load [filename] - load RNG seed data on next 
 	if (lastdot != std::string::npos) {
 		filename = filename.substr(0, lastdot);
 	}
-	filename += ".p2rng";
+	filename += "." RNG_MANIP_EXT;
 	RngManip::loadData(filename.c_str());
 }
 
