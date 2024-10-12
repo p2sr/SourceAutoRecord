@@ -8,6 +8,7 @@
 #include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
 #include "Offsets.hpp"
+#include "PlayerTrace.hpp"
 #include "Utils/json11.hpp"
 
 #include <cstring>
@@ -211,21 +212,25 @@ void RngManip::loadData(const char *filename) {
 }
 
 void RngManip::viewPunch(QAngle *offset) {
+	QAngle orig = *offset;
 	if (g_queued_view_punches.size() > 0) {
 		*offset = g_queued_view_punches.front();
 		g_queued_view_punches.pop_front();
 	}
 
 	g_recorded_view_punches.push_back(*offset);
+	playerTrace->EmitLog(Utils::ssprintf("ViewPunch(%.6f, %.6f, %.6f) -> (%.6f, %.6f, %.6f)", orig.x, orig.y, orig.z, offset->x, offset->y, offset->z).c_str());
 }
 
 void RngManip::randomSeed(int *seed) {
+	int orig = *seed;
 	if (g_queued_randomseeds.size() > 0) {
 		*seed = g_queued_randomseeds.front();
 		g_queued_randomseeds.pop_front();
 	}
 
 	g_recorded_randomseeds.push_back(*seed);
+	playerTrace->EmitLog(Utils::ssprintf("RandomSeed(%d) -> %d", orig, *seed).c_str());
 }
 
 CON_COMMAND(sar_rng_save, "sar_rng_save [filename] - save RNG seed data to the specified file. If filename isn't given, use last TAS script path\n") {

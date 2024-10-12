@@ -1100,7 +1100,6 @@ CON_COMMAND(sar_trace_compare, "sar_trace_compare <trace 1> <trace 2> - compares
 	auto vphysList2 = trace2->vphysLocations;
 	if (vphysList1.size() != vphysList2.size()) {
 		console->ColorMsg(badColor, "Mismatch in trace length: %d <-> %d\n", vphysList1.size(), vphysList2.size());
-		return;
 	}
 
 	int mismatchCount = 0;
@@ -1224,6 +1223,7 @@ void PlayerTrace::EmitLog(const char *msg) {
 	for (unsigned i = 0; i < trace->log_scope_stack.size(); ++i) {
 		line += "  ";
 	}
+	line += Utils::ssprintf("(%.4d) ", trace->positions[0].size() - 1);
 	line += msg;
 	trace->log_lines.push_back(line);
 }
