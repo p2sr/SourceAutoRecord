@@ -321,15 +321,17 @@ void PlayerTrace::DrawInWorld() const {
 				if (pos_delta > 0.001) pos = new_pos;
 			}
 
-			if (sar_trace_draw_hover.GetBool() && closest_dist < 1.0f) {
-				OverlayRender::addBoxMesh(
-					closest_pos,
-					{-1, -1, -1},
-					{1, 1, 1},
-					{0, 0, 0},
-					RenderCallback::constant({255, 0, 255, 20},  draw_through_walls),
-					RenderCallback::constant({255, 0, 255, 255}, draw_through_walls)
-				);
+			if (closest_dist < 1.0f) {
+				if (sar_trace_draw_hover.GetBool()) {
+					OverlayRender::addBoxMesh(
+						closest_pos,
+						{-1, -1, -1},
+						{1, 1, 1},
+						{0, 0, 0},
+						RenderCallback::constant({255, 0, 255, 20},  draw_through_walls),
+						RenderCallback::constant({255, 0, 255, 255}, draw_through_walls)
+					);
+				}
 				hovers.push_back({closest_id, trace_name, closest_pos, closest_vel, closest_dist});
 			}
 		}
@@ -873,25 +875,27 @@ ON_EVENT(RENDER) {
 
 	const Vector hud_offset = {0.0, 0.0, 2.0};
 
-	for (auto &h : hovers) {
-		std::string hover_str;
+	if (sar_trace_draw_hover.GetBool()) {
+		for (auto &h : hovers) {
+			std::string hover_str;
 
-		int timeType = sar_trace_draw_time.GetInt();
-		if (timeType > 0) {
-			int tick = h.tick;
-			auto trace = playerTrace->GetTrace(h.trace_name);
-			if (trace) {
-				tick = tickInternalToUser(tick, *trace);
+			int timeType = sar_trace_draw_time.GetInt();
+			if (timeType > 0) {
+				int tick = h.tick;
+				auto trace = playerTrace->GetTrace(h.trace_name);
+				if (trace) {
+					tick = tickInternalToUser(tick, *trace);
+				}
+				hover_str += Utils::ssprintf("tick: %d\n", tick);
 			}
-			hover_str += Utils::ssprintf("tick: %d\n", tick);
-		}
-		if (playerTrace->GetTraceCount() > 1) {
-			hover_str += Utils::ssprintf("trace: %s\n", h.trace_name.c_str());
-		}
-		hover_str += Utils::ssprintf("pos: %.1f %.1f %.1f\n", h.pos.x, h.pos.y, h.pos.z);
-		hover_str += Utils::ssprintf("horiz. speed: %.2f\n", h.speed);
+			if (playerTrace->GetTraceCount() > 1) {
+				hover_str += Utils::ssprintf("trace: %s\n", h.trace_name.c_str());
+			}
+			hover_str += Utils::ssprintf("pos: %.1f %.1f %.1f\n", h.pos.x, h.pos.y, h.pos.z);
+			hover_str += Utils::ssprintf("horiz. speed: %.2f\n", h.speed);
 
-		OverlayRender::addText(h.pos + hud_offset, hover_str, sar_trace_font_size.GetFloat(), true, true);
+			OverlayRender::addText(h.pos + hud_offset, hover_str, sar_trace_font_size.GetFloat(), true, true);
+		}
 	}
 
 	if (sar_trace_draw_speed_deltas.GetBool()) {
