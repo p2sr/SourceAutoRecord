@@ -19,8 +19,8 @@ public:
 
 	void HandleGroundframeLogic(int slot, bool grounded);
 
-	int groundframes = 0;
-	bool was_grounded = false;
+	int counter[2] = {0};
+	bool grounded[2] = {false};
 
 	struct RhythmGamePopup {
 		int x;
@@ -29,9 +29,10 @@ public:
 		int lifetime;
 		int type;
 		int streak;
+		int slot;
 	};
 
-	int perfectsInARow = 0;
+	int perfectsInARow[2] = {0};
 
 	std::vector<RhythmGamePopup> popups;
 	Color perfectColor = Color{0, 171, 255, 0};  // 0 groundframes
