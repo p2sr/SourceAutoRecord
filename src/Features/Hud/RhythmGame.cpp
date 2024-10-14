@@ -12,6 +12,9 @@
 
 Variable sar_rhythmgame("sar_rhythmgame", "0", "Show a HUD indicating your groundframes as rhythm game like popups.\n");
 
+// Customization
+Variable sar_rhythmgame_combo("sar_rhythmgame_combo", "1", "Show a combo counter on the rhythm game HUD.\n");
+
 bool RhythmGameHud::ShouldDraw() {
 	return sar_rhythmgame.GetBool();
 }
@@ -66,7 +69,8 @@ void RhythmGameHud::Paint(int slot) {
 
 		surface->DrawTxt(font, x, y, popupColor, popupText.c_str());
 		if (popup.streak > 1 && popup.type == 0) {
-			std::string combo = "(" + std::to_string(popup.streak) + "x)";
+			std::string combo = "";
+			if (sar_rhythmgame_combo.GetBool()) combo = "(" + std::to_string(popup.streak) + "x)";
 			surface->DrawTxt(font, x + (surface->GetFontLength(font, popupText.c_str()) / 2) - (surface->GetFontLength(font, combo.c_str()) / 2), y + fh, Color{232, 179, 45, static_cast<uint8_t>(popup.alpha)}, combo.c_str());
 		}
 
