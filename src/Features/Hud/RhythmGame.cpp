@@ -17,13 +17,13 @@ bool RhythmGameHud::ShouldDraw() {
 }
 
 void RhythmGameHud::HandleGroundframeLogic(int slot, bool grounded) {
-	if (!this->was_grounded && grounded) {
-		this->groundframes = 0;
+	if ((!this->grounded[slot] && grounded)) {
+		this->counter[slot] = 0;
 	} else if (grounded) {
-		this->groundframes++;
+		this->counter[slot]++;
 	}
 
-	this->was_grounded = grounded;
+	this->grounded[slot] = grounded;
 }
 
 void RhythmGameHud::Paint(int slot) {
@@ -31,6 +31,8 @@ void RhythmGameHud::Paint(int slot) {
 	float fh = surface->GetFontHeight(font);
 
 	for (unsigned i = 0; i < popups.size(); i++) {
+		if (popups[i].slot != slot) continue;
+
 		RhythmGamePopup popup = popups[i];
 
 		int x = popup.x;
@@ -80,7 +82,7 @@ void RhythmGameHud::Paint(int slot) {
 }
 
 void RhythmGameHud::OnJump(int slot) {
-	int groundframes = this->groundframes;
+	int groundframes = this->counter[slot];
 
 	int screenWidth, screenHeight;
 	engine->GetScreenSize(nullptr, screenWidth, screenHeight);
@@ -97,6 +99,7 @@ void RhythmGameHud::OnJump(int slot) {
 	popup.lifetime = 180;
 	popup.type = -1;
 	popup.streak = 0;
+	popup.slot = slot;
 
 	if (groundframes == 0) {
 		popup.type = 0;
@@ -107,17 +110,17 @@ void RhythmGameHud::OnJump(int slot) {
 	} else if (groundframes >= 3 && groundframes <= 6) {
 		popup.type = 3;
 	} else {
-		perfectsInARow = 0;
+		perfectsInARow[slot] = 0;
 		return;
 	}
 
 	if (popup.type == 0) {
-		perfectsInARow++;
+		perfectsInARow[slot]++;
 	} else {
-		perfectsInARow = 0;
+		perfectsInARow[slot] = 0;
 	}
 
-	popup.streak = perfectsInARow;
+	popup.streak = perfectsInARow[slot];
 
 	popups.push_back(popup);
 }
