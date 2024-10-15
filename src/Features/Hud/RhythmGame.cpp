@@ -14,6 +14,7 @@ Variable sar_rhythmgame("sar_rhythmgame", "0", "Show a HUD indicating your groun
 
 // Customization
 Variable sar_rhythmgame_combo("sar_rhythmgame_combo", "1", "Show a combo counter on the rhythm game HUD.\n");
+Variable sar_rhythmgame_font("sar_rhythmgame_font", "64", "The font to use for the rhythm game HUD.\n");
 
 bool RhythmGameHud::ShouldDraw() {
 	return sar_rhythmgame.GetBool();
@@ -30,7 +31,7 @@ void RhythmGameHud::HandleGroundframeLogic(int slot, bool grounded) {
 }
 
 void RhythmGameHud::Paint(int slot) {
-	auto font = scheme->GetFontByID(49);
+	auto font = scheme->GetFontByID(sar_rhythmgame_font.GetInt());
 	float fh = surface->GetFontHeight(font);
 
 	for (unsigned i = 0; i < popups.size(); i++) {
