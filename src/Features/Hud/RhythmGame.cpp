@@ -12,25 +12,31 @@
 
 Variable sar_rhythmgame("sar_rhythmgame", "0", "Show a HUD indicating your groundframes as rhythm game like popups.\n");
 
+// Customization
+Variable sar_rhythmgame_combo("sar_rhythmgame_combo", "1", "Show a combo counter on the rhythm game HUD.\n");
+Variable sar_rhythmgame_font("sar_rhythmgame_font", "64", "The font to use for the rhythm game HUD.\n");
+
 bool RhythmGameHud::ShouldDraw() {
 	return sar_rhythmgame.GetBool();
 }
 
 void RhythmGameHud::HandleGroundframeLogic(int slot, bool grounded) {
-	if (!this->was_grounded && grounded) {
-		this->groundframes = 0;
+	if ((!this->grounded[slot] && grounded)) {
+		this->counter[slot] = 0;
 	} else if (grounded) {
-		this->groundframes++;
+		this->counter[slot]++;
 	}
 
-	this->was_grounded = grounded;
+	this->grounded[slot] = grounded;
 }
 
 void RhythmGameHud::Paint(int slot) {
-	auto font = scheme->GetFontByID(49);
+	auto font = scheme->GetFontByID(sar_rhythmgame_font.GetInt());
 	float fh = surface->GetFontHeight(font);
 
 	for (unsigned i = 0; i < popups.size(); i++) {
+		if (popups[i].slot != slot) continue;
+
 		RhythmGamePopup popup = popups[i];
 
 		int x = popup.x;
@@ -64,7 +70,8 @@ void RhythmGameHud::Paint(int slot) {
 
 		surface->DrawTxt(font, x, y, popupColor, popupText.c_str());
 		if (popup.streak > 1 && popup.type == 0) {
-			std::string combo = "(" + std::to_string(popup.streak) + "x)";
+			std::string combo = "";
+			if (sar_rhythmgame_combo.GetBool()) combo = "(" + std::to_string(popup.streak) + "x)";
 			surface->DrawTxt(font, x + (surface->GetFontLength(font, popupText.c_str()) / 2) - (surface->GetFontLength(font, combo.c_str()) / 2), y + fh, Color{232, 179, 45, static_cast<uint8_t>(popup.alpha)}, combo.c_str());
 		}
 
@@ -80,7 +87,7 @@ void RhythmGameHud::Paint(int slot) {
 }
 
 void RhythmGameHud::OnJump(int slot) {
-	int groundframes = this->groundframes;
+	int groundframes = this->counter[slot];
 
 	int screenWidth, screenHeight;
 	engine->GetScreenSize(nullptr, screenWidth, screenHeight);
@@ -97,6 +104,7 @@ void RhythmGameHud::OnJump(int slot) {
 	popup.lifetime = 180;
 	popup.type = -1;
 	popup.streak = 0;
+	popup.slot = slot;
 
 	if (groundframes == 0) {
 		popup.type = 0;
@@ -107,17 +115,17 @@ void RhythmGameHud::OnJump(int slot) {
 	} else if (groundframes >= 3 && groundframes <= 6) {
 		popup.type = 3;
 	} else {
-		perfectsInARow = 0;
+		perfectsInARow[slot] = 0;
 		return;
 	}
 
 	if (popup.type == 0) {
-		perfectsInARow++;
+		perfectsInARow[slot]++;
 	} else {
-		perfectsInARow = 0;
+		perfectsInARow[slot] = 0;
 	}
 
-	popup.streak = perfectsInARow;
+	popup.streak = perfectsInARow[slot];
 
 	popups.push_back(popup);
 }
