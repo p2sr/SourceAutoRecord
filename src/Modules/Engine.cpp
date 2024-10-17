@@ -732,11 +732,10 @@ void Host_AccumulateTime_Detour(float dt) {
 		} else {
 			if (sar_frametime_debug.GetBool()) console->Print("Host_AccumulateTime: %f (capped to %f)\n", *host_frametime_unbounded, *host_frametime);
 			if (engine->demorecorder->isRecordingDemo && g_loadstate == LOADED) {
-				char *data = new char[5];
+				char data[5];
 				data[0] = 0x0F;
 				*(float *)(data + 1) = *host_frametime_unbounded;
 				engine->demorecorder->RecordData(data, sizeof data);
-				delete[] data;
 			}
 		}
 	} else {
