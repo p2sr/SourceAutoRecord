@@ -33,7 +33,7 @@ std::vector<std::string> FileSystem::GetSearchPaths() {
 		start = i + 1;
 	}
 
-	paths.push_back(std::string(engine->GetGameDirectory()) + "/../"); // Portal 2/portal2 => Portal 2
+	paths.push_back(std::filesystem::current_path().string() + "/"); // EXECUTABLE_PATH
 	return paths;
 }
 
