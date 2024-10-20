@@ -11,9 +11,6 @@ class MaterialSystem : public Module {
 public:
 	Interface *materials = nullptr;
 
-	using _CreateMaterial = IMaterial*(__rescall*)(void* thisptr, const char *pMaterialName, void *pVMTKeyValues);
-	_CreateMaterial CreateMaterial = nullptr;
-	
 	using _RemoveMaterial = void(__rescall*)(void* thisptr, IMaterialInternal* pMaterial);
 	_RemoveMaterial RemoveMaterial = nullptr;
 
@@ -22,6 +19,7 @@ public:
 
 public:
 	DECL_DETOUR(UncacheUnusedMaterials, bool bRecomputeStateSnapshots);
+	DECL_DETOUR_T(IMaterial *, CreateMaterial, const char *pMaterialName, void *pVMTKeyValues);
 
 	bool Init() override;
 	void Shutdown() override;

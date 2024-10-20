@@ -43,6 +43,7 @@ public:
 };
 
 REDECL(MaterialSystem::UncacheUnusedMaterials);
+REDECL(MaterialSystem::CreateMaterial);
 
 DETOUR(MaterialSystem::UncacheUnusedMaterials, bool bRecomputeStateSnapshots) {
 	auto start = std::chrono::high_resolution_clock::now();
@@ -53,12 +54,37 @@ DETOUR(MaterialSystem::UncacheUnusedMaterials, bool bRecomputeStateSnapshots) {
 	return result;
 }
 
+DETOUR_T(IMaterial *, MaterialSystem::CreateMaterial, const char *pMaterialName, void *pVMTKeyValues) {
+	if (sar.game->Is(SourceGame_Portal2 | SourceGame_PortalReloaded | SourceGame_PortalStoriesMel)) {
+		// Patched by Valve, no need for us to do it again
+		return MaterialSystem::CreateMaterial(thisptr, pMaterialName, pVMTKeyValues);
+	}
+
+	std::string sMaterialName(pMaterialName);
+	std::string sMapName(engine->m_szLevelName);
+	std::replace(sMaterialName.begin(), sMaterialName.end(), '\\', '/');
+	std::replace(sMapName.begin(), sMapName.end(), '\\', '/');
+
+	// Memory leak ultimate fix! -route credits to krzyhau
+    // apparently the game loads PeTI related materials into the memory every time you
+    // load the game. This simply prevents that from happening.
+	// Revived from the dead for mods!
+    bool isPetiMaterial = sMaterialName.find("props_map_editor") != std::string::npos;
+    bool isWhiteMaterial = sMaterialName.find("vgui/white") != std::string::npos;
+    bool isPetiMap = sMapName.find("puzzlemaker/") != std::string::npos;
+    if ((isPetiMaterial || isWhiteMaterial) && !isPetiMap) {
+        return 0;
+    }
+
+	return MaterialSystem::CreateMaterial(thisptr, pMaterialName, pVMTKeyValues);
+}
+
 bool MaterialSystem::Init() {
 	this->materials = Interface::Create(this->Name(), "VMaterialSystem080");
 	if (this->materials) {
 		this->materials->Hook(MaterialSystem::UncacheUnusedMaterials_Hook, MaterialSystem::UncacheUnusedMaterials, Offsets::UncacheUnusedMaterials);
+		this->materials->Hook(MaterialSystem::CreateMaterial_Hook, MaterialSystem::CreateMaterial, Offsets::CreateMaterial);
 
-		this->CreateMaterial = this->materials->Original<_CreateMaterial>(Offsets::CreateMaterial);
 		this->RemoveMaterial = this->materials->Original<_RemoveMaterial>(Offsets::RemoveMaterial);
 
 		this->KeyValues_SetString = (_KeyValues_SetString)Memory::Scan(this->Name(), Offsets::KeyValues_SetString);
