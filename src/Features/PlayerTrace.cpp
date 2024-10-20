@@ -192,7 +192,7 @@ Trace *PlayerTrace::GetTrace(std::string trace_name) {
 	return &traces.find(trace_name)->second;
 }
 std::string PlayerTrace::GetDefaultTraceName() {
-	// first, try to look for currently hovered traces, find the smallest one
+	// first, try to look for currently hovered traces, find the closest one
 	std::string trace_name = "";
 
 	float hoverDist = 1.0f;
@@ -205,6 +205,12 @@ std::string PlayerTrace::GetDefaultTraceName() {
 
 	if (trace_name == "" && traces.size() > 0) {
 		trace_name = traces.begin()->first;
+		for (auto &t : traces) {
+			if (t.second.draw) {
+				trace_name = t.first;
+				break;
+			}
+		}
 	}
 
 	return trace_name;
