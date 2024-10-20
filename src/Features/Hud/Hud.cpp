@@ -709,12 +709,22 @@ HUD_ELEMENT_MODE2(eyeoffset, "0", 0, 2,
 		ctx->DrawElement("eyeoff: -");
 	}
 }
-HUD_ELEMENT2(velang, "0", "Draw the angle of the player's horizontal velocity vector.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+HUD_ELEMENT_MODE2(velang, "0", 0, 2,
+                  "Draw the angle of the player's horizontal velocity vector.\n"
+				  "0 = Default,\n"
+				  "1 = yaw,\n"
+				  "2 = pitch yaw.\n",
+				  HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
 	auto player = client->GetPlayer(ctx->slot + 1);
 	if (player) {
 		auto vel = client->GetLocalVelocity(player);
-		float ang = RAD2DEG(atan2(vel.y, vel.x));
-		ctx->DrawElement("velang: %.*f", getPrecision(true), ang);
+		float pitch = -RAD2DEG(atan2(vel.z, vel.Length2D()));
+		float yaw = RAD2DEG(atan2(vel.y, vel.x));
+		if (mode == 1) {
+			ctx->DrawElement("velang: %.*f", getPrecision(true), yaw);
+		} else {
+			ctx->DrawElement("velang: %.*f %.*f", getPrecision(true), pitch, getPrecision(true), yaw);
+		}
 	} else {
 		ctx->DrawElement("velang: -");
 	}

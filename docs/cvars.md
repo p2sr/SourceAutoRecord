@@ -275,7 +275,7 @@
 |sar_hud_timer|0|Draws current value of timer.|
 |sar_hud_toggle_text|cmd|sar_hud_toggle_text \<id> - toggles the nth text value in the HUD|
 |sar_hud_trace|0|Draws info about current trace bbox tick.|
-|sar_hud_velang|0|Draw the angle of the player's horizontal velocity vector.|
+|sar_hud_velang|0|Draw the angle of the player's horizontal velocity vector.<br>0 = Default,<br>1 = yaw,<br>2 = pitch yaw.|
 |sar_hud_velocity|0|Draws velocity of the client.<br>0 = Default,<br>1 = X, Y, Z<br>2 = X:Y<br>3 = X:Y, Z<br>4 = X:Y:Z<br>5 = X, Y, X:Y, Z|
 |sar_hud_velocity_peak|0|Draws last saved velocity peak.|
 |sar_hud_velocity_precision|2|Precision of velocity HUD numbers.|
