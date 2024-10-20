@@ -7,6 +7,7 @@
 
 /* Timeline can get cluttered up (especially at long recording lengths), nice to have an option to disable adding splits. */
 Variable sar_timeline_splits("sar_timeline_splits", "1", "Add split markers to the Steam Timeline.\n");
+Variable sar_timeline_show_completed("sar_timeline_show_completed", "0", "Only show speedrun starts with matching finishes.\n");
 
 Timeline *timeline;
 
@@ -20,6 +21,7 @@ void Timeline::StartSpeedrun() {
 	if (!steam->hasLoaded) return;
 	g_speedrunStart = std::chrono::system_clock::now();
 
+	if (sar_timeline_show_completed.GetBool()) return;
 	steam->g_timeline->AddTimelineEvent("steam_timer", "Speedrun Start", "", 1, 0.0f, 0.0f, k_ETimelineEventClipPriority_Standard);
 }
 
@@ -46,6 +48,9 @@ ON_EVENT(SPEEDRUN_FINISH) {
 	auto fl_time = SpeedrunTimer::GetTotalTicks() * engine->GetIPT();
 	auto time = SpeedrunTimer::Format(fl_time);
 
+	if (sar_timeline_show_completed.GetBool()) {
+		steam->g_timeline->AddTimelineEvent("steam_timer", "Speedrun Start", "", 1, -offset.count(), 0.0f, k_ETimelineEventClipPriority_Standard);
+	}
 	steam->g_timeline->SetTimelineStateDescription(("Speedrun " + time).c_str(), -offset.count());
 	steam->g_timeline->ClearTimelineStateDescription(0.0f);
 	steam->g_timeline->AddTimelineEvent("steam_flag", "Speedrun Finish", time.c_str(), 1, 0.0f, 0.0f, k_ETimelineEventClipPriority_Standard);
