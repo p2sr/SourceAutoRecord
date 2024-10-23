@@ -77,6 +77,7 @@ REDECL(Server::CheckJumpButtonBase);
 REDECL(Server::StepMove);
 REDECL(Server::TryPlayerMove);
 REDECL(Server::CheckStuck);
+REDECL(Server::SetGroundEntity);
 REDECL(Server::PlayerMove);
 REDECL(Server::FinishGravity);
 REDECL(Server::AirMove);
@@ -221,6 +222,15 @@ DETOUR_T(int, Server::CheckStuck) {
 	wasStuck = result == 1;
 
 	return result;
+}
+
+// CGameMovement::SetGroundEntity
+DETOUR(Server::SetGroundEntity, CGameTrace* tr) {
+	auto player = *reinterpret_cast<void **>((uintptr_t)thisptr + Offsets::player);
+	auto mv = *reinterpret_cast<const CHLMoveData **>((uintptr_t)thisptr + Offsets::mv);
+
+	Cheats::EnsureSlopeBoost(mv, player, &tr);
+	return Server::SetGroundEntity(thisptr, tr);
 }
 
 // CGameMovement::PlayerMove
@@ -817,6 +827,7 @@ bool Server::Init() {
 		this->g_GameMovement->Hook(Server::StepMove_Hook, Server::StepMove, Offsets::StepMove);
 		this->g_GameMovement->Hook(Server::TryPlayerMove_Hook, Server::TryPlayerMove, Offsets::TryPlayerMove);
 		this->g_GameMovement->Hook(Server::CheckStuck_Hook, Server::CheckStuck, Offsets::CheckStuck);
+		this->g_GameMovement->Hook(Server::SetGroundEntity_Hook, Server::SetGroundEntity, Offsets::SetGroundEntity);
 		this->g_GameMovement->Hook(Server::ProcessMovement_Hook, Server::ProcessMovement, Offsets::ProcessMovement);
 		this->g_GameMovement->Hook(Server::GetPlayerViewOffset_Hook, Server::GetPlayerViewOffset, Offsets::GetPlayerViewOffset);
 		this->g_GameMovement->Hook(Server::FinishGravity_Hook, Server::FinishGravity, Offsets::FinishGravity);

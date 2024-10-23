@@ -29,7 +29,8 @@
 Variable sar_autorecord("sar_autorecord", "0", -1, 1, "Enables or disables automatic demo recording.\n");
 Variable sar_autojump("sar_autojump", "0", "Enables automatic jumping on the server.\n");
 Variable sar_autostrafe("sar_autostrafe", "0", "Automatically strafes in your current wishdir.\n");
-Variable sar_jumpboost("sar_jumpboost", "0", 0,
+Variable sar_ensure_slope_boost("sar_ensure_slope_boost", "0", "Ensures a successful slope boost.");
+	Variable sar_jumpboost("sar_jumpboost", "0", 0,
                        "Enables special game movement on the server.\n"
                        "0 = Default,\n"
                        "1 = Orange Box Engine,\n"
@@ -433,4 +434,26 @@ void Cheats::AutoStrafe(int slot, void *player, CUserCmd *cmd) {
 		fb.moveAnalog.y *= 2;
 	}
 	tasPlayer->ApplyMoveAnalog(fb.moveAnalog, cmd);
+}
+
+void Cheats::EnsureSlopeBoost(const CHLMoveData *move, void *player, CGameTrace **tr) {
+	if ((*tr) == NULL) {
+		return;
+	}
+	
+	if (!server->AllowsMovementChanges() || !sar_ensure_slope_boost.GetBool()) {
+		return;
+	}
+	
+	bool goingDown = move->m_vecVelocity.z < 0;
+	bool isntAlreadyGrounded = !(SE(player)->ground_entity());
+	bool landedOnSlope = (*tr)->plane.normal.z < 1.0f;
+	bool wantsToSnapToGround = (*tr)->fraction >= 0.000001f;
+
+	if (goingDown && isntAlreadyGrounded && landedOnSlope && wantsToSnapToGround) {
+		// Nulling out pointer by reference, so that it's passed in CGameMovement::SetGroundEntity, 
+		// preventing being grounded on this call, letting the player to boost off slope
+		*tr = NULL;
+	}
+
 }

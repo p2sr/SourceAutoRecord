@@ -108,6 +108,9 @@ public:
 	// CGameMovement::CheckStuck
 	DECL_DETOUR_T(int, CheckStuck);
 
+	// CGameMovement::SetGroundEntity
+	DECL_DETOUR(SetGroundEntity, CGameTrace* tr);
+
 	// CGameMovement::TryPlayerMove
 	DECL_DETOUR_T(int, TryPlayerMove, Vector *pFirstDest, CGameTrace *pFirstTrace);
 
