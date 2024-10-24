@@ -29,7 +29,7 @@
 Variable sar_autorecord("sar_autorecord", "0", -1, 1, "Enables or disables automatic demo recording.\n");
 Variable sar_autojump("sar_autojump", "0", "Enables automatic jumping on the server.\n");
 Variable sar_autostrafe("sar_autostrafe", "0", "Automatically strafes in your current wishdir.\n");
-Variable sar_ensure_slope_boost("sar_ensure_slope_boost", "0", "Ensures a successful slope boost.");
+Variable sar_ensure_slope_boost("sar_ensure_slope_boost", "0", "Ensures a successful slope boost.\n");
 Variable sar_jumpboost("sar_jumpboost", "0", 0,
                        "Enables special game movement on the server.\n"
                        "0 = Default,\n"

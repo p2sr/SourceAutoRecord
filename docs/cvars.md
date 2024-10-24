@@ -191,6 +191,7 @@
 |sar_ei_hud_x|0|X offset of entity inspection HUD.|
 |sar_ei_hud_y|0|Y offset of entity inspection HUD.|
 |sar_ei_hud_z|0|Z offset of entity inspection HUD.|
+|sar_ensure_slope_boost|0|Ensures a successful slope boost.|
 |sar_ent_info|cmd|sar_ent_info [selector] - show info about the entity under the crosshair or with the given name|
 |sar_ent_slot_serial|cmd|sar_ent_slot_serial \<id> [value] - prints entity slot serial number, or sets it if additional parameter is specified.<br>Banned in most categories, check with the rules before use!|
 |sar_exit|cmd|sar_exit - removes all function hooks, registered commands and unloads the module|

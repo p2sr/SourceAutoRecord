@@ -177,10 +177,12 @@ static std::deque<Color> g_nameColorOverrides;
 
 void Client::Chat(Color col, const char *str) {
 	g_nameColorOverrides.push_back(col);
+	if (!client->ChatPrintf) return;
 	client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, "%c%s", TextColor::PLAYERNAME, str);
 }
 
 void Client::MultiColorChat(const std::vector<std::pair<Color, std::string>> &components) {
+	if (!client->ChatPrintf) return;
 	// this sucks, but because c varargs are stupid, we have to construct a *format* string containing what we want (escaping any % signs)
 	std::string fmt = "";
 
@@ -239,6 +241,7 @@ void Client::ClFrameStageNotify(int stage) {
 }
 
 void Client::OpenChat() {
+	if (!this->StartMessageMode) return;
 	this->StartMessageMode(this->g_HudChat->ThisPtr(), 1);  // MM_SAY
 }
 
@@ -921,15 +924,22 @@ bool Client::Init() {
 
 		this->g_ClientDLL->Hook(Client::LevelInitPreEntity_Hook, Client::LevelInitPreEntity, Offsets::LevelInitPreEntity);
 
+		using _GetHud = void *(__cdecl *)(int unk);
+		using _FindElement = void *(__rescall *)(void *thisptr, const char *pName);
+		_GetHud GetHud = nullptr;
+		_FindElement FindElement = nullptr;
+
 		Command leaderboard("+leaderboard");
 		if (!!leaderboard) {
-			using _GetHud = void *(__cdecl *)(int unk);
-			using _FindElement = void *(__rescall *)(void *thisptr, const char *pName);
-
 			auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
-			auto GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
-			auto FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
+			GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
+			FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
+		} else if (Offsets::GetHudSig && Offsets::FindElementSig) {
+			GetHud = Memory::Scan<_GetHud>(this->Name(), Offsets::GetHudSig);
+			FindElement = Memory::Scan<_FindElement>(this->Name(), Offsets::FindElementSig);
+		}
 
+		if (GetHud && FindElement) {
 			auto CHUDChallengeStats = FindElement(GetHud(-1), "CHUDChallengeStats");
 			if (this->g_HUDChallengeStats = Interface::Create(CHUDChallengeStats)) {
 				this->g_HUDChallengeStats->Hook(Client::GetName_Hook, Client::GetName, Offsets::GetName);
@@ -972,7 +982,7 @@ bool Client::Init() {
 				console->DevWarning("Failed to hook CHudSaveStatus\n");
 			}
 		} else {
-			console->DevWarning("Failed to hook +leaderboard\n");
+			console->DevWarning("Failed to hook GetHud and FindElement\n");
 		}
 
 		this->IN_ActivateMouse = this->g_ClientDLL->Original<_IN_ActivateMouse>(Offsets::IN_ActivateMouse);

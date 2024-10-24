@@ -413,6 +413,8 @@ SIGSCAN_DEFAULT(OnEvent, "55 8B EC 57 8B F9 8B 4D 08 E8",
                          "55 89 E5 57 56 53 83 EC 1C 8B 45 0C 8B 7D 08 89 04 24 E8 ? ? ? ? C7 04 24")
 SIGSCAN_DEFAULT(OnCommand, "55 8B EC 56 57 8B 7D 08 57 68 ? ? ? ? 8B F1 E8 ? ? ? ? 83 C4 08 85 C0 0F 84",
                            "55 89 E5 57 56 53 83 EC 2C 8B 75 0C C7 04 24 ? ? ? ? 8B 5D 08 89 74 24 04 E8 ? ? ? ? 85 C0 75 3D")
+SIGSCAN_EMPTY(GetHudSig)
+SIGSCAN_EMPTY(FindElementSig)
 
 SIGSCAN_DEFAULT(GetChapterProgress, "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8",
                                     "55 89 E5 57 56 53 83 EC 0C E8 ? ? ? ? 83 EC 08 8B 10")
