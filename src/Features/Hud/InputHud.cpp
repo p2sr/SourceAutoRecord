@@ -393,7 +393,7 @@ void InputHud::ApplyPreset(const char* preset, bool start) {
 		PARAM("moveleft", "text", "A");
 		PARAM("moveright", "text", "D");
 		PARAM("jump", "text", "Jump");
-		PARAM("use", "text", "+use");
+		PARAM("use", "text", "Use");
 		PARAM("duck", "text", "Duck");
 		PARAM("attack", "text", "LMB");
 		PARAM("attack2", "text", "RMB");
