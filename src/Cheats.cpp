@@ -93,26 +93,16 @@ CON_COMMAND(sar_autoaim_point, "sar_autoaim_point <x> <y> <z> - automatically ai
 	engine->ExecuteCommand(Utils::ssprintf("setang %f %f\n", pitch, yaw).c_str());
 }
 
-// P2, INFRA and HL2 only
-#ifdef _WIN32
-#	define TRACE_SHUTDOWN_PATTERN "6A 00 68 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? "
-#	define TRACE_SHUTDOWN_OFFSET1 3
-#	define TRACE_SHUTDOWN_OFFSET2 10
-#else
-#	define TRACE_SHUTDOWN_PATTERN "C7 44 24 04 00 00 00 00 C7 04 24 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? C7"
-#	define TRACE_SHUTDOWN_OFFSET1 11
-#	define TRACE_SHUTDOWN_OFFSET2 10
-#endif
 CON_COMMAND(sar_delete_alias_cmds, "sar_delete_alias_cmds - deletes all alias commands\n") {
 	using _Cmd_Shutdown = int (*)();
 	static _Cmd_Shutdown Cmd_Shutdown = nullptr;
 
 	if (!Cmd_Shutdown) {
-		auto result = Memory::MultiScan(engine->Name(), TRACE_SHUTDOWN_PATTERN, TRACE_SHUTDOWN_OFFSET1);
+		auto result = Memory::MultiScan(engine->Name(), Offsets::Cmd_ShutdownSig, Offsets::Cmd_ShutdownOff);
 		if (!result.empty()) {
 			for (auto const &addr : result) {
 				if (!std::strcmp(*reinterpret_cast<char **>(addr), "Cmd_Shutdown()")) {
-					Cmd_Shutdown = Memory::Read<_Cmd_Shutdown>(addr + TRACE_SHUTDOWN_OFFSET2);
+					Cmd_Shutdown = Memory::Read<_Cmd_Shutdown>(addr + Offsets::Cmd_ShutdownOff2);
 					break;
 				}
 			}

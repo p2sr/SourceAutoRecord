@@ -7,10 +7,6 @@
 #include "Utils.hpp"
 #include "Variable.hpp"
 
-#if _WIN32
-#	define IServerMessageHandler_VMT_Offset 8
-#endif
-
 class Engine : public Module {
 public:
 	Interface *engineClient = nullptr;

@@ -150,7 +150,6 @@ const std::pair<size_t, EntField::Type> &EntField::getClientOffset(void *ent, co
 	return g_client_offsets[class_name][std::string(field)];
 }
 
-#define S(x) #x
 static const char *g_type_names[] = {
 	"void",
 	"bool",
@@ -169,7 +168,6 @@ static const char *g_type_names[] = {
 	"matrix3x4_t",
 	"other",
 };
-#undef S
 
 void EntField::warnBadFieldType(void *ent, const char *field, const char *expect_type, Type actual_type, bool server) {
 	if (actual_type == Type::NONE) {
