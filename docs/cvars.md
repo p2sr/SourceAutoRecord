@@ -317,6 +317,9 @@
 |sar_lphud_setpos|cmd|sar_lphud_setpos \<top\|center\|bottom\|y\|y%> \<left\|center\|right\|x\|x%> - automatically sets the position of least portals HUD.|
 |sar_lphud_x|-10|x pos of lp counter.|
 |sar_lphud_y|-10|y pos of lp counter.|
+|sar_metronome|0|Enable metronome.|
+|sar_metronome_bpm|60|Set the beats per minute for the metronome.|
+|sar_metronome_sound|ui/ui_coop_hud_focus_01|Set the sound to play for the metronome.|
 |sar_minimap_load|cmd|sar_minimap_load \<filename> - load a minimap from a JSON file.|
 |sar_minimap_max_height|1000|The maximum height of the minimap.|
 |sar_minimap_max_width|500|The maximum width of the minimap.|
