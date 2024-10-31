@@ -184,6 +184,14 @@
 |sar_dump_server_datamap|cmd|sar_dump_server_datamap - dumps server datamap to a file|
 |sar_echo|cmd|sar_echo \<color> \<string...> - echo a string to console with a given color|
 |sar_echo_nolf|cmd|sar_echo_nolf \<color> \<string...> - echo a string to console with a given color and no trailing line feed|
+|sar_ehm_hud|0|Enables EHM debug HUD.|
+|sar_ehm_hud_autofill|1|Whether to listen for changed slot and use it to replace the oldest one in EHM debug HUD.|
+|sar_ehm_hud_font|2|Font used by the EHM debug HUD.|
+|sar_ehm_hud_list_length|20|How many slots to show in the EHM debug HUD.|
+|sar_ehm_hud_push|cmd|sar_ehm_hud_push \<slot> - push slot on top of the EHM debug HUD.|
+|sar_ehm_hud_refill|cmd|sar_ehm_hud_refill [slot] - fills EHM debug HUD with slots starting from a given one.|
+|sar_ehm_hud_x|-10|The X position of the EHM debug HUD.|
+|sar_ehm_hud_y|10|The Y position of the EHM debug HUD.|
 |sar_ei_hud|0|Draws entity inspection data.|
 |sar_ei_hud_font_color|255 255 255 255|RGBA font color of entity inspection HUD when not recording.|
 |sar_ei_hud_font_color2|153 23 9 255|RGBA font color of entity inspection HUD when recording.|
