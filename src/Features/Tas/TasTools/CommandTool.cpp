@@ -9,6 +9,8 @@ CommandTool commandTool[2] = {{0}, {1}};
 
 void CommandTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 	if (params.enabled) {
+		// FetchInputs happens before tools in the tick, so we don't double-execute
+		bulk.commands.push_back(params.command);
 		engine->ExecuteCommand(params.command.c_str(), true);
 		params.enabled = false;
 	}
