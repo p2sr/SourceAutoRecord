@@ -20,7 +20,7 @@ struct LeaderboardEntry {
 class GhostLeaderboardHud : public Hud {
 public:
 	GhostLeaderboardHud()
-		: Hud(HudType_InGame | HudType_Paused, false)
+		: Hud(HudType_InGame | HudType_Paused, true)
 		, lastLiveUpdate(-1)
 	{ }
 

@@ -141,7 +141,7 @@ public:
 	bool active = false;
 
 	PlayerListUi()
-		: Hud(HudType_InGame | HudType_Menu | HudType_Paused | HudType_LoadingScreen, false)
+		: Hud(HudType_InGame | HudType_Menu | HudType_Paused | HudType_LoadingScreen, true)
 	{
 	}
 
@@ -154,7 +154,7 @@ public:
 	}
 
 	virtual void Paint(int slot) override {
-		if (slot != 0) return;
+		if (slot != 0 && !engine->IsOrange()) return;
 		if (!networkManager.isConnected) return;
 
 		std::set<std::string> players;

@@ -23,7 +23,7 @@ static std::string formatTicks(int ticks) {
 }
 
 void GhostLeaderboardHud::Paint(int slot) {
-	if (slot != 0) return;
+	if (slot != 0 && !engine->IsOrange()) return;
 	if (!this->active) return;
 
 	unsigned nents = ghost_leaderboard_max_display.GetInt();
