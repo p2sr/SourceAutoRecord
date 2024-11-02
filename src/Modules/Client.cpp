@@ -1208,65 +1208,17 @@ bool Client::Init() {
 
 	/* Boards integration, this gets messy lol */
 	if (sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalStoriesMel)) {
-#ifdef _WIN32
-		/* left xrefs here so they are easier to find if different in linux mods */
-
-		// @ xref: "#PORTAL2_LeaderboardOnlineWarning_Steam"
-		auto CPortalLeaderboardPanel_OnThink = Memory::Scan(this->Name(), "55 8B EC A1 ? ? ? ? 81 EC ? ? ? ? 53 56 32 DB");
-
-		// @ xref: "OnProfilesChanged" [CPortalLeaderboardManager::OnEvent]
-		// .text:003DE52F 68 6C 87 76 00                    push    offset aOnprofileschan ; "OnProfilesChanged"
-		// .text:003DE534 E8 37 D0 25 00                    call    sub_63B570
-		// ... next fn call
-		// .text:003DE544 E8 37 FF FF FF                    call    CUtlStringMap_CPortalLeaderboard_ptr__PurgeAndDeleteElements
-		Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 8D 4E 24 E8 ? ? ? ? 5F", 1));
-
-		// @ xref: "LocatorBG" [CLocatorPanel::PerformLayout]
-		// .text:00157EAB 68 C0 6A 78 00                    push    offset aLocatorbg ; "LocatorBG"
-		// ... last fn call
-		// .text:00157F0C E8 DF 7B 4F 00                    call    Panel__SetPos
-		Panel_SetPos = Memory::Read<decltype(Panel_SetPos)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 03 5D F0", 1));
-
-		// @ xref: "crosshair_default" [CHudCrosshair::ApplySchemeSettings]
-		// .text:00151B1F 68 6C 5E 78 00                    push    offset aCrosshairDefau ; "crosshair_default"
-		// ... last fn call
-		// .text:00151B52 E8 19 E0 4F 00                    call    Panel__SetSize
-		Panel_SetSize = Memory::Read<decltype(Panel_SetSize)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 01 7D EC", 1));
-
-		// @ xref: "portal_leaderboard_avatar_panel" [BaseModUI::AddAvatarPanelItem]
-		// .text:0036000E 68 18 06 80 00                    push    offset aPortalLeaderbo ; "portal_leaderboard_avatar_panel"
-		// ... next fn call
-		// .text:00360050 E8 6B DD FF FF                    call    CAvatarPanelItem__SetPlayerData
-		Client::SetPlayerData = Memory::Read<decltype(Client::SetPlayerData)>(Memory::Scan(this->Name(), "E8 ? ? ? ? EB 2C A1 ? ? ? ?", 1));
-
-		// @ xref: "Avatar image for user %llX cached [refcount=%d]\n" [BaseModUI::CUIGameData::AccessAvatarImage]
-		// .text:00318CCF E8 8C 60 E5 FF                    call    IMemAlloc__Alloc
-		// ... next fn call
-		// .text:00318CDD E8 8E B5 FF FF                    call    CGameUiAvatarImage__CGameUiAvatarImage
-		// ...
-		// .text:00318D98 68 30 60 7E 00                    push    offset aAvatarImageFor ; "Avatar image for user %llX cached [refc"...
-		CGameUiAvatarImage_Ctor = (decltype(CGameUiAvatarImage_Ctor))Memory::Scan(this->Name(), "56 6A 00 8B F1 6A 00 C7 06");
-
-		// @ xref: "icon_lobby" (fn with Plat_FloatTime call)
-		CGameUiAvatarImage_InitFromRGBA = Memory::Read<decltype(CGameUiAvatarImage_InitFromRGBA)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 8A 46 1C", 1));
-
-		// @ xref: "steamid/%llu" (small fn with only one string)
-		Client::ActivateSelectedItem = (decltype(Client::ActivateSelectedItem))Memory::Scan(this->Name(), "55 8B EC 83 EC 40 56 8B F1 E8 ? ? ? ? 8B C8");
-#else
-		/* I reversed these from mel binaries so idk how many work in base game */
-
-		auto CPortalLeaderboardPanel_OnThink = Memory::Scan(this->Name(), "55 89 E5 57 56 53 81 EC ? ? ? ? 65 A1 ? ? ? ? 89 45 E4 31 C0 A1 ? ? ? ? 8B 5D 08 8B 70 30");
-		Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 46 10 89 46 20 89 3C 24", 1));
-
-		// XXX: these two had weird looking function signature in IDA, might not work
-		Panel_SetPos = Memory::Read<decltype(Panel_SetPos)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 2B 75 D8", 1));
-		Panel_SetSize = Memory::Read<decltype(Panel_SetSize)>(Memory::Scan(this->Name(), "E8 ? ? ? ? EB 68 66 90", 1));
-
-		Client::SetPlayerData = Memory::Read<decltype(Client::SetPlayerData)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 45 D8 89 83 ? ? ? ? 8B 45 DC 85 C0 75 82", 1));
-		CGameUiAvatarImage_Ctor = Memory::Read<decltype(CGameUiAvatarImage_Ctor)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 8B 45 18 89 74 24 04 89 7C 24 08", 1));
-		CGameUiAvatarImage_InitFromRGBA = Memory::Read<decltype(CGameUiAvatarImage_InitFromRGBA)>(Memory::Scan(this->Name(), "E8 ? ? ? ? 0F B6 43 1C", 1));
-		Client::ActivateSelectedItem = (decltype(Client::ActivateSelectedItem))Memory::Scan(this->Name(), "55 89 E5 53 83 EC 74 65 A1");
+		auto CPortalLeaderboardPanel_OnThink = Memory::Scan(this->Name(), Offsets::CPortalLeaderboardPanel_OnThink);
+		Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(Memory::Scan(this->Name(), Offsets::PurgeAndDeleteElements, 1));
+		Panel_SetPos = Memory::Read<decltype(Panel_SetPos)>(Memory::Scan(this->Name(), Offsets::Panel_SetPos, 1));
+		Panel_SetSize = Memory::Read<decltype(Panel_SetSize)>(Memory::Scan(this->Name(), Offsets::Panel_SetSize, 1));
+		Client::SetPlayerData = Memory::Read<decltype(Client::SetPlayerData)>(Memory::Scan(this->Name(), Offsets::SetPlayerData, 1));
+		CGameUiAvatarImage_Ctor = (decltype(CGameUiAvatarImage_Ctor))Memory::Scan(this->Name(), Offsets::CGameUiAvatarImage_CtorSig, Offsets::CGameUiAvatarImage_CtorOff);
+#ifndef _WIN32
+		CGameUiAvatarImage_Ctor = Memory::Read<decltype(CGameUiAvatarImage_Ctor)>((uintptr_t)CGameUiAvatarImage_Ctor);
 #endif
+		CGameUiAvatarImage_InitFromRGBA = Memory::Read<decltype(CGameUiAvatarImage_InitFromRGBA)>(Memory::Scan(this->Name(), Offsets::CGameUiAvatarImage_InitFromRGBA, 1));
+		Client::ActivateSelectedItem = (decltype(Client::ActivateSelectedItem))Memory::Scan(this->Name(), Offsets::ActivateSelectedItem);
 		Client::GetLeaderboard = Memory::Read<decltype(Client::GetLeaderboard)>(CPortalLeaderboardPanel_OnThink + Offsets::GetLeaderboard);
 		Client::IsQuerying = Memory::Read<decltype(Client::IsQuerying)>(CPortalLeaderboardPanel_OnThink + Offsets::IsQuerying);
 		Client::SetPanelStats = Memory::Read<decltype(Client::SetPanelStats)>(CPortalLeaderboardPanel_OnThink + Offsets::SetPanelStats);
