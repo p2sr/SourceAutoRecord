@@ -347,6 +347,9 @@ int SpeedrunTimer::GetSegmentTicks() {
 		// This can happen for precisely one tick if you
 		// sar_speedrun_start then unpause, because for some dumb
 		// reason, console unpausing makes the engine go back one tick
+		// Also happens for far more than one tick if you reload in
+		// INFRA while dead. So let's rebase here
+		g_speedrun.base = getCurrentTick();
 		ticks = 0;
 	}
 

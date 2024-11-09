@@ -61,7 +61,11 @@ Session::Session()
 }
 int Session::GetTick() {
 	auto result = engine->GetTick() - this->baseTick;
-	return (result >= 0) ? result : 0;
+	if (result < 0) {
+		this->Rebase(engine->GetTick());
+		result = 0;
+	}
+	return result;
 }
 void Session::Rebase(const int from) {
 	this->baseTick = from;
@@ -224,6 +228,7 @@ void Session::Changed() {
 			this->Ended();
 		} else if (this->prevState == INFRA_HS_LOAD_GAME_WITHOUT_RESTART
 			&& engine->hoststate->m_currentState == INFRA_HS_RUN) {
+			SpeedrunTimer::FinishLoad();
 			this->Started();
 		} else if (engine->hoststate->m_currentState == INFRA_HS_RUN
 			&& !engine->hoststate->m_activeGame
