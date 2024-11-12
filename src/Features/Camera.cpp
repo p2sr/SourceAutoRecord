@@ -478,9 +478,10 @@ void Camera::OverrideView(ViewSetup *m_View) {
 					}
 				}
 				if (manualActive) {
-					//even junkier hack. lock mouse movement using fake in_forceuser 2 LMAO
-					if (engine->hoststate->m_activeGame && !tasPlayer->IsActive())
-						in_forceuser.ThisPtr()->m_nValue = 2;
+					//even junkier hack. lock mouse movement using fake in_forceuser LMAO
+					if (engine->hoststate->m_activeGame && !tasPlayer->IsActive()) {
+						in_forceuser.ThisPtr()->m_nValue = engine->GetMaxClients() + 1;
+					}
 
 					//getting mouse movement and resetting the cursor position
 					int mX, mY;

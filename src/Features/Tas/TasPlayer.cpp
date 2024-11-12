@@ -51,7 +51,7 @@ void SetPlaybackVars(bool active) {
 		old_hostframerate = host_framerate.GetInt();
 		old_interpolate = cl_interpolate.GetBool();
 		old_motionblur = mat_motion_blur_enabled.GetBool();
-		in_forceuser.SetValue(tasPlayer->playbackInfo.coopControlSlot >= 0 ? tasPlayer->playbackInfo.coopControlSlot : 100);
+		in_forceuser.SetValue(tasPlayer->playbackInfo.coopControlSlot >= 0 ? tasPlayer->playbackInfo.coopControlSlot : engine->GetMaxClients() + 1);
 		auto tickrate = 1.0f / engine->GetIPT();
 		if (fabsf(tickrate - roundf(tickrate)) < 0.0001f) {
 			// if it's close to a whole number, set it as an int
