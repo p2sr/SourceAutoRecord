@@ -160,6 +160,7 @@ static void initStitch(bool stitching) {
 	static bool fogenable;
 	static bool disablebloom;
 	static float tonemaprate;
+	static int forceuser;
 
 	if (stitching && !was_stitching) {
 		// Store the cvars
@@ -173,6 +174,7 @@ static void initStitch(bool stitching) {
 		fogenable = Variable("fog_enable").GetBool();
 		disablebloom = Variable("mat_disable_bloom").GetBool();
 		tonemaprate = Variable("mat_hdr_manual_tonemap_rate").GetFloat();
+		forceuser = Variable("in_forceuser").GetInt();
 
 		// Set them to our values
 		Variable("r_portalsopenall").SetValue(true);
@@ -185,6 +187,7 @@ static void initStitch(bool stitching) {
 		Variable("fog_enable").SetValue(false);
 		Variable("mat_disable_bloom").SetValue(true);
 		Variable("mat_hdr_manual_tonemap_rate").SetValue(-1.0f);
+		Variable("in_forceuser").SetValue(engine->GetMaxClients() + 1);
 
 		// Set our initial coords to just above the player position
 		g_stitcher.x = g_stitcher.y = g_stitcher.z = 0;
@@ -213,6 +216,7 @@ static void initStitch(bool stitching) {
 		Variable("fog_enable").SetValue(fogenable);
 		Variable("mat_disable_bloom").SetValue(disablebloom);
 		Variable("mat_hdr_manual_tonemap_rate").SetValue(tonemaprate);
+		Variable("in_forceuser").SetValue(forceuser);
 	}
 
 	was_stitching = stitching;
@@ -667,8 +671,7 @@ void Stitcher::OverrideMovement(CUserCmd *cmd) {
 	cmd->sidemove = 0;
 	cmd->upmove = 0;
 
-	g_stitcher.mousex += cmd->mousedx;
-	g_stitcher.mousey += cmd->mousedy;
+	inputSystem->GetCursorPos(g_stitcher.mousex, g_stitcher.mousey);
 
 	int width, height;
 	engine->GetScreenSize(nullptr, width, height);

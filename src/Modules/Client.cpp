@@ -262,6 +262,7 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd *cmd) {
 
 	if (sv_cheats.GetBool() && engine->hoststate->m_activeGame) {
 		camera->OverrideMovement(cmd);
+		Stitcher::OverrideMovement(cmd);
 	}
 
 	if (GhostEntity::GetFollowTarget()) {
@@ -269,10 +270,6 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd *cmd) {
 		cmd->forwardmove = 0;
 		cmd->sidemove = 0;
 		cmd->upmove = 0;
-	}
-
-	if (engine->hoststate->m_activeGame) {
-		Stitcher::OverrideMovement(cmd);
 	}
 
 	if (sar_strafesync.GetBool()) {
