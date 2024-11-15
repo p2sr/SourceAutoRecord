@@ -25,6 +25,7 @@ bool g_partnerHasSAR = false;
 bool g_session_init = false;
 
 Variable sar_netmessage_debug("sar_netmessage_debug", "0", "Debug NetMessages.\n");
+Variable sar_netmessage_enable("sar_netmessage_enable", "1", "Enable sending NetMessages. Disabling this can break other features.\n");
 
 static size_t g_expected_len = 0;
 static std::string g_partial;
@@ -176,6 +177,10 @@ static std::vector<uint8_t> base92_decode(const char *encoded, size_t len) {
 void NetMessage::SendMsg(const char *type, const void *data, size_t size) {
 	if (!engine->IsCoop() || engine->IsSplitscreen()) {
 		// It doesn't make sense to send messages in SP
+		return;
+	}
+
+	if (!sar_netmessage_enable.GetBool()) {
 		return;
 	}
 

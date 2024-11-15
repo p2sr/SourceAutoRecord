@@ -341,6 +341,7 @@
 |sar_mtrigger_legacy_format|!seg -> !tt (!st)|Formatting of the text that is displayed in the chat (!map - for map name, !seg - for segment name, !tt - for total time, !st - for split time).|
 |sar_mtrigger_legacy_textcolor|255 176 0|The color of the text that is displayed in the chat.|
 |sar_netmessage_debug|0|Debug NetMessages.|
+|sar_netmessage_enable|1|Enable sending NetMessages. Disabling this can break other features.|
 |sar_nextdemo|cmd|sar_nextdemo - plays the next demo in demo queue|
 |sar_on_cfg_message|cmd|sar_on_cfg_message \<command> [args]... - registers a command to be run when partner sends a custom message (_sar_cfg_message svar)|
 |sar_on_cfg_message_clear|cmd|sar_on_cfg_message_clear - clears commands registered on event "cfg_message"|
