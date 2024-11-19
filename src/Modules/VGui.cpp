@@ -120,9 +120,7 @@ DETOUR(VGui::UpdateProgressBar, int progress) {
 		return 0;
 	}
 	if (sar_disable_progress_bar_update.GetInt() == 2) {
-		if (!sar.game->Is(SourceGame_INFRA) || vgui->progressBarCount > 1) {
-			return 0;
-		}
+		return 0;
 	}
 	return VGui::UpdateProgressBar(thisptr, progress);
 }
