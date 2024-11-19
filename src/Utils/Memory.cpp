@@ -136,6 +136,10 @@ uintptr_t Memory::FindAddress(const uintptr_t start, const uintptr_t end, const 
 }
 uintptr_t Memory::Scan(const char *moduleName, const char *pattern, int offset) {
 	uintptr_t result = 0;
+	if (strlen(pattern) == 0) {
+		// blank pattern = skip
+		return result;
+	}
 
 	auto info = Memory::ModuleInfo();
 	if (Memory::TryGetModule(moduleName, &info)) {

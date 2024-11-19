@@ -176,8 +176,8 @@ bool Client::ShouldDrawCrosshair() {
 static std::deque<Color> g_nameColorOverrides;
 
 void Client::Chat(Color col, const char *str) {
-	g_nameColorOverrides.push_back(col);
 	if (!client->ChatPrintf) return;
+	g_nameColorOverrides.push_back(col);
 	client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, "%c%s", TextColor::PLAYERNAME, str);
 }
 
@@ -253,11 +253,9 @@ DETOUR(Client::LevelInitPreEntity, const char *levelName) {
 
 // ClientModeShared::CreateMove
 DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd *cmd) {
+	int slot = engine->IsOrange() ? 1 : 0;
 	if (!in_forceuser.isReference || (in_forceuser.isReference && !in_forceuser.GetBool())) {
-		if (engine->IsCoop() && engine->IsOrange())
-			inputHud.SetInputInfo(1, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
-		else
-			inputHud.SetInputInfo(0, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
+		inputHud.SetInputInfo(engine->IsCoop() ? slot : 0, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
 	}
 
 	if (sv_cheats.GetBool() && engine->hoststate->m_activeGame) {
@@ -273,18 +271,16 @@ DETOUR(Client::CreateMove, float flInputSampleTime, CUserCmd *cmd) {
 	}
 
 	if (sar_strafesync.GetBool()) {
-		synchro->UpdateSync(engine->IsOrange() ? 1 : 0, cmd);
+		synchro->UpdateSync(slot, cmd);
 	}
 
-	strafeQualityHud->OnUserCmd(engine->IsOrange() ? 1 : 0, *cmd);
+	strafeQualityHud->OnUserCmd(slot, *cmd);
 
 	if (cmd->buttons & IN_ATTACK) {
-		int slot = engine->IsOrange() ? 1 : 0;
 		g_bluePortalAngles[slot] = engine->GetAngles(slot);
 	}
 
 	if (cmd->buttons & IN_ATTACK2) {
-		int slot = engine->IsOrange() ? 1 : 0;
 		g_orangePortalAngles[slot] = engine->GetAngles(slot);
 	}
 
@@ -1107,10 +1103,8 @@ bool Client::Init() {
 		g_OnCommandHook.SetFunc(Client::OnCommand);
 	}
 
-	if (!sar.game->Is(SourceGame_INFRA)) {
-		Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), Offsets::GetChapterProgress);
-		g_GetChapterProgressHook.SetFunc(Client::GetChapterProgress);
-	}
+	Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), Offsets::GetChapterProgress);
+	g_GetChapterProgressHook.SetFunc(Client::GetChapterProgress);
 
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");
