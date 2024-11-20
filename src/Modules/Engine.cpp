@@ -191,7 +191,9 @@ bool Engine::IsGamePaused() {
 }
 
 int Engine::GetMapIndex(const std::string map) {
-	auto it = std::find(Game::mapNames.begin(), Game::mapNames.end(), map);
+	std::string map_lower = map;
+	std::transform(map_lower.begin(), map_lower.end(), map_lower.begin(), tolower);
+	auto it = std::find(Game::mapNames.begin(), Game::mapNames.end(), map_lower);
 	if (it != Game::mapNames.end()) {
 		return std::distance(Game::mapNames.begin(), it);
 	} else {
@@ -215,8 +217,10 @@ std::string Engine::GetCurrentMapName() {
 }
 
 std::string Engine::GetMapTitle(std::string map) {
-	auto it = std::find_if(Game::maps.begin(), Game::maps.end(), [&map](const MapData &data) {
-		return data.fileName == map;
+	std::string map_lower = map;
+	std::transform(map_lower.begin(), map_lower.end(), map_lower.begin(), tolower);
+	auto it = std::find_if(Game::maps.begin(), Game::maps.end(), [&map_lower](const MapData &data) {
+		return data.fileName == map_lower;
 	});
 	if (it != Game::maps.end()) {
 		return it->displayName;

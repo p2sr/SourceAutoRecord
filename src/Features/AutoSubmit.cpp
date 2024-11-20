@@ -476,8 +476,10 @@ void retrieveMtriggers(int rank, std::string map_name) {
 	if (map_name.empty())
 		return THREAD_PRINT("Not playing a map.\n");
 
+	std::string map_lower = map_name;
+	std::transform(map_lower.begin(), map_lower.end(), map_lower.begin(), tolower);
 	for (const auto &map : Game::maps) {
-		if (map.fileName == map_name) {
+		if (map.fileName == map_lower) {
 			keyFound = true;
 			break;
 		}
