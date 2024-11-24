@@ -78,6 +78,10 @@ void Session::Started(bool menu) {
 	NetMessage::SessionStarted();
 
 	g_loadstate = LOAD_END;
+	this->loadEnd = NOW();
+	auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
+	console->DevMsg("Load took: %dms\n", time);
+
 	this->ResetLoads();
 	if (menu) {
 		console->Print("Session started! (menu)\n");
@@ -268,12 +272,7 @@ void Session::Changed(int state) {
 	if (state == SIGNONSTATE_FULL) {
 		timescaleDetect->Spawn();
 		this->Started();
-		this->loadEnd = NOW();
 		engine->demorecorder->queuedCommands.clear();
-
-		g_loadstate = LOAD_END;
-		auto time = std::chrono::duration_cast<std::chrono::milliseconds>(this->loadEnd - this->loadStart).count();
-		console->DevMsg("Load took: %dms\n", time);
 
 		if (sar_load_delay.GetInt()) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(sar_load_delay.GetInt()));
