@@ -302,7 +302,7 @@
 |sar_ihud_set_background|cmd|sar_ihud_set_background \<path> \<grid x> \<grid y> \<grid w> \<grid h>|
 |sar_ihud_setpos|cmd|sar_ihud_setpos \<top\|center\|bottom\|y\|y%> \<left\|center\|right\|x\|x%> - automatically sets the position of input HUD.|
 |sar_ihud_x|2|X position of input HUD.|
-|sar_ihud_y|2|Y position of input HUD.|
+|sar_ihud_y|-2|Y position of input HUD.|
 |sar_import_stats|cmd|sar_import_stats \<filePath> - import the stats from the specified .csv file|
 |sar_inspection_export|cmd|sar_inspection_export \<file_name> - saves recorded entity data to a csv file|
 |sar_inspection_index|cmd|sar_inspection_index - sets entity index for inspection|
