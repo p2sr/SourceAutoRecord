@@ -28,12 +28,12 @@ void Timeline::StartSpeedrun() {
 }
 
 void Timeline::Split(std::string name, std::string time) {
-    if (!steam->hasLoaded) return;
-    std::chrono::duration<float> currentOffset = std::chrono::system_clock::now() - g_speedrunStart;
-    if (sar_timeline_splits.GetBool()) {
-        steam->g_timeline->AddTimelineEvent("steam_bolt", name.c_str(), time.c_str(), 0, 0.0f, 0.0f, k_ETimelineEventClipPriority_None);
-    }
-	
+	if (!steam->hasLoaded) return;
+	std::chrono::duration<float> currentOffset = std::chrono::system_clock::now() - g_speedrunStart;
+	if (sar_timeline_splits.GetBool()) {
+		steam->g_timeline->AddTimelineEvent("steam_bolt", name.c_str(), time.c_str(), 0, 0.0f, 0.0f, k_ETimelineEventClipPriority_None);
+	}
+
 	if (sar_timeline_show_completed.GetBool()) {
 		g_pendingSplits.push_back({name, time, currentOffset.count()});
 	}
@@ -59,18 +59,17 @@ ON_EVENT(SPEEDRUN_FINISH) {
 	if (sar_timeline_show_completed.GetBool()) {
 		steam->g_timeline->AddTimelineEvent("steam_timer", "Speedrun Start", "", 1, -offset.count(), 0.0f, k_ETimelineEventClipPriority_Standard);
 
-		for (const auto& [splitName, splitTime, splitOffset] : g_pendingSplits) {
-            steam->g_timeline->AddTimelineEvent(
-                "steam_bolt", 
-                splitName.c_str(), 
-                splitTime.c_str(), 
-                0, 
-                splitOffset - offset.count(), 
-                0.0f, 
-                k_ETimelineEventClipPriority_None
-            );
-        }
-        g_pendingSplits.clear();
+		for (const auto &[splitName, splitTime, splitOffset] : g_pendingSplits) {
+			steam->g_timeline->AddTimelineEvent(
+				"steam_bolt",
+				splitName.c_str(),
+				splitTime.c_str(),
+				0,
+				splitOffset - offset.count(),
+				0.0f,
+				k_ETimelineEventClipPriority_None);
+		}
+		g_pendingSplits.clear();
 	}
 
 	steam->g_timeline->SetTimelineStateDescription(("Speedrun " + time).c_str(), -offset.count());
