@@ -7,7 +7,7 @@
 
 /* Timeline can get cluttered up (especially at long recording lengths), nice to have an option to disable adding splits. */
 Variable sar_timeline_splits("sar_timeline_splits", "1", "Add split markers to the Steam Timeline.\n");
-Variable sar_timeline_show_completed("sar_timeline_show_completed", "0", "Only show speedrun starts with matching finishes.\n");
+Variable sar_timeline_show_completed("sar_timeline_show_completed", "0", "Only show speedrun starts and splits with matching finishes.\n");
 
 Timeline *timeline;
 
@@ -31,12 +31,13 @@ void Timeline::Split(std::string name, std::string time) {
 	if (!steam->hasLoaded) return;
 	std::chrono::duration<float> currentOffset = std::chrono::system_clock::now() - g_speedrunStart;
 	if (sar_timeline_splits.GetBool()) {
-		steam->g_timeline->AddTimelineEvent("steam_bolt", name.c_str(), time.c_str(), 0, 0.0f, 0.0f, k_ETimelineEventClipPriority_None);
+		if (sar_timeline_show_completed.GetBool()) {
+			g_pendingSplits.push_back({name, time, currentOffset.count()});
+		} else {
+			steam->g_timeline->AddTimelineEvent("steam_bolt", name.c_str(), time.c_str(), 0, 0.0f, 0.0f, k_ETimelineEventClipPriority_None);
+		}
 	}
 
-	if (sar_timeline_show_completed.GetBool()) {
-		g_pendingSplits.push_back({name, time, currentOffset.count()});
-	}
 }
 
 ON_EVENT(SESSION_START) {
