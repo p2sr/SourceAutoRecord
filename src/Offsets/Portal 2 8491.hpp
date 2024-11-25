@@ -394,6 +394,12 @@ SIGSCAN_DEFAULT(MatrixBuildRotationAboutAxis, "55 8B EC 51 F3 0F 10 45 ? 0F 5A C
                                               "56 66 0F EF C0 53 83 EC 14 8B 5C 24 ? 8D 44 24")
 SIGSCAN_DEFAULT(DrawTranslucentRenderables, "55 8B EC 81 EC 80 00 00 00 53 56 8B F1 8B 0D ? ? ? ? 8B 01 8B 90 C4 01 00 00 57 89 75 F0 FF D2 8B F8",
                                             "55 89 E5 57 56 53 81 EC B8 00 00 00 8B 45 10 8B 5D 0C 89 85 60 FF FF FF 88 45 A7 A1 ? ? ? ?")
+SIGSCAN_DEFAULT(DrawPortal, "55 8B EC 83 EC 14 53 8B D9 8B 0D ? ? ? ? 8B 01", "")
+SIGSCAN_DEFAULT(DrawPortalSpBranch, "8B 15 ? ? ? ? 33 C0 32 C9", "")
+SIGSCAN_DEFAULT(DrawPortalMpBranch, "A1 ? ? ? ? B1 ? 83 C0 ? EB 17", "")
+SIGSCAN_DEFAULT(DrawPortalGhost, "55 8B EC A1 ? ? ? ? 83 EC 24 83 78 ? ? 0F 84 1E 02 00 00 A1 ? ? ? ?", "")
+SIGSCAN_DEFAULT(DrawPortalGhostSpBranch, "8B 90 ? ? ? ? FF D2 D9 55 EC D9 EE D9 C9 DF F1 DD D8 76 3E F3 0F 10 45 EC 8B 15 ? ? ? ?", "")
+SIGSCAN_DEFAULT(DrawPortalGhostMpBranch, "8B 90 ? ? ? ? FF D2 50 33 C0 38 86 ? ? ? ? 8D 4D ? 0F 95 C0", "")
 SIGSCAN_DEFAULT(DrawOpaqueRenderables, "55 8B EC 83 EC 54 83 7D 0C 00 A1 ? ? ? ? 53 56 0F 9F 45 EC 83 78 30 00 57 8B F1 0F 84 BA 03 00 00",
                                        "55 89 E5 57 56 53 83 EC 7C A1 ? ? ? ? 8B 5D 08 89 45 90 85 C0 0F 85 34 04 00 00 A1 ? ? ? ? 8B 40 30 85 C0")
 SIGSCAN_DEFAULT(MsgPreSkipToNextLevel, "57 8B F9 E8 ? ? ? ? 8B C8 E8 ? ? ? ? 0B C2",

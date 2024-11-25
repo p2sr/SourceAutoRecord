@@ -123,6 +123,9 @@ REDECL(Client::OnCommand);
 #ifdef _WIN32
 REDECL(Client::ApplyMouse_Mid);
 REDECL(Client::ApplyMouse_Mid_Continue);
+REDECL(Client::DrawPortal);
+REDECL(Client::DrawPortal_Mid);
+REDECL(Client::DrawPortalGhost_Mid);
 #endif
 REDECL(Client::GetChapterProgress);
 
@@ -330,12 +333,65 @@ DETOUR_COMMAND(Client::openleaderboard) {
 	}
 }
 
+// TODO: Implement the same for linux
+#ifdef _WIN32
+static uintptr_t g_DrawPortalMpBranch;
+extern Hook g_DrawPortalMidHook;
+DETOUR_MID_MH(Client::DrawPortal_Mid) {
+	_asm {
+		jmp g_DrawPortalMpBranch
+	}
+}
+Hook g_DrawPortalMidHook(&Client::DrawPortal_Mid_Hook);
+
+// C_Prop_Portal::DrawPortal
+extern Hook g_DrawPortalHook;
+DETOUR(Client::DrawPortal, void *pRenderContext) {
+	if (sar_portalcolor_enable.GetBool()) {
+		g_DrawPortalMidHook.Enable();
+	}
+	g_DrawPortalHook.Disable();
+	auto ret = Client::DrawPortal(thisptr, pRenderContext);
+	g_DrawPortalHook.Enable();
+	if (sar_portalcolor_enable.GetBool()) {
+		g_DrawPortalMidHook.Disable();
+	}
+	return ret;
+}
+Hook g_DrawPortalHook(&Client::DrawPortal_Hook);
+
+static uintptr_t g_DrawPortalGhostMpBranch;
+extern Hook g_DrawPortalMidHook;
+DETOUR_MID_MH(Client::DrawPortalGhost_Mid) {
+	_asm {
+		jmp g_DrawPortalGhostMpBranch
+	}
+}
+Hook g_DrawPortalGhostMidHook(&Client::DrawPortalGhost_Mid_Hook);
+
+static void (*g_DrawPortalGhost)(void *pRenderContext);
+
+// C_Prop_Portal::DrawPortalGhostLocations
+extern Hook g_DrawPortalGhostHook;
+static void DrawPortalGhost_Hook(void *pRenderContext) {
+	if (sar_portalcolor_enable.GetBool()) {
+		g_DrawPortalGhostMidHook.Enable();
+	}
+	g_DrawPortalGhostHook.Disable();
+	g_DrawPortalGhost(pRenderContext);
+	g_DrawPortalGhostHook.Enable();
+	if (sar_portalcolor_enable.GetBool()) {
+		g_DrawPortalGhostMidHook.Disable();
+	}
+	return;
+}
+Hook g_DrawPortalGhostHook(&DrawPortalGhost_Hook);
+
+#endif
+
 static SourceColor (*UTIL_Portal_Color)(int iPortal, int iTeamNumber);
 extern Hook UTIL_Portal_Color_Hook;
 static SourceColor UTIL_Portal_Color_Detour(int iPortal, int iTeamNumber) {
-	// FIXME: SP portal rendering does not use this but rather the
-	// texture's color itself. This does however work on the color
-	// of the SP *crosshair* and particles.
 	UTIL_Portal_Color_Hook.Disable();
 	SourceColor ret = UTIL_Portal_Color(iPortal, iTeamNumber);
 	UTIL_Portal_Color_Hook.Enable();
@@ -995,6 +1051,20 @@ bool Client::Init() {
 			g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr);
 			g_ApplyMouseMidHook.Disable();
 			Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
+
+			auto drawPortalSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalSpBranch);
+			g_DrawPortalMpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalMpBranch);
+			Client::DrawPortal = (decltype(Client::DrawPortal))Memory::Scan(client->Name(), Offsets::DrawPortal);
+			g_DrawPortalMidHook.SetFunc(drawPortalSpBranch, false);
+			g_DrawPortalHook.SetFunc(Client::DrawPortal);
+
+			auto drawPortalGhostSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostSpBranch);
+			g_DrawPortalGhostMpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostMpBranch);
+			g_DrawPortalGhost = (decltype(g_DrawPortalGhost))Memory::Scan(client->Name(), Offsets::DrawPortalGhost);
+			g_DrawPortalGhostMidHook.SetFunc(drawPortalGhostSpBranch, false);
+			g_DrawPortalGhostHook.SetFunc(g_DrawPortalGhost);
+
+
 #endif
 			MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), Offsets::MatrixBuildRotationAboutAxis);
 			MatrixBuildRotationAboutAxisHook.SetFunc(MatrixBuildRotationAboutAxis);
