@@ -1046,25 +1046,33 @@ bool Client::Init() {
 			g_Input->Hook(Client::SteamControllerMove_Hook, Client::SteamControllerMove, Offsets::SteamControllerMove);
 			g_Input->Hook(Client::ApplyMouse_Hook, Client::ApplyMouse, Offsets::ApplyMouse);
 
+			auto drawPortalSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalSpBranch);
+			auto drawPortalGhostSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostSpBranch);
 #ifdef _WIN32
 			auto ApplyMouse_Mid_addr = (uintptr_t)(Client::ApplyMouse) + Offsets::ApplyMouse_Mid;
 			g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr);
 			g_ApplyMouseMidHook.Disable();
 			Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
 
-			auto drawPortalSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalSpBranch);
 			g_DrawPortalMpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalMpBranch);
 			Client::DrawPortal = (decltype(Client::DrawPortal))Memory::Scan(client->Name(), Offsets::DrawPortal);
 			g_DrawPortalMidHook.SetFunc(drawPortalSpBranch, false);
 			g_DrawPortalHook.SetFunc(Client::DrawPortal);
 
-			auto drawPortalGhostSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostSpBranch);
 			g_DrawPortalGhostMpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostMpBranch);
 			g_DrawPortalGhost = (decltype(g_DrawPortalGhost))Memory::Scan(client->Name(), Offsets::DrawPortalGhost);
 			g_DrawPortalGhostMidHook.SetFunc(drawPortalGhostSpBranch, false);
 			g_DrawPortalGhostHook.SetFunc(g_DrawPortalGhost);
-
-
+#else
+			Memory::UnProtect((void *)(drawPortalSpBranch + 1), 5);
+			Memory::UnProtect((void *)(drawPortalGhostSpBranch + 1), 1);
+			auto drawPortalSpBranchOffset = *(int32_t *)(drawPortalSpBranch + 2);
+			if (drawPortalSpBranch && drawPortalGhostSpBranch) {
+				*(uint8_t *)(drawPortalSpBranch + 1) = 0x81;
+				// add (0x7799-0x7780)=0x19 to the offset
+				*(int32_t *)(drawPortalSpBranch + 2) = drawPortalSpBranchOffset + 0x19;
+				*(uint8_t *)(drawPortalGhostSpBranch + 1) = 0x80;
+			}
 #endif
 			MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), Offsets::MatrixBuildRotationAboutAxis);
 			MatrixBuildRotationAboutAxisHook.SetFunc(MatrixBuildRotationAboutAxis);
