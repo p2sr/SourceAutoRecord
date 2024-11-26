@@ -234,28 +234,31 @@ std::vector<std::vector<uintptr_t>> Memory::MultiScan(const char *moduleName, co
 Memory::Patch::~Patch() {
 	if (this->original) {
 		this->Restore();
-		delete this->original;
+		delete[] this->original;
 		this->original = nullptr;
 	}
 	if (this->patch) {
-		delete this->patch;
+		delete[] this->patch;
 		this->patch = nullptr;
 	}
+	this->isPatched = false;
 }
 bool Memory::Patch::Execute() {
+	if (this->isPatched) return true; // already executed
 	unsigned char *tmpPatch = new unsigned char[this->size];
-	//	We create another patch, because this->patch its gonna be deleted
+	//	We create another patch, because this->patch is gonna be deleted
 	memcpy(tmpPatch, this->patch, this->size);
 	auto ret = this->Execute(this->location, tmpPatch, this->size);
-	delete tmpPatch;
+	delete[] tmpPatch;
 	return ret;
 }
 
 bool Memory::Patch::Execute(uintptr_t location, unsigned char *bytes, size_t size) {
+	if (this->isPatched) return true; // already executed
 	this->location = location;
 	this->size = size;
 	if (this->original) {
-		delete this->original;
+		delete[] this->original;
 		this->original = nullptr;
 	}
 	this->original = new unsigned char[this->size];
@@ -264,7 +267,7 @@ bool Memory::Patch::Execute(uintptr_t location, unsigned char *bytes, size_t siz
 		return false;
 	}
 	if (this->patch) {
-		delete this->patch;
+		delete[] this->patch;
 		this->patch = nullptr;
 	}
 	this->patch = new unsigned char[this->size];
@@ -296,6 +299,7 @@ bool Memory::Patch::Restore() {
 	if (!this->location || !this->original) {
 		return false;
 	}
+	if (!this->isPatched) return true; // already restored
 #ifdef _WIN32
 	for (size_t i = 0; i < this->size; ++i) {
 		if (!WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(this->location + i), &this->original[i], 1, 0)) {

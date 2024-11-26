@@ -11,9 +11,9 @@
 #include "Features/FovChanger.hpp"
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/Hud/InputHud.hpp"
+#include "Features/Hud/RhythmGame.hpp"
 #include "Features/Hud/ScrollSpeed.hpp"
 #include "Features/Hud/StrafeHud.hpp"
-#include "Features/Hud/RhythmGame.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OverlayRender.hpp"
@@ -336,10 +336,9 @@ Memory::Patch *g_drawPortalGhostPatch;
 // C_Prop_Portal::DrawPortal
 extern Hook g_DrawPortalHook;
 DETOUR(Client::DrawPortal, void *pRenderContext) {
-	if (sar_portalcolor_enable.GetBool() && !g_drawPortalPatch->IsPatched()) {
+	if (sar_portalcolor_enable.GetBool()) {
 		g_drawPortalPatch->Execute();
-	}
-	else if(!sar_portalcolor_enable.GetBool() && g_drawPortalPatch->IsPatched()) {
+	} else {
 		g_drawPortalPatch->Restore();
 	}
 	g_DrawPortalHook.Disable();
@@ -354,10 +353,9 @@ static void (*g_DrawPortalGhost)(void *pRenderContext);
 // C_Prop_Portal::DrawPortalGhostLocations
 extern Hook g_DrawPortalGhostHook;
 static void DrawPortalGhost_Hook(void *pRenderContext) {
-	if (sar_portalcolor_enable.GetBool() && !g_drawPortalGhostPatch->IsPatched()) {
+	if (sar_portalcolor_enable.GetBool()) {
 		g_drawPortalGhostPatch->Execute();
-	}
-	else if(!sar_portalcolor_enable.GetBool() && g_drawPortalGhostPatch->IsPatched()) {
+	} else {
 		g_drawPortalGhostPatch->Restore();
 	}
 	g_DrawPortalGhostHook.Disable();
@@ -1036,7 +1034,7 @@ bool Client::Init() {
 
 			auto drawPortalSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalSpBranch);
 			auto drawPortalGhostSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostSpBranch);
-			
+
 			Client::DrawPortal = (decltype(Client::DrawPortal))Memory::Scan(client->Name(), Offsets::DrawPortal);
 			g_DrawPortalGhost = (decltype(g_DrawPortalGhost))Memory::Scan(client->Name(), Offsets::DrawPortalGhost);
 
@@ -1045,7 +1043,7 @@ bool Client::Init() {
 
 			g_drawPortalPatch = new Memory::Patch();
 			g_drawPortalGhostPatch = new Memory::Patch();
-			
+
 			unsigned char drawPortalGhostByte = 0x80;
 			if (drawPortalSpBranch && drawPortalGhostSpBranch) {
 #ifndef _WIN32
@@ -1125,8 +1123,8 @@ bool Client::Init() {
 
 	g_AddShadowToReceiverHook.SetFunc(Client::AddShadowToReceiver);
 
-	UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color);
-	UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color_Particles);
+	UTIL_Portal_Color = (decltype(UTIL_Portal_Color))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color);
+	UTIL_Portal_Color_Particles = (decltype(UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color_Particles);
 	UTIL_Portal_Color_Hook.SetFunc(UTIL_Portal_Color);
 	UTIL_Portal_Color_Particles_Hook.SetFunc(UTIL_Portal_Color_Particles);
 

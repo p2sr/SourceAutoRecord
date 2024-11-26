@@ -169,7 +169,7 @@ public:
 
 	// C_Prop_Portal::DrawPortal
 	DECL_DETOUR(DrawPortal, void *pRenderContext);
-	
+
 	bool Init() override;
 	void Shutdown() override;
 	const char *Name() override {
