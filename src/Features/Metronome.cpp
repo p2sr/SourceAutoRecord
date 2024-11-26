@@ -16,18 +16,20 @@ static std::thread metronomeThread;
 static int metronomeBeat = 0;
 
 static void bpmTick() {
-    auto interval = std::chrono::milliseconds(1000);
-    if (sar_metronome.GetBool()) {
-        auto isBar = metronomeBeat == 0;
-        metronomeBeat = (metronomeBeat + 1) % sar_metronome_beats.GetInt();
-        auto sound = isBar ? sar_metronome_sound_bar.GetString() : sar_metronome_sound.GetString();
-        engine->ExecuteCommand(Utils::ssprintf("playvol \"%s\" %f", sound, sar_metronome_volume.GetFloat()).c_str());
-        if (sar_metronome_bpm.GetFloat() > 0) {
-            interval = std::chrono::milliseconds((int)(60000 / sar_metronome_bpm.GetFloat()));
+    while (true) {
+        while (sar_metronome.GetBool()) {
+            auto interval = std::chrono::milliseconds(1000);
+            auto isBar = metronomeBeat == 0;
+            metronomeBeat = (metronomeBeat + 1) % sar_metronome_beats.GetInt();
+            auto sound = isBar ? sar_metronome_sound_bar.GetString() : sar_metronome_sound.GetString();
+            engine->ExecuteCommand(Utils::ssprintf("playvol \"%s\" %f", sound, sar_metronome_volume.GetFloat()).c_str());
+            if (sar_metronome_bpm.GetFloat() > 0) {
+                interval = std::chrono::milliseconds((int)(60000 / sar_metronome_bpm.GetFloat()));
+            }
+            std::this_thread::sleep_for(interval);
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
-    std::this_thread::sleep_for(interval);
-    bpmTick();
 }
 
 ON_INIT {
