@@ -35,6 +35,8 @@ PortalReloaded::PortalReloaded() {
 	for (const auto &map : Game::maps) {
 		Game::mapNames.push_back(map.fileName);
 	}
+
+	Game::achievements = {};
 }
 void PortalReloaded::LoadOffsets() {
 	using namespace Offsets;

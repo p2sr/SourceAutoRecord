@@ -24,6 +24,8 @@ ThinkingWithTimeMachine::ThinkingWithTimeMachine() {
 	for (const auto &map : Game::maps) {
 		Game::mapNames.push_back(map.fileName);
 	}
+
+	Game::achievements = {};
 }
 void ThinkingWithTimeMachine::LoadOffsets() {
 	using namespace Offsets;

@@ -39,6 +39,8 @@ ApertureTag::ApertureTag() {
 	for (const auto &map : Game::maps) {
 		Game::mapNames.push_back(map.fileName);
 	}
+
+	Game::achievements = {};
 }
 void ApertureTag::LoadOffsets() {
 	using namespace Offsets;
