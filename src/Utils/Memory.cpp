@@ -231,19 +231,49 @@ std::vector<std::vector<uintptr_t>> Memory::MultiScan(const char *moduleName, co
 	return results;
 }
 
-#ifdef _WIN32
 Memory::Patch::~Patch() {
 	if (this->original) {
 		this->Restore();
-		delete this->original;
+		delete[] this->original;
 		this->original = nullptr;
 	}
+	if (this->patch) {
+		delete[] this->patch;
+		this->patch = nullptr;
+	}
+	this->isPatched = false;
 }
+bool Memory::Patch::Execute() {
+	if (this->isPatched) return true; // already executed
+	unsigned char *tmpPatch = new unsigned char[this->size];
+	//	We create another patch, because this->patch is gonna be deleted
+	memcpy(tmpPatch, this->patch, this->size);
+	auto ret = this->Execute(this->location, tmpPatch, this->size);
+	delete[] tmpPatch;
+	return ret;
+}
+
 bool Memory::Patch::Execute(uintptr_t location, unsigned char *bytes, size_t size) {
+	if (this->isPatched) return true; // already executed
 	this->location = location;
 	this->size = size;
+	if (this->original) {
+		delete[] this->original;
+		this->original = nullptr;
+	}
 	this->original = new unsigned char[this->size];
 
+	if (!bytes) {
+		return false;
+	}
+	if (this->patch) {
+		delete[] this->patch;
+		this->patch = nullptr;
+	}
+	this->patch = new unsigned char[this->size];
+	memcpy(this->patch, bytes, size);
+
+#ifdef _WIN32
 	for (size_t i = 0; i < this->size; ++i) {
 		if (!ReadProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(this->location + i), &this->original[i], 1, 0)) {
 			return false;
@@ -255,17 +285,38 @@ bool Memory::Patch::Execute(uintptr_t location, unsigned char *bytes, size_t siz
 			return false;
 		}
 	}
+#else
+	Memory::UnProtect(reinterpret_cast<void *>(this->location), this->size);
+	for (size_t i = 0; i < this->size; ++i) {
+		this->original[i] = *(uint8_t *)(this->location + i);
+		*(uint8_t *)(this->location + i) = bytes[i];
+	}
+#endif
+	this->isPatched = true;
 	return true;
 }
 bool Memory::Patch::Restore() {
-	if (this->location && this->original) {
-		for (size_t i = 0; i < this->size; ++i) {
-			if (!WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(this->location + i), &this->original[i], 1, 0)) {
-				return false;
-			}
-		}
-		return true;
+	if (!this->location || !this->original) {
+		return false;
 	}
-	return false;
-}
+	if (!this->isPatched) return true; // already restored
+#ifdef _WIN32
+	for (size_t i = 0; i < this->size; ++i) {
+		if (!WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(this->location + i), &this->original[i], 1, 0)) {
+			return false;
+		}
+	}
+#else
+	//	Should be already unprotected, but just in case
+	Memory::UnProtect(reinterpret_cast<void *>(this->location), this->size);
+	for (size_t i = 0; i < this->size; ++i) {
+		*(uint8_t *)(this->location + i) = this->original[i];
+	}
 #endif
+	this->isPatched = false;
+	return true;
+}
+
+bool Memory::Patch::IsPatched() {
+	return this->isPatched;
+}

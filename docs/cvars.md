@@ -423,8 +423,8 @@
 |sar_portalcolor_mp2_1|255 179 31|Portal color for P-Body (orange)'s left portal.|
 |sar_portalcolor_mp2_2|57 2 2|Portal color for P-Body (orange)'s right portal.|
 |sar_portalcolor_rainbow|0|Rainbow portals!|
-|sar_portalcolor_sp_1|64 160 255|Portal color for Chell's left portal.|
-|sar_portalcolor_sp_2|255 160 32|Portal color for Chell's right portal.|
+|sar_portalcolor_sp_1|64 160 255|Portal color for Chell's left portal. r_portal_fastpath 0 required.|
+|sar_portalcolor_sp_2|255 160 32|Portal color for Chell's right portal. r_portal_fastpath 0 required.|
 |sar_portalgun_hud|0|Enables the portalgun HUD.|
 |sar_portalgun_hud_x|5|The x position of the portalgun HUD.|
 |sar_portalgun_hud_y|5|The y position of the portalgun HUD.|

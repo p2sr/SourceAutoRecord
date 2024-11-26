@@ -11,9 +11,9 @@
 #include "Features/FovChanger.hpp"
 #include "Features/GroundFramesCounter.hpp"
 #include "Features/Hud/InputHud.hpp"
+#include "Features/Hud/RhythmGame.hpp"
 #include "Features/Hud/ScrollSpeed.hpp"
 #include "Features/Hud/StrafeHud.hpp"
-#include "Features/Hud/RhythmGame.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/OverlayRender.hpp"
@@ -84,8 +84,8 @@ Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", "Patche
 Variable sar_unlocked_chapters("sar_unlocked_chapters", "-1", "Max unlocked chapter.\n");
 
 Variable sar_portalcolor_enable("sar_portalcolor_enable", "0", "Enable custom portal colors.\n");
-Variable sar_portalcolor_sp_1("sar_portalcolor_sp_1", "64 160 255", "Portal color for Chell's left portal.\n");
-Variable sar_portalcolor_sp_2("sar_portalcolor_sp_2", "255 160 32", "Portal color for Chell's right portal.\n");
+Variable sar_portalcolor_sp_1("sar_portalcolor_sp_1", "64 160 255", "Portal color for Chell's left portal. r_portal_fastpath 0 required.\n");
+Variable sar_portalcolor_sp_2("sar_portalcolor_sp_2", "255 160 32", "Portal color for Chell's right portal. r_portal_fastpath 0 required.\n");
 Variable sar_portalcolor_mp1_1("sar_portalcolor_mp1_1", "31 127 210", "Portal color for Atlas (blue)'s left portal.\n");
 Variable sar_portalcolor_mp1_2("sar_portalcolor_mp1_2", "19 0 210",   "Portal color for Atlas (blue)'s right portal.\n");
 Variable sar_portalcolor_mp2_1("sar_portalcolor_mp2_1", "255 179 31", "Portal color for P-Body (orange)'s left portal.\n");
@@ -124,6 +124,7 @@ REDECL(Client::OnCommand);
 REDECL(Client::ApplyMouse_Mid);
 REDECL(Client::ApplyMouse_Mid_Continue);
 #endif
+REDECL(Client::DrawPortal);
 REDECL(Client::GetChapterProgress);
 
 
@@ -330,12 +331,44 @@ DETOUR_COMMAND(Client::openleaderboard) {
 	}
 }
 
+Memory::Patch *g_drawPortalPatch;
+Memory::Patch *g_drawPortalGhostPatch;
+// C_Prop_Portal::DrawPortal
+extern Hook g_DrawPortalHook;
+DETOUR(Client::DrawPortal, void *pRenderContext) {
+	if (sar_portalcolor_enable.GetBool()) {
+		g_drawPortalPatch->Execute();
+	} else {
+		g_drawPortalPatch->Restore();
+	}
+	g_DrawPortalHook.Disable();
+	auto ret = Client::DrawPortal(thisptr, pRenderContext);
+	g_DrawPortalHook.Enable();
+	return ret;
+}
+Hook g_DrawPortalHook(&Client::DrawPortal_Hook);
+
+static void (*g_DrawPortalGhost)(void *pRenderContext);
+
+// C_Prop_Portal::DrawPortalGhostLocations
+extern Hook g_DrawPortalGhostHook;
+static void DrawPortalGhost_Hook(void *pRenderContext) {
+	if (sar_portalcolor_enable.GetBool()) {
+		g_drawPortalGhostPatch->Execute();
+	} else {
+		g_drawPortalGhostPatch->Restore();
+	}
+	g_DrawPortalGhostHook.Disable();
+	g_DrawPortalGhost(pRenderContext);
+	g_DrawPortalGhostHook.Enable();
+	return;
+}
+Hook g_DrawPortalGhostHook(&DrawPortalGhost_Hook);
+
+
 static SourceColor (*UTIL_Portal_Color)(int iPortal, int iTeamNumber);
 extern Hook UTIL_Portal_Color_Hook;
 static SourceColor UTIL_Portal_Color_Detour(int iPortal, int iTeamNumber) {
-	// FIXME: SP portal rendering does not use this but rather the
-	// texture's color itself. This does however work on the color
-	// of the SP *crosshair* and particles.
 	UTIL_Portal_Color_Hook.Disable();
 	SourceColor ret = UTIL_Portal_Color(iPortal, iTeamNumber);
 	UTIL_Portal_Color_Hook.Enable();
@@ -992,13 +1025,45 @@ bool Client::Init() {
 
 #ifdef _WIN32
 			auto ApplyMouse_Mid_addr = (uintptr_t)(Client::ApplyMouse) + Offsets::ApplyMouse_Mid;
-			g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr);
-			g_ApplyMouseMidHook.Disable();
+			g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr, false);
 			Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
 #endif
 			MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), Offsets::MatrixBuildRotationAboutAxis);
-			MatrixBuildRotationAboutAxisHook.SetFunc(MatrixBuildRotationAboutAxis);
-			MatrixBuildRotationAboutAxisHook.Disable();  // only during ApplyMouse
+			MatrixBuildRotationAboutAxisHook.SetFunc(MatrixBuildRotationAboutAxis, false);  // only during ApplyMouse
+
+			auto drawPortalSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalSpBranch);
+			auto drawPortalGhostSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostSpBranch);
+
+			Client::DrawPortal = (decltype(Client::DrawPortal))Memory::Scan(client->Name(), Offsets::DrawPortal);
+			g_DrawPortalGhost = (decltype(g_DrawPortalGhost))Memory::Scan(client->Name(), Offsets::DrawPortalGhost);
+
+			g_DrawPortalHook.SetFunc(Client::DrawPortal);
+			g_DrawPortalGhostHook.SetFunc(g_DrawPortalGhost);
+
+			g_drawPortalPatch = new Memory::Patch();
+			g_drawPortalGhostPatch = new Memory::Patch();
+
+			unsigned char drawPortalGhostByte = 0x80;
+			if (drawPortalSpBranch && drawPortalGhostSpBranch) {
+#ifndef _WIN32
+				unsigned char drawPortalBytes[5];
+
+				*(int32_t *)(drawPortalBytes + 1) = *(int32_t *)(drawPortalSpBranch + 2) + Offsets::DrawPortalSpBranchOff;
+				drawPortalBytes[0] = 0x81;
+
+				g_drawPortalPatch->Execute(drawPortalSpBranch + 1, drawPortalBytes, 5);
+				g_drawPortalGhostPatch->Execute(drawPortalGhostSpBranch + 1, &drawPortalGhostByte, 1);
+
+#else
+				unsigned char drawPortalBytes[2];
+
+				drawPortalBytes[0] = 0xEB;
+				drawPortalBytes[1] = Offsets::DrawPortalSpBranchOff;
+
+				g_drawPortalPatch->Execute(drawPortalSpBranch, drawPortalBytes, 2);
+				g_drawPortalGhostPatch->Execute(drawPortalGhostSpBranch + 1, &drawPortalGhostByte, 1);
+#endif
+			}
 
 			in_forceuser = Variable("in_forceuser");
 			if (!!in_forceuser && this->g_Input) {
@@ -1057,8 +1122,8 @@ bool Client::Init() {
 
 	g_AddShadowToReceiverHook.SetFunc(Client::AddShadowToReceiver);
 
-	UTIL_Portal_Color = (decltype (UTIL_Portal_Color))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color);
-	UTIL_Portal_Color_Particles = (decltype (UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color_Particles);
+	UTIL_Portal_Color = (decltype(UTIL_Portal_Color))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color);
+	UTIL_Portal_Color_Particles = (decltype(UTIL_Portal_Color_Particles))Memory::Scan(client->Name(), Offsets::UTIL_Portal_Color_Particles);
 	UTIL_Portal_Color_Hook.SetFunc(UTIL_Portal_Color);
 	UTIL_Portal_Color_Particles_Hook.SetFunc(UTIL_Portal_Color_Particles);
 
