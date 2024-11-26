@@ -123,10 +123,8 @@ REDECL(Client::OnCommand);
 #ifdef _WIN32
 REDECL(Client::ApplyMouse_Mid);
 REDECL(Client::ApplyMouse_Mid_Continue);
-REDECL(Client::DrawPortal);
-REDECL(Client::DrawPortal_Mid);
-REDECL(Client::DrawPortalGhost_Mid);
 #endif
+REDECL(Client::DrawPortal);
 REDECL(Client::GetChapterProgress);
 
 
@@ -333,61 +331,42 @@ DETOUR_COMMAND(Client::openleaderboard) {
 	}
 }
 
-// TODO: Implement the same for linux
-#ifdef _WIN32
-static uintptr_t g_DrawPortalMpBranch;
-extern Hook g_DrawPortalMidHook;
-DETOUR_MID_MH(Client::DrawPortal_Mid) {
-	_asm {
-		jmp g_DrawPortalMpBranch
-	}
-}
-Hook g_DrawPortalMidHook(&Client::DrawPortal_Mid_Hook);
-
+Memory::Patch *g_drawPortalPatch;
+Memory::Patch *g_drawPortalGhostPatch;
 // C_Prop_Portal::DrawPortal
 extern Hook g_DrawPortalHook;
 DETOUR(Client::DrawPortal, void *pRenderContext) {
-	if (sar_portalcolor_enable.GetBool()) {
-		g_DrawPortalMidHook.Enable();
+	if (sar_portalcolor_enable.GetBool() && !g_drawPortalPatch->IsPatched()) {
+		g_drawPortalPatch->Execute();
+	}
+	else if(!sar_portalcolor_enable.GetBool() && g_drawPortalPatch->IsPatched()) {
+		g_drawPortalPatch->Restore();
 	}
 	g_DrawPortalHook.Disable();
 	auto ret = Client::DrawPortal(thisptr, pRenderContext);
 	g_DrawPortalHook.Enable();
-	if (sar_portalcolor_enable.GetBool()) {
-		g_DrawPortalMidHook.Disable();
-	}
 	return ret;
 }
 Hook g_DrawPortalHook(&Client::DrawPortal_Hook);
-
-static uintptr_t g_DrawPortalGhostMpBranch;
-extern Hook g_DrawPortalMidHook;
-DETOUR_MID_MH(Client::DrawPortalGhost_Mid) {
-	_asm {
-		jmp g_DrawPortalGhostMpBranch
-	}
-}
-Hook g_DrawPortalGhostMidHook(&Client::DrawPortalGhost_Mid_Hook);
 
 static void (*g_DrawPortalGhost)(void *pRenderContext);
 
 // C_Prop_Portal::DrawPortalGhostLocations
 extern Hook g_DrawPortalGhostHook;
 static void DrawPortalGhost_Hook(void *pRenderContext) {
-	if (sar_portalcolor_enable.GetBool()) {
-		g_DrawPortalGhostMidHook.Enable();
+	if (sar_portalcolor_enable.GetBool() && !g_drawPortalGhostPatch->IsPatched()) {
+		g_drawPortalGhostPatch->Execute();
+	}
+	else if(!sar_portalcolor_enable.GetBool() && g_drawPortalGhostPatch->IsPatched()) {
+		g_drawPortalGhostPatch->Restore();
 	}
 	g_DrawPortalGhostHook.Disable();
 	g_DrawPortalGhost(pRenderContext);
 	g_DrawPortalGhostHook.Enable();
-	if (sar_portalcolor_enable.GetBool()) {
-		g_DrawPortalGhostMidHook.Disable();
-	}
 	return;
 }
 Hook g_DrawPortalGhostHook(&DrawPortalGhost_Hook);
 
-#endif
 
 static SourceColor (*UTIL_Portal_Color)(int iPortal, int iTeamNumber);
 extern Hook UTIL_Portal_Color_Hook;
@@ -1057,25 +1036,37 @@ bool Client::Init() {
 
 			auto drawPortalSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalSpBranch);
 			auto drawPortalGhostSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostSpBranch);
-#ifdef _WIN32
-			g_DrawPortalMpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalMpBranch);
+			
 			Client::DrawPortal = (decltype(Client::DrawPortal))Memory::Scan(client->Name(), Offsets::DrawPortal);
-			g_DrawPortalMidHook.SetFunc(drawPortalSpBranch, false);
-			g_DrawPortalHook.SetFunc(Client::DrawPortal);
-
-			g_DrawPortalGhostMpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostMpBranch);
 			g_DrawPortalGhost = (decltype(g_DrawPortalGhost))Memory::Scan(client->Name(), Offsets::DrawPortalGhost);
-			g_DrawPortalGhostMidHook.SetFunc(drawPortalGhostSpBranch, false);
+
+			g_DrawPortalHook.SetFunc(Client::DrawPortal);
 			g_DrawPortalGhostHook.SetFunc(g_DrawPortalGhost);
-#else
-			Memory::UnProtect((void *)(drawPortalSpBranch + 1), 5);
-			Memory::UnProtect((void *)(drawPortalGhostSpBranch + 1), 1);
+
+			g_drawPortalPatch = new Memory::Patch();
+			g_drawPortalGhostPatch = new Memory::Patch();
+			
+			unsigned char drawPortalGhostByte = 0x80;
 			if (drawPortalSpBranch && drawPortalGhostSpBranch) {
-				*(uint8_t *)(drawPortalSpBranch + 1) = 0x81;
-				*(int32_t *)(drawPortalSpBranch + 2) = *(int32_t *)(drawPortalSpBranch + 2) + Offsets::DrawPortalSpBranchOff;
-				*(uint8_t *)(drawPortalGhostSpBranch + 1) = 0x80;
-			}
+#ifndef _WIN32
+				unsigned char drawPortalBytes[5];
+
+				*(int32_t *)(drawPortalBytes + 1) = *(int32_t *)(drawPortalSpBranch + 2) + Offsets::DrawPortalSpBranchOff;
+				drawPortalBytes[0] = 0x81;
+
+				g_drawPortalPatch->Execute(drawPortalSpBranch + 1, drawPortalBytes, 5);
+				g_drawPortalGhostPatch->Execute(drawPortalGhostSpBranch + 1, &drawPortalGhostByte, 1);
+
+#else
+				unsigned char drawPortalBytes[2];
+
+				drawPortalBytes[0] = 0xEB;
+				drawPortalBytes[1] = Offsets::DrawPortalSpBranchOff;
+
+				g_drawPortalPatch->Execute(drawPortalSpBranch, drawPortalBytes, 2);
+				g_drawPortalGhostPatch->Execute(drawPortalGhostSpBranch + 1, &drawPortalGhostByte, 1);
 #endif
+			}
 
 			in_forceuser = Variable("in_forceuser");
 			if (!!in_forceuser && this->g_Input) {

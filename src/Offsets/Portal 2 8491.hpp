@@ -398,15 +398,11 @@ SIGSCAN_DEFAULT(DrawPortal, "55 8B EC 83 EC 14 53 8B D9 8B 0D ? ? ? ? 8B 01",
                             "55 57 56 53 83 EC 2C A1 ? ? ? ? 8B 5C 24 ? 8B 74 24 ? 8B 10") // "$PortalColorGradientLight" xref[0] -> C_Prop_Portal::DrawPortal
 SIGSCAN_DEFAULT(DrawPortalSpBranch, "8B 15 ? ? ? ? 33 C0 32 C9",
                                     "0F 85 ? ? ? ? 0F B6 83 ? ? ? ? 8B 2C 85")
-OFFSET_DEFAULT(DrawPortalSpBranchOff, -1, 0x19)
-SIGSCAN_DEFAULT(DrawPortalMpBranch, "A1 ? ? ? ? B1 ? 83 C0 ? EB 17",
-                                    "")
+OFFSET_DEFAULT(DrawPortalSpBranchOff, -14, 0x19)
 SIGSCAN_DEFAULT(DrawPortalGhost, "55 8B EC A1 ? ? ? ? 83 EC 24 83 78 ? ? 0F 84 1E 02 00 00 A1 ? ? ? ?",
                                  "A1 ? ? ? ? 8B 40 ? 85 C0 0F 84 ? ? ? ? 55 57") // "Portal Ghosts" xref[1] -> next function call has sig (int *) -> C_Prop_Portal::DrawPortalGhostLocations
-SIGSCAN_DEFAULT(DrawPortalGhostSpBranch, "8B 90 ? ? ? ? FF D2 D9 55 EC D9 EE D9 C9 DF F1 DD D8 76 3E F3 0F 10 45 EC 8B 15 ? ? ? ?",
+SIGSCAN_DEFAULT(DrawPortalGhostSpBranch, "0F 84 ? ? ? ? 8B 90 ? ? ? ? FF D2 50 33 C0 38 86 ? ? ? ? 8D 4D ? 0F 95 C0",
                                          "0F 84 ? ? ? ? 8B 03 83 EC 0C 53 FF 90 ? ? ? ? 83 C4 10 80 BB ? ? ? ? 01")
-SIGSCAN_DEFAULT(DrawPortalGhostMpBranch, "8B 90 ? ? ? ? FF D2 50 33 C0 38 86 ? ? ? ? 8D 4D ? 0F 95 C0",
-                                         "")
 SIGSCAN_DEFAULT(DrawOpaqueRenderables, "55 8B EC 83 EC 54 83 7D 0C 00 A1 ? ? ? ? 53 56 0F 9F 45 EC 83 78 30 00 57 8B F1 0F 84 BA 03 00 00",
                                        "55 89 E5 57 56 53 83 EC 7C A1 ? ? ? ? 8B 5D 08 89 45 90 85 C0 0F 85 34 04 00 00 A1 ? ? ? ? 8B 40 30 85 C0")
 SIGSCAN_DEFAULT(MsgPreSkipToNextLevel, "57 8B F9 E8 ? ? ? ? 8B C8 E8 ? ? ? ? 0B C2",

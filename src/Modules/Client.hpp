@@ -165,14 +165,11 @@ public:
 	// C_Paint_Input::ApplyMouse
 	static uintptr_t ApplyMouse_Mid_Continue;
 	DECL_DETOUR_MID_MH(ApplyMouse_Mid);
+#endif
 
 	// C_Prop_Portal::DrawPortal
 	DECL_DETOUR(DrawPortal, void *pRenderContext);
-	// C_Prop_Portal::DrawPortalGhostLocations
-	DECL_DETOUR_MID_MH(DrawPortal_Mid);
-	DECL_DETOUR_MID_MH(DrawPortalGhost_Mid);
-#endif
-
+	
 	bool Init() override;
 	void Shutdown() override;
 	const char *Name() override {

@@ -33,23 +33,25 @@ namespace Memory {
 	uintptr_t Scan(const char *moduleName, const char *pattern, int offset = 0);
 	std::vector<uintptr_t> MultiScan(const char *moduleName, const char *pattern, int offset = 0);
 
-#ifdef _WIN32
 	class Patch {
 	private:
 		uintptr_t location;
 		unsigned char *original;
+		unsigned char *patch;
 		size_t size;
+		bool isPatched;
 
 	public:
 		~Patch();
+		bool Execute();
 		bool Execute(uintptr_t location, unsigned char *bytes, size_t size);
 		template <size_t size>
 		bool Execute(uintptr_t location, unsigned char (&bytes)[size]) {
 			return Execute(location, bytes, size);
 		}
 		bool Restore();
+		bool IsPatched();
 	};
-#endif
 
 	struct Pattern {
 		const char *signature;
