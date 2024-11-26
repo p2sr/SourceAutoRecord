@@ -19,5 +19,11 @@ OFFSET_LINUX(snd_linear_count, 33)
 OFFSET_LINUX(snd_p, 72)
 OFFSET_LINUX(snd_vol, 80)
 
+// Pathmatch
 SIGSCAN_LINUX(PathMatch, "55 89 E5 57 56 53 83 EC ? 0F B6 45 ? 80 3D")
+
+// Client
+SIGSCAN_LINUX(DrawPortalSpBranch, "0F 85 ? ? ? ? 0F B6 83 ? ? ? ? 8B 3C 85 ? ? ? ? A1 ? ? ? ? 89 04 24 E8 ? ? ? ? 84 C0 74")
+OFFSET_LINUX(DrawPortalSpBranchOff, 0x15)
+SIGSCAN_LINUX(DrawPortalGhostSpBranch, "0F 84 ? ? ? ? FF 90 ? ? ? ? 80 BB ? ? ? ? 01")
 SIGSCAN_LINUX(GetChapterProgress, "55 89 E5 57 56 53 83 EC 2C 8B 7D 08 E8 ? ? ? ? 8B 10 C7")

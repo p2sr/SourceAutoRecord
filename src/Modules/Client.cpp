@@ -1046,14 +1046,18 @@ bool Client::Init() {
 			g_Input->Hook(Client::SteamControllerMove_Hook, Client::SteamControllerMove, Offsets::SteamControllerMove);
 			g_Input->Hook(Client::ApplyMouse_Hook, Client::ApplyMouse, Offsets::ApplyMouse);
 
-			auto drawPortalSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalSpBranch);
-			auto drawPortalGhostSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostSpBranch);
 #ifdef _WIN32
 			auto ApplyMouse_Mid_addr = (uintptr_t)(Client::ApplyMouse) + Offsets::ApplyMouse_Mid;
 			g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr);
 			g_ApplyMouseMidHook.Disable();
 			Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
+#endif
+			MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), Offsets::MatrixBuildRotationAboutAxis);
+			MatrixBuildRotationAboutAxisHook.SetFunc(MatrixBuildRotationAboutAxis, false);  // only during ApplyMouse
 
+			auto drawPortalSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalSpBranch);
+			auto drawPortalGhostSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostSpBranch);
+#ifdef _WIN32
 			g_DrawPortalMpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalMpBranch);
 			Client::DrawPortal = (decltype(Client::DrawPortal))Memory::Scan(client->Name(), Offsets::DrawPortal);
 			g_DrawPortalMidHook.SetFunc(drawPortalSpBranch, false);
@@ -1066,17 +1070,12 @@ bool Client::Init() {
 #else
 			Memory::UnProtect((void *)(drawPortalSpBranch + 1), 5);
 			Memory::UnProtect((void *)(drawPortalGhostSpBranch + 1), 1);
-			auto drawPortalSpBranchOffset = *(int32_t *)(drawPortalSpBranch + 2);
 			if (drawPortalSpBranch && drawPortalGhostSpBranch) {
 				*(uint8_t *)(drawPortalSpBranch + 1) = 0x81;
-				// add (0x7799-0x7780)=0x19 to the offset
-				*(int32_t *)(drawPortalSpBranch + 2) = drawPortalSpBranchOffset + 0x19;
+				*(int32_t *)(drawPortalSpBranch + 2) = *(int32_t *)(drawPortalSpBranch + 2) + Offsets::DrawPortalSpBranchOff;
 				*(uint8_t *)(drawPortalGhostSpBranch + 1) = 0x80;
 			}
 #endif
-			MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), Offsets::MatrixBuildRotationAboutAxis);
-			MatrixBuildRotationAboutAxisHook.SetFunc(MatrixBuildRotationAboutAxis);
-			MatrixBuildRotationAboutAxisHook.Disable();  // only during ApplyMouse
 
 			in_forceuser = Variable("in_forceuser");
 			if (!!in_forceuser && this->g_Input) {
