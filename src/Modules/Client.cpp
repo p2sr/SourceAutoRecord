@@ -1025,8 +1025,7 @@ bool Client::Init() {
 
 #ifdef _WIN32
 			auto ApplyMouse_Mid_addr = (uintptr_t)(Client::ApplyMouse) + Offsets::ApplyMouse_Mid;
-			g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr);
-			g_ApplyMouseMidHook.Disable();
+			g_ApplyMouseMidHook.SetFunc(ApplyMouse_Mid_addr, false);
 			Client::ApplyMouse_Mid_Continue = ApplyMouse_Mid_addr + 0x5;
 #endif
 			MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), Offsets::MatrixBuildRotationAboutAxis);
