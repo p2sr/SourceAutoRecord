@@ -1091,7 +1091,6 @@ CON_COMMAND(sar_trace_compare, "sar_trace_compare <trace 1> <trace 2> - compares
 
 	console->Print("Comparing traces \"%s\" and \"%s\":\n", trace1Name, trace2Name);
 
-	const auto goodColor = Color(110, 247, 76);
 	const auto badColor = Color(255, 100, 100);
 
 	auto startTick1 = tickInternalToUser(0, *trace1);

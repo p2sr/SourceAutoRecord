@@ -139,7 +139,7 @@ static void testApiKey() {
 	// FIXME: add API maps endpoint on board.portal2.sr
 	if (sar.game->Is(SourceGame_Portal2)) {
 		for (const auto &map : Game::maps) {
-			if (map.chamberId != "") {
+			if (strlen(map.chamberId) > 0) {
 				g_map_ids.insert({map.fileName, map.chamberId});
 			}
 		}
