@@ -15,6 +15,10 @@
 #include <optional>
 #include <variant>
 
+#ifdef _WIN32
+#	define strcasecmp _stricmp
+#endif
+
 Variable sar_speedrun_draw_triggers("sar_speedrun_draw_triggers", "0", "Draw the triggers associated with speedrun rules in the world.\n");
 
 static std::optional<std::vector<std::string>> extractPartialArgs(const char *str, const char *cmd) {
@@ -256,8 +260,9 @@ ON_EVENT(RENDER) {
 	for (std::string ruleName : g_categories[g_currentCategory].rules) {
 		auto rule = SpeedrunTimer::GetRule(ruleName);
 		if (!rule) continue;
-		if (std::find(rule->maps.begin(), rule->maps.end(), "*") == rule->maps.end() &&
-			std::find(rule->maps.begin(), rule->maps.end(), engine->GetCurrentMapName()) == rule->maps.end()) continue;
+		if (std::find_if(rule->maps.begin(), rule->maps.end(), [](std::string map) {
+				return map == "*" || !strcasecmp(map.c_str(), engine->GetCurrentMapName().c_str());
+			}) == rule->maps.end()) continue;
 		if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
 			std::get<ZoneTriggerRule>(rule->rule).DrawInWorld();
 			std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(rule);

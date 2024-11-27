@@ -13,6 +13,10 @@
 
 #define TAU 6.28318530718
 
+#ifdef _WIN32
+#	define strcasecmp _stricmp
+#endif
+
 template <typename V>
 static inline V *lookupMap(std::map<std::string, V> &m, std::string k) {
 	auto search = m.find(k);
@@ -343,8 +347,9 @@ bool SpeedrunRule::TestGeneral(std::optional<int> slot) {
 		auto prereq = SpeedrunTimer::GetRule(*this->onlyAfter);
 		if (!prereq || !prereq->fired) return false;
 	}
-	if (std::find(this->maps.begin(), this->maps.end(), "*") == this->maps.end() &&
-		std::find(this->maps.begin(), this->maps.end(), engine->GetCurrentMapName()) == this->maps.end()) return false;
+	if (std::find_if(this->maps.begin(), this->maps.end(), [](std::string map) {
+				return map == "*" || !strcasecmp(map.c_str(), engine->GetCurrentMapName().c_str());
+			}) == this->maps.end()) return false;
 	if (this->slot) {
 		if (this->slot != slot) return false;
 	}
