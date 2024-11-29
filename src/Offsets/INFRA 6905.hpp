@@ -95,7 +95,12 @@ SIGSCAN_WINDOWS(SND_RecordBuffer, "55 8B EC 80 3D ? ? ? ? 00 56")
 
 // Client
 SIGSCAN_WINDOWS(DrawTranslucentRenderables, "55 8B EC 81 EC 80 00 00 00 53 56 8B F1")
+SIGSCAN_WINDOWS(DrawPortal, "")
+SIGSCAN_WINDOWS(DrawPortalSpBranch, "")
+OFFSET_WINDOWS(DrawPortalSpBranchOff, -1)
 SIGSCAN_WINDOWS(DrawPortalGhost, "")
+SIGSCAN_WINDOWS(DrawPortalGhostSpBranch, "")
+
 SIGSCAN_WINDOWS(DrawOpaqueRenderables, "55 8B EC 83 EC 54 A1 ? ? ? ? 83 7D ? 00")
 SIGSCAN_WINDOWS(GetHudSig, "55 8B EC 8B 45 ? 83 F8 FF 75 ? 8B 0D ? ? ? ? 8B 01 8B 90 ? ? ? ? FF D2 69 C0 84 00 00 00") // usage of FindElement -> probably previous function call
 SIGSCAN_WINDOWS(FindElementSig, "55 8B EC 53 8B 5D ? 56 57 8B F1 33 FF") // "[%d] Could not find Hud Element: %s\n" xref

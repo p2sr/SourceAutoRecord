@@ -1031,20 +1031,19 @@ bool Client::Init() {
 			MatrixBuildRotationAboutAxis = (decltype(MatrixBuildRotationAboutAxis))Memory::Scan(client->Name(), Offsets::MatrixBuildRotationAboutAxis);
 			MatrixBuildRotationAboutAxisHook.SetFunc(MatrixBuildRotationAboutAxis, false);  // only during ApplyMouse
 
+			Client::DrawPortal = (decltype(Client::DrawPortal))Memory::Scan(client->Name(), Offsets::DrawPortal);
+			g_DrawPortalGhost = (decltype(g_DrawPortalGhost))Memory::Scan(client->Name(), Offsets::DrawPortalGhost);
+			if (Client::DrawPortal && g_DrawPortalGhost) {
 			auto drawPortalSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalSpBranch);
 			auto drawPortalGhostSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostSpBranch);
 
-			Client::DrawPortal = (decltype(Client::DrawPortal))Memory::Scan(client->Name(), Offsets::DrawPortal);
-			g_DrawPortalGhost = (decltype(g_DrawPortalGhost))Memory::Scan(client->Name(), Offsets::DrawPortalGhost);
+				g_DrawPortalHook.SetFunc(Client::DrawPortal);
+				g_DrawPortalGhostHook.SetFunc(g_DrawPortalGhost);
 
-			g_DrawPortalHook.SetFunc(Client::DrawPortal);
-			g_DrawPortalGhostHook.SetFunc(g_DrawPortalGhost);
+				g_drawPortalPatch = new Memory::Patch();
+				g_drawPortalGhostPatch = new Memory::Patch();
 
-			g_drawPortalPatch = new Memory::Patch();
-			g_drawPortalGhostPatch = new Memory::Patch();
-
-			unsigned char drawPortalGhostByte = 0x80;
-			if (drawPortalSpBranch && drawPortalGhostSpBranch) {
+				unsigned char drawPortalGhostByte = 0x80;
 #ifndef _WIN32
 				unsigned char drawPortalBytes[5];
 
