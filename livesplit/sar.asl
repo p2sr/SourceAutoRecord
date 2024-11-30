@@ -8,6 +8,7 @@
 state("portal2") { /* Portal 2 (7054) */ }
 state("hl2") { /* Portal (1910503) */ }
 state("infra") { /* INFRA (6905) */ }
+state("beginnersguide") { /* The Beginner's Guide (303210) */ }
 
 startup
 {

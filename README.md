@@ -41,8 +41,17 @@ For features and installation instructions, please visit [the website].
 | [Thinking with Time Machine](https://store.steampowered.com/app/286080) | ✔       | ✔     |
 | [Portal Reloaded](https://store.steampowered.com/app/1255980)           | ✔       | ✔     |
 | [INFRA](https://store.steampowered.com/app/251110)                      | ✔       | ➖     |
+| [The Beginner's Guide](https://store.steampowered.com/app/303210)       | ✔       | ❓     |
 
 If you're playing a game with no Linux support, you can use Proton to run it.
+
+## The Beginners Guide Experimental Support
+
+### Known Issues
+
+- When recording demos, the title cards / start of each "game" stays black
+  until you move.
+- Rendering most definitely does not work.
 
 ## Documentation
 
