@@ -373,7 +373,7 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bo
 		pi.position = pl->abs_origin();
 		pi.velocity = pl->abs_velocity();
 
-		if (!sar.game->Is(SourceGame_INFRA)) {
+		if (!sar.game->Is(SourceGame_INFRA | SourceGame_BeginnersGuide)) {
 #ifdef _WIN32
 			// windows being weird. ask mlugg for explanation because idfk.
 			void *paintPowerUser = (void *)((uint32_t)player + 0x1250);

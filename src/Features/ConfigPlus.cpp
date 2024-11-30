@@ -396,6 +396,7 @@ static const char *gameName() {
 	case SourceGame_PortalReloaded: return "reloaded";
 	case SourceGame_Portal2: return Game::IsSpeedrunMod() ? "srm" : "portal2";
 	case SourceGame_INFRA: return "infra";
+	case SourceGame_BeginnersGuide: return "guide";
 	default: return "other";
 	}
 }
