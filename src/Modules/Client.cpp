@@ -965,6 +965,11 @@ bool Client::Init() {
 		Command leaderboard("+leaderboard");
 		if (!!leaderboard) {
 			auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
+			if (sar.game->Is(SourceGame_BeginnersGuide)) {
+				// this game has an extra layer of indirection
+				// for whatever reason... (JMP LAB)
+				cc_leaderboard_enable = Memory::Read<uintptr_t>(cc_leaderboard_enable + 1);
+			}
 			GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
 			FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
 		} else if (Offsets::GetHudSig && Offsets::FindElementSig) {
@@ -1020,7 +1025,10 @@ bool Client::Init() {
 
 		this->IN_ActivateMouse = this->g_ClientDLL->Original<_IN_ActivateMouse>(Offsets::IN_ActivateMouse);
 		this->IN_DeactivateMouse = this->g_ClientDLL->Original<_IN_DeactivateMouse>(Offsets::IN_DeactivateMouse);
-
+		if (sar.game->Is(SourceGame_BeginnersGuide)) {
+			this->IN_ActivateMouse = Memory::Read<_IN_ActivateMouse>((uintptr_t)this->IN_ActivateMouse + 1);
+			this->IN_DeactivateMouse = Memory::Read<_IN_DeactivateMouse>((uintptr_t)this->IN_DeactivateMouse + 1);
+		}
 		void *g_InputAddr = Memory::DerefDeref<void *>((uintptr_t)IN_ActivateMouse + Offsets::g_Input);
 
 		if (g_Input = Interface::Create(g_InputAddr)) {
@@ -1083,10 +1091,12 @@ bool Client::Init() {
 		}
 
 		auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput);
+		if (sar.game->Is(SourceGame_BeginnersGuide)) HudProcessInput = Memory::Read<uintptr_t>(HudProcessInput + 1);
 		auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
-		uintptr_t g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
-		void *clientMode = Memory::Deref<void *>(g_pClientMode);
-		void *clientMode2 = Memory::Deref<void *>(g_pClientMode + sizeof(void *));
+		if (sar.game->Is(SourceGame_BeginnersGuide)) GetClientMode = Memory::Read<uintptr_t>(GetClientMode + 1);
+		auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
+		auto clientMode = Memory::Deref<void *>(g_pClientMode);
+		auto clientMode2 = Memory::Deref<void *>(g_pClientMode + sizeof(void *));
 
 		if (this->g_pClientMode = Interface::Create(clientMode)) {
 			this->g_pClientMode->Hook(Client::CreateMove_Hook, Client::CreateMove, Offsets::CreateMove);
@@ -1136,6 +1146,9 @@ bool Client::Init() {
 	auto mouse_menu = Command("+mouse_menu");
 	if (mouse_menu.ThisPtr()) {
 		uintptr_t cbk = (uintptr_t)mouse_menu.ThisPtr()->m_pCommandCallback;
+		if (sar.game->Is(SourceGame_BeginnersGuide)) {
+			cbk = Memory::Read<uintptr_t>(cbk + 1);
+		}
 		// OpenRadialMenuCommand is inlined on Windows
 #ifndef _WIN32
 		cbk = Memory::Read(cbk + Offsets::OpenRadialMenuCommand);

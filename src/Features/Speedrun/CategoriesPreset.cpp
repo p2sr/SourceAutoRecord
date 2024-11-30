@@ -295,6 +295,52 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 			}
 		};
 		// }}}
+	} else if (sar.game->Is(SourceGame_BeginnersGuide)) {
+		*defaultCat = "Any%";
+		*cats = {
+			{"Any%", {{"Start", "Whisper Start", "End"}}},
+		};
+		*rules = {
+			{
+				"Start",
+				SpeedrunRule(
+					RuleAction::START,
+					"intro",
+					EntityInputRule{
+						ENTRULE_TARGETNAME,
+						"cam_white",
+						"",
+						"Disable",
+						"",
+					}),
+			},
+			{
+				"Whisper Start",
+				SpeedrunRule(
+					RuleAction::START,
+					"whisper",
+					EntityInputRule{
+						ENTRULE_TARGETNAME,
+						"intro_block",
+						"",
+						"Disable",
+						"",
+					}),
+			},
+			{
+				"End",
+				SpeedrunRule(
+					RuleAction::STOP,
+					"nomansland2",
+					EntityInputRule{
+						ENTRULE_TARGETNAME,
+						"zap",
+						"",
+						"PlaySound",
+						"",
+					}),
+			},
+		};
 	} else {
 		// Portal 2 {{{
 		*defaultCat = "Singleplayer";
