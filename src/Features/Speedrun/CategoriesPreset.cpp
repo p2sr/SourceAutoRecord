@@ -264,7 +264,7 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 		// INFRA {{{
 		*defaultCat = "Any%";
 		*cats = {
-			{"Any%", {{"Start", "Ending 1", "Ending 2", "Ending 3"}}},
+			{"Any%", {{"Start", "Ending"}}},
 		};
 		*rules = {
 			{
@@ -281,41 +281,15 @@ void InitSpeedrunCategoriesTo(std::map<std::string, SpeedrunCategory> *cats, std
 					}),
 			},
 			{
-				"Ending 1",
+				"Ending",
 				SpeedrunRule(
 					RuleAction::STOP,
-					"infra_c11_ending_1",
+					"infra_c10_m3_roof",
 					EntityInputRule{
 						ENTRULE_TARGETNAME,
-						"achievement",
+						"credits",
 						"",
-						"FireEvent",
-						"",
-					}),
-			},
-			{
-				"Ending 2",
-				SpeedrunRule(
-					RuleAction::STOP,
-					"infra_c11_ending_2",
-					EntityInputRule{
-						ENTRULE_TARGETNAME,
-						"achievement",
-						"",
-						"FireEvent",
-						"",
-					}),
-			},
-			{
-				"Ending 3",
-				SpeedrunRule(
-					RuleAction::STOP,
-					"infra_c11_ending_3",
-					EntityInputRule{
-						ENTRULE_TARGETNAME,
-						"achievement",
-						"",
-						"FireEvent",
+						"RollOutroCredits",
 						"",
 					}),
 			}
