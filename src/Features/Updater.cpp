@@ -88,11 +88,13 @@ static bool isNewerVersion(std::string& verStr) {
 	auto version = getVersionComponents(verStr.c_str());
 	auto current = getVersionComponents(SAR_VERSION);
 
-	if ((version && version->canary) || (current && current->canary)) {
+	if ((version && version->canary) && (current && current->canary)) {
+		// For update from canary to canary, we just check if it's a different version
 		return strcmp(SAR_VERSION, verStr.c_str()) != 0;
 	}
 
-	if (!current) {
+	if (!current || current->canary) {
+		// Otherwise, canary versions shouldn't downgrade to releases
 		THREAD_PRINT("Cannot compare version numbers on non-release version\n");
 		return false;
 	}
@@ -389,7 +391,7 @@ CON_COMMAND(sar_check_update, "sar_check_update [release|pre|canary] - check whe
 
 	if (!strcmp(args[1], "pre")) {
 		channel = Channel::PreRelease;
-	} else if (!strcmp(args[1], "pre")) {
+	} else if (!strcmp(args[1], "canary")) {
 		channel = Channel::Canary;
 	}
 
