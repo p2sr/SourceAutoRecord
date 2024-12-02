@@ -1,4 +1,6 @@
+#include "Event.hpp"
 #include "Features/Hud/Hud.hpp"
+#include "Features/Updater.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Surface.hpp"
 #include "Modules/Client.hpp"
@@ -16,6 +18,7 @@ struct Cheat {
 	const char *fix;
 };
 
+int g_update_status = 2; // assume no update
 static Cheat g_cheats[] = {
 	{ +[]() {
 		return sv_cheats.GetBool();
@@ -62,6 +65,10 @@ static Cheat g_cheats[] = {
 	{ +[]() {
 		return fabsf(engine->GetIPT() - 1.0f / sar.game->Tickrate()) > 0.00001f;
 	}, "tickrate is not default", "remove '-tickrate' from the game launch options" },
+
+	{ +[]() {
+		return g_update_status == 0;
+	}, "SAR is not up-to-date", "run 'sar_update'" }
 };
 
 class CheatWarnHud : public Hud {
@@ -149,5 +156,17 @@ public:
 		drawWarnings(true, x + 4, y + 2, nullptr, nullptr);
 	}
 };
+
+static std::thread g_worker;
+ON_INIT {
+	if (g_worker.joinable()) g_worker.join();
+	g_worker = std::thread(checkUpdate, Channel::Release, false, [](int status) {
+		g_update_status = status;
+	});
+}
+
+ON_EVENT(SAR_UNLOAD) {
+	if (g_worker.joinable()) g_worker.join();
+}
 
 CheatWarnHud cheatWarnHud;

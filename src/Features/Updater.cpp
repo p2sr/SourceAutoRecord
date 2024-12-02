@@ -40,12 +40,6 @@ struct SarVersion {
 
 #define DL_SAR_HOST "https://dl.sar.portal2.sr"
 
-enum class Channel {
-	Release,
-	PreRelease,
-	Canary,
-};
-
 static std::optional<SarVersion> getVersionComponents(const char *str) {
 	SarVersion v = {0, 0, false};
 	v.pre = UINT_MAX;
@@ -84,7 +78,7 @@ static std::optional<SarVersion> getVersionComponents(const char *str) {
 	return v;
 }
 
-static bool isNewerVersion(std::string& verStr) {
+static bool isNewerVersion(std::string& verStr, bool print) {
 	auto version = getVersionComponents(verStr.c_str());
 	auto current = getVersionComponents(SAR_VERSION);
 
@@ -95,7 +89,7 @@ static bool isNewerVersion(std::string& verStr) {
 
 	if (!current || current->canary) {
 		// Otherwise, canary versions shouldn't downgrade to releases
-		THREAD_PRINT("Cannot compare version numbers on non-release version\n");
+		if (print) THREAD_PRINT("Cannot compare version numbers on non-release version\n");
 		return false;
 	}
 
@@ -275,23 +269,27 @@ static std::string createTempPath(const char *filename) {
 	return p.string();
 }
 
-void checkUpdate(Channel channel) {
+void checkUpdate(Channel channel, bool print, std::function<void(int)> callback) {
 	std::string name, dlUrl, pdbUrl;
 
-	THREAD_PRINT("Querying for latest version...\n");
+	if (print) THREAD_PRINT("Querying for latest version...\n");
 
 	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, channel)) {
-		THREAD_PRINT("An error occurred retrieving latest version\n");
+		if (print) THREAD_PRINT("An error occurred retrieving latest version\n");
+		callback(1); // RC=1 indicates failure to check for updates
 		return;
 	}
 
-	THREAD_PRINT("Latest version is %s\n", name.c_str());
+	if (print) THREAD_PRINT("Latest version is %s\n", name.c_str());
 
-	if (!isNewerVersion(name)) {
-		THREAD_PRINT("You're all up-to-date!\n");
+	bool isNewer = isNewerVersion(name, print);
+	if (!isNewer) {
+		if (print) THREAD_PRINT("You're all up-to-date!\n");
 	} else {
-		THREAD_PRINT("Update with sar_update, or at %s\n", dlUrl.c_str());
+		if (print) THREAD_PRINT("Update with sar_update, or at %s\n", dlUrl.c_str());
 	}
+
+	callback(isNewer ? 0 : 2); // RC=0 indicates update available, RC=2 otherwise
 }
 
 void doUpdate(Channel channel, int successAction, bool force) {
@@ -304,7 +302,7 @@ void doUpdate(Channel channel, int successAction, bool force) {
 		return;
 	}
 
-	if (!force && !isNewerVersion(name)) {
+	if (!force && !isNewerVersion(name, true)) {
 		THREAD_PRINT("You're already up-to-date!\n");
 		return;
 	}
@@ -396,7 +394,7 @@ CON_COMMAND(sar_check_update, "sar_check_update [release|pre|canary] - check whe
 	}
 
 	if (g_worker.joinable()) g_worker.join();
-	g_worker = std::thread(checkUpdate, channel);
+	g_worker = std::thread(checkUpdate, channel, true, [](int) {});
 }
 
 CON_COMMAND(sar_update, "sar_update [release|pre|canary] [exit|restart] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade\n") {
