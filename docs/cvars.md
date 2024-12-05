@@ -2,6 +2,8 @@
 
 |Name|Default|Description|
 |---|---|---|
+|<i title="The Stanley Parable">+bhop</i>|cmd|Client sends a key-down event for the in_jump state.|
+|<i title="The Stanley Parable">-bhop</i>|cmd|Client sends a key-up event for the in_jump state.|
 |cl_crosshair_t|0|Removes the top line from the crosshair :0: normal crosshair,1: crosshair without top.|
 |cl_crosshairalpha|255|Change the amount of transparency.|
 |cl_crosshaircolor_b|255|Changes the color of the crosshair.|
@@ -94,6 +96,7 @@
 |sar_alias_run|cmd|sar_alias_run \<name> [args]... - run a SAR alias, passing on any additional arguments|
 |sar_allow_resizing_window|0|EXPERIMENTAL! Forces resizing on game's window.|
 |sar_always_transmit_heavy_ents|0|Always transmit large but seldom changing edicts to clients to prevent lag spikes.|
+|<i title="The Stanley Parable">sar_anti_anti_cheat</i>|cmd|sar_anti_anti_cheat - turns on cheats without the Narrator noticing|
 |sar_auto_voidclip_pause|cmd|sar_auto_voidclip_pause \<command> - runs the specified command, and automatically voidclip-pauses on the next load|
 |sar_autoaim_point|cmd|sar_autoaim_point \<x> \<y> \<z> - automatically aims at a point in space. Requires cheats|
 |sar_autojump|0|Enables automatic jumping on the server.|

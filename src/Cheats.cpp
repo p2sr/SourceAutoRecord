@@ -62,6 +62,23 @@ Variable mm_session_sys_delay_create_host;
 Variable hide_gun_when_holding;
 Variable r_flashlightbrightness;
 
+// TSP only
+void IN_BhopDown(const CCommand& args) {
+	if (!client->KeyDown || !client->in_jump) return;
+	client->KeyDown(client->in_jump, (args.ArgC() > 1) ? args[1] : nullptr);
+}
+void IN_BhopUp(const CCommand& args) {
+	if (!client->KeyUp || !client->in_jump) return;
+	client->KeyUp(client->in_jump, (args.ArgC() > 1) ? args[1] : nullptr);
+}
+
+Command startbhop("+bhop", IN_BhopDown, "Client sends a key-down event for the in_jump state.\n");
+Command endbhop("-bhop", IN_BhopUp, "Client sends a key-up event for the in_jump state.\n");
+
+CON_COMMAND(sar_anti_anti_cheat, "sar_anti_anti_cheat - turns on cheats without the Narrator noticing\n") {
+	sv_cheats.ThisPtr()->m_nValue = 1;
+}
+
 // P2 only
 CON_COMMAND(sar_togglewait, "sar_togglewait - enables or disables \"wait\" for the command buffer\n") {
 	auto state = !*engine->m_bWaitEnabled;
@@ -319,6 +336,10 @@ void Cheats::Init() {
 
 	sar_disable_weapon_sway.UniqueFor(SourceGame_Portal2);
 	sar_disable_viewmodel_shadows.UniqueFor(SourceGame_Portal2 | SourceGame_PortalStoriesMel | SourceGame_PortalReloaded);
+
+	startbhop.UniqueFor(SourceGame_StanleyParable);
+	endbhop.UniqueFor(SourceGame_StanleyParable);
+	sar_anti_anti_cheat.UniqueFor(SourceGame_StanleyParable);
 
 	// Thinking with Time Machine also has workshop support, but we don't support it yet
 	// | SourceGame_ThinkingWithTimeMachine
