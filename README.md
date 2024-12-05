@@ -42,16 +42,27 @@ For features and installation instructions, please visit [the website].
 | [Portal Reloaded](https://store.steampowered.com/app/1255980)           | ✔       | ✔     |
 | [INFRA](https://store.steampowered.com/app/251110)                      | ✔       | ➖     |
 | [The Beginner's Guide](https://store.steampowered.com/app/303210)       | ✔       | ❓     |
+| [The Stanley Parable](https://store.steampowered.com/app/221910)        | ✔       | ❓     |
 
 If you're playing a game with no Linux support, you can use Proton to run it.
 
-## The Beginners Guide Experimental Support
+## Experimental Support
 
 ### Known Issues
+
+The Beginner's Guide:
 
 - When recording demos, the title cards / start of each "game" stays black
   until you move.
 - Rendering most definitely does not work.
+
+The Stanley Parable:
+
+- `+bhop` does not work.
+- `sar_cam_control` can easily crash (OOM when looking OOB)
+- "Activate SAR" text font is unreadable. I know a fix for this, but it's
+  not implemented yet.
+- Missing speedrun categories for now.
 
 ## Documentation
 

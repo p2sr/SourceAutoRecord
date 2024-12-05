@@ -14,6 +14,7 @@
 #include "Games/ThinkingWithTimeMachine.hpp"
 #include "Games/INFRA.hpp"
 #include "Games/BeginnersGuide.hpp"
+#include "Games/StanleyParable.hpp"
 
 #define HAS_GAME_FLAG(flag, name)  \
 	if (version & (flag)) {           \
@@ -94,6 +95,10 @@ Game *Game::CreateNew() {
 		return new BeginnersGuide();
 	}
 
+	if (Utils::ICompare(modDir, StanleyParable::ModDir())) {
+		return new StanleyParable();
+	}
+
 	return nullptr;
 }
 std::string Game::VersionToString(int version) {
@@ -106,6 +111,7 @@ std::string Game::VersionToString(int version) {
 		HAS_GAME_FLAG(SourceGame_PortalReloaded, "Portal Reloaded")
 		HAS_GAME_FLAG(SourceGame_INFRA, "INFRA")
 		HAS_GAME_FLAG(SourceGame_BeginnersGuide, "The Beginner's Guide")
+		HAS_GAME_FLAG(SourceGame_StanleyParable, "The Stanley Parable")
 	}
 	return games;
 }

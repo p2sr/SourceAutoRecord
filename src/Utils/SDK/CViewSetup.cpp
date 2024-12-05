@@ -32,7 +32,7 @@ void ViewSetupWrite(ViewSetup *view, T *cview) {
 
 static ViewSetup *viewCtx = new ViewSetup;
 ViewSetup *ViewSetupCreate(CViewSetup *cview) {
-    if (sar.game->Is(SourceGame_INFRA | SourceGame_BeginnersGuide)) {
+    if (sar.game->Is(SourceGame_INFRA | SourceGame_BeginnersGuide | SourceGame_StanleyParable)) {
         ViewSetupRead(reinterpret_cast<CViewSetupINFRA *>(cview), viewCtx);
     } else {
         ViewSetupRead(cview, viewCtx);
@@ -41,7 +41,7 @@ ViewSetup *ViewSetupCreate(CViewSetup *cview) {
 }
 
 void ViewSetupCopy(ViewSetup *view, CViewSetup *cview) {
-    if (sar.game->Is(SourceGame_INFRA | SourceGame_BeginnersGuide)) {
+    if (sar.game->Is(SourceGame_INFRA | SourceGame_BeginnersGuide | SourceGame_StanleyParable)) {
         ViewSetupWrite(view, reinterpret_cast<CViewSetupINFRA *>(cview));
     } else {
         ViewSetupWrite(view, cview);

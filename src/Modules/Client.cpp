@@ -943,6 +943,12 @@ DETOUR(Client::GetChapterProgress) {
 Hook g_GetChapterProgressHook(&Client::GetChapterProgress_Hook);
 
 bool Client::Init() {
+	bool readJmp = false;
+#ifdef _WIN32
+	if (sar.game->Is(SourceGame_BeginnersGuide | SourceGame_StanleyParable)) {
+		readJmp = true;
+	}
+#endif
 	this->g_ClientDLL = Interface::Create(this->Name(), "VClient016");
 	this->s_EntityList = Interface::Create(this->Name(), "VClientEntityList003", false);
 	this->g_GameMovement = Interface::Create(this->Name(), "GameMovement001");
@@ -952,7 +958,7 @@ bool Client::Init() {
 	}
 
 	if (this->g_ClientDLL) {
-		this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses);
+		this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses, readJmp);
 		this->FrameStageNotify = this->g_ClientDLL->Original<_FrameStageNotify>(Offsets::GetAllClasses + 27);
 
 		this->g_ClientDLL->Hook(Client::LevelInitPreEntity_Hook, Client::LevelInitPreEntity, Offsets::LevelInitPreEntity);
@@ -965,7 +971,7 @@ bool Client::Init() {
 		Command leaderboard("+leaderboard");
 		if (!!leaderboard) {
 			auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
-			if (sar.game->Is(SourceGame_BeginnersGuide)) {
+			if (readJmp) {
 				// this game has an extra layer of indirection
 				// for whatever reason... (JMP LAB)
 				cc_leaderboard_enable = Memory::Read<uintptr_t>(cc_leaderboard_enable + 1);
@@ -1023,12 +1029,8 @@ bool Client::Init() {
 			console->DevWarning("Failed to hook GetHud and FindElement\n");
 		}
 
-		this->IN_ActivateMouse = this->g_ClientDLL->Original<_IN_ActivateMouse>(Offsets::IN_ActivateMouse);
-		this->IN_DeactivateMouse = this->g_ClientDLL->Original<_IN_DeactivateMouse>(Offsets::IN_DeactivateMouse);
-		if (sar.game->Is(SourceGame_BeginnersGuide)) {
-			this->IN_ActivateMouse = Memory::Read<_IN_ActivateMouse>((uintptr_t)this->IN_ActivateMouse + 1);
-			this->IN_DeactivateMouse = Memory::Read<_IN_DeactivateMouse>((uintptr_t)this->IN_DeactivateMouse + 1);
-		}
+		this->IN_ActivateMouse = this->g_ClientDLL->Original<_IN_ActivateMouse>(Offsets::IN_ActivateMouse, readJmp);
+		this->IN_DeactivateMouse = this->g_ClientDLL->Original<_IN_DeactivateMouse>(Offsets::IN_DeactivateMouse, readJmp);
 		void *g_InputAddr = Memory::DerefDeref<void *>((uintptr_t)IN_ActivateMouse + Offsets::g_Input);
 
 		if (g_Input = Interface::Create(g_InputAddr)) {
@@ -1036,6 +1038,16 @@ bool Client::Init() {
 			g_Input->Hook(Client::GetButtonBits_Hook, Client::GetButtonBits, Offsets::GetButtonBits);
 			g_Input->Hook(Client::SteamControllerMove_Hook, Client::SteamControllerMove, Offsets::SteamControllerMove);
 			g_Input->Hook(Client::ApplyMouse_Hook, Client::ApplyMouse, Offsets::ApplyMouse);
+
+			if (Offsets::JoyStickApplyMovement) {
+				auto JoyStickApplyMovement = g_Input->Original(Offsets::JoyStickApplyMovement, readJmp);
+				Memory::Read(JoyStickApplyMovement + Offsets::KeyDown, &this->KeyDown);
+				Memory::Read(JoyStickApplyMovement + Offsets::KeyUp, &this->KeyUp);
+			}
+			if (Offsets::in_jump) {
+				auto GetButtonBits = g_Input->Original(Offsets::GetButtonBits, readJmp);
+				Memory::Deref(GetButtonBits + Offsets::in_jump, &this->in_jump);
+			}
 
 #ifdef _WIN32
 			auto ApplyMouse_Mid_addr = (uintptr_t)(Client::ApplyMouse) + Offsets::ApplyMouse_Mid;
@@ -1090,10 +1102,9 @@ bool Client::Init() {
 			console->DevWarning("Failed to hook input\n");
 		}
 
-		auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput);
-		if (sar.game->Is(SourceGame_BeginnersGuide)) HudProcessInput = Memory::Read<uintptr_t>(HudProcessInput + 1);
+		auto HudProcessInput = this->g_ClientDLL->Original(Offsets::HudProcessInput, readJmp);
 		auto GetClientMode = Memory::Read<uintptr_t>(HudProcessInput + Offsets::GetClientMode);
-		if (sar.game->Is(SourceGame_BeginnersGuide)) GetClientMode = Memory::Read<uintptr_t>(GetClientMode + 1);
+		if (readJmp) GetClientMode = Memory::Read<uintptr_t>(GetClientMode + 1);
 		auto g_pClientMode = Memory::Deref<uintptr_t>(GetClientMode + Offsets::g_pClientMode);
 		auto clientMode = Memory::Deref<void *>(g_pClientMode);
 		auto clientMode2 = Memory::Deref<void *>(g_pClientMode + sizeof(void *));
@@ -1113,7 +1124,7 @@ bool Client::Init() {
 	}
 
 	if (this->s_EntityList) {
-		this->GetClientEntity = this->s_EntityList->Original<_GetClientEntity>(Offsets::GetClientEntity);
+		this->GetClientEntity = this->s_EntityList->Original<_GetClientEntity>(Offsets::GetClientEntity, readJmp);
 	}
 
 	Client::DrawTranslucentRenderables = (decltype(Client::DrawTranslucentRenderables))Memory::Scan(client->Name(), Offsets::DrawTranslucentRenderables);
@@ -1146,7 +1157,7 @@ bool Client::Init() {
 	auto mouse_menu = Command("+mouse_menu");
 	if (mouse_menu.ThisPtr()) {
 		uintptr_t cbk = (uintptr_t)mouse_menu.ThisPtr()->m_pCommandCallback;
-		if (sar.game->Is(SourceGame_BeginnersGuide)) {
+		if (readJmp) {
 			cbk = Memory::Read<uintptr_t>(cbk + 1);
 		}
 		// OpenRadialMenuCommand is inlined on Windows
