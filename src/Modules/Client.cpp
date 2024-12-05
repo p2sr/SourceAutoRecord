@@ -336,7 +336,9 @@ Memory::Patch *g_drawPortalGhostPatch;
 // C_Prop_Portal::DrawPortal
 extern Hook g_DrawPortalHook;
 DETOUR(Client::DrawPortal, void *pRenderContext) {
-	if (sar_portalcolor_enable.GetBool()) {
+	if (sar_portalcolor_enable.GetBool() &&
+		!(!strcmp(sar_portalcolor_sp_1.GetString(), sar_portalcolor_sp_1.ThisPtr()->m_pszDefaultValue) &&
+		  !strcmp(sar_portalcolor_sp_2.GetString(), sar_portalcolor_sp_2.ThisPtr()->m_pszDefaultValue))) {
 		g_drawPortalPatch->Execute();
 	} else {
 		g_drawPortalPatch->Restore();
@@ -353,7 +355,9 @@ static void (*g_DrawPortalGhost)(void *pRenderContext);
 // C_Prop_Portal::DrawPortalGhostLocations
 extern Hook g_DrawPortalGhostHook;
 static void DrawPortalGhost_Hook(void *pRenderContext) {
-	if (sar_portalcolor_enable.GetBool()) {
+	if (sar_portalcolor_enable.GetBool() &&
+		!(!strcmp(sar_portalcolor_sp_1.GetString(), sar_portalcolor_sp_1.ThisPtr()->m_pszDefaultValue) &&
+		  !strcmp(sar_portalcolor_sp_2.GetString(), sar_portalcolor_sp_2.ThisPtr()->m_pszDefaultValue))) {
 		g_drawPortalGhostPatch->Execute();
 	} else {
 		g_drawPortalGhostPatch->Restore();
