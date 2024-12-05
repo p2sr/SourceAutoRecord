@@ -12,6 +12,7 @@ enum SourceGameVersion {
 	SourceGame_PortalReloaded = (1 << 11),
 	SourceGame_INFRA = (1 << 12),
 	SourceGame_BeginnersGuide = (1 << 13),
+	SourceGame_StanleyParable = (1 << 14),
 
 #ifndef _WIN32
 	SourceGame_EIPRelPIC = SourceGame_Portal2,
