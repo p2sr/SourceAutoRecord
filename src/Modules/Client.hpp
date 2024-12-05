@@ -36,6 +36,8 @@ public:
 	DECL_M(GetPlayerState, CPlayerState);
 
 	using _GetClientEntity = ClientEnt *(__rescall *)(void *thisptr, int entnum);
+	using _KeyDown = int(__cdecl *)(void *b, const char *c);
+	using _KeyUp = int(__cdecl *)(void *b, const char *c);
 	using _GetAllClasses = ClientClass *(*)();
 	using _FrameStageNotify = void(__rescall *)(void *thisptr, int stage);
 	using _ShouldDraw = bool(__rescall *)(void *thisptr);
@@ -46,6 +48,8 @@ public:
 	using _AddAvatarPanelItem = void(__cdecl *)(void *pLeaderboard, void *pStatLists, const PortalLeaderboardItem_t *pData, int nScore, int nType, int nPlayerType, int nAvatarIndex, int nHeight, int nSlot, bool bHUDElement);
 
 	_GetClientEntity GetClientEntity = nullptr;
+	_KeyDown KeyDown = nullptr;
+	_KeyUp KeyUp = nullptr;
 	_GetAllClasses GetAllClasses = nullptr;
 	_FrameStageNotify FrameStageNotify = nullptr;
 	_ShouldDraw ShouldDraw = nullptr;
@@ -57,6 +61,8 @@ public:
 
 	ChapterContextData_t *g_ChapterContextNames;
 	ChapterContextData_t *g_ChapterMPContextNames;
+
+	void *in_jump;
 
 	int *nNumSPChapters;
 	int *nNumMPChapters;
