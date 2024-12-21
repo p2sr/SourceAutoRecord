@@ -1110,7 +1110,7 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_autoreset_load, "sar_speedrun_autoreset_lo
 	while (std::getline(file, line)) {
 		int tick = atoi(line.c_str());
 		if (tick < last_tick) {
-			console->Print("Error: autoreset ticks must be increasing, but %d < %d\n. Giving up", tick, last_tick);
+			console->Print("Error: autoreset ticks must be increasing, but %d < %d. Giving up\n", tick, last_tick);
 			g_autoreset_ticks.clear();
 			return;
 		}
