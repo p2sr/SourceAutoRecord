@@ -4,6 +4,7 @@
 #include "Event.hpp"
 #include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "SpeedrunTimer.hpp"
@@ -122,11 +123,11 @@ static void dispatchRule(std::string name, SpeedrunRule *rule) {
 	int info = sar_speedrun_triggers_info.GetInt();
 	if (info == 0) return;
 
-	void *player = server->GetPlayer(1);
-	if (!player) return console->Print("Could not find player at slot 1.\n");
+	void *player = client->GetPlayer(GET_SLOT() + 1);
+	if (!player) return;
 
-	Vector pos = server->GetAbsOrigin(player);
-	Vector vel = server->GetLocalVelocity(player);
+	Vector pos = client->GetAbsOrigin(player);
+	Vector vel = client->GetLocalVelocity(player);
 
 	if (info == 1) {
 		// Info type 1 prints everything
