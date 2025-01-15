@@ -4,6 +4,7 @@
 #include "Event.hpp"
 #include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "SpeedrunTimer.hpp"
@@ -20,6 +21,7 @@
 #endif
 
 Variable sar_speedrun_draw_triggers("sar_speedrun_draw_triggers", "0", "Draw the triggers associated with speedrun rules in the world.\n");
+Variable sar_speedrun_triggers_info("sar_speedrun_triggers_info", "0", "Print player velocity (and position) upon mtrigger activation.\n1 - position and velocity\n2 - only horizontal velocity\n");
 
 static std::optional<std::vector<std::string>> extractPartialArgs(const char *str, const char *cmd) {
 	while (*cmd) {
@@ -116,6 +118,26 @@ static void dispatchRule(std::string name, SpeedrunRule *rule) {
 	}
 
 	rule->fired = true;
+
+	// Handle `sar_speedrun_triggers_info`
+	int info = sar_speedrun_triggers_info.GetInt();
+	if (info == 0) return;
+
+	void *player = client->GetPlayer(GET_SLOT() + 1);
+	if (!player) return;
+
+	Vector pos = client->GetAbsOrigin(player);
+	Vector vel = client->GetLocalVelocity(player);
+
+	if (info == 1) {
+		// Info type 1 prints everything
+		console->Print("Player triggered rule '%s':\n", name.c_str());
+		console->Print("  Position: %.2f %.2f %.2f\n", pos.x, pos.y, pos.z);
+		console->Print("  Velocity: %.2f %.2f %.2f\n", vel.x, vel.y, vel.z);
+	} else if (info == 2) {
+		// Info type 2 prints just the horizontal velocity
+		console->Print("Player velocity on last rule: %.2f\n", vel.Length2D());
+	}
 }
 
 ON_EVENT(PRE_TICK) {
