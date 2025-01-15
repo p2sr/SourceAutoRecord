@@ -638,11 +638,13 @@ HUD_ELEMENT_MODE2(position, "0", 0, 2,
 		ctx->DrawElement("pos: -");
 	}
 }
-HUD_ELEMENT_MODE2(angles, "0", 0, 2,
+HUD_ELEMENT_MODE2(angles, "0", 0, 4,
                   "Draws absolute view angles of the client.\n"
                   "0 = Default,\n"
                   "1 = XY,\n"
-                  "2 = XYZ.\n",
+                  "2 = XYZ,\n"
+                  "3 = X,\n"
+                  "4 = Y.\n",
                   HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
 	// When we're orange (and not splitscreen), for some fucking reason,
 	// the *engine* thinks we're slot 0, but everything else thinks
@@ -651,8 +653,12 @@ HUD_ELEMENT_MODE2(angles, "0", 0, 2,
 	int p = getPrecision();
 	if (mode == 1) {
 		ctx->DrawElement("ang: %.*f %.*f", p, ang.x, p, ang.y);
-	} else {
+	} else if (mode == 2) {
 		ctx->DrawElement("ang: %.*f %.*f %.*f", p, ang.x, p, ang.y, p, ang.z);
+	} else if (mode == 3) {
+		ctx->DrawElement("ang: %.*f", p, ang.x);
+	} else {
+		ctx->DrawElement("ang: %.*f", p, ang.y);
 	}
 }
 HUD_ELEMENT_MODE2(velocity, "0", 0, 5,
