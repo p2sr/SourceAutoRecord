@@ -524,6 +524,7 @@
 |sar_speedrun_stop|cmd|sar_speedrun_stop - stop the speedrun timer|
 |sar_speedrun_stop_in_menu|0|Automatically stop the speedrun timer when the menu is loaded.|
 |sar_speedrun_time_pauses|0|Include time spent paused in the speedrun timer.|
+|sar_speedrun_triggers_info|0|Print player velocity (and position) upon mtrigger activation.<br>1 - position and velocity<br>2 - only horizontal velocity|
 |sar_sr_hud|0|Draws speedrun timer.|
 |sar_sr_hud_font_color|255 255 255 255|RGBA font color of speedrun timer HUD.|
 |sar_sr_hud_font_index|70|Font index of speedrun timer HUD.|
