@@ -126,7 +126,7 @@
 |sar_challenge_autostop|0|Automatically stops recording demos when the leaderboard opens after a CM run. If 2, automatically appends the run time to the demo name.|
 |sar_challenge_autosubmit_reload_api_key|cmd|sar_challenge_autosubmit_reload_api_key - reload the boards API key from its file.|
 |sar_chat|cmd|sar_chat - open the chat HUD|
-|sar_cheat_hud|1|Display a warning in the HUD when cheats are active. 0 = disable, 1 = display if sv_cheats off, 2 = display always|
+|sar_cheat_hud|2|Display a warning in the HUD when cheats are active. 0 = disable, 1 = display if sv_cheats off, 2 = display always|
 |sar_cheat_hud_x|-4|X position of the cheat warning HUD.|
 |sar_cheat_hud_y|4|Y position of the cheat warning HUD.|
 |sar_check_update|cmd|sar_check_update [release\|pre\|canary] - check whether the latest version of SAR is being used|

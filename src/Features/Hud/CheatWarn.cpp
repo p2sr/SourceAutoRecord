@@ -8,7 +8,7 @@
 #include "Modules/Engine.hpp"
 #include "Variable.hpp"
 
-Variable sar_cheat_hud("sar_cheat_hud", "1", 0, 2, "Display a warning in the HUD when cheats are active. 0 = disable, 1 = display if sv_cheats off, 2 = display always\n");
+Variable sar_cheat_hud("sar_cheat_hud", "2", 0, 2, "Display a warning in the HUD when cheats are active. 0 = disable, 1 = display if sv_cheats off, 2 = display always\n");
 Variable sar_cheat_hud_x("sar_cheat_hud_x", "-4", "X position of the cheat warning HUD.\n", 0);
 Variable sar_cheat_hud_y("sar_cheat_hud_y", "4", "Y position of the cheat warning HUD.\n", 0);
 
