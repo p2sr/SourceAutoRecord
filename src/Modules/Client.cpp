@@ -144,6 +144,9 @@ DECL_CVAR_CALLBACK(cl_viewmodelfov) {
 }
 
 ClientEnt *Client::GetPlayer(int index) {
+	if ((index & Offsets::ENT_ENTRY_MASK) == Offsets::ENT_ENTRY_MASK) {
+		return nullptr;
+	}
 	return this->GetClientEntity(this->s_EntityList->ThisPtr(), index);
 }
 void Client::CalcButtonBits(int nSlot, int &bits, int in_button, int in_ignore, kbutton_t *button, bool reset) {
