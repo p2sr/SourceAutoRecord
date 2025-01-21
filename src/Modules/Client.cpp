@@ -1223,6 +1223,10 @@ void Client::Shutdown() {
 	Command::Unhook("playvideo_end_level_transition", Client::playvideo_end_level_transition_callback);
 	Command::Unhook("+leaderboard", Client::openleaderboard_callback);
 	Command::Unhook("unpause", Client::closeleaderboard_callback);
+	g_drawPortalPatch->Restore();
+	g_drawPortalGhostPatch->Restore();
+	SAFE_DELETE(g_drawPortalPatch);
+	SAFE_DELETE(g_drawPortalGhostPatch);
 }
 
 Client *client;
