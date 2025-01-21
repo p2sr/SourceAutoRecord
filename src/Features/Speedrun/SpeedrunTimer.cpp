@@ -578,6 +578,16 @@ static void recordDemoResult() {
 		}
 	}
 
+	// category rules
+	appendI32(1, data); // in case we want to change this later
+	auto rules = SpeedrunTimer::GetCategoryRules();
+	appendI32(rules.size(), data);
+	for (auto ruleName : rules) {
+		auto rule = SpeedrunTimer::GetRule(ruleName);
+		appendStr(ruleName, data);
+		appendStr(rule->Describe(), data);
+	}
+
 	engine->demorecorder->RecordData(data.data(), data.size());
 }
 
@@ -604,11 +614,11 @@ void SpeedrunTimer::Stop(std::string segName) {
 		networkManager.NotifySpeedrunFinished(false);
 	}
 
-	Event::Trigger<Event::SPEEDRUN_FINISH>({});
-
 	if (engine->demorecorder->isRecordingDemo) {
 		recordDemoResult();
 	}
+
+	Event::Trigger<Event::SPEEDRUN_FINISH>({});
 
 	Scheduler::InHostTicks(DEMO_AUTOSTOP_DELAY, [=]() {
 		if (!engine->demorecorder->isRecordingDemo) return; // manual stop before autostop
