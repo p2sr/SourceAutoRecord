@@ -8,6 +8,8 @@
 #include "Modules/Engine.hpp"
 #include "Variable.hpp"
 
+#include <curl/curl.h>
+
 Variable sar_cheat_hud("sar_cheat_hud", "2", 0, 2, "Display a warning in the HUD when cheats are active. 0 = disable, 1 = display if sv_cheats off, 2 = display always\n");
 Variable sar_cheat_hud_x("sar_cheat_hud_x", "-4", "X position of the cheat warning HUD.\n", 0);
 Variable sar_cheat_hud_y("sar_cheat_hud_y", "4", "Y position of the cheat warning HUD.\n", 0);
@@ -158,9 +160,10 @@ public:
 };
 
 static std::thread g_worker;
+static CURL *curl;
 ON_INIT {
 	if (g_worker.joinable()) g_worker.join();
-	g_worker = std::thread(checkUpdate, Channel::Release, false, [](int status) {
+	g_worker = std::thread(checkUpdate, curl, Channel::Release, false, [](int status) {
 		g_update_status = status;
 	});
 }

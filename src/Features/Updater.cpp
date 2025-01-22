@@ -108,11 +108,11 @@ static bool isNewerVersion(std::string& verStr, bool print) {
 	return version->pre > current->pre;
 }
 
-static bool curlPrepare(const char *url, int timeout) {
-	if (!g_curl) {
-		g_curl = curl_easy_init();
+static bool curlPrepare(CURL **curl, const char *url, int timeout) {
+	if (!*curl) {
+		*curl = curl_easy_init();
 
-		if (!g_curl) {
+		if (!*curl) {
 			return false;
 		}
 
@@ -120,17 +120,17 @@ static bool curlPrepare(const char *url, int timeout) {
 		g_httpHdrs = curl_slist_append(g_httpHdrs, "User-Agent: SourceAutoRecord");
 	}
 
-	curl_easy_setopt(g_curl, CURLOPT_URL, url);
-	curl_easy_setopt(g_curl, CURLOPT_NOPROGRESS, 1);
-	curl_easy_setopt(g_curl, CURLOPT_FOLLOWLOCATION, 1);
-	curl_easy_setopt(g_curl, CURLOPT_TIMEOUT, timeout);
-	curl_easy_setopt(g_curl, CURLOPT_HTTPHEADER, g_httpHdrs);
+	curl_easy_setopt(*curl, CURLOPT_URL, url);
+	curl_easy_setopt(*curl, CURLOPT_NOPROGRESS, 1);
+	curl_easy_setopt(*curl, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(*curl, CURLOPT_TIMEOUT, timeout);
+	curl_easy_setopt(*curl, CURLOPT_HTTPHEADER, g_httpHdrs);
 
 	return true;
 }
 
 static bool downloadFile(const char *url, const char *path) {
-	if (!curlPrepare(url, 60)) {
+	if (!curlPrepare(&g_curl, url, 60)) {
 		return false;
 	}
 
@@ -153,35 +153,35 @@ static bool downloadFile(const char *url, const char *path) {
 	return res == CURLE_OK && code == 200;
 }
 
-static std::string request(const char *url) {
-	if (!curlPrepare(url, 10)) {
+static std::string request(CURL *curl, const char *url) {
+	if (!curlPrepare(&curl, url, 10)) {
 		return "";
 	}
 
 	curl_easy_setopt(
-		g_curl, CURLOPT_WRITEFUNCTION, +[](void *ptr, size_t sz, size_t nmemb, std::string *data) -> size_t {
+		curl, CURLOPT_WRITEFUNCTION, +[](void *ptr, size_t sz, size_t nmemb, std::string *data) -> size_t {
 			data->append((char *)ptr, sz * nmemb);
 			return sz * nmemb;
 		});
 
 	std::string response;
-	curl_easy_setopt(g_curl, CURLOPT_WRITEDATA, &response);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
-	CURLcode res = curl_easy_perform(g_curl);
+	CURLcode res = curl_easy_perform(curl);
 
 	long code;
-	curl_easy_getinfo(g_curl, CURLINFO_RESPONSE_CODE, &code);
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
 
 	return res == CURLE_OK && code == 200 ? response : "";
 }
 
-static bool getLatestVersion(std::string *name, std::string *dlUrl, std::string *pdbUrl, Channel channel) {
+static bool getLatestVersion(CURL *curl, std::string *name, std::string *dlUrl, std::string *pdbUrl, Channel channel) {
 	// FIXME: This will fail if the API rate limit is saturated (bruteforcing? many instances?)
 	//        maybe cache the response for a couple minutes - AMJ 2024-04-25
 	json11::Json res;
 	if (channel == Channel::PreRelease) {
 		std::string err;
-		res = json11::Json::parse(request("https://api.github.com/repos/p2sr/SourceAutoRecord/releases"), err);
+		res = json11::Json::parse(request(curl, "https://api.github.com/repos/p2sr/SourceAutoRecord/releases"), err);
 		if (err != "") {
 			return false;
 		}
@@ -192,7 +192,7 @@ static bool getLatestVersion(std::string *name, std::string *dlUrl, std::string 
 		}
 	} else if (channel == Channel::Canary) {
 		std::string err;
-		res = json11::Json::parse(request(DL_SAR_HOST "/api/v1/latest/canary"), err);
+		res = json11::Json::parse(request(curl, DL_SAR_HOST "/api/v1/latest/canary"), err);
 		if (err != "") {
 			return false;
 		}
@@ -213,7 +213,7 @@ static bool getLatestVersion(std::string *name, std::string *dlUrl, std::string 
 		}
 	} else {
 		std::string err;
-		res = json11::Json::parse(request("https://api.github.com/repos/p2sr/SourceAutoRecord/releases/latest"), err);
+		res = json11::Json::parse(request(curl, "https://api.github.com/repos/p2sr/SourceAutoRecord/releases/latest"), err);
 		if (err != "") {
 			return false;
 		}
@@ -269,12 +269,12 @@ static std::string createTempPath(const char *filename) {
 	return p.string();
 }
 
-void checkUpdate(Channel channel, bool print, std::function<void(int)> callback) {
+void checkUpdate(CURL *curl, Channel channel, bool print, std::function<void(int)> callback) {
 	std::string name, dlUrl, pdbUrl;
 
 	if (print) THREAD_PRINT("Querying for latest version...\n");
 
-	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, channel)) {
+	if (!getLatestVersion(curl, &name, &dlUrl, &pdbUrl, channel)) {
 		if (print) THREAD_PRINT("An error occurred retrieving latest version\n");
 		callback(1); // RC=1 indicates failure to check for updates
 		return;
@@ -297,7 +297,7 @@ void doUpdate(Channel channel, int successAction, bool force) {
 
 	THREAD_PRINT("Querying for latest version...\n");
 
-	if (!getLatestVersion(&name, &dlUrl, &pdbUrl, channel)) {
+	if (!getLatestVersion(g_curl, &name, &dlUrl, &pdbUrl, channel)) {
 		THREAD_PRINT("An error occurred retrieving latest version\n");
 		return;
 	}
@@ -394,7 +394,7 @@ CON_COMMAND(sar_check_update, "sar_check_update [release|pre|canary] - check whe
 	}
 
 	if (g_worker.joinable()) g_worker.join();
-	g_worker = std::thread(checkUpdate, channel, true, [](int) {});
+	g_worker = std::thread(checkUpdate, g_curl, channel, true, [](int) {});
 }
 
 CON_COMMAND(sar_update, "sar_update [release|pre|canary] [exit|restart] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade\n") {
