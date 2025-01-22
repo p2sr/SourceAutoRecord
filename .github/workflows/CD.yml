@@ -104,7 +104,7 @@ jobs:
     steps:
       - name: Get Release Version
         id: get_release
-        run: echo "{version}={${GITHUB_REF:10}}" >> $GITHUB_OUTPUT
+        run: echo "version=${GITHUB_REF:10}" >> $GITHUB_ENV
       - name: Download Linux Build
         uses: actions/download-artifact@v4
         with:
@@ -125,8 +125,8 @@ jobs:
 
             **Installation**
             - Download:
-              - [Windows](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.outputs.version }}/sar.dll)
-              - [Linux](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ steps.get_release.outputs.version }}/sar.so)
+              - [Windows](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ env.version }}/sar.dll)
+              - [Linux](https://github.com/p2sr/SourceAutoRecord/releases/download/${{ env.version }}/sar.so)
             - Place the binary into the game folder e.g. `Portal 2`
             - Open developer console and enter `plugin_load sar`
 
