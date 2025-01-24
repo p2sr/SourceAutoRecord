@@ -6,18 +6,20 @@
 #include "Event.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
+#include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
-#include "Utils/json11.hpp"
 #include "Version.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "Utils/stb_image.h"
 
 #include <cctype>
 #include <curl/curl.h>
 #include <filesystem>
 #include <fstream>
-#include <map>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -62,7 +64,7 @@ static std::thread g_worker;
 static std::thread g_worker_search;
 static std::map<std::string, std::string> g_map_ids;
 static bool g_is_querying;
-static std::vector<json11::Json> g_times;
+static std::vector<PortalLeaderboardItem_t> g_times;
 
 static bool ensureCurlReady(CURL **curl) {
 	if (!*curl) {
@@ -165,6 +167,8 @@ static void testApiKey() {
 	}
 
 	THREAD_PRINT("Downloaded %i maps!\n", g_map_ids.size());
+
+	client->EnableCustomLeaderboards();
 }
 
 std::optional<std::string> AutoSubmit::GetMapId(std::string map_name) {
@@ -213,6 +217,42 @@ static std::optional<int> getCurrentPbScore(std::string map_id) {
 	return atoi(str.c_str());
 }
 
+static uint8_t *getAvatar(std::string url) {
+	if (!ensureCurlReady(&g_curl_search)) return {};
+
+	auto response = request(g_curl_search, url);
+
+	if (!response) return {};
+
+	auto avatar = *response;
+	uint8_t *bytes = (uint8_t *)avatar.c_str();
+	size_t len = avatar.length();
+
+	/* decode avatar jpg */
+	int w, h;
+	int channels;
+	auto img = stbi_load_from_memory(bytes, len, &w, &h, &channels, 0);
+
+	if (!img) return {};
+
+	/* avatar doesnt have alpha channel, but IImage needs it */
+	size_t size = w * h * channels;
+	size_t new_size = w * h * 4;
+	uint8_t *new_img = (uint8_t *)malloc(new_size);  // needs to be free'd somewhere!
+
+	for (uint8_t *p = img, *new_p = new_img; p != img + size; p += channels, new_p += 4) {
+		*(new_p + 0) = *(p + 0);
+		*(new_p + 1) = *(p + 1);
+		*(new_p + 2) = *(p + 2);
+		*(new_p + 3) = 0xFF;
+	}
+
+	/* free old decoded jpg */
+	stbi_image_free(img);
+
+	return new_img;
+}
+
 static void startSearching(std::string mapName) {
 	auto map_id = AutoSubmit::GetMapId(mapName);
 	if (!map_id.has_value()) {
@@ -222,9 +262,33 @@ static void startSearching(std::string mapName) {
 
 	auto json = AutoSubmit::GetTopScores(*map_id);
 
+	/* move map into vector so we can sort it */
+	std::vector<std::pair<std::string, json11::Json>> times;
+	for (const auto &it : json) {
+		times.push_back(it);
+	}
+
+	/* sort by rank */
+	std::sort(times.begin(), times.end(), [](const std::pair<std::string, json11::Json> &lhs, const std::pair<std::string, json11::Json> &rhs) {
+		return lhs.second["scoreData"]["playerRank"].int_value() < rhs.second["scoreData"]["playerRank"].int_value();
+	});
+
 	g_times.clear();
-	for (auto score : json) {
-		g_times.push_back(score);
+	size_t i = 0;
+	for (const auto &time : times) {
+		if (i == 40)
+			break;
+
+		PortalLeaderboardItem_t data;
+		strncpy(data.name, time.second["userData"]["boardname"].string_value().c_str(), sizeof(data.name));
+		strncpy(data.autorender, time.second["scoreData"]["autorender_id"].string_value().c_str(), sizeof(data.autorender));
+		data.avatarTex = getAvatar(time.second["userData"]["avatar"].string_value());
+		data.rank = time.second["scoreData"]["playerRank"].int_value();
+		data.score = time.second["scoreData"]["score"].int_value();
+
+		g_times.push_back(data);
+
+		++i;
 	}
 
 	g_is_querying = false;
@@ -237,33 +301,10 @@ void AutoSubmit::Search(std::string map) {
 	g_worker_search = std::thread(startSearching, map);
 }
 
-json11::Json::array AutoSubmit::GetTopScores(std::string &map_id) {
+json11::Json::object AutoSubmit::GetTopScores(std::string &map_id) {
 	if (!ensureCurlReady(&g_curl_search)) return {};
 
-	curl_mime *form = curl_mime_init(g_curl_search);
-	curl_mimepart *field;
-
-	field = curl_mime_addpart(form);
-	curl_mime_name(field, "auth_hash");
-	curl_mime_data(field, g_api_key.c_str(), CURL_ZERO_TERMINATED);
-
-	field = curl_mime_addpart(form);
-	curl_mime_name(field, "mapId");
-	curl_mime_data(field, map_id.c_str(), CURL_ZERO_TERMINATED);
-
-	field = curl_mime_addpart(form);
-	curl_mime_name(field, "before");
-	curl_mime_data(field, "3", CURL_ZERO_TERMINATED);
-
-	field = curl_mime_addpart(form);
-	curl_mime_name(field, "after");
-	curl_mime_data(field, "2", CURL_ZERO_TERMINATED);
-
-	curl_easy_setopt(g_curl_search, CURLOPT_MIMEPOST, form);
-
-	auto response = request(g_curl_search, g_api_base + "/top-scores");
-
-	curl_mime_free(form);
+	auto response = request(g_curl_search, g_api_base.substr(0, g_api_base.length() - 6) + "chamber/" + map_id + "/json");
 
 	if (!response) return {};
 
@@ -274,14 +315,14 @@ json11::Json::array AutoSubmit::GetTopScores(std::string &map_id) {
 		return {};
 	}
 
-	return json.array_items();
+	return json.object_items();
 }
 
 bool AutoSubmit::IsQuerying() {
 	return g_is_querying;
 }
 
-const std::vector<json11::Json>& AutoSubmit::GetTimes() {
+const std::vector<PortalLeaderboardItem_t> &AutoSubmit::GetTimes() {
 	return g_times;
 }
 
@@ -607,6 +648,6 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 }
 
 ON_EVENT(SAR_UNLOAD) {
-	if (g_worker.joinable()) g_worker.detach();
+	if (g_worker.joinable()) g_worker.join();
 	if (g_worker_search.joinable()) g_worker_search.join();
 }

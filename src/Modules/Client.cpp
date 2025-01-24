@@ -26,8 +26,10 @@
 #include "Game.hpp"
 #include "Hook.hpp"
 #include "Interface.hpp"
+#include "MaterialSystem.hpp"
 #include "Offsets.hpp"
 #include "Server.hpp"
+#include "SteamAPI.hpp"
 #include "Utils.hpp"
 
 #include <cstdarg>
@@ -119,7 +121,8 @@ REDECL(Client::GetLeaderboard);
 REDECL(Client::PurgeAndDeleteElements);
 REDECL(Client::IsQuerying);
 REDECL(Client::SetPanelStats);
-REDECL(Client::OnCommand);
+REDECL(Client::SetPlayerData);
+REDECL(Client::ActivateSelectedItem);
 #ifdef _WIN32
 REDECL(Client::ApplyMouse_Mid);
 REDECL(Client::ApplyMouse_Mid_Continue);
@@ -859,6 +862,7 @@ DETOUR(Client::StartSearching) {
 Hook g_StartSearchingHook(&Client::StartSearching_Hook);
 
 static std::vector<std::string> g_registeredLbs;
+static std::vector<void *> g_allocatedAvatars;
 
 extern Hook g_GetLeaderboardHook;
 DETOUR_T(void *, Client::GetLeaderboard, const char *a2) {
@@ -894,41 +898,143 @@ DETOUR(Client::IsQuerying) {
 }
 Hook g_IsQueryingHook(&Client::IsQuerying_Hook);
 
+extern Hook g_ActivateSelectedItemHook;
+DETOUR_T(bool, Client::ActivateSelectedItem) {
+	if (!steam->SteamFriends || !steam->ActivateGameOverlayToWebPage)
+		return false;
+
+	// we stored the autorender ID in this earlier
+	char *m_nSteamID = *(char **)((uintptr_t)thisptr + Offsets::m_pGamerName - 16);
+
+	steam->ActivateGameOverlayToWebPage(steam->SteamFriends(), Utils::ssprintf("https://autorender.portal2.sr/videos/%s", m_nSteamID).c_str(), 0);
+
+	return true;
+}
+Hook g_ActivateSelectedItemHook(&Client::ActivateSelectedItem_Hook);
+
+void(__rescall *Panel_SetPos)(void *thisptr, int x, int y);
+void(__rescall *Panel_SetSize)(void *thisptr, int wide, int tall);
+
+/* https://developer.valvesoftware.com/wiki/VGUI_Documentation#Proportionality */
+void Panel_SetPosProportional(void *panel, int x, int y) {
+	int w, h;
+	engine->GetScreenSize(nullptr, w, h);
+
+	Panel_SetPos(panel, x * h / 480.0f, y * w / 640.0f);
+}
+void Panel_SetSizeProportional(void *panel, int x, int y) {
+	int w, h;
+	engine->GetScreenSize(nullptr, w, h);
+
+	Panel_SetSize(panel, x * h / 480.0f, y * w / 640.0f);
+}
+
 extern Hook g_SetPanelStatsHook;
 DETOUR(Client::SetPanelStats) {
-	void *m_pLeaderboard = *(void **)((uintptr_t)thisptr + Offsets::m_pLeaderboard);
-	void *m_pStatList = *(void **)((uintptr_t)thisptr + Offsets::m_pStatList);
 	int m_nStatHeight = *(int *)((uintptr_t)thisptr + Offsets::m_nStatHeight);
+	void *m_pStatList = *(void **)((uintptr_t)thisptr + Offsets::m_nStatHeight + 152);
+	void *m_pLeaderboardListButton = *(void **)((uintptr_t)thisptr + Offsets::m_nStatHeight + 160);
+	void *m_pLeaderboard = *(void **)((uintptr_t)thisptr + Offsets::m_nStatHeight + 208);
+	int m_CurrentLeaderboardType = *(int *)((uintptr_t)thisptr + Offsets::m_nStatHeight + 212);
 
-	const auto &times = AutoSubmit::GetTimes();
+	/* here for the future if we want to integrate lp boards */
+	bool showLp = false;  // sar.game->Is(SourceGame_Portal2);
 
-	for (size_t i = 0; i < times.size(); ++i) {
-		const auto &time = times[i];
+	/* set time/portals button visible (only in p2 though) */
+	if (showLp)
+		Memory::VMT<void(__rescall *)(void *, bool)>(m_pLeaderboardListButton, Offsets::Panel_SetVisible)(m_pLeaderboardListButton, true);  // Panel::SetVisible
+	else
+		m_CurrentLeaderboardType = 1;
 
-		PortalLeaderboardItem_t data;
-		data.m_xuid = atoll(time["userData"]["profileNumber"].string_value().c_str());
-		data.m_iScore = atoi(time["scoreData"]["score"].string_value().c_str());
-		strncpy(data.m_szName, time["userData"]["boardname"].string_value().c_str(), sizeof(data.m_szName));
+	/* set boards visible */
+	Memory::VMT<void(__rescall *)(void *, bool)>(m_pStatList, Offsets::Panel_SetVisible)(m_pStatList, true);  // Panel::SetVisible
 
-		client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &data, data.m_iScore, 1, -1, i, m_nStatHeight, -1, 0);
+	/* move to top of panel, we don't need the graphs, just takes up space */
+	Panel_SetPosProportional(m_pLeaderboardListButton, 250, 38);
+	Panel_SetPosProportional(m_pStatList, 250, showLp ? 58 : 38);
+
+	/* resize panel */
+	Panel_SetSizeProportional(m_pStatList, 250, showLp ? 164 : 184);
+
+	/* remove old scores */
+	Memory::VMT<void(__rescall *)(void *)>(m_pStatList, Offsets::RemoveAllPanelItems)(m_pStatList);  // GenericPanelList::RemoveAllPanelItems
+
+	/* turn on scrollbar */
+	Memory::VMT<void(__rescall *)(void *, bool)>(m_pStatList, Offsets::RemoveAllPanelItems + 8)(m_pStatList, true);  // GenericPanelList::SetScrollBarVisible
+
+	/* free previously allocated avatars */
+	for (auto avatar : g_allocatedAvatars) {
+/* call dtor */
+#ifdef _WIN32
+		Memory::VMT<void(__rescall *)(void *, bool)>(avatar, 6)(avatar, false);
+#else
+		Memory::VMT<void(__rescall *)(void *)>(avatar, 7)(avatar);
+#endif
+	}
+	g_allocatedAvatars.clear();
+
+	/* add scores */
+	// TODO: maybe integrate LP boards too in the future?
+	if (m_CurrentLeaderboardType == 1 /* times */) {
+		const auto &times = AutoSubmit::GetTimes();
+
+		for (size_t i = 0; i < times.size(); ++i) {
+			const auto &time = times[i];
+
+			client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &time, time.score, 1, -1, i, m_nStatHeight, -1, 0);
+		}
 	}
 
 	return 0;
 }
 Hook g_SetPanelStatsHook(&Client::SetPanelStats_Hook);
 
-extern Hook g_OnCommandHook;
-DETOUR(Client::OnCommand, const char *a2) {
-	if (!strcmp(a2, "Leaderboard_Time")) {
-		return 0;
-	}
+void *(__rescall *CGameUiAvatarImage_Ctor)(void *);
+void(__rescall *CGameUiAvatarImage_InitFromRGBA)(void *, const uint8_t *, int, int);
 
-	g_OnCommandHook.Disable();
-	auto ret = Client::OnCommand(thisptr, a2);
-	g_OnCommandHook.Enable();
-	return ret;
+extern Hook g_SetPlayerDataHook;
+DETOUR(Client::SetPlayerData, PortalLeaderboardItem_t *pData, int nType) {
+	void *m_pGamerName = *(void **)((uintptr_t)thisptr + Offsets::m_pGamerName);
+	void *m_pGamerScore = *(void **)((uintptr_t)thisptr + Offsets::m_pGamerName + 4);
+	void *m_pScoreLegend = *(void **)((uintptr_t)thisptr + Offsets::m_pGamerName + 8);
+	void *m_pGamerAvatar = *(void **)((uintptr_t)thisptr + Offsets::m_pGamerName + 12);
+
+	// HACK: we dont need this anyway and we have 16 bytes to store something, so lets just store the autorender ID here!
+	char **m_nSteamID = (char **)((uintptr_t)thisptr + Offsets::m_pGamerName - 16);
+	*m_nSteamID = pData->autorender;
+
+	/* cut off last digit lol */
+	auto score = SpeedrunTimer::Format(pData->score / 100.0f);
+	score = score.substr(0, score.length() - 1);
+
+	/* set player name */
+	Memory::VMT<void(__rescall *)(void *, const char *)>(m_pGamerName, Offsets::Label_SetText)(m_pGamerName, pData->name);  // Label::SetText
+	/* set score */
+	Memory::VMT<void(__rescall *)(void *, const char *)>(m_pGamerScore, Offsets::Label_SetText)(m_pGamerScore, score.c_str());  // Label::SetText
+	/* set score rank */
+	Memory::VMT<void(__rescall *)(void *, const char *)>(m_pGamerScore, Offsets::Label_SetText)(m_pScoreLegend, Utils::ssprintf("#%d", pData->rank).c_str());  // Label::SetText
+
+	/* alloc CGameUiAvatarImage */
+	auto ui_img = malloc(Offsets::CGameUiAvatarImage_Size);
+	ui_img = CGameUiAvatarImage_Ctor(ui_img);
+	CGameUiAvatarImage_InitFromRGBA(ui_img, pData->avatarTex, 184, 184);  // the avatar size is always same
+
+	/* store so we can free later */
+	g_allocatedAvatars.push_back(ui_img);
+
+	/* finally set avatar image */
+	Memory::VMT<void(__rescall *)(void *, void *)>(m_pGamerAvatar, Offsets::Label_SetText)(m_pGamerAvatar, ui_img);  // ImagePanel::SetImage
+
+	/* set alpha too */
+	((float *)((unsigned long *)thisptr)[Offsets::ImagePanel_Base])[Offsets::m_flAlpha] = 225.0f;
+
+	/* free avatar texture */
+	// FIXME: this corrupts the heap when finishing a run (idk)
+	free(pData->avatarTex);
+
+	return 0;
 }
-Hook g_OnCommandHook(&Client::OnCommand_Hook);
+Hook g_SetPlayerDataHook(&Client::SetPlayerData_Hook);
 
 extern Hook g_GetChapterProgressHook;
 DETOUR(Client::GetChapterProgress) {
@@ -941,6 +1047,16 @@ DETOUR(Client::GetChapterProgress) {
 	return ret;
 }
 Hook g_GetChapterProgressHook(&Client::GetChapterProgress_Hook);
+
+void Client::EnableCustomLeaderboards() {
+	g_GetLeaderboardHook.SetFunc(Client::GetLeaderboard);
+	g_IsQueryingHook.SetFunc(Client::IsQuerying);
+	g_SetPanelStatsHook.SetFunc(Client::SetPanelStats);
+	g_StartSearchingHook.SetFunc(Client::StartSearching);
+	g_PurgeAndDeleteElementsHook.SetFunc(Client::PurgeAndDeleteElements);
+	g_SetPlayerDataHook.SetFunc(Client::SetPlayerData);
+	g_ActivateSelectedItemHook.SetFunc(Client::ActivateSelectedItem);
+}
 
 bool Client::Init() {
 	this->g_ClientDLL = Interface::Create(this->Name(), "VClient016");
@@ -1152,26 +1268,26 @@ bool Client::Init() {
 			this->nNumMPChapters = Memory::Deref<int *>(GetNumChapters + Offsets::nNumMPChapters);
 			this->g_ChapterMPContextNames = Memory::Deref<ChapterContextData_t *>(GetNumChapters + Offsets::g_ChapterMPContextNames);
 		}
+	}
 
+	/* Boards integration, this gets messy lol */
+	if (sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalStoriesMel)) {
 		auto CPortalLeaderboardPanel_OnThink = Memory::Scan(this->Name(), Offsets::CPortalLeaderboardPanel_OnThink);
-		if (CPortalLeaderboardPanel_OnThink) {
-			Client::GetLeaderboard = Memory::Read<decltype(Client::GetLeaderboard)>(CPortalLeaderboardPanel_OnThink + Offsets::GetLeaderboard);
-			Client::IsQuerying = Memory::Read<decltype(Client::IsQuerying)>(CPortalLeaderboardPanel_OnThink + Offsets::IsQuerying);
-			Client::SetPanelStats = Memory::Read<decltype(Client::SetPanelStats)>(CPortalLeaderboardPanel_OnThink + Offsets::SetPanelStats);
-			Client::StartSearching = Memory::Read<decltype(Client::StartSearching)>((uintptr_t)GetLeaderboard + Offsets::StartSearching);
-			Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + Offsets::AddAvatarPanelItem);
-
-			auto OnEvent = Memory::Scan(this->Name(), Offsets::OnEvent);
-			Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(OnEvent + Offsets::PurgeAndDeleteElements);
-			Client::OnCommand = (decltype(Client::OnCommand))Memory::Scan(this->Name(), Offsets::OnCommand);
-		}
-
-		g_GetLeaderboardHook.SetFunc(Client::GetLeaderboard);
-		g_IsQueryingHook.SetFunc(Client::IsQuerying);
-		g_SetPanelStatsHook.SetFunc(Client::SetPanelStats);
-		g_StartSearchingHook.SetFunc(Client::StartSearching);
-		g_PurgeAndDeleteElementsHook.SetFunc(Client::PurgeAndDeleteElements);
-		g_OnCommandHook.SetFunc(Client::OnCommand);
+		Client::PurgeAndDeleteElements = Memory::Read<decltype(Client::PurgeAndDeleteElements)>(Memory::Scan(this->Name(), Offsets::PurgeAndDeleteElements, 1));
+		Panel_SetPos = Memory::Read<decltype(Panel_SetPos)>(Memory::Scan(this->Name(), Offsets::Panel_SetPos, 1));
+		Panel_SetSize = Memory::Read<decltype(Panel_SetSize)>(Memory::Scan(this->Name(), Offsets::Panel_SetSize, 1));
+		Client::SetPlayerData = Memory::Read<decltype(Client::SetPlayerData)>(Memory::Scan(this->Name(), Offsets::SetPlayerData, 1));
+		CGameUiAvatarImage_Ctor = (decltype(CGameUiAvatarImage_Ctor))Memory::Scan(this->Name(), Offsets::CGameUiAvatarImage_CtorSig, Offsets::CGameUiAvatarImage_CtorOff);
+#ifndef _WIN32
+		CGameUiAvatarImage_Ctor = Memory::Read<decltype(CGameUiAvatarImage_Ctor)>((uintptr_t)CGameUiAvatarImage_Ctor);
+#endif
+		CGameUiAvatarImage_InitFromRGBA = Memory::Read<decltype(CGameUiAvatarImage_InitFromRGBA)>(Memory::Scan(this->Name(), Offsets::CGameUiAvatarImage_InitFromRGBA, 1));
+		Client::ActivateSelectedItem = (decltype(Client::ActivateSelectedItem))Memory::Scan(this->Name(), Offsets::ActivateSelectedItem);
+		Client::GetLeaderboard = Memory::Read<decltype(Client::GetLeaderboard)>(CPortalLeaderboardPanel_OnThink + Offsets::GetLeaderboard);
+		Client::IsQuerying = Memory::Read<decltype(Client::IsQuerying)>(CPortalLeaderboardPanel_OnThink + Offsets::IsQuerying);
+		Client::SetPanelStats = Memory::Read<decltype(Client::SetPanelStats)>(CPortalLeaderboardPanel_OnThink + Offsets::SetPanelStats);
+		Client::StartSearching = Memory::Read<decltype(Client::StartSearching)>((uintptr_t)GetLeaderboard + Offsets::StartSearching);
+		Client::AddAvatarPanelItem = Memory::Read<decltype(Client::AddAvatarPanelItem)>((uintptr_t)SetPanelStats + Offsets::AddAvatarPanelItem);
 	}
 
 	Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), Offsets::GetChapterProgress);

@@ -350,9 +350,14 @@ OFFSET_DEFAULT(DestroyDebugMesh, 42, 43)
 OFFSET_DEFAULT(ImageData, 39, 38)
 OFFSET_DEFAULT(ImageFormat, 20, 21)
 OFFSET_DEFAULT(CBaseEntity_Create, 130, 145)
-OFFSET_DEFAULT(m_pLeaderboard, 2308, 3328)
-OFFSET_DEFAULT(m_pStatList, 2252, 3272)
 OFFSET_DEFAULT(m_nStatHeight, 2100, 3120)
+OFFSET_DEFAULT(m_pGamerName, 512, 504)
+OFFSET_DEFAULT(Panel_SetVisible, 5, 34)
+OFFSET_DEFAULT(RemoveAllPanelItems, 187, 216)
+OFFSET_DEFAULT(Label_SetText, 184, 212)
+OFFSET_DEFAULT(CGameUiAvatarImage_Size, 96, 104)
+OFFSET_DEFAULT(ImagePanel_Base, 131, 129)
+OFFSET_DEFAULT(m_flAlpha, 73, 72)
 
 OFFSET_DEFAULT(g_movieInfo, 5, 2)
 OFFSET_DEFAULT(SND_IsRecording, 0, 21)
@@ -370,7 +375,6 @@ OFFSET_DEFAULT(IsQuerying, 366, 666)
 OFFSET_DEFAULT(SetPanelStats, 413, 1056)
 OFFSET_DEFAULT(StartSearching, 172, 262)
 OFFSET_DEFAULT(AddAvatarPanelItem, 1102, 1107)
-OFFSET_DEFAULT(PurgeAndDeleteElements, 37, 120)
 
 OFFSET_DEFAULT(host_frametime, 92, 81)
 
@@ -417,14 +421,56 @@ SIGSCAN_DEFAULT(UTIL_Portal_Color_Particles, "55 8B EC 51 8B 0D ? ? ? ? 8B 01 8B
                                              "53 83 EC 14 A1 ? ? ? ? 8B 5C 24 ? 8B 10 50 FF 92 ? ? ? ? 83 C4 10 84 C0 75")
 SIGSCAN_DEFAULT(GetNumChapters, "55 8B EC 80 7D 08 00 57 74 0C",
                                 "55 89 E5 56 80 7D")
-SIGSCAN_DEFAULT(CPortalLeaderboardPanel_OnThink, "55 8B EC A1 ? ? ? ? 81 EC ? ? ? ? 53 56 32 DB",
-                                                 "55 89 E5 57 56 53 81 EC ? ? ? ? 65 A1 ? ? ? ? 89 45 E4 31 C0 A1 ? ? ? ? 8B 5D 08 8B 70 30")
 SIGSCAN_DEFAULT(OnEvent, "55 8B EC 57 8B F9 8B 4D 08 E8",
                          "55 89 E5 57 56 53 83 EC 1C 8B 45 0C 8B 7D 08 89 04 24 E8 ? ? ? ? C7 04 24")
 SIGSCAN_DEFAULT(OnCommand, "55 8B EC 56 57 8B 7D 08 57 68 ? ? ? ? 8B F1 E8 ? ? ? ? 83 C4 08 85 C0 0F 84",
                            "55 89 E5 57 56 53 83 EC 2C 8B 75 0C C7 04 24 ? ? ? ? 8B 5D 08 89 74 24 04 E8 ? ? ? ? 85 C0 75 3D")
 SIGSCAN_EMPTY(GetHudSig)
 SIGSCAN_EMPTY(FindElementSig)
+
+// @ xref: "#PORTAL2_LeaderboardOnlineWarning_Steam"
+SIGSCAN_DEFAULT(CPortalLeaderboardPanel_OnThink, "55 8B EC A1 ? ? ? ? 81 EC ? ? ? ? 53 56 32 DB",
+                                                 "55 89 E5 57 56 53 81 EC ? ? ? ? 65 A1 ? ? ? ? 89 45 E4 31 C0 A1 ? ? ? ? 8B 5D 08 8B 70 30")
+// @ xref: "OnProfilesChanged" [CPortalLeaderboardManager::OnEvent]
+// .text:003DE52F 68 6C 87 76 00                    push    offset aOnprofileschan ; "OnProfilesChanged"
+// .text:003DE534 E8 37 D0 25 00                    call    sub_63B570
+// ... next fn call
+// .text:003DE544 E8 37 FF FF FF                    call    CUtlStringMap_CPortalLeaderboard_ptr__PurgeAndDeleteElements
+SIGSCAN_DEFAULT(PurgeAndDeleteElements, "E8 ? ? ? ? 8D 4E 24 E8 ? ? ? ? 5F",
+                                        "E8 ? ? ? ? 8B 46 10 89 46 20 89 3C 24")
+// @ xref: "LocatorBG" [CLocatorPanel::PerformLayout]
+// .text:00157EAB 68 C0 6A 78 00                    push    offset aLocatorbg ; "LocatorBG"
+// ... last fn call
+// .text:00157F0C E8 DF 7B 4F 00                    call    Panel__SetPos
+SIGSCAN_DEFAULT(Panel_SetPos, "E8 ? ? ? ? 03 5D F0",
+                              "E8 ? ? ? ? 2B 75 D8")
+// @ xref: "crosshair_default" [CHudCrosshair::ApplySchemeSettings]
+// .text:00151B1F 68 6C 5E 78 00                    push    offset aCrosshairDefau ; "crosshair_default"
+// ... last fn call
+// .text:00151B52 E8 19 E0 4F 00                    call    Panel__SetSize
+SIGSCAN_DEFAULT(Panel_SetSize, "E8 ? ? ? ? 01 7D EC",
+                               "E8 ? ? ? ? EB 68 66 90")
+// @ xref: "portal_leaderboard_avatar_panel" [BaseModUI::AddAvatarPanelItem]
+// .text:0036000E 68 18 06 80 00                    push    offset aPortalLeaderbo ; "portal_leaderboard_avatar_panel"
+// ... next fn call
+// .text:00360050 E8 6B DD FF FF                    call    CAvatarPanelItem__SetPlayerData
+SIGSCAN_DEFAULT(SetPlayerData, "E8 ? ? ? ? EB 2C A1 ? ? ? ?",
+                               "E8 ? ? ? ? 8B 45 D8 89 83 ? ? ? ? 8B 45 DC 85 C0 75 82")
+// @ xref: "Avatar image for user %llX cached [refcount=%d]\n" [BaseModUI::CUIGameData::AccessAvatarImage]
+// .text:00318CCF E8 8C 60 E5 FF                    call    IMemAlloc__Alloc
+// ... next fn call
+// .text:00318CDD E8 8E B5 FF FF                    call    CGameUiAvatarImage__CGameUiAvatarImage
+// ...
+// .text:00318D98 68 30 60 7E 00                    push    offset aAvatarImageFor ; "Avatar image for user %llX cached [refc"...
+SIGSCAN_DEFAULT(CGameUiAvatarImage_CtorSig, "56 6A 00 8B F1 6A 00 C7 06",
+                                            "E8 ? ? ? ? 8B 45 18 89 74 24 04 89 7C 24 08")
+OFFSET_DEFAULT(CGameUiAvatarImage_CtorOff, 0, 1)
+// @ xref: "icon_lobby" (fn with Plat_FloatTime call)
+SIGSCAN_DEFAULT(CGameUiAvatarImage_InitFromRGBA, "E8 ? ? ? ? 8A 46 1C",
+                                                 "E8 ? ? ? ? 0F B6 43 1C")
+// @ xref: "steamid/%llu" (small fn with only one string)
+SIGSCAN_DEFAULT(ActivateSelectedItem, "55 8B EC 83 EC 40 56 8B F1 E8 ? ? ? ? 8B C8",
+                                      "55 89 E5 53 83 EC 74 65 A1")
 
 SIGSCAN_DEFAULT(GetChapterProgress, "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8",
                                     "55 89 E5 57 56 53 83 EC 0C E8 ? ? ? ? 83 EC 08 8B 10")

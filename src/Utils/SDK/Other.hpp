@@ -127,13 +127,6 @@ struct PortalPlayerStatistics_t {
 	float fDistanceTaken;
 };
 
-struct PortalLeaderboardItem_t {
-	uint64_t m_xuid;    //	0x0000
-	char m_szName[32];  //	0x0008
-	char pad_0028[16];  //	0x0028
-	int32_t m_iScore;   //	0x0038
-};
-
 enum ETimelineGameMode {
 	k_ETimelineGameMode_Invalid = 0,
 	k_ETimelineGameMode_Playing = 1,
