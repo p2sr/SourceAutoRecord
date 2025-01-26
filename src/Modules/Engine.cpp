@@ -1245,9 +1245,7 @@ void Engine::Shutdown() {
 #ifdef _WIN32
 	MH_UNHOOK(Engine::ParseSmoothingInfo_Mid);
 
-	if (this->demoSmootherPatch) {
-		this->demoSmootherPatch->Restore();
-	}
+	this->demoSmootherPatch->Restore();
 	SAFE_DELETE(this->demoSmootherPatch)
 #endif
 	Command::Unhook("plugin_load", Engine::plugin_load_callback);

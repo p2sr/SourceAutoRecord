@@ -296,15 +296,13 @@ bool Memory::Patch::Execute(uintptr_t location, unsigned char *bytes, size_t siz
 	return true;
 }
 bool Memory::Patch::Restore() {
-	if (!this->location || !this->original) {
+	if (!this || !this->location || !this->original) {
 		return false;
 	}
 	if (!this->isPatched) return true; // already restored
 #ifdef _WIN32
-	for (size_t i = 0; i < this->size; ++i) {
-		if (!WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(this->location + i), &this->original[i], 1, 0)) {
-			return false;
-		}
+	if (!WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(this->location), this->original, this->size, 0)) {
+		return false;
 	}
 #else
 	//	Should be already unprotected, but just in case
