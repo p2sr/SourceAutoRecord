@@ -765,6 +765,11 @@ const ConCommandBase *Cmd_ExecuteCommand_Detour(int eTarget, const CCommand &com
 		cmd.erase(0, cmd.find_first_not_of(" \t"));
 		console->Print("Cmd_ExecuteCommand (%s) target: %d slot: %d\n", cmd.c_str(), eTarget, nClientSlot);
 	}
+	if (command.ArgC() >= 1 && !strcmp(command.Arg(0), "restart_level") && 
+	    engine->IsCoop() && !engine->IsOrange() &&
+	    (g_partnerHasSAR && !g_orangeReady)) {
+		return 0;
+	}
 	Cmd_ExecuteCommand_Hook.Disable();
 	auto ret = g_Cmd_ExecuteCommand(eTarget, command, nClientSlot);
 	Cmd_ExecuteCommand_Hook.Enable();
