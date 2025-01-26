@@ -20,6 +20,8 @@ Variable sar_velocitygraph_y("sar_velocitygraph_y", "-175", "Velocity graph y ax
 Variable sar_velocitygraph_background("sar_velocitygraph_background", "0", "Background of velocity graph.\n"); // imo this should be off by default
 Variable sar_velocitygraph_show_speed_on_graph("sar_velocitygraph_show_speed_on_graph", "1", "Show speed between jumps.\n");
 Variable sar_velocitygraph_rainbow("sar_velocitygraph_rainbow", "0", "Rainbow mode of velocity graph text.\n");
+Variable sar_velocitygraph_text_color("sar_velocitygraph_text_color", "1", "Whether to color the text of the velocity graph.\n");
+Variable sar_velocitygraph_text_groundspeed("sar_velocitygraph_text_groundspeed", "1", "Whether to show the ground speed on the velocity graph text.\n");
 
 struct VelocityData {
 	int speed;
@@ -79,15 +81,19 @@ void VelocityGraph::Paint(int slot) {
 	const Vector2<int> graphPos = Vector2<int>(x / 2, y) + 
 		Vector2<int>(sar_velocitygraph_x.GetInt(), sar_velocitygraph_y.GetInt());
 
-	bool should_draw_takeoff = !last_on_ground[slot] || take_off_display_timeout[slot] > engine->GetClientTime();
+	bool should_draw_takeoff = (!last_on_ground[slot] || take_off_display_timeout[slot] > engine->GetClientTime()) && sar_velocitygraph_text_groundspeed.GetBool();
 	int recentSpeed = velocityStamps[slot][velocityStamps[slot].size - 10].speed;
 	Color c = Color(30, 255, 109);
-	if (sar_velocitygraph_rainbow.GetBool()) {
-		c = Utils::HSVToRGB(speed, 100, 100);
-	} else if (std::abs(speed - recentSpeed) < 5) {
-		c = Color(255, 199, 89);
-	} else if (speed < recentSpeed + 5) {
-		c = Color(255, 119, 119);
+	if (sar_velocitygraph_text_color.GetBool()) {
+		if (sar_velocitygraph_rainbow.GetBool()) {
+			c = Utils::HSVToRGB(speed, 100, 100);
+		} else if (std::abs(speed - recentSpeed) < 5) {
+			c = Color(255, 199, 89);
+		} else if (speed < recentSpeed + 5) {
+			c = Color(255, 119, 119);
+		}
+	} else {
+		c = Color(255, 255, 255);
 	}
 
 	auto font = scheme->GetFontByID(sar_velocitygraph_font_index.GetInt());

@@ -665,6 +665,8 @@
 |sar_velocitygraph_rainbow|0|Rainbow mode of velocity graph text.|
 |sar_velocitygraph_show_line|1|Shows line for velocity graph.|
 |sar_velocitygraph_show_speed_on_graph|1|Show speed between jumps.|
+|sar_velocitygraph_text_color|1|Whether to color the text of the velocity graph.|
+|sar_velocitygraph_text_groundspeed|1|Whether to show the ground speed on the velocity graph text.|
 |sar_velocitygraph_x|-250|Velocity graph x axis offset.|
 |sar_velocitygraph_y|-175|Velocity graph y axis offset.|
 |sar_vphys_hud|0|Enables or disables the vphys HUD.|
