@@ -29,7 +29,7 @@ std::vector<SlotInfoRecord> g_slotStates;
 std::vector<int> g_hudSlots;
 
 static bool isSlotDisplayed(int slot) {
-	for (int i = 0; i < g_hudSlots.size(); i++) {
+	for (size_t i = 0; i < g_hudSlots.size(); i++) {
 		if (g_hudSlots[i] == slot) {
 			return true;
 		}
@@ -41,7 +41,7 @@ static void pushHudSlotOnTop(int slot) {
 	if (isSlotDisplayed(slot)) return;
 
 	g_hudSlots.insert(g_hudSlots.begin(), slot);
-	if (g_hudSlots.size() >= sar_ehm_hud_list_length.GetInt()) {
+	if (g_hudSlots.size() >= (size_t)sar_ehm_hud_list_length.GetInt()) {
 		g_hudSlots.pop_back();
 	}
 }
@@ -49,7 +49,7 @@ static void pushHudSlotOnTop(int slot) {
 static void swapOldestSlotWith(int slot) {
 	if (isSlotDisplayed(slot)) return;
 
-	if (g_hudSlots.size() < sar_ehm_hud_list_length.GetInt()) {
+	if (g_hudSlots.size() < (size_t)sar_ehm_hud_list_length.GetInt()) {
 		g_hudSlots.insert(g_hudSlots.begin(), slot);
 		return;
 	}
@@ -57,7 +57,7 @@ static void swapOldestSlotWith(int slot) {
 	int oldest_index = -1;
 	float oldest_lifetime = -1.0f;
 
-	for (int i = 0; i < g_hudSlots.size(); i++) {
+	for (size_t i = 0; i < g_hudSlots.size(); i++) {
 		float lifetime = g_slotStates[g_hudSlots[i]].lifetime;
 		if (lifetime > oldest_lifetime) {
 			oldest_index = i;
@@ -72,7 +72,7 @@ static void swapOldestSlotWith(int slot) {
 
 static void handleSlotRecords() {
 	bool fresh = false;
-	if (g_slotStates.size() != Offsets::NUM_ENT_ENTRIES) {
+	if (g_slotStates.size() != (size_t)Offsets::NUM_ENT_ENTRIES) {
 		g_slotStates.resize(Offsets::NUM_ENT_ENTRIES);
 		fresh = true;
 	}
@@ -112,12 +112,12 @@ static void clearSlotRecords() {
 }
 
 static void handleHudSlotsResizing() {
-	while (g_hudSlots.size() < sar_ehm_hud_list_length.GetInt()) {
+	while (g_hudSlots.size() < (size_t)sar_ehm_hud_list_length.GetInt()) {
 		int slotToAssign = (g_hudSlots.size() > 0) ? (g_hudSlots[g_hudSlots.size() - 1] + 1) : 0;
 		slotToAssign %= Offsets::NUM_ENT_ENTRIES;
 		g_hudSlots.push_back(slotToAssign);
 	}
-	if (g_hudSlots.size() > sar_ehm_hud_list_length.GetInt()) {
+	if (g_hudSlots.size() > (size_t)sar_ehm_hud_list_length.GetInt()) {
 		g_hudSlots.resize(sar_ehm_hud_list_length.GetInt());
 	}
 }
@@ -204,7 +204,7 @@ public:
 		surface->DrawTxt(font, hudX + serialHeaderX, hudY + paddingBorder, Color(255, 255, 255, 255), serialHeader);
 		surface->DrawTxt(font, hudX + classnameHeaderX, hudY + paddingBorder, Color(255, 255, 255, 255), classnameHeader);
 
-		for (int i = 0; i < g_hudSlots.size(); ++i) {
+		for (size_t i = 0; i < g_hudSlots.size(); ++i) {
 			int slot = g_hudSlots[i];
 			auto slotRecord = g_slotStates[slot];
 			auto info = entityList->GetEntityInfoByIndex(slot);
