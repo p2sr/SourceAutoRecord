@@ -255,7 +255,13 @@ void Session::Changed(int state) {
 		if (state == SIGNONSTATE_NEW) {
 			engine->ExecuteCommand("showconsole");
 		} else if (state == SIGNONSTATE_SPAWN) {
-			engine->ExecuteCommand("showconsole; hwait 6 seq toggleconsole toggleconsole");
+			int host, server, client;
+			engine->GetTicks(host, server, client);
+			if ((server % 2) == 1) {
+				engine->ExecuteCommand("showconsole; hwait 6 seq nop toggleconsole nop nop toggleconsole");
+			} else {
+				engine->ExecuteCommand("showconsole; hwait 6 seq toggleconsole toggleconsole");
+			}
 			g_autovoidclip = 0;
 		}
 	}
