@@ -29,8 +29,12 @@ public:
 		int screenWidth, screenHeight;
 		engine->GetScreenSize(nullptr, screenWidth, screenHeight);
 
-		Surface::HFont headerFont = scheme->GetFontByID(33);
-		Surface::HFont subTextFont = scheme->GetFontByID(32);
+		auto font = "Trebuchet MS";
+#ifndef _WIN32
+		font = "Arial";
+#endif
+		static Surface::HFont headerFont = scheme->FindFont(font, 72);
+		static Surface::HFont subTextFont = scheme->FindFont(font, 24);
 
 		int fontSize = surface->GetFontHeight(headerFont);
 

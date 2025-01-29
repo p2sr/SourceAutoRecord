@@ -12,6 +12,36 @@ unsigned long Scheme::GetFontByID(int id) {
 	return surface->IsFontValid(font) ? font : defaultFont;
 }
 
+// Find a font by name and size. If you can't find the exact size, return the nearest one.
+// If you can't find the font at all, return the default font.
+unsigned long Scheme::FindFont(const char *fontName, int size) {
+	if (surface->m_FontAmalgams == nullptr) return GetDefaultFont();
+	int fontCount = surface->m_FontAmalgams->m_Size;
+
+	int nearestID = -1;
+	int nearestSize = -1;
+	for (int i = 0; i < fontCount; i++) {
+		if (surface->IsFontValid(i)) {
+			const char *name = surface->GetFontName(surface->matsurface->ThisPtr(), i);
+			if (strcmp(name, fontName) == 0) {
+				int curSize = surface->m_FontAmalgams->m_pElements[i].m_iMaxHeight;
+				if (curSize == size) {
+					return i;
+				} else if (nearestSize == -1 || (abs(curSize - size) < abs(nearestSize - size))) {
+					nearestID = i;
+					nearestSize = curSize;
+				}
+			}
+		}
+	}
+
+	if (nearestID != -1) {
+		return nearestID;
+	}
+
+	return GetDefaultFont();
+}
+
 unsigned long Scheme::GetDefaultFont() {
 	return this->GetFont(this->g_pScheme->ThisPtr(), "DefaultFixedOutline", 0);
 }
