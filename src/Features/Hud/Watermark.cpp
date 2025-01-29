@@ -29,8 +29,19 @@ public:
 		int screenWidth, screenHeight;
 		engine->GetScreenSize(nullptr, screenWidth, screenHeight);
 
-		Surface::HFont headerFont = scheme->GetFontByID(33);
-		Surface::HFont subTextFont = scheme->GetFontByID(32);
+		static Surface::HFont headerFont = scheme->FindFont("Trebuchet MS", 72);
+		static Surface::HFont subTextFont = scheme->FindFont("Trebuchet MS", 24);
+		if (headerFont == scheme->GetDefaultFont() || subTextFont == scheme->GetDefaultFont()) {
+			static bool printedWarning = false;
+			if (!printedWarning) { // don't spam the console / expensive-ish FindFont calls
+				if (headerFont == scheme->GetDefaultFont()) headerFont = scheme->FindFont("DejaVu Sans", 72);
+				if (subTextFont == scheme->GetDefaultFont()) subTextFont = scheme->FindFont("DejaVu Sans", 24);
+				if (headerFont == scheme->GetDefaultFont() || subTextFont == scheme->GetDefaultFont()) {
+					console->DevWarning("Failed to load font for watermark\n");
+					printedWarning = true;
+				}
+			}
+		}
 
 		int fontSize = surface->GetFontHeight(headerFont);
 

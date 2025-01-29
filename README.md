@@ -60,8 +60,6 @@ The Stanley Parable:
 
 - `+bhop` does not work.
 - `sar_cam_control` can easily crash (OOM when looking OOB)
-- "Activate SAR" text font is unreadable. I know a fix for this, but it's
-  not implemented yet.
 - Missing speedrun categories for now.
 
 ## Documentation
