@@ -1021,8 +1021,7 @@ bool Client::Init() {
 		this->IN_ActivateMouse = this->g_ClientDLL->Original<_IN_ActivateMouse>(Offsets::IN_ActivateMouse);
 		this->IN_DeactivateMouse = this->g_ClientDLL->Original<_IN_DeactivateMouse>(Offsets::IN_DeactivateMouse);
 
-		auto IN_ActivateMouse = this->g_ClientDLL->Original(Offsets::IN_ActivateMouse);
-		void *g_InputAddr = Memory::DerefDeref<void *>(IN_ActivateMouse + Offsets::g_Input);
+		void *g_InputAddr = Memory::DerefDeref<void *>((uintptr_t)IN_ActivateMouse + Offsets::g_Input);
 
 		if (g_Input = Interface::Create(g_InputAddr)) {
 			g_Input->Hook(Client::DecodeUserCmdFromBuffer_Hook, Client::DecodeUserCmdFromBuffer, Offsets::DecodeUserCmdFromBuffer);
@@ -1041,8 +1040,8 @@ bool Client::Init() {
 			Client::DrawPortal = (decltype(Client::DrawPortal))Memory::Scan(client->Name(), Offsets::DrawPortal);
 			g_DrawPortalGhost = (decltype(g_DrawPortalGhost))Memory::Scan(client->Name(), Offsets::DrawPortalGhost);
 			if (Client::DrawPortal && g_DrawPortalGhost) {
-			auto drawPortalSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalSpBranch);
-			auto drawPortalGhostSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostSpBranch);
+				auto drawPortalSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalSpBranch);
+				auto drawPortalGhostSpBranch = Memory::Scan(client->Name(), Offsets::DrawPortalGhostSpBranch);
 
 				g_DrawPortalHook.SetFunc(Client::DrawPortal);
 				g_DrawPortalGhostHook.SetFunc(g_DrawPortalGhost);
