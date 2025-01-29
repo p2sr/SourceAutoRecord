@@ -13,6 +13,7 @@ public:
 
 public:
 	unsigned long GetFontByID(int id);
+	unsigned long FindFont(const char *fontName, int size);
 	unsigned long GetDefaultFont();
 
 	bool Init() override;
