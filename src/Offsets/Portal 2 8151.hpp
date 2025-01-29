@@ -1,4 +1,4 @@
-#include "Offsets/Portal 2 8491.hpp"
+#include "Offsets/Portal 2 9568.hpp"
 
 OFFSET_LINUX(tickcount, 74)
 OFFSET_LINUX(interval_per_tick, 82)
@@ -44,6 +44,8 @@ OFFSET_LINUX(host_frametime, 70)
 OFFSET_LINUX(say_callback_insn, 88)
 OFFSET_LINUX(Host_Say_insn, 0x37A)
 OFFSET_LINUX(portalsThruPortals, 462)
+
+// clang-format off
 
 // Pathmatch
 SIGSCAN_LINUX(PathMatch, "55 89 E5 57 56 53 83 EC 2C 8B 45 10 80 3D A0 ? ? ? ? 89 45 E4 0F 84 ? ? ? ? 8B 45 0C 8B 15 ? ? ? ? C7 00 00 00 00 00")
@@ -94,3 +96,5 @@ SIGSCAN_LINUX(UTIL_GetCommandClientIndex, "A1 ? ? ? ? 55 89 E5 5D 83 C0 01 C3")
 SIGSCAN_LINUX(CheckStuck_FloatTime, "E8 ? ? ? ? 8B 43 04 DD 9D ? ? ? ? F2 0F 10 B5 ? ? ? ? 8B 50 24 66 0F 14 F6 66 0F 5A CE 85 D2")
 SIGSCAN_DEFAULT(aircontrol_fling_speedSig, "0F 2F 25 ? ? ? ? 0F 28 F0",
                                            "0F 2E 05 ? ? ? ? 0F 86 ? ? ? ? 0F 2E 25")
+
+// clang-format on

@@ -1,6 +1,6 @@
 #ifndef _WIN32
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
 
 
@@ -33,7 +33,7 @@ OFFSET_DEFAULT(GetSaveDirName, 124, 124)
 OFFSET_DEFAULT(ExecuteClientCmd, 104, 104)
 OFFSET_DEFAULT(GetActiveSplitScreenPlayerSlot, 127, 127)
 OFFSET_DEFAULT(GetSteamAPIContext, 177, 178)
-OFFSET_DEFAULT(GetMouseDelta, -1, 161) // This method only exists on Linux
+OFFSET_DEFAULT(GetMouseDelta, -1, 161)  // This method only exists on Linux
 OFFSET_DEFAULT(IsPaused, 86, 86)
 OFFSET_DEFAULT(DebugDrawPhysCollide, 75, 75)
 OFFSET_DEFAULT(Con_IsVisible, 11, 11)
@@ -48,8 +48,8 @@ OFFSET_DEFAULT(HudProcessInput, 10, 10)
 OFFSET_EMPTY(HudUpdate)
 OFFSET_DEFAULT(IN_ActivateMouse, 15, 15)
 OFFSET_DEFAULT(IN_DeactivateMouse, 16, 16)
-OFFSET_DEFAULT(ApplyMouse, 56, 56)
-OFFSET_DEFAULT(ApplyMouse_Mid, 0x3E1, -1)
+OFFSET_DEFAULT(ApplyMouse, 56, 56)         // "+strafe" concmd -> callback IN_StrafeDown -> in_strafe -> last ref
+OFFSET_DEFAULT(ApplyMouse_Mid, 0x3E1, -1)  // ApplyMouse -> d9 ? ? [e8] ? ? ? ? d8 ? ? ? ? ? 8b
 OFFSET_DEFAULT(SteamControllerMove, 58, 58)
 OFFSET_EMPTY(JoyStickApplyMovement)
 OFFSET_DEFAULT(LevelInitPreEntity, 5, 5)
@@ -159,8 +159,8 @@ OFFSET_DEFAULT(GetPredDescMap, 17, 20)
 
 // CBasePlayer
 OFFSET_DEFAULT(m_pSurfaceData, 3868, 4116)
-OFFSET_DEFAULT(m_pShadowStand, 3160, 3184) // "player_stand" -> CBasePlayer::InitVCollision -> CBasePlayer::SetupVPhysicsShadow -> usage of pStandHullName -> vtable offset write
-OFFSET_DEFAULT(m_pShadowCrouch, 3164, 3188) // ^ "player_crouch" pCrouchHullName
+OFFSET_DEFAULT(m_pShadowStand, 3160, 3184)   // "player_stand" -> CBasePlayer::InitVCollision -> CBasePlayer::SetupVPhysicsShadow -> usage of pStandHullName -> vtable offset write
+OFFSET_DEFAULT(m_pShadowCrouch, 3164, 3188)  // ^ "player_crouch" pCrouchHullName
 OFFSET_DEFAULT(S_m_surfaceFriction, 4096, 4120)
 OFFSET_DEFAULT(C_m_surfaceFriction, 5548, 5520)
 
@@ -225,7 +225,7 @@ OFFSET_DEFAULT(Frame, 5, 6)
 
 // CEngineAPI
 OFFSET_DEFAULT(IsRunningSimulation, 12, 12)
-OFFSET_DEFAULT(Init, 3, 3)
+OFFSET_DEFAULT(Init, 3, 3) // "-sv_benchmark" xref[0] -> CEngineAPI::Init -> vtable index
 
 // CIVDebugOverlay
 OFFSET_DEFAULT(ScreenPosition, 12, 11)
@@ -328,8 +328,8 @@ OFFSET_DEFAULT(PerUserInput_tSize, 376, 352)
 OFFSET_DEFAULT(GetLocalClient, 128, 83)
 OFFSET_DEFAULT(MAX_SPLITSCREEN_PLAYERS, 2, 2)
 OFFSET_DEFAULT(net_time, 19, 29)
-OFFSET_DEFAULT(VideoMode_Create, 88, 103)
-OFFSET_DEFAULT(videomode, 35, 178)
+OFFSET_DEFAULT(VideoMode_Create, 88, 103) // CEngineAPI::Init -> first function call outside ifs
+OFFSET_DEFAULT(videomode, 35, 178) // VideoMode_Create -> assignment to global
 OFFSET_EMPTY(VID_ProcessMovieFrame_1)
 OFFSET_EMPTY(VID_ProcessMovieFrame_2)
 OFFSET_DEFAULT(snd_linear_count, 63, 69)
@@ -391,9 +391,9 @@ SIGSCAN_DEFAULT(SND_RecordBuffer, "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 0
 
 // Client
 SIGSCAN_DEFAULT(MatrixBuildRotationAboutAxis, "55 8B EC 51 F3 0F 10 45 ? 0F 5A C0 F2 0F 59 05 ? ? ? ? 66 0F 5A C0 F3 0F 11 45 ? E8 ? ? ? ? F3 0F 11 45 ? F3 0F 10 45 ? E8 ? ? ? ? 8B 45 ? F3 0F 10 08",
-                                              "56 66 0F EF C0 53 83 EC 14 8B 5C 24 ? 8D 44 24")
+                                              "56 66 0F EF C0 53 83 EC 14 8B 5C 24 ? 8D 44 24") // ApplyMouse -> 0x80000000 value usage -> call -> call -> MatrixBuildRotationAboutAxis
 SIGSCAN_DEFAULT(DrawTranslucentRenderables, "55 8B EC 81 EC 80 00 00 00 53 56 8B F1 8B 0D ? ? ? ? 8B 01 8B 90 C4 01 00 00 57 89 75 F0 FF D2 8B F8",
-                                            "55 89 E5 57 56 53 81 EC B8 00 00 00 8B 45 10 8B 5D 0C 89 85 60 FF FF FF 88 45 A7 A1 ? ? ? ?")
+                                            "55 89 E5 57 56 53 81 EC B8 00 00 00 8B 45 10 8B 5D 0C 89 85 60 FF FF FF 88 45 A7 A1 ? ? ? ?") // "DrawTranslucentEntities" xref -> CRendering3dView::DrawTranslucentRenderables
 SIGSCAN_DEFAULT(DrawPortal, "55 8B EC 83 EC 14 53 8B D9 8B 0D ? ? ? ? 8B 01",
                             "55 57 56 53 83 EC 2C A1 ? ? ? ? 8B 5C 24 ? 8B 74 24 ? 8B 10") // "$PortalColorGradientLight" xref[0] -> C_Prop_Portal::DrawPortal
 SIGSCAN_DEFAULT(DrawPortalSpBranch, "8B 15 ? ? ? ? 33 C0 32 C9",
@@ -404,7 +404,7 @@ SIGSCAN_DEFAULT(DrawPortalGhost, "55 8B EC A1 ? ? ? ? 83 EC 24 83 78 ? ? 0F 84 1
 SIGSCAN_DEFAULT(DrawPortalGhostSpBranch, "0F 84 ? ? ? ? 8B 90 ? ? ? ? FF D2 50 33 C0 38 86 ? ? ? ? 8D 4D ? 0F 95 C0",
                                          "0F 84 ? ? ? ? 8B 03 83 EC 0C 53 FF 90 ? ? ? ? 83 C4 10 80 BB ? ? ? ? 01")
 SIGSCAN_DEFAULT(DrawOpaqueRenderables, "55 8B EC 83 EC 54 83 7D 0C 00 A1 ? ? ? ? 53 56 0F 9F 45 EC 83 78 30 00 57 8B F1 0F 84 BA 03 00 00",
-                                       "55 89 E5 57 56 53 83 EC 7C A1 ? ? ? ? 8B 5D 08 89 45 90 85 C0 0F 85 34 04 00 00 A1 ? ? ? ? 8B 40 30 85 C0")
+                                       "55 89 E5 57 56 53 83 EC 7C A1 ? ? ? ? 8B 5D 08 89 45 90 85 C0 0F 85 34 04 00 00 A1 ? ? ? ? 8B 40 30 85 C0") // DrawTranslucentRenderables usage -> 2nd prior function call -> CRendering3dView::DrawOpaqueRenderables
 SIGSCAN_DEFAULT(MsgPreSkipToNextLevel, "57 8B F9 E8 ? ? ? ? 8B C8 E8 ? ? ? ? 0B C2",
                                        "53 83 EC 08 E8 ? ? ? ? 83 EC 0C 50 E8 ? ? ? ? 83 C4 10 09 C2")
 SIGSCAN_DEFAULT(CalcViewModelLag, "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 83 EC 1C 56 6A 00 6A 00 8D 45 F4 8B F1 8B 4B 0C 50 51 E8 ? ? ? ?",
@@ -434,9 +434,9 @@ SIGSCAN_DEFAULT(GetChapterProgress, "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8
 SIGSCAN_DEFAULT(ParseSmoothingInfoSig, "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", "");
 OFFSET_DEFAULT(ParseSmoothingInfoOff, 178, -1)
 SIGSCAN_DEFAULT(Host_AccumulateTime, "55 8B EC 51 F3 0F 10 05 ? ? ? ? F3 0F 58 45 08 8B 0D ? ? ? ? F3 0F 11 05 ? ? ? ? 8B 01 8B 50 20 53 B3 01 FF D2",
-                                     "83 EC 1C 8B 15 ? ? ? ? F3 0F 10 05 ? ? ? ? F3 0F 58 44 24 20 F3 0F 11 05 ? ? ? ? 8B 02 8B 40 24 3D ? ? ? ? 0F 85 41 03 00 00")
+                                     "83 EC 1C 8B 15 ? ? ? ? F3 0F 10 05 ? ? ? ? F3 0F 58 44 24 20 F3 0F 11 05 ? ? ? ? 8B 02 8B 40 24 3D ? ? ? ? 0F 85 41 03 00 00") // "-tools" -> function with 2 references -> Host_AccumulateTime
 SIGSCAN_DEFAULT(_Host_RunFrame_Render, "A1 ? ? ? ? 85 C0 75 1B 8B 0D ? ? ? ? 8B 01 8B 50 40 68 ? ? ? ? FF D2 A3 ? ? ? ? 85 C0 74 0D 6A 02 6A F6 50 E8 ? ? ? ? 83 C4 0C",
-                                       "55 89 E5 57 56 53 83 EC 1C 8B 1D ? ? ? ? 85 DB 0F 85 69 02 00 00 E8 64 FF FF FF A1 ? ? ? ? 80 3D C5 ? ? ? ? 8B 78 30 74 12 83 EC 08 6A 00")
+                                       "55 89 E5 57 56 53 83 EC 1C 8B 1D ? ? ? ? 85 DB 0F 85 69 02 00 00 E8 64 FF FF FF A1 ? ? ? ? 80 3D C5 ? ? ? ? 8B 78 30 74 12 83 EC 08 6A 00") // "_Host_RunFrame_Render" xref
 SIGSCAN_DEFAULT(readCustomDataInjectSig, "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", // "Unable to decode custom demo data, callback \"%s\" not found.\n" -> memory reference -> first function call
                                          "8D 85 C4 FE FF FF 83 EC 04 8D B5 E8 FE FF FF 56 50 FF B5 94 FE FF FF E8")
 OFFSET_DEFAULT(readCustomDataInjectOff, 12, 24)
@@ -507,5 +507,5 @@ OFFSET_DEFAULT(interfaceMgrOff, 2, -1)
 // clang-format on
 
 #ifndef _WIN32
-#pragma GCC diagnostic pop
+#	pragma GCC diagnostic pop
 #endif
