@@ -1083,7 +1083,7 @@ bool Engine::Init() {
 
 		uintptr_t Init = s_EngineAPI->Original(Offsets::Init);
 		uintptr_t VideoMode_Create = Memory::Read(Init + Offsets::VideoMode_Create);
-		void **videomode = *(void ***)(VideoMode_Create + Offsets::videomode);
+		auto videomode = Memory::Deref<void **>(VideoMode_Create + Offsets::videomode);
 		Renderer::Init(videomode);
 		Stitcher::Init(videomode);
 
