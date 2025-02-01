@@ -81,6 +81,7 @@ public:
 
 	bool ShouldDraw() override {
 		if (!Hud::ShouldDraw()) return false;
+		if (engine->demoplayer->IsPlaying()) return false;
 
 		switch (sar_cheat_hud.GetInt()) {
 			case 0:
