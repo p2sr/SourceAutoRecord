@@ -101,8 +101,9 @@ void *Interface::GetPtr(const char *filename, const char *interfaceSymbol) {
 		}
 
 		for (auto &current = s_pInterfaceRegs; current; current = current->m_pNext) {
-			if (!std::strncmp(current->m_pName, interfaceSymbol, std::strlen(interfaceSymbol)) == 0) {
+			if (!std::strncmp(current->m_pName, interfaceSymbol, std::strlen(interfaceSymbol))) {
 				fn = current->m_CreateFn();
+            	// console->DevMsg("SAR: Found interface %s at %p in %s!\n", current->m_pName, fn, filename);
 				break;
 			}
 		}
@@ -111,6 +112,8 @@ void *Interface::GetPtr(const char *filename, const char *interfaceSymbol) {
 			console->DevWarning("SAR: Failed to find interface with symbol %s in %s!\n", interfaceSymbol, filename);
 			return nullptr;
 		}
+	} else {
+		// console->DevMsg("SAR: Found interface %s (the easy way) at %p in %s!\n", interfaceSymbol, fn, filename);
 	}
 	return fn;
 }
