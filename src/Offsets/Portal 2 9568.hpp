@@ -381,13 +381,12 @@ OFFSET_DEFAULT(portalsThruPortals, 391, 388)
 // clang-format off
 
 // Pathmatch
-SIGSCAN_DEFAULT(PathMatch, "", "55 57 56 53 83 EC 0C 8B 6C 24 28 8B 5C 24 2C 0F B6 05 ? ? ? ? 84 C0 0F 84 ? ? ? ?")
+SIGSCAN_DEFAULT(PathMatch, "", "55 57 56 53 83 EC 0C 8B 6C 24 28 8B 5C 24 2C 0F B6 05 ? ? ? ? 84 C0 0F 84 ? ? ? ?") // "DBG_PATHMATCH"
 
 
 // Renderer
 SIGSCAN_DEFAULT(SND_RecordBuffer, "55 8B EC 80 3D ? ? ? ? 00 53 56 57 0F 84 15 01 00 00 E8 ? ? ? ? 84 C0 0F 85 08 01 00 00 A1 ? ? ? ? 3B 05",
-                                  "80 3D ? ? ? ? 00 75 07 C3 ? ? ? ? ? ? 55 89 E5 57 56 53 83 EC 1C E8 ? ? ? ? 84 C0 0F 85 ? ? ? ?") // "DS_STEREO" -> CAudioDirectSound::TransferSamples -> S_TransferStereo16 -> SND_RecordBuffer
-
+                                  "80 3D ? ? ? ? 00 75 07 C3 ? ? ? ? ? ? 55 89 E5 57 56 53 83 EC 1C E8 ? ? ? ? 84 C0 0F 85 ? ? ? ?") // "WaveFixupTmpFile( '%s' ) failed to open file for editing\n" -> WaveFixupTmpFile -> ".WAV" xref[1] -> WaveAppendTmpFile -> usage -> SND_RecordBuffer
 
 // Client
 SIGSCAN_DEFAULT(MatrixBuildRotationAboutAxis, "55 8B EC 51 F3 0F 10 45 ? 0F 5A C0 F2 0F 59 05 ? ? ? ? 66 0F 5A C0 F3 0F 11 45 ? E8 ? ? ? ? F3 0F 11 45 ? F3 0F 10 45 ? E8 ? ? ? ? 8B 45 ? F3 0F 10 08",
@@ -404,7 +403,7 @@ SIGSCAN_DEFAULT(DrawPortalGhost, "55 8B EC A1 ? ? ? ? 83 EC 24 83 78 ? ? 0F 84 1
 SIGSCAN_DEFAULT(DrawPortalGhostSpBranch, "0F 84 ? ? ? ? 8B 90 ? ? ? ? FF D2 50 33 C0 38 86 ? ? ? ? 8D 4D ? 0F 95 C0",
                                          "0F 84 ? ? ? ? 8B 03 83 EC 0C 53 FF 90 ? ? ? ? 83 C4 10 80 BB ? ? ? ? 01")
 SIGSCAN_DEFAULT(DrawOpaqueRenderables, "55 8B EC 83 EC 54 83 7D 0C 00 A1 ? ? ? ? 53 56 0F 9F 45 EC 83 78 30 00 57 8B F1 0F 84 BA 03 00 00",
-                                       "55 89 E5 57 56 53 83 EC 7C A1 ? ? ? ? 8B 5D 08 89 45 90 85 C0 0F 85 34 04 00 00 A1 ? ? ? ? 8B 40 30 85 C0") // DrawTranslucentRenderables usage -> 2nd prior function call -> CRendering3dView::DrawOpaqueRenderables
+                                       "55 89 E5 57 56 53 83 EC 7C A1 ? ? ? ? 8B 5D 08 89 45 90 85 C0 0F 85 34 04 00 00 A1 ? ? ? ? 8B 40 30 85 C0") // DrawTranslucentRenderables usage -> 2nd prior function call -> CRendering3dView::DrawOpaqueRenderables OR vprof "CViewRender::DrawOpaqueRenderables"
 SIGSCAN_DEFAULT(MsgPreSkipToNextLevel, "57 8B F9 E8 ? ? ? ? 8B C8 E8 ? ? ? ? 0B C2",
                                        "53 83 EC 08 E8 ? ? ? ? 83 EC 0C 50 E8 ? ? ? ? 83 C4 10 09 C2")
 SIGSCAN_DEFAULT(CalcViewModelLag, "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 83 EC 1C 56 6A 00 6A 00 8D 45 F4 8B F1 8B 4B 0C 50 51 E8 ? ? ? ?",

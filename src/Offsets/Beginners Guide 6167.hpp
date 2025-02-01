@@ -11,6 +11,7 @@ OFFSET_WINDOWS(m_pShadowCrouch, 3168)
 OFFSET_WINDOWS(DrawColoredCircle, 158)
 OFFSET_WINDOWS(DrawColoredText, 159)
 OFFSET_WINDOWS(DrawTextLen, 162)
+OFFSET_LINUX(FinishDrawing, 619)
 
 // CInputSystem
 OFFSET_WINDOWS(GetRawMouseAccumulators, 52)
@@ -46,24 +47,25 @@ OFFSET_WINDOWS(m_pCommands, 224)
 OFFSET_WINDOWS(CUserCmdSize, 96)
 OFFSET_WINDOWS(PerUserInput_tSize, 212)
 OFFSET_WINDOWS(GetLocalClient, 138)
-OFFSET_WINDOWS(VideoMode_Create, 90)
+OFFSET_DEFAULT(VideoMode_Create, 90, 106)
 OFFSET_WINDOWS(UncacheUnusedMaterials, 76)
 
 // clang-format off
 
 // Pathmatch
-SIGSCAN_LINUX(PathMatch, "")
+SIGSCAN_LINUX(PathMatch, "55 89 E5 57 56 53 83 EC 2C 8B 45 ? 80 3D ? ? ? ? 00")
 
 
 // Renderer
-SIGSCAN_WINDOWS(SND_RecordBuffer, "55 8B EC 80 3D ? ? ? ? 00 56")
+SIGSCAN_DEFAULT(SND_RecordBuffer, "55 8B EC 80 3D ? ? ? ? 00 56",
+                                  "55 89 E5 57 56 53 83 EC 3C 65 A1 ? ? ? ? 89 45 ? 31 C0 80 3D ? ? ? ? 00")
 
 // Client
 SIGSCAN_WINDOWS(MatrixBuildRotationAboutAxis, "55 8B EC 51 F3 0F 10 45 ? 0F 5A C0 F2 0F 59 05 ? ? ? ? 66 0F 5A C0 F3 0F 11 45 ? F3 0F 5A C0 E8 ? ? ? ? F2 0F 5A C0 F3 0F 11 45 ? F3 0F 10 45 ? 0F 5A C0 E8 ? ? ? ? 8B 45 ? F3 0F 10 60")
 SIGSCAN_DEFAULT(DrawTranslucentRenderables, "55 8B EC 81 EC 80 00 00 00 53 56 8B F1 8B 0D",
-                                            "")
+                                            "55 89 E5 57 56 53 81 EC DC 00 00 00 8B 45 ? 8B 5D")
 SIGSCAN_DEFAULT(DrawOpaqueRenderables, "55 8B EC 83 EC 54 83 7D ? 00 A1",
-                                       "")
+                                       "55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 45 ? 8B 5D ? 89 45 ? 8B 45 ? 89 45 ? 65 A1 ? ? ? ? 89 45 ? 31 C0 A1")
 SIGSCAN_WINDOWS(DrawPortal, "")
 SIGSCAN_WINDOWS(DrawPortalSpBranch, "")
 OFFSET_WINDOWS(DrawPortalSpBranchOff, -1)
