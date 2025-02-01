@@ -821,7 +821,7 @@ void TasPlayer::Update() {
 
 		// prevent usage of TAS tools in CM without cheats
 		if (!sv_cheats.GetBool()) {
-			sv_cheats.SetValue(true);
+			sv_cheats.ThisPtr()->m_nValue = 1;
 		}
 	}
 
