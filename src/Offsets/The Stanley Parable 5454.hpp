@@ -3,9 +3,6 @@
 // CInputSystem
 OFFSET_WINDOWS(GetRawMouseAccumulators, 50)
 
-// CMaterialSystem
-OFFSET_WINDOWS(GetRenderContext, 112)
-
 // clang-format off
 
 // Renderer

@@ -29,7 +29,7 @@ OFFSET_DEFAULT(m_bWaitEnabled, 8264, 8264)
 OFFSET_WINDOWS(CreateMaterial, 80)
 // OFFSET_WINDOWS(FindMaterial, 81)
 OFFSET_WINDOWS(CreateProceduralTexture, 90)
-// OFFSET_WINDOWS(GetRenderContext, 112)
+OFFSET_WINDOWS(GetRenderContext, 112)
 
 // IVideoMode
 OFFSET_WINDOWS(GetModeWidth, 15)
