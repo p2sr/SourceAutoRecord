@@ -36,8 +36,8 @@ public:
 	DECL_M(GetPlayerState, CPlayerState);
 
 	using _GetClientEntity = ClientEnt *(__rescall *)(void *thisptr, int entnum);
-	using _KeyDown = int(__rescall *)(void *b, const char *c);
-	using _KeyUp = int(__rescall *)(void *b, const char *c);
+	using _KeyDown = int(__cdecl *)(void *b, const char *c);
+	using _KeyUp = int(__cdecl *)(void *b, const char *c);
 	using _GetAllClasses = ClientClass *(*)();
 	using _FrameStageNotify = void(__rescall *)(void *thisptr, int stage);
 	using _ShouldDraw = bool(__rescall *)(void *thisptr);
