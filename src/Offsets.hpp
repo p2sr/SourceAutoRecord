@@ -27,10 +27,12 @@ namespace Offsets {
 
 #ifdef _WIN32
 #define OFFSET_DEFAULT(name, win, linux) name = win;
+#define OFFSET_EMPTY(name) name = 0;
 #define OFFSET_WINDOWS(name, off) name = off;
 #define OFFSET_LINUX(name, off);
 
 #define SIGSCAN_DEFAULT(name, win, linux) name = win;
+#define SIGSCAN_EMPTY(name) name = "";
 #define SIGSCAN_WINDOWS(name, sig) name = sig;
 #define SIGSCAN_LINUX(name, sig)
 #else
