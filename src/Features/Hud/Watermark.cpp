@@ -31,7 +31,7 @@ public:
 
 		auto font = "Trebuchet MS";
 #ifndef _WIN32
-		font = "Arial";
+		font = "DejaVu Sans";
 #endif
 		static Surface::HFont headerFont = scheme->FindFont(font, 72);
 		static Surface::HFont subTextFont = scheme->FindFont(font, 24);
