@@ -971,11 +971,13 @@ bool Client::Init() {
 		Command leaderboard("+leaderboard");
 		if (!!leaderboard) {
 			auto cc_leaderboard_enable = (uintptr_t)leaderboard.ThisPtr()->m_pCommandCallback;
+#ifdef _WIN32
 			if (readJmp) {
 				// this game has an extra layer of indirection
 				// for whatever reason... (JMP LAB)
 				cc_leaderboard_enable = Memory::Read<uintptr_t>(cc_leaderboard_enable + 1);
 			}
+#endif
 			GetHud = Memory::Read<_GetHud>(cc_leaderboard_enable + Offsets::GetHud);
 			FindElement = Memory::Read<_FindElement>(cc_leaderboard_enable + Offsets::FindElement);
 		} else if (Offsets::GetHudSig && Offsets::FindElementSig) {
@@ -1157,11 +1159,12 @@ bool Client::Init() {
 	auto mouse_menu = Command("+mouse_menu");
 	if (mouse_menu.ThisPtr()) {
 		uintptr_t cbk = (uintptr_t)mouse_menu.ThisPtr()->m_pCommandCallback;
+#ifdef _WIN32
 		if (readJmp) {
 			cbk = Memory::Read<uintptr_t>(cbk + 1);
 		}
+#else
 		// OpenRadialMenuCommand is inlined on Windows
-#ifndef _WIN32
 		cbk = Memory::Read(cbk + Offsets::OpenRadialMenuCommand);
 #endif
 		this->gamerules = Memory::Deref<void **>(cbk + Offsets::gamerules);
