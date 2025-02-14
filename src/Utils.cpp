@@ -8,7 +8,6 @@
 
 #ifdef _WIN32
 // clang-format off
-#	include <Windows.h>
 #	include <ImageHlp.h>
 // clang-format on
 #else

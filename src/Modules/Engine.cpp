@@ -32,16 +32,6 @@
 #include <cstring>
 #include <cmath>
 
-#ifdef _WIN32
-// clang-format off
-#	include <Windows.h>
-#	include <Memoryapi.h>
-#	define strcasecmp _stricmp
-// clang-format on
-#else
-#	include <sys/mman.h>
-#endif
-
 #define FPS_CHECK_WINDOW 0.5f
 
 Variable host_timescale;

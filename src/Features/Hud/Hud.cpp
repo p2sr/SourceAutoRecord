@@ -21,10 +21,6 @@
 #include <map>
 #include <optional>
 
-#ifdef _WIN32
-#	define strcasecmp _stricmp
-#endif
-
 Variable sar_hud_spacing("sar_hud_spacing", "1", 0, "Spacing between elements of HUD.\n", FCVAR_DONTRECORD);
 Variable sar_hud_x("sar_hud_x", "2", 0, "X padding of HUD.\n", FCVAR_DONTRECORD);
 Variable sar_hud_y("sar_hud_y", "2", 0, "Y padding of HUD.\n", FCVAR_DONTRECORD);

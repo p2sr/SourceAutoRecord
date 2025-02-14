@@ -49,10 +49,6 @@
 #include <cstring>
 #include <cfloat>
 
-#ifdef _WIN32
-#	define strcasecmp _stricmp
-#endif
-
 #define RESET_COOP_PROGRESS_MESSAGE_TYPE "coop-reset"
 #define CM_FLAGS_MESSAGE_TYPE "cm-flags"
 

@@ -5,9 +5,6 @@
 #include "Utils.hpp"
 #include "Modules/Engine.hpp"
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 Variable sar_allow_resizing_window("sar_allow_resizing_window", "0", 0, 1, "EXPERIMENTAL! Forces resizing on game's window.\n");
 

@@ -16,10 +16,6 @@
 #include <optional>
 #include <variant>
 
-#ifdef _WIN32
-#	define strcasecmp _stricmp
-#endif
-
 Variable sar_speedrun_draw_triggers("sar_speedrun_draw_triggers", "0", "Draw the triggers associated with speedrun rules in the world.\n");
 Variable sar_speedrun_triggers_info("sar_speedrun_triggers_info", "0", "Print player velocity (and position) upon mtrigger activation.\n1 - position and velocity\n2 - only horizontal velocity\n");
 

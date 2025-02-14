@@ -5,6 +5,7 @@
 #include "Modules/Engine.hpp"
 #include "Modules/FileSystem.hpp"
 #include "Modules/Server.hpp"
+#include "Utils.hpp"
 
 #include <cstdlib>
 #include <cstring>
@@ -14,12 +15,6 @@
 #include <vector>
 #include <unordered_set>
 #include <fstream>
-
-// Fuck you Windows
-#ifdef _WIN32
-#	define strdup _strdup
-#	define strcasecmp _stricmp
-#endif
 
 #define PERSISTENT_SVAR_FILENAME "svars_persist"
 #define CFG_MESSAGE_TYPE "cfgmessage"

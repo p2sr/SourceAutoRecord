@@ -10,12 +10,7 @@
 #include "Modules/Scheme.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
-
-#define TAU 6.28318530718
-
-#ifdef _WIN32
-#	define strcasecmp _stricmp
-#endif
+#include "Utils/Math.hpp"
 
 template <typename V>
 static inline V *lookupMap(std::map<std::string, V> &m, std::string k) {

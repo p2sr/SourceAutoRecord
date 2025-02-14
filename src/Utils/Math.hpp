@@ -6,6 +6,7 @@
 #define M_PI 3.14159265358979323846
 #define M_PI_F ((float)(M_PI))
 #define M_PI_2 1.57079632679489661923  // pi/2
+#define TAU 6.28318530717958647692
 #define RAD2DEG(x) ((float)(x) * (float)(180.f / M_PI_F))
 #define DEG2RAD(x) ((float)(x) * (float)(M_PI_F / 180.f))
 

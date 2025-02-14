@@ -5,7 +5,11 @@
 #include "Utils/SDK.hpp"
 #include <optional>
 
-#ifndef _WIN32
+#ifdef _WIN32
+#	include <Windows.h>
+#	define strdup _strdup
+#	define strcasecmp _stricmp
+#else
 #	include <unistd.h>
 #endif
 
