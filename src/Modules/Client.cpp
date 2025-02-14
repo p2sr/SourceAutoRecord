@@ -529,7 +529,7 @@ DETOUR(Client::MsgFunc_SayText2, bf_read &msg) {
 	return Client::MsgFunc_SayText2(thisptr, msg);
 }
 
-// MSVC bug workaround - see Engine::GetColorAtPoint for explanation
+// MSVC bug workaround - see Engine::GetLightAtPoint for explanation
 #ifdef _WIN32
 DETOUR_T(void *, Client::GetTextColorForClient, Color *col_out, TextColor color, int client_idx) {
 #else
