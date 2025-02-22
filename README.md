@@ -41,8 +41,8 @@ For features and installation instructions, please visit [the website].
 | [Thinking with Time Machine](https://store.steampowered.com/app/286080) | ✔       | ✔     |
 | [Portal Reloaded](https://store.steampowered.com/app/1255980)           | ✔       | ✔     |
 | [INFRA](https://store.steampowered.com/app/251110)                      | ✔       | ➖     |
-| [The Beginner's Guide](https://store.steampowered.com/app/303210)       | ✔       | ❓     |
-| [The Stanley Parable](https://store.steampowered.com/app/221910)        | ✔       | ❓     |
+| [The Beginner's Guide](https://store.steampowered.com/app/303210)       | ✔       | ❌ (yet) |
+| [The Stanley Parable](https://store.steampowered.com/app/221910)        | ✔       | ❌ (yet) |
 
 If you're playing a game with no Linux support, you can use Proton to run it.
 
@@ -58,7 +58,6 @@ The Beginner's Guide:
 
 The Stanley Parable:
 
-- `+bhop` does not work.
 - `sar_cam_control` can easily crash (OOM when looking OOB)
 - Missing speedrun categories for now.
 
