@@ -1229,13 +1229,15 @@ void Engine::Shutdown() {
 	Interface::Delete(this->g_physCollision);
 
 	// Reset to the offsets that were originally in the code
+	if (this->readCustomDataInjectAddr && this->readConsoleCommandInjectAddr) {
 #ifdef _WIN32
-	*(uint32_t *)this->readCustomDataInjectAddr = 0x50E8458D;
-	*(uint32_t *)this->readConsoleCommandInjectAddr = 0x000491E3;
+		*(uint32_t *)this->readCustomDataInjectAddr = 0x50E8458D;
+		*(uint32_t *)this->readConsoleCommandInjectAddr = 0x000491E3;
 #else
-	*(uint32_t *)this->readCustomDataInjectAddr = 0x08244489;
-	*(uint32_t *)this->readConsoleCommandInjectAddr = 0x0008155A;
+		*(uint32_t *)this->readCustomDataInjectAddr = 0x08244489;
+		*(uint32_t *)this->readConsoleCommandInjectAddr = 0x0008155A;
 #endif
+	}
 
 #ifdef _WIN32
 	MH_UNHOOK(Engine::ParseSmoothingInfo_Mid);

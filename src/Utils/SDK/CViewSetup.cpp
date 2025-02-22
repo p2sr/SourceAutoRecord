@@ -32,18 +32,20 @@ void ViewSetupWrite(ViewSetup *view, T *cview) {
 
 static ViewSetup *viewCtx = new ViewSetup;
 ViewSetup *ViewSetupCreate(CViewSetup *cview) {
+#ifdef _WIN32
     if (sar.game->Is(SourceGame_INFRA | SourceGame_BeginnersGuide | SourceGame_StanleyParable)) {
         ViewSetupRead(reinterpret_cast<CViewSetupINFRA *>(cview), viewCtx);
-    } else {
+    } else
+#endif
         ViewSetupRead(cview, viewCtx);
-    }
     return viewCtx;
 }
 
 void ViewSetupCopy(ViewSetup *view, CViewSetup *cview) {
+#ifdef _WIN32
     if (sar.game->Is(SourceGame_INFRA | SourceGame_BeginnersGuide | SourceGame_StanleyParable)) {
         ViewSetupWrite(view, reinterpret_cast<CViewSetupINFRA *>(cview));
-    } else {
+    } else
+#endif
         ViewSetupWrite(view, cview);
-    }
 }
