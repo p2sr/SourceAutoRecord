@@ -14,6 +14,7 @@
 #include "Features/Hud/StrafeHud.hpp"
 #include "Features/Hud/StrafeQuality.hpp"
 #include "Features/Hud/InputHud.hpp"
+#include "Features/Hud/PlacementHelperHud.hpp"
 #include "Features/Routing/StepSlopeBoostDebug.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
@@ -1085,4 +1086,115 @@ CON_COMMAND(sar_paint_reseed, "sar_paint_reseed <seed> - re-seed all paint spray
 	}
 
 	console->Print("Re-seeded %u paint sprayers\n", count);
+}
+
+
+static CPhysicsEnvironment *getPhysenv() {
+	static void *cbk = NULL;
+	if (!cbk) {
+		cbk = Command("collision_test").ThisPtr()->m_pCommandCallback;
+	}
+	return **(CPhysicsEnvironment ***)((char *)cbk + 0x1E);
+}
+
+void traverseOvNode(IVP_OV_Node *node) {
+	for (size_t i = 0; i < node->elements.nelems; ++i) {
+		IVP_OV_Element *elem = node->elements.get(i);
+		if (!elem->real_object) continue;
+		CPhysicsObject *physobj = elem->real_object->client_data;
+		if (!physobj) continue;
+		// no idea why, it's just crashing
+		/*ServerEnt *ent = (ServerEnt *)physobj->m_pGameData;
+		if (!ent) continue;
+		if (strcmp(ent->classname(), "prop_weighted_cube")) continue;*/
+		// elem->center, elem->radius
+		Vector center = ivpToHl(elem->center.toVector());
+		float rad = elem->radius * INCH_PER_METER;
+
+		SphereDrawing::draw(center, rad, { 255, 0, 0, 70 });
+	}
+
+	int cube_size = pow(2, node->data.sizelevel);
+
+	int raster_scalar = pow(2, node->data.rasterlevel);
+
+	auto luf_point = Vector(
+		node->data.x * raster_scalar,
+		node->data.y * raster_scalar,
+		node->data.z * raster_scalar
+	);
+
+	auto rlb_point = luf_point + Vector(cube_size, cube_size, cube_size);
+
+	auto mins = ivpToHl(luf_point);
+	auto maxs = ivpToHl(rlb_point);
+
+	OverlayRender::addBoxMesh(
+		{0, 0, 0},
+		mins,
+		maxs,
+		{0, 0, 0},
+		RenderCallback::constant({0, 0, 255, 32}),
+		RenderCallback::constant({0, 0, 255, 255})
+	);
+
+	for (size_t i = 0; i < node->children.nelems; ++i) {
+		traverseOvNode(node->children.get(i));
+	}
+}
+
+
+Variable sar_render_ivp_bullshit("sar_render_ivp_bullshit", "0", 1, "the motherfucking bitch");
+
+ON_EVENT(RENDER) {
+	if (!sar_render_ivp_bullshit.GetBool()) return;
+
+	auto physenv = getPhysenv();
+	if (!physenv) return;
+	auto ov_tm = physenv->phys_env->ov_tree_manager;
+	traverseOvNode(ov_tm->root);
+}
+
+void logElementsOfNode(std::stringstream &ss, IVP_OV_Node *node) {
+	for (size_t i = 0; i < node->elements.nelems; ++i) {
+		IVP_OV_Element *elem = node->elements.get(i);
+
+        ss << "    element (" << elem << "):\n";
+		ss << "      center = " << elem->center.x << ", " << elem->center.y << ", " << elem->center.z << "\n";
+        ss << "      radius = " << elem->radius << "\n";
+		ss << "      real_object = " << elem->real_object << "\n";
+		ss << "      collisions: ";
+		for (size_t j = 0; j < elem->collision_fvector.nelems; ++j) {
+			ss << elem->collision_fvector.get(j)->index << "; ";
+		}
+		ss << "\n";
+	}
+}
+
+void logOvTree(std::stringstream& ss, IVP_OV_Node *node) {
+
+	ss << "  node (" << node << "):\n";
+	ss << "    parent = " << node->parent << "\n";
+	ss << "    pos = " << node->data.x << ", " << node->data.y << ", " << node->data.z << "\n";
+	ss << "    sizelevel = " << node->data.sizelevel << "\n";
+    ss << "    rasterlevel = " << node->data.rasterlevel << "\n";
+
+	logElementsOfNode(ss, node);
+
+	for (size_t i = 0; i < node->children.nelems; ++i) {
+		logOvTree(ss, node->children.get(i));
+	}
+}
+
+CON_COMMAND(sar_dump_ivp_info, "sar_dump_ivp_info - dumps ivp info\n") {
+	auto physenv = getPhysenv();
+	if (!physenv) return;
+
+	std::stringstream ss;
+
+	ss << "ov_tree_manager (" << physenv->phys_env->ov_tree_manager << "):\n";
+	ss << "  root = " << physenv->phys_env->ov_tree_manager->root << "\n";
+	logOvTree(ss, physenv->phys_env->ov_tree_manager->root);
+
+	console->Print(ss.str().c_str());
 }

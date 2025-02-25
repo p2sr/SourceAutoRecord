@@ -339,6 +339,7 @@
     <ClInclude Include="Features\AchievementTracker.hpp" />
     <ClInclude Include="Features\Demo\GhostRenderer.hpp" />
     <ClInclude Include="Features\Demo\GhostLeaderboard.hpp" />
+    <ClInclude Include="Features\Hud\PlacementHelperHud.hpp" />
     <ClInclude Include="Features\Hud\StrafeHud.hpp" />
     <ClInclude Include="Features\Routing\Ruler.hpp" />
     <ClInclude Include="Features\Routing\StepSlopeBoostDebug.hpp" />
@@ -489,6 +490,7 @@
     <ClInclude Include="Utils\SDK\ICollideable.hpp" />
     <ClInclude Include="Utils\SDK\ILoggingListener.hpp" />
     <ClInclude Include="Utils\SDK\ImageFormat.hpp" />
+    <ClInclude Include="Utils\SDK\IVP.hpp" />
     <ClInclude Include="Utils\SDK\KeyValues.hpp" />
     <ClInclude Include="Utils\SDK\Math.hpp" />
     <ClInclude Include="Utils\SDK\GameMovement.hpp" />

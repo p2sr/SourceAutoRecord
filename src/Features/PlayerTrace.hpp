@@ -36,6 +36,13 @@ struct PortalLocations {
 	std::vector<PortalLocation> locations;
 };
 
+struct FollowedObjectData {
+	Vector position;
+	QAngle angles;
+	Vector velocity;
+	Vector angular_velocity;
+};
+
 struct Trace {
 	int startSessionTick;
 	int startTasTick;
@@ -49,6 +56,8 @@ struct Trace {
 	// Only have one of those, store all the portals in the map
 	// indiscriminately of player (also ones placed by pedestals etc)
 	std::vector<PortalLocations> portals;
+
+	std::vector<FollowedObjectData> followedObject;
 };
 
 class PlayerTrace : public Feature {

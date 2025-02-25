@@ -45,6 +45,7 @@ Variable sar_trace_bbox_ent_dist("sar_trace_bbox_ent_dist", "200", 50, "Distance
 Variable sar_trace_portal_record("sar_trace_portal_record", "1", "Record portal locations.\n");
 Variable sar_trace_portal_oval("sar_trace_portal_oval", "0", "Draw trace portals as ovals rather than rectangles.\n");
 Variable sar_trace_portal_opacity("sar_trace_portal_opacity", "100", 0, 255, "Opacity of trace portal previews.\n");
+Variable sar_trace_followed_object_selector("sar_trace_followed_object_selector", "prop_weighted_cube", "Object to record data of in trace. 0 for nothing.\n", 0);
 
 Vector g_playerTraceTeleportLocation;
 int g_playerTraceTeleportSlot;
@@ -79,7 +80,7 @@ static void drawTraceInfo(int tick, int slot, const Trace &trace, std::function<
 	if (trace.positions[slot].size() <= (unsigned)tick) return;
 
 	int usertick = tickInternalToUser(tick, trace);
-	const int p = 6; // precision
+	const int p = sar_hud_precision.GetInt();
 
 	Vector pos = trace.positions[slot][tick];
 	Vector eyepos = trace.eyepos[slot][tick];
@@ -95,6 +96,12 @@ static void drawTraceInfo(int tick, int slot, const Trace &trace, std::function<
 	drawCbk(Utils::ssprintf("vel: %.*f %.*f (%.*f) %.*f", p, vel.x, p, vel.y, p, vel.Length2D(), p, vel.z));
 	drawCbk(Utils::ssprintf("velang: %.*f", p, velang));
 	drawCbk(Utils::ssprintf("grounded: %s", grounded ? "yes" : "no"));
+
+	auto fo = trace.followedObject[tick];
+	drawCbk(Utils::ssprintf("F_pos: %.*f %.*f %.*f", p, fo.position.x, p, fo.position.y, p, fo.position.z));
+	drawCbk(Utils::ssprintf("F_ang: %.*f %.*f %.*f", p, fo.angles.x, p, fo.angles.y, p, fo.angles.z));
+	drawCbk(Utils::ssprintf("F_vel: %.*f %.*f %.*f", p, fo.velocity.x, p, fo.velocity.y, p, fo.velocity.z));
+	drawCbk(Utils::ssprintf("F_angvel: %.*f %.*f %.*f", p, fo.angular_velocity.x, p, fo.angular_velocity.y, p, fo.angular_velocity.z));
 }
 
 struct TraceHoverInfo {
@@ -176,6 +183,21 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 	if (slot == 0) {
 		PortalLocations portals = ConstructPortalLocations();
 		trace.portals.push_back(portals);
+
+		FollowedObjectData data = {};
+
+		auto followedName = sar_trace_followed_object_selector.GetString();
+		auto entity = entityList->QuerySelector(followedName);
+		if (entity != NULL) {
+			auto physicsObject = SE(entity->m_pEntity)->field<IPhysicsObject*>("m_pPhysicsObject");
+			if (physicsObject != NULL) {
+				physicsObject->GetPosition(&data.position, &data.angles);
+				physicsObject->GetVelocity(&data.velocity, &data.angular_velocity);
+			}
+		}
+
+		trace.followedObject.push_back(data);
+
 	}
 }
 Trace *PlayerTrace::GetTrace(std::string trace_name) {

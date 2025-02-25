@@ -1332,6 +1332,12 @@
     <ClInclude Include="Features\Tas\TasTools\ZoomTool.hpp">
       <Filter>SourceAutoRecord\Features\Tas\TasTools</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\SDK\IVP.hpp">
+      <Filter>SourceAutoRecord\Utils\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Hud\PlacementHelperHud.hpp">
+      <Filter>SourceAutoRecord\Features\Hud</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SourceAutoRecord">

@@ -295,3 +295,92 @@ CON_COMMAND(sar_vphys_setasleep, "sar_vphys_setasleep <hitbox> <asleep> - sets w
 	_SleepWake SleepWake = Memory::VMT<_SleepWake>(selected, asleep ? Offsets::Sleep : Offsets::Wake);
 	SleepWake(selected);
 }
+
+CON_COMMAND(sar_prop_setpos, "sar_prop_setpos <selector> <x> <y> <z> - sets the position of given prop\n") {
+	if (args.ArgC() != 5) {
+		return console->Print(sar_prop_setpos.ThisPtr()->m_pszHelpString);
+	}
+
+	auto entity = entityList->QuerySelector(args[1]);
+
+	float x = std::atof(args[2]);
+	float y = std::atof(args[3]);
+	float z = std::atof(args[4]);
+
+	if (entity == NULL) return;
+	auto physicsObject = SE(entity->m_pEntity)->field<IPhysicsObject *>("m_pPhysicsObject");
+
+	if (physicsObject == NULL) return;
+	Vector oldPosition; QAngle oldAngles;
+	physicsObject->GetPosition(&oldPosition, &oldAngles);
+	physicsObject->SetPosition(Vector(x,y,z), oldAngles, true);
+}
+
+CON_COMMAND(sar_prop_setang, "sar_prop_setang <selector> <x> <y> <z> - sets rotation of given prop\n") {
+	if (args.ArgC() != 5) {
+		return console->Print(sar_prop_setang.ThisPtr()->m_pszHelpString);
+	}
+
+	auto entity = entityList->QuerySelector(args[1]);
+
+	float x = std::atof(args[2]);
+	float y = std::atof(args[3]);
+	float z = std::atof(args[4]);
+
+	if (entity == NULL) return;
+	auto physicsObject = SE(entity->m_pEntity)->field<IPhysicsObject *>("m_pPhysicsObject");
+
+	if (physicsObject == NULL) return;
+	Vector oldPosition;
+	QAngle oldAngles;
+	physicsObject->GetPosition(&oldPosition, &oldAngles);
+	physicsObject->SetPosition(oldPosition, QAngle{x,y,z}, true);
+}
+
+CON_COMMAND(sar_prop_setvel, "sar_prop_setvel <selector> <x> <y> <z> - sets linear velocity of given prop\n") {
+	if (args.ArgC() != 5) {
+		return console->Print(sar_prop_setvel.ThisPtr()->m_pszHelpString);
+	}
+
+	auto entity = entityList->QuerySelector(args[1]);
+
+	float x = std::atof(args[2]);
+	float y = std::atof(args[3]);
+	float z = std::atof(args[4]);
+
+	if (entity == NULL) return;
+	auto physicsObject = SE(entity->m_pEntity)->field<IPhysicsObject *>("m_pPhysicsObject");
+
+	if (physicsObject == NULL) return;
+	Vector oldVelocity;
+	Vector oldAngularVelocity;
+	physicsObject->GetVelocity(&oldVelocity, &oldAngularVelocity);
+
+	const Vector newVelocity = Vector(x, y, z);
+	const Vector newAngularVelocity = oldAngularVelocity;
+	physicsObject->SetVelocity(&newVelocity, &newAngularVelocity);
+}
+
+CON_COMMAND(sar_prop_setangvel, "sar_prop_setangvel <selector> <x> <y> <z> - sets linear velocity of given prop\n") {
+	if (args.ArgC() != 5) {
+		return console->Print(sar_prop_setangvel.ThisPtr()->m_pszHelpString);
+	}
+
+	auto entity = entityList->QuerySelector(args[1]);
+
+	float x = std::atof(args[2]);
+	float y = std::atof(args[3]);
+	float z = std::atof(args[4]);
+
+	if (entity == NULL) return;
+	auto physicsObject = SE(entity->m_pEntity)->field<IPhysicsObject *>("m_pPhysicsObject");
+
+	if (physicsObject == NULL) return;
+	Vector oldVelocity;
+	Vector oldAngularVelocity;
+	physicsObject->GetVelocity(&oldVelocity, &oldAngularVelocity);
+
+	const Vector newVelocity = oldVelocity;
+	const Vector newAngularVelocity = Vector(x, y, z);
+	physicsObject->SetVelocity(&newVelocity, &newAngularVelocity);
+}

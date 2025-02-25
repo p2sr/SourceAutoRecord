@@ -1,3 +1,5 @@
+#include "PlacementHelperHud.hpp"
+
 #include <Variable.hpp>
 #include <Cheats.hpp>
 #include <Event.hpp>
@@ -45,7 +47,7 @@ static void generateSphereMesh() {
 }
 
 
-static void drawSphere(Vector position, float size, Color color) {
+void SphereDrawing::draw(Vector position, float size, Color color) {
 	generateSphereMesh();
 	MeshId mesh = OverlayRender::createMesh(RenderCallback::constant(color), RenderCallback::none);
 
@@ -110,7 +112,7 @@ ON_EVENT(RENDER) {
 		}
 			
 
-		drawSphere(position, size, sphereColor);
+		SphereDrawing::draw(position, size, sphereColor);
 
 		OverlayRender::addText(position, Utils::ssprintf(
 			"Snap to helper angles: %s\nForce placement:%s\nState: %s", 

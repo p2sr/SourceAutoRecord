@@ -16,6 +16,7 @@
 #include "SDK/ICollideable.hpp"
 #include "SDK/ILoggingListener.hpp"
 #include "SDK/ITexture.hpp"
+#include "SDK/IVP.hpp"
 #include "SDK/ImageFormat.hpp"
 #include "SDK/KeyValues.hpp"
 #include "SDK/Math.hpp"
