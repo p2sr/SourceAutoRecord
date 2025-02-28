@@ -254,6 +254,8 @@ auto IsCommand = Memory::VMT<bool (*)(void*)>(cmd, Offsets::IsCommand));
 
 Only use this in search-dumps or tests.
 
+A Ghidra script to generate signatures is available [here](https://github.com/nosoop/ghidra_scripts/blob/master/makesig.py).
+
 ```cpp
 uintptr_t firstResult = Memory::Scan(MODULE("engine"), "55 8B EC 0F 57 C0 81 EC ? ? ? ", 178);
 
