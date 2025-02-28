@@ -78,8 +78,9 @@ void VelocityGraph::Paint(int slot) {
 	int x, y;
 	engine->GetScreenSize(nullptr, x, y);
 
-	const Vector2<int> graphPos = Vector2<int>(x / 2, y) + 
+	Vector2<int> graphPos = Vector2<int>(x / 2, 0) + 
 		Vector2<int>(sar_velocitygraph_x.GetInt(), sar_velocitygraph_y.GetInt());
+	if (graphPos.y < 0) graphPos.y += y;
 
 	bool should_draw_takeoff = (!last_on_ground[slot] || take_off_display_timeout[slot] > engine->GetClientTime()) && sar_velocitygraph_text_groundspeed.GetBool();
 	int recentSpeed = velocityStamps[slot][velocityStamps[slot].size - 10].speed;
