@@ -218,7 +218,7 @@ OFFSET_DEFAULT(AddListener, 3, 4)
 OFFSET_DEFAULT(RemoveListener, 5, 6)
 OFFSET_DEFAULT(FireEventClientSide, 8, 9)
 OFFSET_DEFAULT(FireEventIntern, 12, 16)
-OFFSET_DEFAULT(ConPrintEvent, 303, 481)
+OFFSET_DEFAULT(ConPrintEvent, 303, 481) // "- \"%s\" = \"%s\" (local)\n" xref -> CGameEventManager::ConPrintEvent xref -> function offset
 
 // CEngine
 OFFSET_DEFAULT(Frame, 5, 6)
@@ -312,8 +312,8 @@ OFFSET_DEFAULT(GetHud, 125, 130)
 OFFSET_DEFAULT(FindElement, 135, 143)
 OFFSET_DEFAULT(Key_SetBinding, 135, 73)
 OFFSET_DEFAULT(eng, 2, 4)
-OFFSET_DEFAULT(HostState_OnClientConnected, 684, 1275)
-OFFSET_DEFAULT(hoststate, 1, 28)
+OFFSET_DEFAULT(HostState_OnClientConnected, 684, 1275) // "-dumpvidmemstats" xref (not CModelLoader::Map_IsValid) -> CHostState::OnClientConnected -> xref -> xref func offset
+OFFSET_DEFAULT(hoststate, 1, 28) // CHostState::OnClientConnected xref
 OFFSET_DEFAULT(m_bLoadGame, 448, 440)
 OFFSET_DEFAULT(NUM_ENT_ENTRIES, 0x2000, 0x2000)
 OFFSET_DEFAULT(ENT_ENTRY_MASK, 0xFFFF, 0xFFFF)
@@ -430,7 +430,7 @@ SIGSCAN_DEFAULT(GetChapterProgress, "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8
 
 
 // Engine
-SIGSCAN_DEFAULT(ParseSmoothingInfoSig, "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", "");
+SIGSCAN_DEFAULT(ParseSmoothingInfoSig, "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", ""); // "cl_demosmootherpanel.cpp" xref -> CDemoSmootherPanel::ParseSmoothingInfo
 OFFSET_DEFAULT(ParseSmoothingInfoOff, 178, -1)
 SIGSCAN_DEFAULT(Host_AccumulateTime, "55 8B EC 51 F3 0F 10 05 ? ? ? ? F3 0F 58 45 08 8B 0D ? ? ? ? F3 0F 11 05 ? ? ? ? 8B 01 8B 50 20 53 B3 01 FF D2",
                                      "83 EC 1C 8B 15 ? ? ? ? F3 0F 10 05 ? ? ? ? F3 0F 58 44 24 20 F3 0F 11 05 ? ? ? ? 8B 02 8B 40 24 3D ? ? ? ? 0F 85 41 03 00 00") // "-tools" -> function with 2 references -> Host_AccumulateTime
@@ -475,7 +475,7 @@ SIGSCAN_DEFAULT(GlobalEntity_GetIndex, "55 8B EC 51 8B 45 08 50 8D 4D FC 51 B9 ?
 SIGSCAN_DEFAULT(GlobalEntity_SetFlags, "55 8B EC 80 3D ? ? ? ? 00 75 1F 8B 45 08 85 C0 78 18 3B 05 ? ? ? ? 7D 10 8B 4D 0C 8B 15 ? ? ? ? 8D 04 40 89 4C 82 08",
                                        "80 3D ? ? ? ? 01 8B 44 24 04 74 1F 85 C0 78 1B 3B 05 ? ? ? ? 7D 13 8B 15 ? ? ? ? 8D 04 40")
 SIGSCAN_DEFAULT(Host_Say, "55 8B EC 81 EC 30 02 00 00 56",
-                          "55 89 E5 57 56 53 81 EC 4C 02 00 00 8B 45")
+                          "55 89 E5 57 56 53 81 EC 4C 02 00 00 8B 45") // "\"%s<%i><%s><%s>\" say_team \"%s\"\n" xref -> Host_Say
 SIGSCAN_DEFAULT(TraceFirePortal, "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC 38 07 00 00 56 57 8B F1",
                                  "55 89 E5 57 56 8D B5 F4 F8 FF FF 53 81 EC 30 07 00 00 8B 45 14 6A 00 8B 5D 0C FF 75 08 56 89 85 D0 F8 FF FF")
 SIGSCAN_DEFAULT(FindPortal, "55 8B EC 0F B6 45 08 8D 0C 80 03 C9 53 8B 9C 09 ? ? ? ? 03 C9 56 57 85 DB 74 3C 8B B9 ? ? ? ? 33 C0 33 F6 EB 08",
@@ -487,9 +487,9 @@ SIGSCAN_DEFAULT(UTIL_FindClosestPassableSpace, "53 8B DC 83 EC 08 83 E4 F0 83 C4
 SIGSCAN_DEFAULT(FindClosestPassableSpace, "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC A1 ? ? ? ? 81 EC 88 02 00 00 83 78 30 00 56 57 0F 84 ? ? ? ? 8B 73 08 8B 8E DC 00 00 00",
                                           "A1 ? ? ? ? 57 56 53 8B 5C 24 10 8B 74 24 14 8B 50 30 8B 4C 24 18 85 D2 74 29 8B 83 E4 00 00 00 8B 3D ? ? ? ? 83 F8 FF 74 24 0F B7 D0 C1 E8 10")
 SIGSCAN_DEFAULT(UTIL_GetCommandClientIndex, "A1 ? ? ? ? 40 C3",
-                                            "A1 ? ? ? ? 83 C0 01 C3")
+                                            "A1 ? ? ? ? 83 C0 01 C3") // "say_team" callback -> first function call -> UTIL_GetCommandClient -> comparison data other xref -> UTIL_GetCommandClientIndex
 SIGSCAN_DEFAULT(CheckStuck_FloatTime, "FF ? ? ? ? ? D9 5D F8 8B 56 04 8B 42 1C 8B ? ? ? ? ? 3B C3 75 04 33 C9 EB 08 8B C8 2B 4A 58 C1 F9 04 F3 0F 10 84 CE 70",
-                                      "E8 ? ? ? ? 8B 43 04 66 0F EF C0 DD 5C 24 08 F2 0F 5A 44 24 08 8B 40 24 85 C0 0F 84 CC 01 00 00 8B 15 ? ? ? ? 2B 42 58")
+                                      "E8 ? ? ? ? 8B 43 04 66 0F EF C0 DD 5C 24 08 F2 0F 5A 44 24 08 8B 40 24 85 C0 0F 84 CC 01 00 00 8B 15 ? ? ? ? 2B 42 58") // "%s stuck on object %i/%s" xref -> CGameMovement::CheckStuck -> call Plat_FloatTime instruction
 SIGSCAN_DEFAULT(IsInPVS, "55 8B EC 51 53 8B 5D 08 56 57 33 FF 89 4D FC 66 39 79 1A 75 57 3B BB 10 20 00 00 0F 8D C0 00 00 00 8D B3 14 20 00 00",
                          "55 57 56 53 31 DB 83 EC 0C 8B 74 24 20 8B 7C 24 24 66 83 7E 1A 00 8B 87 10 20 00 00 89 C2 0F 85 BC 00 00 00 85 C0 7F 75 8D B4 26")
 SIGSCAN_DEFAULT(CreateViewModel, "E8 ? ? ? ? 5F 5D C2 04 00 53",

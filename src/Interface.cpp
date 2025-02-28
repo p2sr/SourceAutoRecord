@@ -109,6 +109,14 @@ void *Interface::GetPtr(const char *filename, const char *interfaceSymbol) {
 		}
 
 		if (!fn) {
+			// Interface012 -> Interface0
+			// Try to get any version of the interface
+			if (interfaceSymbol[std::strlen(interfaceSymbol) - 3] >= '0' && interfaceSymbol[std::strlen(interfaceSymbol) - 3] <= '9') {
+				char symbol[256];
+				std::strncpy(symbol, interfaceSymbol, std::strlen(interfaceSymbol) - 2);
+				symbol[std::strlen(interfaceSymbol) - 2] = '\0';
+				return Interface::GetPtr(filename, symbol);
+			}
 			console->DevWarning("SAR: Failed to find interface with symbol %s in %s!\n", interfaceSymbol, filename);
 			return nullptr;
 		}
