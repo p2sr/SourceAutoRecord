@@ -169,6 +169,7 @@ extern Variable sar_hud_y;
 extern Variable sar_hud_font_index;
 extern Variable sar_hud_font_color;
 extern Variable sar_hud_precision;
+extern Variable sar_hud_shorthand;
 extern QAngle g_bluePortalAngles[2];
 extern QAngle g_orangePortalAngles[2];
 

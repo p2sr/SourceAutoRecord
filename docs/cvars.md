@@ -272,6 +272,7 @@
 |sar_hud_session|0|Draws current session tick.|
 |sar_hud_set_text|cmd|sar_hud_set_text \<id> \<text>... - sets and shows the nth text value in the HUD|
 |sar_hud_set_text_color|cmd|sar_hud_set_text_color \<id> [color] - sets the color of the nth text value in the HUD. Reset by not giving color.|
+|sar_hud_shorthand|0|Whether to hide the text part of HUD elements.|
 |sar_hud_show_text|cmd|sar_hud_show_text \<id\|all> - shows the nth text value in the HUD|
 |sar_hud_spacing|1|Spacing between elements of HUD.|
 |sar_hud_steps|0|Draws total step count.|

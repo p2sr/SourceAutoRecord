@@ -29,6 +29,7 @@ Variable sar_hud_font_color("sar_hud_font_color", "255 255 255 255", "RGBA font 
 
 Variable sar_hud_precision("sar_hud_precision", "2", 0, "Precision of HUD numbers.\n");
 Variable sar_hud_velocity_precision("sar_hud_velocity_precision", "2", 0, "Precision of velocity HUD numbers.\n");
+Variable sar_hud_shorthand("sar_hud_shorthand", "0", "Whether to hide the text part of HUD elements.\n", FCVAR_DONTRECORD);
 
 Variable sar_hud_rainbow("sar_hud_rainbow", "-1", -1, 1, "Enables the rainbow HUD mode. -1 = default, 0 = disable, 1 = enable.\n", FCVAR_DONTRECORD);
 static bool g_rainbow = false;
@@ -173,6 +174,12 @@ void HudContext::DrawElement(const char *fmt, ...) {
 	char data[128];
 	vsnprintf(data, sizeof(data), fmt, argptr);
 	va_end(argptr);
+
+	// cut off to the first ": " if shorthand is on
+	if (sar_hud_shorthand.GetBool()) {
+		char *colon = strstr(data, ": ");
+		if (colon) strcpy(data, colon + 2);
+	}
 
 	surface->DrawTxt(font, this->xPadding, this->yPadding + this->elements * (this->fontSize + this->spacing), this->textColor, data);
 
