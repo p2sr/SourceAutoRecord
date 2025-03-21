@@ -10,6 +10,8 @@
 #include "Utils.hpp"
 #include "Features/OverlayRender.hpp"
 
+#define RENDERCONTEXT_ALLOC_SIZE 0x672000 // 6.45 MB
+
 class MemTexRegen : public ITextureRegenerator {
 	uint8_t *bgra;
 	int w, h;
@@ -92,10 +94,29 @@ bool MaterialSystem::Init() {
 		OverlayRender::initMaterials();
 	}
 
+	this->renderContextSize = Memory::Scan<uint32_t *>(this->Name(), Offsets::RenderContextSize, Offsets::RenderContextSizeOff);
+	this->RenderContextShutdown = Memory::Scan<_RenderContextShutdown>(this->Name(), Offsets::RenderContextShutdown);
+	this->RenderContextInit = Memory::Scan<_RenderContextInit>(this->Name(), Offsets::RenderContextInit);
+	if (this->renderContextSize && this->RenderContextShutdown && this->RenderContextInit) {
+		if (*this->renderContextSize != RENDERCONTEXT_ALLOC_SIZE) {
+			Memory::UnProtect((void *)this->renderContextSize, sizeof(uint32_t));
+			this->origRenderContextSize = *this->renderContextSize;
+			*this->renderContextSize = RENDERCONTEXT_ALLOC_SIZE;
+			this->RenderContextShutdown();
+			this->RenderContextInit();
+		}
+	}
+
 	return this->hasLoaded = this->materials;
 }
 void MaterialSystem::Shutdown() {
 	Interface::Delete(this->materials);
+
+	if (origRenderContextSize) {
+		*renderContextSize = origRenderContextSize;
+		RenderContextShutdown();
+		RenderContextInit();
+	}
 }
 IMaterial *MaterialSystem::FindMaterial(const char *materialName, const char *textureGroupName) {
 	auto func = (IMaterial *(__rescall *)(void *, const char *, const char *, bool, const char *))this->materials->Current(Offsets::FindMaterial);

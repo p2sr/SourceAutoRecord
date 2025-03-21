@@ -11,6 +11,15 @@ class MaterialSystem : public Module {
 public:
 	Interface *materials = nullptr;
 
+	uint32_t *renderContextSize = nullptr;
+	uint32_t origRenderContextSize = 0;
+
+    using _RenderContextShutdown = void(__cdecl *)(void);
+	_RenderContextShutdown RenderContextShutdown = nullptr;
+
+    using _RenderContextInit = void(__cdecl *)(void);
+	_RenderContextInit RenderContextInit = nullptr;
+
 	using _RemoveMaterial = void(__rescall*)(void* thisptr, IMaterialInternal* pMaterial);
 	_RemoveMaterial RemoveMaterial = nullptr;
 

@@ -467,7 +467,13 @@ SIGSCAN_DEFAULT(UpdateLeaderboardData, "55 8B EC 83 EC 08 53 8B D9 8B 03 8B 50 0
 // MaterialSystem
 SIGSCAN_DEFAULT(KeyValues_SetString, "55 8B EC 8B 45 08 6A 01 50 E8 ? ? ? ? 85 C0 74 0B",
                                      "53 83 EC ? 8B 5C 24 ? 6A ? FF 74 24 ? FF 74 24 ? E8 ? ? ? ? 83 C4 ? 85 C0 74 ? 89 5C 24")
-
+SIGSCAN_DEFAULT(RenderContextSize, "56 BE ? ? ? ? E8",
+                                   "81 C3 ? ? ? ? E9") // "portal2" AND "infested" AND "swarm" -> CMatRenderContextBase::Init -> nSize initial value (linux is weird)
+OFFSET_DEFAULT(RenderContextSizeOff, 2, 2)
+SIGSCAN_DEFAULT(RenderContextShutdown, "FF 0D ? ? ? ? 75 ? B9",
+                                       "83 3D ? ? ? ? 00 0F 85 ? ? ? ? 56") // CMatRenderContextBase::Init -> sm_nInitializeCount usage -> decrement, check for 0 -> CMatRenderContextBase::Shutdown
+SIGSCAN_DEFAULT(RenderContextInit, "83 3D ? ? ? ? 00 0F 85 ? ? ? ? 56",
+                                   "A1 ? ? ? ? 85 C0 74 ? 83 C0 01") // CMatRenderContextBase::Init
 
 // Server
 SIGSCAN_DEFAULT(GlobalEntity_GetIndex, "55 8B EC 51 8B 45 08 50 8D 4D FC 51 B9 ? ? ? ? E8 ? ? ? ? 66 8B 55 FC B8 FF FF 00 00",
