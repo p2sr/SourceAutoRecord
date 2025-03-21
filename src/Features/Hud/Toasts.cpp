@@ -299,31 +299,33 @@ void ToastHud::AddToast(std::string tag, std::string text, bool doConsole) {
 
 	auto now = NOW_STEADY();
 
-	g_toasts.push_back({
-		tag,
-		text,
-		now,
-		255,
-	});
+	auto info = getTagInfo(tag);
+	if (info.duration != 0) {
+		g_toasts.push_back({
+			tag,
+			text,
+			now,
+			255,
+		});
 
-	Surface::HFont font = scheme->GetFontByID(sar_toast_font.GetInt());
+		Surface::HFont font = scheme->GetFontByID(sar_toast_font.GetInt());
 
-	bool compact = sar_toast_compact.GetBool();
-	int linePadding = compact ? 0 : LINE_PAD;
-	int gap = compact ? 0 : TOAST_GAP;
-	int toastPadding = compact ? COMPACT_TOAST_PAD : 0;
-	int sidePadding = compact ? COMPACT_SIDE_PAD : SIDE_PAD;
+		bool compact = sar_toast_compact.GetBool();
+		int linePadding = compact ? 0 : LINE_PAD;
+		int gap = compact ? 0 : TOAST_GAP;
+		int toastPadding = compact ? COMPACT_TOAST_PAD : 0;
+		int sidePadding = compact ? COMPACT_SIDE_PAD : SIDE_PAD;
 
-	int lineHeight = surface->GetFontHeight(font) + linePadding;
-	int maxWidth = sar_toast_width.GetInt();
+		int lineHeight = surface->GetFontHeight(font) + linePadding;
+		int maxWidth = sar_toast_width.GetInt();
 
-	auto lines = splitIntoLines(font, text, maxWidth - 2 * sidePadding);
+		auto lines = splitIntoLines(font, text, maxWidth - 2 * sidePadding);
 
-	g_slideOffStart = g_slideOff + (lines.size() * lineHeight + linePadding + 2 * toastPadding + gap);
-	g_slideOffTime = now;
+		g_slideOffStart = g_slideOff + (lines.size() * lineHeight + linePadding + 2 * toastPadding + gap);
+		g_slideOffTime = now;
+	}
 
 	if (doConsole) {
-		auto info = getTagInfo(tag);
 		if (info.r == 255 && info.g == 255 && info.b == 255) {
 			info.r = 255;
 			info.g = 150;
