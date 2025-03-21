@@ -319,18 +319,20 @@ DETOUR_T(const char *, Client::GetName) {
 }
 
 static bool g_leaderboardOpen = false;
+static bool g_leaderboardWillClose = false;
 DETOUR_COMMAND(Client::openleaderboard) {
 	Client::openleaderboard_callback(args);
 
 	if (args.ArgC() == 2 && !strcmp(args[1], "4") && client->GetChallengeStatus() == CMStatus::CHALLENGE) {
 		g_leaderboardOpen = true;
-		if (sar.game->Is(SourceGame_Portal2) && sar_disable_challenge_stats_hud.GetInt() > 0 && (!engine->IsCoop() || engine->IsOrange())) {
-			auto ticks = 6;
-			if (sar_disable_challenge_stats_hud.GetInt() > 1) ticks = sar_disable_challenge_stats_hud.GetInt();
-			Scheduler::InHostTicks(ticks, []() {
+		auto ticks = 6;
+		if (sar_disable_challenge_stats_hud.GetInt() > 1) ticks = sar_disable_challenge_stats_hud.GetInt();
+		Scheduler::InHostTicks(ticks, []() {
+			if (sar.game->Is(SourceGame_Portal2) && sar_disable_challenge_stats_hud.GetInt() > 0 && (!engine->IsCoop() || engine->IsOrange() || g_leaderboardWillClose)) {
+				g_leaderboardWillClose = false;
 				engine->ExecuteCommand("-leaderboard");
-			});
-		}
+			}
+		});
 	}
 }
 
@@ -432,6 +434,7 @@ ON_INIT {
 	NetMessage::RegisterHandler(LEADERBOARD_MESSAGE_TYPE, +[](const void *data, size_t size) {
 		// TODO: Investigate why this sometimes doesn't work - AMJ 2024-04-25
 		if (sar_disable_challenge_stats_hud_partner.GetBool()) {
+			g_leaderboardWillClose = true;
 			engine->ExecuteCommand("-leaderboard");
 		} });
 }
