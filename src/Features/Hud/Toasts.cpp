@@ -48,8 +48,8 @@ struct Toast {
 static std::deque<Toast> g_toasts;
 
 static std::chrono::time_point<std::chrono::steady_clock> g_slideOffTime;
-static int g_slideOffStart;
-static int g_slideOff;
+static int g_slideOffStart = 0;
+static int g_slideOff = 0;
 
 #define STR(s) #s
 #define EXP_STR(s) STR(s)
@@ -364,9 +364,17 @@ void ToastHud::Update() {
 	int screenWidth, screenHeight;
 	engine->GetScreenSize(nullptr, screenWidth, screenHeight);
 
-	g_slideOff = g_slideOffStart - SLIDE_RATE * std::chrono::duration_cast<std::chrono::milliseconds>(now - g_slideOffTime).count() * screenHeight / 1000 / 1000;
-	if (g_slideOff < 0) {
+	if (g_slideOffStart != 0) {
+		g_slideOff = g_slideOffStart - SLIDE_RATE * std::chrono::duration_cast<std::chrono::milliseconds>(now - g_slideOffTime).count() * screenHeight / 1000 / 1000;
+		if (g_slideOff < 0) {
+			g_slideOff = 0;
+		}
+	} else {
 		g_slideOff = 0;
+	}
+	if (g_slideOff > 2 * screenHeight) {
+		console->Print("Safety check triggered on toast slide\n");
+		g_slideOff = 2 * screenHeight; // Stupid BUG!
 	}
 }
 
