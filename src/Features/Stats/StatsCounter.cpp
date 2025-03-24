@@ -153,7 +153,7 @@ bool StatsCounter::ExportToFile(const std::string &path) {
 							<< CSV_SEPARATOR << map.second.CMretries
 							<< CSV_SEPARATOR << SpeedrunTimer::SimpleFormat(map.second.CMTotalTime).c_str()
 							<< CSV_SEPARATOR << map.second.FullGameRetries
-							<< CSV_SEPARATOR << map.second.FullGameTotalTime
+							<< CSV_SEPARATOR << SpeedrunTimer::SimpleFormat(map.second.FullGameTotalTime).c_str()
 							<< std::endl;
 	}
 
