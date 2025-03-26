@@ -48,6 +48,7 @@ OFFSET_WINDOWS(CUserCmdSize, 96)
 OFFSET_WINDOWS(PerUserInput_tSize, 212)
 OFFSET_WINDOWS(GetLocalClient, 138)
 OFFSET_DEFAULT(VideoMode_Create, 90, 106)
+OFFSET_LINUX(videomode, 183)
 OFFSET_WINDOWS(UncacheUnusedMaterials, 76)
 
 // clang-format off
