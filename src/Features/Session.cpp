@@ -149,7 +149,7 @@ void Session::Ended() {
 				auto info = entityList->GetEntityInfoByIndex(index);
 				if (info->m_pEntity == nullptr) continue;
 				auto entityClass = server->GetEntityClassName(info->m_pEntity);
-				if (!entityClass || !Utils::StartsWith(entityClass, "point_viewcontrol")) continue; // point_view
+				if (!entityClass || !Utils::StartsWith(entityClass, "point_viewcontrol")) continue; // point_viewcontrol_multiplayer
 				if (server->AcceptInput) server->AcceptInput(info->m_pEntity, "Disable", 0, 0, {0}, 0);
 			}
 		}
