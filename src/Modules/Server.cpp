@@ -945,7 +945,7 @@ bool Server::Init() {
 		g_check_stuck_code = (void *)code;
 	}
 
-	if (sar.game->Is(SourceGame_Portal2)) {
+	if (sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011)) {
 		Server::IsInPVS = (Server::_IsInPVS)Memory::Scan(this->Name(), Offsets::IsInPVS);
 		g_IsInPVS_Hook.SetFunc(IsInPVS);
 	}
@@ -960,7 +960,7 @@ bool Server::Init() {
 		}
 	}
 
-	if (sar.game->Is(SourceGame_Portal2)) {
+	if (sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011)) {
 		CreateViewModel = Memory::Read<void(__rescall *)(void *, int)>(Memory::Scan(this->Name(), Offsets::CreateViewModel, 1));
 	}
 

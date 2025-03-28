@@ -6,6 +6,7 @@ enum SourceGameVersion {
 	SourceGame_Unknown = 0,
 
 	SourceGame_Portal2 = (1 << 0),
+	SourceGame_Portal2_2011 = (1 << 1),
 	SourceGame_ApertureTag = (1 << 5),
 	SourceGame_PortalStoriesMel = (1 << 6),
 	SourceGame_ThinkingWithTimeMachine = (1 << 7),

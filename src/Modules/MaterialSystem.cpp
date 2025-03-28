@@ -57,7 +57,7 @@ DETOUR(MaterialSystem::UncacheUnusedMaterials, bool bRecomputeStateSnapshots) {
 }
 
 DETOUR_T(IMaterial *, MaterialSystem::CreateMaterial, const char *pMaterialName, void *pVMTKeyValues) {
-	if (sar.game->Is(SourceGame_Portal2 | SourceGame_PortalReloaded | SourceGame_PortalStoriesMel)) {
+	if (sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011 | SourceGame_PortalReloaded | SourceGame_PortalStoriesMel)) {
 		// Patched by Valve, no need for us to do it again
 		return MaterialSystem::CreateMaterial(thisptr, pMaterialName, pVMTKeyValues);
 	}

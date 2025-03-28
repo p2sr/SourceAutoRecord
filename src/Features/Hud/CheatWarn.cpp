@@ -58,7 +58,7 @@ static Cheat g_cheats[] = {
 
 	{ +[]() {
 		auto map = engine->GetCurrentMapName();
-		if (!sar.game->Is(SourceGame_Portal2)) return false;
+		if (!sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011)) return false;
 		if (map == "sp_a2_bts5") return false;
 		if (engine->GetMapIndex(map) == -1) return false;
 		return sv_allow_mobile_portals.GetBool();
