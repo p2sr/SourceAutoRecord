@@ -3,11 +3,13 @@
 #include "Command.hpp"
 #include "Modules/Engine.hpp"
 #include "Utils.hpp"
+#include "Interface.hpp"
 
 #include <cstring>
 #include <string>
 
 #include "Games/Portal2.hpp"
+#include "Games/Portal2_2011.hpp"
 #include "Games/ApertureTag.hpp"
 #include "Games/PortalStoriesMel.hpp"
 #include "Games/PortalReloaded.hpp"
@@ -76,7 +78,13 @@ Game *Game::CreateNew() {
 	modDir = GetModDir(TARGET_MOD);
 
 	if (Utils::ICompare(modDir, Portal2::ModDir())) {
-		return new Portal2();
+		
+		void *engineClient = Interface::GetPtr(MODULE("engine"), "VEngineClient015", false);
+		if (engineClient) {
+			return new Portal2();
+		} else {
+			return new Portal2_2011();
+		}
 	}
 
 	if (Utils::ICompare(modDir, PortalStoriesMel::ModDir())) {
@@ -105,6 +113,7 @@ std::string Game::VersionToString(int version) {
 	auto games = std::string("");
 	while (version > 0) {
 		HAS_GAME_FLAG(SourceGame_Portal2, "Portal 2")
+		HAS_GAME_FLAG(SourceGame_Portal2_2011, "Portal 2")
 		HAS_GAME_FLAG(SourceGame_ApertureTag, "Aperture Tag")
 		HAS_GAME_FLAG(SourceGame_PortalStoriesMel, "Portal Stories: Mel")
 		HAS_GAME_FLAG(SourceGame_ThinkingWithTimeMachine, "Thinking with Time Machine")

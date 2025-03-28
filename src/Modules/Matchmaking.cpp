@@ -12,7 +12,7 @@ DETOUR(Matchmaking::UpdateLeaderboardData, KeyValues *a2) {
 Hook g_UpdateLeaderboardDataHook(&Matchmaking::UpdateLeaderboardData_Hook);
 
 bool Matchmaking::Init() {
-	if (!sar.game->Is(SourceGame_Portal2)) {
+	if (!sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011)) {
 		Matchmaking::UpdateLeaderboardData = (decltype(Matchmaking::UpdateLeaderboardData))Memory::Scan(this->Name(), Offsets::UpdateLeaderboardData);
 
 		g_UpdateLeaderboardDataHook.SetFunc(Matchmaking::UpdateLeaderboardData);

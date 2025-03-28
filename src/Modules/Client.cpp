@@ -499,7 +499,7 @@ DETOUR(Client::MsgFunc_SayText2, bf_read &msg) {
 			char c = (char)(uint8_t)msg.ReadUnsigned(8);
 			if (!c) break;
 		}
-	} else if (sar.game->Is(SourceGame_PortalReloaded)) {
+	} else if (sar.game->Is(SourceGame_PortalReloaded | SourceGame_Portal2_2011)) {
 		// Reloaded uses the legacy format where it's just one string
 		while (true) {
 			char c = (char)(uint8_t)msg.ReadUnsigned(8);
@@ -1008,7 +1008,7 @@ bool Client::Init() {
 				if (sar.game->Is(SourceGame_Portal2)) {
 					this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayText2);
 					this->g_HudChat->Hook(Client::GetTextColorForClient_Hook, Client::GetTextColorForClient, Offsets::GetTextColorForClient);
-				} else if (sar.game->Is(SourceGame_PortalReloaded)) {
+				} else if (sar.game->Is(SourceGame_PortalReloaded | SourceGame_Portal2_2011)) {
 					this->g_HudChat->Hook(Client::MsgFunc_SayText2_Hook, Client::MsgFunc_SayText2, Offsets::MsgFunc_SayTextReloaded);
 				}
 			} else {
@@ -1162,6 +1162,9 @@ bool Client::Init() {
 		uintptr_t cbk = (uintptr_t)mouse_menu.ThisPtr()->m_pCommandCallback;
 		if (readJmp) {
 			cbk = Memory::Read<uintptr_t>(cbk + 1);
+		}
+		if (sar.game->Is(SourceGame_Portal2_2011)) {
+			cbk = Memory::Read<uintptr_t>(cbk + 3);
 		}
 		// OpenRadialMenuCommand is inlined on Windows
 #ifndef _WIN32
