@@ -246,9 +246,13 @@ OFFSET_DEFAULT(ClientCommand, 39, 39)
 OFFSET_DEFAULT(ClientCommandKeyValues, 135, 135)
 OFFSET_DEFAULT(IsServerPaused, 81, 81)
 OFFSET_DEFAULT(ServerPause, 121, 121)
+
+// CHudChat/CBaseHudChat
 OFFSET_DEFAULT(ChatPrintf, 22, 25)
 OFFSET_DEFAULT(MsgFunc_SayText2, 28, 35)
-OFFSET_DEFAULT(MsgFunc_SayTextReloaded, 26, 32)
+// Portal 2 4554 and Reloaded need this offset and use the same value for it (latest P2's offset is 27 instead of 26).
+// Reloaded doesn't have its own offset file, so this is defined here
+OFFSET_DEFAULT(MsgFunc_SayText, 26, 32)
 OFFSET_DEFAULT(GetTextColorForClient, 33, 41)
 
 // CSteam3Client

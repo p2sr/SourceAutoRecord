@@ -9,7 +9,7 @@ SIGSCAN_WINDOWS(MatrixBuildRotationAboutAxis, "55 8B EC 51 F3 0F 10 45 ? 0F 5A C
 // stolen from Infra
 SIGSCAN_WINDOWS(DrawTranslucentRenderables, "55 8B EC 81 EC 80 00 00 00 53 56 8B F1")
 
-// same as something else but I found myself
+// same as something else
 OFFSET_WINDOWS(HostState_OnClientConnected, 695)
 
 OFFSET_WINDOWS(gamerules, 5)
@@ -39,13 +39,17 @@ OFFSET_WINDOWS(GetSteamAPIContext, 176)
 //OFFSET_WINDOWS(HudUpdate, 11) // found, if needed
 //OFFSET_DEFAULT(IN_ActivateMouse, 15, 15) // verified
 //OFFSET_DEFAULT(IN_DeactivateMouse, 16, 16) // verified
-OFFSET_WINDOWS(ApplyMouse, 53) // found myself
+OFFSET_WINDOWS(ApplyMouse, 53) // found
 OFFSET_EMPTY(SteamControllerMove) // THIS DOES NOT EXIST IN 2011!!!! (because the Steam Controller didn't exist in 2011)
 //OFFSET_WINDOWS(JoyStickApplyMovement, 60) // found, if needed
 //OFFSET_DEFAULT(LevelInitPreEntity, 5, 5) // verified
 
 // CVEngineServer
 // all good
+
+// CHudChat/CBaseHudChat
+//OFFSET_WINDOWS(MsgFunc_SayText2, 27) // unused, see comment in latest P2 offsets file
+//OFFSET_WINDOWS(GetTextColorForClient, 32) // unused but ye
 
 // vgui stuff, pretty sure I just stole these from another version, no idea if they are correct,
 // but the game doesn't crash.
@@ -58,8 +62,8 @@ OFFSET_WINDOWS(UncacheUnusedMaterials, 76) // confirmed
 OFFSET_WINDOWS(CreateMaterial, 80) // confirmed
 OFFSET_WINDOWS(FindMaterial, 81) // confirmed
 OFFSET_WINDOWS(CreateProceduralTexture, 89) // confirmed
-OFFSET_WINDOWS(GetRenderContext, 111) // found myself
-OFFSET_WINDOWS(RemoveMaterial, 153) // found myself
+OFFSET_WINDOWS(GetRenderContext, 111) // found
+OFFSET_WINDOWS(RemoveMaterial, 153) // found
 
 // CEngineTool
 //OFFSET_DEFAULT(GetCurrentMap, 25, 26) // good
@@ -77,22 +81,22 @@ OFFSET_WINDOWS(PrecacheModel, 62)
 SIGSCAN_WINDOWS(ViewPunch, "55 8B EC A1 ? ? ? ? 83 EC 0C 83 78 ? 00 56 8B F1") // this works for 9568 too, maybe shorten that pattern/adjust to match this?
 
 // CBasePlayer
-OFFSET_WINDOWS(m_pShadowStand, 3156) // found myself
-OFFSET_WINDOWS(m_pShadowCrouch, 3160) // found myself
+OFFSET_WINDOWS(m_pShadowStand, 3156) // found
+OFFSET_WINDOWS(m_pShadowCrouch, 3160) // found
 
-OFFSET_WINDOWS(viewangles, 19112) // found myself
+OFFSET_WINDOWS(viewangles, 19112) // found
 
 // CBaseEntity
-OFFSET_WINDOWS(AcceptInput, 39) // found myself
-OFFSET_WINDOWS(IsPlayer, 84) // found myself
+OFFSET_WINDOWS(AcceptInput, 39) // found
+OFFSET_WINDOWS(IsPlayer, 84) // found
 
 // CPortal_Player
 //OFFSET_WINDOWS(GetPaintPower, 2) // this seems to be fine as is
-OFFSET_WINDOWS(PlayerRunCommand, 452) // found myself
-OFFSET_WINDOWS(UseSpeedPower, 508) // found myself
+OFFSET_WINDOWS(PlayerRunCommand, 452) // found
+OFFSET_WINDOWS(UseSpeedPower, 508) // found
 
 // CSteam3Client
-OFFSET_WINDOWS(OnGameOverlayActivated, 92)
+OFFSET_WINDOWS(OnGameOverlayActivated, 92) // found
 
 // IPhysicsObject
 // everything (should) be fine.
@@ -105,7 +109,7 @@ OFFSET_EMPTY(interfaceMgrOff)
 // all same as current P2
 
 // CDemoPlayer
-OFFSET_WINDOWS(SkipToTick, 14) // found myself
+OFFSET_WINDOWS(SkipToTick, 14) // found
 // rest are good
 
 // stolen
@@ -117,13 +121,13 @@ OFFSET_WINDOWS(m_bLoadGame, 440)
 
 SIGSCAN_WINDOWS(readConsoleCommandInjectSig, "8B 45 F4 50 68 ? 04 00 00 68 ? ? ? ? 8D 4D 90 E8 ? ? ? ? 8D 4F 04 E8") // needed to mask one byte
 
-OFFSET_WINDOWS(net_time, 21) // found myself
+OFFSET_WINDOWS(net_time, 21) // found
 
-OFFSET_WINDOWS(PerUserInput_tSize, 212) // found myself
-OFFSET_WINDOWS(m_pCommands, 224) // found myself
+OFFSET_WINDOWS(PerUserInput_tSize, 212) // found
+OFFSET_WINDOWS(m_pCommands, 224) // found
 // multiplayer_backup is good
 
 // check/refind these
-OFFSET_WINDOWS(m_pSurfaceData, 4088) // found myself but unsure
-OFFSET_WINDOWS(S_m_surfaceFriction, 4092) // found myself
-OFFSET_WINDOWS(C_m_surfaceFriction, 5532) // found myself
+OFFSET_WINDOWS(m_pSurfaceData, 4088) // found but unsure
+OFFSET_WINDOWS(S_m_surfaceFriction, 4092) // found
+OFFSET_WINDOWS(C_m_surfaceFriction, 5532) // found

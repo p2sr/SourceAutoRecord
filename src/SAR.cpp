@@ -29,15 +29,15 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_
 
 
 bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory) {
+	console = new Console();
+	if (!console->Init())
+		return false;
+	
 	modules = new Modules();
 	features = new Features();
 	cheats = new Cheats();
 	plugin = new Plugin();
 	game = Game::CreateNew();
-
-	console = new Console();
-	if (!console->Init())
-		return false;
 
 #ifdef _WIN32
 	// The auto-updater can create this file on Windows; we should try

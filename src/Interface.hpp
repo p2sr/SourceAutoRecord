@@ -61,7 +61,7 @@ public:
 	static Interface *Create(void *ptr, bool copyVtable = true, bool autoHook = true);
 	static Interface *Create(const char *filename, const char *interfaceSymbol, bool copyVtable = true, bool autoHook = true);
 	static void Delete(Interface *ptr);
-	static void *GetPtr(const char *filename, const char *interfaceSymbol, bool shouldTryLowerVersion = true);
+	static void *GetPtr(const char *filename, const char *interfaceSymbol);
 
 	template <typename T = void *>
 	static T Get(const char *filename, const char *interfaceSymbol) {
