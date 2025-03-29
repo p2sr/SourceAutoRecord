@@ -214,6 +214,7 @@ ON_EVENT(SESSION_START) {
 	if (!sar_speedrun_skip_cutscenes.GetBool()) return;
 	if (engine->IsOrange()) return;
 	switch (sar.game->GetVersion()) {
+		case SourceGame_Portal2_2011:
 		case SourceGame_Portal2:
 			if (Game::IsSpeedrunMod()) return;
 
@@ -335,7 +336,7 @@ int SpeedrunTimer::GetSegmentTicks() {
 	int ticks = 0;
 	ticks += g_speedrun.saved;
 	if (!g_speedrun.isPaused && !g_speedrun.inCoopPause && (!engine->demoplayer->IsPlaying() || engine->demoplayer->IsPlaybackFixReady())) {
-		if (sar_speedrun_skip_cutscenes.GetBool() && sar.game->GetVersion() == SourceGame_Portal2 && !Game::IsSpeedrunMod()) {
+		if (sar_speedrun_skip_cutscenes.GetBool() && sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011) && !Game::IsSpeedrunMod()) {
 			if (g_speedrun.lastMap == "sp_a2_bts6") return 3112;
 			else if (g_speedrun.lastMap == "sp_a3_00") return 4666;
 		}

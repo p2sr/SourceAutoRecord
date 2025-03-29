@@ -395,6 +395,7 @@ static const char *gameName() {
 	case SourceGame_ThinkingWithTimeMachine: return "twtm";
 	case SourceGame_PortalReloaded: return "reloaded";
 	case SourceGame_Portal2: return Game::IsSpeedrunMod() ? "srm" : "portal2";
+	case SourceGame_Portal2_2011: return "portal2";
 	case SourceGame_INFRA: return "infra";
 	case SourceGame_BeginnersGuide: return "guide";
 	case SourceGame_StanleyParable: return "stanley";
