@@ -507,6 +507,13 @@ CON_COMMAND_F_COMPLETION(sar_startdemos, "sar_startdemos <demoname> - improved v
 
 	std::string name = args[1];
 
+	std::string dirPath = fileSystem->FindFileSomewhere(name).value_or(name);
+	if (std::filesystem::is_directory(dirPath)) {
+		console->Print("%s is a directory. Using sar_startdemosfolder\n", dirPath.c_str());
+		engine->ExecuteCommand(Utils::ssprintf("sar_startdemosfolder \"%s\"", dirPath.c_str()).c_str());
+		return;
+	}
+
 	if (name.length() > 4) {
 		if (name.substr(name.length() - 4, 4) == ".dem")
 			name.resize(name.length() - 4);
