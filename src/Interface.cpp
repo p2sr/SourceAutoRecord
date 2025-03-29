@@ -73,7 +73,7 @@ void Interface::Delete(Interface *ptr) {
 		ptr = nullptr;
 	}
 }
-void *Interface::GetPtr(const char *filename, const char *interfaceSymbol, bool shouldTryLowerVersion) {
+void *Interface::GetPtr(const char *filename, const char *interfaceSymbol) {
 	auto handle = Memory::GetModuleHandleByName(filename);
 	if (!handle) {
 		console->DevWarning("SAR: Failed to open module %s!\n", filename);
@@ -92,16 +92,12 @@ void *Interface::GetPtr(const char *filename, const char *interfaceSymbol, bool 
 	void *fn = CreateInterface(interfaceSymbol, &ret);
 
 	if (ret) {
-		uintptr_t CreateInterfaceInternal;
-		InterfaceReg *s_pInterfaceRegs;
-		// hacky: if offsets aren't initialized then just hardcode the offsets
-		// (this is currently only for differentiating 2011/latest p2)
+		uintptr_t CreateInterfaceInternal = 0;
+		InterfaceReg *s_pInterfaceRegs = nullptr;
+		// make sure offsets are initialized so the GetPtr call for detecting 2011 p2 doesn't explode
 		if (Offsets::CreateInterfaceInternal && Offsets::s_pInterfaceRegs) {
 			CreateInterfaceInternal = Memory::Read((uintptr_t)CreateInterface + Offsets::CreateInterfaceInternal);
 			s_pInterfaceRegs = Memory::DerefDeref<InterfaceReg *>(CreateInterfaceInternal + Offsets::s_pInterfaceRegs);
-		} else {
-			CreateInterfaceInternal = Memory::Read((uintptr_t)CreateInterface + 5);
-			s_pInterfaceRegs = Memory::DerefDeref<InterfaceReg *>(CreateInterfaceInternal + 6);
 		}
 
 		if (!CreateInterfaceInternal || !s_pInterfaceRegs) {
@@ -117,7 +113,7 @@ void *Interface::GetPtr(const char *filename, const char *interfaceSymbol, bool 
 			}
 		}
 
-		if (!fn && shouldTryLowerVersion) {
+		if (!fn) {
 			// Interface012 -> Interface0
 			// Try to get any version of the interface
 			if (interfaceSymbol[std::strlen(interfaceSymbol) - 3] >= '0' && interfaceSymbol[std::strlen(interfaceSymbol) - 3] <= '9') {

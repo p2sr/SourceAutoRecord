@@ -79,7 +79,7 @@ Game *Game::CreateNew() {
 
 	if (Utils::ICompare(modDir, Portal2::ModDir())) {
 		
-		void *engineClient = Interface::GetPtr(MODULE("engine"), "VEngineClient015", false);
+		void *engineClient = Interface::GetPtr(MODULE("engine"), "VEngineClient015");
 		if (engineClient) {
 			return new Portal2();
 		} else {

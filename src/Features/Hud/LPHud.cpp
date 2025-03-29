@@ -39,20 +39,21 @@ static int getCurrentCount() {
 // Get the current total portal count as reported by the the players'
 // m_StatsThisLevel values
 static int getStatsCount() {
-	if (!sar.game->Is(SourceGame_Portal2_2011)) {
-		int total = 0;
-
-		int slots = engine->GetMaxClients() >= 2 ? 2 : 1;
-		for (int slot = 0; slot < slots; ++slot) {
-			ClientEnt *player = client->GetPlayer(slot + 1);
-			if (!player) continue;
-			total += player->field<int>("iNumPortalsPlaced");
-		}
-
-		return total;
-	} else {
+	// this field doesn't seem to exist in 2011 Portal 2
+	if (sar.game->Is(SourceGame_Portal2_2011)) {
 		return 0;
 	}
+
+	int total = 0;
+
+	int slots = engine->GetMaxClients() >= 2 ? 2 : 1;
+	for (int slot = 0; slot < slots; ++slot) {
+		ClientEnt *player = client->GetPlayer(slot + 1);
+		if (!player) continue;
+		total += player->field<int>("iNumPortalsPlaced");
+	}
+
+	return total;
 }
 
 // Calculate an up-to-date total portal count using the player stats and
