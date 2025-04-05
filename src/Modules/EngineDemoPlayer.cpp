@@ -593,7 +593,36 @@ CON_COMMAND_F_COMPLETION(sar_startdemosfolder, "sar_startdemosfolder <folder nam
 		}
 	}
 
-	std::sort(engine->demoplayer->demoQueue.begin(), engine->demoplayer->demoQueue.end());
+	std::sort(engine->demoplayer->demoQueue.begin(), engine->demoplayer->demoQueue.end(),
+	[](const std::string &a, const std::string &b) {
+		auto extractNumber = [](const std::string &str) -> int {
+			size_t underscorePos = str.find_last_of('_');
+			if (underscorePos != std::string::npos) {
+				try {
+					return std::stoi(str.substr(underscorePos + 1));
+				} catch (std::invalid_argument &) {
+					return 0;
+				}
+			}
+			return 0;
+		};
+
+		std::string aName = a, bName = b;
+		aName.erase(aName.size() - 4);
+		bName.erase(bName.size() - 4);
+		size_t aSlash = aName.find_last_of('/'), bSlash = bName.find_last_of('/');
+		if (aSlash != std::string::npos) aName = aName.substr(aSlash + 1);
+		if (bSlash != std::string::npos) bName = bName.substr(bSlash + 1);
+		size_t aUnder = aName.find_last_of('_'), bUnder = bName.find_last_of('_');
+		std::string aBase = (aUnder != std::string::npos) ? aName.substr(0, aUnder) : aName;
+		std::string bBase = (bUnder != std::string::npos) ? bName.substr(0, bUnder) : bName;
+		if (aBase == bBase) {
+			int aNum = extractNumber(aName), bNum = extractNumber(bName);
+			if (aNum != 0 && bNum != 0) return aNum < bNum;
+			return aNum == 0;
+		}
+		return aBase < bBase;
+	});	
 
 	engine->demoplayer->demoQueueSize = engine->demoplayer->demoQueue.size();
 	engine->demoplayer->currentDemoID = 0;
