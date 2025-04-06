@@ -70,7 +70,7 @@ static inline int getPrecision(bool velocity = false) {
 	int p = velocity ? sar_hud_velocity_precision.GetInt() : sar_hud_precision.GetInt();
 	if (p < 0) p = 0;
 	if (!sv_cheats.GetBool()) {
-		const int max = velocity ? 2 : 6;
+		const int max = 2;
 		if (p > max) p = max;
 	}
 	return p;
