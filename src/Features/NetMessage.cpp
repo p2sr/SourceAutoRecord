@@ -66,7 +66,7 @@ static bool readyToSend() {
 
 void NetMessage::SessionStarted() {
 	if (engine->IsCoop() && !engine->IsSplitscreen()) {
-		if (!g_session_init && engine->IsOrange()) {
+		if (!g_session_init && engine->IsOrange() && sar_netmessage_enable.GetBool()) {
 			if (sar_netmessage_debug.GetBool()) console->Print("New coop session started as orange, saying hello!\n");
 			g_session_init = true;
 			engine->ExecuteCommand("say \"" SAR_MSG_HELLO "\"");
