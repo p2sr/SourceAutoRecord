@@ -102,6 +102,8 @@ static void drawTraceInfo(int tick, int slot, const Trace &trace, std::function<
 struct TraceHoverInfo {
 	size_t tick;
 	std::string trace_name;
+	bool coop;
+	int slot;
 	Vector pos;
 	float speed;
 	float dist;
@@ -251,6 +253,7 @@ void PlayerTrace::DrawInWorld() const {
 		std::string trace_name = it->first;
 		const Trace &trace = it->second;
 		if (!trace.draw) continue;
+		bool coop = trace.positions[0].size() >= 2 && trace.positions[1].size() >= 2;
 		for (int slot = 0; slot < 2; slot++) {
 			if (trace.positions[slot].size() < 2) continue;
 
@@ -344,7 +347,7 @@ void PlayerTrace::DrawInWorld() const {
 						RenderCallback::constant({255, 0, 255, 255}, draw_through_walls)
 					);
 				}
-				hovers.push_back({closest_id, trace_name, closest_pos, closest_vel, closest_dist});
+				hovers.push_back({closest_id, trace_name, coop, slot, closest_pos, closest_vel, closest_dist});
 			}
 		}
 	}
@@ -945,6 +948,9 @@ ON_EVENT(RENDER) {
 			}
 			if (playerTrace->GetTraceCount() > 1) {
 				hover_str += Utils::ssprintf("trace: %s\n", h.trace_name.c_str());
+			}
+			if (h.coop) {
+				hover_str += Utils::ssprintf("slot: %s\n", h.slot == 0 ? "blue" : "orange");
 			}
 			hover_str += Utils::ssprintf("pos: %.1f %.1f %.1f\n", h.pos.x, h.pos.y, h.pos.z);
 			hover_str += Utils::ssprintf("horiz. speed: %.2f\n", h.speed);
