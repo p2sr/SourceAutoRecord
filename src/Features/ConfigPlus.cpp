@@ -164,6 +164,9 @@ CON_COMMAND_F_COMPLETION(svar_substr, "svar_substr <variable> <from> [len] - set
 	if (from < 0 || (unsigned)from > value.length()) {
 		return console->Print("Substring index out of bounds of variable\n");
 	}
+
+	if (len < 0) len += value.length();
+	
 	if (len < 0) {
 		return console->Print("Negative length of substring\n");
 	}
