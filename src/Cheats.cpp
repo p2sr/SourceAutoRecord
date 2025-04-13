@@ -50,6 +50,9 @@ Variable sar_patch_cfg("sar_patch_cfg", "0", 0, 1, "Patches Crouch Flying Glitch
 Variable sar_prevent_ehm("sar_prevent_ehm", "0", 0, 1, "Prevents Entity Handle Misinterpretation (EHM) from happening.\n");
 Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables the viewmodel lagging behind.\n");
 Variable sar_disable_viewmodel_shadows("sar_disable_viewmodel_shadows", "0", 0, 1, "Disables the shadows on the viewmodel.\n");
+#ifdef _WIN32
+Variable sar_floor_reportals("sar_floor_reportals", "0", "Toggles floor reportals.\n", FCVAR_CHEAT);
+#endif
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -311,7 +314,7 @@ CON_COMMAND(sar_geteyepos, "sar_geteyepos [slot] - get the view position (portal
 	console->Print("angles: %.6f %.6f %.6f\n", angles.x, angles.y, angles.z);
 }
 
-CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit_reload_api_key - reload the boards API key from its file.\n", FCVAR_DONTRECORD) {
+CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit_reload_api_key - reload the board.portal2.sr API key from its file.\n", FCVAR_DONTRECORD) {
 	if (args.ArgC() != 1) {
 		return console->Print(sar_challenge_autosubmit_reload_api_key.ThisPtr()->m_pszHelpString);
 	}
@@ -360,6 +363,8 @@ void Cheats::Init() {
 
 	Variable::RegisterAll();
 	Command::RegisterAll();
+
+	sar_floor_reportals.AddCallBack(&Cheats::OnFloorReportalVarChanged);
 }
 void Cheats::Shutdown() {
 	if (cvars) cvars->Lock();
@@ -372,6 +377,8 @@ void Cheats::Shutdown() {
 
 	Variable::UnregisterAll();
 	Command::UnregisterAll();
+
+	sar_floor_reportals.ClearAllCallbacks();
 }
 
 
@@ -466,4 +473,58 @@ void Cheats::EnsureSlopeBoost(const CHLMoveData *move, void *player, CGameTrace 
 		*tr = NULL;
 	}
 
+}
+
+void Cheats::OnFloorReportalVarChanged(void *pVar, const char *pOldString, float flOldValue) {
+#ifdef _WIN32
+	if (sar.game->Is(SourceGame_Portal2_2011)) {
+		console->Print("Available only on post-DLC builds.\n");
+		return;
+	}
+
+	int iNewConVarValue = sar_floor_reportals.GetInt();
+	const char *pszNewConVarVal = sar_floor_reportals.GetString();
+	static bool bPatched = false;
+
+	// Janky, Hacky user input validation checks to ensure that they input only 0 or 1.
+	// TODO: Strings unfortunately default to 0, need to make a case so they don't pass the checks below.
+	if (std::strcmp("0", pszNewConVarVal) && std::strcmp("1", pszNewConVarVal)) {
+		return;
+	} else if (iNewConVarValue != 1 && iNewConVarValue != 0) {
+		return;
+	} else if (iNewConVarValue == std::atoi(pOldString)) {
+		return;
+	} else if ((iNewConVarValue == 0 && !bPatched) || (iNewConVarValue == 1 && bPatched)) {
+		return;
+	} 
+	bPatched = iNewConVarValue == 1;
+
+	static void *originalMemBlock = (void *)Memory::Scan(MODULE("server"), "75 7D 8B 8E C0 04 00 00");
+	static uint8_t originalBytes[2];
+	if (sar_floor_reportals.GetInt() == 1) {
+		console->Print("Patching...\n");
+		memcpy(originalBytes, originalMemBlock, sizeof(originalBytes));
+		
+		uint8_t shellCode[] = {0x90, 0x90};
+		DWORD old;
+		VirtualProtect(originalMemBlock, sizeof(shellCode), PAGE_EXECUTE_READWRITE, &old);
+		memcpy(originalMemBlock, shellCode, sizeof(shellCode));
+		
+		VirtualProtect(originalMemBlock, sizeof(shellCode), old, &old);
+		FlushInstructionCache(reinterpret_cast<HANDLE>(-1), originalMemBlock, sizeof(shellCode));
+	} else if (sar_floor_reportals.GetInt() == 0) {
+		console->Print("Unpatching...\n");
+		memcpy(originalBytes, originalMemBlock, sizeof(originalBytes));
+		
+		uint8_t shellCode[] = {0x75, 0x7D};
+		DWORD old;
+		VirtualProtect(originalMemBlock, sizeof(shellCode), PAGE_EXECUTE_READWRITE, &old);
+		memcpy(originalMemBlock, shellCode, sizeof(shellCode));
+		
+		VirtualProtect(originalMemBlock, sizeof(shellCode), old, &old);
+		FlushInstructionCache(reinterpret_cast<HANDLE>(-1), originalMemBlock, sizeof(shellCode));
+	} else {
+		console->Print("Incorrect arguments provided.\n");
+	}
+#endif
 }
