@@ -219,6 +219,7 @@
 |sar_find_server_class|cmd|sar_find_server_class \<class_name> - finds specific server class tables and props with their offset|
 |<i title="Portal Reloaded">sar_fix_reloaded_cheats</i>|1|Overrides map execution of specific console commands in Reloaded in order to separate map usage from player usage for these commands.|
 |sar_fix_viewmodel_bug|0|Fixes the viewmodel seemingly randomly disappearing.|
+|sar_floor_reportals|0|Toggles floor reportals. Requires cheats.|
 |sar_font_get_name|cmd|sar_font_get_name \<id> - gets the name of a font from its index|
 |sar_font_list|cmd|sar_font_list - lists all available fonts|
 |sar_force_fov|cmd|sar_force_fov \<fov> - forces player FOV|

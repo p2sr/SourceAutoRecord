@@ -284,6 +284,7 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 	}
 
 	Cheats::AutoStrafe(slot, thisptr, cmd);
+	Cheats::CheckFloorReportals();
 
 	inputHud.SetInputInfo(slot, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
 

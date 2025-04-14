@@ -10,8 +10,7 @@ public:
 	static void PatchBhop(int slot, void *player, CUserCmd *cmd);
 	static void AutoStrafe(int slot, void *player, CUserCmd *cmd);
 	static void EnsureSlopeBoost(const CHLMoveData *move, void *player, CGameTrace **tr);
-
-	static void OnFloorReportalVarChanged(void *pVar, const char *pOldString, float flOldValue);
+	static void CheckFloorReportals();
 };
 
 extern Variable sar_autorecord;
