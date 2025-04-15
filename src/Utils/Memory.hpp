@@ -51,6 +51,7 @@ namespace Memory {
 		}
 		bool Restore();
 		bool IsPatched();
+		bool IsInit();
 	};
 
 	struct Pattern {

@@ -50,6 +50,7 @@ Variable sar_patch_cfg("sar_patch_cfg", "0", 0, 1, "Patches Crouch Flying Glitch
 Variable sar_prevent_ehm("sar_prevent_ehm", "0", 0, 1, "Prevents Entity Handle Misinterpretation (EHM) from happening.\n");
 Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables the viewmodel lagging behind.\n");
 Variable sar_disable_viewmodel_shadows("sar_disable_viewmodel_shadows", "0", 0, 1, "Disables the shadows on the viewmodel.\n");
+Variable sar_floor_reportals("sar_floor_reportals", "0", "Toggles floor reportals. Requires cheats.\n", FCVAR_CHEAT);
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -319,6 +320,8 @@ CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit
 	AutoSubmit::LoadApiKey(true);
 }
 
+Memory::Patch *g_floorReportalPatch;
+
 void Cheats::Init() {
 	sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
 	ui_loadingscreen_transition_time = Variable("ui_loadingscreen_transition_time");
@@ -358,6 +361,14 @@ void Cheats::Init() {
 		Variable("upgrade_portalgun").RemoveFlag(FCVAR_CHEAT);
 	}
 
+	g_floorReportalPatch = new Memory::Patch();
+	auto floorReportalBranch = Memory::Scan(MODULE("server"), Offsets::FloorReportalBranch);
+	if (floorReportalBranch) {
+		unsigned char floorReportalBranchByte = 0x70;
+		g_floorReportalPatch->Execute(floorReportalBranch, &floorReportalBranchByte, 1);
+		g_floorReportalPatch->Restore();
+	}
+
 	Variable::RegisterAll();
 	Command::RegisterAll();
 }
@@ -372,6 +383,9 @@ void Cheats::Shutdown() {
 
 	Variable::UnregisterAll();
 	Command::UnregisterAll();
+	
+	g_floorReportalPatch->Restore();
+	SAFE_DELETE(g_floorReportalPatch);
 }
 
 
@@ -466,4 +480,27 @@ void Cheats::EnsureSlopeBoost(const CHLMoveData *move, void *player, CGameTrace 
 		*tr = NULL;
 	}
 
+}
+
+void Cheats::CheckFloorReportals() {
+	bool enabled = sar_floor_reportals.GetBool();
+	if (enabled && (!g_floorReportalPatch || !g_floorReportalPatch->IsInit())) {
+		console->Print("sar_floor_reportals is not available.\n");
+		sar_floor_reportals.SetValue(0);
+		return;
+	}
+	if (!sv_cheats.GetBool() && enabled) {
+		console->Print("sar_floor_reportals requires sv_cheats 1.\n");
+		sar_floor_reportals.SetValue(0);
+		enabled = false;
+	}
+	if (enabled == g_floorReportalPatch->IsPatched()) {
+		return;
+	}
+
+	if (enabled) {
+		g_floorReportalPatch->Execute();
+	} else {
+		g_floorReportalPatch->Restore();
+	}
 }
