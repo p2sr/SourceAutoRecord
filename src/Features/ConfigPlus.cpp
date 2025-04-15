@@ -753,6 +753,8 @@ ON_INIT {
 		// be kinda safe
 		msg.erase(std::remove(msg.begin(), msg.end(), '"'), msg.end());
 		msg.erase(std::remove(msg.begin(), msg.end(), ';'), msg.end());
+		msg.erase(std::remove(msg.begin(), msg.end(), '\r'), msg.end());
+		msg.erase(std::remove(msg.begin(), msg.end(), '\n'), msg.end());
 		Event::Trigger<Event::CFG_MESSAGE>({msg});
 	});
 }
