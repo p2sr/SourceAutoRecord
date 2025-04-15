@@ -507,7 +507,8 @@ SIGSCAN_DEFAULT(CreateViewModel, "E8 ? ? ? ? 5F 5D C2 04 00 53",
 SIGSCAN_DEFAULT(aircontrol_fling_speedSig, "0F 2F 25 ? ? ? ? F3 0F 11 45",
                                            "0F 2F 05 ? ? ? ? 0F 86 ? ? ? ? 0F 2F D1") // "%s: Make in time? %s velocity %f wish %f\n" -> CPortalGameMovement::AirPortalFunnel -> xref CPortalGameMovement::PortalFunnel -> xref(has 90000) CPortalGameMovement::AirMove, [U]COMISS XMM dword ptr
 OFFSET_DEFAULT(aircontrol_fling_speedOff, 3, 3)
-SIGSCAN_DEFAULT(FloorReportalBranch, "75 7D 8B 8E C0 04 00 00", "")
+SIGSCAN_DEFAULT(FloorReportalBranch, "75 7D 8B 8E C0 04 00 00",
+                                     "75 ? 8B 85 ? ? ? ? 8B 0D") // "Portal.open_red" xref(nothing after if) -> CProp_Portal::NewLocation -> first function call CPortal_Base2D::NewLocation -> 4x func call followed by test, [jnz]
 
 
 // Steam API

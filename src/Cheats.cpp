@@ -484,24 +484,17 @@ void Cheats::EnsureSlopeBoost(const CHLMoveData *move, void *player, CGameTrace 
 
 void Cheats::CheckFloorReportals() {
 	bool enabled = sar_floor_reportals.GetBool();
-#ifndef _WIN32
-	if (enabled) {
-		console->Print("sar_floor_reportals does not support Linux. (yet)\n");
+	if (enabled && (!g_floorReportalPatch || !g_floorReportalPatch->IsInit())) {
+		console->Print("sar_floor_reportals is not available.\n");
 		sar_floor_reportals.SetValue(0);
 		return;
 	}
-#endif
 	if (!sv_cheats.GetBool() && enabled) {
 		console->Print("sar_floor_reportals requires sv_cheats 1.\n");
 		sar_floor_reportals.SetValue(0);
 		enabled = false;
 	}
 	if (enabled == g_floorReportalPatch->IsPatched()) {
-		return;
-	}
-	if (sar.game->Is(SourceGame_Portal2_2011)) {
-		console->Print("Available only on post-DLC builds.\n");
-		sar_floor_reportals.SetValue(0);
 		return;
 	}
 

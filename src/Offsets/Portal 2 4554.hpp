@@ -79,6 +79,7 @@ OFFSET_WINDOWS(PrecacheModel, 62)
 
 // Server
 SIGSCAN_WINDOWS(ViewPunch, "55 8B EC A1 ? ? ? ? 83 EC 0C 83 78 ? 00 56 8B F1") // this works for 9568 too, maybe shorten that pattern/adjust to match this?
+SIGSCAN_EMPTY(FloorReportalBranch)
 
 // CBasePlayer
 OFFSET_WINDOWS(m_pShadowStand, 3156) // found

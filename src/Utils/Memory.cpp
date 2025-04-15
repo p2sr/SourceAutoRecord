@@ -318,3 +318,7 @@ bool Memory::Patch::Restore() {
 bool Memory::Patch::IsPatched() {
 	return this->isPatched;
 }
+
+bool Memory::Patch::IsInit() {
+	return this->original != nullptr && this->patch != nullptr;
+}
