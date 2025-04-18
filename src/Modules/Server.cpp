@@ -575,6 +575,12 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 		activatorSlot = server->GetSplitScreenPlayerSlot(activator);
 	}
 
+	if (!strcasecmp(className, "point_clientcommand") && !strcasecmp(inputName, "Command")) {
+		if (caller && !strcasecmp(server->GetEntityClassName(caller), "player")) {
+			parameter.iszVal = "";
+		}
+	}
+
 	SpeedrunTimer::TestInputRules(entName, className, inputName, parameter.ToString(), activatorSlot);
 
 	if (engine->demorecorder->isRecordingDemo) {
