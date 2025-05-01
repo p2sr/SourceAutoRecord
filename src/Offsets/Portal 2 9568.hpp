@@ -126,7 +126,7 @@ OFFSET_DEFAULT(GetRecordingTick, 1, 1)
 OFFSET_DEFAULT(SetSignonState, 3, 3)
 OFFSET_DEFAULT(StartRecording, 2, 2)
 OFFSET_DEFAULT(StopRecording, 7, 7)
-OFFSET_DEFAULT(RecordCustomData, 14, 14)
+OFFSET_DEFAULT(RecordCustomData, 14, 14) // "IEngineClient::RecordDemoCustomData(): Not recording a demo.\n" xref -> vtable call using params 2 and 3
 OFFSET_DEFAULT(RecordCommand, 8, 8)
 OFFSET_DEFAULT(m_szDemoBaseName, 1344, 1344)
 OFFSET_DEFAULT(m_bRecording, 1606, 1606)
@@ -440,8 +440,8 @@ SIGSCAN_DEFAULT(Host_AccumulateTime, "55 8B EC 51 F3 0F 10 05 ? ? ? ? F3 0F 58 4
                                      "83 EC 1C 8B 15 ? ? ? ? F3 0F 10 05 ? ? ? ? F3 0F 58 44 24 20 F3 0F 11 05 ? ? ? ? 8B 02 8B 40 24 3D ? ? ? ? 0F 85 41 03 00 00") // "-tools" -> function with 2 references -> Host_AccumulateTime
 SIGSCAN_DEFAULT(_Host_RunFrame_Render, "A1 ? ? ? ? 85 C0 75 1B 8B 0D ? ? ? ? 8B 01 8B 50 40 68 ? ? ? ? FF D2 A3 ? ? ? ? 85 C0 74 0D 6A 02 6A F6 50 E8 ? ? ? ? 83 C4 0C",
                                        "55 89 E5 57 56 53 83 EC 1C 8B 1D ? ? ? ? 85 DB 0F 85 69 02 00 00 E8 64 FF FF FF A1 ? ? ? ? 80 3D C5 ? ? ? ? 8B 78 30 74 12 83 EC 08 6A 00") // "_Host_RunFrame_Render" xref
-SIGSCAN_DEFAULT(readCustomDataInjectSig, "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF", // "Unable to decode custom demo data, callback \"%s\" not found.\n" -> memory reference -> first function call
-                                         "8D 85 C4 FE FF FF 83 EC 04 8D B5 E8 FE FF FF 56 50 FF B5 94 FE FF FF E8")
+SIGSCAN_DEFAULT(readCustomDataInjectSig, "8D 45 E8 50 8D 4D BC 51 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF",
+                                         "8D 85 C4 FE FF FF 83 EC 04 8D B5 E8 FE FF FF 56 50 FF B5 94 FE FF FF E8") // "Unable to decode custom demo data, callback \"%s\" not found.\n" -> memory reference -> first function call
 OFFSET_DEFAULT(readCustomDataInjectOff, 12, 24)
 SIGSCAN_DEFAULT(readConsoleCommandInjectSig, "8B 45 F4 50 68 FE 04 00 00 68 ? ? ? ? 8D 4D 90 E8 ? ? ? ? 8D 4F 04 E8",
                                              "FF B5 AC FE FF FF 8D B5 E8 FE FF FF 68 FE 04 00 00 68 ? ? ? ? 56 E8 ? ? ? ? 58 FF B5 94 FE FF FF E8") // "%d dem_consolecmd [%s]\n" -> memory reference -> second function call
@@ -495,7 +495,7 @@ SIGSCAN_DEFAULT(ViewPunch, "55 8B EC A1 ? ? ? ? 83 EC 0C 83 78 30 00 56 8B F1 0F
 SIGSCAN_DEFAULT(UTIL_FindClosestPassableSpace, "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC 98 02 00 00 8B 43 0C 8B 48 08 F3 0F 10 48 04 F3 0F 10 00 F3 0F 10 3D ? ? ? ?",
                                                "55 BA 00 01 00 00 66 0F EF ED 66 0F EF C0 57 56 53 81 EC CC 02 00 00 8B 0D ? ? ? ? 8B 84 24 E4 02 00 00 66 89 94 24 54 01 00 00 8B 3D ? ? ? ?")
 SIGSCAN_DEFAULT(FindClosestPassableSpace, "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC A1 ? ? ? ? 81 EC 88 02 00 00 83 78 30 00 56 57 0F 84 ? ? ? ? 8B 73 08 8B 8E DC 00 00 00",
-                                          "A1 ? ? ? ? 57 56 53 8B 5C 24 10 8B 74 24 14 8B 50 30 8B 4C 24 18 85 D2 74 29 8B 83 E4 00 00 00 8B 3D ? ? ? ? 83 F8 FF 74 24 0F B7 D0 C1 E8 10")
+                                          "A1 ? ? ? ? 57 56 53 8B 5C 24 10 8B 74 24 14 8B 50 30 8B 4C 24 18 85 D2 74 29 8B 83 E4 00 00 00 8B 3D ? ? ? ? 83 F8 FF 74 24 0F B7 D0 C1 E8 10") // "Hurting the player for FindClosestPassableSpaceFailure!" in CPortalGameMovement::CheckStuck -> prev function call
 SIGSCAN_DEFAULT(UTIL_GetCommandClientIndex, "A1 ? ? ? ? 40 C3",
                                             "A1 ? ? ? ? 83 C0 01 C3") // "say_team" callback -> first function call -> UTIL_GetCommandClient -> comparison data other xref -> UTIL_GetCommandClientIndex
 SIGSCAN_DEFAULT(CheckStuck_FloatTime, "FF ? ? ? ? ? D9 5D F8 8B 56 04 8B 42 1C 8B ? ? ? ? ? 3B C3 75 04 33 C9 EB 08 8B C8 2B 4A 58 C1 F9 04 F3 0F 10 84 CE 70",

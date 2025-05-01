@@ -110,9 +110,7 @@ SIGSCAN_WINDOWS(GetChapterProgress, "")
 // Engine
 SIGSCAN_WINDOWS(Host_AccumulateTime, "55 8B EC F3 0F 10 05 ? ? ? ? F3 0F 58 45")
 SIGSCAN_WINDOWS(readCustomDataInjectSig, "8D 4D E8 51 8D 55 BC 52 8D 4F 04 E8 ? ? ? ? 8B 4D BC 83 F9 FF")
-OFFSET_WINDOWS(readCustomDataInjectOff, 12)
 SIGSCAN_WINDOWS(readConsoleCommandInjectSig, "8B 55 F4 52 68 13 05 00 00 68 ? ? ? ? 8D 4D 90 E8 ? ? ? ? 8D 4F 04 E8")
-OFFSET_WINDOWS(readConsoleCommandInjectOff, 26)
 SIGSCAN_WINDOWS(Cmd_ExecuteCommand, "55 8B EC 57 8B 7D ? 8B 07 85 C0")
 SIGSCAN_WINDOWS(InsertCommand, "55 8B EC 56 57 8B 7D ? 8B F1 81 FF FF 01 00 00")
 
@@ -121,6 +119,7 @@ SIGSCAN_WINDOWS(InsertCommand, "55 8B EC 56 57 8B 7D ? 8B F1 81 FF FF 01 00 00")
 SIGSCAN_WINDOWS(ViewPunch, "55 8B EC A1 ? ? ? ? 8B 50 ? 83 EC 0C 56 8B F1")
 SIGSCAN_WINDOWS(FindClosestPassableSpace, "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B ? 89 6C 24 ? 8B EC A1 ? ? ? ? 8B 50 ? 81 EC 88 02 00 00")
 SIGSCAN_WINDOWS(CheckStuck_FloatTime, "FF 15 ? ? ? ? D9 5D ? 8B 4E")
+SIGSCAN_EMPTY(FloorReportalBranch)
 
 
 // Steam API

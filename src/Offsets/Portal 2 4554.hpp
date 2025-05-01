@@ -120,6 +120,7 @@ SIGSCAN_WINDOWS(FindElementSig, "55 8B EC 53 8B 5D ? 56 57 8B F1 33 FF")
 OFFSET_WINDOWS(m_szLevelName, 36)
 OFFSET_WINDOWS(m_bLoadGame, 440)
 
+SIGSCAN_WINDOWS(readCustomDataInjectSig, "8D 45 ? 50 8D 4D ? 51 8D 4F ? E8 ? ? ? ? 8B 4D")
 SIGSCAN_WINDOWS(readConsoleCommandInjectSig, "8B 45 F4 50 68 ? 04 00 00 68 ? ? ? ? 8D 4D 90 E8 ? ? ? ? 8D 4F 04 E8") // needed to mask one byte
 
 OFFSET_WINDOWS(net_time, 21) // found
