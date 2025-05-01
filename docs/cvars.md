@@ -531,6 +531,7 @@
 |sar_speedrun_time_pauses|0|Include time spent paused in the speedrun timer.|
 |sar_speedrun_triggers_info|0|Print player velocity (and position) upon mtrigger activation.<br>1 - position and velocity<br>2 - only horizontal velocity|
 |sar_sr_hud|0|Draws speedrun timer. 1 = speedrun timer, 2 = speedrun and split timer.|
+|sar_sr_hud_bg|0|Draw a background behind the speedrun timer.|
 |sar_sr_hud_font_color|255 255 255 255|RGBA font color of speedrun timer HUD.|
 |sar_sr_hud_font_index|70|Font index of speedrun timer HUD.|
 |sar_sr_hud_font_index_2|71|Font index of speedrun split timer HUD.|

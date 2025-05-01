@@ -12,6 +12,7 @@ Variable sar_sr_hud_y("sar_sr_hud_y", "100", "Y offset of speedrun timer HUD.\n"
 Variable sar_sr_hud_font_color("sar_sr_hud_font_color", "255 255 255 255", "RGBA font color of speedrun timer HUD.\n", FCVAR_DONTRECORD);
 Variable sar_sr_hud_font_index("sar_sr_hud_font_index", "70", 0, "Font index of speedrun timer HUD.\n", FCVAR_DONTRECORD);
 Variable sar_sr_hud_font_index_2("sar_sr_hud_font_index_2", "71", 0, "Font index of speedrun split timer HUD.\n", FCVAR_DONTRECORD);
+Variable sar_sr_hud_bg("sar_sr_hud_bg", "0", "Draw a background behind the speedrun timer.\n", FCVAR_DONTRECORD);
 
 SpeedrunHud speedrunHud;
 
@@ -54,6 +55,10 @@ void SpeedrunHud::Paint(int slot) {
 
 	if (xOffset < 0) xOffset += sw - width;
 	if (yOffset < 0) yOffset += sh - height;
+
+	if (sar_sr_hud_bg.GetBool()) {
+		surface->DrawRect(Color{0, 0, 0, 192}, xOffset - 2, yOffset - 2, xOffset + width + 2, yOffset + height + 2);
+	}
 
 	surface->DrawTxt(font, xOffset + width - width1, yOffset, fontColor, "%s", text.c_str());
 
