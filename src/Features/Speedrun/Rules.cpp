@@ -513,6 +513,12 @@ void SpeedrunTimer::TickRules() {
 				continue;
 			}
 
+			auto fromPlayer = SE(portal)->field<CBaseHandle>("m_hFiredByPlayer");
+			if (!fromPlayer) {
+				portalPositions[slot][i] = {};
+				continue;
+			}
+
 			bool activated = SE(portal)->field<bool>("m_bActivated");
 			if (!activated) {
 				portalPositions[slot][i] = {};
