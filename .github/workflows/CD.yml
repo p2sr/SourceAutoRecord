@@ -45,7 +45,7 @@ jobs:
             -F "count=1" \
             -F "hashes[0]=$(sha256sum sar.so | cut -d ' ' -f 1)" \
             -F "files[0]=@sar.so" \
-            "https://dl.sar.portal2.sr/api/v1/upload"
+            "https://dl.sar.portal2.jonesy.moe/api/v1/upload"
   build-win:
     name: Windows Build
     runs-on: windows-2019
@@ -95,7 +95,7 @@ jobs:
             -F "hashes[1]=$(sha256sum bin/sar.pdb | cut -d ' ' -f 1)" \
             -F "files[0]=@bin/sar.dll" \
             -F "files[1]=@bin/sar.pdb" \
-            "https://dl.sar.portal2.sr/api/v1/upload"
+            "https://dl.sar.portal2.jonesy.moe/api/v1/upload"
   release:
     name: Release
     if: github.repository == 'p2sr/SourceAutoRecord'
