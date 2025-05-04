@@ -47,7 +47,9 @@ jobs:
       env:
           DEMO_SIGN_PUBKEY: ${{ secrets.SAR_DEMO_SIGN_PUBKEY }}
           DEMO_SIGN_PRIVKEY: ${{ secrets.SAR_DEMO_SIGN_PRIVKEY }}
-      run: zig build -Doptimize=Debug -Ddemo-sign-pubkey="$DEMO_SIGN_PUBKEY" -Ddemo-sign-privkey="$DEMO_SIGN_PRIVKEY" -Dcanary=true
+      run: |
+        zig build -Doptimize=Debug -Ddemo-sign-pubkey="$DEMO_SIGN_PUBKEY" -Ddemo-sign-privkey="$DEMO_SIGN_PRIVKEY" -Dcanary=true
+        cp zig-out/lib/sar.so sar.so
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
