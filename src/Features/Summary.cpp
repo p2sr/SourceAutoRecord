@@ -61,7 +61,7 @@ CON_COMMAND(sar_sum_result, "sar_sum_result - prints result of summary\n") {
 	}
 
 	for (size_t i = 0; i < summary->items.size(); ++i) {
-		console->Print("%s -> ", summary->items[i].map);
+		console->Print("%s -> ", summary->items[i].map.c_str());
 		console->Print("%i ticks", summary->items[i].ticks);
 		console->Print("(%.3f)\n", summary->items[i].time);
 	}

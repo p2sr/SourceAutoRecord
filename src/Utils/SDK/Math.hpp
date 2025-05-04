@@ -188,7 +188,7 @@ struct Bounds {
 		return *this;
 	}
 	inline Bounds Scale(float amp) {
-		this.Scale(vBegin, amp);
+		Scale(vBegin, amp);
 		return *this;
 	}
 	inline Bounds operator+(const Bounds &other) const {

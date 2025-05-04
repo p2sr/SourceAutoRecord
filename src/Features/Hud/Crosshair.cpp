@@ -299,7 +299,7 @@ int Crosshair::SetCrosshairTexture(const std::string filename) {
 		console->Warning(
 			"Failed to load \"%s\"\n"
 			"Make sure both the path and the filename are correct.\n",
-			filename);
+			filename.c_str());
 		return -1;
 	}
 

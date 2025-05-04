@@ -82,7 +82,7 @@ namespace {
 #	define __cdecl __attribute__((__cdecl__))
 #	define __fastcall __attribute__((__fastcall__))
 #	define DLL_EXPORT extern "C" __attribute__((visibility("default")))
-#	define SEEK_DIR_CUR std::ios_base::seekdir::_S_cur
+#	define SEEK_DIR_CUR std::ios_base::cur
 #	define STDCALL_NAME(base, param_bytes) base
 
 #	define DECL_DETOUR(name, ...)                                   \

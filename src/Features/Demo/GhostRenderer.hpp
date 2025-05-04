@@ -8,13 +8,13 @@ class GhostEntity;
 
 class GhostRenderer {
 private:
-	GhostEntity *ghost;
+	GhostEntity *ghost = nullptr;
 
-	float lastUpdateCall;
-	std::vector<Vector> animatedVerts;
-	float walkingCycle;
-	float squishForce;
-	bool oldGroundedState;
+	float lastUpdateCall = 0.0f;
+	std::vector<Vector> animatedVerts = {};
+	float walkingCycle = 0.0f;
+	float squishForce = 0.0f;
+	bool oldGroundedState = false;
 
 private:
 	void UpdateAnimatedVerts();
