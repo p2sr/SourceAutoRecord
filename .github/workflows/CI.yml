@@ -29,9 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with: { fetch-depth: 0 }
-      - uses: mlugg/setup-zig@v1
-        with:
-          version: 0.14.0
+      - uses: mlugg/setup-zig@v2
       - name: Build
         env:
           DEMO_SIGN_PUBKEY: ${{ secrets.SAR_DEMO_SIGN_PUBKEY }}

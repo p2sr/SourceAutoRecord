@@ -32,9 +32,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Setup Zig Compiler
-      uses: mlugg/setup-zig@v1
-      with:
-        version: 0.14.0
+      uses: mlugg/setup-zig@v2
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
