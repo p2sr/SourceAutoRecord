@@ -111,7 +111,7 @@ CON_COMMAND(sar_avg_result, "sar_avg_result - prints result of average\n") {
 
 	console->Print("Average of %i:\n", average);
 	for (size_t i = 0; i < average; ++i) {
-		console->Print("%s -> ", timer->avg->items[i].map);
+		console->Print("%s -> ", timer->avg->items[i].map.c_str());
 		console->Print("%i ticks", timer->avg->items[i].ticks);
 		console->Print("(%.3f)\n", timer->avg->items[i].time);
 	}
@@ -143,11 +143,11 @@ CON_COMMAND(sar_cps_result, "sar_cps_result - prints result of timer checkpoints
 
 	for (size_t i = 0; i < cps; ++i) {
 		if (i == cps - 1 && timer->isRunning) {
-			console->PrintActive("%s -> ", timer->cps->items[i].map);
+			console->PrintActive("%s -> ", timer->cps->items[i].map.c_str());
 			console->PrintActive("%i ticks", timer->cps->items[i].ticks);
 			console->PrintActive("(%.3f)\n", timer->cps->items[i].time);
 		} else {
-			console->Print("%s -> ", timer->cps->items[i].map);
+			console->Print("%s -> ", timer->cps->items[i].map.c_str());
 			console->Print("%i ticks", timer->cps->items[i].ticks);
 			console->Print("(%.3f)\n", timer->cps->items[i].time);
 		}

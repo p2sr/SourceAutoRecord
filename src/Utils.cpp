@@ -76,7 +76,8 @@ std::optional<Color> Utils::GetColor(const char *str, bool to_linear) {
 
 	while (isspace(*str)) ++str;
 	size_t len = strlen(str);
-	for (size_t i = len - 1; i; --i) {
+	for (size_t i = len; i > 0;) {
+		--i;
 		if (!isspace(str[i])) break;
 		--len;
 	}
