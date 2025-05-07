@@ -20,5 +20,9 @@
             .url = "https://github.com/Tencent/rapidjson/archive/24b5e7a8b27f42fa16b96fc70aade9106cf7102f.tar.gz",
             .hash = "N-V-__8AAD2dNQDH5f-vkm-ZCt0HMKKVzrK2eOMYCjoGCHkT",
         },
+        .curl = .{
+            .url = "https://github.com/allyourcodebase/curl/archive/b699f96a989ca2ae2d62f9774f436088ed47ea03.tar.gz",
+            .hash = "curl-8.13.0-mFDAWCXtAAAoC5sjcLO6XRYP-ljMSSWdpiYcVnxlt5GN",
+        },
     },
 }

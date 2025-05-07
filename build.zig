@@ -39,17 +39,12 @@ pub fn build(b: *std.Build) void {
     if (disable_watermark) mod.addCMacro("NO_DEV_WATERMARK", "1");
     mod.addIncludePath(b.path("src"));
     mod.addIncludePath(generateHeaders(b));
-    mod.addIncludePath(b.path("lib/curl/include"));
     mod.addIncludePath(b.path("lib/ffmpeg/include"));
     switch (target_option) {
         .linux => {
             mod.addCMacro("_GNU_SOURCE", "1");
             mod.addCMacro("SFML_STATIC", "1");
             mod.addCMacro("CURL_STATICLIB", "1");
-            mod.addObjectFile(b.path("lib/curl/lib/linux/libcrypto.a"));
-            mod.addObjectFile(b.path("lib/curl/lib/linux/libcurl.a"));
-            mod.addObjectFile(b.path("lib/curl/lib/linux/libnghttp2.a"));
-            mod.addObjectFile(b.path("lib/curl/lib/linux/libssl.a"));
             mod.addObjectFile(b.path("lib/ffmpeg/lib/linux/libavcodec.a"));
             mod.addObjectFile(b.path("lib/ffmpeg/lib/linux/libavformat.a"));
             mod.addObjectFile(b.path("lib/ffmpeg/lib/linux/libavutil.a"));
@@ -62,6 +57,18 @@ pub fn build(b: *std.Build) void {
             mod.addObjectFile(b.path("lib/ffmpeg/lib/linux/libvorbisfile.a"));
             mod.addObjectFile(b.path("lib/ffmpeg/lib/linux/libvpx.a"));
             mod.addObjectFile(b.path("lib/ffmpeg/lib/linux/libx264.a"));
+            const curl_dep = b.dependency("curl", .{
+                .target = target,
+                .optimize = optimize,
+                .libpsl = false,
+                .libssh2 = false,
+                .libidn2 = false,
+                .nghttp2 = false,
+                .@"disable-ldap" = true,
+                .@"use-openssl" = false,
+                .@"use-mbedtls" = true,
+            });
+            mod.linkLibrary(@import("curl").artifact(curl_dep, .lib));
             mod.linkLibrary(makeSfml(b, target));
             mod.linkLibrary(makeDiscordRpc(b, target));
             mod.linkLibrary(makeX265(b, target));
