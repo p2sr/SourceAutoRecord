@@ -4,10 +4,15 @@ on:
   push:
     tags: '*'
 
+permissions:
+  contents: read
+
 jobs:
   build-lin:
     name: Linux Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,6 +54,8 @@ jobs:
   build-win:
     name: Windows Build
     runs-on: windows-2019
+    permissions:
+      contents: write
     env:
       POWERSHELL_TELEMETRY_OPTOUT: 1
     steps:
@@ -101,6 +108,8 @@ jobs:
     if: github.repository == 'p2sr/SourceAutoRecord'
     needs: [build-lin, build-win]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Get Release Version
         id: get_release
