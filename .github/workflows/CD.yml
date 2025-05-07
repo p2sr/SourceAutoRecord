@@ -22,7 +22,7 @@ jobs:
         env:
           DEMO_SIGN_PUBKEY: ${{ secrets.SAR_DEMO_SIGN_PUBKEY }}
           DEMO_SIGN_PRIVKEY: ${{ secrets.SAR_DEMO_SIGN_PRIVKEY }}
-        run: zig build -Doptimize=ReleaseFast -Ddemo-sign-pubkey="$DEMO_SIGN_PUBKEY" -Ddemo-sign-privkey="$DEMO_SIGN_PRIVKEY" -Dcanary=false
+        run: zig build --summary all -Doptimize=ReleaseFast -Ddemo-sign-pubkey="$DEMO_SIGN_PUBKEY" -Ddemo-sign-privkey="$DEMO_SIGN_PRIVKEY" -Dcanary=false
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
