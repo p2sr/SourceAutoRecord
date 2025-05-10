@@ -240,7 +240,7 @@ static AVFrame *allocPicture(AVPixelFormat pixFmt, int width, int height) {
 	picture->height = height;
 
 	if (av_frame_get_buffer(picture, 32) < 0) {
-		console->Print("Failed to allocate frame data\n");
+		THREAD_PRINT("Failed to allocate frame data\n");
 		av_frame_free(&picture);
 		return NULL;
 	}
@@ -276,7 +276,7 @@ static AVFrame *allocAudioFrame(AVSampleFormat sampleFmt, uint64_t channelLayout
 static bool addStream(Stream *out, AVFormatContext *outputCtx, AVCodecID codecId, int64_t bitrate, int framerate, int ptsOff, int width = 0, int height = 0) {
 	out->codec = avcodec_find_encoder(codecId);
 	if (!out->codec) {
-		console->Print("Failed to find encoder for '%s'!\n", avcodec_get_name(codecId));
+		THREAD_PRINT("Failed to find encoder for '%s'!\n", avcodec_get_name(codecId));
 		return false;
 	}
 
@@ -342,7 +342,7 @@ static bool addStream(Stream *out, AVFormatContext *outputCtx, AVCodecID codecId
 			rates = rates720;
 			nrates = sizeof rates720 / sizeof rates720[0];
 		} else {
-			console->Print("Resolution not supported by dnxhd\n");
+			THREAD_PRINT("Resolution not supported by dnxhd\n");
 			return false;
 		}
 
@@ -358,7 +358,7 @@ static bool addStream(Stream *out, AVFormatContext *outputCtx, AVCodecID codecId
 		}
 
 		if (realBitrate != bitrate) {
-			console->Print("dnxhd does not support the given bitrate; encoding at %d kb/s instead\n", realBitrate / 1000);
+			THREAD_PRINT("dnxhd does not support the given bitrate; encoding at %d kb/s instead\n", realBitrate / 1000);
 			bitrate = realBitrate;
 		}
 	}
@@ -367,13 +367,13 @@ static bool addStream(Stream *out, AVFormatContext *outputCtx, AVCodecID codecId
 
 	out->stream = avformat_new_stream(outputCtx, NULL);
 	if (!out->stream) {
-		console->Print("Failed to allocate stream\n");
+		THREAD_PRINT("Failed to allocate stream\n");
 		return false;
 	}
 
 	out->enc = avcodec_alloc_context3(out->codec);
 	if (!out->enc) {
-		console->Print("Failed to allocate an encoding context\n");
+		THREAD_PRINT("Failed to allocate an encoding context\n");
 		return false;
 	}
 
@@ -397,7 +397,7 @@ static bool addStream(Stream *out, AVFormatContext *outputCtx, AVCodecID codecId
 			}
 
 			if (!foundStereo) {
-				console->Print("Stereo not supported by audio encoder\n");
+				THREAD_PRINT("Stereo not supported by audio encoder\n");
 				avcodec_free_context(&out->enc);
 				return false;
 			}
@@ -413,7 +413,7 @@ static bool addStream(Stream *out, AVFormatContext *outputCtx, AVCodecID codecId
 			}
 
 			if (!foundRate) {
-				console->Print("Sample rate %d not supported by audio encoder\n", framerate);
+				THREAD_PRINT("Sample rate %d not supported by audio encoder\n", framerate);
 				avcodec_free_context(&out->enc);
 				return false;
 			}
@@ -482,30 +482,30 @@ static bool flushStream(Stream *s, bool isEnd = false) {
 
 static bool openVideo(AVFormatContext *outputCtx, Stream *s, AVDictionary **options) {
 	if (avcodec_open2(s->enc, s->codec, options) < 0) {
-		console->Print("Failed to open video codec\n");
+		THREAD_PRINT("Failed to open video codec\n");
 		return false;
 	}
 
 	s->frame = allocPicture(s->enc->pix_fmt, s->enc->width, s->enc->height);
 	if (!s->frame) {
-		console->Print("Failed to allocate video frame\n");
+		THREAD_PRINT("Failed to allocate video frame\n");
 		return false;
 	}
 
 	s->tmpFrame = allocPicture(AV_PIX_FMT_BGR24, s->enc->width, s->enc->height);
 	if (!s->tmpFrame) {
-		console->Print("Failed to allocate intermediate video frame\n");
+		THREAD_PRINT("Failed to allocate intermediate video frame\n");
 		return false;
 	}
 
 	if (avcodec_parameters_from_context(s->stream->codecpar, s->enc) < 0) {
-		console->Print("Failed to copy stream parameters\n");
+		THREAD_PRINT("Failed to copy stream parameters\n");
 		return false;
 	}
 
 	s->swsCtx = sws_getContext(s->enc->width, s->enc->height, AV_PIX_FMT_BGR24, s->enc->width, s->enc->height, s->enc->pix_fmt, SWS_BICUBIC, NULL, NULL, NULL);
 	if (!s->swsCtx) {
-		console->Print("Failed to initialize conversion context\n");
+		THREAD_PRINT("Failed to initialize conversion context\n");
 		return false;
 	}
 
@@ -514,7 +514,7 @@ static bool openVideo(AVFormatContext *outputCtx, Stream *s, AVDictionary **opti
 
 static bool openAudio(AVFormatContext *outputCtx, Stream *s, AVDictionary **options) {
 	if (avcodec_open2(s->enc, s->codec, options) < 0) {
-		console->Print("Failed to open audio codec\n");
+		THREAD_PRINT("Failed to open audio codec\n");
 		return false;
 	}
 
@@ -522,13 +522,13 @@ static bool openAudio(AVFormatContext *outputCtx, Stream *s, AVDictionary **opti
 	s->tmpFrame = allocAudioFrame(AV_SAMPLE_FMT_S16P, s->enc->channel_layout, s->enc->sample_rate, s->enc->frame_size);
 
 	if (avcodec_parameters_from_context(s->stream->codecpar, s->enc) < 0) {
-		console->Print("Failed to copy stream parameters\n");
+		THREAD_PRINT("Failed to copy stream parameters\n");
 		return false;
 	}
 
 	s->swrCtx = swr_alloc();
 	if (!s->swrCtx) {
-		console->Print("Failed to allocate resampler context\n");
+		THREAD_PRINT("Failed to allocate resampler context\n");
 		return false;
 	}
 
@@ -540,7 +540,7 @@ static bool openAudio(AVFormatContext *outputCtx, Stream *s, AVDictionary **opti
 	av_opt_set_sample_fmt(s->swrCtx, "out_sample_fmt", s->enc->sample_fmt, 0);
 
 	if (swr_init(s->swrCtx) < 0) {
-		console->Print("Failed to initialize resampler context\n");
+		THREAD_PRINT("Failed to initialize resampler context\n");
 		return false;
 	}
 
@@ -555,30 +555,30 @@ static bool openAudio(AVFormatContext *outputCtx, Stream *s, AVDictionary **opti
 
 static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_t videoBitrate, int64_t audioBitrate, AVDictionary *options) {
 	if (avformat_alloc_output_context2(&g_render.outCtx, NULL, NULL, g_render.filename.c_str()) == AVERROR(EINVAL)) {
-		console->Print("Failed to deduce output format from file extension - using MP4\n");
+		THREAD_PRINT("Failed to deduce output format from file extension - using MP4\n");
 		avformat_alloc_output_context2(&g_render.outCtx, NULL, "mp4", g_render.filename.c_str());
 	}
 
 	if (!g_render.outCtx) {
-		console->Print("Failed to allocate output context\n");
+		THREAD_PRINT("Failed to allocate output context\n");
 		return;
 	}
 
 	if (!addStream(&g_render.videoStream, g_render.outCtx, videoCodec, videoBitrate, g_render.fps, 0, g_render.width, g_render.height)) {
-		console->Print("Failed to create video stream\n");
+		THREAD_PRINT("Failed to create video stream\n");
 		avformat_free_context(g_render.outCtx);
 		return;
 	}
 
 	if (!addStream(&g_render.audioStream, g_render.outCtx, audioCodec, audioBitrate, g_render.samplerate, g_render.samplerate / 10)) {  // offset the start by 0.1s because idk
-		console->Print("Failed to create audio stream\n");
+		THREAD_PRINT("Failed to create audio stream\n");
 		closeStream(&g_render.videoStream);
 		avformat_free_context(g_render.outCtx);
 		return;
 	}
 
 	if (!openVideo(g_render.outCtx, &g_render.videoStream, &options)) {
-		console->Print("Failed to open video stream\n");
+		THREAD_PRINT("Failed to open video stream\n");
 		closeStream(&g_render.audioStream);
 		closeStream(&g_render.videoStream);
 		avformat_free_context(g_render.outCtx);
@@ -586,7 +586,7 @@ static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_
 	}
 
 	if (!openAudio(g_render.outCtx, &g_render.audioStream, &options)) {
-		console->Print("Failed to open audio stream\n");
+		THREAD_PRINT("Failed to open audio stream\n");
 		closeStream(&g_render.audioStream);
 		closeStream(&g_render.videoStream);
 		avformat_free_context(g_render.outCtx);
@@ -594,7 +594,7 @@ static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_
 	}
 
 	if (avio_open(&g_render.outCtx->pb, g_render.filename.c_str(), AVIO_FLAG_WRITE) < 0) {
-		console->Print("Failed to open output file\n");
+		THREAD_PRINT("Failed to open output file\n");
 		closeStream(&g_render.audioStream);
 		closeStream(&g_render.videoStream);
 		avformat_free_context(g_render.outCtx);
@@ -602,7 +602,7 @@ static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_
 	}
 
 	if (avformat_write_header(g_render.outCtx, &options) < 0) {
-		console->Print("Failed to write output file\n");
+		THREAD_PRINT("Failed to write output file\n");
 		closeStream(&g_render.audioStream);
 		closeStream(&g_render.videoStream);
 		avio_closep(&g_render.outCtx->pb);
@@ -633,9 +633,9 @@ static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_
 
 	g_render.isRendering.store(true);
 
-	console->Print("Started rendering to '%s'\n", g_render.filename.c_str());
+	THREAD_PRINT("Started rendering to '%s'\n", g_render.filename.c_str());
 
-	console->Print(
+	THREAD_PRINT(
 		"    video: %s (%dx%d @ %d fps, %" PRId64 " kb/s, %s)\n",
 		g_render.videoStream.codec->name,
 		g_render.width,
@@ -644,7 +644,7 @@ static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_
 		g_render.videoStream.enc->bit_rate / 1000,
 		av_get_pix_fmt_name(g_render.videoStream.enc->pix_fmt));
 
-	console->Print(
+	THREAD_PRINT(
 		"    audio: %s (%d Hz, %" PRId64 " kb/s, %s)\n",
 		g_render.audioStream.codec->name,
 		g_render.audioStream.enc->sample_rate,
@@ -658,9 +658,9 @@ static void workerStartRender(AVCodecID videoCodec, AVCodecID audioCodec, int64_
 
 static void workerFinishRender(bool error) {
 	if (error) {
-		console->Print("A fatal error occurred; stopping render early\n");
+		THREAD_PRINT("A fatal error occurred; stopping render early\n");
 	} else {
-		console->Print("Stopping render...\n");
+		THREAD_PRINT("Stopping render...\n");
 	}
 
 	g_render.isRendering.store(false);
@@ -670,7 +670,7 @@ static void workerFinishRender(bool error) {
 
 	av_write_trailer(g_render.outCtx);
 
-	console->Print("Rendered %d frames to '%s'\n", g_render.videoStream.nextPts, g_render.filename.c_str());
+	THREAD_PRINT("Rendered %d frames to '%s'\n", g_render.videoStream.nextPts, g_render.filename.c_str());
 
 	g_render.imageBufLock.lock();
 	g_render.audioBufLock.lock();
@@ -746,12 +746,12 @@ static bool workerHandleVideoFrame() {
 	g_render.videoStream.frame->pts = g_render.videoStream.nextPts;
 
 	if (avcodec_send_frame(g_render.videoStream.enc, g_render.videoStream.frame) < 0) {
-		console->Print("Failed to send video frame for encoding!\n");
+		THREAD_PRINT("Failed to send video frame for encoding!\n");
 		return false;
 	}
 
 	if (!flushStream(&g_render.videoStream)) {
-		console->Print("Failed to flush video stream!\n");
+		THREAD_PRINT("Failed to flush video stream!\n");
 		return false;
 	}
 
@@ -779,24 +779,24 @@ static bool workerHandleAudioFrame() {
 	s->nextPts += s->frame->nb_samples;
 
 	if (av_frame_make_writable(s->frame) < 0) {
-		console->Print("Failed to make audio frame writable!\n");
+		THREAD_PRINT("Failed to make audio frame writable!\n");
 		return false;
 	}
 
 	if (swr_convert(s->swrCtx, s->frame->data, s->frame->nb_samples, (const uint8_t **)s->tmpFrame->data, s->tmpFrame->nb_samples) < 0) {
-		console->Print("Failed to resample audio frame!\n");
+		THREAD_PRINT("Failed to resample audio frame!\n");
 		return false;
 	}
 
 	s->frame->pts = av_rescale_q(s->tmpFrame->pts, {1, s->enc->sample_rate}, s->enc->time_base);
 
 	if (avcodec_send_frame(s->enc, s->frame) < 0) {
-		console->Print("Failed to send audio frame for encoding!\n");
+		THREAD_PRINT("Failed to send audio frame for encoding!\n");
 		return false;
 	}
 
 	if (!flushStream(s)) {
-		console->Print("Failed to flush audio stream!\n");
+		THREAD_PRINT("Failed to flush audio stream!\n");
 		return false;
 	}
 
