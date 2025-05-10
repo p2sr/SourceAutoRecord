@@ -1,0 +1,31 @@
+.{
+    .name = .SourceAutoRecord,
+    // Because SAR is not consumed as a Zig package, there is no need to include its actual version
+    // number here; it's not used anywhere.
+    .version = "0.0.0",
+    .fingerprint = 0x624553be3189c0f7,
+    .minimum_zig_version = "0.14.0",
+    .paths = .{""},
+    .dependencies = .{
+        .x265 = .{
+            .url = "https://bitbucket.org/multicoreware/x265_git/get/bf91444e034831141e0ce02b1200e51996f8b6c6.tar.gz",
+            .hash = "N-V-__8AAGdkxwDhoQRBBu8Xdi_-k6mJF_mUq5NxgCG594a5",
+        },
+        .SFML = .{
+            .url = "https://github.com/mlugg/SFML/archive/54929d30ca09ab2ab79c2a6658cb9ca4843901cc.tar.gz",
+            .hash = "N-V-__8AACDhCgSN7eLNHyDZaMP66YK6wnCQEvYUJQb5IVfq",
+        },
+        .discord_rpc = .{
+            .url = "https://github.com/discord/discord-rpc/archive/963aa9f3e5ce81a4682c6ca3d136cddda614db33.tar.gz",
+            .hash = "N-V-__8AAAjEKwClBC-iaiewnaR2ldunbj-128yVVBULerN0",
+        },
+        .rapidjson = .{
+            .url = "https://github.com/Tencent/rapidjson/archive/24b5e7a8b27f42fa16b96fc70aade9106cf7102f.tar.gz",
+            .hash = "N-V-__8AAD2dNQDH5f-vkm-ZCt0HMKKVzrK2eOMYCjoGCHkT",
+        },
+        .curl = .{
+            .url = "https://github.com/allyourcodebase/curl/archive/b699f96a989ca2ae2d62f9774f436088ed47ea03.tar.gz",
+            .hash = "curl-8.13.0-mFDAWCXtAAAoC5sjcLO6XRYP-ljMSSWdpiYcVnxlt5GN",
+        },
+    },
+}

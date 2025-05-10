@@ -17,21 +17,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with: { fetch-depth: 0 }
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y g++-10-multilib
+      - uses: mlugg/setup-zig@v2
       - name: Build
         env:
-          RELEASE_BUILD: 1
           DEMO_SIGN_PUBKEY: ${{ secrets.SAR_DEMO_SIGN_PUBKEY }}
           DEMO_SIGN_PRIVKEY: ${{ secrets.SAR_DEMO_SIGN_PRIVKEY }}
-        run: make -j$(nproc)
+        run: zig build --summary all -Doptimize=ReleaseFast -Ddemo-sign-pubkey="$DEMO_SIGN_PUBKEY" -Ddemo-sign-privkey="$DEMO_SIGN_PRIVKEY" -Dcanary=false
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: sar-linux
-          path: sar.so
+          path: zig-out/lib/sar.so
           if-no-files-found: error
       - name: Upload to dl.sar.portal2.sr
         if: github.repository_owner == 'p2sr'
@@ -48,8 +44,8 @@ jobs:
             -F "commit=$GITHUB_SHA" \
             -F "branch=$GITHUB_REF_NAME" \
             -F "count=1" \
-            -F "hashes[0]=$(sha256sum sar.so | cut -d ' ' -f 1)" \
-            -F "files[0]=@sar.so" \
+            -F "hashes[0]=$(sha256sum zig-out/lib/sar.so | cut -d ' ' -f 1)" \
+            -F "files[0]=@zig-out/lib/sar.so" \
             "https://dl.sar.portal2.jonesy.moe/api/v1/upload"
   build-win:
     name: Windows Build
