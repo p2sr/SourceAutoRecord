@@ -1,7 +1,9 @@
 .{
     .name = .SourceAutoRecord,
+    // Because SAR is not consumed as a Zig package, there is no need to include its actual version
+    // number here; it's not used anywhere.
+    .version = "0.0.0",
     .fingerprint = 0x624553be3189c0f7,
-    .version = "1.13.1",
     .minimum_zig_version = "0.14.0",
     .paths = .{""},
     .dependencies = .{
