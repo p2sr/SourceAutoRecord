@@ -1158,8 +1158,9 @@ ON_EVENT(PRE_TICK) {
 		// pretty much only useful for that.
 		size_t last_split_idx = g_speedrun.splits.size() - 1;
 		if (last_split_idx < 0 || last_split_idx >= g_autoreset_ticks.size()) return;
-		
-		if (g_speedrun.splits[last_split_idx].ticks < g_autoreset_ticks[last_split_idx]) {
+
+		ticks -= SpeedrunTimer::GetSplitTicks();
+		if (ticks < g_autoreset_ticks[last_split_idx]) {
 			SpeedrunTimer::Reset(false);
 			engine->ExecuteCommand("restart_level");
 		}
