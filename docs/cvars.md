@@ -493,6 +493,7 @@
 |sar_show_entinp|0|Print all entity inputs to console.|
 |sar_skiptodemo|cmd|sar_skiptodemo \<demoname> - skip demos in demo queue to this demo|
 |sar_speedrun_autoreset_clear|cmd|sar_speedrun_autoreset_clear - stop using the autoreset file|
+|sar_speedrun_autoreset_invert|0|Invert the autoreset behavior. If set to 1, automatically reset if the last split was *faster* than the defined time.|
 |sar_speedrun_autoreset_load|cmd|sar_speedrun_autoreset_load \<file> - load the given file of autoreset timestamps and use it while the speedrun timer is active|
 |sar_speedrun_autostop|0|Automatically stop recording demos when a speedrun finishes. If 2, automatically append the run time to the demo name.|
 |sar_speedrun_category|cmd|sar_speedrun_category [category] - get or set the speedrun category|

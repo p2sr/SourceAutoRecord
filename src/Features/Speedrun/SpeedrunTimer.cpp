@@ -872,6 +872,7 @@ Variable sar_speedrun_stop_in_menu("sar_speedrun_stop_in_menu", "0", "Automatica
 Variable sar_speedrun_start_on_load("sar_speedrun_start_on_load", "0", 0, 2, "Automatically start the speedrun timer when a map is loaded. 2 = restart if active.\n");
 Variable sar_speedrun_offset("sar_speedrun_offset", "0", 0, "Start speedruns with this time on the timer.\n", 0);
 Variable sar_speedrun_autostop("sar_speedrun_autostop", "0", 0, 2, "Automatically stop recording demos when a speedrun finishes. If 2, automatically append the run time to the demo name.\n");
+Variable sar_speedrun_autoreset_invert("sar_speedrun_autoreset_invert", "0", 0, 1, "Invert the autoreset behavior. If set to 1, automatically reset if the last split was *faster* than the defined time.\n");
 
 Variable sar_mtrigger_legacy("sar_mtrigger_legacy", "0", 0, 1, "\n");
 Variable sar_mtrigger_legacy_format("sar_mtrigger_legacy_format", "!seg -> !tt (!st)", "Formatting of the text that is displayed in the chat (!map - for map name, !seg - for segment name, !tt - for total time, !st - for split time).\n", 0);
@@ -1151,11 +1152,24 @@ ON_EVENT(PRE_TICK) {
 		}
 	}
 
-	size_t next_split_idx = g_speedrun.splits.size();
-	if (next_split_idx >= g_autoreset_ticks.size()) return;
+	if (sar_speedrun_autoreset_invert.GetBool()) {
+		// Most people would never want this, but now
+		// we need to limit fast drop triggers. This is
+		// pretty much only useful for that.
+		size_t last_split_idx = g_speedrun.splits.size() - 1;
+		if (last_split_idx < 0 || last_split_idx >= g_autoreset_ticks.size()) return;
+		
+		if (g_speedrun.splits[last_split_idx].ticks < g_autoreset_ticks[last_split_idx]) {
+			SpeedrunTimer::Reset(false);
+			engine->ExecuteCommand("restart_level");
+		}
+	} else {
+		size_t next_split_idx = g_speedrun.splits.size();
+		if (next_split_idx >= g_autoreset_ticks.size()) return;
 
-	if (ticks > g_autoreset_ticks[next_split_idx]) {
-		SpeedrunTimer::Reset(false);
-		engine->ExecuteCommand("restart_level");
+		if (ticks > g_autoreset_ticks[next_split_idx]) {
+			SpeedrunTimer::Reset(false);
+			engine->ExecuteCommand("restart_level");
+		}
 	}
 }

@@ -44,6 +44,7 @@ extern Variable sar_speedrun_stop_in_menu;
 extern Variable sar_speedrun_start_on_load;
 extern Variable sar_speedrun_offset;
 extern Variable sar_speedrun_autostop;
+extern Variable sar_speedrun_autoreset_invert;
 
 extern Variable sar_mtrigger_legacy;
 extern Variable sar_mtrigger_legacy_format;
