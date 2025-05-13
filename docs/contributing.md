@@ -44,10 +44,16 @@
 
 ### Linux
 
-- g++ 8.3.0
-- g++-8-multilib
-- Make 4.1
-- Configure paths in `config.mk`
+- Zig 0.14.0
+  - This can be downloaded from [ziglang.org](https://ziglang.org/download) as a self-contained archive with no dependencies
+- Run `zig build` to get `zig-out/lib/sar.so`
+- See available options with `zig build --help`
+- For automatic "copy to game directory" functionality, consider wrapping `zig build` in a simple script:
+```
+#!/bin/sh
+zig build
+cp zig-out/lib/sar.so /path/to/steamapps/common/Portal 2/portal2/sar.so
+```
 
 ## Pull Requests
 
