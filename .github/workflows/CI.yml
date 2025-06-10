@@ -65,7 +65,7 @@ jobs:
 
   build-win:
     name: Windows Build
-    runs-on: windows-2019
+    runs-on: windows-latest
     permissions:
       contents: write
     env:
