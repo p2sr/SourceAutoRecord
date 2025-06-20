@@ -69,6 +69,10 @@ static Cheat g_cheats[] = {
 	}, "tickrate is not default", "remove '-tickrate' from the game launch options" },
 
 	{ +[]() {
+		return sar_hud_precision.GetInt() > 2 && g_hudPrecisionWarn;
+	}, "sar_hud_precision is at a banned value", "(really!) run 'sar_hud_precision 2'" },
+
+	{ +[]() {
 		return g_update_status == 0;
 	}, "SAR is not up-to-date", "run 'sar_update'" }
 };

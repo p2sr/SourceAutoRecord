@@ -66,11 +66,34 @@ ON_EVENT(FRAME) {
 	}
 }
 
+bool g_hudPrecisionWarn = true;
+CON_COMMAND(sar_hud_precision_disable_warning, "sar_hud_precision_disable_warning {lp|reset} - Disables the warning about high precision values in HUD.\n") {
+	if (args.ArgC() > 2) {
+		return console->Print(sar_hud_precision_disable_warning.ThisPtr()->m_pszHelpString);
+	}
+	if (args.ArgC() == 1) {
+		if (g_hudPrecisionWarn) return console->Print("HUD precision above 2 is only allowed in Least Portals. Run \"sar_hud_precision_disable_warning lp\" to confirm.\n");
+		return console->Print(sar_hud_precision_disable_warning.ThisPtr()->m_pszHelpString);
+	}
+	if (!strcmp(args[1], "reset")) {
+		g_hudPrecisionWarn = true;
+		return;
+	} else if (!strcmp(args[1], "lp")) {
+		g_hudPrecisionWarn = false;
+		return;
+	} else {
+		return console->Print(sar_hud_precision_disable_warning.ThisPtr()->m_pszHelpString);
+	}
+}
+ON_EVENT_P(CONFIG_EXEC, -1) {
+	g_hudPrecisionWarn = true;
+}
+
 static inline int getPrecision(bool velocity = false) {
 	int p = velocity ? sar_hud_velocity_precision.GetInt() : sar_hud_precision.GetInt();
 	if (p < 0) p = 0;
 	if (!sv_cheats.GetBool()) {
-		const int max = 2;
+		const int max = velocity ? 2 : 6;
 		if (p > max) p = max;
 	}
 	return p;

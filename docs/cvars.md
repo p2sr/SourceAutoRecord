@@ -269,6 +269,7 @@
 |sar_hud_portals|0|Draws total portal count.|
 |sar_hud_position|0|Draws absolute position of the client.<br>0 = Default,<br>1 = Player position,<br>2 = Camera (shoot) position.|
 |sar_hud_precision|2|Precision of HUD numbers.|
+|sar_hud_precision_disable_warning|cmd|sar_hud_precision_disable_warning {lp\|reset} - Disables the warning about high precision values in HUD.|
 |sar_hud_rainbow|-1|Enables the rainbow HUD mode. -1 = default, 0 = disable, 1 = enable.|
 |sar_hud_session|0|Draws current session tick.|
 |sar_hud_set_text|cmd|sar_hud_set_text \<id> \<text>... - sets and shows the nth text value in the HUD|

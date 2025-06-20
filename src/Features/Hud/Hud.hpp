@@ -172,6 +172,7 @@ extern Variable sar_hud_precision;
 extern Variable sar_hud_shorthand;
 extern QAngle g_bluePortalAngles[2];
 extern QAngle g_orangePortalAngles[2];
+extern bool g_hudPrecisionWarn;
 
 DECL_DECLARE_AUTOCOMPLETION_FUNCTION(HudSetPos);
 
