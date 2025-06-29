@@ -110,6 +110,12 @@ float Engine::GetIPT() { // IntervalPerTick
 	}
 	return 1.0f / sar.game->Tickrate();
 }
+int Engine::GetMaxClients() {
+	if (this->GetMaxClientsOrig() == 0) {
+		return server->gpGlobals->maxClients;
+	}
+	return this->GetMaxClientsOrig();
+}
 int Engine::GetTick() {
 	return (this->GetMaxClients() < 2 || engine->demoplayer->IsPlaying()) ? *this->tickcount : TIME_TO_TICKS(*this->net_time);
 }
@@ -978,7 +984,7 @@ bool Engine::Init() {
 		this->GetLocalPlayer = this->engineClient->Original<_GetLocalPlayer>(Offsets::GetLocalPlayer);
 		this->GetViewAngles = this->engineClient->Original<_GetViewAngles>(Offsets::GetViewAngles);
 		this->SetViewAngles = this->engineClient->Original<_SetViewAngles>(Offsets::SetViewAngles);
-		this->GetMaxClients = this->engineClient->Original<_GetMaxClients>(Offsets::GetMaxClients);
+		this->GetMaxClientsOrig = this->engineClient->Original<_GetMaxClients>(Offsets::GetMaxClients);
 		this->GetGameDirectory = this->engineClient->Original<_GetGameDirectory>(Offsets::GetGameDirectory);
 		this->GetSaveDirName = this->engineClient->Original<_GetSaveDirName>(Offsets::GetSaveDirName);
 		this->DebugDrawPhysCollide = this->engineClient->Original<_DebugDrawPhysCollide>(Offsets::DebugDrawPhysCollide);

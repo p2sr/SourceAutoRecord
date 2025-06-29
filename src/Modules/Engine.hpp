@@ -67,7 +67,7 @@ public:
 	_GetLocalPlayer GetLocalPlayer = nullptr;
 	_GetViewAngles GetViewAngles = nullptr;
 	_SetViewAngles SetViewAngles = nullptr;
-	_GetMaxClients GetMaxClients = nullptr;
+	_GetMaxClients GetMaxClientsOrig = nullptr;
 	_GetGameDirectory GetGameDirectory = nullptr;
 	_GetSaveDirName GetSaveDirName = nullptr;
 	_GetActiveSplitScreenPlayerSlot GetActiveSplitScreenPlayerSlot = nullptr;
@@ -125,6 +125,7 @@ public:
 public:
 	void ExecuteCommand(const char *cmd, bool immediately = false);
 	float GetIPT();
+	int GetMaxClients();
 	int GetTick();
 	float ToTime(int tick);
 	int GetLocalPlayerIndex();
