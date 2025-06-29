@@ -346,6 +346,7 @@ void Cvars::Lock() {
 		cl_forwardspeed.Lock();
 		cl_sidespeed.Lock();
 		cl_backspeed.Lock();
+		hidehud.Lock();
 
 		soundfade.Lock();
 		leaderboard_open.Lock();
@@ -395,6 +396,8 @@ void Cvars::Unlock() {
 		cl_forwardspeed.RemoveFlag(FCVAR_CHEAT);
 		cl_sidespeed.RemoveFlag(FCVAR_CHEAT);
 		cl_backspeed.RemoveFlag(FCVAR_CHEAT);
+		hidehud.Unlock(false);
+		hidehud.RemoveFlag(FCVAR_CHEAT);
 
 		soundfade.Unlock(false);
 		leaderboard_open.Unlock(false);

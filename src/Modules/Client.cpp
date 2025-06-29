@@ -41,6 +41,7 @@ Variable cl_showpos;
 Variable cl_sidespeed;
 Variable cl_backspeed;
 Variable cl_forwardspeed;
+Variable hidehud;
 Variable in_forceuser;
 Variable crosshairVariable;
 Variable cl_fov;
@@ -1211,6 +1212,7 @@ bool Client::Init() {
 	cl_sidespeed = Variable("cl_sidespeed");
 	cl_forwardspeed = Variable("cl_forwardspeed");
 	cl_backspeed = Variable("cl_backspeed");
+	hidehud = Variable("hidehud");
 	prevent_crouch_jump = Variable("prevent_crouch_jump");
 	crosshairVariable = Variable("crosshair");
 	r_PortalTestEnts = Variable("r_PortalTestEnts");
