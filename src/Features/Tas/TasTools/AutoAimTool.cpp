@@ -11,7 +11,7 @@ AutoAimTool autoAimTool[2] = {{0}, {1}};
 std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string> args) {
 	bool usesEntitySelector = args.size() > 0 && args[0] == "ent";
 
-	if (args.size() < 1 || args.size() > (usesEntitySelector ? 4 : 5)) {
+	if (args.size() < (usesEntitySelector ? 2 : 1) || args.size() > (usesEntitySelector ? 4 : 5)) {
 		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), args.size()));
 	}
 
