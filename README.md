@@ -58,7 +58,6 @@ The Beginner's Guide:
 
 The Stanley Parable:
 
-- `sar_cam_control` can easily crash (OOM when looking OOB)
 - Missing speedrun categories for now.
 
 ## Documentation
