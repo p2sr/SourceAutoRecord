@@ -661,6 +661,7 @@
 |sar_trace_portal_oval|0|Draw trace portals as ovals rather than rectangles.|
 |sar_trace_portal_record|1|Record portal locations.|
 |sar_trace_record|0|Record the trace to a slot. Set to 0 for not recording|
+|sar_trace_reveal|0|Only draw traces until the specified tick. Set to bbox to draw until the bbox tick.|
 |sar_trace_show|cmd|sar_trace_show [trace name] - show the trace with the given name|
 |sar_trace_teleport_at|cmd|sar_trace_teleport_at \<tick> [player slot] [trace name] - teleports the player at the given trace tick on the given trace ID (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).|
 |sar_trace_teleport_eye|cmd|sar_trace_teleport_eye \<tick> [player slot] [trace name] - teleports the player to the eye position at the given trace tick on the given trace (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).|

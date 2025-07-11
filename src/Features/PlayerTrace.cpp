@@ -39,6 +39,8 @@ Variable sar_trace_font_size("sar_trace_font_size", "3.0", 0.1, "The size of tex
 
 Variable sar_trace_vphys_record("sar_trace_vphys_record", "1", 0, 1, "Record vphysics locations of dynamic entities for analysis.\n");
 
+Variable sar_trace_reveal("sar_trace_reveal", "0", "Only draw traces until the specified tick. Set to bbox to draw until the bbox tick.\n");
+
 Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.\n");
 Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, 1, "Move trace bbox to hovered trace point tick on given trace.\n");
 Variable sar_trace_bbox_ent_record("sar_trace_bbox_ent_record", "1", "Record hitboxes of nearby entities in the trace. You may want to disable this if memory consumption gets too high.\n");
@@ -274,7 +276,14 @@ void PlayerTrace::DrawInWorld() const {
 			float speed = trace.velocities[slot][0].Length2D();
 			unsigned groundframes = trace.grounded[slot][0];
 
-			for (size_t i = 0; i < trace.positions[slot].size(); i++) {
+			size_t end_tick = trace.positions[slot].size() - 1;
+			if (sar_trace_reveal.GetInt() > 0) {
+				end_tick = (std::min)(end_tick, (size_t)tickUserToInternal(sar_trace_reveal.GetInt() + 1, trace));
+			} else if (!strcmp(sar_trace_reveal.GetString(), "bbox")) {
+				end_tick = (std::min)(end_tick, (size_t)tickUserToInternal(sar_trace_bbox_at.GetInt() + 1, trace));
+			}
+
+			for (size_t i = 0; i < end_tick; i++) {
 				Vector new_pos = trace.positions[slot][i];
 				speed = trace.velocities[slot][i].Length2D();
 				
