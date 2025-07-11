@@ -3,7 +3,6 @@
 #include "Module.hpp"
 #include "Utils.hpp"
 
-// TODO: Custom fonts
 class VPhysics : public Module {
 public:
 	Interface *g_pVphysics = nullptr;
