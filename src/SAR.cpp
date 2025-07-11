@@ -99,6 +99,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->modules->AddModule<FileSystem>(&fileSystem);
 			this->modules->AddModule<Matchmaking>(&matchmaking);
 			this->modules->AddModule<SteamAPI>(&steam);
+			this->modules->AddModule<VPhysics>(&vphysics);
 			this->modules->InitAll();
 
 			SarInitHandler::RunAll();

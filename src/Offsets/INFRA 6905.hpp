@@ -122,6 +122,11 @@ SIGSCAN_WINDOWS(CheckStuck_FloatTime, "FF 15 ? ? ? ? D9 5D ? 8B 4E")
 SIGSCAN_EMPTY(FloorReportalBranch)
 
 
+// VPhysics
+OFFSET_WINDOWS(DestroyEnvironment, 9)
+OFFSET_WINDOWS(GetActiveEnvironmentByIndex, 10)
+
+
 // Steam API
 SIGSCAN_WINDOWS(interfaceMgrSig, "83 3D ? ? ? ? 00 74 ? B0 01")
 OFFSET_WINDOWS(interfaceMgrOff, 2)

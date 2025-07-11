@@ -511,6 +511,11 @@ SIGSCAN_DEFAULT(FloorReportalBranch, "75 7D 8B 8E C0 04 00 00",
                                      "75 ? 8B 85 ? ? ? ? 8B 0D") // "Portal.open_red" xref(nothing after if) -> CProp_Portal::NewLocation -> first function call CPortal_Base2D::NewLocation -> 4x func call followed by test, [jnz]
 
 
+// VPhysics
+OFFSET_EMPTY(DestroyEnvironment)
+OFFSET_EMPTY(GetActiveEnvironmentByIndex)
+
+
 // Steam API
 SIGSCAN_DEFAULT(interfaceMgrSig, "89 0D ? ? ? ? 85 C9 0F", "")
 OFFSET_DEFAULT(interfaceMgrOff, 2, -1)
