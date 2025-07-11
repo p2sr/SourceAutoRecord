@@ -104,6 +104,8 @@ public:
 	VphysLocationList ConstructVphysLocationList() const;
 	// Construct a list of all portals in the map
 	PortalLocations ConstructPortalLocations() const;
+	// Increases bbox tick at the given speed
+	void Playback();
 	// Draw info about all traces to a HUD context
 	void DrawTraceHud(HudContext *ctx);
 	// Corrects latest eye offset according to given CMoveData, to make it correct for portal shooting preview

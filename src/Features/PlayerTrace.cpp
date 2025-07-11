@@ -40,6 +40,7 @@ Variable sar_trace_font_size("sar_trace_font_size", "3.0", 0.1, "The size of tex
 Variable sar_trace_vphys_record("sar_trace_vphys_record", "1", 0, 1, "Record vphysics locations of dynamic entities for analysis.\n");
 
 Variable sar_trace_reveal("sar_trace_reveal", "0", "Only draw traces until the specified tick. Set to bbox to draw until the bbox tick.\n");
+Variable sar_trace_playback_rate("sar_trace_playback_rate", "0", "Playback rate of the trace bbox. Loops upon finishing.\n");
 
 Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.\n");
 Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, 1, "Move trace bbox to hovered trace point tick on given trace.\n");
@@ -826,6 +827,28 @@ void PlayerTrace::CheckTraceChanged() {
 ON_EVENT(SESSION_START) {
 	if (sar_trace_autoclear.GetBool())
 		playerTrace->ClearAll();
+}
+
+ON_EVENT(PRE_TICK) {
+	if (sar_trace_playback_rate.GetFloat() > 0) {
+		playerTrace->Playback();
+	}
+}
+
+void PlayerTrace::Playback() {
+	float tick = sar_trace_bbox_at.GetFloat() + sar_trace_playback_rate.GetFloat();
+
+	size_t max_tick = 0;
+	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
+		const Trace &trace = it->second;
+		max_tick = (std::max)(max_tick, trace.positions[0].size());
+		max_tick = (std::max)(max_tick, trace.positions[1].size());
+	}
+
+	if ((size_t)tick > max_tick) {
+		tick = 0;
+	}
+	sar_trace_bbox_at.SetValue(tick);
 }
 
 void PlayerTrace::DrawTraceHud(HudContext *ctx) {

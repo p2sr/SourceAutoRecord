@@ -657,6 +657,7 @@
 |sar_trace_font_size|3.0|The size of text overlaid on recorded traces.|
 |sar_trace_hide|cmd|sar_trace_hide [trace name] - hide the trace with the given name|
 |sar_trace_override|1|Clears old trace when you start recording to it instead of recording on top of it.|
+|sar_trace_playback_rate|0|Playback rate of the trace bbox. Loops upon finishing.|
 |sar_trace_portal_opacity|100|Opacity of trace portal previews.|
 |sar_trace_portal_oval|0|Draw trace portals as ovals rather than rectangles.|
 |sar_trace_portal_record|1|Record portal locations.|
