@@ -37,6 +37,8 @@ Variable sar_trace_draw_time("sar_trace_draw_time", "3", 0, 3,
 );
 Variable sar_trace_font_size("sar_trace_font_size", "3.0", 0.1, "The size of text overlaid on recorded traces.\n");
 
+Variable sar_trace_vphys_record("sar_trace_vphys_record", "1", 0, 1, "Record vphysics locations of dynamic entities for analysis.\n");
+
 Variable sar_trace_bbox_at("sar_trace_bbox_at", "-1", -1, "Display a player-sized bbox at the given tick.\n");
 Variable sar_trace_bbox_use_hover("sar_trace_bbox_use_hover", "0", 0, 1, "Move trace bbox to hovered trace point tick on given trace.\n");
 Variable sar_trace_bbox_ent_record("sar_trace_bbox_ent_record", "1", "Record hitboxes of nearby entities in the trace. You may want to disable this if memory consumption gets too high.\n");
@@ -665,6 +667,7 @@ HitboxList PlayerTrace::ConstructHitboxList(Vector center) const {
 }
 
 VphysLocationList PlayerTrace::ConstructVphysLocationList() const {
+	if (!sar_trace_vphys_record.GetBool()) return VphysLocationList{};
 	VphysLocationList locationList;
 
 	for (int i = 0; i < Offsets::NUM_ENT_ENTRIES; ++i) {
@@ -709,6 +712,11 @@ VphysLocationList PlayerTrace::ConstructVphysLocationList() const {
 
 PortalLocations PlayerTrace::ConstructPortalLocations() const {
 	if (!sar_trace_portal_record.GetBool()) return PortalLocations{};
+	if (sar.game->Is(SourceGame_BeginnersGuide | SourceGame_StanleyParable | SourceGame_INFRA)) {
+		// Portals are not present in these games
+		// Let's not loop through every single entity every tick
+		return PortalLocations{};
+	}
 
 	PortalLocations portals;
 
