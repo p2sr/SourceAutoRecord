@@ -111,7 +111,7 @@ float Engine::GetIPT() { // IntervalPerTick
 	return 1.0f / sar.game->Tickrate();
 }
 int Engine::GetMaxClients() {
-	if (this->GetMaxClientsOrig() == 0) {
+	if (this->GetMaxClientsOrig() == 0 && this->hoststate->m_activeGame) {
 		return server->gpGlobals->maxClients;
 	}
 	return this->GetMaxClientsOrig();
