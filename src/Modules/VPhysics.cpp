@@ -23,21 +23,20 @@ ON_EVENT(SESSION_START) {
 		if (!env) break;
 		vphysEnvironments.push_back(env);
 	}
-
-	switch (vphysEnvironments.size()) {
-		default:
-			lastWasFast = false;
-			break;
-		case 3:
-			// Fast load, destroy one unused environment
-			// The first env is unused, and the second one persists through
-			// fast load(s). That means on the first fast load we'll destroy
-			// the first environment, and subsequent fast loads we'll destroy
-			// the second environment. (since it's now using the first one)
-			int *env = vphysEnvironments[lastWasFast ? 1 : 0];
-			vphysics->DestroyPhysicsEnvironment(env);
-			lastWasFast = true;
-			break;
+	if (vphysEnvironments.size() == 3) {
+		// Fast load, destroy one unused environment
+		// The first env is unused, and the second one persists through
+		// fast load(s). That means on the first fast load we'll destroy
+		// the first environment, and subsequent fast loads we'll destroy
+		// the second environment. (since it's now using the first one)
+		int *env = vphysEnvironments[lastWasFast ? 1 : 0];
+		vphysics->DestroyPhysicsEnvironment(env);
+		lastWasFast = true;
+	} else {
+		lastWasFast = false;
+		if (vphysEnvironments.size() > 3) {
+			console->Warning("VPhysics: Detected more than 3 physics environments (%zu), this is unexpected!\n", vphysEnvironments.size());
+		}
 	}
 }
 
