@@ -621,6 +621,7 @@
 |sar_timer_stop|cmd|sar_timer_stop - stops timer|
 |sar_timer_time_pauses|1|Timer adds non-simulated ticks when server pauses.|
 |sar_toast_align|0|The side to align toasts to horizontally. 0 = left, 1 = center, 2 = right.|
+|sar_toast_align_text|0|The side to align text to inside toasts horizontally. 0 = left, 1 = center, 2 = right.|
 |sar_toast_anchor|1|Where to put new toasts. 0 = bottom, 1 = top.|
 |sar_toast_background|1|Sets the background highlight for toasts. 0 = no background, 1 = text width only, 2 = full width.|
 |sar_toast_compact|0|Enables a compact form of the toasts HUD.|

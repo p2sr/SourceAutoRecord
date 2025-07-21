@@ -60,6 +60,7 @@ Variable sar_toast_width("sar_toast_width", "250", 2 * SIDE_PAD + 10, "The maxim
 Variable sar_toast_x("sar_toast_x", EXP_STR(TOAST_GAP), 0, "The horizontal position of the toasts HUD.\n", FCVAR_DONTRECORD);
 Variable sar_toast_y("sar_toast_y", EXP_STR(TOAST_GAP), 0, "The vertical position of the toasts HUD.\n", FCVAR_DONTRECORD);
 Variable sar_toast_align("sar_toast_align", "0", 0, 2, "The side to align toasts to horizontally. 0 = left, 1 = center, 2 = right.\n", FCVAR_DONTRECORD);
+Variable sar_toast_align_text("sar_toast_align_text", "0", 0, 2, "The side to align text to inside toasts horizontally. 0 = left, 1 = center, 2 = right.\n", FCVAR_DONTRECORD);
 Variable sar_toast_anchor("sar_toast_anchor", "1", 0, 1, "Where to put new toasts. 0 = bottom, 1 = top.\n", FCVAR_DONTRECORD);
 Variable sar_toast_compact("sar_toast_compact", "0", "Enables a compact form of the toasts HUD.\n", FCVAR_DONTRECORD);
 Variable sar_toast_background("sar_toast_background", "1", 0, 2, "Sets the background highlight for toasts. 0 = no background, 1 = text width only, 2 = full width.\n", FCVAR_DONTRECORD);
@@ -196,12 +197,15 @@ CON_COMMAND_F(sar_toast_setpos, "sar_toast_setpos <bottom|top> <left|center|righ
 
 	if (!strcmp(args[2], "left")) {
 		sar_toast_align.SetValue(0);
+		sar_toast_align_text.SetValue(0);
 		sar_toast_x.SetValue(TOAST_GAP);
 	} else if (!strcmp(args[2], "center")) {
 		sar_toast_align.SetValue(1);
+		sar_toast_align_text.SetValue(1);
 		sar_toast_x.SetValue((screenWidth - sar_toast_width.GetInt()) / 2);
 	} else {
 		sar_toast_align.SetValue(2);
+		sar_toast_align_text.SetValue(2);
 		sar_toast_x.SetValue(screenWidth - sar_toast_width.GetInt() - TOAST_GAP);
 	}
 }
@@ -391,6 +395,7 @@ void ToastHud::Paint(int slot) {
 	int maxWidth = sar_toast_width.GetInt();
 
 	Alignment align = (Alignment)sar_toast_align.GetInt();
+	Alignment textalign = (Alignment)sar_toast_align_text.GetInt();
 	bool againstTop = sar_toast_anchor.GetBool();
 
 	int mainX = sar_toast_x.GetInt();
@@ -449,7 +454,12 @@ void ToastHud::Paint(int slot) {
 
 		for (std::string line : lines) {
 			int length = surface->GetFontLength(font, "%s", line.c_str());
-			int pad = (longestLine - length) / 2;
+			int pad = 0;
+			if (textalign == Alignment::CENTER) {
+				pad = (longestLine - length) / 2;
+			} else if (textalign == Alignment::RIGHT) {
+				pad = longestLine - length;
+			}
 			surface->DrawTxt(font, xLeft + sidePadding + pad, yOffset, textCol, "%s", line.c_str());
 			yOffset += lineHeight;
 		}
