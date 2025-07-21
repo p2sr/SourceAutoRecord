@@ -1,6 +1,7 @@
 #include "StepSlopeBoostDebug.hpp"
 #include "Event.hpp"
 #include "Variable.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Server.hpp"
 #include "Cheats.hpp"
@@ -62,8 +63,8 @@ ON_EVENT(SESSION_START) {
 }
 
 void drawBox(Vector position, Vector velocity, bool ducked, Color color) {
-	auto center = position + (ducked ? Vector{0, 0, 18} : Vector{0, 0, 36});
-	auto size = ducked ? Vector{32, 32, 36} : Vector{32, 32, 72};
+	auto size = client->GetPlayerSize(ducked);
+	auto center = position + Vector{0, 0, size.z * 0.5f};
 
 	OverlayRender::addBoxMesh(
 		center, 

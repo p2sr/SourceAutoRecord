@@ -396,8 +396,8 @@ void PlayerTrace::DrawSpeedDeltas() const {
 	}
 }
 void PlayerTrace::DrawBboxAt(int tick) const {
-	static const Vector player_standing_size = {32, 32, 72};
-	static const Vector player_ducked_size = {32, 32, 36};
+	auto player_standing_size = client->GetPlayerSize(false);
+	auto player_ducked_size = client->GetPlayerSize(true);
 		
 	for (int slot = 0; slot < 2; slot++) {
 		for (const auto &[trace_idx, trace] : traces) {

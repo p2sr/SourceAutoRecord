@@ -5,6 +5,7 @@
 #include "Features/EntityList.hpp"
 #include "Features/OverlayRender.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
+#include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Scheme.hpp"
 #include "Modules/Server.hpp"
@@ -142,9 +143,8 @@ ON_EVENT(RENDER) {
 		}
 	};
 
-	// TODO: find actual values
-	Vector standingSize = Vector(32, 32, 72);
-	Vector crouchingSize = Vector(32, 32, 36);
+	auto standingSize = client->GetPlayerSize(false);
+	auto crouchingSize = client->GetPlayerSize(true);
 
 	// drawing vphys hitboxes
 	renderVphys(vphysHud.GetVphysInfo(GET_SLOT(), false), standingSize);

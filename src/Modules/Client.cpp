@@ -241,6 +241,24 @@ int Client::GetSplitScreenPlayerSlot(void *entity) {
 	return 0;
 }
 
+static Vector player_size_standing;
+static Vector player_size_ducked;
+Vector Client::GetPlayerSize(bool ducked) {
+	if (ducked && player_size_ducked.x != 0) {
+		return player_size_ducked;
+	}
+	if (!ducked && player_size_standing.x != 0) {
+		return player_size_standing;
+	}
+	auto player = client->GetPlayer(1);
+	if (!player) return {32, 32, 72};
+	if (ducked) {
+		return player_size_ducked = player->field<Vector>("m_DuckHullMax") - player->field<Vector>("m_DuckHullMin");
+	} else {
+		return player_size_standing = player->field<Vector>("m_StandHullMax") - player->field<Vector>("m_StandHullMin");
+	}
+}
+
 void Client::ClFrameStageNotify(int stage) {
 	this->FrameStageNotify(this->g_ClientDLL->ThisPtr(), stage);
 }

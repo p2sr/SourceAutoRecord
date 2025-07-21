@@ -79,6 +79,7 @@ public:
 	void SetMouseActivated(bool state);
 	CMStatus GetChallengeStatus();
 	int GetSplitScreenPlayerSlot(void *entity);
+	static Vector GetPlayerSize(bool ducked);
 	void ClFrameStageNotify(int stage);
 	void OpenChat();
 
