@@ -30,6 +30,13 @@ void GhostRenderer::UpdateAnimatedVerts() {
 	float dt = fminf(fmaxf(time - lastUpdateCall, 0.0f), 0.1f);
 	lastUpdateCall = time;
 
+	if (ghost->name == "jeb_" || ghost->name == "AMJ") {
+		int host, server, client;
+		engine->GetTicks(host, server, client);
+		int hue = (server / 4) % 360;
+		ghost->color = Utils::HSVToRGB(hue, 100, 100);
+	}
+
 	// prepare ducking
 	float duckFactor = (64.0f - ghost->data.view_offset) / 36.0f;
 
@@ -119,14 +126,6 @@ void GhostRenderer::UpdateAnimatedVerts() {
 
 		if (ghost->name == "Dinnerbone" || ghost->name == "Grumm") {
 			localPos.z = 72 - localPos.z;
-		}
-
-		if (ghost->name == "jeb_") {
-			int host, server, client;
-			engine->GetTicks(host, server, client);
-
-			int hue = (server) % 360;
-			ghost->color = Utils::HSVToRGB(hue, 100, 100);
 		}
 
 		// transform it to global coordinates
