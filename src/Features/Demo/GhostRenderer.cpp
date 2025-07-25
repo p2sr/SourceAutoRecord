@@ -137,7 +137,7 @@ void GhostRenderer::UpdateAnimatedVerts() {
 }
 
 
-void GhostRenderer::Draw(MeshId mesh) {
+void GhostRenderer::Draw(MeshId &mesh) {
 	if (ghost == nullptr) return;
 
 	//update verts before drawing

@@ -143,7 +143,10 @@ MeshId OverlayRender::createMesh(RenderCallback solid, RenderCallback wireframe)
 	return id;
 }
 
-void OverlayRender::addTriangle(MeshId mesh, Vector a, Vector b, Vector c, bool cull_back) {
+void OverlayRender::addTriangle(MeshId &mesh, Vector a, Vector b, Vector c, bool cull_back) {
+	if (g_meshes[mesh].num_points_in_pos >= 8192) {
+		mesh = OverlayRender::createMesh(g_meshes[mesh].solid, g_meshes[mesh].wireframe);
+	}
 	auto &vs = g_meshes[mesh].tri_verts;
 	vs.insert(vs.end(), { a, b, c });
 	if (!cull_back) vs.insert(vs.end(), { a, c, b });
@@ -151,14 +154,17 @@ void OverlayRender::addTriangle(MeshId mesh, Vector a, Vector b, Vector c, bool 
 	g_meshes[mesh].num_points_in_pos += 1;
 }
 
-void OverlayRender::addLine(MeshId mesh, Vector a, Vector b) {
+void OverlayRender::addLine(MeshId &mesh, Vector a, Vector b) {
+	if (g_meshes[mesh].num_points_in_pos >= 8192) {
+		mesh = OverlayRender::createMesh(g_meshes[mesh].solid, g_meshes[mesh].wireframe);
+	}
 	auto &vs = g_meshes[mesh].line_verts;
 	vs.insert(vs.end(), { a, b });
 	g_meshes[mesh].pos += (a + b) / 2.0;
 	g_meshes[mesh].num_points_in_pos += 1;
 }
 
-void OverlayRender::addQuad(MeshId mesh, Vector a, Vector b, Vector c, Vector d, bool cull_back) {
+void OverlayRender::addQuad(MeshId &mesh, Vector a, Vector b, Vector c, Vector d, bool cull_back) {
 	OverlayRender::addTriangle(mesh, a, b, c, cull_back);
 	OverlayRender::addTriangle(mesh, a, c, d, cull_back);
 }

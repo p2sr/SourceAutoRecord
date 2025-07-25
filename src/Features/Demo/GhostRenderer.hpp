@@ -21,7 +21,7 @@ private:
 public:
 	GhostRenderer();
 	void SetGhost(GhostEntity *ghost);
-	void Draw(MeshId mesh);
+	void Draw(MeshId &mesh);
 	void StartGesture(int id);
 	float GetHeight();
 };

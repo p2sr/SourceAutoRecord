@@ -37,9 +37,9 @@ namespace OverlayRender {
 	MeshId createMesh(RenderCallback solid, RenderCallback wireframe);
 
 	// Primitives that can be drawn during a mesh
-	void addTriangle(MeshId mesh, Vector a, Vector b, Vector c, bool cull_back = false);
-	void addLine(MeshId mesh, Vector a, Vector b);
-	void addQuad(MeshId mesh, Vector a, Vector b, Vector c, Vector d, bool cull_back = false);
+	void addTriangle(MeshId &mesh, Vector a, Vector b, Vector c, bool cull_back = false);
+	void addLine(MeshId &mesh, Vector a, Vector b);
+	void addQuad(MeshId &mesh, Vector a, Vector b, Vector c, Vector d, bool cull_back = false);
 
 	enum class TextAlign {
 		BOTTOM,    // the bottom center of the text block

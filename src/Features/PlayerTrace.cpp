@@ -56,21 +56,6 @@ Vector g_playerTraceTeleportLocation;
 int g_playerTraceTeleportSlot;
 bool g_playerTraceNeedsTeleport = false;
 
-enum MeshType {
-	GROUNDED = 0,
-	UNDER300,
-	AIRLOCKED,
-	MAX_TURN,
-	OVER300
-};
-static const Color mesh_colors[5] = {
-	{ 255, 0,   0   }, // red:    grounded
-	{ 255, 255, 255 }, // white:  speed < 300
-	{ 150, 75,  0   }, // brown:  speedlocked
-	{ 255, 220, 0   }, // yellow: can't turn further
-	{ 0,   255, 0   }  // green:  speed > 300
-};
-
 static int tickInternalToUser(int tick, const Trace &trace) {
 	if (tick == -1) return -1;
 	switch (sar_trace_draw_time.GetInt()) {
@@ -282,14 +267,11 @@ void PlayerTrace::DrawInWorld() const {
 			Vector closest_pos;
 			float closest_vel;
 
-			int mesh_size[5] = {0, 0, 0, 0, 0};
-			MeshId meshes[5] = {
-				OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant(mesh_colors[MeshType::GROUNDED ], draw_through_walls)),
-				OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant(mesh_colors[MeshType::UNDER300 ], draw_through_walls)),
-				OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant(mesh_colors[MeshType::AIRLOCKED], draw_through_walls)),
-				OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant(mesh_colors[MeshType::MAX_TURN ], draw_through_walls)),
-				OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant(mesh_colors[MeshType::OVER300  ], draw_through_walls))
-			};
+			MeshId mesh_airlocked = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 150, 75,  0   }, draw_through_walls));
+			MeshId mesh_max_turn  = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 220, 0   }, draw_through_walls));
+			MeshId mesh_under300  = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 255, 255 }, draw_through_walls));
+			MeshId mesh_over300   = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 0,   255, 0   }, draw_through_walls));
+			MeshId mesh_grounded  = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 0,   0   }, draw_through_walls));
 
 			Vector pos = trace.positions[slot][0];
 			float speed = trace.velocities[slot][0].Length2D();
@@ -348,21 +330,20 @@ void PlayerTrace::DrawInWorld() const {
 				// Don't draw a line when going through a portal or 0 length line
 				float pos_delta = (pos - new_pos).Length();
 				if (pos_delta < 127 && pos_delta > 0.001) {
+					// Colors:
+					// red: grounded
+					// brown: speedlocked
+					// yellow: can't turn further
+					// green: speed>300
 					Vector vel = trace.velocities[slot][i];
-					MeshType meshType = groundframes > 1 ? GROUNDED :
-					                    speed < 300      ? UNDER300 :
-					                    fabsf(vel.x) >= 150 && fabsf(vel.y) >= 150 ? AIRLOCKED :
-					                    fabsf(vel.x) >= 60  && fabsf(vel.y) >= 60  ? MAX_TURN :
-					                    OVER300;
-					MeshId mesh = meshes[meshType];
+					MeshId &mesh =
+						groundframes > 1 ? mesh_grounded :
+						speed < 300      ? mesh_under300 :
+						fabsf(vel.x) >= 150 && fabsf(vel.y) >= 150 ? mesh_airlocked :
+						fabsf(vel.x) >= 60  && fabsf(vel.y) >= 60  ? mesh_max_turn :
+						mesh_over300;
 
 					OverlayRender::addLine(mesh, pos, new_pos);
-
-					mesh_size[meshType]++;
-					if (mesh_size[meshType] >= 8192) { // batches of 8192 to avoid crash by overflowing the vertex buffer
-						meshes[meshType] = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant(mesh_colors[meshType], draw_through_walls));
-						mesh_size[meshType] = 0;
-					}
 				}
 				if (pos_delta > 0.001) pos = new_pos;
 			}
