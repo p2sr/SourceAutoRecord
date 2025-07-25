@@ -56,7 +56,7 @@ Vector g_playerTraceTeleportLocation;
 int g_playerTraceTeleportSlot;
 bool g_playerTraceNeedsTeleport = false;
 
-const enum MeshType {
+enum MeshType {
 	GROUNDED = 0,
 	UNDER300,
 	AIRLOCKED,
