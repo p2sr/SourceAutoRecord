@@ -321,6 +321,7 @@
 |sar_list_ents|cmd|sar_list_ents - lists entities|
 |sar_list_server_classes|cmd|sar_list_server_classes - lists all server classes|
 |sar_load_delay|0|Delay for this number of milliseconds at the end of a load.|
+|sar_loads_coop_dots|0|Toggles the loading screen dots during map transitions in coop.|
 |sar_loads_norender|0|Temporarily set mat_norendering to 1 during loads|
 |sar_loads_uncap|0|Temporarily set fps_max to 0 during loads|
 |sar_lphud|0|Enables or disables the portals display on screen.|
@@ -673,7 +674,6 @@
 |sar_twitch_chat_channel||The Twitch channel to connect to.|
 |sar_twitch_chat_color|255 255 255|The color of the Twitch chat messages.|
 |sar_twitch_chat_enabled|0|Enables Twitch chat integration.|
-|sar_ui_coop_dots|0|Toggles the loading screen dots during map transitions in coop.|
 |sar_unlocked_chapters|-1|Max unlocked chapter.|
 |sar_update|cmd|sar_update [release\|pre\|canary] [exit\|restart] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade|
 |sar_velocitygraph|0|Shows velocity graph.|

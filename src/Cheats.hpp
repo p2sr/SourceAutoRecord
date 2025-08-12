@@ -34,7 +34,7 @@ extern Variable sar_prevent_ehm;
 extern Variable sar_disable_weapon_sway;
 extern Variable sar_disable_viewmodel_shadows;
 extern Variable sar_floor_reportals;
-extern Variable sar_ui_coop_dots;
+extern Variable sar_loads_coop_dots;
 
 extern Variable sv_laser_cube_autoaim;
 extern Variable ui_loadingscreen_transition_time;
