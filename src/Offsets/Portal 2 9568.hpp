@@ -432,6 +432,9 @@ SIGSCAN_EMPTY(FindElementSig)
 SIGSCAN_DEFAULT(GetChapterProgress, "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8",
                                     "55 89 E5 57 56 53 83 EC 0C E8 ? ? ? ? 83 EC 08 8B 10")
 
+    // TODO: Linux Support
+SIGSCAN_DEFAULT(LoadingProgress__SetupControlStatesInstruction, "66 C7 86 ? ? ? ? ? ? EB", "")
+OFFSET_DEFAULT(LoadingProgress__SetupControlStatesBoolOffset, 7, 0)
 
 // Engine
 SIGSCAN_DEFAULT(ParseSmoothingInfoSig, "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", ""); // "cl_demosmootherpanel.cpp" xref -> CDemoSmootherPanel::ParseSmoothingInfo
