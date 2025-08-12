@@ -372,7 +372,7 @@ void Cheats::Init() {
 	}
 
 	g_coopLoadingDotsPatch = new Memory::Patch();
-	auto coopLoadingDotsBool = Memory::Scan(MODULE("client"), Offsets::LoadingProgress__SetupControlStatesInstruction) + Offsets::LoadingProgress__SetupControlStatesBoolOffset;
+	auto coopLoadingDotsBool = Memory::Scan(MODULE("client"), Offsets::LoadingProgress__SetupControlStatesInstruction, Offsets::LoadingProgress__SetupControlStatesBoolOffset);
 	if (coopLoadingDotsBool) {
 		unsigned char coopLoadingDotsBoolByte = 0x1;
 		g_coopLoadingDotsPatch->Execute(coopLoadingDotsBool, &coopLoadingDotsBoolByte, 1);
