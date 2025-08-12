@@ -51,6 +51,7 @@ Variable sar_prevent_ehm("sar_prevent_ehm", "0", 0, 1, "Prevents Entity Handle M
 Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables the viewmodel lagging behind.\n");
 Variable sar_disable_viewmodel_shadows("sar_disable_viewmodel_shadows", "0", 0, 1, "Disables the shadows on the viewmodel.\n");
 Variable sar_floor_reportals("sar_floor_reportals", "0", "Toggles floor reportals. Requires cheats.\n", FCVAR_CHEAT);
+Variable sar_ui_coop_dots("sar_ui_coop_dots", "0", "Toggles the loading screen dots during map transitions in coop.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -321,6 +322,7 @@ CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit
 }
 
 Memory::Patch *g_floorReportalPatch;
+Memory::Patch *g_coopLoadingDotsPatch;
 
 void Cheats::Init() {
 	sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
@@ -367,6 +369,14 @@ void Cheats::Init() {
 		unsigned char floorReportalBranchByte = 0x70;
 		g_floorReportalPatch->Execute(floorReportalBranch, &floorReportalBranchByte, 1);
 		g_floorReportalPatch->Restore();
+	}
+
+	g_coopLoadingDotsPatch = new Memory::Patch();
+	auto coopLoadingDotsBool = Memory::Scan(MODULE("client"), Offsets::LoadingProgress__SetupControlStatesInstruction) + Offsets::LoadingProgress__SetupControlStatesBoolOffset;
+	if (coopLoadingDotsBool) {
+		unsigned char coopLoadingDotsBoolByte = 0x1;
+		g_coopLoadingDotsPatch->Execute(coopLoadingDotsBool, &coopLoadingDotsBoolByte, 1);
+		g_coopLoadingDotsPatch->Restore();
 	}
 
 	Variable::RegisterAll();
@@ -502,5 +512,23 @@ void Cheats::CheckFloorReportals() {
 		g_floorReportalPatch->Execute();
 	} else {
 		g_floorReportalPatch->Restore();
+	}
+}
+
+void Cheats::CheckUICoopDots() {
+	bool enabled = sar_ui_coop_dots.GetBool();
+	if (enabled && (!g_coopLoadingDotsPatch || !g_coopLoadingDotsPatch->IsInit())) {
+		console->Print("sar_ui_coop_dots is not available.\n");
+		sar_ui_coop_dots.SetValue(0);
+		return;
+	}
+	if (enabled == g_coopLoadingDotsPatch->IsPatched()) {
+		return;
+	}
+
+	if (enabled) {
+		g_coopLoadingDotsPatch->Execute();
+	} else {
+		g_coopLoadingDotsPatch->Restore();
 	}
 }
