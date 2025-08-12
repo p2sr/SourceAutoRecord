@@ -51,7 +51,7 @@ Variable sar_prevent_ehm("sar_prevent_ehm", "0", 0, 1, "Prevents Entity Handle M
 Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables the viewmodel lagging behind.\n");
 Variable sar_disable_viewmodel_shadows("sar_disable_viewmodel_shadows", "0", 0, 1, "Disables the shadows on the viewmodel.\n");
 Variable sar_floor_reportals("sar_floor_reportals", "0", "Toggles floor reportals. Requires cheats.\n", FCVAR_CHEAT);
-Variable sar_ui_coop_dots("sar_ui_coop_dots", "0", "Toggles the loading screen dots during map transitions in coop.\n");
+Variable sar_loads_coop_dots("sar_loads_coop_dots", "0", "Toggles the loading screen dots during map transitions in coop.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -516,10 +516,10 @@ void Cheats::CheckFloorReportals() {
 }
 
 void Cheats::CheckUICoopDots() {
-	bool enabled = sar_ui_coop_dots.GetBool();
+	bool enabled = sar_loads_coop_dots.GetBool();
 	if (enabled && (!g_coopLoadingDotsPatch || !g_coopLoadingDotsPatch->IsInit())) {
-		console->Print("sar_ui_coop_dots is not available.\n");
-		sar_ui_coop_dots.SetValue(0);
+		console->Print("sar_loads_coop_dots is not available.\n");
+		sar_loads_coop_dots.SetValue(0);
 		return;
 	}
 	if (enabled == g_coopLoadingDotsPatch->IsPatched()) {
