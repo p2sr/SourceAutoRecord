@@ -984,7 +984,7 @@ DETOUR(Client::SetPlayerData, PortalLeaderboardItem_t *pData, int nType) {
 	/* alloc CGameUiAvatarImage */
 	auto ui_img = malloc(Offsets::CGameUiAvatarImage_Size);
 	ui_img = CGameUiAvatarImage_Ctor(ui_img);
-	CGameUiAvatarImage_InitFromRGBA(ui_img, pData->avatarTex, 184, 184);  // the avatar size is always same
+	CGameUiAvatarImage_InitFromRGBA(ui_img, pData->avatarTex.get(), 184, 184);  // the avatar size is always same
 
 	/* store so we can free later */
 	g_allocatedAvatars.push_back(ui_img);
@@ -994,10 +994,6 @@ DETOUR(Client::SetPlayerData, PortalLeaderboardItem_t *pData, int nType) {
 
 	/* set alpha too */
 	((float *)((unsigned long *)thisptr)[Offsets::ImagePanel_Base])[Offsets::m_flAlpha] = 225.0f;
-
-	/* free avatar texture */
-	// FIXME: this corrupts the heap when finishing a run (idk)
-	free(pData->avatarTex);
 
 	return 0;
 }

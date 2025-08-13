@@ -145,6 +145,7 @@ static void testApiKey() {
 				g_map_ids.insert({map.fileName, map.chamberId});
 			}
 		}
+		client->EnableCustomLeaderboards();
 		return;
 	}
 
@@ -217,7 +218,7 @@ static std::optional<int> getCurrentPbScore(std::string map_id) {
 	return atoi(str.c_str());
 }
 
-static uint8_t *getAvatar(std::string url) {
+static std::shared_ptr<uint8_t> getAvatar(std::string url) {
 	if (!ensureCurlReady(&g_curl_search)) return {};
 
 	auto response = request(g_curl_search, url);
@@ -238,13 +239,15 @@ static uint8_t *getAvatar(std::string url) {
 	/* avatar doesnt have alpha channel, but IImage needs it */
 	size_t size = w * h * channels;
 	size_t new_size = w * h * 4;
-	uint8_t *new_img = (uint8_t *)malloc(new_size);  // needs to be free'd somewhere!
+	auto new_img = std::shared_ptr<uint8_t>(new uint8_t[new_size], std::default_delete<uint8_t[]>());
+	auto new_p = new_img.get();
 
-	for (uint8_t *p = img, *new_p = new_img; p != img + size; p += channels, new_p += 4) {
-		*(new_p + 0) = *(p + 0);
-		*(new_p + 1) = *(p + 1);
-		*(new_p + 2) = *(p + 2);
-		*(new_p + 3) = 0xFF;
+	size_t i = 0;
+	for (uint8_t *p = img; p != img + size; p += channels, i += 4) {
+		new_p[i + 0] = p[0];
+		new_p[i + 1] = p[1];
+		new_p[i + 2] = p[2];
+		new_p[i + 3] = 0xFF;
 	}
 
 	/* free old decoded jpg */

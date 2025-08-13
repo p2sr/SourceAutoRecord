@@ -2,6 +2,7 @@
 #include "Utils/json11.hpp"
 
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -9,7 +10,7 @@
 struct PortalLeaderboardItem_t {
 	char name[32];
 	char autorender[16];
-	uint8_t *avatarTex;
+	std::shared_ptr<uint8_t> avatarTex;
 	int32_t rank;
 	int32_t score;
 };
