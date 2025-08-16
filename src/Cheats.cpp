@@ -396,6 +396,8 @@ void Cheats::Shutdown() {
 	
 	g_floorReportalPatch->Restore();
 	SAFE_DELETE(g_floorReportalPatch);
+	g_coopLoadingDotsPatch->Restore();
+	SAFE_DELETE(g_coopLoadingDotsPatch);
 }
 
 
