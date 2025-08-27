@@ -52,7 +52,7 @@ Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables
 Variable sar_disable_viewmodel_shadows("sar_disable_viewmodel_shadows", "0", 0, 1, "Disables the shadows on the viewmodel.\n");
 Variable sar_floor_reportals("sar_floor_reportals", "0", "Toggles floor reportals. Requires cheats.\n", FCVAR_CHEAT);
 Variable sar_loads_coop_dots("sar_loads_coop_dots", "0", "Toggles the loading screen dots during map transitions in coop.\n");
-Variable sar_patch_autograb("sar_patch_autograb", "0", 0, 1, "Patches the auto-grab in coop. Requires host to enable it for everyone that also enables it.\n");
+Variable sar_disable_autograb("sar_disable_autograb", "0", 0, 1, "Disables the auto-grab in coop. Requires host to enable it for everyone that also enables it.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -555,20 +555,20 @@ void Cheats::CheckUICoopDots() {
 }
 
 void Cheats::CheckAutoGrab() {
-	bool enabled = sar_patch_autograb.GetBool();
+	bool enabled = sar_disable_autograb.GetBool();
 	if (enabled && (!g_autoGrabPatchServer || !g_autoGrabPatchServer->IsInit())) {
-		console->Print("sar_patch_autograb is not available (Server).\n");
-		sar_patch_autograb.SetValue(0);
+		console->Print("sar_disable_autograb is not available (Server).\n");
+		sar_disable_autograb.SetValue(0);
 		return;
 	}
 	if (enabled && (!g_autoGrabPatchClient || !g_autoGrabPatchClient->IsInit())) {
-		console->Print("sar_patch_autograb is not available (Client).\n");
-		sar_patch_autograb.SetValue(0);
+		console->Print("sar_disable_autograb is not available (Client).\n");
+		sar_disable_autograb.SetValue(0);
 		return;
 	}
 	if (!sv_cheats.GetBool() && enabled) {
-		console->Print("sar_patch_autograb requires sv_cheats 1.\n");
-		sar_patch_autograb.SetValue(0);
+		console->Print("sar_disable_autograb requires sv_cheats 1.\n");
+		sar_disable_autograb.SetValue(0);
 		enabled = false;
 	}
 
