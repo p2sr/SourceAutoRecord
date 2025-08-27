@@ -512,6 +512,9 @@ OFFSET_DEFAULT(aircontrol_fling_speedOff, 3, 3)
 SIGSCAN_DEFAULT(FloorReportalBranch, "75 7D 8B 8E C0 04 00 00",
                                      "75 ? 8B 85 ? ? ? ? 8B 0D") // "Portal.open_red" xref(nothing after if) -> CProp_Portal::NewLocation -> first function call CPortal_Base2D::NewLocation -> 4x func call followed by test, [jnz]
 
+//  TODO: Linux Support
+SIGSCAN_DEFAULT(CPortal_Player__PollForUseEntity_CheckMP, "74 ? ? ? 8B 82 ? ? ? ? FF D0 84 C0 74 ? 8B CE",
+                                                          "") // CPortal_Player vtable -> Add offset 0x6D8 -> CPortal_Player::PlayerUse -> Second function call from disassembly -> CPortal_Player::PollForUseEntity -> jz instruction
 
 // VPhysics
 OFFSET_EMPTY(DestroyEnvironment)
