@@ -53,7 +53,7 @@ jobs:
             "https://dl.sar.portal2.jonesy.moe/api/v1/upload"
   build-win:
     name: Windows Build
-    runs-on: windows-latest
+    runs-on: windows-2022
     permissions:
       contents: write
     env:
@@ -64,17 +64,6 @@ jobs:
         with: { fetch-depth: 0 }
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
-        with:
-          vs-version: '16.11'
-      - name: Install VS2019 Build Tools and SDK
-        shell: powershell
-        run: |
-          Invoke-WebRequest -Uri "https://aka.ms/vs/16/release/vs_buildtools.exe" -OutFile "vs_buildtools.exe"
-          Start-Process -FilePath "vs_buildtools.exe" -ArgumentList `
-            "--quiet", "--wait", "--norestart", "--nocache", `
-            "--installPath", "C:\BuildTools", `
-            "--add", "Microsoft.VisualStudio.Component.Windows10SDK.18362", `
-            "--add", "Microsoft.VisualStudio.Component.VC.142.x86.x64" -Wait
       - name: Build
         env:
           RELEASE_BUILD: 1
