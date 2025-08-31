@@ -52,6 +52,7 @@ Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables
 Variable sar_disable_viewmodel_shadows("sar_disable_viewmodel_shadows", "0", 0, 1, "Disables the shadows on the viewmodel.\n");
 Variable sar_floor_reportals("sar_floor_reportals", "0", "Toggles floor reportals. Requires cheats.\n", FCVAR_CHEAT);
 Variable sar_loads_coop_dots("sar_loads_coop_dots", "0", "Toggles the loading screen dots during map transitions in coop.\n");
+Variable sar_disable_autograb("sar_disable_autograb", "0", 0, 1, "Disables the auto-grab in coop. Requires host to enable it for everyone that also enables it.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -323,6 +324,8 @@ CON_COMMAND_F(sar_challenge_autosubmit_reload_api_key, "sar_challenge_autosubmit
 
 Memory::Patch *g_floorReportalPatch;
 Memory::Patch *g_coopLoadingDotsPatch;
+Memory::Patch *g_autoGrabPatchServer;
+Memory::Patch *g_autoGrabPatchClient;
 
 void Cheats::Init() {
 	sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
@@ -379,6 +382,18 @@ void Cheats::Init() {
 		g_coopLoadingDotsPatch->Restore();
 	}
 
+	g_autoGrabPatchServer = new Memory::Patch();
+	g_autoGrabPatchClient = new Memory::Patch();
+	auto autoGrabServerBranch = Memory::Scan(MODULE("server"), Offsets::CPortal_Player__PollForUseEntity_CheckMP);
+	auto autoGrabClientBranch = Memory::Scan(MODULE("client"), Offsets::CPortal_Player__PollForUseEntity_CheckMP);  // Note: Same signature as the server.
+	if (autoGrabServerBranch && autoGrabClientBranch) {
+		unsigned char autoGrabBranchByte = 0xEB;
+		g_autoGrabPatchServer->Execute(autoGrabServerBranch, &autoGrabBranchByte, 1);
+		g_autoGrabPatchServer->Restore();
+		g_autoGrabPatchClient->Execute(autoGrabClientBranch, &autoGrabBranchByte, 1);
+		g_autoGrabPatchClient->Restore();
+	}
+
 	Variable::RegisterAll();
 	Command::RegisterAll();
 }
@@ -398,6 +413,10 @@ void Cheats::Shutdown() {
 	SAFE_DELETE(g_floorReportalPatch);
 	g_coopLoadingDotsPatch->Restore();
 	SAFE_DELETE(g_coopLoadingDotsPatch);
+	g_autoGrabPatchServer->Restore();
+	SAFE_DELETE(g_autoGrabPatchServer);
+	g_autoGrabPatchClient->Restore();
+	SAFE_DELETE(g_autoGrabPatchClient);
 }
 
 
@@ -532,5 +551,36 @@ void Cheats::CheckUICoopDots() {
 		g_coopLoadingDotsPatch->Execute();
 	} else {
 		g_coopLoadingDotsPatch->Restore();
+	}
+}
+
+void Cheats::CheckAutoGrab() {
+	bool enabled = sar_disable_autograb.GetBool();
+	if (enabled && (!g_autoGrabPatchServer || !g_autoGrabPatchServer->IsInit())) {
+		console->Print("sar_disable_autograb is not available (Server).\n");
+		sar_disable_autograb.SetValue(0);
+		return;
+	}
+	if (enabled && (!g_autoGrabPatchClient || !g_autoGrabPatchClient->IsInit())) {
+		console->Print("sar_disable_autograb is not available (Client).\n");
+		sar_disable_autograb.SetValue(0);
+		return;
+	}
+	if (!sv_cheats.GetBool() && enabled) {
+		console->Print("sar_disable_autograb requires sv_cheats 1.\n");
+		sar_disable_autograb.SetValue(0);
+		enabled = false;
+	}
+
+	if (enabled == g_autoGrabPatchServer->IsPatched() && enabled == g_autoGrabPatchClient->IsPatched()) {
+		return;
+	}
+
+	if (enabled) {
+		g_autoGrabPatchServer->Execute();
+		g_autoGrabPatchClient->Execute();
+	} else {
+		g_autoGrabPatchServer->Restore();
+		g_autoGrabPatchClient->Restore();
 	}
 }
