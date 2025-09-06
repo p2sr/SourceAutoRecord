@@ -1,4 +1,5 @@
 #include "Offsets/Portal 2 7054.hpp"
+// Beginner's Guide
 
 // CClientState
 OFFSET_DEFAULT(viewangles, 19112, 19084)

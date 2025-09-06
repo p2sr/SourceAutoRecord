@@ -62,23 +62,25 @@ Game *Game::CreateNew() {
 		return modDir;
 	};
 
-	auto modDir = GetModDir(TARGET_MOD2);
+	auto engineDir = GetModDir(TARGET_MOD2);
 
 	// This check is at the top because aptag's server dll is in a
 	// portal2 bin folder so it gets detected as portal 2 otherwise
-	if (Utils::ICompare(modDir, ApertureTag::GameDir())) {
+	if (Utils::ICompare(engineDir, ApertureTag::GameDir())) {
 		return new ApertureTag();
 	}
 
 	// May as well do the same thing here too then
-	if (Utils::ICompare(modDir, ThinkingWithTimeMachine::GameDir())) {
+	if (Utils::ICompare(engineDir, ThinkingWithTimeMachine::GameDir())) {
 		return new ThinkingWithTimeMachine();
 	}
 
-	modDir = GetModDir(TARGET_MOD);
+	auto modDir = GetModDir(TARGET_MOD);
 
-	if (Utils::ICompare(modDir, Portal2::ModDir())) {
-		
+	if (Utils::ICompare(modDir, Portal2::ModDir()) ||
+		Utils::ICompare(modDir, "cleaninggame") || 
+		Utils::ICompare(modDir, "divinity")) {
+		// Technically The Cleaning Game is on 8928 but all sigs match 9568
 		void *engineClient = Interface::GetPtr(MODULE("engine"), "VEngineClient015");
 		if (engineClient) {
 			return new Portal2();
@@ -106,6 +108,8 @@ Game *Game::CreateNew() {
 	if (Utils::ICompare(modDir, StanleyParable::ModDir())) {
 		return new StanleyParable();
 	}
+
+	console->Warning("Unknown game (server \"%s\" engine \"%s\")\n", modDir.c_str(), engineDir.c_str());
 
 	return nullptr;
 }
