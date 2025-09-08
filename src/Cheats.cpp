@@ -255,6 +255,11 @@ ON_EVENT(RENDER) {
 	}
 }
 
+ON_EVENT(PRE_TICK) {
+	Cheats::CheckUICoopDots();
+	Cheats::CheckAutoGrab();
+}
+
 CON_COMMAND(sar_getpos, "sar_getpos [slot] [server|client] - get the absolute origin and angles of a particular player from either the server or client. Defaults to slot 0 and server.\n") {
 	if (args.ArgC() > 3) {
 		return console->Print(sar_getpos.ThisPtr()->m_pszHelpString);

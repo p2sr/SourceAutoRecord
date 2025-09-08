@@ -165,6 +165,7 @@
 |sar_demo_portal_interp_fix|1|Fix eye interpolation through portals in demo playback.|
 |sar_demo_remove_broken|1|Whether to remove broken frames from demo playback|
 |sar_demo_replay|cmd|sar_demo_replay - play the last recorded or played demo|
+|sar_disable_autograb|0|Disables the auto-grab in coop. Requires host to enable it for everyone that also enables it.|
 |<i title="Portal 2">sar_disable_challenge_stats_hud</i>|0|Disables opening the challenge mode stats HUD. Greater than 1 specifies a custom amount of ticks to leave leaderboard open. -1 closes instantly.|
 |<i title="Portal 2">sar_disable_challenge_stats_hud_partner</i>|1|Closes the challenge mode stats HUD after your coop partner does.|
 |sar_disable_coop_score_hud|0|Disables the coop score HUD which appears in demo playback.|
