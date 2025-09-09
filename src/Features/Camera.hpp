@@ -19,6 +19,7 @@ extern Variable sar_cam_ortho;
 extern Variable sar_cam_ortho_scale;
 extern Variable sar_cam_ortho_nearz;
 extern Variable sar_cam_path_interp;
+extern Variable sar_cam_path_sync_to_demo;
 
 extern Variable cl_skip_player_render_in_main_view;
 extern Variable ss_force_primary_fullscreen;
@@ -59,6 +60,7 @@ private:
 	bool manualActive = false;
 	bool cameraRefreshRequested = false;
 	bool timeOffsetRefreshRequested = true;
+	bool pathActive = false;
 	int mouseHoldPos[2] = {0, 0};
 	float timeOffset = 0.0;
 
@@ -69,11 +71,14 @@ public:
 	std::map<int, CameraState> states;
 	Camera();
 	~Camera();
+	float GetCurrentPathTime();
+	bool IsSyncingPathToDemo() const { return sar_cam_path_sync_to_demo.GetBool() && engine->demoplayer->IsPlaying(); }
+	bool CanUseNonDefaultMode() const { return sv_cheats.GetBool() || engine->demoplayer->IsPlaying(); }
 	bool IsDriving();
 	void OverrideView(ViewSetup *m_View);
 	CameraState InterpolateStates(float time);
 	void DrawInWorld() const;
-	void RequestTimeOffsetRefresh();
+	void ActivatePath();
 	void RequestCameraRefresh();
 	void OverrideMovement(CUserCmd *cmd);
 

@@ -260,8 +260,6 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char *filename, bool bAsTimeDemo) 
 		}
 	}
 
-	camera->RequestTimeOffsetRefresh();
-
 	Renderer::isDemoLoading = true;
 
 	engine->demoplayer->replayName = newFilename;

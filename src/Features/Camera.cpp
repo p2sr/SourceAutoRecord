@@ -47,6 +47,9 @@ Variable sar_cam_path_interp("sar_cam_path_interp", "2", 0, 2,
 
 Variable sar_cam_path_draw("sar_cam_path_draw", "0", 0, 1, "Draws a representation of the camera path in the world. Disabled in cinematic mode.\n");
 
+Variable sar_cam_path_sync_to_demo("sar_cam_path_sync_to_demo", "1", 0, 1, 
+                       "If enabled, path will be synchronized to demo in cinematic mode.\n");
+
 Variable cl_skip_player_render_in_main_view;
 Variable ss_force_primary_fullscreen;
 
@@ -72,6 +75,16 @@ Camera::~Camera() {
 
 ON_EVENT(SAR_UNLOAD) {
 	ResetCameraRelatedCvars();
+}
+
+ON_EVENT(DEMO_START) {
+	if (sar_cam_path_sync_to_demo.GetBool()) {
+		camera->ActivatePath();
+	}
+}
+
+float Camera::GetCurrentPathTime() {
+	return pathActive ? engine->GetClientTime() - timeOffset : 0.0f;
 }
 
 //if in drive mode, checks if player wants to control the camera
@@ -279,7 +292,7 @@ void Camera::DrawInWorld() const {
 
 	if (camera->states.size() < 2) return;
 
-	if (!(sv_cheats.GetBool() || engine->demoplayer->IsPlaying()) || !sar_cam_path_draw.GetBool() || sar_cam_control.GetInt() == 2) return;
+	if (!camera->CanUseNonDefaultMode() || !sar_cam_path_draw.GetBool() || sar_cam_control.GetInt() == 2) return;
 
 	MeshId mesh_path = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 255, 255 }, true));
 	MeshId mesh_cams = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 0, 0 }, true));
@@ -312,9 +325,7 @@ void Camera::DrawInWorld() const {
 
 	// draw fov things at each keyframe and the current one
 	// the way this is done is rather sacrilegious
-
-	float currentTime = engine->GetClientTime() - timeOffset;
-	CameraState currentCameraState = camera->InterpolateStates(currentTime);
+	CameraState currentCameraState = camera->InterpolateStates(camera->GetCurrentPathTime());
 
 	std::vector<int> keyframeTicks(camera->states.size());
 	int i = 0;
@@ -388,40 +399,18 @@ void Camera::OverrideView(ViewSetup *m_View) {
 	}
 
 	if (timeOffsetRefreshRequested) {
-		timeOffset = engine->GetClientTime() - engine->demoplayer->GetTick() * engine->GetIPT();
+		timeOffset = engine->GetClientTime();
+		if (IsSyncingPathToDemo()) {
+			timeOffset -= engine->demoplayer->GetTick() * engine->GetIPT();
+		}
 		timeOffsetRefreshRequested = false;
 	}
 
 	auto newControlType = static_cast<CameraControlType>(sar_cam_control.GetInt());
 
-	//don't allow cinematic mode outside of demo player
-	if (!engine->demoplayer->IsPlaying() && newControlType == Cinematic) {
-		if (controlType != Cinematic) {
-			console->Print("Cinematic mode cannot be used outside of demo player.\n");
-		} else {
-			controlType = Default;
-			ResetCameraRelatedCvars();
-		}
-		newControlType = controlType;
-		sar_cam_control.SetValue(controlType);
-	}
-
-	//don't allow drive mode when not using sv_cheats
-	if (newControlType == Drive && !sv_cheats.GetBool() && !engine->demoplayer->IsPlaying()) {
-		if (controlType != Drive) {
-			console->Print("Drive mode requires sv_cheats 1 or demo player.\n");
-		} else {
-			controlType = Default;
-			ResetCameraRelatedCvars();
-		}
-		newControlType = controlType;
-		sar_cam_control.SetValue(controlType);
-	}
-
-	//don't allow follow mode when not using sv_cheats
-	if (newControlType == Follow && !sv_cheats.GetBool() && !engine->demoplayer->IsPlaying()) {
-		if (controlType != Follow) {
-			console->Print("Follow mode requires sv_cheats 1 or demo player.\n");
+	if (newControlType != Default && !camera->CanUseNonDefaultMode()) {
+		if (controlType == Default) {
+			console->Print("Different camera modes require sv_cheats 1 or demo player.\n");
 		} else {
 			controlType = Default;
 			ResetCameraRelatedCvars();
@@ -441,6 +430,9 @@ void Camera::OverrideView(ViewSetup *m_View) {
 
 	//handling camera control type switching
 	if (newControlType != controlType) {
+		if (newControlType == Cinematic && IsSyncingPathToDemo()) {
+			this->ActivatePath();
+		}
 		if (controlType == Default && newControlType != Default) {
 			//enabling
 			if (newControlType == Follow)
@@ -452,6 +444,11 @@ void Camera::OverrideView(ViewSetup *m_View) {
 			this->manualActive = false;
 		}
 		controlType = newControlType;
+	}
+
+	// reset path active state if outside of cinematic mode
+	if (pathActive && controlType != Cinematic) {
+		pathActive = false;
 	}
 
 	//don't do anything if not in game or demo player
@@ -545,8 +542,7 @@ void Camera::OverrideView(ViewSetup *m_View) {
 			if (controlType == Cinematic) {
 				//don't do interpolation when there are no points
 				if (states.size() > 0) {
-					float currentTime = engine->GetClientTime() - timeOffset;
-					currentState = InterpolateStates(currentTime);
+					currentState = InterpolateStates(GetCurrentPathTime());
 				}
 			}
 			//applying custom view
@@ -579,8 +575,9 @@ void Camera::OverrideView(ViewSetup *m_View) {
 	}
 }
 
-void Camera::RequestTimeOffsetRefresh() {
+void Camera::ActivatePath() {
 	timeOffsetRefreshRequested = true;
+	pathActive = true;
 }
 
 void Camera::RequestCameraRefresh() {
@@ -652,8 +649,11 @@ CON_COMMAND_F_COMPLETION(
 	"sar_cam_path_setkf [frame] [x] [y] [z] [pitch] [yaw] [roll] [fov] - sets the camera path keyframe\n",
 	0,
 	AUTOCOMPLETION_FUNCTION(sar_cam_path_setkf)) {
-	if (!engine->demoplayer->IsPlaying())
-		return console->Print("Cinematic mode cannot be used outside of demo player.\n");
+
+	if (args.ArgC() == 1 && !engine->demoplayer->IsPlaying()) {
+		console->Print("Frame has to be explicitly defined outside of demo player.\n");
+		return;
+	}
 
 	if (args.ArgC() >= 1 && args.ArgC() <= 9) {
 		CameraState campos = camera->currentState;
@@ -713,8 +713,6 @@ CON_COMMAND_F_COMPLETION(
 	"sar_cam_path_showkf <frame> - display information about camera path keyframe at specified frame\n",
 	0,
 	AUTOCOMPLETION_FUNCTION(sar_cam_path_showkf)) {
-	if (!engine->demoplayer->IsPlaying())
-		return console->Print("Cinematic mode cannot be used outside of demo player.\n");
 
 	if (args.ArgC() == 2) {
 		int i = std::atoi(args[1]);
@@ -730,9 +728,6 @@ CON_COMMAND_F_COMPLETION(
 }
 
 CON_COMMAND(sar_cam_path_getkfs, "sar_cam_path_getkfs - exports commands for recreating currently made camera path\n") {
-	if (!engine->demoplayer->IsPlaying())
-		return console->Print("Cinematic mode cannot be used outside of demo player.\n");
-
 	if (args.ArgC() == 1) {
 		for (auto const &state : camera->states) {
 			CameraState cam = state.second;
@@ -774,8 +769,6 @@ CON_COMMAND_F_COMPLETION(
 	"sar_cam_path_remkf <frame> - removes camera path keyframe at specified frame\n",
 	0,
 	AUTOCOMPLETION_FUNCTION(sar_cam_path_remkf)) {
-	if (!engine->demoplayer->IsPlaying())
-		return console->Print("Cinematic mode cannot be used outside of demo player.\n");
 
 	if (args.ArgC() == 2) {
 		int i = std::atoi(args[1]);
@@ -791,9 +784,6 @@ CON_COMMAND_F_COMPLETION(
 }
 
 CON_COMMAND(sar_cam_path_remkfs, "sar_cam_path_remkfs - removes all camera path keyframes\n") {
-	if (!engine->demoplayer->IsPlaying())
-		return console->Print("Cinematic mode cannot be used outside of demo player.\n");
-
 	if (args.ArgC() == 1) {
 		camera->states.clear();
 		console->Print("All camera path keyframes have been removed.\n");
@@ -986,4 +976,29 @@ CON_COMMAND(sar_cam_reset, "sar_cam_reset - resets camera to its default positio
 	} else {
 		return console->Print(sar_cam_reset.ThisPtr()->m_pszHelpString);
 	}
+}
+
+CON_COMMAND(sar_cam_path_start, "sar_cam_path_start - starts playback of predefined camera path. (requires camera Cinematic Mode)") {
+	if (args.ArgC() != 1) {
+		return console->Print(sar_cam_path_start.ThisPtr()->m_pszHelpString);
+	}
+
+	if (camera->states.size() == 0) {
+		return console->Print("No camera path has been defined.\n");
+	}
+
+	if (engine->demoplayer->IsPlaying() && sar_cam_path_sync_to_demo.GetBool()) {
+		return console->Print("Cannot restart the path. Camera path is synchronized to demo time. Turn off sar_cam_path_sync_to_demo.\n");
+	}
+
+	if (camera->controlType != Cinematic) {
+		if (!camera->CanUseNonDefaultMode()) {
+			return console->Print("Camera path cannot be started - switching to cinematic mode is not possible.\n");
+		}
+
+		console->Print("Camera has been switched to cinematic mode. You can switch it back with 'sar_cam_control' cvar.\n");
+		sar_cam_control.SetValue(CameraControlType::Cinematic);
+	}
+
+	camera->ActivatePath();
 }
