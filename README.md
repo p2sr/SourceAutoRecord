@@ -11,7 +11,6 @@
 [![CI](https://github.com/p2sr/SourceAutoRecord/workflows/CI/badge.svg)](https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACI+branch%3Amaster)
 [![CD](https://github.com/p2sr/SourceAutoRecord/workflows/CD/badge.svg)](https://github.com/p2sr/SourceAutoRecord/actions?query=workflow%3ACD+branch%3Amaster)
 [![Latest release](https://img.shields.io/github/v/release/p2sr/SourceAutoRecord?label=latest%20release)](https://github.com/p2sr/SourceAutoRecord/releases/latest)
-[![Latest prerelease](https://img.shields.io/github/v/release/p2sr/SourceAutoRecord?label=latest%20pre-release&include_prereleases)](https://github.com/p2sr/SourceAutoRecord/releases)
 [![License](https://img.shields.io/github/license/p2sr/SourceAutoRecord)](https://github.com/p2sr/SourceAutoRecord/blob/master/LICENSE)
 
 </div>

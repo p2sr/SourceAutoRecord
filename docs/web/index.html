@@ -59,7 +59,7 @@
                 <li>Legitimate TAS script playback, controllable with tick advancing, skipping and pausing.</li>
                 <li>Automation tools (autostrafer, autojump, autoaim etc.)</li>
                 <li>Integration with <a href="https://code.visualstudio.com/" target="_blank">Visual Studio Code</a> through the
-                    <a href="https://github.com/RainbowwPhoenixx/p2tas-lang" target="_blank">p2tas-lang</a> plugin.</li>
+                    <a href="https://github.com/p2sr/p2tas-lang" target="_blank">p2tas-lang</a> plugin.</li>
                 <li>Player trace, for recording and showing the path of the player's movement.</li>
             </ul>
 
@@ -74,7 +74,7 @@
 
             <hr class="horizontal">
             <h1 id="installation">Installation</h1>
-            <p>To install SAR, download either the latest release or pre-release for your operating system, and move it to your
+            <p>To install SAR, download the latest release for your operating system, and move it to your
                 game folder. If you don't know where to find your game folder, you can open it through Steam by navigating to your
                 library and selecting Portal 2. Then, right-click the game and select <i>Properties</i>. Press <i>Local files</i>,
                 and <i>Browse</i>. The folder that opens is your game directory. Put the SAR file you just downloaded in here.
@@ -158,6 +158,16 @@
                     <td>✔</td>
                     <td>❌ (yet)</td>
                 </tr>
+                <tr>
+                    <td><a href="https://store.steampowered.com/app/3281900" target="_blank">The Cleaning Game</a></td>
+                    <td>✔</td>
+                    <td>➖</td>
+                </tr>
+                <tr>
+                    <td>Divinity Chapter 2 <i>(closed beta)</i></td>
+                    <td>✔</td>
+                    <td>❓</td>
+                </tr>
             </table>
             <p>If you're playing a game with no Linux support, you can use Proton to run it.</p>
 
@@ -172,40 +182,43 @@
 
         <!-- Scripts -->
         <script>
-            (async function ()
-            {
+            (async function () {
                 // Fetch release data from the GitHub API
-                const pre = (await (await fetch("https://api.github.com/repos/p2sr/SourceAutoRecord/releases")).json())[0];
                 const stable = (await (await fetch("https://api.github.com/repos/p2sr/SourceAutoRecord/releases/latest")).json());
 
                 // Add download buttons to page depending on OS
                 // FIXME: This is deprecated and MUST be updated soon. However, at the time of making this, there is not yet browser support for the new approach.
                 // See: https://developer.mozilla.org/en-US/docs/web/api/navigator/platform
-                if (window.navigator.platform.toLowerCase().includes("win"))
-                {
-                    // TODO: Windows PDB download (assets[1])
+                const platform = window.navigator.platform.toLowerCase();
+                if (platform.includes("mac") || platform.includes("iphone") || platform.includes("ipad")) {
+                    document.querySelector("#download").innerHTML = `
+                        <h3>Download:</h3>\n
+                        <p>macOS is not supported. Sorry!</p>
+                        <br>
+                        <h4>Not on macOS?</h4>
+                        <a href="${stable.assets[0].browser_download_url}" class="off-os">Latest release (Windows) - ${stable.name}</a>
+                        <a href="${stable.assets[1].browser_download_url}" class="off-os pdb" title="Makes Windows crash reports more useful for the SAR developers. If you crash, send us the report!">PDB Crash Debugger (Windows)</a>
+                        <a href="${stable.assets[2].browser_download_url}" class="off-os">Latest release (Linux) - ${stable.name}</a>
+                    `;
+                } else if (platform.includes("win")) {
                     document.querySelector("#download").innerHTML = `
                         <h3>Downloads for Windows:</h3>
                         <a href="${stable.assets[0].browser_download_url}" class="stable">Latest release (${stable.name})</a>
-                        <a href="${pre.assets[0].browser_download_url}">Latest pre-release (${pre.name})</a>
+                        <a href="${stable.assets[1].browser_download_url}" class="stable pdb" title="Makes Windows crash reports more useful for the SAR developers. If you crash, send us the report!">PDB Crash Debugger</a>
                         <br><br><br>
 
                         <h4>Not on Windows?</h4>
                         <a href="${stable.assets[2].browser_download_url}" class="off-os">Latest release (Linux) - ${stable.name}</a>
-                        <a href="${pre.assets[2].browser_download_url}" class="off-os">Latest pre-release (Linux) - ${pre.name}</a>
                     `;
-                }
-                else
-                {
+                } else {
                     document.querySelector("#download").innerHTML = `
                         <h3>Downloads for Linux:</h3>
                         <a href="${stable.assets[2].browser_download_url}" class="stable">Latest release (${stable.name})</a>
-                        <a href="${pre.assets[2].browser_download_url}">Latest pre-release (${pre.name})</a>
                         <br><br><br>
 
                         <h4>Not on Linux?</h4>
                         <a href="${stable.assets[0].browser_download_url}" class="off-os">Latest release (Windows) - ${stable.name}</a>
-                        <a href="${pre.assets[0].browser_download_url}" class="off-os">Latest pre-release (Windows) - ${pre.name}</a>
+                        <a href="${stable.assets[1].browser_download_url}" class="off-os pdb" title="Makes Windows crash reports more useful for the SAR developers. If you crash, send us the report!">PDB Crash Debugger (Windows)</a>
                     `;
                 }
             })();
