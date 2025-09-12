@@ -10,6 +10,7 @@ state("hl2") { /* Portal (1910503) */ }
 state("infra") { /* INFRA (6905) */ }
 state("beginnersguide") { /* The Beginner's Guide (303210) */ }
 state("stanley") { /* The Stanley Parable (221910) */ }
+state("cleaninggame") { /* The Cleaning Game (8928) */ }
 
 startup
 {
