@@ -39,6 +39,18 @@
     --accent: #379;
 }
 
+@media (prefers-color-scheme: light)
+{
+    :root
+    {
+        --background: #f0f0f0;
+        --alternate-background: #e0e0e0;
+        --foreground: #111;
+        --medium: #aaa;
+        --accent: #59F;
+    }
+}
+
 /* 2.1 Main layout styling */
 body
 {
@@ -120,10 +132,23 @@ main
     white-space: nowrap;
 }
 
+#download
+{
+    padding: 0 0 1rem 1.5rem;
+    border-left: 5px solid var(--accent); 
+    background: var(--alternate-background);
+}
+
 .stable
 {
     background: var(--accent) !important;
     color: var(--foreground);
+}
+
+.pdb
+{
+    text-decoration: underline;
+    text-decoration-style: dashed !important;
 }
 
 .off-os
@@ -172,6 +197,7 @@ p, li
 table
 {
     border-spacing: 0;
+    margin-bottom: 1rem;
 }
 
 th, td
