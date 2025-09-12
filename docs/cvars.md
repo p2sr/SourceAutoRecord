@@ -121,6 +121,8 @@
 |sar_cam_path_remkfs|cmd|sar_cam_path_remkfs - removes all camera path keyframes|
 |sar_cam_path_setkf|cmd|sar_cam_path_setkf [frame] [x] [y] [z] [pitch] [yaw] [roll] [fov] - sets the camera path keyframe|
 |sar_cam_path_showkf|cmd|sar_cam_path_showkf \<frame> - display information about camera path keyframe at specified frame|
+|sar_cam_path_start|cmd|sar_cam_path_start - starts playback of predefined camera path. (requires camera Cinematic Mode)|
+|sar_cam_path_sync_to_demo|1|If enabled, path will be synchronized to demo in cinematic mode.|
 |sar_cam_reset|cmd|sar_cam_reset - resets camera to its default position|
 |sar_cam_setang|cmd|sar_cam_setang \<pitch> \<yaw> [roll] - sets camera angle (requires camera Drive Mode)|
 |sar_cam_setfov|cmd|sar_cam_setfov \<fov> - sets camera field of view (requires camera Drive Mode)|

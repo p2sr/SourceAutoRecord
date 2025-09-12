@@ -43,6 +43,8 @@ For features and installation instructions, please visit [the website].
 | [INFRA](https://store.steampowered.com/app/251110)                      | ✔       | ➖     |
 | [The Beginner's Guide](https://store.steampowered.com/app/303210)       | ✔       | ❌ (yet) |
 | [The Stanley Parable](https://store.steampowered.com/app/221910)        | ✔       | ❌ (yet) |
+| [The Cleaning Game](https://store.steampowered.com/app/3281900)         | ✔       | ➖     |
+| Divinity Chapter 2 *(closed beta)*                                      | ✔       | ❓     |
 
 If you're playing a game with no Linux support, you can use Proton to run it.
 

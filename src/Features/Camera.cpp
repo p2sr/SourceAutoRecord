@@ -978,7 +978,7 @@ CON_COMMAND(sar_cam_reset, "sar_cam_reset - resets camera to its default positio
 	}
 }
 
-CON_COMMAND(sar_cam_path_start, "sar_cam_path_start - starts playback of predefined camera path. (requires camera Cinematic Mode)") {
+CON_COMMAND(sar_cam_path_start, "sar_cam_path_start - starts playback of predefined camera path. (requires camera Cinematic Mode)\n") {
 	if (args.ArgC() != 1) {
 		return console->Print(sar_cam_path_start.ThisPtr()->m_pszHelpString);
 	}
