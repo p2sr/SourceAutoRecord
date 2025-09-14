@@ -573,7 +573,7 @@ CON_COMMAND_F_COMPLETION(ghost_spec_pov, "ghost_spec_pov <name|none> - spectate 
 		networkManager.ghostPoolLock.unlock();
 	} else {
 		for (auto &ghost : demoGhostPlayer.GetAllGhosts()) {
-			if (Utils::ICompare(ghost->name, args[1])) {
+			if (Utils::ICompare(ghost.name, args[1])) {
 				GhostEntity::StartFollowing(&ghost);
 				found = true;
 				break;
