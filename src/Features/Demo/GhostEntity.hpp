@@ -21,9 +21,9 @@ struct DataGhost {
 		return {{NAN, NAN, NAN}, {NAN, NAN, NAN}, NAN, false}; 
 	}
 	bool IsValid() const {
-		return !isnan(position.x) && !isnan(position.y) && !isnan(position.z) 
-			&& !isnan(view_angle.x) && !isnan(view_angle.y) && !isnan(view_angle.z) 
-			&& !isnan(view_offset);
+		return !std::isnan(position.x) && !std::isnan(position.y) && !std::isnan(position.z) 
+			&& !std::isnan(view_angle.x) && !std::isnan(view_angle.y) && !std::isnan(view_angle.z) 
+			&& !std::isnan(view_offset);
 	}
 };
 
