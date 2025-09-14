@@ -47,6 +47,8 @@ ON_EVENT(PRE_TICK) {
                     command = command + "\n";
                     engine->ExecuteCommand(command.c_str(), true);
                 }
+            } else if (Utils::StartsWith(message.c_str(), "!sr ") || Utils::StartsWith(message.c_str(), "!songs ") || Utils::ICompare(author, "nightbot")) {
+                // Ignore
             } else {
                 std::string out = std::string("ghost_message \"(TTV) ") + author + ": " + message + "\"\n";
                 engine->ExecuteCommand(out.c_str(), true);
