@@ -1,5 +1,6 @@
-#include "Version.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Modules/Engine.hpp"
+#include "Version.hpp"
 
 #if defined(SAR_DEV_BUILD) && !defined(NO_DEV_WATERMARK)
 
@@ -18,7 +19,7 @@ public:
 	}
 
 	bool ShouldDraw() override {
-		return !engine->demoplayer->IsPlaying();
+		return !engine->demoplayer->IsPlaying() && !(networkManager.isConnected && networkManager.spectator);
 	}
 
 	bool GetCurrentSize(int &w, int &h) override {
