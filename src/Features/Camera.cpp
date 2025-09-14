@@ -32,6 +32,9 @@ Variable sar_cam_drive("sar_cam_drive", "2", 0, 2,
                        "(turning it on is not required for demo player)\n"
 					   "1 = enabled when LMB is held\n"
 					   "2 = always enabled\n");
+Variable sar_cam_drive_base_speed("sar_cam_drive_base_speed", "175", 0, 10000, "Base speed of camera drive mode, in units per seconds.\n");
+Variable sar_cam_drive_buildup_scale("sar_cam_drive_buildup_scale", "0.5", 0, 10, 
+                       "Defines how much to increase multiplier of drive speed over time of movement every second.\n");
 
 Variable sar_cam_ortho("sar_cam_ortho", "0", 0, 1, "Enables or disables camera orthographic projection.\n");
 Variable sar_cam_ortho_scale("sar_cam_ortho_scale", "1", 0.001f, "Changes the scale of orthographic projection (how many units per pixel).\n");
@@ -444,6 +447,7 @@ void Camera::OverrideView(ViewSetup *m_View) {
 			//resetting cvars to their actual values when switching control off
 			ResetCameraRelatedCvars();
 			this->manualActive = false;
+			driveMovementTime = 0.0f;
 		}
 		controlType = newControlType;
 	}
@@ -474,6 +478,7 @@ void Camera::OverrideView(ViewSetup *m_View) {
 					if (manualActive) {
 						in_forceuser.SetValue(in_forceuser.GetString());
 						manualActive = false;
+						driveMovementTime = 0.0f;
 					}
 				}
 				if (manualActive) {
@@ -520,24 +525,29 @@ void Camera::OverrideView(ViewSetup *m_View) {
 					right.y = (-1 * sr * sp * sy + -1 * cr * cy);
 					right.z = -1 * sr * cp;
 
+					// finding wishdir
+					Vector wishdir;
+					if (inputSystem->IsKeyDown(ButtonCode_t::KEY_W)) wishdir += forward;
+					if (inputSystem->IsKeyDown(ButtonCode_t::KEY_S)) wishdir += (forward * -1);
+					if (inputSystem->IsKeyDown(ButtonCode_t::KEY_A)) wishdir += (right * -1);
+					if (inputSystem->IsKeyDown(ButtonCode_t::KEY_D)) wishdir += right;
+
+					if (wishdir.Length() > 0.0f) {
+						driveMovementTime += real_frame_time;
+					} else {
+						driveMovementTime = 0.0f;
+					}
+
 					//applying movement
 					bool shiftdown = inputSystem->IsKeyDown(KEY_LSHIFT) || inputSystem->IsKeyDown(KEY_RSHIFT);
 					bool controldown = inputSystem->IsKeyDown(KEY_LCONTROL) || inputSystem->IsKeyDown(KEY_RCONTROL);
-					float speed = shiftdown ? 525.0f : (controldown ? 60.0f : 175.0f);
+					float speedMultiplier = shiftdown ? 3.0f : (controldown ? 0.333f : 1.0f);
+					float speed = sar_cam_drive_base_speed.GetFloat() * speedMultiplier;
+					float buildupMultiplier = 1.0f + (driveMovementTime * sar_cam_drive_buildup_scale.GetFloat());
+					speed *= buildupMultiplier;
 					speed *= engine->IsAdvancing() ? real_frame_time : engine->GetHostFrameTime();
 
-					if (inputSystem->IsKeyDown(ButtonCode_t::KEY_W)) {
-						currentState.origin = currentState.origin + (forward * speed);
-					}
-					if (inputSystem->IsKeyDown(ButtonCode_t::KEY_S)) {
-						currentState.origin = currentState.origin + (forward * -speed);
-					}
-					if (inputSystem->IsKeyDown(ButtonCode_t::KEY_A)) {
-						currentState.origin = currentState.origin + (right * -speed);
-					}
-					if (inputSystem->IsKeyDown(ButtonCode_t::KEY_D)) {
-						currentState.origin = currentState.origin + (right * speed);
-					}
+					currentState.origin += wishdir * speed;
 				}
 			}
 			//cinematic camera - move it along predefined path

@@ -63,6 +63,7 @@ private:
 	bool pathActive = false;
 	int mouseHoldPos[2] = {0, 0};
 	float timeOffset = 0.0;
+	float driveMovementTime = 0.0f;
 
 public:
 	CameraControlType controlType = Default;
