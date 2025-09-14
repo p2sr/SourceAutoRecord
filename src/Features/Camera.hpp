@@ -74,7 +74,6 @@ public:
 	~Camera();
 	float GetCurrentPathTime();
 	bool IsSyncingPathToDemo() const { return sar_cam_path_sync_to_demo.GetBool() && engine->demoplayer->IsPlaying(); }
-	bool CanUseNonDefaultMode() const { return sv_cheats.GetBool() || engine->demoplayer->IsPlaying(); }
 	bool IsDriving();
 	void OverrideView(ViewSetup *m_View);
 	CameraState InterpolateStates(float time);

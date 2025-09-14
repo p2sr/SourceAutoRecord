@@ -297,7 +297,7 @@ void Camera::DrawInWorld() const {
 
 	if (camera->states.size() < 2) return;
 
-	if (!camera->CanUseNonDefaultMode() || !sar_cam_path_draw.GetBool() || sar_cam_control.GetInt() == 2) return;
+	if (!sar_cam_path_draw.GetBool() || sar_cam_control.GetInt() == 2) return;
 
 	MeshId mesh_path = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 255, 255 }, true));
 	MeshId mesh_cams = OverlayRender::createMesh(RenderCallback::none, RenderCallback::constant({ 255, 0, 0 }, true));
@@ -412,17 +412,6 @@ void Camera::OverrideView(ViewSetup *m_View) {
 	}
 
 	auto newControlType = static_cast<CameraControlType>(sar_cam_control.GetInt());
-
-	if (newControlType != Default && !camera->CanUseNonDefaultMode()) {
-		if (controlType == Default) {
-			console->Print("Different camera modes require sv_cheats 1 or demo player.\n");
-		} else {
-			controlType = Default;
-			ResetCameraRelatedCvars();
-		}
-		newControlType = controlType;
-		sar_cam_control.SetValue(controlType);
-	}
 
 	//janky hack mate
 	//overriding cvar values, boolean (int) values only.
@@ -608,7 +597,7 @@ void Camera::OverrideMovement(CUserCmd *cmd) {
 
 
 Vector Camera::GetPosition(int slot, bool raw) {
-	bool cam_control = sar_cam_control.GetInt() == 1 && sv_cheats.GetBool();
+	bool cam_control = sar_cam_control.GetInt() == Drive;
 
 	Vector cam_pos = (!raw && cam_control) ? camera->currentState.origin : rawState.origin;
 
@@ -616,7 +605,7 @@ Vector Camera::GetPosition(int slot, bool raw) {
 }
 
 Vector Camera::GetForwardVector(int slot, bool raw) {
-	bool cam_control = sar_cam_control.GetInt() == 1 && sv_cheats.GetBool();
+	bool cam_control = sar_cam_control.GetInt() == Drive;
 
 	QAngle ang = (!raw && cam_control) ? camera->currentState.angles : rawState.angles;
 	Vector view_vec = Vector{
@@ -1004,10 +993,6 @@ CON_COMMAND(sar_cam_path_start, "sar_cam_path_start - starts playback of predefi
 	}
 
 	if (camera->controlType != Cinematic) {
-		if (!camera->CanUseNonDefaultMode()) {
-			return console->Print("Camera path cannot be started - switching to cinematic mode is not possible.\n");
-		}
-
 		console->Print("Camera has been switched to cinematic mode. You can switch it back with 'sar_cam_control' cvar.\n");
 		sar_cam_control.SetValue(CameraControlType::Cinematic);
 	}
