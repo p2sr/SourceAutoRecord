@@ -515,7 +515,7 @@ void NetworkManager::SendPlayerData() {
 		bool grounded = player->ground_entity();
 		packet << DataGhost{client->GetAbsOrigin(player), engine->GetAngles(engine->IsOrange() ? 0 : GET_SLOT()), client->GetViewOffset(player).z, grounded};
 	} else {
-		packet << DataGhost{{0, 0, 0}, {0, 0, 0}, 0, false};
+		packet << DataGhost::Invalid();
 	}
 
 	if (!ghost_TCP_only.GetBool()) {
@@ -930,6 +930,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 				packet >> ghost_id >> data;
 
 				if (ghost_id == this->ID) continue;
+				if (!data.IsValid()) continue;
 				auto ghost = this->GetGhostByID(ghost_id);
 				if (!ghost) continue;
 
