@@ -27,9 +27,11 @@ Variable sar_cam_control("sar_cam_control", "0", 0, 3,
                          "2 = Cinematic mode (camera is controlled by predefined path).\n"
                          "3 = Follow mode (Camera is following the player but not rotating, useful when strafing on gel).\n");
 
-Variable sar_cam_drive("sar_cam_drive", "1", 0, 1,
+Variable sar_cam_drive("sar_cam_drive", "2", 0, 2,
                        "Enables or disables camera drive mode in-game "
-                       "(turning it on is not required for demo player)\n");
+                       "(turning it on is not required for demo player)\n"
+					   "1 = enabled when LMB is held\n"
+					   "2 = always enabled\n");
 
 Variable sar_cam_ortho("sar_cam_ortho", "0", 0, 1, "Enables or disables camera orthographic projection.\n");
 Variable sar_cam_ortho_scale("sar_cam_ortho_scale", "1", 0.001f, "Changes the scale of orthographic projection (how many units per pixel).\n");
@@ -90,9 +92,9 @@ float Camera::GetCurrentPathTime() {
 //if in drive mode, checks if player wants to control the camera
 //for now it requires LMB input (as in demo drive mode)
 bool Camera::IsDriving() {
-	bool drivingInGame = sar_cam_drive.GetBool() && sv_cheats.GetBool() && engine->hoststate->m_activeGame;
+	bool drivingInGame = sar_cam_drive.GetBool() && engine->hoststate->m_activeGame;
 	bool drivingInDemo = engine->demoplayer->IsPlaying();
-	bool wantingToDrive = inputSystem->IsKeyDown(ButtonCode_t::MOUSE_LEFT);
+	bool wantingToDrive = sar_cam_drive.GetInt() == 2 || inputSystem->IsKeyDown(ButtonCode_t::MOUSE_LEFT);
 	bool isUI = vgui->IsUIVisible();
 
 	return (camera->controlType == Drive || camera->controlType == Follow) && wantingToDrive && (drivingInGame || drivingInDemo) && !isUI;
