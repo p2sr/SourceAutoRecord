@@ -43,7 +43,7 @@
 |-ghost_list|cmd|-ghost_list - disable the ghost list HUD|
 |ghost_list|cmd|ghost_list - list all players in the current ghost server|
 |ghost_list_font|0|Font index for ghost list HUD.|
-|ghost_list_mode|0|Mode for ghost list HUD. 0 = all players, 1 = current map|
+|ghost_list_mode|0|Mode for ghost list HUD. 0 = all players, 1 = current map, 2 = dip|
 |ghost_list_show_map|0|Show the map name in the ghost list HUD.|
 |ghost_list_x|2|X position of ghost list HUD.|
 |ghost_list_y|-2|Y position of ghost list HUD.|
@@ -107,7 +107,9 @@
 |sar_avg_stop|cmd|sar_avg_stop - stops average calculation|
 |sar_bink_respect_host_time|1|Make BINK video playback respect host time.|
 |sar_cam_control|0|sar_cam_control \<type>: Change type of camera control.<br>0 = Default (camera is controlled by game engine),<br>1 = Drive mode (camera is separated and can be controlled by user input),<br>2 = Cinematic mode (camera is controlled by predefined path).<br>3 = Follow mode (Camera is following the player but not rotating, useful when strafing on gel).|
-|sar_cam_drive|1|Enables or disables camera drive mode in-game (turning it on is not required for demo player)|
+|sar_cam_drive|2|Enables or disables camera drive mode in-game (turning it on is not required for demo player)<br>1 = enabled when LMB is held<br>2 = always enabled|
+|sar_cam_drive_base_speed|175|Base speed of camera drive mode, in units per seconds.|
+|sar_cam_drive_buildup_scale|0.5|Defines how much to increase multiplier of drive speed over time of movement every second.|
 |sar_cam_force_eye_pos|0|Forces camera to be placed exactly on the player's eye position|
 |sar_cam_ortho|0|Enables or disables camera orthographic projection.|
 |sar_cam_ortho_nearz|1|Changes the near Z plane of orthographic projection.|
@@ -676,7 +678,7 @@
 |sar_transition_timer|0|Output how slow your dialogue fade was.|
 |sar_twitch_chat_channel||The Twitch channel to connect to.|
 |sar_twitch_chat_color|255 255 255|The color of the Twitch chat messages.|
-|sar_twitch_chat_enabled|0|Enables Twitch chat integration.|
+|sar_twitch_chat_enabled|0|Enables Twitch chat integration. 2 enables spectator command !spec|
 |sar_unlocked_chapters|-1|Max unlocked chapter.|
 |sar_update|cmd|sar_update [release\|pre\|canary] [exit\|restart] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade|
 |sar_velocitygraph|0|Shows velocity graph.|

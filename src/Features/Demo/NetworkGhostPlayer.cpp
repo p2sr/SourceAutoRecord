@@ -132,7 +132,7 @@ SyncUi syncUi;
 
 Variable ghost_list_x("ghost_list_x", "2", "X position of ghost list HUD.\n", 0);
 Variable ghost_list_y("ghost_list_y", "-2", "Y position of ghost list HUD.\n", 0);
-Variable ghost_list_mode("ghost_list_mode", "0", 0, 1, "Mode for ghost list HUD. 0 = all players, 1 = current map\n");
+Variable ghost_list_mode("ghost_list_mode", "0", 0, 2, "Mode for ghost list HUD. 0 = all players, 1 = current map, 2 = dip\n");
 Variable ghost_list_show_map("ghost_list_show_map", "0", "Show the map name in the ghost list HUD.\n");
 Variable ghost_list_font("ghost_list_font", "0", 0, "Font index for ghost list HUD.\n");
 
@@ -157,21 +157,39 @@ public:
 		if (slot != 0 && !engine->IsOrange()) return;
 		if (!networkManager.isConnected) return;
 
-		std::set<std::string> players;
+		// HACKHACK: STUPIDEST JANK IVE EVER JANKED
+		// for deep dip. free to revert when event ends.
+		std::vector<std::pair<float, std::string>> players;
 		networkManager.ghostPoolLock.lock();
-		if (ghost_list_show_map.GetBool()) {
-			players.insert(Utils::ssprintf("%s (%s)", networkManager.name.c_str(), engine->GetCurrentMapTitle().c_str()));
+		const static float TOWER_BOTTOM_Z = -13103.97f;
+		const static float TOWER_TOP_Z = 9632.03f;
+		if (ghost_list_mode.GetInt() == 2) {
+			if (!networkManager.spectator) {
+				auto player = client->GetPlayer(GET_SLOT()+1);
+				float percent = std::clamp((client->GetAbsOrigin((void *)player).z + 64.0f - TOWER_BOTTOM_Z) / (TOWER_TOP_Z - TOWER_BOTTOM_Z), 0.0f, 1.0f);
+				players.push_back({percent, Utils::ssprintf("%s (%.2f%%)", networkManager.name.c_str(), percent * 100.0f)});
+			}
 		} else {
-			players.insert(networkManager.name);
+			if (ghost_list_show_map.GetBool()) {
+				players.push_back({0, Utils::ssprintf("%s (%s)", networkManager.name.c_str(), engine->GetCurrentMapTitle().c_str())});
+			} else {
+				players.push_back({0, networkManager.name});
+			}
 		}
 		for (auto &g : networkManager.ghostPool) {
 			if (g->isDestroyed) continue;
 			if (!networkManager.AcknowledgeGhost(g)) continue;
-			if (ghost_list_mode.GetInt() == 1 && !g->sameMap) continue;
-			if (ghost_list_show_map.GetBool()) {
-				players.insert(Utils::ssprintf("%s (%s)", g->name.c_str(), engine->GetMapTitle(g->currentMap).c_str()));
+			if (ghost_list_mode.GetInt() >= 1 && !g->sameMap) continue;
+			if (ghost_list_mode.GetInt() == 2) {
+				if (g->newPos.position.z == 0.0f) continue;
+				float percent = std::clamp((g->newPos.position.z + 64.0f - TOWER_BOTTOM_Z) / (TOWER_TOP_Z - TOWER_BOTTOM_Z), 0.0f, 1.0f);
+				players.push_back({percent, Utils::ssprintf("%s (%.2f%%)", g->name.c_str(), percent * 100.0f)});
 			} else {
-				players.insert(g->name);
+				if (ghost_list_show_map.GetBool()) {
+					players.push_back({0, Utils::ssprintf("%s (%s)", g->name.c_str(), engine->GetMapTitle(g->currentMap).c_str())});
+				} else {
+					players.push_back({0, g->name});
+				}
 			}
 		}
 		networkManager.ghostPoolLock.unlock();
@@ -179,8 +197,12 @@ public:
 		long font = scheme->GetFontByID(ghost_list_font.GetInt());
 
 		int width = 0;
+		// sort players by percentage descending
+		std::sort(players.begin(), players.end(), [](const auto &a, const auto &b) {
+			return a.first > b.first;
+		});
 		for (auto &p : players) {
-			int w = surface->GetFontLength(font, "%s", p.c_str());
+			int w = surface->GetFontLength(font, "%s", p.second.c_str());
 			if (w > width) width = w;
 		}
 		width += 6; // Padding
@@ -199,7 +221,7 @@ public:
 		y += 3;
 
 		for (auto &p : players) {
-			surface->DrawTxt(font, x, y, { 255, 255, 255, 255 }, "%s", p.c_str());
+			surface->DrawTxt(font, x, y, { 255, 255, 255, 255 }, "%s", p.second.c_str());
 			y += surface->GetFontHeight(font) + 3;
 		}
 	}
