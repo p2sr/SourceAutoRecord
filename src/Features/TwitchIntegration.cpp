@@ -41,6 +41,15 @@ ON_EVENT(PRE_TICK) {
                     specName = std::string("ghost_spec_pov \"") + specName.c_str() + "\"\n";
                     engine->ExecuteCommand(specName.c_str(), true);
                 }
+            } else if (message == "!orbit") {
+                engine->ExecuteCommand("ghost_spec_thirdperson 1; +left", true);
+                Scheduler::InHostTicks(30*60, []() {
+                    engine->ExecuteCommand("ghost_spec_thirdperson 0; -left", true);
+                });
+            } else if (message == "!unorbit") {
+                engine->ExecuteCommand("ghost_spec_thirdperson 0; -left", true);
+            } else if (message == "!reconn") {
+                engine->ExecuteCommand("ghost_disconnect; ghost_spec_connect dip.portal2.sr", true);
             } else if (Utils::StartsWith(message.c_str(), "!cmd ") && Utils::ICompare(author, sar_twitch_chat_channel.GetString())) {
                 std::string command = message.substr(5);
                 if (command.length() > 0) {
@@ -49,6 +58,9 @@ ON_EVENT(PRE_TICK) {
                 }
             } else if (Utils::StartsWith(message.c_str(), "!sr ") || Utils::StartsWith(message.c_str(), "!songs ") || Utils::ICompare(author, "nightbot")) {
                 // Ignore
+            } else if (Utils::ICompare(author, sar_twitch_chat_channel.GetString())) {
+                std::string out = std::string("ghost_message \"") + message + "\"\n";
+                engine->ExecuteCommand(out.c_str(), true);
             } else {
                 std::string out = std::string("ghost_message \"(TTV) ") + author + ": " + message + "\"\n";
                 engine->ExecuteCommand(out.c_str(), true);
