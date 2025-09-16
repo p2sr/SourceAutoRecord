@@ -28,6 +28,7 @@ namespace Math {
 	double Distance(const Vector &a, const Vector &b);
 	double Distance(const QAngle &a, const QAngle &b);
 	void Lerp(const Vector &oldPos, const Vector &newPos, float time, Vector &outPut);
+	float Lerp(const float oldValue, const float newValue, float time);
 	float LerpAngle(const float oldValue, const float newValue, float time);
 	void LerpAngles(const QAngle &oldAng, const QAngle &newAng, float time, QAngle &outPut);
 }  // namespace Math
@@ -85,6 +86,15 @@ inline void Math::Lerp(const Vector &oldPos, const Vector &newPos, float time, V
 	outPut.x = (1 - time) * oldPos.x + time * newPos.x;
 	outPut.y = (1 - time) * oldPos.y + time * newPos.y;
 	outPut.z = (1 - time) * oldPos.z + time * newPos.z;
+}
+
+inline float Math::Lerp(const float oldValue, const float newValue, float time) {
+	if (time > 1)
+		time = 1;
+	if (time < 0)
+		time = 0;
+
+	return (1 - time) * oldValue + time * newValue;
 }
 
 inline float Math::LerpAngle(const float oldAngle, const float newAngle, float time) {
