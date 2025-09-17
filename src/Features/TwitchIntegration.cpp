@@ -50,14 +50,20 @@ ON_EVENT(PRE_TICK) {
                 engine->ExecuteCommand("ghost_spec_thirdperson 0; -left", true);
             } else if (message == "!reconn") {
                 engine->ExecuteCommand("ghost_disconnect; ghost_spec_connect dip.portal2.sr", true);
-            } else if (Utils::StartsWith(message.c_str(), "!cmd ") && Utils::ICompare(author, sar_twitch_chat_channel.GetString())) {
-                std::string command = message.substr(5);
-                if (command.length() > 0) {
-                    command = command + "\n";
-                    engine->ExecuteCommand(command.c_str(), true);
+            } else if (Utils::StartsWith(message.c_str(), "!cmd ")) {
+                if (Utils::ICompare(author, "thisamj") || Utils::ICompare(author, sar_twitch_chat_channel.GetString())) {
+                    // obama medal for obama
+                    // i promise i can be trusted :P
+                    std::string command = message.substr(5);
+                    if (command.length() > 0) {
+                        command = command + "\n";
+                        engine->ExecuteCommand(command.c_str(), true);
+                    }
+                } else {
+                    engine->ExecuteCommand("sar_toast_create warning Nuh uh.", true);
                 }
-            } else if (Utils::StartsWith(message.c_str(), "!sr ") || Utils::StartsWith(message.c_str(), "!songs ") || Utils::ICompare(author, "nightbot")) {
-                // Ignore
+            } else if (Utils::StartsWith(message.c_str(), "!") || Utils::ICompare(author, "nightbot") || Utils::ICompare(author, "streamelements")) {
+                // Ignore bots and bot commands
             } else if (Utils::ICompare(author, sar_twitch_chat_channel.GetString())) {
                 std::string out = std::string("ghost_message \"") + message + "\"\n";
                 engine->ExecuteCommand(out.c_str(), true);
