@@ -166,8 +166,10 @@ public:
 		if (ghost_list_mode.GetInt() == 2) {
 			if (!networkManager.spectator) {
 				auto player = client->GetPlayer(GET_SLOT()+1);
-				float percent = std::clamp((client->GetAbsOrigin((void *)player).z + 64.0f - TOWER_BOTTOM_Z) / (TOWER_TOP_Z - TOWER_BOTTOM_Z), 0.0f, 1.0f);
-				players.push_back({percent, Utils::ssprintf("%s (%.2f%%)", networkManager.name.c_str(), percent * 100.0f)});
+				if (player) {
+					float percent = std::clamp((client->GetAbsOrigin((void *)player).z + 64.0f - TOWER_BOTTOM_Z) / (TOWER_TOP_Z - TOWER_BOTTOM_Z), 0.0f, 1.0f);
+					players.push_back({percent, Utils::ssprintf("%s (%.2f%%)", networkManager.name.c_str(), percent * 100.0f)});
+				}
 			}
 		} else {
 			if (ghost_list_show_map.GetBool()) {
