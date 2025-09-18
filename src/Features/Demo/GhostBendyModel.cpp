@@ -16,7 +16,7 @@ Vector GhostBendyModel::GetVertexPosition(int index) {
 	return Vector{0, BENDY_VERTS[index * 2], BENDY_VERTS[index * 2 + 1]};
 }
 
-constexpr int GhostBendyModel::GetVerticesCount() {
+int GhostBendyModel::GetVerticesCount() {
 	return sizeof(BENDY_VERTS) / (sizeof(float) * 2);
 }
 

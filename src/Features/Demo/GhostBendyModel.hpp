@@ -20,7 +20,7 @@ namespace GhostBendyModel {
 	};
 
 	Vector GetVertexPosition(int index);
-	constexpr int GetVerticesCount();
+	int GetVerticesCount();
 	Group GetVertexGroup(int index);
 	VertexInfo GetVertexInfo(int index);
 	bool TryGetTriangleIndices(int triangleIndex, short *i1, short *i2, short *i3);
