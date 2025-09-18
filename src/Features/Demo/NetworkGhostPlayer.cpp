@@ -1026,6 +1026,12 @@ void NetworkManager::UpdateColor() {
 	this->tcpSocket.send(packet);
 }
 
+void NetworkManager::NotifyTaunt(const char *name) {
+	if (!this->isConnected) return;
+
+	// TODO: send taunt packet
+}
+
 bool NetworkManager::AreAllGhostsAheadOrSameMap() {
 	this->ghostPoolLock.lock();
 	syncUi.ready.clear();

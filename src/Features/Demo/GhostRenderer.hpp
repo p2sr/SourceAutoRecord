@@ -11,6 +11,7 @@ struct GhostAnimationState {
 	bool active = true;
 	float controlValue1 = 0.0f;
 	float controlValue2 = 0.0f;
+	float controlValue3 = 0.0f;
 };
 
 using GhostAnimationStateUpdateFunc = std::function<void(const GhostEntity*, float, GhostAnimationState&)>;
@@ -47,7 +48,6 @@ private:
 	void UpdateAnimationStates(float deltaTime);
 	void UpdateAnimatedVertices(float deltaTime);
 	void TransformVertexFromLocalToWorldSpace(Vector &vertex);
-
 public:
 	GhostRenderer();
 	void SetGhost(GhostEntity *ghost);

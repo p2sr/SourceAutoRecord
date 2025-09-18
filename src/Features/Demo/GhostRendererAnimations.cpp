@@ -53,7 +53,7 @@ GhostAnimationDefinition hideHandsAnimation{
 	nullptr,
 	[](const GhostAnimationState &state, GhostBendyModel::VertexInfo vertexInfo, Vector &animatedVertex) {
 		if (vertexInfo.group == GhostBendyModel::LEFT_ARM || vertexInfo.group == GhostBendyModel::RIGHT_ARM) {
-			animatedVertex.x = 0;
+			animatedVertex.y = 0;
 		}
 	},
 };
@@ -108,6 +108,55 @@ GhostAnimationDefinition flipAnimation{
 	},
 };
 
+GhostAnimationDefinition waveAnimation{
+	"wave",
+	[](const GhostEntity *ghost, float dt, GhostAnimationState &state) {
+		if (ghost->velocity.Length() > 20.0f && state.controlValue2 > 1.0f) {
+			state.controlValue1 = 1.0f;
+		}
+
+		state.controlValue2 += dt * 14.0f;
+		if (state.controlValue2 > M_PI * 4 && state.controlValue1 == 0.0f) {
+			state.controlValue2 = fmodf(state.controlValue2, M_PI * 2) + M_PI * 2;
+		}
+
+		if (state.controlValue2 > M_PI * 6 && state.controlValue1 == 1.0f) {
+			state.active = false;
+		}
+
+		state.controlValue3 = ghost->data.view_offset;
+	},
+	[](const GhostAnimationState &state, GhostBendyModel::VertexInfo vertexInfo, Vector &animatedVertex) {
+		float blend = state.controlValue1 == 0.0f
+			? state.controlValue2 / (M_PI * 2)
+			: (M_PI * 6 - state.controlValue2) / (M_PI * 2);
+		blend = fminf(fmaxf(blend, 0.0f), 1.0f);
+
+		if (vertexInfo.group != GhostBendyModel::RIGHT_ARM) {
+			return;
+		}
+
+		animatedVertex.y = vertexInfo.position.y;
+
+		float rotationRadians = DEG2RAD(-100.0f + 30.0f * sinf(state.controlValue2));
+		Vector armPivot = {0, -6.0f, state.controlValue3 - 24.0f};
+		float cosRotation = cosf(rotationRadians);
+		float sinRotation = sinf(rotationRadians);
+
+		Vector originalVertex = animatedVertex;
+		Vector rotatedVector = originalVertex - armPivot;
+		rotatedVector = {
+			rotatedVector.x,
+			rotatedVector.y * cosRotation - rotatedVector.z * sinRotation,
+			rotatedVector.y * sinRotation + rotatedVector.z * cosRotation,
+		};
+		rotatedVector *= 1.2f;
+		rotatedVector += armPivot;
+
+		Math::Lerp(originalVertex, rotatedVector, blend, animatedVertex);
+	},
+};
+
 std::vector<GhostAnimationDefinition> g_ghostMainAnimationDefinitions = {
 	hideHandsAnimation,
 	pitchRotationAnimation,
@@ -115,4 +164,9 @@ std::vector<GhostAnimationDefinition> g_ghostMainAnimationDefinitions = {
 	duckingAnimation,
 	squishAnimation,
 	flipAnimation,
+};
+
+
+std::vector<GhostAnimationDefinition> g_ghostTauntAnimationDefinitions = {
+	waveAnimation,
 };

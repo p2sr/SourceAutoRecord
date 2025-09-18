@@ -6,6 +6,7 @@
 #include "Features/OverlayRender.hpp"
 #include "GhostEntity.hpp"
 #include "GhostBendyModel.hpp"
+#include "NetworkGhostPlayer.hpp"
 
 
 GhostRenderer::GhostRenderer() {
@@ -97,6 +98,12 @@ void GhostRenderer::SetGhost(GhostEntity* ghost) {
 }
 
 void GhostRenderer::StartAnimation(const GhostAnimationDefinition &animation) {
+	for (const auto& anim : animations) {
+		if (anim.identity == &animation) {
+			return;
+		}
+	}
+
 	GhostAnimationInstance instance;
 	instance.identity = &animation;
 	instance.state.active = true;
@@ -118,4 +125,52 @@ void GhostAnimationInstance::UpdateVertex(GhostBendyModel::VertexInfo vertexInfo
 	if (identity->vertexUpdateFunc != nullptr) {
 		identity->vertexUpdateFunc(state, vertexInfo, animatedVertex);
 	}
+}
+
+
+DECL_COMMAND_COMPLETION(ghost_taunt) {
+	for (const auto &def : g_ghostTauntAnimationDefinitions) {
+		if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+			break;
+		}
+
+		if (std::strlen(match) != std::strlen(cmd)) {
+			if (std::strstr(def.name.c_str(), match)) {
+				items.push_back(def.name);
+			}
+		} else {
+			items.push_back(def.name);
+		}
+	}
+
+	FINISH_COMMAND_COMPLETION();
+}
+
+CON_COMMAND_F_COMPLETION(ghost_taunt, "Plays a taunt animation\n", FCVAR_NONE, AUTOCOMPLETION_FUNCTION(ghost_taunt)) {
+	if (args.ArgC() < 2) {
+		console->Print("ghost_taunt <animation_name>\n");
+		return;
+	}
+
+	if (!networkManager.isConnected) {
+		return console->Print("Must be connected to a ghost server.\n");
+	}
+
+	std::string animName = args[1];
+	auto it = std::find_if(
+		g_ghostTauntAnimationDefinitions.begin(),
+		g_ghostTauntAnimationDefinitions.end(),
+		[&](const GhostAnimationDefinition &def) { return def.name == animName; });
+	if (it == g_ghostTauntAnimationDefinitions.end()) {
+		console->Print("Unknown taunt animation: %s\n", animName.c_str());
+		return;
+	}
+
+	networkManager.ghostPoolLock.lock();
+	for (auto &ghost : networkManager.ghostPool) {
+		ghost->renderer.StartAnimation(*it);
+	}
+	networkManager.ghostPoolLock.unlock();
+
+	
 }
