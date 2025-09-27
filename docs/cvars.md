@@ -358,61 +358,61 @@
 |sar_netmessage_enable|1|Enable sending NetMessages. Disabling this can break other features.|
 |sar_nextdemo|cmd|sar_nextdemo - plays the next demo in demo queue|
 |sar_on_cfg_message|cmd|sar_on_cfg_message \<command> [args]... - registers a command to be run when partner sends a custom message (_sar_cfg_message svar)|
-|sar_on_cfg_message_clear|cmd|sar_on_cfg_message_clear - clears commands registered on event "cfg_message"|
+|sar_on_cfg_message_clear|cmd|sar_on_cfg_message_clear [id] - clears command(s) registered on event "cfg_message"|
 |sar_on_cfg_message_list|cmd|sar_on_cfg_message_list - lists commands registered on event "cfg_message"|
 |sar_on_config_exec|cmd|sar_on_config_exec \<command> [args]... - registers a command to be run on config.cfg exec|
-|sar_on_config_exec_clear|cmd|sar_on_config_exec_clear - clears commands registered on event "config_exec"|
+|sar_on_config_exec_clear|cmd|sar_on_config_exec_clear [id] - clears command(s) registered on event "config_exec"|
 |sar_on_config_exec_list|cmd|sar_on_config_exec_list - lists commands registered on event "config_exec"|
 |sar_on_coop_reset_done|cmd|sar_on_coop_reset_done \<command> [args]... - registers a command to be run when coop reset is completed|
-|sar_on_coop_reset_done_clear|cmd|sar_on_coop_reset_done_clear - clears commands registered on event "coop_reset_done"|
+|sar_on_coop_reset_done_clear|cmd|sar_on_coop_reset_done_clear [id] - clears command(s) registered on event "coop_reset_done"|
 |sar_on_coop_reset_done_list|cmd|sar_on_coop_reset_done_list - lists commands registered on event "coop_reset_done"|
 |sar_on_coop_reset_remote|cmd|sar_on_coop_reset_remote \<command> [args]... - registers a command to be run when coop reset run remotely|
-|sar_on_coop_reset_remote_clear|cmd|sar_on_coop_reset_remote_clear - clears commands registered on event "coop_reset_remote"|
+|sar_on_coop_reset_remote_clear|cmd|sar_on_coop_reset_remote_clear [id] - clears command(s) registered on event "coop_reset_remote"|
 |sar_on_coop_reset_remote_list|cmd|sar_on_coop_reset_remote_list - lists commands registered on event "coop_reset_remote"|
 |sar_on_coop_spawn|cmd|sar_on_coop_spawn \<command> [args]... - registers a command to be run on coop spawn|
-|sar_on_coop_spawn_clear|cmd|sar_on_coop_spawn_clear - clears commands registered on event "coop_spawn"|
+|sar_on_coop_spawn_clear|cmd|sar_on_coop_spawn_clear [id] - clears command(s) registered on event "coop_spawn"|
 |sar_on_coop_spawn_list|cmd|sar_on_coop_spawn_list - lists commands registered on event "coop_spawn"|
 |sar_on_demo_start|cmd|sar_on_demo_start \<command> [args]... - registers a command to be run when demo playback starts|
-|sar_on_demo_start_clear|cmd|sar_on_demo_start_clear - clears commands registered on event "demo_start"|
+|sar_on_demo_start_clear|cmd|sar_on_demo_start_clear [id] - clears command(s) registered on event "demo_start"|
 |sar_on_demo_start_list|cmd|sar_on_demo_start_list - lists commands registered on event "demo_start"|
 |sar_on_demo_stop|cmd|sar_on_demo_stop \<command> [args]... - registers a command to be run when demo playback stops|
-|sar_on_demo_stop_clear|cmd|sar_on_demo_stop_clear - clears commands registered on event "demo_stop"|
+|sar_on_demo_stop_clear|cmd|sar_on_demo_stop_clear [id] - clears command(s) registered on event "demo_stop"|
 |sar_on_demo_stop_list|cmd|sar_on_demo_stop_list - lists commands registered on event "demo_stop"|
 |sar_on_exit|cmd|sar_on_exit \<command> [args]... - registers a command to be run on game exit|
-|sar_on_exit_clear|cmd|sar_on_exit_clear - clears commands registered on event "exit"|
+|sar_on_exit_clear|cmd|sar_on_exit_clear [id] - clears command(s) registered on event "exit"|
 |sar_on_exit_list|cmd|sar_on_exit_list - lists commands registered on event "exit"|
 |sar_on_flags|cmd|sar_on_flags \<command> [args]... - registers a command to be run when CM flags are hit|
-|sar_on_flags_clear|cmd|sar_on_flags_clear - clears commands registered on event "flags"|
+|sar_on_flags_clear|cmd|sar_on_flags_clear [id] - clears command(s) registered on event "flags"|
 |sar_on_flags_list|cmd|sar_on_flags_list - lists commands registered on event "flags"|
 |sar_on_load|cmd|sar_on_load \<command> [args]... - registers a command to be run on session start|
-|sar_on_load_clear|cmd|sar_on_load_clear - clears commands registered on event "load"|
+|sar_on_load_clear|cmd|sar_on_load_clear [id] - clears command(s) registered on event "load"|
 |sar_on_load_list|cmd|sar_on_load_list - lists commands registered on event "load"|
 |sar_on_not_pb|cmd|sar_on_not_pb \<command> [args]... - registers a command to be run when auto-submitter detects not PB|
-|sar_on_not_pb_clear|cmd|sar_on_not_pb_clear - clears commands registered on event "not_pb"|
+|sar_on_not_pb_clear|cmd|sar_on_not_pb_clear [id] - clears command(s) registered on event "not_pb"|
 |sar_on_not_pb_list|cmd|sar_on_not_pb_list - lists commands registered on event "not_pb"|
 |sar_on_pb|cmd|sar_on_pb \<command> [args]... - registers a command to be run when auto-submitter detects PB|
-|sar_on_pb_clear|cmd|sar_on_pb_clear - clears commands registered on event "pb"|
+|sar_on_pb_clear|cmd|sar_on_pb_clear [id] - clears command(s) registered on event "pb"|
 |sar_on_pb_list|cmd|sar_on_pb_list - lists commands registered on event "pb"|
 |sar_on_renderer_finish|cmd|sar_on_renderer_finish \<command> [args]... - registers a command to be run when renderer finishes|
-|sar_on_renderer_finish_clear|cmd|sar_on_renderer_finish_clear - clears commands registered on event "renderer_finish"|
+|sar_on_renderer_finish_clear|cmd|sar_on_renderer_finish_clear [id] - clears command(s) registered on event "renderer_finish"|
 |sar_on_renderer_finish_list|cmd|sar_on_renderer_finish_list - lists commands registered on event "renderer_finish"|
 |sar_on_renderer_start|cmd|sar_on_renderer_start \<command> [args]... - registers a command to be run when renderer starts|
-|sar_on_renderer_start_clear|cmd|sar_on_renderer_start_clear - clears commands registered on event "renderer_start"|
+|sar_on_renderer_start_clear|cmd|sar_on_renderer_start_clear [id] - clears command(s) registered on event "renderer_start"|
 |sar_on_renderer_start_list|cmd|sar_on_renderer_start_list - lists commands registered on event "renderer_start"|
 |sar_on_session_end|cmd|sar_on_session_end \<command> [args]... - registers a command to be run on session end|
-|sar_on_session_end_clear|cmd|sar_on_session_end_clear - clears commands registered on event "session_end"|
+|sar_on_session_end_clear|cmd|sar_on_session_end_clear [id] - clears command(s) registered on event "session_end"|
 |sar_on_session_end_list|cmd|sar_on_session_end_list - lists commands registered on event "session_end"|
 |sar_on_speedrun_finish|cmd|sar_on_speedrun_finish \<command> [args]... - registers a command to be run when a speedrun finishes|
-|sar_on_speedrun_finish_clear|cmd|sar_on_speedrun_finish_clear - clears commands registered on event "speedrun_finish"|
+|sar_on_speedrun_finish_clear|cmd|sar_on_speedrun_finish_clear [id] - clears command(s) registered on event "speedrun_finish"|
 |sar_on_speedrun_finish_list|cmd|sar_on_speedrun_finish_list - lists commands registered on event "speedrun_finish"|
 |sar_on_stuck|cmd|sar_on_stuck \<command> [args]... - registers a command to be run when the player gets stuck (singleplayer) (requires cheats)|
-|sar_on_stuck_clear|cmd|sar_on_stuck_clear - clears commands registered on event "stuck"|
+|sar_on_stuck_clear|cmd|sar_on_stuck_clear [id] - clears command(s) registered on event "stuck"|
 |sar_on_stuck_list|cmd|sar_on_stuck_list - lists commands registered on event "stuck"|
 |sar_on_tas_end|cmd|sar_on_tas_end \<command> [args]... - registers a command to be run when TAS script playback ends|
-|sar_on_tas_end_clear|cmd|sar_on_tas_end_clear - clears commands registered on event "tas_end"|
+|sar_on_tas_end_clear|cmd|sar_on_tas_end_clear [id] - clears command(s) registered on event "tas_end"|
 |sar_on_tas_end_list|cmd|sar_on_tas_end_list - lists commands registered on event "tas_end"|
 |sar_on_tas_start|cmd|sar_on_tas_start \<command> [args]... - registers a command to be run when TAS script playback starts|
-|sar_on_tas_start_clear|cmd|sar_on_tas_start_clear - clears commands registered on event "tas_start"|
+|sar_on_tas_start_clear|cmd|sar_on_tas_start_clear [id] - clears command(s) registered on event "tas_start"|
 |sar_on_tas_start_list|cmd|sar_on_tas_start_list - lists commands registered on event "tas_start"|
 |sar_paint_reseed|cmd|sar_paint_reseed \<seed> - re-seed all paint sprayers in the map to the given value (-9999 to 9999 inclusive)|
 |sar_patch_bhop|0|Patches bhop by limiting wish direction if your velocity is too high.|

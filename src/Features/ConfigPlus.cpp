@@ -820,17 +820,27 @@ CON_COMMAND_F(conds, "conds [<condition> <command>]... [else] - runs the first c
 		if (args.ArgC() < 2) {                                                                                                                  \
 			return console->Print(sar_on_##name.ThisPtr()->m_pszHelpString);                                                                       \
 		}                                                                                                                                       \
-		const char *cmd = Utils::ArgContinuation(args, 1);                                                  \
+		const char *cmd = Utils::ArgContinuation(args, 1);                                                                                      \
 		_g_execs_##name.push_back(std::string(cmd));                                                                                            \
 	}                                                                                                                                        \
-	CON_COMMAND_F(sar_on_##name##_clear, "sar_on_" #name "_clear - clears commands registered on event \"" #name "\"\n", FCVAR_DONTRECORD) { \
-		console->Print("Cleared %d commands from event \"" #name "\"\n", _g_execs_##name.size());                                               \
-		_g_execs_##name.clear();                                                                                                                \
+	CON_COMMAND_F(sar_on_##name##_clear, "sar_on_" #name "_clear [id] - clears command(s) registered on event \"" #name "\"\n", FCVAR_DONTRECORD) { \
+		if (args.ArgC() == 2) {                                                                                                                 \
+			int id = atoi(args[1]);                                                                                                                \
+			if (id < 0 || (size_t)id >= _g_execs_##name.size()) {                                                                                  \
+				return console->Print("Invalid id\n");                                                                                                \
+			}                                                                                                                                      \
+			_g_execs_##name.erase(_g_execs_##name.begin() + id);                                                                                   \
+			return console->Print("Cleared command %d from event \"" #name "\"\n", id);																                                            \
+		} else {                                                                                                                                \
+			console->Print("Cleared %d commands from event \"" #name "\"\n", _g_execs_##name.size());                                              \
+			_g_execs_##name.clear();                                                                                                               \
+		}                                                                                                                                       \
 	}                                                                                                                                        \
-	CON_COMMAND_F(sar_on_##name##_list, "sar_on_" #name "_list - lists commands registered on event \"" #name "\"\n", FCVAR_DONTRECORD) {     \
+	CON_COMMAND_F(sar_on_##name##_list, "sar_on_" #name "_list - lists commands registered on event \"" #name "\"\n", FCVAR_DONTRECORD) {    \
 		console->Print("%d commands on event \"" #name "\"\n", _g_execs_##name.size());                                                         \
+		int id = 0;                                                                                                                             \
 		for (auto cmd : _g_execs_##name) {                                                                                                      \
-			console->Print("%s\n", cmd.c_str());                                                                                                   \
+			console->Print("%d: %s\n", id++, cmd.c_str());                                                                                         \
 		}                                                                                                                                       \
 	}                                                                                                                                        \
 	static void _runExecs_##name() {                                                                                                         \
