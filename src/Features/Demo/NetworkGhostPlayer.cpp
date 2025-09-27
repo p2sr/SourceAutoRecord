@@ -963,6 +963,42 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		}
 		break;
 	}
+	case HEADER::TAUNT: {
+		std::string animName;
+		packet >> animName;
+		auto ghost = this->GetGhostByID(ID);
+		addToNetDump("recv-taunt", Utils::ssprintf("%d;%s", ID, animName.c_str()).c_str());
+		if (ghost) {
+			Scheduler::OnMainThread([=]() {
+				if (this->AcknowledgeGhost(ghost)) {
+					auto it = std::find_if(
+						g_ghostTauntAnimationDefinitions.begin(),
+						g_ghostTauntAnimationDefinitions.end(),
+						[&](const GhostAnimationDefinition &def) { return def.name == animName; });
+					if (it != g_ghostTauntAnimationDefinitions.end()) {
+						ghost->renderer.StartAnimation(*it);
+					}
+				}
+			});
+		}
+		break;
+	}
+	case HEADER::LOCATOR: {
+		Vector position;
+		Vector normal;
+		packet >> position >> normal;
+		auto ghost = this->GetGhostByID(ID);
+		addToNetDump("recv-locator", Utils::ssprintf("%d;%.1f,%.1f,%.1f;%.1f,%.1f,%.1f", ID, position.x, position.y, position.z, normal.x, normal.y, normal.z).c_str());
+		if (ghost) {
+			Scheduler::OnMainThread([=]() {
+				if (this->AcknowledgeGhost(ghost)) {
+					console->Print("Locator from %s: Position (%.1f, %.1f, %.1f), Normal (%.1f, %.1f, %.1f)\n", ghost->name.c_str(), position.x, position.y, position.z, normal.x, normal.y, normal.z);
+					// TODO: Ping animation
+				}
+			});
+		}
+		break;
+	}
 	default:
 		break;
 	}
@@ -1026,10 +1062,21 @@ void NetworkManager::UpdateColor() {
 	this->tcpSocket.send(packet);
 }
 
-void NetworkManager::NotifyTaunt(const char *name) {
+void NetworkManager::NotifyTaunt(const std::string name) {
 	if (!this->isConnected) return;
+	addToNetDump("send-taunt", name.c_str());
+	sf::Packet packet;
+	packet << HEADER::TAUNT << this->ID << name.c_str();
+	this->tcpSocket.send(packet);
+}
 
-	// TODO: send taunt packet
+void NetworkManager::NotifyLocator(Vector position, Vector normal) {
+	if (!this->isConnected) return;
+	addToNetDump("send-locator", Utils::ssprintf("%d;%.1f,%.1f,%.1f;%.1f,%.1f,%.1f", this->ID, position.x, position.y, position.z, normal.x, normal.y, normal.z).c_str());
+	console->Print("Locator: Position (%.1f, %.1f, %.1f), Normal (%.1f, %.1f, %.1f)\n", position.x, position.y, position.z, normal.x, normal.y, normal.z);
+	sf::Packet packet;
+	packet << HEADER::LOCATOR << this->ID << position << normal;
+	this->tcpSocket.send(packet);
 }
 
 bool NetworkManager::AreAllGhostsAheadOrSameMap() {

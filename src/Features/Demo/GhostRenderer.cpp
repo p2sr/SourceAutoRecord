@@ -146,9 +146,9 @@ DECL_COMMAND_COMPLETION(ghost_taunt) {
 	FINISH_COMMAND_COMPLETION();
 }
 
-CON_COMMAND_F_COMPLETION(ghost_taunt, "Plays a taunt animation\n", FCVAR_NONE, AUTOCOMPLETION_FUNCTION(ghost_taunt)) {
+CON_COMMAND_F_COMPLETION(ghost_taunt, "ghost_taunt <animation_name> - Plays a taunt animation\n", FCVAR_NONE, AUTOCOMPLETION_FUNCTION(ghost_taunt)) {
 	if (args.ArgC() < 2) {
-		console->Print("ghost_taunt <animation_name>\n");
+		console->Print(ghost_taunt.ThisPtr()->m_pszHelpString);
 		return;
 	}
 
@@ -166,11 +166,36 @@ CON_COMMAND_F_COMPLETION(ghost_taunt, "Plays a taunt animation\n", FCVAR_NONE, A
 		return;
 	}
 
-	networkManager.ghostPoolLock.lock();
-	for (auto &ghost : networkManager.ghostPool) {
-		ghost->renderer.StartAnimation(*it);
-	}
-	networkManager.ghostPoolLock.unlock();
+	networkManager.NotifyTaunt(it->name);
+}
 
-	
+CON_COMMAND(ghost_locator, "ghost_locator - Sends a coop-like ping to other ghosts\n") {
+	if (!networkManager.isConnected) {
+		return console->Print("Must be connected to a ghost server.\n");
+	}
+
+	Vector cam_pos;
+	QAngle cam_ang;
+	camera->GetEyePos<false>(GET_SLOT(), cam_pos, cam_ang);
+
+	Vector dir;
+	Math::AngleVectors(cam_ang, &dir);
+	dir *= 2048.0f;
+
+	CGameTrace tr;
+
+	Ray_t ray;
+	ray.m_IsRay = true;
+	ray.m_IsSwept = true;
+	ray.m_Start = VectorAligned(cam_pos.x, cam_pos.y, cam_pos.z);
+	ray.m_Delta = VectorAligned(dir.x, dir.y, dir.z);
+	ray.m_StartOffset = VectorAligned();
+	ray.m_Extents = VectorAligned();
+
+	CTraceFilterSimple filter;
+	filter.SetPassEntity(server->GetPlayer(GET_SLOT() + 1)); // TODO: orange?
+
+	engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_SHOT_PORTAL, &filter, &tr);
+
+	networkManager.NotifyLocator(tr.endpos, tr.plane.normal);
 }

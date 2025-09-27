@@ -28,6 +28,8 @@ enum class HEADER {
 	SPEEDRUN_FINISH,
 	MODEL_CHANGE,
 	COLOR_CHANGE,
+	TAUNT,
+	LOCATOR,
 };
 
 class NetworkManager {
@@ -98,7 +100,8 @@ public:
 	void SpawnAllGhosts();
 	void DeleteAllGhosts();
 	void UpdateColor();
-	void NotifyTaunt(const char* name);
+	void NotifyTaunt(const std::string name);
+	void NotifyLocator(Vector position, Vector normal);
 
 	void SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration);
 	//Need this function to measure the ping in order to start the countdown at the same time

@@ -47,6 +47,7 @@
 |ghost_list_show_map|0|Show the map name in the ghost list HUD.|
 |ghost_list_x|2|X position of ghost list HUD.|
 |ghost_list_y|-2|Y position of ghost list HUD.|
+|ghost_locator|cmd|ghost_locator - Sends a coop-like ping to other ghosts|
 |ghost_message|cmd|ghost_message - send message to other players|
 |ghost_name|cmd|ghost_name - change your online name|
 |ghost_name_font_size|5.0|The size to render ghost names at.|
@@ -77,6 +78,7 @@
 |ghost_start|cmd|ghost_start - start ghosts|
 |ghost_sync|0|When loading a new level, pauses the game until other players load it.|
 |ghost_sync_countdown|3|The number of seconds of countdown to show at the start of every synced map. 0 to disable.|
+|ghost_taunt|cmd|ghost_taunt \<animation_name> - Plays a taunt animation|
 |ghost_TCP_only|0|Uses only TCP for ghost servers. For people with unreliable internet.|
 |ghost_text_offset|7|Offset of the name over the ghosts.|
 |ghost_type|cmd|ghost_type \<0/1/2/3/4>:<br>0: Colored circle<br>1: Colored pyramid<br>2: Colored pyramid with portal gun (RECORDED IN DEMOS)<br>3: Prop model (RECORDED IN DEMOS)<br>4: Bendy|
