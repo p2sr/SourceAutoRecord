@@ -157,7 +157,7 @@ void GhostEntity::Display() {
 
 	MeshId mesh = OverlayRender::createMesh(solid, RenderCallback::none);
 
-#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(mesh, p1, p2, p3, true)
+#define TRIANGLE(p1, p2, p3) OverlayRender::addTriangle(mesh, p1, p2, p3)
 	switch (GhostEntity::ghost_type) {
 	case GhostType::CIRCLE: {
 		float rad = ghost_height.GetFloat() / 2;
