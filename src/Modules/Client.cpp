@@ -872,6 +872,8 @@ DETOUR_T(bool, Client::ActivateSelectedItem) {
 
 	// we stored the autorender ID in this earlier
 	char *m_nSteamID = *(char **)((uintptr_t)thisptr + Offsets::m_pGamerName - 16);
+	if (!strcmp(m_nSteamID, "null"))
+		return false;
 
 	steam->ActivateGameOverlayToWebPage(steam->SteamFriends(), Utils::ssprintf("https://autorender.portal2.sr/videos/%s", m_nSteamID).c_str(), 0);
 
@@ -905,12 +907,12 @@ DETOUR(Client::SetPanelStats) {
 	int m_CurrentLeaderboardType = *(int *)((uintptr_t)thisptr + Offsets::m_nStatHeight + 212);
 
 	/* here for the future if we want to integrate lp boards */
-	bool showLp = false;  // sar.game->Is(SourceGame_Portal2);
+	bool showLp = sar.game->Is(SourceGame_Portal2) && AutoSubmit::IsLpAvailable();
 
 	/* set time/portals button visible (only in p2 though) */
-	if (showLp)
+	if (showLp) {
 		Memory::VMT<void(__rescall *)(void *, bool)>(m_pLeaderboardListButton, Offsets::Panel_SetVisible)(m_pLeaderboardListButton, true);  // Panel::SetVisible
-	else
+	} else
 		m_CurrentLeaderboardType = 1;
 
 	/* set boards visible */
@@ -950,6 +952,14 @@ DETOUR(Client::SetPanelStats) {
 
 			client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &time, time.score, 1, -1, i, m_nStatHeight, -1, 0);
 		}
+	} else /* portals */ {
+		const auto &times = AutoSubmit::GetPortals();
+
+		for (size_t i = 0; i < times.size(); ++i) {
+			const auto &time = times[i];
+
+			client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &time, time.score, 0, -1, i, m_nStatHeight, -1, 0);
+		}
 	}
 
 	return 0;
@@ -970,9 +980,13 @@ DETOUR(Client::SetPlayerData, PortalLeaderboardItem_t *pData, int nType) {
 	char **m_nSteamID = (char **)((uintptr_t)thisptr + Offsets::m_pGamerName - 16);
 	*m_nSteamID = pData->autorender;
 
+	auto score = std::to_string(pData->score);
+
 	/* cut off last digit lol */
-	auto score = SpeedrunTimer::Format(pData->score / 100.0f);
-	score = score.substr(0, score.length() - 1);
+	if (nType == 1) {
+		score = SpeedrunTimer::Format(pData->score / 100.0f);
+		score = score.substr(0, score.length() - 1);
+	}
 
 	/* set player name */
 	Memory::VMT<void(__rescall *)(void *, const char *)>(m_pGamerName, Offsets::Label_SetText)(m_pGamerName, pData->name);  // Label::SetText

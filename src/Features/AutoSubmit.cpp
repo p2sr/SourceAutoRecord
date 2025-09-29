@@ -42,9 +42,7 @@ ON_EVENT(SESSION_START) {
 }
 
 ON_INIT {
-	NetMessage::RegisterHandler(COOP_NAME_MESSAGE_TYPE, +[](const void *data, size_t size) {
-		AutoSubmit::g_partner_name = std::string((char *)data, size);
-	});
+	NetMessage::RegisterHandler(COOP_NAME_MESSAGE_TYPE, +[](const void *data, size_t size) { AutoSubmit::g_partner_name = std::string((char *)data, size); });
 }
 
 ON_EVENT(SESSION_START) {
@@ -65,6 +63,8 @@ static std::thread g_worker_search;
 static std::map<std::string, std::string> g_map_ids;
 static bool g_is_querying;
 static std::vector<PortalLeaderboardItem_t> g_times;
+static std::vector<PortalLeaderboardItem_t> g_portals;
+static bool g_lp;
 
 static bool ensureCurlReady(CURL **curl) {
 	if (!*curl) {
@@ -257,6 +257,7 @@ static std::shared_ptr<uint8_t> getAvatar(std::string url) {
 }
 
 static void startSearching(std::string mapName) {
+	/* get scores */
 	auto map_id = AutoSubmit::GetMapId(mapName);
 	if (!map_id.has_value()) {
 		g_is_querying = false;
@@ -294,6 +295,36 @@ static void startSearching(std::string mapName) {
 		++i;
 	}
 
+	/* get lp scores */
+	auto lp_map_id = std::to_string(distance(Game::mapNames.begin(), find(Game::mapNames.begin(), Game::mapNames.end(), mapName)) + 1);
+
+	auto lp_json = AutoSubmit::GetLeastPortals(lp_map_id);
+
+	g_portals.clear();
+	for (const auto &score : lp_json) {
+		g_lp = true;
+
+		bool is_coop = stoi(lp_map_id) > 60;
+
+		PortalLeaderboardItem_t data;
+
+		if (!is_coop) {
+			strncpy(data.name, score["user"]["user_name"].string_value().c_str(), sizeof(data.name));
+			strncpy(data.autorender, "null", sizeof(data.autorender));
+			data.avatarTex = getAvatar(score["user"]["avatar_link"].string_value());
+			data.rank = score["placement"].int_value();
+			data.score = score["score_count"].int_value();
+		} else {
+			strncpy(data.name, (score["host"]["user_name"].string_value() + " & " + score["partner"]["user_name"].string_value()).c_str(), sizeof(data.name));
+			strncpy(data.autorender, "null", sizeof(data.autorender));
+			data.avatarTex = getAvatar(score["host"]["avatar_link"].string_value());
+			data.rank = score["placement"].int_value();
+			data.score = score["score_count"].int_value();
+		}
+
+		g_portals.push_back(data);
+	}
+
 	g_is_querying = false;
 }
 
@@ -321,12 +352,38 @@ json11::Json::object AutoSubmit::GetTopScores(std::string &map_id) {
 	return json.object_items();
 }
 
+json11::Json::array AutoSubmit::GetLeastPortals(std::string &map_id) {
+	if (!ensureCurlReady(&g_curl_search)) return {};
+
+	auto response = request(g_curl_search, "lp.pektezol.dev/api/v1/maps/" + map_id + "/leaderboards?page=1&pageSize=40");
+
+	if (!response) return {};
+
+	std::string err;
+	auto json = json11::Json::parse(*response, err);
+
+	if (err != "") {
+		return {};
+	}
+
+	return json["data"]["records"].array_items();
+}
+
+
 bool AutoSubmit::IsQuerying() {
 	return g_is_querying;
 }
 
 const std::vector<PortalLeaderboardItem_t> &AutoSubmit::GetTimes() {
 	return g_times;
+}
+
+const std::vector<PortalLeaderboardItem_t> &AutoSubmit::GetPortals() {
+	return g_portals;
+}
+
+bool AutoSubmit::IsLpAvailable() {
+	return g_lp;
 }
 
 static void submitTime(int score, std::string demopath, bool coop, std::string map_id, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
@@ -406,7 +463,7 @@ static void submitTime(int score, std::string demopath, bool coop, std::string m
 
 	curl_easy_setopt(g_curl, CURLOPT_MIMEPOST, form);
 
-	auto resp = request(g_curl, g_api_base +  "/auto-submit");
+	auto resp = request(g_curl, g_api_base + "/auto-submit");
 
 	curl_mime_free(form);
 
@@ -500,7 +557,7 @@ void AutoSubmit::LoadApiKey(bool output_nonexist) {
 		return;
 	}
 
-	g_api_base = "https://"	+ base + "/api-v2";
+	g_api_base = "https://" + base + "/api-v2";
 	g_api_key = key;
 	g_key_valid = false;
 	console->Print("Set API key! Testing...\n");
@@ -571,7 +628,7 @@ void retrieveMtriggers(int rank, std::string map_name) {
 							auto ticks = split["ticks"].int_value();
 							auto segmentTime = ticks * engine->GetIPT();
 							time += ticks * engine->GetIPT();
-							auto timeS        = SpeedrunTimer::Format(time);
+							auto timeS = SpeedrunTimer::Format(time);
 							auto segmentTimeS = SpeedrunTimer::Format(segmentTime);
 							THREAD_PRINT("[%s] - %s (%s) (%i)\n", split["name"].string_value().c_str(), timeS.c_str(), segmentTimeS.c_str(), ticks);
 						}

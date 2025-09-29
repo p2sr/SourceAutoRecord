@@ -24,6 +24,9 @@ namespace AutoSubmit {
 	std::optional<std::string> GetMapId(std::string map_name);
 	void Search(std::string map);
 	json11::Json::object GetTopScores(std::string &map_id);
+	json11::Json::array GetLeastPortals(std::string &map_id);
 	bool IsQuerying();
 	const std::vector<PortalLeaderboardItem_t> &GetTimes();
+	const std::vector<PortalLeaderboardItem_t> &GetPortals();
+	bool IsLpAvailable();
 };
