@@ -355,7 +355,7 @@ json11::Json::object AutoSubmit::GetTopScores(std::string &map_id) {
 json11::Json::array AutoSubmit::GetLeastPortals(std::string &map_id) {
 	if (!ensureCurlReady(&g_curl_search)) return {};
 
-	auto response = request(g_curl_search, "lp.pektezol.dev/api/v1/maps/" + map_id + "/leaderboards?page=1&pageSize=40");
+	auto response = request(g_curl_search, "https://lp.portal2.sr/api/v1/maps/" + map_id + "/leaderboards?page=1&pageSize=40");
 
 	if (!response) return {};
 
