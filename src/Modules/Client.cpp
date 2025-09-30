@@ -910,9 +910,9 @@ DETOUR(Client::SetPanelStats) {
 	bool showLp = sar.game->Is(SourceGame_Portal2) && AutoSubmit::IsLpAvailable();
 
 	/* set time/portals button visible (only in p2 though) */
-	if (showLp) {
+	if (showLp)
 		Memory::VMT<void(__rescall *)(void *, bool)>(m_pLeaderboardListButton, Offsets::Panel_SetVisible)(m_pLeaderboardListButton, true);  // Panel::SetVisible
-	} else
+	else
 		m_CurrentLeaderboardType = 1;
 
 	/* set boards visible */
@@ -943,7 +943,6 @@ DETOUR(Client::SetPanelStats) {
 	g_allocatedAvatars.clear();
 
 	/* add scores */
-	// TODO: maybe integrate LP boards too in the future?
 	if (m_CurrentLeaderboardType == 1 /* times */) {
 		const auto &times = AutoSubmit::GetTimes();
 
@@ -953,12 +952,12 @@ DETOUR(Client::SetPanelStats) {
 			client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &time, time.score, 1, -1, i, m_nStatHeight, -1, 0);
 		}
 	} else /* portals */ {
-		const auto &times = AutoSubmit::GetPortals();
+		const auto &scores = AutoSubmit::GetPortals();
 
-		for (size_t i = 0; i < times.size(); ++i) {
-			const auto &time = times[i];
+		for (size_t i = 0; i < scores.size(); ++i) {
+			const auto &score = scores[i];
 
-			client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &time, time.score, 0, -1, i, m_nStatHeight, -1, 0);
+			client->AddAvatarPanelItem(m_pLeaderboard, m_pStatList, &score, score.score, 0, -1, i, m_nStatHeight, -1, 0);
 		}
 	}
 

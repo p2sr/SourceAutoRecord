@@ -301,6 +301,7 @@ static void startSearching(std::string mapName) {
 	auto lp_json = AutoSubmit::GetLeastPortals(lp_map_id);
 
 	g_portals.clear();
+	g_lp = false;
 	for (const auto &score : lp_json) {
 		g_lp = true;
 
