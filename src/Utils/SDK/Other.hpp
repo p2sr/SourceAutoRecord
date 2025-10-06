@@ -85,25 +85,24 @@ public:
 };
 
 typedef struct player_info_s {
-	// network xuid
 	uint64_t xuid;
-	// scoreboard information
+
 	char name[32];
-	// local server user ID, unique while server is running
+
 	int userID;
-	// global unique player identifer
+
 	char guid[32 + 1];
-	// friends identification number
+
 	uint32_t friendsID;
-	// friends name
+
 	char friendsName[32];
-	// true, if player is a bot controlled by game.dll
+
 	bool fakeplayer;
-	// true if player is the HLTV proxy
+
 	bool ishltv;
-	// custom files CRC for this player
+
 	CRC32_t customFiles[4];
-	// this counter increases each time the server downloaded a new file
+
 	unsigned char filesDownloaded;
 } player_info_t;
 
@@ -128,10 +127,10 @@ struct PortalPlayerStatistics_t {
 };
 
 struct PortalLeaderboardItem_t {
-	uint64_t m_xuid;    //	0x0000
-	char m_szName[32];  //	0x0008
-	char pad_0028[16];  //	0x0028
-	int32_t m_iScore;   //	0x0038
+	uint64_t m_xuid;
+	char m_szName[32];
+	char pad_0028[16];
+	int32_t m_iScore;
 };
 
 enum ETimelineGameMode {
@@ -156,4 +155,72 @@ public:
 	virtual void ClearTimelineStateDescription(float flTimeDelta) = 0;
 	virtual void AddTimelineEvent(const char *pchIcon, const char *pchTitle, const char *pchDescription, uint32_t unPriority, float flStartOffsetSeconds, float flDurationSeconds, ETimelineEventClipPriority ePossibleClip) = 0;
 	virtual void SetTimelineGameMode(ETimelineGameMode eMode) = 0;
+};
+
+enum EVoiceResult {
+	k_EVoiceResultOK = 0,
+	k_EVoiceResultNotInitialized = 1,
+	k_EVoiceResultNotRecording = 2,
+	k_EVoiceResultNoData = 3,
+	k_EVoiceResultBufferTooSmall = 4,
+	k_EVoiceResultDataCorrupted = 5,
+	k_EVoiceResultRestricted = 6,
+	k_EVoiceResultUnsupportedCodec = 7,
+	k_EVoiceResultReceiverOutOfDate = 8,
+	k_EVoiceResultReceiverDidNotAnswer = 9,
+
+};
+
+enum EMessage {
+	k_EMsgServerBegin = 0,
+	k_EMsgServerSendInfo = k_EMsgServerBegin + 1,
+	k_EMsgServerFailAuthentication = k_EMsgServerBegin + 2,
+	k_EMsgServerPassAuthentication = k_EMsgServerBegin + 3,
+	k_EMsgServerUpdateWorld = k_EMsgServerBegin + 4,
+	k_EMsgServerExiting = k_EMsgServerBegin + 5,
+	k_EMsgServerPingResponse = k_EMsgServerBegin + 6,
+	k_EMsgServerPlayerHitSun = k_EMsgServerBegin + 7,
+	k_EMsgClientBegin = 500,
+	k_EMsgClientBeginAuthentication = k_EMsgClientBegin + 2,
+	k_EMsgClientSendLocalUpdate = k_EMsgClientBegin + 3,
+	k_EMsgP2PBegin = 600,
+	k_EMsgP2PSendingTicket = k_EMsgP2PBegin + 1,
+	k_EMsgVoiceChatBegin = 700,
+	k_EMsgVoiceChatData = k_EMsgVoiceChatBegin + 2,
+	k_EForceDWORD = 0x7fffffff,
+};
+
+struct MsgVoiceChatData_t {
+	MsgVoiceChatData_t()
+		: m_dwMessageType((k_EMsgVoiceChatData)) {}
+	unsigned long GetMessageType() const { return (m_dwMessageType); }
+
+	void SetDataLength(uint32_t unLength) { m_uDataLength = (unLength); }
+	uint32_t GetDataLength() const { return (m_uDataLength); }
+
+	void SetSteamID(uint64_t steamID) { from_steamID = steamID; }
+	uint64_t GetSteamID() const { return from_steamID; }
+
+private:
+	const unsigned long m_dwMessageType;
+	uint32_t m_uDataLength;
+	uint64_t from_steamID;
+};
+
+class ISteamUser {
+public:
+	virtual void *GetHSteamUser() = 0;
+	virtual bool BLoggedOn() = 0;
+	virtual uint64_t GetSteamID() = 0;
+	virtual int InitiateGameConnection_DEPRECATED(void *pAuthBlob, int cbMaxAuthBlob, uint64_t steamIDGameServer, uint32_t unIPServer, uint16_t usPortServer, bool bSecure) = 0;
+	virtual void TerminateGameConnection_DEPRECATED(uint32_t unIPServer, uint16_t usPortServer) = 0;
+	virtual void TrackAppUsageEvent(uint64_t gameID, int eAppUsageEvent, const char *pchExtraInfo = "") = 0;
+	virtual bool GetUserDataFolder(char *pchBuffer, int cubBuffer) = 0;
+	virtual void StartVoiceRecording() = 0;
+	virtual void StopVoiceRecording() = 0;
+	virtual EVoiceResult GetAvailableVoice(uint32_t *pcbCompressed, uint32_t *pcbUncompressed_Deprecated = 0, uint32_t nUncompressedVoiceDesiredSampleRate_Deprecated = 0) = 0;
+	virtual EVoiceResult GetVoice(bool bWantCompressed, void *pDestBuffer, uint32_t cbDestBufferSize, uint32_t *nBytesWritten, bool bWantUncompressed_Deprecated = false, void *pUncompressedDestBuffer_Deprecated = 0, uint32_t cbUncompressedDestBufferSize_Deprecated = 0, uint32_t *nUncompressBytesWritten_Deprecated = 0, uint32_t nUncompressedVoiceDesiredSampleRate_Deprecated = 0) = 0;
+	virtual EVoiceResult DecompressVoice(const void *pCompressed, uint32_t cbCompressed, void *pDestBuffer, uint32_t cbDestBufferSize, uint32_t *nBytesWritten, uint32_t nDesiredSampleRate) = 0;
+	virtual uint32_t GetVoiceOptimalSampleRate() = 0;
+	// don't need the rest.
 };

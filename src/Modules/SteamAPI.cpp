@@ -38,6 +38,8 @@ bool SteamAPI::Init() {
 
 	g_timeline->SetTimelineGameMode(k_ETimelineGameMode_Menus);
 
+	SteamUser = Memory::GetSymbolAddress<ISteamUser *(*)()>(steam_api, "SteamAPI_SteamUser_v021");
+
 	return this->hasLoaded = this->g_timeline;
 }
 void SteamAPI::Shutdown() {
