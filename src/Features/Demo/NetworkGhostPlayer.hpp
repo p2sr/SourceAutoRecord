@@ -30,6 +30,7 @@ enum class HEADER {
 	COLOR_CHANGE,
 	TAUNT,
 	LOCATOR,
+	VOICE,
 };
 
 class NetworkManager {
@@ -128,3 +129,5 @@ extern Command ghost_name;
 
 extern int g_chatType;
 extern int g_wasChatType;
+extern uint8_t g_pbUncompressedVoice[11025 * 2];
+extern uint32_t g_numUncompressedBytes;

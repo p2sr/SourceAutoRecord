@@ -1,20 +1,21 @@
 #include "NetworkGhostPlayer.hpp"
 
 #include "DemoGhostPlayer.hpp"
-#include "GhostLeaderboard.hpp"
 #include "Event.hpp"
-#include "Scheduler.hpp"
 #include "Features/Hud/Toasts.hpp"
 #include "Features/NetMessage.hpp"
 #include "Features/Session.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "GhostEntity.hpp"
+#include "GhostLeaderboard.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
-#include "Modules/Server.hpp"
-#include "Modules/Surface.hpp"
 #include "Modules/Scheme.hpp"
+#include "Modules/Server.hpp"
+#include "Modules/SteamAPI.hpp"
+#include "Modules/Surface.hpp"
+#include "Scheduler.hpp"
 
 #include <chrono>
 #include <functional>
@@ -532,20 +533,54 @@ void NetworkManager::RunNetwork() {
 }
 
 void NetworkManager::SendPlayerData() {
-	sf::Packet packet;
-	packet << HEADER::UPDATE << this->ID;
-	auto player = client->GetPlayer(GET_SLOT() + 1);
-	if (player) {
-		bool grounded = player->ground_entity();
-		packet << DataGhost{client->GetAbsOrigin(player), engine->GetAngles(engine->IsOrange() ? 0 : GET_SLOT()), client->GetViewOffset(player).z, grounded};
-	} else {
-		packet << DataGhost::Invalid();
+	{
+		sf::Packet packet;
+		packet << HEADER::UPDATE << this->ID;
+		auto player = client->GetPlayer(GET_SLOT() + 1);
+		if (player) {
+			bool grounded = player->ground_entity();
+			packet << DataGhost{client->GetAbsOrigin(player), engine->GetAngles(engine->IsOrange() ? 0 : GET_SLOT()), client->GetViewOffset(player).z, grounded};
+		} else {
+			packet << DataGhost::Invalid();
+		}
+
+		if (!ghost_TCP_only.GetBool()) {
+			this->udpSocket.send(packet, this->serverIP, this->serverPort);
+		} else {
+			this->tcpSocket.send(packet);
+		}
 	}
 
-	if (!ghost_TCP_only.GetBool()) {
-		this->udpSocket.send(packet, this->serverIP, this->serverPort);
-	} else {
-		this->tcpSocket.send(packet);
+	// voice.
+	{
+		// read local microphone input.
+		uint32_t nBytesAvailable = 0;
+		EVoiceResult res = steam->SteamUser()->GetAvailableVoice(&nBytesAvailable, NULL, 0);
+
+		if (res == k_EVoiceResultOK && nBytesAvailable > 0) {
+			uint32_t nBytesWritten = 0;
+			MsgVoiceChatData_t msg;
+
+			// don't send more than 1 KB at a time.
+			uint8_t buffer[1024 + sizeof(msg)];
+
+			res = steam->SteamUser()->GetVoice(true, buffer + sizeof(msg), 1024, &nBytesWritten, false, NULL, 0, NULL, 0);
+
+			if (res == k_EVoiceResultOK && nBytesWritten > 0) {
+				msg.SetDataLength(nBytesWritten);
+				memcpy(buffer, &msg, sizeof(msg));
+
+				sf::Packet packet;
+				packet << HEADER::VOICE << this->ID;
+				packet.append(buffer, sizeof(msg) + nBytesWritten);
+
+				if (!ghost_TCP_only.GetBool()) {
+					this->udpSocket.send(packet, this->serverIP, this->serverPort);
+				} else {
+					this->tcpSocket.send(packet);
+				}
+			}
+		}
 	}
 }
 
@@ -704,6 +739,9 @@ void NetworkManager::ReceiveUDPUpdates(std::vector<sf::Packet> &buffer) {
 		}
 	} while (status == sf::Socket::Done);
 }
+
+uint8_t g_pbUncompressedVoice[11025 * 2];
+uint32_t g_numUncompressedBytes;
 
 void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 	HEADER header;
@@ -997,6 +1035,27 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 				}
 			});
 		}
+		break;
+	}
+	case HEADER::VOICE: {
+		console->Warning("voice packet.\n");
+
+		const auto pMessage = (uintptr_t)(packet.getData()) + 5;
+
+		const MsgVoiceChatData_t *pMsgVoiceData = (const MsgVoiceChatData_t *)pMessage;
+
+		uint8_t pbUncompressedVoice[11025 * 2];
+		uint32_t numUncompressedBytes = 0;
+		const uint8_t *pVoiceData = (const uint8_t *)pMessage;
+		pVoiceData += sizeof(MsgVoiceChatData_t);
+
+		EVoiceResult res = steam->SteamUser()->DecompressVoice(pVoiceData, pMsgVoiceData->GetDataLength(), pbUncompressedVoice, sizeof(pbUncompressedVoice), &numUncompressedBytes, 11025);
+
+		if (res == k_EVoiceResultOK && numUncompressedBytes > 0) {
+			memcpy(g_pbUncompressedVoice, pbUncompressedVoice, sizeof(pbUncompressedVoice));
+			g_numUncompressedBytes = numUncompressedBytes;
+		}
+
 		break;
 	}
 	default:
@@ -1321,6 +1380,9 @@ ON_EVENT(FRAME) {
 		g_chatType = 0;
 	}
 }
+
+Command ghost_voice_on("+ghost_voice", +[](const CCommand &args) { steam->SteamUser()->StartVoiceRecording(); }, "+ghost_voice - push to talk in voice chat\n");
+Command ghost_voice_off("-ghost_voice", +[](const CCommand &args) { steam->SteamUser()->StopVoiceRecording(); }, "-ghost_voice - push to talk in voice chat\n");
 
 CON_COMMAND(ghost_chat, "ghost_chat - open the chat HUD for messaging other players\n") {
 	if (g_chatType == 0 && networkManager.isConnected) {

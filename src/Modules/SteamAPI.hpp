@@ -7,6 +7,8 @@ class SteamAPI : public Module {
 public:
 	ISteamTimeline *g_timeline = nullptr;
 
+	ISteamUser *(*SteamUser)();
+
 public:
 	bool Init() override;
 	void Shutdown() override;
