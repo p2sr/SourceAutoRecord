@@ -10,6 +10,7 @@
 #	define MAX_PATH 4096
 #endif
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>

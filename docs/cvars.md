@@ -83,6 +83,9 @@
 |ghost_text_offset|7|Offset of the name over the ghosts.|
 |ghost_type|cmd|ghost_type \<0/1/2/3/4>:<br>0: Colored circle<br>1: Colored pyramid<br>2: Colored pyramid with portal gun (RECORDED IN DEMOS)<br>3: Prop model (RECORDED IN DEMOS)<br>4: Bendy|
 |ghost_update_rate|50|Milliseconds between ghost updates. For people with slow/metered internet.|
+|+ghost_voice|cmd|+ghost_voice - push to talk in voice chat|
+|-ghost_voice|cmd|-ghost_voice - push to talk in voice chat|
+|ghost_volume|1.0|Voice chat volume multiplier.|
 |hwait|cmd|hwait \<tick> \<command> [args...] - run a command after the given number of host ticks|
 |nop|cmd|nop [args]... - nop ignores all its arguments and does nothing|
 |sar_about|cmd|sar_about - prints info about SAR plugin|
