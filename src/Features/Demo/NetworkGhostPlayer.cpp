@@ -1059,16 +1059,20 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		// decompress.
 		EVoiceResult res = steam->SteamUser()->DecompressVoice(pVoiceData, pMsgVoiceData->GetDataLength(), pbUncompressedVoice, sizeof(pbUncompressedVoice), &numUncompressedBytes, sampleRate);
 
-		// continuous stream for voice.
-		static VoiceStream stream(sampleRate);
+		// continuous stream per id for voice.
+		static std::unordered_map<uint32_t, std::unique_ptr<VoiceStream>> voiceStreams;
+		if (!voiceStreams.count(ghost->ID))
+			voiceStreams.insert(std::make_pair(ghost->ID, new VoiceStream(sampleRate)));
 
 		if (res == k_EVoiceResultOK && numUncompressedBytes > 0) {
+			auto stream = voiceStreams[ghost->ID].get();
+
 			// load from raw pcm data.
-			stream.pushSamples((const int16_t *)pbUncompressedVoice, numUncompressedBytes / sizeof(int16_t));
+			stream->pushSamples((const int16_t *)pbUncompressedVoice, numUncompressedBytes / sizeof(int16_t));
 
 			// account for ingame vol.
 			static auto vol = Variable("volume");
-			stream.setVolume(vol.GetFloat() * 10000.f);
+			stream->setVolume(vol.GetFloat() * 10000.f);
 
 			// proximity.
 			auto player = client->GetPlayer(GET_SLOT() + 1);
@@ -1083,11 +1087,11 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 				sf::Listener::setPosition({origin.x, origin.z, origin.y});
 				sf::Listener::setDirection({-forward.x, -forward.z, -forward.y});
 
-				stream.setPosition({ghost_pos.x, ghost_pos.z, ghost_pos.y});
+				stream->setPosition({ghost_pos.x, ghost_pos.z, ghost_pos.y});
 			}
 
-			if (stream.getStatus() != sf::SoundSource::Status::Playing)
-				stream.play();
+			if (stream->getStatus() != sf::SoundSource::Status::Playing)
+				stream->play();
 		}
 
 		break;
