@@ -12,6 +12,7 @@
 #include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <thread>
 #include <vector>
 
@@ -32,6 +33,38 @@ enum class HEADER {
 	TAUNT,
 	LOCATOR,
 	VOICE,
+};
+
+class VoiceStream : public sf::SoundStream {
+public:
+	VoiceStream(unsigned int sampleRate) {
+		initialize(1, sampleRate, {sf::SoundChannel::Mono});
+	}
+
+	bool onGetData(Chunk &data) override {
+		std::unique_lock<std::mutex> lock(mutex);
+		if (bufferQueue.empty()) {
+			return true;
+		}
+
+		currentBuffer = std::move(bufferQueue.front());
+		bufferQueue.pop();
+		data.samples = currentBuffer.data();
+		data.sampleCount = currentBuffer.size();
+		return true;
+	}
+
+	void onSeek(sf::Time) override {}
+
+	void pushSamples(const int16_t *samples, std::size_t count) {
+		std::unique_lock<std::mutex> lock(mutex);
+		bufferQueue.emplace(samples, samples + count);
+	}
+
+private:
+	std::mutex mutex;
+	std::queue<std::vector<int16_t>> bufferQueue;
+	std::vector<int16_t> currentBuffer;
 };
 
 class NetworkManager {
@@ -106,9 +139,9 @@ public:
 	void NotifyLocator(Vector position, Vector normal);
 
 	void SetupCountdown(std::string preCommands, std::string postCommands, uint32_t duration);
-	//Need this function to measure the ping in order to start the countdown at the same time
+	//	Need this function to measure the ping in order to start the countdown at the same time
 	void StartCountdown();
-	//Print the state of the countdown
+	//	Print the state of the countdown
 	void UpdateCountdown();
 
 	bool IsSyncing();
