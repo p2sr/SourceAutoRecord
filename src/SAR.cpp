@@ -33,13 +33,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 	if (!console->Init())
 		return false;
 
-	HANDLE handle = OpenMutexA(MUTEX_ALL_ACCESS, false, "hl2_singleton_mutex");
-	if (handle == NULL)
-		return false;
-
-	if (ReleaseMutex(handle))
-		console->Warning("Released mutex.\n");
-
 	modules = new Modules();
 	features = new Features();
 	cheats = new Cheats();

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2018 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2025 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,82 +22,72 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_THREADLOCAL_HPP
-#define SFML_THREADLOCAL_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Export.hpp>
-#include <SFML/System/NonCopyable.hpp>
-#include <cstdlib>
+#include <SFML/Audio/Export.hpp>
+
+#include <memory>
 
 
 namespace sf
 {
-namespace priv
-{
-    class ThreadLocalImpl;
-}
-
 ////////////////////////////////////////////////////////////
-/// \brief Defines variables with thread-local storage
+/// \brief Base class for classes that require an audio device
 ///
 ////////////////////////////////////////////////////////////
-class SFML_SYSTEM_API ThreadLocal : NonCopyable
+class SFML_AUDIO_API AudioResource
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    AudioResource(const AudioResource&) = default;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief  Copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    AudioResource& operator=(const AudioResource&) = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    AudioResource(AudioResource&&) noexcept = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    AudioResource& operator=(AudioResource&&) noexcept = default;
+
+protected:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
-    /// \param value Optional value to initialize the variable
-    ///
     ////////////////////////////////////////////////////////////
-    ThreadLocal(void* value = NULL);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Destructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ~ThreadLocal();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the thread-specific value of the variable
-    ///
-    /// \param value Value of the variable for the current thread
-    ///
-    ////////////////////////////////////////////////////////////
-    void setValue(void* value);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Retrieve the thread-specific value of the variable
-    ///
-    /// \return Value of the variable for the current thread
-    ///
-    ////////////////////////////////////////////////////////////
-    void* getValue() const;
+    AudioResource();
 
 private:
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::ThreadLocalImpl* m_impl; ///< Pointer to the OS specific implementation
+    std::shared_ptr<void> m_device; //!< Sound device
 };
 
 } // namespace sf
 
 
-#endif // SFML_THREADLOCAL_HPP
-
-
 ////////////////////////////////////////////////////////////
-/// \class sf::ThreadLocal
-/// \ingroup system
+/// \class sf::AudioResource
+/// \ingroup audio
 ///
-/// This class manipulates void* parameters and thus is not
-/// appropriate for strongly-typed variables. You should rather
-/// use the sf::ThreadLocalPtr template class.
+/// This class is for internal use only, it must be the base
+/// of every class that requires a valid audio device in
+/// order to work.
 ///
 ////////////////////////////////////////////////////////////

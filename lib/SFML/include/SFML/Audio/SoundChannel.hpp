@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2018 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2025 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,56 +22,44 @@
 //
 ////////////////////////////////////////////////////////////
 
+#pragma once
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-template <typename T>
-ThreadLocalPtr<T>::ThreadLocalPtr(T* value) :
-ThreadLocal(value)
-{
-}
-
-
+/// \ingroup audio
+/// \brief Types of sound channels that can be read/written from sound buffers/files
+///
+/// In multi-channel audio, each sound channel can be
+/// assigned a position. The position of the channel is
+/// used to determine where to place a sound when it
+/// is spatialized. Assigning an incorrect sound channel
+/// will result in multi-channel audio being positioned
+/// incorrectly when using spatialization.
+///
 ////////////////////////////////////////////////////////////
-template <typename T>
-T& ThreadLocalPtr<T>::operator *() const
+enum class SoundChannel
 {
-    return *static_cast<T*>(getValue());
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-T* ThreadLocalPtr<T>::operator ->() const
-{
-    return static_cast<T*>(getValue());
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-ThreadLocalPtr<T>::operator T*() const
-{
-    return static_cast<T*>(getValue());
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-ThreadLocalPtr<T>& ThreadLocalPtr<T>::operator =(T* value)
-{
-    setValue(value);
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-ThreadLocalPtr<T>& ThreadLocalPtr<T>::operator =(const ThreadLocalPtr<T>& right)
-{
-    setValue(right.getValue());
-    return *this;
-}
+    Unspecified,
+    Mono,
+    FrontLeft,
+    FrontRight,
+    FrontCenter,
+    FrontLeftOfCenter,
+    FrontRightOfCenter,
+    LowFrequencyEffects,
+    BackLeft,
+    BackRight,
+    BackCenter,
+    SideLeft,
+    SideRight,
+    TopCenter,
+    TopFrontLeft,
+    TopFrontRight,
+    TopFrontCenter,
+    TopBackLeft,
+    TopBackRight,
+    TopBackCenter
+};
 
 } // namespace sf

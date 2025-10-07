@@ -208,7 +208,7 @@ CON_COMMAND_F_COMPLETION(ghost_set_demo, "ghost_set_demo <demo> [ID] - ghost wil
 		return console->Print(ghost_set_demo.ThisPtr()->m_pszHelpString);
 	}
 
-	sf::Uint32 ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
+	uint32_t ID = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
 	demoGhostPlayer.DeleteGhostsByID(ID);
 	auto path = std::string(args[1]);
 	if (!Utils::EndsWith(path, ".dem")) path += ".dem";
@@ -236,7 +236,7 @@ CON_COMMAND_F_COMPLETION(ghost_set_demos,
 
 	int firstDemoId = args.ArgC() > 2 ? std::atoi(args[2]) : 0;
 
-	sf::Uint32 ID = args.ArgC() > 3 ? std::atoi(args[3]) : 0;
+	uint32_t ID = args.ArgC() > 3 ? std::atoi(args[3]) : 0;
 	demoGhostPlayer.DeleteGhostsByID(ID);
 
 	auto dir = std::string(args[1]);

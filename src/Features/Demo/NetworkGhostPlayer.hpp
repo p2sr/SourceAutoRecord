@@ -2,6 +2,7 @@
 #include "Command.hpp"
 #include "Features/Demo/GhostEntity.hpp"
 #include "Features/Hud/Hud.hpp"
+#include "SFML/Audio.hpp"
 #include "SFML/Network.hpp"
 #include "Utils/SDK.hpp"
 #include "Variable.hpp"
@@ -40,7 +41,7 @@ public:
 	sf::SocketSelector selector;
 	sf::IpAddress serverIP;
 	unsigned short int serverPort;
-	sf::Uint32 ID;
+	uint32_t ID;
 
 	std::mutex ghostPoolLock;
 	std::vector<std::shared_ptr<GhostEntity>> ghostPool;
@@ -66,8 +67,8 @@ public:
 	std::string modelName;
 	bool spectator;
 
-	sf::Uint32 splitTicks = -1;
-	sf::Uint32 splitTicksTotal = -1;
+	uint32_t splitTicks = -1;
+	uint32_t splitTicksTotal = -1;
 
 	bool disableSyncForLoad = false;
 
@@ -94,7 +95,7 @@ public:
 	void Treat(sf::Packet &packet, bool udp);
 
 	void UpdateGhostsPosition();
-	std::shared_ptr<GhostEntity> GetGhostByID(sf::Uint32 ID);
+	std::shared_ptr<GhostEntity> GetGhostByID(uint32_t ID);
 	void UpdateGhostsSameMap();
 	void UpdateModel(const std::string modelName);
 	bool AreAllGhostsAheadOrSameMap();
@@ -104,7 +105,7 @@ public:
 	void NotifyTaunt(const std::string name);
 	void NotifyLocator(Vector position, Vector normal);
 
-	void SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration);
+	void SetupCountdown(std::string preCommands, std::string postCommands, uint32_t duration);
 	//Need this function to measure the ping in order to start the countdown at the same time
 	void StartCountdown();
 	//Print the state of the countdown
@@ -129,5 +130,3 @@ extern Command ghost_name;
 
 extern int g_chatType;
 extern int g_wasChatType;
-extern uint8_t g_pbUncompressedVoice[11025 * 2];
-extern uint32_t g_numUncompressedBytes;
