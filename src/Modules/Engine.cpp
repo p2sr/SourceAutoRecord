@@ -934,21 +934,6 @@ int __stdcall BinkWait_Detour(void *bink) {
 	}
 }
 
-
-int Voice_GetOutputData_Detour(const int iChannel, char *copyBufBytes, const int copyBufSize, const int samplePosition, const int sampleCount);
-int (*Voice_GetOutputData)(const int iChannel, char *copyBufBytes, const int copyBufSize, const int samplePosition, const int sampleCount);
-static Hook Voice_GetOutputData_Hook(&Voice_GetOutputData_Detour);
-int Voice_GetOutputData_Detour(const int iChannel, char *copyBufBytes, const int copyBufSize, const int samplePosition, const int sampleCount) {
-	memcpy(copyBufBytes, g_pbUncompressedVoice, g_numUncompressedBytes);
-
-	return g_numUncompressedBytes;
-
-	// _Voice_GetOutputData_Hook.Disable();
-	// _Voice_GetOutputData();
-	// _Voice_GetOutputData_Hook.Enable();
-}
-
-
 Color Engine::GetLightAtPoint(Vector point) {
 #ifdef _WIN32
 	// MSVC bug workaround - COM interfaces apparently don't quite follow
@@ -1213,9 +1198,6 @@ bool Engine::Init() {
 		this->CreateDebugMesh = this->g_physCollision->Original<_CreateDebugMesh>(Offsets::CreateDebugMesh);
 		this->DestroyDebugMesh = this->g_physCollision->Original<_DestroyDebugMesh>(Offsets::DestroyDebugMesh);
 	}
-
-	Voice_GetOutputData = Memory::Scan<decltype(Voice_GetOutputData)>(this->Name(), "55 8B EC 51 8B 45 10 53 56");
-	Voice_GetOutputData_Hook.SetFunc(Voice_GetOutputData);
 
 #ifdef _WIN32
 	auto bink_mod = Memory::GetModuleHandleByName(MODULE("binkw32"));

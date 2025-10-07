@@ -283,14 +283,14 @@ sf::Packet &operator<<(sf::Packet &packet, const DataGhost &dataGhost) {
 //HEADER
 
 sf::Packet &operator>>(sf::Packet &packet, HEADER &header) {
-	sf::Uint8 tmp;
+	uint8_t tmp;
 	packet >> tmp;
 	header = static_cast<HEADER>(tmp);
 	return packet;
 }
 
 sf::Packet &operator<<(sf::Packet &packet, const HEADER &header) {
-	return packet << static_cast<sf::Uint8>(header);
+	return packet << static_cast<uint8_t>(header);
 }
 
 // Color (RGB only, no alpha!)
@@ -340,7 +340,7 @@ std::mutex mutex;
 NetworkManager networkManager;
 
 NetworkManager::NetworkManager()
-	: serverIP("localhost")
+	: serverIP(sf::IpAddress::LocalHost)
 	, serverPort(53000)
 	, name("")
 	, isCountdownReady(false)
@@ -350,12 +350,12 @@ NetworkManager::NetworkManager()
 
 void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port, bool spectator) {
 	std::thread connectionThread([this, ip, port, spectator]() {
-		if (this->tcpSocket.connect(ip, port, sf::seconds(5))) {
+		if (this->tcpSocket.connect(ip, port, sf::seconds(5)) != sf::Socket::Status::Done) {
 			toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Connection timed out! Cannot connect to the server at %s:%d", ip.toString().c_str(), port));
 			return;
 		}
 
-		if (this->udpSocket.bind(sf::Socket::AnyPort) != sf::Socket::Done) {
+		if (this->udpSocket.bind(sf::Socket::AnyPort) != sf::Socket::Status::Done) {
 			toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Connection timed out! Cannot connect to the server at %s:%d", ip.toString().c_str(), port));
 			return;
 		}
@@ -382,7 +382,7 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port, bool spe
 				return;
 			}
 
-			if (this->tcpSocket.receive(confirm_connection) != sf::Socket::Done) {
+			if (this->tcpSocket.receive(confirm_connection) != sf::Socket::Status::Done) {
 				toastHud.AddToast(GHOST_TOAST_TAG, Utils::ssprintf("Transfer timed out! Cannot connect to the server at %s:%d", ip.toString().c_str(), port));
 				return;
 			}
@@ -395,10 +395,10 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port, bool spe
 			//Add every player connected to the ghostPool
 			int nb_players = 0;
 			int nb_spectators = 0;
-			sf::Uint32 nb_ghosts;
+			uint32_t nb_ghosts;
 			confirm_connection >> nb_ghosts;
-			for (sf::Uint32 i = 0; i < nb_ghosts; ++i) {
-				sf::Uint32 ID;
+			for (uint32_t i = 0; i < nb_ghosts; ++i) {
+				uint32_t ID;
 				std::string name;
 				DataGhost data;
 				std::string model_name;
@@ -415,8 +415,10 @@ void NetworkManager::Connect(sf::IpAddress ip, unsigned short int port, bool spe
 				this->ghostPool.push_back(ghost);
 				this->ghostPoolLock.unlock();
 				if (!spectator) ghostLeaderboard.AddNew(ghost->ID, ghost->name);
-				if (spectator) ++nb_spectators;
-				else ++nb_players;
+				if (spectator)
+					++nb_spectators;
+				else
+					++nb_players;
 			}
 
 			this->UpdateGhostsSameMap();
@@ -519,8 +521,8 @@ void NetworkManager::RunNetwork() {
 				sf::Packet packet;
 				sf::Socket::Status status;
 				status = this->tcpSocket.receive(packet);
-				if (status != sf::Socket::Done) {
-					if (status == sf::Socket::Disconnected) {  //If connection with the server lost (crash for e.g.)
+				if (status != sf::Socket::Status::Done) {
+					if (status == sf::Socket::Status::Disconnected) {  //	If connection with the server lost (crash for e.g.)
 						this->Disconnect();
 						break;
 					}
@@ -567,6 +569,7 @@ void NetworkManager::SendPlayerData() {
 			res = steam->SteamUser()->GetVoice(true, buffer + sizeof(msg), 1024, &nBytesWritten, false, NULL, 0, NULL, 0);
 
 			if (res == k_EVoiceResultOK && nBytesWritten > 0) {
+				// add voicedata to start of msg.
 				msg.SetDataLength(nBytesWritten);
 				memcpy(buffer, &msg, sizeof(msg));
 
@@ -589,7 +592,7 @@ void NetworkManager::NotifyMapChange() {
 
 	if (ghost_show_advancement.GetInt() >= 3 && AcknowledgeGhost(nullptr)) {
 		std::string msg;
-		if (this->splitTicks != (sf::Uint32)-1) {
+		if (this->splitTicks != (uint32_t)-1) {
 			auto ipt = engine->GetIPT();
 			std::string time = SpeedrunTimer::Format(this->splitTicks * ipt);
 			std::string totalTime = SpeedrunTimer::Format(this->splitTicksTotal * ipt);
@@ -731,21 +734,18 @@ void NetworkManager::ReceiveUDPUpdates(std::vector<sf::Packet> &buffer) {
 	sf::Socket::Status status;
 	do {
 		sf::Packet packet;
-		sf::IpAddress ip;
+		std::optional<sf::IpAddress> ip;
 		unsigned short int port;
 		status = this->udpSocket.receive(packet, ip, port);
-		if (status == sf::Socket::Done) {
+		if (status == sf::Socket::Status::Done) {
 			buffer.push_back(packet);
 		}
-	} while (status == sf::Socket::Done);
+	} while (status == sf::Socket::Status::Done);
 }
-
-uint8_t g_pbUncompressedVoice[11025 * 2];
-uint32_t g_numUncompressedBytes;
 
 void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 	HEADER header;
-	sf::Uint32 ID;
+	uint32_t ID;
 	packet >> header >> ID;
 
 	switch (header) {
@@ -838,7 +838,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		auto ghost = this->GetGhostByID(ID);
 		if (ghost) {
 			std::string map;
-			sf::Uint32 ticksIL, ticksTotal;
+			uint32_t ticksIL, ticksTotal;
 			packet >> map >> ticksIL >> ticksTotal;
 			auto old_map = ghost->currentMap;
 			ghost->currentMap = map;
@@ -850,7 +850,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 
 				this->UpdateGhostsSameMap();
 				if (ghost_show_advancement.GetInt() >= 3 && this->AcknowledgeGhost(ghost)) {
-					if (ticksIL == (sf::Uint32)-1) {
+					if (ticksIL == (uint32_t)-1) {
 						std::string msg = Utils::ssprintf("%s is now on %s", ghost->name.c_str(), engine->GetMapTitle(ghost->currentMap).c_str());
 						toastHud.AddToast(GHOST_TOAST_TAG, msg);
 					} else {
@@ -885,7 +885,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		break;
 	}
 	case HEADER::HEART_BEAT: {
-		sf::Uint32 token;
+		uint32_t token;
 		packet >> token;
 		addToNetDump("recv-heartbeat", Utils::ssprintf("%d;%s;%X", ID, udp ? "UDP" : "TCP", token).c_str());
 		sf::Packet response;
@@ -917,19 +917,19 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		break;
 	}
 	case HEADER::COUNTDOWN: {
-		sf::Uint8 step;
+		uint8_t step;
 		packet >> step;
 		addToNetDump("recv-countdown", Utils::ssprintf("%d;%d", ID, (int)step).c_str());
 		if (step == 0) {  //Countdown setup
 			std::string preCommands;
 			std::string postCommands;
-			sf::Uint32 duration;
+			uint32_t duration;
 			packet >> duration >> preCommands >> postCommands;
 
 			this->SetupCountdown(preCommands, postCommands, duration);
 
 			sf::Packet confirm_packet;
-			confirm_packet << HEADER::COUNTDOWN << this->ID << sf::Uint8(1);
+			confirm_packet << HEADER::COUNTDOWN << this->ID << uint8_t(1);
 			addToNetDump("send-countdown", "1");
 			this->tcpSocket.send(confirm_packet);
 		} else if (step == 1) {  //Exec
@@ -1038,24 +1038,56 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		break;
 	}
 	case HEADER::VOICE: {
-		console->Warning("voice packet.\n");
+		// check if on same map.
+		auto ghost = this->GetGhostByID(ID);
+		if (engine->GetCurrentMapName() != ghost->currentMap)
+			break;
 
+		// skip first 5 bytes (header, id).
 		const auto pMessage = (uintptr_t)(packet.getData()) + 5;
 
+		// get data from start of buffer.
 		const MsgVoiceChatData_t *pMsgVoiceData = (const MsgVoiceChatData_t *)pMessage;
 
-		uint8_t pbUncompressedVoice[11025 * 2];
+		constexpr uint32_t sampleRate = 11025;  // 44100 for highest qual, but this is funnier c:
+		uint8_t pbUncompressedVoice[sampleRate];
 		uint32_t numUncompressedBytes = 0;
+
+		// skip past data header.
 		const uint8_t *pVoiceData = (const uint8_t *)pMessage;
 		pVoiceData += sizeof(MsgVoiceChatData_t);
 
-		EVoiceResult res = steam->SteamUser()->DecompressVoice(pVoiceData, pMsgVoiceData->GetDataLength(), pbUncompressedVoice, sizeof(pbUncompressedVoice), &numUncompressedBytes, 11025);
+		// decompress.
+		EVoiceResult res = steam->SteamUser()->DecompressVoice(pVoiceData, pMsgVoiceData->GetDataLength(), pbUncompressedVoice, sizeof(pbUncompressedVoice), &numUncompressedBytes, sampleRate);
 
 		if (res == k_EVoiceResultOK && numUncompressedBytes > 0) {
-			memcpy(g_pbUncompressedVoice, pbUncompressedVoice, sizeof(pbUncompressedVoice));
-			g_numUncompressedBytes = numUncompressedBytes;
-		}
+			static sf::SoundBuffer buffer;
+			static sf::Sound sound{buffer};
 
+			// load from raw pcm data.
+			if (buffer.loadFromSamples((const int16_t *)pbUncompressedVoice, numUncompressedBytes, 1, sampleRate, {sf::SoundChannel::Mono})) {
+				// account for ingame vol.
+				sf::Listener::setGlobalVolume(Variable("volume").GetFloat() * 10000.f);
+
+				// proximity.
+				auto player = client->GetPlayer(GET_SLOT() + 1);
+				if (player) {
+					auto origin = client->GetAbsOrigin(player) / 128.f;
+					auto angles = client->GetAbsAngles(player);
+					auto ghost_pos = ghost->data.position / 128.f;
+
+					Vector forward;
+					Math::AngleVectors(angles, &forward);
+
+					sf::Listener::setPosition({origin.x, origin.z, origin.y});
+					sf::Listener::setDirection({-forward.x, -forward.z, -forward.y});
+
+					sound.setPosition({ghost_pos.x, ghost_pos.z, ghost_pos.y});
+				}
+
+				sound.play();
+			}
+		}
 		break;
 	}
 	default:
@@ -1077,7 +1109,7 @@ void NetworkManager::UpdateGhostsPosition() {
 	}
 }
 
-std::shared_ptr<GhostEntity> NetworkManager::GetGhostByID(sf::Uint32 ID) {
+std::shared_ptr<GhostEntity> NetworkManager::GetGhostByID(uint32_t ID) {
 	this->ghostPoolLock.lock();
 	for (auto ghost : this->ghostPool) {
 		if (ghost->ID == ID) {
@@ -1177,7 +1209,7 @@ void NetworkManager::DeleteAllGhosts() {
 	this->ghostPoolLock.unlock();
 }
 
-void NetworkManager::SetupCountdown(std::string preCommands, std::string postCommands, sf::Uint32 duration) {
+void NetworkManager::SetupCountdown(std::string preCommands, std::string postCommands, uint32_t duration) {
 	Scheduler::OnMainThread([=]() {
 		engine->ExecuteCommand(preCommands.c_str());
 	});
@@ -1280,7 +1312,7 @@ CON_COMMAND(ghost_connect,
 		return console->Print("You must disconnect from your current ghost server before connecting to another.\n");
 	}
 
-	networkManager.Connect(args[1], args.ArgC() >= 3 ? std::atoi(args[2]) : 53000, false);
+	networkManager.Connect(*sf::IpAddress::resolve(args[1]), args.ArgC() >= 3 ? std::atoi(args[2]) : 53000, false);
 }
 
 CON_COMMAND(ghost_spec_connect,
@@ -1298,7 +1330,7 @@ CON_COMMAND(ghost_spec_connect,
 		return console->Print("You must disconnect from your current ghost server before connecting to another.\n");
 	}
 
-	networkManager.Connect(args[1], args.ArgC() >= 3 ? std::atoi(args[2]) : 53000, true);
+	networkManager.Connect(*sf::IpAddress::resolve(args[1]), args.ArgC() >= 3 ? std::atoi(args[2]) : 53000, true);
 }
 
 CON_COMMAND(ghost_disconnect, "ghost_disconnect - disconnect\n") {
