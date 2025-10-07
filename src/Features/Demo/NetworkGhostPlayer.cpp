@@ -27,6 +27,7 @@
 Variable ghost_sync_countdown("ghost_sync_countdown", "3", 0, "The number of seconds of countdown to show at the start of every synced map. 0 to disable.\n");
 Variable ghost_spec_see_spectators("ghost_spec_see_spectators", "0", "Whether to see other spectators while spectating.\n");
 Variable ghost_show_spec_chat("ghost_show_spec_chat", "1", "Show chat messages from spectators when not spectating.\n");
+Variable ghost_volume("ghost_volume", "1.0", 0.f, 1.f, "Voice chat volume multiplier.\n");
 
 #define DrawTxtRightAlign(font, x, y, clr, ...)               \
 	do {                                                         \
@@ -1072,7 +1073,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 
 			// account for ingame vol.
 			static auto vol = Variable("volume");
-			stream->setVolume(vol.GetFloat() * 10000.f);
+			stream->setVolume(vol.GetFloat() * ghost_volume.GetFloat() * 10000.f);
 
 			// proximity.
 			auto player = client->GetPlayer(GET_SLOT() + 1);
