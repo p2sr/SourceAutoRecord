@@ -1059,10 +1059,8 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		// decompress.
 		EVoiceResult res = steam->SteamUser()->DecompressVoice(pVoiceData, pMsgVoiceData->GetDataLength(), pbUncompressedVoice, sizeof(pbUncompressedVoice), &numUncompressedBytes, sampleRate);
 
-		// continous stream for voice.
+		// continuous stream for voice.
 		static VoiceStream stream(sampleRate);
-		if (stream.getStatus() != sf::SoundSource::Status::Playing)
-			stream.play();
 
 		if (res == k_EVoiceResultOK && numUncompressedBytes > 0) {
 			// load from raw pcm data.
@@ -1070,7 +1068,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 
 			// account for ingame vol.
 			static auto vol = Variable("volume");
-			sf::Listener::setGlobalVolume(vol.GetFloat() * 10000.f);
+			stream.setVolume(vol.GetFloat() * 10000.f);
 
 			// proximity.
 			auto player = client->GetPlayer(GET_SLOT() + 1);
@@ -1087,6 +1085,9 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 
 				stream.setPosition({ghost_pos.x, ghost_pos.z, ghost_pos.y});
 			}
+
+			if (stream.getStatus() != sf::SoundSource::Status::Playing)
+				stream.play();
 		}
 
 		break;

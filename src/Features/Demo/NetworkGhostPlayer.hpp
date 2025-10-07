@@ -41,14 +41,25 @@ public:
 		initialize(1, sampleRate, {sf::SoundChannel::Mono});
 	}
 
+	~VoiceStream() override {
+		stop();
+		{
+			std::unique_lock<std::mutex> lock(mutex);
+			stopRequested = true;
+		}
+		cv.notify_all();
+	}
+
 	bool onGetData(Chunk &data) override {
 		std::unique_lock<std::mutex> lock(mutex);
-		if (bufferQueue.empty()) {
-			return true;
-		}
+
+		cv.wait(lock, [&] { return !bufferQueue.empty() || stopRequested; });
+
+		if (stopRequested) return false;
 
 		currentBuffer = std::move(bufferQueue.front());
 		bufferQueue.pop();
+
 		data.samples = currentBuffer.data();
 		data.sampleCount = currentBuffer.size();
 		return true;
@@ -57,14 +68,20 @@ public:
 	void onSeek(sf::Time) override {}
 
 	void pushSamples(const int16_t *samples, std::size_t count) {
-		std::unique_lock<std::mutex> lock(mutex);
-		bufferQueue.emplace(samples, samples + count);
+		{
+			std::unique_lock<std::mutex> lock(mutex);
+			if (stopRequested) return;
+			bufferQueue.emplace(samples, samples + count);
+		}
+		cv.notify_one();
 	}
 
 private:
 	std::mutex mutex;
+	std::condition_variable cv;
 	std::queue<std::vector<int16_t>> bufferQueue;
 	std::vector<int16_t> currentBuffer;
+	bool stopRequested = false;
 };
 
 class NetworkManager {
