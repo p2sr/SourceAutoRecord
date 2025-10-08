@@ -203,6 +203,19 @@ void Client::MultiColorChat(const std::vector<std::pair<Color, std::string>> &co
 	client->ChatPrintf(client->g_HudChat->ThisPtr(), 0, 0, fmt.c_str());
 }
 
+void Client::ShowLocator(Vector position, Vector normal, Color color) {
+	Vector colorAsVector = {(float)color.r, (float)color.g, (float)color.b};
+	QAngle angles;
+
+	Vector pseudoup = fabsf(normal.z) < 0.999f ? Vector{0, 0, 1} : Vector{1, 0, 0};
+
+	Math::VectorAngles(normal, pseudoup, &angles);
+	angles.x += 90.0f;
+
+	PrecacheParticleSystem("command_target_ping");
+	DispatchParticleEffect("command_target_ping", position, colorAsVector, angles, nullptr, 0, nullptr);
+}
+
 void Client::SetMouseActivated(bool state) {
 	if (state) {
 		this->IN_ActivateMouse(g_Input->ThisPtr());
@@ -982,6 +995,9 @@ bool Client::Init() {
 	if (this->g_ClientDLL) {
 		this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses, readJmp);
 		this->FrameStageNotify = this->g_ClientDLL->Original<_FrameStageNotify>(Offsets::GetAllClasses + 27);
+
+		Client::DispatchParticleEffect = (Client::_DispatchParticleEffect)Memory::Scan(this->Name(), Offsets::DispatchParticleEffect);
+		Client::PrecacheParticleSystem = (Client::_PrecacheParticleSystem)Memory::Scan(this->Name(), Offsets::PrecacheParticleSystem);
 
 		this->g_ClientDLL->Hook(Client::LevelInitPreEntity_Hook, Client::LevelInitPreEntity, Offsets::LevelInitPreEntity);
 

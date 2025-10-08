@@ -1027,11 +1027,10 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		packet >> position >> normal;
 		auto ghost = this->GetGhostByID(ID);
 		addToNetDump("recv-locator", Utils::ssprintf("%d;%.1f,%.1f,%.1f;%.1f,%.1f,%.1f", ID, position.x, position.y, position.z, normal.x, normal.y, normal.z).c_str());
-		if (ghost) {
+		if (ghost && engine->GetCurrentMapName() == ghost->currentMap) {
 			Scheduler::OnMainThread([=]() {
 				if (this->AcknowledgeGhost(ghost)) {
-					console->Print("Locator from %s: Position (%.1f, %.1f, %.1f), Normal (%.1f, %.1f, %.1f)\n", ghost->name.c_str(), position.x, position.y, position.z, normal.x, normal.y, normal.z);
-					// TODO: Ping animation
+					client->ShowLocator(position, normal, ghost->color.value_or(Color(255,255,255)));
 				}
 			});
 		}

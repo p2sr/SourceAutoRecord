@@ -46,6 +46,9 @@ public:
 	using _IN_ActivateMouse = void (*)(void *thisptr);
 	using _IN_DeactivateMouse = void (*)(void *thisptr);
 	using _AddAvatarPanelItem = void(__cdecl *)(void *pLeaderboard, void *pStatLists, const PortalLeaderboardItem_t *pData, int nScore, int nType, int nPlayerType, int nAvatarIndex, int nHeight, int nSlot, bool bHUDElement);
+	using _PrecacheParticleSystem = int(__cdecl *)(const char *pszParticleName);
+	using _DispatchParticleEffect = void (__cdecl *)(const char *pszParticleName, Vector vecOrigin, Vector vecStart, QAngle vecAngles, void *pEntity, int nSplitScreenPlayerSlot, void *filter);
+
 
 	_GetClientEntity GetClientEntity = nullptr;
 	_KeyDown KeyDown = nullptr;
@@ -58,6 +61,8 @@ public:
 	_IN_ActivateMouse IN_ActivateMouse = nullptr;
 	_IN_DeactivateMouse IN_DeactivateMouse = nullptr;
 	_AddAvatarPanelItem AddAvatarPanelItem = nullptr;
+	_DispatchParticleEffect DispatchParticleEffect = nullptr;
+	_PrecacheParticleSystem PrecacheParticleSystem = nullptr;
 
 	ChapterContextData_t *g_ChapterContextNames;
 	ChapterContextData_t *g_ChapterMPContextNames;
@@ -76,6 +81,7 @@ public:
 	bool ShouldDrawCrosshair();
 	void Chat(Color col, const char *str);
 	void MultiColorChat(const std::vector<std::pair<Color, std::string>> &components);
+	void ShowLocator(Vector position, Vector normal, Color color);
 	void SetMouseActivated(bool state);
 	CMStatus GetChallengeStatus();
 	int GetSplitScreenPlayerSlot(void *entity);
