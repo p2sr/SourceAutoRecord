@@ -48,14 +48,26 @@ public:
 			stopRequested = true;
 		}
 		cv.notify_all();
+		{
+			std::lock_guard<std::mutex> lock(mutex);
+			while (!bufferQueue.empty()) {
+				bufferQueue.pop();
+			}
+			currentBuffer.clear();
+		}
 	}
 
 	bool onGetData(Chunk &data) override {
 		std::unique_lock<std::mutex> lock(mutex);
 
-		cv.wait(lock, [&] { return !bufferQueue.empty() || stopRequested; });
+		// wait for data or stop signal with timeout to prevent deadlock.
+		cv.wait_for(lock, std::chrono::milliseconds(100), [&] {
+			return !bufferQueue.empty() || stopRequested;
+		});
 
-		if (stopRequested) return false;
+		if (stopRequested || bufferQueue.empty()) {
+			return false;
+		}
 
 		currentBuffer = std::move(bufferQueue.front());
 		bufferQueue.pop();
@@ -69,11 +81,26 @@ public:
 
 	void pushSamples(const int16_t *samples, std::size_t count) {
 		{
-			std::unique_lock<std::mutex> lock(mutex);
+			std::lock_guard<std::mutex> lock(mutex);
 			if (stopRequested) return;
+
+			// prevent buffer overflow - drop old data if queue is too large.
+			if (bufferQueue.size() > 10) {
+				bufferQueue.pop();
+			}
+
 			bufferQueue.emplace(samples, samples + count);
 		}
 		cv.notify_one();
+	}
+
+	void stopStream() {
+		stop();  // stop playback first.
+		{
+			std::lock_guard<std::mutex> lock(mutex);
+			stopRequested = true;
+		}
+		cv.notify_all();
 	}
 
 private:
@@ -95,6 +122,9 @@ public:
 
 	std::mutex ghostPoolLock;
 	std::vector<std::shared_ptr<GhostEntity>> ghostPool;
+
+	std::mutex voiceStreamsLock;
+	std::unordered_map<uint32_t, std::shared_ptr<VoiceStream>> voiceStreams;
 
 	std::thread networkThread;
 	std::condition_variable waitForRunning;
