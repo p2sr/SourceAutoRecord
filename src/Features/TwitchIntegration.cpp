@@ -1,4 +1,5 @@
 #include "Event.hpp"
+#include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Utils/TwitchConnection.hpp"
@@ -26,17 +27,17 @@ ON_EVENT(PRE_TICK) {
     }
     auto twitchMsgs = twitchConnection.FetchNewMessages();
     for (auto msg : twitchMsgs) {
+        std::string message = msg.message;
+        std::string author = msg.username;
+        if (message.length() == 0 || author.length() == 0)
+            continue;
+        
         if (sar_twitch_chat_enabled.GetInt() == 2) {
-            std::string message = msg.message;
-            message.erase(remove_if(message.begin(), message.end(), [](char c) {
-                return c == '"' || c == '\n' || c == '\r' || c == '\0';
-            }), message.end());
-            std::string author = msg.username;
-            author.erase(remove_if(author.begin(), author.end(), [](char c) {
-                return c == '"' || c == '\n' || c == '\r' || c == '\0';
-            }), author.end());
             if (Utils::StartsWith(message.c_str(), "!spec ")) {
                 std::string specName = message.substr(6);
+                specName.erase(remove_if(specName.begin(), specName.end(), [](char c) {
+                    return c == '"' || c == '\n' || c == '\r' || c == '\0';
+                }), specName.end());
                 if (specName.length() > 0) {
                     specName = std::string("ghost_spec_pov \"") + specName.c_str() + "\"\n";
                     engine->ExecuteCommand(specName.c_str(), true);
@@ -56,7 +57,6 @@ ON_EVENT(PRE_TICK) {
                     // i promise i can be trusted :P
                     std::string command = message.substr(5);
                     if (command.length() > 0) {
-                        command = command + "\n";
                         engine->ExecuteCommand(command.c_str(), true);
                     }
                 } else {
@@ -65,16 +65,16 @@ ON_EVENT(PRE_TICK) {
             } else if (Utils::StartsWith(message.c_str(), "!") || Utils::ICompare(author, "nightbot") || Utils::ICompare(author, "streamelements")) {
                 // Ignore bots and bot commands
             } else if (Utils::ICompare(author, sar_twitch_chat_channel.GetString())) {
-                std::string out = std::string("ghost_message \"") + message + "\"\n";
-                engine->ExecuteCommand(out.c_str(), true);
+                networkManager.SendMessageToAll(message);
             } else {
-                std::string out = std::string("ghost_message \"(TTV) ") + author + ": " + message + "\"\n";
-                engine->ExecuteCommand(out.c_str(), true);
+                networkManager.SendMessageToAll("(TTV) " + author + ": " + message);
             }
         } else {
-            std::string message = msg.username + ": " + msg.message;
-            Color color = Utils::GetColor(sar_twitch_chat_color.GetString()).value_or(Color(255, 255, 255));
-            client->Chat(color, message.c_str());
+            if (!(Utils::StartsWith(message.c_str(), "!") || Utils::ICompare(author, "nightbot") || Utils::ICompare(author, "streamelements"))) {
+                std::string message = msg.username + ": " + msg.message;
+                Color color = Utils::GetColor(sar_twitch_chat_color.GetString()).value_or(Color(255, 255, 255));
+                client->Chat(color, message.c_str());
+            }
         }
     }
 }
