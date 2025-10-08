@@ -454,6 +454,16 @@ void NetworkManager::Disconnect() {
 
 		this->isConnected = false;
 		this->waitForRunning.notify_one();
+
+		this->voiceStreamsLock.lock();
+		for (auto &pair : voiceStreams) {
+			if (pair.second) {
+				pair.second->stopStream();
+			}
+		}
+		voiceStreams.clear();
+		this->voiceStreamsLock.unlock();
+
 		this->ghostPoolLock.lock();
 		this->ghostPool.clear();
 		this->ghostPoolLock.unlock();
@@ -801,6 +811,17 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 	}
 	case HEADER::DISCONNECT: {
 		addToNetDump("recv-disconnect", Utils::ssprintf("%d", ID).c_str());
+
+		this->voiceStreamsLock.lock();
+		auto streamIt = voiceStreams.find(ID);
+		if (streamIt != voiceStreams.end()) {
+			if (streamIt->second) {
+				streamIt->second->stopStream();
+			}
+			voiceStreams.erase(streamIt);
+		}
+		this->voiceStreamsLock.unlock();
+
 		this->ghostPoolLock.lock();
 		int toErase = -1;
 		for (size_t i = 0; i < this->ghostPool.size(); ++i) {
@@ -1059,40 +1080,49 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		// decompress.
 		EVoiceResult res = steam->SteamUser()->DecompressVoice(pVoiceData, pMsgVoiceData->GetDataLength(), pbUncompressedVoice, sizeof(pbUncompressedVoice), &numUncompressedBytes, sampleRate);
 
-		// continuous stream per id for voice.
-		static std::unordered_map<uint32_t, std::unique_ptr<VoiceStream>> voiceStreams;
-		if (!voiceStreams.count(ghost->ID))
-			voiceStreams.insert(std::make_pair(ghost->ID, new VoiceStream(sampleRate)));
+		// check if we have any data.
+		if (!(res == k_EVoiceResultOK && numUncompressedBytes > 0))
+			break;
 
-		if (res == k_EVoiceResultOK && numUncompressedBytes > 0) {
-			auto stream = voiceStreams[ghost->ID].get();
+		// thread-safe stream access.
+		std::shared_ptr<VoiceStream> stream;
+		{
+			std::lock_guard<std::mutex> lock(this->voiceStreamsLock);
 
-			// load from raw pcm data.
-			stream->pushSamples((const int16_t *)pbUncompressedVoice, numUncompressedBytes / sizeof(int16_t));
-
-			// account for ingame vol.
-			static auto vol = Variable("volume");
-			stream->setVolume(vol.GetFloat() * ghost_volume.GetFloat() * 10000.f);
-
-			// proximity.
-			auto player = client->GetPlayer(GET_SLOT() + 1);
-			if (player) {
-				auto origin = client->GetAbsOrigin(player) / 128.f;
-				auto angles = client->GetAbsAngles(player);
-				auto ghost_pos = ghost->data.position / 128.f;
-
-				Vector forward;
-				Math::AngleVectors(angles, &forward);
-
-				sf::Listener::setPosition({origin.x, origin.z, origin.y});
-				sf::Listener::setDirection({-forward.x, -forward.z, -forward.y});
-
-				stream->setPosition({ghost_pos.x, ghost_pos.z, ghost_pos.y});
+			auto it = voiceStreams.find(ID);
+			if (it == voiceStreams.end()) {
+				stream = std::make_shared<VoiceStream>(sampleRate);
+				voiceStreams[ID] = stream;
+			} else {
+				stream = it->second;
 			}
-
-			if (stream->getStatus() != sf::SoundSource::Status::Playing)
-				stream->play();
 		}
+
+		// load from raw pcm data.
+		stream->pushSamples((const int16_t *)pbUncompressedVoice, numUncompressedBytes / sizeof(int16_t));
+
+		// account for ingame vol.
+		static auto vol = Variable("volume");
+		stream->setVolume(vol.GetFloat() * ghost_volume.GetFloat() * 10000.f);
+
+		// proximity.
+		auto player = client->GetPlayer(GET_SLOT() + 1);
+		if (player) {
+			auto origin = client->GetAbsOrigin(player) / 128.f;
+			auto angles = client->GetAbsAngles(player);
+			auto ghost_pos = ghost->data.position / 128.f;
+
+			Vector forward;
+			Math::AngleVectors(angles, &forward);
+
+			sf::Listener::setPosition({origin.x, origin.z, origin.y});
+			sf::Listener::setDirection({-forward.x, -forward.z, -forward.y});
+
+			stream->setPosition({ghost_pos.x, ghost_pos.z, ghost_pos.y});
+		}
+
+		if (stream->getStatus() != sf::SoundSource::Status::Playing)
+			stream->play();
 
 		break;
 	}
