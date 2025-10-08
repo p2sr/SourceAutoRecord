@@ -1170,7 +1170,6 @@ void NetworkManager::NotifyTaunt(const std::string name) {
 void NetworkManager::NotifyLocator(Vector position, Vector normal) {
 	if (!this->isConnected) return;
 	addToNetDump("send-locator", Utils::ssprintf("%d;%.1f,%.1f,%.1f;%.1f,%.1f,%.1f", this->ID, position.x, position.y, position.z, normal.x, normal.y, normal.z).c_str());
-	console->Print("Locator: Position (%.1f, %.1f, %.1f), Normal (%.1f, %.1f, %.1f)\n", position.x, position.y, position.z, normal.x, normal.y, normal.z);
 	sf::Packet packet;
 	packet << HEADER::LOCATOR << this->ID << position << normal;
 	this->tcpSocket.send(packet);
