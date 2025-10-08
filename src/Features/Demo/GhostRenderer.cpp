@@ -180,7 +180,7 @@ CON_COMMAND(ghost_locator, "ghost_locator - Sends a coop-like ping to other ghos
 
 	Vector dir;
 	Math::AngleVectors(cam_ang, &dir);
-	dir *= 2048.0f;
+	dir *= 8192.0f;
 
 	CGameTrace tr;
 
