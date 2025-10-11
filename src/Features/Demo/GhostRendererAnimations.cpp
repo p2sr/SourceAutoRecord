@@ -136,6 +136,10 @@ GhostAnimationDefinition waveAnimation{
 			return;
 		}
 
+		if (state.controlValue3 < 48.0f) {
+			return; // FIXME: crouching looks broken, for now just kill it
+		}
+
 		animatedVertex.y = vertexInfo.position.y;
 
 		float rotationRadians = DEG2RAD(-100.0f + 30.0f * sinf(state.controlValue2));
