@@ -2,6 +2,9 @@
 #include "Modules/Tier1.hpp"
 #include "Utils/SDK.hpp"
 
+#include <string>
+#include <vector>
+
 #define DECL_CVAR_CALLBACK(name) void name##_callback(void *var, const char *pOldValue, float flOldValue)
 #define CVAR_HOOK_AND_CALLBACK(name) \
 	name = Variable(#name);             \
@@ -13,6 +16,15 @@ private:
 
 	int originalFlags;
 	CUtlVector<FnChangeCallback_t> originalCallbacks;
+	std::vector<FnChangeCallback_t> customCallbacks;
+	std::string nameStorage;
+	std::string defaultValueStorage;
+	std::string helpStringStorage;
+	bool hasMinStorage;
+	float minValueStorage;
+	bool hasMaxStorage;
+	float maxValueStorage;
+	int flagsStorage;
 
 	union {
 		FnChangeCallback_t originalFnChangeCallback;

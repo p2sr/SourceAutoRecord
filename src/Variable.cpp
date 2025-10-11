@@ -6,6 +6,7 @@
 #include "SAR.hpp"
 
 #include <cstring>
+#include <algorithm>
 
 std::vector<Variable *> &Variable::GetList() {
 	static std::vector<Variable *> list;
@@ -16,6 +17,15 @@ Variable::Variable()
 	: ptr(nullptr)
 	, originalFlags(0)
 	, originalFnChangeCallback(nullptr)
+	, customCallbacks()
+	, nameStorage()
+	, defaultValueStorage()
+	, helpStringStorage()
+	, hasMinStorage(false)
+	, minValueStorage(0.0f)
+	, hasMaxStorage(false)
+	, maxValueStorage(0.0f)
+	, flagsStorage(0)
 	, version(SourceGame_Unknown)
 	, isRegistered(false)
 	, isReference(false)
@@ -49,6 +59,14 @@ Variable::Variable(const char *name, const char *value, float min, float max, co
 }
 void Variable::Create(const char *name, const char *value, int flags, const char *helpstr, bool hasmin, float min, bool hasmax, float max, FnChangeCallback_t callback) {
 	this->ptr = new ConVar(name, value, flags, helpstr, hasmin, min, hasmax, max);
+	this->nameStorage = name ? name : "";
+	this->defaultValueStorage = value ? value : "";
+	this->helpStringStorage = helpstr ? helpstr : "";
+	this->hasMinStorage = hasmin;
+	this->minValueStorage = min;
+	this->hasMaxStorage = hasmax;
+	this->maxValueStorage = max;
+	this->flagsStorage = flags;
 	this->AddCallBack(callback);
 
 	Variable::GetList().push_back(this);
@@ -70,6 +88,9 @@ void Variable::AddCallBack(FnChangeCallback_t callback) {
 	if (callback != nullptr) {
 		this->originalCallbacks = this->ThisPtr()->m_fnChangeCallback;
 		this->ThisPtr()->m_fnChangeCallback.Append(callback);
+		if (std::find(this->customCallbacks.begin(), this->customCallbacks.end(), callback) == this->customCallbacks.end()) {
+			this->customCallbacks.push_back(callback);
+		}
 		this->hasCustomCallback = true;
 		this->GetList().push_back(this);
 	}
@@ -107,6 +128,7 @@ void Variable::SetValue(int value) {
 }
 void Variable::SetFlags(int value) {
 	if (this->ptr) this->ptr->m_nFlags = value;
+	this->flagsStorage = value;
 }
 void Variable::AddFlag(int value) {
 	this->SetFlags(this->GetFlags() | value);
@@ -152,6 +174,9 @@ void Variable::UniqueFor(int version) {
 	this->version = version;
 }
 void Variable::Register() {
+	if (!this->ptr && !this->nameStorage.empty()) {
+		this->ptr = new ConVar(this->nameStorage.c_str(), this->defaultValueStorage.c_str(), this->flagsStorage, this->helpStringStorage.c_str(), this->hasMinStorage, this->minValueStorage, this->hasMaxStorage, this->maxValueStorage);
+	}
 	if (!this->isRegistered && !this->isReference && this->ptr) {
 		this->isRegistered = true;
 		FnChangeCallback_t callback = this->ptr->m_fnChangeCallback.m_Size > 0 ? this->ptr->m_fnChangeCallback.m_pElements[0] : nullptr;
@@ -159,11 +184,44 @@ void Variable::Register() {
 		*(void **)this->ptr = tier1->ConVar_VTable; // stealing vtable from the game
 		this->ptr->ConVar_VTable = tier1->ConVar_VTable2;
 		tier1->Create(this->ptr, this->ptr->m_pszName, this->ptr->m_pszDefaultValue, this->ptr->m_nFlags, this->ptr->m_pszHelpString, this->ptr->m_bHasMin, this->ptr->m_fMinVal, this->ptr->m_bHasMax, this->ptr->m_fMaxVal, callback);
+		for (auto cb : this->customCallbacks) {
+			if (!cb) continue;
+			bool alreadyPresent = false;
+			for (int i = 0; i < this->ptr->m_fnChangeCallback.m_Size; ++i) {
+				if (this->ptr->m_fnChangeCallback.m_pElements[i] == cb) {
+					alreadyPresent = true;
+					break;
+				}
+			}
+			if (!alreadyPresent) {
+				this->ptr->m_fnChangeCallback.Append(cb);
+			}
+		}
+		this->hasCustomCallback = !this->customCallbacks.empty();
 	}
 }
 void Variable::Unregister() {
 	if (this->isRegistered && !this->isReference && this->ptr) {
 		this->isRegistered = false;
+		this->nameStorage = this->ptr->m_pszName ? this->ptr->m_pszName : "";
+		this->defaultValueStorage = this->ptr->m_pszDefaultValue ? this->ptr->m_pszDefaultValue : "";
+		this->helpStringStorage = this->ptr->m_pszHelpString ? this->ptr->m_pszHelpString : "";
+		this->hasMinStorage = this->ptr->m_bHasMin;
+		this->minValueStorage = this->ptr->m_fMinVal;
+		this->hasMaxStorage = this->ptr->m_bHasMax;
+		this->maxValueStorage = this->ptr->m_fMaxVal;
+		this->flagsStorage = this->ptr->m_nFlags;
+		auto callbacks = this->ptr->m_fnChangeCallback;
+		auto newptr = new ConVar(
+			this->ptr->m_pszName,
+			this->ptr->m_pszDefaultValue,
+			this->ptr->m_nFlags,
+			this->ptr->m_pszHelpString,
+			this->ptr->m_bHasMin,
+			this->ptr->m_fMinVal,
+			this->ptr->m_bHasMax,
+			this->ptr->m_fMaxVal);
+		newptr->m_fnChangeCallback = callbacks;
 		tier1->UnregisterConCommand(tier1->g_pCVar->ThisPtr(), this->ptr);
 #ifdef _WIN32
 		tier1->Dtor(this->ptr, 0);
@@ -171,6 +229,7 @@ void Variable::Unregister() {
 		tier1->Dtor(this->ptr);
 #endif
 		SAFE_DELETE(this->ptr)
+		this->ptr = newptr;
 	}
 }
 bool Variable::operator!() {

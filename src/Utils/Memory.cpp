@@ -28,6 +28,10 @@
 
 std::vector<Memory::ModuleInfo> Memory::moduleList;
 
+void Memory::ClearModuleCache() {
+	Memory::moduleList.clear();
+}
+
 bool Memory::TryGetModule(const char *moduleName, Memory::ModuleInfo *info) {
 	if (Memory::moduleList.empty()) {
 #ifdef _WIN32
