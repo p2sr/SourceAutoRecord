@@ -3,6 +3,7 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 
+#include <atomic>
 #include <thread>
 
 Variable sar_metronome("sar_metronome", "0", "Enable metronome.\n");
