@@ -567,7 +567,9 @@ void NetworkManager::SendPlayerData() {
 	{
 		// read local microphone input.
 		uint32_t nBytesAvailable = 0;
-		EVoiceResult res = steam->SteamUser()->GetAvailableVoice(&nBytesAvailable, NULL, 0);
+		EVoiceResult res = k_EVoiceResultNotInitialized;
+		if (steam && steam->SteamUser)
+			res = steam->SteamUser()->GetAvailableVoice(&nBytesAvailable, NULL, 0);
 
 		if (res == k_EVoiceResultOK && nBytesAvailable > 0) {
 			uint32_t nBytesWritten = 0;
@@ -1078,7 +1080,9 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		pVoiceData += sizeof(MsgVoiceChatData_t);
 
 		// decompress.
-		EVoiceResult res = steam->SteamUser()->DecompressVoice(pVoiceData, pMsgVoiceData->GetDataLength(), pbUncompressedVoice, sizeof(pbUncompressedVoice), &numUncompressedBytes, sampleRate);
+		EVoiceResult res = k_EVoiceResultNotInitialized;
+		if (steam && steam->SteamUser)
+			res = steam->SteamUser()->DecompressVoice(pVoiceData, pMsgVoiceData->GetDataLength(), pbUncompressedVoice, sizeof(pbUncompressedVoice), &numUncompressedBytes, sampleRate);
 
 		// check if we have any data.
 		if (!(res == k_EVoiceResultOK && numUncompressedBytes > 0))
@@ -1446,8 +1450,12 @@ ON_EVENT(FRAME) {
 	}
 }
 
-Command ghost_voice_on("+ghost_voice", +[](const CCommand &args) { steam->SteamUser()->StartVoiceRecording(); }, "+ghost_voice - push to talk in voice chat\n");
-Command ghost_voice_off("-ghost_voice", +[](const CCommand &args) { steam->SteamUser()->StopVoiceRecording(); }, "-ghost_voice - push to talk in voice chat\n");
+Command ghost_voice_on("+ghost_voice", +[](const CCommand &args) {
+	if (steam && steam->SteamUser) steam->SteamUser()->StartVoiceRecording();
+}, "+ghost_voice - push to talk in voice chat\n");
+Command ghost_voice_off("-ghost_voice", +[](const CCommand &args) {
+	if (steam && steam->SteamUser) steam->SteamUser()->StopVoiceRecording();
+}, "-ghost_voice - push to talk in voice chat\n");
 
 CON_COMMAND(ghost_chat, "ghost_chat - open the chat HUD for messaging other players\n") {
 	if (g_chatType == 0 && networkManager.isConnected) {
