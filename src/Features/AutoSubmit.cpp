@@ -607,6 +607,6 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 }
 
 ON_EVENT(SAR_UNLOAD) {
-	if (g_worker.joinable()) g_worker.detach();
+	if (g_worker.joinable()) g_worker.join();
 	if (g_worker_search.joinable()) g_worker_search.join();
 }

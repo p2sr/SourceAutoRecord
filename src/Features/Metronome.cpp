@@ -13,11 +13,12 @@ Variable sar_metronome_sound_bar("sar_metronome_sound_bar", "ui/ui_coop_hud_unfo
 Variable sar_metronome_volume("sar_metronome_volume", "1", 0, 1, "Set the volume for the metronome.\n");
 
 static std::thread metronomeThread;
+static std::atomic<bool> stopMetronome(false); // Atomic flag to stop the thread
 static int metronomeBeat = 0;
 
 static void bpmTick() {
-    while (true) {
-        while (sar_metronome.GetBool()) {
+    while (!stopMetronome.load()) {
+        while (sar_metronome.GetBool() && !stopMetronome.load()) {
             auto interval = std::chrono::milliseconds(1000);
             auto isBar = metronomeBeat == 0;
             metronomeBeat = (metronomeBeat + 1) % sar_metronome_beats.GetInt();
@@ -33,9 +34,11 @@ static void bpmTick() {
 }
 
 ON_INIT {
+    stopMetronome.store(false);
     metronomeThread = std::thread(bpmTick);
 }
 
 ON_EVENT(SAR_UNLOAD) {
-    if (metronomeThread.joinable()) metronomeThread.detach();
+    stopMetronome.store(true);
+    if (metronomeThread.joinable()) metronomeThread.join();
 }
