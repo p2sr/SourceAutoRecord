@@ -81,6 +81,8 @@ DETOUR_T(IMaterial *, MaterialSystem::CreateMaterial, const char *pMaterialName,
 	return MaterialSystem::CreateMaterial(thisptr, pMaterialName, pVMTKeyValues);
 }
 
+Memory::Patch *g_renderContextPatch;
+
 bool MaterialSystem::Init() {
 	this->materials = Interface::Create(this->Name(), "VMaterialSystem080");
 	if (this->materials) {
@@ -97,11 +99,11 @@ bool MaterialSystem::Init() {
 	this->renderContextSize = Memory::Scan<uint32_t *>(this->Name(), Offsets::RenderContextSize, Offsets::RenderContextSizeOff);
 	this->RenderContextShutdown = Memory::Scan<_RenderContextShutdown>(this->Name(), Offsets::RenderContextShutdown);
 	this->RenderContextInit = Memory::Scan<_RenderContextInit>(this->Name(), Offsets::RenderContextInit);
+	g_renderContextPatch = new Memory::Patch();
 	if (this->renderContextSize && this->RenderContextShutdown && this->RenderContextInit) {
 		if (*this->renderContextSize != RENDERCONTEXT_ALLOC_SIZE) {
-			Memory::UnProtect((void *)this->renderContextSize, sizeof(uint32_t));
-			this->origRenderContextSize = *this->renderContextSize;
-			*this->renderContextSize = RENDERCONTEXT_ALLOC_SIZE;
+			auto byte = RENDERCONTEXT_ALLOC_SIZE;
+			g_renderContextPatch->Execute((uintptr_t)this->renderContextSize, (unsigned char *)&byte, sizeof(uint32_t));
 			this->RenderContextShutdown();
 			this->RenderContextInit();
 		}
@@ -112,8 +114,8 @@ bool MaterialSystem::Init() {
 void MaterialSystem::Shutdown() {
 	Interface::Delete(this->materials);
 
-	if (origRenderContextSize) {
-		*renderContextSize = origRenderContextSize;
+	if (g_renderContextPatch->IsPatched()) {
+		g_renderContextPatch->Restore();
 		RenderContextShutdown();
 		RenderContextInit();
 	}

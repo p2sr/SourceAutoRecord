@@ -12,6 +12,7 @@ OFFSET_LINUX(gamerules, 7)
 OFFSET_LINUX(say_callback_insn, 57)
 OFFSET_LINUX(Host_Say_insn, 0x346)
 OFFSET_LINUX(portalsThruPortals, 409)
+OFFSET_LINUX(portalsThruPortalsValOn, 0x85)
 
 // Renderer
 SIGSCAN_LINUX(SND_RecordBuffer, "55 89 E5 57 56 53 83 EC 2C E8 ? ? ? ? 84 C0 75 0E 8D 65 F4 5B 5E 5F 5D C3")

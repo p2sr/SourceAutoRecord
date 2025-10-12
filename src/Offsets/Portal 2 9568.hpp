@@ -382,6 +382,7 @@ OFFSET_DEFAULT(host_frametime, 92, 81)
 OFFSET_DEFAULT(say_callback_insn, 52, 55)
 OFFSET_DEFAULT(Host_Say_insn, 0x335, 0x36C)
 OFFSET_DEFAULT(portalsThruPortals, 391, 388)
+OFFSET_DEFAULT(portalsThruPortalsValOn, 0x00, 0x82)
 
 // clang-format off
 

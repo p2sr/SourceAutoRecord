@@ -517,33 +517,33 @@ DETOUR_B(Server::AirMove) {
 
 	return Server::AirMove(thisptr);
 }
+
+Memory::Patch *g_aircontrolPatch;
+
 static void setAircontrol(int val) {
-	if (!server->aircontrol_fling_speed_addr) return;
+	if (!g_aircontrolPatch->IsInit()) return;
 	switch (val) {
 	case 0:
-		*server->aircontrol_fling_speed_addr = 300.0f * 300.0f;
+		g_aircontrolPatch->Restore();
 		break;
 	default:
-		*server->aircontrol_fling_speed_addr = INFINITY;
+		g_aircontrolPatch->Execute();
 		break;
 	}
 }
+
+Memory::Patch *g_portalsThruPortalsPatch;
+
 static void setPortalsThruPortals(bool val) {
-	uintptr_t tfp = (uintptr_t)server->TraceFirePortal;
-	if (!server->TraceFirePortal) return;
-#ifdef _WIN32
-	*(uint8_t *)(tfp + Offsets::portalsThruPortals) = val ? 0x00 : 0x0A;
-#else
-	if (sar.game->Is(SourceGame_EIPRelPIC)) {
-		*(uint8_t *)(tfp + Offsets::portalsThruPortals) = val ? 0x82 : 0x85;
-	} else if (sar.game->Is(SourceGame_PortalReloaded) || sar.game->Is(SourceGame_PortalStoriesMel)) {
-		*(uint8_t *)(tfp + Offsets::portalsThruPortals) = val ? 0xEB : 0x74;
+	if (!g_portalsThruPortalsPatch->IsInit()) return;
+	if (val) {
+		g_portalsThruPortalsPatch->Execute();
 	} else {
-		*(uint8_t *)(tfp + Offsets::portalsThruPortals) = val ? 0x85 : 0x84;
+		g_portalsThruPortalsPatch->Restore();
 	}
-#endif
 }
 Variable sar_portals_thru_portals("sar_portals_thru_portals", "0", "Allow firing portals through portals.\n");
+
 // cvar callbacks dont want to fucking work so we'll just do this bs
 ON_EVENT(PRE_TICK) {
 	setAircontrol(server->AllowsMovementChanges() ? sar_aircontrol.GetInt() : 0);
@@ -817,8 +817,9 @@ float hostTimeWrap() {
 	return engine->GetHostTime();
 } 
 
-static char g_orig_check_stuck_code[6];
-static void *g_check_stuck_code;
+Memory::Patch *g_chatPatch;
+Memory::Patch *g_unblockChatPatch;
+Memory::Patch *g_checkStuckPatch;
 
 bool Server::Init() {
 	this->g_GameMovement = Interface::Create(this->Name(), "GameMovement001");
@@ -844,9 +845,13 @@ bool Server::Init() {
 		Memory::Deref<_CheckJumpButton>(baseOffset + Offsets::CheckJumpButton * sizeof(uintptr_t *), &Server::CheckJumpButtonBase);
 
 		auto aircontrol_fling_speed_addr = Memory::Scan(this->Name(), Offsets::aircontrol_fling_speedSig, Offsets::aircontrol_fling_speedOff);
+		g_aircontrolPatch = new Memory::Patch();
 		if (aircontrol_fling_speed_addr) {
-			this->aircontrol_fling_speed_addr = Memory::Deref<float *>(aircontrol_fling_speed_addr);
-			Memory::UnProtect(this->aircontrol_fling_speed_addr, 4);
+			unsigned char bytes[4];
+			float infinityValue = INFINITY;
+			std::memcpy(bytes, &infinityValue, sizeof(bytes));
+			g_aircontrolPatch->Execute(Memory::Deref<uintptr_t>(aircontrol_fling_speed_addr), bytes, 4);
+			g_aircontrolPatch->Restore();
 		}
 	}
 
@@ -889,6 +894,7 @@ bool Server::Init() {
 
 	// Remove the limit on how quickly you can use 'say', and also hook it
 	Command::Hook("say", Server::say_callback_hook, Server::say_callback);
+	g_chatPatch = new Memory::Patch();
 	if (say_callback) {
 		auto insn_addr = (uintptr_t)say_callback + Offsets::say_callback_insn;
 		// This is the location of an ADDSD instruction which adds 0.66
@@ -896,14 +902,15 @@ bool Server::Init() {
 		// always be able to chat again! We can just do this by changing
 		// the third byte from 0x58 to 0x5C, hence making the full
 		// opcode start with F2 0F 5C.
-		Memory::UnProtect((void *)(insn_addr + 2), 1);
 		if (*(char *)(insn_addr + 2) == 0x58) {
-			*(char *)(insn_addr + 2) = 0x5C;
+			unsigned char patchByte = 0x5C;
+			g_chatPatch->Execute((uintptr_t)(insn_addr + 2), &patchByte, 1);
 		} else {
-			console->DevMsg("Failed to uncap chat time. insn was %02X\n", *(char *)(insn_addr + 2));
+			console->Warning("Failed to uncap chat time. insn was %02X\n", *(char *)(insn_addr + 2));
 		}
 	}
 	auto Host_Say = Memory::Scan(this->Name(), Offsets::Host_Say);
+	g_unblockChatPatch = new Memory::Patch();
 	if (Host_Say) {
 		auto insn_addr = Host_Say + Offsets::Host_Say_insn;
 		// FIXME: This also disables the "ignoremsg" client command
@@ -911,18 +918,23 @@ bool Server::Init() {
 		// This is the location of a JZ instruction which jumps if the
 		// chat sender is dead but recipient is alive, blocking
 		// messages. We just change it to a JO, which will never jump.
-		Memory::UnProtect((void *)insn_addr, 1);
 		if (*(char *)insn_addr == 0x74) {
-			*(char *)insn_addr = 0x70;
+			unsigned char patchByte = 0x70;
+			g_unblockChatPatch->Execute((uintptr_t)insn_addr, &patchByte, 1);
 		} else {
-			console->DevMsg("Failed to unblock chat when dead. insn was %02X\n", *(char *)insn_addr);
+			console->Warning("Failed to unblock chat. insn was %02X\n", *(char *)insn_addr);
 		}
 	}
 
 	// find the TraceFirePortal function
 	TraceFirePortal = (_TraceFirePortal)Memory::Scan(this->Name(), Offsets::TraceFirePortal);
+	g_portalsThruPortalsPatch = new Memory::Patch();
+	if (TraceFirePortal && Offsets::portalsThruPortals) {
+		unsigned char portalsThruPortalsValOn = Offsets::portalsThruPortalsValOn;
+		g_portalsThruPortalsPatch->Execute((uintptr_t)TraceFirePortal + Offsets::portalsThruPortals, &portalsThruPortalsValOn, 1);
+		g_portalsThruPortalsPatch->Restore();
+	}
 	FindPortal = (_FindPortal)Memory::Scan(this->Name(), Offsets::FindPortal);
-	if (TraceFirePortal) Memory::UnProtect((void *)((uintptr_t)TraceFirePortal + Offsets::portalsThruPortals), 1); // see setPortalsThruPortals
 
 	ViewPunch = (decltype(ViewPunch))Memory::Scan(this->Name(), Offsets::ViewPunch);
 
@@ -939,17 +951,19 @@ bool Server::Init() {
 
 	// a call to Plat_FloatTime in CGameMovement::CheckStuck
 	auto code = Memory::Scan(this->Name(), Offsets::CheckStuck_FloatTime);
+	g_checkStuckPatch = new Memory::Patch();
 	if (code) {
-		Memory::UnProtect((void *)code, sizeof g_orig_check_stuck_code);
-		memcpy(g_orig_check_stuck_code, (void *)code, sizeof g_orig_check_stuck_code);
-
-		*(uint8_t *)code = 0xE8;
-		*(uint32_t *)(code + 1) = (uint32_t)&hostTimeWrap - (code + 5);
 #ifdef _WIN32
-		*(uint8_t *)(code + 5) = 0x90; // nop
+		unsigned char checkStuckBytes[6];
+#else
+		unsigned char checkStuckBytes[5];
 #endif
-
-		g_check_stuck_code = (void *)code;
+		checkStuckBytes[0] = 0xE8; // call
+		*(uint32_t *)(checkStuckBytes + 1) = (uint32_t)&hostTimeWrap - (code + 5);
+#ifdef _WIN32
+		checkStuckBytes[5] = 0x90; // nop
+#endif
+		g_checkStuckPatch->Execute((uintptr_t)code, checkStuckBytes, sizeof checkStuckBytes);
 	}
 
 	if (sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011)) {
@@ -1028,9 +1042,18 @@ DETOUR_COMMAND(Server::say) {
 }
 void Server::Shutdown() {
 	Command::Unhook("say", Server::say_callback);
-	setAircontrol(0);
-	setPortalsThruPortals(false);
-	if (g_check_stuck_code) memcpy(g_check_stuck_code, g_orig_check_stuck_code, sizeof g_orig_check_stuck_code);
+
+	g_aircontrolPatch->Restore();
+	SAFE_DELETE(g_aircontrolPatch);
+	g_portalsThruPortalsPatch->Restore();
+	SAFE_DELETE(g_portalsThruPortalsPatch);
+	g_chatPatch->Restore();
+	SAFE_DELETE(g_chatPatch);
+	g_unblockChatPatch->Restore();
+	SAFE_DELETE(g_unblockChatPatch);
+	g_checkStuckPatch->Restore();
+	SAFE_DELETE(g_checkStuckPatch);
+
 	Interface::Delete(this->gEntList);
 	Interface::Delete(this->g_GameMovement);
 	Interface::Delete(this->g_ServerGameDLL);
