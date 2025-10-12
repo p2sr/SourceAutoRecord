@@ -26,7 +26,6 @@ namespace Memory {
 
 	extern std::vector<ModuleInfo> moduleList;
 
-	void ClearModuleCache();
 	bool TryGetModule(const char *moduleName, ModuleInfo *info);
 	void *GetModuleHandleByName(const char *moduleName);
 	void CloseModuleHandle(void *moduleHandle);

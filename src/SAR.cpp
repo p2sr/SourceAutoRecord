@@ -22,8 +22,6 @@
 #include "Hook.hpp"
 #include "Interface.hpp"
 #include "Modules.hpp"
-#include "Scheduler.hpp"
-#include "Utils/Memory.hpp"
 #include "Variable.hpp"
 
 SAR sar;
@@ -31,7 +29,6 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_
 
 
 bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory) {
-	unloading = false;
 	console = new Console();
 	if (!console->Init())
 		return false;
@@ -102,7 +99,6 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->modules->AddModule<Matchmaking>(&matchmaking);
 			this->modules->AddModule<SteamAPI>(&steam);
 			this->modules->AddModule<VPhysics>(&vphysics);
-			Memory::ClearModuleCache();
 			this->modules->InitAll();
 
 			SarInitHandler::RunAll();
@@ -226,8 +222,6 @@ void SAR::Unload() {
 	Variable::ClearAllCallbacks();
 
 	Hook::DisableAll();
-	Memory::ClearModuleCache();
-	Scheduler::ClearAll();
 
 	if (sar.cheats) {
 		sar.cheats->Shutdown();

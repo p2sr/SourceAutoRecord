@@ -10,13 +10,6 @@ static std::vector<std::pair<int, std::function<void()>>> g_hostScheds;
 static std::vector<std::function<void()>> g_mainThreadScheds;
 static std::mutex g_mainThreadMutex;
 
-void Scheduler::ClearAll() {
-	g_serverScheds.clear();
-	g_hostScheds.clear();
-	std::lock_guard<std::mutex> lock(g_mainThreadMutex);
-	g_mainThreadScheds.clear();
-}
-
 void Scheduler::InServerTicks(int ticks, std::function<void()> fn) {
 	if (!session->isRunning) return;
 	g_serverScheds.push_back({ session->GetTick() + ticks, fn });
