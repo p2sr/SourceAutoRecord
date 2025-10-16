@@ -1052,7 +1052,7 @@ void NetworkManager::Treat(sf::Packet &packet, bool udp) {
 		addToNetDump("recv-locator", Utils::ssprintf("%d;%.1f,%.1f,%.1f;%.1f,%.1f,%.1f", ID, position.x, position.y, position.z, normal.x, normal.y, normal.z).c_str());
 		if (ghost && engine->GetCurrentMapName() == ghost->currentMap) {
 			Scheduler::OnMainThread([=]() {
-				if (this->AcknowledgeGhost(ghost)) {
+				if (this->AcknowledgeGhost(ghost) && !engine->IsGamePaused()) {
 					client->ShowLocator(position, normal, ghost->color.value_or(Color(255,255,255)));
 				}
 			});
