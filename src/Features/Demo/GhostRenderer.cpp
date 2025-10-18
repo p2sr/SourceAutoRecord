@@ -175,7 +175,7 @@ CON_COMMAND(ghost_locator, "ghost_locator - Sends a coop-like ping to other ghos
 	}
 
 	CGameTrace tr;
-	if (engine->TraceFromCamera<false>(8192.0f, MASK_SHOT_PORTAL, tr)) {
+	if (engine->TraceFromCamera<false>(8192.0f, MASK_VISIBLE, tr)) {
 		client->ShowLocator(tr.endpos, tr.plane.normal, GhostEntity::set_color);
 		networkManager.NotifyLocator(tr.endpos, tr.plane.normal);
 	}
