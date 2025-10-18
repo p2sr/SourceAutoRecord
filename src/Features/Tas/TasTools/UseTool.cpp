@@ -48,3 +48,11 @@ std::shared_ptr<TasToolParams> UseTool::ParseParams(std::vector<std::string> vp)
 
 	return std::make_shared<UseToolParams>(enabled, spam);
 }
+
+std::shared_ptr<TasTool> UseTool::makeCopy() {
+	return std::make_shared<UseTool>(*this);
+}
+
+void UseTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(UseTool *)other.get();
+}

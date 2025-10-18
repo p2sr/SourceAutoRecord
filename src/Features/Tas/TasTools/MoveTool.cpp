@@ -112,3 +112,11 @@ std::shared_ptr<TasToolParams> MoveTool::ParseParams(std::vector<std::string> vp
 
 	return std::make_shared<MoveToolParams>(forwardMove * scale, sideMove * scale);
 }
+
+std::shared_ptr<TasTool> MoveTool::makeCopy() {
+	return std::make_shared<MoveTool>(*this);
+}
+
+void MoveTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(MoveTool *)other.get();
+}

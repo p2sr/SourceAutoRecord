@@ -96,3 +96,11 @@ std::shared_ptr<TasToolParams> LookTool::ParseParams(std::vector<std::string> vp
 
 	return std::make_shared<LookToolParams>(pitchDelta * degrees, yawDelta * degrees, tickCount);
 }
+
+std::shared_ptr<TasTool> LookTool::makeCopy() {
+	return std::make_shared<LookTool>(*this);
+}
+
+void LookTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(LookTool *)other.get();
+}

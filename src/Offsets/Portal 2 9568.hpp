@@ -157,6 +157,10 @@ OFFSET_DEFAULT(C_GetDataDescMap, 15, 17)
 OFFSET_DEFAULT(GetServerClass, 9, 10)
 OFFSET_DEFAULT(GetClientClass, 18, 19)
 OFFSET_DEFAULT(GetPredDescMap, 17, 20)
+// TODO: do windows
+SIGSCAN_DEFAULT(GetAbsOrigin, "", "53 83 ec 08 8b 5c 24 10 f6 83 d1 00 00 00 08 75 0f 83 c4 08 8d 83 d4 01 00 00 5b c3")
+SIGSCAN_DEFAULT(SetAbsOrigin, "", "55 57 56 53 83 ec 78 8b 9c 24 8c 00 00 00 8b b4 24 90 00 00 00 53 e8 55 b5 ff ff f3 0f 10 06 83 c4 10 0f 2e 83 d4 01 00 00 7a 2d 75 2b f3 0f 10 46 04 0f 2e 83 d8 01 00 00")
+
 
 // CBasePlayer
 OFFSET_DEFAULT(m_pSurfaceData, 3868, 4116)

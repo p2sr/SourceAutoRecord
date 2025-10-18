@@ -225,3 +225,11 @@ std::shared_ptr<TasToolParams> CheckTool::ParseParams(std::vector<std::string> v
 
 	return std::make_shared<CheckToolParams>(pos, ang, vel, veldir, holding, posepsilon ? *posepsilon : DEFAULT_POS_EPSILON, angepsilon ? *angepsilon : DEFAULT_ANG_EPSILON, velepsilon ? *velepsilon : DEFAULT_VEL_EPSILON);
 }
+
+std::shared_ptr<TasTool> CheckTool::makeCopy() {
+	return std::make_shared<CheckTool>(*this);
+}
+
+void CheckTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(CheckTool *)other.get();
+}

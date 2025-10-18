@@ -11,6 +11,13 @@ struct UseToolParams : public TasToolParams {
 		: TasToolParams(enabled)
 		, spam(spam) {
 	}
+
+	inline bool operator==(TasToolParams& rhs_base) {
+		auto rhs = *dynamic_cast<UseToolParams *>(&rhs_base);
+		return TasToolParams::operator==(rhs) 
+			&& std::tie(this->spam) 
+			== std::tie(rhs.spam);
+	}
 };
 
 class UseTool : public TasToolWithParams<UseToolParams> {
@@ -20,6 +27,8 @@ public:
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
+	virtual std::shared_ptr<TasTool> makeCopy();
+	virtual void fromCopy(std::shared_ptr<TasTool>);
 
 private:
 	bool hasPressedLastTick = false;

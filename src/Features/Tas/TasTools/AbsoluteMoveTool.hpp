@@ -14,6 +14,14 @@ struct AbsoluteMoveToolParams : public TasToolParams {
 		, direction(direction)
 		, strength(strength) {
 	}
+
+	inline bool operator==(TasToolParams& rhs_base) {
+		auto rhs = *dynamic_cast<AbsoluteMoveToolParams *>(&rhs_base);
+		return TasToolParams::operator==(rhs) 
+			&& std::tie(this->direction, this->strength) 
+			== std::tie(rhs.direction, rhs.strength);
+	}
+
 };
 
 class AbsoluteMoveTool : public TasToolWithParams<AbsoluteMoveToolParams> {
@@ -23,6 +31,8 @@ public:
 	AbsoluteMoveTool(int slot) : TasToolWithParams("absmov", POST_PROCESSING, slot) {};
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
+	virtual std::shared_ptr<TasTool> makeCopy();
+	virtual void fromCopy(std::shared_ptr<TasTool>);
 };
 
 extern AbsoluteMoveTool tasAbsoluteMoveTool[2];

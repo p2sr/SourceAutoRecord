@@ -33,3 +33,11 @@ std::shared_ptr<TasToolParams> StopTool::ParseParams(std::vector<std::string> vp
 
 	return std::make_shared<StopToolParams>(true);
 }
+
+std::shared_ptr<TasTool> StopTool::makeCopy() {
+	return std::make_shared<StopTool>(*this);
+}
+
+void StopTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(StopTool *)other.get();
+}

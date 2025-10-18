@@ -725,3 +725,11 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 
 	return std::make_shared<AutoStrafeParams>(type, dir, speed, noPitchLock, antiSpeedLock, turnRate, force);
 }
+
+std::shared_ptr<TasTool> AutoStrafeTool::makeCopy() {
+	return std::make_shared<AutoStrafeTool>(*this);
+}
+
+void AutoStrafeTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(AutoStrafeTool *)other.get();
+}

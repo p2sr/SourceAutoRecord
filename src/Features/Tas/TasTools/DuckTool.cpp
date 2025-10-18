@@ -49,3 +49,11 @@ std::shared_ptr<TasToolParams> DuckTool::ParseParams(std::vector<std::string> vp
 
 	return std::make_shared<DuckToolParams>(enabled, time);
 }
+
+std::shared_ptr<TasTool> DuckTool::makeCopy() {
+	return std::make_shared<DuckTool>(*this);
+}
+
+void DuckTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(DuckTool *)other.get();
+}

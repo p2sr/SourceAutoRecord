@@ -22,6 +22,13 @@ struct SetAngleParams : public TasToolParams {
 
 	int easingTicks;
 	AngleToolsUtils::EasingType easingType;
+
+	inline bool operator==(TasToolParams& rhs_base) {
+		auto rhs = *dynamic_cast<SetAngleParams *>(&rhs_base);
+		return TasToolParams::operator==(rhs) 
+			&& std::tie(this->target, this->pitch, this->yaw, this->easingTicks, this->easingType) 
+			== std::tie(rhs.target, rhs.pitch, rhs.yaw, rhs.easingTicks, rhs.easingType);
+	}
 };
 
 class SetAngleTool : public TasToolWithParams<SetAngleParams> {
@@ -34,4 +41,6 @@ public:
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
+	virtual std::shared_ptr<TasTool> makeCopy();
+	virtual void fromCopy(std::shared_ptr<TasTool>);
 };

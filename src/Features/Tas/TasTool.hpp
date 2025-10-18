@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "Modules/Console.hpp"
+
 // A bunch of stuff accidentally used sin/cos directly, which led to
 // inconsistent scripts between Windows and Linux since Windows has
 // overloads for some functions. These helper macros dispatch to
@@ -20,6 +22,10 @@ struct TasToolParams {
 	TasToolParams() {}
 	TasToolParams(bool enabled)
 		: enabled(enabled) {}
+
+	virtual inline bool operator==(TasToolParams& rhs) {
+		return this->enabled == rhs.enabled;
+	}
 };
 
 struct TasFramebulk;
@@ -49,6 +55,8 @@ public:
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>) = 0;
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) = 0;
 	virtual void Reset() = 0;
+	virtual std::shared_ptr<TasTool> makeCopy() = 0;
+	virtual void fromCopy(std::shared_ptr<TasTool>) = 0;
 	virtual void SetParams(std::shared_ptr<TasToolParams> params);
 
 public:
@@ -90,4 +98,8 @@ public:
 		, params(params) {}
 
 	~TasToolCommand() {}
+
+	inline bool operator==(const TasToolCommand& rhs) const {
+		return this->tool->GetName() == rhs.tool->GetName() && *this->params.get() == *rhs.params.get();
+	};
 };

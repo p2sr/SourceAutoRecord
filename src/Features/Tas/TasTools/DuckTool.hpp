@@ -11,6 +11,13 @@ struct DuckToolParams : public TasToolParams {
 	}
 
 	int time = 0;
+
+	inline bool operator==(TasToolParams& rhs_base) {
+		auto rhs = *dynamic_cast<DuckToolParams *>(&rhs_base);
+		return TasToolParams::operator==(rhs) 
+			&& std::tie(this->time) 
+			== std::tie(rhs.time);
+	}
 };
 
 class DuckTool : public TasToolWithParams<DuckToolParams> {
@@ -21,6 +28,8 @@ public:
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
+	virtual std::shared_ptr<TasTool> makeCopy();
+	virtual void fromCopy(std::shared_ptr<TasTool>);
 
 private:
 	int elapsedTicks;

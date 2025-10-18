@@ -47,3 +47,11 @@ std::shared_ptr<TasToolParams> ZoomTool::ParseParams(std::vector<std::string> vp
 
 	return std::make_shared<ZoomToolParams>(true, type);
 }
+
+std::shared_ptr<TasTool> ZoomTool::makeCopy() {
+	return std::make_shared<ZoomTool>(*this);
+}
+
+void ZoomTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(ZoomTool *)other.get();
+}

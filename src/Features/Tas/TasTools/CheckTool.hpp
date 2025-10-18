@@ -26,6 +26,13 @@ struct CheckToolParams : public TasToolParams {
 	float posepsilon;
 	float angepsilon;
 	float velepsilon;
+
+	inline bool operator==(TasToolParams& rhs_base) {
+		auto rhs = *dynamic_cast<CheckToolParams *>(&rhs_base);
+		return TasToolParams::operator==(rhs) && this->ang == rhs.ang
+			&& std::tie(this->pos, this->vel, this->veldir, this->holding, this->posepsilon, this->angepsilon, this->velepsilon) 
+			== std::tie(rhs.pos, rhs.vel, rhs.veldir, rhs.holding, rhs.posepsilon, rhs.angepsilon, rhs.velepsilon);
+	}
 };
 
 class CheckTool : public TasToolWithParams<CheckToolParams> {
@@ -36,6 +43,8 @@ public:
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &info);
+	virtual std::shared_ptr<TasTool> makeCopy();
+	virtual void fromCopy(std::shared_ptr<TasTool>);
 };
 
 extern CheckTool tasCheckTool[2];

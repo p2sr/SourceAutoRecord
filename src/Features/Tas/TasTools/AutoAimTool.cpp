@@ -130,3 +130,11 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	//bulk.moveAnalog.x = cosf(yawRaw) * oldMove.x - sinf(yawRaw) * oldMove.y;
 	//bulk.moveAnalog.y = sinf(yawRaw) * oldMove.x + cosf(yawRaw) * oldMove.y;
 }
+
+std::shared_ptr<TasTool> AutoAimTool::makeCopy() {
+	return std::make_shared<AutoAimTool>(*this);
+}
+
+void AutoAimTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(AutoAimTool *)other.get();
+}

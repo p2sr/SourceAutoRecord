@@ -95,7 +95,15 @@ static void drawTraceInfo(int tick, int slot, const Trace &trace, std::function<
 	bool grounded = trace.grounded[slot][tick];
 	float velang = RAD2DEG(atan2(vel.y, vel.x));
 
-	drawCbk(Utils::ssprintf("tick: %d", usertick));
+	int hours = usertick / (60*60*60);
+	int minutes = (usertick / (60*60)) - hours*60;
+	float secs = ((float)usertick / 60) - minutes*60;
+
+	auto hours_str = Utils::ssprintf(hours ? "%dh": "", hours);
+	auto minutes_str = Utils::ssprintf((hours || minutes) ? "%dm": "", minutes);
+	auto secs_str = Utils::ssprintf("%.3fs", secs);
+
+	drawCbk(Utils::ssprintf("tick: %d (%s%s%s)", usertick, hours_str.c_str(), minutes_str.c_str(), secs_str.c_str()));
 	drawCbk(Utils::ssprintf("pos: %.*f %.*f %.*f", p, pos.x, p, pos.y, p, pos.z));
 	drawCbk(Utils::ssprintf("eyepos: %.*f %.*f %.*f", p, eyepos.x, p, eyepos.y, p, eyepos.z));
 	drawCbk(Utils::ssprintf("ang: %.*f %.*f %.*f", p, ang.x, p, ang.y, p, ang.z));

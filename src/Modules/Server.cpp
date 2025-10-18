@@ -281,6 +281,11 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 		Vector pos = server->GetAbsOrigin(thisptr);
 		Vector eye_pos = pos + server->GetViewOffset(thisptr) + server->GetPortalLocal(thisptr).m_vEyeOffset;
 		tasPlayer->DumpPlayerInfo(slot, tasTick, pos, eye_pos, cmd->viewangles);
+	} else if (sar_tas_replay_on_change.GetBool()) {
+		g_playerRunCommandHook.Disable();
+		// idk if it's necessary to run the prediction in PlayerRunCommand, but it can't hurt right?
+		tasPlayer->StartFromFirstChange(thisptr, cmd, moveHelper);
+		g_playerRunCommandHook.Enable();
 	}
 
 	Cheats::AutoStrafe(slot, thisptr, cmd);
@@ -925,6 +930,12 @@ bool Server::Init() {
 			console->Warning("Failed to unblock chat. insn was %02X\n", *(char *)insn_addr);
 		}
 	}
+
+	// find the pos getters and setters
+	RealGetAbsOrigin = (_RealGetAbsOrigin)Memory::Scan(this->Name(), Offsets::GetAbsOrigin);
+	SetAbsOrigin = (_SetAbsOrigin)Memory::Scan(this->Name(), Offsets::SetAbsOrigin);
+	
+	if (!RealGetAbsOrigin || !SetAbsOrigin) exit(1);
 
 	// find the TraceFirePortal function
 	TraceFirePortal = (_TraceFirePortal)Memory::Scan(this->Name(), Offsets::TraceFirePortal);

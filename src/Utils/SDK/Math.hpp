@@ -218,6 +218,12 @@ struct Bounds {
 
 struct QAngle {
 	float x, y, z;
+
+	inline bool operator==(const QAngle& rhs) const {
+		return this->x == rhs.x
+			&& this->y == rhs.y
+			&& this->z == rhs.z;
+	}
 };
 
 inline QAngle VectorToQAngle(const Vector &v) {

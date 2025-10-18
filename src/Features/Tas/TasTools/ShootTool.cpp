@@ -63,3 +63,11 @@ std::shared_ptr<TasToolParams> ShootTool::ParseParams(std::vector<std::string> v
 
 	return std::make_shared<ShootToolParams>(enabled, button, spam, hold);
 }
+
+std::shared_ptr<TasTool> ShootTool::makeCopy() {
+	return std::make_shared<ShootTool>(*this);
+}
+
+void ShootTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(ShootTool *)other.get();
+}

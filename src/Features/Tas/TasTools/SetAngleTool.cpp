@@ -93,3 +93,11 @@ std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string
 
 	return std::make_shared<SetAngleParams>(target, pitch, yaw, ticks, easingType);
 }
+
+std::shared_ptr<TasTool> SetAngleTool::makeCopy() {
+	return std::make_shared<SetAngleTool>(*this);
+}
+
+void SetAngleTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(SetAngleTool *)other.get();
+}

@@ -17,6 +17,13 @@ struct ZoomToolParams : public TasToolParams {
 	}
 
 	ZoomType zoomType = In;
+
+	inline bool operator==(TasToolParams& rhs_base) {
+		auto rhs = *dynamic_cast<ZoomToolParams *>(&rhs_base);
+		return TasToolParams::operator==(rhs) 
+			&& std::tie(this->zoomType) 
+			== std::tie(rhs.zoomType);
+	}
 };
 
 class ZoomTool : public TasToolWithParams<ZoomToolParams> {
@@ -27,6 +34,8 @@ public:
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
+	virtual std::shared_ptr<TasTool> makeCopy();
+	virtual void fromCopy(std::shared_ptr<TasTool>);
 };
 
 extern ZoomTool zoomTool[2];

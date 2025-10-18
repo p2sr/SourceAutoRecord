@@ -36,3 +36,11 @@ std::shared_ptr<TasToolParams> CommandTool::ParseParams(std::vector<std::string>
 
 	return std::make_shared<CommandToolParams>(true, command);
 }
+
+std::shared_ptr<TasTool> CommandTool::makeCopy() {
+	return std::make_shared<CommandTool>(*this);
+}
+
+void CommandTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(CommandTool *)other.get();
+}

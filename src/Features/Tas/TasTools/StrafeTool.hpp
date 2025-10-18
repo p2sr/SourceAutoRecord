@@ -25,11 +25,21 @@ struct AutoStrafeDirection {
 	AutoStrafeParamType type;
 	bool useVelAngle;
 	float angle;
+
+	inline bool operator==(const AutoStrafeDirection& rhs) {
+		return std::tie(this->type, this->useVelAngle, this->angle) 
+			== std::tie(rhs.type, rhs.useVelAngle, rhs.angle);
+	}
 };
 
 struct AutoStrafeSpeed {
 	AutoStrafeParamType type;
 	float speed;
+
+	inline bool operator==(const AutoStrafeSpeed& rhs) {
+		return std::tie(this->type, this->speed) 
+			== std::tie(rhs.type, rhs.speed);
+	}
 };
 
 
@@ -55,6 +65,15 @@ struct AutoStrafeParams : public TasToolParams {
 		, turnRate(turnRate)
 		, force(force) {
 	}
+
+	inline bool operator==(TasToolParams& rhs_base) {
+		auto rhs = *dynamic_cast<AutoStrafeParams *>(&rhs_base);
+		return TasToolParams::operator==(rhs)
+			&& this->strafeDir == rhs.strafeDir
+			&& this->strafeSpeed == rhs.strafeSpeed
+			&& std::tie(this->strafeType, this->noPitchLock, this->antiSpeedLock, this->turnRate, this->force) 
+			== std::tie(rhs.strafeType, rhs.noPitchLock, rhs.antiSpeedLock, rhs.turnRate, rhs.force);
+	}
 };
 
 
@@ -69,6 +88,8 @@ public:
 		: TasToolWithParams("strafe", POST_PROCESSING, slot) {};
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
+	virtual std::shared_ptr<TasTool> makeCopy();
+	virtual void fromCopy(std::shared_ptr<TasTool>);
 
 	Vector GetGroundFrictionVelocity(const TasPlayerInfo &player);
 	float GetMaxSpeed(const TasPlayerInfo &player, Vector wishDir, bool notAired = false);

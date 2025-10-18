@@ -16,6 +16,13 @@ struct LookToolParams : public TasToolParams {
 		, yawDelta(yawDelta) 
 		, time(time) {
 	}
+
+	inline bool operator==(TasToolParams& rhs_base) {
+		auto rhs = *dynamic_cast<LookToolParams *>(&rhs_base);
+		return TasToolParams::operator==(rhs) 
+			&& std::tie(this->pitchDelta, this->yawDelta, this->time) 
+			== std::tie(rhs.pitchDelta, rhs.yawDelta, rhs.time);
+	}
 };
 
 class LookTool : public TasToolWithParams<LookToolParams> {
@@ -26,6 +33,8 @@ public:
 		: TasToolWithParams("look", PRE_PROCESSING, slot) {};
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
+	virtual std::shared_ptr<TasTool> makeCopy();
+	virtual void fromCopy(std::shared_ptr<TasTool>);
 };
 
 extern LookTool tasLookTool[2];

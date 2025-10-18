@@ -60,3 +60,11 @@ std::shared_ptr<TasToolParams> DecelTool::ParseParams(std::vector<std::string> a
 
 	return std::make_shared<DecelParams>(targetVel);
 }
+
+std::shared_ptr<TasTool> DecelTool::makeCopy() {
+	return std::make_shared<DecelTool>(*this);
+}
+
+void DecelTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(DecelTool *)other.get();
+}

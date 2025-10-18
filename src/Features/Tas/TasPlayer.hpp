@@ -4,6 +4,7 @@
 #include "Features/Feature.hpp"
 #include "Features/Tas/TasController.hpp"
 #include "Features/Tas/TasTool.hpp"
+#include "Features/Tas/SavestateManager.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -77,6 +78,10 @@ private:
 	// used to cache last used framebulk to quickly access it for playback
 	unsigned currentRequestRawFramebulkIndex[2];
 
+
+	// Predictor stuff
+	SavestateManager savestates;
+
 public:
 	void Update();
 	void UpdateServer();
@@ -134,6 +139,9 @@ public:
 	TasPlaybackInfo previousPlaybackInfo;
 	TasPlaybackInfo playbackInfo;
 
+	// Prediction stuff
+	void StartFromFirstChange(void* player, CUserCmd *cmd, void *moveHelper);
+
 	TasPlayer();
 	~TasPlayer();
 };
@@ -144,3 +152,5 @@ extern Variable sar_tas_autosave_raw;
 extern Variable sar_tas_skipto;
 extern Variable sar_tas_pauseat;
 extern Variable sar_tas_playback_rate;
+
+extern Variable sar_tas_replay_on_change;

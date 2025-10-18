@@ -27,6 +27,13 @@ struct AutoAimParams : public TasToolParams {
 	Vector point;
 	int easingTicks;
 	AngleToolsUtils::EasingType easingType;
+
+	inline bool operator==(TasToolParams& rhs_base) {
+		auto rhs = *dynamic_cast<AutoAimParams *>(&rhs_base);
+		return TasToolParams::operator==(rhs) 
+			&& std::tie(this->entity, this->ent_selector, this->point, this->easingTicks, this->easingType) 
+			== std::tie(rhs.entity, rhs.ent_selector, rhs.point, rhs.easingTicks, rhs.easingType);
+	}
 };
 
 class AutoAimTool : public TasToolWithParams<AutoAimParams> {
@@ -39,4 +46,6 @@ public:
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
+	virtual std::shared_ptr<TasTool> makeCopy();
+	virtual void fromCopy(std::shared_ptr<TasTool>);
 };

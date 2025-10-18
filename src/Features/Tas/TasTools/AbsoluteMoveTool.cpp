@@ -75,3 +75,11 @@ std::shared_ptr<TasToolParams> AbsoluteMoveTool::ParseParams(std::vector<std::st
 
 	return std::make_shared<AbsoluteMoveToolParams>(angle, strength);
 }
+
+std::shared_ptr<TasTool> AbsoluteMoveTool::makeCopy() {
+	return std::make_shared<AbsoluteMoveTool>(*this);
+}
+
+void AbsoluteMoveTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(AbsoluteMoveTool *)other.get();
+}

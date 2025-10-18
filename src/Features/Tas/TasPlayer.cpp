@@ -1,6 +1,8 @@
 #include "TasPlayer.hpp"
 
+#include "Features/EntityList.hpp"
 #include "Features/Session.hpp"
+#include "Features/PlayerTrace.hpp"
 #include "Features/Tas/TasParser.hpp"
 #include "Features/Tas/TasTool.hpp"
 #include "Features/Tas/TasProtocol.hpp"
@@ -30,6 +32,11 @@ Variable sar_tas_skipto("sar_tas_skipto", "0", 0, "Fast-forwards the TAS playbac
 Variable sar_tas_playback_rate("sar_tas_playback_rate", "1.0", 0.02, "The rate at which to play back TAS scripts.\n");
 Variable sar_tas_restore_fps("sar_tas_restore_fps", "1", "Restore fps_max and host_framerate after TAS playback.\n");
 Variable sar_tas_interpolate("sar_tas_interpolate", "0", "Preserve client interpolation in TAS playback.\n");
+
+// Prediction
+Variable sar_tas_replay_on_change("sar_tas_replay_on_change", "0", "Continuously test for tas file changes");
+Variable sar_tas_replay_on_change_use_predict("sar_tas_replay_on_change_use_predict", "0", "Use prediction instead of replaying the tas");
+Variable sar_tas_max_predict_ticks("sar_tas_max_predict_ticks", "1000", 0, 10000, "Maximum number of ticks that can be simulated at once");
 
 TasPlayer *tasPlayer;
 
@@ -383,6 +390,7 @@ TasFramebulk &TasPlayer::RequestProcessedFramebulkAt(int slot, int tick) {
 	}
 
 	console->Warning("TAS processed framebulk for tick %d not found! This should not happen!\n", tick);
+	// FIXME: warning: control reaches end of non-void function (why is this only a warning? I hate cpp)
 }
 
 TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bool clientside) {
@@ -482,6 +490,124 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bo
 	}
 
 	return pi;
+}
+
+// Run the prediction from the savestate for the given number of ticks (bounded by the remaining ticks in the tas script)
+void TasPlayer::StartFromFirstChange(void* player, CUserCmd *cmd, void *moveHelper) {
+	if (engine->IsGamePaused()) return;
+
+	int diff_tick;
+	// Reload tas script
+	if (playbackInfo.GetMainScript().loadedFromFile) {
+		std::string script_name = playbackInfo.slots[0].name;
+		std::string filePath(std::string(TAS_SCRIPTS_DIR) + "/" + script_name + "." + TAS_SCRIPT_EXT);
+		
+		// Check update time (this is maybe not the most optimal way to do this, but it's only 60 times/s so whatever)
+		static std::filesystem::file_time_type last_file_update_time = std::filesystem::last_write_time(std::filesystem::path(filePath));
+		auto update_time = std::filesystem::last_write_time(std::filesystem::path(filePath));
+		if (update_time > last_file_update_time) {
+			last_file_update_time = update_time;
+		} else return;
+		
+		try {
+			TasScript script0;
+			script0.name = script_name;
+			TasParser::ParseFile(script0, filePath);
+			
+			// Find first differing tick
+			diff_tick = playbackInfo.slots[0].FirstDifference(&script0);
+			if (diff_tick == -2) {
+				console->Print("Cannot replay with prediction: you must replay the tas fully\n");
+				return;
+			} else if (diff_tick == -1) {
+				// No difference in script
+				return;
+			}
+
+			playbackInfo.slots[0] = script0;
+		} catch (TasParserException &e) {
+			// This is only prediction, we don't want to return parse errors when
+			// the user is in the middle of writing stuff
+			return;
+		}
+
+		lastTick = 0;
+		for (int slot = 0; slot < 2; ++slot) {
+			for (TasFramebulk fb : playbackInfo.slots[slot].framebulks) {
+				if (fb.tick > lastTick) {
+					lastTick = fb.tick;
+				}
+			}
+			for (TasTool *tool : TasTool::GetList(slot)) {
+				tool->Reset();
+			}
+		}
+
+		for (int slot = 0; slot < 2; ++slot) {
+			playbackInfo.slots[slot].ClearGeneratedContent();
+			currentRequestRawFramebulkIndex[slot] = 0;
+			tasControllers[slot]->Enable();
+		}
+
+	}
+
+	// Save the player current's info, so that we can restore it after the prediction
+	auto player_backup = SavestateManager::GetSavestate(GET_SLOT(), cmd);
+	auto tickbase = FetchCurrentPlayerTickBase(player); // Sometimes used to adjust playback
+
+	// Restore savestate
+	auto slot = 0; // TODO: select correct slot
+	int margin = 50; // TODO: make a sar variable?
+	auto start_tick = this->savestates.RestoreSavestateBefore(slot, std::max(diff_tick - margin, 0), cmd);
+	if (start_tick == -1) {
+		// If there is no savestate with the given margin, try without the margin
+		start_tick = this->savestates.RestoreSavestateBefore(slot, diff_tick, cmd);
+		if (start_tick == -1) {
+			console->Print("Cannot replay with prediction: Modification was too early and no suitable savestate was found\n");
+			return;
+		}
+	}
+
+	ready = true;
+	active = true;
+	// Adjust tickbase
+	SE(player)->template field<int>("m_nTickBase") = tickbase;
+	this->startTick = tickbase - start_tick;
+	
+	if (!sar_tas_replay_on_change_use_predict.GetBool()) {
+		// Bug: the trace tick is 1 less than it should be for replay, but not for prediction
+		playerTrace->Clear("replay");
+		sar_trace_record.SetValue("replay");
+		this->currentTick = start_tick + 1;
+		tasPlayer->PostProcess(slot, player, cmd);
+		return;
+	}
+
+	// player trace
+	std::string old_trace(sar_trace_record.GetString());
+	playerTrace->Clear("prediction");
+	sar_trace_record.SetValue("prediction");
+
+	// Do prediction
+	int last_predict_tick = std::min(lastTick, start_tick + sar_tas_max_predict_ticks.GetInt());
+	for (this->currentTick = start_tick; this->currentTick < last_predict_tick; this->currentTick++) {
+		// The second argument is unused, so just O, who care
+		tasPlayer->PostProcess(slot, player, cmd);
+		Server::PlayerRunCommand(player, cmd, moveHelper);
+		tasControllers[slot]->ControllerMove(slot, 0, cmd);
+		// TODO: perhaps we need to do the thing done at engine.cpp:820 for portals
+	}
+
+	// restore player trace
+	sar_trace_record.SetValue(old_trace.c_str());
+
+	// restore player
+	SavestateManager::RestoreSavestate(slot, player_backup, cmd);
+	ready = false;
+	active = false;
+	for (int slot = 0; slot < 2; ++slot) {
+		tasControllers[slot]->Disable();
+	}
 }
 
 int TasPlayer::FetchCurrentPlayerTickBase(void *player, bool clientside) {
@@ -670,6 +796,10 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	// player tickbase seems to be an accurate way of getting current time in ProcessMovement
 	// every other way of getting time is incorrect due to alternateticks
 	int tasTick = FetchCurrentPlayerTickBase(player) - startTick;
+	
+	if ((tasTick - 6) % 60 == 0) {
+		this->savestates.MakeSavestate(slot, tasTick, cmd);
+	}
 
 	TasFramebulk& fb = RequestProcessedFramebulkAt(slot, tasTick);
 
@@ -890,13 +1020,14 @@ void TasPlayer::Update() {
 		}
 
 		// make sure all ticks are processed by tools before stopping
-		bool s0done = (playbackInfo.slots[0].IsRaw() && currentTick > lastTick) || (int)playbackInfo.slots[0].processedFramebulks.size() > lastTick;
-		bool s1done = !playbackInfo.IsCoop() || (playbackInfo.slots[1].IsRaw() && currentTick > lastTick) || (int)playbackInfo.slots[1].processedFramebulks.size() > lastTick;
-		if ((s0done && s1done) || (!session->isRunning && startTick != -1)) {
-			Stop();
-		}
+		// bool s0done = (playbackInfo.slots[0].IsRaw() && currentTick > lastTick) || (int)playbackInfo.slots[0].processedFramebulks.size() > lastTick;
+		// bool s1done = !playbackInfo.IsCoop() || (playbackInfo.slots[1].IsRaw() && currentTick > lastTick) || (int)playbackInfo.slots[1].processedFramebulks.size() > lastTick;
+		// if ((s0done && s1done) || (!session->isRunning && startTick != -1)) {
+		// 	Stop();
+		// }
 		// also do not allow inputs after TAS has ended
 		if (currentTick > lastTick) {
+			Stop();
 			tasControllers[0]->Disable();
 			tasControllers[1]->Disable();
 		}

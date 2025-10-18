@@ -32,6 +32,9 @@ public:
 	using _SetKeyValueFloat = bool(__rescall *)(void *, void *, const char *, float);
 	using _SetKeyValueVector = bool(__rescall *)(void *, void *, const char *, const Vector &);
 
+	using _RealGetAbsOrigin = Vector&(__cdecl *)(void*);
+	using _SetAbsOrigin = void(__cdecl *)(void*, Vector*);
+
 	_UTIL_PlayerByIndex UTIL_PlayerByIndex = nullptr;
 	_GetAllServerClasses GetAllServerClasses = nullptr;
 	_IsRestoring IsRestoring = nullptr;
@@ -44,6 +47,9 @@ public:
 	_AcceptInput AcceptInput = nullptr;
 	_TraceFirePortal TraceFirePortal = nullptr;
 	_FindPortal FindPortal = nullptr;
+
+	_RealGetAbsOrigin RealGetAbsOrigin = nullptr;
+	_SetAbsOrigin SetAbsOrigin = nullptr;
 
 	CGlobalVars *gpGlobals = nullptr;
 	CEntInfo *m_EntPtrArray = nullptr;

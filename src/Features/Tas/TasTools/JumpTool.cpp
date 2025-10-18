@@ -68,3 +68,12 @@ std::shared_ptr<TasToolParams> JumpTool::ParseParams(std::vector<std::string> vp
 
 	return std::make_shared<JumpToolsParams>(enabled, ducked);
 }
+
+
+std::shared_ptr<TasTool> JumpTool::makeCopy() {
+	return std::make_shared<JumpTool>(*this);
+}
+
+void JumpTool::fromCopy(std::shared_ptr<TasTool> other) {
+	*this = *(JumpTool *)other.get();
+}
