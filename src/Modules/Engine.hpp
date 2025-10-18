@@ -301,7 +301,7 @@ bool Engine::TraceFromCamera(float distMax, int mask, CGameTrace &tr) {
 		return false;
 
 	Vector camPos = serverside ? server->GetAbsOrigin(player) + server->GetViewOffset(player) : client->GetAbsOrigin(player) + client->GetViewOffset(player);
-	QAngle angle = engine->GetAngles(GET_SLOT());
+	QAngle angle = engine->GetAngles(engine->IsOrange() ? 0 : GET_SLOT());
 
 	CTraceFilterSimple filter;
 	filter.SetPassEntity(player);
