@@ -68,38 +68,8 @@ bool Crosshair::GetCurrentSize(int &xSize, int &ySize) {
 }
 
 bool Crosshair::IsSurfacePortalable() {
-	void *player = server->GetPlayer(GET_SLOT() + 1);
-
-	if (player == nullptr || (int)player == -1)
-		return false;
-
-	Vector camPos = server->GetAbsOrigin(player) + server->GetViewOffset(player);
-
-	QAngle angle = engine->GetAngles(GET_SLOT());
-
-	float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);
-	auto cosX = std::cos(X), cosY = std::cos(Y);
-	auto sinX = std::sin(X), sinY = std::sin(Y);
-
-	Vector dir(cosY * cosX, sinY * cosX, -sinX);
-
-	Vector finalDir = Vector(dir.x, dir.y, dir.z).Normalize() * 65536.0;
-
-	Ray_t ray;
-	ray.m_IsRay = true;
-	ray.m_IsSwept = true;
-	ray.m_Start = VectorAligned(camPos.x, camPos.y, camPos.z);
-	ray.m_Delta = VectorAligned(finalDir.x, finalDir.y, finalDir.z);
-	ray.m_StartOffset = VectorAligned();
-	ray.m_Extents = VectorAligned();
-
-	CTraceFilterSimple filter;
-	filter.SetPassEntity(server->GetPlayer(GET_SLOT() + 1));
-
 	CGameTrace tr;
-	engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_SHOT_PORTAL, &filter, &tr);
-
-	if (tr.fraction >= 1) {
+	if (!engine->TraceFromCamera<false>(65536.0, MASK_SHOT_PORTAL, tr)) {
 		return false;
 	}
 

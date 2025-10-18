@@ -419,10 +419,10 @@ void GhostEntity::FollowPov(ViewSetup *view) {
 		// want to view from; that way, we can avoid the camera clipping
 		// into a wall
 
-		void *player = server->GetPlayer(1);
+		void *player = client->GetPlayer(GET_SLOT() + 1);
 		if (!player) return; // Probably shouldn't ever happen
 
-		angles = engine->GetAngles(0);
+		angles = engine->GetAngles(GET_SLOT());
 
 		CTraceFilterSimple filter;
 		filter.SetPassEntity(player);
@@ -445,7 +445,7 @@ void GhostEntity::FollowPov(ViewSetup *view) {
 
 		CGameTrace tr;
 
-		engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_SOLID_BRUSHONLY, &filter, &tr);
+		engine->TraceRayClient(engine->engineTraceClient->ThisPtr(), ray, MASK_SOLID_BRUSHONLY, &filter, &tr);
 
 		Vector campos = tr.endpos + forward * cam_wall_dist;
 
@@ -464,7 +464,7 @@ void GhostEntity::StopFollowing() {
 	r_portalsopenall.SetValue(r_portalsopenall_value);
 	r_drawviewmodel.SetValue(r_drawviewmodel_value);
 	crosshairVariable.SetValue(crosshair_value);
-	void *player = server->GetPlayer(1);
+	void *player = server->GetPlayer(GET_SLOT() + 1);
 	if (player) {
 		SE(player)->field<int>("m_fFlags") &= ~FL_GODMODE;
 		SE(player)->field<int>("m_fFlags") &= ~FL_NOTARGET;
@@ -690,12 +690,12 @@ ON_EVENT(PRE_TICK) {
 	GhostEntity *ghost = GhostEntity::GetFollowTarget();
 	if (!ghost) return;
 
-	void *player = server->GetPlayer(1);
+	void *player = server->GetPlayer(GET_SLOT() + 1);
 	if (!player) return;
 
 	// We use ent_setpos to prevent 'setpos into world' errors being
 	// spewed in console
-	auto cmd = Utils::ssprintf("ent_setpos 1 %.6f %.6f %.6f", ghost->data.position.x, ghost->data.position.y, ghost->data.position.z);
+	auto cmd = Utils::ssprintf("ent_setpos %d %.6f %.6f %.6f", GET_SLOT() + 1, ghost->data.position.x, ghost->data.position.y, ghost->data.position.z);
 	engine->ExecuteCommand(cmd.c_str());
 
 	// Make sure we have godmode so we can't die while spectating someone

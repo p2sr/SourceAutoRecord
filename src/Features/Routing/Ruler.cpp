@@ -87,19 +87,7 @@ void RulerManager::UpdateCreator() {
 	dir *= sar_ruler_max_trace_dist.GetFloat();
 
 	CGameTrace tr;
-
-	Ray_t ray;
-	ray.m_IsRay = true;
-	ray.m_IsSwept = true;
-	ray.m_Start = VectorAligned(cam_pos.x, cam_pos.y, cam_pos.z);
-	ray.m_Delta = VectorAligned(dir.x, dir.y, dir.z);
-	ray.m_StartOffset = VectorAligned();
-	ray.m_Extents = VectorAligned();
-
-	CTraceFilterSimple filter;
-	filter.SetPassEntity(server->GetPlayer(GET_SLOT() + 1));
-
-	engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_SHOT_PORTAL, &filter, &tr);
+	engine->TraceFromCamera<false>(sar_ruler_max_trace_dist.GetFloat(), MASK_SHOT_PORTAL, tr);
 
 	// valid trace
 	if (tr.plane.normal.Length() > 0.9) {

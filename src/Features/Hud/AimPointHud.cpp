@@ -47,33 +47,8 @@ static bool shouldDraw() {
 static bool updateTrace(int slot) {
 	if (!session->isRunning) return false;
 
-	void *player = server->GetPlayer(slot + 1);
-	if (!player) return false;
-
-	g_last_trace_valid = false;
-
-	Vector cam_pos;
-	QAngle cam_ang;
-	camera->GetEyePos<false>(GET_SLOT(), cam_pos, cam_ang);
-
-	Vector dir;
-	Math::AngleVectors(cam_ang, &dir);
-	dir *= TRACE_LENGTH;
-
 	CGameTrace tr;
-
-	Ray_t ray;
-	ray.m_IsRay = true;
-	ray.m_IsSwept = true;
-	ray.m_Start = VectorAligned(cam_pos.x, cam_pos.y, cam_pos.z);
-	ray.m_Delta = VectorAligned(dir.x, dir.y, dir.z);
-	ray.m_StartOffset = VectorAligned();
-	ray.m_Extents = VectorAligned();
-
-	CTraceFilterSimple filter;
-	filter.SetPassEntity(player);
-
-	engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_VISIBLE, &filter, &tr);
+	engine->TraceFromCamera<false>(TRACE_LENGTH, MASK_VISIBLE, tr);
 
 	g_last_trace = tr;
 	g_last_trace_valid = tr.plane.normal.Length() > 0.9;

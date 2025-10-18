@@ -8,7 +8,6 @@
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
-#include "Modules/Server.hpp"
 #include "Variable.hpp"
 
 Variable sar_seamshot_finder("sar_seamshot_finder", "0", 0, 1, "Enables or disables seamshot finder overlay.\n");
@@ -33,9 +32,9 @@ CGameTrace TracePortalShot(const Vector &start, const Vector &dir, float length)
 	ray.m_Extents = VectorAligned();
 
 	CTraceFilterSimple filter;
-	filter.SetPassEntity(server->GetPlayer(GET_SLOT() + 1));
+	filter.SetPassEntity(client->GetPlayer(GET_SLOT() + 1));
 
-	engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_SHOT_PORTAL, &filter, &tr);
+	engine->TraceRayClient(engine->engineTraceClient->ThisPtr(), ray, MASK_SHOT_PORTAL, &filter, &tr);
 
 	//hack
 	if (ray.m_Start.y == start.y) {
@@ -46,7 +45,7 @@ CGameTrace TracePortalShot(const Vector &start, const Vector &dir, float length)
 
 ON_EVENT(RENDER) {
 	if (sv_cheats.GetBool() && sar_seamshot_finder.GetBool()) {
-		void *player = server->GetPlayer(GET_SLOT() + 1);
+		void *player = client->GetPlayer(GET_SLOT() + 1);
 
 		if (player == nullptr || (int)player == -1)
 			return;

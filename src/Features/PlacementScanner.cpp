@@ -21,25 +21,9 @@
 static std::optional<CGameTrace> camTrace() {
 	if (!session->isRunning) return {};
 
-	void *player = server->GetPlayer(1);
-	if (!player) return {};
-
-	CTraceFilterSimple filter;
-	filter.SetPassEntity(player);
-
-	Vector cam = camera->GetPosition(GET_SLOT());
-	Vector delta = camera->GetForwardVector(GET_SLOT()) * TRACE_LENGTH;
-
-	Ray_t ray;
-	ray.m_IsRay = true;
-	ray.m_IsSwept = true;
-	ray.m_Start = VectorAligned(cam.x, cam.y, cam.z);
-	ray.m_Delta = VectorAligned(delta.x, delta.y, delta.z);
-	ray.m_StartOffset = VectorAligned();
-
 	CGameTrace tr;
 
-	engine->TraceRay(engine->engineTrace->ThisPtr(), ray, MASK_SHOT_PORTAL, &filter, &tr);
+	engine->TraceFromCamera<false>(TRACE_LENGTH, MASK_SHOT_PORTAL, tr);
 
 	return tr.plane.normal.Length() > 0.9 ? tr : std::optional<CGameTrace>{};
 }
