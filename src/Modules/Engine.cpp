@@ -262,46 +262,6 @@ bool Engine::IsSplitscreen() {
 	return false;
 }
 
-bool Engine::Trace(Vector &pos, QAngle &angle, float distMax, int mask, CTraceFilterSimple &filter, CGameTrace &tr) {
-	float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);
-	auto cosX = std::cos(X), cosY = std::cos(Y);
-	auto sinX = std::sin(X), sinY = std::sin(Y);
-
-	Vector dir(cosY * cosX, sinY * cosX, -sinX);
-
-	Vector finalDir = Vector(dir.x, dir.y, dir.z).Normalize() * distMax;
-
-	Ray_t ray;
-	ray.m_IsRay = true;
-	ray.m_IsSwept = true;
-	ray.m_Start = VectorAligned(pos.x, pos.y, pos.z);
-	ray.m_Delta = VectorAligned(finalDir.x, finalDir.y, finalDir.z);
-	ray.m_StartOffset = VectorAligned();
-	ray.m_Extents = VectorAligned();
-
-	engine->TraceRay(this->engineTrace->ThisPtr(), ray, mask, &filter, &tr);
-
-	if (tr.fraction >= 1) {
-		return false;
-	}
-	return true;
-}
-
-bool Engine::TraceFromCamera(float distMax, int mask, CGameTrace &tr) {
-	void *player = server->GetPlayer(GET_SLOT() + 1);
-
-	if (player == nullptr || (int)player == -1)
-		return false;
-
-	Vector camPos = server->GetAbsOrigin(player) + server->GetViewOffset(player);
-	QAngle angle = engine->GetAngles(GET_SLOT());
-
-	CTraceFilterSimple filter;
-	filter.SetPassEntity(server->GetPlayer(GET_SLOT() + 1));
-
-	return this->Trace(camPos, angle, distMax, mask, filter, tr);
-}
-
 ON_EVENT(PRE_TICK) {
 	if (!engine->demoplayer->IsPlaying()) {
 		if (sar_pause_at.GetInt() == -1 || (!sv_cheats.GetBool() && sar_pause_at.GetInt() > 0)) {
@@ -1056,6 +1016,10 @@ bool Engine::Init() {
 			this->TraceRay = this->engineTrace->Original<_TraceRay>(Offsets::TraceRay);
 			this->PointOutsideWorld = this->engineTrace->Original<_PointOutsideWorld>(Offsets::TraceRay + 14);
 		}
+
+		if (this->engineTraceClient = Interface::Create(this->Name(), "EngineTraceClient004")) {
+			this->TraceRayClient = this->engineTraceClient->Original<_TraceRay>(Offsets::TraceRay);
+		}
 	}
 
 	if (this->engineTool = Interface::Create(this->Name(), "VENGINETOOL003", false)) {
@@ -1214,7 +1178,7 @@ bool Engine::Init() {
 		Memory::CloseModuleHandle(bink_mod);
 	}
 
-	return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace;
+	return this->hasLoaded = this->engineClient && this->s_ServerPlugin && this->demoplayer && this->demorecorder && this->engineTrace && this->engineTraceClient;
 }
 void Engine::Shutdown() {
 	if (this->engineClient) {

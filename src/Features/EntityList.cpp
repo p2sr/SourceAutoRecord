@@ -255,7 +255,7 @@ CON_COMMAND(sar_ent_info, "sar_ent_info [selector] - show info about the entity 
 	} else {
 		CGameTrace tr;
 
-		if (engine->TraceFromCamera(8192, MASK_ALL, tr)) {
+		if (engine->TraceFromCamera<true>(8192, MASK_ALL, tr)) {
 			void *entity = tr.m_pEnt;
 			if (entity) {
 				dumpEntInfo(entity);

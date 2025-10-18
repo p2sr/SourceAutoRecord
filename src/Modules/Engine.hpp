@@ -4,6 +4,8 @@
 #include "EngineDemoRecorder.hpp"
 #include "Interface.hpp"
 #include "Module.hpp"
+#include "Modules/Client.hpp"
+#include "Modules/Server.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
 
@@ -17,6 +19,7 @@ public:
 	Interface *s_ServerPlugin = nullptr;
 	Interface *engineTool = nullptr;
 	Interface *engineTrace = nullptr;
+	Interface *engineTraceClient = nullptr;
 	Interface *g_VEngineServer = nullptr;
 
 	Interface *g_physCollision = nullptr;  // This is actually on the vphysics module but I don't care
@@ -88,6 +91,7 @@ public:
 	_DebugDrawPhysCollide DebugDrawPhysCollide = nullptr;
 	_IsPaused IsPaused = nullptr;
 	_TraceRay TraceRay = nullptr;
+	_TraceRay TraceRayClient = nullptr;
 	_PointOutsideWorld PointOutsideWorld = nullptr;
 	_GetCount GetCount = nullptr;
 	_Con_IsVisible Con_IsVisible = nullptr;
@@ -148,8 +152,8 @@ public:
 	bool IsOrange();
 	bool IsSplitscreen();
 	void RecordDemoData(void *data, size_t len);
-	bool Trace(Vector &pos, QAngle &angle, float distMax, int mask, CTraceFilterSimple &filter, CGameTrace &tr);
-	bool TraceFromCamera(float distMax, int mask, CGameTrace &tr);
+	template <bool serverside> bool Trace(Vector &pos, QAngle &angle, float distMax, int mask, CTraceFilterSimple &filter, CGameTrace &tr);
+	template <bool serverside> bool TraceFromCamera(float distMax, int mask, CGameTrace &tr);
 	bool ConsoleVisible();
 	void GetTicks(int &host, int &server, int &client);
 	void SetAdvancing(bool advancing);
@@ -262,3 +266,45 @@ extern int g_coop_pausable;
 #define NOW_STEADY() std::chrono::steady_clock::now()
 
 #define GET_ACTIVE_SPLITSCREEN_SLOT() engine->GetActiveSplitScreenPlayerSlot(nullptr)
+
+template <bool serverside>
+bool Engine::Trace(Vector &pos, QAngle &angle, float distMax, int mask, CTraceFilterSimple &filter, CGameTrace &tr) {
+	float X = DEG2RAD(angle.x), Y = DEG2RAD(angle.y);
+	auto cosX = std::cos(X), cosY = std::cos(Y);
+	auto sinX = std::sin(X), sinY = std::sin(Y);
+
+	Vector dir(cosY * cosX, sinY * cosX, -sinX);
+
+	Vector finalDir = Vector(dir.x, dir.y, dir.z).Normalize() * distMax;
+
+	Ray_t ray;
+	ray.m_IsRay = true;
+	ray.m_IsSwept = true;
+	ray.m_Start = VectorAligned(pos.x, pos.y, pos.z);
+	ray.m_Delta = VectorAligned(finalDir.x, finalDir.y, finalDir.z);
+	ray.m_StartOffset = VectorAligned();
+	ray.m_Extents = VectorAligned();
+
+	if (serverside) engine->TraceRay(this->engineTrace->ThisPtr(), ray, mask, &filter, &tr);
+	else engine->TraceRayClient(this->engineTraceClient->ThisPtr(), ray, mask, &filter, &tr);
+
+	if (tr.fraction >= 1) {
+		return false;
+	}
+	return true;
+}
+
+template <bool serverside>
+bool Engine::TraceFromCamera(float distMax, int mask, CGameTrace &tr) {
+	void *player = serverside ? (void *)server->GetPlayer(GET_SLOT() + 1) : (void *)client->GetPlayer(GET_SLOT() + 1);
+	if (player == nullptr || (int)player == -1)
+		return false;
+
+	Vector camPos = serverside ? server->GetAbsOrigin(player) + server->GetViewOffset(player) : client->GetAbsOrigin(player) + client->GetViewOffset(player);
+	QAngle angle = engine->GetAngles(GET_SLOT());
+
+	CTraceFilterSimple filter;
+	filter.SetPassEntity(player);
+
+	return this->Trace<serverside>(camPos, angle, distMax, mask, filter, tr);
+}
