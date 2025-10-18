@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Utils.hpp"  // technically only Utils/SDK/GameMovement.hpp needed
+#include "Features/Hud/PerformanceHud.hpp"
+#include "Modules/Engine.hpp"
 
 #include <functional>
 #include <string>
@@ -116,9 +118,11 @@ namespace Event {
 
 	template <EventType E>
 	void Trigger(EventData<E> data) {
+		auto start = NOW();
 		for (auto &cb : _g_eventCallbacks<E>) {
 			cb.cb(data);
 		}
+		performanceHud->AddVGuiMetric(std::string("event ") + typeid(data).name(), std::chrono::duration_cast<std::chrono::microseconds>(NOW() - start).count() / 1000000.0f);
 	}
 
 	template <EventType E>
