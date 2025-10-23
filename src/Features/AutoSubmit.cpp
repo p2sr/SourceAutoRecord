@@ -29,6 +29,7 @@
 #define OLD_API_KEY_FILE "autosubmit_key.txt"
 
 bool AutoSubmit::g_cheated = false;
+bool AutoSubmit::g_paused = false;
 std::string AutoSubmit::g_partner_name = "";
 
 ON_EVENT(SESSION_START) {
@@ -51,6 +52,7 @@ ON_EVENT(SESSION_START) {
 
 ON_EVENT(PRE_TICK) {
 	if (sv_cheats.GetBool()) AutoSubmit::g_cheated = true;
+	if (engine->IsGamePaused()) AutoSubmit::g_paused = true;
 }
 
 static std::string g_api_base;
@@ -578,6 +580,11 @@ CON_COMMAND_COMPLETION(sar_speedrun_get_mtriggers_map, "sar_speedrun_get_mtrigge
 void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
 	if (AutoSubmit::g_cheated) {
 		console->Print("Cheated; not autosubmitting\n");
+		return;
+	}
+
+	if (AutoSubmit::g_paused && engine->GetCurrentMapName() == "sp_a1_wakeup") {
+		console->Print("Pause Detected in wakeup (pause abuse is not allowed in CM); not autosubmitting\nManually submit this demo if you believe this was a mistake\n");
 		return;
 	}
 
