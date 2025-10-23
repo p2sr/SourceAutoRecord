@@ -1,7 +1,7 @@
 #include "StrafeTool.hpp"
 
 #include "../TasParser.hpp"
-#include "AutoJumpTool.hpp"
+#include "JumpTool.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Console.hpp"
 #include "Modules/Engine.hpp"
@@ -23,7 +23,7 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 
 	FOR_TAS_SCRIPT_VERSIONS_UNTIL(7) {
 		// handled by TasPlayer in newer versions
-		if (autoJumpTool[this->slot].GetCurrentParams().enabled) {
+		if (autoJumpTool[this->slot].GetCurrentParams().enabled || jumpTool[this->slot].GetCurrentParams().enabled) {
 			// if autojump is enabled, we're never grounded.
 			fakePlayerInfo.willBeGrounded = false;
 		}

@@ -12,7 +12,7 @@
 #include "Features/Routing/EntityInspector.hpp"
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Tas/TasParser.hpp"
-#include "Features/Tas/TasTools/AutoJumpTool.hpp"
+#include "Features/Tas/TasTools/JumpTool.hpp"
 #include "Features/Tas/TasTools/StrafeTool.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/WorkshopList.hpp"

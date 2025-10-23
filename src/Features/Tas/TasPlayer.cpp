@@ -17,7 +17,7 @@
 
 #include <climits>
 #include <fstream>
-#include "TasTools/AutoJumpTool.hpp"
+#include "TasTools/JumpTool.hpp"
 
 Variable sar_tas_debug("sar_tas_debug", "0", 0, 2, "Debug TAS information. 0 - none, 1 - basic, 2 - all.\n");
 Variable sar_tas_dump_usercmd("sar_tas_dump_usercmd", "0", "Dump TAS-generated usercmds to a file.\n");
@@ -427,7 +427,7 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bo
 
 	// predict the result of autojump tool so other tools can react appropriately.
 	FOR_TAS_SCRIPT_VERSIONS_SINCE(8) {
-		if (autoJumpTool[slot].GetCurrentParams().enabled && autoJumpTool[slot].ShouldJump(pi)) {
+		if (autoJumpTool[slot].WillJump(pi) || jumpTool[slot].WillJump(pi)) {
 			pi.willBeGrounded = false;
 		}
 	}
