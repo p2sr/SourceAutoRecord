@@ -52,7 +52,7 @@ ON_EVENT(SESSION_START) {
 
 ON_EVENT(PRE_TICK) {
 	if (sv_cheats.GetBool()) AutoSubmit::g_cheated = true;
-	if (engine->IsGamePaused()) AutoSubmit::g_paused = true;
+	if (engine->IsGamePaused() && SpeedrunTimer::IsRunning()) AutoSubmit::g_paused = true;
 }
 
 static std::string g_api_base;
