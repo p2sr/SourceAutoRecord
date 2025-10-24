@@ -350,8 +350,6 @@ DETOUR_T(const char *, Client::GetName) {
 	return Client::GetName(thisptr);
 }
 
-bool g_leaderboardOpen = false;
-bool g_leaderboardWillClose = false;
 DETOUR_COMMAND(Client::openleaderboard) {
 	Client::openleaderboard_callback(args);
 
@@ -466,7 +464,7 @@ ON_INIT {
 	NetMessage::RegisterHandler(LEADERBOARD_MESSAGE_TYPE, +[](const void *data, size_t size) {
 		// TODO: Investigate why this sometimes doesn't work - AMJ 2024-04-25
 		if (sar_disable_challenge_stats_hud_partner.GetBool()) {
-			g_leaderboardWillClose = true;
+			client->g_leaderboardWillClose = true;
 			engine->ExecuteCommand("-leaderboard");
 		} });
 }

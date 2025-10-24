@@ -72,8 +72,8 @@ public:
 	int *nNumSPChapters;
 	int *nNumMPChapters;
 
-	bool g_leaderboardOpen;
-	bool g_leaderboardWillClose;
+	bool g_leaderboardOpen = false;
+	bool g_leaderboardWillClose = false;
 
 	std::string lastLevelName;
 	void **gamerules;
