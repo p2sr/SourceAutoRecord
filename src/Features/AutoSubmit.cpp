@@ -54,7 +54,7 @@ ON_EVENT(SESSION_START) {
 
 ON_EVENT(PRE_TICK) {
 	if (sv_cheats.GetBool()) AutoSubmit::g_cheated = true;
-	if (engine->IsGamePaused() && SpeedrunTimer::IsRunning() && !(client->g_leaderboardOpen)) AutoSubmit::g_paused += 1;
+	if (engine->IsGamePaused() && SpeedrunTimer::IsRunning() && !client->g_leaderboardOpen) AutoSubmit::g_paused++;
 }
 
 static std::string g_api_base;
@@ -588,7 +588,7 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 	int allowedPauses = 0;
 	if (sar_disable_challenge_stats_hud.GetInt() != -1) allowedPauses = 1;
 	if (AutoSubmit::g_paused > allowedPauses && engine->GetCurrentMapName() == "sp_a1_wakeup") {
-		console->Print("Pause Detected in wakeup (pause abuse is not allowed in CM); not autosubmitting\nManually submit this demo if you believe this was a mistake\n");
+		console->Print("Pause detected in Wakeup (pause abuse is not allowed in CM); not autosubmitting\nManually submit this demo if you believe this was a mistake\n");
 		return;
 	}	
 	
