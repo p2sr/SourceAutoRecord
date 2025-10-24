@@ -350,18 +350,18 @@ DETOUR_T(const char *, Client::GetName) {
 	return Client::GetName(thisptr);
 }
 
-static bool g_leaderboardOpen = false;
-static bool g_leaderboardWillClose = false;
+bool g_leaderboardOpen = false;
+bool g_leaderboardWillClose = false;
 DETOUR_COMMAND(Client::openleaderboard) {
 	Client::openleaderboard_callback(args);
 
 	if (args.ArgC() == 2 && !strcmp(args[1], "4") && client->GetChallengeStatus() == CMStatus::CHALLENGE) {
-		g_leaderboardOpen = true;
+		client->g_leaderboardOpen = true;
 		auto ticks = 6;
 		if (sar_disable_challenge_stats_hud.GetInt() > 1) ticks = sar_disable_challenge_stats_hud.GetInt();
 		Scheduler::InHostTicks(ticks, []() {
-			if (sar.game->Is(SourceGame_Portal2) && sar_disable_challenge_stats_hud.GetInt() > 0 && (!engine->IsCoop() || engine->IsOrange() || g_leaderboardWillClose)) {
-				g_leaderboardWillClose = false;
+			if (sar.game->Is(SourceGame_Portal2) && sar_disable_challenge_stats_hud.GetInt() > 0 && (!engine->IsCoop() || engine->IsOrange() || client->g_leaderboardWillClose)) {
+				client->g_leaderboardWillClose = false;
 				engine->ExecuteCommand("-leaderboard");
 			}
 		});
@@ -480,8 +480,8 @@ DETOUR_COMMAND(Client::closeleaderboard) {
 
 	Client::closeleaderboard_callback(args);
 
-	if (g_leaderboardOpen) {
-		g_leaderboardOpen = false;
+	if (client->g_leaderboardOpen) {
+		client->g_leaderboardOpen = false;
 		NetMessage::SendMsg(LEADERBOARD_MESSAGE_TYPE, 0, 0);
 	}
 }
