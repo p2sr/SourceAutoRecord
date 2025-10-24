@@ -1,6 +1,7 @@
 #include "AutoSubmit.hpp"
 
 #include "../Games/Portal2.hpp"
+#include "../Modules/Client.hpp"
 #include "Cheats.hpp"
 #include "Command.hpp"
 #include "Event.hpp"
@@ -29,6 +30,7 @@
 #define OLD_API_KEY_FILE "autosubmit_key.txt"
 
 bool AutoSubmit::g_cheated = false;
+int AutoSubmit::g_paused = 0;
 std::string AutoSubmit::g_partner_name = "";
 
 ON_EVENT(SESSION_START) {
@@ -47,10 +49,12 @@ ON_INIT {
 
 ON_EVENT(SESSION_START) {
 	AutoSubmit::g_cheated = sv_cheats.GetBool();
+	AutoSubmit::g_paused = 0;
 }
 
 ON_EVENT(PRE_TICK) {
 	if (sv_cheats.GetBool()) AutoSubmit::g_cheated = true;
+	if (engine->IsGamePaused() && SpeedrunTimer::IsRunning() && !client->g_leaderboardOpen) AutoSubmit::g_paused++;
 }
 
 static std::string g_api_base;
@@ -581,6 +585,13 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 		return;
 	}
 
+	int allowedPauses = 0;
+	if (sar_disable_challenge_stats_hud.GetInt() != -1) allowedPauses = 1;
+	if (AutoSubmit::g_paused > allowedPauses && engine->GetCurrentMapName() == "sp_a1_wakeup") {
+		console->Print("Pause detected in Wakeup (pause abuse is not allowed in CM); not autosubmitting\nManually submit this demo if you believe this was a mistake\n");
+		return;
+	}	
+	
 #if defined(SAR_DEV_BUILD)
 	console->Print("Dev SAR build; not autosubmitting\n");
 	return;

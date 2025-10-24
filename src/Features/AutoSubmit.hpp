@@ -6,6 +6,7 @@
 
 namespace AutoSubmit {
 	extern bool g_cheated;
+	extern int g_paused;
 	extern std::string g_partner_name;
 
 	void LoadApiKey(bool output_nonexist);
