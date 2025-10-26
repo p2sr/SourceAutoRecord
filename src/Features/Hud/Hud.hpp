@@ -57,7 +57,6 @@ public:
 
 public:
 	void DrawElement(const char *fmt, ...);
-	void DrawElementOnScreen(const int nbElement, const float xPos, const float yPos, const char *fmt, ...);
 	void Reset(int slot);
 };
 
@@ -170,6 +169,7 @@ extern Variable sar_hud_font_index;
 extern Variable sar_hud_font_color;
 extern Variable sar_hud_precision;
 extern Variable sar_hud_shorthand;
+extern Variable sar_hud_align;
 extern QAngle g_bluePortalAngles[2];
 extern QAngle g_orangePortalAngles[2];
 extern bool g_hudPrecisionWarn;
