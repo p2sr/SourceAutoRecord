@@ -57,11 +57,11 @@ void AutoStrafeTool::Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 		this->updated = false;
 	}
 
-	bool shouldStrafe = true;
+	bool reachedTargetValues = false;
 	FOR_TAS_SCRIPT_VERSIONS_SINCE(8) {
-		shouldStrafe = !TryReachTargetValues(fb, fakePlayerInfo);
+		reachedTargetValues = TryReachTargetValues(fb, fakePlayerInfo);
 	}
-	if (shouldStrafe) {
+	if (!reachedTargetValues) {
 		ApplyStrafe(fb, fakePlayerInfo);
 	}
 
@@ -133,8 +133,8 @@ bool AutoStrafeTool::TryReachTargetValues(TasFramebulk &bulk, const TasPlayerInf
 
 	float playerYawRad = DEG2RAD(pInfo.angles.y);
 	float wishDirAngleRad = absoluteWishDirAngleRad - playerYawRad;
-	float forwardMove = cosf(wishDirAngleRad);
-    float sideMove = -sinf(wishDirAngleRad);
+	float forwardMove = cosf(wishDirAngleRad) * params.force;
+    float sideMove = -sinf(wishDirAngleRad) * params.force;
 
 	Vector velocityAfterMove = GetVelocityAfterMove(pInfo, forwardMove, sideMove);
 	Vector afterMoveDelta = velocityAfterMove - velocity;
@@ -172,7 +172,7 @@ void AutoStrafeTool::ApplyStrafe(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 		}
 	}
 
-	float angle = velAngle + RAD2DEG(this->GetStrafeAngle(pInfo, params));
+	float angle = velAngle + RAD2DEG(this->GetStrafeAngle(pInfo, params)) * params.turnRate;
 	
 	FOR_TAS_SCRIPT_VERSIONS_SINCE(8) {
 		// Deal with airlock: we're strafing, so always try to maximize how much
@@ -225,6 +225,8 @@ void AutoStrafeTool::ApplyStrafe(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 		QAngle newAngle = {0, angle + lookAngle, 0};
 		fb.viewAnalog.x -= newAngle.y - pInfo.angles.y;
 	}
+
+	fb.moveAnalog *= params.force;
 }
 
 // returns player's velocity after its been affected by ground friction
@@ -366,7 +368,7 @@ float AutoStrafeTool::GetFastestStrafeAngle(const TasPlayerInfo &player) {
 
 	if (velocity.Length2D() == 0) return 0;
 
-	Vector wishDir(0, 1);
+	Vector wishDir = Vector(0, 1) * params.force;
 	float maxSpeed = GetMaxSpeed(player, wishDir);
 	float maxAccel = GetMaxAccel(player, wishDir);
 
@@ -385,7 +387,8 @@ float AutoStrafeTool::GetTargetStrafeAngle(const TasPlayerInfo &player, float ta
 	float currentSpeed = vel.Length2D();
 	if (currentSpeed == 0) return 0;
 
-	float maxAccel = GetMaxAccel(player, {0, 1});
+	Vector wishDir = Vector(0, 1) * params.force;
+	float maxAccel = GetMaxAccel(player, wishDir);
 
 	// Assuming that it is possible to achieve a velocity of a given length,
 	// I'm using a law of cosines to get the right angle for acceleration.
@@ -425,7 +428,7 @@ float AutoStrafeTool::GetTurningStrafeAngle(const TasPlayerInfo &player) {
 
 	if (velocity.Length2D() == 0) return 0;
 
-	Vector wishDir(0, 1);
+	Vector wishDir = Vector(0, 1) * params.force;
 	float maxAccel = GetMaxAccel(player, wishDir);
 
 	// In order to maximize the angle between old and new velocity, the angle between
@@ -480,6 +483,9 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 			sidemove = sinOld(ang);
 		}
 
+		forwardmove *= params.force;
+		sidemove *= params.force;
+
 		float predictedVel = GetVelocityAfterMove(player, forwardmove, sidemove).Length2D();
 		if ((speedDiff > 0 && predictedVel > params.strafeSpeed.speed) || (speedDiff < 0 && predictedVel < params.strafeSpeed.speed)) {
 			passedTargetSpeed = true;
@@ -522,7 +528,7 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 		// using the math from max angle change strafing to determine whether
 		// line following is too "wobbly"
 		Vector velocity = GetGroundFrictionVelocity(pInfo);
-		float maxAccel = GetMaxAccel(pInfo, Vector(0, 1));
+		float maxAccel = GetMaxAccel(pInfo, Vector(0, 1) * params.force);
 		float maxRotAng = RAD2DEG(asinf(maxAccel / velocity.Length2D()));
 
 		// scale maxRotAng by surfaceFriction and make it slightly bigger, as the range
@@ -585,7 +591,7 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 			}
 
 			if (shouldPreventSpeedLock) {
-				Vector wishDir(0, 1);
+				Vector wishDir = Vector(0, 1) * params.force;
 				float maxSpeed = GetMaxSpeed(pInfo, wishDir);
 				float maxAccel = GetMaxAccel(pInfo, wishDir);
 
@@ -632,6 +638,8 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 	AutoStrafeSpeed speed = {SPECIFIED, maxSpeed};
 	bool noPitchLock = false;
 	bool antiSpeedLock = true;
+	float turnRate = 1.0f;
+	float force = 1.0f;
 
 	if (vp.size() == 0) {
 		return std::make_shared<AutoStrafeParams>();
@@ -658,6 +666,9 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 		} else if (param.size() > 3 && param.substr(param.size() - 3, 3) == "ups") {
 			speed.type = SPECIFIED;
 			speed.speed = TasParser::toFloat(param.substr(0, param.size() - 3));
+		} else if (param == "min") {
+			speed.type = SPECIFIED;
+			speed.speed = 0.0f;
 		}
 
 		//dir (using large numbers for left and right because angle is clamped to range -180 and 180)
@@ -686,10 +697,31 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 			antiSpeedLock = false;
 		}
 
+		//named value parameters
+		else if (param.find('=') != std::string::npos) {
+			size_t eqPos = param.find('=');
+			std::string key = param.substr(0, eqPos);
+			std::string value = param.substr(eqPos + 1);
+			
+			if (key == "turnrate") {
+				turnRate = TasParser::toFloat(value);
+			} else if (key == "force") {
+				force = TasParser::toFloat(value);
+			} else if (key == "velocity" || key == "vel") {
+				speed.type = SPECIFIED;
+				speed.speed = TasParser::toFloat(value);
+			} else if (key == "angle" || key == "ang") {
+				dir.angle = SPECIFIED;
+				dir.angle = TasParser::toFloat(value);
+			} else {
+				throw TasParserException(Utils::ssprintf("Unknown named parameter for tool %s: %s", this->GetName(), key.c_str()));
+			}
+		}
+
 		//unknown parameter...
 		else 
 			throw TasParserException(Utils::ssprintf("Bad parameter for tool %s: %s", this->GetName(), param.c_str()));
 	}
 
-	return std::make_shared<AutoStrafeParams>(type, dir, speed, noPitchLock, antiSpeedLock);
+	return std::make_shared<AutoStrafeParams>(type, dir, speed, noPitchLock, antiSpeedLock, turnRate, force);
 }
