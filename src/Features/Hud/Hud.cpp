@@ -404,11 +404,15 @@ HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | H
 	for (auto &t : sar_hud_text_vals) {
 		int x = ctx->xPadding;
 		int y = ctx->yPadding + ctx->elements * (ctx->fontSize + ctx->spacing);
+		int totalPixLen = 0;
+		for (auto &c : t.second.components) totalPixLen += surface->GetFontLength(ctx->font, "%s", c.text.c_str());
+		int align = sar_hud_align.GetInt();
+		int offset = !align ? 0 : align == 1 ? totalPixLen / 2 : totalPixLen;
 		if (t.second.draw) {
 			for (auto &c : t.second.components) {
 				Color color = c.color ? *c.color : t.second.defaultColor ? *t.second.defaultColor : ctx->textColor;
 				int pixLen = surface->GetFontLength(ctx->font, "%s", c.text.c_str());
-				surface->DrawTxt(ctx->font, x, y, color, "%s", c.text.c_str());
+				surface->DrawTxt(ctx->font, x - offset, y, color, "%s", c.text.c_str());
 				x += pixLen;
 			}
 
