@@ -49,7 +49,10 @@ static void DrawHudBackground(int slot, HudContext &ctx) {
 
 	if (width != 0) width += 4;
 
-	int x = ctx.xPadding - 2;
+	int align = sar_hud_align.GetInt();
+	int offset = !align ? 2 : align == 1 ? width / 2 : width - 3;
+
+	int x = ctx.xPadding - offset;
 	int y = ctx.yPadding - 2;
 
 	surface->DrawRect(Color{0, 0, 0, 192}, x, y, x + width, y + height);

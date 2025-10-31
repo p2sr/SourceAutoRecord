@@ -26,6 +26,7 @@ Variable sar_hud_x("sar_hud_x", "2", 0, "X padding of HUD.\n", FCVAR_DONTRECORD)
 Variable sar_hud_y("sar_hud_y", "2", 0, "Y padding of HUD.\n", FCVAR_DONTRECORD);
 Variable sar_hud_font_index("sar_hud_font_index", "0", 0, "Font index of HUD.\n", FCVAR_DONTRECORD);
 Variable sar_hud_font_color("sar_hud_font_color", "255 255 255 255", "RGBA font color of HUD.\n", FCVAR_DONTRECORD);
+Variable sar_hud_align("sar_hud_align", "0", 0, "Alignment of HUD. (0 = left, 1 = center, 2 = right).\n", FCVAR_DONTRECORD);
 
 Variable sar_hud_precision("sar_hud_precision", "2", 0, "Precision of HUD numbers.\n");
 Variable sar_hud_velocity_precision("sar_hud_velocity_precision", "2", 0, "Precision of velocity HUD numbers.\n");
@@ -204,26 +205,15 @@ void HudContext::DrawElement(const char *fmt, ...) {
 		if (colon) strcpy(data, colon + 2);
 	}
 
-	surface->DrawTxt(font, this->xPadding, this->yPadding + this->elements * (this->fontSize + this->spacing), this->textColor, data);
+	int align = sar_hud_align.GetInt();
+	int width = surface->GetFontLength(this->font, "%s", data);
+	int offset = !align ? 0 : align == 1 ? width / 2 : width;
+
+	surface->DrawTxt(font, this->xPadding - offset, this->yPadding + this->elements * (this->fontSize + this->spacing), this->textColor, data);
 
 	++this->elements;
 
-	int width = surface->GetFontLength(this->font, "%s", data);
 	if (width > this->maxWidth) this->maxWidth = width;
-}
-void HudContext::DrawElementOnScreen(const int groupID, const float xPos, const float yPos, const char *fmt, ...) {
-	va_list argptr;
-	va_start(argptr, fmt);
-	char data[128];
-	vsnprintf(data, sizeof(data), fmt, argptr);
-	va_end(argptr);
-
-	int pixLength = surface->GetFontLength(this->font, "%s", data);
-
-	surface->DrawTxt(font, xPos - pixLength / 2, yPos + this->group[groupID] * (this->fontSize + this->spacing), this->textColor, data);
-
-
-	++this->group[groupID];
 }
 
 void HudContext::Reset(int slot) {
@@ -414,11 +404,15 @@ HUD_ELEMENT2_NO_DISABLE(text, HudType_InGame | HudType_Paused | HudType_Menu | H
 	for (auto &t : sar_hud_text_vals) {
 		int x = ctx->xPadding;
 		int y = ctx->yPadding + ctx->elements * (ctx->fontSize + ctx->spacing);
+		int totalPixLen = 0;
+		for (auto &c : t.second.components) totalPixLen += surface->GetFontLength(ctx->font, "%s", c.text.c_str());
+		int align = sar_hud_align.GetInt();
+		int offset = !align ? 0 : align == 1 ? totalPixLen / 2 : totalPixLen;
 		if (t.second.draw) {
 			for (auto &c : t.second.components) {
 				Color color = c.color ? *c.color : t.second.defaultColor ? *t.second.defaultColor : ctx->textColor;
 				int pixLen = surface->GetFontLength(ctx->font, "%s", c.text.c_str());
-				surface->DrawTxt(ctx->font, x, y, color, "%s", c.text.c_str());
+				surface->DrawTxt(ctx->font, x - offset, y, color, "%s", c.text.c_str());
 				x += pixLen;
 			}
 

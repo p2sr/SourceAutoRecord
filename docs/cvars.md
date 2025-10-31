@@ -246,6 +246,7 @@
 |sar_give_fly|cmd|sar_give_fly [n] - gives the player in slot n (0 by default) preserved crouchfly.|
 |sar_groundframes_reset|cmd|sar_groundframes_reset - reset recorded groundframe statistics.|
 |sar_groundframes_total|cmd|sar_groundframes_total [slot] - output a summary of groundframe counts for the given player slot.|
+|sar_hud_align|0|Alignment of HUD. (0 = left, 1 = center, 2 = right).|
 |sar_hud_angles|0|Draws absolute view angles of the client.<br>0 = Default,<br>1 = XY,<br>2 = XYZ,<br>3 = X,<br>4 = Y.|
 |sar_hud_avg|0|Draws calculated average of timer.|
 |sar_hud_bg|0|Enable the SAR HUD background.|
