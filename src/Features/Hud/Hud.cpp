@@ -761,7 +761,11 @@ HUD_ELEMENT_MODE2(velang, "0", 0, 2,
 		ctx->DrawElement("velang: -");
 	}
 }
-HUD_ELEMENT2(groundspeed, "0", "Draw the speed of the player upon leaving the ground.\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+HUD_ELEMENT_MODE2(groundspeed, "0", 0, 2, "Draw the speed of the player upon leaving the ground.\n"
+				"0 = Default\n"
+				"1 = Groundspeed\n"
+				"2 = Groundspeed (Gain)\n", 
+				HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
 	static float speeds[2];
 	static float drawSpeeds[2];
 	static bool groundeds[2];
@@ -783,8 +787,12 @@ HUD_ELEMENT2(groundspeed, "0", "Draw the speed of the player upon leaving the gr
 		lastSpeeds[ctx->slot] = drawSpeeds[ctx->slot];
 		drawSpeeds[ctx->slot] = speeds[ctx->slot];
 	}
-
-	ctx->DrawElement("groundspeed: %.*f (%.*f)", getPrecision(true), drawSpeeds[ctx->slot], getPrecision(true), drawSpeeds[ctx->slot] - lastSpeeds[ctx->slot]);
+	if (mode == 2) {
+		ctx->DrawElement("groundspeed: %.*f (%.*f)", getPrecision(true), drawSpeeds[ctx->slot], getPrecision(true), drawSpeeds[ctx->slot] - lastSpeeds[ctx->slot]);
+	} else {
+		ctx->DrawElement("groundspeed: %.*f", getPrecision(true), drawSpeeds[ctx->slot]);
+	}
+	
 }
 QAngle g_bluePortalAngles[2];
 QAngle g_orangePortalAngles[2];
