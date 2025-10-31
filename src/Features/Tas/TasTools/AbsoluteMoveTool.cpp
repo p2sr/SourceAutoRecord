@@ -5,10 +5,7 @@
 #include "Features/Tas/TasParser.hpp"
 #include "MoveTool.hpp"
 
-AbsoluteMoveTool tasAbsoluteMoveTool[2] = {
-	{ "absmov", 0 },
-	{ "absmov", 1 },
-};
+AbsoluteMoveTool tasAbsoluteMoveTool[2] = { {0}, {1} };
 
 void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) {
 	if (!params.enabled)

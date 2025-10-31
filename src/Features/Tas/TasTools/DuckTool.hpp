@@ -16,7 +16,7 @@ struct DuckToolParams : public TasToolParams {
 class DuckTool : public TasToolWithParams<DuckToolParams> {
 public:
 	DuckTool(int slot)
-		: TasToolWithParams("duck", slot) {
+		: TasToolWithParams("duck", PRE_PROCESSING, slot) {
 	}
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);

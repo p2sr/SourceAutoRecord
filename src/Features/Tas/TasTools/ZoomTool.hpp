@@ -22,7 +22,7 @@ struct ZoomToolParams : public TasToolParams {
 class ZoomTool : public TasToolWithParams<ZoomToolParams> {
 public:
 	ZoomTool(int slot)
-		: TasToolWithParams("zoom", slot) {
+		: TasToolWithParams("zoom", PRE_PROCESSING, slot) {
 	}
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);

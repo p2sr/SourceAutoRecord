@@ -5,10 +5,7 @@
 #include "Modules/Server.hpp"
 #include "Features/Tas/TasParser.hpp"
 
-MoveTool tasMoveTool[2] = {
-	{ "move", 0 },
-	{ "move", 1 },
-};
+MoveTool tasMoveTool[2] = { {0}, {1} };
 
 const std::map<std::string, Vector> directionLookup = {
 	{"forward", Vector(0, 1)},

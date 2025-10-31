@@ -6,10 +6,7 @@
 
 #include <climits>
 
-LookTool tasLookTool[2] = {
-	{"look", 0},
-	{"look", 1}, 
-};
+LookTool tasLookTool[2] = { {0}, {1} };
 
 void LookTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) {
 	if (!params.enabled)

@@ -34,7 +34,7 @@ private:
 	int elapsedTicks;
 public:
 	AutoAimTool(int slot)
-		: TasToolWithParams("autoaim", slot)
+		: TasToolWithParams("autoaim", POST_PROCESSING, slot)
 		, elapsedTicks(0) {}
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);

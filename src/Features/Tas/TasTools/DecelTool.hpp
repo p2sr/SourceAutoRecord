@@ -17,7 +17,7 @@ struct DecelParams : public TasToolParams {
 class DecelTool : public TasToolWithParams<DecelParams> {
 public:
 	DecelTool(int slot)
-		: TasToolWithParams("decel", slot) {}
+		: TasToolWithParams("decel", POST_PROCESSING, slot) {}
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
 };

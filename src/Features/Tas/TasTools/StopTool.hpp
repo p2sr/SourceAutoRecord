@@ -13,7 +13,7 @@ struct StopToolParams : public TasToolParams {
 class StopTool : public TasToolWithParams<StopToolParams> {
 public:
 	StopTool(int slot)
-		: TasToolWithParams("stop", slot) {
+		: TasToolWithParams("stop", POST_PROCESSING, slot) {
 	}
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);

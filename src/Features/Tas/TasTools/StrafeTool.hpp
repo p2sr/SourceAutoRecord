@@ -66,7 +66,7 @@ private:
 	int lastTurnDir = 0;
 public:
 	AutoStrafeTool(int slot)
-		: TasToolWithParams("strafe", slot){};
+		: TasToolWithParams("strafe", POST_PROCESSING, slot) {};
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
 
