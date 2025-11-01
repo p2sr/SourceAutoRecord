@@ -136,6 +136,19 @@ TasPlayer::~TasPlayer() {
 	//framebulkQueue[1].clear();
 }
 
+bool TasPlayer::IsUsingTools() const {
+	if (!sar_tas_tools_enabled.GetBool()) {
+		return false;
+	}
+
+	if (sar_tas_tools_force.GetBool()) {
+		return true;
+	}
+
+	return (playbackInfo.slots[0].IsActive() && !playbackInfo.slots[0].IsRaw()) 
+		|| (playbackInfo.slots[1].IsActive() && !playbackInfo.slots[1].IsRaw());
+}
+
 void TasPlayer::Activate(TasPlaybackInfo info) {
 
 	if (!info.HasActiveSlot()) return;

@@ -89,10 +89,9 @@ public:
 	inline bool IsReady() const { return ready; };
 	inline bool IsRunning() const { return active && startTick != -1; }
 	inline bool IsPaused() const { return paused; }
-	inline bool IsUsingTools() const {
-		return (playbackInfo.slots[0].IsActive() && !playbackInfo.slots[0].IsRaw()) || (playbackInfo.slots[1].IsActive() && !playbackInfo.slots[1].IsRaw());
-	}
 	inline int GetScriptVersion(int slot) const { return playbackInfo.slots[slot].header.version; }
+
+	bool IsUsingTools() const;
 
 	void PlayFile(std::string slot0scriptPath, std::string slot1scriptPath);
 	void PlayScript(std::string slot0name, std::string slot0script, std::string slot1name, std::string slot1script);
