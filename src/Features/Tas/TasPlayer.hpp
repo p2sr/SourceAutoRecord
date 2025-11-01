@@ -123,6 +123,7 @@ public:
 	TasFramebulk SamplePreProcessedFramebulk(int slot, int tasTick, void *player, CUserCmd *cmd);
 	void PostProcess(int slot, void *player, CUserCmd *cmd);
 	void ApplyMoveAnalog(Vector moveAnalog, CUserCmd *cmd);
+	void UpdateTools(int slot, const TasFramebulk &fb, TasToolProcessingType processType);
 	void ApplyTools(TasFramebulk &fb, const TasPlayerInfo &pInfo, TasToolProcessingType processType);
 	bool CanProcessTool(TasTool *tool, TasToolProcessingType processType);
 	void DumpUsercmd(int slot, const CUserCmd *cmd, int tick, const char *source);

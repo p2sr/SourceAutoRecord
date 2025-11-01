@@ -601,8 +601,6 @@ static bool IsTaunting(ClientEnt *player) {
 }
 
 TasFramebulk TasPlayer::SamplePreProcessedFramebulk(int slot, int tasTick, void *player, CUserCmd *cmd) {
-
-	auto pInfo = GetPlayerInfo(slot, server->GetPlayer(slot + 1), cmd);
 	TasFramebulk& fb = RequestProcessedFramebulkAt(slot, tasTick);
 
 	auto fbTick = fb.tick;
@@ -636,6 +634,8 @@ TasFramebulk TasPlayer::SamplePreProcessedFramebulk(int slot, int tasTick, void 
 	}
 
 	if (IsUsingTools()) {
+		UpdateTools(slot, fb, PRE_PROCESSING);
+		auto pInfo = GetPlayerInfo(slot, server->GetPlayer(slot + 1), cmd);
 		ApplyTools(fb, pInfo, PRE_PROCESSING);
 
 		if (sar_tas_debug.GetInt() > 0) {
@@ -660,6 +660,7 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 
 	TasFramebulk& fb = RequestProcessedFramebulkAt(slot, tasTick);
 
+	UpdateTools(slot, fb, POST_PROCESSING);
 	auto playerInfo = GetPlayerInfo(slot, player, cmd);
 
 	float orig_forward = cmd->forwardmove;
@@ -782,14 +783,16 @@ void TasPlayer::ApplyMoveAnalog(Vector moveAnalog, CUserCmd *cmd) {
 	}
 }
 
-void TasPlayer::ApplyTools(TasFramebulk &fb, const TasPlayerInfo &pInfo, TasToolProcessingType processType) {
-	int slot = pInfo.slot;
-	
+void TasPlayer::UpdateTools(int slot, const TasFramebulk &fb, TasToolProcessingType processType) {
 	for (TasToolCommand cmd : fb.toolCmds) {
 		auto tool = TasTool::GetInstanceByName(slot, cmd.tool->GetName());
 		if (!CanProcessTool(tool, processType)) continue;
 		tool->SetParams(cmd.params);
 	}
+}
+
+void TasPlayer::ApplyTools(TasFramebulk &fb, const TasPlayerInfo &pInfo, TasToolProcessingType processType) {
+	int slot = pInfo.slot;
 
 	FOR_TAS_SCRIPT_VERSIONS_UNTIL(2) {
 		// use old "earliest first" ordering system (partially also present in TasTool::SetParams)
