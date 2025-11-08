@@ -27,20 +27,25 @@ CON_COMMAND(sar_sensitivity, "sar_sensitivity <cm/360> <dpi> - sets the sensitiv
 		// first two values of this area are lowkey not useful in this situation i think we just need the last one
 		int getMouseInfo[3];
 		int winMouseSens;
-		SystemParametersInfo(SPI_GETMOUSE, 0, &getMouseInfo, 0);
-		SystemParametersInfo(SPI_GETMOUSESPEED, 0, &winMouseSens, 0);
-		if (getMouseInfo[2]){
-			/* if true then Enhanced Pointer Performance is on.
-			* conveniently the multiplier when this is the case is just 1/10th the setting
-			* AS FAR AS I AM AWARE: this is how it essentially works, because at default setting (10, or 1.0)
-			* every dot the cursor is moved 1 pixel
-			* and such at non default values it is getting scaled
-			*/
-			dpi = dpi * (winMouseSens / 10);
+		bool mouseAccel = SystemParametersInfo(SPI_GETMOUSE, 0, &getMouseInfo, 0);
+		bool mouseSpeed = SystemParametersInfo(SPI_GETMOUSESPEED, 0, &winMouseSens, 0);
+		if (mouseAccel && mouseSpeed){
+			if (getMouseInfo[2]){
+				/* if true then Enhanced Pointer Performance is on.
+				* conveniently the multiplier when this is the case is just 1/10th the setting
+				* AS FAR AS I AM AWARE: this is how it essentially works, because at default setting (10, or 1.0)
+				* every dot the cursor is moved 1 pixel
+				* and such at non default values it is getting scaled
+				*/
+				dpi = dpi * (winMouseSens / 10);
+			} else {
+				// otherwise its easier to just look it up in this array
+				dpi = dpi * multiplierEnhancedOff[winMouseSens - 1];
+			}
 		} else {
-			// otherwise its easier to just look it up in this array
-			dpi = dpi * multiplierEnhancedOff[winMouseSens - 1];
+			console->Print("Could not retrieve windows mouse settings, sens may not be calculated correctly\n");
 		}
+		
 	}
 #endif
 
