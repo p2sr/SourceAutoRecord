@@ -11,9 +11,9 @@
 const float multiplierEnhancedOff[] = {0.03125, 0.0625, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5};
 
 CON_COMMAND(sar_sensitivity, "sar_sensitivity <cm/360> <dpi> - sets the sensitivity to the specified cm/360 value based on the supplied dpi value\n") {
-	auto sensitivity = Variable("sensitivity");
-	auto m_yaw = Variable("m_yaw");
-	auto m_rawinput = Variable("m_rawinput");
+	static auto sensitivity = Variable("sensitivity");
+	static auto m_yaw = Variable("m_yaw");
+	static auto m_rawinput = Variable("m_rawinput");
 	if (args.ArgC() != 3) {
 		return console->Print(sar_sensitivity.ThisPtr()->m_pszHelpString);
 	}
