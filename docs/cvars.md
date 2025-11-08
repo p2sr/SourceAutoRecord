@@ -261,7 +261,7 @@
 |sar_hud_ghost_spec|0|Show the name of the ghost you're currently spectating.|
 |sar_hud_grounded|0|Draws the state of player being on ground.|
 |sar_hud_groundframes|0|Draws the number of ground frames since last landing. Setting it to 2 preserves the value.|
-|sar_hud_groundspeed|0|Draw the speed of the player upon leaving the ground.|
+|sar_hud_groundspeed|0|Draw the speed of the player upon leaving the ground.<br>0 = Default,<br>1 = Groundspeed,<br>2 = Groundspeed (Gain)|
 |sar_hud_hide_text|cmd|sar_hud_hide_text \<id\|all> - hides the nth text value in the HUD|
 |sar_hud_inspection|0|Draws entity inspection data.|
 |sar_hud_jump|0|Draws current jump distance.|
