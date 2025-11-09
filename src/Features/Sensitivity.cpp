@@ -30,7 +30,7 @@ CON_COMMAND(sar_sensitivity, "sar_sensitivity <cm|in> <distance> <dpi> - changes
 
 	double distance = std::atof(args[2]);
 	double dpi = std::atof(args[3]);
-	
+
 
 	if (!m_rawinput.GetBool()) {
 #ifdef _WIN32
@@ -49,15 +49,15 @@ CON_COMMAND(sar_sensitivity, "sar_sensitivity <cm|in> <distance> <dpi> - changes
 				 * every dot the cursor is moved 1 pixel
 				 * and such at non default values it is getting scaled
 				 */
-				dpi = dpi * (winMouseSens / 10);
+				dpi *= winMouseSens / 10.0f;
 			} else {
 				// otherwise its easier to just look it up in this array
-				dpi = dpi * multiplierEnhancedOff[winMouseSens - 1];
+				dpi *= multiplierEnhancedOff[winMouseSens - 1];
 			}
 		} else {
 			console->Print("Could not retrieve windows mouse settings, sens may not be calculated correctly\n");
 		}
-	
+
 #else
 		console->Print("m_rawinput 0 may make sar_sensitivity inaccurate on linux\n");
 #endif
