@@ -59,7 +59,7 @@ CON_COMMAND(sar_sensitivity, "sar_sensitivity <cm|in> <distance> <dpi> - changes
 		}
 	
 #else
-		console->Print("m_rawinput 0 may be inaccurate on linux\n");
+		console->Print("m_rawinput 0 may make sar_sensitivity inaccurate on linux\n");
 #endif
 	}
 	double new_sens = distanceConstant / (distance * (dpi * m_yaw.GetFloat()));
