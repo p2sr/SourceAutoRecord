@@ -31,8 +31,9 @@ CON_COMMAND(sar_sensitivity, "sar_sensitivity <cm|in> <distance> <dpi> - changes
 	double distance = std::atof(args[2]);
 	double dpi = std::atof(args[3]);
 	
-#ifdef _WIN32
+
 	if (!m_rawinput.GetBool()) {
+#ifdef _WIN32
 		// whole thing relies on the m_rawinput if that shit is on then it do not matter
 		// first two values of this area are lowkey not useful in this situation i think we just need the last one
 		int getMouseInfo[3];
@@ -56,9 +57,11 @@ CON_COMMAND(sar_sensitivity, "sar_sensitivity <cm|in> <distance> <dpi> - changes
 		} else {
 			console->Print("Could not retrieve windows mouse settings, sens may not be calculated correctly\n");
 		}
-	}
+	
+#else
+		console->Print("m_rawinput 0 may be inaccurate on linux\n");
 #endif
-
+	}
 	double new_sens = distanceConstant / (distance * (dpi * m_yaw.GetFloat()));
 	sensitivity.SetValue((float)new_sens);
 }
