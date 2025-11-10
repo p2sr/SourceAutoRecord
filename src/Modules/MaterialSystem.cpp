@@ -119,6 +119,7 @@ void MaterialSystem::Shutdown() {
 		RenderContextShutdown();
 		RenderContextInit();
 	}
+	SAFE_DELETE(g_renderContextPatch);
 }
 IMaterial *MaterialSystem::FindMaterial(const char *materialName, const char *textureGroupName) {
 	auto func = (IMaterial *(__rescall *)(void *, const char *, const char *, bool, const char *))this->materials->Current(Offsets::FindMaterial);
