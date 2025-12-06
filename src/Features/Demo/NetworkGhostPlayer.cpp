@@ -315,7 +315,7 @@ static void startNetDump() {
 	g_dumpFile = fopen("ghost_net_dump.csv", "w");
 	if (g_dumpFile) {
 		fputs("Time,Type,Info\n", g_dumpFile);
-		g_dumpBaseTime = engine->engineTool->Original<float(__rescall *)(void *thisptr)>(Offsets::HostTick - 1)(engine->engineTool->ThisPtr());
+		g_dumpBaseTime = engine->GetHostTime();
 	}
 }
 
@@ -327,7 +327,7 @@ static void endNetDump() {
 
 static void addToNetDump(const char *type, const char *info) {
 	if (!g_dumpFile) return;
-	float time = engine->engineTool->Original<float(__rescall *)(void *thisptr)>(Offsets::HostTick - 1)(engine->engineTool->ThisPtr()) - g_dumpBaseTime;
+	float time = engine->GetHostTime() - g_dumpBaseTime;
 	fprintf(g_dumpFile, "%.2f,%s,%s\n", time, type, info ? info : "");
 }
 
