@@ -50,7 +50,7 @@ Variable sar_patch_cfg("sar_patch_cfg", "0", 0, 1, "Patches Crouch Flying Glitch
 Variable sar_prevent_ehm("sar_prevent_ehm", "0", 0, 1, "Prevents Entity Handle Misinterpretation (EHM) from happening.\n");
 Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables the viewmodel lagging behind.\n");
 Variable sar_disable_viewmodel_shadows("sar_disable_viewmodel_shadows", "0", 0, 1, "Disables the shadows on the viewmodel.\n");
-Variable sar_floor_reportals("sar_floor_reportals", "0", "Toggles floor reportals. Requires cheats.\n", FCVAR_CHEAT);
+Variable sar_floor_reportals("sar_floor_reportals", "0", "Toggles floor reportals.\n");
 Variable sar_loads_coop_dots("sar_loads_coop_dots", "0", "Toggles the loading screen dots during map transitions in coop.\n");
 Variable sar_disable_autograb("sar_disable_autograb", "0", 0, 1, "Disables the auto-grab in coop. Requires host to enable it for everyone that also enables it.\n");
 
@@ -64,6 +64,9 @@ Variable ui_pvplobby_show_offline;
 Variable mm_session_sys_delay_create_host;
 Variable hide_gun_when_holding;
 Variable r_flashlightbrightness;
+
+int origPortal2PromoFlagsValue = 0;  // By default, nothing is loaded.
+int *g_nPortal2PromoFlags = nullptr;
 
 // TSP only
 void IN_BhopDown(const CCommand& args) {
@@ -399,6 +402,8 @@ void Cheats::Init() {
 		g_autoGrabPatchClient->Restore();
 	}
 
+	g_nPortal2PromoFlags = *reinterpret_cast<int **>(Memory::Scan(MODULE("server"), Offsets::Portal2PromoFlags_ADDR, 2)); // Note: Has to be active before map loads.
+
 	Variable::RegisterAll();
 	Command::RegisterAll();
 }
@@ -587,5 +592,50 @@ void Cheats::CheckAutoGrab() {
 	} else {
 		g_autoGrabPatchServer->Restore();
 		g_autoGrabPatchClient->Restore();
+	}
+}
+
+DECL_AUTO_COMMAND_COMPLETION(sar_set_promo_items_state, ({"skins", "helmet", "antenna"})) // TODO: Add support for autofilling multiple args.
+CON_COMMAND_F_COMPLETION(sar_set_promo_items_state, "Enables coop promotional items on spawn.", FCVAR_CHEAT, AUTOCOMPLETION_FUNCTION(sar_set_promo_items_state)) {
+	if (!g_nPortal2PromoFlags) {
+		console->Print("Could not find PromoFlags global!\n");
+		return;
+	}
+	static bool hasCheckedOriginalValue = false;
+	if (!hasCheckedOriginalValue) {
+		origPortal2PromoFlagsValue = *g_nPortal2PromoFlags;
+		hasCheckedOriginalValue = true;
+	}
+	bool bSkin = (_stricmp(args[1], "skins") == 0);
+	bool bHelmet = (_stricmp(args[1], "helmet") == 0);
+	bool bAntenna = (_stricmp(args[1], "antenna") == 0);
+	if (!bSkin && !bHelmet && !bAntenna) {
+		console->Print("Invalid first argument.\n");
+		return;
+	}
+	bool bAdding = (_stricmp(args[2], "add") == 0);
+	bool bRemoving = (_stricmp(args[2], "remove") == 0);
+	if (!bAdding && !bRemoving) {
+		console->Print("Invalid second argument.\n");
+		return;
+	}
+	if (bSkin) {
+		if (bAdding) {
+			*g_nPortal2PromoFlags |= (1 << 0);
+		} else if (bRemoving) {
+			*g_nPortal2PromoFlags &= ~(1 << 0);
+		}
+	} else if (bHelmet) {
+		if (bAdding) {
+			*g_nPortal2PromoFlags |= (1 << 1);
+		} else if (bRemoving) {
+			*g_nPortal2PromoFlags &= ~(1 << 1);
+		}
+	} else if (bAntenna) {
+		if (bAdding) {
+			*g_nPortal2PromoFlags |= (1 << 2);
+		} else if (bRemoving) {
+			*g_nPortal2PromoFlags &= ~(1 << 2);
+		}
 	}
 }
