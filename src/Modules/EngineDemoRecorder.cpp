@@ -21,6 +21,8 @@
 
 #include <cstdio>
 #include <filesystem>
+#include <Hook.hpp>
+#include <InstanceIdentifier.hpp>
 
 REDECL(EngineDemoRecorder::SetSignonState);
 REDECL(EngineDemoRecorder::StartRecording);
@@ -346,6 +348,30 @@ DETOUR_COMMAND(EngineDemoRecorder::record) {
 	}
 }
 
+Memory::Patch *g_StartupDemoFile_headerNamePatch;
+Memory::Patch *g_StartupDemoHeader_headerNamePatch;
+std::string g_uniqueDemoHeaderName;
+
+void patchDemoHeaderTempFileToBeUnique() {
+	int instanceID = InstanceIdentifier::GetID();
+	if (instanceID == 0) {
+		// no need to patch if we're the only instance
+		return;
+	}
+
+	g_uniqueDemoHeaderName = Utils::ssprintf("demoheader_%d.tmp", instanceID+1);
+
+	auto uniqueDemoHeaderName = g_uniqueDemoHeaderName.c_str();
+	auto uniqueDemoHeaderNamePtr = (unsigned char *)&uniqueDemoHeaderName;
+
+	g_StartupDemoFile_headerNamePatch = new Memory::Patch();
+	auto StartupDemoFile = Memory::Scan(engine->demorecorder->Name(), Offsets::StartupDemoFile);
+	g_StartupDemoFile_headerNamePatch->Execute(StartupDemoFile + Offsets::StartupDemoFile_HeaderName, uniqueDemoHeaderNamePtr, 4);
+	g_StartupDemoHeader_headerNamePatch = new Memory::Patch();
+	auto StartupDemoHeader = Memory::Scan(engine->demorecorder->Name(), Offsets::StartupDemoHeader);
+	g_StartupDemoHeader_headerNamePatch->Execute(StartupDemoHeader + Offsets::StartupDemoHeader_HeaderName, uniqueDemoHeaderNamePtr, 4);
+}
+
 bool EngineDemoRecorder::Init() {
 	auto disconnect = engine->cl->Original(Offsets::Disconnect);
 	auto demorecorder = Memory::DerefDeref<void *>(disconnect + Offsets::demorecorder);
@@ -363,6 +389,8 @@ bool EngineDemoRecorder::Init() {
 		this->m_bRecording = reinterpret_cast<bool *>((uintptr_t)demorecorder + Offsets::m_bRecording);
 
 		engine->net_time = Memory::Deref<double *>((uintptr_t)this->GetRecordingTick + Offsets::net_time);
+
+		patchDemoHeaderTempFileToBeUnique();
 	}
 
 	Command::Hook("stop", EngineDemoRecorder::stop_callback_hook, EngineDemoRecorder::stop_callback);
@@ -371,6 +399,11 @@ bool EngineDemoRecorder::Init() {
 	return this->hasLoaded = this->s_ClientDemoRecorder;
 }
 void EngineDemoRecorder::Shutdown() {
+	g_StartupDemoFile_headerNamePatch->Restore();
+	SAFE_DELETE(g_StartupDemoFile_headerNamePatch);
+	g_StartupDemoHeader_headerNamePatch->Restore();
+	SAFE_DELETE(g_StartupDemoHeader_headerNamePatch);
+
 	Interface::Delete(this->s_ClientDemoRecorder);
 	Command::Unhook("stop", EngineDemoRecorder::stop_callback);
 	Command::Unhook("record", EngineDemoRecorder::record_callback);
