@@ -472,6 +472,14 @@ OFFSET_DEFAULT(Cmd_ShutdownOff, 3, 11)
 OFFSET_DEFAULT(Cmd_ShutdownOff2, 10, 10)
 
 
+// EngineDemoRecorder
+// "demoheader.tmp"
+SIGSCAN_DEFAULT(StartupDemoHeader, "56 8B F1 E8 ? ? ? ? 6A 00 6A 00 68 ? ? ? ? 8D", "53 83 EC 14 8B 5C 24 ? 53 E8 ? ? ? ? 8D 43 ?")
+OFFSET_DEFAULT(StartupDemoHeader_HeaderName, 13, 25)
+SIGSCAN_DEFAULT(StartupDemoFile, "55 8B EC 81 EC 18 02 00 00 53 8B D9 80", "55 89 E5 57 56 53 81 EC 3C 02 00 00 8B 5D ? 80 BB ? ? ? ? 00")
+OFFSET_DEFAULT(StartupDemoFile_HeaderName, 212, 184)
+
+
 // EngineDemoPlayer
 SIGSCAN_DEFAULT(InterpolateDemoCommand, "55 8B EC 83 EC 10 56 8B F1 8B 4D 10 57 8B BE B4 05 00 00 83 C1 04 89 75 F4 89 7D F0 E8 ? ? ? ? 8B 4D 14 83 C1 04",
                                         "55 57 56 53 83 EC 10 8B 44 24 24 8B 5C 24 2C 8B 88 B0 05 00 00 8B 44 24 30 8D 70 04 8D 90 9C 00 00 00 89 F0 F3 0F 10 40 04")

@@ -20,6 +20,7 @@
 #include "Features/SeasonalASCII.hpp"
 #include "Game.hpp"
 #include "Hook.hpp"
+#include "InstanceIdentifier.hpp"
 #include "Interface.hpp"
 #include "Modules.hpp"
 #include "Variable.hpp"
@@ -58,6 +59,7 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 		CrashHandler::Init();
 
 		curl_global_init(CURL_GLOBAL_ALL);
+		InstanceIdentifier::Claim();
 
 		tier1 = new Tier1();
 		if (tier1->Init()) {
@@ -244,6 +246,8 @@ void SAR::Unload() {
 	if (tier1) {
 		tier1->Shutdown();
 	}
+
+	InstanceIdentifier::Free();
 
 	SAFE_DELETE(sar.features)
 	SAFE_DELETE(sar.cheats)
