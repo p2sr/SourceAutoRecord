@@ -50,7 +50,7 @@ Variable sar_patch_cfg("sar_patch_cfg", "0", 0, 1, "Patches Crouch Flying Glitch
 Variable sar_prevent_ehm("sar_prevent_ehm", "0", 0, 1, "Prevents Entity Handle Misinterpretation (EHM) from happening.\n");
 Variable sar_disable_weapon_sway("sar_disable_weapon_sway", "0", 0, 1, "Disables the viewmodel lagging behind.\n");
 Variable sar_disable_viewmodel_shadows("sar_disable_viewmodel_shadows", "0", 0, 1, "Disables the shadows on the viewmodel.\n");
-Variable sar_floor_reportals("sar_floor_reportals", "0", "Toggles floor reportals.\n");
+Variable sar_floor_reportals("sar_floor_reportals", "0", "Toggles floor reportals. Requires cheats.\n", FCVAR_CHEAT);
 Variable sar_loads_coop_dots("sar_loads_coop_dots", "0", "Toggles the loading screen dots during map transitions in coop.\n");
 Variable sar_disable_autograb("sar_disable_autograb", "0", 0, 1, "Disables the auto-grab in coop. Requires host to enable it for everyone that also enables it.\n");
 
