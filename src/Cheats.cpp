@@ -65,7 +65,7 @@ Variable mm_session_sys_delay_create_host;
 Variable hide_gun_when_holding;
 Variable r_flashlightbrightness;
 
-int origPortal2PromoFlagsValue = 0;  // By default, nothing is loaded.
+int origPortal2PromoFlagsValue;
 int *g_nPortal2PromoFlags = nullptr;
 
 // TSP only
