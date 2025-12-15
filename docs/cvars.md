@@ -262,7 +262,7 @@
 |sar_hud_ghost_spec|0|Show the name of the ghost you're currently spectating.|
 |sar_hud_grounded|0|Draws the state of player being on ground.|
 |sar_hud_groundframes|0|Draws the number of ground frames since last landing. Setting it to 2 preserves the value.|
-|sar_hud_groundspeed|0|Draw the speed of the player upon leaving the ground.<br>0 = Default,<br>1 = Groundspeed,<br>2 = Groundspeed (Gain)|
+|sar_hud_groundspeed|0|Draw the speed of the player upon leaving the ground.<br>0 = Default<br>1 = Groundspeed<br>2 = Groundspeed (Gain)|
 |sar_hud_hide_text|cmd|sar_hud_hide_text \<id\|all> - hides the nth text value in the HUD|
 |sar_hud_inspection|0|Draws entity inspection data.|
 |sar_hud_jump|0|Draws current jump distance.|
@@ -503,6 +503,7 @@
 |sar_scrollspeed_y|210|Scroll speed HUD y offset.|
 |sar_seamshot_finder|0|Enables or disables seamshot finder overlay.|
 |sar_session|cmd|sar_session - prints the current tick of the server since it has loaded|
+|sar_set_promo_items_state|cmd|sar_set_promo_items_state \<off\|all\|skins\|helmet\|antenna>... - enables coop promotional items on spawn.|
 |sar_show_entinp|0|Print all entity inputs to console.|
 |sar_skiptodemo|cmd|sar_skiptodemo \<demoname> - skip demos in demo queue to this demo|
 |sar_speedrun_autoreset_clear|cmd|sar_speedrun_autoreset_clear - stop using the autoreset file|

@@ -65,9 +65,6 @@ Variable mm_session_sys_delay_create_host;
 Variable hide_gun_when_holding;
 Variable r_flashlightbrightness;
 
-int origPortal2PromoFlagsValue;
-int *g_nPortal2PromoFlags = nullptr;
-
 // TSP only
 void IN_BhopDown(const CCommand& args) {
 	if (!client->KeyDown || !client->in_jump) return;
@@ -334,6 +331,7 @@ Memory::Patch *g_floorReportalPatch;
 Memory::Patch *g_coopLoadingDotsPatch;
 Memory::Patch *g_autoGrabPatchServer;
 Memory::Patch *g_autoGrabPatchClient;
+Memory::Patch *g_promoFlagsPatch;
 
 void Cheats::Init() {
 	sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
@@ -402,7 +400,13 @@ void Cheats::Init() {
 		g_autoGrabPatchClient->Restore();
 	}
 
-	g_nPortal2PromoFlags = *reinterpret_cast<int **>(Memory::Scan(MODULE("server"), Offsets::Portal2PromoFlags_ADDR, 2)); // Note: Has to be active before map loads.
+	g_promoFlagsPatch = new Memory::Patch();
+	auto portal2PromoFlags = Memory::Scan(MODULE("server"), Offsets::Portal2PromoFlagsSig, Offsets::Portal2PromoFlagsOff);
+	if (portal2PromoFlags) {
+		unsigned char promoFlagsByte = 0x00;
+		g_promoFlagsPatch->Execute(portal2PromoFlags, &promoFlagsByte, 1); // Note: Has to be active before map loads.
+		g_promoFlagsPatch->Restore();
+	}
 
 	Variable::RegisterAll();
 	Command::RegisterAll();
@@ -427,6 +431,8 @@ void Cheats::Shutdown() {
 	SAFE_DELETE(g_autoGrabPatchServer);
 	g_autoGrabPatchClient->Restore();
 	SAFE_DELETE(g_autoGrabPatchClient);
+	g_promoFlagsPatch->Restore();
+	SAFE_DELETE(g_promoFlagsPatch);
 }
 
 
@@ -596,46 +602,35 @@ void Cheats::CheckAutoGrab() {
 }
 
 DECL_AUTO_COMMAND_COMPLETION(sar_set_promo_items_state, ({"skins", "helmet", "antenna"})) // TODO: Add support for autofilling multiple args.
-CON_COMMAND_F_COMPLETION(sar_set_promo_items_state, "Enables coop promotional items on spawn.", FCVAR_CHEAT, AUTOCOMPLETION_FUNCTION(sar_set_promo_items_state)) {
-	if (!g_nPortal2PromoFlags) {
-		console->Print("Could not find PromoFlags global!\n");
-		return;
+CON_COMMAND_F_COMPLETION(sar_set_promo_items_state, "sar_set_promo_items_state <off|all|skins|helmet|antenna>... - enables coop promotional items on spawn.\n", FCVAR_CHEAT, AUTOCOMPLETION_FUNCTION(sar_set_promo_items_state)) {
+	if (!g_promoFlagsPatch || !g_promoFlagsPatch->IsInit()) {
+		return console->Print("sar_set_promo_items_state is not available.\n");
 	}
-	static bool hasCheckedOriginalValue = false;
-	if (!hasCheckedOriginalValue) {
-		origPortal2PromoFlagsValue = *g_nPortal2PromoFlags;
-		hasCheckedOriginalValue = true;
+
+	if (args.ArgC() < 2) {
+		return console->Print(sar_set_promo_items_state.ThisPtr()->m_pszHelpString);
 	}
-	bool bSkin = (_stricmp(args[1], "skins") == 0);
-	bool bHelmet = (_stricmp(args[1], "helmet") == 0);
-	bool bAntenna = (_stricmp(args[1], "antenna") == 0);
-	if (!bSkin && !bHelmet && !bAntenna) {
-		console->Print("Invalid first argument.\n");
-		return;
-	}
-	bool bAdding = (_stricmp(args[2], "add") == 0);
-	bool bRemoving = (_stricmp(args[2], "remove") == 0);
-	if (!bAdding && !bRemoving) {
-		console->Print("Invalid second argument.\n");
-		return;
-	}
-	if (bSkin) {
-		if (bAdding) {
-			*g_nPortal2PromoFlags |= (1 << 0);
-		} else if (bRemoving) {
-			*g_nPortal2PromoFlags &= ~(1 << 0);
+
+	unsigned char targetFlags = 0;
+	for (int i = 1; i < args.ArgC(); i++) {
+		if (strcasecmp(args[i], "off") == 0) {
+			g_promoFlagsPatch->Restore();
+			return;
 		}
-	} else if (bHelmet) {
-		if (bAdding) {
-			*g_nPortal2PromoFlags |= (1 << 1);
-		} else if (bRemoving) {
-			*g_nPortal2PromoFlags &= ~(1 << 1);
+		if (strcasecmp(args[i], "all") == 0) {
+			targetFlags = 0b111;
+			break;
 		}
-	} else if (bAntenna) {
-		if (bAdding) {
-			*g_nPortal2PromoFlags |= (1 << 2);
-		} else if (bRemoving) {
-			*g_nPortal2PromoFlags &= ~(1 << 2);
+		if (strcasecmp(args[i], "skins") == 0) {;
+			targetFlags |= 0b001;
+		} else if (strcasecmp(args[i], "helmet") == 0) {
+			targetFlags |= 0b010;
+		} else if (strcasecmp(args[i], "antenna") == 0) {
+			targetFlags |= 0b100;
+		} else {
+			return console->Print(sar_set_promo_items_state.ThisPtr()->m_pszHelpString);
 		}
 	}
+	g_promoFlagsPatch->Restore();
+	g_promoFlagsPatch->Execute(&targetFlags, 1);
 }

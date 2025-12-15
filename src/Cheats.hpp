@@ -51,5 +51,4 @@ extern Variable r_flashlightbrightness;
 
 extern Command sar_togglewait;
 
-extern int origPortal2PromoFlagsValue;
-extern int *g_nPortal2PromoFlags;
+extern Memory::Patch *g_promoFlagsPatch;
