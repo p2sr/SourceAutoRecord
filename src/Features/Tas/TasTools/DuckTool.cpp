@@ -29,7 +29,7 @@ void DuckTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 
 std::shared_ptr<TasToolParams> DuckTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() != 1)
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		TasParserArgumentCountException(this, vp.size());
 
 	bool enabled = true;
 	int time = INT32_MAX;
@@ -43,7 +43,7 @@ std::shared_ptr<TasToolParams> DuckTool::ParseParams(std::vector<std::string> vp
 		try {
 			time = std::stoi(vp[0]);
 		} catch (...) {
-			throw TasParserException(Utils::ssprintf("Incorrect parameter for tool %s: %s", this->GetName(), vp[0].c_str()));
+			throw TasParserArgumentException(this, vp[0]);
 		}
 	}
 

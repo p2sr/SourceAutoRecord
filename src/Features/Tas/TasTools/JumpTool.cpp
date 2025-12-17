@@ -51,8 +51,9 @@ std::shared_ptr<TasToolParams> JumpTool::ParseParams(std::vector<std::string> vp
 		return std::make_shared<JumpToolsParams>(true, false);
 	}
 
-	if (vp.size() != 1)
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+	if (vp.size() != 1) {
+		throw TasParserArgumentCountException(this, vp.size());
+	}
 
 	bool ducked = false;
 	bool enabled = false;
@@ -63,7 +64,7 @@ std::shared_ptr<TasToolParams> JumpTool::ParseParams(std::vector<std::string> vp
 		enabled = true;
 		ducked = true;
 	} else if (vp[0] != "off") {
-		throw TasParserException(Utils::ssprintf("Bad parameter for tool %s: %s", this->GetName(), vp[0].c_str()));
+		throw TasParserArgumentException(this, vp[0]);
 	}
 
 	return std::make_shared<JumpToolsParams>(enabled, ducked);

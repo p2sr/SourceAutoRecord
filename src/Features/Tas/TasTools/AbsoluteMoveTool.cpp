@@ -52,7 +52,7 @@ void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) 
 
 std::shared_ptr<TasToolParams> AbsoluteMoveTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() != 1 && vp.size() != 2)
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		throw TasParserArgumentCountException(this, vp.size());
 
 	if (vp[0] == "off")
 		return std::make_shared<AbsoluteMoveToolParams>();
@@ -61,7 +61,7 @@ std::shared_ptr<TasToolParams> AbsoluteMoveTool::ParseParams(std::vector<std::st
 	try {
 		angle = std::stof(vp[0]);
 	} catch (...) {
-		throw TasParserException(Utils::ssprintf("Bad direction for tool %s: %s", this->GetName(), vp[0].c_str()));
+		throw TasParserArgumentException(this, "direction", vp[0]);
 	}
 	
 	float strength;
@@ -70,7 +70,7 @@ std::shared_ptr<TasToolParams> AbsoluteMoveTool::ParseParams(std::vector<std::st
 		if (strength > 1) strength = 1;
 		if (strength < 0) strength = 0;
 	} catch (...) {
-		throw TasParserException(Utils::ssprintf("Bad strength for tool %s: %s", this->GetName(), vp[0].c_str()));
+		throw TasParserArgumentException(this, "strength", vp[1]);
 	}
 
 	return std::make_shared<AbsoluteMoveToolParams>(angle, strength);

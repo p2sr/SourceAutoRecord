@@ -29,7 +29,7 @@ void StopTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 
 std::shared_ptr<TasToolParams> StopTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() > 0)
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		throw TasParserArgumentCountException(this, vp.size());
 
 	return std::make_shared<StopToolParams>(true);
 }

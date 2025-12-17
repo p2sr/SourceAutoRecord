@@ -44,7 +44,7 @@ void DecelTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 
 std::shared_ptr<TasToolParams> DecelTool::ParseParams(std::vector<std::string> args) {
 	if (args.size() != 1) {
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), args.size()));
+		throw TasParserArgumentCountException(this, args.size());
 	}
 	if (args[0] == "off") {
 		return std::make_shared<TasToolParams>(false);
@@ -55,7 +55,7 @@ std::shared_ptr<TasToolParams> DecelTool::ParseParams(std::vector<std::string> a
 	try {
 		targetVel = atof(args[0].c_str());
 	} catch (...) {
-		throw TasParserException(Utils::ssprintf("Bad target velocity for tool %s: %s", this->GetName(), args[0].c_str()));
+		throw TasParserArgumentException(this, "target velocity", args[0]);
 	}
 
 	return std::make_shared<DecelParams>(targetVel);

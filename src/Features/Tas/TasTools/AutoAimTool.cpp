@@ -12,14 +12,14 @@ std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string>
 	bool usesEntitySelector = args.size() > 0 && args[0] == "ent";
 
 	if (args.size() < (usesEntitySelector ? 2 : 1) || args.size() > (usesEntitySelector ? 4 : 5)) {
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), args.size()));
+		throw TasParserArgumentCountException(this, args.size());
 	}
 
 	if (args.size() == 1 && args[0] == "off") {
 		return std::make_shared<AutoAimParams>();
 	} 
 	else if (!usesEntitySelector && args.size() < 3) {
-		throw TasParserException(Utils::ssprintf("Bad argument for tool %s: %s", this->GetName(), args[0].c_str()));
+		throw TasParserArgumentCountException(this, args.size());
 	}
 
 	int ticks;
@@ -30,7 +30,7 @@ std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string>
 	try {
 		ticks = args.size() >= ticksPos + 1 ? std::stoi(args[ticksPos]) : 1;
 	} catch (...) {
-		throw TasParserException(Utils::ssprintf("Bad tick value for tool %s: %s", this->GetName(), args[ticksPos].c_str()));
+		throw TasParserArgumentException(this, "ticks", args[ticksPos]);
 	}
 
 	// easing type
@@ -38,7 +38,7 @@ std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string>
 	try {
 		easingType = AngleToolsUtils::ParseEasingType(args.size() >= typePos + 1 ? args[typePos] : "linear");
 	} catch (...) {
-		throw TasParserException(Utils::ssprintf("Bad interpolation value for tool %s: %s", this->GetName(), args[typePos].c_str()));
+		throw TasParserArgumentException(this, "interpolation", args[typePos]);
 	}
 
 	if (usesEntitySelector) {
@@ -51,19 +51,19 @@ std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string>
 		try {
 			x = std::stof(args[0]);
 		} catch (...) {
-			throw TasParserException(Utils::ssprintf("Bad x value for tool %s: %s", this->GetName(), args[0].c_str()));
+			throw TasParserArgumentException(this, "x value", args[0]);
 		}
 
 		try {
 			y = std::stof(args[1]);
 		} catch (...) {
-			throw TasParserException(Utils::ssprintf("Bad y value for tool %s: %s", this->GetName(), args[1].c_str()));
+			throw TasParserArgumentException(this, "y value", args[1]);
 		}
 
 		try {
 			z = std::stof(args[2]);
 		} catch (...) {
-			throw TasParserException(Utils::ssprintf("Bad z value for tool %s: %s", this->GetName(), args[2].c_str()));
+			throw TasParserArgumentException(this, "z value", args[2]);
 		}
 
 		return std::make_shared<AutoAimParams>(Vector{x, y, z}, ticks, easingType);

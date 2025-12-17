@@ -674,7 +674,7 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 	float force = 1.0f;
 
 	if (vp.size() == 0) {
-		return std::make_shared<AutoStrafeParams>();
+		throw TasParserArgumentCountException(this, vp.size());
 	}
 
 	for (std::string param : vp) {
@@ -687,6 +687,8 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 			type = ANGULAR;
 		} else if (param == "veccam") {
 			type = VECTORIAL_CAM;
+		} else if (param == "on") {
+			// use defaults if used in isolation
 		}
 
 		// steering offset
@@ -751,7 +753,7 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 		
 		catch (...) {
 			//	unknown parameter...
-			throw TasParserException(Utils::ssprintf("Bad parameter for tool %s: %s", this->GetName(), param.c_str()));
+			throw TasParserArgumentException(this, param);
 		}
 	}
 

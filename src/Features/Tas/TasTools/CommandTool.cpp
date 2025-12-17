@@ -23,7 +23,7 @@ void CommandTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 
 std::shared_ptr<TasToolParams> CommandTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() == 0)
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		throw TasParserArgumentCountException(this, vp.size());
 
 	std::string command;
 

@@ -36,7 +36,7 @@ void MoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) {
 
 std::shared_ptr<TasToolParams> MoveTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() == 0) {
-		return std::make_shared<MoveToolParams>();
+		throw TasParserArgumentCountException(this, vp.size());
 	}
 
 	float forwardMove = 0.0f;
@@ -87,14 +87,14 @@ std::shared_ptr<TasToolParams> MoveTool::ParseParams(std::vector<std::string> vp
 				} else if (numberCount == 2) {
 					forwardMove = number;
 				} else if (numberCount > 2) {
-					throw TasParserException(Utils::ssprintf("Too many parameters for tool %s: %s", this->GetName(), param.c_str()));
+					throw TasParserArgumentCountException(this, vp.size());
 				}
 			} else {
 				if (numberCount == 1) {
 					scale = number;
 					scaleAssigned = true;
 				} else {
-					throw TasParserException(Utils::ssprintf("Too many parameters for tool %s: %s", this->GetName(), param.c_str()));
+					throw TasParserArgumentCountException(this, vp.size());
 				}
 			}
 		}
