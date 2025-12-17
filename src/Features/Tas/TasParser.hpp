@@ -25,4 +25,6 @@ namespace TasParser {
 	std::string SaveRawScriptToString(TasScript script);
 	int toInt(std::string &str);
 	float toFloat(std::string str);
+	bool hasSuffix(const std::string &str, const std::string &suffix);
+	float toFloatAssumeSuffix(std::string str, const std::string &suffix);
 };

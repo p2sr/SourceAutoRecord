@@ -21,6 +21,11 @@ enum AutoStrafeParamType {
 	CURRENT,
 };
 
+enum AutoStrafeSteeringOffsetType {
+	DEGREES,
+	SCALAR,
+};
+
 struct AutoStrafeDirection {
 	AutoStrafeParamType type;
 	bool useVelAngle;
@@ -32,6 +37,11 @@ struct AutoStrafeSpeed {
 	float speed;
 };
 
+struct AutoStrafeSteeringOffset {
+	AutoStrafeSteeringOffsetType type;
+	float value;
+};
+
 
 struct AutoStrafeParams : public TasToolParams {
 	AutoStrafeType strafeType = DISABLED;
@@ -39,20 +49,20 @@ struct AutoStrafeParams : public TasToolParams {
 	AutoStrafeSpeed strafeSpeed = {CURRENT};
 	bool noPitchLock = false;
 	bool antiSpeedLock = true;
-	float turnRate = 1.0f;
+	AutoStrafeSteeringOffset steeringOffset = {DEGREES, 0.0f};
 	float force = 1.0f;
 
 	AutoStrafeParams()
 		: TasToolParams() {}
 
-	AutoStrafeParams(AutoStrafeType type, AutoStrafeDirection dir, AutoStrafeSpeed speed, bool noPitchLock, bool antiSpeedLock, float turnRate, float force)
+	AutoStrafeParams(AutoStrafeType type, AutoStrafeDirection dir, AutoStrafeSpeed speed, bool noPitchLock, bool antiSpeedLock, AutoStrafeSteeringOffset steeringOffset, float force)
 		: TasToolParams(true)
 		, strafeType(type)
 		, strafeDir(dir)
 		, strafeSpeed(speed)
 		, noPitchLock(noPitchLock)
 		, antiSpeedLock(antiSpeedLock)
-		, turnRate(turnRate)
+		, steeringOffset(steeringOffset)
 		, force(force) {
 	}
 };
@@ -80,6 +90,7 @@ public:
 	float GetFastestStrafeAngle(const TasPlayerInfo &player);
 	float GetTargetStrafeAngle(const TasPlayerInfo &player, float targetSpeed, float turningDir);
 	float GetTurningStrafeAngle(const TasPlayerInfo &player);
+	float GetMaxUnderstrafeAngle(const TasPlayerInfo &player);
 
 private:
 	void UpdateTargetValuesMarkedCurrent(TasFramebulk &fb, const TasPlayerInfo &pInfo);
@@ -91,6 +102,7 @@ private:
 
 	int GetTurningDirection(const TasPlayerInfo &pInfo, float desAngle);
 	void FollowLine(const TasPlayerInfo &pInfo);
+	float GetSteeringOffsetValue(const TasPlayerInfo &pInfo, AutoStrafeSteeringOffset &offset);
 };
 
 extern AutoStrafeTool autoStrafeTool[2];

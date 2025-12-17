@@ -172,7 +172,7 @@ void AutoStrafeTool::ApplyStrafe(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 		}
 	}
 
-	float angle = velAngle + RAD2DEG(this->GetStrafeAngle(pInfo, params)) * params.turnRate;
+	float angle = velAngle + RAD2DEG(this->GetStrafeAngle(pInfo, params));
 	
 	FOR_TAS_SCRIPT_VERSIONS_SINCE(8) {
 		// Deal with airlock: we're strafing, so always try to maximize how much
@@ -442,6 +442,22 @@ float AutoStrafeTool::GetTurningStrafeAngle(const TasPlayerInfo &player) {
 	return acosf(cosAng);
 }
 
+// get horizontal angle of wishdir that would give the biggest turning angle while understrafing
+float AutoStrafeTool::GetMaxUnderstrafeAngle(const TasPlayerInfo &player) {
+	Vector velocity = GetGroundFrictionVelocity(player);
+
+	if (velocity.Length2D() == 0) return 0;
+
+	Vector wishDir = Vector(0, 1) * params.force;
+	float maxSpeed = GetMaxSpeed(player, wishDir);
+
+	// Solution is the angle where dot product of velocity and normalized wishdir is equal to max speed.
+	float cosAng = maxSpeed / velocity.Length2D();
+	if (cosAng > 1) cosAng = 1;
+
+	return acosf(cosAng);
+}
+
 
 // get horizontal angle of wishdir that does correct thing based on given parameters
 // angle is relative to your current velocity direction.
@@ -496,6 +512,7 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 		ang = GetTargetStrafeAngle(player, params.strafeSpeed.speed, turningDir);
 	}
 
+	ang += GetSteeringOffsetValue(player, params.steeringOffset) * turningDir;
 	return ang;
 }
 
@@ -630,6 +647,21 @@ void AutoStrafeTool::FollowLine(const TasPlayerInfo &pInfo) {
 	this->followLinePoint = pInfo.position;
 }
 
+float AutoStrafeTool::GetSteeringOffsetValue(const TasPlayerInfo &pInfo, AutoStrafeSteeringOffset &offset) {
+	if (offset.type == DEGREES) {
+		return DEG2RAD(offset.value);
+	}
+
+	bool understrafe = offset.value < 0;
+	float absOffsetScalar = fabsf(offset.value);
+
+	float baseAngle = GetFastestStrafeAngle(pInfo);
+	float unitAngle = understrafe ? GetMaxUnderstrafeAngle(pInfo) : GetTurningStrafeAngle(pInfo);
+
+	float unitDeltaAngle = unitAngle - baseAngle;
+	return unitDeltaAngle * absOffsetScalar;
+}
+
 
 std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::string> vp) {
 	AutoStrafeType type = VECTORIAL;
@@ -638,7 +670,7 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 	AutoStrafeSpeed speed = {SPECIFIED, maxSpeed};
 	bool noPitchLock = false;
 	bool antiSpeedLock = true;
-	float turnRate = 1.0f;
+	AutoStrafeSteeringOffset steeringOffset = {DEGREES, 0.0f};
 	float force = 1.0f;
 
 	if (vp.size() == 0) {
@@ -657,15 +689,30 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 			type = VECTORIAL_CAM;
 		}
 
+		// steering offset
+		else if (TasParser::hasSuffix(param, "os")) {
+			steeringOffset.type = SCALAR;
+			steeringOffset.value = TasParser::toFloatAssumeSuffix(param, "os");
+		} else if (TasParser::hasSuffix(param, "osdeg")) {
+			steeringOffset.type = DEGREES;
+			steeringOffset.value = TasParser::toFloatAssumeSuffix(param, "osdeg");
+		} else if (TasParser::hasSuffix(param, "us")) {
+			steeringOffset.type = SCALAR;
+			steeringOffset.value = TasParser::toFloatAssumeSuffix(param, "us") * -1.0f;
+		} else if (TasParser::hasSuffix(param, "usdeg")) {
+			steeringOffset.type = DEGREES;
+			steeringOffset.value = TasParser::toFloatAssumeSuffix(param, "usdeg") * -1.0f;
+		}
+
 		//speed
 		else if (param == "max") {
 			speed.type = SPECIFIED;
 			speed.speed = maxSpeed;  // as long as it's higher than max speed times square root of 2, we should be fine?
 		} else if (param == "keep") {
 			speed.type = CURRENT;
-		} else if (param.size() > 3 && param.substr(param.size() - 3, 3) == "ups") {
+		} else if (TasParser::hasSuffix(param, "ups")) {
 			speed.type = SPECIFIED;
-			speed.speed = TasParser::toFloat(param.substr(0, param.size() - 3));
+			speed.speed = TasParser::toFloatAssumeSuffix(param, "ups");
 		} else if (param == "min") {
 			speed.type = SPECIFIED;
 			speed.speed = 0.0f;
@@ -684,44 +731,29 @@ std::shared_ptr<TasToolParams> AutoStrafeTool::ParseParams(std::vector<std::stri
 		} else if (param == "right") {
 			dir.type = SPECIFIED;
 			dir.angle = -10000.0f;
-		} else if (param.size() > 3 && param.substr(param.size() - 3, 3) == "deg") {
+		} else if (TasParser::hasSuffix(param, "deg")) {
 			dir.type = SPECIFIED;
-			dir.angle = TasParser::toFloat(param.substr(0, param.size() - 3));
+			dir.angle = TasParser::toFloatAssumeSuffix(param, "deg");
 		}
 
+		// flags
 		else if (param == "nopitchlock") {
 			noPitchLock = true;
 		}
-
 		else if (param == "letspeedlock") {
 			antiSpeedLock = false;
 		}
 
-		//named value parameters
-		else if (param.find('=') != std::string::npos) {
-			size_t eqPos = param.find('=');
-			std::string key = param.substr(0, eqPos);
-			std::string value = param.substr(eqPos + 1);
-			
-			if (key == "turnrate") {
-				turnRate = TasParser::toFloat(value);
-			} else if (key == "force") {
-				force = TasParser::toFloat(value);
-			} else if (key == "velocity" || key == "vel") {
-				speed.type = SPECIFIED;
-				speed.speed = TasParser::toFloat(value);
-			} else if (key == "angle" || key == "ang") {
-				dir.angle = SPECIFIED;
-				dir.angle = TasParser::toFloat(value);
-			} else {
-				throw TasParserException(Utils::ssprintf("Unknown named parameter for tool %s: %s", this->GetName(), key.c_str()));
-			}
-		}
-
-		//unknown parameter...
-		else 
+		// suffix-less number (force)
+		else try {
+			force = TasParser::toFloat(param);
+		} 
+		
+		catch (...) {
+			//	unknown parameter...
 			throw TasParserException(Utils::ssprintf("Bad parameter for tool %s: %s", this->GetName(), param.c_str()));
+		}
 	}
 
-	return std::make_shared<AutoStrafeParams>(type, dir, speed, noPitchLock, antiSpeedLock, turnRate, force);
+	return std::make_shared<AutoStrafeParams>(type, dir, speed, noPitchLock, antiSpeedLock, steeringOffset, force);
 }
