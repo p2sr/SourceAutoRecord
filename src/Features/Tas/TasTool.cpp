@@ -35,9 +35,10 @@ std::vector<std::string> TasTool::priorityList = {
 	"decel",
 };
 
-TasTool::TasTool(const char *name, TasToolProcessingType processingType, int slot)
+TasTool::TasTool(const char *name, TasToolProcessingType processingType, TasToolBulkType bulkType, int slot)
 	: name(name)
 	, processingType(processingType)
+	, bulkType(bulkType)
 	, slot(slot) {
 	this->GetList(slot).push_back(this);
 

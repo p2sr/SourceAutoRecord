@@ -29,7 +29,7 @@ private:
 	int elapsedTicks;
 public:
 	SetAngleTool(int slot)
-		: TasToolWithParams("setang", POST_PROCESSING, slot)
+		: TasToolWithParams("setang", POST_PROCESSING, VIEWANGLES, slot)
 		, elapsedTicks(0) {}
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);

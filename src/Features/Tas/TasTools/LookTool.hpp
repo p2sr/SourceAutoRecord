@@ -23,7 +23,7 @@ private:
 	int remainingTime;
 public:
 	LookTool(int slot)
-		: TasToolWithParams("look", PRE_PROCESSING, slot) {};
+		: TasToolWithParams("look", PRE_PROCESSING, VIEWANGLES, slot) {};
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
 };

@@ -19,7 +19,7 @@ struct MoveToolParams : public TasToolParams {
 class MoveTool : public TasToolWithParams<MoveToolParams> {
 public:
 	MoveTool(int slot)
-		: TasToolWithParams("move", PRE_PROCESSING, slot) {};
+		: TasToolWithParams("move", PRE_PROCESSING, MOVEMENT, slot) {};
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
 };

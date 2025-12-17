@@ -30,21 +30,34 @@ enum TasToolProcessingType {
 	POST_PROCESSING,
 };
 
+enum TasToolBulkType {
+	NONE = 0,
+	MOVEMENT = 1 << 1,
+	VIEWANGLES = 1 << 2,
+	BUTTONS = 1 << 3,
+	COMMANDS = 1 << 4,
+	META = 1 << 5,
+
+	ALL_TYPES_MASK = MOVEMENT | VIEWANGLES | BUTTONS | COMMANDS | META,
+};
+
 class TasTool {
 protected:
 	const char *name;
 	TasToolProcessingType processingType;
+	TasToolBulkType bulkType;
 	std::shared_ptr<TasToolParams> paramsPtr = nullptr;
 	bool updated = false;
 	int slot;
 
 public:
-	TasTool(const char *name, TasToolProcessingType processingType, int slot);
+	TasTool(const char *name, TasToolProcessingType processingType, TasToolBulkType bulkType, int slot);
 	~TasTool();
 
 	const char *GetName() const { return name; }
 	inline int GetSlot() const { return slot; }
 	bool CanProcess(TasToolProcessingType type) const { return this->processingType == type; }
+	TasToolBulkType GetBulkType() const { return this->bulkType; }
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>) = 0;
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo) = 0;
@@ -64,8 +77,8 @@ protected:
 	Params params;
 
 public:
-	TasToolWithParams(const char *name, TasToolProcessingType processingType, int slot)
-		: TasTool(name, processingType, slot) {};
+	TasToolWithParams(const char *name, TasToolProcessingType processingType, TasToolBulkType bulkType, int slot)
+		: TasTool(name, processingType, bulkType, slot) {};
 
 	virtual void Reset() {
 		this->paramsPtr = std::make_shared<Params>();

@@ -16,7 +16,7 @@ struct JumpToolsParams : public TasToolParams {
 class JumpTool : public TasToolWithParams<JumpToolsParams> {
 public:
 	JumpTool(int slot, bool automatic)
-		: TasToolWithParams(automatic ? "autojump" : "jump", POST_PROCESSING, slot) 
+		: TasToolWithParams(automatic ? "autojump" : "jump", POST_PROCESSING, BUTTONS, slot) 
 		, automatic(automatic) {
 	}
 

@@ -20,7 +20,7 @@ class AbsoluteMoveTool : public TasToolWithParams<AbsoluteMoveToolParams> {
 private:
 	AbsoluteMoveToolParams amParams;
 public:
-	AbsoluteMoveTool(int slot) : TasToolWithParams("absmov", POST_PROCESSING, slot) {};
+	AbsoluteMoveTool(int slot) : TasToolWithParams("absmov", POST_PROCESSING, MOVEMENT, slot) {};
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
 };
