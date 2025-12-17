@@ -22,7 +22,7 @@ struct ShootToolParams : public TasToolParams {
 class ShootTool : public TasToolWithParams<ShootToolParams> {
 public:
 	ShootTool(int slot)
-		: TasToolWithParams("shoot", PRE_PROCESSING, BUTTONS, slot) {}
+		: TasToolWithParams("shoot", POST_PROCESSING, BUTTONS, slot) {}
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo);
