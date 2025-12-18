@@ -383,6 +383,7 @@ TasFramebulk &TasPlayer::RequestProcessedFramebulkAt(int slot, int tick) {
 	}
 
 	console->Warning("TAS processed framebulk for tick %d not found! This should not happen!\n", tick);
+	return processed.back();
 }
 
 TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bool clientside) {
