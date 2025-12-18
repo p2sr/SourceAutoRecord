@@ -48,7 +48,7 @@ void JumpTool::SetJumpInput(TasFramebulk &bulk, bool jump) {
 std::shared_ptr<TasToolParams> JumpTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() == 0 && !this->automatic) {
 		// allow 0 parameters for non-automated jump tool
-		return std::make_shared<JumpToolsParams>(true, false);
+		return std::make_shared<JumpToolParams>(true, false);
 	}
 
 	if (vp.size() != 1) {
@@ -67,5 +67,5 @@ std::shared_ptr<TasToolParams> JumpTool::ParseParams(std::vector<std::string> vp
 		throw TasParserArgumentException(this, vp[0]);
 	}
 
-	return std::make_shared<JumpToolsParams>(enabled, ducked);
+	return std::make_shared<JumpToolParams>(enabled, ducked);
 }

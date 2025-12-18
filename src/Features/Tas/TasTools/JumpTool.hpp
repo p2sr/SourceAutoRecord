@@ -1,11 +1,11 @@
 #pragma once
 #include "../TasTool.hpp"
 
-struct JumpToolsParams : public TasToolParams {
-	JumpToolsParams()
+struct JumpToolParams : public TasToolParams {
+	JumpToolParams()
 		: TasToolParams() {
 	}
-	JumpToolsParams(bool enabled, bool ducked)
+	JumpToolParams(bool enabled, bool ducked)
 		: TasToolParams(enabled)
 		, ducked(ducked) {
 	}
@@ -13,7 +13,7 @@ struct JumpToolsParams : public TasToolParams {
 	bool ducked = false;
 };
 
-class JumpTool : public TasToolWithParams<JumpToolsParams> {
+class JumpTool : public TasToolWithParams<JumpToolParams> {
 public:
 	JumpTool(int slot, bool automatic)
 		: TasToolWithParams(automatic ? "autojump" : "jump", POST_PROCESSING, BUTTONS, slot) 
