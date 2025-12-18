@@ -28,7 +28,7 @@ void UseTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 
 std::shared_ptr<TasToolParams> UseTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() > 1)
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		throw TasParserArgumentCountException(this, vp.size());
 
 	if (vp.size() == 0) {
 		return std::make_shared<UseToolParams>(true, false);
@@ -43,7 +43,7 @@ std::shared_ptr<TasToolParams> UseTool::ParseParams(std::vector<std::string> vp)
 	else if (vp[0] == "spam") {
 		spam = true;
 	} else {
-		throw TasParserException(Utils::ssprintf("Incorrect parameter for tool %s: %s", this->GetName(), vp[0].c_str()));
+		throw TasParserArgumentException(this, vp[0]);
 	}
 
 	return std::make_shared<UseToolParams>(enabled, spam);

@@ -17,7 +17,7 @@
 
 #include <climits>
 #include <fstream>
-#include "TasTools/AutoJumpTool.hpp"
+#include "TasTools/JumpTool.hpp"
 
 Variable sar_tas_debug("sar_tas_debug", "0", 0, 2, "Debug TAS information. 0 - none, 1 - basic, 2 - all.\n");
 Variable sar_tas_dump_usercmd("sar_tas_dump_usercmd", "0", "Dump TAS-generated usercmds to a file.\n");
@@ -136,6 +136,19 @@ TasPlayer::~TasPlayer() {
 	//framebulkQueue[1].clear();
 }
 
+bool TasPlayer::IsUsingTools() const {
+	if (!sar_tas_tools_enabled.GetBool()) {
+		return false;
+	}
+
+	if (sar_tas_tools_force.GetBool()) {
+		return true;
+	}
+
+	return (playbackInfo.slots[0].IsActive() && !playbackInfo.slots[0].IsRaw()) 
+		|| (playbackInfo.slots[1].IsActive() && !playbackInfo.slots[1].IsRaw());
+}
+
 void TasPlayer::Activate(TasPlaybackInfo info) {
 
 	if (!info.HasActiveSlot()) return;
@@ -154,8 +167,8 @@ void TasPlayer::Activate(TasPlaybackInfo info) {
 	for (int slot = 0; slot < 2; ++slot) {
 		playbackInfo.slots[slot].ClearGeneratedContent();
 
-		currentInputFramebulkIndex[slot] = 0;
-		currentToolsFramebulkIndex[slot] = 0;
+		currentRequestRawFramebulkIndex[slot] = 0;
+	
 	}
 
 	active = true;
@@ -350,6 +363,29 @@ TasFramebulk TasPlayer::GetRawFramebulkAt(int slot, int tick, unsigned& cachedIn
 	return playbackInfo.slots[slot].framebulks[cachedIndex];
 }
 
+TasFramebulk &TasPlayer::RequestProcessedFramebulkAt(int slot, int tick) {
+	auto &processed = playbackInfo.slots[slot].processedFramebulks;
+	auto processedCount = processed.size();
+
+	if (processedCount == 0 || processed.back().tick < tick) {
+		TasFramebulk fb = GetRawFramebulkAt(slot, tick, currentRequestRawFramebulkIndex[slot]);
+		processed.push_back(fb);
+		return processed.back();
+	}
+
+	// if it already exists, it should be near the end, as we usually request the newest ones
+	for (int index = processedCount - 1; index >= 0; --index) {
+		if (processed[index].tick == tick) {
+			return processed[index];
+		} else if (processed[index].tick < tick) {
+			break;
+		}
+	}
+
+	console->Warning("TAS processed framebulk for tick %d not found! This should not happen!\n", tick);
+	return processed.back();
+}
+
 TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bool clientside) {
 	TasPlayerInfo pi;
 
@@ -427,7 +463,7 @@ TasPlayerInfo TasPlayer::GetPlayerInfo(int slot, void *player, CUserCmd *cmd, bo
 
 	// predict the result of autojump tool so other tools can react appropriately.
 	FOR_TAS_SCRIPT_VERSIONS_SINCE(8) {
-		if (autoJumpTool[slot].GetCurrentParams().enabled && autoJumpTool[slot].ShouldJump(pi)) {
+		if (autoJumpTool[slot].WillJump(pi) || jumpTool[slot].WillJump(pi)) {
 			pi.willBeGrounded = false;
 		}
 	}
@@ -540,7 +576,7 @@ void TasPlayer::SaveProcessedFramebulks() {
     we assume the response time for our "virtual controller" to be
     non-existing and just let it parse inputs corresponding to given tick.
 */
-void TasPlayer::FetchInputs(int slot, TasController *controller) {
+void TasPlayer::FetchInputs(int slot, TasController *controller, CUserCmd* cmd) {
 	// Slight hack! Input fetching (including SteamControllerMove) is
 	// called through _Host_RunFrame_Input, which is called *before*
 	// GameFrame (that being called via _Host_RunFrame_Server). Therefore,
@@ -549,36 +585,23 @@ void TasPlayer::FetchInputs(int slot, TasController *controller) {
 	// said than done since the input fetching code is only run when the
 	// client is connected, so to match the behaviour we'd probably need
 	// to actually hook at _Host_RunFrame_Input or CL_Move.
-	int tick = currentTick + 1;
+	int tasTick = currentTick + 1;
 
-	TasFramebulk fb = GetRawFramebulkAt(slot, tick, currentInputFramebulkIndex[slot]);
+	auto player = server->GetPlayer(slot + 1);
 
-	int fbTick = fb.tick;
-
-	if (sar_tas_debug.GetInt() > 0 && fbTick == tick) {
-		console->Print("%s\n", fb.ToString().c_str());
+	if (tasTick == 1) {
+		SamplePreProcessedFramebulk(slot, 0, player, cmd);
 	}
+
+	TasFramebulk fb = SamplePreProcessedFramebulk(slot, tasTick, player, cmd);
 
 	controller->SetViewAnalog(fb.viewAnalog.x, fb.viewAnalog.y);
 	controller->SetMoveAnalog(fb.moveAnalog.x, fb.moveAnalog.y);
 	for (int i = 0; i < TAS_CONTROLLER_INPUT_COUNT; i++) {
 		controller->SetButtonState((TasControllerInput)i, fb.buttonStates[i]);
 	}
-
-	if (tick == 1) {
-		// on tick 1, we'll run the commands from the bulk at tick 0 because
-		// of the annoying off-by-one thing explained above
-		TasFramebulk fb0 = GetRawFramebulkAt(slot, 0);
-		for (std::string cmd : fb0.commands) {
-			controller->AddCommandToQueue(cmd);
-		}
-	}
-
-	// add commands only for tick when framebulk is placed. Don't preserve it to other ticks.
-	if (tick == fbTick) {
-		for (std::string cmd : fb.commands) {
-			controller->AddCommandToQueue(cmd);
-		}
+	for (std::string cmd : fb.commands) {
+		controller->AddCommandToQueue(cmd);
 	}
 }
 
@@ -589,6 +612,52 @@ static bool IsTaunting(ClientEnt *player) {
 	if (cond & (1 << PORTAL_COND_DEATH_CRUSH)) return true;
 	if (cond & (1 << PORTAL_COND_DEATH_GIB)) return true;
 	return false;
+}
+
+TasFramebulk TasPlayer::SamplePreProcessedFramebulk(int slot, int tasTick, void *player, CUserCmd *cmd) {
+	TasFramebulk& fb = RequestProcessedFramebulkAt(slot, tasTick);
+
+	auto fbTick = fb.tick;
+	fb.tick = tasTick;
+	bool framebulkUpdated = (fbTick == tasTick);
+
+	if (sar_tas_debug.GetInt() > 0 && framebulkUpdated) {
+		console->Print("(TAS:  rawtick) %s\n", fb.ToString().c_str());
+	}
+
+	if (tasTick == 0 || !framebulkUpdated) {
+		std::vector<std::string> emptyCommands;
+		fb.commands = emptyCommands;
+	}
+
+	if (!framebulkUpdated) {
+		std::vector<TasToolCommand> emptyToolCmds;
+		fb.toolCmds = emptyToolCmds;
+	}
+
+	if (tasTick == 1) {
+		// on tick 1, we'll run the commands from the bulk at tick 0 because
+		// of the annoying off-by-one thing explained in FetchInputs
+		TasFramebulk fb0 = GetRawFramebulkAt(slot, 0);
+
+		if (fb0.tick == 0) {
+			for (std::string cmd : fb0.commands) {
+				fb.commands.push_back(cmd);
+			}
+		}
+	}
+
+	if (IsUsingTools()) {
+		UpdateTools(slot, fb, PRE_PROCESSING);
+		auto pInfo = GetPlayerInfo(slot, server->GetPlayer(slot + 1), cmd);
+		ApplyTools(fb, pInfo, PRE_PROCESSING);
+
+		if (sar_tas_debug.GetInt() > 0) {
+			console->Print("(TAS:  pretick) %s\n", fb.ToString().c_str());
+		}
+	}
+
+	return fb;
 }
 
 // special tools have to be parsed in input processing part.
@@ -603,19 +672,9 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 	// every other way of getting time is incorrect due to alternateticks
 	int tasTick = FetchCurrentPlayerTickBase(player) - startTick;
 
-	TasFramebulk fb = GetRawFramebulkAt(slot, tasTick, currentToolsFramebulkIndex[slot]);
+	TasFramebulk& fb = RequestProcessedFramebulkAt(slot, tasTick);
 
-	// update all tools that needs to be updated
-	auto fbTick = fb.tick;
-	fb.tick = tasTick;
-	if (fbTick == tasTick) {
-		for (TasToolCommand cmd : fb.toolCmds) {
-			auto tool = TasTool::GetInstanceByName(slot, cmd.tool->GetName());
-			if (tool == nullptr) continue;
-			tool->SetParams(cmd.params);
-		}
-	}
-
+	UpdateTools(slot, fb, POST_PROCESSING);
 	auto playerInfo = GetPlayerInfo(slot, player, cmd);
 
 	float orig_forward = cmd->forwardmove;
@@ -634,21 +693,7 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 		return;
 	}
 
-	// applying tools
-	if (playbackInfo.slots[slot].header.version >= 3) {
-		// use priority list for newer versions. technically all tools should be in the list
-		for (std::string toolName : TasTool::priorityList) {
-			auto tool = TasTool::GetInstanceByName(slot, toolName);
-			if (tool == nullptr) continue;
-			tool->Apply(fb, playerInfo);
-		}
-	} else {
-		// use old "earliest first" ordering system (partially also present in TasTool::SetParams)
-		for (TasTool *tool : TasTool::GetList(slot)) {
-			tool->Apply(fb, playerInfo);
-		}
-	}
-
+	ApplyTools(fb, playerInfo, POST_PROCESSING);
 
 	// make sure none of the framebulk is NaN
 	if (std::isnan(fb.moveAnalog.x)) fb.moveAnalog.x = 0;
@@ -717,13 +762,9 @@ void TasPlayer::PostProcess(int slot, void *player, CUserCmd *cmd) {
 		SE(player)->fieldOff<CUserCmd>("m_hViewModel", 8) /* m_LastCmd */ = *cmd;
 	}
 
-	// put processed framebulk in the list
-	if (fbTick != tasTick) {
-		std::vector<std::string> empty;
-		fb.commands = empty;
+	if (sar_tas_debug.GetInt() > 0) {
+		console->Print("(TAS: posttick) %s\n", fb.ToString().c_str());
 	}
-	playbackInfo.slots[slot].processedFramebulks.push_back(fb);
-
 	tasPlayer->DumpUsercmd(slot, cmd, tasTick, "processed");
 }
 
@@ -754,6 +795,48 @@ void TasPlayer::ApplyMoveAnalog(Vector moveAnalog, CUserCmd *cmd) {
 	} else if (moveAnalog.x < -0.0) {
 		cmd->buttons |= IN_MOVELEFT;
 	}
+}
+
+void TasPlayer::UpdateTools(int slot, const TasFramebulk &fb, TasToolProcessingType processType) {
+	for (TasToolCommand cmd : fb.toolCmds) {
+		auto tool = TasTool::GetInstanceByName(slot, cmd.tool->GetName());
+		if (!CanProcessTool(tool, processType)) continue;
+		tool->SetParams(cmd.params);
+	}
+}
+
+void TasPlayer::ApplyTools(TasFramebulk &fb, const TasPlayerInfo &pInfo, TasToolProcessingType processType) {
+	int slot = pInfo.slot;
+
+	FOR_TAS_SCRIPT_VERSIONS_UNTIL(2) {
+		// use old "earliest first" ordering system (partially also present in TasTool::SetParams)
+		for (TasTool *tool : TasTool::GetList(slot)) {
+			if (!CanProcessTool(tool, processType)) continue;
+			tool->Apply(fb, pInfo);
+		}
+		return;
+	}
+
+	// use priority list for newer versions. technically all tools should be in the list
+	for (std::string toolName : TasTool::priorityList) {
+		auto tool = TasTool::GetInstanceByName(slot, toolName);
+		if (!CanProcessTool(tool, processType)) continue;
+		tool->Apply(fb, pInfo);
+	}
+}
+
+bool TasPlayer::CanProcessTool(TasTool *tool, TasToolProcessingType processType) {
+	if (tool == nullptr) {
+		return false;
+	}
+
+	int slot = tool->GetSlot();
+	FOR_TAS_SCRIPT_VERSIONS_UNTIL(8) {
+		// old scripts process all tools in post processing
+		return processType == POST_PROCESSING;
+	}
+
+	return tool->CanProcess(processType);
 }
 
 void TasPlayer::DumpUsercmd(int slot, const CUserCmd *cmd, int tick, const char *source) {

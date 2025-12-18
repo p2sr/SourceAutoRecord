@@ -16,7 +16,7 @@ struct CommandToolParams : public TasToolParams {
 class CommandTool : public TasToolWithParams<CommandToolParams> {
 public:
 	CommandTool(int slot)
-		: TasToolWithParams("cmd", slot) {
+		: TasToolWithParams("cmd", PRE_PROCESSING, COMMANDS, slot) {
 	}
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);

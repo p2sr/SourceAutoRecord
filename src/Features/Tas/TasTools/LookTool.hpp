@@ -22,8 +22,8 @@ class LookTool : public TasToolWithParams<LookToolParams> {
 private:
 	int remainingTime;
 public:
-	LookTool(const char *name, int slot)
-		: TasToolWithParams(name, slot){};
+	LookTool(int slot)
+		: TasToolWithParams("look", PRE_PROCESSING, VIEWANGLES, slot) {};
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &fb, const TasPlayerInfo &pInfo);
 };

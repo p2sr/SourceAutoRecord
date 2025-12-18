@@ -1,6 +1,7 @@
 #include "TasTool.hpp"
 
 #include "TasPlayer.hpp"
+
 #include <algorithm>
 
 std::list<TasTool *> &TasTool::GetList(int slot) {
@@ -26,6 +27,7 @@ std::vector<std::string> TasTool::priorityList = {
 	"setang",
 	"autoaim",
 	"look",
+	"jump",
 	"autojump",
 	"absmov",
 	"move",
@@ -33,11 +35,13 @@ std::vector<std::string> TasTool::priorityList = {
 	"decel",
 };
 
-TasTool::TasTool(const char *name, int slot)
+TasTool::TasTool(const char *name, TasToolProcessingType processingType, TasToolBulkType bulkType, int slot)
 	: name(name)
+	, processingType(processingType)
+	, bulkType(bulkType)
 	, slot(slot) {
 	this->GetList(slot).push_back(this);
-	
+
 	// in case the tool is not defined in the priority list, put it in the back of it
 	std::string nameStr = name;
 	if (std::find(priorityList.begin(), priorityList.end(), nameStr) == priorityList.end()) {
@@ -46,10 +50,6 @@ TasTool::TasTool(const char *name, int slot)
 }
 
 TasTool::~TasTool() {
-}
-
-const char *TasTool::GetName() {
-	return this->name;
 }
 
 void TasTool::SetParams(std::shared_ptr<TasToolParams> params) {

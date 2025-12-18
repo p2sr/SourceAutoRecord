@@ -6,10 +6,7 @@
 
 #include <climits>
 
-LookTool tasLookTool[2] = {
-	{"look", 0},
-	{"look", 1}, 
-};
+LookTool tasLookTool[2] = { {0}, {1} };
 
 void LookTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) {
 	if (!params.enabled)
@@ -35,7 +32,7 @@ void LookTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) {
 std::shared_ptr<TasToolParams> LookTool::ParseParams(std::vector<std::string> vp) {
 
 	if (vp.size() == 0) {
-		return std::make_shared<LookToolParams>();
+		throw TasParserArgumentCountException(this, vp.size());
 	}
 
 	float pitchDelta = 0.0f;
@@ -79,8 +76,7 @@ std::shared_ptr<TasToolParams> LookTool::ParseParams(std::vector<std::string> vp
 		// try to just parse a number as time if it's not any known parameter
 		else {
 			if (timeAssigned) {
-				//	unknown parameter
-				throw TasParserException(Utils::ssprintf("Bad parameter for tool %s: %s", this->GetName(), param.c_str()));
+				throw TasParserArgumentException(this, param);
 			}
 			tickCount = TasParser::toFloat(param);
 			timeAssigned = true;

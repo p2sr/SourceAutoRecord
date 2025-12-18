@@ -46,50 +46,60 @@ void SetAngleTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 
 std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() < 1 || vp.size() > 4) 
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		throw TasParserArgumentCountException(this, vp.size());
 
 	std::string target;
 	float pitch;
 	float yaw;
-	int ticks;
-	AngleToolsUtils::EasingType easingType;
+	int ticks = 1;
+	AngleToolsUtils::EasingType easingType = AngleToolsUtils::EasingType::Linear;
 	int i = 2;
 
+	if (vp[0] == "off") {
+		if (vp.size() != 1) throw TasParserArgumentCountException(this, vp.size());
+		return std::make_shared<SetAngleParams>();
+	}
+
 	if (vp[0] == "ahead") {
-		if (vp.size() > 3) throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		if (vp.size() > 3) throw TasParserArgumentCountException(this, vp.size());
 		target = vp[0];
 		i = 1;
 	} else {
-		if (vp.size() < 2) throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		if (vp.size() < 2) throw TasParserArgumentCountException(this, vp.size());
 
 		// pitch
 		try {
 			pitch = std::stof(vp[0]);
 		} catch (...) {
-			throw TasParserException(Utils::ssprintf("Bad pitch value for tool %s: %s", this->GetName(), vp[0].c_str()));
+			throw TasParserArgumentException(this, "pitch", vp[0]);
 		}
 
 		// yaw
 		try {
 			yaw = std::stof(vp[1]);
 		} catch (...) {
-			throw TasParserException(Utils::ssprintf("Bad yaw value for tool %s: %s", this->GetName(), vp[1].c_str()));
+			throw TasParserArgumentException(this, "yaw", vp[1]);
 		}
 	}
 
 	// ticks
-	try {
-		ticks = vp.size() >= (size_t)(i + 1) ? std::stoi(vp[i]) : 1;
-	} catch (...) {
-		throw TasParserException(Utils::ssprintf("Bad tick value for tool %s: %s", this->GetName(), vp[i].c_str()));
+	if (vp.size() >= i + 1) {
+		try {
+			ticks = std::stoi(vp[i]);
+		} catch (...) {
+			throw TasParserArgumentException(this, "tick", vp[i]);
+		}
 	}
 
 	// easing type
-	try {
-		easingType = AngleToolsUtils::ParseEasingType(vp.size() >= (size_t)(i + 2) ? vp[i + 1] : "linear");
-	} catch (...) {
-		throw TasParserException(Utils::ssprintf("Bad interpolation value for tool %s: %s", this->GetName(), vp[i + 1].c_str()));
+	if (vp.size() >= i + 2) {
+		try {
+			easingType = AngleToolsUtils::ParseEasingType(vp[i + 1]);
+		} catch (...) {
+			throw TasParserArgumentException(this, "interpolation", vp[i + 1]);
+		}
 	}
+	
 
 	return std::make_shared<SetAngleParams>(target, pitch, yaw, ticks, easingType);
 }

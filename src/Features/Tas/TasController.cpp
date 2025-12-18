@@ -110,9 +110,8 @@ void TasController::SetButtonState(TasControllerInput i, bool state) {
 std::chrono::time_point<std::chrono::high_resolution_clock> g_lastControllerMove;
 
 void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) {
-	// ControllerMove is executed several times for one tick, idk why,
-	// but only once with tick_count bigger than 0. Working only
-	// on these seems to work fine, so I assume these are correct.
+	// ControllerMove is executed several times for one tick. Most of them
+	// are called from ExtraMouseSamples with 0 tick count. We want to filter them out.
 	if (cmd->tick_count == 0) return;
 
 	// doing some debugs to test the behaviour of the real controller
@@ -141,7 +140,7 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 
 	//console->Print("TasController::ControllerMove (%d, ", cmd->tick_count);
 
-	tasPlayer->FetchInputs(nSlot, this);
+	tasPlayer->FetchInputs(nSlot, this, cmd);
 
 	//TAS is now controlling inputs. Reset everything we can.
 	cmd->forwardmove = 0;

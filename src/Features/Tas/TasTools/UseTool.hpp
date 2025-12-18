@@ -15,7 +15,8 @@ struct UseToolParams : public TasToolParams {
 
 class UseTool : public TasToolWithParams<UseToolParams> {
 public:
-	UseTool(int slot) : TasToolWithParams("use", slot) {}
+	UseTool(int slot)
+		: TasToolWithParams("use", PRE_PROCESSING, BUTTONS, slot) {}
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
 	virtual void Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo);

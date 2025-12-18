@@ -29,7 +29,7 @@ void ZoomTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 
 std::shared_ptr<TasToolParams> ZoomTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() != 1)
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		throw TasParserArgumentCountException(this, vp.size());
 
 	ZoomType type;
 
@@ -42,7 +42,7 @@ std::shared_ptr<TasToolParams> ZoomTool::ParseParams(std::vector<std::string> vp
 	else if (vp[0] == "toggle") {
 		type = ZoomType::Toggle;
 	} else {
-		throw TasParserException(Utils::ssprintf("Bad parameter for tool %s: %s", this->GetName(), vp[0].c_str()));
+		throw TasParserArgumentException(this, vp[0]);
 	}
 
 	return std::make_shared<ZoomToolParams>(true, type);

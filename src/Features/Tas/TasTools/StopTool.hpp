@@ -2,18 +2,21 @@
 #include "../TasTool.hpp"
 
 struct StopToolParams : public TasToolParams {
+	uint32_t typesToDisableMask;
+
 	StopToolParams()
 		: TasToolParams() {
 	}
-	StopToolParams(bool enabled)
-		: TasToolParams(enabled) {
+	StopToolParams(bool enabled, uint32_t typesToDisableMask)
+		: TasToolParams(enabled)
+		, typesToDisableMask(typesToDisableMask) {
 	}
 };
 
 class StopTool : public TasToolWithParams<StopToolParams> {
 public:
 	StopTool(int slot)
-		: TasToolWithParams("stop", slot) {
+		: TasToolWithParams("stop", POST_PROCESSING, META, slot) {
 	}
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);

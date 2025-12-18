@@ -9,16 +9,21 @@ CommandTool commandTool[2] = {{0}, {1}};
 
 void CommandTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 	if (params.enabled) {
-		// FetchInputs happens before tools in the tick, so we don't double-execute
 		bulk.commands.push_back(params.command);
-		engine->ExecuteCommand(params.command.c_str(), true);
+
+		FOR_TAS_SCRIPT_VERSIONS_UNTIL(8) {
+			// Commands in frame bulk are called by FetchInput
+			// but before version 9 they were added in post processing, so they need to be executed here.
+			engine->ExecuteCommand(params.command.c_str(), true);
+		}
+
 		params.enabled = false;
 	}
 }
 
 std::shared_ptr<TasToolParams> CommandTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() == 0)
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		throw TasParserArgumentCountException(this, vp.size());
 
 	std::string command;
 

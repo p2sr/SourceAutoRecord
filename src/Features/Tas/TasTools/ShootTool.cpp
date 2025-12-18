@@ -33,7 +33,7 @@ void ShootTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 
 std::shared_ptr<TasToolParams> ShootTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() < 1 || vp.size() > 2)
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		throw TasParserArgumentCountException(this, vp.size());
 
 	bool enabled = true;
 	TasControllerInput button;
@@ -57,7 +57,7 @@ std::shared_ptr<TasToolParams> ShootTool::ParseParams(std::vector<std::string> v
 			spam = true;
 		} 
 		else {
-			throw TasParserException(Utils::ssprintf("Incorrect parameter for tool %s: %s", this->GetName(), param.c_str()));
+			throw TasParserArgumentException(this, param);
 		}
 	}
 

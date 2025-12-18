@@ -1,30 +1,62 @@
 # P2TAS Documentation
 
+## Table of Contents
+1. [Introduction](#introduction)
+2. [SAR's TAS environment specification](#sars-tas-environment-specification)
+3. [`.p2tas` file structure](#p2tas-file-structure)
+4. [Automation tools](#automation-tools)
+8. [Version history](#version-history)
+
+
 ## Introduction
 
-P2TAS is a scripting language used for defining a sequence of time-stamped actions to be executed by a virtual controller within Portal 2 (and other Portal 2-based games supported by SAR), for the purpose of creating tool-assisted speedruns.
+P2TAS is a scripting language and a set of tools used for defining and playing back a sequence of time-stamped actions to be executed within Portal 2 (and other Portal 2-based games supported by SAR), for the purpose of creating tool-assisted speedruns.
 
-The following document will explain the P2TAS syntax, as well as technical details of how P2TAS files are processed and executed by the plugin.
+The following document serves as a documentation of SAR's behaviour for the purpose of TAS playback, as well as P2TAS scripting language and features available through it.
 
-## TAS Virtual Controller specifications
+## SAR's TAS environment specification
 
-SAR uses its own virtual controller to execute actions defined by P2TAS files. It was implemented by injecting custom code into a Steam Controller's input processing function.
+### Script playback
+Tool-assisted speedrunning in Portal 2 is done through a playback of pre-programmed sequence of inputs declared by our custom P2TAS scripting language. SAR is handling both interpretation of these scripts and their playback, which includes injection of player inputs and their proper timing. Although SAR is filled with other features, some of which make TAS creation process easier, they're not required for a successful TAS script playback.
 
-The controller allows the following input methods:
+### The virtual controller
+SAR implements a virtual controller by injecting code into the Steam Controller's input fetching function. In raw script playback, this is the only injection point required for TAS script playback, ensuring minimal interference with game logic.
 
-- digital inputs (jumping, crouching, "use" action, zooming, primary/secondary attack),
-- floating-point precision analog inputs (movement and camera view),
-- console command execution.
+This controller supports:
 
-All of inputs are executed with tick-based precision, even despite the alternate-ticks mechanism.
+- **Digital inputs**: jump, crouch, use, zoom, primary/secondary attack (blue and orange portal)
+- **Analog inputs**: 2D movement and view angle controls with floating-point precision
+- **Console commands**: Arbitrary command execution at specific ticks (as a way to replicate key binds)
 
-The following features of the virtual controller has been proven possible to replicate by physical hardware.
+The virtual controller has effectively instant response time, allowing different inputs on consecutive ticks despite the existence of `sv_alternateticks` - something confirmed to be replicable with physical hardware (Steam Controller with ~1ms response time).
 
-## File structure
+### Automation tools and raw playback
+SAR's TAS environment includes a set of automation tools (like autojump, autoaim or autostrafer) that calculate complex input sequences based on real-time state of the game. In order for them to work, SAR injects into additional game functions to read player's state properly, as they're not yet available at the input fetching stage.
 
-Script written in P2TAS is stored as a text file with `.p2tas` extension, which is then interpreted by SourceAutoRecord plugin when a playback of said file is requested.
+Because of that, two distinct playback modes exist: 
+- **Tools playback** -  scripts are processed with all tools specified in the script. This is a default playback mode and should be used in a creation process of a TAS script. It is not guaranteed to produce fully legitimate gameplay. By default, tools playback should produce a raw script, automatically saved as a file with `_raw.p2tas` suffix.
 
-The file is expected to start with a header, and then be followed by at least one tickbulk.
+- **Raw playback** - only pre-calculated inputs are interpreted with no tools processing. Every script with `_raw.p2tas` suffix is expected to be a raw script and will be played as such. Raw scripts are guaranteed to produce legitimate gameplay, as they're not using any other extra input injection methods other than the virtual controller, so they should be used for final verification and demo recording.
+
+### RNG Manipulation
+
+Portal 2 TASing is famously annoying due to randomness - both game-based and physics based - which can lead to inconsistent results from a playback of a single script. In the past, there were several attempts of artificially manipulating RNG to resolve script playback into a single possibility. So far, there's a limited amount of RNG manipulation available, mostly related to simple gameplay RNG like gel spread, catapulted prop torque and view punch.
+
+SAR can generate files storing details of RNG state using console command `sar_rng_save`, which then can be used in a P2TAS script by referencing this file in the header of the script to reproduce exact same RNG state. While this solution is not ideal in terms of legitimacy, it is not discouraged, as a final result is still based on state of the game that once existed.
+
+## `.p2tas` file structure
+
+Script written in P2TAS is stored as a text file with `.p2tas` extension. The file is expected to start with a header, and then be followed by at least one tickbulk.
+
+```
+version <versionnumber>
+start {next} {save/next/cm/now} <name>
+[rngmanip [path]]
+
+<tickbulk>
+[tickbulk]
+...
+```
 
 The parser is case-sensitive. All keywords are lowercase.
 
@@ -81,7 +113,7 @@ Everything except console commands and tool commands is persistent, meaning that
 20>|0 0||| // stopped rotating, but still moving and ducking.
 ```
 
-Additionally, as shown above, tickbulk parts are optional. If persistent parts are left empty, they will preserve the behaviour of the same part in last defined framebulk. This also means that pipelines are optional as well, and the following framebulk is valid:
+Additionally, as shown above, tickbulk parts are optional. If persistent parts are left empty, they will preserve the behaviour of the same part in last defined tickbulk. This also means that pipelines are optional as well, and the following tickbulk is valid:
 
 ```cs
 69> // yup, that's valid
@@ -140,64 +172,76 @@ P2TAS supports single-line comments, starting with `//` and running until the en
 
 Whitespaces are used to separate tokens and are useless beyond this point. This means you can put as many spaces, newlines and indents as you want, anywhere you want, as long as it doesn't actually affect the tokens themselves.
 
-## Automation Tools
+## Automation tools
 
 To make certain actions easier to perform, SourceAutoRecord includes automation tools which can be controlled with tool commands in a tickbulk. These tools fetch game data in real time to produce appropriate controller inputs.
 
-Tools work every tick, meaning that you only have to set its parameters once with tool commands for a continuous behaviour. Consequently, if a tool has a continuous behaviour that never ends by itself, it has to be turned off by sending an appropriate tool command.
+Tools can have a continuous behaviour, affecting player inputs every tick, meaning that you only have to set its parameters once with tool commands for it to work. Consequently, if a tool has a continuous behaviour that never ends by itself, it has to be turned off by sending an appropriate tool command.
 
 Below is a complete list of automation tools supported by SourceAutoRecord.
 
 ### `strafe` tool
 
 ```cs
-strafe {vec/ang/veccam/off} {max/keep/<number>ups} {forward/forwardvel/left/right/<number>deg} {nopitchlock} {letspeedlock}
+strafe <parameters>
 ```
 
-A tool for automated strafing. It will attempt to gain the biggest acceleration in given tick, while trying to change movement direction towards the specified one.
+A tool for automated strafing. It's the most complicated automation tool in P2TAS. It will attempt to find the most optimal movement direction which satisfy criteria specified by parameter (whether it's greatest acceleration towards specified direction or something else) and apply it to player's inputs.
 
-Autostrafe tool will always prioritize accelerating first, unless there's no longer need for accelerating. Since there are almost always two ideal movement directions for the perfect acceleration, it will choose direction based on currently set target direction. If that direction has been reached, the autostrafer will toggle into a "line mode", where it will attempt its best to follow a straight line towards set target direction.
+Strafe tool accepts any non-zero number of parameters in unspecified order. Here's a list of behaviours which can be manipulated with those parameters:
 
-Strafe tool accepts any number of parameters. Here's a list of valid parameters:
-
-- Switching strafe modes:
+- **Input type** - The goal of autostrafer is to find a movement direction. However, this direction can be achieved by the player in multiple ways. These paramaters can control the input mode:
   - `vec` (default) - vectorial strafing - using analog movement input to control the direction of movement, while view angles remains mostly unaffected.
-  - `ang` - angular strafing - using view angle input to control the direction of movement, while the movement is oscillated between left and right. Useful for strafing on propulsion gel.
-  - `veccam` - same as vectorial strafing, but the view angles will be modified to point along current horizontal velocity.
-  - `off` - disables autostrafer.
-- Manipulating target speed:
-  - `max` (default) - always accelerates as much as possible
+  - `ang` - angular strafing - using view angle input to control the direction of movement, while the movement is oscillated between left and right. Useful for strafing on propulsion gel, as moving on it causes your side movement acceleration to be scaled down.
+  - `veccam` - same as vectorial strafing, but the view angles will be modified to point along current horizontal velocity. Occasionally useful for better visual presentation.
+
+- **Target velocity** - By default, the tool will attempt to maximize acceleration for every tick. Same behaviour occurs when target velocity is set to be higher than a current one. If they're equal, the tool will attempt to strafe towards target direction while keeping the same velocity, taking ground friction into consideration. If target velocity is lower, it will try to maximize velocity direction change in every tick, effectively making velocity slightly lower (for better deceleration, consider using `decel` tool.). These paramaters can control target velocity:
+  - `max` (default) - always accelerates as much as possible.
+  - `min` - sets target horizontal velocity to 0 units per second.
   - `keep` - attempts to keep horizontal speed from the moment of sending the tool command.
-  - `<number>ups` - attempts to reach given speed, and then keep it. It will either accelerate as efficiently as possible, or decelerate by finding the most efficient rotation towards the target direction as possible (doesn't decelerate as fast as possible. For that, use `decel`).
-- Manipulating target direction:
+  - `<number>ups` - sets target horizontal velocity to given value, in units per second.
+
+- **Target direction** - Because of the very nature of strafing, there are two possible strafe directions. Every tick, the tool will decide between those two directions, preferring the one that brings player's velocity direction closer to target direction given through parameters. After the target is reached, the tool will define a straight line it will try to follow until external factors (like colliding with something) will cause it to deviate too far from it, in which case, it'll fall back to default mode. These parameters can control target direction:
   - `forward` - strafes towards the currently faced direction.
   - `forwardvel` (default) - strafes towards current velocity direction.
   - `left` - forces autostrafer to always strafe left.
   - `right` - forces autostrafer to always strafe right.
-  - `<number>deg` - sets target direction based on given angle. It corresponds to a look direction for given yaw angle.
-- Additional behavior flags:
-  - `nopitchlock` - prevents the autostrafer from locking view angle pitch in a range between -30 and 30 degrees, which is the range where pitch doesn't affect player's movement. Using this flag and going past this range makes strafing sub-optimal, but allows for greater aim range.
+  - `<number>deg` - sets target direction based on given angle in degrees. It corresponds to a look direction for given yaw angle (second angle number in `cl_showpos`)
+
+- **Extra behaviour** - Autostrafer has several internal mechanisms which work around some game's limitations in order for a tool to function properly. These behaviours can be tweaked with these parameters:
+  - `nopitchlock` - prevents the autostrafer from locking view pitch angle in a range between -30 and 30 degrees, which is the range where pitch angle doesn't affect player's movement. Using this flag and going past this range makes strafing sub-optimal, but allows for greater aim range.
   - `letspeedlock` - allows the strafer to become soft-speedlocked when strafing above 300ups midair. This sacrifices speed, but allows slightly better turning towards a diagonal direction when affected by a speedlock.
 
-Parameters marked as default define the default behavior of the tool (as in, the behavior which occurs when no other parameters in given category are given).
+**Movement input manipulation** - For more advanced usage, it is sometimes necessary to make a tiny adjustment of the movement input vector, even if it means sacrificing strafe accuracy. These parameters can be used for that:
+  - `<number>usdeg`, `<number>osdeg` - sets an offset, in degrees, for a calculated movement direction. `usdeg` will understrafe, bringing movement vector closer to velocity vector and causing weaker turn, while `osdeg` will overstrafe, bringing movement vector further away from velocity vector and causing bigger turn.
+  - `<number>us`, `<number>os` - controls understrafing and overstrafing, similarly to `usdeg` and `osdeg`, however, these accept scalar values, where unit value for both (`1us` and `1os`) are equivalent of bringing movement direction yielding most acceleration to the closest direction yielding no acceleration in both ways.
+  - `<number>` - using suffix-less number parameter is treated as an input strength - movement input vector will be scaled by that number.
+
+
+Additional notes:
+- Parameters marked as default define the default behavior of the tool (as in, the behavior which occurs when no other parameters in given category are given).
+- The tool is continuous, meaning it has to be disabled with `off` parameter. It can also be enabled with `on` parameter, which will use default settings.
+- When the tool is about to reach both target velocity and target direction, it will calculate perfect movement input to reach them and then silently stop, but will continue once any of these change.
 
 Examples of usage:
 
-- `strafe max right` - vectorial-strafes with the greatest possible acceleration clockwise.
+- `strafe on` - enables autostrafer with default settings (vectorial strafing with the greatest acceleration towards current looking direction)
+- `strafe right` - vectorial-strafes with the greatest possible acceleration clockwise.
 - `strafe ang forwardvel` - angular-strafes with the greatest possible acceleration towards the current velocity direction.
 - `strafe 30deg max nopitchlock` - vectorial-strafes with the greatest possible acceleration towards 30 degrees without locking pitch angle between -30 and 30 degrees.
+- `strafe 255ups 0.1osdeg` - vectorial-strafes towards current looking direction to reach velocity of 255ups, while doing an overstrafe of 0.1 degrees.
 
 ### `autojump` tool
 
 ```cs
-autojump {on/ducked/duck/off}
+autojump {on/unducked/ducked/duck/off}
 ```
 
 Autojump tool, as the name suggests, will automatically manipulate the jump input in order to perform tick-perfect jumps from the ground, avoiding any ground friction. It's normally used in combination with the `strafe` tool to achieve perfect bunnyhopping.
 
 This tool accepts one of the following parameters:
 
-- `on` - enables autojumping.
+- `on` or `unducked` - enables autojumping.
 - `ducked` or `duck` - enables ducked autojumping, which holds crouch button when jumping, giving a small boost in the jump height.
 - `off` - disables autojumping.
 
@@ -209,9 +253,9 @@ absmov {<angle>deg/off} [scale]
 
 This tool allows to move in an absolute direction defined by an angle in degrees (which corresponds to a look direction for a given yaw angle).
 
-It takes at most two parameters. First parameter is expected to be a number defining an angle of movement as described above. The second parameter is optional, and defines a scalar value of movement analog vector (as in, how much to move in a given direction) in a range from 0.0 to 1.0.
+It takes at most two parameters. First parameter is expected to be a number defining an angle of movement as described above. The second parameter is an optional input strength, between 0.0 and 1.0 (default).
 
-The tool can be disabled by passing `off` as a parameter.
+The tool is continuous can be disabled by passing `off` as a parameter.
 
 ### `setang` tool
 
@@ -221,12 +265,14 @@ setang {<pitch> <yaw>/ahead} [time] [easing_type]
 
 Similarly to a `setang` console command, this tool can set view angles to a desired pitch and yaw values. You can also use `ahead` as a parameter to set the view angles to look the direction you're currently moving. In addition, this tool allows a smooth interpolation from current view angles to desired ones.
 
-The tool takes at least one parameter when looking `ahead`, or two which describe the desired pitch and yaw angle, in this order. Optional next parameter describes a time in ticks for how long the view angle should be interpolated to desired angles before reaching them. Optional final parameter describes an easing function of interpolation:
+The tool takes at least one parameter when looking `ahead`, or two which describe the desired pitch and yaw angle, in this order. The following optional parameter describes a time in ticks for how long the view angle should be interpolated to desired angles before reaching them. The interpolation takes external factors into consideration (like passing through portals) and will always end up on given absolute angles. Optional final parameter describes an easing function of interpolation:
 
 - `linear` - interpolates linearly. Default if no interpolation method is given.
 - `sine` or `sin` - interpolates using a sine easing.
 - `cubic` - interpolates using a cubic easing.
 - `exp` or `exponential` - interpolates using an exponential easing.
+
+When time parameter is used, this tool is continuous. It will disable itself once the angle has been reached, but it can be interrupted by using `off` parameter or with another use of `setang` command.
 
 Examples of usage:
 
@@ -244,8 +290,9 @@ autoaim {ent <entity_selector>/<x> <y> <z>/off} [time] [easing_type]
 
 Works similar to `setang` tool, except the tool is continuously aiming towards given entity or point until the tool is disabled.
 If first parameter is not `ent`, it expects the first three parameters to be X, Y and Z coordinates of a point to aim towards. Otherwise, it expects a second parameter to be a string representing an entity selector (an entity classname or targetname, optionally followed by a square-bracket array accessor describing which entity in a list of ones matching the selector to use for this tool).
-Again, similarly to `setang` tool, it takes interpolation time and easing type as optional parameters.
-The tool can be disabled by passing `off` as a first parameter.
+Similarly to `setang` tool, it takes interpolation time and easing type as optional parameters.
+
+This tool is always continuous, even after finishing interpolation. It can be disabled by passing `off` as a first parameter.
 
 Example of usage:
 
@@ -259,15 +306,24 @@ Example of usage:
 decel {<speed>/off}
 ```
 
-This tool decelerates the player as fast as possible towards the speed, in units per second, specified by a first parameter. It can be disabled any time by passing `off` as a parameter instead of speed number.
+This tool decelerates the player as fast as possible towards the desired horizontal velocity, in units per second. It's a continuous tool that disables itself once target velocity has been reached, but it can be disabled any time by passing `off` as a parameter.
 
 ### `check` tool
 
 ```cs
-check {pos <x> <y> <z>} {posepsilon <number>} {ang <pitch> <yaw>} {angepsilon <number>} {holding [entity_selector]}
+check <conditions>
 ```
 
-This tool can be used to perform a check on player's position or view angles. If position or view angles differ by more than given epsilon, the TAS script is restarted. It can also be used to check if the player is holding an item, with an optional entity selector. The tool will restart until the number of automatic restarts surpasses the number defined by the `sar_tas_check_max_replays` console variable.
+This tool can be used to perform a check on player's properties at the tick of activation to ensure specific outcome of a TAS script (as a way to work around inconsistency issues). When given condition fails, it automatically restarts the script until condition is passed or it reaches maximum number of replayes (which can be tweaked with `sar_tas_check_max_replays` console variable.)
+
+Here's a list of possible conditions:
+- `pos <x> <y> <z>` - checks if player is at given world coordinates.
+- `posepsilon <epsilon>` - defines maximum allowed distance from player to given coordinates in units (0.5 by default).
+- `ang <pitch> <yaw>` - checks if the player aims towards given angles (in degrees).
+- `angepsilon <epsilon>` - defines maximum allowed distance from current player angles to given ones, in degrees (0.2 by default).
+- `vel <x/y/z/xy/xz/yz/xyz> <speed>` - checks if player's accumulated velocity from given components is equal to given value.
+- `velepsilon <epsilon>` - defines maximum allowed difference between player's accumulated velocity from components given in `vel` parameter and the speed value defined in that parameter (1.0 by default).
+- `holding [entity_selector]` - checks if player is holding a prop. Optionally, accepts a selector to check for a specific entity. Behaviour of the selector is similar to the one from [`autoaim` tool](#autoaim-tool).
 
 ### `duck` tool
 
@@ -307,7 +363,7 @@ A tool-based alternative to digital inputs for shooting blue and orange portal. 
 cmd <command>
 ```
 
-A tool-based alternative to console command part of a tickbulk. It will simply execute the command given as a parameter (whitespaces allowed).
+A tool-based alternative to console command part of a tickbulk. It will simply execute the command given as a parameter, whitespace allowed. It does not allow multiple commands, as command separator (`;`) is also used as a command separator for TAS tools. Use multiple `cmd` commands or a command tickbulk part instead.
 
 ### `move` tool
 
@@ -333,28 +389,17 @@ Additionally, time parameter in ticks can be given, which will disable the tool 
 ### `stop` tool
 
 ```cs
-stop
+stop [types]
 ```
 
-Stops all tools that were activated in the past tickbulks.
+Stops all tools that were activated in the past tickbulks. Optionally, it accepts any number of parameters specifying types of tools to disable. Here's a list of available types:
+- `movement` (or `moving`, `move`) - disables tools related to movement
+- `viewangles` (or `angles`, `ang`, `looking`, `look`) - disables tools related to changing your angle (this does NOT include `strafe` tool)
+- `buttons` (or `inputs`, `pressing`, `press`) - disables tools related to pressing digital inputs
+- `all` (or `everything`) - default behaviour, disables every tool.
 
-## Raw Scripts
 
-Automation tools fetch data from the game in real-time in order to produce their inputs. However, Portal 2 uses an alternate ticks system, which results in user inputs being fetched twice before using them to process two ticks at once. This means that, when creating user inputs for a second tick in pair, we will have an outdated information about the game's state, preventing automation tools from creating accurate inputs.
-
-The solution to this problem we've decided upon is to allow less legitimate input injection method for automation tools. However, in order to keep the legitimacy of our system, we've created a system for generating raw scripts.
-
-Raw scripts are P2TAS scripts which do not contain any automation tools. When P2TAS script with automation tools is played back, a raw script is generated based on inputs from automation tools.
-
-Raw scripts are usually identified by a `_raw` suffix in the script's file name. When it's present, TAS script player will ensure that no automation tools are being executed.
-
-## RNG Manipulation
-
-Portal 2 TASing is famously annoying due to randomness - both game-based and physics based. There are currently efforts of artificially manipulating RNG to resolve script playback into a single possibility. So far, there's a limited amount of RNG manipulation available, mostly related to gel spread.
-
-SAR can generate files storing details of RNG state using console command `sar_rng_save`, which then can be used in a P2TAS script by referencing this file in the header of the script to reproduce exact same RNG state.
-
-## Version History
+## Version history
 
 - Version 1:
   - Initial release.
@@ -377,3 +422,12 @@ SAR can generate files storing details of RNG state using console command `sar_r
   - Pitchlock to the correct sign.
 - Version 7:
   - Fix autostrafer air control limit with `sar_aircontrol` set.
+- Version 8:
+  - Improve autostrafer to lock onto target speed and direction instead of wiggling.
+  - Improve autostrafer to handle soft speedcap better.
+  - Improve autostrafer to respect pitch while keeping velocity in `nopitchlock` mode.
+  - Fix `decel` tool not respecting jump-based tools.
+- Version 9:
+  - Fix `use` tool by processing some tools during input fetching.
+
+Last updated during version 9 release.

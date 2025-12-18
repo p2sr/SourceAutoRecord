@@ -776,6 +776,14 @@ float TasParser::toFloat(std::string str) {
 	return x;
 }
 
+bool TasParser::hasSuffix(const std::string &str, const std::string &suffix) {
+	return str.size() > suffix.length() && str.substr(str.size() - suffix.length()) == suffix;
+}
+
+float TasParser::toFloatAssumeSuffix(std::string str, const std::string &suffix) {
+	return TasParser::toFloat(str.substr(0, str.size() - suffix.size()));
+}
+
 void TasParser::SaveRawScriptToFile(TasScript script) {
 	std::string fixedName = script.path;
 	size_t lastdot = fixedName.find_last_of(".");

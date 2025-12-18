@@ -31,7 +31,7 @@ struct CheckToolParams : public TasToolParams {
 class CheckTool : public TasToolWithParams<CheckToolParams> {
 public:
 	CheckTool(int slot)
-		: TasToolWithParams("check", slot)
+		: TasToolWithParams("check", POST_PROCESSING, META, slot)
 	{}
 
 	virtual std::shared_ptr<TasToolParams> ParseParams(std::vector<std::string>);
