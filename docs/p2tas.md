@@ -34,7 +34,7 @@ The virtual controller has effectively instant response time, allowing different
 SAR's TAS environment includes a set of automation tools (like autojump, autoaim or autostrafer) that calculate complex input sequences based on real-time state of the game. In order for them to work, SAR injects into additional game functions to read player's state properly, as they're not yet available at the input fetching stage.
 
 Because of that, two distinct playback modes exist: 
-- **Tools playback** -  scripts are processed with all tools specified in the script. This is a default playback mode and should be used in a creation process of a TAS script. It is not guaranteed to procude fully legitimate gameplay. By default, tools playback should produce a raw script, automatically saved as a file with `_raw.p2tas` suffix.
+- **Tools playback** -  scripts are processed with all tools specified in the script. This is a default playback mode and should be used in a creation process of a TAS script. It is not guaranteed to produce fully legitimate gameplay. By default, tools playback should produce a raw script, automatically saved as a file with `_raw.p2tas` suffix.
 
 - **Raw playback** - only pre-calculated inputs are interpreted with no tools processing. Every script with `_raw.p2tas` suffix is expected to be a raw script and will be played as such. Raw scripts are guaranteed to produce legitimate gameplay, as they're not using any other extra input injection methods other than the virtual controller, so they should be used for final verification and demo recording.
 
@@ -215,7 +215,7 @@ Strafe tool accepts any non-zero number of parameters in unspecified order. Here
 **Movement input manipulation** - For more advanced usage, it is sometimes necessary to make a tiny adjustment of the movement input vector, even if it means sacrificing strafe accuracy. These parameters can be used for that:
   - `<number>usdeg`, `<number>osdeg` - sets an offset, in degrees, for a calculated movement direction. `usdeg` will understrafe, bringing movement vector closer to velocity vector and causing weaker turn, while `osdeg` will overstrafe, bringing movement vector further away from velocity vector and causing bigger turn.
   - `<number>us`, `<number>os` - controls understrafing and overstrafing, similarly to `usdeg` and `osdeg`, however, these accept scalar values, where unit value for both (`1us` and `1os`) are equivalent of bringing movement direction yielding most acceleration to the closest direction yielding no acceleration in both ways.
-  - `<number>` - using suffix-less number parameter is treated as an input strenght - movement input vector will be scaled by that number.
+  - `<number>` - using suffix-less number parameter is treated as an input strength - movement input vector will be scaled by that number.
 
 
 Additional notes:
@@ -229,7 +229,7 @@ Examples of usage:
 - `strafe right` - vectorial-strafes with the greatest possible acceleration clockwise.
 - `strafe ang forwardvel` - angular-strafes with the greatest possible acceleration towards the current velocity direction.
 - `strafe 30deg max nopitchlock` - vectorial-strafes with the greatest possible acceleration towards 30 degrees without locking pitch angle between -30 and 30 degrees.
-- `strafe 255ups 0.1os` - vectorial-strafes to reach velocity of 255ups
+- `strafe 255ups 0.1osdeg` - vectorial-strafes towards current looking direction to reach velocity of 255ups, while doing an overstrafe of 0.1 degrees.
 
 ### `autojump` tool
 
@@ -253,7 +253,7 @@ absmov {<angle>deg/off} [scale]
 
 This tool allows to move in an absolute direction defined by an angle in degrees (which corresponds to a look direction for a given yaw angle).
 
-It takes at most two parameters. First parameter is expected to be a number defining an angle of movement as described above. The second parameter is an optional input strenght, between 0.0 and 1.0 (default).
+It takes at most two parameters. First parameter is expected to be a number defining an angle of movement as described above. The second parameter is an optional input strength, between 0.0 and 1.0 (default).
 
 The tool is continuous can be disabled by passing `off` as a parameter.
 
