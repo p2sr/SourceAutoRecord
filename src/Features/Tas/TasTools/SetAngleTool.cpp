@@ -55,6 +55,11 @@ std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string
 	AngleToolsUtils::EasingType easingType;
 	int i = 2;
 
+	if (vp[0] == "off") {
+		if (vp.size() != 1) throw TasParserArgumentCountException(this, vp.size());
+		return std::make_shared<SetAngleParams>();
+	}
+
 	if (vp[0] == "ahead") {
 		if (vp.size() > 3) throw TasParserArgumentCountException(this, vp.size());
 		target = vp[0];
