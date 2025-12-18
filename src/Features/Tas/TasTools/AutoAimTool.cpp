@@ -22,23 +22,27 @@ std::shared_ptr<TasToolParams> AutoAimTool::ParseParams(std::vector<std::string>
 		throw TasParserArgumentCountException(this, args.size());
 	}
 
-	int ticks;
-	AngleToolsUtils::EasingType easingType;
+	int ticks = 1;
+	AngleToolsUtils::EasingType easingType = AngleToolsUtils::EasingType::Linear;
 
 	// ticks
 	unsigned ticksPos = usesEntitySelector ? 2 : 3;
-	try {
-		ticks = args.size() >= ticksPos + 1 ? std::stoi(args[ticksPos]) : 1;
-	} catch (...) {
-		throw TasParserArgumentException(this, "ticks", args[ticksPos]);
+	if (args.size() >= ticksPos + 1) {
+		try {
+			ticks = std::stoi(args[ticksPos]);
+		} catch (...) {
+			throw TasParserArgumentException(this, "ticks", args[ticksPos]);
+		}
 	}
 
 	// easing type
 	unsigned typePos = usesEntitySelector ? 3 : 4;
-	try {
-		easingType = AngleToolsUtils::ParseEasingType(args.size() >= typePos + 1 ? args[typePos] : "linear");
-	} catch (...) {
-		throw TasParserArgumentException(this, "interpolation", args[typePos]);
+	if (args.size() >= typePos + 1) {
+		try {
+			easingType = AngleToolsUtils::ParseEasingType(args[typePos]);
+		} catch (...) {
+			throw TasParserArgumentException(this, "interpolation", args[typePos]);
+		}
 	}
 
 	if (usesEntitySelector) {

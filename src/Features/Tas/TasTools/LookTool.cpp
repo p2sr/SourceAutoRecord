@@ -32,7 +32,7 @@ void LookTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) {
 std::shared_ptr<TasToolParams> LookTool::ParseParams(std::vector<std::string> vp) {
 
 	if (vp.size() == 0) {
-		throw TasParserException(Utils::ssprintf("Wrong argument count for tool %s: %d", this->GetName(), vp.size()));
+		throw TasParserArgumentCountException(this, vp.size());
 	}
 
 	float pitchDelta = 0.0f;

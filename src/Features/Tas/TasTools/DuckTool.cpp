@@ -29,7 +29,7 @@ void DuckTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &pInfo) {
 
 std::shared_ptr<TasToolParams> DuckTool::ParseParams(std::vector<std::string> vp) {
 	if (vp.size() != 1)
-		TasParserArgumentCountException(this, vp.size());
+		throw TasParserArgumentCountException(this, vp.size());
 
 	bool enabled = true;
 	int time = INT32_MAX;

@@ -51,8 +51,8 @@ std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string
 	std::string target;
 	float pitch;
 	float yaw;
-	int ticks;
-	AngleToolsUtils::EasingType easingType;
+	int ticks = 1;
+	AngleToolsUtils::EasingType easingType = AngleToolsUtils::EasingType::Linear;
 	int i = 2;
 
 	if (vp[0] == "off") {
@@ -83,18 +83,23 @@ std::shared_ptr<TasToolParams> SetAngleTool::ParseParams(std::vector<std::string
 	}
 
 	// ticks
-	try {
-		ticks = vp.size() >= (size_t)(i + 1) ? std::stoi(vp[i]) : 1;
-	} catch (...) {
-		throw TasParserArgumentException(this, "tick", vp[i]);
+	if (vp.size() >= i + 1) {
+		try {
+			ticks = std::stoi(vp[i]);
+		} catch (...) {
+			throw TasParserArgumentException(this, "tick", vp[i]);
+		}
 	}
 
 	// easing type
-	try {
-		easingType = AngleToolsUtils::ParseEasingType(vp.size() >= (size_t)(i + 2) ? vp[i + 1] : "linear");
-	} catch (...) {
-		throw TasParserArgumentException(this, "interpolation", vp[i + 1]);
+	if (vp.size() >= i + 2) {
+		try {
+			easingType = AngleToolsUtils::ParseEasingType(vp[i + 1]);
+		} catch (...) {
+			throw TasParserArgumentException(this, "interpolation", vp[i + 1]);
+		}
 	}
+	
 
 	return std::make_shared<SetAngleParams>(target, pitch, yaw, ticks, easingType);
 }
