@@ -777,7 +777,7 @@ float TasParser::toFloat(std::string str) {
 }
 
 bool TasParser::hasSuffix(const std::string &str, const std::string &suffix) {
-	return str.size() > suffix.length() && str.substr(str.size() - suffix.length()) == suffix;
+	return Utils::EndsWith(str, suffix);
 }
 
 float TasParser::toFloatAssumeSuffix(std::string str, const std::string &suffix) {
