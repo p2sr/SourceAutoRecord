@@ -443,6 +443,9 @@ SIGSCAN_DEFAULT(PrecacheParticleSystem, "55 8B EC 8B 0D ? ? ? ? 8B 01 8B 50 ? 56
 SIGSCAN_DEFAULT(DispatchParticleEffect, "55 8B EC 8B 45 ? 50 E8 ? ? ? ? 8B 4D ? 8B 55 ? F3 0F 7E 45 ? 83 C4 04 51 8B 4D ? 52 8B 55 ? 51 83 EC 0C 8B CC 66 0F D6 01 F3 0F 7E 45 ? 89 51 ? 8B 55 ? 83 EC 0C 8B CC 66 0F D6 01 F3 0F 7E 45",
                                         "53 81 EC 84 00 00 00 8B 9C 24 ? ? ? ? FF B4 24 ? ? ? ? E8 ? ? ? ? 31 D2 F3 0F 10 84 24 ? ? ? ? C7 44 24 ? FF FF FF FF") // "projected_wall_impact" xref -> either usage same function -> DispatchParticleEffect
 
+SIGSCAN_DEFAULT(GetCurrentTonemappingSystem, "F6 05 ? ? ? ? 01 75 ? 83 0D ? ? ? ? 01 56 57", "55 89 E5 53 83 EC 04 0F B6 05 ? ? ? ? 84 C0 74 ? A1 ? ? ? ?")
+SIGSCAN_DEFAULT(ResetToneMapping, "55 8B EC 83 EC 14 F3 0F 10 45 ?", "55 89 E5 53 83 EC 14 E8 ? ? ? ? 66 0F EF C0")
+
 // Engine
 SIGSCAN_DEFAULT(ParseSmoothingInfoSig, "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", ""); // "cl_demosmootherpanel.cpp" xref -> CDemoSmootherPanel::ParseSmoothingInfo
 OFFSET_DEFAULT(ParseSmoothingInfoOff, 178, -1)

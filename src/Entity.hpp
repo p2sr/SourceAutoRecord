@@ -37,6 +37,7 @@ namespace EntField {
 	M2(ANY_INT, SHORT, signed short)
 	M2(ANY_INT, INT, signed int)
 	M2(ANY_INT, INT, unsigned int)
+	M2(ANY_INT, COLOR, color32)
 	M1(FLOAT, float)
 	M1(STRING, const char *)
 	M1(STRING, char *)
@@ -79,6 +80,8 @@ struct ServerEnt {
 	// Ensure type is opaque
 	ServerEnt(const ServerEnt &) = delete;
 
+	ServerClass *GetServerClass();
+
 	template <typename T> T &field(const char *field) {
 		auto val = EntField::getServerOffset(this, field);
 		if (!EntField::matchFieldType<T>(val.second)) EntField::warnBadFieldType(this, field, typeid(T).name(), val.second, true);
@@ -113,6 +116,8 @@ struct ServerEnt {
 struct ClientEnt {
 	// Ensure type is opaque
 	ClientEnt(const ClientEnt &) = delete;
+
+	ClientClass *GetClientClass();
 
 	template <typename T> T &field(const char *field) {
 		auto val = EntField::getClientOffset(this, field);

@@ -25,6 +25,7 @@
 #include "SDK/PlayerLocalData.hpp"
 #include "SDK/PortalPlacement.hpp"
 #include "SDK/ServerPlugin.hpp"
+#include "SDK/TonemapSystem.hpp"
 #include "SDK/Trace.hpp"
 #include "SDK/UserCmd.hpp"
 #include "SDK/UtlMemory.hpp"

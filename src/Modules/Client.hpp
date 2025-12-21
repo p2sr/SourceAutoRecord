@@ -48,7 +48,8 @@ public:
 	using _AddAvatarPanelItem = void(__cdecl *)(void *pLeaderboard, void *pStatLists, const PortalLeaderboardItem_t *pData, int nScore, int nType, int nPlayerType, int nAvatarIndex, int nHeight, int nSlot, bool bHUDElement);
 	using _PrecacheParticleSystem = int(__cdecl *)(const char *pszParticleName);
 	using _DispatchParticleEffect = void (__cdecl *)(const char *pszParticleName, Vector vecOrigin, Vector vecStart, QAngle vecAngles, void *pEntity, int nSplitScreenPlayerSlot, void *filter);
-
+	using _GetCurrentTonemappingSystem = CTonemapSystem*(*)();
+	using _ResetToneMapping = void(__cdecl *)(float flTonemappingScale);
 
 	_GetClientEntity GetClientEntity = nullptr;
 	_KeyDown KeyDown = nullptr;
@@ -63,6 +64,8 @@ public:
 	_AddAvatarPanelItem AddAvatarPanelItem = nullptr;
 	_DispatchParticleEffect DispatchParticleEffect = nullptr;
 	_PrecacheParticleSystem PrecacheParticleSystem = nullptr;
+	_GetCurrentTonemappingSystem GetCurrentTonemappingSystem = nullptr;
+	_ResetToneMapping ResetToneMapping = nullptr;
 
 	ChapterContextData_t *g_ChapterContextNames;
 	ChapterContextData_t *g_ChapterMPContextNames;
@@ -79,7 +82,9 @@ public:
 	void **gamerules;
 
 public:
-	ClientEnt *GetPlayer(int index);
+	ClientEnt *GetEntity(int index);
+	inline ClientEnt *GetPlayer(int index) { return GetEntity(index); }
+
 	void CalcButtonBits(int nSlot, int &bits, int in_button, int in_ignore, kbutton_t *button, bool reset);
 	bool ShouldDrawCrosshair();
 	void Chat(Color col, const char *str);

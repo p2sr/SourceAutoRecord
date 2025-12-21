@@ -110,7 +110,7 @@ static std::unordered_map<std::string, std::unordered_map<std::string, std::pair
 static std::unordered_map<std::string, std::unordered_map<std::string, std::pair<size_t, EntField::Type>>> g_client_offsets;
 
 const std::pair<size_t, EntField::Type> &EntField::getServerOffset(void *ent, const char *field) {
-	ServerClass *sc = Memory::VMT<ServerClass *(__rescall *)(void *)>(ent, Offsets::GetServerClass)(ent);
+	ServerClass *sc = ((ServerEnt*)ent)->GetServerClass();
 	datamap_t *dm = Memory::VMT<datamap_t *(__rescall *)(void *)>(ent, Offsets::S_GetDataDescMap)(ent);
 
 	// dumb, but construct class name by concating datamap and serverclass names
@@ -127,12 +127,7 @@ const std::pair<size_t, EntField::Type> &EntField::getServerOffset(void *ent, co
 }
 
 const std::pair<size_t, EntField::Type> &EntField::getClientOffset(void *ent, const char *field) {
-	// multiple inheritance is cringe
-#ifdef _WIN32
-	ClientClass *cc = ((ClientClass *(__rescall *)(void *))((void ***)ent)[2][2])(ent);
-#else
-	ClientClass *cc = Memory::VMT<ClientClass *(__rescall *)(void *)>(ent, 19)(ent);
-#endif
+	ClientClass *cc = ((ClientEnt *)ent)->GetClientClass();
 	datamap_t *pm = Memory::VMT<datamap_t *(__rescall *)(void *)>(ent, Offsets::GetPredDescMap)(ent); // datamap used for prediction stuff
 	datamap_t *dm = Memory::VMT<datamap_t *(__rescall *)(void *)>(ent, Offsets::C_GetDataDescMap)(ent);
 
@@ -149,6 +144,22 @@ const std::pair<size_t, EntField::Type> &EntField::getClientOffset(void *ent, co
 
 	return g_client_offsets[class_name][std::string(field)];
 }
+
+ServerClass *ServerEnt::GetServerClass() {
+	ServerClass *sc = Memory::VMT<ServerClass *(__rescall *)(void *)>(this, Offsets::GetServerClass)(this);
+	return sc;
+}
+
+ClientClass *ClientEnt::GetClientClass() {
+	// multiple inheritance is cringe
+#ifdef _WIN32
+	ClientClass *cc = ((ClientClass * (__rescall *)(void *))((void ***)this)[2][2])(this);
+#else
+	ClientClass *cc = Memory::VMT<ClientClass *(__rescall *)(void *)>(this, 19)(this);
+#endif
+	return cc;
+}
+
 
 static const char *g_type_names[] = {
 	"void",

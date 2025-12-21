@@ -144,7 +144,7 @@ DECL_CVAR_CALLBACK(cl_viewmodelfov) {
 	fovChanger->Force();
 }
 
-ClientEnt *Client::GetPlayer(int index) {
+ClientEnt *Client::GetEntity(int index) {
 	if ((index & Offsets::ENT_ENTRY_MASK) == Offsets::ENT_ENTRY_MASK) {
 		return nullptr;
 	}
@@ -996,6 +996,9 @@ bool Client::Init() {
 
 		Client::DispatchParticleEffect = (Client::_DispatchParticleEffect)Memory::Scan(this->Name(), Offsets::DispatchParticleEffect);
 		Client::PrecacheParticleSystem = (Client::_PrecacheParticleSystem)Memory::Scan(this->Name(), Offsets::PrecacheParticleSystem);
+		
+		Client::GetCurrentTonemappingSystem = (Client::_GetCurrentTonemappingSystem)Memory::Scan(this->Name(), Offsets::GetCurrentTonemappingSystem);
+		Client::ResetToneMapping = (Client::_ResetToneMapping)Memory::Scan(this->Name(), Offsets::ResetToneMapping);
 
 		this->g_ClientDLL->Hook(Client::LevelInitPreEntity_Hook, Client::LevelInitPreEntity, Offsets::LevelInitPreEntity);
 

@@ -23,7 +23,7 @@ struct Color {
 
 struct color32 {
 	bool operator!=( const struct color32 &other ) const;
-	int r, g, b, a; 
+	uint8_t r, g, b, a; 
 
 	inline unsigned *asInt(void) { return reinterpret_cast<unsigned*>(this); }
 	inline const unsigned *asInt(void) const { return reinterpret_cast<const unsigned*>(this); } 
