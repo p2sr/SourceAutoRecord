@@ -95,12 +95,23 @@ float Camera::GetCurrentPathTime() {
 //if in drive mode, checks if player wants to control the camera
 //for now it requires LMB input (as in demo drive mode)
 bool Camera::IsDriving() {
+	if (!engine->IsGameFocused() || vgui->IsUIVisible()) {
+		return false;
+	}
+
+	if (camera->controlType != Drive && camera->controlType != Follow) {
+		return false;
+	}
+
+	bool userWantsToDrive = sar_cam_drive.GetInt() == 2 || inputSystem->IsKeyDown(ButtonCode_t::MOUSE_LEFT);
+	if (!userWantsToDrive) {
+		return false;
+	}
+
 	bool drivingInGame = sar_cam_drive.GetBool() && engine->hoststate->m_activeGame;
 	bool drivingInDemo = engine->demoplayer->IsPlaying();
-	bool wantingToDrive = sar_cam_drive.GetInt() == 2 || inputSystem->IsKeyDown(ButtonCode_t::MOUSE_LEFT);
-	bool isUI = vgui->IsUIVisible();
 
-	return (camera->controlType == Drive || camera->controlType == Follow) && wantingToDrive && (drivingInGame || drivingInDemo) && !isUI;
+	return drivingInGame || drivingInDemo;
 }
 
 //used by camera state interpolation function. all the math is here.

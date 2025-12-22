@@ -44,6 +44,7 @@ public:
 	using _ClientTime = float (*)(void *thisptr);
 	using _DebugDrawPhysCollide = bool(__rescall *)(void *thisptr, const void *collide, IMaterial *material, const matrix3x4_t &transform, const Color &color);
 	using _IsPaused = bool (*)(void *thisptr);
+	using _IsActiveApp = bool(*)(void *thisptr);
 	using _TraceRay = void(__rescall *)(void *thisptr, const Ray_t &ray, unsigned int fMask, ITraceFilter *pTraceFilter, CGameTrace *pTrace);
 	using _PointOutsideWorld = bool(__rescall *)(void *thisptr, const Vector &test);
 	using _GetCount = int(__rescall *)(void *thisptr);
@@ -90,6 +91,7 @@ public:
 	_GetLightForPoint GetLightForPoint = nullptr;
 	_DebugDrawPhysCollide DebugDrawPhysCollide = nullptr;
 	_IsPaused IsPaused = nullptr;
+	_IsActiveApp IsActiveApp = nullptr;
 	_TraceRay TraceRay = nullptr;
 	_TraceRay TraceRayClient = nullptr;
 	_PointOutsideWorld PointOutsideWorld = nullptr;
@@ -144,6 +146,7 @@ public:
 	float GetHostTime();
 	bool isRunning();
 	bool IsGamePaused();
+	bool IsGameFocused();
 	int GetMapIndex(const std::string map);
 	std::string GetCurrentMapName();
 	std::string GetMapTitle(std::string map);

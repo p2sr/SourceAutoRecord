@@ -34,6 +34,7 @@ OFFSET_DEFAULT(GetSaveDirName, 124, 124)
 OFFSET_DEFAULT(ExecuteClientCmd, 104, 104)
 OFFSET_DEFAULT(GetActiveSplitScreenPlayerSlot, 127, 127)
 OFFSET_DEFAULT(GetSteamAPIContext, 177, 178)
+OFFSET_DEFAULT(IsActiveApp, 187, 188)
 OFFSET_DEFAULT(GetMouseDelta, -1, 161)  // This method only exists on Linux
 OFFSET_DEFAULT(IsPaused, 86, 86)
 OFFSET_DEFAULT(DebugDrawPhysCollide, 75, 75)
