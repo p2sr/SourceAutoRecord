@@ -80,7 +80,7 @@ bool tryClaimInstanceID(int index) {
 
 void freeInstanceID() {
 	if (g_instanceLockFileHandle == -1) {
-		return
+		return;
 	}
 	flock(g_instanceLockFileHandle, LOCK_UN);
 	close(g_instanceLockFileHandle);
