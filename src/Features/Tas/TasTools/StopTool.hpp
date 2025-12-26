@@ -1,5 +1,6 @@
 #pragma once
 #include "../TasTool.hpp"
+#include <cstdint>
 
 struct StopToolParams : public TasToolParams {
 	uint32_t typesToDisableMask;

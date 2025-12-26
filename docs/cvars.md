@@ -170,6 +170,9 @@
 |sar_demo_blacklist|0|Stop a set of commands from being run by demo playback.|
 |sar_demo_blacklist_addcmd|cmd|sar_demo_blacklist_addcmd \<command> - add a command to the demo blacklist|
 |sar_demo_blacklist_all|0|Stop all commands from being run by demo playback.|
+|sar_demo_clean_start|0|Attempts to minimize visual interpolation of some elements (like post-processing or lighting) when demo playback begins.|
+|sar_demo_clean_start_tonemap|0|Overrides initial tonemap scalar value used in auto-exposure.<br>Setting it to 0 will attempt to skip over to target value for several ticks.|
+|sar_demo_clean_start_tonemap_sample|cmd|sar_demo_clean_start_tonemap_sample [tick] - samples tonemap scale from current demo at given tick and stores it in "sar_demo_clean_start_tonemap" variable. If no tick is given, sampling will happen when `__END__` is seen in demo playback.|
 |sar_demo_overwrite_bak|0|Rename demos to (name)_bak if they would be overwritten by recording|
 |sar_demo_portal_interp_fix|1|Fix eye interpolation through portals in demo playback.|
 |sar_demo_remove_broken|1|Whether to remove broken frames from demo playback|
@@ -262,7 +265,7 @@
 |sar_hud_ghost_spec|0|Show the name of the ghost you're currently spectating.|
 |sar_hud_grounded|0|Draws the state of player being on ground.|
 |sar_hud_groundframes|0|Draws the number of ground frames since last landing. Setting it to 2 preserves the value.|
-|sar_hud_groundspeed|0|Draw the speed of the player upon leaving the ground.<br>0 = Default,<br>1 = Groundspeed,<br>2 = Groundspeed (Gain)|
+|sar_hud_groundspeed|0|Draw the speed of the player upon leaving the ground.<br>0 = Default<br>1 = Groundspeed<br>2 = Groundspeed (Gain)|
 |sar_hud_hide_text|cmd|sar_hud_hide_text \<id\|all> - hides the nth text value in the HUD|
 |sar_hud_inspection|0|Draws entity inspection data.|
 |sar_hud_jump|0|Draws current jump distance.|

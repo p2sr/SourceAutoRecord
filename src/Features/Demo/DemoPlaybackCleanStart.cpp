@@ -7,7 +7,7 @@
 Variable sar_demo_clean_start("sar_demo_clean_start", "0", 0,  
 	"Attempts to minimize visual interpolation of some elements (like post-processing or lighting) when demo playback begins.\n", 0);
 Variable sar_demo_clean_start_tonemap("sar_demo_clean_start_tonemap", "0", 0, 
-	"Overrides initial tonemap scalar value used in auto-exposure."
+	"Overrides initial tonemap scalar value used in auto-exposure.\n"
 	"Setting it to 0 will attempt to skip over to target value for several ticks.\n", 0);
 
 
@@ -116,7 +116,7 @@ void forceProjectedTexturesTargetColor() {
 CON_COMMAND(sar_demo_clean_start_tonemap_sample,
             "sar_demo_clean_start_tonemap_sample [tick] - samples tonemap scale from current demo "
             "at given tick and stores it in \"sar_demo_clean_start_tonemap\" variable. "
-            "If no tick is given, sampling will happen when __END__ is seen in demo playback.") {
+            "If no tick is given, sampling will happen when `__END__` is seen in demo playback.\n") {
 	if (args.ArgC() > 2) {
 		return console->Print(sar_demo_clean_start_tonemap_sample.ThisPtr()->m_pszHelpString);
 	}
