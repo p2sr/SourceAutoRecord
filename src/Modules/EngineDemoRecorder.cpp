@@ -365,11 +365,16 @@ void patchDemoHeaderTempFileToBeUnique() {
 	auto uniqueDemoHeaderNamePtr = (unsigned char *)&uniqueDemoHeaderName;
 
 	g_StartupDemoFile_headerNamePatch = new Memory::Patch();
-	auto StartupDemoFile = Memory::Scan(engine->demorecorder->Name(), Offsets::StartupDemoFile);
-	g_StartupDemoFile_headerNamePatch->Execute(StartupDemoFile + Offsets::StartupDemoFile_HeaderName, uniqueDemoHeaderNamePtr, 4);
+	auto StartupDemoFile = Memory::Scan(engine->demorecorder->Name(), Offsets::StartupDemoFile, Offsets::StartupDemoFile_HeaderName);
+	if (StartupDemoFile) {
+		g_StartupDemoFile_headerNamePatch->Execute(StartupDemoFile, uniqueDemoHeaderNamePtr, 4);
+	}
+
 	g_StartupDemoHeader_headerNamePatch = new Memory::Patch();
-	auto StartupDemoHeader = Memory::Scan(engine->demorecorder->Name(), Offsets::StartupDemoHeader);
-	g_StartupDemoHeader_headerNamePatch->Execute(StartupDemoHeader + Offsets::StartupDemoHeader_HeaderName, uniqueDemoHeaderNamePtr, 4);
+	auto StartupDemoHeader = Memory::Scan(engine->demorecorder->Name(), Offsets::StartupDemoHeader, Offsets::StartupDemoHeader_HeaderName);
+	if (StartupDemoHeader) {
+		g_StartupDemoHeader_headerNamePatch->Execute(StartupDemoHeader, uniqueDemoHeaderNamePtr, 4);
+	}
 }
 
 bool EngineDemoRecorder::Init() {

@@ -15,6 +15,8 @@
 #include <unistd.h>
 #endif
 
+#define MAX_INSTANCES 128
+
 
 std::string getInstanceLockFilePath(int index) {
 	std::string tempDir = std::filesystem::temp_directory_path().string();
@@ -93,7 +95,6 @@ void freeInstanceID() {
 int g_instanceID = -1;
 
 void InstanceIdentifier::Claim() {
-	const int MAX_INSTANCES = 128;
 	for (int i = 0; i < MAX_INSTANCES; i++) {
 		if (!tryClaimInstanceID(i)) {
 			continue;
