@@ -17,6 +17,7 @@
 #define TRACE_LENGTH 2500
 #define TEST_DIST 10
 #define TEST_RESOLUTION 0.1f
+#define TEST_SCAN_PERCENTAGE_PER_FRAME 0.1f
 
 static std::optional<CGameTrace> camTrace() {
 	if (!session->isRunning) return {};
@@ -97,34 +98,32 @@ enum class SetupState {
 
 static struct {
 	SetupState state;
-	cplane_t wall_plane;
-	Vector scan_a;
-	Vector scan_b;
-	Vector match_a;
-	Vector match_b;
+	cplane_t wallPlane;
+	Vector scanAreaCorner1;
+	Vector scanAreaCorner2;
+	Vector matchAreaCorner1;
+	Vector matchAreaCorner2;
 } g_setup;
 
-#define NTHREADS 4
-
 static struct {
-	Vector start;
-	int maxd1i;
-	int maxd2i;
-	int d1i;
-	Vector ax1;
-	Vector ax2;
+	Vector startPoint;
+	int maxHeight;
+	int maxWidth;
+	int heightProgress;
+	Vector wallWidthAxis;
+	Vector wallHeightAxis;
 	uint8_t *image;
 } g_scan;
 
 static bool liesInMatchArea(Vector p) {
-	Vector ax1 = g_scan.ax1;
-	Vector ax2 = g_scan.ax2;
+	Vector ax1 = g_scan.wallWidthAxis;
+	Vector ax2 = g_scan.wallHeightAxis;
 
-	float m1a = g_setup.match_a.Dot(ax1);
-	float m2a = g_setup.match_a.Dot(ax2);
+	float m1a = g_setup.matchAreaCorner1.Dot(ax1);
+	float m2a = g_setup.matchAreaCorner1.Dot(ax2);
 
-	float m1b = g_setup.match_b.Dot(ax1);
-	float m2b = g_setup.match_b.Dot(ax2);
+	float m1b = g_setup.matchAreaCorner2.Dot(ax1);
+	float m2b = g_setup.matchAreaCorner2.Dot(ax2);
 
 	float min1 = m1a < m1b ? m1a : m1b;
 	float min2 = m2a < m2b ? m2a : m2b;
@@ -139,8 +138,8 @@ static bool liesInMatchArea(Vector p) {
 }
 
 static bool testPoint(uintptr_t portalgun, Vector point) {
-	Vector origin = point + g_setup.wall_plane.normal * TEST_DIST;
-	Vector dir = -g_setup.wall_plane.normal;
+	Vector origin = point + g_setup.wallPlane.normal * TEST_DIST;
+	Vector dir = -g_setup.wallPlane.normal;
 
 	TracePortalPlacementInfo_t info;
 	server->TraceFirePortal(portalgun, origin, dir, false, 2, info);
@@ -209,39 +208,39 @@ static void writeTga(const char *path, const uint8_t *data, uint16_t w, uint16_t
 }
 
 static void startScan() {
-	Vector ax1, ax2;
-	getAxesForPlane(g_setup.wall_plane, &ax1, &ax2);
+	Vector wallWidthAxis, wallHeightAxis;
+	getAxesForPlane(g_setup.wallPlane, &wallWidthAxis, &wallHeightAxis);
 
-	Vector start = g_setup.scan_a;
-	Vector delta = g_setup.scan_b - start;
-	float maxd1 = delta.Dot(ax1);
-	float maxd2 = delta.Dot(ax2);
+	Vector startPoint = g_setup.scanAreaCorner1;
+	Vector delta = g_setup.scanAreaCorner2 - startPoint;
+	float maxWidth = delta.Dot(wallWidthAxis);
+	float maxHeight = delta.Dot(wallHeightAxis);
 
-	if (maxd1 < 0) {
-		start = start + ax1*maxd1;
-		maxd1 = -maxd1;
+	if (maxWidth < 0) {
+		startPoint = startPoint + wallWidthAxis*maxWidth;
+		maxWidth = -maxWidth;
 	}
 
-	if (maxd2 < 0) {
-		start = start + ax2*maxd2;
-		maxd2 = -maxd2;
+	if (maxHeight < 0) {
+		startPoint = startPoint + wallHeightAxis*maxHeight;
+		maxHeight = -maxHeight;
 	}
 
-	g_scan.start = start;
-	g_scan.maxd1i = maxd1 / TEST_RESOLUTION;
-	g_scan.maxd2i = maxd2 / TEST_RESOLUTION;
-	g_scan.d1i = 0;
-	g_scan.ax1 = ax1;
-	g_scan.ax2 = ax2;
-	g_scan.image = new uint8_t[g_scan.maxd1i * g_scan.maxd2i * 4];
+	g_scan.startPoint = startPoint;
+	g_scan.maxHeight = maxWidth / TEST_RESOLUTION;
+	g_scan.maxWidth = maxHeight / TEST_RESOLUTION;
+	g_scan.heightProgress = 0;
+	g_scan.wallWidthAxis = wallWidthAxis;
+	g_scan.wallHeightAxis = wallHeightAxis;
+	g_scan.image = new uint8_t[g_scan.maxHeight * g_scan.maxWidth * 4];
 
 	g_setup.state = SetupState::RUNNING;
 }
 
 static void endScan(bool success) {
 	if (success) {
-		console->Print("Success! Wrote %d points to pp_scan.tga\n", g_scan.maxd1i * g_scan.maxd2i);
-		writeTga("pp_scan.tga", g_scan.image, g_scan.maxd1i, g_scan.maxd2i);
+		console->Print("Success! Wrote %d points to pp_scan.tga\n", g_scan.maxHeight * g_scan.maxWidth);
+		writeTga("pp_scan.tga", g_scan.image, g_scan.maxHeight, g_scan.maxWidth);
 	} else {
 		console->Print("Scanning failed\n");
 	}
@@ -256,37 +255,37 @@ static void runScan() {
 		return;
 	}
 
-	long initial_percentage = 1000L * (long)g_scan.d1i / (long)g_scan.maxd1i;
+	float initialProgress = (float)g_scan.heightProgress / (float)g_scan.maxHeight;
 
-	Vector ax1 = g_scan.ax1;
-	Vector ax2 = g_scan.ax2;
-	Vector start = g_scan.start;
+	Vector wallAxisWidth = g_scan.wallWidthAxis;
+	Vector wallAxisHeight = g_scan.wallHeightAxis;
+	Vector startPoint = g_scan.startPoint;
 	uint8_t *image = g_scan.image;
-	int maxd1i = g_scan.maxd1i;
-	int maxd2i = g_scan.maxd2i;
+	int maxHeight = g_scan.maxHeight;
+	int maxWidth = g_scan.maxWidth;
 
-	for (int d1i = g_scan.d1i; d1i < maxd1i; ++d1i) {
-		float d1 = (maxd1i - 1 - d1i) * TEST_RESOLUTION;
-		for (int d2i = 0; d2i < maxd2i; ++d2i) {
-			float d2 = (maxd2i - 1 - d2i) * TEST_RESOLUTION;
-			int i = d2i*maxd1i + d1i;
-			bool success = testPoint(portalgun, start + ax1*d1 + ax2*d2);
+	for (int height = g_scan.heightProgress; height < maxHeight; ++height) {
+		float heightUnits = (maxHeight - 1 - height) * TEST_RESOLUTION;
+		for (int width = 0; width < maxWidth; ++width) {
+			float widthUnits = (maxWidth - 1 - width) * TEST_RESOLUTION;
+			int pixelIndex = width*maxHeight + height;
+			bool success = testPoint(portalgun, startPoint + wallAxisWidth*heightUnits + wallAxisHeight*widthUnits);
 			if (success) {
-				image[i*4 + 0] = 0;
-				image[i*4 + 1] = 255;
-				image[i*4 + 2] = 0;
-				image[i*4 + 3] = 255;
+				image[pixelIndex*4 + 0] = 0;
+				image[pixelIndex*4 + 1] = 255;
+				image[pixelIndex*4 + 2] = 0;
+				image[pixelIndex*4 + 3] = 255;
 			} else {
-				image[i*4 + 0] = 0;
-				image[i*4 + 1] = 0;
-				image[i*4 + 2] = 255;
-				image[i*4 + 3] = 255;
+				image[pixelIndex*4 + 0] = 0;
+				image[pixelIndex*4 + 1] = 0;
+				image[pixelIndex*4 + 2] = 255;
+				image[pixelIndex*4 + 3] = 255;
 			}
 		}
 
-		long percentage = 1000L * (long)d1i / (long)maxd1i;
-		if (percentage > initial_percentage && percentage < 1000) {
-			g_scan.d1i = d1i;
+		float currentProgress = (float)height / (float)maxHeight;
+		if (currentProgress < 1.0f && currentProgress > initialProgress + TEST_SCAN_PERCENTAGE_PER_FRAME) {
+			g_scan.heightProgress = height;
 			return;
 		}
 	}
@@ -318,22 +317,22 @@ ON_EVENT(RENDER) {
 		}
 		return;
 	case SetupState::SET_SCAN_POINT_A:
-		drawPointOnPlane(g_setup.wall_plane, intersectPlaneView(g_setup.wall_plane), {255, 0, 0, 100}, 0.04);
+		drawPointOnPlane(g_setup.wallPlane, intersectPlaneView(g_setup.wallPlane), {255, 0, 0, 100}, 0.04);
 		return;
 	case SetupState::SET_SCAN_POINT_B:
-		drawRectOnPlane(g_setup.wall_plane, g_setup.scan_a, intersectPlaneView(g_setup.wall_plane), {255, 0, 0, 100}, 0.04);
+		drawRectOnPlane(g_setup.wallPlane, g_setup.scanAreaCorner1, intersectPlaneView(g_setup.wallPlane), {255, 0, 0, 100}, 0.04);
 		return;
 	case SetupState::SET_MATCH_POINT_A:
-		drawRectOnPlane(g_setup.wall_plane, g_setup.scan_a, g_setup.scan_b, {255, 0, 0, 100}, 0.04);
-		drawPointOnPlane(g_setup.wall_plane, intersectPlaneView(g_setup.wall_plane), {0, 0, 255, 100}, 0.12);
+		drawRectOnPlane(g_setup.wallPlane, g_setup.scanAreaCorner1, g_setup.scanAreaCorner2, {255, 0, 0, 100}, 0.04);
+		drawPointOnPlane(g_setup.wallPlane, intersectPlaneView(g_setup.wallPlane), {0, 0, 255, 100}, 0.12);
 		return;
 	case SetupState::SET_MATCH_POINT_B:
-		drawRectOnPlane(g_setup.wall_plane, g_setup.scan_a, g_setup.scan_b, {255, 0, 0, 100}, 0.04);
-		drawRectOnPlane(g_setup.wall_plane, g_setup.match_a, intersectPlaneView(g_setup.wall_plane), {0, 0, 255, 100}, 0.12);
+		drawRectOnPlane(g_setup.wallPlane, g_setup.scanAreaCorner1, g_setup.scanAreaCorner2, {255, 0, 0, 100}, 0.04);
+		drawRectOnPlane(g_setup.wallPlane, g_setup.matchAreaCorner1, intersectPlaneView(g_setup.wallPlane), {0, 0, 255, 100}, 0.12);
 		return;
 	case SetupState::READY:
-		drawRectOnPlane(g_setup.wall_plane, g_setup.scan_a, g_setup.scan_b, {255, 0, 0, 100}, 0.04);
-		drawRectOnPlane(g_setup.wall_plane, g_setup.match_a, g_setup.match_b, {0, 0, 255, 100}, 0.12);
+		drawRectOnPlane(g_setup.wallPlane, g_setup.scanAreaCorner1, g_setup.scanAreaCorner2, {255, 0, 0, 100}, 0.04);
+		drawRectOnPlane(g_setup.wallPlane, g_setup.matchAreaCorner1, g_setup.matchAreaCorner2, {0, 0, 255, 100}, 0.12);
 		return;
 	case SetupState::RUNNING:
 		return;
@@ -390,7 +389,7 @@ HUD_ELEMENT2_NO_DISABLE(pp_scan, HudType_InGame) {
 	surface->DrawRectAndCenterTxt(Color{0, 0, 0, 0}, 0, 0, sw, sh - 50, 6, Color{255, 255, 255}, status_text.c_str());
 
 	if (g_setup.state == SetupState::RUNNING) {
-		float percentage = 100.0f * (float)g_scan.d1i / (float)g_scan.maxd1i;
+		float percentage = 100.0f * (float)g_scan.heightProgress / (float)g_scan.maxHeight;
 		surface->DrawRectAndCenterTxt(Color{0, 0, 0, 200}, 0, 0, sw, sh + 50, 6, Color{255, 255, 255}, "%.1f%%", percentage);
 	}
 }
@@ -404,24 +403,24 @@ CON_COMMAND(sar_pp_scan_set, "sar_pp_scan_set - set the ppscan point where you'r
 		{
 			auto tr = camTrace();
 			if (!tr) return;
-			g_setup.wall_plane = tr->plane;
+			g_setup.wallPlane = tr->plane;
 			g_setup.state = SetupState::SET_SCAN_POINT_A;
 		}
 		return;
 	case SetupState::SET_SCAN_POINT_A:
-		g_setup.scan_a = intersectPlaneView(g_setup.wall_plane);
+		g_setup.scanAreaCorner1 = intersectPlaneView(g_setup.wallPlane);
 		g_setup.state = SetupState::SET_SCAN_POINT_B;
 		return;
 	case SetupState::SET_SCAN_POINT_B:
-		g_setup.scan_b = intersectPlaneView(g_setup.wall_plane);
+		g_setup.scanAreaCorner2 = intersectPlaneView(g_setup.wallPlane);
 		g_setup.state = SetupState::SET_MATCH_POINT_A;
 		return;
 	case SetupState::SET_MATCH_POINT_A:
-		g_setup.match_a = intersectPlaneView(g_setup.wall_plane);
+		g_setup.matchAreaCorner1 = intersectPlaneView(g_setup.wallPlane);
 		g_setup.state = SetupState::SET_MATCH_POINT_B;
 		return;
 	case SetupState::SET_MATCH_POINT_B:
-		g_setup.match_b = intersectPlaneView(g_setup.wall_plane);
+		g_setup.matchAreaCorner2 = intersectPlaneView(g_setup.wallPlane);
 		g_setup.state = SetupState::READY;
 		return;
 	case SetupState::READY:
