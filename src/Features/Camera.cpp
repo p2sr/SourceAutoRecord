@@ -615,17 +615,10 @@ Vector Camera::GetPosition(int slot, bool raw) {
 	return cam_pos;
 }
 
-Vector Camera::GetForwardVector(int slot, bool raw) {
+QAngle Camera::GetAngles(int slot, bool raw) {
 	bool cam_control = sar_cam_control.GetInt() == Drive;
-
 	QAngle ang = (!raw && cam_control) ? camera->currentState.angles : rawState.angles;
-	Vector view_vec = Vector{
-		cosf(DEG2RAD(ang.y)) * cosf(DEG2RAD(ang.x)),
-		sinf(DEG2RAD(ang.y)) * cosf(DEG2RAD(ang.x)),
-		-sinf(DEG2RAD(ang.x)),
-	}.Normalize();
-
-	return view_vec;
+	return ang;
 }
 
 float Camera::GetFieldOfView(int slot, bool raw) {
