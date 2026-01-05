@@ -82,6 +82,10 @@ void VelocityGraph::Paint(int slot) {
 		Vector2<int>(sar_velocitygraph_x.GetInt(), sar_velocitygraph_y.GetInt());
 	if (graphPos.y < 0) graphPos.y += y;
 
+	if (sar_velocitygraph_background.GetBool()) {
+		surface->DrawRect({0, 0, 0, 192}, graphPos - Vector2<int>(5, 150 + 5), graphPos + Vector2<int>(5 + 500, 5));
+	}
+
 	bool should_draw_takeoff = (!last_on_ground[slot] || take_off_display_timeout[slot] > engine->GetClientTime()) && sar_velocitygraph_text_groundspeed.GetBool();
 	int recentSpeed = velocityStamps[slot][velocityStamps[slot].size - 10].speed;
 	Color c = Color(30, 255, 109);
@@ -127,18 +131,18 @@ void VelocityGraph::Paint(int slot) {
 			graphPos + Vector2<int>(i, -next_speed),
 			Color(255, 255, 255));
 	}
-
-	if (sar_velocitygraph_background.GetBool())
-		surface->DrawRect({0, 0, 0, 192}, graphPos - Vector2<int>(5, 150 + 5), graphPos + Vector2<int>(5 + 500, 5));
 }
+
 bool VelocityGraph::GetCurrentSize(int &xSize, int &ySize) {
 	return false;
 }
+
 ON_EVENT(SESSION_START) {
 	for (int slot = 0; slot < 2; slot++) {
 		if (take_off[slot] != 0) ClearData(slot);
 	}
 }
+
 ON_EVENT(PROCESS_MOVEMENT) {
 	if (!velocityGraph->ShouldDraw()) {
 		if (take_off[event.slot] != 0) ClearData(event.slot);
