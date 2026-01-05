@@ -80,7 +80,7 @@ static inline int GetScreenHeight() {
 	return Memory::VMT<int(__rescall *)(void *)>(*g_videomode, Offsets::GetModeHeight)(*g_videomode);
 }
 
-static inline void ReadScreenPixels(int x, int y, int w, int h, void *buf, ImageFormat fmt) {
+void Renderer::ReadScreenPixels(int x, int y, int w, int h, void *buf, ImageFormat fmt) {
 	return Memory::VMT<void(__rescall *)(void *, int, int, int, int, void *, ImageFormat)>(*g_videomode, Offsets::ReadScreenPixels)(*g_videomode, x, y, w, h, buf, fmt);
 }
 

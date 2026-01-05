@@ -83,7 +83,7 @@ public:
 	void OverrideMovement(CUserCmd *cmd);
 
 	Vector GetPosition(int slot, bool raw = true);
-	Vector GetForwardVector(int slot, bool raw = true);
+	QAngle GetAngles(int slot, bool raw = true);
 	float GetFieldOfView(int slot, bool raw = true);
 
 	template <bool serverside>

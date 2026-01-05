@@ -10,80 +10,21 @@
 #include "Features/OverlayRender.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/Hud/Hud.hpp"
+#include "Features/Renderer.hpp"
 
 #include <cstdio>
 #include <optional>
 
 #define TRACE_LENGTH 2500
-#define TEST_DIST 10
+#define TEST_DIST 2
 #define TEST_RESOLUTION 0.1f
 #define TEST_SCAN_PROGRESS_PER_FRAME 0.001f
+#define TEST_FLOOR_UP_CONTRIBUTION 0.1f;
 
-static std::optional<CGameTrace> camTrace() {
-	if (!session->isRunning) return {};
-
-	CGameTrace tr;
-
-	engine->TraceFromCamera<false>(TRACE_LENGTH, MASK_SHOT_PORTAL, tr);
-
-	return tr.plane.normal.Length() > 0.9 ? tr : std::optional<CGameTrace>{};
-}
-
-// Gets a pair of perpendicular axes on a plane
-static inline void getAxesForPlane(cplane_t plane, Vector *ax1, Vector *ax2) {
-	Vector up = fabsf(plane.normal.z) < 0.9 ? Vector{0,0,1} : Vector{1,0,0};
-	*ax1 = plane.normal.Cross(up);
-	*ax2 = plane.normal.Cross(*ax1);
-
-	*ax1 = ax1->Normalize();
-	*ax2 = ax2->Normalize();
-}
-
-static Vector intersectPlaneView(cplane_t plane) {
-	Vector start = camera->GetPosition(GET_SLOT());
-	Vector dir = camera->GetForwardVector(GET_SLOT());
-
-	float w = dir.Dot(plane.normal);
-	if (w == 0) {
-		// Line parallel to plane - just return some point on the plane
-		return plane.normal * plane.dist;
-	}
-	float p = (plane.dist - start.Dot(plane.normal)) / w;
-	if (p < 0) {
-		// Camera looking away from plane - return a random point again
-		return plane.normal * plane.dist;
-	}
-	return start + dir*p;
-}
-
-static void drawRectOnPlane(cplane_t plane, Vector a, Vector c, Color col, float draw_dist) {
-	Vector ax1, ax2;
-	getAxesForPlane(plane, &ax1, &ax2);
-
-	Vector v = a - c;
-	Vector b = c + ax1*v.Dot(ax1);
-	Vector d = c + ax2*v.Dot(ax2);
-
-	Vector zf = plane.normal*draw_dist; // z-fighting
-
-	MeshId m = OverlayRender::createMesh(RenderCallback::constant(col), RenderCallback::none);
-	OverlayRender::addQuad(m, a+zf, b+zf, c+zf, d+zf);
-}
-
-static void drawPointOnPlane(cplane_t plane, Vector p, Color col, float draw_dist) {
-	Vector ax1, ax2;
-	getAxesForPlane(plane, &ax1, &ax2);
-
-	Vector a = p - ax1 - ax2;
-	Vector b = p + ax1 - ax2;
-	Vector c = p + ax1 + ax2;
-	Vector d = p - ax1 + ax2;
-
-	Vector zf = plane.normal*draw_dist; // z-fighting
-
-	MeshId m = OverlayRender::createMesh(RenderCallback::constant(col), RenderCallback::none);
-	OverlayRender::addQuad(m, a+zf, b+zf, c+zf, d+zf);
-}
+Variable sar_pp_scan_color_success("sar_pp_scan_color_success", "131 182 146", "The color rendered by pp scan when portal placement is successful.\n");
+Variable sar_pp_scan_color_fail("sar_pp_scan_color_fail", "194 69 45", "The color rendered by pp scan where portal placement fails.\n");
+Variable sar_pp_scan_savepath("sar_pp_scan_filename", "pp_scan", "The name of the TGA image to save after pp scan, without extension.\n"); 
+Variable sar_pp_scan_screenshot_overlay("sar_pp_scan_screenshot_overlay", "0", "Whether to overlay pp scan screenshot on top of gameplay screenshot.\n");
 
 enum class SetupState {
 	NONE,
@@ -100,6 +41,7 @@ static struct {
 	SetupState state;
 	bool isPerspective;
 	cplane_t wallPlane;
+	Vector scanUpDirection;
 	Vector scanAreaCorner1;
 	Vector scanAreaCorner2;
 	Vector matchAreaCorner1;
@@ -113,9 +55,109 @@ static struct {
 	int widthProgress;
 	Vector wallWidthAxis;
 	Vector wallHeightAxis;
-	float wallOffset;
+	float fovOffset;
+	Color successColor;
+	Color failColor;
 	uint8_t *image;
 } g_scan;
+
+static std::optional<CGameTrace> camTrace() {
+	if (!session->isRunning) return {};
+
+	CGameTrace tr;
+
+	engine->TraceFromCamera<false>(TRACE_LENGTH, MASK_SHOT_PORTAL, tr);
+
+	return tr.plane.normal.Length() > 0.9 ? tr : std::optional<CGameTrace>{};
+}
+
+// Gets a pair of perpendicular axes on a plane
+static inline void getAxesForScanAreaPlane(cplane_t plane, Vector *ax1, Vector *ax2) {
+	*ax1 = plane.normal.Cross(g_setup.scanUpDirection);
+	*ax2 = plane.normal.Cross(*ax1);
+
+	*ax1 = ax1->Normalize();
+	*ax2 = ax2->Normalize();
+}
+
+static Vector intersectPlaneView(cplane_t plane) {
+	Vector start = camera->GetPosition(GET_SLOT());
+	QAngle angles = camera->GetAngles(GET_SLOT());
+
+	Vector dir;
+	Math::AngleVectors(angles, &dir);
+
+	float w = dir.Dot(plane.normal);
+	if (w == 0) {
+		// Line parallel to plane - just return some point on the plane
+		return plane.normal * plane.dist;
+	}
+	float p = (plane.dist - start.Dot(plane.normal)) / w;
+	if (p < 0) {
+		// Camera looking away from plane - return a random point again
+		return plane.normal * plane.dist;
+	}
+	return start + dir*p;
+}
+
+static void drawRectOnPlane(cplane_t plane, Vector a, Vector c, Color col, float draw_dist) {
+	Vector ax1, ax2;
+	getAxesForScanAreaPlane(plane, &ax1, &ax2);
+
+	Vector v = a - c;
+	Vector b = c + ax1*v.Dot(ax1);
+	Vector d = c + ax2*v.Dot(ax2);
+
+	Vector zf = plane.normal*draw_dist; // z-fighting
+
+	MeshId m = OverlayRender::createMesh(RenderCallback::constant(col), RenderCallback::none);
+	OverlayRender::addQuad(m, a+zf, b+zf, c+zf, d+zf);
+}
+
+static void drawPointOnPlane(cplane_t plane, Vector p, Color col, float draw_dist) {
+	Vector ax1, ax2;
+	getAxesForScanAreaPlane(plane, &ax1, &ax2);
+
+	Vector a = p - ax1 - ax2;
+	Vector b = p + ax1 - ax2;
+	Vector c = p + ax1 + ax2;
+	Vector d = p - ax1 + ax2;
+
+	Vector zf = plane.normal*draw_dist; // z-fighting
+
+	MeshId m = OverlayRender::createMesh(RenderCallback::constant(col), RenderCallback::none);
+	OverlayRender::addQuad(m, a+zf, b+zf, c+zf, d+zf);
+}
+
+static void drawTracePlane() {
+	auto tr = camTrace();
+	if (!tr) return;
+
+	Vector ax1, ax2;
+	getAxesForScanAreaPlane(tr->plane, &ax1, &ax2);
+
+	Vector center = tr->endpos + tr->plane.normal * 0.04;  // Bump away to prevent z-fighting
+
+	Vector a = center + ax1 * 100 + ax2 * 100;
+	Vector b = center + ax1 * 100 - ax2 * 100;
+	Vector c = center - ax1 * 100 - ax2 * 100;
+	Vector d = center - ax1 * 100 + ax2 * 100;
+
+	MeshId m = OverlayRender::createMesh(RenderCallback::constant({255, 0, 0, 100}), RenderCallback::none);
+	OverlayRender::addQuad(m, a, b, c, d);
+}
+
+static void updateScanAreaUpDirection() {
+	auto tr = camTrace();
+	if (!tr) return;
+
+	if (fabsf(tr->plane.normal.z) > 0.999f) {
+		QAngle angles = camera->GetAngles(GET_SLOT());
+		Math::AngleVectors(angles, &g_setup.scanUpDirection);
+	} else {
+		g_setup.scanUpDirection = Vector(0, 0, 1);
+	}
+}
 
 static bool liesInMatchArea(Vector p) {
 	Vector ax1 = g_scan.wallWidthAxis;
@@ -137,25 +179,6 @@ static bool liesInMatchArea(Vector p) {
 	float d2 = p.Dot(ax2);
 
 	return min1 <= d1 && d1 <= max1 && min2 <= d2 && d2 <= max2;
-}
-
-static bool testRay(uintptr_t portalgun, Vector origin, Vector dir, bool checkMatchArea) {
-	TracePortalPlacementInfo_t info;
-	server->TraceFirePortal(portalgun, origin, dir, false, 2, info);
-
-	bool success;
-	switch (info.ePlacementResult) {
-	case PORTAL_PLACEMENT_SUCCESS:
-	case PORTAL_PLACEMENT_USED_HELPER:
-	case PORTAL_PLACEMENT_BUMPED:
-		success = true;
-		break;
-	default:
-		success = false;
-		break;
-	}
-
-	return success && (!checkMatchArea || liesInMatchArea(info.finalPos));
 }
 
 static uintptr_t initScan() {
@@ -206,11 +229,42 @@ static void writeTga(const char *path, const uint8_t *data, uint16_t w, uint16_t
 	fclose(f);
 }
 
+static void loadScreenPixelsIntoImage() {
+	std::vector<uint8_t> buf(g_scan.maxWidth * g_scan.maxHeight * 4);
+	Renderer::ReadScreenPixels(0, 0, g_scan.maxWidth, g_scan.maxHeight, buf.data(), IMAGE_FORMAT_RGBA8888);
+
+	// full alpha, inverted y axis, RGBA to BGRA
+	for (int x = 0; x < g_scan.maxWidth; ++x) {
+		for (int y = 0; y < g_scan.maxHeight; ++y) {
+			size_t i = (y * g_scan.maxWidth + x) * 4;
+			size_t j = ((g_scan.maxHeight - 1 - y) * g_scan.maxWidth + x) * 4;
+			g_scan.image[i + 0] = buf[j + 2];
+			g_scan.image[i + 1] = buf[j + 1];
+			g_scan.image[i + 2] = buf[j + 1];
+			g_scan.image[i + 3] = 255;
+		}
+	}
+}
+
+static void prepareForScan() {
+	g_scan.image = new uint8_t[g_scan.maxWidth * g_scan.maxHeight * 4] {};
+
+	if (sar_pp_scan_screenshot_overlay.GetBool()) {
+		loadScreenPixelsIntoImage();
+	}
+
+	g_scan.successColor = Utils::GetColor(sar_pp_scan_color_success.GetString(), false).value_or(Color(0, 0, 255, 255));
+	g_scan.failColor = Utils::GetColor(sar_pp_scan_color_fail.GetString(), false).value_or(Color(255, 0, 0, 255));
+
+	g_scan.widthProgress = 0;
+	g_setup.state = SetupState::RUNNING;
+}
+
 static void startAreaScan() {
 	g_setup.isPerspective = false;
 
 	Vector wallWidthAxis, wallHeightAxis;
-	getAxesForPlane(g_setup.wallPlane, &wallWidthAxis, &wallHeightAxis);
+	getAxesForScanAreaPlane(g_setup.wallPlane, &wallWidthAxis, &wallHeightAxis);
 
 	Vector startPoint = g_setup.scanAreaCorner1;
 	Vector delta = g_setup.scanAreaCorner2 - startPoint;
@@ -230,44 +284,42 @@ static void startAreaScan() {
 	g_scan.startPoint = startPoint;
 	g_scan.maxWidth = maxWidth / TEST_RESOLUTION;
 	g_scan.maxHeight = maxHeight / TEST_RESOLUTION;
-	g_scan.widthProgress = 0;
 	g_scan.wallWidthAxis = wallWidthAxis;
 	g_scan.wallHeightAxis = wallHeightAxis;
-	g_scan.wallOffset = TEST_DIST;
-	g_scan.image = new uint8_t[g_scan.maxWidth * g_scan.maxHeight * 4];
 
-	g_setup.state = SetupState::RUNNING;
+	prepareForScan();
 }
 
 static void startPerspectiveScan() {
 	g_setup.isPerspective = true;
 
-	Vector cameraPos = camera->GetPosition(GET_SLOT());
-	Vector cameraDir = camera->GetForwardVector(GET_SLOT());
-
 	engine->GetScreenSize(nullptr, g_scan.maxWidth, g_scan.maxHeight);
 
-	g_setup.wallPlane = {cameraDir, cameraDir.Dot(cameraPos) * -1.0f};
-
-	Vector wallWidthAxis, wallHeightAxis;
-	getAxesForPlane(g_setup.wallPlane, &wallWidthAxis, &wallHeightAxis);
-
-	float fov = camera->GetFieldOfView(GET_SLOT());
-	g_scan.wallOffset = 1.0f / tanf(fov * 0.5f);
-
+	Vector cameraPos = camera->GetPosition(GET_SLOT(), false);
 	g_scan.startPoint = cameraPos;
-	g_scan.wallWidthAxis = wallWidthAxis;
-	g_scan.wallHeightAxis = wallHeightAxis;
-	g_scan.widthProgress = 0;
-	g_scan.image = new uint8_t[g_scan.maxWidth * g_scan.maxHeight * 4];
 
-	g_setup.state = SetupState::RUNNING;
+	QAngle cameraAngles = camera->GetAngles(GET_SLOT(), false);
+	Vector cameraForward, cameraRight, cameraUp;
+	Math::AngleVectors(cameraAngles, &cameraForward, &cameraRight, &cameraUp);
+	g_setup.wallPlane = {cameraForward};
+	g_scan.wallWidthAxis = cameraRight;
+	g_scan.wallHeightAxis = cameraUp;
+
+	// scaled fov calculations (https://developer.valvesoftware.com/wiki/Field_of_View)
+	float fov = DEG2RAD(camera->GetFieldOfView(GET_SLOT(), false));
+	float aspectRatio = (float)g_scan.maxWidth / (float)g_scan.maxHeight;
+	float standardRatio = 4.0f / 3.0f;
+	float scaledFov = atanf(tanf(fov * 0.5f) * aspectRatio / standardRatio) * 2.0f;
+	g_scan.fovOffset = 1.0f / tanf(scaledFov * 0.5f);
+	
+	prepareForScan();
 }
 
 static void endScan(bool success) {
 	if (success) {
-		console->Print("Success! Wrote %d points to pp_scan.tga\n", g_scan.maxWidth * g_scan.maxHeight);
-		writeTga("pp_scan.tga", g_scan.image, g_scan.maxWidth, g_scan.maxHeight);
+		console->Print("Success! Wrote %d points to %s.tga\n", g_scan.maxWidth * g_scan.maxHeight, sar_pp_scan_savepath.GetString());
+		std::string path = Utils::ssprintf("%s.tga", sar_pp_scan_savepath.GetString());
+		writeTga(path.c_str(), g_scan.image, g_scan.maxWidth, g_scan.maxHeight);
 	} else {
 		console->Print("Scanning failed\n");
 	}
@@ -275,34 +327,65 @@ static void endScan(bool success) {
 	g_setup.state = SetupState::NONE;
 }
 
-static bool testPixel(uintptr_t portalgun, int x, int y) {
-	if (g_setup.isPerspective) {
-		Vector2 screenPointNormalized(
-			(float)(x) / (float)(g_scan.maxWidth) * 2.0f - 1.0f,
-			(float)(y) / (float)(g_scan.maxHeight) * 2.0f - 1.0f
-		);
+static bool testRay(uintptr_t portalgun, Vector origin, Vector dir, bool checkMatchArea) {
+	TracePortalPlacementInfo_t info;
+	server->TraceFirePortal(portalgun, origin, dir, false, 2, info);
 
-		// aspect ratio + inverted screen
-		screenPointNormalized.y *= -1.0f * ((float)g_scan.maxHeight / (float)g_scan.maxWidth);
-
-		Vector dir = g_setup.wallPlane.normal * g_scan.wallOffset
-			+ g_scan.wallWidthAxis * screenPointNormalized.x
-			+ g_scan.wallHeightAxis * screenPointNormalized.y;
-
-		return testRay(portalgun, g_scan.startPoint, dir.Normalize(), false);
+	bool success;
+	switch (info.ePlacementResult) {
+	case PORTAL_PLACEMENT_SUCCESS:
+	case PORTAL_PLACEMENT_USED_HELPER:
+	case PORTAL_PLACEMENT_BUMPED:
+		success = true;
+		break;
+	default:
+		success = false;
+		break;
 	}
 
+	return success && (!checkMatchArea || liesInMatchArea(info.finalPos));
+}
+
+static bool testPerspectivePixel(uintptr_t portalgun, int x, int y) {
+	Vector2 screenPointNormalized(
+		((float)(x) + 0.5f) / (float)(g_scan.maxWidth) * 2.0f - 1.0f,
+		((float)(y) + 0.5f) / (float)(g_scan.maxHeight) * 2.0f - 1.0f);
+
+	screenPointNormalized.y *= ((float)g_scan.maxHeight / (float)g_scan.maxWidth);  // aspect ratio
+
+	Vector dir = g_setup.wallPlane.normal * g_scan.fovOffset 
+		+ g_scan.wallWidthAxis * screenPointNormalized.x 
+		+ g_scan.wallHeightAxis * screenPointNormalized.y;
+
+	return testRay(portalgun, g_scan.startPoint, dir.Normalize(), false);
+}
+
+static bool testAreaPixel(uintptr_t portalgun, int x, int y) {
 	float widthUnits = (g_scan.maxWidth - 1 - x) * TEST_RESOLUTION;
 	float heightUnits = (g_scan.maxHeight - 1 - y) * TEST_RESOLUTION;
+
+	Vector dir = -g_setup.wallPlane.normal;
+	
+	// fix for floor/ceiling portals, so that the scan can actually check with correct angles
+	if (fabsf(g_setup.wallPlane.normal.z) > 0.999) {
+		dir += g_setup.scanUpDirection * TEST_FLOOR_UP_CONTRIBUTION;
+		dir = dir.Normalize();
+	}
 
 	Vector point = g_scan.startPoint 
 		+ g_scan.wallWidthAxis * widthUnits 
 		+ g_scan.wallHeightAxis * heightUnits 
-		+ g_setup.wallPlane.normal * g_scan.wallOffset;
-
-	Vector dir = -g_setup.wallPlane.normal;
+		- dir * TEST_DIST;
 
 	return testRay(portalgun, point, dir, true);
+}
+
+static bool testPixel(uintptr_t portalgun, int x, int y) {
+	if (g_setup.isPerspective) {
+		return testPerspectivePixel(portalgun, x, y);
+	} else {
+		return testAreaPixel(portalgun, x, y);
+	}
 }
 
 static void runScan() {
@@ -323,17 +406,22 @@ static void runScan() {
 			int pixelIndex = height * maxWidth + width;
 			bool success = testPixel(portalgun, width, height);
 
-			Color color = success ? Color(0, 255, 0, 255) : Color(0, 0, 255, 255);
+			Color color = success ? g_scan.successColor : g_scan.failColor;
 
-			image[pixelIndex * 4 + 0] = color.r;
-			image[pixelIndex * 4 + 1] = color.g;
-			image[pixelIndex * 4 + 2] = color.b;
-			image[pixelIndex * 4 + 3] = color.a;
+			uint8_t baseB = image[pixelIndex * 4 + 0];
+			uint8_t baseG = image[pixelIndex * 4 + 1];
+			uint8_t baseR = image[pixelIndex * 4 + 2];
+			uint8_t baseA = image[pixelIndex * 4 + 3];
+
+			image[pixelIndex * 4 + 0] = 255 - (255 - baseB * baseA / 255) * (255 - color.b * color.a / 255) / 255;
+			image[pixelIndex * 4 + 1] = 255 - (255 - baseG * baseA / 255) * (255 - color.g * color.a / 255) / 255;
+			image[pixelIndex * 4 + 2] = 255 - (255 - baseR * baseA / 255) * (255 - color.r * color.a / 255) / 255;
+			image[pixelIndex * 4 + 3] = 255 - (255 - baseA) * (255 - color.a) / 255;
 		}
 
 		float currentProgress = (float)width / (float)maxWidth;
 		if (currentProgress < 1.0f && currentProgress > initialProgress + TEST_SCAN_PROGRESS_PER_FRAME) {
-			g_scan.widthProgress = width;
+			g_scan.widthProgress = width + 1;
 			return;
 		}
 	}
@@ -341,28 +429,26 @@ static void runScan() {
 	endScan(true);
 }
 
+static bool checkScanningAvailable() {
+	if (!session->isRunning) {
+		console->Print("Cannot start placement scan while not in a session.\n");
+		return false;
+	}
+
+	if (!sv_cheats.GetBool()) {
+		console->Print("Cannot start placement scan while sv_cheats is disabled.\n");
+		return false;
+	}
+
+	return true;
+}
+
 ON_EVENT(RENDER) {
 	switch (g_setup.state) {
 	case SetupState::NONE:
 		return;
 	case SetupState::SET_WALL:
-		{
-			auto tr = camTrace();
-			if (!tr) return;
-
-			Vector ax1, ax2;
-			getAxesForPlane(tr->plane, &ax1, &ax2);
-
-			Vector center = tr->endpos + tr->plane.normal*0.04; // Bump away to prevent z-fighting
-
-			Vector a = center + ax1*100 + ax2*100;
-			Vector b = center + ax1*100 - ax2*100;
-			Vector c = center - ax1*100 - ax2*100;
-			Vector d = center - ax1*100 + ax2*100;
-
-			MeshId m = OverlayRender::createMesh(RenderCallback::constant({255,0,0,100}), RenderCallback::none);
-			OverlayRender::addQuad(m, a, b, c, d);
-		}
+		drawTracePlane();
 		return;
 	case SetupState::SET_SCAN_POINT_A:
 		drawPointOnPlane(g_setup.wallPlane, intersectPlaneView(g_setup.wallPlane), {255, 0, 0, 100}, 0.04);
@@ -388,8 +474,17 @@ ON_EVENT(RENDER) {
 }
 
 ON_EVENT(FRAME) {
-	if (!sv_cheats.GetBool()) {
+	if (g_setup.state == SetupState::NONE) {
+		return;
+	}
+
+	if (!checkScanningAvailable()) {
 		g_setup.state = SetupState::NONE;
+		return;
+	}
+
+	if (g_setup.state == SetupState::SET_WALL) {
+		updateScanAreaUpDirection();
 	}
 
 	if (g_setup.state == SetupState::RUNNING) {
@@ -401,7 +496,7 @@ ON_EVENT(SESSION_START) {
 	g_setup.state = SetupState::NONE;
 }
 
-HUD_ELEMENT2_NO_DISABLE(pp_scan, HudType_InGame) {
+HUD_ELEMENT2_NO_DISABLE(pp_scan, HudType_InGame | HudType_Paused) {
 	if (g_setup.state == SetupState::NONE) return;
 
 	std::string status_text = "";
@@ -428,7 +523,7 @@ HUD_ELEMENT2_NO_DISABLE(pp_scan, HudType_InGame) {
 		status_text = "Placement scan is ready. Use sar_pp_scan_set to begin.";
 		break;
 	case SetupState::RUNNING:
-		status_text = "Scanning to pp_scan.tga... use sar_pp_scan_set to cancel.";
+		status_text = Utils::ssprintf("Scanning to %s.tga... use sar_pp_scan_set to cancel.", sar_pp_scan_savepath.GetString());
 		break;
 	default:
 		break;
@@ -443,6 +538,11 @@ HUD_ELEMENT2_NO_DISABLE(pp_scan, HudType_InGame) {
 }
 
 CON_COMMAND(sar_pp_scan_set, "sar_pp_scan_set - set the ppscan point where you're aiming.\n") {
+	if (!checkScanningAvailable()) {
+		g_setup.state = SetupState::NONE;
+		return;
+	}
+
 	switch (g_setup.state) {
 	case SetupState::NONE:
 		g_setup.state = SetupState::SET_WALL;
@@ -487,6 +587,10 @@ CON_COMMAND(sar_pp_scan_reset, "sar_pp_scan_reset - reset ppscan.\n") {
 CON_COMMAND(sar_pp_scan_screenshot, "sar_pp_scan_screenshot - renders current camera perspective using ppscan rays\n") {
 	if (g_setup.state != SetupState::NONE) {
 		console->Print("Cannot start perspective scan while another scan is in progress.\n");
+		return;
+	}
+
+	if (!checkScanningAvailable()) {
 		return;
 	}
 
