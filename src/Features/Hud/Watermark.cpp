@@ -8,6 +8,7 @@
 #	include "Modules/Engine.hpp"
 #	include "Modules/Surface.hpp"
 #	include "Modules/Scheme.hpp"
+#	include "Features/Renderer.hpp"
 
 #	define WATERMARK_MSG_HEADER "Activate SAR"
 #	define WATERMARK_MSG_HELPTEXT "Development SAR build. Do not use."
@@ -19,7 +20,7 @@ public:
 	}
 
 	bool ShouldDraw() override {
-		return !engine->demoplayer->IsPlaying() && !(networkManager.isConnected && networkManager.spectator);
+		return !engine->demoplayer->IsPlaying() && !Renderer::IsRunning() && !(networkManager.isConnected && networkManager.spectator);
 	}
 
 	bool GetCurrentSize(int &w, int &h) override {
