@@ -84,6 +84,7 @@ public:
 
 	Vector GetPosition(int slot, bool raw = true);
 	Vector GetForwardVector(int slot, bool raw = true);
+	float GetFieldOfView(int slot, bool raw = true);
 
 	template <bool serverside>
 	void TransformThroughPortal(int slot, Vector &eyePos, QAngle &eyeAng) {

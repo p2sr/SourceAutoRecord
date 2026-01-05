@@ -628,6 +628,12 @@ Vector Camera::GetForwardVector(int slot, bool raw) {
 	return view_vec;
 }
 
+float Camera::GetFieldOfView(int slot, bool raw) {
+	bool cam_control = sar_cam_control.GetInt() == Drive;
+	float fov = (!raw && cam_control) ? camera->currentState.fov : rawState.fov;
+	return fov;
+}
+
 
 //COMMANDS
 
