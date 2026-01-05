@@ -17,7 +17,7 @@
 #define TRACE_LENGTH 2500
 #define TEST_DIST 10
 #define TEST_RESOLUTION 0.1f
-#define TEST_SCAN_PERCENTAGE_PER_FRAME 0.1f
+#define TEST_SCAN_PROGRESS_PER_FRAME 0.001f
 
 static std::optional<CGameTrace> camTrace() {
 	if (!session->isRunning) return {};
@@ -98,6 +98,7 @@ enum class SetupState {
 
 static struct {
 	SetupState state;
+	bool isPerspective;
 	cplane_t wallPlane;
 	Vector scanAreaCorner1;
 	Vector scanAreaCorner2;
@@ -107,11 +108,12 @@ static struct {
 
 static struct {
 	Vector startPoint;
-	int maxHeight;
 	int maxWidth;
-	int heightProgress;
+	int maxHeight;
+	int widthProgress;
 	Vector wallWidthAxis;
 	Vector wallHeightAxis;
+	float wallOffset;
 	uint8_t *image;
 } g_scan;
 
@@ -137,10 +139,7 @@ static bool liesInMatchArea(Vector p) {
 	return min1 <= d1 && d1 <= max1 && min2 <= d2 && d2 <= max2;
 }
 
-static bool testPoint(uintptr_t portalgun, Vector point) {
-	Vector origin = point + g_setup.wallPlane.normal * TEST_DIST;
-	Vector dir = -g_setup.wallPlane.normal;
-
+static bool testRay(uintptr_t portalgun, Vector origin, Vector dir, bool checkMatchArea) {
 	TracePortalPlacementInfo_t info;
 	server->TraceFirePortal(portalgun, origin, dir, false, 2, info);
 
@@ -156,7 +155,7 @@ static bool testPoint(uintptr_t portalgun, Vector point) {
 		break;
 	}
 
-	return success && liesInMatchArea(info.finalPos);
+	return success && (!checkMatchArea || liesInMatchArea(info.finalPos));
 }
 
 static uintptr_t initScan() {
@@ -207,7 +206,9 @@ static void writeTga(const char *path, const uint8_t *data, uint16_t w, uint16_t
 	fclose(f);
 }
 
-static void startScan() {
+static void startAreaScan() {
+	g_setup.isPerspective = false;
+
 	Vector wallWidthAxis, wallHeightAxis;
 	getAxesForPlane(g_setup.wallPlane, &wallWidthAxis, &wallHeightAxis);
 
@@ -227,25 +228,81 @@ static void startScan() {
 	}
 
 	g_scan.startPoint = startPoint;
-	g_scan.maxHeight = maxWidth / TEST_RESOLUTION;
-	g_scan.maxWidth = maxHeight / TEST_RESOLUTION;
-	g_scan.heightProgress = 0;
+	g_scan.maxWidth = maxWidth / TEST_RESOLUTION;
+	g_scan.maxHeight = maxHeight / TEST_RESOLUTION;
+	g_scan.widthProgress = 0;
 	g_scan.wallWidthAxis = wallWidthAxis;
 	g_scan.wallHeightAxis = wallHeightAxis;
-	g_scan.image = new uint8_t[g_scan.maxHeight * g_scan.maxWidth * 4];
+	g_scan.wallOffset = TEST_DIST;
+	g_scan.image = new uint8_t[g_scan.maxWidth * g_scan.maxHeight * 4];
+
+	g_setup.state = SetupState::RUNNING;
+}
+
+static void startPerspectiveScan() {
+	g_setup.isPerspective = true;
+
+	Vector cameraPos = camera->GetPosition(GET_SLOT());
+	Vector cameraDir = camera->GetForwardVector(GET_SLOT());
+
+	engine->GetScreenSize(nullptr, g_scan.maxWidth, g_scan.maxHeight);
+
+	g_setup.wallPlane = {cameraDir, cameraDir.Dot(cameraPos) * -1.0f};
+
+	Vector wallWidthAxis, wallHeightAxis;
+	getAxesForPlane(g_setup.wallPlane, &wallWidthAxis, &wallHeightAxis);
+
+	float fov = camera->GetFieldOfView(GET_SLOT());
+	g_scan.wallOffset = 1.0f / tanf(fov * 0.5f);
+
+	g_scan.startPoint = cameraPos;
+	g_scan.wallWidthAxis = wallWidthAxis;
+	g_scan.wallHeightAxis = wallHeightAxis;
+	g_scan.widthProgress = 0;
+	g_scan.image = new uint8_t[g_scan.maxWidth * g_scan.maxHeight * 4];
 
 	g_setup.state = SetupState::RUNNING;
 }
 
 static void endScan(bool success) {
 	if (success) {
-		console->Print("Success! Wrote %d points to pp_scan.tga\n", g_scan.maxHeight * g_scan.maxWidth);
-		writeTga("pp_scan.tga", g_scan.image, g_scan.maxHeight, g_scan.maxWidth);
+		console->Print("Success! Wrote %d points to pp_scan.tga\n", g_scan.maxWidth * g_scan.maxHeight);
+		writeTga("pp_scan.tga", g_scan.image, g_scan.maxWidth, g_scan.maxHeight);
 	} else {
 		console->Print("Scanning failed\n");
 	}
 	delete[] g_scan.image;
 	g_setup.state = SetupState::NONE;
+}
+
+static bool testPixel(uintptr_t portalgun, int x, int y) {
+	if (g_setup.isPerspective) {
+		Vector2 screenPointNormalized(
+			(float)(x) / (float)(g_scan.maxWidth) * 2.0f - 1.0f,
+			(float)(y) / (float)(g_scan.maxHeight) * 2.0f - 1.0f
+		);
+
+		// aspect ratio + inverted screen
+		screenPointNormalized.y *= -1.0f * ((float)g_scan.maxHeight / (float)g_scan.maxWidth);
+
+		Vector dir = g_setup.wallPlane.normal * g_scan.wallOffset
+			+ g_scan.wallWidthAxis * screenPointNormalized.x
+			+ g_scan.wallHeightAxis * screenPointNormalized.y;
+
+		return testRay(portalgun, g_scan.startPoint, dir.Normalize(), false);
+	}
+
+	float widthUnits = (g_scan.maxWidth - 1 - x) * TEST_RESOLUTION;
+	float heightUnits = (g_scan.maxHeight - 1 - y) * TEST_RESOLUTION;
+
+	Vector point = g_scan.startPoint 
+		+ g_scan.wallWidthAxis * widthUnits 
+		+ g_scan.wallHeightAxis * heightUnits 
+		+ g_setup.wallPlane.normal * g_scan.wallOffset;
+
+	Vector dir = -g_setup.wallPlane.normal;
+
+	return testRay(portalgun, point, dir, true);
 }
 
 static void runScan() {
@@ -254,38 +311,29 @@ static void runScan() {
 		endScan(false);
 		return;
 	}
-
-	float initialProgress = (float)g_scan.heightProgress / (float)g_scan.maxHeight;
-
-	Vector wallAxisWidth = g_scan.wallWidthAxis;
-	Vector wallAxisHeight = g_scan.wallHeightAxis;
-	Vector startPoint = g_scan.startPoint;
+	
 	uint8_t *image = g_scan.image;
-	int maxHeight = g_scan.maxHeight;
 	int maxWidth = g_scan.maxWidth;
+	int maxHeight = g_scan.maxHeight;
 
-	for (int height = g_scan.heightProgress; height < maxHeight; ++height) {
-		float heightUnits = (maxHeight - 1 - height) * TEST_RESOLUTION;
-		for (int width = 0; width < maxWidth; ++width) {
-			float widthUnits = (maxWidth - 1 - width) * TEST_RESOLUTION;
-			int pixelIndex = width*maxHeight + height;
-			bool success = testPoint(portalgun, startPoint + wallAxisWidth*heightUnits + wallAxisHeight*widthUnits);
-			if (success) {
-				image[pixelIndex*4 + 0] = 0;
-				image[pixelIndex*4 + 1] = 255;
-				image[pixelIndex*4 + 2] = 0;
-				image[pixelIndex*4 + 3] = 255;
-			} else {
-				image[pixelIndex*4 + 0] = 0;
-				image[pixelIndex*4 + 1] = 0;
-				image[pixelIndex*4 + 2] = 255;
-				image[pixelIndex*4 + 3] = 255;
-			}
+	float initialProgress = (float)g_scan.widthProgress / (float)g_scan.maxWidth;
+
+	for (int width = g_scan.widthProgress; width < maxWidth; ++width) {
+		for (int height = 0; height < maxHeight; ++height) {
+			int pixelIndex = height * maxWidth + width;
+			bool success = testPixel(portalgun, width, height);
+
+			Color color = success ? Color(0, 255, 0, 255) : Color(0, 0, 255, 255);
+
+			image[pixelIndex * 4 + 0] = color.r;
+			image[pixelIndex * 4 + 1] = color.g;
+			image[pixelIndex * 4 + 2] = color.b;
+			image[pixelIndex * 4 + 3] = color.a;
 		}
 
-		float currentProgress = (float)height / (float)maxHeight;
-		if (currentProgress < 1.0f && currentProgress > initialProgress + TEST_SCAN_PERCENTAGE_PER_FRAME) {
-			g_scan.heightProgress = height;
+		float currentProgress = (float)width / (float)maxWidth;
+		if (currentProgress < 1.0f && currentProgress > initialProgress + TEST_SCAN_PROGRESS_PER_FRAME) {
+			g_scan.widthProgress = width;
 			return;
 		}
 	}
@@ -389,7 +437,7 @@ HUD_ELEMENT2_NO_DISABLE(pp_scan, HudType_InGame) {
 	surface->DrawRectAndCenterTxt(Color{0, 0, 0, 0}, 0, 0, sw, sh - 50, 6, Color{255, 255, 255}, status_text.c_str());
 
 	if (g_setup.state == SetupState::RUNNING) {
-		float percentage = 100.0f * (float)g_scan.heightProgress / (float)g_scan.maxHeight;
+		float percentage = 100.0f * (float)g_scan.widthProgress / (float)g_scan.maxWidth;
 		surface->DrawRectAndCenterTxt(Color{0, 0, 0, 200}, 0, 0, sw, sh + 50, 6, Color{255, 255, 255}, "%.1f%%", percentage);
 	}
 }
@@ -424,7 +472,7 @@ CON_COMMAND(sar_pp_scan_set, "sar_pp_scan_set - set the ppscan point where you'r
 		g_setup.state = SetupState::READY;
 		return;
 	case SetupState::READY:
-		startScan();
+		startAreaScan();
 		return;
 	case SetupState::RUNNING:
 		endScan(false);
@@ -434,4 +482,13 @@ CON_COMMAND(sar_pp_scan_set, "sar_pp_scan_set - set the ppscan point where you'r
 
 CON_COMMAND(sar_pp_scan_reset, "sar_pp_scan_reset - reset ppscan.\n") {
 	g_setup.state = SetupState::NONE;
+}
+
+CON_COMMAND(sar_pp_scan_screenshot, "sar_pp_scan_screenshot - renders current camera perspective using ppscan rays\n") {
+	if (g_setup.state != SetupState::NONE) {
+		console->Print("Cannot start perspective scan while another scan is in progress.\n");
+		return;
+	}
+
+	startPerspectiveScan();
 }
