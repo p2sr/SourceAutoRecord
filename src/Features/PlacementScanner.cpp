@@ -295,10 +295,10 @@ static void startPerspectiveScan() {
 
 	engine->GetScreenSize(nullptr, g_scan.maxWidth, g_scan.maxHeight);
 
-	Vector cameraPos = camera->GetPosition(GET_SLOT());
+	Vector cameraPos = camera->GetPosition(GET_SLOT(), false);
 	g_scan.startPoint = cameraPos;
 
-	QAngle cameraAngles = camera->GetAngles(GET_SLOT());
+	QAngle cameraAngles = camera->GetAngles(GET_SLOT(), false);
 	Vector cameraForward, cameraRight, cameraUp;
 	Math::AngleVectors(cameraAngles, &cameraForward, &cameraRight, &cameraUp);
 	g_setup.wallPlane = {cameraForward};
@@ -306,7 +306,7 @@ static void startPerspectiveScan() {
 	g_scan.wallHeightAxis = cameraUp;
 
 	// scaled fov calculations (https://developer.valvesoftware.com/wiki/Field_of_View)
-	float fov = DEG2RAD(camera->GetFieldOfView(GET_SLOT()));
+	float fov = DEG2RAD(camera->GetFieldOfView(GET_SLOT(), false));
 	float aspectRatio = (float)g_scan.maxWidth / (float)g_scan.maxHeight;
 	float standardRatio = 4.0f / 3.0f;
 	float scaledFov = atanf(tanf(fov * 0.5f) * aspectRatio / standardRatio) * 2.0f;
@@ -430,13 +430,13 @@ static void runScan() {
 }
 
 static bool checkScanningAvailable() {
-	if (session->isRunning) {
-		console->Print("Cannot start placement scan while in a session.\n");
+	if (!session->isRunning) {
+		console->Print("Cannot start placement scan while not in a session.\n");
 		return false;
 	}
 
-	if (sv_cheats.GetBool()) {
-		console->Print("Cannot start placement scan while sv_cheats is enabled.\n");
+	if (!sv_cheats.GetBool()) {
+		console->Print("Cannot start placement scan while sv_cheats is disabled.\n");
 		return false;
 	}
 
