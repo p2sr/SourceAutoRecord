@@ -54,6 +54,7 @@ namespace Event {
 		RENDERER_START,
 		RENDERER_FINISH,
 		STUCK,
+		PP_SCAN_FINISH,
 	};
 
 	template <EventType E>

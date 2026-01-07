@@ -870,6 +870,7 @@ MK_SAR_ON(speedrun_finish, "when a speedrun finishes", true)
 MK_SAR_ON(renderer_start, "when renderer starts", true)
 MK_SAR_ON(renderer_finish, "when renderer finishes", true)
 MK_SAR_ON(stuck, "when the player gets stuck (singleplayer) (requires cheats)", true)
+MK_SAR_ON(pp_scan_finish, "when pp scan is finished", false)
 
 ON_EVENT_P(SESSION_START, 1000000) {
 	RUN_EXECS(load);
@@ -929,6 +930,9 @@ ON_EVENT(STUCK) {
 	if (sv_cheats.GetBool()) {
 		RUN_EXECS(stuck);
 	}
+}
+ON_EVENT(PP_SCAN_FINISH) {
+	RUN_EXECS(pp_scan_finish);
 }
 
 struct Seq {

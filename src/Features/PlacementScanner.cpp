@@ -325,6 +325,7 @@ static void endScan(bool success) {
 	}
 	delete[] g_scan.image;
 	g_setup.state = SetupState::NONE;
+	Event::Trigger<Event::PP_SCAN_FINISH>({});
 }
 
 static bool testRay(uintptr_t portalgun, Vector origin, Vector dir, bool checkMatchArea) {
