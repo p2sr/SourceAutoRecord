@@ -6,6 +6,7 @@
 #include "Command.hpp"
 #include "Event.hpp"
 #include "Hud.hpp"
+#include <Features/Session.hpp>
 
 Variable sar_ehm_hud("sar_ehm_hud", "0", "Enables EHM debug HUD.\n");
 
@@ -24,6 +25,7 @@ Variable sar_ehm_hud_autofill("sar_ehm_hud_autofill", "1", 0, 2,
 struct SlotInfoRecord {
 	int slot;
 	float lifetime;
+	float timeSinceSlotChanged;
 	const char *lastClassname;
 	bool isActive;
 };
@@ -113,6 +115,9 @@ static void handleSlotRecords() {
 				? server->GetEntityClassName(info->m_pEntity)
 				: g_slotStates[i].lastClassname;
 
+			if (slotChanged) {
+				record->timeSinceSlotChanged = 0.0f;
+			}
 
 			if (!fresh) {
 				attemptAutofill(i);
@@ -121,7 +126,10 @@ static void handleSlotRecords() {
 			continue;
 		}
 
-		g_slotStates[i].lifetime += 1.0f / 60.0f;
+		if (session->isRunning) {
+			record->lifetime += 1.0f / 60.0f;
+			record->timeSinceSlotChanged += 1.0f / 60.0f;
+		}
 	}
 }
 
@@ -231,15 +239,14 @@ public:
 
 			int recordPosY = hudY + paddingBorder + paddingY + lineHeight * (i + 1);
 
-			float factor = std::fminf(1.0f, slotRecord.lifetime);
+			float slotTimeFactor = std::fminf(1.0f, slotRecord.timeSinceSlotChanged);
+			float lifetimeFactor = std::fminf(1.0f, slotRecord.lifetime);
 
-			Color serialColor = slotRecord.isActive 
-				? Color(255, 255, 255, 128) 
-				: Color(255, 255, 255 * factor, 255 - 127 * factor);
+			Color serialColor = Color(255, 255, 255 * slotTimeFactor, 255 - 127 * slotTimeFactor);
 
 			Color classnameColor = slotRecord.isActive
-				? Color(128 + 127 * factor, 255, 255 * factor, 128)
-				: Color(255, 128 + 127 * factor, 255 * factor, 32);
+				? Color(128 + 127 * lifetimeFactor, 255, 255 * lifetimeFactor, 128)
+				: Color(255, 128 + 127 * lifetimeFactor, 255 * lifetimeFactor, 32);
 
 			surface->DrawTxt(font, hudX + slotHeaderX, recordPosY, Color(255, 255, 255, 128), "%d", slot);
 			surface->DrawTxt(font, hudX + serialHeaderX, recordPosY, serialColor, "%d", info->m_SerialNumber);
