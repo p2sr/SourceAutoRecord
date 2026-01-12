@@ -201,7 +201,7 @@
 |sar_echo|cmd|sar_echo \<color> \<string...> - echo a string to console with a given color|
 |sar_echo_nolf|cmd|sar_echo_nolf \<color> \<string...> - echo a string to console with a given color and no trailing line feed|
 |sar_ehm_hud|0|Enables EHM debug HUD.|
-|sar_ehm_hud_autofill|1|Whether to listen for changed slot and use it to replace the oldest one in EHM debug HUD.|
+|sar_ehm_hud_autofill|1|Whether to listen for changed slot and use it to replace the oldest one in EHM debug HUD.<br>1 = listens only to networked slots<br>2 = listens to all slots|
 |sar_ehm_hud_font|2|Font used by the EHM debug HUD.|
 |sar_ehm_hud_list_length|20|How many slots to show in the EHM debug HUD.|
 |sar_ehm_hud_push|cmd|sar_ehm_hud_push \<slot> - push slot on top of the EHM debug HUD.|
