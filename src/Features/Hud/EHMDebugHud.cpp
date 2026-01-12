@@ -15,8 +15,11 @@ Variable sar_ehm_hud_font("sar_ehm_hud_font", "2", "Font used by the EHM debug H
 
 Variable sar_ehm_hud_list_length("sar_ehm_hud_list_length", "20", "How many slots to show in the EHM debug HUD.\n", 0);
 
-Variable sar_ehm_hud_autofill("sar_ehm_hud_autofill", "1", 
-	"Whether to listen for changed slot and use it to replace the oldest one in EHM debug HUD.\n");
+Variable sar_ehm_hud_autofill("sar_ehm_hud_autofill", "1", 0, 2,
+	"Whether to listen for changed slot and use it to replace the oldest one in EHM debug HUD.\n"
+	"1 = listens only to networked slots\n"
+	"2 = listens to all slots\n"
+);
 
 struct SlotInfoRecord {
 	int slot;
@@ -70,6 +73,22 @@ static void swapOldestSlotWith(int slot) {
 	}
 }
 
+static void attemptAutofill(int slot) {
+	int autofillMode = sar_ehm_hud_autofill.GetInt();
+
+	int autofillSlotsRange = 0;
+
+	if (autofillMode == 1) {
+		autofillSlotsRange = server->gpGlobals->maxEntities;
+	} else if (autofillMode == 2) {
+		autofillSlotsRange = Offsets::NUM_ENT_ENTRIES;
+	}
+
+	if (slot < autofillSlotsRange) {
+		swapOldestSlotWith(slot);
+	}
+}
+
 static void handleSlotRecords() {
 	bool fresh = false;
 	if (g_slotStates.size() != (size_t)Offsets::NUM_ENT_ENTRIES) {
@@ -94,8 +113,9 @@ static void handleSlotRecords() {
 				? server->GetEntityClassName(info->m_pEntity)
 				: g_slotStates[i].lastClassname;
 
-			if (!fresh && sar_ehm_hud_autofill.GetBool()) {
-				swapOldestSlotWith(i);
+
+			if (!fresh) {
+				attemptAutofill(i);
 			}
 
 			continue;
