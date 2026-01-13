@@ -152,11 +152,11 @@ uintptr_t Memory::Scan(const char *moduleName, const char *pattern, int offset) 
 	}
 
 	if (result == 0) {
-		if (console) console->DevMsg("Failed to find pattern \"%s\" in module \"%s\"\n", pattern, moduleName);
-#ifdef _WIN32
-		if (IsDebuggerPresent()) DebugBreak();
-#else
+		if (console) console->Warning("Failed to find pattern \"%s\" in module \"%s\"\n", pattern, moduleName);
 #ifdef SAR_DEV_BUILD
+#ifdef _WIN32
+		DebugBreak();
+#else
 		raise(SIGTRAP);
 #endif
 #endif
