@@ -37,10 +37,18 @@
 
 ### Windows
 
-- Visual Studio 2019 or later
-- MSVC Toolset v142
-- Configure SDK version in `src/SourceAutoRecord.vcxproj`
-- Configure paths in `copy.bat`
+- [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) or [Visual Studio](https://visualstudio.microsoft.com/)
+  - Windows Universal C Runtime
+  - C++ Build Tools core features
+  - Windows 10 SDK (10.0.19041.0 or newer)
+  - MSVC v142 - VS 2019 C++ x64/x86 build tools
+- Add MSBuild to PATH (`Visual Studio/xx/BuildTools/MSBuild/Current/Bin`) or use Visual Studio GUI
+- Configure SDK version in `src/SourceAutoRecord.vcxproj` (`10.0`) (don't commit this change)
+- Configure paths in `copy.bat` (`git update-index --assume-unchanged copy.bat`)
+
+```pwsh
+msbuild -m -p:Platform=x86
+```
 
 ### Linux
 
@@ -49,13 +57,17 @@
 - Make 4.1
 - Configure paths in `config.mk`
 
+```bash
+make -j${nproc}
+```
+
 ## Pull Requests
 
 - Write a meaningful title and a short description
 - Follow the [coding style](#coding-style)
 - Follow the requested changes
 - DO NOT stage files that you had to configure
-- Use the latest `master` branch
+- Use the latest `master` branch as a base
 
 ### Quick Tutorial with git
 
@@ -309,9 +321,9 @@ Note: Keep a static version of a variable if it can be accessed more than once.
 Commands should always return a useful message if something went wrong.
 
 ```cpp
-CON_COMMAND(sar_hello, "Useful help description.\n") {
+CON_COMMAND(sar_hello, "sar_hello <name> - Useful help description.\n") {
     if (args.ArgC() != 2) {
-        return console->Print("Please enter a string!\n");
+        return console->Print(sar_hello.ThisPtr()->m_pszHelpString);
     }
 
     console->Print("Hello %s!\n", args[1]);
