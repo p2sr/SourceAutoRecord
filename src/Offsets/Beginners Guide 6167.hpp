@@ -77,8 +77,8 @@ SIGSCAN_LINUX(UTIL_Portal_Color, "")
 SIGSCAN_LINUX(UTIL_Portal_Color_Particles, "")
 SIGSCAN_WINDOWS(GetHudSig, "55 8B EC 8B 45 ? 83 F8 FF 75 ? 8B 0D ? ? ? ? 8B 01 8B 90 ? ? ? ? FF D2 C1 E0 07")
 SIGSCAN_WINDOWS(FindElementSig, "55 8B EC 53 8B 5D ? 56 57 8B F1 33 FF")
-SIGSCAN_DEFAULT(GetChapterProgress, "",
-                                    "")
+SIGSCAN_DEFAULT(GetChapterProgress, "", "")
+SIGSCAN_DEFAULT(LoadingProgress__SetupControlStatesInstruction, "", "")
 
 // Engine
 SIGSCAN_LINUX(Host_AccumulateTime, "55 89 E5 83 EC 28 F3 0F 10 05 ? ? ? ? A1")

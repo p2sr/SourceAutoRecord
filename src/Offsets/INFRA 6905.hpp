@@ -106,6 +106,9 @@ SIGSCAN_WINDOWS(DrawOpaqueRenderables, "55 8B EC 83 EC 54 A1 ? ? ? ? 83 7D ? 00"
 SIGSCAN_WINDOWS(GetHudSig, "55 8B EC 8B 45 ? 83 F8 FF 75 ? 8B 0D ? ? ? ? 8B 01 8B 90 ? ? ? ? FF D2 69 C0 84 00 00 00") // usage of FindElement -> probably previous function call
 SIGSCAN_WINDOWS(FindElementSig, "55 8B EC 53 8B 5D ? 56 57 8B F1 33 FF") // "[%d] Could not find Hud Element: %s\n" xref
 SIGSCAN_WINDOWS(GetChapterProgress, "")
+SIGSCAN_WINDOWS(LoadingProgress__SetupControlStatesInstruction, "")
+SIGSCAN_WINDOWS(GetCurrentTonemappingSystem, "B8 01 00 00 00 84 05 ? ? ? ? 75 ? 09 05 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 8B 0D ? ? ? ? 8B 01 8B 90 ? ? ? ? FF D2 69 C0 98 05 00 00")
+SIGSCAN_WINDOWS(ResetToneMapping, "")
 
 
 // Engine

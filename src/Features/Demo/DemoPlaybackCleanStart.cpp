@@ -13,7 +13,7 @@ Variable sar_demo_clean_start_tonemap("sar_demo_clean_start_tonemap", "0", 0,
 
 bool g_tonemapScaleDemoLookupInProgress = false;
 int g_tonemapScaleDemoLookupTick;
-bool g_tonemapScaleContinouosSearchEnabled = false;
+bool g_tonemapScaleContinuousSearchEnabled = false;
 int g_tonemapScaleTweakStartTick = 0;
 
 const float TONEMAP_SCALE_SEARCH_DISABLE_THRESHOLD = 0.01f;
@@ -37,7 +37,7 @@ void stopTonemapScaleDemoLookup(bool finished = false) {
 }
 
 void updateTonemapScaleDemoLookup() {
-	if (!g_tonemapScaleDemoLookupInProgress) {
+	if (!g_tonemapScaleDemoLookupInProgress || !client->GetCurrentTonemappingSystem) {
 		return;
 	}
 
@@ -53,10 +53,14 @@ void updateTonemapScaleDemoLookup() {
 }
 
 void triggerTonemapScaleTweak() {
+	if (!client->GetCurrentTonemappingSystem || !client->ResetToneMapping) {
+		return;
+	}
+
 	float tonemapScaleOverride = sar_demo_clean_start_tonemap.GetFloat();
 
 	if (tonemapScaleOverride == 0.0f) {
-		g_tonemapScaleContinouosSearchEnabled = true;
+		g_tonemapScaleContinuousSearchEnabled = true;
 		auto tonemapSystem = client->GetCurrentTonemappingSystem();
 		g_tonemapScaleTweakStartTick = tonemapSystem->m_nCurrentQueryFrame;
 	}
@@ -64,18 +68,18 @@ void triggerTonemapScaleTweak() {
 	client->ResetToneMapping(tonemapScaleOverride);
 }
 
-void disableTonemapScaleContinouosSearch() {
-	g_tonemapScaleContinouosSearchEnabled = false;
+void disableTonemapScaleContinuousSearch() {
+	g_tonemapScaleContinuousSearchEnabled = false;
 }
 
-void updateTonemapScaleContinouosSearch() {
-	if (!g_tonemapScaleContinouosSearchEnabled) {
+void updateTonemapScaleContinuousSearch() {
+	if (!g_tonemapScaleContinuousSearchEnabled || !client->GetCurrentTonemappingSystem) {
 		return;
 	}
 
 	auto tonemapSystem = client->GetCurrentTonemappingSystem();
 	if (tonemapSystem == nullptr) {
-		disableTonemapScaleContinouosSearch();
+		disableTonemapScaleContinuousSearch();
 		return;
 	}
 
@@ -89,7 +93,7 @@ void updateTonemapScaleContinouosSearch() {
 	
 	int searchDuration = tonemapSystem->m_nCurrentQueryFrame - g_tonemapScaleTweakStartTick;
 	if (searchDuration > TONEMAP_SCALE_SEARCH_MAX_NOCHANGE_TICKS) {
-		disableTonemapScaleContinouosSearch();
+		disableTonemapScaleContinuousSearch();
 	}
 }
 
@@ -105,10 +109,10 @@ void forceProjectedTexturesTargetColor() {
 		}
 
 		auto targetColor = clientEntity->field<color32>("m_LightColor");
-		auto &m_CurrentLinearFlotLightColor = clientEntity->fieldOff<Vector>("m_LightColor", 0x04);
+		auto &m_CurrentLinearFloatLightColor = clientEntity->fieldOff<Vector>("m_LightColor", 0x04);
 		auto &m_flCurrentLinearFloatLightAlpha = clientEntity->fieldOff<float>("m_LightColor", 0x10);
 
-		m_CurrentLinearFlotLightColor = Vector(targetColor.r, targetColor.g, targetColor.b);
+		m_CurrentLinearFloatLightColor = Vector(targetColor.r, targetColor.g, targetColor.b);
 		m_flCurrentLinearFloatLightAlpha = targetColor.a;
 	}
 }
@@ -138,7 +142,7 @@ CON_COMMAND(sar_demo_clean_start_tonemap_sample,
 
 
 ON_EVENT(FRAME) {
-	updateTonemapScaleContinouosSearch();
+	updateTonemapScaleContinuousSearch();
 	updateTonemapScaleDemoLookup();
 }
 
@@ -152,6 +156,6 @@ ON_EVENT(DEMO_START) {
 }
 
 ON_EVENT(DEMO_STOP) {
-	disableTonemapScaleContinouosSearch();
+	disableTonemapScaleContinuousSearch();
 	stopTonemapScaleDemoLookup();
 }
