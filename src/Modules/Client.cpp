@@ -435,6 +435,7 @@ static SourceColor UTIL_Portal_Color_Detour(int iPortal, int iTeamNumber) {
 Hook UTIL_Portal_Color_Hook(&UTIL_Portal_Color_Detour);
 
 Color SARUTIL_Portal_Color(int iPortal, int iTeamNumber) {
+	if (!UTIL_Portal_Color) return Color(255, 0, 0);
 	SourceColor col = UTIL_Portal_Color(iPortal, iTeamNumber);
 	return Color(col.r(), col.g(), col.b());
 }

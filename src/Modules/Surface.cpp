@@ -152,6 +152,13 @@ void Surface::DrawColoredLine(const Vector2<int> &v0, const Vector2<int> &v1, Co
 	this->DrawColoredLine(v0.x, v0.y, v1.x, v1.y, clr);
 }
 
+int __rescall StartDrawingFallback(void *thisptr) {
+	return 0;
+}
+int __cdecl FinishDrawingFallback() {
+	return 0;
+}
+
 bool Surface::Init() {
 	this->matsurface = Interface::Create(this->Name(), "VGUI_Surface031", false);
 	if (this->matsurface) {
@@ -178,6 +185,12 @@ bool Surface::Init() {
 		auto PaintTraverseEx = matsurface->Original(Offsets::PaintTraverseEx);
 		this->StartDrawing = Memory::Read<_StartDrawing>(PaintTraverseEx + Offsets::StartDrawing);
 		this->FinishDrawing = Memory::Read<_FinishDrawing>(PaintTraverseEx + Offsets::FinishDrawing);
+		if (!Offsets::StartDrawing) {
+			this->StartDrawing = StartDrawingFallback;
+		}
+		if (!Offsets::FinishDrawing) {
+			this->FinishDrawing = FinishDrawingFallback;
+		}
 
 		// finding m_FontAmalgams pointer from CMatSystemSurface::GetFontName
 		using _FontManager = void*(*)();

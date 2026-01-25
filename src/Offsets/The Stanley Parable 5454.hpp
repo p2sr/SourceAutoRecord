@@ -5,6 +5,8 @@ OFFSET_WINDOWS(GetRawMouseAccumulators, 50)
 
 // Others
 OFFSET_LINUX(VideoMode_Create, 104)
+OFFSET_LINUX(StartDrawing, 0) // these are why the plugin crashes on linux
+OFFSET_LINUX(FinishDrawing, 0)
 
 // clang-format off
 

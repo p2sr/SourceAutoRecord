@@ -40,8 +40,8 @@ For features and installation instructions, please visit [the website].
 | [Thinking with Time Machine](https://store.steampowered.com/app/286080) | ✔       | ✔     |
 | [Portal Reloaded](https://store.steampowered.com/app/1255980)           | ✔       | ✔     |
 | [INFRA](https://store.steampowered.com/app/251110)                      | ✔       | ➖     |
-| [The Beginner's Guide](https://store.steampowered.com/app/303210)       | ✔       | ❌ (yet) |
-| [The Stanley Parable](https://store.steampowered.com/app/221910)        | ✔       | ❌ (yet) |
+| [The Beginner's Guide](https://store.steampowered.com/app/303210)       | ✔       | ✔     |
+| [The Stanley Parable](https://store.steampowered.com/app/221910)        | ✔       | ✔     |
 | [The Cleaning Game](https://store.steampowered.com/app/3281900)         | ✔       | ➖     |
 | Divinity Chapter 2 *(closed beta)*                                      | ✔       | ❓     |
 

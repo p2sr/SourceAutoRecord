@@ -381,7 +381,6 @@ OFFSET_DEFAULT(PurgeAndDeleteElements, 37, 120)
 OFFSET_DEFAULT(host_frametime, 92, 81)
 
 OFFSET_DEFAULT(say_callback_insn, 52, 55)
-OFFSET_DEFAULT(Host_Say_insn, 0x335, 0x36C)
 OFFSET_DEFAULT(portalsThruPortals, 391, 388)
 OFFSET_DEFAULT(portalsThruPortalsValOn, 0x00, 0x82)
 
@@ -444,8 +443,8 @@ SIGSCAN_DEFAULT(PrecacheParticleSystem, "55 8B EC 8B 0D ? ? ? ? 8B 01 8B 50 ? 56
 SIGSCAN_DEFAULT(DispatchParticleEffect, "55 8B EC 8B 45 ? 50 E8 ? ? ? ? 8B 4D ? 8B 55 ? F3 0F 7E 45 ? 83 C4 04 51 8B 4D ? 52 8B 55 ? 51 83 EC 0C 8B CC 66 0F D6 01 F3 0F 7E 45 ? 89 51 ? 8B 55 ? 83 EC 0C 8B CC 66 0F D6 01 F3 0F 7E 45",
                                         "53 81 EC 84 00 00 00 8B 9C 24 ? ? ? ? FF B4 24 ? ? ? ? E8 ? ? ? ? 31 D2 F3 0F 10 84 24 ? ? ? ? C7 44 24 ? FF FF FF FF") // "projected_wall_impact" xref -> either usage same function -> DispatchParticleEffect
 
-SIGSCAN_DEFAULT(GetCurrentTonemappingSystem, "F6 05 ? ? ? ? 01 75 ? 83 0D ? ? ? ? 01 56 57", "55 89 E5 53 83 EC 04 0F B6 05 ? ? ? ? 84 C0 74 ? A1 ? ? ? ?")
-SIGSCAN_DEFAULT(ResetToneMapping, "55 8B EC 83 EC 14 F3 0F 10 45 ?", "55 89 E5 53 83 EC 14 E8 ? ? ? ? 66 0F EF C0")
+SIGSCAN_DEFAULT(GetCurrentTonemappingSystem, "F6 05 ? ? ? ? 01 75 ? 83 0D ? ? ? ? 01 56 57", "55 89 E5 53 83 EC 04 0F B6 05 ? ? ? ? 84 C0 74 ? A1 ? ? ? ?") // "(Original algorithm) Target Scalar = %4.2f  Min/Max( %4.2f, %4.2f )  Current Scalar: %4.2f" xref -> DoTonemapping -> prev function call -> GetCurrentTonemappingSystem
+SIGSCAN_DEFAULT(ResetToneMapping, "55 8B EC 83 EC 14 F3 0F 10 45 ?", "55 89 E5 53 83 EC 14 E8 ? ? ? ? 66 0F EF C0") // GetCurrentTonemappingSystem usage -> one call in function -> ResetToneMapping
 
 // Engine
 SIGSCAN_DEFAULT(ParseSmoothingInfoSig, "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", ""); // "cl_demosmootherpanel.cpp" xref -> CDemoSmootherPanel::ParseSmoothingInfo
@@ -507,7 +506,10 @@ SIGSCAN_DEFAULT(GlobalEntity_GetIndex, "55 8B EC 51 8B 45 08 50 8D 4D FC 51 B9 ?
 SIGSCAN_DEFAULT(GlobalEntity_SetFlags, "55 8B EC 80 3D ? ? ? ? 00 75 1F 8B 45 08 85 C0 78 18 3B 05 ? ? ? ? 7D 10 8B 4D 0C 8B 15 ? ? ? ? 8D 04 40 89 4C 82 08",
                                        "80 3D ? ? ? ? 01 8B 44 24 04 74 1F 85 C0 78 1B 3B 05 ? ? ? ? 7D 13 8B 15 ? ? ? ? 8D 04 40")
 SIGSCAN_DEFAULT(Host_Say, "55 8B EC 81 EC 30 02 00 00 56",
-                          "55 89 E5 57 56 53 81 EC 4C 02 00 00 8B 45") // "\"%s<%i><%s><%s>\" say_team \"%s\"\n" xref -> Host_Say
+                          "55 89 E5 57 56 53 81 EC 4C 02 00 00 8B 5D ? 8B 45") // "\"%s<%i><%s><%s>\" say_team \"%s\"\n" xref -> Host_Say
+OFFSET_DEFAULT(Host_Say_insn, 0x335, 0x36E)
+OFFSET_DEFAULT(Host_Say_from, 0x74, 0x84)
+OFFSET_DEFAULT(Host_Say_to, 0x70, 0x80)
 SIGSCAN_DEFAULT(TraceFirePortal, "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC 38 07 00 00 56 57 8B F1",
                                  "55 89 E5 57 56 8D B5 F4 F8 FF FF 53 81 EC 30 07 00 00 8B 45 14 6A 00 8B 5D 0C FF 75 08 56 89 85 D0 F8 FF FF")
 SIGSCAN_DEFAULT(FindPortal, "55 8B EC 0F B6 45 08 8D 0C 80 03 C9 53 8B 9C 09 ? ? ? ? 03 C9 56 57 85 DB 74 3C 8B B9 ? ? ? ? 33 C0 33 F6 EB 08",

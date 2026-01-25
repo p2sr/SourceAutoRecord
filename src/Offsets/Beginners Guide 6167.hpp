@@ -37,6 +37,9 @@ OFFSET_WINDOWS(GetRenderContext, 112)
 OFFSET_WINDOWS(GetModeWidth, 15)
 OFFSET_WINDOWS(GetModeHeight, 16)
 
+// CGameRules
+OFFSET_LINUX(IsMultiplayer, 0)
+
 // Others
 OFFSET_WINDOWS(tickcount, 103)
 OFFSET_WINDOWS(interval_per_tick, 73)
@@ -79,6 +82,10 @@ SIGSCAN_WINDOWS(GetHudSig, "55 8B EC 8B 45 ? 83 F8 FF 75 ? 8B 0D ? ? ? ? 8B 01 8
 SIGSCAN_WINDOWS(FindElementSig, "55 8B EC 53 8B 5D ? 56 57 8B F1 33 FF")
 SIGSCAN_DEFAULT(GetChapterProgress, "", "")
 SIGSCAN_DEFAULT(LoadingProgress__SetupControlStatesInstruction, "", "")
+SIGSCAN_LINUX(PrecacheParticleSystem, "55 89 E5 56 53 83 EC 20 A1 ? ? ? ? 8B 5D ? 8B 10 C7 44 24 ? 00 00 00 00")
+SIGSCAN_LINUX(DispatchParticleEffect, "55 89 E5 57 56 31 F6 53 81 EC BC 00 00 00 8B 5D")
+SIGSCAN_LINUX(GetCurrentTonemappingSystem, "55 89 E5 53 83 EC 14 80 3D ? ? ? ? 00 0F 85")
+SIGSCAN_LINUX(ResetToneMapping, "")
 
 // Engine
 SIGSCAN_LINUX(Host_AccumulateTime, "55 89 E5 83 EC 28 F3 0F 10 05 ? ? ? ? A1")
@@ -99,6 +106,7 @@ SIGSCAN_LINUX(TraceFirePortal, "")
 SIGSCAN_LINUX(FindPortal, "")
 SIGSCAN_LINUX(ViewPunch, "")
 SIGSCAN_LINUX(FindClosestPassableSpace, "")
+SIGSCAN_LINUX(CPortal_Player__PollForUseEntity_CheckMP, "")
 
 // Matchmaking
 SIGSCAN_LINUX(UpdateLeaderboardData, "")

@@ -234,6 +234,7 @@ std::string Engine::GetCurrentMapTitle() {
 
 bool Engine::IsCoop() {
 	if (GetCurrentMapName().size() == 0) return false;
+	if (!Offsets::IsMultiplayer) return false;
 	if (client->gamerules && *client->gamerules) {
 		using _IsMultiplayer = bool (__rescall *)(void *thisptr);
 		return Memory::VMT<_IsMultiplayer>(*client->gamerules, Offsets::IsMultiplayer)(*client->gamerules);

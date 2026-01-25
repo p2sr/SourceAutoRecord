@@ -909,20 +909,19 @@ bool Server::Init() {
 			console->Warning("Failed to uncap chat time. insn was %02X\n", *(char *)(insn_addr + 2));
 		}
 	}
-	auto Host_Say = Memory::Scan(this->Name(), Offsets::Host_Say);
+	auto Host_Say_insn = Memory::Scan(this->Name(), Offsets::Host_Say, Offsets::Host_Say_insn);
 	g_unblockChatPatch = new Memory::Patch();
-	if (Host_Say) {
-		auto insn_addr = Host_Say + Offsets::Host_Say_insn;
+	if (Host_Say_insn) {
 		// FIXME: This also disables the "ignoremsg" client command
 		// functionality.
 		// This is the location of a JZ instruction which jumps if the
 		// chat sender is dead but recipient is alive, blocking
 		// messages. We just change it to a JO, which will never jump.
-		if (*(char *)insn_addr == 0x74) {
-			unsigned char patchByte = 0x70;
-			g_unblockChatPatch->Execute((uintptr_t)insn_addr, &patchByte, 1);
+		if ((*(char *)Host_Say_insn & 0xFF) == Offsets::Host_Say_from) {
+			unsigned char patchByte = Offsets::Host_Say_to;
+			g_unblockChatPatch->Execute((uintptr_t)Host_Say_insn, &patchByte, 1);
 		} else {
-			console->Warning("Failed to unblock chat. insn was %02X\n", *(char *)insn_addr);
+			console->Warning("Failed to unblock chat. insn was %02X\n", *(char *)Host_Say_insn);
 		}
 	}
 
