@@ -103,9 +103,9 @@ bool MaterialSystem::Init() {
 	if (this->renderContextSize && this->RenderContextShutdown && this->RenderContextInit) {
 		if (*this->renderContextSize != RENDERCONTEXT_ALLOC_SIZE) {
 			auto byte = RENDERCONTEXT_ALLOC_SIZE;
-	// 		g_renderContextPatch->Execute((uintptr_t)this->renderContextSize, (unsigned char *)&byte, sizeof(uint32_t));
-	// 		this->RenderContextShutdown();
-	// 		this->RenderContextInit();
+			g_renderContextPatch->Execute((uintptr_t)this->renderContextSize, (unsigned char *)&byte, sizeof(uint32_t));
+			this->RenderContextShutdown();
+			this->RenderContextInit();
 		}
 	}
 
