@@ -152,10 +152,10 @@ void Surface::DrawColoredLine(const Vector2<int> &v0, const Vector2<int> &v1, Co
 	this->DrawColoredLine(v0.x, v0.y, v1.x, v1.y, clr);
 }
 
-int __rescall StartDrawingFallback(void *thisptr) {
+int __rescall Surface::StartDrawingFallback(void *thisptr) {
 	return 0;
 }
-int __cdecl FinishDrawingFallback() {
+int __cdecl Surface::FinishDrawingFallback() {
 	return 0;
 }
 
@@ -186,10 +186,10 @@ bool Surface::Init() {
 		this->StartDrawing = Memory::Read<_StartDrawing>(PaintTraverseEx + Offsets::StartDrawing);
 		this->FinishDrawing = Memory::Read<_FinishDrawing>(PaintTraverseEx + Offsets::FinishDrawing);
 		if (!Offsets::StartDrawing) {
-			this->StartDrawing = StartDrawingFallback;
+			this->StartDrawing = Surface::StartDrawingFallback;
 		}
 		if (!Offsets::FinishDrawing) {
-			this->FinishDrawing = FinishDrawingFallback;
+			this->FinishDrawing = Surface::FinishDrawingFallback;
 		}
 
 		// finding m_FontAmalgams pointer from CMatSystemSurface::GetFontName

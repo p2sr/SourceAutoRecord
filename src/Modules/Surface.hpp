@@ -88,6 +88,8 @@ public:
 	void DrawColoredLine(int x0, int y0, int x1, int y1, Color clr);
 	void DrawColoredLine(const Vector2<int> &v0, const Vector2<int> &v1, Color clr);
 
+	static int __rescall StartDrawingFallback(void *thisptr);
+	static int __cdecl FinishDrawingFallback();
 
 	bool Init() override;
 	void Shutdown() override;
