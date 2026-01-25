@@ -38,7 +38,7 @@ struct SarVersion {
 	bool canary;
 };
 
-#define DL_SAR_HOST "https://dl.sar.portal2.sr"
+#define DL_SAR_HOST "https://sardl.portal2.sr"
 
 static std::optional<SarVersion> getVersionComponents(const char *str) {
 	SarVersion v = {0, 0, false};

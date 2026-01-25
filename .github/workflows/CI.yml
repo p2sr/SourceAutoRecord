@@ -46,7 +46,7 @@ jobs:
           name: sar-linux
           path: sar.so
           if-no-files-found: error
-      - name: Upload to dl.sar.portal2.sr
+      - name: Upload to sardl.portal2.sr
         if: github.ref == 'refs/heads/master' && github.repository_owner == 'p2sr'
         env:
           DL_SAR_API_TOKEN: ${{ secrets.DL_SAR_API_TOKEN }}
@@ -63,7 +63,7 @@ jobs:
             -F "count=1" \
             -F "hashes[0]=$(sha256sum sar.so | cut -d ' ' -f 1)" \
             -F "files[0]=@sar.so" \
-            "https://dl.sar.portal2.jonesy.moe/api/v1/upload"
+            "https://sardl.portal2.sr/api/v1/upload"
 
   build-win:
     name: Windows Build
@@ -91,7 +91,7 @@ jobs:
             bin\sar.dll
             bin\sar.pdb
           if-no-files-found: error
-      - name: Upload to dl.sar.portal2.sr
+      - name: Upload to sardl.portal2.sr
         if: github.ref == 'refs/heads/master' && github.repository_owner == 'p2sr'
         shell: bash
         env:
@@ -111,4 +111,4 @@ jobs:
             -F "hashes[1]=$(sha256sum bin/sar.pdb | cut -d ' ' -f 1)" \
             -F "files[0]=@bin/sar.dll" \
             -F "files[1]=@bin/sar.pdb" \
-            "https://dl.sar.portal2.jonesy.moe/api/v1/upload"
+            "https://sardl.portal2.sr/api/v1/upload"
