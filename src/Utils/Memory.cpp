@@ -245,6 +245,7 @@ Memory::Patch::~Patch() {
 }
 bool Memory::Patch::Execute() {
 	if (this->isPatched) return true; // already executed
+	if (!this->IsInit()) return false;
 	unsigned char *tmpPatch = new unsigned char[this->size];
 	//	We create another patch, because this->patch is gonna be deleted
 	memcpy(tmpPatch, this->patch, this->size);
