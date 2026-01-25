@@ -400,6 +400,9 @@
 |sar_on_pb|cmd|sar_on_pb \<command> [args]... - registers a command to be run when auto-submitter detects PB|
 |sar_on_pb_clear|cmd|sar_on_pb_clear [id] - clears command(s) registered on event "pb"|
 |sar_on_pb_list|cmd|sar_on_pb_list - lists commands registered on event "pb"|
+|sar_on_pp_scan_finish|cmd|sar_on_pp_scan_finish \<command> [args]... - registers a command to be run when pp scan is finished|
+|sar_on_pp_scan_finish_clear|cmd|sar_on_pp_scan_finish_clear [id] - clears command(s) registered on event "pp_scan_finish"|
+|sar_on_pp_scan_finish_list|cmd|sar_on_pp_scan_finish_list - lists commands registered on event "pp_scan_finish"|
 |sar_on_renderer_finish|cmd|sar_on_renderer_finish \<command> [args]... - registers a command to be run when renderer finishes|
 |sar_on_renderer_finish_clear|cmd|sar_on_renderer_finish_clear [id] - clears command(s) registered on event "renderer_finish"|
 |sar_on_renderer_finish_list|cmd|sar_on_renderer_finish_list - lists commands registered on event "renderer_finish"|
@@ -457,7 +460,12 @@
 |sar_pp_hud_show_orange|0|Enables or disables orange portal preview.|
 |sar_pp_hud_x|5|x pos of portal placement hud.|
 |sar_pp_hud_y|5|y pos of portal placement hud.|
+|sar_pp_scan_color_fail|194 69 45|The color rendered by pp scan where portal placement fails.|
+|sar_pp_scan_color_success|131 182 146|The color rendered by pp scan when portal placement is successful.|
+|sar_pp_scan_filename|pp_scan|The name of the TGA image to save after pp scan, without extension.|
 |sar_pp_scan_reset|cmd|sar_pp_scan_reset - reset ppscan.|
+|sar_pp_scan_screenshot|cmd|sar_pp_scan_screenshot - renders current camera perspective using ppscan rays|
+|sar_pp_scan_screenshot_overlay|0|Whether to overlay pp scan screenshot on top of gameplay screenshot.|
 |sar_pp_scan_set|cmd|sar_pp_scan_set - set the ppscan point where you're aiming.|
 |sar_prevent_ehm|0|Prevents Entity Handle Misinterpretation (EHM) from happening.|
 |sar_prevent_mat_snapshot_recompute|0|Shortens loading times by preventing state snapshot recomputation.|
