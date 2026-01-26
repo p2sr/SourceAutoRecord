@@ -68,6 +68,12 @@ static std::string g_currentCategory = "Singleplayer";
 static std::map<std::string, SpeedrunCategory> g_categories;
 static std::map<std::string, SpeedrunRule> g_rules;
 
+// Ad-hoc trigger state
+static std::vector<std::string> g_adhocTriggers;
+static int g_adhocCounter = 0;
+static std::string g_previousCategory = "";
+static bool g_practiceActive = false;
+
 void SpeedrunTimer::InitCategories() {
 	InitSpeedrunCategoriesTo(&g_categories, &g_rules, &g_currentCategory);
 }
@@ -359,6 +365,14 @@ CON_COMMAND_F_COMPLETION(sar_speedrun_category, "sar_speedrun_category [category
 		if (!lookupMap(g_categories, args[1])) {
 			console->Print("Category %s does not exist!\n", args[1]);
 		} else {
+			// Don't allow changing category if we're in practice mode
+			// (unless we're explicitly setting it to Practice, which happens in ensurePracticeCategory)
+			if (g_practiceActive && std::string(args[1]) != "Practice") {
+				console->Print("Cannot change category to '%s' while ad-hoc triggers are active.\n", args[1]);
+				console->Print("Use 'sar_speedrun_adhoc_clear' to exit practice mode.\n");
+				return;
+			}
+
 			bool same = g_currentCategory == args[1];
 			if (!same) {
 				g_currentCategory = args[1];
@@ -679,4 +693,128 @@ CON_COMMAND(sar_speedrun_reset_categories, "sar_speedrun_reset_categories - dele
 	SpeedrunTimer::InitCategories();
 	SpeedrunTimer::CategoryChanged();
 	g_scheduledRules.clear();
+}
+
+// ============================================
+// Ad-hoc triggers
+// ============================================
+
+static void ensurePracticeCategory() {
+	// Check if we're ACTUALLY in Practice category (not just if flag is set)
+	// This handles cases where category was reset but g_practiceActive wasn't
+	if (g_practiceActive && g_currentCategory == "Practice") {
+		return;
+	}
+
+	// Save current category (only if not already in practice mode)
+	if (!g_practiceActive) {
+		g_previousCategory = SpeedrunTimer::GetCategoryName();
+	}
+
+	// Create Practice category if it doesn't exist
+	if (!lookupMap(g_categories, std::string("Practice"))) {
+		g_categories["Practice"] = SpeedrunCategory{{}};
+	}
+
+	// Switch to Practice category (same as sar_speedrun_category command)
+	g_currentCategory = "Practice";
+	SpeedrunTimer::CategoryChanged();
+	g_scheduledRules.clear();
+
+	// Set offset to 0 and start_on_load to 2 (always restart on load)
+	sar_speedrun_offset.SetValue(0);
+	sar_speedrun_start_on_load.SetValue(2);
+
+	g_practiceActive = true;
+	console->Print("Switched to Practice category (offset=0, start_on_load=2)\n");
+}
+
+CON_COMMAND(sar_speedrun_adhoc_trigger, "sar_speedrun_adhoc_trigger - create a trigger at current position that splits the timer when touched\n") {
+	// Ensure we're in Practice category with proper settings
+	ensurePracticeCategory();
+
+	// Auto-enable cheats and visualization
+	Variable sv_cheats("sv_cheats");
+	sv_cheats.SetValue(1);
+	sar_speedrun_draw_triggers.SetValue(1);
+
+	// Get player position
+	void *player = server->GetPlayer(GET_SLOT() + 1);
+	if (!player) {
+		console->Print("No player found\n");
+		return;
+	}
+	Vector pos = server->GetAbsOrigin(player);
+
+	// Generate unique rule name
+	std::string ruleName = Utils::ssprintf("adhoc_%d", g_adhocCounter++);
+
+	// Create rule parameters
+	std::map<std::string, std::string> params = {
+		{"center", Utils::ssprintf("%f,%f,%f", pos.x, pos.y, pos.z)},
+		{"size", "64,64,128"},
+		{"angle", "0"},
+		{"action", "split"},
+		{"map", "*"},
+	};
+
+	// Create the rule
+	if (!SpeedrunTimer::CreateRule(ruleName, "zone", params)) {
+		console->Print("Failed to create adhoc trigger\n");
+		return;
+	}
+	console->Print("[adhoc] Created rule '%s' in g_rules\n", ruleName.c_str());
+
+	// Add to Practice category
+	if (!SpeedrunTimer::AddRuleToCategory("Practice", ruleName)) {
+		console->Print("Failed to add adhoc trigger to category\n");
+		return;
+	}
+
+	g_adhocTriggers.push_back(ruleName);
+
+	// Debug: show category state
+	console->Print("[adhoc] Current category: %s with %d rules\n", 
+	               g_currentCategory.c_str(), 
+	               (int)g_categories[g_currentCategory].rules.size());
+
+	console->Print("Created adhoc trigger '%s' at %.0f, %.0f, %.0f (total: %d)\n", 
+	               ruleName.c_str(), pos.x, pos.y, pos.z, (int)g_adhocTriggers.size());
+	// console->Print("Use 'sar_speedrun_draw_triggers 1' to visualize\n");
+}
+
+CON_COMMAND(sar_speedrun_adhoc_clear, "sar_speedrun_adhoc_clear - remove all adhoc triggers and restore previous category\n") {
+	if (g_adhocTriggers.empty() && !g_practiceActive) {
+		console->Print("No adhoc triggers to clear\n");
+		return;
+	}
+
+	int count = 0;
+
+	// Remove all adhoc triggers from Practice category
+	auto cat = lookupMap(g_categories, std::string("Practice"));
+	for (const auto& name : g_adhocTriggers) {
+		if (cat) {
+			auto it = std::find(cat->rules.begin(), cat->rules.end(), name);
+			if (it != cat->rules.end()) {
+				cat->rules.erase(it);
+			}
+		}
+		g_rules.erase(name);
+		count++;
+	}
+	g_adhocTriggers.clear();
+
+	// Restore previous category
+	if (g_practiceActive && !g_previousCategory.empty()) {
+		g_currentCategory = g_previousCategory;
+		SpeedrunTimer::CategoryChanged();
+		console->Print("Restored category: %s\n", g_previousCategory.c_str());
+	}
+
+	g_practiceActive = false;
+	g_previousCategory = "";
+	g_adhocCounter = 0;
+
+	console->Print("Cleared %d adhoc triggers\n", count);
 }
