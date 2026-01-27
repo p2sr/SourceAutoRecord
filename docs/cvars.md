@@ -513,6 +513,7 @@
 |sar_scrollspeed_x|0|Scroll speed HUD x offset.|
 |sar_scrollspeed_y|210|Scroll speed HUD y offset.|
 |sar_seamshot_finder|0|Enables or disables seamshot finder overlay.|
+|sar_sensitivity|cmd|sar_sensitivity \<cm\|in> \<distance> \<dpi> - changes the sensitivity to match the amount of distance the mouse needs to travel to turn one whole 360.|
 |sar_session|cmd|sar_session - prints the current tick of the server since it has loaded|
 |sar_show_entinp|0|Print all entity inputs to console.|
 |sar_skiptodemo|cmd|sar_skiptodemo \<demoname> - skip demos in demo queue to this demo|
