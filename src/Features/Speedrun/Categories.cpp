@@ -17,7 +17,7 @@
 #include <optional>
 #include <variant>
 
-Variable sar_speedrun_draw_triggers("sar_speedrun_draw_triggers", "0", "Draw the triggers associated with speedrun rules in the world.\n");
+Variable sar_speedrun_draw_triggers("sar_speedrun_draw_triggers", "0", "Draw the triggers associated with speedrun rules in the world.\n0 = off, 1 = boxes + text, 2 = boxes only\n");
 Variable sar_speedrun_triggers_info("sar_speedrun_triggers_info", "0", "Print player velocity (and position) upon mtrigger activation.\n1 - position and velocity\n2 - only horizontal velocity\n");
 
 static std::optional<std::vector<std::string>> extractPartialArgs(const char *str, const char *cmd) {
@@ -322,15 +322,16 @@ ON_EVENT(RENDER) {
 		if (std::find_if(rule->maps.begin(), rule->maps.end(), [](std::string map) {
 							return map == "*" || !strcasecmp(map.c_str(), engine->GetCurrentMapName().c_str());
 						}) == rule->maps.end()) continue;
+		bool showText = sar_speedrun_draw_triggers.GetInt() == 1;
 		if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
 			std::get<ZoneTriggerRule>(rule->rule).DrawInWorld();
-			std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(rule);
+			if (showText) std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(rule);
 		} else if (std::holds_alternative<JumpTriggerRule>(rule->rule)) {
 			std::get<JumpTriggerRule>(rule->rule).DrawInWorld();
-			std::get<JumpTriggerRule>(rule->rule).OverlayInfo(rule);
+			if (showText) std::get<JumpTriggerRule>(rule->rule).OverlayInfo(rule);
 		} else if (std::holds_alternative<PortalPlacementRule>(rule->rule)) {
 			std::get<PortalPlacementRule>(rule->rule).DrawInWorld();
-			std::get<PortalPlacementRule>(rule->rule).OverlayInfo(rule);
+			if (showText) std::get<PortalPlacementRule>(rule->rule).OverlayInfo(rule);
 		}
 	}
 }
