@@ -752,12 +752,6 @@ CON_COMMAND(sar_speedrun_adhoc_trigger, "sar_speedrun_adhoc_trigger - create a t
 		g_practiceActive = true;
 		console->Print("Switched to practice category\n");
 	}
-
-	// Auto-enable cheats and visualization
-	Variable sv_cheats("sv_cheats");
-	sv_cheats.SetValue(1);
-	sar_speedrun_draw_triggers.SetValue(1);
-
 	// Generate unique rule name
 	std::string ruleName = Utils::ssprintf("adhoc_%d", g_adhocCounter++);
 
