@@ -5,3 +5,4 @@
 
 bool AddDemoChecksum(const char *filename);
 void AddDemoFileChecksums();
+void AddDemoVpkChecksums();
