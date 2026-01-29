@@ -212,12 +212,7 @@ void SAR::SearchPlugin() {
 void SAR::Unload() {
 	if (unloading) return;
 	unloading = true;
-
-	// Stop any running demo so the SAR checksum is written to the demo file
-	if (engine->demorecorder->isRecordingDemo) {
-		engine->demorecorder->Stop();
-	}
-
+	
 	curl_global_cleanup();
 	if (statsCounter) {
 		statsCounter->RecordData(session->GetTick());
