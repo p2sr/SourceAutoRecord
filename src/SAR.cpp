@@ -212,7 +212,7 @@ void SAR::SearchPlugin() {
 void SAR::Unload() {
 	if (unloading) return;
 	unloading = true;
-
+	
 	curl_global_cleanup();
 	if (statsCounter) {
 		statsCounter->RecordData(session->GetTick());
