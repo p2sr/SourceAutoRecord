@@ -37,6 +37,13 @@ int EngineDemoRecorder::GetTick() {
 	return this->GetRecordingTick(this->s_ClientDemoRecorder->ThisPtr());
 }
 
+// Stop any running demo so the SAR checksum is written to the demo file
+ON_EVENT(SAR_UNLOAD) {
+	if (engine->demorecorder->isRecordingDemo) {
+		engine->demorecorder->Stop();
+	}
+}
+
 std::string EngineDemoRecorder::GetDemoFilename() {
 #ifdef _WIN32
 #	define PATH_SEP "\\"
