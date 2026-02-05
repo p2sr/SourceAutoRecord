@@ -235,10 +235,144 @@ bool AddDemoChecksum(const char *filename) {
 static std::thread g_sumthreads[NUM_FILE_SUM_THREADS];
 static std::map<std::string, uint32_t> g_filesums[NUM_FILE_SUM_THREADS];
 
+static const uint32_t g_vpkWhitelist[] = {
+	// Portal 2
+	498458753,	// /portal2_dlc2/pak01_dir.vpk
+	2331752929, // /portal 2/update/pak01_dir.vpk
+	2640587196, // /portal2_dlc1/pak01_dir.vpk
+	4107509135, // /portal2/pak01_dir.vpk
+	// Mel 
+	1561002964, // /portal stories mel/portal_stories/pak01_dir.vpk
+	89568034, 	// /portal stories mel/portal2/pak01_dir.vpk
+	// Reloaded Current
+	2391749182, // /portal reloaded/portalreloaded/pak01_dir.vpk
+	3928273112, // /portal reloaded/update/pak01_dir.vpk
+	177648256,	// /portal reloaded/portal2_dlc2/pak01_dir.vpk
+	1998161362,	// /portal reloaded/portal2_dlc1/pak01_dir.vpk
+	1409821692,	// /portal reloaded/portal2/pak01_dir.vpk
+	// Reloaded 1.0.0
+	128738477, 	// /portal reloaded/portalreloaded/pak01_dir.vpk
+	// Reloaded 1.1.0 Precoop
+	1759389097, // /portal reloaded/portalreloaded/pak01_dir.vpk
+	// Reloaed 1.2.0 Postcoop has none?
+	// Aptag has none?
+};
+static const size_t g_vpkWhitelistSize = sizeof(g_vpkWhitelist) / sizeof(g_vpkWhitelist[0]);
+
+struct VpkFileEntry {
+    std::string internalPath;
+    uint32_t crc;
+};
+
+struct VpkInternalData {
+    std::string vpkPath;
+    uint32_t wholeFileCrc;
+    std::vector<VpkFileEntry> entries;
+};
+
+static std::vector<VpkInternalData> g_vpkInternals;
+static std::thread g_vpkThread;
+
+static bool parseVpkDirectoryTree(const std::string &vpkPath, VpkInternalData *out) {
+	FILE *fp = fopen(vpkPath.c_str(), "rb");
+	if (!fp) return false;
+
+	uint32_t signature;
+	uint32_t version;
+	uint32_t treeSize;
+
+	if (fread(&signature, 4, 1, fp) != 1 ||
+		fread(&version, 4, 1, fp) != 1 ||
+		fread(&treeSize, 4, 1, fp) != 1) {
+		fclose(fp);
+		return false;
+	}
+
+	if (signature != 0x55AA1234) {
+		fclose(fp);
+		return false;
+	}
+
+	if (version == 2) {
+		// Skip v2 extra header fields
+		uint32_t dummy[4];
+		if (fread(dummy, 4, 4, fp) != 4) {
+			fclose(fp);
+			return false;
+		}
+	} else if (version != 1) {
+		fclose(fp);
+		return false;
+	}
+
+	out->vpkPath = vpkPath;
+	out->entries.clear();
+
+	auto readString = [&](std::string &s) -> bool {
+		s.clear();
+		int c;
+		while ((c = fgetc(fp)) != EOF) {
+			if (c == '\0') return true;
+			s += (char)c;
+		}
+		return false;
+	};
+
+	std::string ext, dirpath, filename;
+
+	while (true) {
+		if (!readString(ext) || ext.empty()) break;
+
+		while (true) {
+			if (!readString(dirpath) || dirpath.empty()) break;
+
+			while (true) {
+				if (!readString(filename) || filename.empty()) break;
+
+				uint32_t fileCrc;
+				uint16_t preloadBytes;
+				uint16_t archiveIndex;
+				uint32_t entryOffset;
+				uint32_t entryLength;
+				uint16_t terminator;
+
+				if (fread(&fileCrc, 4, 1, fp) != 1 ||
+					fread(&preloadBytes, 2, 1, fp) != 1 ||
+					fread(&archiveIndex, 2, 1, fp) != 1 ||
+					fread(&entryOffset, 4, 1, fp) != 1 ||
+					fread(&entryLength, 4, 1, fp) != 1 ||
+					fread(&terminator, 2, 1, fp) != 1) {
+					fclose(fp);
+					return false;
+				}
+
+				if (preloadBytes > 0) {
+					if (fseek(fp, preloadBytes, SEEK_CUR) != 0) {
+						fclose(fp);
+						return false;
+					}
+				}
+
+				std::string internalPath;
+				if (dirpath != " ") {
+					internalPath = dirpath + "/";
+				}
+				internalPath += filename + "." + ext;
+
+				out->entries.push_back({internalPath, fileCrc});
+			}
+		}
+	}
+
+	fclose(fp);
+	return true;
+}
+
 ON_EVENT(SAR_UNLOAD) {
 	for (size_t i = 0; i < NUM_FILE_SUM_THREADS; ++i) {
 		if (g_sumthreads[i].joinable()) g_sumthreads[i].detach();
 	}
+	if (g_vpkThread.joinable()) g_vpkThread.detach();
 }
 
 static void calcFileSums(std::map<std::string, uint32_t> *out, std::vector<std::string> paths) {
@@ -255,7 +389,34 @@ static void calcFileSums(std::map<std::string, uint32_t> *out, std::vector<std::
 	}
 }
 
+static void calcVpkInternals(std::vector<std::string> vpkPaths) {
+	for (auto &vpkPath : vpkPaths) {
+		uint32_t wholeFileCrc = 0;
+		FILE *fp = fopen(vpkPath.c_str(), "rb");
+		if (fp) {
+			fileChecksum(fp, 0, &wholeFileCrc);
+			fclose(fp);
+		}
+
+		bool whitelisted = false;
+		for (size_t i = 0; i < g_vpkWhitelistSize; ++i) {
+			if (g_vpkWhitelist[i] == wholeFileCrc) {
+				whitelisted = true;
+				break;
+			}
+		}
+		if (whitelisted) continue;
+
+		VpkInternalData vpkData;
+		vpkData.wholeFileCrc = wholeFileCrc;
+		if (parseVpkDirectoryTree(vpkPath, &vpkData)) {
+			g_vpkInternals.push_back(std::move(vpkData));
+		}
+	}
+}
+
 static void initFileSums() {
+	std::vector<std::string> vpkDirPaths;
 	std::vector<std::string> paths;
 	try {
 		auto searchpaths = fileSystem->GetSearchPaths();
@@ -285,6 +446,10 @@ static void initFileSums() {
 					{
 						paths.push_back(path);
 					}
+					
+					if (Utils::EndsWith(path, "_dir.vpk")) {
+						vpkDirPaths.push_back(path);
+					}
 				}
 			}
 		}
@@ -297,6 +462,7 @@ static void initFileSums() {
 		g_sumthreads[i] = std::thread(calcFileSums, &g_filesums[i], std::vector<std::string>(paths.begin() + idx, paths.begin() + end));
 		idx = end;
 	}
+	g_vpkThread = std::thread(calcVpkInternals, std::move(vpkDirPaths));
 }
 
 static void addFileChecksum(const char *path, uint32_t sum) {
@@ -309,6 +475,42 @@ static void addFileChecksum(const char *path, uint32_t sum) {
 	engine->demorecorder->RecordData(buf, bufLen);
 
 	delete[] buf;
+}
+
+static void addVpkInternalChecksum(const VpkInternalData &vpk) {
+	std::vector<uint8_t> data;
+	data.push_back(0x11);
+
+	auto appendU32 = [&](uint32_t val) {
+		data.push_back((val >>  0) & 0xFF);
+		data.push_back((val >>  8) & 0xFF);
+		data.push_back((val >> 16) & 0xFF);
+		data.push_back((val >> 24) & 0xFF);
+	};
+
+	auto appendStr = [&](const std::string &s) {
+		data.insert(data.end(), s.begin(), s.end());
+		data.push_back(0);
+	};
+
+	appendU32(vpk.wholeFileCrc);
+	appendStr(vpk.vpkPath);
+	appendU32((uint32_t)vpk.entries.size());
+
+	for (auto &entry : vpk.entries) {
+		appendU32(entry.crc);
+		appendStr(entry.internalPath);
+	}
+
+	engine->demorecorder->RecordData(data.data(), data.size());
+}
+
+void AddDemoVpkChecksums() {
+	if (g_vpkThread.joinable()) g_vpkThread.join();
+
+	for (auto &vpk : g_vpkInternals) {
+		addVpkInternalChecksum(vpk);
+	}
 }
 
 void AddDemoFileChecksums() {

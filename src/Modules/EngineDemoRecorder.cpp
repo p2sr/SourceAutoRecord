@@ -173,6 +173,7 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 		RecordQueuedCommands();
 		engine->ExecuteCommand("echo \"SAR " SAR_VERSION " (Built " SAR_BUILT ")\"", true);
 		AddDemoFileChecksums();
+		AddDemoVpkChecksums();
 		/*
 		RecordInitialVal("host_timescale");
 		RecordInitialVal("m_yaw");
