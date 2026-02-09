@@ -404,7 +404,7 @@ void Cheats::Init() {
 	auto portal2PromoFlags = Memory::Scan(MODULE("server"), Offsets::Portal2PromoFlagsSig, Offsets::Portal2PromoFlagsOff);
 	if (portal2PromoFlags) {
 		unsigned char promoFlagsByte = 0x00;
-		g_promoFlagsPatch->Execute(portal2PromoFlags, &promoFlagsByte, 1); // Note: Has to be active before map loads.
+		g_promoFlagsPatch->Execute(Memory::Deref<uintptr_t>(portal2PromoFlags), &promoFlagsByte, 1); // Note: Has to be active before map loads.
 		g_promoFlagsPatch->Restore();
 	}
 
