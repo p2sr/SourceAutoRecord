@@ -285,9 +285,7 @@ DETOUR(Server::PlayerRunCommand, CUserCmd *cmd, void *moveHelper) {
 
 	Cheats::AutoStrafe(slot, thisptr, cmd);
 	Cheats::CheckFloorReportals();
-	if (!sv_cheats.GetBool() && origPortal2PromoFlagsValue) {
-		*g_nPortal2PromoFlags = origPortal2PromoFlagsValue;  // We only want to check this once per map load, to preserve the intended behavior.
-	}
+	if (!sv_cheats.GetBool()) g_promoFlagsPatch->Restore(); // We only want to check this once per map load, to preserve the intended behavior.
 
 	inputHud.SetInputInfo(slot, cmd->buttons, {cmd->sidemove, cmd->forwardmove, cmd->upmove});
 
