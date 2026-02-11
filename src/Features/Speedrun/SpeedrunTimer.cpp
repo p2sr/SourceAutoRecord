@@ -27,6 +27,7 @@
 #include "Modules/Server.hpp"
 #include "Scheduler.hpp"
 #include "Utils.hpp"
+#include "Utils/ed25519/ed25519.h"
 
 #define SPEEDRUN_PACKET_TYPE "srtimer"
 #define SYNC_INTERVAL 1.0f  // Sync every second, just in case
@@ -39,6 +40,8 @@ enum PacketType {
 	STOP,
 	SPLIT,
 	RESET,
+	ID_REQUEST,   // Orange requests speedrun ID
+	ID_RESPONSE,  // Blue responds with speedrun ID
 };
 
 // TimerAction {{{
@@ -118,6 +121,9 @@ static struct
 
 	std::vector<std::string> visitedMaps;
 	std::string lastMap;
+
+	uint8_t speedrunId[16];  // 128-bit unique identifier
+	bool hasSpeedrunId;      // Whether ID has been set
 } g_speedrun;
 
 static std::map<std::string, int> g_activeRun;
@@ -126,6 +132,8 @@ static std::vector<std::map<std::string, int>> g_runs;
 bool g_timePauses = false;
 
 static void handleCoopPacket(const void *data, size_t size);
+static void sendIdRequest();
+static void sendIdResponse();
 
 ON_INIT {
 	g_timerInterface = new TimerInterface();
@@ -160,14 +168,23 @@ static bool g_coopActuallyReady = false;
 static int g_coopLastReadyTick = 0;
 
 static void handleCoopPacket(const void *data, size_t size) {
-	if (!engine->IsOrange()) return;
-
 	char *data_ = (char *)data;
 
 	if (size < 5) return;
 
 	PacketType t = (PacketType)data_[0];
 	int tick = *(int *)(data_ + 1);
+
+	// Blue handles ID_REQUEST, Orange handles everything else
+	if (t == PacketType::ID_REQUEST) {
+		if (!engine->IsOrange() && g_speedrun.hasSpeedrunId) {
+			sendIdResponse();
+		}
+		return;
+	}
+
+	// All other packets are Orange-only
+	if (!engine->IsOrange()) return;
 
 	g_coopLastSyncTick = tick;
 	g_coopLastSyncEngineTick = engine->GetTick();
@@ -179,6 +196,10 @@ static void handleCoopPacket(const void *data, size_t size) {
 		break;
 	case PacketType::START:
 		SpeedrunTimer::Start();
+		// Orange requests the speedrun ID
+		if (g_partnerHasSAR) {
+			sendIdRequest();
+		}
 		break;
 	case PacketType::PAUSE:
 		SpeedrunTimer::Pause();
@@ -195,6 +216,13 @@ static void handleCoopPacket(const void *data, size_t size) {
 		break;
 	case PacketType::RESET:
 		SpeedrunTimer::Reset();
+		break;
+	case PacketType::ID_RESPONSE:
+		// Orange receives speedrun ID
+		if (size >= 21) {
+			memcpy(g_speedrun.speedrunId, data_ + 5, 16);
+			g_speedrun.hasSpeedrunId = true;
+		}
 		break;
 	}
 }
@@ -307,6 +335,32 @@ static void sendCoopPacket(PacketType t, std::string *splitName = NULL, int newS
 	NetMessage::SendMsg(SPEEDRUN_PACKET_TYPE, buf, size);
 
 	free(buf);
+}
+
+void SpeedrunTimer::WriteIdToDemo() {
+	if (!engine->demorecorder->isRecordingDemo) return;
+	if (!g_speedrun.hasSpeedrunId) return;
+
+	uint8_t data[17];
+	data[0] = 0x13;  // Demo data type for speedrun identifier
+	memcpy(data + 1, g_speedrun.speedrunId, 16);
+
+	engine->demorecorder->RecordData(data, sizeof(data));
+}
+
+static void sendIdRequest() {
+	char buf[5];
+	buf[0] = (char)PacketType::ID_REQUEST;
+	*(int *)(buf + 1) = getCurrentTick();
+	NetMessage::SendMsg(SPEEDRUN_PACKET_TYPE, buf, 5);
+}
+
+static void sendIdResponse() {
+	char buf[21];
+	buf[0] = (char)PacketType::ID_RESPONSE;
+	*(int *)(buf + 1) = getCurrentTick();
+	memcpy(buf + 5, g_speedrun.speedrunId, 16);
+	NetMessage::SendMsg(SPEEDRUN_PACKET_TYPE, buf, 21);
 }
 
 int SpeedrunTimer::GetOffsetTicks() {
@@ -510,6 +564,18 @@ void SpeedrunTimer::Start() {
 	g_speedrun.recovery = -1;
 	g_speedrun.lastMap = map;
 	g_speedrun.visitedMaps.push_back(map);
+
+	// Generate unique speedrun ID
+	if (ed25519_create_seed(g_speedrun.speedrunId) != 0) {
+		// Fallback: use timestamp + random if crypto fails
+		auto now = std::chrono::system_clock::now().time_since_epoch();
+		uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+		*(uint64_t *)(g_speedrun.speedrunId) = timestamp;
+		for (int i = 8; i < 16; i++) {
+			g_speedrun.speedrunId[i] = (uint8_t)(Math::RandomNumber(0, 255));
+		}
+	}
+	g_speedrun.hasSpeedrunId = true;
 
 	sendCoopPacket(PacketType::START);
 	if (!sar_mtrigger_legacy.GetBool()) {
@@ -792,6 +858,10 @@ void SpeedrunTimer::Reset(bool requested) {
 	g_speedrun.currentSplit.clear();
 	g_speedrun.splits.clear();
 	g_speedrun.visitedMaps.clear();
+
+	// Clear speedrun ID
+	g_speedrun.hasSpeedrunId = false;
+	memset(g_speedrun.speedrunId, 0, 16);
 
 	if (networkManager.isConnected) {
 		networkManager.splitTicks = -1;
