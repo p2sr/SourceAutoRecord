@@ -172,6 +172,7 @@ std::string EngineDemoPlayer::GetLevelName() {
 // 0x0F: frametime cap detection
 // 0x10: queued commands
 // 0x11: VPK internal checksums
+// 0x12: incomplete speedrun summary
 void EngineDemoPlayer::CustomDemoData(char *data, size_t length) {
 	if (data[0] == 0x03 || data[0] == 0x04) {  // Entity input data
 		std::optional<int> slot;
