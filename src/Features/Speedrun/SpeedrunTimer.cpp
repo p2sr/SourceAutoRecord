@@ -592,6 +592,40 @@ static void recordDemoResult() {
 	engine->demorecorder->RecordData(data.data(), data.size());
 }
 
+static std::vector<uint8_t> buildIncompleteSummary() {
+	std::vector<uint8_t> data({0x12});
+
+	appendI32(g_speedrun.splits.size(), data);
+
+	for (SplitInfo split : g_speedrun.splits) {
+		appendStr(split.name, data);
+		appendI32(split.segments.size(), data);
+		for (Segment seg : split.segments) {
+			appendStr(seg.name, data);
+			appendI32(seg.ticks, data);
+		}
+	}
+
+	// category rules
+	appendI32(1, data);
+	auto rules = SpeedrunTimer::GetCategoryRules();
+	appendI32(rules.size(), data);
+	for (auto ruleName : rules) {
+		auto rule = SpeedrunTimer::GetRule(ruleName);
+		appendStr(ruleName, data);
+		appendStr(rule->Describe(), data);
+	}
+
+	return data;
+}
+
+void SpeedrunTimer::RecordIncompleteSummary() {
+	if (!SpeedrunTimer::IsRunning()) return;
+
+	std::vector<uint8_t> data = buildIncompleteSummary();
+	engine->demorecorder->RecordData(data.data(), data.size());
+}
+
 void SpeedrunTimer::Stop(std::string segName) {
 	if (!g_speedrun.isRunning) {
 		return;

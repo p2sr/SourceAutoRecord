@@ -171,6 +171,7 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 		needToRecordInitialVals = false;
 		RecordTimestamp();
 		RecordQueuedCommands();
+		SpeedrunTimer::RecordIncompleteSummary();
 		engine->ExecuteCommand("echo \"SAR " SAR_VERSION " (Built " SAR_BUILT ")\"", true);
 		AddDemoFileChecksums();
 		AddDemoVpkChecksums();

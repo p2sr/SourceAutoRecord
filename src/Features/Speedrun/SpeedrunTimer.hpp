@@ -33,6 +33,8 @@ namespace SpeedrunTimer {
 
 	bool IsRunning();
 
+	void RecordIncompleteSummary();
+
 	void OnLoad();
 	void CategoryChanged();
 };  // namespace SpeedrunTimer
