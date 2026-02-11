@@ -576,6 +576,7 @@ void SpeedrunTimer::Start() {
 		}
 	}
 	g_speedrun.hasSpeedrunId = true;
+	SpeedrunTimer::WriteIdToDemo();  // Write to current demo if recording
 
 	sendCoopPacket(PacketType::START);
 	if (!sar_mtrigger_legacy.GetBool()) {
