@@ -34,6 +34,7 @@ namespace SpeedrunTimer {
 	bool IsRunning();
 
 	void RecordIncompleteSummary();
+	void WriteIdToDemo();
 
 	void OnLoad();
 	void CategoryChanged();

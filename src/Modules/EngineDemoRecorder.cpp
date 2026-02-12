@@ -170,6 +170,7 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 	if (state == SIGNONSTATE_FULL && needToRecordInitialVals) {
 		needToRecordInitialVals = false;
 		RecordTimestamp();
+		SpeedrunTimer::WriteIdToDemo();  // Write speedrun ID to every demo segment
 		RecordQueuedCommands();
 		SpeedrunTimer::RecordIncompleteSummary();
 		engine->ExecuteCommand("echo \"SAR " SAR_VERSION " (Built " SAR_BUILT ")\"", true);
