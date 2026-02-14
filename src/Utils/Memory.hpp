@@ -50,6 +50,13 @@ namespace Memory {
 		bool Execute(uintptr_t location, unsigned char (&bytes)[size]) {
 			return Execute(location, bytes, size);
 		}
+		bool Execute(unsigned char *bytes, size_t size) {
+			return Execute(location, bytes, size);
+		}
+		template <size_t size>
+		bool Execute(unsigned char (&bytes)[size]) {
+			return Execute(location, bytes, size);
+		}
 		bool Restore();
 		bool IsPatched();
 		bool IsInit();

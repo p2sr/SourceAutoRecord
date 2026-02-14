@@ -50,3 +50,5 @@ extern Variable hide_gun_when_holding;
 extern Variable r_flashlightbrightness;
 
 extern Command sar_togglewait;
+
+extern Memory::Patch *g_promoFlagsPatch;

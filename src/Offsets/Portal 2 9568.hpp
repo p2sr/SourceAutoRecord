@@ -537,6 +537,10 @@ SIGSCAN_DEFAULT(FloorReportalBranch, "75 7D 8B 8E C0 04 00 00",
 SIGSCAN_DEFAULT(CPortal_Player__PollForUseEntity_CheckMP, "74 ? ? ? 8B 82 ? ? ? ? FF D0 84 C0 74 ? 8B CE",
                                                           "74 ? 8B 10 83 EC 0C 50 FF 92 88 00 00 00 83 C4 10 84 C0 ? ? ? ? ? ? ? ? ? ? ? ? ? 00 00") // "OnJump" xref -> CPortal_Player:PreThink -> CBasePlayer::PreThink -> CBasePlayer::ItemPreFrame -> CBasePlayer::PlayerUse -> CPortal_Player vtable offset -> CPortal_Player::PlayerUse -> Second function call from disassembly -> CPortal_Player::PollForUseEntity -> jz instruction
 
+SIGSCAN_DEFAULT(Portal2PromoFlagsSig, "F6 05 ? ? ? ? 02 74 ? 8B CE",
+                                      "A1 ? ? ? ? A8 02") // "#P2_WearableType_Flag" xref -> CPortal_Player::GiveDefaultItems -> bitwise & -> portal2 promo flag
+OFFSET_DEFAULT(Portal2PromoFlagsOff, 2, 1)
+
 // VPhysics
 OFFSET_EMPTY(DestroyEnvironment)
 OFFSET_EMPTY(GetActiveEnvironmentByIndex)
