@@ -38,6 +38,10 @@ private:
 
 	bool enabled;
 
+	bool inExtraMouseSamples;
+	float extraMouseSamplesAccumulatedTime;
+	QAngle viewanglesPreExtraMouseSamples;
+
 public:
 	TasController();
 	~TasController();
@@ -60,6 +64,9 @@ public:
 	void SetButtonState(TasControllerInput i, bool state);
 
 	void ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd);
+
+private:
+	void ApplyViewAnalog(int nSlot, CUserCmd *cmd, Vector analog, bool usePreExtraMouseSampleAngles);
 };
 
 extern TasController *tasControllers[2];

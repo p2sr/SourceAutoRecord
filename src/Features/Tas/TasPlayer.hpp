@@ -76,6 +76,7 @@ private:
 
 	// used to cache last used framebulk to quickly access it for playback
 	unsigned currentRequestRawFramebulkIndex[2];
+	unsigned currentExtraViewAnalogRawFramebulkIndex[2];
 
 public:
 	void Update();
@@ -118,6 +119,7 @@ public:
 	void SaveUsercmdDebugs(int slot);
 	void SavePlayerInfoDebugs(int slot);
 
+	Vector FetchRawExtraViewAnalog(int slot, float frametime);
 	void FetchInputs(int slot, TasController *controller, CUserCmd *cmd);
 	TasFramebulk SamplePreProcessedFramebulk(int slot, int tasTick, void *player, CUserCmd *cmd);
 	void PostProcess(int slot, void *player, CUserCmd *cmd);
