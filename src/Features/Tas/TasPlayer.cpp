@@ -168,7 +168,7 @@ void TasPlayer::Activate(TasPlaybackInfo info) {
 		playbackInfo.slots[slot].ClearGeneratedContent();
 
 		currentRequestRawFramebulkIndex[slot] = 0;
-	
+		currentExtraViewAnalogRawFramebulkIndex[slot] = 0;
 	}
 
 	active = true;
@@ -563,6 +563,28 @@ void TasPlayer::SaveProcessedFramebulks() {
 			TasProtocol::SendProcessedScript((uint8_t)slot, slotScript);
 		}
 	}
+}
+
+// Used by controller for ExtraMouseSample's. Not necessary for gameplay inputs but makes raw playback smooth
+Vector TasPlayer::FetchRawExtraViewAnalog(int slot, float frametime) {
+
+	int tasTick = currentTick + 1;
+	float frametimeInTicks = frametime / engine->GetIPT();
+	int lastSampleTick = ceilf(tasTick + frametimeInTicks);
+
+	GetRawFramebulkAt(slot, tasTick, currentExtraViewAnalogRawFramebulkIndex[slot]);
+	unsigned framebulkIndex = currentExtraViewAnalogRawFramebulkIndex[slot];
+
+	Vector accumulatedAnalog = Vector();
+
+	float remainingFrametimeInTicks = frametimeInTicks;
+	for (int tick = tasTick; tick <= lastSampleTick; tick++) {
+		TasFramebulk fb = GetRawFramebulkAt(slot, tick, framebulkIndex);
+		accumulatedAnalog += fb.viewAnalog * fminf(1.0f, remainingFrametimeInTicks);
+		remainingFrametimeInTicks -= 1.0f;
+	}
+
+	return accumulatedAnalog;
 }
 
 /*
