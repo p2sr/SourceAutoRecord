@@ -630,6 +630,7 @@
 |sar_tas_stop|cmd|sar_tas_stop - stop TAS playing|
 |sar_tas_tools_enabled|1|Enables tool processing for TAS script making.|
 |sar_tas_tools_force|0|Force tool playback for TAS scripts; primarily for debugging.|
+|sar_tas_use_raw_interpolation|0|Allows TAS controller to perform extra mouse samples to make camera movement more smooth. Can affect raw playback outcome!|
 |sar_teleport|cmd|sar_teleport [noportals] - teleports the player to the last saved location|
 |sar_teleport_setpos|cmd|sar_teleport_setpos - saves current location for teleportation|
 |sar_tick_debug|0|Output debugging information to the console related to ticks and frames.|

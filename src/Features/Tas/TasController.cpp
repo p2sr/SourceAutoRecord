@@ -19,6 +19,7 @@ const int g_TasControllerInGameButtons[] = {
 };
 
 Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 4, "Debugs controller.\n");
+Variable sar_tas_use_raw_interpolation("sar_tas_use_raw_interpolation", "0", "Allows TAS controller to perform extra mouse samples to make camera movement more smooth. Can affect raw playback outcome!\n");
 
 TasController *tasControllers[2];
 
@@ -140,6 +141,14 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 	if (tasPlayer->playbackInfo.coopControlSlot == nSlot) return;
 
 	//console->Print("TasController::ControllerMove (%d, ", cmd->tick_count);
+
+	if (!sar_tas_use_raw_interpolation.GetBool()) {
+		// without raw interpolation, treat is as if extra mouse samples never happened
+		wasInExtraMouseSamples = false;
+		if (inExtraMouseSamples) {
+			return;
+		}
+	}
 
 	if (inExtraMouseSamples && !tasPlayer->IsUsingTools()) {
 		if (!wasInExtraMouseSamples) {
