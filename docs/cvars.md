@@ -514,6 +514,7 @@
 |sar_scrollspeed_y|210|Scroll speed HUD y offset.|
 |sar_seamshot_finder|0|Enables or disables seamshot finder overlay.|
 |sar_session|cmd|sar_session - prints the current tick of the server since it has loaded|
+|sar_set_promo_items_state|cmd|sar_set_promo_items_state \<off\|all\|skins\|helmet\|antenna>... - enables coop promotional items on spawn.|
 |sar_show_entinp|0|Print all entity inputs to console.|
 |sar_skiptodemo|cmd|sar_skiptodemo \<demoname> - skip demos in demo queue to this demo|
 |sar_speedrun_autoreset_clear|cmd|sar_speedrun_autoreset_clear - stop using the autoreset file|
