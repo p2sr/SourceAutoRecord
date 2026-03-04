@@ -301,6 +301,7 @@ std::vector<std::string> elementOrder = {
 	"frame",
 	"last_frame",
 	"inspection",
+	"implicit_step_speed"
 };
 
 void HudElement::IndexAll() {
@@ -905,6 +906,17 @@ HUD_ELEMENT_MODE2(ent_slot_serial, "0", 0, 4096,
 	int serial = entityList->GetEntityInfoByIndex(mode)->m_SerialNumber;
 
 	ctx->DrawElement("ent slot %d serial: %d", mode, serial);
+}
+
+HUD_ELEMENT2(implicit_step_speed, "0", "Draw the player's implicit vertical step speed (requires sv_cheats).\n", HudType_InGame | HudType_Paused | HudType_LoadingScreen) {
+	auto player = server->GetPlayer(ctx->slot + 1);
+	if (!player || !sv_cheats.GetBool()) {
+		ctx->DrawElement("implicit step speed: -");
+		return;
+	}
+
+	float implicitStepSpeed = player->fieldOff<float>("m_flUseKeyCooldownTime", 8);
+	ctx->DrawElement("implicit step speed: %f", implicitStepSpeed);
 }
 
 HUD_ELEMENT_MODE2(fps, "0", 0, 2, "Show fps (frames per second) on the SAR hud.\n1 - Show fps\n2 - Show fps with fps cap\n", HudType_InGame | HudType_Paused | HudType_Menu) {

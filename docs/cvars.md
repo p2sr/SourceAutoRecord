@@ -267,6 +267,7 @@
 |sar_hud_groundframes|0|Draws the number of ground frames since last landing. Setting it to 2 preserves the value.|
 |sar_hud_groundspeed|0|Draw the speed of the player upon leaving the ground.<br>0 = Default<br>1 = Groundspeed<br>2 = Groundspeed (Gain)|
 |sar_hud_hide_text|cmd|sar_hud_hide_text \<id\|all> - hides the nth text value in the HUD|
+|sar_hud_implicit_step_speed|0|Draw the player's implicit vertical step speed (requires sv_cheats).|
 |sar_hud_inspection|0|Draws entity inspection data.|
 |sar_hud_jump|0|Draws current jump distance.|
 |sar_hud_jump_peak|0|Draws longest jump distance.|
