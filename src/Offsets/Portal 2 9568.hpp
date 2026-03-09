@@ -449,6 +449,7 @@ SIGSCAN_DEFAULT(ResetToneMapping, "55 8B EC 83 EC 14 F3 0F 10 45 ?", "55 89 E5 5
 // Engine
 SIGSCAN_DEFAULT(ParseSmoothingInfoSig, "55 8B EC 0F 57 C0 81 EC ? ? ? ? B9 ? ? ? ? 8D 85 ? ? ? ? EB", ""); // "cl_demosmootherpanel.cpp" xref -> CDemoSmootherPanel::ParseSmoothingInfo
 OFFSET_DEFAULT(ParseSmoothingInfoOff, 178, -1)
+SIGSCAN_DEFAULT(ForceFullUpdate, "55 8B EC 56 8B F1 83 BE CC 00 00 00 FF 74 21 E8 ? ? ? ? 8B 45 08", "") // "cl_fullupdate" string xref -> ConCommand callback -> CClientState::ForceFullUpdate
 SIGSCAN_DEFAULT(Host_AccumulateTime, "55 8B EC 51 F3 0F 10 05 ? ? ? ? F3 0F 58 45 08 8B 0D ? ? ? ? F3 0F 11 05 ? ? ? ? 8B 01 8B 50 20 53 B3 01 FF D2",
                                      "83 EC 1C 8B 15 ? ? ? ? F3 0F 10 05 ? ? ? ? F3 0F 58 44 24 20 F3 0F 11 05 ? ? ? ? 8B 02 8B 40 24 3D ? ? ? ? 0F 85 41 03 00 00") // "-tools" -> function with 2 references -> Host_AccumulateTime
 SIGSCAN_DEFAULT(_Host_RunFrame_Render, "A1 ? ? ? ? 85 C0 75 1B 8B 0D ? ? ? ? 8B 01 8B 50 40 68 ? ? ? ? FF D2 A3 ? ? ? ? 85 C0 74 0D 6A 02 6A F6 50 E8 ? ? ? ? 83 C4 0C",
