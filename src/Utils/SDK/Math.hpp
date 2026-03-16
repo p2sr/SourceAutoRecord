@@ -273,3 +273,8 @@ struct VMatrix {
 			m[2][0] * vVec.x + m[2][1] * vVec.y + m[2][2] * vVec.z + m[2][3]);
 	}
 };
+
+struct VPlane {
+	Vector m_Normal;
+	float m_Dist;
+};
