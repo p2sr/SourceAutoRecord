@@ -565,17 +565,24 @@ void SpeedrunTimer::Start() {
 	g_speedrun.lastMap = map;
 	g_speedrun.visitedMaps.push_back(map);
 
-	// Generate unique speedrun ID
-	if (ed25519_create_seed(g_speedrun.speedrunId) != 0) {
-		// Fallback: use timestamp + random if crypto fails
-		auto now = std::chrono::system_clock::now().time_since_epoch();
-		uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
-		*(uint64_t *)(g_speedrun.speedrunId) = timestamp;
-		for (int i = 8; i < 16; i++) {
-			g_speedrun.speedrunId[i] = (uint8_t)(Math::RandomNumber(0, 255));
+	// Generate unique speedrun ID. ed25519 seeds are 32 bytes; create_seed
+	// must not write directly into our 16-byte buffer. Generate into a
+	// temporary 32-byte seed and copy the first 16 bytes.
+	{
+		uint8_t seed[32];
+		if (ed25519_create_seed(seed) == 0) {
+			memcpy(g_speedrun.speedrunId, seed, 16);
+		} else {
+			// Fallback: use timestamp + random if crypto fails
+			auto now = std::chrono::system_clock::now().time_since_epoch();
+			uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+			memcpy(g_speedrun.speedrunId, &timestamp, sizeof(timestamp));
+			for (int i = 8; i < 16; i++) {
+				g_speedrun.speedrunId[i] = (uint8_t)(Math::RandomNumber(0, 255));
+			}
 		}
+		g_speedrun.hasSpeedrunId = true;
 	}
-	g_speedrun.hasSpeedrunId = true;
 	SpeedrunTimer::WriteIdToDemo();  // Write to current demo if recording
 
 	sendCoopPacket(PacketType::START);
