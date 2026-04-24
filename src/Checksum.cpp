@@ -440,14 +440,16 @@ static void initFileSums() {
 						path.find("portal2_dlc1") == std::string::npos &&
 						path.find("portal2_dlc2") == std::string::npos;
 
+					bool isVpkDir = Utils::EndsWith(path, "_dir.vpk");
+
 					if (Utils::EndsWith(path, ".nut")
-						|| (Utils::EndsWith(path, ".vpk") && dlc)
+						|| (Utils::EndsWith(path, ".vpk") && dlc && !isVpkDir)
 						|| path.find("scripts/talker") != std::string::npos)
 					{
 						paths.push_back(path);
 					}
 					
-					if (Utils::EndsWith(path, "_dir.vpk")) {
+					if (isVpkDir) {
 						vpkDirPaths.push_back(path);
 					}
 				}
