@@ -514,6 +514,7 @@
 |sar_scrollspeed_x|0|Scroll speed HUD x offset.|
 |sar_scrollspeed_y|210|Scroll speed HUD y offset.|
 |sar_seamshot_finder|0|Enables or disables seamshot finder overlay.|
+|sar_sensitivity|cmd|sar_sensitivity \<cm\|in> \<distance> \<dpi> - changes the sensitivity to match the amount of distance the mouse needs to travel to turn one whole 360.|
 |sar_session|cmd|sar_session - prints the current tick of the server since it has loaded|
 |sar_set_promo_items_state|cmd|sar_set_promo_items_state \<off\|all\|skins\|helmet\|antenna>... - enables coop promotional items on spawn.|
 |sar_show_entinp|0|Print all entity inputs to console.|
