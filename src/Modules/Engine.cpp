@@ -97,6 +97,40 @@ REDECL(Engine::ParseSmoothingInfo_Mid);
 REDECL(Engine::ParseSmoothingInfo_Mid_Trampoline);
 #endif
 
+static void (__rescall *ForceFullUpdate)(void *thisptr, const char *reason);
+#ifdef _WIN32
+void __fastcall ForceFullUpdate_Detour(void *thisptr, void *unused, const char *reason);
+#else
+void ForceFullUpdate_Detour(void *thisptr, const char *reason);
+#endif
+static Hook ForceFullUpdate_Hook(&ForceFullUpdate_Detour);
+
+bool g_suppressNextFullUpdate = false;
+bool g_fullUpdateSuppressed = false;
+
+Variable sar_prevent_demo_lagspike("sar_prevent_demo_lagspike", "0", "Prevent the lag spike caused by the full game update when demo recording starts.\n", FCVAR_CHEAT);
+DECL_CVAR_CALLBACK(sar_prevent_demo_lagspike) {
+	if (sar_prevent_demo_lagspike.GetBool() && !sv_cheats.GetBool()) {
+		console->Print("sar_prevent_demo_lagspike requires sv_cheats 1.\n");
+		sar_prevent_demo_lagspike.SetValue(0);
+	}
+}
+
+#ifdef _WIN32
+void __fastcall ForceFullUpdate_Detour(void *thisptr, void *unused, const char *reason)
+#else
+void ForceFullUpdate_Detour(void *thisptr, const char *reason)
+#endif
+{
+	if (g_suppressNextFullUpdate && sar_prevent_demo_lagspike.GetBool()) {
+		g_fullUpdateSuppressed = true;
+		return;
+	}
+	ForceFullUpdate_Hook.Disable();
+	ForceFullUpdate(thisptr, reason);
+	ForceFullUpdate_Hook.Enable();
+}
+
 void Engine::ExecuteCommand(const char *cmd, bool immediately) {
 	this->SendToCommandBuffer(cmd, 0);
 	if (immediately) {
@@ -1018,6 +1052,9 @@ bool Engine::Init() {
 			Memory::Deref<CHostState *>(HostState_OnClientConnected + Offsets::hoststate, &hoststate);
 		}
 
+		ForceFullUpdate = (decltype(ForceFullUpdate))Memory::Scan(this->Name(), Offsets::ForceFullUpdate);
+		if (ForceFullUpdate) ForceFullUpdate_Hook.SetFunc(ForceFullUpdate);
+
 		if (this->engineTrace = Interface::Create(this->Name(), "EngineTraceServer004")) {
 			this->TraceRay = this->engineTrace->Original<_TraceRay>(Offsets::TraceRay);
 			this->PointOutsideWorld = this->engineTrace->Original<_PointOutsideWorld>(Offsets::TraceRay + 14);
@@ -1145,6 +1182,7 @@ bool Engine::Init() {
 	Command::Hook("changelevel", Engine::changelevel_command_callback_hook, Engine::changelevel_command_callback);
 	Command::Hook("changelevel2", Engine::changelevel2_command_callback_hook, Engine::changelevel2_command_callback);
 	CVAR_HOOK_AND_CALLBACK(ss_force_primary_fullscreen);
+	sar_prevent_demo_lagspike.AddCallBack(&sar_prevent_demo_lagspike_callback);
 
 	host_timescale = Variable("host_timescale");
 	host_framerate = Variable("host_framerate");

@@ -24,6 +24,10 @@
 #include <Hook.hpp>
 #include <InstanceIdentifier.hpp>
 
+extern bool g_suppressNextFullUpdate;
+extern bool g_fullUpdateSuppressed;
+extern Variable sar_prevent_demo_lagspike;
+
 REDECL(EngineDemoRecorder::SetSignonState);
 REDECL(EngineDemoRecorder::StartRecording);
 REDECL(EngineDemoRecorder::StopRecording);
@@ -232,9 +236,27 @@ DETOUR(EngineDemoRecorder::StartRecording, const char *filename, bool continuous
 		engine->demorecorder->autorecordStartNum = *engine->demorecorder->m_nDemoNumber + 1;
 	}
 
+	if (sar_prevent_demo_lagspike.GetBool()) {
+		// Pre-set to 0 so the engine's internal SetValue(0) causes no ConVar change and fires no ForceFullUpdate.
+		engine->ExecuteCommand("cl_localnetworkbackdoor 0", true);
+		g_suppressNextFullUpdate = true;
+	}
 	auto result = EngineDemoRecorder::StartRecording(thisptr, filename, continuously);
+	g_suppressNextFullUpdate = false;
 
-	needToRecordInitialVals = true;
+	if (g_fullUpdateSuppressed) {
+		g_fullUpdateSuppressed = false;
+		needToRecordInitialVals = true;
+		// ForceFullUpdate was suppressed, so SetSignonState(SIGNONSTATE_FULL) won't fire
+		// naturally. Replicate it through the hooked vtable to initialize the engine's
+		// packet-recording path and SAR's tracking simultaneously.
+		*engine->demorecorder->m_bRecording = true;
+		using SetSignonStateFn = int (__rescall *)(void *, int);
+		auto fn = engine->demorecorder->s_ClientDemoRecorder->Current<SetSignonStateFn>(Offsets::SetSignonState);
+		fn(thisptr, SIGNONSTATE_FULL);
+	} else {
+		needToRecordInitialVals = true;
+	}
 
 	return result;
 }
@@ -271,6 +293,12 @@ DETOUR(EngineDemoRecorder::StopRecording) {
 			name += std::string("_") + std::to_string(engine->demorecorder->autorecordStartNum);
 		}
 		engine->demoplayer->replayName = name;
+
+		// Keep cl_localnetworkbackdoor at 0 so the next recording starts without lag.
+		// The engine's StopRecording restores it to 1; we undo that here.
+		if (sar_prevent_demo_lagspike.GetBool()) {
+			engine->ExecuteCommand("cl_localnetworkbackdoor 0", true);
+		}
 	}
 
 	return result;
