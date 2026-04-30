@@ -359,7 +359,7 @@ static void RecordRuntimeVscriptChecksum(const char *scriptName, const char *scr
 		sum = lodepng_crc32(reinterpret_cast<const unsigned char *>(scriptData), scriptLen);
 	}
 
-	if (engine->demorecorder->isRecordingDemo) {
+	if (engine->demorecorder->isRecordingDemo && engine->demorecorder->GetTick() >= 0) {
 		size_t nameLen = strlen(scriptName);
 		size_t bufLen = nameLen + 6;
 		auto *buf = new uint8_t[bufLen];

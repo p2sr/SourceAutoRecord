@@ -104,6 +104,10 @@ static void RecordQueuedCommands() {
 }
 
 static void RecordQueuedVScriptChecksums() {
+	if (!engine->demorecorder->isRecordingDemo) return;
+	if (!engine->demorecorder->customDataReady) return;
+	if (engine->demorecorder->GetTick() < 0) return;
+
 	for (auto &queuedChecksum : engine->demorecorder->queuedVScriptChecksums) {
 		size_t nameLen = queuedChecksum.first.size();
 		size_t bufLen = nameLen + 6;
@@ -117,7 +121,15 @@ static void RecordQueuedVScriptChecksums() {
 	engine->demorecorder->queuedVScriptChecksums.clear();
 }
 
+ON_EVENT(PRE_TICK) {
+	if (!engine->demorecorder->queuedVScriptChecksums.empty()) {
+		RecordQueuedVScriptChecksums();
+	}
+}
+
 ON_EVENT(SESSION_END) {
+	engine->demorecorder->queuedVScriptChecksums.clear();
+
 	if (*engine->demorecorder->m_bRecording && sar_autorecord.GetInt() == -1) {
 		engine->demorecorder->Stop();
 	}
