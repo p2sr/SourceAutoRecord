@@ -295,6 +295,7 @@ OFFSET_DEFAULT(GetModel, 8, 8)
 // Others
 OFFSET_DEFAULT(tickcount, 95, 64)
 OFFSET_DEFAULT(interval_per_tick, 65, 58)
+OFFSET_DEFAULT(VScript_CompileScript, 0x28B50, 0x615D0)
 OFFSET_DEFAULT(GetClientStateFunction, 4, 9)
 OFFSET_EMPTY(cl)
 OFFSET_DEFAULT(demoplayer, 74, 80)

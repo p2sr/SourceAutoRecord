@@ -103,6 +103,20 @@ static void RecordQueuedCommands() {
 	engine->demorecorder->queuedCommands.clear();
 }
 
+static void RecordQueuedVScriptChecksums() {
+	for (auto &queuedChecksum : engine->demorecorder->queuedVScriptChecksums) {
+		size_t nameLen = queuedChecksum.first.size();
+		size_t bufLen = nameLen + 6;
+		auto *buf = new uint8_t[bufLen];
+		buf[0] = 0x14;
+		*reinterpret_cast<uint32_t *>(buf + 1) = queuedChecksum.second;
+		strcpy(reinterpret_cast<char *>(buf + 5), queuedChecksum.first.c_str());
+		engine->demorecorder->RecordData(buf, bufLen);
+		delete[] buf;
+	}
+	engine->demorecorder->queuedVScriptChecksums.clear();
+}
+
 ON_EVENT(SESSION_END) {
 	if (*engine->demorecorder->m_bRecording && sar_autorecord.GetInt() == -1) {
 		engine->demorecorder->Stop();
@@ -172,6 +186,7 @@ DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 		RecordTimestamp();
 		SpeedrunTimer::WriteIdToDemo();  // Write speedrun ID to every demo segment
 		RecordQueuedCommands();
+		RecordQueuedVScriptChecksums();
 		SpeedrunTimer::RecordIncompleteSummary();
 		engine->ExecuteCommand("echo \"SAR " SAR_VERSION " (Built " SAR_BUILT ")\"", true);
 		AddDemoFileChecksums();
