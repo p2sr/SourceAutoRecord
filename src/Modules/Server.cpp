@@ -41,6 +41,7 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+#include "Utils/lodepng.hpp"
 
 #include "Features/OverlayRender.hpp"
 
@@ -336,6 +337,70 @@ static bool FindClosestPassableSpace_Detour(void *entity, const Vector &ind_push
 Hook FindClosestPassableSpace_Hook(&FindClosestPassableSpace_Detour);
 
 static int (*UTIL_GetCommandClientIndex)();
+static constexpr uint8_t SAR_MSG_VSCRIPT_RUNTIME_CHECKSUM = 0x14;
+
+static size_t BoundedCStringLen(const char *str, size_t maxLen) {
+	if (!str) return 0;
+	size_t len = 0;
+	while (len < maxLen && str[len]) ++len;
+	return len;
+}
+
+static void RecordRuntimeVscriptChecksum(const char *scriptName, const char *scriptData) {
+	if (!scriptName || !*scriptName || !scriptData || !*scriptData) return;
+
+	// Meant to avoid an unbounded C-String search in case a file data ever isn't null-terminated
+	constexpr size_t MAX_SCRIPT_SIZE = 8 * 1024 * 1024;
+	size_t scriptLen = BoundedCStringLen(scriptData, MAX_SCRIPT_SIZE);
+	if (scriptLen == 0) return;
+
+	uint32_t sum = 0;
+	if (scriptLen < MAX_SCRIPT_SIZE) {
+		sum = lodepng_crc32(reinterpret_cast<const unsigned char *>(scriptData), scriptLen);
+	}
+
+	if (engine->demorecorder->isRecordingDemo && engine->demorecorder->GetTick() >= 0) {
+		size_t nameLen = strlen(scriptName);
+		size_t bufLen = nameLen + 6;
+		auto *buf = new uint8_t[bufLen];
+		buf[0] = SAR_MSG_VSCRIPT_RUNTIME_CHECKSUM;
+		*reinterpret_cast<uint32_t *>(buf + 1) = sum;
+		strcpy(reinterpret_cast<char *>(buf + 5), scriptName);
+		engine->demorecorder->RecordData(buf, bufLen);
+		delete[] buf;
+	} else {
+		engine->demorecorder->queuedVScriptChecksums.emplace_back(scriptName, sum);
+	}
+}
+
+#ifdef _WIN32
+using _VScript_CompileScript = int(__rescall *)(void *thisptr, const char *scriptData, const char *scriptName);
+#else
+using _VScript_CompileScript = int(__cdecl *)(void *thisptr, const char *scriptData, const char *scriptName);
+#endif
+static _VScript_CompileScript VScript_CompileScript;
+extern Hook g_VScriptCompileScriptHook;
+#ifdef _WIN32
+static int __fastcall VScript_CompileScript_Hook(void *thisptr, int edx, const char *scriptData, const char *scriptName)
+#else
+static int __cdecl VScript_CompileScript_Hook(void *thisptr, const char *scriptData, const char *scriptName)
+#endif
+{
+#ifdef _WIN32
+	(void)edx;
+#endif
+	(void)thisptr;
+
+	if (scriptName && *scriptName) {
+		RecordRuntimeVscriptChecksum(scriptName, scriptData);
+	}
+
+	g_VScriptCompileScriptHook.Disable();
+	auto ret = VScript_CompileScript(thisptr, scriptData, scriptName);
+	g_VScriptCompileScriptHook.Enable();
+	return ret;
+}
+Hook g_VScriptCompileScriptHook(&VScript_CompileScript_Hook);
 
 extern Hook g_ViewPunch_Hook;
 DETOUR_T(void, Server::ViewPunch, const QAngle &offset) {
@@ -969,6 +1034,20 @@ bool Server::Init() {
 	if (sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011)) {
 		Server::IsInPVS = (Server::_IsInPVS)Memory::Scan(this->Name(), Offsets::IsInPVS);
 		g_IsInPVS_Hook.SetFunc(IsInPVS);
+
+#ifdef _WIN32
+		const char *vscriptModuleName = "vscript.dll";
+#else
+		const char *vscriptModuleName = "vscript.so";
+#endif
+
+		auto vscriptCompileScript = Memory::Absolute<uintptr_t>(vscriptModuleName, Offsets::VScript_CompileScript);
+		if (vscriptCompileScript) {
+			VScript_CompileScript = reinterpret_cast<_VScript_CompileScript>(vscriptCompileScript);
+			g_VScriptCompileScriptHook.SetFunc(VScript_CompileScript);
+		} else {
+			console->Warning("[sar] failed to find VScript_CompileScript at offset 0x%X\n", Offsets::VScript_CompileScript);
+		}
 	}
 
 	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);
