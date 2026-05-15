@@ -27,6 +27,8 @@
 #define READ_LE32(arr, i) \
 	(((uint32_t)arr[i + 0] << 0) | ((uint32_t)arr[i + 1] << 8) | ((uint32_t)arr[i + 2] << 16) | ((uint32_t)arr[i + 3] << 24))
 
+static constexpr uint8_t SAR_MSG_VSCRIPT_RUNTIME_CHECKSUM = 0x14;
+
 // clang-format off
 static const uint32_t crcTable[256] = {
 	0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA,
@@ -505,6 +507,40 @@ static void addVpkInternalChecksum(const VpkInternalData &vpk) {
 	}
 
 	engine->demorecorder->RecordData(data.data(), data.size());
+}
+
+static size_t BoundedCStringLen(const char *str, size_t maxLen) {
+	if (!str) return 0;
+	size_t len = 0;
+	while (len < maxLen && str[len]) ++len;
+	return len;
+}
+
+void RecordRuntimeVscriptChecksum(const char *scriptName, const char *scriptData) {
+	if (!scriptName || !*scriptName || !scriptData || !*scriptData) return;
+
+	// Avoid an unbounded C-string search in case file data is not null-terminated.
+	constexpr size_t MAX_SCRIPT_SIZE = 8 * 1024 * 1024;
+	size_t scriptLen = BoundedCStringLen(scriptData, MAX_SCRIPT_SIZE);
+	if (scriptLen == 0) return;
+
+	uint32_t sum = 0;
+	if (scriptLen < MAX_SCRIPT_SIZE) {
+		sum = crc32(scriptData, scriptLen);
+	}
+
+	if (engine->demorecorder->isRecordingDemo && engine->demorecorder->GetTick() >= 0) {
+		size_t nameLen = strlen(scriptName);
+		size_t bufLen = nameLen + 6;
+		auto *buf = new uint8_t[bufLen];
+		buf[0] = SAR_MSG_VSCRIPT_RUNTIME_CHECKSUM;
+		*reinterpret_cast<uint32_t *>(buf + 1) = sum;
+		strcpy(reinterpret_cast<char *>(buf + 5), scriptName);
+		engine->demorecorder->RecordData(buf, bufLen);
+		delete[] buf;
+	} else {
+		engine->demorecorder->queuedVScriptChecksums.emplace_back(scriptName, sum);
+	}
 }
 
 void AddDemoVpkChecksums() {
