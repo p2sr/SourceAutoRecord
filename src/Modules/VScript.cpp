@@ -24,7 +24,6 @@ Hook g_VScriptCompileScriptHook(&VScript::CompileScript_Hook);
 bool VScript::Init() {
 	VScript::CompileScript = (VScript::_CompileScript)Memory::Scan(this->Name(), Offsets::VScript_CompileScript);
 	if (!VScript::CompileScript) {
-		console->Warning("[sar] failed to find VScript_CompileScript\n");
 		return false;
 	}
 

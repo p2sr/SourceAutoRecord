@@ -545,8 +545,9 @@ OFFSET_DEFAULT(Portal2PromoFlagsOff, 2, 1)
 OFFSET_EMPTY(DestroyEnvironment)
 OFFSET_EMPTY(GetActiveEnvironmentByIndex)
 
-// Vscript
-SIGSCAN_DEFAULT(VScript_CompileScript, "55 8B EC 83 EC 0C 56 57 8B 7D 08 8B F1 85 FF 0F 84 ? ? ? ? 80 3F 00 0F 84 ? ? ? ? 53 8B", "57 56 53 8B 5C 24 14 8B 7C 24 10 8B 74 24 18 85 DB 74 ? 80 3B 00 74 ? 85 F6 B8 ? ? ? ? 0F 44 F0 83 EC 0C 53 E8 ? ? ? ? C7 04 24 01 00")
+// VScript
+SIGSCAN_DEFAULT(VScript_CompileScript, "55 8B EC 83 EC 0C 56 57 8B 7D 08 8B F1 85 FF 0F 84 ? ? ? ? 80 3F 00 0F 84 ? ? ? ? 53 8B",
+                                       "57 56 53 8B 5C 24 14 8B 7C 24 10 8B 74 24 18 85 DB 74 ? 80 3B 00 74 ? 85 F6 B8 ? ? ? ? 0F 44 F0 83 EC 0C 53 E8 ? ? ? ? C7 04 24 01 00") // "unnamed" xref -> function with two references -> CScriptVM::CompileScript
 
 
 // Steam API
