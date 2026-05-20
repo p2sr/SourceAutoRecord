@@ -237,25 +237,78 @@ static std::map<std::string, uint32_t> g_filesums[NUM_FILE_SUM_THREADS];
 
 static const uint32_t g_vpkWhitelist[] = {
 	// Portal 2
+	4107509135, // /portal2/pak01_dir.vpk
+	2990582453,	// /portal2_german/pak01_dir.vpk
+	2395721311, // /portal2_french/pak01_dir.vpk
+	4278372139, // /portal2_spanish/pak01_dir.vpk
+	2760172248, // /portal2_russian/pak01_dir.vpk
+	2640587196, // /portal2_dlc1/pak01_dir.vpk
+	921300496,	// /portal2_dlc1_german/pak01_dir.vpk
+	3206151772, // /portal2_dlc1_french/pak01_dir.vpk
+	1845659002, // /portal2_dlc1_spanish/pak01_dir.vpk
+	859382253,	// /portal2_dlc1_russian/pak01_dir.vpk
 	498458753,	// /portal2_dlc2/pak01_dir.vpk
 	2331752929, // /portal 2/update/pak01_dir.vpk
-	2640587196, // /portal2_dlc1/pak01_dir.vpk
-	4107509135, // /portal2/pak01_dir.vpk
-	// Mel 
-	1561002964, // /portal stories mel/portal_stories/pak01_dir.vpk
+	// Portal 2 (4554)
+	865491316,	// /portal2/pak01_dir.vpk
+	// Mel (Current)
 	89568034, 	// /portal stories mel/portal2/pak01_dir.vpk
+	1561002964, // /portal stories mel/portal_stories/pak01_dir.vpk
+	// Mel (day1version)
+	2936548813, // /Portal Stories Mel/portal2/pak01_dir.vpk
+	3212253386, // /Portal Stories Mel/portal_stories/pak01_dir.vpk
 	// Reloaded Current
-	2391749182, // /portal reloaded/portalreloaded/pak01_dir.vpk
-	3928273112, // /portal reloaded/update/pak01_dir.vpk
-	177648256,	// /portal reloaded/portal2_dlc2/pak01_dir.vpk
-	1998161362,	// /portal reloaded/portal2_dlc1/pak01_dir.vpk
 	1409821692,	// /portal reloaded/portal2/pak01_dir.vpk
+	1998161362,	// /portal reloaded/portal2_dlc1/pak01_dir.vpk
+	177648256,	// /portal reloaded/portal2_dlc2/pak01_dir.vpk
+	2391749182, // /portal reloaded/portalreloaded/pak01_dir.vpk
+	3928273112, // /portal reloaded/update/pak01_dir.vpk	
 	// Reloaded 1.0.0
 	128738477, 	// /portal reloaded/portalreloaded/pak01_dir.vpk
 	// Reloaded 1.1.0 Precoop
 	1759389097, // /portal reloaded/portalreloaded/pak01_dir.vpk
-	// Reloaed 1.2.0 Postcoop has none?
-	// Aptag has none?
+	// Aperture Tag
+	2223744882, // /Aperture Tag/aperturetag/pak01_dir.vpk
+	// Thinking With Time Machine
+	3563670858,	// /Thinking with Time Machine/portal2/pak01_dir.vpk
+	2936956689,	// /Thinking with Time Machine/TWTM/pak01_dir.vpk
+	2463630959,	// /Thinking with Time Machine/TWTM/pak02_dir.vpk
+	// Infra Current
+	237409403,  // /infra/pak01_dir.vpk
+	2160779363, // /infra/pak02_dir.vpk
+	3785856412, // /infra_czech/pak01_dir.vpk
+	338580486,  // /infra_german/pak01_dir.vpk
+	353209958,  // /infra_japanese/pak01_dir.vpk
+	2573505813, // /infra_korean/pak01_dir.vpk
+	272729950,  // /infra_russian/pak01_dir.vpk
+	3858909985, // /infra_spanish/pak01_dir.vpk
+	// Infra 2.0.7
+	2492326855, // /infra/pak01_dir.vpk
+	2092064301, // /infra/pak02_dir.vpk
+	// Infra 2.2.0
+	2679513866, // /infra/pak01_dir.vpk
+	2280946892, // /infra/pak02_dir.vpk
+	// Infra 2.3.3
+	2608842457, // /infra/pak01_dir.vpk
+	4287173375, // /infra/pak02_dir.vpk
+	// Infra 3.0.9
+	11407449,  	// /infra/pak01_dir.vpk
+	2701752449,	// /infra/pak02_dir.vpk
+	// Infra 3.1.0
+	71818742,  	// /infra/pak01_dir.vpk
+	99389966,  	// /infra/pak02_dir.vpk
+	// Infra 3.2.0
+	360022013,  // /infra/pak01_dir.vpk
+	419137519,  // /infra/pak02_dir.vpk
+	// Infra 3.3.1
+	2017730589, // /infra/pak01_dir.vpk
+	1372826882, // /infra/pak02_dir.vpk
+	4157558183, // /infra_russian/pak01_dir.vpk
+	3295097349, // /infra_spanish/pak01_dir.vpk
+	// Infra 3.3.2
+	4061596441, // /infra/pak01_dir.vpk
+	1926672917, // /infra/pak02_dir.vpk
+	1861439287, // /infra_russian/pak01_dir.vpk
 };
 static const size_t g_vpkWhitelistSize = sizeof(g_vpkWhitelist) / sizeof(g_vpkWhitelist[0]);
 
