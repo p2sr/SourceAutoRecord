@@ -10,7 +10,6 @@
 #include "Features/AchievementTracker.hpp"
 #include "Features/Camera.hpp"
 #include "Features/Cvars.hpp"
-#include "Features/DataCacheTools.hpp"
 #include "Features/Demo/DemoParser.hpp"
 #include "Features/Demo/NetworkGhostPlayer.hpp"
 #include "Features/Hud/PerformanceHud.hpp"
@@ -404,13 +403,11 @@ DETOUR(Engine::Frame) {
 
 	//demoplayer
 	if (engine->demoplayer->demoQueueSize > 0 && !engine->demoplayer->IsPlaying() && engine->demoplayer->IsPlaybackFixReady()) {
-		if (DataCacheTools::BeforeQueuedDemoStart()) {
-			DemoParser parser;
-			auto name = engine->demoplayer->demoQueue[engine->demoplayer->currentDemoID];
-			engine->ExecuteCommand(Utils::ssprintf("playdemo \"%s\"", name.c_str()).c_str(), true);
-			if (++engine->demoplayer->currentDemoID >= engine->demoplayer->demoQueueSize) {
-				engine->demoplayer->ClearDemoQueue();
-			}
+		DemoParser parser;
+		auto name = engine->demoplayer->demoQueue[engine->demoplayer->currentDemoID];
+		engine->ExecuteCommand(Utils::ssprintf("playdemo \"%s\"", name.c_str()).c_str(), true);
+		if (++engine->demoplayer->currentDemoID >= engine->demoplayer->demoQueueSize) {
+			engine->demoplayer->ClearDemoQueue();
 		}
 	}
 

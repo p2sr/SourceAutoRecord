@@ -6,10 +6,8 @@
 #include "Engine.hpp"
 #include "Event.hpp"
 #include "Features/Camera.hpp"
-#include "Features/DataCacheTools.hpp"
 #include "Features/Demo/Demo.hpp"
 #include "Features/Demo/DemoParser.hpp"
-#include "Features/ModelCacheTools.hpp"
 #include "Features/Renderer.hpp"
 #include "Hook.hpp"
 #include "Interface.hpp"
@@ -238,8 +236,6 @@ DETOUR_COMMAND(EngineDemoPlayer::stopdemo) {
 
 // CDemoPlayer::StartPlayback
 DETOUR(EngineDemoPlayer::StartPlayback, const char *filename, bool bAsTimeDemo) {
-	ModelCacheTools::CleanupBeforeDemoStart();
-
 	auto path = std::string(filename);
 	path = fileSystem->FindFileSomewhere(path).value_or(path);
 	auto newFilename = path.c_str();
@@ -281,17 +277,10 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char *filename, bool bAsTimeDemo) 
 
 // CDemoPlayer::StopPlayback
 DETOUR(EngineDemoPlayer::StopPlayback) {
-	bool stoppedDemo = engine->demoplayer->IsPlaying() && !g_demoFixing;
-	if (stoppedDemo) {
+	if (engine->demoplayer->IsPlaying() && !g_demoFixing) {
 		Event::Trigger<Event::DEMO_STOP>({});
 	}
-
-	auto result = EngineDemoPlayer::StopPlayback(thisptr);
-	if (stoppedDemo) {
-		ModelCacheTools::CleanupAfterDemoStop();
-		DataCacheTools::AfterDemoStop();
-	}
-	return result;
+	return EngineDemoPlayer::StopPlayback(thisptr);
 }
 
 Variable sar_demo_portal_interp_fix("sar_demo_portal_interp_fix", "1", "Fix eye interpolation through portals in demo playback.\n");
