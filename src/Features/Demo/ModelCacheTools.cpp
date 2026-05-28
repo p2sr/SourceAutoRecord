@@ -1,5 +1,6 @@
 #include "Event.hpp"
 #include "Modules/Console.hpp"
+#include "Modules/Server.hpp"
 #include "Offsets.hpp"
 #include "Utils.hpp"
 #include "Utils/Memory.hpp"
@@ -10,11 +11,21 @@ constexpr unsigned int MODEL_FLAG_PROTECTED_MASK = 0x7E;
 constexpr unsigned int MODEL_FLAG_SKIP_PROTECTED_CLEAR = 0x40;
 constexpr unsigned int MAX_REASONABLE_MODEL_COUNT = 16384;
 
+DECL_CVAR_CALLBACK(sar_demo_modelcache_clear_protected_flags);
+
 Variable sar_demo_modelcache_clear_protected_flags(
 	"sar_demo_modelcache_clear_protected_flags",
 	"0",
-	"Fix demo model-cache growth by clearing stale CModelLoader protected flags on demo stop.\n",
-	FCVAR_CHEAT);
+	"Fix demo model-cache growth by clearing stale CModelLoader protected flags on demo stop. Requires sv_cheats 1 to enable.\n",
+	FCVAR_NONE,
+	sar_demo_modelcache_clear_protected_flags_callback);
+
+DECL_CVAR_CALLBACK(sar_demo_modelcache_clear_protected_flags) {
+	if (sar_demo_modelcache_clear_protected_flags.GetBool() && flOldValue == 0.0f && !sv_cheats.GetBool()) {
+		console->Print("sar_demo_modelcache_clear_protected_flags requires sv_cheats 1.\n");
+		sar_demo_modelcache_clear_protected_flags.SetValue(pOldValue ? pOldValue : "0");
+	}
+}
 
 void *GetModelLoader() {
 	static uintptr_t global = 0;
@@ -64,7 +75,7 @@ void ClearProtectedModelFlags() {
 		*flags &= ~MODEL_FLAG_PROTECTED_MASK;
 	}
 }
-}
+} // namespace
 
 ON_EVENT(DEMO_STOP) {
 	if (sar_demo_modelcache_clear_protected_flags.GetBool()) {
