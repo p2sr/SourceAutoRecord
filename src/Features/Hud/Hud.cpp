@@ -222,7 +222,11 @@ void HudContext::Reset(int slot) {
 	this->elements = 0;
 	this->group.fill(0);
 	this->xPadding = sar_hud_x.GetInt();
-	this->yPadding = sar_hud_y.GetInt();
+  if (sar_hud_y.GetInt() < 28) {
+    this->yPadding = (g_drawImgui ? 28 : sar_hud_y.GetInt());
+  } else {
+    this->yPadding = sar_hud_y.GetInt();
+  }
 	this->spacing = sar_hud_spacing.GetInt();
 	this->maxWidth = 0;
 

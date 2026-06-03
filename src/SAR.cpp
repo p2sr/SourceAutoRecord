@@ -24,6 +24,7 @@
 #include "Interface.hpp"
 #include "Modules.hpp"
 #include "Variable.hpp"
+#include <imgui.h>
 
 SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);

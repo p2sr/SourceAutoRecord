@@ -7,11 +7,32 @@
 #include "Offsets.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
+#include "VGui.hpp"
+#include "Surface.hpp"
 
 REDECL(InputSystem::SleepUntilInput);
 #ifdef _WIN32
 REDECL(InputSystem::GetRawMouseAccumulators);
 #endif
+
+REDECL(InputSystem::LockCursor);
+// REDECL(InputSystem::IN_KeyEvent);
+
+DETOUR_T(void, InputSystem::LockCursor) {
+  if (g_drawImgui) {
+    surface->matsurface->Original<void(__rescall*)(void*)>(Offsets::UnlockCursor)(surface->matsurface->ThisPtr());
+
+    if (inputSystem->inputContext) {
+      inputSystem->SetCursorVisible(
+        inputSystem->g_InputStackSystem->ThisPtr(),
+        inputSystem->inputContext,
+        true
+      );
+    }
+    return;
+  }
+  return InputSystem::LockCursor(thisptr);
+}
 
 ButtonCode_t InputSystem::GetButton(const char *pString) {
 	return this->StringToButtonCode(this->g_InputSystem->ThisPtr(), pString);
@@ -74,6 +95,7 @@ DETOUR_T(void, InputSystem::GetRawMouseAccumulators, int &x, int &y) {
 
 bool InputSystem::Init() {
 	this->g_InputSystem = Interface::Create(this->Name(), "InputSystemVersion001");
+  this->g_InputStackSystem = Interface::Create(this->Name(), "InputStackSystemVersion001");
 	if (this->g_InputSystem) {
 		this->StringToButtonCode = this->g_InputSystem->Original<_StringToButtonCode>(Offsets::StringToButtonCode);
 
@@ -84,7 +106,29 @@ bool InputSystem::Init() {
 		this->IsButtonDown = this->g_InputSystem->Original<_IsButtonDown>(Offsets::IsButtonDown);
 		this->GetCursorPosition = this->g_InputSystem->Original<_GetCursorPosition>(Offsets::GetCursorPosition);
 		this->SetCursorPosition = this->g_InputSystem->Original<_SetCursorPosition>(Offsets::SetCursorPosition);
+    int offset = 26;
+    console->Print("GetInputContext offset: %d\n", offset);
+		this->GetInputContext = this->g_InputSystem->Original<_GetInputContext>(offset);
+    // for (int i = 20; i < 35; i++) {
+    //   // using _GetInputContext = void*(__rescall*)(void*, int);
+    //   auto fn = reinterpret_cast<_GetInputContext>(
+    //       (*reinterpret_cast<void***>(this->g_InputSystem->ThisPtr()))[i]
+    //   );
+    //   void* ctx = fn(this->g_InputSystem->ThisPtr(), 0);
+    //   console->Print("vtable[%d] GetInputContext = %p\n", i, ctx);
+    // }
 	}
+
+  if (this->g_InputStackSystem) {
+    this->SetCursorVisible = this->g_InputStackSystem->Original<_SetCursorVisible>(Offsets::SetCursorVisible);
+  }
+
+  if (this->g_InputSystem) {
+    this->inputContext = this->GetInputContext(this->g_InputSystem->ThisPtr(), 0);
+    console->Print("GetInputContext: %p\n", this->inputContext);
+  }
+
+  // client->g_ClientDLL->Hook(Input)
 
 	auto unbind = Command("unbind");
 	if (!!unbind) {

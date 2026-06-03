@@ -216,6 +216,10 @@ enum ButtonCode_t {
 class InputSystem : public Module {
 public:
 	Interface *g_InputSystem = nullptr;
+  Interface *g_InputStackSystem = nullptr;
+  Interface *g_VguiInput = nullptr;
+
+  void* inputContext = nullptr;
 
 	using _StringToButtonCode = ButtonCode_t(__rescall *)(void *thisptr, const char *pString);
 	using _IsButtonDown = bool(__rescall *)(void *thisptr, ButtonCode_t key);
@@ -223,11 +227,17 @@ public:
 	using _SetCursorPosition = void(__rescall *)(void *thisptr, int x, int y);
 	using _KeySetBinding = void(__cdecl *)(int keynum, const char *pBinding);
 
+  using _SetCursorVisible = void(__rescall *)(void *thisptr, void* context, bool visible);
+  using _GetInputContext = void*(__rescall *)(void *thisptr, int id);
+
 	_StringToButtonCode StringToButtonCode = nullptr;
 	_IsButtonDown IsButtonDown = nullptr;
 	_GetCursorPosition GetCursorPosition = nullptr;
 	_SetCursorPosition SetCursorPosition = nullptr;
 	_KeySetBinding KeySetBinding = nullptr;
+  _GetInputContext GetInputContext = nullptr;
+
+  _SetCursorVisible SetCursorVisible = nullptr;
 
 public:
 	ButtonCode_t GetButton(const char *pString);
@@ -239,6 +249,11 @@ public:
 
 	// CInputSystem::SleepUntilInput
 	DECL_DETOUR(SleepUntilInput, int nMaxSleepTimeMS);
+
+  // void* GetInputContext();
+
+  DECL_DETOUR_T(void, LockCursor);
+  // DECL_DETOUR_T(int, IN_KeyEvent, int eventcode, ButtonCode_t keynum, const char* pszCurrentBinding);
 
 #ifdef _WIN32
 	// CInputSystem::GetRawMouseAccumulators

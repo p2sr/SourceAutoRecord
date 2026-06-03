@@ -14,8 +14,9 @@ enum class CMStatus {
 };
 
 class Client : public Module {
+public:
+  Interface *g_ClientDLL = nullptr;
 private:
-	Interface *g_ClientDLL = nullptr;
 	Interface *g_pClientMode = nullptr;
 	Interface *g_pClientMode2 = nullptr;
 	Interface *g_HUDChallengeStats = nullptr;
