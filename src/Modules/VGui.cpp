@@ -20,7 +20,7 @@
 #include "Imgui/ToastPos.hpp"
 #include "Imgui/DemoPlayer.hpp"
 #include "Imgui/FileBrowser.hpp"
-#include "Imgui/Hud.hpp"
+#include "Imgui/ImguiHud.hpp"
 
 #include <algorithm>
 #include <cstring>
