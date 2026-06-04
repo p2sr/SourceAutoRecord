@@ -1,4 +1,5 @@
 #pragma once
 
-extern void AddHud();
+static inline bool g_drawImguiHud = true;
 
+extern void DrawImguiHud();

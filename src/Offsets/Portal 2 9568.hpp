@@ -99,7 +99,6 @@ OFFSET_DEFAULT(IsTextureIDValid, 40, 40)
 OFFSET_DEFAULT(CreateNewTextureID, 41, 41)
 OFFSET_DEFAULT(DrawTexturedPolygon, 104, 104)
 OFFSET_DEFAULT(UnlockCursor, 64, 64)
-OFFSET_DEFAULT(LockCursor, 65, 65)
 
 // CInputSystem
 OFFSET_DEFAULT(StringToButtonCode, 31, 31)

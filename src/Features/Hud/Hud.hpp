@@ -176,6 +176,13 @@ extern bool g_hudPrecisionWarn;
 
 DECL_DECLARE_AUTOCOMPLETION_FUNCTION(HudSetPos);
 
+extern Variable sar_hud_precision;
+extern Variable sar_hud_velocity_precision;
+
+extern Variable sar_hud_position;
+extern Variable sar_hud_angles;
+extern Variable sar_hud_velocity;
+
 #define CON_COMMAND_HUD_SETPOS(name, helpname) \
     CON_COMMAND_F_COMPLETION( \
         name##_setpos,                                                                                                            \

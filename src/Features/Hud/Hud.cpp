@@ -16,6 +16,8 @@
 #include "InputHud.hpp"
 #include "VphysHud.hpp"
 
+#include "Imgui/Hud/ImguiHuds.hpp"
+
 #include <algorithm>
 #include <cstdio>
 #include <map>
@@ -108,6 +110,14 @@ BaseHud::BaseHud(int type, bool drawSecondSplitScreen, int version)
 bool BaseHud::ShouldDraw() {
 	if (engine->IsForcingNoRendering()) {
 		return false;
+	}
+
+	for (auto& h : g_imguiHuds) {
+		if (strcmp(h->GetHandle(), "showpos") == 0) {
+			if (h->Enabled() && h->ShouldDraw()) {
+				return false;
+			}
+		}
 	}
 
 	if (engine->demoplayer->IsPlaying() || engine->IsOrange()) {

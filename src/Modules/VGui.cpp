@@ -20,7 +20,14 @@
 #include "Imgui/ToastPos.hpp"
 #include "Imgui/DemoPlayer.hpp"
 #include "Imgui/FileBrowser.hpp"
+#include "Imgui/ImguiHudSettings.hpp"
 #include "Imgui/ImguiHud.hpp"
+
+#include "Imgui/Hud/ImguiHuds.hpp"
+#include "Imgui/Hud/ShowposHud.hpp"
+
+#include "Imgui/fonts/din_font.hpp"
+#include "Imgui/fonts/fa_solid.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -33,11 +40,13 @@ static bool g_keysReleased[512] = {};
 
 CON_COMMAND(sar_imgui_toggle, "sar_imgui_toggle - Toggle ImGui\n") {
   g_drawImgui = !g_drawImgui;
-  // Stupid stupid stupid
-  engine->ExecuteCommand("toggleconsole; toggleconsole");
 }
 
-CON_COMMAND(sar_imgui_toggle_window, "sar_imgui_toggle_window <window> - toggles the visibility of the given imgui window") {
+CON_COMMAND(sar_imgui_toggle_edit_mode, "sar_imgui_toggle_edit_mode - Toggle ImGui edit mode\n") {
+  g_imguiEditMode = !g_imguiEditMode;
+}
+
+CON_COMMAND(sar_imgui_toggle_window, "sar_imgui_toggle_window <window> - toggles the visibility of the given imgui window\n") {
   if (args.ArgC() != 2) {
 		return console->Print(sar_imgui_toggle_window.ThisPtr()->m_pszHelpString);
   }
@@ -55,10 +64,29 @@ CON_COMMAND(sar_imgui_toggle_window, "sar_imgui_toggle_window <window> - toggles
   if (noneOpen) g_drawImgui = false;
 }
 
+CON_COMMAND(sar_imgui_toggle_hud, "sar_imgui_toggle_hud <hud> - toggles the visibility of the given imgui hud") {
+  if (args.ArgC() != 2) {
+    return console->Print(sar_imgui_toggle_hud.ThisPtr()->m_pszHelpString);
+  }
+
+  for (auto& h : g_imguiHuds) {
+    if (strcmp(h->GetHandle(), args[1]) == 0) {
+      h->Toggle();
+    }
+  }
+}
+
 CON_COMMAND(sar_imgui_list_windows, "sar_imgui_list_windows - lists all available windows") {
   console->Print("Available windows:\n");
   for (auto& w : imguiWindows) {
     console->Print("  %s\n", w.internalName);
+  }
+}
+
+CON_COMMAND(sar_imgui_list_huds, "sar_imgui_list_huds - list all available huds") {
+  console->Print("Available huds:\n");
+  for (auto& h : g_imguiHuds) {
+    console->Print("  %s\n", h->GetHandle());
   }
 }
 
@@ -181,6 +209,11 @@ void ImGui_RenderDrawData_Source(ImDrawData* drawData) {
         const ImDrawVert& v1 = vtxBuffer[cmd->VtxOffset + i1];
         const ImDrawVert& v2 = vtxBuffer[cmd->VtxOffset + i2];
 
+        if (v0.pos.x < cx0 && v1.pos.x < cx0 && v2.pos.x < cx0) continue;
+        if (v0.pos.x > cx1 && v1.pos.x > cx1 && v2.pos.x > cx1) continue;
+        if (v0.pos.y < cy0 && v1.pos.y < cy0 && v2.pos.y < cy0) continue;
+        if (v0.pos.y > cy1 && v1.pos.y > cy1 && v2.pos.y > cy1) continue;
+
         auto unpack = [](ImU32 c) -> Color {
           return Color{
             (uint8_t)((c >> 0) & 0xFF), // R
@@ -190,16 +223,25 @@ void ImGui_RenderDrawData_Source(ImDrawData* drawData) {
           };
         };
 
-        Color col = unpack(v0.col); // Simplification. Only uses v0's col
-        // if (col.a == 0) continue;
+        // Color col = unpack(v0.col); // Simplification. Only uses v0's col
+        // // if (col.a == 0) continue;
 
-        // Makes some glyphs look better. Why? We may never know. And i don't
-        // want to
-        if (col.a == 0) {
-          col = prevCol;
-        }
+        // // Makes some glyphs look better. Why? We may never know. And i don't
+        // // want to
+        // if (col.a == 0) {
+        //   col = prevCol;
+        // }
 
-        prevCol = col;
+        // prevCol = col;
+        Color c0 = unpack(v0.col);
+        Color c1 = unpack(v1.col);
+        Color c2 = unpack(v2.col);
+
+        Color col;
+        col.r = (uint8_t)((c0.r + c1.r + c2.r) / 3);
+        col.g = (uint8_t)((c0.g + c1.g + c2.g) / 3);
+        col.b = (uint8_t)((c0.b + c1.b + c2.b) / 3);
+        col.a = (uint8_t)((c0.a + c1.a + c2.a) / 3);
 
         Vertex_t verts[3];
         verts[0] = {{v0.pos.x, v0.pos.y}, {v0.uv.x, v0.uv.y}};
@@ -252,15 +294,120 @@ void DrawImguiWindows() {
   FileBrowser::Render();
 }
 
-void DrawImguiTopBar() {
-  if (ImGui::BeginMainMenuBar()) {
-    if (ImGui::BeginMenu("Game")) {
-      if (ImGui::MenuItem("Quit")) {
-        engine->ExecuteCommand("quit");
-      }
-      ImGui::EndMenu();
+void DrawImguiHuds() {
+  for (auto& h : g_imguiHuds) {
+    if (!h->Enabled() || !h->ShouldDraw()) {
+      if (!g_imguiEditMode) continue;
+      else if (!g_drawImgui) continue;
     }
 
+    h->Render();
+  }
+}
+
+enum class ToolbarItemType {
+  Button,
+  Toggle,
+  Menu,
+};
+
+struct ToolbarItem {
+  const char* id;
+  const char* icon;
+  const char* tooltip;
+  ToolbarItemType type;
+
+  bool* toggleValue = nullptr;
+  std::function<void()> onClick;
+};
+
+std::vector<ToolbarItem> g_toolbarItems;
+
+void DrawImguiTopbarRightSide() {
+  float h = ImGui::GetFrameHeight();
+
+  ImGui::SameLine(ImGui::GetWindowWidth() - h * g_toolbarItems.size() - ImGui::GetStyle().WindowPadding.x);
+
+  ImDrawList* dl = ImGui::GetWindowDrawList();
+
+  for (int i = (int)g_toolbarItems.size() - 1; i >= 0; i--) {
+    const ToolbarItem& item = g_toolbarItems[i];
+
+    ImVec2 pos = ImGui::GetCursorScreenPos();
+    ImVec2 size(h, h);
+
+    ImGui::InvisibleButton(item.id, size);
+
+    bool hovered = ImGui::IsItemHovered();
+    bool clicked = ImGui::IsItemClicked();
+
+    ImRect rect(pos, ImVec2(pos.x + h, pos.y + h));
+
+    // background
+    if (hovered) {
+      dl->AddRectFilled(rect.Min, rect.Max, ImGui::GetColorU32(ImGuiCol_HeaderHovered));
+
+      if (strcmp(item.tooltip, "") != 0) {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4, 2));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+        ImGui::BeginTooltip();
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+        ImGui::TextUnformatted(item.tooltip);
+        ImGui::PopFont();
+        ImGui::SetWindowFontScale(1.0f);
+        ImGui::EndTooltip();
+
+        ImGui::PopStyleVar(2);
+      }
+    }
+
+    if (item.type == ToolbarItemType::Toggle && item.toggleValue && *item.toggleValue) {
+      dl->AddRectFilled(rect.Min, rect.Max, ImGui::GetColorU32(ImGuiCol_HeaderActive));
+    }
+
+    // icon centered
+    ImVec2 textSize = ImGui::CalcTextSize(item.icon);
+    ImVec2 textPos(
+      pos.x + (h - textSize.x) * 0.5f,
+      pos.y + (h - textSize.y) * 0.5f
+    );
+
+    dl->AddText(textPos, IM_COL32_WHITE, item.icon);
+
+    if (clicked) {
+      switch (item.type) {
+        case ToolbarItemType::Button:
+          if (item.onClick)
+            item.onClick();
+          break;
+
+        case ToolbarItemType::Toggle:
+          if (item.toggleValue)
+            *item.toggleValue = !*item.toggleValue;
+          break;
+
+        case ToolbarItemType::Menu:
+          ImGui::OpenPopup(item.id);
+          break;
+      }
+    }
+
+    if (item.type == ToolbarItemType::Menu) {
+      if (ImGui::BeginPopup(item.id)) {
+        if (item.onClick)
+          item.onClick();
+
+        ImGui::EndPopup();
+      }
+    }
+
+    ImGui::SameLine(0.0f, 0.0f);
+  }
+}
+
+void DrawImguiTopBar() {
+  if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("Sar")) {
       for (auto& w : imguiWindows) {
         if (w.category == ImguiWindowCategory::Sar) {
@@ -271,6 +418,14 @@ void DrawImguiTopBar() {
     }
 
     if (ImGui::BeginMenu("Hud")) {
+      for (auto& h : g_imguiHuds) {
+        if (ImGui::MenuItem(h->GetName(), nullptr, &h->Enabled())) {
+
+        }
+      }
+
+      ImGui::Separator();
+
       for (auto& w : imguiWindows) {
         if (w.category == ImguiWindowCategory::Hud) {
           ImGui::MenuItem(w.name, nullptr, &w.open);
@@ -278,6 +433,8 @@ void DrawImguiTopBar() {
       }
       ImGui::EndMenu();
     }
+
+    DrawImguiTopbarRightSide();
 
     ImGui::EndMainMenuBar();
   }
@@ -378,7 +535,7 @@ DETOUR(VGui::Paint, PaintMode_t mode) {
 		lastCtx[1] = *ctx;
 	}
 
-  if (g_drawImgui) {
+  if (g_drawImgui || g_drawImguiHud) {
     ImGuiIO& io = ImGui::GetIO();
     io.DeltaTime = 1.0f / 60.0f;
 
@@ -391,6 +548,8 @@ DETOUR(VGui::Paint, PaintMode_t mode) {
     inputSystem->GetCursorPos(mouseX, mouseY);
 
     bool mouse1Down = inputSystem->IsKeyDown(MOUSE_LEFT);
+    bool mouse2Down = inputSystem->IsKeyDown(MOUSE_RIGHT);
+    bool mouse3Down = inputSystem->IsKeyDown(MOUSE_MIDDLE);
 
     bool scrollDown = inputSystem->IsKeyDown(MOUSE_WHEEL_DOWN);
     bool scrollUp = inputSystem->IsKeyDown(MOUSE_WHEEL_UP);
@@ -401,8 +560,8 @@ DETOUR(VGui::Paint, PaintMode_t mode) {
 
     io.MousePos = ImVec2(mouseX, mouseY);
     io.MouseDown[0] = mouse1Down ? 1 : 0;
-    io.MouseDown[1] = 0;
-    io.MouseDown[2] = 0;
+    io.MouseDown[1] = mouse2Down ? 1 : 0;
+    io.MouseDown[2] = mouse3Down ? 1 : 0;
     io.MouseWheel = (scrollUp ? 1.0f : 0.0f) + (scrollDown ? -1.0f : 0.0f);
 
     memset(g_keysPressed, 0, sizeof(g_keysPressed));
@@ -447,36 +606,46 @@ DETOUR(VGui::Paint, PaintMode_t mode) {
 
     ImGui::NewFrame();
 
-    // ImGui::Begin("Input test");
-    //
-    // ImGui::Text("KeysDown A: %d", ImGui::IsKeyDown(ImGuiKey_A));
-    // // ImGui::Text("KeysDown W: %d", io.KeysDown[KEY_W]);
-    //
-    // ImGui::Text("Mouse: %.1f %.1f", io.MousePos.x, io.MousePos.y);
-    // ImGui::Text("Wheel: %.1f", io.MouseWheel);
-    //
-    // ImGui::End();
+    if (g_drawImgui) {
+      if (g_imguiEditMode) {
+        ImGui::GetBackgroundDrawList()->AddRectFilled(
+          ImVec2(0, 0),
+          ImGui::GetIO().DisplaySize,
+          IM_COL32(20, 20, 20, 30)
+        );
+      }
+    }
 
-    DrawImguiTopBar();
-    DrawImguiWindows();
+    if (g_drawImguiHud) {
+      DrawImguiHuds();
+    }
+
+    if (g_drawImgui) {
+      DrawImguiTopBar();
+      DrawImguiWindows();
+    }
+
+    if ((g_drawImgui && engine->hoststate->m_activeGame && !pauseTimer->IsActive()) || (g_drawImgui && engine->demoplayer->IsPlaying())) { // if (engine->demoplayer->IsPlaying()) {
+      ImGui::GetForegroundDrawList()->AddText(ImVec2(mouseX, mouseY), IM_COL32(255, 255, 255, 255), "\xef\x89\x85"); // Cursor (stupid hacky stupid)
+      // ImGui::SetWindowFontScale(0.8f);
+      // ImGui::GetForegroundDrawList()->AddText(ImVec2(mouseX + 1.5f, mouseY + 1.5f), IM_COL32(20, 20, 20, 255), "\xef\x89\x85");
+      // ImGui::SetWindowFontScale(1.0f);
+      // int size = 10;
+      // Vertex_t verts[3];
+      // verts[0] = {{mouseX, mouseY}};
+      // verts[1] = {{mouseX + size, mouseY}};
+      // verts[2] = {{mouseX, mouseY + size}};
+
+      // surface->DrawSetTexture(surface->matsurface->ThisPtr(), -1);
+      // surface->DrawSetColor(surface->matsurface->ThisPtr(), 255, 255, 255, 255);
+      // surface->DrawTexturedPolygon(surface->matsurface->ThisPtr(), 3, verts, true);
+    }
 
     ImGui::Render();
 
     ImGui_RenderDrawData_Source(
       ImGui::GetDrawData()
     );
-
-    if (true) { // if (engine->demoplayer->IsPlaying()) {
-      int size = 10;
-      Vertex_t verts[3];
-      verts[0] = {{mouseX, mouseY}};
-      verts[1] = {{mouseX + size, mouseY}};
-      verts[2] = {{mouseX, mouseY + size}};
-
-      surface->DrawSetTexture(surface->matsurface->ThisPtr(), -1);
-      surface->DrawSetColor(surface->matsurface->ThisPtr(), 255, 255, 255, 255);
-      surface->DrawTexturedPolygon(surface->matsurface->ThisPtr(), 3, verts, true);
-    }
   }
 
 	surface->FinishDrawing();
@@ -507,11 +676,32 @@ bool VGui::IsUIVisible() {
 	return this->IsGameUIVisible(this->enginevgui->ThisPtr());
 }
 
+static const ImWchar icon_ranges[] = {
+  0xF000,
+  0xF8FF,
+  0
+};
+
 bool VGui::Init() {
   ImGui::CreateContext();
 
   ImGuiIO& io = ImGui::GetIO();
-  io.Fonts->AddFontFromFileTTF("./din.ttf", 18.0f);
+  io.Fonts->AddFontFromMemoryTTF((void*)din_ttf, din_ttf_len, 18.0f);
+
+  ImFontConfig config;
+  config.MergeMode = true;
+  config.PixelSnapH = true;
+
+  io.Fonts->AddFontFromMemoryTTF(
+    (void*)fa_solid_ttf,
+    fa_solid_ttf_len,
+    16.0f,
+    &config,
+    icon_ranges
+  );
+
+  io.Fonts->AddFontDefault();
+
   io.Fonts->Build();
   UploadImGuiFontTexture();
   // UploadImGuiWhiteTexture();
@@ -527,10 +717,52 @@ bool VGui::Init() {
   style.GrabRounding = rounding;
   style.WindowRounding = rounding;
   style.PopupRounding = rounding;
+  style.WindowBorderSize = 0.0f;
+
+  // Title bar
+  g_toolbarItems.push_back({
+    "game",
+    "\xef\x80\x91", // Power off
+    "",
+    ToolbarItemType::Menu,
+    nullptr,
+    [] {
+      if (engine->hoststate->m_activeGame) {
+        if (ImGui::MenuItem("Disconnect")) {
+          engine->ExecuteCommand("disconnect");
+        }
+      }
+
+      if (ImGui::MenuItem("Quit")) {
+        engine->ExecuteCommand("quit");
+      }
+    }
+  });
+
+  g_toolbarItems.push_back({
+    "settings",
+    "\xef\x80\x93", // Cog
+    "",
+    ToolbarItemType::Button,
+    nullptr,
+    [] { console->Print("Pressed!!\n"); }
+  });
+
+  g_toolbarItems.push_back({
+    "edit_mode",
+    "\xef\x8c\x83", // Pencil thingy
+    "Edit Mode",
+    ToolbarItemType::Toggle,
+    &g_imguiEditMode,
+    nullptr
+  });
 
   // Windows
   AddDemoPlayer();
   AddHud();
+
+  AddHud<ShowposHud>();
+  AddHud<ImguiInputHud>();
 
 	this->enginevgui = Interface::Create(this->Name(), "VEngineVGui001");
 	if (this->enginevgui) {

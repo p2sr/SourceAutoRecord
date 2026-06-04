@@ -193,7 +193,7 @@ void AddDemoPlayer() {
         follow = true;
       }
 
-      if (ImGui::Button("<")) {
+      if (ImGui::Button("\xef\x81\x88")) {
         std::string cmd{"demo_gototick " + std::to_string(tick - 1)};
         engine->ExecuteCommand(cmd.c_str());
       }
@@ -221,7 +221,7 @@ void AddDemoPlayer() {
 
       ImGui::SameLine();
 
-      if (ImGui::Button(">")) {
+      if (ImGui::Button("\xef\x81\x91")) {
         std::string cmd{"demo_gototick " + std::to_string(tick + 1)};
         engine->ExecuteCommand(cmd.c_str());
       }

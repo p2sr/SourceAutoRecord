@@ -95,6 +95,8 @@ public:
 	static int __rescall StartDrawingFallback(void *thisptr);
 	static int __cdecl FinishDrawingFallback();
 
+	DECL_DETOUR_T(void, LockCursor);
+
 	bool Init() override;
 	void Shutdown() override;
 	const char *Name() override { return MODULE("vguimatsurface"); }

@@ -8,8 +8,11 @@
 #include "Utils.hpp"
 #include "Scheme.hpp"
 #include "InputSystem.hpp"
+#include "VGui.hpp"
 
 #include <stdarg.h>
+
+REDECL(Surface::LockCursor);
 
 CON_COMMAND(sar_font_get_name, "sar_font_get_name <id> - gets the name of a font from its index\n") {
 	if (args.ArgC() != 2) {
@@ -324,6 +327,15 @@ int __cdecl Surface::FinishDrawingFallback() {
 	return 0;
 }
 
+// THIS IS THE HOOK!!!!
+DETOUR_T(void, Surface::LockCursor) {
+  if (g_drawImgui) {
+    console->Print("OMG??!!\n");
+  }
+
+  // return LockCursor_Original(thisptr);
+}
+
 bool Surface::Init() {
 	this->matsurface = Interface::Create(this->Name(), "VGUI_Surface031", false);
 	if (this->matsurface) {
@@ -357,6 +369,13 @@ bool Surface::Init() {
 		if (!Offsets::FinishDrawing) {
 			this->FinishDrawing = Surface::FinishDrawingFallback;
 		}
+
+    // I DONT UNDERSTAND THIS SHIT!!!!
+    // surface->matsurface->Hook(
+    //   LockCursor_Hook,
+    //   LockCursor,
+    //   65
+    // );
 
 		// finding m_FontAmalgams pointer from CMatSystemSurface::GetFontName
 		using _FontManager = void*(*)();

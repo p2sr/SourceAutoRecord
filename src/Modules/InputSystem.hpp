@@ -217,7 +217,6 @@ class InputSystem : public Module {
 public:
 	Interface *g_InputSystem = nullptr;
   Interface *g_InputStackSystem = nullptr;
-  Interface *g_VguiInput = nullptr;
 
   void* inputContext = nullptr;
 
@@ -228,6 +227,7 @@ public:
 	using _KeySetBinding = void(__cdecl *)(int keynum, const char *pBinding);
 
   using _SetCursorVisible = void(__rescall *)(void *thisptr, void* context, bool visible);
+  // using _LockCursor = void(__rescall *)(void *thisptr);
   using _GetInputContext = void*(__rescall *)(void *thisptr, int id);
 
 	_StringToButtonCode StringToButtonCode = nullptr;
@@ -236,7 +236,6 @@ public:
 	_SetCursorPosition SetCursorPosition = nullptr;
 	_KeySetBinding KeySetBinding = nullptr;
   _GetInputContext GetInputContext = nullptr;
-
   _SetCursorVisible SetCursorVisible = nullptr;
 
 public:
@@ -252,7 +251,6 @@ public:
 
   // void* GetInputContext();
 
-  DECL_DETOUR_T(void, LockCursor);
   // DECL_DETOUR_T(int, IN_KeyEvent, int eventcode, ButtonCode_t keynum, const char* pszCurrentBinding);
 
 #ifdef _WIN32
