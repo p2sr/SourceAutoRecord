@@ -36,6 +36,7 @@ public:
 	using _IsTextureIDValid = int(__rescall *)(void *thisptr, int id);
 	using _CreateNewTextureID = int(__rescall *)(void *thisptr, bool procedural);
   using _DrawTexturedPolygon = int(__rescall *)(void* thisptr, int n, Vertex_t* pVertice, bool bClipVertices);
+	using _UnlockCursor = void(__rescall *)();
 
 	_GetFontTall GetFontTall = nullptr;
 	_DrawSetColor DrawSetColor = nullptr;
@@ -61,6 +62,7 @@ public:
 	_DrawTexturedRect DrawTexturedRect = nullptr;
 	_IsTextureIDValid IsTextureIDValid = nullptr;
 	_CreateNewTextureID CreateNewTextureID = nullptr;
+	_UnlockCursor UnlockCursor = nullptr;
 
 	CUtlVector<CFontAmalgam> *m_FontAmalgams;
 

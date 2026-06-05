@@ -9,6 +9,7 @@
 #include "Scheme.hpp"
 #include "InputSystem.hpp"
 #include "VGui.hpp"
+#include "Engine.hpp"
 
 #include <stdarg.h>
 
@@ -100,34 +101,6 @@ void Surface::DrawRect(Color clr, const Vector2<int> &v0, const Vector2<int> &v1
 
 void Surface::DrawRect(Color clr, const Bounds<int> &bounds) {
 	this->DrawRect(clr, bounds.vBegin.x, bounds.vBegin.y, bounds.vEnd.x, bounds.vEnd.y);
-}
-
-// Thank you Krzyhau
-static int TextureFromDumbData(int& id, int width, int height, const unsigned char* texData, const unsigned char* colorData, bool grayscale) {
-    if (id == 0 || !surface->IsTextureIDValid(surface->matsurface->ThisPtr(), id)) {
-        id = surface->CreateNewTextureID(surface->matsurface->ThisPtr(), true);
-        unsigned char dataRGBA[130 * 4];
-        int size = width * height;
-        for (int i = 0; i < size; i++) {
-            int c = texData[i] * 4;
-            if (grayscale) {
-                int gc = (colorData[c] + colorData[c + 1] + colorData[c + 2]) / 3;
-                dataRGBA[i * 4] = gc;
-                dataRGBA[i * 4 + 1] = gc;
-                dataRGBA[i * 4 + 2] = gc;
-                dataRGBA[i * 4 + 3] = colorData[c + 3]*0.4;
-            }
-            else {
-                dataRGBA[i * 4] = colorData[c];
-                dataRGBA[i * 4 + 1] = colorData[c + 1];
-                dataRGBA[i * 4 + 2] = colorData[c + 2];
-                dataRGBA[i * 4 + 3] = colorData[c + 3];
-            }
-            
-        }
-        surface->DrawSetTextureRGBA(surface->matsurface->ThisPtr(), id, dataRGBA, 10, 13);
-    }
-    return id;
 }
 
 struct TriangleTexture {
@@ -329,15 +302,24 @@ int __cdecl Surface::FinishDrawingFallback() {
 
 // THIS IS THE HOOK!!!!
 DETOUR_T(void, Surface::LockCursor) {
+
+  // static void* inputCtx = engine->GetInputContext(engine->engineClient->ThisPtr(), 0);
+  // console->Print("%p\n", inputCtx);
+
+  // inputSystem->SetCursorVisible(inputSystem->g_InputStackSystem->ThisPtr(), inputCtx, true);
+
   if (g_drawImgui) {
-    console->Print("OMG??!!\n");
+    surface->UnlockCursor();
+    // console->Print("OMG??!!\n");
+
+    return;
   }
 
-  // return LockCursor_Original(thisptr);
+  return LockCursor(thisptr);
 }
 
 bool Surface::Init() {
-	this->matsurface = Interface::Create(this->Name(), "VGUI_Surface031", false);
+	this->matsurface = Interface::Create(this->Name(), "VGUI_Surface031", true);
 	if (this->matsurface) {
 		this->DrawSetColor = matsurface->Original<_DrawSetColor>(Offsets::DrawSetColor);
 		this->DrawFilledRect = matsurface->Original<_DrawFilledRect>(Offsets::DrawFilledRect);
@@ -359,6 +341,7 @@ bool Surface::Init() {
 		this->DrawTexturedRect = matsurface->Original<_DrawTexturedRect>(Offsets::DrawTexturedRect);
 		this->IsTextureIDValid = matsurface->Original<_IsTextureIDValid>(Offsets::IsTextureIDValid);
 		this->CreateNewTextureID = matsurface->Original<_CreateNewTextureID>(Offsets::CreateNewTextureID);
+    this->UnlockCursor = matsurface->Original<_UnlockCursor>(64);
 
 		auto PaintTraverseEx = matsurface->Original(Offsets::PaintTraverseEx);
 		this->StartDrawing = Memory::Read<_StartDrawing>(PaintTraverseEx + Offsets::StartDrawing);
@@ -371,11 +354,11 @@ bool Surface::Init() {
 		}
 
     // I DONT UNDERSTAND THIS SHIT!!!!
-    // surface->matsurface->Hook(
-    //   LockCursor_Hook,
-    //   LockCursor,
-    //   65
-    // );
+    surface->matsurface->Hook(
+      LockCursor_Hook,
+      LockCursor,
+      65
+    );
 
 		// finding m_FontAmalgams pointer from CMatSystemSurface::GetFontName
 		using _FontManager = void*(*)();

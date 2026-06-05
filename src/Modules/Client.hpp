@@ -4,6 +4,7 @@
 #include "Module.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+#include "InputSystem.hpp"
 
 #include <cstdint>
 
@@ -137,6 +138,8 @@ public:
 
 	// CHLClient::LevelInitPreEntity
 	DECL_DETOUR(LevelInitPreEntity, const char *levelName);
+
+	DECL_DETOUR(IN_KeyEvent, int eventCode, ButtonCode_t keynum, const char* pszCurrentBinding);
 
 	// ClientModeShared::CreateMove
 	DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd *cmd);

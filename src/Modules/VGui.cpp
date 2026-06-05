@@ -409,6 +409,10 @@ void DrawImguiTopbarRightSide() {
 void DrawImguiTopBar() {
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("Sar")) {
+      if (ImGui::MenuItem("Close Imgui")) {
+        g_drawImgui = false;
+      }
+
       for (auto& w : imguiWindows) {
         if (w.category == ImguiWindowCategory::Sar) {
           ImGui::MenuItem(w.name, nullptr, &w.open);
@@ -649,10 +653,6 @@ DETOUR(VGui::Paint, PaintMode_t mode) {
   }
 
 	surface->FinishDrawing();
-
-  // static void* inputCtx = engine->GetInputContext(engine->engineClient->ThisPtr(), 0);
-  //
-  // inputSystem->SetCursorVisible(inputSystem->g_InputSystem->ThisPtr(), inputCtx, false);
 
 	return result;
 }

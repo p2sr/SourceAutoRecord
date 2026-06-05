@@ -56,6 +56,7 @@ public:
 	using _ConPrintEvent = int(__rescall *)(void *thisptr, IGameEvent *ev);
 	using _PrecacheModel = int(__rescall *)(void *thisptr, const char *, bool);
 	using _GetPlayerInfo = bool(__rescall *)(void *thisptr, int, player_info_t *);
+	using _GetInputContext = void*(__rescall *)(void *thisptr, int);
 #ifdef _WIN32
 	// See comment in OverlayRender::startShading
 	using _GetLightForPoint = void(__rescall *)(void *thisptr, Vector &out, const Vector &pos, bool clamp);
@@ -101,6 +102,7 @@ public:
 	_CreateDebugMesh CreateDebugMesh = nullptr;
 	_DestroyDebugMesh DestroyDebugMesh = nullptr;
 	_GetPlayerInfo GetInfo = nullptr;
+	_GetInputContext GetInputContext = nullptr;
 
 	EngineDemoPlayer *demoplayer = nullptr;
 	EngineDemoRecorder *demorecorder = nullptr;

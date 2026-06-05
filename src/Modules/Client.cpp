@@ -29,6 +29,7 @@
 #include "Offsets.hpp"
 #include "Server.hpp"
 #include "Utils.hpp"
+#include "VGui.hpp"
 
 #include <cstdarg>
 #include <cstdint>
@@ -121,6 +122,7 @@ REDECL(Client::PurgeAndDeleteElements);
 REDECL(Client::IsQuerying);
 REDECL(Client::SetPanelStats);
 REDECL(Client::OnCommand);
+REDECL(Client::IN_KeyEvent);
 #ifdef _WIN32
 REDECL(Client::ApplyMouse_Mid);
 REDECL(Client::ApplyMouse_Mid_Continue);
@@ -964,6 +966,24 @@ DETOUR(Client::OnCommand, const char *a2) {
 }
 Hook g_OnCommandHook(&Client::OnCommand_Hook);
 
+DETOUR(Client::IN_KeyEvent, int eventCode, ButtonCode_t keynum, const char* pszCurrentBinding) {
+	// console->Print("IN_KeyEvent %d, %d, %s\n", eventCode, keynum, pszCurrentBinding);
+	if (g_drawImgui) {
+		// console->Print("Blocked by imgui!!\n");
+
+		if (keynum != 0 && pszCurrentBinding) {
+			std::string currentBinding{pszCurrentBinding};
+			if (currentBinding.find("toggleconsole") != std::string::npos || 
+				currentBinding.find("sar_imgui") != std::string::npos ||
+				currentBinding.find("cancelselect") != std::string::npos) {
+				return IN_KeyEvent(thisptr, eventCode, keynum, pszCurrentBinding);
+			}
+		}
+		return 0;
+	}
+	return IN_KeyEvent(thisptr, eventCode, keynum, pszCurrentBinding);
+}
+
 extern Hook g_GetChapterProgressHook;
 DETOUR(Client::GetChapterProgress) {
 	if (sar_unlocked_chapters.GetInt() > -1)
@@ -992,6 +1012,11 @@ bool Client::Init() {
 	}
 
 	if (this->g_ClientDLL) {
+		this->g_ClientDLL->Hook(
+			IN_KeyEvent_Hook,
+			IN_KeyEvent,
+			20
+		);
 		this->GetAllClasses = this->g_ClientDLL->Original<_GetAllClasses>(Offsets::GetAllClasses, readJmp);
 		this->FrameStageNotify = this->g_ClientDLL->Original<_FrameStageNotify>(Offsets::GetAllClasses + 27);
 

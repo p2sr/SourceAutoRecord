@@ -14,7 +14,6 @@ REDECL(InputSystem::SleepUntilInput);
 #ifdef _WIN32
 REDECL(InputSystem::GetRawMouseAccumulators);
 #endif
-// REDECL(InputSystem::LockCursor);
 
 ButtonCode_t InputSystem::GetButton(const char *pString) {
 	return this->StringToButtonCode(this->g_InputSystem->ThisPtr(), pString);
@@ -78,7 +77,7 @@ DETOUR_T(void, InputSystem::GetRawMouseAccumulators, int &x, int &y) {
 
 bool InputSystem::Init() {
 	this->g_InputSystem = Interface::Create(this->Name(), "InputSystemVersion001");
-  this->g_InputStackSystem = Interface::Create(this->Name(), "InputStackSystemVersion001");
+  	this->g_InputStackSystem = Interface::Create(this->Name(), "InputStackSystemVersion001");
 	if (this->g_InputSystem) {
 		this->StringToButtonCode = this->g_InputSystem->Original<_StringToButtonCode>(Offsets::StringToButtonCode);
 
@@ -89,29 +88,11 @@ bool InputSystem::Init() {
 		this->IsButtonDown = this->g_InputSystem->Original<_IsButtonDown>(Offsets::IsButtonDown);
 		this->GetCursorPosition = this->g_InputSystem->Original<_GetCursorPosition>(Offsets::GetCursorPosition);
 		this->SetCursorPosition = this->g_InputSystem->Original<_SetCursorPosition>(Offsets::SetCursorPosition);
-
-    if (surface->matsurface) {
-      // LockCursor_Original = surface->matsurface->Original<_LockCursor>(66);
-
-      // surface->matsurface->Hook(
-      //   InputSystem::LockCursor_Hook,
-      //   InputSystem::LockCursor,
-      //   65
-      // );
-    }
-
-    int offset = 25;
-    console->Print("GetInputContext offset: %d\n", offset);
-		this->GetInputContext = this->g_InputSystem->Original<_GetInputContext>(offset);
-    if (this->GetInputContext) {
-      this->inputContext = this->GetInputContext(this->g_InputSystem->ThisPtr(), 0);
-      console->Print("GetInputContext: %p\n", this->inputContext);
-    }
 	}
 
-  if (this->g_InputStackSystem) {
-    this->SetCursorVisible = this->g_InputStackSystem->Original<_SetCursorVisible>(Offsets::SetCursorVisible);
-  }
+	if (this->g_InputStackSystem) {
+		this->SetCursorVisible = this->g_InputStackSystem->Original<_SetCursorVisible>(Offsets::SetCursorVisible);
+	}
 
   // client->g_ClientDLL->Hook(Input)
 
