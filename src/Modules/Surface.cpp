@@ -306,11 +306,8 @@ DETOUR_T(void, Surface::LockCursor) {
   // static void* inputCtx = engine->GetInputContext(engine->engineClient->ThisPtr(), 0);
   // console->Print("%p\n", inputCtx);
 
-  // inputSystem->SetCursorVisible(inputSystem->g_InputStackSystem->ThisPtr(), inputCtx, true);
-
   if (g_drawImgui) {
     surface->UnlockCursor();
-    // console->Print("OMG??!!\n");
 
     return;
   }
@@ -353,7 +350,7 @@ bool Surface::Init() {
 			this->FinishDrawing = Surface::FinishDrawingFallback;
 		}
 
-    // I DONT UNDERSTAND THIS SHIT!!!!
+    // I UNDERSTAND THIS SHIT!!!!
     surface->matsurface->Hook(
       LockCursor_Hook,
       LockCursor,
