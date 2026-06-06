@@ -204,6 +204,7 @@ void Client::MultiColorChat(const std::vector<std::pair<Color, std::string>> &co
 }
 
 void Client::ShowLocator(Vector position, Vector normal, Color color) {
+	if (!PrecacheParticleSystem || !DispatchParticleEffect) return;
 	Vector colorAsVector = {(float)color.r, (float)color.g, (float)color.b};
 	QAngle angles;
 

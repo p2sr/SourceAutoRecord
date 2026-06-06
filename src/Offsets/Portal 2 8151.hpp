@@ -107,7 +107,7 @@ SIGSCAN_DEFAULT(Portal2PromoFlagsSig, "", "")
 SIGSCAN_LINUX(FloorReportalBranch, "")
 SIGSCAN_LINUX(CPortal_Player__PollForUseEntity_CheckMP, "")
 
-//VScript
+// VScript
 SIGSCAN_LINUX(VScript_CompileScript, "55 89 E5 57 56 53 83 EC 2C 8B 5D 0C 8B 75 08 8B 45 10 85 DB 0F 84 ? ? ? ? 80 3B 00 0F 84 ? ? ? ? 85 C0 BF ? ? ? ? 89 1C 24 0F 45 F8")
 
 // clang-format on
