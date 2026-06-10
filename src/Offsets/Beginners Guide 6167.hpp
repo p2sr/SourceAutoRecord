@@ -115,4 +115,7 @@ SIGSCAN_LINUX(UpdateLeaderboardData, "")
 SIGSCAN_WINDOWS(interfaceMgrSig, "83 3D ? ? ? ? 00 74 ? B0 01")
 OFFSET_WINDOWS(interfaceMgrOff, 2)
 
+// VScript
+SIGSCAN_LINUX(VScript_CompileScript, "55 89 E5 83 EC 38 89 5D ? 8B 5D ? 89 7D ? 31 FF 89 75 ? 8B 75")
+
 // clang-format on

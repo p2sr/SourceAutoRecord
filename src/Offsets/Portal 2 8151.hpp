@@ -68,6 +68,11 @@ SIGSCAN_LINUX(AddShadowToReceiver, "55 89 E5 57 56 53 83 EC ? 8B 45 ? 8B 4D ? 8B
 SIGSCAN_LINUX(UTIL_Portal_Color, "55 89 E5 56 53 83 EC 10 8B 75 ? 8B 5D ? 85 F6 0F 84")
 SIGSCAN_LINUX(UTIL_Portal_Color_Particles, "55 89 E5 53 83 EC 14 A1 ? ? ? ? 8B 5D ? 8B 10 89 04 24 FF 92 ? ? ? ? 84 C0 75 ? 83 7D ? 01")
 SIGSCAN_LINUX(GetChapterProgress, "55 89 E5 57 56 53 83 EC 2C 8B 5D 08 E8 ? ? ? ? 8B 10")
+SIGSCAN_LINUX(DispatchParticleEffect, "55 89 E5 57 56 31 F6 53 81 EC BC 00 00 00 8B 5D")
+SIGSCAN_LINUX(PrecacheParticleSystem, "55 89 E5 56 53 83 EC 20 A1 ? ? ? ? 8B 5D ? 8B 10 C7 44 24 ? 00 00 00 00")
+SIGSCAN_LINUX(GetCurrentTonemappingSystem, "55 89 E5 53 83 EC 14 80 3D ? ? ? ? 00 0F 85")
+SIGSCAN_LINUX(ResetToneMapping, "55 89 E5 57 56 53 83 EC 3C 8B 15 ? ? ? ? 8B 5D ? 8B 42")
+SIGSCAN_LINUX(LoadingProgress__SetupControlStatesInstruction, "")
 
 // Engine
 SIGSCAN_LINUX(Host_AccumulateTime, "55 89 E5 83 EC 28 F3 0F 10 05 ? ? ? ? A1 ? ? ? ? F3 0F 58 45 08 F3 0F 11 05 ? ? ? ? 8B 10 89 04 24 FF 52 24")
@@ -98,5 +103,11 @@ SIGSCAN_LINUX(UTIL_GetCommandClientIndex, "A1 ? ? ? ? 55 89 E5 5D 83 C0 01 C3")
 SIGSCAN_LINUX(CheckStuck_FloatTime, "E8 ? ? ? ? 8B 43 04 DD 9D ? ? ? ? F2 0F 10 B5 ? ? ? ? 8B 50 24 66 0F 14 F6 66 0F 5A CE 85 D2")
 SIGSCAN_DEFAULT(aircontrol_fling_speedSig, "0F 2F 25 ? ? ? ? 0F 28 F0",
                                            "0F 2E 05 ? ? ? ? 0F 86 ? ? ? ? 0F 2E 25")
+SIGSCAN_DEFAULT(Portal2PromoFlagsSig, "", "")
+SIGSCAN_LINUX(FloorReportalBranch, "75 ? 8B 87 ? ? ? ? 8B 15")
+SIGSCAN_LINUX(CPortal_Player__PollForUseEntity_CheckMP, "")
+
+// VScript
+SIGSCAN_LINUX(VScript_CompileScript, "55 89 E5 57 56 53 83 EC 2C 8B 5D 0C 8B 75 08 8B 45 10 85 DB 0F 84 ? ? ? ? 80 3B 00 0F 84 ? ? ? ? 85 C0 BF ? ? ? ? 89 1C 24 0F 45 F8")
 
 // clang-format on

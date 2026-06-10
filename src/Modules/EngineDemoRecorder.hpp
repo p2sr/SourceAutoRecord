@@ -5,6 +5,8 @@
 #include "Utils.hpp"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 // Ticks before demo autostop
 #define DEMO_AUTOSTOP_DELAY 15
@@ -28,6 +30,7 @@ public:
 	int autorecordStartNum = 1;
 
 	std::vector<std::string> queuedCommands = {};
+	std::vector<std::pair<std::string, uint32_t>> queuedVScriptChecksums = {};
 
 	char coopRadialMenuLastPos[8];
 
