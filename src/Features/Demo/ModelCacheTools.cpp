@@ -21,19 +21,19 @@ Variable sar_demo_modelcache_clear_protected_flags(
 	sar_demo_modelcache_clear_protected_flags_callback);
 
 DECL_CVAR_CALLBACK(sar_demo_modelcache_clear_protected_flags) {
-	if (sar_demo_modelcache_clear_protected_flags.GetBool() && flOldValue == 0.0f && !sv_cheats.GetBool()) {
+	if (sar_demo_modelcache_clear_protected_flags.GetBool() && !sv_cheats.GetBool()) {
 		console->Print("sar_demo_modelcache_clear_protected_flags requires sv_cheats 1.\n");
-		sar_demo_modelcache_clear_protected_flags.SetValue(pOldValue ? pOldValue : "0");
+		sar_demo_modelcache_clear_protected_flags.SetValue(0);
 	}
 }
 
 void *GetModelLoader() {
 	static uintptr_t global = 0;
 	if (!global) {
-		auto site = Memory::Scan(MODULE("engine"), Offsets::CModelLoaderModelPrecache);
+		auto site = Memory::Scan(MODULE("engine"), Offsets::CModelLoaderModelPrecache, Offsets::CModelLoaderModelPrecacheGlobal);
 		if (!site) return nullptr;
 
-		global = Memory::Deref<uintptr_t>(site + Offsets::CModelLoaderModelPrecacheGlobal);
+		global = Memory::Deref<uintptr_t>(site);
 	}
 
 	return Memory::Deref<void *>(global);
@@ -78,7 +78,7 @@ void ClearProtectedModelFlags() {
 } // namespace
 
 ON_EVENT(DEMO_STOP) {
-	if (sar_demo_modelcache_clear_protected_flags.GetBool()) {
+	if (sar_demo_modelcache_clear_protected_flags.GetBool() && sv_cheats.GetBool()) {
 		ClearProtectedModelFlags();
 	}
 }

@@ -89,12 +89,6 @@ SIGSCAN_LINUX(InterpolateDemoCommand, "55 31 C9 89 E5 57 56 53 83 EC 3C 89 4D F0
 
 // CModelLoader
 SIGSCAN_LINUX(CModelLoaderModelPrecache, "A1 ? ? ? ? 8B 8D ? ? ? ? 8B 10 C7 44 24 08 04 00 00 00 89 4C 24 04 89 04 24 FF 52 1C")
-OFFSET_LINUX(CModelLoaderModelPrecacheGlobal, 1)
-OFFSET_LINUX(CModelLoaderEntryArray, 0x8)
-OFFSET_LINUX(CModelLoaderEntryCount, 0x16)
-OFFSET_LINUX(CModelLoaderEntryStride, 0x10)
-OFFSET_LINUX(CModelLoaderEntryModel, 0xC)
-OFFSET_LINUX(CModelLoaderModelFlags, 0x108)
 
 // MaterialSystem
 SIGSCAN_LINUX(KeyValues_SetString, "55 89 E5 53 83 EC ? 8B 45 ? C7 44 24 ? ? ? ? ? 8B 5D ? 89 44 24 ? 8B 45 ? 89 04 24 E8 ? ? ? ? 85 C0 74 ? 89 5D")
