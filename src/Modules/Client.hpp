@@ -218,9 +218,12 @@ extern Variable leaderboard_open;
 extern Variable gameui_activate;
 extern Variable gameui_allowescape;
 extern Variable gameui_preventescape;
+extern Variable gameui_allowescapetoshow;
 extern Variable setpause;
+extern Variable unpause;
 extern Variable snd_ducktovolume;
 extern Variable say;
+extern Variable disconnect;
 
 extern Variable cl_cmdrate;
 extern Variable cl_updaterate;

@@ -188,11 +188,17 @@ int Cvars::DumpDoc(std::ofstream &file) {
 		};
 		return compareCvar(a.cmd->m_pszName, b.cmd->m_pszName) < 0;
 	});
+	std::string prev = "";
 	for (auto cvar : cvarList) {
 		if (!!strcmp(cvar.cmd->m_pszHelpString, "SAR alias command.\n") &&
 			!!strcmp(cvar.cmd->m_pszHelpString, "SAR function command.\n") &&
 			cvar.cmd->m_pszName[0] != '_') {
-			InternalDump(cvar.cmd, cvar.games, cvar.isCommand);
+			if (prev == cvar.cmd->m_pszName) {
+				console->Print("Duplicate cvar name in doc dump: %s\n", cvar.cmd->m_pszName);
+			} else {
+				InternalDump(cvar.cmd, cvar.games, cvar.isCommand);
+				prev = cvar.cmd->m_pszName;
+			}
 			++count;
 		}
 	}
@@ -353,9 +359,12 @@ void Cvars::Lock() {
 		gameui_activate.Lock();
 		gameui_allowescape.Lock();
 		gameui_preventescape.Lock();
+		gameui_allowescapetoshow.Lock();
 		setpause.Lock();
+		unpause.Lock();
 		snd_ducktovolume.Lock();
 		say.Lock();
+		disconnect.Lock();
 
 		this->locked = true;
 	}
@@ -404,17 +413,23 @@ void Cvars::Unlock() {
 		gameui_activate.Unlock(false);
 		gameui_allowescape.Unlock(false);
 		gameui_preventescape.Unlock(false);
+		gameui_allowescapetoshow.Unlock(false);
 		setpause.Unlock(false);
+		unpause.Unlock(false);
 		snd_ducktovolume.Unlock(false);
 		say.Unlock(false);
+		disconnect.Unlock(false);
 		soundfade.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE);
 		leaderboard_open.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 		gameui_activate.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 		gameui_allowescape.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 		gameui_preventescape.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
-		setpause.AddFlag(FCVAR_SERVER_CAN_EXECUTE);
+		gameui_allowescapetoshow.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
+		setpause.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
+		unpause.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 		snd_ducktovolume.AddFlag(FCVAR_SERVER_CAN_EXECUTE);
 		say.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
+		disconnect.AddFlag(FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 
 		this->locked = false;
 	}
