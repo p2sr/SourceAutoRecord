@@ -87,6 +87,9 @@ SIGSCAN_LINUX(InsertCommand, "55 89 E5 57 56 53 83 EC 1C 8B 75 ? 8B 5D ? 81 FE F
 // EngineDemoPlayer
 SIGSCAN_LINUX(InterpolateDemoCommand, "55 31 C9 89 E5 57 56 53 83 EC 3C 89 4D F0 8B 45 08 8B 4D 14 8B 80 B0 05 00 00 89 45 B8 8B 45 14 83 C0 04 89 45 D0")
 
+// CModelLoader
+SIGSCAN_LINUX(CModelLoaderModelPrecache, "A1 ? ? ? ? 8B 8D ? ? ? ? 8B 10 C7 44 24 08 04 00 00 00 89 4C 24 04 89 04 24 FF 52 1C")
+
 // MaterialSystem
 SIGSCAN_LINUX(KeyValues_SetString, "55 89 E5 53 83 EC ? 8B 45 ? C7 44 24 ? ? ? ? ? 8B 5D ? 89 44 24 ? 8B 45 ? 89 04 24 E8 ? ? ? ? 85 C0 74 ? 89 5D")
 
