@@ -625,7 +625,7 @@ TasFramebulk TasPlayer::SamplePreProcessedFramebulk(int slot, int tasTick, void 
 		console->Print("(TAS:  rawtick) %s\n", fb.ToString().c_str());
 	}
 
-	if (tasTick == 0 || !framebulkUpdated) {
+	if (!framebulkUpdated) {
 		std::vector<std::string> emptyCommands;
 		fb.commands = emptyCommands;
 	}
@@ -638,12 +638,10 @@ TasFramebulk TasPlayer::SamplePreProcessedFramebulk(int slot, int tasTick, void 
 	if (tasTick == 1) {
 		// on tick 1, we'll run the commands from the bulk at tick 0 because
 		// of the annoying off-by-one thing explained in FetchInputs
-		TasFramebulk fb0 = RequestProcessedFramebulkAt(slot, 0);
+		TasFramebulk fbTick0 = RequestProcessedFramebulkAt(slot, 0);
 
-		if (fb0.tick == 0) {
-			for (std::string cmd : fb0.commands) {
-				fb.commands.push_back(cmd);
-			}
+		if (fbTick0.tick == 0) {
+			fb.commands.insert(fb.commands.begin(), fbTick0.commands.begin(), fbTick0.commands.end());
 		}
 	}
 
