@@ -174,6 +174,7 @@ std::string EngineDemoPlayer::GetLevelName() {
 // 0x11: VPK internal checksums
 // 0x12: incomplete speedrun summary
 // 0x13: speedrun identifier
+// 0x14: runtime vscript checksum
 void EngineDemoPlayer::CustomDemoData(char *data, size_t length) {
 	if (data[0] == 0x03 || data[0] == 0x04) {  // Entity input data
 		std::optional<int> slot;

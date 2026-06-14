@@ -58,9 +58,12 @@ Variable leaderboard_open;
 Variable gameui_activate;
 Variable gameui_allowescape;
 Variable gameui_preventescape;
+Variable gameui_allowescapetoshow;
 Variable setpause;
+Variable unpause;
 Variable snd_ducktovolume;
 Variable say;
+Variable disconnect;
 
 Variable cl_cmdrate;
 Variable cl_updaterate;
@@ -206,6 +209,7 @@ void Client::MultiColorChat(const std::vector<std::pair<Color, std::string>> &co
 }
 
 void Client::ShowLocator(Vector position, Vector normal, Color color) {
+	if (!PrecacheParticleSystem || !DispatchParticleEffect) return;
 	Vector colorAsVector = {(float)color.r, (float)color.g, (float)color.b};
 	QAngle angles;
 
@@ -1285,9 +1289,12 @@ bool Client::Init() {
 	gameui_activate = Variable("gameui_activate");
 	gameui_allowescape = Variable("gameui_allowescape");
 	gameui_preventescape = Variable("gameui_preventescape");
+	gameui_allowescapetoshow = Variable("gameui_allowescapetoshow");
 	setpause = Variable("setpause");
+	unpause = Variable("unpause");
 	snd_ducktovolume = Variable("snd_ducktovolume");
 	say = Variable("say");
+	disconnect = Variable("disconnect");
 	cl_cmdrate = Variable("cl_cmdrate");
 	cl_updaterate = Variable("cl_updaterate");
 	cl_chat_active = Variable("cl_chat_active");

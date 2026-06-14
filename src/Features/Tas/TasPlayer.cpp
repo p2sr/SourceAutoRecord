@@ -168,7 +168,7 @@ void TasPlayer::Activate(TasPlaybackInfo info) {
 		playbackInfo.slots[slot].ClearGeneratedContent();
 
 		currentRequestRawFramebulkIndex[slot] = 0;
-	
+		currentExtraViewAnalogRawFramebulkIndex[slot] = 0;
 	}
 
 	active = true;
@@ -565,6 +565,28 @@ void TasPlayer::SaveProcessedFramebulks() {
 	}
 }
 
+// Used by controller for ExtraMouseSample's. Not necessary for gameplay inputs but makes raw playback smooth
+Vector TasPlayer::FetchRawExtraViewAnalog(int slot, float frametime) {
+
+	int tasTick = currentTick + 1;
+	float frametimeInTicks = frametime / engine->GetIPT();
+	int lastSampleTick = ceilf(tasTick + frametimeInTicks);
+
+	GetRawFramebulkAt(slot, tasTick, currentExtraViewAnalogRawFramebulkIndex[slot]);
+	unsigned framebulkIndex = currentExtraViewAnalogRawFramebulkIndex[slot];
+
+	Vector accumulatedAnalog = Vector();
+
+	float remainingFrametimeInTicks = frametimeInTicks;
+	for (int tick = tasTick; tick <= lastSampleTick; tick++) {
+		TasFramebulk fb = GetRawFramebulkAt(slot, tick, framebulkIndex);
+		accumulatedAnalog += fb.viewAnalog * fminf(1.0f, remainingFrametimeInTicks);
+		remainingFrametimeInTicks -= 1.0f;
+	}
+
+	return accumulatedAnalog;
+}
+
 /*
     This function is called by TAS controller's ControllerMove function.
     Even with alternateticks, the shortest interval between two ticks
@@ -625,7 +647,7 @@ TasFramebulk TasPlayer::SamplePreProcessedFramebulk(int slot, int tasTick, void 
 		console->Print("(TAS:  rawtick) %s\n", fb.ToString().c_str());
 	}
 
-	if (tasTick == 0 || !framebulkUpdated) {
+	if (!framebulkUpdated) {
 		std::vector<std::string> emptyCommands;
 		fb.commands = emptyCommands;
 	}
@@ -638,12 +660,10 @@ TasFramebulk TasPlayer::SamplePreProcessedFramebulk(int slot, int tasTick, void 
 	if (tasTick == 1) {
 		// on tick 1, we'll run the commands from the bulk at tick 0 because
 		// of the annoying off-by-one thing explained in FetchInputs
-		TasFramebulk fb0 = GetRawFramebulkAt(slot, 0);
+		TasFramebulk fbTick0 = RequestProcessedFramebulkAt(slot, 0);
 
-		if (fb0.tick == 0) {
-			for (std::string cmd : fb0.commands) {
-				fb.commands.push_back(cmd);
-			}
+		if (fbTick0.tick == 0) {
+			fb.commands.insert(fb.commands.begin(), fbTick0.commands.begin(), fbTick0.commands.end());
 		}
 	}
 

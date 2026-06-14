@@ -12,3 +12,4 @@
 #include "Modules/Tier1.hpp"
 #include "Modules/VGui.hpp"
 #include "Modules/VPhysics.hpp"
+#include "Modules/VScript.hpp"

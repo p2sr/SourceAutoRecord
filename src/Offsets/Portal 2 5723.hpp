@@ -30,3 +30,13 @@ OFFSET_LINUX(DrawPortalSpBranchOff, 0x15)
 SIGSCAN_LINUX(DrawPortalGhost, "55 89 E5 57 56 53 83 EC 5C A1 ? ? ? ? 8B 40")
 SIGSCAN_LINUX(DrawPortalGhostSpBranch, "0F 84 ? ? ? ? FF 90 ? ? ? ? 80 BB ? ? ? ? 01")
 SIGSCAN_LINUX(GetChapterProgress, "55 89 E5 57 56 53 83 EC 2C 8B 7D 08 E8 ? ? ? ? 8B 10 C7")
+SIGSCAN_LINUX(DispatchParticleEffect, "55 89 E5 83 EC ? 8B 45 ? 89 5D ? 89 75 ? 8B 5D ? 8B 75 ? 89 7D ? 8B 7D ? 89 04 24")
+SIGSCAN_LINUX(PrecacheParticleSystem, "55 89 E5 83 EC ? A1 ? ? ? ? 89 5D ? 89 75 ? 8B 5D ? 8B 10 C7 44 24 ? ? ? ? ? 89 5C 24")
+SIGSCAN_LINUX(GetCurrentTonemappingSystem, "55 89 E5 53 83 EC ? 80 3D ? ? ? ? ? 0F 85")
+SIGSCAN_LINUX(ResetToneMapping, "55 89 E5 53 83 EC ? 8B 5D ? E8 ? ? ? ? 89 04 24 89 5C 24")
+
+// Server
+SIGSCAN_LINUX(FloorReportalBranch,"75 ? 8B 83 ? ? ? ? 8B 0D ? ? ? ? 83 F8 FF 74 ? 0F B7 D0 C1 E8 10 8D 14 ? 8D 14 ? 39 42 ? 75 ? 8B 42 ? 85 C0 74 ? 89 04 24 E8 ? ? ? ? 8B 85")
+
+// VScript
+SIGSCAN_LINUX(VScript_CompileScript, "55 89 E5 83 EC 38 89 5D F4 8B 5D 0C 89 7D FC 31 FF 89 75 F8 8B 75 10 85 DB 0F 84 ? ? ? ? 80 3B 00 0F 84 ? ? ? ? 85 F6 B8 ? ? ? ? 89")

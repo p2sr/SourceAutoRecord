@@ -173,6 +173,7 @@
 |sar_demo_clean_start|0|Attempts to minimize visual interpolation of some elements (like post-processing or lighting) when demo playback begins.|
 |sar_demo_clean_start_tonemap|0|Overrides initial tonemap scalar value used in auto-exposure.<br>Setting it to 0 will attempt to skip over to target value for several ticks.|
 |sar_demo_clean_start_tonemap_sample|cmd|sar_demo_clean_start_tonemap_sample [tick] - samples tonemap scale from current demo at given tick and stores it in "sar_demo_clean_start_tonemap" variable. If no tick is given, sampling will happen when `__END__` is seen in demo playback.|
+|sar_demo_modelcache_clear_protected_flags|0|Fix demo model-cache growth by clearing stale CModelLoader protected flags on demo stop. Requires sv_cheats 1 to enable.|
 |sar_demo_overwrite_bak|0|Rename demos to (name)_bak if they would be overwritten by recording|
 |sar_demo_portal_interp_fix|1|Fix eye interpolation through portals in demo playback.|
 |sar_demo_remove_broken|1|Whether to remove broken frames from demo playback|
@@ -632,6 +633,7 @@
 |sar_tas_stop|cmd|sar_tas_stop - stop TAS playing|
 |sar_tas_tools_enabled|1|Enables tool processing for TAS script making.|
 |sar_tas_tools_force|0|Force tool playback for TAS scripts; primarily for debugging.|
+|sar_tas_use_raw_interpolation|0|Allows TAS controller to perform extra mouse samples to make camera movement more smooth. Can affect raw playback outcome!|
 |sar_teleport|cmd|sar_teleport [noportals] - teleports the player to the last saved location|
 |sar_teleport_setpos|cmd|sar_teleport_setpos - saves current location for teleportation|
 |sar_tick_debug|0|Output debugging information to the console related to ticks and frames.|

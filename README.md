@@ -32,18 +32,19 @@ For features and installation instructions, please visit [the website].
 
 ## Support
 
-| Game                                                                    | Windows | Linux |
-|-------------------------------------------------------------------------|---------|-------|
-| [Portal 2](https://store.steampowered.com/app/620)                      | ✔       | ✔     |
-| [Aperture Tag](https://store.steampowered.com/app/280740)               | ✔       | [➖](https://wiki.portal2.sr/Aperture_Tag#Linux) |
-| [Portal Stories: Mel](https://store.steampowered.com/app/317400)        | ✔       | ✔     |
-| [Thinking with Time Machine](https://store.steampowered.com/app/286080) | ✔       | ✔     |
-| [Portal Reloaded](https://store.steampowered.com/app/1255980)           | ✔       | ✔     |
-| [INFRA](https://store.steampowered.com/app/251110)                      | ✔       | ➖     |
-| [The Beginner's Guide](https://store.steampowered.com/app/303210)       | ✔       | ✔     |
-| [The Stanley Parable](https://store.steampowered.com/app/221910)        | ✔       | ✔     |
-| [The Cleaning Game](https://store.steampowered.com/app/3281900)         | ✔       | ➖     |
-| Divinity Chapter 2 *(closed beta)*                                      | ✔       | ❓     |
+| Game                                                                       | Windows | Linux |
+|----------------------------------------------------------------------------|---------|-------|
+| [Portal 2 (Steam)](https://store.steampowered.com/app/620)                 | ✔       | ✔     |
+| [Portal 2 (4554)](https://sourceunpack.gameabusefastcomplete.com/#p2-4554) | ✔       | ➖    |
+| [Aperture Tag](https://store.steampowered.com/app/280740)                  | ✔       | [➖](https://wiki.portal2.sr/Aperture_Tag#Linux) |
+| [Portal Stories: Mel](https://store.steampowered.com/app/317400)           | ✔       | ✔     |
+| [Thinking with Time Machine](https://store.steampowered.com/app/286080)    | ✔       | ❌    |
+| [Portal Reloaded](https://store.steampowered.com/app/1255980)              | ✔       | ✔     |
+| [INFRA](https://store.steampowered.com/app/251110)                         | ✔       | ➖    |
+| [The Beginner's Guide](https://store.steampowered.com/app/303210)          | ✔       | ✔     |
+| [The Stanley Parable](https://store.steampowered.com/app/221910)           | ✔       | ✔     |
+| [The Cleaning Game](https://store.steampowered.com/app/3281900)            | ✔       | ➖    |
+| Divinity Chapter 2 *(closed beta)*                                         | ✔       | ❓    |
 
 If you're playing a game with no Linux support, you can use Proton to run it.
 

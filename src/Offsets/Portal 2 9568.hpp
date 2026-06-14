@@ -492,6 +492,20 @@ SIGSCAN_DEFAULT(InterpolateDemoCommand, "55 8B EC 83 EC 10 56 8B F1 8B 4D 10 57 
                                         "55 57 56 53 83 EC 10 8B 44 24 24 8B 5C 24 2C 8B 88 B0 05 00 00 8B 44 24 30 8D 70 04 8D 90 9C 00 00 00 89 F0 F3 0F 10 40 04")
 
 
+// CModelLoader
+// win: "modelprecache" xref -> client string-table update callback -> CModelLoader vtable +0x1C call with flag 4; global immediate is g_pModelLoader
+// linux: "CClientState::ConsistencyCheck" xref -> model consistency type 3 block -> CModelLoader vtable +0x1C call with flag 4; global immediate is g_pModelLoader
+SIGSCAN_DEFAULT(CModelLoaderModelPrecache,
+                "8B 0D ? ? ? ? 8B 11 6A 04 50 8B 42 1C FF D0 50 EB 02 6A 00",
+                "A1 ? ? ? ? 83 EC 04 8B 10 6A 04 FF B5 ? ? ? ? 50 FF 52 1C 89 85 ? ? ? ? 83 C4 10 85 C0")
+OFFSET_DEFAULT(CModelLoaderModelPrecacheGlobal, 2, 1)
+OFFSET_DEFAULT(CModelLoaderEntryArray, 0x8, 0x8) // "CModelLoader::FindModel: NULL name" xref -> successful lookup path reads [this+8] + index*0x10 + 0xC
+OFFSET_DEFAULT(CModelLoaderEntryCount, 0x16, 0x16) // same CModelLoader::FindModel tree/list state; active count is this+0x16
+OFFSET_DEFAULT(CModelLoaderEntryStride, 0x10, 0x10) // same CModelLoader::FindModel lookup path; entry nodes are 0x10 bytes
+OFFSET_DEFAULT(CModelLoaderEntryModel, 0xC, 0xC) // same CModelLoader::FindModel lookup path; entry+0xC is model_t *
+OFFSET_DEFAULT(CModelLoaderModelFlags, 0x108, 0x108) // CModelLoader vtable +0x1C target ORs caller flags into model_t+0x108
+
+
 // Matchmaking
 SIGSCAN_DEFAULT(UpdateLeaderboardData, "55 8B EC 83 EC 08 53 8B D9 8B 03 8B 50 08",
                                        "55 89 E5 57 56 53 83 EC 2C 8B 45 08 8B 5D 0C")
@@ -552,6 +566,10 @@ OFFSET_DEFAULT(Portal2PromoFlagsOff, 2, 1)
 // VPhysics
 OFFSET_EMPTY(DestroyEnvironment)
 OFFSET_EMPTY(GetActiveEnvironmentByIndex)
+
+// VScript
+SIGSCAN_DEFAULT(VScript_CompileScript, "55 8B EC 83 EC 0C 56 57 8B 7D 08 8B F1 85 FF 0F 84 ? ? ? ? 80 3F 00 0F 84 ? ? ? ? 53 8B",
+                                       "57 56 53 8B 5C 24 14 8B 7C 24 10 8B 74 24 18 85 DB 74 ? 80 3B 00 74 ? 85 F6 B8 ? ? ? ? 0F 44 F0 83 EC 0C 53 E8 ? ? ? ? C7 04 24 01 00") // "unnamed" xref -> function with two references -> CScriptVM::CompileScript
 
 
 // Steam API

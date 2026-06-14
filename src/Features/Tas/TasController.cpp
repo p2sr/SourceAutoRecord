@@ -19,6 +19,7 @@ const int g_TasControllerInGameButtons[] = {
 };
 
 Variable sar_tas_real_controller_debug("sar_tas_real_controller_debug", "0", 0, 4, "Debugs controller.\n");
+Variable sar_tas_use_raw_interpolation("sar_tas_use_raw_interpolation", "0", "Allows TAS controller to perform extra mouse samples to make camera movement more smooth. Can affect raw playback outcome!\n");
 
 TasController *tasControllers[2];
 
@@ -112,10 +113,11 @@ std::chrono::time_point<std::chrono::high_resolution_clock> g_lastControllerMove
 void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) {
 	// ControllerMove is executed several times for one tick. Most of them
 	// are called from ExtraMouseSamples with 0 tick count. We want to filter them out.
-	if (cmd->tick_count == 0) return;
+	bool wasInExtraMouseSamples = inExtraMouseSamples;
+	inExtraMouseSamples = cmd->tick_count == 0;
 
 	// doing some debugs to test the behaviour of the real controller
-	if (sar_tas_real_controller_debug.GetBool()) {
+	if (sar_tas_real_controller_debug.GetBool() && !inExtraMouseSamples) {
 		int debugType = sar_tas_real_controller_debug.GetInt();
 		if (debugType == 1) {
 			console->Print("forwardmove: %.5f, sidemove: %.5f\n", cmd->forwardmove, cmd->sidemove);
@@ -139,6 +141,31 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 	if (tasPlayer->playbackInfo.coopControlSlot == nSlot) return;
 
 	//console->Print("TasController::ControllerMove (%d, ", cmd->tick_count);
+
+	if (!sar_tas_use_raw_interpolation.GetBool()) {
+		// without raw interpolation, treat is as if extra mouse samples never happened
+		wasInExtraMouseSamples = false;
+		if (inExtraMouseSamples) {
+			return;
+		}
+	}
+
+	if (inExtraMouseSamples && !tasPlayer->IsUsingTools()) {
+		if (!wasInExtraMouseSamples) {
+			viewanglesPreExtraMouseSamples = engine->GetAngles(nSlot);
+		}
+
+		extraMouseSamplesAccumulatedTime += flFrametime;
+
+		auto extraViewAnalog = tasPlayer->FetchRawExtraViewAnalog(nSlot, extraMouseSamplesAccumulatedTime);
+		ApplyViewAnalog(nSlot, nullptr, extraViewAnalog, true);
+
+		return;
+	}
+
+	if (wasInExtraMouseSamples) {
+		extraMouseSamplesAccumulatedTime = 0.0f;
+	}
 
 	tasPlayer->FetchInputs(nSlot, this, cmd);
 
@@ -197,17 +224,7 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 	// don't do this part if tools are enabled.
 	// tools processing will do it instead
 	if (!tasPlayer->IsUsingTools()) {
-		QAngle viewangles;
-		viewangles = engine->GetAngles(nSlot);
-
-		viewangles.y -= viewAnalog.x;  // positive values should rotate right.
-		viewangles.x -= viewAnalog.y;  // positive values should rotate up.
-		viewangles.x = std::min(std::max(viewangles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
-
-		cmd->mousedx = (int)(-viewAnalog.x);
-		cmd->mousedy = (int)(-viewAnalog.y);
-
-		engine->SetAngles(nSlot, viewangles);
+		ApplyViewAnalog(nSlot, cmd, viewAnalog, wasInExtraMouseSamples);
 	}
 
 	{
@@ -218,4 +235,24 @@ void TasController::ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd) 
 		tmp.viewangles = engine->GetAngles(nSlot);
 		tasPlayer->DumpUsercmd(nSlot, &tmp, tasPlayer->GetTick() + 1, "client"); // off-by-one bullshit on tick count
 	}
+}
+
+void TasController::ApplyViewAnalog(int nSlot, CUserCmd *cmd, Vector analog, bool usePreExtraMouseSampleAngles) {
+	QAngle viewangles;
+	viewangles = engine->GetAngles(nSlot);
+
+	if (usePreExtraMouseSampleAngles) {
+		viewangles = viewanglesPreExtraMouseSamples;
+	}
+
+	viewangles.y -= analog.x;  // positive values should rotate right.
+	viewangles.x -= analog.y;  // positive values should rotate up.
+	viewangles.x = std::min(std::max(viewangles.x, -cl_pitchdown.GetFloat()), cl_pitchup.GetFloat());
+
+	if (cmd != nullptr) {
+		cmd->mousedx = (int)(-analog.x);
+		cmd->mousedy = (int)(-analog.y);
+	}
+
+	engine->SetAngles(nSlot, viewangles);
 }
