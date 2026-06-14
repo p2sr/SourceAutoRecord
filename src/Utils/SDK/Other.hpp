@@ -11,6 +11,19 @@
 #include <cstring>
 
 
+struct Vertex_t {
+	Vector2<float>	m_Position;
+	Vector2<float>	m_TexCoord;
+
+	Vertex_t() {}
+	Vertex_t(Vector2<float> pos, Vector2<float> coord = Vector2<float>{ 0, 0 }) : m_Position(pos), m_TexCoord(coord) {}
+
+	// void Init(Vector2 pos, Vector2 coord = Vector2{0, 0}) {
+	// 	m_Position = pos;
+	// 	m_TexCoord = coord;
+	// }
+};
+
 struct cmdalias_t {
 	cmdalias_t *next;
 	char name[32];

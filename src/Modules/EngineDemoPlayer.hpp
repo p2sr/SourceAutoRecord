@@ -24,6 +24,7 @@ public:
 	_SkipToTick SkipToTick = nullptr;
 
 	char *DemoName = nullptr;
+  int demoPlaybackTicks = 0;
 	int demoQueueSize = false;
 	int currentDemoID = false;
 	std::vector<std::string> demoQueue;
@@ -56,6 +57,9 @@ public:
 	bool ShouldBlacklistCommand(const char *cmd);
 	void OverrideView(ViewSetup *view);
 };
+
+extern Variable sar_demo_remove_broken;
+extern Variable demo_timescale;
 
 extern Command sar_startdemos;
 extern Command sar_startdemosfolder;

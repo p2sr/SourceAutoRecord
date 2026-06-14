@@ -959,6 +959,7 @@ bool Engine::Init() {
 		this->GetLevelNameShort = this->engineClient->Original<_GetLevelNameShort>(Offsets::GetLevelNameShort);
 		this->GetLightForPoint = this->engineClient->Original<_GetLightForPoint>(Offsets::GetLightForPoint);
 		this->GetInfo = this->engineClient->Original<_GetPlayerInfo>(Offsets::GetPlayerInfo);
+		this->GetInputContext = this->engineClient->Original<_GetInputContext>(190);
 
 #ifndef _WIN32
 		this->engineClient->Hook(Engine::GetMouseDelta_Hook, Engine::GetMouseDelta, Offsets::GetMouseDelta);

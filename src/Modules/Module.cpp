@@ -1,7 +1,5 @@
 #include "Module.hpp"
 
-#include <vector>
-
 Modules::Modules()
 	: list() {
 }

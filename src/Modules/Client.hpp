@@ -4,6 +4,7 @@
 #include "Module.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
+#include "InputSystem.hpp"
 
 #include <cstdint>
 
@@ -14,8 +15,9 @@ enum class CMStatus {
 };
 
 class Client : public Module {
+public:
+  Interface *g_ClientDLL = nullptr;
 private:
-	Interface *g_ClientDLL = nullptr;
 	Interface *g_pClientMode = nullptr;
 	Interface *g_pClientMode2 = nullptr;
 	Interface *g_HUDChallengeStats = nullptr;
@@ -136,6 +138,8 @@ public:
 
 	// CHLClient::LevelInitPreEntity
 	DECL_DETOUR(LevelInitPreEntity, const char *levelName);
+
+	DECL_DETOUR(IN_KeyEvent, int eventCode, ButtonCode_t keynum, const char* pszCurrentBinding);
 
 	// ClientModeShared::CreateMove
 	DECL_DETOUR(CreateMove, float flInputSampleTime, CUserCmd *cmd);
