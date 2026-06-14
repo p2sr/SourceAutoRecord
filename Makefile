@@ -6,10 +6,10 @@ SDIR=src
 ODIR=obj
 
 IMGUI_SRCS=\
-	external/imgui/imgui.cpp \
-	external/imgui/imgui_draw.cpp \
-	external/imgui/imgui_tables.cpp \
-	external/imgui/imgui_widgets.cpp
+	lib/imgui/imgui.cpp \
+	lib/imgui/imgui_draw.cpp \
+	lib/imgui/imgui_tables.cpp \
+	lib/imgui/imgui_widgets.cpp
 
 SRCS=$(shell find $(SDIR) -name '*.cpp') $(IMGUI_SRCS)
 OBJS=$(SRCS:.cpp=.o)
@@ -22,7 +22,7 @@ VERSION=$(shell git describe --tags)
 DEPS=$(OBJS:.o=.d)
 
 WARNINGS=-Wall -Wno-parentheses -Wno-unknown-pragmas -Wno-delete-non-virtual-dtor -Wno-overloaded-virtual
-CXXFLAGS=-std=c++17 -m32 $(WARNINGS) -I$(SDIR) -Iexternal/imgui -fPIC -D_GNU_SOURCE -Ilib/ffmpeg/include -Ilib/SFML/include -Ilib/curl/include -Ilib/discord-rpc/include -DSFML_STATIC -DCURL_STATICLIB
+CXXFLAGS=-std=c++17 -m32 $(WARNINGS) -I$(SDIR) -Ilib/imgui -fPIC -D_GNU_SOURCE -Ilib/ffmpeg/include -Ilib/SFML/include -Ilib/curl/include -Ilib/discord-rpc/include -DSFML_STATIC -DCURL_STATICLIB
 LDFLAGS=-m32 -shared -lstdc++fs -Llib/ffmpeg/lib/linux -lavformat -lavcodec -lavutil -lswscale -lswresample -lx264 -lx265 -lvorbis -lvorbisenc -lvorbisfile -logg -lopus -lvpx -Llib/SFML/lib/linux -lsfml -Llib/curl/lib/linux -lcurl -lssl -lcrypto -lnghttp2 -Llib/discord-rpc/lib/linux -ldiscord-rpc
 
 # Import config.mk, which can be used for optional config
