@@ -595,10 +595,10 @@ void ImGui_RenderDrawData_Source(ImDrawData* drawData) {
 
         auto isWhitePixelTri = [&](const ImDrawVert& v0, const ImDrawVert& v1, const ImDrawVert& v2) {
           const float eps = 0.0001f;
-          auto near = [&](ImVec2 uv) {
+          auto isNear = [&](ImVec2 uv) {
             return fabs(uv.x - whiteUV.x) < eps && fabs(uv.y - whiteUV.y) < eps;
           };
-          return near(v0.uv) && near(v1.uv) && near(v2.uv);
+          return isNear(v0.uv) && isNear(v1.uv) && isNear(v2.uv);
         };
 
         bool isShape = isWhitePixelTri(v0, v1, v2);
