@@ -93,7 +93,6 @@ CON_COMMAND(sar_imgui_list_huds, "sar_imgui_list_huds - list all available huds"
 static bool g_drawWithFontAtlas = true;
 
 static int g_imguiFontTextureId = -1;
-static int g_imguiWhiteTextureId = -1;
 
 static void UploadImGuiFontTexture() {
   ImGuiIO& io = ImGui::GetIO();
@@ -113,18 +112,6 @@ static void UploadImGuiFontTexture() {
   io.Fonts->SetTexID((ImTextureID)(intptr_t)g_imguiFontTextureId);
   console->Print("ImGui Font ID: %d", g_imguiFontTextureId);
 }
-
-// static void UploadImGuiWhiteTexture() {
-//   g_imguiWhiteTextureId = surface->CreateNewTextureID(surface->matsurface->ThisPtr(), true);
-//   unsigned char whitePixel[4] = { 255, 255, 255, 255 };
-//   surface->DrawSetTextureRGBA(
-//     surface->matsurface->ThisPtr(),
-//     g_imguiWhiteTextureId,
-//     whitePixel,
-//     1,
-//     1
-//   );
-// }
 
 REDECL(VGui::Paint);
 REDECL(VGui::UpdateProgressBar);
@@ -267,7 +254,7 @@ void ImGui_RenderDrawData_Source(ImDrawData* drawData) {
           // texture, everything looks fucked?! This is probably the same 
           // reason why the stupid borders look fucked (they use the texture
           // atlas). No texture works fine for now.
-          surface->DrawSetTexture(surface->matsurface->ThisPtr(), -1);
+          // surface->DrawSetTexture(surface->matsurface->ThisPtr(), -1);
         } else {
           int texId = (int)(intptr_t)cmd->GetTexID();
           surface->DrawSetTexture(surface->matsurface->ThisPtr(), texId);
@@ -275,6 +262,14 @@ void ImGui_RenderDrawData_Source(ImDrawData* drawData) {
 
         surface->DrawSetColor(surface->matsurface->ThisPtr(), col.r, col.g, col.b, col.a);
         surface->DrawTexturedPolygon(surface->matsurface->ThisPtr(), 3, verts, true);
+
+        // surface->DrawColoredLine({v0.pos.x, v0.pos.y}, {v1.pos.x, v1.pos.y}, col);
+        // surface->DrawColoredLine({v1.pos.x, v1.pos.y}, {v2.pos.x, v2.pos.y}, col);
+        // surface->DrawColoredLine({v2.pos.x, v2.pos.y}, {v0.pos.x, v0.pos.y}, col);
+
+        // surface->DrawColoredLine({v0.pos.x, v0.pos.y}, {v1.pos.x, v1.pos.y}, {255, 255, 255, 100});
+        // surface->DrawColoredLine({v1.pos.x, v1.pos.y}, {v2.pos.x, v2.pos.y}, {255, 255, 255, 100});
+        // surface->DrawColoredLine({v2.pos.x, v2.pos.y}, {v0.pos.x, v0.pos.y}, {255, 255, 255, 100});
       }
     }
   }
