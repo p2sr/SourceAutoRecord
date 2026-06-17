@@ -70,6 +70,8 @@ class PlayerTrace : public Feature {
 private:
 	// In order to arbitrarily number traces
 	std::map<std::string, Trace> traces;
+	// Universal map for trace tick offsets to be able to preserve them between trace recordings
+	std::unordered_map<std::string, int> tickOffsets;
 	std::string lastRecordedTrace;
 public:
 	PlayerTrace();
@@ -115,6 +117,8 @@ public:
 	void CheckTraceChanged();
 	// Get the current trace bbox tick for TAS stuff, or -1 if there isn't one
 	int GetTasTraceTick();
+	// Set tick offset globally
+	void SetTickOffset(std::string &trace_name, int offset);
 
 	// Returns an identifier for the scope which should be passed to ExitLogScope
 	void EnterLogScope(const char *name);

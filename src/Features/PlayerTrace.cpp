@@ -137,6 +137,12 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 	if (traces.count(trace_name) == 0) {
 		traces[trace_name] = Trace();
 		traces[trace_name].startSessionTick = session->GetTick();
+
+		auto it = playerTrace->tickOffsets.find(trace_name);
+
+		if (it != playerTrace->tickOffsets.end()) {
+			traces[trace_name].tasTickOffset = it->second;
+		}
 	}
 
 	Trace &trace = traces[trace_name];
@@ -890,6 +896,10 @@ int PlayerTrace::GetTasTraceTick() {
 	return max_tas_tick;
 }
 
+void PlayerTrace::SetTickOffset(std::string &trace_name, int offset) {
+	playerTrace->tickOffsets[trace_name] = offset;
+}
+
 HUD_ELEMENT2(trace, "0", "Draws info about current trace bbox tick.\n", HudType_InGame | HudType_Paused) {
 	if (!sv_cheats.GetBool()) return;
 	playerTrace->DrawTraceHud(ctx);
@@ -1250,7 +1260,11 @@ CON_COMMAND(sar_trace_sync, "sar_trace_sync - syncs all the hovered traces to th
 	for (auto &h : hovers) {
 		auto trace = playerTrace->GetTrace(h.trace_name);
 
-		trace->tasTickOffset = min_tick - h.tick;
+		auto offset = min_tick - h.tick;
+
+		trace->tasTickOffset = offset;
+
+		playerTrace->SetTickOffset(h.trace_name, offset);
 	}
 }
 
