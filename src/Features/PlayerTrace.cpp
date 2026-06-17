@@ -1241,28 +1241,16 @@ CON_COMMAND(sar_trace_compare, "sar_trace_compare <trace 1> <trace 2> - compares
 }
 
 CON_COMMAND(sar_trace_sync, "sar_trace_sync - syncs all the hovered traces to the fastest trace.\n") {
-	std::unordered_map<std::string, int> trace_ticks;
-
-	int min_tick = INT_MAX;
-	std::string fastest_trace_name;
+	size_t min_tick = SIZE_MAX;
 
 	for (auto &h : hovers) {
-		int tick = h.tick;
-
-		if (tick < min_tick) {
-			min_tick = tick;
-			fastest_trace_name = h.trace_name;
-		}
-
-		trace_ticks[h.trace_name] = tick;
+		min_tick = std::min(min_tick, h.tick);
 	}
 
-	auto fastest_trace = playerTrace->GetTrace(fastest_trace_name);
+	for (auto &h : hovers) {
+		auto trace = playerTrace->GetTrace(h.trace_name);
 
-	for (const auto& [name, tick] : trace_ticks) {
-		auto trace = playerTrace->GetTrace(name);
-
-		trace->tasTickOffset = min_tick - tick;
+		trace->tasTickOffset = min_tick - h.tick;
 	}
 }
 
