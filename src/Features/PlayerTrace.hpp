@@ -48,6 +48,7 @@ struct PortalLocations {
 struct Trace {
 	int startSessionTick;
 	int startTasTick;
+	int tasTickOffset = 0;
 	std::vector<Vector> positions[2];
 	std::vector<Vector> eyepos[2];
 	std::vector<QAngle> angles[2];

@@ -16,6 +16,7 @@
 #include "Modules/Surface.hpp"
 
 #include <vector>
+#include <climits>
 
 PlayerTrace *playerTrace;
 
@@ -60,11 +61,11 @@ static int tickInternalToUser(int tick, const Trace &trace) {
 	if (tick == -1) return -1;
 	switch (sar_trace_draw_time.GetInt()) {
 	case 2:
-		return tick + trace.startSessionTick;
+		return tick + trace.startSessionTick + trace.tasTickOffset;
 	case 3:
-		if (trace.startTasTick > 0) return tick + trace.startTasTick;
+		if (trace.startTasTick > 0) return tick + trace.startTasTick + trace.tasTickOffset;
 	default: // FALLTHROUGH
-		return tick;
+		return tick + trace.tasTickOffset;
 	}
 }
 
@@ -72,11 +73,11 @@ static int tickUserToInternal(int tick, const Trace &trace) {
 	if (tick == -1) return -1;
 	switch (sar_trace_draw_time.GetInt()) {
 	case 2:
-		return tick - trace.startSessionTick;
+		return tick - trace.startSessionTick - trace.tasTickOffset;
 	case 3:
-		if (trace.startTasTick > 0) return tick - trace.startTasTick;
+		if (trace.startTasTick > 0) return tick - trace.startTasTick - trace.tasTickOffset;
 	default: // FALLTHROUGH
-		return tick;
+		return tick - trace.tasTickOffset;
 	}
 }
 
@@ -1236,6 +1237,32 @@ CON_COMMAND(sar_trace_compare, "sar_trace_compare <trace 1> <trace 2> - compares
 			fclose(f2);
 			console->Print("Trace '%s' log dumped to '%s'\n", trace2Name, dump_2_name.c_str());
 		}
+	}
+}
+
+CON_COMMAND(sar_trace_sync, "sar_trace_sync - syncs all the hovered traces to the fastest trace.\n") {
+	std::unordered_map<std::string, int> trace_ticks;
+
+	int min_tick = INT_MAX;
+	std::string fastest_trace_name;
+
+	for (auto &h : hovers) {
+		int tick = h.tick;
+
+		if (tick < min_tick) {
+			min_tick = tick;
+			fastest_trace_name = h.trace_name;
+		}
+
+		trace_ticks[h.trace_name] = tick;
+	}
+
+	auto fastest_trace = playerTrace->GetTrace(fastest_trace_name);
+
+	for (const auto& [name, tick] : trace_ticks) {
+		auto trace = playerTrace->GetTrace(name);
+
+		trace->tasTickOffset = min_tick - tick;
 	}
 }
 
