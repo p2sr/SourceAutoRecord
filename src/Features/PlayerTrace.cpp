@@ -443,29 +443,29 @@ void PlayerTrace::DrawBboxAt(int tick) const {
 			if (sar_trace_bbox_ent_draw.GetBool()) {
 				auto &boxes = trace.hitboxes[slot][localtick];
 
+				MeshId allVphysMesh = OverlayRender::createMesh(
+					RenderCallback::constant({255, 0, 0, 20}),
+					RenderCallback::constant({255, 0, 0, 255})
+				);
 				for (auto &vphys : boxes.vphys) {
-					MeshId mesh = OverlayRender::createMesh(
-						RenderCallback::constant({ 255, 0, 0, 20  }),
-						RenderCallback::constant({ 255, 0, 0, 255 })
-					);
 					for (size_t i = 0; i < vphys.verts.size(); i += 3) {
 						Vector a = vphys.verts[i+0];
 						Vector b = vphys.verts[i+1];
 						Vector c = vphys.verts[i+2];
-						OverlayRender::addTriangle(mesh, a, b, c, true);
+						OverlayRender::addTriangle(allVphysMesh, a, b, c, true);
 					}
 				}
 
+				MeshId allBspMesh = OverlayRender::createMesh(
+					RenderCallback::constant({0, 0, 255, 20}),
+					RenderCallback::constant({0, 0, 255, 255})
+				);
 				for (auto &bsp : boxes.bsps) {
-					MeshId mesh = OverlayRender::createMesh(
-						RenderCallback::constant({ 0, 0, 255, 20  }),
-						RenderCallback::constant({ 0, 0, 255, 255 })
-					);
 					for (size_t i = 0; i < bsp.verts.size(); i += 3) {
 						Vector a = bsp.verts[i+0];
 						Vector b = bsp.verts[i+1];
 						Vector c = bsp.verts[i+2];
-						OverlayRender::addTriangle(mesh, a, b, c, true);
+						OverlayRender::addTriangle(allBspMesh, a, b, c, true);
 					}
 				}
 
